@@ -39,5 +39,5 @@
 
 void handleErrorChannel(unsigned char* buf, WORD datalen)
 {
-	Netlib_Logf(ghServerNetlibUser, "Ignoring server packet on ERROR channel");
+	NetLog_Server("Ignoring server packet on ERROR channel");
 }

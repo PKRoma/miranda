@@ -60,8 +60,8 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
     szWork = strstr(szQuery, "<PluginID>");
     szEnd = strstr(szQuery, "</PluginID>");
 #ifdef _DEBUG
-    Netlib_Logf(ghServerNetlibUser, "Query: %s", szQuery);
-    Netlib_Logf(ghServerNetlibUser, "Notify: %s", szNotify);
+    NetLog_Server("Query: %s", szQuery);
+    NetLog_Server("Notify: %s", szNotify);
 #endif
     if (szWork && szEnd)
     { // this is our plugin
@@ -125,7 +125,7 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
               nResponseLen = 212 + strlennull(szXName) + strlennull(szXMsg) + UINMAXLEN + 2;
               szResponse = (char*)malloc(nResponseLen + 1);
               // send response
-              nResponseLen = mir_snprintf(szResponse, nResponseLen, 
+              nResponseLen = null_snprintf(szResponse, nResponseLen, 
                 "<ret event='OnRemoteNotification'>"
                 "<srv><id>cAwaySrv</id>"
                 "<val srv_id='cAwaySrv'><Root>"
@@ -142,30 +142,30 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
               if (gbXStatusEnabled)
                 SendXtrazNotifyResponse(dwUin, dwMID, dwMID2, wCookie, szResponse, nResponseLen, bThruDC);
               else
-                Netlib_Logf(ghServerNetlibUser, "XStatus Disabled");
+                NetLog_Server("XStatus Disabled");
 
               SAFE_FREE(&szResponse);
             }
             else
-              Netlib_Logf(ghServerNetlibUser, "Error: We are not in XStatus, skipping");
+              NetLog_Server("Error: We are not in XStatus, skipping");
           }
           else
-            Netlib_Logf(ghServerNetlibUser, "Error: Invalid sender information");
+            NetLog_Server("Error: Invalid sender information");
         }
         else
-          Netlib_Logf(ghServerNetlibUser, "Error: Missing sender information");
+          NetLog_Server("Error: Missing sender information");
       }
       else
-        Netlib_Logf(ghServerNetlibUser, "Error: Unknown plugin \"%s\" in Xtraz message", szWork);
+        NetLog_Server("Error: Unknown plugin \"%s\" in Xtraz message", szWork);
     }
     else 
-      Netlib_Logf(ghServerNetlibUser, "Error: Missing PluginID in Xtraz message");
+      NetLog_Server("Error: Missing PluginID in Xtraz message");
 
     SAFE_FREE(&szNotify);
     SAFE_FREE(&szQuery);
   }
   else 
-    Netlib_Logf(ghServerNetlibUser, "Error: Invalid Xtraz Notify message");
+    NetLog_Server("Error: Invalid Xtraz Notify message");
 }
 
 
@@ -175,7 +175,7 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
   int nResLen;
 
 #ifdef _DEBUG
-  Netlib_Logf(ghServerNetlibUser, "Received Xtraz Notify Response");
+  NetLog_Server("Received Xtraz Notify Response");
 #endif
 
   szRes = strstr(szMsg, "<RES>");
@@ -221,7 +221,7 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
               *szEnd = '\0';
               if (atoi(szNode) != ICQGetContactSettingByte(hContact, "XStatusId", 0))
               { // this is strange - but go on
-                Netlib_Logf(ghServerNetlibUser, "Warning: XStatusIds do not match!");
+                NetLog_Server("Warning: XStatusIds do not match!");
               }
               *szEnd = ' ';
             }
@@ -254,21 +254,21 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
             }
           }
           else
-            Netlib_Logf(ghServerNetlibUser, "Error: Invalid sender information");
+            NetLog_Server("Error: Invalid sender information");
         }
         else
-          Netlib_Logf(ghServerNetlibUser, "Error: Missing sender information");
+          NetLog_Server("Error: Missing sender information");
       }
       else
-        Netlib_Logf(ghServerNetlibUser, "Error: Unknown serverId \"%s\" in Xtraz response", szNode);
+        NetLog_Server("Error: Unknown serverId \"%s\" in Xtraz response", szNode);
     }
     else
-      Netlib_Logf(ghServerNetlibUser, "Error: Missing serverId in Xtraz response");
+      NetLog_Server("Error: Missing serverId in Xtraz response");
 
     SAFE_FREE(&szRes);
   }
   else
-    Netlib_Logf(ghServerNetlibUser, "Error: Invalid Xtraz Notify response");
+    NetLog_Server("Error: Invalid Xtraz Notify response");
 }
 
 
@@ -282,7 +282,7 @@ void SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
   DWORD dwCookie;
   message_cookie_data* pCookieData;
 
-  nBodyLen = mir_snprintf(szBody, nBodyLen, "<N><QUERY>%s</QUERY><NOTIFY>%s</NOTIFY></N>", szQueryBody, szNotifyBody);
+  nBodyLen = null_snprintf(szBody, nBodyLen, "<N><QUERY>%s</QUERY><NOTIFY>%s</NOTIFY></N>", szQueryBody, szNotifyBody);
   SAFE_FREE(&szQueryBody);
   SAFE_FREE(&szNotifyBody);
 
@@ -314,7 +314,7 @@ void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCooki
 
   if (validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
   { // apply privacy rules
-    nBodyLen = mir_snprintf(szBody, nBodyLen, "<NR><RES>%s</RES></NR>", szResBody);
+    nBodyLen = null_snprintf(szBody, nBodyLen, "<NR><RES>%s</RES></NR>", szResBody);
     SAFE_FREE(&szResBody);
 
     // Was request received thru DC and have we a open DC, send through that

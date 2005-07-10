@@ -122,7 +122,7 @@ BOOL icq_QueueUser(HANDLE hContact)
 			userList[nFirstFree].hContact = hContact;
 			nUserCount++;
 #ifdef _DEBUG
-			Netlib_Logf(ghServerNetlibUser, "Queued user %u, place %u, count %u", userList[nFirstFree].dwUin, nFirstFree, nUserCount);
+			NetLog_Server("Queued user %u, place %u, count %u", userList[nFirstFree].dwUin, nFirstFree, nUserCount);
 #endif
 			// Notify worker thread
 			if (hQueueEvent)
@@ -155,7 +155,7 @@ void icq_DequeueUser(DWORD dwUin)
 				if (userList[i].dwUin == dwUin) 
         {
 #ifdef _DEBUG
-					Netlib_Logf(ghServerNetlibUser, "Dequeued user %u", userList[i].dwUin);
+					NetLog_Server("Dequeued user %u", userList[i].dwUin);
 #endif
 					userList[i].dwUin = 0;
 					userList[i].hContact = NULL;
@@ -226,7 +226,7 @@ void icq_PauseUserLookup()
   tLast = GetTickCount();
 
 #ifdef _DEBUG
-  Netlib_Logf(ghServerNetlibUser, "Pausing Auto-info update thread...");
+  NetLog_Server("Pausing Auto-info update thread...");
 #endif
 }
 
@@ -283,7 +283,7 @@ void __cdecl icq_InfoUpdateThread(void* arg)
         {
           bPaused = FALSE;
 #ifdef _DEBUG
-          Netlib_Logf(ghServerNetlibUser, "Resuming auto-info update thread...");
+          NetLog_Server("Resuming auto-info update thread...");
 #endif
         }
         continue;
@@ -291,7 +291,7 @@ void __cdecl icq_InfoUpdateThread(void* arg)
       tLast = GetTickCount();
 
 #ifdef _DEBUG
-			Netlib_Logf(ghServerNetlibUser, "Users %u", nUserCount);
+			NetLog_Server("Users %u", nUserCount);
 #endif
 			if (nUserCount > 0 && icqOnline)
 			{
@@ -303,7 +303,7 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 						// Check TS again, maybe it has been updated while we slept
 						if ((time(NULL) - ICQGetContactSettingDword(userList[i].hContact, "InfoTS", 0)) > UPDATE_THRESHOLD) {
 #ifdef _DEBUG
-							Netlib_Logf(ghServerNetlibUser, "Request info for user %u", userList[i].dwUin);
+							NetLog_Server("Request info for user %u", userList[i].dwUin);
 #endif
 							sendUserInfoAutoRequest(userList[i].dwUin);
 
@@ -316,7 +316,7 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 						else
 						{
 #ifdef _DEBUG
-							Netlib_Logf(ghServerNetlibUser, "Dequeued absolete user %u", userList[i].dwUin);
+							NetLog_Server("Dequeued absolete user %u", userList[i].dwUin);
 #endif
 							// Dequeue user and find another one
 							userList[i].dwUin = 0;

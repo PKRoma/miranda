@@ -64,7 +64,7 @@ BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, L
 	switch(message)
 	{
 		case WM_INITDIALOG:
-			TranslateDialogDefault(hwndDlg);
+			ICQTranslateDialog(hwndDlg);
 			InitComboBox(GetDlgItem(hwndDlg, IDC_GENDER), genderField);
 			InitComboBox(GetDlgItem(hwndDlg, IDC_AGERANGE), agesField);
       InitComboBox(GetDlgItem(hwndDlg, IDC_MARITALSTATUS), maritalField);

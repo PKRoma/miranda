@@ -344,64 +344,65 @@
 #define META_SEARCH_EMAIL           0x0573 // Search user by E-mail (TLV)
 
 #define META_XML_INFO               0x08A2 // Server variable requested via xml
+#define META_SET_FULLINFO_REQ       0x3A0C // Set full user info request
 #define META_SET_FULLINFO_ACK       0x0C3F // Server ack for set fullinfo command
 #define META_SPAM_REPORT_ACK        0x2012 // Server ack for user spam report
 
 // TLV types
 
 // SECURITY flags
-#define TLV_AUTH		0x02F8  //   uint8      User authorization permissions
-#define TLV_WEBAWARE	0x030C  //   uint8      User 'show web status' permissions
+#define TLV_AUTH        0x02F8  //   uint8      User authorization permissions
+#define TLV_WEBAWARE    0x030C  //   uint8      User 'show web status' permissions
 
 
 // SEARCH only TLVs
-#define TLV_AGERANGE	0x0168  //   acombo     Age range to search
-#define TLV_KEYWORDS	0x0226  //   sstring    Whitepages search keywords string
-#define TLV_ONLINEONLY	0x0230  //   uint8      Search only online users flag
-#define TLV_UIN			0x0136  //   uint32     User uin
+#define TLV_AGERANGE    0x0168  //   acombo     Age range to search
+#define TLV_KEYWORDS    0x0226  //   sstring    Whitepages search keywords string
+#define TLV_ONLINEONLY  0x0230  //   uint8      Search only online users flag
+#define TLV_UIN         0x0136  //   uint32     User uin
 
 // common
-#define TLV_FIRSTNAME	0x0140  //   sstring    User firstname
-#define TLV_LASTNAME	0x014A  //   sstring    User lastname
-#define TLV_NICKNAME	0x0154  //   sstring    User nickname
-#define TLV_EMAIL		0x015E  //   ecombo     User email
-#define TLV_GENDER		0x017C  //   uint8      User gender
-#define TLV_MARITAL		0x033E  //   uint8      User marital status
-#define TLV_LANGUAGE	0x0186  //   uint16     User spoken language
-#define TLV_CITY		0x0190  //   sstring    User home city name
-#define TLV_STATE		0x019A  //   sstring    User home state abbr
-#define TLV_COUNTRY		0x01A4  //   uint16     User home country code
-#define TLV_COMPANY		0x01AE  //   sstring    User work company name
-#define TLV_DEPARTMENT	0x01B8  //   sstring    User work department name
-#define TLV_POSITION	0x01C2  //   sstring    User work position (title)
-#define TLV_OCUPATION	0x01CC  //   uint16     User work ocupation code
-#define TLV_PASTINFO	0x01D6  //   icombo     !! User affilations node
+#define TLV_FIRSTNAME   0x0140  //   sstring    User firstname
+#define TLV_LASTNAME    0x014A  //   sstring    User lastname
+#define TLV_NICKNAME    0x0154  //   sstring    User nickname
+#define TLV_EMAIL       0x015E  //   ecombo     User email
+#define TLV_GENDER      0x017C  //   uint8      User gender
+#define TLV_MARITAL     0x033E  //   uint8      User marital status
+#define TLV_LANGUAGE    0x0186  //   uint16     User spoken language
+#define TLV_CITY        0x0190  //   sstring    User home city name
+#define TLV_STATE       0x019A  //   sstring    User home state abbr
+#define TLV_COUNTRY     0x01A4  //   uint16     User home country code
+#define TLV_COMPANY     0x01AE  //   sstring    User work company name
+#define TLV_DEPARTMENT  0x01B8  //   sstring    User work department name
+#define TLV_POSITION    0x01C2  //   sstring    User work position (title)
+#define TLV_OCUPATION   0x01CC  //   uint16     User work ocupation code
+#define TLV_PASTINFO    0x01D6  //   icombo     !! User affilations node
 #define TLV_AFFILATIONS 0x01FE  //   icombo     !! User past info node
-#define TLV_INTERESTS	0x01EA  //   icombo     User interests node
-#define TLV_HOMEPAGE	0x0212  //   sstring    User homepage category/keywords
+#define TLV_INTERESTS   0x01EA  //   icombo     User interests node
+#define TLV_HOMEPAGE    0x0212  //   sstring    User homepage category/keywords
 
 // changeinfo
-#define TLV_AGE			0x0172  //   uint16     User age
-#define TLV_URL			0x0213  //   sstring    User homepage url
-#define TLV_BIRTH		0x023A  //   bcombo     User birthday info (year, month, day)
-#define TLV_ABOUT		0x0258  //   sstring    User notes (about) text
-#define TLV_STREET		0x0262  //   sstring    User home street address
-#define TLV_ZIPCODE		0x026C  //   uint32     User home zip code
-#define TLV_PHONE		0x0276  //   sstring    User home phone number
-#define TLV_FAX			0x0280  //   sstring    User home fax number
-#define TLV_MOBILE		0x028A  //   sstring    User home cellular phone number
-#define TLV_WORKSTREET	0x0294  //   sstring    User work street address
-#define TLV_WORKCITY	0x029E  //   sstring    User work city name
-#define TLV_WORKSTATE	0x02A8  //   sstring    User work state name
-#define TLV_WORKCOUNTRY	0x02B2  //   uint16     User work country code
-#define TLV_WORKZIPCODE	0x02BC  //   uint32     User work zip code
-#define TLV_WORKPHONE	0x02C6  //   sstring    User work phone number
-#define TLV_WORKFAX		0x02D0  //   sstring    User work fax number
-#define TLV_WORKURL		0x02DA  //   sstring    User work webpage url
-#define TLV_TIMEZONE	0x0316  //   uint8      User GMT offset
-#define TLV_ORGCITY		0x0320  //   sstring    User originally from city
-#define TLV_ORGSTATE	0x032A  //   sstring    User originally from state
-#define TLV_ORGCOUNTRY	0x0334  //   uint16     User originally from country (code)
+#define TLV_AGE         0x0172  //   uint16     User age
+#define TLV_URL         0x0213  //   sstring    User homepage url
+#define TLV_BIRTH       0x023A  //   bcombo     User birthday info (year, month, day)
+#define TLV_ABOUT       0x0258  //   sstring    User notes (about) text
+#define TLV_STREET      0x0262  //   sstring    User home street address
+#define TLV_ZIPCODE     0x026C  //   uint32     User home zip code
+#define TLV_PHONE       0x0276  //   sstring    User home phone number
+#define TLV_FAX         0x0280  //   sstring    User home fax number
+#define TLV_MOBILE      0x028A  //   sstring    User home cellular phone number
+#define TLV_WORKSTREET  0x0294  //   sstring    User work street address
+#define TLV_WORKCITY    0x029E  //   sstring    User work city name
+#define TLV_WORKSTATE   0x02A8  //   sstring    User work state name
+#define TLV_WORKCOUNTRY 0x02B2  //   uint16     User work country code
+#define TLV_WORKZIPCODE 0x02BC  //   uint32     User work zip code
+#define TLV_WORKPHONE   0x02C6  //   sstring    User work phone number
+#define TLV_WORKFAX     0x02D0  //   sstring    User work fax number
+#define TLV_WORKURL     0x02DA  //   sstring    User work webpage url
+#define TLV_TIMEZONE    0x0316  //   uint8      User GMT offset
+#define TLV_ORGCITY	    0x0320  //   sstring    User originally from city
+#define TLV_ORGSTATE    0x032A  //   sstring    User originally from state
+#define TLV_ORGCOUNTRY  0x0334  //   uint16     User originally from country (code)
 
 
 /* Direct packet types */
@@ -451,7 +452,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030601
+#define ICQ_PLUG_VERSION            0x80030602
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

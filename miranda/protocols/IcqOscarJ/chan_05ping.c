@@ -44,7 +44,7 @@ HANDLE hKeepAliveEvent = NULL;
 
 void handlePingChannel(unsigned char* buf, WORD datalen)
 {
-  Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring server packet on PING channel");
+  NetLog_Server("Warning: Ignoring server packet on PING channel");
 }
 
 
@@ -52,7 +52,7 @@ void __cdecl icq_keepAliveThread(void* fa)
 {
   icq_packet packet;
 
-  Netlib_Logf(ghServerNetlibUser, "Keep alive thread starting.");
+  NetLog_Server("Keep alive thread starting.");
 
   hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
@@ -76,7 +76,7 @@ void __cdecl icq_keepAliveThread(void* fa)
       if (Miranda_Terminated()) break;
   }
 
-  Netlib_Logf(ghServerNetlibUser, "Keep alive thread shutting down.");
+  NetLog_Server("Keep alive thread shutting down.");
 
   CloseHandle(hKeepAliveEvent);
   hKeepAliveEvent = NULL;

@@ -80,7 +80,7 @@ void icq_sendDirectMsgAck(directconnect* dc, WORD wCookie, BYTE bMsgType, BYTE b
   EncryptDirectPacket(dc, &packet);
   sendDirectPacket(dc->hConnection, &packet);
 
-  Netlib_Logf(ghDirectNetlibUser, "Sent acknowledgement thru direct connection");
+  NetLog_Direct("Sent acknowledgement thru direct connection");
 }
 
 
@@ -146,7 +146,7 @@ void icq_sendFileAcceptDirect(HANDLE hContact, filetransfer* ft)
 
 	SendDirectMessage(hContact, &packet);
 
-  Netlib_Logf(ghDirectNetlibUser, "Sent file accept direct, port %u", wListenPort);
+  NetLog_Direct("Sent file accept direct, port %u", wListenPort);
 }
 
 
@@ -167,7 +167,7 @@ void icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, char *szReason)
 
 	SendDirectMessage(hContact, &packet);
 
-  Netlib_Logf(ghDirectNetlibUser, "Sent file deny direct.");
+  NetLog_Direct("Sent file deny direct.");
 }
 
 
@@ -184,7 +184,7 @@ int icq_sendFileSendDirectv7(DWORD dwUin, HANDLE hContact, WORD wCookie, char* p
 	packLEDWord(&packet, dwTotalSize);
 	packLEDWord(&packet, 0);		// listen port (again)
 
-	Netlib_Logf(ghDirectNetlibUser, "Sending v%u file transfer request direct", 7);
+	NetLog_Direct("Sending v%u file transfer request direct", 7);
 
 	return SendDirectMessage(hContact, &packet);
 }
@@ -209,7 +209,7 @@ int icq_sendFileSendDirectv8(DWORD dwUin, HANDLE hContact, WORD wCookie, char *p
 	packLEDWord(&packet, dwTotalSize);
 	packLEDWord(&packet, 0x0008c82); // Unknown, (seen 0xf680 ~33000)
 
-  Netlib_Logf(ghDirectNetlibUser, "Sending v%u file transfer request direct", 8);
+  NetLog_Direct("Sending v%u file transfer request direct", 8);
 
   return SendDirectMessage(hContact, &packet);
 }

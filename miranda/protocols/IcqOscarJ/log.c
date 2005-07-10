@@ -44,22 +44,22 @@ typedef struct {
     char *szTitle;
 } LogMessageInfo;
 
-static void __cdecl icq_LogMessageThread(void* arg) {
-    LogMessageInfo *err = (LogMessageInfo*)arg;
-    if (!err) return;
-    if (err->szMsg&&err->szTitle)
-        MessageBox(NULL, err->szMsg, err->szTitle, MB_OK);
-    if (err->szMsg) free(err->szMsg);
-    if (err->szTitle) free(err->szTitle);
-    free(err);
+static void __cdecl icq_LogMessageThread(void* arg) 
+{
+  LogMessageInfo *err = (LogMessageInfo*)arg;
+  if (!err) return;
+  if (err->szMsg&&err->szTitle)
+    MessageBox(NULL, err->szMsg, err->szTitle, MB_OK);
+  SAFE_FREE(&err->szMsg);
+  SAFE_FREE(&err->szTitle);
+  SAFE_FREE(&err);
 }
 
 void icq_LogMessage(int level, const char *szMsg)
 {
 	int displayLevel;
 
-
-	Netlib_Logf(ghServerNetlibUser, "%s", szMsg);
+	NetLog_Server("%s", szMsg);
 
 	displayLevel = ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING);
 	if (level >= displayLevel)
@@ -119,6 +119,6 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
 			break;
 	}
 
-	mir_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?Translate(szMsg):"", szMsg?"\r\n\r\n":"", pszErrorMsg, Translate("error"), dwError);
+	null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?Translate(szMsg):"", szMsg?"\r\n\r\n":"", pszErrorMsg, Translate("error"), dwError);
 	icq_LogMessage(level, szBuf);
 }

@@ -43,7 +43,7 @@ void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* 
 	{
 
 	case ICQ_LOCATION_RIGHTS_REPLY: // Reply to CLI_REQLOCATION
-		Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x02,x03) - SRV_LOCATION_RIGHTS_REPLY");
+		NetLog_Server("Server sent SNAC(x02,x03) - SRV_LOCATION_RIGHTS_REPLY");
 		break;
 
   case ICQ_ERROR:
@@ -60,7 +60,7 @@ void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* 
   }
 
 	default:
-		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x02,%2x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+		NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_LOCATION_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
 	}
 }

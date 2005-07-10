@@ -57,9 +57,9 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 	if (isLoginServer)
 	{
 #ifdef _DEBUG
-		Netlib_Logf(ghServerNetlibUser, "Received SRV_HELLO from login server");
+		NetLog_Server("Received SRV_HELLO from login server");
 #endif
-		mir_snprintf(szUin, sizeof(szUin), "%d", dwLocalUIN);
+		null_snprintf(szUin, sizeof(szUin), "%d", dwLocalUIN);
 		wUinLen = strlen(szUin);
 
 		packet.wLen = 66 + strlen(CLIENT_ID_STRING) + wUinLen + info->wPassLen;
@@ -69,7 +69,6 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 
 		packTLV(&packet, 0x0001, wUinLen, szUin);
 		packTLV(&packet, 0x0002, info->wPassLen, info->szEncPass);
-
 
 		// Pack client identification details. We identify ourselves as icq5
 		packTLV(&packet, 0x0003, (WORD)strlen(CLIENT_ID_STRING), CLIENT_ID_STRING); // Client ID string
@@ -85,7 +84,7 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 		sendServPacket(&packet);
 
 #ifdef _DEBUG
-		Netlib_Logf(ghServerNetlibUser, "Sent CLI_IDENT to login server");
+		NetLog_Server("Sent CLI_IDENT to login server");
 #endif
 
 		isLoginServer = 0;
@@ -105,7 +104,7 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 			sendServPacket(&packet);
 			
 #ifdef _DEBUG
-			Netlib_Logf(ghServerNetlibUser, "Sent CLI_IDENT to communication server");
+			NetLog_Server("Sent CLI_IDENT to communication server");
 #endif
 			
 			SAFE_FREE(&cookieData);
@@ -114,7 +113,7 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 		else
 		{
 			// We need a cookie to identify us to the communication server
-			Netlib_Logf(ghServerNetlibUser, "Something went wrong...");
+			NetLog_Server("Something went wrong...");
 		}
 	}
 }

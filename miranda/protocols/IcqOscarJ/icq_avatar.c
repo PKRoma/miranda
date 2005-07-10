@@ -107,7 +107,7 @@ void GetAvatarFileName(int dwUin, char* pszDest, int cbLen)
   CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
 
   tPathLen = strlen(pszDest);
-  tPathLen += mir_snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", gpszICQProtoName);
+  tPathLen += null_snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", gpszICQProtoName);
   CreateDirectory(pszDest, NULL);
 
   if (dwUin != 0) 
@@ -193,7 +193,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
   if (!hConn)
   {
     pendingAvatarsStart = 0;
-    Netlib_Logf(ghServerNetlibUser, "Avatar: Connect failed");
+    NetLog_Server("Avatar: Connect failed");
 
     SAFE_FREE(&cookie);
 
@@ -201,7 +201,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
   }
   if (currentAvatarThread && currentAvatarThread->pendingLogin) // this is not safe...
   {
-    Netlib_Logf(ghServerNetlibUser, "Avatar, Multiple start thread attempt, ignored.");
+    NetLog_Server("Avatar, Multiple start thread attempt, ignored.");
     Netlib_CloseHandle(hConn);
     SAFE_FREE(&cookie);
     return;
@@ -276,7 +276,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
 
     if (sendAvatarPacket(&packet, atsi))
     {
-      Netlib_Logf(ghServerNetlibUser, "Request to get %d avatar image sent.", dwUin);
+      NetLog_Server("Request to get %d avatar image sent.", dwUin);
 
       return dwCookie;
     }
@@ -296,7 +296,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
       if (ar->hContact == hContact)
       { // we found it, return error
         LeaveCriticalSection(&cookieMutex);
-        Netlib_Logf(ghServerNetlibUser, "Ignoring duplicate get %d avatar request.", dwUin);
+        NetLog_Server("Ignoring duplicate get %d avatar request.", dwUin);
 
         return 0;
       }
@@ -321,7 +321,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
   }
   LeaveCriticalSection(&cookieMutex);
 
-  Netlib_Logf(ghServerNetlibUser, "Request to get %d avatar image added to queue.", dwUin);
+  NetLog_Server("Request to get %d avatar image added to queue.", dwUin);
 
   if (!AvatarsReady && !pendingAvatarsStart)
   {
@@ -361,7 +361,7 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
 
     if (sendAvatarPacket(&packet, atsi))
     {
-      Netlib_Logf(ghServerNetlibUser, "Upload avatar packet sent.");
+      NetLog_Server("Upload avatar packet sent.");
 
       return dwCookie;
     }
@@ -379,7 +379,7 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
       if (ar->hContact == hContact)
       { // we found it, return error
         LeaveCriticalSection(&cookieMutex);
-        Netlib_Logf(ghServerNetlibUser, "Ignoring duplicate upload avatar request.");
+        NetLog_Server("Ignoring duplicate upload avatar request.");
 
         return 0;
       }
@@ -408,7 +408,7 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
   }
   LeaveCriticalSection(&cookieMutex);
 
-  Netlib_Logf(ghServerNetlibUser, "Request to upload avatar image added to queue.");
+  NetLog_Server("Request to upload avatar image added to queue.");
 
   if (!AvatarsReady && !pendingAvatarsStart)
   {
@@ -439,7 +439,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
 
       if (recvResult == 0)
       {
-        Netlib_Logf(ghServerNetlibUser, "Clean closure of avatar socket");
+        NetLog_Server("Clean closure of avatar socket");
         break;
       }
 
@@ -451,7 +451,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
             atsi->stopThread = 1; // we must stop here, cause due to a hack in netlib, we always get timeout, even if the connection is already dead
 #ifdef _DEBUG
           else
-            Netlib_Logf(ghServerNetlibUser, "Avatar Thread is Idle.");
+            NetLog_Server("Avatar Thread is Idle.");
 #endif
           if (GetTickCount() > wLastKeepAlive)
           { // limit frequency (HACK: on some systems select() does not work well)
@@ -468,13 +468,13 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
           else
           { // this is bad, the system does not handle select() properly
 #ifdef _DEBUG
-            Netlib_Logf(ghServerNetlibUser, "Avatar Thread is Forcing Idle.");
+            NetLog_Server("Avatar Thread is Forcing Idle.");
 #endif
             Sleep(500); // wait some time, can we do anything else ??
           }
           continue; 
         }
-        Netlib_Logf(ghServerNetlibUser, "Abortive closure of avatar socket");
+        NetLog_Server("Abortive closure of avatar socket");
         break;
       }
 
@@ -491,7 +491,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
           pendingRequests = reqdata->pNext;
 
 #ifdef _DEBUG
-          Netlib_Logf(ghServerNetlibUser, "Picked up the %d request from queue.", reqdata->dwUin);
+          NetLog_Server("Picked up the %d request from queue.", reqdata->dwUin);
 #endif
           switch (reqdata->type)
           {
@@ -556,7 +556,7 @@ int handleAvatarPackets(unsigned char* buf, int buflen, avatarthreadstartinfo* a
       break;
 
 #ifdef _DEBUG
-    Netlib_Logf(ghServerNetlibUser, "Avatar FLAP: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
+    NetLog_Server("Avatar FLAP: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
 #endif
 
     switch (channel)
@@ -570,7 +570,7 @@ int handleAvatarPackets(unsigned char* buf, int buflen, avatarthreadstartinfo* a
       break;
 
     default:
-      Netlib_Logf(ghServerNetlibUser, "Warning: Unhandled Avatar FLAP Channel: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
+      NetLog_Server("Warning: Unhandled Avatar FLAP Channel: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
       break;
     }
 
@@ -618,7 +618,7 @@ int sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi)
     // Send error
     if (nSendResult == SOCKET_ERROR)
     { // thread stops automatically
-      Netlib_Logf(ghServerNetlibUser, "Your connection with the ICQ avatar server was abortively closed");
+      NetLog_Server("Your connection with the ICQ avatar server was abortively closed");
     }
     else
     {
@@ -627,7 +627,7 @@ int sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi)
   }
   else
   {
-    Netlib_Logf(ghServerNetlibUser, "Error: Failed to send packet (no connection)");
+    NetLog_Server("Error: Failed to send packet (no connection)");
   }
 
   LeaveCriticalSection(&atsi->localSeqMutex);
@@ -653,9 +653,9 @@ void handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthreadstartinfo *
     packTLV(&packet, 0x06, (WORD)atsi->wCookieLen, atsi->pCookie);
 
     sendAvatarPacket(&packet, atsi);
-    
+
 #ifdef _DEBUG
-    Netlib_Logf(ghServerNetlibUser, "Sent CLI_IDENT to avatar server");
+    NetLog_Server("Sent CLI_IDENT to avatar server");
 #endif
 
     SAFE_FREE(&atsi->pCookie);
@@ -663,9 +663,10 @@ void handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthreadstartinfo *
   }
   else
   {
-    Netlib_Logf(ghServerNetlibUser, "Invalid Avatar Server response, Ch1.");
+    NetLog_Server("Invalid Avatar Server response, Ch1.");
   }
 }
+
 
 void handleAvatarData(unsigned char *pBuffer, WORD wBufferLength, avatarthreadstartinfo *atsi)
 {
@@ -675,12 +676,12 @@ void handleAvatarData(unsigned char *pBuffer, WORD wBufferLength, avatarthreadst
 
   if (!pSnacHeader || !pSnacHeader->bValid)
   {
-    Netlib_Logf(ghServerNetlibUser, "Error: Failed to parse SNAC header");
+    NetLog_Server("Error: Failed to parse SNAC header");
   }
   else
   {
 #ifdef _DEBUG
-    Netlib_Logf(ghServerNetlibUser, " Received SNAC(x%02X,x%02X)", pSnacHeader->wFamily, pSnacHeader->wSubtype);
+    NetLog_Server(" Received SNAC(x%02X,x%02X)", pSnacHeader->wFamily, pSnacHeader->wSubtype);
 #endif
 
     switch (pSnacHeader->wFamily)
@@ -695,7 +696,7 @@ void handleAvatarData(unsigned char *pBuffer, WORD wBufferLength, avatarthreadst
       break;
 
     default:
-      Netlib_Logf(ghServerNetlibUser, "Ignoring SNAC(x%02X,x%02X) - FAMILYx%02X not expected", pSnacHeader->wFamily, pSnacHeader->wSubtype, pSnacHeader->wFamily);
+      NetLog_Server("Ignoring SNAC(x%02X,x%02X) - FAMILYx%02X not implemented", pSnacHeader->wFamily, pSnacHeader->wSubtype, pSnacHeader->wFamily);
       break;
     }
   }
@@ -713,8 +714,8 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 
   case ICQ_SERVER_READY:
 #ifdef _DEBUG
-    Netlib_Logf(ghServerNetlibUser, "Avatar server is ready and is requesting my Family versions");
-    Netlib_Logf(ghServerNetlibUser, "Sending my Families");
+    NetLog_Server("Avatar server is ready and is requesting my Family versions");
+    NetLog_Server("Sending my Families");
 #endif
 
     // Miranda mimics the behaviour of Icq5
@@ -730,8 +731,8 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     /* This is a reply to CLI_FAMILIES and it tells the client which families and their versions that this server understands.
      * We send a rate request packet */
 #ifdef _DEBUG
-    Netlib_Logf(ghServerNetlibUser, "Server told me his Family versions");
-    Netlib_Logf(ghServerNetlibUser, "Requesting Rate Information");
+    NetLog_Server("Server told me his Family versions");
+    NetLog_Server("Requesting Rate Information");
 #endif
     packet.wLen = 10;
     write_flap(&packet, 2);
@@ -741,11 +742,11 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 
   case ICQ_SERVER_RATE_INFO:
 #ifdef _DEBUG
-    Netlib_Logf(ghServerNetlibUser, "Server sent Rate Info");
-    Netlib_Logf(ghServerNetlibUser, "Sending Rate Info Ack");
+    NetLog_Server("Server sent Rate Info");
+    NetLog_Server("Sending Rate Info Ack");
 #endif
     /* Don't really care about this now, just send the ack */
-    packet.wLen = 20;
+    packet.wLen = 20; // TODO: add rate management to request queue (0.5+)
     write_flap(&packet, 2);
     packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_RATE_ACK, 0, ICQ_CLIENT_RATE_ACK<<0x10);
     packDWord(&packet, 0x00010002);
@@ -767,25 +768,25 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     pendingAvatarsStart = 0;
     atsi->pendingLogin = 0;
 
-    Netlib_Logf(ghServerNetlibUser, " *** Yeehah, avatar login sequence complete");
+    NetLog_Server(" *** Yeehah, avatar login sequence complete");
     break;
 
   case ICQ_SERVER_PAUSE:
-    Netlib_Logf(ghServerNetlibUser, "Avatar server is going down in a few seconds... (Flags: %u, Ref: %u", pSnacHeader->wFlags, pSnacHeader->dwRef);
+    NetLog_Server("Avatar server is going down in a few seconds... (Flags: %u, Ref: %u)", pSnacHeader->wFlags, pSnacHeader->dwRef);
     // This is the list of groups that we want to have on the next server
     packet.wLen = 14;
     write_flap(&packet, ICQ_DATA_CHAN);
     packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_PAUSE_ACK, 0, ICQ_CLIENT_PAUSE_ACK<<0x10);
     packWord(&packet,ICQ_SERVICE_FAMILY);
-    packWord(&packet,0x10);
+    packWord(&packet,ICQ_AVATAR_FAMILY);
     sendAvatarPacket(&packet, atsi);
 #ifdef _DEBUG
-    Netlib_Logf(ghServerNetlibUser, "Sent server pause ack");
-#endif
-    break;
+    NetLog_Server("Sent server pause ack");
+#endif 
+    break; // TODO: avatar migration is not working, should be ?
 
   default:
-    Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x01,%2x) - Unknown SNAC (Flags: %u, Ref: %u)", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_SERVICE_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
   }
 }
@@ -818,9 +819,9 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         unpackByte(&pBuffer, &len);
         if (wBufferLength < ((ac->hashlen)<<1)+4+len)
         {
-          Netlib_Logf(ghServerNetlibUser, "Received invalid avatar reply.");
+          NetLog_Server("Received invalid avatar reply.");
 
-          ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, (LPARAM)NULL);
+          ICQBroadcastAck(ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, 0);
 
           SAFE_FREE(&ac->szFile);
           SAFE_FREE(&szMyFile);
@@ -838,14 +839,14 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         if (datalen > wBufferLength)
         {
           datalen = wBufferLength;
-          Netlib_Logf(ghServerNetlibUser, "Avatar reply broken, trying to do my best.");
+          NetLog_Server("Avatar reply broken, trying to do my best.");
         }
 
         if (datalen > 4)
         { // store to file...
           int dwPaFormat;
 
-          Netlib_Logf(ghServerNetlibUser, "Received user avatar, storing (%d bytes).", datalen);
+          NetLog_Server("Received user avatar, storing (%d bytes).", datalen);
 
           dwPaFormat = DetectAvatarFormatBuffer(pBuffer);
           ICQWriteContactSettingByte(ac->hContact, "AvatarType", (BYTE)dwPaFormat);
@@ -867,29 +868,29 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
             if (!ICQGetContactSetting(ac->hContact, "AvatarHash", &dbv))
             {
               if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", dbv.pbVal, dbv.cpbVal))
-                Netlib_Logf(ghServerNetlibUser, "Failed to set file hash.");
+                NetLog_Server("Failed to set file hash.");
 
               DBFreeVariant(&dbv);
             }
             else
             {
-              Netlib_Logf(ghServerNetlibUser, "Warning: DB error (no hash in DB).");
+              NetLog_Server("Warning: DB error (no hash in DB).");
               // the hash was lost, try to fix that
               if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", ac->hash, ac->hashlen) ||
                 ICQWriteContactSettingBlob(ac->hContact, "AvatarHash", ac->hash, ac->hashlen))
               {
-                Netlib_Logf(ghServerNetlibUser, "Failed to save avatar hash to DB");
+                NetLog_Server("Failed to save avatar hash to DB");
               }
             }
 
-            ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, (HANDLE)&ai, (LPARAM)NULL);
+            ICQBroadcastAck(ac->hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, (HANDLE)&ai, 0);
           }
         }
         else
         { // the avatar is empty
-          Netlib_Logf(ghServerNetlibUser, "Received empty avatar, nothing written.", datalen);
+          NetLog_Server("Received empty avatar, nothing written.", datalen);
 
-          ProtoBroadcastAck(gpszICQProtoName, ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, (LPARAM)NULL);
+          ICQBroadcastAck(ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, 0);
         }
         SAFE_FREE(&ac->szFile);
         SAFE_FREE(&szMyFile);
@@ -898,7 +899,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
       }
       else
       {
-        Netlib_Logf(ghServerNetlibUser, "Warning: Received unexpected Avatar Reply SNAC(x10,x07).");
+        NetLog_Server("Warning: Received unexpected Avatar Reply SNAC(x10,x07).");
       }
 
       break;
@@ -919,16 +920,16 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         }
         else
         {
-          Netlib_Logf(ghServerNetlibUser, "Warning: Received unexpected Upload Avatar Reply SNAC(x10,x03).");
+          NetLog_Server("Warning: Received unexpected Upload Avatar Reply SNAC(x10,x03).");
         }
       }
       else if (res)
       {
-        Netlib_Logf(ghServerNetlibUser, "Error uploading avatar to server, #%d", res);
+        NetLog_Server("Error uploading avatar to server, #%d", res);
         icq_LogMessage(LOG_WARNING, "Error uploading avatar to server, server refused to accept the image.");
       }
       else
-        Netlib_Logf(ghServerNetlibUser, "Received invalid upload avatar ack.");
+        NetLog_Server("Received invalid upload avatar ack.");
 
       break;
     }
@@ -941,13 +942,13 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
       {
         if (ack->dwUin)
         {
-          Netlib_Logf(ghServerNetlibUser, "Error: Avatar request failed");
+          NetLog_Server("Error: Avatar request failed");
           SAFE_FREE(&ack->szFile);
           SAFE_FREE(&ack->hash);
         }
         else
         {
-          Netlib_Logf(ghServerNetlibUser, "Error: Avatar upload failed");
+          NetLog_Server("Error: Avatar upload failed");
         }
         SAFE_FREE(&ack);
         FreeCookie(pSnacHeader->dwRef);
@@ -962,7 +963,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
       break;
     }
   default:
-    Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x10,%2x) - Unknown SNAC (Flags: %u, Ref: %u)", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_AVATAR_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
   }

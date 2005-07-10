@@ -219,7 +219,7 @@ static BOOL AddPendingOperation(HANDLE hContact, const char* szGroup, servlistco
     pItem->szGroupPath = szGroup?_strdup(szGroup):NULL; // we need to duplicate the string
     bRes = FALSE;
 
-    Netlib_Logf(ghServerNetlibUser, "Operation postponed.");
+    NetLog_Server("Operation postponed.");
   }
   
   if (nPendingCount >= nPendingSize) // add new
@@ -265,13 +265,13 @@ void RemovePendingOperation(HANDLE hContact, int nResult)
 
           if (pItem->ofCallback)
           {
-            Netlib_Logf(ghServerNetlibUser, "Resuming postponed operation.");
+            NetLog_Server("Resuming postponed operation.");
 
             makeGroupId(pItem->szGroupPath, pItem->ofCallback, pItem->pCookie);
           }
           else if ((int)pItem->pCookie == 1)
           {
-            Netlib_Logf(ghServerNetlibUser, "Resuming postponed rename.");
+            NetLog_Server("Resuming postponed rename.");
 
             renameServContact(hContact, pItem->szGroupPath);
           }
@@ -544,7 +544,7 @@ DWORD icq_sendBuddy(DWORD dwCookie, WORD wAction, DWORD dwUin, WORD wGroupId, WO
 
   if (!nUinLen)
   {
-    Netlib_Logf(ghServerNetlibUser, "Buddy upload failed (UIN missing).");
+    NetLog_Server("Buddy upload failed (UIN missing).");
     return 0;
   }
 
@@ -639,7 +639,7 @@ DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szN
   }
   if (nNameLen == 0 && wGroupId != 0)
   {
-    Netlib_Logf(ghServerNetlibUser, "Group upload failed (GroupName missing).");
+    NetLog_Server("Group upload failed (GroupName missing).");
     return 0; // without name we could not change the group
   }
 
@@ -1295,7 +1295,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
   if (wItemID)
   { // Only add the contact if it doesnt already have an ID
     RemovePendingOperation(ack->hContact, 0);
-    Netlib_Logf(ghServerNetlibUser, "Failed to add contact to server side list (already there)");
+    NetLog_Server("Failed to add contact to server side list (%s)", "already there");
     return;
   }
 
@@ -1303,7 +1303,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
 	if (!(dwUin = ICQGetContactSettingDword(ack->hContact, UNIQUEIDSETTING, 0)))
   { // Could not do anything without uin
     RemovePendingOperation(ack->hContact, 0);
-    Netlib_Logf(ghServerNetlibUser, "Failed to add contact to server side list (no UIN)");
+    NetLog_Server("Failed to add contact to server side list (%s)", "no UIN");
     return;
   }
 
@@ -1329,7 +1329,7 @@ DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup)
 
   if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
   { // Could not do anything without cookie
-    Netlib_Logf(ghServerNetlibUser, "Failed to add contact to server side list (malloc failed)");
+    NetLog_Server("Failed to add contact to server side list (%s)", "malloc failed");
     return 0;
   }
   else
@@ -1359,7 +1359,7 @@ DWORD removeServContact(HANDLE hContact)
   if (!(wGroupID = ICQGetContactSettingWord(hContact, "SrvGroupId", 0)))
   {
     // Could not find a usable group ID
-    Netlib_Logf(ghServerNetlibUser, "Failed to remove contact from server side list (no group ID)");
+    NetLog_Server("Failed to remove contact from server side list (%s)", "no group ID");
     return 0;
   }
 
@@ -1367,7 +1367,7 @@ DWORD removeServContact(HANDLE hContact)
   if (!(wItemID = ICQGetContactSettingWord(hContact, "ServerId", 0)))
   {
     // Could not find usable item ID
-    Netlib_Logf(ghServerNetlibUser, "Failed to remove contact from server side list (no item ID)");
+    NetLog_Server("Failed to remove contact from server side list (%s)", "no item ID");
     return 0;
   }
 
@@ -1375,13 +1375,13 @@ DWORD removeServContact(HANDLE hContact)
 	if (!(dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0)))
   {
     // Could not do anything without uin
-    Netlib_Logf(ghServerNetlibUser, "Failed to remove contact from server side list (no UIN)");
+    NetLog_Server("Failed to remove contact from server side list (%s)", "no UIN");
     return 0;
   }
 
   if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
   { // Could not do anything without cookie
-    Netlib_Logf(ghServerNetlibUser, "Failed to remove contact from server side list (malloc failed)");
+    NetLog_Server("Failed to remove contact from server side list (%s)", "malloc failed");
     return 0;
   }
   else
@@ -1441,7 +1441,7 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
 
   if (!wItemID) 
   { // We have no ID, so try to simply add the contact to serv-list 
-    Netlib_Logf(ghServerNetlibUser, "Unable to move contact (no ItemID) -> trying to add");
+    NetLog_Server("Unable to move contact (no ItemID) -> trying to add");
     // we know the GroupID, so directly call add
     addServContactReady(wNewGroupID, lParam);
     return;
@@ -1450,14 +1450,14 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   if (!wGroupID)
   { // Only move the contact if it had an GroupID
     RemovePendingOperation(ack->hContact, 0);
-    Netlib_Logf(ghServerNetlibUser, "Failed to move contact to group on server side list (no Group)");
+    NetLog_Server("Failed to move contact to group on server side list (%s)", "no Group");
     return;
   }
 
   if (wGroupID == wNewGroupID)
   { // Only move the contact if it had different GroupID
     RemovePendingOperation(ack->hContact, 1);
-    Netlib_Logf(ghServerNetlibUser, "Contact not moved to group on server side list (same Group)");
+    NetLog_Server("Contact not moved to group on server side list (same Group)");
     return;
   }
 
@@ -1465,7 +1465,7 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
 	if (!(dwUin = ICQGetContactSettingDword(ack->hContact, UNIQUEIDSETTING, 0)))
   { // Could not do anything without uin
     RemovePendingOperation(ack->hContact, 0);
-    Netlib_Logf(ghServerNetlibUser, "Failed to move contact to group on server side list (no UIN)");
+    NetLog_Server("Failed to move contact to group on server side list (%s)", "no UIN");
     return;
   }
 
@@ -1510,7 +1510,7 @@ DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup)
 
   if (!GroupNameExists(pszNewGroup, -1) && (pszNewGroup != NULL) && (pszNewGroup[0]!='\0'))
   { // the contact moved to non existing group, do not do anything: MetaContact hack
-    Netlib_Logf(ghServerNetlibUser, "Contact not moved - probably hiding by MetaContacts.");
+    NetLog_Server("Contact not moved - probably hiding by MetaContacts.");
     return 0;
   }
 
@@ -1522,7 +1522,7 @@ DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup)
 
   if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
   { // Could not do anything without cookie
-    Netlib_Logf(ghServerNetlibUser, "Failed to add contact to server side list (malloc failed)");
+    NetLog_Server("Failed to add contact to server side list (%s)", "malloc failed");
     return 0;
   }
   else
@@ -1554,7 +1554,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
   if (!(wGroupID = ICQGetContactSettingWord(hContact, "SrvGroupId", 0)))
   {
     // Could not find a usable group ID
-    Netlib_Logf(ghServerNetlibUser, "Failed to upload new nick name to server side list (no group ID)");
+    NetLog_Server("Failed to upload new nick name to server side list (%s)", "no group ID");
     RemovePendingOperation(hContact, 0);
     return 0;
   }
@@ -1563,7 +1563,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
   if (!(wItemID = ICQGetContactSettingWord(hContact, "ServerId", 0)))
   {
     // Could not find usable item ID
-    Netlib_Logf(ghServerNetlibUser, "Failed to upload new nick name to server side list (no item ID)");
+    NetLog_Server("Failed to upload new nick name to server side list (%s)", "no item ID");
     RemovePendingOperation(hContact, 0);
     return 0;
   }
@@ -1581,7 +1581,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
 	if (!(dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0)))
   {
     // Could not set nickname on server without uin
-    Netlib_Logf(ghServerNetlibUser, "Failed to upload new nick name to server side list (no UIN)");
+    NetLog_Server("Failed to upload new nick name to server side list (%s)", "no UIN");
 
     RemovePendingOperation(hContact, 0);
     DBFreeVariant(&dbvNote);
@@ -1591,7 +1591,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
   if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
   {
     // Could not allocate cookie - use old fake
-    Netlib_Logf(ghServerNetlibUser, "Failed to allocate cookie");
+    NetLog_Server("Failed to allocate cookie");
 
     dwCookie = GenerateCookie(ICQ_LISTS_UPDATEGROUP);
   }
@@ -1634,7 +1634,7 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
   if (!(wGroupID = ICQGetContactSettingWord(hContact, "SrvGroupId", 0)))
   {
     // Could not find a usable group ID
-    Netlib_Logf(ghServerNetlibUser, "Failed to upload new comment to server side list (no group ID)");
+    NetLog_Server("Failed to upload new comment to server side list (%s)", "no group ID");
     return 0;
   }
 
@@ -1642,7 +1642,7 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
   if (!(wItemID = ICQGetContactSettingWord(hContact, "ServerId", 0)))
   {
     // Could not find usable item ID
-    Netlib_Logf(ghServerNetlibUser, "Failed to upload new comment to server side list (no item ID)");
+    NetLog_Server("Failed to upload new comment to server side list (%s)", "no item ID");
     return 0;
   }
 
@@ -1659,7 +1659,7 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
 	if (!(dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0)))
   {
     // Could not set comment on server without uin
-    Netlib_Logf(ghServerNetlibUser, "Failed to upload new comment to server side list (no UIN)");
+    NetLog_Server("Failed to upload new comment to server side list (%s)", "no UIN");
 
     DBFreeVariant(&dbvNick);
     return 0;
@@ -1668,7 +1668,7 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
   if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
   {
     // Could not allocate cookie - use old fake
-    Netlib_Logf(ghServerNetlibUser, "Failed to allocate cookie");
+    NetLog_Server("Failed to allocate cookie");
 
     dwCookie = GenerateCookie(ICQ_LISTS_UPDATEGROUP);
   }
@@ -1854,8 +1854,8 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
             { // source group not known -> already renamed
               if (!IsGroupRenamed(wGroupId))
               { // is rename in progress ?
-                bRenamed = 1;
-                Netlib_Logf(ghServerNetlibUser, "Group %x renamed to ""%s"".", wGroupId, cws->value.pszVal);
+                bRenamed = 1; // TODO: we should really check if group was not moved to sub-group
+                NetLog_Server("Group %x renamed to ""%s"".", wGroupId, cws->value.pszVal);
               }
               else // if rename in progress do not move contacts
                 bMoved = 0;

@@ -854,12 +854,12 @@ void icq_sendFileAcceptServ(DWORD dwUin, filetransfer* ft, int nAckType)
 	if (ft->nVersion >= 8)
 	{
 		icq_sendFileAcceptServv8(dwUin, ft->TS1, ft->TS2, ft->dwCookie, ft->szFilename, szDesc, ft->dwTotalSize, wListenPort, TRUE, nAckType);
-		Netlib_Logf(ghServerNetlibUser, "Sent file accept v%u through server, port %u", 8, wListenPort);
+		NetLog_Server("Sent file accept v%u through server, port %u", 8, wListenPort);
 	}
 	else
 	{
 		icq_sendFileAcceptServv7(dwUin, ft->TS1, ft->TS2, ft->dwCookie, ft->szFilename, szDesc, ft->dwTotalSize, wListenPort, TRUE, nAckType);
-		Netlib_Logf(ghServerNetlibUser, "Sent file accept v%u through server, port %u", 7, wListenPort);
+		NetLog_Server("Sent file accept v%u through server, port %u", 7, wListenPort);
 	}
 }
 
@@ -870,12 +870,12 @@ void icq_sendFileDenyServ(DWORD dwUin, filetransfer* ft, char *szReason, int nAc
 	if (ft->nVersion >= 8)
 	{
 		icq_sendFileAcceptServv8(dwUin, ft->TS1, ft->TS2, ft->dwCookie, ft->szFilename, szReason, ft->dwTotalSize, wListenPort, FALSE, nAckType);
-		Netlib_Logf(ghServerNetlibUser, "Sent file deny v%u through server", 8);
+		NetLog_Server("Sent file deny v%u through server", 8);
 	}
 	else
 	{
 		icq_sendFileAcceptServv7(dwUin, ft->TS1, ft->TS2, ft->dwCookie, ft->szFilename, szReason, ft->dwTotalSize, wListenPort, FALSE, nAckType);
-		Netlib_Logf(ghServerNetlibUser, "Sent file deny v%u through server", 7);
+		NetLog_Server("Sent file deny v%u through server", 7);
 	}
 }
 
@@ -1158,7 +1158,7 @@ DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 	if (szBuffer = (char *)malloc(nBufferSize))
 	{
 
-		wBufferLen = mir_snprintf(szBuffer, nBufferSize,
+		wBufferLen = null_snprintf(szBuffer, nBufferSize,
 			"<icq_sms_message>"
 			"<destination>"
             "%s"   /* phone number */

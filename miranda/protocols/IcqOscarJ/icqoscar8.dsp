@@ -170,6 +170,10 @@ SOURCE=.\icq_packet.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\icq_popups.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\icq_server.h
 # End Source File
 # Begin Source File
@@ -236,6 +240,10 @@ SOURCE=.\utilities.h
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# Begin Source File
+
+SOURCE=.\changeinfo\expandst.ico
+# End Source File
 # Begin Source File
 
 SOURCE=.\icos\icq.ico
@@ -390,6 +398,10 @@ SOURCE=.\icq_opts.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\icq_popups.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\icq_uploadui.c
 # End Source File
 # Begin Source File
@@ -399,6 +411,42 @@ SOURCE=.\UI\loginpassword.c
 # Begin Source File
 
 SOURCE=.\UI\userinfotab.c
+# End Source File
+# End Group
+# Begin Group "Change Info"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\changeinfo\changeinfo.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\changeinfo\constants.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\changeinfo\db.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\changeinfo\dlgproc.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\changeinfo\editlist.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\changeinfo\editstring.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\changeinfo\main.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\changeinfo\upload.c
 # End Source File
 # End Group
 # Begin Source File

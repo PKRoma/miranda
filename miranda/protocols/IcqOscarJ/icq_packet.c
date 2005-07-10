@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -53,7 +53,7 @@ void write_httphdr(icq_packet* pPacket, WORD wType, DWORD dwSeq)
 
 
 
-void write_flap(icq_packet* pPacket, BYTE byFlapChannel)
+void __fastcall write_flap(icq_packet* pPacket, BYTE byFlapChannel)
 {
 	pPacket->wPlace = 0;
 	pPacket->wLen += 6;
@@ -67,7 +67,7 @@ void write_flap(icq_packet* pPacket, BYTE byFlapChannel)
 
 
 
-void directPacketInit(icq_packet* pPacket, DWORD dwSize)
+void __fastcall directPacketInit(icq_packet* pPacket, DWORD dwSize)
 {
 	pPacket->wPlace = 0;
 	pPacket->wLen   = (WORD)dwSize;
@@ -78,14 +78,14 @@ void directPacketInit(icq_packet* pPacket, DWORD dwSize)
 
 
 
-void packByte(icq_packet* pPacket, BYTE byValue)
+void __fastcall packByte(icq_packet* pPacket, BYTE byValue)
 {
 	pPacket->pData[pPacket->wPlace++] = byValue;
 }
 
 
 
-void packWord(icq_packet* pPacket, WORD wValue)
+void __fastcall packWord(icq_packet* pPacket, WORD wValue)
 {
 	pPacket->pData[pPacket->wPlace++] = ((wValue & 0xff00) >> 8);
 	pPacket->pData[pPacket->wPlace++] = (wValue & 0x00ff);
@@ -93,7 +93,7 @@ void packWord(icq_packet* pPacket, WORD wValue)
 
 
 
-void packDWord(icq_packet* pPacket, DWORD dwValue)
+void __fastcall packDWord(icq_packet* pPacket, DWORD dwValue)
 {
 	pPacket->pData[pPacket->wPlace++] = (BYTE)((dwValue & 0xff000000) >> 24);
 	pPacket->pData[pPacket->wPlace++] = (BYTE)((dwValue & 0x00ff0000) >> 16);
@@ -156,7 +156,7 @@ void packBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength)
 //}
 
 
-int getUINLen(DWORD dwUin)
+int __fastcall getUINLen(DWORD dwUin)
 { // TODO: invent something more clever
   if (dwUin >= 1000000000) return 10;
   if (dwUin >= 100000000) return 9;
@@ -171,7 +171,7 @@ int getUINLen(DWORD dwUin)
 }
 
 
-void packUIN(icq_packet* pPacket, DWORD dwUin)
+void __fastcall packUIN(icq_packet* pPacket, DWORD dwUin)
 {
 	unsigned char pszUin[UINMAXLEN];
   BYTE nUinLen = getUINLen(dwUin);
@@ -196,7 +196,7 @@ void packFNACHeader(icq_packet* pPacket, WORD wFamily, WORD wSubtype, WORD wFlag
 
 
 
-void packLEWord(icq_packet* pPacket, WORD wValue)
+void __fastcall packLEWord(icq_packet* pPacket, WORD wValue)
 {
 	pPacket->pData[pPacket->wPlace++] =  (wValue & 0x00ff);
 	pPacket->pData[pPacket->wPlace++] = ((wValue & 0xff00) >> 8);
@@ -204,7 +204,7 @@ void packLEWord(icq_packet* pPacket, WORD wValue)
 
 
 
-void packLEDWord(icq_packet* pPacket, DWORD dwValue)
+void __fastcall packLEDWord(icq_packet* pPacket, DWORD dwValue)
 {
 	pPacket->pData[pPacket->wPlace++] = (BYTE) (dwValue & 0x000000ff);
 	pPacket->pData[pPacket->wPlace++] = (BYTE)((dwValue & 0x0000ff00) >> 8);
@@ -341,7 +341,58 @@ void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wTy
 }
 
 
-void unpackByte(BYTE** pSource, BYTE* byDestination)
+void ppackTLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wType)
+{
+	int len = strlen(str) + 1;
+
+	*buf = (PBYTE)realloc(*buf, 7 + *buflen + len);
+	*(PWORD)(*buf + *buflen) = wType;
+	*(PWORD)(*buf + *buflen + 2) = len + 3;
+	*(PWORD)(*buf + *buflen + 4) = len;
+	memcpy(*buf + *buflen + 6, str, len);
+	*(*buf + *buflen + 6 + len) = b;
+	*buflen += len + 7;
+}
+
+
+
+void ppackTLVLNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wType)
+{
+	char szTmp[1024];
+	char *str = "";
+
+	if (!ICQGetContactStaticString(NULL, szSetting, szTmp, sizeof(szTmp)))
+		str = szTmp;
+
+	ppackTLVLNTS(buf, buflen, str, wType, 1);
+}
+
+
+void ppackTLVWordLNTSfromDB(PBYTE *buf, int *buflen, WORD w, const char *szSetting, WORD wType)
+{
+	char szTmp[1024];
+	char *str = "";
+
+	if (!ICQGetContactStaticString(NULL, szSetting, szTmp, sizeof(szTmp)))
+		str = szTmp;
+
+	ppackTLVWordLNTS(buf, buflen, w, str, wType, 1);
+}
+
+
+void ppackTLVLNTSBytefromDB(PBYTE *buf, int *buflen, const char *szSetting, BYTE b, WORD wType)
+{
+	char szTmp[1024];
+	char *str = "";
+
+	if (!ICQGetContactStaticString(NULL, szSetting, szTmp, sizeof(szTmp)))
+		str = szTmp;
+
+	ppackTLVLNTSByte(buf, buflen, str, b, wType);
+}
+
+
+void __fastcall unpackByte(BYTE** pSource, BYTE* byDestination)
 {
 	if (byDestination)
 	{
@@ -355,43 +406,47 @@ void unpackByte(BYTE** pSource, BYTE* byDestination)
 
 
 
-void unpackWord(BYTE** pSource, WORD* wDestination)
+void __fastcall unpackWord(BYTE** pSource, WORD* wDestination)
 {
+  unsigned char *tmp = *pSource;
 
 	if (wDestination)
 	{
-		*wDestination  = *(*pSource)++ << 8;
-		*wDestination |= *(*pSource)++;
+		*wDestination  = *tmp++ << 8;
+		*wDestination |= *tmp++;
+
+    *pSource = tmp;
 	}
 	else
 	{
 		*pSource += 2;
 	}
-
 }
 
 
 
-void unpackDWord(BYTE** pSource, DWORD* dwDestination)
+void __fastcall unpackDWord(BYTE** pSource, DWORD* dwDestination)
 {
+  unsigned char *tmp = *pSource;
 
 	if (dwDestination)
 	{
-		*dwDestination  = *(*pSource)++ << 24;
-		*dwDestination |= *(*pSource)++ << 16;
-		*dwDestination |= *(*pSource)++ << 8;
-		*dwDestination |= *(*pSource)++;
+		*dwDestination  = *tmp++ << 24;
+		*dwDestination |= *tmp++ << 16;
+		*dwDestination |= *tmp++ << 8;
+		*dwDestination |= *tmp++;
+
+    *pSource = tmp;
 	}
 	else
 	{
 		*pSource += 4;
 	}
-
 }
 
 
 
-void unpackLEWord(unsigned char **buf, WORD *w)
+void __fastcall unpackLEWord(unsigned char **buf, WORD *w)
 {
 	unsigned char *tmp = *buf;
 
@@ -408,7 +463,7 @@ void unpackLEWord(unsigned char **buf, WORD *w)
 
 
 
-void unpackLEDWord(unsigned char **buf, DWORD *dw)
+void __fastcall unpackLEDWord(unsigned char **buf, DWORD *dw)
 {
 	unsigned char *tmp = *buf;
 
@@ -531,14 +586,14 @@ BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, char** ppszUID
     }
     else if (!ppszUID)
     {
-      Netlib_Logf(ghServerNetlibUser, "Malformed UIN in packet");
+      NetLog_Server("Malformed UIN in packet");
       return FALSE;
     }
 
   }
   else if (!ppszUID)
   {
-    Netlib_Logf(ghServerNetlibUser, "Malformed UIN in packet");
+    NetLog_Server("Malformed UIN in packet");
     return FALSE;
   }
 #ifdef DBG_AIM_SUPPORT_HACK
@@ -553,7 +608,7 @@ BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, char** ppszUID
 
 	return TRUE;
 #else
-  Netlib_Logf(ghServerNetlibUser, "AOL screennames not accepted");
+  NetLog_Server("AOL screennames not accepted");
 
   return FALSE;
 #endif

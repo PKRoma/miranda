@@ -55,14 +55,14 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"ICQ Oscar v8 / Joe",
-	PLUGIN_MAKE_VERSION(0,3,6,1),
+	PLUGIN_MAKE_VERSION(0,3,6,2),
 	"Support for ICQ network, enhanced.",
 	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@users.sourceforge.net",
 	"(C) 2000-2005 M.Öberg, R.Hughes, J.Keating, Bio, J.Kucera",
   "http://www.miranda-im.org/download/details.php?action=viewfile&id=1683",
-	0,		//not transient
-	0		//doesn't replace anything built-in
+	0,  //not transient
+	0   //doesn't replace anything built-in
 };
 
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam);
@@ -185,8 +185,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		CreateServiceFunction(pszServiceName , IcqAddToList);
 		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, PS_ADDTOLISTBYEVENT);
 		CreateServiceFunction(pszServiceName , IcqAddToListByEvent);
-		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, PS_CHANGEINFO);
-		CreateServiceFunction(pszServiceName , IcqChangeInfo);
+//		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, PS_CHANGEINFO);
+//		CreateServiceFunction(pszServiceName , IcqChangeInfo);
 		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, PS_FILERESUME);
 		CreateServiceFunction(pszServiceName , IcqFileResume);
 		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, PSS_GETINFO);
@@ -282,8 +282,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		hUserMenuGrant = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 	}
 
-  InitXStatusItems();
-
 	return 0;
 }
 
@@ -351,6 +349,8 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   char szBuffer[MAX_PATH+64];
   char* modules[5] = {0,0,0,0,0};
 
+  InitXStatusItems();
+
   strcpy(pszP2PName, gpszICQProtoName);
   strcat(pszP2PName, "P2P");
 
@@ -365,7 +365,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   CallService("DBEditorpp/RegisterModule",(WPARAM)modules,(LPARAM)4);
 
 
-  mir_snprintf(szBuffer, sizeof szBuffer, Translate("%s server connection"), gpszICQProtoName);
+  null_snprintf(szBuffer, sizeof szBuffer, Translate("%s server connection"), gpszICQProtoName);
   nlu.cbSize = sizeof(nlu);
   nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS; 
   nlu.szDescriptiveName = szBuffer;
@@ -383,7 +383,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   }
 	ghServerNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-  mir_snprintf(szBuffer, sizeof szBuffer, Translate("%s client-to-client connections"), gpszICQProtoName);
+  null_snprintf(szBuffer, sizeof szBuffer, Translate("%s client-to-client connections"), gpszICQProtoName);
   nlu.flags = NUF_OUTGOING | NUF_INCOMING;
   nlu.szDescriptiveName = szBuffer;
   nlu.szSettingsModule = pszP2PName;
@@ -396,6 +396,8 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   hHookIdleEvent = HookEvent(ME_IDLE_CHANGED, IcqIdleChanged);
 
   InitXStatusEvents();
+
+  InitPopUps();
 
   return 0;
 }

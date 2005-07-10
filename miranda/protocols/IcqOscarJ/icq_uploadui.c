@@ -280,7 +280,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
   case WM_INITDIALOG:
     {
-      TranslateDialogDefault(hwndDlg);
+      ICQTranslateDialog(hwndDlg);
       working = 0;
       hProtoAckHook = NULL;
       currentState = STATE_READY;
@@ -663,7 +663,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                   DeleteLastUploadLogLine(hwndDlg);
                   AppendToUploadLog(hwndDlg, "%s%s", szLastLogLine, Translate("FAILED"));
                   AppendToUploadLog(hwndDlg, Translate("No upload group available"));
-                  Netlib_Logf(ghServerNetlibUser, "Upload failed, no group");
+                  NetLog_Server("Upload failed, no group");
                   currentState = STATE_READY;
                 }
               }

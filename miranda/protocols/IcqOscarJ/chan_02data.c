@@ -46,12 +46,12 @@ void handleDataChannel(unsigned char *pBuffer, WORD wBufferLength)
 
 	if (!pSnacHeader || !pSnacHeader->bValid)
 	{
-		Netlib_Logf(ghServerNetlibUser, "Error: Failed to parse SNAC header");
+		NetLog_Server("Error: Failed to parse SNAC header");
 	}
 	else
 	{
 #ifdef _DEBUG
-		Netlib_Logf(ghServerNetlibUser, " Received SNAC(x%02X,x%02X)", pSnacHeader->wFamily, pSnacHeader->wSubtype);
+		NetLog_Server(" Received SNAC(x%02X,x%02X)", pSnacHeader->wFamily, pSnacHeader->wSubtype);
 #endif
 
 		
@@ -91,7 +91,7 @@ void handleDataChannel(unsigned char *pBuffer, WORD wBufferLength)
 			break;
 			
 		default:
-			Netlib_Logf(ghServerNetlibUser, "Ignoring SNAC(x%02X,x%02X) - FAMILYx%02X not implemented", pSnacHeader->wFamily, pSnacHeader->wSubtype, pSnacHeader->wFamily);
+			NetLog_Server("Ignoring SNAC(x%02X,x%02X) - FAMILYx%02X not implemented", pSnacHeader->wFamily, pSnacHeader->wSubtype, pSnacHeader->wFamily);
 			break;
 
 		}
@@ -213,5 +213,5 @@ void LogFamilyError(WORD wFamily, WORD wError)
 	  default:	 msg = ""; break;
 	}
 
-	Netlib_Logf(ghServerNetlibUser, "SNAC(x%02X,x01) - Error(%u): %s", wFamily, wError, msg);
+	NetLog_Server("SNAC(x%02X,x01) - Error(%u): %s", wFamily, wError, msg);
 }

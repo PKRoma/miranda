@@ -69,7 +69,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
   // Add "contacts" option
 	nNameLen = strlen(Translate(gpszICQProtoName)) + 1 + strlen(Translate("Contacts"));
 	pszTreeItemName = calloc(1, nNameLen+1);
-	mir_snprintf(pszTreeItemName, nNameLen+1, "%s %s", Translate(gpszICQProtoName), Translate("Contacts"));
+	null_snprintf(pszTreeItemName, nNameLen+1, "%s %s", Translate(gpszICQProtoName), Translate("Contacts"));
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQCONTACTS);
     odp.pszTitle = pszTreeItemName;
 	odp.pfnDlgProc = DlgProcIcqContactsOpts;
@@ -80,7 +80,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
 	// Add "features" option
 	nNameLen = strlen(Translate(gpszICQProtoName)) + 1 + strlen(Translate("Features"));
 	pszTreeItemName = calloc(1, nNameLen+1);
-	mir_snprintf(pszTreeItemName, nNameLen+1, "%s %s", Translate(gpszICQProtoName), Translate("Features"));
+	null_snprintf(pszTreeItemName, nNameLen+1, "%s %s", Translate(gpszICQProtoName), Translate("Features"));
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQFEATURES);
     odp.pszTitle = pszTreeItemName;
 	odp.pfnDlgProc = DlgProcIcqFeaturesOpts;
@@ -92,7 +92,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
 	// Add "privacy" option
 	nNameLen = strlen(Translate(gpszICQProtoName)) + 1 + strlen(Translate("Privacy"));
 	pszTreeItemName = calloc(1, nNameLen+1);
-	mir_snprintf(pszTreeItemName, nNameLen+1, "%s %s", Translate(gpszICQProtoName), Translate("Privacy"));
+	null_snprintf(pszTreeItemName, nNameLen+1, "%s %s", Translate(gpszICQProtoName), Translate("Privacy"));
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQPRIVACY);
 	odp.pszTitle = pszTreeItemName;
 	odp.pfnDlgProc = DlgProcIcqPrivacyOpts;
@@ -114,7 +114,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
     {
       DBVARIANT dbv;
 
-			TranslateDialogDefault(hwndDlg);
+			ICQTranslateDialog(hwndDlg);
 
 			SetDlgItemInt(hwndDlg, IDC_ICQNUM, ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0), FALSE);
 
@@ -241,7 +241,7 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			nDcType = ICQGetContactSettingByte(NULL, "DCType", 0);
 			nAddAuth = ICQGetContactSettingByte(NULL, "Auth", 1);
 			
-			TranslateDialogDefault(hwndDlg);
+			ICQTranslateDialog(hwndDlg);
 			if (!icqOnline)
 			{
 				icq_EnableMultipleControls(hwndDlg, icqPrivacyControls, sizeof(icqPrivacyControls)/sizeof(icqPrivacyControls[0]), FALSE);
@@ -444,7 +444,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       int sCodePage;
       int i;
 
-      TranslateDialogDefault(hwndDlg);
+      ICQTranslateDialog(hwndDlg);
       bData = ICQGetContactSettingByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
       CheckDlgButton(hwndDlg, IDC_UTFENABLE, bData?TRUE:FALSE);
       CheckDlgButton(hwndDlg, IDC_UTFALL, bData==2?TRUE:FALSE);
@@ -528,7 +528,7 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
   switch (msg)
   {
   case WM_INITDIALOG:
-    TranslateDialogDefault(hwndDlg);
+    ICQTranslateDialog(hwndDlg);
     CheckDlgButton(hwndDlg, IDC_ENABLE, ICQGetContactSettingByte(NULL, "UseServerCList",DEFAULT_SS_ENABLED));
     CheckDlgButton(hwndDlg, IDC_ADDSERVER, ICQGetContactSettingByte(NULL, "ServerAddRemove",DEFAULT_SS_ADDSERVER));
     CheckDlgButton(hwndDlg, IDC_LOADFROMSERVER, ICQGetContactSettingByte(NULL, "LoadServerDetails",DEFAULT_SS_LOAD));

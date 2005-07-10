@@ -69,8 +69,8 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
   case ICQ_SERVER_READY:
 #ifdef _DEBUG
-		Netlib_Logf(ghServerNetlibUser, "Server is ready and is requesting my Family versions");
-		Netlib_Logf(ghServerNetlibUser, "Sending my Families");
+		NetLog_Server("Server is ready and is requesting my Family versions");
+		NetLog_Server("Sending my Families");
 #endif
 
 		// This packet is a response to SRV_FAMILIES SNAC(1,3).
@@ -98,8 +98,8 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     /* This is a reply to CLI_FAMILIES and it tells the client which families and their versions that this server understands.
 	   * We send a rate request packet */
 #ifdef _DEBUG
-    Netlib_Logf(ghServerNetlibUser, "Server told me his Family versions");
-    Netlib_Logf(ghServerNetlibUser, "Requesting Rate Information");
+    NetLog_Server("Server told me his Family versions");
+    NetLog_Server("Requesting Rate Information");
 #endif
     packet.wLen = 10;
     write_flap(&packet, 2);
@@ -109,8 +109,8 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
   case ICQ_SERVER_RATE_INFO:
 #ifdef _DEBUG
-    Netlib_Logf(ghServerNetlibUser, "Server sent Rate Info");
-    Netlib_Logf(ghServerNetlibUser, "Sending Rate Info Ack");
+    NetLog_Server("Server sent Rate Info");
+    NetLog_Server("Sending Rate Info Ack");
 #endif
     /* Don't really care about this now, just send the ack */
     packet.wLen = 20;
@@ -123,7 +123,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
     /* CLI_REQINFO - This command requests from the server certain information about the client that is stored on the server. */
 #ifdef _DEBUG
-    Netlib_Logf(ghServerNetlibUser, "Sending CLI_REQINFO");
+    NetLog_Server("Sending CLI_REQINFO");
 #endif
     packet.wLen = 10;
     write_flap(&packet, ICQ_DATA_CHAN);
@@ -149,7 +149,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       if (!wRecordCount) // CLI_REQROSTER
       { // we do not have any data - request full list
 #ifdef _DEBUG
-        Netlib_Logf(ghServerNetlibUser, "Requesting full roster");
+        NetLog_Server("Requesting full roster");
 #endif
         packet.wLen = 10;
         write_flap(&packet, ICQ_DATA_CHAN);
@@ -169,7 +169,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       else // CLI_CHECKROSTER
       {
 #ifdef _DEBUG
-        Netlib_Logf(ghServerNetlibUser, "Requesting roster check");
+        NetLog_Server("Requesting roster check");
 #endif
         packet.wLen = 16;
         write_flap(&packet, ICQ_DATA_CHAN);
@@ -225,7 +225,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     break;
 
   case ICQ_SERVER_PAUSE:
-    Netlib_Logf(ghServerNetlibUser, "Server is going down in a few seconds... (Flags: %u)", pSnacHeader->wFlags);
+    NetLog_Server("Server is going down in a few seconds... (Flags: %u)", pSnacHeader->wFlags);
     // This is the list of groups that we want to have on the next server
     packet.wLen = 30;
     write_flap(&packet, ICQ_DATA_CHAN);
@@ -242,7 +242,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     packWord(&packet,ICQ_STATS_FAMILY);
     sendServPacket(&packet);
 #ifdef _DEBUG
-    Netlib_Logf(ghServerNetlibUser, "Sent server pause ack");
+    NetLog_Server("Sent server pause ack");
 #endif
     break;
 
@@ -251,7 +251,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 			oscar_tlv_chain *chain = NULL;
 
 #ifdef _DEBUG
-			Netlib_Logf(ghServerNetlibUser, "Server migration requested (Flags: %u, Ref: %u", pSnacHeader->wFlags, pSnacHeader->dwRef);
+			NetLog_Server("Server migration requested (Flags: %u)", pSnacHeader->wFlags);
 #endif
 			pBuffer += 2; // Unknown, seen: 0
 			wBufferLength -= 2;
@@ -274,7 +274,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 			}
 
 			disposeChain(&chain);
-			Netlib_Logf(ghServerNetlibUser, "Migration has started. New server will be %s", migratedServer);
+			NetLog_Server("Migration has started. New server will be %s", migratedServer);
 
 			icqGoingOnlineStatus = gnCurrentStatus;
       SetCurrentStatus(ID_STATUS_CONNECTING); // revert to connecting state
@@ -326,7 +326,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 				// Change status
         SetCurrentStatus(icqGoingOnlineStatus);
 
-				Netlib_Logf(ghServerNetlibUser, " *** Yeehah, login sequence complete");
+				NetLog_Server(" *** Yeehah, login sequence complete");
 
 
 				/* Get Offline Messages Reqeust */
@@ -367,13 +367,13 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
 			if (wStatus == 2 || wStatus == 3)
       { // this is only the simplest solution, needs rate management to every section
-        ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
+        ICQBroadcastAck(NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
         gbOverRate = 1; // block user requests (user info, status messages, etc.)
 				icq_PauseUserLookup(); // pause auto-info update thread
 			}
 			else if (wStatus == 4)
 			{
-        ProtoBroadcastAck(gpszICQProtoName, NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
+        ICQBroadcastAck(NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
         gbOverRate = 0; // enable user requests
 				icq_EnableUserLookup(TRUE);
 			}
@@ -389,7 +389,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
     if (!(pChain = readIntoTLVChain(&pBuffer, wBufferLength, 0)))
     {
-      Netlib_Logf(ghServerNetlibUser, "Received Broken Redirect Service SNAC(1,5).");
+      NetLog_Server("Received Broken Redirect Service SNAC(1,5).");
       break;
     }
     wFamily = getWordFromChain(pChain, 0x0D, 1);
@@ -398,7 +398,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     if ((!FindCookie(pSnacHeader->dwRef, NULL, &reqdata)) || (reqdata->wFamily != wFamily))
     {
       disposeChain(&pChain);
-      Netlib_Logf(ghServerNetlibUser, "Received unexpected SNAC(1,5), skipping.");
+      NetLog_Server("Received unexpected SNAC(1,5), skipping.");
       break;
     }
 
@@ -417,7 +417,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
       if (!pServer || !pCookie)
       {
-        Netlib_Logf(ghServerNetlibUser, "Server returned invalid data, family unavailable.");
+        NetLog_Server("Server returned invalid data, family unavailable.");
 
         SAFE_FREE(&pServer);
         SAFE_FREE(&pCookie);
@@ -438,7 +438,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       
       if (hConnection == NULL)
       {
-        Netlib_Logf(ghServerNetlibUser, "Unable to connect to ICQ new family server.");
+        NetLog_Server("Unable to connect to ICQ new family server.");
       } // we want the handler to be called even if the connecting failed
       reqdata->familyhandler(hConnection, pCookie, wCookieLen);
 
@@ -454,7 +454,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
   case ICQ_SERVER_EXTSTATUS: // our avatar
   {
-    Netlib_Logf(ghServerNetlibUser, "Received our avatar hash & status.");
+    NetLog_Server("Received our avatar hash & status.");
 
     if ((wBufferLength >= 0x14) && gbAvatarsEnabled)
     {
@@ -481,7 +481,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
           if (ICQGetContactSetting(NULL, "AvatarFile", &dbv))
           { // we have no file to upload, remove hash from server
-            Netlib_Logf(ghServerNetlibUser, "We do not have avatar, removing hash.");
+            NetLog_Server("We do not have avatar, removing hash.");
             updateServAvatarHash(NULL, 0);
             LinkContactPhotoToFile(NULL, NULL);
             break;
@@ -489,7 +489,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           hash = calcMD5Hash(dbv.pszVal);
           if (!hash)
           { // the hash could not be calculated, remove from server
-            Netlib_Logf(ghServerNetlibUser, "We could not obtain hash, removing hash.");
+            NetLog_Server("We could not obtain hash, removing hash.");
             updateServAvatarHash(NULL, 0);
             LinkContactPhotoToFile(NULL, NULL);
           }
@@ -499,7 +499,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             BYTE* ppMap = NULL;
             long cbFileSize = 0;
 
-            Netlib_Logf(ghServerNetlibUser, "Uploading our avatar data.");
+            NetLog_Server("Uploading our avatar data.");
 
             if ((hFile = CreateFile(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
               if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
@@ -522,7 +522,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             char* pHash = malloc(0x12);
             if (pHash)
             {
-              Netlib_Logf(ghServerNetlibUser, "Our file is different, set our new hash.");
+              NetLog_Server("Our file is different, set our new hash.");
 
               pHash[0] = 1; // state of the hash
               pHash[1] = 0x10; // len of the hash
@@ -532,7 +532,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             }
             else
             {
-              Netlib_Logf(ghServerNetlibUser, "We could not set hash, removing hash.");
+              NetLog_Server("We could not set hash, removing hash.");
               updateServAvatarHash(NULL, 0);
             }
             SAFE_FREE(&hash);
@@ -541,7 +541,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           DBFreeVariant(&dbv);
           break;
         default:
-          Netlib_Logf(ghServerNetlibUser, "Reiceived UNKNOWN Avatar Status.");
+          NetLog_Server("Reiceived UNKNOWN Avatar Status.");
         }
       }
     }
@@ -564,12 +564,12 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 		// Stuff we don't care about
 	case ICQ_SERVER_MOTD:
 #ifdef _DEBUG
-		Netlib_Logf(ghServerNetlibUser, "Server message of the day");
+		NetLog_Server("Server message of the day");
 #endif
 		break;
 
 	default:
-		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x01,%2x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+		NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_SERVICE_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
 
 	}
@@ -1010,9 +1010,9 @@ void handleServUINSettings(int nPort, int nIP)
 
   if (gbAvatarsEnabled)
   { // Send SNAC 1,4 - request avatar family 0x10 connection
-    icq_requestnewfamily(0x10, StartAvatarThread);
+    icq_requestnewfamily(ICQ_AVATAR_FAMILY, StartAvatarThread);
 
     pendingAvatarsStart = 1;
-    Netlib_Logf(ghServerNetlibUser, "Requesting Avatar family entry point.");
+    NetLog_Server("Requesting Avatar family entry point.");
   }
 }

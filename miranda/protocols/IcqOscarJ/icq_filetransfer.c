@@ -108,7 +108,7 @@ static void file_sendNextFile(directconnect* dc)
 	{
 		Netlib_CloseHandle(dc->hConnection);
 		dc->hConnection = dc->ft->hConnection = NULL;
-		ProtoBroadcastAck(gpszICQProtoName, dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, dc->ft, 0);
+		ICQBroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, dc->ft, 0);
 		return;
 	}
 
@@ -195,7 +195,7 @@ static void file_sendNextFile(directconnect* dc)
 
 	sendDirectPacket(dc->hConnection, &packet);
 
-	ProtoBroadcastAck(gpszICQProtoName, dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, dc->ft, 0);
+	ICQBroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, dc->ft, 0);
 }
 
 
@@ -239,11 +239,12 @@ static void file_sendData(directconnect* dc)
 	dc->ft->dwBytesDone += bytesRead;
 	dc->ft->dwFileBytesDone += bytesRead;
 
-	if(GetTickCount() > dc->ft->dwLastNotify + 500 || bytesRead == 0) {
+	if(GetTickCount() > dc->ft->dwLastNotify + 500 || bytesRead == 0)
+  {
 		PROTOFILETRANSFERSTATUS pfts;
 
 		file_buildProtoFileTransferStatus(dc->ft, &pfts);
-		ProtoBroadcastAck(gpszICQProtoName, dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, dc->ft, (LPARAM)&pfts);
+		ICQBroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, dc->ft, (LPARAM)&pfts);
 		dc->ft->dwLastNotify = GetTickCount();
 	}
 
@@ -316,7 +317,7 @@ void icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
 
 	file_sendResume(ft);
 
-	ProtoBroadcastAck(gpszICQProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
+	ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
 }
 
 
@@ -335,7 +336,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 	if (wLen < 1)
 		return;
 
-	Netlib_Logf(ghDirectNetlibUser, "Handling file packet");
+	NetLog_Direct("Handling file packet");
 
 	switch (buf[0])
 	{
@@ -360,7 +361,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				dc->ft = FindExpectedFileRecv(dc->dwRemoteUin, dwTotalSize);
 				if (dc->ft == NULL)
 				{
-					Netlib_Logf(ghDirectNetlibUser, "Unexpected file receive");
+					NetLog_Direct("Unexpected file receive");
 					Netlib_CloseHandle(dc->hConnection);
 					dc->hConnection = NULL;
 					return;
@@ -379,7 +380,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				file_sendTransferSpeed(dc);
 				file_sendNick(dc);
 			}
-			ProtoBroadcastAck(gpszICQProtoName, dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, dc->ft, 0);
+			ICQBroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, dc->ft, 0);
 			break;
 
 		case PEER_FILE_INIT_ACK:
@@ -428,14 +429,14 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 					strstr(dc->ft->szThisFile, ":\\") || strstr(dc->ft->szThisFile, ":/") ||
 					dc->ft->szThisFile[0] == '\\' || dc->ft->szThisFile[0] == '/')
         {
-          Netlib_Logf(ghDirectNetlibUser, "Invalid path information");
+          NetLog_Direct("Invalid path information");
 					break;
         }
 				if (strstr(dc->ft->szThisSubdir, "..\\") || strstr(dc->ft->szThisSubdir, "../") ||
 					strstr(dc->ft->szThisSubdir, ":\\") || strstr(dc->ft->szThisSubdir, ":/") ||
 					dc->ft->szThisSubdir[0] == '\\' || dc->ft->szThisSubdir[0] == '/')
         {
-          Netlib_Logf(ghDirectNetlibUser, "Invalid path information");
+          NetLog_Direct("Invalid path information");
 					break;
         }
 
@@ -465,7 +466,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 					PROTOFILETRANSFERSTATUS pfts = {0};
 
 					file_buildProtoFileTransferStatus(dc->ft, &pfts);
-    			if (ProtoBroadcastAck(gpszICQProtoName, dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, dc->ft, (LPARAM)&pfts))
+    			if (ICQBroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, dc->ft, (LPARAM)&pfts))
 					break;   /* UI supports resume: it will call PS_FILERESUME */
 
 					dc->ft->fileId = _open(dc->ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
@@ -479,7 +480,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				}
 			}
 			file_sendResume(dc->ft);
-			ProtoBroadcastAck(gpszICQProtoName, dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, dc->ft, 0);
+			ICQBroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, dc->ft, 0);
 			break;
 
 		case PEER_FILE_RESUME:
@@ -530,7 +531,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				PROTOFILETRANSFERSTATUS pfts;
 
 				file_buildProtoFileTransferStatus(dc->ft, &pfts);
-    		ProtoBroadcastAck(gpszICQProtoName, dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, dc->ft, (LPARAM)&pfts);
+    		ICQBroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, dc->ft, (LPARAM)&pfts);
 				dc->ft->dwLastNotify = GetTickCount();
 			}
 			if (wLen < 2048)
@@ -542,13 +543,13 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				if ((DWORD)dc->ft->iCurrentFile == dc->ft->dwFileCount - 1)
 				{
 					dc->type = DIRECTCONN_CLOSING;	   /* this guarantees that we won't accept any more data but that the sender is still free to closesocket() neatly */
-					ProtoBroadcastAck(gpszICQProtoName, dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, dc->ft, 0);
+					ICQBroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, dc->ft, 0);
 				}
 			}
 			break;
 
 		default:
-			Netlib_Logf(ghDirectNetlibUser, "Unknown file transfer packet ignored.");
+			NetLog_Direct("Unknown file transfer packet ignored.");
 			break;
 	}
 }

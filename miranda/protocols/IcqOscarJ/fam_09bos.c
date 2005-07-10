@@ -63,7 +63,7 @@ void handleBosFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
   }
 
 	default:
-		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x09,x%02x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+		NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_BOS_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
 
 	}
@@ -90,7 +90,7 @@ static void handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLength)
 
 			disposeChain(&pChain);
 
-			Netlib_Logf(ghServerNetlibUser, "SRV_PRIVACY_RIGHTS_REPLY: Max visible %u, max invisible %u", wMaxVisibleContacts, wMaxInvisibleContacts);
+			NetLog_Server("SRV_PRIVACY_RIGHTS_REPLY: Max visible %u, max invisible %u", wMaxVisibleContacts, wMaxInvisibleContacts);
 
 			// Success
 			return;
@@ -98,7 +98,7 @@ static void handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLength)
 	}
 
 	// Failure
-	Netlib_Logf(ghServerNetlibUser, "Warning: Malformed SRV_PRIVACY_RIGHTS_REPLY");
+	NetLog_Server("Warning: Malformed SRV_PRIVACY_RIGHTS_REPLY");
 }
 
 
@@ -123,7 +123,7 @@ void makeContactTemporaryVisible(HANDLE hContact)
   ICQWriteContactSettingByte(hContact, "TemporaryVisible", 1);
 
 #ifdef _DEBUG
-  Netlib_Logf(ghServerNetlibUser, "Added contact %u to temporary visible list");
+  NetLog_Server("Added contact %u to temporary visible list");
 #endif
 }
 

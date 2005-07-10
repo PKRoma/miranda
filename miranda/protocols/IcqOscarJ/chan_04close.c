@@ -89,7 +89,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 
 	if (!(chain = readIntoTLVChain(&buf, datalen, 0)))
 	{
-		Netlib_Logf(ghServerNetlibUser, "Error: Missing chain on close channel");
+		NetLog_Server("Error: Missing chain on close channel");
     if (hServerConn) Netlib_MyCloseHandle(hServerConn);
 		return;
 	}
@@ -142,7 +142,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 		return;
 	}
 
-	Netlib_Logf(ghServerNetlibUser, "Authenticated.");
+	NetLog_Server("Authenticated.");
 
 	/* Get the ip and port */
 	i = 0;
@@ -164,10 +164,10 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
       Netlib_CloseHandle(hServerPacketRecver);
       hServerPacketRecver = NULL; // clear the variable
 
-      Netlib_Logf(ghServerNetlibUser, "Closed connection to login server");
+      NetLog_Server("Closed connection to login server");
     }
 
-	  Netlib_Logf(ghServerNetlibUser, "Connecting to %s", newServer);
+	  NetLog_Server("Connecting to %s", newServer);
     hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
     if (!hServerConn && (GetLastError() == 87))
     { // this ensures that an old Miranda can also connect
@@ -186,7 +186,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 		  hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
 		  if (!hServerPacketRecver)
       {
-			  Netlib_Logf(ghServerNetlibUser, "Error: Failed to create packet receiver.");
+			  NetLog_Server("Error: Failed to create packet receiver.");
       }
       else // we need to reset receiving structs
         bReinitRecver = 1;
@@ -194,7 +194,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 	}
   else
   { // TODO: We should really do some checks here
-    Netlib_Logf(ghServerNetlibUser, "Walking in Gateway to %s", newServer);
+    NetLog_Server("Walking in Gateway to %s", newServer);
     // TODO: This REQUIRES more work (most probably some kind of mid-netlib module)
     cookieData = cookie;
     cookieDataLen = wCookieLen;
@@ -219,7 +219,7 @@ static void handleMigration()
 	ZeroMemory(servip, 16);
 
 	// Check the data that was saved when the migration was announced
-	Netlib_Logf(ghServerNetlibUser, "Migrating to %s", migratedServer);
+	NetLog_Server("Migrating to %s", migratedServer);
 	if (!migratedServer || !cookieData)
 	{
 		icq_LogMessage(LOG_FATAL, Translate("You have been disconnected from the ICQ network because the current server shut down."));
@@ -276,7 +276,7 @@ static void handleMigration()
 	  	Netlib_CloseHandle(hServerPacketRecver);
 		  // Create new packer receiver
 #ifdef _DEBUG
-		  Netlib_Logf(ghServerNetlibUser, "Created new packet receiver");
+		  NetLog_Server("Created new packet receiver");
 #endif
 		  hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
       bReinitRecver = 1;
@@ -284,7 +284,7 @@ static void handleMigration()
   }
   else
   { // TODO: We should really do some checks here
-    Netlib_Logf(ghServerNetlibUser, "Walking in Gateway to %s", migratedServer);
+    NetLog_Server("Walking in Gateway to %s", migratedServer);
     // TODO: This REQUIRES more work (most probably some kind of mid-netlib module)
     icq_httpGatewayWalkTo(hServerConn, &nloc);
   }
@@ -307,26 +307,26 @@ static void handleSignonError(WORD wError)
 	case 0x05:
 	case 0x06:
 	case 0x07:
-		ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
-		mir_snprintf(msg, 250, Translate("Connection failed.\nYour ICQ number or password was rejected (%d)."), wError);
+		ICQBroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
+		null_snprintf(msg, 250, Translate("Connection failed.\nYour ICQ number or password was rejected (%d)."), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 
 	case 0x14:
   case 0x15:
-		mir_snprintf(msg, 250, Translate("Connection failed.\nThe server is temporally unavailable (%d)."), wError);
+		null_snprintf(msg, 250, Translate("Connection failed.\nThe server is temporally unavailable (%d)."), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 
 	case 0x16:
 	case 0x17:
-		mir_snprintf(msg, 250, Translate("Connection failed.\nServer has too many connections from your IP (%d)."), wError);
+		null_snprintf(msg, 250, Translate("Connection failed.\nServer has too many connections from your IP (%d)."), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 
 	case 0x18:
 	case 0x1D:
-		mir_snprintf(msg, 250, Translate("Connection failed.\nYou have connected too quickly,\nplease wait and retry 10 to 20 minutes later (%d)."), wError);
+		null_snprintf(msg, 250, Translate("Connection failed.\nYou have connected too quickly,\nplease wait and retry 10 to 20 minutes later (%d)."), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 
@@ -345,7 +345,7 @@ static void handleSignonError(WORD wError)
 		break;
 
 	default:
-		mir_snprintf(msg, 50, Translate("Connection failed.\nUnknown error during sign on: 0x%02x"), wError);
+		null_snprintf(msg, 50, Translate("Connection failed.\nUnknown error during sign on: 0x%02x"), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 	}
@@ -362,13 +362,13 @@ static void handleRuntimeError(WORD wError)
 
 	case 0x01:
 	{
-		ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
+		ICQBroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
 		icq_LogMessage(LOG_FATAL, Translate("You have been disconnected from the ICQ network because you logged on from another location using the same ICQ number."));
 		break;
 	}
 
 	default:
-		mir_snprintf(msg, 50, Translate("Unknown runtime error: 0x%02x"), wError);
+		null_snprintf(msg, 50, Translate("Unknown runtime error: 0x%02x"), wError);
 		icq_LogMessage(LOG_FATAL, msg);
 		break;
 	}

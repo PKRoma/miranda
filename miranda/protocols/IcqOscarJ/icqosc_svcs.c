@@ -58,7 +58,7 @@ int IcqGetCaps(WPARAM wParam, LPARAM lParam)
 	case PFLAGNUM_1:
 		nReturn = PF1_IM | PF1_URL | PF1_AUTHREQ | PF1_BASICSEARCH | PF1_ADDSEARCHRES |
 			PF1_VISLIST | PF1_INVISLIST | PF1_MODEMSG | PF1_FILE | PF1_EXTSEARCH |
-			PF1_EXTSEARCHUI | PF1_SEARCHBYEMAIL | PF1_SEARCHBYNAME | PF1_CHANGEINFO |
+			PF1_EXTSEARCHUI | PF1_SEARCHBYEMAIL | PF1_SEARCHBYNAME | //PF1_CHANGEINFO |
             PF1_NUMERICUSERID |
 			PF1_ADDED | PF1_CONTACT;
 		if (gbSsiEnabled && ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
@@ -232,7 +232,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 
 			SetCurrentStatus(ID_STATUS_OFFLINE);
 
-			Netlib_Logf(ghServerNetlibUser, "Logged off.");
+			NetLog_Server("Logged off.");
 		}
 		else
 		{
@@ -462,8 +462,8 @@ static VOID CALLBACK CheekySearchTimerProc(HWND hwnd, UINT uMsg, UINT idEvent, D
 	isr.hdr.email = "";
 	isr.uin = cheekySearchUin;
 
-	ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)cheekySearchId, (LPARAM)&isr);
-	ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)cheekySearchId, 0);
+	ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)cheekySearchId, (LPARAM)&isr);
+	ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)cheekySearchId, 0);
 
 	cheekySearchId = -1;
 }
@@ -1018,8 +1018,8 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 					pCookieData->nAckType = ACKTYPE_CLIENT;
 
 #ifdef _DEBUG
-    		Netlib_Logf(ghServerNetlibUser, "Send message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
-		    Netlib_Logf(ghServerNetlibUser, "Send message - Contact status is %u", wRecipientStatus);
+    		NetLog_Server("Send message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
+		    NetLog_Server("Send message - Contact status is %u", wRecipientStatus);
 #endif
         if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
         {
@@ -1128,8 +1128,8 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 					pCookieData->nAckType = ACKTYPE_CLIENT;
 
 #ifdef _DEBUG
-    		Netlib_Logf(ghServerNetlibUser, "Send unicode message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
-		    Netlib_Logf(ghServerNetlibUser, "Send unicode message - Contact status is %u", wRecipientStatus);
+    		NetLog_Server("Send unicode message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
+		    NetLog_Server("Send unicode message - Contact status is %u", wRecipientStatus);
 #endif
         if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
         {
@@ -1372,7 +1372,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 						char* pBuffer;
 
 #ifdef _DEBUG
-						Netlib_Logf(ghServerNetlibUser, "Sending contacts to %d.", dwUin);
+						NetLog_Server("Sending contacts to %d.", dwUin);
 #endif
 
 						// Compute count record's length
@@ -1498,7 +1498,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 					wClientVersion = ICQGetContactSettingWord(ccs->hContact, "Version", 7);
 					if (wClientVersion < 7)
 					{
-						Netlib_Logf(ghServerNetlibUser, "IcqSendFile() can't send to version %u", wClientVersion);
+						NetLog_Server("IcqSendFile() can't send to version %u", wClientVersion);
 					}
 					else
 					{
@@ -1523,7 +1523,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 							ft->files[i] = _strdup(files[i]);
 
 							if (_stat(files[i], &statbuf))
-								Netlib_Logf(ghServerNetlibUser, "IcqSendFile() was passed invalid filename(s)");
+								NetLog_Server("IcqSendFile() was passed invalid filename(s)");
 							else
 								ft->dwTotalSize += statbuf.st_size;
 						}
@@ -1543,7 +1543,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 							char* pszFiles;
 
 
-							Netlib_Logf(ghServerNetlibUser, "Init file send");
+							NetLog_Server("Init file send");
 
 							if (ft->dwFileCount == 1)
 							{
@@ -1555,7 +1555,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 							}
 							else
 							{
-								mir_snprintf(szFiles, 64, "%d Files", ft->dwFileCount);
+								null_snprintf(szFiles, 64, "%d Files", ft->dwFileCount);
 								pszFiles = szFiles;
 							}
 
@@ -1568,7 +1568,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
                     int iRes = icq_sendFileSendDirectv7(dwUin, hContact, (WORD)ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize); 
                     if (iRes) return (int)(HANDLE)ft; // Success
                   }
-									Netlib_Logf(ghServerNetlibUser, "Sending v%u file transfer request through server", 8);
+									NetLog_Server("Sending v%u file transfer request through server", 8);
                   icq_sendFileSendServv7(dwUin, ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize);
 								}
 								else
@@ -1578,7 +1578,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
                     int iRes = icq_sendFileSendDirectv8(dwUin, hContact, (WORD)ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize); 
                     if (iRes) return (int)(HANDLE)ft; // Success
                   }
-									Netlib_Logf(ghServerNetlibUser, "Sending v%u file transfer request through server", 8);
+									NetLog_Server("Sending v%u file transfer request through server", 8);
 									icq_sendFileSendServv8(dwUin, ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize, 0);
 								}
 							}
@@ -1708,7 +1708,7 @@ int IcqRecvAwayMsg(WPARAM wParam,LPARAM lParam)
 	PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
 
 
-	ProtoBroadcastAck(gpszICQProtoName, ccs->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS,
+  ICQBroadcastAck(ccs->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS,
 		(HANDLE)pre->lParam, (LPARAM)pre->szMessage);
 
 	return 0;

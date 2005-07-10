@@ -53,7 +53,7 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
 	// Find the filetransfer that belongs to this response
 	if (!FindCookie(dwCookie, &dwCookieUin, &ft))
 	{
-		Netlib_Logf(ghDirectNetlibUser, "Error: Received unexpected file transfer request response");
+		NetLog_Direct("Error: Received unexpected file transfer request response");
 		return;
 	}
 
@@ -61,16 +61,15 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
 	
 	if (dwCookieUin != dwUin)
 	{
-		Netlib_Logf(ghDirectNetlibUser, "Error: UINs do not match in file transfer request response");
+		NetLog_Direct("Error: UINs do not match in file transfer request response");
 		return;
 	}
 
-	
 	// If status != 0, a request has been denied
 	if (wStatus != 0)
 	{
-		Netlib_Logf(ghDirectNetlibUser, "File transfer denied by %u,", dwUin);
-		ProtoBroadcastAck(gpszICQProtoName, HContactFromUIN(dwUin, 1), ACKTYPE_FILE, ACKRESULT_DENIED, (HANDLE)ft, 0);
+		NetLog_Direct("File transfer denied by %u,", dwUin);
+		ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DENIED, (HANDLE)ft, 0);
 
 		FreeCookie(dwCookie);
 
@@ -100,7 +99,7 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
 	unpackLEDWord(&buf, &dwFileSize);
 	wLen -= 4;
 	
-	Netlib_Logf(ghDirectNetlibUser, "File transfer ack from %u, port %u, name %s, size %u", dwUin, ft->dwRemotePort, pszFileName, dwFileSize);
+	NetLog_Direct("File transfer ack from %u, port %u, name %s, size %u", dwUin, ft->dwRemotePort, pszFileName, dwFileSize);
 	
 	OpenDirectConnection(ft->hContact, DIRECTCONN_FILE, ft);
 
@@ -140,7 +139,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
 	}
 	else
 	{
-		Netlib_Logf(ghDirectNetlibUser, "Ignoring malformed file send request");
+		NetLog_Direct("Ignoring malformed file send request");
 		return;
 	}
 
@@ -199,7 +198,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
 
 void handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, DWORD dwCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText)
 {
-	Netlib_Logf(ghDirectNetlibUser, "handleDirectCancel: Unhandled cancel");
+	NetLog_Direct("handleDirectCancel: Unhandled cancel");
 }
 
 
@@ -217,12 +216,12 @@ void icq_CancelFileTransfer(HANDLE hContact, filetransfer* ft)
 
 	if (ft->hConnection)
 	{
-		ProtoBroadcastAck(gpszICQProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+		ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
 		Netlib_CloseHandle(ft->hConnection);
 		ft->hConnection = NULL;
 	}
 	/* FIXME: Do not free ft, or anything therein, it is freed inside DC thread ! */
 	#ifdef _DEBUG
-		Netlib_Logf(ghDirectNetlibUser, "icq_CancelFileTransfer: OK");
+		NetLog_Direct("icq_CancelFileTransfer: OK");
 	#endif
 }

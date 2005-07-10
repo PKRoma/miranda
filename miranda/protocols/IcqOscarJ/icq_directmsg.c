@@ -61,7 +61,7 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 	// The first part of the packet should always be at least 31 bytes
 	if (wLen < 31)
 	{
-		Netlib_Logf(ghDirectNetlibUser, "Error during parsing of DC packet 2 PEER_MSG (too short)");
+		NetLog_Direct("Error during parsing of DC packet 2 PEER_MSG (too short)");
 		return;
 	}
 	
@@ -123,7 +123,7 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 	wLen = (wLen - 2) - wTextLen;
 
 
-  Netlib_Logf(ghDirectNetlibUser, "Handling PEER_MSG '%s', command %u, cookie %u, messagetype %u, messageflags %u, status %u, flags %u", pszText, wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags);
+  NetLog_Direct("Handling PEER_MSG '%s', command %u, cookie %u, messagetype %u, messageflags %u, status %u, flags %u", pszText, wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags);
 
   // The remaining actual message is handled either as a status message request,
   // a greeting message, a acknowledge or a normal (text, url, file) message
@@ -189,11 +189,11 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 
       if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
       {
-        Netlib_Logf(ghServerNetlibUser, "Received an unexpected direct ack");
+        NetLog_Direct("Received an unexpected direct ack");
       }
       else if (dwCookieUin != dc->dwRemoteUin)
       {
-        Netlib_Logf(ghServerNetlibUser, "Direct UIN does not match Cookie UIN(%u != %u)", dc->dwRemoteUin, dwCookieUin);
+        NetLog_Direct("Direct UIN does not match Cookie UIN(%u != %u)", dc->dwRemoteUin, dwCookieUin);
         SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
         FreeCookie(wCookie);
       }
@@ -222,12 +222,12 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
             break;
 
           default: 
-            Netlib_Logf(ghDirectNetlibUser, "Skipped packet from direct connection");
+            NetLog_Direct("Skipped packet from direct connection");
             break;
         }
         if (ackType != -1)
         { // was a good ack to broadcast ?
-   		    ProtoBroadcastAck(gpszICQProtoName, dc->hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+   		    ICQBroadcastAck(dc->hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
           SAFE_FREE(&pCookieData);
           FreeCookie(wCookie);
         }
@@ -235,7 +235,7 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
     }
   }
   else
-    Netlib_Logf(ghDirectNetlibUser, "Unknown wCommand, packet skipped");
+    NetLog_Direct("Unknown wCommand, packet skipped");
 
 	// Clean up allocated memory
 	SAFE_FREE(&pszText);
@@ -255,7 +255,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
   WORD qt;
 
 
-	Netlib_Logf(ghDirectNetlibUser, "Handling PEER_MSG_GREETING, command %u, cookie %u, messagetype %u, messageflags %u, status %u, flags %u", wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags);
+	NetLog_Direct("Handling PEER_MSG_GREETING, command %u, cookie %u, messagetype %u, messageflags %u, status %u, flags %u", wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags);
 
 
 	// The command in this packet. Seen values:
@@ -286,7 +286,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 	wLen -= 4;
 	if (dwMsgTypeLen == 0 || dwMsgTypeLen>256)
 	{
-		Netlib_Logf(ghDirectNetlibUser, "Error: Sanity checking failed (1) in handleDirectGreetingMessage, len is %u", dwMsgTypeLen);
+		NetLog_Direct("Error: Sanity checking failed (%d) in handleDirectGreetingMessage, len is %u", 1, dwMsgTypeLen);
 		return;
 	}
 	szMsgType = (char *)malloc(dwMsgTypeLen + 1);
@@ -295,13 +295,13 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 	//typeId = TypeStringToTypeId(szMsgType);
   typeId = TypeGUIDToTypeId(q1,q2,q3,q4,qt);
   if (!typeId)
-    Netlib_Logf(ghServerNetlibUser, "Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt);
+    NetLog_Direct("Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt);
 
 	buf += dwMsgTypeLen;
 	wLen -= (WORD)dwMsgTypeLen;
 
 
-	Netlib_Logf(ghDirectNetlibUser, "PEER_MSG_GREETING, command: %u, type: %s, typeID: %u", wPacketCommand, szMsgType, typeId);
+	NetLog_Direct("PEER_MSG_GREETING, command: %u, type: %s, typeID: %u", wPacketCommand, szMsgType, typeId);
 
 
 	// Unknown
@@ -312,7 +312,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 	unpackLEDWord(&buf, &dwLengthToEnd);
 	if (dwLengthToEnd < 4 || dwLengthToEnd > wLen)
 	{
-		Netlib_Logf(ghDirectNetlibUser, "Error: Sanity checking failed (2) in handleDirectGreetingMessage, datalen %u wLen %u", dwLengthToEnd, wLen);
+		NetLog_Direct("Error: Sanity checking failed (%d) in handleDirectGreetingMessage, datalen %u wLen %u", 2, dwLengthToEnd, wLen);
 		return;
 	}
 	
@@ -321,7 +321,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 	wLen -= 4;
 	if (dwDataLength > wLen)
 	{
-		Netlib_Logf(ghDirectNetlibUser, "Error: Sanity checking failed (3) in handleDirectGreetingMessage, dwDataLength %u wLen %u", dwDataLength, wLen);
+		NetLog_Direct("Error: Sanity checking failed (%d) in handleDirectGreetingMessage, datalen %u wLen %u", 3, dwDataLength, wLen);
 		return;
 	}
 
@@ -331,7 +331,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 		char* szMsg;
 
 		
-		Netlib_Logf(ghDirectNetlibUser, "This is file request");
+		NetLog_Direct("This is file request");
 		szMsg = malloc(dwDataLength+1);
 		unpackString(&buf, szMsg, (WORD)dwDataLength);
 		szMsg[dwDataLength] = '\0';
@@ -345,7 +345,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 		char* szMsg;
 
 		
-		Netlib_Logf(ghDirectNetlibUser, "This is file ack");
+		NetLog_Direct("This is file ack");
 		szMsg = malloc(dwDataLength+1);
 		unpackString(&buf, szMsg, (WORD)dwDataLength);
 		szMsg[dwDataLength] = '\0';
@@ -370,11 +370,11 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 
     if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
     {
-      Netlib_Logf(ghServerNetlibUser, "Received an unexpected direct ack");
+      NetLog_Direct("Received an unexpected direct ack");
     }
     else if (dwCookieUin != dc->dwRemoteUin)
     {
-      Netlib_Logf(ghServerNetlibUser, "Direct UIN does not match Cookie UIN(%u != %u)", dc->dwRemoteUin, dwCookieUin);
+      NetLog_Direct("Direct UIN does not match Cookie UIN(%u != %u)", dc->dwRemoteUin, dwCookieUin);
       SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
       FreeCookie(wCookie);
     }
@@ -410,13 +410,13 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
         break;
 
       default:
-        Netlib_Logf(ghDirectNetlibUser, "Skipped packet from direct connection");
+        NetLog_Direct("Skipped packet from direct connection");
         break;
       }
 
       if (ackType != -1)
       { // was a good ack to broadcast ?
-	      ProtoBroadcastAck(gpszICQProtoName, dc->hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+	      ICQBroadcastAck(dc->hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
         SAFE_FREE(&pCookieData);
         FreeCookie(wCookie);
       }
@@ -424,7 +424,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
   }
 	else
 	{
-		Netlib_Logf(ghDirectNetlibUser, "Unsupported plugin message type '%s'", szMsgType);
+		NetLog_Direct("Unsupported plugin message type '%s'", szMsgType);
 	}
 
 	SAFE_FREE(&szMsgType);

@@ -74,7 +74,7 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
   }
 
 	default:
-		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x03,x%02x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+		NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_BUDDY_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
 	}
 }
@@ -181,7 +181,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	if ((hContact = HContactFromUIN(dwUIN, 0)) == INVALID_HANDLE_VALUE)
 	{
 #ifdef _DEBUG
-		Netlib_Logf(ghServerNetlibUser, "Ignoring user online (%u)", dwUIN);
+		NetLog_Server("Ignoring user online (%u)", dwUIN);
 #endif
 		return;
 	}
@@ -238,6 +238,10 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         { // This is WebICQ not Miranda
           szClient = "WebICQ";
         }
+        else if (!dwFT2 && dwFT3 == 0x3B7248ED)
+        { // And this is most probably Spam Bot
+          szClient = cliSpamBot;
+        }
         else 
         { // Yes this is most probably Miranda, get the version info
 				  szClient = MirandaVersionToString(dwFT2, 0);
@@ -248,11 +252,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       { // This is probably an Licq client
         DWORD ver = dwFT1 & 0xFFFF;
         if (ver % 10){
-          mir_snprintf(szClientBuf, 64, cliLicqVerL, ver / 1000, (ver / 10) % 100, ver % 10);
+          null_snprintf(szClientBuf, 64, cliLicqVerL, ver / 1000, (ver / 10) % 100, ver % 10);
         }
         else
         {
-          mir_snprintf(szClientBuf, 64, cliLicqVer, ver / 1000, (ver / 10) % 100);
+          null_snprintf(szClientBuf, 64, cliLicqVer, ver / 1000, (ver / 10) % 100);
         }
         if (dwFT1 & 0x00800000)
           strcat(szClientBuf, "/SSL");
@@ -274,9 +278,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         unsigned ver3 = (dwFT2>>8)&0xFF;
         
         if (ver3) 
-          mir_snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u.%u", ver1, ver2, ver3);
+          null_snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u.%u", ver1, ver2, ver3);
         else  
-          mir_snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u", ver1, ver2);
+          null_snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u", ver1, ver2);
         szClient = szClientBuf;
       }
       else if (dwFT1 == 0xFFFFFF7F)
@@ -346,8 +350,8 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		}
 
 #ifdef _DEBUG
-		Netlib_Logf(ghServerNetlibUser, "Flags are %x", wStatusFlags);
-		Netlib_Logf(ghServerNetlibUser, "Status is %x", wStatus);
+		NetLog_Server("Flags are %x", wStatusFlags);
+		NetLog_Server("Status is %x", wStatus);
 #endif
 
 		// Get IP TLV
@@ -366,8 +370,8 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 #ifdef _DEBUG
 		if (wIdleTimer)
-			Netlib_Logf(ghServerNetlibUser, "Idle timer is %u.", wIdleTimer);
-		Netlib_Logf(ghServerNetlibUser, "Online since %s", asctime(localtime(&dwOnlineSince)));
+			NetLog_Server("Idle timer is %u.", wIdleTimer);
+		NetLog_Server("Online since %s", asctime(localtime(&dwOnlineSince)));
 #endif
 
 		// Check client capabilities
@@ -413,18 +417,18 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
                 GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
                 if (access(szAvatar, 0) == 0)
                 { // the file is there, link to contactphoto, save hash
-                  Netlib_Logf(ghServerNetlibUser, "Avatar is known, hash stored, linked to file.");
+                  NetLog_Server("Avatar is known, hash stored, linked to file.");
 
                   if (dummy = ICQWriteContactSettingBlob(hContact, "AvatarHash", pTLV->pData, 0x14))
                   {
-                    Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
+                    NetLog_Server("Hash saving failed. Error: %d", dummy);
                   }
                   if (dwPaFormat != PA_FORMAT_UNKNOWN && dwPaFormat != PA_FORMAT_XML)
                     LinkContactPhotoToFile(hContact, szAvatar);
                   else  // the format is not supported unlink
                     LinkContactPhotoToFile(hContact, NULL);
 
-                  ProtoBroadcastAck(gpszICQProtoName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+                  ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
                 }
                 else // the file is lost, request avatar again
                   dwJob = 1;
@@ -436,7 +440,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           }
           else
           { // we found hash check if it changed or not
-            Netlib_Logf(ghServerNetlibUser, "Old Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", dbv.pbVal[0], dbv.pbVal[1], dbv.pbVal[2], dbv.pbVal[3], dbv.pbVal[4], dbv.pbVal[5], dbv.pbVal[6], dbv.pbVal[7], dbv.pbVal[8], dbv.pbVal[9], dbv.pbVal[10], dbv.pbVal[11], dbv.pbVal[12], dbv.pbVal[13], dbv.pbVal[14], dbv.pbVal[15], dbv.pbVal[16], dbv.pbVal[17], dbv.pbVal[18], dbv.pbVal[19]);
+            NetLog_Server("%s Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", "Old", dbv.pbVal[0], dbv.pbVal[1], dbv.pbVal[2], dbv.pbVal[3], dbv.pbVal[4], dbv.pbVal[5], dbv.pbVal[6], dbv.pbVal[7], dbv.pbVal[8], dbv.pbVal[9], dbv.pbVal[10], dbv.pbVal[11], dbv.pbVal[12], dbv.pbVal[13], dbv.pbVal[14], dbv.pbVal[15], dbv.pbVal[16], dbv.pbVal[17], dbv.pbVal[18], dbv.pbVal[19]);
             if ((dbv.cpbVal != 0x14) || memcmp(dbv.pbVal, pTLV->pData, 0x14))
             { // the hash is different, request new avatar
               LinkContactPhotoToFile(hContact, NULL); // unlink photo
@@ -470,14 +474,14 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
           if (dwJob)
           {
-            Netlib_Logf(ghServerNetlibUser, "New Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", pTLV->pData[0], pTLV->pData[1], pTLV->pData[2], pTLV->pData[3], pTLV->pData[4], pTLV->pData[5], pTLV->pData[6], pTLV->pData[7], pTLV->pData[8], pTLV->pData[9], pTLV->pData[10], pTLV->pData[11], pTLV->pData[12], pTLV->pData[13], pTLV->pData[14], pTLV->pData[15], pTLV->pData[16], pTLV->pData[17], pTLV->pData[18], pTLV->pData[19]);
-            ProtoBroadcastAck(gpszICQProtoName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+            NetLog_Server("%s Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", "New", pTLV->pData[0], pTLV->pData[1], pTLV->pData[2], pTLV->pData[3], pTLV->pData[4], pTLV->pData[5], pTLV->pData[6], pTLV->pData[7], pTLV->pData[8], pTLV->pData[9], pTLV->pData[10], pTLV->pData[11], pTLV->pData[12], pTLV->pData[13], pTLV->pData[14], pTLV->pData[15], pTLV->pData[16], pTLV->pData[17], pTLV->pData[18], pTLV->pData[19]);
+            ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
 
-            Netlib_Logf(ghServerNetlibUser, "User has Avatar, new hash stored.");
+            NetLog_Server("User has Avatar, new hash stored.");
 
             if (dummy = ICQWriteContactSettingBlob(hContact, "AvatarHash", pTLV->pData, 0x14))
             {
-              Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
+              NetLog_Server("Hash saving failed. Error: %d", dummy);
             }
 
             GetAvatarFileName(dwUIN, szAvatar, MAX_PATH);
@@ -486,7 +490,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           }
           else
           {
-            Netlib_Logf(ghServerNetlibUser, "User has Avatar.");
+            NetLog_Server("User has Avatar.");
           }
         }
         else if (gbAvatarsEnabled)
@@ -530,18 +534,18 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
           if (dwJob)
           {
-            ProtoBroadcastAck(gpszICQProtoName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+            ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
 
-            Netlib_Logf(ghServerNetlibUser, "User has Avatar, hash stored.");
+            NetLog_Server("User has Avatar, hash stored.");
 
             if (dummy = ICQWriteContactSettingBlob(hContact, "AvatarHash", pTLV->pData, 0x14))
             {
-              Netlib_Logf(ghServerNetlibUser, "Hash saving failed. Error: %d", dummy);
+              NetLog_Server("Hash saving failed. Error: %d", dummy);
             }
           }
           else
           {
-            Netlib_Logf(ghServerNetlibUser, "User has Avatar.");
+            NetLog_Server("User has Avatar.");
           }
         }
 			}
@@ -585,7 +589,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               szClient = "Kopete";
             else
             {
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", (unsigned)hiVer, loVer);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", (unsigned)hiVer, loVer);
               szClient = szClientBuf;
             }
           }
@@ -595,9 +599,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver2 = (*capId)[0xD];
             unsigned ver3 = (*capId)[0xE];
             if (ver3) 
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u.%u", ver1, ver2, ver3);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u.%u", ver1, ver2, ver3);
             else  
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", ver1, ver2);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", ver1, ver2);
             if ((*capId)[0xF] & 0x80) 
               strcat(szClientBuf,"/Win32");
             else if ((*capId)[0xF] & 0x40) 
@@ -610,9 +614,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver2 = (*capId)[0xD] % 100;
             unsigned ver3 = (*capId)[0xE];
             if (ver3) 
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVerL, ver1, ver2, ver3);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVerL, ver1, ver2, ver3);
             else  
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVer, ver1, ver2);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVer, ver1, ver2);
             if ((*capId)[0xF]) 
               strcat(szClientBuf,"/SSL");
             szClient = szClientBuf;
@@ -632,11 +636,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver3 = (*capId)[0xE];
             unsigned ver4 = (*capId)[0xF];
             if (ver4) 
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u.%u", ver1, ver2, ver3, ver4);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u.%u", ver1, ver2, ver3, ver4);
             else if (ver3) 
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u", ver1, ver2, ver3);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u", ver1, ver2, ver3);
             else
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u", ver1, ver2);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u", ver1, ver2);
             szClient = szClientBuf;
           }
           else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capmIcq, 0xC))
@@ -646,11 +650,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver3 = (*capId)[0xE];
             unsigned ver4 = (*capId)[0xF];
             if (ver4) 
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
             else if (ver3) 
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u", ver1, ver2, ver3);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u", ver1, ver2, ver3);
             else
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u", ver1, ver2);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u", ver1, ver2);
             szClient = szClientBuf;
           }
           else if (MatchCap(pTLV->pData, pTLV->wLen, &capIm2, 0x10))
@@ -664,18 +668,18 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             unsigned ver3 = (*capId)[0xA];
             unsigned ver4 = (*capId)[9];
             if (ver4) 
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
             else if (ver3) 
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u", ver1, ver2, ver3);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u", ver1, ver2, ver3);
             else
-              mir_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u", ver1, ver2);
+              null_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u", ver1, ver2);
             szClient = szClientBuf;
           }
           else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capQip, 0xE))
           {
             char v1 = (*capId)[0xE];
             char v2 = (*capId)[0xF];
-            mir_snprintf(szClientBuf, sizeof(szClientBuf), cliQip, v1, v2);
+            null_snprintf(szClientBuf, sizeof(szClientBuf), cliQip, v1, v2);
             szClient = szClientBuf;
           }
           else if (MatchCap(pTLV->pData, pTLV->wLen, &capMacIcq, 0x10))
@@ -729,29 +733,29 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               if (!MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10) && !CheckContactCapabilities(hContact, CAPF_UTF))
               { // this is bad, but we must do it - try to detect QNext
                 ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
-                Netlib_Logf(ghServerNetlibUser, "Forcing simple messages (QNext client).");
+                NetLog_Server("Forcing simple messages (QNext client).");
                 szClient = "QNext";
               }
           }
 				}
 				else
 				{
-					Netlib_Logf(ghServerNetlibUser, "No capability info TLV");
+					NetLog_Server("No capability info TLV");
           // clear XStatus
           handleXStatusCaps(hContact, NULL, 0);
 				}
 
 #ifdef _DEBUG
 				if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
-					Netlib_Logf(ghServerNetlibUser, "Supports advanced messages");
+					NetLog_Server("Supports advanced messages");
 				else
-					Netlib_Logf(ghServerNetlibUser, "Does NOT support advanced messages");
+					NetLog_Server("Does NOT support advanced messages");
 #endif
 
 				if (wVersion < 8)
 				{
 					ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
-					Netlib_Logf(ghServerNetlibUser, "Forcing simple messages due to compability issues");
+					NetLog_Server("Forcing simple messages due to compability issues");
 				}
 			}
       else
@@ -775,7 +779,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
   if (szClient == 0)
   {
-    Netlib_Logf(ghServerNetlibUser, "No client identification, put default ICQ client for protocol.");
+    NetLog_Server("No client identification, put default ICQ client for protocol.");
 
     switch (wVersion)
     {  // client detection failed, provide default clients
@@ -807,7 +811,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   else
   {
     if (szClient != (char*)-1)
-      Netlib_Logf(ghServerNetlibUser, "Client identified as %s", szClient);
+      NetLog_Server("Client identified as %s", szClient);
   }
   if (szClient == cliSpamBot)
   {
@@ -841,7 +845,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	}
 
 	// And a small log notice...
-	Netlib_Logf(ghServerNetlibUser, "%u changed status to %s (v%d).",
+	NetLog_Server("%u changed status to %s (v%d).",
 		dwUIN, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
 }
 
@@ -860,7 +864,7 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
 	// Skip contacts that are not already on our list
 	if (hContact != INVALID_HANDLE_VALUE)
 	{
-		Netlib_Logf(ghServerNetlibUser, "%u went offline.", dwUIN);
+		NetLog_Server("%u went offline.", dwUIN);
 		ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 		ICQWriteContactSettingDword(hContact, "IdleTS", 0);
     // close Direct Connections to that user
@@ -886,13 +890,13 @@ static void handleReplyBuddy(BYTE *buf, WORD wPackLen)
 		wMaxUins = getWordFromChain(pChain, 1, 1);
 		wMaxWatchers = getWordFromChain(pChain, 2, 1);
 
-		Netlib_Logf(ghServerNetlibUser, "MaxUINs %u", wMaxUins);
-		Netlib_Logf(ghServerNetlibUser, "MaxWatchers %u", wMaxWatchers);
+		NetLog_Server("MaxUINs %u", wMaxUins);
+		NetLog_Server("MaxWatchers %u", wMaxWatchers);
 
 		disposeChain(&pChain);
 	}
 	else
 	{
-		Netlib_Logf(ghServerNetlibUser, "Error: Malformed BuddyRepyl");
+		NetLog_Server("Error: Malformed BuddyRepyl");
 	}
 }

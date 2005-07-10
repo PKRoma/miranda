@@ -63,7 +63,7 @@ void handleIcqExtensionsFam(unsigned char *pBuffer, WORD wBufferLength, snac_hea
 		break;
 
 	default:
-		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(0x15,x%02x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+		NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_EXTENSIONS_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
 		break;
 	}
 }
@@ -103,11 +103,11 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
         switch (wData)
         {
         case CLI_OFFLINE_MESSAGE_REQ: 
-          Netlib_Logf(ghServerNetlibUser, "Offline messages request failed with error 0x%02x", wData, wErrorCode);
+          NetLog_Server("Offline messages request failed with error 0x%02x", wData, wErrorCode);
           break;
 
         case CLI_DELETE_OFFLINE_MSGS_REQ:
-          Netlib_Logf(ghServerNetlibUser, "Deleting offline messages from server failed with error 0x%02x", wErrorCode);
+          NetLog_Server("Deleting offline messages from server failed with error 0x%02x", wErrorCode);
           icq_LogMessage(LOG_WARNING, "Deleting Offline Messages from server failed.\nYou will probably receive them again.");
           break;
 
@@ -130,23 +130,23 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
               if (foundCookie && pCookieData)
               {
                 HANDLE hContact = HContactFromUIN(dwCookieUin, 0);
-                ProtoBroadcastAck(gpszICQProtoName, hContact,	ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
+                ICQBroadcastAck(hContact,	ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
 
                 SAFE_FREE(&pCookieData); // we do not leak cookie and memory
                 FreeCookie(wCookie); 
               }
 
-              Netlib_Logf(ghServerNetlibUser, "Full info request error 0x%02x received", wErrorCode);
+              NetLog_Server("Full info request error 0x%02x received", wErrorCode);
             }
           }
           else 
-            Netlib_Logf(ghServerNetlibUser, "Meta request error 0x%02x received", wErrorCode);
+            NetLog_Server("Meta request error 0x%02x received", wErrorCode);
 
 
           break;
 
         default:
-          Netlib_Logf(ghServerNetlibUser, "Unknown request 0x%02x error 0x%02x received", wData, wErrorCode);
+          NetLog_Server("Unknown request 0x%02x error 0x%02x received", wData, wErrorCode);
         }
         disposeChain(&chain);
         return;
@@ -175,7 +175,7 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
 	chain = readIntoTLVChain(&buf, wPackLen, 0);
 	if (chain == NULL)
 	{
-		Netlib_Logf(ghServerNetlibUser, "Error: Broken snac 15/3 %d", 1);
+		NetLog_Server("Error: Broken snac 15/3 %d", 1);
 		return;
 	}
 
@@ -183,7 +183,7 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
 	if (dataTlv == NULL)
 	{
 		disposeChain(&chain);
-		Netlib_Logf(ghServerNetlibUser, "Error: Broken snac 15/3 %d", 2);
+		NetLog_Server("Error: Broken snac 15/3 %d", 2);
 		return;
 	}
 	databuf = dataTlv->pData;
@@ -223,7 +223,7 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
 	}
 	else
 	{
-		Netlib_Logf(ghServerNetlibUser, "Error: Broken snac 15/3 3");
+		NetLog_Server("Error: Broken snac 15/3 3");
 	}
 
 	if (chain)
@@ -262,8 +262,8 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 		wPacketLen -=14;
 
 		
-		Netlib_Logf(ghServerNetlibUser, "Offline message time: %u-%u-%u %u:%u", wYear, nMonth, nDay, nHour, nMinute);
-		Netlib_Logf(ghServerNetlibUser, "Offline message type %u from %u", bType, dwUin);
+		NetLog_Server("Offline message time: %u-%u-%u %u:%u", wYear, nMonth, nDay, nHour, nMinute);
+		NetLog_Server("Offline message type %u from %u", bType, dwUin);
 
 		_ASSERTE(wMsgLen == wPacketLen);
 		if (wMsgLen == wPacketLen)
@@ -347,7 +347,7 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 	}
 
 	// Failure
-	Netlib_Logf(ghServerNetlibUser, "Error: Broken offline message");
+	NetLog_Server("Error: Broken offline message");
 }
 
 
@@ -360,11 +360,11 @@ static void parseEndOfOfflineMessages(unsigned char *databuf, WORD wPacketLen)
 	if (wPacketLen == 1)
 	{
 		unpackByte(&databuf, &bMissedMessages);
-		Netlib_Logf(ghServerNetlibUser, "End of offline msgs, %u dropped", bMissedMessages);
+		NetLog_Server("End of offline msgs, %u dropped", bMissedMessages);
 	}
 	else
 	{
-		Netlib_Logf(ghServerNetlibUser, "Error: Malformed end of offline msgs");
+		NetLog_Server("Error: Malformed end of offline msgs");
 	}
 
 	// Send 'got offline msgs'
@@ -449,8 +449,7 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 					memcpy(pszInfo, databuf, wPacketLen);
 				pszInfo[wPacketLen] = 0;
 				
-				ProtoBroadcastAck(gpszICQProtoName, NULL,
-					ICQACKTYPE_SMS, ACKRESULT_FAILED, (HANDLE)wCookie, (LPARAM)pszInfo);
+				ICQBroadcastAck(NULL, ICQACKTYPE_SMS, ACKRESULT_FAILED, (HANDLE)wCookie, (LPARAM)pszInfo);
 				SAFE_FREE(&pszInfo);
 				FreeCookie(wCookie);
 				break;
@@ -462,7 +461,6 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 			// Todo: Check what happens if result != A
 			if (wPacketLen > 8)
 			{
-
 				WORD wNetworkNameLen;
 				WORD wAckLen;
 				char *pszInfo;
@@ -485,8 +483,7 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 							memcpy(pszInfo, databuf, wAckLen);
 						pszInfo[wAckLen] = 0;
 						
-						ProtoBroadcastAck(gpszICQProtoName, NULL,
-							ICQACKTYPE_SMS, ACKRESULT_SENTREQUEST, (HANDLE)wCookie, (LPARAM)pszInfo);
+						ICQBroadcastAck(NULL, ICQACKTYPE_SMS, ACKRESULT_SENTREQUEST, (HANDLE)wCookie, (LPARAM)pszInfo);
 						SAFE_FREE(&pszInfo);
 						FreeCookie(wCookie);
 						
@@ -497,11 +494,11 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 			}
 			
 			// Parsing failure
-			Netlib_Logf(ghServerNetlibUser, "Error: Failure parsing META_SMS_DELIVERY_RECEIPT");
+			NetLog_Server("Error: Failure parsing META_SMS_DELIVERY_RECEIPT");
 			break;
 			
 		default:
-			Netlib_Logf(ghServerNetlibUser, "Warning: Ignored 15/03 replysubtype x%x", wReplySubtype);
+			NetLog_Server("Warning: Ignored 15/03 replysubtype x%x", wReplySubtype);
 //			_ASSERTE(0);
 			break;
 
@@ -513,7 +510,7 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 	}
 
 	// Failure
-	Netlib_Logf(ghServerNetlibUser, "Warning: Broken 15/03 ExtensionMetaResponse");
+	NetLog_Server("Warning: Broken 15/03 ExtensionMetaResponse");
 }
 
 
@@ -522,13 +519,12 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 {
 	BYTE bParsingOK = FALSE; // For debugging purposes only
 
-
 	switch (wReplySubtype)
 	{
 		
 	case SRV_USER_FOUND:      // Search: user found reply
 	case SRV_LAST_USER_FOUND: // Search: last user found reply
-		Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3: Search reply");
+		NetLog_Server("SNAC(0x15,0x3): Search reply");
 		if (bResultCode == 0xA)
 		{
 			
@@ -634,29 +630,23 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 			
 
 			// Finally, broadcast the result
-			ProtoBroadcastAck(gpszICQProtoName, NULL,
-				ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)wCookie, (LPARAM)&sr);
+			ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)wCookie, (LPARAM)&sr);
 			
 			// Broadcast "Last result" ack if this was the last user found
 			if (wReplySubtype == SRV_LAST_USER_FOUND)
 			{
-				ProtoBroadcastAck(gpszICQProtoName, NULL,
-					ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+				ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
 			}
 
 			bParsingOK = TRUE;
-
 		}
 		else 
-		{
-
+    {
 			// Failed search
-			Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3: Search error %u", bResultCode);
-			ProtoBroadcastAck(gpszICQProtoName, NULL,
-				ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+			NetLog_Server("SNAC(0x15,0x3): Search error %u", bResultCode);
+			ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
 
 			bParsingOK = TRUE;
-
 		}
 		break;
 
@@ -664,13 +654,12 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 	default:
 		break;
 
-	}
-
+  }
 
 	// For debugging purposes only
 	if (!bParsingOK)
 	{
-		Netlib_Logf(ghServerNetlibUser, "Warning: Parsing error in 15/03 search reply type x%x", wReplySubtype);
+		NetLog_Server("Warning: Parsing error in 15/03 search reply type x%x", wReplySubtype);
 		_ASSERTE(!bParsingOK);
 	}
 }
@@ -697,14 +686,14 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 	}
 	else
 	{
-		Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring unrequested 15/03 user info reply type 0x%x", wReplySubtype);
+		NetLog_Server("Warning: Ignoring unrequested 15/03 user info reply type 0x%x", wReplySubtype);
 
     return;
 	}
 
 	if (bResultCode != 0x0A)
 	{
-		Netlib_Logf(ghServerNetlibUser, "Warning: Got 15/03 user info failure reply type 0x%x", wReplySubtype);
+		NetLog_Server("Warning: Got 15/03 user info failure reply type 0x%x", wReplySubtype);
 	}
 
 	// Check if this is the last packet for this request
@@ -715,7 +704,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 	{
 
 	case META_BASIC_USERINFO:
-		Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3): META_BASIC_USERINFO for %u", dwCookieUin);
+		NetLog_Server("SNAC(0x15,0x3): META_BASIC_USERINFO for %u", dwCookieUin);
 		if (bResultCode == 0x0A)
 		{
 			if (bOK) bOK = writeDbInfoSettingString(hContact, "Nick", &databuf, &wPacketLen);
@@ -749,7 +738,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 		break;
 		
 	case META_WORK_USERINFO:
-		Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3): META_WORK_USERINFO for %u", dwCookieUin);
+		NetLog_Server("SNAC(0x15,0x3): META_WORK_USERINFO for %u", dwCookieUin);
 		if (bResultCode == 0x0A)
 		{
 			if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyCity", &databuf, &wPacketLen);
@@ -768,7 +757,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 		break;
 
 	case META_MORE_USERINFO:
-		Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3): META_MORE_USERINFO for %u", dwCookieUin);
+		NetLog_Server("SNAC(0x15,0x3): META_MORE_USERINFO for %u", dwCookieUin);
 		if (bResultCode == 0x0A)
 		{
 			if (bOK) bOK = writeDbInfoSettingWord(hContact, "Age", &databuf, &wPacketLen);
@@ -812,7 +801,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 		break;
 
 	case META_NOTES_USERINFO:
-		Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3): META_NOTES_USERINFO for %u", dwCookieUin);
+		NetLog_Server("SNAC(0x15,0x3): META_NOTES_USERINFO for %u", dwCookieUin);
 		if (bResultCode == 0x0A)
 		{
 			if (bOK) bOK = writeDbInfoSettingString(hContact, "About", &databuf, &wPacketLen);
@@ -820,7 +809,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 		break;
 		
 	case META_EMAIL_USERINFO:
-		Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3): META_EMAIL_USERINFO for %u", dwCookieUin);
+		NetLog_Server("SNAC(0x15,0x3): META_EMAIL_USERINFO for %u", dwCookieUin);
 		if (bResultCode == 0x0A)
 		{
 			int nCount = 0;
@@ -855,7 +844,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 
 				if (wEmailLength > 1)
 				{ 
-					mir_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
+					null_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
 					if (bOK) bOK = writeDbInfoSettingString(hContact, pszDatabaseKey, &databuf, &wPacketLen);
 
 					// Stop on parsing errors
@@ -880,14 +869,14 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			{
 				// We only delete e-mails when the parsing was successful since nCount
 				// may be incorrect otherwise
-				mir_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
+				null_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
 				ICQDeleteContactSetting(hContact, pszDatabaseKey);
 			}
 		}
 		break;
 
 	case META_INTERESTS_USERINFO:
-		Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3): META_INTERESTS_USERINFO for %u", dwCookieUin);
+		NetLog_Server("SNAC(0x15,0x3): META_INTERESTS_USERINFO for %u", dwCookieUin);
 		if (bResultCode == 0x0A)
 		{
 			int i, count;
@@ -902,10 +891,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			{
 				if (i < count)
 				{
-					mir_snprintf(idstr, 33, "Interest%dCat", i);
+					null_snprintf(idstr, 33, "Interest%dCat", i);
 					if (bOK) bOK = writeDbInfoSettingWordWithTable(hContact, idstr, interestsField, &databuf, &wPacketLen);
 
-					mir_snprintf(idstr, 33, "Interest%dText", i);
+					null_snprintf(idstr, 33, "Interest%dText", i);
 					if (bOK) bOK = writeDbInfoSettingString(hContact, idstr, &databuf, &wPacketLen);
 
 					if (!bOK)
@@ -914,10 +903,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 				else
 				{
 					// Delete older entries if the count has decreased since last update
-					mir_snprintf(idstr, 33, "Interest%dCat", i);
+					null_snprintf(idstr, 33, "Interest%dCat", i);
 					ICQDeleteContactSetting(hContact, idstr);
 
-					mir_snprintf(idstr, 33, "Interest%dText", i);
+					null_snprintf(idstr, 33, "Interest%dText", i);
 					ICQDeleteContactSetting(hContact, idstr);
 				}
 			}
@@ -925,7 +914,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 		break;
 		
 	case META_AFFILATIONS_USERINFO:
-		Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3): META_AFFILATIONS_USERINFO for %u", dwCookieUin);
+		NetLog_Server("SNAC(0x15,0x3): META_AFFILATIONS_USERINFO for %u", dwCookieUin);
 		if (bResultCode == 0x0A)
 		{
 			int i;
@@ -941,10 +930,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			{
 				if (i < count)
 				{
-					mir_snprintf(idstr, 33, "Past%d", i);
+					null_snprintf(idstr, 33, "Past%d", i);
 					if (bOK) bOK = writeDbInfoSettingWordWithTable(hContact, idstr, pastField, &databuf, &wPacketLen);
 
-					mir_snprintf(idstr, 33, "Past%dText", i);
+					null_snprintf(idstr, 33, "Past%dText", i);
 					if (bOK) bOK = writeDbInfoSettingString(hContact, idstr, &databuf, &wPacketLen);
 
 					if (!bOK)
@@ -953,10 +942,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 				else
 				{
 					// Delete older entries if the count has decreased since last update
-					mir_snprintf(idstr, 33, "Past%d", i);
+					null_snprintf(idstr, 33, "Past%d", i);
 					ICQDeleteContactSetting(hContact, idstr);
 
-					mir_snprintf(idstr, 33, "Past%dText", i);
+					null_snprintf(idstr, 33, "Past%dText", i);
 					ICQDeleteContactSetting(hContact, idstr);
 				}
 			}
@@ -970,10 +959,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 			{
 				if (i < count)
 				{
-					mir_snprintf(idstr, 33, "Affiliation%d", i);
+					null_snprintf(idstr, 33, "Affiliation%d", i);
 					if (bOK) bOK = writeDbInfoSettingWordWithTable(hContact, idstr, affiliationField, &databuf, &wPacketLen);
 
-					mir_snprintf(idstr, 33, "Affiliation%dText", i);
+					null_snprintf(idstr, 33, "Affiliation%dText", i);
 					if (bOK) bOK = writeDbInfoSettingString(hContact, idstr, &databuf, &wPacketLen);
 
 					if (!bOK)
@@ -982,10 +971,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 				else 
 				{
 					// Delete older entries if the count has decreased since last update
-					mir_snprintf(idstr, 33, "Affiliation%d", i);
+					null_snprintf(idstr, 33, "Affiliation%d", i);
 					ICQDeleteContactSetting(hContact, idstr);
 					
-					mir_snprintf(idstr, 33, "Affiliation%dText", i);
+					null_snprintf(idstr, 33, "Affiliation%dText", i);
 					ICQDeleteContactSetting(hContact, idstr);
 				}
 			}
@@ -995,7 +984,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 
 	// This is either a auto update reply or a GetInfo Minimal reply
 	case META_SHORT_USERINFO: 
-		Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3): META_SHORT_USERINFO for %u", dwCookieUin);
+		NetLog_Server("SNAC(0x15,0x3): META_SHORT_USERINFO for %u", dwCookieUin);
 		if (bResultCode == 0xA)
 		{
 			if (bOK) bOK = writeDbInfoSettingString(hContact, "Nick", &databuf, &wPacketLen);
@@ -1006,21 +995,19 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 		break;
 		
 	case META_HPAGECAT_USERINFO:
-		Netlib_Logf(ghServerNetlibUser, "SNAC(0x15,0x3): META_HPAGECAT_USERINFO for %u", dwCookieUin);
+		NetLog_Server("SNAC(0x15,0x3): META_HPAGECAT_USERINFO for %u", dwCookieUin);
 		break;
 
 	default:
-		Netlib_Logf(ghServerNetlibUser, "Warning: Ignored 15/03 user info reply type x%x", wReplySubtype);
+		NetLog_Server("Warning: Ignored 15/03 user info reply type x%x", wReplySubtype);
 //		_ASSERTE(0);
 		break;
 	}
 
-
 	if (!bOK)
 	{
-		Netlib_Logf(ghServerNetlibUser, "Error: Failed parsing 15/03 user info reply type x%x", wReplySubtype);
+		NetLog_Server("Error: Failed parsing 15/03 user info reply type x%x", wReplySubtype);
 	}
-
 
 	// :TRICKY:  * Dont change the following section unless you really understand it *
 	// I have now switched to only send one GETINFO ack instead of 8. The multiple ack
@@ -1035,8 +1022,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 		&&
 		((bResultCode != 0x0A) || !bMoreDataFollows))
 	{
-		ProtoBroadcastAck(gpszICQProtoName, hContact,
-			ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1 ,0);
+		ICQBroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1 ,0);
 	}
 
 	// Free cookie
@@ -1079,16 +1065,15 @@ static void parseUserInfoUpdateAck(unsigned char *databuf, WORD wPacketLen, WORD
 	case META_SET_FULLINFO_ACK:  // Server ack for set fullinfo command
 
 		if (bResultCode == 0xA)
-			ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_SETINFO, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+			ICQBroadcastAck(NULL, ACKTYPE_SETINFO, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
 		else
-			ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_SETINFO, ACKRESULT_FAILED, (HANDLE)wCookie, 0);
+			ICQBroadcastAck(NULL, ACKTYPE_SETINFO, ACKRESULT_FAILED, (HANDLE)wCookie, 0);
+
 		FreeCookie(wCookie);
 		break;
 
 	default:
-		Netlib_Logf(ghServerNetlibUser, "Warning: Ignored 15/03 user info update ack type x%x", wReplySubtype);
-//		_ASSERTE(0);
+		NetLog_Server("Warning: Ignored 15/03 user info update ack type x%x", wReplySubtype);
 		break;
-		
 	}
 }

@@ -166,7 +166,6 @@ WORD MirandaStatusToIcq(int nMirandaStatus)
 }
 
 
-
 int MirandaStatusToSupported(int nMirandaStatus)
 {
 	int nSupportedStatus;
@@ -218,11 +217,11 @@ char* MirandaStatusToString(int mirandaStatus)
 static void verToStr(char* szStr, int v)
 {
   if (v&0xFF)
-    mir_snprintf(szStr, 64, "%s%u.%u.%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
+    sprintf(szStr, "%s%u.%u.%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
   else if ((v>>8)&0xFF)
-    mir_snprintf(szStr, 64, "%s%u.%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0x80000000?" alpha":"");
+    sprintf(szStr, "%s%u.%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0x80000000?" alpha":"");
   else
-    mir_snprintf(szStr, 64, "%s%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, v&0x80000000?" alpha":"");
+    sprintf(szStr, "%s%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, v&0x80000000?" alpha":"");
 }
 
 
@@ -232,14 +231,14 @@ char* MirandaVersionToString(int v, int m)
 {
 	static char szVersion[64];
 
-	if (!v)
-		strcpy(szVersion, "");
+	if (!v) // this is not Miranda
+		return NULL;
 	else
 	{
     strcpy(szVersion, "Miranda IM ");
 
 		if (v == 1)
-			strcat(szVersion, "0.1.2.0 alpha");
+			verToStr(szVersion, 0x80010200);
 		else if ((v&0x7FFFFFFF) <= 0x030301)
       verToStr(szVersion, v);
     else 
@@ -605,7 +604,7 @@ char *NickFromHandle(HANDLE hContact)
 
 
 /* a strlen() that likes NULL */
-size_t strlennull(const char *string)
+size_t __fastcall strlennull(const char *string)
 {
 	if (string)
 		return strlen(string);
@@ -613,6 +612,28 @@ size_t strlennull(const char *string)
 	return 0;
 }
 
+
+/* a strcmp() that likes NULL */
+int __fastcall strcmpnull(const char *str1, const char *str2)
+{
+  if (str1 && str2) 
+    return strcmp(str1, str2);
+
+  return 1;
+}
+
+
+int null_snprintf(char *buffer, size_t count, const char* fmt, ...)
+{
+	va_list va;
+	int len;
+
+	va_start(va, fmt);
+	len = _vsnprintf(buffer, count-1, fmt, va);
+	va_end(va);
+	buffer[count-1] = 0;
+	return len;
+}
 
 
 char *DemangleXml(const char *string, int len)
@@ -816,16 +837,15 @@ void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
 	void* pvExtra;
 
 
-	ProtoBroadcastAck(gpszICQProtoName, pArguments->hContact,
-		pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
+	ICQBroadcastAck(pArguments->hContact, pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
 
 	if (FindCookie((WORD)pArguments->hSequence, &dwUin, &pvExtra))
 		FreeCookie((WORD)pArguments->hSequence);
 
 	if (pArguments->nAckResult == ACKRESULT_SUCCESS)
-		Netlib_Logf(ghServerNetlibUser, "Sent fake message ack");
+		NetLog_Server("Sent fake message ack");
 	else if (pArguments->nAckResult == ACKRESULT_FAILED)
-		Netlib_Logf(ghServerNetlibUser, "Message delivery failed");
+		NetLog_Server("Message delivery failed");
 
 	SAFE_FREE(&(char *)pArguments->pszMessage);
 	SAFE_FREE(&pArguments);
@@ -860,7 +880,7 @@ void SetCurrentStatus(int nStatus)
   int nOldStatus = gnCurrentStatus;
 
   gnCurrentStatus = nStatus;
-  ProtoBroadcastAck(gpszICQProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)nOldStatus, nStatus);
+  ICQBroadcastAck(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)nOldStatus, nStatus);
 }
 
 
@@ -1067,6 +1087,16 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 }
 
 
+void __fastcall SAFE_FREE(void** p)
+{
+	if (*p)
+	{
+		free(*p);
+		*p = NULL;
+	}
+}
+
+
 static int bPhotoLock = 0;
 
 void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
@@ -1082,7 +1112,7 @@ void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
           DBDeleteContactSetting(hContact, "ContactPhoto", "File"); // delete that setting
           DBDeleteContactSetting(hContact, "ContactPhoto", "Link");
           if (DBWriteContactSettingString(hContact, "ContactPhoto", "File", szFile))
-            Netlib_Logf(ghServerNetlibUser, "Avatar file could not be linked to ContactPhoto.");
+            NetLog_Server("Avatar file could not be linked to ContactPhoto.");
         }
         else
         { // no file, unlink
@@ -1129,3 +1159,53 @@ void ContactPhotoSettingChanged(HANDLE hContact)
   bNoChanging = 0;
 }
 
+
+int NetLog_Server(const char *fmt,...)
+{
+	va_list va;
+	char szText[1024];
+
+	va_start(va,fmt);
+	mir_vsnprintf(szText,sizeof(szText),fmt,va);
+	va_end(va);
+	return CallService(MS_NETLIB_LOG,(WPARAM)ghServerNetlibUser,(LPARAM)szText);
+}
+
+
+int NetLog_Direct(const char *fmt,...)
+{
+	va_list va;
+	char szText[1024];
+
+	va_start(va,fmt);
+	mir_vsnprintf(szText,sizeof(szText),fmt,va);
+	va_end(va);
+	return CallService(MS_NETLIB_LOG,(WPARAM)ghDirectNetlibUser,(LPARAM)szText);
+}
+
+
+int ICQBroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam)
+{
+	ACKDATA ack={0};
+
+	ack.cbSize=sizeof(ACKDATA);
+	ack.szModule=gpszICQProtoName;
+  ack.hContact=hContact;
+	ack.type=type; 
+  ack.result=result;
+	ack.hProcess=hProcess; 
+  ack.lParam=lParam;
+	return CallService(MS_PROTO_BROADCASTACK,0,(LPARAM)&ack);
+}
+
+
+int __fastcall ICQTranslateDialog(HWND hwndDlg)
+{
+	LANGPACKTRANSLATEDIALOG lptd;
+
+	lptd.cbSize=sizeof(lptd);
+	lptd.flags=0;
+	lptd.hwndDlg=hwndDlg;
+	lptd.ignoreControls=NULL;
+	return CallService(MS_LANGPACK_TRANSLATEDIALOG,0,(LPARAM)&lptd);
+}

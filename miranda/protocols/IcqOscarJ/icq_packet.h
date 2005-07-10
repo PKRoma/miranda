@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -55,48 +55,51 @@ typedef struct icq_packet_s
 /*---------* Functions *---------------*/
 
 void write_httphdr(icq_packet *d, WORD wType, DWORD dwSeq);
-void write_flap(icq_packet *, BYTE);
-void directPacketInit(icq_packet *, DWORD);
+void __fastcall write_flap(icq_packet *, BYTE);
+void __fastcall directPacketInit(icq_packet *, DWORD);
 
-void packByte(icq_packet *, BYTE);
-void packWord(icq_packet *, WORD);
-void packDWord(icq_packet *, DWORD);
+void __fastcall packByte(icq_packet *, BYTE);
+void __fastcall packWord(icq_packet *, WORD);
+void __fastcall packDWord(icq_packet *, DWORD);
 void packTLV(icq_packet* pPacket, WORD wType, WORD wLength, BYTE* pbyValue);
 void packTLVWord(icq_packet *d, unsigned short nType, WORD wData);
 void packTLVDWord(icq_packet *d, unsigned short nType, DWORD dwData);
 
 void packBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
 //void packLEWordSizedBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
-int getUINLen(DWORD dwUin);
-void packUIN(icq_packet *pPacket, DWORD dwUin);
+int __fastcall getUINLen(DWORD dwUin);
+void __fastcall packUIN(icq_packet *pPacket, DWORD dwUin);
 void packFNACHeader(icq_packet *d, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD wSeq);
 
-void packLEWord(icq_packet *, WORD);
-void packLEDWord(icq_packet *, DWORD);
+void __fastcall packLEWord(icq_packet *, WORD);
+void __fastcall packLEDWord(icq_packet *, DWORD);
 
 void ppackByte(PBYTE *buf,int *buflen,BYTE b);
 void ppackLEWord(PBYTE *buf,int *buflen,WORD w);
 void ppackLEDWord(PBYTE *buf,int *buflen,DWORD d);
-//void ppackLNTS(PBYTE *buf, int *buflen, const char *str);
 void ppackLELNTS(PBYTE *buf, int *buflen, const char *str);
 void ppackLELNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting);
-//void ppackLNTS(PBYTE *buf, int *buflen, const char *szSetting);
 
 void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always);
 void ppackTLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always);
 void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always);
 void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always);
 void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wType, BYTE always);
+void ppackTLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wType);
 
-void unpackByte(unsigned char **, BYTE *);
-void unpackWord(unsigned char **, WORD *);
-void unpackDWord(unsigned char **, DWORD *);
+void ppackTLVLNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wType);
+void ppackTLVWordLNTSfromDB(PBYTE *buf, int *buflen, WORD w, const char *szSetting, WORD wType);
+void ppackTLVLNTSBytefromDB(PBYTE *buf, int *buflen, const char *szSetting, BYTE b, WORD wType);
+
+void __fastcall unpackByte(unsigned char **, BYTE *);
+void __fastcall unpackWord(unsigned char **, WORD *);
+void __fastcall unpackDWord(unsigned char **, DWORD *);
 void unpackString(unsigned char **buf, char *string, WORD len);
 void unpackWideString(unsigned char **buf, WCHAR *string, WORD len);
 void unpackTLV(unsigned char **, WORD *, WORD *, char **);
 BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, char** ppszUID);
 
-void unpackLEWord(unsigned char **, WORD *);
-void unpackLEDWord(unsigned char **, DWORD *);
+void __fastcall unpackLEWord(unsigned char **, WORD *);
+void __fastcall unpackLEDWord(unsigned char **, DWORD *);
 
 #endif /* __ICQ_PACKET_H */

@@ -69,6 +69,7 @@
 #include <m_userinfo.h>
 #include <m_utils.h>
 #include <m_idle.h>
+#include <m_popup.h>
 
 // Project resources
 #include "resource.h"
@@ -106,6 +107,9 @@
 #include "ui/askauthentication.h"
 #include "ui/userinfotab.h"
 #include "ui/loginpassword.h"
+
+#include "changeinfo/changeinfo.h"
+#include "icq_popups.h"
 
 #include "md5.h"
 

@@ -183,22 +183,21 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
     {
       if (MatchCap(caps, capsize, (const capstr*)capXStatus[i], 0x10))
       {
-//        if (DBGetContactSettingByte(hContact, gpszICQProtoName, "XStatusId", 0) != (i + 1))
-        { // status changed - we request details
-          char *szNotify;
-          int nNotifyLen;
+        // status changed - we request details
+        char *szNotify;
+        int nNotifyLen;
 
-          ICQWriteContactSettingByte(hContact, "XStatusId", (BYTE)(i+1));
-          ICQWriteContactSettingString(hContact, "XStatusName", (char*)nameXStatus[i]);
+        ICQWriteContactSettingByte(hContact, "XStatusId", (BYTE)(i+1));
+        ICQWriteContactSettingString(hContact, "XStatusName", (char*)nameXStatus[i]);
 
-          nNotifyLen = 94 + UINMAXLEN;
-          szNotify = (char*)malloc(nNotifyLen);
-          nNotifyLen = mir_snprintf(szNotify, nNotifyLen, "<srv><id>cAwaySrv</id><req><id>AwayStat</id><trans>1</trans><senderId>%d</senderId></req></srv>", dwLocalUIN);
-          // TODO: this should be postponed
-          SendXtrazNotifyRequest(hContact, "<Q><PluginID>srvMng</PluginID></Q>", szNotify);
+        nNotifyLen = 94 + UINMAXLEN;
+        szNotify = (char*)malloc(nNotifyLen);
+        nNotifyLen = null_snprintf(szNotify, nNotifyLen, "<srv><id>cAwaySrv</id><req><id>AwayStat</id><trans>1</trans><senderId>%d</senderId></req></srv>", dwLocalUIN);
+        // TODO: this should be postponed
+        SendXtrazNotifyRequest(hContact, "<Q><PluginID>srvMng</PluginID></Q>", szNotify);
 
-          SAFE_FREE(&szNotify);
-        }
+        SAFE_FREE(&szNotify);
+
         hIcon = hXStatusIcons[i];
 
         break;
@@ -280,7 +279,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
   {
 		case WM_INITDIALOG:
 		{
-			TranslateDialogDefault(hwndDlg);
+			ICQTranslateDialog(hwndDlg);
       dat=(struct SetXStatusData*)malloc(sizeof(struct SetXStatusData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
       dat->bXStatus = (BYTE)lParam;
@@ -291,7 +290,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			{	
         char str[256], format[128];
 				GetWindowText(hwndDlg, format, sizeof(format));
-				mir_snprintf(str, sizeof(str), format, Translate(nameXStatus[dat->bXStatus-1]));
+				null_snprintf(str, sizeof(str), format, Translate(nameXStatus[dat->bXStatus-1]));
 				SetWindowText(hwndDlg, str);
 			}
       GetDlgItemText(hwndDlg,IDOK,dat->okButtonFormat,sizeof(dat->okButtonFormat));
@@ -326,7 +325,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
       }
 			{	
         char str[64];
-				mir_snprintf(str,sizeof(str),dat->okButtonFormat,dat->countdown);
+				null_snprintf(str,sizeof(str),dat->okButtonFormat,dat->countdown);
 				SetDlgItemText(hwndDlg,IDOK,str);
 			}
 			dat->countdown--;
@@ -400,7 +399,7 @@ static void setXStatus(BYTE bXStatus)
       DBFreeVariant(&dbv);
     }
     else 
-      ICQDeleteContactSetting(NULL, "XStatusName");
+      ICQWriteContactSettingString(NULL, "XStatusName", Translate(nameXStatus[bXStatus-1]));
     sprintf(szSetting, "XStatus%dMsg", bXStatus);
     if (!ICQGetContactSetting(NULL, szSetting, &dbv))
     {
@@ -417,7 +416,7 @@ static void setXStatus(BYTE bXStatus)
   }
   else
   {
-    ICQWriteContactSettingString(NULL, "XStatusName", Translate(nameXStatus[bXStatus-1]));
+    ICQDeleteContactSetting(NULL, "XStatusName");
     ICQDeleteContactSetting(NULL, "XStatusMsg");
 
     setUserInfo();

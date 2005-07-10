@@ -2,6 +2,7 @@
 // Microsoft Developer Studio generated include file.
 // Used by resources.rc
 //
+#define IDI_EXPANDSTRINGEDIT            101
 #define IDD_ICQACCOUNT                  103
 #define IDD_ASKAUTH                     104
 #define IDD_LOGINPW                     105
@@ -15,6 +16,8 @@
 #define IDD_ICQUPLOADLIST               253
 #define IDD_SETXSTATUS                  256
 #define IDD_OPT_ICQPRIVACY              260
+#define IDD_PWCONFIRM                   300
+#define IDD_INFO_CHANGEINFO             301
 #define IDC_LOG                         1001
 #define IDI_ICQ                         1001
 #define IDC_USEGATEWAY                  1010
@@ -73,6 +76,7 @@
 #define IDC_SLOWSEND                    1301
 #define IDC_LOGLEVEL                    1331
 #define IDC_LEVELDESCR                  1332
+#define IDC_NOERRMULTI                  1333
 #define IDC_STICQGROUP                  1374
 #define IDC_AGERANGE                    1410
 #define IDC_MARITALSTATUS               1411
@@ -121,6 +125,9 @@
 #define IDC_STATIC_DC2                  1556
 #define IDC_STATIC_DC1                  1557
 #define IDC_STATIC_CLIST                1558
+#define IDC_SAVE                        1600
+#define IDC_LIST                        1601
+#define IDC_UPLOADING                   1602
 
 // Next default values for new objects
 //

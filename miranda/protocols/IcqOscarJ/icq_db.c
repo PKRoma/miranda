@@ -61,6 +61,27 @@ int ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
 }
 
 
+// (c) by George Hazan
+int ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest, int dest_len)
+{
+	DBVARIANT dbv;
+	DBCONTACTGETSETTING sVal;
+
+	dbv.pszVal = dest;
+	dbv.cchVal = dest_len;
+	dbv.type = DBVT_ASCIIZ;
+
+	sVal.pValue = &dbv;
+	sVal.szModule = gpszICQProtoName;
+	sVal.szSetting = valueName;
+
+	if (CallService(MS_DB_CONTACT_GETSETTINGSTATIC, (WPARAM)hContact, (LPARAM)&sVal) != 0)
+		return 1;
+
+	return (dbv.type != DBVT_ASCIIZ);
+}
+
+
 int ICQDeleteContactSetting(HANDLE hContact, const char* szSetting)
 {
   return DBDeleteContactSetting(hContact, gpszICQProtoName, szSetting);
@@ -108,7 +129,7 @@ void TestDBBlobIssue()
   }
   else // the crap is still in the cache, we need to use workaround for avatars to work properly
   {
-    Netlib_Logf(ghServerNetlibUser, "DB Module contains bug #0001177, using workaround");
+    NetLog_Server("DB Module contains bug #0001177, using workaround");
     bdWorkaroundRequired = 1;
   }
   DBDeleteContactSetting(NULL, gpszICQProtoName, "BlobTestItem");

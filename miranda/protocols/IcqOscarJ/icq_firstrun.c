@@ -62,14 +62,14 @@ BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			char pszUIN[20];
 
 
-      TranslateDialogDefault(hwndDlg);
+      ICQTranslateDialog(hwndDlg);
       SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
 
 			dwUIN = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
 
       if (dwUIN)
 			{
-				mir_snprintf(pszUIN, 20, "%u", dwUIN);
+				null_snprintf(pszUIN, 20, "%u", dwUIN);
         SetDlgItemText(hwndDlg, IDC_UIN, pszUIN);
       }
 

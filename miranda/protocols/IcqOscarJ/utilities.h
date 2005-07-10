@@ -80,7 +80,9 @@ HANDLE HContactFromUIN(DWORD, int);
 //HANDLE HContactFromUID(char* pszUID, int);
 char *NickFromHandle(HANDLE);
 
-size_t strlennull(const char *string);
+size_t __fastcall strlennull(const char *string);
+int __fastcall strcmpnull(const char *str1, const char *str2);
+int null_snprintf(char *buffer, size_t count, const char* fmt, ...);
 
 char *DemangleXml(const char *string, int len);
 char *MangleXml(const char *string, int len);
@@ -109,16 +111,17 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType);
 
 #define icqOnline ((gnCurrentStatus != ID_STATUS_OFFLINE) && (gnCurrentStatus != ID_STATUS_CONNECTING))
 
-void __inline SAFE_FREE(void** p)
-{
-	if (*p)
-	{
-		free(*p);
-		*p = NULL;
-	}
-}
+void __fastcall SAFE_FREE(void** p);
 
 void LinkContactPhotoToFile(HANDLE hContact, char* szFile);
 void ContactPhotoSettingChanged(HANDLE hContact);
+
+int NetLog_Server(const char *fmt,...);
+int NetLog_Direct(const char *fmt,...);
+
+int ICQBroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam);
+
+int __fastcall ICQTranslateDialog(HWND hwndDlg);
+
 
 #endif /* __UTILITIES_H */

@@ -46,7 +46,7 @@ void handleStatusFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
     {
       WORD wInterval;
       unpackWord(&pBuffer, &wInterval);
-      Netlib_Logf(ghServerNetlibUser, "Server sent SNAC(x0B,x03) - SRV_SET_MINREPORTINTERVAL (Value: %u hours)", wInterval);
+      NetLog_Server("Server sent SNAC(x0B,x03) - SRV_SET_MINREPORTINTERVAL (Value: %u hours)", wInterval);
     }
     break;
 
@@ -64,7 +64,7 @@ void handleStatusFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
   }
 
   default:
-    Netlib_Logf(ghServerNetlibUser, "Warning: Ignoring SNAC(x0B,x%02x) - Unknown SNAC (Flags: %u, Ref: %u", pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_STATS_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
   }
 }

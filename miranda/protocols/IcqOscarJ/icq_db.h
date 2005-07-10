@@ -43,6 +43,8 @@ WORD ICQGetContactSettingWord(HANDLE hContact, const char* szSetting, WORD wDef)
 DWORD ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef);
 int ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv);
 
+int ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest, int dest_len);
+
 int ICQDeleteContactSetting(HANDLE hContact, const char* szSetting);
 
 int ICQWriteContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bValue);

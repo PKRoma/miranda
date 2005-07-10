@@ -73,7 +73,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   ResetSettingsOnConnect();
 
 	// Connect to the login server
-	Netlib_Logf(ghServerNetlibUser, "Authenticating to server");
+	NetLog_Server("Authenticating to server");
 	hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&info.nloc);
   if (!hServerConn && (GetLastError() == 87))
   {
@@ -144,13 +144,13 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
 			if (recvResult == 0)
 			{
-				Netlib_Logf(ghServerNetlibUser, "Clean closure of server socket");
+				NetLog_Server("Clean closure of server socket");
 				break;
 			}
 
 			if (recvResult == SOCKET_ERROR)
 			{
-				Netlib_Logf(ghServerNetlibUser, "Abortive closure of server socket, error: %d", GetLastError());
+				NetLog_Server("Abortive closure of server socket, error: %d", GetLastError());
 				break;
 			}
 
@@ -207,7 +207,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   FlushPendingOperations(); // clear pending operations list
   FlushGroupRenames(); // clear group rename in progress list
 
-  Netlib_Logf(ghServerNetlibUser, "Server thread ended.");
+  NetLog_Server("Server thread ended.");
 
   return 0;
 }
@@ -269,7 +269,7 @@ static int handleServerPackets(unsigned char* buf, int len, serverthread_start_i
 
 
 #ifdef _DEBUG
-		Netlib_Logf(ghServerNetlibUser, "Server FLAP: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
+		NetLog_Server("Server FLAP: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
 #endif
 
 		switch (channel)
@@ -295,7 +295,7 @@ static int handleServerPackets(unsigned char* buf, int len, serverthread_start_i
 			return 0;
 
 		default:
-			Netlib_Logf(ghServerNetlibUser, "Warning: Unhandled Server FLAP Channel: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
+			NetLog_Server("Warning: Unhandled Server FLAP Channel: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
 			break;
 		}
 
@@ -355,7 +355,7 @@ void sendServPacket(icq_packet* pPacket)
 	}
 	else
 	{
-		Netlib_Logf(ghServerNetlibUser, "Error: Failed to send packet (no connection)");
+		NetLog_Server("Error: Failed to send packet (no connection)");
 	}
 
 	LeaveCriticalSection(&localSeqMutex);
