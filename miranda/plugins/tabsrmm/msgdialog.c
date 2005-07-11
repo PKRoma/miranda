@@ -1908,6 +1908,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if(GetTickCount() - dat->dwLastUpdate < (DWORD)200) {
                 SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                if(dat->dwFlags & MWF_DEFERREDSCROLL)
+                    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
                 UpdateStatusBar(hwndDlg, dat);
                 return 1;
             }
@@ -1982,7 +1984,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if((GetTickCount() - dat->dwLastUpdate) < (DWORD)200) {
                 if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL)
                     pSetLayeredWindowAttributes(dat->pContainer->hwnd, RGB(255,255,255), (BYTE)LOWORD(dat->pContainer->dwTransparency), LWA_ALPHA);
-                //SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                if(dat->dwFlags & MWF_DEFERREDSCROLL)
+                    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
                 UpdateStatusBar(hwndDlg, dat);
                 break;
             }
@@ -2291,6 +2294,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
                     break;
                 if(!IsIconic(dat->pContainer->hwnd)) {
+                    dat->dwFlags &= ~MWF_DEFERREDSCROLL;
                     if(dat->hwndLog) {
                         IEVIEWWINDOW iew = {0};
                         iew.cbSize = sizeof(IEVIEWWINDOW);
@@ -2299,8 +2303,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&iew);
                     }
                     else {
-                        HWND hwnd = dat->hwndLog ? dat->hwndLog : GetDlgItem(hwndDlg, IDC_LOG);
-                        dat->dwFlags &= ~MWF_DEFERREDSCROLL;
+                        HWND hwnd = GetDlgItem(hwndDlg, IDC_LOG);
                         if ((GetWindowLong(hwnd, GWL_STYLE) & WS_VSCROLL) == 0)
                             break;
                         if(lParam)
