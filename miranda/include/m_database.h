@@ -64,6 +64,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /******************** GENERALLY USEFUL STUFF***********************/
 
+#include <tchar.h>
+
 //DBVARIANT: used by db/contact/getsetting and db/contact/writesetting
 #define DBVT_DELETED 0    //this setting just got deleted, no other values are valid
 #define DBVT_BYTE   1	  //bVal and cVal are valid
@@ -71,6 +73,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DBVT_DWORD  4	  //dVal and lVal are valid
 #define DBVT_ASCIIZ 255	  //pszVal is valid
 #define DBVT_BLOB   254	  //cpbVal and pbVal are valid
+#define DBVT_UTF8   253   //pszVal is valid
+#define DBVT_WCHAR  252   //pszVal is valid
 #define DBVTF_VARIABLELENGTH  0x80
 typedef struct {
 	BYTE type;
@@ -79,7 +83,11 @@ typedef struct {
 		WORD wVal; short sVal;
 		DWORD dVal; long lVal;
 		struct {
-			char *pszVal;
+			union {
+				char *pszVal;
+				TCHAR *ptszVal;
+				WCHAR *pwszVal;
+			};
 			WORD cchVal;   //only used for db/contact/getsettingstatic
 		};
 		struct {
@@ -149,6 +157,12 @@ typedef struct {
 	DBVARIANT *pValue;		// pointer to variant to receive the value
 } DBCONTACTGETSETTING;
 #define MS_DB_CONTACT_GETSETTING  "DB/Contact/GetSetting"
+
+/* DB/Contact/GetSettingString service  0.4.3+
+Same as DB/Contact/GetSetting, but also gets the required string type inside
+the dbcgs->type parameter
+*/
+#define MS_DB_CONTACT_GETSETTING_STR  "DB/Contact/GetSettingStr"
 
 /* DB/Contact/GetSettingStatic service
 Look up the value of a named setting for a specific contact in the database
@@ -697,6 +711,9 @@ don't change any of the members.
 #define DBGetContactSettingWord(a,b,c,d) DBGetContactSettingWord_Helper(a,b,c,d,__FILE__,__LINE__)
 #define DBGetContactSettingDword(a,b,c,d) DBGetContactSettingDword_Helper(a,b,c,d,__FILE__,__LINE__)
 #define DBGetContactSetting(a,b,c,d) DBGetContactSetting_Helper(a,b,c,d,__FILE__,__LINE__)
+#define DBGetContactSettingTString(a,b,c,d) DBGetContactSettingTString_Helper(a,b,c,d,__FILE__,__LINE__)
+#define DBGetContactSettingWString(a,b,c,d) DBGetContactSettingWString_Helper(a,b,c,d,__FILE__,__LINE__)
+#define DBGetContactSettingStringUtf(a,b,c,d) DBGetContactSettingWStringUtf_Helper(a,b,c,d,__FILE__,__LINE__)
 
 #define db_msg_dbg(s) MessageBoxA(0,(s),"",0); 
 
@@ -765,6 +782,73 @@ __inline static DWORD DBGetContactSettingDword_Helper(HANDLE hContact,const char
 	}
 #endif
 	return dbv.dVal;
+}
+
+__inline static int DBGetContactSettingTString_Helper(HANDLE hContact,const char *szModule,
+	const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine)
+{
+	int rc;
+	DBCONTACTGETSETTING cgs;
+	cgs.szModule=szModule;
+	cgs.szSetting=szSetting;
+	cgs.pValue=dbv;
+#if defined(_UNICODE)
+	dbv->type = DBVT_WCHAR;
+#else
+	dbv->type = DBVT_ASCIIZ;
+#endif
+
+	rc=CallService(MS_DB_CONTACT_GETSETTING_STR,(WPARAM)hContact,(LPARAM)&cgs);
+#if defined(_DEBUG) && defined(DBCHECKSETTINGS)
+	if (rc != 0) {
+		char buf[128];
+		_snprintf(buf,sizeof(buf),"%s:%d failed to fetch %s/%s",szFile,nLine,szModule,szSetting);
+		db_msg_dbg(buf);
+	}
+#endif
+	return rc;
+}
+
+__inline static int DBGetContactSettingWString_Helper(HANDLE hContact,const char *szModule,
+	const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine)
+{
+	int rc;
+	DBCONTACTGETSETTING cgs;
+	cgs.szModule=szModule;
+	cgs.szSetting=szSetting;
+	cgs.pValue=dbv;
+	dbv->type = DBVT_WCHAR;
+
+	rc=CallService(MS_DB_CONTACT_GETSETTING_STR,(WPARAM)hContact,(LPARAM)&cgs);
+#if defined(_DEBUG) && defined(DBCHECKSETTINGS)
+	if (rc != 0) {
+		char buf[128];
+		_snprintf(buf,sizeof(buf),"%s:%d failed to fetch %s/%s",szFile,nLine,szModule,szSetting);
+		db_msg_dbg(buf);
+	}
+#endif
+	return rc;
+}
+
+__inline static int DBGetContactSettingStringUtf_Helper(HANDLE hContact,const char *szModule,
+	const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine)
+{
+	int rc;
+	DBCONTACTGETSETTING cgs;
+	cgs.szModule=szModule;
+	cgs.szSetting=szSetting;
+	cgs.pValue=dbv;
+	dbv->type = DBVT_UTF8;
+
+	rc=CallService(MS_DB_CONTACT_GETSETTING_STR,(WPARAM)hContact,(LPARAM)&cgs);
+#if defined(_DEBUG) && defined(DBCHECKSETTINGS)
+	if (rc != 0) {
+		char buf[128];
+		_snprintf(buf,sizeof(buf),"%s:%d failed to fetch %s/%s",szFile,nLine,szModule,szSetting);
+		db_msg_dbg(buf);
+	}
+#endif
+	return rc;
 }
 
 __inline static int DBGetContactSetting_Helper(HANDLE hContact,const char *szModule,
@@ -839,6 +923,44 @@ __inline static int DBWriteContactSettingString(HANDLE hContact,const char *szMo
 	cws.szModule=szModule;
 	cws.szSetting=szSetting;
 	cws.value.type=DBVT_ASCIIZ;
+	cws.value.pszVal=(char*)val;
+	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
+}
+
+__inline static int DBWriteContactSettingTString(HANDLE hContact,const char *szModule,const char *szSetting,const TCHAR *val)
+{
+	DBCONTACTWRITESETTING cws;
+
+	cws.szModule=szModule;
+	cws.szSetting=szSetting;
+	#if defined( _UNICODE )
+		cws.value.type=DBVT_WCHAR;
+		cws.value.pwszVal=(WCHAR*)val;
+	#else
+		cws.value.type=DBVT_ASCIIZ;
+		cws.value.pszVal=(char*)val;
+	#endif
+	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
+}
+
+__inline static int DBWriteContactSettingWString(HANDLE hContact,const char *szModule,const char *szSetting,const WCHAR *val)
+{
+	DBCONTACTWRITESETTING cws;
+
+	cws.szModule=szModule;
+	cws.szSetting=szSetting;
+	cws.value.type=DBVT_WCHAR;
+	cws.value.pwszVal=(WCHAR*)val;
+	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
+}
+
+__inline static int DBWriteContactSettingStringUTF(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
+{
+	DBCONTACTWRITESETTING cws;
+
+	cws.szModule=szModule;
+	cws.szSetting=szSetting;
+	cws.value.type=DBVT_UTF8;
 	cws.value.pszVal=(char*)val;
 	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
 }
