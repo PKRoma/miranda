@@ -885,20 +885,23 @@ start:
 
 	// If it was unwanted disconnection reconnect
     pthread_mutex_lock(&threadMutex);
-    if(connected && (thread == ggThread) && DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, GG_KEYDEF_ARECONNECT))
-    {
-        pthread_mutex_unlock(&threadMutex);
-        hostnum = -1;
-#ifdef DEBUGMODE
-        gg_netlog("gg_mainthread(%x): Unintentional disconnection detected. Going to reconnect...", thread);
-#endif
-        goto start;
-    }
     // If it was unintentional disconnection without reconnect
     if(thread == ggThread)
     {
         gg_broadcastnewstatus(ID_STATUS_OFFLINE);
-        gg_setalloffline();
+        if(connected)
+        {
+            gg_setalloffline();
+            if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, GG_KEYDEF_ARECONNECT))
+            {
+                pthread_mutex_unlock(&threadMutex);
+                hostnum = -1;
+#ifdef DEBUGMODE
+                gg_netlog("gg_mainthread(%x): Unintentional disconnection detected. Going to reconnect...", thread);
+#endif
+                goto start;
+            }
+        }
         ggThread = NULL;
     }
     pthread_mutex_unlock(&threadMutex);
