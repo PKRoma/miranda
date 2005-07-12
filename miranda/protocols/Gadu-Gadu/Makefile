@@ -82,11 +82,11 @@ endif
 LFLAGS  = -shared
 RCFLAGS = --input-format rc --output-format coff
 ifdef DEBUG
-CFLAGS  = -g $(DEFINES) $(INC)
-CPPFLAGS  = -g $(DEFINES) $(INC)
+CFLAGS = -g $(DEFINES) $(INC)
+CPPFLAGS = -g $(DEFINES) $(INC)
 else
-CFLAGS  = -Os $(DEFINES) $(INC)
-CPPFLAGS  = -Os $(DEFINES) $(INC)
+CFLAGS = -Os $(DEFINES) $(INC)
+CPPFLAGS = -Os $(DEFINES) $(INC)
 LFLAGS := $(LFLAGS) -Wl,-s
 endif
 
