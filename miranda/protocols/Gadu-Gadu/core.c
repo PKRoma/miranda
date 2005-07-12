@@ -285,6 +285,9 @@ start:
     p.client_version = GG_DEFAULT_CLIENT_VERSION;
 	// p.has_audio = 1;
 
+	// Send Era Omnix info if set
+	p.era_omnix = DBGetContactSettingByte(NULL, GG_PROTO, "EraOmnix", 0);
+
     // Setup proxy
     nlus.cbSize = sizeof(nlus);
     if(CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)hNetlib, (LPARAM)&nlus))
@@ -891,6 +894,13 @@ start:
 #endif
         goto start;
     }
+    // If it was unintentional disconnection without reconnect
+    if(thread == ggThread)
+    {
+        gg_broadcastnewstatus(ID_STATUS_OFFLINE);
+        gg_setalloffline();
+        ggThread = NULL;
+    }
     pthread_mutex_unlock(&threadMutex);
 
 	// Stop dcc server
@@ -900,14 +910,8 @@ start:
     gg_netlog("gg_mainthread(%x): Server Thread Ending", thread);
 #endif
 
-    // We release main thread if it was the same as global
+    // We release main thread from the thread list
     pthread_mutex_lock(&threadMutex);
-    if(thread == ggThread)
-    {
-        gg_broadcastnewstatus(ID_STATUS_OFFLINE);
-        gg_setalloffline();
-        ggThread = NULL;
-    }
     list_remove(&ggThreadList, thread, 1);
     pthread_mutex_unlock(&threadMutex);
 
@@ -974,9 +978,7 @@ int gg_dbsettingchanged(WPARAM wParam, LPARAM lParam)
 
     // If ignorance changed
     if (!strcmp(cws->szModule, "Ignore") && !strcmp(cws->szSetting, "Mask1"))
-    {
         gg_notifyuser((HANDLE) wParam, 1);
-    }
 
     // Renamed
     if (ggGCEnabled && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, "Nick") && cws->value.pszVal)
@@ -1034,13 +1036,14 @@ int gg_dbsettingchanged(WPARAM wParam, LPARAM lParam)
         {
             if (DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0))
                 return 0;
-            if (cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)) {
-                char *szProto;
-
-                szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
-                if (szProto && !strcmp(szProto, GG_PROTO)) {
-                    DBDeleteContactSetting((HANDLE) wParam, GG_PROTO, GG_KEY_DELETEUSER);
-                    //gg_set_config();
+            if (cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0))
+            {
+                char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
+                // Notify user normally this time if added to the list permanently
+                if (szProto && !strcmp(szProto, GG_PROTO))
+                {
+                    DBDeleteContactSetting((HANDLE) wParam, GG_PROTO, GG_KEY_DELETEUSER); // What is it ?? I don't remember
+                    gg_notifyuser((HANDLE) wParam, 1);
                 }
             }
         }
@@ -1091,7 +1094,8 @@ void gg_notifyuser(HANDLE hContact, int refresh)
     {
         // Check if user should be invisible
         // Or be blocked ?
-        if(DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD) ID_STATUS_ONLINE) == ID_STATUS_OFFLINE)
+        if((DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD) ID_STATUS_ONLINE) == ID_STATUS_OFFLINE) ||
+			DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
         {
             if(refresh)
             {
@@ -1153,7 +1157,8 @@ void gg_notifyall()
         szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
         if (szProto != NULL && !strcmp(szProto, GG_PROTO) && (uins[cc] = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)))
         {
-            if(DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD) ID_STATUS_ONLINE) == ID_STATUS_OFFLINE)
+            if((DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD) ID_STATUS_ONLINE) == ID_STATUS_OFFLINE) ||
+				DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
                 types[cc] = GG_USER_OFFLINE;
             else if(DBGetContactSettingDword(hContact, "Ignore", "Mask1", (DWORD)0 ) & IGNOREEVENT_MESSAGE)
                 types[cc] = GG_USER_BLOCKED;
@@ -1264,7 +1269,8 @@ HANDLE gg_getcontact(uin_t uin, int create, int inlist, char *szNick)
 
     // Add to notify list if new
     pthread_mutex_lock(&threadMutex);
-    if(gg_isonline()) gg_add_notify_ex(ggThread->sess, uin, GG_USER_NORMAL);
+    if(gg_isonline())
+        gg_add_notify_ex(ggThread->sess, uin, inlist ? GG_USER_NORMAL : GG_USER_OFFLINE);
     pthread_mutex_unlock(&threadMutex);
 
     // TODO server side list & add buddy
@@ -1277,7 +1283,6 @@ int status_m2gg(int status, int descr)
 {
     // check frends only
     int mask = DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_FRIENDSONLY, GG_KEYDEF_FRIENDSONLY) ? GG_STATUS_FRIENDS_MASK : 0;
-
 
     if(descr)
     {
