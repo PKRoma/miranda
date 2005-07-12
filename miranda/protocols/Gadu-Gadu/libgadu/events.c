@@ -174,8 +174,7 @@ static void gg_image_queue_parse(struct gg_event *e, char *p, unsigned int len, 
 	struct gg_msg_image_reply *i = (void*) p;
 	struct gg_image_queue *q, *qq;
 
-	if (!p || !sess || !e)
-	{
+	if (!p || !sess || !e) {
 		errno = EFAULT;
 		return;
 	}
@@ -314,8 +313,11 @@ static int gg_handle_recv_msg(struct gg_header *h, struct gg_event *e, struct gg
 					goto fail;
 				}
 
-				for (i = 0; i < count; i++, p += sizeof(uin_t))
-					e->event.msg.recipients[i] = gg_fix32(*((uint32_t*) p));
+				for (i = 0; i < count; i++, p += sizeof(uint32_t)) {
+					uint32_t u;
+					memcpy(&u, p, sizeof(uint32_t));
+					e->event.msg.recipients[i] = gg_fix32(u);
+				}
 
 				e->event.msg.recipients_count = count;
 
@@ -324,7 +326,7 @@ static int gg_handle_recv_msg(struct gg_header *h, struct gg_event *e, struct gg
 
 			case 0x02:		/* richtext */
 			{
-				unsigned short len;
+				uint16_t len;
 				char *buf;
 
 				if (p + 3 > packet_end) {
@@ -332,7 +334,8 @@ static int gg_handle_recv_msg(struct gg_header *h, struct gg_event *e, struct gg
 					goto malformed;
 				}
 
-				len = gg_fix16(*((unsigned short*) (p + 1)));
+				memcpy(&len, p + 1, sizeof(uint16_t));
+				len = gg_fix16(len);
 
 				if (!(buf = malloc(len))) {
 					gg_debug(GG_DEBUG_MISC, "// gg_handle_recv_msg() not enough memory for richtext data\n");
@@ -396,6 +399,8 @@ static int gg_handle_recv_msg(struct gg_header *h, struct gg_event *e, struct gg
 					goto malformed;
 				}
 
+				rep->size = gg_fix32(rep->size);
+				rep->crc32 = gg_fix32(rep->crc32);
 				gg_image_queue_parse(e, p, (unsigned int)(packet_end - p), sess, gg_fix32(r->sender));
 
 				return 0;
@@ -484,7 +489,7 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 				goto fail;
 			}
 
-			if (gg_fix32(n->status) == GG_STATUS_BUSY_DESCR || gg_fix32(n->status == GG_STATUS_NOT_AVAIL_DESCR) || gg_fix32(n->status) == GG_STATUS_AVAIL_DESCR) {
+			if (gg_fix32(n->status) == GG_STATUS_BUSY_DESCR || gg_fix32(n->status) == GG_STATUS_NOT_AVAIL_DESCR || gg_fix32(n->status) == GG_STATUS_AVAIL_DESCR) {
 				e->type = GG_EVENT_NOTIFY_DESCR;
 
 				if (!(e->event.notify_descr.notify = (void*) malloc(sizeof(*n) * 2))) {
@@ -495,6 +500,7 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 				memcpy(e->event.notify_descr.notify, p, sizeof(*n));
 				e->event.notify_descr.notify[0].uin = gg_fix32(e->event.notify_descr.notify[0].uin);
 				e->event.notify_descr.notify[0].status = gg_fix32(e->event.notify_descr.notify[0].status);
+				e->event.notify_descr.notify[0].remote_ip = e->event.notify_descr.notify[0].remote_ip;
 				e->event.notify_descr.notify[0].remote_port = gg_fix16(e->event.notify_descr.notify[0].remote_port);
 
 				count = h->length - sizeof(*n);
@@ -521,6 +527,7 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 				for (i = 0; i < count; i++) {
 					e->event.notify[i].uin = gg_fix32(e->event.notify[i].uin);
 					e->event.notify[i].status = gg_fix32(e->event.notify[i].status);
+					e->event.notify[i].remote_ip = e->event.notify[i].remote_ip;
 					e->event.notify[i].remote_port = gg_fix16(e->event.notify[i].remote_port);
 				}
 			}
@@ -584,6 +591,11 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 				e->event.notify60[i].descr = NULL;
 				e->event.notify60[i].time = 0;
 
+				if (uin & 0x40000000)
+					e->event.notify60[i].version |= GG_HAS_AUDIO_MASK;
+				if (uin & 0x08000000)
+					e->event.notify60[i].version |= GG_ERA_OMNIX_MASK;
+
 				if (GG_S_D(n->status)) {
 					unsigned char descr_len = *((char*) n + sizeof(struct gg_notify_reply60));
 
@@ -643,6 +655,8 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 
 			if (uin & 0x40000000)
 				e->event.status60.version |= GG_HAS_AUDIO_MASK;
+			if (uin & 0x08000000)
+				e->event.status60.version |= GG_ERA_OMNIX_MASK;
 
 			if (h->length > sizeof(*s)) {
 				int len = h->length - sizeof(*s);
@@ -655,8 +669,11 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 
 				e->event.status60.descr = buf;
 
-				if (len > 4 && p[h->length - 5] == 0)
-					e->event.status60.time = *((int*) (p + h->length - 4));
+				if (len > 4 && p[h->length - 5] == 0) {
+					uint32_t t;
+					memcpy(&t, p + h->length - 4, sizeof(uint32_t));
+					e->event.status60.time = gg_fix32(t);
+				}
 			}
 
 			break;
@@ -1412,7 +1429,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 
 			if (sess->external_addr && sess->external_port > 1023) {
 				l.external_ip = sess->external_addr;
-				l.external_port = sess->external_port;
+				l.external_port = gg_fix16(sess->external_port);
 			}
 
 			gg_debug(GG_DEBUG_TRAFFIC, "// gg_watch_fd() sending GG_LOGIN60 packet\n");
