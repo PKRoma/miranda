@@ -104,12 +104,16 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 												int v = dbv.dVal & 0x00ffffff;
 												switch(v)
 												{
+                                                    case 0x24:
+                                                        pstr = "6.1 build 155"; break;
+                                                    case 0x22:
+                                                        pstr = "6.0 build 140"; break;
 													case 0x21:
-														pstr = "6.0"; break;
+														pstr = "6.0 build 133"; break;
 													case 0x20:
 														pstr = "6.0b"; break;
 													case 0x1e:
-														pstr = "5.7b 121"; break;
+														pstr = "5.7b build 121"; break;
 													case 0x1c:
 														pstr = "5.7b"; break;
 													case 0x1b:
@@ -137,8 +141,8 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 													default:
 														if (v < 0x0b)
 															pstr = "< 4.0.25";
-														else if (v > 0x21)
-															pstr = "> 6.0";
+														else if (v > 0x24)
+															pstr = "> 6.1";
 														else
 														{
 															pstr=str;
