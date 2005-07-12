@@ -110,7 +110,8 @@ int miranda_to_yahoo(int myyahooStatus)
 
 void yahoo_set_status(int myyahooStatus, char *msg, int away)
 {
-	LOG(("yahoo_set_status myyahooStatus: %s (%d), msg: %s, away: %d", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, myyahooStatus, 0), myyahooStatus, msg, away));
+	//LOG(("yahoo_set_status myyahooStatus: %s (%d), msg: %s, away: %d", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, myyahooStatus, 0), myyahooStatus, msg, away));
+	LOG(("yahoo_set_status myyahooStatus: %d, msg: %s, away: %d", myyahooStatus, msg, away));
 
 	/* Safety check, don't dereference Invalid pointers */
 	if ((ylad != NULL) && (ylad->id > 0) )  {
