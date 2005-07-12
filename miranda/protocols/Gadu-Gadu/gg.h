@@ -351,7 +351,7 @@ int gg_gc_unload();
 char * gg_gc_getchat(uin_t sender, uin_t *recipients, int recipients_count);
 int gg_gc_changenick(HANDLE hContact, char *pszNick);
 int gg_getinfo(WPARAM wParam, LPARAM lParam);
-void gg_remindpassword(uin_t uin);
+void gg_remindpassword(uin_t uin, const char *email);
 char *ws_strerror(int code);
 void gg_dccwait(GGTHREAD *thread);
 uint32_t swap32(uint32_t x);

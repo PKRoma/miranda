@@ -192,7 +192,7 @@ int gg_optionsinit(WPARAM wParam, LPARAM lParam)
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	strcat(title, " ");
-	strcat(title, Translate("Ex."));
+	strcat(title, Translate("Advanced"));
     odp.cbSize = sizeof(odp);
     odp.position = 1003000;
     odp.hInstance = hInstance;
@@ -345,14 +345,17 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 }
                 case IDC_LOSTPASS:
                 {
-                    char strUin[128];
-                    GetDlgItemText(hwndDlg, IDC_UIN, strUin, sizeof(strUin));
+                    char email[128];
+                    uin_t uin;
+                    GetDlgItemText(hwndDlg, IDC_UIN, email, sizeof(email));
+                    uin = atoi(email);
+                    GetDlgItemText(hwndDlg, IDC_EMAIL, email, sizeof(email));
 					if(MessageBox(
 						NULL,
 						Translate("Your password will be sent to your registration e-mail.\nDo you want to continue ?"),
 						GG_PROTONAME,
 						MB_OKCANCEL | MB_ICONQUESTION) == IDOK)
-							gg_remindpassword(atoi(strUin));
+							gg_remindpassword(uin, email);
                     return TRUE;
                 }
 				case IDC_CREATEACCOUNT:
