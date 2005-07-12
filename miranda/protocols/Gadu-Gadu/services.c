@@ -406,7 +406,6 @@ static int gg_searchbydetails(WPARAM wParam, LPARAM lParam)
 int gg_addtolist(WPARAM wParam, LPARAM lParam)
 {
     GGSEARCHRESULT *sr = (GGSEARCHRESULT *) lParam;
-    if(!gg_isonline()) return 0;
     return (int) gg_getcontact(sr->uin, 1, wParam & PALF_TEMPORARY ? 0 : 1, sr->hdr.nick);
 }
 
