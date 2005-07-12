@@ -61,8 +61,11 @@ Note: For secure connections this plugin requires OpenSSL DLL
 5. History
 ----------
 0.0.3.1: 2005-07-12
- - Fix: GG thread hanging, not going to offilne when cannot connect
-   to the server after disconnection
+ - Hidden db setting "EraOmnix" for being visible as EraOmnix client
+ - Fix: Temporary contacts cannot see our status when having "Friends only"
+   (Features thanks to JacekFH)
+ - Fix: GG thread hanging, not going offline when cannot reconnect
+   after disconnection
 0.0.3.0: 2005-06-27
  - Status descriptions compatible with MWClist
  - GG.dll now compiles on Visual C++ 6.0 and Visual C++ 2005
