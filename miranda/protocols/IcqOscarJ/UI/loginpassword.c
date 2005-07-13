@@ -50,7 +50,6 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 {
   switch (msg)
   {
-
     case WM_INITDIALOG:
       {
         char pszUIN[128];
@@ -61,6 +60,10 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
         dwUin = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
         null_snprintf(pszUIN, 128, Translate("Enter a password for UIN %u:"), dwUin);
         SetDlgItemText(hwndDlg, IDC_INSTRUCTION, pszUIN);
+
+        SendDlgItemMessage(hwndDlg, IDC_LOGINPW, EM_LIMITTEXT, 10, 0);
+
+        CheckDlgButton(hwndDlg, IDC_SAVEPASS, ICQGetContactSettingByte(NULL, "RememberPass", 0));
       }
 		  break;
 
@@ -73,21 +76,25 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
       {
         switch (LOWORD(wParam))
         {
-				
           case IDOK:
             {
-              char str[128];
+              gbRememberPwd = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SAVEPASS);
+              ICQWriteContactSettingByte(NULL, "RememberPass", gbRememberPwd);
 
-              GetDlgItemText(hwndDlg, IDC_LOGINPW, str, sizeof(str));
-					    icq_login(str);
+              GetDlgItemText(hwndDlg, IDC_LOGINPW, gpszPassword, sizeof(gpszPassword));
+
+					    icq_login(gpszPassword);
+
 					    EndDialog(hwndDlg, IDOK);
             }
 				    break;
 
           case IDCANCEL:
-            SetCurrentStatus(ID_STATUS_OFFLINE);
+            {
+              SetCurrentStatus(ID_STATUS_OFFLINE);
 
-            EndDialog(hwndDlg, IDCANCEL);
+              EndDialog(hwndDlg, IDCANCEL);
+            }
             break;
         }
       }

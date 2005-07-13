@@ -159,9 +159,14 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					ListView_InsertItem(hwndList, &lvi);
 				}
 			}
-
-			if (ICQGetContactStaticString(NULL, "Password", Password, sizeof(Password)))
-				strcpy(Password,"");
+      {
+        char *pwd = GetUserPassword(TRUE);
+       
+        if (pwd) 
+          strcpy(Password, pwd);
+        else
+				  strcpy(Password,"");
+      }
 
 			SendMessage(GetParent(hwndDlg),PSM_CHANGED,0,0);
 			return TRUE;

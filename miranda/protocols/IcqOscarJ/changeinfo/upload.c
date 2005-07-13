@@ -182,19 +182,34 @@ int UploadSettings(HWND hwndParent)
 
 	//password
 	{
-		char szTmp[256];
+		char* tmp;
 		buflen = 2;
 
-		if(!ICQGetContactStaticString(NULL, "Password", szTmp, sizeof(szTmp)))
+    tmp = GetUserPassword(TRUE);
+		if(tmp)
 		{
-			if (strlennull(Password) > 0 && strcmpnull(Password, szTmp))
+			if (strlennull(Password) > 0 && strcmpnull(Password, tmp))
 			{
-				CallService(MS_DB_CRYPT_DECODESTRING, strlen(szTmp) + 1, (LPARAM)szTmp);
-
-				ppackLELNTS(&buf, &buflen, szTmp);
+				ppackLELNTS(&buf, &buflen, tmp);
 
 				*(PWORD)buf = buflen - 2;
 				hUpload[1] = (HANDLE)IcqChangeInfo(ICQCHANGEINFO_PASSWORD, (LPARAM)buf);
+
+        {
+          DBVARIANT dbv;
+
+          if (!ICQGetContactSetting(NULL, "Password", &dbv) && strlennull(dbv.pszVal))
+          { // password is stored in DB, update
+            char ptmp[16];
+
+            strcpy(ptmp, tmp);
+
+            CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ptmp), (LPARAM)ptmp);
+
+            ICQWriteContactSettingString(NULL, "Password", ptmp);
+          }
+          DBFreeVariant(&dbv);
+        }
 			}
 		}
 	}

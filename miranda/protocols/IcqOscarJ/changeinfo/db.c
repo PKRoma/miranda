@@ -52,6 +52,8 @@ void LoadSettingsFromDb(int keepChanged)
 			setting[i].value = 0;
 
 		setting[i].changed=0;
+    
+    if(setting[i].displayType&LIF_PASSWORD) continue;
 
 		if(!ICQGetContactSetting(NULL,setting[i].szDbSetting,&dbv)) 
     {
@@ -172,9 +174,9 @@ int SaveSettingsToDb(HWND hwndDlg)
 				if(setting[i].displayType&LIF_PASSWORD) 
         {
 					char szScrambled[64];
-					if(strlen((char*)setting[i].value)>9 || strlen((char*)setting[i].value)<1) 
+					if(strlen((char*)setting[i].value)>8 || strlen((char*)setting[i].value)<1) 
           {
-						MessageBox(hwndDlg,Translate("The ICQ server does not support passwords longer than 9 characters. Please use a shorter password."),Translate("Change ICQ Details"),MB_OK);
+						MessageBox(hwndDlg,Translate("The ICQ server does not support passwords longer than 8 characters. Please use a shorter password."),Translate("Change ICQ Details"),MB_OK);
 						ret=0;
 						break;
 					}
@@ -183,9 +185,10 @@ int SaveSettingsToDb(HWND hwndDlg)
 						ret=0;
 						break;
 					}
-					lstrcpyn(szScrambled,(char*)setting[i].value,sizeof(szScrambled));
+          strcpy(gpszPassword, (char*)setting[i].value);
+/*					lstrcpyn(szScrambled,(char*)setting[i].value,sizeof(szScrambled));
 					CallService(MS_DB_CRYPT_ENCODESTRING,sizeof(szScrambled),(LPARAM)szScrambled);
-					ICQWriteContactSettingString(NULL,setting[i].szDbSetting,szScrambled);
+					ICQWriteContactSettingString(NULL,setting[i].szDbSetting,szScrambled);*/
 				}
 				else 
         {
