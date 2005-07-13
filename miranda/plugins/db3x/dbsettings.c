@@ -451,9 +451,14 @@ static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 
 			MultiByteToWideChar( CP_ACP, 0, dgs->pValue->pszVal, -1, wszResult, len );
 			wszResult[ len ] = 0;
+			mir_free( dgs->pValue->pszVal );
 			dgs->pValue->pwszVal = wszResult;
 		}
-		else Utf8Decode( dgs->pValue->pszVal, &dgs->pValue->pwszVal );
+		else {
+			char* savePtr = dgs->pValue->pszVal;
+			Utf8Decode( dgs->pValue->pszVal, &dgs->pValue->pwszVal );
+			mir_free( savePtr );
+		}
 	}
 	else if ( iSaveType == DBVT_UTF8 ) {
 		char* tmpBuf = Utf8Encode( dgs->pValue->pszVal );
@@ -491,6 +496,7 @@ static int FreeVariant(WPARAM wParam,LPARAM lParam)
 	switch ( dbv->type ) {
 		case DBVT_ASCIIZ:
 		case DBVT_UTF8:
+		case DBVT_WCHAR:
 		{
 			if ( dbv->pszVal ) mir_free(dbv->pszVal);
 			dbv->pszVal=0;
