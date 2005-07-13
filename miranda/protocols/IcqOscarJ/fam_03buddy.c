@@ -710,7 +710,14 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               else if (MatchCap(pTLV->pData, pTLV->wLen, &capIs2002, 0x10))
                 szClient = "ICQ 2002";
               else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY || CAPF_UTF) && MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
-                szClient = "ICQ 2002/2003a";
+              {
+                if (!dwFT1 && !dwFT2 && !dwFT3)
+                  szClient = "GnomeICU"; // no other way
+                else
+                  szClient = "ICQ 2002/2003a";
+              }
+              else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY || CAPF_UTF) && !dwFT1 && !dwFT2 && !dwFT3)
+                szClient = "Agile Messenger"; // no other way
             }
             else if (wVersion == 9)
             { // try to determine lite versions

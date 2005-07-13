@@ -694,8 +694,8 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
         }
 
 				unpackLEWord(&buf, &wSecondLen);
-				if (wSecondLen != 0x2b)
-        {
+				if (wSecondLen && wSecondLen != 0x2b)
+        { // OMG? GnomeICU sets this to zero
           NetLog_Direct("Error: Received malformed PEER_INIT");
           return;
         }

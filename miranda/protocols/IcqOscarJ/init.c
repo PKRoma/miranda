@@ -106,21 +106,21 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	_tzset();
 
 	// Get module name from DLL file name
+  {
+    char* str1;
+    char str2[MAX_PATH];
+
+    GetModuleFileName(hInst, str2, MAX_PATH);
+    str1 = strrchr(str2, '\\');
+    if (str1 != NULL && (strlen(str1+1) > 4))
     {
-
-		char* str1;
-        char str2[MAX_PATH];
-
-
-		GetModuleFileName(hInst, str2, MAX_PATH);
-        str1 = strrchr(str2, '\\');
-        if (str1 != NULL && (strlen(str1+1) > 4))
-		{
-			strncpy(gpszICQProtoName, str1+1, strlen(str1+1)-4);
-			gpszICQProtoName[strlen(str1+1)-3] = 0;
-        }
-		CharUpper(gpszICQProtoName);
+      strncpy(gpszICQProtoName, str1+1, strlen(str1+1)-4);
+      gpszICQProtoName[strlen(str1+1)-3] = 0;
     }
+    CharUpper(gpszICQProtoName);
+  }
+
+  ZeroMemory(gpszPassword, sizeof(gpszPassword));
 
 	icq_FirstRunCheck();
 
@@ -185,8 +185,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		CreateServiceFunction(pszServiceName , IcqAddToList);
 		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, PS_ADDTOLISTBYEVENT);
 		CreateServiceFunction(pszServiceName , IcqAddToListByEvent);
-//		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, PS_CHANGEINFO);
-//		CreateServiceFunction(pszServiceName , IcqChangeInfo);
 		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, PS_FILERESUME);
 		CreateServiceFunction(pszServiceName , IcqFileResume);
 		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, PSS_GETINFO);

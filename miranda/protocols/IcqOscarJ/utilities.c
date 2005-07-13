@@ -1209,3 +1209,23 @@ int __fastcall ICQTranslateDialog(HWND hwndDlg)
 	lptd.ignoreControls=NULL;
 	return CallService(MS_LANGPACK_TRANSLATEDIALOG,0,(LPARAM)&lptd);
 }
+
+
+char* GetUserPassword(BOOL bAlways)
+{
+  if (gpszPassword[0] != '\0' && (gbRememberPwd || bAlways))
+    return gpszPassword;
+
+  if (!ICQGetContactStaticString(NULL, "Password", gpszPassword, sizeof(gpszPassword)))
+  {
+    CallService(MS_DB_CRYPT_DECODESTRING, strlen(gpszPassword) + 1, (LPARAM)gpszPassword);
+
+    if (!strlen(gpszPassword)) return NULL;
+
+    gbRememberPwd = TRUE;
+
+    return gpszPassword;
+  }
+
+  return NULL;
+}

@@ -123,5 +123,7 @@ int ICQBroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM l
 
 int __fastcall ICQTranslateDialog(HWND hwndDlg);
 
+char* GetUserPassword(BOOL bAlways);
+
 
 #endif /* __UTILITIES_H */

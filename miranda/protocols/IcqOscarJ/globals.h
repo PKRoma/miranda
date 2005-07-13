@@ -63,4 +63,7 @@ DWORD MIRANDA_VERSION;
 int gnCurrentStatus;
 DWORD dwLocalUIN;
 
+char gpszPassword[16];
+BYTE gbRememberPwd;
+
 #endif /* __GLOBALS_H */

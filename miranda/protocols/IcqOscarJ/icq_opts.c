@@ -113,17 +113,18 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
   case WM_INITDIALOG:
     {
       DBVARIANT dbv;
+      char pszPwd[16];
 
 			ICQTranslateDialog(hwndDlg);
 
 			SetDlgItemInt(hwndDlg, IDC_ICQNUM, ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0), FALSE);
 
-			if (!ICQGetContactSetting(NULL, "Password", &dbv))
-			{
-				//bit of a security hole here, since it's easy to extract a password from an edit box
-				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM)dbv.pszVal);
-				SetDlgItemText(hwndDlg, IDC_PASSWORD, dbv.pszVal);
-				DBFreeVariant(&dbv);
+      if (!ICQGetContactStaticString(NULL, "Password", pszPwd, sizeof(pszPwd)))
+      {
+        CallService(MS_DB_CRYPT_DECODESTRING, strlen(pszPwd) + 1, (LPARAM)pszPwd);
+
+        //bit of a security hole here, since it's easy to extract a password from an edit box
+				SetDlgItemText(hwndDlg, IDC_PASSWORD, pszPwd);
 			}
 			
 			if (!ICQGetContactSetting(NULL, "OscarServer", &dbv))
@@ -205,6 +206,15 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					
 					ICQWriteContactSettingDword(NULL, UNIQUEIDSETTING, (DWORD)GetDlgItemInt(hwndDlg, IDC_ICQNUM, NULL, FALSE));
 					GetDlgItemText(hwndDlg, IDC_PASSWORD, str, sizeof(str));
+          if (strlen(str))
+          {
+            strcpy(gpszPassword, str);
+            gbRememberPwd = TRUE;
+          }
+          else
+          {
+            gbRememberPwd = ICQGetContactSettingByte(NULL, "RememberPass", 0);
+          }
 					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM)str);
 					ICQWriteContactSettingString(NULL, "Password", str);
 					GetDlgItemText(hwndDlg,IDC_ICQSERVER, str, sizeof(str));

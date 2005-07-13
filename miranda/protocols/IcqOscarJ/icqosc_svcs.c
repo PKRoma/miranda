@@ -242,7 +242,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 			// We are offline and need to connect
 			case ID_STATUS_OFFLINE:
 				{
-					DBVARIANT dbvPassword = {DBVT_DELETED};
+					char *pszPwd;
 
 					// Update user connection settings
 					UpdateGlobalSettings();
@@ -262,19 +262,12 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 					SetCurrentStatus(ID_STATUS_CONNECTING);
 
 					// Read password from database
-					ICQGetContactSetting(NULL, "Password", &dbvPassword);
-					if ( dbvPassword.pszVal && (strlen(dbvPassword.pszVal) > 0) ) 
-          {
-						CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbvPassword.pszVal) + 1, (LPARAM)dbvPassword.pszVal);
+          pszPwd = GetUserPassword(FALSE);
 
-						icq_login(dbvPassword.pszVal);
-					}
+          if (pszPwd)
+						icq_login(pszPwd);
 					else 
-          {
 						RequestPassword();
-					}
-
-					DBFreeVariant(&dbvPassword);
 
 					break;
 				}

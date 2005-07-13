@@ -57,7 +57,7 @@ BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 	case WM_INITDIALOG:
     {
-      DBVARIANT dbv;
+      char* pszPwd;
 			DWORD dwUIN;
 			char pszUIN[20];
 
@@ -73,11 +73,11 @@ BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
         SetDlgItemText(hwndDlg, IDC_UIN, pszUIN);
       }
 
-      if (!ICQGetContactSetting(NULL, "Password", &dbv))
+      SendDlgItemMessage(hwndDlg, IDC_PW, EM_LIMITTEXT, 10, 0);
+      pszPwd = GetUserPassword(FALSE);
+      if (pszPwd)
 			{
-        CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-        SetDlgItemText(hwndDlg, IDC_PW, dbv.pszVal);
-        DBFreeVariant(&dbv);
+        SetDlgItemText(hwndDlg, IDC_PW, pszPwd);
       }
     }
 		break;
@@ -102,11 +102,11 @@ BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					char str[128];
 					DWORD dwUIN;
 
-
 					GetDlgItemText(hwndDlg, IDC_UIN, str, sizeof(str));
 					dwUIN = atoi(str);
 					ICQWriteContactSettingDword(NULL, UNIQUEIDSETTING, dwUIN);
 					GetDlgItemText(hwndDlg, IDC_PW, str, sizeof(str));
+          strcpy(gpszPassword, str);
 					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
 					ICQWriteContactSettingString(NULL, "Password", str);
 				}

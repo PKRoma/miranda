@@ -42,6 +42,8 @@ Bugfixes:
   Incorporated some bugfixes from ISee (thx Bio)
   Message errors are now really displayed
   Fixed memory leak in avatar code
+  File transfers with GnomeICU works now
+  Fixed changing password in ICQ Details will not save it to DB if not there
 
 New Features:
   Messaging support enhanced (P2P messaging supported)
@@ -49,6 +51,7 @@ New Features:
   Temporary Visible List support
   New Features page in options to configure extra features
   Custom statuses just like icq5 - needs clist_mw derivative (thx Big Muscle)
+TODO: Enhanced Unicode & Ansi charsets support
 TODO: AIM cross-compatability (only messages)
 
 Improvements:
@@ -56,6 +59,7 @@ Improvements:
   Better protocol error handling
   Detects some spam bots & ability to block known spam bots
   Merged with ChangeInfo (thx Bio)
+  Added possibility to remember password for session
 TODO:  Support for Iconlib
 TODO:  Display error messages using PopUp Plugin
 TODO:  Manage server-list dialog now groups requests - much faster

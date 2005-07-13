@@ -486,8 +486,10 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 		case PEER_FILE_RESUME:
 			if (dc->ft->fileId == -1 && !dc->ft->currentIsDir)
 				return;
-			if (wLen < 17)
+			if (wLen < 13)
 				return;
+      if (wLen < 17)
+        NetLog_Direct("Warning: Received short PEER_FILE_RESUME");
 			buf++;
 			{
 				DWORD dwRestartFrom;

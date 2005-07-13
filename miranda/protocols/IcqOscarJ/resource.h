@@ -20,6 +20,7 @@
 #define IDD_INFO_CHANGEINFO             301
 #define IDC_LOG                         1001
 #define IDI_ICQ                         1001
+#define IDC_SAVEPASS                    1004
 #define IDC_USEGATEWAY                  1010
 #define IDC_UTFENABLE                   1010
 #define IDC_XTITLE                      1010
