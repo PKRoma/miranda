@@ -1736,6 +1736,12 @@ void HandlePasteAndSend(HWND hwndDlg, struct MessageWindowData *dat)
 int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct MessageWindowData *dat)
 {
     LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
+
+    if(!dat)
+        return;
+    if(dat->dwFlags & MWF_INITMODE)
+        return;
+    
     if(dis->CtlType == ODT_BUTTON && dis->CtlID == IDC_TOGGLESIDEBAR) {
         HICON hIcon;
         DWORD bStyle = 0;
