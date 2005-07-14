@@ -36,7 +36,16 @@ int __stdcall MSN_BitmapToAvatarDibBits( HBITMAP hBitmap, BITMAPINFOHEADER*& ppD
 	GetObject( hBitmap, sizeof( BITMAP ), &bmp );
 
 	HDC hBmpDC = CreateCompatibleDC( hDC );
-	HBITMAP hStretchedBitmap = CreateBitmap( 96, 96, 1, GetDeviceCaps( hDC, BITSPIXEL ), NULL );
+
+	BITMAPINFO bmStretch = { 0 }; 
+	bmStretch.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmStretch.bmiHeader.biWidth = 96;
+	bmStretch.bmiHeader.biHeight = 96;
+	bmStretch.bmiHeader.biPlanes = 1;
+	bmStretch.bmiHeader.biBitCount = 32;
+
+	UINT* ptPixels;
+	HBITMAP hStretchedBitmap = CreateDIBSection( NULL, &bmStretch, DIB_RGB_COLORS, ( void** )&ptPixels, NULL, 0);
 	if ( hStretchedBitmap == NULL ) {
 		MSN_DebugLog( "Bitmap creation failed with error %d", GetLastError() );
 		return 1;
