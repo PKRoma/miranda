@@ -1107,6 +1107,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 // input history stuff (initialise it..)
 
                 dat->iHistorySize = DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 10);
+                if(dat->iHistorySize < 10)
+                    dat->iHistorySize = 10;
                 dat->history = malloc(sizeof(struct InputHistory) * (dat->iHistorySize + 1));
                 dat->iHistoryCurrent = 0;
                 dat->iHistoryTop = 0;

@@ -1267,7 +1267,7 @@ void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam
 
     szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS|SFF_PLAINRTF|SF_USECODEPAGE));
 
-    iLength = iStreamLength = lstrlenA(szFromStream) + 1;
+    iLength = iStreamLength = (lstrlenA(szFromStream) + 1);
 
     if(iLength > 0 && dat->history != NULL) {
         if((dat->iHistoryTop == dat->iHistorySize) && oldTop == 0) {          // shift the stack down...
