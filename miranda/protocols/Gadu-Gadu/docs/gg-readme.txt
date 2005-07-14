@@ -60,6 +60,9 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.3.2: 2005-07-14
+ - Fix: libgadu event.c commit version 1.83 by szalik introduced bug that was
+   crashing Miranda on image receive, since it was designed specially for Kadu
 0.0.3.1: 2005-07-12
  - Hidden db setting "EraOmnix" for being visible as EraOmnix client
  - Fix: Temporary contacts cannot see our status when having "Friends only"
