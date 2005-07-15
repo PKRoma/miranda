@@ -1088,7 +1088,7 @@ LBL_InvalidCommand:
 			if ( tArgs < 3 )
 				goto LBL_InvalidCommand;
 
-			UrlDecode( data.userEmail ); UrlDecode( data.userNick ); Utf8Decode( data.userNick );
+			UrlDecode( data.userEmail ); UrlDecode( data.userNick );
 
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 0, 0 );
 			if ( hContact != NULL) {
@@ -1098,7 +1098,7 @@ LBL_InvalidCommand:
 					if ( hContact == T->mInitialContact )
 						T->sendPacket( "CAL", "%s", data.userEmail );
 
-				MSN_SetString( hContact, "Nick", data.userNick );
+				MSN_SetStringUtf( hContact, "Nick", data.userNick );
 				MSN_SetWord( hContact, "Status", ( WORD )MSNStatusToMiranda( data.userStatus ));
 			}
 
@@ -1371,10 +1371,10 @@ LBL_InvalidCommand:
 			if ( sttDivideWords( params, 2, tWords ) != 2 )
 				goto LBL_InvalidCommand;
 
-			UrlDecode( data.value ); Utf8Decode( data.value );
+			UrlDecode( data.value );
 			if ( !stricmp( data.name, "MFN" ))
 				if ( !sttIsSync || !MSN_GetByte( "NeverUpdateNickname", 0 ))
-					MSN_SetString( NULL, "Nick", data.value );
+					MSN_SetStringUtf( NULL, "Nick", data.value );
 			break;
 		}
 		case ' YRQ':   //********* QRY:
@@ -1389,25 +1389,6 @@ LBL_InvalidCommand:
 			}
 			break;
 
-		case ' AER':	//********* REA: get a nickname
-		{
-			union {
-				char* tWords[ 3 ];
-				struct { char *id, *userEmail, *userNick; } data;
-			};
-
-			if ( sttDivideWords( params, 3, tWords ) != 3 )
-				goto LBL_InvalidCommand;
-
-			UrlDecode( data.userEmail );
-			UrlDecode( data.userNick ); Utf8Decode( data.userNick );
-
-			char tEmail[ MSN_MAX_EMAIL_LEN ];
-			MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof( tEmail ));
-			if ( stricmp( data.userEmail, tEmail ) == 0 )
-				MSN_SetString( NULL, "Nick", data.userNick );
-			break;
-		}
 		case ' GER':   //********* REG: rename group
 		{
 			union {
@@ -1598,7 +1579,7 @@ LBL_InvalidCommand:
 					if ( MSN_GetByte( "NeverUpdateNickname", 0 )) {
 						char tNick[ 130 ];
 						MSN_GetStaticString( "Nick", NULL, tNick, sizeof tNick );
-						MSN_SendNickname( tWords[1], tNick );
+						MSN_SendNickname( tNick );
 
 						MSN_DebugLog( "Logged in as '%s', name is '%s'", tWords[1], tNick );
 					}

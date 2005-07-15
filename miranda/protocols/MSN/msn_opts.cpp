@@ -111,7 +111,13 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		SendDlgItemMessage( hwndDlg, IDC_PASSWORD, EM_SETLIMITTEXT, 16, 0 );
 
 		HWND wnd = GetDlgItem( hwndDlg, IDC_HANDLE2 );
-		if ( !MSN_GetStaticString( "Nick", NULL, tBuffer, sizeof( tBuffer )))
+		if ( msnRunningUnderNT && msnUtfServicesAvailable ) {
+			DBVARIANT dbv;
+			if ( !DBGetContactSettingWString( NULL, msnProtocolName, "Nick", &dbv )) {
+				SetWindowTextW( wnd, dbv.pwszVal );
+				MSN_FreeVariant( &dbv );
+		}	}
+		else if ( !MSN_GetStaticString( "Nick", NULL, tBuffer, sizeof( tBuffer )))
 			SetWindowText( wnd, tBuffer );
 		if ( !msnLoggedIn )
 			EnableWindow( wnd, FALSE );
@@ -284,6 +290,7 @@ LBL_Continue:
 			bool reconnectRequired = false, restartRequired = false;
 			char screenStr[ MAX_PATH ], dbStr[ MAX_PATH ];
 			char tEmail[ MSN_MAX_EMAIL_LEN ];
+			WCHAR *screenStrW;
 
 			GetDlgItemText( hwndDlg, IDC_HANDLE, tEmail, sizeof( tEmail ));
 			if ( MSN_GetStaticString( "e-mail", NULL, dbStr, sizeof( dbStr )))
@@ -300,12 +307,31 @@ LBL_Continue:
 				reconnectRequired = true;
 			MSN_SetString( NULL, "Password", screenStr );
 
-			GetDlgItemText( hwndDlg, IDC_HANDLE2, screenStr, sizeof( screenStr ));
-			if ( MSN_GetStaticString( "Nick", NULL, dbStr, sizeof( dbStr )))
-				dbStr[0] = 0;
-			if ( strcmp( screenStr, dbStr ) && msnLoggedIn )
-				MSN_SendNickname( tEmail, screenStr );
-			MSN_SetString( NULL, "Nick", screenStr );
+			if ( msnRunningUnderNT && msnUtfServicesAvailable ) {
+				screenStrW = ( WCHAR* )alloca( MAX_PATH * sizeof( WCHAR ));
+				GetDlgItemTextW( hwndDlg, IDC_HANDLE2, screenStrW, MAX_PATH );
+
+				if ( msnLoggedIn ) {
+					DBVARIANT dbv;
+					if	( !DBGetContactSettingWString( NULL, msnProtocolName, "Nick", &dbv )) {
+						if ( wcscpy( dbv.pwszVal, screenStrW )) {
+							char* szNickUtf = Utf8EncodeUcs2( dbv.pwszVal );
+							msnNsThread->sendPacket( "PRP", "MFN %s", szNickUtf );
+							free( szNickUtf );
+						}
+						MSN_FreeVariant( &dbv );
+				}	}
+
+				DBWriteContactSettingWString( NULL, msnProtocolName, "Nick", screenStrW );
+			}
+			else {
+				GetDlgItemTextA( hwndDlg, IDC_HANDLE2, screenStr, sizeof( screenStr ));
+				if ( MSN_GetStaticString( "Nick", NULL, dbStr, sizeof( dbStr )))
+					dbStr[0] = 0;
+				if ( strcmp( screenStr, dbStr ) && msnLoggedIn )
+					MSN_SendNickname( screenStr );
+				MSN_SetString( NULL, "Nick", screenStr );
+			}
 
 			BYTE tValue = IsDlgButtonChecked( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS );
 			if ( tValue != msnOtherContactsBlocked && msnLoggedIn ) {

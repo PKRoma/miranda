@@ -1025,9 +1025,7 @@ static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
 
 static int MsnSetNickName( WPARAM wParam, LPARAM lParam )
 {
-	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	MSN_GetStaticString( "e-mail", ( HANDLE )wParam, tEmail, sizeof( tEmail ));
-	MSN_SendNickname( tEmail, ( char* )lParam );
+	MSN_SendNickname(( char* )lParam );
 	return 0;
 }
 
@@ -1044,25 +1042,37 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSN )));
 			SendMessage( GetDlgItem( hwndDlg, IDC_NICKNAME ), EM_LIMITTEXT, 129, 0 );
 
-			char tNick[ 130 ];
-			if ( !MSN_GetStaticString( "Nick", NULL, tNick, sizeof tNick ))
-				SetDlgItemText( hwndDlg, IDC_NICKNAME, tNick );
-
+			if ( msnRunningUnderNT && msnUtfServicesAvailable ) {
+				DBVARIANT dbv;
+				if ( !DBGetContactSettingWString( NULL, msnProtocolName, "Nick", &dbv )) {
+					SetDlgItemTextW( hwndDlg, IDC_NICKNAME, dbv.pwszVal );
+					MSN_FreeVariant( &dbv );
+				}
+			}
+			else {
+				char tNick[ 130 ];
+				if ( !MSN_GetStaticString( "Nick", NULL, tNick, sizeof tNick ))
+					SetDlgItemText( hwndDlg, IDC_NICKNAME, tNick );
+			}
 			return TRUE;
 		}
 		case WM_COMMAND:
 			switch(wParam)
 			{
 				case IDOK:
-					if ( msnLoggedIn )
-					{
-						char str[ 130 ];
-						GetDlgItemText( hwndDlg, IDC_NICKNAME, str, sizeof( str ));
-
-						char tEmail[ MSN_MAX_EMAIL_LEN ];
-						MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof( tEmail ));
-						MSN_SendNickname( tEmail, str );
-					}
+					if ( msnLoggedIn ) {
+						if ( msnRunningUnderNT && msnUtfServicesAvailable ) {
+							WCHAR str[ 130 ];
+							GetDlgItemTextW( hwndDlg, IDC_NICKNAME, str, sizeof( str ));
+							char* szNickUtf = Utf8EncodeUcs2( str );
+							msnNsThread->sendPacket( "PRP", "MFN %s", szNickUtf );
+							free( szNickUtf );
+						}
+						else {
+							char str[ 130 ];
+							GetDlgItemText( hwndDlg, IDC_NICKNAME, str, sizeof( str ));
+							MSN_SendNickname( str );
+					}	}
 
 				case IDCANCEL:
  					DestroyWindow( hwndDlg );

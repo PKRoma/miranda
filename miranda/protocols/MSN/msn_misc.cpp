@@ -368,7 +368,7 @@ LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Msn_SendNickname - update our own nickname on the server
 
-int __stdcall MSN_SendNickname(char *email, char *nickname)
+int __stdcall MSN_SendNickname(char *nickname)
 {
 	char* nickutf = Utf8Encode( nickname );
 

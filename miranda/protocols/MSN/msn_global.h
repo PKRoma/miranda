@@ -164,7 +164,7 @@ void		__cdecl		MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP );
 void		__stdcall	MSN_GoOffline( void );
 void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen, bool bOldFormat = false );
 LPTSTR	__stdcall   MSN_GetErrorText( DWORD parErrorCode );
-int		__stdcall	MSN_SendNickname(char *email, char *nickname);
+int		__stdcall	MSN_SendNickname(char *nickname);
 void     __stdcall   MSN_SendStatusMessage( const char* msg );
 void		__stdcall	MSN_SetServerStatus( int newStatus );
 char*		__stdcall	MSN_StoreLen( char* dest, char* last );
@@ -189,6 +189,7 @@ DWORD		__stdcall	MSN_SetByte( const char* valueName, int parValue );
 DWORD		__stdcall	MSN_SetDword( HANDLE hContact, const char* valueName, DWORD parValue );
 DWORD		__stdcall	MSN_SetWord( HANDLE hContact, const char* valueName, int parValue );
 DWORD		__stdcall	MSN_SetString( HANDLE hContact, const char* valueName, const char* parValue );
+DWORD		__stdcall	MSN_SetStringUtf( HANDLE hContact, const char* valueName, char* parValue );
 void     __cdecl		MSN_ShowError( const char* msgtext, ... );
 char*		__stdcall	MSN_Translate( const char* str );
 
@@ -580,5 +581,6 @@ extern	int			msnOtherContactsBlocked;
 
 extern   bool			msnRunningUnderNT;
 extern	bool			msnHaveChatDll;
+extern	bool			msnUtfServicesAvailable;
 
 extern	HANDLE		hGroupAddEvent;

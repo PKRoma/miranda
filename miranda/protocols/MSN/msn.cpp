@@ -43,6 +43,7 @@ void		P2pSessions_Uninit( void );
 void		P2pSessions_Init( void );
 void		Threads_Uninit( void );
 int		MsnOptInit( WPARAM wParam, LPARAM lParam );
+void		UninitSsl( void );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Global variables
@@ -56,6 +57,7 @@ HANDLE   hHookOnUserInfoInit = NULL;
 HANDLE   hGroupAddEvent = NULL;
 bool     msnRunningUnderNT = false;
 bool		msnHaveChatDll = false;
+bool     msnUtfServicesAvailable = false;
 
 MYOPTIONS MyOptions;
 
@@ -130,6 +132,8 @@ static HANDLE hChatEvent = NULL, hChatMenu = NULL;
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
+	msnUtfServicesAvailable = false; //ServiceExists( MS_DB_CONTACT_GETSETTING_STR );
+
 	char szBuffer[ MAX_PATH ];
 
 	WORD wPort = MSN_GetWord( NULL, "YourPort", 0xFFFF );
@@ -353,6 +357,7 @@ int __declspec( dllexport ) Unload( void )
 	if ( hInitChat )
 		DestroyHookableEvent( hInitChat );
 
+	UninitSsl();
 	MSN_FreeGroups();
 	Threads_Uninit();
 	MsgQueue_Uninit();

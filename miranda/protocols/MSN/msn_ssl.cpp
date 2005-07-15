@@ -323,39 +323,57 @@ typedef int ( *PFN_SSL_int_pvoid_pvoid_int ) ( PVOID, PVOID, int );
 
 struct SSL_OpenSsl : public SSL_Base
 {
-	virtual ~SSL_OpenSsl();
-
 	virtual  char* getSslResult( char* parUrl, char* parAuthInfo );
 	virtual  int init();
 
-	PVOID sslCtx;
+	static	PVOID sslCtx;
 
-	HMODULE hLibSSL, hLibEAY;
-	PFN_SSL_int_void            pfn_SSL_library_init;
-	PFN_SSL_pvoid_void          pfn_SSLv23_client_method;
-	PFN_SSL_pvoid_pvoid         pfn_SSL_CTX_new;
-	PFN_SSL_void_pvoid          pfn_SSL_CTX_free;
-	PFN_SSL_pvoid_pvoid         pfn_SSL_new;
-	PFN_SSL_void_pvoid          pfn_SSL_free;
-	PFN_SSL_int_pvoid_int       pfn_SSL_set_fd;
-	PFN_SSL_int_pvoid           pfn_SSL_connect;
-	PFN_SSL_int_pvoid_pvoid_int pfn_SSL_read;
-	PFN_SSL_int_pvoid_pvoid_int pfn_SSL_write;
+	static	HMODULE hLibSSL, hLibEAY;
+	static	PFN_SSL_int_void            pfn_SSL_library_init;
+	static	PFN_SSL_pvoid_void          pfn_SSLv23_client_method;
+	static	PFN_SSL_pvoid_pvoid         pfn_SSL_CTX_new;
+	static	PFN_SSL_void_pvoid          pfn_SSL_CTX_free;
+	static	PFN_SSL_pvoid_pvoid         pfn_SSL_new;
+	static	PFN_SSL_void_pvoid          pfn_SSL_free;
+	static	PFN_SSL_int_pvoid_int       pfn_SSL_set_fd;
+	static	PFN_SSL_int_pvoid           pfn_SSL_connect;
+	static	PFN_SSL_int_pvoid_pvoid_int pfn_SSL_read;
+	static	PFN_SSL_int_pvoid_pvoid_int pfn_SSL_write;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+PVOID		SSL_OpenSsl::sslCtx = NULL;
+
+HMODULE	SSL_OpenSsl::hLibSSL = NULL,
+			SSL_OpenSsl::hLibEAY = NULL;
+
+PFN_SSL_int_void            SSL_OpenSsl::pfn_SSL_library_init;
+PFN_SSL_pvoid_void          SSL_OpenSsl::pfn_SSLv23_client_method;
+PFN_SSL_pvoid_pvoid         SSL_OpenSsl::pfn_SSL_CTX_new;
+PFN_SSL_void_pvoid          SSL_OpenSsl::pfn_SSL_CTX_free;
+PFN_SSL_pvoid_pvoid         SSL_OpenSsl::pfn_SSL_new;
+PFN_SSL_void_pvoid          SSL_OpenSsl::pfn_SSL_free;
+PFN_SSL_int_pvoid_int       SSL_OpenSsl::pfn_SSL_set_fd;
+PFN_SSL_int_pvoid           SSL_OpenSsl::pfn_SSL_connect;
+PFN_SSL_int_pvoid_pvoid_int SSL_OpenSsl::pfn_SSL_read;
+PFN_SSL_int_pvoid_pvoid_int SSL_OpenSsl::pfn_SSL_write;
+
 int SSL_OpenSsl::init()
 {
-	if (( hLibEAY = LoadLibrary( "LIBEAY32.DLL" )) == NULL ) {
-		MSN_ShowError( "Valid %s must be installed to perform the SSL login", "LIBEAY32.DLL" );
-		return 1;
-	}
+	if ( sslCtx != NULL )
+		return 0;
 
-	if (( hLibSSL = LoadLibrary( "LIBSSL32.DLL" )) == NULL ) {
-		MSN_ShowError( "Valid %s must be installed to perform the SSL login", "LIBSSL32.DLL" );
-		return 1;
-	}
+	if ( hLibSSL == NULL ) {
+		if (( hLibEAY = LoadLibrary( "LIBEAY32.DLL" )) == NULL ) {
+			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "LIBEAY32.DLL" );
+			return 1;
+		}
+
+		if (( hLibSSL = LoadLibrary( "LIBSSL32.DLL" )) == NULL ) {
+			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "LIBSSL32.DLL" );
+			return 1;
+	}	}
 
 	int retVal = 0;
 	if (( pfn_SSL_library_init = ( PFN_SSL_int_void )GetProcAddress( hLibSSL, "SSL_library_init" )) == NULL )
@@ -390,18 +408,6 @@ int SSL_OpenSsl::init()
 	MSN_DebugLog( "OpenSSL context successully allocated" );
 	return 0;
 }
-
-SSL_OpenSsl::~SSL_OpenSsl()
-{
-	if ( hLibEAY )
-		FreeLibrary( hLibEAY );
-
-	if ( hLibSSL ) {
-		pfn_SSL_CTX_free( sslCtx );
-
-		MSN_DebugLog( "Free SSL library" );
-		FreeLibrary( hLibSSL );
-}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -560,3 +566,15 @@ LBL_Exit:
 	parResult = tResult;
 	goto LBL_Exit;
 }
+
+void UninitSsl( void )
+{
+	if ( SSL_OpenSsl::hLibEAY )
+		FreeLibrary( SSL_OpenSsl::hLibEAY );
+
+	if ( SSL_OpenSsl::hLibSSL ) {
+		SSL_OpenSsl::pfn_SSL_CTX_free( SSL_OpenSsl::sslCtx );
+
+		MSN_DebugLog( "Free SSL library" );
+		FreeLibrary( SSL_OpenSsl::hLibSSL );
+}	}

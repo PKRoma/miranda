@@ -44,7 +44,7 @@ HANDLE __stdcall MSN_HContactFromEmail( const char* msnEmail, const char* msnNic
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_ADD, 0, 0 );
 		MSN_CallService( MS_PROTO_ADDTOCONTACT, ( WPARAM )hContact, ( LPARAM )msnProtocolName );
 		MSN_SetString( hContact, "e-mail", msnEmail );
-		MSN_SetString( hContact, "Nick", msnNick );
+		MSN_SetStringUtf( hContact, "Nick", ( char* )msnNick );
 		if ( temporary )
 			DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 
