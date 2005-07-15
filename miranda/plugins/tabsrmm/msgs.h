@@ -71,6 +71,12 @@ typedef struct __gettextex
 	LPBOOL	lpUsedDefChar;	// Pointer to flag set when def char used	
 } _GETTEXTEX;
 
+#define WM_APPCOMMAND                   0x0319
+#define APPCOMMAND_BROWSER_BACKWARD       1
+#define APPCOMMAND_BROWSER_FORWARD        2
+#define FAPPCOMMAND_MASK  0xF000
+#define GET_APPCOMMAND_LPARAM(lParam) ((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
+
 #ifndef _WIN32_IE
 typedef struct tagNMMOUSE {
     NMHDR   hdr;

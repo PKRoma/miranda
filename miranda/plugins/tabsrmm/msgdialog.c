@@ -1408,11 +1408,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
                         dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
                     }
-                    ShowWindow(hwndDlg, SW_SHOW);
                     dat->pContainer->hwndActive = hwndDlg;
-                    SetActiveWindow(hwndDlg);
-                    SetForegroundWindow(hwndDlg);
-                    SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                    if(!(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED)) {
+                        ShowWindow(hwndDlg, SW_SHOW);
+                        SetActiveWindow(hwndDlg);
+                        SetForegroundWindow(hwndDlg);
+                        SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                    }
                 }
                 else {
                     DBEVENTINFO dbei = {0};
