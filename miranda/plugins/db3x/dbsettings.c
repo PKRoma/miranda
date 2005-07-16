@@ -420,6 +420,7 @@ static __inline int GetContactSettingWorker(HANDLE hContact,DBCONTACTGETSETTING 
 static int GetContactSetting(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTGETSETTING* dgs = ( DBCONTACTGETSETTING* )lParam;
+	dgs->pValue->type = 0;
 	if ( GetContactSettingWorker(( HANDLE )wParam, dgs, 0 ))
 		return 1;
 
@@ -433,13 +434,16 @@ static int GetContactSetting(WPARAM wParam,LPARAM lParam)
 
 static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 {
-	DBCONTACTGETSETTING* dgs = ( DBCONTACTGETSETTING* )lParam;
+	DBCONTACTGETSETTING* dgs = (DBCONTACTGETSETTING*)lParam;
 	int iSaveType = dgs->pValue->type;
 
 	if ( GetContactSettingWorker(( HANDLE )wParam, dgs, 0 ))
 		return 1;
 
    if ( iSaveType == dgs->pValue->type )
+		return 0;
+
+	if ( dgs->pValue->type != DBVT_ASCIIZ && dgs->pValue->type != DBVT_UTF8 )
 		return 0;
 
 	if ( iSaveType == DBVT_WCHAR ) {
