@@ -1364,6 +1364,8 @@ panel_found:
                 pContainer->dwPrivateFlags |= (CNT_GLOBALSETTINGS);
 			}
 			else {
+                if(!(dwLocalFlags & CNT_NEWCONTAINERFLAGS))
+                    dwLocalFlags = CNT_FLAGS_DEFAULT;
 				pContainer->dwPrivateFlags = dwLocalFlags;
                 pContainer->dwFlags = dwLocalFlags & CNT_GLOBALSETTINGS ? myGlobals.m_GlobalContainerFlags : dwLocalFlags;
 			}

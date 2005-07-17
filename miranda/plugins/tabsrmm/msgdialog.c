@@ -1213,9 +1213,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->minEditBoxSize.cx = rc.right - rc.left;
                 dat->minEditBoxSize.cy = rc.bottom - rc.top;
 
-                SetDlgItemTextA(hwndDlg, IDC_ADD, Translate("Add it"));
-                SetDlgItemTextA(hwndDlg, IDC_CANCELADD, Translate("Leave it"));
-
                 SendMessage(hwndDlg, DM_LOADBUTTONBARICONS, 0, 0);
 
                 SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BUTTONSETASPUSHBTN, 0, 0);
@@ -1262,6 +1259,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 
                 SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, Translate("Message Log is frozen"));
+                //SetDlgItemTextW(hwndDlg, IDC_LOGFROZENTEXT, (wchar_t *)CallService(MS_LANGPACK_TRANSLATESTRING, 1, "Message Log is frozen"));
                 
                 SendMessage(GetDlgItem(hwndDlg, IDC_SAVE), BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
                 if(dat->bIsMeta)
@@ -2729,6 +2727,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 res = DBGetContactSetting(dat->hContact, SRMSGMOD_T, "locale", &dbv);
                 if (res == 0 && dbv.type == DBVT_ASCIIZ) {
+                    
                     dat->hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
                     PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                     GetLocaleID(dat, dbv.pszVal);

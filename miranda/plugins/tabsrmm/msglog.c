@@ -1485,10 +1485,10 @@ static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t che
     dbtts.cbDest = 70;;
     dbtts.szDest = szResult;
 
-    if((code == 'R' || code == 'r') && check >= today) {
+    if((code == 'R' || code == 'r' || code == 'E') && check >= today) {
         strcpy(szResult, szToday);
     }
-    else if((code == 'R' || code == 'r') && check > (today - 86400)) {
+    else if((code == 'R' || code == 'r' || code =='E') && check > (today - 86400)) {
         strcpy(szResult, szYesterday);
     }
     else {

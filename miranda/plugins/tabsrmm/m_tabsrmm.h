@@ -300,6 +300,7 @@ struct MessageWindowData {
     int    iEventQueueSize;
     HBITMAP hbmMsgArea;
     TCHAR newtitle[130];        // tab title...
+    LCID lcid;
     char  lcID[4];
     int   panelHeight;
     WORD wApparentMode;

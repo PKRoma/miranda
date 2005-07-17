@@ -266,7 +266,8 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                          (IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE) ? CNT_TITLE_PRIVATE : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_USEGLOBALSIZE) ? CNT_GLOBALSIZE : 0) |
                          (IsDlgButtonChecked(hwndDlg, IDC_INFOPANEL) ? CNT_INFOPANEL : 0) |
-                         (IsDlgButtonChecked(hwndDlg, IDC_VERTICALMAX) ? CNT_VERTICALMAX : 0);
+                         (IsDlgButtonChecked(hwndDlg, IDC_VERTICALMAX) ? CNT_VERTICALMAX : 0) |
+                         (CNT_NEWCONTAINERFLAGS);
 
             if (IsDlgButtonChecked(hwndDlg, IDC_O_FLASHDEFAULT))
                 dwNewFlags &= ~(CNT_FLASHALWAYS | CNT_NOFLASH);

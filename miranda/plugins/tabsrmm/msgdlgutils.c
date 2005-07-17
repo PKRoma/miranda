@@ -1589,11 +1589,10 @@ void GetLocaleID(struct MessageWindowData *dat, char *szKLName)
 {
     char szLI[20], *stopped = NULL;
     USHORT langID;
-    DWORD lcid;
 
     langID = (USHORT)strtol(szKLName, &stopped, 16);
-    lcid = MAKELCID(langID, 0);
-    GetLocaleInfoA(lcid, LOCALE_SISO639LANGNAME , szLI, 10);
+    dat->lcid = MAKELCID(langID, 0);
+    GetLocaleInfoA(dat->lcid, LOCALE_SISO639LANGNAME , szLI, 10);
     dat->lcID[0] = toupper(szLI[0]);
     dat->lcID[1] = toupper(szLI[1]);
     dat->lcID[2] = 0;
@@ -1738,9 +1737,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
     LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
 
     if(!dat)
-        return;
+        return 0;
     if(dat->dwFlags & MWF_INITMODE)
-        return;
+        return 0;
     
     if(dis->CtlType == ODT_BUTTON && dis->CtlID == IDC_TOGGLESIDEBAR) {
         HICON hIcon;

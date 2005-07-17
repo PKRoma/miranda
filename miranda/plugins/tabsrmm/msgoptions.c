@@ -943,7 +943,7 @@ static struct LISTOPTIONSITEM tabItems[] = {
     0, "Activate autolocale support", 0, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
     0, "ESC closes sessions (minimizes window, if disabled)", 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode", 3,
     0, "Use global hotkeys (configure modifiers below)", 0, LOI_TYPE_SETTING, (UINT_PTR)"globalhotkeys", 3,
-    0, "Perform version check on Icon DLL", 1, LOI_TYPE_SETTING, (UINT_PTR)"v-check", 3,
+    0, "Perform version check on Icon DLL", 1, LOI_TYPE_SETTING, (UINT_PTR)"v_check", 3,
     0, "Force more aggressive window updates", 1, LOI_TYPE_SETTING, (UINT_PTR)"aggromode", 3,
     0, "Dim icons for idle contacts", 1, LOI_TYPE_SETTING, (UINT_PTR)"detectidle", 2,
     0, NULL, 0, 0, 0, 0
@@ -1117,8 +1117,6 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 	switch (msg) {
         case WM_INITDIALOG:
         {
-            DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containerflags", CNT_FLAGS_DEFAULT);
-            
             TranslateDialogDefault(hwndDlg);
 
             CheckDlgButton(hwndDlg, IDC_CONTAINERGROUPMODE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0));

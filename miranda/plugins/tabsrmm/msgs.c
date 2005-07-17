@@ -1162,6 +1162,8 @@ int LoadSendRecvMessageModule(void)
     myGlobals.szDefaultTitleFormat = DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat");
 #endif
     myGlobals.m_GlobalContainerFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containerflags", CNT_FLAGS_DEFAULT);
+    if(!(myGlobals.m_GlobalContainerFlags & CNT_NEWCONTAINERFLAGS))
+        myGlobals.m_GlobalContainerFlags = CNT_FLAGS_DEFAULT;
     myGlobals.m_GlobalContainerTrans = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containertrans", CNT_TRANS_DEFAULT);
     return 0;
 }
