@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_LANGPACK_H__
 #define M_LANGPACK_H__
 
+#define LANG_UNICODE 0x1000
+
 //translates a single string into the user's local language	  v0.1.1.0+
 //wParam=0
 //lParam=(LPARAM)(const char*)szEnglish
@@ -35,6 +37,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //these versions, I pity them.
 #define MS_LANGPACK_TRANSLATESTRING   "LangPack/TranslateString"
 #define Translate(s)   ((char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)(s)))
+#define TranslateW(s)   ((WCHAR*)CallService(MS_LANGPACK_TRANSLATESTRING,LANG_UNICODE,(LPARAM)(s)))
+#if defined( _UNICODE )
+	#define TranslateT(s) TranslateW(_T(s))
+#else
+	#define TranslateT(s) Translate(s)
+#endif
 
 //translates a dialog into the user's local language	  v0.1.1.0+
 //wParam=0
@@ -62,6 +70,22 @@ __inline static int TranslateDialogDefault(HWND hwndDlg)
 	lptd.ignoreControls=NULL;
 	return CallService(MS_LANGPACK_TRANSLATEDIALOG,0,(LPARAM)&lptd);
 }
+
+__inline static int TranslateDialogDefaultW(HWND hwndDlg)
+{
+	LANGPACKTRANSLATEDIALOG lptd;
+	lptd.cbSize=sizeof(lptd);
+	lptd.flags=0;
+	lptd.hwndDlg=hwndDlg;
+	lptd.ignoreControls=NULL;
+	return CallService(MS_LANGPACK_TRANSLATEDIALOG,LANG_UNICODE,(LPARAM)&lptd);
+}
+
+#if defined( _UNICODE )
+	#define TranslateDialogDefaultT(h) TranslateDialogDefaultW(h)
+#else
+	#define TranslateDialogDefaultT(h) TranslateDialogDefault(h)
+#endif
 
 //translates a menu into the user's local language	  v0.1.1.0+
 //wParam=(WPARAM)(HMENU)hMenu

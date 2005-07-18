@@ -22,11 +22,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "../../core/commonheaders.h"
 
-char *LangPackTranslateString(const char *szEnglish);
+char *LangPackTranslateString(const char *szEnglish, const int W);
 
 static int TranslateString(WPARAM wParam,LPARAM lParam)
 {
-	return (int)LangPackTranslateString((const char *)lParam);
+    return (int)LangPackTranslateString((const char *)lParam, wParam & LANG_UNICODE ? 1 : 0);
 }
 
 static int TranslateMenu(WPARAM wParam,LPARAM lParam)
@@ -43,7 +43,7 @@ static int TranslateMenu(WPARAM wParam,LPARAM lParam)
 		mii.cch=sizeof(str);
 		GetMenuItemInfo(hMenu,i,TRUE,&mii);
 		if(mii.cch&&mii.dwTypeData) {
-			mii.dwTypeData=LangPackTranslateString(mii.dwTypeData);
+            mii.dwTypeData=LangPackTranslateString(mii.dwTypeData, lParam & LANG_UNICODE ? 1: 0);
 			mii.fMask=MIIM_TYPE;
 			SetMenuItemInfo(hMenu,i,TRUE,&mii);
 		}
@@ -63,12 +63,12 @@ static BOOL CALLBACK TranslateDialogEnumProc(HWND hwnd,LPARAM lParam)
 	GetClassName(hwnd,szClass,sizeof(szClass));
 	if(!lstrcmpi(szClass,"static") || !lstrcmpi(szClass,"hyperlink") || !lstrcmpi(szClass,"button") || !strcmpi(szClass,"MButtonClass")) {
 		GetWindowText(hwnd,title,sizeof(title));
-		SetWindowText(hwnd,LangPackTranslateString(title));
+		SetWindowText(hwnd,LangPackTranslateString(title, 0));
 	}
 	else if(!lstrcmpi(szClass,"edit")) {
 		if(lptd->flags&LPTDF_NOIGNOREEDIT || GetWindowLong(hwnd,GWL_STYLE)&ES_READONLY) {
 			GetWindowText(hwnd,title,sizeof(title));
-			SetWindowText(hwnd,LangPackTranslateString(title));
+			SetWindowText(hwnd,LangPackTranslateString(title, 0));
 		}
 	}
 	return TRUE;
@@ -81,7 +81,7 @@ static int TranslateDialog(WPARAM wParam,LPARAM lParam)
 	if(!(lptd->flags&LPTDF_NOTITLE)) {
 		char title[256];
 		GetWindowText(lptd->hwndDlg,title,sizeof(title));
-		SetWindowText(lptd->hwndDlg,LangPackTranslateString(title));
+		SetWindowText(lptd->hwndDlg,LangPackTranslateString(title, 0));
 	}
 	EnumChildWindows(lptd->hwndDlg,TranslateDialogEnumProc,lParam);
 	return 0;

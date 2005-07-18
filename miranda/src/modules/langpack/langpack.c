@@ -29,6 +29,7 @@ struct LangPackEntry {
 	DWORD englishHash;
 	char *english;	  //not currently used, the hash does everything
 	char *local;
+	wchar_t *wlocal;
 };
 
 struct LangPackStruct {
@@ -39,6 +40,8 @@ struct LangPackStruct {
 	char authorEmail[128];
 	struct LangPackEntry *entry;
 	int entryCount;
+	LCID localeID;
+	DWORD defaultANSICp;
 } static langPack;
 
 static void TrimString(char *str)
@@ -52,19 +55,19 @@ static void TrimString(char *str)
 
 static void TrimStringSimple(char *str) 
 {
-    if (str[lstrlen(str)-1] == '\n') str[lstrlen(str)-1] = '\0';
-    if (str[lstrlen(str)-1] == '\r') str[lstrlen(str)-1] = '\0';
+	if (str[lstrlen(str)-1] == '\n') str[lstrlen(str)-1] = '\0';
+	if (str[lstrlen(str)-1] == '\r') str[lstrlen(str)-1] = '\0';
 }
 
 static int IsEmpty(char *str) {
-    int i = 0;
-    int len = lstrlen(str);
+	int i = 0;
+	int len = lstrlen(str);
 
-    while (str[i]) {
-        if (str[i]!=' '&&str[i]!='\r'&&str[i]!='\n') return 0;
-        i++;
-    }
-    return 1;
+	while (str[i]) {
+		if (str[i]!=' '&&str[i]!='\r'&&str[i]!='\n') return 0;
+		i++;
+	}
+	return 1;
 }
 
 static void ConvertBackslashes(char *str)
@@ -73,10 +76,10 @@ static void ConvertBackslashes(char *str)
 	for(pstr=str;*pstr;pstr=CharNext(pstr)) {
 		if(*pstr=='\\') {
 			switch(pstr[1]) {
-				case 'n': *pstr='\n'; break;
-				case 't': *pstr='\t'; break;
-				case 'r': *pstr='\r'; break;
-				default: *pstr=pstr[1]; break;
+case 'n': *pstr='\n'; break;
+case 't': *pstr='\t'; break;
+case 'r': *pstr='\r'; break;
+default: *pstr=pstr[1]; break;
 			}
 			MoveMemory(pstr+1,pstr+2,lstrlen(pstr+2)+1);
 		}
@@ -88,21 +91,21 @@ static DWORD LangPackHash(const char *szStr)
 #if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined __GNUC__
 	__asm {				//this is mediocrely optimised, but I'm sure it's good enough
 		xor  edx,edx
-		mov  esi,szStr
-		xor  cl,cl
-	lph_top:
+			mov  esi,szStr
+			xor  cl,cl
+lph_top:
 		xor  eax,eax
-		and  cl,31
-		mov  al,[esi]
-		inc  esi
-		test al,al
-		jz   lph_end
-		rol  eax,cl
-		add  cl,5
-		xor  edx,eax
-		jmp  lph_top
-	lph_end:
-		mov  eax,edx
+			and  cl,31
+			mov  al,[esi]
+			inc  esi
+				test al,al
+				jz   lph_end
+				rol  eax,cl
+				add  cl,5
+				xor  edx,eax
+				jmp  lph_top
+lph_end:
+			mov  eax,edx
 	}
 #else
 	DWORD hash=0;
@@ -141,10 +144,11 @@ static int LoadLangPack(const char *szLangPack)
 	FILE *fp;
 	char line[4096];
 	char *pszColon;
-    char *pszLine;
+	char *pszLine;
 	int entriesAlloced;
 	int startOfLine=0;
 	unsigned int linePos=1;
+	USHORT langID;
 
 	lstrcpy(langPack.filename,szLangPack);
 	fp=fopen(szLangPack,"rt");
@@ -156,7 +160,7 @@ static int LoadLangPack(const char *szLangPack)
 	while(!feof(fp)) {
 		startOfLine=ftell(fp);
 		if(fgets(line,sizeof(line),fp)==NULL) break;
-        TrimString(line);
+		TrimString(line);
 		if(IsEmpty(line) || line[0]==';' || line[0]==0) continue;
 		if(line[0]=='[') break;
 		pszColon=strchr(line,':');
@@ -166,6 +170,16 @@ static int LoadLangPack(const char *szLangPack)
 		else if(!lstrcmp(line,"Last-Modified-Using")) {lstrcpy(langPack.lastModifiedUsing,pszColon+1); TrimString(langPack.lastModifiedUsing);}
 		else if(!lstrcmp(line,"Authors")) {lstrcpy(langPack.authors,pszColon+1); TrimString(langPack.authors);}
 		else if(!lstrcmp(line,"Author-email")) {lstrcpy(langPack.authorEmail,pszColon+1); TrimString(langPack.authorEmail);}
+		else if(!lstrcmp(line, "Locale")) {
+			char szBuf[20], *stopped;
+
+			TrimString(pszColon + 1);
+			langID = (USHORT)strtol(pszColon + 1, &stopped, 16);
+			langPack.localeID = MAKELCID(langID, 0);
+			GetLocaleInfoA(langPack.localeID, LOCALE_IDEFAULTANSICODEPAGE, szBuf, 10);
+			szBuf[5] = 0;                       // codepages have max. 5 digits
+			langPack.defaultANSICp = atoi(szBuf);
+		}
 	}
 	//body
 	fseek(fp,startOfLine,SEEK_SET);
@@ -173,14 +187,14 @@ static int LoadLangPack(const char *szLangPack)
 	while(!feof(fp)) {
 		if(fgets(line,sizeof(line),fp)==NULL) break;
 		if(IsEmpty(line) || line[0]==';' || line[0]==0) continue;
-        TrimStringSimple(line);
+		TrimStringSimple(line);
 		ConvertBackslashes(line);
-        if(line[0]=='[' && line[lstrlen(line)-1]==']') {
+		if(line[0]=='[' && line[lstrlen(line)-1]==']') {
 			if(langPack.entryCount && langPack.entry[langPack.entryCount-1].local==NULL) {
 				if(langPack.entry[langPack.entryCount-1].english!=NULL) free(langPack.entry[langPack.entryCount-1].english);
 				langPack.entryCount--;
 			}
-            pszLine = line+1;
+			pszLine = line+1;
 			line[lstrlen(line)-1]='\0';
 			TrimStringSimple(line);
 			if(++langPack.entryCount>entriesAlloced) {
@@ -190,15 +204,28 @@ static int LoadLangPack(const char *szLangPack)
 			langPack.entry[langPack.entryCount-1].english=NULL;
 			langPack.entry[langPack.entryCount-1].englishHash=LangPackHash(pszLine);
 			langPack.entry[langPack.entryCount-1].local=NULL;
+			langPack.entry[langPack.entryCount-1].wlocal = NULL;
 			langPack.entry[langPack.entryCount-1].linePos=linePos++;
 		}
 		else if(langPack.entryCount) {
-			if(langPack.entry[langPack.entryCount-1].local==NULL)
+			if(langPack.entry[langPack.entryCount-1].local==NULL) {
 				langPack.entry[langPack.entryCount-1].local=_strdup(line);
+				{
+					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, langPack.entry[langPack.entryCount - 1].wlocal, 0);
+					langPack.entry[langPack.entryCount-1].wlocal = (wchar_t *)malloc(iNeeded * sizeof(wchar_t));
+					MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, langPack.entry[langPack.entryCount - 1].wlocal, iNeeded);
+				}
+			}
 			else {
 				langPack.entry[langPack.entryCount-1].local=(char*)realloc(langPack.entry[langPack.entryCount-1].local,lstrlen(langPack.entry[langPack.entryCount-1].local)+lstrlen(line)+2);
 				lstrcat(langPack.entry[langPack.entryCount-1].local,"\n");
 				lstrcat(langPack.entry[langPack.entryCount-1].local,line);
+				{
+					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, langPack.entry[langPack.entryCount - 1].wlocal, 0);
+					langPack.entry[langPack.entryCount-1].wlocal = (wchar_t*)realloc(langPack.entry[langPack.entryCount-1].wlocal, (sizeof(wchar_t) * wcslen(langPack.entry[langPack.entryCount-1].wlocal)) + iNeeded + 4);
+					wcscat(langPack.entry[langPack.entryCount-1].wlocal, L"\n");
+					MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, &langPack.entry[langPack.entryCount-1].wlocal[lstrlenW(langPack.entry[langPack.entryCount-1].wlocal)], iNeeded);
+				}
 			}
 		}
 	}
@@ -207,7 +234,7 @@ static int LoadLangPack(const char *szLangPack)
 	return 0;
 }
 
-char *LangPackTranslateString(const char *szEnglish)
+char *LangPackTranslateString(const char *szEnglish, const int W)
 {
 	struct LangPackEntry key,*entry;
 
@@ -221,10 +248,10 @@ char *LangPackTranslateString(const char *szEnglish)
 		entry--;
 		if(entry->englishHash!=key.englishHash) {
 			entry++;
-			return entry->local;
+			return W ? (char *)entry->wlocal : entry->local;
 		}
 	}
-	return entry->local;
+	return W ? (char *)entry->wlocal : entry->local;
 }
 
 static int LangPackShutdown(WPARAM wParam,LPARAM lParam)
@@ -233,6 +260,7 @@ static int LangPackShutdown(WPARAM wParam,LPARAM lParam)
 	for(i=0;i<langPack.entryCount;i++) {
 		if(langPack.entry[i].english!=NULL) free(langPack.entry[i].english);
 		if(langPack.entry[i].local!=NULL) { free(langPack.entry[i].local); }
+		if(langPack.entry[i].wlocal!=NULL) { free(langPack.entry[i].wlocal); }
 	}
 	if(langPack.entryCount) {
 		free(langPack.entry);
