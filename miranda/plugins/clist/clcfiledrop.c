@@ -140,8 +140,8 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragEnter(struct CDropTarget *lpThis, 
     shortPt.x = pt.x;
     shortPt.y = pt.y;
     hwnd = WindowFromPoint(shortPt);
-    GetClassName(hwnd, szWindowClass, sizeof(szWindowClass));
-    if (!lstrcmp(szWindowClass, CLISTCONTROL_CLASS)) {
+    GetClassNameA(hwnd, szWindowClass, sizeof(szWindowClass));
+    if (!lstrcmpA(szWindowClass, CLISTCONTROL_CLASS)) {
         struct ClcData *dat;
         hwndCurrentDrag = hwnd;
         dat = (struct ClcData *) GetWindowLong(hwndCurrentDrag, 0);
@@ -173,21 +173,21 @@ static void AddToFileList(char ***pppFiles, int *totalCount, const char *szFilen
     *pppFiles = (char **) mir_realloc(*pppFiles, (++*totalCount + 1) * sizeof(char *));
     (*pppFiles)[*totalCount] = NULL;
     (*pppFiles)[*totalCount - 1] = mir_strdup(szFilename);
-    if (GetFileAttributes(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
-        WIN32_FIND_DATA fd;
+    if (GetFileAttributesA(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
+        WIN32_FIND_DATAA fd;
         HANDLE hFind;
         char szPath[MAX_PATH];
-        lstrcpy(szPath, szFilename);
-        lstrcat(szPath, "\\*");
-        if (hFind = FindFirstFile(szPath, &fd)) {
+        lstrcpyA(szPath, szFilename);
+        lstrcatA(szPath, "\\*");
+        if (hFind = FindFirstFileA(szPath, &fd)) {
             do {
-                if (!lstrcmp(fd.cFileName, ".") || !lstrcmp(fd.cFileName, ".."))
+                if (!lstrcmpA(fd.cFileName, ".") || !lstrcmpA(fd.cFileName, ".."))
                     continue;
-                lstrcpy(szPath, szFilename);
-                lstrcat(szPath, "\\");
-                lstrcat(szPath, fd.cFileName);
+                lstrcpyA(szPath, szFilename);
+                lstrcatA(szPath, "\\");
+                lstrcatA(szPath, fd.cFileName);
                 AddToFileList(pppFiles, totalCount, szPath);
-            } while (FindNextFile(hFind, &fd));
+            } while (FindNextFileA(hFind, &fd));
             FindClose(hFind);
         }
     }
@@ -223,7 +223,7 @@ static STDMETHODIMP_(HRESULT) CDropTarget_Drop(struct CDropTarget *lpThis, IData
         fileCount = DragQueryFile(hDrop, -1, NULL, 0);
         ppFiles = NULL;
         for (i = 0; i < fileCount; i++) {
-            DragQueryFile(hDrop, i, szFilename, sizeof(szFilename));
+            DragQueryFileA(hDrop, i, szFilename, sizeof(szFilename));
             AddToFileList(&ppFiles, &totalCount, szFilename);
         }
 

@@ -142,7 +142,7 @@ static int GetRealStatus(struct ClcContact *contact, int status)
     if (!szProto)
         return status;
     for (i = 0; i < hClcProtoCount; i++) {
-        if (!lstrcmp(clcProto[i].szProto, szProto)) {
+        if (!lstrcmpA(clcProto[i].szProto, szProto)) {
             return clcProto[i].dwStatus;
         }
     }
@@ -337,9 +337,9 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
             if (group->contact[group->scanIndex].type == CLCIT_GROUP) {
                 szCounts = GetGroupCountsText(dat, &group->contact[group->scanIndex]);
                 if (szCounts[0]) {
-                    GetTextExtentPoint32(hdcMem, " ", 1, &spaceSize);
+                    GetTextExtentPoint32A(hdcMem, " ", 1, &spaceSize);
                     ChangeToFont(hdcMem, dat, FONTID_GROUPCOUNTS, &fontHeight);
-                    GetTextExtentPoint32(hdcMem, szCounts, lstrlen(szCounts), &countsSize);
+                    GetTextExtentPoint32A(hdcMem, szCounts, lstrlenA(szCounts), &countsSize);
                     width += spaceSize.cx + countsSize.cx;
                 }
             }
@@ -369,7 +369,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
                 // THEME
                 if (IsWinVerXPPlus()) {
                     if (!themeAPIHandle) {
-                        themeAPIHandle = GetModuleHandle("uxtheme");
+                        themeAPIHandle = GetModuleHandleA("uxtheme");
                         if (themeAPIHandle) {
                             MyOpenThemeData = (HANDLE(WINAPI *) (HWND, LPCWSTR)) MGPROC("OpenThemeData");
                             MyCloseThemeData = (HRESULT(WINAPI *) (HANDLE)) MGPROC("CloseThemeData");
@@ -459,7 +459,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
                     if (rc.right < rc.left + 4)
                         rc.right = clRect.right + 1;
                     else
-                        TextOut(hdcMem, rc.right, rc.top + groupCountsFontTopShift, szCounts, lstrlen(szCounts));
+                        TextOutA(hdcMem, rc.right, rc.top + groupCountsFontTopShift, szCounts, lstrlenA(szCounts));
                     ChangeToFont(hdcMem, dat, FONTID_GROUPS, &fontHeight);
                     if (selected)
                         SetTextColor(hdcMem, dat->selTextColour);
@@ -483,7 +483,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
                 }
             }
             else {
-                char *szText = group->contact[group->scanIndex].szText;
+                TCHAR *szText = group->contact[group->scanIndex].szText;
                 RECT rc;
                 rc.left = dat->leftMargin + indent * dat->groupIndent + checkboxWidth + dat->iconXSpace;
                 rc.top = y + ((dat->rowHeight - fontHeight) >> 1);
@@ -493,7 +493,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
             }
             if (selected) {
                 if (group->contact[group->scanIndex].type != CLCIT_DIVIDER) {
-                    char *szText = group->contact[group->scanIndex].szText;
+                    TCHAR *szText = group->contact[group->scanIndex].szText;
                     RECT rc;
                     int qlen = lstrlen(dat->szQuickSearch);
                     SetTextColor(hdcMem, dat->quickSearchColour);

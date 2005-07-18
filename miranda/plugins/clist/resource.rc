@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -29,8 +29,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 IDD_DELETECONTACT DIALOGEX 0, 0, 284, 90
-STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
-    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | 
+    DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Delete Contact"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -49,7 +49,7 @@ BEGIN
 END
 
 IDD_OPT_HOTKEY DIALOGEX 0, 0, 238, 136
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -77,9 +77,9 @@ BEGIN
 END
 
 IDD_OPT_CLIST DIALOGEX 0, 0, 314, 204
-STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Hide offline users",IDC_HIDEOFFLINE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,17,124,10
@@ -136,7 +136,7 @@ BEGIN
 END
 
 IDD_OPT_CLUI DIALOGEX 0, 0, 313, 245
-STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -200,7 +200,7 @@ BEGIN
 END
 
 IDD_OPT_CLC DIALOGEX 0, 0, 314, 251
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -223,8 +223,8 @@ BEGIN
                     WS_TABSTOP,11,88,179,10
     LTEXT           "'Hide Offline' means to hide:",IDC_STATIC,191,10,112,8
     CONTROL         "Tree1",IDC_HIDEOFFLINEOPTS,"SysTreeView32",
-                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | 
-                    WS_BORDER | WS_TABSTOP,191,20,112,86
+                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | WS_BORDER | 
+                    WS_TABSTOP | 0x4000,191,20,112,86
     GROUPBOX        "Groups",IDC_STATIC,2,120,148,121
     CONTROL         "Draw a line alongside group names",IDC_LINEWITHGROUPS,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,11,
@@ -268,8 +268,8 @@ BEGIN
     CONTROL         "Grey out entire list when:",IDC_GREYOUT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,165,195,139,10
     CONTROL         "Tree1",IDC_GREYOUTOPTS,"SysTreeView32",
-                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | 
-                    WS_BORDER | WS_TABSTOP,165,205,139,30
+                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | WS_BORDER | 
+                    WS_TABSTOP | 0x4000,165,205,139,30
     CONTROL         "Dim idle contacts",IDC_IDLE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,11,102,153,10
     CONTROL         "Hide vertical scroll bar",IDC_NOSCROLLBAR,"Button",
@@ -277,7 +277,7 @@ BEGIN
 END
 
 IDD_OPT_CLCTEXT DIALOGEX 0, 0, 277, 240
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -335,7 +335,7 @@ BEGIN
 END
 
 IDD_OPT_CLCBKG DIALOGEX 0, 0, 235, 154
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -365,7 +365,7 @@ BEGIN
 END
 
 IDD_OPT_SBAR DIALOGEX 0, 0, 178, 212
-STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -391,7 +391,7 @@ BEGIN
 END
 
 IDD_OPT_CLCTEXTSIMPLE DIALOGEX 0, 0, 277, 240
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -444,7 +444,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_DELETECONTACT, DIALOG
     BEGIN
@@ -591,12 +591,12 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
@@ -604,7 +604,7 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -620,25 +620,25 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_RENAME              ICON    DISCARDABLE     "res\\rename.ico"
-IDI_BLANK               ICON    DISCARDABLE     "res\\blank.ico"
-IDI_DELETE              ICON    DISCARDABLE     "res\\delete.ico"
+IDI_RENAME              ICON                    "res\\rename.ico"
+IDI_BLANK               ICON                    "res\\blank.ico"
+IDI_DELETE              ICON                    "res\\delete.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "res\\hyperlin.cur"
-IDC_DROP                CURSOR  DISCARDABLE     "res\\DRAGCOPY.CUR"
-IDC_DROPUSER            CURSOR  DISCARDABLE     "res\\dropuser.cur"
+IDC_HYPERLINKHAND       CURSOR                  "res\\hyperlin.cur"
+IDC_DROP                CURSOR                  "res\\DRAGCOPY.CUR"
+IDC_DROPUSER            CURSOR                  "res\\dropuser.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_CLISTMENU MENU DISCARDABLE 
+IDR_CLISTMENU MENU 
 BEGIN
     POPUP "&¤"
     BEGIN
@@ -660,7 +660,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT MENU DISCARDABLE 
+IDR_CONTEXT MENU 
 BEGIN
     POPUP "Tray"
     BEGIN

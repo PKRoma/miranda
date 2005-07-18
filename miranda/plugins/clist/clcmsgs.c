@@ -36,7 +36,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
         case CLM_ADDGROUP:
         {
             DWORD groupFlags;
-            char *szName = (char *) CallService(MS_CLIST_GROUPGETNAME2, wParam, (LPARAM) & groupFlags);
+            TCHAR *szName = GetGroupNameT(wParam, &groupFlags);
             if (szName == NULL)
                 break;
             AddGroup(hwnd, dat, szName, groupFlags, wParam, 0);
@@ -172,7 +172,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
             return dat->groupIndent;
 
         case CLM_GETISEARCHSTRING:
-            lstrcpy((char *) lParam, dat->szQuickSearch);
+            lstrcpy(( TCHAR* ) lParam, dat->szQuickSearch);
             return lstrlen(dat->szQuickSearch);
 
         case CLM_GETITEMTEXT:
@@ -180,7 +180,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
             struct ClcContact *contact;
             if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
                 return 0;
-            lstrcpy((char *) lParam, contact->szText);
+            lstrcpy(( TCHAR* ) lParam, contact->szText);
             return lstrlen(contact->szText);
         }
 
@@ -375,7 +375,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
                 SIZE fontSize;
                 HDC hdc = GetDC(hwnd);
                 SelectObject(hdc, (HFONT) wParam);
-                GetTextExtentPoint32(hdc, "x", 1, &fontSize);
+                GetTextExtentPoint32A(hdc, "x", 1, &fontSize);
                 dat->fontInfo[HIWORD(lParam)].fontHeight = fontSize.cy;
                 if (dat->rowHeight < fontSize.cy + 2)
                     dat->rowHeight = fontSize.cy + 2;
@@ -412,7 +412,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
             struct ClcContact *contact;
             if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
                 break;
-            lstrcpyn(contact->szText, (char *) lParam, sizeof(contact->szText));
+            lstrcpyn(contact->szText, ( TCHAR* )lParam, sizeof(contact->szText));
             SortCLC(hwnd, dat, 1);
             InvalidateRect(hwnd, NULL, FALSE);
             break;

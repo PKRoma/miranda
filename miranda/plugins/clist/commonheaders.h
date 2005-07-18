@@ -21,6 +21,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#if defined(UNICODE)
+#define _UNICODE 1
+#endif
+
+#include <tchar.h>
 #include <malloc.h>
 
 #ifdef _DEBUG

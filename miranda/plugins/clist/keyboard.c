@@ -50,25 +50,25 @@ int HotKeysRegister(HWND hwnd)
 
     if (DBGetContactSettingByte(NULL, "CList", "HKEnShowHide", 0)) {
         if (!aHide)
-            aHide = GlobalAddAtom("HKEnShowHide");
+            aHide = GlobalAddAtomA("HKEnShowHide");
         WordToModAndVk((WORD) DBGetContactSettingWord(NULL, "CList", "HKShowHide", 0), &mod, &vk);
         RegisterHotKey(hwnd, aHide, mod, vk);
     }
     if (DBGetContactSettingByte(NULL, "CList", "HKEnReadMsg", 0)) {
         if (!aRead)
-            aRead = GlobalAddAtom("HKEnReadMsg");
+            aRead = GlobalAddAtomA("HKEnReadMsg");
         WordToModAndVk((WORD) DBGetContactSettingWord(NULL, "CList", "HKReadMsg", 0), &mod, &vk);
         RegisterHotKey(hwnd, aRead, mod, vk);
     }
     if (DBGetContactSettingByte(NULL, "CList", "HKEnNetSearch", 0)) {
         if (!aSearch)
-            aSearch = GlobalAddAtom("HKEnNetSearch");
+            aSearch = GlobalAddAtomA("HKEnNetSearch");
         WordToModAndVk((WORD) DBGetContactSettingWord(NULL, "CList", "HKNetSearch", 0), &mod, &vk);
         RegisterHotKey(hwnd, aSearch, mod, vk);
     }
     if (DBGetContactSettingByte(NULL, "CList", "HKEnShowOptions", 0)) {
         if (!aOpts)
-            aOpts = GlobalAddAtom("HKEnShowOptions");
+            aOpts = GlobalAddAtomA("HKEnShowOptions");
         WordToModAndVk((WORD) DBGetContactSettingWord(NULL, "CList", "HKShowOptions", 0), &mod, &vk);
         RegisterHotKey(hwnd, aOpts, mod, vk);
     }

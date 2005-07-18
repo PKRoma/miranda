@@ -145,7 +145,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLM_SETLEFTMARGIN     (CLM_FIRST+47)   //wParam=pixels
 typedef struct {
 	int cbSize;
-	const char *pszText;
+	const TCHAR *pszText;
 	HANDLE hParentGroup;
 	DWORD flags;
 	HICON hIcon;     //todo

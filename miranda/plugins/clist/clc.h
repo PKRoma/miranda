@@ -69,8 +69,8 @@ struct ClcContact {
 			struct ClcGroup *group;
 		};
 	};
-	BYTE iExtraImage[MAXEXTRACOLUMNS];
-	char szText[120-MAXEXTRACOLUMNS];
+	BYTE  iExtraImage[MAXEXTRACOLUMNS];
+	TCHAR szText[120-MAXEXTRACOLUMNS];
 	char * proto;	// MS_PROTO_GETBASEPROTO
 };
 
@@ -109,7 +109,7 @@ struct ClcData {
 	int scrollTime;
 	HIMAGELIST himlHighlight;
 	int groupIndent;
-	char szQuickSearch[128];
+	TCHAR szQuickSearch[128];
 	int iconXSpace;
 	HWND hwndRenameEdit;
 	COLORREF bkColour,selBkColour,selTextColour,hotTextColour,quickSearchColour;
@@ -151,9 +151,9 @@ HANDLE ContactToHItem(struct ClcContact *contact);
 HANDLE ContactToItemHandle(struct ClcContact *contact,DWORD *nmFlags);
 
 //clcitems.c
-struct ClcGroup *AddGroup(HWND hwnd,struct ClcData *dat,const char *szName,DWORD flags,int groupId,int calcTotalMembers);
+struct ClcGroup *AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
 void FreeGroup(struct ClcGroup *group);
-int AddInfoItemToGroup(struct ClcGroup *group,int flags,const char *pszText);
+int AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
 void RebuildEntireList(HWND hwnd,struct ClcData *dat);
 struct ClcGroup *RemoveItemFromGroup(HWND hwnd,struct ClcGroup *group,struct ClcContact *contact,int updateTotalCount);
 void DeleteItemFromTree(HWND hwnd,HANDLE hItem);
@@ -170,7 +170,7 @@ void EnsureVisible(HWND hwnd,struct ClcData *dat,int iItem,int partialOk);
 void RecalcScrollBar(HWND hwnd,struct ClcData *dat);
 void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int newState);
 void DoSelectionDefaultAction(HWND hwnd,struct ClcData *dat);
-int FindRowByText(HWND hwnd,struct ClcData *dat,const char *text,int prefixOk);
+int FindRowByText(HWND hwnd,struct ClcData *dat,const TCHAR *text,int prefixOk);
 void EndRename(HWND hwnd,struct ClcData *dat,int save);
 void DeleteFromContactList(HWND hwnd,struct ClcData *dat);
 void BeginRenameSelection(HWND hwnd,struct ClcData *dat);
@@ -199,13 +199,20 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint);
 //clcopts.c
 int ClcOptInit(WPARAM wParam,LPARAM lParam);
 DWORD GetDefaultExStyle(void);
-void GetFontSetting(int i,LOGFONT *lf,COLORREF *colour);
+void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour);
+
+//clistsettings.c
+TCHAR* GetContactDisplayNameW( HANDLE hContact, int mode );
 
 //clcfiledrop.c
 void InitFileDropping(void);
 void FreeFileDropping(void);
 void RegisterFileDropping(HWND hwnd);
 void UnregisterFileDropping(HWND hwnd);
+
+//groups.c
+TCHAR* GetGroupNameT( int idx, DWORD* pdwFlags );
+int RenameGroupT( int idx, TCHAR* tszNewName );
 
 #define CLCDEFAULT_ROWHEIGHT     16
 #define CLCDEFAULT_EXSTYLE       (CLS_EX_EDITLABELS|CLS_EX_TRACKSELECT|CLS_EX_SHOWGROUPCOUNTS|CLS_EX_HIDECOUNTSWHENEMPTY|CLS_EX_TRACKSELECT|CLS_EX_NOTRANSLUCENTSEL)  //plus CLS_EX_NOSMOOTHSCROLL is got from the system

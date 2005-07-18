@@ -76,15 +76,15 @@ int CluiProtocolStatusChanged(WPARAM wParam, LPARAM lParam)
                 x += GetSystemMetrics(SM_CXSMICON);
             if (showOpts & 2) {
                 CallProtoService(proto[i]->szName, PS_GETNAME, sizeof(szName), (LPARAM) szName);
-                if (showOpts & 4 && lstrlen(szName) < sizeof(szName) - 1)
-                    lstrcat(szName, " ");
-                GetTextExtentPoint32(hdc, szName, lstrlen(szName), &textSize);
+                if (showOpts & 4 && lstrlenA(szName) < sizeof(szName) - 1)
+                    lstrcatA(szName, " ");
+                GetTextExtentPoint32A(hdc, szName, lstrlenA(szName), &textSize);
                 x += textSize.cx;
                 x += GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
             }
             if (showOpts & 4) {
                 modeDescr = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, CallProtoService(proto[i]->szName, PS_GETSTATUS, 0, 0), 0);
-                GetTextExtentPoint32(hdc, modeDescr, lstrlen(modeDescr), &textSize);
+                GetTextExtentPoint32A(hdc, modeDescr, lstrlenA(modeDescr), &textSize);
                 x += textSize.cx;
                 x += GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
             }
@@ -129,8 +129,8 @@ static int GroupAdded(WPARAM wParam, LPARAM lParam)
         char szFocusClass[64];
         HWND hwndFocus = GetFocus();
 
-        GetClassName(hwndFocus, szFocusClass, sizeof(szFocusClass));
-        if (!lstrcmp(szFocusClass, CLISTCONTROL_CLASS)) {
+        GetClassNameA(hwndFocus, szFocusClass, sizeof(szFocusClass));
+        if (!lstrcmpA(szFocusClass, CLISTCONTROL_CLASS)) {
             hItem = (HANDLE) SendMessage(hwndFocus, CLM_FINDGROUP, wParam, 0);
             if (hItem)
                 SendMessage(hwndFocus, CLM_EDITLABEL, (WPARAM) hItem, 0);

@@ -53,10 +53,10 @@ static int statusModePf2List[] =
 
 extern HANDLE hStatusModeChangeEvent;
 
-static void InsertMenuItemWithSeparators(HMENU hMenu, int uItem, BOOL fByPosition, MENUITEMINFO * lpmii)
+static void InsertMenuItemWithSeparators(HMENU hMenu, int uItem, BOOL fByPosition, MENUITEMINFOA * lpmii)
 {
     int thisItemPosition, needSeparator;
-    MENUITEMINFO mii;
+    MENUITEMINFOA mii;
 
     if (lpmii->fMask & MIIM_SUBMENU)
         thisItemPosition = (int) lpmii->dwItemData;
@@ -67,7 +67,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu, int uItem, BOOL fByPositio
     //check for separator before
     if (uItem) {
         mii.fMask = MIIM_SUBMENU | MIIM_DATA | MIIM_TYPE;
-        GetMenuItemInfo(hMenu, uItem - 1, TRUE, &mii);
+        GetMenuItemInfoA(hMenu, uItem - 1, TRUE, &mii);
         if (mii.fType == MFT_SEPARATOR)
             needSeparator = 0;
         else if (mii.hSubMenu == NULL && (mii.dwItemData & MENU_CUSTOMITEMMAIN) == 0)
@@ -83,12 +83,12 @@ static void InsertMenuItemWithSeparators(HMENU hMenu, int uItem, BOOL fByPositio
             mii.fType = 0;
             if (uItem < GetMenuItemCount(hMenu)) {
                 mii.fMask = MIIM_SUBMENU | MIIM_DATA | MIIM_TYPE;
-                GetMenuItemInfo(hMenu, uItem, TRUE, &mii);
+                GetMenuItemInfoA(hMenu, uItem, TRUE, &mii);
             }
             if (mii.fType != MFT_SEPARATOR) {
                 mii.fMask = MIIM_TYPE;
                 mii.fType = MFT_SEPARATOR;
-                InsertMenuItem(hMenu, uItem, TRUE, &mii);
+                InsertMenuItemA(hMenu, uItem, TRUE, &mii);
             }
             uItem++;
         }
@@ -97,7 +97,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu, int uItem, BOOL fByPositio
     if (uItem < GetMenuItemCount(hMenu)) {
         mii.fMask = MIIM_SUBMENU | MIIM_DATA | MIIM_TYPE;
         mii.cch = 0;
-        GetMenuItemInfo(hMenu, uItem, TRUE, &mii);
+        GetMenuItemInfoA(hMenu, uItem, TRUE, &mii);
         if (mii.fType == MFT_SEPARATOR)
             needSeparator = 0;
         else if (mii.hSubMenu == NULL && (mii.dwItemData & MENU_CUSTOMITEMMAIN) == 0)
@@ -111,7 +111,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu, int uItem, BOOL fByPositio
         if (needSeparator) {
             mii.fMask = MIIM_TYPE;
             mii.fType = MFT_SEPARATOR;
-            InsertMenuItem(hMenu, uItem, TRUE, &mii);
+            InsertMenuItemA(hMenu, uItem, TRUE, &mii);
         }
     }
     if (uItem == GetMenuItemCount(hMenu) - 1) {
@@ -119,22 +119,22 @@ static void InsertMenuItemWithSeparators(HMENU hMenu, int uItem, BOOL fByPositio
         mii.fMask = MIIM_SUBMENU | MIIM_DATA | MIIM_TYPE;
         mii.dwTypeData = str;
         mii.cch = sizeof(str);
-        GetMenuItemInfo(hMenu, uItem, TRUE, &mii);
+        GetMenuItemInfoA(hMenu, uItem, TRUE, &mii);
         if (mii.fType == MFT_STRING && !strcmp(mii.dwTypeData, Translate("E&xit"))) {
             //make sure we keep the separator before the exit menu item
             mii.fMask = MIIM_TYPE;
             mii.fType = MFT_SEPARATOR;
-            InsertMenuItem(hMenu, uItem, TRUE, &mii);
+            InsertMenuItemA(hMenu, uItem, TRUE, &mii);
         }
     }
-    InsertMenuItem(hMenu, uItem, TRUE, lpmii);
+    InsertMenuItemA(hMenu, uItem, TRUE, lpmii);
 }
 
 //#define PUTPOSITIONSONMENU
 static int AddMainMenuItem(WPARAM wParam, LPARAM lParam)
 {
     CLISTMENUITEM *mi = (CLISTMENUITEM *) lParam;
-    MENUITEMINFO mii;
+    MENUITEMINFOA mii;
     int i;
     HMENU hMenu;
 
@@ -159,7 +159,7 @@ static int AddMainMenuItem(WPARAM wParam, LPARAM lParam)
         for (i = GetMenuItemCount(hMenu) - 1; i >= 0; i--) {
             mii.cch = sizeof(str);
             mii.dwTypeData = str;
-            GetMenuItemInfo(hMenu, i, TRUE, &mii);
+            GetMenuItemInfoA(hMenu, i, TRUE, &mii);
 #ifdef PUTPOSITIONSONMENU
             if (mii.hSubMenu != NULL && !_strnicmp(str, mi->pszPopupName, strlen(mi->pszPopupName)))
                 break;
@@ -173,7 +173,7 @@ static int AddMainMenuItem(WPARAM wParam, LPARAM lParam)
             for (i = GetMenuItemCount(hMenu) - 1; i >= 0; i--) {
                 mii.cch = sizeof(str);
                 mii.dwTypeData = str;
-                GetMenuItemInfo(hMenu, i, TRUE, &mii);
+                GetMenuItemInfoA(hMenu, i, TRUE, &mii);
                 if (mii.fType == MFT_SEPARATOR)
                     continue;
                 if (mii.hSubMenu == NULL && (mii.dwItemData & MENU_CUSTOMITEMMAIN) == 0)
@@ -208,7 +208,7 @@ static int AddMainMenuItem(WPARAM wParam, LPARAM lParam)
     }
     mii.fMask = MIIM_SUBMENU | MIIM_DATA;
     for (i = GetMenuItemCount(hMenu) - 1; i >= 0; i--) {
-        GetMenuItemInfo(hMenu, i, TRUE, &mii);
+        GetMenuItemInfoA(hMenu, i, TRUE, &mii);
         if (mii.fType == MFT_SEPARATOR)
             continue;
         if (mii.hSubMenu == NULL && (mii.dwItemData & MENU_CUSTOMITEMMAIN) == 0)
@@ -277,7 +277,7 @@ static int ModifyCustomMenuItem(WPARAM wParam, LPARAM lParam)
 {
     struct CListMenuItem *clmi;
     CLISTMENUITEM *mi = (CLISTMENUITEM *) lParam;
-    MENUITEMINFO mii;
+    MENUITEMINFOA mii;
 
     if (mi==NULL || mi->cbSize != sizeof(CLISTMENUITEM))
         return 1;
@@ -303,7 +303,7 @@ static int ModifyCustomMenuItem(WPARAM wParam, LPARAM lParam)
             mii.fMask = IsWinVer98Plus()? MIIM_STRING : MIIM_TYPE;
             mii.fType = MFT_STRING;
             mii.dwTypeData = clmi->mi.pszName;
-            SetMenuItemInfo(hMainMenu, clmi->id, FALSE, &mii);
+            SetMenuItemInfoA(hMainMenu, clmi->id, FALSE, &mii);
         }
     }
     if (mi->flags & CMIM_FLAGS) {
@@ -311,7 +311,7 @@ static int ModifyCustomMenuItem(WPARAM wParam, LPARAM lParam)
         if (wParam & MENU_CUSTOMITEMMAIN) {
             mii.fMask = MIIM_STATE;
             mii.fState = ((clmi->mi.flags & CMIF_GRAYED) ? MFS_GRAYED : 0) | ((clmi->mi.flags & CMIF_CHECKED) ? MFS_CHECKED : 0);
-            SetMenuItemInfo(hMainMenu, clmi->id, FALSE, &mii);
+            SetMenuItemInfoA(hMainMenu, clmi->id, FALSE, &mii);
         }
     }
     if (mi->flags & CMIM_ICON) {
@@ -423,7 +423,7 @@ static int MenuSortProc(int *item1, int *item2)
 static int BuildContactMenu(WPARAM wParam, LPARAM lParam)
 {
     HMENU hMenu;
-    MENUITEMINFO mii;
+    MENUITEMINFOA mii;
     int i;
     int *itemOrder, itemCount;
     int isOnline, isOnList;
@@ -503,7 +503,7 @@ static int BuildContactMenu(WPARAM wParam, LPARAM lParam)
             UINT oldMask = mii.fMask;
             mii.fMask = MIIM_TYPE;
             mii.fType = MFT_SEPARATOR;
-            InsertMenuItem(hMenu, 0, TRUE, &mii);
+            InsertMenuItemA(hMenu, 0, TRUE, &mii);
             mii.fMask = oldMask;
             mii.fType = MFT_STRING;
         }
@@ -522,14 +522,14 @@ static int BuildContactMenu(WPARAM wParam, LPARAM lParam)
 #ifdef _DEBUG
         if (GetKeyState(VK_CONTROL) & 0x8000) {
             char str[256];
-            wsprintf(str, "%s (%d)", contextMenuItem[itemOrder[i]].mi.pszName, contextMenuItem[itemOrder[i]].mi.position);
+            wsprintfA(str, "%s (%d)", contextMenuItem[itemOrder[i]].mi.pszName, contextMenuItem[itemOrder[i]].mi.position);
             mii.dwTypeData = str;
-            InsertMenuItem(hMenu, 0, TRUE, &mii);
+            InsertMenuItemA(hMenu, 0, TRUE, &mii);
         }
         else
-            InsertMenuItem(hMenu, 0, TRUE, &mii);
+            InsertMenuItemA(hMenu, 0, TRUE, &mii);
 #else
-        InsertMenuItem(hMenu, 0, TRUE, &mii);
+        InsertMenuItemA(hMenu, 0, TRUE, &mii);
 #endif
     }
     mir_free(itemOrder);
@@ -541,7 +541,7 @@ static int MenuIconsChanged(WPARAM wParam, LPARAM lParam)
     int i, protoCount, networkProtoCount, j;
     PROTOCOLDESCRIPTOR **proto;
     DWORD flags;
-    MENUITEMINFO mii;
+    MENUITEMINFOA mii;
 
     ZeroMemory(&mii, sizeof(mii));
     mii.cbSize = sizeof(mii);
@@ -560,7 +560,7 @@ static int MenuIconsChanged(WPARAM wParam, LPARAM lParam)
             for (j = 0; j < sizeof(statusModeList) / sizeof(statusModeList[0]); j++) {
                 if (!(flags & statusModePf2List[j]))
                     continue;
-                if (!GetMenuItemInfo(hStatusMenu, (i + 1) * sizeof(statusModeList) / sizeof(statusModeList[0]) + statusModeList[j], FALSE, &mii))
+                if (!GetMenuItemInfoA(hStatusMenu, (i + 1) * sizeof(statusModeList) / sizeof(statusModeList[0]) + statusModeList[j], FALSE, &mii))
                     continue;
                 if ((mii.dwItemData & MENU_CUSTOMITEMMAIN) != MENU_CUSTOMITEMMAIN)
                     continue;
@@ -571,7 +571,7 @@ static int MenuIconsChanged(WPARAM wParam, LPARAM lParam)
     }
 
     for (i = 0; i < sizeof(statusModeList) / sizeof(statusModeList[0]); i++) {
-        if (!GetMenuItemInfo(hStatusMenu, statusModeList[i], FALSE, &mii))
+        if (!GetMenuItemInfoA(hStatusMenu, statusModeList[i], FALSE, &mii))
             continue;
         if ((mii.dwItemData & MENU_CUSTOMITEMMAIN) != MENU_CUSTOMITEMMAIN)
             continue;
@@ -583,7 +583,7 @@ static int MenuIconsChanged(WPARAM wParam, LPARAM lParam)
 
 static void GiveExistingItemAnIcon(UINT id, HICON hIcon)
 {
-    MENUITEMINFO mii;
+    MENUITEMINFOA mii;
 
     mainMenuItem = (struct CListMenuItem *) mir_realloc(mainMenuItem, sizeof(struct CListMenuItem) * (mainItemCount + 1));
     mii.cbSize = sizeof(mii);
@@ -595,7 +595,7 @@ static void GiveExistingItemAnIcon(UINT id, HICON hIcon)
     mainMenuItem[mainItemCount].mi.hotKey = 0;
     mainMenuItem[mainItemCount].mi.pszName = NULL;
     mainMenuItem[mainItemCount].mi.pszService = NULL;
-    SetMenuItemInfo(hStatusMenu, id, FALSE, &mii);
+    SetMenuItemInfoA(hStatusMenu, id, FALSE, &mii);
     mainItemCount++;
 }
 
@@ -710,13 +710,13 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
     }
 
     if (networkProtoCount > 1) {
-        MENUITEMINFO mii;
+        MENUITEMINFOA mii;
         ZeroMemory(&mii, sizeof(mii));
         mii.cbSize = MENUITEMINFO_V4_SIZE;
         mii.fMask = MIIM_TYPE;
         mii.fType = MFT_SEPARATOR;
         mii.dwTypeData = "";
-        InsertMenuItem(hStatusMenu, 0, TRUE, &mii);
+        InsertMenuItemA(hStatusMenu, 0, TRUE, &mii);
     }
     for (i = 0; i < protoCount; i++) {
         if (proto[i]->type != PROTOTYPE_PROTOCOL || CallProtoService(proto[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
@@ -724,7 +724,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
         flags = CallProtoService(proto[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0);
         moreflags = CallProtoService(proto[i]->szName, PS_GETCAPS, PFLAGNUM_5, 0);
         if (networkProtoCount > 1) {
-            MENUITEMINFO mii;
+            MENUITEMINFOA mii;
             char protoName[128];
             int j;
             HMENU hMenu = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CLISTMENU)), 1);
@@ -740,7 +740,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
                     mii.fMask = MIIM_TYPE;
                     mii.cch = sizeof(text);
                     mii.dwTypeData = text;
-                    GetMenuItemInfo(hMenu, statusModeList[j], FALSE, &mii);
+                    GetMenuItemInfoA(hMenu, statusModeList[j], FALSE, &mii);
                     strcpy(text, Translate(text));
                     ptab = strchr(text, '\t');
                     if (ptab != NULL)
@@ -762,7 +762,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
                     else
                         mii.fMask = MIIM_ID | MIIM_TYPE;
                     mii.wID = statusModeList[j] + (i + 1) * sizeof(statusModeList) / sizeof(statusModeList[0]);
-                    SetMenuItemInfo(hMenu, statusModeList[j], FALSE, &mii);
+                    SetMenuItemInfoA(hMenu, statusModeList[j], FALSE, &mii);
                 }
             }
             if (IsWinVer98Plus()) {
@@ -789,7 +789,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
             mii.hSubMenu = hMenu;
             CallProtoService(proto[i]->szName, PS_GETNAME, sizeof(protoName), (LPARAM) protoName);
             mii.dwTypeData = protoName;
-            InsertMenuItem(hStatusMenu, 0, TRUE, &mii);
+            InsertMenuItemA(hStatusMenu, 0, TRUE, &mii);
         }
         statusFlags |= flags;
         statusFlags ^= moreflags;
@@ -883,11 +883,11 @@ int InitCustomMenus(void)
     currentStatusMenuItem = ID_STATUS_OFFLINE;
     currentDesiredStatusMode = ID_STATUS_OFFLINE;
     {
-        MENUITEMINFO mii;
+        MENUITEMINFOA mii;
         mii.cbSize = MENUITEMINFO_V4_SIZE;
         mii.fMask = MIIM_STATE;
         mii.fState = MFS_CHECKED | MFS_DEFAULT;
-        SetMenuItemInfo(hStatusMenu, currentStatusMenuItem, FALSE, &mii);
+        SetMenuItemInfoA(hStatusMenu, currentStatusMenuItem, FALSE, &mii);
     }
 
     HookEvent(ME_SYSTEM_MODULESLOADED, MenuModulesLoaded);

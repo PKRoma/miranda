@@ -42,7 +42,7 @@ int CListOptInit(WPARAM wParam, LPARAM lParam)
     odp.cbSize = sizeof(odp);
     odp.position = -1000000000;
     odp.hInstance = g_hInst;
-    odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_CLIST);
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLIST);
     odp.pszTitle = Translate("Contact List");
     odp.pfnDlgProc = DlgProcGenOpts;
     odp.flags = ODPF_BOLDGROUPS;
@@ -52,7 +52,7 @@ int CListOptInit(WPARAM wParam, LPARAM lParam)
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
     odp.position = -900000000;
-    odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_HOTKEY);
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
     odp.pszTitle = Translate("Hotkeys");
     odp.pszGroup = Translate("Events");
     odp.pfnDlgProc = DlgProcHotkeyOpts;
@@ -71,7 +71,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             HANDLE hContact = (HANDLE) wParam;
             DBCONTACTWRITESETTING *ws = (DBCONTACTWRITESETTING *) lParam;
             if (hContact == NULL && ws != NULL && ws->szModule != NULL && ws->szSetting != NULL
-                && lstrcmpi(ws->szModule, "CList") == 0 && lstrcmpi(ws->szSetting, "UseGroups") == 0 && IsWindowVisible(hwndDlg)) {
+                && lstrcmpiA(ws->szModule, "CList") == 0 && lstrcmpiA(ws->szSetting, "UseGroups") == 0 && IsWindowVisible(hwndDlg)) {
                 CheckDlgButton(hwndDlg, IDC_DISABLEGROUPS, ws->value.bVal == 0);
             }
             break;
@@ -166,15 +166,15 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 DBVARIANT dbv = { DBVT_DELETED };
                 DBGetContactSetting(NULL, "CList", "PrimaryStatus", &dbv);
                 CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
-                item = SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_ADDSTRING, 0, (LPARAM) Translate("Global"));
+                item = SendDlgItemMessageA(hwndDlg, IDC_PRIMARYSTATUS, CB_ADDSTRING, 0, (LPARAM) Translate("Global"));
                 SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_SETITEMDATA, item, (LPARAM) 0);
                 for (i = 0; i < count; i++) {
                     if (protos[i]->type != PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
                         continue;
                     CallProtoService(protos[i]->szName, PS_GETNAME, sizeof(szName), (LPARAM) szName);
-                    item = SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_ADDSTRING, 0, (LPARAM) szName);
+                    item = SendDlgItemMessageA(hwndDlg, IDC_PRIMARYSTATUS, CB_ADDSTRING, 0, (LPARAM) szName);
                     SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_SETITEMDATA, item, (LPARAM) protos[i]);
-                    if (dbv.type == DBVT_ASCIIZ && !lstrcmp(dbv.pszVal, protos[i]->szName))
+                    if (dbv.type == DBVT_ASCIIZ && !lstrcmpA(dbv.pszVal, protos[i]->szName))
                         SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_SETCURSEL, item, 0);
                 }
                 DBFreeVariant(&dbv);
@@ -304,11 +304,11 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             SendDlgItemMessage(hwndDlg, IDC_HKSHOWOPTIONS, HKM_SETHOTKEY,
                                DBGetContactSettingWord(NULL, "CList", "HKShowOptions", MAKEWORD('O', HOTKEYF_CONTROL | HOTKEYF_SHIFT)), 0);
             if (!DBGetContactSetting(NULL, "CList", "SearchUrl", &dbv)) {
-                SetDlgItemText(hwndDlg, IDC_SEARCHURL, dbv.pszVal);
+                SetDlgItemTextA(hwndDlg, IDC_SEARCHURL, dbv.pszVal);
                 mir_free(dbv.pszVal);
             }
             else
-                SetDlgItemText(hwndDlg, IDC_SEARCHURL, "http://www.google.com/");
+                SetDlgItemTextA(hwndDlg, IDC_SEARCHURL, "http://www.google.com/");
             CheckDlgButton(hwndDlg, IDC_SEARCHNEWWND, DBGetContactSettingByte(NULL, "CList", "HKSearchNewWnd", 0) ? BST_CHECKED : BST_UNCHECKED);
             return TRUE;
         }
@@ -346,7 +346,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                     DBWriteContactSettingWord(NULL, "CList", "HKReadMsg", (WORD) SendDlgItemMessage(hwndDlg, IDC_HKREADMSG, HKM_GETHOTKEY, 0, 0));
                     DBWriteContactSettingByte(NULL, "CList", "HKEnNetSearch", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_NETSEARCH));
                     DBWriteContactSettingWord(NULL, "CList", "HKNetSearch", (WORD) SendDlgItemMessage(hwndDlg, IDC_HKSEARCH, HKM_GETHOTKEY, 0, 0));
-                    GetDlgItemText(hwndDlg, IDC_SEARCHURL, str, sizeof(str));
+                    GetDlgItemTextA(hwndDlg, IDC_SEARCHURL, str, sizeof(str));
                     DBWriteContactSettingString(NULL, "CList", "SearchUrl", str);
                     DBWriteContactSettingByte(NULL, "CList", "HKSearchNewWnd", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SEARCHNEWWND));
                     DBWriteContactSettingByte(NULL, "CList", "HKEnShowOptions", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWOPTIONS));

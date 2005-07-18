@@ -136,16 +136,16 @@ static int GetStatusModeDescription(WPARAM wParam, LPARAM lParam)
             break;
         default:
             if (wParam > ID_STATUS_CONNECTING && wParam < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES) {
-                wsprintf(szMode, Translate("Connecting (attempt %d)"), wParam - ID_STATUS_CONNECTING + 1);
+                wsprintfA(szMode, Translate("Connecting (attempt %d)"), wParam - ID_STATUS_CONNECTING + 1);
                 return (int) szMode;
             }
             return (int) (char *) NULL;
     }
     if (noPrefixReqd || !(lParam & GSMDF_PREFIXONLINE))
         return (int) descr;
-    lstrcpy(szMode, Translate("Online"));
-    lstrcat(szMode, ": ");
-    lstrcat(szMode, descr);
+    lstrcpyA(szMode, Translate("Online"));
+    lstrcatA(szMode, ": ");
+    lstrcatA(szMode, descr);
     return (int) szMode;
 }
 
@@ -274,21 +274,21 @@ static BOOL CALLBACK AskForConfirmationDlgProc(HWND hWnd, UINT msg, WPARAM wPara
         {
             TranslateDialogDefault(hWnd);
             {
-                LOGFONT lf;
+                LOGFONTA lf;
                 HFONT hFont;
 
                 hFont = (HFONT) SendDlgItemMessage(hWnd, IDYES, WM_GETFONT, 0, 0);
                 GetObject(hFont, sizeof(lf), &lf);
                 lf.lfWeight = FW_BOLD;
-                SendDlgItemMessage(hWnd, IDC_TOPLINE, WM_SETFONT, (WPARAM) CreateFontIndirect(&lf), 0);
+                SendDlgItemMessage(hWnd, IDC_TOPLINE, WM_SETFONT, (WPARAM) CreateFontIndirectA(&lf), 0);
             }
             {
                 char szFormat[256];
                 char szFinal[256];
 
-                GetDlgItemText(hWnd, IDC_TOPLINE, szFormat, sizeof(szFormat));
-                mir_snprintf(szFinal, sizeof(szFinal), szFormat, (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, lParam, 0));
-                SetDlgItemText(hWnd, IDC_TOPLINE, szFinal);
+                GetDlgItemTextA(hWnd, IDC_TOPLINE, szFormat, sizeof(szFormat));
+                mir_snprintf(szFinal, sizeof(szFinal), szFormat, GetContactDisplayNameW((HANDLE)lParam, 0));
+                SetDlgItemTextA(hWnd, IDC_TOPLINE, szFinal);
             }
             SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
             return TRUE;
@@ -360,7 +360,7 @@ static int MenuItem_DeleteContact(WPARAM wParam, LPARAM lParam)
                     if (status == ID_STATUS_OFFLINE || (status >= ID_STATUS_CONNECTING && status < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES)) {
                         // Set a flag so we remember to delete the contact when the protocol goes online the next time
                         DBWriteContactSettingByte((HANDLE) wParam, "CList", "Delete", 1);
-                        MessageBox(NULL,
+                        MessageBoxA(NULL,
                                    Translate
                                    ("This contact is on an instant messaging system which stores its contact list on a central server. The contact will be removed from the server and from your contact list when you next connect to that network."),
                                    Translate("Delete Contact"), MB_OK);
@@ -439,7 +439,7 @@ int LoadContactListModule(void)
     CreateServiceFunction(MS_CLIST_DOCKINGISDOCKED, Docking_IsDocked);
     CreateServiceFunction(MS_CLIST_HOTKEYSPROCESSMESSAGE, HotkeysProcessMessage);
     CreateServiceFunction(MS_CLIST_GETCONTACTICON, GetContactIcon);
-    MySetProcessWorkingSetSize = (BOOL(WINAPI *) (HANDLE, SIZE_T, SIZE_T)) GetProcAddress(GetModuleHandle("kernel32"), "SetProcessWorkingSetSize");
+    MySetProcessWorkingSetSize = (BOOL(WINAPI *) (HANDLE, SIZE_T, SIZE_T)) GetProcAddress(GetModuleHandleA("kernel32"), "SetProcessWorkingSetSize");
     InitDisplayNameCache();
     InitCListEvents();
     InitCustomMenus();
@@ -576,14 +576,14 @@ int ShowHide(WPARAM wParam, LPARAM lParam)
         SetForegroundWindow(hwndContactList);
         DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
         //this forces the window onto the visible screen
-        MyMonitorFromWindow = (HMONITOR(WINAPI *) (HWND, DWORD)) GetProcAddress(GetModuleHandle("USER32"), "MonitorFromWindow");
+        MyMonitorFromWindow = (HMONITOR(WINAPI *) (HWND, DWORD)) GetProcAddress(GetModuleHandleA("USER32"), "MonitorFromWindow");
         GetWindowRect(hwndContactList, &rcWindow);
         if (MyMonitorFromWindow) {
             if (MyMonitorFromWindow(hwndContactList, 0) == NULL) {
                 BOOL(WINAPI * MyGetMonitorInfoA) (HMONITOR, LPMONITORINFO);
                 MONITORINFO mi = { 0 };
                 HMONITOR hMonitor = MyMonitorFromWindow(hwndContactList, 2);
-                MyGetMonitorInfoA = (BOOL(WINAPI *) (HMONITOR, LPMONITORINFO)) GetProcAddress(GetModuleHandle("USER32"), "GetMonitorInfoA");
+                MyGetMonitorInfoA = (BOOL(WINAPI *) (HMONITOR, LPMONITORINFO)) GetProcAddress(GetModuleHandleA("USER32"), "GetMonitorInfoA");
                 mi.cbSize = sizeof(mi);
                 MyGetMonitorInfoA(hMonitor, &mi);
                 rcScreen = mi.rcWork;
