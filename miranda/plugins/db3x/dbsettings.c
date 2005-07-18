@@ -531,7 +531,23 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	int bytesRequired,bytesRemaining;
 	DWORD ofsContact,ofsSettingsGroup,ofsBlobPtr;	
 
-	if (dbcws == NULL) return 1;
+	if (dbcws == NULL) 
+		return 1;
+
+	if (dbcws->value.type == DBVT_WCHAR) {
+		if (dbcws->value.pszVal != NULL) {
+			char* val = Utf8EncodeUcs2(dbcws->value.pwszVal);
+			if ( val == NULL )
+				return 1;
+
+			dbcws->value.pszVal = ( char* )alloca( strlen( val )+1 );
+			strcpy( dbcws->value.pszVal, val );
+			free(val);
+			dbcws->value.type = DBVT_UTF8;
+		}
+		else return 1;
+	}
+
 	if(dbcws->value.type!=DBVT_BYTE && dbcws->value.type!=DBVT_WORD && dbcws->value.type!=DBVT_DWORD && dbcws->value.type!=DBVT_ASCIIZ && dbcws->value.type!=DBVT_UTF8 && dbcws->value.type!=DBVT_BLOB)
 		return 1;
 	if ((!dbcws->szModule) || (!dbcws->szSetting) || ((dbcws->value.type == DBVT_ASCIIZ || dbcws->value.type == DBVT_UTF8 )&& dbcws->value.pszVal == NULL) || (dbcws->value.type == DBVT_BLOB && dbcws->value.pbVal == NULL) )
