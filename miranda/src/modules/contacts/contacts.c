@@ -23,6 +23,14 @@ extern HWND hwndContactTree;
 static char *nameOrderDescr[NAMEORDERCOUNT]={"My custom name (not moveable)","Nick","FirstName","E-mail","LastName","Username","FirstName LastName","'(Unknown Contact)' (not moveable)"};
 BYTE nameOrder[NAMEORDERCOUNT];
 
+static int GetDatabaseString( CONTACTINFO *ci, const char* setting, DBVARIANT* dbv )
+{
+	if ( ci->dwFlag & CNF_UNICODE )
+		return DBGetContactSettingWString(ci->hContact,ci->szProto,setting,dbv);
+
+	return DBGetContactSetting(ci->hContact,ci->szProto,setting,dbv);
+}
+
 static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 	DBVARIANT dbv;
 	CONTACTINFO *ci = (CONTACTINFO*)lParam;
@@ -31,44 +39,44 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 	if (ci->szProto==NULL) ci->szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)ci->hContact,0);
 	if (ci->szProto==NULL) return 1;
 	ci->type = 0;
-	switch(ci->dwFlag) {
+	switch(ci->dwFlag & 0x7F) {
 		case CNF_FIRSTNAME:
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"FirstName",&dbv)) {
+			if (!GetDatabaseString(ci,"FirstName",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
 				ci->pszVal = dbv.pszVal;
 				return 0;
 			}
 			break;
 		case CNF_LASTNAME:
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"LastName",&dbv)) {
+			if (!GetDatabaseString(ci,"LastName",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
 				ci->pszVal = dbv.pszVal;
 				return 0;
 			}
 			break;
 		case CNF_NICK:
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"Nick",&dbv)) {
+			if (!GetDatabaseString(ci,"Nick",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
 				ci->pszVal = dbv.pszVal;
 				return 0;
 			}
 			break;
 		case CNF_EMAIL:
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"e-mail",&dbv)) {
+			if (!GetDatabaseString(ci,"e-mail",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
 				ci->pszVal = dbv.pszVal;
 				return 0;
 			}
 			break;
 		case CNF_CITY:
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"City",&dbv)) {
+			if (!GetDatabaseString(ci,"City",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
 				ci->pszVal = dbv.pszVal;
 				return 0;
 			}
 			break;
 		case CNF_STATE:
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"State",&dbv)) {
+			if (!GetDatabaseString(ci,"State",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
 				ci->pszVal = dbv.pszVal;
 				return 0;
@@ -77,7 +85,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 		case CNF_COUNTRY:
 		{   int i,countryCount;
 			struct CountryListEntry *countries;
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"Country",&dbv)) {
+			if (!GetDatabaseString(ci,"Country",&dbv)) {
 				CallService(MS_UTILS_GETCOUNTRYLIST,(WPARAM)&countryCount,(LPARAM)&countries);
 				for(i=0;i<countryCount;i++) {
 					if(countries[i].id!=dbv.wVal) continue;
@@ -91,21 +99,21 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 			break;
 		}
 		case CNF_PHONE:
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"Phone",&dbv)) {
+			if (!GetDatabaseString(ci,"Phone",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
 				ci->pszVal = dbv.pszVal;
 				return 0;
 			}
 			break;
 		case CNF_HOMEPAGE:
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"Homepage",&dbv)) {
+			if (!GetDatabaseString(ci,"Homepage",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
 				ci->pszVal = dbv.pszVal;
 				return 0;
 			}
 			break;
 		case CNF_AGE:
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"Age",&dbv)) {
+			if (!GetDatabaseString(ci,"Age",&dbv)) {
 				ci->type = CNFT_WORD;
 				ci->wVal = dbv.wVal;
 				DBFreeVariant(&dbv);
@@ -124,9 +132,9 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 		}
 		case CNF_FIRSTLAST:
 		{
-			if(!DBGetContactSetting(ci->hContact,ci->szProto,"FirstName",&dbv)) {
+			if(!GetDatabaseString(ci,"FirstName",&dbv)) {
 				char *firstName=_strdup(dbv.pszVal);
-				if(!DBGetContactSetting(ci->hContact,ci->szProto,"LastName",&dbv)) {
+				if(!GetDatabaseString(ci,"LastName",&dbv)) {
 					char *buffer = (char*)malloc(strlen(firstName)+strlen(dbv.pszVal)+2);
 					ci->type = CNFT_ASCIIZ;
 					mir_snprintf(buffer,strlen(firstName)+strlen(dbv.pszVal)+2,"%s %s",firstName,dbv.pszVal);
@@ -143,7 +151,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 		{
 			char *uid = (char*)CallProtoService(ci->szProto,PS_GETCAPS,PFLAG_UNIQUEIDSETTING,0);
 			if ((int)uid!=CALLSERVICE_NOTFOUND&&uid) {
-				if (!DBGetContactSetting(ci->hContact,ci->szProto,uid,&dbv)) {
+				if (!GetDatabaseString(ci,uid,&dbv)) {
 					if (dbv.type==DBVT_BYTE) {
 						ci->type = CNFT_BYTE;
 						ci->bVal = dbv.bVal;
@@ -178,50 +186,47 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 					{
 						// make sure we aren't in CNF_DISPLAYNC mode
 						// don't get custom name for NULL contact
-						if (ci->hContact!=NULL&&ci->dwFlag==CNF_DISPLAY&&!DBGetContactSetting(ci->hContact,"CList","MyHandle",&dbv)) {
+						char* saveProto = ci->szProto; ci->szProto = "CList";
+						if (ci->hContact!=NULL && (ci->dwFlag&0x7F)==CNF_DISPLAY && !GetDatabaseString(ci,"MyHandle",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = _strdup(dbv.pszVal);
-							free(dbv.pszVal);
+							ci->pszVal = dbv.pszVal;
 							return 0;
 						}
+						ci->szProto = saveProto;
 						break;
 					}
 					case 1: // nick
 					{
-						if (!DBGetContactSetting(ci->hContact,ci->szProto,"Nick",&dbv)) {
+						if (!GetDatabaseString(ci,"Nick",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = _strdup(dbv.pszVal);
-							free(dbv.pszVal);
+							ci->pszVal = dbv.pszVal;
 							return 0;
 						}
 						break;
 					}
 					case 2: // First Name
 					{
-						if (!DBGetContactSetting(ci->hContact,ci->szProto,"FirstName",&dbv)) {
+						if (!GetDatabaseString(ci,"FirstName",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = _strdup(dbv.pszVal);
-							free(dbv.pszVal);
+							ci->pszVal = dbv.pszVal;
 							return 0;
 						}
 						break;
 					}
 					case 3: // E-mail
 					{
-						if (!DBGetContactSetting(ci->hContact,ci->szProto,"e-mail",&dbv)) {
+						if (!GetDatabaseString(ci,"e-mail",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = _strdup(dbv.pszVal);
-							free(dbv.pszVal);
+							ci->pszVal = dbv.pszVal;
 							return 0;
 						}
 						break;
 					}
 					case 4: // Last Name
 					{
-						if (!DBGetContactSetting(ci->hContact,ci->szProto,"LastName",&dbv)) {
+						if (!GetDatabaseString(ci,"LastName",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = _strdup(dbv.pszVal);
-							free(dbv.pszVal);
+							ci->pszVal = dbv.pszVal;
 							return 0;
 						}
 						break;
@@ -231,7 +236,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 						// protocol must define a PFLAG_UNIQUEIDSETTING
 						char *uid = (char*)CallProtoService(ci->szProto,PS_GETCAPS,PFLAG_UNIQUEIDSETTING,0);
 						if ((int)uid!=CALLSERVICE_NOTFOUND&&uid) {
-							if (!DBGetContactSetting(ci->hContact,ci->szProto,uid,&dbv)) {
+							if (!GetDatabaseString(ci,uid,&dbv)) {
 								if (dbv.type==DBVT_BYTE||dbv.type==DBVT_WORD||dbv.type==DBVT_DWORD) {
 									char buf[256];
 									ci->type = CNFT_ASCIIZ;
@@ -241,8 +246,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 								}
 								else if (dbv.type==DBVT_ASCIIZ) {
 									ci->type = CNFT_ASCIIZ;
-									ci->pszVal = _strdup(dbv.pszVal);
-									free(dbv.pszVal);
+									ci->pszVal = dbv.pszVal;
 									return 0;
 								}
 							}
@@ -250,9 +254,9 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 						break;
 					}
 					case 6: // first + last name
-						if(!DBGetContactSetting(ci->hContact,ci->szProto,"FirstName",&dbv)) {
+						if(!GetDatabaseString(ci,"FirstName",&dbv)) {
 							char *firstName=_strdup(dbv.pszVal);
-							if(!DBGetContactSetting(ci->hContact,ci->szProto,"LastName",&dbv)) {
+							if(!GetDatabaseString(ci,"LastName",&dbv)) {
 								char *buffer = (char*)malloc(strlen(firstName)+strlen(dbv.pszVal)+2);
 								ci->type = CNFT_ASCIIZ;
 								mir_snprintf(buffer,strlen(firstName)+strlen(dbv.pszVal)+2,"%s %s",firstName,dbv.pszVal);

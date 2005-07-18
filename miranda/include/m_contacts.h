@@ -29,7 +29,7 @@ typedef struct {
 		BYTE bVal;
 		WORD wVal;
 		DWORD dVal;
-		char *pszVal;
+		TCHAR *pszVal;
 		WORD cchVal;
 	};
 } CONTACTINFO;
@@ -62,6 +62,9 @@ typedef struct {
 // You must **NOT** do this from your version of free() you have to use Miranda's free()
 // you can get a function pointer to Miranda's free() via MS_SYSTEM_GET_MMI, see m_system.h
 #define CNF_DISPLAYNC	17
+
+// Add this flag if you want to get the Unicode info
+#define CNF_UNICODE     0x80
 
 // If MS_CONTACT_GETCONTACTINFO returns 0 (valid), then one of the following
 // types is setting telling you what type of info you received
