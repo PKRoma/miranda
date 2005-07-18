@@ -132,7 +132,7 @@ static HANDLE hChatEvent = NULL, hChatMenu = NULL;
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	msnUtfServicesAvailable = false; //ServiceExists( MS_DB_CONTACT_GETSETTING_STR );
+	msnUtfServicesAvailable = ServiceExists( MS_DB_CONTACT_GETSETTING_STR );
 
 	char szBuffer[ MAX_PATH ];
 
