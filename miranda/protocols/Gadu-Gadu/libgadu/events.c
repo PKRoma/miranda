@@ -303,7 +303,7 @@ static int gg_handle_recv_msg(struct gg_header *h, struct gg_event *e, struct gg
 
 				count = gg_fix32(m->count);
 
-				if (p + count * sizeof(uin_t) > packet_end) {
+				if (p + count * sizeof(uin_t) > packet_end || p + count * sizeof(uin_t) < p || count > 0xffff) {
 					gg_debug(GG_DEBUG_MISC, "// gg_handle_recv_msg() packet out of bounds (1.5)\n");
 					goto malformed;
 				}
@@ -383,18 +383,19 @@ static int gg_handle_recv_msg(struct gg_header *h, struct gg_event *e, struct gg
 			{
 				struct gg_msg_image_reply *rep = (void*) p;
 
-                /* Miranda IM fix - 1.83 by szalik introduces bug that crashes miranda */
-				/* if (p + sizeof(struct gg_msg_image_reply) == packet_end) {
+				if (p + sizeof(struct gg_msg_image_reply) == packet_end) {
+
+					/* pusta odpowied¼ - klient po drugiej stronie nie ma ¿±danego obrazka */
 
 					e->type = GG_EVENT_IMAGE_REPLY;
 					e->event.image_reply.sender = gg_fix32(r->sender);
-					e->event.image_reply.size = gg_fix32(rep->size);
+					e->event.image_reply.size = 0;
 					e->event.image_reply.crc32 = gg_fix32(rep->crc32);
-					e->event.image_reply.filename = strdup("");
-					e->event.image_reply.image = strdup("");
+					e->event.image_reply.filename = NULL;
+					e->event.image_reply.image = NULL;
 					return 0;
 
-				} else */ if (p + sizeof(struct gg_msg_image_reply) + 1 > packet_end) {
+				} else if (p + sizeof(struct gg_msg_image_reply) + 1 > packet_end) {
 
 					gg_debug(GG_DEBUG_MISC, "// gg_handle_recv_msg() packet out of bounds (4)\n");
 					goto malformed;

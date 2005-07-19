@@ -722,8 +722,11 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
 
     if(hImageFile)
         dat->imageSize = GetFileSize(hImageFile, 0);
-    else
+    // Check if it's valid nonzero size image
+    else if(e->event.image_reply.size && e->event.image_reply.image)
         dat->imageSize = e->event.image_reply.size;
+    else
+        return FALSE;
 
     if(szFileName)
     {

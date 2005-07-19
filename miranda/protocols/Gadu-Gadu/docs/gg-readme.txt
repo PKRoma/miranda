@@ -60,6 +60,8 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.3.3: 2005-07-19
+ - Fix: Serious multiple vulnerabilities of libgadu upto ekg version 1.6rc3
 0.0.3.2: 2005-07-14
  - Fix: libgadu event.c commit version 1.83 by szalik introduced bug that was
    crashing Miranda on image receive, since it was designed specially for Kadu
