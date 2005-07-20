@@ -314,11 +314,8 @@ LBL_Continue:
 				if ( msnLoggedIn ) {
 					DBVARIANT dbv;
 					if	( !DBGetContactSettingWString( NULL, msnProtocolName, "Nick", &dbv )) {
-						if ( wcscpy( dbv.pwszVal, screenStrW )) {
-							char* szNickUtf = Utf8EncodeUcs2( dbv.pwszVal );
-							msnNsThread->sendPacket( "PRP", "MFN %s", szNickUtf );
-							free( szNickUtf );
-						}
+						if ( wcscmp( dbv.pwszVal, screenStrW ))
+							MSN_SendNicknameW( screenStrW );
 						MSN_FreeVariant( &dbv );
 				}	}
 

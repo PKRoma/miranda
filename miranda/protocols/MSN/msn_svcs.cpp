@@ -1064,9 +1064,7 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						if ( msnRunningUnderNT && msnUtfServicesAvailable ) {
 							WCHAR str[ 130 ];
 							GetDlgItemTextW( hwndDlg, IDC_NICKNAME, str, sizeof( str ));
-							char* szNickUtf = Utf8EncodeUcs2( str );
-							msnNsThread->sendPacket( "PRP", "MFN %s", szNickUtf );
-							free( szNickUtf );
+							MSN_SendNicknameW( str );
 						}
 						else {
 							char str[ 130 ];

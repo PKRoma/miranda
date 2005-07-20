@@ -380,6 +380,18 @@ int __stdcall MSN_SendNickname(char *nickname)
 	return 0;
 }
 
+int __stdcall MSN_SendNicknameW( WCHAR* nickname)
+{
+	char* nickutf = Utf8EncodeUcs2( nickname );
+
+	char urlNick[ 387 ];
+	UrlEncode( nickutf, urlNick,  sizeof( urlNick ));
+	msnNsThread->sendPacket( "PRP", "MFN %s", urlNick );
+
+	free( nickutf );
+	return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendStatusMessage - notify a server about the status message change
 

@@ -165,6 +165,7 @@ void		__stdcall	MSN_GoOffline( void );
 void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen, bool bOldFormat = false );
 LPTSTR	__stdcall   MSN_GetErrorText( DWORD parErrorCode );
 int		__stdcall	MSN_SendNickname(char *nickname);
+int		__stdcall	MSN_SendNicknameW( WCHAR* nickname);
 void     __stdcall   MSN_SendStatusMessage( const char* msg );
 void		__stdcall	MSN_SetServerStatus( int newStatus );
 char*		__stdcall	MSN_StoreLen( char* dest, char* last );
