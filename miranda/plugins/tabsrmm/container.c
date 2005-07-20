@@ -79,13 +79,14 @@ extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus);
+extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus);
 
 char *szWarnClose = "Do you really want to close this session?";
 
 struct ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
 struct ContainerWindowData *pLastActiveContainer = NULL;
 
+TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwnd);
 int GetTabItemFromMouse(HWND hwndTab, POINT *pt);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
@@ -803,7 +804,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 
                 dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
                 if(dat) {
-                    szNewTitle = NewTitle(pContainer->szTitleFormat, dat->szNickname, dat->szStatus, pContainer->szName, dat->uin, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->idle, dat->codePage, dat->xStatus);
+                    szNewTitle = NewTitle(dat->bIsMeta ? dat->hSubContact : dat->hContact, pContainer->szTitleFormat, dat->szNickname, dat->szStatus, pContainer->szName, dat->uin, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->idle, dat->codePage, dat->xStatus);
                     if(szNewTitle) {
                         SetWindowText(hwndDlg, szNewTitle);
                         free(szNewTitle);

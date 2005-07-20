@@ -55,6 +55,7 @@ $Id$
 MYGLOBALS myGlobals;
 NEN_OPTIONS nen_options;
 
+TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 static void InitREOleCallback(void);
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam);
 

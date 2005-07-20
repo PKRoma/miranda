@@ -41,6 +41,7 @@ License: GPL
 extern "C" RTFColorTable rtf_ctable[];
 extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 extern "C" char *xStatusDescr[];
+extern "C" TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 
 #if defined(UNICODE)
 
@@ -320,10 +321,10 @@ nosimpletags:
 
 #if defined(_UNICODE)
 
-static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x")};
-#define NR_VARS 6
+static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x"), _T("%m")};
+#define NR_VARS 7
 
-extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus)
+extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus)
 {
     TCHAR *szResult = 0;
     int length = 0;
@@ -386,6 +387,29 @@ extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const 
                 title.erase(tempmark, 2);
                 break;
             }
+            case 'm': {
+                char *szFinalStatus = NULL;
+                TCHAR *result = NULL;
+                
+                if(xStatus > 0 && xStatus <= 24) {
+                    if((result = DBGetContactSettingString(hContact, (char *)szProto, "XStatusName")) != NULL)
+                        _tcsncpy(szTemp, result, 500);
+                    else
+                        szFinalStatus = (char *)szStatus;
+                }
+                else
+                    szFinalStatus = (char *)szStatus;
+                
+                if(szFinalStatus)
+                    MultiByteToWideChar(CP_ACP, 0, szFinalStatus, -1, szTemp, 500);
+
+                title.insert(tempmark + 2, szTemp);
+                title.erase(tempmark, 2);
+                
+                if(result)
+                    free(result);
+                break;
+            }
             default:
                 title.erase(tempmark, 1);
                 break;
@@ -393,7 +417,7 @@ extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const 
     }
     length = title.length();
     
-    szResult = (TCHAR *)malloc((title.length() + 2) * sizeof(TCHAR));
+    szResult = (TCHAR *)malloc((length + 2) * sizeof(TCHAR));
     if(szResult) {
         _tcsncpy(szResult, title.c_str(), length);
         szResult[length] = 0;

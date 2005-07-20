@@ -46,6 +46,7 @@ extern struct ContainerWindowData *pFirstContainer;
 extern BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
+TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 HMENU BuildContainerMenu();
 void CacheMsgLogIcons(), CacheLogFonts(), ReloadGlobals(), LoadIconTheme(), UnloadIconTheme();
 void CreateImageList(BOOL bInitial);

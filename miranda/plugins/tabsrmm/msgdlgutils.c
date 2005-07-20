@@ -2056,7 +2056,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                     oldColor = GetTextColor(dis->hDC);
                     SetTextColor(dis->hDC, myGlobals.ipConfig.clrClockSymbol);
                     base_hour = atoi(szResult);
-                    base_hour = base_hour > 12 ? base_hour - 12 : base_hour;
+                    base_hour = base_hour > 11 ? base_hour - 12 : base_hour;
                     symbolic_time[0] = (char)(0xB7 + base_hour);
                     symbolic_time[1] = 0;
                     //DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, myGlobals.g_IconClock, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);

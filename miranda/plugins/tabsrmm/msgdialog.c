@@ -2510,10 +2510,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 else if(wParam == (TIMERID_AWAYMSG + 1) && PtInRect(&rcNick, pt) && dat->xStatus > 0) {
                     char szBuffer[1025];
                     DBVARIANT dbv;
-                    
                     mir_snprintf(szBuffer, sizeof(szBuffer), "No extended status message available");
                     if(!DBGetContactSetting(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusMsg", &dbv)) {
-                        if(dbv.type == DBVT_ASCIIZ)
+                        if(dbv.type == DBVT_ASCIIZ && lstrlenA(dbv.pszVal) > 2)
                             mir_snprintf(szBuffer, sizeof(szBuffer), "%s", dbv.pszVal);
                         DBFreeVariant(&dbv);
                     }
