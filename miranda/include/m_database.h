@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -626,7 +626,7 @@ are passed as-is (with errors, pointer problems, if any) from any arguments
 passed to MS_DB_EVENT_ADD.
 
 The point of this hook is to stop any unwanted database events, to stop
-an event being added, return 1, to allow the event to pass through return 
+an event being added, return 1, to allow the event to pass through return
 0.
   wParam=(WPARAM)(HANDLE)hContact
   lParam=(LPARAM)&DBEVENTINFO
@@ -713,9 +713,9 @@ don't change any of the members.
 #define DBGetContactSetting(a,b,c,d) DBGetContactSetting_Helper(a,b,c,d,__FILE__,__LINE__)
 #define DBGetContactSettingTString(a,b,c,d) DBGetContactSettingTString_Helper(a,b,c,d,__FILE__,__LINE__)
 #define DBGetContactSettingWString(a,b,c,d) DBGetContactSettingWString_Helper(a,b,c,d,__FILE__,__LINE__)
-#define DBGetContactSettingStringUtf(a,b,c,d) DBGetContactSettingWStringUtf_Helper(a,b,c,d,__FILE__,__LINE__)
+#define DBGetContactSettingStringUtf(a,b,c,d) DBGetContactSettingStringUtf_Helper(a,b,c,d,__FILE__,__LINE__)
 
-#define db_msg_dbg(s) MessageBoxA(0,(s),"",0); 
+#define db_msg_dbg(s) MessageBoxA(0,(s),"",0);
 
 #ifdef _DEBUG
 #include <stdio.h>
@@ -1015,4 +1015,3 @@ __inline static DWORD DBGetContactSettingRangedDword(HANDLE hContact, const char
 #endif
 
 #endif // M_DATABASE_H__
-
