@@ -3419,7 +3419,7 @@ quote_from_last:
                             smaddInfo.Direction = 0;
                             smaddInfo.xPosition = rc.left;
                             smaddInfo.yPosition = rc.top + 24;
-                            dat->dwFlags |= MWF_SMBUTTONSELECTED;
+                            //dat->dwFlags |= MWF_SMBUTTONSELECTED;
                             if(dat->hwndLog)
                                 CallService(MS_IEVIEW_SHOWSMILEYSELECTION, 0, (LPARAM)&smaddInfo);
                             else
@@ -3847,12 +3847,12 @@ quote_from_last:
                         dat->dwLastActivity = GetTickCount();
                         dat->pContainer->dwLastActivity = dat->dwLastActivity;
                         UpdateSaveAndSendButton(hwndDlg, dat);
-
+                        /*
                         if(dat->dwFlags & MWF_SMBUTTONSELECTED) {
                             SendMessage(hwndDlg, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(hwndDlg, IDC_MESSAGE), (LPARAM)TRUE);
                             SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                             dat->dwFlags &= ~MWF_SMBUTTONSELECTED;
-                        }
+                        }*/
                         if (!(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
                             dat->nLastTyping = GetTickCount();
                             if (GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE))) {

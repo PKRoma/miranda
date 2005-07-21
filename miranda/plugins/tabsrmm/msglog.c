@@ -802,7 +802,7 @@ nogroup:
                 case 'm':           // minute
                     if(showTime) {
                         if(skipFont)
-                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "02d", event_time.tm_min);
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%02d", event_time.tm_min);
                         else
                             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %02d", rtfFonts[isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset], event_time.tm_min);
                     }
