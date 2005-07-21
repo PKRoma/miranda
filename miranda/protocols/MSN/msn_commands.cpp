@@ -1574,16 +1574,29 @@ LBL_InvalidCommand:
 					free( tAuth );
 				}
 				else if ( !strcmp( data.security, "OK" )) {
-					UrlDecode( tWords[1] ); UrlDecode( tWords[2] ); Utf8Decode( tWords[2] );
+					UrlDecode( tWords[1] ); UrlDecode( tWords[2] );
 
 					if ( MSN_GetByte( "NeverUpdateNickname", 0 )) {
-						char tNick[ 130 ];
-						MSN_GetStaticString( "Nick", NULL, tNick, sizeof tNick );
-						MSN_SendNickname( tNick );
-
-						MSN_DebugLog( "Logged in as '%s', name is '%s'", tWords[1], tNick );
+						int result;
+						DBVARIANT dbv;
+						if ( msnRunningUnderNT && msnUtfServicesAvailable ) {
+							if (( result = DBGetContactSettingWString( NULL, msnProtocolName, "Nick", &dbv )) == 0 ) {
+								MSN_SendNicknameW( dbv.pwszVal );
+								MSN_FreeVariant( &dbv );
+						}	}
+						else {
+							if (( result = DBGetContactSetting( NULL, msnProtocolName, "Nick", &dbv )) == 0 ) {
+								MSN_SendNickname( dbv.pszVal );
+								MSN_FreeVariant( &dbv );
+						}	}
 					}
-					else MSN_DebugLog( "Logged in as '%s', name is '%s'", tWords[1], tWords[2] );
+					else {
+						if ( msnUtfServicesAvailable )
+							MSN_SetStringUtf( NULL, "Nick", tWords[2] );
+						else {
+							Utf8Decode( tWords[2] );
+							MSN_SetString( NULL, "Nick", tWords[2] );
+					}	}
 
 					msnLoggedIn = true;
 					sttListNumber = 0;
