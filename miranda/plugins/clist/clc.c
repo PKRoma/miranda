@@ -363,7 +363,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				struct ClcContact *contact;
 				struct ClcGroup *group;
 				TCHAR szFullName[512];
-				int i, nameLen;
+				int i, nameLen, eq;
 				//check name of group and ignore message if just being expanded/collapsed
 				if (FindItem(hwnd, dat, (HANDLE) (groupId | HCONTACT_ISGROUP), &contact, &group, NULL)) {
 					lstrcpy(szFullName, contact->szText);
@@ -385,8 +385,16 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 						memcpy(szFullName, group->contact[i].szText, sizeof( TCHAR )*nameLen);
 						szFullName[nameLen] = '\\';
 					}
-					if (!lstrcmp(szFullName, dbcws->value.pszVal + 1)
-						&& (contact->group->hideOffline != 0) == ((dbcws->value.pszVal[0] & GROUPF_HIDEOFFLINE) != 0))
+
+					#if defined( UNICODE )
+					{	WCHAR* wszGrpName = a2u(dbcws->value.pszVal+1);
+						eq = !lstrcmp( szFullName, wszGrpName );
+						mir_free( wszGrpName );
+					}
+					#else
+						eq = !lstrcmp( szFullName, dbcws->value.pszVal+1 );
+					#endif
+					if ( eq && (contact->group->hideOffline != 0) == ((dbcws->value.pszVal[0] & GROUPF_HIDEOFFLINE) != 0))
 						break;  //only expanded has changed: no action reqd
 				}
 			}
