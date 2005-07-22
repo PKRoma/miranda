@@ -203,6 +203,8 @@ void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour);
 
 //clistsettings.c
 TCHAR* GetContactDisplayNameW( HANDLE hContact, int mode );
+char* u2a( wchar_t* src );
+wchar_t* a2u( char* src );
 
 //clcfiledrop.c
 void InitFileDropping(void);

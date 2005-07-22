@@ -108,30 +108,6 @@ void InvalidateDisplayNameCacheEntry(HANDLE hContact)
 	}
 }
 
-static char* u2a( wchar_t* src )
-{
-	int cbLen = WideCharToMultiByte( CP_ACP, 0, src, -1, NULL, 0, NULL, NULL );
-	char* result = ( char* )mir_alloc( cbLen+1 );
-	if ( result == NULL )
-		return NULL;
-
-	WideCharToMultiByte( CP_ACP, 0, src, -1, result, cbLen, NULL, NULL );
-	result[ cbLen ] = 0;
-	return result;
-}
-
-static wchar_t* a2u( char* src )
-{
-	int cbLen = MultiByteToWideChar( CP_ACP, 0, src, -1, NULL, 0 );
-	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
-	if ( result == NULL )
-		return NULL;
-
-	MultiByteToWideChar( CP_ACP, 0, src, -1, result, cbLen );
-	result[ cbLen ] = 0;
-	return result;
-}
-
 int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 {
 	CONTACTINFO ci;
@@ -363,3 +339,30 @@ int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 
 }
+
+/*-----------------------------------------------------*/
+
+char* u2a( wchar_t* src )
+{
+	int cbLen = WideCharToMultiByte( CP_ACP, 0, src, -1, NULL, 0, NULL, NULL );
+	char* result = ( char* )mir_alloc( cbLen+1 );
+	if ( result == NULL )
+		return NULL;
+
+	WideCharToMultiByte( CP_ACP, 0, src, -1, result, cbLen, NULL, NULL );
+	result[ cbLen ] = 0;
+	return result;
+}
+
+wchar_t* a2u( char* src )
+{
+	int cbLen = MultiByteToWideChar( CP_ACP, 0, src, -1, NULL, 0 );
+	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
+	if ( result == NULL )
+		return NULL;
+
+	MultiByteToWideChar( CP_ACP, 0, src, -1, result, cbLen );
+	result[ cbLen ] = 0;
+	return result;
+}
+
