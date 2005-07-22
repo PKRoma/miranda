@@ -60,7 +60,6 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 struct FontOptionsList
 {
-    char *szDescr;
     COLORREF defColour;
     char *szDefFace;
     BYTE defCharset, defStyle;
@@ -71,7 +70,7 @@ struct FontOptionsList
     char size;
 }
 static fontOptionsList[] = {
-    {"Outgoing messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -12}};
+    {RGB(0, 0, 0), "Tahoma", DEFAULT_CHARSET, 0, -10}};
     
 
 HIMAGELIST CreateStateImageList()
@@ -101,7 +100,7 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
         if(i == H_MSGFONTID_DIVIDERS)
             lf->lfHeight = 5;
         else {
-            bSize = (char)DBGetContactSettingByte(NULL, FONTMODULE, str, -12);
+            bSize = (char)DBGetContactSettingByte(NULL, FONTMODULE, str, -10);
             if(bSize < 0)
                 lf->lfHeight = abs(bSize);
             else
@@ -180,12 +179,12 @@ static const char *szIPFontDescr[IPFONTCOUNT] = {
  * Font Service support
  */
 
-static struct _colornames { char *szName; char *szModule; char *szSetting; } colornames[] = {
-    "Background", FONTMODULE, SRMSGSET_BKGCOLOUR,
-    "Incoming events", FONTMODULE, "inbg",
-    "Outgoing events", FONTMODULE, "outbg",
-    "Input area background", FONTMODULE, "inputbg",
-    "Horizontal grid lines", FONTMODULE, "hgrid",
+static struct _colornames { char *szName; char *szModule; char *szSetting; DWORD defclr; } colornames[] = {
+    "Background", FONTMODULE, SRMSGSET_BKGCOLOUR, 0,
+    "Incoming events", FONTMODULE, "inbg", 0,
+    "Outgoing events", FONTMODULE, "outbg", 0,
+    "Input area background", FONTMODULE, "inputbg", 0,
+    "Horizontal grid lines", FONTMODULE, "hgrid", 0,
     NULL, NULL, NULL
 };
 
@@ -198,6 +197,9 @@ void FS_RegisterFonts()
     DBVARIANT dbv;
     ColourID cid = {0};
 
+    colornames[0].defclr = colornames[1].defclr = colornames[3].defclr = GetSysColor(COLOR_WINDOW);
+    colornames[2].defclr = GetSysColor(COLOR_3DFACE);
+    
     cid.cbSize = sizeof(cid);
     strncpy(cid.group, "TabSRMM", sizeof(cid.group));
     strncpy(cid.dbSettingsGroup, FONTMODULE, sizeof(cid.dbSettingsGroup));

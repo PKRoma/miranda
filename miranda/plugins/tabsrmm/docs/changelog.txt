@@ -31,6 +31,8 @@ Version 0.9.9.97 - 2005/07/20
         * removed smiley selection window focus workaround. No longer necessary, because 
           fixed smileyadd doesn't mess up input focus any more.
 
+        + new shortcut: Ctrl-K -> clear input area
+        
 Version 0.9.9.96 - 2005/07/18
 
         ! null pointer check when retrieving status message. Fixes crash when retrieving

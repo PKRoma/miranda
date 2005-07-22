@@ -202,8 +202,8 @@ void CacheLogFonts()
     myGlobals.ipConfig.bkgBrush = CreateSolidBrush(myGlobals.ipConfig.clrBackground);
 
     myGlobals.crDefault = DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
-    myGlobals.crIncoming = DBGetContactSettingDword(NULL, FONTMODULE, "inbg", RGB(224, 224, 224));
-    myGlobals.crOutgoing = DBGetContactSettingDword(NULL, FONTMODULE, "outbg", RGB(224, 224, 224));
+    myGlobals.crIncoming = DBGetContactSettingDword(NULL, FONTMODULE, "inbg", GetSysColor(COLOR_WINDOW));
+    myGlobals.crOutgoing = DBGetContactSettingDword(NULL, FONTMODULE, "outbg", GetSysColor(COLOR_3DFACE));
 }
 
 /*

@@ -412,6 +412,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                     case 25:
                         PostMessage(GetParent(hwnd), DM_SPLITTEREMERGENCY, 0, 0);
                         return 0;
+                    case 0x0b:
+                        SetWindowText(hwnd, _T(""));
+                        return 0;
                 }
                 break;
             }
@@ -3404,26 +3407,40 @@ quote_from_last:
                     break;
                 case IDC_SMILEYBTN:
                     if(dat->doSmileys && (myGlobals.g_SmileyAddAvail || dat->hwndLog != 0)) {
-                        SMADD_SHOWSEL smaddInfo;
                         HICON hButtonIcon = 0;
                         RECT rc;
                         
                         if(CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, &hButtonIcon) != 0 || dat->hwndLog != 0) {
-                            smaddInfo.cbSize = sizeof(SMADD_SHOWSEL);
-                            smaddInfo.hwndTarget = GetDlgItem(hwndDlg, IDC_MESSAGE);
-                            smaddInfo.targetMessage = EM_REPLACESEL;
-                            smaddInfo.targetWParam = TRUE;
-                            smaddInfo.Protocolname = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
                             GetWindowRect(GetDlgItem(hwndDlg, IDC_SMILEYBTN), &rc);
 
-                            smaddInfo.Direction = 0;
-                            smaddInfo.xPosition = rc.left;
-                            smaddInfo.yPosition = rc.top + 24;
                             //dat->dwFlags |= MWF_SMBUTTONSELECTED;
-                            if(dat->hwndLog)
+                            if(dat->hwndLog) {
+                                SMADD_SHOWSEL smaddInfo;
+
+                                smaddInfo.cbSize = sizeof(SMADD_SHOWSEL);
+                                smaddInfo.hwndTarget = GetDlgItem(hwndDlg, IDC_MESSAGE);
+                                smaddInfo.targetMessage = EM_REPLACESEL;
+                                smaddInfo.targetWParam = TRUE;
+                                smaddInfo.Protocolname = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+                                smaddInfo.Direction = 0;
+                                smaddInfo.xPosition = rc.left;
+                                smaddInfo.yPosition = rc.top + 24;
                                 CallService(MS_IEVIEW_SHOWSMILEYSELECTION, 0, (LPARAM)&smaddInfo);
-                            else
+                            }
+                            else {
+                                SMADD_SHOWSEL2 smaddInfo;
+
+                                smaddInfo.cbSize = sizeof(SMADD_SHOWSEL2);
+                                smaddInfo.hwndTarget = GetDlgItem(hwndDlg, IDC_MESSAGE);
+                                smaddInfo.targetMessage = EM_REPLACESEL;
+                                smaddInfo.targetWParam = TRUE;
+                                smaddInfo.Protocolname = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+                                smaddInfo.Direction = 0;
+                                smaddInfo.xPosition = rc.left;
+                                smaddInfo.yPosition = rc.top + 24;
+                                smaddInfo.hwndParent = dat->pContainer->hwnd;
                                 CallService(MS_SMILEYADD_SHOWSELECTION, (WPARAM)dat->pContainer->hwnd, (LPARAM) &smaddInfo);
+                            }
                         }
                     }
                     break;
