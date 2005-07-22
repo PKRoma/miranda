@@ -589,7 +589,11 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     GlobalFree(dat->lpImages->hPicture);
                     free(dat->lpImages);
                 }
-                dat->lpImages = gg_img_loadpicture(0, dat->hContact, szFileName);
+                if(!(dat->lpImages = gg_img_loadpicture(0, dat->hContact, szFileName))
+                {
+                    EndDialog(hwndDlg, 0);
+                    return FALSE;
+                }
                 ShowWindow(hwndDlg, SW_SHOW);
             }
             else
@@ -717,7 +721,7 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
     {
         hImageFile = CreateFile(szFileName, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
         if(hImageFile == INVALID_HANDLE_VALUE)
-            return FALSE;
+            return NULL;
     }
 
     if(hImageFile)
@@ -726,7 +730,7 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
     else if(e->event.image_reply.size && e->event.image_reply.image)
         dat->imageSize = e->event.image_reply.size;
     else
-        return FALSE;
+        return NULL;
 
     if(szFileName)
     {
@@ -758,7 +762,7 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
 
         if (hImageFile>0) CloseHandle(hImageFile);
         free(dat);
-        return FALSE;
+        return NULL;
     }
 
     DWORD dwBytes;
@@ -782,7 +786,7 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
         if(pstm != NULL)
             pstm->Release();
         free(dat);
-        return FALSE;
+        return NULL;
     }
 
     // Create IPicture from image file
@@ -801,7 +805,7 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
         );
         if (hImageFile>0) CloseHandle(hImageFile);
         free(dat);
-        return FALSE;
+        return NULL;
     }
 
     pstm->Release();
@@ -819,11 +823,12 @@ int gg_img_recvimage(WPARAM wParam, LPARAM lParam)
     struct gg_event* e = (struct gg_event *)cle->lParam;
 
     GGIMAGEENTRY *img = gg_img_loadpicture(e, cle->hContact, 0);
+
+    if(!img) return FALSE;
+
     gg_img_display(
         e->event.image_reply.sender,
         gg_getcontact(e->event.image_reply.sender, 1, 0, NULL), img);
-
-    gg_free_event(e);
 
 	return FALSE;
 }

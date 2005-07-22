@@ -60,6 +60,10 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.3.4: 2005-07-22
+ - Fix: Yet another image receive fix, libgadu fixes introduced ghost image
+   messages
+ - Small code formatting fixes
 0.0.3.3: 2005-07-19
  - Fix: Serious multiple vulnerabilities of libgadu upto ekg version 1.6rc3
 0.0.3.2: 2005-07-14

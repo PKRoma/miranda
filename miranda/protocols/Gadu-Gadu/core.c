@@ -543,343 +543,348 @@ start:
 #endif
         // pthread_mutex_unlock(&threadMutex);
 
-        // Client connected
-        if (e->type == GG_EVENT_CONN_SUCCESS)
+        switch(e->type)
         {
-            // Nada
-        }
+            // Client connected
+            case GG_EVENT_CONN_SUCCESS:
+                // Nada
+                break;
 
-        // Client disconnected or connection failure
-        if (e->type == GG_EVENT_CONN_FAILED || e->type == GG_EVENT_DISCONNECT)
-        {
-            gg_free_session(thread->sess);
-            thread->sess = NULL;
-        }
+            // Client disconnected or connection failure
+            case GG_EVENT_CONN_FAILED:
+            case GG_EVENT_DISCONNECT:
+                gg_free_session(thread->sess);
+                thread->sess = NULL;
+                break;
 
-        // Received ackowledge
-        if (e->type == GG_EVENT_ACK)
-        {
-            if(e->event.ack.seq && e->event.ack.recipient)
-            {
-                ProtoBroadcastAck(GG_PROTO, gg_getcontact((DWORD)e->event.ack.recipient, 0, 0, NULL),
-                    ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) e->event.ack.seq, 0);
-            }
-        }
-
-        // Statuslist notify
-        if (e->type == GG_EVENT_NOTIFY || e->type == GG_EVENT_NOTIFY_DESCR)
-        {
-            struct gg_notify_reply *n;
-
-            n = (e->type == GG_EVENT_NOTIFY) ? e->event.notify : e->event.notify_descr.notify;
-
-            for (; n->uin; n++)
-            {
-                char *descr = (e->type == GG_EVENT_NOTIFY_DESCR) ? e->event.notify_descr.descr : NULL;
-                gg_changecontactstatus(n->uin, n->status, descr, 0, n->remote_ip, n->remote_port, n->version);
-            }
-        }
-        // Statuslist notify (version 6.0)
-        if (e->type == GG_EVENT_NOTIFY60)
-				{
-						int i;
-						for (i = 0; e->event.notify60[i].uin; i++)
-								gg_changecontactstatus(e->event.notify60[i].uin, e->event.notify60[i].status, e->event.notify60[i].descr,
-										e->event.notify60[i].time, e->event.notify60[i].remote_ip, e->event.notify60[i].remote_port,
-										e->event.notify60[i].version);
-				}
-
-        // Pubdir search reply && read own data reply
-        if (e->type == GG_EVENT_PUBDIR50_SEARCH_REPLY || e->type == GG_EVENT_PUBDIR50_READ || e->type == GG_EVENT_PUBDIR50_WRITE)
-        {
-            gg_pubdir50_t res = e->event.pubdir50;
-            int i, count;
-
-#ifdef DEBUGMODE
-            if(e->type == GG_EVENT_PUBDIR50_SEARCH_REPLY)
-                gg_netlog("gg_mainthread(%x): Got user info.", thread);
-            if(e->type == GG_EVENT_PUBDIR50_READ)
-                gg_netlog("gg_mainthread(%x): Got owner info.", thread);
-            if(e->type == GG_EVENT_PUBDIR50_WRITE)
-                gg_netlog("gg_mainthread(%x): Public catalog save succesful.", thread);
-#endif
-            // Store next search UIN
-            nextUIN = gg_pubdir50_next(res);
-
-            if ((count = gg_pubdir50_count(res)) > 0)
-            {
-                for (i = 0; i < count; i++)
+            // Received ackowledge
+            case GG_EVENT_ACK:
+                if(e->event.ack.seq && e->event.ack.recipient)
                 {
-                    // Loadup fields
-                    const char *__fmnumber = gg_pubdir50_get(res, i, GG_PUBDIR50_UIN);
-                    const char *__nick = gg_pubdir50_get(res, i, GG_PUBDIR50_NICKNAME);
-                    const char *__firstname = gg_pubdir50_get(res, i, GG_PUBDIR50_FIRSTNAME);
-                    const char *__lastname = gg_pubdir50_get(res, i, GG_PUBDIR50_LASTNAME);
-                    const char *__familyname = gg_pubdir50_get(res, i, GG_PUBDIR50_FAMILYNAME);
-                    const char *__birthyear = gg_pubdir50_get(res, i, GG_PUBDIR50_BIRTHYEAR);
-                    const char *__city = gg_pubdir50_get(res, i, GG_PUBDIR50_CITY);
-                    const char *__origincity = gg_pubdir50_get(res, i, GG_PUBDIR50_FAMILYCITY);
-                    const char *__gender = gg_pubdir50_get(res, i, GG_PUBDIR50_GENDER);
-                    const char *__status = gg_pubdir50_get(res, i, GG_PUBDIR50_STATUS);
-                    uin_t uin = __fmnumber ? atoi(__fmnumber) : 0;
+                    ProtoBroadcastAck(GG_PROTO, gg_getcontact((DWORD)e->event.ack.recipient, 0, 0, NULL),
+                        ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) e->event.ack.seq, 0);
+                }
+                break;
 
-                    HANDLE hContact = (res->seq == GG_SEQ_CHINFO) ? NULL : gg_getcontact(uin, 0, 0, NULL);
+            // Statuslist notify
+            case GG_EVENT_NOTIFY:
+            case GG_EVENT_NOTIFY_DESCR:
+            {
+                struct gg_notify_reply *n;
+
+                n = (e->type == GG_EVENT_NOTIFY) ? e->event.notify : e->event.notify_descr.notify;
+
+                for (; n->uin; n++)
+                {
+                    char *descr = (e->type == GG_EVENT_NOTIFY_DESCR) ? e->event.notify_descr.descr : NULL;
+                    gg_changecontactstatus(n->uin, n->status, descr, 0, n->remote_ip, n->remote_port, n->version);
+                }
+
+                break;
+            }
+            // Statuslist notify (version 6.0)
+            case GG_EVENT_NOTIFY60:
+            {
+                int i;
+                for(i = 0; e->event.notify60[i].uin; i++)
+                    gg_changecontactstatus(e->event.notify60[i].uin, e->event.notify60[i].status, e->event.notify60[i].descr,
+                        e->event.notify60[i].time, e->event.notify60[i].remote_ip, e->event.notify60[i].remote_port,
+                        e->event.notify60[i].version);
+                break;
+            }
+
+            // Pubdir search reply && read own data reply
+            case GG_EVENT_PUBDIR50_SEARCH_REPLY:
+            case GG_EVENT_PUBDIR50_READ:
+            case GG_EVENT_PUBDIR50_WRITE:
+            {
+                gg_pubdir50_t res = e->event.pubdir50;
+                int i, count;
+
 #ifdef DEBUGMODE
-                    gg_netlog("gg_mainthread(%x): Search result for uin %d, seq %d.", thread, uin, res->seq);
+                if(e->type == GG_EVENT_PUBDIR50_SEARCH_REPLY)
+                    gg_netlog("gg_mainthread(%x): Got user info.", thread);
+                if(e->type == GG_EVENT_PUBDIR50_READ)
+                    gg_netlog("gg_mainthread(%x): Got owner info.", thread);
+                if(e->type == GG_EVENT_PUBDIR50_WRITE)
+                    gg_netlog("gg_mainthread(%x): Public catalog save succesful.", thread);
 #endif
-                    if(res->seq == GG_SEQ_SEARCH)
+                // Store next search UIN
+                nextUIN = gg_pubdir50_next(res);
+
+                if ((count = gg_pubdir50_count(res)) > 0)
+                {
+                    for (i = 0; i < count; i++)
                     {
-                        char strFmt1[64];
-                        char strFmt2[64];
-                        GGSEARCHRESULT sr;
+                        // Loadup fields
+                        const char *__fmnumber = gg_pubdir50_get(res, i, GG_PUBDIR50_UIN);
+                        const char *__nick = gg_pubdir50_get(res, i, GG_PUBDIR50_NICKNAME);
+                        const char *__firstname = gg_pubdir50_get(res, i, GG_PUBDIR50_FIRSTNAME);
+                        const char *__lastname = gg_pubdir50_get(res, i, GG_PUBDIR50_LASTNAME);
+                        const char *__familyname = gg_pubdir50_get(res, i, GG_PUBDIR50_FAMILYNAME);
+                        const char *__birthyear = gg_pubdir50_get(res, i, GG_PUBDIR50_BIRTHYEAR);
+                        const char *__city = gg_pubdir50_get(res, i, GG_PUBDIR50_CITY);
+                        const char *__origincity = gg_pubdir50_get(res, i, GG_PUBDIR50_FAMILYCITY);
+                        const char *__gender = gg_pubdir50_get(res, i, GG_PUBDIR50_GENDER);
+                        const char *__status = gg_pubdir50_get(res, i, GG_PUBDIR50_STATUS);
+                        uin_t uin = __fmnumber ? atoi(__fmnumber) : 0;
 
-                        sprintf(strFmt2, "%s", (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status_gg2m(atoi(__status)), 0));
-                        if(__city)
+                        HANDLE hContact = (res->seq == GG_SEQ_CHINFO) ? NULL : gg_getcontact(uin, 0, 0, NULL);
+#ifdef DEBUGMODE
+                        gg_netlog("gg_mainthread(%x): Search result for uin %d, seq %d.", thread, uin, res->seq);
+#endif
+                        if(res->seq == GG_SEQ_SEARCH)
                         {
-                            sprintf(strFmt1, ", %s %s", Translate("City:"), __city);
-                            strcat(strFmt2, strFmt1);
-                        }
-                        if(__birthyear)
-                        {
-                            time_t t = time(NULL);
-                            struct tm *lt = localtime(&t);
-                            int br = atoi(__birthyear);
+                            char strFmt1[64];
+                            char strFmt2[64];
+                            GGSEARCHRESULT sr;
 
-                            if(br < (lt->tm_year + 1900) && br > 1900)
+                            sprintf(strFmt2, "%s", (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status_gg2m(atoi(__status)), 0));
+                            if(__city)
                             {
-                                sprintf(strFmt1, ", %s %d", Translate("Age:"), (lt->tm_year + 1900) - br);
+                                sprintf(strFmt1, ", %s %s", Translate("City:"), __city);
                                 strcat(strFmt2, strFmt1);
                             }
-                        }
-                        sprintf(strFmt1, "GG: %d", uin);
-
-                        sr.hdr.cbSize = sizeof(sr);
-                        sr.hdr.nick = (char *)__nick;
-                        sr.hdr.firstName = (char *)__firstname;
-                        sr.hdr.lastName = strFmt1;
-                        sr.hdr.email = strFmt2;
-                        sr.uin = uin;
-
-                        ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM)&sr);
-                    }
-
-                    if(((res->seq == GG_SEQ_INFO || res->seq == GG_SEQ_GETNICK) && hContact != NULL)
-                        || res->seq == GG_SEQ_CHINFO)
-                    {
-                        // Change nickname if it's not present
-                        if(__nick && (res->seq == GG_SEQ_GETNICK || res->seq == GG_SEQ_CHINFO))
-                            DBWriteContactSettingString(hContact, GG_PROTO, "Nick", __nick);
-                        if(__nick)
-                            DBWriteContactSettingString(hContact, GG_PROTO, "NickName", __nick);
-
-                        // Change other info
-                        if(__city)
-                            DBWriteContactSettingString(hContact, GG_PROTO, "City", __city);
-                        if(__firstname)
-                            DBWriteContactSettingString(hContact, GG_PROTO, "FirstName", __firstname);
-                        if(__lastname)
-                            DBWriteContactSettingString(hContact, GG_PROTO, "LastName", __lastname);
-                        if(__familyname)
-                            DBWriteContactSettingString(hContact, GG_PROTO, "FamilyName", __familyname);
-                        if(__origincity)
-                            DBWriteContactSettingString(hContact, GG_PROTO, "CityOrigin", __origincity);
-                        if(__birthyear)
-                        {
-                            time_t t = time(NULL);
-                            struct tm *lt = localtime(&t);
-                            int br = atoi(__birthyear);
-                            if(br > 0)
+                            if(__birthyear)
                             {
-                                DBWriteContactSettingWord(hContact, GG_PROTO, "Age", (lt->tm_year + 1900) - br);
-                                DBWriteContactSettingWord(hContact, GG_PROTO, "BirthYear", br);
+                                time_t t = time(NULL);
+                                struct tm *lt = localtime(&t);
+                                int br = atoi(__birthyear);
+
+                                if(br < (lt->tm_year + 1900) && br > 1900)
+                                {
+                                    sprintf(strFmt1, ", %s %d", Translate("Age:"), (lt->tm_year + 1900) - br);
+                                    strcat(strFmt2, strFmt1);
+                                }
                             }
+                            sprintf(strFmt1, "GG: %d", uin);
+
+                            sr.hdr.cbSize = sizeof(sr);
+                            sr.hdr.nick = (char *)__nick;
+                            sr.hdr.firstName = (char *)__firstname;
+                            sr.hdr.lastName = strFmt1;
+                            sr.hdr.email = strFmt2;
+                            sr.uin = uin;
+
+                            ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM)&sr);
                         }
 
-                        // Gadu-Gadu Male <-> Female
-                        if(__gender)
-                            DBWriteContactSettingByte(hContact, GG_PROTO, "Gender",
-                            (BYTE)(!strcmp(__gender, GG_PUBDIR50_GENDER_MALE) ? 'F' :
-                                  (!strcmp(__gender, GG_PUBDIR50_GENDER_FEMALE) ? 'M' : '?')));
+                        if(((res->seq == GG_SEQ_INFO || res->seq == GG_SEQ_GETNICK) && hContact != NULL)
+                            || res->seq == GG_SEQ_CHINFO)
+                        {
+                            // Change nickname if it's not present
+                            if(__nick && (res->seq == GG_SEQ_GETNICK || res->seq == GG_SEQ_CHINFO))
+                                DBWriteContactSettingString(hContact, GG_PROTO, "Nick", __nick);
+                            if(__nick)
+                                DBWriteContactSettingString(hContact, GG_PROTO, "NickName", __nick);
+
+                            // Change other info
+                            if(__city)
+                                DBWriteContactSettingString(hContact, GG_PROTO, "City", __city);
+                            if(__firstname)
+                                DBWriteContactSettingString(hContact, GG_PROTO, "FirstName", __firstname);
+                            if(__lastname)
+                                DBWriteContactSettingString(hContact, GG_PROTO, "LastName", __lastname);
+                            if(__familyname)
+                                DBWriteContactSettingString(hContact, GG_PROTO, "FamilyName", __familyname);
+                            if(__origincity)
+                                DBWriteContactSettingString(hContact, GG_PROTO, "CityOrigin", __origincity);
+                            if(__birthyear)
+                            {
+                                time_t t = time(NULL);
+                                struct tm *lt = localtime(&t);
+                                int br = atoi(__birthyear);
+                                if(br > 0)
+                                {
+                                    DBWriteContactSettingWord(hContact, GG_PROTO, "Age", (lt->tm_year + 1900) - br);
+                                    DBWriteContactSettingWord(hContact, GG_PROTO, "BirthYear", br);
+                                }
+                            }
+
+                            // Gadu-Gadu Male <-> Female
+                            if(__gender)
+                                DBWriteContactSettingByte(hContact, GG_PROTO, "Gender",
+                                (BYTE)(!strcmp(__gender, GG_PUBDIR50_GENDER_MALE) ? 'F' :
+                                      (!strcmp(__gender, GG_PUBDIR50_GENDER_FEMALE) ? 'M' : '?')));
 
 #ifdef DEBUGMODE
-                        gg_netlog("gg_mainthread(%x): Setting user info for uin %d.", thread, uin);
+                            gg_netlog("gg_mainthread(%x): Setting user info for uin %d.", thread, uin);
 #endif
-                        ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+                            ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+                        }
                     }
                 }
+                if(res->seq == GG_SEQ_SEARCH)
+                    ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+                break;
             }
-            if(res->seq == GG_SEQ_SEARCH)
-                ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-        }
 
-        // Status (depreciated)
-        if (e->type == GG_EVENT_STATUS)
-            gg_changecontactstatus(e->event.status.uin, e->event.status.status, e->event.status.descr, 0, 0, 0, 0);
+            // Status (depreciated)
+            case GG_EVENT_STATUS:
+                gg_changecontactstatus(e->event.status.uin, e->event.status.status, e->event.status.descr, 0, 0, 0, 0);
+                break;
 
-		// Status (version 6.0)
-        if (e->type == GG_EVENT_STATUS60)
-            gg_changecontactstatus(e->event.status60.uin, e->event.status60.status, e->event.status60.descr,
-							e->event.status60.time, e->event.status60.remote_ip, e->event.status60.remote_port, e->event.status60.version);
+            // Status (version 6.0)
+            case GG_EVENT_STATUS60:
+                gg_changecontactstatus(e->event.status60.uin, e->event.status60.status, e->event.status60.descr,
+                    e->event.status60.time, e->event.status60.remote_ip, e->event.status60.remote_port, e->event.status60.version);
+                break;
 
-        // Received userlist / or put info
-		if (e->type == GG_EVENT_USERLIST)
-		{
-			switch (e->event.userlist.type)
-			{
-				case GG_USERLIST_GET_REPLY:
-				{
-					if (e->event.userlist.reply)
-					{
-						gg_parsecontacts(e->event.userlist.reply);
-						MessageBox(
-							NULL,
-							Translate("List import successful."),
-							GG_PROTONAME,
-							MB_OK | MB_ICONINFORMATION
-						);
-					}
-					break;
-				}
-
-				case GG_USERLIST_PUT_REPLY:
-				{
-					if(ggListRemove)
-						MessageBox(
-							NULL,
-							Translate("List remove successful."),
-							GG_PROTONAME,
-							MB_OK | MB_ICONINFORMATION
-						);
-					else
-						MessageBox(
-							NULL,
-							Translate("List export successful."),
-							GG_PROTONAME,
-							MB_OK | MB_ICONINFORMATION
-						);
-
-					break;
-				}
-			}
-		}
-
-        // Received message
-        if (e->type == GG_EVENT_MSG)
-        {
-			// This is CTCP request
-			if ((e->event.msg.msgclass & GG_CLASS_CTCP))
-			{
-				gg_dccconnect(e->event.msg.sender);
-			}
-            // Check if not conference and block
-			else if(!e->event.msg.recipients_count || ggGCEnabled)
-			{
-                // Check if groupchat
-                if(e->event.msg.recipients_count && ggGCEnabled && !DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, GG_KEYDEF_IGNORECONF))
+            // Received userlist / or put info
+            case GG_EVENT_USERLIST:
+                switch (e->event.userlist.type)
                 {
-                    char *chat = gg_gc_getchat(e->event.msg.sender, e->event.msg.recipients, e->event.msg.recipients_count);
-                    if(chat)
+                    case GG_USERLIST_GET_REPLY:
+                        if (e->event.userlist.reply)
+                        {
+                            gg_parsecontacts(e->event.userlist.reply);
+                            MessageBox(
+                                NULL,
+                                Translate("List import successful."),
+                                GG_PROTONAME,
+                                MB_OK | MB_ICONINFORMATION
+                            );
+                        }
+                        break;
+
+                    case GG_USERLIST_PUT_REPLY:
+                        if(ggListRemove)
+                            MessageBox(
+                                NULL,
+                                Translate("List remove successful."),
+                                GG_PROTONAME,
+                                MB_OK | MB_ICONINFORMATION
+                            );
+                        else
+                            MessageBox(
+                                NULL,
+                                Translate("List export successful."),
+                                GG_PROTONAME,
+                                MB_OK | MB_ICONINFORMATION
+                            );
+
+                        break;
+                }
+                break;
+
+            // Received message
+            case GG_EVENT_MSG:
+                // This is CTCP request
+                if ((e->event.msg.msgclass & GG_CLASS_CTCP))
+                {
+                    gg_dccconnect(e->event.msg.sender);
+                }
+                // Check if not conference and block
+                else if(!e->event.msg.recipients_count || ggGCEnabled)
+                {
+                    // Check if groupchat
+                    if(e->event.msg.recipients_count && ggGCEnabled && !DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, GG_KEYDEF_IGNORECONF))
                     {
-                        char id[32];
-                        GCDEST gcdest = {GG_PROTO, chat, GC_EVENT_MESSAGE};
-                        GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
-                        time_t t = time(NULL);
+                        char *chat = gg_gc_getchat(e->event.msg.sender, e->event.msg.recipients, e->event.msg.recipients_count);
+                        if(chat)
+                        {
+                            char id[32];
+                            GCDEST gcdest = {GG_PROTO, chat, GC_EVENT_MESSAGE};
+                            GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
+                            time_t t = time(NULL);
 
-						UIN2ID(e->event.msg.sender, id);
+                            UIN2ID(e->event.msg.sender, id);
 
-                        gcevent.pszUID = id;
-                        gcevent.pszText = e->event.msg.message;
-                        gcevent.pszNick = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(e->event.msg.sender, 1, 0, NULL), 0);
-                        gcevent.time = e->event.msg.time > (t - timeDeviation) ? t : e->event.msg.time;
-                        gcevent.bAddToLog = 1;
+                            gcevent.pszUID = id;
+                            gcevent.pszText = e->event.msg.message;
+                            gcevent.pszNick = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(e->event.msg.sender, 1, 0, NULL), 0);
+                            gcevent.time = e->event.msg.time > (t - timeDeviation) ? t : e->event.msg.time;
+                            gcevent.bAddToLog = 1;
 #ifdef DEBUGMODE
-                        gg_netlog("gg_mainthread(%x): Conference message to room %s & id %s.", thread, chat, id);
+                            gg_netlog("gg_mainthread(%x): Conference message to room %s & id %s.", thread, chat, id);
 #endif
-                        CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+                            CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+                        }
+                    }
+                    // Check if not empty message ( who needs it? )
+                    else if(!e->event.msg.recipients_count && strlen(e->event.msg.message))
+                    {
+                        time_t t = time(NULL);
+                        ccs.szProtoService = PSR_MESSAGE;
+                        ccs.hContact = gg_getcontact(e->event.msg.sender, 1, 0, NULL);
+                        ccs.wParam = 0;
+                        ccs.lParam = (LPARAM) & pre;
+                        pre.flags = 0;
+                        pre.timestamp = e->event.msg.time > (t - timeDeviation) ? t : e->event.msg.time;
+                        pre.szMessage = e->event.msg.message;
+                        pre.lParam = 0;
+                        CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
+                    }
+
+                    // richedit format included
+                    if ( e->event.msg.formats_length )
+                    {
+                       char *formats;
+                       int len, formats_len, add_ptr;
+
+                       len = 0;
+                       formats = e->event.msg.formats;
+                       formats_len = e->event.msg.formats_length;
+
+                        while ( len < formats_len )
+                        {
+                            add_ptr = sizeof(struct gg_msg_richtext_format);
+                            if ( ((struct gg_msg_richtext_format*)formats)->font & GG_FONT_IMAGE)
+                            {
+                                gg_image_request(thread->sess, e->event.msg.sender,
+                                ((struct gg_msg_image_request*)(formats+4))->size,
+                                ((struct gg_msg_image_request*)(formats+4))->crc32 );
+
+#ifdef DEBUGMODE
+                                gg_netlog("gg_mainthread: image request send!");
+#endif
+                                add_ptr += sizeof(struct gg_msg_richtext_format);
+                            }
+                            if ( ((struct gg_msg_richtext_format*)formats)->font & GG_FONT_COLOR)
+                                add_ptr += 3;
+                            len += add_ptr;
+                            formats += add_ptr;
+                        }
                     }
                 }
-	            // Check if not empty message ( who needs it? )
-	            else if(!e->event.msg.recipients_count && strlen(e->event.msg.message))
+                break;
+
+            // Image reply sent
+            case GG_EVENT_IMAGE_REPLY:
+                // Get rid of empty image
+                if(!e->event.image_reply.size || e->event.image_reply.image)
+                    break;
+                if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_POPUPIMG, GG_KEYDEF_POPUPIMG) || gg_img_opened(e->event.image_reply.sender))
                 {
-					time_t t = time(NULL);
-					ccs.szProtoService = PSR_MESSAGE;
-					ccs.hContact = gg_getcontact(e->event.msg.sender, 1, 0, NULL);
-					ccs.wParam = 0;
-					ccs.lParam = (LPARAM) & pre;
-					pre.flags = 0;
-					pre.timestamp = e->event.msg.time > (t - timeDeviation) ? t : e->event.msg.time;
-					pre.szMessage = e->event.msg.message;
-					pre.lParam = 0;
-					CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
-				}
+                    CLISTEVENT cle;
+                    cle.cbSize = sizeof(CLISTEVENT);
+                    cle.lParam = (LPARAM)e;
+                    cle.hContact = gg_getcontact(e->event.image_reply.sender, 1, 0, NULL);
+                    gg_img_recvimage((WPARAM)0, (LPARAM)&cle);
+                }
+                else
+                {
+                    CLISTEVENT cle;
+                    char service[128]; snprintf(service, sizeof(service), "%s%s", GG_PROTO, GGS_RECVIMAGE);
 
-	            // richedit format included
-	            if ( e->event.msg.formats_length )
-	            {
-	               char *formats;
-	               int len, formats_len, add_ptr;
+                    cle.cbSize = sizeof(CLISTEVENT);
+                    cle.hContact = gg_getcontact(e->event.image_reply.sender, 1, 0, NULL);
+                    cle.hIcon = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(IDI_IMAGE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);//LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CHPASS));
+                    cle.flags = CLEF_URGENT;
+                    cle.hDbEvent = (HANDLE)("img");
+                    cle.lParam = (LPARAM)e;
+                    cle.pszService = service;
+                    cle.pszTooltip = Translate("Image received");
+                    CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
+                }
+                break;
 
-	               len = 0;
-	               formats = e->event.msg.formats;
-	               formats_len = e->event.msg.formats_length;
-
-					while ( len < formats_len )
-					{
-						add_ptr = sizeof(struct gg_msg_richtext_format);
-						if ( ((struct gg_msg_richtext_format*)formats)->font & GG_FONT_IMAGE)
-						{
-							gg_image_request(thread->sess, e->event.msg.sender,
-							((struct gg_msg_image_request*)(formats+4))->size,
-							((struct gg_msg_image_request*)(formats+4))->crc32 );
-
-#ifdef DEBUGMODE
-							gg_netlog("gg_mainthread: image request send!");
-#endif
-							add_ptr += sizeof(struct gg_msg_richtext_format);
-						}
-						if ( ((struct gg_msg_richtext_format*)formats)->font & GG_FONT_COLOR)
-							add_ptr += 3;
-						len += add_ptr;
-						formats += add_ptr;
-					}
-	            }
-	     	}
-    	}
-
-        if (e->type == GG_EVENT_IMAGE_REPLY)
-        {
-            if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_POPUPIMG, GG_KEYDEF_POPUPIMG) || gg_img_opened(e->event.image_reply.sender))
-            {
-                CLISTEVENT cle;
-                cle.cbSize = sizeof(CLISTEVENT);
-                cle.lParam = (LPARAM)e;
-                cle.hContact = gg_getcontact(e->event.image_reply.sender, 1, 0, NULL);
-                gg_img_recvimage((WPARAM)0, (LPARAM)&cle);
-            }
-            else
-            {
-                CLISTEVENT cle;
-                char service[128]; snprintf(service, sizeof(service), "%s%s", GG_PROTO, GGS_RECVIMAGE);
-
-                cle.cbSize = sizeof(CLISTEVENT);
-                cle.hContact = gg_getcontact(e->event.image_reply.sender, 1, 0, NULL);
-                cle.hIcon = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(IDI_IMAGE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);//LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CHPASS));
-                cle.flags = CLEF_URGENT;
-                cle.hDbEvent = (HANDLE)("img");
-                cle.lParam = (LPARAM)e;
-                cle.pszService = service;
-                cle.pszTooltip = Translate("Image received");
-                CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
-            }
-
-            continue;
+            // Image send request
+            case GG_EVENT_IMAGE_REQUEST:
+                gg_img_sendonrequest(e);
+                break;
         }
-
-        if (e->type == GG_EVENT_IMAGE_REQUEST)
-        {
-			gg_img_sendonrequest(e);
-        }
-
+        // Free event struct
         gg_free_event(e);
     }
 
@@ -1369,7 +1374,7 @@ void gg_changecontactstatus(uin_t uin, int status, const char *idescr, int time,
 	if(!hContact) return;
 
     // Write contact status
-    DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, status_gg2m(status));
+    DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, (WORD)status_gg2m(status));
 
 	// Check if there's description and if it's not empty
     if(idescr && *idescr != '\n' && *idescr != 0)
