@@ -1506,9 +1506,9 @@ void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 void LoadSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if(!(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE))
-        dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 150);
+        dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 60);
     else
-        dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 150));
+        dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 60));
 
     if(dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
         dat->splitterY = 150;

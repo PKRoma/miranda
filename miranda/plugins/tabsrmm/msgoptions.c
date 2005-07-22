@@ -314,14 +314,14 @@ static struct LISTOPTIONSGROUP defaultGroups[] = {
 
 static struct LISTOPTIONSITEM defaultItems[] = {
     0, "Send on SHIFT - Enter", IDC_SENDONSHIFTENTER, LOI_TYPE_SETTING, (UINT_PTR)"sendonshiftenter", 1,
-    0, "Send message on 'Enter'", SRMSGDEFSET_SENDONENTER, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SENDONENTER, 1,
+    0, "Send message on 'Enter'", SRMSGDEFSET_SENDONENTER, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SENDONENTER, 0,
     0, "Minimize the message window on send", SRMSGDEFSET_AUTOMIN, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOMIN, 1,
     0, "Allow the toolbar to hide the send button", 1, LOI_TYPE_SETTING, (UINT_PTR)"hidesend", 1,
     0, "Flash contact list and tray icons for new events in unfocused windows", 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
     0, "Delete temporary contacts on close", 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
     0, "Enable event API (support for third party plugins)", 0, LOI_TYPE_SETTING, (UINT_PTR)"eventapi", 2,
     0, "Don't send UNICODE parts for 7bit ANSI messages (saves db space)", 1, LOI_TYPE_SETTING, (UINT_PTR)"7bitasANSI", 2,
-    0, "Always keep the button bar at full width", 0, LOI_TYPE_SETTING, (UINT_PTR)"alwaysfulltoolbar", 0,
+    0, "Always keep the button bar at full width", 0, LOI_TYPE_SETTING, (UINT_PTR)"alwaysfulltoolbar", 1,
     0, "Allow PASTE AND SEND feature", 0, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
     0, NULL, 0, 0, 0, 0
 };
@@ -1983,7 +1983,7 @@ void ReloadGlobals()
      myGlobals.m_AvatarMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0);
      myGlobals.m_FlashOnClist = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "flashcl", 0);
      myGlobals.m_TabAutoClose = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabautoclose", 0);
-     myGlobals.m_AlwaysFullToolbarWidth = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", 0);
+     myGlobals.m_AlwaysFullToolbarWidth = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", 1);
      myGlobals.m_LimitStaticAvatarHeight = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "avatarheight", 100);
      myGlobals.m_AvatarDisplayMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatardisplaymode", 0);
      myGlobals.m_SendFormat = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendformat", 0);

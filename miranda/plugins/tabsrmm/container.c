@@ -1432,7 +1432,7 @@ panel_found:
 			ws = (pContainer->dwFlags & CNT_NOTITLE) ? ws & ~WS_CAPTION : ws | WS_CAPTION;
 			SetWindowLong(hwndDlg, GWL_STYLE, ws);
 
-            pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 0);
+            pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 2);
             pContainer->tBorder_outer = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer", 2);
             
 			if (LOBYTE(LOWORD(GetVersion())) >= 5  && pSetLayeredWindowAttributes != NULL) {
