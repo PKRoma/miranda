@@ -447,7 +447,8 @@ start:
     szMsg = gg_getstatusmsg(ggDesiredStatus);
     p.status = status_m2gg(ggDesiredStatus, szMsg != NULL);
     p.status_descr = szMsg;
-    p.image_size = 512;
+    // Gadu-Gadu accepts image sizes upto 255
+    p.image_size = 255;
 
 #ifdef DEBUGMODE
     gg_netlog("gg_mainthread(%x): Connecting with number %d, status %d and description \"%s\".", thread, p.uin, ggDesiredStatus,
@@ -852,7 +853,7 @@ start:
             // Image reply sent
             case GG_EVENT_IMAGE_REPLY:
                 // Get rid of empty image
-                if(!e->event.image_reply.size || e->event.image_reply.image)
+                if(!e->event.image_reply.size || !e->event.image_reply.image)
                     break;
                 if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_POPUPIMG, GG_KEYDEF_POPUPIMG) || gg_img_opened(e->event.image_reply.sender))
                 {

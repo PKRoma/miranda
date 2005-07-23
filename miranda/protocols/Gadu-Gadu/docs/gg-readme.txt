@@ -60,9 +60,11 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
-0.0.3.4: 2005-07-22
+0.0.3.4: 2005-07-23
  - Fix: Yet another image receive fix, libgadu fixes introduced ghost image
    messages
+ - Fix: Maximum image size 512KB was not accepted original GG client.
+   Miranda now can receive images upto 255KB from original GG clients.
  - Small code formatting fixes
 0.0.3.3: 2005-07-19
  - Fix: Serious multiple vulnerabilities of libgadu upto ekg version 1.6rc3
