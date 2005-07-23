@@ -340,8 +340,8 @@ start:
                 }
                 else
                 {
-#ifdef DEBUGMODE
                     p.server_port = hosts[hostnum].port;
+#ifdef DEBUGMODE
                     gg_netlog("gg_mainthread(%x): Connecting to manually specified host %s (%d.%d.%d.%d) and port %d.", empty,
                         hosts[hostnum].hostname, LOBYTE(LOWORD(p.server_addr)), HIBYTE(LOWORD(p.server_addr)),
                         LOBYTE(HIWORD(p.server_addr)), HIBYTE(HIWORD(p.server_addr)), p.server_port);

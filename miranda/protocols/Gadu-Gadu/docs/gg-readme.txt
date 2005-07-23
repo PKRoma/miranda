@@ -61,6 +61,7 @@ Note: For secure connections this plugin requires OpenSSL DLL
 5. History
 ----------
 0.0.3.4: 2005-07-23
+ - Fix: Connection server config was broken
  - Fix: Password retrieval was broken
  - Fix: Maximum image size 512KB was not accepted original GG client.
    Miranda now can receive images upto 255KB from original GG clients.
