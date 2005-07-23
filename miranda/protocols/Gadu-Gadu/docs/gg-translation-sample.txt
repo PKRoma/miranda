@@ -129,6 +129,8 @@ Lista zosta³a zaimportowana pomyœlnie.
 kontakty
 [Your password will be sent to your registration e-mail.\nDo you want to continue ?]
 Twoje has³o zostanie wys³ane na twój e-mail rejestracyjny.\nChcesz kontynuowaæ ?
+[You need to specify your registration e-mail first.]
+Musisz najpierw wpisaæ w konfiguracji swój e-mail rejestracyjny.
 [Password could not be reminded because of error:\n\t%s]
 Has³o nie mo¿e zostaæ wys³ane z powodu b³êdu:\n\t%s
 [Password was sent to your e-mail.]

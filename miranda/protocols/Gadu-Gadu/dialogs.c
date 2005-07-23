@@ -354,7 +354,13 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     GetDlgItemText(hwndDlg, IDC_UIN, email, sizeof(email));
                     uin = atoi(email);
                     GetDlgItemText(hwndDlg, IDC_EMAIL, email, sizeof(email));
-					if(MessageBox(
+                    if(!strlen(email))
+                        MessageBox(
+                            NULL,
+                            Translate("You need to specify your registration e-mail first."),
+                            GG_PROTONAME,
+                            MB_OK | MB_ICONEXCLAMATION);
+                    else if(MessageBox(
 						NULL,
 						Translate("Your password will be sent to your registration e-mail.\nDo you want to continue ?"),
 						GG_PROTONAME,

@@ -91,6 +91,6 @@ void gg_remindpassword(uin_t uin, const char *email)
 
     rp->uin = uin;
     rp->email = email;
-    pthread_create(&tid, NULL, gg_remindpasswordthread, (void *)&rp);
+    pthread_create(&tid, NULL, gg_remindpasswordthread, (void *)rp);
     pthread_detach(&tid);
 }
