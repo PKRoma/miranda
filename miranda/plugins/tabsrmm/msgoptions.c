@@ -46,7 +46,7 @@ extern struct ContainerWindowData *pFirstContainer;
 extern BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
+TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 HMENU BuildContainerMenu();
 void CacheMsgLogIcons(), CacheLogFonts(), ReloadGlobals(), LoadIconTheme(), UnloadIconTheme();
 void CreateImageList(BOOL bInitial);
@@ -1190,9 +1190,9 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
                             if(myGlobals.szDefaultTitleFormat)
                                 free(myGlobals.szDefaultTitleFormat);
 #if defined(_UNICODE)
-                            myGlobals.szDefaultTitleFormat = DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformatW");
+                            myGlobals.szDefaultTitleFormat = MY_DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformatW");
 #else
-                            myGlobals.szDefaultTitleFormat = DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat");
+                            myGlobals.szDefaultTitleFormat = MY_DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat");
 #endif                            
                             
                             myGlobals.g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING);

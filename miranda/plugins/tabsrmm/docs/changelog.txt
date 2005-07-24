@@ -15,7 +15,7 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.97 - 2005/07/20
+Version 0.9.9.97 - 2005/07/23
 
         ! extended status tooltip working with all (recent) ICQ.dll builds. 
         
@@ -33,6 +33,20 @@ Version 0.9.9.97 - 2005/07/20
 
         + new shortcut: Ctrl-K -> clear input area
         
+        ! fixed %D and %E variables
+        
+        + updated for smileyadd 1.5.0 (by borkra). Beginning with this release, tabSRMM does
+          no longer require its own smileyadd plugin and therefore this plugin has been removed
+          from the archive.
+          
+          I suggest to update to the most recent smileyadd, available from:
+          
+          http://www.miranda-im.org/download/details.php?action=viewfile&id=2152
+          
+          It is strongly recommended to use this version, because it fixes a lot of issues and
+          has some internal improvements. It is fully compatible with all SRMM-based message
+          windows and therefore works with SRMM, tabSRMM, scriver and others.
+          
 Version 0.9.9.96 - 2005/07/18
 
         ! null pointer check when retrieving status message. Fixes crash when retrieving

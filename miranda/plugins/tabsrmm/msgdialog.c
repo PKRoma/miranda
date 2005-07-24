@@ -4691,8 +4691,20 @@ verify:
 #else
                 switch(id) {
                     case IDC_PANELNICK:
-                        mir_snprintf(szTitle, sizeof(szTitle), Translate("%s has set an extended status"), dat->szNickname);
+                    {
+                        DBVARIANT dbv;
+
+                        if(!DBGetContactSetting(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusName", &dbv)) {
+                            if(dbv.type == DBVT_ASCIIZ)
+                                mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), dat->szNickname, dbv.pszVal);
+                            DBFreeVariant(&dbv);
+                        }
+                        else if(dat->xStatus > 0 && dat->xStatus <= 24)
+                            mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), dat->szNickname, xStatusDescr[dat->xStatus - 1]);
+                        else
+                            return 0;
                         break;
+                    }
                     case IDC_PANELSTATUS:
                         mir_snprintf(szTitle, sizeof(szTitle), Translate("Status message for %s (%s)"), dat->szNickname, dat->szStatus);
                         break;

@@ -47,7 +47,7 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(0, 9, 9, 96),
+    PLUGIN_MAKE_VERSION(0, 9, 9, 97),
     "Send and receive instant messages, using a split mode interface and tab containers.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
@@ -81,6 +81,19 @@ int __declspec(dllexport) Unload(void)
 {
     return SplitmsgShutdown();
 }
+
+#ifdef _DEBUG
+int _DebugTRACE(const char *fmt, ...)
+{
+    char    debug[1024];
+    int     ibsize = 1023;
+    
+    va_list va;
+    va_start(va, fmt);
+    _vsnprintf(debug, ibsize, fmt, va);
+    OutputDebugString(debug);
+}
+#endif
 
 /*
  * output a notification message.

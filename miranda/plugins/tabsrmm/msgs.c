@@ -55,7 +55,7 @@ $Id$
 MYGLOBALS myGlobals;
 NEN_OPTIONS nen_options;
 
-TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
+TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 static void InitREOleCallback(void);
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
@@ -1154,13 +1154,13 @@ int LoadSendRecvMessageModule(void)
     BuildCodePageList();
     myGlobals.m_VSApiEnabled = InitVSApi();
 #if defined(_UNICODE)
-    if(DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformatW") == NULL)
+    if(MY_DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformatW") == NULL)
         DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformatW", "%n - %s");
-    myGlobals.szDefaultTitleFormat = DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformatW");
+    myGlobals.szDefaultTitleFormat = MY_DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformatW");
 #else
-    if(DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat") == NULL)
+    if(MY_DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat") == NULL)
         DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformat", "%n - %s");
-    myGlobals.szDefaultTitleFormat = DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat");
+    myGlobals.szDefaultTitleFormat = MY_DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat");
 #endif
     myGlobals.m_GlobalContainerFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containerflags", CNT_FLAGS_DEFAULT);
     if(!(myGlobals.m_GlobalContainerFlags & CNT_NEWCONTAINERFLAGS))
@@ -1288,7 +1288,7 @@ static void InitREOleCallback(void)
 
 int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 {
-	struct MessageWindowData *dat;
+	struct MessageWindowData *dat = 0;
 	NMHDR nmhdr;
 
 	dat = (struct MessageWindowData *) GetWindowLong(hwndChild, GWL_USERDATA);	// needed to obtain the hContact for the message window

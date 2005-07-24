@@ -41,7 +41,7 @@ License: GPL
 extern "C" RTFColorTable rtf_ctable[];
 extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 extern "C" char *xStatusDescr[];
-extern "C" TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
+extern "C" TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 
 #if defined(UNICODE)
 
@@ -331,6 +331,8 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const char *s
     int i, tempmark = 0;
     TCHAR szTemp[512];
     
+    OutputDebugString(_T("foo"));
+    
     std::wstring title(szFormat);
 
     while(TRUE) {
@@ -392,7 +394,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const char *s
                 TCHAR *result = NULL;
                 
                 if(xStatus > 0 && xStatus <= 24) {
-                    if((result = DBGetContactSettingString(hContact, (char *)szProto, "XStatusName")) != NULL)
+                    if((result = MY_DBGetContactSettingString(hContact, (char *)szProto, "XStatusName")) != NULL)
                         _tcsncpy(szTemp, result, 500);
                     else
                         szFinalStatus = (char *)szStatus;
@@ -446,10 +448,10 @@ extern "C" const WCHAR *EncodeWithNickname(const char *string, const char *szNic
 
 #else
 
-static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x")};
-#define NR_VARS 6
+static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x"), _T("%m")};
+#define NR_VARS 7
 
-extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, BYTE xStatus)
+extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus)
 {
     TCHAR *szResult = 0;
     int length = 0;
@@ -499,6 +501,27 @@ extern "C" TCHAR *NewTitle(const TCHAR *szFormat, const char *szNickname, const 
                 if(xStatus > 0 && xStatus <= 24)
                     title.insert(tempmark + 2, xStatusDescr[xStatus - 1]);
                 title.erase(tempmark, 2);
+                break;
+            }
+            case 'm': {
+                char *szFinalStatus = NULL;
+                TCHAR *result = NULL;
+
+                if(xStatus > 0 && xStatus <= 24) {
+                    if((result = MY_DBGetContactSettingString(hContact, (char *)szProto, "XStatusName")) != NULL) {
+                        szFinalStatus = result;
+                    }
+                    else
+                        szFinalStatus = (char *)szStatus;
+                }
+                else
+                    szFinalStatus = (char *)szStatus;
+
+                title.insert(tempmark + 2, szFinalStatus);
+                title.erase(tempmark, 2);
+
+                if(result)
+                    free(result);
                 break;
             }
             default:

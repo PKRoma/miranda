@@ -1670,16 +1670,12 @@ void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
 
 void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    //char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-    
     if(dat->wApparentMode == ID_STATUS_OFFLINE) {
         CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_CHECKED);
-        //SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_IconBlocked);
         SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadSkinnedIcon(SKINICON_STATUS_OFFLINE));
     }
     else if(dat->wApparentMode == ID_STATUS_ONLINE || dat->wApparentMode == 0) {
         CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_UNCHECKED);
-        //SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? myGlobals.g_IconVisible : myGlobals.g_IconDependStatus));
         SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? LoadSkinnedIcon(SKINICON_STATUS_INVISIBLE) : LoadSkinnedIcon(SKINICON_STATUS_ONLINE)));
         SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASFLATBTN, 0, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? 1 : 0));
     }
@@ -1687,7 +1683,7 @@ void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 
 // free() the return value
 
-TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting)
+TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting)
 {
     DBVARIANT dbv;
     TCHAR *szResult = NULL;

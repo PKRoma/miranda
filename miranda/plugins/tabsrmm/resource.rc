@@ -1148,8 +1148,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,96
- PRODUCTVERSION 0,9,9,96
+ FILEVERSION 0,9,9,97
+ PRODUCTVERSION 0,9,9,97
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -1166,14 +1166,14 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Miranda Open Source Project"
             VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
-            VALUE "FileVersion", "0, 9, 9, 96"
+            VALUE "FileVersion", "0, 9, 9, 97"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright © 2005 The Miranda IM project"
             VALUE "LegalTrademarks", "Gnu General Public License V2"
             VALUE "OriginalFilename", "tabSRMM.dll"
             VALUE "PrivateBuild", "No"
             VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
-            VALUE "ProductVersion", "0, 9, 9, 96"
+            VALUE "ProductVersion", "0, 9, 9, 97"
             VALUE "SpecialBuild", "FC2"
         END
     END
@@ -1198,9 +1198,6 @@ IDI_RIGHTARROW          ICON                    "res/rightarrow.ico"
 IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
 IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
 IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
-//IDI_VISIBLE             ICON                    "res/visible.ico"
-//IDI_BLOCKED             ICON                    "res/blocked.ico"
-//IDI_STATUSDEPEND        ICON                    "res/status.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 

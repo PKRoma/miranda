@@ -86,7 +86,7 @@ char *szWarnClose = "Do you really want to close this session?";
 struct ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
 struct ContainerWindowData *pLastActiveContainer = NULL;
 
-TCHAR *DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
+TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwnd);
 int GetTabItemFromMouse(HWND hwndTab, POINT *pt);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
@@ -795,22 +795,31 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             } 
             case DM_UPDATETITLE:
             {
-                HANDLE hContact = (HANDLE) wParam;
+                HANDLE hContact = 0;
                 TCHAR *szNewTitle;
                 struct MessageWindowData *dat = 0;
                 
-                if(wParam == 0)             // no hContact given - obtain the hContact for the active tab
-                    SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-                
-                dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+                if(wParam == 0) {            // no hContact given - obtain the hContact for the active tab
+                    if(pContainer->hwndActive && IsWindow(pContainer->hwndActive))
+                        SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+                    else
+                        break;
+                    dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+                } 
+                else {
+                    HWND hwnd = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
+                    hContact = (HANDLE)wParam;
+                    if(hwnd && hContact)
+                        dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+                }
                 if(dat) {
                     szNewTitle = NewTitle(dat->bIsMeta ? dat->hSubContact : dat->hContact, pContainer->szTitleFormat, dat->szNickname, dat->szStatus, pContainer->szName, dat->uin, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->idle, dat->codePage, dat->xStatus);
                     if(szNewTitle) {
                         SetWindowText(hwndDlg, szNewTitle);
                         free(szNewTitle);
                     }
+                    SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus));
                 }
-                SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus));
                 break;
             }
         case WM_TIMER:
@@ -1207,10 +1216,13 @@ panel_found:
 					pSetLayeredWindowAttributes(hwndDlg, RGB(255,255,255), (BYTE)LOWORD(pContainer->dwTransparency), LWA_ALPHA);
 
                 if(pContainer->dwFlags & CNT_NEED_UPDATETITLE) {
-                    HANDLE hContact;
+                    HANDLE hContact = 0;
                     pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
-                    SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
+                    if(pContainer->hwndActive) {
+                        SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+                        if(hContact)
+                            SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
+                    }
                 }
                 ZeroMemory((void *)&item, sizeof(item));
                 item.mask = TCIF_PARAM;
@@ -1218,7 +1230,7 @@ panel_found:
                     TabCtrl_GetItem(hwndTab, curItem, &item);
                 if (pContainer->dwFlags & CNT_DEFERREDCONFIGURE && curItem >= 0) {
                     RECT rc;
-                    HANDLE hContact;
+                    HANDLE hContact = 0;
                     
                     pContainer->dwFlags &= ~CNT_DEFERREDCONFIGURE;
                     GetClientRect(hwndDlg, &rc);
@@ -1229,7 +1241,8 @@ panel_found:
                         ShowWindow(pContainer->hwndActive, SW_SHOW);
                         SetFocus(pContainer->hwndActive);
                         SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-                        SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
+                        if(hContact)
+                            SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
                         SendMessage(hwndDlg, WM_SIZE, 0, 0);
                         SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
                         SendMessage(pContainer->hwndActive, WM_ACTIVATE, WA_ACTIVE, 0);
@@ -1344,7 +1357,7 @@ panel_found:
                 mir_snprintf(szCname, 40, "%s_Trans", szSetting);
                 dwLocalTrans = DBGetContactSettingDword(pContainer->hContactFrom, SRMSGMOD_T, szCname, 0xffffffff);
                 mir_snprintf(szCname, 40, "%s_titleformat", szSetting);
-                szTitleFormat = DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
+                szTitleFormat = MY_DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
                 if(dwLocalFlags == 0xffffffff || dwLocalTrans == 0xffffffff)
                     overridePerContact = 1;
                 else
@@ -1357,7 +1370,7 @@ panel_found:
                 dwLocalTrans = DBGetContactSettingDword(NULL, SRMSGMOD_T, szCname, 0xffffffff);
                 if(szTitleFormat == NULL) {
                     mir_snprintf(szCname, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
-                    szTitleFormat = DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
+                    szTitleFormat = MY_DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
                 }
             }
 			if (dwLocalFlags == 0xffffffff) {
@@ -1517,8 +1530,10 @@ panel_found:
             }
 
             if(pContainer->hwndActive != 0) {
+                hContact = 0;
                 SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-                SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
+                if(hContact)
+                    SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
             }
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
             BroadCastContainer(pContainer, DM_CONFIGURETOOLBAR, 0, 1);
