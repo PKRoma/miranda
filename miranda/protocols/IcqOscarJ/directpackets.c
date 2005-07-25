@@ -87,9 +87,13 @@ void icq_sendDirectMsgAck(directconnect* dc, WORD wCookie, BYTE bMsgType, BYTE b
 DWORD icq_sendGetAwayMsgDirect(HANDLE hContact, int type)
 {
   icq_packet packet;
-  DWORD dwCookie;
+	DWORD dwCookie;
+	message_cookie_data *pCookieData = NULL;
 
-  dwCookie = GenerateCookie(0);
+	pCookieData = malloc(sizeof(message_cookie_data));
+	dwCookie = AllocateCookie(0, ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0), (void*)pCookieData);
+  pCookieData->bMessageType = MTYPE_AUTOAWAY;
+  pCookieData->nAckType = (BYTE)type;
 
   packDirectMsgHeader(&packet, 3, DIRECT_MESSAGE, dwCookie, (BYTE)type, 3, 1, 0);
   packLEWord(&packet, 1);	    /* length of message */

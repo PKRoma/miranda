@@ -292,7 +292,7 @@ static int handleServerPackets(unsigned char* buf, int len, serverthread_start_i
 
 		case ICQ_PING_CHAN:
 			handlePingChannel(buf, datalen);
-			return 0;
+			break;
 
 		default:
 			NetLog_Server("Warning: Unhandled Server FLAP Channel: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);

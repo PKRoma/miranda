@@ -187,8 +187,12 @@ BEGIN
                     115,290,10
     GROUPBOX        "Extra Features",IDC_STATIC,7,136,300,45
     CONTROL         "Enable Custom Statuses support",IDC_XSTATUSENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,151,290,10
-    GROUPBOX        "AIM Support",IDC_STATIC,7,181,300,45,WS_DISABLED
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,151,145,10
+    CONTROL         "Auto-retrieve Custom status details",IDC_XSTATUSAUTO,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,157,151,145,10
+    CONTROL         "Block known Spam Bots",IDC_KILLSPAMBOTS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,164,290,10
+    GROUPBOX        "AIM Support",IDC_STATIC,7,185,300,45,WS_DISABLED
     CONTROL         "Enable AIM support",IDC_AIMENABLE,"Button",
                     BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,199,290,10
     LTEXT           "Note: The support is VERY limited, only messaging and status supported.",
@@ -258,9 +262,6 @@ BEGIN
     LTEXT           "User Client:",IDC_STATIC,5,70,71,8
     EDITTEXT        IDC_MIRVER,74,70,141,12,ES_AUTOHSCROLL | ES_READONLY |
                     NOT WS_BORDER | NOT WS_TABSTOP
-    CONTROL         "Change my details using the ICQ website",
-                    IDC_CHANGEDETAILS,"Hyperlink",NOT WS_VISIBLE |
-                    WS_TABSTOP,5,122,212,8
     LTEXT           "Online since:",IDC_STATIC,5,83,71,8
     EDITTEXT        IDC_ONLINESINCE,74,83,139,12,ES_AUTOHSCROLL |
                     ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
@@ -269,6 +270,9 @@ BEGIN
                     ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
     LTEXT           "Idle since:",IDC_STATIC,5,109,71,8
     EDITTEXT        IDC_IDLETIME,74,109,139,12,ES_AUTOHSCROLL | ES_READONLY |
+                    NOT WS_BORDER | NOT WS_TABSTOP
+    LTEXT           "Status:",IDC_STATIC,5,122,71,8
+    EDITTEXT        IDC_STATUS,74,122,139,12,ES_AUTOHSCROLL | ES_READONLY |
                     NOT WS_BORDER | NOT WS_TABSTOP
 END
 
@@ -598,7 +602,7 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced\0"
-            VALUE "FileVersion", "0, 3, 6, 2\0"
+            VALUE "FileVersion", "0, 3, 6, 3\0"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM\0"
             VALUE "LegalCopyright", "Copyright (C) 2000-2005 Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
             VALUE "LegalTrademarks", "\0"

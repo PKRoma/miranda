@@ -39,6 +39,8 @@
 
 extern BOOL AvatarsReady;
 
+void handleAvatarContactHash(DWORD dwUIN, HANDLE hContact, char* pHash, unsigned int nHashLen, WORD wOldStatus);
+
 void GetFullAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen);
 void GetAvatarFileName(int dwUin, char* pszDest, int cbLen);
 void AddAvatarExt(int dwFormat, char* pszDest);

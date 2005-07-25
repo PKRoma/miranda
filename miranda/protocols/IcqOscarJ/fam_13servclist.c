@@ -1435,6 +1435,12 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 
   if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
+  if (IsOnSpammerList(dwUin))
+  {
+    NetLog_Server("Ignored Message from known Spammer");
+    return;
+  }
+
 	unpackWord(&buf, &wReasonLen);
 	wLen -= 2;
 	if (wReasonLen > wLen)
@@ -1511,6 +1517,12 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 
   if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
+  if (IsOnSpammerList(dwUin))
+  {
+    NetLog_Server("Ignored Message from known Spammer");
+    return;
+  }
+
   hContact=HContactFromUIN(dwUin,1);
 
   ICQDeleteContactSetting(hContact, "Grant");
@@ -1550,6 +1562,12 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 
   if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
+  if (IsOnSpammerList(dwUin))
+  {
+    NetLog_Server("Ignored Message from known Spammer");
+    return;
+  }
+
   hContact = HContactFromUIN(dwUin, 1);
 
 	if (hContact != INVALID_HANDLE_VALUE) szNick = NickFromHandle(hContact);
@@ -1575,7 +1593,6 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 	{
 
 	case 0:
-		ICQWriteContactSettingByte(hContact, "Auth", 1);
 		NetLog_Server("Authorisation request denied by %u", dwUin);
 		// TODO: Add to system history as soon as new auth system is ready
 		break;

@@ -37,11 +37,13 @@
 #ifndef __ICQ_DB_H
 #define __ICQ_DB_H
 
+void InitDB();
 
 BYTE ICQGetContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef);
 WORD ICQGetContactSettingWord(HANDLE hContact, const char* szSetting, WORD wDef);
 DWORD ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef);
 int ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv);
+char* ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef);
 
 int ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest, int dest_len);
 
@@ -51,6 +53,7 @@ int ICQWriteContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bVal
 int ICQWriteContactSettingWord(HANDLE hContact, const char* szSetting, WORD wValue);
 int ICQWriteContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwValue);
 int ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, char* szValue);
+int ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, char* szValue);
 
 int ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char *val, const int cbVal);
 

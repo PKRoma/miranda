@@ -37,11 +37,8 @@
 #include "icqoscar.h"
 
 
-
 icq_mode_messages modeMsgs;
 CRITICAL_SECTION modeMsgsMutex;
-
-extern char* nameXStatus[24];
 
 static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, DWORD dwTS1, DWORD dwTS2);
@@ -120,6 +117,12 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
 	                                   //  0x0004: 'New' message format
 	// Sender UIN
   if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
+
+  if (IsOnSpammerList(dwUin))
+  {
+    NetLog_Server("Ignored Message from known Spammer");
+    return;
+  }
 
 	// Warning level?
 	buf += 2;
@@ -241,6 +244,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 					WORD wEncoding;
 					WORD wCodePage;
 					char* szMsg = NULL;
+          HANDLE hContact;
 					CCSDATA ccs;
 					PROTORECVEVENT pre;
 
@@ -288,7 +292,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 					case 0:
 					case 3:
 					default:
-            { // TODO: use codepage to create unicode record
+            {
 							// Copy the message text into a new proper string.
 							szMsg = (char *)malloc(wMsgLen + 1);
 							memcpy(szMsg, pMsgBuf, wMsgLen);
@@ -298,9 +302,28 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, D
 						}
 					}
 
+          hContact = HContactFromUIN(dwUin, 1);
+
+          if (!pre.flags && !IsUSASCII(szMsg, strlennull(szMsg)))
+          { // message is Ansi and contains national characters, create Unicode part by codepage
+            WORD wCP = ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage);
+
+            if (wCP != CP_ACP)
+            {
+  				    wchar_t* usMsg;
+
+              usMsg = malloc((strlen(szMsg)+2)*(sizeof(wchar_t)+1));
+					    memcpy((char*)usMsg, szMsg, strlen(szMsg)+1);
+              MultiByteToWideChar(wCP, 0, szMsg, strlen(szMsg), (wchar_t*)((char*)usMsg + strlen(szMsg) + 1), strlen(szMsg));
+              *(WORD*)(usMsg + 1 + strlen(szMsg)*(1 + sizeof(wchar_t))) = '\0'; // trailing zeros
+					    SAFE_FREE(&szMsg);
+					    szMsg = (char*)usMsg;
+					    pre.flags = PREF_UNICODE;
+            }
+          }
 					// Create and send the message event
 					ccs.szProtoService = PSR_MESSAGE;
-					ccs.hContact = HContactFromUIN(dwUin, 1);
+					ccs.hContact = hContact;
 					ccs.wParam = 0;
 					ccs.lParam = (LPARAM)&pre;
 					pre.timestamp = time(NULL);
@@ -1072,10 +1095,10 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, DWORD dwLeng
 		PROTORECVEVENT pre;
 		int status;
 		HANDLE hContact;
-
+    DWORD dwCookieUin;
+		message_cookie_data* pCookieData = NULL;
 
 		hContact = HContactFromUIN(dwUin, 0);
-
 
 		if (hContact == INVALID_HANDLE_VALUE)
 		{
@@ -1083,6 +1106,23 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, DWORD dwLeng
 			return INVALID_HANDLE_VALUE;
 		}
 
+    if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
+    {
+      NetLog_Server("handleMessageAck: Ignoring unrequested status message from %u", dwUin);
+      FreeCookie(wCookie);
+      SAFE_FREE(&pCookieData);
+      return INVALID_HANDLE_VALUE;
+    }
+
+    if (dwUin != dwCookieUin)
+    {
+      NetLog_Server("handleMessageAck: Ack UIN does not match Cookie UIN(%u != %u)", dwUin, dwCookieUin);
+      FreeCookie(wCookie);
+      SAFE_FREE(&pCookieData);
+      return INVALID_HANDLE_VALUE;
+    }
+    FreeCookie(wCookie);
+    SAFE_FREE(&pCookieData);
 
 		switch (type)
 		{
@@ -1145,7 +1185,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 	HANDLE hContact = INVALID_HANDLE_VALUE;
 
 
-	if (dwDataLen < wMsgLen)
+  if (dwDataLen < wMsgLen)
 	{
     if (bThruDC)
 		  NetLog_Direct("Ignoring overflowed message");
@@ -1199,7 +1239,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 			// Check if this message is marked as UTF8 encoded
 			if (dwDataLen > 12)
 			{
-
 				DWORD dwGuidLen;
 
 				wchar_t* usMsg;
@@ -1251,6 +1290,8 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
               NetLog_Direct("Warning: User %u sends us RichText.", dwUin);
             else
               NetLog_Server("Warning: User %u sends us RichText.", dwUin);
+
+            break;
           }
 
 					dwGuidLen -= 38;
@@ -1259,8 +1300,28 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 				}
 			}
 
+      hContact = HContactFromUIN(dwUin, 1);
+
+      if (!pre.flags && !IsUSASCII(szMsg, strlennull(szMsg)))
+      { // message is Ansi and contains national characters, create Unicode part by codepage
+        WORD wCP = ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage);
+
+        if (wCP != CP_ACP)
+        {
+  				wchar_t* usMsg;
+
+          usMsg = malloc((strlen(szMsg)+2)*(sizeof(wchar_t)+1));
+					memcpy((char*)usMsg, szMsg, strlen(szMsg)+1);
+          MultiByteToWideChar(wCP, 0, szMsg, strlen(szMsg), (wchar_t*)((char*)usMsg + strlen(szMsg) + 1), strlen(szMsg));
+          *(WORD*)(usMsg + 1 + strlen(szMsg)*(1 + sizeof(wchar_t))) = '\0'; // trailing zeros
+					SAFE_FREE(&szMsg);
+					szMsg = (char*)usMsg;
+					pre.flags = PREF_UNICODE;
+        }
+      }
+
 			ccs.szProtoService = PSR_MESSAGE;
-			ccs.hContact = hContact = HContactFromUIN(dwUin, 1);
+			ccs.hContact = hContact;
 			ccs.wParam = 0;
 			ccs.lParam = (LPARAM)&pre;
 			pre.timestamp = dwTimestamp;
@@ -1292,7 +1353,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 			strcpy(szBlob + strlen(szBlob) + 1, pszMsgField[0]);
 
 			ccs.szProtoService = PSR_URL;
-			ccs.hContact= hContact = HContactFromUIN(dwUin, 1);
+			ccs.hContact = hContact = HContactFromUIN(dwUin, 1);
 			ccs.wParam = 0;
 			ccs.lParam = (LPARAM)&pre;
 			pre.flags = 0;
@@ -1591,6 +1652,8 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 	BYTE bFlags;
 	WORD wLength;
 	HANDLE hContact;
+	DWORD dwCookieUin;
+	message_cookie_data* pCookieData = NULL;
 
 
 	buf += 8;  // Message ID
@@ -1641,6 +1704,20 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 	buf += 2;
 	wLen -= 2;
 
+  if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
+  {
+    NetLog_Server("SNAC(4.B) Received an ack that I did not ask for from (%u)", dwUin);
+		return;
+	}
+
+	if (dwCookieUin != dwUin)
+	{
+		NetLog_Server("SNAC(4.B) Ack UIN does not match Cookie UIN(%u != %u)", dwUin, dwCookieUin);
+		SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
+		FreeCookie(wCookie);
+		return;
+	}
+
 	if (bFlags == 3)     // A status message reply
 	{
 		CCSDATA ccs;
@@ -1653,7 +1730,6 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 			NetLog_Server("SNAC(4.B) Ignoring status message from unknown contact");
 			return;
 		}
-
 
 		switch (bMsgType)
 		{
@@ -1699,23 +1775,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 	else
 	{ // An ack of some kind
 		int ackType;
-		DWORD dwCookieUin;
-		message_cookie_data* pCookieData = NULL;
 
-
-		if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
-		{
-			NetLog_Server("SNAC(4.B) Received an ack that I did not ask for from (%u)", dwUin);
-			return;
-		}
-
-		if (dwCookieUin != dwUin)
-		{
-			NetLog_Server("SNAC(4.B) Ack UIN does not match Cookie UIN(%u != %u)", dwUin, dwCookieUin);
-			SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
-			FreeCookie(wCookie);
-			return;
-		}
 
 		if (hContact == NULL || hContact == INVALID_HANDLE_VALUE)
 		{
@@ -1892,11 +1952,11 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 		{
 			ICQBroadcastAck(hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
 		}
-
-		SAFE_FREE(&pCookieData);
-
-		FreeCookie(wCookie);
 	}
+
+	SAFE_FREE(&pCookieData);
+
+	FreeCookie(wCookie);
 }
 
 
@@ -1929,6 +1989,20 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 
 			return;
 		}
+    if (wError == 9 && pCookieData->bMessageType == MTYPE_AUTOAWAY)
+    { // we failed to request away message the normal way, try it AIM way
+     	icq_packet packet;
+
+      packet.wLen = 13 + getUINLen(dwUin);
+      write_flap(&packet, ICQ_DATA_CHAN);
+      packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, dwSequence);
+      packWord(&packet, 0x03);
+      packUIN(&packet, dwUin);
+
+      sendServPacket(&packet);
+
+      return;
+    }
 
 		// Not all of these are actually used in family 4
 		// This will be moved into a special error handling function later

@@ -37,6 +37,16 @@
 #include "icqoscar.h"
 
 
+static BOOL bUtfReadyDB = FALSE;
+
+void InitDB()
+{
+	bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
+  if (!bUtfReadyDB)
+    NetLog_Server("Warning: DB module does not support Unicode.");
+}
+
+
 BYTE ICQGetContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef)
 {
   return DBGetContactSettingByte(hContact, gpszICQProtoName, szSetting, bDef);
@@ -58,6 +68,39 @@ DWORD ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dw
 int ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
 {
   return DBGetContactSetting(hContact, gpszICQProtoName, szSetting, dbv);
+}
+
+
+char* ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef)
+{
+  DBVARIANT dbv = {DBVT_DELETED};
+  char* szRes;
+
+  if (bUtfReadyDB)
+  {
+    if (DBGetContactSettingStringUtf(hContact, gpszICQProtoName, szSetting, &dbv))
+      return strdup(szDef);
+    
+    szRes = strdup(dbv.pszVal);
+    DBFreeVariant(&dbv);
+  }
+  else
+  { // old DB, we need to convert the string to UTF-8
+    if (DBGetContactSetting(hContact, gpszICQProtoName, szSetting, &dbv))
+      return strdup(szDef);
+
+    if (strlennull(dbv.pszVal))
+    {
+      int nResult;
+
+		  nResult = utf8_encode(dbv.pszVal, &szRes);
+    }
+    else 
+      szRes = strdup("");
+
+    DBFreeVariant(&dbv);
+  }
+  return szRes;
 }
 
 
@@ -109,6 +152,28 @@ int ICQWriteContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dw
 int ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, char* szValue)
 {
   return DBWriteContactSettingString(hContact, gpszICQProtoName, szSetting, szValue);
+}
+
+
+int ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, char* szValue)
+{
+  if (bUtfReadyDB)
+    return DBWriteContactSettingStringUTF(hContact, gpszICQProtoName, szSetting, szValue);
+  else
+  { // old DB, we need to convert the string to Ansi
+    char* szAnsi;
+
+		if (utf8_decode(szValue, &szAnsi))
+    {
+      int nRes = DBWriteContactSettingString(hContact, gpszICQProtoName, szSetting, szAnsi);
+
+      SAFE_FREE(&szAnsi);
+      return nRes;
+    }
+    // failed to convert - give error
+
+    return 1;
+  }
 }
 
 

@@ -45,28 +45,30 @@
 
 
 /* Some default settings */
-#define DEFAULT_SERVER_PORT     5190
-#define DEFAULT_SERVER_HOST     "login.icq.com"
-#define DEFAULT_SS_ENABLED      1
-#define DEFAULT_SS_ADDSERVER    1
-#define DEFAULT_SS_LOAD         0
-#define DEFAULT_SS_STORE        1
-#define DEFAULT_SS_GROUP        "General"
+#define DEFAULT_SERVER_PORT         5190
+#define DEFAULT_SERVER_HOST         "login.icq.com"
+#define DEFAULT_SS_ENABLED          1
+#define DEFAULT_SS_ADDSERVER        1
+#define DEFAULT_SS_LOAD             0
+#define DEFAULT_SS_STORE            1
+#define DEFAULT_SS_GROUP            "General"
 
-#define DEFAULT_AIM_ENABLED     0
-#define DEFAULT_UTF_ENABLED     2 // everything unicode is default
-#define DEFAULT_UTF_CODEPAGE    CP_ACP
-#define DEFAULT_DCMSG_ENABLED   1 // passive dc messaging is default
-#define DEFAULT_TEMPVIS_ENABLED 1 // temporary visible is enabled by default
-#define DEFAULT_MTN_ENABLED     0
-#define DEFAULT_CAPS            0
-#define DEFAULT_AVATARS_ENABLED 1
-#define DEFAULT_LOAD_AVATARS    1
-#define DEFAULT_LINK_AVATARS    1
-#define DEFAULT_XSTATUS_ENABLED 1
+#define DEFAULT_AIM_ENABLED         0
+#define DEFAULT_UTF_ENABLED         2 // everything unicode is default
+#define DEFAULT_ANSI_CODEPAGE       CP_ACP
+#define DEFAULT_DCMSG_ENABLED       1 // passive dc messaging is default
+#define DEFAULT_TEMPVIS_ENABLED     1 // temporary visible is enabled by default
+#define DEFAULT_MTN_ENABLED         0
+#define DEFAULT_CAPS                0
+#define DEFAULT_AVATARS_ENABLED     1
+#define DEFAULT_LOAD_AVATARS        1
+#define DEFAULT_LINK_AVATARS        1
+#define DEFAULT_XSTATUS_ENABLED     1
+#define DEFAULT_XSTATUS_AUTO        1
+#define DEFAULT_KILLSPAM_ENABLED    1
 
 // Database setting names
-#define DBSETTING_CAPABILITIES  "caps"
+#define DBSETTING_CAPABILITIES      "caps"
 
 
 // Status FLAGS (used to determine status of other users)
@@ -184,22 +186,22 @@
 
 
 /* Channels */
-#define	ICQ_LOGIN_CHAN			0x01
-#define ICQ_DATA_CHAN				0x02
-#define ICQ_ERROR_CHAN			0x03
-#define ICQ_CLOSE_CHAN			0x04
-#define ICQ_PING_CHAN				0x05
+#define	ICQ_LOGIN_CHAN			        0x01
+#define ICQ_DATA_CHAN				        0x02
+#define ICQ_ERROR_CHAN			        0x03
+#define ICQ_CLOSE_CHAN			        0x04
+#define ICQ_PING_CHAN				        0x05
 
 /* Families */
-#define ICQ_SERVICE_FAMILY    0x0001
-#define ICQ_LOCATION_FAMILY   0x0002
-#define ICQ_BUDDY_FAMILY      0x0003
-#define ICQ_MSG_FAMILY        0x0004
-#define ICQ_BOS_FAMILY        0x0009
-#define ICQ_STATS_FAMILY      0x000b
-#define ICQ_AVATAR_FAMILY     0x0010
-#define ICQ_LISTS_FAMILY      0x0013
-#define ICQ_EXTENSIONS_FAMILY 0x0015
+#define ICQ_SERVICE_FAMILY          0x0001
+#define ICQ_LOCATION_FAMILY         0x0002
+#define ICQ_BUDDY_FAMILY            0x0003
+#define ICQ_MSG_FAMILY              0x0004
+#define ICQ_BOS_FAMILY              0x0009
+#define ICQ_STATS_FAMILY            0x000b
+#define ICQ_AVATAR_FAMILY           0x0010
+#define ICQ_LISTS_FAMILY            0x0013
+#define ICQ_EXTENSIONS_FAMILY       0x0015
 
 /* Subtypes for Service Family 0x0001 */
 #define ICQ_ERROR                   0x0001
@@ -228,13 +230,15 @@
 #define ICQ_LOCATION_CLI_REQ_RIGHTS 0x0002
 #define ICQ_LOCATION_RIGHTS_REPLY   0x0003
 #define ICQ_LOCATION_SET_USER_INFO  0x0004
+#define ICQ_LOCATION_REQ_USER_INFO  0x0005
+#define ICQ_LOCATION_USR_INFO_REPLY 0x0006
 
 /* Subtypes for Buddy Family 0x0003 */
 #define ICQ_USER_CLI_REQBUDDY       0x0002
 #define ICQ_USER_SRV_REPLYBUDDY     0x0003
 #define ICQ_USER_ADDTOLIST          0x0004
 #define ICQ_USER_REMOVEFROMLIST     0x0005
-#define ICQ_USER_ADD_REJECTED       0x000a
+#define ICQ_USER_NOTIFY_REJECTED    0x000a
 #define ICQ_USER_ONLINE             0x000b
 #define ICQ_USER_OFFLINE            0x000c
 
@@ -452,7 +456,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030602
+#define ICQ_PLUG_VERSION            0x80030603
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

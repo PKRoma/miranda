@@ -37,6 +37,9 @@
 #include "icqoscar.h"
 
 
+extern HANDLE hsmsgrequest;
+
+
 void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC)
 {
   char *szWork, *szEnd, *szNotify, *szQuery;
@@ -314,6 +317,8 @@ void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCooki
 
   if (validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
   { // apply privacy rules
+		NotifyEventHooks(hsmsgrequest, (WPARAM)MTYPE_SCRIPT_NOTIFY, (LPARAM)dwUin);
+
     nBodyLen = null_snprintf(szBody, nBodyLen, "<NR><RES>%s</RES></NR>", szResBody);
     SAFE_FREE(&szResBody);
 

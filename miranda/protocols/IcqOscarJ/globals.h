@@ -49,7 +49,7 @@ HANDLE ghDirectNetlibUser;
 // from init.h
 BYTE gbAimEnabled;
 BYTE gbUtfEnabled;
-DWORD gbUtfCodepage;
+WORD gwAnsiCodepage;
 BYTE gbDCMsgEnabled;
 BYTE gbTempVisListEnabled;
 BYTE gbSsiEnabled;

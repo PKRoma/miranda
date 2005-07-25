@@ -576,13 +576,17 @@ DWORD icq_sendGetAwayMsgServ(DWORD dwUin, int type)
 {
 	icq_packet packet;
 	DWORD dwCookie;
+	message_cookie_data *pCookieData = NULL;
 
   // we request if we can or 10sec after last request
   if (gbOverRate && (GetTickCount()-gtLastRequest)<10000) return 0;
   gbOverRate = 0;
   gtLastRequest = GetTickCount();
 
-	dwCookie = GenerateCookie(0);
+	pCookieData = malloc(sizeof(message_cookie_data));
+	dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
+  pCookieData->bMessageType = MTYPE_AUTOAWAY;
+  pCookieData->nAckType = (BYTE)type;
 
 	packServChannel2Header(&packet, dwUin, 3, dwCookie, (BYTE)type, 3, 1, 0, 0, 0);
 	packLEWord(&packet, 1);	/* length of message */
@@ -648,24 +652,6 @@ void icq_sendFileSendServv8(DWORD dwUin, DWORD dwCookie, const char *szFiles, co
 
 	// TLV(0x2711) header
   packServTLV2711Header(&packet, (WORD)dwCookie, MTYPE_PLUGIN, 0, (WORD)MirandaStatusToIcq(gnCurrentStatus), 0x100, 69 + strlen(szDescr) + strlen(szFiles));
-/*	packWord(&packet, 0x2711);	                                        // Type
-  packWord(&packet, (WORD)(120 + strlen(szDescr) + strlen(szFiles))); // Len
-	// TLV(0x2711) data
-	packLEWord(&packet, 0x1B); // Unknown
-	packByte(&packet, ICQ_VERSION); // Client version
-  packGUID(&packet, PSIG_MESSAGE);
-	packDWord(&packet, CLIENTFEATURES);
-	packDWord(&packet, DC_TYPE);
-	packLEWord(&packet, (WORD)dwCookie); // Reference cookie
-	packLEWord(&packet, 0x0E);    // Unknown
-	packLEWord(&packet, (WORD)dwCookie); // Reference cookie again
-	packDWord(&packet, 0); // Unknown (12 bytes)
-	packDWord(&packet, 0); //  -
-	packDWord(&packet, 0); //  -
-	packByte(&packet, MTYPE_PLUGIN); // Message type
-	packByte(&packet, 0);  // Flags
-	packLEWord(&packet, (WORD)MirandaStatusToIcq(gnCurrentStatus));
-	packLEWord(&packet, 1); // Unknown, priority?*/
 
 	packLEWord(&packet, 1); // Message len
 	packByte(&packet, 0);   // Message (unused)
@@ -726,24 +712,6 @@ void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie,
 
 	// TLV(0x2711) header
   packServTLV2711Header(&packet, (WORD)dwCookie, MTYPE_PLUGIN, 0, (WORD)(accepted ? 0:1), 0, 69 + strlen(szDescr) + strlen(szFiles));
-/*	packWord(&packet, 0x2711);	                                        // Type
-  packWord(&packet, (WORD)(120 + strlen(szDescr) + strlen(szFiles))); // Len
-	// TLV(0x2711) data
-	packLEWord(&packet, 0x1B); // Unknown
-	packByte(&packet, ICQ_VERSION); // Client version
-  packGUID(&packet, PSIG_MESSAGE);
-	packDWord(&packet, CLIENTFEATURES);
-	packDWord(&packet, DC_TYPE);
-	packLEWord(&packet, (WORD)dwCookie); // Reference cookie
-	packLEWord(&packet, 0x0E);    // Unknown
-	packLEWord(&packet, (WORD)dwCookie); // Reference cookie again
-	packDWord(&packet, 0); // Unknown (12 bytes)
-	packDWord(&packet, 0); //  -
-	packDWord(&packet, 0); //  -
-	packByte(&packet, MTYPE_PLUGIN); // Message type
-	packByte(&packet, 0);  // Flags
-	packLEWord(&packet, (WORD) (accepted ? 0:1)); // Accepted or not?
-	packLEWord(&packet, 0); // Unknown, priority?*/
 	//
 	packLEWord(&packet, 1); // Message len
 	packByte(&packet, 0);   // Message (unused)
@@ -804,24 +772,6 @@ void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie,
 
 	// TLV(0x2711) header
   packServTLV2711Header(&packet, (WORD)dwCookie, MTYPE_FILEREQ, 0, (WORD)(accepted ? 0:1), 0, 19 + strlen(szDescr) + strlen(szFiles));
-/*	packWord(&packet, 0x2711);	                                       // Type
-	packWord(&packet, (WORD)(70 + strlen(szDescr) + strlen(szFiles))); // Len
-	// TLV(0x2711) data
-	packLEWord(&packet, 0x1B); // Unknown
-	packByte(&packet, 0x8); // Client version
-  packGUID(&packet, PSIG_MESSAGE);
-	packDWord(&packet, 0x0003); // Unknown
-	packDWord(&packet, 0x0004); // Unknown
-	packLEWord(&packet, (WORD)dwCookie); // Reference cookie
-	packLEWord(&packet, 0x0E);    // Unknown
-	packLEWord(&packet, (WORD)dwCookie); // Reference cookie again
-	packDWord(&packet, 0); // Unknown (12 bytes)
-	packDWord(&packet, 0); //  -
-	packDWord(&packet, 0); //  -
-	packByte(&packet, MTYPE_FILEREQ); // Message type
-	packByte(&packet, 0);  // Flags
-	packLEWord(&packet, (WORD)(accepted ? 0:1)); // Accepted or not?
-	packLEWord(&packet, 0); // Unknown, priority?*/
 	//
 	packLEWord(&packet, (WORD)(strlen(szDescr)+1));          // Description
 	packBuffer(&packet, szDescr, (WORD)(strlen(szDescr)+1));
@@ -1118,7 +1068,7 @@ DWORD icq_sendAdvancedSearchServ(BYTE* fieldsBuffer,int bufferLen)
 
 
 DWORD icq_changeUserDetailsServ(WORD type, const unsigned char *pData, WORD wDataLen)
-{ // TODO: change to TLV based update - integrate with Change Info (0.3.6)
+{
 	icq_packet packet;
 	DWORD dwCookie;
 

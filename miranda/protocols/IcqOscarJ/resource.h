@@ -47,6 +47,8 @@
 #define IDC_AIMENABLE                   1030
 #define IDC_CLIST                       1035
 #define IDC_XSTATUSENABLE               1040
+#define IDC_XSTATUSAUTO                 1041
+#define IDC_KILLSPAMBOTS                1045
 #define IDC_EMAIL                       1048
 #define IDC_NICK                        1053
 #define IDC_GENDER                      1060
@@ -63,7 +65,6 @@
 #define IDC_ICQSERVER                   1171
 #define IDC_ICQPORT                     1172
 #define IDC_VERSION                     1179
-#define IDC_CHANGEDETAILS               1197
 #define IDC_FIRSTNAME                   1224
 #define IDC_LASTNAME                    1225
 #define IDC_REALIP                      1230
@@ -74,6 +75,7 @@
 #define IDC_ONLINESINCE                 1252
 #define IDC_SYSTEMUPTIME                1253
 #define IDC_IDLETIME                    1254
+#define IDC_STATUS                      1255
 #define IDC_SLOWSEND                    1301
 #define IDC_LOGLEVEL                    1331
 #define IDC_LEVELDESCR                  1332

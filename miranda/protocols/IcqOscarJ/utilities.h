@@ -76,6 +76,9 @@ void SetGatewayIndex(HANDLE hConn, DWORD dwIndex);
 DWORD GetGatewayIndex(HANDLE hConn);
 void FreeGatewayIndex(HANDLE hConn);
 
+void AddToSpammerList(DWORD dwUIN);
+BOOL IsOnSpammerList(DWORD dwUIN);
+
 HANDLE HContactFromUIN(DWORD, int);
 //HANDLE HContactFromUID(char* pszUID, int);
 char *NickFromHandle(HANDLE);

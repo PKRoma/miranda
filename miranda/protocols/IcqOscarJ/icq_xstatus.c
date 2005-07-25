@@ -183,20 +183,22 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
     {
       if (MatchCap(caps, capsize, (const capstr*)capXStatus[i], 0x10))
       {
-        // status changed - we request details
-        char *szNotify;
-        int nNotifyLen;
-
         ICQWriteContactSettingByte(hContact, "XStatusId", (BYTE)(i+1));
         ICQWriteContactSettingString(hContact, "XStatusName", (char*)nameXStatus[i]);
 
-        nNotifyLen = 94 + UINMAXLEN;
-        szNotify = (char*)malloc(nNotifyLen);
-        nNotifyLen = null_snprintf(szNotify, nNotifyLen, "<srv><id>cAwaySrv</id><req><id>AwayStat</id><trans>1</trans><senderId>%d</senderId></req></srv>", dwLocalUIN);
-        // TODO: this should be postponed
-        SendXtrazNotifyRequest(hContact, "<Q><PluginID>srvMng</PluginID></Q>", szNotify);
+        if (ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
+        {
+          char *szNotify;
+          int nNotifyLen;
 
-        SAFE_FREE(&szNotify);
+          nNotifyLen = 94 + UINMAXLEN;
+          szNotify = (char*)malloc(nNotifyLen);
+          nNotifyLen = null_snprintf(szNotify, nNotifyLen, "<srv><id>cAwaySrv</id><req><id>AwayStat</id><trans>1</trans><senderId>%d</senderId></req></srv>", dwLocalUIN);
+          // TODO: this should be postponed
+          SendXtrazNotifyRequest(hContact, "<Q><PluginID>srvMng</PluginID></Q>", szNotify);
+
+          SAFE_FREE(&szNotify);
+        }
 
         hIcon = hXStatusIcons[i];
 
@@ -204,7 +206,7 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
       }
     }
   }
-  else
+  if (hIcon == (HANDLE)-1)
   {
     ICQDeleteContactSetting(hContact, "XStatusId");
     ICQDeleteContactSetting(hContact, "XStatusName");

@@ -52,6 +52,10 @@ typedef struct gateway_index_s
 static gateway_index *gateways = NULL;
 static int gatewayCount = 0;
 
+static DWORD *spammerList = NULL;
+static int spammerListCount = 0;
+
+
 extern BYTE gbOverRate;
 extern DWORD gtLastRequest;
 
@@ -478,6 +482,40 @@ void FreeGatewayIndex(HANDLE hConn)
 	}
 
 	LeaveCriticalSection(&cookieMutex);
+}
+
+
+void AddToSpammerList(DWORD dwUIN)
+{
+  EnterCriticalSection(&cookieMutex);
+
+  spammerList = (DWORD *)realloc(spammerList, sizeof(DWORD) * (spammerListCount + 1));
+  spammerList[spammerListCount] = dwUIN;
+  spammerListCount++;
+
+  LeaveCriticalSection(&cookieMutex);
+}
+
+
+BOOL IsOnSpammerList(DWORD dwUIN)
+{
+	int i;
+
+	EnterCriticalSection(&cookieMutex);
+
+	for (i = 0; i < spammerListCount; i++)
+	{
+		if (dwUIN == spammerList[i])
+		{
+      LeaveCriticalSection(&cookieMutex);
+
+      return TRUE;
+		}
+	}
+
+	LeaveCriticalSection(&cookieMutex);
+
+  return FALSE;
 }
 
 

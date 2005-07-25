@@ -76,7 +76,7 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 		packTLVWord(&packet, 0x0017, 0x0014);               // Client major version
 		packTLVWord(&packet, 0x0018, 0x0022);               // Client minor version
 		packTLVWord(&packet, 0x0019, 0x0000);               // Client lesser version
-		packTLVWord(&packet, 0x001a, 0x0911);               // Client build number
+		packTLVWord(&packet, 0x001a, 0x09b7);               // Client build number
 		packTLVDWord(&packet, 0x0014, 0x0000043d);          // Client distribution number
 		packTLV(&packet, 0x000f, 0x0002, "en");             // Client language
 		packTLV(&packet, 0x000e, 0x0002, "us");             // Client country
@@ -84,7 +84,7 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 		sendServPacket(&packet);
 
 #ifdef _DEBUG
-		NetLog_Server("Sent CLI_IDENT to login server");
+		NetLog_Server("Sent CLI_IDENT to %s server", "login");
 #endif
 
 		isLoginServer = 0;
@@ -104,7 +104,7 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 			sendServPacket(&packet);
 			
 #ifdef _DEBUG
-			NetLog_Server("Sent CLI_IDENT to communication server");
+			NetLog_Server("Sent CLI_IDENT to %s server", "communication");
 #endif
 			
 			SAFE_FREE(&cookieData);

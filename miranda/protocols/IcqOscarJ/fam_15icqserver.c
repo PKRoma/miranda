@@ -223,7 +223,7 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
 	}
 	else
 	{
-		NetLog_Server("Error: Broken snac 15/3 3");
+		NetLog_Server("Error: Broken snac 15/3 %d", 3);
 	}
 
 	if (chain)
@@ -237,7 +237,6 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 	_ASSERTE(wPacketLen >= 14);
 	if (wPacketLen >= 14)
 	{
-		
 		DWORD dwUin;
 		DWORD dwTimestamp;
 		WORD wYear;
@@ -270,7 +269,6 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 		{
 			struct tm *sentTm;
 
-
 			// Hack around the timezone problem
 			// This is probably broken in some countries
 			// but I'll leave it like this for now (todo)
@@ -288,15 +286,16 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 			// It might be UK time or something.
 			// More observations reqd at changeover.
 			if ((sentTm->tm_mon > 3 && sentTm->tm_mon < 9)
-			    || (sentTm->tm_mon == 3
-				    && (sentTm->tm_mday > 7
-					    || (sentTm->tm_wday != 0 && sentTm->tm_mday > sentTm->tm_wday)
-						|| (sentTm->tm_wday == 0 && sentTm->tm_hour >= 2)))
-				|| (sentTm->tm_mon == 9
-				    && (sentTm->tm_mday < 25
-					    || (sentTm->tm_wday != 0 && sentTm->tm_mday < 25 + sentTm->tm_wday)
-						|| (sentTm->tm_wday == 0 && sentTm->tm_hour <= 2))))
-				sentTm->tm_hour--;
+    	  || (sentTm->tm_mon == 3
+          && (sentTm->tm_mday > 7
+            || (sentTm->tm_wday != 0 && sentTm->tm_mday > sentTm->tm_wday)
+            || (sentTm->tm_wday == 0 && sentTm->tm_hour >= 2)))
+        || (sentTm->tm_mon == 9
+          && (sentTm->tm_mday < 25
+            || (sentTm->tm_wday != 0 && sentTm->tm_mday < 25 + sentTm->tm_wday)
+            || (sentTm->tm_wday == 0 && sentTm->tm_hour <= 2))))
+        sentTm->tm_hour--;
+
 			sentTm->tm_sec -= 28800 + _timezone;
 			{	// _daylight global variable is reversed in southern hemisphere. Silly.
 				TIME_ZONE_INFORMATION tzinfo;
@@ -304,7 +303,6 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 					sentTm->tm_hour++;
 			}
 			dwTimestamp = mktime(sentTm);
-
 
 			// :NOTE:
 			// This is a check for the problem with offline messages being marked
@@ -377,7 +375,7 @@ static void parseEndOfOfflineMessages(unsigned char *databuf, WORD wPacketLen)
 	packLEWord(&packet, 8);           // Data length
 	packLEDWord(&packet, dwLocalUIN); // My UIN
 	packLEWord(&packet, CLI_DELETE_OFFLINE_MSGS_REQ); // Ack offline msgs
-	packLEWord(&packet, 0x0000);      // Requence number number (we dont use this for now)
+	packLEWord(&packet, 0x0000);      // Request sequence number (we dont use this for now)
 
 	// Send it
 	sendServPacket(&packet);
@@ -527,7 +525,6 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 		NetLog_Server("SNAC(0x15,0x3): Search reply");
 		if (bResultCode == 0xA)
 		{
-			
 			ICQSEARCHRESULT sr = {0};
 			DWORD dwUin;
 			WORD wLen;

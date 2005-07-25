@@ -311,6 +311,14 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       {
         szClient = cliIM2;
       }
+      else if (dwFT1 == 0xDDDDEEFF && !dwFT2 && !dwFT3)
+      {
+        szClient = "SmartICQ";
+      }
+      else if ((dwFT1 & 0xFFFFFFF0) == 0x494D2B00 && !dwFT2 && !dwFT3)
+      { // last byte of FT1: (5 = Win32, 3 = SmartPhone, Pocket PC)
+        szClient = "IM+";
+      }
       else if (dwFT1 == dwFT2 && dwFT2 == dwFT3 && wVersion == 8)
       {
         DWORD tNow = getDWordFromChain(pChain, 0x03, 1);
@@ -383,177 +391,10 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 			// Get Avatar Hash TLV
 			pTLV = getTLV(pChain, 0x1D, 1);
-			if (pTLV && (pTLV->wLen >= 0x14))
-			{
-        DBVARIANT dbv;
-        int dummy;
-        int dwJob = 0;
-        char szAvatar[MAX_PATH];
-        int dwPaFormat;
-
-        if (pTLV->wLen == 0x18 && pTLV->pData[3] == 0)
-        { // icq probably set two avatars, get something from that
-          memcpy(pTLV->pData, pTLV->pData+4, 0x14);
-        }
-
-        if (gbAvatarsEnabled && ICQGetContactSettingByte(NULL, "AvatarsAutoLoad", 1))
-        { // check settings, should we request avatar immediatelly
-
-          if (ICQGetContactSetting(hContact, "AvatarHash", &dbv))
-          { // we not found old hash, i.e. get new avatar
-            DBVARIANT dbvHashFile;
-
-            if (!ICQGetContactSetting(hContact, "AvatarSaved", &dbvHashFile))
-            { // check saved hash and file, if equal only store hash
-              if ((dbvHashFile.cpbVal != 0x14) || memcmp(dbvHashFile.pbVal, pTLV->pData, 0x14))
-              { // the hash is different, unlink contactphoto
-                LinkContactPhotoToFile(hContact, NULL);
-                dwJob = 1;
-              }
-              else
-              {
-                dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
-
-                GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
-                if (access(szAvatar, 0) == 0)
-                { // the file is there, link to contactphoto, save hash
-                  NetLog_Server("Avatar is known, hash stored, linked to file.");
-
-                  if (dummy = ICQWriteContactSettingBlob(hContact, "AvatarHash", pTLV->pData, 0x14))
-                  {
-                    NetLog_Server("Hash saving failed. Error: %d", dummy);
-                  }
-                  if (dwPaFormat != PA_FORMAT_UNKNOWN && dwPaFormat != PA_FORMAT_XML)
-                    LinkContactPhotoToFile(hContact, szAvatar);
-                  else  // the format is not supported unlink
-                    LinkContactPhotoToFile(hContact, NULL);
-
-                  ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
-                }
-                else // the file is lost, request avatar again
-                  dwJob = 1;
-              }
-              DBFreeVariant(&dbvHashFile);
-            }
-            else
-              dwJob = 1;
-          }
-          else
-          { // we found hash check if it changed or not
-            NetLog_Server("%s Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", "Old", dbv.pbVal[0], dbv.pbVal[1], dbv.pbVal[2], dbv.pbVal[3], dbv.pbVal[4], dbv.pbVal[5], dbv.pbVal[6], dbv.pbVal[7], dbv.pbVal[8], dbv.pbVal[9], dbv.pbVal[10], dbv.pbVal[11], dbv.pbVal[12], dbv.pbVal[13], dbv.pbVal[14], dbv.pbVal[15], dbv.pbVal[16], dbv.pbVal[17], dbv.pbVal[18], dbv.pbVal[19]);
-            if ((dbv.cpbVal != 0x14) || memcmp(dbv.pbVal, pTLV->pData, 0x14))
-            { // the hash is different, request new avatar
-              LinkContactPhotoToFile(hContact, NULL); // unlink photo
-              dwJob = 1;
-            }
-            else
-            { // the hash does not changed, so check if the file exists
-              dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
-              if (dwPaFormat == PA_FORMAT_UNKNOWN)
-              { // we do not know the format, get avatar again
-                dwJob = 1;
-              }
-              else
-              {
-                GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
-                if (access(szAvatar, 0) == 0)
-                { // the file exists, so try to update photo setting
-                  if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
-                  {
-                    LinkContactPhotoToFile(hContact, szAvatar);
-                  }
-                }
-                else
-                { // the file was lost, get it again
-                  dwJob = 1;
-                }
-              }
-            }
-            DBFreeVariant(&dbv);
-          }
-
-          if (dwJob)
-          {
-            NetLog_Server("%s Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", "New", pTLV->pData[0], pTLV->pData[1], pTLV->pData[2], pTLV->pData[3], pTLV->pData[4], pTLV->pData[5], pTLV->pData[6], pTLV->pData[7], pTLV->pData[8], pTLV->pData[9], pTLV->pData[10], pTLV->pData[11], pTLV->pData[12], pTLV->pData[13], pTLV->pData[14], pTLV->pData[15], pTLV->pData[16], pTLV->pData[17], pTLV->pData[18], pTLV->pData[19]);
-            ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
-
-            NetLog_Server("User has Avatar, new hash stored.");
-
-            if (dummy = ICQWriteContactSettingBlob(hContact, "AvatarHash", pTLV->pData, 0x14))
-            {
-              NetLog_Server("Hash saving failed. Error: %d", dummy);
-            }
-
-            GetAvatarFileName(dwUIN, szAvatar, MAX_PATH);
-            GetAvatarData(hContact, dwUIN, pTLV->pData, 0x14 /*pTLV->wLen*/, szAvatar);
-            // avatar request sent or added to queue
-          }
-          else
-          {
-            NetLog_Server("User has Avatar.");
-          }
-        }
-        else if (gbAvatarsEnabled)
-        { // we should not request the avatar, so eventually save the hash and go on
-
-          if (ICQGetContactSetting(hContact, "AvatarHash", &dbv))
-          { // we not found old hash, i.e. store avatar hash
-            DBVARIANT dbvHashFile;
-
-            if (!ICQGetContactSetting(hContact, "AvatarSaved", &dbvHashFile))
-            { // check save hash and file, if equal only store hash
-              if ((dbvHashFile.cpbVal != 0x14) || memcmp(dbvHashFile.pbVal, pTLV->pData, 0x14))
-              { // the hash is different, unlink contactphoto
-                LinkContactPhotoToFile(hContact, NULL);
-              }
-              else
-              {
-                dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
-
-                GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
-                if (access(szAvatar, 0) == 0)
-                { // the file is there, link to contactphoto
-                  if (dwPaFormat != PA_FORMAT_UNKNOWN && dwPaFormat != PA_FORMAT_XML)
-                    LinkContactPhotoToFile(hContact, szAvatar);
-                  else  // the format is not supported unlink
-                    LinkContactPhotoToFile(hContact, NULL);
-                }
-              }
-              DBFreeVariant(&dbvHashFile);
-            }
-            dwJob = 1;
-          }
-          else
-          { // we found hash check if it changed or not
-            if ((dbv.cpbVal != 0x14) || memcmp(dbv.pbVal, pTLV->pData, 0x14))
-            { // the hash is different, store new avatar hash
-              dwJob = 1;
-            }
-            DBFreeVariant(&dbv);
-          }
-
-          if (dwJob)
-          {
-            ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
-
-            NetLog_Server("User has Avatar, hash stored.");
-
-            if (dummy = ICQWriteContactSettingBlob(hContact, "AvatarHash", pTLV->pData, 0x14))
-            {
-              NetLog_Server("Hash saving failed. Error: %d", dummy);
-            }
-          }
-          else
-          {
-            NetLog_Server("User has Avatar.");
-          }
-        }
-			}
-      else if (wOldStatus == ID_STATUS_OFFLINE)
-      { // if user were offline, and now hash not found, clear the hash
-      //  DBDeleteContactSetting(hContact, gpszICQProtoName, "AvatarHash"); // TODO: need more testing
-        // TODO: configure, here should be removed also the mtooltip link if it is ours - in procedure
-      }
+      if (pTLV)
+        handleAvatarContactHash(dwUIN, hContact, pTLV->pData, pTLV->wLen, wOldStatus);
+      else
+        handleAvatarContactHash(dwUIN, hContact, NULL, 0, wOldStatus);
 
 			// Update the contact's capabilities
 			if (wOldStatus == ID_STATUS_OFFLINE)
@@ -716,8 +557,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
                 else
                   szClient = "ICQ 2002/2003a";
               }
-              else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY || CAPF_UTF) && !dwFT1 && !dwFT2 && !dwFT3)
-                szClient = "Agile Messenger"; // no other way
             }
             else if (wVersion == 9)
             { // try to determine lite versions
@@ -731,7 +570,12 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
               if (MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
                 szClient = "GnomeICU"; // this is an exception
               else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
-                szClient = "ICQ 2000";
+              {
+                if (!dwFT1 && !dwFT2 && !dwFT3)
+                  szClient = "&RQ";
+                else
+                  szClient = "ICQ 2000";
+              }
               else if (CheckContactCapabilities(hContact, CAPF_TYPING))
                 szClient = "Icq2Go! (Java)";
               else 
@@ -743,6 +587,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
                 NetLog_Server("Forcing simple messages (QNext client).");
                 szClient = "QNext";
               }
+            if (szClient == NULL)
+            { // still unknown client, try Agile
+              if (CheckContactCapabilities(hContact, CAPF_UTF) && !MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10) && !dwFT1 && !dwFT2 && !dwFT3)
+                szClient = "Agile Messenger";
+            }
           }
 				}
 				else
@@ -820,10 +669,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
     if (szClient != (char*)-1)
       NetLog_Server("Client identified as %s", szClient);
   }
-  if (szClient == cliSpamBot)
-  {
-    // TODO: handle
-  }
 
 	// Save contacts details in database
   if (hContact != NULL)
@@ -854,6 +699,17 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	// And a small log notice...
 	NetLog_Server("%u changed status to %s (v%d).",
 		dwUIN, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
+
+  if (szClient == cliSpamBot)
+  {
+    if (ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED))
+    { // TODO: show popup informing that user was blocked
+      AddToSpammerList(dwUIN);
+			CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+
+      NetLog_Server("Contact %u deleted", dwUIN);
+    }
+  }
 }
 
 
