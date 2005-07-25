@@ -19,6 +19,8 @@ ______________
 
 - In Invisible mode, when other side is not in visible list messages are not unicode
   aware. This is because ICQ protocol does not support unicode offline messages.
+  You can partly solve this by setting proper codepage for the contact - database setting
+  WORD "CodePage" in ICQ scope
 
 - When synchronising server-list, users get added with await auth flag or receive added
   message. The way which ICQ servers handle authorisations, we cannot do it better - when
@@ -44,6 +46,7 @@ Bugfixes:
   Fixed memory leak in avatar code
   File transfers with GnomeICU works now
   Fixed changing password in ICQ Details will not save it to DB if not there
+  Fixed PING channel handling (caused connection drop)
 
 New Features:
   Messaging support enhanced (P2P messaging supported)
@@ -51,7 +54,7 @@ New Features:
   Temporary Visible List support
   New Features page in options to configure extra features
   Custom statuses just like icq5 - needs clist_mw derivative (thx Big Muscle)
-TODO: Enhanced Unicode & Ansi charsets support
+  Enhanced Unicode & Ansi charsets support (each contact can have its own codepage)
 TODO: AIM cross-compatability (only messages)
 
 Improvements:
@@ -60,6 +63,9 @@ Improvements:
   Detects some spam bots & ability to block known spam bots
   Merged with ChangeInfo (thx Bio)
   Added possibility to remember password for session
+  Added possibility to retrieve away message from libgaim clients
+  Added status to UserInfo page
+  Small improvements to client detection
 TODO:  Support for Iconlib
 TODO:  Display error messages using PopUp Plugin
 TODO:  Manage server-list dialog now groups requests - much faster
