@@ -43,6 +43,8 @@ extern WORD wListenPort;
 
 extern char* calcMD5Hash(char* szFile);
 
+extern char* nameXStatus[24];
+
 static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char *szModule, char *szSetting, int special);
@@ -57,7 +59,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char *szModule, 
 #define SVS_TIMEZONE      7
 #define SVS_ICQVERSION    8
 #define SVS_TIMESTAMP     9
-
+#define SVS_STATUSID      10
 
 
 int OnDetailsInit(WPARAM wParam, LPARAM lParam)
@@ -111,8 +113,6 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
-		if ((HANDLE)lParam == NULL)
-			ShowWindow(GetDlgItem(hwndDlg, IDC_CHANGEDETAILS), SW_SHOW);
 		return TRUE;
 		
 	case WM_NOTIFY:
@@ -152,6 +152,7 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 if (ICQGetContactSettingDword(hContact, "ClientID", 0) == 1)
                   ICQWriteContactSettingDword(hContact, "TickTS", 0);
                 SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "TickTS", SVS_TIMESTAMP);
+                SetValue(hwndDlg, IDC_STATUS, hContact, szProto, "Status", SVS_STATUSID);
               }
               else
               {
@@ -162,6 +163,7 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, "Miranda IM", SVS_ZEROISUNSPEC);
                 SetDlgItemText(hwndDlg, IDC_SUPTIME, Translate("Member since:"));
                 SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "MemberTS", SVS_TIMESTAMP);
+                SetValue(hwndDlg, IDC_STATUS, hContact, (char*)DBVT_WORD, (char*)gnCurrentStatus, SVS_STATUSID);
               }
             }
             break;
@@ -175,13 +177,6 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
   case WM_COMMAND:
     switch(LOWORD(wParam))
     {
-
-    case IDC_CHANGEDETAILS:
-      {
-        CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://www.icq.com/whitepages/user_details.php");
-      }
-      break;
-
     case IDCANCEL:
       SendMessage(GetParent(hwndDlg),msg,wParam,lParam);
       break;
@@ -439,6 +434,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
   DBVARIANT dbv = {0};
 	char str[80];
 	char* pstr;
+  char szStatus[256];
 	int unspecified = 0;
 
 	dbv.type = DBVT_DELETED;
@@ -532,6 +528,28 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
 				else
 					unspecified = 1;
 			}
+      else if (special == SVS_STATUSID)
+      {
+        DBVARIANT dbv1 = {0};
+        BYTE bXStatus = ICQGetContactSettingByte(hContact, "XStatusId", 0);
+
+        ZeroMemory(szStatus, sizeof(szStatus));
+        null_snprintf(szStatus, sizeof(szStatus), MirandaStatusToString(dbv.wVal));
+        if (bXStatus)
+        {
+          if (ICQGetContactSetting(hContact, "XStatusName", &dbv1) || !strlennull(dbv1.pszVal))
+          {
+            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szStatus, Translate(nameXStatus[bXStatus-1]));
+          }
+          else
+          {
+            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szStatus, dbv1.pszVal);
+            DBFreeVariant(&dbv1);
+          }
+        }
+        pstr = szStatus;
+        unspecified = 0;
+      }
 			else
 			{
 				unspecified = (special == SVS_ZEROISUNSPEC && dbv.wVal == 0);
