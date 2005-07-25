@@ -173,7 +173,6 @@ int SaveSettingsToDb(HWND hwndDlg)
 			case DBVT_ASCIIZ:
 				if(setting[i].displayType&LIF_PASSWORD) 
         {
-					char szScrambled[64];
 					if(strlen((char*)setting[i].value)>8 || strlen((char*)setting[i].value)<1) 
           {
 						MessageBox(hwndDlg,Translate("The ICQ server does not support passwords longer than 8 characters. Please use a shorter password."),Translate("Change ICQ Details"),MB_OK);
@@ -186,9 +185,6 @@ int SaveSettingsToDb(HWND hwndDlg)
 						break;
 					}
           strcpy(gpszPassword, (char*)setting[i].value);
-/*					lstrcpyn(szScrambled,(char*)setting[i].value,sizeof(szScrambled));
-					CallService(MS_DB_CRYPT_ENCODESTRING,sizeof(szScrambled),(LPARAM)szScrambled);
-					ICQWriteContactSettingString(NULL,setting[i].szDbSetting,szScrambled);*/
 				}
 				else 
         {
