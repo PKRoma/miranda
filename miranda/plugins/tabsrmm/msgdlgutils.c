@@ -361,8 +361,11 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                             else
                                 _DebugMessage(hwndDlg, dat, Translate("The current protocol doesn't support setting your avatar from the message window"));
                         }
-                        else
-                            DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",FileName);
+                        else {
+                            char szFinalPath[MAX_PATH];
+                            CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)FileName, (LPARAM)szFinalPath);
+                            DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File", szFinalPath);
+                        }
                     }
                     else
                         return 1;
@@ -765,15 +768,18 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BO
             int maxImageSizeX=500;
             int maxImageSizeY=300;
             HANDLE hFile;
+            char szFinalPath[MAX_PATH];
+
+            CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFinalPath);
             
             if(iUnknown)
                 dat->hContactPic = myGlobals.g_hbmUnknown;
             else {
-                if((hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
+                if((hFile = CreateFileA(szFinalPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
                     dat->hContactPic = 0;
                 else {
                     CloseHandle(hFile);
-                    dat->hContactPic=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
+                    dat->hContactPic=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)szFinalPath);
                 }
             }
             if(dat->hContactPic == 0)

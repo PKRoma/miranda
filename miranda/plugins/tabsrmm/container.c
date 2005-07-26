@@ -79,9 +79,13 @@ extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wPara
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
 extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus);
 
 char *szWarnClose = "Do you really want to close this session?";
+BOOL cntHelpActive = FALSE;
 
 struct ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
 struct ContainerWindowData *pLastActiveContainer = NULL;
@@ -622,6 +626,15 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     }
                     return 0;
                 }
+                case ID_HELP_ABOUTTABSRMM:
+                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_ABOUT), 0, DlgProcAbout, 0);
+                    break;
+                case ID_HELP_MESSAGEWINDOWHELP:
+                    if(!cntHelpActive) {
+                        cntHelpActive = TRUE;
+                        CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), hwndDlg, DlgProcTemplateHelp, (LPARAM)"plugins\\tabsrmm\\help\\Message Window Help.rtf");
+                    }
+                    break;
             }
             if(pContainer->dwFlags != dwOldFlags)
                 SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 0);
@@ -776,20 +789,17 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(pContainer->dwFlags & CNT_SIDEBAR)
                     DrawSideBar(hwndDlg, pContainer, &rcUnadjusted, menuSep);
 #ifdef __MATHMOD_SUPPORT    			
-                //mathMod begin
-    			if(myGlobals.m_MathModAvail) {  //start scope
+    			if(myGlobals.m_MathModAvail) {
     						TMathWindowInfo mathWndInfo;
     												
     						RECT windRect;
-    						// größe ermitteln:
     						GetWindowRect(hwndDlg,&windRect);
     						mathWndInfo.top=windRect.top;
     						mathWndInfo.left=windRect.left;
     						mathWndInfo.right=windRect.right;
     						mathWndInfo.bottom=windRect.bottom;
     						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
-    			}  // end scope
-    			//mathMod end
+    			}
 #endif                
             break;
             } 
@@ -849,7 +859,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
                 dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
                 if(dat) {
-                    if(dat->idle || dat->timezone != -1)
+                    if((dat->idle || dat->timezone != -1) && pContainer->hwndActive && IsWindow(pContainer->hwndActive))
                         InvalidateRect(GetDlgItem(pContainer->hwndActive, IDC_PANELUIN), NULL, FALSE);
                 }
             }

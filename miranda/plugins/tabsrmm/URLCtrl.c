@@ -19,6 +19,7 @@ typedef struct {
     COLORREF crVisited;//color visited
     BOOL fClicking;//internal state
     DWORD dwFlags;//combination of UCF_xxx values
+    COLORREF bkg;
 } URLCTRL;
 
 
@@ -69,7 +70,15 @@ BOOL util_url_draw(HWND hwnd,HDC hdc,RECT *calcrect) //calc OR draw
                 COLORREF crOldText;
                 int iOldBkMode;
                 GetClientRect(hwnd,&rc);
-                FillRect(hdc,&rc,(HBRUSH)(COLOR_3DFACE+1));
+                if(url->bkg == -1)
+                    FillRect(hdc,&rc,(HBRUSH)(COLOR_3DFACE+1));
+                else {
+                    HBRUSH hbr = CreateSolidBrush(url->bkg);
+                    HBRUSH hOldBrush = SelectObject(hdc, hbr);
+                    FillRect(hdc,&rc,hbr);
+                    SelectObject(hdc, hOldBrush);
+                    DeleteObject(hbr);
+                }
                 if (url->dwFlags&UCF_KBD) {
                     if (GetFocus()==hwnd) DrawFocusRect(hdc,&rc);
                     ++rc.left; --rc.right; ++rc.top; --rc.bottom;//protect focus rect
@@ -248,7 +257,7 @@ LRESULT CALLBACK urlctrl_proc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
     return CallWindowProc(oldproc,hwnd,uMsg,wParam,lParam);
 }
 
-BOOL urlctrl_set(HWND hwnd,TCHAR *szURL,COLORREF *unvisited,COLORREF *visited,DWORD dwFlags)
+BOOL urlctrl_set(HWND hwnd,TCHAR *szURL,COLORREF *unvisited,COLORREF *visited,DWORD dwFlags, COLORREF clr)
 {   BOOL fResult=FALSE;
     if (IsWindow(hwnd)) {
         URLCTRL *url;
@@ -263,6 +272,7 @@ BOOL urlctrl_set(HWND hwnd,TCHAR *szURL,COLORREF *unvisited,COLORREF *visited,DW
                 url->fClicking=FALSE;
                 url->hcur=CreateCursor(GetModuleHandle(NULL),5,0,32,32,curAND,curXOR);
                 SendMessage(hwnd,WM_SETFONT,(WPARAM)hfont,0);//modify current font
+                url->bkg = clr;
             }
         }
         if (url) { //init always

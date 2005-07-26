@@ -79,10 +79,12 @@ TemplateSet RTL_Default = { TRUE,
 TemplateSet LTR_Active, RTL_Active;
 
 extern struct CREOleCallback reOleCallback;
+extern BOOL cntHelpActive;
+
 extern HINSTANCE g_hInst;
 static int helpActive = 0;
 
-static BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /*
  * loads template set overrides from hContact into the given set of already existing
@@ -192,7 +194,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             SendDlgItemMessage(hwndDlg, IDC_COLOR4, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc4", SRMSGDEFSET_BKGCOLOUR));
             SendDlgItemMessage(hwndDlg, IDC_COLOR5, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc5", SRMSGDEFSET_BKGCOLOUR));
             SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
-            urlctrl_set(GetDlgItem(hwndDlg, IDC_VARIABLESHELP), _T("http://www.miranda.or.at/forums/index.php/topic,610.0.html"), &url_unvisited, &url_visited, 0);
+            urlctrl_set(GetDlgItem(hwndDlg, IDC_VARIABLESHELP), _T("http://www.miranda.or.at/forums/index.php/topic,610.0.html"), &url_unvisited, &url_visited, 0, -1);
             return TRUE;
         }
         case WM_COMMAND:
@@ -434,7 +436,7 @@ static char *var_helptxt[] = {
     NULL
 };
 
-static BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_INITDIALOG:
@@ -443,19 +445,45 @@ static BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, 
             char szHeader[2048];
             SETTEXTEX stx = {ST_SELECTION, CP_ACP};
             RECT rc;
+            char szBasename[_MAX_FNAME], szExt[_MAX_EXT];
             
             /*
              * send the help text
              */
 
-            mir_snprintf(szHeader, 256, var_helptxt[0], 40*15, 40*15, 40*15);
-            while(var_helptxt[i] != NULL) {
-                mir_snprintf(szHeader, 2040, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 60*15, 60*15, 5*15, 60*15, Translate(var_helptxt[i++]));
-                SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szHeader);
+            if(lParam == 0) {
+                mir_snprintf(szHeader, 256, var_helptxt[0], 40*15, 40*15, 40*15);
+                while(var_helptxt[i] != NULL) {
+                    mir_snprintf(szHeader, 2040, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 60*15, 60*15, 5*15, 60*15, Translate(var_helptxt[i++]));
+                    SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szHeader);
+                }
+            }
+            else {
+                HANDLE hFile;
+                DWORD size, actual_read;
+                BYTE *buffer = 0;
+                char final_path[MAX_PATH];
+                
+                CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)lParam, (LPARAM)final_path);
+                _splitpath(final_path, NULL, NULL, szBasename, szExt);
+                if((hFile = CreateFileA(final_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE ) {
+                    MessageBoxA(0, Translate("Failed to open help file"), "tabSRMM", MB_OK);
+                    DestroyWindow(hwndDlg);
+                    return FALSE;
+                }
+                size = GetFileSize(hFile, 0);
+                buffer = malloc(size + 10);
+                ReadFile(hFile, (void *)buffer, size, &actual_read, 0);
+                SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)buffer);
+                CloseHandle(hFile);
+                free(buffer);
             }
             GetWindowRect(hwndDlg, &rc);
             MoveWindow(hwndDlg, 0, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
-            SetWindowTextA(hwndDlg, Translate("Template editor help"));
+            if(lParam == 0)
+                SetWindowTextA(hwndDlg, Translate("Template editor help"));
+            else
+                SetWindowTextA(hwndDlg, szBasename);
             ShowWindow(hwndDlg, SW_SHOWNOACTIVATE);
             helpActive = 1;
             return TRUE;
@@ -466,6 +494,7 @@ static BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, 
             break;
         case WM_DESTROY:
             helpActive = 0;
+            cntHelpActive = FALSE;
             break;
     }
     return FALSE;

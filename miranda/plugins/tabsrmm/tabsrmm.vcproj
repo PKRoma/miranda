@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252" ?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
@@ -1134,6 +1134,8 @@
 			<File
 				RelativePath=".\docs\changelog.txt">
 			</File>
+			<File
+				RelativePath="docs\INSTALL"/>
 			<File
 				RelativePath="langpacks\langpack_tabsrmm_german.txt">
 			</File>

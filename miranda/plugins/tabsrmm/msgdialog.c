@@ -902,7 +902,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.right -= dat->pic.cx+2;
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             if(dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
-                urc->rcItem.left += 26;
+                urc->rcItem.left += 32;
             if(dat->bNotOnList) {
                 if(urc->rcItem.bottom - urc->rcItem.top > 48)
                     urc->rcItem.right -= 26;
@@ -1491,6 +1491,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     mir_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing..."), dat->szNickname);
                     SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) myGlobals.g_buttonBarIcons[5]);
+                    if(dat->pContainer->hwndSlist)
+                        SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[5]);
                     break;
                 }
                 if (dat->lastMessage || dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
@@ -2598,8 +2600,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                         if ((GetForegroundWindow() != dat->pContainer->hwnd) || (dat->pContainer->hwndStatus == 0)) {
                             SendMessage(dat->pContainer->hwnd, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) myGlobals.g_buttonBarIcons[5]);
-                            if(dat->pContainer->hwndSlist)
-                                SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[5]);
+                            //if(dat->pContainer->hwndSlist)
+                            //    SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[5]);
                         }
                         dat->showTyping = 1;
                     }
@@ -2764,32 +2766,38 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
          */
         case DM_QUERYLASTUNREAD:{
                 DWORD *pdw = (DWORD *)lParam;
-                *pdw = dat->dwTickLastEvent;
+                if(pdw)
+                    *pdw = dat->dwTickLastEvent;
                 return 0;
             }
         case DM_QUERYCONTAINER: {
                 struct ContainerWindowData **pc = (struct ContainerWindowData **) lParam;
-                *pc = dat->pContainer;
+                if(pc)
+                    *pc = dat->pContainer;
                 return 0;
             }
         case DM_QUERYCONTAINERHWND: {
                 HWND *pHwnd = (HWND *) lParam;
-                *pHwnd = dat->pContainer->hwnd;
+                if(pHwnd)
+                    *pHwnd = dat->pContainer->hwnd;
                 return 0;
             }
         case DM_QUERYHCONTACT: {
                 HANDLE *phContact = (HANDLE *) lParam;
-                *phContact = dat->hContact;
+                if(phContact)
+                    *phContact = dat->hContact;
                 return 0;
             }
         case DM_QUERYSTATUS: {
                 WORD *wStatus = (WORD *) lParam;
-                *wStatus = dat->bIsMeta ? dat->wMetaStatus : dat->wStatus;
+                if(wStatus)
+                    *wStatus = dat->bIsMeta ? dat->wMetaStatus : dat->wStatus;
                 return 0;
             }
         case DM_QUERYFLAGS: {
                 DWORD *dwFlags = (DWORD *) lParam;
-                *dwFlags = dat->dwFlags;
+                if(dwFlags)
+                    *dwFlags = dat->dwFlags;
                 return 0;        
             }
         case DM_CALCMINHEIGHT: {
@@ -2809,7 +2817,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_QUERYMINHEIGHT: {
                 UINT *puMinHeight = (UINT *) lParam;
 
-                *puMinHeight = dat->uMinHeight;
+                if(puMinHeight)
+                    *puMinHeight = dat->uMinHeight;
                 return 0;
             }
         case DM_SAVESIZE: {
@@ -3035,6 +3044,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
             break;
         }
+        case WM_HELP:
+            PostMessage(dat->pContainer->hwnd, WM_COMMAND, ID_HELP_MESSAGEWINDOWHELP, 0);
+            break;
         case WM_COMMAND:
             if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) dat->hContact))
                 break;
@@ -3601,9 +3613,9 @@ quote_from_last:
                     break;
                 }
                 case IDC_TOGGLETOOLBAR:
-                    if(GetKeyState(VK_SHIFT) & 0x8000) {
+                    if(lParam == 1) {
                         dat->pContainer->dwFlags ^= CNT_NOMENUBAR;
-                        SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
+                        SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 1);
                     }
                     else {
                         dat->pContainer->dwFlags ^= CNT_HIDETOOLBAR;
@@ -3943,6 +3955,9 @@ quote_from_last:
                                             break;
                                         case 16:
                                             PostMessage(hwndDlg, WM_COMMAND, IDC_PROTOMENU, (LPARAM)GetDlgItem(hwndDlg, IDC_PROTOMENU));
+                                            break;
+                                        case 20:
+                                            PostMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 1);
                                             break;
                                     }
                                     return 1;

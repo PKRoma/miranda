@@ -700,6 +700,51 @@ BEGIN
                     7,322,206,WS_EX_CLIENTEDGE
 END
 
+IDD_ABOUT DIALOGEX 0, 0, 228, 140
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
+    WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "About tabSRMM"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITERECT,0,0,228,116
+    DEFPUSHBUTTON   "OK",IDOK,168,123,55,14
+    LTEXT           "tabSRMM",IDC_TABSRMM,5,7,150,15
+    CTEXT           "Copyright © 2004-2005 by the Miranda IM project. More detailed copyright information can be found in the source code or the included README file.\n\nThis software is distributed and licensed under the terms of the GNU General Public License V2 or any later version.",
+                    IDC_COPYRIGHT,5,39,217,47
+    ICON            0,IDC_LOGO,201,2,20,20
+    LTEXT           "Version",IDC_VERSION,5,19,150,15
+    CTEXT           "build time",IDC_BUILDTIME,37,105,150,11
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,117,228,1
+    CTEXT           "Support and latest version information",IDC_SUPPORT,18,
+                    91,192,12
+END
+
+IDD_FIRSTTIME DIALOGEX 0, 0, 265, 201
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "tabSRMM first time configuration"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Apply",IDOK,154,180,50,14
+    PUSHBUTTON      "Skip",IDCANCEL,209,180,50,14
+    GROUPBOX        "Choose your message history appearance",IDC_STATIC,7,7,
+                    251,43
+    CONTROL         "Compact theme (classic message window look)",
+                    IDC_COMPACTTHEME,"Button",BS_AUTORADIOBUTTON,13,18,232,
+                    11
+    CONTROL         "Fancy theme, based on the ""Stone"" theme",
+                    IDC_FANCYTHEME,"Button",BS_AUTORADIOBUTTON,14,31,232,12
+    GROUPBOX        "Other message window options",IDC_STATIC,7,56,251,70
+    CONTROL         "Show avatars when present",IDC_SHOWAVATARS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,70,236,9
+    CONTROL         "Show the info panel in the message window",
+                    IDC_SHOWINFOPANEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    14,82,236,9
+    LTEXT           "This first time configuration dialog is primarily for users upgrading from earlier versions of tabSRMM or when installing tabSRMM on a fresh and clean Miranda profile.\nIf you are already running a version equal or later than 0.9.9.95, you can skip this. Hitting ""Apply"" will overwrite some of your settings.",
+                    IDC_STATIC,7,130,251,46
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -751,6 +796,22 @@ BEGIN
     BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 231
+    END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 195
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 96
+    END
+
+    IDD_FIRSTTIME, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 258
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 194
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1138,6 +1199,13 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Save current Window Position as Default", 40113
+    END
+    POPUP "Help"
+    BEGIN
+        MENUITEM "Help Contents",               ID_HELP_HELPCONTENTS, GRAYED
+        MENUITEM "Message Window Help...",      ID_HELP_MESSAGEWINDOWHELP
+        MENUITEM SEPARATOR
+        MENUITEM "About tabSRMM...",            ID_HELP_ABOUTTABSRMM
     END
 END
 

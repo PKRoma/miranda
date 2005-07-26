@@ -43,7 +43,7 @@ extern "C" {
 #define UCF_KBD         32 //keyboard support (tabbing,focus,space key)
 #define UCF_FIT         64 //automatic resizing
 
-    BOOL urlctrl_set(HWND,TCHAR *url,COLORREF *unvisited,COLORREF *visited,DWORD flags);
+    BOOL urlctrl_set(HWND,TCHAR *url,COLORREF *unvisited,COLORREF *visited,DWORD flags, COLORREF clr);
 
 
 // RESIZE URLCTRL TO FIT DISPLAY TEXT

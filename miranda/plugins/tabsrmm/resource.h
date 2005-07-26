@@ -8,6 +8,9 @@
 #define IDD_VARIABLEHELP                5
 #define IDB_BITMAP1                     6
 #define IDB_XSTATUS                     6
+#define IDD_DIALOG1                     7
+#define IDD_ABOUT                       7
+#define IDD_FIRSTTIME                   8
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
 #define IDM_CUT                         182
@@ -268,6 +271,7 @@
 #define IDC_DONTFLASH                   1206
 #define IDC_RADIO1                      1207
 #define IDC_LOGISGLOBAL                 1207
+#define IDC_COMPACTTHEME                1207
 #define IDC_O_FLASHDEFAULT              1208
 #define IDC_FLASHDEFAULT                1209
 #define IDC_DEFAULTCONTAINERMODE        1210
@@ -369,8 +373,10 @@
 #define IDC_FLATTABS                    1289
 #define IDC_FLASHICON                   1289
 #define IDC_USEPRIVATETITLE             1289
+#define IDC_SHOWAVATARS                 1289
 #define IDC_SYNCSOUNDS                  1290
 #define IDC_FLASHLABEL                  1290
+#define IDC_SHOWINFOPANEL               1290
 #define IDC_NOSKINNING                  1291
 #define IDC_AVADYNAMIC                  1292
 #define IDC_FLATTABS2                   1292
@@ -470,6 +476,14 @@
 #define IDC_DEFAULTTITLEFORMAT          1394
 #define IDC_CHECK3                      1395
 #define IDC_INFOPANEL                   1395
+#define IDC_SUPPORT                     1396
+#define IDC_FANCYTHEME                  1397
+#define IDC_WHITERECT                   2000
+#define IDC_TABSRMM                     2001
+#define IDC_COPYRIGHT                   2002
+#define IDC_LOGO                        2003
+#define IDC_VERSION                     2004
+#define IDC_BUILDTIME                   2005
 #define ID_CLOSETAB_DETACHTAB           40025
 #define ID_TABCONTEXT_NEXTTAB           40026
 #define ID_TABCONTEXT_ATTACH            40027
@@ -654,15 +668,18 @@
 #define ID_PANELPICMENU_RESETTHEAVATAR  40218
 #define ID_PANELPICMENU_DISABLEAUTOMATICAVATARUPDATES 40220
 #define ID_EDITOR_PASTEANDSENDIMMEDIATELY 40221
+#define ID_HELP_HELPCONTENTS            40222
+#define ID_HELP_ABOUTTABSRMM            40223
+#define ID_HELP_MESSAGEWINDOWHELP       40224
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        7
-#define _APS_NEXT_COMMAND_VALUE         40222
-#define _APS_NEXT_CONTROL_VALUE         1396
+#define _APS_NEXT_RESOURCE_VALUE        9
+#define _APS_NEXT_COMMAND_VALUE         40225
+#define _APS_NEXT_CONTROL_VALUE         1398
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

@@ -314,7 +314,7 @@ static struct LISTOPTIONSGROUP defaultGroups[] = {
 
 static struct LISTOPTIONSITEM defaultItems[] = {
     0, "Send on SHIFT - Enter", IDC_SENDONSHIFTENTER, LOI_TYPE_SETTING, (UINT_PTR)"sendonshiftenter", 1,
-    0, "Send message on 'Enter'", SRMSGDEFSET_SENDONENTER, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SENDONENTER, 0,
+    0, "Send message on 'Enter'", SRMSGDEFSET_SENDONENTER, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SENDONENTER, 1,
     0, "Minimize the message window on send", SRMSGDEFSET_AUTOMIN, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOMIN, 1,
     0, "Allow the toolbar to hide the send button", 1, LOI_TYPE_SETTING, (UINT_PTR)"hidesend", 1,
     0, "Flash contact list and tray icons for new events in unfocused windows", 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,

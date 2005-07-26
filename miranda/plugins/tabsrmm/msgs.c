@@ -105,6 +105,7 @@ void BuildCodePageList();
 int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto, struct MessageWindowData *dat);
 int FS_ReloadFonts(WPARAM wParam, LPARAM lParam);
 void FS_RegisterFonts();
+void FirstTimeConfig();
 
 /*
  * installed as a WH_GETMESSAGE hook in order to process unicode messages.
@@ -1137,6 +1138,7 @@ int LoadSendRecvMessageModule(void)
 
     LoadTSButtonModule();
     RegisterTabCtrlClass();
+    FirstTimeConfig();
     ReloadGlobals();
     GetDataDir();
     ReloadTabConfig();

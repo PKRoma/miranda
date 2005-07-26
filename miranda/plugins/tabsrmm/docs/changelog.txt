@@ -15,6 +15,24 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.98 - 2005/07/25
+
+        * several sanity checks added (pointers, window handles)
+        
+        ! status bar remembers typing notification state when switching tabs even with
+          the session list button active.
+          
+        + added about dialog
+
+        ! fixed small visual glitch with multisend indicator
+        
+        + hotkey: Ctrl-T -> toggle menu bar
+        
+        ! local avatars (load a local picture) can now use relative pathnames when the picture
+          you selected is located in a subdirectory of your miranda folder.
+          
+        + added 
+
 Version 0.9.9.97 - 2005/07/23
 
         ! extended status tooltip working with all (recent) ICQ.dll builds. 

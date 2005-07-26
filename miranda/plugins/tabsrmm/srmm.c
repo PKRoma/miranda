@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_popup.h"
 #include "msgs.h"
+#include "urlctrl.h"
 
 int LoadSendRecvMessageModule(void);
 int SplitmsgShutdown(void);
@@ -31,6 +32,7 @@ int LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int i, char *sz
 
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
+extern MYGLOBALS myGlobals;
 
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
@@ -161,4 +163,122 @@ int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, 
 
     LogErrorMessage(hwndDlg, dat, -1, debug);
     return 0;
+}
+
+BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    HICON hIcon;
+    COLORREF url_visited = RGB(128, 0, 128);
+    COLORREF url_unvisited = RGB(0, 0, 255);
+    
+    switch (msg)
+	{
+		case WM_INITDIALOG:
+			TranslateDialogDefault(hwndDlg);
+			{	int h;
+                HFONT hFont;
+				LOGFONT lf;
+                
+				hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_TABSRMM,WM_GETFONT,0,0);
+				GetObject(hFont,sizeof(lf),&lf);
+                h=lf.lfHeight;
+				lf.lfHeight=(int)(lf.lfHeight*1.5);
+				lf.lfWeight=FW_BOLD;
+				hFont=CreateFontIndirect(&lf);
+				SendDlgItemMessage(hwndDlg,IDC_TABSRMM,WM_SETFONT,(WPARAM)hFont,0);
+				lf.lfHeight=h;
+				hFont=CreateFontIndirect(&lf);
+				SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,(WPARAM)hFont,0);
+			}
+			{	char str[64];
+                DWORD v = pluginInfo.version;
+#if defined(_UNICODE)
+                mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d (Unicode)", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)));
+#else
+				mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)));
+#endif                
+				SetDlgItemTextA(hwndDlg,IDC_VERSION,str);
+				mir_snprintf(str,sizeof(str),Translate("Built %s %s"),__DATE__,__TIME__);
+				SetDlgItemTextA(hwndDlg,IDC_BUILDTIME,str);
+			}
+            hIcon = LoadIcon(GetModuleHandleA("miranda32.exe"), MAKEINTRESOURCE(102));
+            SendDlgItemMessage(hwndDlg, IDC_LOGO, STM_SETICON, (WPARAM)hIcon, 0);
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
+            urlctrl_set(GetDlgItem(hwndDlg, IDC_SUPPORT), _T("http://www.miranda.or.at/forums/index.php"), &url_unvisited, &url_visited, UCF_TXT_HCENTER, RGB(255, 255, 255));
+            DestroyIcon(hIcon);
+			return TRUE;
+		case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+				case IDOK:
+				case IDCANCEL:
+					DestroyWindow(hwndDlg);
+					return TRUE;
+			}
+			break;
+		case WM_CTLCOLOREDIT:
+		case WM_CTLCOLORSTATIC:
+			if((HWND)lParam==GetDlgItem(hwndDlg,IDC_WHITERECT)
+					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_TABSRMM)
+					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_VERSION)
+					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_BUILDTIME)
+                    || (HWND)lParam==GetDlgItem(hwndDlg,IDC_COPYRIGHT)
+                    || (HWND)lParam==GetDlgItem(hwndDlg,IDC_SUPPORT)
+					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_LOGO)) {
+                if((HWND)lParam==GetDlgItem(hwndDlg,IDC_TABSRMM))
+				    SetTextColor((HDC)wParam,RGB(180,10,10));
+                else if((HWND)lParam==GetDlgItem(hwndDlg,IDC_VERSION))
+				    SetTextColor((HDC)wParam,RGB(70,70,70));
+                else
+				    SetTextColor((HDC)wParam,RGB(0,0,0));
+				SetBkColor((HDC)wParam,RGB(255,255,255));
+				return (BOOL)GetStockObject(WHITE_BRUSH);
+			}
+			break;
+		case WM_DESTROY:
+			{	HFONT hFont;
+            
+				hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_TABSRMM,WM_GETFONT,0,0);
+				SendDlgItemMessage(hwndDlg,IDC_TABSRMM,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);
+				DeleteObject(hFont);				
+                hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_GETFONT,0,0);
+                SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);
+                DeleteObject(hFont);				
+			}
+			break;
+	}
+	return FALSE;
+}
+
+static BOOL CALLBACK DlgProcFirsttime(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg)
+	{
+		case WM_INITDIALOG:
+			TranslateDialogDefault(hwndDlg);
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
+            ShowWindow(hwndDlg, SW_SHOWNORMAL);
+			return TRUE;
+		case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+                case IDOK:
+                {
+                    DestroyWindow(hwndDlg);
+                    return TRUE;
+                }
+				case IDCANCEL:
+					DestroyWindow(hwndDlg);
+					return TRUE;
+			}
+			break;
+	}
+	return FALSE;
+}
+
+void FirstTimeConfig()
+{
+    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "firstrun", 0))
+        return;
+    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FIRSTTIME), 0, DlgProcFirsttime, 0);
 }
