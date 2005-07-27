@@ -54,10 +54,6 @@ void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const cha
 BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-#define FONTF_BOLD   1
-#define FONTF_ITALIC 2
-#define FONTF_UNDERLINE 4
-
 struct FontOptionsList
 {
     COLORREF defColour;

@@ -105,10 +105,10 @@ typedef struct {
 
 #define MWF_SHOW_URLEVENTS 1
 #define MWF_SHOW_FILEEVENTS 2
-//#define MWF_SHOW_INOUTICONS 4
-#define MWF_SHOW_EMPTYLINEFIX 8
-#define MWF_SHOW_MICROLF 16
-#define MWF_SHOW_MARKFOLLOWUPTS 32
+#define MWF_SHOW_PRIVATETHEME 4
+//#define MWF_SHOW_EMPTYLINEFIX 8
+//#define MWF_SHOW_MICROLF 16
+//#define MWF_SHOW_MARKFOLLOWUPTS 32
 #define MWF_SHOW_FLASHCLIST 64
 #define MWF_SHOW_SPLITTEROVERRIDE 128
 #define MWF_SHOW_SCROLLINGDISABLED 256
@@ -146,6 +146,27 @@ typedef struct {
 #define IPFIELD_EDGE 3
 #define IPFIELD_FLAT 4
 
+#define TEMPLATE_LENGTH 150
+#define CUSTOM_COLORS 5
+
+#define TEMPLATES_MODULE "tabSRMM_Templates"
+#define RTLTEMPLATES_MODULE "tabSRMM_RTLTemplates"
+
+#define TMPL_MSGIN 0
+#define TMPL_MSGOUT 1
+#define TMPL_GRPSTARTIN 2
+#define TMPL_GRPSTARTOUT 3
+#define TMPL_GRPINNERIN 4
+#define TMPL_GRPINNEROUT 5
+#define TMPL_STATUSCHG 6
+#define TMPL_ERRMSG 7
+
+typedef struct _tagTemplateSet {
+    BOOL valid;             // all templates populated (may still contain crap.. so it's only half-assed safety :)
+    TCHAR szTemplates[TMPL_ERRMSG + 1][TEMPLATE_LENGTH];      // the template strings
+    char szSetName[20];     // everything in this world needs a name. so does this poor template set.
+} TemplateSet;
+
 struct ContainerWindowData {
 	struct ContainerWindowData *pNextContainer;
 	TCHAR szName[CONTAINER_NAMELEN + 4];		// container name
@@ -179,6 +200,11 @@ struct ContainerWindowData {
     BOOL bSizingLoop;
     int sb_NrTopButtons, sb_NrBottomButtons, sb_FirstButton;
     TCHAR szTitleFormat[TITLE_FORMATLEN + 2];
+    char szThemeFile[MAX_PATH];
+    TemplateSet *ltr_templates, *rtl_templates;
+    LOGFONTA *logFonts;
+    COLORREF *fontColors;
+    char *rtfFonts;
 };
 
 #define STICK_ICON_MSG 10
@@ -207,26 +233,16 @@ struct MessageSessionStats {
     BOOL bWritten;
 };
 
-#define TEMPLATE_LENGTH 150
-#define CUSTOM_COLORS 5
-
-#define TEMPLATES_MODULE "tabSRMM_Templates"
-#define RTLTEMPLATES_MODULE "tabSRMM_RTLTemplates"
-
-#define TMPL_MSGIN 0
-#define TMPL_MSGOUT 1
-#define TMPL_GRPSTARTIN 2
-#define TMPL_GRPSTARTOUT 3
-#define TMPL_GRPINNERIN 4
-#define TMPL_GRPINNEROUT 5
-#define TMPL_STATUSCHG 6
-#define TMPL_ERRMSG 7
-
-typedef struct _tagTemplateSet {
-    BOOL valid;             // all templates populated (may still contain crap.. so it's only half-assed safety :)
-    TCHAR szTemplates[TMPL_ERRMSG + 1][TEMPLATE_LENGTH];      // the template strings
-    char szSetName[20];     // everything in this world needs a name. so does this poor template set.
-} TemplateSet;
+struct MessageWindowTheme {
+    COLORREF inbg, outbg, bg, inputbg;
+    COLORREF hgrid;
+    COLORREF custom_colors[5];
+    DWORD dwFlags;
+    DWORD left_indent, right_indent;
+    LOGFONTA *logFonts;
+    COLORREF *fontColors;
+    char *rtfFonts;
+};
 
 struct MessageWindowData {
 	HANDLE hContact, hSubContact;
@@ -315,6 +331,7 @@ struct MessageWindowData {
     BYTE xStatus;
     COLORREF inputbg;
     SIZE szLabel;
+    struct MessageWindowTheme theme;
 };
 
 typedef struct _recentinfo {

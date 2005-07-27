@@ -65,6 +65,9 @@ void LoadPanelHeight(HWND hwndDlg, struct MessageWindowData *dat);
 void LoadTimeZone(HWND hwndDlg, struct MessageWindowData *dat);
 void HandlePasteAndSend(HWND hwndDlg, struct MessageWindowData *dat);
 int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct MessageWindowData *dat);
+void LoadOverrideTheme(HWND hwndDlg, struct MessageWindowData *dat);
+void LoadThemeDefaults(HWND hwndDlg, struct MessageWindowData *dat);
+void SaveMessageLogFlags(HWND hwndDlg, struct MessageWindowData *dat);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

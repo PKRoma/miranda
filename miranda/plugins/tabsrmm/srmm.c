@@ -25,10 +25,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_popup.h"
 #include "msgs.h"
 #include "urlctrl.h"
+#include "m_ieview.h"
 
 int LoadSendRecvMessageModule(void);
 int SplitmsgShutdown(void);
 int LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int i, char *szMsg);
+int ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat);
 
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
@@ -49,7 +51,7 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(0, 9, 9, 97),
+    PLUGIN_MAKE_VERSION(0, 9, 9, 98),
     "Send and receive instant messages, using a split mode interface and tab containers.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
@@ -258,17 +260,40 @@ static BOOL CALLBACK DlgProcFirsttime(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			TranslateDialogDefault(hwndDlg);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
             ShowWindow(hwndDlg, SW_SHOWNORMAL);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_IEVEIW), ServiceExists(MS_IEVIEW_EVENT) ? TRUE : FALSE);
+            CheckDlgButton(hwndDlg, IDC_COMPACTTHEME, TRUE);
+            CheckDlgButton(hwndDlg, IDC_SHOWAVATARS, TRUE);
+            CheckDlgButton(hwndDlg, IDC_SHOWINFOPANEL, TRUE);
 			return TRUE;
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
                 case IDOK:
                 {
+                    char szFilename[MAX_PATH];
+                    HANDLE hFile;
+                    
+                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", IsDlgButtonChecked(hwndDlg, IDC_SHOWAVATARS) ? 3 : 4);
+                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", IsDlgButtonChecked(hwndDlg, IDC_IEVIEWMODE) ? 1 : 0);
+                    if(IsDlgButtonChecked(hwndDlg, IDC_COMPACTTHEME))
+                        CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)"plugins\\tabsrmm\\themes\\compact.tabsrmm", (LPARAM)szFilename);
+                    if(IsDlgButtonChecked(hwndDlg, IDC_FANCYTHEME))
+                        CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)"plugins\\tabsrmm\\themes\\fancy.tabsrmm", (LPARAM)szFilename);
+                    
+                    if((hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
+                        CloseHandle(hFile);
+                        ReadThemeFromINI(szFilename, 0);
+                        DBWriteContactSettingByte(NULL, SRMSGMOD_T, "firstrun", 1);
+                    }
+                    else
+                        MessageBoxA(0, "The selected theme was not installed, because the file couldn't be found.\nYou may want to reinstall tabSRMM", "tabSRMM", MB_OK | MB_ICONEXCLAMATION);
+                    
                     DestroyWindow(hwndDlg);
                     return TRUE;
                 }
 				case IDCANCEL:
 					DestroyWindow(hwndDlg);
+                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "firstrun", 1);
 					return TRUE;
 			}
 			break;

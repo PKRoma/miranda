@@ -54,8 +54,6 @@ $Id$
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
 extern TemplateSet RTL_Active, LTR_Active;
-extern LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
-extern COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
 extern HANDLE hMessageWindowList;
 extern struct CREOleCallback reOleCallback;
 extern HINSTANCE g_hInst;
@@ -1187,7 +1185,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->dwEventIsShown = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwEventIsShown | MWF_SHOW_INFOPANEL : dat->dwEventIsShown & ~MWF_SHOW_INFOPANEL;
                 dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
                 SetMessageLog(hwndDlg, dat);
-
+                LoadOverrideTheme(hwndDlg, dat);
                 if(dat->hContact) {
                     dat->codePage = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
                     dat->dwFlags |= (myGlobals.m_RTLDefault == 0 ? (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) ? MWF_LOG_RTL : 0) : (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1) ? MWF_LOG_RTL : 0));
@@ -1604,6 +1602,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
             }
 
+            if(!(dat->dwFlags & MWF_SHOW_PRIVATETHEME))
+                LoadThemeDefaults(hwndDlg, dat);
+            
             if(dat->hContact) {
                 dat->dwIsFavoritOrRecent = MAKELONG((WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0), (WORD)DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "isRecent", 0));
                 LoadTimeZone(hwndDlg, dat);
@@ -1612,16 +1613,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if(dat->hContact && dat->szProto != NULL && dat->bIsMeta) {
                 DWORD dwForcedContactNum = 0;
                 CallService(MS_MC_GETFORCESTATE, (WPARAM)dat->hContact, (LPARAM)&dwForcedContactNum);
-                DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", dwForcedContactNum);
+                DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabSRMM_forced", dwForcedContactNum);
             }
 
             dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
             
             dat->dwEventIsShown = DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_SHOWURLS, SRMSGDEFSET_SHOWURLS) ? MWF_SHOW_URLEVENTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_SHOWFILES, SRMSGDEFSET_SHOWFILES) ? MWF_SHOW_FILEEVENTS : 0;
-            dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "emptylinefix", 1) ? MWF_SHOW_EMPTYLINEFIX : 0;
-            dat->dwEventIsShown |= MWF_SHOW_MICROLF;
-            dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "followupts", 1) ? MWF_SHOW_MARKFOLLOWUPTS : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "log_bbcode", 1) ? MWF_SHOW_BBCODE : 0;
             dat->dwEventIsShown |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0) ? MWF_SHOW_USELOCALTIME : 0;
@@ -1658,7 +1656,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 int logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
                 ReleaseDC(NULL, hdc);
 
-                dat->inputbg = DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
+                dat->inputbg = dat->theme.inputbg;
                 if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
                     szStreamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS|SFF_PLAINRTF|SF_USECODEPAGE));
 
@@ -1666,8 +1664,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->hInputBkgBrush = CreateSolidBrush(dat->inputbg);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETBKGNDCOLOR, 0, dat->inputbg);
-                lf = logfonts[MSGFONTID_MESSAGEAREA];
-                inputcharcolor = fontcolors[MSGFONTID_MESSAGEAREA];
+                lf = dat->theme.logFonts[MSGFONTID_MESSAGEAREA];
+                inputcharcolor = dat->theme.fontColors[MSGFONTID_MESSAGEAREA];
                 /*
                  * correct the input area text color to avoid a color from the table of usable bbcode colors
                  */
@@ -3019,7 +3017,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             {	
                 if((HWND)lParam != GetDlgItem(hwndDlg,IDC_NOTES)) 
                     break;
-                SetTextColor((HDC)wParam, fontcolors[MSGFONTID_MESSAGEAREA]);
+                if(dat->theme.fontColors != NULL)
+                    SetTextColor((HDC)wParam, dat->theme.fontColors[MSGFONTID_MESSAGEAREA]);
                 SetBkColor((HDC)wParam, dat->inputbg);
                 return (BOOL)dat->hInputBkgBrush;
             }
@@ -3473,7 +3472,7 @@ quote_from_last:
                     if(dat->dwFlags != dwOldFlags || dat->dwEventIsShown != dwOldEventIsShown) {
                         if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0)) {
                             WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-                            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
+                            SaveMessageLogFlags(hwndDlg, dat);
                         }
                         else
                             SendMessage(hwndDlg, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, 0);
@@ -4368,13 +4367,13 @@ quote_from_last:
                     if(iSelection < 1000 && iSelection >= 100) {         // the "force" submenu...
                         if(iSelection == 999) {                           // un-force
                             if(CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)dat->hContact, 0) == 0)
-                                DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
+                                DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabSRMM_forced", -1);
                             else
                                 _DebugMessage(hwndDlg, dat, Translate("Unforce failed"));
                         }
                         else {
                             if(CallService(MS_MC_FORCESENDCONTACTNUM, (WPARAM)dat->hContact,  (LPARAM)(iSelection - 100)) == 0)
-                                DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", (DWORD)(iSelection - 100));
+                                DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabSRMM_forced", (DWORD)(iSelection - 100));
                             else
                                 _DebugMessage(hwndDlg, dat, Translate("The selected protocol cannot be forced at this time"));
                         }
@@ -4832,13 +4831,13 @@ verify:
         {
             DWORD isForced;
             char *szProto;
-            if((isForced = DBGetContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1)) >= 0) {
+            if((isForced = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabSRMM_forced", -1)) >= 0) {
                 char szTemp[64];
                 mir_snprintf(szTemp, sizeof(szTemp), "Status%d", isForced);
                 if(DBGetContactSettingWord(dat->hContact, "MetaContacts", szTemp, 0) == ID_STATUS_OFFLINE) {
                     _DebugPopup(dat->hContact, Translate("MetaContact: The enforced protocol (%d) is now offline.\nReverting to default protocol selection."), isForced);
                     CallService(MS_MC_UNFORCESENDCONTACT, (WPARAM)dat->hContact, 0);
-                    DBWriteContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
+                    DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabSRMM_forced", -1);
                 }
             }
             szProto = GetCurrentMetaContactProto(hwndDlg, dat);
@@ -5079,11 +5078,6 @@ verify:
                 dat->stats.bWritten = TRUE;
             }
 
-            if(dat->ltr_templates != (TemplateSet *)&LTR_Active)
-                free(dat->ltr_templates);
-            if(dat->rtl_templates != (TemplateSet *)&RTL_Active)
-                free(dat->rtl_templates);
-            
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);

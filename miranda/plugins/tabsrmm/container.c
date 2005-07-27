@@ -1356,6 +1356,9 @@ panel_found:
 			char szCname[40];
             int overridePerContact = 1;
             TCHAR *szTitleFormat = NULL;
+            char *szThemeName = NULL;
+            DBVARIANT dbv = {0};
+            
 #if defined (_UNICODE)
             char *szSetting = "CNTW_";
 #else
@@ -1368,6 +1371,10 @@ panel_found:
                 dwLocalTrans = DBGetContactSettingDword(pContainer->hContactFrom, SRMSGMOD_T, szCname, 0xffffffff);
                 mir_snprintf(szCname, 40, "%s_titleformat", szSetting);
                 szTitleFormat = MY_DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
+                pContainer->szThemeFile[0] = 0;
+                mir_snprintf(szCname, 40, "%s_theme", szSetting);
+                if(!DBGetContactSetting(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv))
+                    szThemeName = dbv.pszVal;
                 if(dwLocalFlags == 0xffffffff || dwLocalTrans == 0xffffffff)
                     overridePerContact = 1;
                 else
@@ -1381,6 +1388,11 @@ panel_found:
                 if(szTitleFormat == NULL) {
                     mir_snprintf(szCname, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
                     szTitleFormat = MY_DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
+                }
+                if(szThemeName == NULL) {
+                    mir_snprintf(szCname, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
+                    if(!DBGetContactSetting(NULL, SRMSGMOD_T, szCname, &dbv))
+                        szThemeName = dbv.pszVal;
                 }
             }
 			if (dwLocalFlags == 0xffffffff) {
@@ -1416,7 +1428,22 @@ panel_found:
             pContainer->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
             if(szTitleFormat != NULL)
                 free(szTitleFormat);
-            
+
+            if(szThemeName != NULL) {
+                char szNewPath[MAX_PATH];
+
+                CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szThemeName, (LPARAM)szNewPath);
+                mir_snprintf(pContainer->szThemeFile, MAX_PATH, "%s", szNewPath);
+                DBFreeVariant(&dbv);
+            }
+            else 
+                pContainer->szThemeFile[0] = 0;
+
+            pContainer->ltr_templates = pContainer->rtl_templates = 0;
+            pContainer->logFonts = 0;
+            pContainer->fontColors = 0;
+            pContainer->rtfFonts = 0;
+            // container theme
             break;
 		}
         case DM_STATUSBARCHANGED:
@@ -1727,6 +1754,19 @@ panel_found:
                     SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)OldStatusBarproc);
                     DestroyWindow(pContainer->hwndStatus);
                 }
+
+                // free private theme...
+                if(pContainer->ltr_templates)
+                    free(pContainer->ltr_templates);
+                if(pContainer->rtl_templates)
+                    free(pContainer->rtl_templates);
+                if(pContainer->logFonts)
+                    free(pContainer->logFonts);
+                if(pContainer->fontColors)
+                    free(pContainer->fontColors);
+                if(pContainer->rtfFonts)
+                    free(pContainer->rtfFonts);
+                
                 if(pContainer->hMenu)
                     DestroyMenu(pContainer->hMenu);
     			DestroyWindow(pContainer->hwndTip);
@@ -1811,6 +1851,17 @@ panel_found:
                             DBWriteContactSettingDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
                             _snprintf(szCName, 40, "%s_Trans", szSetting);
                             DBWriteContactSettingDword(hContact, SRMSGMOD_T, szCName, pContainer->dwTransparency);
+
+                            mir_snprintf(szCName, 40, "%s_theme", szSetting);
+                            if(lstrlenA(pContainer->szThemeFile) > 1) {
+                                char szNewPath[MAX_PATH];
+
+                                CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)pContainer->szThemeFile, (LPARAM)szNewPath);
+                                DBWriteContactSettingString(hContact, SRMSGMOD_T, szCName, szNewPath);
+                            }
+                            else
+                                DBDeleteContactSetting(hContact, SRMSGMOD_T, szCName);
+                            
                             if(pContainer->dwFlags & CNT_TITLE_PRIVATE) {
                                 char *szTitleFormat = NULL;
                                 mir_snprintf(szCName, 40, "%s_titleformat", szSetting);
@@ -1844,6 +1895,15 @@ panel_found:
                         DBWriteContactSettingString(NULL, SRMSGMOD_T, szCName, szTitleFormat);
 #endif
                     }
+                    mir_snprintf(szCName, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
+                    if(lstrlenA(pContainer->szThemeFile) > 1) {
+                        char szNewPath[MAX_PATH];
+
+                        CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)pContainer->szThemeFile, (LPARAM)szNewPath);
+                        DBWriteContactSettingString(NULL, SRMSGMOD_T, szCName, szNewPath);
+                    }
+                    else
+                        DBDeleteContactSetting(NULL, SRMSGMOD_T, szCName);
                 }
                 DestroyWindow(hwndDlg);
                 break;
@@ -2485,7 +2545,7 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
     iDefaultProtoByNum = (int)CallService(MS_MC_GETDEFAULTCONTACTNUM, (WPARAM)dat->hContact, 0);
     hContactMostOnline = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
     szProtoMostOnline = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContactMostOnline, 0);
-    isForced = DBGetContactSettingDword(dat->hContact, "MetaContacts", "tabSRMM_forced", -1);
+    isForced = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabSRMM_forced", -1);
     
     for(i = 0; i < iNumProtos; i++) {
         mir_snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);

@@ -209,7 +209,7 @@ BEGIN
     LTEXT           "Timezone offset",IDC_STATIC,8,251,112,9
 END
 
-IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 281, 288
+IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 281, 324
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "   "
@@ -256,7 +256,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,156,140,111,10
     CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,156,152,105,11
-    GROUPBOX        "Titlebar options",IDC_STATIC,7,149,138,65
+    GROUPBOX        "Titlebar options",IDC_STATIC,7,149,138,71
     CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,161,111,10
     CONTROL         "Use static container Icon",IDC_STATICICON,"Button",
@@ -264,25 +264,30 @@ BEGIN
     CONTROL         "Use private title format",IDC_USEPRIVATETITLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,185,115,9
     EDITTEXT        IDC_TITLEFORMAT,14,198,123,13,ES_AUTOHSCROLL
-    GROUPBOX        "Container size and position",IDC_STATIC,151,171,123,55
+    GROUPBOX        "Container size and position",IDC_STATIC,151,171,123,48
     CONTROL         "Use global",IDC_USEGLOBALSIZE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,158,184,109,9
     PUSHBUTTON      "Save current as global",IDC_SAVESIZEASGLOBAL,158,199,
                     109,14
-    GROUPBOX        "Container transparency",IDC_STATIC,7,225,267,36
+    GROUPBOX        "Container transparency",IDC_STATIC,7,259,267,36
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,236,101,11
-    LTEXT           "active",IDC_STATIC,125,237,26,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,270,101,11
+    LTEXT           "active",IDC_STATIC,125,271,26,11
     CONTROL         "",IDC_TRANSPARENCY_ACTIVE,"msctls_trackbar32",TBS_BOTH | 
-                    WS_TABSTOP,153,233,95,11
-    LTEXT           "Statisch",IDC_TLABEL_ACTIVE,248,237,19,9
-    LTEXT           "inactive",IDC_STATIC,125,250,28,9
+                    WS_TABSTOP,153,267,95,11
+    LTEXT           "Statisch",IDC_TLABEL_ACTIVE,248,271,19,9
+    LTEXT           "inactive",IDC_STATIC,125,284,28,9
     CONTROL         "",IDC_TRANSPARENCY_INACTIVE,"msctls_trackbar32",
-                    TBS_BOTH | WS_TABSTOP,153,246,95,11
-    LTEXT           "Statisch",IDC_TLABEL_INACTIVE,248,250,19,9
-    DEFPUSHBUTTON   "OK",IDOK,114,267,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,169,267,50,14
-    PUSHBUTTON      "Apply",IDC_APPLY,225,267,50,14,WS_DISABLED
+                    TBS_BOTH | WS_TABSTOP,153,280,95,11
+    LTEXT           "Statisch",IDC_TLABEL_INACTIVE,248,284,19,9
+    DEFPUSHBUTTON   "OK",IDOK,114,303,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,169,303,50,14
+    PUSHBUTTON      "Apply",IDC_APPLY,225,303,50,14,WS_DISABLED
+    GROUPBOX        "Message window theme",IDC_STATIC,7,224,267,34
+    EDITTEXT        IDC_THEME,14,235,123,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_SELECTTHEME,147,235,27,13
+    LTEXT           "Leave this field empty to use the global theme.",
+                    IDC_STATIC,181,231,90,21
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
@@ -710,7 +715,7 @@ BEGIN
     LTEXT           "",IDC_WHITERECT,0,0,228,116
     DEFPUSHBUTTON   "OK",IDOK,168,123,55,14
     LTEXT           "tabSRMM",IDC_TABSRMM,5,7,150,15
-    CTEXT           "Copyright © 2004-2005 by the Miranda IM project. More detailed copyright information can be found in the source code or the included README file.\n\nThis software is distributed and licensed under the terms of the GNU General Public License V2 or any later version.",
+    CTEXT           "Copyright © 2004-2005 by the Miranda IM project. More detailed copyright information can be found or the included README file.\n\nThis software is distributed and licensed under the terms of the GNU General Public License V2 or any later version.",
                     IDC_COPYRIGHT,5,39,217,47
     ICON            0,IDC_LOGO,201,2,20,20
     LTEXT           "Version",IDC_VERSION,5,19,150,15
@@ -738,11 +743,16 @@ BEGIN
     GROUPBOX        "Other message window options",IDC_STATIC,7,56,251,70
     CONTROL         "Show avatars when present",IDC_SHOWAVATARS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,70,236,9
-    CONTROL         "Show the info panel in the message window",
+    CONTROL         "Show the info panel in the message window.",
                     IDC_SHOWINFOPANEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     14,82,236,9
-    LTEXT           "This first time configuration dialog is primarily for users upgrading from earlier versions of tabSRMM or when installing tabSRMM on a fresh and clean Miranda profile.\nIf you are already running a version equal or later than 0.9.9.95, you can skip this. Hitting ""Apply"" will overwrite some of your settings.",
+    LTEXT           "This step is primarily for users upgrading from earlier versions or installing tabSRMM on a fresh Miranda profile.\nIf you are already running a version equal or later than 0.9.9.95, you can skip this. ""Apply"" will overwrite some of your settings.",
                     IDC_STATIC,7,130,251,46
+    CONTROL         "By default, use IEView as message log viewer.",
+                    IDC_IEVEIW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,94,
+                    233,9
+    LTEXT           " This option is disabled, if IEView is not installed.",
+                    IDC_STATIC,24,103,218,10
 END
 
 
@@ -777,7 +787,7 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 274
-        BOTTOMMARGIN, 281
+        BOTTOMMARGIN, 317
     END
 
     IDD_TEMPLATEEDIT, DIALOG
@@ -1216,8 +1226,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,97
- PRODUCTVERSION 0,9,9,97
+ FILEVERSION 0,9,9,98
+ PRODUCTVERSION 0,9,9,98
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -1234,14 +1244,14 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Miranda Open Source Project"
             VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
-            VALUE "FileVersion", "0, 9, 9, 97"
+            VALUE "FileVersion", "0, 9, 9, 98"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright © 2005 The Miranda IM project"
             VALUE "LegalTrademarks", "Gnu General Public License V2"
             VALUE "OriginalFilename", "tabSRMM.dll"
             VALUE "PrivateBuild", "No"
             VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
-            VALUE "ProductVersion", "0, 9, 9, 97"
+            VALUE "ProductVersion", "0, 9, 9, 98"
             VALUE "SpecialBuild", "FC2"
         END
     END

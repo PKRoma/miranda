@@ -32,6 +32,7 @@ $Id$
 int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
 extern struct ContainerWindowData *pFirstContainer;
 extern MYGLOBALS myGlobals;
+char *GetThemeFileName(int iMode);
 
 void ReloadGlobalContainerSettings()
 {
@@ -100,6 +101,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
                 SendDlgItemMessage(hwndDlg, IDC_TITLEFORMAT, EM_LIMITTEXT, TITLE_FORMATLEN - 1, 0);
                 SetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->szTitleFormat);
+                SetDlgItemTextA(hwndDlg, IDC_THEME, pContainer->szThemeFile);
 				return TRUE;
             }
 
@@ -145,6 +147,17 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                         return TRUE;
                     EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
                     break;
+                case IDC_SELECTTHEME:
+                    {
+                        char *szFileName = GetThemeFileName(0);
+                        HANDLE hFile;
+
+                        if((hFile = CreateFileA(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
+                            CloseHandle(hFile);
+                            SetDlgItemTextA(hwndDlg, IDC_THEME, szFileName);
+                        }
+                        break;
+                    }
 				case IDOK:
 				case IDC_APPLY:
                     {
@@ -177,6 +190,20 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                         else
                             _tcsncpy(pContainer->szTitleFormat, myGlobals.szDefaultTitleFormat, TITLE_FORMATLEN);
 
+                        pContainer->szThemeFile[0] = 0;
+                        
+                        if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_THEME)) > 0) {
+                            char szFilename[MAX_PATH];
+                            HANDLE hFile;
+
+                            GetDlgItemTextA(hwndDlg, IDC_THEME, szFilename, MAX_PATH);
+                            szFilename[MAX_PATH - 1] = 0;
+                            if((hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
+                                CloseHandle(hFile);
+                                mir_snprintf(pContainer->szThemeFile, MAX_PATH, "%s", szFilename);
+                            }
+                        }
+                            
                         if(!IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE))
                             ReloadGlobalContainerSettings();
                         else {
@@ -188,6 +215,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 							DestroyWindow(hwndDlg);
                         else
                             EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), FALSE);
+
 						break;
                     }
                 case IDCANCEL:

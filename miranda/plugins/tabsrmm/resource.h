@@ -246,6 +246,7 @@
 #define IDC_PRIVATESPLITTER             1182
 #define IDC_ALWAYSFIXED                 1182
 #define IDC_CNTPRIVATE                  1182
+#define IDC_IEVEIW                      1182
 #define IDC_NEWSPLITLAYOUT              1183
 #define IDC_O_NOTABS                    1184
 #define IDC_DONTREPORTUNFOCUSED         1185
@@ -452,6 +453,7 @@
 #define IDC_BACKGROUNDIMAGE             1375
 #define IDC_BUTTON2                     1376
 #define IDC_GETBGIMAGE                  1376
+#define IDC_SELECTTHEME                 1376
 #define IDC_LOGOPTIONS                  1377
 #define IDC_WINDOWOPTIONS               1378
 #define IDC_TRAYCONTAINER               1379
@@ -474,6 +476,7 @@
 #define IDC_TITLEFORMAT                 1393
 #define IDC_EDIT1                       1394
 #define IDC_DEFAULTTITLEFORMAT          1394
+#define IDC_THEME                       1394
 #define IDC_CHECK3                      1395
 #define IDC_INFOPANEL                   1395
 #define IDC_SUPPORT                     1396
@@ -512,7 +515,6 @@
 #define ID_LOGMENU_SHOWNICKNAME         40055
 #define ID_LOGMENU_SHOWMESSAGEICONS     40056
 #define ID_LOGMENU_LOADDEFAULTS         40057
-#define ID_LOGMENU_SAVETHESESETTINGSASDEFAULTVALUES 40058
 #define ID_LOGMENU_ALWAYSUSEGLOBALSPLITTERPOSITION 40060
 #define ID_LOGMENU_TIMESTAMPSETTINGS    40061
 #define ID_LOGMENU_MESSAGELOGFORMATTING 40062

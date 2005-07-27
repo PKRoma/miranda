@@ -52,12 +52,15 @@ extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
 extern LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
 extern COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
+extern TemplateSet LTR_Active, RTL_Active;
 
 extern HMODULE g_hInst;
 extern HANDLE hMessageWindowList;
 void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
 
-void WriteThemeToINI(const char *szIniFilename), ReadThemeFromINI(const char *szIniFilename);
+void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat), ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat);
+int CheckThemeVersion(const char *szIniFilename);
+
 char *GetThemeFileName(int iMode);
 void CacheMsgLogIcons(), CacheLogFonts();
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
@@ -430,10 +433,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES:
                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", iLogStatus ? 0 : -1);
                 return 1;
-            case ID_LOGMENU_SAVETHESESETTINGSASDEFAULTVALUES:
-                DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
-                WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-                return 1;
             case ID_MESSAGELOGFORMATTING_SHOWGRID:
                 dat->dwFlags ^= MWF_LOG_GRID;
                 if(dat->dwFlags & MWF_LOG_GRID)
@@ -454,14 +453,14 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 {
                     char *szFilename = GetThemeFileName(1);
                     if(szFilename != NULL)
-                        WriteThemeToINI(szFilename);
+                        WriteThemeToINI(szFilename, dat);
                     return 1;
                 }
             case ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS:
                 {
                     char *szFilename = GetThemeFileName(0);
                     if(szFilename != NULL) {
-                        ReadThemeFromINI(szFilename);
+                        ReadThemeFromINI(szFilename, 0);
                         CacheMsgLogIcons();
                         CacheLogFonts();
                         WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
@@ -995,8 +994,11 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
      * font
      */
 
-    lf = logfonts[MSGFONTID_MESSAGEAREA];
-    color = fontcolors[MSGFONTID_MESSAGEAREA];
+    //lf = logfonts[MSGFONTID_MESSAGEAREA];
+    //color = fontcolors[MSGFONTID_MESSAGEAREA];
+
+    lf = dat->theme.logFonts[MSGFONTID_MESSAGEAREA];
+    color = dat->theme.fontColors[MSGFONTID_MESSAGEAREA];
     
 	// create an index of colors in the module and map them to
 	// corresponding colors in the RTF color table
@@ -2075,4 +2077,93 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         return TRUE;
     }
     return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
+}
+
+void LoadThemeDefaults(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    int i;
+    char szTemp[40];
+    COLORREF colour;
+    
+    dat->theme.inbg = myGlobals.crIncoming;
+    dat->theme.outbg = myGlobals.crOutgoing;
+    dat->theme.bg = myGlobals.crDefault;
+    dat->theme.hgrid = DBGetContactSettingDword(NULL, FONTMODULE, "hgrid", RGB(224,224,224));
+    dat->theme.left_indent = DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0) * 15;
+    dat->theme.right_indent = DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0) * 15;
+    dat->theme.inputbg = DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
+    
+    for(i = 1; i <= 5; i++) {
+        _snprintf(szTemp, 10, "cc%d", i);
+        colour = DBGetContactSettingDword(NULL, SRMSGMOD_T, szTemp, RGB(224,224,224));
+        if(colour == 0)
+            colour = RGB(1,1,1);
+        dat->theme.custom_colors[i - 1] = colour;
+    }
+    dat->theme.logFonts = logfonts;
+    dat->theme.fontColors = fontcolors;
+    dat->theme.rtfFonts = NULL;
+}
+
+void LoadOverrideTheme(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    BOOL bReadTemplates = ((dat->pContainer->ltr_templates == NULL) || (dat->pContainer->rtl_templates == NULL) ||
+                           (dat->pContainer->logFonts == NULL) || (dat->pContainer->fontColors == NULL));
+    
+    if(lstrlenA(dat->pContainer->szThemeFile) > 1) {
+        HANDLE hFile;
+        if((hFile = CreateFileA(dat->pContainer->szThemeFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
+            CloseHandle(hFile);
+            if(CheckThemeVersion(dat->pContainer->szThemeFile) == 0) {
+                _DebugPopup(0, "%s is an incompatible theme.", dat->pContainer->szThemeFile);
+                LoadThemeDefaults(hwndDlg, dat);
+                return;
+            }
+            if(dat->pContainer->ltr_templates == NULL) {
+                dat->pContainer->ltr_templates = (TemplateSet *)malloc(sizeof(TemplateSet));
+                CopyMemory(dat->ltr_templates, &LTR_Active, sizeof(TemplateSet));
+            }
+            if(dat->pContainer->rtl_templates == NULL) {
+                dat->pContainer->rtl_templates = (TemplateSet *)malloc(sizeof(TemplateSet));
+                CopyMemory(dat->rtl_templates, &RTL_Active, sizeof(TemplateSet));
+            }
+            
+            if(dat->pContainer->logFonts == NULL)
+                dat->pContainer->logFonts = malloc(sizeof(LOGFONTA) * (MSGDLGFONTCOUNT + 2));
+            if(dat->pContainer->fontColors == NULL)
+                dat->pContainer->fontColors = malloc(sizeof(COLORREF) * (MSGDLGFONTCOUNT + 2));
+            if(dat->pContainer->rtfFonts == NULL)
+                dat->pContainer->rtfFonts = malloc((MSGDLGFONTCOUNT + 2) * RTFCACHELINESIZE);
+            
+            dat->ltr_templates = dat->pContainer->ltr_templates;
+            dat->rtl_templates = dat->pContainer->rtl_templates;
+            dat->theme.logFonts = dat->pContainer->logFonts;
+            dat->theme.fontColors = dat->pContainer->fontColors;
+            dat->theme.rtfFonts = dat->pContainer->rtfFonts;
+            if(bReadTemplates)
+                ReadThemeFromINI(dat->pContainer->szThemeFile, dat);
+            dat->dwFlags = dat->theme.dwFlags;
+            dat->theme.left_indent *= 15;
+            dat->theme.right_indent *= 15;
+            dat->dwFlags |= MWF_SHOW_PRIVATETHEME;
+            return;
+        }
+    }
+    LoadThemeDefaults(hwndDlg, dat);
+}
+
+void SaveMessageLogFlags(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    char szBuf[100];
+    
+    if(!(dat->dwFlags & MWF_SHOW_PRIVATETHEME))
+        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
+    else {
+        HANDLE hFile;
+
+        if((hFile = CreateFileA(dat->pContainer->szThemeFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
+            CloseHandle(hFile);
+            WritePrivateProfileStringA("Message Log", "DWFlags", _itoa(dat->dwFlags & MWF_LOG_ALL, szBuf, 10), dat->pContainer->szThemeFile);
+        }
+    }
 }

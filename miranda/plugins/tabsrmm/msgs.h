@@ -499,4 +499,9 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 }
 #endif
 
+#define FONTF_BOLD   1
+#define FONTF_ITALIC 2
+#define FONTF_UNDERLINE 4
+
+#define RTFCACHELINESIZE 128
 
