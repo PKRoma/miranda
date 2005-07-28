@@ -467,7 +467,7 @@
 #define COOKIE_TIMEOUT              3600 // One hour
 #define WEBFRONTPORT                0x50
 #define CLIENTFEATURES              0x3
-#define URL_FORGOT_PASSWORD         "https://web.icq.com/secure/password"
+#define URL_FORGOT_PASSWORD         "https://www.icq.com/password/"
 #define URL_REGISTER                "http://lite.icq.com/register"
 #define FLAP_MARKER                 0x2a
 #define CLIENT_ID_STRING            "ICQBasic"
