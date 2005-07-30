@@ -162,15 +162,15 @@ CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Message log settings",IDC_STATIC,2,3,274,40
-    CONTROL         "Global",IDC_LOGISGLOBAL,"Button",BS_AUTORADIOBUTTON,9,
-                    14,59,11
-    LTEXT           "When set to ""Local"", current global settings are inherited for this user. Future changes of message log related options will then be private.",
-                    IDC_STATIC,73,13,196,24
+    CONTROL         "Global",IDC_LOGISGLOBAL,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,9,14,59,11
     CONTROL         "Local",IDC_LOGISPRIVATE,"Button",BS_AUTORADIOBUTTON,9,
                     27,61,11
+    LTEXT           "When set to ""Local"", current global settings are inherited for this user. Future changes of message log related options will then be private.",
+                    IDC_STATIC,73,13,196,24
     GROUPBOX        "Message log view mode",IDC_STATIC,2,44,274,33
     COMBOBOX        IDC_IEVIEWMODE,6,58,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+                    WS_GROUP | WS_TABSTOP
     LTEXT           "Global mode can be set on the message log options page. This option is only available when IEView is installed.",
                     IDC_STATIC,130,50,141,24
     GROUPBOX        "Send text formatting method",IDC_STATIC,2,78,274,33

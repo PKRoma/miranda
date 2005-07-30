@@ -1259,7 +1259,7 @@ int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
         return 0;
     dbei.pBlob = (PBYTE) malloc(dbei.cbBlob);
     CallService(MS_DB_EVENT_GET, (WPARAM) lParam, (LPARAM) & dbei);
-    szPreview = GetPreview(eventType, dbei.pBlob);
+    szPreview = GetPreview(eventType, (char *)dbei.pBlob);
     nickName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)wParam, 0);
     if(nickName) {
         if(lstrlenA(nickName) >= 30)
@@ -1306,11 +1306,11 @@ nounicode:
         wcsncpy(nim.szInfo, msg, 256);
         nim.szInfo[255] = 0;
 #else
-        if(lstrlenA(dbei.pBlob) >= iPreviewLimit) {
-            strncpy(&dbei.pBlob[iPreviewLimit - 3], "...", 3);
+        if(lstrlenA((char *)dbei.pBlob) >= iPreviewLimit) {
+            strncpy((char *)&dbei.pBlob[iPreviewLimit - 3], "...", 3);
             dbei.pBlob[iPreviewLimit] = 0;
         }
-        strncpy(nim.szInfo, dbei.pBlob, 256);
+        strncpy(nim.szInfo, (char *)dbei.pBlob, 256);
         nim.szInfo[255] = 0;
 #endif        
     }

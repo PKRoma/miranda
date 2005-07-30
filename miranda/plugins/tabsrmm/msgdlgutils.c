@@ -58,7 +58,7 @@ extern HMODULE g_hInst;
 extern HANDLE hMessageWindowList;
 void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
 
-void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat), ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat);
+void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat), ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced);
 int CheckThemeVersion(const char *szIniFilename);
 
 char *GetThemeFileName(int iMode);
@@ -460,7 +460,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 {
                     char *szFilename = GetThemeFileName(0);
                     if(szFilename != NULL) {
-                        ReadThemeFromINI(szFilename, 0);
+                        ReadThemeFromINI(szFilename, 0, 0);
                         CacheMsgLogIcons();
                         CacheLogFonts();
                         WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
@@ -2141,7 +2141,9 @@ void LoadOverrideTheme(HWND hwndDlg, struct MessageWindowData *dat)
             dat->theme.fontColors = dat->pContainer->fontColors;
             dat->theme.rtfFonts = dat->pContainer->rtfFonts;
             if(bReadTemplates)
-                ReadThemeFromINI(dat->pContainer->szThemeFile, dat);
+                ReadThemeFromINI(dat->pContainer->szThemeFile, dat, 0);
+            else
+                ReadThemeFromINI(dat->pContainer->szThemeFile, dat, 1);
             dat->dwFlags = dat->theme.dwFlags;
             dat->theme.left_indent *= 15;
             dat->theme.right_indent *= 15;

@@ -207,7 +207,7 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
     }
 }
 
-void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat)
+void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced)
 {
     char szBuf[512], szTemp[100], szAppname[100];
     int i;
@@ -270,12 +270,14 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat)
         HDC hdc = GetDC(NULL);
         int SY = GetDeviceCaps(hdc, LOGPIXELSY);
         ReleaseDC(NULL, hdc);
-        for(i = 0; i < MSGDLGFONTCOUNT; i++) {
-            _snprintf(szTemp, 20, "Font%d", i);
-            LoadLogfontFromINI(i, szTemp, &dat->theme.logFonts[i], &dat->theme.fontColors[i], szIniFilename);
-            wsprintfA(dat->theme.rtfFonts + (i * RTFCACHELINESIZE), "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", i, i, dat->theme.logFonts[i].lfWeight >= FW_BOLD ? 1 : 0, dat->theme.logFonts[i].lfItalic, dat->theme.logFonts[i].lfUnderline, 2 * abs(dat->theme.logFonts[i].lfHeight) * 74 / SY);
+        if(!noAdvanced) {
+            for(i = 0; i < MSGDLGFONTCOUNT; i++) {
+                _snprintf(szTemp, 20, "Font%d", i);
+                LoadLogfontFromINI(i, szTemp, &dat->theme.logFonts[i], &dat->theme.fontColors[i], szIniFilename);
+                wsprintfA(dat->theme.rtfFonts + (i * RTFCACHELINESIZE), "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", i, i, dat->theme.logFonts[i].lfWeight >= FW_BOLD ? 1 : 0, dat->theme.logFonts[i].lfItalic, dat->theme.logFonts[i].lfUnderline, 2 * abs(dat->theme.logFonts[i].lfHeight) * 74 / SY);
+            }
+            wsprintfA(dat->theme.rtfFonts + (MSGDLGFONTCOUNT * RTFCACHELINESIZE), "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0, 0);
         }
-        wsprintfA(dat->theme.rtfFonts + (MSGDLGFONTCOUNT * RTFCACHELINESIZE), "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0, 0);
         dat->theme.bg = GetPrivateProfileIntA("Message Log", "BackgroundColor", RGB(224, 224, 224), szIniFilename);
         dat->theme.inbg = GetPrivateProfileIntA("Message Log", "IncomingBG", RGB(224, 224, 224), szIniFilename);
         dat->theme.outbg = GetPrivateProfileIntA("Message Log", "OutgoingBG", RGB(224, 224, 224), szIniFilename);
@@ -290,37 +292,39 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat)
     }
 
     if(version >= 3) {
-        for(i = 0; i <= TMPL_ERRMSG; i++) {
-#if defined(_UNICODE)
-            wchar_t *decoded;
-            GetPrivateProfileStringA("Templates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
-            if(dat == 0)
-                DBWriteContactSettingString(NULL, TEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
-            decoded = Utf8_Decode(szTemplateBuffer);
-            if(dat == 0)
-                mir_snprintfW(LTR_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
-            else
-                mir_snprintfW(dat->ltr_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
-            free(decoded);
-            GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
-            if(dat == 0)
-                DBWriteContactSettingString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
-            decoded = Utf8_Decode(szTemplateBuffer);
-            if(dat == 0)
-                mir_snprintfW(RTL_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
-            else
-                mir_snprintfW(dat->rtl_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
-            free(decoded);
-#else
-            if(dat == 0) {
-                GetPrivateProfileStringA("Templates", TemplateNames[i], "", LTR_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
-                GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", RTL_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
+        if(!noAdvanced) {
+            for(i = 0; i <= TMPL_ERRMSG; i++) {
+    #if defined(_UNICODE)
+                wchar_t *decoded;
+                GetPrivateProfileStringA("Templates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
+                if(dat == 0)
+                    DBWriteContactSettingString(NULL, TEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
+                decoded = Utf8_Decode(szTemplateBuffer);
+                if(dat == 0)
+                    mir_snprintfW(LTR_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+                else
+                    mir_snprintfW(dat->ltr_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+                free(decoded);
+                GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
+                if(dat == 0)
+                    DBWriteContactSettingString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
+                decoded = Utf8_Decode(szTemplateBuffer);
+                if(dat == 0)
+                    mir_snprintfW(RTL_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+                else
+                    mir_snprintfW(dat->rtl_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+                free(decoded);
+    #else
+                if(dat == 0) {
+                    GetPrivateProfileStringA("Templates", TemplateNames[i], "", LTR_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
+                    GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", RTL_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
+                }
+                else {
+                    GetPrivateProfileStringA("Templates", TemplateNames[i], "", dat->ltr_templates->szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
+                    GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", dat->rtl_templates->szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
+                }
+    #endif        
             }
-            else {
-                GetPrivateProfileStringA("Templates", TemplateNames[i], "", dat->ltr_templates->szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
-                GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", dat->rtl_templates->szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
-            }
-#endif        
         }
         for(i = 0; i < CUSTOM_COLORS; i++) {
             sprintf(szTemp, "cc%d", i + 1);

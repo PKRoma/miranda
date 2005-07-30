@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int LoadSendRecvMessageModule(void);
 int SplitmsgShutdown(void);
 int LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int i, char *szMsg);
-int ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat);
+int ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced);
 
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
@@ -282,7 +282,7 @@ static BOOL CALLBACK DlgProcFirsttime(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                     
                     if((hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
                         CloseHandle(hFile);
-                        ReadThemeFromINI(szFilename, 0);
+                        ReadThemeFromINI(szFilename, 0, 0);
                         DBWriteContactSettingByte(NULL, SRMSGMOD_T, "firstrun", 1);
                     }
                     else

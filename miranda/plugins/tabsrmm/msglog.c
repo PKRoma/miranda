@@ -134,7 +134,7 @@ struct LogStreamData
     DBEVENTINFO *dbei;
 };
 
-static _inline char *GetRTFFont(DWORD dwIndex)
+static __inline char *GetRTFFont(DWORD dwIndex)
 {
     return rtfFonts + (dwIndex * RTFCACHELINESIZE);
 }
