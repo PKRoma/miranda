@@ -157,7 +157,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             
             dat->ltr_templates = &LTR_Active;
             dat->rtl_templates = &RTL_Active;
-
+            LoadOverrideTheme(hwndDlg, dat);
             /*
              * set hContact to the first found contact so that we can use the Preview window properly
              * also, set other parameters needed by the streaming function to display events

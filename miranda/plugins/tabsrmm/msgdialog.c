@@ -349,7 +349,6 @@ void SetDialogToType(HWND hwndDlg)
     ShowWindow(GetDlgItem(hwndDlg, IDOK), showToolbar ? SW_SHOW : SW_HIDE);
 
     ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
-    ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
     
     EnableWindow(GetDlgItem(hwndDlg, IDOK), GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE)) != 0);
     SendMessage(hwndDlg, DM_UPDATETITLE, 0, 1);
@@ -931,19 +930,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             if(!splitterEdges)
                 urc->rcItem.bottom += 2;
             return RD_ANCHORX_RIGHT | RD_ANCHORY_CUSTOM;
-        case IDC_CLIST:
-            if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
-                urc->rcItem.top += panelHeight;
-            urc->rcItem.left = urc->dlgNewSize.cx - dat->multiSplitterX;
-            urc->rcItem.right = urc->dlgNewSize.cx - 3;
-            urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
-            if (!showToolbar)
-                urc->rcItem.bottom += (splitterEdges ? 24 : 26);
-            if(!splitterEdges)
-                urc->rcItem.bottom += 2;
-            if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
-                urc->rcItem.top += 24;
-            return RD_ANCHORX_CUSTOM | RD_ANCHORY_HEIGHT;
         case IDC_LOGFROZEN:
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
                 OffsetRect(&urc->rcItem, 0, panelHeight);
@@ -1056,7 +1042,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         if(dat == NULL && (msg == WM_ACTIVATE || msg == WM_SETFOCUS))
             return 0;
     }
-    
     switch (msg) {
         case WM_INITDIALOG:
             {
@@ -1198,7 +1183,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_SMILEYBTN), &rc);
 
                 ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), SW_HIDE);
-                ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), SW_HIDE);
 
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_SPLITTER), &rc);
                 pt.y = (rc.top + rc.bottom) / 2;
@@ -1291,11 +1275,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
                 if (dat->hContact) {
                     int  pCaps;
-                    HANDLE hItem;
-                    
-                    hItem = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) dat->hContact, 0);
-                    if (hItem)
-                        SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM) hItem, 1);
                     
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXLIMITTEXT, 0, 0x80000000);
                     if (dat->szProto) {
@@ -1314,14 +1293,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 OldAvatarWndProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWL_WNDPROC, (LONG) AvatarSubclassProc);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELPIC), GWL_WNDPROC, (LONG) AvatarSubclassProc);
                 
-                if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_DISABLEGROUPS && !DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
-                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETUSEGROUPS, (WPARAM) FALSE, 0);
-                else
-                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETUSEGROUPS, (WPARAM) TRUE, 0);
-                if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS && DBGetContactSettingByte(NULL, "CList", "HideEmptyGroups", SETTING_USEGROUPS_DEFAULT))
-                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
-                else
-                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) FALSE, 0);
                 OldSplitterProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
@@ -2165,8 +2136,23 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                     }
                 }
-                
                 CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
+                
+                if(GetDlgItem(hwndDlg, IDC_CLIST) != 0) {
+                    RECT rc, rcClient, rcLog;
+                    GetClientRect(hwndDlg, &rcClient);
+                    GetClientRect(GetDlgItem(hwndDlg, IDC_LOG), &rcLog);
+                    rc.top = 0; 
+                    rc.right = rcClient.right - 3;
+                    rc.left = rcClient.right - dat->multiSplitterX;
+                    rc.bottom = rcLog.bottom;
+                    if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
+                        rc.top += dat->panelHeight;
+                    if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
+                        rc.top += 24;
+                    MoveWindow(GetDlgItem(hwndDlg, IDC_CLIST), rc.left, rc.top, rc.right - rc.left, rcLog.bottom - rcLog.top, FALSE);
+                }
+                
                 if (dat->hwndLog != 0)
                     ResizeIeView(hwndDlg, dat, 0, 0, 0, 0);
                 if(dat->hbmMsgArea)
@@ -3740,6 +3726,27 @@ quote_from_last:
                     switch(iSelection) {
                         case ID_SENDMENU_SENDTOMULTIPLEUSERS:
                             dat->sendMode ^= SMODE_MULTIPLE;
+                            if(dat->sendMode & SMODE_MULTIPLE) {
+                                HANDLE hItem;
+                                
+                                CreateWindowExA(0, "CListControl", "", WS_TABSTOP | WS_VISIBLE | WS_CHILD | 0x248, 184, 0, 30, 30, hwndDlg, (HMENU)IDC_CLIST, g_hInst, NULL);
+                                hItem = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) dat->hContact, 0);
+                                if (hItem)
+                                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM) hItem, 1);
+                                
+                                if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_DISABLEGROUPS && !DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
+                                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETUSEGROUPS, (WPARAM) FALSE, 0);
+                                else
+                                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETUSEGROUPS, (WPARAM) TRUE, 0);
+                                if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS && DBGetContactSettingByte(NULL, "CList", "HideEmptyGroups", SETTING_USEGROUPS_DEFAULT))
+                                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
+                                else
+                                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) FALSE, 0);
+                            }
+                            else {
+                                if(IsWindow(GetDlgItem(hwndDlg, IDC_CLIST)))
+                                    DestroyWindow(GetDlgItem(hwndDlg, IDC_CLIST));
+                            }
                             break;
                         case ID_SENDMENU_SENDDEFAULT:
                             dat->sendMode = 0;

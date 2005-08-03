@@ -63,8 +63,6 @@ BEGIN
     CONTROL         "",IDC_SAVE,"TSButtonClass",WS_TABSTOP,154,33,14,12,
                     0x18000000L
     CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,186,21,2,40
-    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,184,0,30,
-                    30,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_PROTOCOL,"TSButtonClass",WS_TABSTOP,0,33,14,12,
                     0x18000000L
     CONTROL         "",IDC_INFOPANELMENU,"TSButtonClass",WS_TABSTOP,14,33,8,

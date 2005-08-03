@@ -31,7 +31,13 @@ Version 0.9.9.98 - 2005/07/25
         ! local avatars (load a local picture) can now use relative pathnames when the picture
           you selected is located in a subdirectory of your miranda folder.
           
-        + added 
+        + added first run configuration dialog
+        
+        + added "per container themes". It is now possible to define a private .tabsrmm theme 
+          file for a container. This includes the entire theme, fonts, colors, template message
+          log settings.
+          
+        ! bugfix (UI problem in the global/local radio button of the user preferences dialog).
 
 Version 0.9.9.97 - 2005/07/23
 

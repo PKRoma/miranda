@@ -1612,16 +1612,12 @@ BOOL IsUnicodeAscii(const wchar_t* pBuffer, int nSize)
 	BOOL bResult = TRUE;
 	int nIndex;
 
-
-	for (nIndex = 0; nIndex < nSize; nIndex++)
-	{
-		if (pBuffer[nIndex] > 0x7F)
-		{
+	for (nIndex = 0; nIndex < nSize; nIndex++) {
+		if (pBuffer[nIndex] > 0x7F) {
 			bResult = FALSE;
 			break;
 		}
 	}
-
 	return bResult;
 }
 
@@ -1735,6 +1731,11 @@ void HandlePasteAndSend(HWND hwndDlg, struct MessageWindowData *dat)
     if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
         SendMessage(hwndDlg, WM_COMMAND, IDOK, 0);
 }
+
+/*
+ * draw various elements of the message window, like avatar(s), info panel fields
+ * and the color formatting menu
+ */
 
 int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct MessageWindowData *dat)
 {
