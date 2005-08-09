@@ -405,8 +405,10 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 						error = 1;
 						break;
 					}
-				} while ( dw > 0 );
-			CloseHandle(myhFile);
+				} while ( dw > 0 && rsize < size);
+				
+				LOG(("[Finished DL] Got %lu/%lu", rsize, size));
+				CloseHandle(myhFile);
 				
 			} else {
 				LOG(("Can not open file for writing: %s", buf));
