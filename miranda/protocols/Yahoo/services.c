@@ -1009,7 +1009,7 @@ static int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
 	if ( DBGetContactSetting(( HANDLE )wParam, yahooProtocolName, "yahoo_id", &dbv ))
 		return 0;
 		
-	_snprintf( tUrl, sizeof( tUrl ), "http://mail.yahoo.com/", dbv.pszVal  );
+	_snprintf( tUrl, sizeof( tUrl ), "https://mail.yahoo.com/", dbv.pszVal  );
 	DBFreeVariant( &dbv );
 	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
 		
