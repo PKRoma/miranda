@@ -703,7 +703,7 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 	if ( sttDivideWords( params, 2, tWords ) != 2 )
 		return false;
 
-	UrlDecode( data.grpName );   Utf8Decode( data.grpName );
+	UrlDecode( data.grpName );
 	MSN_AddGroup( data.grpName, data.grpId );
 	if ( hGroupAddEvent != NULL )
 		SetEvent( hGroupAddEvent );
@@ -1255,6 +1255,7 @@ LBL_InvalidCommand:
 
 			int tNumTokens = sttDivideWords( params, 10, tWords );
 
+			MSN_DebugLog( "Pending contacts: %d", sttListNumber );
 			if ( --sttListNumber == 0 )
 				MSN_SetServerStatus( msnDesiredStatus );
 
@@ -1399,7 +1400,7 @@ LBL_InvalidCommand:
 			if ( sttDivideWords( params, 2, tWords ) != 2 )
 				goto LBL_InvalidCommand;
 
-			UrlDecode( data.groupName );	Utf8Decode( data.groupName );
+			UrlDecode( data.groupName );
 			MSN_SetGroupName( data.id, data.groupName );
 			break;
 		}
@@ -1579,7 +1580,7 @@ LBL_InvalidCommand:
 					if ( MSN_GetByte( "NeverUpdateNickname", 0 )) {
 						int result;
 						DBVARIANT dbv;
-						if ( msnRunningUnderNT && msnUtfServicesAvailable ) {
+						if ( msnRunningUnderNT ) {
 							if (( result = DBGetContactSettingWString( NULL, msnProtocolName, "Nick", &dbv )) == 0 ) {
 								MSN_SendNicknameW( dbv.pwszVal );
 								MSN_FreeVariant( &dbv );
@@ -1590,13 +1591,7 @@ LBL_InvalidCommand:
 								MSN_FreeVariant( &dbv );
 						}	}
 					}
-					else {
-						if ( msnUtfServicesAvailable )
-							MSN_SetStringUtf( NULL, "Nick", tWords[2] );
-						else {
-							Utf8Decode( tWords[2] );
-							MSN_SetString( NULL, "Nick", tWords[2] );
-					}	}
+					else MSN_SetStringUtf( NULL, "Nick", tWords[2] );
 
 					msnLoggedIn = true;
 					sttListNumber = 0;

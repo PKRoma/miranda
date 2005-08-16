@@ -76,11 +76,7 @@ static void __cdecl sttUploadGroups( void* )
 	while ( hContact != NULL ) {
 		if ( !lstrcmp( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
 			DBVARIANT dbv;
-			if ( !DBGetContactSetting( hContact, "CList", "Group", &dbv )) {
-				LPCSTR szId = MSN_GetGroupByName( dbv.pszVal );
-				if ( szId == NULL )
-					MSN_AddServerGroup( dbv.pszVal );
-
+			if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
 				MSN_MoveContactToGroup( hContact, dbv.pszVal );
 				MSN_FreeVariant( &dbv );
 		}	}
@@ -111,7 +107,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		SendDlgItemMessage( hwndDlg, IDC_PASSWORD, EM_SETLIMITTEXT, 16, 0 );
 
 		HWND wnd = GetDlgItem( hwndDlg, IDC_HANDLE2 );
-		if ( msnRunningUnderNT && msnUtfServicesAvailable ) {
+		if ( msnRunningUnderNT ) {
 			DBVARIANT dbv;
 			if ( !DBGetContactSettingWString( NULL, msnProtocolName, "Nick", &dbv )) {
 				SetWindowTextW( wnd, dbv.pwszVal );
@@ -307,7 +303,7 @@ LBL_Continue:
 				reconnectRequired = true;
 			MSN_SetString( NULL, "Password", screenStr );
 
-			if ( msnRunningUnderNT && msnUtfServicesAvailable ) {
+			if ( msnRunningUnderNT ) {
 				screenStrW = ( WCHAR* )alloca( MAX_PATH * sizeof( WCHAR ));
 				GetDlgItemTextW( hwndDlg, IDC_HANDLE2, screenStrW, MAX_PATH );
 

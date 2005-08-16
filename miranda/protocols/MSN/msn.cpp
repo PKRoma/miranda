@@ -57,7 +57,6 @@ HANDLE   hHookOnUserInfoInit = NULL;
 HANDLE   hGroupAddEvent = NULL;
 bool     msnRunningUnderNT = false;
 bool		msnHaveChatDll = false;
-bool     msnUtfServicesAvailable = false;
 
 MYOPTIONS MyOptions;
 
@@ -132,8 +131,6 @@ static HANDLE hChatEvent = NULL, hChatMenu = NULL;
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	msnUtfServicesAvailable = ServiceExists( MS_DB_CONTACT_GETSETTING_STR );
-
 	char szBuffer[ MAX_PATH ];
 
 	WORD wPort = MSN_GetWord( NULL, "YourPort", 0xFFFF );
@@ -253,6 +250,12 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 int __declspec(dllexport) Load( PLUGINLINK* link )
 {
 	pluginLink = link;
+
+	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
+		MessageBox( NULL, MSN_Translate( "This MSN plugin version requires db3x plugin version 0.5.1.0 or later" ), "MSN", MB_OK );
+		return 1;
+	}
+
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &msnMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
 
 	char path[MAX_PATH];

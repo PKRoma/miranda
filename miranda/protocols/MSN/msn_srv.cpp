@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 struct ServerGroupItem
 {
 	char* id;
-	char* name;
+	char* name; // in UTF8
 	int   number;
 
 	ServerGroupItem* next;
@@ -102,7 +102,7 @@ LPCSTR MSN_GetGroupById( const char* pId )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MSN_GetGroupByName - tries to return a group UUID associated with given name 
+// MSN_GetGroupByName - tries to return a group UUID associated with the given name 
 
 LPCSTR MSN_GetGroupByName( const char* pName )
 {
@@ -114,7 +114,7 @@ LPCSTR MSN_GetGroupByName( const char* pName )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MSN_GetGroupByName - tries to return a group UUID associated with given name 
+// MSN_GetGroupByNumber - tries to return a group UUID associated with the given id 
 
 LPCSTR MSN_GetGroupByNumber( int pNumber )
 {
@@ -143,7 +143,7 @@ void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 	if ( grpName != NULL )
 	{
 		if (( szId = MSN_GetGroupByName( grpName )) == NULL )
-			return;
+			MSN_AddServerGroup( grpName );
 
 		if ( !strcmp( szGroupID, szId ))	bDelete = false;
 		else                             bInsert = true;

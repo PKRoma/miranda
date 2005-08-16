@@ -158,14 +158,13 @@ void __stdcall MSN_AddAuthRequest( HANDLE hContact, const char *email, const cha
 
 void MSN_AddServerGroup( const char* pszGroupName )
 {
-	char* p = Utf8Encode( pszGroupName ), szBuf[ 200 ];
-	UrlEncode( p, szBuf, sizeof szBuf );
+	char szBuf[ 200 ];
+	UrlEncode( UTF8(pszGroupName), szBuf, sizeof szBuf );
 
 	if ( hGroupAddEvent == NULL )
 		hGroupAddEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 
 	msnNsThread->sendPacket( "ADG", "%s", szBuf );
-	free( p );
 
 	WaitForSingleObject( hGroupAddEvent, INFINITE );
 	CloseHandle( hGroupAddEvent ); hGroupAddEvent = NULL;
@@ -366,17 +365,27 @@ LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MSN_RenameServerGroup - renames a group at the server
+
+void MSN_RenameServerGroup( int iNumber, LPCSTR szId, const char* newName )
+{
+	LPCSTR oldId = MSN_GetGroupByName( newName );
+	if ( oldId == NULL ) {
+		char szNewName[ 256 ];
+		UrlEncode( newName, szNewName, sizeof szNewName );
+		msnNsThread->sendPacket( "REG", "%s %s", szId, szNewName );
+	}
+	else MSN_SetGroupNumber( oldId, iNumber );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // Msn_SendNickname - update our own nickname on the server
 
 int __stdcall MSN_SendNickname(char *nickname)
 {
-	char* nickutf = Utf8Encode( nickname );
-
 	char urlNick[ 387 ];
-	UrlEncode( nickutf, urlNick,  sizeof( urlNick ));
+	UrlEncode( UTF8(nickname), urlNick,  sizeof( urlNick ));
 	msnNsThread->sendPacket( "PRP", "MFN %s", urlNick );
-
-	free( nickutf );
 	return 0;
 }
 
@@ -401,9 +410,8 @@ void __stdcall MSN_SendStatusMessage( const char* msg )
 		return;
 
 	char* msgEnc = HtmlEncode(( msg == NULL ) ? "" : msg );
-	char* msgUtf = Utf8Encode( msgEnc ), szMsg[ 1024 ], szEmail[ MSN_MAX_EMAIL_LEN ];
-	mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia></Data>", msgUtf );
-	free( msgUtf );
+	char  szMsg[ 1024 ], szEmail[ MSN_MAX_EMAIL_LEN ];
+	mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia></Data>", UTF8(msgEnc));
 	free( msgEnc );
 
 	if ( !MSN_GetStaticString( "e-mail", NULL, szEmail, sizeof szEmail ))

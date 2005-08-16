@@ -493,6 +493,7 @@ LPCSTR MSN_GetGroupById( const char* pId );
 LPCSTR MSN_GetGroupByName( const char* pName );
 LPCSTR MSN_GetGroupByNumber( int pNumber );
 void   MSN_MoveContactToGroup( HANDLE hContact, const char* grpName );
+void   MSN_RenameServerGroup( int iNumber, LPCSTR szId, const char* newName );
 void   MSN_SetGroupName( const char* pId, const char* pName );
 void   MSN_SetGroupNumber( const char* pId, int pNumber );
 
@@ -582,6 +583,25 @@ extern	int			msnOtherContactsBlocked;
 
 extern   bool			msnRunningUnderNT;
 extern	bool			msnHaveChatDll;
-extern	bool			msnUtfServicesAvailable;
 
 extern	HANDLE		hGroupAddEvent;
+
+///////////////////////////////////////////////////////////////////////////////
+// UTF8 encode helper
+
+class UTFEncoder {
+	char* m_body;
+
+public:
+	__forceinline UTFEncoder( const char* pSrc ) :
+		m_body( Utf8Encode( pSrc ))
+		{}
+
+	__forceinline ~UTFEncoder()
+		{  free( m_body );
+		}
+
+	__forceinline const char* str() const { return m_body; }
+};
+
+#define UTF8(A) UTFEncoder(A).str()

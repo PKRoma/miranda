@@ -145,11 +145,9 @@ static int MsnAuthAllow(WPARAM wParam,LPARAM lParam)
 
 	char urlNick[388],urlEmail[130];
 
-	char* nickutf = Utf8Encode( nick );
-	UrlEncode( nickutf, urlNick, sizeof( urlNick ));
+	UrlEncode( UTF8( nick ), urlNick, sizeof( urlNick ));
 	UrlEncode( email, urlEmail, sizeof( urlEmail ));
 
-	free( nickutf );
 	AddToListByEmail( email, 0 );
 	return 0;
 }
@@ -186,12 +184,10 @@ static int MsnAuthDeny(WPARAM wParam,LPARAM lParam)
 
 	char urlNick[388],urlEmail[130];
 
-	char* nickutf = Utf8Encode( nick );
-	UrlEncode( nickutf, urlNick, sizeof( urlNick ));
+	UrlEncode( UTF8(nick), urlNick, sizeof( urlNick ));
 	UrlEncode( email, urlEmail, sizeof( urlEmail ));
 
 	MSN_AddUser( NULL, urlEmail, LIST_BL );
-	free( nickutf );
 	return 0;
 }
 
@@ -271,23 +267,17 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 	if ( hContact == NULL && MyOptions.ManageServer && !strcmp( cws->szModule, "CListGroups" )) {
 		int iNumber = atol( cws->szSetting );
 		LPCSTR szId = MSN_GetGroupByNumber( iNumber );
-		if ( szId != NULL ) {
-			if ( cws->value.type == DBVT_DELETED ) {
-				msnNsThread->sendPacket( "RMG", szId );
-			}
-			else if ( cws->value.type == DBVT_ASCIIZ ) {
-				LPCSTR oldId = MSN_GetGroupByName( cws->value.pszVal+1 );
-				if ( oldId == NULL ) {
-					char* p = Utf8Encode( cws->value.pszVal+1 ), szNewName[ 200 ];
-					UrlEncode( p, szNewName, sizeof szNewName );
-					msnNsThread->sendPacket( "REG", "%s %s", szId, szNewName );
-					free( p );
-				}
-				else MSN_SetGroupNumber( oldId, iNumber );
-		}	}
-		else if ( cws->value.type == DBVT_ASCIIZ )
-			MSN_AddServerGroup( cws->value.pszVal+1 );
+		if ( szId == NULL ) {
+			if ( cws->value.type == DBVT_ASCIIZ )
+				MSN_AddServerGroup( cws->value.pszVal+1 );
+			return 0;
+		}
 
+		switch ( cws->value.type ) {
+			case DBVT_DELETED:	msnNsThread->sendPacket( "RMG", szId );										break;
+			case DBVT_UTF8:		MSN_RenameServerGroup( iNumber, szId, cws->value.pszVal+1 );			break;
+			case DBVT_ASCIIZ:		MSN_RenameServerGroup( iNumber, szId, UTF8( cws->value.pszVal+1 ));	break;
+		}
 		return 0;
 	}
 
@@ -311,14 +301,10 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 			return 0;
 
 		if ( !strcmp( cws->szSetting, "Group" )) {
-			if ( cws->value.type == DBVT_DELETED )
-				MSN_MoveContactToGroup( hContact, NULL );
-			else if ( cws->value.type == DBVT_ASCIIZ ) {
-				LPCSTR p = MSN_GetGroupByName( cws->value.pszVal );
-				if ( p == NULL )
-					MSN_AddServerGroup( cws->value.pszVal );
-
-				MSN_MoveContactToGroup( hContact, cws->value.pszVal );
+			switch( cws->value.type ) {
+				case DBVT_DELETED:	MSN_MoveContactToGroup( hContact, NULL );								break;
+				case DBVT_ASCIIZ:    MSN_MoveContactToGroup( hContact, UTF8(cws->value.pszVal));		break;
+				case DBVT_UTF8:		MSN_MoveContactToGroup( hContact, cws->value.pszVal );			break;
 			}
 			return 0;
 		}
@@ -327,10 +313,8 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 			char szContactID[ 100 ], szNewNick[ 387 ];
 			if ( !MSN_GetStaticString( "ID", hContact, szContactID, sizeof szContactID )) {
 				if ( cws->value.type != DBVT_DELETED ) {
-					char* p = Utf8Encode( cws->value.pszVal );
-					UrlEncode( p, szNewNick, sizeof szNewNick );
+					UrlEncode( UTF8(cws->value.pszVal), szNewNick, sizeof szNewNick );
 					msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
-					free( p );
 				}
 				else {
 					MSN_GetStaticString( "e-mail", hContact, szNewNick, sizeof szNewNick );
@@ -805,7 +789,6 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 		else
 			pszFiles = *files;
 
-		char* pszFilesUTF = Utf8Encode( pszFiles );
 		mir_snprintf( msg, sizeof( msg ),
 			"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 			"Application-Name: File Transfer\r\n"
@@ -814,8 +797,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 			"Invitation-Cookie: %i\r\n"
 			"Application-File: %s\r\n"
 			"Application-FileSize: %i\r\n\r\n",
-			( WORD )(((double)rand()/(double)RAND_MAX)*4294967295), pszFilesUTF, tFileSize );
-		free( pszFilesUTF );
+			( WORD )(((double)rand()/(double)RAND_MAX)*4294967295), UTF8(pszFiles), tFileSize );
 
 		if ( thread == NULL )
 			MsgQueue_Add( ccs->hContact, 'D', msg, -1, sft );
@@ -1042,7 +1024,7 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSN )));
 			SendMessage( GetDlgItem( hwndDlg, IDC_NICKNAME ), EM_LIMITTEXT, 129, 0 );
 
-			if ( msnRunningUnderNT && msnUtfServicesAvailable ) {
+			if ( msnRunningUnderNT ) {
 				DBVARIANT dbv;
 				if ( !DBGetContactSettingWString( NULL, msnProtocolName, "Nick", &dbv )) {
 					SetDlgItemTextW( hwndDlg, IDC_NICKNAME, dbv.pwszVal );
@@ -1061,7 +1043,7 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			{
 				case IDOK:
 					if ( msnLoggedIn ) {
-						if ( msnRunningUnderNT && msnUtfServicesAvailable ) {
+						if ( msnRunningUnderNT ) {
 							WCHAR str[ 130 ];
 							GetDlgItemTextW( hwndDlg, IDC_NICKNAME, str, sizeof( str ));
 							MSN_SendNicknameW( str );
