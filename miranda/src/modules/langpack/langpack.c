@@ -208,23 +208,26 @@ static int LoadLangPack(const char *szLangPack)
 			langPack.entry[langPack.entryCount-1].linePos=linePos++;
 		}
 		else if(langPack.entryCount) {
-			if(langPack.entry[langPack.entryCount-1].local==NULL) {
-				langPack.entry[langPack.entryCount-1].local=_strdup(line);
+			struct LangPackEntry* E = &langPack.entry[langPack.entryCount-1];
+
+			if(E->local==NULL) {
+				E->local=_strdup(line);
 				{
-					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, langPack.entry[langPack.entryCount - 1].wlocal, 0);
-					langPack.entry[langPack.entryCount-1].wlocal = (wchar_t *)malloc(iNeeded * sizeof(wchar_t));
-					MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, langPack.entry[langPack.entryCount - 1].wlocal, iNeeded);
+					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
+					E->wlocal = (wchar_t *)malloc((iNeeded+1) * sizeof(wchar_t));
+					MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, E->wlocal, iNeeded);
 				}
 			}
 			else {
-				langPack.entry[langPack.entryCount-1].local=(char*)realloc(langPack.entry[langPack.entryCount-1].local,lstrlen(langPack.entry[langPack.entryCount-1].local)+lstrlen(line)+2);
-				lstrcat(langPack.entry[langPack.entryCount-1].local,"\n");
-				lstrcat(langPack.entry[langPack.entryCount-1].local,line);
+				E->local=(char*)realloc(E->local,lstrlen(E->local)+lstrlen(line)+2);
+				lstrcat(E->local,"\n");
+				lstrcat(E->local,line);
 				{
-					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, langPack.entry[langPack.entryCount - 1].wlocal, 0);
-					langPack.entry[langPack.entryCount-1].wlocal = (wchar_t*)realloc(langPack.entry[langPack.entryCount-1].wlocal, (sizeof(wchar_t) * wcslen(langPack.entry[langPack.entryCount-1].wlocal)) + iNeeded + 4);
-					wcscat(langPack.entry[langPack.entryCount-1].wlocal, L"\n");
-					MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, &langPack.entry[langPack.entryCount-1].wlocal[lstrlenW(langPack.entry[langPack.entryCount-1].wlocal)], iNeeded);
+					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
+					int iOldLen = wcslen(E->wlocal);
+					E->wlocal = (wchar_t*)realloc(E->wlocal, ( sizeof(wchar_t) * ( iOldLen + iNeeded + 2)));
+					wcscat(E->wlocal, L"\n");
+					MultiByteToWideChar( langPack.defaultANSICp, 0, line, -1, E->wlocal + iOldLen+1, iNeeded);
 				}
 			}
 		}
