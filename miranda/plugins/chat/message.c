@@ -23,10 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "chat.h"
 #include <math.h>
 
-static int RTFColorToIndex(int *pIndex, int iCol, CHATWINDOWDATA * dat)
+static int RTFColorToIndex(int *pIndex, int iCol, SESSION_INFO * si)
 {
 	int i;
-	MODULE * pMod = MM_FindModule(dat->pszModule);
+	MODULEINFO * pMod = MM_FindModule(si->pszModule);
 	
 	for (i = 0; i < pMod->nColorCount ; i++)
 	{
@@ -37,7 +37,7 @@ static int RTFColorToIndex(int *pIndex, int iCol, CHATWINDOWDATA * dat)
 	return -1;
 }
 
-static void CreateColorMap(char * Text, int *pIndex, CHATWINDOWDATA * dat)
+static void CreateColorMap(char * Text, int *pIndex, SESSION_INFO * si)
 {
 	char * pszText;
 	char * p1;
@@ -45,7 +45,6 @@ static void CreateColorMap(char * Text, int *pIndex, CHATWINDOWDATA * dat)
 	char * pEnd;
 	int iIndex = 1;
 
-//	static const char* lpszFmt = "/red%[^ \x5b,]/red%[^ \x5b,]/red%[^ \x5b,]";
 	static const char* lpszFmt = "\\red%[^ \x5b\\]\\green%[^ \x5b\\]\\blue%[^ \x5b;];";
 	char szRed[10], szGreen[10], szBlue[10];
 
@@ -64,7 +63,7 @@ static void CreateColorMap(char * Text, int *pIndex, CHATWINDOWDATA * dat)
 		if( sscanf(p2, lpszFmt, &szRed, &szGreen, &szBlue) > 0 )
 		{
 			int i;
-			MODULE * pMod = MM_FindModule(dat->pszModule);
+			MODULEINFO * pMod = MM_FindModule(si->pszModule);
 			for (i = 0; i < pMod->nColorCount ; i ++)
 			{
 				if (pMod->crColors[i] == RGB(atoi(szRed), atoi(szGreen), atoi(szBlue)))
@@ -84,7 +83,7 @@ static void CreateColorMap(char * Text, int *pIndex, CHATWINDOWDATA * dat)
 
 }
 
-BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
+BOOL DoRtfToTags(char * pszText, SESSION_INFO * si)
 {
 	char * p1;
 	int * pIndex;
@@ -97,10 +96,10 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 
 	// create an index of colors in the module and map them to
 	// corresponding colors in the RTF color table
-	pIndex = malloc(sizeof(int) * MM_FindModule(dat->pszModule)->nColorCount);
-	for(i = 0; i < MM_FindModule(dat->pszModule)->nColorCount ; i++)
+	pIndex = malloc(sizeof(int) * MM_FindModule(si->pszModule)->nColorCount);
+	for(i = 0; i < MM_FindModule(si->pszModule)->nColorCount ; i++)
 		pIndex[i] = -1;
-	CreateColorMap(pszText, pIndex, dat);
+	CreateColorMap(pszText, pIndex, si);
 
 	// scan the file for rtf commands and remove or parse them
 	p1 = strstr(pszText, "\\pard");
@@ -110,7 +109,7 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 		char InsertThis[50];
 		p1 += 5;
 
-		MoveMemory(pszText, p1, lstrlen(p1) +1);		
+		MoveMemory(pszText, p1, lstrlenA(p1) +1);		
 		p1 = pszText;
 
 		// iterate through all characters, if rtf control character found then take action
@@ -126,11 +125,11 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 				{
 					char szTemp[20];
 					int iCol = atoi(p1 + 3);
-					int iInd = RTFColorToIndex(pIndex, iCol, dat);
+					int iInd = RTFColorToIndex(pIndex, iCol, si);
 					bJustRemovedRTF = TRUE;
 
 					itoa(iCol, szTemp, 10);
-					iRemoveChars = 3 + lstrlen(szTemp);
+					iRemoveChars = 3 + lstrlenA(szTemp);
 					if(bTextHasStarted || iInd >= 0)
 						mir_snprintf(InsertThis, sizeof(InsertThis), ( iInd >= 0 )?"%%c%02u":"%%C", iInd);
 				}
@@ -138,11 +137,11 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 				{
 					char szTemp[20];
 					int iCol = atoi(p1 + 10);
-					int iInd = RTFColorToIndex(pIndex, iCol, dat);
+					int iInd = RTFColorToIndex(pIndex, iCol, si);
 					bJustRemovedRTF = TRUE;
 					
 					itoa(iCol, szTemp, 10);
-					iRemoveChars = 10 + lstrlen(szTemp);
+					iRemoveChars = 10 + lstrlenA(szTemp);
 					if(bTextHasStarted || iInd >= 0)
 						mir_snprintf(InsertThis, sizeof(InsertThis), ( iInd >= 0 )?"%%f%02u":"%%F", iInd);
 				}
@@ -210,12 +209,12 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 						{
 
 
-							lstrcpyn(InsertThis, p1 + 2, 3);
+							lstrcpynA(InsertThis, p1 + 2, 3);
 							iRemoveChars = 4;
 						}
 						else
 						{
-							lstrcpyn(InsertThis, p1 + 2, 2);
+							lstrcpynA(InsertThis, p1 + 2, 2);
 							iRemoveChars = 3;
 
 						}
@@ -225,19 +224,19 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 						while (*p3)
 						{
 							if(*p3 == 'a')
-								iLame += 10 * (int)pow(16, lstrlen(p3) -1);
+								iLame += 10 * (int)pow(16, lstrlenA(p3) -1);
 							else if(*p3 == 'b')
-								iLame += 11 * (int)pow(16, lstrlen(p3) -1);
+								iLame += 11 * (int)pow(16, lstrlenA(p3) -1);
 							else if(*p3 == 'c')
-								iLame += 12 * (int)pow(16, lstrlen(p3) -1);
+								iLame += 12 * (int)pow(16, lstrlenA(p3) -1);
 							else if(*p3 == 'd')
-								iLame += 13 * (int)pow(16, lstrlen(p3) -1);
+								iLame += 13 * (int)pow(16, lstrlenA(p3) -1);
 							else if(*p3 == 'e')
-								iLame += 14 * (int)pow(16, lstrlen(p3) -1);
+								iLame += 14 * (int)pow(16, lstrlenA(p3) -1);
 							else if(*p3 == 'f')
-								iLame += 15 * (int)pow(16, lstrlen(p3) -1);
+								iLame += 15 * (int)pow(16, lstrlenA(p3) -1);
 							else
-								iLame += (*p3 - 48) * (int)pow(16, lstrlen(p3) -1);
+								iLame += (*p3 - 48) * (int)pow(16, lstrlenA(p3) -1);
 							p3++;
 						}
 						mir_snprintf(InsertThis, sizeof(InsertThis), "%c", iLame);
@@ -281,11 +280,11 @@ BOOL DoRtfToTags(char * pszText, CHATWINDOWDATA * dat)
 			}
 
 			// move the memory and paste in new commands instead of the old RTF
-			if(lstrlen(InsertThis) || iRemoveChars)
+			if(lstrlenA(InsertThis) || iRemoveChars)
 			{
-				MoveMemory(p1 + lstrlen(InsertThis) , p1 + iRemoveChars, lstrlen(p1) - iRemoveChars +1);
-				CopyMemory(p1, InsertThis, lstrlen(InsertThis));
-				p1 += lstrlen(InsertThis);
+				MoveMemory(p1 + lstrlenA(InsertThis) , p1 + iRemoveChars, lstrlenA(p1) - iRemoveChars +1);
+				CopyMemory(p1, InsertThis, lstrlenA(InsertThis));
+				p1 += lstrlenA(InsertThis);
 			}
 			else
 				p1++;
@@ -329,13 +328,13 @@ static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG
     return 0;
 }
 
-char * Message_GetFromStream(HWND hwndDlg, CHATWINDOWDATA* dat)
+char * Message_GetFromStream(HWND hwndDlg, SESSION_INFO * si)
 {
 	EDITSTREAM stream;
 	char * pszText = NULL;
 
 
-	if(hwndDlg == 0 || dat == 0)
+	if(hwndDlg == 0 || si == 0)
 		return NULL;
 
 	ZeroMemory(&stream, sizeof(stream));

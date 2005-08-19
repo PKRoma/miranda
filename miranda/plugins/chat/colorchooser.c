@@ -105,7 +105,7 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		pCC->yPosition -= height;
 
 
-		SetDlgItemText(hwndDlg, IDC_COLORTEXT, pCC->bForeground?Translate("Text colour"):Translate("Background colour"));
+		SetDlgItemTextA(hwndDlg, IDC_COLORTEXT, pCC->bForeground?Translate("Text colour"):Translate("Background colour"));
 		SetWindowPos(GetDlgItem(hwndDlg, IDC_COLORTEXT), NULL,  0, 0, width, 20, 0);
 		SetWindowPos(hwndDlg, NULL, pCC->xPosition, pCC->yPosition, width, height, SWP_SHOWWINDOW);
 
@@ -147,8 +147,8 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 			if (pCC->bForeground)
 			{
-				pCC->dat->bFGSet = TRUE;
-				pCC->dat->iFG = iCurrentHotTrack;
+				pCC->si->bFGSet = TRUE;
+				pCC->si->iFG = iCurrentHotTrack;
 				if(IsDlgButtonChecked(hWindow, IDC_COLOR))
 				{
 					cf.dwMask = CFM_COLOR;
@@ -158,8 +158,8 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			}
 			else
 			{
-				pCC->dat->bBGSet = TRUE;
-				pCC->dat->iBG = iCurrentHotTrack;
+				pCC->si->bBGSet = TRUE;
+				pCC->si->iBG = iCurrentHotTrack;
 				if(IsDlgButtonChecked(hWindow, IDC_BKGCOLOR))
 				{
 					cf.dwMask = CFM_BACKCOLOR;
@@ -242,8 +242,8 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				iThisRow++;
 			}
 
-			if(pCC->bForeground && pCC->dat->bFGSet && pCC->dat->iFG == i
-				|| !pCC->bForeground && pCC->dat->bBGSet && pCC->dat->iBG == i)
+			if(pCC->bForeground && pCC->si->bFGSet && pCC->si->iFG == i
+				|| !pCC->bForeground && pCC->si->bBGSet && pCC->si->iBG == i)
 			{
 			rc.top = (iThisRow-1) * 20+ 1 +20 ;
 			rc.left = (iThisColumn-1) * 25 + 1 + 1 ;

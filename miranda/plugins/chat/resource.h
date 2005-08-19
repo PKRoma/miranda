@@ -7,10 +7,10 @@
 #define IDD_OPTIONS2                    103
 #define IDD_FILTER                      105
 #define IDD_OPTIONSPOPUP                106
-#define IDI_ITALICS                     120
-#define IDI_SMILEY                      121
-#define IDI_BOLD                        122
-#define IDI_UNDERLINE                   123
+#define IDI_BUNDERLINE                  120
+#define IDI_BBOLD                       121
+#define IDI_BITALICS                    122
+#define IDI_BSMILEY                     123
 #define IDI_TOPICBUT                    124
 #define IDI_BKGCOLOR                    125
 #define IDI_CHANMGR                     126
@@ -37,7 +37,16 @@
 #define IDI_TAG2                        150
 #define IDR_MENU                        151
 #define IDD_COLORCHOOSER                152
-#define IDC_NICKLIST                    1004
+#define IDI_STATUS3                     153
+#define IDI_STATUS2                     154
+#define IDI_STATUS4                     155
+#define IDI_STATUS1                     156
+#define IDI_STATUS0                     157
+#define IDI_STATUS5                     158
+#define IDI_CLOSE                       159
+#define IDI_OVERLAY                     160
+#define IDI_NICKLIST2                   161
+#define IDI_FILTER2                     162
 #define IDC_LOG                         1005
 #define IDC_SPLITTERX                   1006
 #define IDC_SMILEY                      1007
@@ -54,8 +63,7 @@
 #define IDC_CHECKBOXES                  1021
 #define IDC_NICKLISTBKG                 1021
 #define IDC_HISTORY                     1022
-#define IDC_NICKLISTLINES               1022
-#define IDC_NICKINDENT                  1023
+#define IDC_CLOSE                       1023
 #define IDC_NICKROW                     1024
 #define IDC_LOGLIMIT                    1024
 #define IDC_SPIN1                       1028
@@ -74,7 +82,6 @@
 #define IDC_LOGDIRECTORY                1048
 #define IDC_LIMIT                       1050
 #define IDC_LOGTIMESTAMP                1051
-#define IDC_FILTERLIST                  1056
 #define IDC_GROUP                       1057
 #define IDC_RADIO1                      1061
 #define IDC_RADIO2                      1062
@@ -86,6 +93,19 @@
 #define IDC_TEXTO                       1069
 #define IDC_LOGGING                     1069
 #define IDC_COLORTEXT                   1070
+#define IDC_LIST                        1072
+#define IDC_TAB                         1074
+#define IDC_1                           1075
+#define IDC_2                           1076
+#define IDC_3                           1077
+#define IDC_4                           1078
+#define IDC_5                           1079
+#define IDC_6                           1080
+#define IDC_7                           1081
+#define IDC_8                           1082
+#define IDC_9                           1083
+#define IDC_10                          1084
+#define IDC_11                          1085
 #define ID_MESS                         40001
 #define ID_NEW                          40002
 #define ID_CURR                         40003
@@ -99,14 +119,17 @@
 #define ID_MESSAGE_SELECTALL            40018
 #define ID_MESSAGE_REDO                 40019
 #define ID_MESSAGE_PASTE                40020
+#define ID_CLOSE                        40022
+#define ID_CLOSEOTHER                   40023
+#define ID_LOCKPOSITION                 40024
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        153
-#define _APS_NEXT_COMMAND_VALUE         40022
-#define _APS_NEXT_CONTROL_VALUE         1072
+#define _APS_NEXT_RESOURCE_VALUE        163
+#define _APS_NEXT_COMMAND_VALUE         40026
+#define _APS_NEXT_CONTROL_VALUE         1076
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

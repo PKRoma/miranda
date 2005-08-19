@@ -100,7 +100,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CHAT_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CHAT_EXPORTS" /D "UNICODE" /YX /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CHAT_EXPORTS" /D "UNICODE" /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x41d /d "_DEBUG"
@@ -110,7 +110,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /out:"../../bin/Debug/Plugins/chat.dll" /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib Version.lib /nologo /dll /debug /machine:I386 /out:"../../bin/Debug/Plugins/chat.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib Version.lib shlwapi.lib /nologo /dll /debug /machine:I386 /out:"../../bin/Debug/Plugins/chat.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "chat - Win32 Release Unicode"
@@ -128,7 +128,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CHAT_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CHAT_EXPORTS" /D "UNICODE" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CHAT_EXPORTS" /D "UNICODE" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x41d /d "NDEBUG"
@@ -138,7 +138,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386 /out:"../../bin/Release/Plugins/chat.dll"
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib Version.lib /nologo /dll /machine:I386 /out:"../../bin/Release/Plugins/chat_unicode.dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib Version.lib shlwapi.lib /nologo /dll /machine:I386 /out:"../../bin/Release/Plugins/chat.dll"
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
@@ -182,6 +182,10 @@ SOURCE=.\options.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\richutil.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\services.c
 # End Source File
 # Begin Source File
@@ -205,11 +209,15 @@ SOURCE=.\AggressiveOptimize.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\m_smileyadd.h
+SOURCE=.\IcoLib.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\m_uninstaller.h
+SOURCE=..\..\include\m_popup.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\m_smileyadd.h
 # End Source File
 # Begin Source File
 
@@ -224,10 +232,38 @@ SOURCE=.\chat.h
 
 SOURCE=.\m_chat.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\richutil.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# Begin Source File
+
+SOURCE=.\Icons\1.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\2.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\3.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\4.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\5.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\6.ico
+# End Source File
 # Begin Source File
 
 SOURCE=.\Icons\action.ico
@@ -258,6 +294,10 @@ SOURCE=.\Chat.rc
 # End Source File
 # Begin Source File
 
+SOURCE=.\Icons\close.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\Icons\color.ico
 # End Source File
 # Begin Source File
@@ -266,11 +306,19 @@ SOURCE=.\Icons\filter.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\Icons\filter2.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\Icons\highlight.ico
 # End Source File
 # Begin Source File
 
 SOURCE=.\Icons\history.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\hop.ico
 # End Source File
 # Begin Source File
 
@@ -310,7 +358,23 @@ SOURCE=.\Icons\nicklist.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\Icons\nicklist2.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\normal.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\Icons\notice.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\Op.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\overlay.ico
 # End Source File
 # Begin Source File
 
@@ -347,6 +411,10 @@ SOURCE=.\Icons\topicbut.ico
 # Begin Source File
 
 SOURCE=.\Icons\underline.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\Voice.ico
 # End Source File
 # Begin Source File
 
