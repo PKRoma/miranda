@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HANDLE					OptionsInitHook = NULL;	
 extern UINT_PTR			KeepAliveTimer;	
 UINT_PTR				OnlineNotifTimer = 0;	
+UINT_PTR				OnlineNotifTimer3 = 0;	
 
 
 extern PREFERENCES *	prefs;
@@ -34,14 +35,17 @@ extern char *			pszPerformFile;
 extern char				mirandapath[MAX_PATH];
 HWND					connect_hWnd = NULL;
 HWND					addserver_hWnd = NULL;
+extern HWND				IgnoreWndHwnd;
 bool					ServerlistModified = false;
 bool					PerformlistModified = false;
+extern bool				bMbotInstalled;
 extern bool				bTempDisableCheck ;
 extern bool				bTempForceCheck ;
 extern int				iTempCheckTime ;
 extern HMODULE			m_ssleay32;
 extern HANDLE			hMenuServer;
 static WNDPROC			OldProc;
+static WNDPROC			OldListViewProc;
 
 
 static int GetPrefsString(const char *szSetting, char * prefstoset, int n, char * defaulttext)
@@ -87,7 +91,6 @@ void InitPrefs(void)
 	GetPrefsString("RetryWait", prefs->RetryWait, 4, "30");
 	GetPrefsString("RetryCount", prefs->RetryCount, 4, "10");
 	GetPrefsString("Network", prefs->Network, 31, "");
-	GetPrefsString("OnlineNotificationTime", prefs->OnlineNotificationTime, 10, "30");
 	GetPrefsString("QuitMessage", prefs->QuitMessage, 399, STR_QUITMESSAGE);
 	GetPrefsString("UserInfo", prefs->UserInfo, 499, STR_USERINFO);
 	GetPrefsString("SpecHost", prefs->MySpecifiedHost, 499, "");
@@ -107,6 +110,7 @@ void InitPrefs(void)
 //		DBFreeVariant(&dbv);
 	}
 
+	prefs->ScriptingEnabled = DBGetContactSettingByte(NULL,IRCPROTONAME, "ScriptingEnabled", 0);
 	prefs->ForceVisible = DBGetContactSettingByte(NULL,IRCPROTONAME, "ForceVisible", 0);
 	prefs->DisableErrorPopups = DBGetContactSettingByte(NULL,IRCPROTONAME, "DisableErrorPopups", 0);
 	prefs->RejoinChannels = DBGetContactSettingByte(NULL,IRCPROTONAME, "RejoinChannels", 0);
@@ -121,8 +125,8 @@ void InitPrefs(void)
 	prefs->Perform = DBGetContactSettingByte(NULL,IRCPROTONAME, "Perform", 0);
 	prefs->ShowAddresses = DBGetContactSettingByte(NULL,IRCPROTONAME, "ShowAddresses", 0);
 	prefs->AutoOnlineNotification = DBGetContactSettingByte(NULL,IRCPROTONAME, "AutoOnlineNotification", 1);
-	prefs->AutoOnlineNotifTempAlso = DBGetContactSettingByte(NULL,IRCPROTONAME, "AutoOnlineNotifTempAlso", 0);
-	prefs->Ignore = 1;
+	prefs->Ignore = DBGetContactSettingByte(NULL,IRCPROTONAME, "Ignore", 0);;
+	prefs->IgnoreChannelDefault = DBGetContactSettingByte(NULL,IRCPROTONAME, "IgnoreChannelDefault", 0);;
 	prefs->ServerComboSelection = DBGetContactSettingDword(NULL,IRCPROTONAME, "ServerComboSelection", -1);
 	prefs->QuickComboSelection = DBGetContactSettingDword(NULL,IRCPROTONAME, "QuickComboSelection", prefs->ServerComboSelection);
 	prefs->SendKeepAlive = (int)DBGetContactSettingByte(NULL,IRCPROTONAME, "SendKeepAlive", 0);
@@ -155,11 +159,144 @@ void InitPrefs(void)
 	prefs->colors[13] = RGB(255,0,255);
 	prefs->colors[14] = RGB(127,127,127); 
 	prefs->colors[15] = RGB(210,210,210);
+	prefs->OnlineNotificationTime = DBGetContactSettingWord(NULL, IRCPROTONAME, "OnlineNotificationTime", 30);
+	prefs->OnlineNotificationLimit = DBGetContactSettingWord(NULL, IRCPROTONAME, "OnlineNotificationLimit", 50);
+	prefs->ChannelAwayNotification = DBGetContactSettingByte(NULL,IRCPROTONAME, "ChannelAwayNotification", 1);
 
 //	DBFreeVariant(&dbv);
 	return;
 }
 
+// add icons to the skinning module
+void AddIcons(void)
+{
+	if(ServiceExists(MS_SKIN2_ADDICON))
+	{
+		SKINICONDESC3 sid = {0};
+		char szTemp[255];
+		char szFile[MAX_PATH];
+
+		sid.cx = sid.cy = 16;
+		sid.cbSize = sizeof(SKINICONDESC3);
+		sid.pszSection = ALTIRCPROTONAME;
+		GetModuleFileName(g_hInstance, szFile, MAX_PATH);
+		sid.pszDefaultFile = szFile;
+
+		// add them one by one
+		sid.pszDescription = Translate("Main");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_main", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_MAIN;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Add");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_add", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_ADD;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Apply");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_go", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_GO;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Edit");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_rename", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_RENAME;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Cancel");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_delete", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_DELETE;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Ignore");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_block", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_BLOCK;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Channel list");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_list", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_LIST;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Channel manager");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_manager", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_MANAGER;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Quick connect");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_quick", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_QUICK;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Server window");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_server", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_SERVER;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Show channel");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_show", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_SHOW;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Join channel");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_join", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_JOIN;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Leave Channel");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_part", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_PART;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Question");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_whois", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_WHOIS;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		sid.pszDescription = Translate("Incoming DCC Chat");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_dcc", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_DCC;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+	
+		sid.cx = sid.cy = 48;
+		sid.pszDescription = Translate("Logo (48x48)");
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_logo", IRCPROTONAME);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = -IDI_LOGO;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+}
+	return;
+}
+
+// load icons from the skinning module if available
+HICON LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY)
+{
+	if(ServiceExists(MS_SKIN2_GETICON))
+	{
+		char szTemp[256];
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_%s", IRCPROTONAME, pszIcoLibName);
+		return (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
+	}
+	else
+		return (HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(iIndex),IMAGE_ICON,iX,iY,LR_SHARED);
+	return 0;
+}
 
 // Callback for the 'Add server' dialog
 BOOL CALLBACK AddServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
@@ -449,8 +586,8 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			SetDlgItemText(hwndDlg,IDC_USERINFO,prefs->UserInfo);
 
-			CheckDlgButton(hwndDlg, IDC_ENABLEXFER, prefs->DCCFileEnabled?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_ENABLECHAT, prefs->DCCChatEnabled?BST_CHECKED:BST_UNCHECKED);
+
+			
 			CheckDlgButton(hwndDlg, IDC_SLOW, DBGetContactSettingByte(NULL, IRCPROTONAME, "DCCMode", 0)==0?BST_CHECKED:BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_FAST, DBGetContactSettingByte(NULL, IRCPROTONAME, "DCCMode", 0)==1?BST_CHECKED:BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_DISC, prefs->DisconnectDCCChats?BST_CHECKED:BST_UNCHECKED);
@@ -476,10 +613,6 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				CheckDlgButton(hwndDlg, IDC_RADIO2, BST_CHECKED);
 			if(prefs->DCCChatAccept == 3)
 				CheckDlgButton(hwndDlg, IDC_RADIO3, BST_CHECKED);
-			if(prefs->DCCChatIgnore == 1)
-				CheckDlgButton(hwndDlg, IDC_RADIO4, BST_CHECKED);
-			if(prefs->DCCChatIgnore == 2)
-				CheckDlgButton(hwndDlg, IDC_RADIO5, BST_CHECKED);
 
 			CheckDlgButton(hwndDlg, IDC_FROMSERVER, prefs->IPFromServer?BST_CHECKED:BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_ENABLEIP, prefs->ManualHost?BST_CHECKED:BST_UNCHECKED);
@@ -514,11 +647,6 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			}
 
-			EnableWindow(GetDlgItem(hwndDlg, IDC_RADIO1), prefs->DCCChatEnabled);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_RADIO2), prefs->DCCChatEnabled);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_RADIO3), prefs->DCCChatEnabled);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_RADIO4), prefs->DCCChatEnabled);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_RADIO5), prefs->DCCChatEnabled);
 
 		}break;
 
@@ -526,7 +654,8 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		{
 			
 			if((	LOWORD(wParam) == IDC_USERINFO	
-				|| LOWORD(wParam) == IDC_IP)
+				|| LOWORD(wParam) == IDC_IP
+				|| LOWORD(wParam) == IDC_COMBO && HIWORD(wParam) != CBN_SELCHANGE)
 				&& (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))	return true;
 				
 				
@@ -536,16 +665,6 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			{
 				switch (LOWORD(wParam))
 				{	
-					case ( IDC_ENABLECHAT):
-					{
-
-						EnableWindow(GetDlgItem(hwndDlg, IDC_RADIO1), IsDlgButtonChecked(hwndDlg, IDC_ENABLECHAT)== BST_CHECKED);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_RADIO2), IsDlgButtonChecked(hwndDlg, IDC_ENABLECHAT)== BST_CHECKED);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_RADIO3), IsDlgButtonChecked(hwndDlg, IDC_ENABLECHAT)== BST_CHECKED);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_RADIO4), IsDlgButtonChecked(hwndDlg, IDC_ENABLECHAT)== BST_CHECKED);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_RADIO5), IsDlgButtonChecked(hwndDlg, IDC_ENABLECHAT)== BST_CHECKED);
-		
-					}break;
 					case ( IDC_FROMSERVER):
 					case ( IDC_ENABLEIP):
 					{
@@ -604,11 +723,7 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 							DBWriteContactSettingWord(NULL,IRCPROTONAME,"DCCPacketSize", (WORD)atoi(szTemp));
 
 
-							prefs->DCCFileEnabled = IsDlgButtonChecked(hwndDlg,IDC_ENABLEXFER)== BST_CHECKED?1:0;
-							prefs->DCCChatEnabled = IsDlgButtonChecked(hwndDlg,IDC_ENABLECHAT)== BST_CHECKED?1:0;
-							DBWriteContactSettingByte(NULL,IRCPROTONAME,"EnableCtcpFile",prefs->DCCFileEnabled);
-							DBWriteContactSettingByte(NULL,IRCPROTONAME,"EnableCtcpChat",prefs->DCCChatEnabled);
-
+						
 							prefs->DCCPassive = IsDlgButtonChecked(hwndDlg,IDC_PASSIVE)== BST_CHECKED?1:0;
 							DBWriteContactSettingByte(NULL,IRCPROTONAME,"DccPassive",prefs->DCCPassive);
 							
@@ -648,12 +763,7 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 								prefs->DCCChatAccept = 2;
 							if(IsDlgButtonChecked(hwndDlg, IDC_RADIO3) == BST_CHECKED)
 								prefs->DCCChatAccept = 3;
-							if(IsDlgButtonChecked(hwndDlg, IDC_RADIO4) == BST_CHECKED)
-								prefs->DCCChatIgnore = 1;
-							if(IsDlgButtonChecked(hwndDlg, IDC_RADIO5) == BST_CHECKED)
-								prefs->DCCChatIgnore = 2;
 							DBWriteContactSettingByte(NULL,IRCPROTONAME,"CtcpChatAccept",prefs->DCCChatAccept);
-							DBWriteContactSettingByte(NULL,IRCPROTONAME,"CtcpChatIgnore",prefs->DCCChatIgnore);								
 						}
 						default:break;
 						return TRUE;
@@ -680,14 +790,16 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_QUITMESSAGE), GWL_WNDPROC,(LONG)EditSubclassProc); 
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_PERFORMEDIT), GWL_WNDPROC,(LONG)EditSubclassProc); 
 
-			SendDlgItemMessage(hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_ADD),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED));
-			SendDlgItemMessage(hwndDlg,IDC_DELETE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_DELETE),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED));
+			SendDlgItemMessage(hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_ADD,"add",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+			SendDlgItemMessage(hwndDlg,IDC_DELETE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE,"delete",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
 			SendMessage(GetDlgItem(hwndDlg,IDC_ADD), BUTTONADDTOOLTIP, (WPARAM)Translate("Click to set commands that will be performed for this event"), 0);
 			SendMessage(GetDlgItem(hwndDlg,IDC_DELETE), BUTTONADDTOOLTIP, (WPARAM)Translate("Click to delete the commands for this event"), 0);
 		
 			SetDlgItemText(hwndDlg,IDC_ALIASEDIT,prefs->Alias);
 			SetDlgItemText(hwndDlg,IDC_QUITMESSAGE,prefs->QuitMessage);
 			CheckDlgButton(hwndDlg,IDC_PERFORM, ((prefs->Perform) ? (BST_CHECKED) : (BST_UNCHECKED)));
+			CheckDlgButton(hwndDlg,IDC_SCRIPT, ((prefs->ScriptingEnabled) ? (BST_CHECKED) : (BST_UNCHECKED)));
+			EnableWindow(GetDlgItem(hwndDlg, IDC_SCRIPT), bMbotInstalled);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), prefs->Perform);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_PERFORMEDIT), prefs->Perform);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_ADD), prefs->Perform);
@@ -771,6 +883,17 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				&& (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))	return true;
 				
 				
+			if ( HIWORD(wParam) == STN_CLICKED ) 
+			{ 
+				switch (LOWORD(wParam)) 
+				{
+					case IDC_CUSTOM:
+					{
+						CallService(MS_UTILS_OPENURL,0,(LPARAM) "http://members.chello.se/matrix/index.html" );
+					}break;
+					default:break;
+				} // switch
+			}
 			if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_PERFORMCOMBO)
 			{
 
@@ -852,6 +975,7 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 						
 					}break;
+
 					case ( IDC_DELETE):
 					{
 						int i = (int) SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETCURSEL, 0, 0);
@@ -913,6 +1037,8 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 							prefs->Perform = IsDlgButtonChecked(hwndDlg,IDC_PERFORM)== BST_CHECKED;
 							DBWriteContactSettingByte(NULL,IRCPROTONAME,"Perform",prefs->Perform);
+							prefs->ScriptingEnabled = IsDlgButtonChecked(hwndDlg,IDC_SCRIPT)== BST_CHECKED;
+							DBWriteContactSettingByte(NULL,IRCPROTONAME,"ScriptingEnabled",prefs->ScriptingEnabled);
 							if (IsWindowEnabled(GetDlgItem(hwndDlg, IDC_ADD)))
 								SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_ADD, BN_CLICKED), 0);
 
@@ -977,9 +1103,9 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 
 			TranslateDialogDefault(hwndDlg);
 
-			SendDlgItemMessage(hwndDlg,IDC_ADDSERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_ADD),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED));
-			SendDlgItemMessage(hwndDlg,IDC_DELETESERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_DELETE),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED));
-			SendDlgItemMessage(hwndDlg,IDC_EDITSERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_RENAME),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED));
+			SendDlgItemMessage(hwndDlg,IDC_ADDSERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_ADD,"add",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+			SendDlgItemMessage(hwndDlg,IDC_DELETESERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE,"delete",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+			SendDlgItemMessage(hwndDlg,IDC_EDITSERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_RENAME,"rename",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
 			SendMessage(GetDlgItem(hwndDlg,IDC_ADDSERVER), BUTTONADDTOOLTIP, (WPARAM)Translate("Add a new network"), 0);
 			SendMessage(GetDlgItem(hwndDlg,IDC_EDITSERVER), BUTTONADDTOOLTIP, (WPARAM)Translate("Edit this network"), 0);
 			SendMessage(GetDlgItem(hwndDlg,IDC_DELETESERVER), BUTTONADDTOOLTIP, (WPARAM)Translate("Delete this network"), 0);
@@ -1077,8 +1203,11 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 					}
 				}
 
+				SendDlgItemMessage(hwndDlg,IDC_SPIN1,UDM_SETRANGE,0,MAKELONG(999,20));
+				SendDlgItemMessage(hwndDlg,IDC_SPIN1,UDM_SETPOS,0,MAKELONG(prefs->OnlineNotificationTime,0));
+				SendDlgItemMessage(hwndDlg,IDC_SPIN2,UDM_SETRANGE,0,MAKELONG(200,0));
+				SendDlgItemMessage(hwndDlg,IDC_SPIN2,UDM_SETPOS,0,MAKELONG(prefs->OnlineNotificationLimit,0));
 				SetDlgItemText(hwndDlg,IDC_NICK,prefs->Nick);
-				SetDlgItemText(hwndDlg,IDC_ONLINETIMER,prefs->OnlineNotificationTime);
 				SetDlgItemText(hwndDlg,IDC_NICK2,prefs->AlternativeNick);
 				SetDlgItemText(hwndDlg,IDC_USERID,prefs->UserID);
 				SetDlgItemText(hwndDlg,IDC_NAME,prefs->Name);
@@ -1089,10 +1218,13 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 				SetDlgItemText(hwndDlg,IDC_RETRYCOUNT,prefs->RetryCount);			
 				CheckDlgButton(hwndDlg,IDC_ADDRESS, ((prefs->ShowAddresses) ? (BST_CHECKED) : (BST_UNCHECKED)));
 				CheckDlgButton(hwndDlg,IDC_OLDSTYLE, ((prefs->OldStyleModes) ? (BST_CHECKED) : (BST_UNCHECKED)));
+				CheckDlgButton(hwndDlg,IDC_CHANNELAWAY, ((prefs->ChannelAwayNotification) ? (BST_CHECKED) : (BST_UNCHECKED)));
 				CheckDlgButton(hwndDlg,IDC_ONLINENOTIF, ((prefs->AutoOnlineNotification) ? (BST_CHECKED) : (BST_UNCHECKED)));
 				EnableWindow(GetDlgItem(hwndDlg, IDC_ONLINETIMER), prefs->AutoOnlineNotification);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_NOTTEMP), prefs->AutoOnlineNotification);
-				CheckDlgButton(hwndDlg,IDC_NOTTEMP, ((prefs->AutoOnlineNotifTempAlso) ? (BST_CHECKED) : (BST_UNCHECKED)));
+				EnableWindow(GetDlgItem(hwndDlg, IDC_CHANNELAWAY), prefs->AutoOnlineNotification);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_SPIN1), prefs->AutoOnlineNotification);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_SPIN2), prefs->AutoOnlineNotification && prefs->ChannelAwayNotification);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), prefs->AutoOnlineNotification && prefs->ChannelAwayNotification);
 				CheckDlgButton(hwndDlg,IDC_IDENT, ((prefs->Ident) ? (BST_CHECKED) : (BST_UNCHECKED)));
 				EnableWindow(GetDlgItem(hwndDlg, IDC_IDENTSYSTEM), prefs->Ident);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_IDENTPORT), prefs->Ident);
@@ -1135,6 +1267,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 					|| LOWORD(wParam) == IDC_IDENTSYSTEM
 					|| LOWORD(wParam) == IDC_IDENTPORT
 					|| LOWORD(wParam) == IDC_ONLINETIMER
+					|| LOWORD(wParam) == IDC_LIMIT
 					|| LOWORD(wParam) == IDC_RETRYWAIT
 					|| LOWORD(wParam) == IDC_RETRYCOUNT
 					|| LOWORD(wParam) == IDC_SSL
@@ -1261,8 +1394,18 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 					}break;
 					case ( IDC_ONLINENOTIF):
 					{
-						EnableWindow(GetDlgItem(hwndDlg, IDC_NOTTEMP), IsDlgButtonChecked(hwndDlg, IDC_ONLINENOTIF)== BST_CHECKED);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_CHANNELAWAY), IsDlgButtonChecked(hwndDlg, IDC_ONLINENOTIF)== BST_CHECKED);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_ONLINETIMER), IsDlgButtonChecked(hwndDlg, IDC_ONLINENOTIF)== BST_CHECKED);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_SPIN1), IsDlgButtonChecked(hwndDlg, IDC_ONLINENOTIF)== BST_CHECKED);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_SPIN2), IsDlgButtonChecked(hwndDlg, IDC_ONLINENOTIF)== BST_CHECKED && IsDlgButtonChecked(hwndDlg, IDC_CHANNELAWAY)== BST_CHECKED);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), IsDlgButtonChecked(hwndDlg, IDC_ONLINENOTIF)== BST_CHECKED && IsDlgButtonChecked(hwndDlg, IDC_CHANNELAWAY)== BST_CHECKED);
+
+					}break;
+					case ( IDC_CHANNELAWAY):
+					{
+						EnableWindow(GetDlgItem(hwndDlg, IDC_SPIN2), IsDlgButtonChecked(hwndDlg, IDC_ONLINENOTIF)== BST_CHECKED && IsDlgButtonChecked(hwndDlg, IDC_CHANNELAWAY)== BST_CHECKED);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), IsDlgButtonChecked(hwndDlg, IDC_ONLINENOTIF)== BST_CHECKED && IsDlgButtonChecked(hwndDlg, IDC_CHANNELAWAY)== BST_CHECKED);
+
 					}break;
 
 					case ( IDC_RETRY):
@@ -1308,13 +1451,16 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 								lstrcpy( prefs->Password, "");
 								DBWriteContactSettingString(NULL,IRCPROTONAME,"Password",prefs->Password);
 							}
-							GetDlgItemText(hwndDlg,IDC_ONLINETIMER, prefs->OnlineNotificationTime, 5);
-							if (lstrlen(prefs->OnlineNotificationTime) == 0 ) 
-								lstrcpy(prefs->OnlineNotificationTime, "30");
-							if (StrToInt(prefs->OnlineNotificationTime) <10 ) 
-								lstrcpy(prefs->OnlineNotificationTime, "10");
-							SetDlgItemText(hwndDlg, IDC_ONLINETIMER, prefs->OnlineNotificationTime);
-							DBWriteContactSettingString(NULL,IRCPROTONAME,"OnlineNotificationTime",prefs->OnlineNotificationTime);
+
+							prefs->OnlineNotificationTime = SendDlgItemMessage(hwndDlg,IDC_SPIN1,UDM_GETPOS,0,0);
+							DBWriteContactSettingWord(NULL, IRCPROTONAME, "OnlineNotificationTime", (BYTE)prefs->OnlineNotificationTime);
+
+							prefs->OnlineNotificationLimit = SendDlgItemMessage(hwndDlg,IDC_SPIN2,UDM_GETPOS,0,0);
+							DBWriteContactSettingWord(NULL, IRCPROTONAME, "OnlineNotificationLimit", (BYTE)prefs->OnlineNotificationLimit);
+
+							prefs->ChannelAwayNotification = IsDlgButtonChecked(hwndDlg, IDC_CHANNELAWAY )== BST_CHECKED;
+							DBWriteContactSettingByte(NULL,IRCPROTONAME,"ChannelAwayNotification",prefs->ChannelAwayNotification);
+
 							GetDlgItemText(hwndDlg,IDC_NICK, prefs->Nick, 30);
 							DBWriteContactSettingString(NULL,IRCPROTONAME,"PNick",prefs->Nick);
 							DBWriteContactSettingString(NULL,IRCPROTONAME,"Nick",prefs->Nick);
@@ -1388,17 +1534,21 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 							if (prefs->AutoOnlineNotification)
 							{
 								if(!bTempDisableCheck)
-									SetChatTimer(OnlineNotifTimer, 1000, OnlineNotifTimerProc);
+								{
+									SetChatTimer(OnlineNotifTimer, 500, OnlineNotifTimerProc);
+									if(prefs->ChannelAwayNotification)
+										SetChatTimer(OnlineNotifTimer3, 1500, OnlineNotifTimerProc3);
+								}
 							}
 							else
 							{
 								if (!bTempForceCheck)
+								{
 									KillChatTimer(OnlineNotifTimer);
+									KillChatTimer(OnlineNotifTimer3);
+								}
 							}
 							
-							prefs->AutoOnlineNotifTempAlso = IsDlgButtonChecked(hwndDlg, IDC_NOTTEMP )== BST_CHECKED;
-							DBWriteContactSettingByte(NULL,IRCPROTONAME,"AutoOnlineNotifTempAlso",prefs->AutoOnlineNotifTempAlso);
-
 							int i = SendMessage(GetDlgItem(hwndDlg, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
 							SERVER_INFO * pData = (SERVER_INFO *)SendMessage(GetDlgItem(hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
 							if (pData && (int)pData !=CB_ERR)
@@ -1477,6 +1627,536 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 	}
 return (false);
 }
+
+
+
+
+
+
+
+
+
+
+
+static int CALLBACK IgnoreListSort(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+{
+	if(!IgnoreWndHwnd)
+		return 1;
+	char temp1[512];
+	char temp2[512];
+	LVITEM lvm;
+	lvm.mask = LVIF_TEXT;
+	lvm.iItem = lParam1;
+	lvm.iSubItem = lParamSort;
+	lvm.pszText = temp1;
+	lvm.cchTextMax = 511;
+	SendMessage(GetDlgItem(IgnoreWndHwnd, IDC_INFO_LISTVIEW), LVM_GETITEM, 0, (LPARAM)&lvm);
+	lvm.iItem = lParam2;
+	lvm.pszText = temp2;
+	SendMessage(GetDlgItem(IgnoreWndHwnd, IDC_INFO_LISTVIEW), LVM_GETITEM, 0, (LPARAM)&lvm);
+	if (lstrlen(temp1) !=0 && lstrlen(temp2) !=0)
+		return lstrcmpi(temp1, temp2);
+	else
+	{
+		if(lstrlen(temp1) ==0 )
+			return 1;
+		else
+			return -1;
+	}
+
+}
+static LRESULT CALLBACK ListviewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
+{ 
+    switch (msg) 
+	{
+		case WM_KEYUP :
+		{
+				if(	ListView_GetSelectionMark(GetDlgItem(GetParent(hwnd), IDC_LIST)) != -1)
+				{
+					EnableWindow(GetDlgItem(GetParent(hwnd), IDC_EDIT), true);
+					EnableWindow(GetDlgItem(GetParent(hwnd), IDC_DELETE), true);
+				}
+				else
+				{
+					EnableWindow(GetDlgItem(GetParent(hwnd), IDC_EDIT), false);
+					EnableWindow(GetDlgItem(GetParent(hwnd), IDC_DELETE), false);
+				}
+				if (wParam == VK_DELETE)
+					SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_DELETE, BN_CLICKED), 0);
+
+				if (wParam == VK_SPACE)
+					SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_EDIT, BN_CLICKED), 0);
+
+
+		}break;
+
+		default:break;
+	} 
+
+	return CallWindowProc(OldListViewProc, hwnd, msg, wParam, lParam); 
+
+}
+// Callback for the 'Add server' dialog
+BOOL CALLBACK AddIgnoreWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
+{
+	static char szOldMask[500];
+	switch (uMsg)
+	{
+		case WM_INITDIALOG:
+		{
+			 TranslateDialogDefault(hwndDlg);
+			 if(lParam == 0)
+			 {
+				 if(g_ircSession)
+					 SetWindowText(GetDlgItem(hwndDlg, IDC_NETWORK), g_ircSession.GetInfo().sNetwork.c_str());
+				 CheckDlgButton(hwndDlg, IDC_Q, BST_CHECKED);
+				 CheckDlgButton(hwndDlg, IDC_N, BST_CHECKED);
+				 CheckDlgButton(hwndDlg, IDC_I, BST_CHECKED);
+				 CheckDlgButton(hwndDlg, IDC_D, BST_CHECKED);
+				 CheckDlgButton(hwndDlg, IDC_C, BST_CHECKED);
+				 lstrcpyn(szOldMask, (char *) "\0", 499);
+			 }
+			 else
+				 lstrcpyn(szOldMask, (char *) lParam, 499);
+					
+		}break;
+
+		
+		case WM_COMMAND:
+		{
+			if (HIWORD(wParam) == BN_CLICKED)
+				switch (LOWORD(wParam))
+				{	
+					case IDN_YES:
+					{
+						char szMask[500];
+						char szNetwork[500];
+						String flags = "";
+						if(IsDlgButtonChecked(hwndDlg, IDC_Q) == BST_CHECKED)
+							flags += "q";
+						if(IsDlgButtonChecked(hwndDlg, IDC_N) == BST_CHECKED)
+							flags += "n";
+						if(IsDlgButtonChecked(hwndDlg, IDC_I) == BST_CHECKED)
+							flags += "i";
+						if(IsDlgButtonChecked(hwndDlg, IDC_D) == BST_CHECKED)
+							flags += "d";
+						if(IsDlgButtonChecked(hwndDlg, IDC_C) == BST_CHECKED)
+							flags += "c";
+						if(IsDlgButtonChecked(hwndDlg, IDC_M) == BST_CHECKED)
+							flags += "m";
+
+						GetWindowText(GetDlgItem(hwndDlg, IDC_MASK), szMask, 499);
+						GetWindowText(GetDlgItem(hwndDlg, IDC_NETWORK), szNetwork, 499);
+						
+						String Mask = GetWord(szMask, 0);
+						if(Mask.length() != 0)
+						{
+							if (!strchr(Mask.c_str(), '!') && !strchr(Mask.c_str(), '@'))
+								Mask += "!*@*";
+
+							if(flags != "")
+							{
+								if(*szOldMask)
+									RemoveIgnore(szOldMask);
+								AddIgnore(Mask, flags, szNetwork);
+							}
+						}
+
+						PostMessage (hwndDlg, WM_CLOSE, 0,0);
+
+					}break;
+
+					case IDN_NO:
+					{
+						PostMessage (hwndDlg, WM_CLOSE, 0,0);
+					}break;
+					default:break;
+				}
+
+		}break;
+
+
+		case WM_CLOSE:
+		{
+			PostMessage(IgnoreWndHwnd, IRC_FIXIGNOREBUTTONS, 0, 0);
+			DestroyWindow(hwndDlg);
+			return(true);
+		} break;
+		
+		default:break;
+	}
+
+	return false;
+}
+
+// Callback for the 'Connect preferences' dialog
+BOOL CALLBACK IgnorePrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
+{
+
+	switch (uMsg)
+	{
+	case WM_INITDIALOG:
+	{
+
+		TranslateDialogDefault(hwndDlg);
+		OldListViewProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_LIST),GWL_WNDPROC,(LONG)ListviewSubclassProc);
+
+		CheckDlgButton(hwndDlg, IDC_ENABLEIGNORE, prefs->Ignore?BST_CHECKED:BST_UNCHECKED);
+		CheckDlgButton(hwndDlg, IDC_IGNOREFILE, prefs->DCCFileEnabled?BST_UNCHECKED:BST_CHECKED);
+		CheckDlgButton(hwndDlg, IDC_IGNORECHAT, prefs->DCCChatEnabled?BST_UNCHECKED:BST_CHECKED);
+		CheckDlgButton(hwndDlg, IDC_IGNORECHANNEL, prefs->IgnoreChannelDefault?BST_CHECKED:BST_UNCHECKED);
+		if(prefs->DCCChatIgnore == 2)
+			CheckDlgButton(hwndDlg, IDC_IGNOREUNKNOWN, BST_CHECKED);
+
+		EnableWindow(GetDlgItem(hwndDlg, IDC_IGNOREUNKNOWN), prefs->DCCChatEnabled);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LIST), prefs->Ignore);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_IGNORECHANNEL), prefs->Ignore);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_ADD), prefs->Ignore);
+
+		SendDlgItemMessage(hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_ADD,"add",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+		SendDlgItemMessage(hwndDlg,IDC_DELETE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE,"delete",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+		SendDlgItemMessage(hwndDlg,IDC_EDIT,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_RENAME,"rename",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+		SendMessage(GetDlgItem(hwndDlg,IDC_ADD), BUTTONADDTOOLTIP, (WPARAM)Translate("Add new ignore"), 0);
+		SendMessage(GetDlgItem(hwndDlg,IDC_EDIT), BUTTONADDTOOLTIP, (WPARAM)Translate("Edit this ignore"), 0);
+		SendMessage(GetDlgItem(hwndDlg,IDC_DELETE), BUTTONADDTOOLTIP, (WPARAM)Translate("Delete this ignore"), 0);
+
+		LV_COLUMN lvC;
+		int COLUMNS_SIZES[3] ={195, 60,80};
+		char szBuffer[32];
+
+		lvC.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+		lvC.fmt = LVCFMT_LEFT;
+		for (int index=0;index < 3;index++)
+		{
+			lvC.iSubItem = index;
+			lvC.cx = COLUMNS_SIZES[index];
+
+			switch (index)
+			{
+				case 0: lstrcpy(szBuffer,Translate("Ignore mask")); break;
+				case 1: lstrcpy(szBuffer,"Flags"); break;
+				case 2: lstrcpy(szBuffer,Translate("Network")); break;
+			}
+			lvC.pszText = szBuffer;
+			ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_INFO_LISTVIEW),index,&lvC);
+		}
+		
+		ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_INFO_LISTVIEW), LVS_EX_FULLROWSELECT);
+		PostMessage(hwndDlg, IRC_REBUILDIGNORELIST, 0, 0);
+
+
+	} break;
+
+	case IRC_UPDATEIGNORELIST:
+	{
+		int j = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_LIST));
+		if (j >0) 
+		{
+			LVITEM lvm;
+			lvm.mask= LVIF_PARAM;
+			lvm.iSubItem = 0;
+			for( int i =0; i < j; i++)
+			{
+				lvm.iItem = i;
+				lvm.lParam = i;
+				ListView_SetItem(GetDlgItem(hwndDlg, IDC_LIST),&lvm);
+			}	
+		}
+	} break;
+	case IRC_REBUILDIGNORELIST:
+	{
+		IgnoreWndHwnd = hwndDlg;
+
+		ListView_DeleteAllItems	(GetDlgItem(hwndDlg, IDC_LIST));
+
+
+		if (pszIgnoreFile)
+		{
+			char * p1 = pszIgnoreFile;
+			char * p2 = NULL;
+			char * p3 = NULL;
+			char * pTemp = NULL;
+			while(*p1 != '\0')
+			{
+				while(*p1 == '\r' || *p1 == '\n')
+					p1++;
+				if (*p1 == '\0')
+					break;
+				p2 = strstr(p1, "\r\n");
+				if (!p2)
+					p2 = strchr(p1, '\0');
+
+				pTemp = p2;
+
+				while (pTemp > p1 && (*pTemp == '\r' || *pTemp == '\n' ||*pTemp == '\0' || *pTemp == ' '))
+					pTemp--;
+				pTemp++;
+
+				p3= new char[pTemp-p1+1];
+				lstrcpyn(p3, p1, pTemp-p1+1);
+				if(GetWord(p3, 0) != "" && GetWord(p3, 0) != "")
+				{
+					String mask = GetWord(p3, 0);
+					String flags = GetWord(p3, 1);
+					String network = GetWordAddress(p3, 2);
+					if(flags[0] == '+')
+					{
+						LVITEM lvItem;
+						HWND hListView = GetDlgItem(hwndDlg, IDC_LIST);
+						lvItem.iItem = ListView_GetItemCount(hListView); 
+						lvItem.mask = LVIF_TEXT|LVIF_PARAM ;
+						lvItem.iSubItem = 0;
+						lvItem.lParam = lvItem.iItem;
+						lvItem.pszText = (char *)mask.c_str();
+						lvItem.iItem = ListView_InsertItem(hListView,&lvItem);
+
+						lvItem.mask = LVIF_TEXT;
+						lvItem.iSubItem =1;
+						lvItem.pszText = (char *)flags.c_str();
+						ListView_SetItem(hListView,&lvItem);
+
+						lvItem.mask = LVIF_TEXT;
+						lvItem.iSubItem =2;
+						lvItem.pszText = (char *)network.c_str();
+						ListView_SetItem(hListView,&lvItem);
+					}
+				}
+				delete []p3;
+				p1 = p2;
+			}
+
+		}
+
+		SendMessage(hwndDlg, IRC_UPDATEIGNORELIST, 0, 0);
+		SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LVM_SORTITEMS, (WPARAM)0, (LPARAM)IgnoreListSort);
+		SendMessage(hwndDlg, IRC_UPDATEIGNORELIST, 0, 0);
+
+		PostMessage(hwndDlg, IRC_FIXIGNOREBUTTONS, 0, 0);
+
+	
+	}break;
+	case IRC_FIXIGNOREBUTTONS:
+	{
+			EnableWindow(GetDlgItem(hwndDlg, IDC_ADD), true);
+			if(ListView_GetSelectionMark(GetDlgItem(hwndDlg, IDC_LIST)) != -1)
+			{
+				EnableWindow(GetDlgItem(hwndDlg, IDC_EDIT), true);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), true);
+			}
+			else
+			{
+				EnableWindow(GetDlgItem(hwndDlg, IDC_EDIT), false);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), false);
+
+			}
+	}break;
+
+	case WM_COMMAND:
+	{
+//		if(	(LOWORD(wParam)		  == IDC_SERVER
+//				|| LOWORD(wParam) == IDC_PORT
+//				 && HIWORD(wParam) != CBN_SELCHANGE
+//				)
+//		&& (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))	return true;
+
+		SendMessage(GetParent(hwndDlg), PSM_CHANGED,0,0);
+		
+		if ( HIWORD(wParam) == STN_CLICKED ) 
+		{ 
+			switch (LOWORD(wParam)) 
+			{
+				case IDC_CUSTOM:
+				{
+					CallService(MS_UTILS_OPENURL,0,(LPARAM) "http://members.chello.se/matrix/troubleshooting.html" );
+				}break;
+				default:break;
+			} // switch
+		}
+		if (HIWORD(wParam) == BN_CLICKED)
+		{
+			switch (LOWORD(wParam))
+			{
+				case ( IDC_ENABLEIGNORE):
+				{
+					EnableWindow(GetDlgItem(hwndDlg, IDC_IGNORECHANNEL), IsDlgButtonChecked(hwndDlg, IDC_ENABLEIGNORE) == BST_CHECKED);
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LIST), IsDlgButtonChecked(hwndDlg, IDC_ENABLEIGNORE) == BST_CHECKED);
+					EnableWindow(GetDlgItem(hwndDlg, IDC_ADD), IsDlgButtonChecked(hwndDlg, IDC_ENABLEIGNORE) == BST_CHECKED);
+
+				}break;
+				case ( IDC_IGNORECHAT):
+				{
+					EnableWindow(GetDlgItem(hwndDlg, IDC_IGNOREUNKNOWN), IsDlgButtonChecked(hwndDlg, IDC_IGNORECHAT) == BST_UNCHECKED);
+
+				}break;
+				case ( IDC_ADD):
+				{
+					HWND hWnd = CreateDialogParam(g_hInstance,MAKEINTRESOURCE(IDD_ADDIGNORE), hwndDlg,AddIgnoreWndProc, 0);
+					SetWindowText(hWnd, Translate("Add Ignore"));
+					EnableWindow(GetDlgItem((hwndDlg), IDC_ADD), false);
+					EnableWindow(GetDlgItem((hwndDlg), IDC_EDIT), false);
+					EnableWindow(GetDlgItem((hwndDlg), IDC_DELETE), false);
+
+				}break;
+				case ( IDC_EDIT):
+				{
+					if(!IsWindowEnabled(GetDlgItem(hwndDlg, IDC_ADD)))
+						break;
+					char szMask[512];
+					char szFlags[512];
+					char szNetwork[512];
+					int i = ListView_GetSelectionMark(GetDlgItem(hwndDlg, IDC_LIST));
+					ListView_GetItemText(GetDlgItem(hwndDlg, IDC_LIST), i, 0, szMask, 511); 
+					ListView_GetItemText(GetDlgItem(hwndDlg, IDC_LIST), i, 1, szFlags, 511); 
+					ListView_GetItemText(GetDlgItem(hwndDlg, IDC_LIST), i, 2, szNetwork, 511); 
+					HWND hWnd = CreateDialogParam(g_hInstance,MAKEINTRESOURCE(IDD_ADDIGNORE), hwndDlg,AddIgnoreWndProc, (LPARAM)&szMask);
+					SetWindowText(hWnd, Translate("Edit Ignore"));
+					if(szFlags)
+					{
+						if(strchr(szFlags, 'q'))
+							CheckDlgButton(hWnd, IDC_Q, BST_CHECKED);
+						if(strchr(szFlags, 'n'))
+							CheckDlgButton(hWnd, IDC_N, BST_CHECKED);
+						if(strchr(szFlags, 'i'))
+							CheckDlgButton(hWnd, IDC_I, BST_CHECKED);
+						if(strchr(szFlags, 'd'))
+							CheckDlgButton(hWnd, IDC_D, BST_CHECKED);
+						if(strchr(szFlags, 'c'))
+							CheckDlgButton(hWnd, IDC_C, BST_CHECKED);
+						if(strchr(szFlags, 'm'))
+							CheckDlgButton(hWnd, IDC_M, BST_CHECKED);
+					}
+					SetWindowText(GetDlgItem(hWnd, IDC_MASK), szMask);
+					SetWindowText(GetDlgItem(hWnd, IDC_NETWORK), szNetwork);
+					EnableWindow(GetDlgItem((hwndDlg), IDC_ADD), false);
+					EnableWindow(GetDlgItem((hwndDlg), IDC_EDIT), false);
+					EnableWindow(GetDlgItem((hwndDlg), IDC_DELETE), false);
+
+				}break;
+				case ( IDC_DELETE):
+				{
+					if(!IsWindowEnabled(GetDlgItem(hwndDlg, IDC_DELETE)))
+						break;
+					char szMask[512];
+					int i = ListView_GetSelectionMark(GetDlgItem(hwndDlg, IDC_LIST));
+					ListView_GetItemText(GetDlgItem(hwndDlg, IDC_LIST), i, 0, szMask, 511); 
+					RemoveIgnore(szMask);
+				}break;
+
+				default:break;
+			}
+		}
+	} break;
+	case WM_NOTIFY :
+	{
+		switch(((LPNMHDR)lParam)->idFrom) 
+		{
+			case IDC_LIST:
+			{
+				switch (((NMHDR*)lParam)->code)
+				{
+					case NM_CLICK:
+					case NM_RCLICK:
+					{
+						if(ListView_GetSelectionMark(GetDlgItem(hwndDlg, IDC_LIST)) != -1)
+						{
+							SendMessage(hwndDlg, IRC_FIXIGNOREBUTTONS, 0, 0);
+						}
+						
+					} break;
+					case NM_DBLCLK:
+					{
+						SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_EDIT, BN_CLICKED), 0);
+						
+					} break;
+					case LVN_COLUMNCLICK :
+					{
+						LPNMLISTVIEW lv;
+						lv = (LPNMLISTVIEW)lParam;
+						SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LVM_SORTITEMS, (WPARAM)lv->iSubItem, (LPARAM)IgnoreListSort);
+						SendMessage(hwndDlg, IRC_UPDATEIGNORELIST, 0, 0);
+					} break;
+					default:break;
+				}
+			}
+			case 0:
+			{
+				switch (((LPNMHDR)lParam)->code) 
+				{
+					case PSN_APPLY:
+					{
+						prefs->DCCFileEnabled = IsDlgButtonChecked(hwndDlg,IDC_IGNOREFILE)== BST_UNCHECKED?1:0;
+						prefs->DCCChatEnabled = IsDlgButtonChecked(hwndDlg,IDC_IGNORECHAT)== BST_UNCHECKED?1:0;
+						prefs->Ignore = IsDlgButtonChecked(hwndDlg,IDC_ENABLEIGNORE)== BST_CHECKED?1:0;
+						prefs->IgnoreChannelDefault = IsDlgButtonChecked(hwndDlg,IDC_IGNORECHANNEL)== BST_CHECKED?1:0;
+						prefs->DCCChatIgnore = IsDlgButtonChecked(hwndDlg, IDC_IGNOREUNKNOWN) == BST_CHECKED?2:1;
+						DBWriteContactSettingByte(NULL,IRCPROTONAME,"EnableCtcpFile",prefs->DCCFileEnabled);
+						DBWriteContactSettingByte(NULL,IRCPROTONAME,"EnableCtcpChat",prefs->DCCChatEnabled);
+						DBWriteContactSettingByte(NULL,IRCPROTONAME,"Ignore",prefs->Ignore);
+						DBWriteContactSettingByte(NULL,IRCPROTONAME,"IgnoreChannelDefault",prefs->IgnoreChannelDefault);
+						DBWriteContactSettingByte(NULL,IRCPROTONAME,"CtcpChatIgnore",prefs->DCCChatIgnore);
+					}
+					default:break;					
+				}
+				return TRUE;
+			}break;
+			default:break;
+		}
+	}break;
+	case WM_DESTROY:
+	{
+		int i = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_LIST));
+		String S = "";
+		for(int j = 0; j<i; j++)
+		{
+			char szItem[512];
+			ListView_GetItemText(GetDlgItem(hwndDlg, IDC_LIST), j, 0, szItem, 511); 
+			S += szItem;
+			S += " ";
+			ListView_GetItemText(GetDlgItem(hwndDlg, IDC_LIST), j, 1, szItem, 511); 
+			S += szItem;
+			S += " ";
+			ListView_GetItemText(GetDlgItem(hwndDlg, IDC_LIST), j, 2, szItem, 511); 
+			S += szItem;
+			S += "\r\n";
+		}
+		char filepath[MAX_PATH];
+		mir_snprintf(filepath, sizeof(filepath), "%s\\%s_ignore.ini", mirandapath, IRCPROTONAME);
+		FILE *hFile = fopen(filepath,"wb");
+		if (hFile)
+		{
+			fputs(S.c_str(), hFile);
+			fclose(hFile);
+		}
+		if (pszIgnoreFile)
+			delete [] pszIgnoreFile;
+		pszIgnoreFile = IrcLoadFile(filepath);
+
+		SetWindowLong(GetDlgItem(hwndDlg,IDC_LIST),GWL_WNDPROC,(LONG)OldListViewProc);
+		IgnoreWndHwnd = NULL;
+		
+	} break;
+
+	default:break;
+	}
+return (false);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 int InitOptionsPages(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
@@ -1513,6 +2193,16 @@ int InitOptionsPages(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc = OtherPrefsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
+	ZeroMemory(&odp,sizeof(odp));
+	odp.cbSize = sizeof(odp);
+	odp.hInstance = g_hInstance;
+	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_IGNORE);
+	wsprintf(Temp, Translate("%s Ignore"), ALTIRCPROTONAME);
+	odp.pszTitle = Temp;
+	odp.pszGroup = Translate("Network");
+	odp.flags=ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
+	odp.pfnDlgProc = IgnorePrefsProc;
+	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	return 0;
 }
 

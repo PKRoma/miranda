@@ -24,8 +24,11 @@ extern char * IRCPROTONAME;
 extern HANDLE hNetlib;
 extern HANDLE hNetlibDCC;
 extern UINT_PTR	OnlineNotifTimer;	
+extern UINT_PTR	OnlineNotifTimer3;	
 extern HMODULE m_ssleay32;
 extern PREFERENCES * prefs;
+extern MM_INTERFACE mmi;
+extern bool bMbotInstalled;
 UINT_PTR	DCCTimer;	
 CRITICAL_SECTION m_resolve;
 int i = 0;
@@ -172,7 +175,7 @@ String CIrcMessage::AsString() const
 
 	s += sCommand;
 
-	for(int i=0; i < parameters.size(); i++)
+	for(int i=0; i < (int)parameters.size(); i++)
 	{
 		s += " ";
 		if( i == parameters.size() - 1 && (strchr(parameters[i].c_str(), ' ') || parameters[i][0] == ':' ) )// is last parameter ?
@@ -299,6 +302,7 @@ CIrcSession::~CIrcSession()
 	DeleteCriticalSection(&m_resolve);
 	DeleteCriticalSection(&m_dcc);
 	KillChatTimer(OnlineNotifTimer);
+	KillChatTimer(OnlineNotifTimer3);
 }
 
 
@@ -332,6 +336,7 @@ bool CIrcSession::Connect(const CIrcSessionInfo& info)
 			}
 		}
 #endif
+
 		if(Miranda_Terminated())
 		{
 			Disconnect();
@@ -425,6 +430,32 @@ void CIrcSession::Notify(const CIrcMessage* pmsg)
 }
 
 int CIrcSession::NLSend( const unsigned char* buf, int cbBuf)
+{
+	if(bMbotInstalled && prefs->ScriptingEnabled)
+	{
+		int iVal = NULL;
+		char * pszTemp = 0;
+		pszTemp = (char *) mmi.mmi_malloc( lstrlen((const char *) buf ) + 1);
+		lstrcpyn(pszTemp, (const char *)buf, lstrlen ((const char *)buf) + 1);
+
+		if(	Scripting_TriggerMSPRawOut(&pszTemp) && pszTemp )
+		{
+#ifdef IRC_SSL
+			if(sslSession.nSSLConnected == 1) 
+			{
+				iVal = pSSL_write(sslSession.m_ssl, pszTemp, lstrlen(pszTemp));	
+			} 
+			else 
+#endif
+				if (con)
+					iVal = Netlib_Send(con, (const char*)pszTemp, lstrlen(pszTemp), MSG_DUMPASTEXT);
+		}
+		if(pszTemp)
+			mmi.mmi_free ( pszTemp );
+
+		return iVal;
+	}
+	else
 	{
 
 #ifdef IRC_SSL
@@ -435,24 +466,40 @@ int CIrcSession::NLSend( const unsigned char* buf, int cbBuf)
 		else 
 #endif
 			if (con)
-			return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
-		return 0;
-
+				return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
 	}
+	return 0;
+
+}
 
 int CIrcSession::NLSend( const char* fmt, ...)
+{
+	va_list marker;
+	va_start(marker, fmt);
+
+	char szBuf[1024*4];
+	vsprintf(szBuf, fmt, marker);
+
+	va_end(marker);
+
+	return NLSend((unsigned char*)szBuf, strlen(szBuf));
+}
+int CIrcSession::NLSendNoScript( const unsigned char* buf, int cbBuf)
+{
+
+#ifdef IRC_SSL
+	if(sslSession.nSSLConnected == 1) 
 	{
-		va_list marker;
-		va_start(marker, fmt);
+		return pSSL_write(sslSession.m_ssl, buf, cbBuf);	
+	} 
+	else 
+#endif
+		if (con)
+			return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
 
-		char szBuf[1024*4];
-		vsprintf(szBuf, fmt, marker);
+	return 0;
 
-		va_end(marker);
-
-		return NLSend((unsigned char*)szBuf, strlen(szBuf));
-	}
-
+}
 int CIrcSession::NLReceive(unsigned char* buf, int cbBuf)
 {
 	int n = 0;
@@ -473,6 +520,12 @@ void CIrcSession::KillIdent()
 	return;
 }
 
+void CIrcSession::InsertIncomingEvent(char * pszRaw)
+{
+	CIrcMessage msg(pszRaw, true);
+	Notify(&msg);
+	return;
+}
 
 void CIrcSession::DoReceive()
 {
@@ -490,7 +543,7 @@ void CIrcSession::DoReceive()
 		if (!hBindPort || nb.wPort != m_info.iIdentServerPort)
 		{
 			char szTemp[200];
-			_snprintf(szTemp, sizeof(szTemp), "Error: unable to bind local port %u", m_info.iIdentServerPort);
+			mir_snprintf(szTemp, sizeof(szTemp), "Error: unable to bind local port %u", m_info.iIdentServerPort);
 			CallService(MS_NETLIB_LOG, (WPARAM) hNetlib , (LPARAM) szTemp );
 			KillIdent();
 		}
@@ -524,11 +577,39 @@ void CIrcSession::DoReceive()
 			while( *pEnd == '\r' || *pEnd == '\n' )
 				*pEnd++ = '\0';
 
+			// process single message by monitor objects
 			if( *pStart )
 			{
-				// process single message by monitor objects
-				CIrcMessage msg(pStart, true);
-				Notify(&msg);
+				if(bMbotInstalled && prefs->ScriptingEnabled)
+				{
+
+					char * pszTemp = NULL;
+					pszTemp = (char *) mmi.mmi_malloc(lstrlen(pStart) + 1); 
+					lstrcpyn(pszTemp, pStart, lstrlen (pStart) + 1);
+
+					if(	Scripting_TriggerMSPRawIn(&pszTemp) && pszTemp)
+					{
+						char* p1 = pszTemp;
+						// replace end-of-line with NULLs
+						while( *p1 != '\0')
+						{
+							if( *p1 == '\r' || *p1 == '\n')
+								*p1 = '\0';
+							*p1++;
+						}
+
+						CIrcMessage msg(pszTemp, true);
+						Notify(&msg);
+					}
+
+					if(pszTemp)
+						mmi.mmi_free( pszTemp );
+				}
+				else
+				{
+					CIrcMessage msg(pStart, true);
+					Notify(&msg);
+				}
 			}
 
 			cbInBuf -= pEnd - pStart;

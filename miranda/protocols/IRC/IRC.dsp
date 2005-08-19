@@ -181,6 +181,10 @@ SOURCE=.\output.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\scripting.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\services.cpp
 # End Source File
 # Begin Source File
@@ -204,11 +208,15 @@ SOURCE=.\AggressiveOptimize.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Plugins\chat\m_chat.h
+SOURCE=.\IcoLib.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\m_uninstaller.h
+SOURCE="..\..\plugins\chat unstableTab\m_chat.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\m_ircscript.h
 # End Source File
 # End Group
 # Begin Source File
@@ -241,6 +249,10 @@ SOURCE=.\Icons\block.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\Icons\dcc.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\Icons\delete.ico
 # End Source File
 # Begin Source File
@@ -269,6 +281,10 @@ SOURCE=.\IRC.rc
 # End Source File
 # Begin Source File
 
+SOURCE=.\Icons\join.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\Icons\list.ico
 # End Source File
 # Begin Source File
@@ -278,6 +294,10 @@ SOURCE=.\Icons\manager.ico
 # Begin Source File
 
 SOURCE=.\Icons\nick.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\part.ico
 # End Source File
 # Begin Source File
 

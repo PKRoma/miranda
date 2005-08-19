@@ -54,11 +54,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../include/m_addcontact.h"
 #include "../../include/m_button.h"
 #include "../../include/m_file.h"
-#include "../../plugins/chat/m_chat.h"
+#include "../../include/m_ignore.h"
+#include "../../plugins/chat unstable/m_chat.h"
+#include "m_ircscript.h"
 #include "resource.h"
 #include "irclib.h"
 #include "commandmonitor.h"
-#include "m_uninstaller.h"
+#include "IcoLib.h"
 
 #ifndef NDEBUG
 #include <crtdbg.h>
@@ -70,6 +72,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	IRC_QUESTIONCLOSE			(WM_USER+3)
 #define	IRC_ACTIVATE				(WM_USER+4)
 #define	IRC_INITMANAGER				(WM_USER+5)
+#define	IRC_REBUILDIGNORELIST		(WM_USER+6)
+#define	IRC_UPDATEIGNORELIST		(WM_USER+7)
+#define IRC_FIXIGNOREBUTTONS		(WM_USER+8)
 
 #define STR_QUITMESSAGE				"\002Miranda IM!\002 Smaller, Faster, Easier. http://miranda-im.org"
 #define STR_USERINFO				"I'm a happy Miranda IM user! Get it here: http://miranda-im.org"
@@ -163,7 +168,9 @@ typedef struct PREFERENCES_TYPE			// Preferences structure
 	char * Alias;
 	int ServerComboSelection;
 	int QuickComboSelection;
-	char OnlineNotificationTime[10];
+	int OnlineNotificationTime;
+	int OnlineNotificationLimit;
+	BYTE ScriptingEnabled;
 	BYTE IPFromServer;
 	BYTE ShowAddresses;
 	BYTE DisconnectDCCChats;
@@ -175,12 +182,12 @@ typedef struct PREFERENCES_TYPE			// Preferences structure
 	BYTE Retry;
 	BYTE DisableDefaultServer;
 	BYTE AutoOnlineNotification;
-	BYTE AutoOnlineNotifTempAlso;
 	BYTE SendKeepAlive;
 	BYTE JoinOnInvite;
 	BYTE Perform;
 	BYTE ForceVisible;
 	BYTE Ignore;
+	BYTE IgnoreChannelDefault;
 	BYTE UseServer;
 	BYTE DCCFileEnabled;
 	BYTE DCCChatEnabled;
@@ -189,12 +196,15 @@ typedef struct PREFERENCES_TYPE			// Preferences structure
 	BYTE DCCPassive;
 	BYTE ManualHost;
 	BYTE OldStyleModes;
+	BYTE ChannelAwayNotification;
 	POINT ListSize;
 	COLORREF colors[16];
+	HICON hIcon[13];
 
 } PREFERENCES;
 
 //main.cpp
+void						UpgradeCheck(void);
 
 //services.cpp
 void						HookEvents(void);
@@ -202,16 +212,18 @@ void						UnhookEvents(void);
 void						CreateServiceFunctions(void);
 void						ConnectToServer(void);
 void						DisconnectFromServer(void);
+int							Service_GCEventHook(WPARAM wParam,LPARAM lParam);
 
 //options.cpp
 void						InitPrefs(void);
 void						UnInitOptions(void);
 int							InitOptionsPages(WPARAM wParam,LPARAM lParam);
+void						AddIcons(void);
+HICON						LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);
 
 //tools.cpp
 int							WCCmp(char* wild, char *string);
 char *						IrcLoadFile(char * szPath);
-void						AddToUHTemp(String sCommand);
 void						AddToJTemp(String sCommand);
 void __cdecl				forkthread_r(void *param);
 unsigned long				forkthread (	void (__cdecl *threadcode)(void*),unsigned long stacksize,void *arg);
@@ -222,7 +234,8 @@ char *						GetWordAddress(const char * text, int index);
 String						RemoveLinebreaks(String Message);
 char*						my_strstri(char *s1, char *s2) ;
 char *						DoColorCodes (const char * text, bool bStrip, bool bReplacePercent);
-int							DoEvent(int iEvent, const char* pszWindow, const char * pszNick, const char* pszText, const char* pszStatus, const char* pszUserInfo, DWORD dwItemData, bool bAddToLog, bool bIsMe);
+int							DoEvent(int iEvent, const char* pszWindow, const char * pszNick, const char* pszText, const char* pszStatus, const char* pszUserInfo, DWORD dwItemData, bool bAddToLog, bool bIsMe,time_t timestamp = 1);
+int							CallChatEvent(WPARAM wParam, LPARAM lParam);
 String						ModeToStatus(char sMode) ;
 String						PrefixToStatus(char cPrefix) ;
 void						SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse,TIMERPROC lpTimerFunc);
@@ -232,6 +245,10 @@ String						MakeWndID(String sWindow);
 bool						FreeWindowItemData(String window, CHANNELINFO* wis);
 bool						AddWindowItemData(String window, const char * pszLimit, const char * pszMode, const char * pszPassword, const char * pszTopic);
 void						FindLocalIP(HANDLE con);
+void						DoUserhostWithReason(int type, String reason, bool bSendCommand, String userhostparams, ...);
+String						GetNextUserhostReason(int type);
+void						ClearUserhostReasons(int type);
+String						PeekAtReasons(int type);
 //clist.cpp
 HANDLE						CList_AddContact(struct CONTACT_TYPE * user, bool InList, bool SetOnline);
 bool						CList_SetAllOffline(BYTE ChatsToo);
@@ -266,6 +283,18 @@ LRESULT CALLBACK			MgrEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 //commandmonitor.cpp
 VOID CALLBACK				KeepAliveTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
 VOID CALLBACK				OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
+VOID CALLBACK				OnlineNotifTimerProc3(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
+
+//scripting.cpp
+int Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam);
+int Scripting_InsertRawOut(WPARAM wParam,LPARAM lParam);
+int Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam);
+int Scripting_InsertGuiOut(WPARAM wParam,LPARAM lParam);
+int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam);
+BOOL Scripting_TriggerMSPRawIn(char ** pszRaw);
+BOOL Scripting_TriggerMSPRawOut(char ** pszRaw);
+BOOL Scripting_TriggerMSPGuiIn(WPARAM * wparam, GCEVENT * gce);
+BOOL Scripting_TriggerMSPGuiOut(GCHOOK * gch);
 
 #ifndef NDEBUG
 #include <crtdbg.h>

@@ -28,7 +28,7 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_JOIN                ICON    DISCARDABLE     "Icons/irc.ico"
+IDI_MAIN                ICON    DISCARDABLE     "Icons/irc.ico"
 IDI_ADD                 ICON    DISCARDABLE     "Icons\\add.ico"
 IDI_BLOCK               ICON    DISCARDABLE     "Icons\\block.ico"
 IDI_DELETE              ICON    DISCARDABLE     "Icons\\delete.ico"
@@ -40,6 +40,7 @@ IDI_QUICK               ICON    DISCARDABLE     "Icons\\quick.ico"
 IDI_RENAME              ICON    DISCARDABLE     "Icons\\rename.ico"
 IDI_SHOW                ICON    DISCARDABLE     "Icons\\show.ico"
 IDI_LOGO                ICON    DISCARDABLE     "Icons\\world.ico"
+IDI_DCC                 ICON    DISCARDABLE     "Icons\\dcc.ico"
 #endif    // Neutral (Default) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -94,22 +95,40 @@ BEGIN
                     WS_EX_RIGHT
     EDITTEXT        IDC_RETRYCOUNT,261,124,44,12,ES_AUTOHSCROLL | ES_NUMBER,
                     WS_EX_RIGHT
-    CONTROL         "Online notification of contacts",IDC_ONLINENOTIF,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,205,108,10
-    CONTROL         "Check temporary also",IDC_NOTTEMP,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,164,218,98,10
-    EDITTEXT        IDC_ONLINETIMER,267,204,38,12,ES_AUTOHSCROLL | ES_NUMBER,
-                    WS_EX_RIGHT
-    CONTROL         "Keep connection alive",IDC_KEEPALIVE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,166,132,10
     CONTROL         "Force visible (-i)",IDC_FORCEVISIBLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,153,139,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,153,134,10
     CONTROL         "Rejoin channel if kicked",IDC_REJOINONKICK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,166,139,10
-    CONTROL         "Disable tray balloon on error",IDC_DISABLEERROR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,153,139,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,164,134,10
     CONTROL         "Rejoin channels on reconnect",IDC_REJOINCHANNELS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,179,139,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,175,134,10
+    CONTROL         "Disable tray balloon on error",IDC_DISABLEERROR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,186,134,10
+    CONTROL         "Show addresses",IDC_ADDRESS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,197,134,10
+    CONTROL         "Use server window",IDC_USESERVER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,208,134,10
+    CONTROL         "Show server window on startup",IDC_SHOWSERVER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,219,129,10
+    CONTROL         "Keep connection alive",IDC_KEEPALIVE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,144,153,161,10
+    CONTROL         "Automatically join on invite",IDC_AUTOJOIN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,144,164,161,10
+    CONTROL         "'Old style' mode changes",IDC_OLDSTYLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,144,175,161,10
+    CONTROL         "Update online statuses for users",IDC_ONLINENOTIF,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,186,132,10
+    EDITTEXT        IDC_ONLINETIMER,276,196,29,12,ES_AUTOHSCROLL | ES_NUMBER,
+                    WS_EX_RIGHT
+    CONTROL         "Spin1",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,300,197,11,14
+    CONTROL         "Update statuses in channel nicklist",IDC_CHANNELAWAY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,208,131,10
+    EDITTEXT        IDC_LIMIT,276,218,29,12,ES_AUTOHSCROLL | ES_NUMBER,
+                    WS_EX_RIGHT
+    CONTROL         "Spin2",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,300,219,11,14
     CONTROL         "Enable",IDC_STARTUP,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,15,73,10
     CONTROL         "Internet address",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
@@ -137,20 +156,12 @@ BEGIN
                     WS_EX_TRANSPARENT
     LTEXT           "Fear the monkeys!!!",IDC_STATIC,72,4,63,8,NOT 
                     WS_VISIBLE
-    LTEXT           "timer (s): ",IDC_STATIC,267,196,31,8
+    LTEXT           "Check every (s):",IDC_STATIC,158,198,116,8
     EDITTEXT        IDC_SSL,107,58,28,12,ES_AUTOHSCROLL | ES_READONLY | 
                     ES_NUMBER | NOT WS_TABSTOP,WS_EX_RIGHT
     LTEXT           "SSL",IDC_STATIC,107,50,28,8,0,WS_EX_TRANSPARENT
-    CONTROL         "Use server window",IDC_USESERVER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,205,136,10
-    CONTROL         "Show server window on startup",IDC_SHOWSERVER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,218,137,10
-    CONTROL         "Automatically join on invite",IDC_AUTOJOIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,179,102,10
-    CONTROL         "Show addresses",IDC_ADDRESS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,192,136,10
-    CONTROL         "'Old style' mode changes",IDC_OLDSTYLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,158,192,107,10
+    CONTROL         "Don't check if more than (users):",IDC_STATIC,"Static",
+                    SS_LEFTNOWORDWRAP | WS_GROUP,158,220,115,8
 END
 
 IDD_INFO DIALOG DISCARDABLE  0, 0, 267, 193
@@ -229,22 +240,28 @@ BEGIN
                     WS_TABSTOP,10,15,107,10
     COMBOBOX        IDC_PERFORMCOMBO,10,38,118,99,CBS_DROPDOWNLIST | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_PERFORMEDIT,10,56,118,89,ES_MULTILINE | 
+    EDITTEXT        IDC_PERFORMEDIT,10,56,118,68,ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | 
                     WS_VSCROLL | WS_HSCROLL | WS_GROUP
     CONTROL         "&Set",IDC_ADD,"MButtonClass",WS_DISABLED | WS_TABSTOP,
-                    29,150,30,14,0x18000000L
+                    29,134,30,14,0x18000000L
     CONTROL         "&Del",IDC_DELETE,"MButtonClass",WS_DISABLED | 
-                    WS_TABSTOP,78,150,30,14,0x18000000L
-    EDITTEXT        IDC_QUITMESSAGE,10,189,273,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_ALIASEDIT,145,15,138,149,ES_MULTILINE | 
+                    WS_TABSTOP,78,134,30,14,0x18000000L
+    EDITTEXT        IDC_QUITMESSAGE,10,174,273,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ALIASEDIT,145,15,138,102,ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | 
                     WS_VSCROLL | WS_HSCROLL
-    GROUPBOX        "Perform",IDC_STATIC,2,0,134,170
-    LTEXT           "Network",IDC_STATIC,10,30,110,8,0,WS_EX_TRANSPARENT
-    GROUPBOX        "Alias",IDC_STATIC,138,0,153,170
-    GROUPBOX        "Other",IDC_STATIC,2,170,289,42
-    LTEXT           "Quit message",IDC_STATIC,10,181,135,8
+    GROUPBOX        "Perform",IDC_STATIC,2,0,132,155
+    LTEXT           "Perform on event:",IDC_STATIC,10,30,110,8,0,
+                    WS_EX_TRANSPARENT
+    GROUPBOX        "Alias",IDC_STATIC,139,0,152,124
+    GROUPBOX        "Other",IDC_STATIC,2,155,289,57
+    LTEXT           "Quit message",IDC_STATIC,10,166,135,8
+    GROUPBOX        "Scripting support",IDC_STATIC,139,124,152,31
+    CONTROL         "Enable",IDC_SCRIPT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,151,136,38,10
+    CONTROL         "Go to the IRC protocol website for help and information",
+                    IDC_CUSTOM,"Hyperlink",WS_TABSTOP | 0x1,9,196,273,9
 END
 
 IDD_ADDSERVER DIALOGEX 0, 0, 182, 136
@@ -295,7 +312,7 @@ IDD_QUICKCONN DIALOGEX 0, 0, 201, 148
 STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_SERVERCOMBO,12,54,177,69,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
@@ -330,18 +347,23 @@ IDD_USERINFO DIALOG DISCARDABLE  0, 0, 222, 132
 STYLE DS_CENTER | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg"
 BEGIN
-    EDITTEXT        IDC_WILDCARD,12,88,40,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_USER,66,88,40,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_HOST,120,88,89,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "&Save",IDC_BUTTON,159,105,50,14,WS_DISABLED
-    LTEXT           "Nick",IDC_STATIC,12,80,40,8
-    LTEXT           "User",IDC_STATIC,66,80,40,8
-    LTEXT           "Address",IDC_STATIC,120,80,89,8
+    EDITTEXT        IDC_WILDCARD,12,91,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_USER,66,91,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_HOST,120,91,89,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Save",IDC_BUTTON,159,107,50,14,WS_DISABLED
+    LTEXT           "Nick",IDC_STATIC,12,83,40,8
+    LTEXT           "User",IDC_STATIC,66,83,40,8
+    LTEXT           "Address",IDC_STATIC,120,83,89,8
     LTEXT           "@",IDC_STATIC,109,90,8,8
-    GROUPBOX        "Hostmask",IDC_STATIC,6,68,209,57
-    LTEXT           "",IDC_DEFAULT,12,7,197,58
+    GROUPBOX        "Hostmask",IDC_STATIC,6,73,209,52
+    LTEXT           "",IDC_DEFAULT,12,30,197,37
     LTEXT           "!",IDC_STATIC,57,90,8,8
-    PUSHBUTTON      "&Clear all",IDC_BUTTON2,98,105,50,14
+    PUSHBUTTON      "&Clear all",IDC_BUTTON2,96,107,50,14
+    GROUPBOX        "Online detection mode",IDC_STATIC,6,7,209,66
+    CONTROL         "Basic",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,23,17,33,10
+    CONTROL         "Wildcard enabled network search",IDC_RADIO2,"Button",
+                    BS_AUTORADIOBUTTON,69,17,122,10
 END
 
 IDD_CHANMANAGER DIALOGEX 0, 0, 250, 250
@@ -430,7 +452,7 @@ STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE |
     WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Miranda IRC"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT,5,52,65,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT2,88,52,118,14,ES_AUTOHSCROLL
@@ -452,46 +474,36 @@ STYLE DS_CENTER | WS_POPUP | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg"
 BEGIN
-    CONTROL         "Enable incoming requests",IDC_ENABLEXFER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,12,130,10
-    COMBOBOX        IDC_COMBO,234,27,52,85,CBS_DROPDOWNLIST | WS_VSCROLL | 
+    COMBOBOX        IDC_COMBO,98,36,52,85,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "Normal",IDC_SLOW,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
-                    WS_TABSTOP,60,29,38,10
-    CONTROL         "Send-ahead",IDC_FAST,"Button",BS_AUTORADIOBUTTON,110,29,
-                    60,10
+                    WS_TABSTOP,98,18,76,10
+    CONTROL         "Send-ahead",IDC_FAST,"Button",BS_AUTORADIOBUTTON,182,18,
+                    102,10
     CONTROL         "Attempt reverse DCC (good if firewalled)",IDC_PASSIVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,12,145,10
-    CONTROL         "Enable incoming requests",IDC_ENABLECHAT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,59,250,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,56,273,10
     CONTROL         "none",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
-                    WS_TABSTOP,37,83,40,10
+                    WS_TABSTOP,98,88,162,10
     CONTROL         "everyone on the contact list",IDC_RADIO2,"Button",
-                    BS_AUTORADIOBUTTON,83,83,110,10
-    CONTROL         "everyone",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,199,83,
-                    54,10
-    CONTROL         "none",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
-                    WS_TABSTOP,37,111,40,10
-    CONTROL         "everyone not on the contact list",IDC_RADIO5,"Button",
-                    BS_AUTORADIOBUTTON,83,111,158,10
+                    BS_AUTORADIOBUTTON,98,99,186,10
+    CONTROL         "everyone",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,98,110,
+                    186,10
     CONTROL         "Disconnect DCC chats when disconnecting from server",
-                    IDC_DISC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,129,
+                    IDC_DISC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,129,
                     257,10
     CONTROL         "Manually set external IP:",IDC_ENABLEIP,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,158,130,10
     EDITTEXT        IDC_IP,140,156,144,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_USERINFO,10,190,274,14,ES_AUTOHSCROLL
-    GROUPBOX        "Client-to-Client File Transfers",IDC_STATIC,2,0,289,46
-    GROUPBOX        "Automatically accept chat requests from... ",IDC_STATIC,
-                    27,73,233,24
-    GROUPBOX        "Ignore chat requests from...",IDC_STATIC,27,100,233,24
+    GROUPBOX        "Client-to-Client File Transfers",IDC_STATIC,2,0,289,75
     LTEXT           "User information",IDC_STATIC,10,182,144,8
     GROUPBOX        "Client-to-Client Protocol",IDC_STATIC,2,145,289,67
-    GROUPBOX        "Client-to-Client Chats",IDC_STATIC,2,46,289,99
-    LTEXT           "Send mode:",IDC_STATIC,10,29,48,8
-    LTEXT           "Packet size (b):",IDC_STATIC,178,29,55,8
+    GROUPBOX        "Client-to-Client Chats",IDC_STATIC,2,75,289,70
+    LTEXT           "Send mode:",IDC_STATIC,10,19,79,8
+    LTEXT           "Packet size (b):",IDC_STATIC,10,38,88,8
     CONTROL         "Get IP address from server",IDC_FROMSERVER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,27,170,113,10
+    LTEXT           "Auto-accept from:",IDC_STATIC,10,100,82,8
 END
 
 IDD_MESSAGEBOX DIALOGEX 0, 0, 220, 68
@@ -505,6 +517,65 @@ BEGIN
     DEFPUSHBUTTON   "&Deny",IDN_NO,120,47,50,14
     LTEXT           "",IDC_TEXT,43,13,170,31,0,WS_EX_TRANSPARENT
     ICON            "",IDC_LOGO,7,13,21,20
+END
+
+IDD_PREFS_IGNORE DIALOGEX 0, 0, 294, 214
+STYLE DS_CENTER | WS_POPUP | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CONTROL         "Enable (*)",IDC_ENABLEIGNORE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,12,78,10
+    CONTROL         "Ignore channel messages by default",IDC_IGNORECHANNEL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,12,180,10
+    CONTROL         "List1",IDC_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,10,27,240,104
+    CONTROL         "&Add",IDC_ADD,"MButtonClass",WS_DISABLED | WS_TABSTOP,
+                    258,37,27,14,0x18000000L
+    CONTROL         "&Edit",IDC_EDIT,"MButtonClass",WS_DISABLED | WS_TABSTOP,
+                    258,62,27,14,0x18000000L
+    CONTROL         "&Del",IDC_DELETE,"MButtonClass",WS_DISABLED | 
+                    WS_TABSTOP,258,87,27,14,0x18000000L
+    CONTROL         "Ignore filetransfer requests",IDC_IGNOREFILE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,164,240,10
+    CONTROL         "Ignore DCC Chat requests",IDC_IGNORECHAT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,179,240,10
+    CONTROL         "Ignore DCC Chat requests from unknown contacts",
+                    IDC_IGNOREUNKNOWN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    16,194,256,10
+    GROUPBOX        "Ignore users",-1,2,0,289,150
+    GROUPBOX        "Other",-1,2,150,289,62
+    CONTROL         "(*) Queries from users on your contactlist are never ignored",
+                    IDC_CUSTOM,"Hyperlink",WS_TABSTOP | 0x1,10,136,274,9
+END
+
+IDD_ADDIGNORE DIALOGEX 0, 0, 220, 126
+STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | 
+    WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW | WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg"
+BEGIN
+    EDITTEXT        IDC_MASK,7,15,137,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_NETWORK,150,15,63,14,ES_AUTOHSCROLL
+    CONTROL         "Queries",IDC_Q,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,
+                    47,54,10
+    CONTROL         "Messages",IDC_M,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    80,47,64,10
+    CONTROL         "Notices",IDC_N,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    150,47,57,10
+    CONTROL         "Invites",IDC_I,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,
+                    66,54,10
+    CONTROL         "CTCP",IDC_C,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,80,66,
+                    64,10
+    CONTROL         "DCC",IDC_D,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,66,
+                    57,10
+    DEFPUSHBUTTON   "&Accept",IDN_YES,93,105,50,14
+    PUSHBUTTON      "&Cancel",IDN_NO,163,105,50,14
+    LTEXT           "Ignore mask ( nick!user@host )",IDC_STATIC,7,7,136,8
+    LTEXT           "Network (*)",IDC_STATIC,150,7,63,8
+    GROUPBOX        "Ignore events",IDC_STATIC,7,36,206,46
+    CTEXT           "(*) blank to set this mask for all networks",IDC_STATIC,
+                    7,90,206,8
 END
 
 
@@ -578,8 +649,11 @@ BEGIN
         HORZGUIDE, 15
         HORZGUIDE, 38
         HORZGUIDE, 56
-        HORZGUIDE, 170
-        HORZGUIDE, 189
+        HORZGUIDE, 117
+        HORZGUIDE, 124
+        HORZGUIDE, 141
+        HORZGUIDE, 155
+        HORZGUIDE, 174
     END
 
     IDD_ADDSERVER, DIALOG
@@ -629,16 +703,14 @@ BEGIN
     BEGIN
         LEFTMARGIN, 6
         RIGHTMARGIN, 215
+        VERTGUIDE, 62
         TOPMARGIN, 7
         BOTTOMMARGIN, 125
-        HORZGUIDE, 15
-        HORZGUIDE, 19
-        HORZGUIDE, 36
-        HORZGUIDE, 48
-        HORZGUIDE, 65
-        HORZGUIDE, 68
-        HORZGUIDE, 76
-        HORZGUIDE, 88
+        HORZGUIDE, 22
+        HORZGUIDE, 30
+        HORZGUIDE, 73
+        HORZGUIDE, 91
+        HORZGUIDE, 114
     END
 
     IDD_CHANMANAGER, DIALOG
@@ -689,15 +761,11 @@ BEGIN
         VERTGUIDE, 260
         VERTGUIDE, 284
         BOTTOMMARGIN, 212
-        HORZGUIDE, 17
-        HORZGUIDE, 29
+        HORZGUIDE, 23
         HORZGUIDE, 42
-        HORZGUIDE, 46
-        HORZGUIDE, 59
-        HORZGUIDE, 73
-        HORZGUIDE, 88
-        HORZGUIDE, 100
-        HORZGUIDE, 116
+        HORZGUIDE, 61
+        HORZGUIDE, 75
+        HORZGUIDE, 104
         HORZGUIDE, 134
         HORZGUIDE, 145
         HORZGUIDE, 163
@@ -714,6 +782,35 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 61
         HORZGUIDE, 13
+    END
+
+    IDD_PREFS_IGNORE, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 291
+        VERTGUIDE, 10
+        VERTGUIDE, 250
+        VERTGUIDE, 258
+        BOTTOMMARGIN, 212
+        HORZGUIDE, 17
+        HORZGUIDE, 27
+        HORZGUIDE, 140
+        HORZGUIDE, 150
+    END
+
+    IDD_ADDIGNORE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 213
+        VERTGUIDE, 20
+        VERTGUIDE, 80
+        VERTGUIDE, 150
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 119
+        HORZGUIDE, 15
+        HORZGUIDE, 36
+        HORZGUIDE, 52
+        HORZGUIDE, 71
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -798,6 +895,8 @@ LANGUAGE LANG_SWEDISH, SUBLANG_DEFAULT
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_SERVER              ICON    DISCARDABLE     "Icons\\server.ico"
+IDI_PART                ICON    DISCARDABLE     "Icons\\part.ico"
+IDI_JOIN                ICON    DISCARDABLE     "Icons\\join.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

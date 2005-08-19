@@ -35,7 +35,7 @@ static String FormatOutput (const CIrcMessage* pmsg)
 			char temp[200]; *temp = '\0';
 			mir_snprintf(temp, 499, Translate(	"WallOps from %s: " ), pmsg->prefix.sNick.c_str());
 			sMessage = temp;
-			for(int i=0; i < pmsg->parameters.size(); i++)
+			for(int i=0; i < (int)pmsg->parameters.size(); i++)
 			{
 				sMessage = sMessage + pmsg->parameters[i];
 				if (i != pmsg->parameters.size()-1)
@@ -49,7 +49,7 @@ static String FormatOutput (const CIrcMessage* pmsg)
 			char temp[500]; *temp = '\0';
 			mir_snprintf(temp, sizeof(temp), Translate(	"%s is away" ), pmsg->parameters[1].c_str());
 			sMessage = temp;
-			for(int i=2; i < pmsg->parameters.size(); i++)
+			for(int i=2; i < (int)pmsg->parameters.size(); i++)
 			{
 				sMessage = sMessage + ": " + pmsg->parameters[i];
 				if (i != pmsg->parameters.size()-1)
@@ -62,7 +62,7 @@ static String FormatOutput (const CIrcMessage* pmsg)
 			char temp[256]; *temp = '\0';
 			mir_snprintf(temp, 255, Translate(	"%s invites you to %s" ), pmsg->prefix.sNick.c_str(), pmsg->parameters[1].c_str());
 			sMessage = temp;
-			for(int i=2; i < pmsg->parameters.size(); i++)
+			for(int i=2; i < (int)pmsg->parameters.size(); i++)
 			{
 				sMessage = sMessage  +": "+ pmsg->parameters[i];
 				if (i != pmsg->parameters.size()-1)
@@ -79,7 +79,7 @@ static String FormatOutput (const CIrcMessage* pmsg)
 		if (pmsg->sCommand=="303")  // ISON command
 		{
 			sMessage= Translate("These are online: ");
-			for(int i=1; i < pmsg->parameters.size(); i++)
+			for(int i=1; i < (int)pmsg->parameters.size(); i++)
 			{
 				sMessage = sMessage + pmsg->parameters[i];
 				if (i != pmsg->parameters.size()-1)
@@ -119,7 +119,7 @@ static String FormatOutput (const CIrcMessage* pmsg)
 			
 			mir_snprintf(temp, 499, Translate(	"Notice to %s: " ), pmsg->parameters[0].c_str());
 			sMessage = temp;
-			for(int i=1; i < pmsg->parameters.size(); i++)
+			for(int i=1; i < (int)pmsg->parameters.size(); i++)
 			{
 				sMessage = sMessage + pmsg->parameters[i];
 				if (i != pmsg->parameters.size()-1)
@@ -140,7 +140,7 @@ static String FormatOutput (const CIrcMessage* pmsg)
 			return sMessage;
 		}
 		if (pmsg->parameters.size() >1)
-			for(int i=1; i < pmsg->parameters.size(); i++)
+			for(int i=1; i < (int)pmsg->parameters.size(); i++)
 			{
 				sMessage = sMessage+pmsg->parameters[i] + " ";
 			}
@@ -150,7 +150,7 @@ static String FormatOutput (const CIrcMessage* pmsg)
 		if( pmsg->prefix.sNick.length() )
 			sMessage= pmsg->prefix.sNick + " ";
 		sMessage =sMessage + pmsg->sCommand + " ";
-		for(int i=0; i < pmsg->parameters.size(); i++)
+		for(int i=0; i < (int)pmsg->parameters.size(); i++)
 		{
 			sMessage = sMessage + pmsg->parameters[i] + " ";
 		}

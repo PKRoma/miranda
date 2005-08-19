@@ -77,6 +77,7 @@ public:
 	bool OnIrc_BACKFROMAWAY(const CIrcMessage* pmsg);
 	bool OnIrc_SETAWAY(const CIrcMessage* pmsg);
 	bool OnIrc_JOINERROR(const CIrcMessage* pmsg);
+	bool OnIrc_UNKNOWN(const CIrcMessage* pmsg);
 	bool OnIrc_ERROR(const CIrcMessage* pmsg);
 	bool OnIrc_NOOFCHANNELS(const CIrcMessage* pmsg);
 	bool OnIrc_PINGPONG(const CIrcMessage* pmsg);

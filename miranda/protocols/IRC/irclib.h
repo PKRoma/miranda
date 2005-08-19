@@ -229,7 +229,9 @@ public :
 
 	int NLSend(const unsigned char* buf, int cbBuf);
 	int NLSend(const char* fmt, ...);
+	int NLSendNoScript( const unsigned char* buf, int cbBuf);
 	int NLReceive(unsigned char* buf, int cbBuf);
+	void InsertIncomingEvent(char * pszRaw);
 
 	operator bool() const { return con!= NULL; }
 
@@ -298,10 +300,14 @@ public :
 
 	CIrcMonitor(CIrcSession& session);
 	virtual ~CIrcMonitor();
+	static IrcCommandsMapsListEntry m_handlersMapsListEntry;
+	static HandlersMap m_handlers;
 
+	PfnIrcMessageHandler FindMethod(const char* lpszName);
+	PfnIrcMessageHandler FindMethod(IrcCommandsMapsListEntry* pMapsList, const char* lpszName);
+
+	static void __stdcall OnCrossThreadsMessage(void * p);
 	virtual void OnIrcMessage(const CIrcMessage* pmsg);
-
-protected :
 	CIrcSession& m_session;
 
 	virtual IrcCommandsMapsListEntry* GetIrcCommandsMap() 
@@ -310,15 +316,11 @@ protected :
 	virtual void OnIrcAll(const CIrcMessage* pmsg) {}
 	virtual void OnIrcDefault(const CIrcMessage* pmsg) {}
 	virtual void OnIrcDisconnected() {}
+protected :
+
 
 private :
-	static IrcCommandsMapsListEntry m_handlersMapsListEntry;
-	static HandlersMap m_handlers;
 
-	PfnIrcMessageHandler FindMethod(const char* lpszName);
-	PfnIrcMessageHandler FindMethod(IrcCommandsMapsListEntry* pMapsList, const char* lpszName);
-
-	static void __stdcall OnCrossThreadsMessage(void * p);
 };
 
 // define an IRC command-to-member map.
@@ -327,9 +329,9 @@ private :
 protected :	\
 	virtual IrcCommandsMapsListEntry* GetIrcCommandsMap()	\
 				{ return &m_handlersMapsListEntry; }	\
-private :	\
 	static CIrcMonitor::IrcCommandsMapsListEntry m_handlersMapsListEntry;	\
 	static CIrcMonitor::HandlersMap m_handlers;	\
+private :	\
 protected :
 
 // IRC command-to-member map's declaration. 

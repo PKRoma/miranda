@@ -47,13 +47,15 @@ String			WhoisAwayReply;
 String			sTopic;
 String			sTopicName;
 String			NamesToWho = "";
+String			ChannelsToWho = "";
+String			NamesToUserhost = "";
 
 extern char *	pszIgnoreFile;
 extern String	StatusMessage;
 extern char *	pszPerformFile;
 extern char		mirandapath[MAX_PATH];
-extern bool		WhoInProgress ;
-extern int		ManualWhoCount ;
+extern HANDLE	hMenuQuick ;			
+extern HANDLE	hMenuServer ;			
 extern HANDLE	hMenuJoin ;			
 extern HANDLE	hMenuNick ;				
 extern HANDLE	hMenuList ;	
@@ -67,9 +69,11 @@ extern PREFERENCES *prefs;
 extern CIrcSession g_ircSession;
 extern char *	IRCPROTONAME;
 extern UINT_PTR	OnlineNotifTimer;
+extern UINT_PTR	OnlineNotifTimer3;
 extern UINT_PTR	KeepAliveTimer = 0;
 extern CRITICAL_SECTION m_resolve;
 extern GETEVENTFUNC			pfnAddEvent;
+HWND			IgnoreWndHwnd = NULL;
 
 extern HANDLE					hNetlib;	
 
@@ -98,9 +102,7 @@ static VOID CALLBACK TimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 
 	if (lstrlen(prefs->MyHost)== 0 && g_ircSession)
 	{
-		String s = (String)"WHO " + g_ircSession.GetInfo().sNick;
-		WhoInProgress = true;
-		g_ircSession << CIrcMessage(s.c_str(), false, false);
+		DoUserhostWithReason(2, ("S"+ g_ircSession.GetInfo().sNick).c_str(), true, "%s", g_ircSession.GetInfo().sNick.c_str());
 	}
 
 	return;
@@ -127,11 +129,56 @@ VOID CALLBACK KeepAliveTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 
 	return;
 }
+VOID CALLBACK OnlineNotifTimerProc3(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
+{
+	if(!prefs->ChannelAwayNotification || OldStatus == ID_STATUS_OFFLINE || OldStatus == ID_STATUS_CONNECTING || (!prefs->AutoOnlineNotification && !bTempForceCheck) || bTempDisableCheck) 
+	{
+		KillChatTimer(OnlineNotifTimer3);
+		ChannelsToWho == "";
+		return;
+	}
+
+	String name = GetWord((char *)ChannelsToWho.c_str(), 0);
+
+	if (name == "" )
+	{
+		ChannelsToWho = "";
+		int count = (int)CallService(MS_GC_GETSESSIONCOUNT, 0, (LPARAM)IRCPROTONAME);
+		for (int i = 0; i < count ; i++)
+		{
+			GC_INFO gci = {0};
+			gci.Flags = BYINDEX|NAME|TYPE|COUNT;
+			gci.iItem = i;
+			gci.pszModule = IRCPROTONAME;
+			if(!CallService(MS_GC_GETINFO, 0, (LPARAM)&gci) && gci.iType == GCW_CHATROOM)
+			{
+				if(gci.iCount <= prefs->OnlineNotificationLimit)
+					ChannelsToWho += (String)gci.pszName + " ";
+			}
+		}
+	}
+
+	if(ChannelsToWho == "") {
+		SetChatTimer(OnlineNotifTimer3, 60*1000, OnlineNotifTimerProc3);
+		return;
+	}
+	name = GetWord((char *)ChannelsToWho.c_str(), 0);
+	DoUserhostWithReason(2, "S" + name, true, "%s", name.c_str());
+	String temp = GetWordAddress(ChannelsToWho.c_str(), 1);
+	ChannelsToWho = temp;
+	if (iTempCheckTime)
+		SetChatTimer(OnlineNotifTimer3, iTempCheckTime*1000, OnlineNotifTimerProc3);
+	else
+		SetChatTimer(OnlineNotifTimer3, prefs->OnlineNotificationTime*1000, OnlineNotifTimerProc3);
+	return;
+
+
+}
 
 VOID CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 {
 
-	if(OldStatus == ID_STATUS_OFFLINE || OldStatus == ID_STATUS_CONNECTING || !prefs->AutoOnlineNotification) 
+	if(OldStatus == ID_STATUS_OFFLINE || OldStatus == ID_STATUS_CONNECTING || (!prefs->AutoOnlineNotification && !bTempForceCheck) || bTempDisableCheck) 
 	{
 		KillChatTimer(OnlineNotifTimer);
 		NamesToWho == "";
@@ -140,8 +187,9 @@ VOID CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime
 	}
 
 	String name = GetWord((char *)NamesToWho.c_str(), 0);
+	String name2 = GetWord((char *)NamesToUserhost.c_str(), 0);
 
-	if (name == "" )
+	if (name == "" && name2 == "")
 	{
 		HANDLE hContact;
 		DBVARIANT dbv;
@@ -153,38 +201,47 @@ VOID CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime
 		   szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		   if (szProto != NULL && !lstrcmpi(szProto, IRCPROTONAME)) 
 		   {
-				if(DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0) == 0 && DBGetContactSettingByte(hContact, IRCPROTONAME, "DCC", 0) == 0)
-				{
-					if (DBGetContactSettingByte(hContact,"CList", "NotOnList", 0) == 0 || DBGetContactSettingByte(hContact,"CList", "NotOnList", 0) == 1 && prefs->AutoOnlineNotifTempAlso)
+			   BYTE bRoom = DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0);
+			   if(bRoom == 0)
+			   {
+				   BYTE bDCC = DBGetContactSettingByte(hContact, IRCPROTONAME, "DCC", 0);
+				   BYTE bHidden = DBGetContactSettingByte(hContact,"CList", "Hidden", 0);
+					if(bDCC == 0 &&  bHidden == 0)
 					{
-						if (DBGetContactSettingByte(hContact,"CList", "Hidden", 0) == 0)
+						if (!DBGetContactSetting(hContact, IRCPROTONAME, "Default", &dbv) && dbv.type == DBVT_ASCIIZ) 
 						{
+							BYTE bAdvanced = DBGetContactSettingByte(hContact,IRCPROTONAME, "AdvancedMode", 0) ;
 
-							if (!DBGetContactSetting(hContact, IRCPROTONAME, "Default", &dbv) && dbv.type == DBVT_ASCIIZ) 
+							
+							if (!bAdvanced)
 							{
-								if (!IsChannel(dbv.pszVal))
-								{
+								DBFreeVariant(&dbv);
+								if (!DBGetContactSetting(hContact, IRCPROTONAME, "Nick", &dbv) && dbv.type == DBVT_ASCIIZ) 
+								{	
+									NamesToUserhost += (String)dbv.pszVal + " ";
 									DBFreeVariant(&dbv);
-									DBVARIANT dbv2;
-									
-									char * DBNick = NULL;
-									char * DBWildcard = NULL;
-									if (!DBGetContactSetting(hContact, IRCPROTONAME, "Nick", &dbv) && dbv.type == DBVT_ASCIIZ) DBNick = dbv.pszVal;
-									if (!DBGetContactSetting(hContact, IRCPROTONAME, "UWildcard", &dbv2) && dbv2.type == DBVT_ASCIIZ) DBWildcard = dbv2.pszVal;
-
-									if (DBNick && (!DBWildcard ||!WCCmp(CharLower(DBWildcard), CharLower(DBNick)))) 
-										NamesToWho += (String)DBNick + " ";
-									else if(DBWildcard)
-										NamesToWho += (String)DBWildcard + " ";
-
-									if(DBNick)
-										DBFreeVariant(&dbv);
-
-									if(DBWildcard)
-										DBFreeVariant(&dbv2);
 								}
-								else
+							}
+							else
+							{
+								DBFreeVariant(&dbv);
+								DBVARIANT dbv2;
+								
+								char * DBNick = NULL;
+								char * DBWildcard = NULL;
+								if (!DBGetContactSetting(hContact, IRCPROTONAME, "Nick", &dbv) && dbv.type == DBVT_ASCIIZ) DBNick = dbv.pszVal;
+								if (!DBGetContactSetting(hContact, IRCPROTONAME, "UWildcard", &dbv2) && dbv2.type == DBVT_ASCIIZ) DBWildcard = dbv2.pszVal;
+
+								if (DBNick && (!DBWildcard ||!WCCmp(CharLower(DBWildcard), CharLower(DBNick)))) 
+									NamesToWho += (String)DBNick + " ";
+								else if(DBWildcard)
+									NamesToWho += (String)DBWildcard + " ";
+
+								if(DBNick)
 									DBFreeVariant(&dbv);
+
+								if(DBWildcard)
+									DBFreeVariant(&dbv2);
 							}
 						}
 					}
@@ -194,29 +251,43 @@ VOID CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime
 		}
 	}
 
-	if (name == "" )
+	if (NamesToWho == "" && NamesToUserhost == "")
 	{
 		SetChatTimer(OnlineNotifTimer, 60*1000, OnlineNotifTimerProc);
 		return;
 	}
 
 	name = GetWord((char *)NamesToWho.c_str(), 0);
+	name2 = GetWord((char *)NamesToUserhost.c_str(), 0);
+	String temp;
+	if(name != "")
+	{
+		DoUserhostWithReason(2, "S" + name, true, "%s", name.c_str());
+		temp = GetWordAddress(NamesToWho.c_str(), 1);
+		NamesToWho = temp;
+	}
 
-	String s = (String)"WHO " + name;
-
-	WhoInProgress = true;
-
-	if (g_ircSession)
-		g_ircSession << CIrcMessage(s.c_str(), false, false);
-
-	String temp = GetWordAddress(NamesToWho.c_str(), 1);
-
-	NamesToWho = temp;
+	if(name2 != "")
+	{
+		String params;
+		for(int i = 0; i < 2; i++)
+		{
+			params = "";
+			for(int j = 0; j < 5; j++)
+			{
+				params += GetWord(NamesToUserhost.c_str(), i *5 + j) + " ";
+			}
+			if(params[0] != ' ')
+				DoUserhostWithReason(1, (String)"S" + params, true, params);
+		}
+		temp = GetWordAddress(NamesToUserhost.c_str(), 15);
+		NamesToUserhost  = temp;
+	}
 
 	if (iTempCheckTime)
 		SetChatTimer(OnlineNotifTimer, iTempCheckTime*1000, OnlineNotifTimerProc);
 	else
-		SetChatTimer(OnlineNotifTimer, StrToInt(prefs->OnlineNotificationTime)*1000, OnlineNotifTimerProc);
+		SetChatTimer(OnlineNotifTimer, prefs->OnlineNotificationTime*1000, OnlineNotifTimerProc);
 
 	return;
 	
@@ -329,6 +400,7 @@ CMyMonitor::CMyMonitor() : irc::CIrcDefaultMonitor(g_ircSession)
 	IRC_MAP_ENTRY(CMyMonitor, "401", OnIrc_WHOIS_NO_USER)
 	IRC_MAP_ENTRY(CMyMonitor, "403", OnIrc_JOINERROR)
 	IRC_MAP_ENTRY(CMyMonitor, "416", OnIrc_WHOTOOLONG)
+	IRC_MAP_ENTRY(CMyMonitor, "421", OnIrc_UNKNOWN)
 	IRC_MAP_ENTRY(CMyMonitor, "422", OnIrc_ENDMOTD)
 	IRC_MAP_ENTRY(CMyMonitor, "433", OnIrc_NICK_ERR)
 	IRC_MAP_ENTRY(CMyMonitor, "471", OnIrc_JOINERROR)
@@ -378,11 +450,10 @@ bool CMyMonitor::OnIrc_WELCOME(const CIrcMessage* pmsg)
 }
 bool CMyMonitor::OnIrc_WHOTOOLONG(const CIrcMessage* pmsg)
 {
-	if (ManualWhoCount > 0)
-	{
-		ManualWhoCount--;		
+	String command = GetNextUserhostReason(2);
+	if(command[0] == 'U')
 		ShowMessage(pmsg); 
-	}
+
 	return true;
 }
 bool CMyMonitor::OnIrc_BACKFROMAWAY(const CIrcMessage* pmsg)
@@ -442,7 +513,7 @@ bool CMyMonitor::OnIrc_SETAWAY(const CIrcMessage* pmsg)
 }
 bool CMyMonitor::OnIrc_JOIN(const CIrcMessage* pmsg)
 {
-	if (pmsg->parameters.size() > 0 && pmsg->m_bIncoming) {
+	if (pmsg->parameters.size() > 0 && pmsg->m_bIncoming && pmsg->prefix.sNick != g_ircSession.GetInfo().sNick) {
 		String host = pmsg->prefix.sUser + "@" + pmsg->prefix.sHost;
 		DoEvent(GC_EVENT_JOIN, pmsg->parameters[0].c_str(), pmsg->prefix.sNick.c_str(), NULL, "Normal", host.c_str(), NULL, true, false); 
 	}
@@ -470,7 +541,7 @@ bool CMyMonitor::OnIrc_QUIT(const CIrcMessage* pmsg)
 			gcd.pszModule = IRCPROTONAME;
 			gcd.iType = GC_EVENT_CONTROL;
 			gce.pDest = &gcd;
-			CallService(MS_GC_EVENT, WINDOW_OFFLINE, (LPARAM)&gce);
+			CallChatEvent( SESSION_OFFLINE, (LPARAM)&gce);
 
 		}
 
@@ -500,7 +571,7 @@ bool CMyMonitor::OnIrc_PART(const CIrcMessage* pmsg)
 			gcd.pszModule = IRCPROTONAME;
 			gcd.iType = GC_EVENT_CONTROL;
 			gce.pDest = &gcd;
-			CallService(MS_GC_EVENT, WINDOW_OFFLINE, (LPARAM)&gce);
+			CallChatEvent( SESSION_OFFLINE, (LPARAM)&gce);
 	
 		}
 	}
@@ -528,10 +599,10 @@ bool CMyMonitor::OnIrc_KICK(const CIrcMessage* pmsg)
 		gcd.pszModule = IRCPROTONAME;
 		gcd.iType = GC_EVENT_CONTROL;
 		gce.pDest = &gcd;
-		CallService(MS_GC_EVENT, WINDOW_OFFLINE, (LPARAM)&gce);
+		CallChatEvent( SESSION_OFFLINE, (LPARAM)&gce);
 
 		if (prefs->RejoinIfKicked) {
-			CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, pmsg->parameters[0].c_str(), NULL, NULL, NULL, NULL, NULL, FALSE, FALSE);
+			CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, pmsg->parameters[0].c_str(), NULL, NULL, NULL, NULL, NULL, FALSE, FALSE, 0);
 			if (wi && wi->pszPassword)
 				PostIrcMessage("/JOIN %s %s", (char *)pmsg->parameters[0].c_str(), wi->pszPassword);
 			else
@@ -561,13 +632,13 @@ bool CMyMonitor::OnIrc_MODEQUERY(const CIrcMessage* pmsg)
 				bAdd = false;
 			if (*p1 == 'l' && bAdd)
 			{
-				if (pmsg->parameters.size() > iParametercount)
+				if ((int)pmsg->parameters.size() > iParametercount)
 					sLimit = pmsg->parameters[iParametercount];
 				iParametercount++;
 			}
 			if (*p1 == 'k' && bAdd)
 			{
-				if (pmsg->parameters.size() > iParametercount)
+				if ((int)pmsg->parameters.size() > iParametercount)
 					sPassword = pmsg->parameters[iParametercount];
 				iParametercount++;
 			}
@@ -608,14 +679,14 @@ bool CMyMonitor::OnIrc_MODE(const CIrcMessage* pmsg)
 					bAdd = false;
 					sModes += "-";
 				}
-				if (*p1 == 'l' && bAdd && iParametercount < pmsg->parameters.size())
+				if (*p1 == 'l' && bAdd && iParametercount < (int)pmsg->parameters.size())
 				{
 					bContainsValidModes = true;
 					sModes += "l";
 					sParams += " " + pmsg->parameters[iParametercount];
 					iParametercount++;
 				}
-				if (*p1 == 'b' || *p1 == 'k' && iParametercount < pmsg->parameters.size())
+				if (*p1 == 'b' || *p1 == 'k' && iParametercount < (int)pmsg->parameters.size())
 				{
 					bContainsValidModes = true;
 					sModes += *p1;
@@ -626,7 +697,7 @@ bool CMyMonitor::OnIrc_MODE(const CIrcMessage* pmsg)
 				if(strchr(sUserModes.c_str(), *p1))
 				{
 					String sStatus = ModeToStatus(*p1);
-					if(pmsg->parameters.size() > iParametercount)
+					if((int)pmsg->parameters.size() > iParametercount)
 					{
 						DoEvent(bAdd?GC_EVENT_ADDSTATUS:GC_EVENT_REMOVESTATUS, pmsg->parameters[0].c_str(), pmsg->parameters[iParametercount].c_str(), pmsg->prefix.sNick.c_str(), sStatus.c_str(), NULL, NULL, prefs->OldStyleModes?false:true, false); 
 						iParametercount++;
@@ -649,7 +720,7 @@ bool CMyMonitor::OnIrc_MODE(const CIrcMessage* pmsg)
 				char temp[256]; *temp = '\0';
 				mir_snprintf(temp, 255, Translate(	"%s sets mode %s" ), pmsg->prefix.sNick.c_str(), pmsg->parameters[1].c_str());
 				sMessage = temp;
-				for(int i=2; i < pmsg->parameters.size(); i++)
+				for(int i=2; i < (int)pmsg->parameters.size(); i++)
 				{
 					sMessage = sMessage  +" "+ pmsg->parameters[i];
 				}
@@ -657,7 +728,7 @@ bool CMyMonitor::OnIrc_MODE(const CIrcMessage* pmsg)
 			}
 			else if(bContainsValidModes)
 			{
-				for(int i=iParametercount; i < pmsg->parameters.size(); i++)
+				for(int i=iParametercount; i < (int)pmsg->parameters.size(); i++)
 				{
 					sParams += " "+ pmsg->parameters[i];
 				}
@@ -677,7 +748,7 @@ bool CMyMonitor::OnIrc_MODE(const CIrcMessage* pmsg)
 				char temp[256]; *temp = '\0';
 				mir_snprintf(temp, 255, Translate(	"%s sets mode %s" ), pmsg->prefix.sNick.c_str(), pmsg->parameters[1].c_str());
 				sMessage = temp;
-				for(int i=2; i < pmsg->parameters.size(); i++)
+				for(int i=2; i < (int)pmsg->parameters.size(); i++)
 				{
 					sMessage = sMessage  +" "+ pmsg->parameters[i];
 				}
@@ -695,10 +766,11 @@ bool CMyMonitor::OnIrc_NICK(const CIrcMessage* pmsg)
 {
 	if (pmsg->m_bIncoming && pmsg->parameters.size() > 0) 
 	{
+		bool bIsMe = pmsg->prefix.sNick.c_str() == g_ircSession.GetInfo().sNick?true:false;
 		CIrcDefaultMonitor::OnIrc_NICK(pmsg);
 		String host = pmsg->prefix.sUser + "@" + pmsg->prefix.sHost;
-		DoEvent(GC_EVENT_NICK, NULL, pmsg->prefix.sNick.c_str(), pmsg->parameters[0].c_str(), NULL, host.c_str(), NULL, true, false); 
-		DoEvent(GC_EVENT_CHID, NULL, pmsg->prefix.sNick.c_str(), pmsg->parameters[0].c_str(), NULL, NULL, NULL, true, false); 
+		DoEvent(GC_EVENT_NICK, NULL, pmsg->prefix.sNick.c_str(), pmsg->parameters[0].c_str(), NULL, host.c_str(), NULL, true, bIsMe); 
+		DoEvent(GC_EVENT_CHUID, NULL, pmsg->prefix.sNick.c_str(), pmsg->parameters[0].c_str(), NULL, NULL, NULL, true, false); 
 		struct CONTACT_TYPE user ={(char *)pmsg->prefix.sNick.c_str(), (char *)pmsg->prefix.sUser.c_str(), (char *)pmsg->prefix.sHost.c_str(), false, false, false};
 		HANDLE hContact = CList_FindContact(&user);
 		if (hContact) 
@@ -716,6 +788,7 @@ bool CMyMonitor::OnIrc_NICK(const CIrcMessage* pmsg)
 	return true;
 }
 
+
 bool CMyMonitor::OnIrc_NOTICE(const CIrcMessage* pmsg)
 {
 	if (pmsg->m_bIncoming && pmsg->parameters.size() > 1) 
@@ -726,11 +799,41 @@ bool CMyMonitor::OnIrc_NOTICE(const CIrcMessage* pmsg)
 		if(!prefs->Ignore || !IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'n'))
 		{
 			String S;
+			String S2;
 			if(pmsg->prefix.sNick.length() > 0)
 				S = pmsg->prefix.sNick + " (" +m_session.GetInfo().sNetwork + ")";
 			else
 				S = m_session.GetInfo().sNetwork;
-			DoEvent(GC_EVENT_NOTICE, IsChannel(pmsg->parameters[0])?pmsg->parameters[0].c_str():NULL, S.c_str(), pmsg->parameters[1].c_str(), NULL, NULL, NULL, true, false); 
+
+			if(IsChannel(pmsg->parameters[0]))
+			{
+				S2 = pmsg->parameters[0].c_str();
+			}
+			else
+			{
+				String S3;
+				GC_INFO gci = {0};
+				gci.Flags = BYID|TYPE;
+				gci.pszModule = IRCPROTONAME;
+
+				S3 = GetWord(pmsg->parameters[1].c_str(), 0);
+
+				if(S3[0] == '[' && S3[1] == '#' && S3[S3.length()-1] == ']')
+				{
+					String Wnd;
+					S3.erase(S3.length()-1, 1);
+					S3.erase(0,1);
+					Wnd = MakeWndID(S3);
+					gci.pszID = (char *) Wnd.c_str();
+					if(!CallService(MS_GC_GETINFO, 0, (LPARAM)&gci) && gci.iType == GCW_CHATROOM)
+						S2 = GetWord(gci.pszID, 0);
+					else
+						S2 = "";
+				}
+				else
+					S2 = "";
+			}
+			DoEvent(GC_EVENT_NOTICE, S2 != "" ? S2.c_str() : NULL, S.c_str(), pmsg->parameters[1].c_str(), NULL, NULL, NULL, true, false); 
 		}
 	}
 	else
@@ -792,7 +895,7 @@ bool CMyMonitor::OnIrc_PRIVMSG(const CIrcMessage* pmsg)
 
 			struct CONTACT_TYPE user ={(char *)pmsg->prefix.sNick.c_str(), (char *)pmsg->prefix.sUser.c_str(), (char *)pmsg->prefix.sHost.c_str(), false, false, false};
 
-			if (DBGetContactSettingDword(NULL, "Ignore", "Mask1", 0)&1 == 1) 
+			if (CallService(MS_IGNORE_ISIGNORED, NULL, IGNOREEVENT_MESSAGE)) 
 			{
 				if (!CList_FindContact(&user))
 					return true;
@@ -804,6 +907,7 @@ bool CMyMonitor::OnIrc_PRIVMSG(const CIrcMessage* pmsg)
 				if (!hContact || (hContact && DBGetContactSettingByte(hContact,"CList", "Hidden", 0) == 1))
 					return true;
 			}
+
 			ccs.hContact = CList_AddContact(&user, false, true);
 			ccs.wParam = 0;
 			ccs.lParam = (LPARAM) & pre;
@@ -817,11 +921,14 @@ bool CMyMonitor::OnIrc_PRIVMSG(const CIrcMessage* pmsg)
 			return true;
 		}
 		
-		if (bIsChannel && !(pmsg->m_bIncoming && prefs->Ignore && IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'c')))
+		if (bIsChannel)
 		{
-			if(!pmsg->m_bIncoming)
-				mess = ReplaceString(mess, "%%", "%");
-			DoEvent(GC_EVENT_MESSAGE, pmsg->parameters[0].c_str(), pmsg->m_bIncoming?pmsg->prefix.sNick.c_str():m_session.GetInfo().sNick.c_str(), mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming?false:true); 
+			if(!(pmsg->m_bIncoming && prefs->Ignore && IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'm')))
+			{
+				if(!pmsg->m_bIncoming)
+					mess = ReplaceString(mess, "%%", "%");
+				DoEvent(GC_EVENT_MESSAGE, pmsg->parameters[0].c_str(), pmsg->m_bIncoming?pmsg->prefix.sNick.c_str():m_session.GetInfo().sNick.c_str(), mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming?false:true); 				
+			}
 			return true;
 		}
 	}
@@ -847,15 +954,30 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 		String command = GetWord(mess.c_str(), 0);
 		transform (command.begin(),command.end(), command.begin(), tolower);
 
-		if(pmsg->sCommand != "PRIVMSG" && command != "action") // treat CTCP actions as messages when ignoring
+		// should it be ignored?
+		if(prefs->Ignore)
 		{
-			if(prefs->Ignore && IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'd'))
-				return true;
-		}
-		else
-		{
-			if(prefs->Ignore && IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'c'))
-				return true;
+			if(IsChannel(pmsg->parameters[0]))
+			{
+				if (command == "action" && IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'm'))
+					return true;
+
+			}
+			else
+			{
+				if (command == "action")
+				{
+					if(IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'q'))
+						return true;
+				}
+				else if (command == "dcc")
+				{
+					if( IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'd'))
+						return true;
+				}
+				else if (IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'c'))
+					return true;
+			}
 		}
 
 		if(pmsg->sCommand == "PRIVMSG")
@@ -865,7 +987,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 			{
 				mess.erase(0,6);
 
-				if(IsChannel(pmsg->parameters[0]) && !(pmsg->m_bIncoming && prefs->Ignore && IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'c')))
+				if(IsChannel(pmsg->parameters[0]) )
 				{
 					if(mess.length() >1)
 					{
@@ -876,7 +998,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 						DoEvent(GC_EVENT_ACTION, pmsg->parameters[0].c_str(), pmsg->m_bIncoming?pmsg->prefix.sNick.c_str():m_session.GetInfo().sNick.c_str(), mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming?false:true); 
 					}
 				}
-				else
+				else if (pmsg->m_bIncoming)
 				{
 					mess.insert(0, pmsg->prefix.sNick.c_str());
 					mess.insert(0, "* ");
@@ -899,7 +1021,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 			// incoming VERSION
 			else if (pmsg->m_bIncoming && command == "version")
 			{
-				PostIrcMessage("/NOTICE %s \001VERSION Miranda IRC v %s, (c) J Persson 2004\001", pmsg->prefix.sNick.c_str(), "%version");
+				PostIrcMessage("/NOTICE %s \001VERSION Miranda IRC v %s, (c) J Persson 2003 - 2005\001", pmsg->prefix.sNick.c_str(), "%version");
 				char temp[300];
 				mir_snprintf(temp, sizeof(temp), Translate("CTCP VERSION requested by %s"), pmsg->prefix.sNick.c_str());
 				DoEvent(GC_EVENT_INFORMATION, "Network log", NULL, temp, NULL, NULL, NULL, true, false); 
@@ -1204,6 +1326,13 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 						String host = pmsg->prefix.sUser + "@" + pmsg->prefix.sHost;
 						CList_AddDCCChat(pmsg->prefix.sNick, host, dwAdr, iPort); // add a CHAT event to the clist
 					}
+					else
+					{
+						char szTemp[512];
+						mir_snprintf(szTemp, sizeof(szTemp), Translate("DCC: Chat request from %s denied"),pmsg->prefix.sNick.c_str());
+						DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+					}
+
 				}
 
 				// remote requested that the file should be resumed
@@ -1271,8 +1400,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 					else 
 					{
 						struct CONTACT_TYPE user ={(char *)pmsg->prefix.sNick.c_str(), (char *)pmsg->prefix.sUser.c_str(), (char *)pmsg->prefix.sHost.c_str(), false, false, false};
-						
-						if (DBGetContactSettingDword(NULL, "Ignore", "Mask1", 0)&4 == 4) 
+						if (CallService(MS_IGNORE_ISIGNORED, NULL, IGNOREEVENT_FILE)) 
 						{
 							if (!CList_FindContact(&user))
 								return true;
@@ -1439,15 +1567,15 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 
 
 			// Add a new chat window
-			GCWINDOW gcw = {0};
+			GCSESSION gcw = {0};
 			String sID = MakeWndID(sChanName) ;
 
-			gcw.cbSize = sizeof(GCWINDOW);
+			gcw.cbSize = sizeof(GCSESSION);
 			gcw.iType = GCW_CHATROOM;
 			gcw.pszID = sID.c_str();
 			gcw.pszModule = IRCPROTONAME;
 			gcw.pszName = sChanName.c_str();
-			if(!CallService(MS_GC_NEWCHAT, 0, (LPARAM)&gcw))
+			if(!CallService(MS_GC_NEWSESSION, 0, (LPARAM)&gcw))
 	
 			{
 				DBVARIANT dbv;
@@ -1461,24 +1589,24 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 				gcd.pszID = (char*)sID.c_str();
 				gcd.pszModule = IRCPROTONAME;
 				gcd.iType = GC_EVENT_ADDGROUP;
+				gce.time = 0;
 
 				//register the statuses
 				gce.cbSize = sizeof(GCEVENT);
 				gce.pDest = &gcd;
-				for (i = 0; i<sUserModes.length(); i++)
-				{
-					sTemp = ModeToStatus(sUserModes[i]);
-					gce.pszStatus = sTemp.c_str();
-					if(pfnAddEvent)
-						pfnAddEvent(0, (LPARAM)&gce);
-					else
-						CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
-				}
+
+				gce.pszStatus = "Owner";
+				CallChatEvent(0, (LPARAM)&gce);
+				gce.pszStatus = "Admin";
+				CallChatEvent(0, (LPARAM)&gce);
+				gce.pszStatus = "Op";
+				CallChatEvent(0, (LPARAM)&gce);
+				gce.pszStatus = "Halfop";
+				CallChatEvent(0, (LPARAM)&gce);
+				gce.pszStatus = "Voice";
+				CallChatEvent(0, (LPARAM)&gce);
 				gce.pszStatus = "Normal";
-				if(pfnAddEvent)
-					pfnAddEvent(0, (LPARAM)&gce);
-				else
-				CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
+				CallChatEvent(0, (LPARAM)&gce);
 
 				i = 0;
 				sTemp = GetWord(sNamesList.c_str(), i);
@@ -1499,14 +1627,11 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 					gce.pszNick = sTemp.c_str();
 					gce.pszStatus = sStat.c_str();
 					BOOL bIsMe = (lstrcmpi(gce.pszNick, m_session.GetInfo().sNick.c_str()) == 0)?TRUE:FALSE;
-					gce.bAddToLog = FALSE;
-					gce.time = 0;
+					gce.bAddToLog = false;
 					gce.bIsMe = bIsMe;
+					gce.time = bIsMe?time(0):0;
 
-					if(pfnAddEvent)
-						pfnAddEvent(0, (LPARAM)&gce);
-					else
-						CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
+					CallChatEvent(0, (LPARAM)&gce);
 
 					// fix for networks like freshirc where they allow more than one prefix
 					if(PrefixToStatus(sTemp2[0]) != "Normal")
@@ -1515,7 +1640,7 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 						sStat = PrefixToStatus(sTemp2[0]);
 						while(sStat != "Normal")
 						{
-							DoEvent(GC_EVENT_ADDSTATUS, (char*)sID.c_str(), sTemp.c_str(), "system", sStat.c_str(), NULL, NULL, false, false); 
+							DoEvent(GC_EVENT_ADDSTATUS, (char*)sID.c_str(), sTemp.c_str(), "system", sStat.c_str(), NULL, NULL, false, false, 0); 
 							sTemp2.erase(0,1);
 							sStat = PrefixToStatus(sTemp2[0]);
 						}
@@ -1525,7 +1650,6 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 					i++;
 					sTemp = GetWord(sNamesList.c_str(), i);
 				}
-				
 				//Set the item data for the window
 				{
 					FreeWindowItemData(sChanName, NULL);
@@ -1535,12 +1659,12 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 					wi->pszMode = 0;
 					wi->pszPassword = 0;
 					wi->pszTopic = 0;
-					DoEvent(GC_EVENT_SETITEMDATA, sChanName.c_str(), NULL, NULL, NULL, NULL, (DWORD)wi, false, false);
+					DoEvent(GC_EVENT_SETITEMDATA, sChanName.c_str(), NULL, NULL, NULL, NULL, (DWORD)wi, false, false, 0);
 
 					if(sTopic != "" && !lstrcmpi(GetWord(sTopic.c_str(), 0).c_str() , sChanName.c_str()))
 					{
-						AddWindowItemData(sChanName, 0, 0, 0, GetWordAddress(sTopic.c_str(), 1));
 						DoEvent(GC_EVENT_TOPIC, sChanName.c_str(), sTopicName==""?NULL:sTopicName.c_str(), GetWordAddress(sTopic.c_str(), 1), NULL, NULL, NULL, true, false);
+						AddWindowItemData(sChanName, 0, 0, 0, GetWordAddress(sTopic.c_str(), 1));
 						sTopic = "";
 						sTopicName = "";
 					}
@@ -1549,6 +1673,15 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 				gcd.pszID = (char*)sID.c_str();
 				gcd.iType = GC_EVENT_CONTROL;
 				gce.cbSize = sizeof(GCEVENT);
+				gce.bAddToLog = false;
+				gce.bIsMe = false;
+				gce.dwItemData = false;
+				gce.pszNick = NULL;
+				gce.pszStatus = NULL;
+				gce.pszText = NULL;
+				gce.pszUID = NULL;
+				gce.pszUserInfo = NULL;
+				gce.time = time(0);
 				gce.pDest = &gcd;
 	
 				if (!DBGetContactSetting(NULL, IRCPROTONAME, "JTemp", &dbv) && dbv.type == DBVT_ASCIIZ) 
@@ -1578,19 +1711,19 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 						switch (command[0])
 						{
 						case 'M':
+							CallChatEvent( WINDOW_HIDDEN, (LPARAM)&gce);
 							break;
 						case 'X':
-							CallService(MS_GC_EVENT, WINDOW_MAXIMIZE, (LPARAM)&gce);
-							CallService(MS_GC_EVENT, WINDOW_VISIBLE, (LPARAM)&gce);
+							CallChatEvent( WINDOW_MAXIMIZE, (LPARAM)&gce);
 							break;
 						default:
-							CallService(MS_GC_EVENT, WINDOW_INITDONE, (LPARAM)&gce);
+							CallChatEvent( SESSION_INITDONE, (LPARAM)&gce);
 							break;
 						}
 
 					}
 					else 
-						CallService(MS_GC_EVENT, WINDOW_INITDONE, (LPARAM)&gce);
+						CallChatEvent( SESSION_INITDONE, (LPARAM)&gce);
 
 
 					if (save == "")
@@ -1600,14 +1733,14 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 					DBFreeVariant(&dbv);
 				}
 				else 
-					CallService(MS_GC_EVENT, WINDOW_INITDONE, (LPARAM)&gce);
+					CallChatEvent( SESSION_INITDONE, (LPARAM)&gce);
 
 				{
 
 					gcd.iType = GC_EVENT_CONTROL;
 
 					gce.pDest = &gcd;
-					CallService(MS_GC_EVENT, WINDOW_ONLINE, (LPARAM)&gce);
+					CallChatEvent( SESSION_ONLINE, (LPARAM)&gce);
 					
 
 				}
@@ -1615,7 +1748,10 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 			
 			}
 
-							
+//			if(prefs->AutoOnlineNotification && !bTempDisableCheck || bTempForceCheck)
+//				DoUserhostWithReason(2, "S", true, "%s", sChanName.c_str());
+//			SetChatTimer(OnlineNotifTimer3, prefs->OnlineNotificationTime*500, OnlineNotifTimerProc3);
+					
 		}
 	}
 
@@ -1991,19 +2127,19 @@ bool CMyMonitor::OnIrc_WHOIS_NO_USER(const CIrcMessage* pmsg)
 			{
 				DBWriteContactSettingString(hContact, IRCPROTONAME, "Nick", dbv.pszVal);
 				DBVARIANT dbv2;
-				String s = "WHO ";
-				if (!DBGetContactSetting(hContact, IRCPROTONAME, "UWildcard", &dbv2) && dbv2.type == DBVT_ASCIIZ)
-				{
-					s += dbv2.pszVal;
-					if (g_ircSession)
-						g_ircSession << CIrcMessage(s.c_str(), false, false);
-					DBFreeVariant(&dbv2);
-				}
+				if(DBGetContactSettingByte(hContact, IRCPROTONAME, "AdvancedMode", 0) == 0)
+					DoUserhostWithReason(1, ((String)"S" + dbv.pszVal).c_str(), true, dbv.pszVal);
 				else
 				{
-					s += dbv.pszVal;
-					if (g_ircSession)
-						g_ircSession << CIrcMessage(s.c_str(), false, false);
+					if (!DBGetContactSetting(hContact, IRCPROTONAME, "UWildcard", &dbv2) && dbv2.type == DBVT_ASCIIZ)
+					{
+						DoUserhostWithReason(2, ((String)"S" + dbv2.pszVal).c_str(), true, dbv2.pszVal);
+						DBFreeVariant(&dbv2);
+					}
+					else
+					{
+						DoUserhostWithReason(2, ((String)"S" + dbv.pszVal).c_str(), true, dbv.pszVal);
+					}
 				}
 				DBWriteContactSettingString(hContact, IRCPROTONAME, "User", "");
 				DBWriteContactSettingString(hContact, IRCPROTONAME, "Host", "");
@@ -2078,7 +2214,18 @@ bool CMyMonitor::OnIrc_JOINERROR(const CIrcMessage* pmsg)
 
 	return true;
 }
-
+bool CMyMonitor::OnIrc_UNKNOWN(const CIrcMessage* pmsg)
+{
+	if(pmsg->m_bIncoming && pmsg->parameters.size() > 0)
+	{
+		if(pmsg->parameters[0] == "WHO" && GetNextUserhostReason(2) !="U")
+			return true;
+		if(pmsg->parameters[0] == "USERHOST" && GetNextUserhostReason(1) !="U")
+			return true;
+	}
+	ShowMessage(pmsg);
+	return true;
+}
 bool CMyMonitor::OnIrc_ENDMOTD(const CIrcMessage* pmsg)
 {
 	if(pmsg->m_bIncoming && !bPerformDone)
@@ -2122,67 +2269,126 @@ bool CMyMonitor::OnIrc_ERROR(const CIrcMessage* pmsg)
 }
 bool CMyMonitor::OnIrc_WHO_END(const CIrcMessage* pmsg)
 {
-	if(pmsg->m_bIncoming)
-		WhoInProgress = false;
-	if(pmsg->m_bIncoming && pmsg->parameters.size() > 1 && ManualWhoCount <1) {
-		char * UserList = new char [lstrlen(WhoReply.c_str())+2];
-		lstrcpyn(UserList, WhoReply.c_str(), lstrlen(WhoReply.c_str())+1);
-		char * p1= UserList;
-		WhoReply = "";
-		struct CONTACT_TYPE user ={(char *)pmsg->parameters[1].c_str(), NULL, NULL, false, true, false};
-		HANDLE hContact = CList_FindContact(&user);
-
-		if (hContact) {
-			char * DBDefault = NULL;
-			char * DBNick = NULL;
-			char * DBWildcard = NULL;
-			char * DBUser = NULL;
-			char * DBHost = NULL;
-			char * DBManUser = NULL;
-			char * DBManHost = NULL;
-			DBVARIANT dbv1;
-			DBVARIANT dbv2;	
-			DBVARIANT dbv3;	
-			DBVARIANT dbv4;	
-			DBVARIANT dbv5;	
-			DBVARIANT dbv6;	
-			DBVARIANT dbv7;	
-			if (!DBGetContactSetting(hContact, IRCPROTONAME, "Default", &dbv1) && dbv1.type == DBVT_ASCIIZ) DBDefault = dbv1.pszVal;
-			if (!DBGetContactSetting(hContact, IRCPROTONAME, "Nick", &dbv2) && dbv2.type == DBVT_ASCIIZ) DBNick = dbv2.pszVal;
-			if (!DBGetContactSetting(hContact, IRCPROTONAME, "UWildcard", &dbv3) && dbv3.type == DBVT_ASCIIZ) DBWildcard = dbv3.pszVal;
-			if (!DBGetContactSetting(hContact, IRCPROTONAME, "UUser", &dbv4) && dbv4.type == DBVT_ASCIIZ) DBUser = dbv4.pszVal;
-			if (!DBGetContactSetting(hContact, IRCPROTONAME, "UHost", &dbv5) && dbv5.type == DBVT_ASCIIZ) DBHost = dbv5.pszVal;
-			if (!DBGetContactSetting(hContact, IRCPROTONAME, "User", &dbv6) && dbv6.type == DBVT_ASCIIZ) DBManUser = dbv6.pszVal;
-			if (!DBGetContactSetting(hContact, IRCPROTONAME, "Host", &dbv7) && dbv7.type == DBVT_ASCIIZ) DBManHost = dbv7.pszVal;
-			if (DBWildcard)
-				CharLower(DBWildcard);
-
-			while (!GetWord(p1, 0).empty() && !GetWord(p1, 1).empty() && !GetWord(p1, 2).empty() && !GetWord(p1, 3).empty()) 
+	String command = GetNextUserhostReason(2);
+	if(command[0] == 'S') 
+	{
+		if(pmsg->m_bIncoming && pmsg->parameters.size() > 1 )
+		{
+			// is it a channel?
+			if(IsChannel(pmsg->parameters[1]))
 			{
-				char * Nick = new char[lstrlen(GetWord(p1, 0).c_str())+2];
-				lstrcpyn(Nick, GetWord(p1, 0).c_str(), lstrlen(GetWord(p1, 0).c_str())+1);
-				CharLower(Nick);
-				char * User = new char[lstrlen(GetWord(p1, 1).c_str())+2];
-				lstrcpyn(User, GetWord(p1, 1).c_str(), lstrlen(GetWord(p1, 1).c_str())+1);
-				char * Host = new char[lstrlen(GetWord(p1, 2).c_str())+2];
-				lstrcpyn(Host, GetWord(p1, 2).c_str(), lstrlen(GetWord(p1, 2).c_str())+1);
-				char * Away = new char[lstrlen(GetWord(p1, 3).c_str())+2];
-				lstrcpyn(Away, GetWord(p1, 3).c_str(), lstrlen(GetWord(p1, 3).c_str())+1);
-
-				if ((DBWildcard && WCCmp(DBWildcard, Nick) || DBNick && !lstrcmpi(DBNick, Nick) || DBDefault && !lstrcmpi(DBDefault, Nick))
-					&& (WCCmp(DBUser, User) &&WCCmp(DBHost, Host)))
+				String S = "";
+				String SS = WhoReply;
+				String User = GetWord(WhoReply.c_str(), 0);
+				while (!User.empty()) 
 				{
-					if (Away[0] == 'G' && DBGetContactSettingWord(hContact,IRCPROTONAME, "Status", ID_STATUS_OFFLINE) != ID_STATUS_AWAY)
-						DBWriteContactSettingWord(hContact, IRCPROTONAME, "Status", ID_STATUS_AWAY);
-					else if (Away[0] == 'H' && DBGetContactSettingWord(hContact,IRCPROTONAME, "Status", ID_STATUS_OFFLINE) != ID_STATUS_ONLINE)
-						DBWriteContactSettingWord(hContact, IRCPROTONAME, "Status", ID_STATUS_ONLINE);
+					if(GetWord(WhoReply.c_str(), 3)[0] == 'G')
+					{
+						S += User;
+						S += " ";
+					}
+					SS = GetWordAddress(WhoReply.c_str(), 4);
+					if(SS.empty())
+						break;
+					WhoReply = SS;
+					User = GetWord(WhoReply.c_str(), 0);
+				}
+				DoEvent(GC_EVENT_SETSTATUSEX, pmsg->parameters[1].c_str(), NULL, S == ""?NULL:S.c_str(), NULL, NULL, NULL, FALSE, FALSE); 
 
-					if ((DBNick && Nick && lstrcmpi(Nick, DBNick)) || !DBNick)
-						DBWriteContactSettingString(hContact, IRCPROTONAME, "Nick", GetWord(p1, 0).c_str());
-					if ((DBManUser && User && lstrcmpi(User, DBManUser)) || !DBManUser)
-						DBWriteContactSettingString(hContact, IRCPROTONAME, "User", User);
-					if ((DBManHost && Host &&lstrcmpi(Host, DBManHost)) || !DBManHost)
-						DBWriteContactSettingString(hContact, IRCPROTONAME, "Host", Host);
+				return true;
+			}
+
+
+			/// if it is not a channel
+			char * UserList = new char [lstrlen(WhoReply.c_str())+2];
+			lstrcpyn(UserList, WhoReply.c_str(), lstrlen(WhoReply.c_str())+1);
+			char * p1= UserList;
+			WhoReply = "";
+			struct CONTACT_TYPE user ={(char *)pmsg->parameters[1].c_str(), NULL, NULL, false, true, false};
+			HANDLE hContact = CList_FindContact(&user);
+
+			if (hContact && DBGetContactSettingByte(hContact, IRCPROTONAME, "AdvancedMode", 0) == 1) 
+			{
+				char * DBDefault = NULL;
+				char * DBNick = NULL;
+				char * DBWildcard = NULL;
+				char * DBUser = NULL;
+				char * DBHost = NULL;
+				char * DBManUser = NULL;
+				char * DBManHost = NULL;
+				DBVARIANT dbv1;
+				DBVARIANT dbv2;	
+				DBVARIANT dbv3;	
+				DBVARIANT dbv4;	
+				DBVARIANT dbv5;	
+				DBVARIANT dbv6;	
+				DBVARIANT dbv7;	
+				if (!DBGetContactSetting(hContact, IRCPROTONAME, "Default", &dbv1) && dbv1.type == DBVT_ASCIIZ) DBDefault = dbv1.pszVal;
+				if (!DBGetContactSetting(hContact, IRCPROTONAME, "Nick", &dbv2) && dbv2.type == DBVT_ASCIIZ) DBNick = dbv2.pszVal;
+				if (!DBGetContactSetting(hContact, IRCPROTONAME, "UWildcard", &dbv3) && dbv3.type == DBVT_ASCIIZ) DBWildcard = dbv3.pszVal;
+				if (!DBGetContactSetting(hContact, IRCPROTONAME, "UUser", &dbv4) && dbv4.type == DBVT_ASCIIZ) DBUser = dbv4.pszVal;
+				if (!DBGetContactSetting(hContact, IRCPROTONAME, "UHost", &dbv5) && dbv5.type == DBVT_ASCIIZ) DBHost = dbv5.pszVal;
+				if (!DBGetContactSetting(hContact, IRCPROTONAME, "User", &dbv6) && dbv6.type == DBVT_ASCIIZ) DBManUser = dbv6.pszVal;
+				if (!DBGetContactSetting(hContact, IRCPROTONAME, "Host", &dbv7) && dbv7.type == DBVT_ASCIIZ) DBManHost = dbv7.pszVal;
+				if (DBWildcard)
+					CharLower(DBWildcard);
+
+				String nick;
+				String user;
+				String host;
+				String away = GetWord(p1, 3);
+
+				while (away != "") 
+				{
+					nick = GetWord(p1, 0);
+					user = GetWord(p1, 1);
+					host = GetWord(p1, 2);
+					if ((DBWildcard && WCCmp(DBWildcard, (char *)nick.c_str()) || DBNick && !lstrcmpi(DBNick, nick.c_str()) || DBDefault && !lstrcmpi(DBDefault, nick.c_str()))
+						&& (WCCmp(DBUser, (char *)user.c_str()) &&WCCmp(DBHost, (char *)host.c_str())))
+					{
+						if (away[0] == 'G' && DBGetContactSettingWord(hContact,IRCPROTONAME, "Status", ID_STATUS_OFFLINE) != ID_STATUS_AWAY)
+							DBWriteContactSettingWord(hContact, IRCPROTONAME, "Status", ID_STATUS_AWAY);
+						else if (away[0] == 'H' && DBGetContactSettingWord(hContact,IRCPROTONAME, "Status", ID_STATUS_OFFLINE) != ID_STATUS_ONLINE)
+							DBWriteContactSettingWord(hContact, IRCPROTONAME, "Status", ID_STATUS_ONLINE);
+
+						if ((DBNick && lstrcmpi(nick.c_str(), DBNick)) || !DBNick)
+							DBWriteContactSettingString(hContact, IRCPROTONAME, "Nick", nick.c_str());
+						if ((DBManUser && lstrcmpi(user.c_str(), DBManUser)) || !DBManUser)
+							DBWriteContactSettingString(hContact, IRCPROTONAME, "User", user.c_str());
+						if ((DBManHost &&lstrcmpi(host.c_str(), DBManHost)) || !DBManHost)
+							DBWriteContactSettingString(hContact, IRCPROTONAME, "Host", host.c_str());
+
+						if (DBDefault)
+							DBFreeVariant(&dbv1);
+						if (DBNick)
+							DBFreeVariant(&dbv2);
+						if (DBWildcard)
+							DBFreeVariant(&dbv3);
+						if (DBUser)
+							DBFreeVariant(&dbv4);
+						if (DBHost)
+							DBFreeVariant(&dbv5);
+						if (DBManUser)
+							DBFreeVariant(&dbv6);
+						if (DBManHost)
+							DBFreeVariant(&dbv7);
+
+						delete []UserList;
+						return true;
+
+					}
+					p1 = GetWordAddress(p1, 4);
+					away = GetWord(p1, 3);
+				}
+				if (DBWildcard && DBNick && !WCCmp(CharLower(DBWildcard), CharLower(DBNick)))
+				{
+					DBWriteContactSettingString(hContact, IRCPROTONAME, "Nick", DBDefault);
+
+					
+					DoUserhostWithReason(2, ((String)"S" + DBWildcard).c_str(), true, DBWildcard);
+							
+					DBWriteContactSettingString(hContact, IRCPROTONAME, "User", "");
+					DBWriteContactSettingString(hContact, IRCPROTONAME, "Host", "");
 
 					if (DBDefault)
 						DBFreeVariant(&dbv1);
@@ -2198,22 +2404,17 @@ bool CMyMonitor::OnIrc_WHO_END(const CIrcMessage* pmsg)
 						DBFreeVariant(&dbv6);
 					if (DBManHost)
 						DBFreeVariant(&dbv7);
-
-					delete [] Nick;delete [] User;delete [] Host;delete [] Away;delete []UserList;
+					
+					delete [] UserList;
 					return true;
-
 				}
-				p1 = GetWordAddress(p1, 4);
-				delete [] Nick;delete [] User;delete [] Host;delete [] Away;
-			}
-			if (DBWildcard && DBNick && !WCCmp(CharLower(DBWildcard), CharLower(DBNick)))
-			{
-				DBWriteContactSettingString(hContact, IRCPROTONAME, "Nick", DBDefault);
-				String s = (String)"WHO " + DBWildcard;
-				if (g_ircSession)
-					g_ircSession << CIrcMessage(s.c_str(), false, false);
-				DBWriteContactSettingString(hContact, IRCPROTONAME, "User", "");
-				DBWriteContactSettingString(hContact, IRCPROTONAME, "Host", "");
+				if (DBGetContactSettingWord(hContact,IRCPROTONAME, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+				{
+					DBWriteContactSettingWord(hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE);
+					DBWriteContactSettingString(hContact, IRCPROTONAME, "Nick", DBDefault);
+					DBWriteContactSettingString(hContact, IRCPROTONAME, "User", "");
+					DBWriteContactSettingString(hContact, IRCPROTONAME, "Host", "");
+				}
 
 				if (DBDefault)
 					DBFreeVariant(&dbv1);
@@ -2229,47 +2430,20 @@ bool CMyMonitor::OnIrc_WHO_END(const CIrcMessage* pmsg)
 					DBFreeVariant(&dbv6);
 				if (DBManHost)
 					DBFreeVariant(&dbv7);
-				
-				delete []UserList;
-				return true;
 			}
-			if (DBGetContactSettingWord(hContact,IRCPROTONAME, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
-			{
-				DBWriteContactSettingWord(hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE);
-				DBWriteContactSettingString(hContact, IRCPROTONAME, "Nick", DBDefault);
-				DBWriteContactSettingString(hContact, IRCPROTONAME, "User", "");
-				DBWriteContactSettingString(hContact, IRCPROTONAME, "Host", "");
-			}
-
-			if (DBDefault)
-				DBFreeVariant(&dbv1);
-			if (DBNick)
-				DBFreeVariant(&dbv2);
-			if (DBWildcard)
-				DBFreeVariant(&dbv3);
-			if (DBUser)
-				DBFreeVariant(&dbv4);
-			if (DBHost)
-				DBFreeVariant(&dbv5);
-			if (DBManUser)
-				DBFreeVariant(&dbv6);
-			if (DBManHost)
-				DBFreeVariant(&dbv7);
+			delete []UserList;
 		}
-		delete []UserList;
+		
 	}
-	if(ManualWhoCount > 0) {
-		ManualWhoCount--;
+	else
 		ShowMessage(pmsg);
-	}
 	return true;
-
-
 }
 
 bool CMyMonitor::OnIrc_WHO_REPLY(const CIrcMessage* pmsg)
 {
-	if(pmsg->m_bIncoming && pmsg->parameters.size() > 6 && ManualWhoCount < 1) {
+	String command = PeekAtReasons(2);
+	if(pmsg->m_bIncoming && pmsg->parameters.size() > 6 && command[0] == 'S') {
 		WhoReply += pmsg->parameters[5] + (String)" " +pmsg->parameters[2] + (String)" " + pmsg->parameters[3] + (String)" " + pmsg->parameters[6] +  (String)" ";
 		if(lstrcmpi(pmsg->parameters[5].c_str(), m_session.GetInfo().sNick.c_str()) ==0)
 		{
@@ -2281,128 +2455,210 @@ bool CMyMonitor::OnIrc_WHO_REPLY(const CIrcMessage* pmsg)
 			forkthread(ResolveIPThread, NULL, ipr);
 		}
 	}
-	if (ManualWhoCount > 0)
+	if (command[0] == 'U')
 		ShowMessage(pmsg);
 	return true;
 }
 bool CMyMonitor::OnIrc_TRYAGAIN(const CIrcMessage* pmsg)
 {
+	String command = "";
 	if(pmsg->m_bIncoming && pmsg->parameters.size() > 1 ) 
 	{
 		if(pmsg->parameters[1] == "WHO")
 		{
-			if(ManualWhoCount < 1)
-			{
-				WhoInProgress = false;
-				WhoReply = "";
-				return true;
-			}
-			else
-				ManualWhoCount--;
+			command = GetNextUserhostReason(2);
+		}
+		if(pmsg->parameters[1] == "USERHOST")
+		{
+			command = GetNextUserhostReason(1);
 		}
 	}
-	if (ManualWhoCount > 0)
+	if (command[0] == 'U')
 		ShowMessage(pmsg);
 	return true;
 }
 
 bool CMyMonitor::OnIrc_USERHOST_REPLY(const CIrcMessage* pmsg)
 {
-	if (pmsg->m_bIncoming && pmsg->parameters.size() > 0)
+	String command = "";
+	if(pmsg->m_bIncoming)
 	{
-		char * p1 = NULL;
-		char * p2 = NULL;
-		String host = "";
-		String user = "";
-		String nick = "";
-		String command = "";
-		if (pmsg->parameters.size() >1)
+		// Get command
+		command = GetNextUserhostReason(1);
+		if(command != "" && command != "U" && pmsg->parameters.size() > 1)
 		{
-			p1 = new char[pmsg->parameters[1].length()+2];
-			lstrcpyn(p1, pmsg->parameters[1].c_str(), pmsg->parameters[1].length()+1);
-			p2 = strchr(p1, '@');
-			if (p2)
-			{
-				*p2 = '\0';
-				p2++;
-				host = p2;
-			}
-			p2 = strchr(p1, '=');
-			if (p2)
-			{
-				*p2 = '\0';
-				p2++; p2++;
-				user = p2;
-				nick = p1;
-			}
-
-		}
-		if (p1)
-			delete [] p1;
-
-		DBVARIANT dbv;
-		if (!DBGetContactSetting(NULL, IRCPROTONAME, "UHTemp", &dbv) && dbv.type == DBVT_ASCIIZ) 
-		{
-			command = GetWord(dbv.pszVal, 0);
-			String S = GetWordAddress(dbv.pszVal, 1);
-			DBFreeVariant(&dbv);
-			if (S == "")
-				DBDeleteContactSetting(NULL, IRCPROTONAME, "UHTemp");
-			else
-				DBWriteContactSettingString(NULL, IRCPROTONAME, "UHTemp", S.c_str());
-		}
-
-		if(command != "" && host != "" && user != "" && nick != "") 
-		{
-			String mask = nick + "!" + user + "@" + host;
+			CONTACT finduser = {NULL, NULL, NULL, false, false, false};
+			char * params = NULL;
+			char * next = NULL;
+			char * p1 = NULL;
+			char * p2 = NULL;
+			char awaystatus = 0;
+			String sTemp = "";
+			String host = "";
+			String user = "";
+			String nick = "";
+			String mask = "";
 			String mess = "";
-			switch (command[0])
+			String channel;
+			int i;
+			int j;
+
+			// Status-check pre-processing: Setup check-list
+			std::vector<String> checklist;
+			if(command[0] == 'S') 
 			{
-				case 'I':
+				j = 0;
+				sTemp = GetWord(command.c_str(), 0);
+				sTemp.erase(0,1);
+				while(sTemp != "")
 				{
+					checklist.push_back(sTemp);
+					j++;
+					sTemp = GetWord(command.c_str(), j);
+				}
+
+				/*
+				params = new char[command.length()+1];
+				lstrcpyn(params, command.c_str() + 1, command.length());
+				for(p1 = GetWordAddress(params, 0); *p1; p1 = GetWordAddress(p1, 1)) {
+					p2 = next = GetWordAddress(p1, 1);
+					while(*(p2 - 1) == ' ') 
+						p2--;
+					*p2 = '\0';
+					checklist.push_back(p1);
+				}
+				if(params) 
+					delete [] params;
+					*/
+			}
+
+			// Cycle through results
+//			params = new char[pmsg->parameters[1].length()+2];
+//			lstrcpyn(params, pmsg->parameters[1].c_str(), pmsg->parameters[1].length()+1);
+//			for(p1 = GetWordAddress(params, 0); *p1; p1 = next)
+			j = 0;
+			sTemp = GetWord(pmsg->parameters[1].c_str(), j);
+			while (sTemp != "")
+			{
+//				p2 = next = GetWordAddress(p1, 1);
+//				while(*(p2 - 1) == ' ') p2--;
+//				*p2 = '\0';
+				p1 = new char[sTemp.length()+1];
+				lstrcpyn(p1, sTemp.c_str(), sTemp.length()+1);
+				p2 = p1;
+
+				// Pull out host, user and nick
+				p2 = strchr(p1, '@');
+				if (p2)
+				{
+					*p2 = '\0';
+					p2++;
+					host = p2;
+				}
+				p2 = strchr(p1, '=');
+				if (p2)
+				{
+					*p2 = '\0';
+					p2++;
+					awaystatus = *p2;
+					p2++;
+					user = p2;
+					nick = p1;
+				}
+				mess = "";
+				mask = nick + "!" + user + "@" + host;
+				if(host == "" || user == "" || nick == "")
+				{
+					if(p1)
+						delete[] p1;
+					continue;
+				}
+
+				// Do command
+				switch (command[0])
+				{
+				case 'S':	// Status check
+					HANDLE hContact;
+					finduser.name = (char *)nick.c_str();
+					finduser.host = (char *)host.c_str();
+					finduser.user = (char *)user.c_str();
+
+					hContact = CList_FindContact(&finduser);
+
+					if(hContact && DBGetContactSettingByte(hContact, IRCPROTONAME, "AdvancedMode", 0) == 0)
+					{
+						DBWriteContactSettingWord(hContact, IRCPROTONAME, "Status", awaystatus == '-'? ID_STATUS_AWAY : ID_STATUS_ONLINE);
+
+						DBWriteContactSettingString(hContact, IRCPROTONAME, "User", user.c_str());
+						DBWriteContactSettingString(hContact, IRCPROTONAME, "Host", host.c_str());
+
+							// If user found, remove from checklist
+						for(i = 0; i < (int)checklist.size(); i++)
+							if(checklist[i] == nick)
+								checklist.erase(checklist.begin() + i);
+					}
+					break;
+
+				case 'I':	// Ignore
 					mess = "/IGNORE %question=\"";
-					mess += Translate("Please enter the hostmask (nick!user@host) \nNOTE! Contacts on your contact list are never ignored");
-					mess += "\",\"";
-					mess += Translate("Ignore");
-					mess += "\",\"*!*@";
-					mess += host ;
-					mess += "\"";
-				}break;
-				case 'J':
-				{
-					mess = "/UNIGNORE " + mask;
-				}break;
-				case 'B':
-				{
-					command.erase(0,1);
-					mess = "/MODE " + command + " +b *!*@" + host;
-				}break;
-				case 'K':
-				{
-					command.erase(0,1);
-					mess = "/MODE " + command + " +b *!*@" + host + "%newl/KICK "+command + " " + nick;
-				}break;
-				case 'L':
-				{
-					command.erase(0,1);
-					mess = "/MODE " + command + " +b *!*@" + host + "%newl/KICK "+command + " " + nick + (String)" %question=\"";
-					mess += Translate("Please enter the reason");
-					mess += "\",\"";
-					mess += Translate("Ban'n Kick");
-					mess += "\",\"";
-					mess += Translate("Jerk");
-					mess += "\"";
-				}break;
+					mess += Translate("Please enter the hostmask (nick!user@host)\nNOTE! Contacts on your contact list are never ignored");
+					mess += (String)"\",\"" + Translate("Ignore") + "\",\"*!*@" + host + "\"";
+					if(prefs->IgnoreChannelDefault)
+						mess += " +qnidcm";
+					else
+						mess += " +qnidc";
+					break;
+
+				case 'J':	// Unignore
+					mess = "/UNIGNORE *!*@" + host;
+					break;
+
+				case 'B':	// Ban
+					channel = (command.c_str() + 1);
+					mess = "/MODE " + channel + " +b *!*@" + host;
+					break;
+
+				case 'K':	// Ban & Kick
+					channel = (command.c_str() + 1);
+					mess = "/MODE " + channel + " +b *!*@" + host + "%newl/KICK "+ channel + " " + nick;
+					break;
+
+				case 'L':	// Ban & Kick with reason
+					channel = (command.c_str() + 1);
+					mess = "/MODE " + channel + " +b *!*@" + host + "%newl/KICK "+ channel + " " + nick + (String)" %question=\"";
+					mess += (String)Translate("Please enter the reason") + "\",\"" + Translate("Ban'n Kick") + "\",\"" + Translate("Jerk") + "\"";
+					break;
+				}
+				
+				if(p1)
+					delete [] p1;
+
+				// Post message
+				if (mess != "")
+					PostIrcMessageWnd(NULL, NULL,(char *)mess.c_str());
+				j++;
+				sTemp = GetWord(pmsg->parameters[1].c_str(), j);
 			}
-			if (mess != "")
+			
+			// Cleanup and exit
+//			if(params) delete [] params;
+
+			// Status-check post-processing: make buddies in ckeck-list offline
+			if(command[0] == 'S')
 			{
-				PostIrcMessageWnd(NULL, NULL,(char *)mess.c_str());
-				return true;
+				for(i = 0; i < (int)checklist.size(); i++) {
+					finduser.name = (char *)checklist[i].c_str();
+					finduser.ExactNick = true;
+					CList_SetOffline(&finduser);
+				}
 			}
+			return true;
 		}
 	}
-	ShowMessage(pmsg);
+	if(!pmsg->m_bIncoming || command =="U")
+		ShowMessage(pmsg);
 	return true;
+
 }
 bool CMyMonitor::OnIrc_SUPPORT(const CIrcMessage* pmsg)
 {
@@ -2428,7 +2684,7 @@ bool CMyMonitor::OnIrc_SUPPORT(const CIrcMessage* pmsg)
 	if (pmsg->m_bIncoming && pmsg->parameters.size() >0)
 	{
 		String S;
-		for( int i = 0; i < pmsg->parameters.size();i++)
+		for( int i = 0; i < (int)pmsg->parameters.size();i++)
 		{
 			char * temp = new char[lstrlen(pmsg->parameters[i].c_str())+1];
 			strcpy(temp, pmsg->parameters[i].c_str());
@@ -2464,7 +2720,7 @@ bool CMyMonitor::OnIrc_SUPPORT(const CIrcMessage* pmsg)
 					p1= strchr(temp, '=');
 					p1++;
 					sUserModePrefixes= p1;
-					for (int i =0; i < sUserModePrefixes.length()+1; i++){
+					for (int i =0; i < (int)sUserModePrefixes.length()+1; i++){
 						if (sUserModePrefixes[i]	     == '@')
 							sUserModes[i] = 'o';
 						else if (sUserModePrefixes[i] == '+')
@@ -2507,7 +2763,6 @@ void CMyMonitor::OnIrcDisconnected()
 {
 	CIrcDefaultMonitor::OnIrcDisconnected();
 	StatusMessage = "";
-	DBDeleteContactSetting(NULL, IRCPROTONAME, "UHTemp");
 	DBDeleteContactSetting(NULL, IRCPROTONAME, "JTemp");
 	bTempDisableCheck = false;
 	bTempForceCheck = false;
@@ -2517,13 +2772,13 @@ void CMyMonitor::OnIrcDisconnected()
 
 	int Temp = OldStatus;
 	KillChatTimer(OnlineNotifTimer);
+	KillChatTimer(OnlineNotifTimer3);
 	KillChatTimer(KeepAliveTimer);
 	KillChatTimer(InitTimer);
 	KillChatTimer(IdentTimer);
 	OldStatus = ID_STATUS_OFFLINE;
 	ProtoBroadcastAck(IRCPROTONAME,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp, ID_STATUS_OFFLINE);
-	DoEvent(GC_EVENT_CHWINNAME, "Network log", NULL, Translate("Offline"), NULL, NULL, NULL, FALSE, TRUE); 
-	DoEvent(GC_EVENT_PART, "Network log", "miranda IRC roxxor my boxxor", NULL, "Normal", NULL, NULL, FALSE, TRUE); 
+	DoEvent(GC_EVENT_CHANGESESSIONAME, "Network log", NULL, Translate("Offline"), NULL, NULL, NULL, FALSE, TRUE); 
 
 	String sDisconn = "\0035\002";
 	sDisconn += Translate("*Disconnected*");
@@ -2538,7 +2793,7 @@ void CMyMonitor::OnIrcDisconnected()
 		gcd.pszModule = IRCPROTONAME;
 		gcd.iType = GC_EVENT_CONTROL;
 		gce.pDest = &gcd;
-		CallService(MS_GC_EVENT, WINDOW_OFFLINE, (LPARAM)&gce);
+		CallChatEvent( SESSION_OFFLINE, (LPARAM)&gce);
 
 	}
 
@@ -2590,42 +2845,27 @@ bool DoOnConnect(const CIrcMessage *pmsg)
 
 	if(prefs->RejoinChannels)
 	{
-		
-		HANDLE hContact;
-		char *szProto;
-		DBVARIANT dbv;
+		int count = (int)CallService(MS_GC_GETSESSIONCOUNT, 0, (LPARAM)IRCPROTONAME);
 
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-		while (hContact) 
+		for (int i = 0; i < count ; i++)
 		{
-		   szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		   if (szProto != NULL && !lstrcmpi(szProto, IRCPROTONAME)) 
-		   {
-				if(DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0) == GCW_CHATROOM)
-				{
-					if (!DBGetContactSetting(hContact, IRCPROTONAME, "Nick", &dbv) && dbv.type == DBVT_ASCIIZ)
-					{
-						int iStatus = DBGetContactSettingWord(hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE);
-						int bHidden = DBGetContactSettingByte(hContact,"CList", "Hidden", 0);
-						if (iStatus == ID_STATUS_OFFLINE && bHidden == 0 )
-						{
-							CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, dbv.pszVal, NULL, NULL, NULL, NULL, NULL, FALSE, FALSE);
-							if (wi && wi->pszPassword)
-								PostIrcMessage("/JOIN %s %s", dbv.pszVal, wi->pszPassword);
-							else
-								PostIrcMessage("/JOIN %s", dbv.pszVal);
-						}
-						DBFreeVariant(&dbv);
-					}
-				}
+			GC_INFO gci = {0};
+			gci.Flags = BYINDEX|DATA|NAME|TYPE;
+			gci.iItem = i;
+			gci.pszModule = IRCPROTONAME;
+			if(!CallService(MS_GC_GETINFO, 0, (LPARAM)&gci) && gci.iType == GCW_CHATROOM)
+			{
+				CHANNELINFO* wi = (CHANNELINFO *)gci.dwItemData;
+				if (wi && wi->pszPassword)
+					PostIrcMessage("/JOIN %s %s", gci.pszName, wi->pszPassword);
+				else
+					PostIrcMessage("/JOIN %s", gci.pszName);
 			}
-			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 		}
 	}
 
-	DoEvent(GC_EVENT_CHWINNAME, "Network log", NULL, g_ircSession.GetInfo().sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE); 
+	DoEvent(GC_EVENT_CHANGESESSIONAME, "Network log", NULL, g_ircSession.GetInfo().sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE); 
 	DoEvent(GC_EVENT_ADDGROUP, "Network log", NULL, NULL, "Normal", NULL, NULL, FALSE, TRUE); 
-	DoEvent(GC_EVENT_JOIN, "Network log", "miranda IRC roxxor my boxxor", NULL, "Normal", NULL, NULL, FALSE, FALSE); 
 	{
 		GCDEST gcd = {0};
 		GCEVENT gce = {0};
@@ -2635,7 +2875,7 @@ bool DoOnConnect(const CIrcMessage *pmsg)
 		gcd.pszModule = IRCPROTONAME;
 		gcd.iType = GC_EVENT_CONTROL;
 		gce.pDest = &gcd;
-		CallService(MS_GC_EVENT, WINDOW_ONLINE, (LPARAM)&gce);
+		CallChatEvent( SESSION_ONLINE, (LPARAM)&gce);
 
 	}
 	SetChatTimer(InitTimer, 1*1000, TimerProc);
@@ -2644,11 +2884,14 @@ bool DoOnConnect(const CIrcMessage *pmsg)
 	if (prefs->SendKeepAlive)
 		SetChatTimer(KeepAliveTimer, 60*1000, KeepAliveTimerProc);
 	if (prefs->AutoOnlineNotification && !bTempDisableCheck || bTempForceCheck)
+	{
 		SetChatTimer(OnlineNotifTimer, 1000, OnlineNotifTimerProc);
+		if(prefs->ChannelAwayNotification)
+			SetChatTimer(OnlineNotifTimer3, 3000, OnlineNotifTimerProc3);
+	}
 	return 0;
 
 }
-
 static void __cdecl AwayWarningThread(LPVOID di)
 {
 	MessageBox(NULL, Translate("The usage of /AWAY in your perform buffer is restricted\n as IRC sends this command automatically."), Translate("IRC Error"), MB_OK);
@@ -2691,6 +2934,7 @@ int DoPerform(char * event)
 }
 
 
+
 char * IsIgnored(String nick, String address, String host, char type) 
 { 
 	String user = nick + "!" + address + "@" + host;
@@ -2703,21 +2947,42 @@ char * IsIgnored(String user, char type)
 	{
 		char * p1 = pszIgnoreFile;
 		char * p2 = p1;
+		char * pTemp = NULL;
 		while (*p1 != '\0')
 		{
+			while(*p1 == '\r' || *p1 == '\n')
+				p1++;
+			if (*p1 == '\0')
+				return 0;
 			p2 = strstr(p1, "\r\n");
 			if (!p2)
 				p2 = strchr(p1, '\0');
-			char * p3= new char[p2-p1+2];
-			lstrcpyn(p3, p1, p2-p1+1);
-			if((!strchr(user.c_str(), '*') && WCCmp((char *)GetWord(p3, 0).c_str(), (char *)user.c_str())) 
-				|| (strchr(user.c_str(), '*') && lstrcmpi(user.c_str(),(char *)GetWord(p3, 0).c_str()) == 0))
+			pTemp = p2;
+			while (pTemp > p1 && (*pTemp == '\r' || *pTemp == '\n' ||*pTemp == '\0' || *pTemp == ' '))
+				pTemp--;
+			pTemp++;
+
+			char * p3= new char[pTemp-p1+1];
+			lstrcpyn(p3, p1, pTemp-p1+1);
+
+			if(type == '\0')
+			{	
+				if(!lstrcmpi(user.c_str(),(char *)GetWord(p3, 0).c_str()))
+				{
+					delete [] p3;
+					return p1;
+				}
+			}
+			bool bUserContainsWild = strchr(user.c_str(), '*') == NULL ?false:true || strchr(user.c_str(), '?') == NULL?false:true;
+			
+			if( !bUserContainsWild && WCCmp((char *)GetWord(p3, 0).c_str(), (char *)user.c_str())  
+				|| bUserContainsWild && !lstrcmpi(user.c_str(),(char *)GetWord(p3, 0).c_str()))
 			{
 				if(GetWord(p3, 1) == "" || GetWord(p3, 1)[0] != '+')
 				{
 					goto IGNORELABEL;
 				}
-				if(type != '\0' && !strchr(GetWord(p3, 1).c_str(), type))
+				if(!strchr(GetWord(p3, 1).c_str(), type))
 				{
 					goto IGNORELABEL;
 				}
@@ -2726,24 +2991,16 @@ char * IsIgnored(String user, char type)
 					delete [] p3;
 					return p1;
 				}
-				int index = 2;
-				while (GetWord(p3, index) != "")
+				if (g_ircSession && !lstrcmpi(GetWordAddress(p3, 2), g_ircSession.GetInfo().sNetwork.c_str()))
 				{
-					if (g_ircSession && lstrcmpi(GetWord(p3, index).c_str(), g_ircSession.GetInfo().sNetwork.c_str())== 0)
-					{
-						delete [] p3;
-						return p1;
-					}
-					index++;
+					delete [] p3;
+					return p1;
 				}
+
 
 			}
 IGNORELABEL:
 			delete [] p3;
-			if (*p2 == '\r')
-				p2 ++;
-			if (*p2 == '\n')
-				p2 ++;
 			p1 = p2;
 
 		}
@@ -2754,27 +3011,26 @@ IGNORELABEL:
 
 bool AddIgnore(String mask, String mode, String network) 
 { 
-	if ((pszIgnoreFile &&!IsIgnored(mask, '\0') || !pszIgnoreFile))
+	RemoveIgnore(mask);
+	String S = mask + " +" + mode + " " + network + "\r\n";
+	if (pszIgnoreFile)
+		S += pszIgnoreFile;
+
+	char filepath[MAX_PATH];
+	mir_snprintf(filepath, sizeof(filepath), "%s\\%s_ignore.ini", mirandapath, IRCPROTONAME);
+	FILE *hFile = fopen(filepath,"wb");
+	if (hFile)
 	{
-		String S = mask + " +" + mode + " " + network + "\r\n";
-		if (pszIgnoreFile)
-			S += pszIgnoreFile;
+		fputs(S.c_str(), hFile);
+		fclose(hFile);
 
-		char filepath[MAX_PATH];
-		mir_snprintf(filepath, sizeof(filepath), "%s\\%s_ignore.ini", mirandapath, IRCPROTONAME);
-		FILE *hFile = fopen(filepath,"wb");
-		if (hFile)
-		{
-			fputs(S.c_str(), hFile);
-			fclose(hFile);
-
-		}
-		if (pszIgnoreFile)
-			delete [] pszIgnoreFile;
-		pszIgnoreFile = IrcLoadFile(filepath);
-		return true;
 	}
-	return false; 
+	if (pszIgnoreFile)
+		delete [] pszIgnoreFile;
+	pszIgnoreFile = IrcLoadFile(filepath);
+	if(IgnoreWndHwnd)
+		SendMessage(IgnoreWndHwnd, IRC_REBUILDIGNORELIST, 0, 0);
+	return true;
 }  
 
 bool RemoveIgnore(String mask) 
@@ -2812,6 +3068,8 @@ bool RemoveIgnore(String mask)
 		p1 = IsIgnored(mask, '\0');
 
 	}
+	if(IgnoreWndHwnd)
+		SendMessage(IgnoreWndHwnd, IRC_REBUILDIGNORELIST, 0, 0);
 	return true; 
 } 
 

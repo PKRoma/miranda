@@ -25,6 +25,11 @@ extern String sUserModes;
 extern String sUserModePrefixes;
 extern PREFERENCES * prefs;
 extern GETEVENTFUNC			pfnAddEvent;
+extern bool bMbotInstalled;
+extern MM_INTERFACE		mmi;
+
+std::vector<String> vUserhostReasons;
+std::vector<String> vWhoInProgress;
 
 
 struct FORK_ARG {
@@ -34,24 +39,6 @@ struct FORK_ARG {
 	void *arg;
 };
 
-
-
-
-
-void AddToUHTemp(String sCommand)
-{
-	DBVARIANT dbv;
-
-	if (!DBGetContactSetting(NULL, IRCPROTONAME, "UHTemp", &dbv) && dbv.type == DBVT_ASCIIZ) 
-	{
-		sCommand = (String)dbv.pszVal + (String)" " + sCommand;
-		DBFreeVariant(&dbv);
-	}
-
-	DBWriteContactSettingString(NULL, IRCPROTONAME, "UHTemp", sCommand.c_str());
-
-	return;
-}
 
 void AddToJTemp(String sCommand)
 {
@@ -449,8 +436,8 @@ char * DoColorCodes (const char * text, bool bStrip, bool bReplacePercent)
 					*p = '%'; p++;
 					*p = 'c';p++;
 
-					mir_snprintf(szTemp, sizeof(szTemp), "%03u%03u%03u", GetRValue(prefs->colors[iFG]), GetGValue(prefs->colors[iFG]), GetBValue(prefs->colors[iFG]));
-					for (int i = 0; i<9; i++)
+					mir_snprintf(szTemp, sizeof(szTemp), "%02u", iFG);
+					for (int i = 0; i<2; i++)
 					{
 						*p = szTemp[i]; p++;
 					}
@@ -465,8 +452,8 @@ char * DoColorCodes (const char * text, bool bStrip, bool bReplacePercent)
 					*p = '%'; p++;
 					*p = 'f';p++;
 
-					mir_snprintf(szTemp, sizeof(szTemp), "%03u%03u%03u", GetRValue(prefs->colors[iBG]), GetGValue(prefs->colors[iBG]), GetBValue(prefs->colors[iBG]));
-					for (int i = 0; i<9; i++)
+					mir_snprintf(szTemp, sizeof(szTemp), "%02u", iBG);
+					for (int i = 0; i<2; i++)
 					{
 						*p = szTemp[i]; p++;
 					}
@@ -478,84 +465,6 @@ char * DoColorCodes (const char * text, bool bStrip, bool bReplacePercent)
 				}
 			}
 		
-
-
-
-
-/*
-			if(*text > 47 && *text < 58 && *text != '\0')
-			{
-				if (text[1] != '\0' && text[1] > 47 && text[1] < 58 && *text >47 && *text < 50)
-				{
-					iText = (*text-48)*10 + (text[1]-48) ;//ASCII to int
-					text++; text ++;
-					if (*text != '\0' && text[1] != '\0' && *text == ',' && text[1] >47 && text[1] < 58)
-					{
-						if (text[2] != '\0'  && text[2] > 47 && text[2] < 58 && text[1] >47 && text[1] < 50)
-						{
-							iBG = (text[1]-48)*10 + (text[2]-48);
-							text++;text++;text++;
-						}
-						else
-						{
-							iBG = text[1]-48;
-							text++; text++;
-						}
-					}
-				}
-				else 
-				{
-					iText = *text-48;
-					text++;
-					if (*text != '\0' && text[1] != '\0' && *text == ',' && text[1] >47 && text[1] < 58)
-					{
-						if (text[2] != '\0'  && text[2] > 47 && text[2] < 58 && text[1] >47 && text[1] < 50)
-						{
-							iBG = (text[1]-48)*10 + (text[2]-48);
-							text++;text++;text++;
-						}
-						else
-						{
-							iBG = text[1]-48;
-							text++; text++;
-						}
-					}
-				}
-				
-				if(!bStrip && iText >= 0 && iText < 16)
-				{
-					char szTemp[10];
-					mir_snprintf(szTemp, sizeof(szTemp), "%03u%03u%03u", GetRValue(prefs->colors[iText]), GetGValue(prefs->colors[iText]), GetBValue(prefs->colors[iText]));
-					*p = '%'; p++;
-					*p = 'c';p++;
-					for (int i = 0; i<9; i++)
-					{
-						*p = szTemp[i]; p++;
-					}
-				}
-				
-				if(!bStrip && iBG >= 0 && iBG < 16)
-				{
-					char szTemp[10];
-					mir_snprintf(szTemp, sizeof(szTemp), "%03u%03u%03u", GetRValue(prefs->colors[iBG]), GetGValue(prefs->colors[iBG]), GetBValue(prefs->colors[iBG]));
-					*p = '%'; p++;
-					*p = 'f';p++;
-					for (int i = 0; i<9; i++)
-					{
-						*p = szTemp[i]; p++;
-					}
-				}
-				
-
-			}
-			else if (!bStrip)
-			{
-				*p = '%'; p++;
-				*p = 'C'; p++;
-				*p = '%'; p++;
-				*p = 'F'; p++;
-			}
-*/
 			break;
 
 		default:
@@ -574,8 +483,121 @@ char * DoColorCodes (const char * text, bool bStrip, bool bReplacePercent)
 }
 
 
+int CallChatEvent(WPARAM wParam, LPARAM lParam)
+{
+	
+	GCEVENT * gce = (GCEVENT *)lParam;
+	int iVal = 0;
 
-int DoEvent(int iEvent, const char* pszWindow, const char * pszNick, const char* pszText, const char* pszStatus, const char* pszUserInfo, DWORD dwItemData, bool bAddToLog, bool bIsMe)
+	// first see if the scripting module should modify or stop this event
+	if(bMbotInstalled && prefs->ScriptingEnabled && gce 
+		&& gce->time != 0 && (gce->pDest->pszID == NULL 
+		|| lstrlen(gce->pDest->pszID) != 0 && lstrcmpi(gce->pDest->pszID , "Network Log")) )
+	{
+		GCEVENT *gcevent= (GCEVENT*) lParam;
+		GCEVENT *gcetemp = NULL;
+		WPARAM wp = wParam;
+		gcetemp = (GCEVENT *)mmi.mmi_malloc(sizeof(GCEVENT));
+		gcetemp->pDest = (GCDEST *)mmi.mmi_malloc(sizeof(GCDEST));
+		gcetemp->pDest->iType = gcevent->pDest->iType;
+		gcetemp->bAddToLog = gcevent->bAddToLog;
+		gcetemp->bIsMe = gcevent->bIsMe;
+		gcetemp->cbSize = sizeof(GCEVENT);
+		gcetemp->dwItemData = gcevent->dwItemData;
+		gcetemp->time = gcevent->time;
+		if(gcevent->pDest->pszID)
+		{
+			char * pTemp = NULL;
+			gcetemp->pDest->pszID = (char *)mmi.mmi_malloc(lstrlen(gcevent->pDest->pszID) + 1);
+			lstrcpyn(gcetemp->pDest->pszID, gcevent->pDest->pszID, lstrlen(gcevent->pDest->pszID) + 1);
+			pTemp = strchr(gcetemp->pDest->pszID, ' ');
+			if(pTemp)
+				*pTemp = '\0';
+		}else gcetemp->pDest->pszID = NULL;
+
+		if(gcevent->pDest->pszModule)
+		{
+			gcetemp->pDest->pszModule = (char *)mmi.mmi_malloc(lstrlen(gcevent->pDest->pszModule) + 1);
+			lstrcpyn(gcetemp->pDest->pszModule, gcevent->pDest->pszModule, lstrlen(gcevent->pDest->pszModule) + 1);
+		}else gcetemp->pDest->pszModule = NULL;
+
+		if(gcevent->pszText)
+		{
+			gcetemp->pszText = (char *)mmi.mmi_malloc(lstrlen(gcevent->pszText) + 1);
+			lstrcpyn((char *)gcetemp->pszText, gcevent->pszText, lstrlen(gcevent->pszText) + 1);
+		}else gcetemp->pszText = NULL;
+
+		if(gcevent->pszUID)
+		{
+			gcetemp->pszUID = (char *)mmi.mmi_malloc(lstrlen(gcevent->pszUID) + 1);
+			lstrcpyn((char *)gcetemp->pszUID, gcevent->pszUID, lstrlen(gcevent->pszUID) + 1);
+		}else gcetemp->pszUID = NULL;
+
+		if(gcevent->pszNick)
+		{
+			gcetemp->pszNick = (char *)mmi.mmi_malloc(lstrlen(gcevent->pszNick) + 1);
+			lstrcpyn((char *)gcetemp->pszNick, gcevent->pszNick, lstrlen(gcevent->pszNick) + 1);
+		}else gcetemp->pszNick = NULL;
+
+		if(gcevent->pszStatus)
+		{
+			gcetemp->pszStatus = (char *)mmi.mmi_malloc(lstrlen(gcevent->pszStatus) + 1);
+			lstrcpyn((char *)gcetemp->pszStatus, gcevent->pszStatus, lstrlen(gcevent->pszStatus) + 1);
+		}else gcetemp->pszStatus = NULL;
+
+		if(gcevent->pszUserInfo)
+		{
+			gcetemp->pszUserInfo = (char *)mmi.mmi_malloc(lstrlen(gcevent->pszUserInfo) + 1);
+			lstrcpyn((char *)gcetemp->pszUserInfo, gcevent->pszUserInfo, lstrlen(gcevent->pszUserInfo) + 1);
+		}else gcetemp->pszUserInfo = NULL;
+
+		if(	Scripting_TriggerMSPGuiIn(&wp, gcetemp) && gcetemp)
+		{
+			if(gcetemp && gcetemp->pDest && gcetemp->pDest->pszID)
+			{
+				String sTempId = MakeWndID(gcetemp->pDest->pszID);
+				mmi.mmi_realloc(gcetemp->pDest->pszID, sTempId.length() + 1);
+				lstrcpyn(gcetemp->pDest->pszID, sTempId.c_str(), sTempId.length()+1); 
+			}
+			if(pfnAddEvent)
+				iVal = pfnAddEvent(wp, (LPARAM) gcetemp);
+			else
+				iVal = CallService(MS_GC_EVENT, wp, (LPARAM) gcetemp);
+		}
+		if (gcetemp)
+		{
+			if(gcetemp->pszNick)
+				mmi.mmi_free((void *)gcetemp->pszNick);
+			if(gcetemp->pszUID)
+				mmi.mmi_free((void *)gcetemp->pszUID);
+			if(gcetemp->pszStatus)
+				mmi.mmi_free((void *)gcetemp->pszStatus);
+			if(gcetemp->pszUserInfo)
+				mmi.mmi_free((void *)gcetemp->pszUserInfo);
+			if(gcetemp->pszText)
+				mmi.mmi_free((void *)gcetemp->pszText);
+			if(gcetemp->pDest->pszID)
+				mmi.mmi_free((void *)gcetemp->pDest->pszID);
+			if(gcetemp->pDest->pszModule)
+				mmi.mmi_free((void *)gcetemp->pDest->pszModule);
+			mmi.mmi_free((void *)gcetemp->pDest);
+			mmi.mmi_free((void *)gcetemp);
+		}
+
+		return iVal;
+	}
+
+	if(pfnAddEvent)
+		iVal = pfnAddEvent(wParam, (LPARAM) gce);
+	else
+		iVal = CallService(MS_GC_EVENT, wParam, (LPARAM) gce);
+
+	return iVal;
+}
+
+int DoEvent(int iEvent, const char* pszWindow, const char * pszNick, 
+			const char* pszText, const char* pszStatus, const char* pszUserInfo, 
+			DWORD dwItemData, bool bAddToLog, bool bIsMe, time_t timestamp)
 {						   
 	GCDEST gcd = {0};
 	GCEVENT gce = {0};
@@ -621,12 +643,12 @@ int DoEvent(int iEvent, const char* pszWindow, const char * pszNick, const char*
 		gce.pszText = (char *)sText.c_str();
 
 	gce.dwItemData = dwItemData;
-	gce.time = time(NULL);
-	gce.bIsMe = bIsMe;
-	if(pfnAddEvent)
-		return pfnAddEvent(0, (LPARAM)&gce);
+	if(timestamp == 1)
+		gce.time = time(NULL);
 	else
-		return CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
+		gce.time = timestamp;
+	gce.bIsMe = bIsMe;
+	return CallChatEvent((WPARAM)0, (LPARAM)&gce);
 
 
 }
@@ -706,7 +728,7 @@ int SetChannelSBText(String sWindow, CHANNELINFO * wi)
 	if(wi->pszTopic)
 		sTemp += wi->pszTopic;
 	sTemp = DoColorCodes(sTemp.c_str(), TRUE, FALSE);
-	return DoEvent(GC_EVENT_SETSBTEXT, sWindow.c_str(), NULL, sTemp.c_str(), NULL, NULL, NULL, FALSE, FALSE);
+	return DoEvent(GC_EVENT_SETSBTEXT, sWindow.c_str(), NULL, sTemp.c_str(), NULL, NULL, NULL, FALSE, FALSE, 0);
 	
 
 }
@@ -733,7 +755,7 @@ bool FreeWindowItemData(String window, CHANNELINFO* wis)
 {
 	CHANNELINFO* wi;
 	if(!wis)
-		wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, window.c_str(), NULL, NULL, NULL, NULL, NULL, FALSE, FALSE);
+		wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, window.c_str(), NULL, NULL, NULL, NULL, NULL, FALSE, FALSE, 0);
 	else
 		wi = wis;
 	if(wi)
@@ -759,7 +781,7 @@ bool AddWindowItemData(String window, const char * pszLimit, const char * pszMod
 {
 	CHANNELINFO* wi;
 
-	wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, window.c_str(), NULL, NULL, NULL, NULL, NULL, FALSE, FALSE);
+	wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, window.c_str(), NULL, NULL, NULL, NULL, NULL, FALSE, FALSE, 0);
 	if(wi)
 	{
 		if(pszLimit)
@@ -807,3 +829,97 @@ void FindLocalIP(HANDLE con) // inspiration from jabber
 		}
 
 } 
+
+void DoUserhostWithReason(int type, String reason, bool bSendCommand, String userhostparams, ...)
+{
+	char temp[4096];
+	String S = "";
+	switch(type)
+	{
+	case 1:
+		S = "USERHOST";
+		break;
+	case 2:
+		S = "WHO";
+		break;
+	default:
+		S= "USERHOST";
+		break;
+	}
+
+	va_list ap;
+	va_start(ap, userhostparams);
+	mir_vsnprintf(temp, sizeof(temp), (S + (String)" " + userhostparams).c_str(), ap);
+	va_end(ap);
+
+	// Add reason
+	if (type ==1)
+		vUserhostReasons.push_back(reason);
+	else if (type == 2)
+		vWhoInProgress.push_back(reason);
+
+	// Do command
+	if (g_ircSession && bSendCommand)
+		g_ircSession << CIrcMessage(temp, false, false);
+}
+
+String GetNextUserhostReason(int type)
+{
+	String reason = "";
+	switch(type)
+	{
+	case 1:
+		if(!vUserhostReasons.size())
+			return (String)"";
+
+		// Get reason
+		reason = vUserhostReasons.front();
+		vUserhostReasons.erase(vUserhostReasons.begin());
+		break;
+	case 2:
+		if(!vWhoInProgress.size())
+			return (String)"";
+
+		// Get reason
+		reason = vWhoInProgress.front();
+		vWhoInProgress.erase(vWhoInProgress.begin());
+		break;
+	default:break;
+	}
+
+	return reason;
+}
+String PeekAtReasons(int type)
+{
+	switch (type)
+	{
+	case 1:
+		if(!vUserhostReasons.size())
+			return (String)"";
+		return vUserhostReasons.front();
+		break;
+	case 2:
+		if(!vWhoInProgress.size())
+			return (String)"";
+		return vWhoInProgress.front();
+		break;
+	default:break;
+	}
+	return (String)"";
+
+}
+
+void ClearUserhostReasons(int type)
+{
+	switch (type)
+	{
+	case 1:
+		vUserhostReasons.clear();
+		break;
+	case 2:
+		vWhoInProgress.clear();
+		break;
+	default:break;
+	}
+	return;
+}

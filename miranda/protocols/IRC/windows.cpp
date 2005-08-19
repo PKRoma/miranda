@@ -105,7 +105,7 @@ BOOL CALLBACK InfoWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_LOGO),IMAGE_ICON,48, 48,LR_SHARED), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_INFO_NAME), EM_SETREADONLY, true, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_INFO_ID), EM_SETREADONLY, true, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_INFO_ADDRESS), EM_SETREADONLY, true, 0);
@@ -114,7 +114,7 @@ BOOL CALLBACK InfoWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(GetDlgItem(hwndDlg, IDC_INFO_SERVER), EM_SETREADONLY, true, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_INFO_AWAY2), EM_SETREADONLY, true, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_INFO_OTHER), EM_SETREADONLY, true, 0);
-			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_WHOIS),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED)); // Tell the dialog to use it
+			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_WHOIS,"whois",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON))); // Tell the dialog to use it
 					
 		} break;
 
@@ -211,7 +211,7 @@ BOOL CALLBACK NickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_LOGO),IMAGE_ICON,48, 48,LR_SHARED), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
 
 			DBVARIANT dbv;
   			if (!DBGetContactSetting(NULL, IRCPROTONAME, "RecentNicks", &dbv) && dbv.type == DBVT_ASCIIZ) 
@@ -339,7 +339,7 @@ BOOL CALLBACK ListWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SetWindowPos(hwndDlg, HWND_TOP, (screen.right-screen.left)/2- (prefs->ListSize.x)/2,(screen.bottom-screen.top)/2- (prefs->ListSize.y)/2, (prefs->ListSize.x), (prefs->ListSize.y), 0);
 			SendMessage(hwndDlg, WM_SIZE, SIZE_RESTORED, MAKELPARAM(prefs->ListSize.x, prefs->ListSize.y));
 			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_INFO_LISTVIEW), LVS_EX_FULLROWSELECT);
-			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_LIST),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED)); // Tell the dialog to use it
+			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_LIST,"list",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON))); // Tell the dialog to use it
 		} break;
 
 	case WM_SIZE:
@@ -432,7 +432,7 @@ BOOL CALLBACK JoinWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_LOGO),IMAGE_ICON,48, 48,LR_SHARED), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
 			DBVARIANT dbv;
   			if (!DBGetContactSetting(NULL, IRCPROTONAME, "RecentChannels", &dbv) && dbv.type == DBVT_ASCIIZ) 
 			{
@@ -525,7 +525,7 @@ BOOL CALLBACK InitWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_LOGO),IMAGE_ICON,48, 48,LR_SHARED), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
 		} break;
 		case WM_CTLCOLOREDIT:
 		case WM_CTLCOLORSTATIC:
@@ -612,7 +612,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_LOGO),IMAGE_ICON,48, 48,LR_SHARED), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
 			
 			char * p1 = pszServerFile;
 			char * p2 = pszServerFile;
@@ -856,6 +856,12 @@ static void __cdecl AckUserInfoSearch(void * lParam)
 {
 	ProtoBroadcastAck(IRCPROTONAME, (void*)lParam, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
+
+#define STR_BASIC "Faster! Searches the network for an exact match of the nickname only. The hostmask is optional and provides further security if used. Wildcards (? and *) are allowed."		
+#define STR_ADVANCED "Slower! Searches the network for nicknames matching a wildcard string. The hostmask is mandatory and a minimum of 4 characters is necessary in the \"Nick\" field. Wildcards (? and *) are allowed."		
+#define STR_ERROR "Settings could not be saved!\n\nThe \"Nick\" field must contain at least four characters including wildcards,\n and it must also match the default nickname for this contact."		
+#define STR_ERROR2 "Settings could not be saved!\n\nA full hostmask must be set for this online detection mode to work."		
+
 BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact;
@@ -863,19 +869,35 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	switch (msg) {
 		case WM_INITDIALOG:
 		{
-			TranslateDialogDefault(hwndDlg);
-			hContact = (HANDLE) lParam;
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) hContact);
 			DBVARIANT dbv;
-			if (!DBGetContactSetting(hContact, IRCPROTONAME, "Default", &dbv) && dbv.type == DBVT_ASCIIZ) {
-				String S = (String)Translate("The \"Nick\" field must contain at least four characters, and also match the default nickname (incl. wildcards) for this contact.\n\nThe \"Nick\" field is not case-sensitive but \"User\" and \"Address\" are.\r\n\r\nThe default nickname for this contact is") + (String)" " + dbv.pszVal;
-				SetDlgItemText(hwndDlg, IDC_DEFAULT, S.c_str());
-				DBFreeVariant(&dbv);
+			hContact = (HANDLE) lParam;
+			BYTE bAdvanced = DBGetContactSettingByte(hContact, IRCPROTONAME, "AdvancedMode", 0);
+
+			TranslateDialogDefault(hwndDlg);
+
+			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) hContact);
+
+			CheckDlgButton(hwndDlg, IDC_RADIO1, bAdvanced?BST_UNCHECKED:BST_CHECKED);
+			CheckDlgButton(hwndDlg, IDC_RADIO2, bAdvanced?BST_CHECKED:BST_UNCHECKED);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_WILDCARD), bAdvanced);
+
+			if(!bAdvanced)
+			{
+				SetDlgItemText(hwndDlg, IDC_DEFAULT, STR_BASIC);
+				if (!DBGetContactSetting(hContact, IRCPROTONAME, "Default", &dbv) && dbv.type == DBVT_ASCIIZ) {
+					SetDlgItemText(hwndDlg, IDC_WILDCARD, dbv.pszVal);
+					DBFreeVariant(&dbv);
+				}
 			}
-			if (!DBGetContactSetting(hContact, IRCPROTONAME, "UWildcard", &dbv) && dbv.type == DBVT_ASCIIZ) {
-				SetDlgItemText(hwndDlg, IDC_WILDCARD, dbv.pszVal);
-				DBFreeVariant(&dbv);
+			else 
+			{
+				SetDlgItemText(hwndDlg, IDC_DEFAULT, STR_ADVANCED);
+				if (!DBGetContactSetting(hContact, IRCPROTONAME, "UWildcard", &dbv) && dbv.type == DBVT_ASCIIZ) {
+					SetDlgItemText(hwndDlg, IDC_WILDCARD, dbv.pszVal);
+					DBFreeVariant(&dbv);
+				}
 			}
+
 			if (!DBGetContactSetting(hContact, IRCPROTONAME, "UUser", &dbv) && dbv.type == DBVT_ASCIIZ) {
 				SetDlgItemText(hwndDlg, IDC_USER, dbv.pszVal);
 				DBFreeVariant(&dbv);
@@ -904,21 +926,38 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				char temp[500];
 				GetDlgItemText(hwndDlg, IDC_WILDCARD, temp, 500);
 				DBVARIANT dbv;
-				if (!DBGetContactSetting(hContact, IRCPROTONAME, "Default", &dbv) && dbv.type == DBVT_ASCIIZ ) 
+				BYTE bAdvanced = IsDlgButtonChecked(hwndDlg, IDC_RADIO1)?0:1;
+				
+
+
+				if(bAdvanced)
 				{
-					if((lstrlen(temp) <4 && lstrlen(temp)) || !WCCmp(CharLower(temp), CharLower(dbv.pszVal)))
+					if(GetWindowTextLength(GetDlgItem(hwndDlg, IDC_WILDCARD)) == 0
+						|| GetWindowTextLength(GetDlgItem(hwndDlg, IDC_USER)) == 0
+						|| GetWindowTextLength(GetDlgItem(hwndDlg, IDC_HOST)) == 0)
 					{
-						MessageBox(NULL, Translate(	"Settings could not be saved!\n\nThe \"Nick\" field must contain at least four characters including wildcards,\n and it must also match the default nickname for this contact."	), Translate("IRC error"), MB_OK|MB_ICONERROR);
-						DBFreeVariant(&dbv);
+						MessageBox(NULL, Translate(	STR_ERROR2	), Translate("IRC error"), MB_OK|MB_ICONERROR);
 						return false;
 					}
-					DBFreeVariant(&dbv);
+					if (!DBGetContactSetting(hContact, IRCPROTONAME, "Default", &dbv) && dbv.type == DBVT_ASCIIZ ) 
+					{
+						String S = STR_ERROR + (String)" (" + dbv.pszVal + (String)")";
+						if((lstrlen(temp) <4 && lstrlen(temp)) || !WCCmp(CharLower(temp), CharLower(dbv.pszVal)))
+						{
+							MessageBox(NULL, Translate(	S.c_str()	), Translate("IRC error"), MB_OK|MB_ICONERROR);
+							DBFreeVariant(&dbv);
+							return false;
+						}
+						DBFreeVariant(&dbv);
+					}
+					GetDlgItemText(hwndDlg, IDC_WILDCARD, temp, 500);
+					if (lstrlen(GetWord(temp, 0).c_str()))
+						DBWriteContactSettingString(hContact, IRCPROTONAME, "UWildcard", GetWord(temp, 0).c_str());
+					else
+						DBDeleteContactSetting(hContact, IRCPROTONAME, "UWildcard");
 				}
-				GetDlgItemText(hwndDlg, IDC_WILDCARD, temp, 500);
-				if (lstrlen(GetWord(temp, 0).c_str()))
-					DBWriteContactSettingString(hContact, IRCPROTONAME, "UWildcard", GetWord(temp, 0).c_str());
-				else
-					DBDeleteContactSetting(hContact, IRCPROTONAME, "UWildcard");
+
+				DBWriteContactSettingByte(hContact, IRCPROTONAME, "AdvancedMode", bAdvanced);
 
 				GetDlgItemText(hwndDlg, IDC_USER, temp, 500);
 				if (lstrlen(GetWord(temp, 0).c_str()))
@@ -930,14 +969,15 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				if (lstrlen(GetWord(temp, 0).c_str()))
 					DBWriteContactSettingString(hContact, IRCPROTONAME, "UHost", GetWord(temp, 0).c_str());
 				else
-					DBDeleteContactSetting(hContact, IRCPROTONAME, "UUser");
+					DBDeleteContactSetting(hContact, IRCPROTONAME, "UHost");
 
 				EnableWindow(GetDlgItem(hwndDlg, IDC_BUTTON), false);
 
 			}
 			if(HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_BUTTON2)
 			{
-				SetDlgItemText(hwndDlg, IDC_WILDCARD, "");
+				if(IsDlgButtonChecked(hwndDlg, IDC_RADIO2))
+					SetDlgItemText(hwndDlg, IDC_WILDCARD, "");
 				SetDlgItemText(hwndDlg, IDC_HOST, "");
 				SetDlgItemText(hwndDlg, IDC_USER, "");
 				DBDeleteContactSetting(hContact, IRCPROTONAME, "UWildcard");
@@ -946,8 +986,31 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				EnableWindow(GetDlgItem(hwndDlg, IDC_BUTTON), false);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_BUTTON2), false);
 
-			}		}break;
+			}		
+			if(HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_RADIO1)
+			{
+				DBVARIANT dbv;
+				SetDlgItemText(hwndDlg, IDC_DEFAULT, STR_BASIC);
+				if (!DBGetContactSetting(hContact, IRCPROTONAME, "Default", &dbv) && dbv.type == DBVT_ASCIIZ) {
+					SetDlgItemText(hwndDlg, IDC_WILDCARD, dbv.pszVal);
+					DBFreeVariant(&dbv);
+				}
+				EnableWindow(GetDlgItem(hwndDlg, IDC_WILDCARD), false);
 
+			}	
+			if(HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_RADIO2)
+			{
+				DBVARIANT dbv;
+				SetDlgItemText(hwndDlg, IDC_DEFAULT, STR_ADVANCED);
+				if (!DBGetContactSetting(hContact, IRCPROTONAME, "UWildcard", &dbv) && dbv.type == DBVT_ASCIIZ) {
+					SetDlgItemText(hwndDlg, IDC_WILDCARD, dbv.pszVal);
+					DBFreeVariant(&dbv);
+				}
+				EnableWindow(GetDlgItem(hwndDlg, IDC_WILDCARD), true);
+
+			}	
+
+		}break;
     }
     return FALSE;
 }
@@ -967,7 +1030,7 @@ BOOL CALLBACK QuestionWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_LOGO),IMAGE_ICON,48, 48,LR_SHARED), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
 
 		} break;
 		
@@ -1108,18 +1171,18 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			HWND hwndEdit = ChildWindowFromPoint(GetDlgItem(hwndDlg, IDC_TOPIC), pt); 
 			
 			OldMgrEditProc = (WNDPROC)SetWindowLong(hwndEdit, GWL_WNDPROC,(LONG)MgrEditSubclassProc); 
-
-			SendDlgItemMessage(hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_ADD),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED));
-			SendDlgItemMessage(hwndDlg,IDC_REMOVE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_DELETE),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED));
-			SendDlgItemMessage(hwndDlg,IDC_EDIT,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_RENAME),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED));
+			
+			SendDlgItemMessage(hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadIconEx(IDI_ADD,"add",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+			SendDlgItemMessage(hwndDlg,IDC_REMOVE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE,"delete",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+			SendDlgItemMessage(hwndDlg,IDC_EDIT,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_RENAME,"rename",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
 			SendMessage(GetDlgItem(hwndDlg,IDC_ADD), BUTTONADDTOOLTIP, (WPARAM)Translate("Add ban/invite/exception"), 0);
 			SendMessage(GetDlgItem(hwndDlg,IDC_EDIT), BUTTONADDTOOLTIP, (WPARAM)Translate("Edit selected ban/invite/exception"), 0);
 			SendMessage(GetDlgItem(hwndDlg,IDC_REMOVE), BUTTONADDTOOLTIP, (WPARAM)Translate("Delete selected ban/invite/exception"), 0);
 
-			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_MANAGER),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED));
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_LOGO),IMAGE_ICON,48, 48,LR_SHARED), 0);
-			SendDlgItemMessage(hwndDlg,IDC_APPLYTOPIC,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_GO),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED));
-			SendDlgItemMessage(hwndDlg,IDC_APPLYMODES,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_GO),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),LR_SHARED));
+			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_MANAGER,"manager",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
+			SendDlgItemMessage(hwndDlg,IDC_APPLYTOPIC,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_GO,"go",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+			SendDlgItemMessage(hwndDlg,IDC_APPLYMODES,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_GO,"go",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
 			SendMessage(GetDlgItem(hwndDlg,IDC_APPLYTOPIC), BUTTONADDTOOLTIP, (WPARAM)Translate("Set this topic for the channel"), 0);
 			SendMessage(GetDlgItem(hwndDlg,IDC_APPLYMODES), BUTTONADDTOOLTIP, (WPARAM)Translate("Set these modes for the channel"), 0);
 
@@ -1158,7 +1221,7 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case IRC_INITMANAGER:
 		{
 			char * window = (char *) lParam;
-			CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, window, NULL, NULL, NULL, NULL, NULL, FALSE, FALSE);
+			CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, window, NULL, NULL, NULL, NULL, NULL, FALSE, FALSE, 0);
 
 			if(wi)
 			{
@@ -1442,7 +1505,7 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 			if(HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_APPLYMODES)
 			{
-				CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, window, NULL, NULL, NULL, NULL, NULL, FALSE, FALSE);
+				CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, window, NULL, NULL, NULL, NULL, NULL, FALSE, FALSE, 0);
 				if (wi )
 				{
 					char toadd[10]; *toadd = '\0';

@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 CIrcSession			g_ircSession=NULL;			// Representation of the IRC-connection
 CMyMonitor			*monitor;					// Object that processes data from the IRC server
+MM_INTERFACE		mmi = {0};					// structure which keeps pointers to mirandas alloc, free and realloc
 char *				IRCPROTONAME = NULL; 
 char *				ALTIRCPROTONAME = NULL;
 char *				pszServerFile = NULL;
@@ -30,6 +31,7 @@ char *				pszIgnoreFile = NULL;
 char				mirandapath[MAX_PATH];
 DWORD				mirVersion = NULL;
 CRITICAL_SECTION	cs;
+CRITICAL_SECTION	m_gchook;
 PLUGINLINK *		pluginLink;
 HINSTANCE			g_hInstance = NULL;	
 PREFERENCES			* prefs;	
@@ -42,7 +44,7 @@ PLUGININFO			pluginInfo=
 {						// Information about the plugin
 						sizeof( PLUGININFO ),
 						"IRC Protocol",
-						PLUGIN_MAKE_VERSION( 0,5,1,3 ),
+						PLUGIN_MAKE_VERSION( 0,6,3,5 ),
 						"IRC protocol for Miranda IM.",
 						"MatriX",
 						"i_am_matrix@users.sourceforge.net",
@@ -80,10 +82,18 @@ static void GetModuleName( void )	 // ripped from msn
 	p = strrchr( mirandapath, '\\' );
 	if(p)
 	{
+		char * p2;
 		*p = '\0';
 		p++;
 		p1 = strrchr( p, '.' );
 		*p1 = '\0';
+		p2 = p;
+		while( *p2 )
+		{
+			if(*p2 == ' ')
+				*p2 = '_';
+			p2++;
+		}
 		IRCPROTONAME = strdup( p );
 		ALTIRCPROTONAME = new char[lstrlen( IRCPROTONAME ) + 7 ];
 		CharUpper(IRCPROTONAME);
@@ -131,8 +141,12 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 		return 1;
 	}
 
-
+	GetModuleName();
+	UpgradeCheck();
+	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &mmi);
+	
 	InitializeCriticalSection(&cs);
+	InitializeCriticalSection(&m_gchook);
 
 #ifdef IRC_SSL
 	m_ssleay32 = LoadLibrary("ssleay32.dll");
@@ -141,7 +155,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	monitor = new CMyMonitor;
 	g_ircSession.AddIrcMonitor(monitor);
 
-	GetModuleName();
 	RegisterProtocol();
 	HookEvents();
 	CreateServiceFunctions();
@@ -159,13 +172,14 @@ extern "C" int __declspec(dllexport) Unload(void)
 	CList_SetAllOffline(TRUE);
 
 	DeleteCriticalSection(&cs);
+	DeleteCriticalSection(&m_gchook);
 
 	if(m_ssleay32)
 		FreeLibrary(m_ssleay32);
 
 	UnhookEvents();
 	UnInitOptions();
-	delete [] IRCPROTONAME;
+	free( IRCPROTONAME );
 	delete [] ALTIRCPROTONAME;
 	delete monitor;
 
@@ -173,9 +187,22 @@ extern "C" int __declspec(dllexport) Unload(void)
 }
 
 
-
-
-
+void UpgradeCheck(void)
+{
+	DWORD dwVersion = DBGetContactSettingDword(NULL, IRCPROTONAME, "OldVersion", PLUGIN_MAKE_VERSION(0,6,0,0));
+	if(	pluginInfo.version > dwVersion)
+	{
+		if(dwVersion < PLUGIN_MAKE_VERSION(0,6,1,0))
+		{
+			DBDeleteContactSetting(NULL, IRCPROTONAME,	"OnlineNotificationTime");
+			DBDeleteContactSetting(NULL, IRCPROTONAME,	"AutoOnlineNotifTempAlso");
+			
+		}
+		
+	}
+	DBWriteContactSettingDword(NULL, IRCPROTONAME, "OldVersion", pluginInfo.version);
+	return;
+}
 
 
 

@@ -11,13 +11,15 @@
 #define IDD_LIST                        123
 #define IDR_MENU                        129
 #define IDD_QUICKCONN                   133
-#define IDI_JOIN                        136
+#define IDI_MAIN                        136
 #define IDD_USERINFO                    154
 #define IDD_CHANMANAGER                 155
 #define IDD_QUESTION                    156
 #define IDD_INIT                        157
 #define IDD_PREFS_CTCP                  158
 #define IDD_MESSAGEBOX                  159
+#define IDD_PREFS_IGNORE                160
+#define IDD_ADDIGNORE                   161
 #define IDI_ADD                         175
 #define IDI_BLOCK                       176
 #define IDI_DELETE                      177
@@ -30,6 +32,9 @@
 #define IDI_LOGO                        187
 #define IDI_RENAME                      188
 #define IDI_SERVER                      189
+#define IDI_DCC                         196
+#define IDI_PART                        197
+#define IDI_JOIN                        198
 #define IDC_ENICK                       1000
 #define IDC_USERID                      1001
 #define IDC_INFO_NAME                   1001
@@ -75,11 +80,10 @@
 #define IDC_PERFORM                     1043
 #define IDC_PERFORMCOMBO                1044
 #define IDC_DISABLEERROR                1044
-#define IDC_ENABLECHAT                  1044
 #define IDC_KEEPALIVE                   1045
 #define IDC_ENABLEIP                    1045
 #define IDC_ONLINENOTIF                 1046
-#define IDC_NOTTEMP                     1047
+#define IDC_CHANNELAWAY                 1047
 #define IDC_USESERVER                   1048
 #define IDC_SHOWSERVER                  1049
 #define IDC_ADDRESS                     1050
@@ -124,8 +128,6 @@
 #define IDC_RADIO1                      1170
 #define IDC_RADIO2                      1171
 #define IDC_RADIO3                      1172
-#define IDC_RADIO4                      1173
-#define IDC_RADIO5                      1174
 #define IDC_HIDDENEDIT                  1175
 #define IDC_NOTOP                       1176
 #define IDC_WHITERECT                   1179
@@ -135,7 +137,6 @@
 #define IDC_AUTO                        1185
 #define IDC_ON                          1186
 #define IDC_QUITMESSAGE                 1187
-#define IDC_ENABLEXFER                  1188
 #define IDC_USERINFO                    1189
 #define IDC_PING                        1190
 #define IDC_IP                          1190
@@ -149,6 +150,23 @@
 #define IDC_COMBO                       1196
 #define IDC_DISC                        1197
 #define IDC_FROMSERVER                  1201
+#define IDC_SCRIPT                      1202
+#define IDC_MASK                        1204
+#define IDC_Q                           1205
+#define IDC_M                           1206
+#define IDC_N                           1207
+#define IDC_I                           1208
+#define IDC_C                           1209
+#define IDC_D                           1210
+#define IDC_NETWORK                     1211
+#define IDC_IGNORECHANNEL               1212
+#define IDC_ENABLEIGNORE                1213
+#define IDC_IGNOREFILE                  1214
+#define IDC_IGNORECHAT                  1215
+#define IDC_IGNOREUNKNOWN               1216
+#define IDC_CUSTOM                      1218
+#define IDC_SPIN1                       1219
+#define IDC_SPIN2                       1220
 #define ID_MENU1_OP                     40013
 #define ID_MENU1_DEOP                   40014
 #define ID_MENU1_VOICE                  40015
@@ -180,9 +198,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        193
+#define _APS_NEXT_RESOURCE_VALUE        199
 #define _APS_NEXT_COMMAND_VALUE         40040
-#define _APS_NEXT_CONTROL_VALUE         1202
+#define _APS_NEXT_CONTROL_VALUE         1221
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
