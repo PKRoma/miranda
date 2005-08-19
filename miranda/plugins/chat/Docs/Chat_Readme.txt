@@ -1,8 +1,8 @@
 ----------------------------oOo----------------------------
 
-                      Chat v 0.2.1.3
+                      Chat v 0.3.1.6
 
-        Released 2004-05-26, last updated 2005-04-20
+        Released 2004-05-26, last updated 2005-08-19
 
 ------------------------------------------------------------
 
@@ -53,7 +53,7 @@ Credits
 ----------  
 
 Egodust, "The coding encyclopedia". Thanks! We miss You!!!
-  
+Valkyre, Thanks for the bold, italics and underline icons
 
 
 Base Address
