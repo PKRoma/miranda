@@ -159,7 +159,7 @@ void __stdcall MSN_AddAuthRequest( HANDLE hContact, const char *email, const cha
 void MSN_AddServerGroup( const char* pszGroupName )
 {
 	char szBuf[ 200 ];
-	UrlEncode( UTF8(pszGroupName), szBuf, sizeof szBuf );
+	UrlEncode( pszGroupName, szBuf, sizeof szBuf );
 
 	if ( hGroupAddEvent == NULL )
 		hGroupAddEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
@@ -671,8 +671,7 @@ void __stdcall UrlEncode( const char* src,char* dest, int cbDest )
 	for( const BYTE* s = ( const BYTE* )src; *s; s++ ) {
 		if (( *s < '0' && *s != '.' && *s != '-' ) ||
 			 ( *s >= ':' && *s <= '?' ) ||
-			 ( *s >= '[' && *s <= '`' && *s != '_' ) ||
-			 ( *s >= '{' ))
+			 ( *s >= '[' && *s <= '`' && *s != '_' ))
 		{
 			if ( i >= cbDest-4 )
 				break;

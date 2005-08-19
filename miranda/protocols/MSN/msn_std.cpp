@@ -135,7 +135,7 @@ DWORD __stdcall MSN_SetString( HANDLE hContact, const char* valueName, const cha
 DWORD __stdcall MSN_SetStringUtf( HANDLE hContact, const char* valueName, char* parValue )
 {
 	if ( msnRunningUnderNT )
-		return DBWriteContactSettingStringUTF( hContact, msnProtocolName, valueName, parValue );
+		return DBWriteContactSettingStringUtf( hContact, msnProtocolName, valueName, parValue );
 
 	Utf8Decode(( char* )parValue );
 	return DBWriteContactSettingString( hContact, msnProtocolName, valueName, parValue );

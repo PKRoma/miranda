@@ -142,8 +142,11 @@ void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 
 	if ( grpName != NULL )
 	{
-		if (( szId = MSN_GetGroupByName( grpName )) == NULL )
+		if (( szId = MSN_GetGroupByName( grpName )) == NULL ) {
 			MSN_AddServerGroup( grpName );
+			if (( szId = MSN_GetGroupByName( grpName )) == NULL )
+				return;
+		}
 
 		if ( !strcmp( szGroupID, szId ))	bDelete = false;
 		else                             bInsert = true;

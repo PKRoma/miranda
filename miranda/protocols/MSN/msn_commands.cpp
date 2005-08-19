@@ -715,7 +715,7 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 		ltoa( i, str, 10 );
 
 		DBVARIANT dbv;
-		if ( DBGetContactSetting( NULL, "CListGroups", str, &dbv ))
+		if ( DBGetContactSettingStringUtf( NULL, "CListGroups", str, &dbv ))
 			break;
 
 		bool result = !stricmp( dbv.pszVal+1, data.grpName );
@@ -731,7 +731,7 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 		if ( MyOptions.ManageServer ) {
 			char szNewName[ 128 ];
 			mir_snprintf( szNewName, sizeof szNewName, "%c%s",  1 | GROUPF_EXPANDED, data.grpName );
-			DBWriteContactSettingString( NULL, "CListGroups", str, szNewName );
+			DBWriteContactSettingStringUtf( NULL, "CListGroups", str, szNewName );
 			CallService( MS_CLUI_GROUPADDED, i, 0 );
 	}	}
 	return true;
@@ -753,7 +753,7 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 	sttIsSync = false;
 
 	if ( cmdString[3] ) {
-		if ( isdigit( cmdString[ 4 ] )) {
+		if ( isdigit(( BYTE )cmdString[ 4 ] )) {
 			trid = strtol( cmdString+4, &params, 10 );
 			switch ( *params ) {
 				case ' ':	case '\0':	case '\t':	case '\n':
@@ -1255,7 +1255,6 @@ LBL_InvalidCommand:
 
 			int tNumTokens = sttDivideWords( params, 10, tWords );
 
-			MSN_DebugLog( "Pending contacts: %d", sttListNumber );
 			if ( --sttListNumber == 0 )
 				MSN_SetServerStatus( msnDesiredStatus );
 
