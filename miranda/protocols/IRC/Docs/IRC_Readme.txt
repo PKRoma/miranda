@@ -1,23 +1,23 @@
 ----------------------------oOo----------------------------
-               IRC Protocol Plugin v 0.5.0.1
+               IRC Protocol Plugin v 0.6.3.5
 
   Implementation of IRC RFC-1459, RFC-2812 for Miranda IM
 
-	Released 2003-03-03, last updated 2004-11-14
+	Released 2003-03-03, last updated 2005-08-19
 -----------------------------------------------------------
 
 
-Information
+Important information
 -----------
 
-Please visit the online resource for the IRC plugin at:
-http://members.chello.se/matrix/ for more information on usage etc.
+#1 	Please visit the online resource for the IRC plugin at:
+	http://members.chello.se/matrix/ for more information on usage etc.
 
-To install OpenSSL if you need it, go here: 
-http://members.chello.se/matrix/openssl/Win32OpenSSL-v0.9.7e.exe
+#2	To install OpenSSL if you need it, go here: 
+	http://members.chello.se/matrix/openssl/Win32OpenSSL-v0.9.7f.exe
 
-This protocol is dependant on the Chat plugin, get it here: 
-http://www.miranda-im.org/download/details.php?action=viewfile&id=1309
+#3	This protocol is dependant on the Chat plugin, get it here: 
+	http://www.miranda-im.org/download/details.php?action=viewfile&id=1309
 
 
 
@@ -32,7 +32,7 @@ http://www.miranda-im.org/download/details.php?action=viewlog&id=550
 Copyright and license
 ---------------------
 
-Copyright (C) 2003-2004  Jörgen Persson
+Copyright (C) 2003-2005  Jörgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
