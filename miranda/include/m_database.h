@@ -954,7 +954,7 @@ __inline static int DBWriteContactSettingWString(HANDLE hContact,const char *szM
 	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
 }
 
-__inline static int DBWriteContactSettingStringUTF(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
+__inline static int DBWriteContactSettingStringUtf(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
 {
 	DBCONTACTWRITESETTING cws;
 
