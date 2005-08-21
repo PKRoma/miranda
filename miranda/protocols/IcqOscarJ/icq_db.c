@@ -158,7 +158,7 @@ int ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, char* s
 int ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, char* szValue)
 {
   if (bUtfReadyDB)
-    return DBWriteContactSettingStringUTF(hContact, gpszICQProtoName, szSetting, szValue);
+    return DBWriteContactSettingStringUtf(hContact, gpszICQProtoName, szSetting, szValue);
   else
   { // old DB, we need to convert the string to Ansi
     char* szAnsi;
