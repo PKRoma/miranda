@@ -302,7 +302,6 @@ void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint
                     DrawEdge(dc, rcItem, EDGE_RAISED, BF_RECT|BF_SOFT);
             }
             else {
-                //_DebugPopup(0, "draw button with vs");
                 FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
                 pfnDrawThemeBackground(tabdat->hThemeButton, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), rcItem, rcItem);
             }
@@ -405,8 +404,8 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
      * for top row tabs, it's easy. Just draw to the provided dc (it's a mem dc already)
      */
     
+    FillRect(pDC, rcItem, GetSysColorBrush(COLOR_3DFACE));
     if(!bBottom) {
-        FillRect(pDC, rcItem, GetSysColorBrush(COLOR_3DFACE));
         if(bBody) 
             DrawThemesPart(tabdat, pDC, 9, 0, rcItem);	// TABP_PANE id = 9 
         else { 
