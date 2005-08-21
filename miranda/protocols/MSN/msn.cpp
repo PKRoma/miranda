@@ -252,7 +252,7 @@ int __declspec(dllexport) Load( PLUGINLINK* link )
 	pluginLink = link;
 
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBox( NULL, MSN_Translate( "This MSN plugin version requires db3x plugin version 0.5.1.0 or later" ), "MSN", MB_OK );
+		MessageBox( NULL, Translate( "This plugin requires db3x plugin version 0.5.1.0 or later" ), "MSN", MB_OK );
 		return 1;
 	}
 
