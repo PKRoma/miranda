@@ -131,6 +131,11 @@ static HANDLE hChatEvent = NULL, hChatMenu = NULL;
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
+	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
+		MessageBox( NULL, Translate( "This plugin requires db3x plugin version 0.5.1.0 or later" ), "MSN", MB_OK );
+		return 1;
+	}
+
 	char szBuffer[ MAX_PATH ];
 
 	WORD wPort = MSN_GetWord( NULL, "YourPort", 0xFFFF );
@@ -250,12 +255,6 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 int __declspec(dllexport) Load( PLUGINLINK* link )
 {
 	pluginLink = link;
-
-	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBox( NULL, Translate( "This plugin requires db3x plugin version 0.5.1.0 or later" ), "MSN", MB_OK );
-		return 1;
-	}
-
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &msnMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
 
 	char path[MAX_PATH];
@@ -295,33 +294,6 @@ int __declspec(dllexport) Load( PLUGINLINK* link )
 	pd.szName = msnProtocolName;
 	pd.type = PROTOTYPE_PROTOCOL;
 	MSN_CallService( MS_PROTO_REGISTERMODULE, 0, ( LPARAM )&pd );
-
-	BOOL bWasConverted = MSN_GetByte( "AvatarsNameConverted", 0 );
-	{
-		HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-		while ( hContact != NULL )
-		{
-			if ( !lstrcmp( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
-				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
-
-				if ( !bWasConverted ) {
-					char tOldName[ MAX_PATH ], tNewName[ MAX_PATH ];
-					MSN_GetAvatarFileName( hContact, tOldName, MAX_PATH, true );
-					MSN_GetAvatarFileName( hContact, tNewName, MAX_PATH, false );
-					MoveFile( tOldName, tNewName );
-			}	}
-
-			hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
-	}	}
-
-	if ( !bWasConverted ) {
-		char tOldName[ MAX_PATH ], tNewName[ MAX_PATH ];
-		MSN_GetAvatarFileName( NULL, tOldName, MAX_PATH, true );
-		MSN_GetAvatarFileName( NULL, tNewName, MAX_PATH, false );
-		MoveFile( tOldName, tNewName );
-
-		MSN_SetByte( "AvatarsNameConverted", TRUE );
-	}
 
 	char mailsoundtemp[ 64 ];
 	strcpy( mailsoundtemp, protocolname );
