@@ -544,14 +544,16 @@ int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 	//hContact = (HANDLE) ( dbei.pBlob + sizeof( DWORD ));
 	
 	nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
-	char* firstName = nick + lstrlen(nick) + 1;
-	char* lastName = firstName + lstrlen(firstName) + 1;
-	char* email = lastName + lstrlen(lastName) + 1;
-	char* reason = email + lstrlen(email) + 1;
-		
-    YAHOO_DebugLog("buddy:%s first:%s last:%s e-mail:%s", nick,
-					firstName, lastName, email);
-	YAHOO_DebugLog("reason:%s ", reason);
+	{
+		char* firstName = nick + lstrlen(nick) + 1;
+		char* lastName = firstName + lstrlen(firstName) + 1;
+		char* email = lastName + lstrlen(lastName) + 1;
+		char* reason = email + lstrlen(email) + 1;
+			
+		 YAHOO_DebugLog("buddy:%s first:%s last:%s e-mail:%s", nick,
+						firstName, lastName, email);
+		YAHOO_DebugLog("reason:%s ", reason);
+	}
 	
 	/* we need to send out a packet to request an add */
 	//YAHOO_add_buddy(nick, "miranda", reason);
