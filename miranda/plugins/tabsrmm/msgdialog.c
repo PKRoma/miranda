@@ -3743,10 +3743,6 @@ quote_from_last:
                                 else
                                     SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) FALSE, 0);
                             }
-                            else {
-                                if(IsWindow(GetDlgItem(hwndDlg, IDC_CLIST)))
-                                    DestroyWindow(GetDlgItem(hwndDlg, IDC_CLIST));
-                            }
                             break;
                         case ID_SENDMENU_SENDDEFAULT:
                             dat->sendMode = 0;
@@ -3768,8 +3764,11 @@ quote_from_last:
                     DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "forceansi", dat->sendMode & SMODE_FORCEANSI ? 1 : 0);
                     if(dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
                         ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_SHOW);
-                    else
+                    else {
+                        if(IsWindow(GetDlgItem(hwndDlg, IDC_CLIST)))
+                            DestroyWindow(GetDlgItem(hwndDlg, IDC_CLIST));
                         ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_HIDE);
+                    }
                     SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
