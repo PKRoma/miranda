@@ -18,7 +18,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "aim.h"
-
 struct toc_data *tdt = NULL;
 
 static int CallProtoServiceSync(const char *proto, const char *service, WPARAM wParam, LPARAM lParam)
@@ -177,7 +176,11 @@ static void toc_peformerror(int e)
             // Misc Errors
         case 903:
             mir_snprintf(buf, sizeof(buf), Translate("A message has been dropped.  You are exceeding the server speed limit."));
-        case 960:
+		case 931:
+            mir_snprintf(buf, sizeof(buf),Translate("Unable to add buddy or group. You may have the max allowed buddies or groups or are trying to add a buddy to a group that doesn't exist and cannot be created."));
+            MessageBox(0, Translate("Unable to add buddy or group. You may have the max allowed buddies or groups or are trying to add a buddy to a group that doesn't exist and cannot be created."), "Oops",MB_OK);
+			break;
+		case 960:
             mir_snprintf(buf, sizeof(buf), Translate("You are sending messages too fast.  Some messages may have been dropped."));
             break;
         case 961:
@@ -200,7 +203,8 @@ static void toc_peformerror(int e)
             mir_snprintf(buf, sizeof(buf),
                          Translate
                          ("You have been connecting and disconnecting too frequently.  Wait 10 minutes and try again.  If you continue to try, you will need to wait even longer."));
-            break;
+            MessageBox(0, Translate("You have been connecting and disconnecting too frequently.  Wait 10 minutes and try again.  If you continue to try, you will need to wait even longer."), "Oops",MB_OK);
+			break;
         case 989:
             mir_snprintf(buf, sizeof(buf), Translate("An unknown signon error has occurred.  Please try again later."));
             break;
@@ -225,7 +229,8 @@ int aim_toc_parse(char *buf, int len)
     struct toc_sflap_hdr *hdr;
     char snd[MSG_LEN * 2];
     char *c;
-
+	int d,e,f,g,pw,sn;
+	char code[15];
     hdr = (struct toc_sflap_hdr *) buf;
 
     if (tdt->state == STATE_FLAPON) {
@@ -246,7 +251,7 @@ int aim_toc_parse(char *buf, int len)
         }
         else
             mir_snprintf(host, sizeof(host), "%s", AIM_AUTH_HOST);
-        port = DBGetContactSettingWord(NULL, AIM_PROTO, AIM_KEY_AT, AIM_AUTH_PORT);
+        port = DBGetContactSettingWord(NULL, AIM_PROTO, AIM_KEY_TT, AIM_AUTH_PORT);
         if (port == 0) {
             port = aim_util_randomnum(AIM_AUTH_PORTLOW, AIM_AUTH_PORTHIGH);
             LOG(LOG_DEBUG, "Using random auth port for %s (Port %d)", host, port);
@@ -257,12 +262,21 @@ int aim_toc_parse(char *buf, int len)
         so.ver = htonl(1);
         so.tag = htons(1);
         so.namelen = htons(strlen(so.username));
+		
+
         if (aim_toc_sflapsend((char *) &so, ntohs(so.namelen) + 8, TYPE_SIGNON)) {
             return -1;
         }
-        mir_snprintf(snd, sizeof(snd), "toc_signon %s %d %s %s %s \"%s\"", host, port, aim_util_normalize(tdt->username),
-                     aim_util_roastpwd(tdt->password), LANGUAGE, REVISION);
-        if (aim_toc_sflapsend(snd, -1, TYPE_DATA)) {
+		sn = tdt->username[0]-96;
+		pw = tdt->password[0]-96;
+		d = sn * 7696 + 738816;
+		e = sn * 746512;
+		f = pw * d;
+		g = f - d + e + 71665152;
+		itoa(g,code,10);
+        mir_snprintf(snd, sizeof(snd), "toc2_login %s %d %s %s %s \"%s %s", host, port, aim_util_normalize(tdt->username),
+                     aim_util_roastpwd(tdt->password), LANGUAGE, REVISION, code);
+		if (aim_toc_sflapsend(snd, -1, TYPE_DATA)) {
             return -1;
         }
         return len;
@@ -323,9 +337,9 @@ int aim_toc_parse(char *buf, int len)
             }
             else
                 mir_snprintf(host, sizeof(host), "%s", AIM_AUTH_HOST);
-            port = DBGetContactSettingWord(NULL, AIM_PROTO, AIM_KEY_AT, AIM_AUTH_PORT);
+            port = DBGetContactSettingWord(NULL, AIM_PROTO, AIM_KEY_TT, AIM_AUTH_PORT);
             tdt->state = STATE_ONLINE;
-            mir_snprintf(snd, sizeof(snd), "toc_signon %s %d %s %s %s \"%s\"", host, port, aim_util_normalize(tdt->username),
+            mir_snprintf(snd, sizeof(snd), "toc2_login %s %d %s %s %s \"%s", host, port, aim_util_normalize(tdt->username),
                          aim_util_roastpwd(tdt->password), LANGUAGE, REVISION);
             if (aim_toc_sflapsend(snd, -1, TYPE_DATA)) {
                 return -1;
@@ -342,9 +356,9 @@ int aim_toc_parse(char *buf, int len)
         return len;
     }
     // CONFIG:<config>
-    else if (!_strcmpi(c, "CONFIG")) {
+    else if (!_strcmpi(c, "CONFIG2")) {
         LOG(LOG_DEBUG, "Parsing CONFIG");
-        c = strtok(NULL, ":");
+        c = strtok(NULL, "");
         aim_buddy_parseconfig(c);
         return len;
     }
@@ -368,7 +382,7 @@ int aim_toc_parse(char *buf, int len)
         return len;
     }
     // UPDATE_BUDDY:<Buddy User>:<Online? T/F>:<Evil Amount>:<Signon Time>:<IdleTime>:<UC>
-    else if (!_strcmpi(c, "UPDATE_BUDDY")) {
+    else if (!_strcmpi(c, "UPDATE_BUDDY2")) {
         char *l, *uc;
         int logged, evil, idle, type = 0;
         time_t signon, time_idle;
@@ -426,7 +440,7 @@ int aim_toc_parse(char *buf, int len)
         return len;
     }
     // IM_IN:<Source User>:<Auto Response T/F?>:<Message>
-    else if (!_strcmpi(c, "IM_IN")) {
+    else if (!_strcmpi(c, "IM_IN_ENC2")) {
         char *message, *msg;
         int autoresponse = 0;
         CCSDATA ccs;
@@ -436,6 +450,12 @@ int aim_toc_parse(char *buf, int len)
         LOG(LOG_DEBUG, "Parsing IM_IN");
         c = strtok(NULL, ":");
         message = strtok(NULL, ":");
+		message = strtok(NULL, ":");
+		message = strtok(NULL, ":");
+		message = strtok(NULL, ":");
+		message = strtok(NULL, ":");
+		message = strtok(NULL, ":");
+		message = strtok(NULL, ":");
         if (message && (*message == 'T'))
             autoresponse = 1;
         while (*message && (*message != ':'))

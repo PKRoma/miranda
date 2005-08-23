@@ -47,7 +47,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // AIM_TOC_PORTLOW:  If using random port, this is the low value for the random number chooser
 // AIM_TOC_PORTHIGH: If using random port, this is the high value for the random number chooser
 #define AIM_TOC_HOST      "toc.oscar.aol.com"
-#define AIM_TOC_PORT      9898
+#define AIM_TOC_PORT      29999
 #define AIM_TOC_PORTLOW   1000
 #define AIM_TOC_PORTHIGH  10000
 
@@ -55,7 +55,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 // See: TOC Server Options
 #define AIM_AUTH_HOST     "login.oscar.aol.com"
-#define AIM_AUTH_PORT     5190
+#define AIM_AUTH_PORT     29999
 #define AIM_AUTH_PORTLOW  1000
 #define AIM_AUTH_PORTHIGH 10000
 

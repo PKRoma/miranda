@@ -69,7 +69,7 @@ int aim_im_sendmessage(HANDLE hContact, char *msg, int automsg)
             DBFreeVariant(&dbv);
             return (int) (HANDLE) 1;
         }
-        mir_snprintf(buf, MSG_LEN - 8, "toc_send_im %s \"%s\"%s", dbv.pszVal, tmp, automsg ? " auto" : "");
+        mir_snprintf(buf, MSG_LEN - 8, "toc2_send_im %s \"%s\"%s", dbv.pszVal, tmp, automsg ? " auto" : "");
         aim_toc_sflapsend(buf, -1, TYPE_DATA);
         free(tmp);
         DBFreeVariant(&dbv);

@@ -21,17 +21,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
-    "AIM Protocol",
-    PLUGIN_MAKE_VERSION(1, 4, 0, 0),
+    "AIM TOC2 Plugin",
+    PLUGIN_MAKE_VERSION(1, 4, 0, 5),
 #ifdef AIM_CVSBUILD
-    "This is a development build of the AIM protocol.  Please check the website for updates. (" __DATE__ ")",
+    "This is a development build of the AIM TOC2 protocol.  Please check the website for updates. (" __DATE__ ")",
 #else
-    "Provides support for AOL® Instant Messenger protocol.  Also provides support for ICQ users who use an AIM interoperable client.",
+    "Provides support for AOL® TOC2 Instant Messenger protocol.",
 #endif
-    "Robert Rainwater",
+	"Original Author: Robert Rainwater/Modification by Aaron Myles Landwehr",
     "rainwater at miranda-im.org",
     "Copyright © 2003-2005 Robert Rainwater",
-    "http://miranda-im.org/download/details.php?action=viewfile&id=581",
+    "http://www.miranda-im.org/download/details.php?action=viewfile&id=2286",
     0,
     0
 };

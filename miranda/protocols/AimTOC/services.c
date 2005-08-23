@@ -183,7 +183,7 @@ static int aim_addtolist(WPARAM wParam, LPARAM lParam)
     PROTOSEARCHRESULT *psr = (PROTOSEARCHRESULT *) lParam;
     if (aimStatus == ID_STATUS_OFFLINE)
         return 0;
-    return (int) aim_buddy_get(psr->nick, 1, wParam & PALF_TEMPORARY ? 0 : 1, 0, NULL);
+    return (int) aim_buddy_get(psr->nick, 1, wParam & PALF_TEMPORARY ? 0 : 1, 0,NULL);
 }
 
 static DWORD lastUpdateCheck = 0;
