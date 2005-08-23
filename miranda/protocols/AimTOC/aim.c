@@ -110,7 +110,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
     pthread_mutex_init(&connectionHandleMutex);
     pthread_mutex_init(&buddyMutex);
     aim_filerecv_init();
-    aim_services_register();
+    aim_services_register(hInstance);
     aim_buddy_offlineall();
     return 0;
 }

@@ -174,8 +174,12 @@ static void toc_peformerror(int e)
     buf[0] = '\0';
     switch (e) {
             // Misc Errors
-        case 903:
-            mir_snprintf(buf, sizeof(buf), Translate("A message has been dropped.  You are exceeding the server speed limit."));
+		case 901:
+			mir_snprintf(buf, sizeof(buf), Translate("Buddy not avaliable."));
+			break;
+		case 903:
+            mir_snprintf(buf, sizeof(buf), Translate("A message has been dropped. You are exceeding the server speed limit."));
+			break;
 		case 931:
             mir_snprintf(buf, sizeof(buf),Translate("Unable to add buddy or group. You may have the max allowed buddies or groups or are trying to add a buddy to a group that doesn't exist and cannot be created."));
             MessageBox(0, Translate("Unable to add buddy or group. You may have the max allowed buddies or groups or are trying to add a buddy to a group that doesn't exist and cannot be created."), "Oops",MB_OK);
@@ -203,7 +207,7 @@ static void toc_peformerror(int e)
             mir_snprintf(buf, sizeof(buf),
                          Translate
                          ("You have been connecting and disconnecting too frequently.  Wait 10 minutes and try again.  If you continue to try, you will need to wait even longer."));
-            MessageBox(0, Translate("You have been connecting and disconnecting too frequently.  Wait 10 minutes and try again.  If you continue to try, you will need to wait even longer."), "Oops",MB_OK);
+            MessageBox(0, Translate("You have been connecting and disconnecting too frequently.  Wait 10 minutes and try again.  If you continue to try, you will need to wait even longer."), "Error 983",MB_ICONERROR | MB_OK);
 			break;
         case 989:
             mir_snprintf(buf, sizeof(buf), Translate("An unknown signon error has occurred.  Please try again later."));
@@ -274,12 +278,13 @@ int aim_toc_parse(char *buf, int len)
 		f = pw * d;
 		g = f - d + e + 71665152;
 		itoa(g,code,10);
-        mir_snprintf(snd, sizeof(snd), "toc2_login %s %d %s %s %s \"%s %s", host, port, aim_util_normalize(tdt->username),
-                     aim_util_roastpwd(tdt->password), LANGUAGE, REVISION, code);
+		//toc2_login login.oscar.aol.com 29999 screenname 0x3900005d3b01 English "TIC:\Revision: 1.61 " 160 US "" "" 3 0 30303 -kentucky -utf8 94791632'
+		mir_snprintf(snd, sizeof(snd), "toc2_login %s %d %s %s %s %s %s", host, 29999, aim_util_normalize(tdt->username),
+		aim_util_roastpwd(tdt->password), LANGUAGE, REVISION, code);
 		if (aim_toc_sflapsend(snd, -1, TYPE_DATA)) {
-            return -1;
-        }
-        return len;
+			return -1;
+		}
+		return len;
     }
     if (tdt->state == STATE_SIGNON) {
         if (_strnicmp(buf + sizeof(struct toc_sflap_hdr), "SIGN_ON", strlen("SIGN_ON"))) {
@@ -320,6 +325,10 @@ int aim_toc_parse(char *buf, int len)
         toc_peformerror(error);
         return len;
     }
+	if (!_strcmpi(c, "NEW_BUDDY_REPLY2")) {
+        char* ch=strtok(NULL, ":");
+		MessageBox(0, Translate("Buddy Added Successfully!"),ch, MB_OK | MB_ICONINFORMATION);
+    }
     // SIGN_ON:<Client Version Supported>
     if (!_strcmpi(c, "SIGN_ON")) {
         LOG(LOG_DEBUG, "Parsing SIGN_ON");
@@ -339,7 +348,7 @@ int aim_toc_parse(char *buf, int len)
                 mir_snprintf(host, sizeof(host), "%s", AIM_AUTH_HOST);
             port = DBGetContactSettingWord(NULL, AIM_PROTO, AIM_KEY_TT, AIM_AUTH_PORT);
             tdt->state = STATE_ONLINE;
-            mir_snprintf(snd, sizeof(snd), "toc2_login %s %d %s %s %s \"%s", host, port, aim_util_normalize(tdt->username),
+            mir_snprintf(snd, sizeof(snd), "toc2_signon %s %d %s %s %s %s", host, port, aim_util_normalize(tdt->username),
                          aim_util_roastpwd(tdt->password), LANGUAGE, REVISION);
             if (aim_toc_sflapsend(snd, -1, TYPE_DATA)) {
                 return -1;
@@ -446,7 +455,6 @@ int aim_toc_parse(char *buf, int len)
         CCSDATA ccs;
         PROTORECVEVENT pre;
         HANDLE hContact;
-
         LOG(LOG_DEBUG, "Parsing IM_IN");
         c = strtok(NULL, ":");
         message = strtok(NULL, ":");

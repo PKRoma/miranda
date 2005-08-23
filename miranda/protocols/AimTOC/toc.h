@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define FLAPON 					"FLAPON\r\n\r\n"
 #define ROAST 					"Tic/Toc"
-#define REVISION 				"TIC:\\$Revision 1.16 \\$\" 160 US \"\" \"\" 3 0 21030 -kentucky -utf8"
+#define REVISION 				"\"TIC:\\Revision: 1.61 \" 1600 US \"\" \"\" 3 0 30303 -kentucky -utf8 94791632"
 #define LANGUAGE 				"English"
 
 #define STATE_OFFLINE 			0

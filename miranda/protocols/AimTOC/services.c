@@ -302,9 +302,46 @@ int aim_recvfilecancel(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void aim_services_register()
+static int SyncBuddyWithServer(WPARAM wParam, LPARAM lParam)
 {
-    char szService[256];
+	if (aim_util_isonline())
+	{
+		char buf[MSG_LEN * 2];
+		char sn[33],group[33];
+		DBVARIANT dbv;
+		DBGetContactSetting((HANDLE)wParam, AIM_PROTO, AIM_KEY_UN, &dbv);
+		strcpy(sn,dbv.pszVal);
+		DBFreeVariant(&dbv);
+		DBGetContactSetting((HANDLE)wParam, "CList", "Group", &dbv);
+		if(dbv.pszVal)
+		{
+			strcpy(group,dbv.pszVal);
+		}
+		else
+		{
+			strcpy(group,"1");
+		}
+			DBFreeVariant(&dbv);
+			strcpy(buf,"toc2_new_buddies {");
+			strcat(buf,"g:");
+			strcat(buf,group);
+			strcat(buf,"\n");
+			strcat(buf,"b:");
+			strcat(buf,sn);
+			strcat(buf,"\n");
+			strcat(buf,"}");
+			aim_toc_sflapsend(buf, -1, TYPE_DATA);
+	}
+	else
+	{
+		MessageBox(0,Translate("Please login before you attempt to sync your buddy list with the server-side list."),"Not Online",  MB_OK | MB_ICONINFORMATION);
+	}
+	return 0;
+}
+void aim_services_register(HINSTANCE hInstance)
+{
+	CLISTMENUITEM mi;
+    char szService[300];
 
     mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_GETCAPS);
     CreateServiceFunction(szService, aim_getcaps);
@@ -342,4 +379,16 @@ void aim_services_register()
     CreateServiceFunction(szService, aim_recvfileallow);
     mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_FILECANCEL);
     CreateServiceFunction(szService, aim_recvfilecancel);
+	mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, "/SyncBuddy");
+	CreateServiceFunction( szService, SyncBuddyWithServer );
+	memset( &mi, 0, sizeof( mi ));
+	mi.pszPopupName = "Sync Buddy";
+    mi.cbSize = sizeof( mi );
+    mi.popupPosition = 500090000;
+    mi.position = 500090000;
+    mi.hIcon = LoadIcon(hInstance,MAKEINTRESOURCE( IDI_AIMXP ));
+	mi.pszContactOwner = AIM_PROTO;
+    mi.pszName = Translate( "Sync Buddy with Server-side list" );
+    mi.pszService = szService;
+	CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 }

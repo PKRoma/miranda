@@ -51,11 +51,12 @@ int aim_im_sendmessage(HANDLE hContact, char *msg, int automsg)
         return (int) (HANDLE) 1;
     }
     lastIMTime = timenow;
-    if (DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_ST, ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE && !automsg) {
-        pthread_create(aim_im_sendackfail, hContact);
-        return (int) (HANDLE) 1;
-    }
-    else if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_UN, &dbv)) {
+ //   if (DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_ST, ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE && !automsg) {
+   //     if (!automsg) {
+	//		pthread_create(aim_im_sendackfail, hContact);
+     //   return (int) (HANDLE) 1;
+   // }
+    if (!DBGetContactSetting(hContact, AIM_PROTO, AIM_KEY_UN, &dbv)) {
         char buf[MSG_LEN * 2];
         char *tmp = malloc(strlen(msg) * 4 + 1);
 

@@ -72,9 +72,9 @@ HANDLE aim_buddy_get(char *nick, int create, int inlist, int noadd, char *group)
 {
     HANDLE hContact;
     DBVARIANT dbv;
+	char buf[MSG_LEN * 2];
     char *szProto;
     char *sn;
-	char buf[MSG_LEN];
     pthread_mutex_lock(&buddyMutex);
 	sn = aim_util_normalize(nick);
     if (!strncmp(sn, "pleaseupgrade", strlen("pleaseupgrade"))) {
@@ -124,16 +124,15 @@ HANDLE aim_buddy_get(char *nick, int create, int inlist, int noadd, char *group)
         aim_group_create(group);
         aim_group_adduser(hContact, group);
     }
-    LOG(LOG_INFO, "Added AIM Contact: %s", nick);
-	
 	strcpy(buf, "toc2_new_buddies {g:");
-	strcat(buf,"1");
+	strcat(buf,"Miranda Merged");
 	strcat(buf,"\n");
 	strcat(buf,"b:");
 	strcat(buf,nick);
 	strcat(buf,"\n}");
 	aim_toc_sflapsend(buf, -1, TYPE_DATA);
-	DBWriteContactSettingString(hContact,AIM_PROTO,"Group","1");
+	DBWriteContactSettingString(hContact,AIM_PROTO,"Group","Miranda Merged");
+    LOG(LOG_INFO, "Added AIM Contact: %s", nick);
     if (!inlist) {
         DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
         DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
@@ -204,16 +203,26 @@ void aim_buddy_delete(HANDLE hContact)
     szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
     if (szProto && !strcmp(szProto, AIM_PROTO)) {
 	DBGetContactSetting(hContact,AIM_PROTO, AIM_KEY_UN, &dbv);
-	strcpy(mbuf, "toc2_remove_buddy ");
-	strcat(mbuf,dbv.pszVal);
-	DBFreeVariant(&dbv);
-	strcat(mbuf," ");
-	DBGetContactSetting(hContact,AIM_PROTO, "Group", &dbv);
 	if(dbv.pszVal)
 	{
+	
+		strcpy(mbuf, "toc2_remove_buddy ");
 		strcat(mbuf,dbv.pszVal);
 		DBFreeVariant(&dbv);
-		aim_toc_sflapsend(mbuf, -1, TYPE_DATA);
+		strcat(mbuf," ");
+		DBGetContactSetting(hContact,AIM_PROTO, "Group", &dbv);
+		if(dbv.pszVal)
+		{
+			strcat(mbuf,"\"");
+			strcat(mbuf,dbv.pszVal);
+			strcat(mbuf,"\"");
+			DBFreeVariant(&dbv);
+			aim_toc_sflapsend(mbuf, -1, TYPE_DATA);
+		}
+		else
+		{
+			MessageBox(0, Translate("Buddy does not exist on server!"), "Oops",MB_OK);
+		}
 	}
 	else
 	{
@@ -320,20 +329,34 @@ void aim_buddy_parseconfig(char *config)
         return;
 	hServerSideList=1;
     if (hServerSideList) {
-        char *c, group[256];
+        char *c="\0", group[256];
         HANDLE hContact;
         TList *buddies = NULL;
 
         LOG(LOG_DEBUG, "Parsing configuation from server");
         group[0] = '\0';
-        if (config != NULL) {
-			c = strtok(config, ":");
-            do {
+		c = strtok(config, "\n");
+		while(c[0]!='g' || c[1]!=':')
+		{
+			c = strtok(NULL, "\n");
+			if(c==NULL)
+				break;
+		}
+		if (config != NULL) {
+			do {
+				
                 if (c == NULL)
                     break;
-                if (*c == 'g') {
+				if(c[0]=='d'&&c[1]=='o'&&c[2]=='n'&&c[3]=='e'&&c[4]==':')
+				{
+					break;
+				}
+				else if (*c == 'g') {
+					//c[1]='\n';
+					c[strlen(c)]='\0';
                     mir_snprintf(group, sizeof(group), c + 2);
                     LOG(LOG_DEBUG, "Parsed group from server config: (%s)", group);
+					
                 }
                 else if (*c == 'b') {
                     char nm[80], *a;
@@ -377,7 +400,7 @@ void aim_buddy_parseconfig(char *config)
                     sscanf(c + 2, "%d", &m);
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SM, m);
                 }
-            } while ((c = strtok(NULL, "\n")));
+			} while ((c=strtok(NULL, "\n")));
         }
         {                       // Update new contacts on the server
             if (buddies) {
@@ -420,8 +443,7 @@ void aim_buddy_updateconfig(int ssilist)
     char dbuf[MSG_LEN * 2];
     if (!aim_util_isonline())
         return;
-
-    n = mir_snprintf(buf, sizeof(buf), "toc_add_buddy");
+	n = mir_snprintf(buf, sizeof(buf), "toc2_new_buddies {");
     m = mir_snprintf(dbuf, sizeof(dbuf), "toc_add_deny");
 
     hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -437,7 +459,7 @@ void aim_buddy_updateconfig(int ssilist)
                     if (!ssilist || !DBGetContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 0)) {
                         if (strlen(dbv.pszVal) + n + 32 > MSG_LEN) {
                             aim_toc_sflapsend(buf, -1, TYPE_DATA);
-                            n = mir_snprintf(buf, sizeof(buf), "toc_add_buddy");
+                            n = mir_snprintf(buf, sizeof(buf), "toc2_new_buddies");
                         }
                         if (ID_STATUS_OFFLINE == DBGetContactSettingWord(hContact, AIM_PROTO, AIM_KEY_AM, 0)) {
                             LOG(LOG_DEBUG, "Setting deny mode for %s", dbv.pszVal);
@@ -447,7 +469,8 @@ void aim_buddy_updateconfig(int ssilist)
                             }
                             m += mir_snprintf(dbuf + m, sizeof(dbuf) - m, " %s", dbv.pszVal);
                         }
-                        n += mir_snprintf(buf + n, sizeof(buf) - n, " %s", dbv.pszVal);
+						//	n += mir_snprintf(buf + n, sizeof(buf) - n, "toc2_new_buddies {g:%s\nb:%s\n}",group,sn);
+						//	aim_toc_sflapsend(buf, -1, TYPE_DATA);
                     }
                 }
                 if (dbv.pszVal)
@@ -456,8 +479,10 @@ void aim_buddy_updateconfig(int ssilist)
         }
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
-    if (n > lstrlen("toc_add_buddy"))
-        aim_toc_sflapsend(buf, -1, TYPE_DATA);
+	//if (n > lstrlen("toc_new_buddies"))
+	//	n += mir_snprintf(buf + n, sizeof(buf) - n,"%s","}");
+//	strcat(buf,"}");
+     //   aim_toc_sflapsend(buf, -1, TYPE_DATA);
     if (m > lstrlen("toc_add_deny"))
         aim_toc_sflapsend(dbuf, -1, TYPE_DATA);
 }
