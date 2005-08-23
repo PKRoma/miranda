@@ -61,6 +61,7 @@ static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
 HANDLE hMessageWindowList, hUserPrefsWindowList;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted, hEventDispatch, hEvent_ttbInit, hTTB_Slist, hTTB_Tray, hEvent_FontService;
+static HANDLE hEventSmileyAdd = 0;
 HANDLE *hMsgMenuItem = NULL;
 int hMsgMenuItemCount = 0;
 
@@ -131,6 +132,12 @@ LRESULT CALLBACK GetMsgHookProc(int iCode, WPARAM wParam, LPARAM lParam)
     return CallNextHookEx(g_hMsgHook, iCode, wParam, lParam);
 }
 #endif
+
+static int SmileyAddOptionsChanged(WPARAM wParam, LPARAM lParam)
+{
+    WindowList_Broadcast(hMessageWindowList, DM_SMILEYOPTIONSCHANGED, 0, 0);
+    return 0;
+}
 
 static int ContactSecureChanged(WPARAM wParam, LPARAM lParam)
 {
@@ -894,8 +901,10 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     else
         DBFreeVariant(&dbv);
 
-    if(ServiceExists(MS_SMILEYADD_REPLACESMILEYS)) 
+    if(ServiceExists(MS_SMILEYADD_REPLACESMILEYS)) {
         myGlobals.g_SmileyAddAvail = 1;
+        hEventSmileyAdd = HookEvent(ME_SMILEYADD_OPTIONSCHANGED, SmileyAddOptionsChanged);
+    }
     myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
     myGlobals.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
 #ifdef __MATHMOD_SUPPORT    		

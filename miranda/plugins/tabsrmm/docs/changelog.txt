@@ -15,7 +15,7 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.98 - 2005/07/25
+Version 0.9.9.98 - 2005/08/25
 
         * several sanity checks added (pointers, window handles)
         
@@ -38,6 +38,16 @@ Version 0.9.9.98 - 2005/07/25
           log settings.
           
         ! bugfix (UI problem in the global/local radio button of the user preferences dialog).
+
+        * changed multisend contact list. It is no longer created automatically for each tab
+          you open, instead, the contact list is only created when you activate the multisend
+          feature and destroyed when it is no longer needed. Saves quite *some* resources and
+          loading time, especially with complex contact lists (clist_nicer, clist_modern and
+          such).
+          
+        * updated for new smileyadd api (event for changed emoticon configuration). Changing
+          smileyadd options will now instantly reconfigure smileyadd settings in all open message
+          windows (button icon + smileys in the message window).
 
 Version 0.9.9.97 - 2005/07/23
 

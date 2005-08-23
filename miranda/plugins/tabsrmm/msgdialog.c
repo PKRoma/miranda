@@ -252,8 +252,6 @@ void ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int
 void SetDialogToType(HWND hwndDlg)
 {
     struct MessageWindowData *dat;
-    HICON hButtonIcon = 0;
-    int nrSmileys = 0;
     int showToolbar = 0;
     
     dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -302,36 +300,7 @@ void SetDialogToType(HWND hwndDlg)
         ShowMultipleControls(hwndDlg, &formatControls[1], 4, SW_HIDE);
     
 // smileybutton stuff...
-    
-    if(myGlobals.g_SmileyAddAvail && myGlobals.m_SmileyPluginEnabled && dat->hwndLog == 0) {
-        nrSmileys = CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, &hButtonIcon);
-
-        dat->doSmileys = 1;
-        
-        if(hButtonIcon == 0) {
-            dat->hSmileyIcon = 0;
-            SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[11]);
-        }
-        else {
-            SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hButtonIcon);
-            dat->hSmileyIcon = 0;
-        }
-    }
-    else if(dat->hwndLog != 0) {
-        dat->doSmileys = 1;
-        nrSmileys = 1;
-        if(dat->hSmileyIcon == 0) {
-            DeleteObject(dat->hSmileyIcon);
-            dat->hSmileyIcon = 0;
-        }
-        SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[11]);
-    }
-    
-    if(nrSmileys == 0 || dat->hContact == 0)
-        dat->doSmileys = 0;
-    
-    ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), (dat->doSmileys && showToolbar) ? SW_SHOW : SW_HIDE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), dat->doSmileys ? TRUE : FALSE);
+    ConfigureSmileyButton(hwndDlg, dat);
     
     if(dat->pContainer->hwndActive == hwndDlg)
         UpdateReadChars(hwndDlg, dat);
@@ -4853,25 +4822,29 @@ verify:
             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
             break;
         }
-      case DM_SECURE_CHANGED:
-         UpdateStatusBar(hwndDlg, dat);
-         break;
+        case DM_SECURE_CHANGED:
+            UpdateStatusBar(hwndDlg, dat);
+            break;
+        case DM_SMILEYOPTIONSCHANGED:
+            ConfigureSmileyButton(hwndDlg, dat);
+            SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+            break;
         case WM_INPUTLANGCHANGE:
             return DefWindowProc(hwndDlg, WM_INPUTLANGCHANGE, wParam, lParam);
 
-       case DM_GETWINDOWSTATE:
-          {
-             UINT state = 0;
-             
-             state |= MSG_WINDOW_STATE_EXISTS;
-             if (IsWindowVisible(hwndDlg)) 
-                state |= MSG_WINDOW_STATE_VISIBLE;
-             if (GetForegroundWindow() == dat->pContainer->hwnd) 
-                state |= MSG_WINDOW_STATE_FOCUS;
-             if (IsIconic(dat->pContainer->hwnd))
-                state |= MSG_WINDOW_STATE_ICONIC;
-             return state;
-          }
+        case DM_GETWINDOWSTATE:
+        {
+            UINT state = 0;
+         
+            state |= MSG_WINDOW_STATE_EXISTS;
+            if (IsWindowVisible(hwndDlg)) 
+               state |= MSG_WINDOW_STATE_VISIBLE;
+            if (GetForegroundWindow() == dat->pContainer->hwnd) 
+               state |= MSG_WINDOW_STATE_FOCUS;
+            if (IsIconic(dat->pContainer->hwnd))
+               state |= MSG_WINDOW_STATE_ICONIC;
+            return state;
+        }
         case DM_SPLITTEREMERGENCY:
             dat->splitterY = 150;
             SendMessage(hwndDlg, WM_SIZE, 0, 0);
