@@ -38,6 +38,7 @@ $Id$
 #include "m_fontservice.h"
 #include "../../include/m_clc.h"
 #include "../../include/m_clui.h"
+#include "m_updater.h"
 
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
@@ -54,6 +55,7 @@ $Id$
 
 MYGLOBALS myGlobals;
 NEN_OPTIONS nen_options;
+extern PLUGININFO pluginInfo;
 
 TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 static void InitREOleCallback(void);
@@ -849,7 +851,21 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     DBVARIANT dbv;
     MENUITEMINFOA mii = {0};
     HMENU submenu;
-    
+#if defined(_UNICODE)
+    static Update upd = {0};
+    static char *component = "tabSRMM (Unicode)";
+    static char szCurrentVersion[30];
+    static char *szVersionUrl = "http://miranda.or.at/files/tabsrmm/version.txt";
+    static char *szUpdateUrl = "http://miranda.or.at/files/tabsrmm/tabsrmmW.zip";
+    static char *szPrefix = "tabsrmm ";
+#else
+    static Update upd = {0};
+    static char *component = "tabSRMM (ANSI)";
+    static char szCurrentVersion[30];
+    static char *szVersionUrl = "http://miranda.or.at/files/tabsrmm/version.txt";
+    static char *szUpdateUrl = "http://miranda.or.at/files/tabsrmm/tabsrmm.zip";
+    static char *szPrefix = "tabsrmm ";
+#endif
     ZeroMemory(&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
     mi.position = -2000090000;
@@ -964,6 +980,23 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     hEvent_ttbInit = HookEvent("TopToolBar/ModuleLoaded", TTB_Loaded);
 
     myGlobals.m_hFontWebdings = CreateFontA(-16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, SYMBOL_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE | DEFAULT_PITCH, "Wingdings");
+
+    // updater plugin support
+
+    upd.cbSize = sizeof(upd);
+    upd.szComponentName = component;
+    upd.szVersionURL = szVersionUrl;
+    upd.pbVersionPrefix = szPrefix;
+    upd.cpbVersionPrefix = lstrlenA(szPrefix);
+
+    upd.szUpdateURL = szUpdateUrl;
+
+    CreateVersionStringPlugin(&pluginInfo, szCurrentVersion);
+    upd.pbVersion = szCurrentVersion;
+    upd.cpbVersion = lstrlenA(szCurrentVersion);
+    if(ServiceExists(MS_UPDATE_REGISTER))
+        CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
+
     return 0;
 }
 

@@ -902,6 +902,8 @@
 				RelativePath="m_toptoolbar.h">
 			</File>
 			<File
+				RelativePath="m_updater.h"/>
+			<File
 				RelativePath="msgdlgutils.h">
 			</File>
 			<File

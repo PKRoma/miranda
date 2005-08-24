@@ -49,6 +49,8 @@ Version 0.9.9.98 - 2005/08/25
           smileyadd options will now instantly reconfigure smileyadd settings in all open message
           windows (button icon + smileys in the message window).
 
+        + added support for the updater plugin
+        
 Version 0.9.9.97 - 2005/07/23
 
         ! extended status tooltip working with all (recent) ICQ.dll builds. 
