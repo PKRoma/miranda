@@ -84,18 +84,23 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 
   if (((lParam != 0) && gbAvatarsEnabled) || (gbSsiEnabled && gbAvatarsEnabled))
   {
-    odp.pfnDlgProc = AvatarDlgProc;
-    odp.position = -1899999998;
-    odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_AVATAR);
-    if (lParam != 0)
-      odp.pszTitle = Translate("Avatar");
-    else
-    {
-      null_snprintf(szAvtCaption, sizeof(szAvtCaption), "%s %s", Translate(gpszICQProtoName), Translate("Avatar"));
-      odp.pszTitle = szAvtCaption;
-    }
+    DWORD dwUin;
 
-    CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+    if (!ICQGetContactSettingUID((HANDLE)lParam, &dwUin, NULL))
+    { // Avatar page only for valid contacts
+      odp.pfnDlgProc = AvatarDlgProc;
+      odp.position = -1899999998;
+      odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_AVATAR);
+      if (lParam != 0)
+        odp.pszTitle = Translate("Avatar");
+      else
+      {
+        null_snprintf(szAvtCaption, sizeof(szAvtCaption), "%s %s", Translate(gpszICQProtoName), Translate("Avatar"));
+        odp.pszTitle = szAvtCaption;
+      }
+
+      CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+    }
   }
 
   InitChangeDetails(wParam, lParam);
@@ -138,7 +143,7 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
               if (szProto == NULL)
                 break;
 
-              SetValue(hwndDlg, IDC_UIN, hContact, szProto, UNIQUEIDSETTING, 0);
+              SetValue(hwndDlg, IDC_UIN, hContact, szProto, UNIQUEIDSETTING, SVS_NORMAL);
               SetValue(hwndDlg, IDC_ONLINESINCE, hContact, szProto, "LogonTS", SVS_TIMESTAMP);
               SetValue(hwndDlg, IDC_IDLETIME, hContact, szProto, "IdleTS", SVS_TIMESTAMP);
 
@@ -584,6 +589,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
 		case DBVT_ASCIIZ:
 			unspecified = (special == SVS_ZEROISUNSPEC && dbv.pszVal[0] == '\0');
 			pstr = dbv.pszVal;
+      if (idCtrl == IDC_UIN) SetDlgItemText(hwndDlg, IDC_UINSTATIC, Translate("ScreenName:"));
 			break;
 			
 		default:

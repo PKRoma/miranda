@@ -80,9 +80,10 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
         {
 					DWORD dwUin;
 					
-					dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
+          if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
+            return TRUE; // Invalid contact
 					
-					if (!dwUin || !icqOnline)
+					if (!icqOnline)
 						return TRUE;
 					
 					GetDlgItemText(hwndDlg, IDC_EDITAUTH, szReason, 255);
