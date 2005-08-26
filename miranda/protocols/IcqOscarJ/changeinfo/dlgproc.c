@@ -71,7 +71,7 @@ static void PaintItemSetting(HDC hdc,RECT *rc,int i,UINT itemState)
 			case LI_LIST:
 				if(setting[i].dbType==DBVT_ASCIIZ) 
         {
-					text=(char*)setting[i].value;
+					text=Translate((char*)setting[i].value);
 				}
 				else 
         {

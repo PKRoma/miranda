@@ -134,8 +134,7 @@ void EndListEdit(int save)
 		newValue=SendMessage(hwndListEdit,LB_GETITEMDATA,i,0);
 		if(setting[iEditItem].dbType==DBVT_ASCIIZ) 
     {
-			char szNewValue[256];
-			SendMessage(hwndListEdit,LB_GETTEXT,i,(LPARAM)szNewValue);
+			char *szNewValue = (((ListTypeDataItem*)setting[iEditItem].pList)[i].szValue);
 			if(newValue || setting[iEditItem].displayType&LIF_ZEROISVALID) 
       { 
 				setting[iEditItem].changed=strcmpnull(szNewValue,(char*)setting[iEditItem].value);
