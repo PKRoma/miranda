@@ -1328,13 +1328,12 @@ LBL_InvalidCommand:
 
 						if (( p = ( char* )MSN_GetGroupById( groupId )) != NULL ) {
 							DBVARIANT dbv;
-							if ( !DBGetContactSetting( sttListedContact, "CList", "Group", &dbv )) {
+							if ( !DBGetContactSettingStringUtf( sttListedContact, "CList", "Group", &dbv )) {
 								if ( strcmp( dbv.pszVal, p ))
-									DBWriteContactSettingString( sttListedContact, "CList", "Group", p );
+									DBWriteContactSettingStringUtf( sttListedContact, "CList", "Group", p );
+								MSN_FreeVariant( &dbv );
 							}
-							else DBWriteContactSettingString( sttListedContact, "CList", "Group", p );
-
-							MSN_FreeVariant( &dbv );
+							else DBWriteContactSettingStringUtf( sttListedContact, "CList", "Group", p );
 					}	}
 					else {
 						DBDeleteContactSetting( sttListedContact, "CList", "Group" );
