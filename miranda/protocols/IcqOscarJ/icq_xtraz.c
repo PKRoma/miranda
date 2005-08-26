@@ -87,43 +87,11 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
             int nResponseLen;
             char *szXName, *szXMsg;
             BYTE dwXId = ICQGetContactSettingByte(NULL, "XStatusId", 0);
-            DBVARIANT dbv;
 
             if (dwXId)
             {
-              char *szUtf;
-
-              if (!ICQGetContactSetting(NULL, "XStatusName", &dbv))
-                szXName = dbv.pszVal;
-              else 
-                szXName = "";
-              // Prepare utf-8
-              if (strlen(szXName) > 0)
-              {
-                int nResult;
-
-                nResult = utf8_encode(szXName, &szUtf);
-              }
-              else
-                szUtf = strdup(szXName);
-              DBFreeVariant(&dbv);
-              szXName = szUtf;
-
-              if (!ICQGetContactSetting(NULL, "XStatusMsg", &dbv))
-                szXMsg = dbv.pszVal;
-              else
-                szXMsg = "";
-              // Prepare utf-8
-              if (strlen(szXMsg) > 0)
-              {
-                int nResult;
-
-                nResult = utf8_encode(szXMsg, &szUtf);
-              }
-              else
-                szUtf = strdup(szXMsg);
-              DBFreeVariant(&dbv);
-              szXMsg = szUtf;
+              szXName = ICQGetContactSettingUtf(NULL, "XStatusName", "");
+              szXMsg = ICQGetContactSettingUtf(NULL, "XStatusMsg", "");
               
               nResponseLen = 212 + strlennull(szXName) + strlennull(szXMsg) + UINMAXLEN + 2;
               szResponse = (char*)malloc(nResponseLen + 1);
@@ -170,6 +138,7 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
   else 
     NetLog_Server("Error: Invalid Xtraz Notify message");
 }
+
 
 
 void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nMsgLen)
@@ -233,13 +202,9 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
 
             if (szNode && szEnd)
             { // we got XStatus title, save it
-              char *szData;
-
               szNode += 7;
               *szEnd = '\0';
-              if (!utf8_decode(szNode, &szData)) szData = strdup(szNode);
-              ICQWriteContactSettingString(hContact, "XStatusName", szData);
-              SAFE_FREE(&szData);
+              ICQWriteContactSettingUtf(hContact, "XStatusName", szNode);
               *szEnd = ' ';
             }
             szNode = strstr(szWork, "<desc>");
@@ -247,13 +212,9 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
 
             if (szNode && szEnd)
             { // we got XStatus mode msg, save it
-              char *szData;
-
               szNode += 6;
               *szEnd = '\0';
-              if (!utf8_decode(szNode, &szData)) szData = strdup(szNode);
-              ICQWriteContactSettingString(hContact, "XStatusMsg", szData);
-              SAFE_FREE(&szData);
+              ICQWriteContactSettingUtf(hContact, "XStatusMsg", szNode);
             }
           }
           else
@@ -275,15 +236,19 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
 }
 
 
+
 void SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
 {
   char *szQueryBody = MangleXml(szQuery, strlen(szQuery));
   char *szNotifyBody = MangleXml(szNotify, strlen(szNotify));
-  DWORD dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
+  DWORD dwUin;
   int nBodyLen = strlennull(szQueryBody) + strlennull(szNotifyBody) + 41;
   char *szBody = (char*)malloc(nBodyLen);
   DWORD dwCookie;
   message_cookie_data* pCookieData;
+
+  if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
+    return; // Invalid contact
 
   nBodyLen = null_snprintf(szBody, nBodyLen, "<N><QUERY>%s</QUERY><NOTIFY>%s</NOTIFY></N>", szQueryBody, szNotifyBody);
   SAFE_FREE(&szQueryBody);
@@ -308,12 +273,14 @@ void SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
 }
 
 
+
 void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szResponse, int nResponseLen, BOOL bThruDC)
 {
   char *szResBody = MangleXml(szResponse, nResponseLen);
   int nBodyLen = strlennull(szResBody) + 21;
   char *szBody = (char*)malloc(nBodyLen);
-  HANDLE hContact = HContactFromUIN(dwUin, 0);
+  int bAdded;
+  HANDLE hContact = HContactFromUIN(dwUin, &bAdded);
 
   if (validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
   { // apply privacy rules
