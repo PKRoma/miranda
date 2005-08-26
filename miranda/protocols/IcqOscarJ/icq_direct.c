@@ -288,6 +288,9 @@ BOOL IsDirectConnectionOpen(HANDLE hContact, int type)
     pthread_t tid;
     directthreadstartinfo* dtsi;
 
+    // do not try to open DC to offline contact
+    if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE) return FALSE;
+
     dtsi = (directthreadstartinfo*)malloc(sizeof(directthreadstartinfo));
     dtsi->type = DIRECTCONN_STANDARD;
     dtsi->incoming = 0;
@@ -725,7 +728,7 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 
 				/* 12 more bytes of unknown stuff */
 
-				hContact = HContactFromUIN(dc->dwRemoteUin, 0);
+				hContact = HContactFromUIN(dc->dwRemoteUin, NULL);
 				if (hContact == INVALID_HANDLE_VALUE)
         {
           NetLog_Direct("Error: Received PEER_INIT from %u not on my list", dwUin);

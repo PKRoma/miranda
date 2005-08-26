@@ -445,6 +445,7 @@ static BOOL CALLBACK FillCpCombo(LPCSTR str)
 static const UINT icqUnicodeControls[] = {IDC_UTFALL,IDC_UTFSTATIC,IDC_UTFCODEPAGE};
 static const UINT icqDCMsgControls[] = {IDC_DCPASSIVE};
 static const UINT icqXStatusControls[] = {IDC_XSTATUSAUTO};
+static const UINT icqAimControls[] = {IDC_AIMENABLE,IDC_AIMSTATIC};
 static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   switch (msg)
@@ -471,9 +472,10 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       CheckDlgButton(hwndDlg, IDC_XSTATUSAUTO, ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO));
       CheckDlgButton(hwndDlg, IDC_KILLSPAMBOTS, ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED));
       CheckDlgButton(hwndDlg, IDC_AIMENABLE, ICQGetContactSettingByte(NULL, "AimEnabled",DEFAULT_AIM_ENABLED));
+      icq_EnableMultipleControls(hwndDlg, icqAimControls, sizeof(icqAimControls)/sizeof(icqAimControls[0]), icqOnline?FALSE:TRUE);
 
       hCpCombo = GetDlgItem(hwndDlg, IDC_UTFCODEPAGE);
-      sCodePage = ICQGetContactSettingDword(NULL, "AnsiCodepage", CP_ACP);
+      sCodePage = ICQGetContactSettingWord(NULL, "AnsiCodepage", CP_ACP);
       EnumSystemCodePagesA(FillCpCombo, CP_INSTALLED);
       SendDlgItemMessageA(hwndDlg, IDC_UTFCODEPAGE, CB_INSERTSTRING, 0, (LPARAM)Translate("System default codepage"));
       if(sCodePage == 0)
@@ -483,7 +485,10 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
         for(i = 0; i < SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETCOUNT, 0, 0); i++) 
         {
           if(SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETITEMDATA, (WPARAM)i, 0) == sCodePage)
+          {
             SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_SETCURSEL, (WPARAM)i, 0);
+            break;
+          }
         }
       }
 
@@ -531,7 +536,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       ICQWriteContactSettingByte(NULL, "XStatusEnabled", gbXStatusEnabled);
       ICQWriteContactSettingByte(NULL, "XStatusAuto", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_XSTATUSAUTO));
       ICQWriteContactSettingByte(NULL, "KillSpambots", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_KILLSPAMBOTS));
-//      ICQWriteContactSettingByte(NULL, "AimEnabled", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_AIMENABLE));
+      ICQWriteContactSettingByte(NULL, "AimEnabled", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_AIMENABLE));
       return TRUE;
     }
     break;

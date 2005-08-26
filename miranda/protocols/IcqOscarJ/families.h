@@ -72,6 +72,7 @@ void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* 
 void handleBuddyFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleBosFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
+void handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleStatusFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleIcqExtensionsFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);

@@ -186,15 +186,18 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 			szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 			if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
 			{
-				if (ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0))
+        DWORD dwUIN;
+        char *szUID;
+
+				if (!ICQGetContactSettingUID(hContact, &dwUIN, &szUID))
 				{
-					if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE)
-						!= ID_STATUS_OFFLINE)
+					if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
 					{
 						ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
             handleXStatusCaps(hContact, NULL, 0);
 					}
+          SAFE_FREE(&szUID);
 				}
 			}
 

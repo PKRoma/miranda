@@ -111,7 +111,9 @@ void makeContactTemporaryVisible(HANDLE hContact)
   if (ICQGetContactSettingByte(hContact, "TemporaryVisible", 0))
     return; // already there
 
-  dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
+  if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
+    return; // Invalid contact
+
   nUinLen = getUINLen(dwUin);
 
   packet.wLen = nUinLen + 11;
@@ -150,7 +152,7 @@ static char* buildTempVisUinList()
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
 		{
 			if (ICQGetContactSettingByte(hContact, "TemporaryVisible", 0)
-        && (dwUIN = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0)))
+        && (!ICQGetContactSettingUID(hContact, &dwUIN, NULL)))
 			{
 				_itoa(dwUIN, szUin, 10);
 				szLen[0] = strlen(szUin);

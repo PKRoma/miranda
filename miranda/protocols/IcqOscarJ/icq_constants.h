@@ -198,6 +198,7 @@
 #define ICQ_BUDDY_FAMILY            0x0003
 #define ICQ_MSG_FAMILY              0x0004
 #define ICQ_BOS_FAMILY              0x0009
+#define ICQ_LOOKUP_FAMILY           0x000a
 #define ICQ_STATS_FAMILY            0x000b
 #define ICQ_AVATAR_FAMILY           0x0010
 #define ICQ_LISTS_FAMILY            0x0013
@@ -266,6 +267,10 @@
 #define ICQ_CLI_ADDTEMPVISIBLE      0x000A
 #define ICQ_CLI_REMOVETEMPVISIBLE   0x000B
 
+/* Subtypes for Lookup Family 0x000a */
+#define ICQ_LOOKUP_REQUEST          0x0002
+#define ICQ_LOOKUP_EMAIL_REPLY      0x0003
+
 /* Subtypes for Stats Family 0x000b */
 #define ICQ_STATS_MINREPORTINTERVAL 0x0002
 
@@ -304,6 +309,16 @@
 #define SRV_ICQEXT_ERROR            0x0001
 #define CLI_META_REQ                0x0002
 #define SRV_META_REPLY              0x0003
+
+// Class constants
+#define CLASS_UNCONFIRMED           0x0001
+#define CLASS_ADMINISTRATOR         0x0002
+#define CLASS_AOL                   0x0004
+#define CLASS_COMMERCIAL            0x0008
+#define CLASS_FREE                  0x0010
+#define CLASS_AWAY                  0x0020
+#define CLASS_ICQ                   0x0040
+#define CLASS_WIRELESS              0x0080
 
 // Reply types for SNAC 15/02 & 15/03
 #define CLI_OFFLINE_MESSAGE_REQ     0x003C
@@ -456,7 +471,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030603
+#define ICQ_PLUG_VERSION            0x80030604
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

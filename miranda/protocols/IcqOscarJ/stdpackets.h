@@ -37,7 +37,8 @@
 #ifndef __STDPACKETS_H
 #define __STDPACKETS_H
 
-struct icq_contactsend_s {
+struct icq_contactsend_s
+{
 	DWORD uin;
 	char *szNick;
 };
@@ -58,10 +59,24 @@ typedef struct fam15_cookie_data_s
 	BYTE bRequestType;
 } fam15_cookie_data;
 
-#define REQUESTTYPE_OWNER 0
-#define REQUESTTYPE_USERAUTO  1
-#define REQUESTTYPE_USERMINIMAL 2
+#define REQUESTTYPE_OWNER        0
+#define REQUESTTYPE_USERAUTO     1
+#define REQUESTTYPE_USERMINIMAL  2
 #define REQUESTTYPE_USERDETAILED 3
+
+
+typedef struct search_cookie_s
+{
+  BYTE bSearchType;
+  char* szObject;
+  DWORD dwMainId;
+  DWORD dwStatus;
+} search_cookie;
+
+#define SEARCHTYPE_UID     0
+#define SEARCHTYPE_EMAIL   1
+#define SEARCHTYPE_NAMES   2
+#define SEARCHTYPE_DETAILS 4
 
 
 void packMsgColorInfo(icq_packet *packet);
@@ -72,6 +87,8 @@ void icq_setidle(int bAllow);
 void icq_setstatus(WORD wStatus);
 DWORD icq_sendGetInfoServ(DWORD, int);
 DWORD icq_sendGetAwayMsgServ(DWORD, int);
+DWORD icq_sendGetAimAwayMsgServ(char *szUID, int type);
+void icq_sendSetAimAwayMsgServ(char *szMsg);
 void icq_sendFileSendServv7(DWORD dwUin, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize);
 void icq_sendFileSendServv8(DWORD dwUin, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize, int nAckType);
 
@@ -83,14 +100,14 @@ void icq_sendFileDenyServ(DWORD dwUin, filetransfer* ft, char *szReason, int nAc
 
 DWORD icq_sendAdvancedSearchServ(BYTE *fieldsBuffer,int bufferLen);
 DWORD icq_changeUserDetailsServ(WORD, const unsigned char *, WORD);
-void icq_sendNewContact(DWORD);
-void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, int list, int add);
+void icq_sendNewContact(DWORD dwUin, char* szUid);
+void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list, int add);
 void icq_sendEntireVisInvisList(int);
 void icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, BYTE, const char **);
 void icq_sendAdvancedMsgAck(DWORD, DWORD, DWORD, WORD, BYTE, BYTE);
 DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg);
 void icq_sendMessageCapsServ(DWORD dwUin);
-void icq_sendGrantAuthServ(DWORD dwUin, char *szMsg);
+void icq_sendGrantAuthServ(DWORD dwUin, char* szUid, char *szMsg);
 void icq_sendAuthReqServ(DWORD dwUin,char *szMsg);
 void icq_sendAuthResponseServ(DWORD,int,char *);
 void icq_sendYouWereAddedServ(DWORD,DWORD);
@@ -98,8 +115,8 @@ void icq_sendYouWereAddedServ(DWORD,DWORD);
 void sendOwnerInfoRequest(void);
 void sendUserInfoAutoRequest(DWORD dwUin);
 
-DWORD icq_SendChannel1Message(DWORD dwUin, HANDLE hContact, char *pszText, message_cookie_data *pCookieData);
-DWORD icq_SendChannel1MessageW(DWORD dwUin, HANDLE hContact, wchar_t *pszText, message_cookie_data *pCookieData); // UTF-16
+DWORD icq_SendChannel1Message(DWORD dwUin, char *szUID, HANDLE hContact, char *pszText, message_cookie_data *pCookieData);
+DWORD icq_SendChannel1MessageW(DWORD dwUin, char *szUID, HANDLE hContact, wchar_t *pszText, message_cookie_data *pCookieData); // UTF-16
 DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap);
 DWORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData);
 
@@ -110,5 +127,6 @@ DWORD SearchByUin(DWORD dwUin);
 DWORD SearchByNames(char *pszNick, char *pszFirstName, char *pszLastName);
 DWORD SearchByEmail(char *pszEmail);
 
+DWORD icq_searchAimByEmail(char* pszEmail, DWORD dwSearchId);
 
 #endif /* __STDPACKETS_H */

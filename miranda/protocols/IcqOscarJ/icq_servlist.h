@@ -64,6 +64,7 @@ typedef void (*GROUPADDCALLBACK)(WORD wGroupId, LPARAM lParam);
 typedef struct servlistcookie_t
 {
   DWORD dwUin;
+  char* szUID;
   HANDLE hContact;
   WORD wContactId;
   WORD wGroupId;
@@ -83,6 +84,7 @@ void* collectGroups(int *count);
 void* collectBuddyGroup(WORD wGroupID, int *count);
 char* getServerGroupName(WORD wGroupID);
 void setServerGroupName(WORD wGroupID, const char* szGroupName);
+void setServerGroupNameUtf(WORD wGroupID, const char* szGroupNameUtf);
 WORD getServerGroupID(const char* szPath);
 void setServerGroupID(const char* szPath, WORD wGroupID);
 int IsServerGroupsDefined();
@@ -95,7 +97,7 @@ DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup)
 DWORD removeServContact(HANDLE hContact);
 DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup);
 
-DWORD icq_sendBuddy(DWORD dwCookie, WORD wAction, DWORD dwUin, WORD wGroupId, WORD wContactId, const char *szNick, const char*szNote, int authRequired, WORD wItemType);
+DWORD icq_sendBuddy(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, WORD wGroupId, WORD wContactId, const char *szNick, const char*szNote, int authRequired, WORD wItemType);
 DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent);
 
 // id type groups

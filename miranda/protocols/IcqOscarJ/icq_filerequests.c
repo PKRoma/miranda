@@ -154,6 +154,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
 		PROTORECVEVENT pre;
 		char* szBlob;
 		filetransfer* ft;
+    int bAdded;
 		
 		// Initialize a filetransfer struct
 		ft = (filetransfer*)malloc(sizeof(filetransfer));
@@ -178,7 +179,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
 		strcpy(szBlob + sizeof(DWORD), pszFileName);
 		strcpy(szBlob + sizeof(DWORD) + strlen(pszFileName) + 1, pszDescription);
 		ccs.szProtoService = PSR_FILE;
-		ccs.hContact = HContactFromUIN(dwUin, 1);
+		ccs.hContact = HContactFromUIN(dwUin, &bAdded);
 		ccs.wParam = 0;
 		ccs.lParam = (LPARAM)&pre;
 		pre.flags = 0;

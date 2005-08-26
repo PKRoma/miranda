@@ -83,7 +83,7 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
     unpackWord(&buf, &wErrorCode);
 	}
 	else
-  {
+  { // TODO: cookies need to be handled and freed here on error
     oscar_tlv_chain *chain = NULL;
 
     unpackWord(&buf, &wErrorCode);
@@ -129,7 +129,7 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
               foundCookie = FindCookie(wCookie, &dwCookieUin, (void**)&pCookieData);
               if (foundCookie && pCookieData)
               {
-                HANDLE hContact = HContactFromUIN(dwCookieUin, 0);
+                HANDLE hContact = HContactFromUIN(dwCookieUin, NULL);
                 ICQBroadcastAck(hContact,	ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
 
                 SAFE_FREE(&pCookieData); // we do not leak cookie and memory
@@ -141,7 +141,6 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
           }
           else 
             NetLog_Server("Meta request error 0x%02x received", wErrorCode);
-
 
           break;
 
@@ -205,7 +204,6 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
 			wPackLen -= 10;			
 			switch (wRequestType)
 			{
-				
 			case SRV_OFFLINE_MESSAGE:     // This is an offline message
 				parseOfflineMessage(databuf, wPackLen);
 				break;
@@ -217,7 +215,6 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
 			case SRV_META_INFO_REPLY:     // SRV_META request replies
 				handleExtensionMetaResponse(databuf, wPackLen, wCookie, wFlags);
 				break;
-				
 			}
 		}
 	}
@@ -313,7 +310,7 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 				dwTimestamp = time(NULL);
 
       { // Check if the time is not behind last user event, if yes, get current time
-        HANDLE hContact = HContactFromUIN(dwUin, 0);
+        HANDLE hContact = HContactFromUIN(dwUin, NULL);
 
         if (hContact)
         { // we have contact
@@ -367,7 +364,7 @@ static void parseEndOfOfflineMessages(unsigned char *databuf, WORD wPacketLen)
 
 	// Send 'got offline msgs'
 	// This will delete the messages stored on server
-	packet.wLen = 6 + 10 + 10;
+	packet.wLen = 24;
 	write_flap(&packet, ICQ_DATA_CHAN);
 	packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, CLI_META_REQ<<0x10);
 	packWord(&packet, 1);             // TLV Type
@@ -388,7 +385,6 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 	WORD wReplySubtype;
 	BYTE bResultCode;
 	
-
 	_ASSERTE(wPacketLen >= 3);
 	if (wPacketLen >= 3)
 	{
@@ -400,10 +396,8 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 		unpackByte(&databuf, &bResultCode);
 		wPacketLen -= 1;
 		
-		
 		switch (wReplySubtype)
 		{
-			
 		case META_SET_HOMEINFO_ACK:
 		case META_SET_WORKINFO_ACK:
 		case META_SET_MOREINFO_ACK:
@@ -499,13 +493,11 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 			NetLog_Server("Warning: Ignored 15/03 replysubtype x%x", wReplySubtype);
 //			_ASSERTE(0);
 			break;
-
 		}
 		
 		// Success
 		return;
-		
-	}
+  }
 
 	// Failure
 	NetLog_Server("Warning: Broken 15/03 ExtensionMetaResponse");
@@ -516,21 +508,35 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, BYTE bResultCode)
 {
 	BYTE bParsingOK = FALSE; // For debugging purposes only
+  BOOL bLastUser = FALSE;
+  search_cookie* pCookie;
+
+  if (!FindCookie(wCookie, NULL, &pCookie))
+  {
+    NetLog_Server("Warning: Received unexpected search reply");
+    pCookie = NULL;
+  }
 
 	switch (wReplySubtype)
 	{
 		
-	case SRV_USER_FOUND:      // Search: user found reply
 	case SRV_LAST_USER_FOUND: // Search: last user found reply
-		NetLog_Server("SNAC(0x15,0x3): Search reply");
+    bLastUser = TRUE;
+
+	case SRV_USER_FOUND:      // Search: user found reply
+    if (bLastUser)
+      NetLog_Server("SNAC(0x15,0x3): Last search reply");
+    else
+      NetLog_Server("SNAC(0x15,0x3): Search reply");
+
 		if (bResultCode == 0xA)
 		{
 			ICQSEARCHRESULT sr = {0};
 			DWORD dwUin;
 			WORD wLen;
-			
+
 			sr.hdr.cbSize = sizeof(sr);
-			
+
 			// Remaining bytes
 			if (wPacketLen < 2)
 				break;
@@ -564,8 +570,7 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 			{
 				sr.hdr.nick = NULL;
 			}
-			
-			
+
 			// First name
 			if (wPacketLen < 2)
 				break;
@@ -582,8 +587,7 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 			{
 				sr.hdr.firstName = NULL;
 			}
-			
-			
+
 			// Last name
 			if (wPacketLen < 2)
 				break;
@@ -600,8 +604,7 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 			{
 				sr.hdr.lastName = NULL;
 			}
-			
-			
+
 			// E-mail name
 			if (wPacketLen < 2)
 				break;
@@ -618,13 +621,11 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 			{
 				sr.hdr.email = NULL;
 			}
-			
-			
+
 			// Authentication needed flag
 			if (wPacketLen < 1)
 				break;
 			unpackByte(&databuf, &sr.auth);
-			
 
 			// Finally, broadcast the result
 			ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)wCookie, (LPARAM)&sr);
@@ -632,7 +633,37 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 			// Broadcast "Last result" ack if this was the last user found
 			if (wReplySubtype == SRV_LAST_USER_FOUND)
 			{
-				ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+        if (wPacketLen>=10)
+        {
+          DWORD dwLeft;
+
+          databuf += 5;
+          unpackLEDWord(&databuf, &dwLeft);
+          if (dwLeft)
+            NetLog_Server("Warning: %d search results omitted", dwLeft);
+        }
+        if (pCookie)
+        {
+          FreeCookie(wCookie);
+          if (pCookie->dwMainId) // is paralel search present?
+          {
+            if (pCookie->dwStatus)
+            { // paralel search already finished
+              SAFE_FREE(&pCookie);
+    				  ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+            } // state we finished, the rest will do paralel search
+            else
+              pCookie->dwStatus = 1;
+          }
+          else
+          {
+            SAFE_FREE(&pCookie);
+  				  ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+          }
+
+        }
+        else
+				  ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
 			}
 
 			bParsingOK = TRUE;
@@ -641,7 +672,27 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
     {
 			// Failed search
 			NetLog_Server("SNAC(0x15,0x3): Search error %u", bResultCode);
-			ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+      if (pCookie)
+      {
+        FreeCookie(wCookie);
+        if (pCookie->dwMainId)
+        {
+          if (pCookie->dwStatus)
+          {
+            SAFE_FREE(&pCookie);
+  				  ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+          }
+          else
+            pCookie->dwStatus = 1;
+        }
+        else
+        {
+          SAFE_FREE(&pCookie);
+				  ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+        }
+      }
+      else
+			  ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
 
 			bParsingOK = TRUE;
 		}
@@ -649,6 +700,11 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 
 	case SRV_RANDOM_FOUND: // Random search server reply
 	default:
+    if (pCookie)
+    {
+      FreeCookie(wCookie);
+      SAFE_FREE(&pCookie);
+    }
 		break;
 
   }
@@ -679,7 +735,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
     if (pCookieData->bRequestType == REQUESTTYPE_OWNER)
       hContact = NULL; // this is here for situation when we have own uin in clist
     else
-		  hContact = HContactFromUIN(dwCookieUin, 0);
+		  hContact = HContactFromUIN(dwCookieUin, NULL);
 	}
 	else
 	{

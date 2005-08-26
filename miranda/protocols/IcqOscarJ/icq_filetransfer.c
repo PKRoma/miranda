@@ -352,6 +352,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				DWORD dwTotalSize;
 				DWORD dwTransferSpeed;
 				WORD wNickLength;
+        int bAdded;
 
 				unpackLEDWord(&buf, &dwFileCount);
 				unpackLEDWord(&buf, &dwTotalSize);
@@ -368,7 +369,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				}
 				dc->ft->dwFileCount = dwFileCount;
 				dc->ft->dwTransferSpeed = dwTransferSpeed;
-				dc->ft->hContact = HContactFromUIN(dc->ft->dwUin, 1);
+				dc->ft->hContact = HContactFromUIN(dc->ft->dwUin, &bAdded);
 				dc->ft->dwBytesDone = 0;
 				dc->ft->iCurrentFile = -1;
 				dc->ft->fileId = -1;				

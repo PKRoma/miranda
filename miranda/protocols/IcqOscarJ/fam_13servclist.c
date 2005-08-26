@@ -86,9 +86,28 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
     break;
 
   case ICQ_LISTS_SRV_REPLYLISTS:
-    /* received list rights, we just skip them */
-    /* as the structure is not yet fully understood */
-    NetLog_Server("Server sent SNAC(x13,x03) - SRV_REPLYLISTS");
+    {
+      /* received list rights, we just skip them */
+
+      oscar_tlv_chain* chain;
+
+      if (chain = readIntoTLVChain(&pBuffer, wBufferLength, 0))
+      {
+        oscar_tlv* pTLV;
+
+        if ((pTLV = getTLV(chain, 0x04, 1)) && pTLV->wLen>=30)
+        { // limits for item types
+          WORD* pMax = (WORD*)pTLV->pData;
+
+          NetLog_Server("SSI: Max %d contacts, %d groups, %d permit, %d deny, %d ignore items.", pMax[0], pMax[1], pMax[2], pMax[3], pMax[14]);
+        }
+
+        disposeChain(&chain);
+      }
+#ifdef _DEBUG
+      NetLog_Server("Server sent SNAC(x13,x03) - SRV_REPLYLISTS");
+#endif
+    }
     break;
 
   case ICQ_LISTS_LIST: // SRV_REPLYROSTER
@@ -276,6 +295,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         NetLog_Server("Renaming of server contact failed, error %d", wError);
         icq_LogMessage(LOG_WARNING, Translate("Renaming of server contact failed."));
       }
+      SAFE_FREE(&sc->szUID);
       break;
     }
   case SSA_CONTACT_COMMENT: 
@@ -285,6 +305,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         NetLog_Server("Update of server contact's comment failed, error %d", wError);
         icq_LogMessage(LOG_WARNING, Translate("Update of server contact's comment failed."));
       }
+      SAFE_FREE(&sc->szUID);
       break;
     }
   case SSA_PRIVACY_ADD: 
@@ -294,6 +315,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         NetLog_Server("Adding of privacy item to server list failed, error %d", wError);
         icq_LogMessage(LOG_WARNING, Translate("Adding of privacy item to server list failed."));
       }
+      SAFE_FREE(&sc->szUID);
       break;
     }
   case SSA_PRIVACY_REMOVE: 
@@ -304,6 +326,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         icq_LogMessage(LOG_WARNING, Translate("Removing of privacy item from server list failed."));
       }
       FreeServerID(sc->wContactId, SSIT_ITEM); // release server id
+      SAFE_FREE(&sc->szUID);
       break;
     }
   case SSA_CONTACT_ADD:
@@ -318,7 +341,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
           ICQWriteContactSettingByte(sc->hContact, "Auth", 1); // we need auth
           dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, sc->dwUin, sc);
-          icq_sendBuddy(dwCookie, ICQ_LISTS_ADDTOLIST, sc->dwUin, sc->wGroupId, sc->wContactId, sc->szGroupName, NULL, 1, SSI_ITEM_BUDDY);
+          icq_sendBuddy(dwCookie, ICQ_LISTS_ADDTOLIST, sc->dwUin, sc->szUID, sc->wGroupId, sc->wContactId, sc->szGroupName, NULL, 1, SSI_ITEM_BUDDY);
 
           sc = NULL; // we do not want it to be freed now
           break;
@@ -330,6 +353,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
         NetLog_Server("Adding of contact to server list failed, error %d", wError);
         icq_LogMessage(LOG_WARNING, Translate("Adding of contact to server list failed."));
+        SAFE_FREE(&sc->szUID);
       }
       else
       {
@@ -354,12 +378,14 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
           icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, sc->wGroupId, sc->szGroupName, groupData, groupSize);
           sendAddEnd(); // end server modifications here
 
+          SAFE_FREE(&sc->szUID);
           sc = NULL; // we do not want it to be freed now
         }
         else
         { // this should never happen
           NetLog_Server("Group update failed.");
           sendAddEnd(); // end server modifications here
+          SAFE_FREE(&sc->szUID);
         }
         if (hPend) RemovePendingOperation(hPend, 1);
       }
@@ -436,6 +462,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
           icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, sc->wGroupId, sc->szGroupName, groupData, groupSize);
           sendAddEnd(); // end server modifications here
 
+          SAFE_FREE(&sc->szUID);
           sc = NULL; // we do not want it to be freed now
         }
         else // the group is empty, delete it if it does not have sub-groups
@@ -452,6 +479,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
             icq_sendGroup(dwCookie, ICQ_LISTS_REMOVEFROMLIST, sc->wGroupId, sc->szGroupName, NULL, 0);
             // here the modifications go on
+            SAFE_FREE(&sc->szUID);
             sc = NULL; // we do not want it to be freed now
           }
         }
@@ -462,6 +490,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         NetLog_Server("Removing of contact from server list failed, error %d", wError);
         icq_LogMessage(LOG_WARNING, Translate("Removing of contact from server list failed."));
         sendAddEnd(); // end server modifications here
+        SAFE_FREE(&sc->szUID);
       }
       break;
     }
@@ -512,6 +541,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
     { // we moved contact to another group
       if (sc->lParam == -1)
       { // the first was an error
+        SAFE_FREE(&sc->szUID);
         break;
       }
       if (wError)
@@ -601,6 +631,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         }
         if (bEnd) sendAddEnd();
         if (sc->hContact) RemovePendingOperation(sc->hContact, 1);
+        SAFE_FREE(&sc->szUID);
       }
       else
       {
@@ -679,27 +710,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
   return;
 }
 
-
-static HANDLE addContactToList(DWORD dwUin, char* szType)
-{
-  HANDLE hContact;
-
-  NetLog_Server("SSI adding new %s contact '%d'", szType, dwUin);
-  hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD,0,0);
-  if (!hContact)
-	{
-    NetLog_Server("Failed to create ICQ contact %u", dwUin);
-    return hContact;
-  }
-  if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName) != 0)
-  {
-    // For some reason we failed to register the protocol to this contact
-    CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
-    NetLog_Server("Failed to register ICQ contact %u", dwUin);
-    hContact = NULL;
-  }
-  return hContact;
-}
 
 
 static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
@@ -812,47 +822,32 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
     case SSI_ITEM_BUDDY:
       {
         /* this is a contact */
+        HANDLE hContact;
+        int bAdded;
 
         if (!IsStringUIN(pszRecordName))
-        { // TODO: handle AIM contacts too
-          NetLog_Server("Ignoring fake AOL contact, message is: \"%s\"", pszRecordName);
+        { // probably AIM contact
+          hContact = HContactFromUID(pszRecordName, &bAdded);
         }
         else
-        {
-          HANDLE hContact;
-          char* pszProto;
+        { // this should be ICQ number
           DWORD dwUin;
-          int bAdded = 0;
+
+          dwUin = atoi(pszRecordName);
+          hContact = HContactFromUIN(dwUin, &bAdded);
+        }
+
+        if (hContact != INVALID_HANDLE_VALUE)
+        {
           int bRegroup = 0;
           int bNicked = 0;
           WORD wOldGroupId;
 
-          // This looks like a real contact
-          // Check if this user already exists in local list
-          dwUin = atoi(pszRecordName);
-					hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-					while (hContact) // TODO: speed up
-					{
-						pszProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-						if (pszProto && !strcmp(pszProto, gpszICQProtoName) && dwUin == ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0))
-						{
-							NetLog_Server("SSI ignoring existing contact '%d'", dwUin);
-							break;
-						}
-						hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-					}
-
-					if (hContact == NULL)
-          { // Not already on list: add
+					if (bAdded)
+          { // Not already on list: added
             char* szGroup;
 
-						hContact = addContactToList(dwUin, "ICQ");
-						if (!hContact)
-						{
-							if (pChain)
-								disposeChain(&pChain);
-							continue;
-						}
+            NetLog_Server("SSI added new %s contact '%s'", "ICQ", pszRecordName);
 
             if (szGroup = makeGroupPath(wGroupId))
             { // try to get Miranda Group path from groupid, if succeeded save to db
@@ -860,10 +855,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
               SAFE_FREE(&szGroup);
             }
-            bAdded = 1;
             AddJustAddedContact(hContact);
-
-						ICQWriteContactSettingDword(hContact, UNIQUEIDSETTING, dwUin);
 					}
 					else
 					{
@@ -873,6 +865,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 							DBWriteContactSettingByte(hContact, "CList", "Hidden", 0);
               bAdded = 1; // we want details for new contacts
             }
+            else
+              NetLog_Server("SSI ignoring existing contact '%s'", pszRecordName);
             // Contact on server is always on list
             DBWriteContactSettingByte(hContact, "CList", "NotOnList", 0);
           }
@@ -939,51 +933,38 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 								pszNick = (char*)malloc(wNickLength + 1);
 								if (pszNick)
 								{
-									char* pszTempNick = NULL; // Used for UTF-8 conversion
-
 									// Copy buffer to utf-8 buffer
 									memcpy(pszNick, pTLV->pData, wNickLength);
 									pszNick[wNickLength] = 0; // Terminate string
 
-									// Convert to ansi
-									if (utf8_decode(pszNick, &pszTempNick))
-									{
-										SAFE_FREE(&pszNick);
-										pszNick = pszTempNick;
-										NetLog_Server("Nickname is '%s'", pszNick);
-									}
-									else
-									{
-										NetLog_Server("Failed to convert Nickname '%s' from UTF-8", pszNick);
-									}
+									NetLog_Server("Nickname is '%s'", pszNick);
 
                   bNicked = 1;
 
 									// Write nickname to database
 									if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
                   { // if just added contact, save details always - does no harm
-										DBVARIANT dbv;
+										char *szOldNick;
 
-										if (!DBGetContactSetting(hContact,"CList","MyHandle",&dbv))
+										if (szOldNick = UniGetContactSettingUtf(hContact,"CList","MyHandle",""))
 										{
-											if ((lstrcmp(dbv.pszVal, pszNick)) && (strlen(pszNick) > 0))
+											if ((lstrcmp(szOldNick, pszNick)) && (strlen(pszNick) > 0))
 											{
 												// Yes, we really do need to delete it first. Otherwise the CLUI nick
 												// cache isn't updated (I'll look into it)
 												DBDeleteContactSetting(hContact,"CList","MyHandle");
-												DBWriteContactSettingString(hContact, "CList", "MyHandle", pszNick);
+												UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
 											}
-											DBFreeVariant(&dbv);
+											SAFE_FREE(&szOldNick);
 										}
 										else if (strlen(pszNick) > 0)
 										{
 											DBDeleteContactSetting(hContact,"CList","MyHandle");
-											DBWriteContactSettingString(hContact, "CList", "MyHandle", pszNick);
+											UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
 										}
 									}
 									SAFE_FREE(&pszNick);
 								}
-
 							}
 							else
 							{
@@ -998,7 +979,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 						{
 							if (pTLV->pData && (pTLV->wLen > 0))
 							{
-
 								char* pszComment;
 								WORD wCommentLength;
 
@@ -1008,42 +988,28 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 								pszComment = (char*)malloc(wCommentLength + 1);
 								if (pszComment)
 								{
-
-									char* pszTempComment = NULL; // Used for UTF-8 conversion
-
-
 									// Copy buffer to utf-8 buffer
 									memcpy(pszComment, pTLV->pData, wCommentLength);
 									pszComment[wCommentLength] = 0; // Terminate string
 
-									// Convert to ansi
-									if (utf8_decode(pszComment, &pszTempComment))
-									{
-										SAFE_FREE(&pszComment);
-										pszComment = pszTempComment;
-										NetLog_Server("Comment is '%s'", pszComment);
-									}
-									else
-									{
-										NetLog_Server("Failed to convert Comment '%s' from UTF-8", pszComment);
-									}
+									NetLog_Server("Comment is '%s'", pszComment);
 
 									// Write comment to database
 									if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
                   { // if just added contact, save details always - does no harm
-										DBVARIANT dbv;
+										char *szOldComment;
 
-										if (!DBGetContactSetting(hContact,"UserInfo","MyNotes",&dbv))
+										if (szOldComment = UniGetContactSettingUtf(hContact,"UserInfo","MyNotes",""))
 										{
-											if ((lstrcmp(dbv.pszVal, pszComment)) && (strlen(pszComment) > 0))
+											if ((lstrcmp(szOldComment, pszComment)) && (strlen(pszComment) > 0))
 											{
-												DBWriteContactSettingString(hContact, "UserInfo", "MyNotes", pszComment);
+												UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
 											}
-											DBFreeVariant(&dbv);
+											SAFE_FREE(&szOldComment);
 										}
 										else if (strlen(pszComment) > 0)
 										{
-											DBWriteContactSettingString(hContact, "UserInfo", "MyNotes", pszComment);
+											UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
 										}
 									}
 
@@ -1068,6 +1034,10 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 						}
 					}
 				}
+        else
+        { // failed to add or other error
+          NetLog_Server("SSI failed to handle %s Item '%s'", "Buddy", pszRecordName);
+			  }
 			}
 			break;
 
@@ -1086,11 +1056,11 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
         { /* no item ID: this is a group */
           /* pszRecordName is the name of the group */
           char* pszName = NULL;
-          WORD wNameLength;
+//          WORD wNameLength;
 
 					ReserveServerID(wGroupId, SSIT_GROUP);
 
-          wNameLength = strlen(pszRecordName);
+/*          wNameLength = strlennull(pszRecordName);
 
           pszName = (char*)malloc(wNameLength + 1);
 
@@ -1112,12 +1082,12 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
             {
               NetLog_Server("Failed to convert Groupname '%s' from UTF-8", pszName);
             }
-          }
-          setServerGroupName(wGroupId, pszName);
+          }*/
+          setServerGroupNameUtf(wGroupId, pszRecordName);
 
-          NetLog_Server("Group %s added to known groups.", pszName);
+          NetLog_Server("Group %s added to known groups.", pszRecordName);
 
-          SAFE_FREE(&pszName);
+//          SAFE_FREE(&pszName);
           /* demangle full grouppath, create groups, set it to known */
           pszName = makeGroupPath(wGroupId); 
           SAFE_FREE(&pszName);
@@ -1137,113 +1107,100 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
       break;
 
 		case SSI_ITEM_PERMIT:
-			/* item on visible list */
-			/* wItemId not related to contact ID */
-			/* pszRecordName is the UIN */
-			if (!IsStringUIN(pszRecordName))
-			{
-				NetLog_Server("Ignoring fake AOL contact, message is: \"%s\"", pszRecordName);
-			}
-			else
-			{
-				DWORD dwUin;
-				char* pszProto;
-				HANDLE hContact;
+      {
+  			/* item on visible list */
+			  /* wItemId not related to contact ID */
+			  /* pszRecordName is the UIN */
+        HANDLE hContact;
+        int bAdded;
 
-				// This looks like a real contact
-				// Check if this user already exists in local list
-				dwUin = atoi(pszRecordName);
-				hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-				while (hContact) // TODO: speed up
+        if (!IsStringUIN(pszRecordName))
+        { // probably AIM contact
+          hContact = HContactFromUID(pszRecordName, &bAdded);
+        }
+        else
+        { // this should be ICQ number
+          DWORD dwUin;
+
+          dwUin = atoi(pszRecordName);
+          hContact = HContactFromUIN(dwUin, &bAdded);
+        }
+
+        if (hContact != INVALID_HANDLE_VALUE)
         {
-					pszProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-					if (pszProto && !strcmp(pszProto, gpszICQProtoName) && dwUin == ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0))
-					{
-						NetLog_Server("Permit contact already exists '%d'", dwUin);
-						break;
-					}
-					hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-				}
+				  if (bAdded)
+          {
+            NetLog_Server("SSI added new %s contact '%s'", "Permit", pszRecordName);
+  					// It wasn't previously in the list, we hide it so it only appears in the visible list
+  					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+            // Add it to the list, so it can be added properly if proper contact
+            AddJustAddedContact(hContact);
+          }
+          else
+            NetLog_Server("SSI %s contact already exists '%s'", "Permit", pszRecordName);
 
-				if (hContact == NULL)
-				{
-					/* not already on list: add */
-  				hContact = addContactToList(dwUin, "Permit");
-					if (!hContact)
-					{
-						if (pChain)
-							disposeChain(&pChain);
-						continue;
-					}
-					ICQWriteContactSettingDword(hContact, UNIQUEIDSETTING, dwUin);
-					// It wasn't previously in the list, we hide it so it only appears in the visible list
-					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
-          // Add it to the list, so it can be added properly if proper contact
-          AddJustAddedContact(hContact);
-				}
-
-				// Save permit ID
-				ICQWriteContactSettingWord(hContact, "SrvPermitId", wItemId);
-				ReserveServerID(wItemId, SSIT_ITEM);
-				// Set apparent mode
-				ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_ONLINE);
-				NetLog_Server("Visible-contact (%u)", dwUin);
-			}
+          // Save permit ID
+				  ICQWriteContactSettingWord(hContact, "SrvPermitId", wItemId);
+				  ReserveServerID(wItemId, SSIT_ITEM);
+				  // Set apparent mode
+				  ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_ONLINE);
+				  NetLog_Server("Visible-contact (%s)", pszRecordName);
+        }
+        else
+        { // failed to add or other error
+          NetLog_Server("SSI failed to handle %s Item '%s'", "Permit", pszRecordName);
+			  }
+      }
 			break;
 
-		case SSI_ITEM_DENY: // Item on invisible list
-			if (!IsStringUIN(pszRecordName))
-			{
-				NetLog_Server("Ignoring fake AOL contact, message is: \"%s\"", pszRecordName);
-			}
-			else
-			{
-				DWORD dwUin;
-				char* pszProto;
-				HANDLE hContact;
+		case SSI_ITEM_DENY:
+      {
+        /* Item on invisible list */
+			  /* wItemId not related to contact ID */
+			  /* pszRecordName is the UIN */
+        HANDLE hContact;
+        int bAdded;
 
-				// This looks like a real contact
-				// Check if this user already exists in local list
-				dwUin = atoi(pszRecordName);
-				hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-				while (hContact)
-				{
-					pszProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-					if (pszProto && !strcmp(pszProto, gpszICQProtoName) && (dwUin == ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0)))
-					{
-						NetLog_Server("Deny contact already exists '%d'", dwUin);
-						break;
-					}
-					hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-				}
+        if (!IsStringUIN(pszRecordName))
+        { // probably AIM contact
+          hContact = HContactFromUID(pszRecordName, &bAdded);
+        }
+        else
+        { // this should be ICQ number
+          DWORD dwUin;
 
-				if (hContact == NULL)
-				{
-					/* not already on list: add */
-					hContact = addContactToList(dwUin, "Deny");
-					if (!hContact)
-					{
-						if (pChain)
-							disposeChain(&pChain);
-						continue;
-					}
-					ICQWriteContactSettingDword(hContact, UNIQUEIDSETTING, dwUin);
-					// It wasn't previously in the list, we hide it so it only appears in the visible list
-					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
-          // Add it to the list, so it can be added properly if proper contact
-          AddJustAddedContact(hContact);
-				}
+          dwUin = atoi(pszRecordName);
+          hContact = HContactFromUIN(dwUin, &bAdded);
+        }
 
-				// Save Deny ID
-				ICQWriteContactSettingWord(hContact, "SrvDenyId", wItemId);
-				ReserveServerID(wItemId, SSIT_ITEM);
+        if (hContact != INVALID_HANDLE_VALUE)
+        {
+				  if (bAdded)
+          {
+					  /* not already on list: added */
+            NetLog_Server("SSI added new %s contact '%s'", "Deny", pszRecordName);
+  					// It wasn't previously in the list, we hide it so it only appears in the visible list
+  					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+            // Add it to the list, so it can be added properly if proper contact
+            AddJustAddedContact(hContact);
+          }
+          else
+            NetLog_Server("SSI %s contact already exists '%s'", "Deny", pszRecordName);
 
-				// Set apparent mode
-				ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
-				NetLog_Server("Invisible-contact (%u)", dwUin);
-			}
+  				// Save Deny ID
+  				ICQWriteContactSettingWord(hContact, "SrvDenyId", wItemId);
+  				ReserveServerID(wItemId, SSIT_ITEM);
+
+  				// Set apparent mode
+  				ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
+  				NetLog_Server("Invisible-contact (%s)", pszRecordName);
+        }
+        else
+        { // failed to add or other error
+          NetLog_Server("SSI failed to handle %s Item '%s'", "Deny", pszRecordName);
+			  }
+      }
 			break;
-
 
     case SSI_ITEM_VISIBILITY: /* My visibility settings */
       {
@@ -1260,58 +1217,54 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
       }
       break;
 
-    case SSI_ITEM_IGNORE: // item on ignore list 
-      /* pszRecordName is the UIN */
-
-      if (!IsStringUIN(pszRecordName))
-        NetLog_Server("Ignoring fake AOL contact, message is: \"%s\"", pszRecordName);
-      else
+    case SSI_ITEM_IGNORE: 
       {
-        DWORD dwUin;
-        char* pszProto;
+        /* item on ignore list */
+			  /* wItemId not related to contact ID */
+			  /* pszRecordName is the UIN */
         HANDLE hContact;
+        int bAdded;
 
-				// This looks like a real contact
-				// Check if this user already exists in local list
-				dwUin = atoi(pszRecordName);
-				hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-				while (hContact)
-				{
-					pszProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-					if (pszProto && !strcmp(pszProto, gpszICQProtoName) && (dwUin == ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0)))
-					{
-						NetLog_Server("Ignore contact already exists '%d'", dwUin);
-						break;
-					}
-					hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-				}
+        if (!IsStringUIN(pszRecordName))
+        { // probably AIM contact
+          hContact = HContactFromUID(pszRecordName, &bAdded);
+        }
+        else
+        { // this should be ICQ number
+          DWORD dwUin;
 
-				if (hContact == NULL)
-				{
-					/* not already on list: add */
-					hContact = addContactToList(dwUin, "Ignore");
-					if (!hContact)
-					{
-						if (pChain)
-							disposeChain(&pChain);
-						continue;
-					}
-					ICQWriteContactSettingDword(hContact, UNIQUEIDSETTING, dwUin);
-					// It wasn't previously in the list, we hide it
-					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
-          // Add it to the list, so it can be added properly if proper contact
-          AddJustAddedContact(hContact);
-				}
+          dwUin = atoi(pszRecordName);
+          hContact = HContactFromUIN(dwUin, &bAdded);
+        }
 
-				// Save Ignore ID
-				ICQWriteContactSettingWord(hContact, "SrvIgnoreId", wItemId);
-				ReserveServerID(wItemId, SSIT_ITEM);
+        if (hContact != INVALID_HANDLE_VALUE)
+        {
+    			if (bAdded)
+          {
+					  /* not already on list: add */
+            NetLog_Server("SSI added new %s contact '%s'", "Ignore", pszRecordName);
+  					// It wasn't previously in the list, we hide it
+					  DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+            // Add it to the list, so it can be added properly if proper contact
+            AddJustAddedContact(hContact);
+          }
+          else
+            NetLog_Server("SSI %s contact already exists '%s'", "Ignore", pszRecordName);
 
-				// Set apparent mode & ignore
-        ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
-        // set ignore all events
-        DBWriteContactSettingDword(hContact, "Ignore", "Mask1", 0xFFFF);
-        NetLog_Server("Ignore-contact (%u)", dwUin);
+  				// Save Ignore ID
+				  ICQWriteContactSettingWord(hContact, "SrvIgnoreId", wItemId);
+				  ReserveServerID(wItemId, SSIT_ITEM);
+
+				  // Set apparent mode & ignore
+          ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
+          // set ignore all events
+          DBWriteContactSettingDword(hContact, "Ignore", "Mask1", 0xFFFF);
+          NetLog_Server("Ignore-contact (%s)", pszRecordName);
+        }
+        else
+        { // failed to add or other error
+          NetLog_Server("SSI failed to handle %s Item '%s'", "Ignore", pszRecordName);
+			  }
       }
 			break;
 
@@ -1432,6 +1385,7 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	char* szBlob;
 	char* pCurBlob;
   DBVARIANT dbv;
+  int bAdded;
 
   if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
@@ -1447,7 +1401,7 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 		return;
 
 	ccs.szProtoService=PSR_AUTH;
-	ccs.hContact=hcontact=HContactFromUIN(dwUin,1);
+	ccs.hContact=hcontact=HContactFromUIN(dwUin, &bAdded);
 	ccs.wParam=0;
 	ccs.lParam=(LPARAM)&pre;
 	pre.flags=0;
@@ -1514,6 +1468,7 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 	DBEVENTINFO dbei;
 	PBYTE pCurBlob;
 	HANDLE hContact;
+  int bAdded;
 
   if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
@@ -1523,7 +1478,7 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
     return;
   }
 
-  hContact=HContactFromUIN(dwUin,1);
+  hContact=HContactFromUIN(dwUin, &bAdded);
 
   ICQDeleteContactSetting(hContact, "Grant");
 
@@ -1557,6 +1512,7 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 	char* szNick;
 	WORD nReasonLen;
 	char* szReason;
+  int bAdded;
 
 	bResponse = 0xFF;
 
@@ -1568,7 +1524,7 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
     return;
   }
 
-  hContact = HContactFromUIN(dwUin, 1);
+  hContact = HContactFromUIN(dwUin, &bAdded);
 
 	if (hContact != INVALID_HANDLE_VALUE) szNick = NickFromHandle(hContact);
 
@@ -1799,7 +1755,7 @@ void sendAddStart(int bImport)
         ack->dwAction = SSA_IMPORT;
         dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, 0, ack);
 
-        icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, 0, 0, wImportID, NULL, NULL, 0, SSI_ITEM_IMPORTTIME);
+        icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, 0, "ImportTime", 0, wImportID, NULL, NULL, 0, SSI_ITEM_IMPORTTIME);
       }
     }
   }

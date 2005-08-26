@@ -39,85 +39,81 @@
 
 void handleDataChannel(unsigned char *pBuffer, WORD wBufferLength)
 {
-	snac_header* pSnacHeader = NULL;
+  snac_header snacHeader = {0};
 
 
-	pSnacHeader = unpackSnacHeader(&pBuffer, &wBufferLength);
-
-	if (!pSnacHeader || !pSnacHeader->bValid)
+	if (!unpackSnacHeader(&snacHeader, &pBuffer, &wBufferLength) || !snacHeader.bValid)
 	{
 		NetLog_Server("Error: Failed to parse SNAC header");
 	}
 	else
 	{
 #ifdef _DEBUG
-		NetLog_Server(" Received SNAC(x%02X,x%02X)", pSnacHeader->wFamily, pSnacHeader->wSubtype);
+		NetLog_Server(" Received SNAC(x%02X,x%02X)", snacHeader.wFamily, snacHeader.wSubtype);
 #endif
 
-		
-		switch (pSnacHeader->wFamily)
+		switch (snacHeader.wFamily)
 		{
 			
 		case ICQ_SERVICE_FAMILY:
-			handleServiceFam(pBuffer, wBufferLength, pSnacHeader);
+			handleServiceFam(pBuffer, wBufferLength, &snacHeader);
 			break;
 			
 		case ICQ_LOCATION_FAMILY:
-			handleLocationFam(pBuffer, wBufferLength, pSnacHeader);
+			handleLocationFam(pBuffer, wBufferLength, &snacHeader);
 			break;
 			
 		case ICQ_BUDDY_FAMILY:
-			handleBuddyFam(pBuffer, wBufferLength, pSnacHeader);
+			handleBuddyFam(pBuffer, wBufferLength, &snacHeader);
 			break;
 			
 		case ICQ_MSG_FAMILY:
-			handleMsgFam(pBuffer, wBufferLength, pSnacHeader);
+			handleMsgFam(pBuffer, wBufferLength, &snacHeader);
 			break;
 			
 		case ICQ_BOS_FAMILY:
-			handleBosFam(pBuffer, wBufferLength, pSnacHeader);
+			handleBosFam(pBuffer, wBufferLength, &snacHeader);
 			break;
 			
+    case ICQ_LOOKUP_FAMILY:
+      handleLookupFam(pBuffer, wBufferLength, &snacHeader);
+      break;
+
 		case ICQ_STATS_FAMILY:
-			handleStatusFam(pBuffer, wBufferLength, pSnacHeader);
+			handleStatusFam(pBuffer, wBufferLength, &snacHeader);
 			break;
 			
 		case ICQ_LISTS_FAMILY:
-			handleServClistFam(pBuffer, wBufferLength, pSnacHeader);
+			handleServClistFam(pBuffer, wBufferLength, &snacHeader);
 			break;
 			
 		case ICQ_EXTENSIONS_FAMILY:
-			handleIcqExtensionsFam(pBuffer, wBufferLength, pSnacHeader);
+			handleIcqExtensionsFam(pBuffer, wBufferLength, &snacHeader);
 			break;
 			
 		default:
-			NetLog_Server("Ignoring SNAC(x%02X,x%02X) - FAMILYx%02X not implemented", pSnacHeader->wFamily, pSnacHeader->wSubtype, pSnacHeader->wFamily);
+			NetLog_Server("Ignoring SNAC(x%02X,x%02X) - FAMILYx%02X not implemented", snacHeader.wFamily, snacHeader.wSubtype, snacHeader.wFamily);
 			break;
 
 		}
   }
-	
-	// Clean up and exit
-	SAFE_FREE(&pSnacHeader);
 }
 
 
-snac_header* unpackSnacHeader(unsigned char **pBuffer, WORD* pwBufferLength)
+
+int unpackSnacHeader(snac_header* pSnacHeader, unsigned char **pBuffer, WORD* pwBufferLength)
 {
-	snac_header* pSnacHeader = NULL;
   WORD wRef1, wRef2;
 
-
-	// Create a empty header
-	if (!(pSnacHeader = calloc(1, sizeof(snac_header))))
-		return FALSE;
+	// Check header
+	if (!pSnacHeader) return 0;
 
 	// 10 bytes is the minimum size of a header
 	if (*pwBufferLength < 10)
 	{
 		// Buffer overflow
 		pSnacHeader->bValid = FALSE;
-		return pSnacHeader;
+		return 1;
 	}
 
 	// Unpack all the standard data
@@ -128,7 +124,6 @@ snac_header* unpackSnacHeader(unsigned char **pBuffer, WORD* pwBufferLength)
   unpackWord(pBuffer,  &wRef2); // command
   pSnacHeader->dwRef = wRef1 | (wRef2<<0x10);
 
-	//unpackDWord(pBuffer, &(pSnacHeader->dwRef));
 	*pwBufferLength -= 10;
 	
 	// If flag bit 15 is set, we also have a version tag
@@ -163,7 +158,6 @@ snac_header* unpackSnacHeader(unsigned char **pBuffer, WORD* pwBufferLength)
 				// Buffer overflow
 				pSnacHeader->bValid = FALSE;
 			}
-			
 		}
 		else
 		{
@@ -176,8 +170,9 @@ snac_header* unpackSnacHeader(unsigned char **pBuffer, WORD* pwBufferLength)
 		pSnacHeader->bValid = TRUE;
 	}
 
-	return pSnacHeader;
+	return 1;
 }
+
 
 
 void LogFamilyError(WORD wFamily, WORD wError)

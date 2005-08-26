@@ -37,7 +37,7 @@
 #ifndef __CHANNELS_H
 #define __CHANNELS_H
 
-snac_header* unpackSnacHeader(unsigned char **pBuffer, WORD* pwBufferLength);
+int unpackSnacHeader(snac_header* pSnacHeader, unsigned char **pBuffer, WORD* pwBufferLength);
 void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_info *info);
 void handleErrorChannel(unsigned char *buf, WORD datalen);
 void handleDataChannel(unsigned char *buf, WORD wLen);

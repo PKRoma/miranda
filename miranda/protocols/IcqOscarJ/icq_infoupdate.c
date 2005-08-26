@@ -118,15 +118,20 @@ BOOL icq_QueueUser(HANDLE hContact)
 		// Add to list
 		if (!bFound)
 		{
-			userList[nFirstFree].dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
-			userList[nFirstFree].hContact = hContact;
-			nUserCount++;
+      DWORD dwUin;
+
+      if (!ICQGetContactSettingUID(hContact, &dwUin, NULL))
+      {
+			  userList[nFirstFree].dwUin = dwUin;
+			  userList[nFirstFree].hContact = hContact;
+			  nUserCount++;
 #ifdef _DEBUG
-			NetLog_Server("Queued user %u, place %u, count %u", userList[nFirstFree].dwUin, nFirstFree, nUserCount);
+  			NetLog_Server("Queued user %u, place %u, count %u", userList[nFirstFree].dwUin, nFirstFree, nUserCount);
 #endif
-			// Notify worker thread
-			if (hQueueEvent)
-				SetEvent(hQueueEvent);
+  			// Notify worker thread
+  			if (hQueueEvent)
+				  SetEvent(hQueueEvent);
+      }
 		}
 
 		LeaveCriticalSection(&listmutex);

@@ -77,7 +77,6 @@ typedef struct avatarrequest_t
 
 avatarthreadstartinfo* currentAvatarThread; 
 int pendingAvatarsStart = 1;
-//static int pendingLogin = 0;
 avatarrequest* pendingRequests = NULL;
 
 extern CRITICAL_SECTION cookieMutex;
@@ -192,14 +191,49 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
 
   if (!hConn)
   {
+    atsi = currentAvatarThread;
+    if (atsi && atsi->pendingLogin) // this is not safe...
+    {
+      NetLog_Server("Avatar, Multiple start thread attempt, ignored.");
+      SAFE_FREE(&cookie);
+      return;
+    }
     pendingAvatarsStart = 0;
     NetLog_Server("Avatar: Connect failed");
+
+    EnterCriticalSection(&cookieMutex); // wait for ready queue, reused cs
+    { // check if any upload request is not in the queue
+      avatarrequest* ar;
+      int bYet = 0;
+      ar = pendingRequests;
+      while (ar)
+      {
+        if (ar->type == 2)
+        { // we found it, return error
+          void *tmp;
+
+          if (!bYet)
+          {
+            icq_LogMessage(LOG_WARNING, "Error uploading avatar to server, server temporarily unavailable.");
+          }
+          bYet = 1;
+          SAFE_FREE(&ar->pData); // remove upload request from queue
+          tmp = ar;
+          ar = ar->pNext;
+          SAFE_FREE(&tmp);
+          continue;
+        }
+        ar = ar->pNext;
+      }
+    }
+    LeaveCriticalSection(&cookieMutex);
 
     SAFE_FREE(&cookie);
 
     return;
   }
-  if (currentAvatarThread && currentAvatarThread->pendingLogin) // this is not safe...
+  atsi = currentAvatarThread;
+  if (atsi && atsi->pendingLogin) // this is not safe...
   {
     NetLog_Server("Avatar, Multiple start thread attempt, ignored.");
     Netlib_CloseHandle(hConn);
@@ -240,7 +274,7 @@ void StopAvatarThread()
 
 
 // handle Contact's avatar hash
-void handleAvatarContactHash(DWORD dwUIN, HANDLE hContact, char* pHash, unsigned int nHashLen, WORD wOldStatus)
+void handleAvatarContactHash(DWORD dwUIN, HANDLE hContact, unsigned char* pHash, unsigned int nHashLen, WORD wOldStatus)
 {
   DBVARIANT dbv;
   int dummy;
@@ -475,6 +509,11 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
         LeaveCriticalSection(&cookieMutex);
         NetLog_Server("Ignoring duplicate get %d avatar request.", dwUin);
 
+        if (!AvatarsReady && !pendingAvatarsStart)
+        {
+          icq_requestnewfamily(0x10, StartAvatarThread);
+          pendingAvatarsStart = 1;
+        }
         return 0;
       }
       ar = ar->pNext;
@@ -558,6 +597,11 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
         LeaveCriticalSection(&cookieMutex);
         NetLog_Server("Ignoring duplicate upload avatar request.");
 
+        if (!AvatarsReady && !pendingAvatarsStart)
+        {
+          icq_requestnewfamily(0x10, StartAvatarThread);
+          pendingAvatarsStart = 1;
+        }
         return 0;
       }
       ar = ar->pNext;
@@ -595,6 +639,7 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
 
   return -1; // we added to queue
 }
+
 
 
 static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
@@ -709,6 +754,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
 }
 
 
+
 int handleAvatarPackets(unsigned char* buf, int buflen, avatarthreadstartinfo* atsi)
 {
   BYTE channel;
@@ -759,6 +805,7 @@ int handleAvatarPackets(unsigned char* buf, int buflen, avatarthreadstartinfo* a
 
   return bytesUsed;
 }
+
 
 
 int sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi)
@@ -815,6 +862,7 @@ int sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi)
 }
 
 
+
 void handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthreadstartinfo *atsi)
 {
   icq_packet packet;
@@ -845,41 +893,39 @@ void handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthreadstartinfo *
 }
 
 
+
 void handleAvatarData(unsigned char *pBuffer, WORD wBufferLength, avatarthreadstartinfo *atsi)
 {
-  snac_header* pSnacHeader = NULL;
+  snac_header snacHeader = {0};
 
-  pSnacHeader = unpackSnacHeader(&pBuffer, &wBufferLength);
-
-  if (!pSnacHeader || !pSnacHeader->bValid)
+  if (!unpackSnacHeader(&snacHeader, &pBuffer, &wBufferLength) || !snacHeader.bValid)
   {
     NetLog_Server("Error: Failed to parse SNAC header");
   }
   else
   {
 #ifdef _DEBUG
-    NetLog_Server(" Received SNAC(x%02X,x%02X)", pSnacHeader->wFamily, pSnacHeader->wSubtype);
+    NetLog_Server(" Received SNAC(x%02X,x%02X)", snacHeader.wFamily, snacHeader.wSubtype);
 #endif
 
-    switch (pSnacHeader->wFamily)
+    switch (snacHeader.wFamily)
     {
 
     case ICQ_SERVICE_FAMILY:
-      handleAvatarServiceFam(pBuffer, wBufferLength, pSnacHeader, atsi);
+      handleAvatarServiceFam(pBuffer, wBufferLength, &snacHeader, atsi);
       break;
 
     case ICQ_AVATAR_FAMILY:
-      handleAvatarFam(pBuffer, wBufferLength, pSnacHeader, atsi);
+      handleAvatarFam(pBuffer, wBufferLength, &snacHeader, atsi);
       break;
 
     default:
-      NetLog_Server("Ignoring SNAC(x%02X,x%02X) - FAMILYx%02X not implemented", pSnacHeader->wFamily, pSnacHeader->wSubtype, pSnacHeader->wFamily);
+      NetLog_Server("Ignoring SNAC(x%02X,x%02X) - FAMILYx%02X not implemented", snacHeader.wFamily, snacHeader.wSubtype, snacHeader.wFamily);
       break;
     }
   }
-  // Clean up and exit
-  SAFE_FREE(&pSnacHeader);
 }
+
 
 
 void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi)

@@ -44,6 +44,7 @@
 #define IDC_AVATAR                      1023
 #define IDC_SETAVATAR                   1024
 #define IDC_DELETEAVATAR                1025
+#define IDC_AIMSTATIC                   1029
 #define IDC_AIMENABLE                   1030
 #define IDC_CLIST                       1035
 #define IDC_XSTATUSENABLE               1040
@@ -59,6 +60,7 @@
 #define IDC_DEPARTMENT                  1067
 #define IDC_POSITION                    1069
 #define IDC_IP                          1094
+#define IDC_UINSTATIC                   1122
 #define IDC_UIN                         1123
 #define IDC_STATIC11                    1154
 #define IDC_STATIC12                    1155

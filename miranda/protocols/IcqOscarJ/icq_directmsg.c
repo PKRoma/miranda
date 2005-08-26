@@ -38,7 +38,6 @@
 
 
 
-extern icq_mode_messages modeMsgs;
 extern WORD wListenPort;
 
 void icq_sendAwayMsgReplyDirect(directconnect *dc, WORD wCookie, BYTE msgType, const char **szMsg);
@@ -134,24 +133,17 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
         handleFileRequest(buf, wLen, dc->dwRemoteUin, wCookie, 0, 0, pszText, 7, TRUE);
         break;
 
-      case MTYPE_AUTOAWAY: // TODO: let this handle handleMessageTypes
-        icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTOAWAY, &modeMsgs.szAway);
-        break;
-
+      case MTYPE_AUTOAWAY:
       case MTYPE_AUTOBUSY:
-        icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTOBUSY, &modeMsgs.szOccupied);
-        break;
-
       case MTYPE_AUTONA:
-        icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTONA, &modeMsgs.szNa);
-        break;
-
       case MTYPE_AUTODND:
-        icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTODND, &modeMsgs.szDnd);
-        break;
-
       case MTYPE_AUTOFFC:
-        icq_sendAwayMsgReplyDirect(dc, wCookie, MTYPE_AUTOFFC, &modeMsgs.szFfc);
+        {
+          char** szMsg = MirandaStatusToAwayMsg(AwayMsgTypeToStatus(bMsgType));
+
+          if (szMsg)
+            icq_sendAwayMsgReplyDirect(dc, wCookie, bMsgType, szMsg);
+        }
         break;
 
       case MTYPE_PLUGIN: // Greeting
@@ -324,7 +316,6 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 		NetLog_Direct("Error: Sanity checking failed (%d) in handleDirectGreetingMessage, datalen %u wLen %u", 3, dwDataLength, wLen);
 		return;
 	}
-
 
 	if (typeId == MTYPE_FILEREQ && wCommand == DIRECT_MESSAGE)
 	{

@@ -48,6 +48,7 @@ extern DWORD dwLocalDirectConnCookie;
 extern char* cookieData;
 extern int cookieDataLen;
 extern char* migratedServer;
+extern CRITICAL_SECTION modeMsgsMutex;
 
 typedef unsigned char capstr[0x10];
 
@@ -238,7 +239,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     packWord(&packet,ICQ_MSG_FAMILY);
     packWord(&packet,0x06);
     packWord(&packet,ICQ_BOS_FAMILY);
-    packWord(&packet,0x0a);
+    packWord(&packet,ICQ_LOOKUP_FAMILY);
     packWord(&packet,ICQ_STATS_FAMILY);
     sendServPacket(&packet);
 #ifdef _DEBUG
@@ -614,6 +615,7 @@ char* calcMD5Hash(char* szFile)
 }
 
 
+
 static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 {
 	char* szList;
@@ -621,6 +623,7 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 	HANDLE hContact;
 	WORD wCurrentLen = 0;
 	DWORD dwUIN;
+  char* szUID;
 	char szUin[33];
 	char szLen[2];
 	int add;
@@ -640,10 +643,15 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
 		{
-			if (dwUIN = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0))
+      if (!ICQGetContactSettingUID(hContact, &dwUIN, &szUID))
 			{
-				_itoa(dwUIN, szUin, 10);
-				szLen[0] = strlen(szUin);
+        if (dwUIN)
+        {
+				  _itoa(dwUIN, szUin, 10);
+				  szLen[0] = strlennull(szUin);
+        }
+        else
+          szLen[0] = strlennull(szUID);
 
 				switch (subtype)
 				{
@@ -687,8 +695,12 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 					}
 
 					strcat(szList, szLen);
-					strcat(szList, szUin);
+          if (dwUIN)
+					  strcat(szList, szUin);
+          else
+            strcat(szList, szUID);
 				}
+        SAFE_FREE(&szUID);
 			}
 		}
 
@@ -733,6 +745,16 @@ void sendEntireListServ(WORD wFamily, WORD wSubtype, WORD wFlags, int listType)
 }
 
 
+static void packNewCap(icq_packet* packet, WORD wNewCap)
+{ // pack standard capability
+  DWORD dwQ1 = 0x09460000 | wNewCap;
+
+  packDWord(packet, dwQ1); 
+  packDWord(packet, 0x4c7f11d1);
+  packDWord(packet, 0x82224445);
+  packDWord(packet, 0x53540000);
+}
+
 
 void setUserInfo()
 { // CLI_SETUSERINFO
@@ -753,6 +775,9 @@ void setUserInfo()
 #endif
   if (gbUtfEnabled)
     wAdditionalData += 16;
+#ifdef DBG_NEWCAPS
+  wAdditionalData += 16;
+#endif
 #ifdef DBG_CAPXTRAZ
   wAdditionalData += 16;
 #endif
@@ -772,7 +797,7 @@ void setUserInfo()
 
 #ifdef DBG_CAPMTN
   {
-    packDWord(&packet, 0x563FC809);
+    packDWord(&packet, 0x563FC809); // CAP_TYPING
     packDWord(&packet, 0x0B6F41BD);
     packDWord(&packet, 0x9F794226);
     packDWord(&packet, 0x09DFA2F3);
@@ -780,10 +805,7 @@ void setUserInfo()
 #endif
 #ifdef DBG_CAPCH2
   {
-    packDWord(&packet, 0x09461349); // AIM_CAPS_ICQSERVERRELAY
-    packDWord(&packet, 0x4c7f11d1);
-    packDWord(&packet, 0x82224445);
-    packDWord(&packet, 0x53540000);
+    packNewCap(&packet, 0x1349);    // AIM_CAPS_ICQSERVERRELAY
   }
 #endif
 #ifdef DBG_CAPRTF
@@ -796,11 +818,13 @@ void setUserInfo()
 #endif
   if (gbUtfEnabled)
   {
-    packDWord(&packet, 0x0946134e);	// CAP_UTF8MSGS
-    packDWord(&packet, 0x4c7f11d1); // Broadcasts the capability to receive
-    packDWord(&packet, 0x82224445); // UTF8 encoded messages
-    packDWord(&packet, 0x53540000);
-  }
+    packNewCap(&packet, 0x134E);    // CAP_UTF8MSGS
+  } // Broadcasts the capability to receive UTF8 encoded messages
+#ifdef DBG_NEWCAPS
+  {
+    packNewCap(&packet, 0x0000);    // CAP_NEWCAPS
+  } // Tells server we understand to new format of caps
+#endif
 #ifdef DBG_CAPXTRAZ
   {
     packDWord(&packet, 0x1a093c6c);	// CAP_XTRAZ
@@ -811,29 +835,20 @@ void setUserInfo()
 #endif
   if (gbAvatarsEnabled)
   {
-    packDWord(&packet, 0x0946134c);	// CAP_AVATAR
-    packDWord(&packet, 0x4c7f11d1); // Broadcasts the capability to provide
-    packDWord(&packet, 0x82224445); // Avatar
-    packDWord(&packet, 0x53540000);
-  }
+    packNewCap(&packet, 0x134C);    // CAP_AVATAR
+  } // Broadcasts the capability to provide Avatar
   if (gbAimEnabled)
   {
-    packDWord(&packet, 0x0946134D); // Tells the server we can speak to AIM
-    packDWord(&packet, 0x4C7F11D1); // This also change how permit/deny lists work
-    packDWord(&packet, 0x82224445);
-    packDWord(&packet, 0x53540000);
+    packNewCap(&packet, 0x134D);    // Tells the server we can speak to AIM
   }
   if (bXStatus)
   {
     packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
   }
 
-  packDWord(&packet, 0x09461344); // AIM_CAPS_ICQ
-  packDWord(&packet, 0x4c7f11d1);
-  packDWord(&packet, 0x82224445);
-  packDWord(&packet, 0x53540000);
+  packNewCap(&packet, 0x1344);      // AIM_CAPS_ICQ
 
-  packDWord(&packet, 0x4D697261); // Miranda Signature
+  packDWord(&packet, 0x4D697261);   // Miranda Signature
   packDWord(&packet, 0x6E64614D);
   packDWord(&packet, MIRANDA_VERSION);
   packDWord(&packet, ICQ_PLUG_VERSION);
@@ -913,13 +928,10 @@ void handleServUINSettings(int nPort, int nIP)
 			updateServVisibilityCode(4);
 	}
 
-
-
 	// SNAC 1,1E: Set status
 	{
 		WORD wFlags = 0;
 		WORD wStatus;
-
 
 		// Webaware setting bit flag
 		if (ICQGetContactSettingByte(NULL, "WebAware", 0))
@@ -947,14 +959,13 @@ void handleServUINSettings(int nPort, int nIP)
 		// Get status
 		wStatus = MirandaStatusToIcq(icqGoingOnlineStatus);
 
-		packet.wLen = 65;
+		packet.wLen = 71;
 		write_flap(&packet, 2);
 		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS, 0, ICQ_CLIENT_SET_STATUS<<0x10);
 		packDWord(&packet, 0x00060004);	            // TLV 6: Status mode and security flags
 		packWord(&packet, wFlags);                  // Status flags
 		packWord(&packet, wStatus);                 // Status
-		packDWord(&packet, 0x00080002);	            // TLV 8: Error code
-		packWord(&packet, 0x0000);
+    packTLVWord(&packet, 0x0008, 0x0000);       // TLV 8: Error code
 		packDWord(&packet, 0x000c0025);             // TLV C: Direct connection info
 		packDWord(&packet, nIP);
 		packDWord(&packet, nPort);
@@ -967,6 +978,7 @@ void handleServUINSettings(int nPort, int nIP)
 		packDWord(&packet, ICQ_PLUG_VERSION);       // Abused timestamp
 		packDWord(&packet, 0x00000000);             // Timestamp
 		packWord(&packet, 0x0000);                  // Unknown
+    packTLVWord(&packet, 0x001F, 0x0000);
 
 		sendServPacket(&packet);
 	}
@@ -1014,5 +1026,15 @@ void handleServUINSettings(int nPort, int nIP)
 
     pendingAvatarsStart = 1;
     NetLog_Server("Requesting Avatar family entry point.");
+  }
+
+  if (gbAimEnabled)
+  {
+    char** szMsg = MirandaStatusToAwayMsg(gnCurrentStatus);
+
+    EnterCriticalSection(&modeMsgsMutex);
+    if (szMsg)
+      icq_sendSetAimAwayMsgServ(*szMsg);
+    LeaveCriticalSection(&modeMsgsMutex);
   }
 }

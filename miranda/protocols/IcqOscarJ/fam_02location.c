@@ -77,6 +77,7 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, WORD wCookie)
 {
 	HANDLE hContact;
 	DWORD dwUIN;
+  char *szUID;
 	WORD wTLVCount;
 	WORD wWarningLevel;
   DWORD dwCookieUin;
@@ -84,7 +85,7 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, WORD wCookie)
   message_cookie_data *pCookieData;
 
 	// Unpack the sender's user ID
-  if (!unpackUID(&buf, &wLen, &dwUIN, NULL)) return;
+  if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
 
 	// Syntax check
 	if (wLen < 4)
@@ -98,8 +99,14 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, WORD wCookie)
 	unpackWord(&buf, &wTLVCount);
 	wLen -= 2;
 
+  // Determine contact
+  if (dwUIN)
+    hContact = HContactFromUIN(dwUIN, NULL);
+  else
+    hContact = HContactFromUID(szUID, NULL);
+
 	// Ignore away status if the user is not already on our list
-	if ((hContact = HContactFromUIN(dwUIN, 0)) == INVALID_HANDLE_VALUE)
+	if (hContact == INVALID_HANDLE_VALUE)
 	{
 #ifdef _DEBUG
 		NetLog_Server("Ignoring away reply (%u)", dwUIN);
@@ -121,30 +128,9 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, WORD wCookie)
 		return;
   }
 
-	switch (pCookieData->nAckType)
-	{
-
-	case MTYPE_AUTOAWAY:
-		status=ID_STATUS_AWAY;
-		break;
-
-	case MTYPE_AUTOBUSY:
-		status=ID_STATUS_OCCUPIED;
-		break;
-
-	case MTYPE_AUTONA:
-		status=ID_STATUS_NA;
-		break;
-
-	case MTYPE_AUTODND:
-		status=ID_STATUS_DND;
-		break;
-
-	case MTYPE_AUTOFFC:
-		status=ID_STATUS_FREECHAT;
-		break;
-
-	default:
+  status = AwayMsgTypeToStatus(pCookieData->nAckType);
+  if (status == ID_STATUS_OFFLINE)
+  {
 		NetLog_Server("SNAC(2.6) Ignoring unknown status message from %u", dwUIN);
     FreeCookie(wCookie);
     SAFE_FREE(&pCookieData);
