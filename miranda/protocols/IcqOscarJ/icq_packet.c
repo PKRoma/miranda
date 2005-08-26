@@ -171,6 +171,17 @@ int __fastcall getUINLen(DWORD dwUin)
 }
 
 
+
+int __fastcall getUIDLen(DWORD dwUin, char* szUid)
+{
+  if (dwUin) 
+    return getUINLen(dwUin);
+  else
+    return strlennull(szUid);
+}
+
+
+
 void __fastcall packUIN(icq_packet* pPacket, DWORD dwUin)
 {
 	unsigned char pszUin[UINMAXLEN];
@@ -181,6 +192,21 @@ void __fastcall packUIN(icq_packet* pPacket, DWORD dwUin)
 	packByte(pPacket, nUinLen);           // Length of user id
 	packBuffer(pPacket, pszUin, nUinLen); // Receiving user's id
 }
+
+
+
+void __fastcall packUID(icq_packet* pPacket, DWORD dwUin, char* szUid)
+{
+  if (dwUin)
+    packUIN(pPacket, dwUin);
+  else
+  {
+    BYTE nLen = strlennull(szUid);
+    packByte(pPacket, nLen);
+    packBuffer(pPacket, szUid, nLen);
+  }
+}
+
 
 
 void packFNACHeader(icq_packet* pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSeq)
@@ -213,12 +239,14 @@ void __fastcall packLEDWord(icq_packet* pPacket, DWORD dwValue)
 }
 
 
+
 void ppackByte(PBYTE *buf,int *buflen,BYTE b)
 {
   *buf=(PBYTE)realloc(*buf,1+*buflen);
   *(*buf+*buflen)=b;
   ++*buflen;
 }
+
 
 
 void ppackLEWord(PBYTE *buf,int *buflen,WORD w)
@@ -229,12 +257,14 @@ void ppackLEWord(PBYTE *buf,int *buflen,WORD w)
 }
 
 
+
 void ppackLEDWord(PBYTE *buf, int *buflen, DWORD d)
 {
 	*buf = (PBYTE)realloc(*buf, 4 + *buflen);
 	*(PDWORD)(*buf + *buflen) = d;
 	*buflen += 4;
 }
+
 
 
 /*void ppackLNTS(PBYTE *buf, int *buflen, const char *str)
@@ -247,6 +277,7 @@ void ppackLEDWord(PBYTE *buf, int *buflen, DWORD d)
 }*/
 
 
+
 void ppackLELNTS(PBYTE *buf, int *buflen, const char *str)
 {
 	WORD len = strlen(str);
@@ -255,6 +286,7 @@ void ppackLELNTS(PBYTE *buf, int *buflen, const char *str)
 	memcpy(*buf + *buflen, str, len);
 	*buflen += len;
 }
+
 
 
 void ppackLELNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting)
@@ -273,6 +305,7 @@ void ppackLELNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting)
 }
 
 
+
 // *** TLV based (!!! WORDs and DWORDs are LE !!!)
 void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always)
 {
@@ -284,6 +317,7 @@ void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always)
 	*(*buf + *buflen + 4) = b;
 	*buflen += 5;
 }
+
 
 
 void ppackTLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always)
@@ -298,6 +332,7 @@ void ppackTLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always)
 }
 
 
+
 void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always)
 {
   if (!always && !d) return;
@@ -308,6 +343,7 @@ void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always)
 	*(PDWORD)(*buf + *buflen + 4) = d;
 	*buflen += 8;
 }
+
 
 
 void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always)
@@ -325,6 +361,7 @@ void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE alw
 }
 
 
+
 void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wType, BYTE always)
 {
 	int len = strlen(str) + 1;
@@ -339,6 +376,7 @@ void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wTy
 	memcpy(*buf + *buflen + 8, str, len);
 	*buflen += len + 8;
 }
+
 
 
 void ppackTLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wType)
@@ -368,6 +406,7 @@ void ppackTLVLNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wTy
 }
 
 
+
 void ppackTLVWordLNTSfromDB(PBYTE *buf, int *buflen, WORD w, const char *szSetting, WORD wType)
 {
 	char szTmp[1024];
@@ -380,6 +419,7 @@ void ppackTLVWordLNTSfromDB(PBYTE *buf, int *buflen, WORD w, const char *szSetti
 }
 
 
+
 void ppackTLVLNTSBytefromDB(PBYTE *buf, int *buflen, const char *szSetting, BYTE b, WORD wType)
 {
 	char szTmp[1024];
@@ -390,6 +430,7 @@ void ppackTLVLNTSBytefromDB(PBYTE *buf, int *buflen, const char *szSetting, BYTE
 
 	ppackTLVLNTSByte(buf, buflen, str, b, wType);
 }
+
 
 
 void __fastcall unpackByte(BYTE** pSource, BYTE* byDestination)
@@ -584,32 +625,26 @@ BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, char** ppszUID
       *pdwUIN = atoi(szUIN);
       return TRUE;
     }
-    else if (!ppszUID)
+    else if (!ppszUID || !gbAimEnabled)
     {
       NetLog_Server("Malformed UIN in packet");
       return FALSE;
     }
 
   }
-  else if (!ppszUID)
+  else if (!ppszUID || ! gbAimEnabled)
   {
     NetLog_Server("Malformed UIN in packet");
     return FALSE;
   }
-#ifdef DBG_AIM_SUPPORT_HACK
 	if (!(*ppszUID = malloc(nUIDLen+1)))
 		return FALSE;
 
 	unpackString(ppBuf, *ppszUID, nUIDLen);
 	*pwLen -= nUIDLen;
-	*ppszUID[nUIDLen] = '\0';
+	(*ppszUID)[nUIDLen] = '\0';
 
-  *pdwUIN = -1; // this is hack, since we keep numeric uin, -1 is for all aim contacts
+  *pdwUIN = 0; // this is how we determine aim contacts internally
 
 	return TRUE;
-#else
-  NetLog_Server("AOL screennames not accepted");
-
-  return FALSE;
-#endif
 }
