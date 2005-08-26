@@ -40,8 +40,13 @@
 static void handleUserOffline(BYTE* buf, WORD wPackLen);
 static void handleUserOnline(BYTE* buf, WORD wPackLen);
 static void handleReplyBuddy(BYTE* buf, WORD wPackLen);
+static void handleNotifyRejected(BYTE* buf, WORD wPackLen);
 
 extern DWORD dwLocalDirectConnCookie;
+
+extern const capstr capAimIcon;
+extern const char* cliSpamBot;
+extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE* caps, WORD wLen, DWORD* dwClientId);
 
 
 void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
@@ -58,6 +63,10 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
 
 	case ICQ_USER_SRV_REPLYBUDDY:
 		handleReplyBuddy(pBuffer, wBufferLength);
+		break;
+
+	case ICQ_USER_NOTIFY_REJECTED:
+    handleNotifyRejected(pBuffer, wBufferLength);
 		break;
 
   case ICQ_ERROR:
@@ -80,55 +89,6 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
 }
 
 
-capstr* MatchCap(char* buf, int bufsize, const capstr* cap, int capsize)
-{
-  while (bufsize>0) // search the buffer for a capability
-  {
-    if (!memcmp(buf, cap, capsize))
-    {
-      return (capstr*)buf; // give found capability for version info
-    }
-    else
-    {
-      buf += 0x10;
-      bufsize -= 0x10;
-    }
-  }
-  return 0;
-}
-
-
-const capstr capMirandaIm = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'M', 0, 0, 0, 0, 0, 0, 0, 0};
-const capstr capTrillian  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09};
-const capstr capTrilCrypt = {0xf2, 0xe7, 0xc7, 0xf4, 0xfe, 0xad, 0x4d, 0xfb, 0xb2, 0x35, 0x36, 0x79, 0x8b, 0xdf, 0x00, 0x00};
-const capstr capSim       = {'S', 'I', 'M', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', ' ', 0, 0, 0, 0};
-const capstr capSimOld    = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x00};
-const capstr capLicq      = {'L', 'i', 'c', 'q', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', 0, 0, 0, 0};
-const capstr capKopete    = {'K', 'o', 'p', 'e', 't', 'e', ' ', 'I', 'C', 'Q', ' ', ' ', 0, 0, 0, 0};
-const capstr capmIcq      = {'m', 'I', 'C', 'Q', ' ', 0xA9, ' ', 'R', '.', 'K', '.', ' ', 0, 0, 0, 0};
-const capstr capAndRQ     = {'&', 'R', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
-const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
-const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F};
-const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
-const capstr capRichText  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92};
-const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf};
-const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
-const capstr capStr20012  = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xbc, 0xd2, 0x00, 0x04, 0xac, 0x96, 0xdd, 0x96};
-const capstr capXtraz     = {0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0};
-const capstr capIcq5Extra = {0x09, 0x46, 0x13, 0x43, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_SENDFILE
-const capstr capAimIcon   = {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
-
-char* cliLibicq2k  = "libicq2000";
-char* cliLicqVer   = "Licq %u.%u";
-char* cliLicqVerL  = "Licq %u.%u.%u";
-char* cliCentericq = "Centericq";
-char* cliLibicqUTF = "libicq2000 (Unicode)";
-char* cliTrillian  = "Trillian";
-char* cliQip       = "QIP 200%c%c";
-char* cliIM2       = "IM2";
-char* cliSpamBot   = "Spam Bot";
-
-
 // TLV(1) Unknown (x50)
 // TLV(2) Member since (not sent)
 // TLV(3) Online since
@@ -149,9 +109,8 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	DWORD dwDirectConnCookie;
 	DWORD dwFT1, dwFT2, dwFT3;
 	LPSTR szClient = 0;
-	char szClientBuf[64];
 	DWORD dwClientId = 0;
-	WORD wVersion;
+	WORD wVersion = 0;
 	WORD wTLVCount;
 	WORD wWarningLevel;
 	WORD wStatusFlags;
@@ -160,10 +119,10 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	DWORD dwOnlineSince;
 	WORD wIdleTimer = 0;
 	time_t tIdleTS = 0;
-
+  char *szUID;
 
 	// Unpack the sender's user ID
-  if (!unpackUID(&buf, &wLen, &dwUIN, NULL)) return;
+  if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
 
 	// Syntax check
 	if (wLen < 4)
@@ -177,15 +136,23 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	unpackWord(&buf, &wTLVCount);
 	wLen -= 2;
 
+  // Determine contact
+  if (dwUIN)
+    hContact = HContactFromUIN(dwUIN, NULL);
+  else
+    hContact = HContactFromUID(szUID, NULL);
+
 	// Ignore status notification if the user is not already on our list
-	if ((hContact = HContactFromUIN(dwUIN, 0)) == INVALID_HANDLE_VALUE)
+	if (hContact == INVALID_HANDLE_VALUE)
 	{
 #ifdef _DEBUG
-		NetLog_Server("Ignoring user online (%u)", dwUIN);
+    if (dwUIN)
+		  NetLog_Server("Ignoring user online (%u)", dwUIN);
+    else
+		  NetLog_Server("Ignoring user online (%s)", szUID);
 #endif
 		return;
 	}
-
 
 	// Read user info TLVs
 	{
@@ -200,162 +167,79 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
 			return;
 
-		// Get DC info TLV
-		pTLV = getTLV(pChain, 0x0C, 1);
-		if (pTLV && (pTLV->wLen >= 15))
-		{
-			unsigned char* pBuffer;
+    if (dwUIN)
+    {
+		  // Get DC info TLV
+		  pTLV = getTLV(pChain, 0x0C, 1);
+		  if (pTLV && (pTLV->wLen >= 15))
+		  {
+			  unsigned char* pBuffer;
 
-			pBuffer = pTLV->pData;
-			unpackDWord(&pBuffer, &dwRealIP);
-			unpackDWord(&pBuffer, &dwPort);
-			unpackByte(&pBuffer,  &nTCPFlag);
-			unpackWord(&pBuffer,  &wVersion);
-			unpackDWord(&pBuffer, &dwDirectConnCookie);
-			pBuffer += 4; // Web front port
-			pBuffer += 4; // Client features
+			  pBuffer = pTLV->pData;
+			  unpackDWord(&pBuffer, &dwRealIP);
+			  unpackDWord(&pBuffer, &dwPort);
+			  unpackByte(&pBuffer,  &nTCPFlag);
+			  unpackWord(&pBuffer,  &wVersion);
+			  unpackDWord(&pBuffer, &dwDirectConnCookie);
+			  pBuffer += 4; // Web front port
+			  pBuffer += 4; // Client features
 
-      // Get faked time signatures, used to identify clients
-      if (pTLV->wLen >= 0x23)
-      {
-        unpackDWord(&pBuffer, &dwFT1);
-        unpackDWord(&pBuffer, &dwFT2);
-        unpackDWord(&pBuffer, &dwFT3);
-      }
-      else
-      {  // just for the case the timestamps are not there
-        dwFT1 = dwFT2 = dwFT3 = 0;
-      }
-
-      // Is this a Miranda IM client?
-      if (dwFT1 == 0xffffffff)
-      {
-        if (dwFT2 == 0xffffffff)
-			  { // This is Gaim not Miranda
-          szClient = "Gaim";
-        }
-        else if (!dwFT2 && wVersion == 7)
-        { // This is WebICQ not Miranda
-          szClient = "WebICQ";
-        }
-        else if (!dwFT2 && dwFT3 == 0x3B7248ED)
-        { // And this is most probably Spam Bot
-          szClient = cliSpamBot;
-        }
-        else 
-        { // Yes this is most probably Miranda, get the version info
-				  szClient = MirandaVersionToString(dwFT2, 0);
-				  dwClientId = 1; // Miranda does not use Tick as msgId
-			  }
-      }
-      else if ((dwFT1 & 0xFF7F0000) == 0x7D000000)
-      { // This is probably an Licq client
-        DWORD ver = dwFT1 & 0xFFFF;
-        if (ver % 10){
-          null_snprintf(szClientBuf, 64, cliLicqVerL, ver / 1000, (ver / 10) % 100, ver % 10);
+        // Get faked time signatures, used to identify clients
+        if (pTLV->wLen >= 0x23)
+        {
+          unpackDWord(&pBuffer, &dwFT1);
+          unpackDWord(&pBuffer, &dwFT2);
+          unpackDWord(&pBuffer, &dwFT3);
         }
         else
-        {
-          null_snprintf(szClientBuf, 64, cliLicqVer, ver / 1000, (ver / 10) % 100);
+        {  // just for the case the timestamps are not there
+          dwFT1 = dwFT2 = dwFT3 = 0;
         }
-        if (dwFT1 & 0x00800000)
-          strcat(szClientBuf, "/SSL");
+		  }
+		  else
+		  {
+			  // This client doesnt want DCs
+			  dwRealIP = 0;
+			  dwPort = 0;
+			  nTCPFlag = 0;
+			  dwDirectConnCookie = 0;
+        dwFT1 = dwFT2 = dwFT3 = 0;
+		  }
 
-        szClient = szClientBuf;
-      }
-      else if (dwFT1 == 0xffffff8f)
-      {
-        szClient = "StrICQ";
-      }
-      else if (dwFT1 == 0xffffff42)
-      {
-        szClient = "mICQ";
-      }
-      else if (dwFT1 == 0xffffffbe)
-      {
-        unsigned ver1 = (dwFT2>>24)&0xFF;
-        unsigned ver2 = (dwFT2>>16)&0xFF;
-        unsigned ver3 = (dwFT2>>8)&0xFF;
-        
-        if (ver3) 
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u.%u", ver1, ver2, ver3);
-        else  
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u", ver1, ver2);
-        szClient = szClientBuf;
-      }
-      else if (dwFT1 == 0xFFFFFF7F)
-      {
-        szClient = "&RQ";
-      }
-      else if (dwFT1 == 0xFFFFFFAB)
-      {
-        szClient = "YSM";
-      }
-      else if (dwFT1 == 0x04031980)
-      {
-        szClient = "vICQ";
-      }
-      else if ((dwFT1 == 0x3AA773EE) && (dwFT2 == 0x3AA66380))
-      {
-        szClient = cliLibicq2k;
-      }
-      else if (dwFT1 == 0x3B75AC09)
-      {
-        szClient = cliTrillian;
-      }
-      else if (dwFT1 == 0xFFFFFFFE && dwFT3 == 0xFFFFFFFE)
-      {
-        szClient = "mobicq/JIMM";
-      }
-      else if (dwFT1 == 0x3FF19BEB && dwFT3 == 0x3FF19BEB)
-      {
-        szClient = cliIM2;
-      }
-      else if (dwFT1 == 0xDDDDEEFF && !dwFT2 && !dwFT3)
-      {
-        szClient = "SmartICQ";
-      }
-      else if ((dwFT1 & 0xFFFFFFF0) == 0x494D2B00 && !dwFT2 && !dwFT3)
-      { // last byte of FT1: (5 = Win32, 3 = SmartPhone, Pocket PC)
-        szClient = "IM+";
-      }
-      else if (dwFT1 == dwFT2 && dwFT2 == dwFT3 && wVersion == 8)
-      {
-        DWORD tNow = getDWordFromChain(pChain, 0x03, 1);
+		  // Get Status info TLV
+		  pTLV = getTLV(pChain, 0x06, 1);
+		  if (pTLV && (pTLV->wLen >= 4))
+		  {
+			  unsigned char* pBuffer;
 
-        if ((dwFT1 < tNow + 3600) && (dwFT1 > (tNow - 3600)))
-        {
-          szClient = cliSpamBot;
-        }
-      }
-		}
-		else
-		{
-			// This client doesnt want DCs
-			dwRealIP = 0;
-			dwPort = 0;
-			nTCPFlag = 0;
-			wVersion = 0;
-			dwDirectConnCookie = 0;
-		}
+			  pBuffer = pTLV->pData;
+			  unpackWord(&pBuffer, &wStatusFlags);
+			  unpackWord(&pBuffer, &wStatus);
+		  }
+		  else
+		  {
+			  // Huh? No status TLV? Lets guess then...
+			  wStatusFlags = 0;
+			  wStatus = ICQ_STATUS_ONLINE;
+		  }
+    }
+    else
+    {
+      // Get Class word
+      WORD wClass = getWordFromChain(pChain, 0x01, 1);
 
+      if (wClass & CLASS_AWAY)
+        wStatus = ID_STATUS_AWAY;
+      else
+        wStatus = ID_STATUS_ONLINE;
 
-		// Get Status info TLV
-		pTLV = getTLV(pChain, 0x06, 1);
-		if (pTLV && (pTLV->wLen >= 4))
-		{
-			unsigned char* pBuffer;
-
-			pBuffer = pTLV->pData;
-			unpackWord(&pBuffer, &wStatusFlags);
-			unpackWord(&pBuffer, &wStatus);
-		}
-		else
-		{
-			// Huh? No status TLV? Lets guess then...
-			wStatusFlags = 0;
-			wStatus = ICQ_STATUS_ONLINE;
-		}
+      wStatusFlags = 0;
+  	  dwRealIP = 0;
+		  dwPort = 0;
+		  nTCPFlag = 0;
+		  dwDirectConnCookie = 0;
+      dwFT1 = dwFT2 = dwFT3 = 0;
+    }
 
 #ifdef _DEBUG
 		NetLog_Server("Flags are %x", wStatusFlags);
@@ -402,203 +286,68 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 				// Delete the capabilities we saved the last time this contact came online
 				ClearAllContactCapabilities(hContact);
 
-				// Get Capability Info TLV
-				pTLV = getTLV(pChain, 0x0D, 1);
+        {
+          BYTE capBufDat[0x200]; // max 0x20 caps, currently used max 0x12
+          BYTE* capBuf;
+          WORD capLen = 0;
+          oscar_tlv* pNewTLV;
 
-				if (pTLV && (pTLV->wLen >= 16))
-				{
-          capstr* capId;
+				  // Get Location Capability Info TLVs
+				  pTLV = getTLV(pChain, 0x0D, 1);
+          pNewTLV = getTLV(pChain, 0x19, 1);
 
-					AddCapabilitiesFromBuffer(hContact, pTLV->pData, pTLV->wLen);
+				  if (pTLV && (pTLV->wLen >= 16))
+            capLen = pTLV->wLen;
+
+          if (pNewTLV && (pNewTLV->wLen >= 2))
+            capLen += (pNewTLV->wLen * 8);
+
+          if (capLen)
+          {
+            int i;
+            BYTE* pCap;
+
+            capBuf = pCap = capBufDat;
+
+            if (pTLV && (pTLV->wLen >= 16))
+            { // copy classic Capabilities
+              pCap += pTLV->wLen;
+              memcpy(capBuf, pTLV->pData, pTLV->wLen);
+            }
+
+            if (pNewTLV && (pNewTLV->wLen >= 2))
+            { // get new Capabilities
+              capstr tmp;
+              BYTE* capNew = pNewTLV->pData;
+
+              memcpy(tmp, capAimIcon, 0x10); 
+
+              for (i = 0; i<pNewTLV->wLen; i+=2)
+              {
+                BYTE capVal;
+
+                capVal = capNew[0];
+                tmp[2] = capVal;
+                capVal = capNew[1];
+                tmp[3] = capVal;
+  
+                capNew += 2;
+
+                memcpy(pCap, tmp, 0x10);
+                pCap += 0x10;
+              }
+            }
+  					AddCapabilitiesFromBuffer(hContact, capBuf, capLen);
+          }
+          else
+          { // no capability
+            NetLog_Server("No capability info TLVs");
+          }
 
           // handle Xtraz status
-          handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen);
+          handleXStatusCaps(hContact, capBuf, capLen);
 
-          // check capabilities for client identification
-          if (MatchCap(pTLV->pData, pTLV->wLen, &capTrillian, 0x10) || MatchCap(pTLV->pData, pTLV->wLen, &capTrilCrypt, 0x10))
-          { // this is Trillian, check for new version
-            if (MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
-              szClient = "Trillian v3";
-            else
-              szClient = cliTrillian;
-          }
-          else if ((capId = MatchCap(pTLV->pData, pTLV->wLen, &capSimOld, 0xF)) && ((*capId)[0xF] != 0x92 && (*capId)[0xF] >= 0x20 || (*capId)[0xF] == 0))
-          {
-            int hiVer = (((*capId)[0xF]) >> 6) - 1;
-            unsigned loVer = (*capId)[0xF] & 0x1F;
-            if ((hiVer < 0) || ((hiVer == 0) && (loVer == 0))) 
-              szClient = "Kopete";
-            else
-            {
-              null_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", (unsigned)hiVer, loVer);
-              szClient = szClientBuf;
-            }
-          }
-          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capSim, 0xC))
-          {
-            unsigned ver1 = (*capId)[0xC];
-            unsigned ver2 = (*capId)[0xD];
-            unsigned ver3 = (*capId)[0xE];
-            if (ver3) 
-              null_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u.%u", ver1, ver2, ver3);
-            else  
-              null_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", ver1, ver2);
-            if ((*capId)[0xF] & 0x80) 
-              strcat(szClientBuf,"/Win32");
-            else if ((*capId)[0xF] & 0x40) 
-              strcat(szClientBuf,"/MacOS X");
-            szClient = szClientBuf;
-          }
-          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capLicq, 0xC))
-          {
-            unsigned ver1 = (*capId)[0xC];
-            unsigned ver2 = (*capId)[0xD] % 100;
-            unsigned ver3 = (*capId)[0xE];
-            if (ver3) 
-              null_snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVerL, ver1, ver2, ver3);
-            else  
-              null_snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVer, ver1, ver2);
-            if ((*capId)[0xF]) 
-              strcat(szClientBuf,"/SSL");
-            szClient = szClientBuf;
-          }
-          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capMirandaIm, 8))
-          { // new Miranda Signature
-            DWORD iver = (*capId)[0xC] << 0x18 | (*capId)[0xD] << 0x10 | (*capId)[0xE] << 8 | (*capId)[0xF];
-            DWORD mver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
-
-            szClient = MirandaVersionToString(iver, mver);
-            dwClientId = 1; // Miranda does not use Tick as msgId
-          }
-          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capKopete, 0xC))
-          {
-            unsigned ver1 = (*capId)[0xC];
-            unsigned ver2 = (*capId)[0xD];
-            unsigned ver3 = (*capId)[0xE];
-            unsigned ver4 = (*capId)[0xF];
-            if (ver4) 
-              null_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u.%u", ver1, ver2, ver3, ver4);
-            else if (ver3) 
-              null_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u", ver1, ver2, ver3);
-            else
-              null_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u", ver1, ver2);
-            szClient = szClientBuf;
-          }
-          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capmIcq, 0xC))
-          { 
-            unsigned ver1 = (*capId)[0xC];
-            unsigned ver2 = (*capId)[0xD];
-            unsigned ver3 = (*capId)[0xE];
-            unsigned ver4 = (*capId)[0xF];
-            if (ver4) 
-              null_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
-            else if (ver3) 
-              null_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u", ver1, ver2, ver3);
-            else
-              null_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u", ver1, ver2);
-            szClient = szClientBuf;
-          }
-          else if (MatchCap(pTLV->pData, pTLV->wLen, &capIm2, 0x10))
-          {
-            szClient = cliIM2;
-          }
-          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capAndRQ, 9))
-          {
-            unsigned ver1 = (*capId)[0xC];
-            unsigned ver2 = (*capId)[0xB];
-            unsigned ver3 = (*capId)[0xA];
-            unsigned ver4 = (*capId)[9];
-            if (ver4) 
-              null_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
-            else if (ver3) 
-              null_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u", ver1, ver2, ver3);
-            else
-              null_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u", ver1, ver2);
-            szClient = szClientBuf;
-          }
-          else if (capId = MatchCap(pTLV->pData, pTLV->wLen, &capQip, 0xE))
-          {
-            char v1 = (*capId)[0xE];
-            char v2 = (*capId)[0xF];
-            null_snprintf(szClientBuf, sizeof(szClientBuf), cliQip, v1, v2);
-            szClient = szClientBuf;
-          }
-          else if (MatchCap(pTLV->pData, pTLV->wLen, &capMacIcq, 0x10))
-          {
-            szClient = "ICQ for Mac";
-          }
-          else if (MatchCap(pTLV->pData, pTLV->wLen, &capAimIcon, 0x10))
-          { // this is what I really hate, but as it seems to me, there is no other way to detect libgaim
-            szClient = "libgaim";
-          }
-          else if (szClient == cliLibicq2k)
-          { // try to determine which client is behind libicq2000
-            if (MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
-              szClient = cliCentericq; // centericq added rtf capability to libicq2000
-            else if (CheckContactCapabilities(hContact, CAPF_UTF))
-              szClient = cliLibicqUTF; // IcyJuice added unicode capability to libicq2000
-            // others - like jabber transport uses unmodified library, thus cannot be detected
-          }
-          else if (szClient == NULL) // HERE ENDS THE SIGNATURE DETECTION, after this only feature default will be detected
-          {
-            if (wVersion == 8 && (MatchCap(pTLV->pData, pTLV->wLen, &capStr20012, 0x10) || CheckContactCapabilities(hContact, CAPF_SRV_RELAY)))
-            { // try to determine 2001-2003 versions
-              if (MatchCap(pTLV->pData, pTLV->wLen, &capIs2001, 0x10))
-                if (!dwFT1 && !dwFT2 && !dwFT3)
-                  szClient = "ICQ for Pocket PC";
-                else
-                  szClient = "ICQ 2001";
-              else if (MatchCap(pTLV->pData, pTLV->wLen, &capIs2002, 0x10))
-                szClient = "ICQ 2002";
-              else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY || CAPF_UTF) && MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
-              {
-                if (!dwFT1 && !dwFT2 && !dwFT3)
-                  szClient = "GnomeICU"; // no other way
-                else
-                  szClient = "ICQ 2002/2003a";
-              }
-            }
-            else if (wVersion == 9)
-            { // try to determine lite versions
-              if (MatchCap(pTLV->pData, pTLV->wLen, &capXtraz, 0x10))
-                if (MatchCap(pTLV->pData, pTLV->wLen, &capIcq5Extra, 0x10))
-                  szClient = "icq5";
-                else
-                  szClient = "ICQ Lite v4";
-            }
-            else if (wVersion == 7)
-              if (MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10))
-                szClient = "GnomeICU"; // this is an exception
-              else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
-              {
-                if (!dwFT1 && !dwFT2 && !dwFT3)
-                  szClient = "&RQ";
-                else
-                  szClient = "ICQ 2000";
-              }
-              else if (CheckContactCapabilities(hContact, CAPF_TYPING))
-                szClient = "Icq2Go! (Java)";
-              else 
-                szClient = "Icq2Go!";
-            else if (wVersion == 0xA)
-              if (!MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10) && !CheckContactCapabilities(hContact, CAPF_UTF))
-              { // this is bad, but we must do it - try to detect QNext
-                ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
-                NetLog_Server("Forcing simple messages (QNext client).");
-                szClient = "QNext";
-              }
-            if (szClient == NULL)
-            { // still unknown client, try Agile
-              if (CheckContactCapabilities(hContact, CAPF_UTF) && !MatchCap(pTLV->pData, pTLV->wLen, &capRichText, 0x10) && !dwFT1 && !dwFT2 && !dwFT3)
-                szClient = "Agile Messenger";
-            }
-          }
-				}
-				else
-				{
-					NetLog_Server("No capability info TLV");
-          // clear XStatus
-          handleXStatusCaps(hContact, NULL, 0);
+          szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, capBuf, capLen, &dwClientId);
 				}
 
 #ifdef _DEBUG
@@ -608,7 +357,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 					NetLog_Server("Does NOT support advanced messages");
 #endif
 
-				if (wVersion < 8)
+				if (dwUIN && wVersion < 8)
 				{
 					ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
 					NetLog_Server("Forcing simple messages due to compability issues");
@@ -633,7 +382,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		disposeChain(&pChain);
 	}
 
-  if (szClient == 0)
+/*  if (szClient == 0)
   {
     NetLog_Server("No client identification, put default ICQ client for protocol.");
 
@@ -668,7 +417,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   {
     if (szClient != (char*)-1)
       NetLog_Server("Client identified as %s", szClient);
-  }
+  }*/
 
 	// Save contacts details in database
   if (hContact != NULL)
@@ -677,12 +426,15 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
     ICQWriteContactSettingDword(hContact,  "ClientID",     dwClientId);
 
 		ICQWriteContactSettingDword(hContact,  "LogonTS",      dwOnlineSince);
-		ICQWriteContactSettingDword(hContact,  "IP",           dwIP);
-		ICQWriteContactSettingDword(hContact,  "RealIP",       dwRealIP);
-		ICQWriteContactSettingDword(hContact,  "DirectCookie", dwDirectConnCookie);
-    ICQWriteContactSettingByte(hContact,   "DCType",       (BYTE)nTCPFlag);
-		ICQWriteContactSettingWord(hContact,   "UserPort",     (WORD)(dwPort & 0xffff));
-		ICQWriteContactSettingWord(hContact,   "Version",      wVersion);
+    if (dwUIN)
+    { // on AIM these are not used
+		  ICQWriteContactSettingDword(hContact,  "IP",           dwIP);
+		  ICQWriteContactSettingDword(hContact,  "RealIP",       dwRealIP);
+		  ICQWriteContactSettingDword(hContact,  "DirectCookie", dwDirectConnCookie);
+      ICQWriteContactSettingByte(hContact,   "DCType",       (BYTE)nTCPFlag);
+		  ICQWriteContactSettingWord(hContact,   "UserPort",     (WORD)(dwPort & 0xffff));
+		  ICQWriteContactSettingWord(hContact,   "Version",      wVersion);
+    }
 		if (szClient != (char*)-1) ICQWriteContactSettingString(hContact, "MirVer", szClient);
 		ICQWriteContactSettingWord(hContact,   "Status",       (WORD)IcqStatusToMiranda(wStatus));
 		ICQWriteContactSettingDword(hContact,  "IdleTS",       tIdleTS);
@@ -697,8 +449,12 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	}
 
 	// And a small log notice...
-	NetLog_Server("%u changed status to %s (v%d).",
-		dwUIN, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
+  if (dwUIN)
+	  NetLog_Server("%u changed status to %s (v%d).",
+		  dwUIN, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
+  else
+	  NetLog_Server("%s changed status to %s (v%d).",
+		  szUID, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
 
   if (szClient == cliSpamBot)
   {
@@ -713,21 +469,28 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 }
 
 
-
 static void handleUserOffline(BYTE *buf, WORD wLen)
 {
 	HANDLE hContact;
 	DWORD dwUIN;
+  char *szUID;
 
 	// Unpack the sender's user ID
-  if (!unpackUID(&buf, &wLen, &dwUIN, NULL)) return;
+  if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
 
-	hContact = HContactFromUIN(dwUIN, 0);
+  if (dwUIN)
+	  hContact = HContactFromUIN(dwUIN, NULL);
+  else
+    hContact = HContactFromUID(szUID, NULL);
 
 	// Skip contacts that are not already on our list
 	if (hContact != INVALID_HANDLE_VALUE)
 	{
-		NetLog_Server("%u went offline.", dwUIN);
+    if (dwUIN)
+		  NetLog_Server("%u went offline.", dwUIN);
+    else
+      NetLog_Server("%s went offline.", szUID);
+
 		ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 		ICQWriteContactSettingDword(hContact, "IdleTS", 0);
     // close Direct Connections to that user
@@ -736,7 +499,6 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
     handleXStatusCaps(hContact, NULL, 0);
 	}
 }
-
 
 
 static void handleReplyBuddy(BYTE *buf, WORD wPackLen)
@@ -760,6 +522,21 @@ static void handleReplyBuddy(BYTE *buf, WORD wPackLen)
 	}
 	else
 	{
-		NetLog_Server("Error: Malformed BuddyRepyl");
+		NetLog_Server("Error: Malformed BuddyReply");
 	}
+}
+
+
+static void handleNotifyRejected(BYTE *buf, WORD wPackLen)
+{
+	DWORD dwUIN;
+  char *szUID;
+
+  if (!unpackUID(&buf, &wPackLen, &dwUIN, &szUID))
+    return;
+
+  if (dwUIN)
+    NetLog_Server("SNAC(x03,x0a) - SRV_NOTIFICATION_REJECTED for %u", dwUIN);
+  else
+    NetLog_Server("SNAC(x03,x0a) - SRV_NOTIFICATION_REJECTED for %s", szUID);
 }
