@@ -65,20 +65,51 @@ DWORD ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dw
 }
 
 
+int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, char** ppszUid)
+{
+  DBVARIANT dbv;
+  int iRes = 1;
+
+  *pdwUin = 0;
+  if (ppszUid) *ppszUid = NULL;
+
+  if (!DBGetContactSetting(hContact, gpszICQProtoName, UNIQUEIDSETTING, &dbv))
+  {
+    if (dbv.type == DBVT_DWORD)
+    {
+      *pdwUin = dbv.dVal;
+      iRes = 0;
+    }
+    else if (dbv.type == DBVT_ASCIIZ)
+    {
+      if (ppszUid && gbAimEnabled) 
+      {
+        *ppszUid = _strdup(dbv.pszVal);
+        iRes = 0;
+      }
+      else
+        NetLog_Server("AOL screennames not accepted");
+    }
+    DBFreeVariant(&dbv);
+  }
+  return iRes;
+}
+
+
 int ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
 {
   return DBGetContactSetting(hContact, gpszICQProtoName, szSetting, dbv);
 }
 
 
-char* ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef)
+char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szDef)
 {
   DBVARIANT dbv = {DBVT_DELETED};
   char* szRes;
 
   if (bUtfReadyDB)
   {
-    if (DBGetContactSettingStringUtf(hContact, gpszICQProtoName, szSetting, &dbv))
+    if (DBGetContactSettingStringUtf(hContact, szModule, szSetting, &dbv))
       return strdup(szDef);
     
     szRes = strdup(dbv.pszVal);
@@ -86,7 +117,7 @@ char* ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDe
   }
   else
   { // old DB, we need to convert the string to UTF-8
-    if (DBGetContactSetting(hContact, gpszICQProtoName, szSetting, &dbv))
+    if (DBGetContactSetting(hContact, szModule, szSetting, &dbv))
       return strdup(szDef);
 
     if (strlennull(dbv.pszVal))
@@ -101,6 +132,12 @@ char* ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDe
     DBFreeVariant(&dbv);
   }
   return szRes;
+}
+
+
+char* ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef)
+{
+  return UniGetContactSettingUtf(hContact, gpszICQProtoName, szSetting, szDef);
 }
 
 
@@ -155,17 +192,17 @@ int ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, char* s
 }
 
 
-int ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, char* szValue)
+int UniWriteContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szValue)
 {
   if (bUtfReadyDB)
-    return DBWriteContactSettingStringUtf(hContact, gpszICQProtoName, szSetting, szValue);
+    return DBWriteContactSettingStringUtf(hContact, szModule, szSetting, szValue);
   else
   { // old DB, we need to convert the string to Ansi
-    char* szAnsi;
+    char* szAnsi = NULL;
 
 		if (utf8_decode(szValue, &szAnsi))
     {
-      int nRes = DBWriteContactSettingString(hContact, gpszICQProtoName, szSetting, szAnsi);
+      int nRes = DBWriteContactSettingString(hContact, szModule, szSetting, szAnsi);
 
       SAFE_FREE(&szAnsi);
       return nRes;
@@ -174,6 +211,12 @@ int ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, char* szVa
 
     return 1;
   }
+}
+
+
+int ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, char* szValue)
+{
+  return UniWriteContactSettingUtf(hContact, gpszICQProtoName, szSetting, szValue);
 }
 
 
