@@ -62,7 +62,9 @@ int IcqStatusToMiranda(WORD wStatus);
 WORD MirandaStatusToIcq(int nStatus);
 int MirandaStatusToSupported(int nMirandaStatus);
 char *MirandaStatusToString(int);
-char *MirandaVersionToString(int, int);
+char**MirandaStatusToAwayMsg(int nStatus);
+
+int AwayMsgTypeToStatus(int nMsgType);
 
 void InitCookies(void);
 void UninitCookies(void);
@@ -79,9 +81,12 @@ void FreeGatewayIndex(HANDLE hConn);
 void AddToSpammerList(DWORD dwUIN);
 BOOL IsOnSpammerList(DWORD dwUIN);
 
-HANDLE HContactFromUIN(DWORD, int);
-//HANDLE HContactFromUID(char* pszUID, int);
-char *NickFromHandle(HANDLE);
+void InitCache();
+void UninitCache();
+void DeleteFromCache(HANDLE hContact);
+HANDLE HContactFromUIN(DWORD dwUin, int *Added);
+HANDLE HContactFromUID(char* pszUID, int *Added);
+char *NickFromHandle(HANDLE hContact);
 
 size_t __fastcall strlennull(const char *string);
 int __fastcall strcmpnull(const char *str1, const char *str2);

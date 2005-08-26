@@ -55,9 +55,21 @@ static int gatewayCount = 0;
 static DWORD *spammerList = NULL;
 static int spammerListCount = 0;
 
+typedef struct icq_contacts_cache_s
+{
+	HANDLE hContact;
+	DWORD dwUin;
+} icq_contacts_cache;
+
+static icq_contacts_cache *contacts_cache = NULL;
+static int cacheCount = 0;
+static int cacheListSize = 0;
+static CRITICAL_SECTION cacheMutex;
 
 extern BYTE gbOverRate;
 extern DWORD gtLastRequest;
+extern BOOL bIsSyncingCL;
+extern icq_mode_messages modeMsgs;
 
 
 void icq_EnableMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
@@ -69,7 +81,6 @@ void icq_EnableMultipleControls(HWND hwndDlg, const UINT *controls, int cControl
 }
 
 
-
 void icq_ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
 	int i;
@@ -77,7 +88,6 @@ void icq_ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls,
 	for(i = 0; i < cControls; i++)
 		ShowWindow(GetDlgItem(hwndDlg, controls[i]), state);
 }
-
 
 
 // Maps the ICQ status flag (as seen in the status change SNACS) and returns
@@ -112,7 +122,6 @@ int IcqStatusToMiranda(WORD nIcqStatus)
 
 	return nMirandaStatus;
 }
-
 
 
 WORD MirandaStatusToIcq(int nMirandaStatus)
@@ -211,56 +220,62 @@ int MirandaStatusToSupported(int nMirandaStatus)
 }
 
 
-
 char* MirandaStatusToString(int mirandaStatus)
 {
 	return (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, 0);
 }
 
 
-static void verToStr(char* szStr, int v)
+char**MirandaStatusToAwayMsg(int nStatus)
 {
-  if (v&0xFF)
-    sprintf(szStr, "%s%u.%u.%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
-  else if ((v>>8)&0xFF)
-    sprintf(szStr, "%s%u.%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0x80000000?" alpha":"");
-  else
-    sprintf(szStr, "%s%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, v&0x80000000?" alpha":"");
-}
-
-
-// Dont free the returned string.
-// Function is not multithread safe.
-char* MirandaVersionToString(int v, int m)
-{
-	static char szVersion[64];
-
-	if (!v) // this is not Miranda
-		return NULL;
-	else
+	switch (nStatus)
 	{
-    strcpy(szVersion, "Miranda IM ");
 
-		if (v == 1)
-			verToStr(szVersion, 0x80010200);
-		else if ((v&0x7FFFFFFF) <= 0x030301)
-      verToStr(szVersion, v);
-    else 
-    {
-      if (m)
-      {
-        verToStr(szVersion, m);
-        strcat(szVersion, " ");
-      }
-      strcat(szVersion, "(ICQ v");
-      verToStr(szVersion, v);
-      strcat(szVersion, ")");
-    }
+	case ID_STATUS_AWAY:
+		return &modeMsgs.szAway;
+		break;
+
+	case ID_STATUS_NA:
+		return &modeMsgs.szNa;
+
+	case ID_STATUS_OCCUPIED:
+		return &modeMsgs.szOccupied;
+
+	case ID_STATUS_DND:
+		return &modeMsgs.szDnd;
+
+	case ID_STATUS_FREECHAT:
+		return &modeMsgs.szFfc;
+
+	default:
+    return NULL;
 	}
-
-	return szVersion;
 }
 
+
+int AwayMsgTypeToStatus(int nMsgType)
+{
+  switch (nMsgType)
+  {
+    case MTYPE_AUTOAWAY:
+      return ID_STATUS_AWAY;
+
+    case MTYPE_AUTOBUSY:
+      return ID_STATUS_OCCUPIED;
+
+    case MTYPE_AUTONA:
+      return ID_STATUS_NA;
+
+    case MTYPE_AUTODND:
+      return ID_STATUS_DND;
+
+    case MTYPE_AUTOFFC:
+      return ID_STATUS_FREECHAT;
+
+    default:
+      return ID_STATUS_OFFLINE;
+  }
+}
 
 
 void InitCookies(void)
@@ -519,10 +534,139 @@ BOOL IsOnSpammerList(DWORD dwUIN)
 }
 
 
-HANDLE HContactFromUIN(DWORD uin, int allowAdd)
+// ICQ contacts cache
+static void AddToCache(HANDLE hContact, DWORD dwUin)
+{
+	int i = 0;
+
+  if (!hContact || !dwUin)
+    return;
+
+	EnterCriticalSection(&cacheMutex);
+
+	if (cacheCount + 1 >= cacheListSize)
+	{
+		cacheListSize += 100;
+		contacts_cache = (icq_contacts_cache *)realloc(contacts_cache, sizeof(icq_contacts_cache) * cacheListSize);
+	}
+
+#ifdef _DEBUG
+	Netlib_Logf(ghServerNetlibUser, "Adding contact to cache: %u, position: %u", dwUin, cacheCount);
+#endif
+
+	contacts_cache[cacheCount].hContact = hContact;
+	contacts_cache[cacheCount].dwUin = dwUin;
+
+	cacheCount++;
+
+  LeaveCriticalSection(&cacheMutex);
+}
+
+
+void InitCache(void)
+{
+	HANDLE hContact;
+	char *szProto;
+
+	InitializeCriticalSection(&cacheMutex);
+	cacheCount = 0;
+	cacheListSize = 0;
+	contacts_cache = NULL;
+
+	// build cache
+	EnterCriticalSection(&cacheMutex);
+
+	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+
+	while (hContact)
+	{
+		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
+		{
+      DWORD dwUin;
+
+      if (!ICQGetContactSettingUID(hContact, &dwUin, NULL))
+			  AddToCache(hContact, dwUin);
+		}
+
+		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+	}
+
+	LeaveCriticalSection(&cacheMutex);
+}
+
+
+void UninitCache(void)
+{
+	SAFE_FREE(&contacts_cache);
+
+	DeleteCriticalSection(&cacheMutex);
+}
+
+
+void DeleteFromCache(HANDLE hContact)
+{
+	int i;
+
+	if (cacheCount == 0)
+		return;
+
+	EnterCriticalSection(&cacheMutex);
+
+	for (i = cacheCount-1; i >= 0; i--)
+		if (contacts_cache[i].hContact == hContact)
+		{
+			cacheCount--;
+
+#ifdef _DEBUG
+			Netlib_Logf(ghServerNetlibUser, "Removing contact from cache: %u, position: %u", contacts_cache[i].dwUin, i);
+#endif
+			// move last contact to deleted position
+			if (i < cacheCount)
+				memcpy(&contacts_cache[i], &contacts_cache[cacheCount], sizeof(icq_contacts_cache));
+
+			// clear last contact position
+			ZeroMemory(&contacts_cache[cacheCount], sizeof(icq_contacts_cache));
+
+			break;
+		}
+
+	LeaveCriticalSection(&cacheMutex);
+}
+
+
+static HANDLE HandleFromCacheByUin(DWORD dwUin)
+{
+	int i;
+	HANDLE hContact = NULL;
+
+	if (cacheCount == 0)
+		return hContact;
+
+	EnterCriticalSection(&cacheMutex);
+
+	for (i = cacheCount-1; i >= 0; i--)
+		if (contacts_cache[i].dwUin == dwUin)
+		{
+			hContact = contacts_cache[i].hContact;
+			break;
+		}
+
+	LeaveCriticalSection(&cacheMutex);
+
+	return hContact;
+}
+
+
+HANDLE HContactFromUIN(DWORD uin, int *Added)
 {
 	HANDLE hContact;
 	char* szProto;
+
+  if (Added) *Added = 0;
+
+  hContact = HandleFromCacheByUin(uin);
+  if (hContact) return hContact;
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact != NULL)
@@ -530,8 +674,15 @@ HANDLE HContactFromUIN(DWORD uin, int allowAdd)
 		szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
-			if (ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0) == uin)
+    {
+      DWORD dwUin;
+
+			if (!ICQGetContactSettingUID(hContact, &dwUin, NULL) && dwUin == uin)
+      {
+        AddToCache(hContact, dwUin);
 				return hContact;
+      }
+    }
 
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}
@@ -541,21 +692,41 @@ HANDLE HContactFromUIN(DWORD uin, int allowAdd)
 		return NULL;
 
 	//not present: add
-	if (allowAdd)
+	if (Added)
 	{
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
-		CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName);
+    if (!hContact)
+  	{
+      NetLog_Server("Failed to create ICQ contact %u", uin);
+      return INVALID_HANDLE_VALUE;
+    }
+
+		if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName) != 0)
+    {
+      // For some reason we failed to register the protocol to this contact
+      CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+      NetLog_Server("Failed to register ICQ contact %u", uin);
+      return INVALID_HANDLE_VALUE;
+    }
 
 		ICQWriteContactSettingDword(hContact, UNIQUEIDSETTING, uin);
-		DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
-		DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 
-		icq_QueueUser(hContact);
+    if (!bIsSyncingCL)
+    {
+		  DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
+		  DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 
-		if (icqOnline)
-		{
-			icq_sendNewContact(uin);
-		}
+		  ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+
+		  icq_QueueUser(hContact);
+
+		  if (icqOnline)
+      {
+			  icq_sendNewContact(uin, NULL);
+      }
+    }
+    AddToCache(hContact, uin);
+    *Added = 1;
 
 		return hContact;
 	}
@@ -564,71 +735,62 @@ HANDLE HContactFromUIN(DWORD uin, int allowAdd)
 }
 
 
-/*
-HANDLE HContactFromUID(char* pszUID, int allowAdd)
+HANDLE HContactFromUID(char* pszUID, int *Added)
 {
-
 	HANDLE hContact;
 	char* szProto;
-	DBVARIANT dbv;
+  DWORD dwUin;
+	char* szUid;
 
-
-	if (DBGetContactSetting(NULL, gpszICQProtoName, UNIQUEIDSETTING, &dbv))
-	{
-		if (strcmp(dbv.pszVal, pszUID))
-		{
-			DBFreeVariant(&dbv);
-			return NULL;
-		}
-	}
-
+  if (Added) *Added = 0;
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact != NULL)
 	{
-
 		szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
-			if (DBGetContactSetting(hContact, gpszICQProtoName, UNIQUEIDSETTING, &dbv))
+			if (!ICQGetContactSettingUID(hContact, &dwUin, &szUid))
 			{
-				if (strcmp(dbv.pszVal, pszUID))
+				if (!dwUin && !strcmp(szUid, pszUID))
 				{
-					DBFreeVariant(&dbv);
+          SAFE_FREE(&szUid);
 					return hContact;
 				}
+        SAFE_FREE(&szUid);
 			}
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}
 
-
 	//not present: add
-	if (allowAdd)
+	if (Added)
 	{
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
 		CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName);
 
-		DBWriteContactSettingString(hContact, gpszICQProtoName, UNIQUEIDSETTING, pszUID);
-		DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
-		DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+		ICQWriteContactSettingString(hContact, UNIQUEIDSETTING, pszUID);
 
-		icq_QueueUser(hContact);
+    if (!bIsSyncingCL)
+    {
+      DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
+		  DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 
-		if (icqOnline)
-		{
-//			if (!(gbSsiEnabled && DBGetContactSettingByte(NULL, gpszICQProtoName, "ServerAddRemove", DEFAULT_SS_ADDREMOVE)))
-//				icq_sendNewContact(pszUID);
-//			// else need to wait for CList/NotOnList to be deleted
-		}
+		  ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+
+//		  icq_QueueUser(hContact);
+
+		  if (icqOnline)
+		  {
+				icq_sendNewContact(0, pszUID);
+		  }
+    }
+    *Added = 1;
 
 		return hContact;
-
 	}
 
 	return INVALID_HANDLE_VALUE;
-
 }
-*/
 
 
 char *NickFromHandle(HANDLE hContact)
@@ -693,6 +855,18 @@ char *DemangleXml(const char *string, int len)
       szChar++;
       i += 3;
     }
+    else if (!strnicmp(string+i, "&amp;", 5))
+    {
+      *szChar = '&';
+      szChar++;
+      i += 4;
+    }
+    else if (!strnicmp(string+i, "&quot;", 6))
+    {
+      *szChar = '"';
+      szChar++;
+      i += 5;
+    }
     else
     {
       *szChar = string[i];
@@ -712,7 +886,7 @@ char *MangleXml(const char *string, int len)
 
   for (i = 0; i<len; i++)
   {
-    if (string[i]=='<' || string[i]=='>') l += 4; else l++;
+    if (string[i]=='<' || string[i]=='>') l += 4; else if (string[i]=='&') l += 5; else l++;
   }
   szChar = szWork = (char*)malloc(l + 1);
   for (i = 0; i<len; i++)
@@ -726,6 +900,13 @@ char *MangleXml(const char *string, int len)
     {
       *(DWORD*)szChar = ';tg&';
       szChar += 4;
+    }
+    else if (string[i]=='&')
+    {
+      *(DWORD*)szChar = 'pma&';
+      szChar += 4;
+      *szChar = ';';
+      szChar++;
     }
     else
     {
@@ -1125,6 +1306,7 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 }
 
 
+
 void __fastcall SAFE_FREE(void** p)
 {
 	if (*p)
@@ -1184,6 +1366,7 @@ void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
   }
 }
 
+
 static int bNoChanging = 0;
 
 void ContactPhotoSettingChanged(HANDLE hContact)
@@ -1198,6 +1381,7 @@ void ContactPhotoSettingChanged(HANDLE hContact)
 }
 
 
+
 int NetLog_Server(const char *fmt,...)
 {
 	va_list va;
@@ -1210,6 +1394,7 @@ int NetLog_Server(const char *fmt,...)
 }
 
 
+
 int NetLog_Direct(const char *fmt,...)
 {
 	va_list va;
@@ -1220,6 +1405,7 @@ int NetLog_Direct(const char *fmt,...)
 	va_end(va);
 	return CallService(MS_NETLIB_LOG,(WPARAM)ghDirectNetlibUser,(LPARAM)szText);
 }
+
 
 
 int ICQBroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam)
