@@ -54,8 +54,8 @@ HANDLE hsmsgrequest;
 
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
-	"ICQ Oscar v8 / Joe",
-	PLUGIN_MAKE_VERSION(0,3,6,3),
+	"IcqOscarJ Protocol",
+	PLUGIN_MAKE_VERSION(0,3,6,4),
 	"Support for ICQ network, enhanced.",
 	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@users.sourceforge.net",
@@ -148,6 +148,9 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
 	// Initialize status message struct
 	ZeroMemory(&modeMsgs, sizeof(icq_mode_messages));
+
+	// contacts cache
+	InitCache();
 
 	// Reset a bunch of session specific settings
 	ResetSettingsOnLoad();
@@ -273,6 +276,7 @@ int __declspec(dllexport) Unload(void)
 	Netlib_CloseHandle(ghDirectNetlibUser);
 	Netlib_CloseHandle(ghServerNetlibUser);
 	UninitCookies();
+  UninitCache();
 	DeleteCriticalSection(&modeMsgsMutex);
 	DeleteCriticalSection(&localSeqMutex);
 	DeleteCriticalSection(&connectionHandleMutex);

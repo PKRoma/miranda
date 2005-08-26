@@ -44,4 +44,5 @@ void UpdateGlobalSettings(void);
 #undef DBG_CAPRTF
 #define DBG_CAPMTN
 #define DBG_CAPXTRAZ
-#undef DBG_AIM_SUPPORT_HACK
+#define DBG_NEWCAPS
+
