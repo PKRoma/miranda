@@ -47,6 +47,9 @@ Bugfixes:
   File transfers with GnomeICU works now
   Fixed changing password in ICQ Details will not save it to DB if not there
   Fixed PING channel handling (caused connection drop)
+  Fixed bug in changeinfo with translated listbox values (thx Bio)
+  Fixed error handling in avatar code for uploading avatar
+  Fixed bug in Manage-Server list dialog, caused hang
 
 New Features:
   Messaging support enhanced (P2P messaging supported)
@@ -55,7 +58,7 @@ New Features:
   New Features page in options to configure extra features
   Custom statuses just like icq5 - needs clist_mw derivative (thx Big Muscle)
   Enhanced Unicode & Ansi charsets support (each contact can have its own codepage)
-TODO: AIM cross-compatability (only messages)
+  AIM cross-compatability (add/remove, search by mail, status, messaging, away messages)
 
 Improvements:
   Advanced search now uses newer method (thx Bio)
@@ -66,6 +69,8 @@ Improvements:
   Added possibility to retrieve away message from libgaim clients
   Added status to UserInfo page
   Small improvements to client detection
+  Uses newer capabilities format (cuts incoming traffic)
+TODO:  Support for unicode database module (clist data)
 TODO:  Support for Iconlib
 TODO:  Display error messages using PopUp Plugin
 TODO:  Manage server-list dialog now groups requests - much faster
