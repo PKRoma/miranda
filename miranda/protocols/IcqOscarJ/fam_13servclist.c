@@ -1375,6 +1375,7 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 {
 	WORD wReasonLen;
 	DWORD dwUin;
+  char* szUid;
 	HANDLE hcontact;
 	CCSDATA ccs;
 	PROTORECVEVENT pre;
@@ -1387,21 +1388,30 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
   DBVARIANT dbv;
   int bAdded;
 
-  if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
+  if (!unpackUID(&buf, &wLen, &dwUin, &szUid)) return;
 
-  if (IsOnSpammerList(dwUin))
+  if (dwUin && IsOnSpammerList(dwUin))
   {
     NetLog_Server("Ignored Message from known Spammer");
+    SAFE_FREE(&szUid);
     return;
   }
 
 	unpackWord(&buf, &wReasonLen);
 	wLen -= 2;
 	if (wReasonLen > wLen)
+  {
+    SAFE_FREE(&szUid);
 		return;
+  }
+
+  if (dwUin) 
+    hcontact = HContactFromUIN(dwUin, &bAdded);
+  else
+    hcontact = HContactFromUID(szUid, &bAdded);
 
 	ccs.szProtoService=PSR_AUTH;
-	ccs.hContact=hcontact=HContactFromUIN(dwUin, &bAdded);
+	ccs.hContact=hcontact;
 	ccs.wParam=0;
 	ccs.lParam=(LPARAM)&pre;
 	pre.flags=0;
@@ -1416,13 +1426,18 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
   }
   nReasonLen = strlennull(szReason);
   // Read nick name from DB
-  if (ICQGetContactSetting(ccs.hContact, "Nick", &dbv))
-    nNickLen = 0;
-  else
+  if (dwUin)
   {
-    szNick = dbv.pszVal;
-    nNickLen = strlennull(szNick);
+    if (ICQGetContactSetting(hcontact, "Nick", &dbv))
+      nNickLen = 0;
+    else
+    {
+      szNick = dbv.pszVal;
+      nNickLen = strlennull(szNick);
+    }
   }
+  else
+    nNickLen = strlennull(szUid);
   pre.lParam += nNickLen + nReasonLen;
 
   ICQWriteContactSettingByte(ccs.hContact, "Grant", 1);
@@ -1431,9 +1446,14 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	pCurBlob=szBlob=(char *)malloc(pre.lParam);
 	memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
 	memcpy(pCurBlob,&hcontact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
-  if (nNickLen) 
+  if (nNickLen && dwUin) 
   { // if we have nick we add it, otherwise keep trailing zero
     memcpy(pCurBlob, szNick, nNickLen);
+    pCurBlob+=nNickLen;
+  }
+  else
+  {
+    memcpy(pCurBlob, szUid, nNickLen);
     pCurBlob+=nNickLen;
   }
 	*(char *)pCurBlob = 0; pCurBlob++;
@@ -1458,6 +1478,8 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 
   SAFE_FREE(&szReason);
   DBFreeVariant(&dbv);
+  SAFE_FREE(&szUid);
+  return;
 }
 
 

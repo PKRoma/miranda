@@ -109,7 +109,7 @@ DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg);
 void icq_sendMessageCapsServ(DWORD dwUin);
 void icq_sendGrantAuthServ(DWORD dwUin, char* szUid, char *szMsg);
 void icq_sendAuthReqServ(DWORD dwUin,char *szMsg);
-void icq_sendAuthResponseServ(DWORD,int,char *);
+void icq_sendAuthResponseServ(DWORD dwUin, char* szUid,int auth,char *szReason);
 void icq_sendYouWereAddedServ(DWORD,DWORD);
 
 void sendOwnerInfoRequest(void);

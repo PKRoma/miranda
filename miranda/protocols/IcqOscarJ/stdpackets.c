@@ -1499,7 +1499,7 @@ void icq_sendAuthReqServ(DWORD dwUin, char *szMsg)
 
 
 
-void icq_sendAuthResponseServ(DWORD dwUin, int auth, char *szReason)
+void icq_sendAuthResponseServ(DWORD dwUin, char* szUid, int auth, char *szReason)
 {
   icq_packet p;
   WORD nReasonlen;

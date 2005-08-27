@@ -376,12 +376,14 @@ int IcqAuthAllow(WPARAM wParam, LPARAM lParam)
 	{
 		DBEVENTINFO dbei;
 		DWORD uin;
+    char* uid;
+    HANDLE hContact = (HANDLE)CallService(MS_DB_EVENT_GETCONTACT, wParam, 0);
 
 
 		ZeroMemory(&dbei, sizeof(dbei));
 		dbei.cbSize = sizeof(dbei);
 		dbei.cbBlob = sizeof(DWORD);
-		dbei.pBlob = (PBYTE)&uin;
+		dbei.pBlob = (PBYTE)&uin; // TODO: remove this is useless
 
 		if (CallService(MS_DB_EVENT_GET, wParam, (LPARAM)&dbei))
 			return 1;
@@ -392,10 +394,12 @@ int IcqAuthAllow(WPARAM wParam, LPARAM lParam)
 		if (strcmp(dbei.szModule, gpszICQProtoName))
 			return 1;
 
-		if (uin <= 1)
-			return 1;
+    if (ICQGetContactSettingUID(hContact, &uin, &uid))
+      return 1;
 
-		icq_sendAuthResponseServ(uin, 1, "");
+		icq_sendAuthResponseServ(uin, uid, 1, "");
+
+    SAFE_FREE(&uid);
 
 		return 0; // Success
 	}
@@ -410,13 +414,15 @@ int IcqAuthDeny(WPARAM wParam, LPARAM lParam)
 	if (icqOnline && wParam)
 	{
 		DBEVENTINFO dbei;
-		DWORD uin;
+    DWORD uin;
+    char* uid;
+    HANDLE hContact = (HANDLE)CallService(MS_DB_EVENT_GETCONTACT, wParam, 0);
 
 
 		ZeroMemory(&dbei, sizeof(dbei));
 		dbei.cbSize = sizeof(dbei);
 		dbei.cbBlob = sizeof(DWORD);
-		dbei.pBlob = (PBYTE)&uin;
+		dbei.pBlob = (PBYTE)&uin; // this is useless
 
 		if (CallService(MS_DB_EVENT_GET, wParam, (LPARAM)&dbei))
 			return 1;
@@ -427,16 +433,19 @@ int IcqAuthDeny(WPARAM wParam, LPARAM lParam)
 		if (strcmp(dbei.szModule, gpszICQProtoName))
 			return 1;
 
-		if (uin <= 1)
-			return 1;
+    if (ICQGetContactSettingUID(hContact, &uin, &uid))
+      return 1;
 
-		icq_sendAuthResponseServ(uin, 0, (char *)lParam);
+		icq_sendAuthResponseServ(uin, uid, 0, (char *)lParam);
+
+    SAFE_FREE(&uid);
 
 		return 0; // Success
 	}
 
 	return 1; // Failure
 }
+
 
 
 static int cheekySearchId = -1;
@@ -1831,6 +1840,7 @@ int IcqRecvAwayMsg(WPARAM wParam,LPARAM lParam)
 }
 
 
+
 int IcqRecvMessage(WPARAM wParam, LPARAM lParam)
 {
 	DBEVENTINFO dbei;
@@ -1861,6 +1871,7 @@ int IcqRecvMessage(WPARAM wParam, LPARAM lParam)
 }
 
 
+
 int IcqRecvUrl(WPARAM wParam, LPARAM lParam)
 {
 	DBEVENTINFO dbei;
@@ -1886,6 +1897,7 @@ int IcqRecvUrl(WPARAM wParam, LPARAM lParam)
 
 	return 0;
 }
+
 
 
 int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
@@ -1928,6 +1940,7 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
 }
 
 
+
 int IcqRecvFile(WPARAM wParam, LPARAM lParam)
 {
 	DBEVENTINFO dbei;
@@ -1955,6 +1968,7 @@ int IcqRecvFile(WPARAM wParam, LPARAM lParam)
 
 	return 0;
 }
+
 
 
 int IcqRecvAuth(WPARAM wParam, LPARAM lParam)
