@@ -85,8 +85,9 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
   if (((lParam != 0) && gbAvatarsEnabled) || (gbSsiEnabled && gbAvatarsEnabled))
   {
     DWORD dwUin;
+    uid_str dwUid;
 
-    if (!ICQGetContactSettingUID((HANDLE)lParam, &dwUin, NULL))
+    if (!ICQGetContactSettingUID((HANDLE)lParam, &dwUin, &dwUid))
     { // Avatar page only for valid contacts
       odp.pfnDlgProc = AvatarDlgProc;
       odp.position = -1899999998;
@@ -236,6 +237,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
       DBVARIANT dbvHash, dbvSaved;
       AvtDlgProcData* pData = (AvtDlgProcData*)malloc(sizeof(AvtDlgProcData));
       DWORD dwUIN;
+      uid_str szUID;
       char szAvatar[MAX_PATH];
       DWORD dwPaFormat;
       int bValid = 0;
@@ -257,53 +259,54 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
       }
       SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)pData);
 
-      dwUIN = ICQGetContactSettingDword((HANDLE)lParam, UNIQUEIDSETTING, 0);
-
-      if (!ICQGetContactSetting((HANDLE)lParam, "AvatarHash", &dbvHash))
+      if (!ICQGetContactSettingUID((HANDLE)lParam, &dwUIN, &szUID))
       {
-        dwPaFormat = ICQGetContactSettingByte((HANDLE)lParam, "AvatarType", PA_FORMAT_UNKNOWN);
-        if (!pData->hContact || (dwPaFormat != PA_FORMAT_UNKNOWN))
-        { // we do not know avatar format, so neither filename is known, not valid
-          if (pData->hContact)
-            GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, 255);
-          else
-          {
-            DBVARIANT dbvFile;
-            if (!ICQGetContactSetting(NULL, "AvatarFile", &dbvFile))
-            {
-              strcpy(szAvatar, dbvFile.pszVal);
-              DBFreeVariant(&dbvFile);
-            }
+        if (!ICQGetContactSetting((HANDLE)lParam, "AvatarHash", &dbvHash))
+        {
+          dwPaFormat = ICQGetContactSettingByte((HANDLE)lParam, "AvatarType", PA_FORMAT_UNKNOWN);
+          if (!pData->hContact || (dwPaFormat != PA_FORMAT_UNKNOWN))
+          { // we do not know avatar format, so neither filename is known, not valid
+            if (pData->hContact)
+              GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, 255);
             else
-              szAvatar[0] = '\0';
-          }
-
-          if (pData->hContact && !ICQGetContactSetting((HANDLE)lParam, "AvatarSaved", &dbvSaved))
-          { // not for us
-            if (!memcmp(dbvHash.pbVal, dbvSaved.pbVal, 0x14))
-            { // if the file exists, we know we have the current avatar
-              if (!access(szAvatar, 0)) bValid = 1;
+            {
+              DBVARIANT dbvFile;
+              if (!ICQGetContactSetting(NULL, "AvatarFile", &dbvFile))
+              {
+                strcpy(szAvatar, dbvFile.pszVal);
+                DBFreeVariant(&dbvFile);
+              }
+              else
+                szAvatar[0] = '\0';
             }
-            DBFreeVariant(&dbvSaved);
-          }
-          else // we do not have saved picture hash, do not rely on it
-            if (!access(szAvatar, 0)) bValid = 1;
-        }
-      }
-      else 
-        return TRUE;
 
-      if (bValid)
-      { //load avatar
-        HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szAvatar);
+            if (pData->hContact && !ICQGetContactSetting((HANDLE)lParam, "AvatarSaved", &dbvSaved))
+            { // not for us
+              if (!memcmp(dbvHash.pbVal, dbvSaved.pbVal, 0x14))
+              { // if the file exists, we know we have the current avatar
+                if (!access(szAvatar, 0)) bValid = 1;
+              }
+              DBFreeVariant(&dbvSaved);
+            }
+            else // we do not have saved picture hash, do not rely on it
+              if (!access(szAvatar, 0)) bValid = 1;
+          }
+        }
+        else
+          return TRUE;
+
+        if (bValid)
+        { //load avatar
+          HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szAvatar);
         
-        if (avt)
-          SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)avt);
-      }
-      else if (pData->hContact) // only retrieve users avatars
-      {
-        GetAvatarFileName(dwUIN, szAvatar, 255);
-        GetAvatarData((HANDLE)lParam, dwUIN, dbvHash.pbVal, 0x14, szAvatar);
+          if (avt)
+            SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)avt);
+        }
+        else if (pData->hContact) // only retrieve users avatars
+        {
+          GetAvatarFileName(dwUIN, szUID, szAvatar, 255);
+          GetAvatarData((HANDLE)lParam, dwUIN, szUID, dbvHash.pbVal, 0x14, szAvatar);
+        }
       }
 
       DBFreeVariant(&dbvHash);
@@ -330,17 +333,21 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				}
 				else if (ack->result == ACKRESULT_STATUS)
         {
-          DWORD dwUIN = ICQGetContactSettingDword(pData->hContact, UNIQUEIDSETTING, 0);
+          DWORD dwUIN;
+          uid_str szUID;
           DBVARIANT dbvHash;
           
-          if (!ICQGetContactSetting(pData->hContact, "AvatarHash", &dbvHash))
+          if (!ICQGetContactSettingUID(pData->hContact, &dwUIN, &szUID))
           {
-            char szAvatar[MAX_PATH];
+            if (!ICQGetContactSetting(pData->hContact, "AvatarHash", &dbvHash))
+            {
+              char szAvatar[MAX_PATH];
 
-            GetAvatarFileName(dwUIN, szAvatar, 255);
-            GetAvatarData(pData->hContact, dwUIN, dbvHash.pbVal, 0x14, szAvatar);
+              GetAvatarFileName(dwUIN, szUID, szAvatar, 255);
+              GetAvatarData(pData->hContact, dwUIN, szUID, dbvHash.pbVal, 0x14, szAvatar);
+            }
+            DBFreeVariant(&dbvHash);
           }
-          DBFreeVariant(&dbvHash);
         }
       }	
     }
@@ -360,7 +367,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
           HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
 
-          GetFullAvatarFileName(0, dwPaFormat, szMyFile, MAX_PATH);
+          GetFullAvatarFileName(0, NULL, dwPaFormat, szMyFile, MAX_PATH);
           if (!CopyFile(szFile, szMyFile, FALSE))
           {
             NetLog_Server("Failed to copy our avatar to local storage.");
