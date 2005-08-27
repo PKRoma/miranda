@@ -219,6 +219,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	const char* From = tFileInfo[ "From" ];
 	const char* Subject = tFileInfo[ "Subject" ];
 	const char* Fromaddr = tFileInfo[ "From-Addr" ];
+	const char* MailData = tFileInfo[ "Mail-Data" ];
 	{
 		const char* p;
 		if (( p = tFileInfo[ "Inbox-Unread" ] ) != NULL )
@@ -249,6 +250,14 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 			else mir_snprintf( tBuffer, sizeof( tBuffer ),  MSN_Translate("A new mail has come from %s (%s) (title: %s)."),mimeFrom, Fromaddr, mimeSubject );
 	}	}
 	else {
+		if ( MailData != NULL ) {
+			char* p = strstr( MailData, "<IU>" );
+			if ( p != NULL )
+				UnreadMessages = atoi( p+4 );
+			if (( p = strstr( MailData, "<OU>" )) != NULL )
+				UnreadJunkEmails = atoi( p+4 );
+		}
+
 		// nothing to do, a fake notification
 		if ( UnreadMessages == 0 && UnreadJunkEmails == 0 )
 			return;
@@ -626,6 +635,8 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	if ( !strnicmp( tContentType,"text/x-msmsgsemailnotification", 30 ))
 		sttNotificationMessage( msgBody, false );
 	else if ( !strnicmp( tContentType, "text/x-msmsgsinitialemailnotification", 37 ))
+		sttNotificationMessage( msgBody, true );
+	else if ( !strnicmp( tContentType, "text/x-msmsgsinitialmdatanotification", 37 ))
 		sttNotificationMessage( msgBody, true );
 	else if ( !strnicmp( tContentType, "text/x-msmsgsinvite", 19 ))
 		sttInviteMessage( info, msgBody, data.fromEmail, data.fromNick );
@@ -1027,7 +1038,7 @@ LBL_InvalidCommand:
 				sttSwapInt64( &key );
 				sttSwapInt64( &hash1 );
 				sttSwapInt64( &hash2 );
-			
+
 				info->sendPacket( "QRY", "%s 32\r\n%11I64x%11I64x", msnProductID, hash1 ^ key, hash2 ^ key );
 			}
 			else info->sendPacket( "QRY", "%s 32\r\n%08x%08x%08x%08x", msnProductID,
@@ -1501,7 +1512,7 @@ LBL_InvalidCommand:
 			char* dataBuf = ( char* )alloca( len+1 ), *p = dataBuf;
 			memcpy( dataBuf, HReadBuffer( info, 0 ).surelyRead( len ), len );
 			dataBuf[ len ] = 0;
-         
+
          p = strstr( dataBuf, "<PSM>" );
 			if ( p ) {
 				p += 5;
@@ -1509,7 +1520,7 @@ LBL_InvalidCommand:
 				if ( p1 ) {
 					*p1 = 0;
 					if ( *p != 0 ) {
-						HtmlDecode( p ); Utf8Decode( p ); 
+						HtmlDecode( p ); Utf8Decode( p );
 						DBWriteContactSettingString( hContact, "CList", "StatusMsg", p );
 					}
 					else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
@@ -1639,7 +1650,7 @@ LBL_InvalidCommand:
 				msnProductID = "msmsgs@msnmsgr.com";
 			}
          else if ( !strcmp( protocol1, "MSNP11" )) {
-				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 7.0.0777 MSMSGS %s", tEmail );
+				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 7.0.0816 MSMSGS %s", tEmail );
 				msnProtChallenge = "CFHUR$52U_{VIX5T";
 				msnProductID = "PROD0101{0RM?UBW";
 			}

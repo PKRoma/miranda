@@ -4,6 +4,12 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.4.1.2
+===============
+[+] Unicode in the nicknames and groups. Requires clistw &  Miranda
+0.4.3 bld. 32 or later
+[!] fix for initial email notification in the MSNP11 mode
+
 Version 0.4.1.1
 ===============
 [!]  fixed a bug when Miranda hangs up on exit, when the
