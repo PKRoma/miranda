@@ -630,7 +630,8 @@ BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, char** ppszUID
       NetLog_Server("Malformed UIN in packet");
       return FALSE;
     }
-
+    else
+      *ppBuf -= nUIDLen;
   }
   else if (!ppszUID || ! gbAimEnabled)
   {

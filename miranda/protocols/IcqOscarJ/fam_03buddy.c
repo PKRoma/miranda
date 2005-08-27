@@ -382,43 +382,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		disposeChain(&pChain);
 	}
 
-/*  if (szClient == 0)
-  {
-    NetLog_Server("No client identification, put default ICQ client for protocol.");
-
-    switch (wVersion)
-    {  // client detection failed, provide default clients
-      case 1: 
-        szClient = "ICQ 1.x";
-        break;
-      case 2: 
-        szClient = "ICQ 2.x";
-        break;
-      case 4:
-        szClient = "ICQ98";
-        break;
-      case 6:
-        szClient = "ICQ99";
-        break;
-      case 7:
-        szClient = "ICQ 2000/Icq2Go";
-        break;
-      case 8: 
-        szClient = "ICQ 2001-2003a";
-        break;
-      case 9: 
-        szClient = "ICQ Lite";
-        break;
-      case 0xA:
-        szClient = "ICQ 2003b";
-    }
-  }
-  else
-  {
-    if (szClient != (char*)-1)
-      NetLog_Server("Client identified as %s", szClient);
-  }*/
-
 	// Save contacts details in database
   if (hContact != NULL)
   {
@@ -440,7 +403,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 		ICQWriteContactSettingDword(hContact,  "IdleTS",       tIdleTS);
 
 		// Update info?
-		if ((time(NULL) - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD)
+		if (dwUIN && ((time(NULL) - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD))
 			icq_QueueUser(hContact);
 	}
 	else

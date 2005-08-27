@@ -81,6 +81,7 @@ void icq_EnableMultipleControls(HWND hwndDlg, const UINT *controls, int cControl
 }
 
 
+
 void icq_ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
 	int i;
@@ -122,6 +123,7 @@ int IcqStatusToMiranda(WORD nIcqStatus)
 
 	return nMirandaStatus;
 }
+
 
 
 WORD MirandaStatusToIcq(int nMirandaStatus)
@@ -179,6 +181,7 @@ WORD MirandaStatusToIcq(int nMirandaStatus)
 }
 
 
+
 int MirandaStatusToSupported(int nMirandaStatus)
 {
 	int nSupportedStatus;
@@ -220,10 +223,12 @@ int MirandaStatusToSupported(int nMirandaStatus)
 }
 
 
+
 char* MirandaStatusToString(int mirandaStatus)
 {
 	return (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, 0);
 }
+
 
 
 char**MirandaStatusToAwayMsg(int nStatus)
@@ -253,6 +258,7 @@ char**MirandaStatusToAwayMsg(int nStatus)
 }
 
 
+
 int AwayMsgTypeToStatus(int nMsgType)
 {
   switch (nMsgType)
@@ -278,6 +284,7 @@ int AwayMsgTypeToStatus(int nMsgType)
 }
 
 
+
 void InitCookies(void)
 {
   InitializeCriticalSection(&cookieMutex);
@@ -288,12 +295,14 @@ void InitCookies(void)
 }
 
 
+
 void UninitCookies(void)
 {
   SAFE_FREE(&cookie);
 
   DeleteCriticalSection(&cookieMutex);
 }
+
 
 
 // Generate and allocate cookie
@@ -320,6 +329,7 @@ DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra)
 }
 
 
+
 DWORD GenerateCookie(WORD wIdent)
 {
   DWORD dwThisSeq;
@@ -332,6 +342,7 @@ DWORD GenerateCookie(WORD wIdent)
 
   return dwThisSeq;
 }
+
 
 
 int FindCookie(DWORD dwCookie, DWORD *pdwUin, void **ppvExtra)
@@ -364,6 +375,7 @@ int FindCookie(DWORD dwCookie, DWORD *pdwUin, void **ppvExtra)
 }
 
 
+
 int FindCookieByData(void *pvExtra,DWORD *pdwCookie, DWORD *pdwUin)
 {
 	int i;
@@ -394,9 +406,11 @@ int FindCookieByData(void *pvExtra,DWORD *pdwCookie, DWORD *pdwUin)
 }
 
 
+
 void FreeCookie(DWORD dwCookie)
 {
 	int i;
+  DWORD tNow = time(NULL);
 
 
 	EnterCriticalSection(&cookieMutex);
@@ -412,7 +426,7 @@ void FreeCookie(DWORD dwCookie)
 			// Cookie found, exit loop
 			break;
 		}
-    if (cookie[i].dwTime + COOKIE_TIMEOUT < (DWORD)time(NULL))
+    if (cookie[i].dwTime + COOKIE_TIMEOUT < tNow)
     { // cookie expired, remove too
 			cookieCount--;
 			memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
@@ -423,6 +437,7 @@ void FreeCookie(DWORD dwCookie)
 
 	LeaveCriticalSection(&cookieMutex);
 }
+
 
 
 void SetGatewayIndex(HANDLE hConn, DWORD dwIndex)
@@ -454,6 +469,7 @@ void SetGatewayIndex(HANDLE hConn, DWORD dwIndex)
 }
 
 
+
 DWORD GetGatewayIndex(HANDLE hConn)
 {
 	int i;
@@ -474,6 +490,7 @@ DWORD GetGatewayIndex(HANDLE hConn)
 
 	return 1; // this is default
 }
+
 
 
 void FreeGatewayIndex(HANDLE hConn)
@@ -500,6 +517,7 @@ void FreeGatewayIndex(HANDLE hConn)
 }
 
 
+
 void AddToSpammerList(DWORD dwUIN)
 {
   EnterCriticalSection(&cookieMutex);
@@ -510,6 +528,7 @@ void AddToSpammerList(DWORD dwUIN)
 
   LeaveCriticalSection(&cookieMutex);
 }
+
 
 
 BOOL IsOnSpammerList(DWORD dwUIN)
@@ -532,6 +551,7 @@ BOOL IsOnSpammerList(DWORD dwUIN)
 
   return FALSE;
 }
+
 
 
 // ICQ contacts cache
@@ -561,6 +581,7 @@ static void AddToCache(HANDLE hContact, DWORD dwUin)
 
   LeaveCriticalSection(&cacheMutex);
 }
+
 
 
 void InitCache(void)
@@ -596,12 +617,14 @@ void InitCache(void)
 }
 
 
+
 void UninitCache(void)
 {
 	SAFE_FREE(&contacts_cache);
 
 	DeleteCriticalSection(&cacheMutex);
 }
+
 
 
 void DeleteFromCache(HANDLE hContact)
@@ -635,6 +658,7 @@ void DeleteFromCache(HANDLE hContact)
 }
 
 
+
 static HANDLE HandleFromCacheByUin(DWORD dwUin)
 {
 	int i;
@@ -656,6 +680,7 @@ static HANDLE HandleFromCacheByUin(DWORD dwUin)
 
 	return hContact;
 }
+
 
 
 HANDLE HContactFromUIN(DWORD uin, int *Added)
@@ -735,6 +760,7 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
 }
 
 
+
 HANDLE HContactFromUID(char* pszUID, int *Added)
 {
 	HANDLE hContact;
@@ -752,8 +778,12 @@ HANDLE HContactFromUID(char* pszUID, int *Added)
 		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
 			if (!ICQGetContactSettingUID(hContact, &dwUin, &szUid))
 			{
-				if (!dwUin && !strcmp(szUid, pszUID))
+				if (!dwUin && !stricmp(szUid, pszUID))
 				{
+          if (strcmp(szUid, pszUID))
+          { // fix case in SN
+            ICQWriteContactSettingString(hContact, UNIQUEIDSETTING, pszUID);
+          }
           SAFE_FREE(&szUid);
 					return hContact;
 				}
@@ -791,6 +821,7 @@ HANDLE HContactFromUID(char* pszUID, int *Added)
 
 	return INVALID_HANDLE_VALUE;
 }
+
 
 
 char *NickFromHandle(HANDLE hContact)
