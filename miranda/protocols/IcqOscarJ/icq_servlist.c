@@ -1303,7 +1303,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
 {
   WORD wItemID;
   DWORD dwUin;
-  char* szUid;
+  uid_str szUid;
   servlistcookie* ack;
   DWORD dwCookie;
 
@@ -1336,7 +1336,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
 
   ack->dwAction = SSA_CONTACT_ADD;
   ack->dwUin = dwUin;
-  ack->szUID = szUid;
+  ack->szUID = strdup(szUid);
   ack->wGroupId = wGroupID;
   ack->wContactId = wItemID;
 
@@ -1378,7 +1378,7 @@ DWORD removeServContact(HANDLE hContact)
   WORD wGroupID;
   WORD wItemID;
   DWORD dwUin;
-  char* szUid;
+  uid_str szUid;
   servlistcookie* ack;
   DWORD dwCookie;
 
@@ -1415,7 +1415,7 @@ DWORD removeServContact(HANDLE hContact)
   {
     ack->dwAction = SSA_CONTACT_REMOVE;
     ack->dwUin = dwUin;
-    ack->szUID = szUid;
+    ack->szUID = strdup(szUid);
     ack->hContact = hContact;
     ack->wGroupId = wGroupID;
     ack->wContactId = wItemID;
@@ -1437,7 +1437,7 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   WORD wItemID;
   WORD wGroupID;
   DWORD dwUin;
-  char* szUid;
+  uid_str szUid;
   servlistcookie* ack;
   DWORD dwCookie, dwCookie2;
   DBVARIANT dbvNote;
@@ -1511,7 +1511,7 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   ack->szGroupName = NULL;
   ack->dwAction = SSA_CONTACT_SET_GROUP;
   ack->dwUin = dwUin;
-  ack->szUID = szUid;
+  ack->szUID = strdup(szUid);
   ack->wGroupId = wGroupID;
   ack->wContactId = wItemID;
   ack->wNewContactId = GenerateServerId(SSIT_ITEM); // icq5 recreates also this, imitate
@@ -1582,7 +1582,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
   WORD wGroupID;
   WORD wItemID;
   DWORD dwUin;
-  char* szUid;
+  uid_str szUid;
   BOOL bAuthRequired;
   DBVARIANT dbvNote;
   char* pszNote;
@@ -1640,7 +1640,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
     ack->wContactId = wItemID;
     ack->wGroupId = wGroupID;
     ack->dwUin = dwUin;
-    ack->szUID = szUid;
+    ack->szUID = strdup(szUid);
     ack->hContact = hContact;
 
     dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, dwUin, ack);
@@ -1664,7 +1664,7 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
   WORD wGroupID;
   WORD wItemID;
   DWORD dwUin;
-  char* szUid;
+  uid_str szUid;
   BOOL bAuthRequired;
   DBVARIANT dbvNick;
   char* pszNick;
@@ -1719,7 +1719,7 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
     ack->wContactId = wItemID;
     ack->wGroupId = wGroupID;
     ack->dwUin = dwUin;
-    ack->szUID = szUid;
+    ack->szUID = strdup(szUid);
     ack->hContact = hContact;
 
     dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, dwUin, ack);
@@ -1831,7 +1831,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
       ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
     {
       DWORD dwUin;
-      char* szUid;
+      uid_str szUid;
 
       // Does this contact have a UID?
       if (!ICQGetContactSettingUID((HANDLE)wParam, &dwUin, &szUid))
@@ -1841,7 +1841,6 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
         DBVARIANT dbvNick;
         DBVARIANT dbvGroup;
 
-        SAFE_FREE(&szUid);
         // Read nick name from DB
         if (DBGetContactSetting((HANDLE)wParam, "CList", "MyHandle", &dbvNick))
           pszNick = NULL; // if not read, no nick
@@ -1958,7 +1957,7 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 		WORD wInvisibleID;
     WORD wIgnoreID;
 		DWORD dwUIN;
-    char* szUID;
+    uid_str szUID;
 
 		wContactID = ICQGetContactSettingWord((HANDLE)wParam, "ServerId", 0);
 		wGroupID = ICQGetContactSettingWord((HANDLE)wParam, "SrvGroupId", 0);
@@ -2047,7 +2046,6 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
         icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUIN, szUID, 0, wIgnoreID, NULL, NULL, 0, SSI_ITEM_IGNORE);
       }
     }
-    SAFE_FREE(&szUID);
   }
 
 	return 0;

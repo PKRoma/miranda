@@ -42,7 +42,7 @@ void InitDB();
 BYTE ICQGetContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef);
 WORD ICQGetContactSettingWord(HANDLE hContact, const char* szSetting, WORD wDef);
 DWORD ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef);
-int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, char** ppszUid);
+int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid);
 int ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv);
 char* ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef);
 

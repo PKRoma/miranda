@@ -102,7 +102,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
 	DWORD dwID2;
 	WORD wTLVCount;
 	WORD wMessageFormat;
-  char *szUID;
+  uid_str szUID;
 
 
 	// These two values are some kind of reference, we need to save
@@ -123,7 +123,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
   }
   else 
   {
-    szUID = NULL;
+    szUID[0] = '\0';
     if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
   }
 
@@ -2142,7 +2142,7 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwSequence)
 {
 	DWORD dwUin;
-  char *szUID;
+  uid_str szUID;
 	WORD wChannel;
 	HANDLE hContact;
 	message_cookie_data* pCookieData;
@@ -2331,10 +2331,10 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
 	DWORD dwID1;
 	DWORD dwID2;
 	DWORD dwUin;
+  uid_str szUID;
 	WORD wChannel;
 	WORD wNotification;
 	HANDLE hContact;
-  char *szUID;
 
   if (wLen < 14)
 	{
@@ -2414,17 +2414,14 @@ void sendTypingNotification(HANDLE hContact, WORD wMTNCode)
 	icq_packet p;
 	BYTE byUinlen;
 	DWORD dwUin;
-  char *szUID;
+  uid_str szUID;
 
 	_ASSERTE((wMTNCode == MTN_FINISHED) || (wMTNCode == MTN_TYPED) || (wMTNCode == MTN_BEGUN));
 
   if (ICQGetContactSettingUID(hContact, &dwUin, &szUID))
     return; // Invalid contact
 
-  if (dwUin)
-    byUinlen = getUINLen(dwUin);
-  else
-    byUinlen = strlennull(szUID);
+  byUinlen = getUIDLen(dwUin, szUID);
 
 	p.wLen = 23 + byUinlen;
 	write_flap(&p, ICQ_DATA_CHAN);
@@ -2432,13 +2429,7 @@ void sendTypingNotification(HANDLE hContact, WORD wMTNCode)
 	packLEDWord(&p, 0x0000);          // Msg ID
 	packLEDWord(&p, 0x0000);          // Msg ID
 	packWord(&p, 0x01);               // Channel
-  if (dwUin)
-    packUIN(&p, dwUin);
-  else
-  {
-    packByte(&p, byUinlen);
-    packBuffer(&p, szUID, byUinlen);
-  }
+  packUID(&p, dwUin, szUID);        // User ID
 	packWord(&p, wMTNCode);           // Notification type
 
 	sendServPacket(&p);

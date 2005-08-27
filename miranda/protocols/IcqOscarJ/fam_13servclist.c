@@ -1375,7 +1375,7 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 {
 	WORD wReasonLen;
 	DWORD dwUin;
-  char* szUid;
+  uid_str szUid;
 	HANDLE hcontact;
 	CCSDATA ccs;
 	PROTORECVEVENT pre;
@@ -1393,17 +1393,13 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
   if (dwUin && IsOnSpammerList(dwUin))
   {
     NetLog_Server("Ignored Message from known Spammer");
-    SAFE_FREE(&szUid);
     return;
   }
 
 	unpackWord(&buf, &wReasonLen);
 	wLen -= 2;
 	if (wReasonLen > wLen)
-  {
-    SAFE_FREE(&szUid);
 		return;
-  }
 
   if (dwUin) 
     hcontact = HContactFromUIN(dwUin, &bAdded);
@@ -1478,7 +1474,6 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 
   SAFE_FREE(&szReason);
   DBFreeVariant(&dbv);
-  SAFE_FREE(&szUid);
   return;
 }
 

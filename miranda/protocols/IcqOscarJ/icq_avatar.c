@@ -66,6 +66,7 @@ typedef struct avatarrequest_t
 {
   int type;
   DWORD dwUin;
+  char* szUid;
   HANDLE hContact;
   char *hash;
   unsigned int hashlen;
@@ -93,13 +94,15 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi);
 
 
-void GetFullAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen)
+void GetFullAvatarFileName(int dwUin, char* szUid, int dwFormat, char* pszDest, int cbLen)
 {
-  GetAvatarFileName(dwUin, pszDest, cbLen);
+  GetAvatarFileName(dwUin, szUid, pszDest, cbLen);
   AddAvatarExt(dwFormat, pszDest);
 }
 
-void GetAvatarFileName(int dwUin, char* pszDest, int cbLen)
+
+
+void GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbLen)
 {
   int tPathLen;
 
@@ -113,7 +116,11 @@ void GetAvatarFileName(int dwUin, char* pszDest, int cbLen)
   {
     ltoa(dwUin, pszDest + tPathLen, 10);
   }
-  else 
+  else if (szUid)
+  {
+    strcpy(pszDest + tPathLen, szUid);
+  }
+  else
   {
     char szBuf[MAX_PATH];
 
@@ -130,6 +137,8 @@ void GetAvatarFileName(int dwUin, char* pszDest, int cbLen)
   }
 }
 
+
+
 void AddAvatarExt(int dwFormat, char* pszDest)
 {
   if (dwFormat == PA_FORMAT_JPEG)
@@ -145,6 +154,8 @@ void AddAvatarExt(int dwFormat, char* pszDest)
   else
     strcat(pszDest, ".dat");
 }
+
+
 
 int DetectAvatarFormatBuffer(char* pBuffer)
 {
@@ -172,6 +183,7 @@ int DetectAvatarFormatBuffer(char* pBuffer)
 }
 
 
+
 int DetectAvatarFormat(char* szFile)
 {
   char pBuf[32];
@@ -182,6 +194,7 @@ int DetectAvatarFormat(char* szFile)
 
   return DetectAvatarFormatBuffer(pBuf);
 }
+
 
 
 void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called from event
@@ -260,6 +273,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
 }
 
 
+
 void StopAvatarThread()
 {
   AvatarsReady = FALSE; // the connection are about to close
@@ -273,8 +287,9 @@ void StopAvatarThread()
 }
 
 
+
 // handle Contact's avatar hash
-void handleAvatarContactHash(DWORD dwUIN, HANDLE hContact, unsigned char* pHash, unsigned int nHashLen, WORD wOldStatus)
+void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned char* pHash, unsigned int nHashLen, WORD wOldStatus)
 {
   DBVARIANT dbv;
   int dummy;
@@ -307,7 +322,7 @@ void handleAvatarContactHash(DWORD dwUIN, HANDLE hContact, unsigned char* pHash,
           {
             dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
 
-            GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
+            GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH);
             if (access(szAvatar, 0) == 0)
             { // the file is there, link to contactphoto, save hash
               NetLog_Server("Avatar is known, hash stored, linked to file.");
@@ -348,7 +363,7 @@ void handleAvatarContactHash(DWORD dwUIN, HANDLE hContact, unsigned char* pHash,
           }
           else
           {
-            GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
+            GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH);
             if (access(szAvatar, 0) == 0)
             { // the file exists, so try to update photo setting
               if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
@@ -377,8 +392,8 @@ void handleAvatarContactHash(DWORD dwUIN, HANDLE hContact, unsigned char* pHash,
 
         ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
 
-        GetAvatarFileName(dwUIN, szAvatar, MAX_PATH);
-        GetAvatarData(hContact, dwUIN, pHash, 0x14 /*nHashLen*/, szAvatar);
+        GetAvatarFileName(dwUIN, szUID, szAvatar, MAX_PATH);
+        GetAvatarData(hContact, dwUIN, szUID, pHash, 0x14 /*nHashLen*/, szAvatar);
         // avatar request sent or added to queue
       }
       else
@@ -403,7 +418,7 @@ void handleAvatarContactHash(DWORD dwUIN, HANDLE hContact, unsigned char* pHash,
           {
             dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
 
-            GetFullAvatarFileName(dwUIN, dwPaFormat, szAvatar, MAX_PATH);
+            GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH);
             if (access(szAvatar, 0) == 0)
             { // the file is there, link to contactphoto
               if (dwPaFormat != PA_FORMAT_UNKNOWN && dwPaFormat != PA_FORMAT_XML)
@@ -450,8 +465,9 @@ void handleAvatarContactHash(DWORD dwUIN, HANDLE hContact, unsigned char* pHash,
 }
 
 
+
 // request avatar data from server
-int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen, char* file)
+int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigned int hashlen, char* file)
 {
   avatarthreadstartinfo* atsi;
 
@@ -459,17 +475,15 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
   if (AvatarsReady && !atsi->paused) // check if we are ready
   {
     icq_packet packet;
-    char szUin[33];
     BYTE nUinLen;
     DWORD dwCookie;
     avatarcookie* ack;
 
-    _itoa(dwUin, szUin, 10);
-    nUinLen = strlen(szUin);
+    nUinLen = getUIDLen(dwUin, szUid);
     
     ack = (avatarcookie*)malloc(sizeof(avatarcookie));
     if (!ack) return 0; // out of memory, go away
-    ack->dwUin = dwUin;
+    ack->dwUin = 1; //dwUin; // I should be damned for this - only to identify get request
     ack->hContact = hContact;
     ack->hash = (char*)malloc(hashlen);
     memcpy(ack->hash, hash, hashlen); // copy the data
@@ -480,8 +494,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
     packet.wLen = 12 + nUinLen + hashlen;
     write_flap(&packet, 2);
     packFNACHeader(&packet, ICQ_AVATAR_FAMILY, ICQ_AVATAR_GET_REQUEST, 0, dwCookie);
-    packByte(&packet, nUinLen);
-    packBuffer(&packet, szUin, nUinLen);
+    packUID(&packet, dwUin, szUid);
     packByte(&packet, 1); // unknown, probably type of request: 1 = get icon :)
     packBuffer(&packet, hash, (unsigned short)hashlen);
 
@@ -527,6 +540,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
     }
     ar->type = 1; // get avatar
     ar->dwUin = dwUin;
+    ar->szUid = strdup(szUid);
     ar->hContact = hContact;
     ar->hash = (char*)malloc(hashlen);
     memcpy(ar->hash, hash, hashlen); // copy the data
@@ -547,6 +561,8 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen
 
   return -1; // we added to queue
 }
+
+
 
 // upload avatar data to server
 int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
@@ -718,8 +734,9 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
           switch (reqdata->type)
           {
           case 1: // get avatar
-            GetAvatarData(reqdata->hContact, reqdata->dwUin, reqdata->hash, reqdata->hashlen, reqdata->szFile);
+            GetAvatarData(reqdata->hContact, reqdata->dwUin, reqdata->szUid, reqdata->hash, reqdata->hashlen, reqdata->szFile);
 
+            SAFE_FREE(&reqdata->szUid);
             SAFE_FREE(&reqdata->szFile);
             SAFE_FREE(&reqdata->hash); // as soon as it will be copied
             break;
@@ -1013,6 +1030,7 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     break;
   }
 }
+
 
 
 void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi)

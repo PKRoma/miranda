@@ -106,6 +106,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	DWORD dwRealIP;
 	DWORD dwIP;
 	DWORD dwUIN;
+  uid_str szUID;
 	DWORD dwDirectConnCookie;
 	DWORD dwFT1, dwFT2, dwFT3;
 	LPSTR szClient = 0;
@@ -119,7 +120,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 	DWORD dwOnlineSince;
 	WORD wIdleTimer = 0;
 	time_t tIdleTS = 0;
-  char *szUID;
 
 	// Unpack the sender's user ID
   if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
@@ -276,9 +276,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 			// Get Avatar Hash TLV
 			pTLV = getTLV(pChain, 0x1D, 1);
       if (pTLV)
-        handleAvatarContactHash(dwUIN, hContact, pTLV->pData, pTLV->wLen, wOldStatus);
+        handleAvatarContactHash(dwUIN, szUID, hContact, pTLV->pData, pTLV->wLen, wOldStatus);
       else
-        handleAvatarContactHash(dwUIN, hContact, NULL, 0, wOldStatus);
+        handleAvatarContactHash(dwUIN, szUID, hContact, NULL, 0, wOldStatus);
 
 			// Update the contact's capabilities
 			if (wOldStatus == ID_STATUS_OFFLINE)
@@ -432,11 +432,12 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 }
 
 
+
 static void handleUserOffline(BYTE *buf, WORD wLen)
 {
 	HANDLE hContact;
 	DWORD dwUIN;
-  char *szUID;
+  uid_str szUID;
 
 	// Unpack the sender's user ID
   if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
@@ -490,10 +491,11 @@ static void handleReplyBuddy(BYTE *buf, WORD wPackLen)
 }
 
 
+
 static void handleNotifyRejected(BYTE *buf, WORD wPackLen)
 {
 	DWORD dwUIN;
-  char *szUID;
+  uid_str szUID;
 
   if (!unpackUID(&buf, &wPackLen, &dwUIN, &szUID))
     return;

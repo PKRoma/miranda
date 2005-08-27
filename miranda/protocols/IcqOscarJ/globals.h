@@ -38,6 +38,7 @@
 #ifndef __GLOBALS_H
 #define __GLOBALS_H
 
+typedef char uid_str[MAX_PATH];
 
 // from init.c
 HINSTANCE hInst;

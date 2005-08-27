@@ -161,7 +161,8 @@ int IcqIdleChanged(WPARAM wParam, LPARAM lParam)
 int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 {
   PROTO_AVATAR_INFORMATION* pai = (PROTO_AVATAR_INFORMATION*)lParam;
-  int dwUIN;
+  DWORD dwUIN;
+  uid_str szUID;
   DBVARIANT dbv, dbvSaved;
   int dwPaFormat;
 
@@ -170,12 +171,16 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
   if (ICQGetContactSetting(pai->hContact, "AvatarHash", &dbv))
     return GAIR_NOAVATAR; // we did not found avatar hash - no avatar available
 
-  if (ICQGetContactSettingUID(pai->hContact, &dwUIN, NULL))
+  if (ICQGetContactSettingUID(pai->hContact, &dwUIN, &szUID))
+  {
+    DBFreeVariant(&dbv);
+
     return GAIR_NOAVATAR; // we do not support avatars for invalid contacts
+  }
   dwPaFormat = ICQGetContactSettingByte(pai->hContact, "AvatarType", PA_FORMAT_UNKNOWN);
   if (dwPaFormat != PA_FORMAT_UNKNOWN)
   { // we know the format, test file
-    GetFullAvatarFileName(dwUIN, dwPaFormat, pai->filename, MAX_PATH);
+    GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, pai->filename, MAX_PATH);
 
     pai->format = dwPaFormat; 
 
@@ -193,8 +198,8 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
   if ((wParam & GAIF_FORCE) != 0 && pai->hContact != 0)
   { // request avatar data
-    GetAvatarFileName(dwUIN, pai->filename, MAX_PATH);
-    GetAvatarData(pai->hContact, dwUIN, dbv.pbVal, dbv.cpbVal, pai->filename);
+    GetAvatarFileName(dwUIN, szUID, pai->filename, MAX_PATH);
+    GetAvatarData(pai->hContact, dwUIN, szUID, dbv.pbVal, dbv.cpbVal, pai->filename);
     DBFreeVariant(&dbv);
 
     return GAIR_WAITFOR;
@@ -375,15 +380,16 @@ int IcqAuthAllow(WPARAM wParam, LPARAM lParam)
 	if (icqOnline && wParam)
 	{
 		DBEVENTINFO dbei;
+    DWORD body[2];
 		DWORD uin;
-    char* uid;
-    HANDLE hContact = (HANDLE)CallService(MS_DB_EVENT_GETCONTACT, wParam, 0);
+    uid_str uid;
+    HANDLE hContact;
 
 
 		ZeroMemory(&dbei, sizeof(dbei));
 		dbei.cbSize = sizeof(dbei);
-		dbei.cbBlob = sizeof(DWORD);
-		dbei.pBlob = (PBYTE)&uin; // TODO: remove this is useless
+		dbei.cbBlob = sizeof(DWORD)*2;
+		dbei.pBlob = (PBYTE)&body;
 
 		if (CallService(MS_DB_EVENT_GET, wParam, (LPARAM)&dbei))
 			return 1;
@@ -394,12 +400,12 @@ int IcqAuthAllow(WPARAM wParam, LPARAM lParam)
 		if (strcmp(dbei.szModule, gpszICQProtoName))
 			return 1;
 
+    hContact = (HANDLE)body[1]; // this is bad - needs new auth system
+
     if (ICQGetContactSettingUID(hContact, &uin, &uid))
       return 1;
 
 		icq_sendAuthResponseServ(uin, uid, 1, "");
-
-    SAFE_FREE(&uid);
 
 		return 0; // Success
 	}
@@ -414,15 +420,16 @@ int IcqAuthDeny(WPARAM wParam, LPARAM lParam)
 	if (icqOnline && wParam)
 	{
 		DBEVENTINFO dbei;
+    DWORD body[2];
     DWORD uin;
-    char* uid;
-    HANDLE hContact = (HANDLE)CallService(MS_DB_EVENT_GETCONTACT, wParam, 0);
+    uid_str uid;
+    HANDLE hContact;
 
 
 		ZeroMemory(&dbei, sizeof(dbei));
 		dbei.cbSize = sizeof(dbei);
-		dbei.cbBlob = sizeof(DWORD);
-		dbei.pBlob = (PBYTE)&uin; // this is useless
+		dbei.cbBlob = sizeof(DWORD)*2;
+		dbei.pBlob = (PBYTE)&body;
 
 		if (CallService(MS_DB_EVENT_GET, wParam, (LPARAM)&dbei))
 			return 1;
@@ -433,12 +440,12 @@ int IcqAuthDeny(WPARAM wParam, LPARAM lParam)
 		if (strcmp(dbei.szModule, gpszICQProtoName))
 			return 1;
 
+    hContact = (HANDLE)body[1]; // this is bad - needs new auth system
+
     if (ICQGetContactSettingUID(hContact, &uin, &uid))
       return 1;
 
 		icq_sendAuthResponseServ(uin, uid, 0, (char *)lParam);
-
-    SAFE_FREE(&uid);
 
 		return 0; // Success
 	}
@@ -910,7 +917,7 @@ int IcqSetApparentMode(WPARAM wParam, LPARAM lParam)
 	{
 		CCSDATA* ccs = (CCSDATA*)lParam;
     DWORD uin;
-    char* uid;
+    uid_str uid;
 
     if (ICQGetContactSettingUID(ccs->hContact, &uin, &uid))
       return 1; // Invalid contact
@@ -936,13 +943,11 @@ int IcqSetApparentMode(WPARAM wParam, LPARAM lParam)
 						if (ccs->wParam != 0) // Add to new list
 							icq_sendChangeVisInvis(ccs->hContact, uin, uid, ccs->wParam==ID_STATUS_OFFLINE, 1);
 					}
-          SAFE_FREE(&uid);
 
-					return 0; // Success
+          return 0; // Success
 				}
 			}
 		}
-    SAFE_FREE(&uid);
 	}
 
 	return 1; // Failure
@@ -956,7 +961,7 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
 	{
 		CCSDATA* ccs = (CCSDATA*)lParam;
     DWORD dwUin;
-    char* szUID;
+    uid_str szUID;
 		WORD wStatus;
 
     if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUID))
@@ -1012,7 +1017,6 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
         return icq_sendGetAimAwayMsgServ(szUID, MTYPE_AUTOAWAY);
       }
     }
-    SAFE_FREE(&szUID);
 	}
 
 	return 0; // Failure
@@ -1031,7 +1035,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 			WORD wRecipientStatus;
 			DWORD dwCookie;
 			DWORD dwUin;
-      char* szUID;
+      uid_str szUID;
 			char* pszText;
 
       if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUID))
@@ -1147,7 +1151,6 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 				}
         if (!dwUin) SAFE_FREE(&pszText);
 			}
-      SAFE_FREE(&szUID);
 
 			return dwCookie; // Success
 		}
@@ -1169,7 +1172,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 			WORD wRecipientStatus;
 			DWORD dwCookie;
 			DWORD dwUin;
-      char* szUID;
+      uid_str szUID;
 			wchar_t* pszText;
 
 			if (!gbUtfEnabled || (ccs->wParam & PREF_UNICODE == PREF_UNICODE) || (!CheckContactCapabilities(ccs->hContact, CAPF_UTF)))
@@ -1209,7 +1212,6 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 
 				if ((wRecipientStatus == ID_STATUS_OFFLINE) || IsUnicodeAscii(pszText, wcslen(pszText)))
 				{ // send as plain if no special char or user offline
-          SAFE_FREE(&szUID);
 					return IcqSendMessage(wParam, lParam);
 				};
 
@@ -1289,8 +1291,6 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 				}
 
 			}
-      SAFE_FREE(&szUID);
-
 			return dwCookie; // Success
 		}
 	}
@@ -1773,14 +1773,13 @@ int IcqGrantAuthorization(WPARAM wParam, LPARAM lParam)
   if (gnCurrentStatus != ID_STATUS_OFFLINE && gnCurrentStatus != ID_STATUS_CONNECTING && wParam != 0)
   {
     DWORD dwUin;
-    char *szUid;
+    uid_str szUid;
 
     if (ICQGetContactSettingUID((HANDLE)wParam, &dwUin, &szUid))
       return 0; // Invalid contact
 
     // send without reason, do we need any ?
     icq_sendGrantAuthServ(dwUin, szUid, NULL);
-    SAFE_FREE(&szUid);
   }
 
   return 0;

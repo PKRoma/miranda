@@ -41,6 +41,7 @@
 static WORD wCookieSeq;
 static icq_cookie_info *cookie = NULL;
 static int cookieCount = 0;
+static int cookieSize = 0;
 CRITICAL_SECTION cookieMutex; // we want this in avatar thread, used as queue lock
 
 typedef struct gateway_index_s
@@ -285,13 +286,52 @@ int AwayMsgTypeToStatus(int nMsgType)
 
 
 
+static int ResizeCookieList(int nSize)
+{
+  if ((cookieSize < nSize) || ((cookieSize > nSize + 6) && nSize))
+  {
+    icq_cookie_info *pNew;
+    int n = 5;
+    int newSize;
+
+    if (cookieSize < nSize)
+      newSize = cookieSize + 4;
+    else
+      newSize = cookieSize - 4;
+
+rclTryAgain:
+    pNew = (icq_cookie_info *)realloc(cookie, sizeof(icq_cookie_info) * newSize);
+
+    if (!pNew)
+    { // realloc failed, cookies intact... try again
+      NetLog_Server("ResizeCookieList: realloc failed.");
+      Sleep(100);
+      n--; // try five times to realloc then give up..
+      if (n) goto rclTryAgain;
+
+      return 1; // Failure
+    }
+    else
+    {
+      cookie = pNew;
+      cookieSize = newSize;
+    }
+  }
+  return 0; // Success
+}
+
+
+
 void InitCookies(void)
 {
   InitializeCriticalSection(&cookieMutex);
 
   cookieCount = 0;
+  cookieSize = 0;
   cookie = NULL;
   wCookieSeq = 2;
+
+  ResizeCookieList(4);
 }
 
 
@@ -312,11 +352,18 @@ DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra)
 
   EnterCriticalSection(&cookieMutex);
 
+  if (ResizeCookieList(cookieCount + 1))
+  { // resizing failed...
+    LeaveCriticalSection(&cookieMutex);
+    // this is horrible, but can't do anything better
+    return GenerateCookie(wIdent);
+  }
+
   dwThisSeq = wCookieSeq++;
   dwThisSeq &= 0x7FFF;
   dwThisSeq |= wIdent<<0x10;
 
-  cookie = (icq_cookie_info *)realloc(cookie, sizeof(icq_cookie_info) * (cookieCount + 1));
+//  cookie = (icq_cookie_info *)realloc(cookie, sizeof(icq_cookie_info) * (cookieCount + 1));
   cookie[cookieCount].dwCookie = dwThisSeq;
   cookie[cookieCount].dwUin = dwUin;
   cookie[cookieCount].pvExtra = pvExtra;
@@ -421,16 +468,16 @@ void FreeCookie(DWORD dwCookie)
 		{
 			cookieCount--;
 			memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
-			cookie = (icq_cookie_info*)realloc(cookie, sizeof(icq_cookie_info) * cookieCount);
+      ResizeCookieList(cookieCount);
 
 			// Cookie found, exit loop
 			break;
 		}
-    if (cookie[i].dwTime + COOKIE_TIMEOUT < tNow)
+    if ((cookie[i].dwTime + COOKIE_TIMEOUT) < tNow)
     { // cookie expired, remove too
 			cookieCount--;
 			memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
-			cookie = (icq_cookie_info*)realloc(cookie, sizeof(icq_cookie_info) * cookieCount);
+      ResizeCookieList(cookieCount);
       i--; // fix the loop
     }
 	}
@@ -766,7 +813,7 @@ HANDLE HContactFromUID(char* pszUID, int *Added)
 	HANDLE hContact;
 	char* szProto;
   DWORD dwUin;
-	char* szUid;
+	uid_str szUid;
 
   if (Added) *Added = 0;
 
@@ -784,10 +831,8 @@ HANDLE HContactFromUID(char* pszUID, int *Added)
           { // fix case in SN
             ICQWriteContactSettingString(hContact, UNIQUEIDSETTING, pszUID);
           }
-          SAFE_FREE(&szUid);
 					return hContact;
 				}
-        SAFE_FREE(&szUid);
 			}
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}

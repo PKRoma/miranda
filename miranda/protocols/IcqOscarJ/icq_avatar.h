@@ -39,15 +39,15 @@
 
 extern BOOL AvatarsReady;
 
-void handleAvatarContactHash(DWORD dwUIN, HANDLE hContact, unsigned char* pHash, unsigned int nHashLen, WORD wOldStatus);
+void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned char* pHash, unsigned int nHashLen, WORD wOldStatus);
 
-void GetFullAvatarFileName(int dwUin, int dwFormat, char* pszDest, int cbLen);
-void GetAvatarFileName(int dwUin, char* pszDest, int cbLen);
+void GetFullAvatarFileName(int dwUin, char* szUid, int dwFormat, char* pszDest, int cbLen);
+void GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbLen);
 void AddAvatarExt(int dwFormat, char* pszDest);
 
 int DetectAvatarFormat(char* szFile);
 
-int GetAvatarData(HANDLE hContact, DWORD dwUin, char* hash, unsigned int hashlen, char* file);
+int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigned int hashlen, char* file);
 int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen);
 
 void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen);

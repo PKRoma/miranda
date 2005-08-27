@@ -99,7 +99,7 @@ void __fastcall unpackDWord(unsigned char **, DWORD *);
 void unpackString(unsigned char **buf, char *string, WORD len);
 void unpackWideString(unsigned char **buf, WCHAR *string, WORD len);
 void unpackTLV(unsigned char **, WORD *, WORD *, char **);
-BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, char** ppszUID);
+BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, uid_str* ppszUID);
 
 void __fastcall unpackLEWord(unsigned char **, WORD *);
 void __fastcall unpackLEDWord(unsigned char **, DWORD *);

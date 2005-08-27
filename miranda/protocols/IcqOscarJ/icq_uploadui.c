@@ -270,8 +270,6 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
   static int currentState;
   static HANDLE hCurrentContact;
   static int lastAckResult = 0;
-  static DWORD dwCurrentUin;
-  static char* szCurrentUid;
   static WORD wNewContactId;
   static WORD wNewGroupId;
   static char* szNewGroupName;
@@ -346,6 +344,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
           char* pszNick = NULL;
           char* pszNote = NULL;
           DBVARIANT dbv;
+          DWORD dwUIN;
+          uid_str szUID;
 
           // Only upload custom nicks
           if (!DBGetContactSetting(hCurrentContact, "CList", "MyHandle", &dbv))
@@ -362,8 +362,11 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             DBFreeVariant(&dbv);
           }
 
-          currentAction = ACTION_ADDBUDDYAUTH;
-          currentSequence = sendUploadBuddy(hCurrentContact, ICQ_LISTS_ADDTOLIST, dwCurrentUin, szCurrentUid, wNewContactId, wNewGroupId, pszNick, pszNote, 1, SSI_ITEM_BUDDY);
+          if (!ICQGetContactSettingUID(hCurrentContact, &dwUIN, &szUID))
+          {
+            currentAction = ACTION_ADDBUDDYAUTH;
+            currentSequence = sendUploadBuddy(hCurrentContact, ICQ_LISTS_ADDTOLIST, dwUIN, szUID, wNewContactId, wNewGroupId, pszNick, pszNote, 1, SSI_ITEM_BUDDY);
+          }
 
           SAFE_FREE(&pszNick);
           SAFE_FREE(&pszNote);
@@ -516,7 +519,6 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       {
         SetTimer(hwndDlg, M_UPLOADMORE, dwUploadDelay, 0); // delay
       }
-      SAFE_FREE(&szCurrentUid);
     }
     break;
 
@@ -542,7 +544,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       HANDLE hContact;
       HANDLE hItem;
       DWORD dwUin;
-      char* szUid;
+      uid_str szUid;
       char* pszNick;
       char* pszNote;
       char* pszGroup;
@@ -591,9 +593,6 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             {
               DBVARIANT dbv;
 
-              dwCurrentUin = dwUin;
-              szCurrentUid = szUid;
-            
               // Only upload custom nicks
               pszNick = NULL;
               if (!DBGetContactSetting(hContact, "CList", "MyHandle", &dbv))
@@ -808,7 +807,6 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               else
                 AppendToUploadLog(hwndDlg, Translate("Adding %s to visible list..."), szUid);
               currentSequence = sendUploadBuddy(hContact, ICQ_LISTS_ADDTOLIST, dwUin, szUid, wNewContactId, 0, NULL, NULL, 0, SSI_ITEM_PERMIT);
-              SAFE_FREE(&szUid);
               break;
             }
           }
@@ -823,7 +821,6 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               else
                 AppendToUploadLog(hwndDlg, Translate("Adding %s to invisible list..."), szUid);
               currentSequence = sendUploadBuddy(hContact, ICQ_LISTS_ADDTOLIST, dwUin, szUid, wNewContactId, 0, NULL, NULL, 0, SSI_ITEM_DENY);
-              SAFE_FREE(&szUid);
               break;
             }
           }
@@ -838,7 +835,6 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               else
                 AppendToUploadLog(hwndDlg, Translate("Deleting %s from visible list..."), szUid);
               currentSequence = sendUploadBuddy(hContact, ICQ_LISTS_REMOVEFROMLIST, dwUin, szUid, wNewContactId, 0, NULL, NULL, 0, SSI_ITEM_PERMIT);
-              SAFE_FREE(&szUid);
               break;
             }
           }
@@ -853,12 +849,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               else
                 AppendToUploadLog(hwndDlg, Translate("Deleting %s from invisible list..."), szUid);
               currentSequence = sendUploadBuddy(hContact, ICQ_LISTS_REMOVEFROMLIST, dwUin, szUid, wNewContactId, 0, NULL, NULL, 0, SSI_ITEM_DENY);
-              SAFE_FREE(&szUid);
               break;
             }
           }
-          SAFE_FREE(&szUid);
-          
           hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
         }
         if (!hContact) 

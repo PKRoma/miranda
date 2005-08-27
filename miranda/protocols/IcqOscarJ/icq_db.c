@@ -65,13 +65,14 @@ DWORD ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dw
 }
 
 
-int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, char** ppszUid)
+
+int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid)
 {
   DBVARIANT dbv;
   int iRes = 1;
 
   *pdwUin = 0;
-  if (ppszUid) *ppszUid = NULL;
+  if (ppszUid) *ppszUid[0] = '\0';
 
   if (!DBGetContactSetting(hContact, gpszICQProtoName, UNIQUEIDSETTING, &dbv))
   {
@@ -84,7 +85,7 @@ int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, char** ppszUid)
     {
       if (ppszUid && gbAimEnabled) 
       {
-        *ppszUid = _strdup(dbv.pszVal);
+        strcpy(*ppszUid, dbv.pszVal);
         iRes = 0;
       }
       else
@@ -94,6 +95,7 @@ int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, char** ppszUid)
   }
   return iRes;
 }
+
 
 
 int ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)

@@ -187,7 +187,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 			if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
 			{
         DWORD dwUIN;
-        char *szUID;
+        uid_str szUID;
 
 				if (!ICQGetContactSettingUID(hContact, &dwUIN, &szUID))
 				{
@@ -197,7 +197,6 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
             handleXStatusCaps(hContact, NULL, 0);
 					}
-          SAFE_FREE(&szUID);
 				}
 			}
 

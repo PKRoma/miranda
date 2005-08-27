@@ -623,8 +623,8 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 	HANDLE hContact;
 	WORD wCurrentLen = 0;
 	DWORD dwUIN;
-  char* szUID;
-	char szUin[33];
+  uid_str szUID;
+	char szUin[UINMAXLEN];
 	char szLen[2];
 	int add;
 
@@ -700,7 +700,6 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
           else
             strcat(szList, szUID);
 				}
-        SAFE_FREE(&szUID);
 			}
 		}
 

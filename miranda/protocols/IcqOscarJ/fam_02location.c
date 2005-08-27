@@ -77,7 +77,7 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, WORD wCookie)
 {
 	HANDLE hContact;
 	DWORD dwUIN;
-  char *szUID;
+  uid_str szUID;
 	WORD wTLVCount;
 	WORD wWarningLevel;
   DWORD dwCookieUin;

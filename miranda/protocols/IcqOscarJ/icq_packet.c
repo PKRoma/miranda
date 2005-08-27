@@ -602,7 +602,7 @@ void unpackTLV(unsigned char **buf, WORD *type, WORD *len, char **string)
 
 
 
-BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, char** ppszUID)
+BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, uid_str* ppszUID)
 {
 	BYTE nUIDLen;
   char szUIN[UINMAXLEN+1];
@@ -631,15 +631,17 @@ BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, char** ppszUID
       return FALSE;
     }
     else
+    { // go back
       *ppBuf -= nUIDLen;
+      *pwLen += nUIDLen;
+    }
   }
   else if (!ppszUID || ! gbAimEnabled)
   {
     NetLog_Server("Malformed UIN in packet");
     return FALSE;
   }
-	if (!(*ppszUID = malloc(nUIDLen+1)))
-		return FALSE;
+	if (!(*ppszUID)) return FALSE;
 
 	unpackString(ppBuf, *ppszUID, nUIDLen);
 	*pwLen -= nUIDLen;
