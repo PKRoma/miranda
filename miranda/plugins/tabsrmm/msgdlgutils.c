@@ -243,14 +243,27 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
     }
     else if(menuID == MENU_PICMENU) {
-        EnableMenuItem(submenu, ID_PICMENU_RESETTHEAVATAR, MF_BYCOMMAND | ( dat->showPic ? MF_ENABLED : MF_GRAYED));
-        EnableMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | ((dat->showPic && !(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) ? MF_ENABLED : MF_GRAYED));
-        CheckMenuItem(submenu, ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0) == 1) ? MF_CHECKED : MF_UNCHECKED);
+        MENUITEMINFOA mii = {0};
+        char *szText;
+        
+        mii.cbSize = sizeof(mii);
+        mii.fMask = MIIM_STRING;
+        
         EnableMenuItem(submenu, ID_PICMENU_TOGGLEAVATARDISPLAY, MF_BYCOMMAND | (myGlobals.m_AvatarMode == 2 ? MF_ENABLED : MF_GRAYED));
         CheckMenuItem(submenu, ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH, MF_BYCOMMAND | (myGlobals.m_AlwaysFullToolbarWidth ? MF_CHECKED : MF_UNCHECKED));
+        if(!(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) {
+            EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(MS_AV_GETAVATARBITMAP) ? MF_ENABLED : MF_GRAYED));
+            szText = Translate("Contact picture settings...");
+        }
+        else
+            szText = Translate("Set your avatar...");
+        mii.dwTypeData = szText;
+        mii.cch = lstrlenA(szText) + 1;
+        SetMenuItemInfoA(submenu, ID_PICMENU_SETTINGS, FALSE, &mii);
     }
     else if(menuID == MENU_PANELPICMENU) {
         CheckMenuItem(submenu, ID_PANELPICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0) == 1) ? MF_CHECKED : MF_UNCHECKED);
+        EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(MS_AV_GETAVATARBITMAP) ? MF_ENABLED : MF_GRAYED));
     }
     return 0;
 }
@@ -288,27 +301,12 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
                 return 1;
-            case ID_PICMENU_RESETTHEAVATAR:
-            case ID_PANELPICMENU_RESETTHEAVATAR:
-                DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic");
-                DBDeleteContactSetting(dat->hContact, "ContactPhoto", "File");
-                InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
-                SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-                SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
-                return 1;
-            case ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES:
-            case ID_PANELPICMENU_DISABLEAUTOMATICAVATARUPDATES:
-                {
-                    int iState = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0);
-                    DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", !iState);
-                    return 1;
-                }
             case ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH:
                 myGlobals.m_AlwaysFullToolbarWidth = !myGlobals.m_AlwaysFullToolbarWidth;
                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", myGlobals.m_AlwaysFullToolbarWidth);
                 WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
                 break;
-            case ID_PICMENU_LOADALOCALPICTUREASAVATAR:
+            case ID_PICMENU_SETTINGS:
                 {
                     char FileName[MAX_PATH];
                     char Filters[512];
@@ -325,49 +323,55 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                     ofn.lpstrInitialDir = ".";
                     *FileName = '\0';
                     ofn.lpstrDefExt="";
-                    if (GetOpenFileNameA(&ofn)) {
-                        if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL && menuId == MENU_PICMENU) {
-                            char szNewPath[MAX_PATH + 1], szOldPath[MAX_PATH + 1];
-                            char szBasename[_MAX_FNAME], szExt[_MAX_EXT];
-                            char szServiceName[50], *szProto;
-                            
-                            _splitpath(FileName, NULL, NULL, szBasename, szExt);
-                            mir_snprintf(szNewPath, MAX_PATH, "%s%s_avatar%s", myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto, szExt);
-                            /*
-                             * delete all old avatars
-                             */
-                            strncpy(szOldPath, szNewPath, MAX_PATH);
-                            DeleteFileA(szOldPath);
-                            strncpy(&szOldPath[lstrlenA(szOldPath) - 3], "bmp", 3);
-                            DeleteFileA(szOldPath);
-                            strncpy(&szOldPath[lstrlenA(szOldPath) - 3], "jpg", 3);
-                            DeleteFileA(szOldPath);
-                            strncpy(&szOldPath[lstrlenA(szOldPath) - 3], "gif", 3);
-                            DeleteFileA(szOldPath);
-                            
-                            CopyFileA(FileName, szNewPath, FALSE);
-                            LoadOwnAvatar(hwndDlg, dat);
-                            WindowList_Broadcast(hMessageWindowList, DM_CHANGELOCALAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0);
-                            /*
-                             * try to set it for the protocol (note: currently, only possible for MSN
-                             */
-                            szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-                            mir_snprintf(szServiceName, sizeof(szServiceName), "%s/SetAvatar", szProto);
-                            if(ServiceExists(szServiceName)) {
-                                if(CallProtoService(szProto, "/SetAvatar", 0, (LPARAM)FileName) != 0)
-                                    _DebugMessage(hwndDlg, dat, Translate("Failed to set avatar for %s"), szProto);
+                    if(menuId == MENU_PANELPICMENU)
+                        CallService(MS_AV_CONTACTOPTIONS, (WPARAM)dat->hContact, 0);
+                    else if(menuId == MENU_PICMENU) {
+                        if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+                            if (GetOpenFileNameA(&ofn)) {
+                                if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL && menuId == MENU_PICMENU) {
+                                    char szNewPath[MAX_PATH + 1], szOldPath[MAX_PATH + 1];
+                                    char szBasename[_MAX_FNAME], szExt[_MAX_EXT];
+                                    char szServiceName[50], *szProto;
+
+                                    _splitpath(FileName, NULL, NULL, szBasename, szExt);
+                                    mir_snprintf(szNewPath, MAX_PATH, "%s%s_avatar%s", myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto, szExt);
+                                    /*
+                                     * delete all old avatars
+                                     */
+                                    strncpy(szOldPath, szNewPath, MAX_PATH);
+                                    DeleteFileA(szOldPath);
+                                    strncpy(&szOldPath[lstrlenA(szOldPath) - 3], "bmp", 3);
+                                    DeleteFileA(szOldPath);
+                                    strncpy(&szOldPath[lstrlenA(szOldPath) - 3], "jpg", 3);
+                                    DeleteFileA(szOldPath);
+                                    strncpy(&szOldPath[lstrlenA(szOldPath) - 3], "gif", 3);
+                                    DeleteFileA(szOldPath);
+
+                                    CopyFileA(FileName, szNewPath, FALSE);
+                                    LoadOwnAvatar(hwndDlg, dat);
+                                    WindowList_Broadcast(hMessageWindowList, DM_CHANGELOCALAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0);
+                                    /*
+                                     * try to set it for the protocol (note: currently, only possible for MSN
+                                     */
+                                    szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+                                    mir_snprintf(szServiceName, sizeof(szServiceName), "%s/SetAvatar", szProto);
+                                    if(ServiceExists(szServiceName)) {
+                                        if(CallProtoService(szProto, "/SetAvatar", 0, (LPARAM)FileName) != 0)
+                                            _DebugMessage(hwndDlg, dat, Translate("Failed to set avatar for %s"), szProto);
+                                    }
+                                    else
+                                        _DebugMessage(hwndDlg, dat, Translate("The current protocol doesn't support setting your avatar from the message window"));
+                                }
+                                else {
+                                    char szFinalPath[MAX_PATH];
+                                    CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)FileName, (LPARAM)szFinalPath);
+                                    DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File", szFinalPath);
+                                }
                             }
-                            else
-                                _DebugMessage(hwndDlg, dat, Translate("The current protocol doesn't support setting your avatar from the message window"));
                         }
-                        else {
-                            char szFinalPath[MAX_PATH];
-                            CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)FileName, (LPARAM)szFinalPath);
-                            DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File", szFinalPath);
-                        }
+                        else
+                            CallService(MS_AV_CONTACTOPTIONS, (WPARAM)dat->hContact, 0);
                     }
-                    else
-                        return 1;
                 }
                 return 1;
         }

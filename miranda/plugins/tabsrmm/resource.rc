@@ -900,13 +900,7 @@ BEGIN
         MENUITEM "Toggle Avatar Display",       ID_PICMENU_TOGGLEAVATARDISPLAY
 
         MENUITEM SEPARATOR
-        MENUITEM "Reset the Avatar",            ID_PICMENU_RESETTHEAVATAR
-        MENUITEM "Load a local Picture as Avatar...", 
-                                                ID_PICMENU_LOADALOCALPICTUREASAVATAR
-
-        MENUITEM "Disable automatic Avatar updates", 
-                                                ID_PICMENU_DISABLEAUTOMATICAVATARUPDATES
-
+        MENUITEM "Contact picture settings...", ID_PICMENU_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Always keep the button bar at full width", 
                                                 ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH
@@ -1099,14 +1093,7 @@ BEGIN
     END
     POPUP "Panelpicmenu"
     BEGIN
-        MENUITEM "Reset the Avatar",            ID_PANELPICMENU_RESETTHEAVATAR
-
-        MENUITEM "Load a local Picture as Avatar...", 
-                                                ID_PICMENU_LOADALOCALPICTUREASAVATAR
-
-        MENUITEM "Disable automatic Avatar updates", 
-                                                ID_PANELPICMENU_DISABLEAUTOMATICAVATARUPDATES
-
+        MENUITEM "Contact picture settings...", ID_PICMENU_SETTINGS
     END
 END
 

@@ -1082,7 +1082,6 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
             ShowPicture(hwnd, dat, TRUE);
         }
     }
-    
     return 0;
 }
 
