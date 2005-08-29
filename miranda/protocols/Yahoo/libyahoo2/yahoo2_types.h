@@ -82,6 +82,9 @@ enum yahoo_log_level {
 	YAHOO_LOG_DEBUG
 };
 
+/* Yahoo Protocol versions. Thanks to GAIM devs.*/
+#define YAHOO_WEBMESSENGER_PROTO_VER 0x0065
+#define YAHOO_PROTO_VER 0x000c
 
 /* Yahoo style/color directives */
 #define YAHOO_COLOR_BLACK "\033[30m"
@@ -117,6 +120,12 @@ enum yahoo_connection_type {
 enum yahoo_webcam_direction_type {
         YAHOO_WEBCAM_DOWNLOAD=0,
         YAHOO_WEBCAM_UPLOAD
+};
+
+enum yahoo_stealth_visibility_type {
+	YAHOO_STEALTH_DEFAULT = 0,
+  	YAHOO_STEALTH_ONLINE,
+  	YAHOO_STEALTH_PERM_OFFLINE
 };
 
 /* chat member attribs */

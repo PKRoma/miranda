@@ -271,7 +271,8 @@ File List Cancel:
 [22:48:41 YAHOO]  
 
 	 */
-	YAHOO_SERVICE_STEALTH = 0xb9,
+	YAHOO_SERVICE_STEALTH_PERM = 0xb9,
+	YAHOO_SERVICE_STEALTH_SESSION = 0xba,
 	YAHOO_SERVICE_AVATAR = 0xbc,
 	YAHOO_SERVICE_PICTURE_CHECKSUM = 0xbd,
 	YAHOO_SERVICE_PICTURE = 0xbe,
@@ -347,7 +348,8 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_CHATPING, "YAHOO_SERVICE_CHATPING"},
 	{YAHOO_SERVICE_COMMENT, "YAHOO_SERVICE_COMMENT"},
 	{YAHOO_SERVICE_GAME_INVITE,"YAHOO_SERVICE_GAME_INVITE "},
-	{YAHOO_SERVICE_STEALTH, "YAHOO_SERVICE_STEALTH"},
+	{YAHOO_SERVICE_STEALTH_PERM, "YAHOO_SERVICE_STEALTH_PERM"},
+	{YAHOO_SERVICE_STEALTH_SESSION, "YAHOO_SERVICE_STEALTH_SESSION"},
 	{YAHOO_SERVICE_AVATAR,"YAHOO_SERVICE_AVATAR"},
 	{YAHOO_SERVICE_PICTURE_CHECKSUM,"YAHOO_SERVICE_PICTURE_CHECKSUM"},
 	{YAHOO_SERVICE_PICTURE,"YAHOO_SERVICE_PICTURE"},
@@ -1045,7 +1047,7 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 	data = y_new0(unsigned char, len + 1);
 
 	memcpy(data + pos, "YMSG", 4); pos += 4;
-	pos += yahoo_put16(data + pos, 0x0a00); /* version [latest 12 0c00 */
+	pos += yahoo_put16(data + pos, YAHOO_PROTO_VER); /* version [latest 12 0x000c */
 	pos += yahoo_put16(data + pos, 0x0000); /* HIWORD pkt length??? */
 	pos += yahoo_put16(data + pos, pktlen + extra_pad); /* LOWORD pkt length? */
 	pos += yahoo_put16(data + pos, pkt->service); /* service */
@@ -2726,6 +2728,25 @@ static void yahoo_process_ignore(struct yahoo_input_data *yid, struct yahoo_pack
 	}
 }
 
+static void yahoo_process_stealth(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
+{
+	//struct yahoo_data *yd = yid->yd;
+	char *who = NULL;
+	int  status = 0;
+	
+	YList *l;
+	for (l = pkt->hash; l; l = l->next) {
+		struct yahoo_pair *pair = l->data;
+		if (pair->key == 7)
+			who = pair->value;
+		
+		if (pair->key == 31) 
+			status = strtol(pair->value, NULL, 10);
+	}
+
+	NOTICE(("got %s stealth info for %s with value: %d", pkt->service == YAHOO_SERVICE_STEALTH_PERM ? "permanent": "session" , who, status == 1));
+}
+
 static void yahoo_process_voicechat(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
 	char *who = NULL;
@@ -3008,6 +3029,10 @@ static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_pack
 	case YAHOO_SERVICE_IGNORECONTACT:
 		yahoo_process_ignore(yid, pkt);
 		break;
+	case YAHOO_SERVICE_STEALTH_PERM:
+	case YAHOO_SERVICE_STEALTH_SESSION:
+		yahoo_process_stealth(yid, pkt);
+		break;		
 	case YAHOO_SERVICE_VOICECHAT:
 		yahoo_process_voicechat(yid, pkt);
 		break;
@@ -4144,7 +4169,7 @@ void yahoo_set_stealth(int id, const char *buddy, int add)
 
 	yd = yid->yd;
 
-	pkt = yahoo_packet_new(185, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_STEALTH_PERM, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 31, add ? "1" : "2"); /*visibility? */
 	yahoo_packet_hash(pkt, 13, "2");
 	yahoo_packet_hash(pkt, 7, buddy);
@@ -5035,7 +5060,8 @@ void yahoo_send_file(int id, const char *who, const char *msg,
 	unsigned char buff[1024];
 	char url[255];
 	struct send_file_data *sfd;
-
+	const char *s;
+		
 	if(!yd)
 		return;
 
@@ -5052,7 +5078,14 @@ void yahoo_send_file(int id, const char *who, const char *msg,
 	yahoo_packet_hash(pkt, 0, yd->user);
 	yahoo_packet_hash(pkt, 5, who);
 	yahoo_packet_hash(pkt, 14, msg);
-	yahoo_packet_hash(pkt, 27, name);
+	
+	s = strrchr(name, '\\');
+	if (s == NULL)
+		s = name;
+	else
+		s++;
+	
+	yahoo_packet_hash(pkt, 27, s);
 	yahoo_packet_hash(pkt, 28, size_str);
 
 	content_length = YAHOO_PACKET_HDRLEN + yahoo_packet_length(pkt);

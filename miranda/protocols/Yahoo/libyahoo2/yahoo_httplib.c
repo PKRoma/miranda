@@ -320,17 +320,26 @@ void yahoo_http_post(int id, const char *url, const char *cookies, long content_
 	if(!url_to_host_port_path(url, host, &port, path))
 		return;
 
-	snprintf(buff, sizeof(buff), 
+	/*snprintf(buff, sizeof(buff), 
 			"POST %s HTTP/1.0\r\n"
 			"Content-length: %ld\r\n"
-			"User-Agent: Mozilla/4.5 [en] (\" PACKAGE \"/\" VERSION \")\r\n"
+			"User-Agent: Mozilla/4.5 [en] (" PACKAGE "/" VERSION ")\r\n"
 			"Host: %s:%d\r\n"
 			"Cookie: %s\r\n"
 			"\r\n",
 			path, content_length, 
 			host, port,
-			cookies);
+			cookies);*/
 
+	snprintf(buff, sizeof(buff), 
+			"POST %s HTTP/1.0\r\n"
+			"Content-length: %ld\r\n"
+			"Host: %s:%d\r\n"
+			"Cookie: %s\r\n"
+			"\r\n",
+			url, content_length, 
+			host, port,
+			cookies);
 	yahoo_send_http_request(id, host, port, buff, callback, data);
 }
 
