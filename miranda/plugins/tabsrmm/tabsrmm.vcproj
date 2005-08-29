@@ -875,6 +875,8 @@
 				RelativePath="ImageDataObject.h">
 			</File>
 			<File
+				RelativePath="m_avatars.h"/>
+			<File
 				RelativePath="m_fontservice.h">
 			</File>
 			<File

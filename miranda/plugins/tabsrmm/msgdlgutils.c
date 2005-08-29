@@ -283,7 +283,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 return 1;
             case ID_PICMENU_TOGGLEAVATARDISPLAY:
                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", dat->showPic ? 0 : 1);
-                ShowPicture(hwndDlg,dat,FALSE,FALSE);
+                ShowPicture(hwndDlg, dat, FALSE);
                 SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
@@ -291,11 +291,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_PICMENU_RESETTHEAVATAR:
             case ID_PANELPICMENU_RESETTHEAVATAR:
                 DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic");
-                if(dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
-                    DeleteObject(dat->hContactPic);
-                dat->hContactPic = myGlobals.g_hbmUnknown;
                 DBDeleteContactSetting(dat->hContact, "ContactPhoto", "File");
-                SendMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
                 InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
                 SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                 SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
@@ -567,7 +563,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
             break;
         case 3:             // on, if present
         {
-            HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic;
+            HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : 0);
             if((hbm && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) || (hbm && hbm != myGlobals.g_hbmUnknown))
                 dat->showPic = 1;
             else
@@ -580,7 +576,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 
                 if(dat->szProto) {
                     pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
-                    if((pCaps & PF4_AVATARS) && dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown) {
+                    if((pCaps & PF4_AVATARS) && (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown)) {
                         dat->showPic = 1;
                     }
                 }
@@ -692,7 +688,7 @@ TCHAR *QuoteText(TCHAR *text,int charsPerLine,int removeExistingQuotes)
 
 void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic;
+    HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
     
     if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC)
         dat->iRealAvatarHeight = 0;
@@ -720,86 +716,15 @@ void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat)
     }
 }
 
-void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic)
+void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL showNewPic)
 {
     DBVARIANT dbv = {0};
     RECT rc;
-    int picFailed = FALSE;
-    int iUnknown = FALSE;
     
     if(!(dat->dwEventIsShown & MWF_SHOW_INFOPANEL))
         dat->pic.cy = dat->pic.cx = 60;
     
-    if(changePic) {
-        if (dat->hContactPic) {
-            if(dat->hContactPic != myGlobals.g_hbmUnknown)
-                DeleteObject(dat->hContactPic);
-            dat->hContactPic=NULL;
-        }
-        DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic");
-    }
-    
     if (showNewPic) {
-        if (dat->hContactPic) {
-            if(dat->hContactPic != myGlobals.g_hbmUnknown)
-                DeleteObject(dat->hContactPic);
-            dat->hContactPic=NULL;
-        }
-        if (DBGetContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic",&dbv)) {
-            if (!DBGetContactSetting(dat->hContact,"ContactPhoto","File",&dbv)) {
-                DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic" ,dbv.pszVal);
-                DBFreeVariant(&dbv);
-            } else {
-                if (!DBGetContactSetting(dat->hContact, dat->szProto, "Photo", &dbv)) {
-                    DBWriteContactSettingString(dat->hContact, SRMSGMOD_T,"MOD_Pic",dbv.pszVal);
-                    DBFreeVariant(&dbv);
-                }
-                else
-                    iUnknown = TRUE;
-            }
-        }
-        else
-            DBFreeVariant(&dbv);
-        
-        if (!DBGetContactSetting(dat->hContact, SRMSGMOD_T, "MOD_Pic",&dbv) || iUnknown) {
-            BITMAP bminfo;
-            BOOL isNoPic = FALSE;
-            int maxImageSizeX=500;
-            int maxImageSizeY=300;
-            HANDLE hFile;
-            char szFinalPath[MAX_PATH];
-
-            CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFinalPath);
-            
-            if(iUnknown)
-                dat->hContactPic = myGlobals.g_hbmUnknown;
-            else {
-                if((hFile = CreateFileA(szFinalPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
-                    dat->hContactPic = 0;
-                else {
-                    CloseHandle(hFile);
-                    dat->hContactPic=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)szFinalPath);
-                }
-            }
-            if(dat->hContactPic == 0)
-                dat->hContactPic = myGlobals.g_hbmUnknown;
-            else {
-                GetObject(dat->hContactPic,sizeof(bminfo),&bminfo);
-                if (bminfo.bmWidth <= 0 || bminfo.bmHeight <= 0) 
-                    isNoPic=TRUE;
-            }
-            if (isNoPic) {
-                _DebugPopup(dat->hContact, "%s %s", dbv.pszVal, Translate("has either a wrong size (max 150 x 150) or is not a recognized image file"));
-                if(dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
-                    DeleteObject(dat->hContactPic);
-                dat->hContactPic = myGlobals.g_hbmUnknown;
-            }
-            DBFreeVariant(&dbv);
-        } else {
-            if(dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
-                DeleteObject(dat->hContactPic);
-            dat->hContactPic = myGlobals.g_hbmUnknown;
-        }
         if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
             InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELPIC), NULL, FALSE);
             return;
@@ -1799,7 +1724,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         SelectObject(dis->hDC, old);
         DeleteObject(col);
         return TRUE;
-    } else if ((dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && dat->hContactPic && dat->showPic) || (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL && dat->hContactPic)) {
+    } else if ((dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown) && dat->showPic) || (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL && (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown))) {
         HPEN hPen, hOldPen;
         HBRUSH hOldBrush;
         BITMAP bminfo;
@@ -1811,9 +1736,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         BOOL bPanelPic = dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC);
         
         if(bPanelPic)
-            GetObject(dat->hContactPic, sizeof(bminfo), &bminfo);
+            GetObject(dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown, sizeof(bminfo), &bminfo);
         else 
-            GetObject(dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic, sizeof(bminfo), &bminfo);
+            GetObject(dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown), sizeof(bminfo), &bminfo);
     
         GetClientRect(hwndDlg, &rc);
         GetClientRect(dis->hwndItem, &rcClient);
@@ -1865,9 +1790,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                 Rectangle(hdcDraw, 0, top - 1, dat->pic.cx, top + dat->iRealAvatarHeight + 1);
             }
         }
-        if(((dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic) && dat->showPic) || bPanelPic) {
+        if(((dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown)) && dat->showPic) || bPanelPic) {
             HDC hdcMem = CreateCompatibleDC(dis->hDC);
-            HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, bPanelPic ? dat->hContactPic : (dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic));
+            HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, bPanelPic ? (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown) : (dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown)));
             if(bPanelPic) {
                 RECT rcFrame = rcClient;
                 rcFrame.left = rcFrame.right - ((LONG)dNewWidth + 2);

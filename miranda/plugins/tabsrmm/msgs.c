@@ -39,6 +39,7 @@ $Id$
 #include "../../include/m_clc.h"
 #include "../../include/m_clui.h"
 #include "m_updater.h"
+#include "m_avatars.h"
 
 #ifdef __MATHMOD_SUPPORT
 //mathMod begin
@@ -60,6 +61,7 @@ extern PLUGININFO pluginInfo;
 TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 static void InitREOleCallback(void);
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam);
+static int AvatarChanged(WPARAM wParam, LPARAM lParam);
 
 HANDLE hMessageWindowList, hUserPrefsWindowList;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted, hEventDispatch, hEvent_ttbInit, hTTB_Slist, hTTB_Tray, hEvent_FontService;
@@ -400,36 +402,6 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
         }
         return 0;
     }
-    if(pAck->type != ACKTYPE_AVATAR)
-        return 0;
-
-    hwndDlg = WindowList_Find(hMessageWindowList, (HANDLE)pAck->hContact);
-    if(hwndDlg) {
-        struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
-        if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_STATUS)
-            PostMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
-        if(pai == NULL) {
-#if !defined(_RELEASE_BUILD)
-            _DebugPopup(dat->hContact, "pai == 0 in avatar ACK handler");
-#endif            
-            return 0;
-        }
-        if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_SUCCESS) {
-            if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
-                DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai->filename);
-                DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai->filename);
-                ShowPicture(hwndDlg, dat, FALSE, TRUE);
-            }
-        }
-        if(pAck->hContact == dat->hContact && pAck->type == ACKTYPE_AVATAR && pAck->result == ACKRESULT_FAILED) {
-            if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
-                DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", "");
-                DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File", "");
-                ShowPicture(hwndDlg, dat, FALSE, TRUE);
-            }
-        }
-        return 0;
-    }
     return 0;
 }
 
@@ -764,11 +736,6 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
         return 0;       // for the hContact.
     }
 
-    if(!strncmp(cws->szModule, "ContactPhoto", 12)) {
-        SendMessage(hwnd, DM_PICTURECHANGED, 0, 0);
-        return 0;
-    }
-
     szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
     if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
         return 0;
@@ -885,6 +852,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     }
     if(ServiceExists(MS_SKIN2_ADDICON))
         HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
+    if(ServiceExists(MS_AV_GETAVATARBITMAP))
+       HookEvent(ME_AV_AVATARCHANGED, AvatarChanged);
     HookEvent(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
     RestoreUnreadMessageAlerts();
     for(i = 0; i < NR_BUTTONBARICONS; i++)
@@ -1098,6 +1067,22 @@ int SplitmsgShutdown(void)
     
     if(myGlobals.szDefaultTitleFormat)
         free(myGlobals.szDefaultTitleFormat);
+    return 0;
+}
+
+static int AvatarChanged(WPARAM wParam, LPARAM lParam)
+{
+    struct avatarCacheEntry *ace = (struct avatarCacheEntry *)lParam;
+    HWND hwnd = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
+
+    if(hwnd) {
+        struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+        if(dat) {
+            dat->ace = ace;
+            ShowPicture(hwnd, dat, TRUE);
+        }
+    }
+    
     return 0;
 }
 

@@ -270,7 +270,7 @@ struct MessageWindowData {
 	BOOL mayFlashTab;	// XXX tabs...
     HKL  hkl;           // keyboard layout identifier
     DWORD dwTickLastEvent;
-	HBITMAP hContactPic, hOwnPic;
+	HBITMAP hOwnPic;
 	SIZE pic;
 	int showPic;
     int bottomOffset;
@@ -332,6 +332,7 @@ struct MessageWindowData {
     COLORREF inputbg;
     SIZE szLabel;
     struct MessageWindowTheme theme;
+    struct avatarCacheEntry *ace;
 };
 
 typedef struct _recentinfo {

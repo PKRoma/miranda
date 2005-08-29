@@ -36,7 +36,7 @@ void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode);
 int CheckValidSmileyPack(char *szProto, HICON *hButtonIcon);
 TCHAR *QuoteText(TCHAR *text,int charsPerLine,int removeExistingQuotes);
 void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat);
-void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL changePic, BOOL showNewPic);
+void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL showNewPic);
 void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat);
 void SetDialogToType(HWND hwndDlg);
 void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei);

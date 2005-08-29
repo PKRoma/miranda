@@ -100,6 +100,7 @@ typedef struct _settextex {
 
 #include <richedit.h>
 #include <richole.h>
+#include "m_avatars.h"
 #include "m_tabsrmm.h"
 #include "templates.h"
 
@@ -222,9 +223,9 @@ struct ProtocolData {
 #define DM_ADDDIVIDER        (WM_USER+50)
 #define DM_STATUSMASKSET     (WM_USER+51)       
 #define DM_CONTACTSETTINGCHANGED (WM_USER+52)
-#define DM_PICTURECHANGED    (WM_USER+53)
+//#define DM_PICTURECHANGED    (WM_USER+53) **free**
 #define DM_PROTOACK          (WM_USER+54)
-#define DM_RETRIEVEAVATAR    (WM_USER+55)
+//#define DM_RETRIEVEAVATAR    (WM_USER+55) **free**
 #define DM_CONFIGURETOOLBAR  (WM_USER+56)
 #define DM_LOADBUTTONBARICONS (WM_USER+57)
 #define DM_ACTIVATETOOLTIP   (WM_USER+58)

@@ -195,7 +195,7 @@ static void ConfigurePanel(HWND hwndDlg, struct MessageWindowData *dat)
 }
 static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic;
+    HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
     BITMAP bm;
     
     if(dat->dwFlags & MWF_ERRORSTATE)
@@ -1054,6 +1054,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->sendMode |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "forceansi", 0) ? SMODE_FORCEANSI : 0;
                 dat->sendMode |= dat->hContact == 0 ? SMODE_MULTIPLE : 0;
                 dat->sendMode |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "no_ack", 0) ? SMODE_NOACK : 0;
+                if(ServiceExists(MS_AV_GETAVATARBITMAP))
+                    dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
                 
                 dat->hwnd = hwndDlg;
 
@@ -1254,8 +1256,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         else
                             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)7500);
                         pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
-                        if(pCaps & PF4_AVATARS)
-                            SendMessage(hwndDlg, DM_RETRIEVEAVATAR, 0, 0);
                     }
                 }
                 OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
@@ -1327,7 +1327,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SetWindowPos(dat->hwndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                     SetWindowPos(hwndDlg, HWND_TOP, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), 0);
                     LoadSplitter(hwndDlg, dat);
-                    ShowPicture(hwndDlg,dat,FALSE,TRUE);
+                    ShowPicture(hwndDlg,dat,TRUE);
                     //if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL && myGlobals.m_AvatarDisplayMode == AVATARMODE_DYNAMIC)
                         //AdjustBottomAvatarDisplay(hwndDlg, dat);
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
@@ -2029,7 +2029,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 RECT rc;
                 int saved = 0, i;
                 int delta;
-                HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic;
+                HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
                     
                 if (IsIconic(hwndDlg))
                     break;
@@ -2791,7 +2791,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->dwFlags &= ~MWF_WASBACKGROUNDCREATE;
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     LoadSplitter(hwndDlg, dat);
-                    ShowPicture(hwndDlg,dat,FALSE,TRUE);
+                    ShowPicture(hwndDlg,dat,TRUE);
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
                     SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
                     SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
@@ -2820,7 +2820,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_RECALCPICTURESIZE:
         {
             BITMAP bminfo;
-            HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic;
+            HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
             
             if(hbm == 0) {
                 dat->pic.cy = dat->pic.cx = 60;
@@ -2837,7 +2837,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
          */
         case DM_UPDATEPICLAYOUT:
             if (dat->showPic) {
-                HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : dat->hContactPic;
+                HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
                 int iOffset = 0;
                 
                 if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
@@ -2888,7 +2888,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             else if(PtInRect(&rcPanelPicture, pt))
                 menuID = MENU_PANELPICMENU;
             
-            if((menuID == MENU_PICMENU && (dat->hContactPic || dat->hOwnPic) && dat->showPic !=0) || (menuID == MENU_PANELPICMENU && dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) {
+            if((menuID == MENU_PICMENU && ((dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown) || dat->hOwnPic) && dat->showPic !=0) || (menuID == MENU_PANELPICMENU && dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) {
                 int iSelection, isHandled;
                 HMENU submenu = 0;
 
@@ -4522,15 +4522,6 @@ verify:
                 SetActiveWindow(pNewContainer->hwnd);
                 break;
             }
-        /*
-         * sent by the hotkeyhandler when it detects a changed user picture
-         * for our hContact by anyone who uses the "Photo" page of the mTooltip
-         * plugin.
-         */
-        case DM_PICTURECHANGED:
-            ShowPicture(hwndDlg, dat, TRUE, TRUE);
-            return 0;
-
         case DM_STATUSBARCHANGED:
             UpdateStatusBar(hwndDlg, dat);
             break;
@@ -4563,7 +4554,7 @@ verify:
                 
         /*
          * force a reload of the avatar by using the PS_GETAVATARINFO proto service
-         */
+         *
         case DM_RETRIEVEAVATAR:
         {
             PROTO_AVATAR_INFORMATION pai_s;
@@ -4597,7 +4588,7 @@ verify:
                 SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
             }
             return 1;
-        }
+        } */
         /*
          * broadcast to change the OWN avatar...
          * proto is in wParam (char *)
@@ -5031,9 +5022,6 @@ verify:
                     free(dat->hQueuedEvents);
             }
             
-            if (dat->hContactPic && dat->hContactPic != myGlobals.g_hbmUnknown)
-                DeleteObject(dat->hContactPic);
-
             if (dat->hOwnPic && dat->hOwnPic != myGlobals.g_hbmUnknown)
                 DeleteObject(dat->hOwnPic);
 
