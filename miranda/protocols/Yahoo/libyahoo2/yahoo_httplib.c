@@ -332,13 +332,14 @@ void yahoo_http_post(int id, const char *url, const char *cookies, long content_
 			cookies);*/
 
 	snprintf(buff, sizeof(buff), 
-			"POST %s HTTP/1.0\r\n"
-			"Content-length: %ld\r\n"
+			"POST %s HTTP/1.1\r\n"
+			"User-Agent: Mozilla/4.01 [en] (Win95; I)\r\n"
 			"Host: %s:%d\r\n"
+			"Content-Length: %ld\r\n"
 			"Cookie: %s\r\n"
 			"\r\n",
-			url, content_length, 
-			host, port,
+			path, 
+			host, port,content_length, 
 			cookies);
 	yahoo_send_http_request(id, host, port, buff, callback, data);
 }
