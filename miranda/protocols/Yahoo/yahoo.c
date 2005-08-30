@@ -1383,7 +1383,7 @@ void ext_yahoo_typing_notify(int id, char *me, char *who, int stat)
 	
 	CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)hContact, (LPARAM)stat?10:0);
 
-    if (!YAHOO_GetByte("DisplayTyping", 1)) return;
+    if (!YAHOO_GetByte("DisplayTyping", 0)) return;
 
 	if(ServiceExists( MS_POPUP_ADDPOPUPEX ))
 		YAHOO_ShowPopup( c, Translate( "typing..." ), YAHOO_ALLOW_MSGBOX + YAHOO_NOTIFY_POPUP );

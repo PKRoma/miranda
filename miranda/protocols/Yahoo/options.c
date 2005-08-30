@@ -299,14 +299,14 @@ BOOL CALLBACK DlgProcYahooPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT ), !toSet );		
 		SetButtonCheck( hwndDlg, IDC_DISABLEYAHOOMAIL,  !toSet);
 		
-		SetButtonCheck( hwndDlg, IDC_NOTIFY_USERTYPE, YAHOO_GetByte( "DisplayTyping", 1 ));
-		SetButtonCheck( hwndDlg, IDC_SHOW_ERRORS, YAHOO_GetByte( "ShowErrors", 0 )); 
+		SetButtonCheck( hwndDlg, IDC_NOTIFY_USERTYPE, YAHOO_GetByte( "DisplayTyping", 0 ));
+		SetButtonCheck( hwndDlg, IDC_SHOW_ERRORS, YAHOO_GetByte( "ShowErrors", 1 )); 
 		
 		tTimeout = YAHOO_GetDword( "PopupTimeout", 3 );
 		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, tTimeout, FALSE );
 		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT2, YAHOO_GetDword( "PopupTimeoutOther", tTimeout ), FALSE );
 
-		toSet = YAHOO_GetByte( "DisplayTyping", 0 ) || YAHOO_GetByte( "ShowErrors", 0 );
+		toSet = YAHOO_GetByte( "DisplayTyping", 0 ) || YAHOO_GetByte( "ShowErrors", 1 );
     	
     	EnableWindow( GetDlgItem( hwndDlg, IDC_PREVIEW2 ), toSet );
 		if ( !ServiceExists( MS_POPUP_ADDPOPUPEX )) 

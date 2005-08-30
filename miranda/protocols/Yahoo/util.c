@@ -202,7 +202,7 @@ int YAHOO_shownotification(const char *title, const char *info, DWORD flags)
 
 void YAHOO_ShowError(const char *title, const char *buff)
 {
-	if (YAHOO_GetByte( "ShowErrors", 0 )) 
+	if (YAHOO_GetByte( "ShowErrors", 1 )) 
 		YAHOO_ShowPopup(title, buff, YAHOO_NOTIFY_POPUP);
 }
 
