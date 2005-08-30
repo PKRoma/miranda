@@ -168,12 +168,11 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 				if (ctl->stateId==PBS_PRESSED||ctl->stateId==PBS_HOT)
 					hbr = GetSysColorBrush(COLOR_3DLIGHT);
 				else {
-					HDC dc;
-					HWND hwndParent;
-
-					hwndParent = GetParent(ctl->hwnd);
-					dc=GetDC(hwndParent);
+					HWND hwndParent = GetParent(ctl->hwnd);
+					HDC dc = GetDC(hwndParent);
+					HBRUSH oldBrush = GetCurrentObject( dc, OBJ_BRUSH );
 					hbr = (HBRUSH)SendMessage(hwndParent, WM_CTLCOLORDLG, (WPARAM)dc, (LPARAM)hwndParent);
+					SelectObject(dc,oldBrush);
 					ReleaseDC(hwndParent,dc);
 				}
 				if (hbr) {
