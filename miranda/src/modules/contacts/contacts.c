@@ -269,8 +269,11 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 						}
 						break;
 					case 7:
+						if ( ci->dwFlag & CNF_UNICODE )
+							ci->pszVal = ( char* )wcsdup( TranslateW( L"'(Unknown Contact)'" ));
+						else
+							ci->pszVal = _strdup( Translate("'(Unknown Contact)'"));
 						ci->type = CNFT_ASCIIZ;
-						ci->pszVal = _strdup(Translate("'(Unknown Contact)'"));
 						return 0;
 				}
 			}
