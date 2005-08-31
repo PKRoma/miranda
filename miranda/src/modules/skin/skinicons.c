@@ -161,13 +161,12 @@ static HICON ImportIcon(const char *szProto,int n)
 			_itoa(i,szSetting+1,10);
 			if(DBGetContactSetting(NULL,"Icons",szSetting,&dbv)) break;
 			mir_snprintf(szSetting,sizeof(szSetting),"%s%d",dbv.pszVal,skinIconStatusToIdStatus[n]);
-			free(dbv.pszVal);
+			DBFreeVariant(&dbv);
 			if(!DBGetContactSetting(NULL,"Icons",szSetting,&dbv)) {
 				hIcon=ExtractIconFromPath(dbv.pszVal);
-				free(dbv.pszVal);
-				if (hIcon) {
+				DBFreeVariant(&dbv);
+				if (hIcon)
 					return hIcon;
-				} //if
 			} //if
 		} //for			
 		return hStatusIcons[n];
@@ -184,11 +183,9 @@ static HICON ImportIcon(const char *szProto,int n)
 
 	if(!DBGetContactSetting(NULL,"Icons",szSetting,&dbv)) {
 		hIcon=ExtractIconFromPath(dbv.pszVal);
-		if(hIcon!=NULL) {
-			free(dbv.pszVal);
+		DBFreeVariant(&dbv);
+		if(hIcon!=NULL)
 			return hIcon;
-		}
-		free(dbv.pszVal);
 	}
 	if (szProto) {
 		char szPath[MAX_PATH], szFullPath[MAX_PATH],*str;
@@ -223,7 +220,7 @@ static void LoadAllIcons(void)
 		hStatusIcons[i] = NULL;
 		if(!DBGetContactSetting(NULL,"Icons",szSetting,&dbv)) {
 			hStatusIcons[i] = ExtractIconFromPath(dbv.pszVal);
-			free(dbv.pszVal);
+			DBFreeVariant(&dbv);
 		}
 		if (!hStatusIcons[i]) hStatusIcons[i]=LoadIcon(hMiranda,MAKEINTRESOURCE(skinIconStatusToResourceId[i]));
 	}
