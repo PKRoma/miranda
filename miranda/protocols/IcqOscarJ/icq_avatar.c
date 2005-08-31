@@ -217,6 +217,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
     EnterCriticalSection(&cookieMutex); // wait for ready queue, reused cs
     { // check if any upload request is not in the queue
       avatarrequest* ar;
+      void** par = &pendingRequests;
       int bYet = 0;
       ar = pendingRequests;
       while (ar)
@@ -233,9 +234,11 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
           SAFE_FREE(&ar->pData); // remove upload request from queue
           tmp = ar;
           ar = ar->pNext;
+          *par = ar;
           SAFE_FREE(&tmp);
           continue;
         }
+        par = &ar->pNext;
         ar = ar->pNext;
       }
     }
