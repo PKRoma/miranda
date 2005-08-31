@@ -38,6 +38,7 @@
 
 BOOL IsUSASCII(const unsigned char *pBuffer, int nSize);
 BOOL IsUnicodeAscii(const wchar_t *pBuffer, int nSize);
+int UTF8_IsValid(const unsigned char* pszInput);
 
 char* detect_decode_utf8(const char *from);
 

@@ -123,14 +123,18 @@ static void AppendToUploadLog(HWND hwndDlg, const char *fmt, ...)
 {
   va_list va;
   char szText[1024];
+  char*pszText = NULL;
   int iItem;
 
   va_start(va, fmt);
   mir_vsnprintf(szText, sizeof(szText), fmt, va);
   va_end(va);
 
-  iItem = SendDlgItemMessage(hwndDlg, IDC_LOG, LB_ADDSTRING, 0, (LPARAM)szText);
+  if (IsUSASCII(szText, strlennull(szText)) || !UTF8_IsValid(szText) || !utf8_decode(szText, &pszText)) pszText = (char*)&szText;
+
+  iItem = SendDlgItemMessage(hwndDlg, IDC_LOG, LB_ADDSTRING, 0, (LPARAM)pszText);
   SendDlgItemMessage(hwndDlg, IDC_LOG, LB_SETTOPINDEX, iItem, 0);
+  if (pszText != (char*)&szText) SAFE_FREE(&pszText);
 }
 
 
@@ -232,7 +236,7 @@ static DWORD sendUploadBuddy(HANDLE hContact, WORD wAction, DWORD dwUin, char *s
     dwCookie = AllocateCookie(wAction, dwUin, ack);
     ack->lParam = dwCookie;
 
-    icq_sendBuddy(dwCookie, wAction, dwUin, szUID, ack->wGroupId, ack->wContactId, szItemName, szNote, bAuth, wItemType);
+    icq_sendBuddyUtf(dwCookie, wAction, dwUin, szUID, ack->wGroupId, ack->wContactId, szItemName, szNote, bAuth, wItemType);
 
     return dwCookie;
   }
@@ -343,24 +347,12 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
           char* pszNick = NULL;
           char* pszNote = NULL;
-          DBVARIANT dbv;
           DWORD dwUIN;
           uid_str szUID;
 
           // Only upload custom nicks
-          if (!DBGetContactSetting(hCurrentContact, "CList", "MyHandle", &dbv))
-          {
-            if (dbv.pszVal && strlen(dbv.pszVal) > 0)
-              pszNick = _strdup(dbv.pszVal);
-            DBFreeVariant(&dbv);
-          }
-
-          if (!DBGetContactSetting(hCurrentContact, "UserInfo", "MyNotes", &dbv))
-          {
-            if (dbv.pszVal && strlen(dbv.pszVal) > 0)
-              pszNote = _strdup(dbv.pszVal);
-            DBFreeVariant(&dbv);
-          }
+          pszNick = UniGetContactSettingUtf(hCurrentContact, "CList", "MyHandle", NULL);
+          pszNote = UniGetContactSettingUtf(hCurrentContact, "UserInfo", "MyNotes", NULL);
 
           if (!ICQGetContactSettingUID(hCurrentContact, &dwUIN, &szUID))
           {
@@ -594,20 +586,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               DBVARIANT dbv;
 
               // Only upload custom nicks
-              pszNick = NULL;
-              if (!DBGetContactSetting(hContact, "CList", "MyHandle", &dbv))
-              {
-                if (dbv.pszVal && strlen(dbv.pszVal) > 0)
-                  pszNick = _strdup(dbv.pszVal);
-                DBFreeVariant(&dbv);
-              }
-              pszNote = NULL;
-              if (!DBGetContactSetting(hContact, "UserInfo", "MyNotes", &dbv))
-              {
-                if (dbv.pszVal && strlen(dbv.pszVal) > 0)
-                  pszNote = _strdup(dbv.pszVal);
-                DBFreeVariant(&dbv);
-              }
+              pszNick = UniGetContactSettingUtf(hContact, "CList", "MyHandle", NULL);
+              pszNote = UniGetContactSettingUtf(hContact, "UserInfo", "MyNotes", NULL);
 
               if (isChecked)
               {  // Queue for uploading
@@ -730,20 +710,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 WORD wCurrentContactId = ICQGetContactSettingWord(hContact, "ServerId", 0);
                 BYTE bAuth = ICQGetContactSettingByte(hContact, "Auth", 0);
 
-                pszNick = NULL;
-                if (!DBGetContactSetting(hContact, "CList", "MyHandle", &dbv))
-                {
-                  if (dbv.pszVal && strlen(dbv.pszVal) > 0)
-                    pszNick = _strdup(dbv.pszVal);
-                  DBFreeVariant(&dbv);
-                }
-                pszNote = NULL;
-                if (!DBGetContactSetting(hContact, "UserInfo", "MyNotes", &dbv))
-                {
-                  if (dbv.pszVal && strlen(dbv.pszVal) > 0)
-                    pszNote = _strdup(dbv.pszVal);
-                  DBFreeVariant(&dbv);
-                }
+                pszNick = UniGetContactSettingUtf(hContact, "CList", "MyHandle", NULL);
+                pszNote = UniGetContactSettingUtf(hContact, "UserInfo", "MyNotes", NULL);
+
                 if (pszNick)
                   AppendToUploadLog(hwndDlg, Translate("Moving %s to group \"%s\"..."), pszNick, pszGroup);
                 else if (dwUin)
@@ -878,7 +847,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
           if (groupData = collectBuddyGroup(wNewGroupId, &groupSize))
           { // the group is still not empty, just update it
-            char* pszGroup = getServerGroupName(wNewGroupId);
+            char* pszGroup = getServerGroupNameUtf(wNewGroupId);
             servlistcookie* ack = (servlistcookie*)malloc(sizeof(servlistcookie));
 
             ack->dwAction = SSA_SERVLIST_ACK;
@@ -890,7 +859,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             currentAction = ACTION_UPDATESTATE;
             AppendToUploadLog(hwndDlg, Translate("Updating group \"%s\"..."), pszGroup);
 
-            icq_sendGroup(currentSequence, ICQ_LISTS_UPDATEGROUP, wNewGroupId, pszGroup, groupData, groupSize);
+            icq_sendGroupUtf(currentSequence, ICQ_LISTS_UPDATEGROUP, wNewGroupId, pszGroup, groupData, groupSize);
 
             SAFE_FREE(&pszGroup);
           }
@@ -906,7 +875,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             }
             else // update empty group
             {
-              char* pszGroup = getServerGroupName(wNewGroupId);
+              char* pszGroup = getServerGroupNameUtf(wNewGroupId);
               servlistcookie* ack = (servlistcookie*)malloc(sizeof(servlistcookie));
 
               ack->dwAction = SSA_SERVLIST_ACK;
@@ -918,7 +887,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               currentAction = ACTION_UPDATESTATE;
               AppendToUploadLog(hwndDlg, Translate("Updating group \"%s\"..."), pszGroup);
 
-              icq_sendGroup(currentSequence, ICQ_LISTS_UPDATEGROUP, wNewGroupId, pszGroup, 0, 0);
+              icq_sendGroupUtf(currentSequence, ICQ_LISTS_UPDATEGROUP, wNewGroupId, pszGroup, 0, 0);
 
               SAFE_FREE(&pszGroup);
             }

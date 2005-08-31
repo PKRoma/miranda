@@ -83,6 +83,7 @@ void UninitServerLists(void);
 void* collectGroups(int *count);
 void* collectBuddyGroup(WORD wGroupID, int *count);
 char* getServerGroupName(WORD wGroupID);
+char* getServerGroupNameUtf(WORD wGroupID);
 void setServerGroupName(WORD wGroupID, const char* szGroupName);
 void setServerGroupNameUtf(WORD wGroupID, const char* szGroupNameUtf);
 WORD getServerGroupID(const char* szPath);
@@ -93,11 +94,12 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
 void removeGroupPathLinks(WORD wGroupID);
 int countGroupLevel(WORD wGroupId);
 
-DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup);
-DWORD removeServContact(HANDLE hContact);
-DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup);
+//DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup);
+//DWORD removeServContact(HANDLE hContact);
+//DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup);
 
-DWORD icq_sendBuddy(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, WORD wGroupId, WORD wContactId, const char *szNick, const char*szNote, int authRequired, WORD wItemType);
+DWORD icq_sendBuddyUtf(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, WORD wGroupId, WORD wContactId, const char *szNick, const char*szNote, int authRequired, WORD wItemType);
+DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent);
 DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent);
 
 // id type groups

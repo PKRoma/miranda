@@ -1336,7 +1336,7 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list,
         dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, dwUin, ack);
       }
       
-      icq_sendBuddy(dwCookie, ICQ_LISTS_ADDTOLIST, dwUin, szUID, 0, wContactId, NULL, NULL, 0, wType);
+      icq_sendBuddyUtf(dwCookie, ICQ_LISTS_ADDTOLIST, dwUin, szUID, 0, wContactId, NULL, NULL, 0, wType);
 
       if (wType == SSI_ITEM_DENY)
         ICQWriteContactSettingWord(hContact, "SrvDenyId", wContactId);
@@ -1371,7 +1371,7 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list,
 
           dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
         }
-        icq_sendBuddy(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, szUID, 0, wContactId, NULL, NULL, 0, wType);
+        icq_sendBuddyUtf(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, szUID, 0, wContactId, NULL, NULL, 0, wType);
 
         if (wType == SSI_ITEM_DENY)
           ICQDeleteContactSetting(hContact, "SrvDenyId");
