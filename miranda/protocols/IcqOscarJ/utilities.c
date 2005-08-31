@@ -1462,11 +1462,17 @@ int NetLog_Server(const char *fmt,...)
 {
 	va_list va;
 	char szText[1024];
+  char*pszText = NULL;
 
 	va_start(va,fmt);
 	mir_vsnprintf(szText,sizeof(szText),fmt,va);
 	va_end(va);
+
+  if (IsUSASCII(szText, strlennull(szText)) || !UTF8_IsValid(szText) || !utf8_decode(szText, &pszText)) pszText = (char*)&szText;
+
 	return CallService(MS_NETLIB_LOG,(WPARAM)ghServerNetlibUser,(LPARAM)szText);
+
+  if (pszText != (char*)&szText) SAFE_FREE(&pszText);
 }
 
 
