@@ -436,7 +436,7 @@ BEGIN
     CONTROL         "Specify proxy server",IDC_PROXY_MANUAL,"Button",
                     BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,9,54,102,10
     CONTROL         "Disable main menu",IDC_DISABLE_MAINMENU,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,9,128,75,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,9,128,202,10
 END
 
 IDD_GROUPCHAT DIALOGEX 0, 0, 306, 208

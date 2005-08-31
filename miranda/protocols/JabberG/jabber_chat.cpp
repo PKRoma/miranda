@@ -172,7 +172,7 @@ void JabberGcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 	item->bChatActive = FALSE;
 
 	if ( jabberOnline ) {
-		JabberSend( jabberThreadInfo->s, "<presence to='%s' type='unavailable'/>", UTF8(item->jid));
+		JabberSend( jabberThreadInfo->s, "<presence to='%s' type='unavailable'/>", item->jid );
 		JabberListRemove( LIST_CHATROOM, item->jid );
 }	}
 
@@ -369,33 +369,33 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		mir_snprintf( szBuffer, sizeof szBuffer, "%s %s", JTranslate( "Reason to kick" ), him->resourceName );
 		if ( JabberEnterString( szBuffer, sizeof szBuffer ))
 			JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<item nick='%s' role='none'><reason>%s</reason></item></query></iq>",
-				xmlnsAdmin, UTF8(item->jid), UTF8(him->resourceName), UTF8(szBuffer));
+				xmlnsAdmin, item->jid, UTF8(him->resourceName), UTF8(szBuffer));
 		break;
 
 	case IDM_BAN:
 		mir_snprintf( szBuffer, sizeof szBuffer, "%s %s", JTranslate( "Reason to ban" ), him->resourceName );
 		if ( JabberEnterString( szBuffer, sizeof szBuffer ))
 			JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<item nick='%s' affiliation='outcast'><reason>%s</reason></item></query></iq>",
-				xmlnsAdmin, UTF8(item->jid), UTF8(him->resourceName), UTF8(szBuffer));
+				xmlnsAdmin, item->jid, UTF8(him->resourceName), UTF8(szBuffer));
 		break;
 
 	case IDM_VOICE:
-		JabberSend( jabberThreadInfo->s, sttAdminXml, UTF8(item->jid), xmlnsAdmin, UTF8(item->nick), "role", 
+		JabberSend( jabberThreadInfo->s, sttAdminXml, item->jid, xmlnsAdmin, UTF8(item->nick), "role", 
 			( him->role == ROLE_PARTICIPANT ) ? "visitor" : "participant" );
 		break;
 
 	case IDM_MODERATOR:
-		JabberSend( jabberThreadInfo->s, sttAdminXml, UTF8(item->jid), xmlnsAdmin, UTF8(item->nick), "role", 
+		JabberSend( jabberThreadInfo->s, sttAdminXml, item->jid, xmlnsAdmin, UTF8(item->nick), "role", 
 			( him->affiliation == ROLE_MODERATOR ) ? "participant" : "moderator" );
 		break;
 
 	case IDM_ADMIN:
-		JabberSend( jabberThreadInfo->s, sttAdminXml, UTF8(item->jid), xmlnsAdmin, UTF8(item->nick), "affiliation", 
+		JabberSend( jabberThreadInfo->s, sttAdminXml, item->jid, xmlnsAdmin, UTF8(item->nick), "affiliation", 
 			( him->affiliation==AFFILIATION_ADMIN )? "member" : "admin" );
 		break;
 
 	case IDM_OWNER:
-		JabberSend( jabberThreadInfo->s, sttAdminXml, UTF8(item->jid), xmlnsAdmin, UTF8(item->nick), "affiliation", 
+		JabberSend( jabberThreadInfo->s, sttAdminXml, item->jid, xmlnsAdmin, UTF8(item->nick), "affiliation", 
 			( him->affiliation==AFFILIATION_OWNER ) ? "admin" : "owner" );
 		break;
 }	}
@@ -410,49 +410,49 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultMucGetVoiceList );
 		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><item role='participant'/></query></iq>", 
-			iqId, UTF8(gch->pDest->pszID));
+			iqId, gch->pDest->pszID );
 		break;
 
 	case IDM_MEMBER:
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultMucGetMemberList );
 		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s<item affiliation='member'/></query></iq>", 
-			iqId, UTF8(gch->pDest->pszID), xmlnsAdmin );
+			iqId, gch->pDest->pszID, xmlnsAdmin );
 		break;
 
 	case IDM_MODERATOR:
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultMucGetModeratorList );
 		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s<item role='moderator'/></query></iq>", 
-			iqId, UTF8(gch->pDest->pszID), xmlnsAdmin );
+			iqId, gch->pDest->pszID, xmlnsAdmin );
 		break;
 
 	case IDM_BAN:
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultMucGetBanList );
 		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s<item affiliation='outcast'/></query></iq>",
-			iqId, UTF8(gch->pDest->pszID), xmlnsAdmin );
+			iqId, gch->pDest->pszID, xmlnsAdmin );
 		break;
 
 	case IDM_ADMIN:
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultMucGetAdminList );
 		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s<item affiliation='admin'/></query></iq>",
-			iqId, UTF8(gch->pDest->pszID), xmlnsOwner );
+			iqId, gch->pDest->pszID, xmlnsOwner );
 		break;
 
 	case IDM_OWNER:
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultMucGetOwnerList );
 		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s<item affiliation='owner'/></query></iq>", 
-			iqId, UTF8(gch->pDest->pszID), xmlnsOwner );
+			iqId, gch->pDest->pszID, xmlnsOwner );
 		break;
 
 	case IDM_TOPIC:
 		mir_snprintf( szBuffer, sizeof szBuffer, "%s %s", JTranslate( "Set topic for" ), gch->pDest->pszID );
 		if ( JabberEnterString( szBuffer, sizeof szBuffer ))
 			JabberSend( jabberThreadInfo->s, "<message to='%s' type='groupchat'><subject>%s</subject></message>", 
-				UTF8(gch->pDest->pszID), UTF8(szBuffer));
+				gch->pDest->pszID, UTF8(szBuffer));
 		break;
 
 	case IDM_NICK:
@@ -477,7 +477,7 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetMuc );
 		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s</query></iq>", 
-			iqId, UTF8(gch->pDest->pszID), xmlnsOwner );
+			iqId, gch->pDest->pszID, xmlnsOwner );
 		break;
 
 	case IDM_DESTROY:
@@ -486,7 +486,7 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 			break;
 
 		JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<destroy><reason>%s</reason></destroy></query></iq>", 
-			UTF8(gch->pDest->pszID), xmlnsOwner, UTF8(szBuffer));
+			gch->pDest->pszID, xmlnsOwner, UTF8(szBuffer));
 
 	case IDM_LEAVE: 
 		JabberGcQuit( item, 0, 0 );
@@ -514,7 +514,7 @@ int JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 			if ( jabberOnline ) {
 				char* str = JabberTextEncode( gch->pszText );
 				if ( str != NULL ) {
-					JabberSend( jabberThreadInfo->s, "<message to='%s' type='groupchat'><body>%s</body></message>", UTF8(item->jid), str );
+					JabberSend( jabberThreadInfo->s, "<message to='%s' type='groupchat'><body>%s</body></message>", item->jid, str );
 					free( str );
 		}	}	}
 		break;

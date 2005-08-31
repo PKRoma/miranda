@@ -113,7 +113,7 @@
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				GenerateDebugInformation="FALSE"
+				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				MapFileName="$(OutDir)/$(ProjectName).map"
 				OptimizeReferences="2"

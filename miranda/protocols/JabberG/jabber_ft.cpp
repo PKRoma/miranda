@@ -128,7 +128,7 @@ void JabberFtInitiate( char* jid, JABBER_FILE_TRANSFER *ft )
 						"</feature>"
 					"</si>"
 				"</iq>",
-				iqId, UTF8(jid), rs, sid, encFilename, ft->fileSize[ft->currentFile], encDesc
+				iqId, jid, rs, sid, encFilename, ft->fileSize[ft->currentFile], encDesc
 			 );
 			free( encDesc );
 		}
@@ -170,8 +170,8 @@ static void JabberFtSiResult( XmlNode *iqNode, void *userdata )
 								// Start Bytestream session
 								jbt = ( JABBER_BYTE_TRANSFER * ) malloc( sizeof( JABBER_BYTE_TRANSFER ));
 								ZeroMemory( jbt, sizeof( JABBER_BYTE_TRANSFER ));
-								jbt->srcJID = _strdup( JabberStringDecode( jabberThreadInfo->fullJID ));
-								jbt->dstJID = _strdup( JabberStringDecode( from ));
+								jbt->srcJID = _strdup( JabberUrlDecode( jabberThreadInfo->fullJID ));
+								jbt->dstJID = _strdup( JabberUrlDecode( from ));
 								jbt->sid = _strdup( item->ft->sid );
 								jbt->pfnSend = JabberFtSend;
 								jbt->pfnFinal = JabberFtSendFinal;
@@ -330,7 +330,7 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 					if (( localFilename=JabberTextDecode( filename )) != NULL ) {
 						ft = ( JABBER_FILE_TRANSFER * ) malloc( sizeof( JABBER_FILE_TRANSFER ));
 						ZeroMemory( ft, sizeof( JABBER_FILE_TRANSFER ));
-						ft->jid = _strdup( JabberStringDecode( from ));
+						ft->jid = _strdup( JabberUrlDecode( from ));
 						ft->hContact = JabberHContactFromJID( from );
 						ft->sid = _strdup( sid );
 						ft->iqId = ( szId )?_strdup( szId ):NULL;
@@ -359,12 +359,12 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 			}
 			else {
 				// No known stream mechanism
-				JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s'%s%s%s><error code='400' type='cancel'><bad-request xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><no-valid-streams xmlns='http://jabber.org/protocol/si'/></error></iq>", UTF8(from), ( szId )?" id='":"", ( szId )?szId:"", ( szId )?"'":"" );
+				JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s'%s%s%s><error code='400' type='cancel'><bad-request xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><no-valid-streams xmlns='http://jabber.org/protocol/si'/></error></iq>", from, ( szId )?" id='":"", ( szId )?szId:"", ( szId )?"'":"" );
 				return;
 	}	}	}
 
 	// Bad stream initiation, reply with bad-profile
-	JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s'%s%s%s><error code='400' type='cancel'><bad-request xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><bad-profile xmlns='http://jabber.org/protocol/si'/></error></iq>", UTF8(from), ( szId )?" id='":"", ( szId )?szId:"", ( szId )?"'":"" );
+	JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s'%s%s%s><error code='400' type='cancel'><bad-request xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><bad-profile xmlns='http://jabber.org/protocol/si'/></error></iq>", from, ( szId )?" id='":"", ( szId )?szId:"", ( szId )?"'":"" );
 }
 
 void JabberFtAcceptSiRequest( JABBER_FILE_TRANSFER *ft )
@@ -390,7 +390,7 @@ void JabberFtAcceptSiRequest( JABBER_FILE_TRANSFER *ft )
 					"</feature>"
 				"</si>"
 			"</iq>",
-			UTF8(ft->jid), ( szId )?" id='":"", ( szId )?szId:"", ( szId )?"'":"",
+			ft->jid, ( szId )?" id='":"", ( szId )?szId:"", ( szId )?"'":"",
 			/*( ft->type==FT_BYTESTREAM )?*/"http://jabber.org/protocol/bytestreams"
 		 );
 	}

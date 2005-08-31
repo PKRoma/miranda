@@ -54,7 +54,7 @@ int JabberSendGetVcard( const char* jid )
 	JabberIqAdd( iqId, ( jid == jabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, JabberIqResultGetVcard );
 	JabberSend( jabberThreadInfo->s, 
 		"<iq type='get' id='"JABBER_IQID"%d' to='%s'><vCard xmlns='vcard-temp' prodid='-//HandGen//NONSGML vGen v1.0//EN' version='2.0' /></iq>", 
-		iqId, UTF8(jid));
+		iqId, jid );
 	return 0;	
 }
 

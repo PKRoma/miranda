@@ -547,7 +547,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL )
 		return;
 
-	BOOL isChatRoomJid = JabberListExist( LIST_CHATROOM, JabberStringDecode( from ));
+	BOOL isChatRoomJid = JabberListExist( LIST_CHATROOM, JabberUrlDecode( from ));
 	if ( isChatRoomJid && type != NULL && !strcmp( type, "groupchat" )) {
 		JabberGroupchatProcessMessage( node, userdata );
 		return;
@@ -569,22 +569,6 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		}
 		else szMessage = bodyNode->text;
 
-		JabberUtf8Decode( szMessage, &wszMessage );
-		JabberUrlDecode( szMessage );
-		if (( szMessage = JabberUnixToDos( szMessage )) == NULL )
-			szMessage = "";
-		{
-			JabberUrlDecodeW( wszMessage );
-			WCHAR* p = JabberUnixToDosW( wszMessage );
-			free( wszMessage );
-			wszMessage = ( p == NULL ) ? L"" : p;
-		}
-
-		int cbAnsiLen = strlen( szMessage )+1, cbWideLen = wcslen( wszMessage )+1;
-		char* buf = ( char* )alloca( cbAnsiLen + cbWideLen*sizeof( WCHAR ));
-		memcpy( buf, szMessage, cbAnsiLen );
-		memcpy( buf + cbAnsiLen, wszMessage, cbWideLen*sizeof( WCHAR ));
-
 		time_t msgTime = 0, now;
 		BOOL  isChatRoomInvitation = FALSE;
 		char* inviteRoomJid = NULL;
@@ -595,7 +579,18 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 
 		for ( int i = 1; ( xNode = JabberXmlGetNthChild( node, "x", i )) != NULL; i++ ) {
 			if (( p=JabberXmlGetAttrValue( xNode, "xmlns" )) != NULL ) {
-				if ( !strcmp( p, "jabber:x:delay" ) && msgTime==0 ) {
+				if ( !strcmp( p, "jabber:x:encrypted" ) ) {
+					if ( xNode->text == NULL )
+						return;
+					char* prolog = JabberUtf8Encode("-----BEGIN PGP MESSAGE-----\r\n\r\n");
+					char* epilog = JabberUtf8Encode("\r\n-----END PGP MESSAGE-----\r\n");
+					char* tempstring = ( char* )alloca( strlen( prolog ) + strlen( xNode->text ) + strlen( epilog ) );
+					strncpy( tempstring, prolog, strlen( prolog )+1 );
+					strncpy(tempstring+strlen( prolog ), xNode->text, strlen( xNode->text )+1);
+					strncpy(tempstring+strlen( prolog )+strlen(xNode->text ), epilog, strlen( epilog )+1);
+					szMessage = tempstring;
+            }
+				else if ( !strcmp( p, "jabber:x:delay" ) && msgTime == 0 ) {
 					if (( p=JabberXmlGetAttrValue( xNode, "stamp" )) != NULL )
 						msgTime = JabberIsoToUnixTime( p );
 				}
@@ -604,7 +599,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 					if ( !delivered && ( n=JabberXmlGetChild( xNode, "delivered" ))!=NULL ) {
 						delivered = TRUE;
 						idStr = JabberXmlGetAttrValue( node, "id" );
-						JabberSend( info->s, "<message to='%s'><x xmlns='jabber:x:event'><delivered/><id>%s</id></x></message>", UTF8(from), ( idStr!=NULL )?idStr:"" );
+						JabberSend( info->s, "<message to='%s'><x xmlns='jabber:x:event'><delivered/><id>%s</id></x></message>", from, ( idStr!=NULL )?idStr:"" );
 					}
 					if ( item!=NULL && JabberXmlGetChild( xNode, "composing" )!=NULL ) {
 						composing = TRUE;
@@ -633,6 +628,22 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 
 			i++;
 		}
+
+		JabberUtf8Decode( szMessage, &wszMessage );
+		JabberUrlDecode( szMessage );
+		if (( szMessage = JabberUnixToDos( szMessage )) == NULL )
+			szMessage = "";
+		{
+			JabberUrlDecodeW( wszMessage );
+			WCHAR* p = JabberUnixToDosW( wszMessage );
+			free( wszMessage );
+			wszMessage = ( p == NULL ) ? L"" : p;
+		}
+
+		int cbAnsiLen = strlen( szMessage )+1, cbWideLen = wcslen( wszMessage )+1;
+		char* buf = ( char* )alloca( cbAnsiLen + cbWideLen*sizeof( WCHAR ));
+		memcpy( buf, szMessage, cbAnsiLen );
+		memcpy( buf + cbAnsiLen, wszMessage, cbWideLen*sizeof( WCHAR ));
 
 		if ( isChatRoomInvitation ) {
 			if ( inviteRoomJid != NULL )
@@ -735,7 +746,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
 
 	if (( from = JabberXmlGetAttrValue( node, "from" )) != NULL ) {
-		JabberStringDecode( from );
+		JabberUrlDecode( from );
 
 		if ( JabberListExist( LIST_CHATROOM, from ))
 			JabberGroupchatProcessPresence( node, userdata );
@@ -768,7 +779,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 								r = item->resource;
 								for ( i=0; i<item->resourceCount && strcmp( r[i].resourceName, p ); i++ );
 								if ( i >= item->resourceCount )
-									JabberSend( info->s, "<iq type='get' to='%s'><query xmlns='jabber:iq:version'/></iq>", UTF8( from ));
+									JabberSend( info->s, "<iq type='get' to='%s'><query xmlns='jabber:iq:version'/></iq>", from );
 					}	}	}
 
 					if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL && statusNode->text != NULL )
@@ -843,7 +854,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			else if ( !strcmp( type, "subscribe" )) {
 				if ( strchr( from, '@' ) == NULL ) {
 					// automatically send authorization allowed to agent/transport
-					JabberSend( info->s, "<presence to='%s' type='subscribed'/>", UTF8(from));
+					JabberSend( info->s, "<presence to='%s' type='subscribed'/>", from );
 				}
 				else if (( nick=JabberNickFromJID( from )) != NULL ) {
 					JabberLog( "%s ( %s ) requests authorization", nick, from );
@@ -924,7 +935,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 				if (( str = JabberXmlGetAttrValue( itemNode, "subscription" )) == NULL )
 					continue;
 
-				JabberStringDecode( jid );
+				JabberUrlDecode( jid );
 
 				// we will not add new account when subscription=remove
 				if ( !strcmp( str, "to" ) || !strcmp( str, "both" ) || !strcmp( str, "from" ) || !strcmp( str, "none" )) {
@@ -1004,7 +1015,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 				str = n->text;	// URL of the file to get
 				ft = ( JABBER_FILE_TRANSFER * ) malloc( sizeof( JABBER_FILE_TRANSFER ));
 				memset( ft, 0, sizeof( JABBER_FILE_TRANSFER ));
-				ft->jid = _strdup( JabberStringDecode( jid ));
+				ft->jid = _strdup( JabberUrlDecode( jid ));
 				ft->hContact = JabberHContactFromJID( jid );
 				ft->type = FT_OOB;
 				ft->httpHostName = NULL;
@@ -1069,9 +1080,9 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 				else {
 					// reject
 					if ( ft->iqId )
-						JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s' id='%s'><error code='406'>File transfer refused</error></iq>", UTF8(ft->jid), ft->iqId );
+						JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s' id='%s'><error code='406'>File transfer refused</error></iq>", ft->jid, ft->iqId );
 					else
-						JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s'><error code='406'>File transfer refused</error></iq>", UTF8(ft->jid));
+						JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s'><error code='406'>File transfer refused</error></iq>", ft->jid );
 					JabberFileFreeFt( ft );
 		}	}	}
 
@@ -1122,10 +1133,10 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 				if ( os == NULL ) os = JabberTextEncode( JTranslate( "Windows" ));
 				JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
 				if (( resultId = JabberTextEncode( idStr )) != NULL ) {
-					JabberSend( jabberThreadInfo->s, "<iq type='result' id='%s' to='%s'><query xmlns='jabber:iq:version'><name>Jabber Protocol Plugin ( Miranda IM %s )</name><version>%s</version><os>%s</os></query></iq>", resultId, UTF8(from), mversion, version?version:"", os?os:"" );
+					JabberSend( jabberThreadInfo->s, "<iq type='result' id='%s' to='%s'><query xmlns='jabber:iq:version'><name>Jabber Protocol Plugin ( Miranda IM %s )</name><version>%s</version><os>%s</os></query></iq>", resultId, from, mversion, version?version:"", os?os:"" );
 					free( resultId );
 				}
-				else JabberSend( jabberThreadInfo->s, "<iq type='result' to='%s'><query xmlns='jabber:iq:version'><name>Jabber Protocol Plugin ( Miranda IM %s )</name><version>%s</version><os>%s</os></query></iq>", UTF8(from), mversion, version?version:"", os?os:"" );
+				else JabberSend( jabberThreadInfo->s, "<iq type='result' to='%s'><query xmlns='jabber:iq:version'><name>Jabber Protocol Plugin ( Miranda IM %s )</name><version>%s</version><os>%s</os></query></iq>", from, mversion, version?version:"", os?os:"" );
 
 				if ( str ) free( str );
 				if ( version ) free( version );
@@ -1183,7 +1194,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		else {
 			if (( from=JabberXmlGetAttrValue( node, "from" )) != NULL ) {
 				idStr = JabberXmlGetAttrValue( node, "id" );
-				JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s'%s%s%s><error code='400' type='cancel'><bad-request xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><bad-profile xmlns='http://jabber.org/protocol/si'/></error></iq>", UTF8(from), ( idStr )?" id='":"", ( idStr )?idStr:"", ( idStr )?"'":"" );
+				JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s'%s%s%s><error code='400' type='cancel'><bad-request xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><bad-profile xmlns='http://jabber.org/protocol/si'/></error></iq>", from, ( idStr )?" id='":"", ( idStr )?idStr:"", ( idStr )?"'":"" );
 		}	}
 	}
 	// RECVED: <iq type='error'> ...

@@ -118,16 +118,19 @@ HANDLE __stdcall JabberHContactFromJID( const char* jid )
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto!=NULL && !strcmp( jabberProtoName, szProto )) {
-			char szJid[ JABBER_MAX_JID_LEN ];
-			if ( JGetStaticString( "jid", hContact, szJid, sizeof szJid ))
-				if ( JGetStaticString( "ChatRoomID", hContact, szJid, sizeof szJid ))
-					continue;
+		if ( szProto != NULL && !strcmp( jabberProtoName, szProto )) {
+			DBVARIANT dbv;
+			int result = DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv );
+			if ( result )
+				result = DBGetContactSettingStringUtf( hContact, jabberProtoName, "ChatRoomID", &dbv );
 
-			if ( JabberCompareJids( jid, szJid ) == 0 ) {
-				hContactMatched = hContact;
-				break;
-		}	}
+			if ( !result ) {
+				int result = JabberCompareJids( jid, dbv.pszVal );
+				JFreeVariant( &dbv );
+				if ( !result ) {
+					hContactMatched = hContact;
+					break;
+		}	}	}
 
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}
@@ -153,13 +156,12 @@ char* __stdcall JabberNickFromJID( const char* jid )
 
 	return nick;
 }
-
-void __stdcall JabberUrlDecode( char* str )
+char* __stdcall JabberUrlDecode( char* str )
 {
 	char* p, *q;
 
 	if ( str == NULL )
-		return;
+		return NULL;
 
 	for ( p=q=str; *p!='\0'; p++,q++ ) {
 		if ( *p == '&' ) {
@@ -175,6 +177,7 @@ void __stdcall JabberUrlDecode( char* str )
 		}
 	}
 	*q = '\0';
+	return str;
 }
 
 void __stdcall JabberUrlDecodeW( WCHAR* str )
@@ -234,6 +237,46 @@ char* __stdcall JabberUrlEncode( const char* str )
 	return s;
 }
 
+static void __stdcall sttUtf8Decode( const BYTE* str, wchar_t* tempBuf )
+{
+	wchar_t* d = tempBuf;
+	BYTE* s = ( BYTE* )str;
+
+	while( *s )
+	{
+		if (( *s & 0x80 ) == 0 ) {
+			*d++ = *s++;
+			continue;
+		}
+
+		if (( s[0] & 0xE0 ) == 0xE0 && ( s[1] & 0xC0 ) == 0x80 && ( s[2] & 0xC0 ) == 0x80 ) {
+			*d++ = (( WORD )( s[0] & 0x0F ) << 12 ) + ( WORD )(( s[1] & 0x3F ) << 6 ) + ( WORD )( s[2] & 0x3F );
+			s += 3;
+			continue;
+		}
+
+		if (( s[0] & 0xE0 ) == 0xC0 && ( s[1] & 0xC0 ) == 0x80 ) {
+			*d++ = ( WORD )(( s[0] & 0x1F ) << 6 ) + ( WORD )( s[1] & 0x3F );
+			s += 2;
+			continue;
+		}
+
+		*d++ = *s++;
+	}
+
+	*d = 0;
+}
+
+int __stdcall JabberUtfCompareI( const char* s1, const char* s2 )
+{
+	int l1 = strlen( s1 ), l2 = strlen( s2 );
+	wchar_t* w1 = ( wchar_t* )alloca(( l1+1 )*sizeof( wchar_t ));
+	wchar_t* w2 = ( wchar_t* )alloca(( l2+1 )*sizeof( wchar_t ));
+	sttUtf8Decode(( BYTE* )s1, w1 );
+	sttUtf8Decode(( BYTE* )s2, w2 );
+	return lstrcmpiW( w1, w2 );
+}
+
 void __stdcall JabberUtf8Decode( char* str, WCHAR** ucs2 )
 {
 	if ( str == NULL )
@@ -250,34 +293,7 @@ void __stdcall JabberUtf8Decode( char* str, WCHAR** ucs2 )
 	}
 
 	wchar_t* tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
-	{
-		wchar_t* d = tempBuf;
-		BYTE* s = ( BYTE* )str;
-
-		while( *s )
-		{
-			if (( *s & 0x80 ) == 0 ) {
-				*d++ = *s++;
-				continue;
-			}
-
-			if (( s[0] & 0xE0 ) == 0xE0 && ( s[1] & 0xC0 ) == 0x80 && ( s[2] & 0xC0 ) == 0x80 ) {
-				*d++ = (( WORD )( s[0] & 0x0F ) << 12 ) + ( WORD )(( s[1] & 0x3F ) << 6 ) + ( WORD )( s[2] & 0x3F );
-				s += 3;
-				continue;
-			}
-
-			if (( s[0] & 0xE0 ) == 0xC0 && ( s[1] & 0xC0 ) == 0x80 ) {
-				*d++ = ( WORD )(( s[0] & 0x1F ) << 6 ) + ( WORD )( s[1] & 0x3F );
-				s += 2;
-				continue;
-			}
-
-			*d++ = *s++;
-		}
-
-		*d = 0;
-	}
+	sttUtf8Decode(( BYTE* )str, tempBuf );
 
 	if ( ucs2 != NULL ) {
 		int fullLen = ( len+1 )*sizeof( wchar_t );
@@ -542,7 +558,7 @@ void __stdcall JabberSendVisibleInvisiblePresence( BOOL invisible )
 
 		WORD apparentMode = JGetWord( hContact, "ApparentMode", 0 );
 		if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE )
-			JabberSend( jabberThreadInfo->s, "<presence to='%s' type='invisible'/>", UTF8(item->jid));
+			JabberSend( jabberThreadInfo->s, "<presence to='%s' type='invisible'/>", item->jid );
 		else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE )
 			JabberSendPresenceTo( jabberStatus, item->jid, NULL );
 }	}
@@ -623,19 +639,6 @@ char* __stdcall JabberTextEncodeW( const wchar_t* str )
 	*d = 0;
 
 	return JabberUtf8EncodeW( tmp );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// JabberStringDecode - retrieve a text from the encoded string
-
-char* __stdcall JabberStringDecode( char* str )
-{
-	if ( str == NULL )
-		return NULL;
-
-	JabberUtf8Decode( str, NULL );
-	JabberUrlDecode( str );
-	return str;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -726,6 +729,10 @@ char* __stdcall JabberBase64Decode( const char* str, int *resultLen )
 	count = 0;
 	for ( p=( unsigned char* )str,r=( unsigned char* )res; *p!='\0'; ) {
 		for ( n=0; n<4; n++ ) {
+			if ( *p == '\r' || *p == '\n' ) {
+				n--; p++;
+				continue;
+			}
 			if ( *p=='\0' || b64rtable[*p]==0x80 ) {
 				free( res );
 				return NULL;
@@ -868,7 +875,7 @@ void __stdcall JabberSendPresenceTo( int status, char* to, char* extra )
 
 	char toStr[ 512 ];
 	if ( to != NULL )
-		mir_snprintf( toStr, sizeof toStr, " to='%s'", UTF8(to));
+		mir_snprintf( toStr, sizeof toStr, " to='%s'", to );
 	else
 		toStr[0] = '\0';
 

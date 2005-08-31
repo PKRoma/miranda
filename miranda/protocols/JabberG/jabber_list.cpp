@@ -133,7 +133,7 @@ int JabberListExist( JABBER_LIST list, const char* jid )
 	for ( int i=0; i<count; i++ ) {
 		if ( lists[i].list == list ) {
 			char szTempJid[ JABBER_MAX_JID_LEN ];
-			if ( !lstrcmpi( szSrc, JabberStripJid( lists[i].jid, szTempJid, sizeof szTempJid ))) {
+			if ( !JabberUtfCompareI( szSrc, JabberStripJid( lists[i].jid, szTempJid, sizeof szTempJid ))) {
 			  	LeaveCriticalSection( &csLists );
 				return i+1;
 	}	}	}

@@ -45,7 +45,7 @@ static void JabberRegisterAgent( HWND hwndDlg, char* jid )
 {
 	int iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_GETREGISTER, JabberIqResultGetRegister );
-	JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:register'/></iq>", iqId, UTF8( jid ));
+	JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:register'/></iq>", iqId, jid );
 	hwndAgentRegInput = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ), hwndDlg, JabberAgentRegInputDlgProc, 0 );
 }
 
@@ -278,9 +278,9 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				ListView_GetItem( lv, &lvItem );
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL ) {
 					if ( LOWORD( wParam )==IDC_AGENT_LOGON )
-						JabberSend( jabberThreadInfo->s, "<presence to='%s'/>", UTF8(item->jid));
+						JabberSend( jabberThreadInfo->s, "<presence to='%s'/>", item->jid );
 					else
-						JabberSend( jabberThreadInfo->s, "<presence to='%s' type='unavailable'/>", UTF8(item->jid));
+						JabberSend( jabberThreadInfo->s, "<presence to='%s' type='unavailable'/>", item->jid );
 			}	}
 			return TRUE;
 		case IDC_AGENT_UNREGISTER:

@@ -283,8 +283,8 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					CallService( MS_GC_NEWCHAT, 0, ( LPARAM )&gcw );
 				}
 
-				JabberSend( jabberThreadInfo->s, "<iq type='set'><query xmlns='jabber:iq:roster'><item jid='%s'/></query></iq>", UTF8(jid));
-				JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribe'/>", UTF8(jid));
+				JabberSend( jabberThreadInfo->s, "<iq type='set'><query xmlns='jabber:iq:roster'><item jid='%s'/></query></iq>", jid );
+				JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribe'/>", jid );
 			}
 			break;
 		case IDC_SERVER:
@@ -522,7 +522,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 
 					userjid = JabberXmlGetAttrValue( itemNode, "jid" );
 					if ( userjid != NULL )
-						JabberStringDecode( userjid );
+						JabberUrlDecode( userjid );
 			}	}
 
 			if (( statusNode=JabberXmlGetChild( xNode, "status" )) != NULL )
@@ -551,7 +551,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 			iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetMuc );
 			JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s</query></iq>", 
-				iqId, UTF8(item->jid), xmlnsOwner );
+				iqId, item->jid, xmlnsOwner );
 		}
 
 		free( room );
@@ -581,7 +581,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 
 					userjid = JabberXmlGetAttrValue( itemNode, "jid" );
 					if ( userjid != NULL )
-						JabberStringDecode( userjid );
+						JabberUrlDecode( userjid );
 		}	}	}
 
 		JabberListRemoveResource( LIST_CHATROOM, from );

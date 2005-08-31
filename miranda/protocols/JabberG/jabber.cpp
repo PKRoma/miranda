@@ -169,6 +169,11 @@ HANDLE hChatEvent = NULL, hChatMenu = NULL, hInitChat = NULL, hEvInitChat = NULL
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
+	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
+		MessageBox( NULL, Translate( "This plugin requires db3x plugin version 0.5.1.0 or later" ), "Jabber", MB_OK );
+		return 1;
+	}
+
 	JabberWsInit();
 	JabberSslInit();
 	HookEvent( ME_USERINFO_INITIALISE, JabberUserInfoInit );

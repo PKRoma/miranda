@@ -51,7 +51,7 @@ void JabberXmlnsBrowse( XmlNode *iqNode, void *userdata )
 			"<ns>jabber:x:data</ns>"
 			"<ns>jabber:x:event</ns>"
 			"<ns>vcard-temp</ns>"
-			"</user></iq>", iqFrom, idStr, UTF8(jabberJID), xmlns );
+			"</user></iq>", iqFrom, idStr, jabberJID, xmlns );
 }	}
 
 void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
@@ -67,7 +67,7 @@ void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
 	if (( queryNode = JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
 	if (( xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" )) == NULL ) return;
 
-	JabberStringDecode( iqFrom );
+	JabberUrlDecode( iqFrom );
 
 	p = strrchr( xmlns, '/' );
 	discoType = strrchr( xmlns, '#' );
@@ -95,7 +95,7 @@ void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
 				"<feature var='jabber:x:data'/>"
 				"<feature var='jabber:x:event'/>"
 				"<feature var='vcard-temp'/>"
-				"</query></iq>", UTF8(iqFrom), idStr, xmlns );
+				"</query></iq>", iqFrom, idStr, xmlns );
 		}
 		else JabberSend( jabberThreadInfo->s, "<iq type='result'%s><query xmlns='%s'/></iq>", idStr, xmlns );
 }	}

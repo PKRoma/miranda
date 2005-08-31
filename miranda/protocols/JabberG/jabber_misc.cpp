@@ -31,11 +31,11 @@ void JabberAddContactToRoster( const char* jid, const char* nick, const char* gr
 	if ( grpName != NULL )
 		JabberSend( jabberThreadInfo->s, 
 			"<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'><group>%s</group></item></query></iq>", 
-			UTF8(nick), UTF8(jid), UTF8(grpName));
+			UTF8(nick), jid, UTF8(grpName));
 	else
 		JabberSend( jabberThreadInfo->s, 
 			"<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'/></query></iq>", 
-			UTF8(nick), UTF8(jid));
+			UTF8(nick), jid );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -53,12 +53,12 @@ void JabberChatDllError()
 
 int JabberCompareJids( const char* jid1, const char* jid2 )
 {
-	if ( !lstrcmpi( jid1, jid2 ))
+	if ( !JabberUtfCompareI( jid1, jid2 ))
 		return 0;
 
 	// match only node@domain part
 	char szTempJid1[ JABBER_MAX_JID_LEN ], szTempJid2[ JABBER_MAX_JID_LEN ];
-	return lstrcmpi( 
+	return JabberUtfCompareI( 
 		JabberStripJid( jid1, szTempJid1, sizeof szTempJid1 ),
 		JabberStripJid( jid2, szTempJid2, sizeof szTempJid2 ));
 }
@@ -133,7 +133,7 @@ void JabberDBAddAuthRequest( char* jid, char* nick )
 	if (( hContact=JabberHContactFromJID( jid )) == NULL ) {
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_ADD, 0, 0 );
 		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )jabberProtoName );
-		JSetString( hContact, "jid", s );
+		DBWriteContactSettingStringUtf( hContact, jabberProtoName, "jid", s );
 	}
 	else DBDeleteContactSetting( hContact, jabberProtoName, "Hidden" );
 
@@ -162,12 +162,11 @@ void JabberDBAddAuthRequest( char* jid, char* nick )
 
 ///////////////////////////////////////////////////////////////////////////////
 // JabberDBCreateContact()
+// jid & nick are passed in UTF8
 
 HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripResource )
 {
-	HANDLE hContact;
 	char* s, *p, *q;
-	DBVARIANT dbv;
 	int len;
 	char* szProto;
 
@@ -181,16 +180,17 @@ HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripR
 		if (( q=strchr( p, '/' )) != NULL )
 			*q = '\0';
 	
-	if ( !stripResource && q!=NULL )	// so that resource is not converted to lowercase
+	if ( !stripResource && q!=NULL )	// so that resource is not stripped
 		*q = '/';
 	len = strlen( s );
 
 	// We can't use JabberHContactFromJID() here because of the stripResource option
-	hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
 		if ( szProto!=NULL && !strcmp( jabberProtoName, szProto )) {
-			if ( !DBGetContactSetting( hContact, jabberProtoName, "jid", &dbv )) {
+			DBVARIANT dbv;
+			if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv )) {
 				p = dbv.pszVal;
 				if ( p && ( int )strlen( p )>=len && ( p[len]=='\0'||p[len]=='/' ) && !strncmp( p, s, len )) {
 					JFreeVariant( &dbv );
@@ -201,20 +201,18 @@ HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripR
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}
 
-	//if (( hContact=JabberHContactFromJID( s )) == NULL ) {
 	if ( hContact == NULL ) {
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_ADD, 0, 0 );
 		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )jabberProtoName );
-		JSetString( hContact, "jid", s );
-		if ( nick!=NULL && nick[0]!='\0' )
-			JSetString( hContact, "Nick", nick );
+		DBWriteContactSettingStringUtf( hContact, jabberProtoName, "jid", s );
+		if ( nick != NULL && *nick != '\0' )
+			DBWriteContactSettingStringUtf( hContact, jabberProtoName, "Nick", nick );
 		if ( temporary )
 			DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 		JabberLog( "Create Jabber contact jid=%s, nick=%s", s, nick );
 	}
 
 	free( s );
-
 	return hContact;
 }
 

@@ -50,7 +50,7 @@ void JabberIqResultBrowseRooms( XmlNode *iqNode, void *userdata )
 							if (( roomNode=confNode->child[j] )!=NULL && !strcmp( roomNode->name, "item" )) {
 								if (( category=JabberXmlGetAttrValue( roomNode, "category" ))!=NULL && !strcmp( category, "conference" )) {
 									if (( jid=JabberXmlGetAttrValue( roomNode, "jid" )) != NULL ) {
-										item = JabberListAdd( LIST_ROOM, JabberStringDecode( jid ));
+										item = JabberListAdd( LIST_ROOM, JabberUrlDecode( jid ));
 										if (( str=JabberXmlGetAttrValue( roomNode, "name" )) != NULL )
 											item->name = JabberTextDecode( str );
 										if (( str=JabberXmlGetAttrValue( roomNode, "type" )) != NULL )
@@ -135,7 +135,7 @@ void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )
 			for ( i=0; i<queryNode->numChild; i++ ) {
 				if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL && !strcmp( itemNode->name, "item" )) {
 					if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-						item = JabberListAdd( LIST_ROOM, JabberStringDecode( jid ));
+						item = JabberListAdd( LIST_ROOM, JabberUrlDecode( jid ));
 						item->name = JabberTextDecode( JabberXmlGetAttrValue( itemNode, "name" ));
 		}	}	}	}
 
@@ -150,7 +150,7 @@ void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )
 		// disco is not supported, try browse
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_BROWSEROOMS, JabberIqResultBrowseRooms );
-		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:browse'/></iq>", iqId, UTF8(from));
+		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:browse'/></iq>", iqId, from );
 }	}
 
 static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
@@ -241,7 +241,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 							for ( i=0; i<queryNode->numChild; i++ ) {
 								if (( itemNode=queryNode->child[i] ) != NULL ) {
 									if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-										JabberStringDecode( jid );
+										JabberUrlDecode( jid );
 										lvi.pszText = jid;
 										lvi.lParam = ( LPARAM )_strdup( jid );
 										ListView_InsertItem( hwndList, &lvi );
@@ -338,24 +338,24 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 								switch ( jidListInfo->type ) {
 								case MUC_VOICELIST:		// change role to visitor ( from participant )
 									JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<item jid='%s' role='visitor'/></query></iq>", 
-										UTF8(jidListInfo->roomJid), xmlnsAdmin, ( char* )lvi.lParam );
+										jidListInfo->roomJid, xmlnsAdmin, ( char* )lvi.lParam );
 									break;
 								case MUC_BANLIST:		// change affiliation to none ( from outcast )
 								case MUC_MEMBERLIST:	// change affiliation to none ( from member )
 									JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<item jid='%s' affiliation='none'/></query></iq>", 
-										UTF8(jidListInfo->roomJid), xmlnsOwner, ( char* )lvi.lParam );
+										jidListInfo->roomJid, xmlnsOwner, ( char* )lvi.lParam );
 									break;
 								case MUC_MODERATORLIST:	// change role to participant ( from moderator )
 									JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<item jid='%s' role='participant'/></query></iq>", 
-										UTF8(jidListInfo->roomJid), xmlnsAdmin, ( char* )lvi.lParam );
+										jidListInfo->roomJid, xmlnsAdmin, ( char* )lvi.lParam );
 									break;
 								case MUC_ADMINLIST:		// change affiliation to member ( from admin )
 									JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<item jid='%s' affiliation='member'/></query></iq>", 
-										UTF8(jidListInfo->roomJid), xmlnsOwner, ( char* )lvi.lParam );
+										jidListInfo->roomJid, xmlnsOwner, ( char* )lvi.lParam );
 									break;
 								case MUC_OWNERLIST:		// change affiliation to admin ( from owner )
 									JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<item jid='%s' affiliation='admin'/></query></iq>", 
-										UTF8(jidListInfo->roomJid), xmlnsOwner, ( char* )lvi.lParam );
+										jidListInfo->roomJid, xmlnsOwner, ( char* )lvi.lParam );
 									break;
 								}
 
