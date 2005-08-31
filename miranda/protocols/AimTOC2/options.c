@@ -94,6 +94,7 @@ static BOOL CALLBACK aim_options_generaloptsproc(HWND hwndDlg, UINT msg, WPARAM 
             CheckDlgButton(hwndDlg, IDC_PASSWORD, DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_PM, AIM_KEY_PM_DEF));
             CheckDlgButton(hwndDlg, IDC_SHOWJOINMENU, DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_GM, AIM_KEY_GM_DEF));
             CheckDlgButton(hwndDlg, IDC_IGNOREJOIN, DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_GI, AIM_KEY_GI_DEF));
+			CheckDlgButton(hwndDlg, IDC_SHOWSYNCMENU, DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_LSM,AIM_KEY_SM_DEF));
             break;
         }
         case WM_COMMAND:
@@ -120,6 +121,7 @@ static BOOL CALLBACK aim_options_generaloptsproc(HWND hwndDlg, UINT msg, WPARAM 
                 }
 				case IDC_SHOWJOINMENU:
                 case IDC_PASSWORD:
+				case IDC_SHOWSYNCMENU:
                 {
                     ShowWindow(GetDlgItem(hwndDlg, IDC_RELOADREQD), SW_SHOW);
                     break;
@@ -165,6 +167,7 @@ static BOOL CALLBACK aim_options_generaloptsproc(HWND hwndDlg, UINT msg, WPARAM 
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_AL, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_WEBSUPPORT));
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_PM, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_PASSWORD));
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_GM, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWJOINMENU));
+					DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_LSM, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSYNCMENU));
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_GI, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IGNOREJOIN));
                     break;
                 }

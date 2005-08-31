@@ -90,8 +90,8 @@ static void aim_userinfo_inforeq(HANDLE hContact)
         aim_toc_sflapsend(buf, -1, TYPE_DATA);
 
         SleepEx(250, FALSE);
-        mir_snprintf(buf, sizeof(buf), "toc_get_info %s", dbv.pszVal);
-        aim_toc_sflapsend(buf, -1, TYPE_DATA);
+       // mir_snprintf(buf, sizeof(buf), "toc_get_info %s", dbv.pszVal);
+        //aim_toc_sflapsend(buf, -1, TYPE_DATA);
         DBFreeVariant(&dbv);
     }
 }
@@ -111,6 +111,7 @@ void __cdecl aim_userinfo_infoshow(HANDLE hContact)
     }
     else {
         aim_userinfo_inforeq(hContact);
+		ProtoBroadcastAck(AIM_PROTO, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
     }
 }
 

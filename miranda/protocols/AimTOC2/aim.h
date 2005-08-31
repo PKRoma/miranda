@@ -150,6 +150,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AIM_KEY_SE      "ShowErrors"     // Show error popups
 #define AIM_KEY_GI		"GroupChatIgInv" // Ignore invites
 #define AIM_KEY_GM		"GroupChatMnMnu" // Main menu visibility
+#define AIM_KEY_LSM		"SyncMnMnu"		 //Sync Main menu visiblity
 #define AIM_KEY_GT		"GroupMin2Tray"  // Minimize to tray
 #define AIM_KEY_AL		"AIMLinks"       // aim: links support
 #define AIM_KEY_PM      "PasswordMenu"   // Show password menu

@@ -57,6 +57,7 @@ void aim_util_broadcaststatus(int s)
     ProtoBroadcastAck(AIM_PROTO, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, aimStatus);
     LOG(LOG_DEBUG, "Broadcasted new status (%s)", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, aimStatus, 0));
     aim_gchat_updatestatus();
+	aim_synclist_updatemenu();
     aim_password_updatemenu();
 }
 
@@ -325,7 +326,7 @@ void aim_util_statusupdate()
     aim_toc_sflapsend(snd, -1, TYPE_DATA);
 }
 
-static void __cdecl aim_util_parseurlthread(void *url)
+/*static void __cdecl aim_util_parseurlthread(void *url)
 {
     // This thread will process a GOTO URL sent by the TOC server
     DBVARIANT dbv;
@@ -358,7 +359,7 @@ static void __cdecl aim_util_parseurlthread(void *url)
         headers[1].szName = "Host";
         headers[1].szValue = host;
         headers[2].szName = "Accept";
-        headers[2].szValue = "*/*";
+        headers[2].szValue = "**";//if uncommenting insert '/' between the two stars.
         nlreply = (NETLIBHTTPREQUEST *) CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM) hNetlib, (LPARAM) & nlhr);
         if (nlreply) {
             if (nlreply->resultCode >= 200 && nlreply->resultCode < 300 && nlreply->dataLength) {
@@ -464,7 +465,7 @@ void aim_util_parseurl(char *url)
 {
     // url must be freeable and will be freed when we are done
     pthread_create(aim_util_parseurlthread, (void *) url);
-}
+}*/
 
 void aim_util_formatnick(char *nick)
 {

@@ -195,7 +195,7 @@ void aim_buddy_delete(HANDLE hContact)
     szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
     if (szProto && !strcmp(szProto, AIM_PROTO)) {
 	DBGetContactSetting(hContact,AIM_PROTO, AIM_KEY_UN, &dbv);
-	if(dbv.pszVal)
+	if(dbv.pszVal&&_strcmpi(dbv.pszVal,"temp"))
 	{
 	
 		strcpy(mbuf, "toc2_remove_buddy ");
@@ -227,22 +227,6 @@ void aim_buddy_delete(HANDLE hContact)
 				}
 			}
 		}
-	}
-	else
-	{
-			char buf[256];
-			mir_snprintf(buf, sizeof(buf), Translate("Buddy does not exist on server!"));
-			if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SE, AIM_KEY_SE_DEF)) 
-			{
-				if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) 
-				{
-					aim_util_shownotification(Translate("Oops!"), buf, NIIF_ERROR);
-				}
-				else
-				{
-					MessageBox(0, buf, Translate("Oops!"), MB_OK | MB_ICONERROR);
-				}
-			}
 	}
     DBWriteContactSettingByte(hContact, AIM_PROTO, AIM_KEY_DU, 1);
         if (!hServerSideList)
@@ -310,6 +294,7 @@ static void aim_buddy_updatedetails(HANDLE hContact, char *nick, char *sn, int o
         LOG(LOG_DEBUG, "Set Idle Time (%s, %s)", sn, idle_time > 0 ? buf : "N/A");
         DBWriteContactSettingDword(hContact, AIM_PROTO, AIM_KEY_IT, idle_time);
     }
+	
 }
 
 void aim_buddy_update(char *nick, int online, int type, int idle, int evil, time_t signon, time_t idle_time)

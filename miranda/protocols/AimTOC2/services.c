@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 pthread_mutex_t connectionHandleMutex;
 pthread_mutex_t modeMsgsMutex;
+static HANDLE hSyncListMenu;
 
 static int aim_getcaps(WPARAM wParam, LPARAM lParam)
 {
@@ -316,50 +317,31 @@ int aim_recvfilecancel(WPARAM wParam, LPARAM lParam)
 
 static int SyncBuddyWithServer(WPARAM wParam, LPARAM lParam)
 {
-	if (aim_util_isonline())
+	char buf[MSG_LEN * 2];
+	char sn[33],group[33];
+	DBVARIANT dbv;
+	DBGetContactSetting((HANDLE)wParam, AIM_PROTO, AIM_KEY_UN, &dbv);
+	strcpy(sn,dbv.pszVal);
+	DBFreeVariant(&dbv);
+	DBGetContactSetting((HANDLE)wParam, "CList", "Group", &dbv);
+	if(dbv.pszVal)
 	{
-		char buf[MSG_LEN * 2];
-		char sn[33],group[33];
-		DBVARIANT dbv;
-		DBGetContactSetting((HANDLE)wParam, AIM_PROTO, AIM_KEY_UN, &dbv);
-		strcpy(sn,dbv.pszVal);
-		DBFreeVariant(&dbv);
-		DBGetContactSetting((HANDLE)wParam, "CList", "Group", &dbv);
-		if(dbv.pszVal)
-		{
-			strcpy(group,dbv.pszVal);
-		}
-		else
-		{
-			strcpy(group,"Miranda Merged");
-		}
-			DBFreeVariant(&dbv);
-			strcpy(buf,"toc2_new_buddies {");
-			strcat(buf,"g:");
-			strcat(buf,group);
-			strcat(buf,"\n");
-			strcat(buf,"b:");
-			strcat(buf,sn);
-			strcat(buf,"\n");
-			strcat(buf,"}");
-			aim_toc_sflapsend(buf, -1, TYPE_DATA);
+		strcpy(group,dbv.pszVal);
 	}
 	else
 	{
-		char buf[256];
-		mir_snprintf(buf, sizeof(buf), Translate("Please login before you attempt to sync your buddy list with the server-side list."));
-		if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SE, AIM_KEY_SE_DEF)) 
-		{
-			if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) 
-			{
-				aim_util_shownotification(Translate("Oops!"), buf, NIIF_ERROR);
-			}
-			else
-			{
-				MessageBox(0, buf, Translate("Oops!"), MB_OK | MB_ICONERROR);
-			}
-		}
+		strcpy(group,"Miranda Merged");
 	}
+	DBFreeVariant(&dbv);
+	strcpy(buf,"toc2_new_buddies {");
+	strcat(buf,"g:");
+	strcat(buf,group);
+	strcat(buf,"\n");
+	strcat(buf,"b:");
+	strcat(buf,sn);
+	strcat(buf,"\n");
+	strcat(buf,"}");
+	aim_toc_sflapsend(buf, -1, TYPE_DATA);
 	return 0;
 }
 static int SyncBuddyListWithServer(WPARAM wParam, LPARAM lParam)
@@ -424,6 +406,21 @@ static int SyncBuddyListWithServer(WPARAM wParam, LPARAM lParam)
         aim_toc_sflapsend(buf, -1, TYPE_DATA);
 	return 0;
 }
+void aim_synclist_updatemenu()
+{
+    CLISTMENUITEM cli;
+
+	if (!ServiceExists(MS_GC_REGISTER)) return;
+    ZeroMemory(&cli, sizeof(cli));
+    cli.cbSize = sizeof(cli);
+    if (!aim_util_isonline()) {
+        cli.flags = CMIM_FLAGS | CMIF_GRAYED;
+    }
+    else {
+        cli.flags = CMIM_FLAGS;
+    }
+    CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hSyncListMenu, (LPARAM) & cli);
+}
 static int UserIsTyping(WPARAM wParam, LPARAM lParam)
 {
 	char buf[256];
@@ -454,9 +451,6 @@ void aim_services_register(HINSTANCE hInstance)
 {
 	CLISTMENUITEM mi,mi2,mi3;
     char szService[300];
-	char szService1[]="AIM/SyncBuddy";
-	char szService2[]="AIM/SyncList";
-	char szService3[]="AIM/ShowProfile";
     mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_GETCAPS);
     CreateServiceFunction(szService, aim_getcaps);
     mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_GETNAME);
@@ -479,8 +473,8 @@ void aim_services_register(HINSTANCE hInstance)
     CreateServiceFunction(szService, aim_searchbyemail);
     mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_ADDTOLIST);
     CreateServiceFunction(szService, aim_addtolist);
-    //mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_GETINFO);
-    //CreateServiceFunction(szService, aim_getinfo);
+    mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_GETINFO);
+    CreateServiceFunction(szService, aim_getinfo);
     mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_SETAWAYMSG);
     CreateServiceFunction(szService, aim_setawaymsg);
     mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_SETAPPARENTMODE);
@@ -495,37 +489,43 @@ void aim_services_register(HINSTANCE hInstance)
     CreateServiceFunction(szService, aim_recvfilecancel);
     mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_USERISTYPING);
 	CreateServiceFunction(szService, UserIsTyping);
-	CreateServiceFunction( szService1, SyncBuddyWithServer );
-	CreateServiceFunction( szService2, SyncBuddyListWithServer );
-	CreateServiceFunction( szService3, ShowProfile );
+	
+	CreateServiceFunction( "AIM/SyncBuddy", SyncBuddyWithServer );
 	memset( &mi, 0, sizeof( mi ));
 	mi.pszPopupName = "Sync Buddy";
     mi.cbSize = sizeof( mi );
-    mi.popupPosition = 500090000;
-    mi.position = 500090000;
+    mi.popupPosition = -2000017000;
+	mi.position = -2000017000;
     mi.hIcon = LoadIcon(hInstance,MAKEINTRESOURCE( IDI_AIMXP ));
 	mi.pszContactOwner = AIM_PROTO;
     mi.pszName = Translate( "Sync Buddy with Server-side list" );
-    mi.pszService = szService1;
+    mi.pszService = "AIM/SyncBuddy";
+	mi.flags= CMIF_NOTONLINE;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
-	memset( &mi2, 0, sizeof( mi2 ));
-	mi2.pszPopupName = "AIM";
-    mi2.cbSize = sizeof( mi2 );
-    mi2.popupPosition = 500090000;
-    mi2.position = 500090000;
-    mi2.hIcon = LoadIcon(hInstance,MAKEINTRESOURCE( IDI_AIMXP ));
-	mi2.pszContactOwner = AIM_PROTO;
-    mi2.pszName = Translate( "Sync Buddy List with Server-side list" );
-    mi2.pszService = szService2;
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi2 );
+	if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_LSM, AIM_KEY_SM_DEF))
+	{
+		char szService[]="AIM/SyncList";
+		CreateServiceFunction( szService, SyncBuddyListWithServer );
+		memset( &mi2, 0, sizeof( mi2 ));
+		mi2.pszPopupName = "AIM";
+		mi2.cbSize = sizeof( mi2 );
+		mi2.position = 500090000;
+		mi2.hIcon = LoadIcon(hInstance,MAKEINTRESOURCE( IDI_AIMXP ));
+		mi2.pszName = Translate( "Sync Buddy List with Server-side list" );
+		mi2.pszService = szService;
+		hSyncListMenu=(HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi2 );
+	}
+		
+	CreateServiceFunction( "AIM/ShowProfile", ShowProfile );
 	memset( &mi3, 0, sizeof( mi3 ));
 	mi3.pszPopupName = "Show Profile";
     mi3.cbSize = sizeof( mi3 );
-    mi3.popupPosition = 500090000;
-    mi3.position = 500090000;
+	mi3.popupPosition = -2000017000;
+	mi3.position = -2000017000;
     mi3.hIcon = LoadIcon(hInstance,MAKEINTRESOURCE( IDI_GSHOW ));
 	mi3.pszContactOwner = AIM_PROTO;
     mi3.pszName = Translate( "Show Profile" );
-    mi3.pszService = szService3;
+    mi3.pszService = "AIM/ShowProfile";
+	mi3.flags= CMIF_NOTOFFLINE;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi3 );
 }

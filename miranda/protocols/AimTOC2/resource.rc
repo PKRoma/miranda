@@ -48,7 +48,7 @@ IDI_GDELETE             ICON                    "icos\\delete.ico"
 // Dialog
 //
 
-IDD_OPT_AIM DIALOGEX 0, 0, 280, 203
+IDD_OPT_AIM DIALOGEX 0, 0, 280, 265
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -62,7 +62,7 @@ BEGIN
     EDITTEXT        IDC_DN,84,59,85,12,ES_AUTOHSCROLL
     CONTROL         "Lost AIM Password?",IDC_LOSTLINK,"Hyperlink",WS_TABSTOP,
                     175,42,90,8
-    GROUPBOX        "Advanced Configuration",IDC_STDSTATIC,4,89,273,113
+    GROUPBOX        "Advanced Configuration",IDC_STDSTATIC,4,89,273,130
     LTEXT           "Login Server:",IDC_STDLSERVER,12,104,55,8
     EDITTEXT        IDC_TOCSERVER,68,102,97,12,ES_AUTOHSCROLL
     LTEXT           "Port:",IDC_STDLPORT,173,104,25,8
@@ -77,11 +77,13 @@ BEGIN
     CONTROL         "Show change password menu item",IDC_PASSWORD,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,159,255,10
     CONTROL         "Ignore group chat join requests",IDC_IGNOREJOIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,172,255,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,172,211,10
     CONTROL         "Show join group chat main menu item",IDC_SHOWJOINMENU,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,185,255,10
     CTEXT           "A restart of Miranda IM is required for changes to take effect.",
-                    IDC_RELOADREQD,12,172,260,12,NOT WS_VISIBLE
+                    IDC_RELOADREQD,5,235,260,12,NOT WS_VISIBLE
+    CONTROL         "Show sync buddy list menu item",IDC_SHOWSYNCMENU,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,198,255,10
 END
 
 IDD_OPT_AIMCONTACTS DIALOGEX 0, 0, 280, 81
@@ -140,29 +142,26 @@ BEGIN
     DEFPUSHBUTTON   "Close",IDOK,128,76,50,15
 END
 
-IDD_INFO_AIM DIALOGEX 0, 0, 222, 132
+IDD_INFO_AIM DIALOGEX 0, 0, 222, 71
 STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "Screenname:",IDC_STATIC,7,5,50,8
-    EDITTEXT        IDC_SN,63,5,171,8,ES_AUTOHSCROLL | ES_READONLY | NOT 
+    EDITTEXT        IDC_SN,63,5,171,12,ES_AUTOHSCROLL | ES_READONLY | NOT 
                     WS_BORDER | NOT WS_TABSTOP
     LTEXT           "User Type:",IDC_STATIC,7,18,50,8
-    EDITTEXT        IDC_TYPE,63,18,171,8,ES_AUTOHSCROLL | ES_READONLY | NOT 
+    EDITTEXT        IDC_TYPE,63,18,171,12,ES_AUTOHSCROLL | ES_READONLY | NOT 
                     WS_BORDER | NOT WS_TABSTOP
     LTEXT           "Status:",IDC_STATIC,7,31,50,8
-    EDITTEXT        IDC_STATUS,63,31,171,8,ES_AUTOHSCROLL | ES_READONLY | 
+    EDITTEXT        IDC_STATUS,63,31,171,12,ES_AUTOHSCROLL | ES_READONLY | 
                     NOT WS_BORDER | NOT WS_TABSTOP
     LTEXT           "Online since:",IDC_STATIC,7,44,50,8
-    EDITTEXT        IDC_OL,63,44,171,8,ES_AUTOHSCROLL | ES_READONLY | NOT 
+    EDITTEXT        IDC_OL,63,44,171,12,ES_AUTOHSCROLL | ES_READONLY | NOT 
                     WS_BORDER | NOT WS_TABSTOP
     LTEXT           "Idle:",IDC_IDS,7,57,50,8
-    EDITTEXT        IDC_ID,63,57,171,8,ES_AUTOHSCROLL | ES_READONLY | NOT 
+    EDITTEXT        IDC_ID,63,59,171,12,ES_AUTOHSCROLL | ES_READONLY | NOT 
                     WS_BORDER | NOT WS_TABSTOP
-    CONTROL         "",IDC_INFO,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
-                    ES_READONLY | ES_NUMBER | WS_VSCROLL | WS_TABSTOP,7,70,
-                    208,55,WS_EX_CLIENTEDGE
 END
 
 IDD_INFO_OWNER DIALOGEX 0, 0, 222, 132
@@ -329,6 +328,22 @@ BEGIN
     "\0"
 END
 
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_OPT_AIM, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 203
+    END
+END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // English (U.S.) resources

@@ -36,6 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AIM_KEY_SE_DEF  1       // Show error messages
 #define AIM_KEY_GI_DEF  0       // Ignore invites off
 #define AIM_KEY_GM_DEF  1       // Show groupchat menu item by default
+#define AIM_KEY_SM_DEF  1       // Show Synclist menu item by default
 #define AIM_KEY_AL_DEF  0       // aim: links support on
 #define AIM_KEY_PM_DEF  1       // show password menu item
 #define AIM_EVIL_TO		10      // Evil mode timeout in minutes (can't warn if last message greater)
@@ -46,7 +47,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // AIM_TOC_PORT:     Port to connect to (use 0 for random port)
 // AIM_TOC_PORTLOW:  If using random port, this is the low value for the random number chooser
 // AIM_TOC_PORTHIGH: If using random port, this is the high value for the random number chooser
-#define AIM_TOC_HOST      "205.188.179.24"
+#define AIM_TOC_HOST      "aimexpress.oscar.aol.com"
 #define AIM_TOC_PORT      5190
 #define AIM_TOC_PORTLOW   1000
 #define AIM_TOC_PORTHIGH  10000

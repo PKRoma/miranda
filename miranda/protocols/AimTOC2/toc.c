@@ -506,6 +506,7 @@ int aim_toc_parse(char *buf, int len)
         }
         ccs.szProtoService = PSR_MESSAGE;
         ccs.hContact = hContact = aim_buddy_get(c, 1, 0, 0, NULL);
+		CallService(MS_PROTO_CONTACTISTYPING,(WPARAM)hContact,0);
         ccs.wParam = 0;
         ccs.lParam = (LPARAM) & pre;
         pre.flags = 0;
@@ -526,12 +527,18 @@ int aim_toc_parse(char *buf, int len)
     else if (!_strcmpi(c, "GOTO_URL")) {
         char *url;
 		char szURL[256];
+		int port;
+		DBVARIANT dbv;
         strtok(NULL, ":");
         url = _strdup(strtok(NULL, ":"));
 		LOG(LOG_DEBUG, "Parsing GOTO_URL: %s", url);
-		mir_snprintf(szURL, 256, "http://205.188.179.24:5190/%s",url);
-		CallService(MS_UTILS_OPENURL , 1, (LPARAM)(const char*)szURL);
-		//aim_util_parseurl(url);
+		if (!DBGetContactSetting(NULL, AIM_PROTO, AIM_KEY_SA, &dbv))
+		{	
+			port=DBGetContactSettingWord(NULL, AIM_PROTO, AIM_KEY_TT,AIM_TOC_PORT);
+			mir_snprintf(szURL, 256, "http://%s:%d/%s",dbv.pszVal,port,url);
+			CallService(MS_UTILS_OPENURL , 1, (LPARAM)(const char*)szURL);
+			DBFreeVariant(&dbv);
+		}
         return len;
     }
     // ADMIN_PASSWD_STATUS:<Return Code>:<Optional args>
