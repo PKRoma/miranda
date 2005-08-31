@@ -333,6 +333,7 @@ struct MessageWindowData {
     SIZE szLabel;
     struct MessageWindowTheme theme;
     struct avatarCacheEntry *ace;
+    COLORREF avatarbg;
 };
 
 typedef struct _recentinfo {

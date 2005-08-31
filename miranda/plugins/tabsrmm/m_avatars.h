@@ -31,10 +31,11 @@ Avatar service - load and maintain contact avatars
 
 #define AVS_BITMAP_VALID 1
 #define AVS_BITMAP_EXPIRED 2        // the bitmap has been expired from the cache. (unused, currently.
-#define AVS_HIDEONCLIST 4           // set, when the avatar has the "hidden" flag. plugins may or may
-                                    // not ignore this flag. It does not really affect the avatar itself -
-                                    // the bitmap is still valid - it is merely a hint that the user has
-                                    // choosen to hide the avatar for a given contact.
+#define AVS_HIDEONCLIST 4
+#define AVS_PREMULTIPLIED 8         // set in the dwFlags member of the struct avatarCacheEntry for 32 bit transparent
+                                    // images when loaded with imgdecoder. These images can be rendered transparently
+                                    // using the AlphaBlend() API with AC_SRC_ALPHA
+#define AVS_PROTOPIC    16          // picture is a protocol picture
 
 struct avatarCacheEntry {
     DWORD cbSize;                   // set to sizeof(struct)
@@ -45,11 +46,11 @@ struct avatarCacheEntry {
     time_t t_lastAccess;            // last access time (currently unused, but plugins should still
                                     // use it whenever they access the avatar. may be used in the future
                                     // to implement cache expiration
-    DWORD dwReserved;
+    LPVOID lpDIBSection;
     char szFilename[MAX_PATH];      // filename of the avatar (absolute path)
 };
 
-#define INITIAL_AVATARCACHESIZE 100
+#define INITIAL_AVATARCACHESIZE 300
 
 #define AVS_MODULE "AVS_Settings"          // db settings module path
 #define PPICT_MODULE "AVS_ProtoPics"   // protocol pictures are saved here
@@ -60,7 +61,7 @@ struct avatarCacheEntry {
 // returns: pointer to a struct avatarCacheEntry *, NULL on failure
 // if it returns a failure, the avatar may be ready later and the caller may receive
 // a notification via ME_AV_AVATARCHANGED
-// DONT modify the contents of the returned data structure except t_lastAccess
+// DONT modify the contents of the returned data structure
 
 #define MS_AV_GETAVATARBITMAP "SV_Avatars/GetAvatar"
 
@@ -75,7 +76,7 @@ struct avatarCacheEntry {
 
 #define MS_AV_PROTECTAVATAR "SV_Avatars/ProtectAvatar"
 
-// set a local contact picture for the given hContact
+// set (and optionally protect) a local contact picture for the given hContact
 // 
 // wParam = (HANDLE)hContact
 // lParam = either a full picture filename or NULL. If lParam == NULL, the service

@@ -55,6 +55,9 @@ Version 0.9.9.98 - 2005/08/25
           avatar service plugin (loadavatars.dll). You need this plugin installed in order to
           get avatars working.
 
+        + added ability to render transparent PNG images when set as local contact pictures by
+          the avatar service. NOTE: unicode version only.
+
 Version 0.9.9.97 - 2005/07/23
 
         ! extended status tooltip working with all (recent) ICQ.dll builds. 

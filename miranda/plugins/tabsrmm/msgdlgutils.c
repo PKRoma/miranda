@@ -67,6 +67,8 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
 extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
+extern void DrawWithGDIp(HDC hDC, DWORD x, DWORD y, DWORD width, DWORD height, DWORD srcWidth, DWORD srcHeight, struct avatarCacheEntry *ace, HBITMAP hbm);
+
 struct RTFColorTable rtf_ctable[] = {
     _T("red"), RGB(255, 0, 0), 0, ID_FONT_RED,
     _T("blue"), RGB(0, 0, 255), 0, ID_FONT_BLUE,
@@ -306,6 +308,25 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", myGlobals.m_AlwaysFullToolbarWidth);
                 WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
                 break;
+            case ID_PICMENU_CHOOSEBACKGROUNDCOLOR:
+            case ID_PANELPICMENU_CHOOSEBACKGROUNDCOLOR:
+                {
+                    CHOOSECOLOR cc = {0};
+                    COLORREF custColors[20];
+                    int i;
+                    
+                    for(i = 0; i < 20; i++)
+                        custColors[i] = GetSysColor(COLOR_3DFACE);
+                    
+                    cc.lStructSize = sizeof(cc);
+                    cc.hwndOwner = dat->pContainer->hwnd;
+                    cc.lpCustColors = custColors;
+                    if(ChooseColor(&cc)) {
+                        dat->avatarbg = cc.rgbResult;
+                        DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "avbg", dat->avatarbg);
+                    }
+                    break;
+                }
             case ID_PICMENU_SETTINGS:
                 {
                     char FileName[MAX_PATH];
@@ -1738,11 +1759,21 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         HDC hdcDraw;
         HBITMAP hbmDraw, hbmOld;
         BOOL bPanelPic = dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC);
+        DWORD aceFlags = 0;
+        HBRUSH bgBrush = 0;
         
-        if(bPanelPic)
+        if(bPanelPic) {
             GetObject(dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown, sizeof(bminfo), &bminfo);
-        else 
+            if(dat->ace)
+                aceFlags = dat->ace->dwFlags;
+        }
+        else  {
+            if(!(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) {
+                if(dat->ace)
+                    aceFlags = dat->ace->dwFlags;
+            }
             GetObject(dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown), sizeof(bminfo), &bminfo);
+        }
     
         GetClientRect(hwndDlg, &rc);
         GetClientRect(dis->hwndItem, &rcClient);
@@ -1784,40 +1815,80 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         }
         hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
         hOldPen = SelectObject(hdcDraw, hPen);
-        hOldBrush = SelectObject(hdcDraw, GetSysColorBrush(COLOR_3DFACE));
-        FillRect(hdcDraw, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+        bgBrush = CreateSolidBrush(dat->avatarbg);
+        hOldBrush = SelectObject(hdcDraw, bgBrush);
+        FillRect(hdcDraw, &rcClient, bgBrush);
         if(!bPanelPic) {
-            if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                Rectangle(hdcDraw, 0, 0, dat->pic.cx, dat->pic.cy);
+            if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
+                if(aceFlags & AVS_PREMULTIPLIED) {
+                    RECT rcEdge = {0, 0, dat->pic.cx, dat->pic.cy};
+                    DrawEdge(hdcDraw, &rcEdge, BDR_SUNKENINNER, BF_RECT);
+                }
+                else
+                    Rectangle(hdcDraw, 0, 0, dat->pic.cx, dat->pic.cy);
+            }
             else {
                 top = (dat->pic.cy - dat->iRealAvatarHeight) / 2;
-                Rectangle(hdcDraw, 0, top - 1, dat->pic.cx, top + dat->iRealAvatarHeight + 1);
+                if(aceFlags & AVS_PREMULTIPLIED) {
+                    RECT rcEdge = {0, top - 1, dat->pic.cx, top + dat->iRealAvatarHeight + 1};
+                    DrawEdge(hdcDraw, &rcEdge, BDR_SUNKENINNER, BF_RECT);
+                }
+                else
+                    Rectangle(hdcDraw, 0, top - 1, dat->pic.cx, top + dat->iRealAvatarHeight + 1);
             }
         }
         if(((dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown)) && dat->showPic) || bPanelPic) {
             HDC hdcMem = CreateCompatibleDC(dis->hDC);
-            HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, bPanelPic ? (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown) : (dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown)));
+            HBITMAP hbmAvatar = bPanelPic ? (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown) : (dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown));
+            HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, hbmAvatar);
             if(bPanelPic) {
                 RECT rcFrame = rcClient;
                 rcFrame.left = rcFrame.right - ((LONG)dNewWidth + 2);
                 rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 2;
                 SetStretchBltMode(hdcDraw, HALFTONE);
-                Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
-                StretchBlt(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-            }
-            else {
-                if(dat->iRealAvatarHeight != bminfo.bmHeight) {
-                    SetStretchBltMode(hdcDraw, HALFTONE);
-                    if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                        StretchBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                    else
-                        StretchBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                if(aceFlags & AVS_PREMULTIPLIED) {
+#if defined(_UNICODE)
+                    DrawEdge(hdcDraw, &rc, BDR_SUNKENINNER, BF_RECT);
+                    DrawWithGDIp(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
+#else                    
+                    Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
+                    StretchBlt(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+#endif                    
                 }
                 else {
+                    Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
+                    StretchBlt(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                }
+            }
+            else {
+                SetStretchBltMode(hdcDraw, HALFTONE);
+                if(aceFlags & AVS_PREMULTIPLIED) {
                     if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                        BitBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
+#if defined(_UNICODE)
+                        DrawWithGDIp(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
+#else
+                        StretchBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+#endif                    
                     else
-                        BitBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
+#if defined(_UNICODE)
+                        DrawWithGDIp(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
+#else
+                        StretchBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+#endif                    
+                }
+                else {
+                    if(dat->iRealAvatarHeight != bminfo.bmHeight) {
+                        if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
+                            StretchBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                        else
+                            StretchBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                    }
+                    else {
+                        if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
+                            BitBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
+                        else
+                            BitBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
+                    }
                 }
             }
             DeleteObject(hbmMem);
@@ -1825,6 +1896,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         }
         SelectObject(hdcDraw, hOldPen);
         SelectObject(hdcDraw, hOldBrush);
+        DeleteObject(bgBrush);
         DeleteObject(hPen);
         BitBlt(dis->hDC, 0, 0, cx, cy, hdcDraw, 0, 0, SRCCOPY);
         SelectObject(hdcDraw, hbmOld);

@@ -900,8 +900,9 @@ BEGIN
         MENUITEM "Toggle Avatar Display",       ID_PICMENU_TOGGLEAVATARDISPLAY
 
         MENUITEM SEPARATOR
-        MENUITEM "Contact picture settings...", ID_PICMENU_SETTINGS
-        MENUITEM SEPARATOR
+        MENUITEM "Contact Picture Settings...", ID_PICMENU_SETTINGS
+        MENUITEM "Choose Background Color...",  ID_PICMENU_CHOOSEBACKGROUNDCOLOR
+
         MENUITEM "Always keep the button bar at full width", 
                                                 ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH
 
@@ -1093,7 +1094,9 @@ BEGIN
     END
     POPUP "Panelpicmenu"
     BEGIN
-        MENUITEM "Contact picture settings...", ID_PICMENU_SETTINGS
+        MENUITEM "Contact Picture Settings...", ID_PICMENU_SETTINGS
+        MENUITEM "Choose Background Color...",  ID_PANELPICMENU_CHOOSEBACKGROUNDCOLOR
+
     END
 END
 

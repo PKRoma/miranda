@@ -667,6 +667,8 @@
 #define ID_HELP_HELPCONTENTS            40222
 #define ID_HELP_ABOUTTABSRMM            40223
 #define ID_HELP_MESSAGEWINDOWHELP       40224
+#define ID_PANELPICMENU_CHOOSEBACKGROUNDCOLOR 40226
+#define ID_PICMENU_CHOOSEBACKGROUNDCOLOR 40227
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -674,7 +676,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        9
-#define _APS_NEXT_COMMAND_VALUE         40226
+#define _APS_NEXT_COMMAND_VALUE         40228
 #define _APS_NEXT_CONTROL_VALUE         1398
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
