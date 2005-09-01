@@ -316,7 +316,7 @@ END
 IDD_OPT_CLUI DIALOGEX 0, 0, 313, 232
 STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Window",IDC_STWINDOWGROUP,4,4,305,121
     CONTROL         "Always on top",IDC_ONTOP,"Button",BS_AUTOCHECKBOX | 
@@ -348,19 +348,19 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,151,86,147,10
     LTEXT           "Title bar text:",IDC_STATIC,12,106,51,8
     GROUPBOX        "Translucency options (Windows 2000/XP only)",IDC_STATIC,
-                    4,130,191,95
+                    4,130,191,80
     CONTROL         "Fade contact list in/out",IDC_FADEINOUT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,144,163,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,13,140,163,10
     CONTROL         "Transparent contact list",IDC_TRANSPARENT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,161,151,9
-    LTEXT           "Inactive opacity:",IDC_STATIC11,23,176,67,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,13,152,151,9
+    LTEXT           "Inactive opacity:",IDC_STATIC11,23,165,67,8
     CONTROL         "Slider2",IDC_TRANSINACTIVE,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,95,175,70,11
-    LTEXT           "Active opacity:",IDC_STATIC12,23,192,67,8
+                    TBS_NOTICKS | WS_TABSTOP,95,164,70,11
+    LTEXT           "Active opacity:",IDC_STATIC12,23,181,67,8
     CONTROL         "Slider2",IDC_TRANSACTIVE,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,95,190,70,11
-    LTEXT           "000%",IDC_INACTIVEPERC,165,175,25,8,SS_NOPREFIX
-    LTEXT           "000%",IDC_ACTIVEPERC,165,195,25,8,SS_NOPREFIX
+                    TBS_NOTICKS | WS_TABSTOP,95,179,70,11
+    LTEXT           "000%",IDC_INACTIVEPERC,165,164,25,8,SS_NOPREFIX
+    LTEXT           "000%",IDC_ACTIVEPERC,165,184,25,8,SS_NOPREFIX
     CONTROL         "Show menu bar",IDC_SHOWMAINMENU,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,13,60,128,10
     CONTROL         "Easy move",IDC_CLIENTDRAG,"Button",BS_AUTOCHECKBOX | 
@@ -372,18 +372,20 @@ BEGIN
                     WS_TABSTOP,141,102,162,16
     EDITTEXT        IDC_TITLETEXT,63,104,72,12,ES_AUTOHSCROLL
     CONTROL         "Enable drop shadow (restart required)",IDC_DROPSHADOW,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,207,138,10
-    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,200,130,110,95
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,194,138,10
+    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,200,130,110,80
     CONTROL         "Protocol Type",IDC_EXTRA_PROTO,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,210,150,70,10
+                    WS_TABSTOP,210,143,70,10
     CONTROL         "E-mail",IDC_EXTRA_EMAIL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,210,164,75,10
+                    WS_TABSTOP,210,157,75,10
     CONTROL         "Cellular",IDC_EXTRA_CELLULAR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,210,176,92,10
+                    WS_TABSTOP,210,169,92,10
     CONTROL         "Advanced #2",IDC_EXTRA_ADV2,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,210,189,92,10
+                    WS_TABSTOP,210,182,92,10
     CONTROL         "Advanced #1",IDC_EXTRA_ADV1,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,210,202,92,10
+                    WS_TABSTOP,210,195,92,10
+    LTEXT           "!!! Note: all client icons are made by Angeli-ka, and I have her permission to use them in clist_mw plugin.",
+                    IDC_STATIC,5,210,190,20
 END
 
 IDD_OPT_CLC DIALOGEX 0, 0, 314, 251
