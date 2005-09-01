@@ -265,3 +265,35 @@ int ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char 
   cws.value.cpbVal = cbVal;
   return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
 }
+
+
+
+HANDLE ICQFindFirstContact()
+{
+  HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+
+	if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
+	{
+    return hContact;
+	}
+  return ICQFindNextContact(hContact);
+}
+
+
+
+HANDLE ICQFindNextContact(HANDLE hContact)
+{
+  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
+
+	while (hContact != NULL)
+	{
+		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
+		{
+      return hContact;
+		}
+		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
+	}
+  return hContact;
+}

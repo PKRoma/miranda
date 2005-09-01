@@ -70,6 +70,7 @@ void handleBosFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
 }
 
 
+
 static void handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLength)
 {
 	if (wBufferLength >= 12)
@@ -102,6 +103,7 @@ static void handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLength)
 }
 
 
+
 void makeContactTemporaryVisible(HANDLE hContact)
 {
   icq_packet packet;
@@ -130,10 +132,10 @@ void makeContactTemporaryVisible(HANDLE hContact)
 }
 
 
+
 static char* buildTempVisUinList()
 {
 	char* szList;
-	char* szProto;
 	HANDLE hContact;
 	WORD wCurrentLen = 0;
 	DWORD dwUIN;
@@ -144,34 +146,31 @@ static char* buildTempVisUinList()
 	szList = (char*)calloc(CallService(MS_DB_CONTACT_GETCOUNT, 0, 0), UINMAXLEN);
 	szLen[1] = '\0';
 
-	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	hContact = ICQFindFirstContact();
 
 	while(hContact != NULL)
 	{
-		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
+		if (ICQGetContactSettingByte(hContact, "TemporaryVisible", 0)
+      && (!ICQGetContactSettingUID(hContact, &dwUIN, NULL)))
 		{
-			if (ICQGetContactSettingByte(hContact, "TemporaryVisible", 0)
-        && (!ICQGetContactSettingUID(hContact, &dwUIN, NULL)))
-			{
-				_itoa(dwUIN, szUin, 10);
-				szLen[0] = strlen(szUin);
+			_itoa(dwUIN, szUin, 10);
+			szLen[0] = strlen(szUin);
 
-        wCurrentLen += szLen[0] + 1;
+      wCurrentLen += szLen[0] + 1;
 
-				strcat(szList, szLen); // add to list
-				strcat(szList, szUin);
+			strcat(szList, szLen); // add to list
+			strcat(szList, szUin);
 
-        // clear flag
-        ICQDeleteContactSetting(hContact, "TemporaryVisible");
-			}
+      // clear flag
+      ICQDeleteContactSetting(hContact, "TemporaryVisible");
 		}
 
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+		hContact = ICQFindNextContact(hContact);
 	}
 
 	return szList;
 }
+
 
 
 void clearTemporaryVisibleList()

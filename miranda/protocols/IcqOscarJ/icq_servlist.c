@@ -445,7 +445,6 @@ void LoadServerIDs()
 {
   HANDLE hContact;
   WORD wSrvID;
-  char* szProto;
 
   EnterCriticalSection(&servlistMutex);
   if (wSrvID = ICQGetContactSettingWord(NULL, "SrvAvatarID", 0))
@@ -454,24 +453,21 @@ void LoadServerIDs()
     ReserveServerID(wSrvID, SSIT_ITEM);
 
   ReserveServerGroups();
-  
-  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+
+  hContact = ICQFindFirstContact();
 
   while (hContact)
   { // search all our contacts, reserve their server IDs
-    szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-    if (szProto && !lstrcmp(szProto, gpszICQProtoName))
-    {
-      if (wSrvID = ICQGetContactSettingWord(hContact, "SrvContactId", 0))
-        ReserveServerID(wSrvID, SSIT_ITEM);
-      if (wSrvID = ICQGetContactSettingWord(hContact, "SrvDenyId", 0))
-        ReserveServerID(wSrvID, SSIT_ITEM);
-      if (wSrvID = ICQGetContactSettingWord(hContact, "SrvPermitId", 0))
-        ReserveServerID(wSrvID, SSIT_ITEM);
-      if (wSrvID = ICQGetContactSettingWord(hContact, "SrvIgnoreId", 0))
-        ReserveServerID(wSrvID, SSIT_ITEM);
-    }
-    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+    if (wSrvID = ICQGetContactSettingWord(hContact, "SrvContactId", 0))
+      ReserveServerID(wSrvID, SSIT_ITEM);
+    if (wSrvID = ICQGetContactSettingWord(hContact, "SrvDenyId", 0))
+      ReserveServerID(wSrvID, SSIT_ITEM);
+    if (wSrvID = ICQGetContactSettingWord(hContact, "SrvPermitId", 0))
+      ReserveServerID(wSrvID, SSIT_ITEM);
+    if (wSrvID = ICQGetContactSettingWord(hContact, "SrvIgnoreId", 0))
+      ReserveServerID(wSrvID, SSIT_ITEM);
+
+    hContact = ICQFindNextContact(hContact);
   }
   LeaveCriticalSection(&servlistMutex);
 
@@ -695,6 +691,29 @@ static int GroupNamesEnumProc(const char *szSetting,LPARAM lParam)
 
 
 
+void DeleteModuleEntries(const char* szModule)
+{
+  DBCONTACTENUMSETTINGS dbces;
+  char** list = NULL;
+
+  dbces.pfnEnumProc = &GroupNamesEnumProc;
+  dbces.szModule = szModule;
+  dbces.lParam = (LPARAM)&list;
+  CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces);
+  while (list)
+  {
+    void* bet;
+
+    DBDeleteContactSetting(NULL, szModule, list[1]);
+    SAFE_FREE(&list[1]);
+    bet = list;
+    list = (char**)list[0];
+    SAFE_FREE(&bet);
+  }
+}
+
+
+
 int IsServerGroupsDefined()
 {
   DBCONTACTENUMSETTINGS dbces;
@@ -716,25 +735,25 @@ int IsServerGroupsDefined()
 
   if (CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces))
   { // old version of groups, remove old settings and force to reload all info
-    char** list = NULL;
     strcpy(szModule, gpszICQProtoName);
     strcat(szModule, "Groups");
-    dbces.lParam = (LPARAM)&list;
-    CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces);
-    while (list)
-    {
-      void* bet;
+    DeleteModuleEntries(szModule);
 
-      DBDeleteContactSetting(NULL, szModule, list[1]);
-      SAFE_FREE(&list[1]);
-      bet = list;
-      list = (char**)list[0];
-      SAFE_FREE(&bet);
-    }
     return 0; // no groups defined
   }
   else 
     return 1;
+}
+
+
+
+void FlushSrvGroupsCache()
+{
+  char szModule[MAX_PATH+9];
+
+  strcpy(szModule, gpszICQProtoName);
+  strcat(szModule, "SrvGroups");
+  DeleteModuleEntries(szModule);
 }
 
 
@@ -747,7 +766,7 @@ void* collectBuddyGroup(WORD wGroupID, int *count)
   HANDLE hContact;
   WORD wItemID;
 
-  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+  hContact = ICQFindFirstContact();
 
   while (hContact)
   { // search all contacts
@@ -763,7 +782,7 @@ void* collectBuddyGroup(WORD wGroupID, int *count)
       }
     }
 
-    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+    hContact = ICQFindNextContact(hContact);
   }
 
   *count = cnt<<1; // we return size in bytes
@@ -781,7 +800,7 @@ void* collectGroups(int *count)
   HANDLE hContact;
   WORD wGroupID;
 
-  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+  hContact = ICQFindFirstContact();
 
   while (hContact)
   { // search all contacts
@@ -800,7 +819,7 @@ void* collectGroups(int *count)
       }
     }
 
-    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+    hContact = ICQFindNextContact(hContact);
   }
 
   *count = cnt<<1;

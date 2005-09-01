@@ -634,7 +634,6 @@ static void AddToCache(HANDLE hContact, DWORD dwUin)
 void InitCache(void)
 {
 	HANDLE hContact;
-	char *szProto;
 
 	InitializeCriticalSection(&cacheMutex);
 	cacheCount = 0;
@@ -644,20 +643,16 @@ void InitCache(void)
 	// build cache
 	EnterCriticalSection(&cacheMutex);
 
-	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	hContact = ICQFindFirstContact();
 
 	while (hContact)
 	{
-		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
-		{
-      DWORD dwUin;
+    DWORD dwUin;
 
-      if (!ICQGetContactSettingUID(hContact, &dwUin, NULL))
-			  AddToCache(hContact, dwUin);
-		}
+    if (!ICQGetContactSettingUID(hContact, &dwUin, NULL))
+      AddToCache(hContact, dwUin);
 
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+		hContact = ICQFindNextContact(hContact);
 	}
 
 	LeaveCriticalSection(&cacheMutex);
@@ -733,30 +728,24 @@ static HANDLE HandleFromCacheByUin(DWORD dwUin)
 HANDLE HContactFromUIN(DWORD uin, int *Added)
 {
 	HANDLE hContact;
-	char* szProto;
 
   if (Added) *Added = 0;
 
   hContact = HandleFromCacheByUin(uin);
   if (hContact) return hContact;
 
-	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	hContact = ICQFindFirstContact();
 	while (hContact != NULL)
 	{
-		szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+    DWORD dwUin;
 
-		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
+    if (!ICQGetContactSettingUID(hContact, &dwUin, NULL) && dwUin == uin)
     {
-      DWORD dwUin;
-
-			if (!ICQGetContactSettingUID(hContact, &dwUin, NULL) && dwUin == uin)
-      {
-        AddToCache(hContact, dwUin);
-				return hContact;
-      }
+      AddToCache(hContact, dwUin);
+      return hContact;
     }
 
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+		hContact = ICQFindNextContact(hContact);
 	}
 
   // not in list, check that uin do not belong to us
@@ -811,30 +800,26 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
 HANDLE HContactFromUID(char* pszUID, int *Added)
 {
 	HANDLE hContact;
-	char* szProto;
   DWORD dwUin;
 	uid_str szUid;
 
   if (Added) *Added = 0;
 
-	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	hContact = ICQFindFirstContact();
 	while (hContact != NULL)
 	{
-		szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-
-		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
-			if (!ICQGetContactSettingUID(hContact, &dwUin, &szUid))
-			{
-				if (!dwUin && !stricmp(szUid, pszUID))
-				{
-          if (strcmp(szUid, pszUID))
-          { // fix case in SN
-            ICQWriteContactSettingString(hContact, UNIQUEIDSETTING, pszUID);
-          }
-					return hContact;
-				}
-			}
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+    if (!ICQGetContactSettingUID(hContact, &dwUin, &szUid))
+    {
+      if (!dwUin && !stricmp(szUid, pszUID))
+      {
+        if (strcmp(szUid, pszUID))
+        { // fix case in SN
+          ICQWriteContactSettingString(hContact, UNIQUEIDSETTING, pszUID);
+        }
+        return hContact;
+      }
+    }
+    hContact = ICQFindNextContact(hContact);
 	}
 
 	//not present: add
@@ -899,6 +884,7 @@ int __fastcall strcmpnull(const char *str1, const char *str2)
 }
 
 
+
 int null_snprintf(char *buffer, size_t count, const char* fmt, ...)
 {
 	va_list va;
@@ -910,6 +896,7 @@ int null_snprintf(char *buffer, size_t count, const char* fmt, ...)
 	buffer[count-1] = 0;
 	return len;
 }
+
 
 
 char *DemangleXml(const char *string, int len)
@@ -955,6 +942,7 @@ char *DemangleXml(const char *string, int len)
 }
 
 
+
 char *MangleXml(const char *string, int len)
 {
   int i, l = 1;
@@ -996,34 +984,31 @@ char *MangleXml(const char *string, int len)
 }
 
 
+
 void ResetSettingsOnListReload()
 {
   HANDLE hContact;
-  char *szProto;
 
   // Reset a bunch of session specific settings
   ICQWriteContactSettingWord(NULL, "SrvVisibilityID", 0);
   ICQWriteContactSettingWord(NULL, "SrvAvatarID", 0);
   ICQWriteContactSettingWord(NULL, "SrvRecordCount", 0);
 
-  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+  hContact = ICQFindFirstContact();
 
   while (hContact)
   {
-    szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+    // All these values will be restored during the serv-list receive
+    ICQWriteContactSettingWord(hContact, "ServerId", 0);
+    ICQWriteContactSettingWord(hContact, "SrvGroupId", 0);
+    ICQWriteContactSettingWord(hContact, "SrvPermitId", 0);
+    ICQWriteContactSettingWord(hContact, "SrvDenyId", 0);
+    ICQWriteContactSettingByte(hContact, "Auth", 0);
 
-    if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
-    {
-      // All these values will be restored during the serv-list receive
-      ICQWriteContactSettingWord(hContact, "ServerId", 0);
-      ICQWriteContactSettingWord(hContact, "SrvGroupId", 0);
-      ICQWriteContactSettingWord(hContact, "SrvPermitId", 0);
-      ICQWriteContactSettingWord(hContact, "SrvDenyId", 0);
-      ICQWriteContactSettingByte(hContact, "Auth", 0);
-    }
-
-    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+    hContact = ICQFindNextContact(hContact);
   }
+
+  FlushSrvGroupsCache();
 }
 
 
@@ -1031,7 +1016,6 @@ void ResetSettingsOnListReload()
 void ResetSettingsOnConnect()
 {
 	HANDLE hContact;
-	char *szProto;
 
   gbOverRate = 0; // init
   gtLastRequest = 0;
@@ -1040,25 +1024,20 @@ void ResetSettingsOnConnect()
   ICQWriteContactSettingByte(NULL, "SrvVisibility", 0);
   ICQWriteContactSettingDword(NULL, "IdleTS", 0);
 
-	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	hContact = ICQFindFirstContact();
 
 	while (hContact)
 	{
-		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+		ICQWriteContactSettingDword(hContact, "LogonTS", 0);
+		ICQWriteContactSettingDword(hContact, "IdleTS", 0);
+		ICQWriteContactSettingDword(hContact, "TickTS", 0);
+    ICQDeleteContactSetting(hContact, "TemporaryVisible");
 
-		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
-		{
-			ICQWriteContactSettingDword(hContact, "LogonTS", 0);
-			ICQWriteContactSettingDword(hContact, "IdleTS", 0);
-			ICQWriteContactSettingDword(hContact, "TickTS", 0);
-      ICQDeleteContactSetting(hContact, "TemporaryVisible");
+		// All these values will be restored during the login
+		if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+			ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
-			// All these values will be restored during the login
-			if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
-				ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
-		}
-
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+		hContact = ICQFindNextContact(hContact);
 	}
 }
 
@@ -1067,31 +1046,26 @@ void ResetSettingsOnConnect()
 void ResetSettingsOnLoad()
 {
 	HANDLE hContact;
-	char *szProto;
 
   ICQWriteContactSettingDword(NULL, "IdleTS", 0);
   ICQWriteContactSettingDword(NULL, "LogonTS", 0);
 
-	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	hContact = ICQFindFirstContact();
 
 	while (hContact)
 	{
-		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
-		{
-			ICQWriteContactSettingDword(hContact, "LogonTS", 0);
-			ICQWriteContactSettingDword(hContact, "IdleTS", 0);
-			ICQWriteContactSettingDword(hContact, "TickTS", 0);
-			if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
-      {
-				ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+		ICQWriteContactSettingDword(hContact, "LogonTS", 0);
+		ICQWriteContactSettingDword(hContact, "IdleTS", 0);
+		ICQWriteContactSettingDword(hContact, "TickTS", 0);
+		if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+    {
+			ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
-        ICQDeleteContactSetting(hContact, "XStatusId");
-        ICQDeleteContactSetting(hContact, "XStatusName");
-        ICQDeleteContactSetting(hContact, "XStatusMsg");
-      }
-		}
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+      ICQDeleteContactSetting(hContact, "XStatusId");
+      ICQDeleteContactSetting(hContact, "XStatusName");
+      ICQDeleteContactSetting(hContact, "XStatusMsg");
+    }
+		hContact = ICQFindNextContact(hContact);
 	}
 }
 
@@ -1170,6 +1144,7 @@ void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckT
 }
 
 
+
 void SetCurrentStatus(int nStatus)
 {
   int nOldStatus = gnCurrentStatus;
@@ -1177,6 +1152,7 @@ void SetCurrentStatus(int nStatus)
   gnCurrentStatus = nStatus;
   ICQBroadcastAck(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)nOldStatus, nStatus);
 }
+
 
 
 BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf, WORD* pwLength)
@@ -1505,6 +1481,7 @@ int ICQBroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM l
 }
 
 
+
 int __fastcall ICQTranslateDialog(HWND hwndDlg)
 {
 	LANGPACKTRANSLATEDIALOG lptd;
@@ -1515,6 +1492,7 @@ int __fastcall ICQTranslateDialog(HWND hwndDlg)
 	lptd.ignoreControls=NULL;
 	return CallService(MS_LANGPACK_TRANSLATEDIALOG,0,(LPARAM)&lptd);
 }
+
 
 
 char* GetUserPassword(BOOL bAlways)

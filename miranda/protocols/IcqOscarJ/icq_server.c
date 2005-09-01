@@ -177,37 +177,32 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   // Offline all contacts
 	{
 		HANDLE hContact;
-		char* szProto;
 
-		hContact= (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		hContact= ICQFindFirstContact();
 
 		while (hContact)
 		{
-			szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-			if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
+      DWORD dwUIN;
+      uid_str szUID;
+
+			if (!ICQGetContactSettingUID(hContact, &dwUIN, &szUID))
 			{
-        DWORD dwUIN;
-        uid_str szUID;
-
-				if (!ICQGetContactSettingUID(hContact, &dwUIN, &szUID))
+				if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
 				{
-					if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
-					{
-						ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+					ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
-            handleXStatusCaps(hContact, NULL, 0);
-					}
+          handleXStatusCaps(hContact, NULL, 0);
 				}
 			}
 
-			hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+			hContact = ICQFindNextContact(hContact);
 		}
 	}
   ICQWriteContactSettingDword(NULL, "LogonTS", 0); // clear logon time
 
-  FlushServerIDs(); // clear server IDs list
+  FlushServerIDs();         // clear server IDs list
   FlushPendingOperations(); // clear pending operations list
-  FlushGroupRenames(); // clear group rename in progress list
+  FlushGroupRenames();      // clear group rename in progress list
 
   NetLog_Server("Server thread ended.");
 

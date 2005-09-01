@@ -178,7 +178,6 @@ void icq_DequeueUser(DWORD dwUin)
 void icq_RescanInfoUpdate()
 {
 	HANDLE hContact = NULL;
-	char* szProto = NULL;
 	DWORD dwCurrentTime = 0;
   BOOL bOldEnable = bEnabled;
 
@@ -188,24 +187,20 @@ void icq_RescanInfoUpdate()
   bEnabled = 0; // freeze thread
 	// Queue all outdated users
 	dwCurrentTime = time(NULL);
-	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	hContact = ICQFindFirstContact();
 
 	while (hContact != NULL)
 	{
-		szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
+		if ((dwCurrentTime - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD)
 		{
-			if ((dwCurrentTime - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD)
-			{
-				// Queue user
-				if (!icq_QueueUser(hContact))
-        { // The queue is full, pause queuing contacts
-          bPendingUsers = 1;
-					break; 
-        }
-			}
+			// Queue user
+			if (!icq_QueueUser(hContact))
+      { // The queue is full, pause queuing contacts
+        bPendingUsers = 1;
+        break; 
+      }
 		}
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
+		hContact = ICQFindNextContact(hContact);
 	}
   icq_EnableUserLookup(bOldEnable); // wake up thread
 }

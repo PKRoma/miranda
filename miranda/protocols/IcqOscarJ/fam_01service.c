@@ -619,7 +619,6 @@ char* calcMD5Hash(char* szFile)
 static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 {
 	char* szList;
-	char* szProto;
 	HANDLE hContact;
 	WORD wCurrentLen = 0;
 	DWORD dwUIN;
@@ -635,75 +634,70 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 	if (*hContactResume)
 		hContact = *hContactResume;
 	else
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		hContact = ICQFindFirstContact();
 
-
-	while(hContact != NULL)
+	while (hContact != NULL)
 	{
-		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
-		{
-      if (!ICQGetContactSettingUID(hContact, &dwUIN, &szUID))
+    if (!ICQGetContactSettingUID(hContact, &dwUIN, &szUID))
+    {
+      if (dwUIN)
+      {
+        _itoa(dwUIN, szUin, 10);
+				szLen[0] = strlennull(szUin);
+      }
+      else
+        szLen[0] = strlennull(szUID);
+
+			switch (subtype)
 			{
-        if (dwUIN)
-        {
-				  _itoa(dwUIN, szUin, 10);
-				  szLen[0] = strlennull(szUin);
-        }
-        else
-          szLen[0] = strlennull(szUID);
 
-				switch (subtype)
-				{
+			case BUL_VISIBLE:
+				add = ID_STATUS_ONLINE == ICQGetContactSettingWord(hContact, "ApparentMode", 0);
+				break;
 
-				case BUL_VISIBLE:
-					add = ID_STATUS_ONLINE == ICQGetContactSettingWord(hContact, "ApparentMode", 0);
-					break;
+			case BUL_INVISIBLE:
+				add = ID_STATUS_OFFLINE == ICQGetContactSettingWord(hContact, "ApparentMode", 0);
+				break;
 
-				case BUL_INVISIBLE:
-					add = ID_STATUS_OFFLINE == ICQGetContactSettingWord(hContact, "ApparentMode", 0);
-					break;
+			default:
+				add = 1;
 
-				default:
-					add = 1;
+				// If we are in SS mode, we only add those contacts that are
+				// not in our SS list, or are awaiting authorization, to our
+				// client side list
 
-					// If we are in SS mode, we only add those contacts that are
-					// not in our SS list, or are awaiting authorization, to our
-					// client side list
+        // TODO: re-enabled, should work properly, needs more testing
+        // This is temporarily disabled cause we cant rely on the Auth flag. 
+        // The negative thing is that some status updates will arrive twice, sometimes contradicting themselves
+        if (gbSsiEnabled && ICQGetContactSettingWord(hContact, "ServerId", 0) &&
+          !ICQGetContactSettingByte(hContact, "Auth", 0))
+          add = 0;
 
-          // TODO: re-enabled, should work properly, needs more testing
-          // This is temporarily disabled cause we cant rely on the Auth flag. 
-          // The negative thing is that some status updates will arrive twice, sometimes contradicting themselves
-          if (gbSsiEnabled && ICQGetContactSettingWord(hContact, "ServerId", 0) &&
-            !ICQGetContactSettingByte(hContact, "Auth", 0))
-            add = 0;
+        // Never add hidden contacts to CS list
+				if (DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
+					add = 0;
 
-					// Never add hidden contacts to CS list
-					if (DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
-						add = 0;
-
-					break;
-				}
-
-				if (add)
-				{
-					wCurrentLen += szLen[0] + 1;
-					if (wCurrentLen > wMaxLen)
-					{
-						*hContactResume = hContact;
-						return szList;
-					}
-
-					strcat(szList, szLen);
-          if (dwUIN)
-					  strcat(szList, szUin);
-          else
-            strcat(szList, szUID);
-				}
+				break;
 			}
+
+			if (add)
+			{
+				wCurrentLen += szLen[0] + 1;
+				if (wCurrentLen > wMaxLen)
+				{
+					*hContactResume = hContact;
+					return szList;
+				}
+
+				strcat(szList, szLen);
+        if (dwUIN)
+				  strcat(szList, szUin);
+        else
+          strcat(szList, szUID);
+      }
 		}
 
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+		hContact = ICQFindNextContact(hContact);
 	}
 	*hContactResume = NULL;
 

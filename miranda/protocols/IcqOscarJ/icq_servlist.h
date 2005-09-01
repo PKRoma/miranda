@@ -94,6 +94,8 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
 void removeGroupPathLinks(WORD wGroupID);
 int countGroupLevel(WORD wGroupId);
 
+void FlushSrvGroupsCache();
+
 //DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup);
 //DWORD removeServContact(HANDLE hContact);
 //DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup);

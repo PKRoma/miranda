@@ -61,5 +61,7 @@ int ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char 
 char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szDef);
 int UniWriteContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szValue);
 
+HANDLE ICQFindFirstContact();
+HANDLE ICQFindNextContact(HANDLE hContact);
 
 #endif /* __ICQ_DB_H */

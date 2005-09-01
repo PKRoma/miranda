@@ -54,24 +54,21 @@ static void UpdateAllContactsCheckmark(HWND hwndList, HANDLE phItemAll)
   int check = 1;
   HANDLE hContact;
   HANDLE hItem;
-  char* szProto;
 
-  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+  hContact = ICQFindFirstContact();
 
   while (hContact)
   {
     hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
     if (hItem)
     {
-      szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-      if (szProto && !lstrcmp(szProto, gpszICQProtoName))
-        if (!SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0))
-        { // if any of our contacts is unchecked, uncheck all contacts as well
-          check = 0;
-          break;
-        }
+      if (!SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0))
+      { // if any of our contacts is unchecked, uncheck all contacts as well
+        check = 0;
+        break;
+      }
     }
-    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+    hContact = ICQFindNextContact(hContact);
   }
 
   SendMessage(hwndList, CLM_SETCHECKMARK, (WPARAM)phItemAll, check);
@@ -86,26 +83,21 @@ static int UpdateCheckmarks(HWND hwndDlg, HANDLE phItemAll)
   int bAll = 1;
   HANDLE hContact;
   HANDLE hItem;
-  char* szProto;
 
   bListInit = 1; // lock CLC events
  
-  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+  hContact = ICQFindFirstContact();
   while (hContact)
   {
     hItem = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0);
-     if (hItem)
+    if (hItem)
     {
-      szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-      if (szProto && !lstrcmp(szProto, gpszICQProtoName))
-      {
-        if (ICQGetContactSettingWord(hContact, "ServerId", 0))
-          SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM)hItem, 1);
-        else
-          bAll = 0;
-      }
+      if (ICQGetContactSettingWord(hContact, "ServerId", 0))
+        SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM)hItem, 1);
+      else
+        bAll = 0;
     }
-    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+    hContact = ICQFindNextContact(hContact);
   }
 
   // Update the "All contacts" checkmark
@@ -152,6 +144,7 @@ static void GetLastUploadLogLine(HWND hwndDlg, char *szBuf)
 }
 
 
+
 static int GroupEnumIdsEnumProc(const char *szSetting,LPARAM lParam)
 { 
   if (szSetting && strlen(szSetting)<5)
@@ -181,6 +174,7 @@ static int GroupEnumIdsEnumProc(const char *szSetting,LPARAM lParam)
 }
 
 
+
 static void enumServerGroups()
 {
   DBCONTACTENUMSETTINGS dbces;
@@ -196,6 +190,7 @@ static void enumServerGroups()
 
   CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces);
 }
+
 
 
 static DWORD sendUploadGroup(WORD wAction, WORD wGroupId, char* szItemName)
@@ -560,12 +555,12 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
         // Iterate over all contacts until one is found that
         // needs to be updated on the server
         if (hCurrentContact == NULL)
-          hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+          hContact = ICQFindFirstContact();
         else // we do not want to go thru all contacts over and over again
         {
           hContact = hCurrentContact;
           if (lastAckResult) // if the last operation on this contact fail, do not do it again, go to next
-            hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+            hContact = ICQFindNextContact(hContact);
         }
 
         while (hContact)
@@ -747,12 +742,12 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
         // Iterate over all contacts until one is found that
         // needs to be updated on the server
         if (hCurrentContact == NULL)
-          hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+          hContact = ICQFindFirstContact();
         else // we do not want to go thru all contacts over and over again
         {
           hContact = hCurrentContact;
           if (lastAckResult) // if the last operation on this contact fail, do not do it again, go to next
-            hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+            hContact = ICQFindNextContact(hContact);
         }
 
         while (hContact)
@@ -1052,13 +1047,13 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
                 check = SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM)hItemAll, 0);
                 
-                hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+                hContact = ICQFindFirstContact();
                 while (hContact)
                 {
                   hItem = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0);
                   if (hItem)
                     SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM)hItem, check);
-                  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+                  hContact = ICQFindNextContact(hContact);
                 }
               }
               else
