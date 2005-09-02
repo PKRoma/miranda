@@ -121,7 +121,7 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				if ( HIWORD( wParam ) == STN_CLICKED) {
 					void* tData = PUGetPluginData( hWnd );
 					if ( tData != NULL ) {
-						CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM ) "http://mail.yahoo.com/");    
+						YahooGotoMailboxCommand(0, 0);
 					}
 					
 					PUDeletePopUp( hWnd );

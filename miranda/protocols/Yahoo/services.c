@@ -1000,7 +1000,7 @@ static int YahooShowMyProfileCommand( WPARAM wParam, LPARAM lParam )
 //=======================================================
 //Show Goto mailbox
 //=======================================================
-static int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
+int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
 {
 	char tUrl[ 4096 ];
 	
