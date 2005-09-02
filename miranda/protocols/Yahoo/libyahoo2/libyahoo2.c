@@ -1823,7 +1823,10 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 
 			break;
 		case 3: /* my id/nick */
-			/* need some callback function for Nick updating from server */
+			
+			if (pair->value)
+				YAHOO_CALLBACK(ext_yahoo_got_nick)(yd->client_id, pair->value);
+			
 			break;
 		case 90: /* 1 */
 		case 100: /* 0 */

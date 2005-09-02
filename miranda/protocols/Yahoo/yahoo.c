@@ -1027,6 +1027,13 @@ void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int b
 	
 }
 
+void ext_yahoo_got_nick(int id, const char *nick)
+{
+	LOG(("[ext_yahoo_got_nick] nick: %s", nick));
+	
+	YAHOO_SetString( NULL, "Nick", nick);
+}
+
 void ext_yahoo_got_stealth(int id, char *stealthlist)
 {
 	char **s;
@@ -2024,6 +2031,7 @@ void register_callbacks()
 	yc.ext_yahoo_got_picture  = ext_yahoo_got_picture;
 	yc.ext_yahoo_got_picture_checksum = ext_yahoo_got_picture_checksum;
 	yc.ext_yahoo_got_picture_update = ext_yahoo_got_picture_update;
+	yc.ext_yahoo_got_nick = ext_yahoo_got_nick;
 	
 	yc.ext_yahoo_buddy_added = ext_yahoo_buddy_added;
 	yc.ext_yahoo_cleanup = ext_yahoo_cleanup;
