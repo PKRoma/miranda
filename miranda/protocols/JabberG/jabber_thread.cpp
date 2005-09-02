@@ -972,16 +972,15 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 							}
 							else DBWriteContactSettingStringUtf( hContact, "CList", "MyHandle", nick );
 
-							if ( item->group != NULL )
+							if ( item->group != NULL ) {
 								JabberContactListCreateGroup( item->group );
 								DBWriteContactSettingStringUtf( hContact, "CList", "Group", item->group );
 							}
 							else DBDeleteContactSetting( hContact, "CList", "Group" );
 
-							if ( !strcmp( str, "none" ) || ( !strcmp( str, "from" ) && strchr( jid, '@' )!=NULL )) {
+							if ( !strcmp( str, "none" ) || ( !strcmp( str, "from" ) && strchr( jid, '@' )!=NULL ))
 								if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
 									JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
-							}
 						}
 						else free( nick );
 				}	}
@@ -1091,10 +1090,8 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 
 		// RECVED: bytestream initiation request
 		// ACTION: check for any stream negotiation that is pending ( now only file transfer is handled )
-		else if ( !strcmp( xmlns, "http://jabber.org/protocol/bytestreams" )) {
+		else if ( !strcmp( xmlns, "http://jabber.org/protocol/bytestreams" ))
 			JabberFtHandleBytestreamRequest( node );
-		}
-
 	}
 	// RECVED: <iq type='get'><query ...
 	else if ( !strcmp( type, "get" ) && queryNode!=NULL && ( xmlns=JabberXmlGetAttrValue( queryNode, "xmlns" ))!=NULL ) {
