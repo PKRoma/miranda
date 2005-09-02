@@ -45,6 +45,7 @@
 #define IDC_USE_YAB		                1477
 #define IDC_SHOW_ERRORS	                1478
 #define IDC_SHOW_AVATARS                1479
+#define IDC_MAIL_AUTOLOGIN              1480
 
 #define IDD_OPT_YAHOO_IGNORE            201
 #define IDC_YIGN_EDIT					202

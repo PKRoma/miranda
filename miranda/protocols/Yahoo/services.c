@@ -1003,16 +1003,26 @@ static int YahooShowMyProfileCommand( WPARAM wParam, LPARAM lParam )
 static int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
 {
 	char tUrl[ 4096 ];
-	DBVARIANT dbv;
-
+	
 	if ( !yahooLoggedIn )
 		return 0;
 
-	if ( DBGetContactSetting(( HANDLE )wParam, yahooProtocolName, "yahoo_id", &dbv ))
-		return 0;
+	if (YAHOO_GetByte( "MailAutoLogin", 0 ) ) {
+		int   id = 1;
+		char  *y, *t;
 		
-	_snprintf( tUrl, sizeof( tUrl ), "https://mail.yahoo.com/", dbv.pszVal  );
-	DBFreeVariant( &dbv );
+		y = yahoo_urlencode(yahoo_get_cookie(id, "y"));
+		t = yahoo_urlencode(yahoo_get_cookie(id, "t"));
+		_snprintf( tUrl, sizeof( tUrl ), 
+				"http://msg.edit.yahoo.com/config/reset_cookies?&.y=Y=%s&.t=T=%s&.ver=2&.done=http%%3a//us.rd.yahoo.com/messenger/client/%%3fhttp%%3a//mail.yahoo.com/",
+				y, t);
+				
+		FREE(y);
+		FREE(t);
+	} else {
+		_snprintf( tUrl, sizeof( tUrl ), "https://mail.yahoo.com/" );
+	}
+	
 	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
 		
 	return 0;

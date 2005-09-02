@@ -65,6 +65,9 @@ BEGIN
 	CONTROL         "Show Avatars",IDC_SHOW_AVATARS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,162,120,10 					
 
+	CONTROL         "AutoLogin to Yahoo Mail",IDC_MAIL_AUTOLOGIN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,172,120,10 					
+
     GROUPBOX        "Yahoo Ignore List",IDC_STYAHOOGROUP,158,88,130,118,WS_GROUP
 	
 	EDITTEXT 		IDC_YIGN_EDIT,164,102,84,13, ES_AUTOHSCROLL
