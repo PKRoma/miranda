@@ -76,6 +76,8 @@ PSLWA pSetLayeredWindowAttributes;
 
 extern struct ContainerWindowData *pFirstContainer;
 extern BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+DWORD g_gdiplusToken = 0;
+BOOL gdiPlusFail = FALSE;
 
 // send jobs...
 
@@ -111,7 +113,7 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 int FS_ReloadFonts(WPARAM wParam, LPARAM lParam);
 void FS_RegisterFonts();
 void FirstTimeConfig();
-
+void InitGdiPlus(void);
 /*
  * installed as a WH_GETMESSAGE hook in order to process unicode messages.
  * without this, the rich edit control does NOT accept input for all languages.
@@ -966,6 +968,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists(MS_UPDATE_REGISTER))
         CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 
+    InitGdiPlus();
     return 0;
 }
 

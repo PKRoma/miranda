@@ -1,6 +1,4 @@
 
-#if defined(UNICODE)
-
 #include <malloc.h>
 
 #ifdef _DEBUG
@@ -23,6 +21,21 @@
 #include "m_avatars.h"
 
 #include "gdiplus.h"
+
+extern "C" DWORD g_gdiplusToken;
+extern "C" BOOL gdiPlusFail;
+
+extern "C" void InitGdiPlus(void)
+{
+	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+	__try {
+		if (g_gdiplusToken == 0)
+			Gdiplus::GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, NULL);
+	}
+	__except ( EXCEPTION_EXECUTE_HANDLER ) {
+		gdiPlusFail = true;
+	}
+}
 
 using namespace Gdiplus;
 
@@ -68,4 +81,3 @@ plain:
     delete g;
 }
 
-#endif

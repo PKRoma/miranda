@@ -53,6 +53,7 @@ extern NEN_OPTIONS nen_options;
 extern LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
 extern COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
 extern TemplateSet LTR_Active, RTL_Active;
+extern DWORD g_gdiplusToken;
 
 extern HMODULE g_hInst;
 extern HANDLE hMessageWindowList;
@@ -1847,13 +1848,14 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                 rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 2;
                 SetStretchBltMode(hdcDraw, HALFTONE);
                 if(aceFlags & AVS_PREMULTIPLIED) {
-#if defined(_UNICODE)
-                    DrawEdge(hdcDraw, &rc, BDR_SUNKENINNER, BF_RECT);
-                    DrawWithGDIp(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
-#else                    
-                    Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
-                    StretchBlt(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-#endif                    
+                    if(g_gdiplusToken) {
+                        DrawEdge(hdcDraw, &rc, BDR_SUNKENINNER, BF_RECT);
+                        DrawWithGDIp(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
+                    }
+                    else {
+                        Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
+                        StretchBlt(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                    }
                 }
                 else {
                     Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
@@ -1863,18 +1865,18 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             else {
                 SetStretchBltMode(hdcDraw, HALFTONE);
                 if(aceFlags & AVS_PREMULTIPLIED) {
-                    if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-#if defined(_UNICODE)
-                        DrawWithGDIp(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
-#else
-                        StretchBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-#endif                    
-                    else
-#if defined(_UNICODE)
-                        DrawWithGDIp(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
-#else
-                        StretchBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-#endif                    
+                    if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
+                        if(g_gdiplusToken)
+                            DrawWithGDIp(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
+                        else
+                            StretchBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                    }
+                    else {
+                        if(g_gdiplusToken)
+                            DrawWithGDIp(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
+                        else
+                            StretchBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                    }
                 }
                 else {
                     if(dat->iRealAvatarHeight != bminfo.bmHeight) {
