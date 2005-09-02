@@ -100,12 +100,13 @@ static void SetFilenameControls(HWND hwndDlg,PROTOFILETRANSFERSTATUS *fts)
 		RECT rcFilename;
 		HDC hdc;
 		SIZE textSize;
+		HFONT hFont;
 		int driveNameLen,driveAndEllipsisLen=0;
 		char *pszBackslash;
 
 		GetClientRect(hwndFilename,&rcFilename);
-		hdc=GetDC(hwndFilename);
-		SelectObject(hdc,(HFONT)SendMessage(hwndFilename,WM_GETFONT,0,0));
+		hdc = GetDC(hwndFilename);
+		hFont = SelectObject(hdc,(HFONT)SendMessage(hwndFilename,WM_GETFONT,0,0));
 		if(str[0] && str[1]==':' && str[2]=='\\') driveNameLen=3;
 		else if(str[0]=='\\' && str[1]=='\\') {
 			if((pszBackslash=strchr(str+2,'\\'))!=NULL && (pszBackslash=strchr(pszBackslash+1,'\\'))!=NULL)
@@ -129,6 +130,7 @@ static void SetFilenameControls(HWND hwndDlg,PROTOFILETRANSFERSTATUS *fts)
 				driveAndEllipsisLen=driveNameLen+4;
 			}
 		}
+		SelectObject(hdc,hFont);
 		ReleaseDC(hwndFilename,hdc);
 	}
 	SetWindowText(hwndFilename,str);
