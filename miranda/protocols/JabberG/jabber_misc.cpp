@@ -31,11 +31,11 @@ void JabberAddContactToRoster( const char* jid, const char* nick, const char* gr
 	if ( grpName != NULL )
 		JabberSend( jabberThreadInfo->s, 
 			"<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'><group>%s</group></item></query></iq>", 
-			UTF8(nick), jid, UTF8(grpName));
+			nick, jid, grpName );
 	else
 		JabberSend( jabberThreadInfo->s, 
 			"<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'/></query></iq>", 
-			UTF8(nick), jid );
+			nick, jid );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -75,7 +75,7 @@ static void JabberContactListCreateClistGroup( char* groupName )
 
 	for ( i=0;;i++ ) {
 		itoa( i, str, 10 );
-		if ( DBGetContactSetting( NULL, "CListGroups", str, &dbv ))
+		if ( DBGetContactSettingStringUtf( NULL, "CListGroups", str, &dbv ))
 			break;
 		name = dbv.pszVal;
 		if ( name[0]!='\0' && !strcmp( name+1, groupName )) {
@@ -90,7 +90,7 @@ static void JabberContactListCreateClistGroup( char* groupName )
 	newName[0] = 1 | GROUPF_EXPANDED;
 	strncpy( newName+1, groupName, sizeof( newName )-1 );
 	newName[sizeof( newName )-1] = '\0';
-	DBWriteContactSettingString( NULL, "CListGroups", str, newName );
+	DBWriteContactSettingStringUtf( NULL, "CListGroups", str, newName );
 	JCallService( MS_CLUI_GROUPADDED, i+1, 0 );
 }
 
@@ -133,7 +133,7 @@ void JabberDBAddAuthRequest( char* jid, char* nick )
 	if (( hContact=JabberHContactFromJID( jid )) == NULL ) {
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_ADD, 0, 0 );
 		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )jabberProtoName );
-		DBWriteContactSettingStringUtf( hContact, jabberProtoName, "jid", s );
+		JSetStringUtf( hContact, "jid", s );
 	}
 	else DBDeleteContactSetting( hContact, jabberProtoName, "Hidden" );
 
@@ -204,9 +204,9 @@ HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripR
 	if ( hContact == NULL ) {
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_ADD, 0, 0 );
 		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )jabberProtoName );
-		DBWriteContactSettingStringUtf( hContact, jabberProtoName, "jid", s );
+		JSetStringUtf( hContact, "jid", s );
 		if ( nick != NULL && *nick != '\0' )
-			DBWriteContactSettingStringUtf( hContact, jabberProtoName, "Nick", nick );
+			JSetStringUtf( hContact, "Nick", nick );
 		if ( temporary )
 			DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 		JabberLog( "Create Jabber contact jid=%s, nick=%s", s, nick );

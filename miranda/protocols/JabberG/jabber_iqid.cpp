@@ -149,7 +149,6 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 	if ( lstrcmpA( JabberXmlGetAttrValue( queryNode, "xmlns" ), "jabber:iq:roster" ))
 		return;
 
-	DBVARIANT dbv;
 	char* name, *nick;
 	int i;
 
@@ -168,12 +167,12 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 		else sub = SUB_NONE;
 
 		char* jid = JabberXmlGetAttrValue( itemNode, "jid" );
-		if ( jid != NULL )
+		if ( jid == NULL )
 			continue;
 
 		JabberUrlDecode( jid );
 		if (( name = JabberXmlGetAttrValue( itemNode, "name" )) != NULL )
-			nick = JabberTextDecode( name );
+			nick = strdup( JabberUrlDecode( name ));
 		else
 			nick = JabberNickFromJID( jid );
 
@@ -181,9 +180,18 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 			continue;
 
 		JABBER_LIST_ITEM* item = JabberListAdd( LIST_ROSTER, jid );
+		item->subscription = sub;
+
 		if ( item->nick ) free( item->nick );
 		item->nick = nick;
-		item->subscription = sub;
+
+		if ( item->group ) free( item->group );
+		XmlNode* groupNode = JabberXmlGetChild( itemNode, "group" );
+		if ( groupNode != NULL && groupNode->text != NULL )
+			item->group = strdup( JabberUrlDecode( groupNode->text ));
+		else
+			item->group = NULL;
+
 		HANDLE hContact = JabberHContactFromJID( jid );
 		if ( hContact == NULL ) {
 			// Received roster has a new JID.
@@ -194,40 +202,33 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 		if ( JGetByte( hContact, "ChatRoom", 0 ))
 			QueueUserAPC( sttCreateRoom, hMainThread, ( ULONG_PTR )jid );
 
-      char szNick[ 256 ];
-		if ( !JGetStaticString( "Nick", hContact, szNick, sizeof szNick )) {
-			if ( strcmp( nick, szNick ) != 0 )
-				DBWriteContactSettingString( hContact, "CList", "MyHandle", nick );
+      DBVARIANT dbNick;
+		if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "Nick", &dbNick )) {
+			if ( strcmp( nick, dbNick.pszVal ) != 0 )
+				DBWriteContactSettingStringUtf( hContact, "CList", "MyHandle", nick );
 			else
 				DBDeleteContactSetting( hContact, "CList", "MyHandle" );
-			JFreeVariant( &dbv );
+			JFreeVariant( &dbNick );
 		}
-		else JSetString( hContact, "CList", nick );
-		DBDeleteContactSetting( hContact, "CList", "Nick" );
+		else DBWriteContactSettingStringUtf( hContact, "CList", "MyHandle", nick );
 
 		if ( JGetByte( hContact, "ChatRoom", 0 ))
 			DBDeleteContactSetting( hContact, "CList", "Hidden" );
 
-		if ( item->group ) 
-			free( item->group );
-
-		XmlNode* groupNode = JabberXmlGetChild( itemNode, "group" );
-		if ( groupNode != NULL && groupNode->text != NULL ) {
-			item->group = JabberTextDecode( groupNode->text );
+		if ( item->group != NULL ) {
 			JabberContactListCreateGroup( item->group );
+
 			// Don't set group again if already correct, or Miranda may show wrong group count in some case
-			if ( !DBGetContactSetting( hContact, "CList", "Group", &dbv )) {
+			DBVARIANT dbv;
+			if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
 				if ( strcmp( dbv.pszVal, item->group ))
-					DBWriteContactSettingString( hContact, "CList", "Group", item->group );
+					DBWriteContactSettingStringUtf( hContact, "CList", "Group", item->group );
 				JFreeVariant( &dbv );
 			}
-			else
-				DBWriteContactSettingString( hContact, "CList", "Group", item->group );
+			else DBWriteContactSettingStringUtf( hContact, "CList", "Group", item->group );
 		}
-		else {
-			item->group = NULL;
-			DBDeleteContactSetting( hContact, "CList", "Group" );
-	}	}
+		else DBDeleteContactSetting( hContact, "CList", "Group" );
+	}
 
 	// Delete orphaned contacts ( if roster sync is enabled )
 	if ( JGetByte( "RosterSync", FALSE ) == TRUE ) {
@@ -238,7 +239,8 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 		while ( hContact != NULL ) {
 			char* str = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-			if( str != NULL && !strcmp( str, jabberProtoName )) {
+			if ( str != NULL && !strcmp( str, jabberProtoName )) {
+				DBVARIANT dbv;
 				if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv )) {
 					if ( !JabberListExist( LIST_ROSTER, dbv.pszVal )) {
 						JabberLog( "Syncing roster: preparing to delete %s ( hContact=0x%x )", dbv.pszVal, hContact );
@@ -429,13 +431,13 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 				if ( !strcmp( n->name, "FN" )) {
 					if ( n->text != NULL ) {
 						hasFn = TRUE;
-						JSetString( hContact, "FullName", JabberUrlDecode( n->text ));
+						JSetStringUtf( hContact, "FullName", JabberUrlDecode( n->text ));
 					}
 				}
 				else if ( !strcmp( n->name, "NICKNAME" )) {
 					if ( n->text != NULL ) {
 						hasNick = TRUE;
-						JSetString( hContact, "Nick", JabberUrlDecode( n->text ));
+						JSetStringUtf( hContact, "Nick", JabberUrlDecode( n->text ));
 					}
 				}
 				else if ( !strcmp( n->name, "N" )) {

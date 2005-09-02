@@ -118,6 +118,11 @@ DWORD __stdcall JSetString( HANDLE hContact, const char* valueName, const char* 
 	return DBWriteContactSettingString( hContact, jabberProtoName, valueName, parValue );
 }
 
+DWORD __stdcall JSetStringUtf( HANDLE hContact, const char* valueName, const char* parValue )
+{
+	return DBWriteContactSettingStringUtf( hContact, jabberProtoName, valueName, parValue );
+}
+
 DWORD __stdcall JSetWord( HANDLE hContact, const char* valueName, int parValue )
 {
 	return DBWriteContactSettingWord( hContact, jabberProtoName, valueName, parValue );

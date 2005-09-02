@@ -368,6 +368,7 @@ DWORD  __stdcall  JSetByte( const char* valueName, int parValue );
 DWORD  __stdcall  JSetByte( HANDLE hContact, const char* valueName, int parValue );
 DWORD  __stdcall  JSetDword( HANDLE hContact, const char* valueName, DWORD parValue );
 DWORD  __stdcall  JSetString( HANDLE hContact, const char* valueName, const char* parValue );
+DWORD  __stdcall  JSetStringUtf( HANDLE hContact, const char* valueName, const char* parValue );
 DWORD  __stdcall  JSetWord( HANDLE hContact, const char* valueName, int parValue );
 char*  __stdcall  JTranslate( const char* str );
 

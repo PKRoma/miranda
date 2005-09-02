@@ -940,7 +940,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 				// we will not add new account when subscription=remove
 				if ( !strcmp( str, "to" ) || !strcmp( str, "both" ) || !strcmp( str, "from" ) || !strcmp( str, "none" )) {
 					if (( name=JabberXmlGetAttrValue( itemNode, "name" )) != NULL )
-						nick = JabberTextDecode( name );
+						nick = strdup( JabberUrlDecode( name ));
 					else
 						nick = JabberNickFromJID( jid );
 
@@ -948,33 +948,36 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 						if (( item=JabberListAdd( LIST_ROSTER, jid )) != NULL ) {
 							if ( item->nick ) free( item->nick );
 							item->nick = nick;
+
+							if ( item->group ) free( item->group );
+							if (( groupNode=JabberXmlGetChild( itemNode, "group" ))!=NULL && groupNode->text!=NULL )
+								item->group = strdup( JabberUrlDecode( groupNode->text ));
+							else
+								item->group = NULL;
+
 							if (( hContact=JabberHContactFromJID( jid )) == NULL ) {
 								// Received roster has a new JID.
 								// Add the jid ( with empty resource ) to Miranda contact list.
 								hContact = JabberDBCreateContact( jid, nick, FALSE, TRUE );
 							}
-							else JSetString( hContact, "jid", jid );
+							else JSetStringUtf( hContact, "jid", jid );
 
-                     char szNick[ 256 ];
-							if ( !JGetStaticString( "Nick", hContact, szNick, sizeof szNick )) {
-								if ( strcmp( nick, szNick ) != 0 )
-									DBWriteContactSettingString( hContact, "CList", "MyHandle", nick );
+                     DBVARIANT dbnick;
+							if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "Nick", &dbnick )) {
+								if ( strcmp( nick, dbnick.pszVal ) != 0 )
+									DBWriteContactSettingStringUtf( hContact, "CList", "MyHandle", nick );
 								else
 									DBDeleteContactSetting( hContact, "CList", "MyHandle" );
+								JFreeVariant( &dbnick );
 							}
-							else JSetString( hContact, "CList", nick );
-							DBDeleteContactSetting( hContact, "CList", "Nick" );
+							else DBWriteContactSettingStringUtf( hContact, "CList", "MyHandle", nick );
 
-							if ( item->group ) free( item->group );
-							if (( groupNode=JabberXmlGetChild( itemNode, "group" ))!=NULL && groupNode->text!=NULL ) {
-								item->group = JabberTextDecode( groupNode->text );
+							if ( item->group != NULL )
 								JabberContactListCreateGroup( item->group );
-								DBWriteContactSettingString( hContact, "CList", "Group", item->group );
+								DBWriteContactSettingStringUtf( hContact, "CList", "Group", item->group );
 							}
-							else {
-								item->group = NULL;
-								DBDeleteContactSetting( hContact, "CList", "Group" );
-							}
+							else DBDeleteContactSetting( hContact, "CList", "Group" );
+
 							if ( !strcmp( str, "none" ) || ( !strcmp( str, "from" ) && strchr( jid, '@' )!=NULL )) {
 								if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
 									JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
