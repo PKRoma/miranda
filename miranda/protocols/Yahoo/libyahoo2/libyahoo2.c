@@ -2406,8 +2406,12 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	yahoo_packet_hash(pack, 6, resp_6);
 	yahoo_packet_hash(pack, 96, resp_96);
 	yahoo_packet_hash(pack, 0, sn);
+	yahoo_packet_hash(pack, 2, sn);
+	yahoo_packet_hash(pack, 192, "-1");// no avatar support yet
+	yahoo_packet_hash(pack, 2, "1");
 	yahoo_packet_hash(pack, 1, sn);
-	yahoo_packet_hash(pack, 135, "6,0,0,1710"); /* Yahoo Client version, thanx GAIM */
+	yahoo_packet_hash(pack, 135, "6,0,0,1750"); 
+	yahoo_packet_hash(pack, 148, "300"); 
 	yahoo_send_packet(yid, pack, 0);
 	yahoo_packet_free(pack);
 
