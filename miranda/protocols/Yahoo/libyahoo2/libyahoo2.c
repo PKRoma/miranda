@@ -1717,6 +1717,11 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 		case 137: /* seconds idle */
 			idle = atoi(pair->value);
 			break;
+		case 138: /* either we're not idle, or we are but won't say how long */
+			/* thanx Gaim.. I am seeing 138 -> 1. so don't do idle at all for miranda
+				since we don't have idle w/o time :( */
+			idle = 0;
+			break;
 		case 11: /* this is the buddy's session id */
 			NOTICE(("key %d:%s", pair->key, pair->value));
 			break;
@@ -1817,7 +1822,9 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 			} 
 
 			break;
-		case 3: /* my id */
+		case 3: /* my id/nick */
+			/* need some callback function for Nick updating from server */
+			break;
 		case 90: /* 1 */
 		case 100: /* 0 */
 		case 101: /* NULL */
@@ -2974,6 +2981,7 @@ static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_pack
 	case YAHOO_SERVICE_GAMELOGOFF:
 	case YAHOO_SERVICE_IDACT:
 	case YAHOO_SERVICE_IDDEACT:
+	case YAHOO_SERVICE_YAHOO6_STATUS_UPDATE:
 		yahoo_process_status(yid, pkt);
 		break;
 	case YAHOO_SERVICE_NOTIFY:
