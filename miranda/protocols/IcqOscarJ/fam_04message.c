@@ -841,6 +841,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 	NetLog_Server("Parsing Greeting message through server");
 
 	pDataBuf += wMsgLen;   // Message
+  wLen -= wMsgLen;
 
 	//
 	unpackLEWord(&pDataBuf, &wInfoLen);
@@ -850,8 +851,14 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
   unpackDWord(&pDataBuf, &q3);
   unpackDWord(&pDataBuf, &q4);
   unpackLEWord(&pDataBuf, &qt);
+  wLen -= 20;
 
 	unpackLEDWord(&pDataBuf, &dwPluginNameLen);
+  if (dwPluginNameLen > wLen) 
+  { // check for malformed plugin name
+    dwPluginNameLen = wLen;
+    NetLog_Server("Warning: malformed size of plugin name.");
+  }
 	szPluginName = (char *)malloc(dwPluginNameLen + 1);
 	memcpy(szPluginName, pDataBuf, dwPluginNameLen);
 	szPluginName[dwPluginNameLen] = '\0';
@@ -1684,6 +1691,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 }
 
 
+
 static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 {
 	DWORD dwUin;
@@ -1865,6 +1873,11 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
 				unpackLEDWord(&buf, &dwPluginNameLen);
 				wLen -= 4;
+        if (dwPluginNameLen > wLen) 
+        { // check for malformed plugin name
+          dwPluginNameLen = wLen;
+          NetLog_Server("Warning: malformed size of plugin name.");
+        }
 				szPluginName = (char *)malloc(dwPluginNameLen + 1);
 				memcpy(szPluginName, buf, dwPluginNameLen);
 				szPluginName[dwPluginNameLen] = '\0';
