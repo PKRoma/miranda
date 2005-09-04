@@ -1,0 +1,237 @@
+# Microsoft Developer Studio Generated Dependency File, included by jabber.mak
+
+.\jabber.cpp : \
+	"..\..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\jabber.h"\
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_ssl.h"\
+	".\jabber_xml.h"\
+	".\sdk\m_chat.h"\
+	".\version.h"\
+	
+
+.\jabber_agent.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_byte.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_chat.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_file.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_form.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_ft.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_groupchat.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_iq.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	".\jabber_xmlns.h"\
+	
+
+.\jabber_iqid.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_iqid_muc.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_libstr.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_list.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_menu.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_misc.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_opt.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_password.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_proxy.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_ssl.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_ssl.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_std.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_svc.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_thread.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_ssl.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_userinfo.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_util.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_ssl.h"\
+	".\jabber_xml.h"\
+	".\sha1.h"\
+	
+
+.\jabber_vcard.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_ws.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_xml.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_xmlns.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\sha1.cpp : \
+	".\sha1.h"\
+	
+
+.\msvc6.rc : \
+	".\icos\addcontact.ico"\
+	".\icos\block.ico"\
+	".\icos\delete.ico"\
+	".\icos\gcadmin.ico"\
+	".\icos\gcmodera.ico"\
+	".\icos\gcowner.ico"\
+	".\icos\gcvoice.ico"\
+	".\icos\grant.ico"\
+	".\icos\group.ico"\
+	".\icos\jabber.ico"\
+	".\icos\key.ico"\
+	".\icos\open.ico"\
+	".\icos\pages.ico"\
+	".\icos\rename.ico"\
+	".\icos\request.ico"\
+	".\icos\save.ico"\
+	".\icos\write.ico"\
+	".\jabber.rc"\
+	".\version.h"\
+	".\version.rc"\
+	

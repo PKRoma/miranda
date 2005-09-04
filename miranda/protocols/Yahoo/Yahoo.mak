@@ -51,6 +51,7 @@ CLEAN :
 	-@erase "$(INTDIR)\util.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\yahoo.obj"
+	-@erase "$(INTDIR)\Yahoo.res"
 	-@erase "$(INTDIR)\yahoo_fn.obj"
 	-@erase "$(INTDIR)\yahoo_httplib.obj"
 	-@erase "$(INTDIR)\yahoo_list.obj"
@@ -62,8 +63,9 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX- /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x419 /fo"$(INTDIR)\Yahoo.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc" 
 BSC32_SBRS= \
@@ -71,6 +73,14 @@ BSC32_SBRS= \
 LINK32=link.exe
 LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Yahoo.pdb" /machine:I386 /out:"../../Bin/Release/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" 
 LINK32_OBJS= \
+	"$(INTDIR)\crypt.obj" \
+	"$(INTDIR)\libyahoo2.obj" \
+	"$(INTDIR)\md5.obj" \
+	"$(INTDIR)\sha.obj" \
+	"$(INTDIR)\yahoo_fn.obj" \
+	"$(INTDIR)\yahoo_httplib.obj" \
+	"$(INTDIR)\yahoo_list.obj" \
+	"$(INTDIR)\yahoo_util.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\pthread.obj" \
@@ -79,14 +89,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\utf8.obj" \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\yahoo_util.obj" \
-	"$(INTDIR)\crypt.obj" \
-	"$(INTDIR)\md5.obj" \
-	"$(INTDIR)\sha.obj" \
-	"$(INTDIR)\yahoo_fn.obj" \
-	"$(INTDIR)\yahoo_httplib.obj" \
-	"$(INTDIR)\yahoo_list.obj" \
-	"$(INTDIR)\libyahoo2.obj"
+	"$(INTDIR)\Yahoo.res"
 
 "..\..\Bin\Release\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -116,6 +119,7 @@ CLEAN :
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\yahoo.obj"
+	-@erase "$(INTDIR)\Yahoo.res"
 	-@erase "$(INTDIR)\yahoo_fn.obj"
 	-@erase "$(INTDIR)\yahoo_httplib.obj"
 	-@erase "$(INTDIR)\yahoo_list.obj"
@@ -129,8 +133,9 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX- /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x419 /fo"$(INTDIR)\Yahoo.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc" 
 BSC32_SBRS= \
@@ -138,6 +143,14 @@ BSC32_SBRS= \
 LINK32=link.exe
 LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Yahoo.pdb" /debug /machine:I386 /out:"../../Bin/Debug/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" /pdbtype:sept 
 LINK32_OBJS= \
+	"$(INTDIR)\crypt.obj" \
+	"$(INTDIR)\libyahoo2.obj" \
+	"$(INTDIR)\md5.obj" \
+	"$(INTDIR)\sha.obj" \
+	"$(INTDIR)\yahoo_fn.obj" \
+	"$(INTDIR)\yahoo_httplib.obj" \
+	"$(INTDIR)\yahoo_list.obj" \
+	"$(INTDIR)\yahoo_util.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\pthread.obj" \
@@ -146,14 +159,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\utf8.obj" \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\yahoo_util.obj" \
-	"$(INTDIR)\crypt.obj" \
-	"$(INTDIR)\md5.obj" \
-	"$(INTDIR)\sha.obj" \
-	"$(INTDIR)\yahoo_fn.obj" \
-	"$(INTDIR)\yahoo_httplib.obj" \
-	"$(INTDIR)\yahoo_list.obj" \
-	"$(INTDIR)\libyahoo2.obj"
+	"$(INTDIR)\Yahoo.res"
 
 "..\..\Bin\Debug\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -289,6 +295,12 @@ SOURCE=.\util.c
 SOURCE=.\yahoo.c
 
 "$(INTDIR)\yahoo.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\Yahoo.rc
+
+"$(INTDIR)\Yahoo.res" : $(SOURCE) "$(INTDIR)"
+	$(RSC) $(RSC_PROJ) $(SOURCE)
 
 
 

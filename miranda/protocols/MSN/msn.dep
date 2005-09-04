@@ -1,0 +1,72 @@
+# Microsoft Developer Studio Generated Dependency File, included by msn.mak
+
+.\msn.cpp : \
+	"..\..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\msn_global.h"\
+	".\sdk\m_chat.h"\
+	".\version.h"\
+	
+
+.\msn_bitmap.cpp : \
+	".\sha1.h"\
+	
+
+.\msn_chat.cpp : \
+	"..\..\include\m_history.h"\
+	
+
+.\msn_commands.cpp : \
+	".\msn_md5.h"\
+	
+
+.\msn_md5c.cpp : \
+	".\msn_md5.h"\
+	
+
+.\msn_misc.cpp : \
+	".\msn_md5.h"\
+	
+
+.\msn_opts.cpp : \
+	".\msn_md5.h"\
+	
+
+.\sha1.c : \
+	".\sha1.h"\
+	
+
+.\resource.rc : \
+	".\Icos\avatar.ico"\
+	".\Icos\inbox.ico"\
+	".\Icos\invite.ico"\
+	".\Icos\list_al.ico"\
+	".\Icos\list_bl.ico"\
+	".\Icos\list_fl.ico"\
+	".\Icos\list_rl.ico"\
+	".\Icos\msn.ico"\
+	".\Icos\msnblock.ico"\
+	".\Icos\netmeeting.ico"\
+	".\Icos\profile.ico"\
+	".\Icos\services.ico"\
+	".\msn.rc"\
+	

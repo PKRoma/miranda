@@ -286,3 +286,11 @@
 	".\utf8.h"\
 	".\yahoo.h"\
 	
+
+.\Yahoo.rc : \
+	".\icos\inbox.ico"\
+	".\icos\yahoo.ico"\
+	".\resource.h"\
+	".\version.h"\
+	".\version.rc"\
+	
