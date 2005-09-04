@@ -60,6 +60,12 @@ typedef struct {
 #define LPTDF_NOIGNOREEDIT   1     //translate all edit controls. By default
                    //non-read-only edit controls are not translated
 #define LPTDF_NOTITLE        2     //do not translate the title of the dialog
+#if defined( _UNICODE )
+	#define LPTDF_UNICODE     LANG_UNICODE
+#else
+	#define LPTDF_UNICODE     0
+#endif
+
 #define MS_LANGPACK_TRANSLATEDIALOG  "LangPack/TranslateDialog"
 __inline static int TranslateDialogDefault(HWND hwndDlg)
 {
@@ -68,24 +74,8 @@ __inline static int TranslateDialogDefault(HWND hwndDlg)
 	lptd.flags=0;
 	lptd.hwndDlg=hwndDlg;
 	lptd.ignoreControls=NULL;
-	return CallService(MS_LANGPACK_TRANSLATEDIALOG,0,(LPARAM)&lptd);
+	return CallService(MS_LANGPACK_TRANSLATEDIALOG,LPTDF_UNICODE,(LPARAM)&lptd);
 }
-
-__inline static int TranslateDialogDefaultW(HWND hwndDlg)
-{
-	LANGPACKTRANSLATEDIALOG lptd;
-	lptd.cbSize=sizeof(lptd);
-	lptd.flags=0;
-	lptd.hwndDlg=hwndDlg;
-	lptd.ignoreControls=NULL;
-	return CallService(MS_LANGPACK_TRANSLATEDIALOG,LANG_UNICODE,(LPARAM)&lptd);
-}
-
-#if defined( _UNICODE )
-	#define TranslateDialogDefaultT(h) TranslateDialogDefaultW(h)
-#else
-	#define TranslateDialogDefaultT(h) TranslateDialogDefault(h)
-#endif
 
 //translates a menu into the user's local language	  v0.1.1.0+
 //wParam=(WPARAM)(HMENU)hMenu
