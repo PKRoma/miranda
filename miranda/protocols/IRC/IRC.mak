@@ -155,8 +155,8 @@ LINK32_OBJS= \
 
 !ELSEIF  "$(CFG)" == "IRC - Win32 Release SSL"
 
-OUTDIR=.\IRC___Win32_Release_SSL
-INTDIR=.\IRC___Win32_Release_SSL
+OUTDIR=.\Release_SSL
+INTDIR=.\Release_SSL
 
 ALL : "..\..\bin\Release\plugins\IRC.dll"
 
@@ -213,8 +213,8 @@ LINK32_OBJS= \
 
 !ELSEIF  "$(CFG)" == "IRC - Win32 Debug SSL"
 
-OUTDIR=.\IRC___Win32_Debug_SSL
-INTDIR=.\IRC___Win32_Debug_SSL
+OUTDIR=.\Debug_SSL
+INTDIR=.\Debug_SSL
 
 ALL : "..\..\bin\Debug\plugins\IRC.dll"
 
