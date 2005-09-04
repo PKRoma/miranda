@@ -1,0 +1,283 @@
+# Microsoft Developer Studio Generated Dependency File, included by srmm.mak
+
+.\cmdlist.c : \
+	"..\..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\cmdlist.h"\
+	".\commonheaders.h"\
+	".\globals.h"\
+	".\msgs.h"\
+	".\richutil.h"\
+	
+
+.\globals.c : \
+	"..\..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\cmdlist.h"\
+	".\commonheaders.h"\
+	".\globals.h"\
+	".\msgs.h"\
+	".\richutil.h"\
+	
+
+.\msgdialog.c : \
+	"..\..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\cmdlist.h"\
+	".\commonheaders.h"\
+	".\globals.h"\
+	".\msgs.h"\
+	".\richutil.h"\
+	
+
+.\msglog.c : \
+	"..\..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\cmdlist.h"\
+	".\commonheaders.h"\
+	".\globals.h"\
+	".\msgs.h"\
+	".\richutil.h"\
+	
+
+.\msgoptions.c : \
+	"..\..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\cmdlist.h"\
+	".\commonheaders.h"\
+	".\globals.h"\
+	".\msgs.h"\
+	".\richutil.h"\
+	
+
+.\msgs.c : \
+	"..\..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\cmdlist.h"\
+	".\commonheaders.h"\
+	".\globals.h"\
+	".\msgs.h"\
+	".\richutil.h"\
+	
+
+.\msgtimedout.c : \
+	"..\..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\cmdlist.h"\
+	".\commonheaders.h"\
+	".\globals.h"\
+	".\msgs.h"\
+	".\richutil.h"\
+	
+
+.\richutil.c : \
+	"..\..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\..\vc\sdk\include\winefs.h"\
+	".\richutil.h"\
+	
+
+.\srmm.c : \
+	"..\..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\cmdlist.h"\
+	".\commonheaders.h"\
+	".\globals.h"\
+	".\msgs.h"\
+	".\richutil.h"\
+	
+
+.\resource.rc : \
+	"..\..\include\statusmodes.h"\
+	"..\..\src\res\dragcopy.cur"\
+	"..\..\src\res\dropuser.cur"\
+	"..\..\src\res\hyperlin.cur"\
+	".\res\add32.ico"\
+	".\res\add8.ico"\
+	".\res\Details32.ico"\
+	".\res\Details8.ico"\
+	".\res\Downarrow32.ico"\
+	".\res\Downarrow8.ico"\
+	".\res\History32.ico"\
+	".\res\History8.ico"\
+	".\res\incoming.ico"\
+	".\res\notice.ico"\
+	".\res\outgoing.ico"\
+	".\res\Typing32.ico"\
+	".\res\Typing8.ico"\
+	

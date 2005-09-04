@@ -1,0 +1,67 @@
+# Microsoft Developer Studio Generated Dependency File, included by db3x.mak
+
+.\commonheaders.c : \
+	"..\..\include\m_plugins.h"\
+	
+
+.\database.c : \
+	"..\..\include\m_plugins.h"\
+	".\database.h"\
+	
+
+.\dbcache.c : \
+	"..\..\include\m_plugins.h"\
+	".\database.h"\
+	
+
+.\dbcontacts.c : \
+	"..\..\include\m_plugins.h"\
+	".\database.h"\
+	".\dblists.h"\
+	
+
+.\dbevents.c : \
+	"..\..\include\m_plugins.h"\
+	".\database.h"\
+	
+
+.\dbheaders.c : \
+	"..\..\include\m_plugins.h"\
+	".\database.h"\
+	
+
+.\dbini.c : \
+	"..\..\include\m_plugins.h"\
+	".\database.h"\
+	
+
+.\dblists.c : \
+	"..\..\include\m_plugins.h"\
+	".\dblists.h"\
+	
+
+.\dbmodulechain.c : \
+	"..\..\include\m_plugins.h"\
+	".\database.h"\
+	
+
+.\dbsettings.c : \
+	"..\..\include\m_plugins.h"\
+	".\database.h"\
+	".\dblists.h"\
+	
+
+.\encrypt.c : \
+	"..\..\include\m_plugins.h"\
+	".\database.h"\
+	
+
+.\init.c : \
+	"..\..\include\m_plugins.h"\
+	".\database.h"\
+	
+
+.\utf.c : \
+	"..\..\include\m_plugins.h"\
+	".\database.h"\
+	

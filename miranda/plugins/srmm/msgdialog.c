@@ -455,15 +455,17 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 HDC hdc;
                 SIZE textSize;
                 TCHAR buf[256];
+					 HFONT hFont;
 
                 GetWindowText(h, buf, sizeof(buf));
 
                 hdc = GetDC(h);
-                SelectObject(hdc, (HFONT) SendMessage(GetDlgItem(hwndDlg, IDOK), WM_GETFONT, 0, 0));
+                hFont = SelectObject(hdc, (HFONT) SendMessage(GetDlgItem(hwndDlg, IDOK), WM_GETFONT, 0, 0));
                 GetTextExtentPoint32(hdc, buf, lstrlen(buf), &textSize);
                 urc->rcItem.right = urc->rcItem.left + textSize.cx + 10;
                 if ((g_dat->flags&SMF_SHOWBTNS) && urc->rcItem.right > urc->dlgNewSize.cx - dat->nLabelRight)
                     urc->rcItem.right = urc->dlgNewSize.cx - dat->nLabelRight;
+					 SelectObject(hdc, hFont);
                 ReleaseDC(h, hdc);
             }
         }
@@ -1395,27 +1397,27 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 				else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_AVATAR) && dat->avatarPic && (g_dat->flags&SMF_AVATAR)) {
 					BITMAP bminfo;
-					HPEN hPen;
+					HPEN hPen, hOldPen;
 
-                    hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
-                    SelectObject(dis->hDC, hPen);
-                    Rectangle(dis->hDC, 0, 0, dat->avatarWidth, dat->avatarHeight);
-                    DeleteObject(hPen);
+               hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
+               hOldPen = SelectObject(dis->hDC, hPen);
+               Rectangle(dis->hDC, 0, 0, dat->avatarWidth, dat->avatarHeight);
+					SelectObject(dis->hDC,hOldPen);
+               DeleteObject(hPen);
 					GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
 					{
 						HDC hdcMem = CreateCompatibleDC(dis->hDC);
-                        HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, dat->avatarPic);
-						
+                  HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, dat->avatarPic);
 						{
 							double aspect = 0, w = 0;
 
 							aspect = (double)dat->limitAvatarH / (double)bminfo.bmHeight;
 							w = (double)bminfo.bmWidth * aspect; 
 							SetStretchBltMode(dis->hDC, HALFTONE);
-                            StretchBlt(dis->hDC, 1, 1, dat->avatarWidth-2, dat->avatarHeight-2, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                     StretchBlt(dis->hDC, 1, 1, dat->avatarWidth-2, dat->avatarHeight-2, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
 						}
-						DeleteObject(hbmMem);
-                        DeleteDC(hdcMem);
+						SelectObject(hdcMem,hbmMem);
+                  DeleteDC(hdcMem);
 					}
 				}
 				return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
