@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_UTILS_H__
 #define M_UTILS_H__ 1
 
+#include <tchar.h>
+
 //this entire module is v0.1.0.1+
 //this module cannot be redefined by a plugin, because it's not useful for it
 //to be possible
@@ -177,7 +179,7 @@ __inline static int WindowList_BroadcastAsync(HANDLE hList,UINT message,WPARAM w
 /***************************** Hyperlink windows ********************************/
 
 //there aren't any services here, because you don't need them.
-#define WNDCLASS_HYPERLINK   "Hyperlink"
+#define WNDCLASS_HYPERLINK   _T("Hyperlink")
 //the control will obey the SS_LEFT (0), SS_CENTER (1), and SS_RIGHT (2) styles
 //the control will send STN_CLICKED via WM_COMMAND when the link itself is clicked
 
@@ -239,7 +241,7 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 
 /************************ Colour Picker Control (0.1.2.1+) **********************/
 
-#define WNDCLASS_COLOURPICKER  "ColourPicker"
+#define WNDCLASS_COLOURPICKER  _T("ColourPicker")
 
 #define CPM_SETCOLOUR          0x1000	  //lParam=new colour
 #define CPM_GETCOLOUR          0x1001	  //returns colour
@@ -301,6 +303,17 @@ static __inline int mir_snprintf(char *buffer, size_t count, const char* fmt, ..
 	return len;
 }
 
+static __inline int mir_sntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt, ...) {
+	va_list va;
+	int len;
+
+	va_start(va, fmt);
+	len = _vsntprintf(buffer, count-1, fmt, va);
+	va_end(va);
+	buffer[count-1] = 0;
+	return len;
+}
+
 static __inline int mir_vsnprintf(char *buffer, size_t count, const char* fmt, va_list va) {
 	int len;
 
@@ -310,5 +323,3 @@ static __inline int mir_vsnprintf(char *buffer, size_t count, const char* fmt, v
 }
 
 #endif // M_UTILS_H__
-
-
