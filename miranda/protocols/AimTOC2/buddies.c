@@ -197,19 +197,15 @@ void aim_buddy_delete(HANDLE hContact)
 	DBGetContactSetting(hContact,AIM_PROTO, AIM_KEY_UN, &dbv);
 	if(dbv.pszVal&&_strcmpi(dbv.pszVal,"temp"))
 	{
-	
-		strcpy(mbuf, "toc2_remove_buddy ");
-		strcat(mbuf,dbv.pszVal);
+		char sn[32];
+		mir_snprintf(sn, sizeof(sn),dbv.pszVal);
 		DBFreeVariant(&dbv);
-		strcat(mbuf," ");
 		DBGetContactSetting(hContact,AIM_PROTO, "Group", &dbv);
 		if(dbv.pszVal)
 		{
-			strcat(mbuf,"\"");
-			strcat(mbuf,dbv.pszVal);
-			strcat(mbuf,"\"");
-			DBFreeVariant(&dbv);
+			mir_snprintf(mbuf, sizeof(mbuf),"toc2_remove_buddy %s \"%s\"",sn,dbv.pszVal);
 			aim_toc_sflapsend(mbuf, -1, TYPE_DATA);
+			DBFreeVariant(&dbv);
 		}
 		else
 		{
@@ -329,7 +325,8 @@ void aim_buddy_parseconfig(char *config)
 	char *c="\0", group[256];
     HANDLE hContact;
     TList *buddies = NULL;
-	HANDLE tempContact = aim_buddy_get("temp", 1, 1, 1, 0);
+	HANDLE tempContact;
+	tempContact = aim_buddy_get("temp", 1, 1, 1, 0);
     if (!config)
         return;
         LOG(LOG_DEBUG, "Parsing configuation from server");
@@ -351,7 +348,6 @@ void aim_buddy_parseconfig(char *config)
 					break;
 				}
 				else if (*c == 'g') {
-					//c[1]='\n';
 					c[strlen(c)]='\0';
                     mir_snprintf(group, sizeof(group), c + 2);
                     LOG(LOG_DEBUG, "Parsed group from server config: (%s)", group);
@@ -379,21 +375,18 @@ void aim_buddy_parseconfig(char *config)
                         }
 						else
 						{	
-							if(DBGetContactSettingByte(tempContact, AIM_PROTO, nm, 0)!=1)
+							DBVARIANT dbv;
+							if(DBGetContactSetting(tempContact, AIM_PROTO, nm, &dbv))
 							{
-								DBWriteContactSettingByte(tempContact,AIM_PROTO,nm,1);
+								DBWriteContactSettingString(tempContact,AIM_PROTO,nm,group);
 							}
-							else
+							else if(_strcmpi(dbv.pszVal,group)!=0)
 							{
 								char mbuf[MSG_LEN];
-								strcpy(mbuf, "toc2_remove_buddy ");
-								strcat(mbuf,nm);
-								strcat(mbuf," ");
-								strcat(mbuf,"\"");
-								strcat(mbuf,group);
-								strcat(mbuf,"\"");
+								mir_snprintf(mbuf, sizeof(mbuf),"toc2_remove_buddy %s \"%s\"",nm,group);
 								aim_toc_sflapsend(mbuf, -1, TYPE_DATA);
 							}
+							DBFreeVariant(&dbv);
 						}
                     }
                 }
@@ -425,32 +418,6 @@ void aim_buddy_parseconfig(char *config)
                     DBWriteContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SM, m);
                 }
 			} while ((c=strtok(NULL, "\n")));
-        }
-        {                       // Update new contacts on the server
-            if (buddies) {
-                TList *n = buddies;
-                char *un;
-
-                char mbuf[MSG_LEN * 2];
-                int buflen = 0;
-
-                strcpy(mbuf, "toc2_new_buddies ");
-                buflen = strlen(mbuf);
-                while (n) {
-                    un = (char *) n->data;
-                    if (un && strlen(un) && (buflen + strlen(un) + 1 < MSG_LEN * 2)) {
-                        buflen = strlen(mbuf);
-                    }
-                    if (un)
-                        free((char *) n->data);
-                    n = n->next;
-                }
-                if (strlen(mbuf) > strlen("toc2_new_buddies ")) {
-                    LOG(LOG_DEBUG, "Updating new contacts on the server");
-                    aim_toc_sflapsend(mbuf, -1, TYPE_DATA);
-                }
-                tlist_free(buddies);
-            }
         }
         aim_buddy_updateconfig(1);
 		CallService(MS_DB_CONTACT_DELETE, (WPARAM) tempContact, 0);

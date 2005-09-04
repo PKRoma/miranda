@@ -185,16 +185,9 @@ static int aim_addtolist(WPARAM wParam, LPARAM lParam)
     PROTOSEARCHRESULT *psr = (PROTOSEARCHRESULT *) lParam;
     if (aimStatus == ID_STATUS_OFFLINE)
         return 0;
-
-	strcpy(buf, "toc2_new_buddies {g:");
-	strcat(buf,"Miranda Merged");
-	strcat(buf,"\n");
-	strcat(buf,"b:");
-	strcat(buf,psr->nick);
-	strcat(buf,"\n}");
+	mir_snprintf(buf, sizeof(buf),"toc2_new_buddies {g:Miranda Merged\nb:%s\n}",psr->nick);
 	aim_toc_sflapsend(buf, -1, TYPE_DATA);
-	strcpy(buf, "toc_get_status ");
-	strcat(buf,psr->nick);
+	mir_snprintf(buf, sizeof(buf),"toc_get_status %s",psr->nick);
 	aim_toc_sflapsend(buf, -1, TYPE_DATA);
     return (int) aim_buddy_get(psr->nick, 1, wParam & PALF_TEMPORARY ? 0 : 1, 0,NULL);
 }
@@ -321,26 +314,19 @@ static int SyncBuddyWithServer(WPARAM wParam, LPARAM lParam)
 	char sn[33],group[33];
 	DBVARIANT dbv;
 	DBGetContactSetting((HANDLE)wParam, AIM_PROTO, AIM_KEY_UN, &dbv);
-	strcpy(sn,dbv.pszVal);
+	mir_snprintf(sn,sizeof(sn),dbv.pszVal);
 	DBFreeVariant(&dbv);
 	DBGetContactSetting((HANDLE)wParam, "CList", "Group", &dbv);
 	if(dbv.pszVal)
 	{
-		strcpy(group,dbv.pszVal);
+		mir_snprintf(group, sizeof(group),dbv.pszVal);
 	}
 	else
 	{
-		strcpy(group,"Miranda Merged");
+		mir_snprintf(group, sizeof(group),"Miranda Merged");
 	}
 	DBFreeVariant(&dbv);
-	strcpy(buf,"toc2_new_buddies {");
-	strcat(buf,"g:");
-	strcat(buf,group);
-	strcat(buf,"\n");
-	strcat(buf,"b:");
-	strcat(buf,sn);
-	strcat(buf,"\n");
-	strcat(buf,"}");
+	mir_snprintf(buf, sizeof(buf),"toc2_new_buddies {g:%s\nb:%s\n}",group,sn);
 	aim_toc_sflapsend(buf, -1, TYPE_DATA);
 	return 0;
 }
@@ -428,9 +414,18 @@ static int UserIsTyping(WPARAM wParam, LPARAM lParam)
 	DBGetContactSetting((HANDLE)wParam, AIM_PROTO, AIM_KEY_UN, &dbv);
 	if(dbv.pszVal)
 	{
-		mir_snprintf(buf, sizeof(buf), "toc2_client_event %s 2", dbv.pszVal);
-		aim_toc_sflapsend(buf, -1, TYPE_DATA);
-		DBFreeVariant(&dbv);
+		if(lParam==PROTOTYPE_SELFTYPING_ON)
+		{
+			mir_snprintf(buf, sizeof(buf), "toc2_client_event %s 2", dbv.pszVal);
+			aim_toc_sflapsend(buf, -1, TYPE_DATA);
+			DBFreeVariant(&dbv);
+		}
+		else if(lParam==PROTOTYPE_SELFTYPING_OFF)
+		{
+			mir_snprintf(buf, sizeof(buf), "toc2_client_event %s 0", dbv.pszVal);
+			aim_toc_sflapsend(buf, -1, TYPE_DATA);
+			DBFreeVariant(&dbv);
+		}
 	}
 	return 0;
 }
@@ -447,6 +442,19 @@ static int ShowProfile(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
+/*static int GetAway(WPARAM wParam, LPARAM lParam)
+{
+	char buf[256];
+	DBVARIANT dbv;
+	DBGetContactSetting((HANDLE)wParam, AIM_PROTO, AIM_KEY_UN, &dbv);
+	if(dbv.pszVal)
+	{
+		mir_snprintf(buf, sizeof(buf), "toc2_send_im %s \"\"", dbv.pszVal, "test");
+		aim_toc_sflapsend(buf, -1, TYPE_DATA);
+		DBFreeVariant(&dbv);
+	}
+	return 0;
+}*/
 void aim_services_register(HINSTANCE hInstance)
 {
 	CLISTMENUITEM mi,mi2,mi3;
@@ -509,6 +517,7 @@ void aim_services_register(HINSTANCE hInstance)
 		memset( &mi2, 0, sizeof( mi2 ));
 		mi2.pszPopupName = "AIM";
 		mi2.cbSize = sizeof( mi2 );
+		mi2.popupPosition = 500090000;
 		mi2.position = 500090000;
 		mi2.hIcon = LoadIcon(hInstance,MAKEINTRESOURCE( IDI_AIMXP ));
 		mi2.pszName = Translate( "Sync Buddy List with Server-side list" );
@@ -528,4 +537,17 @@ void aim_services_register(HINSTANCE hInstance)
     mi3.pszService = "AIM/ShowProfile";
 	mi3.flags= CMIF_NOTOFFLINE;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi3 );
+/*
+	CreateServiceFunction( "AIM/GetAway", GetAway );
+	memset( &mi4, 0, sizeof( mi4 ));
+	mi4.pszPopupName = "Read Away Message";
+    mi4.cbSize = sizeof( mi4 );
+	mi4.popupPosition = -2000017000;
+	mi4.position = -2000017000;
+    mi4.hIcon = LoadIcon(hInstance,MAKEINTRESOURCE( IDI_GSHOW ));
+	mi4.pszContactOwner = AIM_PROTO;
+    mi4.pszName = Translate( "Read Away Message" );
+    mi4.pszService = "AIM/GetAway";
+	mi4.flags= CMIF_NOTOFFLINE;
+	CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi4 );*/
 }

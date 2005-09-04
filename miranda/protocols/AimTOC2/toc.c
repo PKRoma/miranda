@@ -446,15 +446,27 @@ int aim_toc_parse(char *buf, int len)
 	else if (!_strcmpi(c, "CLIENT_EVENT2"))
 	{
 		char* sn= strtok(NULL, ":");
+		char* type= strtok(NULL, ":");
 		HANDLE hContact=aim_buddy_get(sn, 0, 0, 0, NULL);
-		CallService(MS_PROTO_CONTACTISTYPING,(WPARAM)hContact,5);
+		if(!_strcmpi(type,"0"))//Deleted all text
+		{
+			CallService(MS_PROTO_CONTACTISTYPING,(WPARAM)hContact,(WPARAM)PROTOTYPE_CONTACTTYPING_OFF);
+		}
+		else if(!_strcmpi(type,"1"))//Has entered Text
+		{
+			CallService(MS_PROTO_CONTACTISTYPING,(WPARAM)hContact,PROTOTYPE_CONTACTTYPING_INFINITE);
+		}
+		else if(!_strcmpi(type,"2"))//Is typing
+		{
+			CallService(MS_PROTO_CONTACTISTYPING,(WPARAM)hContact,(LPARAM)60);
+		}
 	}
     // EVILED:<new evil>:<name of eviler, blank if anonymous>
     else if (!_strcmpi(c, "EVILED")) {
         int level;
         char *sn;
 
-        LOG(LOG_DEBUG, "Parsing EVILED");
+        
         sscanf(strtok(NULL, ":"), "%d", &level);
         sn = strtok(NULL, ":");
         LOG(LOG_DEBUG, "You have been eviled (%d%%)", level);

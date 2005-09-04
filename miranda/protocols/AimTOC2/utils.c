@@ -57,7 +57,6 @@ void aim_util_broadcaststatus(int s)
     ProtoBroadcastAck(AIM_PROTO, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, aimStatus);
     LOG(LOG_DEBUG, "Broadcasted new status (%s)", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, aimStatus, 0));
     aim_gchat_updatestatus();
-	aim_synclist_updatemenu();
     aim_password_updatemenu();
 }
 

@@ -48,7 +48,7 @@ IDI_GDELETE             ICON                    "icos\\delete.ico"
 // Dialog
 //
 
-IDD_OPT_AIM DIALOGEX 0, 0, 280, 265
+IDD_OPT_AIM DIALOGEX 0, 0, 280, 239
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -62,28 +62,28 @@ BEGIN
     EDITTEXT        IDC_DN,84,59,85,12,ES_AUTOHSCROLL
     CONTROL         "Lost AIM Password?",IDC_LOSTLINK,"Hyperlink",WS_TABSTOP,
                     175,42,90,8
-    GROUPBOX        "Advanced Configuration",IDC_STDSTATIC,4,89,273,130
+    GROUPBOX        "Advanced Configuration",IDC_STDSTATIC,4,86,275,148
     LTEXT           "Login Server:",IDC_STDLSERVER,12,104,55,8
     EDITTEXT        IDC_TOCSERVER,68,102,97,12,ES_AUTOHSCROLL
     LTEXT           "Port:",IDC_STDLPORT,173,104,25,8
     EDITTEXT        IDC_TOCPORT,199,102,29,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Reset",IDC_RESETSERVER,235,102,34,12
-    LTEXT           "Note: Use port 0 to connect on a random port",
-                    IDC_STATIC,12,119,255,8
+    LTEXT           "Note: Use port 0 to connect on a random port\r\nNote: Profiles will only work on the default server and port.",
+                    IDC_STATIC,12,119,255,18
     CONTROL         "Show tooltip messages",IDC_SHOWERRORS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,133,255,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,138,255,10
     CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,146,255,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,151,255,10
     CONTROL         "Show change password menu item",IDC_PASSWORD,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,159,255,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,164,255,10
     CONTROL         "Ignore group chat join requests",IDC_IGNOREJOIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,172,211,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,177,211,10
     CONTROL         "Show join group chat main menu item",IDC_SHOWJOINMENU,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,185,255,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,190,255,10
     CTEXT           "A restart of Miranda IM is required for changes to take effect.",
-                    IDC_RELOADREQD,5,235,260,12,NOT WS_VISIBLE
+                    IDC_RELOADREQD,9,217,260,12,NOT WS_VISIBLE
     CONTROL         "Show sync buddy list menu item",IDC_SHOWSYNCMENU,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,198,255,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,203,255,10
 END
 
 IDD_OPT_AIMCONTACTS DIALOGEX 0, 0, 280, 81
@@ -341,7 +341,7 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_OPT_AIM, DIALOG
     BEGIN
-        BOTTOMMARGIN, 203
+        BOTTOMMARGIN, 177
     END
 END
 #endif    // APSTUDIO_INVOKED
