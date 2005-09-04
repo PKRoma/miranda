@@ -154,7 +154,15 @@ typedef struct {
 #define CLCIIF_BELOWCONTACTS  2     //put it at the bottom
 #define CLCIIF_CHECKBOX       0x40  //give this item a check box
 #define CLCIIF_GROUPFONT      0x80  //draw the item using FONTID_GROUPS
-#define CLM_ADDINFOITEM    (CLM_FIRST+48)   //lParam=&cii, returns hItem
+
+#define CLM_ADDINFOITEMA    (CLM_FIRST+48)   //lParam=&cii, returns hItem
+#define CLM_ADDINFOITEMW    (CLM_FIRST+53)   //lParam=&cii, returns hItem
+#if defined( _UNICODE )
+	#define CLM_ADDINFOITEM CLM_ADDINFOITEMW
+#else
+	#define CLM_ADDINFOITEM CLM_ADDINFOITEMA
+#endif
+
 	//the order of info items is never changed, so make sure you add them in the
 	//  order you want them to remain
 #define CLCIT_INVALID    -1
