@@ -51,6 +51,8 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 
 // put stuff that's not apart of any SDKs but is used nonetheless
 
+#define SIZEOF(X) (sizeof(X)/sizeof(X[0]))
+
 //mii was extended for NT5/Win98, so need the old length for some stuff
 #define MENUITEMINFO_V4_SIZE (offsetof(MENUITEMINFO,cch)+sizeof((*((MENUITEMINFO*)0)).cch))
 
