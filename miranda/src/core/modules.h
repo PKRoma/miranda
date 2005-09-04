@@ -89,7 +89,7 @@ int SetHookDefaultForHookableEvent(HANDLE hEvent, MIRANDAHOOK pfnHook);
 Adds a new hook to the chain 'name', to be called when the hook owner calls
 NotifyEventHooks(). Returns NULL if name is not a valid event or a handle
 referring to the hook otherwise. Note that debug builds will warn with a
-MessageBox if a hook is attempted on an unknown event. All hooks will be
+MessageBoxA if a hook is attempted on an unknown event. All hooks will be
 automatically destroyed when their parent event is destroyed or the programme
 ends, but can be unhooked earlier using UnhookEvent(). hookProc() is defined as
   int HookProc(WPARAM wParam,LPARAM lParam)

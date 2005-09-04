@@ -350,9 +350,9 @@ HANDLE HookEvent(const char *name,MIRANDAHOOK hookProc)
 	hookId=FindHookByName(name);
 	if(hookId==-1) {
 #ifdef _DEBUG
-		OutputDebugString("Attempt to hook: \t");
-		OutputDebugString(name);
-		OutputDebugString("\n");
+		OutputDebugStringA("Attempt to hook: \t");
+		OutputDebugStringA(name);
+		OutputDebugStringA("\n");
 #endif
 		LeaveCriticalSection(&csHooks);
 		return NULL;
@@ -375,7 +375,7 @@ HANDLE HookEventMessage(const char *name,HWND hwnd,UINT message)
 	hookId=FindHookByName(name);
 	if(hookId==-1) {
 #ifdef _DEBUG
-		MessageBox(NULL,"Attempt to hook non-existant event",name,MB_OK);
+		MessageBoxA(NULL,"Attempt to hook non-existant event",name,MB_OK);
 #endif
 		LeaveCriticalSection(&csHooks);
 		return NULL;
@@ -483,7 +483,7 @@ HANDLE CreateServiceFunction(const char *name,MIRANDASERVICE serviceProc)
 	int shift = 1;
 #ifdef _DEBUG
 	if (name==NULL) { 
-		MessageBox(0,"Someone tried to create a NULL'd service, see call stack for more info","",0);
+		MessageBoxA(0,"Someone tried to create a NULL'd service, see call stack for more info","",0);
 		DebugBreak();
 		return NULL;
 	}
@@ -537,7 +537,7 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 
 #ifdef _DEBUG
 	if (name==NULL) {
-		MessageBox(0,"Someone tried to CallService(NULL,..) see stack trace for details","",0);
+		MessageBoxA(0,"Someone tried to CallService(NULL,..) see stack trace for details","",0);
 		DebugBreak();
 		return CALLSERVICE_NOTFOUND;
 	}
@@ -550,10 +550,10 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 	if(pService==NULL) {
 		LeaveCriticalSection(&csServices);
 #ifdef _DEBUG
-		//MessageBox(NULL,"Attempt to call non-existant service",name,MB_OK);
-		OutputDebugString("Missing service called: \t");
-		OutputDebugString(name);
-		OutputDebugString("\n");
+		//MessageBoxA(NULL,"Attempt to call non-existant service",name,MB_OK);
+		OutputDebugStringA("Missing service called: \t");
+		OutputDebugStringA(name);
+		OutputDebugStringA("\n");
 #endif
 		return CALLSERVICE_NOTFOUND;
 	}

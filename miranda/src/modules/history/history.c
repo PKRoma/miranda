@@ -189,8 +189,8 @@ static void FillHistoryThread(THistoryThread *hInfo)
 		GetObjectDescription(&dbei,SUMMARY,str,sizeof(str));
 		if(str[0]) {
 			CallService(MS_DB_TIME_TIMESTAMPTOSTRING,dbei.timestamp,(LPARAM)&dbtts);
-			wsprintf(eventText,"%s: %s",strdatetime,str);
-			i=SendMessage(hwndList,LB_ADDSTRING,0,(LPARAM)eventText);
+			wsprintfA(eventText,"%s: %s",strdatetime,str);
+			i=SendMessageA(hwndList,LB_ADDSTRING,0,(LPARAM)eventText);
 			SendMessage(hwndList,LB_SETITEMDATA,i,(LPARAM)hDbEvent);
 		}
 		hDbEvent=(HANDLE)CallService(MS_DB_EVENT_FINDPREV,(WPARAM)hDbEvent,0);
@@ -199,7 +199,7 @@ static void FillHistoryThread(THistoryThread *hInfo)
 
 	SendDlgItemMessage(hInfo->hwnd,IDC_LIST,LB_SETCURSEL,0,0);
 	SendMessage(hInfo->hwnd,WM_COMMAND,MAKEWPARAM(IDC_LIST,LBN_SELCHANGE),0);
-    EnableWindow(GetDlgItem(hInfo->hwnd, IDC_LIST), TRUE);
+	EnableWindow(GetDlgItem(hInfo->hwnd, IDC_LIST), TRUE);
 	free(hInfo);
 }
 
@@ -236,7 +236,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			Utils_RestoreWindowPosition(hwndDlg,hContact,"History","");
 			contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0);
 			mir_snprintf(str,sizeof(str),Translate("History for %s"),contactName);
-			SetWindowText(hwndDlg,str);
+			SetWindowTextA(hwndDlg,str);
 			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_HISTORY)));
 			SendMessage(hwndDlg,DM_HREBUILD,0,0);
 			return TRUE;
@@ -244,7 +244,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		case DM_HREBUILD:
 		{
 			THistoryThread *hInfo = (THistoryThread*)malloc(sizeof(THistoryThread));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_LIST), FALSE);
+         EnableWindow(GetDlgItem(hwndDlg, IDC_LIST), FALSE);
 			hInfo->hContact = hContact;
 			hInfo->hwnd = hwndDlg;			
 			forkthread(FillHistoryThread, 0, hInfo);
@@ -267,7 +267,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			urd.cbSize=sizeof(urd);
 			urd.hwndDlg=hwndDlg;
 			urd.hInstance=GetModuleHandle(NULL);
-			urd.lpTemplate=MAKEINTRESOURCE(IDD_HISTORY);
+			urd.lpTemplate=MAKEINTRESOURCEA(IDD_HISTORY);
 			urd.lParam=(LPARAM)NULL;
 			urd.pfnResizer=HistoryDlgResizer;
 			CallService(MS_UTILS_RESIZEDIALOG,0,(LPARAM)&urd);
@@ -289,7 +289,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					int index;
 					index = SendDlgItemMessage(hwndDlg,IDC_LIST,LB_GETCURSEL,0,0);
 					if(index==LB_ERR) break;
-					if (MessageBox(hwndDlg,Translate("Are you sure you want to delete this history item?"),Translate("Delete History"),MB_YESNO|MB_ICONQUESTION)==IDYES) {
+					if (MessageBoxA(hwndDlg,Translate("Are you sure you want to delete this history item?"),Translate("Delete History"),MB_YESNO|MB_ICONQUESTION)==IDYES) {
 						hDbevent = (HANDLE)SendDlgItemMessage(hwndDlg,IDC_LIST,LB_GETITEMDATA,index,0);
 						CallService(MS_DB_EVENT_DELETE,(WPARAM)hContact,(LPARAM)hDbevent);
 						SendMessage(hwndDlg,DM_HREBUILD,0,0);
@@ -314,7 +314,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
 						GetObjectDescription(&dbei,DETAIL,str,sizeof(str));
 						free(dbei.pBlob);
-						if(str[0]) SetDlgItemText(hwndDlg, IDC_EDIT, str);
+						if(str[0]) SetDlgItemTextA(hwndDlg, IDC_EDIT, str);
 					}
 					return TRUE;
 			}
@@ -351,7 +351,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
 				GetObjectDescription(&dbei,DETAIL,str,sizeof(str));
 				if(str[0]) {
-					CharUpperBuff(str,lstrlen(str));
+					CharUpperBuffA(str,lstrlenA(str));
 					if(strstr(str,(const char*)lParam)!=NULL) {
 						SendDlgItemMessage(hwndDlg,IDC_LIST,LB_SETCURSEL,index,0);
 						SendMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_LIST,LBN_SELCHANGE),0);
@@ -379,7 +379,7 @@ static BOOL CALLBACK DlgProcHistoryFind(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			{
 				case IDOK://find Next
 				{	HWND hwndParent;
-					char str[128];
+					TCHAR str[128];
 
 					hwndParent=(HWND)GetWindowLong(hwndDlg, GWL_USERDATA);
 					GetDlgItemText(hwndDlg, IDC_FINDWHAT, str, sizeof(str));

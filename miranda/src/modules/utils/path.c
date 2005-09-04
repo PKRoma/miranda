@@ -73,7 +73,7 @@ static int pathToAbsolute(WPARAM wParam, LPARAM lParam) {
 int InitPathUtils(void)
 {
 	char *p = 0;
-	GetModuleFileName(GetModuleHandle(NULL), szMirandaPath, sizeof(szMirandaPath));
+	GetModuleFileNameA(GetModuleHandle(NULL), szMirandaPath, sizeof(szMirandaPath));
 	p=strrchr(szMirandaPath,'\\');
 	if (p&&p+1) *(p+1)=0;
     strlwr(szMirandaPath);

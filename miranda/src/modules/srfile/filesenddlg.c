@@ -39,24 +39,24 @@ static void SetFileListAndSizeControls(HWND hwndDlg,struct FileDlgData *dat)
 		}
 	}
 	GetSensiblyFormattedSize(totalSize,str,sizeof(str),0,1,NULL);
-	SetDlgItemText(hwndDlg,IDC_TOTALSIZE,str);
+	SetDlgItemTextA(hwndDlg,IDC_TOTALSIZE,str);
 	if(i>1) {
 		char szFormat[32];
 		if(fileCount && dirCount) {
-			wsprintf(szFormat,"%s, %s",Translate(fileCount==1?"%d file":"%d files"),Translate(dirCount==1?"%d directory":"%d directories"));
-			wsprintf(str,szFormat,fileCount,dirCount);
+			wsprintfA(szFormat,"%s, %s",Translate(fileCount==1?"%d file":"%d files"),Translate(dirCount==1?"%d directory":"%d directories"));
+			wsprintfA(str,szFormat,fileCount,dirCount);
 		}
 		else if(fileCount) {
-			lstrcpy(szFormat,Translate("%d files"));
-			wsprintf(str,szFormat,fileCount);
+			lstrcpyA(szFormat,Translate("%d files"));
+			wsprintfA(str,szFormat,fileCount);
 		}
 		else {
-			lstrcpy(szFormat,Translate("%d directories"));
-			wsprintf(str,szFormat,dirCount);
+			lstrcpyA(szFormat,Translate("%d directories"));
+			wsprintfA(str,szFormat,dirCount);
 		}
-		SetDlgItemText(hwndDlg,IDC_FILE,str);
+		SetDlgItemTextA(hwndDlg,IDC_FILE,str);
 	}
-	else SetDlgItemText(hwndDlg,IDC_FILE,dat->files[0]);
+	else SetDlgItemTextA(hwndDlg,IDC_FILE,dat->files[0]);
 }
 
 static void FilenameToFileList(HWND hwndDlg, struct FileDlgData *dat, const char *buf)
@@ -68,11 +68,11 @@ static void FilenameToFileList(HWND hwndDlg, struct FileDlgData *dat, const char
 	FreeFilesMatrix(&dat->files);
 
 	// Get the file attributes of selection
-	dwFileAttributes = GetFileAttributes(buf);
+	dwFileAttributes = GetFileAttributesA(buf);
 	if (dwFileAttributes != INVALID_FILE_ATTRIBUTES)
 	{
 		// Check if the selection is a directory or a file
-		if (GetFileAttributes(buf) & FILE_ATTRIBUTE_DIRECTORY)
+		if (GetFileAttributesA(buf) & FILE_ATTRIBUTE_DIRECTORY)
 		{
 			char *pBuf;
 			int nNumberOfFiles = 0;
@@ -83,13 +83,13 @@ static void FilenameToFileList(HWND hwndDlg, struct FileDlgData *dat, const char
 			// NULL separated list of all files
 
 			// fileOffset is the offset to the first file.
-			fileOffset = lstrlen(buf) + 1;
+			fileOffset = lstrlenA(buf) + 1;
 
 			// Count number of files
 			pBuf = (char*)buf + fileOffset;
 			while (*pBuf)
 			{
-				pBuf += lstrlen(pBuf) + 1;
+				pBuf += lstrlenA(pBuf) + 1;
 				nNumberOfFiles++;
 			}
 
@@ -102,14 +102,14 @@ static void FilenameToFileList(HWND hwndDlg, struct FileDlgData *dat, const char
 			while(*pBuf)
 			{
 				// Allocate space for path+filename
-				dat->files[nTemp] = malloc(fileOffset + lstrlen(pBuf) + 1);
+				dat->files[nTemp] = malloc(fileOffset + lstrlenA(pBuf) + 1);
 
 				// Add path to filename and copy into array
 				CopyMemory(dat->files[nTemp], buf, fileOffset - 1);
 				dat->files[nTemp][fileOffset-1] = '\\';
 				strcpy(dat->files[nTemp] + fileOffset - (buf[fileOffset-2]=='\\'?1:0), pBuf);
 				// Move pointers to next file...
-				pBuf += lstrlen(pBuf) + 1;
+				pBuf += lstrlenA(pBuf) + 1;
 				nTemp++;
 			}
 			// Teminate array
@@ -133,24 +133,24 @@ static void FilenameToFileList(HWND hwndDlg, struct FileDlgData *dat, const char
 void __cdecl ChooseFilesThread(HWND hwndDlg)
 {
 	char *buf;
-	OPENFILENAME ofn={0};
+	OPENFILENAMEA ofn={0};
 	char filter[128],*pfilter;
 
 	buf=(char*)malloc(32767);
 	buf[0]=0;
 	ofn.lStructSize=OPENFILENAME_SIZE_VERSION_400;
 	ofn.hwndOwner=hwndDlg;
-	lstrcpy(filter,Translate("All Files"));
-	lstrcat(filter," (*)");
+	lstrcpyA(filter,Translate("All Files"));
+	lstrcatA(filter," (*)");
 	pfilter=filter+strlen(filter)+1;
-	lstrcpy(pfilter,"*");
+	lstrcpyA(pfilter,"*");
 	pfilter=filter+strlen(filter)+1;
 	pfilter[0]='\0';
 	ofn.lpstrFilter=filter;
 	ofn.lpstrFile=buf;
 	ofn.nMaxFile=32767;
 	ofn.Flags=OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_HIDEREADONLY;
-	if(GetOpenFileName(&ofn))
+	if(GetOpenFileNameA(&ofn))
 		PostMessage(hwndDlg,M_FILECHOOSEDONE,0,(LPARAM)buf);
 	else {
 		free(buf);
@@ -233,7 +233,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			}
 
 			contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-			SetDlgItemText(hwndDlg,IDC_TO,contactName);
+			SetDlgItemTextA(hwndDlg,IDC_TO,contactName);
 			{
 				char *szProto;
 
@@ -261,7 +261,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 								break;
 						}
 					}
-					SetDlgItemText(hwndDlg,IDC_NAME,hasName?buf:contactName);
+					SetDlgItemTextA(hwndDlg,IDC_NAME,hasName?buf:contactName);
 				}
 			}
 			if(fsd->ppFiles==NULL) {

@@ -62,10 +62,10 @@ void SaveColumnSizes(HWND hwndResults)
 		}
 	}
 	for(i=0;i<=COLUMNID_HANDLE;i++) {
-		wsprintf(szSetting,"ColOrder%d",i);
+		wsprintfA(szSetting,"ColOrder%d",i);
 		DBWriteContactSettingByte(NULL,"FindAdd",szSetting,(BYTE)columnOrder[i]);
 		if(i>=columnCount) continue;
-		wsprintf(szSetting,"ColWidth%d",i);
+		wsprintfA(szSetting,"ColWidth%d",i);
 		DBWriteContactSettingWord(NULL,"FindAdd",szSetting,(WORD)ListView_GetColumnWidth(hwndResults,i));
 	}
 	DBWriteContactSettingByte(NULL,"FindAdd","SortColumn",(BYTE)dat->iLastColumnSortIndex);
@@ -83,12 +83,12 @@ void LoadColumnSizes(HWND hwndResults,const char *szProto)
 	int i;
 	struct FindAddDlgData *dat;
 	int colOrdersValid;
-	LVCOLUMN lvc;
+	LVCOLUMNA lvc;
 
 	defaultColumnSizes[COLUMNID_PROTO]=GetSystemMetrics(SM_CXSMICON)+4;
 	dat=(struct FindAddDlgData*)GetWindowLong(GetParent(hwndResults),GWL_USERDATA);
 
-	if(szProto && !lstrcmp(szProto,"ICQ"))
+	if(szProto && !lstrcmpA(szProto,"ICQ"))
 		columnCount=COLUMNID_HANDLE+1;
 	else
 		columnCount=COLUMNID_EMAIL+1;
@@ -102,11 +102,11 @@ void LoadColumnSizes(HWND hwndResults,const char *szProto)
 			else if(i==COLUMNID_HANDLE)
 				lvc.pszText=(char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0);
 			else lvc.mask&=~LVCF_TEXT;
-			wsprintf(szSetting,"ColWidth%d",i);
+			wsprintfA(szSetting,"ColWidth%d",i);
 			lvc.cx=DBGetContactSettingWord(NULL,"FindAdd",szSetting,defaultColumnSizes[i]);
-			ListView_InsertColumn(hwndResults, i, &lvc);
+			SendMessageA( hwndResults, LVM_INSERTCOLUMNA, i, (LPARAM)&lvc );
 		}
-		wsprintf(szSetting,"ColOrder%d",i);
+		wsprintfA(szSetting,"ColOrder%d",i);
 		columnOrder[i]=DBGetContactSettingByte(NULL,"FindAdd",szSetting,-1);
 		if(columnOrder[i]==-1) colOrdersValid=0;
 		if(columnOrder[i]==COLUMNID_HANDLE) handleColumnAfter=i?columnOrder[i-1]:-1;
@@ -145,24 +145,24 @@ int CALLBACK SearchResultsCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lPa
 	switch(sortCol)
 	{
 	case COLUMNID_PROTO:
-		return lstrcmp(lsr1->szProto, lsr2->szProto)*sortMultiplier;
+		return lstrcmpA(lsr1->szProto, lsr2->szProto)*sortMultiplier;
 	case COLUMNID_NICK:
-		return lstrcmpi(lsr1->psr.nick, lsr2->psr.nick)*sortMultiplier;
+		return lstrcmpiA(lsr1->psr.nick, lsr2->psr.nick)*sortMultiplier;
 	case COLUMNID_FIRST:
-		return lstrcmpi(lsr1->psr.firstName, lsr2->psr.firstName)*sortMultiplier;
+		return lstrcmpiA(lsr1->psr.firstName, lsr2->psr.firstName)*sortMultiplier;
 	case COLUMNID_LAST:
-		return lstrcmpi(lsr1->psr.lastName, lsr2->psr.lastName)*sortMultiplier;
+		return lstrcmpiA(lsr1->psr.lastName, lsr2->psr.lastName)*sortMultiplier;
 	case COLUMNID_EMAIL:
-		return lstrcmpi(lsr1->psr.email, lsr2->psr.email)*sortMultiplier;
+		return lstrcmpiA(lsr1->psr.email, lsr2->psr.email)*sortMultiplier;
 	case COLUMNID_HANDLE:
-		if(!lstrcmp(lsr1->szProto,lsr2->szProto)) {
-			if(!lstrcmp(lsr1->szProto,"ICQ")) {
+		if(!lstrcmpA(lsr1->szProto,lsr2->szProto)) {
+			if(!lstrcmpA(lsr1->szProto,"ICQ")) {
 				if(((ICQSEARCHRESULT*)&lsr1->psr)->uin<((ICQSEARCHRESULT*)&lsr2->psr)->uin) return -sortMultiplier;
 				return sortMultiplier;
 			}
 			else return 0;
 		}
-		else return lstrcmp(lsr1->szProto, lsr2->szProto)*sortMultiplier;
+		else return lstrcmpA(lsr1->szProto, lsr2->szProto)*sortMultiplier;
 	}
 	return 0;
 }
@@ -195,7 +195,7 @@ static void BeginSearchFailed(void * arg)
 		free((char*)arg);
 	}
 	else strncpy(buf,Translate("Could not search on any of the protocols, are you online?"),sizeof(buf));
-	MessageBox(0,buf,Translate("Problem with search"),MB_OK | MB_ICONERROR);
+	MessageBoxA(0,buf,Translate("Problem with search"),MB_OK | MB_ICONERROR);
 }
 
 int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,const char *szSearchService,DWORD requiredCapability,void *pvSearchParams)
@@ -222,13 +222,13 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 		if(failures) {
 			//infuriatingly vague error message. fixme.
 			if(dat->searchCount==0) {
-				//MessageBox(hwndDlg,Translate("None of the messaging protocols were able to initiate the search. Please correct the fault and try again."),Translate("Search"),MB_OK);
+				//MessageBoxA(hwndDlg,Translate("None of the messaging protocols were able to initiate the search. Please correct the fault and try again."),Translate("Search"),MB_OK);
 				forkthread(BeginSearchFailed,0,NULL);
 				free(dat->search);
 				dat->search=NULL;
 				return 1;
 			}
-			//MessageBox(hwndDlg,Translate("One or more of the messaging protocols failed to initiate the search, however some were successful. Please correct the fault if you wish to search using the other protocols."),Translate("Search"),MB_OK);
+			//MessageBoxA(hwndDlg,Translate("One or more of the messaging protocols failed to initiate the search, however some were successful. Please correct the fault if you wish to search using the other protocols."),Translate("Search"),MB_OK);
 		}
 	}
 	else {
@@ -238,7 +238,7 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 		dat->search[0].szProto=szProto;
 		if(dat->search[0].hProcess==NULL) {
 			//infuriatingly vague error message. fixme.
-			//MessageBox(hwndDlg,Translate("The messaging protocol reported an error initiating the search. Please correct the fault and try again."),Translate("Search"),MB_OK);
+			//MessageBoxA(hwndDlg,Translate("The messaging protocol reported an error initiating the search. Please correct the fault and try again."),Translate("Search"),MB_OK);
 			forkthread(BeginSearchFailed,0,(void*)_strdup(szProto));
 			free(dat->search);
 			dat->search=NULL;
@@ -257,11 +257,11 @@ void SetStatusBarSearchInfo(HWND hwndStatus,struct FindAddDlgData *dat)
 		char str[256],szProtoName[64];
 		int i;
 
-		lstrcpy(str,Translate("Searching"));
+		lstrcpyA(str,Translate("Searching"));
 		for(i=0;i<dat->searchCount;i++) {
-			lstrcat(str,i?",":" ");
+			lstrcatA(str,i?",":" ");
 			CallProtoService(dat->search[i].szProto,PS_GETNAME,sizeof(szProtoName),(LPARAM)szProtoName);
-			lstrcat(str,szProtoName);
+			lstrcatA(str,szProtoName);
 		}
 		SendMessage(hwndStatus,SB_SETTEXT,0,(LPARAM)str);
 	}
@@ -301,7 +301,7 @@ void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
 		}
 	}
 	if(total==0) {
-		lstrcpy(str,Translate("No users found"));
+		lstrcpyA(str,Translate("No users found"));
 	}
 	else {
 		char szProtoName[64];
@@ -309,20 +309,20 @@ void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
 
 		CallProtoService(subtotal[0].szProto,PS_GETNAME,sizeof(szProtoName),(LPARAM)szProtoName);
 		if(subtotalCount==1) {
-			if(total==1) wsprintf(str,Translate("1 %s user found"),szProtoName);
-			else wsprintf(str,Translate("%d %s users found"),total,szProtoName);
+			if(total==1) wsprintfA(str,Translate("1 %s user found"),szProtoName);
+			else wsprintfA(str,Translate("%d %s users found"),total,szProtoName);
 		}
 		else {
-			wsprintf(str,Translate("%d users found ("),total);
+			wsprintfA(str,Translate("%d users found ("),total);
 			for(i=0;i<subtotalCount;i++) {
 				if(i) {
 					CallProtoService(subtotal[i].szProto,PS_GETNAME,sizeof(szProtoName),(LPARAM)szProtoName);
-					lstrcat(str,", ");
+					lstrcatA(str,", ");
 				}
-				wsprintf(substr,"%d %s",subtotal[i].count,szProtoName);
-				lstrcat(str,substr);
+				wsprintfA(substr,"%d %s",subtotal[i].count,szProtoName);
+				lstrcatA(str,substr);
 			}
-			lstrcat(str,")");
+			lstrcatA(str,")");
 		}
 		free(subtotal);
 	}

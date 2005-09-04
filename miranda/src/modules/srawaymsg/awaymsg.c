@@ -54,12 +54,12 @@ static BOOL CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,
 				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
 				dwStatus = DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE);
 				status=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,dwStatus,0);
-				GetWindowText(hwndDlg,format,sizeof(format));
+				GetWindowTextA(hwndDlg,format,sizeof(format));
 				mir_snprintf(str,sizeof(str),format,status,contactName);
-				SetWindowText(hwndDlg,str);
-				GetDlgItemText(hwndDlg,IDC_RETRIEVING,format,sizeof(format));
+				SetWindowTextA(hwndDlg,str);
+				GetDlgItemTextA(hwndDlg,IDC_RETRIEVING,format,sizeof(format));
 				mir_snprintf(str,sizeof(str),format,status);
-				SetDlgItemText(hwndDlg,IDC_RETRIEVING,str);
+				SetDlgItemTextA(hwndDlg,IDC_RETRIEVING,str);
 				SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedProtoIcon(szProto, dwStatus));
 			}
 			return TRUE;
@@ -70,10 +70,10 @@ static BOOL CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,
 			if(ack->hProcess!=dat->hSeq) break;
 			if(ack->result!=ACKRESULT_SUCCESS) break;
 			if(dat->hAwayMsgEvent!=NULL) {UnhookEvent(dat->hAwayMsgEvent); dat->hAwayMsgEvent=NULL;}
-			SetDlgItemText(hwndDlg,IDC_MSG,(const char*)ack->lParam);
+			SetDlgItemTextA(hwndDlg,IDC_MSG,(const char*)ack->lParam);
 			ShowWindow(GetDlgItem(hwndDlg,IDC_RETRIEVING),SW_HIDE);
 			ShowWindow(GetDlgItem(hwndDlg,IDC_MSG),SW_SHOW);
-			SetDlgItemText(hwndDlg,IDOK,Translate("&Close"));
+			SetDlgItemTextA(hwndDlg,IDOK,Translate("&Close"));
 			break;
 		}
 		case WM_COMMAND:
@@ -123,7 +123,7 @@ static int AwayMsgPreBuildMenu(WPARAM wParam,LPARAM lParam)
 	   int chatRoom = szProto?DBGetContactSettingByte((HANDLE)wParam, szProto, "ChatRoom", 0):0;
 	   if ( !chatRoom ) {
 			status=DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE);
-			wsprintf(str,Translate("Re&ad %s Message"),(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,status,0));
+			wsprintfA(str,Translate("Re&ad %s Message"),(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,status,0));
 			clmi.pszName=str;
 			if(CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGRECV) {
 				if(CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_3,0)&Proto_Status2Flag(status)){

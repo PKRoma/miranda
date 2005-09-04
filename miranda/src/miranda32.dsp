@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=miranda32 - Win32 Release
+CFG=miranda32 - Win32 Debug Unicode
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,12 +13,14 @@ CFG=miranda32 - Win32 Release
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "miranda32.mak" CFG="miranda32 - Win32 Release"
+!MESSAGE NMAKE /f "miranda32.mak" CFG="miranda32 - Win32 Debug Unicode"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "miranda32 - Win32 Release" (based on "Win32 (x86) Application")
 !MESSAGE "miranda32 - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "miranda32 - Win32 Release Unicode" (based on "Win32 (x86) Application")
+!MESSAGE "miranda32 - Win32 Debug Unicode" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -43,7 +45,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr /Yu"../../core/commonheaders.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr /Yu"../../core/commonheaders.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -54,7 +56,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
 # ADD LINK32 wsock32.lib comctl32.lib winmm.lib version.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /map /machine:I386 /out:"../bin/release/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108
-# SUBTRACT LINK32 /pdb:none
+# SUBTRACT LINK32 /pdb:none /debug
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
@@ -84,12 +86,74 @@ LINK32=link.exe
 # ADD LINK32 ws2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /map /debug /machine:I386 /out:"../bin/debug/miranda32.exe"
 # SUBTRACT LINK32 /profile
 
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "miranda32___Win32_Release_Unicode"
+# PROP BASE Intermediate_Dir "miranda32___Win32_Release_Unicode"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir ".\Release_Unicode"
+# PROP Intermediate_Dir ".\Release_Unicode"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr /Yu"../../core/commonheaders.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr /Yu"../../core/commonheaders.h" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 wsock32.lib comctl32.lib winmm.lib version.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /map /machine:I386 /out:"../bin/release/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108
+# SUBTRACT BASE LINK32 /pdb:none /debug
+# ADD LINK32 wsock32.lib comctl32.lib winmm.lib version.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /map /machine:I386 /out:"../bin/Release Unicode/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108
+# SUBTRACT LINK32 /pdb:none /debug
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "miranda32___Win32_Debug_Unicode"
+# PROP BASE Intermediate_Dir "miranda32___Win32_Debug_Unicode"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir ".\Debug_Unicode"
+# PROP Intermediate_Dir ".\Debug_Unicode"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr /FD /c
+# SUBTRACT BASE CPP /YX
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_UNICODE" /Fr /FD /c
+# SUBTRACT CPP /YX
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 ws2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /map /debug /machine:I386 /out:"../bin/debug/miranda32.exe"
+# SUBTRACT BASE LINK32 /profile
+# ADD LINK32 ws2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /map /debug /machine:I386 /out:"../bin/Debug Unicode/miranda32.exe"
+# SUBTRACT LINK32 /profile
+
 !ENDIF 
 
 # Begin Target
 
 # Name "miranda32 - Win32 Release"
 # Name "miranda32 - Win32 Debug"
+# Name "miranda32 - Win32 Release Unicode"
+# Name "miranda32 - Win32 Debug Unicode"
 # Begin Group "SDK"
 
 # PROP Default_Filter ""
@@ -243,6 +307,13 @@ SOURCE=.\core\commonheaders.c
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+# ADD BASE CPP /Yc"commonheaders.h"
+# ADD CPP /Yc"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
 !ENDIF 
 
 # End Source File
@@ -264,6 +335,13 @@ SOURCE=.\core\miranda.c
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
 !ENDIF 
 
 # End Source File
@@ -276,6 +354,13 @@ SOURCE=.\core\modules.c
 # ADD CPP /Yu"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -300,6 +385,13 @@ SOURCE=.\modules\addcontact\addcontact.c
 # ADD CPP /Yu"../../core/commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"../../core/commonheaders.h"
+# ADD CPP /Yu"../../core/commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
 !ENDIF 
 

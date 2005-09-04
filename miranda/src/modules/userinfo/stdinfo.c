@@ -53,7 +53,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 				else if(special==SVS_MONTH) {
 					if(dbv.bVal>0 && dbv.bVal<=12) {
 						pstr=str;
-						GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SABBREVMONTHNAME1-1+dbv.bVal,str,sizeof(str));
+						GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_SABBREVMONTHNAME1-1+dbv.bVal,str,sizeof(str));
 					}
 					else unspecified=1;
 				}
@@ -78,7 +78,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 					if (dbv.wVal != 0) {
 						static char *szVersionDescr[] = {"", "ICQ 1.x", "ICQ 2.x", "Unknown", "ICQ98", "Unknown", "ICQ99 / licq", "ICQ2000", "ICQ2001-2003, Miranda or Trillian", "ICQ Lite"};
 						pstr = str;
-						wsprintf(str, "%d: %s", dbv.wVal, dbv.wVal > 9 ? Translate("Unknown") : Translate(szVersionDescr[dbv.wVal]));
+						wsprintfA(str, "%d: %s", dbv.wVal, dbv.wVal > 9 ? Translate("Unknown") : Translate(szVersionDescr[dbv.wVal]));
 					}
 					else unspecified = 1;
 				}
@@ -101,15 +101,15 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 				unspecified=(special==SVS_ZEROISUNSPEC && dbv.pszVal[0]=='\0');
 				pstr=dbv.pszVal;
 				break;
-			default: pstr=str; lstrcpy(str,"???"); break;
+			default: pstr=str; lstrcpyA(str,"???"); break;
 		}
 	}
 
 	EnableWindow(GetDlgItem(hwndDlg, idCtrl), !unspecified);
 	if (unspecified)
-		SetDlgItemText(hwndDlg, idCtrl, Translate("<not specified>"));
+		SetDlgItemTextA(hwndDlg, idCtrl, Translate("<not specified>"));
 	else
-		SetDlgItemText(hwndDlg, idCtrl, pstr);
+		SetDlgItemTextA(hwndDlg, idCtrl, pstr);
 	DBFreeVariant(&dbv);
 	
 }
@@ -154,10 +154,10 @@ static BOOL CALLBACK SummaryDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				case IDC_EMAIL:
 					if(IsWindowEnabled(GetDlgItem(hwndDlg,IDC_EMAIL))) {
 						char szExec[264],szEmail[256];
-						GetDlgItemText(hwndDlg,IDC_EMAIL,szEmail,sizeof(szEmail));
-						lstrcpy(szExec,"mailto:");
-						lstrcat(szExec,szEmail);
-						ShellExecute(hwndDlg,"open",szExec,NULL,NULL,SW_SHOW);
+						GetDlgItemTextA(hwndDlg,IDC_EMAIL,szEmail,sizeof(szEmail));
+						lstrcpyA(szExec,"mailto:");
+						lstrcatA(szExec,szEmail);
+						ShellExecuteA(hwndDlg,"open",szExec,NULL,NULL,SW_SHOW);
 					}
 					break;
 			}
@@ -190,7 +190,7 @@ static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				timezone=DBGetContactSettingByte(hContact,szProto,"Timezone",256);
 				if(timezone==256 || (char)timezone==-100) {
 					EnableWindow(GetDlgItem(hwndDlg,IDC_LOCALTIME),FALSE);
-					SetDlgItemText(hwndDlg,IDC_LOCALTIME,Translate("<not specified>"));
+					SetDlgItemTextA(hwndDlg,IDC_LOCALTIME,Translate("<not specified>"));
 				}
 				else {
                     TIME_ZONE_INFORMATION tzi;
@@ -207,8 +207,8 @@ static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					lift.QuadPart-=(__int64)timezone*BIGI(30)*BIGI(60)*BIGI(10000000);
 					*(__int64*)&ft=lift.QuadPart;
 					FileTimeToSystemTime(&ft,&st);
-					GetTimeFormat(LOCALE_USER_DEFAULT,0,&st,NULL,szTime,sizeof(szTime));
-					SetDlgItemText(hwndDlg,IDC_LOCALTIME,szTime);
+					GetTimeFormatA(LOCALE_USER_DEFAULT,0,&st,NULL,szTime,sizeof(szTime));
+					SetDlgItemTextA(hwndDlg,IDC_LOCALTIME,szTime);
 				}
 			}
 			break;
@@ -290,7 +290,7 @@ static BOOL CALLBACK WorkDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				case IDC_WEBPAGE:
 					if(IsWindowEnabled(GetDlgItem(hwndDlg,IDC_WEBPAGE))) {
 						char szPage[256];
-						GetDlgItemText(hwndDlg,IDC_WEBPAGE,szPage,sizeof(szPage));
+						GetDlgItemTextA(hwndDlg,IDC_WEBPAGE,szPage,sizeof(szPage));
 						CallService(MS_UTILS_OPENURL,1,(LPARAM)szPage);
 					}
 					break;
@@ -353,30 +353,30 @@ static BOOL CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								lvi.iSubItem=0;
 								lvi.iItem=0;
 								for(i=0;;i++) {
-									wsprintf(idstr,"Past%d",i);
-									if(DBGetContactSetting(hContact,szProto,idstr,&dbv))
+									wsprintfA(idstr,"Past%d",i);
+									if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
 										break;
-									wsprintf(idstr,"Past%dText",i);
-									if(DBGetContactSetting(hContact,szProto,idstr,&dbvText))
+									wsprintfA(idstr,"Past%dText",i);
+									if(DBGetContactSettingTString(hContact,szProto,idstr,&dbvText))
 									{DBFreeVariant(&dbv); break;}
-									lvi.pszText=dbv.pszVal;
+									lvi.pszText=dbv.ptszVal;
 									ListView_InsertItem(GetDlgItem(hwndDlg,IDC_PAST),&lvi);
-									ListView_SetItemText(GetDlgItem(hwndDlg,IDC_PAST),lvi.iItem,1,dbvText.pszVal);
+									ListView_SetItemText(GetDlgItem(hwndDlg,IDC_PAST),lvi.iItem,1,dbvText.ptszVal);
 									DBFreeVariant(&dbvText);
 									DBFreeVariant(&dbv);
 									lvi.iItem++;
 								}
 								
 								for(i=0;;i++) {
-									wsprintf(idstr,"Affiliation%d",i);
-									if(DBGetContactSetting(hContact,szProto,idstr,&dbv))
+									wsprintfA(idstr,"Affiliation%d",i);
+									if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
 										break;
-									wsprintf(idstr,"Affiliation%dText",i);
-									if(DBGetContactSetting(hContact,szProto,idstr,&dbvText))
+									wsprintfA(idstr,"Affiliation%dText",i);
+									if(DBGetContactSettingTString(hContact,szProto,idstr,&dbvText))
 									{DBFreeVariant(&dbv); break;}
-									lvi.pszText=dbv.pszVal;
+									lvi.pszText=dbv.ptszVal;
 									ListView_InsertItem(GetDlgItem(hwndDlg,IDC_PAST),&lvi);
-									ListView_SetItemText(GetDlgItem(hwndDlg,IDC_PAST),lvi.iItem,1,dbvText.pszVal);
+									ListView_SetItemText(GetDlgItem(hwndDlg,IDC_PAST),lvi.iItem,1,dbvText.ptszVal);
 									DBFreeVariant(&dbvText);
 									DBFreeVariant(&dbv);
 									lvi.iItem++;
@@ -390,15 +390,15 @@ static BOOL CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								lvi.iSubItem=0;
 								lvi.iItem=0;
 								for(i=0;;i++) {
-									wsprintf(idstr,"Interest%dCat",i);
-									if(DBGetContactSetting(hContact,szProto,idstr,&dbv))
+									wsprintfA(idstr,"Interest%dCat",i);
+									if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
 										break;
-									wsprintf(idstr,"Interest%dText",i);
-									if(DBGetContactSetting(hContact,szProto,idstr,&dbvText))
+									wsprintfA(idstr,"Interest%dText",i);
+									if(DBGetContactSettingTString(hContact,szProto,idstr,&dbvText))
 									{DBFreeVariant(&dbv); break;}
-									lvi.pszText=dbv.pszVal;
+									lvi.pszText=dbv.ptszVal;
 									ListView_InsertItem(GetDlgItem(hwndDlg,IDC_INTERESTS),&lvi);
-									ListView_SetItemText(GetDlgItem(hwndDlg,IDC_INTERESTS),lvi.iItem,1,dbvText.pszVal);
+									ListView_SetItemText(GetDlgItem(hwndDlg,IDC_INTERESTS),lvi.iItem,1,dbvText.ptszVal);
 									DBFreeVariant(&dbvText);
 									DBFreeVariant(&dbv);
 									lvi.iItem++;
@@ -419,7 +419,7 @@ static BOOL CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case IDC_WEBPAGE:
 					if(IsWindowEnabled(GetDlgItem(hwndDlg,IDC_WEBPAGE))) {
 						char szPage[256];
-						GetDlgItemText(hwndDlg,IDC_WEBPAGE,szPage,sizeof(szPage));
+						GetDlgItemTextA(hwndDlg,IDC_WEBPAGE,szPage,sizeof(szPage));
 						CallService(MS_UTILS_OPENURL,1,(LPARAM)szPage);
 					}
 					break;
@@ -438,7 +438,7 @@ static BOOL CALLBACK NotesDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			TranslateDialogDefault(hwndDlg);
 			{	DBVARIANT dbv;
 				if(!DBGetContactSetting((HANDLE)lParam,"UserInfo","MyNotes",&dbv)) {
-					SetDlgItemText(hwndDlg,IDC_MYNOTES,dbv.pszVal);
+					SetDlgItemTextA(hwndDlg,IDC_MYNOTES,dbv.pszVal);
 					DBFreeVariant(&dbv);
 				}
 			}
@@ -462,7 +462,7 @@ static BOOL CALLBACK NotesDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						{	HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
 							if(GetWindowTextLength(GetDlgItem(hwndDlg,IDC_MYNOTES))) {
 								char text[2048];
-								GetDlgItemText(hwndDlg,IDC_MYNOTES,text,sizeof(text));
+								GetDlgItemTextA(hwndDlg,IDC_MYNOTES,text,sizeof(text));
 								DBWriteContactSettingString(hContact,"UserInfo","MyNotes",text);
 							}
 							else DBDeleteContactSetting(hContact,"UserInfo","MyNotes");
@@ -503,37 +503,37 @@ int DetailsInit(WPARAM wParam,LPARAM lParam)
 
 	odp.pfnDlgProc=SummaryDlgProc;
 	odp.position=-2100000000;
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_INFO_SUMMARY);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_INFO_SUMMARY);
 	odp.pszTitle=Translate("Summary");
 	CallService(MS_USERINFO_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pfnDlgProc=ContactDlgProc;
 	odp.position=-1800000000;
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_INFO_CONTACT);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_INFO_CONTACT);
 	odp.pszTitle=Translate("Contact");
 	CallService(MS_USERINFO_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pfnDlgProc=LocationDlgProc;
 	odp.position=-1500000000;
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_INFO_LOCATION);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_INFO_LOCATION);
 	odp.pszTitle=Translate("Location");
 	CallService(MS_USERINFO_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pfnDlgProc=WorkDlgProc;
 	odp.position=-1200000000;
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_INFO_WORK);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_INFO_WORK);
 	odp.pszTitle=Translate("Work");
 	CallService(MS_USERINFO_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pfnDlgProc=BackgroundDlgProc;
 	odp.position=-900000000;
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_INFO_BACKGROUND);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_INFO_BACKGROUND);
 	odp.pszTitle=Translate("Background");
 	CallService(MS_USERINFO_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pfnDlgProc=NotesDlgProc;
 	odp.position=0;
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_INFO_NOTES);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_INFO_NOTES);
 	odp.pszTitle=Translate("Notes");
 	CallService(MS_USERINFO_ADDPAGE,wParam,(LPARAM)&odp);
 

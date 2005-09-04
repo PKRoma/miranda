@@ -83,7 +83,7 @@ int LoadButtonModule(void) {
 static int ThemeSupport() {
 	if (IsWinVerXPPlus()) {
 		if (!themeAPIHandle) {
-			themeAPIHandle = GetModuleHandle("uxtheme");
+			themeAPIHandle = GetModuleHandleA("uxtheme");
 			if (themeAPIHandle) {
 				MyOpenThemeData = (HANDLE (WINAPI *)(HWND,LPCWSTR))MGPROC("OpenThemeData");
 				MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))MGPROC("CloseThemeData");
@@ -253,16 +253,16 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			HFONT hOldFont;
 
 			CopyRect(&rcText, &rcClient);
-			GetWindowText(ctl->hwnd, szText, sizeof(szText));
+			GetWindowTextA(ctl->hwnd, szText, sizeof(szText));
 			SetBkMode(hdcMem, TRANSPARENT);
 			hOldFont = SelectObject(hdcMem, ctl->hFont);
 			// XP w/themes doesn't used the glossy disabled text.  Is it always using COLOR_GRAYTEXT?  Seems so.
 			SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd)||!ctl->hThemeButton?GetSysColor(COLOR_BTNTEXT):GetSysColor(COLOR_GRAYTEXT));
-			GetTextExtentPoint32(hdcMem, szText, lstrlen(szText), &sz);
+			GetTextExtentPoint32A(hdcMem, szText, lstrlenA(szText), &sz);
 			if (ctl->cHot) {
 				SIZE szHot;
 				
-				GetTextExtentPoint32(hdcMem, "&", 1, &szHot);
+				GetTextExtentPoint32 (hdcMem, _T("&"), 1, &szHot);
 				sz.cx -= szHot.cx;
 			}
 			if (ctl->arrow) {
@@ -441,13 +441,13 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			break;
 		case BUTTONADDTOOLTIP:
 		{
-			TOOLINFO ti;
+			TOOLINFOA ti;
 
 			if (!(char*)wParam) break;
             EnterCriticalSection(&csTips);
-			if (!hwndToolTips) {
-				hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, "", WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
-			}
+			if (!hwndToolTips)
+				hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, _T(""), WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
+
 			ZeroMemory(&ti, sizeof(ti));
 			ti.cbSize = sizeof(ti);
 			ti.uFlags = TTF_IDISHWND;
@@ -459,8 +459,8 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			ti.uFlags = TTF_IDISHWND|TTF_SUBCLASS;
 			ti.uId = (UINT)bct->hwnd;
 			ti.lpszText=(char*)wParam;
-			SendMessage(hwndToolTips,TTM_ADDTOOL,0,(LPARAM)&ti);
-            LeaveCriticalSection(&csTips);
+			SendMessageA( hwndToolTips, TTM_ADDTOOLA, 0, (LPARAM)&ti);
+			LeaveCriticalSection(&csTips);
 			break;
 		}
 		case WM_SETFOCUS: // set keybord focus and redraw

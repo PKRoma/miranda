@@ -58,7 +58,7 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 				else {
 					mir_snprintf(szTitle,128,Translate("Add Contact"),szName);
 				}
-				SetWindowText(hdlg,szTitle);
+				SetWindowTextA(hdlg,szTitle);
 				
 				if ( acs->handleType==HANDLE_CONTACT && acs->handle ) {
 					if ( acs->szProto == NULL || (acs->szProto != NULL && strcmp(acs->szProto,"") == 0) ) 
@@ -69,10 +69,10 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 				{
 					itoa(groupId,idstr,10);
 					if(DBGetContactSetting(NULL,"CListGroups",idstr,&dbv)) break;
-					SendDlgItemMessage(hdlg,IDC_GROUP,CB_ADDSTRING,0,(LPARAM)(dbv.pszVal+1));
+					SendDlgItemMessageA(hdlg,IDC_GROUP,CB_ADDSTRING,0,(LPARAM)(dbv.pszVal+1));
 				}
 				DBFreeVariant(&dbv);
-				SendDlgItemMessage(hdlg,IDC_GROUP,CB_INSERTSTRING,0,(LPARAM)Translate("None"));
+				SendDlgItemMessage(hdlg,IDC_GROUP,CB_INSERTSTRING,0,(LPARAM)TranslateT("None"));
 				SendDlgItemMessage(hdlg,IDC_GROUP,CB_SETCURSEL,0,0);
 				/* acs->szProto may be NULL don't expect it */
 				if (acs->szProto) flags=CallProtoService(acs->szProto,PS_GETCAPS,PFLAGNUM_4,0);
@@ -89,7 +89,7 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 					EnableWindow(GetDlgItem(hdlg,IDC_AUTHREQ),FALSE);
 					EnableWindow(GetDlgItem(hdlg,IDC_AUTHGB),FALSE);
 				}
-				SetDlgItemText(hdlg,IDC_AUTHREQ,Translate("Please authorize my request and add me to your contact list."));
+				SetDlgItemTextA(hdlg,IDC_AUTHREQ,Translate("Please authorize my request and add me to your contact list."));
 				EnableWindow(GetDlgItem(hdlg,IDC_AUTHREQ),IsDlgButtonChecked(hdlg,IDC_AUTH));
 				EnableWindow(GetDlgItem(hdlg,IDC_AUTHGB),IsDlgButtonChecked(hdlg,IDC_AUTH));
 			}
@@ -145,16 +145,16 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 							else {
 								char szReason[256];
 
-								GetDlgItemText(hdlg,IDC_AUTHREQ,szReason,256);
+								GetDlgItemTextA(hdlg,IDC_AUTHREQ,szReason,256);
 								CallContactService(hcontact,PSS_AUTHREQUEST,0,(LPARAM)szReason);
 							}
 						}
 						
-						if(GetDlgItemText(hdlg,IDC_MYHANDLE,szHandle,128))
+						if(GetDlgItemTextA(hdlg,IDC_MYHANDLE,szHandle,128))
 							DBWriteContactSettingString(hcontact,"CList","MyHandle",szHandle);
 
-						GetDlgItemText(hdlg,IDC_GROUP,szHandle,256);
-						if(lstrcmp(szHandle,Translate("None")))
+						GetDlgItemTextA(hdlg,IDC_GROUP,szHandle,256);
+						if(lstrcmpA(szHandle,Translate("None")))
 							DBWriteContactSettingString(hcontact,"CList","Group",szHandle);
 
 						DBDeleteContactSetting(hcontact,"CList","NotOnList");

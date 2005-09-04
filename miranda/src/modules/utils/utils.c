@@ -287,13 +287,13 @@ static int SaveWindowPosition(WPARAM wParam,LPARAM lParam)
 
 	wp.length=sizeof(wp);
 	GetWindowPlacement(swp->hwnd,&wp);
-	wsprintf(szSettingName,"%sx",swp->szNamePrefix);
+	wsprintfA(szSettingName,"%sx",swp->szNamePrefix);
 	DBWriteContactSettingDword(swp->hContact,swp->szModule,szSettingName,wp.rcNormalPosition.left);
-	wsprintf(szSettingName,"%sy",swp->szNamePrefix);
+	wsprintfA(szSettingName,"%sy",swp->szNamePrefix);
 	DBWriteContactSettingDword(swp->hContact,swp->szModule,szSettingName,wp.rcNormalPosition.top);
-	wsprintf(szSettingName,"%swidth",swp->szNamePrefix);
+	wsprintfA(szSettingName,"%swidth",swp->szNamePrefix);
 	DBWriteContactSettingDword(swp->hContact,swp->szModule,szSettingName,wp.rcNormalPosition.right-wp.rcNormalPosition.left);
-	wsprintf(szSettingName,"%sheight",swp->szNamePrefix);
+	wsprintfA(szSettingName,"%sheight",swp->szNamePrefix);
 	DBWriteContactSettingDword(swp->hContact,swp->szModule,szSettingName,wp.rcNormalPosition.bottom-wp.rcNormalPosition.top);
 	return 0;
 }
@@ -307,9 +307,9 @@ static int RestoreWindowPosition(WPARAM wParam,LPARAM lParam)
 
 	wp.length=sizeof(wp);
 	GetWindowPlacement(swp->hwnd,&wp);
-	wsprintf(szSettingName,"%sx",swp->szNamePrefix);
+	wsprintfA(szSettingName,"%sx",swp->szNamePrefix);
 	x=DBGetContactSettingDword(swp->hContact,swp->szModule,szSettingName,-1);
-	wsprintf(szSettingName,"%sy",swp->szNamePrefix);
+	wsprintfA(szSettingName,"%sy",swp->szNamePrefix);
 	y=(int)DBGetContactSettingDword(swp->hContact,swp->szModule,szSettingName,-1);
 	if(x==-1) return 1;
 	if(wParam&RWPF_NOSIZE) {
@@ -318,9 +318,9 @@ static int RestoreWindowPosition(WPARAM wParam,LPARAM lParam)
 	else {
 		wp.rcNormalPosition.left=x;
 		wp.rcNormalPosition.top=y;
-		wsprintf(szSettingName,"%swidth",swp->szNamePrefix);
+		wsprintfA(szSettingName,"%swidth",swp->szNamePrefix);
 		wp.rcNormalPosition.right=wp.rcNormalPosition.left+DBGetContactSettingDword(swp->hContact,swp->szModule,szSettingName,-1);
-		wsprintf(szSettingName,"%sheight",swp->szNamePrefix);
+		wsprintfA(szSettingName,"%sheight",swp->szNamePrefix);
 		wp.rcNormalPosition.bottom=wp.rcNormalPosition.top+DBGetContactSettingDword(swp->hContact,swp->szModule,szSettingName,-1);
 	}
 	wp.flags=0;

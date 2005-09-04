@@ -65,7 +65,7 @@ static int PageSortProc(OPTIONSDIALOGPAGE *item1,OPTIONSDIALOGPAGE *item2)
 static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM lParam)
 {
 	HWND hwnd;
-	PROPSHEETHEADER psh;
+	PROPSHEETHEADERA psh;
 	struct DetailsPageInit opi;
 	int i;
 
@@ -88,8 +88,8 @@ static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM lParam)
 	psh.nPages = opi.pageCount;
 	psh.pStartPage = 0;
 	psh.pszCaption = (char*)wParam;	  //more abuses of structure: this is hContact
-	psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
-	CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_DETAILS),NULL,DlgProcDetails,(LPARAM)&psh);
+	psh.ppsp = (PROPSHEETPAGEA*)opi.odp;		  //blatent misuse of the structure, but what the hell
+	CreateDialogParamA(GetModuleHandle(NULL),MAKEINTRESOURCEA(IDD_DETAILS),NULL,DlgProcDetails,(LPARAM)&psh);
 	for(i=0;i<opi.pageCount;i++) {
 		free((char*)opi.odp[i].pszTitle);
 		if(opi.odp[i].pszGroup!=NULL) free(opi.odp[i].pszGroup);
@@ -133,7 +133,7 @@ static int UserInfoContactDelete(WPARAM wParam,LPARAM lParam)
 static void ThemeDialogBackground(HWND hwnd) {
 	if (IsWinVerXPPlus()) {
 		static HMODULE hThemeAPI = NULL;
-		if (!hThemeAPI) hThemeAPI = GetModuleHandle("uxtheme");
+		if (!hThemeAPI) hThemeAPI = GetModuleHandleA("uxtheme");
 		if (hThemeAPI) {
 			HRESULT (STDAPICALLTYPE *MyEnableThemeDialogTexture)(HWND,DWORD) = (HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
 			if (MyEnableThemeDialogTexture)
@@ -168,10 +168,10 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				else
 					name = (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
 
-				GetWindowText(hwndDlg,oldTitle,sizeof(oldTitle));
+				GetWindowTextA(hwndDlg,oldTitle,sizeof(oldTitle));
 				mir_snprintf(newTitle,sizeof(newTitle),oldTitle,name);
-				SetWindowText(hwndDlg,newTitle);
-				SetDlgItemText(hwndDlg,IDC_NAME,name);
+				SetWindowTextA(hwndDlg,newTitle);
+				SetDlgItemTextA(hwndDlg,IDC_NAME,name);
 
 			}
 			{	LOGFONT lf;
@@ -183,7 +183,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			}
 			{	OPTIONSDIALOGPAGE *odp;
 				int i;
-				TCITEM tci;
+				TCITEMA tci;
 				DBVARIANT dbv;
 
 				dat->currentPage=0;
@@ -195,7 +195,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 				tci.mask=TCIF_TEXT;
 				for(i=0;i<dat->pageCount;i++) {
-					dat->opd[i].pTemplate=(DLGTEMPLATE *)LockResource(LoadResource(odp[i].hInstance,FindResource(odp[i].hInstance,odp[i].pszTemplate,RT_DIALOG)));
+					dat->opd[i].pTemplate=(DLGTEMPLATE *)LockResource(LoadResource(odp[i].hInstance,FindResourceA(odp[i].hInstance,odp[i].pszTemplate,MAKEINTRESOURCEA(5))));
 					dat->opd[i].dlgProc=odp[i].pfnDlgProc;
 					dat->opd[i].hInst=odp[i].hInstance;
 					dat->opd[i].hwnd=NULL;
@@ -203,7 +203,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					tci.pszText=(char*)odp[i].pszTitle;
 					if(dbv.type!=DBVT_DELETED && !strcmp(tci.pszText,dbv.pszVal))
 						dat->currentPage=i;
-					TabCtrl_InsertItem(GetDlgItem(hwndDlg,IDC_TABS),i,&tci);
+					SendMessageA( GetDlgItem(hwndDlg,IDC_TABS), TCM_INSERTITEMA, i, (LPARAM)&tci );
 				}
 				DBFreeVariant(&dbv);
 			}
@@ -288,7 +288,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			}
 			ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);
 			dat->updateAnimFrame=0;
-			GetDlgItemText(hwndDlg,IDC_UPDATING,dat->szUpdating,sizeof(dat->szUpdating));
+			GetDlgItemTextA(hwndDlg,IDC_UPDATING,dat->szUpdating,sizeof(dat->szUpdating));
 			SendMessage(hwndDlg,M_CHECKONLINE,0,0);
 			if(!IsWindowEnabled(GetDlgItem(hwndDlg,IDC_UPDATE)))
 				ShowWindow(GetDlgItem(hwndDlg,IDC_UPDATING),SW_HIDE);
@@ -302,7 +302,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		case WM_TIMER:
 		{	char str[128];
 			sprintf(str,"%.*s%s%.*s",dat->updateAnimFrame%10,".........",dat->szUpdating,dat->updateAnimFrame%10,".........");
-			SetDlgItemText(hwndDlg,IDC_UPDATING,str);
+			SetDlgItemTextA(hwndDlg,IDC_UPDATING,str);
 			if(++dat->updateAnimFrame==UPDATEANIMFRAMES) dat->updateAnimFrame=0;
 			break;
 		}
@@ -482,12 +482,12 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			break;
 		case WM_DESTROY:
 			{	TCITEM tci;
-				char name[128];
+				TCHAR name[128];
 				tci.mask=TCIF_TEXT;
 				tci.pszText=name;
 				tci.cchTextMax=sizeof(name);
 				TabCtrl_GetItem(GetDlgItem(hwndDlg,IDC_TABS),dat->currentPage,&tci);
-				DBWriteContactSettingString(NULL,"UserInfo","LastTab",name);
+				DBWriteContactSettingTString(NULL,"UserInfo","LastTab",name);
 			}
 			SendDlgItemMessage(hwndDlg,IDC_NAME,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDC_WHITERECT,WM_GETFONT,0,0),0);
 			DeleteObject(dat->hBoldFont);

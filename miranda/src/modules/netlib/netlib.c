@@ -129,7 +129,7 @@ static int NetlibRegisterUser(WPARAM wParam,LPARAM lParam)
 
 	EnterCriticalSection(&csNetlibUser);
 	for(i=0;i<netlibUserCount;i++)
-		if(!lstrcmp(netlibUser[i]->user.szSettingsModule,nlu->szSettingsModule)) {
+		if(!lstrcmpA(netlibUser[i]->user.szSettingsModule,nlu->szSettingsModule)) {
 			LeaveCriticalSection(&csNetlibUser);
 			SetLastError(ERROR_DUP_NAME);
 			return (int)(HANDLE)NULL;
@@ -213,7 +213,7 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 			int i;
 			EnterCriticalSection(&csNetlibUser);
 			for(i=0;i<netlibUserCount;i++)
-				if(!lstrcmp(netlibUser[i]->user.szSettingsModule,nlu->user.szSettingsModule)) {
+				if(!lstrcmpA(netlibUser[i]->user.szSettingsModule,nlu->user.szSettingsModule)) {
 					netlibUserCount--;
 					memmove(netlibUser+i,netlibUser+i+1,(netlibUserCount-i)*sizeof(struct NetlibUser*));
 					break;

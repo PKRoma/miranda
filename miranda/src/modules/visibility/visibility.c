@@ -153,7 +153,7 @@ static BOOL CALLBACK DlgProcVisibilityOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			{	CLCINFOITEM cii={0};
 				cii.cbSize=sizeof(cii);
 				cii.flags=CLCIIF_GROUPFONT;
-				cii.pszText=Translate("** All contacts **");
+				cii.pszText=TranslateT("** All contacts **");
 				hItemAll=(HANDLE)SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_ADDINFOITEM,0,(LPARAM)&cii);
 			}
 
@@ -283,7 +283,7 @@ static int VisibilityOptInitialise(WPARAM wParam,LPARAM lParam)
 	odp.cbSize=sizeof(odp);
 	odp.position=850000000;
 	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_VISIBILITY);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_VISIBILITY);
 	odp.pszTitle=Translate("Visibility");
 	odp.pszGroup=Translate("Status");
 	odp.pfnDlgProc=DlgProcVisibilityOpts;

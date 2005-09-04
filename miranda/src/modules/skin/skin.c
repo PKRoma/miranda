@@ -45,13 +45,13 @@ static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.pszGroup=Translate("Events");
 	odp.position=-200000000;
 	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_SOUND);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SOUND);
 	odp.pszTitle=Translate("Sounds");
 	odp.pfnDlgProc=DlgProcSoundOpts;
 	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	odp.position=-180000000;
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_ICONS);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_ICONS);
 	odp.pszTitle=Translate("Icons");
 	odp.pszGroup=Translate("Contact List");
 	odp.pfnDlgProc=DlgProcIconsOpts;

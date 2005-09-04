@@ -47,12 +47,12 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			{	char productVersion[56],str[64];
 				CallService(MS_SYSTEM_GETVERSIONTEXT,sizeof(productVersion),(LPARAM)productVersion);
 				mir_snprintf(str,sizeof(str),"%s %s", Translate("Version"), productVersion);
-				SetDlgItemText(hwndDlg,IDC_VERSION,str);
+				SetDlgItemTextA(hwndDlg,IDC_VERSION,str);
 				mir_snprintf(str,sizeof(str),Translate("Built %s %s"),__DATE__,__TIME__);
-				SetDlgItemText(hwndDlg,IDC_BUILDTIME,str);
+				SetDlgItemTextA(hwndDlg,IDC_BUILDTIME,str);
 			}
-            ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_HIDE);
-            SetDlgItemText(hwndDlg,IDC_CREDITSFILE, LockResource(LoadResource(GetModuleHandle(NULL),FindResource(GetModuleHandle(NULL),MAKEINTRESOURCE(IDR_CREDITS),"TEXT"))));
+			ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_HIDE);
+			SetDlgItemTextA(hwndDlg,IDC_CREDITSFILE, LockResource(LoadResource(GetModuleHandle(NULL),FindResourceA(GetModuleHandle(NULL),MAKEINTRESOURCEA(IDR_CREDITS),"TEXT"))));
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MIRANDA)));
 			return TRUE;
 		case WM_COMMAND:
@@ -66,14 +66,14 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				{
                     if (iState) {
                         iState = 0;
-                        SetDlgItemText(hwndDlg, IDC_CONTRIBLINK, Translate("Credits >"));
+                        SetDlgItemTextA(hwndDlg, IDC_CONTRIBLINK, Translate("Credits >"));
                         ShowWindow(GetDlgItem(hwndDlg, IDC_DEVS), SW_SHOW);
                         ShowWindow(GetDlgItem(hwndDlg, IDC_BUILDTIME), SW_SHOW);
                         ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_HIDE);
                     }
                     else {
                         iState = 1;
-                        SetDlgItemText(hwndDlg, IDC_CONTRIBLINK, Translate("< About"));
+                        SetDlgItemTextA(hwndDlg, IDC_CONTRIBLINK, Translate("< About"));
                         ShowWindow(GetDlgItem(hwndDlg, IDC_DEVS), SW_HIDE);
                         ShowWindow(GetDlgItem(hwndDlg, IDC_BUILDTIME), SW_HIDE);
                         ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_SHOW);

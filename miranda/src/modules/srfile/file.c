@@ -92,14 +92,14 @@ void CreateDirectoryTree(char *szDir)
 	DWORD dwAttributes;
 	char *pszLastBackslash,szTestDir[MAX_PATH];
 
-	lstrcpyn(szTestDir,szDir,sizeof(szTestDir));
-	if((dwAttributes=GetFileAttributes(szTestDir))!=0xffffffff
+	lstrcpynA(szTestDir,szDir,sizeof(szTestDir));
+	if((dwAttributes=GetFileAttributesA(szTestDir))!=0xffffffff
 	   && dwAttributes&FILE_ATTRIBUTE_DIRECTORY) return;
 	pszLastBackslash=strrchr(szTestDir,'\\');
-	if(pszLastBackslash==NULL) {GetCurrentDirectory(MAX_PATH,szDir); return;}
+	if(pszLastBackslash==NULL) {GetCurrentDirectoryA(MAX_PATH,szDir); return;}
 	*pszLastBackslash='\0';
 	CreateDirectoryTree(szTestDir);
-	CreateDirectory(szTestDir,NULL);
+	CreateDirectoryA(szTestDir,NULL);
 }
 
 int SRFile_GetRegValue(HKEY hKeyBase,const char *szSubKey,const char *szValue,char *szOutput,int cbOutput)
@@ -107,8 +107,8 @@ int SRFile_GetRegValue(HKEY hKeyBase,const char *szSubKey,const char *szValue,ch
 	HKEY hKey;
 	DWORD cbOut=cbOutput;
 
-	if(RegOpenKeyEx(hKeyBase,szSubKey,0,KEY_QUERY_VALUE,&hKey)!=ERROR_SUCCESS) return 0;
-	if(RegQueryValueEx(hKey,szValue,NULL,NULL,(PBYTE)szOutput,&cbOut)!=ERROR_SUCCESS) {RegCloseKey(hKey); return 0;}
+	if(RegOpenKeyExA(hKeyBase,szSubKey,0,KEY_QUERY_VALUE,&hKey)!=ERROR_SUCCESS) return 0;
+	if(RegQueryValueExA(hKey,szValue,NULL,NULL,(PBYTE)szOutput,&cbOut)!=ERROR_SUCCESS) {RegCloseKey(hKey); return 0;}
 	RegCloseKey(hKey);
 	return 1;
 }

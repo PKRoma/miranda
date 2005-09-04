@@ -21,8 +21,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include <malloc.h>
+#if defined( UNICODE )
+#  define _UNICODE
+#endif
 
+#include <tchar.h>
+#include <malloc.h>
 
 #define _ALPHA_BASE_ 1	// defined for CVS builds
 #define _ALPHA_FUSE_ 1	// defined for fuse powered core

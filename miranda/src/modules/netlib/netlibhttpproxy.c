@@ -372,7 +372,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 		retryCount = 0;
 		contentLength=-1;
 		for(i=0;i<nlhrReply->headersCount;i++)
-			if(!lstrcmpi(nlhrReply->headers[i].szName,"Content-Length")) {
+			if(!lstrcmpiA(nlhrReply->headers[i].szName,"Content-Length")) {
 				contentLength=atoi(nlhrReply->headers[i].szValue);
 				break;
 			}

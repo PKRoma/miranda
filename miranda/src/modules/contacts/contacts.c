@@ -43,42 +43,42 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 		case CNF_FIRSTNAME:
 			if (!GetDatabaseString(ci,"FirstName",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.pszVal;
+				ci->pszVal = dbv.ptszVal;
 				return 0;
 			}
 			break;
 		case CNF_LASTNAME:
 			if (!GetDatabaseString(ci,"LastName",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.pszVal;
+				ci->pszVal = dbv.ptszVal;
 				return 0;
 			}
 			break;
 		case CNF_NICK:
 			if (!GetDatabaseString(ci,"Nick",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.pszVal;
+				ci->pszVal = dbv.ptszVal;
 				return 0;
 			}
 			break;
 		case CNF_EMAIL:
 			if (!GetDatabaseString(ci,"e-mail",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.pszVal;
+				ci->pszVal = dbv.ptszVal;
 				return 0;
 			}
 			break;
 		case CNF_CITY:
 			if (!GetDatabaseString(ci,"City",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.pszVal;
+				ci->pszVal = dbv.ptszVal;
 				return 0;
 			}
 			break;
 		case CNF_STATE:
 			if (!GetDatabaseString(ci,"State",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.pszVal;
+				ci->pszVal = dbv.ptszVal;
 				return 0;
 			}
 			break;
@@ -90,7 +90,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 				for(i=0;i<countryCount;i++) {
 					if(countries[i].id!=dbv.wVal) continue;
 					ci->type = CNFT_ASCIIZ;
-					ci->pszVal = _strdup(countries[i].szName);
+					ci->pszVal = ( TCHAR* )_strdup(countries[i].szName);
 					DBFreeVariant(&dbv);
 					return 0;
 				}
@@ -101,14 +101,14 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 		case CNF_PHONE:
 			if (!GetDatabaseString(ci,"Phone",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.pszVal;
+				ci->pszVal = dbv.ptszVal;
 				return 0;
 			}
 			break;
 		case CNF_HOMEPAGE:
 			if (!GetDatabaseString(ci,"Homepage",&dbv)) {
 				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.pszVal;
+				ci->pszVal = dbv.ptszVal;
 				return 0;
 			}
 			break;
@@ -140,7 +140,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 					mir_snprintf(buffer,strlen(firstName)+strlen(dbv.pszVal)+2,"%s %s",firstName,dbv.pszVal);
 					free(dbv.pszVal);
 					free(firstName);
-					ci->pszVal = _strdup(buffer);
+					ci->pszVal = ( TCHAR* )_strdup(buffer);
 					free(buffer);
 					return 0;
 				}
@@ -169,7 +169,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 					}
 					if (dbv.type==DBVT_ASCIIZ) {
 						ci->type = CNFT_ASCIIZ;
-						ci->pszVal = dbv.pszVal;
+						ci->pszVal = dbv.ptszVal;
 						return 0;
 					}
 				}
@@ -189,7 +189,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 						char* saveProto = ci->szProto; ci->szProto = "CList";
 						if (ci->hContact!=NULL && (ci->dwFlag&0x7F)==CNF_DISPLAY && !GetDatabaseString(ci,"MyHandle",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = dbv.pszVal;
+							ci->pszVal = dbv.ptszVal;
 							return 0;
 						}
 						ci->szProto = saveProto;
@@ -199,7 +199,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 					{
 						if (!GetDatabaseString(ci,"Nick",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = dbv.pszVal;
+							ci->pszVal = dbv.ptszVal;
 							return 0;
 						}
 						break;
@@ -208,7 +208,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 					{
 						if (!GetDatabaseString(ci,"FirstName",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = dbv.pszVal;
+							ci->pszVal = dbv.ptszVal;
 							return 0;
 						}
 						break;
@@ -217,7 +217,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 					{
 						if (!GetDatabaseString(ci,"e-mail",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = dbv.pszVal;
+							ci->pszVal = dbv.ptszVal;
 							return 0;
 						}
 						break;
@@ -226,7 +226,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 					{
 						if (!GetDatabaseString(ci,"LastName",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = dbv.pszVal;
+							ci->pszVal = dbv.ptszVal;
 							return 0;
 						}
 						break;
@@ -241,12 +241,12 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 									char buf[256];
 									ci->type = CNFT_ASCIIZ;
 									mir_snprintf(buf,sizeof(buf),"%u",dbv.type==DBVT_BYTE?dbv.bVal:(dbv.type==DBVT_WORD?dbv.wVal:dbv.dVal));
-									ci->pszVal=_strdup(buf);
+									ci->pszVal = ( TCHAR* )_strdup(buf);
 									return 0;
 								}
 								else if (dbv.type==DBVT_ASCIIZ) {
 									ci->type = CNFT_ASCIIZ;
-									ci->pszVal = dbv.pszVal;
+									ci->pszVal = dbv.ptszVal;
 									return 0;
 								}
 							}
@@ -262,7 +262,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 								mir_snprintf(buffer,strlen(firstName)+strlen(dbv.pszVal)+2,"%s %s",firstName,dbv.pszVal);
 								free(dbv.pszVal);
 								free(firstName);
-								ci->pszVal = _strdup(buffer);
+								ci->pszVal = ( TCHAR* )_strdup(buffer);
 								free(buffer);
 								return 0;
 							}
@@ -270,9 +270,9 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 						break;
 					case 7:
 						if ( ci->dwFlag & CNF_UNICODE )
-							ci->pszVal = ( char* )wcsdup( TranslateW( L"'(Unknown Contact)'" ));
+							ci->pszVal = ( TCHAR* )wcsdup( TranslateW( L"'(Unknown Contact)'" ));
 						else
-							ci->pszVal = _strdup( Translate("'(Unknown Contact)'"));
+							ci->pszVal = ( TCHAR* )_strdup( Translate("'(Unknown Contact)'"));
 						ci->type = CNFT_ASCIIZ;
 						return 0;
 				}
@@ -299,7 +299,7 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 			dat->dragging=0;
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_NAMEORDER),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_NAMEORDER),GWL_STYLE)|TVS_NOHSCROLL);
-			{	TVINSERTSTRUCT tvis;
+			{	TVINSERTSTRUCTA tvis;
 				int i;
 				tvis.hParent=NULL;
 				tvis.hInsertAfter=TVI_LAST;
@@ -307,7 +307,7 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				for(i=0;i<sizeof(nameOrderDescr)/sizeof(nameOrderDescr[0]);i++) {
 					tvis.item.lParam=nameOrder[i];
 					tvis.item.pszText=Translate(nameOrderDescr[nameOrder[i]]);
-					TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_NAMEORDER),&tvis);
+					SendMessageA( GetDlgItem(hwndDlg,IDC_NAMEORDER), TVM_INSERTITEMA, 0, (LPARAM)&tvis );
 				}
 			}
 			return TRUE;
@@ -392,7 +392,7 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				if(tvi.lParam==sizeof(nameOrderDescr)/sizeof(nameOrderDescr[0])-1) break;
 				if(hti.flags&(TVHT_ONITEM|TVHT_ONITEMRIGHT)) {
 					TVINSERTSTRUCT tvis;
-					char name[128];
+					TCHAR name[128];
 					tvis.item.mask=TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT|TVIF_PARAM;
 					tvis.item.stateMask=0xFFFFFFFF;
 					tvis.item.pszText=name;
@@ -421,7 +421,7 @@ static int ContactOptInit(WPARAM wParam,LPARAM lParam) {
 	odp.cbSize=sizeof(odp);
 	odp.position=-1000000000;
 	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_CONTACT);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CONTACT);
 	odp.pszGroup=Translate("Contact List");
 	odp.pszTitle=Translate("Contact Display");
 	odp.pfnDlgProc=ContactOpts;

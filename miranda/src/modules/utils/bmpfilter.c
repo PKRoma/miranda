@@ -39,11 +39,11 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
     
     if (!CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szFile, (LPARAM)szFilename))
         mir_snprintf(szFilename, sizeof(szFilename), "%s", szFile);
-	filenameLen=lstrlen(szFilename);
+	filenameLen=lstrlenA(szFilename);
 	if(filenameLen>4) {
-		if(!lstrcmpi(szFilename+filenameLen-4,".bmp") || !lstrcmpi(szFilename+filenameLen-4,".rle")) {
+		if(!lstrcmpiA(szFilename+filenameLen-4,".bmp") || !lstrcmpiA(szFilename+filenameLen-4,".rle")) {
 			//LoadImage can do this much faster
-			return (int)LoadImage(GetModuleHandle(NULL),szFilename,IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
+			return (int)LoadImageA(GetModuleHandle(NULL),szFilename,IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
 		}
 	}
 	OleInitialize(NULL);
@@ -86,35 +86,35 @@ static int BmpFilterGetStrings(WPARAM wParam,LPARAM lParam)
 	int bytesLeft=wParam;
 	char *filter=(char*)lParam,*pfilter;
 
-	lstrcpyn(filter,Translate("All Bitmaps"),bytesLeft); bytesLeft-=lstrlen(filter);
+	lstrcpynA(filter,Translate("All Bitmaps"),bytesLeft); bytesLeft-=lstrlenA(filter);
 	strncat(filter," (*.bmp;*.jpg;*.gif)",bytesLeft);
-	pfilter=filter+lstrlen(filter)+1; bytesLeft=wParam-(pfilter-filter);
-	lstrcpyn(pfilter,"*.BMP;*.RLE;*.JPG;*.JPEG;*.GIF",bytesLeft);
-	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	pfilter=filter+lstrlenA(filter)+1; bytesLeft=wParam-(pfilter-filter);
+	lstrcpynA(pfilter,"*.BMP;*.RLE;*.JPG;*.JPEG;*.GIF",bytesLeft);
+	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
 
-	lstrcpyn(pfilter,Translate("Windows Bitmaps"),bytesLeft); bytesLeft-=lstrlen(pfilter);
+	lstrcpynA(pfilter,Translate("Windows Bitmaps"),bytesLeft); bytesLeft-=lstrlenA(pfilter);
 	strncat(pfilter," (*.bmp;*.rle)",bytesLeft);
-	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
-	lstrcpyn(pfilter,"*.BMP;*.RLE",bytesLeft);
-	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	lstrcpynA(pfilter,"*.BMP;*.RLE",bytesLeft);
+	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
 
-	lstrcpyn(pfilter,Translate("JPEG Bitmaps"),bytesLeft); bytesLeft-=lstrlen(pfilter);
+	lstrcpynA(pfilter,Translate("JPEG Bitmaps"),bytesLeft); bytesLeft-=lstrlenA(pfilter);
 	strncat(pfilter," (*.jpg;*.jpeg)",bytesLeft);
-	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
-	lstrcpyn(pfilter,"*.JPG;*.JPEG",bytesLeft);
-	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	lstrcpynA(pfilter,"*.JPG;*.JPEG",bytesLeft);
+	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
 
-	lstrcpyn(pfilter,Translate("GIF Bitmaps"),bytesLeft); bytesLeft-=lstrlen(pfilter);
+	lstrcpynA(pfilter,Translate("GIF Bitmaps"),bytesLeft); bytesLeft-=lstrlenA(pfilter);
 	strncat(pfilter," (*.gif)",bytesLeft);
-	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
-	lstrcpyn(pfilter,"*.GIF",bytesLeft);
-	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	lstrcpynA(pfilter,"*.GIF",bytesLeft);
+	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
 
-	lstrcpyn(pfilter,Translate("All Files"),bytesLeft); bytesLeft-=lstrlen(pfilter);
+	lstrcpynA(pfilter,Translate("All Files"),bytesLeft); bytesLeft-=lstrlenA(pfilter);
 	strncat(pfilter," (*)",bytesLeft);
-	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
-	lstrcpyn(pfilter,"*",bytesLeft);
-	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	lstrcpynA(pfilter,"*",bytesLeft);
+	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
 
 	if(bytesLeft) *pfilter='\0';
 	return 0;

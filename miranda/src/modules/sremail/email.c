@@ -26,7 +26,7 @@ static HANDLE hEMailMenuItem;
 
 void SendEmailThread(char *szUrl)
 {
-	ShellExecute(NULL,"open",szUrl,"","",SW_SHOW);
+	ShellExecuteA(NULL,"open",szUrl,"","",SW_SHOW);
 	free(szUrl);	
 	return;
 }
@@ -40,13 +40,13 @@ static int SendEMailCommand(WPARAM wParam,LPARAM lParam)
 	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
 	if(szProto==NULL || DBGetContactSetting((HANDLE)wParam,szProto,"e-mail",&dbv)) {
 		if(DBGetContactSetting((HANDLE)wParam,"UserInfo","Mye-mail0",&dbv)) {
-			MessageBox((HWND)lParam,Translate("User has not registered an e-mail address"),Translate("Send e-mail"),MB_OK);
+			MessageBoxA((HWND)lParam,Translate("User has not registered an e-mail address"),Translate("Send e-mail"),MB_OK);
 			return 1;
 		}
 	}
-	szUrl=(char*)malloc(lstrlen(dbv.pszVal)+8);
-	lstrcpy(szUrl,"mailto:");
-	lstrcat(szUrl,dbv.pszVal);
+	szUrl=(char*)malloc(lstrlenA(dbv.pszVal)+8);
+	lstrcpyA(szUrl,"mailto:");
+	lstrcatA(szUrl,dbv.pszVal);
 	free(dbv.pszVal);
 	forkthread(SendEmailThread,0,szUrl);
 	return 0;

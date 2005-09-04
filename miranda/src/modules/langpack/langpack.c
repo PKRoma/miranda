@@ -33,11 +33,11 @@ struct LangPackEntry {
 };
 
 struct LangPackStruct {
-	char filename[MAX_PATH];
-	char language[64];
-	char lastModifiedUsing[64];
-	char authors[256];
-	char authorEmail[128];
+	TCHAR filename[MAX_PATH];
+	char  language[64];
+	char  lastModifiedUsing[64];
+	char  authors[256];
+	char  authorEmail[128];
 	struct LangPackEntry *entry;
 	int entryCount;
 	LCID localeID;
@@ -47,7 +47,7 @@ struct LangPackStruct {
 static void TrimString(char *str)
 {
 	int len,start;
-	len=lstrlen(str);
+	len=lstrlenA(str);
 	while(str[0] && (unsigned char)str[len-1]<=' ') str[--len]=0;
 	for(start=0;str[start] && (unsigned char)str[start]<=' ';start++);
 	MoveMemory(str,str+start,len-start+1);
@@ -55,13 +55,13 @@ static void TrimString(char *str)
 
 static void TrimStringSimple(char *str) 
 {
-	if (str[lstrlen(str)-1] == '\n') str[lstrlen(str)-1] = '\0';
-	if (str[lstrlen(str)-1] == '\r') str[lstrlen(str)-1] = '\0';
+	if (str[lstrlenA(str)-1] == '\n') str[lstrlenA(str)-1] = '\0';
+	if (str[lstrlenA(str)-1] == '\r') str[lstrlenA(str)-1] = '\0';
 }
 
 static int IsEmpty(char *str) {
 	int i = 0;
-	int len = lstrlen(str);
+	int len = lstrlenA(str);
 
 	while (str[i]) {
 		if (str[i]!=' '&&str[i]!='\r'&&str[i]!='\n') return 0;
@@ -73,7 +73,7 @@ static int IsEmpty(char *str) {
 static void ConvertBackslashes(char *str)
 {
 	char *pstr;
-	for(pstr=str;*pstr;pstr=CharNext(pstr)) {
+	for(pstr=str;*pstr;pstr=CharNextA(pstr)) {
 		if(*pstr=='\\') {
 			switch(pstr[1]) {
 case 'n': *pstr='\n'; break;
@@ -81,7 +81,7 @@ case 't': *pstr='\t'; break;
 case 'r': *pstr='\r'; break;
 default: *pstr=pstr[1]; break;
 			}
-			MoveMemory(pstr+1,pstr+2,lstrlen(pstr+2)+1);
+			MoveMemory(pstr+1,pstr+2,lstrlenA(pstr+2)+1);
 		}
 	}
 }
@@ -139,7 +139,7 @@ static int SortLangPackHashesProc2(struct LangPackEntry *arg1,struct LangPackEnt
 	return 0;
 }
 
-static int LoadLangPack(const char *szLangPack)
+static int LoadLangPack(const TCHAR *szLangPack)
 {
 	FILE *fp;
 	char line[4096];
@@ -151,11 +151,11 @@ static int LoadLangPack(const char *szLangPack)
 	USHORT langID;
 
 	lstrcpy(langPack.filename,szLangPack);
-	fp=fopen(szLangPack,"rt");
+	fp = _tfopen(szLangPack,_T("rt"));
 	if(fp==NULL) return 1;
 	fgets(line,sizeof(line),fp);
 	TrimString(line);
-	if(lstrcmp(line,"Miranda Language Pack Version 1")) {fclose(fp); return 2;}
+	if(lstrcmpA(line,"Miranda Language Pack Version 1")) {fclose(fp); return 2;}
 	//headers
 	while(!feof(fp)) {
 		startOfLine=ftell(fp);
@@ -166,11 +166,11 @@ static int LoadLangPack(const char *szLangPack)
 		pszColon=strchr(line,':');
 		if(pszColon==NULL) {fclose(fp); return 3;}
 		*pszColon=0;
-		if(!lstrcmp(line,"Language")) {lstrcpy(langPack.language,pszColon+1); TrimString(langPack.language);}
-		else if(!lstrcmp(line,"Last-Modified-Using")) {lstrcpy(langPack.lastModifiedUsing,pszColon+1); TrimString(langPack.lastModifiedUsing);}
-		else if(!lstrcmp(line,"Authors")) {lstrcpy(langPack.authors,pszColon+1); TrimString(langPack.authors);}
-		else if(!lstrcmp(line,"Author-email")) {lstrcpy(langPack.authorEmail,pszColon+1); TrimString(langPack.authorEmail);}
-		else if(!lstrcmp(line, "Locale")) {
+		if(!lstrcmpA(line,"Language")) {lstrcpyA(langPack.language,pszColon+1); TrimString(langPack.language);}
+		else if(!lstrcmpA(line,"Last-Modified-Using")) {lstrcpyA(langPack.lastModifiedUsing,pszColon+1); TrimString(langPack.lastModifiedUsing);}
+		else if(!lstrcmpA(line,"Authors")) {lstrcpyA(langPack.authors,pszColon+1); TrimString(langPack.authors);}
+		else if(!lstrcmpA(line,"Author-email")) {lstrcpyA(langPack.authorEmail,pszColon+1); TrimString(langPack.authorEmail);}
+		else if(!lstrcmpA(line, "Locale")) {
 			char szBuf[20], *stopped;
 
 			TrimString(pszColon + 1);
@@ -189,13 +189,13 @@ static int LoadLangPack(const char *szLangPack)
 		if(IsEmpty(line) || line[0]==';' || line[0]==0) continue;
 		TrimStringSimple(line);
 		ConvertBackslashes(line);
-		if(line[0]=='[' && line[lstrlen(line)-1]==']') {
+		if(line[0]=='[' && line[lstrlenA(line)-1]==']') {
 			if(langPack.entryCount && langPack.entry[langPack.entryCount-1].local==NULL) {
 				if(langPack.entry[langPack.entryCount-1].english!=NULL) free(langPack.entry[langPack.entryCount-1].english);
 				langPack.entryCount--;
 			}
 			pszLine = line+1;
-			line[lstrlen(line)-1]='\0';
+			line[lstrlenA(line)-1]='\0';
 			TrimStringSimple(line);
 			if(++langPack.entryCount>entriesAlloced) {
 				entriesAlloced+=128;
@@ -219,9 +219,9 @@ static int LoadLangPack(const char *szLangPack)
 				}
 			}
 			else {
-				E->local=(char*)realloc(E->local,lstrlen(E->local)+lstrlen(line)+2);
-				lstrcat(E->local,"\n");
-				lstrcat(E->local,line);
+				E->local=(char*)realloc(E->local,lstrlenA(E->local)+lstrlenA(line)+2);
+				lstrcatA(E->local,"\n");
+				lstrcatA(E->local,line);
 				{
 					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
 					int iOldLen = wcslen(E->wlocal);
@@ -276,19 +276,19 @@ static int LangPackShutdown(WPARAM wParam,LPARAM lParam)
 int LoadLangPackModule(void)
 {
 	HANDLE hFind;
-	char szSearch[MAX_PATH],*str2,szLangPack[MAX_PATH];
+	TCHAR szSearch[MAX_PATH],*str2,szLangPack[MAX_PATH];
 	WIN32_FIND_DATA fd;
 
 	ZeroMemory(&langPack,sizeof(langPack));
 	HookEvent(ME_SYSTEM_SHUTDOWN,LangPackShutdown);
 	LoadLangPackServices();
 	GetModuleFileName(GetModuleHandle(NULL),szSearch,sizeof(szSearch));
-	str2=strrchr(szSearch,'\\');
+	str2=_tcsrchr(szSearch,'\\');
 	if(str2!=NULL) *str2=0;
 	else str2=szSearch;
-	lstrcat(szSearch,"\\langpack_*.txt");
-	hFind=FindFirstFile(szSearch,&fd);
-	if(hFind!=INVALID_HANDLE_VALUE) {
+	lstrcat( szSearch, _T("\\langpack_*.txt"));
+	hFind = FindFirstFile( szSearch, &fd );
+	if( hFind != INVALID_HANDLE_VALUE ) {
 		lstrcpy(str2+1,fd.cFileName);
 		lstrcpy(szLangPack,szSearch);
 		FindClose(hFind);

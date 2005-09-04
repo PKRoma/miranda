@@ -82,18 +82,18 @@ static int NetlibInitSocks4Connection(struct NetlibConnection *nlc,struct Netlib
 	int nUserLen,nHostLen,len;
 	BYTE reply[8];
 
-	nUserLen=lstrlen(nlu->settings.szProxyAuthUser);
-	nHostLen=lstrlen(nloc->szHost);
+	nUserLen=lstrlenA(nlu->settings.szProxyAuthUser);
+	nHostLen=lstrlenA(nloc->szHost);
 	pInit=(PBYTE)malloc(10+nUserLen+nHostLen);
 	pInit[0]=4;   //SOCKS4
 	pInit[1]=1;   //connect
 	*(PWORD)(pInit+2)=htons(nloc->wPort);
 	if(nlu->settings.szProxyAuthUser==NULL) pInit[8]=0;
-	else lstrcpy(pInit+8,nlu->settings.szProxyAuthUser);
+	else lstrcpyA(pInit+8,nlu->settings.szProxyAuthUser);
 	if(nlu->settings.dnsThroughProxy) {
 		if((*(PDWORD)(pInit+4)=inet_addr(nloc->szHost))==INADDR_NONE) {
 			*(PDWORD)(pInit+4)=0x01000000;
-			lstrcpy(pInit+9+nUserLen,nloc->szHost);
+			lstrcpyA(pInit+9+nUserLen,nloc->szHost);
 			len=10+nUserLen+nHostLen;
 		}
 		else len=9+nUserLen;
@@ -168,8 +168,8 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 		int nUserLen,nPassLen;
 		PBYTE pAuthBuf;
 
-		nUserLen=lstrlen(nlu->settings.szProxyAuthUser);
-		nPassLen=lstrlen(nlu->settings.szProxyAuthPassword);
+		nUserLen=lstrlenA(nlu->settings.szProxyAuthUser);
+		nPassLen=lstrlenA(nlu->settings.szProxyAuthPassword);
 		pAuthBuf=(PBYTE)malloc(3+nUserLen+nPassLen);
 		pAuthBuf[0]=1;		//auth version
 		pAuthBuf[1]=nUserLen;
@@ -205,7 +205,7 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 
 		if(nlu->settings.dnsThroughProxy) {
 			if((hostIP=inet_addr(nloc->szHost))==INADDR_NONE)
-				nHostLen=lstrlen(nloc->szHost)+1;
+				nHostLen=lstrlenA(nloc->szHost)+1;
 			else nHostLen=4;
 		}
 		else {
@@ -478,7 +478,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	NetlibInitializeNestedCS(&nlc->ncsSend);
 	NetlibInitializeNestedCS(&nlc->ncsRecv);
 	if(nlu->settings.useProxy && (nlu->settings.proxyType==PROXYTYPE_HTTP || nlu->settings.proxyType==PROXYTYPE_HTTPS) && nlu->settings.useProxyAuth && nlu->settings.useProxyAuthNtlm)
-		nlc->hInstSecurityDll=LoadLibrary("security.dll");
+		nlc->hInstSecurityDll=LoadLibraryA("security.dll");
 
 	nlc->sinProxy.sin_family=AF_INET;
 	if(nlu->settings.useProxy) {

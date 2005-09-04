@@ -155,7 +155,7 @@ void CALLBACK IdleTimer(HWND hwnd, UINT umsg, UINT idEvent, DWORD dwTime)
 static BOOL IsWorkstationLocked(void)
 {
 	BOOL rc=0;	
-	HDESK hDesk = OpenDesktop("default", 0, FALSE, DESKTOP_SWITCHDESKTOP);
+	HDESK hDesk = OpenDesktop( _T("default"), 0, FALSE, DESKTOP_SWITCHDESKTOP);
 	if ( hDesk != 0 ) {
 		rc = SwitchDesktop(hDesk) == FALSE;
 		CloseDesktop(hDesk);
@@ -199,7 +199,7 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
     
             CheckDlgButton(hwndDlg, IDC_AASHORTIDLE, DBGetContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, 0) ? BST_CHECKED:BST_UNCHECKED);
             for (j = 0; j<sizeof(aa_Status)/sizeof(aa_Status[0]) ;j++) {
-				SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_ADDSTRING, 0, (LPARAM)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)aa_Status[j], 0) );
+				SendDlgItemMessageA(hwndDlg, IDC_AASTATUS, CB_ADDSTRING, 0, (LPARAM)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)aa_Status[j], 0) );
 			}
             j = IdleGetStatusIndex(DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0));
             SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_SETCURSEL, j, 0);
@@ -280,7 +280,7 @@ static int IdleOptInit(WPARAM wParam, LPARAM lParam)
 	odp.cbSize=sizeof(odp);
 	odp.position=100000000;
 	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_IDLE);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_IDLE);
 	odp.pszGroup=Translate("Status");
 	odp.pszTitle=Translate("Idle");
 	odp.pfnDlgProc=IdleOptsDlgProc;
@@ -311,7 +311,7 @@ static int UnloadIdleModule(WPARAM wParam, LPARAM lParam)
 
 int LoadIdleModule(void)
 {
-	MyGetLastInputInfo=(BOOL (WINAPI *)(LASTINPUTINFO*))GetProcAddress(GetModuleHandle("user32"), "GetLastInputInfo");
+	MyGetLastInputInfo=(BOOL (WINAPI *)(LASTINPUTINFO*))GetProcAddress(GetModuleHandleA("user32"), "GetLastInputInfo");
 	hIdleEvent=CreateHookableEvent(ME_IDLE_CHANGED);
 	IdleObject_Create(&gIdleObject);
     CreateServiceFunction(MS_IDLE_GETIDLEINFO, IdleGetInfo);

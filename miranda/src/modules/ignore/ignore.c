@@ -229,10 +229,10 @@ static BOOL CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			{	CLCINFOITEM cii={0};
 				cii.cbSize=sizeof(cii);
 				cii.flags=CLCIIF_GROUPFONT;
-				cii.pszText=Translate("** All contacts **");
+				cii.pszText=TranslateT("** All contacts **");
 				hItemAll=(HANDLE)SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_ADDINFOITEM,0,(LPARAM)&cii);
 
-				cii.pszText=Translate("** Unknown contacts **");
+				cii.pszText=TranslateT("** Unknown contacts **");
 				hItemUnknown=(HANDLE)SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_ADDINFOITEM,0,(LPARAM)&cii);
 				InitialiseItem(GetDlgItem(hwndDlg,IDC_LIST),NULL,hItemUnknown,0xFFFFFFFF);
 			}
@@ -340,7 +340,7 @@ static int IgnoreOptInitialise(WPARAM wParam,LPARAM lParam)
 	odp.cbSize=sizeof(odp);
 	odp.position=900000000;
 	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_IGNORE);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_IGNORE);
 	odp.pszTitle=Translate("Ignore");
 	odp.pszGroup=Translate("Events");
 	odp.pfnDlgProc=DlgProcIgnoreOpts;

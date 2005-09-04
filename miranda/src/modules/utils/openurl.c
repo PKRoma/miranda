@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <ctype.h>
 
 #define DDEMESSAGETIMEOUT  1000
-#define WNDCLASS_DDEMSGWINDOW  "MirandaDdeMsgWindow"
+#define WNDCLASS_DDEMSGWINDOW  _T("MirandaDdeMsgWindow")
 
 struct DdeMsgWindowData {
 	int fAcked,fData;
@@ -72,7 +72,7 @@ static int DoDdeRequest(const char *szItemName,HWND hwndDdeMsg)
 	MSG msg;
 	struct DdeMsgWindowData *dat=(struct DdeMsgWindowData*)GetWindowLong(hwndDdeMsg,0);
 
-	hSzItemName=GlobalAddAtom(szItemName);
+	hSzItemName=GlobalAddAtomA(szItemName);
 	if(!PostMessage(dat->hwndDde,WM_DDE_REQUEST,(WPARAM)hwndDdeMsg,MAKELPARAM(CF_TEXT,hSzItemName))) {
 		GlobalDeleteAtom(hSzItemName);
 		return 1;
@@ -104,8 +104,8 @@ static int DdeOpenUrl(const char *szBrowser,char *szUrl,int newWindow,HWND hwndD
 	char *szItemName;
 	struct DdeMsgWindowData *dat=(struct DdeMsgWindowData*)GetWindowLong(hwndDdeMsg,0);
 
-	hSzBrowser=GlobalAddAtom(szBrowser);
-	hSzTopic=GlobalAddAtom("WWW_OpenURL");
+	hSzBrowser=GlobalAddAtomA(szBrowser);
+	hSzTopic=GlobalAddAtomA("WWW_OpenURL");
 	dat->fAcked=0;
 	if(!SendMessageTimeout(HWND_BROADCAST,WM_DDE_INITIATE,(WPARAM)hwndDdeMsg,MAKELPARAM(hSzBrowser,hSzTopic),SMTO_ABORTIFHUNG|SMTO_NORMAL,DDEMESSAGETIMEOUT,&dwResult)
 	   || !dat->fAcked) {
@@ -113,8 +113,8 @@ static int DdeOpenUrl(const char *szBrowser,char *szUrl,int newWindow,HWND hwndD
 		GlobalDeleteAtom(hSzBrowser);
 		return 1;
 	}
-	szItemName=(char*)malloc(lstrlen(szUrl)+7);
-	wsprintf(szItemName,"\"%s\",,%d",szUrl,newWindow?0:-1);
+	szItemName=(char*)malloc(lstrlenA(szUrl)+7);
+	wsprintfA(szItemName,"\"%s\",,%d",szUrl,newWindow?0:-1);
 	if(DoDdeRequest(szItemName,hwndDdeMsg)) {
 		free(szItemName);
 		GlobalDeleteAtom(hSzTopic);
@@ -135,7 +135,7 @@ typedef struct {
 
 static void OpenURLThread(void *arg)
 {
-    TOpenUrlInfo *hUrlInfo = (TOpenUrlInfo*)arg;
+   TOpenUrlInfo *hUrlInfo = (TOpenUrlInfo*)arg;
 	char *szResult;
 	HWND hwndDdeMsg;
 	struct DdeMsgWindowData msgWndData={0};
@@ -146,17 +146,17 @@ static void OpenURLThread(void *arg)
 	DWORD dataLength;
 	int success=0;
     
-    if (!hUrlInfo->szUrl) return;
-	hwndDdeMsg=CreateWindow(WNDCLASS_DDEMSGWINDOW,"",0,0,0,0,0,NULL,NULL,GetModuleHandle(NULL),NULL);
+   if (!hUrlInfo->szUrl) return;
+	hwndDdeMsg=CreateWindow(WNDCLASS_DDEMSGWINDOW,_T(""),0,0,0,0,0,NULL,NULL,GetModuleHandle(NULL),NULL);
 	SetWindowLong(hwndDdeMsg,0,(LONG)&msgWndData);
 
 	if(!_strnicmp(hUrlInfo->szUrl,"ftp:",4) || !_strnicmp(hUrlInfo->szUrl,"ftp.",4)) pszProtocol="ftp";
 	if(!_strnicmp(hUrlInfo->szUrl,"mailto:",7)) pszProtocol="mailto";
 	if(!_strnicmp(hUrlInfo->szUrl,"news:",5)) pszProtocol="news";
 	else pszProtocol="http";
-	wsprintf(szSubkey,"%s\\shell\\open\\command",pszProtocol);
-	if(RegOpenKeyEx(HKEY_CURRENT_USER,szSubkey,0,KEY_QUERY_VALUE,&hKey)==ERROR_SUCCESS
-	   || RegOpenKeyEx(HKEY_CLASSES_ROOT,szSubkey,0,KEY_QUERY_VALUE,&hKey)==ERROR_SUCCESS) {
+	wsprintfA(szSubkey,"%s\\shell\\open\\command",pszProtocol);
+	if(RegOpenKeyExA(HKEY_CURRENT_USER,szSubkey,0,KEY_QUERY_VALUE,&hKey)==ERROR_SUCCESS
+	   || RegOpenKeyExA(HKEY_CLASSES_ROOT,szSubkey,0,KEY_QUERY_VALUE,&hKey)==ERROR_SUCCESS) {
 		dataLength=sizeof(szCommandName);
 		if(RegQueryValueEx(hKey,NULL,NULL,NULL,(PBYTE)szCommandName,&dataLength)==ERROR_SUCCESS) {
 			strlwr(szCommandName);
@@ -176,8 +176,8 @@ static void OpenURLThread(void *arg)
 
 	//wack a protocol on it
 	if((isalpha(hUrlInfo->szUrl[0]) && hUrlInfo->szUrl[1]==':') || hUrlInfo->szUrl[0]=='\\') {
-		szResult=(char*)malloc(lstrlen(hUrlInfo->szUrl)+9);
-		wsprintf(szResult,"file:///%s",hUrlInfo->szUrl);
+		szResult=(char*)malloc(lstrlenA(hUrlInfo->szUrl)+9);
+		wsprintfA(szResult,"file:///%s",hUrlInfo->szUrl);
 	}
 	else {
 		int i;
@@ -185,28 +185,28 @@ static void OpenURLThread(void *arg)
 		if(hUrlInfo->szUrl[i]==':') szResult=_strdup(hUrlInfo->szUrl);
 		else {
 			if(!_strnicmp(hUrlInfo->szUrl,"ftp.",4)) {
-				szResult=(char*)malloc(lstrlen(hUrlInfo->szUrl)+7);
-				wsprintf(szResult,"ftp://%s",hUrlInfo->szUrl);
+				szResult=(char*)malloc(lstrlenA(hUrlInfo->szUrl)+7);
+				wsprintfA(szResult,"ftp://%s",hUrlInfo->szUrl);
 			}
 			else {
-				szResult=(char*)malloc(lstrlen(hUrlInfo->szUrl)+8);
-				wsprintf(szResult,"http://%s",hUrlInfo->szUrl);
+				szResult=(char*)malloc(lstrlenA(hUrlInfo->szUrl)+8);
+				wsprintfA(szResult,"http://%s",hUrlInfo->szUrl);
 			}
 		}
 	}
-	ShellExecute(NULL, "open",szResult, NULL, NULL, SW_SHOW);
+	ShellExecuteA(NULL, "open", szResult, NULL, NULL, SW_SHOW);
 	free(szResult);
-    free(hUrlInfo->szUrl);
-    free(hUrlInfo);
+	free(hUrlInfo->szUrl);
+	free(hUrlInfo);
 	return;
 }
 
 static int OpenURL(WPARAM wParam,LPARAM lParam) {
-    TOpenUrlInfo *hUrlInfo = (TOpenUrlInfo*)malloc(sizeof(TOpenUrlInfo));
-    hUrlInfo->szUrl = (char*)lParam?_strdup((char*)lParam):NULL;
-    hUrlInfo->newWindow = (int)wParam;
-    forkthread(OpenURLThread, 0, (void*)hUrlInfo);
-    return 0;
+	TOpenUrlInfo *hUrlInfo = (TOpenUrlInfo*)malloc(sizeof(TOpenUrlInfo));
+	hUrlInfo->szUrl = (char*)lParam?_strdup((char*)lParam):NULL;
+	hUrlInfo->newWindow = (int)wParam;
+	forkthread(OpenURLThread, 0, (void*)hUrlInfo);
+	return 0;
 }
 
 int InitOpenUrl(void)

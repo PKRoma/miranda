@@ -56,11 +56,11 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			{
 				char str[MAX_PATH];
 				GetContactReceivedFilesDir(NULL,str,sizeof(str));
-				SetDlgItemText(hwndDlg,IDC_FILEDIR,str);
+				SetDlgItemTextA(hwndDlg,IDC_FILEDIR,str);
 			}
 			{	HRESULT (STDAPICALLTYPE *MySHAutoComplete)(HWND,DWORD);
 
-				MySHAutoComplete=(HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(GetModuleHandle("shlwapi"),"SHAutoComplete");
+				MySHAutoComplete=(HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
 				if(MySHAutoComplete) MySHAutoComplete(GetWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),GW_CHILD),1);
 			}
 			CheckDlgButton(hwndDlg, IDC_AUTOACCEPT, DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) ? BST_CHECKED : BST_UNCHECKED);
@@ -76,13 +76,13 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				int i,iItem;
 				for(i=0;i<sizeof(virusScanners)/sizeof(virusScanners[0]);i++) {
 					if(SRFile_GetRegValue(HKEY_LOCAL_MACHINE,virusScanners[i].szExeRegPath,virusScanners[i].szExeRegValue,szScanExe,sizeof(szScanExe))) {
-						iItem=SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_ADDSTRING,0,(LPARAM)virusScanners[i].szProductName);
+						iItem=SendDlgItemMessageA(hwndDlg,IDC_SCANCMDLINE,CB_ADDSTRING,0,(LPARAM)virusScanners[i].szProductName);
 						SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_SETITEMDATA,iItem,i);
 					}
 				}
 			}
 			if(DBGetContactSetting(NULL,"SRFile","ScanCmdLine",&dbv)==0) {
-				SetDlgItemText(hwndDlg,IDC_SCANCMDLINE,dbv.pszVal);
+				SetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 			else {
@@ -115,8 +115,8 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			if(iScanner>=sizeof(virusScanners)/sizeof(virusScanners[0]) || iScanner<0) break;
 			str[0]='\0';
 			if(SRFile_GetRegValue(HKEY_LOCAL_MACHINE,virusScanners[iScanner].szExeRegPath,virusScanners[iScanner].szExeRegValue,szScanExe,sizeof(szScanExe)))
-				wsprintf(str,virusScanners[iScanner].szCommandLine,szScanExe);
-			SetDlgItemText(hwndDlg,IDC_SCANCMDLINE,str);
+				wsprintfA(str,virusScanners[iScanner].szCommandLine,szScanExe);
+			SetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,str);
 			break;
 		}
 		case WM_COMMAND:
@@ -126,9 +126,9 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					break;
 				case IDC_FILEDIRBROWSE:
 				{	char str[MAX_PATH];
-					GetDlgItemText(hwndDlg,IDC_FILEDIR,str,sizeof(str));
+					GetDlgItemTextA(hwndDlg,IDC_FILEDIR,str,sizeof(str));
 					if(BrowseForFolder(hwndDlg,str))
-						SetDlgItemText(hwndDlg,IDC_FILEDIR,str);
+						SetDlgItemTextA(hwndDlg,IDC_FILEDIR,str);
 					break;
 				}
 				case IDC_AUTOACCEPT:
@@ -143,10 +143,10 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					break;
 				case IDC_SCANCMDLINEBROWSE:
 				{	char str[MAX_PATH+2];
-					OPENFILENAME ofn={0};
+					OPENFILENAMEA ofn={0};
 					char filter[512],*pfilter;
 
-					GetDlgItemText(hwndDlg,IDC_SCANCMDLINE,str,sizeof(str));
+					GetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,str,sizeof(str));
 					ofn.lStructSize=OPENFILENAME_SIZE_VERSION_400;
 					ofn.hwndOwner=hwndDlg;
 					ofn.Flags=OFN_FILEMUSTEXIST|OFN_HIDEREADONLY;
@@ -167,20 +167,20 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					if(str[0]=='"')	{
 						char *pszQuote=strchr(str+1,'"');
 						if(pszQuote) *pszQuote='\0';
-						MoveMemory(str,str+1,lstrlen(str));
+						MoveMemory(str,str+1,lstrlenA(str));
 					}
 					else {
 						char *pszSpace=strchr(str,' ');
 						if(pszSpace) *pszSpace='\0';
 					}
 					ofn.nMaxFileTitle=MAX_PATH;
-					if(!GetOpenFileName(&ofn)) break;
+					if(!GetOpenFileNameA(&ofn)) break;
 					if(strchr(str,' ')!=NULL) {
 						MoveMemory(str+1,str,sizeof(str)-2);
 						str[0]='"';
-						lstrcat(str,"\"");
+						lstrcatA(str,"\"");
 					}
-					SetDlgItemText(hwndDlg,IDC_SCANCMDLINE,str);
+					SetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,str);
 					break;
 				}
 			}
@@ -191,13 +191,13 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			{
 				case PSN_APPLY:
 				{	char str[512];
-					GetDlgItemText(hwndDlg,IDC_FILEDIR,str,sizeof(str));
+					GetDlgItemTextA(hwndDlg,IDC_FILEDIR,str,sizeof(str));
 					DBWriteContactSettingString(NULL,"SRFile","RecvFilesDirAdv",str);
 					DBWriteContactSettingByte(NULL,"SRFile","AutoAccept",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOACCEPT));
 					DBWriteContactSettingByte(NULL,"SRFile","AutoMin",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOMIN));
 					DBWriteContactSettingByte(NULL,"SRFile","AutoClose",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOCLOSE));
 					DBWriteContactSettingByte(NULL,"SRFile","UseScanner",(BYTE)(IsDlgButtonChecked(hwndDlg,IDC_SCANAFTERDL)?VIRUSSCAN_AFTERDL:(IsDlgButtonChecked(hwndDlg,IDC_SCANDURINGDL)?VIRUSSCAN_DURINGDL:VIRUSSCAN_DISABLE)));
-					GetDlgItemText(hwndDlg,IDC_SCANCMDLINE,str,sizeof(str));
+					GetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,str,sizeof(str));
 					DBWriteContactSettingString(NULL,"SRFile","ScanCmdLine",str);
 					DBWriteContactSettingByte(NULL,"SRFile","WarnBeforeOpening",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_WARNBEFOREOPENING));
 					DBWriteContactSettingByte(NULL,"SRFile","IfExists",(BYTE)(IsDlgButtonChecked(hwndDlg,IDC_ASK)?FILERESUME_ASK:(IsDlgButtonChecked(hwndDlg,IDC_RESUME)?FILERESUME_RESUMEALL:(IsDlgButtonChecked(hwndDlg,IDC_OVERWRITE)?FILERESUME_OVERWRITEALL:FILERESUME_RENAMEALL))));
@@ -216,7 +216,7 @@ int FileOptInitialise(WPARAM wParam,LPARAM lParam)
 	odp.cbSize=sizeof(odp);
 	odp.position=900000000;
 	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_FILETRANSFER);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_FILETRANSFER);
 	odp.pszTitle=Translate("File Transfers");
 	odp.pszGroup=Translate("Events");
 	odp.pfnDlgProc=DlgProcFileOpts;

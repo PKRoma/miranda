@@ -61,7 +61,7 @@ static char *StatusModeToDbSetting(int status,const char *suffix)
 		case ID_STATUS_IDLE: prefix="Idl"; break;
 		default: return NULL;
 	}
-	lstrcpy(str,prefix); lstrcat(str,suffix);
+	lstrcpyA(str,prefix); lstrcatA(str,suffix);
 	return str;
 }
 
@@ -86,13 +86,13 @@ static int GetAwayMessage(WPARAM wParam, LPARAM lParam)
 		for(i=0;dbv.pszVal[i];i++) {
 			if(dbv.pszVal[i]!='%') continue;
 			if(!_strnicmp(dbv.pszVal+i,"%time%",6))
-				GetTimeFormat(LOCALE_USER_DEFAULT,TIME_NOSECONDS,NULL,NULL,substituteStr,sizeof(substituteStr));
+				GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_NOSECONDS,NULL,NULL,substituteStr,sizeof(substituteStr));
 			else if(!_strnicmp(dbv.pszVal+i,"%date%",6))
-				GetDateFormat(LOCALE_USER_DEFAULT,DATE_SHORTDATE,NULL,NULL,substituteStr,sizeof(substituteStr));
+				GetDateFormatA(LOCALE_USER_DEFAULT,DATE_SHORTDATE,NULL,NULL,substituteStr,sizeof(substituteStr));
 			else continue;
-			if(lstrlen(substituteStr)>6) dbv.pszVal=(char*)realloc(dbv.pszVal,lstrlen(dbv.pszVal)+1+lstrlen(substituteStr)-6);
-			MoveMemory(dbv.pszVal+i+lstrlen(substituteStr),dbv.pszVal+i+6,lstrlen(dbv.pszVal)-i-5);
-			CopyMemory(dbv.pszVal+i,substituteStr,lstrlen(substituteStr));
+			if(lstrlenA(substituteStr)>6) dbv.pszVal=(char*)realloc(dbv.pszVal,lstrlenA(dbv.pszVal)+1+lstrlenA(substituteStr)-6);
+			MoveMemory(dbv.pszVal+i+lstrlenA(substituteStr),dbv.pszVal+i+6,lstrlenA(dbv.pszVal)-i-5);
+			CopyMemory(dbv.pszVal+i,substituteStr,lstrlenA(substituteStr));
 		}
 	}
 	return (int)dbv.pszVal;
@@ -185,13 +185,13 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			SendDlgItemMessage(hwndDlg,IDC_MSG,EM_LIMITTEXT,1024,0);
 			OldMessageEditProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
 			{	char str[256],format[128];
-				GetWindowText(hwndDlg,format,sizeof(format));
+				GetWindowTextA(hwndDlg,format,sizeof(format));
 				mir_snprintf(str,sizeof(str),format,(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,dat->statusMode,0));
-				SetWindowText(hwndDlg,str);
+				SetWindowTextA(hwndDlg,str);
 			}
-			GetDlgItemText(hwndDlg,IDOK,dat->okButtonFormat,sizeof(dat->okButtonFormat));
+			GetDlgItemTextA(hwndDlg,IDOK,dat->okButtonFormat,sizeof(dat->okButtonFormat));
 			{	char *msg=(char*)GetAwayMessage((WPARAM)dat->statusMode,0);
-				SetDlgItemText(hwndDlg,IDC_MSG,msg);
+				SetDlgItemTextA(hwndDlg,IDC_MSG,msg);
 				free(msg);
 			}
 			dat->countdown=5;
@@ -205,7 +205,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			if(dat->countdown==-1) {DestroyWindow(hwndDlg); break;}
 			{	char str[64];
 				mir_snprintf(str,sizeof(str),dat->okButtonFormat,dat->countdown);
-				SetDlgItemText(hwndDlg,IDOK,str);
+				SetDlgItemTextA(hwndDlg,IDOK,str);
 			}
 			dat->countdown--;
 			break;
@@ -217,7 +217,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 					break;
 				case IDC_MSG:
 					KillTimer(hwndDlg,1);
-					SetDlgItemText(hwndDlg,IDOK,Translate("OK"));
+					SetDlgItemTextA(hwndDlg,IDOK,Translate("OK"));
 					break;
 			}
 			break;
@@ -226,7 +226,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			break;
 		case WM_DESTROY:
 			{	char str[1024];
-				GetDlgItemText(hwndDlg,IDC_MSG,str,sizeof(str));
+				GetDlgItemTextA(hwndDlg,IDC_MSG,str,sizeof(str));
 				ChangeAllProtoMessages(dat->szProto,dat->statusMode,str);
 				DBWriteContactSettingString(NULL,"SRAway",StatusModeToDbSetting(dat->statusMode,"Msg"),str);
 			}
@@ -296,7 +296,7 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			dat->oldPage=-1;
 			for(i=0;i<sizeof(statusModes)/sizeof(statusModes[0]);i++) {
 				if(!(protoModeMsgFlags&Proto_Status2Flag(statusModes[i]))) continue;
-				j=SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_ADDSTRING,0,(LPARAM)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModes[i],0));
+				j=SendDlgItemMessageA(hwndDlg,IDC_STATUS,CB_ADDSTRING,0,(LPARAM)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModes[i],0));
 				SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETITEMDATA,j,statusModes[i]);
 				dat->info[j].ignore=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Ignore"),0);
 				dat->info[j].noDialog=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"NoDlg"),0);
@@ -304,7 +304,7 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				if(DBGetContactSetting(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Default"),&dbv))
 					if(DBGetContactSetting(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Msg"),&dbv))
 						dbv.pszVal=_strdup(GetDefaultMessage(statusModes[i]));
-				lstrcpy(dat->info[j].msg,dbv.pszVal);
+				lstrcpyA(dat->info[j].msg,dbv.pszVal);
 				free(dbv.pszVal);
 			}
 			SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETCURSEL,0,0);
@@ -320,13 +320,13 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 							dat->info[dat->oldPage].ignore=IsDlgButtonChecked(hwndDlg,IDC_DONTREPLY);
 							dat->info[dat->oldPage].noDialog=IsDlgButtonChecked(hwndDlg,IDC_NODIALOG);
 							dat->info[dat->oldPage].usePrevious=IsDlgButtonChecked(hwndDlg,IDC_USEPREVIOUS);
-							GetDlgItemText(hwndDlg,IDC_MSG,dat->info[dat->oldPage].msg,sizeof(dat->info[dat->oldPage].msg));
+							GetDlgItemTextA(hwndDlg,IDC_MSG,dat->info[dat->oldPage].msg,sizeof(dat->info[dat->oldPage].msg));
 						}
 						CheckDlgButton(hwndDlg,IDC_DONTREPLY,i<0?0:dat->info[i].ignore);
 						CheckDlgButton(hwndDlg,IDC_NODIALOG,i<0?0:dat->info[i].noDialog);
 						CheckDlgButton(hwndDlg,IDC_USEPREVIOUS,i<0?0:dat->info[i].usePrevious);
 						CheckDlgButton(hwndDlg,IDC_USESPECIFIC,i<0?0:!dat->info[i].usePrevious);
-						SetDlgItemText(hwndDlg,IDC_MSG,i<0?"":dat->info[i].msg);
+						SetDlgItemTextA(hwndDlg,IDC_MSG,i<0?"":dat->info[i].msg);
 						EnableWindow(GetDlgItem(hwndDlg,IDC_NODIALOG),i<0?0:!dat->info[i].ignore);
 						EnableWindow(GetDlgItem(hwndDlg,IDC_USEPREVIOUS),i<0?0:!dat->info[i].ignore);
 						EnableWindow(GetDlgItem(hwndDlg,IDC_USESPECIFIC),i<0?0:!dat->info[i].ignore);
@@ -380,7 +380,7 @@ static int AwayMsgOptInitialise(WPARAM wParam,LPARAM lParam)
 	odp.cbSize=sizeof(odp);
 	odp.position=870000000;
 	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_AWAYMSG);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_AWAYMSG);
 	odp.pszTitle=Translate("Status Messages");
 	odp.pszGroup=Translate("Status");
 	odp.pfnDlgProc=DlgProcAwayMsgOpts;

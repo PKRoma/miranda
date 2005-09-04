@@ -59,7 +59,7 @@ BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			if (*uin) 
 				SetDlgItemInt(hwndDlg,IDC_NAME,*uin,FALSE);
 			else
-				SetDlgItemText(hwndDlg,IDC_NAME,Translate("(Unknown)"));
+				SetDlgItemTextA(hwndDlg,IDC_NAME,Translate("(Unknown)"));
 			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_DETAILS),GWL_USERDATA,(LONG)hcontact);
 			free(dbei.pBlob);
@@ -144,7 +144,7 @@ BOOL CALLBACK DenyReasonProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dbei.cbSize=sizeof(dbei);
 				dbei.cbBlob=0;
 				CallService(MS_DB_EVENT_GET,(WPARAM)GetWindowLong(hwndDlg,GWL_USERDATA),(LPARAM)&dbei);
-				GetDlgItemText(hwndDlg,IDC_REASON,szReason,256);
+				GetDlgItemTextA(hwndDlg,IDC_REASON,szReason,256);
 				CallProtoService(dbei.szModule,PS_AUTHDENY,(WPARAM)GetWindowLong(hwndDlg,GWL_USERDATA),(LPARAM)szReason);
 			}
             // fall through
@@ -188,12 +188,12 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			last=first+strlen(first)+1;
 			email=last+strlen(last)+1;
 			reason=email+strlen(email)+1;
-			SetDlgItemText(hwndDlg,IDC_NAME,nick[0]?nick:Translate("(Unknown)"));
+			SetDlgItemTextA(hwndDlg,IDC_NAME,nick[0]?nick:Translate("(Unknown)"));
 			if (*uin)
 				SetDlgItemInt(hwndDlg,IDC_UIN,*uin,FALSE);
-			else SetDlgItemText(hwndDlg,IDC_UIN,Translate("(Unknown)"));
-			SetDlgItemText(hwndDlg,IDC_MAIL,email[0]?email:Translate("(Unknown)"));
-			SetDlgItemText(hwndDlg,IDC_REASON,reason);
+			else SetDlgItemTextA(hwndDlg,IDC_UIN,Translate("(Unknown)"));
+			SetDlgItemTextA(hwndDlg,IDC_MAIL,email[0]?email:Translate("(Unknown)"));
+			SetDlgItemTextA(hwndDlg,IDC_REASON,reason);
 			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_DETAILS),GWL_USERDATA,(LONG)*hcontact);
 			free(dbei.pBlob);

@@ -70,7 +70,7 @@ struct OptionsDlgData {
 
 static HTREEITEM FindNamedTreeItemAtRoot(HWND hwndTree,const char *name)
 {
-	TVITEM tvi;
+	TVITEMA tvi;
 	char str[128];
 
 	tvi.mask=TVIF_TEXT;
@@ -78,7 +78,7 @@ static HTREEITEM FindNamedTreeItemAtRoot(HWND hwndTree,const char *name)
 	tvi.cchTextMax=sizeof(str);
 	tvi.hItem=TreeView_GetRoot(hwndTree);
 	while(tvi.hItem!=NULL) {
-		TreeView_GetItem(hwndTree,&tvi);
+		SendMessageA( hwndTree, TVM_GETITEMA, 0, (LPARAM)&tvi );
 		if(!strcmpi(str,name)) return tvi.hItem;
 		tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
 	}
@@ -87,26 +87,26 @@ static HTREEITEM FindNamedTreeItemAtRoot(HWND hwndTree,const char *name)
 
 static BOOL CALLBACK BoldGroupTitlesEnumChildren(HWND hwnd,LPARAM lParam)
 {
-	char szClass[64];
+	TCHAR szClass[64];
 
 	GetClassName(hwnd,szClass,sizeof(szClass));
-	if(!lstrcmp(szClass,"Button") && (GetWindowLong(hwnd,GWL_STYLE)&0x0F)==BS_GROUPBOX)
+	if(!lstrcmp(szClass,_T("Button")) && (GetWindowLong(hwnd,GWL_STYLE)&0x0F)==BS_GROUPBOX)
 		SendMessage(hwnd,WM_SETFONT,lParam,0);
 	return TRUE;
 }
 
 #define OPTSTATE_PREFIX "s_"
 static void SaveOptionsTreeState(HWND hdlg) {
-	TVITEM tvi;
+	TVITEMA tvi;
 	char buf[130],str[128];
 	tvi.mask=TVIF_TEXT|TVIF_STATE;
 	tvi.pszText=str;
 	tvi.cchTextMax=sizeof(str);
 	tvi.hItem=TreeView_GetRoot(GetDlgItem(hdlg,IDC_PAGETREE));
 	while(tvi.hItem!=NULL) {
-		TreeView_GetItem(GetDlgItem(hdlg,IDC_PAGETREE),&tvi);
+		SendMessageA( GetDlgItem(hdlg,IDC_PAGETREE), TVM_GETITEMA, 0, (LPARAM)&tvi );
 		if (str) {
-			wsprintf(buf,"%s%s",OPTSTATE_PREFIX,str);
+			wsprintfA(buf,"%s%s",OPTSTATE_PREFIX,str);
 			DBWriteContactSettingByte(NULL,"Options",buf,(BYTE)((tvi.state&TVIS_EXPANDED)?1:0));
 		}
 		tvi.hItem=TreeView_GetNextSibling(GetDlgItem(hdlg,IDC_PAGETREE),tvi.hItem);
@@ -163,7 +163,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 
 			for(i=0;i<dat->pageCount;i++) {
 				DWORD resSize;				
-				hrsrc=FindResource(odp[i].hInstance,odp[i].pszTemplate,RT_DIALOG);
+				hrsrc=FindResourceA(odp[i].hInstance,odp[i].pszTemplate,MAKEINTRESOURCEA(5));
 				hglb=LoadResource(odp[i].hInstance,hrsrc);
 				resSize=SizeofResource(odp[i].hInstance,hrsrc);
 				dat->opd[i].pTemplate=malloc(resSize);
@@ -195,8 +195,8 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 				if(odp[i].pszTitle) dat->opd[i].pszTitle=_strdup(odp[i].pszTitle);
 				dat->opd[i].pszGroup=odp[i].pszGroup;
 				if(odp[i].pszGroup) dat->opd[i].pszGroup=_strdup(odp[i].pszGroup);
-				if(ood->pszPage && !lstrcmp(ood->pszPage,odp[i].pszTitle) &&
-				   ((ood->pszGroup==NULL && odp[i].pszGroup==NULL) || (ood->pszGroup && odp[i].pszGroup && !lstrcmp(ood->pszGroup,odp[i].pszGroup))))
+				if(ood->pszPage && !lstrcmpA(ood->pszPage,odp[i].pszTitle) &&
+				   ((ood->pszGroup==NULL && odp[i].pszGroup==NULL) || (ood->pszGroup && odp[i].pszGroup && !lstrcmpA(ood->pszGroup,odp[i].pszGroup))))
 				    dat->currentPage=i;
 			}
 			DBFreeVariant(&dbvLastGroup);
@@ -217,8 +217,8 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		}
 		case DM_REBUILDPAGETREE:
 		{	int i;
-			TVINSERTSTRUCT tvis;
-			TVITEM tvi;
+			TVINSERTSTRUCTA tvis;
+			TVITEMA tvi;
 			char str[128],buf[130];
 
 			TreeView_SelectItem(GetDlgItem(hdlg,IDC_PAGETREE),NULL);
@@ -239,7 +239,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 					if(tvis.hParent==NULL) {
 						tvis.item.lParam=-1;
 						tvis.item.pszText=dat->opd[i].pszGroup;
-						tvis.hParent=TreeView_InsertItem(GetDlgItem(hdlg,IDC_PAGETREE),&tvis);
+						tvis.hParent=(HTREEITEM)SendMessageA( GetDlgItem(hdlg,IDC_PAGETREE), TVM_INSERTITEMA, 0, (LPARAM)&tvis );
 					}
 				}
 				else {
@@ -258,7 +258,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 				}
 				tvis.item.pszText=(char*)dat->opd[i].pszTitle;
 				tvis.item.lParam=i;
-				dat->opd[i].hTreeItem=TreeView_InsertItem(GetDlgItem(hdlg,IDC_PAGETREE),&tvis);
+				dat->opd[i].hTreeItem=(HTREEITEM)SendMessageA( GetDlgItem(hdlg,IDC_PAGETREE), TVM_INSERTITEMA, 0, (LPARAM)&tvis);
 				if(i==dat->currentPage) dat->hCurrentPage=dat->opd[i].hTreeItem;
 			}
 			tvi.mask=TVIF_TEXT|TVIF_STATE;
@@ -266,9 +266,9 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			tvi.cchTextMax=sizeof(str);
 			tvi.hItem=TreeView_GetRoot(GetDlgItem(hdlg,IDC_PAGETREE));
 			while(tvi.hItem!=NULL) {
-				TreeView_GetItem(GetDlgItem(hdlg,IDC_PAGETREE),&tvi);
+				SendMessageA( GetDlgItem(hdlg,IDC_PAGETREE), TVM_GETITEMA, 0, (LPARAM)&tvi );
 				if (str) {
-					wsprintf(buf,"%s%s",OPTSTATE_PREFIX,str);
+					wsprintfA(buf,"%s%s",OPTSTATE_PREFIX,str);
 					if (!DBGetContactSettingByte(NULL,"Options",buf,1))
 						TreeView_Expand(GetDlgItem(hdlg,IDC_PAGETREE),tvi.hItem,TVE_COLLAPSE);
 				}
@@ -527,7 +527,7 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage)
 	ood.pszGroup=pszGroup;
 	ood.pszPage=pszPage;
 	psh.pStartPage = (LPCTSTR)&ood;	  //more structure misuse
-	psh.pszCaption = Translate("Miranda IM Options");	
+	psh.pszCaption = TranslateT("Miranda IM Options");	
 	psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
 	hwndOptions=CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_OPTIONS),NULL,OptionsDlgProc,(LPARAM)&psh);
 	for(i=0;i<opi.pageCount;i++) {

@@ -60,22 +60,22 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)dat->hDbEvent,0);
 				dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
 				CallService(MS_DB_EVENT_GET,(WPARAM)dat->hDbEvent,(LPARAM)&dbei);
-				SetDlgItemText(hwndDlg,IDC_URL,dbei.pBlob);
-				SetDlgItemText(hwndDlg,IDC_MSG,dbei.pBlob+lstrlen(dbei.pBlob)+1);
+				SetDlgItemTextA(hwndDlg,IDC_URL,dbei.pBlob);
+				SetDlgItemTextA(hwndDlg,IDC_MSG,dbei.pBlob+lstrlenA(dbei.pBlob)+1);
 				free(dbei.pBlob);
 
 				CallService(MS_DB_EVENT_MARKREAD,(WPARAM)dat->hContact,(LPARAM)dat->hDbEvent);
 
 				contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
 				mir_snprintf(str,sizeof(str),Translate("URL from %s"),contactName);
-				SetWindowText(hwndDlg,str);
-				SetDlgItemText(hwndDlg,IDC_FROM,contactName);
+				SetWindowTextA(hwndDlg,str);
+				SetDlgItemTextA(hwndDlg,IDC_FROM,contactName);
 				SendDlgItemMessage(hwndDlg,IDOK,BUTTONSETARROW,1,0);
 				dbtts.szDest=str;
 				dbtts.cbDest=sizeof(str);
 				dbtts.szFormat="t d";
 				CallService(MS_DB_TIME_TIMESTAMPTOSTRING,dbei.timestamp,(LPARAM)&dbtts);
-				SetDlgItemText(hwndDlg,IDC_DATE,str);
+				SetDlgItemTextA(hwndDlg,IDC_DATE,str);
 			}
 
 			// From message dlg
@@ -160,19 +160,19 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 						//
 						contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-						SetDlgItemText(hwndDlg,IDC_NAME,hasName?buf:contactName);
+						SetDlgItemTextA(hwndDlg,IDC_NAME,hasName?buf:contactName);
 
 						szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE),0);
 						mir_snprintf(newtitle,sizeof(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
 					}
 				}
 				else
-					lstrcpyn(newtitle, pszNewTitleStart, sizeof(newtitle));
+					lstrcpynA(newtitle, pszNewTitleStart, sizeof(newtitle));
 
-				GetWindowText(hwndDlg,oldtitle,sizeof(oldtitle));
+				GetWindowTextA(hwndDlg,oldtitle,sizeof(oldtitle));
 
-				if(lstrcmp(newtitle,oldtitle))	   //swt() flickers even if the title hasn't actually changed
-					SetWindowText(hwndDlg,newtitle);
+				if(lstrcmpA(newtitle,oldtitle))	   //swt() flickers even if the title hasn't actually changed
+					SetWindowTextA(hwndDlg,newtitle);
 
 				break;
 				
@@ -193,7 +193,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						hSubMenu=GetSubMenu(hMenu,6);
 						CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hSubMenu,0);
 						GetWindowRect((HWND)lParam, &rc);
-						GetDlgItemText(hwndDlg, IDC_URL, url, sizeof(url));
+						GetDlgItemTextA(hwndDlg, IDC_URL, url, sizeof(url));
 						switch(TrackPopupMenu(hSubMenu,TPM_RETURNCMD,rc.left,rc.bottom,0,hwndDlg,NULL)) {
 							case IDM_OPENNEW:
 								CallService(MS_UTILS_OPENURL,1,(LPARAM)url);
@@ -205,8 +205,8 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							{	HGLOBAL hData;
 								if(!OpenClipboard(hwndDlg)) break;
 								EmptyClipboard();
-								hData=GlobalAlloc(GMEM_MOVEABLE,lstrlen(url)+1);
-								lstrcpy((char*)GlobalLock(hData),url);
+								hData=GlobalAlloc(GMEM_MOVEABLE,lstrlenA(url)+1);
+								lstrcpyA((char*)GlobalLock(hData),url);
 								GlobalUnlock(hData);
 								SetClipboardData(CF_TEXT,hData);
 								CloseClipboard();
@@ -301,7 +301,7 @@ static HGLOBAL DoDdeRequest(const char *szItemName,HWND hwndDlg)
 	DWORD timeoutTick,thisTick;
 	MSG msg;
 
-	hSzItemName=GlobalAddAtom(szItemName);
+	hSzItemName=GlobalAddAtomA(szItemName);
 	if(!PostMessage(hwndDde,WM_DDE_REQUEST,(WPARAM)hwndDlg,MAKELPARAM(CF_TEXT,hSzItemName))) {
 		GlobalDeleteAtom(hSzItemName);
 		return NULL;
@@ -369,9 +369,9 @@ static void AddBrowserPageToCombo(char *url,HWND hwndCombo)
 			if(SendMessage(hwndCombo,CB_GETLBTEXTLEN,i,0)>=sizeof(szExistingUrl))
 				continue;
 			SendMessage(hwndCombo,CB_GETLBTEXT,i,(LPARAM)szExistingUrl);
-			if(!lstrcmp(szExistingUrl,url)) return;
+			if(!lstrcmpA(szExistingUrl,url)) return;
 		}
-		i=SendMessage(hwndCombo,CB_ADDSTRING,0,(LPARAM)url);
+		i=SendMessageA(hwndCombo,CB_ADDSTRING,0,(LPARAM)url);
 		szItemData=_strdup(title);
 		SendMessage(hwndCombo,CB_SETITEMDATA,i,(LPARAM)szItemData);
 	}
@@ -388,9 +388,9 @@ static void GetOpenBrowserUrlsForBrowser(const char *szBrowser,HWND hwndDlg,HWND
 	DDEDATA *data;
 	int dataLength;
 
-	hSzBrowser=GlobalAddAtom(szBrowser);
+	hSzBrowser=GlobalAddAtomA(szBrowser);
 
-	hSzTopic=GlobalAddAtom("WWW_ListWindows");
+	hSzTopic=GlobalAddAtomA("WWW_ListWindows");
 	ddeAcked=0;
 	if(!SendMessageTimeout(HWND_BROADCAST,WM_DDE_INITIATE,(WPARAM)hwndDlg,MAKELPARAM(hSzBrowser,hSzTopic),SMTO_ABORTIFHUNG|SMTO_NORMAL,DDEMESSAGETIMEOUT,&dwResult)
 	   || !ddeAcked) {
@@ -414,7 +414,7 @@ static void GetOpenBrowserUrlsForBrowser(const char *szBrowser,HWND hwndDlg,HWND
 	PostMessage(hwndDde,WM_DDE_TERMINATE,(WPARAM)hwndDlg,0);
 	GlobalDeleteAtom(hSzTopic);
 
-	hSzTopic=GlobalAddAtom("WWW_GetWindowInfo");
+	hSzTopic=GlobalAddAtomA("WWW_GetWindowInfo");
 	ddeAcked=0;
 	if(!SendMessageTimeout(HWND_BROADCAST,WM_DDE_INITIATE,(WPARAM)hwndDlg,MAKELPARAM(hSzBrowser,hSzTopic),SMTO_ABORTIFHUNG|SMTO_NORMAL,DDEMESSAGETIMEOUT,&dwResult)
 	   || !ddeAcked) {
@@ -426,7 +426,7 @@ static void GetOpenBrowserUrlsForBrowser(const char *szBrowser,HWND hwndDlg,HWND
 	for(i=0;i<windowCount;i++) {
 		if(windowId[i]==0) break;
 		{	char str[16];
-			wsprintf(str,"%d",windowId[i]);
+			wsprintfA(str,"%d",windowId[i]);
 			hData=DoDdeRequest(str,hwndDlg);
 		}
 		if(hData!=NULL) {
@@ -492,7 +492,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			{	char *str;
 				str=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-				SetDlgItemText(hwndDlg,IDC_NAME,str);
+				SetDlgItemTextA(hwndDlg,IDC_NAME,str);
 			}
 
 
@@ -536,7 +536,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (wParam==0)
 			{//ICQ sendurl timed out
 				KillTimer(hwndDlg,0);
-				MessageBox(hwndDlg,Translate("Send timed out"),"",MB_OK);
+				MessageBoxA(hwndDlg,Translate("Send timed out"),"",MB_OK);
 				EnableWindow(GetDlgItem(hwndDlg,IDOK),TRUE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_URLS),TRUE);
 				SendDlgItemMessage(hwndDlg,IDC_MESSAGE,EM_SETREADONLY,FALSE,0);
@@ -595,19 +595,19 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						}
 
 						contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-						SetDlgItemText(hwndDlg,IDC_NAME,hasName?buf:contactName);
+						SetDlgItemTextA(hwndDlg,IDC_NAME,hasName?buf:contactName);
 
 						szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE),0);
 						mir_snprintf(newtitle,sizeof(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
 					}
 				}
 				else
-					lstrcpyn(newtitle, pszNewTitleStart, sizeof(newtitle));
+					lstrcpynA(newtitle, pszNewTitleStart, sizeof(newtitle));
 
-				GetWindowText(hwndDlg,oldtitle,sizeof(oldtitle));
+				GetWindowTextA(hwndDlg,oldtitle,sizeof(oldtitle));
 
-				if(lstrcmp(newtitle,oldtitle))	   //swt() flickers even if the title hasn't actually changed
-					SetWindowText(hwndDlg,newtitle);
+				if(lstrcmpA(newtitle,oldtitle))	   //swt() flickers even if the title hasn't actually changed
+					SetWindowTextA(hwndDlg,newtitle);
 
 				break;
 				
@@ -625,18 +625,18 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					
 					urlSize=GetWindowTextLength(GetDlgItem(hwndDlg,IDC_URLS))+1;
 					url=(char*)malloc(urlSize);
-					GetDlgItemText(hwndDlg,IDC_URLS,url,urlSize);
+					GetDlgItemTextA(hwndDlg,IDC_URLS,url,urlSize);
 					if (url[0] == 0) {
 						free(url);
 						break;
 					}
 					bodySize=GetWindowTextLength(GetDlgItem(hwndDlg,IDC_MESSAGE))+1;
 					body=(char*)malloc(bodySize);
-					GetDlgItemText(hwndDlg,IDC_MESSAGE,body,bodySize);
+					GetDlgItemTextA(hwndDlg,IDC_MESSAGE,body,bodySize);
 
-					dat->sendBuffer=(char*)realloc(dat->sendBuffer,lstrlen(url)+lstrlen(body)+2);
-					lstrcpy(dat->sendBuffer,url);
-					lstrcpy(dat->sendBuffer+lstrlen(url)+1,body);
+					dat->sendBuffer=(char*)realloc(dat->sendBuffer,lstrlenA(url)+lstrlenA(body)+2);
+					lstrcpyA(dat->sendBuffer,url);
+					lstrcpyA(dat->sendBuffer+lstrlenA(url)+1,body);
 					dat->hAckEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_EVENTSENT);
 					dat->hSendId=(HANDLE)CallContactService(dat->hContact,PSS_URL,0,(LPARAM)dat->sendBuffer);
 					free(url);
@@ -660,7 +660,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						char *title;
 						i=SendDlgItemMessage(hwndDlg,IDC_URLS,CB_GETCURSEL,0,0);
 						title=(char*)SendDlgItemMessage(hwndDlg,IDC_URLS,CB_GETITEMDATA,(WPARAM)i,0);
-						SetDlgItemText(hwndDlg,IDC_MESSAGE,title);
+						SetDlgItemTextA(hwndDlg,IDC_MESSAGE,title);
 						urlSize=SendDlgItemMessage(hwndDlg,IDC_URLS,CB_GETLBTEXTLEN,(WPARAM)i,0);
 						EnableWindow(GetDlgItem(hwndDlg,IDOK), (urlSize>0));
 					}

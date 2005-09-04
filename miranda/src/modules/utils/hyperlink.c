@@ -86,7 +86,7 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT message,WPARAM wParam,LP
 			return (LRESULT)dat->hSetFont;
 		case IM_MEASURETEXT:
 		{	char text[256];
-			GetWindowText(hwnd,text,sizeof(text));
+			GetWindowTextA(hwnd,text,sizeof(text));
 			lParam=(LPARAM)text;
 			//fall thru
 		case WM_SETTEXT:
@@ -97,7 +97,7 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT message,WPARAM wParam,LP
 
 			hdc1=GetDC(hwnd);
 			if(dat->hFont!=NULL) hoFont=(HFONT)SelectObject(hdc1,dat->hFont);
-			GetTextExtentPoint32(hdc1,(const char*)lParam,lstrlen((const char*)lParam),&textSize);
+			GetTextExtentPoint32A(hdc1,(const char*)lParam,lstrlenA((const char*)lParam),&textSize);
 			dat->rcText.top=0; dat->rcText.bottom=dat->rcText.top+textSize.cy;
 			GetClientRect(hwnd,&rc);
 			if(GetWindowLong(hwnd,GWL_STYLE)&SS_CENTER) dat->rcText.left=(rc.right-textSize.cx)/2;
@@ -148,8 +148,8 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT message,WPARAM wParam,LP
 			else if(GetWindowLong(hwnd,GWL_STYLE)&SS_RIGHT) alignFlag=DT_RIGHT;
 			else alignFlag=DT_LEFT;
 			GetClientRect(hwnd,&rc);
-			GetWindowText(hwnd,text,sizeof(text));
-			DrawText(hdc1,text,-1,&rc,alignFlag|DT_NOPREFIX|DT_SINGLELINE|DT_TOP);
+			GetWindowTextA(hwnd,text,sizeof(text));
+			DrawTextA(hdc1,text,-1,&rc,alignFlag|DT_NOPREFIX|DT_SINGLELINE|DT_TOP);
 			SelectObject(hdc1,hoFont);
 			EndPaint(hwnd,&ps);
 			break;

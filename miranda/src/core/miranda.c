@@ -180,7 +180,7 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 		{
 			char szBuf[64];
 			mir_snprintf(szBuf,sizeof(szBuf),"*** pushing thread (%x)\n",GetCurrentThreadId());
-			OutputDebugString(szBuf);
+			OutputDebugStringA(szBuf);
 		}
 #endif
 		ReleaseMutex(hStackMutex);		
@@ -244,12 +244,12 @@ static void InsertRegistryKey(void)
 	if(DBGetContactSettingByte(NULL,"_Sys","CreateRegKey",1)) {
 		HKEY hKey;	
 		DWORD dw;
-		if(RegCreateKeyEx(HKEY_LOCAL_MACHINE,"SOFTWARE\\Miranda",0,NULL,0,KEY_CREATE_SUB_KEY|KEY_SET_VALUE,NULL,&hKey,&dw)==ERROR_SUCCESS) {
+		if(RegCreateKeyExA(HKEY_LOCAL_MACHINE,"SOFTWARE\\Miranda",0,NULL,0,KEY_CREATE_SUB_KEY|KEY_SET_VALUE,NULL,&hKey,&dw)==ERROR_SUCCESS) {
 			char str[MAX_PATH],*str2;
-			GetModuleFileName(NULL,str,sizeof(str));
+			GetModuleFileNameA(NULL,str,sizeof(str));
 			str2=strrchr(str,'\\');
 			if(str2!=NULL) *str2=0;
-			RegSetValueEx(hKey,"Install_Dir",0,REG_SZ,(PBYTE)str,lstrlen(str)+1);
+			RegSetValueExA(hKey,"Install_Dir",0,REG_SZ,(PBYTE)str,lstrlenA(str)+1);
 			RegCloseKey(hKey);
 		}
 	}
@@ -312,9 +312,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	BOOL (WINAPI *MyIsDialogMessage) (HWND,LPMSG);
 	LRESULT (WINAPI *MyDispatchMessage) (LPMSG);
 
-	MyPeekMessage=IsWinVerNT() ? (BOOL (WINAPI *)(LPMSG,HWND,UINT,UINT,UINT))GetProcAddress(GetModuleHandle("user32"),"PeekMessageW") : PeekMessageA;
-	MyIsDialogMessage=IsWinVerNT() ? (BOOL (WINAPI *)(HWND,LPMSG))GetProcAddress(GetModuleHandle("user32"),"IsDialogMessageW") : IsDialogMessageA;
-	MyDispatchMessage=IsWinVerNT() ? (LRESULT (WINAPI *)(LPMSG))GetProcAddress(GetModuleHandle("user32"),"DispatchMessageW") : DispatchMessageA;
+	MyPeekMessage=IsWinVerNT() ? (BOOL (WINAPI *)(LPMSG,HWND,UINT,UINT,UINT))GetProcAddress(GetModuleHandleA("user32"),"PeekMessageW") : PeekMessageA;
+	MyIsDialogMessage=IsWinVerNT() ? (BOOL (WINAPI *)(HWND,LPMSG))GetProcAddress(GetModuleHandleA("user32"),"IsDialogMessageW") : IsDialogMessageA;
+	MyDispatchMessage=IsWinVerNT() ? (LRESULT (WINAPI *)(LPMSG))GetProcAddress(GetModuleHandleA("user32"),"DispatchMessageW") : DispatchMessageA;
 
 #ifdef _DEBUG
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -329,13 +329,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 1;
 	}
 	InsertRegistryKey();
-	hAPCWindow=CreateWindowEx(0,"STATIC",NULL,0, 0,0,0,0, NULL,NULL,NULL,NULL); // lame
+	hAPCWindow=CreateWindowEx(0,_T("STATIC"),NULL,0, 0,0,0,0, NULL,NULL,NULL,NULL); // lame
 	SetWindowLong(hAPCWindow,GWL_WNDPROC,(LONG)APCWndProc);
 	hStackMutex=CreateMutex(NULL,FALSE,NULL);
 	hMirandaShutdown=CreateEvent(NULL,TRUE,FALSE,NULL);
 	hThreadQueueEmpty=CreateEvent(NULL,TRUE,TRUE,NULL);
 	NotifyEventHooks(hModulesLoadedEvent,0,0);
-	MyMsgWaitForMultipleObjectsEx=(DWORD (WINAPI *)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD))GetProcAddress(GetModuleHandle("user32"),"MsgWaitForMultipleObjectsEx");
+	MyMsgWaitForMultipleObjectsEx=(DWORD (WINAPI *)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD))GetProcAddress(GetModuleHandleA("user32"),"MsgWaitForMultipleObjectsEx");
 	forkthread(compactHeapsThread,0,NULL);	
 	CreateServiceFunction(MS_SYSTEM_SETIDLECALLBACK,SystemSetIdleCallback);
 	CreateServiceFunction(MS_SYSTEM_GETIDLE, SystemGetIdle);
@@ -409,11 +409,11 @@ static int GetMirandaVersion(WPARAM wParam,LPARAM lParam)
 	VS_FIXEDFILEINFO *vsffi;
 	DWORD ver;
 
-	GetModuleFileName(NULL,filename,sizeof(filename));
-	verInfoSize=GetFileVersionInfoSize(filename,&unused);
+	GetModuleFileNameA(NULL,filename,sizeof(filename));
+	verInfoSize=GetFileVersionInfoSizeA(filename,&unused);
 	pVerInfo=malloc(verInfoSize);
-	GetFileVersionInfo(filename,0,verInfoSize,pVerInfo);
-	VerQueryValue(pVerInfo,"\\",(PVOID*)&vsffi,&blockSize);
+	GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);
+	VerQueryValueA(pVerInfo,"\\",(PVOID*)&vsffi,&blockSize);
 	ver=(((vsffi->dwProductVersionMS>>16)&0xFF)<<24)|
 	    ((vsffi->dwProductVersionMS&0xFF)<<16)|
 		(((vsffi->dwProductVersionLS>>16)&0xFF)<<8)|
@@ -430,12 +430,12 @@ static int GetMirandaVersionText(WPARAM wParam,LPARAM lParam)
 	UINT blockSize;
 	PVOID pVerInfo;
 
-	GetModuleFileName(NULL,filename,sizeof(filename));
-	verInfoSize=GetFileVersionInfoSize(filename,&unused);
+	GetModuleFileNameA(NULL,filename,sizeof(filename));
+	verInfoSize=GetFileVersionInfoSizeA(filename,&unused);
 	pVerInfo=malloc(verInfoSize);
-	GetFileVersionInfo(filename,0,verInfoSize,pVerInfo);
-	VerQueryValue(pVerInfo,"\\StringFileInfo\\000004b0\\ProductVersion",(void*)&productVersion,&blockSize);
-	lstrcpyn((char*)lParam,productVersion,wParam);
+	GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);
+	VerQueryValueA(pVerInfo,"\\StringFileInfo\\000004b0\\ProductVersion",(void*)&productVersion,&blockSize);
+	lstrcpynA((char*)lParam,productVersion,wParam);
 	free(pVerInfo);
 	return 0;
 }

@@ -109,7 +109,7 @@ static int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 	char *szProto;
 
 	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
-	if(lstrcmp(cws->szModule,"CList") && (szProto==NULL || lstrcmp(cws->szModule,szProto))) return 0;
+	if(lstrcmpA(cws->szModule,"CList") && (szProto==NULL || lstrcmpA(cws->szModule,szProto))) return 0;
 	WindowList_Broadcast(hUrlWindowList,DM_UPDATETITLE,0,0);
 	return 0;
 }

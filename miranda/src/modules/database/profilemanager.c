@@ -62,7 +62,7 @@ static char szDefaultMirandaProfile[MAX_PATH];
 static void ThemeDialogBackground(HWND hwnd) {
 	if (IsWinVerXPPlus()) {
 		static HMODULE hThemeAPI = NULL;
-		if (!hThemeAPI) hThemeAPI = GetModuleHandle("uxtheme");
+		if (!hThemeAPI) hThemeAPI = GetModuleHandleA("uxtheme");
 		if (hThemeAPI) {
 			HRESULT (STDAPICALLTYPE *MyEnableThemeDialogTexture)(HWND,DWORD) = (HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
 			if (MyEnableThemeDialogTexture)
@@ -74,10 +74,10 @@ static void ThemeDialogBackground(HWND hwnd) {
 static int findProfiles(char * szProfileDir, ENUMPROFILECALLBACK callback, LPARAM lParam)
 {
 	HANDLE hFind = INVALID_HANDLE_VALUE;
-	WIN32_FIND_DATA ffd;
+	WIN32_FIND_DATAA ffd;
 	char searchspec[MAX_PATH];
 	mir_snprintf(searchspec, sizeof(searchspec), "%s\\*.dat", szProfileDir);
-	hFind = FindFirstFile(searchspec, &ffd);
+	hFind = FindFirstFileA(searchspec, &ffd);
 	if ( hFind != INVALID_HANDLE_VALUE ) {
 		do { 			
 			if ( !(ffd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName) ) 
@@ -86,7 +86,7 @@ static int findProfiles(char * szProfileDir, ENUMPROFILECALLBACK callback, LPARA
 				mir_snprintf(buf,sizeof(buf),"%s\\%s",szProfileDir, ffd.cFileName);
 				if ( !callback(buf, ffd.cFileName, lParam) ) break;
 			}
-		} while ( FindNextFile(hFind, &ffd) );
+		} while ( FindNextFileA(hFind, &ffd) );
 		FindClose(hFind);
 		return 1;
 	}
@@ -110,7 +110,7 @@ static int FindDbProviders(char * pluginname, DATABASELINK * dblink, LPARAM lPar
 
 	if ( dblink->getFriendlyName(szName,sizeof(szName),1) == 0 ) {
 		// add to combo box
-		LRESULT index = SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)Translate(szName));
+		LRESULT index = SendMessageA(hwndCombo, CB_ADDSTRING, 0, (LPARAM)Translate(szName));
 		SendMessage(hwndCombo, CB_SETITEMDATA, index, (LPARAM)dblink);
 	}	
 	return DBPE_CONT;
@@ -121,12 +121,12 @@ static int checkAutoCreateProfile(char * profile)
 {
 	char ac[MAX_PATH];
 	char env_profile[MAX_PATH];
-	GetPrivateProfileString("Database", "AutoCreate", "no", ac, sizeof(ac), mirandabootini);
-	if ( lstrcmpi(ac,"yes") != 0 ) return 0;
-	GetPrivateProfileString("Database", "DefaultProfile", "", ac, sizeof(ac), mirandabootini);
-	ExpandEnvironmentStrings(ac, env_profile, sizeof(env_profile));	
+	GetPrivateProfileStringA("Database", "AutoCreate", "no", ac, sizeof(ac), mirandabootini);
+	if ( lstrcmpiA(ac,"yes") != 0 ) return 0;
+	GetPrivateProfileStringA("Database", "DefaultProfile", "", ac, sizeof(ac), mirandabootini);
+	ExpandEnvironmentStringsA(ac, env_profile, sizeof(env_profile));	
 	if ( profile != NULL ) strcpy(profile, env_profile);
-	return lstrlen(env_profile) > 0;
+	return lstrlenA(env_profile) > 0;
 }
 
 static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -164,7 +164,7 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			// decide if there is a default profile name given in the INI and if it should be used
 			{
 				char profile[MAX_PATH];
-				if ( checkAutoCreateProfile((char*)&profile) ) SetDlgItemText(hwndDlg, IDC_PROFILENAME, profile);
+				if ( checkAutoCreateProfile((char*)&profile) ) SetDlgItemTextA(hwndDlg, IDC_PROFILENAME, profile);
 			}
 			// focus on the textbox
 			PostMessage(hwndDlg,WM_USER+10,0,0);
@@ -184,7 +184,7 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		case WM_SHOWWINDOW:
 		{
 			if ( wParam ) { 
-				SetWindowText(dat->hwndOK,Translate("&Create"));
+				SetWindowTextA(dat->hwndOK,Translate("&Create"));
 				SendMessage(hwndDlg,WM_USER+2,0,0);
 			}
 			break;
@@ -196,8 +196,8 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				char szName[MAX_PATH];						
 				LRESULT curSel = SendDlgItemMessage(hwndDlg,IDC_PROFILEDRIVERS,CB_GETCURSEL,0,0);				
 				if ( curSel == CB_ERR ) break; // should never happen				
-				GetWindowText(GetDlgItem(hwndDlg,IDC_PROFILENAME),szName,sizeof(szName));
-				if ( lstrlen(szName) == 0 ) break;
+				GetWindowTextA(GetDlgItem(hwndDlg,IDC_PROFILENAME),szName,sizeof(szName));
+				if ( lstrlenA(szName) == 0 ) break;
 				mir_snprintf(dat->pd->szProfile,MAX_PATH,"%s\\%s.dat",dat->pd->szProfileDir,szName);
 				dat->pd->newProfile=1;
 				dat->pd->dblink=(DATABASELINK *)SendDlgItemMessage(hwndDlg,IDC_PROFILEDRIVERS,CB_GETITEMDATA,(WPARAM)curSel,0);
@@ -218,7 +218,7 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 	HWND hwndDlg = (HWND) lParam;
 	HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
 	char sizeBuf[64];
-	LVITEM item;
+	LVITEMA item;
 	int iItem=0;	
 	char * p = strrchr(profile, '.');	
 	strcpy(sizeBuf, "0 KB");
@@ -237,10 +237,14 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 		}
 		if ( fp ) fclose(fp);
 	}
-	iItem=ListView_InsertItem(hwndList, &item);	
-	if ( lstrcmpi(szDefaultMirandaProfile, profile) == 0 ) 
+	iItem=SendMessageA( hwndList, LVM_INSERTITEMA, 0, (LPARAM)&item);	
+	if ( lstrcmpiA(szDefaultMirandaProfile, profile) == 0 ) 
 		ListView_SetItemState(hwndList, iItem, LVIS_SELECTED, LVIS_SELECTED);
-	ListView_SetItemText(hwndList, iItem, 1, sizeBuf);
+
+	item.iItem = iItem;
+	item.iSubItem = 1;
+	item.pszText = sizeBuf;
+	SendMessageA( hwndList, LVM_SETITEMTEXTA, iItem, (LPARAM)&item );
 	return TRUE;
 }
 
@@ -252,7 +256,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		{
 			HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
 			HIMAGELIST hImgList=0;
-			LVCOLUMN col;
+			LVCOLUMNA col;
 
 			TranslateDialogDefault(hwndDlg);
 			
@@ -263,11 +267,11 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			col.mask=LVCF_TEXT | LVCF_WIDTH;
 			col.pszText = Translate("Profile");
 			col.cx=225;
-			ListView_InsertColumn(hwndList, 0, &col);
+			SendMessageA( hwndList, LVM_INSERTCOLUMNA, 0, (LPARAM)&col );
 
 			col.pszText = Translate("Size");
 			col.cx=100;
-			ListView_InsertColumn(hwndList, 1, &col);
+			SendMessageA( hwndList, LVM_INSERTCOLUMNA, 1, (LPARAM)&col );
 
 			// icons
 			hImgList=ImageList_Create(16,16,ILC_COLOR16|ILC_MASK, 1, 1);
@@ -284,14 +288,14 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		{
 			HWND hwndList=GetDlgItem(hwndDlg,IDC_PROFILELIST);
 			SetFocus(hwndList);		
-			if ( lstrlen(szDefaultMirandaProfile) == 0 || ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST)) == 0 ) 
+			if ( lstrlenA(szDefaultMirandaProfile) == 0 || ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST)) == 0 ) 
 				ListView_SetItemState(hwndList, 0, LVIS_SELECTED, LVIS_SELECTED);
 			break;
 		}
 		case WM_SHOWWINDOW:
 		{
 			if ( wParam ) {
-				SetWindowText(dat->hwndOK,Translate("&Run"));
+				SetWindowTextA(dat->hwndOK,Translate("&Run"));
 				EnableWindow(dat->hwndOK, ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST))==1);
 			}
 			break;
@@ -311,7 +315,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					case NM_DBLCLK:
 					{					
 						HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
-						LVITEM item;						
+						LVITEMA item;						
 						char profile[MAX_PATH];
 						
 						if ( dat == NULL ) break;
@@ -352,7 +356,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			prof->hwndOK=GetDlgItem(hwndDlg,IDOK);
 			EnableWindow(prof->hwndOK, FALSE);
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
-			SetDlgItemText(hwndDlg,IDC_NAME,"Miranda IM Profile Manager");
+			SetDlgItemTextA(hwndDlg,IDC_NAME,"Miranda IM Profile Manager");
 			{	LOGFONT lf;
 				HFONT hNormalFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_NAME,WM_GETFONT,0,0);
 				GetObject(hNormalFont,sizeof(lf),&lf);
@@ -362,7 +366,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			{	OPTIONSDIALOGPAGE *odp;
 				int i;
-				TCITEM tci;
+				TCITEMA tci;
 
 				dat->currentPage=0;
 				dat->pageCount=psh->nPages;
@@ -371,14 +375,14 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 				tci.mask=TCIF_TEXT;
 				for(i=0;i<dat->pageCount;i++) {
-					dat->opd[i].pTemplate=(DLGTEMPLATE *)LockResource(LoadResource(odp[i].hInstance,FindResource(odp[i].hInstance,odp[i].pszTemplate,RT_DIALOG)));
+					dat->opd[i].pTemplate=(DLGTEMPLATE *)LockResource(LoadResource(odp[i].hInstance,FindResourceA(odp[i].hInstance,odp[i].pszTemplate,MAKEINTRESOURCEA(5))));
 					dat->opd[i].dlgProc=odp[i].pfnDlgProc;
 					dat->opd[i].hInst=odp[i].hInstance;
 					dat->opd[i].hwnd=NULL;
 					dat->opd[i].changed=0;
 					tci.pszText=(char*)odp[i].pszTitle;
 					if ( dat->prof->pd->noProfiles || checkAutoCreateProfile(NULL) ) dat->currentPage=1;
-					TabCtrl_InsertItem(GetDlgItem(hwndDlg,IDC_TABS),i,&tci);
+					SendMessageA( GetDlgItem(hwndDlg,IDC_TABS), TCM_INSERTITEMA, i, (LPARAM)&tci );
 				}
 			}
 			
@@ -563,8 +567,8 @@ int getProfileManager(PROFILEMANAGERDATA * pd)
 	
 	{ // remember what the default profile is, if any.
 		char defaultProfile[MAX_PATH];
-		GetPrivateProfileString("Database", "DefaultProfile", "", defaultProfile, sizeof(defaultProfile), mirandabootini);
-		ExpandEnvironmentStrings(defaultProfile, szDefaultMirandaProfile, sizeof(szDefaultMirandaProfile));
+		GetPrivateProfileStringA("Database", "DefaultProfile", "", defaultProfile, sizeof(defaultProfile), mirandabootini);
+		ExpandEnvironmentStringsA(defaultProfile, szDefaultMirandaProfile, sizeof(szDefaultMirandaProfile));
 	}
 
 	{
@@ -573,12 +577,12 @@ int getProfileManager(PROFILEMANAGERDATA * pd)
 		odp.cbSize=sizeof(odp);
 		odp.pszTitle=Translate("My Profiles");
 		odp.pfnDlgProc=DlgProfileSelect;
-		odp.pszTemplate=MAKEINTRESOURCE(IDD_PROFILE_SELECTION);
+		odp.pszTemplate=MAKEINTRESOURCEA(IDD_PROFILE_SELECTION);
 		odp.hInstance=GetModuleHandle(NULL);
 		AddProfileManagerPage(&opi, &odp);
 
 		odp.pszTitle=Translate("New Profile");
-		odp.pszTemplate=MAKEINTRESOURCE(IDD_PROFILE_NEW);
+		odp.pszTemplate=MAKEINTRESOURCEA(IDD_PROFILE_NEW);
 		odp.pfnDlgProc=DlgProfileNew;
 		AddProfileManagerPage(&opi, &odp);
 	}

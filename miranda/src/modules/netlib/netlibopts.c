@@ -86,7 +86,7 @@ static void EnableMultipleControls(HWND hwndDlg,const UINT *controls,int cContro
 static void AddProxyTypeItem(HWND hwndDlg,int type,int selectType)
 {
 	int i;
-	i=SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_ADDSTRING,0,(LPARAM)(type==0?Translate(szProxyTypes[type]):szProxyTypes[type]));
+	i=SendDlgItemMessageA(hwndDlg,IDC_PROXYTYPE,CB_ADDSTRING,0,(LPARAM)(type==0?Translate(szProxyTypes[type]):szProxyTypes[type]));
 	SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_SETITEMDATA,i,type);
 	if(type==selectType) SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_SETCURSEL,i,0);
 }
@@ -103,7 +103,7 @@ static void CopySettingsStruct(NETLIBUSERSETTINGS *dest,NETLIBUSERSETTINGS *sour
 
 static void CombineSettingsStrings(char **dest,char **source)
 {
-	if(*dest!=NULL && (*source==NULL || lstrcmpi(*dest,*source))) {free(*dest); *dest=NULL;}
+	if(*dest!=NULL && (*source==NULL || lstrcmpiA(*dest,*source))) {free(*dest); *dest=NULL;}
 }
 
 static void CombineSettingsStructs(NETLIBUSERSETTINGS *dest,DWORD *destFlags,NETLIBUSERSETTINGS *source,DWORD sourceFlags)
@@ -178,7 +178,7 @@ static void ChangeSettingStringByEdit(HWND hwndDlg,UINT ctrlId,int iUser,int mem
 
 	newValueLen=GetWindowTextLength(GetDlgItem(hwndDlg,ctrlId));
 	szNewValue=(char*)malloc(newValueLen+1);
-	GetDlgItemText(hwndDlg,ctrlId,szNewValue,newValueLen+1);
+	GetDlgItemTextA(hwndDlg,ctrlId,szNewValue,newValueLen+1);
 	if(iUser==-1) {
 		for(i=0;i<tempSettingsCount;i++)
 			if(!(tempSettings[i].flags&NUF_NOOPTIONS)) {
@@ -205,7 +205,7 @@ static void WriteSettingsStructToDb(const char *szSettingsModule,NETLIBUSERSETTI
 		DBWriteContactSettingWord(NULL,szSettingsModule,"NLProxyPort",(WORD)settings->wProxyPort);
 		DBWriteContactSettingByte(NULL,szSettingsModule,"NLUseProxyAuth",(BYTE)settings->useProxyAuth);
 		DBWriteContactSettingString(NULL,szSettingsModule,"NLProxyAuthUser",settings->szProxyAuthUser?settings->szProxyAuthUser:"");
-		lstrcpyn(szEncodedPassword,settings->szProxyAuthPassword?settings->szProxyAuthPassword:"",sizeof(szEncodedPassword));
+		lstrcpynA(szEncodedPassword,settings->szProxyAuthPassword?settings->szProxyAuthPassword:"",sizeof(szEncodedPassword));
 		CallService(MS_DB_CRYPT_ENCODESTRING,sizeof(szEncodedPassword),(LPARAM)szEncodedPassword);
 		DBWriteContactSettingString(NULL,szSettingsModule,"NLProxyAuthPassword",szEncodedPassword);
 		DBWriteContactSettingByte(NULL,szSettingsModule,"NLUseProxyAuthNtlm",(BYTE)settings->useProxyAuthNtlm);
@@ -227,7 +227,7 @@ void NetlibSaveUserSettingsStruct(const char *szSettingsModule,NETLIBUSERSETTING
 			
 	EnterCriticalSection(&csNetlibUser);
 	for(iUser=0;iUser<netlibUserCount;iUser++)
-		if(!lstrcmp(szSettingsModule,netlibUser[iUser]->user.szSettingsModule)) break;
+		if(!lstrcmpA(szSettingsModule,netlibUser[iUser]->user.szSettingsModule)) break;
 	if(iUser==netlibUserCount) {
 		LeaveCriticalSection(&csNetlibUser);
 		return;
@@ -258,7 +258,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		{	int iUser,iItem;
 
 			TranslateDialogDefault(hwndDlg);
-			iItem=SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)Translate("<All connections>"));
+			iItem=SendDlgItemMessageA(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)Translate("<All connections>"));
 			SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_SETITEMDATA,iItem,(LPARAM)-1);
 			SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_SETCURSEL,iItem,0);
 			EnterCriticalSection(&csNetlibUser);
@@ -269,7 +269,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				tempSettings[iUser].szSettingsModule=_strdup(netlibUser[iUser]->user.szSettingsModule);
 				CopySettingsStruct(&tempSettings[iUser].settings,&netlibUser[iUser]->settings);
 				if(netlibUser[iUser]->user.flags&NUF_NOOPTIONS) continue;
-				iItem=SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)netlibUser[iUser]->user.szDescriptiveName);
+				iItem=SendDlgItemMessageA(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)netlibUser[iUser]->user.szDescriptiveName);
 				SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_SETITEMDATA,iItem,iUser);
 			}
 			LeaveCriticalSection(&csNetlibUser);
@@ -301,21 +301,21 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			AddProxyTypeItem(hwndDlg,PROXYTYPE_SOCKS5,settings.proxyType);
 			if(flags&(NUF_HTTPCONNS|NUF_HTTPGATEWAY)) AddProxyTypeItem(hwndDlg,PROXYTYPE_HTTP,settings.proxyType);
 			if(!(flags&NUF_NOHTTPSOPTION)) AddProxyTypeItem(hwndDlg,PROXYTYPE_HTTPS,settings.proxyType);
-			SetDlgItemText(hwndDlg,IDC_PROXYHOST,settings.szProxyServer?settings.szProxyServer:"");
+			SetDlgItemTextA(hwndDlg,IDC_PROXYHOST,settings.szProxyServer?settings.szProxyServer:"");
 			if(settings.wProxyPort) SetDlgItemInt(hwndDlg,IDC_PROXYPORT,settings.wProxyPort,FALSE);
-			else SetDlgItemText(hwndDlg,IDC_PROXYPORT,"");
+			else SetDlgItemTextA(hwndDlg,IDC_PROXYPORT,"");
 			CheckDlgButton(hwndDlg,IDC_PROXYAUTH,settings.useProxyAuth);
-			SetDlgItemText(hwndDlg,IDC_PROXYUSER,settings.szProxyAuthUser?settings.szProxyAuthUser:"");
-			SetDlgItemText(hwndDlg,IDC_PROXYPASS,settings.szProxyAuthPassword?settings.szProxyAuthPassword:"");
+			SetDlgItemTextA(hwndDlg,IDC_PROXYUSER,settings.szProxyAuthUser?settings.szProxyAuthUser:"");
+			SetDlgItemTextA(hwndDlg,IDC_PROXYPASS,settings.szProxyAuthPassword?settings.szProxyAuthPassword:"");
 			CheckDlgButton(hwndDlg,IDC_PROXYDNS,settings.dnsThroughProxy);
 			CheckDlgButton(hwndDlg,IDC_PROXYAUTHNTLM,settings.useProxyAuthNtlm);
 
 			ShowMultipleControls(hwndDlg,incomingConnectionsControls,sizeof(incomingConnectionsControls)/sizeof(incomingConnectionsControls[0]),flags&NUF_INCOMING?SW_SHOW:SW_HIDE);
 			CheckDlgButton(hwndDlg,IDC_SPECIFYPORTS,settings.specifyIncomingPorts);
-			SetDlgItemText(hwndDlg,IDC_PORTSRANGE,settings.szIncomingPorts?settings.szIncomingPorts:"");
+			SetDlgItemTextA(hwndDlg,IDC_PORTSRANGE,settings.szIncomingPorts?settings.szIncomingPorts:"");
 
 			CheckDlgButton(hwndDlg,IDC_SPECIFYPORTSO,settings.specifyOutgoingPorts);
-			SetDlgItemText(hwndDlg,IDC_PORTSRANGEO,settings.szOutgoingPorts?settings.szOutgoingPorts:"");
+			SetDlgItemTextA(hwndDlg,IDC_PORTSRANGEO,settings.szOutgoingPorts?settings.szOutgoingPorts:"");
 
 			NetlibFreeUserSettingsStruct(&settings);
 			SendMessage(hwndDlg,M_REFRESHENABLING,0,0);
@@ -326,8 +326,8 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			char str[80];
 
 			selectedProxyType=SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_GETCURSEL,0,0),0);
-			wsprintf(str,Translate("(often %d)"),oftenProxyPorts[selectedProxyType]);
-			SetDlgItemText(hwndDlg,IDC_STOFTENPORT,str);
+			wsprintfA(str,Translate("(often %d)"),oftenProxyPorts[selectedProxyType]);
+			SetDlgItemTextA(hwndDlg,IDC_STOFTENPORT,str);
 			if(IsDlgButtonChecked(hwndDlg,IDC_USEPROXY)!=BST_UNCHECKED) {
 				int enableAuth=0,enableUser=0,enablePass=0,enableNtlm=0;
 				EnableMultipleControls(hwndDlg,useProxyControls,sizeof(useProxyControls)/sizeof(useProxyControls[0]),TRUE);
@@ -501,7 +501,7 @@ int NetlibOptInitialise(WPARAM wParam,LPARAM lParam)
 	odp.cbSize=sizeof(odp);
 	odp.position=900000000;
 	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_NETLIB);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_NETLIB);
 	odp.pszTitle=Translate("Network");
 	odp.pfnDlgProc=DlgProcNetlibOpts;
 	odp.flags=ODPF_BOLDGROUPS;
