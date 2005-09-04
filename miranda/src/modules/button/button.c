@@ -247,18 +247,18 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 		}
 		else if (GetWindowTextLength(ctl->hwnd)) {
 			// Draw the text and optinally the arrow
-			char szText[MAX_PATH];
+			TCHAR szText[MAX_PATH];
 			SIZE sz;
 			RECT rcText;
 			HFONT hOldFont;
 
 			CopyRect(&rcText, &rcClient);
-			GetWindowTextA(ctl->hwnd, szText, sizeof(szText));
+			GetWindowText(ctl->hwnd, szText, SIZEOF(szText));
 			SetBkMode(hdcMem, TRANSPARENT);
 			hOldFont = SelectObject(hdcMem, ctl->hFont);
 			// XP w/themes doesn't used the glossy disabled text.  Is it always using COLOR_GRAYTEXT?  Seems so.
 			SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd)||!ctl->hThemeButton?GetSysColor(COLOR_BTNTEXT):GetSysColor(COLOR_GRAYTEXT));
-			GetTextExtentPoint32A(hdcMem, szText, lstrlenA(szText), &sz);
+			GetTextExtentPoint32(hdcMem, szText, lstrlen(szText), &sz);
 			if (ctl->cHot) {
 				SIZE szHot;
 				
@@ -337,11 +337,11 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 		case WM_SETTEXT:
 		{
 			bct->cHot = 0;
-			if ((char*)lParam) {
-				char *tmp = (char*)lParam;
+			if ( lParam != 0 ) {
+				TCHAR *tmp = ( TCHAR* )lParam;
 				while (*tmp) {
 					if (*tmp=='&' && *(tmp+1)) {
-						bct->cHot = tolower(*(tmp+1));
+						bct->cHot = _tolower(*(tmp+1));
 						break;
 					}
 					tmp++;
