@@ -324,7 +324,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						item.iItem = ListView_GetNextItem(hwndList, -1, LVNI_SELECTED | LVNI_ALL);
 						item.pszText = profile;
 						item.cchTextMax = sizeof(profile);						
-						if ( ListView_GetItem(hwndList, &item) && dat ) {
+						if ( SendMessageA(hwndList, LVM_GETITEMA, 0, (LPARAM)&item) && dat ) {
 							mir_snprintf(dat->pd->szProfile, MAX_PATH, "%s\\%s.dat", dat->pd->szProfileDir, profile);
 							if ( hdr->code == NM_DBLCLK ) EndDialog(GetParent(hwndDlg), 1);								
 						}						

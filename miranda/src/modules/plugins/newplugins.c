@@ -69,7 +69,7 @@ typedef struct {
 } pluginEntryList;
 
 PLUGINLINK pluginCoreLink;
-TCHAR  mirandabootini[MAX_PATH];
+char   mirandabootini[MAX_PATH];
 static DWORD mirandaVersion;
 static pluginEntryList pluginListHead;
 static pluginEntry * pluginListDb;
@@ -394,12 +394,12 @@ int LoadNewPluginsModuleInfos(void)
 	pluginCoreLink.CallFunctionAsync=CallFunctionAsync;	
 	// remember where the mirandaboot.ini goes
 	{
-		TCHAR exe[MAX_PATH];
-		TCHAR* slice;
-		GetModuleFileName(NULL, exe, sizeof(exe));
-		slice=_tcsrchr(exe, '\\');
+		char exe[MAX_PATH];
+		char * slice;
+		GetModuleFileNameA(NULL, exe, sizeof(exe));
+		slice=strrchr(exe, '\\');
 		if ( slice != NULL ) *slice=0;
-		mir_sntprintf(mirandabootini, sizeof(mirandabootini), _T("%s\\mirandaboot.ini"), exe);
+		mir_snprintf(mirandabootini, sizeof(mirandabootini), "%s\\mirandaboot.ini", exe);
 	}
 	// look for all *.dll's
 	enumPlugins(scanPluginsDir, 0, 0);
@@ -483,7 +483,7 @@ int LoadNewPluginsModule(void)
 	slice=strrchr(exe, '\\');
 	if ( slice != NULL ) *slice=0;
 	// remember some useful options
-	askAboutIgnoredPlugins=(UINT) GetPrivateProfileInt( _T("PluginLoader"), _T("AskAboutIgnoredPlugins"), 0, mirandabootini);
+	askAboutIgnoredPlugins=(UINT) GetPrivateProfileIntA( "PluginLoader", "AskAboutIgnoredPlugins", 0, mirandabootini);
 	// first load the clist cos alot of plugins need that to be present at Load()
 	for ( useWhiteList = 1; useWhiteList >= 0 && clist == NULL; useWhiteList-- ) 
 		clist=getCListModule(exe, slice, useWhiteList);
@@ -751,13 +751,3 @@ static int PluginOptionsInit(WPARAM wParam, LPARAM lParam)
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
