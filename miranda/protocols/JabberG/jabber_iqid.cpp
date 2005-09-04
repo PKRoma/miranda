@@ -445,15 +445,15 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 					if ( !hasGiven && !hasFamily && !hasMiddle ) {
 						if (( m=JabberXmlGetChild( n, "GIVEN" )) != NULL && m->text!=NULL ) {
 							hasGiven = TRUE;
-							JSetString( hContact, "FirstName", JabberUrlDecode( m->text ));
+							JSetStringUtf( hContact, "FirstName", JabberUrlDecode( m->text ));
 						}
 						if (( m=JabberXmlGetChild( n, "FAMILY" )) != NULL && m->text!=NULL ) {
 							hasFamily = TRUE;
-							JSetString( hContact, "LastName", JabberUrlDecode( m->text ));
+							JSetStringUtf( hContact, "LastName", JabberUrlDecode( m->text ));
 						}
 						if (( m=JabberXmlGetChild( n, "MIDDLE" )) != NULL && m->text != NULL ) {
 							hasMiddle = TRUE;
-							JSetString( hContact, "MiddleName", JabberUrlDecode( m->text ));
+							JSetStringUtf( hContact, "MiddleName", JabberUrlDecode( m->text ));
 					}	}
 				}
 				else if ( !strcmp( n->name, "EMAIL" )) {
@@ -468,7 +468,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 								sprintf( text, "e-mail%d", nEmail-1 );
 						}
 						else sprintf( text, "e-mail%d", nEmail );
-						JSetString( hContact, text, JabberUrlDecode( m->text ));
+						JSetStringUtf( hContact, text, JabberUrlDecode( m->text ));
 
 						if ( hContact == NULL ) {
 							sprintf( text, "e-mailFlag%d", nEmail );
@@ -495,7 +495,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 						}
 						else {
 							hasBday = TRUE;
-							JSetString( NULL, "BirthDate", JabberUrlDecode( n->text ));
+							JSetStringUtf( NULL, "BirthDate", JabberUrlDecode( n->text ));
 					}	}
 				}
 				else if ( !strcmp( n->name, "GENDER" )) {
@@ -509,7 +509,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 						}
 						else {
 							hasGender = TRUE;
-							JSetString( NULL, "GenderString", JabberUrlDecode( n->text ));
+							JSetStringUtf( NULL, "GenderString", JabberUrlDecode( n->text ));
 					}	}
 				}
 				else if ( !strcmp( n->name, "ADR" )) {
@@ -527,7 +527,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 								else
 									strncpy( text, m->text, sizeof( text ));
 								text[sizeof( text )-1] = '\0';
-								JSetString( hContact, "Street", text );
+								JSetStringUtf( hContact, "Street", text );
 							}
 							else {
 								JSetString( hContact, "Street", m->text );
@@ -535,20 +535,20 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 									m = JabberXmlGetChild( n, "EXTADD" );
 								if ( m!=NULL && m->text!=NULL ) {
 									hasHomeStreet2 = TRUE;
-									JSetString( hContact, "Street2", JabberUrlDecode( m->text ));
+									JSetStringUtf( hContact, "Street2", JabberUrlDecode( m->text ));
 						}	}	}
 
 						if (( m=JabberXmlGetChild( n, "LOCALITY" ))!=NULL && m->text!=NULL ) {
 							hasHomeLocality = TRUE;
-							JSetString( hContact, "City", JabberUrlDecode( m->text ));
+							JSetStringUtf( hContact, "City", JabberUrlDecode( m->text ));
 						}
 						if (( m=JabberXmlGetChild( n, "REGION" ))!=NULL && m->text!=NULL ) {
 							hasHomeRegion = TRUE;
-							JSetString( hContact, "State", JabberUrlDecode( m->text ));
+							JSetStringUtf( hContact, "State", JabberUrlDecode( m->text ));
 						}
 						if (( m=JabberXmlGetChild( n, "PCODE" ))!=NULL && m->text!=NULL ) {
 							hasHomePcode = TRUE;
-							JSetString( hContact, "ZIP", JabberUrlDecode( m->text ));
+							JSetStringUtf( hContact, "ZIP", JabberUrlDecode( m->text ));
 						}
 						if (( m=JabberXmlGetChild( n, "CTRY" ))==NULL || m->text==NULL )	// Some bad client use <COUNTRY/> instead of <CTRY/>
 							m = JabberXmlGetChild( n, "COUNTRY" );
@@ -558,7 +558,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 							if ( hContact != NULL )
 								JSetWord( hContact, "Country", ( WORD )JabberCountryNameToId( m->text ));
 							else
-								JSetString( hContact, "CountryName", m->text );
+								JSetStringUtf( hContact, "CountryName", m->text );
 					}	}
 
 					if ( !hasWork && JabberXmlGetChild( n, "WORK" )!=NULL ) {
@@ -575,28 +575,28 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 								else
 									strncpy( text, m->text, sizeof( text ));
 								text[sizeof( text )-1] = '\0';
-								JSetString( hContact, "CompanyStreet", text );
+								JSetStringUtf( hContact, "CompanyStreet", text );
 							}
 							else {
-								JSetString( hContact, "CompanyStreet", m->text );
+								JSetStringUtf( hContact, "CompanyStreet", m->text );
 								if (( m=JabberXmlGetChild( n, "EXTADR" )) == NULL )
 									m = JabberXmlGetChild( n, "EXTADD" );
 								if ( m!=NULL && m->text!=NULL ) {
 									hasWorkStreet2 = TRUE;
-									JSetString( hContact, "CompanyStreet2", JabberUrlDecode( m->text ));
+									JSetStringUtf( hContact, "CompanyStreet2", JabberUrlDecode( m->text ));
 						}	}	}
 
 						if (( m=JabberXmlGetChild( n, "LOCALITY" ))!=NULL && m->text!=NULL ) {
 							hasWorkLocality = TRUE;
-							JSetString( hContact, "CompanyCity", JabberUrlDecode( m->text ));
+							JSetStringUtf( hContact, "CompanyCity", JabberUrlDecode( m->text ));
 						}
 						if (( m=JabberXmlGetChild( n, "REGION" ))!=NULL && m->text!=NULL ) {
 							hasWorkRegion = TRUE;
-							JSetString( hContact, "CompanyState", JabberUrlDecode( m->text ));
+							JSetStringUtf( hContact, "CompanyState", JabberUrlDecode( m->text ));
 						}
 						if (( m=JabberXmlGetChild( n, "PCODE" ))!=NULL && m->text!=NULL ) {
 							hasWorkPcode = TRUE;
-							JSetString( hContact, "CompanyZIP", JabberUrlDecode( m->text ));
+							JSetStringUtf( hContact, "CompanyZIP", JabberUrlDecode( m->text ));
 						}
 						if (( m=JabberXmlGetChild( n, "CTRY" ))==NULL || m->text==NULL )	// Some bad client use <COUNTRY/> instead of <CTRY/>
 							m = JabberXmlGetChild( n, "COUNTRY" );
@@ -606,7 +606,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 							if ( hContact != NULL )
 								JSetWord( hContact, "CompanyCountry", ( WORD )JabberCountryNameToId( m->text ));
 							else
-								JSetString( hContact, "CompanyCountryName", m->text );
+								JSetStringUtf( hContact, "CompanyCountryName", m->text );
 					}	}
 				}
 				else if ( !strcmp( n->name, "TEL" )) {
@@ -616,11 +616,11 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 						if ( hContact != NULL ) {
 							if ( !hasFax && JabberXmlGetChild( n, "FAX" )!=NULL ) {
 								hasFax = TRUE;
-								JSetString( hContact, "Fax", m->text );
+								JSetStringUtf( hContact, "Fax", m->text );
 							}
 							if ( !hasCell && JabberXmlGetChild( n, "CELL" )!=NULL ) {
 								hasCell = TRUE;
-								JSetString( hContact, "Cellular", m->text );
+								JSetStringUtf( hContact, "Cellular", m->text );
 							}
 							if ( !hasPhone &&
 								( JabberXmlGetChild( n, "HOME" )!=NULL ||
@@ -665,36 +665,36 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 					// Homepage
 					if ( !hasUrl && n->text!=NULL ) {
 						hasUrl = TRUE;
-						JSetString( hContact, "Homepage", JabberUrlDecode( n->text ));
+						JSetStringUtf( hContact, "Homepage", JabberUrlDecode( n->text ));
 					}
 				}
 				else if ( !strcmp( n->name, "ORG" )) {
 					if ( !hasOrgname && !hasOrgunit ) {
 						if (( m=JabberXmlGetChild( n, "ORGNAME" ))!=NULL && m->text!=NULL ) {
 							hasOrgname = TRUE;
-							JSetString( hContact, "Company", JabberUrlDecode( m->text ));
+							JSetStringUtf( hContact, "Company", JabberUrlDecode( m->text ));
 						}
 						if (( m=JabberXmlGetChild( n, "ORGUNIT" ))!=NULL && m->text!=NULL ) {	// The real vCard can have multiple <ORGUNIT/> but we will only display the first one
 							hasOrgunit = TRUE;
-							JSetString( hContact, "CompanyDepartment", JabberUrlDecode( m->text ));
+							JSetStringUtf( hContact, "CompanyDepartment", JabberUrlDecode( m->text ));
 					}	}
 				}
 				else if ( !strcmp( n->name, "ROLE" )) {
 					if ( !hasRole && n->text!=NULL ) {
 						hasRole = TRUE;
-						JSetString( hContact, "Role", JabberUrlDecode( n->text ));
+						JSetStringUtf( hContact, "Role", JabberUrlDecode( n->text ));
 					}
 				}
 				else if ( !strcmp( n->name, "TITLE" )) {
 					if ( !hasTitle && n->text!=NULL ) {
 						hasTitle = TRUE;
-						JSetString( hContact, "CompanyPosition", JabberUrlDecode( n->text ));
+						JSetStringUtf( hContact, "CompanyPosition", JabberUrlDecode( n->text ));
 					}
 				}
 				else if ( !strcmp( n->name, "DESC" )) {
 					if ( !hasDesc && n->text!=NULL ) {
 						hasDesc = TRUE;
-						JSetString( hContact, "About", JabberUrlDecode( n->text ));
+						JSetStringUtf( hContact, "About", JabberUrlDecode( n->text ));
 					}
 				}
 				else if ( !strcmp( n->name, "PHOTO" )) {
