@@ -324,7 +324,6 @@ void aim_buddy_parseconfig(char *config)
 {
 	char *c="\0", group[256];
     HANDLE hContact;
-    TList *buddies = NULL;
 	HANDLE tempContact;
 	tempContact = aim_buddy_get("temp", 1, 1, 1, 0);
     if (!config)
@@ -370,7 +369,6 @@ void aim_buddy_parseconfig(char *config)
 								int i=0;
 								DBWriteContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 1);
 								DBWriteContactSettingString(hContact,AIM_PROTO,"Group",group);
-								buddies = tlist_append(buddies, _strdup(nm));
 							}
                         }
 						else
