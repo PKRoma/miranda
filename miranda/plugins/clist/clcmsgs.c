@@ -44,7 +44,8 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 		break;
 	}
 
-	case CLM_ADDINFOITEM:
+	case CLM_ADDINFOITEMA:
+	case CLM_ADDINFOITEMW:
 	{
 		int i;
 		struct ClcContact *groupContact;
@@ -60,10 +61,12 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			group = groupContact->group;
 		}
 #if defined( _UNICODE )
+		if ( msg == CLM_ADDINFOITEMA )
 		{	WCHAR* wszText = a2u(( char* )cii->pszText );
 			i = AddInfoItemToGroup(group, cii->flags, wszText);
 			free( wszText );
 		}
+		else i = AddInfoItemToGroup(group, cii->flags, cii->pszText);
 #else					
 		i = AddInfoItemToGroup(group, cii->flags, cii->pszText);
 #endif

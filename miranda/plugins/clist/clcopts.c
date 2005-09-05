@@ -331,150 +331,150 @@ case WM_DESTROY:
 static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
-case WM_INITDIALOG:
-	TranslateDialogDefault(hwndDlg);
-	CheckDlgButton(hwndDlg, IDC_BITMAP,
-		DBGetContactSettingByte(NULL, "CLC", "UseBitmap", CLCDEFAULT_USEBITMAP) ? BST_CHECKED : BST_UNCHECKED);
-	SendMessage(hwndDlg, WM_USER + 10, 0, 0);
-	SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_BKCOLOUR);
-	SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR));
-	SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_SELBKCOLOUR);
-	SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_SETCOLOUR, 0,
-		DBGetContactSettingDword(NULL, "CLC", "SelBkColour", CLCDEFAULT_SELBKCOLOUR));
-	CheckDlgButton(hwndDlg, IDC_WINCOLOUR, DBGetContactSettingByte(NULL, "CLC", "UseWinColours", 0));
-	SendMessage(hwndDlg, WM_USER + 11, 0, 0);
-	{
-		DBVARIANT dbv;
-		if (!DBGetContactSetting(NULL, "CLC", "BkBitmap", &dbv)) {
-			SetDlgItemTextA(hwndDlg, IDC_FILENAME, dbv.pszVal);
-			if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
-				char szPath[MAX_PATH];
-
-				if (CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM) dbv.pszVal, (LPARAM) szPath))
-					SetDlgItemTextA(hwndDlg, IDC_FILENAME, szPath);
-			}
-			else
-				mir_free(dbv.pszVal);
-		}
-	}
-	{
-		WORD bmpUse = DBGetContactSettingWord(NULL, "CLC", "BkBmpUse", CLCDEFAULT_BKBMPUSE);
-		CheckDlgButton(hwndDlg, IDC_STRETCHH, bmpUse & CLB_STRETCHH ? BST_CHECKED : BST_UNCHECKED);
-		CheckDlgButton(hwndDlg, IDC_STRETCHV, bmpUse & CLB_STRETCHV ? BST_CHECKED : BST_UNCHECKED);
-		CheckDlgButton(hwndDlg, IDC_TILEH, bmpUse & CLBF_TILEH ? BST_CHECKED : BST_UNCHECKED);
-		CheckDlgButton(hwndDlg, IDC_TILEV, bmpUse & CLBF_TILEV ? BST_CHECKED : BST_UNCHECKED);
-		CheckDlgButton(hwndDlg, IDC_SCROLL, bmpUse & CLBF_SCROLL ? BST_CHECKED : BST_UNCHECKED);
-		CheckDlgButton(hwndDlg, IDC_PROPORTIONAL, bmpUse & CLBF_PROPORTIONAL ? BST_CHECKED : BST_UNCHECKED);
-	}
-	{
-		HRESULT(STDAPICALLTYPE * MySHAutoComplete) (HWND, DWORD);
-		MySHAutoComplete = (HRESULT(STDAPICALLTYPE *) (HWND, DWORD)) GetProcAddress(GetModuleHandleA("shlwapi"), "SHAutoComplete");
-		if (MySHAutoComplete)
-			MySHAutoComplete(GetDlgItem(hwndDlg, IDC_FILENAME), 1);
-	}
-	return TRUE;
-case WM_USER + 10:
-	EnableWindow(GetDlgItem(hwndDlg, IDC_FILENAME), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-	EnableWindow(GetDlgItem(hwndDlg, IDC_BROWSE), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-	EnableWindow(GetDlgItem(hwndDlg, IDC_STRETCHH), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-	EnableWindow(GetDlgItem(hwndDlg, IDC_STRETCHV), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-	EnableWindow(GetDlgItem(hwndDlg, IDC_TILEH), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-	EnableWindow(GetDlgItem(hwndDlg, IDC_TILEV), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-	EnableWindow(GetDlgItem(hwndDlg, IDC_SCROLL), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-	EnableWindow(GetDlgItem(hwndDlg, IDC_PROPORTIONAL), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-	break;
-case WM_USER + 11:
-	{
-		BOOL b = IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_BKGCOLOUR), !b);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_SELCOLOUR), !b);
-		break;
-	}
-case WM_COMMAND:
-	if (LOWORD(wParam) == IDC_BROWSE) {
-		char str[MAX_PATH];
-		OPENFILENAMEA ofn = { 0 };
-		char filter[512];
-
-		GetDlgItemTextA(hwndDlg, IDC_FILENAME, str, sizeof(str));
-		ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-		ofn.hwndOwner = hwndDlg;
-		ofn.hInstance = NULL;
-		CallService(MS_UTILS_GETBITMAPFILTERSTRINGS, sizeof(filter), (LPARAM) filter);
-		ofn.lpstrFilter = filter;
-		ofn.lpstrFile = str;
-		ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-		ofn.nMaxFile = sizeof(str);
-		ofn.nMaxFileTitle = MAX_PATH;
-		ofn.lpstrDefExt = "bmp";
-		if (!GetOpenFileNameA(&ofn))
-			break;
-		SetDlgItemTextA(hwndDlg, IDC_FILENAME, str);
-	}
-	else if (LOWORD(wParam) == IDC_FILENAME && HIWORD(wParam) != EN_CHANGE)
-		break;
-	if (LOWORD(wParam) == IDC_BITMAP)
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+		CheckDlgButton(hwndDlg, IDC_BITMAP,
+			DBGetContactSettingByte(NULL, "CLC", "UseBitmap", CLCDEFAULT_USEBITMAP) ? BST_CHECKED : BST_UNCHECKED);
 		SendMessage(hwndDlg, WM_USER + 10, 0, 0);
-	if (LOWORD(wParam) == IDC_WINCOLOUR)
+		SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_BKCOLOUR);
+		SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR));
+		SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_SELBKCOLOUR);
+		SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_SETCOLOUR, 0,
+			DBGetContactSettingDword(NULL, "CLC", "SelBkColour", CLCDEFAULT_SELBKCOLOUR));
+		CheckDlgButton(hwndDlg, IDC_WINCOLOUR, DBGetContactSettingByte(NULL, "CLC", "UseWinColours", 0));
 		SendMessage(hwndDlg, WM_USER + 11, 0, 0);
-	if (LOWORD(wParam) == IDC_FILENAME && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
-		return 0;
-	SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-	break;
-case WM_NOTIFY:
-	switch (((LPNMHDR) lParam)->idFrom) {
-case 0:
-	switch (((LPNMHDR) lParam)->code) {
-case PSN_APPLY:
-	DBWriteContactSettingByte(NULL, "CLC", "UseBitmap", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-	{
-		COLORREF col;
-		col = SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0);
-		if (col == CLCDEFAULT_BKCOLOUR)
-			DBDeleteContactSetting(NULL, "CLC", "BkColour");
-		else
-			DBWriteContactSettingDword(NULL, "CLC", "BkColour", col);
-		col = SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_GETCOLOUR, 0, 0);
-		if (col == CLCDEFAULT_SELBKCOLOUR)
-			DBDeleteContactSetting(NULL, "CLC", "SelBkColour");
-		else
-			DBWriteContactSettingDword(NULL, "CLC", "SelBkColour", col);
-		DBWriteContactSettingByte(NULL, "CLC", "UseWinColours", IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR));
-	}
-	{
-		char str[MAX_PATH], strrel[MAX_PATH];
-		GetDlgItemTextA(hwndDlg, IDC_FILENAME, str, sizeof(str));
-		if (ServiceExists(MS_UTILS_PATHTORELATIVE)) {
-			if (CallService(MS_UTILS_PATHTORELATIVE, (WPARAM) str, (LPARAM) strrel))
-				DBWriteContactSettingString(NULL, "CLC", "BkBitmap", strrel);
-			else
-				DBWriteContactSettingString(NULL, "CLC", "BkBitmap", str);
+		{
+			DBVARIANT dbv;
+			if (!DBGetContactSetting(NULL, "CLC", "BkBitmap", &dbv)) {
+				SetDlgItemTextA(hwndDlg, IDC_FILENAME, dbv.pszVal);
+				if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
+					char szPath[MAX_PATH];
+
+					if (CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM) dbv.pszVal, (LPARAM) szPath))
+						SetDlgItemTextA(hwndDlg, IDC_FILENAME, szPath);
+				}
+				else
+					mir_free(dbv.pszVal);
+			}
 		}
-		else
-			DBWriteContactSettingString(NULL, "CLC", "BkBitmap", str);
-	}
-	{
-		WORD flags = 0;
-		if (IsDlgButtonChecked(hwndDlg, IDC_STRETCHH))
-			flags |= CLB_STRETCHH;
-		if (IsDlgButtonChecked(hwndDlg, IDC_STRETCHV))
-			flags |= CLB_STRETCHV;
-		if (IsDlgButtonChecked(hwndDlg, IDC_TILEH))
-			flags |= CLBF_TILEH;
-		if (IsDlgButtonChecked(hwndDlg, IDC_TILEV))
-			flags |= CLBF_TILEV;
-		if (IsDlgButtonChecked(hwndDlg, IDC_SCROLL))
-			flags |= CLBF_SCROLL;
-		if (IsDlgButtonChecked(hwndDlg, IDC_PROPORTIONAL))
-			flags |= CLBF_PROPORTIONAL;
-		DBWriteContactSettingWord(NULL, "CLC", "BkBmpUse", flags);
-	}
-	ClcOptionsChanged();
-	return TRUE;
-	}
-	break;
-	}
-	break;
+		{
+			WORD bmpUse = DBGetContactSettingWord(NULL, "CLC", "BkBmpUse", CLCDEFAULT_BKBMPUSE);
+			CheckDlgButton(hwndDlg, IDC_STRETCHH, bmpUse & CLB_STRETCHH ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_STRETCHV, bmpUse & CLB_STRETCHV ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_TILEH, bmpUse & CLBF_TILEH ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_TILEV, bmpUse & CLBF_TILEV ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SCROLL, bmpUse & CLBF_SCROLL ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_PROPORTIONAL, bmpUse & CLBF_PROPORTIONAL ? BST_CHECKED : BST_UNCHECKED);
+		}
+		{
+			HRESULT(STDAPICALLTYPE * MySHAutoComplete) (HWND, DWORD);
+			MySHAutoComplete = (HRESULT(STDAPICALLTYPE *) (HWND, DWORD)) GetProcAddress(GetModuleHandleA("shlwapi"), "SHAutoComplete");
+			if (MySHAutoComplete)
+				MySHAutoComplete(GetDlgItem(hwndDlg, IDC_FILENAME), 1);
+		}
+		return TRUE;
+	case WM_USER + 10:
+		EnableWindow(GetDlgItem(hwndDlg, IDC_FILENAME), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+		EnableWindow(GetDlgItem(hwndDlg, IDC_BROWSE), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+		EnableWindow(GetDlgItem(hwndDlg, IDC_STRETCHH), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+		EnableWindow(GetDlgItem(hwndDlg, IDC_STRETCHV), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+		EnableWindow(GetDlgItem(hwndDlg, IDC_TILEH), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+		EnableWindow(GetDlgItem(hwndDlg, IDC_TILEV), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+		EnableWindow(GetDlgItem(hwndDlg, IDC_SCROLL), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+		EnableWindow(GetDlgItem(hwndDlg, IDC_PROPORTIONAL), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+		break;
+	case WM_USER + 11:
+		{
+			BOOL b = IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_BKGCOLOUR), !b);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_SELCOLOUR), !b);
+			break;
+		}
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDC_BROWSE) {
+			char str[MAX_PATH];
+			OPENFILENAMEA ofn = { 0 };
+			char filter[512];
+
+			GetDlgItemTextA(hwndDlg, IDC_FILENAME, str, sizeof(str));
+			ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+			ofn.hwndOwner = hwndDlg;
+			ofn.hInstance = NULL;
+			CallService(MS_UTILS_GETBITMAPFILTERSTRINGS, sizeof(filter), (LPARAM) filter);
+			ofn.lpstrFilter = filter;
+			ofn.lpstrFile = str;
+			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+			ofn.nMaxFile = sizeof(str);
+			ofn.nMaxFileTitle = MAX_PATH;
+			ofn.lpstrDefExt = "bmp";
+			if (!GetOpenFileNameA(&ofn))
+				break;
+			SetDlgItemTextA(hwndDlg, IDC_FILENAME, str);
+		}
+		else if (LOWORD(wParam) == IDC_FILENAME && HIWORD(wParam) != EN_CHANGE)
+			break;
+		if (LOWORD(wParam) == IDC_BITMAP)
+			SendMessage(hwndDlg, WM_USER + 10, 0, 0);
+		if (LOWORD(wParam) == IDC_WINCOLOUR)
+			SendMessage(hwndDlg, WM_USER + 11, 0, 0);
+		if (LOWORD(wParam) == IDC_FILENAME && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+			return 0;
+		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+		break;
+	case WM_NOTIFY:
+		switch (((LPNMHDR) lParam)->idFrom) {
+		case 0:
+			switch (((LPNMHDR) lParam)->code) {
+			case PSN_APPLY:
+				DBWriteContactSettingByte(NULL, "CLC", "UseBitmap", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+				{
+					COLORREF col;
+					col = SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0);
+					if (col == CLCDEFAULT_BKCOLOUR)
+						DBDeleteContactSetting(NULL, "CLC", "BkColour");
+					else
+						DBWriteContactSettingDword(NULL, "CLC", "BkColour", col);
+					col = SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_GETCOLOUR, 0, 0);
+					if (col == CLCDEFAULT_SELBKCOLOUR)
+						DBDeleteContactSetting(NULL, "CLC", "SelBkColour");
+					else
+						DBWriteContactSettingDword(NULL, "CLC", "SelBkColour", col);
+					DBWriteContactSettingByte(NULL, "CLC", "UseWinColours", IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR));
+				}
+				{
+					char str[MAX_PATH], strrel[MAX_PATH];
+					GetDlgItemTextA(hwndDlg, IDC_FILENAME, str, sizeof(str));
+					if (ServiceExists(MS_UTILS_PATHTORELATIVE)) {
+						if (CallService(MS_UTILS_PATHTORELATIVE, (WPARAM) str, (LPARAM) strrel))
+							DBWriteContactSettingString(NULL, "CLC", "BkBitmap", strrel);
+						else
+							DBWriteContactSettingString(NULL, "CLC", "BkBitmap", str);
+					}
+					else
+						DBWriteContactSettingString(NULL, "CLC", "BkBitmap", str);
+				}
+				{
+					WORD flags = 0;
+					if (IsDlgButtonChecked(hwndDlg, IDC_STRETCHH))
+						flags |= CLB_STRETCHH;
+					if (IsDlgButtonChecked(hwndDlg, IDC_STRETCHV))
+						flags |= CLB_STRETCHV;
+					if (IsDlgButtonChecked(hwndDlg, IDC_TILEH))
+						flags |= CLBF_TILEH;
+					if (IsDlgButtonChecked(hwndDlg, IDC_TILEV))
+						flags |= CLBF_TILEV;
+					if (IsDlgButtonChecked(hwndDlg, IDC_SCROLL))
+						flags |= CLBF_SCROLL;
+					if (IsDlgButtonChecked(hwndDlg, IDC_PROPORTIONAL))
+						flags |= CLBF_PROPORTIONAL;
+					DBWriteContactSettingWord(NULL, "CLC", "BkBmpUse", flags);
+				}
+				ClcOptionsChanged();
+				return TRUE;
+			}
+			break;
+		}
+		break;
 	}
 	return FALSE;
 }

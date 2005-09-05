@@ -1263,7 +1263,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			if (dat->selection != -1 && hitFlags & (CLCHT_ONITEMICON | CLCHT_ONITEMCHECK | CLCHT_ONITEMLABEL)) {
 				if (contact->type == CLCIT_GROUP) {
 					hMenu = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 2);
-					CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, 0);
+					CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, LPTDF_UNICODE);
 					CheckMenuItem(hMenu, POPUP_GROUPHIDEOFFLINE, contact->group->hideOffline ? MF_CHECKED : MF_UNCHECKED);
 				}
 				else if (contact->type == CLCIT_CONTACT)

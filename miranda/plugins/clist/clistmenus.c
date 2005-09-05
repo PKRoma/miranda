@@ -870,8 +870,8 @@ int InitCustomMenus(void)
     hRootMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CLISTMENU));
     hMainMenu = GetSubMenu(hRootMenu, 0);
     hStatusMenu = GetSubMenu(hRootMenu, 1);
-    CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMainMenu, 0);
-    CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hStatusMenu, 0);
+    CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMainMenu, LPTDF_UNICODE);
+    CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hStatusMenu, LPTDF_UNICODE);
     nextMenuId = FIRSTCUSTOMMENUITEMID;
     mainMenuItem = contextMenuItem = NULL;
     mainItemCount = contextItemCount = 0;

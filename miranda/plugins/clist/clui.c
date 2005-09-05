@@ -134,7 +134,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 	switch (msg) {
 	case WM_CREATE:
-		CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), 0);
+		CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), LPTDF_UNICODE);
 		DrawMenuBar(hwnd);
 
 		//create the status wnd
@@ -582,7 +582,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if (PtInRect(&rc, pt)) {
 				HMENU hMenu;
 				hMenu = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 1);
-				CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, 0);
+				CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, LPTDF_UNICODE);
 				CheckMenuItem(hMenu, POPUP_HIDEOFFLINE,
 					DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) ? MF_CHECKED : MF_UNCHECKED);
 				CheckMenuItem(hMenu, POPUP_HIDEOFFLINEROOT, SendMessage(hwndContactTree, CLM_GETHIDEOFFLINEROOT, 0, 0) ? MF_CHECKED : MF_UNCHECKED);

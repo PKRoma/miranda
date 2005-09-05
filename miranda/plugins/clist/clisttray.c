@@ -582,7 +582,7 @@ int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 			POINT pt;
 			hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
 			hMenu = GetSubMenu(hMenu, 0);
-			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, 0);
+			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, LPTDF_UNICODE);
 
 			ZeroMemory(&mi, sizeof(mi));
 			mi.cbSize = MENUITEMINFO_V4_SIZE;
