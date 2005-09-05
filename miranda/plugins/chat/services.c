@@ -19,27 +19,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "chat.h"
 
-extern HANDLE	g_hInst;
-extern HIMAGELIST hImageList;
-extern HIMAGELIST hIconsList;
-extern BOOL		SmileyAddInstalled;
-extern BOOL		PopUpInstalled;
-extern BOOL		IEviewInstalled;
+extern HANDLE		g_hInst;
+extern HIMAGELIST	hImageList;
+extern HIMAGELIST	hIconsList;
+extern BOOL			SmileyAddInstalled;
+extern BOOL			PopUpInstalled;
+extern BOOL			IEviewInstalled;
 
-HANDLE			hSendEvent;
-HANDLE			hBuildMenuEvent ;
-HANDLE			g_hModulesLoaded;
-HANDLE			g_hSystemPreShutdown;
-HANDLE			g_hHookContactDblClick;
-HANDLE			g_hIconsChanged;
-HANDLE			g_hIconsChanged2;
-SESSION_INFO	g_TabSession;
+HANDLE				hSendEvent;
+HANDLE				hBuildMenuEvent ;
+HANDLE				g_hModulesLoaded;
+HANDLE				g_hSystemPreShutdown;
+HANDLE				g_hHookContactDblClick;
+HANDLE				g_hIconsChanged;
+HANDLE				g_hIconsChanged2;
+SESSION_INFO		g_TabSession;
+CRITICAL_SECTION	cs;
+
 #define SIZEOF_STRUCT_GCREGISTER_V1 28
 #define SIZEOF_STRUCT_GCWINDOW_V1	32
 #define SIZEOF_STRUCT_GCEVENT_V1	44
 
 void HookEvents(void)
 {
+	InitializeCriticalSection(&cs);
 	g_hModulesLoaded =			HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
 	g_hHookContactDblClick=		HookEvent(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
 	g_hSystemPreShutdown =		HookEvent(ME_SYSTEM_PRESHUTDOWN, PreShutdown);
@@ -49,6 +52,7 @@ void HookEvents(void)
 
 void UnhookEvents(void)
 {
+	DeleteCriticalSection(&cs);
 	UnhookEvent(g_hModulesLoaded);
 	UnhookEvent(g_hSystemPreShutdown);
 	UnhookEvent(g_hHookContactDblClick);
@@ -156,10 +160,17 @@ int IconsChanged(WPARAM wParam,LPARAM lParam)
 
 int Service_GetCount(WPARAM wParam,LPARAM lParam)
 {
+	int i;
+
 	if(!lParam)
 		return -1;
 
-	return SM_GetCount((char *)lParam);
+	EnterCriticalSection(&cs);
+
+	i = SM_GetCount((char *)lParam);
+
+	LeaveCriticalSection(&cs);
+	return i;
 }
 
 int Service_GetInfo(WPARAM wParam,LPARAM lParam)
@@ -169,6 +180,8 @@ int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 
 	if(!gci || !gci->pszModule)
 		return 1;
+
+	EnterCriticalSection(&cs);
 
 	if(gci->Flags&BYINDEX)
 		si = SM_FindSessionByIndex((char *)gci->pszModule, gci->iItem);
@@ -191,8 +204,14 @@ int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 			gci->iCount = si->nUsersInNicklist;
 		if(gci->Flags&USERS)
 			gci->pszUsers = SM_GetUsers(si);
+	
+		LeaveCriticalSection(&cs);
+	
 		return 0;
 	}
+
+	LeaveCriticalSection(&cs);
+
 	return 1;
 }
 int Service_Register(WPARAM wParam, LPARAM lParam)
@@ -210,6 +229,8 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 	if(gcr->dwFlags &GC_UNICODE)
 		return GC_REGISTER_NOUNICODE;
 #endif
+
+	EnterCriticalSection(&cs);
 
 	mi = MM_AddModule((char *)gcr->pszModule);
 	if(mi)
@@ -249,8 +270,11 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 
 		CheckColorsInModule((char*)gcr->pszModule);
 		CList_SetAllOffline(TRUE);
+
+		LeaveCriticalSection(&cs);
 		return 0;
 	}
+	LeaveCriticalSection(&cs);
 	return GC_REGISTER_ERROR;
 }
 
@@ -263,6 +287,8 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 
 	if(gcw->cbSize != SIZEOF_STRUCT_GCWINDOW_V1)
 		return GC_NEWSESSION_WRONGVER;
+
+	EnterCriticalSection(&cs);
 
 	if(MM_FindModule((char *)gcw->pszModule))
 	{
@@ -344,6 +370,8 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 			}
 //			SendMessage(hwnd, GC_NICKLISTREINIT, 0, 0);
 		}
+	
+		LeaveCriticalSection(&cs);
 		return 0;
 	}
 	return GC_NEWSESSION_ERROR;
@@ -679,6 +707,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	char * pMod = NULL;
 	BOOL bIsHighlighted = FALSE;
 	BOOL bRemoveFlag = FALSE;
+	int iRetVal;
 
 	if(gce== NULL)
 		return GC_EVENT_ERROR;
@@ -688,6 +717,8 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 
 	if(gce->cbSize != SIZEOF_STRUCT_GCEVENT_V1)
 		return GC_EVENT_WRONGVER;
+
+	EnterCriticalSection(&cs);
 
 	//remove spaces in UID
 	if(gce->pszUID)
@@ -707,6 +738,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	{
 	case GC_EVENT_ADDGROUP:
 		AddStatus(gce);
+		LeaveCriticalSection(&cs);
 		return 0;
 
 	case GC_EVENT_CHUID:
@@ -718,7 +750,9 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	case GC_EVENT_ACK:
 	case GC_EVENT_SENDMESSAGE :
 	case GC_EVENT_SETSTATUSEX :
-		return DoControl(gce, wParam);
+		iRetVal = DoControl(gce, wParam);
+		LeaveCriticalSection(&cs);
+		return iRetVal;
 	case GC_EVENT_TOPIC:
 	{
 		SESSION_INFO * si = SM_FindSession(gce->pDest->pszID, gce->pDest->pszModule);
@@ -782,14 +816,20 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 			pMod = si->pszModule;
 		}
 		else
+		{
+			LeaveCriticalSection(&cs);
 			return 0;
+		}
 	}
 	else
 	{
 		// Send the event to all windows with a user pszUID. Used for broadcasting QUIT etc
 		SM_AddEventToAllMatchingUID(gce);
 		if(!bRemoveFlag)
+		{
+			LeaveCriticalSection(&cs);
 			return 0;
+		}
 	}
 	// add to log
 	if(pWnd)
@@ -798,10 +838,16 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 
 		// fix for IRC's old stuyle mode notifications. Should not affect any other protocol
 		if((gce->pDest->iType == GC_EVENT_ADDSTATUS || gce->pDest->iType == GC_EVENT_REMOVESTATUS) && !gce->bAddToLog)
+		{
+			LeaveCriticalSection(&cs);
 			return 0;
+		}
 
 		if(gce && gce->pDest->iType == GC_EVENT_JOIN && gce->time == 0)
+		{
+			LeaveCriticalSection(&cs);
 			return 0;
+		}
 
 		if(si && (si->bInitDone || gce->pDest->iType == GC_EVENT_TOPIC || (gce->pDest->iType == GC_EVENT_JOIN && gce->bIsMe)))
 		{
@@ -824,22 +870,32 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 
 
 		if(!bRemoveFlag)
+		{
+			LeaveCriticalSection(&cs);
 			return 0;
+		}
 
 	}
 	if (bRemoveFlag)
 	{
-		return RemoveUser(gce);
+		iRetVal = RemoveUser(gce);
+		LeaveCriticalSection(&cs);
+		return iRetVal;
 	}
 
 
+	LeaveCriticalSection(&cs);
 	return GC_EVENT_ERROR;
 }
 
 int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
 {
 	GCPTRS * gp = (GCPTRS *) lParam;
+
+	EnterCriticalSection(&cs);
+
 	gp->pfnAddEvent = Service_AddEvent;
+	LeaveCriticalSection(&cs);
 
 	return 0;
 }

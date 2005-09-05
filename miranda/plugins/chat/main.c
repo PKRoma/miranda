@@ -51,7 +51,7 @@ PLUGININFO pluginInfo = {
 	#else
 		"Chat",
 	#endif
-	PLUGIN_MAKE_VERSION(0,3,1,6),
+	PLUGIN_MAKE_VERSION(0,3,2,0),
 	"Provides chat rooms for protocols supporting it",
 	"MatriX",
 	"i_am_matrix@users.sourceforge.net",
