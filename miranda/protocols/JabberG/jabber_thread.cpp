@@ -89,7 +89,7 @@ static VOID CALLBACK JabberOfflineChatWindows( DWORD )
 	GCEVENT gce = { 0 };
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
-	CallService( MS_GC_EVENT, WINDOW_OFFLINE, (LPARAM)&gce );
+	CallService( MS_GC_EVENT, WINDOW_TERMINATE, (LPARAM)&gce );
 }
 
 void __cdecl JabberServerThread( struct ThreadData *info )

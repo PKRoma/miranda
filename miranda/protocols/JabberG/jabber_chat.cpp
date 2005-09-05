@@ -132,10 +132,14 @@ void JabberGcLogCreate( JABBER_LIST_ITEM* item )
 
 void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, char* nick, int action )
 {
+	char* dispNick = NEWSTR_ALLOCA( nick );
+	JabberUtf8Decode( dispNick, NULL );
+
 	GCDEST gcd = { jabberProtoName, item->jid, GC_EVENT_PART };
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
-	gce.pszNick = gce.pszUID = nick;
+	gce.pszNick = dispNick;
+	gce.pszUID = nick;
 	gce.pDest = &gcd;
 	gce.bAddToLog = TRUE;
 	gce.time = time(0);
@@ -358,7 +362,8 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 	if ( him == NULL || me == NULL )
 		return;
 
-	char szBuffer[ 1024 ];
+	char   szBuffer[ 1024 ];
+	char*  dispNick = NEWSTR_ALLOCA( him->resourceName );  JabberUtf8Decode( dispNick, NULL );
 
 	switch( gch->dwData ) {
 	case IDM_LEAVE: 
@@ -366,17 +371,17 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		break;
 
 	case IDM_KICK:
-		mir_snprintf( szBuffer, sizeof szBuffer, "%s %s", JTranslate( "Reason to kick" ), him->resourceName );
+		mir_snprintf( szBuffer, sizeof szBuffer, "%s %s", JTranslate( "Reason to kick" ), dispNick );
 		if ( JabberEnterString( szBuffer, sizeof szBuffer ))
 			JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<item nick='%s' role='none'><reason>%s</reason></item></query></iq>",
-				xmlnsAdmin, item->jid, UTF8(him->resourceName), UTF8(szBuffer));
+				item->jid, xmlnsAdmin, him->resourceName, UTF8(szBuffer));
 		break;
 
 	case IDM_BAN:
-		mir_snprintf( szBuffer, sizeof szBuffer, "%s %s", JTranslate( "Reason to ban" ), him->resourceName );
+		mir_snprintf( szBuffer, sizeof szBuffer, "%s %s", JTranslate( "Reason to ban" ), dispNick );
 		if ( JabberEnterString( szBuffer, sizeof szBuffer ))
 			JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<item nick='%s' affiliation='outcast'><reason>%s</reason></item></query></iq>",
-				xmlnsAdmin, item->jid, UTF8(him->resourceName), UTF8(szBuffer));
+				item->jid, xmlnsAdmin, him->resourceName, UTF8(szBuffer));
 		break;
 
 	case IDM_VOICE:
@@ -461,7 +466,7 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 			JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, gch->pDest->pszID );
 			if ( item != NULL ) {
 				char text[ 1024 ];
-				mir_snprintf( text, sizeof( text ), "%s/%s", gch->pDest->pszID, szBuffer );
+				mir_snprintf( text, sizeof( text ), "%s/%s", gch->pDest->pszID, UTF8(szBuffer));
 				JabberSendPresenceTo( jabberStatus, text, NULL );
 				if ( item->newNick != NULL )
 					free( item->newNick );
