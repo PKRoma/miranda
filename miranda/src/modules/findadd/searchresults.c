@@ -252,7 +252,7 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 void SetStatusBarSearchInfo(HWND hwndStatus,struct FindAddDlgData *dat)
 {
 	if(dat->searchCount==0)
-		SendMessage(hwndStatus,SB_SETTEXT,0,(LPARAM)Translate("Idle"));
+		SendMessageA(hwndStatus,SB_SETTEXTA,0,(LPARAM)Translate("Idle"));
 	else {
 		char str[256],szProtoName[64];
 		int i;
@@ -263,7 +263,7 @@ void SetStatusBarSearchInfo(HWND hwndStatus,struct FindAddDlgData *dat)
 			CallProtoService(dat->search[i].szProto,PS_GETNAME,sizeof(szProtoName),(LPARAM)szProtoName);
 			lstrcatA(str,szProtoName);
 		}
-		SendMessage(hwndStatus,SB_SETTEXT,0,(LPARAM)str);
+		SendMessageA(hwndStatus,SB_SETTEXTA,0,(LPARAM)str);
 	}
 }
 
@@ -326,7 +326,7 @@ void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
 		}
 		free(subtotal);
 	}
-	SendMessage(hwndStatus,SB_SETTEXT,2,(LPARAM)str);
+	SendMessageA(hwndStatus,SB_SETTEXTA,2,(LPARAM)str);
 }
 
 void CreateResultsColumns(HWND hwndResults,struct FindAddDlgData *dat,char *szProto)
