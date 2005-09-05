@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
     "AIM TOC2 Plugin",
-    PLUGIN_MAKE_VERSION(1, 4, 1, 6),
+    PLUGIN_MAKE_VERSION(1, 4, 1, 7),
 #ifdef AIM_CVSBUILD
     "This is a development build of the AIM TOC2 protocol.  Please check the website for updates. (" __DATE__ ")",
 #else
