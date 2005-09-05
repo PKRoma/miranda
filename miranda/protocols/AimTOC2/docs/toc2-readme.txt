@@ -29,6 +29,13 @@ Still need help?
 
 Change Log:
 
+Version 1.4.1.7
+	
+	-fix profiles to work when connecting via a proxy
+	-fixed bug that could potentially cause crashes when connecting via a proxy(MOST LIKELY).
+	-Cleaned up some old & somewhat useless code.
+	-fix addition of buddies from the clist and messagedialog(should work anytime now).
+
 Version 1.4.1.6
 
 	-Changed strcpy() and strcat() functions to buffer overun safe mir_snprintf().
