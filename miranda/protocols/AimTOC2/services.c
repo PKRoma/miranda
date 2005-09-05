@@ -37,7 +37,7 @@ static int aim_getcaps(WPARAM wParam, LPARAM lParam)
             ret = PF2_SHORTAWAY;
             break;
         case PFLAGNUM_4:
-            ret = PF4_NOCUSTOMAUTH|PF4_SUPPORTTYPING;
+			ret = PF4_SUPPORTTYPING|PF4_NOCUSTOMAUTH|PF4_FORCEADDED;
             break;
         case 5:                /* this is PFLAGNUM_5 change when alpha SDK is released */
             ret = PF2_ONTHEPHONE;
@@ -179,16 +179,29 @@ static int aim_searchbyemail(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-static int aim_addtolist(WPARAM wParam, LPARAM lParam)
+static int aim_added(WPARAM wParam, LPARAM lParam)
 {
 	char buf[MSG_LEN * 2];
-    PROTOSEARCHRESULT *psr = (PROTOSEARCHRESULT *) lParam;
+	DBVARIANT dbv;
+	CCSDATA *ccs = (CCSDATA *)lParam;
     if (aimStatus == ID_STATUS_OFFLINE)
         return 0;
-	mir_snprintf(buf, sizeof(buf),"toc2_new_buddies {g:Miranda Merged\nb:%s\n}",psr->nick);
-	aim_toc_sflapsend(buf, -1, TYPE_DATA);
-	mir_snprintf(buf, sizeof(buf),"toc_get_status %s",psr->nick);
-	aim_toc_sflapsend(buf, -1, TYPE_DATA);
+	DBGetContactSetting(ccs->hContact, AIM_PROTO, AIM_KEY_UN, &dbv);
+	if(dbv.pszVal)
+	{
+		mir_snprintf(buf, sizeof(buf),"toc2_new_buddies {g:Miranda Merged\nb:%s\n}",dbv.pszVal);
+		aim_toc_sflapsend(buf, -1, TYPE_DATA);
+		mir_snprintf(buf, sizeof(buf),"toc_get_status %s",dbv.pszVal);
+		aim_toc_sflapsend(buf, -1, TYPE_DATA);
+		DBFreeVariant(&dbv);
+	}
+	return 0;
+}
+static int aim_addtolist(WPARAM wParam, LPARAM lParam)
+{
+	PROTOSEARCHRESULT *psr = (PROTOSEARCHRESULT *) lParam;
+    if (aimStatus == ID_STATUS_OFFLINE)
+        return 0;
     return (int) aim_buddy_get(psr->nick, 1, wParam & PALF_TEMPORARY ? 0 : 1, 0,NULL);
 }
 
@@ -481,6 +494,8 @@ void aim_services_register(HINSTANCE hInstance)
     CreateServiceFunction(szService, aim_searchbyemail);
     mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_ADDTOLIST);
     CreateServiceFunction(szService, aim_addtolist);
+	mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_ADDED);
+    CreateServiceFunction(szService, aim_added);
     mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PSS_GETINFO);
     CreateServiceFunction(szService, aim_getinfo);
     mir_snprintf(szService, sizeof(szService), "%s%s", AIM_PROTO, PS_SETAWAYMSG);
