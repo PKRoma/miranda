@@ -36,6 +36,14 @@ HANDLE				g_hIconsChanged2;
 SESSION_INFO		g_TabSession;
 CRITICAL_SECTION	cs;
 
+static HANDLE     hServiceRegister = NULL, 
+                  hServiceNewChat = NULL,
+                  hServiceAddEvent = NULL,
+                  hServiceGetAddEventPtr = NULL,
+                  hServiceGetInfo = NULL,
+                  hServiceGetCount = NULL,
+                  hEventDoubleclicked = NULL;
+
 #define SIZEOF_STRUCT_GCREGISTER_V1 28
 #define SIZEOF_STRUCT_GCWINDOW_V1	32
 #define SIZEOF_STRUCT_GCEVENT_V1	44
@@ -52,24 +60,36 @@ void HookEvents(void)
 
 void UnhookEvents(void)
 {
-	DeleteCriticalSection(&cs);
 	UnhookEvent(g_hModulesLoaded);
 	UnhookEvent(g_hSystemPreShutdown);
 	UnhookEvent(g_hHookContactDblClick);
 	UnhookEvent(g_hIconsChanged);
 	UnhookEvent(g_hIconsChanged2);
+	DeleteCriticalSection(&cs);
 	return;
 }
 
 void CreateServiceFunctions(void)
 {
-	CreateServiceFunction(MS_GC_REGISTER,			Service_Register);
-	CreateServiceFunction(MS_GC_NEWSESSION,			Service_NewChat);
-	CreateServiceFunction(MS_GC_EVENT,				Service_AddEvent);
-	CreateServiceFunction(MS_GC_GETEVENTPTR,		Service_GetAddEventPtr);
-	CreateServiceFunction(MS_GC_GETINFO,			Service_GetInfo);
-	CreateServiceFunction(MS_GC_GETSESSIONCOUNT,	Service_GetCount);
-	CreateServiceFunction("GChat/DblClickEvent",	CList_EventDoubleclicked);
+	hServiceRegister       = CreateServiceFunction(MS_GC_REGISTER,        Service_Register);
+	hServiceNewChat        = CreateServiceFunction(MS_GC_NEWSESSION,      Service_NewChat);
+	hServiceAddEvent       = CreateServiceFunction(MS_GC_EVENT,           Service_AddEvent);
+	hServiceGetAddEventPtr = CreateServiceFunction(MS_GC_GETEVENTPTR,     Service_GetAddEventPtr);
+	hServiceGetInfo        = CreateServiceFunction(MS_GC_GETINFO,         Service_GetInfo);
+	hServiceGetCount       = CreateServiceFunction(MS_GC_GETSESSIONCOUNT, Service_GetCount);
+	hEventDoubleclicked    = CreateServiceFunction("GChat/DblClickEvent", CList_EventDoubleclicked);
+	return;
+}
+
+void DestroyServiceFunctions(void)
+{
+	DestroyServiceFunction(hServiceRegister       );
+	DestroyServiceFunction(hServiceNewChat        );
+	DestroyServiceFunction(hServiceAddEvent       );
+	DestroyServiceFunction(hServiceGetAddEventPtr );
+	DestroyServiceFunction(hServiceGetInfo        );       
+	DestroyServiceFunction(hServiceGetCount       );      
+	DestroyServiceFunction(hEventDoubleclicked    );
 	return;
 }
 

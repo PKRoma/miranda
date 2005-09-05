@@ -174,10 +174,11 @@ int __declspec(dllexport) Unload(void)
 		free(pszActiveWndModule);
 
 	DestroyMenu(g_hMenu);
+	DestroyServiceFunctions();
 	FreeIcons();
 	OptionsUnInit();
-    FreeLibrary(GetModuleHandleA("riched20.dll"));
-    OleUninitialize();
+	FreeLibrary(GetModuleHandleA("riched20.dll"));
+	OleUninitialize();
 	UnhookEvents();
 	return 0;
 }

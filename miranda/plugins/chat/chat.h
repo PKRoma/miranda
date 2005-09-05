@@ -416,6 +416,7 @@ HICON				LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);
 void				HookEvents(void);
 void				UnhookEvents(void);
 void				CreateServiceFunctions(void);
+void           DestroyServiceFunctions(void);
 void				CreateHookableEvents(void);
 void				TabsInit(void);
 int					ModulesLoaded(WPARAM wParam,LPARAM lParam);
