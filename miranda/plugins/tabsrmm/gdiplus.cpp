@@ -37,6 +37,20 @@ extern "C" void InitGdiPlus(void)
 	}
 }
 
+
+extern "C" void ShutdownGdiPlus(void)
+{
+	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+	__try {
+		if (g_gdiplusToken)
+			Gdiplus::GdiplusShutdown(g_gdiplusToken);
+	}
+	__except ( EXCEPTION_EXECUTE_HANDLER ) {
+		gdiPlusFail = true;
+    }
+    g_gdiplusToken = 0;
+}
+
 using namespace Gdiplus;
 
 static ColorMatrix ClrMatrix =         { 

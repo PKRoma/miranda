@@ -1070,6 +1070,7 @@ int SplitmsgShutdown(void)
     
     if(myGlobals.szDefaultTitleFormat)
         free(myGlobals.szDefaultTitleFormat);
+    ShutdownGdiPlus();
     return 0;
 }
 
