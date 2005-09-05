@@ -82,8 +82,6 @@ HANDLE aim_toc_connect()
     else {
         DBWriteContactSettingString(NULL, AIM_PROTO, AIM_KEY_SA, host);
     }
-	getpeername(s, (SOCKADDR *) & saddr, &len);
-	DBWriteContactSettingString(NULL, AIM_PROTO, AIM_KEY_SA, inet_ntoa(saddr.sin_addr));
     importBuddies = 0;
     return con;
 }
