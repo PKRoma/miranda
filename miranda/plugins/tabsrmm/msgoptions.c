@@ -831,9 +831,9 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 CLCINFOITEM cii = { 0 };
                 cii.cbSize = sizeof(cii);
                 cii.flags = CLCIIF_GROUPFONT | CLCIIF_CHECKBOX;
-                cii.pszText = Translate("** New contacts **");
+                cii.pszText = TranslateT("** New contacts **");
                 hItemNew = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_ADDINFOITEM, 0, (LPARAM) & cii);
-                cii.pszText = Translate("** Unknown contacts **");
+                cii.pszText = TranslateT("** Unknown contacts **");
                 hItemUnknown = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_ADDINFOITEM, 0, (LPARAM) & cii);
             }
             SetWindowLong(GetDlgItem(hwndDlg, IDC_CLIST), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_CLIST), GWL_STYLE) | (CLS_SHOWHIDDEN));
