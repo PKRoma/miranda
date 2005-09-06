@@ -288,7 +288,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
         {
           BYTE capBufDat[0x200]; // max 0x20 caps, currently used max 0x12
-          BYTE* capBuf;
+          BYTE* capBuf = NULL;
           WORD capLen = 0;
           oscar_tlv* pNewTLV;
 
