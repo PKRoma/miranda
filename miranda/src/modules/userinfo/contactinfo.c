@@ -310,12 +310,12 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				for(i=0;;i++) {
 					lvi.lParam=i;
 					wsprintfA(idstr,"MyPhone%d",i);
-					if(DBGetContactSetting(hContact,"UserInfo",idstr,&dbv))
+					if(DBGetContactSettingTString(hContact,"UserInfo",idstr,&dbv))
 						break;
 					lvi.pszText=idstr2;
 					wsprintf(idstr2,TranslateT("Custom %d"),i+1);
 					ListView_InsertItem(GetDlgItem(hwndDlg,IDC_PHONES),&lvi);
-					if(lstrlenA(dbv.pszVal)>4 && !lstrcmpA(dbv.pszVal+lstrlenA(dbv.pszVal)-4," SMS")) {
+					if(lstrlen(dbv.ptszVal)>4 && !lstrcmp(dbv.ptszVal+lstrlen(dbv.ptszVal)-4,_T(" SMS"))) {
 						ListView_SetItemText(GetDlgItem(hwndDlg,IDC_PHONES),lvi.iItem,2,_T("y"));
 						dbv.ptszVal[lstrlen(dbv.ptszVal)-4]='\0';
 					}
