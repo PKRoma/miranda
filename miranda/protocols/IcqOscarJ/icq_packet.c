@@ -269,7 +269,7 @@ void ppackLEDWord(PBYTE *buf, int *buflen, DWORD d)
 
 /*void ppackLNTS(PBYTE *buf, int *buflen, const char *str)
 {
-	WORD len = strlen(str);
+	WORD len = strlennull(str);
 	ppackWord(buf, buflen, len);
 	*buf = (PBYTE)realloc(*buf, *buflen + len);
 	memcpy(*buf + *buflen, str, len);
@@ -280,7 +280,7 @@ void ppackLEDWord(PBYTE *buf, int *buflen, DWORD d)
 
 void ppackLELNTS(PBYTE *buf, int *buflen, const char *str)
 {
-	WORD len = strlen(str);
+	WORD len = strlennull(str);
 	ppackLEWord(buf, buflen, len);
 	*buf = (PBYTE)realloc(*buf, *buflen + len);
 	memcpy(*buf + *buflen, str, len);
@@ -348,7 +348,7 @@ void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always)
 
 void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always)
 {
-	int len = strlen(str) + 1;
+	int len = strlennull(str) + 1;
 
 	if (!always && len < 2) return;
 
@@ -364,7 +364,7 @@ void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE alw
 
 void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wType, BYTE always)
 {
-	int len = strlen(str) + 1;
+	int len = strlennull(str) + 1;
 
 	if (!always && len < 2 && !w) return;
 
@@ -381,7 +381,7 @@ void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wTy
 
 void ppackTLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wType)
 {
-	int len = strlen(str) + 1;
+	int len = strlennull(str) + 1;
 
 	*buf = (PBYTE)realloc(*buf, 7 + *buflen + len);
 	*(PWORD)(*buf + *buflen) = wType;
