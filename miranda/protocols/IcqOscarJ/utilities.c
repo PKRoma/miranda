@@ -805,6 +805,8 @@ HANDLE HContactFromUID(char* pszUID, int *Added)
 
   if (Added) *Added = 0;
 
+  if (!gbAimEnabled) return INVALID_HANDLE_VALUE;
+
 	hContact = ICQFindFirstContact();
 	while (hContact != NULL)
 	{
