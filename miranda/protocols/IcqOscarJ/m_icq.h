@@ -135,6 +135,11 @@ typedef struct {
 //lParam=server's status code
 #define ICQACKTYPE_RATEWARNING  1004
 
+
+// Change nickname in White pages
+// lParam=(LPARAM)(const char*)szNewNickName
+#define PS_SET_NICKNAME  "/SetNickname"
+
 //Changing user info:
 //See documentation of PS_CHANGEINFO
 //The changing user info stuff built into the protocol is purposely extremely
