@@ -750,6 +750,23 @@ int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
 
 
 
+int IcqSetNickName(WPARAM wParam, LPARAM lParam)
+{
+	PBYTE buf = NULL;
+  int buflen = 0;
+
+  ICQWriteContactSettingString(NULL, "Nick", (char*)lParam);
+
+ 	ppackLEWord(&buf, &buflen, 0);  // data length
+	ppackTLVLNTS(&buf, &buflen, (char*)lParam, TLV_NICKNAME, 1);
+	*(PWORD)buf = buflen - 2;
+  IcqChangeInfo(META_SET_FULLINFO_REQ, (LPARAM)buf);
+
+  return 0; // Not defined // TODO: change when definition is ready
+}
+
+
+
 int IcqChangeInfo(WPARAM wParam, LPARAM lParam)
 {
 	if (lParam && icqOnline)

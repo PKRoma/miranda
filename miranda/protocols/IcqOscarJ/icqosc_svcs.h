@@ -37,10 +37,6 @@
 #ifndef __ICQOSC_SVCS_H
 #define __ICQOSC_SVCS_H
 
-/*
-	//CreateServiceFunction(ICQOSCPROTONAME PSS_FILECANCEL,IcqFileCancel);	 //not yet implemented
-*/
-
 /*---------* Functions *---------------*/
 
 int IcqGetCaps(WPARAM wParam, LPARAM lParam);
@@ -60,6 +56,7 @@ int IcqCreateAdvSearchUI(WPARAM wParam, LPARAM lParam);
 int IcqSearchByAdvanced(WPARAM wParam, LPARAM lParam);
 int IcqAddToList(WPARAM wParam, LPARAM lParam);
 int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam);
+int IcqSetNickName(WPARAM wParam, LPARAM lParam);
 int IcqChangeInfo(WPARAM wParam, LPARAM lParam);
 int IcqGetInfo(WPARAM wParam, LPARAM lParam);
 int IcqSendSms(WPARAM wParam, LPARAM lParam);

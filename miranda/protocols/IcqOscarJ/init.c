@@ -55,7 +55,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"IcqOscarJ Protocol",
-	PLUGIN_MAKE_VERSION(0,3,6,4),
+	PLUGIN_MAKE_VERSION(0,3,6,5),
 	"Support for ICQ network, enhanced.",
 	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@users.sourceforge.net",
@@ -95,6 +95,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 }
 
 
+
 static HANDLE ICQCreateServiceFunction(const char* szService,	MIRANDASERVICE serviceProc)
 {
 	char str[MAX_PATH + 32];
@@ -102,6 +103,7 @@ static HANDLE ICQCreateServiceFunction(const char* szService,	MIRANDASERVICE ser
 	strcat(str, szService);
 	return CreateServiceFunction(str, serviceProc);
 }
+
 
 
 int __declspec(dllexport) Load(PLUGINLINK *link)
@@ -174,6 +176,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	ICQCreateServiceFunction(PS_ADDTOLIST, IcqAddToList);
 	ICQCreateServiceFunction(PS_ADDTOLISTBYEVENT, IcqAddToListByEvent);
 	ICQCreateServiceFunction(PS_FILERESUME, IcqFileResume);
+  ICQCreateServiceFunction(PS_SET_NICKNAME, IcqSetNickName);
 	ICQCreateServiceFunction(PSS_GETINFO, IcqGetInfo);
 	ICQCreateServiceFunction(PSS_MESSAGE, IcqSendMessage);
 	ICQCreateServiceFunction(PSS_MESSAGE"W", IcqSendMessageW);
