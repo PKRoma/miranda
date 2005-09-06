@@ -1031,7 +1031,7 @@ void ext_yahoo_got_nick(int id, const char *nick)
 {
 	LOG(("[ext_yahoo_got_nick] nick: %s", nick));
 	
-	YAHOO_SetString( NULL, "Nick", nick);
+	//YAHOO_SetString( NULL, "Nick", nick);
 }
 
 void ext_yahoo_got_stealth(int id, char *stealthlist)
