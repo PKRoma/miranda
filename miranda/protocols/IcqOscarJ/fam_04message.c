@@ -391,7 +391,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
               usMsg = malloc((strlen(szMsg)+2)*(sizeof(wchar_t)+1));
 					    memcpy((char*)usMsg, szMsg, strlen(szMsg)+1);
               MultiByteToWideChar(wCP, 0, szMsg, strlen(szMsg), (wchar_t*)((char*)usMsg + strlen(szMsg) + 1), strlen(szMsg));
-              *(WORD*)(usMsg + 1 + strlen(szMsg)*(1 + sizeof(wchar_t))) = '\0'; // trailing zeros
+              *(wchar_t*)((char*)usMsg + 1 + strlen(szMsg)*(1 + sizeof(wchar_t))) = '\0'; // trailing zeros
 					    SAFE_FREE(&szMsg);
 					    szMsg = (char*)usMsg;
 					    pre.flags = PREF_UNICODE;
@@ -1376,7 +1376,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
           usMsg = malloc((strlen(szMsg)+2)*(sizeof(wchar_t)+1));
 					memcpy((char*)usMsg, szMsg, strlen(szMsg)+1);
           MultiByteToWideChar(wCP, 0, szMsg, strlen(szMsg), (wchar_t*)((char*)usMsg + strlen(szMsg) + 1), strlen(szMsg));
-          *(WORD*)(usMsg + 1 + strlen(szMsg)*(1 + sizeof(wchar_t))) = '\0'; // trailing zeros
+          *(wchar_t*)((char*)usMsg + 1 + strlen(szMsg)*(1 + sizeof(wchar_t))) = '\0'; // trailing zeros
 					SAFE_FREE(&szMsg);
 					szMsg = (char*)usMsg;
 					pre.flags = PREF_UNICODE;
