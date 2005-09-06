@@ -325,7 +325,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 									RECT rcControl,rc;
 									int w,h;
 
-									dat->opd[dat->currentPage].hwnd=CreateDialogIndirect(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hdlg,dat->opd[dat->currentPage].dlgProc);
+									dat->opd[dat->currentPage].hwnd=CreateDialogIndirectA(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hdlg,dat->opd[dat->currentPage].dlgProc);
 									if(dat->opd[dat->currentPage].flags&ODPF_BOLDGROUPS)
 										EnumChildWindows(dat->opd[dat->currentPage].hwnd,BoldGroupTitlesEnumChildren,(LPARAM)dat->hBoldFont);
 									GetClientRect(dat->opd[dat->currentPage].hwnd,&rcPage);
