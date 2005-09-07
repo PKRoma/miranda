@@ -126,8 +126,10 @@ int JabberGcInit( WPARAM wParam, LPARAM lParam )
 
 void JabberGcLogCreate( JABBER_LIST_ITEM* item )
 {
-	if ( !item->bChatActive )
-		NotifyEventHooks( hInitChat, (WPARAM)item, 0 );
+	if ( item->bChatActive )
+		return;
+
+	NotifyEventHooks( hInitChat, (WPARAM)item, 0 );
 }
 
 void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, char* nick, int action )
@@ -154,7 +156,7 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, cha
 				}
 				else gcd.iType = GC_EVENT_JOIN;
 				gce.pszStatus = JTranslate( sttRoles[ JS.role ] );
-				gce.bIsMe = JabberCompareJids( jid, jabberJID ) == 0;
+				gce.bIsMe = ( jid == NULL || JabberCompareJids( jid, jabberJID ) == 0 );
 				break;
 	}	}	}
 
@@ -176,6 +178,9 @@ void JabberGcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 	item->bChatActive = FALSE;
 
 	if ( jabberOnline ) {
+		gcd.iType = GC_EVENT_SETITEMDATA;
+		JCallService(MS_GC_EVENT, 0, (LPARAM)&gce );
+
 		JabberSend( jabberThreadInfo->s, "<presence to='%s' type='unavailable'/>", item->jid );
 		JabberListRemove( LIST_CHATROOM, item->jid );
 }	}

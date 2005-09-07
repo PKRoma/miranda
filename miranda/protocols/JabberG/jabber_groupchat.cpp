@@ -619,19 +619,20 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 			return;
 
 		gcd.iType = GC_EVENT_TOPIC;
+		nick = item->nick;
 	}
 	else {
 		if (( n = JabberXmlGetChild( node, "body" )) == NULL ) return;
 		if ( n->text == NULL )
 			return;
 
+		nick = strchr( from, '/' );
+		if ( nick == NULL || nick[1] == '\0' )
+			return;
+		nick++;
+
 		gcd.iType = GC_EVENT_MESSAGE;
 	}
-
-	nick = strchr( from, '/' );
-	if ( nick == NULL || nick[1] == '\0' )
-		return;
-	nick++;
 
 	JabberGcLogCreate( item );
 
@@ -644,7 +645,7 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 					msgTime = JabberIsoToUnixTime( p );
 
 	time_t now = time( NULL );
-	if ( msgTime==0 || msgTime>now )
+	if ( msgTime == 0 || msgTime > now )
 		msgTime = now;
 
 	GCEVENT gce = {0};
