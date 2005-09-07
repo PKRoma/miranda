@@ -78,7 +78,7 @@ for /F "tokens=1,2 delims= " %%i in (..\build.no) do call :Pack %%i %%j
 exit
 
 :Pack
-del %Temp%\miranda-v%1a%2w.zip
+del %Temp%\miranda-v%1a%2.zip
 7za.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2.zip ./*
 goto :eof
 
