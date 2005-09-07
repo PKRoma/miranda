@@ -773,13 +773,12 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			break;
 		case WM_DESTROY:		
 			{
-				char *szProto;
+				TCHAR *szProto;
 				int len = SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETLBTEXTLEN,SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCURSEL,0,0),0);
-				szProto = (char*)malloc(len+1);
+				szProto = ( TCHAR* )alloca( sizeof(TCHAR)*( len+1 ));
 				*szProto='\0';
 				SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETLBTEXT,SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCURSEL,0,0),(LPARAM)szProto);
-				DBWriteContactSettingString(NULL, "FindAdd", "LastSearched", szProto?szProto:"");
-				free(szProto);
+				DBWriteContactSettingTString(NULL, "FindAdd", "LastSearched", szProto?szProto:_T(""));
 			}			
 			SaveColumnSizes(GetDlgItem(hwndDlg,IDC_RESULTS));
 			if(dat->hResultHook!=NULL) UnhookEvent(dat->hResultHook);
