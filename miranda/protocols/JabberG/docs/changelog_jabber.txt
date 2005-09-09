@@ -7,6 +7,8 @@ Legend:
 Version 0.4.1.2
 ===============
 [+] added GNUPG support (many thanks to Karl-Heinz Pennemann for a patch)
+[!] bug #0001324 fixed: groupchat subjects don't get recognized
+[!] bug #0001430 fixed: several problems with moderator controls
 
 Version 0.4.1.1
 ===============
