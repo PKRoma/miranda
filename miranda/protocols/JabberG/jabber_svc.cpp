@@ -921,19 +921,23 @@ void sttRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 	if ( item == NULL )
 		return;
 	
-	char* newNick = NULL;
 	if ( cws->value.type == DBVT_DELETED ) {
 		JabberAddContactToRoster( item->jid, ( char* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, ( WPARAM )hContact, GCDNF_NOMYHANDLE ), item->group );
 		return;
 	}
 
-	if ( cws->value.pszVal == NULL || !lstrcmp( item->nick, newNick ))
-		return;
-
+	char* newNick = NULL;	bool isFree = false;
 	switch( cws->value.type ) {
-		case DBVT_ASCIIZ: JabberAddContactToRoster( item->jid, UTF8( cws->value.pszVal ), item->group );  break;
-		case DBVT_UTF8:   JabberAddContactToRoster( item->jid, cws->value.pszVal, item->group );          break;
-}	}
+		case DBVT_ASCIIZ: newNick = JabberTextEncode( cws->value.pszVal ); isFree = true;	break;
+		case DBVT_UTF8:   newNick = cws->value.pszVal;											break;
+	}
+
+	if ( cws->value.pszVal != NULL && lstrcmp( item->nick, newNick ))
+		JabberAddContactToRoster( item->jid, newNick, item->group );
+
+	if ( isFree )
+		free( newNick );
+}
 
 void sttAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 {
