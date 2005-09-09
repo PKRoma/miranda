@@ -368,7 +368,7 @@ static void AddBrowserPageToCombo(char *url,HWND hwndCombo)
 		for(i=SendMessage(hwndCombo,CB_GETCOUNT,0,0)-1;i>=0;i--) {
 			if(SendMessage(hwndCombo,CB_GETLBTEXTLEN,i,0)>=sizeof(szExistingUrl))
 				continue;
-			SendMessage(hwndCombo,CB_GETLBTEXT,i,(LPARAM)szExistingUrl);
+			SendMessageA(hwndCombo,CB_GETLBTEXT,i,(LPARAM)szExistingUrl);
 			if(!lstrcmpA(szExistingUrl,url)) return;
 		}
 		i=SendMessageA(hwndCombo,CB_ADDSTRING,0,(LPARAM)url);
