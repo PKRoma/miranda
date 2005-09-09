@@ -307,7 +307,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		break;
 		case IDC_SOUNDTREE:
 			switch(((NMHDR*)lParam)->code) {
-			case TVN_SELCHANGED:
+			case TVN_SELCHANGEDA:
 			{
 				NMTREEVIEW *pnmtv = (NMTREEVIEW*)lParam;
 				TVITEM tvi = pnmtv->itemNew;
