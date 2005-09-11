@@ -352,6 +352,59 @@ extern const char xmlnsOwner[], xmlnsAdmin[];
  * Function declarations
  *******************************************************************/
 
+//---- jabber_chat.cpp ----------------------------------------------
+
+void JabberGcLogCreate( JABBER_LIST_ITEM* item );
+void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, char* nick, int action );
+void JabberGcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode* reason );
+
+//---- jabber_file.c ------------------------------------------------
+
+void JabberFileFreeFt( JABBER_FILE_TRANSFER *ft );
+void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft );
+void __cdecl JabberFileServerThread( JABBER_FILE_TRANSFER *ft );
+
+//---- jabber_form.c ------------------------------------------------
+
+void JabberFormCreateUI( HWND hwndStatic, XmlNode *xNode, int *formHeight );
+char* JabberFormGetData( HWND hwndStatic, XmlNode *xNode );
+void JabberFormCreateDialog( XmlNode *xNode, char* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
+
+//---- jabber_ft.c --------------------------------------------------
+
+void JabberFtCancel( JABBER_FILE_TRANSFER *ft );
+void JabberFtInitiate( char* jid, JABBER_FILE_TRANSFER *ft );
+void JabberFtHandleSiRequest( XmlNode *iqNode );
+void JabberFtAcceptSiRequest( JABBER_FILE_TRANSFER *ft );
+BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode );
+
+//---- jabber_groupchat.c -------------------------------------------
+
+int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam );
+void JabberGroupchatProcessPresence( XmlNode *node, void *userdata );
+void JabberGroupchatProcessMessage( XmlNode *node, void *userdata );
+void JabberGroupchatProcessInvite( char* roomJid, char* from, char* reason, char* password );
+
+//---- jabber_libstr.c ----------------------------------------------
+
+void  __stdcall replaceStr( char*& dest, const char* src );
+char* __stdcall rtrim( char *string );
+
+//---- jabber_misc.c ------------------------------------------------
+
+void   JabberAddContactToRoster( const char* jid, const char* nick, const char* grpName );
+void   JabberChatDllError( void );
+int    JabberCompareJids( const char* jid1, const char* jid2 );
+void   JabberContactListCreateGroup( char* groupName );
+void   JabberDBAddAuthRequest( char* jid, char* nick );
+HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripResource );
+ULONG  JabberForkThread( void ( __cdecl *threadcode )( void* ), unsigned long stacksize, void *arg );
+void   JabberSetServerStatus( int iNewStatus );
+
+//---- jabber_svc.c -------------------------------------------------
+
+void JabberEnableMenuItems( BOOL bEnable );
+
 //---- jabber_std.cpp ----------------------------------------------
 
 HANDLE __stdcall  JCreateServiceFunction( const char* szService, MIRANDASERVICE serviceProc );
@@ -375,14 +428,6 @@ char*  __stdcall  JTranslate( const char* str );
 //---- jabber_thread.cpp -------------------------------------------
 
 void __cdecl JabberServerThread( struct ThreadData *info );
-
-//---- jabber_ws.c -------------------------------------------------
-
-BOOL          JabberWsInit( void );
-void          JabberWsUninit( void );
-JABBER_SOCKET JabberWsConnect( char* host, WORD port );
-int           JabberWsSend( JABBER_SOCKET s, char* data, int datalen );
-int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen );
 
 //---- jabber_util.c ----------------------------------------------
 
@@ -422,58 +467,17 @@ void          __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const 
 char*         __stdcall JabberGetClientJID( const char* jid, char*, size_t );
 char*         __stdcall JabberStripJid( const char* jid, char* dest, size_t destLen );
 
-//---- jabber_misc.c ------------------------------------------------
+//---- jabber_vcard.c -----------------------------------------------
 
-void   JabberAddContactToRoster( const char* jid, const char* nick, const char* grpName );
-void   JabberChatDllError( void );
-int    JabberCompareJids( const char* jid1, const char* jid2 );
-void   JabberContactListCreateGroup( char* groupName );
-void   JabberDBAddAuthRequest( char* jid, char* nick );
-HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripResource );
-ULONG  JabberForkThread( void ( __cdecl *threadcode )( void* ), unsigned long stacksize, void *arg );
-void   JabberSetServerStatus( int iNewStatus );
+int JabberSendGetVcard( const char* );
 
-//---- jabber_file.c ------------------------------------------------
+//---- jabber_ws.c -------------------------------------------------
 
-void JabberFileFreeFt( JABBER_FILE_TRANSFER *ft );
-void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft );
-void __cdecl JabberFileServerThread( JABBER_FILE_TRANSFER *ft );
-
-//---- jabber_groupchat.c -------------------------------------------
-
-int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam );
-void JabberGroupchatProcessPresence( XmlNode *node, void *userdata );
-void JabberGroupchatProcessMessage( XmlNode *node, void *userdata );
-void JabberGroupchatProcessInvite( char* roomJid, char* from, char* reason, char* password );
-
-//---- jabber_chat.cpp ----------------------------------------------
-
-void JabberGcLogCreate( JABBER_LIST_ITEM* item );
-void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const char* jid, char* nick, int action );
-void JabberGcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode* reason );
-
-//---- jabber_form.c ------------------------------------------------
-
-void JabberFormCreateUI( HWND hwndStatic, XmlNode *xNode, int *formHeight );
-char* JabberFormGetData( HWND hwndStatic, XmlNode *xNode );
-void JabberFormCreateDialog( XmlNode *xNode, char* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
-
-//---- jabber_ft.c --------------------------------------------------
-
-void JabberFtCancel( JABBER_FILE_TRANSFER *ft );
-void JabberFtInitiate( char* jid, JABBER_FILE_TRANSFER *ft );
-void JabberFtHandleSiRequest( XmlNode *iqNode );
-void JabberFtAcceptSiRequest( JABBER_FILE_TRANSFER *ft );
-BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode );
-
-//---- jabber_svc.c -------------------------------------------------
-
-void JabberEnableMenuItems( BOOL bEnable );
-
-//---- jabber_libstr.c ----------------------------------------------
-
-void  __stdcall replaceStr( char*& dest, const char* src );
-char* __stdcall rtrim( char *string );
+BOOL          JabberWsInit( void );
+void          JabberWsUninit( void );
+JABBER_SOCKET JabberWsConnect( char* host, WORD port );
+int           JabberWsSend( JABBER_SOCKET s, char* data, int datalen );
+int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen );
 
 ///////////////////////////////////////////////////////////////////////////////
 // UTF8 encode helper

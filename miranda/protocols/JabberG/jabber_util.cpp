@@ -274,7 +274,7 @@ int __stdcall JabberUtfCompareI( const char* s1, const char* s2 )
 	wchar_t* w2 = ( wchar_t* )alloca(( l2+1 )*sizeof( wchar_t ));
 	sttUtf8Decode(( BYTE* )s1, w1 );
 	sttUtf8Decode(( BYTE* )s2, w2 );
-	return lstrcmpiW( w1, w2 );
+	return _wcsicmp( w1, w2 );
 }
 
 void __stdcall JabberUtf8Decode( char* str, WCHAR** ucs2 )
