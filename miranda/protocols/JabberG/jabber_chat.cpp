@@ -353,7 +353,20 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 /////////////////////////////////////////////////////////////////////////////////////////
 // Context menu processing
 
-static char sttAdminXml[] = "<iq type='set' to='%s'>%s<item nick='%s' %s='%s'/></query></iq>";
+static void JabberAdminSet( const char* to, const char* ns, const char* item, const char* itemVal, const char* var, const char* varVal )
+{
+	JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<item %s='%s' %s='%s'/></query></iq>", 
+		to, ns, item, itemVal, var, varVal );
+}
+
+static void JabberAdminGet( const char* to, const char* ns, const char* var, const char* varVal, JABBER_IQ_PFUNC foo )
+{
+	int id = JabberSerialNext();
+	JabberIqAdd( id, IQ_PROC_NONE, foo );
+	JabberSend( jabberThreadInfo->s, 
+		"<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s<item %s='%s'/></query></iq>",
+		id, to, ns, var, varVal );
+}
 
 static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 {
@@ -390,72 +403,53 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		break;
 
 	case IDM_VOICE:
-		JabberSend( jabberThreadInfo->s, sttAdminXml, item->jid, xmlnsAdmin, UTF8(item->nick), "role", 
-			( him->role == ROLE_PARTICIPANT ) ? "visitor" : "participant" );
+		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(item->nick), 
+			"role", ( him->role == ROLE_PARTICIPANT ) ? "visitor" : "participant" );
 		break;
 
 	case IDM_MODERATOR:
-		JabberSend( jabberThreadInfo->s, sttAdminXml, item->jid, xmlnsAdmin, UTF8(item->nick), "role", 
-			( him->affiliation == ROLE_MODERATOR ) ? "participant" : "moderator" );
+		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(item->nick), 
+			"role", ( him->affiliation == ROLE_MODERATOR ) ? "participant" : "moderator" );
 		break;
 
 	case IDM_ADMIN:
-		JabberSend( jabberThreadInfo->s, sttAdminXml, item->jid, xmlnsAdmin, UTF8(item->nick), "affiliation", 
-			( him->affiliation==AFFILIATION_ADMIN )? "member" : "admin" );
+		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(item->nick), 
+			"affiliation", ( him->affiliation==AFFILIATION_ADMIN )? "member" : "admin" );
 		break;
 
 	case IDM_OWNER:
-		JabberSend( jabberThreadInfo->s, sttAdminXml, item->jid, xmlnsAdmin, UTF8(item->nick), "affiliation", 
-			( him->affiliation==AFFILIATION_OWNER ) ? "admin" : "owner" );
+		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(item->nick), 
+			"affiliation", ( him->affiliation==AFFILIATION_OWNER ) ? "admin" : "owner" );
 		break;
 }	}
 
 static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 {
-	int iqId;
 	char szBuffer[ 1024 ];
 
 	switch( gch->dwData ) {
 	case IDM_VOICE:
-		iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultMucGetVoiceList );
-		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><item role='participant'/></query></iq>", 
-			iqId, gch->pDest->pszID );
+		JabberAdminGet( gch->pDest->pszID, xmlnsAdmin, "role", "participant", JabberIqResultMucGetVoiceList );
 		break;
 
 	case IDM_MEMBER:
-		iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultMucGetMemberList );
-		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s<item affiliation='member'/></query></iq>", 
-			iqId, gch->pDest->pszID, xmlnsAdmin );
+		JabberAdminGet( gch->pDest->pszID, xmlnsAdmin, "affiliation", "member", JabberIqResultMucGetMemberList );
 		break;
 
 	case IDM_MODERATOR:
-		iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultMucGetModeratorList );
-		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s<item role='moderator'/></query></iq>", 
-			iqId, gch->pDest->pszID, xmlnsAdmin );
+		JabberAdminGet( gch->pDest->pszID, xmlnsAdmin, "role", "moderator", JabberIqResultMucGetModeratorList );
 		break;
 
 	case IDM_BAN:
-		iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultMucGetBanList );
-		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s<item affiliation='outcast'/></query></iq>",
-			iqId, gch->pDest->pszID, xmlnsAdmin );
+		JabberAdminGet( gch->pDest->pszID, xmlnsAdmin, "affiliation", "outcast", JabberIqResultMucGetBanList );
 		break;
 
 	case IDM_ADMIN:
-		iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultMucGetAdminList );
-		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s<item affiliation='admin'/></query></iq>",
-			iqId, gch->pDest->pszID, xmlnsOwner );
+		JabberAdminGet( gch->pDest->pszID, xmlnsOwner, "affiliation", "admin", JabberIqResultMucGetAdminList );
 		break;
 
 	case IDM_OWNER:
-		iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultMucGetOwnerList );
-		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s<item affiliation='owner'/></query></iq>", 
-			iqId, gch->pDest->pszID, xmlnsOwner );
+		JabberAdminGet( gch->pDest->pszID, xmlnsOwner, "affiliation", "owner", JabberIqResultMucGetOwnerList );
 		break;
 
 	case IDM_TOPIC:
@@ -484,12 +478,13 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		break;
 
 	case IDM_CONFIG:
-		iqId = JabberSerialNext();
+	{
+		int iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetMuc );
 		JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s</query></iq>", 
 			iqId, gch->pDest->pszID, xmlnsOwner );
 		break;
-
+	}
 	case IDM_DESTROY:
 		mir_snprintf( szBuffer, sizeof szBuffer, "%s %s", JTranslate( "Reason to destroy" ), gch->pDest->pszID );
 		if ( !JabberEnterString( szBuffer, sizeof szBuffer ))
@@ -540,3 +535,60 @@ int JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 
 	return 0;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+void JabberAddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, char* str )
+{
+	char* field = strchr(str,'@') ? "jid" : "nick";
+	char* roomJid = jidListInfo->roomJid;
+
+	switch (jidListInfo->type) {
+	case MUC_VOICELIST:
+		JabberAdminSet( roomJid, xmlnsAdmin, field, str, "role", "participant" );
+		JabberAdminGet( roomJid, xmlnsAdmin, "role", "participant", JabberIqResultMucGetVoiceList);
+		break;
+	case MUC_MEMBERLIST:
+		JabberAdminSet( roomJid, xmlnsAdmin, field, str, "affiliation", "member" ); 
+		JabberAdminGet( roomJid, xmlnsAdmin, "affiliation", "member", JabberIqResultMucGetMemberList);
+		break;
+	case MUC_MODERATORLIST:
+		JabberAdminSet( roomJid, xmlnsAdmin, field, str, "role", "moderator" );
+		JabberAdminGet( roomJid, xmlnsAdmin, "role", "moderator", JabberIqResultMucGetModeratorList);
+		break;
+	case MUC_BANLIST:
+		JabberAdminSet( roomJid, xmlnsAdmin, field, str, "affiliation", "outcast" ); 
+		JabberAdminGet( roomJid, xmlnsAdmin, "affiliation", "outcast", JabberIqResultMucGetBanList);
+		break;
+	case MUC_ADMINLIST:
+		JabberAdminSet( roomJid, xmlnsOwner, field, str, "affiliation", "admin" ); 
+		JabberAdminGet( roomJid, xmlnsOwner, "affiliation", "admin", JabberIqResultMucGetAdminList);
+		break;
+	case MUC_OWNERLIST:
+		JabberAdminSet( roomJid, xmlnsOwner, field, str, "affiliation", "owner" );
+		JabberAdminGet( roomJid, xmlnsOwner, "affiliation", "owner", JabberIqResultMucGetOwnerList);
+		break;
+}	}
+
+void JabberDeleteMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, char* jid )
+{
+	char* roomJid = jidListInfo->roomJid;
+
+	switch ( jidListInfo->type ) {
+	case MUC_VOICELIST:		// change role to visitor ( from participant )
+		JabberAdminSet( roomJid, xmlnsAdmin, "jid", roomJid, "role", "visitor" );
+		break;
+	case MUC_BANLIST:		// change affiliation to none ( from outcast )
+	case MUC_MEMBERLIST:	// change affiliation to none ( from member )
+		JabberAdminSet( roomJid, xmlnsAdmin, "jid", roomJid, "affiliation", "none" );
+		break;
+	case MUC_MODERATORLIST:	// change role to participant ( from moderator )
+		JabberAdminSet( roomJid, xmlnsAdmin, "jid", roomJid, "role", "participant" );
+		break;
+	case MUC_ADMINLIST:		// change affiliation to member ( from admin )
+		JabberAdminSet( roomJid, xmlnsOwner, "jid", roomJid, "affiliation", "member" );
+		break;
+	case MUC_OWNERLIST:		// change affiliation to admin ( from owner )
+		JabberAdminSet( roomJid, xmlnsOwner, "jid", roomJid, "affiliation", "admin" );
+		break;
+}	}

@@ -148,10 +148,11 @@ enum {
  *******************************************************************/
 typedef HANDLE JABBER_SOCKET;
 
-typedef enum {
+enum JABBER_SESSION_TYPE
+{
 	JABBER_SESSION_NORMAL,
 	JABBER_SESSION_REGISTER
-} JABBER_SESSION_TYPE;
+};
 
 struct ThreadData {
 	HANDLE hThread;
@@ -173,27 +174,30 @@ struct ThreadData {
 	BOOL reg_done;
 };
 
-typedef struct {
+struct JABBER_MODEMSGS
+{
 	char* szOnline;
 	char* szAway;
 	char* szNa;
 	char* szDnd;
 	char* szFreechat;
-} JABBER_MODEMSGS;
+};
 
-typedef struct {
+struct JABBER_REG_ACCOUNT
+{
 	char username[128];
 	char password[128];
 	char server[128];
 	char manualHost[128];
 	WORD port;
 	BOOL useSSL;
-} JABBER_REG_ACCOUNT;
+};
 
 typedef enum { FT_SI, FT_OOB, FT_BYTESTREAM } JABBER_FT_TYPE;
 typedef enum { FT_CONNECTING, FT_INITIALIZING, FT_RECEIVING, FT_DONE, FT_ERROR, FT_DENIED } JABBER_FILE_STATE;
 
-typedef struct {
+struct JABBER_FILE_TRANSFER
+{ 
 	HANDLE hContact;
 	JABBER_FT_TYPE type;
 	JABBER_SOCKET s;
@@ -227,43 +231,50 @@ typedef struct {
 	long allFileReceivedBytes;
 	char* szDescription;
 	int currentFile;
-} JABBER_FILE_TRANSFER;
+};
 
-typedef struct {
+struct JABBER_SEARCH_RESULT
+{
 	PROTOSEARCHRESULT hdr;
 	char jid[256];
-} JABBER_SEARCH_RESULT;
+};
 
-typedef struct {
+struct JABBER_GCLOG_FONT
+{
 	char face[LF_FACESIZE];		// LF_FACESIZE is from LOGFONT struct
 	BYTE style;
 	char size;	// signed
 	BYTE charset;
 	COLORREF color;
-} JABBER_GCLOG_FONT;
+};
 
-typedef struct {
+struct JABBER_FIELD_MAP 
+{
 	int id;
 	char* name;
-} JABBER_FIELD_MAP;
+};
 
-typedef enum {
+enum JABBER_MUC_JIDLIST_TYPE 
+{
 	MUC_VOICELIST,
 	MUC_MEMBERLIST,
 	MUC_MODERATORLIST,
 	MUC_BANLIST,
 	MUC_ADMINLIST,
 	MUC_OWNERLIST
-} JABBER_MUC_JIDLIST_TYPE;
+};
 
-typedef struct {
+struct JABBER_MUC_JIDLIST_INFO
+{
 	JABBER_MUC_JIDLIST_TYPE type;
 	char* roomJid;	// filled-in by the WM_JABBER_REFRESH code
 	XmlNode *iqNode;
-	HWND hwndAddJid;
-} JABBER_MUC_JIDLIST_INFO;
 
-typedef struct {
+	char* type2str( void ) const;
+};
+
+struct JABBER_GCLOG_INFO
+{
 	char* roomJid;		// stored in UTF-8
 	int hSplitterPos;	// position from right edge
 	int vSplitterPos;	// position from bottom edge
@@ -279,21 +290,7 @@ typedef struct {
 	HWND hwndKickReason;
 	HWND hwndDestroyReason;
 	int nFlash;
-} JABBER_GCLOG_INFO;
-
-typedef enum {
-	MUC_SETTOPIC,
-	MUC_CHANGENICK,
-	MUC_DESTROYREASON,
-	MUC_ADDJID
-} JABBER_GCLOG_INPUT_TYPE;
-
-typedef struct {
-	JABBER_GCLOG_INPUT_TYPE type;
-	JABBER_GCLOG_INFO *gcLogInfo;
-	JABBER_MUC_JIDLIST_INFO *jidListInfo;
-	char* nick;
-} JABBER_GCLOG_INPUT_INFO;
+};
 
 typedef void ( *JABBER_FORM_SUBMIT_FUNC )( char* submitStr, void *userdata );
 typedef void ( __cdecl *JABBER_THREAD_FUNC )( void * );
