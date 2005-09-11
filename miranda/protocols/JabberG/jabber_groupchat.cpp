@@ -80,8 +80,8 @@ static int CALLBACK GroupchatCompare( LPARAM lParam1, LPARAM lParam2, LPARAM lPa
 			if ( item1->name!=NULL && item2->name!=NULL )
 				res = strcmp( item1->name, item2->name );
 			break;
-		}
-	}
+	}	}
+
 	if ( !sortAscending )
 		res *= -1;
 
@@ -619,7 +619,15 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 			return;
 
 		gcd.iType = GC_EVENT_TOPIC;
-		nick = item->nick;
+
+		if ( from != NULL ) {
+			nick = strchr( from, '/' );
+			if ( nick == NULL || nick[1] == '\0' )
+				nick = NULL;
+			else
+				nick++;
+		}
+		else nick = NULL;
 	}
 	else {
 		if (( n = JabberXmlGetChild( node, "body" )) == NULL ) return;
@@ -648,15 +656,18 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 	if ( msgTime == 0 || msgTime > now )
 		msgTime = now;
 
+	char* dispNick = NEWSTR_ALLOCA( nick );
+	JabberUtf8Decode( dispNick, NULL );
+
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
 	gce.pszUID = nick;
-	gce.pszNick = nick;
+	gce.pszNick = dispNick;
 	gce.bAddToLog = TRUE;
 	gce.time = msgTime;
 	gce.pszText = JabberTextDecode( n->text );
-	gce.bIsMe = strcmp( nick, item->nick ) == 0;
+	gce.bIsMe = lstrcmpA( nick, item->nick ) == 0;
 	JCallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
 
 	if ( gcd.iType == GC_EVENT_TOPIC ) {
