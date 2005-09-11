@@ -4835,7 +4835,8 @@ verify:
                state |= MSG_WINDOW_STATE_FOCUS;
             if (IsIconic(dat->pContainer->hwnd))
                state |= MSG_WINDOW_STATE_ICONIC;
-            return state;
+            SetWindowLong(hwndDlg, DWL_MSGRESULT, state);
+            return TRUE;
         }
         case DM_SPLITTEREMERGENCY:
             dat->splitterY = 150;
