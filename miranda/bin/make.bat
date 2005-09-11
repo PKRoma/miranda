@@ -79,7 +79,7 @@ exit
 
 :Pack
 del %Temp%\miranda-v%1a%2.zip
-7za.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2.zip ./*
+7za.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2.zip ./* ..\ChangeLog
 goto :eof
 
 :Error

@@ -104,8 +104,8 @@ Project: "aim"=..\protocols\AimTOC2\aim.dsp - Package Owner=<4>
 Package=<5>
 {{{
     begin source code control
-    "$/Miranda/miranda/protocols/aim", WJRAAAAA
-    ..\protocols\aimtoc
+    "$/Miranda/miranda/protocols/AimTOC2", YCPAAAAA
+    ..\protocols\aimtoc2
     end source code control
 }}}
 
