@@ -423,7 +423,12 @@ void __stdcall MSN_SendStatusMessage( const char* msg )
 
 LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 {
+	MSN_DebugLog( "sendPacket[%08p]: %s %s", this, cmd, fmt );
+
 	if ( this == NULL )  // :)
+		return 0;
+
+	if ( !strcmp( cmd, "CAL" ) && mIsCalSent )
 		return 0;
 
 	va_list vararg;
@@ -445,6 +450,9 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 	if ( strcmp( cmd, "MSG" ) && strcmp( cmd, "QRY" ) && strcmp( cmd, "UUX" ))
 		strcat( str,"\r\n" );
 
+	if ( !strcmp( cmd, "CAL" ))
+		mIsCalSent = true;
+
 	int result = send( str, strlen( str ));
 	free( str );
 	return ( result > 0 ) ? thisTrid : -1;
@@ -455,6 +463,8 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 
 void __stdcall MSN_SetServerStatus( int newStatus )
 {
+	MSN_DebugLog( "Setting MSN server status %d, logged in = %d", newStatus, msnLoggedIn );
+
 	if ( !msnLoggedIn )
 		return;
 

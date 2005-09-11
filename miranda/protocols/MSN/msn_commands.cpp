@@ -219,7 +219,6 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	const char* From = tFileInfo[ "From" ];
 	const char* Subject = tFileInfo[ "Subject" ];
 	const char* Fromaddr = tFileInfo[ "From-Addr" ];
-	const char* MailData = tFileInfo[ "Mail-Data" ];
 	{
 		const char* p;
 		if (( p = tFileInfo[ "Inbox-Unread" ] ) != NULL )
@@ -250,6 +249,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 			else mir_snprintf( tBuffer, sizeof( tBuffer ),  MSN_Translate("A new mail has come from %s (%s) (title: %s)."),mimeFrom, Fromaddr, mimeSubject );
 	}	}
 	else {
+		const char* MailData = tFileInfo[ "Mail-Data" ];
 		if ( MailData != NULL ) {
 			char* p = strstr( MailData, "<IU>" );
 			if ( p != NULL )

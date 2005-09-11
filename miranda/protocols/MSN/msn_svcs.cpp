@@ -638,8 +638,7 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 			if ( tActiveThreads[ tChosenThread ]->mJoinedContacts[j] == ( HANDLE )wParam ) {
 				MessageBox(NULL, Translate("User is already in the chat session."), Translate("MSN Chat"), MB_OK|MB_ICONINFORMATION);
 				return 0;
-			}
-		}
+		}	}
 
 		tActiveThreads[ tChosenThread ]->sendPacket( "CAL", tEmail );
 

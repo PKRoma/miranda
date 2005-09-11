@@ -372,11 +372,12 @@ struct ThreadData
 	//----| for switchboard servers only |------------------------------------------------
 	int            mCaller;
 	char           mCookie[130];     // for switchboard servers only
-	HANDLE			mInitialContact;  // initial switchboard contact
+	HANDLE         mInitialContact;  // initial switchboard contact
 	HANDLE*        mJoinedContacts;  //	another contacts
 	int            mJoinedCount;     // another contacts count
-	int				mMessageCount;		// message counter
-	LONG				mTrid;				// current message ID
+	int            mMessageCount;    // message counter
+	LONG           mTrid;            // current message ID
+	bool           mIsCalSent;       // is CAL already sent?
 
 	//----| for file transfers only |-----------------------------------------------------
 	filetransfer*  mMsnFtp;          // file transfer block
