@@ -204,7 +204,8 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
             { // we got XStatus title, save it
               szNode += 7;
               *szEnd = '\0';
-              ICQWriteContactSettingUtf(hContact, "XStatusName", szNode);
+              if (strlennull(szNode)) // save only non-empty names
+                ICQWriteContactSettingUtf(hContact, "XStatusName", szNode);
               *szEnd = ' ';
             }
             szNode = strstr(szWork, "<desc>");
@@ -239,13 +240,16 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
 
 void SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
 {
-  char *szQueryBody = MangleXml(szQuery, strlen(szQuery));
-  char *szNotifyBody = MangleXml(szNotify, strlen(szNotify));
+  char *szQueryBody = MangleXml(szQuery, strlennull(szQuery));
+  char *szNotifyBody = MangleXml(szNotify, strlennull(szNotify));
   DWORD dwUin;
   int nBodyLen = strlennull(szQueryBody) + strlennull(szNotifyBody) + 41;
   char *szBody = (char*)malloc(nBodyLen);
   DWORD dwCookie;
   message_cookie_data* pCookieData;
+
+  if (!CheckContactCapabilities(hContact, CAPF_XTRAZ))
+    return; // Contact does not support xtraz, do not send anything
 
   if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
     return; // Invalid contact
@@ -282,9 +286,12 @@ void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCooki
   int bAdded;
   HANDLE hContact = HContactFromUIN(dwUin, &bAdded);
 
+  if (!CheckContactCapabilities(hContact, CAPF_XTRAZ))
+    return; // Contact does not support xtraz, do not send anything
+
   if (validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
   { // apply privacy rules
-		NotifyEventHooks(hsmsgrequest, (WPARAM)MTYPE_SCRIPT_NOTIFY, (LPARAM)dwUin);
+    NotifyEventHooks(hsmsgrequest, (WPARAM)MTYPE_SCRIPT_NOTIFY, (LPARAM)dwUin);
 
     nBodyLen = null_snprintf(szBody, nBodyLen, "<NR><RES>%s</RES></NR>", szResBody);
     SAFE_FREE(&szResBody);
