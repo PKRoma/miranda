@@ -57,12 +57,14 @@ typedef struct message_cookie_data_s
 typedef struct fam15_cookie_data_s
 {
   BYTE bRequestType;
+  HANDLE hContact;
 } fam15_cookie_data;
 
 #define REQUESTTYPE_OWNER        0
 #define REQUESTTYPE_USERAUTO     1
 #define REQUESTTYPE_USERMINIMAL  2
 #define REQUESTTYPE_USERDETAILED 3
+#define REQUESTTYPE_PROFILE      4
 
 
 typedef struct search_cookie_s
@@ -86,6 +88,7 @@ void icq_requestnewfamily(WORD wFamily, void (*familyhandler)(HANDLE hConn, char
 void icq_setidle(int bAllow);
 void icq_setstatus(WORD wStatus);
 DWORD icq_sendGetInfoServ(DWORD, int);
+DWORD icq_sendGetAimProfileServ(HANDLE hContact, char *szUid);
 DWORD icq_sendGetAwayMsgServ(DWORD, int);
 DWORD icq_sendGetAimAwayMsgServ(char *szUID, int type);
 void icq_sendSetAimAwayMsgServ(char *szMsg);

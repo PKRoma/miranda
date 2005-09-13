@@ -37,7 +37,7 @@
 #include "icqoscar.h"
 
 
-static void handleLocationAwayReply(BYTE* buf, WORD wLen, WORD wCookie);
+static void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie);
 
 
 void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
@@ -49,18 +49,32 @@ void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* 
     NetLog_Server("Server sent SNAC(x02,x03) - SRV_LOCATION_RIGHTS_REPLY");
     break;
 
-  case ICQ_LOCATION_USR_INFO_REPLY: // AIM away reply
-    handleLocationAwayReply(pBuffer, wBufferLength, (WORD)pSnacHeader->dwRef);
+  case ICQ_LOCATION_USR_INFO_REPLY: // AIM user info reply
+    handleLocationAwayReply(pBuffer, wBufferLength, pSnacHeader->dwRef);
     break;
 
   case ICQ_ERROR:
   { 
     WORD wError;
+    DWORD dwCookieUin;
+    fam15_cookie_data *pCookieData;
+
 
     if (wBufferLength >= 2)
       unpackWord(&pBuffer, &wError);
     else 
       wError = 0;
+
+    if (wError == 4)
+    {
+      if (FindCookie(pSnacHeader->dwRef, &dwCookieUin, &pCookieData) && !dwCookieUin && pCookieData->bRequestType == REQUESTTYPE_PROFILE)
+      {
+        ICQBroadcastAck(pCookieData->hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
+
+        FreeCookie(pSnacHeader->dwRef);
+        SAFE_FREE(&pCookieData);
+      }
+    }
 
     LogFamilyError(ICQ_LOCATION_FAMILY, wError);
     break;
@@ -73,7 +87,8 @@ void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* 
 }
 
 
-void handleLocationAwayReply(BYTE* buf, WORD wLen, WORD wCookie)
+
+void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 {
   HANDLE hContact;
   DWORD dwUIN;
@@ -114,7 +129,7 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, WORD wCookie)
     return;
   }
 
-  if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
+  if (!FindCookie(dwCookie, &dwCookieUin, &pCookieData))
   {
     NetLog_Server("Error: Received unexpected away reply from %u", dwUIN);
     return;
@@ -123,71 +138,118 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, WORD wCookie)
   if (dwUIN != dwCookieUin)
   {
     NetLog_Server("Error: Away reply UIN does not match Cookie UIN(%u != %u)", dwUIN, dwCookieUin);
-    FreeCookie(wCookie);
+    FreeCookie(dwCookie);
     SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
     return;
   }
 
-  status = AwayMsgTypeToStatus(pCookieData->nAckType);
-  if (status == ID_STATUS_OFFLINE)
-  {
-    NetLog_Server("SNAC(2.6) Ignoring unknown status message from %u", dwUIN);
-    FreeCookie(wCookie);
+  if (pCookieData->bMessageType == REQUESTTYPE_PROFILE)
+  { // TODO: this badly needs typed cookies
+    FreeCookie(dwCookie);
     SAFE_FREE(&pCookieData);
-    return;
-  }
 
-  FreeCookie(wCookie);
-  SAFE_FREE(&pCookieData);
-
-  // Read user info TLVs
-  {
-    oscar_tlv_chain* pChain;
-    oscar_tlv* pTLV;
-    BYTE *tmp;
-    char *szMsg = NULL;
-    CCSDATA ccs;
-    PROTORECVEVENT pre;
-
-    // Syntax check
-    if (wLen < 4)
-      return;
-
-    tmp = buf;
-    // Get general chain
-    if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
-      return;
-
-    disposeChain(&pChain);
-
-    wLen -= (buf - tmp);
-
-    // Get extra chain
-    if (pChain = readIntoTLVChain(&buf, wLen, 2))
+    // Read user info TLVs
     {
-      // Get Away info TLV
-      pTLV = getTLV(pChain, 0x04, 1);
-      if (pTLV && (pTLV->wLen >= 1))
-      {
-        szMsg = malloc(pTLV->wLen + 1);
-        memcpy(szMsg, pTLV->pData, pTLV->wLen);
-        szMsg[pTLV->wLen] = '\0';
-      }
-      // Free TLV chain
+      oscar_tlv_chain* pChain;
+      oscar_tlv* pTLV;
+      BYTE *tmp;
+      char *szMsg = NULL;
+
+      // Syntax check
+      if (wLen < 4)
+        return;
+
+      tmp = buf;
+      // Get general chain
+      if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
+        return;
+
       disposeChain(&pChain);
+
+      wLen -= (buf - tmp);
+
+      // Get extra chain
+      if (pChain = readIntoTLVChain(&buf, wLen, 2))
+      {
+        // Get Profile info TLV
+        pTLV = getTLV(pChain, 0x02, 1);
+        if (pTLV && (pTLV->wLen >= 1))
+        {
+          szMsg = malloc(pTLV->wLen + 1);
+          memcpy(szMsg, pTLV->pData, pTLV->wLen);
+          szMsg[pTLV->wLen] = '\0';
+        }
+        // Free TLV chain
+        disposeChain(&pChain);
+      }
+
+      ICQWriteContactSettingString(hContact, "About", szMsg);
+      ICQBroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1 ,0);
+    }
+  }
+  else
+  {
+    status = AwayMsgTypeToStatus(pCookieData->nAckType);
+    if (status == ID_STATUS_OFFLINE)
+    {
+      NetLog_Server("SNAC(2.6) Ignoring unknown status message from %u", dwUIN);
+      FreeCookie(dwCookie);
+      SAFE_FREE(&pCookieData);
+      return;
     }
 
-    ccs.szProtoService = PSR_AWAYMSG;
-    ccs.hContact = hContact;
-    ccs.wParam = status;
-    ccs.lParam = (LPARAM)&pre;
-    pre.flags = 0;
-    pre.szMessage = szMsg?szMsg:"";
-    pre.timestamp = time(NULL);
-    pre.lParam = wCookie;
+    FreeCookie(dwCookie);
+    SAFE_FREE(&pCookieData);
 
-    CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
+    // Read user info TLVs
+    {
+      oscar_tlv_chain* pChain;
+      oscar_tlv* pTLV;
+      BYTE *tmp;
+      char *szMsg = NULL;
+      CCSDATA ccs;
+      PROTORECVEVENT pre;
 
-    SAFE_FREE(&szMsg);
+      // Syntax check
+      if (wLen < 4)
+        return;
+
+      tmp = buf;
+      // Get general chain
+      if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
+        return;
+
+      disposeChain(&pChain);
+
+      wLen -= (buf - tmp);
+
+      // Get extra chain
+      if (pChain = readIntoTLVChain(&buf, wLen, 2))
+      {
+        // Get Away info TLV
+        pTLV = getTLV(pChain, 0x04, 1);
+        if (pTLV && (pTLV->wLen >= 1))
+        {
+          szMsg = malloc(pTLV->wLen + 1);
+          memcpy(szMsg, pTLV->pData, pTLV->wLen);
+          szMsg[pTLV->wLen] = '\0';
+        }
+        // Free TLV chain
+        disposeChain(&pChain);
+      }
+
+      ccs.szProtoService = PSR_AWAYMSG;
+      ccs.hContact = hContact;
+      ccs.wParam = status;
+      ccs.lParam = (LPARAM)&pre;
+      pre.flags = 0;
+      pre.szMessage = szMsg?szMsg:"";
+      pre.timestamp = time(NULL);
+      pre.lParam = dwCookie;
+
+      CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
+
+      SAFE_FREE(&szMsg);
+    }
   }
 }

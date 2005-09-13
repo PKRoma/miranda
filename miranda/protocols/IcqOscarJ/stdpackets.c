@@ -577,6 +577,32 @@ DWORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal)
 
 
 
+DWORD icq_sendGetAimProfileServ(HANDLE hContact, char* szUid)
+{
+  icq_packet packet;
+  DWORD dwCookie;
+  fam15_cookie_data *pCookieData = NULL;
+  BYTE bUIDlen = strlennull(szUid);
+
+  pCookieData = malloc(sizeof(fam15_cookie_data));
+  dwCookie = AllocateCookie(ICQ_LOCATION_REQ_USER_INFO, 0, (void*)pCookieData);
+  pCookieData->bRequestType = REQUESTTYPE_PROFILE;
+  pCookieData->hContact = hContact;
+
+  packet.wLen = 13 + bUIDlen;
+  write_flap(&packet, ICQ_DATA_CHAN);
+  packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, dwCookie);
+  packWord(&packet, 0x01); // request profile info
+  packByte(&packet, bUIDlen);
+  packBuffer(&packet, szUid, bUIDlen);
+
+  sendServPacket(&packet);
+
+  return dwCookie;
+}
+
+
+
 DWORD icq_sendGetAwayMsgServ(DWORD dwUin, int type)
 {
   icq_packet packet;

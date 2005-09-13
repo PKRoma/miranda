@@ -786,8 +786,9 @@ int IcqGetInfo(WPARAM wParam, LPARAM lParam)
   { // TODO: add checking for SGIF_ONOPEN, otherwise max one per 10sec
     CCSDATA* ccs = (CCSDATA*)lParam;
     DWORD dwUin;
+    uid_str szUid;
 
-    if (ICQGetContactSettingUID(ccs->hContact, &dwUin, NULL))
+    if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUid))
     {
       return 0; // Invalid contact
     }
@@ -801,7 +802,10 @@ int IcqGetInfo(WPARAM wParam, LPARAM lParam)
     // server kicks if 100 msgs sent instantly, so send max 50 instantly
     if (messageRate < 67*50)
     {
-      icq_sendGetInfoServ(dwUin, (ccs->wParam & SGIF_MINIMAL) != 0);
+      if (dwUin)
+        icq_sendGetInfoServ(dwUin, (ccs->wParam & SGIF_MINIMAL) != 0);
+      else
+        icq_sendGetAimProfileServ(ccs->hContact, szUid);
 
       return 0; // Success
     }
