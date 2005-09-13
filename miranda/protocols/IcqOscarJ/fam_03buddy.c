@@ -51,23 +51,23 @@ extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD
 
 void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {
-	switch (pSnacHeader->wSubtype)
-	{
-	case ICQ_USER_ONLINE:
-		handleUserOnline(pBuffer, wBufferLength);
-		break;
+  switch (pSnacHeader->wSubtype)
+  {
+  case ICQ_USER_ONLINE:
+    handleUserOnline(pBuffer, wBufferLength);
+    break;
 
-	case ICQ_USER_OFFLINE:
-		handleUserOffline(pBuffer, wBufferLength);
-		break;
+  case ICQ_USER_OFFLINE:
+    handleUserOffline(pBuffer, wBufferLength);
+    break;
 
-	case ICQ_USER_SRV_REPLYBUDDY:
-		handleReplyBuddy(pBuffer, wBufferLength);
-		break;
+  case ICQ_USER_SRV_REPLYBUDDY:
+    handleReplyBuddy(pBuffer, wBufferLength);
+    break;
 
-	case ICQ_USER_NOTIFY_REJECTED:
+  case ICQ_USER_NOTIFY_REJECTED:
     handleNotifyRejected(pBuffer, wBufferLength);
-		break;
+    break;
 
   case ICQ_ERROR:
   {
@@ -82,10 +82,10 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
     break;
   }
 
-	default:
-		NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_BUDDY_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
-		break;
-	}
+  default:
+    NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_BUDDY_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    break;
+  }
 }
 
 
@@ -101,40 +101,40 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
 // TLV(1D) Avatar Hash (20 bytes)
 static void handleUserOnline(BYTE* buf, WORD wLen)
 {
-	HANDLE hContact;
-	DWORD dwPort;
-	DWORD dwRealIP;
-	DWORD dwIP;
-	DWORD dwUIN;
+  HANDLE hContact;
+  DWORD dwPort;
+  DWORD dwRealIP;
+  DWORD dwIP;
+  DWORD dwUIN;
   uid_str szUID;
-	DWORD dwDirectConnCookie;
-	DWORD dwFT1, dwFT2, dwFT3;
-	LPSTR szClient = 0;
-	DWORD dwClientId = 0;
-	WORD wVersion = 0;
-	WORD wTLVCount;
-	WORD wWarningLevel;
-	WORD wStatusFlags;
-	WORD wStatus;
-	BYTE nTCPFlag;
-	DWORD dwOnlineSince;
-	WORD wIdleTimer = 0;
-	time_t tIdleTS = 0;
+  DWORD dwDirectConnCookie;
+  DWORD dwFT1, dwFT2, dwFT3;
+  LPSTR szClient = 0;
+  DWORD dwClientId = 0;
+  WORD wVersion = 0;
+  WORD wTLVCount;
+  WORD wWarningLevel;
+  WORD wStatusFlags;
+  WORD wStatus;
+  BYTE nTCPFlag;
+  DWORD dwOnlineSince;
+  WORD wIdleTimer = 0;
+  time_t tIdleTS = 0;
 
-	// Unpack the sender's user ID
+  // Unpack the sender's user ID
   if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
 
-	// Syntax check
-	if (wLen < 4)
-		return;
+  // Syntax check
+  if (wLen < 4)
+    return;
 
-	// Warning level?
-	unpackWord(&buf, &wWarningLevel);
-	wLen -= 2;
+  // Warning level?
+  unpackWord(&buf, &wWarningLevel);
+  wLen -= 2;
 
-	// TLV count
-	unpackWord(&buf, &wTLVCount);
-	wLen -= 2;
+  // TLV count
+  unpackWord(&buf, &wTLVCount);
+  wLen -= 2;
 
   // Determine contact
   if (dwUIN)
@@ -142,47 +142,47 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   else
     hContact = HContactFromUID(szUID, NULL);
 
-	// Ignore status notification if the user is not already on our list
-	if (hContact == INVALID_HANDLE_VALUE)
-	{
+  // Ignore status notification if the user is not already on our list
+  if (hContact == INVALID_HANDLE_VALUE)
+  {
 #ifdef _DEBUG
     if (dwUIN)
-		  NetLog_Server("Ignoring user online (%u)", dwUIN);
+      NetLog_Server("Ignoring user online (%u)", dwUIN);
     else
-		  NetLog_Server("Ignoring user online (%s)", szUID);
+      NetLog_Server("Ignoring user online (%s)", szUID);
 #endif
-		return;
-	}
+    return;
+  }
 
-	// Read user info TLVs
-	{
-		oscar_tlv_chain* pChain;
-		oscar_tlv* pTLV;
+  // Read user info TLVs
+  {
+    oscar_tlv_chain* pChain;
+    oscar_tlv* pTLV;
 
-		// Syntax check
-		if (wLen < 4)
-			return;
+    // Syntax check
+    if (wLen < 4)
+      return;
 
-		// Get chain
-		if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
-			return;
+    // Get chain
+    if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
+      return;
 
     if (dwUIN)
     {
-		  // Get DC info TLV
-		  pTLV = getTLV(pChain, 0x0C, 1);
-		  if (pTLV && (pTLV->wLen >= 15))
-		  {
-			  unsigned char* pBuffer;
+      // Get DC info TLV
+      pTLV = getTLV(pChain, 0x0C, 1);
+      if (pTLV && (pTLV->wLen >= 15))
+      {
+        unsigned char* pBuffer;
 
-			  pBuffer = pTLV->pData;
-			  unpackDWord(&pBuffer, &dwRealIP);
-			  unpackDWord(&pBuffer, &dwPort);
-			  unpackByte(&pBuffer,  &nTCPFlag);
-			  unpackWord(&pBuffer,  &wVersion);
-			  unpackDWord(&pBuffer, &dwDirectConnCookie);
-			  pBuffer += 4; // Web front port
-			  pBuffer += 4; // Client features
+        pBuffer = pTLV->pData;
+        unpackDWord(&pBuffer, &dwRealIP);
+        unpackDWord(&pBuffer, &dwPort);
+        unpackByte(&pBuffer,  &nTCPFlag);
+        unpackWord(&pBuffer,  &wVersion);
+        unpackDWord(&pBuffer, &dwDirectConnCookie);
+        pBuffer += 4; // Web front port
+        pBuffer += 4; // Client features
 
         // Get faked time signatures, used to identify clients
         if (pTLV->wLen >= 0x23)
@@ -195,33 +195,33 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         {  // just for the case the timestamps are not there
           dwFT1 = dwFT2 = dwFT3 = 0;
         }
-		  }
-		  else
-		  {
-			  // This client doesnt want DCs
-			  dwRealIP = 0;
-			  dwPort = 0;
-			  nTCPFlag = 0;
-			  dwDirectConnCookie = 0;
+      }
+      else
+      {
+        // This client doesnt want DCs
+        dwRealIP = 0;
+        dwPort = 0;
+        nTCPFlag = 0;
+        dwDirectConnCookie = 0;
         dwFT1 = dwFT2 = dwFT3 = 0;
-		  }
+      }
 
-		  // Get Status info TLV
-		  pTLV = getTLV(pChain, 0x06, 1);
-		  if (pTLV && (pTLV->wLen >= 4))
-		  {
-			  unsigned char* pBuffer;
+      // Get Status info TLV
+      pTLV = getTLV(pChain, 0x06, 1);
+      if (pTLV && (pTLV->wLen >= 4))
+      {
+        unsigned char* pBuffer;
 
-			  pBuffer = pTLV->pData;
-			  unpackWord(&pBuffer, &wStatusFlags);
-			  unpackWord(&pBuffer, &wStatus);
-		  }
-		  else
-		  {
-			  // Huh? No status TLV? Lets guess then...
-			  wStatusFlags = 0;
-			  wStatus = ICQ_STATUS_ONLINE;
-		  }
+        pBuffer = pTLV->pData;
+        unpackWord(&pBuffer, &wStatusFlags);
+        unpackWord(&pBuffer, &wStatus);
+      }
+      else
+      {
+        // Huh? No status TLV? Lets guess then...
+        wStatusFlags = 0;
+        wStatus = ICQ_STATUS_ONLINE;
+      }
     }
     else
     {
@@ -234,57 +234,57 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         wStatus = ID_STATUS_ONLINE;
 
       wStatusFlags = 0;
-  	  dwRealIP = 0;
-		  dwPort = 0;
-		  nTCPFlag = 0;
-		  dwDirectConnCookie = 0;
+      dwRealIP = 0;
+      dwPort = 0;
+      nTCPFlag = 0;
+      dwDirectConnCookie = 0;
       dwFT1 = dwFT2 = dwFT3 = 0;
     }
 
 #ifdef _DEBUG
-		NetLog_Server("Flags are %x", wStatusFlags);
-		NetLog_Server("Status is %x", wStatus);
+    NetLog_Server("Flags are %x", wStatusFlags);
+    NetLog_Server("Status is %x", wStatus);
 #endif
 
-		// Get IP TLV
-		dwIP = getDWordFromChain(pChain, 0x0a, 1);
+    // Get IP TLV
+    dwIP = getDWordFromChain(pChain, 0x0a, 1);
 
-		// Get Online Since TLV
-		dwOnlineSince = getDWordFromChain(pChain, 0x03, 1);
+    // Get Online Since TLV
+    dwOnlineSince = getDWordFromChain(pChain, 0x03, 1);
 
-		// Get Idle timer TLV
-		wIdleTimer = getWordFromChain(pChain, 0x04, 1);
-		if (wIdleTimer)
-		{
-			time(&tIdleTS);
-			tIdleTS -= (wIdleTimer*60);
-		};
+    // Get Idle timer TLV
+    wIdleTimer = getWordFromChain(pChain, 0x04, 1);
+    if (wIdleTimer)
+    {
+      time(&tIdleTS);
+      tIdleTS -= (wIdleTimer*60);
+    };
 
 #ifdef _DEBUG
-		if (wIdleTimer)
-			NetLog_Server("Idle timer is %u.", wIdleTimer);
-		NetLog_Server("Online since %s", asctime(localtime(&dwOnlineSince)));
+    if (wIdleTimer)
+      NetLog_Server("Idle timer is %u.", wIdleTimer);
+    NetLog_Server("Online since %s", asctime(localtime(&dwOnlineSince)));
 #endif
 
-		// Check client capabilities
-		if (hContact != NULL)
-		{
-			WORD wOldStatus;
+    // Check client capabilities
+    if (hContact != NULL)
+    {
+      WORD wOldStatus;
 
-			wOldStatus = ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+      wOldStatus = ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
-			// Get Avatar Hash TLV
-			pTLV = getTLV(pChain, 0x1D, 1);
+      // Get Avatar Hash TLV
+      pTLV = getTLV(pChain, 0x1D, 1);
       if (pTLV)
         handleAvatarContactHash(dwUIN, szUID, hContact, pTLV->pData, pTLV->wLen, wOldStatus);
       else
         handleAvatarContactHash(dwUIN, szUID, hContact, NULL, 0, wOldStatus);
 
-			// Update the contact's capabilities
-			if (wOldStatus == ID_STATUS_OFFLINE)
-			{
-				// Delete the capabilities we saved the last time this contact came online
-				ClearAllContactCapabilities(hContact);
+      // Update the contact's capabilities
+      if (wOldStatus == ID_STATUS_OFFLINE)
+      {
+        // Delete the capabilities we saved the last time this contact came online
+        ClearAllContactCapabilities(hContact);
 
         {
           BYTE capBufDat[0x200]; // max 0x20 caps, currently used max 0x12
@@ -292,11 +292,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           WORD capLen = 0;
           oscar_tlv* pNewTLV;
 
-				  // Get Location Capability Info TLVs
-				  pTLV = getTLV(pChain, 0x0D, 1);
+          // Get Location Capability Info TLVs
+          pTLV = getTLV(pChain, 0x0D, 1);
           pNewTLV = getTLV(pChain, 0x19, 1);
 
-				  if (pTLV && (pTLV->wLen >= 16))
+          if (pTLV && (pTLV->wLen >= 16))
             capLen = pTLV->wLen;
 
           if (pNewTLV && (pNewTLV->wLen >= 2))
@@ -337,7 +337,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
                 pCap += 0x10;
               }
             }
-  					AddCapabilitiesFromBuffer(hContact, capBuf, capLen);
+            AddCapabilitiesFromBuffer(hContact, capBuf, capLen);
           }
           else
           { // no capability
@@ -348,83 +348,85 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           handleXStatusCaps(hContact, capBuf, capLen);
 
           szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, capBuf, capLen, &dwClientId);
-				}
+        }
 
 #ifdef _DEBUG
-				if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
-					NetLog_Server("Supports advanced messages");
-				else
-					NetLog_Server("Does NOT support advanced messages");
+        if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
+          NetLog_Server("Supports advanced messages");
+        else
+          NetLog_Server("Does NOT support advanced messages");
 #endif
 
-				if (dwUIN && wVersion < 8)
-				{
-					ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
-					NetLog_Server("Forcing simple messages due to compability issues");
-				}
-			}
+        if (dwUIN && wVersion < 8)
+        {
+          ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
+          NetLog_Server("Forcing simple messages due to compability issues");
+        }
+      }
       else
       {
         szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
 
-				// Get Capability Info TLV
-				pTLV = getTLV(pChain, 0x0D, 1);
+        // Get Capability Info TLV
+        pTLV = getTLV(pChain, 0x0D, 1);
 
-				if (pTLV && (pTLV->wLen >= 16))
-				{
+        if (pTLV && (pTLV->wLen >= 16))
+        {
           // handle Xtraz status
           handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen);
         }
       }
-		}
+    }
 
-		// Free TLV chain
-		disposeChain(&pChain);
-	}
+    // Free TLV chain
+    disposeChain(&pChain);
+  }
 
-	// Save contacts details in database
+  // Save contacts details in database
   if (hContact != NULL)
   {
     if (szClient == 0) szClient = ""; // if no detection, set uknown
     ICQWriteContactSettingDword(hContact,  "ClientID",     dwClientId);
 
-		ICQWriteContactSettingDword(hContact,  "LogonTS",      dwOnlineSince);
+    ICQWriteContactSettingDword(hContact,  "LogonTS",      dwOnlineSince);
     if (dwUIN)
     { // on AIM these are not used
-		  ICQWriteContactSettingDword(hContact,  "IP",           dwIP);
-		  ICQWriteContactSettingDword(hContact,  "RealIP",       dwRealIP);
-		  ICQWriteContactSettingDword(hContact,  "DirectCookie", dwDirectConnCookie);
+      ICQWriteContactSettingDword(hContact,  "IP",           dwIP);
+      ICQWriteContactSettingDword(hContact,  "RealIP",       dwRealIP);
+      ICQWriteContactSettingDword(hContact,  "DirectCookie", dwDirectConnCookie);
       ICQWriteContactSettingByte(hContact,   "DCType",       (BYTE)nTCPFlag);
-		  ICQWriteContactSettingWord(hContact,   "UserPort",     (WORD)(dwPort & 0xffff));
-		  ICQWriteContactSettingWord(hContact,   "Version",      wVersion);
+      ICQWriteContactSettingWord(hContact,   "UserPort",     (WORD)(dwPort & 0xffff));
+      ICQWriteContactSettingWord(hContact,   "Version",      wVersion);
     }
-		if (szClient != (char*)-1) ICQWriteContactSettingString(hContact, "MirVer", szClient);
-		ICQWriteContactSettingWord(hContact,   "Status",       (WORD)IcqStatusToMiranda(wStatus));
-		ICQWriteContactSettingDword(hContact,  "IdleTS",       tIdleTS);
+    if (szClient != (char*)-1) ICQWriteContactSettingString(hContact, "MirVer", szClient);
+    ICQWriteContactSettingWord(hContact,   "Status",       (WORD)IcqStatusToMiranda(wStatus));
+    ICQWriteContactSettingDword(hContact,  "IdleTS",       tIdleTS);
 
-		// Update info?
-		if (dwUIN && ((time(NULL) - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD))
-			icq_QueueUser(hContact);
-	}
-	else
-	{
-		dwLocalDirectConnCookie = dwDirectConnCookie;
-	}
-
-	// And a small log notice...
-  if (dwUIN)
-	  NetLog_Server("%u changed status to %s (v%d).",
-		  dwUIN, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
+    // Update info?
+    if (dwUIN && ((time(NULL) - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD))
+      icq_QueueUser(hContact);
+  }
   else
-	  NetLog_Server("%s changed status to %s (v%d).",
-		  szUID, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
+  {
+    dwLocalDirectConnCookie = dwDirectConnCookie;
+  }
+
+  // And a small log notice...
+  if (dwUIN)
+    NetLog_Server("%u changed status to %s (v%d).",
+      dwUIN, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
+  else
+    NetLog_Server("%s changed status to %s (v%d).",
+      szUID, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
 
   if (szClient == cliSpamBot)
   {
     if (ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED))
-    { // TODO: show popup informing that user was blocked
+    { // kill spammer
       AddToSpammerList(dwUIN);
-			CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+      if (ICQGetContactSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
+        ShowPopUpMsg(hContact, Translate("Spambot Detected"), Translate("Contact deleted & further events blocked."), POPTYPE_SPAM);
+      CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 
       NetLog_Server("Contact %u deleted", dwUIN);
     }
@@ -435,66 +437,66 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
 static void handleUserOffline(BYTE *buf, WORD wLen)
 {
-	HANDLE hContact;
-	DWORD dwUIN;
+  HANDLE hContact;
+  DWORD dwUIN;
   uid_str szUID;
 
-	// Unpack the sender's user ID
+  // Unpack the sender's user ID
   if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
 
   if (dwUIN)
-	  hContact = HContactFromUIN(dwUIN, NULL);
+    hContact = HContactFromUIN(dwUIN, NULL);
   else
     hContact = HContactFromUID(szUID, NULL);
 
-	// Skip contacts that are not already on our list
-	if (hContact != INVALID_HANDLE_VALUE)
-	{
+  // Skip contacts that are not already on our list
+  if (hContact != INVALID_HANDLE_VALUE)
+  {
     if (dwUIN)
-		  NetLog_Server("%u went offline.", dwUIN);
+      NetLog_Server("%u went offline.", dwUIN);
     else
       NetLog_Server("%s went offline.", szUID);
 
-		ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
-		ICQWriteContactSettingDword(hContact, "IdleTS", 0);
+    ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+    ICQWriteContactSettingDword(hContact, "IdleTS", 0);
     // close Direct Connections to that user
     CloseContactDirectConns(hContact);
     // clear Xtraz status
     handleXStatusCaps(hContact, NULL, 0);
-	}
+  }
 }
 
 
 static void handleReplyBuddy(BYTE *buf, WORD wPackLen)
 {
-	oscar_tlv_chain *pChain;
+  oscar_tlv_chain *pChain;
 
-	pChain = readIntoTLVChain(&buf, wPackLen, 0);
+  pChain = readIntoTLVChain(&buf, wPackLen, 0);
 
-	if (pChain)
-	{
-		DWORD wMaxUins;
-		DWORD wMaxWatchers;
+  if (pChain)
+  {
+    DWORD wMaxUins;
+    DWORD wMaxWatchers;
 
-		wMaxUins = getWordFromChain(pChain, 1, 1);
-		wMaxWatchers = getWordFromChain(pChain, 2, 1);
+    wMaxUins = getWordFromChain(pChain, 1, 1);
+    wMaxWatchers = getWordFromChain(pChain, 2, 1);
 
-		NetLog_Server("MaxUINs %u", wMaxUins);
-		NetLog_Server("MaxWatchers %u", wMaxWatchers);
+    NetLog_Server("MaxUINs %u", wMaxUins);
+    NetLog_Server("MaxWatchers %u", wMaxWatchers);
 
-		disposeChain(&pChain);
-	}
-	else
-	{
-		NetLog_Server("Error: Malformed BuddyReply");
-	}
+    disposeChain(&pChain);
+  }
+  else
+  {
+    NetLog_Server("Error: Malformed BuddyReply");
+  }
 }
 
 
 
 static void handleNotifyRejected(BYTE *buf, WORD wPackLen)
 {
-	DWORD dwUIN;
+  DWORD dwUIN;
   uid_str szUID;
 
   if (!unpackUID(&buf, &wPackLen, &dwUIN, &szUID))

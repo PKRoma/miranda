@@ -48,72 +48,72 @@ static HANDLE hXStatusItems[25];
 
 static void setContactExtraIcon(HANDLE hContact, HANDLE hIcon)
 {
-	IconExtraColumn iec;
+  IconExtraColumn iec;
 
-	iec.cbSize = sizeof(iec);
-	iec.hImage = hIcon;
-	iec.ColumnType = EXTRA_ICON_ADV1;
-	CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+  iec.cbSize = sizeof(iec);
+  iec.hImage = hIcon;
+  iec.ColumnType = EXTRA_ICON_ADV1;
+  CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
 }
 
 
 static int CListMW_ExtraIconsRebuild(WPARAM wParam, LPARAM lParam) 
 {
-	int i;
-	HIMAGELIST CSImages;
+  int i;
+  HIMAGELIST CSImages;
 
-	if(gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+  if(gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
   { // TODO: divide into icons, change for IconLib
-		CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 24, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
-		
+    CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 24, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
+    
     for(i = 0; i < 24; i++) 
     {
       HICON hXIcon = ImageList_ExtractIcon(NULL, CSImages, i);
 
-			hXStatusIcons[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
+      hXStatusIcons[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
       DestroyIcon(hXIcon);
-		}
+    }
 
     ImageList_Destroy(CSImages);
-	}
+  }
 
-	return 0;
+  return 0;
 }
 
 
 static int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam) 
 {
-	if(gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
+  if(gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
   {
-		DWORD bXStatus = ICQGetContactSettingByte((HANDLE)wParam, "XStatusId", 0);
+    DWORD bXStatus = ICQGetContactSettingByte((HANDLE)wParam, "XStatusId", 0);
 
-		if (bXStatus > 0 && bXStatus < 24) 
+    if (bXStatus > 0 && bXStatus < 24) 
     {
       setContactExtraIcon((HANDLE)wParam, hXStatusIcons[bXStatus-1]);
-		} 
+    } 
     else 
     {
       setContactExtraIcon((HANDLE)wParam, (HANDLE)-1);
-		}
-	}
-	return 0;
+    }
+  }
+  return 0;
 }
 
 
 void InitXStatusEvents()
 {
-	hHookExtraIconsRebuild = HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, CListMW_ExtraIconsRebuild);
-	hHookExtraIconsApply = HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY, CListMW_ExtraIconsApply);
+  hHookExtraIconsRebuild = HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, CListMW_ExtraIconsRebuild);
+  hHookExtraIconsApply = HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY, CListMW_ExtraIconsApply);
 }
 
 
 void UninitXStatusEvents()
 {
-	if (hHookExtraIconsRebuild)
-		UnhookEvent(hHookExtraIconsRebuild);
+  if (hHookExtraIconsRebuild)
+    UnhookEvent(hHookExtraIconsRebuild);
 
-	if (hHookExtraIconsApply)
-		UnhookEvent(hHookExtraIconsApply);
+  if (hHookExtraIconsApply)
+    UnhookEvent(hHookExtraIconsApply);
 }
 
 
@@ -224,14 +224,14 @@ static WNDPROC OldMessageEditProc;
 
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
-	switch(msg) 
+  switch(msg) 
   {
-		case WM_CHAR:
-			if(wParam=='\n' && GetKeyState(VK_CONTROL)&0x8000) 
+    case WM_CHAR:
+      if(wParam=='\n' && GetKeyState(VK_CONTROL)&0x8000) 
       {
-				PostMessage(GetParent(hwnd),WM_COMMAND,IDOK,0);
-				return 0;
-			}
+        PostMessage(GetParent(hwnd),WM_COMMAND,IDOK,0);
+        return 0;
+      }
       if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000) 
       {      //ctrl-a
         SendMessage(hwnd, EM_SETSEL, 0, -1);
@@ -261,16 +261,16 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam
         SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
         return 0;
       }
-			break;
-	}
-	return CallWindowProc(OldMessageEditProc,hwnd,msg,wParam,lParam);
+      break;
+  }
+  return CallWindowProc(OldMessageEditProc,hwnd,msg,wParam,lParam);
 }
 
 
 struct SetXStatusData {
-	BYTE bXStatus;
-	int countdown;
-	char okButtonFormat[64];
+  BYTE bXStatus;
+  int countdown;
+  char okButtonFormat[64];
 };
 
 static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
@@ -279,24 +279,24 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 
   switch(message) 
   {
-		case WM_INITDIALOG:
-		{
-			ICQTranslateDialog(hwndDlg);
+    case WM_INITDIALOG:
+    {
+      ICQTranslateDialog(hwndDlg);
       dat=(struct SetXStatusData*)malloc(sizeof(struct SetXStatusData));
-			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
+      SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
       dat->bXStatus = (BYTE)lParam;
       SendDlgItemMessage(hwndDlg, IDC_XTITLE, EM_LIMITTEXT, 256, 0);
-			SendDlgItemMessage(hwndDlg, IDC_XMSG, EM_LIMITTEXT, 1024, 0);
-			OldMessageEditProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
-			OldMessageEditProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
-			{	
+      SendDlgItemMessage(hwndDlg, IDC_XMSG, EM_LIMITTEXT, 1024, 0);
+      OldMessageEditProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
+      OldMessageEditProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
+      {  
         char str[256], format[128];
-				GetWindowText(hwndDlg, format, sizeof(format));
-				null_snprintf(str, sizeof(str), format, Translate(nameXStatus[dat->bXStatus-1]));
-				SetWindowText(hwndDlg, str);
-			}
+        GetWindowText(hwndDlg, format, sizeof(format));
+        null_snprintf(str, sizeof(str), format, Translate(nameXStatus[dat->bXStatus-1]));
+        SetWindowText(hwndDlg, str);
+      }
       GetDlgItemText(hwndDlg,IDOK,dat->okButtonFormat,sizeof(dat->okButtonFormat));
-			{	
+      {  
         DBVARIANT dbv;
         char szSetting[64];
 
@@ -312,63 +312,63 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
           SetDlgItemText(hwndDlg,IDC_XMSG,dbv.pszVal);
           DBFreeVariant(&dbv);
         }
-			}
-			dat->countdown=5;
-			SendMessage(hwndDlg, WM_TIMER, 0, 0);
-			SetTimer(hwndDlg,1,1000,0);
+      }
+      dat->countdown=5;
+      SendMessage(hwndDlg, WM_TIMER, 0, 0);
+      SetTimer(hwndDlg,1,1000,0);
 
-			return TRUE;
-		}
-		case WM_TIMER:
-			if(dat->countdown==-1) 
+      return TRUE;
+    }
+    case WM_TIMER:
+      if(dat->countdown==-1) 
       {
         DestroyWindow(hwndDlg); 
         break;
       }
-			{	
+      {  
         char str[64];
-				null_snprintf(str,sizeof(str),dat->okButtonFormat,dat->countdown);
-				SetDlgItemText(hwndDlg,IDOK,str);
-			}
-			dat->countdown--;
-			break;
+        null_snprintf(str,sizeof(str),dat->okButtonFormat,dat->countdown);
+        SetDlgItemText(hwndDlg,IDOK,str);
+      }
+      dat->countdown--;
+      break;
 
-		case WM_COMMAND:
-			switch(LOWORD(wParam)) 
+    case WM_COMMAND:
+      switch(LOWORD(wParam)) 
       {
-				case IDOK:
-					DestroyWindow(hwndDlg);
-					break;
+        case IDOK:
+          DestroyWindow(hwndDlg);
+          break;
         case IDC_XTITLE:
-				case IDC_XMSG:
-					KillTimer(hwndDlg,1);
-					SetDlgItemText(hwndDlg,IDOK,Translate("OK"));
-					break;
-			}
-			break;
+        case IDC_XMSG:
+          KillTimer(hwndDlg,1);
+          SetDlgItemText(hwndDlg,IDOK,Translate("OK"));
+          break;
+      }
+      break;
 
-		case WM_DESTROY:
-			{
+    case WM_DESTROY:
+      {
         char str[1025];
         char szSetting[64];
 
-				GetDlgItemText(hwndDlg,IDC_XMSG,str,sizeof(str));
+        GetDlgItemText(hwndDlg,IDC_XMSG,str,sizeof(str));
         sprintf(szSetting, "XStatus%dMsg", dat->bXStatus);
         ICQWriteContactSettingString(NULL, szSetting, str);
         ICQWriteContactSettingString(NULL, "XStatusMsg", str);
-				GetDlgItemText(hwndDlg,IDC_XTITLE,str,sizeof(str));
+        GetDlgItemText(hwndDlg,IDC_XTITLE,str,sizeof(str));
         sprintf(szSetting, "XStatus%dName", dat->bXStatus);
         ICQWriteContactSettingString(NULL, szSetting, str);
         ICQWriteContactSettingString(NULL, "XStatusName", str);
 
         setUserInfo();
-			}
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)OldMessageEditProc);
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)OldMessageEditProc);
-			SAFE_FREE(&dat);
-			break;
-	}
-	return FALSE;
+      }
+      SetWindowLong(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)OldMessageEditProc);
+      SetWindowLong(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)OldMessageEditProc);
+      SAFE_FREE(&dat);
+      break;
+  }
+  return FALSE;
 }
 
 
@@ -555,62 +555,62 @@ static int menuXStatus24(WPARAM wParam,LPARAM lParam)
 void InitXStatusItems()
 {
   CLISTMENUITEM mi;
-	int i = 0;
-	char srvFce[MAX_PATH + 64];
+  int i = 0;
+  char srvFce[MAX_PATH + 64];
   char szItem[MAX_PATH + 14];
 
-	BYTE bXStatus = ICQGetContactSettingByte(NULL, "XStatusId", 0);
-	HIMAGELIST CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 24, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
+  BYTE bXStatus = ICQGetContactSettingByte(NULL, "XStatusId", 0);
+  HIMAGELIST CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 24, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
 
   if (!gbXStatusEnabled) return;
 
   sprintf(szItem, Translate("%s Custom Status"), gpszICQProtoName);
   mi.cbSize = sizeof(mi);
-	mi.pszPopupName = szItem;
-	mi.popupPosition= 500084000;
-	mi.position = 2000040000;
+  mi.pszPopupName = szItem;
+  mi.popupPosition= 500084000;
+  mi.position = 2000040000;
 
-	for(i = 0; i < 25; i++) 
+  for(i = 0; i < 25; i++) 
   {
-		sprintf(srvFce, "%s\\SetXStatus%d", gpszICQProtoName, i);
+    sprintf(srvFce, "%s\\SetXStatus%d", gpszICQProtoName, i);
     mi.hIcon = (i > 0) ? ImageList_ExtractIcon(NULL, CSImages, i-1) : NULL;
-		mi.position++;
+    mi.position++;
 
-		switch(i) 
+    switch(i) 
     {
       case 0: CreateServiceFunction(srvFce, menuXStatus0); break;
-			case 1: CreateServiceFunction(srvFce, menuXStatus1); break;
-			case 2: CreateServiceFunction(srvFce, menuXStatus2); break;
-			case 3: CreateServiceFunction(srvFce, menuXStatus3); break;
-			case 4: CreateServiceFunction(srvFce, menuXStatus4); break;
-			case 5: CreateServiceFunction(srvFce, menuXStatus5); break;
-			case 6: CreateServiceFunction(srvFce, menuXStatus6); break;
-			case 7: CreateServiceFunction(srvFce, menuXStatus7); break;
-			case 8: CreateServiceFunction(srvFce, menuXStatus8); break;
-			case 9: CreateServiceFunction(srvFce, menuXStatus9); break;
-			case 10: CreateServiceFunction(srvFce, menuXStatus10); break;
-			case 11: CreateServiceFunction(srvFce, menuXStatus11); break;
-			case 12: CreateServiceFunction(srvFce, menuXStatus12); break;
-			case 13: CreateServiceFunction(srvFce, menuXStatus13); break;
-			case 14: CreateServiceFunction(srvFce, menuXStatus14); break;
-			case 15: CreateServiceFunction(srvFce, menuXStatus15); break;
-			case 16: CreateServiceFunction(srvFce, menuXStatus16); break;
-			case 17: CreateServiceFunction(srvFce, menuXStatus17); break;
-			case 18: CreateServiceFunction(srvFce, menuXStatus18); break;
-			case 19: CreateServiceFunction(srvFce, menuXStatus19); break;
-			case 20: CreateServiceFunction(srvFce, menuXStatus20); break;
-			case 21: CreateServiceFunction(srvFce, menuXStatus21); break;
-			case 22: CreateServiceFunction(srvFce, menuXStatus22); break;
-			case 23: CreateServiceFunction(srvFce, menuXStatus23); break;
-			case 24: CreateServiceFunction(srvFce, menuXStatus24); break;
-		}
+      case 1: CreateServiceFunction(srvFce, menuXStatus1); break;
+      case 2: CreateServiceFunction(srvFce, menuXStatus2); break;
+      case 3: CreateServiceFunction(srvFce, menuXStatus3); break;
+      case 4: CreateServiceFunction(srvFce, menuXStatus4); break;
+      case 5: CreateServiceFunction(srvFce, menuXStatus5); break;
+      case 6: CreateServiceFunction(srvFce, menuXStatus6); break;
+      case 7: CreateServiceFunction(srvFce, menuXStatus7); break;
+      case 8: CreateServiceFunction(srvFce, menuXStatus8); break;
+      case 9: CreateServiceFunction(srvFce, menuXStatus9); break;
+      case 10: CreateServiceFunction(srvFce, menuXStatus10); break;
+      case 11: CreateServiceFunction(srvFce, menuXStatus11); break;
+      case 12: CreateServiceFunction(srvFce, menuXStatus12); break;
+      case 13: CreateServiceFunction(srvFce, menuXStatus13); break;
+      case 14: CreateServiceFunction(srvFce, menuXStatus14); break;
+      case 15: CreateServiceFunction(srvFce, menuXStatus15); break;
+      case 16: CreateServiceFunction(srvFce, menuXStatus16); break;
+      case 17: CreateServiceFunction(srvFce, menuXStatus17); break;
+      case 18: CreateServiceFunction(srvFce, menuXStatus18); break;
+      case 19: CreateServiceFunction(srvFce, menuXStatus19); break;
+      case 20: CreateServiceFunction(srvFce, menuXStatus20); break;
+      case 21: CreateServiceFunction(srvFce, menuXStatus21); break;
+      case 22: CreateServiceFunction(srvFce, menuXStatus22); break;
+      case 23: CreateServiceFunction(srvFce, menuXStatus23); break;
+      case 24: CreateServiceFunction(srvFce, menuXStatus24); break;
+    }
 
     mi.flags = bXStatus == i?CMIF_CHECKED:0;
     mi.pszName = Translate(i?nameXStatus[i-1]:"None");
-		mi.pszService = srvFce;
-		hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+    mi.pszService = srvFce;
+    hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
     if (i) DestroyIcon(mi.hIcon);
-	}
+  }
   ImageList_Destroy(CSImages);
 }
 

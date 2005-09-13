@@ -70,34 +70,34 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
   case ICQ_SERVER_READY:
 #ifdef _DEBUG
-		NetLog_Server("Server is ready and is requesting my Family versions");
-		NetLog_Server("Sending my Families");
+    NetLog_Server("Server is ready and is requesting my Family versions");
+    NetLog_Server("Sending my Families");
 #endif
 
-		// This packet is a response to SRV_FAMILIES SNAC(1,3).
-		// This tells the server which SNAC families and their corresponding
-		// versions which the client understands. This also seems to identify
-		// the client as an ICQ vice AIM client to the server.
-		// Miranda mimics the behaviour of icq5 (haven't changed since at least 2002a)
-		packet.wLen = 50;
-		write_flap(&packet, 2);
-		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_FAMILIES, 0, ICQ_CLIENT_FAMILIES<<0x10);
-		packDWord(&packet, 0x00010004);
-		packDWord(&packet, 0x00130004);
-		packDWord(&packet, 0x00020001);
-		packDWord(&packet, 0x00030001);
-		packDWord(&packet, 0x00150001);
-		packDWord(&packet, 0x00040001);
-		packDWord(&packet, 0x00060001);
-		packDWord(&packet, 0x00090001);
-		packDWord(&packet, 0x000a0001);
-		packDWord(&packet, 0x000b0001);
-		sendServPacket(&packet);
-		break;
+    // This packet is a response to SRV_FAMILIES SNAC(1,3).
+    // This tells the server which SNAC families and their corresponding
+    // versions which the client understands. This also seems to identify
+    // the client as an ICQ vice AIM client to the server.
+    // Miranda mimics the behaviour of icq5 (haven't changed since at least 2002a)
+    packet.wLen = 50;
+    write_flap(&packet, 2);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_FAMILIES, 0, ICQ_CLIENT_FAMILIES<<0x10);
+    packDWord(&packet, 0x00010004);
+    packDWord(&packet, 0x00130004);
+    packDWord(&packet, 0x00020001);
+    packDWord(&packet, 0x00030001);
+    packDWord(&packet, 0x00150001);
+    packDWord(&packet, 0x00040001);
+    packDWord(&packet, 0x00060001);
+    packDWord(&packet, 0x00090001);
+    packDWord(&packet, 0x000a0001);
+    packDWord(&packet, 0x000b0001);
+    sendServPacket(&packet);
+    break;
 
   case ICQ_SERVER_FAMILIES2:
     /* This is a reply to CLI_FAMILIES and it tells the client which families and their versions that this server understands.
-	   * We send a rate request packet */
+     * We send a rate request packet */
 #ifdef _DEBUG
     NetLog_Server("Server told me his Family versions");
     NetLog_Server("Requesting Rate Information");
@@ -247,146 +247,146 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 #endif
     break;
 
-	case ICQ_SERVER_MIGRATIONREQ:
-		{
-			oscar_tlv_chain *chain = NULL;
+  case ICQ_SERVER_MIGRATIONREQ:
+    {
+      oscar_tlv_chain *chain = NULL;
 
 #ifdef _DEBUG
-			NetLog_Server("Server migration requested (Flags: %u)", pSnacHeader->wFlags);
+      NetLog_Server("Server migration requested (Flags: %u)", pSnacHeader->wFlags);
 #endif
-			pBuffer += 2; // Unknown, seen: 0
-			wBufferLength -= 2;
-			chain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
+      pBuffer += 2; // Unknown, seen: 0
+      wBufferLength -= 2;
+      chain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
 
-			if (cookieDataLen > 0 && cookieData != 0)
-				SAFE_FREE(&cookieData);
+      if (cookieDataLen > 0 && cookieData != 0)
+        SAFE_FREE(&cookieData);
 
-			migratedServer = getStrFromChain(chain, 0x05, 1);
-			cookieData = getStrFromChain(chain, 0x06, 1);
-			cookieDataLen = getLenFromChain(chain, 0x06, 1);
+      migratedServer = getStrFromChain(chain, 0x05, 1);
+      cookieData = getStrFromChain(chain, 0x06, 1);
+      cookieDataLen = getLenFromChain(chain, 0x06, 1);
 
-			if (!migratedServer || !cookieData)
-			{
-				icq_LogMessage(LOG_FATAL, Translate("A server migration has failed because the server returned invalid data. You must reconnect manually."));
-				SAFE_FREE(&migratedServer);
-				SAFE_FREE(&cookieData);
-				cookieDataLen = 0;
-				return;
-			}
+      if (!migratedServer || !cookieData)
+      {
+        icq_LogMessage(LOG_FATAL, Translate("A server migration has failed because the server returned invalid data. You must reconnect manually."));
+        SAFE_FREE(&migratedServer);
+        SAFE_FREE(&cookieData);
+        cookieDataLen = 0;
+        return;
+      }
 
-			disposeChain(&chain);
-			NetLog_Server("Migration has started. New server will be %s", migratedServer);
+      disposeChain(&chain);
+      NetLog_Server("Migration has started. New server will be %s", migratedServer);
 
-			icqGoingOnlineStatus = gnCurrentStatus;
+      icqGoingOnlineStatus = gnCurrentStatus;
       SetCurrentStatus(ID_STATUS_CONNECTING); // revert to connecting state
 
-			isMigrating = 1;
-		}
-		break;
+      isMigrating = 1;
+    }
+    break;
 
-	case ICQ_SERVER_NAME_INFO: // This is the reply to CLI_REQINFO
-		{
-			BYTE bUinLen;
-			oscar_tlv_chain *chain;
+  case ICQ_SERVER_NAME_INFO: // This is the reply to CLI_REQINFO
+    {
+      BYTE bUinLen;
+      oscar_tlv_chain *chain;
 
-			unpackByte(&pBuffer, &bUinLen);
-			pBuffer += bUinLen;
-			pBuffer += 4;      /* warning level & user class */
-			wBufferLength -= 5 + bUinLen;
+      unpackByte(&pBuffer, &bUinLen);
+      pBuffer += bUinLen;
+      pBuffer += 4;      /* warning level & user class */
+      wBufferLength -= 5 + bUinLen;
 
-			if (pSnacHeader->dwRef == ICQ_CLIENT_REQINFO<<0x10) // This is during the login sequence
-			{
+      if (pSnacHeader->dwRef == ICQ_CLIENT_REQINFO<<0x10) // This is during the login sequence
+      {
         DWORD dwValue;
 
-				// TLV(x01) User type?
-				// TLV(x0C) Empty CLI2CLI Direct connection info
-				// TLV(x0A) External IP
-				// TLV(x0F) Number of seconds that user has been online
-				// TLV(x02) TIME MEMBERTIME The member since time (not sent)
-				// TLV(x03) The online since time.
-				// TLV(x05) Member of ICQ since. (not sent)
-				// TLV(x0A) External IP again
-				// TLV(x06) The current online status.
-				// TLV(x1E) Unknown: empty.
-				chain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
+        // TLV(x01) User type?
+        // TLV(x0C) Empty CLI2CLI Direct connection info
+        // TLV(x0A) External IP
+        // TLV(x0F) Number of seconds that user has been online
+        // TLV(x02) TIME MEMBERTIME The member since time (not sent)
+        // TLV(x03) The online since time.
+        // TLV(x05) Member of ICQ since. (not sent)
+        // TLV(x0A) External IP again
+        // TLV(x06) The current online status.
+        // TLV(x1E) Unknown: empty.
+        chain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
 
-				dwLocalExternalIP = getDWordFromChain(chain, 10, 1); 
+        dwLocalExternalIP = getDWordFromChain(chain, 10, 1); 
 
         dwValue = getDWordFromChain(chain, 5, 1); 
         if (dwValue) ICQWriteContactSettingDword(NULL, "MemberTS", dwValue);
 
         ICQWriteContactSettingDword(NULL, "LogonTS", time(NULL));
 
-				disposeChain(&chain);
+        disposeChain(&chain);
 
-				// If we are in SSI mode, this is sent after the list is acked instead
-				// to make sure that we don't set status before seing the visibility code
-				if (!gbSsiEnabled)
-					handleServUINSettings(wListenPort, dwLocalInternalIP);
+        // If we are in SSI mode, this is sent after the list is acked instead
+        // to make sure that we don't set status before seing the visibility code
+        if (!gbSsiEnabled)
+          handleServUINSettings(wListenPort, dwLocalInternalIP);
 
-				// Change status
+        // Change status
         SetCurrentStatus(icqGoingOnlineStatus);
 
-				NetLog_Server(" *** Yeehah, login sequence complete");
+        NetLog_Server(" *** Yeehah, login sequence complete");
 
 
-				/* Get Offline Messages Reqeust */
-				packet.wLen = 24;
-				write_flap(&packet, 2);
-				packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, 0x00010002);
-				packDWord(&packet, 0x0001000a);	  /* TLV */
-				packLEWord(&packet, 8);		      /* bytes remaining */
-				packLEDWord(&packet, dwLocalUIN);
-				packDWord(&packet, 0x3c000200);	  /* get offline msgs */
+        /* Get Offline Messages Reqeust */
+        packet.wLen = 24;
+        write_flap(&packet, 2);
+        packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, 0x00010002);
+        packDWord(&packet, 0x0001000a);    /* TLV */
+        packLEWord(&packet, 8);          /* bytes remaining */
+        packLEDWord(&packet, dwLocalUIN);
+        packDWord(&packet, 0x3c000200);    /* get offline msgs */
 
-				sendServPacket(&packet);
+        sendServPacket(&packet);
 
-				// Update our information from the server
-				sendOwnerInfoRequest();
+        // Update our information from the server
+        sendOwnerInfoRequest();
 
-				// Request info updates on all contacts
-				icq_RescanInfoUpdate();
+        // Request info updates on all contacts
+        icq_RescanInfoUpdate();
 
-				// Start sending Keep-Alive packets
-				if (ICQGetContactSettingByte(NULL, "KeepAlive", 0))
-					forkthread(icq_keepAliveThread, 0, NULL);
-			}
-		}
-		break;
+        // Start sending Keep-Alive packets
+        if (ICQGetContactSettingByte(NULL, "KeepAlive", 0))
+          forkthread(icq_keepAliveThread, 0, NULL);
+      }
+    }
+    break;
 
-	case ICQ_SERVER_RATE_CHANGE:
+  case ICQ_SERVER_RATE_CHANGE:
 
-		if (wBufferLength >= 2)
-		{
-			WORD wStatus;
+    if (wBufferLength >= 2)
+    {
+      WORD wStatus;
       WORD wClass;
-			// This is a horrible simplification, but the only
-			// area where we have rate control is in the user info
-			// auto request part.
-			unpackWord(&pBuffer, &wStatus);
+      // This is a horrible simplification, but the only
+      // area where we have rate control is in the user info
+      // auto request part.
+      unpackWord(&pBuffer, &wStatus);
       unpackWord(&pBuffer, &wClass);
 
-			if (wStatus == 2 || wStatus == 3)
+      if (wStatus == 2 || wStatus == 3)
       { // this is only the simplest solution, needs rate management to every section
         ICQBroadcastAck(NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
         gbOverRate = 1; // block user requests (user info, status messages, etc.)
-				icq_PauseUserLookup(); // pause auto-info update thread
-			}
-			else if (wStatus == 4)
-			{
+        icq_PauseUserLookup(); // pause auto-info update thread
+      }
+      else if (wStatus == 4)
+      {
         ICQBroadcastAck(NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
         gbOverRate = 0; // enable user requests
-				icq_EnableUserLookup(TRUE);
-			}
-		}
+        icq_EnableUserLookup(TRUE);
+      }
+    }
 
-		break;
+    break;
 
   case ICQ_SERVER_REDIRECT_SERVICE: // reply to family request, got new connection point
   {
-   	oscar_tlv_chain* pChain = NULL;
-   	WORD wFamily;
-   	familyrequest_rec* reqdata;
+     oscar_tlv_chain* pChain = NULL;
+     WORD wFamily;
+     familyrequest_rec* reqdata;
 
     if (!(pChain = readIntoTLVChain(&pBuffer, wBufferLength, 0)))
     {
@@ -546,7 +546,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         }
       }
     }
-		break;
+    break;
   }
 
   case ICQ_ERROR:
@@ -562,18 +562,18 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     break;
   }
 
-		// Stuff we don't care about
-	case ICQ_SERVER_MOTD:
+    // Stuff we don't care about
+  case ICQ_SERVER_MOTD:
 #ifdef _DEBUG
-		NetLog_Server("Server message of the day");
+    NetLog_Server("Server message of the day");
 #endif
-		break;
+    break;
 
-	default:
-		NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_SERVICE_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
-		break;
+  default:
+    NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_SERVICE_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    break;
 
-	}
+  }
 }
 
 
@@ -618,53 +618,53 @@ char* calcMD5Hash(char* szFile)
 
 static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 {
-	char* szList;
-	HANDLE hContact;
-	WORD wCurrentLen = 0;
-	DWORD dwUIN;
+  char* szList;
+  HANDLE hContact;
+  WORD wCurrentLen = 0;
+  DWORD dwUIN;
   uid_str szUID;
-	char szUin[UINMAXLEN];
-	char szLen[2];
-	int add;
+  char szUin[UINMAXLEN];
+  char szLen[2];
+  int add;
 
 
-	szList = (char*)calloc(CallService(MS_DB_CONTACT_GETCOUNT, 0, 0), 11);
-	szLen[1] = '\0';
+  szList = (char*)calloc(CallService(MS_DB_CONTACT_GETCOUNT, 0, 0), 11);
+  szLen[1] = '\0';
 
-	if (*hContactResume)
-		hContact = *hContactResume;
-	else
-		hContact = ICQFindFirstContact();
+  if (*hContactResume)
+    hContact = *hContactResume;
+  else
+    hContact = ICQFindFirstContact();
 
-	while (hContact != NULL)
-	{
+  while (hContact != NULL)
+  {
     if (!ICQGetContactSettingUID(hContact, &dwUIN, &szUID))
     {
       if (dwUIN)
       {
         _itoa(dwUIN, szUin, 10);
-				szLen[0] = strlennull(szUin);
+        szLen[0] = strlennull(szUin);
       }
       else
         szLen[0] = strlennull(szUID);
 
-			switch (subtype)
-			{
+      switch (subtype)
+      {
 
-			case BUL_VISIBLE:
-				add = ID_STATUS_ONLINE == ICQGetContactSettingWord(hContact, "ApparentMode", 0);
-				break;
+      case BUL_VISIBLE:
+        add = ID_STATUS_ONLINE == ICQGetContactSettingWord(hContact, "ApparentMode", 0);
+        break;
 
-			case BUL_INVISIBLE:
-				add = ID_STATUS_OFFLINE == ICQGetContactSettingWord(hContact, "ApparentMode", 0);
-				break;
+      case BUL_INVISIBLE:
+        add = ID_STATUS_OFFLINE == ICQGetContactSettingWord(hContact, "ApparentMode", 0);
+        break;
 
-			default:
-				add = 1;
+      default:
+        add = 1;
 
-				// If we are in SS mode, we only add those contacts that are
-				// not in our SS list, or are awaiting authorization, to our
-				// client side list
+        // If we are in SS mode, we only add those contacts that are
+        // not in our SS list, or are awaiting authorization, to our
+        // client side list
 
         // TODO: re-enabled, should work properly, needs more testing
         // This is temporarily disabled cause we cant rely on the Auth flag. 
@@ -674,67 +674,67 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
           add = 0;
 
         // Never add hidden contacts to CS list
-				if (DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
-					add = 0;
+        if (DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
+          add = 0;
 
-				break;
-			}
+        break;
+      }
 
-			if (add)
-			{
-				wCurrentLen += szLen[0] + 1;
-				if (wCurrentLen > wMaxLen)
-				{
-					*hContactResume = hContact;
-					return szList;
-				}
+      if (add)
+      {
+        wCurrentLen += szLen[0] + 1;
+        if (wCurrentLen > wMaxLen)
+        {
+          *hContactResume = hContact;
+          return szList;
+        }
 
-				strcat(szList, szLen);
+        strcat(szList, szLen);
         if (dwUIN)
-				  strcat(szList, szUin);
+          strcat(szList, szUin);
         else
           strcat(szList, szUID);
       }
-		}
+    }
 
-		hContact = ICQFindNextContact(hContact);
-	}
-	*hContactResume = NULL;
+    hContact = ICQFindNextContact(hContact);
+  }
+  *hContactResume = NULL;
 
 
-	return szList;
+  return szList;
 }
 
 
 
 void sendEntireListServ(WORD wFamily, WORD wSubtype, WORD wFlags, int listType)
 {
-	HANDLE hResumeContact;
-	char* szList;
-	int nListLen;
-	icq_packet packet;
+  HANDLE hResumeContact;
+  char* szList;
+  int nListLen;
+  icq_packet packet;
 
 
-	hResumeContact = NULL;
+  hResumeContact = NULL;
 
-	do
+  do
   { // server doesn't seem to be able to cope with packets larger than 8k
     // send only about 100contacts per packet
-		szList = buildUinList(listType, 0x3E8, &hResumeContact);
-		nListLen = strlennull(szList);
+    szList = buildUinList(listType, 0x3E8, &hResumeContact);
+    nListLen = strlennull(szList);
 
     if (nListLen)
     {
-		  packet.wLen = nListLen + 10;
-		  write_flap(&packet, 2);
-		  packFNACHeader(&packet, wFamily, wSubtype, 0, wFlags<<0x10);
-		  packBuffer(&packet, szList, (WORD)nListLen);
-		  sendServPacket(&packet);
+      packet.wLen = nListLen + 10;
+      write_flap(&packet, 2);
+      packFNACHeader(&packet, wFamily, wSubtype, 0, wFlags<<0x10);
+      packBuffer(&packet, szList, (WORD)nListLen);
+      sendServPacket(&packet);
     }
 
-		SAFE_FREE(&szList);
-	}
-	while (hResumeContact);
+    SAFE_FREE(&szList);
+  }
+  while (hResumeContact);
 }
 
 
@@ -803,7 +803,7 @@ void setUserInfo()
 #endif
 #ifdef DBG_CAPRTF
   {
-    packDWord(&packet, 0x97B12751);	// AIM_CAPS_ICQRTF
+    packDWord(&packet, 0x97B12751);  // AIM_CAPS_ICQRTF
     packDWord(&packet, 0x243C4334); // Broadcasts the capability to receive
     packDWord(&packet, 0xAD22D6AB); // RTF messages
     packDWord(&packet, 0xF73F1492);
@@ -820,7 +820,7 @@ void setUserInfo()
 #endif
 #ifdef DBG_CAPXTRAZ
   {
-    packDWord(&packet, 0x1a093c6c);	// CAP_XTRAZ
+    packDWord(&packet, 0x1a093c6c);  // CAP_XTRAZ
     packDWord(&packet, 0xd7fd4ec5); // Broadcasts the capability to handle
     packDWord(&packet, 0x9d51a647); // Xtraz
     packDWord(&packet, 0x4e34f5a0);
@@ -856,160 +856,160 @@ void handleServUINSettings(int nPort, int nIP)
 
   setUserInfo();
 
-	// Set message parameters for channel 1 (CLI_SET_ICBM_PARAMS)
-	packet.wLen = 26;
-	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS, 0, ICQ_MSG_CLI_SETPARAMS<<0x10);
-	packWord(&packet, 0x0001);              // Channel
+  // Set message parameters for channel 1 (CLI_SET_ICBM_PARAMS)
+  packet.wLen = 26;
+  write_flap(&packet, ICQ_DATA_CHAN);
+  packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS, 0, ICQ_MSG_CLI_SETPARAMS<<0x10);
+  packWord(&packet, 0x0001);              // Channel
 #ifdef DBG_CAPMTN
-		packDWord(&packet, 0x0000000B);     // Flags
+    packDWord(&packet, 0x0000000B);     // Flags
 #else
-		packDWord(&packet, 0x00000003);     // Flags
+    packDWord(&packet, 0x00000003);     // Flags
 #endif
-	packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
-	packWord(&packet, 0x03E7);              // Max sender warning level
-	packWord(&packet, 0x03E7);              // Max receiver warning level
-	packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
-	packWord(&packet, 0x0000);              // Unknown
-	sendServPacket(&packet);
+  packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
+  packWord(&packet, 0x03E7);              // Max sender warning level
+  packWord(&packet, 0x03E7);              // Max receiver warning level
+  packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
+  packWord(&packet, 0x0000);              // Unknown
+  sendServPacket(&packet);
 
-	// Set message parameters for channel 2 (CLI_SET_ICBM_PARAMS)
-	packet.wLen = 26;
-	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS, 0, ICQ_MSG_CLI_SETPARAMS<<0x10);
-	packWord(&packet, 0x0002);              // Channel
-	packDWord(&packet, 0x00000003);         // Flags
-	packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
-	packWord(&packet, 0x03E7);              // Max sender warning level
-	packWord(&packet, 0x03E7);              // Max receiver warning level
-	packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
-	packWord(&packet, 0x0000);              // Unknown
-	sendServPacket(&packet);
+  // Set message parameters for channel 2 (CLI_SET_ICBM_PARAMS)
+  packet.wLen = 26;
+  write_flap(&packet, ICQ_DATA_CHAN);
+  packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS, 0, ICQ_MSG_CLI_SETPARAMS<<0x10);
+  packWord(&packet, 0x0002);              // Channel
+  packDWord(&packet, 0x00000003);         // Flags
+  packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
+  packWord(&packet, 0x03E7);              // Max sender warning level
+  packWord(&packet, 0x03E7);              // Max receiver warning level
+  packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
+  packWord(&packet, 0x0000);              // Unknown
+  sendServPacket(&packet);
 
-	// Set message parameters for channel 4 (CLI_SET_ICBM_PARAMS)
-	packet.wLen = 26;
-	write_flap(&packet, ICQ_DATA_CHAN);
-	packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS, 0, ICQ_MSG_CLI_SETPARAMS<<0x10);
-	packWord(&packet, 0x0004);              // Channel
-	packDWord(&packet, 0x00000003);         // Flags
-	packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
-	packWord(&packet, 0x03E7);              // Max sender warning level
-	packWord(&packet, 0x03E7);              // Max receiver warning level
-	packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
-	packWord(&packet, 0x0000);              // Unknown
-	sendServPacket(&packet);
+  // Set message parameters for channel 4 (CLI_SET_ICBM_PARAMS)
+  packet.wLen = 26;
+  write_flap(&packet, ICQ_DATA_CHAN);
+  packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS, 0, ICQ_MSG_CLI_SETPARAMS<<0x10);
+  packWord(&packet, 0x0004);              // Channel
+  packDWord(&packet, 0x00000003);         // Flags
+  packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
+  packWord(&packet, 0x03E7);              // Max sender warning level
+  packWord(&packet, 0x03E7);              // Max receiver warning level
+  packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
+  packWord(&packet, 0x0000);              // Unknown
+  sendServPacket(&packet);
 
 
-	/* SNAC 3,4: Tell server who's on our list */
-	sendEntireListServ(ICQ_BUDDY_FAMILY, ICQ_USER_ADDTOLIST, ICQ_USER_ADDTOLIST, BUL_ALLCONTACTS);
+  /* SNAC 3,4: Tell server who's on our list */
+  sendEntireListServ(ICQ_BUDDY_FAMILY, ICQ_USER_ADDTOLIST, ICQ_USER_ADDTOLIST, BUL_ALLCONTACTS);
 
-	if (icqGoingOnlineStatus == ID_STATUS_INVISIBLE)
-	{
-		/* Tell server who's on our visible list */
-		if (!gbSsiEnabled)
-			sendEntireListServ(ICQ_BOS_FAMILY, ICQ_CLI_ADDVISIBLE, 7, BUL_VISIBLE);
-		else
-			updateServVisibilityCode(3);
-	}
+  if (icqGoingOnlineStatus == ID_STATUS_INVISIBLE)
+  {
+    /* Tell server who's on our visible list */
+    if (!gbSsiEnabled)
+      sendEntireListServ(ICQ_BOS_FAMILY, ICQ_CLI_ADDVISIBLE, 7, BUL_VISIBLE);
+    else
+      updateServVisibilityCode(3);
+  }
 
-	if (icqGoingOnlineStatus != ID_STATUS_INVISIBLE)
-	{
-		/* Tell server who's on our invisible list */
-		if (!gbSsiEnabled)
-			sendEntireListServ(ICQ_BOS_FAMILY, ICQ_CLI_ADDINVISIBLE, 7, BUL_INVISIBLE);
-		else
-			updateServVisibilityCode(4);
-	}
+  if (icqGoingOnlineStatus != ID_STATUS_INVISIBLE)
+  {
+    /* Tell server who's on our invisible list */
+    if (!gbSsiEnabled)
+      sendEntireListServ(ICQ_BOS_FAMILY, ICQ_CLI_ADDINVISIBLE, 7, BUL_INVISIBLE);
+    else
+      updateServVisibilityCode(4);
+  }
 
-	// SNAC 1,1E: Set status
-	{
-		WORD wFlags = 0;
-		WORD wStatus;
+  // SNAC 1,1E: Set status
+  {
+    WORD wFlags = 0;
+    WORD wStatus;
 
-		// Webaware setting bit flag
-		if (ICQGetContactSettingByte(NULL, "WebAware", 0))
-			wFlags = STATUS_WEBAWARE;
+    // Webaware setting bit flag
+    if (ICQGetContactSettingByte(NULL, "WebAware", 0))
+      wFlags = STATUS_WEBAWARE;
 
-		// DC setting bit flag
-		switch (ICQGetContactSettingByte(NULL, "DCType", 0))
-		{
+    // DC setting bit flag
+    switch (ICQGetContactSettingByte(NULL, "DCType", 0))
+    {
     case 0:
       break;
 
-		case 1:
-			wFlags = wFlags | STATUS_DCCONT;
-			break;
+    case 1:
+      wFlags = wFlags | STATUS_DCCONT;
+      break;
 
-		case 2:
-			wFlags = wFlags | STATUS_DCAUTH;
-			break;
+    case 2:
+      wFlags = wFlags | STATUS_DCAUTH;
+      break;
 
-		default:
-			wFlags = wFlags | STATUS_DCDISABLED;
-			break;
-		}
+    default:
+      wFlags = wFlags | STATUS_DCDISABLED;
+      break;
+    }
 
-		// Get status
-		wStatus = MirandaStatusToIcq(icqGoingOnlineStatus);
+    // Get status
+    wStatus = MirandaStatusToIcq(icqGoingOnlineStatus);
 
-		packet.wLen = 71;
-		write_flap(&packet, 2);
-		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS, 0, ICQ_CLIENT_SET_STATUS<<0x10);
-		packDWord(&packet, 0x00060004);	            // TLV 6: Status mode and security flags
-		packWord(&packet, wFlags);                  // Status flags
-		packWord(&packet, wStatus);                 // Status
+    packet.wLen = 71;
+    write_flap(&packet, 2);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS, 0, ICQ_CLIENT_SET_STATUS<<0x10);
+    packDWord(&packet, 0x00060004);              // TLV 6: Status mode and security flags
+    packWord(&packet, wFlags);                  // Status flags
+    packWord(&packet, wStatus);                 // Status
     packTLVWord(&packet, 0x0008, 0x0000);       // TLV 8: Error code
-		packDWord(&packet, 0x000c0025);             // TLV C: Direct connection info
-		packDWord(&packet, nIP);
-		packDWord(&packet, nPort);
-		packByte(&packet, DC_TYPE);                 // TCP/FLAG firewall settings
-		packWord(&packet, ICQ_VERSION);
-		packDWord(&packet, dwLocalDirectConnCookie);// DC Cookie
-		packDWord(&packet, WEBFRONTPORT);           // Web front port
-		packDWord(&packet, CLIENTFEATURES);         // Client features
-		packDWord(&packet, 0xffffffff);             // Abused timestamp
-		packDWord(&packet, ICQ_PLUG_VERSION);       // Abused timestamp
-		packDWord(&packet, 0x00000000);             // Timestamp
-		packWord(&packet, 0x0000);                  // Unknown
+    packDWord(&packet, 0x000c0025);             // TLV C: Direct connection info
+    packDWord(&packet, nIP);
+    packDWord(&packet, nPort);
+    packByte(&packet, DC_TYPE);                 // TCP/FLAG firewall settings
+    packWord(&packet, ICQ_VERSION);
+    packDWord(&packet, dwLocalDirectConnCookie);// DC Cookie
+    packDWord(&packet, WEBFRONTPORT);           // Web front port
+    packDWord(&packet, CLIENTFEATURES);         // Client features
+    packDWord(&packet, 0xffffffff);             // Abused timestamp
+    packDWord(&packet, ICQ_PLUG_VERSION);       // Abused timestamp
+    packDWord(&packet, 0x00000000);             // Timestamp
+    packWord(&packet, 0x0000);                  // Unknown
     packTLVWord(&packet, 0x001F, 0x0000);
 
-		sendServPacket(&packet);
-	}
+    sendServPacket(&packet);
+  }
 
 
-	/* SNAC 1,11 */
-	packet.wLen = 14;
-	write_flap(&packet, 2);
-	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_IDLE, 0, ICQ_CLIENT_SET_IDLE<<0x10);
-	packDWord(&packet, 0x00000000);
+  /* SNAC 1,11 */
+  packet.wLen = 14;
+  write_flap(&packet, 2);
+  packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_IDLE, 0, ICQ_CLIENT_SET_IDLE<<0x10);
+  packDWord(&packet, 0x00000000);
 
-	sendServPacket(&packet);
-	gbIdleAllow = 0;
+  sendServPacket(&packet);
+  gbIdleAllow = 0;
 
 
-	packet.wLen = 90;
-	write_flap(&packet, 2);
-	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY, 0, ICQ_CLIENT_READY<<0x10);
-	packDWord(&packet, 0x00010004); // imitate icq5 behaviour
-	packDWord(&packet, 0x011008E4);
-	packDWord(&packet, 0x00130004);
-	packDWord(&packet, 0x011008E4);
-	packDWord(&packet, 0x00020001);
-	packDWord(&packet, 0x011008E4);
-	packDWord(&packet, 0x00030001);
-	packDWord(&packet, 0x011008E4);
-	packDWord(&packet, 0x00150001);
-	packDWord(&packet, 0x011008E4);
-	packDWord(&packet, 0x00040001);
-	packDWord(&packet, 0x011008E4);
-	packDWord(&packet, 0x00060001);
-	packDWord(&packet, 0x011008E4);
-	packDWord(&packet, 0x00090001);
-	packDWord(&packet, 0x011008E4);
-	packDWord(&packet, 0x000A0001);
-	packDWord(&packet, 0x011008E4);
-	packDWord(&packet, 0x000B0001);
-	packDWord(&packet, 0x011008E4);
+  packet.wLen = 90;
+  write_flap(&packet, 2);
+  packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY, 0, ICQ_CLIENT_READY<<0x10);
+  packDWord(&packet, 0x00010004); // imitate icq5 behaviour
+  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x00130004);
+  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x00020001);
+  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x00030001);
+  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x00150001);
+  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x00040001);
+  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x00060001);
+  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x00090001);
+  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x000A0001);
+  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x000B0001);
+  packDWord(&packet, 0x011008E4);
 
   sendServPacket(&packet);
 

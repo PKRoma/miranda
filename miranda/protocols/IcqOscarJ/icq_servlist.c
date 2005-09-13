@@ -74,14 +74,14 @@ static int nGroupRenameSize = 0;
 void AddGroupRename(WORD wGroupID)
 {
   EnterCriticalSection(&servlistMutex);
-	if (nGroupRenameCount >= nGroupRenameSize)
-	{
-		nGroupRenameSize += 10;
-		pwGroupRenameList = (WORD*)realloc(pwGroupRenameList, nGroupRenameSize * sizeof(WORD));
-	}
+  if (nGroupRenameCount >= nGroupRenameSize)
+  {
+    nGroupRenameSize += 10;
+    pwGroupRenameList = (WORD*)realloc(pwGroupRenameList, nGroupRenameSize * sizeof(WORD));
+  }
 
-	pwGroupRenameList[nGroupRenameCount] = wGroupID;
-	nGroupRenameCount++;	
+  pwGroupRenameList[nGroupRenameCount] = wGroupID;
+  nGroupRenameCount++;  
   LeaveCriticalSection(&servlistMutex);
 }
 
@@ -147,14 +147,14 @@ void FlushGroupRenames()
 void AddJustAddedContact(HANDLE hContact)
 {
   EnterCriticalSection(&servlistMutex);
-	if (nJustAddedCount >= nJustAddedSize)
-	{
-		nJustAddedSize += 10;
-		pdwJustAddedList = (HANDLE*)realloc(pdwJustAddedList, nJustAddedSize * sizeof(HANDLE));
-	}
+  if (nJustAddedCount >= nJustAddedSize)
+  {
+    nJustAddedSize += 10;
+    pdwJustAddedList = (HANDLE*)realloc(pdwJustAddedList, nJustAddedSize * sizeof(HANDLE));
+  }
 
-	pdwJustAddedList[nJustAddedCount] = hContact;
-	nJustAddedCount++;	
+  pdwJustAddedList[nJustAddedCount] = hContact;
+  nJustAddedCount++;  
   LeaveCriticalSection(&servlistMutex);
 }
 
@@ -223,15 +223,15 @@ static BOOL AddPendingOperation(HANDLE hContact, const char* szGroup, servlistco
   }
   
   if (nPendingCount >= nPendingSize) // add new
-	{
-		nPendingSize += 10;
-		pdwPendingList = (ssipendingitem**)realloc(pdwPendingList, nPendingSize * sizeof(ssipendingitem*));
-	}
+  {
+    nPendingSize += 10;
+    pdwPendingList = (ssipendingitem**)realloc(pdwPendingList, nPendingSize * sizeof(ssipendingitem*));
+  }
 
-	pdwPendingList[nPendingCount] = (ssipendingitem*)calloc(sizeof(ssipendingitem),1);
+  pdwPendingList[nPendingCount] = (ssipendingitem*)calloc(sizeof(ssipendingitem),1);
   pdwPendingList[nPendingCount]->hContact = hContact;
 
-	nPendingCount++;
+  nPendingCount++;
   LeaveCriticalSection(&servlistMutex);
 
   return bRes;
@@ -280,6 +280,7 @@ void RemovePendingOperation(HANDLE hContact, int nResult)
           SAFE_FREE(&pItem);
           return;
         } // else remove all pending operations for this contact
+        NetLog_Server("Purging postponed operation.");
         if ((pItem->pCookie) && ((int)pItem->pCookie != 1))
           SAFE_FREE(&pItem->pCookie->szGroupName); // do not leak nick name on error
         SAFE_FREE(&pItem->szGroupPath);
@@ -320,14 +321,14 @@ void FlushPendingOperations()
 void ReserveServerID(WORD wID, int bGroupId)
 {
   EnterCriticalSection(&servlistMutex);
-	if (nIDListCount >= nIDListSize)
-	{
-		nIDListSize += 100;
-		pwIDList = (DWORD*)realloc(pwIDList, nIDListSize * sizeof(DWORD));
-	}
+  if (nIDListCount >= nIDListSize)
+  {
+    nIDListSize += 100;
+    pwIDList = (DWORD*)realloc(pwIDList, nIDListSize * sizeof(DWORD));
+  }
 
-	pwIDList[nIDListCount] = wID | bGroupId << 0x18;
-	nIDListCount++;	
+  pwIDList[nIDListCount] = wID | bGroupId << 0x18;
+  nIDListCount++;  
   LeaveCriticalSection(&servlistMutex);
 }
 
@@ -396,7 +397,7 @@ void FlushServerIDs()
 
 static int GroupReserveIdsEnumProc(const char *szSetting,LPARAM lParam)
 { 
-  if (szSetting && strlen(szSetting)<5)
+  if (szSetting && strlennull(szSetting)<5)
   { // it is probably server group
     char val[MAX_PATH+2]; // dummy
     DBVARIANT dbv;
@@ -512,11 +513,11 @@ WORD GenerateServerIdPair(int bGroupId, int wCount)
 
     if (!CheckServerID(wId, wCount))
       break;
-	}
-	
-	ReserveServerID(wId, bGroupId);
+  }
+  
+  ReserveServerID(wId, bGroupId);
 
-	return wId;
+  return wId;
 }
 
 
@@ -557,7 +558,7 @@ DWORD icq_sendBuddyUtf(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, W
   // Build the packet
   wTLVlen = (nNickLen?4+nNickLen:0) + (nNoteLen?4+nNoteLen:0) + (authRequired?4:0);
 
-  packet.wLen = nUinLen + 20 + wTLVlen;	
+  packet.wLen = nUinLen + 20 + wTLVlen;  
   
   write_flap(&packet, ICQ_DATA_CHAN);
   packFNACHeader(&packet, ICQ_LISTS_FAMILY, wAction, 0, dwCookie);
@@ -575,18 +576,18 @@ DWORD icq_sendBuddyUtf(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, W
     packDWord(&packet, 0x00660000);  // "Still waiting for auth" TLV
   if (nNickLen > 0)
   {
-    packWord(&packet, 0x0131);	// Nickname TLV
+    packWord(&packet, 0x0131);  // Nickname TLV
     packWord(&packet, (WORD)nNickLen);
     packBuffer(&packet, szNick, (WORD)nNickLen);
   }
   if (nNoteLen > 0)
   {
-    packWord(&packet, 0x013C);	// Comment TLV
+    packWord(&packet, 0x013C);  // Comment TLV
     packWord(&packet, (WORD)nNoteLen);
     packBuffer(&packet, szNote, (WORD)nNoteLen);
   }
 
-	// Send the packet and return the cookie
+  // Send the packet and return the cookie
   sendServPacket(&packet);
 
   return dwCookie;
@@ -625,12 +626,12 @@ DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *
   packWord(&packet, wTLVlen);
   if (cbContent)
   {
-    packWord(&packet, 0x0C8);	// Groups TLV
+    packWord(&packet, 0x0C8);  // Groups TLV
     packWord(&packet, (WORD)cbContent);
     packBuffer(&packet, pContent, (WORD)cbContent);
   }
 
-	// Send the packet and return the cookie
+  // Send the packet and return the cookie
   sendServPacket(&packet);
 
   return dwCookie;
@@ -645,7 +646,7 @@ DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szN
   DWORD dwRes;
 
   // Prepare custom utf-8 group name
-  if (szName && (strlen(szName) > 0))
+  if (szName && (strlennull(szName) > 0))
   {
     int nResult;
 
@@ -1350,15 +1351,15 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
     return;
   }
 
-	// Get UID
-	if (ICQGetContactSettingUID(ack->hContact, &dwUin, &szUid))
+  // Get UID
+  if (ICQGetContactSettingUID(ack->hContact, &dwUin, &szUid))
   { // Could not do anything without uid
     RemovePendingOperation(ack->hContact, 0);
     NetLog_Server("Failed to add contact to server side list (%s)", "no UID");
     return;
   }
 
-	wItemID = GenerateServerId(SSIT_ITEM);
+  wItemID = GenerateServerId(SSIT_ITEM);
 
   ack->dwAction = SSA_CONTACT_ADD;
   ack->dwUin = dwUin;
@@ -1424,8 +1425,8 @@ DWORD removeServContact(HANDLE hContact)
     return 0;
   }
 
-	// Get UID
-	if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
+  // Get UID
+  if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
   {
     // Could not do anything without uid
     NetLog_Server("Failed to remove contact from server side list (%s)", "no UID");
@@ -1507,8 +1508,8 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
     return;
   }
 
-	// Get UID
-	if (ICQGetContactSettingUID(ack->hContact, &dwUin, &szUid))
+  // Get UID
+  if (ICQGetContactSettingUID(ack->hContact, &dwUin, &szUid))
   { // Could not do anything without uin
     RemovePendingOperation(ack->hContact, 0);
     NetLog_Server("Failed to move contact to group on server side list (%s)", "no UID");
@@ -1621,8 +1622,8 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
   // Check if contact is authorized
   bAuthRequired = (ICQGetContactSettingByte(hContact, "Auth", 0) == 1);
 
-	// Get UID
-	if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
+  // Get UID
+  if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
   {
     // Could not set nickname on server without uid
     NetLog_Server("Failed to upload new nick name to server side list (%s)", "no UID");
@@ -1696,8 +1697,8 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
   // Check if contact is authorized
   bAuthRequired = (ICQGetContactSettingByte(hContact, "Auth", 0) == 1);
 
-	// Get UID
-	if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
+  // Get UID
+  if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
   {
     // Could not set comment on server without uid
     NetLog_Server("Failed to upload new comment to server side list (%s)", "no UID");
@@ -1908,7 +1909,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
       {
         moveServContactGroup((HANDLE)wParam, NULL);
       }
-    }		
+    }    
   }
 
   if (!strcmp(cws->szModule, "UserInfo"))
@@ -1938,29 +1939,29 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 {
   DeleteFromCache((HANDLE)wParam);
 
-	if (!icqOnline || !gbSsiEnabled)
-		return 0;
+  if (!icqOnline || !gbSsiEnabled)
+    return 0;
 
   { // we need all server contacts on local buddy list
-		WORD wContactID;
-		WORD wGroupID;
-		WORD wVisibleID;
-		WORD wInvisibleID;
+    WORD wContactID;
+    WORD wGroupID;
+    WORD wVisibleID;
+    WORD wInvisibleID;
     WORD wIgnoreID;
-		DWORD dwUIN;
+    DWORD dwUIN;
     uid_str szUID;
 
-		wContactID = ICQGetContactSettingWord((HANDLE)wParam, "ServerId", 0);
-		wGroupID = ICQGetContactSettingWord((HANDLE)wParam, "SrvGroupId", 0);
-		wVisibleID = ICQGetContactSettingWord((HANDLE)wParam, "SrvPermitId", 0);
-		wInvisibleID = ICQGetContactSettingWord((HANDLE)wParam, "SrvDenyId", 0);
-		wIgnoreID = ICQGetContactSettingWord((HANDLE)wParam, "SrvIgnoreId", 0);
+    wContactID = ICQGetContactSettingWord((HANDLE)wParam, "ServerId", 0);
+    wGroupID = ICQGetContactSettingWord((HANDLE)wParam, "SrvGroupId", 0);
+    wVisibleID = ICQGetContactSettingWord((HANDLE)wParam, "SrvPermitId", 0);
+    wInvisibleID = ICQGetContactSettingWord((HANDLE)wParam, "SrvDenyId", 0);
+    wIgnoreID = ICQGetContactSettingWord((HANDLE)wParam, "SrvIgnoreId", 0);
     if (ICQGetContactSettingUID((HANDLE)wParam, &dwUIN, &szUID))
       return 0;
 
-		if ((wGroupID && wContactID) || wVisibleID || wInvisibleID || wIgnoreID)
-		{
-			if (wContactID)
+    if ((wGroupID && wContactID) || wVisibleID || wInvisibleID || wIgnoreID)
+    {
+      if (wContactID)
       { // delete contact from server
         removeServContact((HANDLE)wParam);
       }
@@ -2039,7 +2040,7 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
     }
   }
 
-	return 0;
+  return 0;
 }
 
 

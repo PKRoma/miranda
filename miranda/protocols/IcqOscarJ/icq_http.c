@@ -42,60 +42,60 @@ extern int isLoginServer;
 
 int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQUEST *nlhr)
 {
-	WORD wLen, wVersion, wType;
-	WORD wIpLen;
-	DWORD dwSid1, dwSid2, dwSid3, dwSid4;
-	BYTE response[300], *buf;
-	int responseBytes, recvResult;
-	char szSid[33], szHttpServer[256], szHttpGetUrl[300], szHttpPostUrl[300];
-	NETLIBHTTPPROXYINFO nlhpi = {0};
+  WORD wLen, wVersion, wType;
+  WORD wIpLen;
+  DWORD dwSid1, dwSid2, dwSid3, dwSid4;
+  BYTE response[300], *buf;
+  int responseBytes, recvResult;
+  char szSid[33], szHttpServer[256], szHttpGetUrl[300], szHttpPostUrl[300];
+  NETLIBHTTPPROXYINFO nlhpi = {0};
 
-	
-	for (responseBytes = 0; ; )
-	{
-		recvResult = Netlib_Recv(hConn, response + responseBytes, sizeof(response) - responseBytes, MSG_DUMPPROXY);
-		if(recvResult<=0) break;
-		responseBytes += recvResult;
-		if(responseBytes == sizeof(response))
-			break;
-	}
+  
+  for (responseBytes = 0; ; )
+  {
+    recvResult = Netlib_Recv(hConn, response + responseBytes, sizeof(response) - responseBytes, MSG_DUMPPROXY);
+    if(recvResult<=0) break;
+    responseBytes += recvResult;
+    if(responseBytes == sizeof(response))
+      break;
+  }
 
-	if (responseBytes < 31)
-	{
-		SetLastError(ERROR_INVALID_DATA);
-		return 0;
-	}
+  if (responseBytes < 31)
+  {
+    SetLastError(ERROR_INVALID_DATA);
+    return 0;
+  }
 
-	buf = response;
-	unpackWord(&buf, &wLen);
-	unpackWord(&buf, &wVersion);	  /* always 0x0443 */
-	unpackWord(&buf, &wType);       /* hello reply */
-	buf += 6;  /* dunno */
-	unpackDWord(&buf, &dwSid1);
-	unpackDWord(&buf, &dwSid2);
-	unpackDWord(&buf, &dwSid3);
-	unpackDWord(&buf, &dwSid4);
-	null_snprintf(szSid, 33, "%08x%08x%08x%08x", dwSid1, dwSid2, dwSid3, dwSid4);
-	unpackWord(&buf, &wIpLen);
+  buf = response;
+  unpackWord(&buf, &wLen);
+  unpackWord(&buf, &wVersion);    /* always 0x0443 */
+  unpackWord(&buf, &wType);       /* hello reply */
+  buf += 6;  /* dunno */
+  unpackDWord(&buf, &dwSid1);
+  unpackDWord(&buf, &dwSid2);
+  unpackDWord(&buf, &dwSid3);
+  unpackDWord(&buf, &dwSid4);
+  null_snprintf(szSid, 33, "%08x%08x%08x%08x", dwSid1, dwSid2, dwSid3, dwSid4);
+  unpackWord(&buf, &wIpLen);
 
-	if(responseBytes < 30 + wIpLen || wIpLen == 0 || wIpLen > sizeof(szHttpServer) - 1)
-	{
-		SetLastError(ERROR_INVALID_DATA);
-		return 0;
-	}
+  if(responseBytes < 30 + wIpLen || wIpLen == 0 || wIpLen > sizeof(szHttpServer) - 1)
+  {
+    SetLastError(ERROR_INVALID_DATA);
+    return 0;
+  }
 
   SetGatewayIndex(hConn, 1); // new master connection begins here
 
-	memcpy(szHttpServer, buf, wIpLen);
-	szHttpServer[wIpLen] = '\0';
+  memcpy(szHttpServer, buf, wIpLen);
+  szHttpServer[wIpLen] = '\0';
 
-	nlhpi.cbSize = sizeof(nlhpi);
-	nlhpi.flags = NLHPIF_USEPOSTSEQUENCE;
-	nlhpi.szHttpGetUrl = szHttpGetUrl;
-	nlhpi.szHttpPostUrl = szHttpPostUrl;
-	nlhpi.firstPostSequence = 1;
-	null_snprintf(szHttpGetUrl, 300, "http://%s/monitor?sid=%s", szHttpServer, szSid);
-	null_snprintf(szHttpPostUrl, 300, "http://%s/data?sid=%s&seq=", szHttpServer, szSid);
+  nlhpi.cbSize = sizeof(nlhpi);
+  nlhpi.flags = NLHPIF_USEPOSTSEQUENCE;
+  nlhpi.szHttpGetUrl = szHttpGetUrl;
+  nlhpi.szHttpPostUrl = szHttpPostUrl;
+  nlhpi.firstPostSequence = 1;
+  null_snprintf(szHttpGetUrl, 300, "http://%s/monitor?sid=%s", szHttpServer, szSid);
+  null_snprintf(szHttpPostUrl, 300, "http://%s/data?sid=%s&seq=", szHttpServer, szSid);
 
   return CallService(MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 }
@@ -107,7 +107,7 @@ int icq_httpGatewayBegin(HANDLE hConn, NETLIBOPENCONNECTION* nloc)
   icq_packet packet;
   int serverNameLen;
 
-  serverNameLen = strlen(nloc->szHost);
+  serverNameLen = strlennull(nloc->szHost);
 
   packet.wLen = (WORD)(serverNameLen + 4);
   write_httphdr(&packet, HTTP_PACKETTYPE_LOGIN, GetGatewayIndex(hConn));
@@ -146,37 +146,37 @@ int icq_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDA
 
 PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int* outBufLen, void *(*NetlibRealloc)(void *, size_t))
 {
-	WORD wLen, wType;
+  WORD wLen, wType;
   DWORD dwPackSeq;
-	PBYTE tbuf;
-	int i, copyBytes;
+  PBYTE tbuf;
+  int i, copyBytes;
 
-	
-	tbuf = buf;
-	for(i = 0;;)
-	{
-		if (tbuf - buf + 2 > len)
-			break;
-		unpackWord(&tbuf, &wLen);
-		if (wLen < 12)
-			break;
-		if (tbuf - buf + wLen > len)
-			break;
-		tbuf += 2;	  /* version */
-		unpackWord(&tbuf, &wType);
-		tbuf += 4;    /* flags */
+  
+  tbuf = buf;
+  for(i = 0;;)
+  {
+    if (tbuf - buf + 2 > len)
+      break;
+    unpackWord(&tbuf, &wLen);
+    if (wLen < 12)
+      break;
+    if (tbuf - buf + wLen > len)
+      break;
+    tbuf += 2;    /* version */
+    unpackWord(&tbuf, &wType);
+    tbuf += 4;    /* flags */
     unpackDWord(&tbuf, &dwPackSeq);
-		if (wType == HTTP_PACKETTYPE_FLAP)
-		{
-			copyBytes = wLen - 12;
-			if (copyBytes > len - i)
-			{
-				/* invalid data - do our best to get something out of it */
-				copyBytes = len - i;
-			}
-			memcpy(buf + i, tbuf, copyBytes);
-			i += copyBytes;
-		}
+    if (wType == HTTP_PACKETTYPE_FLAP)
+    {
+      copyBytes = wLen - 12;
+      if (copyBytes > len - i)
+      {
+        /* invalid data - do our best to get something out of it */
+        copyBytes = len - i;
+      }
+      memcpy(buf + i, tbuf, copyBytes);
+      i += copyBytes;
+    }
     else if (wType == HTTP_PACKETTYPE_LOGINREPLY)
     {
       BYTE bRes;
@@ -192,11 +192,11 @@ PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
     {
       NetLog_Server("Gateway Connection #%d Closed.", dwPackSeq);
     }
-		tbuf += wLen - 12;
-	}
-	*outBufLen = i;
+    tbuf += wLen - 12;
+  }
+  *outBufLen = i;
 
-	return buf;
+  return buf;
 }
 
 

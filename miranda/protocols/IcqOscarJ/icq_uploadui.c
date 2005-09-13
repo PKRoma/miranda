@@ -111,6 +111,28 @@ static int UpdateCheckmarks(HWND hwndDlg, HANDLE phItemAll)
 
 
 
+static void DeleteOtherContactsFromControl(HWND hCtrl)
+{
+  HANDLE hContact;
+  HANDLE hItem;
+  char *szProto;
+
+  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+  while (hContact)
+  {
+    hItem = (HANDLE)SendMessage(hCtrl, CLM_FINDCONTACT, (WPARAM)hContact, 0);
+    if (hItem)
+    {
+      szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+      if (szProto == NULL || lstrcmp(szProto, gpszICQProtoName))
+        SendMessage(hCtrl, CLM_DELETEITEM, (WPARAM)hItem, 0);
+    }
+    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+  }
+}
+
+
+
 static void AppendToUploadLog(HWND hwndDlg, const char *fmt, ...)
 {
   va_list va;
@@ -147,7 +169,7 @@ static void GetLastUploadLogLine(HWND hwndDlg, char *szBuf)
 
 static int GroupEnumIdsEnumProc(const char *szSetting,LPARAM lParam)
 { 
-  if (szSetting && strlen(szSetting)<5)
+  if (szSetting && strlennull(szSetting)<5)
   { // it is probably server group
     char val[MAX_PATH+2]; // dummy
     DBVARIANT dbv;
@@ -589,7 +611,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 pszGroup = NULL;
                 if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
                 {
-                  if (dbv.pszVal && strlen(dbv.pszVal) > 0)
+                  if (dbv.pszVal && strlennull(dbv.pszVal) > 0)
                     pszGroup = _strdup(dbv.pszVal);
                   DBFreeVariant(&dbv);
                 }
@@ -678,7 +700,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               pszGroup = NULL;
               if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
               {
-                if (dbv.pszVal && strlen(dbv.pszVal) > 0)
+                if (dbv.pszVal && strlennull(dbv.pszVal) > 0)
                   pszGroup = _strdup(dbv.pszVal);
                 DBFreeVariant(&dbv);
               }
@@ -965,20 +987,21 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETGREYOUTFLAGS, working?0xFFFFFFFF:0, 0);
               for (i=0; i<=FONTID_MAX; i++)
                 SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETTEXTCOLOR, i, GetSysColor(COLOR_WINDOWTEXT));
-             	if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS) // hide empty groups
-            		SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
+               if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS) // hide empty groups
+                SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
             }
             break;
             
           case CLN_NEWCONTACT:
           case CLN_CONTACTMOVED:
             {
-              HANDLE hContact;
-              HANDLE hItem = ((NMCLISTCONTROL*)lParam)->hItem;
-              char* szProto;
+//            HANDLE hContact;
+//            HANDLE hItem = ((NMCLISTCONTROL*)lParam)->hItem;
+//            char* szProto;
 
               // Delete non-icq contacts
-              hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+              DeleteOtherContactsFromControl(GetDlgItem(hwndDlg, IDC_CLIST));
+/*              hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
               while (hContact)
               {
                 if (hItem == (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0))
@@ -989,7 +1012,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                   break; // exit loop
                 }
                 hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-              }
+              }*/
               if (hItemAll)
                 UpdateAllContactsCheckmark(GetDlgItem(hwndDlg, IDC_CLIST), hItemAll);
             }
@@ -997,13 +1020,14 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
           case CLN_LISTREBUILT:
             {
-              HANDLE hContact;
-              HANDLE hItem;
-              char* szProto;
+//            HANDLE hContact;
+//            HANDLE hItem;
+//            char* szProto;
               int bCheck;
 
               // Delete non-icq contacts
-              hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+              DeleteOtherContactsFromControl(GetDlgItem(hwndDlg, IDC_CLIST));
+/*              hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
               while (hContact)
               {
                 hItem = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0);
@@ -1014,7 +1038,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                     SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_DELETEITEM, (WPARAM)hItem, 0);
                 }
                 hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-              }
+              }*/
 
               if (!bListInit) // do not enter twice
                 bCheck = UpdateCheckmarks(hwndDlg, NULL);

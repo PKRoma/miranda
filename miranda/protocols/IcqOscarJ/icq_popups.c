@@ -39,11 +39,212 @@
 
 static BOOL bPopUpService = FALSE;
 
+static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
 
 void InitPopUps()
 {
- 	if (ServiceExists(MS_POPUP_ADDPOPUPEX))
-	{
-		bPopUpService = TRUE;
-	}
+  if (ServiceExists(MS_POPUP_ADDPOPUPEX))
+  {
+    bPopUpService = TRUE;
+  }
+}
+
+
+
+void InitPopupOpts(WPARAM wParam)
+{
+  OPTIONSDIALOGPAGE odp = {0};
+
+  if (bPopUpService)
+  {
+    odp.cbSize = sizeof(odp);
+    odp.position = 100000000;
+    odp.hInstance = hInst;
+    odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_POPUPS);
+    odp.pszTitle = Translate(gpszICQProtoName);
+    odp.pszGroup = Translate("Popups");
+    odp.groupPosition = 900000000;
+    odp.pfnDlgProc = DlgProcIcqPopupOpts;
+    odp.flags = ODPF_BOLDGROUPS;
+    odp.nIDBottomSimpleControl = 0;
+    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
+  }
+}
+
+
+static const UINT icqPopupsControls[] = {IDC_POPUPS_LOG_ENABLED,IDC_POPUPS_SPAM_ENABLED,IDC_PREVIEW,IDC_USEWINCOLORS,IDC_USESYSICONS,IDC_POPUP_LOG0_TIMEOUT,IDC_POPUP_LOG1_TIMEOUT,IDC_POPUP_LOG2_TIMEOUT,IDC_POPUP_LOG3_TIMEOUT,IDC_POPUP_SPAM_TIMEOUT};
+static const UINT icqPopupColorControls[] = {IDC_POPUP_LOG0_TEXTCOLOR,IDC_POPUP_LOG1_TEXTCOLOR,IDC_POPUP_LOG2_TEXTCOLOR,IDC_POPUP_LOG3_TEXTCOLOR,IDC_POPUP_SPAM_TEXTCOLOR,
+                                             IDC_POPUP_LOG0_BACKCOLOR,IDC_POPUP_LOG1_BACKCOLOR,IDC_POPUP_LOG2_BACKCOLOR,IDC_POPUP_LOG3_BACKCOLOR,IDC_POPUP_SPAM_BACKCOLOR};
+static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+  BYTE bEnabled;
+
+  switch (msg)
+  {
+  case WM_INITDIALOG:
+    ICQTranslateDialog(hwndDlg);
+    CheckDlgButton(hwndDlg, IDC_POPUPS_LOG_ENABLED, ICQGetContactSettingByte(NULL,"PopupsLogEnabled",DEFAULT_LOG_POPUPS_ENABLED));
+    CheckDlgButton(hwndDlg, IDC_POPUPS_SPAM_ENABLED, ICQGetContactSettingByte(NULL,"PopupsSpamEnabled",DEFAULT_SPAM_POPUPS_ENABLED));
+    SendDlgItemMessage(hwndDlg, IDC_POPUP_LOG0_TEXTCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"Popups0TextColor",DEFAULT_LOG0_TEXT_COLORS));
+    SendDlgItemMessage(hwndDlg, IDC_POPUP_LOG0_BACKCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"Popups0BackColor",DEFAULT_LOG0_BACK_COLORS));
+    SetDlgItemInt(hwndDlg, IDC_POPUP_LOG0_TIMEOUT, ICQGetContactSettingDword(NULL,"Popups0Timeout",DEFAULT_LOG0_TIMEOUT),FALSE);
+    SendDlgItemMessage(hwndDlg, IDC_POPUP_LOG1_TEXTCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"Popups1TextColor",DEFAULT_LOG1_TEXT_COLORS));
+    SendDlgItemMessage(hwndDlg, IDC_POPUP_LOG1_BACKCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"Popups1BackColor",DEFAULT_LOG1_BACK_COLORS));
+    SetDlgItemInt(hwndDlg, IDC_POPUP_LOG1_TIMEOUT, ICQGetContactSettingDword(NULL,"Popups1Timeout",DEFAULT_LOG1_TIMEOUT),FALSE);
+    SendDlgItemMessage(hwndDlg, IDC_POPUP_LOG2_TEXTCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"Popups2TextColor",DEFAULT_LOG2_TEXT_COLORS));
+    SendDlgItemMessage(hwndDlg, IDC_POPUP_LOG2_BACKCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"Popups2BackColor",DEFAULT_LOG2_BACK_COLORS));
+    SetDlgItemInt(hwndDlg, IDC_POPUP_LOG2_TIMEOUT, ICQGetContactSettingDword(NULL,"Popups2Timeout",DEFAULT_LOG2_TIMEOUT),FALSE);
+    SendDlgItemMessage(hwndDlg, IDC_POPUP_LOG3_TEXTCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"Popups3TextColor",DEFAULT_LOG3_TEXT_COLORS));
+    SendDlgItemMessage(hwndDlg, IDC_POPUP_LOG3_BACKCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"Popups3BackColor",DEFAULT_LOG3_BACK_COLORS));
+    SetDlgItemInt(hwndDlg, IDC_POPUP_LOG3_TIMEOUT, ICQGetContactSettingDword(NULL,"Popups3Timeout",DEFAULT_LOG3_TIMEOUT),FALSE);
+    SendDlgItemMessage(hwndDlg, IDC_POPUP_SPAM_TEXTCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"PopupsSpamTextColor",DEFAULT_SPAM_TEXT_COLORS));
+    SendDlgItemMessage(hwndDlg, IDC_POPUP_SPAM_BACKCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"PopupsSpamBackColor",DEFAULT_SPAM_BACK_COLORS));
+    SetDlgItemInt(hwndDlg, IDC_POPUP_SPAM_TIMEOUT, ICQGetContactSettingDword(NULL,"PopupsSpamTimeout",DEFAULT_SPAM_TIMEOUT),FALSE);
+    bEnabled = ICQGetContactSettingByte(NULL,"PopupsWinColors",DEFAULT_POPUPS_WIN_COLORS);
+    CheckDlgButton(hwndDlg, IDC_USEWINCOLORS, bEnabled);
+    icq_EnableMultipleControls(hwndDlg, icqPopupColorControls, sizeof(icqPopupColorControls)/sizeof(icqPopupColorControls[0]), bEnabled);
+    CheckDlgButton(hwndDlg, IDC_USESYSICONS, ICQGetContactSettingByte(NULL,"PopupsSysIcons",DEFAULT_POPUPS_SYS_ICONS));
+    bEnabled = ICQGetContactSettingByte(NULL,"PopupsEnabled",DEFAULT_POPUPS_ENABLED);
+    CheckDlgButton(hwndDlg, IDC_POPUPS_ENABLED, bEnabled);
+    icq_EnableMultipleControls(hwndDlg, icqPopupsControls, sizeof(icqPopupsControls)/sizeof(icqPopupsControls[0]), bEnabled);
+    icq_EnableMultipleControls(hwndDlg, icqPopupColorControls, sizeof(icqPopupColorControls)/sizeof(icqPopupColorControls[0]), bEnabled);
+
+    return TRUE;
+
+  case WM_COMMAND:
+    switch (LOWORD(wParam))
+    {
+    case IDC_PREVIEW:
+      ShowPopUpMsg(NULL,Translate("Popup Title"), Translate("Sample Note"), LOG_NOTE);
+      ShowPopUpMsg(NULL,Translate("Popup Title"), Translate("Sample Warning"), LOG_WARNING);
+      ShowPopUpMsg(NULL,Translate("Popup Title"), Translate("Sample Error"), LOG_ERROR);
+      ShowPopUpMsg(NULL,Translate("Popup Title"), Translate("Sample Fatal"), LOG_FATAL);
+      ShowPopUpMsg(NULL,Translate("Popup Title"), Translate("Sample Spambot"), POPTYPE_SPAM);
+      break;
+
+    case IDC_POPUPS_ENABLED:
+      bEnabled = IsDlgButtonChecked(hwndDlg,IDC_POPUPS_ENABLED);
+      icq_EnableMultipleControls(hwndDlg, icqPopupsControls, sizeof(icqPopupsControls)/sizeof(icqPopupsControls[0]), bEnabled);
+      icq_EnableMultipleControls(hwndDlg, icqPopupColorControls, sizeof(icqPopupColorControls)/sizeof(icqPopupColorControls[0]), bEnabled & IsDlgButtonChecked(hwndDlg,IDC_POPUPS_ENABLED));
+      break;
+
+    case IDC_USEWINCOLORS:
+      bEnabled = IsDlgButtonChecked(hwndDlg,IDC_POPUPS_ENABLED);
+      icq_EnableMultipleControls(hwndDlg, icqPopupColorControls, sizeof(icqPopupColorControls)/sizeof(icqPopupColorControls[0]), bEnabled);
+      break;
+    }
+    SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+    break;
+
+  case WM_NOTIFY:
+    switch (((LPNMHDR)lParam)->code)
+    {
+    case PSN_APPLY:
+      ICQWriteContactSettingByte(NULL,"PopupsEnabled",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_POPUPS_ENABLED));
+      ICQWriteContactSettingByte(NULL,"PopupsLogEnabled",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_POPUPS_LOG_ENABLED));
+      ICQWriteContactSettingByte(NULL,"PopupsSpamEnabled",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_POPUPS_SPAM_ENABLED));
+      ICQWriteContactSettingDword(NULL,"Popups0TextColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_LOG0_TEXTCOLOR,CPM_GETCOLOUR,0,0));
+      ICQWriteContactSettingDword(NULL,"Popups0BackColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_LOG0_BACKCOLOR,CPM_GETCOLOUR,0,0));
+      ICQWriteContactSettingDword(NULL,"Popups0Timeout",GetDlgItemInt(hwndDlg, IDC_POPUP_LOG0_TIMEOUT, NULL, FALSE));
+      ICQWriteContactSettingDword(NULL,"Popups1TextColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_LOG1_TEXTCOLOR,CPM_GETCOLOUR,0,0));
+      ICQWriteContactSettingDword(NULL,"Popups1BackColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_LOG1_BACKCOLOR,CPM_GETCOLOUR,0,0));
+      ICQWriteContactSettingDword(NULL,"Popups1Timeout",GetDlgItemInt(hwndDlg, IDC_POPUP_LOG1_TIMEOUT, NULL, FALSE));
+      ICQWriteContactSettingDword(NULL,"Popups2TextColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_LOG2_TEXTCOLOR,CPM_GETCOLOUR,0,0));
+      ICQWriteContactSettingDword(NULL,"Popups2BackColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_LOG2_BACKCOLOR,CPM_GETCOLOUR,0,0));
+      ICQWriteContactSettingDword(NULL,"Popups2Timeout",GetDlgItemInt(hwndDlg, IDC_POPUP_LOG2_TIMEOUT, NULL, FALSE));
+      ICQWriteContactSettingDword(NULL,"Popups3TextColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_LOG3_TEXTCOLOR,CPM_GETCOLOUR,0,0));
+      ICQWriteContactSettingDword(NULL,"Popups3BackColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_LOG3_BACKCOLOR,CPM_GETCOLOUR,0,0));
+      ICQWriteContactSettingDword(NULL,"Popups3Timeout",GetDlgItemInt(hwndDlg, IDC_POPUP_LOG3_TIMEOUT, NULL, FALSE));
+      ICQWriteContactSettingDword(NULL,"PopupsSpamTextColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_SPAM_TEXTCOLOR,CPM_GETCOLOUR,0,0));
+      ICQWriteContactSettingDword(NULL,"PopupsSpamBackColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_SPAM_BACKCOLOR,CPM_GETCOLOUR,0,0));
+      ICQWriteContactSettingDword(NULL,"PopupsSpamTimeout",GetDlgItemInt(hwndDlg, IDC_POPUP_SPAM_TIMEOUT, NULL, FALSE));
+      ICQWriteContactSettingByte(NULL,"PopupsWinColors",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_USEWINCOLORS));
+      ICQWriteContactSettingByte(NULL,"PopupsSysIcons",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_USESYSICONS));
+
+      return TRUE;
+    }
+    break;
+  }
+  return FALSE;
+}
+
+
+
+int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE bType)
+{
+  if (bPopUpService && ICQGetContactSettingByte(NULL, "PopupsEnabled", DEFAULT_POPUPS_ENABLED))
+  {
+    POPUPDATAEX ppd = {0};
+    LPCTSTR rsIcon;
+    HINSTANCE hIcons = NULL;
+    char szPrefix[32], szSetting[32];
+
+    strcpy(szPrefix, "Popups");
+    ppd.iSeconds = 0;
+
+    switch(bType) 
+    {
+      case LOG_NOTE:
+        rsIcon = MAKEINTRESOURCE(IDI_INFORMATION);
+        ppd.colorBack = DEFAULT_LOG0_BACK_COLORS;
+        ppd.colorText = DEFAULT_LOG0_TEXT_COLORS;
+        strcat(szPrefix, "0");
+        break;
+
+      case LOG_WARNING:
+        rsIcon = MAKEINTRESOURCE(IDI_WARNING);
+        ppd.colorBack = DEFAULT_LOG1_BACK_COLORS;
+        ppd.colorText = DEFAULT_LOG1_TEXT_COLORS;
+        strcat(szPrefix, "1");
+        break;
+
+      case LOG_ERROR:
+        rsIcon = MAKEINTRESOURCE(IDI_ERROR);
+        ppd.colorBack = DEFAULT_LOG2_BACK_COLORS;
+        ppd.colorText = DEFAULT_LOG2_TEXT_COLORS;
+        strcat(szPrefix, "2");
+        break;
+
+      case LOG_FATAL:
+        rsIcon = MAKEINTRESOURCE(IDI_ERROR);
+        ppd.colorBack = DEFAULT_LOG3_BACK_COLORS;
+        ppd.colorText = DEFAULT_LOG3_TEXT_COLORS;
+        strcat(szPrefix, "3");
+        break;
+
+      case POPTYPE_SPAM:
+        rsIcon = MAKEINTRESOURCE(IDI_WARNING);
+        ppd.colorBack = DEFAULT_SPAM_BACK_COLORS;
+        ppd.colorText = DEFAULT_SPAM_TEXT_COLORS;
+        strcat(szPrefix, "Spam");
+        break;
+      default:
+        return -1;
+    }
+    if (!ICQGetContactSettingByte(NULL, "PopupsSysIcons", DEFAULT_POPUPS_SYS_ICONS))
+    {
+      hIcons = hInst;
+      rsIcon = MAKEINTRESOURCE(IDI_ICQ);
+    }
+    ppd.lchIcon = (HICON)LoadImage(hIcons, rsIcon, IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
+    strcpy(szSetting, szPrefix);
+    strcat(szSetting, "TextColor");
+    ppd.colorText = ICQGetContactSettingDword(NULL, szSetting, ppd.colorText);
+    strcpy(szSetting, szPrefix);
+    strcat(szSetting, "BackColor");
+    ppd.colorBack = ICQGetContactSettingDword(NULL, szSetting, ppd.colorBack);
+    strcpy(szSetting, szPrefix);
+    strcat(szSetting, "Timeout");
+    ppd.iSeconds = ICQGetContactSettingDword(NULL, szSetting, ppd.iSeconds);
+
+    lstrcpyn(ppd.lpzContactName, szTitle, MAX_CONTACTNAME);
+    lstrcpyn(ppd.lpzText, Translate(szMsg), MAX_SECONDLINE);
+    ppd.lchContact = NULL;
+    ppd.PluginWindowProc = NULL;
+    ppd.PluginData = NULL;
+
+    return CallService(MS_POPUP_ADDPOPUPEX, (WPARAM)&ppd, 0);
+  }
+  return -1; // Failure
 }

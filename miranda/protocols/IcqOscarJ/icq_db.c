@@ -41,7 +41,7 @@ static BOOL bUtfReadyDB = FALSE;
 
 void InitDB()
 {
-	bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
+  bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
   if (!bUtfReadyDB)
     NetLog_Server("Warning: DB module does not support Unicode.");
 }
@@ -126,7 +126,7 @@ char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* 
     {
       int nResult;
 
-		  nResult = utf8_encode(dbv.pszVal, &szRes);
+      nResult = utf8_encode(dbv.pszVal, &szRes);
     }
     else 
       szRes = strdup("");
@@ -146,21 +146,21 @@ char* ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDe
 // (c) by George Hazan
 int ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest, int dest_len)
 {
-	DBVARIANT dbv;
-	DBCONTACTGETSETTING sVal;
+  DBVARIANT dbv;
+  DBCONTACTGETSETTING sVal;
 
-	dbv.pszVal = dest;
-	dbv.cchVal = dest_len;
-	dbv.type = DBVT_ASCIIZ;
+  dbv.pszVal = dest;
+  dbv.cchVal = dest_len;
+  dbv.type = DBVT_ASCIIZ;
 
-	sVal.pValue = &dbv;
-	sVal.szModule = gpszICQProtoName;
-	sVal.szSetting = valueName;
+  sVal.pValue = &dbv;
+  sVal.szModule = gpszICQProtoName;
+  sVal.szSetting = valueName;
 
-	if (CallService(MS_DB_CONTACT_GETSETTINGSTATIC, (WPARAM)hContact, (LPARAM)&sVal) != 0)
-		return 1;
+  if (CallService(MS_DB_CONTACT_GETSETTINGSTATIC, (WPARAM)hContact, (LPARAM)&sVal) != 0)
+    return 1;
 
-	return (dbv.type != DBVT_ASCIIZ);
+  return (dbv.type != DBVT_ASCIIZ);
 }
 
 
@@ -202,7 +202,7 @@ int UniWriteContactSettingUtf(HANDLE hContact, const char *szModule,const char* 
   { // old DB, we need to convert the string to Ansi
     char* szAnsi = NULL;
 
-		if (utf8_decode(szValue, &szAnsi))
+    if (utf8_decode(szValue, &szAnsi))
     {
       int nRes = DBWriteContactSettingString(hContact, szModule, szSetting, szAnsi);
 
@@ -271,12 +271,12 @@ int ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char 
 HANDLE ICQFindFirstContact()
 {
   HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+  char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
-	if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
-	{
+  if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
+  {
     return hContact;
-	}
+  }
   return ICQFindNextContact(hContact);
 }
 
@@ -286,14 +286,14 @@ HANDLE ICQFindNextContact(HANDLE hContact)
 {
   hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 
-	while (hContact != NULL)
-	{
-		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
-		{
+  while (hContact != NULL)
+  {
+    char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+    if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
+    {
       return hContact;
-		}
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
-	}
+    }
+    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
+  }
   return hContact;
 }

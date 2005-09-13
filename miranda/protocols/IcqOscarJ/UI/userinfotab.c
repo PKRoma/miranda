@@ -113,26 +113,26 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 
 static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	
-	switch (msg)
-	{
+  
+  switch (msg)
+  {
 
-	case WM_INITDIALOG:
-		ICQTranslateDialog(hwndDlg);
-		return TRUE;
-		
-	case WM_NOTIFY:
-		{
-			switch (((LPNMHDR)lParam)->idFrom)
-			{
-				
-			case 0:
-				{
-  				switch (((LPNMHDR)lParam)->code)
-					{
-						
-					case PSN_INFOCHANGED:
-						{
+  case WM_INITDIALOG:
+    ICQTranslateDialog(hwndDlg);
+    return TRUE;
+    
+  case WM_NOTIFY:
+    {
+      switch (((LPNMHDR)lParam)->idFrom)
+      {
+        
+      case 0:
+        {
+          switch (((LPNMHDR)lParam)->code)
+          {
+            
+          case PSN_INFOCHANGED:
+            {
               char* szProto;
               HANDLE hContact = (HANDLE)((LPPSHNOTIFY)lParam)->lParam;
 
@@ -173,12 +173,12 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
               }
             }
             break;
-					}
-				}
-				break;
-			}
-		}
-		break;
+          }
+        }
+        break;
+      }
+    }
+    break;
 
   case WM_COMMAND:
     switch(LOWORD(wParam))
@@ -186,11 +186,11 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
     case IDCANCEL:
       SendMessage(GetParent(hwndDlg),msg,wParam,lParam);
       break;
-		}
+    }
     break;
   }
 
-  return FALSE;	
+  return FALSE;  
 }
 
 typedef struct AvtDlgProcData_t
@@ -312,9 +312,9 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
       DBFreeVariant(&dbvHash);
     }
     return TRUE;
-	
+  
   case HM_REBIND_AVATAR:
-    {	
+    {  
       AvtDlgProcData* pData = (AvtDlgProcData*)GetWindowLong(hwndDlg, GWL_USERDATA);
       ACKDATA* ack = (ACKDATA*)lParam;
 
@@ -330,8 +330,8 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         
           if (avt) avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
           if (avt) DeleteObject(avt); // we release old avatar if any
-				}
-				else if (ack->result == ACKRESULT_STATUS)
+        }
+        else if (ack->result == ACKRESULT_STATUS)
         {
           DWORD dwUIN;
           uid_str szUID;
@@ -349,9 +349,9 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             DBFreeVariant(&dbvHash);
           }
         }
-      }	
+      }  
     }
-		break;
+    break;
 
   case WM_COMMAND:
     switch(LOWORD(wParam))
@@ -444,12 +444,12 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, char* szSetting, int special)
 {
   DBVARIANT dbv = {0};
-	char str[80];
-	char* pstr;
+  char str[80];
+  char* pstr;
   char szStatus[256];
-	int unspecified = 0;
+  int unspecified = 0;
 
-	dbv.type = DBVT_DELETED;
+  dbv.type = DBVT_DELETED;
 
   if ((hContact == NULL) && ((int)szModule<0x100))
   {
@@ -476,70 +476,70 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
   }
   else
   {
-	  if (szModule == NULL)
-		  unspecified = 1;
-	  else
-		  unspecified = DBGetContactSetting(hContact, szModule, szSetting, &dbv);
+    if (szModule == NULL)
+      unspecified = 1;
+    else
+      unspecified = DBGetContactSetting(hContact, szModule, szSetting, &dbv);
   }
 
-	if (!unspecified)
-	{
-		switch (dbv.type)
-		{
+  if (!unspecified)
+  {
+    switch (dbv.type)
+    {
 
-		case DBVT_BYTE:
-			if (special == SVS_GENDER)
-			{
-				if (dbv.cVal == 'M')
-					pstr = Translate("Male");
-				else if (dbv.cVal == 'F')
-					pstr = Translate("Female");
-				else
-					unspecified = 1;
-			}
-			else if (special == SVS_MONTH)
-			{
-				if (dbv.bVal>0 && dbv.bVal<=12)
-				{
-					pstr = str;
-					GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SABBREVMONTHNAME1-1+dbv.bVal, str,sizeof(str));
-				}
-				else
-					unspecified = 1;
-			}
-			else if (special == SVS_TIMEZONE)
-			{
-				if (dbv.cVal == -100)
-					unspecified = 1;
-				else
-				{
-					pstr = str;
-					_snprintf(str, 80, dbv.cVal ? "GMT%+d:%02d":"GMT", -dbv.cVal/2, (dbv.cVal&1)*30);
-				}
-			}
-			else
-			{
-				unspecified = (special == SVS_ZEROISUNSPEC && dbv.bVal == 0);
-				pstr = itoa(special == SVS_SIGNED ? dbv.cVal:dbv.bVal, str, 10);
-			}
-			break;
-			
-		case DBVT_WORD:
-			if (special == SVS_COUNTRY)
-			{
-				pstr = (char*)CallService(MS_UTILS_GETCOUNTRYBYNUMBER, dbv.wVal, 0);
-				unspecified = pstr == NULL;
-			}
-			else if (special == SVS_ICQVERSION)
-			{
-				if (dbv.wVal != 0)
-				{
-					pstr = str;
-					_snprintf(str, 80, "%d", dbv.wVal);
-				}
-				else
-					unspecified = 1;
-			}
+    case DBVT_BYTE:
+      if (special == SVS_GENDER)
+      {
+        if (dbv.cVal == 'M')
+          pstr = Translate("Male");
+        else if (dbv.cVal == 'F')
+          pstr = Translate("Female");
+        else
+          unspecified = 1;
+      }
+      else if (special == SVS_MONTH)
+      {
+        if (dbv.bVal>0 && dbv.bVal<=12)
+        {
+          pstr = str;
+          GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SABBREVMONTHNAME1-1+dbv.bVal, str,sizeof(str));
+        }
+        else
+          unspecified = 1;
+      }
+      else if (special == SVS_TIMEZONE)
+      {
+        if (dbv.cVal == -100)
+          unspecified = 1;
+        else
+        {
+          pstr = str;
+          _snprintf(str, 80, dbv.cVal ? "GMT%+d:%02d":"GMT", -dbv.cVal/2, (dbv.cVal&1)*30);
+        }
+      }
+      else
+      {
+        unspecified = (special == SVS_ZEROISUNSPEC && dbv.bVal == 0);
+        pstr = itoa(special == SVS_SIGNED ? dbv.cVal:dbv.bVal, str, 10);
+      }
+      break;
+      
+    case DBVT_WORD:
+      if (special == SVS_COUNTRY)
+      {
+        pstr = (char*)CallService(MS_UTILS_GETCOUNTRYBYNUMBER, dbv.wVal, 0);
+        unspecified = pstr == NULL;
+      }
+      else if (special == SVS_ICQVERSION)
+      {
+        if (dbv.wVal != 0)
+        {
+          pstr = str;
+          _snprintf(str, 80, "%d", dbv.wVal);
+        }
+        else
+          unspecified = 1;
+      }
       else if (special == SVS_STATUSID)
       {
         DBVARIANT dbv1 = {0};
@@ -562,55 +562,55 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
         pstr = szStatus;
         unspecified = 0;
       }
-			else
-			{
-				unspecified = (special == SVS_ZEROISUNSPEC && dbv.wVal == 0);
-				pstr = itoa(special == SVS_SIGNED ? dbv.sVal:dbv.wVal, str, 10);
-			}
-			break;
-			
-		case DBVT_DWORD:
-			unspecified = (special == SVS_ZEROISUNSPEC && dbv.dVal == 0);
-			if (special == SVS_IP)
-			{
-				struct in_addr ia;
-				ia.S_un.S_addr = htonl(dbv.dVal);
-				pstr = inet_ntoa(ia);
-				if (dbv.dVal == 0)
-					unspecified=1;
-			}
-			else if (special == SVS_TIMESTAMP)
-			{
-				if (dbv.dVal == 0)
-					unspecified = 1;
-				else
-				{
-					pstr = asctime(localtime(&dbv.dVal));
-					pstr[24] = '\0'; // Remove newline
-				}
-			}
-			else
-				pstr = itoa(special == SVS_SIGNED ? dbv.lVal:dbv.dVal, str, 10);
-			break;
-			
-		case DBVT_ASCIIZ:
-			unspecified = (special == SVS_ZEROISUNSPEC && dbv.pszVal[0] == '\0');
-			pstr = dbv.pszVal;
+      else
+      {
+        unspecified = (special == SVS_ZEROISUNSPEC && dbv.wVal == 0);
+        pstr = itoa(special == SVS_SIGNED ? dbv.sVal:dbv.wVal, str, 10);
+      }
+      break;
+      
+    case DBVT_DWORD:
+      unspecified = (special == SVS_ZEROISUNSPEC && dbv.dVal == 0);
+      if (special == SVS_IP)
+      {
+        struct in_addr ia;
+        ia.S_un.S_addr = htonl(dbv.dVal);
+        pstr = inet_ntoa(ia);
+        if (dbv.dVal == 0)
+          unspecified=1;
+      }
+      else if (special == SVS_TIMESTAMP)
+      {
+        if (dbv.dVal == 0)
+          unspecified = 1;
+        else
+        {
+          pstr = asctime(localtime(&dbv.dVal));
+          pstr[24] = '\0'; // Remove newline
+        }
+      }
+      else
+        pstr = itoa(special == SVS_SIGNED ? dbv.lVal:dbv.dVal, str, 10);
+      break;
+      
+    case DBVT_ASCIIZ:
+      unspecified = (special == SVS_ZEROISUNSPEC && dbv.pszVal[0] == '\0');
+      pstr = dbv.pszVal;
       if (idCtrl == IDC_UIN) SetDlgItemText(hwndDlg, IDC_UINSTATIC, Translate("ScreenName:"));
-			break;
-			
-		default:
-			pstr = str;
-			lstrcpy(str,"???");
-			break;
-		}
-	}
-	
-	EnableWindow(GetDlgItem(hwndDlg, idCtrl), !unspecified);
-	if (unspecified)
-		SetDlgItemText(hwndDlg, idCtrl, Translate("<not specified>"));
-	else
-		SetDlgItemText(hwndDlg, idCtrl, pstr);
-	
+      break;
+      
+    default:
+      pstr = str;
+      lstrcpy(str,"???");
+      break;
+    }
+  }
+  
+  EnableWindow(GetDlgItem(hwndDlg, idCtrl), !unspecified);
+  if (unspecified)
+    SetDlgItemText(hwndDlg, idCtrl, Translate("<not specified>"));
+  else
+    SetDlgItemText(hwndDlg, idCtrl, pstr);
+  
   if (dbv.pszVal!=szSetting) DBFreeVariant(&dbv);
 }

@@ -40,15 +40,15 @@
 
 typedef struct oscar_tlv_s
 {
-	WORD wType;
-	WORD wLen;
-	BYTE *pData;
+  WORD wType;
+  WORD wLen;
+  BYTE *pData;
 } oscar_tlv;
 
 typedef struct oscar_tlv_chain_s
 {
-	oscar_tlv *tlv;
-	struct oscar_tlv_chain_s *next;
+  oscar_tlv *tlv;
+  struct oscar_tlv_chain_s *next;
 } oscar_tlv_chain;
 
 /*---------* Functions *---------------*/

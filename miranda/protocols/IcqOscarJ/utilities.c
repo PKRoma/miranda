@@ -58,8 +58,8 @@ static int spammerListCount = 0;
 
 typedef struct icq_contacts_cache_s
 {
-	HANDLE hContact;
-	DWORD dwUin;
+  HANDLE hContact;
+  DWORD dwUin;
 } icq_contacts_cache;
 
 static icq_contacts_cache *contacts_cache = NULL;
@@ -75,20 +75,20 @@ extern icq_mode_messages modeMsgs;
 
 void icq_EnableMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
-	int i;
+  int i;
 
-	for (i = 0; i < cControls; i++)
-		EnableWindow(GetDlgItem(hwndDlg, controls[i]), state);
+  for (i = 0; i < cControls; i++)
+    EnableWindow(GetDlgItem(hwndDlg, controls[i]), state);
 }
 
 
 
 void icq_ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
-	int i;
+  int i;
 
-	for(i = 0; i < cControls; i++)
-		ShowWindow(GetDlgItem(hwndDlg, controls[i]), state);
+  for(i = 0; i < cControls; i++)
+    ShowWindow(GetDlgItem(hwndDlg, controls[i]), state);
 }
 
 
@@ -96,166 +96,166 @@ void icq_ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls,
 // a Miranda style status.
 int IcqStatusToMiranda(WORD nIcqStatus)
 {
-	int nMirandaStatus;
+  int nMirandaStatus;
 
-	// :NOTE: The order in which the flags are compared are important!
-	// I dont like this method but it works.
+  // :NOTE: The order in which the flags are compared are important!
+  // I dont like this method but it works.
 
-	if (nIcqStatus & ICQ_STATUSF_INVISIBLE)
-		nMirandaStatus = ID_STATUS_INVISIBLE;
-	else
-		if (nIcqStatus & ICQ_STATUSF_DND)
-			nMirandaStatus = ID_STATUS_DND;
-	else
-		if (nIcqStatus & ICQ_STATUSF_OCCUPIED)
-			nMirandaStatus = ID_STATUS_OCCUPIED;
-	else
-		if (nIcqStatus & ICQ_STATUSF_NA)
-			nMirandaStatus = ID_STATUS_NA;
-	else
-		if (nIcqStatus & ICQ_STATUSF_AWAY)
-			nMirandaStatus = ID_STATUS_AWAY;
-	else
-		if (nIcqStatus & ICQ_STATUSF_FFC)
-			nMirandaStatus = ID_STATUS_FREECHAT;
-	else
-		// Can be discussed, but I think 'online' is the most generic ICQ status
-		nMirandaStatus = ID_STATUS_ONLINE;
+  if (nIcqStatus & ICQ_STATUSF_INVISIBLE)
+    nMirandaStatus = ID_STATUS_INVISIBLE;
+  else
+    if (nIcqStatus & ICQ_STATUSF_DND)
+      nMirandaStatus = ID_STATUS_DND;
+  else
+    if (nIcqStatus & ICQ_STATUSF_OCCUPIED)
+      nMirandaStatus = ID_STATUS_OCCUPIED;
+  else
+    if (nIcqStatus & ICQ_STATUSF_NA)
+      nMirandaStatus = ID_STATUS_NA;
+  else
+    if (nIcqStatus & ICQ_STATUSF_AWAY)
+      nMirandaStatus = ID_STATUS_AWAY;
+  else
+    if (nIcqStatus & ICQ_STATUSF_FFC)
+      nMirandaStatus = ID_STATUS_FREECHAT;
+  else
+    // Can be discussed, but I think 'online' is the most generic ICQ status
+    nMirandaStatus = ID_STATUS_ONLINE;
 
-	return nMirandaStatus;
+  return nMirandaStatus;
 }
 
 
 
 WORD MirandaStatusToIcq(int nMirandaStatus)
 {
-	WORD nIcqStatus;
+  WORD nIcqStatus;
 
 
-	switch (nMirandaStatus)
-	{
+  switch (nMirandaStatus)
+  {
 
-	case ID_STATUS_ONLINE:
-		nIcqStatus = ICQ_STATUS_ONLINE;
-		break;
+  case ID_STATUS_ONLINE:
+    nIcqStatus = ICQ_STATUS_ONLINE;
+    break;
 
-	case ID_STATUS_AWAY:
-		nIcqStatus = ICQ_STATUS_AWAY;
-		break;
+  case ID_STATUS_AWAY:
+    nIcqStatus = ICQ_STATUS_AWAY;
+    break;
 
-	case ID_STATUS_OUTTOLUNCH:
-	case ID_STATUS_NA:
-		nIcqStatus = ICQ_STATUS_NA;
-		break;
+  case ID_STATUS_OUTTOLUNCH:
+  case ID_STATUS_NA:
+    nIcqStatus = ICQ_STATUS_NA;
+    break;
 
-	case ID_STATUS_ONTHEPHONE:
-	case ID_STATUS_OCCUPIED:
-		nIcqStatus = ICQ_STATUS_OCCUPIED;
-		break;
+  case ID_STATUS_ONTHEPHONE:
+  case ID_STATUS_OCCUPIED:
+    nIcqStatus = ICQ_STATUS_OCCUPIED;
+    break;
 
-	case ID_STATUS_DND:
-		nIcqStatus = ICQ_STATUS_DND;
-		break;
+  case ID_STATUS_DND:
+    nIcqStatus = ICQ_STATUS_DND;
+    break;
 
-	case ID_STATUS_INVISIBLE:
-		nIcqStatus = ICQ_STATUS_INVISIBLE;
-		break;
+  case ID_STATUS_INVISIBLE:
+    nIcqStatus = ICQ_STATUS_INVISIBLE;
+    break;
 
-	case ID_STATUS_FREECHAT:
-		nIcqStatus = ICQ_STATUS_FFC;
-		break;
+  case ID_STATUS_FREECHAT:
+    nIcqStatus = ICQ_STATUS_FFC;
+    break;
 
-	case ID_STATUS_OFFLINE:
-		// Oscar doesnt have anything that maps to this status. This should never happen.
-		_ASSERTE(nMirandaStatus != ID_STATUS_OFFLINE);
-		nIcqStatus = 0;
-		break;
+  case ID_STATUS_OFFLINE:
+    // Oscar doesnt have anything that maps to this status. This should never happen.
+    _ASSERTE(nMirandaStatus != ID_STATUS_OFFLINE);
+    nIcqStatus = 0;
+    break;
 
-	default:
-		// Online seems to be a good default.
-		// Since it cant be offline, it must be a new type of online status.
-		nIcqStatus = ICQ_STATUS_ONLINE;
-		break;
-	}
+  default:
+    // Online seems to be a good default.
+    // Since it cant be offline, it must be a new type of online status.
+    nIcqStatus = ICQ_STATUS_ONLINE;
+    break;
+  }
 
-	return nIcqStatus;
+  return nIcqStatus;
 }
 
 
 
 int MirandaStatusToSupported(int nMirandaStatus)
 {
-	int nSupportedStatus;
+  int nSupportedStatus;
 
-	switch (nMirandaStatus)
-	{
+  switch (nMirandaStatus)
+  {
 
-		// These status mode does not need any mapping
-	case ID_STATUS_ONLINE:
-	case ID_STATUS_AWAY:
-	case ID_STATUS_NA:
-	case ID_STATUS_OCCUPIED:
-	case ID_STATUS_DND:
-	case ID_STATUS_INVISIBLE:
-	case ID_STATUS_FREECHAT:
-	case ID_STATUS_OFFLINE:
-		nSupportedStatus = nMirandaStatus;
-		break;
+    // These status mode does not need any mapping
+  case ID_STATUS_ONLINE:
+  case ID_STATUS_AWAY:
+  case ID_STATUS_NA:
+  case ID_STATUS_OCCUPIED:
+  case ID_STATUS_DND:
+  case ID_STATUS_INVISIBLE:
+  case ID_STATUS_FREECHAT:
+  case ID_STATUS_OFFLINE:
+    nSupportedStatus = nMirandaStatus;
+    break;
 
-		// This mode is not support and must be mapped to something else
-	case ID_STATUS_OUTTOLUNCH:
-		nSupportedStatus = ID_STATUS_NA;
-		break;
+    // This mode is not support and must be mapped to something else
+  case ID_STATUS_OUTTOLUNCH:
+    nSupportedStatus = ID_STATUS_NA;
+    break;
 
-		// This mode is not support and must be mapped to something else
-	case ID_STATUS_ONTHEPHONE:
-		nSupportedStatus = ID_STATUS_OCCUPIED;
-		break;
+    // This mode is not support and must be mapped to something else
+  case ID_STATUS_ONTHEPHONE:
+    nSupportedStatus = ID_STATUS_OCCUPIED;
+    break;
 
-		// This is not supposed to happen.
-	default:
-		_ASSERTE(0);
-		// Online seems to be a good default.
-		nSupportedStatus = ID_STATUS_ONLINE;
-		break;
-	}
+    // This is not supposed to happen.
+  default:
+    _ASSERTE(0);
+    // Online seems to be a good default.
+    nSupportedStatus = ID_STATUS_ONLINE;
+    break;
+  }
 
-	return nSupportedStatus;
+  return nSupportedStatus;
 }
 
 
 
 char* MirandaStatusToString(int mirandaStatus)
 {
-	return (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, 0);
+  return (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, 0);
 }
 
 
 
 char**MirandaStatusToAwayMsg(int nStatus)
 {
-	switch (nStatus)
-	{
+  switch (nStatus)
+  {
 
-	case ID_STATUS_AWAY:
-		return &modeMsgs.szAway;
-		break;
+  case ID_STATUS_AWAY:
+    return &modeMsgs.szAway;
+    break;
 
-	case ID_STATUS_NA:
-		return &modeMsgs.szNa;
+  case ID_STATUS_NA:
+    return &modeMsgs.szNa;
 
-	case ID_STATUS_OCCUPIED:
-		return &modeMsgs.szOccupied;
+  case ID_STATUS_OCCUPIED:
+    return &modeMsgs.szOccupied;
 
-	case ID_STATUS_DND:
-		return &modeMsgs.szDnd;
+  case ID_STATUS_DND:
+    return &modeMsgs.szDnd;
 
-	case ID_STATUS_FREECHAT:
-		return &modeMsgs.szFfc;
+  case ID_STATUS_FREECHAT:
+    return &modeMsgs.szFfc;
 
-	default:
+  default:
     return NULL;
-	}
+  }
 }
 
 
@@ -363,7 +363,6 @@ DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra)
   dwThisSeq &= 0x7FFF;
   dwThisSeq |= wIdent<<0x10;
 
-//  cookie = (icq_cookie_info *)realloc(cookie, sizeof(icq_cookie_info) * (cookieCount + 1));
   cookie[cookieCount].dwCookie = dwThisSeq;
   cookie[cookieCount].dwUin = dwUin;
   cookie[cookieCount].pvExtra = pvExtra;
@@ -394,95 +393,95 @@ DWORD GenerateCookie(WORD wIdent)
 
 int FindCookie(DWORD dwCookie, DWORD *pdwUin, void **ppvExtra)
 {
-	int i;
-	int nFound = 0;
+  int i;
+  int nFound = 0;
 
 
-	EnterCriticalSection(&cookieMutex);
+  EnterCriticalSection(&cookieMutex);
 
-	for (i = 0; i < cookieCount; i++)
-	{
-		if (dwCookie == cookie[i].dwCookie)
-		{
-			if (pdwUin)
-				*pdwUin = cookie[i].dwUin;
-			if (ppvExtra)
-				*ppvExtra = cookie[i].pvExtra;
+  for (i = 0; i < cookieCount; i++)
+  {
+    if (dwCookie == cookie[i].dwCookie)
+    {
+      if (pdwUin)
+        *pdwUin = cookie[i].dwUin;
+      if (ppvExtra)
+        *ppvExtra = cookie[i].pvExtra;
 
-			// Cookie found, exit loop
-			nFound = 1;
-			break;
+      // Cookie found, exit loop
+      nFound = 1;
+      break;
 
-		}
-	}
+    }
+  }
 
-	LeaveCriticalSection(&cookieMutex);
+  LeaveCriticalSection(&cookieMutex);
 
-	return nFound;
+  return nFound;
 }
 
 
 
 int FindCookieByData(void *pvExtra,DWORD *pdwCookie, DWORD *pdwUin)
 {
-	int i;
-	int nFound = 0;
+  int i;
+  int nFound = 0;
 
 
-	EnterCriticalSection(&cookieMutex);
+  EnterCriticalSection(&cookieMutex);
 
-	for (i = 0; i < cookieCount; i++)
-	{
-		if (pvExtra == cookie[i].pvExtra)
-		{
-			if (pdwUin)
-				*pdwUin = cookie[i].dwUin;
-			if (pdwCookie)
-				*pdwCookie = cookie[i].dwCookie;
+  for (i = 0; i < cookieCount; i++)
+  {
+    if (pvExtra == cookie[i].pvExtra)
+    {
+      if (pdwUin)
+        *pdwUin = cookie[i].dwUin;
+      if (pdwCookie)
+        *pdwCookie = cookie[i].dwCookie;
 
-			// Cookie found, exit loop
-			nFound = 1;
-			break;
+      // Cookie found, exit loop
+      nFound = 1;
+      break;
 
-		}
-	}
+    }
+  }
 
-	LeaveCriticalSection(&cookieMutex);
+  LeaveCriticalSection(&cookieMutex);
 
-	return nFound;
+  return nFound;
 }
 
 
 
 void FreeCookie(DWORD dwCookie)
 {
-	int i;
+  int i;
   DWORD tNow = time(NULL);
 
 
-	EnterCriticalSection(&cookieMutex);
+  EnterCriticalSection(&cookieMutex);
 
-	for (i = 0; i < cookieCount; i++)
-	{
-		if (dwCookie == cookie[i].dwCookie)
-		{
-			cookieCount--;
-			memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
+  for (i = 0; i < cookieCount; i++)
+  {
+    if (dwCookie == cookie[i].dwCookie)
+    {
+      cookieCount--;
+      memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
       ResizeCookieList(cookieCount);
 
-			// Cookie found, exit loop
-			break;
-		}
+      // Cookie found, exit loop
+      break;
+    }
     if ((cookie[i].dwTime + COOKIE_TIMEOUT) < tNow)
     { // cookie expired, remove too
-			cookieCount--;
-			memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
+      cookieCount--;
+      memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
       ResizeCookieList(cookieCount);
       i--; // fix the loop
     }
-	}
+  }
 
-	LeaveCriticalSection(&cookieMutex);
+  LeaveCriticalSection(&cookieMutex);
 }
 
 
@@ -493,17 +492,17 @@ void SetGatewayIndex(HANDLE hConn, DWORD dwIndex)
 
   EnterCriticalSection(&cookieMutex);
 
-	for (i = 0; i < gatewayCount; i++)
-	{
-		if (hConn == gateways[i].hConn)
-		{
+  for (i = 0; i < gatewayCount; i++)
+  {
+    if (hConn == gateways[i].hConn)
+    {
       gateways[i].dwIndex = dwIndex;
-      
-    	LeaveCriticalSection(&cookieMutex);
+
+      LeaveCriticalSection(&cookieMutex);
 
       return;
-		}
-	}
+    }
+  }
 
   gateways = (gateway_index *)realloc(gateways, sizeof(gateway_index) * (gatewayCount + 1));
   gateways[gatewayCount].hConn = hConn;
@@ -519,48 +518,48 @@ void SetGatewayIndex(HANDLE hConn, DWORD dwIndex)
 
 DWORD GetGatewayIndex(HANDLE hConn)
 {
-	int i;
+  int i;
 
-	EnterCriticalSection(&cookieMutex);
+  EnterCriticalSection(&cookieMutex);
 
-	for (i = 0; i < gatewayCount; i++)
-	{
-		if (hConn == gateways[i].hConn)
-		{
-    	LeaveCriticalSection(&cookieMutex);
+  for (i = 0; i < gatewayCount; i++)
+  {
+    if (hConn == gateways[i].hConn)
+    {
+      LeaveCriticalSection(&cookieMutex);
 
       return gateways[i].dwIndex;
-		}
-	}
+    }
+  }
 
-	LeaveCriticalSection(&cookieMutex);
+  LeaveCriticalSection(&cookieMutex);
 
-	return 1; // this is default
+  return 1; // this is default
 }
 
 
 
 void FreeGatewayIndex(HANDLE hConn)
 {
-	int i;
+  int i;
 
 
-	EnterCriticalSection(&cookieMutex);
+  EnterCriticalSection(&cookieMutex);
 
-	for (i = 0; i < gatewayCount; i++)
-	{
-		if (hConn == gateways[i].hConn)
-		{
-			gatewayCount--;
-			memmove(&gateways[i], &gateways[i+1], sizeof(gateway_index) * (gatewayCount - i));
-			gateways = (gateway_index*)realloc(gateways, sizeof(gateway_index) * gatewayCount);
+  for (i = 0; i < gatewayCount; i++)
+  {
+    if (hConn == gateways[i].hConn)
+    {
+      gatewayCount--;
+      memmove(&gateways[i], &gateways[i+1], sizeof(gateway_index) * (gatewayCount - i));
+      gateways = (gateway_index*)realloc(gateways, sizeof(gateway_index) * gatewayCount);
 
-			// Gateway found, exit loop
-			break;
-		}
-	}
+      // Gateway found, exit loop
+      break;
+    }
+  }
 
-	LeaveCriticalSection(&cookieMutex);
+  LeaveCriticalSection(&cookieMutex);
 }
 
 
@@ -580,21 +579,21 @@ void AddToSpammerList(DWORD dwUIN)
 
 BOOL IsOnSpammerList(DWORD dwUIN)
 {
-	int i;
+  int i;
 
-	EnterCriticalSection(&cookieMutex);
+  EnterCriticalSection(&cookieMutex);
 
-	for (i = 0; i < spammerListCount; i++)
-	{
-		if (dwUIN == spammerList[i])
-		{
+  for (i = 0; i < spammerListCount; i++)
+  {
+    if (dwUIN == spammerList[i])
+    {
       LeaveCriticalSection(&cookieMutex);
 
       return TRUE;
-		}
-	}
+    }
+  }
 
-	LeaveCriticalSection(&cookieMutex);
+  LeaveCriticalSection(&cookieMutex);
 
   return FALSE;
 }
@@ -604,27 +603,27 @@ BOOL IsOnSpammerList(DWORD dwUIN)
 // ICQ contacts cache
 static void AddToCache(HANDLE hContact, DWORD dwUin)
 {
-	int i = 0;
+  int i = 0;
 
   if (!hContact || !dwUin)
     return;
 
-	EnterCriticalSection(&cacheMutex);
+  EnterCriticalSection(&cacheMutex);
 
-	if (cacheCount + 1 >= cacheListSize)
-	{
-		cacheListSize += 100;
-		contacts_cache = (icq_contacts_cache *)realloc(contacts_cache, sizeof(icq_contacts_cache) * cacheListSize);
-	}
+  if (cacheCount + 1 >= cacheListSize)
+  {
+    cacheListSize += 100;
+    contacts_cache = (icq_contacts_cache *)realloc(contacts_cache, sizeof(icq_contacts_cache) * cacheListSize);
+  }
 
 #ifdef _DEBUG
-	Netlib_Logf(ghServerNetlibUser, "Adding contact to cache: %u, position: %u", dwUin, cacheCount);
+  Netlib_Logf(ghServerNetlibUser, "Adding contact to cache: %u, position: %u", dwUin, cacheCount);
 #endif
 
-	contacts_cache[cacheCount].hContact = hContact;
-	contacts_cache[cacheCount].dwUin = dwUin;
+  contacts_cache[cacheCount].hContact = hContact;
+  contacts_cache[cacheCount].dwUin = dwUin;
 
-	cacheCount++;
+  cacheCount++;
 
   LeaveCriticalSection(&cacheMutex);
 }
@@ -633,110 +632,110 @@ static void AddToCache(HANDLE hContact, DWORD dwUin)
 
 void InitCache(void)
 {
-	HANDLE hContact;
+  HANDLE hContact;
 
-	InitializeCriticalSection(&cacheMutex);
-	cacheCount = 0;
-	cacheListSize = 0;
-	contacts_cache = NULL;
+  InitializeCriticalSection(&cacheMutex);
+  cacheCount = 0;
+  cacheListSize = 0;
+  contacts_cache = NULL;
 
-	// build cache
-	EnterCriticalSection(&cacheMutex);
+  // build cache
+  EnterCriticalSection(&cacheMutex);
 
-	hContact = ICQFindFirstContact();
+  hContact = ICQFindFirstContact();
 
-	while (hContact)
-	{
+  while (hContact)
+  {
     DWORD dwUin;
 
     if (!ICQGetContactSettingUID(hContact, &dwUin, NULL))
       AddToCache(hContact, dwUin);
 
-		hContact = ICQFindNextContact(hContact);
-	}
+    hContact = ICQFindNextContact(hContact);
+  }
 
-	LeaveCriticalSection(&cacheMutex);
+  LeaveCriticalSection(&cacheMutex);
 }
 
 
 
 void UninitCache(void)
 {
-	SAFE_FREE(&contacts_cache);
+  SAFE_FREE(&contacts_cache);
 
-	DeleteCriticalSection(&cacheMutex);
+  DeleteCriticalSection(&cacheMutex);
 }
 
 
 
 void DeleteFromCache(HANDLE hContact)
 {
-	int i;
+  int i;
 
-	if (cacheCount == 0)
-		return;
+  if (cacheCount == 0)
+    return;
 
-	EnterCriticalSection(&cacheMutex);
+  EnterCriticalSection(&cacheMutex);
 
-	for (i = cacheCount-1; i >= 0; i--)
-		if (contacts_cache[i].hContact == hContact)
-		{
-			cacheCount--;
+  for (i = cacheCount-1; i >= 0; i--)
+    if (contacts_cache[i].hContact == hContact)
+    {
+      cacheCount--;
 
 #ifdef _DEBUG
-			Netlib_Logf(ghServerNetlibUser, "Removing contact from cache: %u, position: %u", contacts_cache[i].dwUin, i);
+      Netlib_Logf(ghServerNetlibUser, "Removing contact from cache: %u, position: %u", contacts_cache[i].dwUin, i);
 #endif
-			// move last contact to deleted position
-			if (i < cacheCount)
-				memcpy(&contacts_cache[i], &contacts_cache[cacheCount], sizeof(icq_contacts_cache));
+      // move last contact to deleted position
+      if (i < cacheCount)
+        memcpy(&contacts_cache[i], &contacts_cache[cacheCount], sizeof(icq_contacts_cache));
 
-			// clear last contact position
-			ZeroMemory(&contacts_cache[cacheCount], sizeof(icq_contacts_cache));
+      // clear last contact position
+      ZeroMemory(&contacts_cache[cacheCount], sizeof(icq_contacts_cache));
 
-			break;
-		}
+      break;
+    }
 
-	LeaveCriticalSection(&cacheMutex);
+  LeaveCriticalSection(&cacheMutex);
 }
 
 
 
 static HANDLE HandleFromCacheByUin(DWORD dwUin)
 {
-	int i;
-	HANDLE hContact = NULL;
+  int i;
+  HANDLE hContact = NULL;
 
-	if (cacheCount == 0)
-		return hContact;
+  if (cacheCount == 0)
+    return hContact;
 
-	EnterCriticalSection(&cacheMutex);
+  EnterCriticalSection(&cacheMutex);
 
-	for (i = cacheCount-1; i >= 0; i--)
-		if (contacts_cache[i].dwUin == dwUin)
-		{
-			hContact = contacts_cache[i].hContact;
-			break;
-		}
+  for (i = cacheCount-1; i >= 0; i--)
+    if (contacts_cache[i].dwUin == dwUin)
+    {
+      hContact = contacts_cache[i].hContact;
+      break;
+    }
 
-	LeaveCriticalSection(&cacheMutex);
+  LeaveCriticalSection(&cacheMutex);
 
-	return hContact;
+  return hContact;
 }
 
 
 
 HANDLE HContactFromUIN(DWORD uin, int *Added)
 {
-	HANDLE hContact;
+  HANDLE hContact;
 
   if (Added) *Added = 0;
 
   hContact = HandleFromCacheByUin(uin);
   if (hContact) return hContact;
 
-	hContact = ICQFindFirstContact();
-	while (hContact != NULL)
-	{
+  hContact = ICQFindFirstContact();
+  while (hContact != NULL)
+  {
     DWORD dwUin;
 
     if (!ICQGetContactSettingUID(hContact, &dwUin, NULL) && dwUin == uin)
@@ -745,24 +744,24 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
       return hContact;
     }
 
-		hContact = ICQFindNextContact(hContact);
-	}
+    hContact = ICQFindNextContact(hContact);
+  }
 
   // not in list, check that uin do not belong to us
-	if (ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0) == uin)
-		return NULL;
+  if (ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0) == uin)
+    return NULL;
 
-	//not present: add
-	if (Added)
-	{
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
+  //not present: add
+  if (Added)
+  {
+    hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
     if (!hContact)
-  	{
+    {
       NetLog_Server("Failed to create ICQ contact %u", uin);
       return INVALID_HANDLE_VALUE;
     }
 
-		if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName) != 0)
+    if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName) != 0)
     {
       // For some reason we failed to register the protocol to this contact
       CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
@@ -770,46 +769,46 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
       return INVALID_HANDLE_VALUE;
     }
 
-		ICQWriteContactSettingDword(hContact, UNIQUEIDSETTING, uin);
+    ICQWriteContactSettingDword(hContact, UNIQUEIDSETTING, uin);
 
     if (!bIsSyncingCL)
     {
-		  DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
-		  DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+      DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
+      DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 
-		  ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+      ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
-		  icq_QueueUser(hContact);
+      icq_QueueUser(hContact);
 
-		  if (icqOnline)
+      if (icqOnline)
       {
-			  icq_sendNewContact(uin, NULL);
+        icq_sendNewContact(uin, NULL);
       }
     }
     AddToCache(hContact, uin);
     *Added = 1;
 
-		return hContact;
-	}
+    return hContact;
+  }
 
-	return INVALID_HANDLE_VALUE;
+  return INVALID_HANDLE_VALUE;
 }
 
 
 
 HANDLE HContactFromUID(char* pszUID, int *Added)
 {
-	HANDLE hContact;
+  HANDLE hContact;
   DWORD dwUin;
-	uid_str szUid;
+  uid_str szUid;
 
   if (Added) *Added = 0;
 
   if (!gbAimEnabled) return INVALID_HANDLE_VALUE;
 
-	hContact = ICQFindFirstContact();
-	while (hContact != NULL)
-	{
+  hContact = ICQFindFirstContact();
+  while (hContact != NULL)
+  {
     if (!ICQGetContactSettingUID(hContact, &dwUin, &szUid))
     {
       if (!dwUin && !stricmp(szUid, pszUID))
@@ -822,64 +821,64 @@ HANDLE HContactFromUID(char* pszUID, int *Added)
       }
     }
     hContact = ICQFindNextContact(hContact);
-	}
+  }
 
-	//not present: add
-	if (Added)
-	{
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
-		CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName);
+  //not present: add
+  if (Added)
+  {
+    hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
+    CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)gpszICQProtoName);
 
-		ICQWriteContactSettingString(hContact, UNIQUEIDSETTING, pszUID);
+    ICQWriteContactSettingString(hContact, UNIQUEIDSETTING, pszUID);
 
     if (!bIsSyncingCL)
     {
       DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
-		  DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+      DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 
-		  ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+      ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
-//		  icq_QueueUser(hContact);
+//      icq_QueueUser(hContact);
 
-		  if (icqOnline)
-		  {
-				icq_sendNewContact(0, pszUID);
-		  }
+      if (icqOnline)
+      {
+        icq_sendNewContact(0, pszUID);
+      }
     }
     *Added = 1;
 
-		return hContact;
-	}
+    return hContact;
+  }
 
-	return INVALID_HANDLE_VALUE;
+  return INVALID_HANDLE_VALUE;
 }
 
 
 
 char *NickFromHandle(HANDLE hContact)
 {
-	if (hContact == INVALID_HANDLE_VALUE)
-		return _strdup("<invalid>");
+  if (hContact == INVALID_HANDLE_VALUE)
+    return _strdup("<invalid>");
 
-	return _strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+  return _strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
 }
 
 
 
-/* a strlen() that likes NULL */
+/* a strlennull() that likes NULL */
 size_t __fastcall strlennull(const char *string)
 {
-	if (string)
-		return strlen(string);
+  if (string)
+    return strlen(string);
 
-	return 0;
+  return 0;
 }
 
 
 /* a strcmp() that likes NULL */
 int __fastcall strcmpnull(const char *str1, const char *str2)
 {
-  if (str1 && str2) 
+  if (str1 && str2)
     return strcmp(str1, str2);
 
   return 1;
@@ -889,20 +888,20 @@ int __fastcall strcmpnull(const char *str1, const char *str2)
 
 int null_snprintf(char *buffer, size_t count, const char* fmt, ...)
 {
-	va_list va;
-	int len;
+  va_list va;
+  int len;
 
-	va_start(va, fmt);
-	len = _vsnprintf(buffer, count-1, fmt, va);
-	va_end(va);
-	buffer[count-1] = 0;
-	return len;
+  va_start(va, fmt);
+  len = _vsnprintf(buffer, count-1, fmt, va);
+  va_end(va);
+  buffer[count-1] = 0;
+  return len;
 }
 
 
 
 char *DemangleXml(const char *string, int len)
-{ 
+{
   char *szWork = (char*)malloc(len+1), *szChar = szWork;
   int i;
 
@@ -957,7 +956,7 @@ char *MangleXml(const char *string, int len)
   szChar = szWork = (char*)malloc(l + 1);
   for (i = 0; i<len; i++)
   {
-    if (string[i]=='<') 
+    if (string[i]=='<')
     {
       *(DWORD*)szChar = ';tl&';
       szChar += 4;
@@ -1017,132 +1016,132 @@ void ResetSettingsOnListReload()
 
 void ResetSettingsOnConnect()
 {
-	HANDLE hContact;
+  HANDLE hContact;
 
   gbOverRate = 0; // init
   gtLastRequest = 0;
 
-	// Reset a bunch of session specific settings
+  // Reset a bunch of session specific settings
   ICQWriteContactSettingByte(NULL, "SrvVisibility", 0);
   ICQWriteContactSettingDword(NULL, "IdleTS", 0);
 
-	hContact = ICQFindFirstContact();
+  hContact = ICQFindFirstContact();
 
-	while (hContact)
-	{
-		ICQWriteContactSettingDword(hContact, "LogonTS", 0);
-		ICQWriteContactSettingDword(hContact, "IdleTS", 0);
-		ICQWriteContactSettingDword(hContact, "TickTS", 0);
+  while (hContact)
+  {
+    ICQWriteContactSettingDword(hContact, "LogonTS", 0);
+    ICQWriteContactSettingDword(hContact, "IdleTS", 0);
+    ICQWriteContactSettingDword(hContact, "TickTS", 0);
     ICQDeleteContactSetting(hContact, "TemporaryVisible");
 
-		// All these values will be restored during the login
-		if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
-			ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+    // All these values will be restored during the login
+    if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+      ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
-		hContact = ICQFindNextContact(hContact);
-	}
+    hContact = ICQFindNextContact(hContact);
+  }
 }
 
 
 
 void ResetSettingsOnLoad()
 {
-	HANDLE hContact;
+  HANDLE hContact;
 
   ICQWriteContactSettingDword(NULL, "IdleTS", 0);
   ICQWriteContactSettingDword(NULL, "LogonTS", 0);
 
-	hContact = ICQFindFirstContact();
+  hContact = ICQFindFirstContact();
 
-	while (hContact)
-	{
-		ICQWriteContactSettingDword(hContact, "LogonTS", 0);
-		ICQWriteContactSettingDword(hContact, "IdleTS", 0);
-		ICQWriteContactSettingDword(hContact, "TickTS", 0);
-		if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+  while (hContact)
+  {
+    ICQWriteContactSettingDword(hContact, "LogonTS", 0);
+    ICQWriteContactSettingDword(hContact, "IdleTS", 0);
+    ICQWriteContactSettingDword(hContact, "TickTS", 0);
+    if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
     {
-			ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+      ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
       ICQDeleteContactSetting(hContact, "XStatusId");
       ICQDeleteContactSetting(hContact, "XStatusName");
       ICQDeleteContactSetting(hContact, "XStatusMsg");
     }
-		hContact = ICQFindNextContact(hContact);
-	}
+    hContact = ICQFindNextContact(hContact);
+  }
 }
 
 
 
 int RandRange(int nLow, int nHigh)
 {
-	return nLow + (int)((nHigh-nLow+1)*rand()/(RAND_MAX+1.0));
+  return nLow + (int)((nHigh-nLow+1)*rand()/(RAND_MAX+1.0));
 }
 
 
 
 BOOL IsStringUIN(char* pszString)
 {
-	int i;
-	int nLen = strlen(pszString);
+  int i;
+  int nLen = strlennull(pszString);
 
 
-	if (nLen > 0 && pszString[0] != '0')
-	{
-		for (i=0; i<nLen; i++)
-		{
-			if ((pszString[i] < '0') || (pszString[i] > '9'))
-				return FALSE;
-		}
+  if (nLen > 0 && pszString[0] != '0')
+  {
+    for (i=0; i<nLen; i++)
+    {
+      if ((pszString[i] < '0') || (pszString[i] > '9'))
+        return FALSE;
+    }
 
-		return TRUE;
-	}
+    return TRUE;
+  }
 
-	return FALSE;
+  return FALSE;
 }
 
 
 
 void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
 {
-	DWORD dwUin;
-	void* pvExtra;
+  DWORD dwUin;
+  void* pvExtra;
 
 
-	ICQBroadcastAck(pArguments->hContact, pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
+  ICQBroadcastAck(pArguments->hContact, pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
 
-	if (FindCookie((WORD)pArguments->hSequence, &dwUin, &pvExtra))
-		FreeCookie((WORD)pArguments->hSequence);
+  if (FindCookie((WORD)pArguments->hSequence, &dwUin, &pvExtra))
+    FreeCookie((WORD)pArguments->hSequence);
 
-	if (pArguments->nAckResult == ACKRESULT_SUCCESS)
-		NetLog_Server("Sent fake message ack");
-	else if (pArguments->nAckResult == ACKRESULT_FAILED)
-		NetLog_Server("Message delivery failed");
+  if (pArguments->nAckResult == ACKRESULT_SUCCESS)
+    NetLog_Server("Sent fake message ack");
+  else if (pArguments->nAckResult == ACKRESULT_FAILED)
+    NetLog_Server("Message delivery failed");
 
-	SAFE_FREE(&(char *)pArguments->pszMessage);
-	SAFE_FREE(&pArguments);
+  SAFE_FREE(&(char *)pArguments->pszMessage);
+  SAFE_FREE(&pArguments);
 
-	return;
+  return;
 }
 
 
 
 void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage)
 {
-	icq_ack_args* pArgs;
+  icq_ack_args* pArgs;
 
 
-	pArgs = malloc(sizeof(icq_ack_args)); // This will be freed in the new thread
+  pArgs = malloc(sizeof(icq_ack_args)); // This will be freed in the new thread
 
-	pArgs->hContact = hContact;
-	pArgs->hSequence = (HANDLE)dwCookie;
-	pArgs->nAckResult = nAckResult;
-	pArgs->nAckType = nAckType;
-	if (pszMessage)
-		pArgs->pszMessage = (LPARAM)strdup(pszMessage);
-	else
-		pArgs->pszMessage = (LPARAM)NULL;
+  pArgs->hContact = hContact;
+  pArgs->hSequence = (HANDLE)dwCookie;
+  pArgs->nAckResult = nAckResult;
+  pArgs->nAckType = nAckType;
+  if (pszMessage)
+    pArgs->pszMessage = (LPARAM)strdup(pszMessage);
+  else
+    pArgs->pszMessage = (LPARAM)NULL;
 
-	forkthread(icq_ProtocolAckThread, 0, pArgs);
+  forkthread(icq_ProtocolAckThread, 0, pArgs);
 }
 
 
@@ -1159,115 +1158,115 @@ void SetCurrentStatus(int nStatus)
 
 BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf, WORD* pwLength)
 {
-	WORD wLen;
+  WORD wLen;
 
 
-	if (*pwLength < 2)
-		return FALSE;
+  if (*pwLength < 2)
+    return FALSE;
 
-	unpackLEWord(buf, &wLen);
-	*pwLength -= 2;
+  unpackLEWord(buf, &wLen);
+  *pwLength -= 2;
 
-	if (*pwLength < wLen)
-		return FALSE;
+  if (*pwLength < wLen)
+    return FALSE;
 
-	if ((wLen > 0) && (**buf) && ((*buf)[wLen-1]==0)) // Make sure we have a proper string
-		ICQWriteContactSettingString(hContact, szSetting, *buf);
-	else
-		ICQDeleteContactSetting(hContact, szSetting);
+  if ((wLen > 0) && (**buf) && ((*buf)[wLen-1]==0)) // Make sure we have a proper string
+    ICQWriteContactSettingString(hContact, szSetting, *buf);
+  else
+    ICQDeleteContactSetting(hContact, szSetting);
 
-	*buf += wLen;
-	*pwLength -= wLen;
+  *buf += wLen;
+  *pwLength -= wLen;
 
-	return TRUE;
+  return TRUE;
 }
 
 
 
 BOOL writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, WORD* pwLength)
 {
-	WORD wVal;
+  WORD wVal;
 
 
-	if (*pwLength < 2)
-		return FALSE;
+  if (*pwLength < 2)
+    return FALSE;
 
-	unpackLEWord(buf, &wVal);
-	*pwLength -= 2;
+  unpackLEWord(buf, &wVal);
+  *pwLength -= 2;
 
-	if (wVal != 0)
-		ICQWriteContactSettingWord(hContact, szSetting, wVal);
-	else
-		ICQDeleteContactSetting(hContact, szSetting);
+  if (wVal != 0)
+    ICQWriteContactSettingWord(hContact, szSetting, wVal);
+  else
+    ICQDeleteContactSetting(hContact, szSetting);
 
-	return TRUE;
+  return TRUE;
 }
 
 
 
 BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength)
 {
-	WORD wVal;
-	char *text;
+  WORD wVal;
+  char *text;
 
 
-	if (*pwLength < 2)
-		return FALSE;
+  if (*pwLength < 2)
+    return FALSE;
 
-	unpackLEWord(buf, &wVal);
-	*pwLength -= 2;
+  unpackLEWord(buf, &wVal);
+  *pwLength -= 2;
 
-	text = LookupFieldName(table, wVal);
-	if (text)
-		ICQWriteContactSettingString(hContact, szSetting, text);
-	else
-		ICQDeleteContactSetting(hContact, szSetting);
+  text = LookupFieldName(table, wVal);
+  if (text)
+    ICQWriteContactSettingString(hContact, szSetting, text);
+  else
+    ICQDeleteContactSetting(hContact, szSetting);
 
-	return TRUE;
+  return TRUE;
 }
 
 
 
 BOOL writeDbInfoSettingByte(HANDLE hContact, const char *pszSetting, char **buf, WORD* pwLength)
 {
-	BYTE byVal;
+  BYTE byVal;
 
 
-	if (*pwLength < 1)
-		return FALSE;
+  if (*pwLength < 1)
+    return FALSE;
 
-	unpackByte(buf, &byVal);
-	*pwLength -= 1;
+  unpackByte(buf, &byVal);
+  *pwLength -= 1;
 
-	if (byVal != 0)
-		ICQWriteContactSettingByte(hContact, pszSetting, byVal);
-	else
-		ICQDeleteContactSetting(hContact, pszSetting);
+  if (byVal != 0)
+    ICQWriteContactSettingByte(hContact, pszSetting, byVal);
+  else
+    ICQDeleteContactSetting(hContact, pszSetting);
 
-	return TRUE;
+  return TRUE;
 }
 
 
 
 BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength)
 {
-	BYTE byVal;
-	char *text;
+  BYTE byVal;
+  char *text;
 
 
-	if (*pwLength < 1)
-		return FALSE;
+  if (*pwLength < 1)
+    return FALSE;
 
-	unpackByte(buf, &byVal);
-	*pwLength -= 1;
+  unpackByte(buf, &byVal);
+  *pwLength -= 1;
 
-	text = LookupFieldName(table, byVal);
-	if (text)
-		ICQWriteContactSettingString(hContact, szSetting, text);
-	else
-		ICQDeleteContactSetting(hContact, szSetting);
+  text = LookupFieldName(table, byVal);
+  if (text)
+    ICQWriteContactSettingString(hContact, szSetting, text);
+  else
+    ICQDeleteContactSetting(hContact, szSetting);
 
-	return TRUE;
+  return TRUE;
 }
 
 
@@ -1275,99 +1274,99 @@ BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, str
 // Returns the current GMT offset in seconds
 int GetGMTOffset(void)
 {
-	TIME_ZONE_INFORMATION tzinfo;
-	DWORD dwResult;
-	int nOffset = 0;
+  TIME_ZONE_INFORMATION tzinfo;
+  DWORD dwResult;
+  int nOffset = 0;
 
 
-	dwResult = GetTimeZoneInformation(&tzinfo);
+  dwResult = GetTimeZoneInformation(&tzinfo);
 
-	switch(dwResult)
-	{
+  switch(dwResult)
+  {
 
-	case TIME_ZONE_ID_STANDARD:
-		nOffset = -(tzinfo.Bias + tzinfo.StandardBias) * 60;
-		break;
+  case TIME_ZONE_ID_STANDARD:
+    nOffset = -(tzinfo.Bias + tzinfo.StandardBias) * 60;
+    break;
 
-	case TIME_ZONE_ID_DAYLIGHT:
-		nOffset = -(tzinfo.Bias + tzinfo.DaylightBias) * 60;
-		break;
+  case TIME_ZONE_ID_DAYLIGHT:
+    nOffset = -(tzinfo.Bias + tzinfo.DaylightBias) * 60;
+    break;
 
-	case TIME_ZONE_ID_UNKNOWN:
-	case TIME_ZONE_ID_INVALID:
-	default:
-		nOffset = 0;
-		break;
+  case TIME_ZONE_ID_UNKNOWN:
+  case TIME_ZONE_ID_INVALID:
+  default:
+    nOffset = 0;
+    break;
 
-	}
+  }
 
-	return nOffset;
+  return nOffset;
 }
 
 
 
 BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 {
-	// Privacy control
-	if (ICQGetContactSettingByte(NULL, "StatusMsgReplyCList", 0))
-	{
-		// Don't send statusmessage to unknown contacts
-		if (hContact == INVALID_HANDLE_VALUE)
-			return FALSE;
+  // Privacy control
+  if (ICQGetContactSettingByte(NULL, "StatusMsgReplyCList", 0))
+  {
+    // Don't send statusmessage to unknown contacts
+    if (hContact == INVALID_HANDLE_VALUE)
+      return FALSE;
 
-		// Don't send statusmessage to temporary contacts or hidden contacts
-		if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) ||
-			DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
-			return FALSE;
+    // Don't send statusmessage to temporary contacts or hidden contacts
+    if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) ||
+      DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
+      return FALSE;
 
-		// Don't send statusmessage to invisible contacts
-		if (ICQGetContactSettingByte(NULL, "StatusMsgReplyVisible", 0))
-		{
-			WORD wStatus = ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
-			if (wStatus == ID_STATUS_OFFLINE)
-				return FALSE;
-		}
-	}
+    // Don't send statusmessage to invisible contacts
+    if (ICQGetContactSettingByte(NULL, "StatusMsgReplyVisible", 0))
+    {
+      WORD wStatus = ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+      if (wStatus == ID_STATUS_OFFLINE)
+        return FALSE;
+    }
+  }
 
-	// Dont send messages to people you are hiding from
-	if (hContact != INVALID_HANDLE_VALUE &&
-		ICQGetContactSettingWord(hContact, "ApparentMode", 0) == ID_STATUS_OFFLINE)
-	{
+  // Dont send messages to people you are hiding from
+  if (hContact != INVALID_HANDLE_VALUE &&
+    ICQGetContactSettingWord(hContact, "ApparentMode", 0) == ID_STATUS_OFFLINE)
+  {
     return FALSE;
-	}
+  }
 
-	// Dont respond to request for other statuses than your current one
-	if ((byMessageType == MTYPE_AUTOAWAY && gnCurrentStatus != ID_STATUS_AWAY) ||
-		(byMessageType == MTYPE_AUTOBUSY && gnCurrentStatus != ID_STATUS_OCCUPIED) ||
-		(byMessageType == MTYPE_AUTONA   && gnCurrentStatus != ID_STATUS_NA) ||
-		(byMessageType == MTYPE_AUTODND  && gnCurrentStatus != ID_STATUS_DND) ||
-		(byMessageType == MTYPE_AUTOFFC  && gnCurrentStatus != ID_STATUS_FREECHAT))
-	{
-		return FALSE;
-	}
+  // Dont respond to request for other statuses than your current one
+  if ((byMessageType == MTYPE_AUTOAWAY && gnCurrentStatus != ID_STATUS_AWAY) ||
+    (byMessageType == MTYPE_AUTOBUSY && gnCurrentStatus != ID_STATUS_OCCUPIED) ||
+    (byMessageType == MTYPE_AUTONA   && gnCurrentStatus != ID_STATUS_NA) ||
+    (byMessageType == MTYPE_AUTODND  && gnCurrentStatus != ID_STATUS_DND) ||
+    (byMessageType == MTYPE_AUTOFFC  && gnCurrentStatus != ID_STATUS_FREECHAT))
+  {
+    return FALSE;
+  }
 
   if (hContact != INVALID_HANDLE_VALUE && gnCurrentStatus==ID_STATUS_INVISIBLE &&
     ICQGetContactSettingWord(hContact, "ApparentMode", 0) != ID_STATUS_ONLINE)
   {
-		if (!ICQGetContactSettingByte(hContact, "TemporaryVisible", 0))
+    if (!ICQGetContactSettingByte(hContact, "TemporaryVisible", 0))
     { // Allow request to temporary visible contacts
       return FALSE;
     }
   }
 
-	// All OK!
-	return TRUE;
+  // All OK!
+  return TRUE;
 }
 
 
 
 void __fastcall SAFE_FREE(void** p)
 {
-	if (*p)
-	{
-		free(*p);
-		*p = NULL;
-	}
+  if (*p)
+  {
+    free(*p);
+    *p = NULL;
+  }
 }
 
 
@@ -1394,7 +1393,7 @@ void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
           DBDeleteContactSetting(hContact, "ContactPhoto", "ICQLink");
         }
       }
-      else if (szFile) 
+      else if (szFile)
       { // link only if file valid
         DBVARIANT dbv;
         if (DBGetContactSetting(hContact, "ContactPhoto", "File", &dbv))
@@ -1438,17 +1437,17 @@ void ContactPhotoSettingChanged(HANDLE hContact)
 
 int NetLog_Server(const char *fmt,...)
 {
-	va_list va;
-	char szText[1024];
+  va_list va;
+  char szText[1024];
   char*pszText = NULL;
 
-	va_start(va,fmt);
-	mir_vsnprintf(szText,sizeof(szText),fmt,va);
-	va_end(va);
+  va_start(va,fmt);
+  mir_vsnprintf(szText,sizeof(szText),fmt,va);
+  va_end(va);
 
   if (IsUSASCII(szText, strlennull(szText)) || !UTF8_IsValid(szText) || !utf8_decode(szText, &pszText)) pszText = (char*)&szText;
 
-	return CallService(MS_NETLIB_LOG,(WPARAM)ghServerNetlibUser,(LPARAM)szText);
+  return CallService(MS_NETLIB_LOG,(WPARAM)ghServerNetlibUser,(LPARAM)szText);
 
   if (pszText != (char*)&szText) SAFE_FREE(&pszText);
 }
@@ -1457,42 +1456,42 @@ int NetLog_Server(const char *fmt,...)
 
 int NetLog_Direct(const char *fmt,...)
 {
-	va_list va;
-	char szText[1024];
+  va_list va;
+  char szText[1024];
 
-	va_start(va,fmt);
-	mir_vsnprintf(szText,sizeof(szText),fmt,va);
-	va_end(va);
-	return CallService(MS_NETLIB_LOG,(WPARAM)ghDirectNetlibUser,(LPARAM)szText);
+  va_start(va,fmt);
+  mir_vsnprintf(szText,sizeof(szText),fmt,va);
+  va_end(va);
+  return CallService(MS_NETLIB_LOG,(WPARAM)ghDirectNetlibUser,(LPARAM)szText);
 }
 
 
 
 int ICQBroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam)
 {
-	ACKDATA ack={0};
+  ACKDATA ack={0};
 
-	ack.cbSize=sizeof(ACKDATA);
-	ack.szModule=gpszICQProtoName;
+  ack.cbSize=sizeof(ACKDATA);
+  ack.szModule=gpszICQProtoName;
   ack.hContact=hContact;
-	ack.type=type; 
+  ack.type=type;
   ack.result=result;
-	ack.hProcess=hProcess; 
+  ack.hProcess=hProcess;
   ack.lParam=lParam;
-	return CallService(MS_PROTO_BROADCASTACK,0,(LPARAM)&ack);
+  return CallService(MS_PROTO_BROADCASTACK,0,(LPARAM)&ack);
 }
 
 
 
 int __fastcall ICQTranslateDialog(HWND hwndDlg)
 {
-	LANGPACKTRANSLATEDIALOG lptd;
+  LANGPACKTRANSLATEDIALOG lptd;
 
-	lptd.cbSize=sizeof(lptd);
-	lptd.flags=0;
-	lptd.hwndDlg=hwndDlg;
-	lptd.ignoreControls=NULL;
-	return CallService(MS_LANGPACK_TRANSLATEDIALOG,0,(LPARAM)&lptd);
+  lptd.cbSize=sizeof(lptd);
+  lptd.flags=0;
+  lptd.hwndDlg=hwndDlg;
+  lptd.ignoreControls=NULL;
+  return CallService(MS_LANGPACK_TRANSLATEDIALOG,0,(LPARAM)&lptd);
 }
 
 
@@ -1504,9 +1503,9 @@ char* GetUserPassword(BOOL bAlways)
 
   if (!ICQGetContactStaticString(NULL, "Password", gpszPassword, sizeof(gpszPassword)))
   {
-    CallService(MS_DB_CRYPT_DECODESTRING, strlen(gpszPassword) + 1, (LPARAM)gpszPassword);
+    CallService(MS_DB_CRYPT_DECODESTRING, strlennull(gpszPassword) + 1, (LPARAM)gpszPassword);
 
-    if (!strlen(gpszPassword)) return NULL;
+    if (!strlennull(gpszPassword)) return NULL;
 
     gbRememberPwd = TRUE;
 

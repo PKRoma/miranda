@@ -37,22 +37,22 @@
 
 int InitChangeDetails(WPARAM wParam,LPARAM lParam)
 {
-	OPTIONSDIALOGPAGE odp={0};
-	char title[128];
+  OPTIONSDIALOGPAGE odp={0};
+  char title[128];
 
-	if((HANDLE)lParam != NULL) return 0;
+  if((HANDLE)lParam != NULL) return 0;
 
-	null_snprintf(title, sizeof(title),"%s %s", Translate(gpszICQProtoName), Translate("Details"));
+  null_snprintf(title, sizeof(title),"%s %s", Translate(gpszICQProtoName), Translate("Details"));
 
-	odp.cbSize=sizeof(odp);
-	odp.hIcon = NULL;
-	odp.hInstance = hInst;
+  odp.cbSize=sizeof(odp);
+  odp.hIcon = NULL;
+  odp.hInstance = hInst;
   odp.position = -1899999999;
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_INFO_CHANGEINFO);
-	odp.pszTitle=title;
-	odp.pfnDlgProc=ChangeInfoDlgProc;
+  odp.pszTemplate=MAKEINTRESOURCE(IDD_INFO_CHANGEINFO);
+  odp.pszTitle=title;
+  odp.pfnDlgProc=ChangeInfoDlgProc;
 
-	CallService(MS_USERINFO_ADDPAGE,wParam,(LPARAM)&odp);
+  CallService(MS_USERINFO_ADDPAGE,wParam,(LPARAM)&odp);
 
-	return 0;
+  return 0;
 }

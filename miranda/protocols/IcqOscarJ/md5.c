@@ -27,7 +27,7 @@
 
   This code implements the MD5 Algorithm defined in RFC 1321, whose
   text is available at
-	http://www.ietf.org/rfc/rfc1321.txt
+  http://www.ietf.org/rfc/rfc1321.txt
   The code is derived from the text of the RFC, including the test suite
   (section A.5) but excluding the rest of Appendix A.  It does not include
   any code or documentation that is identified in the RFC as being
@@ -38,14 +38,14 @@
   that follows (in reverse chronological order):
 
   2002-04-13 lpd Clarified derivation from RFC 1321; now handles byte order
-	either statically or dynamically; added missing #include <string.h>
-	in library.
+  either statically or dynamically; added missing #include <string.h>
+  in library.
   2002-03-11 lpd Corrected argument list for main(), and added int return
-	type, in test program and T value program.
+  type, in test program and T value program.
   2002-02-21 lpd Added missing #include <stdio.h> in test program.
   2000-07-03 lpd Patched to eliminate warnings about "constant is
-	unsigned in ANSI C, signed in traditional"; made test program
-	self-checking.
+  unsigned in ANSI C, signed in traditional"; made test program
+  self-checking.
   1999-11-04 lpd Edited comments slightly for automatic TOC extraction.
   1999-10-18 lpd Fixed typo in header comment (ansi2knr rather than md5).
   1999-05-03 lpd Original version.
@@ -141,34 +141,34 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/)
      */
     static const int w = 1;
 
-	if (*((const md5_byte_t *)&w)) /* dynamic little-endian */
-	{
-	    /*
-	     * On little-endian machines, we can process properly aligned
-	     * data without copying it.
-	     */
-	    if (!((data - (const md5_byte_t *)0) & 3)) {
-		/* data are properly aligned */
-		X = (const md5_word_t *)data;
-	    } else {
-		/* not aligned */
-		memcpy(xbuf, data, 64);
-		X = xbuf;
-	    }
-	}
-	else			/* dynamic big-endian */
-	{
-	    /*
-	     * On big-endian machines, we must arrange the bytes in the
-	     * right order.
-	     */
-	    const md5_byte_t *xp = data;
-	    int i;
+  if (*((const md5_byte_t *)&w)) /* dynamic little-endian */
+  {
+      /*
+       * On little-endian machines, we can process properly aligned
+       * data without copying it.
+       */
+      if (!((data - (const md5_byte_t *)0) & 3)) {
+    /* data are properly aligned */
+    X = (const md5_word_t *)data;
+      } else {
+    /* not aligned */
+    memcpy(xbuf, data, 64);
+    X = xbuf;
+      }
+  }
+  else      /* dynamic big-endian */
+  {
+      /*
+       * On big-endian machines, we must arrange the bytes in the
+       * right order.
+       */
+      const md5_byte_t *xp = data;
+      int i;
 
-	    X = xbuf;		/* (dynamic only) */
-	    for (i = 0; i < 16; ++i, xp += 4)
-		xbuf[i] = xp[0] + (xp[1] << 8) + (xp[2] << 16) + (xp[3] << 24);
-	}
+      X = xbuf;    /* (dynamic only) */
+      for (i = 0; i < 16; ++i, xp += 4)
+    xbuf[i] = xp[0] + (xp[1] << 8) + (xp[2] << 16) + (xp[3] << 24);
+  }
     }
 
 #define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
@@ -314,7 +314,7 @@ void md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes)
 
     memcpy(pms->buf + offset, p, copy);
     if (offset + copy < 64)
-	    return;
+      return;
     p += copy;
     left -= copy;
     md5_process(pms, pms->buf);

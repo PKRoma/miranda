@@ -55,70 +55,78 @@ static void __cdecl icq_LogMessageThread(void* arg)
   SAFE_FREE(&err);
 }
 
+
 void icq_LogMessage(int level, const char *szMsg)
 {
-	int displayLevel;
+  int displayLevel;
 
-	NetLog_Server("%s", szMsg);
+  NetLog_Server("%s", szMsg);
 
-	displayLevel = ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING);
-	if (level >= displayLevel)
-	{
-		LogMessageInfo *lmi = (LogMessageInfo*)malloc(sizeof(LogMessageInfo));
-		lmi->szMsg = _strdup(szMsg);
-		lmi->szTitle = _strdup(Translate(szLevelDescr[level]));
-		forkthread(icq_LogMessageThread, 0, lmi);
-	}
+  displayLevel = ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING);
+  if (level >= displayLevel)
+  {
+    LogMessageInfo *lmi;
+
+    if (ICQGetContactSettingByte(NULL, "PopupsLogEnabled", DEFAULT_LOG_POPUPS_ENABLED))
+    {
+      if (!ShowPopUpMsg(NULL, Translate(szLevelDescr[level]), szMsg, (BYTE)level))
+        return; // Popup showed successfuly
+    }
+    lmi = (LogMessageInfo*)malloc(sizeof(LogMessageInfo));
+    lmi->szMsg = _strdup(szMsg);
+    lmi->szTitle = _strdup(Translate(szLevelDescr[level]));
+    forkthread(icq_LogMessageThread, 0, lmi);
+  }
 }
 
 
 
 void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
 {
-	char szBuf[1024];
-	char szErrorMsg[256];
-	char* pszErrorMsg;
+  char szBuf[1024];
+  char szErrorMsg[256];
+  char* pszErrorMsg;
 
 
-	switch(dwError)
-	{
-		case ERROR_TIMEOUT:
-		case WSAETIMEDOUT:
-			pszErrorMsg = "The server did not respond to the connection attempt within a reasonable time, it may be temporarily down. Try again later.";
-			break;
+  switch(dwError)
+  {
+    case ERROR_TIMEOUT:
+    case WSAETIMEDOUT:
+      pszErrorMsg = "The server did not respond to the connection attempt within a reasonable time, it may be temporarily down. Try again later.";
+      break;
 
-		case ERROR_GEN_FAILURE:
-			pszErrorMsg = "The connection with the server was abortively closed during the connection attempt. You may have lost your local network connection.";
-			break;
+    case ERROR_GEN_FAILURE:
+      pszErrorMsg = "The connection with the server was abortively closed during the connection attempt. You may have lost your local network connection.";
+      break;
 
-		case WSAEHOSTUNREACH:
-		case WSAENETUNREACH:
-			pszErrorMsg = "Miranda was unable to resolve the name of a server to its numeric address. This is most likely caused by a catastrophic loss of your network connection (for example, your modem has disconnected), but if you are behind a proxy, you may need to use the 'Resolve hostnames through proxy' option in M->Options->Network.";
-			break;
+    case WSAEHOSTUNREACH:
+    case WSAENETUNREACH:
+      pszErrorMsg = "Miranda was unable to resolve the name of a server to its numeric address. This is most likely caused by a catastrophic loss of your network connection (for example, your modem has disconnected), but if you are behind a proxy, you may need to use the 'Resolve hostnames through proxy' option in M->Options->Network.";
+      break;
 
-		case WSAEHOSTDOWN:
-		case WSAENETDOWN:
-		case WSAECONNREFUSED:
-			pszErrorMsg = "Miranda was unable to make a connection with a server. It is likely that the server is down, in which case you should wait for a while and try again later.";
-			break;
+    case WSAEHOSTDOWN:
+    case WSAENETDOWN:
+    case WSAECONNREFUSED:
+      pszErrorMsg = "Miranda was unable to make a connection with a server. It is likely that the server is down, in which case you should wait for a while and try again later.";
+      break;
 
-		case ERROR_ACCESS_DENIED:
-	 		pszErrorMsg = "Your proxy rejected the user name and password that you provided. Please check them in M->Options->Network.";
-			break;
+    case ERROR_ACCESS_DENIED:
+       pszErrorMsg = "Your proxy rejected the user name and password that you provided. Please check them in M->Options->Network.";
+      break;
 
-		case WSAHOST_NOT_FOUND:
-		case WSANO_DATA:
-			pszErrorMsg = "The server to which you are trying to connect does not exist. Check your spelling in M->Options->Network->ICQ.";
-			break;
+    case WSAHOST_NOT_FOUND:
+    case WSANO_DATA:
+      pszErrorMsg = "The server to which you are trying to connect does not exist. Check your spelling in M->Options->Network->ICQ.";
+      break;
 
-		default:
-			if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwError, 0, szErrorMsg, sizeof(szErrorMsg), NULL))
-				pszErrorMsg = szErrorMsg;
-			else
-				pszErrorMsg = "";
-			break;
-	}
+    default:
+      if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwError, 0, szErrorMsg, sizeof(szErrorMsg), NULL))
+        pszErrorMsg = szErrorMsg;
+      else
+        pszErrorMsg = "";
+      break;
+  }
 
-	null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?Translate(szMsg):"", szMsg?"\r\n\r\n":"", pszErrorMsg, Translate("error"), dwError);
-	icq_LogMessage(level, szBuf);
+  null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?Translate(szMsg):"", szMsg?"\r\n\r\n":"", pszErrorMsg, Translate("error"), dwError);
+  icq_LogMessage(level, szBuf);
 }

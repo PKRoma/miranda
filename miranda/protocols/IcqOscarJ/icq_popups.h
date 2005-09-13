@@ -38,7 +38,13 @@
 #define __ICQ_POPUPS_H
 
 
+#define POPTYPE_SPAM    254  // this is for spambots
+
+
 void InitPopUps();
+void InitPopupOpts(WPARAM wParam);
+
+int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE bType);
 
 
 #endif /* __ICQ_POPUPS_H */

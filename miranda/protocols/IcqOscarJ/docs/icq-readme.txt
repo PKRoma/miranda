@@ -70,9 +70,9 @@ Improvements:
   Added status to UserInfo page
   Small improvements to client detection
   Uses newer capabilities format (cuts incoming traffic)
+  Display error messages using PopUp Plugin
 TODO:  Support for unicode database module (clist data)
 TODO:  Support for Iconlib
-TODO:  Display error messages using PopUp Plugin
 TODO:  Manage server-list dialog now groups requests - much faster
 
 

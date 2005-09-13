@@ -35,8 +35,8 @@
 // -----------------------------------------------------------------------------
 
 struct fieldnames_t {
-	int code;
-	char *text;
+  int code;
+  char *text;
 };
 
 extern struct fieldnames_t interestsField[];

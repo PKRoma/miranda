@@ -42,12 +42,12 @@ static void handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLength)
 
 void handleBosFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {
-	switch (pSnacHeader->wSubtype)
-	{
+  switch (pSnacHeader->wSubtype)
+  {
 
-	case ICQ_PRIVACY_RIGHTS_REPLY: // Reply to CLI_REQBOS
-		handlePrivacyRightsReply(pBuffer, wBufferLength);
-		break;
+  case ICQ_PRIVACY_RIGHTS_REPLY: // Reply to CLI_REQBOS
+    handlePrivacyRightsReply(pBuffer, wBufferLength);
+    break;
 
   case ICQ_ERROR:
   {
@@ -62,44 +62,44 @@ void handleBosFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
     break;
   }
 
-	default:
-		NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_BOS_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
-		break;
+  default:
+    NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_BOS_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    break;
 
-	}
+  }
 }
 
 
 
 static void handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLength)
 {
-	if (wBufferLength >= 12)
-	{
-		oscar_tlv_chain* pChain;
+  if (wBufferLength >= 12)
+  {
+    oscar_tlv_chain* pChain;
 
 
-		pChain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
+    pChain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
 
-		if (pChain)
-		{
-			WORD wMaxVisibleContacts;
-			WORD wMaxInvisibleContacts;
+    if (pChain)
+    {
+      WORD wMaxVisibleContacts;
+      WORD wMaxInvisibleContacts;
 
 
-			wMaxVisibleContacts = getWordFromChain(pChain, 0x0001, 1);
-			wMaxInvisibleContacts = getWordFromChain(pChain, 0x0001, 1);
+      wMaxVisibleContacts = getWordFromChain(pChain, 0x0001, 1);
+      wMaxInvisibleContacts = getWordFromChain(pChain, 0x0001, 1);
 
-			disposeChain(&pChain);
+      disposeChain(&pChain);
 
-			NetLog_Server("SRV_PRIVACY_RIGHTS_REPLY: Max visible %u, max invisible %u", wMaxVisibleContacts, wMaxInvisibleContacts);
+      NetLog_Server("SRV_PRIVACY_RIGHTS_REPLY: Max visible %u, max invisible %u", wMaxVisibleContacts, wMaxInvisibleContacts);
 
-			// Success
-			return;
-		}
-	}
+      // Success
+      return;
+    }
+  }
 
-	// Failure
-	NetLog_Server("Warning: Malformed SRV_PRIVACY_RIGHTS_REPLY");
+  // Failure
+  NetLog_Server("Warning: Malformed SRV_PRIVACY_RIGHTS_REPLY");
 }
 
 
@@ -135,62 +135,62 @@ void makeContactTemporaryVisible(HANDLE hContact)
 
 static char* buildTempVisUinList()
 {
-	char* szList;
-	HANDLE hContact;
-	WORD wCurrentLen = 0;
-	DWORD dwUIN;
-	char szUin[UINMAXLEN];
-	char szLen[2];
+  char* szList;
+  HANDLE hContact;
+  WORD wCurrentLen = 0;
+  DWORD dwUIN;
+  char szUin[UINMAXLEN];
+  char szLen[2];
 
 
-	szList = (char*)calloc(CallService(MS_DB_CONTACT_GETCOUNT, 0, 0), UINMAXLEN);
-	szLen[1] = '\0';
+  szList = (char*)calloc(CallService(MS_DB_CONTACT_GETCOUNT, 0, 0), UINMAXLEN);
+  szLen[1] = '\0';
 
-	hContact = ICQFindFirstContact();
+  hContact = ICQFindFirstContact();
 
-	while(hContact != NULL)
-	{
-		if (ICQGetContactSettingByte(hContact, "TemporaryVisible", 0)
+  while(hContact != NULL)
+  {
+    if (ICQGetContactSettingByte(hContact, "TemporaryVisible", 0)
       && (!ICQGetContactSettingUID(hContact, &dwUIN, NULL)))
-		{
-			_itoa(dwUIN, szUin, 10);
-			szLen[0] = strlen(szUin);
+    {
+      _itoa(dwUIN, szUin, 10);
+      szLen[0] = strlennull(szUin);
 
       wCurrentLen += szLen[0] + 1;
 
-			strcat(szList, szLen); // add to list
-			strcat(szList, szUin);
+      strcat(szList, szLen); // add to list
+      strcat(szList, szUin);
 
       // clear flag
       ICQDeleteContactSetting(hContact, "TemporaryVisible");
-		}
+    }
 
-		hContact = ICQFindNextContact(hContact);
-	}
+    hContact = ICQFindNextContact(hContact);
+  }
 
-	return szList;
+  return szList;
 }
 
 
 
 void clearTemporaryVisibleList()
 { // browse clist, remove all temporary visible contacts
-	char* szList;
-	int nListLen;
-	icq_packet packet;
+  char* szList;
+  int nListLen;
+  icq_packet packet;
 
 
-	szList = buildTempVisUinList();
-	nListLen = strlennull(szList);
+  szList = buildTempVisUinList();
+  nListLen = strlennull(szList);
 
   if (nListLen)
   {
     packet.wLen = nListLen + 10;
-	  write_flap(&packet, 2);
-	  packFNACHeader(&packet, ICQ_BOS_FAMILY, ICQ_CLI_REMOVETEMPVISIBLE, 0, ICQ_CLI_REMOVETEMPVISIBLE<<0x10);
-		packBuffer(&packet, szList, (WORD)nListLen);
-		sendServPacket(&packet);
+    write_flap(&packet, 2);
+    packFNACHeader(&packet, ICQ_BOS_FAMILY, ICQ_CLI_REMOVETEMPVISIBLE, 0, ICQ_CLI_REMOVETEMPVISIBLE<<0x10);
+    packBuffer(&packet, szList, (WORD)nListLen);
+    sendServPacket(&packet);
   }
 
-	SAFE_FREE(&szList);
+  SAFE_FREE(&szList);
 }

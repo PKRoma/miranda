@@ -37,19 +37,19 @@
 #ifndef __ICQ_PACKET_H
 #define __ICQ_PACKET_H
 
-typedef unsigned char	BYTE;
-typedef unsigned short	WORD;
-typedef unsigned long	DWORD;
+typedef unsigned char  BYTE;
+typedef unsigned short  WORD;
+typedef unsigned long  DWORD;
 
 /*---------* Structures *--------------*/
 
 typedef struct icq_packet_s
 {
-	WORD wPlace;
-	BYTE nChannel;
-	WORD wSequence;
-	WORD wLen;
-	BYTE *pData;
+  WORD wPlace;
+  BYTE nChannel;
+  WORD wSequence;
+  WORD wLen;
+  BYTE *pData;
 } icq_packet;
 
 /*---------* Functions *---------------*/

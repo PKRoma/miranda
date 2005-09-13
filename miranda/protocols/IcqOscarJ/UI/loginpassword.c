@@ -65,13 +65,13 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
         CheckDlgButton(hwndDlg, IDC_SAVEPASS, ICQGetContactSettingByte(NULL, "RememberPass", 0));
       }
-		  break;
+      break;
 
     case WM_CLOSE:
 
       EndDialog(hwndDlg, 0);
       break;
-		
+    
     case WM_COMMAND:
       {
         switch (LOWORD(wParam))
@@ -83,11 +83,11 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
               GetDlgItemText(hwndDlg, IDC_LOGINPW, gpszPassword, sizeof(gpszPassword));
 
-					    icq_login(gpszPassword);
+              icq_login(gpszPassword);
 
-					    EndDialog(hwndDlg, IDOK);
+              EndDialog(hwndDlg, IDOK);
             }
-				    break;
+            break;
 
           case IDCANCEL:
             {

@@ -38,35 +38,35 @@
 #define __ICQ_DIRECT_H
 
 typedef struct {
-	BYTE bMessageType;
-	BYTE nAckType;
-	int status;
-	int sending;
-	int iCurrentFile;
-	int currentIsDir;
-	DWORD dwCookie;
-	DWORD dwUin;
-	DWORD dwRemotePort;
-	HANDLE hContact;
-	char *szFilename;
-	char *szDescription;
-	char *szSavePath;
-	char *szThisFile;
-	char *szThisSubdir;
-	char **files;
-	DWORD dwThisFileSize;
-	DWORD dwThisFileDate;
-	DWORD dwTotalSize;
-	DWORD dwFileCount;
-	DWORD dwTransferSpeed;
-	DWORD dwBytesDone, dwFileBytesDone;
-	int fileId;
-	HANDLE hConnection;
-	DWORD dwLastNotify;
-	DWORD TS1;
-	DWORD TS2;
-	int   nVersion; // Was this sent with a v7 or a v8 packet?
-	BOOL bDC;       // Was this received over a DC or through server?
+  BYTE bMessageType;
+  BYTE nAckType;
+  int status;
+  int sending;
+  int iCurrentFile;
+  int currentIsDir;
+  DWORD dwCookie;
+  DWORD dwUin;
+  DWORD dwRemotePort;
+  HANDLE hContact;
+  char *szFilename;
+  char *szDescription;
+  char *szSavePath;
+  char *szThisFile;
+  char *szThisSubdir;
+  char **files;
+  DWORD dwThisFileSize;
+  DWORD dwThisFileDate;
+  DWORD dwTotalSize;
+  DWORD dwFileCount;
+  DWORD dwTransferSpeed;
+  DWORD dwBytesDone, dwFileBytesDone;
+  int fileId;
+  HANDLE hConnection;
+  DWORD dwLastNotify;
+  DWORD TS1;
+  DWORD TS2;
+  int   nVersion; // Was this sent with a v7 or a v8 packet?
+  BOOL bDC;       // Was this received over a DC or through server?
   BOOL bEmptyDesc; // Was the description empty ?
 } filetransfer;
 
@@ -79,20 +79,20 @@ typedef struct {
 typedef struct {
   HANDLE hContact;
   HANDLE hConnection;
-	int type;
-	WORD wVersion;
-	int incoming;
-	int wantIdleTime;
+  int type;
+  WORD wVersion;
+  int incoming;
+  int wantIdleTime;
   int packetPending;
-	DWORD dwRemotePort;
-	DWORD dwRemoteUin;
-	DWORD dwRemoteExternalIP;
-	DWORD dwRemoteInternalIP;
-	DWORD dwConnCookie;
-	int initialised;
-	DWORD dwThreadId;
-	icq_packet *packetToSend;
-	filetransfer *ft;
+  DWORD dwRemotePort;
+  DWORD dwRemoteUin;
+  DWORD dwRemoteExternalIP;
+  DWORD dwRemoteInternalIP;
+  DWORD dwConnCookie;
+  int initialised;
+  DWORD dwThreadId;
+  icq_packet *packetToSend;
+  filetransfer *ft;
   DWORD dwReqId;  // Reverse Connect request cookie
 } directconnect;
 

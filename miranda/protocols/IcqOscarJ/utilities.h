@@ -39,19 +39,19 @@
 
 typedef struct icq_cookie_info_s
 {
-	DWORD dwCookie;
-	DWORD dwUin;
-	void *pvExtra;
+  DWORD dwCookie;
+  DWORD dwUin;
+  void *pvExtra;
   DWORD dwTime;
 } icq_cookie_info;
 
 typedef struct icq_ack_args_s
 {
-	HANDLE hContact;
-	int    nAckType;
-	int    nAckResult;
-	HANDLE hSequence;
-	LPARAM pszMessage;
+  HANDLE hContact;
+  int    nAckType;
+  int    nAckResult;
+  HANDLE hSequence;
+  LPARAM pszMessage;
 } icq_ack_args;
 
 /*---------* Functions *---------------*/

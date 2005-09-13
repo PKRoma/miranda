@@ -39,9 +39,9 @@
 
 #ifndef AW_SLIDE
 #define SPI_GETCOMBOBOXANIMATION 0x1004
-#define AW_SLIDE			0x40000
-#define AW_ACTIVATE			0x20000
-#define AW_VER_POSITIVE		0x4
+#define AW_SLIDE      0x40000
+#define AW_ACTIVATE      0x20000
+#define AW_VER_POSITIVE    0x4
 #define UDM_SETPOS32            (WM_USER+113)
 #define UDM_GETPOS32            (WM_USER+114)
 #endif
@@ -65,19 +65,19 @@ HFONT hListFont;
 int iEditItem;
 
 typedef struct {
-	char *szDescription;
-	unsigned displayType;    //LI_ constant
-	int dbType;              //DBVT_ constant
-	char *szDbSetting;
-	void *pList;
-	int listCount;
-	LPARAM value;
-	int changed;
+  char *szDescription;
+  unsigned displayType;    //LI_ constant
+  int dbType;              //DBVT_ constant
+  char *szDbSetting;
+  void *pList;
+  int listCount;
+  LPARAM value;
+  int changed;
 } SettingItem;
 
 typedef struct {
-	int id;
-	char *szValue;
+  int id;
+  char *szValue;
 } ListTypeDataItem;
 
 // contants.c

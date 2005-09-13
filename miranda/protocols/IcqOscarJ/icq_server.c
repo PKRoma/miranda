@@ -72,53 +72,53 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
   ResetSettingsOnConnect();
 
-	// Connect to the login server
-	NetLog_Server("Authenticating to server");
-	hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&info.nloc);
+  // Connect to the login server
+  NetLog_Server("Authenticating to server");
+  hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&info.nloc);
   if (!hServerConn && (GetLastError() == 87))
   {
     info.nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
     hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&info.nloc);
   }
 
-	SAFE_FREE(&(void*)info.nloc.szHost);
+  SAFE_FREE(&(void*)info.nloc.szHost);
 
 
-	// Login error
-	if (hServerConn == NULL)
-	{
-		DWORD dwError = GetLastError();
+  // Login error
+  if (hServerConn == NULL)
+  {
+    DWORD dwError = GetLastError();
 
-		hServerConn = NULL;
+    hServerConn = NULL;
 
     SetCurrentStatus(ID_STATUS_OFFLINE);
 
-		icq_LogUsingErrorCode(LOG_ERROR, dwError, "Unable to connect to ICQ login server");
+    icq_LogUsingErrorCode(LOG_ERROR, dwError, "Unable to connect to ICQ login server");
 
-		return 0;
-	}
+    return 0;
+  }
 
 
-	// Initialize direct connection ports
-	{
-		NETLIBBIND nlb = {0};
+  // Initialize direct connection ports
+  {
+    NETLIBBIND nlb = {0};
 
-		nlb.cbSize = sizeof(nlb);
-		nlb.pfnNewConnection = icq_newConnectionReceived;
+    nlb.cbSize = sizeof(nlb);
+    nlb.pfnNewConnection = icq_newConnectionReceived;
     hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)ghDirectNetlibUser, (LPARAM)&nlb);
     if (!hDirectBoundPort && (GetLastError() == 87))
     { // this ensures old Miranda also can bind a port for a dc
       nlb.cbSize = NETLIBBIND_SIZEOF_V1;
       hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)ghDirectNetlibUser, (LPARAM)&nlb);
     }
-		if (hDirectBoundPort == NULL)
-		{
-			icq_LogUsingErrorCode(LOG_WARNING, GetLastError(), "Miranda was unable to allocate a port to listen for direct peer-to-peer connections between clients. You will be able to use most of the ICQ network without problems but you may be unable to send or receive files.\n\nIf you have a firewall this may be blocking Miranda, in which case you should configure your firewall to leave some ports open and tell Miranda which ports to use in M->Options->ICQ->Network.");
-			wListenPort = 0;
-		}
-		wListenPort = nlb.wPort;
-		dwLocalInternalIP = nlb.dwInternalIP;
-	}
+    if (hDirectBoundPort == NULL)
+    {
+      icq_LogUsingErrorCode(LOG_WARNING, GetLastError(), "Miranda was unable to allocate a port to listen for direct peer-to-peer connections between clients. You will be able to use most of the ICQ network without problems but you may be unable to send or receive files.\n\nIf you have a firewall this may be blocking Miranda, in which case you should configure your firewall to leave some ports open and tell Miranda which ports to use in M->Options->ICQ->Network.");
+      wListenPort = 0;
+    }
+    wListenPort = nlb.wPort;
+    dwLocalInternalIP = nlb.dwInternalIP;
+  }
 
 
   // This is the "infinite" loop that receives the packets from the ICQ server
@@ -140,64 +140,64 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
         packetRecv.dwTimeout = INFINITE;
       }
 
-			recvResult = CallService(MS_NETLIB_GETMOREPACKETS,(WPARAM)hServerPacketRecver, (LPARAM)&packetRecv);
+      recvResult = CallService(MS_NETLIB_GETMOREPACKETS,(WPARAM)hServerPacketRecver, (LPARAM)&packetRecv);
 
-			if (recvResult == 0)
-			{
-				NetLog_Server("Clean closure of server socket");
-				break;
-			}
+      if (recvResult == 0)
+      {
+        NetLog_Server("Clean closure of server socket");
+        break;
+      }
 
-			if (recvResult == SOCKET_ERROR)
-			{
-				NetLog_Server("Abortive closure of server socket, error: %d", GetLastError());
-				break;
-			}
+      if (recvResult == SOCKET_ERROR)
+      {
+        NetLog_Server("Abortive closure of server socket, error: %d", GetLastError());
+        break;
+      }
 
-			// Deal with the packet
-			packetRecv.bytesUsed = handleServerPackets(packetRecv.buffer, packetRecv.bytesAvailable, &info);
-		}
+      // Deal with the packet
+      packetRecv.bytesUsed = handleServerPackets(packetRecv.buffer, packetRecv.bytesAvailable, &info);
+    }
 
-		// Close the packet receiver (connection may still be open)
-		Netlib_CloseHandle(hServerPacketRecver);
-		hServerPacketRecver = 0;
+    // Close the packet receiver (connection may still be open)
+    Netlib_CloseHandle(hServerPacketRecver);
+    hServerPacketRecver = 0;
 
-		// Close DC port
-		Netlib_CloseHandle(hDirectBoundPort);
-		hDirectBoundPort = 0;
-	}
+    // Close DC port
+    Netlib_CloseHandle(hDirectBoundPort);
+    hDirectBoundPort = 0;
+  }
 
-	// Time to shutdown
-	icq_serverDisconnect(FALSE);
-	if (gnCurrentStatus != ID_STATUS_OFFLINE)
-	{
-		SetCurrentStatus(ID_STATUS_OFFLINE);
-	}
+  // Time to shutdown
+  icq_serverDisconnect(FALSE);
+  if (gnCurrentStatus != ID_STATUS_OFFLINE)
+  {
+    SetCurrentStatus(ID_STATUS_OFFLINE);
+  }
 
   // Offline all contacts
-	{
-		HANDLE hContact;
+  {
+    HANDLE hContact;
 
-		hContact= ICQFindFirstContact();
+    hContact= ICQFindFirstContact();
 
-		while (hContact)
-		{
+    while (hContact)
+    {
       DWORD dwUIN;
       uid_str szUID;
 
-			if (!ICQGetContactSettingUID(hContact, &dwUIN, &szUID))
-			{
-				if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
-				{
-					ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+      if (!ICQGetContactSettingUID(hContact, &dwUIN, &szUID))
+      {
+        if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+        {
+          ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
           handleXStatusCaps(hContact, NULL, 0);
-				}
-			}
+        }
+      }
 
-			hContact = ICQFindNextContact(hContact);
-		}
-	}
+      hContact = ICQFindNextContact(hContact);
+    }
+  }
   ICQWriteContactSettingDword(NULL, "LogonTS", 0); // clear logon time
 
   FlushServerIDs();         // clear server IDs list
@@ -213,28 +213,28 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
 void icq_serverDisconnect(BOOL bBlock)
 {
-	EnterCriticalSection(&connectionHandleMutex);
+  EnterCriticalSection(&connectionHandleMutex);
 
-	if (hServerConn)
-	{
+  if (hServerConn)
+  {
     int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)hServerConn, (LPARAM)0);
     if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
-		Netlib_CloseHandle(hServerConn);
+    Netlib_CloseHandle(hServerConn);
     FreeGatewayIndex(hServerConn);
-		hServerConn = NULL;
-		LeaveCriticalSection(&connectionHandleMutex);
+    hServerConn = NULL;
+    LeaveCriticalSection(&connectionHandleMutex);
     
-		// Not called from network thread?
-		if (bBlock && GetCurrentThreadId() != serverThreadId.dwThreadId)
+    // Not called from network thread?
+    if (bBlock && GetCurrentThreadId() != serverThreadId.dwThreadId)
     {
-			while (WaitForSingleObjectEx(serverThreadId.hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
-		  CloseHandle(serverThreadId.hThread);
+      while (WaitForSingleObjectEx(serverThreadId.hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
+      CloseHandle(serverThreadId.hThread);
     }
     else
       CloseHandle(serverThreadId.hThread);
-	}
-	else
-		LeaveCriticalSection(&connectionHandleMutex);
+  }
+  else
+    LeaveCriticalSection(&connectionHandleMutex);
 
   if (hKeepAliveEvent) SetEvent(hKeepAliveEvent); // signal keep-alive thread to stop
 }
@@ -243,182 +243,182 @@ void icq_serverDisconnect(BOOL bBlock)
 
 static int handleServerPackets(unsigned char* buf, int len, serverthread_start_info* info)
 {
-	BYTE channel;
-	WORD sequence;
-	WORD datalen;
-	int bytesUsed = 0;
+  BYTE channel;
+  WORD sequence;
+  WORD datalen;
+  int bytesUsed = 0;
 
-	while (len > 0)
-	{
-		// All FLAPS begin with 0x2a
-		if (*buf++ != FLAP_MARKER)
-			break;
+  while (len > 0)
+  {
+    // All FLAPS begin with 0x2a
+    if (*buf++ != FLAP_MARKER)
+      break;
 
-		if (len < 6)
-			break;
+    if (len < 6)
+      break;
 
-		unpackByte(&buf, &channel);
-		unpackWord(&buf, &sequence);
-		unpackWord(&buf, &datalen);
+    unpackByte(&buf, &channel);
+    unpackWord(&buf, &sequence);
+    unpackWord(&buf, &datalen);
 
-		if (len < 6 + datalen)
-			break;
+    if (len < 6 + datalen)
+      break;
 
 
 #ifdef _DEBUG
-		NetLog_Server("Server FLAP: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
+    NetLog_Server("Server FLAP: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
 #endif
 
-		switch (channel)
-		{
-		case ICQ_LOGIN_CHAN:
-			handleLoginChannel(buf, datalen, info);
-			break;
+    switch (channel)
+    {
+    case ICQ_LOGIN_CHAN:
+      handleLoginChannel(buf, datalen, info);
+      break;
 
-		case ICQ_DATA_CHAN:
-			handleDataChannel(buf, datalen);
-			break;
+    case ICQ_DATA_CHAN:
+      handleDataChannel(buf, datalen);
+      break;
 
-		case ICQ_ERROR_CHAN:
-			handleErrorChannel(buf, datalen);
-			break;
+    case ICQ_ERROR_CHAN:
+      handleErrorChannel(buf, datalen);
+      break;
 
-		case ICQ_CLOSE_CHAN:
-			handleCloseChannel(buf, datalen);
+    case ICQ_CLOSE_CHAN:
+      handleCloseChannel(buf, datalen);
       break; // we need this for walking thru proxy
 
-		case ICQ_PING_CHAN:
-			handlePingChannel(buf, datalen);
-			break;
+    case ICQ_PING_CHAN:
+      handlePingChannel(buf, datalen);
+      break;
 
-		default:
-			NetLog_Server("Warning: Unhandled Server FLAP Channel: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
-			break;
-		}
+    default:
+      NetLog_Server("Warning: Unhandled Server FLAP Channel: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
+      break;
+    }
 
-		/* Increase pointers so we can check for more FLAPs */
-		buf += datalen;
-		len -= (datalen + 6);
-		bytesUsed += (datalen + 6);
-	}
+    /* Increase pointers so we can check for more FLAPs */
+    buf += datalen;
+    len -= (datalen + 6);
+    bytesUsed += (datalen + 6);
+  }
 
-	return bytesUsed;
+  return bytesUsed;
 }
 
 
 
 void sendServPacket(icq_packet* pPacket)
 {
-	// This critsec makes sure that the sequence order doesn't get screwed up
-	EnterCriticalSection(&localSeqMutex);
+  // This critsec makes sure that the sequence order doesn't get screwed up
+  EnterCriticalSection(&localSeqMutex);
 
-	if (hServerConn)
-	{
-		int nRetries;
-		int nSendResult;
+  if (hServerConn)
+  {
+    int nRetries;
+    int nSendResult;
 
 
     // :IMPORTANT:
-		// The FLAP sequence must be a WORD. When it reaches 0xFFFF it should wrap to
-		// 0x0000, otherwise we'll get kicked by server.
-		wLocalSequence++;
+    // The FLAP sequence must be a WORD. When it reaches 0xFFFF it should wrap to
+    // 0x0000, otherwise we'll get kicked by server.
+    wLocalSequence++;
 
-		// Pack sequence number
-		pPacket->pData[2] = ((wLocalSequence & 0xff00) >> 8);
-		pPacket->pData[3] = (wLocalSequence & 0x00ff);
+    // Pack sequence number
+    pPacket->pData[2] = ((wLocalSequence & 0xff00) >> 8);
+    pPacket->pData[3] = (wLocalSequence & 0x00ff);
 
-		for (nRetries = 3; nRetries >= 0; nRetries--)
-		{
-			nSendResult = Netlib_Send(hServerConn, (const char *)pPacket->pData, pPacket->wLen, 0);
+    for (nRetries = 3; nRetries >= 0; nRetries--)
+    {
+      nSendResult = Netlib_Send(hServerConn, (const char *)pPacket->pData, pPacket->wLen, 0);
 
-			if (nSendResult != SOCKET_ERROR)
-				break;
+      if (nSendResult != SOCKET_ERROR)
+        break;
 
-			Sleep(1000);
-		}
+      Sleep(1000);
+    }
 
 
-		// Send error
-		if (nSendResult == SOCKET_ERROR)
-		{
-			icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Your connection with the ICQ server was abortively closed");
-			icq_serverDisconnect(FALSE);
+    // Send error
+    if (nSendResult == SOCKET_ERROR)
+    {
+      icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Your connection with the ICQ server was abortively closed");
+      icq_serverDisconnect(FALSE);
 
-			if (gnCurrentStatus != ID_STATUS_OFFLINE)
-			{
-				SetCurrentStatus(ID_STATUS_OFFLINE);
-			}
-		}
-	}
-	else
-	{
-		NetLog_Server("Error: Failed to send packet (no connection)");
-	}
+      if (gnCurrentStatus != ID_STATUS_OFFLINE)
+      {
+        SetCurrentStatus(ID_STATUS_OFFLINE);
+      }
+    }
+  }
+  else
+  {
+    NetLog_Server("Error: Failed to send packet (no connection)");
+  }
 
-	LeaveCriticalSection(&localSeqMutex);
+  LeaveCriticalSection(&localSeqMutex);
 
-	SAFE_FREE(&pPacket->pData);
+  SAFE_FREE(&pPacket->pData);
 }
 
 
 
 void icq_login(const char* szPassword)
 {
-	DBVARIANT dbvServer = {DBVT_DELETED};
-	serverthread_start_info* stsi;
-	DWORD dwUin;
+  DBVARIANT dbvServer = {DBVT_DELETED};
+  serverthread_start_info* stsi;
+  DWORD dwUin;
 
 
-	dwUin = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
-	stsi = (serverthread_start_info*)calloc(sizeof(serverthread_start_info), 1);
-	stsi->nloc.cbSize = sizeof(NETLIBOPENCONNECTION);
-	stsi->nloc.flags = 0;
+  dwUin = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
+  stsi = (serverthread_start_info*)calloc(sizeof(serverthread_start_info), 1);
+  stsi->nloc.cbSize = sizeof(NETLIBOPENCONNECTION);
+  stsi->nloc.flags = 0;
 
 
-	// Server host name
-	if (ICQGetContactSetting(NULL, "OscarServer", &dbvServer))
-		stsi->nloc.szHost = _strdup(DEFAULT_SERVER_HOST);
-	else
-		stsi->nloc.szHost = _strdup(dbvServer.pszVal);
+  // Server host name
+  if (ICQGetContactSetting(NULL, "OscarServer", &dbvServer))
+    stsi->nloc.szHost = _strdup(DEFAULT_SERVER_HOST);
+  else
+    stsi->nloc.szHost = _strdup(dbvServer.pszVal);
 
-	// Server port
-	stsi->nloc.wPort = (WORD)ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
-	if (stsi->nloc.wPort == 0)
-		stsi->nloc.wPort = RandRange(1024, 65535);
+  // Server port
+  stsi->nloc.wPort = (WORD)ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
+  if (stsi->nloc.wPort == 0)
+    stsi->nloc.wPort = RandRange(1024, 65535);
 
-	// User password
-	stsi->wPassLen = strlen(szPassword);
-	if (stsi->wPassLen > 9) stsi->wPassLen = 9;
-	icq_encryptPassword(szPassword, stsi->szEncPass);
-	stsi->szEncPass[stsi->wPassLen] = '\0';
+  // User password
+  stsi->wPassLen = strlennull(szPassword);
+  if (stsi->wPassLen > 9) stsi->wPassLen = 9;
+  icq_encryptPassword(szPassword, stsi->szEncPass);
+  stsi->szEncPass[stsi->wPassLen] = '\0';
 
-	// Randomize sequence
-	wLocalSequence = (WORD)RandRange(0, 0x7fff);
+  // Randomize sequence
+  wLocalSequence = (WORD)RandRange(0, 0x7fff);
 
-	dwLocalUIN = dwUin;
+  dwLocalUIN = dwUin;
 
-	isLoginServer = 1;
+  isLoginServer = 1;
 
-	serverThreadId.hThread = (HANDLE)forkthreadex(NULL, 0, icq_serverThread, stsi, 0, &serverThreadId.dwThreadId);
+  serverThreadId.hThread = (HANDLE)forkthreadex(NULL, 0, icq_serverThread, stsi, 0, &serverThreadId.dwThreadId);
 
-	DBFreeVariant(&dbvServer);
+  DBFreeVariant(&dbvServer);
 }
 
 
 
 static void icq_encryptPassword(const char* szPassword, unsigned char* encrypted)
 {
-	unsigned int i;
-	unsigned char table[] =
-	{
-		0xf3, 0x26, 0x81, 0xc4,
-		0x39, 0x86, 0xdb, 0x92,
-		0x71, 0xa3, 0xb9, 0xe6,
-		0x53, 0x7a, 0x95, 0x7c
-	};
+  unsigned int i;
+  unsigned char table[] =
+  {
+    0xf3, 0x26, 0x81, 0xc4,
+    0x39, 0x86, 0xdb, 0x92,
+    0x71, 0xa3, 0xb9, 0xe6,
+    0x53, 0x7a, 0x95, 0x7c
+  };
 
-	for (i = 0; szPassword[i]; i++)
-	{
-		encrypted[i] = (szPassword[i] ^ table[i % 16]);
-	}
+  for (i = 0; szPassword[i]; i++)
+  {
+    encrypted[i] = (szPassword[i] ^ table[i % 16]);
+  }
 }

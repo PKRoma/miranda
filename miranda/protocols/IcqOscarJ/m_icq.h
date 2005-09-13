@@ -49,9 +49,9 @@
 //Results are returned using the same scheme documented in PSS_BASICSEARCH
 //**DEPRECATED** in favour of PS_SEARCHBYEMAIL
 typedef struct {   //extended search result structure, used for all searches
-	PROTOSEARCHRESULT hdr;
-	DWORD uin;
-	BYTE auth;
+  PROTOSEARCHRESULT hdr;
+  DWORD uin;
+  BYTE auth;
 } ICQSEARCHRESULT;
 #define MS_ICQ_SEARCHBYEMAIL   "/SearchByEmail"
 
@@ -62,9 +62,9 @@ typedef struct {   //extended search result structure, used for all searches
 //Results are returned using the same scheme documented in PSS_BASICSEARCH
 //**DEPRECATED** in favour of PS_SEARCHBYNAME
 typedef struct {
-	char *nick;
-	char *firstName;
-	char *lastName;
+  char *nick;
+  char *firstName;
+  char *lastName;
 } ICQDETAILSSEARCH;
 #define MS_ICQ_SEARCHBYDETAILS   "/SearchByDetails"
 
@@ -106,7 +106,7 @@ typedef struct {
 //an XML parser in the protocol module. Here's one I got:
 //"<sms_message><source>MTN</source><destination_UIN>[UIN of recipient, ie this account]</destination_UIN><sender>[sending phone number, without +]</sender><senders_network>[contains one space, because I sent from ICQ]</senders_network><text>[body of the message]</text><time>Fri, 16 Nov 2001 03:12:33 GMT</time></sms_message>"
 #define ICQACKTYPE_SMS      1001
-#define ICQEVENTTYPE_SMS    2001	  //database event type
+#define ICQEVENTTYPE_SMS    2001    //database event type
 #define MS_ICQ_SENDSMS      "/SendSMS" 
 
 //e-mail express
@@ -182,12 +182,12 @@ typedef struct {
     BYTE    lang2
     BYTE    lang3
 */
-#define ICQCHANGEINFO_ABOUT	   0x0604
+#define ICQCHANGEINFO_ABOUT     0x0604
 /* pInfoData points to:
     WORD    datalen
     LNTS    about
 */
-#define ICQCHANGEINFO_WORK	   0xF303
+#define ICQCHANGEINFO_WORK     0xF303
 /* pInfoData points to:
     WORD    datalen
     LNTS    city
@@ -259,4 +259,4 @@ typedef struct {
 //lParam=(DWORD)uin
 //msgType is one of the ICQ_MSGTYPE_GET###MSG constants in icq_constants.h
 //uin is the UIN of the contact requesting our status message
-#define ME_ICQ_STATUSMSGREQ			"/StatusMsgReq"
+#define ME_ICQ_STATUSMSGREQ      "/StatusMsgReq"

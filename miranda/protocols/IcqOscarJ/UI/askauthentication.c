@@ -42,9 +42,9 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 int icq_RequestAuthorization(WPARAM wParam, LPARAM lParam)
 {
-	DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_ASKAUTH), NULL, AskAuthProc, (LPARAM)wParam);
+  DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_ASKAUTH), NULL, AskAuthProc, (LPARAM)wParam);
 
-	return 0;
+  return 0;
 }
 
 
@@ -52,63 +52,63 @@ int icq_RequestAuthorization(WPARAM wParam, LPARAM lParam)
 static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 
-	static char szReason[256];
-	static HANDLE hContact;
+  static char szReason[256];
+  static HANDLE hContact;
 
 
-	switch (msg)
-	{
+  switch (msg)
+  {
 
-	case WM_INITDIALOG:
-		hContact = (HANDLE)lParam;
+  case WM_INITDIALOG:
+    hContact = (HANDLE)lParam;
 
-		if (!hContact || !icqOnline)
-			EndDialog(hwndDlg, 0);
+    if (!hContact || !icqOnline)
+      EndDialog(hwndDlg, 0);
 
-		ICQTranslateDialog(hwndDlg);
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-		SendDlgItemMessage(hwndDlg, IDC_EDITAUTH, EM_LIMITTEXT, (WPARAM)255, 0);
-		SetDlgItemText(hwndDlg, IDC_EDITAUTH, Translate("Please authorize me to add you to my contact list."));
-		
-		return TRUE;
-		
-	case WM_COMMAND:
+    ICQTranslateDialog(hwndDlg);
+    SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+    SendDlgItemMessage(hwndDlg, IDC_EDITAUTH, EM_LIMITTEXT, (WPARAM)255, 0);
+    SetDlgItemText(hwndDlg, IDC_EDITAUTH, Translate("Please authorize me to add you to my contact list."));
+    
+    return TRUE;
+    
+  case WM_COMMAND:
     {
       switch (LOWORD(wParam))
       {
-			case IDOK:
+      case IDOK:
         {
-					DWORD dwUin;
-					
+          DWORD dwUin;
+          
           if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
             return TRUE; // Invalid contact
-					
-					if (!icqOnline)
-						return TRUE;
-					
-					GetDlgItemText(hwndDlg, IDC_EDITAUTH, szReason, 255);
-					icq_sendAuthReqServ(dwUin, szReason);
-					EndDialog(hwndDlg, 0);
+          
+          if (!icqOnline)
+            return TRUE;
+          
+          GetDlgItemText(hwndDlg, IDC_EDITAUTH, szReason, 255);
+          icq_sendAuthReqServ(dwUin, szReason);
+          EndDialog(hwndDlg, 0);
 
-					return TRUE;
+          return TRUE;
         }
-				break;
+        break;
 
-			case IDCANCEL:
-				EndDialog(hwndDlg, 0);
-				return TRUE;
+      case IDCANCEL:
+        EndDialog(hwndDlg, 0);
+        return TRUE;
 
-			default:
-				break;
+      default:
+        break;
 
-			}
+      }
     }
-		break;
+    break;
 
-	case WM_CLOSE:
-		EndDialog(hwndDlg,0);
-		return TRUE;
-	}
-	
-	return FALSE;
+  case WM_CLOSE:
+    EndDialog(hwndDlg,0);
+    return TRUE;
+  }
+  
+  return FALSE;
 }

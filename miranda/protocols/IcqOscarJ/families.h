@@ -39,21 +39,21 @@
 
 typedef struct icq_mode_messages_s
 {
-	char* szAway;
-	char* szNa;
-	char* szDnd;
-	char* szOccupied;
-	char* szFfc;
+  char* szAway;
+  char* szNa;
+  char* szDnd;
+  char* szOccupied;
+  char* szFfc;
 } icq_mode_messages;
 
 typedef struct snac_header_s
 {
-	BOOL  bValid;
-	WORD  wFamily;
-	WORD  wSubtype;
-	WORD  wFlags;
-	DWORD dwRef;
-	WORD  wVersion;
+  BOOL  bValid;
+  WORD  wFamily;
+  WORD  wSubtype;
+  WORD  wFlags;
+  DWORD dwRef;
+  WORD  wVersion;
 } snac_header;
 
 

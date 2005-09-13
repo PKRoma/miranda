@@ -43,7 +43,7 @@ static void handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie);
 void handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {
   switch (pSnacHeader->wSubtype)
-	{
+  {
 
   case ICQ_LOOKUP_EMAIL_REPLY: // AIM search reply
     handleLookupEmailReply(pBuffer, wBufferLength, pSnacHeader->dwRef);
@@ -89,10 +89,10 @@ void handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
     break;
   }
 
-	default:
-		NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_LOOKUP_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
-		break;
-	}
+  default:
+    NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_LOOKUP_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    break;
+  }
 }
 
 
@@ -100,7 +100,7 @@ void handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
 void handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 {
   ICQSEARCHRESULT sr = {0};
-	oscar_tlv_chain* pChain;
+  oscar_tlv_chain* pChain;
   search_cookie* pCookie;
   int i;
 
@@ -115,8 +115,8 @@ void handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie)
   sr.hdr.cbSize = sizeof(sr);
   sr.hdr.email = pCookie->szObject;
 
-	// Syntax check, read chain
-	if (wLen >= 4 && (pChain = readIntoTLVChain(&buf, wLen, 0)))
+  // Syntax check, read chain
+  if (wLen >= 4 && (pChain = readIntoTLVChain(&buf, wLen, 0)))
   {
     for (i = 1; TRUE; i++)
     { // collect the results

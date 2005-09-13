@@ -48,78 +48,78 @@ void handleDirectGreetingMessage(directconnect *dc, PBYTE buf, WORD wLen, WORD w
 
 void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 {
-	WORD wCommand;
-	WORD wCookie;
-	BYTE bMsgType,bMsgFlags;
-	WORD wStatus;
-	WORD wFlags;
-	WORD wTextLen;
-	char* pszText = NULL;
+  WORD wCommand;
+  WORD wCookie;
+  BYTE bMsgType,bMsgFlags;
+  WORD wStatus;
+  WORD wFlags;
+  WORD wTextLen;
+  char* pszText = NULL;
 
 
-	// The first part of the packet should always be at least 31 bytes
-	if (wLen < 31)
-	{
-		NetLog_Direct("Error during parsing of DC packet 2 PEER_MSG (too short)");
-		return;
-	}
-	
-	// Skip packet checksum
-	buf += 4;
-	wLen -= 4;
+  // The first part of the packet should always be at least 31 bytes
+  if (wLen < 31)
+  {
+    NetLog_Direct("Error during parsing of DC packet 2 PEER_MSG (too short)");
+    return;
+  }
+  
+  // Skip packet checksum
+  buf += 4;
+  wLen -= 4;
 
-	// Command:
-	//   0x07d0 = 2000 - cancel given message.
-	//   0x07da = 2010 - acknowledge message.
-	//   0x07ee = 2030 - normal message/request.
-	unpackLEWord(&buf, &wCommand);
-	wLen -= 2;
+  // Command:
+  //   0x07d0 = 2000 - cancel given message.
+  //   0x07da = 2010 - acknowledge message.
+  //   0x07ee = 2030 - normal message/request.
+  unpackLEWord(&buf, &wCommand);
+  wLen -= 2;
 
-	// Unknown, always 0xe (14)
-	buf += 2;
-	wLen -= 2;
+  // Unknown, always 0xe (14)
+  buf += 2;
+  wLen -= 2;
 
-	// Sequence number
-	unpackLEWord(&buf, &wCookie);
-	wLen -=2;
+  // Sequence number
+  unpackLEWord(&buf, &wCookie);
+  wLen -=2;
 
-	// Unknown, always zeroes
-	buf += 12;
-	wLen -= 12;
-	
-	// Peer message type
-	unpackByte(&buf, &bMsgType);
+  // Unknown, always zeroes
+  buf += 12;
+  wLen -= 12;
+  
+  // Peer message type
+  unpackByte(&buf, &bMsgType);
   // Peer message flags
   unpackByte(&buf, &bMsgFlags);
-	wLen -= 2;
+  wLen -= 2;
 
-	// The current status of the user, or whether the message was accepted or not.
-	//   0x00 - user is online, or message was receipt, or file transfer accepted
-	//   0x01 - refused
-	//   0x04 - auto-refused, because of away
-	//   0x09 - auto-refused, because of occupied
-	//   0x0a - auto-refused, because of dnd
-	//   0x0e - auto-refused, because of na
-	unpackLEWord(&buf, &wStatus);
-	wLen -= 2;
+  // The current status of the user, or whether the message was accepted or not.
+  //   0x00 - user is online, or message was receipt, or file transfer accepted
+  //   0x01 - refused
+  //   0x04 - auto-refused, because of away
+  //   0x09 - auto-refused, because of occupied
+  //   0x0a - auto-refused, because of dnd
+  //   0x0e - auto-refused, because of na
+  unpackLEWord(&buf, &wStatus);
+  wLen -= 2;
 
-	// Flags, or priority
-	// Seen: 1 - Chat request
-	//       0 - File auto accept (type 3)
+  // Flags, or priority
+  // Seen: 1 - Chat request
+  //       0 - File auto accept (type 3)
   //       33 - priority ?
-	unpackLEWord(&buf, &wFlags);
-	wLen -= 2;
+  unpackLEWord(&buf, &wFlags);
+  wLen -= 2;
 
-	// Messagetext. This is either the status message or the actual message
-	// when this is a PEER_MSG_MSG packet
-	unpackLEWord(&buf, &wTextLen);
-	if (wTextLen > 0)
-	{
-		pszText = malloc(wTextLen+1);
-		unpackString(&buf, pszText, wTextLen);
-		pszText[wTextLen] = '\0';
-	}
-	wLen = (wLen - 2) - wTextLen;
+  // Messagetext. This is either the status message or the actual message
+  // when this is a PEER_MSG_MSG packet
+  unpackLEWord(&buf, &wTextLen);
+  if (wTextLen > 0)
+  {
+    pszText = malloc(wTextLen+1);
+    unpackString(&buf, pszText, wTextLen);
+    pszText[wTextLen] = '\0';
+  }
+  wLen = (wLen - 2) - wTextLen;
 
 
   NetLog_Direct("Handling PEER_MSG '%s', command %u, cookie %u, messagetype %u, messageflags %u, status %u, flags %u", pszText, wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags);
@@ -152,16 +152,16 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 
       default: 
         {
-	        buf -= wTextLen;
-	        wLen += wTextLen;
+          buf -= wTextLen;
+          wLen += wTextLen;
 
-	        handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, (int)bMsgType, (int)bMsgFlags, 0, (DWORD)wLen, wTextLen, buf, TRUE);
-		
-	        // Send acknowledgement
-	        if (bMsgType == MTYPE_PLAIN || bMsgType == MTYPE_URL || bMsgType == MTYPE_CONTACTS)
-	        {
+          handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, (int)bMsgType, (int)bMsgFlags, 0, (DWORD)wLen, wTextLen, buf, TRUE);
+    
+          // Send acknowledgement
+          if (bMsgType == MTYPE_PLAIN || bMsgType == MTYPE_URL || bMsgType == MTYPE_CONTACTS)
+          {
             icq_sendDirectMsgAck(dc, wCookie, bMsgType, bMsgFlags, CAP_RTFMSGS);
-	        }
+          }
           break;
         }
     }
@@ -219,7 +219,7 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
         }
         if (ackType != -1)
         { // was a good ack to broadcast ?
-   		    ICQBroadcastAck(dc->hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+           ICQBroadcastAck(dc->hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
           SAFE_FREE(&pCookieData);
           FreeCookie(wCookie);
         }
@@ -229,131 +229,131 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
   else
     NetLog_Direct("Unknown wCommand, packet skipped");
 
-	// Clean up allocated memory
-	SAFE_FREE(&pszText);
+  // Clean up allocated memory
+  SAFE_FREE(&pszText);
 }
 
 
 void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD wCommand, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wStatus, WORD wFlags, char* pszText)
 {
-	DWORD dwMsgTypeLen;
-	DWORD dwLengthToEnd;
-	DWORD dwDataLength;
-	char* szMsgType = NULL;
-	char* pszFileName = NULL;
-	int typeId;
-	WORD wPacketCommand;
+  DWORD dwMsgTypeLen;
+  DWORD dwLengthToEnd;
+  DWORD dwDataLength;
+  char* szMsgType = NULL;
+  char* pszFileName = NULL;
+  int typeId;
+  WORD wPacketCommand;
   DWORD q1,q2,q3,q4;
   WORD qt;
 
 
-	NetLog_Direct("Handling PEER_MSG_GREETING, command %u, cookie %u, messagetype %u, messageflags %u, status %u, flags %u", wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags);
+  NetLog_Direct("Handling PEER_MSG_GREETING, command %u, cookie %u, messagetype %u, messageflags %u, status %u, flags %u", wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags);
 
 
-	// The command in this packet. Seen values:
-	//          0x0029 =  41 - file request
-	//          0x002d =  45 - chat request
-	//          0x0032 =  50 - file request granted/refused
-	//                    55 - Greeting card
-	//          0x0040 =  64 - URL
-	unpackLEWord(&buf, &wPacketCommand); // TODO: this is most probably length...
-	wLen -= 2;
-	
-	// Data type GUID
+  // The command in this packet. Seen values:
+  //          0x0029 =  41 - file request
+  //          0x002d =  45 - chat request
+  //          0x0032 =  50 - file request granted/refused
+  //                    55 - Greeting card
+  //          0x0040 =  64 - URL
+  unpackLEWord(&buf, &wPacketCommand); // TODO: this is most probably length...
+  wLen -= 2;
+  
+  // Data type GUID
   unpackDWord(&buf, &q1);
   unpackDWord(&buf, &q2);
   unpackDWord(&buf, &q3);
   unpackDWord(&buf, &q4);
-	wLen -= 16;
+  wLen -= 16;
 
-	// Data type function id
+  // Data type function id
   unpackLEWord(&buf, &qt);
-	wLen -= 2;
+  wLen -= 2;
 
-	// A text string
-	// "ICQ Chat" for chat request, "File" for file request,
-	// "File Transfer" for file request grant/refusal. This text is
-	// displayed in the requester opened by Windows.
-	unpackLEDWord(&buf, &dwMsgTypeLen);
-	wLen -= 4;
-	if (dwMsgTypeLen == 0 || dwMsgTypeLen>256)
-	{
-		NetLog_Direct("Error: Sanity checking failed (%d) in handleDirectGreetingMessage, len is %u", 1, dwMsgTypeLen);
-		return;
-	}
-	szMsgType = (char *)malloc(dwMsgTypeLen + 1);
-	memcpy(szMsgType, buf, dwMsgTypeLen);
-	szMsgType[dwMsgTypeLen] = '\0';
-	//typeId = TypeStringToTypeId(szMsgType);
+  // A text string
+  // "ICQ Chat" for chat request, "File" for file request,
+  // "File Transfer" for file request grant/refusal. This text is
+  // displayed in the requester opened by Windows.
+  unpackLEDWord(&buf, &dwMsgTypeLen);
+  wLen -= 4;
+  if (dwMsgTypeLen == 0 || dwMsgTypeLen>256)
+  {
+    NetLog_Direct("Error: Sanity checking failed (%d) in handleDirectGreetingMessage, len is %u", 1, dwMsgTypeLen);
+    return;
+  }
+  szMsgType = (char *)malloc(dwMsgTypeLen + 1);
+  memcpy(szMsgType, buf, dwMsgTypeLen);
+  szMsgType[dwMsgTypeLen] = '\0';
+  //typeId = TypeStringToTypeId(szMsgType);
   typeId = TypeGUIDToTypeId(q1,q2,q3,q4,qt);
   if (!typeId)
     NetLog_Direct("Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt);
 
-	buf += dwMsgTypeLen;
-	wLen -= (WORD)dwMsgTypeLen;
+  buf += dwMsgTypeLen;
+  wLen -= (WORD)dwMsgTypeLen;
 
 
-	NetLog_Direct("PEER_MSG_GREETING, command: %u, type: %s, typeID: %u", wPacketCommand, szMsgType, typeId);
+  NetLog_Direct("PEER_MSG_GREETING, command: %u, type: %s, typeID: %u", wPacketCommand, szMsgType, typeId);
 
 
-	// Unknown
-	buf += 15;
-	wLen -= 15;
-	
-	// Length of remaining data
-	unpackLEDWord(&buf, &dwLengthToEnd);
-	if (dwLengthToEnd < 4 || dwLengthToEnd > wLen)
-	{
-		NetLog_Direct("Error: Sanity checking failed (%d) in handleDirectGreetingMessage, datalen %u wLen %u", 2, dwLengthToEnd, wLen);
-		return;
-	}
-	
-	// Length of message/reason
-	unpackLEDWord(&buf, &dwDataLength);
-	wLen -= 4;
-	if (dwDataLength > wLen)
-	{
-		NetLog_Direct("Error: Sanity checking failed (%d) in handleDirectGreetingMessage, datalen %u wLen %u", 3, dwDataLength, wLen);
-		return;
-	}
+  // Unknown
+  buf += 15;
+  wLen -= 15;
+  
+  // Length of remaining data
+  unpackLEDWord(&buf, &dwLengthToEnd);
+  if (dwLengthToEnd < 4 || dwLengthToEnd > wLen)
+  {
+    NetLog_Direct("Error: Sanity checking failed (%d) in handleDirectGreetingMessage, datalen %u wLen %u", 2, dwLengthToEnd, wLen);
+    return;
+  }
+  
+  // Length of message/reason
+  unpackLEDWord(&buf, &dwDataLength);
+  wLen -= 4;
+  if (dwDataLength > wLen)
+  {
+    NetLog_Direct("Error: Sanity checking failed (%d) in handleDirectGreetingMessage, datalen %u wLen %u", 3, dwDataLength, wLen);
+    return;
+  }
 
-	if (typeId == MTYPE_FILEREQ && wCommand == DIRECT_MESSAGE)
-	{
-		char* szMsg;
+  if (typeId == MTYPE_FILEREQ && wCommand == DIRECT_MESSAGE)
+  {
+    char* szMsg;
 
-		
-		NetLog_Direct("This is file request");
-		szMsg = malloc(dwDataLength+1);
-		unpackString(&buf, szMsg, (WORD)dwDataLength);
-		szMsg[dwDataLength] = '\0';
-		wLen = wLen - (WORD)dwDataLength;
+    
+    NetLog_Direct("This is file request");
+    szMsg = malloc(dwDataLength+1);
+    unpackString(&buf, szMsg, (WORD)dwDataLength);
+    szMsg[dwDataLength] = '\0';
+    wLen = wLen - (WORD)dwDataLength;
 
-		handleFileRequest(buf, wLen, dc->dwRemoteUin, wCookie, 0, 0, szMsg, 8, TRUE);
-		SAFE_FREE(&szMsg);
-	}
-	else if (typeId == MTYPE_FILEREQ && wCommand == DIRECT_ACK)
-	{
-		char* szMsg;
+    handleFileRequest(buf, wLen, dc->dwRemoteUin, wCookie, 0, 0, szMsg, 8, TRUE);
+    SAFE_FREE(&szMsg);
+  }
+  else if (typeId == MTYPE_FILEREQ && wCommand == DIRECT_ACK)
+  {
+    char* szMsg;
 
-		
-		NetLog_Direct("This is file ack");
-		szMsg = malloc(dwDataLength+1);
-		unpackString(&buf, szMsg, (WORD)dwDataLength);
-		szMsg[dwDataLength] = '\0';
-		wLen = wLen - (WORD)dwDataLength;
+    
+    NetLog_Direct("This is file ack");
+    szMsg = malloc(dwDataLength+1);
+    unpackString(&buf, szMsg, (WORD)dwDataLength);
+    szMsg[dwDataLength] = '\0';
+    wLen = wLen - (WORD)dwDataLength;
 
-		// 50 - file request granted/refused
-		handleFileAck(buf, wLen, dc->dwRemoteUin, wCookie, wStatus, szMsg);
-		SAFE_FREE(&szMsg);
-	}
-	else if (typeId && wCommand == DIRECT_MESSAGE)
-	{
-		if (typeId == MTYPE_URL || typeId == MTYPE_CONTACTS)
+    // 50 - file request granted/refused
+    handleFileAck(buf, wLen, dc->dwRemoteUin, wCookie, wStatus, szMsg);
+    SAFE_FREE(&szMsg);
+  }
+  else if (typeId && wCommand == DIRECT_MESSAGE)
+  {
+    if (typeId == MTYPE_URL || typeId == MTYPE_CONTACTS)
     { 
       icq_sendDirectMsgAck(dc, wCookie, (BYTE)typeId, 0, CAP_RTFMSGS);
-		}
-		handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, typeId, 0, 0, dwLengthToEnd, (WORD)dwDataLength, buf, TRUE);
-	}
+    }
+    handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, typeId, 0, 0, dwLengthToEnd, (WORD)dwDataLength, buf, TRUE);
+  }
   else if (typeId && wCommand == DIRECT_ACK)
   {
     DWORD dwCookieUin;
@@ -407,16 +407,16 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
 
       if (ackType != -1)
       { // was a good ack to broadcast ?
-	      ICQBroadcastAck(dc->hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+        ICQBroadcastAck(dc->hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
         SAFE_FREE(&pCookieData);
         FreeCookie(wCookie);
       }
     }
   }
-	else
-	{
-		NetLog_Direct("Unsupported plugin message type '%s'", szMsgType);
-	}
+  else
+  {
+    NetLog_Direct("Unsupported plugin message type '%s'", szMsgType);
+  }
 
-	SAFE_FREE(&szMsgType);
+  SAFE_FREE(&szMsgType);
 }

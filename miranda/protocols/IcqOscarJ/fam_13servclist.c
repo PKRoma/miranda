@@ -143,16 +143,16 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
     break;
   }
 
-	case SRV_SSI_UPTODATE: // SRV_REPLYROSTEROK
+  case SRV_SSI_UPTODATE: // SRV_REPLYROSTEROK
   {
     servlistcookie* sc;
 
-		bIsSyncingCL = FALSE;
+    bIsSyncingCL = FALSE;
 
     if (FindCookie(pSnacHeader->dwRef, NULL, &sc))
     { // we requested servlist check
 #ifdef _DEBUG
-		  NetLog_Server("Server stated roster is ok.");
+      NetLog_Server("Server stated roster is ok.");
 #endif
       FreeCookie(pSnacHeader->dwRef);
       LoadServerIDs();
@@ -160,21 +160,21 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
       SAFE_FREE(&sc);
     }
     else
-		  NetLog_Server("Server sent unexpected SNAC(x13,x0F) - SRV_REPLYROSTEROK");
+      NetLog_Server("Server sent unexpected SNAC(x13,x0F) - SRV_REPLYROSTEROK");
 
-		// This will activate the server side list
-		sendRosterAck(); // this must be here, cause of failures during cookie alloc
-		handleServUINSettings(wListenPort, dwLocalInternalIP);
-		break;
+    // This will activate the server side list
+    sendRosterAck(); // this must be here, cause of failures during cookie alloc
+    handleServUINSettings(wListenPort, dwLocalInternalIP);
+    break;
   }
 
-	case ICQ_LISTS_CLI_MODIFYSTART:
-		NetLog_Server("Server sent SNAC(x13,x11) - Server is modifying contact list");
-		break;
+  case ICQ_LISTS_CLI_MODIFYSTART:
+    NetLog_Server("Server sent SNAC(x13,x11) - Server is modifying contact list");
+    break;
 
-	case ICQ_LISTS_CLI_MODIFYEND:
-		NetLog_Server("Server sent SNAC(x13,x12) - End of server modification");
-		break;
+  case ICQ_LISTS_CLI_MODIFYEND:
+    NetLog_Server("Server sent SNAC(x13,x12) - End of server modification");
+    break;
 
   case ICQ_LISTS_UPDATEGROUP:
     NetLog_Server("Server sent SNAC(x13,x09) - Server updated our contact on list");
@@ -222,21 +222,21 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
     NetLog_Server("Server sent SNAC(x13,x08) - Server added something to our list");
     break;
 
-	case ICQ_LISTS_AUTHREQUEST:
-		handleRecvAuthRequest(pBuffer, wBufferLength);
-		break;
+  case ICQ_LISTS_AUTHREQUEST:
+    handleRecvAuthRequest(pBuffer, wBufferLength);
+    break;
 
-	case ICQ_LISTS_SRV_AUTHRESPONSE:
-		handleRecvAuthResponse(pBuffer, wBufferLength);
-		break;
+  case ICQ_LISTS_SRV_AUTHRESPONSE:
+    handleRecvAuthResponse(pBuffer, wBufferLength);
+    break;
 
-	case ICQ_LISTS_AUTHGRANTED:
+  case ICQ_LISTS_AUTHGRANTED:
     NetLog_Server("Server sent SNAC(x13,x15) - User granted us future authorization");
     break;
 
-	case ICQ_LISTS_YOUWEREADDED:
-		handleRecvAdded(pBuffer, wBufferLength);
-		break;
+  case ICQ_LISTS_YOUWEREADDED:
+    handleRecvAdded(pBuffer, wBufferLength);
+    break;
 
   case ICQ_LISTS_ERROR:
     if (wBufferLength >= 2)
@@ -269,10 +269,10 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
     }
     break;
 
-	default:
-		NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_LISTS_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
-		break;
-	}
+  default:
+    NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_LISTS_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    break;
+  }
 }
 
 
@@ -362,7 +362,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         HANDLE hPend = sc->hContact;
 
         ICQWriteContactSettingWord(sc->hContact, "ServerId", sc->wContactId);
-	      ICQWriteContactSettingWord(sc->hContact, "SrvGroupId", sc->wGroupId);
+        ICQWriteContactSettingWord(sc->hContact, "SrvGroupId", sc->wGroupId);
         SAFE_FREE(&sc->szGroupName); // free the nick
 
         if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize))
@@ -563,7 +563,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         int bEnd = 1; // shall we end the sever modifications
 
         ICQWriteContactSettingWord(sc->hContact, "ServerId", sc->wNewContactId);
-	      ICQWriteContactSettingWord(sc->hContact, "SrvGroupId", sc->wNewGroupId);
+        ICQWriteContactSettingWord(sc->hContact, "SrvGroupId", sc->wNewGroupId);
         FreeServerID(sc->wContactId, SSIT_ITEM); // release old contact id
 
         if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize)) // update the group we moved from
@@ -714,109 +714,109 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
 static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 {
-	BYTE bySSIVersion;
-	WORD wRecordCount;
-	WORD wRecord;
-	WORD wRecordNameLen;
-	WORD wGroupId;
-	WORD wItemId;
-	WORD wTlvType;
-	WORD wTlvLength;
-	BOOL bIsLastPacket;
-	uid_str szRecordName;
-	oscar_tlv_chain* pChain = NULL;
-	oscar_tlv* pTLV = NULL;
+  BYTE bySSIVersion;
+  WORD wRecordCount;
+  WORD wRecord;
+  WORD wRecordNameLen;
+  WORD wGroupId;
+  WORD wItemId;
+  WORD wTlvType;
+  WORD wTlvLength;
+  BOOL bIsLastPacket;
+  uid_str szRecordName;
+  oscar_tlv_chain* pChain = NULL;
+  oscar_tlv* pTLV = NULL;
 
 
-	// If flag bit 1 is set, this is not the last
-	// packet. If it is 0, this is the last packet
-	// and there will be a timestamp at the end.
-	if (wFlags & 0x0001)
-		bIsLastPacket = FALSE;
-	else
-		bIsLastPacket = TRUE;
+  // If flag bit 1 is set, this is not the last
+  // packet. If it is 0, this is the last packet
+  // and there will be a timestamp at the end.
+  if (wFlags & 0x0001)
+    bIsLastPacket = FALSE;
+  else
+    bIsLastPacket = TRUE;
 
 
-	if (wLen < 3)
-		return;
+  if (wLen < 3)
+    return;
 
-	// Version number of SSI protocol?
-	unpackByte(&buf, &bySSIVersion);
-	wLen -= 1;
+  // Version number of SSI protocol?
+  unpackByte(&buf, &bySSIVersion);
+  wLen -= 1;
 
-	// Total count of following entries. This is the size of the server
-	// side contact list and should be saved and sent with CLI_CHECKROSTER.
-	// NOTE: When the entries are split up in several packets, each packet
-	// has it's own count and they must be added to get the total size of
-	// server list.
-	unpackWord(&buf, &wRecordCount);
-	wLen -= 2;
-	NetLog_Server("SSI: number of entries is %u, version is %u", wRecordCount, bySSIVersion);
-
-
-	// Loop over all items in the packet
-	for (wRecord = 0; wRecord < wRecordCount; wRecord++)
-	{
-		NetLog_Server("SSI: parsing record %u", wRecord + 1);
-
-		if (wLen < 10)
-		{
-			// minimum: name length (zero), group ID, item ID, empty TLV
-			NetLog_Server("Warning: SSI parsing error (%d)", 0);
-			break;
-		}
-
-		// The name of the entry. If this is a group header, then this
-		// is the name of the group. If it is a plain contact list entry,
-		// then it's the UIN of the contact.
-		unpackWord(&buf, &wRecordNameLen);
-		if (wLen < 10 + wRecordNameLen || wRecordNameLen >= MAX_PATH)
-		{
-			NetLog_Server("Warning: SSI parsing error (%d)", 1);
-			break;
-		}
-		unpackString(&buf, szRecordName, wRecordNameLen);
-		szRecordName[wRecordNameLen] = '\0';
-
-		// The group identifier this entry belongs to. If 0, this is meta information or
-		// a contact without a group
-		unpackWord(&buf, &wGroupId);
-
-		// The ID of this entry. Group headers have ID 0. Otherwise, this
-		// is a random number generated when the user is added to the
-		// contact list, or when the user is ignored. See CLI_ADDBUDDY.
-		unpackWord(&buf, &wItemId);
-
-		// This field indicates what type of entry this is
-		unpackWord(&buf, &wTlvType);
-
-		// The length in bytes of the following TLV chain
-		unpackWord(&buf, &wTlvLength);
-
-  	NetLog_Server("Name: '%s', GroupID: %u, EntryID: %u, EntryType: %u, TLVlength: %u",
-			szRecordName, wGroupId, wItemId, wTlvType, wTlvLength);
-
-		wLen -= (10 + wRecordNameLen);
-		if (wLen < wTlvLength)
-		{
-			NetLog_Server("Warning: SSI parsing error (%d)", 2);
-			break;
-		}
-
-		// Initialize the tlv chain
-		if (wTlvLength > 0)
-		{
-			pChain = readIntoTLVChain(&buf, (WORD)(wTlvLength), 0);
-			wLen -= wTlvLength;
-		}
-		else
-		{
-			pChain = NULL;
-		}
+  // Total count of following entries. This is the size of the server
+  // side contact list and should be saved and sent with CLI_CHECKROSTER.
+  // NOTE: When the entries are split up in several packets, each packet
+  // has it's own count and they must be added to get the total size of
+  // server list.
+  unpackWord(&buf, &wRecordCount);
+  wLen -= 2;
+  NetLog_Server("SSI: number of entries is %u, version is %u", wRecordCount, bySSIVersion);
 
 
-		switch (wTlvType)
-		{
+  // Loop over all items in the packet
+  for (wRecord = 0; wRecord < wRecordCount; wRecord++)
+  {
+    NetLog_Server("SSI: parsing record %u", wRecord + 1);
+
+    if (wLen < 10)
+    {
+      // minimum: name length (zero), group ID, item ID, empty TLV
+      NetLog_Server("Warning: SSI parsing error (%d)", 0);
+      break;
+    }
+
+    // The name of the entry. If this is a group header, then this
+    // is the name of the group. If it is a plain contact list entry,
+    // then it's the UIN of the contact.
+    unpackWord(&buf, &wRecordNameLen);
+    if (wLen < 10 + wRecordNameLen || wRecordNameLen >= MAX_PATH)
+    {
+      NetLog_Server("Warning: SSI parsing error (%d)", 1);
+      break;
+    }
+    unpackString(&buf, szRecordName, wRecordNameLen);
+    szRecordName[wRecordNameLen] = '\0';
+
+    // The group identifier this entry belongs to. If 0, this is meta information or
+    // a contact without a group
+    unpackWord(&buf, &wGroupId);
+
+    // The ID of this entry. Group headers have ID 0. Otherwise, this
+    // is a random number generated when the user is added to the
+    // contact list, or when the user is ignored. See CLI_ADDBUDDY.
+    unpackWord(&buf, &wItemId);
+
+    // This field indicates what type of entry this is
+    unpackWord(&buf, &wTlvType);
+
+    // The length in bytes of the following TLV chain
+    unpackWord(&buf, &wTlvLength);
+
+    NetLog_Server("Name: '%s', GroupID: %u, EntryID: %u, EntryType: %u, TLVlength: %u",
+      szRecordName, wGroupId, wItemId, wTlvType, wTlvLength);
+
+    wLen -= (10 + wRecordNameLen);
+    if (wLen < wTlvLength)
+    {
+      NetLog_Server("Warning: SSI parsing error (%d)", 2);
+      break;
+    }
+
+    // Initialize the tlv chain
+    if (wTlvLength > 0)
+    {
+      pChain = readIntoTLVChain(&buf, (WORD)(wTlvLength), 0);
+      wLen -= wTlvLength;
+    }
+    else
+    {
+      pChain = NULL;
+    }
+
+
+    switch (wTlvType)
+    {
 
     case SSI_ITEM_BUDDY:
       {
@@ -842,7 +842,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
           int bNicked = 0;
           WORD wOldGroupId;
 
-					if (bAdded)
+          if (bAdded)
           { // Not already on list: added
             char* szGroup;
 
@@ -855,13 +855,13 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
               SAFE_FREE(&szGroup);
             }
             AddJustAddedContact(hContact);
-					}
-					else
-					{
-						// we should add new contacts and this contact was just added, show it
-						if (IsContactJustAdded(hContact))
+          }
+          else
+          {
+            // we should add new contacts and this contact was just added, show it
+            if (IsContactJustAdded(hContact))
             {
-							DBWriteContactSettingByte(hContact, "CList", "Hidden", 0);
+              DBWriteContactSettingByte(hContact, "CList", "Hidden", 0);
               bAdded = 1; // we want details for new contacts
             }
             else
@@ -871,10 +871,10 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
           }
 
           wOldGroupId = ICQGetContactSettingWord(hContact, "SrvGroupId", 0);
-					// Save group and item ID
-					ICQWriteContactSettingWord(hContact, "ServerId", wItemId);
-					ICQWriteContactSettingWord(hContact, "SrvGroupId", wGroupId);
-					ReserveServerID(wItemId, SSIT_ITEM);
+          // Save group and item ID
+          ICQWriteContactSettingWord(hContact, "ServerId", wItemId);
+          ICQWriteContactSettingWord(hContact, "SrvGroupId", wGroupId);
+          ReserveServerID(wItemId, SSIT_ITEM);
 
           if (!bAdded && (wOldGroupId != wGroupId) && ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD))
           { // contact has been moved on the server
@@ -887,7 +887,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
               if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
               { // get group from CList
-                if (dbv.pszVal && strlen(dbv.pszVal) > 0)
+                if (dbv.pszVal && strlennull(dbv.pszVal) > 0)
                   szOldGroup = _strdup(dbv.pszVal);
                 DBFreeVariant(&dbv);
               }
@@ -918,127 +918,127 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
             }
           }
 
-					if (pChain)
-					{ // Look for nickname TLV and copy it to the db if necessary
-						if (pTLV = getTLV(pChain, 0x0131, 1))
-						{
-							if (pTLV->pData && (pTLV->wLen > 0))
-							{
-								char* pszNick;
-								WORD wNickLength;
+          if (pChain)
+          { // Look for nickname TLV and copy it to the db if necessary
+            if (pTLV = getTLV(pChain, 0x0131, 1))
+            {
+              if (pTLV->pData && (pTLV->wLen > 0))
+              {
+                char* pszNick;
+                WORD wNickLength;
 
-								wNickLength = pTLV->wLen;
+                wNickLength = pTLV->wLen;
 
-								pszNick = (char*)malloc(wNickLength + 1);
-								if (pszNick)
-								{
-									// Copy buffer to utf-8 buffer
-									memcpy(pszNick, pTLV->pData, wNickLength);
-									pszNick[wNickLength] = 0; // Terminate string
+                pszNick = (char*)malloc(wNickLength + 1);
+                if (pszNick)
+                {
+                  // Copy buffer to utf-8 buffer
+                  memcpy(pszNick, pTLV->pData, wNickLength);
+                  pszNick[wNickLength] = 0; // Terminate string
 
-									NetLog_Server("Nickname is '%s'", pszNick);
+                  NetLog_Server("Nickname is '%s'", pszNick);
 
                   bNicked = 1;
 
-									// Write nickname to database
-									if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
+                  // Write nickname to database
+                  if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
                   { // if just added contact, save details always - does no harm
-										char *szOldNick;
+                    char *szOldNick;
 
-										if (szOldNick = UniGetContactSettingUtf(hContact,"CList","MyHandle",""))
-										{
-											if ((lstrcmp(szOldNick, pszNick)) && (strlen(pszNick) > 0))
-											{
-												// Yes, we really do need to delete it first. Otherwise the CLUI nick
-												// cache isn't updated (I'll look into it)
-												DBDeleteContactSetting(hContact,"CList","MyHandle");
-												UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
-											}
-											SAFE_FREE(&szOldNick);
-										}
-										else if (strlen(pszNick) > 0)
-										{
-											DBDeleteContactSetting(hContact,"CList","MyHandle");
-											UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
-										}
-									}
-									SAFE_FREE(&pszNick);
-								}
-							}
-							else
-							{
-								NetLog_Server("Invalid nickname");
-							}
-						}
+                    if (szOldNick = UniGetContactSettingUtf(hContact,"CList","MyHandle",""))
+                    {
+                      if ((lstrcmp(szOldNick, pszNick)) && (strlennull(pszNick) > 0))
+                      {
+                        // Yes, we really do need to delete it first. Otherwise the CLUI nick
+                        // cache isn't updated (I'll look into it)
+                        DBDeleteContactSetting(hContact,"CList","MyHandle");
+                        UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
+                      }
+                      SAFE_FREE(&szOldNick);
+                    }
+                    else if (strlennull(pszNick) > 0)
+                    {
+                      DBDeleteContactSetting(hContact,"CList","MyHandle");
+                      UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
+                    }
+                  }
+                  SAFE_FREE(&pszNick);
+                }
+              }
+              else
+              {
+                NetLog_Server("Invalid nickname");
+              }
+            }
             if (bAdded && !bNicked)
               icq_QueueUser(hContact); // queue user without nick for fast auto info update
 
-						// Look for comment TLV and copy it to the db if necessary
-						if (pTLV = getTLV(pChain, 0x013C, 1))
-						{
-							if (pTLV->pData && (pTLV->wLen > 0))
-							{
-								char* pszComment;
-								WORD wCommentLength;
+            // Look for comment TLV and copy it to the db if necessary
+            if (pTLV = getTLV(pChain, 0x013C, 1))
+            {
+              if (pTLV->pData && (pTLV->wLen > 0))
+              {
+                char* pszComment;
+                WORD wCommentLength;
 
 
-								wCommentLength = pTLV->wLen;
+                wCommentLength = pTLV->wLen;
 
-								pszComment = (char*)malloc(wCommentLength + 1);
-								if (pszComment)
-								{
-									// Copy buffer to utf-8 buffer
-									memcpy(pszComment, pTLV->pData, wCommentLength);
-									pszComment[wCommentLength] = 0; // Terminate string
+                pszComment = (char*)malloc(wCommentLength + 1);
+                if (pszComment)
+                {
+                  // Copy buffer to utf-8 buffer
+                  memcpy(pszComment, pTLV->pData, wCommentLength);
+                  pszComment[wCommentLength] = 0; // Terminate string
 
-									NetLog_Server("Comment is '%s'", pszComment);
+                  NetLog_Server("Comment is '%s'", pszComment);
 
-									// Write comment to database
-									if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
+                  // Write comment to database
+                  if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
                   { // if just added contact, save details always - does no harm
-										char *szOldComment;
+                    char *szOldComment;
 
-										if (szOldComment = UniGetContactSettingUtf(hContact,"UserInfo","MyNotes",""))
-										{
-											if ((lstrcmp(szOldComment, pszComment)) && (strlen(pszComment) > 0))
-											{
-												UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
-											}
-											SAFE_FREE(&szOldComment);
-										}
-										else if (strlen(pszComment) > 0)
-										{
-											UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
-										}
-									}
+                    if (szOldComment = UniGetContactSettingUtf(hContact,"UserInfo","MyNotes",""))
+                    {
+                      if ((lstrcmp(szOldComment, pszComment)) && (strlennull(pszComment) > 0))
+                      {
+                        UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
+                      }
+                      SAFE_FREE(&szOldComment);
+                    }
+                    else if (strlennull(pszComment) > 0)
+                    {
+                      UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
+                    }
+                  }
 
-									SAFE_FREE(&pszComment);
-								}
-							}
-							else
-							{
-								NetLog_Server("Invalid comment");
-							}
-						}
+                  SAFE_FREE(&pszComment);
+                }
+              }
+              else
+              {
+                NetLog_Server("Invalid comment");
+              }
+            }
 
-						// Look for need-authorization TLV
-						if (pTLV = getTLV(pChain, 0x0066, 1))
-						{
-							ICQWriteContactSettingByte(hContact, "Auth", 1);
-							NetLog_Server("SSI contact need authorization");
-						}
-						else
-						{
-							ICQWriteContactSettingByte(hContact, "Auth", 0);
-						}
-					}
-				}
+            // Look for need-authorization TLV
+            if (pTLV = getTLV(pChain, 0x0066, 1))
+            {
+              ICQWriteContactSettingByte(hContact, "Auth", 1);
+              NetLog_Server("SSI contact need authorization");
+            }
+            else
+            {
+              ICQWriteContactSettingByte(hContact, "Auth", 0);
+            }
+          }
+        }
         else
         { // failed to add or other error
           NetLog_Server("SSI failed to handle %s Item '%s'", "Buddy", szRecordName);
-			  }
-			}
-			break;
+        }
+      }
+      break;
 
     case SSI_ITEM_GROUP:
       if ((wGroupId == 0) && (wItemId == 0))
@@ -1080,11 +1080,11 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
       }
       break;
 
-		case SSI_ITEM_PERMIT:
+    case SSI_ITEM_PERMIT:
       {
-  			/* item on visible list */
-			  /* wItemId not related to contact ID */
-			  /* pszRecordName is the UIN */
+        /* item on visible list */
+        /* wItemId not related to contact ID */
+        /* pszRecordName is the UIN */
         HANDLE hContact;
         int bAdded;
 
@@ -1102,11 +1102,11 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
         if (hContact != INVALID_HANDLE_VALUE)
         {
-				  if (bAdded)
+          if (bAdded)
           {
             NetLog_Server("SSI added new %s contact '%s'", "Permit", szRecordName);
-  					// It wasn't previously in the list, we hide it so it only appears in the visible list
-  					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+            // It wasn't previously in the list, we hide it so it only appears in the visible list
+            DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
             // Add it to the list, so it can be added properly if proper contact
             AddJustAddedContact(hContact);
           }
@@ -1114,24 +1114,24 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
             NetLog_Server("SSI %s contact already exists '%s'", "Permit", szRecordName);
 
           // Save permit ID
-				  ICQWriteContactSettingWord(hContact, "SrvPermitId", wItemId);
-				  ReserveServerID(wItemId, SSIT_ITEM);
-				  // Set apparent mode
-				  ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_ONLINE);
-				  NetLog_Server("Visible-contact (%s)", szRecordName);
+          ICQWriteContactSettingWord(hContact, "SrvPermitId", wItemId);
+          ReserveServerID(wItemId, SSIT_ITEM);
+          // Set apparent mode
+          ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_ONLINE);
+          NetLog_Server("Visible-contact (%s)", szRecordName);
         }
         else
         { // failed to add or other error
           NetLog_Server("SSI failed to handle %s Item '%s'", "Permit", szRecordName);
-			  }
+        }
       }
-			break;
+      break;
 
-		case SSI_ITEM_DENY:
+    case SSI_ITEM_DENY:
       {
         /* Item on invisible list */
-			  /* wItemId not related to contact ID */
-			  /* pszRecordName is the UIN */
+        /* wItemId not related to contact ID */
+        /* pszRecordName is the UIN */
         HANDLE hContact;
         int bAdded;
 
@@ -1149,32 +1149,32 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
         if (hContact != INVALID_HANDLE_VALUE)
         {
-				  if (bAdded)
+          if (bAdded)
           {
-					  /* not already on list: added */
+            /* not already on list: added */
             NetLog_Server("SSI added new %s contact '%s'", "Deny", szRecordName);
-  					// It wasn't previously in the list, we hide it so it only appears in the visible list
-  					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+            // It wasn't previously in the list, we hide it so it only appears in the visible list
+            DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
             // Add it to the list, so it can be added properly if proper contact
             AddJustAddedContact(hContact);
           }
           else
             NetLog_Server("SSI %s contact already exists '%s'", "Deny", szRecordName);
 
-  				// Save Deny ID
-  				ICQWriteContactSettingWord(hContact, "SrvDenyId", wItemId);
-  				ReserveServerID(wItemId, SSIT_ITEM);
+          // Save Deny ID
+          ICQWriteContactSettingWord(hContact, "SrvDenyId", wItemId);
+          ReserveServerID(wItemId, SSIT_ITEM);
 
-  				// Set apparent mode
-  				ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
-  				NetLog_Server("Invisible-contact (%s)", szRecordName);
+          // Set apparent mode
+          ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
+          NetLog_Server("Invisible-contact (%s)", szRecordName);
         }
         else
         { // failed to add or other error
           NetLog_Server("SSI failed to handle %s Item '%s'", "Deny", szRecordName);
-			  }
+        }
       }
-			break;
+      break;
 
     case SSI_ITEM_VISIBILITY: /* My visibility settings */
       {
@@ -1194,8 +1194,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
     case SSI_ITEM_IGNORE: 
       {
         /* item on ignore list */
-			  /* wItemId not related to contact ID */
-			  /* pszRecordName is the UIN */
+        /* wItemId not related to contact ID */
+        /* pszRecordName is the UIN */
         HANDLE hContact;
         int bAdded;
 
@@ -1213,23 +1213,23 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
         if (hContact != INVALID_HANDLE_VALUE)
         {
-    			if (bAdded)
+          if (bAdded)
           {
-					  /* not already on list: add */
+            /* not already on list: add */
             NetLog_Server("SSI added new %s contact '%s'", "Ignore", szRecordName);
-  					// It wasn't previously in the list, we hide it
-					  DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+            // It wasn't previously in the list, we hide it
+            DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
             // Add it to the list, so it can be added properly if proper contact
             AddJustAddedContact(hContact);
           }
           else
             NetLog_Server("SSI %s contact already exists '%s'", "Ignore", szRecordName);
 
-  				// Save Ignore ID
-				  ICQWriteContactSettingWord(hContact, "SrvIgnoreId", wItemId);
-				  ReserveServerID(wItemId, SSIT_ITEM);
+          // Save Ignore ID
+          ICQWriteContactSettingWord(hContact, "SrvIgnoreId", wItemId);
+          ReserveServerID(wItemId, SSIT_ITEM);
 
-				  // Set apparent mode & ignore
+          // Set apparent mode & ignore
           ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
           // set ignore all events
           DBWriteContactSettingDword(hContact, "Ignore", "Mask1", 0xFFFF);
@@ -1238,25 +1238,25 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
         else
         { // failed to add or other error
           NetLog_Server("SSI failed to handle %s Item '%s'", "Ignore", szRecordName);
-			  }
+        }
       }
-			break;
+      break;
 
-		case SSI_ITEM_UNKNOWN2:
-			NetLog_Server("SSI unknown type 0x11");
-			break;
+    case SSI_ITEM_UNKNOWN2:
+      NetLog_Server("SSI unknown type 0x11");
+      break;
 
-		case SSI_ITEM_IMPORTTIME:
-			if (wGroupId == 0)
-			{
-				/* time our list was first imported */
-				/* pszRecordName is "Import Time" */
-				/* data is TLV(13) {TLV(D4) {time_t importTime}} */
+    case SSI_ITEM_IMPORTTIME:
+      if (wGroupId == 0)
+      {
+        /* time our list was first imported */
+        /* pszRecordName is "Import Time" */
+        /* data is TLV(13) {TLV(D4) {time_t importTime}} */
         ICQWriteContactSettingDword(NULL, "ImportTS", getDWordFromChain(pChain, 0xD4, 1));
         ICQWriteContactSettingWord(NULL, "SrvImportID", wItemId);
-				NetLog_Server("SSI first import recognized");
-			}
-			break;
+        NetLog_Server("SSI first import recognized");
+      }
+      break;
 
     case SSI_ITEM_BUDDYICON:
       if (wGroupId == 0)
@@ -1272,50 +1272,50 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
       }
       break;
 
-		case SSI_ITEM_UNKNOWN1:
+    case SSI_ITEM_UNKNOWN1:
       if (wGroupId == 0)
       {
         /* ICQ2k ShortcutBar Items */
         /* data is TLV(CD) text */
       }
 
-		default:
-			NetLog_Server("SSI unhandled item %2x", wTlvType);
-			break;
-		}
+    default:
+      NetLog_Server("SSI unhandled item %2x", wTlvType);
+      break;
+    }
 
-		if (pChain)
-			disposeChain(&pChain);
+    if (pChain)
+      disposeChain(&pChain);
 
-	} // end for
+  } // end for
 
-	NetLog_Server("Bytes left: %u", wLen);
+  NetLog_Server("Bytes left: %u", wLen);
 
-	ICQWriteContactSettingWord(NULL, "SrvRecordCount", (WORD)(wRecord + ICQGetContactSettingWord(NULL, "SrvRecordCount", 0)));
+  ICQWriteContactSettingWord(NULL, "SrvRecordCount", (WORD)(wRecord + ICQGetContactSettingWord(NULL, "SrvRecordCount", 0)));
 
-	if (bIsLastPacket)
-	{
-		// No contacts left to sync
-		bIsSyncingCL = FALSE;
+  if (bIsLastPacket)
+  {
+    // No contacts left to sync
+    bIsSyncingCL = FALSE;
 
     icq_RescanInfoUpdate();
 
-		if (wLen >= 4)
-		{
-			DWORD dwLastUpdateTime;
+    if (wLen >= 4)
+    {
+      DWORD dwLastUpdateTime;
 
-			/* finally we get a time_t of the last update time */
-			unpackDWord(&buf, &dwLastUpdateTime);
-			ICQWriteContactSettingDword(NULL, "SrvLastUpdate", dwLastUpdateTime);
-			NetLog_Server("Last update of server list was (%u) %s", dwLastUpdateTime, asctime(localtime(&dwLastUpdateTime)));
+      /* finally we get a time_t of the last update time */
+      unpackDWord(&buf, &dwLastUpdateTime);
+      ICQWriteContactSettingDword(NULL, "SrvLastUpdate", dwLastUpdateTime);
+      NetLog_Server("Last update of server list was (%u) %s", dwLastUpdateTime, asctime(localtime(&dwLastUpdateTime)));
 
-			sendRosterAck();
-			handleServUINSettings(wListenPort, dwLocalInternalIP);
-		}
-		else
-		{
-			NetLog_Server("Last packet missed update time...");
-		}
+      sendRosterAck();
+      handleServUINSettings(wListenPort, dwLocalInternalIP);
+    }
+    else
+    {
+      NetLog_Server("Last packet missed update time...");
+    }
     if (ICQGetContactSettingWord(NULL, "SrvRecordCount", 0) == 0)
     { // we got empty serv-list, create master group
       servlistcookie* ack = (servlistcookie*)malloc(sizeof(servlistcookie));
@@ -1345,18 +1345,18 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
 static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 {
-	WORD wReasonLen;
-	DWORD dwUin;
+  WORD wReasonLen;
+  DWORD dwUin;
   uid_str szUid;
-	HANDLE hcontact;
-	CCSDATA ccs;
-	PROTORECVEVENT pre;
+  HANDLE hcontact;
+  CCSDATA ccs;
+  PROTORECVEVENT pre;
   char* szReason;
   int nReasonLen;
   char* szNick;
   int nNickLen;
-	char* szBlob;
-	char* pCurBlob;
+  char* szBlob;
+  char* pCurBlob;
   DBVARIANT dbv;
   int bAdded;
 
@@ -1368,23 +1368,23 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
     return;
   }
 
-	unpackWord(&buf, &wReasonLen);
-	wLen -= 2;
-	if (wReasonLen > wLen)
-		return;
+  unpackWord(&buf, &wReasonLen);
+  wLen -= 2;
+  if (wReasonLen > wLen)
+    return;
 
   if (dwUin) 
     hcontact = HContactFromUIN(dwUin, &bAdded);
   else
     hcontact = HContactFromUID(szUid, &bAdded);
 
-	ccs.szProtoService=PSR_AUTH;
-	ccs.hContact=hcontact;
-	ccs.wParam=0;
-	ccs.lParam=(LPARAM)&pre;
-	pre.flags=0;
-	pre.timestamp=time(NULL);
-	pre.lParam=sizeof(DWORD)+sizeof(HANDLE)+wReasonLen+5;
+  ccs.szProtoService=PSR_AUTH;
+  ccs.hContact=hcontact;
+  ccs.wParam=0;
+  ccs.lParam=(LPARAM)&pre;
+  pre.flags=0;
+  pre.timestamp=time(NULL);
+  pre.lParam=sizeof(DWORD)+sizeof(HANDLE)+wReasonLen+5;
   szReason = (char*)malloc(wReasonLen+1);
   if (szReason)
   {
@@ -1410,10 +1410,10 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 
   ICQWriteContactSettingByte(ccs.hContact, "Grant", 1);
 
-	/*blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)*/
-	pCurBlob=szBlob=(char *)malloc(pre.lParam);
-	memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
-	memcpy(pCurBlob,&hcontact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
+  /*blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)*/
+  pCurBlob=szBlob=(char *)malloc(pre.lParam);
+  memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
+  memcpy(pCurBlob,&hcontact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
   if (nNickLen && dwUin) 
   { // if we have nick we add it, otherwise keep trailing zero
     memcpy(pCurBlob, szNick, nNickLen);
@@ -1424,10 +1424,10 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
     memcpy(pCurBlob, szUid, nNickLen);
     pCurBlob+=nNickLen;
   }
-	*(char *)pCurBlob = 0; pCurBlob++;
-	*(char *)pCurBlob = 0; pCurBlob++;
-	*(char *)pCurBlob = 0; pCurBlob++;
-	*(char *)pCurBlob = 0; pCurBlob++;
+  *(char *)pCurBlob = 0; pCurBlob++;
+  *(char *)pCurBlob = 0; pCurBlob++;
+  *(char *)pCurBlob = 0; pCurBlob++;
+  *(char *)pCurBlob = 0; pCurBlob++;
   if (nReasonLen)
   {
     memcpy(pCurBlob, szReason, nReasonLen);
@@ -1435,14 +1435,14 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
   }
   else
   {
-	  memcpy(pCurBlob, buf, wReasonLen); 
+    memcpy(pCurBlob, buf, wReasonLen); 
     pCurBlob += wReasonLen;
   }
-	*(char *)pCurBlob = 0;
-	pre.szMessage=(char *)szBlob;
+  *(char *)pCurBlob = 0;
+  pre.szMessage=(char *)szBlob;
 
 // TODO: Change for new auth system, include all known informations
-	CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
+  CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
 
   SAFE_FREE(&szReason);
   DBFreeVariant(&dbv);
@@ -1453,10 +1453,10 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 
 static void handleRecvAdded(unsigned char *buf, WORD wLen)
 {
-	DWORD dwUin;
-	DBEVENTINFO dbei;
-	PBYTE pCurBlob;
-	HANDLE hContact;
+  DWORD dwUin;
+  DBEVENTINFO dbei;
+  PBYTE pCurBlob;
+  HANDLE hContact;
   int bAdded;
 
   if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
@@ -1471,39 +1471,39 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 
   ICQDeleteContactSetting(hContact, "Grant");
 
-	ZeroMemory(&dbei,sizeof(dbei));
-	dbei.cbSize=sizeof(dbei);
-	dbei.szModule=gpszICQProtoName;
-	dbei.timestamp=time(NULL);
-	dbei.flags=0;
-	dbei.eventType=EVENTTYPE_ADDED;
-	dbei.cbBlob=sizeof(DWORD)+sizeof(HANDLE)+4;
-	pCurBlob=dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
-	/*blob is: uin(DWORD), hContact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ) */
-	memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
-	memcpy(pCurBlob,&hContact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
-	*(char *)pCurBlob = 0; pCurBlob++;
-	*(char *)pCurBlob = 0; pCurBlob++;
-	*(char *)pCurBlob = 0; pCurBlob++;
-	*(char *)pCurBlob = 0;
+  ZeroMemory(&dbei,sizeof(dbei));
+  dbei.cbSize=sizeof(dbei);
+  dbei.szModule=gpszICQProtoName;
+  dbei.timestamp=time(NULL);
+  dbei.flags=0;
+  dbei.eventType=EVENTTYPE_ADDED;
+  dbei.cbBlob=sizeof(DWORD)+sizeof(HANDLE)+4;
+  pCurBlob=dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
+  /*blob is: uin(DWORD), hContact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ) */
+  memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
+  memcpy(pCurBlob,&hContact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
+  *(char *)pCurBlob = 0; pCurBlob++;
+  *(char *)pCurBlob = 0; pCurBlob++;
+  *(char *)pCurBlob = 0; pCurBlob++;
+  *(char *)pCurBlob = 0;
 // TODO: Change for new auth system
 
-	CallService(MS_DB_EVENT_ADD,(WPARAM)(HANDLE)NULL,(LPARAM)&dbei);
+  CallService(MS_DB_EVENT_ADD,(WPARAM)(HANDLE)NULL,(LPARAM)&dbei);
 }
 
 
 
 static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 {
-	BYTE bResponse;
-	DWORD dwUin;
-	HANDLE hContact;
-	char* szNick;
-	WORD nReasonLen;
-	char* szReason;
+  BYTE bResponse;
+  DWORD dwUin;
+  HANDLE hContact;
+  char* szNick;
+  WORD nReasonLen;
+  char* szReason;
   int bAdded;
 
-	bResponse = 0xFF;
+  bResponse = 0xFF;
 
   if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
 
@@ -1515,46 +1515,46 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 
   hContact = HContactFromUIN(dwUin, &bAdded);
 
-	if (hContact != INVALID_HANDLE_VALUE) szNick = NickFromHandle(hContact);
+  if (hContact != INVALID_HANDLE_VALUE) szNick = NickFromHandle(hContact);
 
-	if (wLen > 0)
-	{
-	  unpackByte(&buf, &bResponse);
-	  wLen -= 1;
-	}
-	if (wLen >= 2)
-	{
-	  unpackWord(&buf, &nReasonLen);
-	  wLen -= 2;
-	  if (wLen >= nReasonLen)
-		{
-			szReason = malloc(nReasonLen+1);
-			unpackString(&buf, szReason, nReasonLen);
-			szReason[nReasonLen] = '\0';
-		}
-	}
+  if (wLen > 0)
+  {
+    unpackByte(&buf, &bResponse);
+    wLen -= 1;
+  }
+  if (wLen >= 2)
+  {
+    unpackWord(&buf, &nReasonLen);
+    wLen -= 2;
+    if (wLen >= nReasonLen)
+    {
+      szReason = malloc(nReasonLen+1);
+      unpackString(&buf, szReason, nReasonLen);
+      szReason[nReasonLen] = '\0';
+    }
+  }
 
-	switch (bResponse)
-	{
+  switch (bResponse)
+  {
 
-	case 0:
-		NetLog_Server("Authorisation request denied by %u", dwUin);
-		// TODO: Add to system history as soon as new auth system is ready
-		break;
+  case 0:
+    NetLog_Server("Authorisation request denied by %u", dwUin);
+    // TODO: Add to system history as soon as new auth system is ready
+    break;
 
-	case 1:
-		ICQWriteContactSettingByte(hContact, "Auth", 0);
-		NetLog_Server("Authorisation request granted by %u", dwUin);
-		// TODO: Add to system history as soon as new auth system is ready
-		break;
+  case 1:
+    ICQWriteContactSettingByte(hContact, "Auth", 0);
+    NetLog_Server("Authorisation request granted by %u", dwUin);
+    // TODO: Add to system history as soon as new auth system is ready
+    break;
 
-	default:
-		NetLog_Server("Unknown Authorisation request response (%u) from %u", bResponse, dwUin);
-		break;
+  default:
+    NetLog_Server("Unknown Authorisation request response (%u) from %u", bResponse, dwUin);
+    break;
 
-	}
-	SAFE_FREE(&szNick);
-	SAFE_FREE(&szReason);
+  }
+  SAFE_FREE(&szNick);
+  SAFE_FREE(&szReason);
 }
 
 

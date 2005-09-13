@@ -36,10 +36,10 @@
 #ifndef __LOG_H
 #define __LOG_H
 
-#define LOG_NOTE       0	 //trivial problems or problems that will already have been reported elsewhere
-#define LOG_WARNING    1	 //problems that may have caused data loss
-#define LOG_ERROR      2	 //problems that cause a disconnection from the network
-#define LOG_FATAL      3	 //problems requiring user intervention: password wrong, rate exceeded, etc.
+#define LOG_NOTE       0   //trivial problems or problems that will already have been reported elsewhere
+#define LOG_WARNING    1   //problems that may have caused data loss
+#define LOG_ERROR      2   //problems that cause a disconnection from the network
+#define LOG_FATAL      3   //problems requiring user intervention: password wrong, rate exceeded, etc.
 
 /*---------* Functions *---------------*/
 

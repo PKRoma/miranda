@@ -39,14 +39,14 @@
 
 struct icq_contactsend_s
 {
-	DWORD uin;
-	char *szNick;
+  DWORD uin;
+  char *szNick;
 };
 
 typedef struct message_cookie_data_s
 {
-	BYTE bMessageType;
-	BYTE nAckType;
+  BYTE bMessageType;
+  BYTE nAckType;
 } message_cookie_data;
 
 #define ACKTYPE_NONE   0
@@ -56,7 +56,7 @@ typedef struct message_cookie_data_s
 
 typedef struct fam15_cookie_data_s
 {
-	BYTE bRequestType;
+  BYTE bRequestType;
 } fam15_cookie_data;
 
 #define REQUESTTYPE_OWNER        0

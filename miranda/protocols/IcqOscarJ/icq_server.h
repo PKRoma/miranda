@@ -38,9 +38,9 @@
 #define __ICQ_SERVER_H
 
 typedef struct serverthread_start_info_s {
-	NETLIBOPENCONNECTION nloc;
-	WORD wPassLen;
-	char szEncPass[20];
+  NETLIBOPENCONNECTION nloc;
+  WORD wPassLen;
+  char szEncPass[20];
 } serverthread_start_info;
 
 int isLoginServer;

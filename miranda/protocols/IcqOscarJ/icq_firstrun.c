@@ -53,76 +53,76 @@ void icq_FirstRunCheck()
 BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   switch (msg)
-	{
+  {
 
-	case WM_INITDIALOG:
+  case WM_INITDIALOG:
     {
       char* pszPwd;
-			DWORD dwUIN;
-			char pszUIN[20];
+      DWORD dwUIN;
+      char pszUIN[20];
 
 
       ICQTranslateDialog(hwndDlg);
       SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
 
-			dwUIN = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
+      dwUIN = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
 
       if (dwUIN)
-			{
-				null_snprintf(pszUIN, 20, "%u", dwUIN);
+      {
+        null_snprintf(pszUIN, 20, "%u", dwUIN);
         SetDlgItemText(hwndDlg, IDC_UIN, pszUIN);
       }
 
       SendDlgItemMessage(hwndDlg, IDC_PW, EM_LIMITTEXT, 10, 0);
       pszPwd = GetUserPassword(FALSE);
       if (pszPwd)
-			{
+      {
         SetDlgItemText(hwndDlg, IDC_PW, pszPwd);
       }
     }
-		break;
+    break;
 
-	case WM_CLOSE:
-		EndDialog(hwndDlg, 0);
-		break;
+  case WM_CLOSE:
+    EndDialog(hwndDlg, 0);
+    break;
 
-	case WM_COMMAND:
-		{
-			switch (LOWORD(wParam))
-			{
+  case WM_COMMAND:
+    {
+      switch (LOWORD(wParam))
+      {
 
-			case IDC_REGISTER:
-				{
-					CallService(MS_UTILS_OPENURL, 1, (LPARAM)URL_REGISTER);
-					break;
-				}
-
-			case IDOK:
-				{
-					char str[128];
-					DWORD dwUIN;
-
-					GetDlgItemText(hwndDlg, IDC_UIN, str, sizeof(str));
-					dwUIN = atoi(str);
-					ICQWriteContactSettingDword(NULL, UNIQUEIDSETTING, dwUIN);
-					GetDlgItemText(hwndDlg, IDC_PW, str, sizeof(str));
-          strcpy(gpszPassword, str);
-					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
-					ICQWriteContactSettingString(NULL, "Password", str);
-				}
-				// fall through
-
-			case IDCANCEL:
+      case IDC_REGISTER:
         {
-					// Mark first run as completed
-					ICQWriteContactSettingByte(NULL, "FirstRun", 1);
+          CallService(MS_UTILS_OPENURL, 1, (LPARAM)URL_REGISTER);
+          break;
+        }
+
+      case IDOK:
+        {
+          char str[128];
+          DWORD dwUIN;
+
+          GetDlgItemText(hwndDlg, IDC_UIN, str, sizeof(str));
+          dwUIN = atoi(str);
+          ICQWriteContactSettingDword(NULL, UNIQUEIDSETTING, dwUIN);
+          GetDlgItemText(hwndDlg, IDC_PW, str, sizeof(str));
+          strcpy(gpszPassword, str);
+          CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
+          ICQWriteContactSettingString(NULL, "Password", str);
+        }
+        // fall through
+
+      case IDCANCEL:
+        {
+          // Mark first run as completed
+          ICQWriteContactSettingByte(NULL, "FirstRun", 1);
           EndDialog(hwndDlg, IDCANCEL);
         }
-				break;
+        break;
 
       }
     }
-		break;
+    break;
   }
 
   return FALSE;

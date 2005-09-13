@@ -70,15 +70,15 @@ static void verToStr(char* szStr, int v)
 // Function is not multithread safe.
 static char* MirandaVersionToString(char* szStr, int v, int m)
 {
-	if (!v) // this is not Miranda
-		return NULL;
-	else
-	{
+  if (!v) // this is not Miranda
+    return NULL;
+  else
+  {
     strcpy(szStr, "Miranda IM ");
 
-		if (v == 1)
-			verToStr(szStr, 0x80010200);
-		else if ((v&0x7FFFFFFF) <= 0x030301)
+    if (v == 1)
+      verToStr(szStr, 0x80010200);
+    else if ((v&0x7FFFFFFF) <= 0x030301)
       verToStr(szStr, v);
     else 
     {
@@ -91,9 +91,9 @@ static char* MirandaVersionToString(char* szStr, int v, int m)
       verToStr(szStr, v);
       strcat(szStr, ")");
     }
-	}
+  }
 
-	return szStr;
+  return szStr;
 }
 
 
@@ -113,8 +113,6 @@ const capstr capRichText  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xa
 const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf};
 const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capStr20012  = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xbc, 0xd2, 0x00, 0x04, 0xac, 0x96, 0xdd, 0x96};
-const capstr capXtraz     = {0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0};
-const capstr capIcq5Extra = {0x09, 0x46, 0x13, 0x43, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_SENDFILE
 const capstr capAimIcon   = {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
 const capstr capUim       = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
 
@@ -144,31 +142,31 @@ char* cliSpamBot   = "Spam Bot";
 
 char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE* caps, WORD wLen, DWORD* dwClientId)
 {
-	LPSTR szClient = NULL;
-	static char szClientBuf[64];
+  LPSTR szClient = NULL;
+  static char szClientBuf[64];
 
   *dwClientId = 1; // Most clients does not tick as MsgIDs
   hasRichChecked = FALSE; // init fast rich text detection
 
   // Is this a Miranda IM client?
   if (dwFT1 == 0xffffffff)
-	{
-		if (dwFT2 == 0xffffffff)
-		{ // This is Gaim not Miranda
-			szClient = "Gaim";
-		}
-		else if (!dwFT2 && wVersion == 7)
-		{ // This is WebICQ not Miranda
-			szClient = "WebICQ";
-		}
-		else if (!dwFT2 && dwFT3 == 0x3B7248ED)
-		{ // And this is most probably Spam Bot
-			szClient = cliSpamBot;
-		}
-		else 
+  {
+    if (dwFT2 == 0xffffffff)
+    { // This is Gaim not Miranda
+      szClient = "Gaim";
+    }
+    else if (!dwFT2 && wVersion == 7)
+    { // This is WebICQ not Miranda
+      szClient = "WebICQ";
+    }
+    else if (!dwFT2 && dwFT3 == 0x3B7248ED)
+    { // And this is most probably Spam Bot
+      szClient = cliSpamBot;
+    }
+    else 
     { // Yes this is most probably Miranda, get the version info
-			szClient = MirandaVersionToString(szClientBuf, dwFT2, 0);
-		}
+      szClient = MirandaVersionToString(szClientBuf, dwFT2, 0);
+    }
   }
   else if ((dwFT1 & 0xFF7F0000) == 0x7D000000)
   { // This is probably an Licq client
@@ -421,10 +419,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         }
         else if (wVersion == 9)
         { // try to determine lite versions
-          if (MatchCap(caps, wLen, &capXtraz, 0x10))
+          if (CheckContactCapabilities(hContact, CAPF_XTRAZ))
           {
             *dwClientId = 0;
-            if (MatchCap(caps, wLen, &capIcq5Extra, 0x10))
+            if (CheckContactCapabilities(hContact, CAPF_AIM_FILE))
               szClient = "icq5";
             else
               szClient = "ICQ Lite v4";
@@ -461,7 +459,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           }
       }
     }
-  	else if (!dwUin)
+    else if (!dwUin)
     {
       szClient = "AIM";
     }

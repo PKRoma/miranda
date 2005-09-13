@@ -47,8 +47,8 @@ static BOOL bEnabled = TRUE;
 static BOOL bPaused = FALSE;
 static DWORD tLast;
 typedef struct s_userinfo {
-	DWORD dwUin;
-	HANDLE hContact;
+  DWORD dwUin;
+  HANDLE hContact;
 } userinfo;
 static userinfo userList[LISTSIZE];
 
@@ -60,26 +60,26 @@ void __cdecl icq_InfoUpdateThread(void* arg);
 
 void icq_InitInfoUpdate(void)
 {
-	int i;
-	
-	// Create wait objects
-	hQueueEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	hDummyEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	
-	if (hQueueEvent && hDummyEvent)
-	{
-		// Init mutexes
-		InitializeCriticalSection(&listmutex);
-		
-		// Init list
-		for (i = 0; i<LISTSIZE; i++)
-		{
-			userList[i].dwUin = 0;
-			userList[i].hContact = NULL;
-		}
-		
-		forkthread(icq_InfoUpdateThread, 0, 0);
-	}
+  int i;
+  
+  // Create wait objects
+  hQueueEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+  hDummyEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+  
+  if (hQueueEvent && hDummyEvent)
+  {
+    // Init mutexes
+    InitializeCriticalSection(&listmutex);
+    
+    // Init list
+    for (i = 0; i<LISTSIZE; i++)
+    {
+      userList[i].dwUin = 0;
+      userList[i].hContact = NULL;
+    }
+    
+    forkthread(icq_InfoUpdateThread, 0, 0);
+  }
 
   bPendingUsers = 0;
 }
@@ -88,56 +88,56 @@ void icq_InitInfoUpdate(void)
 // Returns FALSE if the list was full
 BOOL icq_QueueUser(HANDLE hContact)
 {
-	if (nUserCount < LISTSIZE)
-	{
-		int i, nChecked = 0, nFirstFree = -1;
-		BOOL bFound = FALSE;
+  if (nUserCount < LISTSIZE)
+  {
+    int i, nChecked = 0, nFirstFree = -1;
+    BOOL bFound = FALSE;
 
-		EnterCriticalSection(&listmutex);
+    EnterCriticalSection(&listmutex);
 
-		// Check if in list
-		for (i = 0; (i<LISTSIZE && nChecked<nUserCount); i++)
-		{
-			if (userList[i].hContact)
-			{
-				nChecked++;
-				if (userList[i].hContact == hContact)
-				{
-					bFound = TRUE;
-					break;
-				}
-			}
-			else if (nFirstFree == -1)
-			{
-				nFirstFree = i;
-			}
-		}
-		if (nFirstFree == -1)
-			nFirstFree = i;
+    // Check if in list
+    for (i = 0; (i<LISTSIZE && nChecked<nUserCount); i++)
+    {
+      if (userList[i].hContact)
+      {
+        nChecked++;
+        if (userList[i].hContact == hContact)
+        {
+          bFound = TRUE;
+          break;
+        }
+      }
+      else if (nFirstFree == -1)
+      {
+        nFirstFree = i;
+      }
+    }
+    if (nFirstFree == -1)
+      nFirstFree = i;
 
-		// Add to list
-		if (!bFound)
-		{
+    // Add to list
+    if (!bFound)
+    {
       DWORD dwUin;
 
       if (!ICQGetContactSettingUID(hContact, &dwUin, NULL))
       {
-			  userList[nFirstFree].dwUin = dwUin;
-			  userList[nFirstFree].hContact = hContact;
-			  nUserCount++;
+        userList[nFirstFree].dwUin = dwUin;
+        userList[nFirstFree].hContact = hContact;
+        nUserCount++;
 #ifdef _DEBUG
-  			NetLog_Server("Queued user %u, place %u, count %u", userList[nFirstFree].dwUin, nFirstFree, nUserCount);
+        NetLog_Server("Queued user %u, place %u, count %u", userList[nFirstFree].dwUin, nFirstFree, nUserCount);
 #endif
-  			// Notify worker thread
-  			if (hQueueEvent)
-				  SetEvent(hQueueEvent);
+        // Notify worker thread
+        if (hQueueEvent)
+          SetEvent(hQueueEvent);
       }
-		}
+    }
 
-		LeaveCriticalSection(&listmutex);
+    LeaveCriticalSection(&listmutex);
 
-		return TRUE;
-	}
+    return TRUE;
+  }
 
   return FALSE;
 }
@@ -146,62 +146,62 @@ BOOL icq_QueueUser(HANDLE hContact)
 
 void icq_DequeueUser(DWORD dwUin)
 {
-	if (nUserCount > 0) 
+  if (nUserCount > 0) 
   {
-		int i, nChecked = 0;
-		// Check if in list
-		EnterCriticalSection(&listmutex);
-		for (i = 0; (i<LISTSIZE && nChecked<nUserCount); i++) 
+    int i, nChecked = 0;
+    // Check if in list
+    EnterCriticalSection(&listmutex);
+    for (i = 0; (i<LISTSIZE && nChecked<nUserCount); i++) 
     {
-			if (userList[i].dwUin) 
+      if (userList[i].dwUin) 
       {
-				nChecked++;
-				// Remove from list
-				if (userList[i].dwUin == dwUin) 
+        nChecked++;
+        // Remove from list
+        if (userList[i].dwUin == dwUin) 
         {
 #ifdef _DEBUG
-					NetLog_Server("Dequeued user %u", userList[i].dwUin);
+          NetLog_Server("Dequeued user %u", userList[i].dwUin);
 #endif
-					userList[i].dwUin = 0;
-					userList[i].hContact = NULL;
-					nUserCount--;
-					break;
-				}
-			}
-		}
-		LeaveCriticalSection(&listmutex);
-	}
+          userList[i].dwUin = 0;
+          userList[i].hContact = NULL;
+          nUserCount--;
+          break;
+        }
+      }
+    }
+    LeaveCriticalSection(&listmutex);
+  }
 }
 
 
 
 void icq_RescanInfoUpdate()
 {
-	HANDLE hContact = NULL;
-	DWORD dwCurrentTime = 0;
+  HANDLE hContact = NULL;
+  DWORD dwCurrentTime = 0;
   BOOL bOldEnable = bEnabled;
 
   bPendingUsers = 0;
   /* This is here, cause we do not want to emit large number of reuqest at once,
     fill queue, and let thread deal with it */
   bEnabled = 0; // freeze thread
-	// Queue all outdated users
-	dwCurrentTime = time(NULL);
-	hContact = ICQFindFirstContact();
+  // Queue all outdated users
+  dwCurrentTime = time(NULL);
+  hContact = ICQFindFirstContact();
 
-	while (hContact != NULL)
-	{
-		if ((dwCurrentTime - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD)
-		{
-			// Queue user
-			if (!icq_QueueUser(hContact))
+  while (hContact != NULL)
+  {
+    if ((dwCurrentTime - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD)
+    {
+      // Queue user
+      if (!icq_QueueUser(hContact))
       { // The queue is full, pause queuing contacts
         bPendingUsers = 1;
         break; 
       }
-		}
-		hContact = ICQFindNextContact(hContact);
-	}
+    }
+    hContact = ICQFindNextContact(hContact);
+  }
   icq_EnableUserLookup(bOldEnable); // wake up thread
 }
 
@@ -209,13 +209,13 @@ void icq_RescanInfoUpdate()
 
 void icq_EnableUserLookup(BOOL bEnable)
 {
-	bEnabled = bEnable;
+  bEnabled = bEnable;
 
   if (bEnabled) bPaused = FALSE;
 
-	// Notify worker thread
-	if (bEnabled && hQueueEvent)
-		SetEvent(hQueueEvent);
+  // Notify worker thread
+  if (bEnabled && hQueueEvent)
+    SetEvent(hQueueEvent);
 }
 
 
@@ -234,26 +234,26 @@ void icq_PauseUserLookup()
 
 void __cdecl icq_InfoUpdateThread(void* arg)
 {
-	int i;
-	DWORD dwWait;
-	BOOL bKeepRunning = TRUE;
+  int i;
+  DWORD dwWait;
+  BOOL bKeepRunning = TRUE;
 
-	while (bKeepRunning)
-	{
-		// Wait for a while
-		ResetEvent(hQueueEvent);
+  while (bKeepRunning)
+  {
+    // Wait for a while
+    ResetEvent(hQueueEvent);
 
     if (!nUserCount && bPendingUsers) // whole queue processed, check if more users needs updating
       icq_RescanInfoUpdate();
 
-		if ((nUserCount > 0) && bEnabled && icqOnline)
-			dwWait = WaitForSingleObjectEx(hDummyEvent, 3000, TRUE);
-		else
+    if ((nUserCount > 0) && bEnabled && icqOnline)
+      dwWait = WaitForSingleObjectEx(hDummyEvent, 3000, TRUE);
+    else
     { // we need to slow down the process or icq will kick us
       dwWait = WaitForSingleObjectEx(hDummyEvent, 1000, TRUE);
       while (dwWait == WAIT_TIMEOUT)
       {
-			  dwWait = WaitForSingleObjectEx(hQueueEvent, 10000, TRUE);
+        dwWait = WaitForSingleObjectEx(hQueueEvent, 10000, TRUE);
 
         if (Miranda_Terminated())
           bKeepRunning = FALSE;
@@ -262,19 +262,19 @@ void __cdecl icq_InfoUpdateThread(void* arg)
       }
     }
 
-		switch (dwWait) 
+    switch (dwWait) 
     {
-		case WAIT_IO_COMPLETION:
-			// Possible shutdown in progress
-			if (Miranda_Terminated())
-				bKeepRunning = FALSE;
-			break;
-			
-		case WAIT_OBJECT_0:
-			if (Miranda_Terminated())
-				bKeepRunning = FALSE;
-		case WAIT_TIMEOUT:
-			// Time to check for new users
+    case WAIT_IO_COMPLETION:
+      // Possible shutdown in progress
+      if (Miranda_Terminated())
+        bKeepRunning = FALSE;
+      break;
+      
+    case WAIT_OBJECT_0:
+      if (Miranda_Terminated())
+        bKeepRunning = FALSE;
+    case WAIT_TIMEOUT:
+      // Time to check for new users
       if (!bEnabled) continue; // we can't send requests now
 
       if (bPaused)
@@ -291,53 +291,53 @@ void __cdecl icq_InfoUpdateThread(void* arg)
       tLast = GetTickCount();
 
 #ifdef _DEBUG
-			NetLog_Server("Users %u", nUserCount);
+      NetLog_Server("Users %u", nUserCount);
 #endif
-			if (nUserCount > 0 && icqOnline)
-			{
-				EnterCriticalSection(&listmutex);
-				for (i = 0; i<LISTSIZE; i++)
-				{
-					if (userList[i].hContact)
-					{
-						// Check TS again, maybe it has been updated while we slept
-						if ((time(NULL) - ICQGetContactSettingDword(userList[i].hContact, "InfoTS", 0)) > UPDATE_THRESHOLD) {
+      if (nUserCount > 0 && icqOnline)
+      {
+        EnterCriticalSection(&listmutex);
+        for (i = 0; i<LISTSIZE; i++)
+        {
+          if (userList[i].hContact)
+          {
+            // Check TS again, maybe it has been updated while we slept
+            if ((time(NULL) - ICQGetContactSettingDword(userList[i].hContact, "InfoTS", 0)) > UPDATE_THRESHOLD) {
 #ifdef _DEBUG
-							NetLog_Server("Request info for user %u", userList[i].dwUin);
+              NetLog_Server("Request info for user %u", userList[i].dwUin);
 #endif
-							sendUserInfoAutoRequest(userList[i].dwUin);
+              sendUserInfoAutoRequest(userList[i].dwUin);
 
-							// Dequeue user and go back to sleep
-							userList[i].dwUin = 0;
-							userList[i].hContact = NULL;
-							nUserCount--;
-							break;
-						}
-						else
-						{
+              // Dequeue user and go back to sleep
+              userList[i].dwUin = 0;
+              userList[i].hContact = NULL;
+              nUserCount--;
+              break;
+            }
+            else
+            {
 #ifdef _DEBUG
-							NetLog_Server("Dequeued absolete user %u", userList[i].dwUin);
+              NetLog_Server("Dequeued absolete user %u", userList[i].dwUin);
 #endif
-							// Dequeue user and find another one
-							userList[i].dwUin = 0;
-							userList[i].hContact = NULL;
-							nUserCount--;
-							// continue for loop
-						}
-					}
-				}
-				LeaveCriticalSection(&listmutex);
-			}
-			break;
+              // Dequeue user and find another one
+              userList[i].dwUin = 0;
+              userList[i].hContact = NULL;
+              nUserCount--;
+              // continue for loop
+            }
+          }
+        }
+        LeaveCriticalSection(&listmutex);
+      }
+      break;
 
-		default:
-			// Something strange happened. Exit
-			bKeepRunning = FALSE;
-			break;
-		}
-	}
+    default:
+      // Something strange happened. Exit
+      bKeepRunning = FALSE;
+      break;
+    }
+  }
 
-	return;
+  return;
 }
 
 
@@ -345,8 +345,8 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 // Clean up before exit
 void icq_InfoUpdateCleanup(void)
 {
-	// Uninit mutex
-	DeleteCriticalSection(&listmutex);
-	CloseHandle(hQueueEvent);
-	CloseHandle(hDummyEvent);
+  // Uninit mutex
+  DeleteCriticalSection(&listmutex);
+  CloseHandle(hQueueEvent);
+  CloseHandle(hDummyEvent);
 }

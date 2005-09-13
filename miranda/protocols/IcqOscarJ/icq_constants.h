@@ -58,7 +58,7 @@
 #define DEFAULT_ANSI_CODEPAGE       CP_ACP
 #define DEFAULT_DCMSG_ENABLED       1 // passive dc messaging is default
 #define DEFAULT_TEMPVIS_ENABLED     1 // temporary visible is enabled by default
-#define DEFAULT_MTN_ENABLED         0
+#define DEFAULT_MTN_ENABLED         1
 #define DEFAULT_CAPS                0
 #define DEFAULT_AVATARS_ENABLED     1
 #define DEFAULT_LOAD_AVATARS        1
@@ -67,130 +67,155 @@
 #define DEFAULT_XSTATUS_AUTO        1
 #define DEFAULT_KILLSPAM_ENABLED    1
 
+#define DEFAULT_POPUPS_ENABLED      1
+#define DEFAULT_SPAM_POPUPS_ENABLED 1
+#define DEFAULT_LOG_POPUPS_ENABLED  1
+#define DEFAULT_POPUPS_SYS_ICONS    1
+#define DEFAULT_LOG0_TEXT_COLORS    RGB(0,0,0)  // LOG_NOTE
+#define DEFAULT_LOG0_BACK_COLORS    RGB(255,255,255)
+#define DEFAULT_LOG0_TIMEOUT        0
+#define DEFAULT_LOG1_TEXT_COLORS    RGB(0,0,0)  // LOG_WARNING
+#define DEFAULT_LOG1_BACK_COLORS    RGB(255,255,255)
+#define DEFAULT_LOG1_TIMEOUT        0
+#define DEFAULT_LOG2_TEXT_COLORS    RGB(0,0,0)  // LOG_ERROR
+#define DEFAULT_LOG2_BACK_COLORS    RGB(255,255,255)
+#define DEFAULT_LOG2_TIMEOUT        0
+#define DEFAULT_LOG3_TEXT_COLORS    RGB(0,0,0)  // LOG_FATAL
+#define DEFAULT_LOG3_BACK_COLORS    RGB(255,255,255)
+#define DEFAULT_LOG3_TIMEOUT        0
+#define DEFAULT_SPAM_TEXT_COLORS    RGB(193,0,38)
+#define DEFAULT_SPAM_BACK_COLORS    RGB(213,209,208)
+#define DEFAULT_SPAM_TIMEOUT        0
+#define DEFAULT_POPUPS_WIN_COLORS   0
+
 // Database setting names
 #define DBSETTING_CAPABILITIES      "caps"
 
 
 // Status FLAGS (used to determine status of other users)
-#define ICQ_STATUSF_ONLINE      0x0000
-#define ICQ_STATUSF_AWAY        0x0001
-#define ICQ_STATUSF_DND         0x0002
-#define ICQ_STATUSF_NA          0x0004
-#define ICQ_STATUSF_OCCUPIED    0x0010
-#define ICQ_STATUSF_FFC         0x0020
-#define ICQ_STATUSF_INVISIBLE   0x0100
+#define ICQ_STATUSF_ONLINE          0x0000
+#define ICQ_STATUSF_AWAY            0x0001
+#define ICQ_STATUSF_DND             0x0002
+#define ICQ_STATUSF_NA              0x0004
+#define ICQ_STATUSF_OCCUPIED        0x0010
+#define ICQ_STATUSF_FFC             0x0020
+#define ICQ_STATUSF_INVISIBLE       0x0100
 
 // Status values (used to set own status)
-#define ICQ_STATUS_ONLINE       0x0000
-#define ICQ_STATUS_AWAY         0x0001
-#define ICQ_STATUS_NA           0x0005
-#define ICQ_STATUS_OCCUPIED     0x0011
-#define ICQ_STATUS_DND          0x0013
-#define ICQ_STATUS_FFC          0x0020
-#define ICQ_STATUS_INVISIBLE    0x0100
+#define ICQ_STATUS_ONLINE           0x0000
+#define ICQ_STATUS_AWAY             0x0001
+#define ICQ_STATUS_NA               0x0005
+#define ICQ_STATUS_OCCUPIED         0x0011
+#define ICQ_STATUS_DND              0x0013
+#define ICQ_STATUS_FFC              0x0020
+#define ICQ_STATUS_INVISIBLE        0x0100
 
-#define STATUS_WEBAWARE         0x0001 // Status webaware flag
-#define STATUS_SHOWIP           0x0002 // Status show ip flag
-#define STATUS_BIRTHDAY         0x0008 // User birthday flag
-#define STATUS_WEBFRONT         0x0020 // User active webfront flag
-#define STATUS_DCDISABLED       0x0100 // Direct connection not supported
-#define STATUS_DCAUTH           0x1000 // Direct connection upon authorization
-#define STATUS_DCCONT           0x2000 // DC only with contact users
+#define STATUS_WEBAWARE             0x0001 // Status webaware flag
+#define STATUS_SHOWIP               0x0002 // Status show ip flag
+#define STATUS_BIRTHDAY             0x0008 // User birthday flag
+#define STATUS_WEBFRONT             0x0020 // User active webfront flag
+#define STATUS_DCDISABLED           0x0100 // Direct connection not supported
+#define STATUS_DCAUTH               0x1000 // Direct connection upon authorization
+#define STATUS_DCCONT               0x2000 // DC only with contact users
 
 
 
 // Typing notification statuses
-#define MTN_FINISHED            0x0000
-#define MTN_TYPED               0x0001
-#define MTN_BEGUN               0x0002
+#define MTN_FINISHED                0x0000
+#define MTN_TYPED                   0x0001
+#define MTN_BEGUN                   0x0002
 
 
 
 // Ascii Capability IDs
-#define CAP_RTFMSGS  	          "{97B12751-243C-4334-AD22-D6ABF73F1492}"
-#define CAP_UTF8MSGS            "{0946134E-4C7F-11D1-8222-444553540000}"
+#define CAP_RTFMSGS                 "{97B12751-243C-4334-AD22-D6ABF73F1492}"
+#define CAP_UTF8MSGS                "{0946134E-4C7F-11D1-8222-444553540000}"
 
 // Binary Capability IDs
-#define BINARY_CAP_SIZE         16
-#define CAP_SRV_RELAY           0x09, 0x46, 0x13, 0x49, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
-#define CAP_UTF                 0x09, 0x46, 0x13, 0x4e, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
-#define CAP_TYPING              0x56, 0x3f, 0xc8, 0x09, 0x0b, 0x6f, 0x41, 0xbd, 0x9f, 0x79, 0x42, 0x26, 0x09, 0xdf, 0xa2, 0xf3
+#define BINARY_CAP_SIZE             16
+#define CAP_SRV_RELAY               0x09, 0x46, 0x13, 0x49, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
+#define CAP_UTF                     0x09, 0x46, 0x13, 0x4e, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
+#define CAP_TYPING                  0x56, 0x3f, 0xc8, 0x09, 0x0b, 0x6f, 0x41, 0xbd, 0x9f, 0x79, 0x42, 0x26, 0x09, 0xdf, 0xa2, 0xf3
+#define CAP_XTRAZ                   0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0
+#define CAP_AIM_FILE                0x09, 0x46, 0x13, 0x43, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
 
 // Miranda IM Capability bitmask
-#define CAPF_SRV_RELAY          0x00000001
-#define CAPF_UTF                0x00000002
-#define CAPF_TYPING             0x00000004
+#define CAPF_SRV_RELAY              0x00000001
+#define CAPF_UTF                    0x00000002
+#define CAPF_TYPING                 0x00000004
+#define CAPF_XTRAZ                  0x00000010
+#define CAPF_AIM_FILE               0x00000040
 
 
 // Message Capability IDs
-#define MCAP_TLV2711_FMT_s      0x09461349, 0x4c7f11d1, 0x82224445, 0x53540000
-#define MCAP_REVERSE_REQ_s      0x09461344, 0x4c7f11d1, 0x82224445, 0x53540000
+#define MCAP_TLV2711_FMT_s          0x09461349, 0x4c7f11d1, 0x82224445, 0x53540000
+#define MCAP_REVERSE_REQ_s          0x09461344, 0x4c7f11d1, 0x82224445, 0x53540000
 
 // Plugin Type GUIDs
-#define PSIG_MESSAGE_s          0x00000000, 0x00000000, 0x00000000, 0x00000000
-#define PSIG_INFO_PLUGIN_s      0xa0e93f37, 0x4fe9d311, 0xbcd20004, 0xac96dd96
-#define PSIG_STATUS_PLUGIN_s    0x10cf40d1, 0x4fe9d311, 0xbcd20004, 0xac96dd96
+#define PSIG_MESSAGE_s              0x00000000, 0x00000000, 0x00000000, 0x00000000
+#define PSIG_INFO_PLUGIN_s          0xa0e93f37, 0x4fe9d311, 0xbcd20004, 0xac96dd96
+#define PSIG_STATUS_PLUGIN_s        0x10cf40d1, 0x4fe9d311, 0xbcd20004, 0xac96dd96
 
 // Plugin Message GUIDs
-#define PMSG_QUERY_INFO_s       0xF002BF71, 0x4371D311, 0x8DD20010, 0x4B06462E
-#define PMSG_QUERY_STATUS_s     0x10180670, 0x5471D311, 0x8DD20010, 0x4B06462E
+#define PMSG_QUERY_INFO_s           0xF002BF71, 0x4371D311, 0x8DD20010, 0x4B06462E
+#define PMSG_QUERY_STATUS_s         0x10180670, 0x5471D311, 0x8DD20010, 0x4B06462E
 
 
 
 // Message types
-#define MTYPE_PLAIN             0x01 // Plain text (simple) message
-#define MTYPE_CHAT              0x02 // Chat request message
-#define MTYPE_FILEREQ           0x03 // File request / file ok message
-#define MTYPE_URL               0x04 // URL message (0xFE formatted)
-#define MTYPE_AUTHREQ           0x06 // Authorization request message (0xFE formatted)
-#define MTYPE_AUTHDENY          0x07 // Authorization denied message (0xFE formatted)
-#define MTYPE_AUTHOK            0x08 // Authorization given message (empty)
-#define MTYPE_SERVER            0x09 // Message from OSCAR server (0xFE formatted)
-#define MTYPE_ADDED             0x0C // "You-were-added" message (0xFE formatted)
-#define MTYPE_WWP               0x0D // Web pager message (0xFE formatted)
-#define MTYPE_EEXPRESS          0x0E // Email express message (0xFE formatted)
-#define MTYPE_CONTACTS          0x13 // Contact list message
-#define MTYPE_PLUGIN            0x1A // Plugin message described by text string
-#define MTYPE_AUTOAWAY          0xE8 // Auto away message
-#define MTYPE_AUTOBUSY          0xE9 // Auto occupied message
-#define MTYPE_AUTONA            0xEA // Auto not available message
-#define MTYPE_AUTODND           0xEB // Auto do not disturb message
-#define MTYPE_AUTOFFC           0xEC // Auto free for chat message
+#define MTYPE_PLAIN                 0x01 // Plain text (simple) message
+#define MTYPE_CHAT                  0x02 // Chat request message
+#define MTYPE_FILEREQ               0x03 // File request / file ok message
+#define MTYPE_URL                   0x04 // URL message (0xFE formatted)
+#define MTYPE_AUTHREQ               0x06 // Authorization request message (0xFE formatted)
+#define MTYPE_AUTHDENY              0x07 // Authorization denied message (0xFE formatted)
+#define MTYPE_AUTHOK                0x08 // Authorization given message (empty)
+#define MTYPE_SERVER                0x09 // Message from OSCAR server (0xFE formatted)
+#define MTYPE_ADDED                 0x0C // "You-were-added" message (0xFE formatted)
+#define MTYPE_WWP                   0x0D // Web pager message (0xFE formatted)
+#define MTYPE_EEXPRESS              0x0E // Email express message (0xFE formatted)
+#define MTYPE_CONTACTS              0x13 // Contact list message
+#define MTYPE_PLUGIN                0x1A // Plugin message described by text string
+#define MTYPE_AUTOAWAY              0xE8 // Auto away message
+#define MTYPE_AUTOBUSY              0xE9 // Auto occupied message
+#define MTYPE_AUTONA                0xEA // Auto not available message
+#define MTYPE_AUTODND               0xEB // Auto do not disturb message
+#define MTYPE_AUTOFFC               0xEC // Auto free for chat message
 // Internal Message types
-#define MTYPE_UNKNOWN           0x00 // Unknown message
+#define MTYPE_UNKNOWN               0x00 // Unknown message
 
-#define MTYPE_GREETINGCARD      0x101 // Request for Contacts
-#define MTYPE_REQUESTCONTACTS   0x102 // Greeting Card
-#define MTYPE_MESSAGE           0x103 // Message+
-#define MTYPE_SCRIPT_INVITATION 0x201 // Xtraz Invitation
-#define MTYPE_SCRIPT_DATA       0x202 // Xtraz Message
-#define MTYPE_SCRIPT_NOTIFY     0x208 // Xtraz Response
+#define MTYPE_GREETINGCARD          0x101 // Request for Contacts
+#define MTYPE_REQUESTCONTACTS       0x102 // Greeting Card
+#define MTYPE_MESSAGE               0x103 // Message+
+#define MTYPE_SCRIPT_INVITATION     0x201 // Xtraz Invitation
+#define MTYPE_SCRIPT_DATA           0x202 // Xtraz Message
+#define MTYPE_SCRIPT_NOTIFY         0x208 // Xtraz Response
 
 // Message Plugin Type GUIDs
-#define MGTYPE_MESSAGE_s        0xBE6B7305, 0x0FC2104F, 0xA6DE4DB1, 0xE3564B0E 
-#define MGTYPE_FILE_s           0xF02D12D9, 0x3091D311, 0x8DD70010, 0x4B06462E
-#define MGTYPE_WEBURL_s         0x371C5872, 0xE987D411, 0xA4C100D0, 0xB759B1D9
-#define MGTYPE_CONTACTS_s       0x2A0E7D46, 0x7676D411, 0xBCE60004, 0xAC961EA6 
-#define MGTYPE_GREETING_CARD_s  0x01E53B48, 0x2AE4D111, 0xB6790060, 0x97E1E294
-#define MGTYPE_CHAT_s           0xBFF720B2, 0x378ED411, 0xBD280004, 0xAC96D905
-#define MGTYPE_XTRAZ_SCRIPT_s   0x3b60b3ef, 0xd82a6c45, 0xa4e09c5a, 0x5e67e865
+#define MGTYPE_MESSAGE_s            0xBE6B7305, 0x0FC2104F, 0xA6DE4DB1, 0xE3564B0E 
+#define MGTYPE_FILE_s               0xF02D12D9, 0x3091D311, 0x8DD70010, 0x4B06462E
+#define MGTYPE_WEBURL_s             0x371C5872, 0xE987D411, 0xA4C100D0, 0xB759B1D9
+#define MGTYPE_CONTACTS_s           0x2A0E7D46, 0x7676D411, 0xBCE60004, 0xAC961EA6 
+#define MGTYPE_GREETING_CARD_s      0x01E53B48, 0x2AE4D111, 0xB6790060, 0x97E1E294
+#define MGTYPE_CHAT_s               0xBFF720B2, 0x378ED411, 0xBD280004, 0xAC96D905
+#define MGTYPE_XTRAZ_SCRIPT_s       0x3b60b3ef, 0xd82a6c45, 0xa4e09c5a, 0x5e67e865
 
 // Message Plugin Sub-Type IDs
-#define MGTYPE_STANDARD_SEND      0x00
-#define MGTYPE_CONTACTS_REQUEST   0x02
-#define MGTYPE_SCRIPT_INVITATION  0x01
-#define MGTYPE_SCRIPT_DATA        0x02
-#define MGTYPE_SCRIPT_USER_REMOVE 0x04
-#define MGTYPE_SCRIPT_NOTIFY      0x08
+#define MGTYPE_STANDARD_SEND        0x00
+#define MGTYPE_CONTACTS_REQUEST     0x02
+#define MGTYPE_SCRIPT_INVITATION    0x01
+#define MGTYPE_SCRIPT_DATA          0x02
+#define MGTYPE_SCRIPT_USER_REMOVE   0x04
+#define MGTYPE_SCRIPT_NOTIFY        0x08
 
 
 
 /* Channels */
-#define	ICQ_LOGIN_CHAN			        0x01
-#define ICQ_DATA_CHAN				        0x02
-#define ICQ_ERROR_CHAN			        0x03
-#define ICQ_CLOSE_CHAN			        0x04
-#define ICQ_PING_CHAN				        0x05
+#define  ICQ_LOGIN_CHAN             0x01
+#define ICQ_DATA_CHAN               0x02
+#define ICQ_ERROR_CHAN              0x03
+#define ICQ_CLOSE_CHAN              0x04
+#define ICQ_PING_CHAN               0x05
 
 /* Families */
 #define ICQ_SERVICE_FAMILY          0x0001
@@ -278,7 +303,7 @@
 #define ICQ_AVATAR_ERROR            0x0001
 #define ICQ_AVATAR_UPLOAD_REQUEST   0x0002
 #define ICQ_AVATAR_UPLOAD_ACK       0x0003
-#define ICQ_AVATAR_GET_REQUEST	    0x0006
+#define ICQ_AVATAR_GET_REQUEST      0x0006
 #define ICQ_AVATAR_GET_REPLY        0x0007
 
 /* Subtypes for Server Lists Family 0x0013 */
@@ -419,7 +444,7 @@
 #define TLV_WORKFAX     0x02D0  //   sstring    User work fax number
 #define TLV_WORKURL     0x02DA  //   sstring    User work webpage url
 #define TLV_TIMEZONE    0x0316  //   uint8      User GMT offset
-#define TLV_ORGCITY	    0x0320  //   sstring    User originally from city
+#define TLV_ORGCITY     0x0320  //   sstring    User originally from city
 #define TLV_ORGSTATE    0x032A  //   sstring    User originally from state
 #define TLV_ORGCOUNTRY  0x0334  //   uint16     User originally from country (code)
 
@@ -471,7 +496,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030604
+#define ICQ_PLUG_VERSION            0x80030605
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

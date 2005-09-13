@@ -41,7 +41,7 @@ BOOL AvatarsReady = FALSE; // states if avatar connection established and ready 
 
 typedef struct avatarthreadstartinfo_t
 {
-  HANDLE hConnection;	// handle to the connection
+  HANDLE hConnection;  // handle to the connection
   char* pCookie;
   WORD wCookieLen;
   HANDLE hAvatarPacketRecver;
@@ -108,7 +108,7 @@ void GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbLen)
 
   CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
 
-  tPathLen = strlen(pszDest);
+  tPathLen = strlennull(pszDest);
   tPathLen += null_snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", gpszICQProtoName);
   CreateDirectory(pszDest, NULL);
 
@@ -459,7 +459,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
         NetLog_Server("User has Avatar.");
       }
     }
-	}
+  }
   else if (wOldStatus == ID_STATUS_OFFLINE)
   { // if user were offline, and now hash not found, clear the hash
   //  ICQDeleteContactSetting(hContact, "AvatarHash"); // TODO: need more testing
@@ -1048,7 +1048,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         BYTE len;
         WORD datalen;
         int out;
-        char* szMyFile = (char*)malloc(strlen(ac->szFile)+10);
+        char* szMyFile = (char*)malloc(strlennull(ac->szFile)+10);
         PROTO_AVATAR_INFORMATION ai;
 
         strcpy(szMyFile, ac->szFile);
@@ -1099,7 +1099,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           strcpy(ai.filename, szMyFile);
 
           out = _open(szMyFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-			    if (out) 
+          if (out) 
           {
             DBVARIANT dbv;
 
