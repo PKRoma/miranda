@@ -40,37 +40,36 @@ static int AutoAwayEvent(WPARAM wParam, LPARAM lParam)
 	PROTOCOLDESCRIPTOR **proto=0;
 	int protoCount=0;
 	int j;
-    MIRANDA_IDLE_INFO mii;
-    int status;
+	MIRANDA_IDLE_INFO mii;
+	int status;
 
-    mii.cbSize = sizeof(mii);
-    CallService(MS_IDLE_GETIDLEINFO, 0, (LPARAM)&mii);
-    if (mii.aaStatus==0) return 0;
+	mii.cbSize = sizeof(mii);
+	CallService(MS_IDLE_GETIDLEINFO, 0, (LPARAM)&mii);
+	if (mii.aaStatus==0) return 0;
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&protoCount, (LPARAM)&proto);
-	for (j=0; j<protoCount; j++) 
+	for (j=0; j<protoCount; j++) {
 		if ( proto[j]->type == PROTOTYPE_PROTOCOL )  {
-		int statusbits = CallProtoService(proto[j]->szName, PS_GETCAPS, PFLAGNUM_2, 0);
-		int currentstatus = CallProtoService(proto[j]->szName, PS_GETSTATUS, 0, 0);
-        status = mii.aaStatus;
-		if ( !(statusbits & Proto_Status2Flag(status)) ) {
-			// the protocol doesnt support the given status
-			if ( statusbits & Proto_Status2Flag(ID_STATUS_AWAY) ) status=ID_STATUS_AWAY;
-			else {
-				// the proto doesnt support user mode or even away, bail.
-				continue;
+			int statusbits = CallProtoService(proto[j]->szName, PS_GETCAPS, PFLAGNUM_2, 0);
+			int currentstatus = CallProtoService(proto[j]->szName, PS_GETSTATUS, 0, 0);
+			status = mii.aaStatus;
+			if ( !(statusbits & Proto_Status2Flag(status)) ) {
+				// the protocol doesnt support the given status
+				if ( statusbits & Proto_Status2Flag(ID_STATUS_AWAY) ) status=ID_STATUS_AWAY;
+				else {
+					// the proto doesnt support user mode or even away, bail.
+					continue;
+				}
 			}
-		}
-		if ( currentstatus >= ID_STATUS_ONLINE && currentstatus != ID_STATUS_INVISIBLE ) {			
-			if ( (lParam&IDF_ISIDLE) && ( currentstatus == ID_STATUS_ONLINE || currentstatus == ID_STATUS_FREECHAT ))  {
-				DBWriteContactSettingByte(NULL,AA_MODULE,proto[j]->szName,1);
-				AutoAwaySetProtocol(proto[j]->szName, status);
-			} else if ( !(lParam&IDF_ISIDLE) && DBGetContactSettingByte(NULL,AA_MODULE,proto[j]->szName,0) ) {
-				// returning from idle and this proto was set away, set it back
-				DBWriteContactSettingByte(NULL,AA_MODULE,proto[j]->szName,0);
-				if ( !mii.aaLock ) AutoAwaySetProtocol(proto[j]->szName, ID_STATUS_ONLINE);
-			}			
-		}
-	}
+			if ( currentstatus >= ID_STATUS_ONLINE && currentstatus != ID_STATUS_INVISIBLE ) {			
+				if ( (lParam&IDF_ISIDLE) && ( currentstatus == ID_STATUS_ONLINE || currentstatus == ID_STATUS_FREECHAT ))  {
+					DBWriteContactSettingByte(NULL,AA_MODULE,proto[j]->szName,1);
+					AutoAwaySetProtocol(proto[j]->szName, status);
+				} else if ( !(lParam&IDF_ISIDLE) && DBGetContactSettingByte(NULL,AA_MODULE,proto[j]->szName,0) ) {
+					// returning from idle and this proto was set away, set it back
+					DBWriteContactSettingByte(NULL,AA_MODULE,proto[j]->szName,0);
+					if ( !mii.aaLock ) AutoAwaySetProtocol(proto[j]->szName, ID_STATUS_ONLINE);
+	}	}	}	}
+
 	return 0;
 }
 

@@ -21,7 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#if defined( UNICODE )
+#if defined( UNICODE ) && !defined( _UNICODE )
 #  define _UNICODE
 #endif
 
@@ -78,5 +78,5 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_awaymsg.h>
 #include <m_idle.h>
 #include <m_ignore.h>
-
+#include <m_utils.h>
 

@@ -435,7 +435,11 @@ static int GetMirandaVersionText(WPARAM wParam,LPARAM lParam)
 	pVerInfo=malloc(verInfoSize);
 	GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);
 	VerQueryValueA(pVerInfo,"\\StringFileInfo\\000004b0\\ProductVersion",(void*)&productVersion,&blockSize);
-	lstrcpynA((char*)lParam,productVersion,wParam);
+	#if defined( _UNICODE )
+		mir_snprintf(( char* )lParam, wParam, "%s Unicode", productVersion );
+	#else
+		lstrcpynA((char*)lParam,productVersion,wParam);
+	#endif
 	free(pVerInfo);
 	return 0;
 }
