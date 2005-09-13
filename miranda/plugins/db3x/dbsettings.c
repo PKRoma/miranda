@@ -440,7 +440,7 @@ static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 	if ( GetContactSettingWorker(( HANDLE )wParam, dgs, 0 ))
 		return 1;
 
-   if ( iSaveType == dgs->pValue->type )
+   if ( iSaveType == 0 || iSaveType == dgs->pValue->type )
 		return 0;
 
 	if ( dgs->pValue->type != DBVT_ASCIIZ && dgs->pValue->type != DBVT_UTF8 )
