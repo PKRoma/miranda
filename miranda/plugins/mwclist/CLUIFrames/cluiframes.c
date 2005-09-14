@@ -726,7 +726,7 @@ HMENU CLUIFramesCreateMenuForFrame(int frameid,int root,int popuppos,char *addse
 	ZeroMemory(&mi,sizeof(mi));
 
 	mi.cbSize=sizeof(mi);
-	mi.hIcon=LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_MIRANDA));
+	mi.hIcon=LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_CLIENTMIRANDA));
 	mi.pszPopupName=(char *)root;
 	mi.popupPosition=frameid;
 	mi.position=popuppos++;
@@ -1610,7 +1610,7 @@ static int CLUIFramesLoadMainMenu()
 	mi.cbSize=sizeof(mi);
 
 	// create root menu
-	mi.hIcon=LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_MIRANDA));
+	mi.hIcon=LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_CLIENTMIRANDA));
 	mi.flags=CMIF_ROOTPOPUP;
 	mi.position=3000090000;
 	mi.pszPopupName=(char*)-1;
