@@ -854,6 +854,8 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
   wLen -= 20;
 
   unpackLEDWord(&pDataBuf, &dwPluginNameLen);
+  wLen -= 4;
+
   if (dwPluginNameLen > wLen) 
   { // check for malformed plugin name
     dwPluginNameLen = wLen;
@@ -862,6 +864,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
   szPluginName = (char *)malloc(dwPluginNameLen + 1);
   memcpy(szPluginName, pDataBuf, dwPluginNameLen);
   szPluginName[dwPluginNameLen] = '\0';
+  wLen -= (WORD)dwPluginNameLen;
 
   pDataBuf += dwPluginNameLen + 15;
 
@@ -869,70 +872,75 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
   if (!typeId)
     NetLog_Server("Error: Unknown type {%08x-%08x-%08x-%08x:%04x}: %s", q1,q2,q3,q4,qt, szPluginName);
 
-  // Length of remaining data
-  unpackLEDWord(&pDataBuf, &dwLengthToEnd);
-
-  // Length of message
-  unpackLEDWord(&pDataBuf, &dwDataLen);
-
-
-  if (typeId == MTYPE_FILEREQ && wAckType == 2)
+  if (wLen > 8)
   {
-    char* szMsg;
+    // Length of remaining data
+    unpackLEDWord(&pDataBuf, &dwLengthToEnd);
+
+    // Length of message
+    unpackLEDWord(&pDataBuf, &dwDataLen);
+    wLen -= 8;
+
+    if (dwDataLen > wLen)
+      dwDataLen = wLen;
+
+    if (typeId == MTYPE_FILEREQ && wAckType == 2)
+    {
+      char* szMsg;
 
 
-    NetLog_Server("This is file ack");
-    szMsg = (char *)malloc(dwDataLen + 1);
-    memcpy(szMsg, pDataBuf, dwDataLen);
-    szMsg[dwDataLen] = '\0';
-    pDataBuf += dwDataLen;
-    wLen -= (WORD)dwDataLen;
+      NetLog_Server("This is file ack");
+      szMsg = (char *)malloc(dwDataLen + 1);
+      memcpy(szMsg, pDataBuf, dwDataLen);
+      szMsg[dwDataLen] = '\0';
+      pDataBuf += dwDataLen;
+      wLen -= (WORD)dwDataLen;
 
-    handleFileAck(pDataBuf, wLen, dwUin, wCookie, wStatus, szMsg);
-    SAFE_FREE(&szMsg);
+      handleFileAck(pDataBuf, wLen, dwUin, wCookie, wStatus, szMsg);
+      SAFE_FREE(&szMsg);
+    }
+    else if (typeId == MTYPE_FILEREQ && wAckType == 1)
+    {
+      char* szMsg;
+
+
+      NetLog_Server("This is a file request");
+      szMsg = (char *)malloc(dwDataLen + 1);
+      memcpy(szMsg, pDataBuf, dwDataLen);
+      szMsg[dwDataLen] = '\0';
+      pDataBuf += dwDataLen;
+      wLen -= (WORD)dwDataLen;
+
+      handleFileRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8, FALSE);
+      SAFE_FREE(&szMsg);
+    }
+    else if (typeId == MTYPE_CHAT && wAckType == 1)
+    {
+      char* szMsg;
+
+      NetLog_Server("This is a chat request");
+      szMsg = (char *)malloc(dwDataLen + 1);
+      memcpy(szMsg, pDataBuf, dwDataLen);
+      szMsg[dwDataLen] = '\0';
+      pDataBuf += dwDataLen;
+      wLen -= (WORD)dwDataLen;
+
+  //    handleChatRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8);
+      SAFE_FREE(&szMsg);
+
+    }
+    else if (typeId)
+    {
+      if (typeId == MTYPE_URL || typeId == MTYPE_CONTACTS)
+        icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, (BYTE)typeId, bFlags);
+
+      handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, typeId, bFlags, wAckType, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE);
+    }
+    else
+    {
+      NetLog_Server("Unsupported plugin message type '%s'", szPluginName);
+    }
   }
-  else if (typeId == MTYPE_FILEREQ && wAckType == 1)
-  {
-    char* szMsg;
-
-
-    NetLog_Server("This is a file request");
-    szMsg = (char *)malloc(dwDataLen + 1);
-    memcpy(szMsg, pDataBuf, dwDataLen);
-    szMsg[dwDataLen] = '\0';
-    pDataBuf += dwDataLen;
-    wLen -= (WORD)dwDataLen;
-
-    handleFileRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8, FALSE);
-    SAFE_FREE(&szMsg);
-  }
-  else if (typeId == MTYPE_CHAT && wAckType == 1)
-  {
-    char* szMsg;
-
-    NetLog_Server("This is a chat request");
-    szMsg = (char *)malloc(dwDataLen + 1);
-    memcpy(szMsg, pDataBuf, dwDataLen);
-    szMsg[dwDataLen] = '\0';
-    pDataBuf += dwDataLen;
-    wLen -= (WORD)dwDataLen;
-
-//    handleChatRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8);
-    SAFE_FREE(&szMsg);
-
-  }
-  else if (typeId)
-  {
-    if (typeId == MTYPE_URL || typeId == MTYPE_CONTACTS)
-      icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, (BYTE)typeId, bFlags);
-
-    handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, typeId, bFlags, wAckType, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE);
-  }
-  else
-  {
-    NetLog_Server("Unsupported plugin message type '%s'", szPluginName);
-  }
-
 
   SAFE_FREE(&szPluginName);
 }
@@ -1858,18 +1866,16 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         wLen -= wInfoLen;
 
         // This packet is malformed. Possibly a file accept from Miranda IM 0.1.2.1
-        if (wLen < 20)
-          return;
+        if (wLen < 20) return;
 
         unpackLEWord(&buf, &wInfoLen);
-        wLen -= 2;
 
         unpackDWord(&buf, &q1); // get data GUID & function id
         unpackDWord(&buf, &q2);
         unpackDWord(&buf, &q3);
         unpackDWord(&buf, &q4);
         unpackLEWord(&buf, &qt);
-        wLen -= 18;
+        wLen -= 20;
 
         unpackLEDWord(&buf, &dwPluginNameLen);
         wLen -= 4;
@@ -1891,11 +1897,13 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
         SAFE_FREE(&szPluginName);
 
+        if (wLen < 4) return;
+
         // Length of remaining data
         unpackLEDWord(&buf, &dwLengthToEnd);
         wLen -= 4;
 
-        if (dwLengthToEnd > 0)
+        if (wLen >= 4 && dwLengthToEnd > 0)
           unpackLEDWord(&buf, &dwDataLen); // Length of message
         else
           dwDataLen = 0;
