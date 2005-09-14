@@ -728,6 +728,13 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			char *szProto;
 			struct ClcContact *contact;
 			if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL)) break;
+			if (!contact) break;
+			if (IsBadCodePtr((FARPROC)contact))
+			{
+				OutputDebugString("IsBadCodePtr(contact) INTM_IDLECHANGED\r\n");
+				break;
+			}
+
 			szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
 			if(szProto==NULL) break;
 			contact->flags&=~CONTACTF_IDLE;
