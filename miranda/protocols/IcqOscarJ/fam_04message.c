@@ -59,32 +59,32 @@ void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
   switch (pSnacHeader->wSubtype)
   {
 
-  case ICQ_MSG_SRV_ERROR: // SNAC(4, 0x01)
+  case ICQ_MSG_SRV_ERROR:          // SNAC(4, 0x01)
     handleRecvServMsgError(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
-  case ICQ_MSG_SRV_RECV: // SNAC(4, 0x07)
+  case ICQ_MSG_SRV_RECV:           // SNAC(4, 0x07)
     handleRecvServMsg(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
-  case ICQ_MSG_SRV_MISSED_MESSAGE: // SNAC(4,A)
+  case ICQ_MSG_SRV_MISSED_MESSAGE: // SNAC(4, 0x0A)
     handleMissedMsg(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
-  case ICQ_MSG_RESPONSE: // SNAC(4, 0x0B)
+  case ICQ_MSG_RESPONSE:           // SNAC(4, 0x0B)
     handleRecvMsgResponse(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
-  case ICQ_MSG_SRV_ACK: // SNAC(4, 0x0C) Server acknowledgements
+  case ICQ_MSG_SRV_ACK:            // SNAC(4, 0x0C) Server acknowledgements
     handleServerAck(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
-  case ICQ_MSG_MTN: // SNAC (4,0x14) Typing notifications
+  case ICQ_MSG_MTN:                // SNAC (4,0x14) Typing notifications
     handleTypingNotification(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
     // Stuff we don't care about
-  case ICQ_MSG_SRV_REPLYICBM: // SNAC(4,x05) - SRV_REPLYICBM
+  case ICQ_MSG_SRV_REPLYICBM:      // SNAC(4,x05) - SRV_REPLYICBM
     break;
 
   default:
@@ -121,7 +121,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
   {
     if (!unpackUID(&buf, &wLen, &dwUin, &szUID)) return;
   }
-  else 
+  else
   {
     szUID[0] = '\0';
     if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
@@ -302,7 +302,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
                 tmp = (char*)malloc(nUtfLen + 1);
                 for (i=0,j=0;i<nUtfLen + 1;i++)
                 {
-                  if (!tag && utf[i] == '<') 
+                  if (!tag && utf[i] == '<')
                   {
                     tag = TRUE;
                   }
@@ -356,7 +356,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
                 tmp = (char*)malloc(wMsgLen + 1);
                 for (i=0,j=0;i<wMsgLen + 1;i++)
                 {
-                  if (!tag && szMsg[i] == '<') 
+                  if (!tag && szMsg[i] == '<')
                   {
                     tag = TRUE;
                   }
@@ -497,7 +497,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
       if (wTLVLen > 4)
       {
         int bAdded;
-        HANDLE hContact = HContactFromUIN(dwUin, &bAdded);
+        HANDLE hContact = HContactFromUIN(dwUin, NULL);
 
         // This TLV chain may contain the following TLVs:
         // TLV(A): Acktype 0x0000 - normal message
@@ -565,14 +565,14 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
 
             unpackLEDWord(&buf, &dwUin);
 
-            hContact = HContactFromUIN(dwUin, &bAdded);
+            hContact = HContactFromUIN(dwUin, NULL);
             if (hContact == INVALID_HANDLE_VALUE)
             {
-              NetLog_Server("Error: Reverse Connect Request from unknown contact %u", dwUin);
+              NetLog_Server("Error: %s from unknown contact %u", "Reverse Connect Request", dwUin);
             }
             else
             {
-              unpackDWord(&buf, &dwIp); 
+              unpackDWord(&buf, &dwIp);
               unpackLEDWord(&buf, &dwPort);
               unpackByte(&buf, &bMode);
               buf += 4; // unknown
@@ -593,12 +593,12 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
                 OpenDirectConnection(hContact, DIRECTCONN_REVERSE, (void*)dwId);
               }
               else
-                NetLog_Server("Warning: Unsupported direct protocol version in Reverse Connect Request");
+                NetLog_Server("Warning: Unsupported direct protocol version in %s", "Reverse Connect Request");
             }
           }
           else
           {
-            NetLog_Server("Malformed Reverse Connect Request");
+            NetLog_Server("Malformed %s", "Reverse Connect Request");
           }
         }
         else
@@ -663,10 +663,10 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
     wLen -= 16;
 
     // Skip lots of unused stuff
-    pDataBuf += 9; 
+    pDataBuf += 9;
     wLen -= 9;
 
-    unpackLEWord(&pDataBuf, &wId); 
+    unpackLEWord(&pDataBuf, &wId);
     wLen -= 2;
 
     unpackLEWord(&pDataBuf, &wCookie);
@@ -770,7 +770,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
       unpackByte(&pDataBuf, &bLevel);
       if (bLevel != 0 || wLen < 16)
       {
-        NetLog_Server("Invalid Info Manager Plugin message from %u", dwUin);
+        NetLog_Server("Invalid %s Manager Plugin message from %u", "Info", dwUin);
         return;
       }
       unpackDWord(&pDataBuf, &dwGuid1); // plugin request GUID
@@ -784,7 +784,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
         NetLog_Server("User %u requests our %s plugin list. NOT SUPPORTED YET", dwUin, "info");
       }
       else
-        NetLog_Server("Unknown Info Manager message from %u", dwUin);
+        NetLog_Server("Unknown %s Manager message from %u", "Info", dwUin);
     }
     else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PSIG_STATUS_PLUGIN))
     { // status manager plugin
@@ -800,7 +800,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
       unpackByte(&pDataBuf, &bLevel);
       if (bLevel != 0 || wLen < 16)
       {
-        NetLog_Server("Invalid Status Manager Plugin message from %u", dwUin);
+        NetLog_Server("Invalid %s Manager Plugin message from %u", "Status", dwUin);
         return;
       }
       unpackDWord(&pDataBuf, &dwGuid1); // plugin request GUID
@@ -814,7 +814,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
         NetLog_Server("User %u requests our %s plugin list. NOT SUPPORTED YET", dwUin, "status");
       }
       else
-        NetLog_Server("Unknown Status Manager message from %u", dwUin);
+        NetLog_Server("Unknown %s Manager message from %u", "Status", dwUin);
     }
     else
       NetLog_Server("Unknown signature (%08x-%08x-%08x-%08x) in message (format 2)", dwGuid1, dwGuid2, dwGuid3, dwGuid4);
@@ -856,7 +856,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
   unpackLEDWord(&pDataBuf, &dwPluginNameLen);
   wLen -= 4;
 
-  if (dwPluginNameLen > wLen) 
+  if (dwPluginNameLen > wLen)
   { // check for malformed plugin name
     dwPluginNameLen = wLen;
     NetLog_Server("Warning: malformed size of plugin name.");
@@ -1879,7 +1879,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
         unpackLEDWord(&buf, &dwPluginNameLen);
         wLen -= 4;
-        if (dwPluginNameLen > wLen) 
+        if (dwPluginNameLen > wLen)
         { // check for malformed plugin name
           dwPluginNameLen = wLen;
           NetLog_Server("Warning: malformed size of plugin name.");
@@ -1948,7 +1948,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
             szMsg[dwDataLen] = '\0';
 
             handleXtrazNotifyResponse(dwUin, hContact, szMsg, dwDataLen);
-            
+
             SAFE_FREE(&pCookieData);
             FreeCookie(wCookie);
           }
