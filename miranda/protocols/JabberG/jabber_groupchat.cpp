@@ -443,11 +443,52 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 	return FALSE;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberGroupchatProcessPresence - handles the group chat presence packet
+
+static int sttGetStatusCode( XmlNode* node )
+{
+	XmlNode* statusNode = JabberXmlGetChild( node, "status" );
+	if ( statusNode == NULL )
+		return -1;
+
+	char* statusCode = JabberXmlGetAttrValue( statusNode, "code" );
+	if ( statusCode == NULL )
+		return -1;
+
+	return atol( statusCode );
+}
+
+void sttRenameParticipantNick( JABBER_LIST_ITEM* item, char* oldNick, XmlNode *itemNode )
+{
+	char* newNick = JabberXmlGetAttrValue( itemNode, "nick" );
+	if ( newNick == NULL )
+		return;
+
+	for ( int i=0; i < item->resourceCount; i++ ) {
+		JABBER_RESOURCE_STATUS& RS = item->resource[i];
+		if ( !strcmp( RS.resourceName, oldNick )) {
+			replaceStr( RS.resourceName, newNick );
+
+			char* dispNick = NEWSTR_ALLOCA( newNick );
+			JabberUtf8Decode( dispNick, NULL );
+
+			GCDEST gcd = { jabberProtoName, item->jid, GC_EVENT_NICK };
+			GCEVENT gce = {0};
+			gce.cbSize = sizeof(GCEVENT);
+			gce.pszNick = oldNick;
+			gce.pszUID = newNick;
+			gce.pszText = dispNick;
+			gce.pDest = &gcd;
+			JCallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+			break;
+}	}	}
+
 void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 {
 	struct ThreadData *info;
 	XmlNode *showNode, *statusNode, *errorNode, *xNode, *itemNode, *n;
-	char* from, *type, *show, *statusCode;
+	char* from, *type, *show;
 	int status;
 	char* str, *p;
 	int iqId, i;
@@ -499,7 +540,6 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		}
 
 		roomCreated = FALSE;
-		char* userjid = NULL;
 
 		// Check additional MUC info for this user
 		if (( xNode=JabberXmlGetChildWithGivenAttrValue( node, "x", "xmlns", "http://jabber.org/protocol/muc#user" )) != NULL ) {
@@ -518,21 +558,14 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 						if ( !strcmp( str, "moderator" )) item->resource[i].role = ROLE_MODERATOR;
 						else if ( !strcmp( str, "participant" )) item->resource[i].role = ROLE_PARTICIPANT;
 						else if ( !strcmp( str, "visitor" )) item->resource[i].role = ROLE_VISITOR;
-					}
+			}	}	}
 
-					userjid = JabberXmlGetAttrValue( itemNode, "jid" );
-					if ( userjid != NULL )
-						JabberUrlDecode( userjid );
-			}	}
-
-			if (( statusNode=JabberXmlGetChild( xNode, "status" )) != NULL )
-				if (( statusCode=JabberXmlGetAttrValue( statusNode, "code" )) != NULL )
-					if ( !strcmp( statusCode, "201" ))
-						roomCreated = TRUE;
+			if ( sttGetStatusCode( xNode ) == 201 )
+				roomCreated = TRUE;
 		}
 
 		// Update groupchat log window
-		JabberGcLogUpdateMemberStatus( item, userjid, nick, newRes );
+		JabberGcLogUpdateMemberStatus( item, nick, newRes );
 
 		// Update room status
 		//if ( item->status != ID_STATUS_ONLINE ) {
@@ -557,35 +590,31 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		free( room );
 	}
 	else if ( !strcmp( type, "unavailable" )) {
-		int forceType;
-		char* userjid = NULL;
-
-		forceType = -1;
 		if ( item->nick!=NULL && ( p=strchr( from, '/' ))!=NULL && *( ++p )!='\0' ) {
 			if ( !strcmp( p, item->nick )) {
-				// Set item->nick to NULL for the change nick process ( it does no harm even if it is actually not a change nick process )
-				free( item->nick );
-				item->nick = NULL;
 				// Now evil part, check if I am kicked or banned
 				if (( xNode=JabberXmlGetChildWithGivenAttrValue( node, "x", "xmlns", "http://jabber.org/protocol/muc#user" )) != NULL ) {
 					itemNode = JabberXmlGetChild( xNode, "item" );
 					n = JabberXmlCopyNode( itemNode );
-					if (( statusNode=JabberXmlGetChild( xNode, "status" ))!=NULL && ( statusCode=JabberXmlGetAttrValue( statusNode, "code" ))!=NULL ) {
-						if ( !strcmp( statusCode, "301" ))
-							forceType = 301;
-						else if ( !strcmp( statusCode, "307" ))
-							forceType = 307;
-					}
-					if ( forceType >= 0 )
-						JabberGcQuit( item, forceType, n );
 
-					userjid = JabberXmlGetAttrValue( itemNode, "jid" );
-					if ( userjid != NULL )
-						JabberUrlDecode( userjid );
-		}	}	}
+					int iStatus = sttGetStatusCode( xNode );
+					switch( iStatus ) {
+						case 301:	case 307:
+							JabberGcQuit( item, iStatus, n );
+							break;
+
+						case 303:
+							sttRenameParticipantNick( item, nick, itemNode );
+							return;
+				}	}	
+
+				// Set item->nick to NULL for the change nick process ( it does no harm even if it is actually not a change nick process )
+				free( item->nick );
+				item->nick = NULL;
+		}	}
 
 		JabberListRemoveResource( LIST_CHATROOM, from );
-		JabberGcLogUpdateMemberStatus( item, userjid, nick, -1 );
+		JabberGcLogUpdateMemberStatus( item, nick, -1 );
 	}
 	else if ( !strcmp( type, "error" )) {
 		errorNode = JabberXmlGetChild( node, "error" );
