@@ -10,6 +10,7 @@ Version 0.4.1.2
 0.4.3 bld. 32 or later
 [!] fix for initial email notification in the MSNP11 mode
 [!] fix for the "User is already in your contact list" error
+[!] BYE command was handled incorrectly
 
 Version 0.4.1.1
 ===============

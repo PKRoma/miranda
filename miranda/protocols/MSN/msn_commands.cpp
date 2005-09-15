@@ -970,7 +970,7 @@ LBL_InvalidCommand:
 			}	}
 			// this is not in chat session, quit the session when everyone left
 			else if ( personleft == 0 )
-				info->sendPacket("OUT", NULL );
+				return 1; // die
 
 			break;
 		}

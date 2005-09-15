@@ -389,7 +389,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 				else handlerResult = MSN_HandleMSNFTP( info, msg );
 
 				if ( handlerResult )
-					break;
+					goto LBL_Exit;
 		}	}
 
 		if ( info->mBytesInData == sizeof( info->mData )) {
@@ -397,6 +397,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 			break;
 	}	}
 
+LBL_Exit:
 	if ( tIsMainThread ) {
 		MSN_GoOffline();
 		msnNsThread = NULL;
