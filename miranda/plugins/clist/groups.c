@@ -298,7 +298,14 @@ int RenameGroupT( int groupID, TCHAR* newName )
 
 static int RenameGroup(WPARAM wParam, LPARAM lParam)
 {
-	return -1 != RenameGroupWithMove(wParam - 1, (TCHAR*) lParam, 1);
+	#if defined( _UNICODE )
+		WCHAR* temp = a2u(( char* )lParam );
+		int result = ( -1 != RenameGroupWithMove(wParam - 1, temp, 1));
+		free( temp );
+		return result;
+	#else
+		return -1 != RenameGroupWithMove(wParam - 1, (TCHAR*) lParam, 1);
+	#endif
 }
 
 static int SetGroupExpandedState(WPARAM wParam, LPARAM lParam)
