@@ -33,6 +33,7 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #define SVS_SIGNED        6
 #define SVS_TIMEZONE      7
 #define SVS_ICQVERSION    8
+
 static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char *szSetting,int special)
 {
 	DBVARIANT dbv;
@@ -41,7 +42,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 
 	dbv.type=DBVT_DELETED;
 	if(szModule==NULL) unspecified=1;
-	else unspecified=DBGetContactSetting(hContact,szModule,szSetting,&dbv);
+	else unspecified=DBGetContactSettingStringUtf(hContact,szModule,szSetting,&dbv);
 	if(!unspecified) {
 		switch(dbv.type) {
 			case DBVT_BYTE:
@@ -101,67 +102,77 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 				unspecified=(special==SVS_ZEROISUNSPEC && dbv.pszVal[0]=='\0');
 				pstr=dbv.pszVal;
 				break;
+			case DBVT_UTF8:
+				unspecified=(special==SVS_ZEROISUNSPEC && dbv.pszVal[0]=='\0');
+				#if defined( _UNICODE )
+				if ( !unspecified )
+				{	WCHAR* wszStr;
+					Utf8Decode( dbv.pszVal, &wszStr );
+					SetDlgItemTextW( hwndDlg, idCtrl, wszStr);
+					free( wszStr );
+               goto LBL_Exit;
+				}
+				#endif
+				pstr=dbv.pszVal;
+				Utf8Decode( dbv.pszVal, NULL );
+				break;
 			default: pstr=str; lstrcpyA(str,"???"); break;
-		}
-	}
+	}	}
 
-	EnableWindow(GetDlgItem(hwndDlg, idCtrl), !unspecified);
 	if (unspecified)
-		SetDlgItemTextA(hwndDlg, idCtrl, Translate("<not specified>"));
+		SetDlgItemText(hwndDlg, idCtrl, TranslateT("<not specified>"));
 	else
 		SetDlgItemTextA(hwndDlg, idCtrl, pstr);
+
+LBL_Exit:
+	EnableWindow(GetDlgItem(hwndDlg, idCtrl), !unspecified);
 	DBFreeVariant(&dbv);
-	
 }
 
 static BOOL CALLBACK SummaryDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
-		case WM_INITDIALOG:
-			TranslateDialogDefault(hwndDlg);
-			return TRUE;
-		case WM_NOTIFY:
-			switch (((LPNMHDR)lParam)->idFrom) {
-				case 0:
-					switch (((LPNMHDR)lParam)->code) {
-						case PSN_INFOCHANGED:
-						{	char *szProto;
-							HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
-							if (hContact != NULL) {
-								szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-								if (szProto==NULL) break;
-								SetValue(hwndDlg,IDC_NICK,hContact,szProto,"Nick",0);
-								SetValue(hwndDlg,IDC_FIRSTNAME,hContact,szProto,"FirstName",0);
-								SetValue(hwndDlg,IDC_LASTNAME,hContact,szProto,"LastName",0);
-								SetValue(hwndDlg,IDC_EMAIL,hContact,szProto,"e-mail",0);
-								SetValue(hwndDlg,IDC_AGE,hContact,szProto,"Age",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_GENDER,hContact,szProto,"Gender",SVS_GENDER);
-								SetValue(hwndDlg,IDC_DOBDAY,hContact,szProto,"BirthDay",0);
-								SetValue(hwndDlg,IDC_DOBMONTH,hContact,szProto,"BirthMonth",SVS_MONTH);
-								SetValue(hwndDlg,IDC_DOBYEAR,hContact,szProto,"BirthYear",0);
-							}
-							break;
-						}
-					}
-					break;
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+		return TRUE;
+	case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->idFrom) {
+		case 0:
+			if (((LPNMHDR)lParam)->code == PSN_INFOCHANGED )
+			{	char *szProto;
+				HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
+				if (hContact != NULL) {
+					szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+					if (szProto==NULL) break;
+					SetValue(hwndDlg,IDC_NICK,hContact,szProto,"Nick",0);
+					SetValue(hwndDlg,IDC_FIRSTNAME,hContact,szProto,"FirstName",0);
+					SetValue(hwndDlg,IDC_LASTNAME,hContact,szProto,"LastName",0);
+					SetValue(hwndDlg,IDC_EMAIL,hContact,szProto,"e-mail",0);
+					SetValue(hwndDlg,IDC_AGE,hContact,szProto,"Age",SVS_ZEROISUNSPEC);
+					SetValue(hwndDlg,IDC_GENDER,hContact,szProto,"Gender",SVS_GENDER);
+					SetValue(hwndDlg,IDC_DOBDAY,hContact,szProto,"BirthDay",0);
+					SetValue(hwndDlg,IDC_DOBMONTH,hContact,szProto,"BirthMonth",SVS_MONTH);
+					SetValue(hwndDlg,IDC_DOBYEAR,hContact,szProto,"BirthYear",0);
+			}	}
+			break;
+		}
+		break;
+	case WM_COMMAND:
+		switch(LOWORD(wParam)) {
+		case IDCANCEL:
+			SendMessage(GetParent(hwndDlg),msg,wParam,lParam);
+			break;
+		case IDC_EMAIL:
+			if(IsWindowEnabled(GetDlgItem(hwndDlg,IDC_EMAIL))) {
+				char szExec[264],szEmail[256];
+				GetDlgItemTextA(hwndDlg,IDC_EMAIL,szEmail,sizeof(szEmail));
+				lstrcpyA(szExec,"mailto:");
+				lstrcatA(szExec,szEmail);
+				ShellExecuteA(hwndDlg,"open",szExec,NULL,NULL,SW_SHOW);
 			}
 			break;
-		case WM_COMMAND:
-			switch(LOWORD(wParam)) {
-				case IDCANCEL:
-					SendMessage(GetParent(hwndDlg),msg,wParam,lParam);
-					break;
-				case IDC_EMAIL:
-					if(IsWindowEnabled(GetDlgItem(hwndDlg,IDC_EMAIL))) {
-						char szExec[264],szEmail[256];
-						GetDlgItemTextA(hwndDlg,IDC_EMAIL,szEmail,sizeof(szEmail));
-						lstrcpyA(szExec,"mailto:");
-						lstrcatA(szExec,szEmail);
-						ShellExecuteA(hwndDlg,"open",szExec,NULL,NULL,SW_SHOW);
-					}
-					break;
-			}
-			break;
+		}
+		break;
 	}
 	return FALSE;
 }
@@ -215,28 +226,24 @@ static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		}
 		case WM_NOTIFY:
 			switch (((LPNMHDR)lParam)->idFrom) {
-				case 0:
-					switch (((LPNMHDR)lParam)->code) {
-						case PSN_INFOCHANGED:
-						{	char *szProto;
-							HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
-							if (hContact != NULL) {
-								szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-								if (szProto==NULL) break;
-								SetValue(hwndDlg,IDC_STREET,hContact,szProto,"Street",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_CITY,hContact,szProto,"City",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_STATE,hContact,szProto,"State",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_ZIP,hContact,szProto,"ZIP",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_COUNTRY,hContact,szProto,"Country",SVS_COUNTRY);
-								SetValue(hwndDlg,IDC_LANGUAGE1,hContact,szProto,"Language1",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_LANGUAGE2,hContact,szProto,"Language2",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_LANGUAGE3,hContact,szProto,"Language3",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_TIMEZONE,hContact,szProto,"Timezone",SVS_TIMEZONE);
-							}
-							break;
-						}
-					}
-					break;
+			case 0:
+				if (((LPNMHDR)lParam)->code == PSN_INFOCHANGED )
+				{	char *szProto;
+					HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
+					if (hContact != NULL) {
+						szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+						if (szProto==NULL) break;
+						SetValue(hwndDlg,IDC_STREET,hContact,szProto,"Street",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_CITY,hContact,szProto,"City",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_STATE,hContact,szProto,"State",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_ZIP,hContact,szProto,"ZIP",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_COUNTRY,hContact,szProto,"Country",SVS_COUNTRY);
+						SetValue(hwndDlg,IDC_LANGUAGE1,hContact,szProto,"Language1",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_LANGUAGE2,hContact,szProto,"Language2",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_LANGUAGE3,hContact,szProto,"Language3",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_TIMEZONE,hContact,szProto,"Timezone",SVS_TIMEZONE);
+				}	}
+				break;
 			}
 			break;
 		case WM_COMMAND:
@@ -253,49 +260,45 @@ static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 static BOOL CALLBACK WorkDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
-		case WM_INITDIALOG:
-			TranslateDialogDefault(hwndDlg);
-			return TRUE;
-		case WM_NOTIFY:
-			switch (((LPNMHDR)lParam)->idFrom) {
-				case 0:
-					switch (((LPNMHDR)lParam)->code) {
-						case PSN_INFOCHANGED:
-						{	char *szProto;
-							HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
-							if (hContact != NULL) {
-								szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-								if (szProto==NULL) break;
-								SetValue(hwndDlg,IDC_COMPANY,hContact,szProto,"Company",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_DEPARTMENT,hContact,szProto,"CompanyDepartment",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_POSITION,hContact,szProto,"CompanyPosition",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_STREET,hContact,szProto,"CompanyStreet",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_CITY,hContact,szProto,"CompanyCity",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_STATE,hContact,szProto,"CompanyState",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_ZIP,hContact,szProto,"CompanyZIP",SVS_ZEROISUNSPEC);
-								SetValue(hwndDlg,IDC_COUNTRY,hContact,szProto,"CompanyCountry",SVS_COUNTRY);
-								SetValue(hwndDlg,IDC_WEBPAGE,hContact,szProto,"CompanyHomepage",SVS_ZEROISUNSPEC);
-							}
-							break;
-						}
-					}
-					break;
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+		return TRUE;
+	case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->idFrom) {
+			case 0:
+				if (((LPNMHDR)lParam)->code == PSN_INFOCHANGED)
+				{	char *szProto;
+					HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
+					if (hContact != NULL) {
+						szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+						if (szProto==NULL) break;
+						SetValue(hwndDlg,IDC_COMPANY,hContact,szProto,"Company",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_DEPARTMENT,hContact,szProto,"CompanyDepartment",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_POSITION,hContact,szProto,"CompanyPosition",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_STREET,hContact,szProto,"CompanyStreet",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_CITY,hContact,szProto,"CompanyCity",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_STATE,hContact,szProto,"CompanyState",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_ZIP,hContact,szProto,"CompanyZIP",SVS_ZEROISUNSPEC);
+						SetValue(hwndDlg,IDC_COUNTRY,hContact,szProto,"CompanyCountry",SVS_COUNTRY);
+						SetValue(hwndDlg,IDC_WEBPAGE,hContact,szProto,"CompanyHomepage",SVS_ZEROISUNSPEC);
+				}	}
+				break;
+		}
+		break;
+	case WM_COMMAND:
+		switch(LOWORD(wParam)) {
+		case IDCANCEL:
+			SendMessage(GetParent(hwndDlg),msg,wParam,lParam);
+			break;
+		case IDC_WEBPAGE:
+			if(IsWindowEnabled(GetDlgItem(hwndDlg,IDC_WEBPAGE))) {
+				char szPage[256];
+				GetDlgItemTextA(hwndDlg,IDC_WEBPAGE,szPage,sizeof(szPage));
+				CallService(MS_UTILS_OPENURL,1,(LPARAM)szPage);
 			}
 			break;
-		case WM_COMMAND:
-			switch(LOWORD(wParam)) {
-				case IDCANCEL:
-					SendMessage(GetParent(hwndDlg),msg,wParam,lParam);
-					break;
-				case IDC_WEBPAGE:
-					if(IsWindowEnabled(GetDlgItem(hwndDlg,IDC_WEBPAGE))) {
-						char szPage[256];
-						GetDlgItemTextA(hwndDlg,IDC_WEBPAGE,szPage,sizeof(szPage));
-						CallService(MS_UTILS_OPENURL,1,(LPARAM)szPage);
-					}
-					break;
-			}
-			break;
+		}
+		break;
 	}
 	return FALSE;
 }
@@ -313,171 +316,165 @@ void ResizeColumns(HWND hwndLV)
 static BOOL CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
-		case WM_INITDIALOG:
-			TranslateDialogDefault(hwndDlg);
-			{	LVCOLUMN lvc;
-				RECT rc;
-				GetClientRect(GetDlgItem(hwndDlg,IDC_PAST),&rc);
-				rc.right-=GetSystemMetrics(SM_CXVSCROLL);
-				lvc.mask=LVCF_WIDTH;
-				lvc.cx=rc.right/3;
-				ListView_InsertColumn(GetDlgItem(hwndDlg,IDC_PAST),0,&lvc);
-				ListView_InsertColumn(GetDlgItem(hwndDlg,IDC_INTERESTS),0,&lvc);
-				lvc.cx=rc.right-rc.right/3;
-				ListView_InsertColumn(GetDlgItem(hwndDlg,IDC_PAST),1,&lvc);
-				ListView_InsertColumn(GetDlgItem(hwndDlg,IDC_INTERESTS),1,&lvc);
-			}
-			ListView_SetExtendedListViewStyleEx(GetDlgItem(hwndDlg,IDC_PAST),LVS_EX_LABELTIP,LVS_EX_LABELTIP);
-			ListView_SetExtendedListViewStyleEx(GetDlgItem(hwndDlg,IDC_INTERESTS),LVS_EX_LABELTIP,LVS_EX_LABELTIP);
-			return TRUE;
-		case WM_NOTIFY:
-			switch (((LPNMHDR)lParam)->idFrom) {
-				case 0:
-					switch (((LPNMHDR)lParam)->code) {
-						case PSN_INFOCHANGED:
-						{	char *szProto;
-							LVITEM lvi;
-							int i;
-							char idstr[33];
-							DBVARIANT dbv,dbvText;
-							HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
-							
-							if (hContact != NULL) {
-								szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-								if (szProto==NULL) break;
-								SetValue(hwndDlg,IDC_WEBPAGE,hContact,szProto,"Homepage",SVS_ZEROISUNSPEC);
-								
-								//past
-								ListView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_PAST));
-								lvi.mask=LVIF_TEXT;
-								lvi.iSubItem=0;
-								lvi.iItem=0;
-								for(i=0;;i++) {
-									wsprintfA(idstr,"Past%d",i);
-									if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
-										break;
-									wsprintfA(idstr,"Past%dText",i);
-									if(DBGetContactSettingTString(hContact,szProto,idstr,&dbvText))
-									{DBFreeVariant(&dbv); break;}
-									lvi.pszText=dbv.ptszVal;
-									ListView_InsertItem(GetDlgItem(hwndDlg,IDC_PAST),&lvi);
-									ListView_SetItemText(GetDlgItem(hwndDlg,IDC_PAST),lvi.iItem,1,dbvText.ptszVal);
-									DBFreeVariant(&dbvText);
-									DBFreeVariant(&dbv);
-									lvi.iItem++;
-								}
-								
-								for(i=0;;i++) {
-									wsprintfA(idstr,"Affiliation%d",i);
-									if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
-										break;
-									wsprintfA(idstr,"Affiliation%dText",i);
-									if(DBGetContactSettingTString(hContact,szProto,idstr,&dbvText))
-									{DBFreeVariant(&dbv); break;}
-									lvi.pszText=dbv.ptszVal;
-									ListView_InsertItem(GetDlgItem(hwndDlg,IDC_PAST),&lvi);
-									ListView_SetItemText(GetDlgItem(hwndDlg,IDC_PAST),lvi.iItem,1,dbvText.ptszVal);
-									DBFreeVariant(&dbvText);
-									DBFreeVariant(&dbv);
-									lvi.iItem++;
-								}
-								
-								ResizeColumns(GetDlgItem(hwndDlg,IDC_PAST));
-								
-								//interests
-								ListView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_INTERESTS));
-								lvi.mask=LVIF_TEXT;
-								lvi.iSubItem=0;
-								lvi.iItem=0;
-								for(i=0;;i++) {
-									wsprintfA(idstr,"Interest%dCat",i);
-									if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
-										break;
-									wsprintfA(idstr,"Interest%dText",i);
-									if(DBGetContactSettingTString(hContact,szProto,idstr,&dbvText))
-									{DBFreeVariant(&dbv); break;}
-									lvi.pszText=dbv.ptszVal;
-									ListView_InsertItem(GetDlgItem(hwndDlg,IDC_INTERESTS),&lvi);
-									ListView_SetItemText(GetDlgItem(hwndDlg,IDC_INTERESTS),lvi.iItem,1,dbvText.ptszVal);
-									DBFreeVariant(&dbvText);
-									DBFreeVariant(&dbv);
-									lvi.iItem++;
-								}
-								ResizeColumns(GetDlgItem(hwndDlg,IDC_INTERESTS));
-							}
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+		{	LVCOLUMN lvc;
+			RECT rc;
+			GetClientRect(GetDlgItem(hwndDlg,IDC_PAST),&rc);
+			rc.right-=GetSystemMetrics(SM_CXVSCROLL);
+			lvc.mask=LVCF_WIDTH;
+			lvc.cx=rc.right/3;
+			ListView_InsertColumn(GetDlgItem(hwndDlg,IDC_PAST),0,&lvc);
+			ListView_InsertColumn(GetDlgItem(hwndDlg,IDC_INTERESTS),0,&lvc);
+			lvc.cx=rc.right-rc.right/3;
+			ListView_InsertColumn(GetDlgItem(hwndDlg,IDC_PAST),1,&lvc);
+			ListView_InsertColumn(GetDlgItem(hwndDlg,IDC_INTERESTS),1,&lvc);
+		}
+		ListView_SetExtendedListViewStyleEx(GetDlgItem(hwndDlg,IDC_PAST),LVS_EX_LABELTIP,LVS_EX_LABELTIP);
+		ListView_SetExtendedListViewStyleEx(GetDlgItem(hwndDlg,IDC_INTERESTS),LVS_EX_LABELTIP,LVS_EX_LABELTIP);
+		return TRUE;
+	case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->idFrom) {
+		case 0:
+			if (((LPNMHDR)lParam)->code == PSN_INFOCHANGED)
+			{	char *szProto;
+				LVITEM lvi;
+				int i;
+				char idstr[33];
+				DBVARIANT dbv,dbvText;
+				HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
+				
+				if (hContact != NULL) {
+					szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+					if (szProto==NULL) break;
+					SetValue(hwndDlg,IDC_WEBPAGE,hContact,szProto,"Homepage",SVS_ZEROISUNSPEC);
+					
+					//past
+					ListView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_PAST));
+					lvi.mask=LVIF_TEXT;
+					lvi.iSubItem=0;
+					lvi.iItem=0;
+					for(i=0;;i++) {
+						wsprintfA(idstr,"Past%d",i);
+						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
 							break;
-						}
+						wsprintfA(idstr,"Past%dText",i);
+						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbvText))
+						{DBFreeVariant(&dbv); break;}
+						lvi.pszText=dbv.ptszVal;
+						ListView_InsertItem(GetDlgItem(hwndDlg,IDC_PAST),&lvi);
+						ListView_SetItemText(GetDlgItem(hwndDlg,IDC_PAST),lvi.iItem,1,dbvText.ptszVal);
+						DBFreeVariant(&dbvText);
+						DBFreeVariant(&dbv);
+						lvi.iItem++;
 					}
-					break;
+					
+					for(i=0;;i++) {
+						wsprintfA(idstr,"Affiliation%d",i);
+						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
+							break;
+						wsprintfA(idstr,"Affiliation%dText",i);
+						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbvText))
+						{DBFreeVariant(&dbv); break;}
+						lvi.pszText=dbv.ptszVal;
+						ListView_InsertItem(GetDlgItem(hwndDlg,IDC_PAST),&lvi);
+						ListView_SetItemText(GetDlgItem(hwndDlg,IDC_PAST),lvi.iItem,1,dbvText.ptszVal);
+						DBFreeVariant(&dbvText);
+						DBFreeVariant(&dbv);
+						lvi.iItem++;
+					}
+					
+					ResizeColumns(GetDlgItem(hwndDlg,IDC_PAST));
+					
+					//interests
+					ListView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_INTERESTS));
+					lvi.mask=LVIF_TEXT;
+					lvi.iSubItem=0;
+					lvi.iItem=0;
+					for(i=0;;i++) {
+						wsprintfA(idstr,"Interest%dCat",i);
+						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
+							break;
+						wsprintfA(idstr,"Interest%dText",i);
+						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbvText))
+						{DBFreeVariant(&dbv); break;}
+						lvi.pszText=dbv.ptszVal;
+						ListView_InsertItem(GetDlgItem(hwndDlg,IDC_INTERESTS),&lvi);
+						ListView_SetItemText(GetDlgItem(hwndDlg,IDC_INTERESTS),lvi.iItem,1,dbvText.ptszVal);
+						DBFreeVariant(&dbvText);
+						DBFreeVariant(&dbv);
+						lvi.iItem++;
+					}
+					ResizeColumns(GetDlgItem(hwndDlg,IDC_INTERESTS));
+			}	}
+			break;
+		}
+		break;
+	case WM_COMMAND:
+		switch(LOWORD(wParam)) {
+		case IDCANCEL:
+			SendMessage(GetParent(hwndDlg),msg,wParam,lParam);
+			break;
+		case IDC_WEBPAGE:
+			if(IsWindowEnabled(GetDlgItem(hwndDlg,IDC_WEBPAGE))) {
+				char szPage[256];
+				GetDlgItemTextA(hwndDlg,IDC_WEBPAGE,szPage,sizeof(szPage));
+				CallService(MS_UTILS_OPENURL,1,(LPARAM)szPage);
 			}
 			break;
-		case WM_COMMAND:
-			switch(LOWORD(wParam)) {
-				case IDCANCEL:
-					SendMessage(GetParent(hwndDlg),msg,wParam,lParam);
-					break;
-				case IDC_WEBPAGE:
-					if(IsWindowEnabled(GetDlgItem(hwndDlg,IDC_WEBPAGE))) {
-						char szPage[256];
-						GetDlgItemTextA(hwndDlg,IDC_WEBPAGE,szPage,sizeof(szPage));
-						CallService(MS_UTILS_OPENURL,1,(LPARAM)szPage);
-					}
-					break;
-			}
-			break;
+		}
+		break;
 	}
 	return FALSE;
 }
 
-
-
 static BOOL CALLBACK NotesDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
-		case WM_INITDIALOG:
-			TranslateDialogDefault(hwndDlg);
-			{	DBVARIANT dbv;
-				if(!DBGetContactSetting((HANDLE)lParam,"UserInfo","MyNotes",&dbv)) {
-					SetDlgItemTextA(hwndDlg,IDC_MYNOTES,dbv.pszVal);
-					DBFreeVariant(&dbv);
-				}
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+		{	DBVARIANT dbv;
+			if(!DBGetContactSetting((HANDLE)lParam,"UserInfo","MyNotes",&dbv)) {
+				SetDlgItemTextA(hwndDlg,IDC_MYNOTES,dbv.pszVal);
+				DBFreeVariant(&dbv);
 			}
-			SendDlgItemMessage(hwndDlg,IDC_MYNOTES,EM_LIMITTEXT,2048,0);
-			return TRUE;
-		case WM_NOTIFY:
-			switch (((LPNMHDR)lParam)->idFrom) {
-				case 0:
-					switch (((LPNMHDR)lParam)->code) {
-						case PSN_INFOCHANGED:
-						{	char *szProto;
-							HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
-							if (hContact != NULL) {
-								szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-								if (szProto==NULL) break;
-								SetValue(hwndDlg,IDC_ABOUT,hContact,szProto,"About",0);
-							}
-							break;
+		}
+		SendDlgItemMessage(hwndDlg,IDC_MYNOTES,EM_LIMITTEXT,2048,0);
+		return TRUE;
+	case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->idFrom) {
+			case 0:
+				switch (((LPNMHDR)lParam)->code) {
+					case PSN_INFOCHANGED:
+					{	char *szProto;
+						HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
+						if (hContact != NULL) {
+							szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+							if (szProto==NULL) break;
+							SetValue(hwndDlg,IDC_ABOUT,hContact,szProto,"About",0);
 						}
-						case PSN_APPLY:
-						{	HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
-							if(GetWindowTextLength(GetDlgItem(hwndDlg,IDC_MYNOTES))) {
-								char text[2048];
-								GetDlgItemTextA(hwndDlg,IDC_MYNOTES,text,sizeof(text));
-								DBWriteContactSettingString(hContact,"UserInfo","MyNotes",text);
-							}
-							else DBDeleteContactSetting(hContact,"UserInfo","MyNotes");
-							break;
-						}
+						break;
 					}
-					break;
-			}
-			break;
-		case WM_COMMAND:
-			if(wParam==MAKEWPARAM(IDC_MYNOTES,EN_CHANGE))
-				SendMessage(GetParent(hwndDlg),PSM_CHANGED,0,0);
-			else if(LOWORD(wParam)==IDCANCEL)
-				SendMessage(GetParent(hwndDlg),msg,wParam,lParam);
-			break;
+					case PSN_APPLY:
+					{	HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
+						if(GetWindowTextLength(GetDlgItem(hwndDlg,IDC_MYNOTES))) {
+							char text[2048];
+							GetDlgItemTextA(hwndDlg,IDC_MYNOTES,text,sizeof(text));
+							DBWriteContactSettingString(hContact,"UserInfo","MyNotes",text);
+						}
+						else DBDeleteContactSetting(hContact,"UserInfo","MyNotes");
+						break;
+					}
+				}
+				break;
+		}
+		break;
+	case WM_COMMAND:
+		if(wParam==MAKEWPARAM(IDC_MYNOTES,EN_CHANGE))
+			SendMessage(GetParent(hwndDlg),PSM_CHANGED,0,0);
+		else if(LOWORD(wParam)==IDCANCEL)
+			SendMessage(GetParent(hwndDlg),msg,wParam,lParam);
+		break;
 	}
 	return FALSE;
 }
@@ -486,7 +483,6 @@ static BOOL CALLBACK NotesDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 int DetailsInit(WPARAM wParam,LPARAM lParam)
 {
-	
 	OPTIONSDIALOGPAGE odp;
 	char *szProto;
 
@@ -494,7 +490,7 @@ int DetailsInit(WPARAM wParam,LPARAM lParam)
 		return 0;
 
 	szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
-    if (szProto == NULL)
+	if (szProto == NULL)
 		return 0;
 
 	odp.cbSize=sizeof(odp);
@@ -538,5 +534,4 @@ int DetailsInit(WPARAM wParam,LPARAM lParam)
 	CallService(MS_USERINFO_ADDPAGE,wParam,(LPARAM)&odp);
 
 	return 0;
-
 }
