@@ -241,7 +241,7 @@ HANDLE HContactFromID(char* pszProtoName, char* pszSetting, char* pszID)
 		{
 			if (DBGetContactSetting(hContact, pszProtoName, pszSetting, &dbv) == 0)
 			{
-				if (strcmp(pszID, dbv.pszVal) == 0)
+				if (dbv.type==DBVT_ASCIIZ && strcmp(pszID, dbv.pszVal) == 0)
 				{
 					free(dbv.pszVal);
 					return hContact;
