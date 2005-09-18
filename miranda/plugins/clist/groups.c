@@ -139,69 +139,70 @@ static int GetGroupName(WPARAM wParam, LPARAM lParam)
 static int DeleteGroup(WPARAM wParam, LPARAM lParam)
 {
 	int i;
-	char str[33], name[256], szNewParent[256], *pszLastBackslash;
+	char str[33];
 	DBVARIANT dbv;
 	HANDLE hContact;
+	TCHAR name[256], szNewParent[256], *pszLastBackslash;
 
 	//get the name
 	itoa(wParam - 1, str, 10);
-	if (DBGetContactSetting(NULL, "CListGroups", str, &dbv))
+	if (DBGetContactSettingTString(NULL, "CListGroups", str, &dbv))
 		return 1;
 	if (DBGetContactSettingByte(NULL, "CList", "ConfirmDelete", SETTING_CONFIRMDELETE_DEFAULT))
-		if (MessageBoxA((HWND)CallService(MS_CLUI_GETHWND, 0, 0), Translate("Are you sure you want to delete this group?  This operation can not be undone."), Translate("Delete Group"), MB_YESNO|MB_ICONQUESTION)==IDNO)
+		if (MessageBox((HWND)CallService(MS_CLUI_GETHWND, 0, 0), TranslateT("Are you sure you want to delete this group?  This operation can not be undone."), TranslateT("Delete Group"), MB_YESNO|MB_ICONQUESTION)==IDNO)
 			return 1;
-	lstrcpynA(name, dbv.pszVal + 1, sizeof(name));
+	lstrcpyn(name, dbv.ptszVal + 1, sizeof(name));
 	DBFreeVariant(&dbv);
 	SetCursor(LoadCursor(NULL, IDC_WAIT));
 	//must remove setting from all child contacts too
 	//children are demoted to the next group up, not deleted.
-	lstrcpyA(szNewParent, name);
-	pszLastBackslash = strrchr(szNewParent, '\\');
+	lstrcpy(szNewParent, name);
+	pszLastBackslash = _tcsrchr(szNewParent, '\\');
 	if (pszLastBackslash)
 		pszLastBackslash[0] = '\0';
 	else
 		szNewParent[0] = '\0';
 	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	do {
-		if (DBGetContactSetting(hContact, "CList", "Group", &dbv))
+		if (DBGetContactSettingTString(hContact, "CList", "Group", &dbv))
 			continue;
-		if (strcmp(dbv.pszVal, name)) {
+		if (_tcscmp(dbv.ptszVal, name)) {
 			DBFreeVariant(&dbv);
 			continue;
 		}
 		DBFreeVariant(&dbv);
 		if (szNewParent[0])
-			DBWriteContactSettingString(hContact, "CList", "Group", szNewParent);
+			DBWriteContactSettingTString(hContact, "CList", "Group", szNewParent);
 		else
 			DBDeleteContactSetting(hContact, "CList", "Group");
 	} while ((hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0)) != NULL);
 	//shuffle list of groups up to fill gap
 	for (i = wParam - 1;; i++) {
 		itoa(i + 1, str, 10);
-		if (DBGetContactSetting(NULL, "CListGroups", str, &dbv))
+		if (DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv))
 			break;
 		itoa(i, str, 10);
-		DBWriteContactSettingString(NULL, "CListGroups", str, dbv.pszVal);
+		DBWriteContactSettingStringUtf(NULL, "CListGroups", str, dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	itoa(i, str, 10);
 	DBDeleteContactSetting(NULL, "CListGroups", str);
 	//rename subgroups
 	{
-		char szNewName[256];
+		TCHAR szNewName[256];
 		int len;
 
-		len = lstrlenA(name);
+		len = lstrlen(name);
 		for (i = 0;; i++) {
 			itoa(i, str, 10);
-			if (DBGetContactSetting(NULL, "CListGroups", str, &dbv))
+			if (DBGetContactSettingTString(NULL, "CListGroups", str, &dbv))
 				break;
-			if (!strncmp(dbv.pszVal + 1, name, len) && dbv.pszVal[len + 1] == '\\' && strchr(dbv.pszVal + len + 2, '\\') == NULL) {
+			if (!_tcsncmp(dbv.ptszVal + 1, name, len) && dbv.pszVal[len + 1] == '\\' && _tcschr(dbv.ptszVal + len + 2, '\\') == NULL) {
 				if (szNewParent[0])
-					mir_snprintf(szNewName, sizeof(szNewName), "%s\\%s", szNewParent, dbv.pszVal + len + 2);
+					mir_sntprintf(szNewName, sizeof(szNewName), _T("%s\\%s"), szNewParent, dbv.ptszVal + len + 2);
 				else
-					lstrcpynA(szNewName, dbv.pszVal + len + 2, sizeof(szNewName));
-				RenameGroup(i + 1, (LPARAM) szNewName);
+					lstrcpyn(szNewName, dbv.ptszVal + len + 2, sizeof(szNewName));
+				RenameGroupT(i + 1, szNewName);
 			}
 			DBFreeVariant(&dbv);
 		}
@@ -314,13 +315,13 @@ static int SetGroupExpandedState(WPARAM wParam, LPARAM lParam)
 	DBVARIANT dbv;
 
 	itoa(wParam - 1, idstr, 10);
-	if (DBGetContactSetting(NULL, "CListGroups", idstr, &dbv))
+	if (DBGetContactSettingStringUtf(NULL, "CListGroups", idstr, &dbv))
 		return 1;
 	if (lParam)
 		dbv.pszVal[0] |= GROUPF_EXPANDED;
 	else
 		dbv.pszVal[0] = dbv.pszVal[0] & ~GROUPF_EXPANDED;
-	DBWriteContactSettingString(NULL, "CListGroups", idstr, dbv.pszVal);
+	DBWriteContactSettingStringUtf(NULL, "CListGroups", idstr, dbv.pszVal);
 	DBFreeVariant(&dbv);
 	return 0;
 }
@@ -332,12 +333,12 @@ static int SetGroupFlags(WPARAM wParam, LPARAM lParam)
 	int flags, oldval, newval;
 
 	itoa(wParam - 1, idstr, 10);
-	if (DBGetContactSetting(NULL, "CListGroups", idstr, &dbv))
+	if (DBGetContactSettingStringUtf(NULL, "CListGroups", idstr, &dbv))
 		return 1;
 	flags = LOWORD(lParam) & HIWORD(lParam);
 	oldval = dbv.pszVal[0];
 	newval = dbv.pszVal[0] = (dbv.pszVal[0] & ~HIWORD(lParam)) | flags;
-	DBWriteContactSettingString(NULL, "CListGroups", idstr, dbv.pszVal);
+	DBWriteContactSettingStringUtf(NULL, "CListGroups", idstr, dbv.pszVal);
 	DBFreeVariant(&dbv);
 	if ((oldval & GROUPF_HIDEOFFLINE) != (newval & GROUPF_HIDEOFFLINE))
 		LoadContactTree();
@@ -348,15 +349,15 @@ static int MoveGroupBefore(WPARAM wParam, LPARAM lParam)
 {
 	int i, shuffleFrom, shuffleTo, shuffleDir;
 	char str[33];
-	char *szMoveName;
+	TCHAR *szMoveName;
 	DBVARIANT dbv;
 
 	if (wParam == 0 || (LPARAM) wParam == lParam)
 		return 0;
 	itoa(wParam - 1, str, 10);
-	if (DBGetContactSetting(NULL, "CListGroups", str, &dbv))
+	if (DBGetContactSettingTString(NULL, "CListGroups", str, &dbv))
 		return 0;
-	szMoveName = dbv.pszVal;
+	szMoveName = dbv.ptszVal;
 	//shuffle list of groups up to fill gap
 	if (lParam == 0) {
 		shuffleFrom = wParam - 1;
@@ -378,29 +379,29 @@ static int MoveGroupBefore(WPARAM wParam, LPARAM lParam)
 	if (shuffleDir == -1) {
 		for (i = shuffleFrom; i != shuffleTo; i++) {
 			itoa(i + 1, str, 10);
-			if (DBGetContactSetting(NULL, "CListGroups", str, &dbv)) {
+			if (DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv)) {
 				shuffleTo = i;
 				break;
 			}
 			itoa(i, str, 10);
-			DBWriteContactSettingString(NULL, "CListGroups", str, dbv.pszVal);
+			DBWriteContactSettingStringUtf(NULL, "CListGroups", str, dbv.pszVal);
 			DBFreeVariant(&dbv);
 		}
 	}
 	else {
 		for (i = shuffleFrom; i != shuffleTo; i--) {
 			itoa(i - 1, str, 10);
-			if (DBGetContactSetting(NULL, "CListGroups", str, &dbv)) {
+			if (DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv)) {
 				mir_free(szMoveName);
 				return 1;
 			}                   //never happens
 			itoa(i, str, 10);
-			DBWriteContactSettingString(NULL, "CListGroups", str, dbv.pszVal);
+			DBWriteContactSettingStringUtf(NULL, "CListGroups", str, dbv.pszVal);
 			DBFreeVariant(&dbv);
 		}
 	}
 	itoa(shuffleTo, str, 10);
-	DBWriteContactSettingString(NULL, "CListGroups", str, szMoveName);
+	DBWriteContactSettingTString(NULL, "CListGroups", str, szMoveName);
 	mir_free(szMoveName);
 	return shuffleTo + 1;
 }
@@ -412,30 +413,30 @@ static int BuildGroupMenu(WPARAM wParam, LPARAM lParam)
 	int groupId;
 	HMENU hRootMenu, hThisMenu;
 	int nextMenuId = 100;
-	char *pBackslash, *pNextField, szThisField[128], szThisMenuItem[128];
+	TCHAR *pBackslash, *pNextField, szThisField[128], szThisMenuItem[128];
 	int menuId, compareResult, menuItemCount;
-	MENUITEMINFOA mii = { 0 };
+	MENUITEMINFO mii = { 0 };
 
-	if (DBGetContactSetting(NULL, "CListGroups", "0", &dbv))
+	if (DBGetContactSettingStringUtf(NULL, "CListGroups", "0", &dbv))
 		return (int) (HMENU) NULL;
 	DBFreeVariant(&dbv);
 	hRootMenu = CreateMenu();
 	for (groupId = 0;; groupId++) {
 		itoa(groupId, idstr, 10);
-		if (DBGetContactSetting(NULL, "CListGroups", idstr, &dbv))
+		if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
 			break;
 
-		pNextField = dbv.pszVal + 1;
+		pNextField = dbv.ptszVal + 1;
 		hThisMenu = hRootMenu;
 		mii.cbSize = MENUITEMINFO_V4_SIZE;
 		do {
-			pBackslash = strchr(pNextField, '\\');
+			pBackslash = _tcschr(pNextField, '\\');
 			if (pBackslash == NULL) {
-				lstrcpynA(szThisField, pNextField, sizeof(szThisField));
+				lstrcpyn(szThisField, pNextField, sizeof(szThisField));
 				pNextField = NULL;
 			}
 			else {
-				lstrcpynA(szThisField, pNextField, min(sizeof(szThisField), pBackslash - pNextField + 1));
+				lstrcpyn(szThisField, pNextField, min(sizeof(szThisField), pBackslash - pNextField + 1));
 				pNextField = pBackslash + 1;
 			}
 			compareResult = 1;
@@ -444,28 +445,28 @@ static int BuildGroupMenu(WPARAM wParam, LPARAM lParam)
 				mii.fMask = MIIM_TYPE | MIIM_SUBMENU | MIIM_DATA;
 				mii.cch = sizeof(szThisMenuItem);
 				mii.dwTypeData = szThisMenuItem;
-				GetMenuItemInfoA(hThisMenu, menuId, TRUE, &mii);
-				compareResult = lstrcmpA(szThisField, szThisMenuItem);
+				GetMenuItemInfo(hThisMenu, menuId, TRUE, &mii);
+				compareResult = lstrcmp(szThisField, szThisMenuItem);
 				if (compareResult == 0) {
 					if (pNextField == NULL) {
 						mii.fMask = MIIM_DATA;
 						mii.dwItemData = groupId + 1;
-						SetMenuItemInfoA(hThisMenu, menuId, TRUE, &mii);
+						SetMenuItemInfo(hThisMenu, menuId, TRUE, &mii);
 					}
 					else {
 						if (mii.hSubMenu == NULL) {
 							mii.fMask = MIIM_SUBMENU;
 							mii.hSubMenu = CreateMenu();
-							SetMenuItemInfoA(hThisMenu, menuId, TRUE, &mii);
+							SetMenuItemInfo(hThisMenu, menuId, TRUE, &mii);
 							mii.fMask = MIIM_DATA | MIIM_TYPE | MIIM_ID;
 							//dwItemData doesn't change
 							mii.fType = MFT_STRING;
-							mii.dwTypeData = Translate("This group");
+							mii.dwTypeData = TranslateT("This group");
 							mii.wID = nextMenuId++;
-							InsertMenuItemA(mii.hSubMenu, 0, TRUE, &mii);
+							InsertMenuItem(mii.hSubMenu, 0, TRUE, &mii);
 							mii.fMask = MIIM_TYPE;
 							mii.fType = MFT_SEPARATOR;
-							InsertMenuItemA(mii.hSubMenu, 1, TRUE, &mii);
+							InsertMenuItem(mii.hSubMenu, 1, TRUE, &mii);
 						}
 						hThisMenu = mii.hSubMenu;
 					}
@@ -487,7 +488,7 @@ static int BuildGroupMenu(WPARAM wParam, LPARAM lParam)
 					mii.fMask |= MIIM_DATA;
 					mii.dwItemData = groupId + 1;
 				}
-				InsertMenuItemA(hThisMenu, menuId, TRUE, &mii);
+				InsertMenuItem(hThisMenu, menuId, TRUE, &mii);
 				if (pNextField) {
 					hThisMenu = mii.hSubMenu;
 				}
