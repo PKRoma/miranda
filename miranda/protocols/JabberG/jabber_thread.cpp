@@ -366,7 +366,6 @@ LBL_Exit:
 			datalen += recvResult;
 
 			buffer[datalen] = '\0';
-			JabberLog( "RECV:%s", buffer );
 			if ( sslMode && DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", TRUE ) == TRUE ) {
 				// Emulate netlib log feature for SSL connection
 				if (( szLogBuffer=( char* )malloc( recvResult+128 )) != NULL ) {
@@ -624,10 +623,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 					if ( inviteReason == NULL )
 						inviteReason = xNode->text;
 					isChatRoomInvitation = TRUE;
-			}	}
-
-			i++;
-		}
+		}	}	}
 
 		JabberUtf8Decode( szMessage, &wszMessage );
 		JabberUrlDecode( szMessage );
