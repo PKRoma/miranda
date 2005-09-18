@@ -28,7 +28,9 @@ void __stdcall replaceStr( char*& dest, const char* src )
 		if ( dest != NULL )
 			free( dest );
 		dest = strdup( src );
-}	}
+	}
+	else dest = NULL;
+}
 
 char* __stdcall rtrim( char *string )
 {

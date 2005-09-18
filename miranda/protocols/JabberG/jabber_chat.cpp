@@ -117,10 +117,6 @@ int JabberGcInit( WPARAM wParam, LPARAM lParam )
 	gce.cbSize = sizeof(GCEVENT);
 	gce.dwItemData = wParam;
 	gce.pDest = &gcd;
-
-	gcd.iType = GC_EVENT_SETITEMDATA;
-	JCallService(MS_GC_EVENT, 0, (LPARAM)&gce);
-	
 	gcd.iType = GC_EVENT_CONTROL;
 	JCallService(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gce);
 	JCallService(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gce);
@@ -184,9 +180,6 @@ void JabberGcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 	item->bChatActive = FALSE;
 
 	if ( jabberOnline ) {
-		gcd.iType = GC_EVENT_SETITEMDATA;
-		JCallService(MS_GC_EVENT, 0, (LPARAM)&gce );
-
 		JabberSend( jabberThreadInfo->s, "<presence to='%s' type='unavailable'/>", item->jid );
 		JabberListRemove( LIST_CHATROOM, item->jid );
 }	}

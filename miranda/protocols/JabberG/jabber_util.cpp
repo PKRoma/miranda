@@ -85,7 +85,6 @@ int __stdcall JabberSend( HANDLE hConn, const char* fmt, ... )
 	}
 	va_end( vararg );
 
-	JabberLog( "SEND:%s", str );
 	size = strlen( str );
 	if (( ssl=JabberSslHandleToSsl( hConn )) != NULL ) {
 		if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE ) {
@@ -827,8 +826,6 @@ time_t __stdcall JabberIsoToUnixTime( char* stamp )
 
 	_tzset();
 	t -= _timezone;
-
-	JabberLog( "%s is %s", stamp, ctime( &t ));
 
 	if ( t >= 0 )
 		return t;

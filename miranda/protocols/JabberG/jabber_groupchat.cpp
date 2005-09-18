@@ -367,14 +367,12 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 					SetDlgItemText( hwndDlg, IDC_ROOM, room );
 					SetDlgItemText( hwndDlg, IDC_SERVER, p+1 );
 				}
-				else
-					SetDlgItemText( hwndDlg, IDC_SERVER, text );
+				else SetDlgItemText( hwndDlg, IDC_SERVER, text );
 			}
 
 			char szNick[ 256 ];
-			if ( !JGetStaticString( "Nick", NULL, szNick, sizeof szNick )) {
+			if ( !JGetStaticString( "Nick", NULL, szNick, sizeof szNick ))
 				SetDlgItemText( hwndDlg, IDC_NICK, szNick );
-			}
 			else {
 				char* nick = JabberNickFromJID( jabberJID );
 				if ( nick != NULL ) {
@@ -386,19 +384,14 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_ROOM:
-			{
-				char* str;
-
-				if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE ) {
-					// Change in IDC_ROOM field is detected,
-					// invalidate the saved UTF-8 room name if any
-					str = ( char* )GetWindowLong( hwndDlg, GWL_USERDATA );
-					if ( str != NULL ) {
-						free( str );
-						SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) NULL );
-					}
-				}
-			}
+			if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE ) {
+				// Change in IDC_ROOM field is detected,
+				// invalidate the saved UTF-8 room name if any
+				char* str = ( char* )GetWindowLong( hwndDlg, GWL_USERDATA );
+				if ( str != NULL ) {
+					free( str );
+					SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) NULL );
+			}	}
 			break;
 		case IDOK:
 			{
@@ -487,6 +480,7 @@ void sttRenameParticipantNick( JABBER_LIST_ITEM* item, char* oldNick, XmlNode *i
 			gce.pDest = &gcd;
 			gce.pszNick = oldNick;
 			gce.pszText = newNick;
+			gce.time = time(0);
 			JCallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 
 			gcd.iType = GC_EVENT_NICK;
@@ -500,10 +494,10 @@ void sttRenameParticipantNick( JABBER_LIST_ITEM* item, char* oldNick, XmlNode *i
 void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 {
 	struct ThreadData *info;
-	XmlNode *showNode, *statusNode, *errorNode, *xNode, *itemNode, *n;
+	XmlNode *showNode, *statusNode, *errorNode, *itemNode, *n;
 	char* from;
 	int status;
-	char* str, *p;
+	char* str;
 	int i;
 	BOOL roomCreated;
 
@@ -519,6 +513,8 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, from );
 	if ( item == NULL )
 		return;
+
+	XmlNode* xNode = JabberXmlGetChildWithGivenAttrValue( node, "x", "xmlns", "http://jabber.org/protocol/muc#user" );
 
 	char* type = JabberXmlGetAttrValue( node, "type" );
 	if ( type == NULL || !strcmp( type, "available" )) {
@@ -548,7 +544,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		roomCreated = FALSE;
 
 		// Check additional MUC info for this user
-		if (( xNode=JabberXmlGetChildWithGivenAttrValue( node, "x", "xmlns", "http://jabber.org/protocol/muc#user" )) != NULL ) {
+		if ( xNode != NULL ) {
 			if (( itemNode=JabberXmlGetChild( xNode, "item" )) != NULL ) {
 				for ( i=0; i<item->resourceCount && strcmp( item->resource[i].resourceName, nick ); i++ );
 				if ( i < item->resourceCount ) {
@@ -596,26 +592,26 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		free( room );
 	}
 	else if ( !strcmp( type, "unavailable" )) {
-		if ( item->nick!=NULL && ( p=strchr( from, '/' ))!=NULL && *( ++p )!='\0' ) {
-			if ( !strcmp( p, item->nick )) {
-				// Now evil part, check if I am kicked or banned
-				if (( xNode=JabberXmlGetChildWithGivenAttrValue( node, "x", "xmlns", "http://jabber.org/protocol/muc#user" )) != NULL ) {
-					itemNode = JabberXmlGetChild( xNode, "item" );
+		if ( xNode != NULL || item->nick != NULL ) {
+			itemNode = JabberXmlGetChild( xNode, "item" );
 
-					int iStatus = sttGetStatusCode( xNode );
-					switch( iStatus ) {
-						case 301:	case 307:
-							JabberGcQuit( item, iStatus, itemNode );
-							break;
+			if ( !strcmp( nick, item->nick )) {
+				int iStatus = sttGetStatusCode( xNode );
+				switch( iStatus ) {
+				case 301:	case 307:
+					JabberGcQuit( item, iStatus, itemNode );
+					break;
 
-						case 303:
-							sttRenameParticipantNick( item, nick, itemNode );
-							return;
-				}	}	
+				case 303:
+					sttRenameParticipantNick( item, nick, itemNode );
+					return;
+				}
 
-				// Set item->nick to NULL for the change nick process ( it does no harm even if it is actually not a change nick process )
-				free( item->nick );
-				item->nick = NULL;
+				replaceStr( item->nick, NULL );
+			}	
+			else if ( sttGetStatusCode( xNode ) == 303 ) {
+				sttRenameParticipantNick( item, nick, itemNode );
+				return;
 		}	}
 
 		JabberListRemoveResource( LIST_CHATROOM, from );
