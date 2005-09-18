@@ -56,8 +56,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_utils.h>
 #include <m_message.h>
 #include <m_skin.h>
-
-#include "sdk/m_chat.h"
+#include <m_chat.h>
 
 #include "jabber_xml.h"
 #include "jabber_byte.h"

@@ -86,18 +86,18 @@ static char* sttRoles[] = { "Other", "Visitors", "Participants", "Moderators" };
 int JabberGcInit( WPARAM wParam, LPARAM lParam )
 {
 	JABBER_LIST_ITEM* item = ( JABBER_LIST_ITEM* )wParam;
-	GCWINDOW gcw = {0};
+	GCSESSION gcw = {0};
 	GCEVENT gce = {0};
 
 	char* szNick = JabberNickFromJID( item->jid );
-	gcw.cbSize = sizeof(GCWINDOW);
+	gcw.cbSize = sizeof(GCSESSION);
 	gcw.iType = GCW_CHATROOM;
 	gcw.pszModule = jabberProtoName;
 	gcw.pszName = szNick;
 	gcw.pszID = item->jid;
 	gcw.pszStatusbarText = NULL;
 	gcw.bDisableNickList = FALSE;
-	JCallService(MS_GC_NEWCHAT, NULL, (LPARAM)&gcw);
+	JCallService(MS_GC_NEWSESSION, NULL, (LPARAM)&gcw);
 	free( szNick );
 
 	item->bChatActive = TRUE;
@@ -118,8 +118,8 @@ int JabberGcInit( WPARAM wParam, LPARAM lParam )
 	JCallService(MS_GC_EVENT, 0, (LPARAM)&gce);
 	
 	gcd.iType = GC_EVENT_CONTROL;
-	JCallService(MS_GC_EVENT, WINDOW_INITDONE, (LPARAM)&gce);
-	JCallService(MS_GC_EVENT, WINDOW_ONLINE, (LPARAM)&gce);
+	JCallService(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gce);
+	JCallService(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gce);
 	JCallService(MS_GC_EVENT, WINDOW_VISIBLE, (LPARAM)&gce);
 	return 0;
 }
@@ -174,7 +174,7 @@ void JabberGcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 	gce.pszUID = item->jid;
 	gce.pDest = &gcd;
 	gce.pszText = ( reason != NULL ) ? reason->text : NULL;
-	JCallService( MS_GC_EVENT, WINDOW_OFFLINE, ( LPARAM )&gce );
+	JCallService( MS_GC_EVENT, SESSION_OFFLINE, ( LPARAM )&gce );
 	JCallService( MS_GC_EVENT, WINDOW_HIDDEN, ( LPARAM )&gce );
 	JCallService( MS_GC_EVENT, WINDOW_CLEARLOG, ( LPARAM )&gce );
 

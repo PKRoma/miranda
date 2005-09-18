@@ -121,15 +121,15 @@ void CALLBACK sttCreateRoom( ULONG dwParam )
 {
 	char* jid = ( char* )dwParam, *p;
 
-	GCWINDOW gcw = {0};
-	gcw.cbSize = sizeof(GCWINDOW);
+	GCSESSION gcw = {0};
+	gcw.cbSize = sizeof(GCSESSION);
 	gcw.iType = GCW_CHATROOM;
 	gcw.pszID = jid;
 	gcw.pszModule = jabberProtoName;
 	gcw.pszName = strcpy(( char* )alloca( strlen(jid)+1 ), jid );
 	if (( p = strchr( gcw.pszName, '@' )) != NULL )
 		*p = 0;
-	CallService( MS_GC_NEWCHAT, 0, ( LPARAM )&gcw );
+	CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

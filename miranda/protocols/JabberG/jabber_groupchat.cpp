@@ -272,15 +272,15 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				lvItem.mask = LVIF_PARAM;
 				ListView_GetItem( lv, &lvItem );
 				char* jid = ( char* )lvItem.lParam;
-				{	GCWINDOW gcw = {0};
-					gcw.cbSize = sizeof(GCWINDOW);
+				{	GCSESSION gcw = {0};
+					gcw.cbSize = sizeof(GCSESSION);
 					gcw.iType = GCW_CHATROOM;
 					gcw.pszID = jid;
 					gcw.pszModule = jabberProtoName;
 					gcw.pszName = strcpy(( char* )alloca( strlen(jid)+1 ), jid );
 					if (( p = strchr( gcw.pszName, '@' )) != NULL )
 						*p = 0;
-					CallService( MS_GC_NEWCHAT, 0, ( LPARAM )&gcw );
+					CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
 				}
 
 				JabberSend( jabberThreadInfo->s, "<iq type='set'><query xmlns='jabber:iq:roster'><item jid='%s'/></query></iq>", jid );
@@ -470,6 +470,9 @@ void sttRenameParticipantNick( JABBER_LIST_ITEM* item, char* oldNick, XmlNode *i
 		if ( !strcmp( RS.resourceName, oldNick )) {
 			replaceStr( RS.resourceName, newNick );
 
+			if ( !lstrcmp( item->nick, oldNick ))
+				replaceStr( item->nick, newNick );
+
 			char* dispNick = NEWSTR_ALLOCA( newNick );
 			JabberUtf8Decode( dispNick, NULL );
 
@@ -477,9 +480,14 @@ void sttRenameParticipantNick( JABBER_LIST_ITEM* item, char* oldNick, XmlNode *i
 			GCEVENT gce = {0};
 			gce.cbSize = sizeof(GCEVENT);
 			gce.pszNick = oldNick;
-			gce.pszUID = newNick;
+			gce.pszUID = oldNick;
 			gce.pszText = dispNick;
 			gce.pDest = &gcd;
+			JCallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+
+			gcd.iType = GC_EVENT_CHUID;
+			gce.pszUID = oldNick;
+			gce.pszText = newNick;
 			JCallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 			break;
 }	}	}
