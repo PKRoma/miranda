@@ -13,6 +13,7 @@ Version 0.4.1.2
 [!] bug #0001430 fixed: several problems with moderator controls
 [!] bug #0001316 fixed: User appears to part/rejoin on nick change in conference
 [!] bug #0001423 fixed: Leaving a jabber conference closes the chat.dll container window.
+[!] bug #0001355 fixed: Switching presence to 'Invisible' causes me to exit MUC
 [!] fixed the crash when two or more chats were opened
 
 Version 0.4.1.1

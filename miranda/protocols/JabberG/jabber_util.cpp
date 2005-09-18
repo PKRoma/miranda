@@ -925,31 +925,15 @@ void __stdcall JabberSendPresenceTo( int status, char* to, char* extra )
 
 void __stdcall JabberSendPresence( int status )
 {
-	JABBER_LIST_ITEM *item;
-	int i;
-
 	JabberSendPresenceTo( status, NULL, NULL );
 	JabberSendVisibleInvisiblePresence( status == ID_STATUS_INVISIBLE );
 
-	if ( status == ID_STATUS_INVISIBLE ) {
-		i = 0;
-		while (( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0 ) {
-			if (( item=JabberListGetItemPtrFromIndex( i )) != NULL )
-				// Quit all chatrooms when change to invisible
-				JabberGcQuit( item, 0, 0 );
-
-			i++;
-		}
-	}
-	else {
-		i = 0;
-		while (( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0 ) {
-			if (( item=JabberListGetItemPtrFromIndex( i )) != NULL ) {
-				// Also update status in all chatrooms
-				JabberSendPresenceTo( status, item->jid, NULL );
-			}
-			i++;
-}	}	}
+	// Also update status in all chatrooms
+	for ( int i = 0; ( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
+		JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
+		if ( item != NULL )
+			JabberSendPresenceTo( status, item->jid, NULL );
+}	}
 
 void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... )
 {
