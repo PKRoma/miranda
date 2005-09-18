@@ -284,7 +284,7 @@ int JabberContactDeleted( WPARAM wParam, LPARAM lParam )
 	szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
 	if ( szProto==NULL || strcmp( szProto, jabberProtoName ))
 		return 0;
-	if ( !DBGetContactSettingStringUtf(( HANDLE ) wParam, jabberProtoName, "jid", &dbv )) {
+	if ( !JGetStringUtf(( HANDLE ) wParam, "jid", &dbv )) {
 		char* jid, *p, *q;
 
 		jid = dbv.pszVal;
@@ -308,7 +308,7 @@ int JabberContactDeleted( WPARAM wParam, LPARAM lParam )
 void sttRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 {
 	DBVARIANT jid, dbv;
-	if ( DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &jid ))
+	if ( JGetStringUtf( hContact, "jid", &jid ))
 		return;
 
 	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, jid.pszVal );
@@ -321,7 +321,7 @@ void sttRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		nick = strdup( dbv.pszVal );
 		JFreeVariant( &dbv );
 	}
-	else if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "Nick", &dbv )) {
+	else if ( !JGetStringUtf( hContact, "Nick", &dbv )) {
 		nick = strdup( dbv.pszVal );
 		JFreeVariant( &dbv );
 	}
@@ -348,7 +348,7 @@ void sttRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 void sttRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 {
 	DBVARIANT jid;
-	if ( DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &jid ))
+	if ( JGetStringUtf( hContact, "jid", &jid ))
 		return;
 
 	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, jid.pszVal );
@@ -382,7 +382,7 @@ void sttAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		return;
 
 	DBVARIANT jid, dbv;
-	if ( DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &jid ))
+	if ( JGetStringUtf( hContact, "jid", &jid ))
 		return;
 
 	char *nick;
@@ -391,7 +391,7 @@ void sttAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		nick = strdup( dbv.pszVal );
 		JFreeVariant( &dbv );
 	}
-	else if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "Nick", &dbv )) {
+	else if ( !JGetStringUtf( hContact, "Nick", &dbv )) {
 		nick = strdup( dbv.pszVal );
 		JFreeVariant( &dbv );
 	}
@@ -525,7 +525,7 @@ static void __cdecl JabberGetAwayMsgThread( HANDLE hContact )
 	char* str;
 	int i, len, msgCount;
 
-	if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv )) {
+	if ( !JGetStringUtf( hContact, "jid", &dbv )) {
 		if (( item=JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal )) != NULL ) {
 			JFreeVariant( &dbv );
 			if ( item->resourceCount > 0 ) {
@@ -609,7 +609,7 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
 	int result = 1;
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingStringUtf( ccs->hContact, jabberProtoName, "jid", &dbv )) {
+	if ( !JGetStringUtf( ccs->hContact, "jid", &dbv )) {
 		result = JabberSendGetVcard( dbv.pszVal );
 		JFreeVariant( &dbv );
 	}
@@ -797,7 +797,7 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 
 	if ( !jabberOnline ) return 0;
 	if ( JGetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE ) return 0;
-	if ( DBGetContactSettingStringUtf( ccs->hContact, jabberProtoName, "jid", &dbv )) return 0;
+	if ( JGetStringUtf( ccs->hContact, "jid", &dbv )) return 0;
 
 	if (( item=JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal )) != NULL ) {
 		// Check if another file transfer session request is pending ( waiting for disco result )
@@ -866,7 +866,7 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 	int id;
 
 	DBVARIANT dbv;
-	if ( !jabberOnline || DBGetContactSettingStringUtf( ccs->hContact, jabberProtoName, "jid", &dbv )) {
+	if ( !jabberOnline || JGetStringUtf( ccs->hContact, "jid", &dbv )) {
 		ProtoBroadcastAck( jabberProtoName, ccs->hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) 1, 0 );
 		return 0;
 	}
@@ -956,7 +956,7 @@ int JabberSetApparentMode( WPARAM wParam, LPARAM lParam )
 
 	if ( !jabberOnline ) return 0;
 
-	if ( !DBGetContactSettingStringUtf( ccs->hContact, jabberProtoName, "jid", &dbv )) {
+	if ( !JGetStringUtf( ccs->hContact, "jid", &dbv )) {
 		jid = dbv.pszVal;
 		switch ( ccs->wParam ) {
 		case ID_STATUS_ONLINE:
@@ -1095,7 +1095,7 @@ int JabberUserIsTyping( WPARAM wParam, LPARAM lParam )
 	JABBER_LIST_ITEM *item;
 
 	if ( !jabberOnline ) return 0;
-	if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv )) {
+	if ( !JGetStringUtf( hContact, "jid", &dbv )) {
 		if (( item=JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal ))!=NULL && item->wantComposingEvent==TRUE ) {
 			char szClientJid[ 256 ];
 			JabberGetClientJID( dbv.pszVal, szClientJid, sizeof( szClientJid ));

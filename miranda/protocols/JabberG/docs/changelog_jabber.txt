@@ -12,6 +12,7 @@ Version 0.4.1.2
 [!] bug #0001324 fixed: groupchat subjects don't get recognized
 [!] bug #0001430 fixed: several problems with moderator controls
 [!] bug #0001316 fixed: User appears to part/rejoin on nick change in conference
+[!] fixed the crash when two or more chats were opened
 
 Version 0.4.1.1
 ===============

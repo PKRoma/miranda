@@ -83,7 +83,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			EnableWindow( GetDlgItem( hwndDlg, IDC_SYSTEM ), FALSE );
 
 			HANDLE hContact = ( HANDLE ) GetWindowLong( hwndDlg, GWL_USERDATA );
-			if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv )) {
+			if ( !JGetStringUtf( hContact, "jid", &dbv )) {
 				char* jid = dbv.pszVal;
 				SetDlgItemText( hwndDlg, IDC_INFO_JID, jid );
 				if ( jabberOnline ) {
@@ -142,7 +142,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 
 					HWND hwndList = GetDlgItem( hwndDlg, IDC_INFO_RESOURCE );
 					HANDLE hContact = ( HANDLE ) GetWindowLong( hwndDlg, GWL_USERDATA );
-					if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv )) {
+					if ( !JGetStringUtf( hContact, "jid", &dbv )) {
 						jid = dbv.pszVal;
 						int nItem = SendMessage( hwndList, LB_GETCURSEL, 0, 0 );
 						char* szResource = ( char* )SendMessage( hwndList, LB_GETITEMDATA, ( WPARAM ) nItem, 0 );
@@ -231,7 +231,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				photoInfo->hBitmap = NULL;
 			}
 			ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_HIDE );
-			if ( !DBGetContactSettingStringUtf( photoInfo->hContact, jabberProtoName, "jid", &dbv )) {
+			if ( !JGetStringUtf( photoInfo->hContact, "jid", &dbv )) {
 				jid = dbv.pszVal;
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, jid )) != NULL ) {
 					if ( item->photoFileName ) {
@@ -260,8 +260,9 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				char* jid;
 				DWORD n;
 
-				if ( DBGetContactSettingStringUtf( photoInfo->hContact, jabberProtoName, "jid", &dbv ))
+				if ( JGetStringUtf( photoInfo->hContact, "jid", &dbv ))
 					break;
+
 				jid = dbv.pszVal;
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, jid )) != NULL ) {
 					if (( hFile=CreateFile( item->photoFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {

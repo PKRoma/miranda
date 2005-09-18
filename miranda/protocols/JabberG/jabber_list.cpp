@@ -32,36 +32,34 @@ static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item );
 #ifdef _DEBUG
 static void PrintResource( int index )
 {
-	char* p;
-	int i, resourceCount;
-	JABBER_RESOURCE_STATUS *resource;
-	char* str;
-
 	if ( index<0 || index>=count ) {
 		JabberLog( "PrintResource(): index out-of-bound" );
+		return;
 	}
-	else {
-		resourceCount = lists[index].resourceCount;
-		if ( resourceCount <= 0 )
-			JabberLog( "Resource count is zero" );
-		else {
-			if (( str=( char* )malloc( resourceCount * 48 )) != NULL ) {
-				p = str;
-				for ( i=0; i<resourceCount; i++ ) {
-					resource = &( lists[index].resource[i] );
-					sprintf( p, "( %d )", resource->status );
-					for ( ; *p!='\0'; p++ );
-					if ( resource->resourceName )
-						sprintf( p, "%s-", resource->resourceName );
-					else
-						strcpy( p, "( NULL )" );
-					for ( ; *p!='\0'; p++ );
-				}
-				JabberLog( "Resource is now '%s'", str );
-				free( str );
-			}
-		}
+
+	int resourceCount = lists[index].resourceCount;
+	if ( resourceCount <= 0 ) {
+		JabberLog( "Resource count is zero" );
+		return;
 	}
+
+	char* str = ( char* )malloc( resourceCount * 48 );
+	if ( str == NULL )
+		return;
+
+	char* p = str;
+	for ( int i=0; i < resourceCount; i++ ) {
+		JABBER_RESOURCE_STATUS* resource = &( lists[index].resource[i] );
+		sprintf( p, "( %d )", resource->status );
+		for ( ; *p!='\0'; p++ );
+		if ( resource->resourceName )
+			sprintf( p, "%s-", resource->resourceName );
+		else
+			strcpy( p, "( NULL )" );
+		for ( ; *p!='\0'; p++ );
+	}
+	JabberLog( "Resource is now '%s'", str );
+	free( str );
 }
 #endif
 
@@ -176,10 +174,8 @@ JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const char* jid )
 
 void JabberListRemove( JABBER_LIST list, const char* jid )
 {
-	int i;
-
 	EnterCriticalSection( &csLists );
-	i = JabberListExist( list, jid );
+	int i = JabberListExist( list, jid );
 	if ( !i ) {
 		LeaveCriticalSection( &csLists );
 		return;
@@ -194,12 +190,9 @@ void JabberListRemove( JABBER_LIST list, const char* jid )
 
 void JabberListRemoveList( JABBER_LIST list )
 {
-	int i;
-
-	i = 0;
-	while (( i=JabberListFindNext( list, i )) >= 0 ) {
+	int i = 0;
+	while (( i=JabberListFindNext( list, i )) >= 0 )
 		JabberListRemoveByIndex( i );
-	}
 }
 
 void JabberListRemoveByIndex( int index )
@@ -216,13 +209,11 @@ void JabberListRemoveByIndex( int index )
 
 int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const char* statusMessage )
 {
-	int i, j, resourceCount;
+	int j;
 	char* p, *q;
-	char* resource;
-	JABBER_RESOURCE_STATUS *r;
 
 	EnterCriticalSection( &csLists );
-	i = JabberListExist( list, jid );
+	int i = JabberListExist( list, jid );
 	if ( !i ) {
 		LeaveCriticalSection( &csLists );
 		return 0;
@@ -233,9 +224,9 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 
 	if (( p=strchr( jid, '@' )) != NULL ) {
 		if (( q=strchr( p, '/' )) != NULL ) {
-			resource = q+1;
+			char* resource = q+1;
 			if ( resource[0] ) {
-				r = lists[i].resource;
+				JABBER_RESOURCE_STATUS* r = lists[i].resource;
 				if ( r == NULL ) {
 					r = ( JABBER_RESOURCE_STATUS * ) malloc( sizeof( JABBER_RESOURCE_STATUS ));
 					bIsNewResource = true;
@@ -248,7 +239,7 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 						r->statusMessage = _strdup( statusMessage );
 				}
 				else {
-					resourceCount = lists[i].resourceCount;
+					int resourceCount = lists[i].resourceCount;
 					r = lists[i].resource;
 					for ( j=0; j<resourceCount; j++ ) {
 						if ( !strcmp( r[j].resourceName, resource )) {

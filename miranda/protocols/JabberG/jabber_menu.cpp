@@ -63,7 +63,7 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	}
 
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv )) {
+	if ( !JGetStringUtf( hContact, "jid", &dbv )) {
 		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal );
 		JFreeVariant( &dbv );
 		if ( item != NULL ) {
@@ -81,7 +81,7 @@ int JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam )
 	DBVARIANT dbv;
 
 	if (( hContact=( HANDLE ) wParam )!=NULL && jabberOnline ) {
-		if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv )) {
+		if ( !JGetStringUtf( hContact, "jid", &dbv )) {
 			JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribe'/>", dbv.pszVal );
 			JFreeVariant( &dbv );
 	}	}
@@ -95,7 +95,7 @@ int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
 	DBVARIANT dbv;
 
 	if (( hContact=( HANDLE ) wParam )!=NULL && jabberOnline ) {
-		if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv )) {
+		if ( !JGetStringUtf( hContact, "jid", &dbv )) {
 			JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribed'/>", dbv.pszVal );
 			JFreeVariant( &dbv );
 	}	}

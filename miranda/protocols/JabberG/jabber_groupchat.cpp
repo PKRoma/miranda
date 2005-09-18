@@ -45,9 +45,7 @@ int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam )
 			// <iq/> result will send WM_JABBER_REFRESH to update the list with real data
 		}
 	}
-	else {
-		hwndJabberGroupchat = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT ), NULL, JabberGroupchatDlgProc, lParam );
-	}
+	else hwndJabberGroupchat = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT ), NULL, JabberGroupchatDlgProc, lParam );
 
 	return 0;
 }
@@ -134,12 +132,9 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					if ( !DBGetContactSetting( NULL, jabberProtoName, text, &dbv )) {
 						SendDlgItemMessage( hwndDlg, IDC_SERVER, CB_ADDSTRING, 0, ( LPARAM )dbv.pszVal );
 						JFreeVariant( &dbv );
-					}
-				}
-			}
+			}	}	}	
 		}
-		else
-			EnableWindow( GetDlgItem( hwndDlg, IDC_JOIN ), FALSE );
+		else EnableWindow( GetDlgItem( hwndDlg, IDC_JOIN ), FALSE );
 		return TRUE;
 	case WM_JABBER_ACTIVATE:
 		// lParam = server from which agent information is obtained

@@ -203,7 +203,7 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 			QueueUserAPC( sttCreateRoom, hMainThread, ( ULONG_PTR )jid );
 
       DBVARIANT dbNick;
-		if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "Nick", &dbNick )) {
+		if ( !JGetStringUtf( hContact, "Nick", &dbNick )) {
 			if ( strcmp( nick, dbNick.pszVal ) != 0 )
 				DBWriteContactSettingStringUtf( hContact, "CList", "MyHandle", nick );
 			else
@@ -241,7 +241,7 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 			char* str = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
 			if ( str != NULL && !strcmp( str, jabberProtoName )) {
 				DBVARIANT dbv;
-				if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv )) {
+				if ( !JGetStringUtf( hContact, "jid", &dbv )) {
 					if ( !JabberListExist( LIST_ROSTER, dbv.pszVal )) {
 						JabberLog( "Syncing roster: preparing to delete %s ( hContact=0x%x )", dbv.pszVal, hContact );
 						if ( listSize >= listAllocSize ) {
@@ -727,7 +727,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 												jabberVcardPhotoType = _strdup( m->text );
 												JabberLog( "My picture saved to %s", szTempFileName );
 											}
-											else if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv )) {
+											else if ( !JGetStringUtf( hContact, "jid", &dbv )) {
 												if (( item = JabberListGetItemPtr( LIST_ROSTER, jid )) != NULL ) {
 													hasPhoto = TRUE;
 													if ( item->photoFileName )

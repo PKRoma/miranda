@@ -737,7 +737,6 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 	HANDLE hContact;
 	XmlNode *showNode, *statusNode;
 	JABBER_LIST_ITEM *item;
-	JABBER_RESOURCE_STATUS *r;
 	char* from, *type, *nick, *show;
 	int status, count, i;
 	char* p;
@@ -776,7 +775,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 						if (( p=strchr( p, '/' ))!=NULL && p[1]!='\0' ) {
 							p++;
 							if (( item = JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
-								r = item->resource;
+								JABBER_RESOURCE_STATUS *r = item->resource;
 								for ( i=0; i<item->resourceCount && strcmp( r[i].resourceName, p ); i++ );
 								if ( i >= item->resourceCount )
 									JabberSend( info->s, "<iq type='get' to='%s'><query xmlns='jabber:iq:version'/></iq>", from );
@@ -889,10 +888,9 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	if (( type=JabberXmlGetAttrValue( node, "type" )) == NULL ) return;
 
 	id = -1;
-	if (( idStr=JabberXmlGetAttrValue( node, "id" )) != NULL ) {
+	if (( idStr=JabberXmlGetAttrValue( node, "id" )) != NULL )
 		if ( !strncmp( idStr, JABBER_IQID, strlen( JABBER_IQID )) )
 			id = atoi( idStr+strlen( JABBER_IQID ));
-	}
 
 	queryNode = JabberXmlGetChild( node, "query" );
 	xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
@@ -963,7 +961,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 							else JSetStringUtf( hContact, "jid", jid );
 
                      DBVARIANT dbnick;
-							if ( !DBGetContactSettingStringUtf( hContact, jabberProtoName, "Nick", &dbnick )) {
+							if ( !JGetStringUtf( hContact, "Nick", &dbnick )) {
 								if ( strcmp( nick, dbnick.pszVal ) != 0 )
 									DBWriteContactSettingStringUtf( hContact, "CList", "MyHandle", nick );
 								else

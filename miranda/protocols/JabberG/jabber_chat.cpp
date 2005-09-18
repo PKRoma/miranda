@@ -70,16 +70,7 @@ BOOL JabberEnterString( char* result, size_t resultLen )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// JabberGetUserData - get an item by the room name
-
-JABBER_LIST_ITEM* JabberGetUserData( char* szRoomName )
-{
-	GCDEST gcd = { jabberProtoName, szRoomName, GC_EVENT_GETITEMDATA };
-	GCEVENT gce = {0};
-	gce.cbSize = sizeof( gce );
-	gce.pDest = &gcd;
-	return ( JABBER_LIST_ITEM* )JCallService( MS_GC_EVENT, NULL, (LPARAM)&gce );
-}
+// JabberGcInit - initializes the new chat
 
 static char* sttRoles[] = { "Other", "Visitors", "Participants", "Moderators" };
 
@@ -187,10 +178,9 @@ void JabberGcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 	gce.pszUID = item->jid;
 	gce.pDest = &gcd;
 	gce.pszText = ( reason != NULL ) ? reason->text : NULL;
-	JCallService( MS_GC_EVENT, SESSION_OFFLINE, ( LPARAM )&gce );
-	JCallService( MS_GC_EVENT, WINDOW_HIDDEN, ( LPARAM )&gce );
+	JCallService( MS_GC_EVENT, SESSION_TERMINATE, ( LPARAM )&gce );
+	DBDeleteContactSetting( JabberHContactFromJID( item->jid ), "CList", "Hidden" );
 	JCallService( MS_GC_EVENT, WINDOW_CLEARLOG, ( LPARAM )&gce );
-
 	item->bChatActive = FALSE;
 
 	if ( jabberOnline ) {
@@ -216,7 +206,7 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 	if ( lstrcmpi( gcmi->pszModule, jabberProtoName ))
 		return 0;
 
-	JABBER_LIST_ITEM* item = JabberGetUserData( gcmi->pszID );
+	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, gcmi->pszID );
 	if ( item == NULL )
 		return 0;
 
@@ -520,7 +510,7 @@ int JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 	if ( lstrcmpi( gch->pDest->pszModule, jabberProtoName ))
 		return 0;
 
-	JABBER_LIST_ITEM* item = JabberGetUserData( gch->pDest->pszID );
+	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, gch->pDest->pszID );
 	if ( item == NULL )
 		return 0;
 

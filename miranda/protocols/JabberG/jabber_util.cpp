@@ -120,9 +120,9 @@ HANDLE __stdcall JabberHContactFromJID( const char* jid )
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
 		if ( szProto != NULL && !strcmp( jabberProtoName, szProto )) {
 			DBVARIANT dbv;
-			int result = DBGetContactSettingStringUtf( hContact, jabberProtoName, "jid", &dbv );
+			int result = JGetStringUtf( hContact, "jid", &dbv );
 			if ( result )
-				result = DBGetContactSettingStringUtf( hContact, jabberProtoName, "ChatRoomID", &dbv );
+				result = JGetStringUtf( hContact, "ChatRoomID", &dbv );
 
 			if ( !result ) {
 				int result = JabberCompareJids( jid, dbv.pszVal );
