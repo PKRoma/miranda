@@ -33,10 +33,12 @@ HANDLE __stdcall JCreateServiceFunction(
 	return CreateServiceFunction( str, serviceProc );
 }
 
+#if !defined( _DEBUG )
 int __stdcall JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam )
 {
 	return CallService( szSvcName, wParam, lParam );
 }
+#endif
 
 DWORD __stdcall JGetByte( const char* valueName, int parDefltValue )
 {
@@ -73,6 +75,11 @@ int __stdcall JGetStaticString( const char* valueName, HANDLE hContact, char* de
 		return 1;
 
 	return ( dbv.type != DBVT_ASCIIZ );
+}
+
+int __stdcall JGetStringUtf( HANDLE hContact, char* valueName, DBVARIANT* dbv )
+{
+	return DBGetContactSettingStringUtf( hContact, jabberProtoName, valueName, dbv );
 }
 
 WORD __stdcall JGetWord( HANDLE hContact, const char* valueName, int parDefltValue )

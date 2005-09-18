@@ -127,7 +127,6 @@ struct JABBER_LIST_ITEM
 	HWND hwndGcListBan;
 	HWND hwndGcListAdmin;
 	HWND hwndGcListOwner;
-	char* newNick;	// new nickname that is pending in the change nick process
 
 	// LIST_FILE
 	// jid = string representation of port number

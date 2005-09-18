@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "jabber_list.h"
 #include "resource.h"
 
-void JabberGroupchatJoinRoom( char* server, char* room, char* nick, char* password );
+void JabberGroupchatJoinRoom( const char* server, const char* room, const char* nick, const char* password );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // module data
@@ -106,8 +106,16 @@ int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
 int JabberMenuJoinLeave( WPARAM wParam, LPARAM lParam )
 {
 	char szNick[ 256 ], szJid[ JABBER_MAX_JID_LEN ];
-	if ( JGetStaticString( "ChatRoomID", ( HANDLE )wParam, szJid,  sizeof szJid  )) return 0;
-	if ( JGetStaticString( "Nick",       NULL,             szNick, sizeof szNick )) return 0;
+	if ( JGetStaticString( "ChatRoomID", ( HANDLE )wParam, szJid,  sizeof szJid  )) 
+		return 0;
+
+	DBVARIANT dbv;
+	if ( !JGetStringUtf(( HANDLE )wParam, "MyNick", &dbv )) {
+		strncpy( szNick, dbv.pszVal, sizeof( szNick ));
+		JFreeVariant( &dbv );
+	}
+	else if ( JGetStaticString( "Nick", NULL, szNick, sizeof szNick )) 
+		return 0;
 
 	if ( JGetWord(( HANDLE )wParam, "Status", 0 ) != ID_STATUS_ONLINE ) {
 		if ( !jabberChatDllPresent ) {

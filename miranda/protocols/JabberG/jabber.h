@@ -403,13 +403,19 @@ void JabberEnableMenuItems( BOOL bEnable );
 
 //---- jabber_std.cpp ----------------------------------------------
 
+#if defined( _DEBUG )
+	#define JCallService CallService
+#else
+	int __stdcall  JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
+#endif
+
 HANDLE __stdcall  JCreateServiceFunction( const char* szService, MIRANDASERVICE serviceProc );
-int    __stdcall  JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 DWORD  __stdcall  JGetByte( const char* valueName, int parDefltValue );
 DWORD  __stdcall  JGetByte( HANDLE hContact, const char* valueName, int parDefltValue );
 char*  __stdcall  JGetContactName( HANDLE hContact );
 DWORD  __stdcall  JGetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
 int    __stdcall  JGetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len );
+int    __stdcall  JGetStringUtf( HANDLE hContact, char* valueName, DBVARIANT* dbv );
 WORD   __stdcall  JGetWord( HANDLE hContact, const char* valueName, int parDefltValue );
 void   __fastcall JFreeVariant( DBVARIANT* dbv );
 int    __stdcall  JSendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );

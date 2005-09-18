@@ -90,6 +90,19 @@ int JabberGcInit( WPARAM wParam, LPARAM lParam )
 	GCEVENT gce = {0};
 
 	char* szNick = JabberNickFromJID( item->jid );
+	HANDLE hContact = JabberHContactFromJID( item->jid );
+	if ( hContact != NULL ) {
+		DBVARIANT dbv;
+		if ( !JGetStringUtf( hContact, "MyNick", &dbv )) {
+			if ( !strcmp( dbv.pszVal, szNick ) == NULL )
+				DBDeleteContactSetting( hContact, jabberProtoName, "MyNick" );
+			else {
+				free( szNick );
+				szNick = strdup( dbv.pszVal );
+			}
+			JFreeVariant( &dbv );
+	}	}
+
 	gcw.cbSize = sizeof(GCSESSION);
 	gcw.iType = GCW_CHATROOM;
 	gcw.pszModule = jabberProtoName;
@@ -470,9 +483,6 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 				char text[ 1024 ];
 				mir_snprintf( text, sizeof( text ), "%s/%s", gch->pDest->pszID, UTF8(szBuffer));
 				JabberSendPresenceTo( jabberStatus, text, NULL );
-				if ( item->newNick != NULL )
-					free( item->newNick );
-				item->newNick = strdup( szBuffer );
 		}	}
 		break;
 
