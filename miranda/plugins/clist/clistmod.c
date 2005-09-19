@@ -283,12 +283,12 @@ static BOOL CALLBACK AskForConfirmationDlgProc(HWND hWnd, UINT msg, WPARAM wPara
                 SendDlgItemMessage(hWnd, IDC_TOPLINE, WM_SETFONT, (WPARAM) CreateFontIndirectA(&lf), 0);
             }
             {
-                char szFormat[256];
-                char szFinal[256];
+                TCHAR szFormat[256];
+                TCHAR szFinal[256];
 
-                GetDlgItemTextA(hWnd, IDC_TOPLINE, szFormat, sizeof(szFormat));
-                mir_snprintf(szFinal, sizeof(szFinal), szFormat, GetContactDisplayNameW((HANDLE)lParam, 0));
-                SetDlgItemTextA(hWnd, IDC_TOPLINE, szFinal);
+                GetDlgItemText(hWnd, IDC_TOPLINE, szFormat, sizeof(szFormat));
+                mir_sntprintf(szFinal, sizeof(szFinal), szFormat, GetContactDisplayNameW((HANDLE)lParam, 0));
+                SetDlgItemText(hWnd, IDC_TOPLINE, szFinal);
             }
             SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
             return TRUE;
