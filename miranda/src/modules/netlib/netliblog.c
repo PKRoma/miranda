@@ -130,10 +130,10 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 					ofn.hwndOwner=hwndDlg;
 					ofn.Flags=OFN_HIDEREADONLY;
 					if (LOWORD(wParam)==IDC_FILENAMEBROWSE) {
-						ofn.lpstrTitle=TranslateW("Select where log file will be created");
+						ofn.lpstrTitle=TranslateT("Select where log file will be created");
 					} else {
 						ofn.Flags|=OFN_PATHMUSTEXIST|OFN_FILEMUSTEXIST;
-						ofn.lpstrTitle=TranslateW("Select program to be run");
+						ofn.lpstrTitle=TranslateT("Select program to be run");
 					}					
 					_tcscpy(filter,TranslateT("All Files"));
 					_tcscat(filter,_T(" (*)"));
