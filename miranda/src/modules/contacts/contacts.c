@@ -237,20 +237,26 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 						char *uid = (char*)CallProtoService(ci->szProto,PS_GETCAPS,PFLAG_UNIQUEIDSETTING,0);
 						if ((int)uid!=CALLSERVICE_NOTFOUND&&uid) {
 							if (!GetDatabaseString(ci,uid,&dbv)) {
-								if (dbv.type==DBVT_BYTE||dbv.type==DBVT_WORD||dbv.type==DBVT_DWORD) {
-									char buf[256];
+								if ( dbv.type == DBVT_BYTE || dbv.type == DBVT_WORD || dbv.type == DBVT_DWORD ) {
+									long value = (dbv.type == DBVT_BYTE) ? dbv.bVal:(dbv.type==DBVT_WORD ? dbv.wVal : dbv.dVal);
+									if ( ci->dwFlag & CNF_UNICODE ) {
+										WCHAR buf[ 40 ];
+										_ltow( value, buf, 10 );
+										ci->pszVal = ( TCHAR* )_wcsdup( buf );
+									}
+									else {
+										char buf[ 40 ];
+										ltoa( value, buf, 10 );
+										ci->pszVal = ( TCHAR* )_strdup(buf);
+									}
 									ci->type = CNFT_ASCIIZ;
-									mir_snprintf(buf,sizeof(buf),"%u",dbv.type==DBVT_BYTE?dbv.bVal:(dbv.type==DBVT_WORD?dbv.wVal:dbv.dVal));
-									ci->pszVal = ( TCHAR* )_strdup(buf);
 									return 0;
 								}
-								else if (dbv.type==DBVT_ASCIIZ) {
+								if (dbv.type==DBVT_ASCIIZ) {
 									ci->type = CNFT_ASCIIZ;
 									ci->pszVal = dbv.ptszVal;
 									return 0;
-								}
-							}
-						}
+						}	}	}
 						break;
 					}
 					case 6: // first + last name
