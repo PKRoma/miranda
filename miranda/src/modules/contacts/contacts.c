@@ -304,7 +304,7 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				tvis.hParent=NULL;
 				tvis.hInsertAfter=TVI_LAST;
 				tvis.item.mask=TVIF_TEXT|TVIF_PARAM;
-				for(i=0;i<sizeof(nameOrderDescr)/sizeof(nameOrderDescr[0]);i++) {
+				for(i=0; i < SIZEOF(nameOrderDescr); i++ ) {
 					tvis.item.lParam=nameOrder[i];
 					tvis.item.pszText=Translate(nameOrderDescr[nameOrder[i]]);
 					SendMessageA( GetDlgItem(hwndDlg,IDC_NAMEORDER), TVM_INSERTITEMA, 0, (LPARAM)&tvis );
@@ -315,39 +315,36 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		case WM_NOTIFY:
 			switch (((LPNMHDR)lParam)->idFrom) {
 				case 0:
-					switch (((LPNMHDR)lParam)->code)
-					{
-						case PSN_APPLY:
-							{	DBCONTACTWRITESETTING cws;
-								TVITEM tvi;
-								int i;
-								cws.szModule="Contact";
-								cws.szSetting="NameOrder";
-								cws.value.type=DBVT_BLOB;
-								cws.value.cpbVal=sizeof(nameOrderDescr)/sizeof(nameOrderDescr[0]);
-								cws.value.pbVal=nameOrder;
-								tvi.hItem=TreeView_GetRoot(GetDlgItem(hwndDlg,IDC_NAMEORDER));
-								i=0;
-								while(tvi.hItem!=NULL) {
-									tvi.mask=TVIF_PARAM|TVIF_HANDLE;
-									TreeView_GetItem(GetDlgItem(hwndDlg,IDC_NAMEORDER),&tvi);
-									nameOrder[i++]=(BYTE)tvi.lParam;
-									tvi.hItem=TreeView_GetNextSibling(GetDlgItem(hwndDlg,IDC_NAMEORDER),tvi.hItem);
-								}
-								CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)(HANDLE)NULL,(LPARAM)&cws);
-								CallService(MS_CLIST_INVALIDATEDISPLAYNAME,(WPARAM)INVALID_HANDLE_VALUE,0);
-							}
+					if (((LPNMHDR)lParam)->code == PSN_APPLY)
+					{	DBCONTACTWRITESETTING cws;
+						TVITEM tvi;
+						int i;
+						cws.szModule="Contact";
+						cws.szSetting="NameOrder";
+						cws.value.type=DBVT_BLOB;
+						cws.value.cpbVal = SIZEOF(nameOrderDescr);
+						cws.value.pbVal=nameOrder;
+						tvi.hItem=TreeView_GetRoot(GetDlgItem(hwndDlg,IDC_NAMEORDER));
+						i=0;
+						while(tvi.hItem!=NULL) {
+							tvi.mask=TVIF_PARAM|TVIF_HANDLE;
+							TreeView_GetItem(GetDlgItem(hwndDlg,IDC_NAMEORDER),&tvi);
+							nameOrder[i++]=(BYTE)tvi.lParam;
+							tvi.hItem=TreeView_GetNextSibling(GetDlgItem(hwndDlg,IDC_NAMEORDER),tvi.hItem);
+						}
+						CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)(HANDLE)NULL,(LPARAM)&cws);
+						CallService(MS_CLIST_INVALIDATEDISPLAYNAME,(WPARAM)INVALID_HANDLE_VALUE,0);
 					}
 					break;
 				case IDC_NAMEORDER:
-					switch (((LPNMHDR)lParam)->code) {
-						case TVN_BEGINDRAG:
-							if(((LPNMTREEVIEW)lParam)->itemNew.lParam==0 || ((LPNMTREEVIEW)lParam)->itemNew.lParam==sizeof(nameOrderDescr)/sizeof(nameOrderDescr[0])-1) break;
-							SetCapture(hwndDlg);
-							dat->dragging=1;
-							dat->hDragItem=((LPNMTREEVIEW)lParam)->itemNew.hItem;
-							TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_NAMEORDER),dat->hDragItem);
+					if (((LPNMHDR)lParam)->code == TVN_BEGINDRAGA) {
+						LPNMTREEVIEWA notify = (LPNMTREEVIEWA)lParam;
+						if ( notify->itemNew.lParam==0 || notify->itemNew.lParam == SIZEOF(nameOrderDescr)-1 )
 							break;
+						SetCapture(hwndDlg);
+						dat->dragging=1;
+						dat->hDragItem=((LPNMTREEVIEW)lParam)->itemNew.hItem;
+						TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_NAMEORDER),dat->hDragItem);
 					}
 					break;
 			}
@@ -389,7 +386,7 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				tvi.mask=TVIF_HANDLE|TVIF_PARAM;
 				tvi.hItem=hti.hItem;
 				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_NAMEORDER),&tvi);
-				if(tvi.lParam==sizeof(nameOrderDescr)/sizeof(nameOrderDescr[0])-1) break;
+				if(tvi.lParam == SIZEOF(nameOrderDescr)-1) break;
 				if(hti.flags&(TVHT_ONITEM|TVHT_ONITEMRIGHT)) {
 					TVINSERTSTRUCT tvis;
 					TCHAR name[128];
