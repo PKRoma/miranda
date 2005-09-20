@@ -1168,7 +1168,7 @@ int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT 
     codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
     
     if (hContact) {
-        MultiByteToWideChar(codePage, 0, (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0), -1, pud.lpwzContactName, MAX_CONTACTNAME);
+        MY_GetContactDisplayNameW(hContact, pud.lpwzContactName, MAX_CONTACTNAME, dbe.szModule, 0);
         pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
     }
     else {

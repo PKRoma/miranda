@@ -41,6 +41,7 @@ void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iNum)
 void LoadMsgAreaBackground();
 int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 void DeleteCachedIcon(struct MsgLogIcon *theIcon);
+int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int size, const char *szProto, UINT codePage);
 
 // the cached message log icons
 void CacheMsgLogIcons();

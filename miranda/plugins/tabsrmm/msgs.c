@@ -1167,7 +1167,7 @@ int LoadSendRecvMessageModule(void)
 
     LoadTSButtonModule();
     RegisterTabCtrlClass();
-    FirstTimeConfig();
+    //FirstTimeConfig();
     ReloadGlobals();
     GetDataDir();
     ReloadTabConfig();
