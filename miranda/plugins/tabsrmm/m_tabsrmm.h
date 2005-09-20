@@ -288,7 +288,7 @@ struct MessageWindowData {
     HBITMAP hSmileyIcon;
     char *szProto;
     char *szMetaProto;
-    char szNickname[84];
+    TCHAR szNickname[130];
     char *szStatus;
     WORD wStatus, wMetaStatus;
     int iLastEventType;
@@ -465,6 +465,7 @@ typedef struct _globals {
     HFONT m_hFontWebdings;
     struct infopanelconfig ipConfig;
     COLORREF crDefault, crIncoming, crOutgoing;
+    BOOL bUnicodeBuild;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

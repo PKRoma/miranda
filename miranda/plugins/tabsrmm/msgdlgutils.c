@@ -777,7 +777,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL showNewPic)
 void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei)
 {
     CLISTEVENT cle;
-    char toolTip[256];
+    //char toolTip[256];
 
     dat->dwTickLastEvent = GetTickCount();
     if((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE) {
@@ -798,8 +798,8 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
         cle.hDbEvent = hEvent;
         cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
         cle.pszService = "SRMsg/ReadMessage";
-        _snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), dat->szNickname);
-        cle.pszTooltip = toolTip;
+        //_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), dat->szNickname);
+        //cle.pszTooltip = toolTip;
         CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
         dat->dwEventIsShown |= MWF_SHOW_FLASHCLIST;
         dat->hFlashingEvent = hEvent;
@@ -1980,9 +1980,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         dis->rcItem.left +=2;
         if(dat->szNickname) {
             HFONT hOldFont = 0;
-    #if defined(_UNICODE)
-            wchar_t szNickW[128];
-    #endif                        
+            
             if(dat->xStatus > 0 && dat->xStatus <= 24) {
                 HICON xIcon = ImageList_ExtractIcon(NULL, myGlobals.g_xIcons, dat->xStatus - 1);
                 DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, xIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
@@ -1993,13 +1991,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                 hOldFont = SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_NICK]);
                 SetTextColor(dis->hDC, myGlobals.ipConfig.clrs[IPFONTID_NICK]);
             }
-    #if defined(_UNICODE)
-            MultiByteToWideChar(dat->codePage, 0, dat->szNickname, -1, szNickW, 128);
-            szNickW[127] = 0;
-            DrawTextW(dis->hDC, szNickW, lstrlenW(szNickW), &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS);
-    #else
-            DrawTextA(dis->hDC, dat->szNickname, lstrlenA(dat->szNickname), &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS);
-    #endif
+            DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS);
             if(hOldFont)
                 SelectObject(dis->hDC, hOldFont);
         }
@@ -2209,4 +2201,46 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
 
     ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), (dat->doSmileys && showToolbar) ? SW_SHOW : SW_HIDE);
     EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), dat->doSmileys ? TRUE : FALSE);
+}
+
+// size in TCHARs
+// szwBuf must be large enough to hold at least size wchar_t's
+// proto may be NULL
+// per contact codepage only used with non-unicode cores (to get "faked" unicode nicknames...)
+
+int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int size, const char *szProto, UINT codePage)
+{
+	CONTACTINFO ci;
+
+    if(!myGlobals.bUnicodeBuild) {
+        char *szBasenick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
+        MultiByteToWideChar(codePage, 0, szBasenick, -1, szwBuf, size);
+        szwBuf[size - 1] = 0;
+        return 0;
+    }
+	ZeroMemory(&ci, sizeof(ci));
+	ci.cbSize = sizeof(ci);
+	ci.hContact = hContact;
+    ci.szProto = (char *)szProto;
+	ci.dwFlag = CNF_DISPLAY;
+	#if defined( _UNICODE )
+		ci.dwFlag += CNF_UNICODE;
+	#endif
+	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+		if (ci.type == CNFT_ASCIIZ) {
+            size_t len = lstrlenW(ci.pszVal);
+            wcsncpy(szwBuf, ci.pszVal, size);
+            szwBuf[size - 1] = 0;
+            return 0;
+		}
+		if (ci.type == CNFT_DWORD) {
+            _ltow(ci.dVal, szwBuf, 10 );
+            szwBuf[size - 1] = 0;
+            return 0;
+		}
+	}
+	CallContactService(hContact, PSS_GETINFO, SGIF_MINIMAL, 0);
+	wcsncpy(szwBuf, TranslateT("(Unknown Contact)"), size);
+    szwBuf[size - 1] = 0;
+    return 0;
 }

@@ -171,7 +171,11 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             dat->hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
             dat->dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
             dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
+#if defined(_UNICODE)
+            MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, 0);
+#else
             mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
+#endif            
             GetContactUIN(hwndDlg, dat);
             
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);

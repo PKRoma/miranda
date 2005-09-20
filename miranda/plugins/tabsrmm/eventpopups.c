@@ -1388,12 +1388,12 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
     if(myGlobals.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
         char szMenuEntry[80];
 #if defined(_UNICODE)
-        const wchar_t *szMenuEntryW;
+        const wchar_t *szMenuEntryW = NULL, szWNick[102];
 #endif        
         MENUITEMINFO mii = {0};
         WORD wMyStatus;
         char *szMyStatus;
-        char *szNick;
+        TCHAR *szNick = NULL;
         mii.cbSize = sizeof(mii);
         mii.fMask = MIIM_DATA | MIIM_ID | MIIM_BITMAP;
 
@@ -1423,7 +1423,12 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
         }
         else {
             UINT codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
+#if defined(_UNICODE)
+            MY_GetContactDisplayNameW(hContact, szWNick, 100, szProto, codePage);
+            szNick = szWNick;
+#else
             szNick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
+#endif
             if(CheckMenuItem(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == -1) {
 #if defined(_UNICODE)
                 mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, "%nick%", szMyStatus, fromEvent ? 1 : 0);

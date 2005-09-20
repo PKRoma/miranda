@@ -253,15 +253,27 @@ void RemoveBalloonTip()
  * is deleted, if necessary.
  */
 
-void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage)
+void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage)
 {
     MENUITEMINFO mii = {0};
     char szMenuEntry[80];
+    TCHAR szFinalNick[100];
 #if defined(_UNICODE)
     const wchar_t *szMenuEntryW = 0;
 #endif
-    if(szNickname == NULL)
-        szNickname = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
+    if(szNickname == NULL) {
+#if defined(_UNICODE)
+        MY_GetContactDisplayNameW(hContact, szFinalNick, 100, szProto, 0);
+#else
+        strncpy(szFinalNick, (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0), 100);
+        szFinalNick[99] = 0;
+#endif        
+    }
+    else {
+        _tcsncpy(szFinalNick, szNickname, 100);
+        szFinalNick[99] = 0;
+    }
+    
     if(szProto == NULL)
         szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
     if(szProto) {
@@ -279,9 +291,9 @@ void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, cha
     mii.cbSize = sizeof(mii);
 #if defined(_UNICODE)
     mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s)", szProto, "%nick%", szStatus);
-    szMenuEntryW = EncodeWithNickname(szMenuEntry, szNickname, codePage);
+    szMenuEntryW = EncodeWithNickname(szMenuEntry, szFinalNick, codePage);
 #else
-    mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s)", szProto, szNickname, szStatus);
+    mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s)", szProto, szFinalNick, szStatus);
 #endif
     if(mode) {
         if(hMenu == myGlobals.g_hMenuRecent) {

@@ -69,6 +69,8 @@ void LoadOverrideTheme(HWND hwndDlg, struct MessageWindowData *dat);
 void LoadThemeDefaults(HWND hwndDlg, struct MessageWindowData *dat);
 void SaveMessageLogFlags(HWND hwndDlg, struct MessageWindowData *dat);
 void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat);
+int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int size, const char *szProto, UINT codePage);
+int CutContactName(TCHAR *szold, TCHAR *sznew, unsigned int size);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

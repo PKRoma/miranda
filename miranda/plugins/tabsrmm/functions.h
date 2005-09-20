@@ -24,7 +24,7 @@ void RemoveBalloonTip();
 void FlashTrayIcon(int mode);
 void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced);
 void LoadFavoritesAndRecent();
-void AddContactToFavorites(HANDLE hContact, char *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage);
+void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage);
 void CreateTrayMenus(int mode);
 void HandleMenuEntryFromhContact(int iSelection);
 
@@ -91,4 +91,4 @@ void ReloadGlobalContainerSettings();
 void FS_RegisterFonts();
 void MoveFonts();
 
-extern const WCHAR *EncodeWithNickname(const char *string, const char *szNick, UINT codePage);
+extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);

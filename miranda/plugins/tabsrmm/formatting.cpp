@@ -324,7 +324,7 @@ nosimpletags:
 static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x"), _T("%m")};
 #define NR_VARS 7
 
-extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus)
+extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus)
 {
     TCHAR *szResult = 0;
     int length = 0;
@@ -346,8 +346,8 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const char *s
         switch(title[tempmark + 1]) {
             case 'n': {
                 if(szNickname) {
-                    MultiByteToWideChar(codePage, 0, szNickname, -1, szTemp, 500);
-                    title.insert(tempmark + 2, szTemp);
+                    //MultiByteToWideChar(codePage, 0, szNickname, -1, szTemp, 500);
+                    title.insert(tempmark + 2, szNickname);
                 }
                 title.erase(tempmark, 2);
                 break;
@@ -427,7 +427,8 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const char *s
     return szResult;
 }
 
-extern "C" const WCHAR *EncodeWithNickname(const char *string, const char *szNick, UINT codePage)
+
+extern "C" const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage)
 {
     static std::wstring msg;
     wchar_t stringW[256];
@@ -437,11 +438,11 @@ extern "C" const WCHAR *EncodeWithNickname(const char *string, const char *szNic
     stringW[255] = 0;
     msg.assign(stringW);
     if((mark = msg.find(L"%nick%")) != msg.npos) {
-        wchar_t szNickW[128];
-        MultiByteToWideChar(codePage, 0, szNick, -1, szNickW, 128);
-        szNickW[127] = 0;
+        //wchar_t szNickW[128];
+        //MultiByteToWideChar(codePage, 0, szNick, -1, szNickW, 128);
+        //szNickW[127] = 0;
         msg.erase(mark, 6);
-        msg.insert(mark, szNickW, lstrlenW(szNickW));
+        msg.insert(mark, szNick, lstrlenW(szNick));
     }
     return msg.c_str();
 }
@@ -451,7 +452,7 @@ extern "C" const WCHAR *EncodeWithNickname(const char *string, const char *szNic
 static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x"), _T("%m")};
 #define NR_VARS 7
 
-extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus)
+extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus)
 {
     TCHAR *szResult = 0;
     int length = 0;

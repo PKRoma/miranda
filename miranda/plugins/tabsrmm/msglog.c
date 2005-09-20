@@ -82,12 +82,13 @@ char szMsgPrefixColon[5], szMsgPrefixNoColon[5];
 DWORD dwExtraLf = 0;
 
 int g_groupBreak = TRUE;
-static char *szMyName;
 #if defined(_UNICODE)
-    static wchar_t szYourName[512];
-#else    
-    static char *szYourName;
+    static TCHAR szMyName[110];
+#else
+    static char *szMyName = NULL;
 #endif    
+static TCHAR *szYourName = NULL;
+
 static char *szDivider = "\\strike-----------------------------------------------------------------------------------------------------------------------------------\\strike0";
 static char *szGroupedSeparator = "> ";
 
@@ -958,7 +959,8 @@ nogroup:
                             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset));
 #if defined(_UNICODE)
                         if(isSent)
-                            AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szMyName);
+                            AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMyName, MAKELONG(isSent, dat->isHistory));
+                            //AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szMyName);
                         else
                             AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, szYourName, MAKELONG(isSent, dat->isHistory));
 #else
@@ -1292,6 +1294,9 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     strcpy(szMsgPrefixNoColon, " ");
 
     ZeroMemory(&ci, sizeof(ci));
+#if defined(_UNICODE)
+    MY_GetContactDisplayNameW(0, szMyName, 100, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->codePage);
+#else    
     ci.cbSize = sizeof(ci);
     ci.hContact = NULL;
     ci.szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
@@ -1302,13 +1307,8 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     }
     else
         szMyName = NULL;
-#if defined(_UNICODE)
-    MultiByteToWideChar(dat->codePage, 0, dat->szNickname, -1, szYourName, 512);
-    szYourName[511] = 0;
-#else
-    szYourName = (char *) dat->szNickname;
 #endif    
-    
+    szYourName = dat->szNickname;
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, TRUE, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXGETSEL, 0, (LPARAM) & oldSel);
     streamData.hContact = dat->hContact;

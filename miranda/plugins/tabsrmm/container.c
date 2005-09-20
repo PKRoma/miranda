@@ -82,7 +82,7 @@ extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 extern BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const char *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus);
+extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus);
 
 char *szWarnClose = "Do you really want to close this session?";
 BOOL cntHelpActive = FALSE;
@@ -1035,7 +1035,8 @@ panel_found:
                             TCITEM item;
                             NMTTDISPINFO *nmtt = (NMTTDISPINFO *) lParam;
                             struct MessageWindowData *cdat = 0;
-                            char *contactName = 0, *szStatus = 0;
+                            TCHAR *contactName = 0;
+                            char *szStatus = 0;
                             char szTtitle[256];
 #if defined ( _UNICODE )
                             const wchar_t *newTitle;
@@ -2015,15 +2016,16 @@ int GetTabItemFromMouse(HWND hwndTab, POINT *pt)
  * screen space.
  */
 
-int CutContactName(char *oldname, char *newname, int size)
+int CutContactName(TCHAR *oldname, TCHAR *newname, unsigned int size)
 {
     int cutMax = myGlobals.m_CutContactNameTo;
-    if ((int)strlen(oldname) <= cutMax)
-        strncpy(newname, oldname, size);
+    if ((int)lstrlen(oldname) <= cutMax)
+        lstrcpyn(newname, oldname, size);
     else {
-		char fmt[20];
-		mir_snprintf(fmt, 18, "%%%d.%ds...", cutMax, cutMax);
-		mir_snprintf(newname, size - 1, fmt, oldname);
+		TCHAR fmt[20];
+		_sntprintf(fmt, 18, _T("%%%d.%ds..."), cutMax, cutMax);
+		_sntprintf(newname, size, fmt, oldname);
+        newname[size - 1] = 0;
     }
     return 0;
 }

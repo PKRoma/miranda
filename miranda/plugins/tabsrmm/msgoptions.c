@@ -2021,6 +2021,15 @@ void ReloadGlobals()
              break;
      }
      myGlobals.ipConfig.edgeFlags = BF_RECT | BF_ADJUST;
+     // checkversion..
+     {
+         char str[512];
+         CallService(MS_SYSTEM_GETVERSIONTEXT, (WPARAM)500, (LPARAM)(char*)str);
+         if(strstr(str, "Unicode"))
+             myGlobals.bUnicodeBuild = TRUE;
+         else
+             myGlobals.bUnicodeBuild = FALSE;
+     }
 }
 
 /*

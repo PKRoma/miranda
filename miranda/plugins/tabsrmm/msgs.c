@@ -95,7 +95,6 @@ extern struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 int _log(const char *fmt, ...);
 struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom);
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwnd);
-int CutContactName(char *contactName, char *newcontactname, int length);
 
 struct ContainerWindowData *FindContainerByName(const TCHAR *name);
 struct ContainerWindowData *FindMatchingContainer(const TCHAR *name, HANDLE hContact);
@@ -1353,12 +1352,15 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 
 HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup, HANDLE hdbEvent)
 {
-	char *contactName, *szProto, *szStatus, tabtitle[128], newcontactname[128];
+	TCHAR *contactName = NULL, newcontactname[128];
+    char *szProto, *szStatus, tabtitle[128];
 	WORD wStatus;
     int	newItem;
     HWND hwndNew = 0;
     struct NewMessageWindowLParam newData = {0};
-
+#if defined(_UNICODE)
+    WCHAR contactNameW[100];
+#endif    
     if(WindowList_Find(hMessageWindowList, hContact) != 0) {
         _DebugPopup(hContact, "Warning: trying to create duplicate window");
         return 0;
@@ -1376,26 +1378,34 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	newData.hContact = hContact;
     newData.isSend = isSend;
     newData.szInitialText = pszInitialText;
+    szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) newData.hContact, 0);
 
     ZeroMemory((void *)&newData.item, sizeof(newData.item));
 
 	// obtain various status information about the contact
+#if defined(_UNICODE)
+    contactNameW[0] = 0;
+    MY_GetContactDisplayNameW(hContact, contactNameW, 100, szProto, 0);
+    contactName = contactNameW;
+#else
 	contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) newData.hContact, 0);
+#endif    
 
 	/*
 	 * cut nickname if larger than x chars...
 	 */
 
-    if(contactName && strlen(contactName) > 0) {
+    if(contactName && lstrlen(contactName) > 0) {
         if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", 0))
-            CutContactName(contactName, newcontactname, sizeof(newcontactname));
-        else
-            strncpy(newcontactname, contactName, sizeof(newcontactname));
+            CutContactName(contactName, newcontactname, sizeof(newcontactname) / sizeof(TCHAR));
+        else {
+            lstrcpyn(newcontactname, contactName, sizeof(newcontactname) / sizeof(TCHAR));
+            newcontactname[127] = 0;
+        }
     }
     else
-        strncpy(newcontactname, "_U_", sizeof(newcontactname));
+        lstrcpyn(newcontactname, _T("_U_"), sizeof(newcontactname) / sizeof(TCHAR));
 
-	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) newData.hContact, 0);
 	wStatus = szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) newData.hContact, szProto, "Status", ID_STATUS_OFFLINE);
 	szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE)newData.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
     

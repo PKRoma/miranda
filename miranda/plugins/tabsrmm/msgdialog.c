@@ -69,8 +69,6 @@ char *xStatusDescr[] = { "Angry", "Duck", "Tired", "Party", "Beer", "Thinking", 
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
 
-int CutContactName(char *old, char *new, int size);
-
 TCHAR *QuoteText(TCHAR *text, int charsPerLine, int removeExistingQuotes);
 void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, const wchar_t *value);
 int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
@@ -1043,7 +1041,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->bIsMeta = IsMetaContact(hwndDlg, dat) ? TRUE : FALSE;
                 if(dat->hContact && dat->szProto != NULL) {
                     dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
+#if defined(_UNICODE)
+                    MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, dat->codePage);
+#else
                     mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
+#endif                    
                     dat->szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
                     dat->avatarbg = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "avbg", GetSysColor(COLOR_3DFACE));
                 }
@@ -1425,10 +1427,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (dat->pContainer->hwndActive != hwndDlg)
                     break;
                 if(dat->showTyping) {
-                    char szBuf[80];
+                    TCHAR szBuf[80];
 
-                    mir_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing..."), dat->szNickname);
-                    SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
+                    _sntprintf(szBuf, sizeof(szBuf) / sizeof(TCHAR), TranslateT("%s is typing..."), dat->szNickname);
+                    szBuf[79] = 0;
+                    SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) myGlobals.g_buttonBarIcons[5]);
                     if(dat->pContainer->hwndSlist)
                         SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[5]);
@@ -1674,7 +1677,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_UPDATETITLE:
             {
                 char newtitle[128], *szProto = 0, *szOldMetaProto = 0;
-                char *pszNewTitleEnd, newcontactname[128], *temp;
+                char *pszNewTitleEnd;
+                TCHAR newcontactname[128];
+                TCHAR *temp;
                 TCITEM item;
                 int    iHash = 0;
                 WORD wOldApparentMode;
@@ -1705,8 +1710,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                         szActProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
                         hActContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
-                        
+#if defined(_UNICODE)
+                        MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->codePage);
+#else
                         mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hActContact, 0));
+#endif                        
                         iHasName = (int)dat->uin[0];        // dat->uin[0] == 0 if there is no valid UIN
                         dat->idle = DBGetContactSettingDword(dat->hContact, szActProto, "IdleTS", 0);
                         dat->dwEventIsShown =  dat->idle ? dat->dwEventIsShown | MWF_SHOW_ISIDLE : dat->dwEventIsShown & ~MWF_SHOW_ISIDLE;
@@ -1726,11 +1734,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         
                         if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || lParam != 0) {
                             if (myGlobals.m_CutContactNameOnTabs)
-                                CutContactName(dat->szNickname, newcontactname, sizeof(newcontactname));
+                                CutContactName(dat->szNickname, newcontactname, sizeof(newcontactname) / sizeof(TCHAR));
                             else
-                                strncpy(newcontactname, dat->szNickname, sizeof(newcontactname));
+                                lstrcpyn(newcontactname, dat->szNickname, sizeof(newcontactname) / sizeof(TCHAR));
 
-                            if (strlen(newcontactname) != 0 && dat->szStatus != NULL) {
+                            if (lstrlen(newcontactname) != 0 && dat->szStatus != NULL) {
                                 if (myGlobals.m_StatusOnTabs)
 #if defined(_UNICODE)
                                     mir_snprintf(newtitle, 127, "%s (%s)", "%nick%", dat->szStatus);
@@ -2524,18 +2532,19 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                 } else {
                     if (dat->nTypeSecs > 0) {
-                        char szBuf[256];
+                        TCHAR szBuf[256];
 
-                        mir_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing..."), dat->szNickname);
+                        _sntprintf(szBuf, sizeof(szBuf), TranslateT("%s is typing..."), dat->szNickname);
+                        szBuf[255] = 0;
                         dat->nTypeSecs--;
                         if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
-                            SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
+                            SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
                             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) myGlobals.g_buttonBarIcons[5]);
                             if(dat->pContainer->hwndSlist)
                                 SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[5]);
                         }
                         if(IsIconic(dat->pContainer->hwnd) || GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd) {
-                            SetWindowTextA(dat->pContainer->hwnd, szBuf);
+                            SetWindowText(dat->pContainer->hwnd, szBuf);
                             dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
                             if(!(dat->pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin)
                                 ReflashContainer(dat->pContainer);
@@ -4406,7 +4415,7 @@ quote_from_last:
                      */
                     if(sendJobs[iFound].sendCount > 1) {         // multisend is different...
                         char szErrMsg[256];
-                        mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: failed sending to: %s", dat->szNickname);
+                        mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: failed sending to: %s", dat->szProto);
                         LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
                         goto verify;
                     }
@@ -4652,11 +4661,11 @@ verify:
 
                         if(!DBGetContactSetting(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusName", &dbv)) {
                             if(dbv.type == DBVT_ASCIIZ)
-                                mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), dat->szNickname, dbv.pszVal);
+                                mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), "%nick%", dbv.pszVal);
                             DBFreeVariant(&dbv);
                         }
                         else if(dat->xStatus > 0 && dat->xStatus <= 24)
-                            mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), dat->szNickname, xStatusDescr[dat->xStatus - 1]);
+                            mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), "%nick%", xStatusDescr[dat->xStatus - 1]);
                         else
                             return 0;
                         break;
@@ -4737,10 +4746,10 @@ verify:
          */
         case DM_SAVEMESSAGELOG:
         {
-            char szFilename[MAX_PATH];
-            OPENFILENAMEA ofn={0};
+            TCHAR szFilename[MAX_PATH];
+            OPENFILENAME ofn={0};
             EDITSTREAM stream = { 0 };
-            char szFilter[MAX_PATH];
+            TCHAR szFilter[MAX_PATH];
             
             if(dat->hwndLog != 0) {
                 IEVIEWEVENT event = {0};
@@ -4755,18 +4764,18 @@ verify:
                 CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
             }
             else {
-                strncpy(szFilter, "Rich Edit file\0*.rtf", MAX_PATH);
-                strncpy(szFilename, dat->szNickname, MAX_PATH);
-                strncat(szFilename, ".rtf", MAX_PATH);
+                _tcsncpy(szFilter, _T("Rich Edit file\0*.rtf"), MAX_PATH);
+                _tcsncpy(szFilename, dat->szNickname, MAX_PATH);
+                _tcsncat(szFilename, _T(".rtf"), MAX_PATH);
                 ofn.lStructSize=sizeof(ofn);
                 ofn.hwndOwner=hwndDlg;
                 ofn.lpstrFile = szFilename;
                 ofn.lpstrFilter = szFilter;
-                ofn.lpstrInitialDir = "rtflogs";
+                ofn.lpstrInitialDir = _T("rtflogs");
                 ofn.nMaxFile = MAX_PATH;
                 ofn.Flags = OFN_HIDEREADONLY;
-                ofn.lpstrDefExt = "rtf";
-                if (GetSaveFileNameA(&ofn)) {
+                ofn.lpstrDefExt = _T("rtf");
+                if (GetSaveFileName(&ofn)) {
                     stream.dwCookie = (DWORD_PTR)szFilename;
                     stream.dwError = 0;
                     stream.pfnCallback = StreamOut;

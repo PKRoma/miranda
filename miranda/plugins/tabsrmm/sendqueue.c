@@ -402,7 +402,8 @@ void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
         ZeroMemory((void *)&ppd, sizeof(ppd));
         ppd.lchContact = dat->hContact;
         ppd.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-        strncpy(ppd.lpzContactName, dat->szNickname, MAX_CONTACTNAME);
+        ppd.lpzContactName[0] = 0;
+        //strncpy(ppd.lpzContactName, dat->szNickname, MAX_CONTACTNAME);
         strcpy(ppd.lpzText, Translate("A message delivery has failed.\nClick to open the message window."));
         ppd.colorText = RGB(0,0,0);
         ppd.colorBack = RGB(255,0,0);
