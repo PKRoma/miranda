@@ -1017,7 +1017,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
                     bTextHasStarted = TRUE;
                     bJustRemovedRTF = TRUE;
                     iRemoveChars = 5;
-                    _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), _T("\n"));
+                    _sntprintf(InsertThis, safe_sizeof(InsertThis), _T("\n"));
                 }
 				else if(p1 == _tcsstr(p1, _T("\\b"))) //bold
 				{
@@ -1026,9 +1026,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
                     if(!(lf.lfWeight == FW_BOLD)) {          // only allow bold if the font itself isn't a bold one, otherwise just strip it..
                         if(dat->SendFormat == SENDFORMAT_BBCODE)
-                            _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (p1[2] != (TCHAR)'0') ? _T("[b]") : _T("[/b]"));
+                            _sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[b]") : _T("[/b]"));
                         else
-                            _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
+                            _sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
                     }
 
 				}
@@ -1039,9 +1039,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
                     if(!lf.lfItalic) {                       // same as for bold
                         if(dat->SendFormat == SENDFORMAT_BBCODE)
-                            _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (p1[2] != (TCHAR)'0') ? _T("[i]") : _T("[/i]"));
+                            _sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[i]") : _T("[/i]"));
                         else
-                            _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
+                            _sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
                     }
 
 				}
@@ -1057,9 +1057,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 						iRemoveChars = 3;
                     if(!lf.lfUnderline)  {                   // same as for bold
                         if(dat->SendFormat == SENDFORMAT_BBCODE)
-                            _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("[u]") : _T("[/u]"));
+                            _sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("[u]") : _T("[/u]"));
                         else
-                            _sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));
+                            _sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));
                     }
 
 				}
@@ -1068,7 +1068,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 4;
-					_sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), _T(" "));
+					_sntprintf(InsertThis, safe_sizeof(InsertThis), _T(" "));
 
 				}
 				else if(p1[1] == (TCHAR)'\\' || p1[1] == (TCHAR)'{' || p1[1] == (TCHAR)'}' ) // escaped characters
@@ -1076,7 +1076,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 2;
-					_sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), _T("%c"), p1[1]);
+					_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), p1[1]);
 
 				}
 				else if(p1[1] == (TCHAR)'\'' ) // special character
@@ -1126,7 +1126,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 							p3++;
 						}
                         */
-						_sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), _T("%c"), (TCHAR)iLame);
+						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), (TCHAR)iLame);
                         
 					}
 					else

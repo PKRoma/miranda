@@ -1429,7 +1429,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->showTyping) {
                     TCHAR szBuf[80];
 
-                    _sntprintf(szBuf, sizeof(szBuf) / sizeof(TCHAR), TranslateT("%s is typing..."), dat->szNickname);
+                    _sntprintf(szBuf, safe_sizeof(szBuf), TranslateT("%s is typing..."), dat->szNickname);
                     szBuf[79] = 0;
                     SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) myGlobals.g_buttonBarIcons[5]);
@@ -1711,7 +1711,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         szActProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
                         hActContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
 #if defined(_UNICODE)
-                        MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->codePage);
+                        MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, dat->codePage);
 #else
                         mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hActContact, 0));
 #endif                        
@@ -2534,7 +2534,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (dat->nTypeSecs > 0) {
                         TCHAR szBuf[256];
 
-                        _sntprintf(szBuf, sizeof(szBuf), TranslateT("%s is typing..."), dat->szNickname);
+                        _sntprintf(szBuf, safe_sizeof(szBuf), TranslateT("%s is typing..."), dat->szNickname);
                         szBuf[255] = 0;
                         dat->nTypeSecs--;
                         if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {

@@ -1397,9 +1397,9 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 
     if(contactName && lstrlen(contactName) > 0) {
         if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", 0))
-            CutContactName(contactName, newcontactname, sizeof(newcontactname) / sizeof(TCHAR));
+            CutContactName(contactName, newcontactname, safe_sizeof(newcontactname));
         else {
-            lstrcpyn(newcontactname, contactName, sizeof(newcontactname) / sizeof(TCHAR));
+            lstrcpyn(newcontactname, contactName, safe_sizeof(newcontactname));
             newcontactname[127] = 0;
         }
     }
@@ -1417,7 +1417,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 #ifdef _UNICODE
 	{
     wchar_t w_tabtitle[256];
-    if(MultiByteToWideChar(CP_ACP, 0, tabtitle, -1, w_tabtitle, sizeof(w_tabtitle)) != 0)
+    if(MultiByteToWideChar(CP_ACP, 0, tabtitle, -1, w_tabtitle, safe_sizeof(w_tabtitle)) != 0)
         newData.item.pszText = w_tabtitle;
 	}
 #else

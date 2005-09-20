@@ -67,3 +67,4 @@ typedef unsigned short wchar_t;
 #include "../../include/m_skin.h"
 #include "../../include/m_contacts.h"
 
+#define safe_sizeof(a) (sizeof((a)) / sizeof((a)[0]))
