@@ -261,18 +261,28 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 					}
 					case 6: // first + last name
 						if(!GetDatabaseString(ci,"FirstName",&dbv)) {
-							char *firstName=_strdup(dbv.pszVal);
-							if(!GetDatabaseString(ci,"LastName",&dbv)) {
-								char *buffer = (char*)malloc(strlen(firstName)+strlen(dbv.pszVal)+2);
+							DBVARIANT dbv2;
+							if(!GetDatabaseString(ci,"LastName",&dbv2)) {
 								ci->type = CNFT_ASCIIZ;
-								mir_snprintf(buffer,strlen(firstName)+strlen(dbv.pszVal)+2,"%s %s",firstName,dbv.pszVal);
-								free(dbv.pszVal);
-								free(firstName);
-								ci->pszVal = ( TCHAR* )_strdup(buffer);
-								free(buffer);
+
+								if ( ci->dwFlag & CNF_UNICODE ) {
+									int len = wcslen(dbv.pwszVal) + wcslen(dbv2.pwszVal) + 2;
+									WCHAR* buf = ( WCHAR* )malloc( sizeof( WCHAR )*len );
+									if ( buf != NULL )
+										wcscat( wcscat( wcscpy( buf, dbv.pwszVal ), L" " ), dbv2.pwszVal );
+									ci->pszVal = ( TCHAR* )buf;
+								}
+								else {
+									int len = strlen(dbv.pszVal) + strlen(dbv2.pszVal) + 2;
+									char* buf = ( char* )malloc( len );
+									if ( buf != NULL )
+										strcat( strcat( strcpy( buf, dbv.pszVal ), " " ), dbv2.pszVal );
+									ci->pszVal = ( TCHAR* )buf;
+								}
+
+								DBFreeVariant( &dbv2 );
 								return 0;
-							}
-						}
+						}	}
 						break;
 					case 7:
 						if ( ci->dwFlag & CNF_UNICODE )
