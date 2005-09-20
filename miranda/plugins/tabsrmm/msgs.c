@@ -388,17 +388,21 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
             if(dat && dat->hProcessAwayMsg == pAck->hProcess) {
                 dat->hProcessAwayMsg = 0;
                 if(pAck->lParam)
+#if defined(_UNICODE)
+                    MultiByteToWideChar(dat->codePage, 0, (char *)pAck->lParam, -1, dat->statusMsg, safe_sizeof(dat->statusMsg));
+#else
                     strncpy(dat->statusMsg, (char *)pAck->lParam, sizeof(dat->statusMsg));
+#endif                
                 else
-                    strncpy(dat->statusMsg, myGlobals.m_szNoStatus, sizeof(dat->statusMsg));
-                dat->statusMsg[sizeof(dat->statusMsg) - 1] = 0;
+                    lstrcpyn(dat->statusMsg, myGlobals.m_szNoStatus, safe_sizeof(dat->statusMsg));
+                dat->statusMsg[safe_sizeof(dat->statusMsg) - 1] = 0;
                 SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, 0);
             }
         }
         else if(pAck->result = ACKRESULT_FAILED) {
             if(dat && dat->hProcessAwayMsg == pAck->hProcess) {
                 dat->hProcessAwayMsg = 0;
-                SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, (LPARAM)"Either there is no status message available, or the protocol could not retrieve it.");
+                SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, (LPARAM)_T("Either there is no status message available, or the protocol could not retrieve it."));
             }
         }
         return 0;

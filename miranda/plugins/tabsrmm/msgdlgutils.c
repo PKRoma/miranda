@@ -2208,6 +2208,7 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
 // proto may be NULL
 // per contact codepage only used with non-unicode cores (to get "faked" unicode nicknames...)
 
+#if defined(_UNICODE)
 int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int size, const char *szProto, UINT codePage)
 {
 	CONTACTINFO ci;
@@ -2244,3 +2245,4 @@ int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int siz
     szwBuf[size - 1] = 0;
     return 0;
 }
+#endif

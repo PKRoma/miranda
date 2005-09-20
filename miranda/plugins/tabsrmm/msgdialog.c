@@ -2466,7 +2466,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELNICK), &rcNick);
                 if(wParam == TIMERID_AWAYMSG && PtInRect(&rc, pt)) {
                     if(GetTickCount() - dat->lastRetrievedStatusMsg > 60000) {
-                        SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)Translate("Retrieving..."));
+                        SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)TranslateT("Retrieving..."));
                         if(!(dat->hProcessAwayMsg = (HANDLE)CallContactService(dat->bIsMeta ? dat->hSubContact : dat->hContact, PSS_GETAWAYMSG, 0, 0)))
                             SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)myGlobals.m_szNoStatus);
                         dat->lastRetrievedStatusMsg = GetTickCount();
@@ -2475,12 +2475,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, 0);
                 }
                 else if(wParam == (TIMERID_AWAYMSG + 1) && PtInRect(&rcNick, pt) && dat->xStatus > 0) {
-                    char szBuffer[1025];
+                    TCHAR szBuffer[1025];
                     DBVARIANT dbv;
-                    mir_snprintf(szBuffer, sizeof(szBuffer), "No extended status message available");
-                    if(!DBGetContactSetting(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusMsg", &dbv)) {
-                        if(dbv.type == DBVT_ASCIIZ && lstrlenA(dbv.pszVal) > 2)
-                            mir_snprintf(szBuffer, sizeof(szBuffer), "%s", dbv.pszVal);
+                    mir_sntprintf(szBuffer, safe_sizeof(szBuffer), _T("No extended status message available"));
+                    if(!DBGetContactSettingTString(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusMsg", &dbv)) {
+                        if(lstrlen(dbv.ptszVal) > 2)
+                            mir_sntprintf(szBuffer, safe_sizeof(szBuffer), _T("%s"), dbv.ptszVal);
                         DBFreeVariant(&dbv);
                     }
                     SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_PANELNICK, (LPARAM)szBuffer);
@@ -4643,15 +4643,15 @@ verify:
                 GetWindowRect(GetDlgItem(hwndDlg, id), &rc);
                 SendMessage(dat->hwndTip, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(rc.left, rc.bottom));
                 if(lParam)
-                    dat->ti.lpszText = (char *)lParam;
+                    dat->ti.lpszText = (TCHAR *)lParam;
                 else {
-                    if(lstrlenA(dat->statusMsg) > 0)
+                    if(lstrlen(dat->statusMsg) > 0)
                         dat->ti.lpszText = dat->statusMsg;
                     else
                         dat->ti.lpszText = myGlobals.m_szNoStatus;
                 }
                     
-                SendMessageA(dat->hwndTip, TTM_UPDATETIPTEXTA, 0, (LPARAM)&dat->ti);
+                SendMessage(dat->hwndTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&dat->ti);
                 SendMessage(dat->hwndTip, TTM_SETMAXTIPWIDTH, 0, 350);
 #if defined(_UNICODE)
                 switch(id) {
@@ -4677,7 +4677,7 @@ verify:
                         mir_snprintf(szTitle, sizeof(szTitle), Translate("tabSRMM Information"));
                 }
                 szTitleW = EncodeWithNickname(szTitle, dat->szNickname, dat->codePage);
-                SendMessage(dat->hwndTip, TTM_SETTITLEW, 1, (LPARAM)szTitleW);
+                SendMessage(dat->hwndTip, TTM_SETTITLE, 1, (LPARAM)szTitleW);
 #else
                 switch(id) {
                     case IDC_PANELNICK:

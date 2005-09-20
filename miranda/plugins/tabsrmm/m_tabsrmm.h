@@ -322,9 +322,9 @@ struct MessageWindowData {
     WORD wApparentMode;
     DWORD idle;
     HWND hwndTip;
-    TOOLINFOA ti;
+    TOOLINFO ti;
     DWORD lastRetrievedStatusMsg;
-    char statusMsg[1025];
+    TCHAR statusMsg[1025];
     HANDLE hProcessAwayMsg;
     DWORD timezone, timediff;
     DWORD panelStatusCX;
@@ -461,7 +461,7 @@ typedef struct _globals {
     int m_smcxicon, m_smcyicon;
     DWORD local_gmt_diff;
     int m_PasteAndSend;
-    char *m_szNoStatus;
+    TCHAR *m_szNoStatus;
     HFONT m_hFontWebdings;
     struct infopanelconfig ipConfig;
     COLORREF crDefault, crIncoming, crOutgoing;

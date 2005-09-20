@@ -68,3 +68,16 @@ typedef unsigned short wchar_t;
 #include "../../include/m_contacts.h"
 
 #define safe_sizeof(a) (sizeof((a)) / sizeof((a)[0]))
+
+#if !defined(_UNICODE)
+
+#define ptszVal pszVal
+
+#undef DBGetContactSettingTString
+#undef DBGetContactSettingWString
+
+#define DBGetContactSettingTString(a,b,c,d) DBGetContactSetting(a,b,c,d)
+#define DBGetContactSettingWString(a,b,c,d) DBGetContactSetting(a,b,c,d)
+
+#endif
+

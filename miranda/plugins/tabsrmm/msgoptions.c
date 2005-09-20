@@ -2004,7 +2004,7 @@ void ReloadGlobals()
      myGlobals.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
      myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
      myGlobals.m_PasteAndSend = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "pasteandsend", 0);
-     myGlobals.m_szNoStatus = Translate("No status message available");
+     myGlobals.m_szNoStatus = TranslateT("No status message available");
      myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN);
      switch(myGlobals.ipConfig.borderStyle) {
          case IPFIELD_SUNKEN:
