@@ -126,11 +126,11 @@ static int GroupAdded(WPARAM wParam, LPARAM lParam)
     //CLC does this automatically unless it's a new group
     if (lParam) {
         HANDLE hItem;
-        char szFocusClass[64];
+        TCHAR szFocusClass[64];
         HWND hwndFocus = GetFocus();
 
-        GetClassNameA(hwndFocus, szFocusClass, sizeof(szFocusClass));
-        if (!lstrcmpA(szFocusClass, CLISTCONTROL_CLASS)) {
+        GetClassName(hwndFocus, szFocusClass, sizeof(szFocusClass));
+        if (!lstrcmp(szFocusClass, CLISTCONTROL_CLASS)) {
             hItem = (HANDLE) SendMessage(hwndFocus, CLM_FINDGROUP, wParam, 0);
             if (hItem)
                 SendMessage(hwndFocus, CLM_EDITLABEL, (WPARAM) hItem, 0);

@@ -134,14 +134,14 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragOver(struct CDropTarget *lpThis, D
 static STDMETHODIMP_(HRESULT) CDropTarget_DragEnter(struct CDropTarget *lpThis, IDataObject * pData, DWORD fKeyState, POINTL pt, DWORD * pdwEffect)
 {
     HWND hwnd;
-    char szWindowClass[64];
+    TCHAR szWindowClass[64];
     POINT shortPt;
 
     shortPt.x = pt.x;
     shortPt.y = pt.y;
     hwnd = WindowFromPoint(shortPt);
-    GetClassNameA(hwnd, szWindowClass, sizeof(szWindowClass));
-    if (!lstrcmpA(szWindowClass, CLISTCONTROL_CLASS)) {
+    GetClassName(hwnd, szWindowClass, sizeof(szWindowClass));
+    if (!lstrcmp(szWindowClass, CLISTCONTROL_CLASS)) {
         struct ClcData *dat;
         hwndCurrentDrag = hwnd;
         dat = (struct ClcData *) GetWindowLong(hwndCurrentDrag, 0);

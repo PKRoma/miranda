@@ -180,7 +180,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		return FALSE;
 
 	case M_CREATECLC:
-		hwndContactTree = CreateWindow( _T(CLISTCONTROL_CLASS), _T(""),
+		hwndContactTree = CreateWindow( CLISTCONTROL_CLASS, _T(""),
 			WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN
 			| CLS_CONTACTLIST
 			| (DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) ? CLS_USEGROUPS : 0)
@@ -768,7 +768,7 @@ static HANDLE hRenameMenuItem;
 
 static int MenuItem_PreBuild(WPARAM wParam, LPARAM lParam)
 {
-	char cls[128];
+	TCHAR cls[128];
 	HANDLE hItem;
 	HWND hwndClist = GetFocus();
 	CLISTMENUITEM mi;
@@ -776,8 +776,8 @@ static int MenuItem_PreBuild(WPARAM wParam, LPARAM lParam)
 	ZeroMemory(&mi, sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.flags = CMIM_FLAGS;
-	GetClassNameA(hwndClist, cls, sizeof(cls));
-	hwndClist = (!lstrcmpA(CLISTCONTROL_CLASS, cls)) ? hwndClist : hwndContactList;
+	GetClassName(hwndClist, cls, SIZEOF(cls));
+	hwndClist = (!lstrcmp(CLISTCONTROL_CLASS, cls)) ? hwndClist : hwndContactList;
 	hItem = (HANDLE) SendMessage(hwndClist, CLM_GETSELECTION, 0, 0);
 	if (!hItem) {
 		mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
@@ -788,12 +788,12 @@ static int MenuItem_PreBuild(WPARAM wParam, LPARAM lParam)
 
 static int MenuItem_RenameContact(WPARAM wParam, LPARAM lParam)
 {
-	char cls[128];
+	TCHAR cls[128];
 	HANDLE hItem;
 	HWND hwndClist = GetFocus();
-	GetClassNameA(hwndClist, cls, sizeof(cls));
+	GetClassName(hwndClist, cls, SIZEOF(cls));
 	// worst case scenario, the rename is sent to the main contact list
-	hwndClist = (!lstrcmpA(CLISTCONTROL_CLASS, cls)) ? hwndClist : hwndContactList;
+	hwndClist = (!lstrcmp(CLISTCONTROL_CLASS, cls)) ? hwndClist : hwndContactList;
 	hItem = (HANDLE) SendMessage(hwndClist, CLM_GETSELECTION, 0, 0);
 	if (hItem) {
 		SetFocus(hwndClist);

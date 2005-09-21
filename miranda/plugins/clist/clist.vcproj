@@ -1044,6 +1044,9 @@
 						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\db3x\utf.c">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

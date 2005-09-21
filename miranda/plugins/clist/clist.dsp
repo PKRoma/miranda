@@ -631,6 +631,10 @@ SOURCE=.\keyboard.c
 !ENDIF 
 
 # End Source File
+# Begin Source File
+
+SOURCE=..\db3x\utf.c
+# End Source File
 # End Group
 # Begin Group "Header Files"
 

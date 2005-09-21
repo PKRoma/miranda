@@ -26,3 +26,5 @@ HTREEITEM GetTreeItemByHContact(HANDLE hContact);
 void TrayIconUpdateWithImageList(int iImage,const char *szNewTip,char *szPreferredProto);
 void SortContacts(void);
 void ChangeContactIcon(HANDLE hContact,int iIcon,int add);
+
+#define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)

@@ -173,7 +173,7 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 
 int LoadCLCModule(void)
 {
-	WNDCLASSA wndclass;
+	WNDCLASS wndclass;
 
 	himlCListClc = (HIMAGELIST) CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
 	hClcWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
@@ -192,7 +192,7 @@ int LoadCLCModule(void)
 	wndclass.hbrBackground = NULL;
 	wndclass.lpszMenuName = NULL;
 	wndclass.lpszClassName = CLISTCONTROL_CLASS;
-	RegisterClassA(&wndclass);
+	RegisterClass(&wndclass);
 
 	InitFileDropping();
 
@@ -358,7 +358,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 	case INTM_GROUPSCHANGED:
 		{
 			DBCONTACTWRITESETTING *dbcws = (DBCONTACTWRITESETTING *) lParam;
-			if (dbcws->value.type == DBVT_ASCIIZ) {
+			if (dbcws->value.type == DBVT_ASCIIZ || dbcws->value.type == DBVT_UTF8) {
 				int groupId = atoi(dbcws->szSetting) + 1;
 				struct ClcContact *contact;
 				struct ClcGroup *group;
@@ -386,6 +386,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 						szFullName[nameLen] = '\\';
 					}
 
+					if ( dbcws->value.type == DBVT_ASCIIZ )
 					#if defined( UNICODE )
 					{	WCHAR* wszGrpName = a2u(dbcws->value.pszVal+1);
 						eq = !lstrcmp( szFullName, wszGrpName );
@@ -394,6 +395,19 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 					#else
 						eq = !lstrcmp( szFullName, dbcws->value.pszVal+1 );
 					#endif
+					else {
+						char* szGrpName = NEWSTR_ALLOCA(dbcws->value.pszVal+1);
+						#if defined( UNICODE )
+							WCHAR* wszGrpName;
+							Utf8Decode(szGrpName, &wszGrpName );
+							eq = !lstrcmp( szFullName, wszGrpName );
+							mir_free( wszGrpName );
+						
+						#else
+							Utf8Decode(szGrpName, NULL);
+							eq = !lstrcmp( szFullName, szGrpName );
+						#endif
+					}
 					if ( eq && (contact->group->hideOffline != 0) == ((dbcws->value.pszVal[0] & GROUPF_HIDEOFFLINE) != 0))
 						break;  //only expanded has changed: no action reqd
 				}
