@@ -90,14 +90,13 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT message,WPARAM wParam,LP
 			lParam=(LPARAM)text;
 			//fall thru
 		case WM_SETTEXT:
-		{	HDC hdc1;
-			HFONT hoFont;
+		{	HFONT hoFont;
 			SIZE textSize;
 			RECT rc;
 
-			hdc1=GetDC(hwnd);
+			HDC hdc1=GetDC(hwnd);
 			if(dat->hFont!=NULL) hoFont=(HFONT)SelectObject(hdc1,dat->hFont);
-			GetTextExtentPoint32A(hdc1,(const char*)lParam,lstrlenA((const char*)lParam),&textSize);
+			GetTextExtentPoint32(hdc1,(const TCHAR*)lParam,lstrlen((const TCHAR*)lParam),&textSize);
 			dat->rcText.top=0; dat->rcText.bottom=dat->rcText.top+textSize.cy;
 			GetClientRect(hwnd,&rc);
 			if(GetWindowLong(hwnd,GWL_STYLE)&SS_CENTER) dat->rcText.left=(rc.right-textSize.cx)/2;
@@ -125,15 +124,15 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT message,WPARAM wParam,LP
 			break;
 		case WM_NCPAINT:
 		case WM_PAINT:
-		{	PAINTSTRUCT ps;
-			HDC hdc1;
+		{	
 			HFONT hoFont;
 			RECT rc;
-			char text[256];
+			TCHAR text[256];
 			int alignFlag;
 			DWORD textColour;
 
-			hdc1=BeginPaint(hwnd,&ps);
+			PAINTSTRUCT ps;
+			HDC hdc1=BeginPaint(hwnd,&ps);
 			if(IsWindowEnabled(hwnd)) {
 				hoFont=(HFONT)SelectObject(hdc1,dat->hFont);
 				textColour=dat->enableColor;
@@ -148,8 +147,8 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT message,WPARAM wParam,LP
 			else if(GetWindowLong(hwnd,GWL_STYLE)&SS_RIGHT) alignFlag=DT_RIGHT;
 			else alignFlag=DT_LEFT;
 			GetClientRect(hwnd,&rc);
-			GetWindowTextA(hwnd,text,sizeof(text));
-			DrawTextA(hdc1,text,-1,&rc,alignFlag|DT_NOPREFIX|DT_SINGLELINE|DT_TOP);
+			GetWindowText(hwnd,text,SIZEOF(text));
+			DrawText(hdc1,text,-1,&rc,alignFlag|DT_NOPREFIX|DT_SINGLELINE|DT_TOP);
 			SelectObject(hdc1,hoFont);
 			EndPaint(hwnd,&ps);
 			break;
