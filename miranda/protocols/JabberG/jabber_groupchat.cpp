@@ -592,7 +592,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		free( room );
 	}
 	else if ( !strcmp( type, "unavailable" )) {
-		if ( xNode != NULL || item->nick != NULL ) {
+		if ( xNode != NULL && item->nick != NULL ) {
 			itemNode = JabberXmlGetChild( xNode, "item" );
 
 			if ( !strcmp( nick, item->nick )) {
