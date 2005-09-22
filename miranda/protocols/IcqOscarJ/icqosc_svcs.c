@@ -173,7 +173,7 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
   if (ICQGetContactSettingUID(pai->hContact, &dwUIN, &szUID))
   {
-    DBFreeVariant(&dbv);
+    ICQFreeVariant(&dbv);
 
     return GAIR_NOAVATAR; // we do not support avatars for invalid contacts
   }
@@ -188,11 +188,11 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
     { // hashes are the same
       if (access(pai->filename, 0) == 0)
       {
-        DBFreeVariant(&dbv);
+        ICQFreeVariant(&dbv);
 
         return GAIR_SUCCESS; // we have found the avatar file, whoala
       }
-      DBFreeVariant(&dbvSaved);
+      ICQFreeVariant(&dbvSaved);
     }
   }
 
@@ -200,12 +200,12 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
   { // request avatar data
     GetAvatarFileName(dwUIN, szUID, pai->filename, MAX_PATH);
     GetAvatarData(pai->hContact, dwUIN, szUID, dbv.pbVal, dbv.cpbVal, pai->filename);
-    DBFreeVariant(&dbv);
+    ICQFreeVariant(&dbv);
 
     return GAIR_WAITFOR;
   }
 
-  DBFreeVariant(&dbv);
+  ICQFreeVariant(&dbv);
 
   return GAIR_NOAVATAR;
 }
@@ -635,7 +635,7 @@ static HANDLE AddToListByUIN(DWORD dwUin, DWORD dwFlags)
     if ((!dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1)) 
     {
       DBDeleteContactSetting(hContact, "CList", "NotOnList");
-      DBDeleteContactSetting(hContact, "CList", "Hidden");
+      SetContactHidden(hContact, 0);
     }
 
     return hContact; // Success
@@ -657,7 +657,7 @@ static HANDLE AddToListByUID(char *szUID, DWORD dwFlags)
     if ((!dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1)) 
     {
       DBDeleteContactSetting(hContact, "CList", "NotOnList");
-      DBDeleteContactSetting(hContact, "CList", "Hidden");
+      SetContactHidden(hContact, 0);
     }
 
     return hContact; // Success
@@ -987,7 +987,7 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
     if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUID))
       return 0; // Invalid contact
 
-    wStatus = ICQGetContactSettingWord(ccs->hContact, "Status", ID_STATUS_OFFLINE);
+    wStatus = ICQGetContactStatus(ccs->hContact);
 
     if (dwUin)
     {
@@ -1044,6 +1044,28 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
 
 
 
+static message_cookie_data* CreateMsgCookieData(BYTE bMsgType, HANDLE hContact, DWORD dwUin)
+{
+  message_cookie_data* pCookieData = malloc(sizeof(message_cookie_data));
+
+  if (pCookieData)
+  {
+    WORD wStatus = ICQGetContactStatus(hContact);
+
+    pCookieData->bMessageType = bMsgType;
+
+    if (!ICQGetContactSettingByte(NULL, "SlowSend", 1))
+      pCookieData->nAckType = ACKTYPE_NONE;
+    else if ((!dwUin) || (!CheckContactCapabilities(hContact, CAPF_SRV_RELAY)) || (wStatus == ID_STATUS_OFFLINE))
+      pCookieData->nAckType = ACKTYPE_SERVER;
+    else
+      pCookieData->nAckType = ACKTYPE_CLIENT;
+  }
+  return pCookieData;
+}
+
+
+
 int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 {
   if (lParam)
@@ -1070,7 +1092,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 
       pszText = (char*)ccs->lParam;
 
-      wRecipientStatus = ICQGetContactSettingWord(ccs->hContact, "Status", ID_STATUS_OFFLINE);
+      wRecipientStatus = ICQGetContactStatus(ccs->hContact);
 
       // Failure scenarios
       if (!icqOnline)
@@ -1124,15 +1146,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
         }
 
         // Set up the ack type
-        pCookieData = malloc(sizeof(message_cookie_data));
-        pCookieData->bMessageType = MTYPE_PLAIN;
-        if (!ICQGetContactSettingByte(NULL, "SlowSend", 1))
-          pCookieData->nAckType = ACKTYPE_NONE;
-        else if ((!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) ||
-          (wRecipientStatus == ID_STATUS_OFFLINE) || !dwUin)
-          pCookieData->nAckType = ACKTYPE_SERVER;
-        else
-          pCookieData->nAckType = ACKTYPE_CLIENT;
+        pCookieData = CreateMsgCookieData(MTYPE_PLAIN, ccs->hContact, dwUin);
 
 #ifdef _DEBUG
         NetLog_Server("Send message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
@@ -1181,6 +1195,26 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 
 
 
+static char* convertMsgToUserSpecificAnsi(HANDLE hContact, const char* szMsg)
+{ // this needs valid "Unicode" buffer from SRMM !!!
+  WORD wCP = ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage);
+  int nMsgLen = strlennull(szMsg);
+  wchar_t* usMsg = (wchar_t*)(szMsg + nMsgLen);
+  char* szAnsi = NULL;
+
+  if (wCP != CP_ACP)
+  {
+    int nStrSize = WideCharToMultiByte(wCP, 0, usMsg, nMsgLen, szAnsi, 0, NULL, NULL);
+
+    szAnsi = malloc(nStrSize + 1);
+    WideCharToMultiByte(wCP, 0, usMsg, nMsgLen, szAnsi, nStrSize, NULL, NULL);
+    szAnsi[nStrSize] = '\0';
+  }
+  return szAnsi;
+}
+
+
+
 int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 {
   if (lParam)
@@ -1194,15 +1228,18 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
       DWORD dwUin;
       uid_str szUID;
       wchar_t* pszText;
-
-      if (!gbUtfEnabled || (ccs->wParam & PREF_UNICODE == PREF_UNICODE) || (!CheckContactCapabilities(ccs->hContact, CAPF_UTF)))
+         // TODO: this was not working, removed check
+      if (!gbUtfEnabled || /*(ccs->wParam & PREF_UNICODE == PREF_UNICODE) ||*/ 
+        (!CheckContactCapabilities(ccs->hContact, CAPF_UTF)) || (!ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1)))
       {  // send as unicode only if marked as unicode & unicode enabled
-        return IcqSendMessage(wParam, lParam);
-      }
+        char* szAnsi = convertMsgToUserSpecificAnsi(ccs->hContact, (char*)ccs->lParam);
+        int nRes;
 
-      if (!ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
-      { // has the user blocked sending unicode to that user ?
-        return IcqSendMessage(wParam, lParam);
+        if (szAnsi) ccs->lParam = (LPARAM)szAnsi;
+        nRes = IcqSendMessage(wParam, lParam);
+        SAFE_FREE(&szAnsi);
+
+        return nRes;
       }
 
       if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUID))
@@ -1217,7 +1254,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 
       pszText = (wchar_t*)((char*)ccs->lParam+strlennull((char*)ccs->lParam)+1); // get the UTF-16 part
 
-      wRecipientStatus = ICQGetContactSettingWord(ccs->hContact, "Status", ID_STATUS_OFFLINE);
+      wRecipientStatus = ICQGetContactStatus(ccs->hContact);
 
       // Failure scenarios
       if (!icqOnline)
@@ -1232,18 +1269,18 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 
         if ((wRecipientStatus == ID_STATUS_OFFLINE) || IsUnicodeAscii(pszText, wcslen(pszText)))
         { // send as plain if no special char or user offline
-          return IcqSendMessage(wParam, lParam);
+          char* szAnsi = convertMsgToUserSpecificAnsi(ccs->hContact, (char*)ccs->lParam);
+          int nRes;
+
+          if (szAnsi) ccs->lParam = (LPARAM)szAnsi;
+          nRes = IcqSendMessage(wParam, lParam);
+          SAFE_FREE(&szAnsi);
+
+          return nRes;
         };
 
         // Set up the ack type
-        pCookieData = malloc(sizeof(message_cookie_data));
-        pCookieData->bMessageType = MTYPE_PLAIN;
-        if (!ICQGetContactSettingByte(NULL, "SlowSend", 1))
-          pCookieData->nAckType = ACKTYPE_NONE;
-        else if ((!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) || !dwUin)
-          pCookieData->nAckType = ACKTYPE_SERVER;
-        else
-          pCookieData->nAckType = ACKTYPE_CLIENT;
+        pCookieData = CreateMsgCookieData(MTYPE_PLAIN, ccs->hContact, dwUin);
 
 #ifdef _DEBUG
         NetLog_Server("Send unicode message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
@@ -1338,7 +1375,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
         return dwCookie;
       }
 
-      wRecipientStatus = ICQGetContactSettingWord(ccs->hContact, "Status", ID_STATUS_OFFLINE);
+      wRecipientStatus = ICQGetContactStatus(ccs->hContact);
 
       // Failure
       if (!icqOnline)
@@ -1359,21 +1396,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 
 
         // Set up the ack type
-        pCookieData = malloc(sizeof(message_cookie_data));
-        pCookieData->bMessageType = MTYPE_URL;
-        if (!ICQGetContactSettingByte(NULL, "SlowSend", 1))
-        {
-          pCookieData->nAckType = ACKTYPE_NONE;
-        }
-        else if ((!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) ||
-          (wRecipientStatus == ID_STATUS_OFFLINE))
-        {
-          pCookieData->nAckType = ACKTYPE_SERVER;
-        }
-        else
-        {
-          pCookieData->nAckType = ACKTYPE_CLIENT;
-        }
+        pCookieData = CreateMsgCookieData(MTYPE_URL, ccs->hContact, dwUin);
 
         // Format the body
         szUrl = (char*)ccs->lParam;
@@ -1390,7 +1413,11 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
         if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
         {
           int iRes = icq_SendDirectMessage(dwUin, ccs->hContact, szBody, nBodyLen, 1, pCookieData, NULL);
-          if (iRes) return iRes; // we succeded, return
+          if (iRes) 
+          {
+            SAFE_FREE(&szBody);
+            return iRes; // we succeded, return
+          }
         }
 
         // Select channel and send
@@ -1458,7 +1485,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
         return dwCookie;
       }
 
-      wRecipientStatus = ICQGetContactSettingWord(ccs->hContact, "Status", ID_STATUS_OFFLINE);
+      wRecipientStatus = ICQGetContactStatus(ccs->hContact);
       nContacts = HIWORD(ccs->wParam);
 
       // Failures
@@ -1476,9 +1503,10 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
       else
       {
         int nBodyLength;
-        char szUin[17];
+        char szUin[UINMAXLEN];
         char szCount[17];
         struct icq_contactsend_s* contacts = NULL;
+        uid_str szUid;
 
 
         // Format the body
@@ -1492,12 +1520,12 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
             szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContactsList[i], 0);
             if (szProto == NULL || strcmp(szProto, gpszICQProtoName))
               break; // Abort if a non icq contact is found
-            contacts[i].uin = ICQGetContactSettingDword(hContactsList[i], UNIQUEIDSETTING, 0);
-            // Todo: update this
-            contacts[i].szNick = _strdup((char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContactsList[i], 0));
+            if (ICQGetContactSettingUID(hContactsList[i], &contacts[i].uin, &szUid))
+              break; // Abort if invalid contact
+            contacts[i].uid = contacts[i].uin?NULL:_strdup(szUid);
+            contacts[i].szNick = NickFromHandle(hContactsList[i]); //_strdup((char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContactsList[i], 0));
             // Compute this contact's length
-            _itoa(contacts[i].uin, szUin, 10);
-            nBodyLength += strlennull(szUin) + 1;
+            nBodyLength += getUIDLen(contacts[i].uin, contacts[i].uid) + 1;
             nBodyLength += strlennull(contacts[i].szNick) + 1;
           }
 
@@ -1510,7 +1538,6 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 #ifdef _DEBUG
             NetLog_Server("Sending contacts to %d.", dwUin);
 #endif
-
             // Compute count record's length
             _itoa(nContacts, szCount, 10);
             nBodyLength += strlennull(szCount) + 1;
@@ -1522,8 +1549,13 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
             *pBuffer++ = (char)0xFE;
             for (i = 0; i < nContacts; i++)
             {
-              _itoa(contacts[i].uin, szUin, 10);
-              strcpy(pBuffer, szUin);
+              if (contacts[i].uin)
+              {
+                _itoa(contacts[i].uin, szUin, 10);
+                strcpy(pBuffer, szUin);
+              }
+              else
+                strcpy(pBuffer, contacts[i].uid);
               pBuffer += strlennull(pBuffer);
               *pBuffer++ = (char)0xFE;
               strcpy(pBuffer, contacts[i].szNick);
@@ -1532,24 +1564,26 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
             }
 
             // Set up the ack type
-            pCookieData = malloc(sizeof(message_cookie_data));
-            pCookieData->bMessageType = MTYPE_CONTACTS;
-            if (!ICQGetContactSettingByte(NULL, "SlowSend", 1))
-              pCookieData->nAckType = ACKTYPE_NONE;
-            else if ((!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) ||
-              (wRecipientStatus == ID_STATUS_OFFLINE))
-            {
-              pCookieData->nAckType = ACKTYPE_SERVER;
-            }
-            else
-            {
-              pCookieData->nAckType = ACKTYPE_CLIENT;
-            }
+            pCookieData = CreateMsgCookieData(MTYPE_CONTACTS, ccs->hContact, dwUin);
 
             if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
             {
               int iRes = icq_SendDirectMessage(dwUin, ccs->hContact, pBody, nBodyLength, 1, pCookieData, NULL);
-              if (iRes) return iRes; // we succeded, return
+
+              if (iRes)
+              {
+                SAFE_FREE(&pBody);
+
+                for(i = 0; i < nContacts; i++)
+                { // release memory
+                  SAFE_FREE(&contacts[i].szNick);
+                  SAFE_FREE(&contacts[i].uid);
+                }
+
+                SAFE_FREE(&contacts);
+
+                return iRes; // we succeded, return
+              }
             }
 
             // Select channel and send
@@ -1571,7 +1605,6 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
               dwCookie = icq_SendChannel2Message(dwUin, pBody, nBodyLength, wPriority, pCookieData, NULL);
             }
 
-
             // This will stop the message dialog from waiting for the real message delivery ack
             if (pCookieData->nAckType == ACKTYPE_NONE)
              {
@@ -1581,6 +1614,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
               SAFE_FREE(&pCookieData);
               FreeCookie(dwCookie);
             }
+            SAFE_FREE(&pBody);
           }
           else
           {
@@ -1591,6 +1625,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
           for(i = 0; i < nContacts; i++)
           {
             SAFE_FREE(&contacts[i].szNick);
+            SAFE_FREE(&contacts[i].uid);
           }
 
           SAFE_FREE(&contacts);
@@ -1629,7 +1664,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 
       if (dwUin)
       {
-        if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+        if (ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE)
         {
           WORD wClientVersion;
 
@@ -1867,7 +1902,7 @@ int IcqRecvMessage(WPARAM wParam, LPARAM lParam)
   PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
 
 
-  DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
+  SetContactHidden(ccs->hContact, 0);
 
   ZeroMemory(&dbei, sizeof(dbei));
   dbei.cbSize = sizeof(dbei);
@@ -1899,7 +1934,7 @@ int IcqRecvUrl(WPARAM wParam, LPARAM lParam)
   char* szDesc;
 
 
-  DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
+  SetContactHidden(ccs->hContact, 0);
 
   szDesc = pre->szMessage + strlennull(pre->szMessage) + 1;
 
@@ -1930,7 +1965,7 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
   PBYTE pBlob;
 
 
-  DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
+  SetContactHidden(ccs->hContact, 0);
 
   for (i = 0; i < pre->lParam; i++)
   {
@@ -1969,7 +2004,7 @@ int IcqRecvFile(WPARAM wParam, LPARAM lParam)
   char* szFile;
 
 
-  DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
+  SetContactHidden(ccs->hContact, 0);
 
   szFile = pre->szMessage + sizeof(DWORD);
   szDesc = szFile + strlennull(szFile) + 1;
@@ -1997,7 +2032,7 @@ int IcqRecvAuth(WPARAM wParam, LPARAM lParam)
   PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
 
 
-  DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
+  SetContactHidden(ccs->hContact, 0);
 
   ZeroMemory(&dbei, sizeof(dbei));
   dbei.cbSize = sizeof(dbei);
