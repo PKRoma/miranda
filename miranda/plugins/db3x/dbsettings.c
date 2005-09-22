@@ -267,6 +267,7 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 
 #define NeedBytes(n)   if(bytesRemaining<(n)) pBlob=(PBYTE)DBRead(ofsBlobPtr,(n),&bytesRemaining)
 #define MoveAlong(n)   {int x=n; pBlob+=(x); ofsBlobPtr+=(x); bytesRemaining-=(x);}
+#define VLT(n) ((n==DBVT_UTF8)?DBVT_ASCIIZ:n)
 static __inline int GetContactSettingWorker(HANDLE hContact,DBCONTACTGETSETTING *dbcgs,int isStatic)
 {
 	struct DBContact dbc;
@@ -341,7 +342,7 @@ static __inline int GetContactSettingWorker(HANDLE hContact,DBCONTACTGETSETTING 
 			if(pBlob[0]==settingNameLen && !memcmp(pBlob+1,dbcgs->szSetting,settingNameLen)) {
 				MoveAlong(1+settingNameLen);
 				NeedBytes(5);
-				if(isStatic && pBlob[0]&DBVTF_VARIABLELENGTH && dbcgs->pValue->type!=pBlob[0]) {
+				if(isStatic && pBlob[0]&DBVTF_VARIABLELENGTH && VLT(dbcgs->pValue->type) != VLT(pBlob[0])) {
 					LeaveCriticalSection(&csDbAccess);
 					return 1;
 				}
