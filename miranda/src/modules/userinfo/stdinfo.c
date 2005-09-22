@@ -42,7 +42,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 
 	dbv.type=DBVT_DELETED;
 	if(szModule==NULL) unspecified=1;
-	else unspecified=DBGetContactSettingStringUtf(hContact,szModule,szSetting,&dbv);
+	else unspecified=DBGetContactSettingW(hContact,szModule,szSetting,&dbv);
 	if(!unspecified) {
 		switch(dbv.type) {
 			case DBVT_BYTE:

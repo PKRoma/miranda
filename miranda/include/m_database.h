@@ -711,6 +711,7 @@ don't change any of the members.
 #define DBGetContactSettingWord(a,b,c,d) DBGetContactSettingWord_Helper(a,b,c,d,__FILE__,__LINE__)
 #define DBGetContactSettingDword(a,b,c,d) DBGetContactSettingDword_Helper(a,b,c,d,__FILE__,__LINE__)
 #define DBGetContactSetting(a,b,c,d) DBGetContactSetting_Helper(a,b,c,d,__FILE__,__LINE__)
+#define DBGetContactSettingW(a,b,c,d) DBGetContactSettingW_Helper(a,b,c,d,__FILE__,__LINE__)
 #define DBGetContactSettingTString(a,b,c,d) DBGetContactSettingTString_Helper(a,b,c,d,__FILE__,__LINE__)
 #define DBGetContactSettingWString(a,b,c,d) DBGetContactSettingWString_Helper(a,b,c,d,__FILE__,__LINE__)
 #define DBGetContactSettingStringUtf(a,b,c,d) DBGetContactSettingStringUtf_Helper(a,b,c,d,__FILE__,__LINE__)
@@ -782,6 +783,27 @@ __inline static DWORD DBGetContactSettingDword_Helper(HANDLE hContact,const char
 	}
 #endif
 	return dbv.dVal;
+}
+
+__inline static int DBGetContactSettingW_Helper(HANDLE hContact,const char *szModule,
+	const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine)
+{
+	int rc;
+	DBCONTACTGETSETTING cgs;
+	cgs.szModule=szModule;
+	cgs.szSetting=szSetting;
+	cgs.pValue=dbv;
+	dbv->type = 0;
+
+	rc=CallService(MS_DB_CONTACT_GETSETTING_STR,(WPARAM)hContact,(LPARAM)&cgs);
+#if defined(_DEBUG) && defined(DBCHECKSETTINGS)
+	if (rc != 0) {
+		char buf[128];
+		_snprintf(buf,sizeof(buf),"%s:%d failed to fetch %s/%s",szFile,nLine,szModule,szSetting);
+		db_msg_dbg(buf);
+	}
+#endif
+	return rc;
 }
 
 __inline static int DBGetContactSettingTString_Helper(HANDLE hContact,const char *szModule,

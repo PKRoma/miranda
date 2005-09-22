@@ -166,6 +166,13 @@ sense to store all this information in memory, etc.
 //on every call to this service. Callers should make sure that they copy the
 //information before they call this service again.
 #define GCDNF_NOMYHANDLE     1      //will never return the user's custom name
+#define GCDNF_UNICODE        2      //will return TCHAR* instead of char*
+#if defined( _UNICODE )
+	#define GCDNF_TCHAR       GCDNF_UNICODE      //will return TCHAR* instead of char*
+#else
+	#define GCDNF_TCHAR       0      //will return char*, as usual
+#endif
+
            //even if it's the one that should be displayed.  v0.1.2.0+
 		   //v0.3.0.0+ if using GCDNF_NOMYHANDLE you must free your string
 #define MS_CLIST_GETCONTACTDISPLAYNAME  "CList/GetContactDisplayName"

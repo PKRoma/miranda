@@ -108,11 +108,82 @@ void InvalidateDisplayNameCacheEntry(HANDLE hContact)
 	}
 }
 
+TCHAR* GetContactDisplayNameW( HANDLE hContact, int mode )
+{
+	CONTACTINFO ci;
+	int cacheEntry = -1;
+	TCHAR *buffer;
+
+	if ( mode != GCDNF_NOMYHANDLE) {
+		cacheEntry = GetDisplayNameCacheEntry( hContact );
+		#if defined( _UNICODE )
+			if (displayNameCache[cacheEntry].wszName)
+				return displayNameCache[cacheEntry].wszName;
+		#else
+			if (displayNameCache[cacheEntry].name)
+				return displayNameCache[cacheEntry].name;
+		#endif
+	}
+	ZeroMemory(&ci, sizeof(ci));
+	ci.cbSize = sizeof(ci);
+	ci.hContact = hContact;
+	if (ci.hContact == NULL)
+		ci.szProto = "ICQ";
+	ci.dwFlag = (mode == GCDNF_NOMYHANDLE) ? CNF_DISPLAYNC : CNF_DISPLAY;
+	#if defined( _UNICODE )
+		ci.dwFlag += CNF_UNICODE;
+	#endif
+	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+		if (ci.type == CNFT_ASCIIZ) {
+			if (cacheEntry == -1) {
+				size_t len = _tcslen(ci.pszVal);
+				buffer = (TCHAR*) mir_alloc( sizeof( TCHAR )*( len+1 ));
+				memcpy( buffer, ci.pszVal, len * sizeof( TCHAR ));
+				buffer[ len ] = 0;
+				mir_free(ci.pszVal);
+				return buffer;
+			}
+			else {
+				#if defined( _UNICODE )
+					displayNameCache[cacheEntry].wszName = ci.pszVal;
+					displayNameCache[cacheEntry].name = u2a( ci.pszVal );
+				#else
+					displayNameCache[cacheEntry].name = ci.pszVal;
+				#endif
+				return ci.pszVal;
+		}	}
+
+		if (ci.type == CNFT_DWORD) {
+			if (cacheEntry == -1) {
+				buffer = (TCHAR*) mir_alloc(15 * sizeof( TCHAR ));
+				_ltot(ci.dVal, buffer, 10 );
+				return buffer;
+			}
+			else {
+				buffer = (TCHAR*) mir_alloc(15 * sizeof( TCHAR ));
+				_ltot(ci.dVal, buffer, 10 );
+				#if defined( _UNICODE )
+					displayNameCache[cacheEntry].wszName = buffer;
+					displayNameCache[cacheEntry].name = u2a( buffer );
+				#else
+					displayNameCache[cacheEntry].name = buffer;
+				#endif
+				return buffer;
+	}	}	}
+
+	CallContactService(hContact, PSS_GETINFO, SGIF_MINIMAL, 0);
+	buffer = TranslateT("(Unknown Contact)");
+	return buffer;
+}
+
 int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 {
 	CONTACTINFO ci;
 	int cacheEntry = -1;
 	char *buffer;
+
+	if ( lParam & GCDNF_UNICODE )
+		return ( int )GetContactDisplayNameW(( HANDLE )wParam, lParam & ~GCDNF_UNICODE );
 
 	if ((int) lParam != GCDNF_NOMYHANDLE) {
 		cacheEntry = GetDisplayNameCacheEntry((HANDLE) wParam);
@@ -171,75 +242,6 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 	//buffer = (char*)mir_alloc(strlen(Translate("'(Unknown Contact)'"))+1);
 	//mir_snprintf(buffer,strlen(Translate("'(Unknown Contact)'"))+1,"%s",Translate("'(Unknown Contact)'"));
 	return (int) buffer;
-}
-
-TCHAR* GetContactDisplayNameW( HANDLE hContact, int mode )
-{
-	CONTACTINFO ci;
-	int cacheEntry = -1;
-	TCHAR *buffer;
-
-	if ( mode != GCDNF_NOMYHANDLE) {
-		cacheEntry = GetDisplayNameCacheEntry( hContact );
-		#if defined( _UNICODE )
-			if (displayNameCache[cacheEntry].wszName)
-				return displayNameCache[cacheEntry].wszName;
-		#else
-			if (displayNameCache[cacheEntry].name)
-				return displayNameCache[cacheEntry].name;
-		#endif
-	}
-	ZeroMemory(&ci, sizeof(ci));
-	ci.cbSize = sizeof(ci);
-	ci.hContact = hContact;
-	if (ci.hContact == NULL)
-		ci.szProto = "ICQ";
-	ci.dwFlag = (mode == GCDNF_NOMYHANDLE) ? CNF_DISPLAYNC : CNF_DISPLAY;
-	#if defined( _UNICODE )
-		ci.dwFlag += CNF_UNICODE;
-	#endif
-	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-		if (ci.type == CNFT_ASCIIZ) {
-			if (cacheEntry == -1) {
-				size_t len = _tcslen(ci.pszVal);
-				buffer = (TCHAR*) mir_alloc( sizeof( TCHAR )*( len+1 ));
-				memcpy( buffer, ci.pszVal, len * sizeof( TCHAR ));
-				buffer[ len ] = 0;
-				mir_free(ci.pszVal);
-				return buffer;
-			}
-			else {
-				#if defined( _UNICODE )
-					displayNameCache[cacheEntry].wszName = ci.pszVal;
-					displayNameCache[cacheEntry].name = u2a( ci.pszVal );
-				#else
-					displayNameCache[cacheEntry].name = ci.pszVal;
-				#endif
-				return ci.pszVal;
-			}
-		}
-		if (ci.type == CNFT_DWORD) {
-			if (cacheEntry == -1) {
-				buffer = (TCHAR*) mir_alloc(15 * sizeof( TCHAR ));
-				_ltot(ci.dVal, buffer, 10 );
-				return buffer;
-			}
-			else {
-				buffer = (TCHAR*) mir_alloc(15 * sizeof( TCHAR ));
-				_ltot(ci.dVal, buffer, 10 );
-				#if defined( _UNICODE )
-					displayNameCache[cacheEntry].wszName = buffer;
-					displayNameCache[cacheEntry].name = u2a( buffer );
-				#else
-					displayNameCache[cacheEntry].name = buffer;
-				#endif
-				return buffer;
-			}
-		}
-	}
-	CallContactService(hContact, PSS_GETINFO, SGIF_MINIMAL, 0);
-	buffer = TranslateT("(Unknown Contact)");
-	return buffer;
 }
 
 int InvalidateDisplayName(WPARAM wParam, LPARAM lParam)

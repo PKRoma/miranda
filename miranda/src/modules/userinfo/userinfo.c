@@ -65,7 +65,7 @@ static int PageSortProc(OPTIONSDIALOGPAGE *item1,OPTIONSDIALOGPAGE *item2)
 static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM lParam)
 {
 	HWND hwnd;
-	PROPSHEETHEADERA psh;
+	PROPSHEETHEADER psh;
 	struct DetailsPageInit opi;
 	int i;
 
@@ -87,9 +87,9 @@ static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM lParam)
 	psh.hwndParent = NULL;
 	psh.nPages = opi.pageCount;
 	psh.pStartPage = 0;
-	psh.pszCaption = (char*)wParam;	  //more abuses of structure: this is hContact
-	psh.ppsp = (PROPSHEETPAGEA*)opi.odp;		  //blatent misuse of the structure, but what the hell
-	CreateDialogParamA(GetModuleHandle(NULL),MAKEINTRESOURCEA(IDD_DETAILS),NULL,DlgProcDetails,(LPARAM)&psh);
+	psh.pszCaption = (TCHAR*)wParam;	  //more abuses of structure: this is hContact
+	psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
+	CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_DETAILS),NULL,DlgProcDetails,(LPARAM)&psh);
 	for(i=0;i<opi.pageCount;i++) {
 		free((char*)opi.odp[i].pszTitle);
 		if(opi.odp[i].pszGroup!=NULL) free(opi.odp[i].pszGroup);
@@ -146,9 +146,7 @@ static void ThemeDialogBackground(HWND hwnd) {
 #define M_CHECKONLINE (WM_USER+11)
 static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct DetailsData *dat;
-
-	dat=(struct DetailsData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+	struct DetailsData *dat =(struct DetailsData*)GetWindowLong(hwndDlg,GWL_USERDATA);
 	switch (msg)
 	{
 		case WM_INITDIALOG:
@@ -162,17 +160,16 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			dat->infosUpdated=NULL;
 			WindowList_Add(hWindowList,hwndDlg,dat->hContact);
 			{
-				char *name,oldTitle[256],newTitle[256];
+				TCHAR *name, oldTitle[256], newTitle[256];
 				if (dat->hContact == NULL)
-					name = Translate("Owner");
+					name = TranslateT("Owner");
 				else
-					name = (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
+					name = ( TCHAR* )CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, GCDNF_TCHAR);
 
-				GetWindowTextA(hwndDlg,oldTitle,sizeof(oldTitle));
-				mir_snprintf(newTitle,sizeof(newTitle),oldTitle,name);
-				SetWindowTextA(hwndDlg,newTitle);
-				SetDlgItemTextA(hwndDlg,IDC_NAME,name);
-
+				GetWindowText( hwndDlg, oldTitle, sizeof( oldTitle ));
+				mir_sntprintf( newTitle, sizeof( newTitle ), oldTitle, name );
+				SetWindowText( hwndDlg, newTitle );
+				SetDlgItemText( hwndDlg, IDC_NAME, name );
 			}
 			{	LOGFONT lf;
 				HFONT hNormalFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_NAME,WM_GETFONT,0,0);
