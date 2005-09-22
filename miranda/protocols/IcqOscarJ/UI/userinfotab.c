@@ -274,7 +274,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
               if (!ICQGetContactSetting(NULL, "AvatarFile", &dbvFile))
               {
                 strcpy(szAvatar, dbvFile.pszVal);
-                DBFreeVariant(&dbvFile);
+                ICQFreeVariant(&dbvFile);
               }
               else
                 szAvatar[0] = '\0';
@@ -286,7 +286,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
               { // if the file exists, we know we have the current avatar
                 if (!access(szAvatar, 0)) bValid = 1;
               }
-              DBFreeVariant(&dbvSaved);
+              ICQFreeVariant(&dbvSaved);
             }
             else // we do not have saved picture hash, do not rely on it
               if (!access(szAvatar, 0)) bValid = 1;
@@ -309,7 +309,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         }
       }
 
-      DBFreeVariant(&dbvHash);
+      ICQFreeVariant(&dbvHash);
     }
     return TRUE;
   
@@ -346,7 +346,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
               GetAvatarFileName(dwUIN, szUID, szAvatar, 255);
               GetAvatarData(pData->hContact, dwUIN, szUID, dbvHash.pbVal, 0x14, szAvatar);
             }
-            DBFreeVariant(&dbvHash);
+            ICQFreeVariant(&dbvHash);
           }
         }
       }  
@@ -446,7 +446,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
   DBVARIANT dbv = {0};
   char str[80];
   char* pstr;
-  char szStatus[256];
+  char szStatus[MAX_PATH];
   int unspecified = 0;
 
   dbv.type = DBVT_DELETED;
@@ -542,21 +542,20 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       }
       else if (special == SVS_STATUSID)
       {
-        DBVARIANT dbv1 = {0};
+        char szXStatus[MAX_PATH] = {0};
         BYTE bXStatus = ICQGetContactSettingByte(hContact, "XStatusId", 0);
 
         ZeroMemory(szStatus, sizeof(szStatus));
         null_snprintf(szStatus, sizeof(szStatus), MirandaStatusToString(dbv.wVal));
         if (bXStatus)
         {
-          if (ICQGetContactSetting(hContact, "XStatusName", &dbv1) || !strlennull(dbv1.pszVal))
+          if (ICQGetContactStaticString(hContact, "XStatusName", szXStatus, MAX_PATH) || !strlennull(szXStatus))
           {
             null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szStatus, Translate(nameXStatus[bXStatus-1]));
           }
           else
           {
-            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szStatus, dbv1.pszVal);
-            DBFreeVariant(&dbv1);
+            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szStatus, szXStatus);
           }
         }
         pstr = szStatus;
@@ -612,5 +611,5 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
   else
     SetDlgItemText(hwndDlg, idCtrl, pstr);
   
-  if (dbv.pszVal!=szSetting) DBFreeVariant(&dbv);
+  if (dbv.pszVal!=szSetting) ICQFreeVariant(&dbv);
 }
