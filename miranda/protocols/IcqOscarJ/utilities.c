@@ -774,7 +774,7 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
     if (!bIsSyncingCL)
     {
       DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
-      DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+      SetContactHidden(hContact, 1);
 
       ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
@@ -834,7 +834,7 @@ HANDLE HContactFromUID(char* pszUID, int *Added)
     if (!bIsSyncingCL)
     {
       DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
-      DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+      SetContactHidden(hContact, 1);
 
       ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
@@ -861,6 +861,16 @@ char *NickFromHandle(HANDLE hContact)
     return _strdup("<invalid>");
 
   return _strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+}
+
+
+
+void SetContactHidden(HANDLE hContact, BYTE bHidden)
+{
+  DBWriteContactSettingByte(hContact, "CList", "Hidden", bHidden);
+
+  if (!bHidden) // clear zero setting
+    DBDeleteContactSetting(hContact, "CList", "Hidden");
 }
 
 
@@ -1035,7 +1045,7 @@ void ResetSettingsOnConnect()
     ICQDeleteContactSetting(hContact, "TemporaryVisible");
 
     // All these values will be restored during the login
-    if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+    if (ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE)
       ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
     hContact = ICQFindNextContact(hContact);
@@ -1058,7 +1068,7 @@ void ResetSettingsOnLoad()
     ICQWriteContactSettingDword(hContact, "LogonTS", 0);
     ICQWriteContactSettingDword(hContact, "IdleTS", 0);
     ICQWriteContactSettingDword(hContact, "TickTS", 0);
-    if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+    if (ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE)
     {
       ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
@@ -1322,7 +1332,7 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
     // Don't send statusmessage to invisible contacts
     if (ICQGetContactSettingByte(NULL, "StatusMsgReplyVisible", 0))
     {
-      WORD wStatus = ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+      WORD wStatus = ICQGetContactStatus(hContact);
       if (wStatus == ID_STATUS_OFFLINE)
         return FALSE;
     }
@@ -1403,7 +1413,7 @@ void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
             DBWriteContactSettingString(hContact, "ContactPhoto", "File", szFile);
             DBWriteContactSettingByte(hContact, "ContactPhoto", "ICQLink", 1);
           }
-          DBFreeVariant(&dbv);
+          ICQFreeVariant(&dbv);
         }
         else
         { // some file already defined, check if it is not the same, if yes, set link
@@ -1411,7 +1421,7 @@ void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
           {
             DBWriteContactSettingByte(hContact, "ContactPhoto", "ICQLink", 1);
           }
-          DBFreeVariant(&dbv);
+          ICQFreeVariant(&dbv);
         }
       }
     }
@@ -1440,6 +1450,7 @@ int NetLog_Server(const char *fmt,...)
   va_list va;
   char szText[1024];
   char*pszText = NULL;
+  int iRes;
 
   va_start(va,fmt);
   mir_vsnprintf(szText,sizeof(szText),fmt,va);
@@ -1447,9 +1458,11 @@ int NetLog_Server(const char *fmt,...)
 
   if (IsUSASCII(szText, strlennull(szText)) || !UTF8_IsValid(szText) || !utf8_decode(szText, &pszText)) pszText = (char*)&szText;
 
-  return CallService(MS_NETLIB_LOG,(WPARAM)ghServerNetlibUser,(LPARAM)szText);
+  iRes = CallService(MS_NETLIB_LOG,(WPARAM)ghServerNetlibUser,(LPARAM)pszText);
 
   if (pszText != (char*)&szText) SAFE_FREE(&pszText);
+
+  return iRes;
 }
 
 

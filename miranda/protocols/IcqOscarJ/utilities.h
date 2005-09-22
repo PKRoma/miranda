@@ -87,6 +87,7 @@ void DeleteFromCache(HANDLE hContact);
 HANDLE HContactFromUIN(DWORD dwUin, int *Added);
 HANDLE HContactFromUID(char* pszUID, int *Added);
 char *NickFromHandle(HANDLE hContact);
+void SetContactHidden(HANDLE hContact, BYTE bHidden);
 
 size_t __fastcall strlennull(const char *string);
 int __fastcall strcmpnull(const char *str1, const char *str2);
