@@ -46,6 +46,8 @@ int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid);
 int ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv);
 char* ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef);
 
+WORD ICQGetContactStatus(HANDLE hContact);
+
 int ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest, int dest_len);
 
 int ICQDeleteContactSetting(HANDLE hContact, const char* szSetting);
@@ -60,6 +62,8 @@ int ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char 
 
 char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szDef);
 int UniWriteContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szValue);
+
+int ICQFreeVariant(DBVARIANT* dbv);
 
 HANDLE ICQFindFirstContact();
 HANDLE ICQFindNextContact(HANDLE hContact);

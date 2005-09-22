@@ -104,6 +104,7 @@ int ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
 }
 
 
+
 char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szDef)
 {
   DBVARIANT dbv = {DBVT_DELETED};
@@ -137,10 +138,19 @@ char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* 
 }
 
 
+
 char* ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef)
 {
   return UniGetContactSettingUtf(hContact, gpszICQProtoName, szSetting, szDef);
 }
+
+
+
+WORD ICQGetContactStatus(HANDLE hContact)
+{
+  return ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+}
+
 
 
 // (c) by George Hazan
@@ -158,7 +168,14 @@ int ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest
   sVal.szSetting = valueName;
 
   if (CallService(MS_DB_CONTACT_GETSETTINGSTATIC, (WPARAM)hContact, (LPARAM)&sVal) != 0)
-    return 1;
+  {
+    dbv.pszVal = dest;
+    dbv.cchVal = dest_len;
+    dbv.type = DBVT_UTF8;
+
+    if (CallService(MS_DB_CONTACT_GETSETTINGSTATIC, (WPARAM)hContact, (LPARAM)&sVal) != 0)
+      return 1; // this is here due to DB module bug...
+  }
 
   return (dbv.type != DBVT_ASCIIZ);
 }
@@ -264,6 +281,13 @@ int ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char 
   cws.value.pbVal=(char*)val;
   cws.value.cpbVal = cbVal;
   return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
+}
+
+
+
+int ICQFreeVariant(DBVARIANT* dbv)
+{
+  return DBFreeVariant(dbv);
 }
 
 
