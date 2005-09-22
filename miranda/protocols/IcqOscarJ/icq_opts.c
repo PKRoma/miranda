@@ -114,8 +114,8 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
   {
   case WM_INITDIALOG:
     {
-      DBVARIANT dbv;
       char pszPwd[16];
+      char szServer[MAX_PATH];
 
       ICQTranslateDialog(hwndDlg);
 
@@ -129,10 +129,9 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
         SetDlgItemText(hwndDlg, IDC_PASSWORD, pszPwd);
       }
       
-      if (!ICQGetContactSetting(NULL, "OscarServer", &dbv))
+      if (!ICQGetContactStaticString(NULL, "OscarServer", szServer, MAX_PATH))
       {
-        SetDlgItemText(hwndDlg, IDC_ICQSERVER, dbv.pszVal);
-        DBFreeVariant(&dbv);
+        SetDlgItemText(hwndDlg, IDC_ICQSERVER, szServer);
       }
       else
       {
