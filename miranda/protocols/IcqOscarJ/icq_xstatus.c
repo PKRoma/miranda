@@ -304,13 +304,13 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         if (!ICQGetContactSetting(NULL, szSetting, &dbv))
         {
           SetDlgItemText(hwndDlg,IDC_XTITLE,dbv.pszVal);
-          DBFreeVariant(&dbv);
+          ICQFreeVariant(&dbv);
         }
         sprintf(szSetting, "XStatus%dMsg", dat->bXStatus);
         if (!ICQGetContactSetting(NULL, szSetting, &dbv))
         {
           SetDlgItemText(hwndDlg,IDC_XMSG,dbv.pszVal);
-          DBFreeVariant(&dbv);
+          ICQFreeVariant(&dbv);
         }
       }
       dat->countdown=5;
@@ -398,7 +398,7 @@ static void setXStatus(BYTE bXStatus)
     if (!ICQGetContactSetting(NULL, szSetting, &dbv))
     {
       ICQWriteContactSettingString(NULL, "XStatusName", dbv.pszVal);
-      DBFreeVariant(&dbv);
+      ICQFreeVariant(&dbv);
     }
     else 
       ICQWriteContactSettingString(NULL, "XStatusName", Translate(nameXStatus[bXStatus-1]));
@@ -406,7 +406,7 @@ static void setXStatus(BYTE bXStatus)
     if (!ICQGetContactSetting(NULL, szSetting, &dbv))
     {
       ICQWriteContactSettingString(NULL, "XStatusMsg", dbv.pszVal);
-      DBFreeVariant(&dbv);
+      ICQFreeVariant(&dbv);
     }
     else 
       ICQDeleteContactSetting(NULL, "XStatusMsg");

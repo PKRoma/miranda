@@ -187,7 +187,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
       if (!ICQGetContactSettingUID(hContact, &dwUIN, &szUID))
       {
-        if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+        if (ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE)
         {
           ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
@@ -365,6 +365,7 @@ void sendServPacket(icq_packet* pPacket)
 void icq_login(const char* szPassword)
 {
   DBVARIANT dbvServer = {DBVT_DELETED};
+  char szServer[MAX_PATH];
   serverthread_start_info* stsi;
   DWORD dwUin;
 
@@ -376,10 +377,10 @@ void icq_login(const char* szPassword)
 
 
   // Server host name
-  if (ICQGetContactSetting(NULL, "OscarServer", &dbvServer))
+  if (ICQGetContactStaticString(NULL, "OscarServer", szServer, MAX_PATH))
     stsi->nloc.szHost = _strdup(DEFAULT_SERVER_HOST);
   else
-    stsi->nloc.szHost = _strdup(dbvServer.pszVal);
+    stsi->nloc.szHost = _strdup(szServer);
 
   // Server port
   stsi->nloc.wPort = (WORD)ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
@@ -400,8 +401,6 @@ void icq_login(const char* szPassword)
   isLoginServer = 1;
 
   serverThreadId.hThread = (HANDLE)forkthreadex(NULL, 0, icq_serverThread, stsi, 0, &serverThreadId.dwThreadId);
-
-  DBFreeVariant(&dbvServer);
 }
 
 

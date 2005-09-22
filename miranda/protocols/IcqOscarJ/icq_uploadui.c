@@ -613,7 +613,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 {
                   if (dbv.pszVal && strlennull(dbv.pszVal) > 0)
                     pszGroup = _strdup(dbv.pszVal);
-                  DBFreeVariant(&dbv);
+                  ICQFreeVariant(&dbv);
                 }
                 if (!pszGroup) pszGroup = _strdup(DEFAULT_SS_GROUP);
 
@@ -702,7 +702,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               {
                 if (dbv.pszVal && strlennull(dbv.pszVal) > 0)
                   pszGroup = _strdup(dbv.pszVal);
-                DBFreeVariant(&dbv);
+                ICQFreeVariant(&dbv);
               }
               if (!pszGroup) pszGroup = _strdup(DEFAULT_SS_GROUP);
               wNewGroupId = getServerGroupID(pszGroup);
