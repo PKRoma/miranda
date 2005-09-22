@@ -196,9 +196,9 @@ int UploadSettings(HWND hwndParent)
         hUpload[1] = (HANDLE)IcqChangeInfo(ICQCHANGEINFO_PASSWORD, (LPARAM)buf);
 
         {
-          DBVARIANT dbv;
+          char szPwd[16] = {0};
 
-          if (!ICQGetContactSetting(NULL, "Password", &dbv) && strlennull(dbv.pszVal))
+          if (!ICQGetContactStaticString(NULL, "Password", szPwd, 16) && strlennull(szPwd))
           { // password is stored in DB, update
             char ptmp[16];
 
@@ -208,7 +208,6 @@ int UploadSettings(HWND hwndParent)
 
             ICQWriteContactSettingString(NULL, "Password", ptmp);
           }
-          DBFreeVariant(&dbv);
         }
       }
     }

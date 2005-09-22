@@ -84,7 +84,7 @@ void LoadSettingsFromDb(int keepChanged)
           break;
 #endif
       }
-      DBFreeVariant(&dbv);
+      ICQFreeVariant(&dbv);
     }
   }
 }
