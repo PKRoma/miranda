@@ -300,7 +300,7 @@ void ppackLELNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting)
   else
   {
     ppackLELNTS(buf, buflen, dbv.pszVal);
-    DBFreeVariant(&dbv);
+    ICQFreeVariant(&dbv);
   }
 }
 

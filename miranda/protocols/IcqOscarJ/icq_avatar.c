@@ -344,7 +344,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
             else // the file is lost, request avatar again
               dwJob = 1;
           }
-          DBFreeVariant(&dbvHashFile);
+          ICQFreeVariant(&dbvHashFile);
         }
         else
           dwJob = 1;
@@ -380,7 +380,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
             }
           }
         }
-        DBFreeVariant(&dbv);
+        ICQFreeVariant(&dbv);
       }
 
       if (dwJob)
@@ -430,7 +430,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
                 LinkContactPhotoToFile(hContact, NULL);
             }
           }
-          DBFreeVariant(&dbvHashFile);
+          ICQFreeVariant(&dbvHashFile);
         }
         dwJob = 1;
       }
@@ -440,7 +440,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
         { // the hash is different, store new avatar hash
           dwJob = 1;
         }
-        DBFreeVariant(&dbv);
+        ICQFreeVariant(&dbv);
       }
 
       if (dwJob)
@@ -1114,7 +1114,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
               if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", dbv.pbVal, dbv.cpbVal))
                 NetLog_Server("Failed to set file hash.");
 
-              DBFreeVariant(&dbv);
+              ICQFreeVariant(&dbv);
             }
             else
             {

@@ -76,6 +76,7 @@ static void file_sendNick(directconnect* dc)
 {
   icq_packet packet;
   char* szNick;
+  WORD wNickLen;
   DBVARIANT dbv;
 
 
@@ -85,13 +86,15 @@ static void file_sendNick(directconnect* dc)
   else
     szNick = dbv.pszVal;
 
-  directPacketInit(&packet, (WORD)(8 + strlennull(szNick)));
+  wNickLen = strlennull(szNick);
+
+  directPacketInit(&packet, (WORD)(8 + wNickLen));
   packByte(&packet, PEER_FILE_INIT_ACK);        /* Ident */
   packLEDWord(&packet, dc->ft->dwTransferSpeed);
-  packLEWord(&packet, (WORD)(strlennull(szNick) + 1));
-  packBuffer(&packet, szNick, (WORD)(strlennull(szNick) + 1));
+  packLEWord(&packet, (WORD)(wNickLen + 1));
+  packBuffer(&packet, szNick, (WORD)(wNickLen + 1));
   sendDirectPacket(dc->hConnection, &packet);
-  DBFreeVariant(&dbv);
+  ICQFreeVariant(&dbv);
 }
 
 

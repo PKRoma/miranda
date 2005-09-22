@@ -289,7 +289,7 @@ BOOL IsDirectConnectionOpen(HANDLE hContact, int type)
     directthreadstartinfo* dtsi;
 
     // do not try to open DC to offline contact
-    if (ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE) return FALSE;
+    if (ICQGetContactStatus(hContact) == ID_STATUS_OFFLINE) return FALSE;
 
     dtsi = (directthreadstartinfo*)malloc(sizeof(directthreadstartinfo));
     dtsi->type = DIRECTCONN_STANDARD;
@@ -801,7 +801,7 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
             packLEWord(&packet, (WORD)(strlennull(szNick) + 1));
             packBuffer(&packet, szNick, (WORD)(strlennull(szNick) + 1));
             sendDirectPacket(dc->hConnection, &packet);
-            DBFreeVariant(&dbv);
+            ICQFreeVariant(&dbv);
             dc->initialised = 1;
           }
         }
