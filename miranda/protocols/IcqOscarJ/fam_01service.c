@@ -335,7 +335,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         write_flap(&packet, 2);
         packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, 0x00010002);
         packDWord(&packet, 0x0001000a);    /* TLV */
-        packLEWord(&packet, 8);          /* bytes remaining */
+        packLEWord(&packet, 8);            /* bytes remaining */
         packLEDWord(&packet, dwLocalUIN);
         packDWord(&packet, 0x3c000200);    /* get offline msgs */
 
@@ -539,7 +539,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             SAFE_FREE(&hash);
           }
 
-          DBFreeVariant(&dbv);
+          ICQFreeVariant(&dbv);
           break;
         default:
           NetLog_Server("Reiceived UNKNOWN Avatar Status.");
@@ -738,6 +738,7 @@ void sendEntireListServ(WORD wFamily, WORD wSubtype, WORD wFlags, int listType)
 }
 
 
+
 static void packNewCap(icq_packet* packet, WORD wNewCap)
 { // pack standard capability
   DWORD dwQ1 = 0x09460000 | wNewCap;
@@ -747,6 +748,7 @@ static void packNewCap(icq_packet* packet, WORD wNewCap)
   packDWord(packet, 0x82224445);
   packDWord(packet, 0x53540000);
 }
+
 
 
 void setUserInfo()
@@ -803,7 +805,7 @@ void setUserInfo()
 #endif
 #ifdef DBG_CAPRTF
   {
-    packDWord(&packet, 0x97B12751);  // AIM_CAPS_ICQRTF
+    packDWord(&packet, 0x97B12751); // AIM_CAPS_ICQRTF
     packDWord(&packet, 0x243C4334); // Broadcasts the capability to receive
     packDWord(&packet, 0xAD22D6AB); // RTF messages
     packDWord(&packet, 0xF73F1492);
@@ -820,7 +822,7 @@ void setUserInfo()
 #endif
 #ifdef DBG_CAPXTRAZ
   {
-    packDWord(&packet, 0x1a093c6c);  // CAP_XTRAZ
+    packDWord(&packet, 0x1a093c6c); // CAP_XTRAZ
     packDWord(&packet, 0xd7fd4ec5); // Broadcasts the capability to handle
     packDWord(&packet, 0x9d51a647); // Xtraz
     packDWord(&packet, 0x4e34f5a0);
@@ -862,9 +864,9 @@ void handleServUINSettings(int nPort, int nIP)
   packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS, 0, ICQ_MSG_CLI_SETPARAMS<<0x10);
   packWord(&packet, 0x0001);              // Channel
 #ifdef DBG_CAPMTN
-    packDWord(&packet, 0x0000000B);     // Flags
+  packDWord(&packet, 0x0000000B);         // Flags
 #else
-    packDWord(&packet, 0x00000003);     // Flags
+  packDWord(&packet, 0x00000003);         // Flags
 #endif
   packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
   packWord(&packet, 0x03E7);              // Max sender warning level
@@ -955,7 +957,7 @@ void handleServUINSettings(int nPort, int nIP)
     packet.wLen = 71;
     write_flap(&packet, 2);
     packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS, 0, ICQ_CLIENT_SET_STATUS<<0x10);
-    packDWord(&packet, 0x00060004);              // TLV 6: Status mode and security flags
+    packDWord(&packet, 0x00060004);             // TLV 6: Status mode and security flags
     packWord(&packet, wFlags);                  // Status flags
     packWord(&packet, wStatus);                 // Status
     packTLVWord(&packet, 0x0008, 0x0000);       // TLV 8: Error code

@@ -271,7 +271,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
     {
       WORD wOldStatus;
 
-      wOldStatus = ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+      wOldStatus = ICQGetContactStatus(hContact);
 
       // Get Avatar Hash TLV
       pTLV = getTLV(pChain, 0x1D, 1);
@@ -391,16 +391,16 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
     ICQWriteContactSettingDword(hContact,  "LogonTS",      dwOnlineSince);
     if (dwUIN)
     { // on AIM these are not used
-      ICQWriteContactSettingDword(hContact,  "IP",           dwIP);
-      ICQWriteContactSettingDword(hContact,  "RealIP",       dwRealIP);
-      ICQWriteContactSettingDword(hContact,  "DirectCookie", dwDirectConnCookie);
-      ICQWriteContactSettingByte(hContact,   "DCType",       (BYTE)nTCPFlag);
-      ICQWriteContactSettingWord(hContact,   "UserPort",     (WORD)(dwPort & 0xffff));
-      ICQWriteContactSettingWord(hContact,   "Version",      wVersion);
+      ICQWriteContactSettingDword(hContact, "IP",           dwIP);
+      ICQWriteContactSettingDword(hContact, "RealIP",       dwRealIP);
+      ICQWriteContactSettingDword(hContact, "DirectCookie", dwDirectConnCookie);
+      ICQWriteContactSettingByte(hContact,  "DCType",       (BYTE)nTCPFlag);
+      ICQWriteContactSettingWord(hContact,  "UserPort",     (WORD)(dwPort & 0xffff));
+      ICQWriteContactSettingWord(hContact,  "Version",      wVersion);
     }
     if (szClient != (char*)-1) ICQWriteContactSettingString(hContact, "MirVer", szClient);
-    ICQWriteContactSettingWord(hContact,   "Status",       (WORD)IcqStatusToMiranda(wStatus));
-    ICQWriteContactSettingDword(hContact,  "IdleTS",       tIdleTS);
+    ICQWriteContactSettingWord(hContact, "Status", (WORD)IcqStatusToMiranda(wStatus));
+    ICQWriteContactSettingDword(hContact, "IdleTS", tIdleTS);
 
     // Update info?
     if (dwUIN && ((time(NULL) - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD))

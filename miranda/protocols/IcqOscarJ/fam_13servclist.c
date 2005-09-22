@@ -861,7 +861,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
             // we should add new contacts and this contact was just added, show it
             if (IsContactJustAdded(hContact))
             {
-              DBWriteContactSettingByte(hContact, "CList", "Hidden", 0);
+              SetContactHidden(hContact, 0);
               bAdded = 1; // we want details for new contacts
             }
             else
@@ -889,7 +889,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
               { // get group from CList
                 if (dbv.pszVal && strlennull(dbv.pszVal) > 0)
                   szOldGroup = _strdup(dbv.pszVal);
-                DBFreeVariant(&dbv);
+                ICQFreeVariant(&dbv);
               }
               if (!szOldGroup) szOldGroup = _strdup(DEFAULT_SS_GROUP);
             }
@@ -1106,7 +1106,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
           {
             NetLog_Server("SSI added new %s contact '%s'", "Permit", szRecordName);
             // It wasn't previously in the list, we hide it so it only appears in the visible list
-            DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+            SetContactHidden(hContact, 1);
             // Add it to the list, so it can be added properly if proper contact
             AddJustAddedContact(hContact);
           }
@@ -1154,7 +1154,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
             /* not already on list: added */
             NetLog_Server("SSI added new %s contact '%s'", "Deny", szRecordName);
             // It wasn't previously in the list, we hide it so it only appears in the visible list
-            DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+            SetContactHidden(hContact, 1);
             // Add it to the list, so it can be added properly if proper contact
             AddJustAddedContact(hContact);
           }
@@ -1218,7 +1218,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
             /* not already on list: add */
             NetLog_Server("SSI added new %s contact '%s'", "Ignore", szRecordName);
             // It wasn't previously in the list, we hide it
-            DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+            SetContactHidden(hContact, 1);
             // Add it to the list, so it can be added properly if proper contact
             AddJustAddedContact(hContact);
           }
@@ -1445,7 +1445,7 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
   CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
 
   SAFE_FREE(&szReason);
-  DBFreeVariant(&dbv);
+  ICQFreeVariant(&dbv);
   return;
 }
 

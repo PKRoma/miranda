@@ -79,12 +79,12 @@ void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
     handleServerAck(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
-  case ICQ_MSG_MTN:                // SNAC (4,0x14) Typing notifications
+  case ICQ_MSG_MTN:                // SNAC(4, 0x14) Typing notifications
     handleTypingNotification(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
     // Stuff we don't care about
-  case ICQ_MSG_SRV_REPLYICBM:      // SNAC(4,x05) - SRV_REPLYICBM
+  case ICQ_MSG_SRV_REPLYICBM:      // SNAC(4, 0x05) SRV_REPLYICBM
     break;
 
   default:
@@ -189,6 +189,25 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
     break;
 
   }
+}
+
+
+
+static char* convertMsgToUserSpecificUtf(HANDLE hContact, const char* szMsg)
+{
+  WORD wCP = ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage);
+  wchar_t* usMsg = NULL;
+
+  if (wCP != CP_ACP)
+  {
+    int nMsgLen = strlennull(szMsg);
+
+    usMsg = malloc((nMsgLen + 2)*(sizeof(wchar_t) + 1));
+    memcpy((char*)usMsg, szMsg, nMsgLen + 1);
+    MultiByteToWideChar(wCP, 0, szMsg, nMsgLen, (wchar_t*)((char*)usMsg + nMsgLen + 1), nMsgLen);
+    *(wchar_t*)((char*)usMsg + 1 + nMsgLen*(1 + sizeof(wchar_t))) = '\0'; // trailing zeros
+  }
+  return (char*)usMsg;
 }
 
 
@@ -382,16 +401,10 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
 
           if (!pre.flags && !IsUSASCII(szMsg, strlennull(szMsg)))
           { // message is Ansi and contains national characters, create Unicode part by codepage
-            WORD wCP = ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage);
+            char* usMsg = convertMsgToUserSpecificUtf(hContact, szMsg);
 
-            if (wCP != CP_ACP)
+            if (usMsg)
             {
-              wchar_t* usMsg;
-
-              usMsg = malloc((strlennull(szMsg)+2)*(sizeof(wchar_t)+1));
-              memcpy((char*)usMsg, szMsg, strlennull(szMsg)+1);
-              MultiByteToWideChar(wCP, 0, szMsg, strlennull(szMsg), (wchar_t*)((char*)usMsg + strlennull(szMsg) + 1), strlennull(szMsg));
-              *(wchar_t*)((char*)usMsg + 1 + strlennull(szMsg)*(1 + sizeof(wchar_t))) = '\0'; // trailing zeros
               SAFE_FREE(&szMsg);
               szMsg = (char*)usMsg;
               pre.flags = PREF_UNICODE;
@@ -496,7 +509,6 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
       // We need at least 4 bytes to read a chain
       if (wTLVLen > 4)
       {
-        int bAdded;
         HANDLE hContact = HContactFromUIN(dwUin, NULL);
 
         // This TLV chain may contain the following TLVs:
@@ -561,7 +573,6 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
             WORD wVersion;
             BYTE bMode;
             HANDLE hContact;
-            int bAdded;
 
             unpackLEDWord(&buf, &dwUin);
 
@@ -1063,6 +1074,7 @@ int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4,
 }
 
 
+
 int getPluginTypeIdLen(int nTypeID)
 {
   switch (nTypeID)
@@ -1077,6 +1089,7 @@ int getPluginTypeIdLen(int nTypeID)
     return 0;
   }
 }
+
 
 
 void packPluginTypeId(icq_packet *packet, int nTypeID)
@@ -1119,6 +1132,7 @@ void packPluginTypeId(icq_packet *packet, int nTypeID)
     return;
   }
 }
+
 
 
 static void handleSmsReceipt(unsigned char *buf, DWORD dwDataLen)
@@ -1272,7 +1286,8 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
   }
 
   szMsg = (char *)malloc(wMsgLen + 1);
-  if (wMsgLen > 0) {
+  if (wMsgLen > 0) 
+  {
     memcpy(szMsg, pMsg, wMsgLen);
     pMsg += wMsgLen;
     dwDataLen -= wMsgLen;
@@ -1375,16 +1390,10 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 
       if (!pre.flags && !IsUSASCII(szMsg, strlennull(szMsg)))
       { // message is Ansi and contains national characters, create Unicode part by codepage
-        WORD wCP = ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage);
+        char* usMsg = convertMsgToUserSpecificUtf(hContact, szMsg);
 
-        if (wCP != CP_ACP)
+        if (usMsg)
         {
-          wchar_t* usMsg;
-
-          usMsg = malloc((strlennull(szMsg)+2)*(sizeof(wchar_t)+1));
-          memcpy((char*)usMsg, szMsg, strlennull(szMsg)+1);
-          MultiByteToWideChar(wCP, 0, szMsg, strlennull(szMsg), (wchar_t*)((char*)usMsg + strlennull(szMsg) + 1), strlennull(szMsg));
-          *(wchar_t*)((char*)usMsg + 1 + strlennull(szMsg)*(1 + sizeof(wchar_t))) = '\0'; // trailing zeros
           SAFE_FREE(&szMsg);
           szMsg = (char*)usMsg;
           pre.flags = PREF_UNICODE;
@@ -1413,9 +1422,9 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
       if (nMsgFields < 2)
       {
         if (bThruDC)
-          NetLog_Direct("Malformed URL message");
+          NetLog_Direct("Malformed '%s' message", "URL");
         else
-          NetLog_Server("Malformed URL message");
+          NetLog_Server("Malformed '%s' message", "URL");
         break;
       }
 
@@ -1449,7 +1458,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 
       if (nMsgFields < 6)
       {
-        NetLog_Server("Malformed auth req message");
+        NetLog_Server("Malformed '%s' message", "auth req");
         break;
       }
 
@@ -1484,11 +1493,11 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 
       if (nMsgFields < 4)
       {
-        NetLog_Server("Malformed 'you were added' message");
+        NetLog_Server("Malformed '%s' message", "you were added");
         break;
       }
 
-      hContact=HContactFromUIN(dwUin, &bAdded);
+      hContact = HContactFromUIN(dwUin, &bAdded);
 
       /*blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ) */
       ZeroMemory(&dbei,sizeof(dbei));
@@ -1527,16 +1536,16 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
         || nMsgFields < nContacts * 2 + 1)
       {
         if (bThruDC)
-          NetLog_Direct("Malformed contacts message%s", "");
+          NetLog_Direct("Malformed '%s' message", "contacts");
         else
-          NetLog_Server("Malformed contacts message%s", "");
+          NetLog_Server("Malformed '%s' message", "contacts");
         break;
       }
 
       valid = 1;
       isrList = (ICQSEARCHRESULT**)malloc(nContacts * sizeof(ICQSEARCHRESULT*));
       for (i = 0; i < nContacts; i++)
-      {
+      { // TODO: accept messages with AIM contacts
         isrList[i] = (ICQSEARCHRESULT*)calloc(1, sizeof(ICQSEARCHRESULT));
         isrList[i]->hdr.cbSize = sizeof(ICQSEARCHRESULT);
         isrList[i]->uin = atoi(pszMsgField[1 + i * 2]);
@@ -1548,9 +1557,9 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
       if (!valid)
       {
         if (bThruDC)
-          NetLog_Direct("Malformed contacts message%s", " (most probably contained AIM contacts)");
+          NetLog_Direct("Malformed contacts message (most probably contained AIM contacts)");
         else
-          NetLog_Server("Malformed contacts message%s", " (most probably contained AIM contacts)");
+          NetLog_Server("Malformed contacts message (most probably contained AIM contacts)");
       }
       else
       {
@@ -1595,7 +1604,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 
       if (nMsgFields < 6)
       {
-        NetLog_Server("Malformed web pager message");
+        NetLog_Server("Malformed '%s' message", "web pager");
         break;
       }
 
@@ -1625,7 +1634,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 
       if (nMsgFields < 6)
       {
-        NetLog_Server("Malformed e-mail express message");
+        NetLog_Server("Malformed '%s' message", "e-mail express");
         break;
       }
 
