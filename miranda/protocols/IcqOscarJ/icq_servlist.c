@@ -410,22 +410,32 @@ static int GroupReserveIdsEnumProc(const char *szSetting,LPARAM lParam)
     cgs.szModule=(char*)lParam;
     cgs.szSetting=szSetting;
     cgs.pValue=&dbv;
-    if(CallService(MS_DB_CONTACT_GETSETTINGSTATIC,(WPARAM)NULL,(LPARAM)&cgs))
-      return 0;
-    if(dbv.type!=DBVT_ASCIIZ)
+    if (CallService(MS_DB_CONTACT_GETSETTINGSTATIC,(WPARAM)NULL,(LPARAM)&cgs))
+    { // we failed to read setting, try also utf8 - DB bug
+      dbv.type = DBVT_UTF8;
+      dbv.pszVal = val;
+      dbv.cchVal = MAX_PATH;
+      if (CallService(MS_DB_CONTACT_GETSETTINGSTATIC,(WPARAM)NULL,(LPARAM)&cgs))
+        return 0; // we failed also, invalid setting
+    }
+    if (dbv.type!=DBVT_ASCIIZ)
     { // it is not a cached server-group name
       return 0;
     }
     ReserveServerID((WORD)strtoul(szSetting, NULL, 0x10), SSIT_GROUP);
+#ifdef _DEBUG
+    NetLog_Server("Loaded group %u:'%s'", strtoul(szSetting, NULL, 0x10), val);
+#endif
   }
   return 0;
 }
 
 
 
-void ReserveServerGroups()
+int ReserveServerGroups()
 {
   DBCONTACTENUMSETTINGS dbces;
+  int nStart = nIDListCount;
 
   char szModule[MAX_PATH+9];
 
@@ -437,6 +447,8 @@ void ReserveServerGroups()
   dbces.lParam = (LPARAM)szModule;
 
   CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces);
+
+  return nIDListCount - nStart;
 }
 
 
@@ -446,6 +458,7 @@ void LoadServerIDs()
 {
   HANDLE hContact;
   WORD wSrvID;
+  int nGroups = 0, nContacts = 0, nPermits = 0, nDenys = 0, nIgnores = 0;
 
   EnterCriticalSection(&servlistMutex);
   if (wSrvID = ICQGetContactSettingWord(NULL, "SrvAvatarID", 0))
@@ -453,24 +466,38 @@ void LoadServerIDs()
   if (wSrvID = ICQGetContactSettingWord(NULL, "SrvVisibilityID", 0))
     ReserveServerID(wSrvID, SSIT_ITEM);
 
-  ReserveServerGroups();
+  nGroups = ReserveServerGroups();
 
   hContact = ICQFindFirstContact();
 
   while (hContact)
   { // search all our contacts, reserve their server IDs
-    if (wSrvID = ICQGetContactSettingWord(hContact, "SrvContactId", 0))
+    if (wSrvID = ICQGetContactSettingWord(hContact, "ServerId", 0))
+    {
       ReserveServerID(wSrvID, SSIT_ITEM);
+      nContacts++;
+    }
     if (wSrvID = ICQGetContactSettingWord(hContact, "SrvDenyId", 0))
+    {
       ReserveServerID(wSrvID, SSIT_ITEM);
+      nDenys++;
+    }
     if (wSrvID = ICQGetContactSettingWord(hContact, "SrvPermitId", 0))
+    {
       ReserveServerID(wSrvID, SSIT_ITEM);
+      nPermits++;
+    }
     if (wSrvID = ICQGetContactSettingWord(hContact, "SrvIgnoreId", 0))
+    {
       ReserveServerID(wSrvID, SSIT_ITEM);
+      nIgnores++;
+    }
 
     hContact = ICQFindNextContact(hContact);
   }
   LeaveCriticalSection(&servlistMutex);
+
+  NetLog_Server("Loaded SSI: %d contacts, %d groups, %d permit, %d deny, %d ignore items.", nContacts, nGroups, nPermits, nDenys, nIgnores);
 
   return;
 }
@@ -912,6 +939,7 @@ char* getServerGroupName(WORD wGroupID)
 
   if (!CheckServerID(wGroupID, 0))
   { // check if valid id, if not give empty and remove
+    NetLog_Server("Removing group %u from cache...", wGroupID);
     DBDeleteContactSetting(NULL, szModule, szGroup);
     return NULL;
   }
@@ -920,7 +948,7 @@ char* getServerGroupName(WORD wGroupID)
     szRes = NULL;
   else
     szRes = _strdup(dbv.pszVal);
-  DBFreeVariant(&dbv);
+  ICQFreeVariant(&dbv);
 
   return szRes;
 }
@@ -981,6 +1009,7 @@ WORD getServerGroupID(const char* szPath)
 
   if (wGroupId && !CheckServerID(wGroupId, 0))
   { // known, check if still valid, if not remove
+    NetLog_Server("Removing group \"%s\" from cache...", szPath);
     DBDeleteContactSetting(NULL, szModule, szPath);
     wGroupId = 0;
   }
@@ -1022,10 +1051,10 @@ int GroupNameExists(const char *name,int skipGroup)
     if(DBGetContactSetting(NULL,"CListGroups",idstr,&dbv)) break;
     if(!strcmp(dbv.pszVal+1,name)) 
     {
-      DBFreeVariant(&dbv);
+      ICQFreeVariant(&dbv);
       return 1;
     }
-    DBFreeVariant(&dbv);
+    ICQFreeVariant(&dbv);
   }
   return 0;
 }
@@ -1855,7 +1884,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
         addServContact((HANDLE)wParam, pszNick, pszGroup);
 
         SAFE_FREE(&pszNick);
-        DBFreeVariant(&dbvGroup);
+        ICQFreeVariant(&dbvGroup);
       }
     }
 
