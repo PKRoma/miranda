@@ -992,16 +992,12 @@ LBL_InvalidCommand:
 			if ( sscanf( params, "%30s", authChallengeInfo ) < 1 )
 				goto LBL_InvalidCommand;
 
-			//fill chal info
-			char* chalinfo = (char*)alloca( strlen( authChallengeInfo )+16+4 );
-			strcpy( chalinfo, authChallengeInfo );
-			strcat( chalinfo, msnProtChallenge );
-
 			//Digest it
 			DWORD md5hash[ 4 ];
 			MD5_CTX context;
 			MD5Init(&context);
-			MD5Update(&context, ( BYTE* )chalinfo, strlen( chalinfo ));
+			MD5Update(&context, ( BYTE* )authChallengeInfo, strlen( authChallengeInfo ));
+			MD5Update(&context, ( BYTE* )msnProtChallenge,  strlen( msnProtChallenge  ));
 			MD5Final(( BYTE* )md5hash, &context);
 
 			if ( MyOptions.UseMSNP11 ) {
