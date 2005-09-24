@@ -308,14 +308,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	DWORD myPid=0;
 	int messageloop=1;
 
-	BOOL (WINAPI *MyPeekMessage) (LPMSG,HWND,UINT,UINT,UINT);
-	BOOL (WINAPI *MyIsDialogMessage) (HWND,LPMSG);
-	LRESULT (WINAPI *MyDispatchMessage) (LPMSG);
-
-	MyPeekMessage=IsWinVerNT() ? (BOOL (WINAPI *)(LPMSG,HWND,UINT,UINT,UINT))GetProcAddress(GetModuleHandleA("user32"),"PeekMessageW") : PeekMessageA;
-	MyIsDialogMessage=IsWinVerNT() ? (BOOL (WINAPI *)(HWND,LPMSG))GetProcAddress(GetModuleHandleA("user32"),"IsDialogMessageW") : IsDialogMessageA;
-	MyDispatchMessage=IsWinVerNT() ? (LRESULT (WINAPI *)(LPMSG))GetProcAddress(GetModuleHandleA("user32"),"DispatchMessageW") : DispatchMessageA;
-
 #ifdef _DEBUG
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
@@ -351,17 +343,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			CallService(pszWaitServices[rc], (WPARAM) hWaitObjects[rc], 0);
 		}
 		// 
-		while ( MyPeekMessage(&msg, NULL, 0, 0, PM_REMOVE) ) {
+		while ( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) ) {
 			if ( msg.message != WM_QUIT ) {
 				HWND h=GetForegroundWindow();
 				DWORD pid = 0;
 				checkIdle(&msg);
 				if ( h != NULL && GetWindowThreadProcessId(h,&pid) && pid==myPid 
 					&& GetClassLong(h, GCW_ATOM)==32770 ) {
-					if ( MyIsDialogMessage(h, &msg) ) continue;
+					if ( IsDialogMessage(h, &msg) ) continue;
 				}
 				TranslateMessage(&msg);
-				MyDispatchMessage(&msg);						
+				DispatchMessage(&msg);						
 				if ( SetIdleCallback != NULL ) 
 					SetIdleCallback();
 			} else if ( !dying ) {
