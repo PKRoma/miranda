@@ -633,11 +633,19 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		free( str );
 }	}
 
+void strdel( char* parBuffer, int len )
+{
+	for ( char* p = parBuffer+len; *p != 0; p++ )
+		p[ -len ] = *p;
+
+	p[ -len ] = '\0';
+}
+
 void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 {
 	struct ThreadData *info;
 	XmlNode *n, *xNode;
-	char* from, *type, *p, *nick;
+	char* from, *type, *p, *nick, *msgText;
 	JABBER_LIST_ITEM *item;
 
 	if ( !node->name || strcmp( node->name, "message" )) return;
@@ -655,6 +663,7 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 		if ( n->text == NULL || n->text[0] == '\0' )
 			return;
 
+		msgText = JabberTextDecode( n->text );
 		gcd.iType = GC_EVENT_TOPIC;
 
 		if ( from != NULL ) {
@@ -676,7 +685,12 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 			return;
 		nick++;
 
-		gcd.iType = GC_EVENT_MESSAGE;
+		msgText = JabberTextDecode( n->text );
+		if ( memcmp( msgText, "/me", 3 ) == 0 ) {
+			strdel( msgText, 4 );
+			gcd.iType = GC_EVENT_ACTION;
+		}
+		else gcd.iType = GC_EVENT_MESSAGE;
 	}
 
 	JabberGcLogCreate( item );
@@ -703,7 +717,7 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 	gce.pszNick = dispNick;
 	gce.bAddToLog = TRUE;
 	gce.time = msgTime;
-	gce.pszText = JabberTextDecode( n->text );
+	gce.pszText = msgText;
 	gce.bIsMe = lstrcmpA( nick, item->nick ) == 0;
 	JCallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
 
@@ -713,7 +727,7 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 		JCallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
 	}
 
-	free(( char* )gce.pszText );
+	free( msgText );
 }
 
 typedef struct {
