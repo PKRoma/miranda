@@ -609,10 +609,17 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 
 				replaceStr( item->nick, NULL );
 			}	
-			else if ( sttGetStatusCode( xNode ) == 303 ) {
-				sttRenameParticipantNick( item, nick, itemNode );
-				return;
-		}	}
+			else {
+				switch( sttGetStatusCode( xNode )) {
+				case 303:
+					sttRenameParticipantNick( item, nick, itemNode );
+					return;
+
+				case 307:
+					JabberListRemoveResource( LIST_CHATROOM, from );
+					JabberGcLogUpdateMemberStatus( item, nick, -2 );
+					return;
+		}	}	}
 
 		JabberListRemoveResource( LIST_CHATROOM, from );
 		JabberGcLogUpdateMemberStatus( item, nick, -1 );

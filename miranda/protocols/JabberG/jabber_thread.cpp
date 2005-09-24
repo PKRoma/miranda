@@ -95,19 +95,10 @@ static VOID CALLBACK JabberOfflineChatWindows( DWORD )
 void __cdecl JabberServerThread( struct ThreadData *info )
 {
 	DBVARIANT dbv;
-	char jidStr[128];
-	char* connectHost;
 	char* buffer;
 	int datalen;
-	XmlState xmlState;
-	HANDLE hContact;
-	int jabberNetworkBufferSize;
-	int socket;
 	int oldStatus;
-	char* str;
 	PVOID ssl;
-	BOOL sslMode;
-	char* szLogBuffer;
 
 	JabberLog( "Thread started: type=%d", info->type );
 
@@ -164,10 +155,9 @@ LBL_Exit:
 		}
 		else strcpy( info->resource, "Miranda" );
 
+		char jidStr[128];
 		mir_snprintf( jidStr, sizeof( jidStr ), "%s@%s/%s", info->username, info->server, info->resource );
-		str = JabberTextEncode( jidStr );
-		strncpy( info->fullJID, str, sizeof( info->fullJID )-1 );
-		free( str );
+		strncpy( info->fullJID, UTF8(jidStr), sizeof( info->fullJID )-1 );
 
 		if ( JGetByte( "SavePassword", TRUE ) == FALSE ) {
 			mir_snprintf( jidStr, sizeof( jidStr ), "%s@%s", info->username, info->server );
@@ -228,14 +218,10 @@ LBL_Exit:
 		goto LBL_Exit;
 	}
 
-	if ( info->manualHost[0] )
-		connectHost = info->manualHost;
-	else
-		connectHost = info->server;
-
+	char* connectHost = ( info->manualHost[0] ) ? info->manualHost : info->server;
 	JabberLog( "Thread type=%d server='%s' port='%d'", info->type, connectHost, info->port );
 
-	jabberNetworkBufferSize = 2048;
+	int jabberNetworkBufferSize = 2048;
 	if (( buffer=( char* )malloc( jabberNetworkBufferSize+1 )) == NULL ) {	// +1 is for '\0' when debug logging this buffer
 		JabberLog( "Cannot allocate network buffer, thread ended" );
 		if ( info->type == JABBER_SESSION_NORMAL ) {
@@ -272,7 +258,7 @@ LBL_Exit:
 	}
 
 	// Determine local IP
-	socket = JCallService( MS_NETLIB_GETSOCKET, ( WPARAM ) info->s, 0 );
+	int socket = JCallService( MS_NETLIB_GETSOCKET, ( WPARAM ) info->s, 0 );
 	if ( info->type==JABBER_SESSION_NORMAL && socket!=INVALID_SOCKET ) {
 		struct sockaddr_in saddr;
 		int len;
@@ -283,7 +269,7 @@ LBL_Exit:
 		JabberLog( "Local IP = %s", inet_ntoa( saddr.sin_addr ));
 	}
 
-	sslMode = FALSE;
+	BOOL sslMode = FALSE;
 	if ( info->useSSL ) {
 		JabberLog( "Intializing SSL connection" );
 		if ( hLibSSL!=NULL && socket!=INVALID_SOCKET ) {
@@ -340,14 +326,13 @@ LBL_Exit:
 			JabberForkThread( JabberKeepAliveThread, 0, info->s );
 		}
 
+		XmlState xmlState;
 		JabberXmlInitState( &xmlState );
 		JabberXmlSetCallback( &xmlState, 1, ELEM_OPEN, JabberProcessStreamOpening, info );
 		JabberXmlSetCallback( &xmlState, 1, ELEM_CLOSE, JabberProcessStreamClosing, info );
 		JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
 
-		str = JabberTextEncode( info->server );
-		JabberSend( info->s, "<?xml version='1.0' encoding='UTF-8'?><stream:stream to='%s' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>", str );
-		free( str );
+		JabberSend( info->s, "<?xml version='1.0' encoding='UTF-8'?><stream:stream to='%s' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>", UTF8(info->server) );
 
 		JabberLog( "Entering main recv loop" );
 		datalen = 0;
@@ -368,7 +353,8 @@ LBL_Exit:
 			buffer[datalen] = '\0';
 			if ( sslMode && DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", TRUE ) == TRUE ) {
 				// Emulate netlib log feature for SSL connection
-				if (( szLogBuffer=( char* )malloc( recvResult+128 )) != NULL ) {
+				char* szLogBuffer = ( char* )malloc( recvResult+128 );
+				if ( szLogBuffer != NULL ) {
 					strcpy( szLogBuffer, "( SSL ) Data received\n" );
 					memcpy( szLogBuffer+strlen( szLogBuffer ), buffer+datalen-recvResult, recvResult+1 /* also copy \0 */ );
 					Netlib_Logf( hNetlibUser, "%s", szLogBuffer );	// %s to protect against when fmt tokens are in szLogBuffer causing crash
@@ -421,10 +407,9 @@ LBL_Exit:
 			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 
 			// Set all contacts to offline
-			hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+			HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 			while ( hContact != NULL ) {
-				str = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-				if ( str != NULL && !strcmp( str, jabberProtoName ))
+				if ( !lstrcmp(( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 ), jabberProtoName ))
 					if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
 						JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
 
@@ -469,6 +454,10 @@ LBL_Exit:
 	free( buffer );
 	JabberLog( "Exiting ServerThread" );
 	goto LBL_Exit;
+}
+
+static void JabberIqProcessSearch( XmlNode *node, void *userdata )
+{
 }
 
 static void JabberProcessStreamOpening( XmlNode *node, void *userdata )

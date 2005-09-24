@@ -7,6 +7,7 @@ Legend:
 Version 0.4.1.2
 ===============
 [+] added GNUPG support (many thanks to Karl-Heinz Pennemann for a patch)
+[+] added support for the extended JUD search
 [!] important bug fixed: Jabber contact list maybe messed up under Win9x
 [!] numerous fixes for the groupchat administration
 [!] bug #0001324 fixed: groupchat subjects don't get recognized

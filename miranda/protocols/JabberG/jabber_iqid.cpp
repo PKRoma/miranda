@@ -747,25 +747,25 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 		}	}	}	}	}	}
 
 		if ( !hasFn )
-			DBDeleteContactSetting( hContact, jabberProtoName, "FullName" );
+			JDeleteSetting( hContact, "FullName" );
 		// We are not deleting "Nick"
 //		if ( !hasNick )
-//			DBDeleteContactSetting( hContact, jabberProtoName, "Nick" );
+//			JDeleteSetting( hContact, "Nick" );
 		if ( !hasGiven )
-			DBDeleteContactSetting( hContact, jabberProtoName, "FirstName" );
+			JDeleteSetting( hContact, "FirstName" );
 		if ( !hasFamily )
-			DBDeleteContactSetting( hContact, jabberProtoName, "LastName" );
+			JDeleteSetting( hContact, "LastName" );
 		if ( !hasMiddle )
-			DBDeleteContactSetting( hContact, jabberProtoName, "MiddleName" );
+			JDeleteSetting( hContact, "MiddleName" );
 		if ( hContact != NULL ) {
 			while ( true ) {
 				if ( nEmail <= 0 )
-					DBDeleteContactSetting( hContact, jabberProtoName, "e-mail" );
+					JDeleteSetting( hContact, "e-mail" );
 				else {
 					sprintf( text, "e-mail%d", nEmail-1 );
 					if ( DBGetContactSetting( hContact, jabberProtoName, text, &dbv )) break;
 					JFreeVariant( &dbv );
-					DBDeleteContactSetting( hContact, jabberProtoName, text );
+					JDeleteSetting( hContact, text );
 				}
 				nEmail++;
 			}
@@ -775,87 +775,87 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 				sprintf( text, "e-mail%d", nEmail );
 				if ( DBGetContactSetting( NULL, jabberProtoName, text, &dbv )) break;
 				JFreeVariant( &dbv );
-				DBDeleteContactSetting( NULL, jabberProtoName, text );
+				JDeleteSetting( NULL, text );
 				sprintf( text, "e-mailFlag%d", nEmail );
-				DBDeleteContactSetting( NULL, jabberProtoName, text );
+				JDeleteSetting( NULL, text );
 				nEmail++;
 		}	}
 
 		if ( !hasBday ) {
-			DBDeleteContactSetting( hContact, jabberProtoName, "BirthYear" );
-			DBDeleteContactSetting( hContact, jabberProtoName, "BirthMonth" );
-			DBDeleteContactSetting( hContact, jabberProtoName, "BirthDay" );
-			DBDeleteContactSetting( hContact, jabberProtoName, "BirthDate" );
+			JDeleteSetting( hContact, "BirthYear" );
+			JDeleteSetting( hContact, "BirthMonth" );
+			JDeleteSetting( hContact, "BirthDay" );
+			JDeleteSetting( hContact, "BirthDate" );
 		}
 		if ( !hasGender ) {
 			if ( hContact != NULL )
-				DBDeleteContactSetting( hContact, jabberProtoName, "Gender" );
+				JDeleteSetting( hContact, "Gender" );
 			else
-				DBDeleteContactSetting( NULL, jabberProtoName, "GenderString" );
+				JDeleteSetting( NULL, "GenderString" );
 		}
 		if ( hContact != NULL ) {
 			if ( !hasPhone )
-				DBDeleteContactSetting( hContact, jabberProtoName, "Phone" );
+				JDeleteSetting( hContact, "Phone" );
 			if ( !hasFax )
-				DBDeleteContactSetting( hContact, jabberProtoName, "Fax" );
+				JDeleteSetting( hContact, "Fax" );
 			if ( !hasCell )
-				DBDeleteContactSetting( hContact, jabberProtoName, "Cellular" );
+				JDeleteSetting( hContact, "Cellular" );
 		}
 		else {
 			while ( true ) {
 				sprintf( text, "Phone%d", nPhone );
 				if ( DBGetContactSetting( NULL, jabberProtoName, text, &dbv )) break;
 				JFreeVariant( &dbv );
-				DBDeleteContactSetting( NULL, jabberProtoName, text );
+				JDeleteSetting( NULL, text );
 				sprintf( text, "PhoneFlag%d", nPhone );
-				DBDeleteContactSetting( NULL, jabberProtoName, text );
+				JDeleteSetting( NULL, text );
 				nPhone++;
 		}	}
 
 		if ( !hasHomeStreet )
-			DBDeleteContactSetting( hContact, jabberProtoName, "Street" );
+			JDeleteSetting( hContact, "Street" );
 		if ( !hasHomeStreet2 && hContact==NULL )
-			DBDeleteContactSetting( hContact, jabberProtoName, "Street2" );
+			JDeleteSetting( hContact, "Street2" );
 		if ( !hasHomeLocality )
-			DBDeleteContactSetting( hContact, jabberProtoName, "City" );
+			JDeleteSetting( hContact, "City" );
 		if ( !hasHomeRegion )
-			DBDeleteContactSetting( hContact, jabberProtoName, "State" );
+			JDeleteSetting( hContact, "State" );
 		if ( !hasHomePcode )
-			DBDeleteContactSetting( hContact, jabberProtoName, "ZIP" );
+			JDeleteSetting( hContact, "ZIP" );
 		if ( !hasHomeCtry ) {
 			if ( hContact != NULL )
-				DBDeleteContactSetting( hContact, jabberProtoName, "Country" );
+				JDeleteSetting( hContact, "Country" );
 			else
-				DBDeleteContactSetting( hContact, jabberProtoName, "CountryName" );
+				JDeleteSetting( hContact, "CountryName" );
 		}
 		if ( !hasWorkStreet )
-			DBDeleteContactSetting( hContact, jabberProtoName, "CompanyStreet" );
+			JDeleteSetting( hContact, "CompanyStreet" );
 		if ( !hasWorkStreet2 && hContact==NULL )
-			DBDeleteContactSetting( hContact, jabberProtoName, "CompanyStreet2" );
+			JDeleteSetting( hContact, "CompanyStreet2" );
 		if ( !hasWorkLocality )
-			DBDeleteContactSetting( hContact, jabberProtoName, "CompanyCity" );
+			JDeleteSetting( hContact, "CompanyCity" );
 		if ( !hasWorkRegion )
-			DBDeleteContactSetting( hContact, jabberProtoName, "CompanyState" );
+			JDeleteSetting( hContact, "CompanyState" );
 		if ( !hasWorkPcode )
-			DBDeleteContactSetting( hContact, jabberProtoName, "CompanyZIP" );
+			JDeleteSetting( hContact, "CompanyZIP" );
 		if ( !hasWorkCtry ) {
 			if ( hContact != NULL )
-				DBDeleteContactSetting( hContact, jabberProtoName, "CompanyCountry" );
+				JDeleteSetting( hContact, "CompanyCountry" );
 			else
-				DBDeleteContactSetting( hContact, jabberProtoName, "CompanyCountryName" );
+				JDeleteSetting( hContact, "CompanyCountryName" );
 		}
 		if ( !hasUrl )
-			DBDeleteContactSetting( hContact, jabberProtoName, "Homepage" );
+			JDeleteSetting( hContact, "Homepage" );
 		if ( !hasOrgname )
-			DBDeleteContactSetting( hContact, jabberProtoName, "Company" );
+			JDeleteSetting( hContact, "Company" );
 		if ( !hasOrgunit )
-			DBDeleteContactSetting( hContact, jabberProtoName, "CompanyDepartment" );
+			JDeleteSetting( hContact, "CompanyDepartment" );
 		if ( !hasRole )
-			DBDeleteContactSetting( hContact, jabberProtoName, "Role" );
+			JDeleteSetting( hContact, "Role" );
 		if ( !hasTitle )
-			DBDeleteContactSetting( hContact, jabberProtoName, "CompanyPosition" );
+			JDeleteSetting( hContact, "CompanyPosition" );
 		if ( !hasDesc )
-			DBDeleteContactSetting( hContact, jabberProtoName, "About" );
+			JDeleteSetting( hContact, "About" );
 		if ( !hasPhoto && jabberVcardPhotoFileName!=NULL ) {
 			DeleteFile( jabberVcardPhotoFileName );
 			jabberVcardPhotoFileName = NULL;
@@ -926,6 +926,73 @@ void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata )
 					free( jsr.hdr.lastName );
 					free( jsr.hdr.email );
 		}	}	}
+
+		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
+	}
+	else if ( !strcmp( type, "error" )) {
+		// ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_FAILED, ( HANDLE ) id, 0 );
+		// There is no ACKRESULT_FAILED for ACKTYPE_SEARCH : ) look at findadd.c
+		// So we will just send a SUCCESS
+		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
+}	}
+
+void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
+{
+	XmlNode *queryNode;
+	char* type, *str;
+
+	JabberLog( "<iq/> iqIdGetExtSearch" );
+	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
+	if (( str=JabberXmlGetAttrValue( iqNode, "id" )) == NULL ) return;
+	int id = atoi( str+strlen( JABBER_IQID ));
+
+	if ( !strcmp( type, "result" )) {
+		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
+		if (( queryNode=JabberXmlGetChild( queryNode, "x" )) == NULL ) return;
+		for ( int i=0; i<queryNode->numChild; i++ ) {
+			XmlNode* itemNode = queryNode->child[i];
+			if ( strcmp( itemNode->name, "item" ))
+				continue;
+
+			JABBER_SEARCH_RESULT jsr = { 0 };
+			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
+			jsr.hdr.firstName = "";
+
+			for ( int j=0; j < itemNode->numChild; j++ ) {
+				XmlNode* fieldNode = itemNode->child[j];
+				if ( strcmp( fieldNode->name, "field" ))
+					continue;
+
+				char* fieldName = JabberXmlGetAttrValue( fieldNode, "var" );
+				if ( fieldName == NULL )
+					continue;
+
+				XmlNode* n = JabberXmlGetChild( fieldNode, "value" );
+				if ( n == NULL )
+					continue;
+
+				if ( !strcmp( fieldName, "jid" )) {
+					strncpy( jsr.jid, JabberUrlDecode( n->text ), sizeof( jsr.jid ));
+					jsr.jid[sizeof( jsr.jid )-1] = '\0'; 
+					JabberLog( "Result jid=%s", jsr.jid );
+				}
+				else if ( !strcmp( fieldName, "nickname" ))
+					jsr.hdr.nick = ( n->text != NULL ) ? JabberUtf8Decode( n->text, 0 ) : "";
+				else if ( !strcmp( fieldName, "fn" )) {
+					if ( n->text != NULL )
+	               jsr.hdr.firstName = JabberUtf8Decode( n->text, 0 );
+				}
+				else if ( !strcmp( fieldName, "given" )) {
+					if ( n->text != NULL )
+	               jsr.hdr.firstName = JabberUtf8Decode( n->text, 0 );
+				}
+				else if ( !strcmp( fieldName, "family" ))
+               jsr.hdr.lastName = ( n->text != NULL ) ? JabberUtf8Decode( n->text, 0 ) : "";
+				else if ( !strcmp( fieldName, "email" )) 
+               jsr.hdr.email = ( n->text != NULL ) ? JabberUtf8Decode( n->text, 0 ) : "";
+			}
+			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) id, ( LPARAM )&jsr );
+		}
 
 		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
 	}
@@ -1055,7 +1122,7 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 
 	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
 		char* str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-		if ( str!=NULL && !strcmp( str, "http://jabber.org/protocol/disco#info" )) {
+		if ( !lstrcmp( str, "http://jabber.org/protocol/disco#info" )) {
 			item->cap = CLIENT_CAP_READY;
 			for ( int i=0; i<queryNode->numChild; i++ ) {
 				if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL ) {

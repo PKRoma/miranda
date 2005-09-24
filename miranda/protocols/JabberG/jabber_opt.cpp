@@ -361,7 +361,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					if ( dbv.pszVal != NULL )	JFreeVariant( &dbv );
 					JSetString( NULL, "Password", text );
 				}
-				else DBDeleteContactSetting( NULL, jabberProtoName, "Password" );
+				else JDeleteSetting( NULL, "Password" );
 
 				GetDlgItemText( hwndDlg, IDC_EDIT_RESOURCE, text, sizeof( text ));
 				if ( DBGetContactSetting( NULL, jabberProtoName, "Resource", &dbv ) || strcmp( text, dbv.pszVal ))

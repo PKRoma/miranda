@@ -698,26 +698,19 @@ int JabberRecvMessage( WPARAM wParam, LPARAM lParam )
 
 int JabberSearchByEmail( WPARAM wParam, LPARAM lParam )
 {
-	char* email;
-	int iqId;
-	DBVARIANT dbv;
-
 	if ( !jabberOnline ) return 0;
 	if (( char* )lParam == NULL ) return 0;
 
-	if (( email=JabberTextEncode(( char* )lParam )) != NULL ) {
-		iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultSetSearch );
-		if ( !DBGetContactSetting( NULL, jabberProtoName, "Jud", &dbv )) {
-			JabberSend( jabberThreadInfo->s, "<iq type='set' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:search'><email>%s</email></query></iq>", iqId, dbv.pszVal, email );
-			JFreeVariant( &dbv );
-		}
-		else
-			JabberSend( jabberThreadInfo->s, "<iq type='set' id='"JABBER_IQID"%d' to='users.jabber.org'><query xmlns='jabber:iq:search'><email>%s</email></query></iq>", iqId, email );
-		return iqId;
-	}
+	char szServerName[100];
+	if ( JGetStaticString( "Jud", NULL, szServerName, sizeof szServerName ))
+		strcpy( szServerName, "users.jabber.org" );
 
-	return 0;
+	int iqId = JabberSerialNext();
+	JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultSetSearch );
+	JabberSend( jabberThreadInfo->s, 
+		"<iq type='set' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:search'><email>%s</email></query></iq>", 
+		iqId, UTF8(( char* )lParam));
+	return iqId;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -725,60 +718,52 @@ int JabberSearchByEmail( WPARAM wParam, LPARAM lParam )
 
 int JabberSearchByName( WPARAM wParam, LPARAM lParam )
 {
-	PROTOSEARCHBYNAME *psbn = ( PROTOSEARCHBYNAME * ) lParam;
-	char* p;
-	char text[128];
-	unsigned int size;
-	int iqId;
-	DBVARIANT dbv;
-
 	if ( !jabberOnline ) return 0;
 
-	text[0] = text[sizeof( text )-1] = '\0';
-	size = sizeof( text )-1;
+	PROTOSEARCHBYNAME *psbn = ( PROTOSEARCHBYNAME * ) lParam;
+	char*  text = ( char* )alloca( 1024 ); *text = 0;
+	size_t len = 0;
+	BOOL   bIsExtFormat = JGetByte( "ExtendedSearch", 0 );
+
 	if ( psbn->pszNick[0] != '\0' ) {
-		if (( p=JabberTextEncode( psbn->pszNick )) != NULL ) {
-			if ( strlen( p )+13 < size ) {
-				strcat( text, "<nick>" );
-				strcat( text, p );
-				strcat( text, "</nick>" );
-				size = sizeof( text )-strlen( text )-1;
-			}
-			free( p );
-		}
+		if ( bIsExtFormat )
+			len += mir_snprintf( text, 1024-len, "<field var='user'><value>%s</value></field>", UTF8(psbn->pszNick));
+		else
+			len += mir_snprintf( text, 1024-len, "<nick>%s</nick>", UTF8(psbn->pszNick));
 	}
+
 	if ( psbn->pszFirstName[0] != '\0' ) {
-		if (( p=JabberTextEncode( psbn->pszFirstName )) != NULL ) {
-			if ( strlen( p )+15 < size ) {
-				strcat( text, "<first>" );
-				strcat( text, p );
-				strcat( text, "</first>" );
-				size = sizeof( text )-strlen( text )-1;
-			}
-			free( p );
-		}
+		if ( bIsExtFormat )
+			len += mir_snprintf( text+len, 1024-len, "<field var='fn'><value>%s</value></field>", UTF8(psbn->pszFirstName));
+		else
+			len += mir_snprintf( text+len, 1024-len, "<first>%s</first>", UTF8(psbn->pszFirstName));
 	}
+
 	if ( psbn->pszLastName[0] != '\0' ) {
-		if (( p=JabberTextEncode( psbn->pszLastName )) != NULL ) {
-			if ( strlen( p )+13 < size ) {
-				strcat( text, "<last>" );
-				strcat( text, p );
-				strcat( text, "</last>" );
-				size = sizeof( text )-strlen( text )-1;
-			}
-			free( p );
-		}
+		if ( bIsExtFormat )
+			len += mir_snprintf( text+len, 1024-len, "<field var='given'><value>%s</value></field>", UTF8(psbn->pszLastName));
+		else
+			len += mir_snprintf( text+len, 1024-len, "<last>%s</last>", UTF8(psbn->pszLastName));
 	}
 
-	iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultSetSearch );
-	if ( !DBGetContactSetting( NULL, jabberProtoName, "Jud", &dbv )) {
-		JabberSend( jabberThreadInfo->s, "<iq type='set' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:search'>%s</query></iq>", iqId, dbv.pszVal, text );
-		JFreeVariant( &dbv );
-	}
-	else
-		JabberSend( jabberThreadInfo->s, "<iq type='set' id='"JABBER_IQID"%d' to='users.jabber.org'><query xmlns='jabber:iq:search'>%s</query></iq>", iqId, text );
+	char szServerName[100];
+	if ( JGetStaticString( "Jud", NULL, szServerName, sizeof szServerName ))
+		strcpy( szServerName, "users.jabber.org" );
 
+	int iqId = JabberSerialNext();
+	if ( bIsExtFormat ) {
+		JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultExtSearch );
+		JabberSend( jabberThreadInfo->s, 
+			"<iq type='set' id='"JABBER_IQID"%d' to='%s' xml:lang='en'>"
+			"<query xmlns='jabber:iq:search'><x xmlns='jabber:x:data' type='submit'>%s</x></query></iq>", 
+			iqId, szServerName, text );
+	}
+	else {
+		JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultSetSearch );
+		JabberSend( jabberThreadInfo->s, 
+			"<iq type='set' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:search'>%s</query></iq>", 
+			iqId, szServerName, text );
+	}
 	return iqId;
 }
 

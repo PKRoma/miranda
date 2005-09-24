@@ -79,7 +79,7 @@ static void JabberContactListCreateClistGroup( char* groupName )
 			break;
 		name = dbv.pszVal;
 		if ( name[0]!='\0' && !strcmp( name+1, groupName )) {
-			// Already exist, no need to create
+			// Already exists, no need to create
 			JFreeVariant( &dbv );
 			return;
 		}
@@ -135,7 +135,7 @@ void JabberDBAddAuthRequest( char* jid, char* nick )
 		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )jabberProtoName );
 		JSetStringUtf( hContact, "jid", s );
 	}
-	else DBDeleteContactSetting( hContact, jabberProtoName, "Hidden" );
+	else JDeleteSetting( hContact, "Hidden" );
 
 	JSetString( hContact, "Nick", nick );
 

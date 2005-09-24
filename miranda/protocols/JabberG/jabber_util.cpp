@@ -276,10 +276,10 @@ int __stdcall JabberUtfCompareI( const char* s1, const char* s2 )
 	return _wcsicmp( w1, w2 );
 }
 
-void __stdcall JabberUtf8Decode( char* str, WCHAR** ucs2 )
+char* __stdcall JabberUtf8Decode( char* str, WCHAR** ucs2 )
 {
 	if ( str == NULL )
-		return;
+		return NULL;
 
 	int len = strlen( str );
 	if ( len < 2 ) {
@@ -288,7 +288,7 @@ void __stdcall JabberUtf8Decode( char* str, WCHAR** ucs2 )
 			MultiByteToWideChar( CP_ACP, 0, str, len, *ucs2, len );
 			( *ucs2 )[ len ] = 0;
 		}
-		return;
+		return str;
 	}
 
 	wchar_t* tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
@@ -301,6 +301,7 @@ void __stdcall JabberUtf8Decode( char* str, WCHAR** ucs2 )
 	}
 
    WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
+	return str;
 }
 
 char* __stdcall JabberUtf8EncodeW( const WCHAR* wstr )

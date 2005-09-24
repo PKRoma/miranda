@@ -410,6 +410,7 @@ void JabberEnableMenuItems( BOOL bEnable );
 #endif
 
 HANDLE __stdcall  JCreateServiceFunction( const char* szService, MIRANDASERVICE serviceProc );
+void   __stdcall  JDeleteSetting( HANDLE hContact, const char* valueName );
 DWORD  __stdcall  JGetByte( const char* valueName, int parDefltValue );
 DWORD  __stdcall  JGetByte( HANDLE hContact, const char* valueName, int parDefltValue );
 char*  __stdcall  JGetContactName( HANDLE hContact );
@@ -444,7 +445,7 @@ char*         __stdcall JabberUrlDecode( char* str );
 void          __stdcall JabberUrlDecodeW( WCHAR* str );
 char*         __stdcall JabberUrlEncode( const char* str );
 int           __stdcall JabberUtfCompareI( const char* s1, const char* s2 );
-void          __stdcall JabberUtf8Decode( char*,WCHAR** );
+char*         __stdcall JabberUtf8Decode( char*,WCHAR** );
 char*         __stdcall JabberUtf8Encode( const char* str );
 char*         __stdcall JabberSha1( char* str );
 char*         __stdcall JabberUnixToDos( const char* str );

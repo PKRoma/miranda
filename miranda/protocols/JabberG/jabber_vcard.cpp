@@ -682,9 +682,9 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 								JSetWord( NULL, idstr, nFlag );
 							}
 							wsprintf( idstr, szIdTemplate, i );
-							DBDeleteContactSetting( NULL, jabberProtoName, idstr );
+							JDeleteSetting( NULL, idstr );
 							wsprintf( idstr, szFlagTemplate, i );
-							DBDeleteContactSetting( NULL, jabberProtoName, idstr );
+							JDeleteSetting( NULL, idstr );
 							SendMessage( hwndDlg, M_REMAKELISTS, 0, 0 );
 							SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
 						}

@@ -25,27 +25,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef enum { ELEM_OPEN, ELEM_CLOSE, ELEM_OPENCLOSE, ELEM_TEXT } XmlElemType;
 typedef enum { NODE_OPEN, NODE_CLOSE } XmlNodeType;
 
-typedef struct tagXmlAttr {
+struct XmlAttr
+{
 	char* name;
 	char* value;
-} XmlAttr;
+};
 
-typedef struct tagXmlNode {
+struct  XmlNode 
+{
 	int depth;									// depth of the current node ( 1=root )
 	char* name;									// tag name of the current node
 	int numAttr;								// number of attributes
-	int maxNumAttr;								// internal use ( num of slots currently allocated to attr )
-	XmlAttr **attr;								// attribute list
+	int maxNumAttr;							// internal use ( num of slots currently allocated to attr )
+	XmlAttr **attr;							// attribute list
 	int numChild;								// number of direct child nodes
 	int maxNumChild;							// internal use ( num of slots currently allocated to child )
-	struct tagXmlNode **child;					// child node list
+	XmlNode **child;							// child node list
 	char* text;
-	XmlNodeType state;							// internal use by parser
-} XmlNode;
+	XmlNodeType state;						// internal use by parser
+};
 
 typedef void ( *JABBER_XML_CALLBACK )( XmlNode*, void* );
 
-typedef struct tagXmlState {
+struct XmlState
+{
 	XmlNode root;			// root is the document ( depth = 0 );
 	// callback for depth=n element on opening/closing
 	JABBER_XML_CALLBACK callback1_open;
@@ -56,7 +59,7 @@ typedef struct tagXmlState {
 	void *userdata1_close;
 	void *userdata2_open;
 	void *userdata2_close;
-} XmlState;
+};
 
 void JabberXmlInitState( XmlState *xmlState );
 void JabberXmlDestroyState( XmlState *xmlState );

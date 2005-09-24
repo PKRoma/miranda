@@ -40,6 +40,11 @@ int __stdcall JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam 
 }
 #endif
 
+void __stdcall JDeleteSetting( HANDLE hContact, const char* valueName )
+{
+   DBDeleteContactSetting( hContact, jabberProtoName, valueName );
+}
+
 DWORD __stdcall JGetByte( const char* valueName, int parDefltValue )
 {
 	return DBGetContactSettingByte( NULL, jabberProtoName, valueName, parDefltValue );
