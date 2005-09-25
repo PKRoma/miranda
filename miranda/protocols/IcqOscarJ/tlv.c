@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Helper functions for Oscar TLV chains
 //
 // -----------------------------------------------------------------------------
 
@@ -42,6 +42,8 @@
 oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs)
 {
   oscar_tlv_chain *now, *chain = NULL;
+  oscar_tlv *now_tlv = NULL;
+  WORD now_tlv_len;
   int len = wLen;
 
   if (!buf || !wLen) return NULL;
@@ -56,32 +58,34 @@ oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs)
       return NULL;
     }
 
-    now->tlv = (oscar_tlv *)malloc(sizeof(oscar_tlv));
+    now_tlv = (oscar_tlv *)malloc(sizeof(oscar_tlv));
 
-    if (!(now->tlv))
+    if (!now_tlv)
     {
-      disposeChain(&chain);
       SAFE_FREE(&now);
+      disposeChain(&chain);
       return NULL;
     }
+    now->tlv = now_tlv;
 
-    unpackWord(buf, &(now->tlv->wType));
-    unpackWord(buf, &(now->tlv->wLen));
+    unpackWord(buf, &(now_tlv->wType));
+    unpackWord(buf, &now_tlv_len);
+    now_tlv->wLen = now_tlv_len;
     len -= 4;
 
-    if (now->tlv->wLen < 1)
+    if (now_tlv_len < 1)
     {
-      now->tlv->pData = NULL;
+      now_tlv->pData = NULL;
     }
-    else if (now->tlv->wLen <= len)
-    { // TODO: here should be error given out
-      now->tlv->pData = (BYTE *)malloc(now->tlv->wLen);
-      if (now->tlv->pData)
-        memcpy(now->tlv->pData, *buf, now->tlv->wLen);
+    else if (now_tlv_len <= len)
+    {
+      now_tlv->pData = (BYTE *)malloc(now_tlv_len);
+      if (now_tlv->pData)
+        memcpy(now_tlv->pData, *buf, now_tlv_len);
     }
     else
     { // the packet is shorter than it should be
-      SAFE_FREE(&now->tlv);
+      SAFE_FREE(&now_tlv);
       SAFE_FREE(&now);
       return chain; // give at least the rest of chain
     }
@@ -89,8 +93,8 @@ oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs)
     now->next = chain;
     chain = now;
 
-    len -= now->tlv->wLen;
-    *buf += now->tlv->wLen;
+    len -= now_tlv_len;
+    *buf += now_tlv_len;
 
     if (--maxTlvs == 0)
       break;
