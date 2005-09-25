@@ -747,10 +747,6 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
     hContact = ICQFindNextContact(hContact);
   }
 
-  // not in list, check that uin do not belong to us
-  if (ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0) == uin)
-    return NULL;
-
   //not present: add
   if (Added)
   {
@@ -790,6 +786,10 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
 
     return hContact;
   }
+
+  // not in list, check that uin do not belong to us
+  if (ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0) == uin)
+    return NULL;
 
   return INVALID_HANDLE_VALUE;
 }
