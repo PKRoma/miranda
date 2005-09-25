@@ -167,7 +167,6 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
   oscar_tlv_chain* chain;
   oscar_tlv* dataTlv;
   unsigned char* databuf;
-  HANDLE hContact = INVALID_HANDLE_VALUE;
   
   
   // The entire packet is encapsulated in a TLV type 1
