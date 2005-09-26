@@ -232,9 +232,7 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 
 	// Delete orphaned contacts ( if roster sync is enabled )
 	if ( JGetByte( "RosterSync", FALSE ) == TRUE ) {
-		int listSize, listAllocSize;
-
-		listSize = listAllocSize = 0;
+		int listSize = 0, listAllocSize = 0;
 		HANDLE* list = NULL;
 		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 		while ( hContact != NULL ) {
@@ -246,7 +244,7 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 						JabberLog( "Syncing roster: preparing to delete %s ( hContact=0x%x )", dbv.pszVal, hContact );
 						if ( listSize >= listAllocSize ) {
 							listAllocSize = listSize + 100;
-							if (( list=( HANDLE * ) realloc( list, listAllocSize )) == NULL ) {
+							if (( list=( HANDLE * ) realloc( list, listAllocSize * sizeof( HANDLE ))) == NULL ) {
 								listSize = 0;
 								break;
 						}	}
