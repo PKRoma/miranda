@@ -51,5 +51,6 @@ int aim_util_isicquser(char *sn);
 int aim_util_shownotification(char *title, char *info, DWORD flags);
 void aim_utils_logversion();
 void aim_util_base64decode(char *in, char **out);
+wchar_t *make_unicode_string(const unsigned char *utf8);
 
 #endif
