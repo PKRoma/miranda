@@ -323,6 +323,7 @@ void aim_buddy_update(char *nick, int online, int type, int idle, int evil, time
 void aim_buddy_parseconfig(char *config)
 {
 	char *c="\0", group[256];
+	wchar_t* wgroup;
     HANDLE hContact;
 	HANDLE tempContact;
 	tempContact = aim_buddy_get("temp", 1, 1, 1, 0);
@@ -349,7 +350,8 @@ void aim_buddy_parseconfig(char *config)
 				else if (*c == 'g') {
 					c[strlen(c)]='\0';
                     mir_snprintf(group, sizeof(group), c + 2);
-                    LOG(LOG_DEBUG, "Parsed group from server config: (%s)", group);
+					wgroup =make_unicode_string(group);
+                    LOG(LOG_DEBUG, "Parsed group from server config: (%s)", wgroup);
 					
                 }
                 else if (*c == 'b') {
@@ -359,7 +361,7 @@ void aim_buddy_parseconfig(char *config)
                     mir_snprintf(nm, sizeof(nm), c + 2);
 
                     if (!aim_buddy_delaydeletecheck(nm)) {
-                        LOG(LOG_DEBUG, "Parsed buddy from server config (%s) in %s", nm, group);
+                        LOG(LOG_DEBUG, "Parsed buddy from server config (%s) in %s", nm, wgroup);
 						hContact = aim_buddy_get(nm, 0, 0, 0, 0);
 						if(!hContact)
 						{
@@ -367,8 +369,12 @@ void aim_buddy_parseconfig(char *config)
 							if (hContact)
 							{
 								int i=0;
+								BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 								DBWriteContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 1);
-								DBWriteContactSettingString(hContact,AIM_PROTO,"Group",group);
+								if(bUtfReadyDB==1)
+									DBWriteContactSettingStringUtf(hContact,AIM_PROTO,"Group",group);
+								else
+									DBWriteContactSettingString(hContact,AIM_PROTO,"Group",group);
 							}
                         }
 						else
@@ -376,7 +382,11 @@ void aim_buddy_parseconfig(char *config)
 							DBVARIANT dbv;
 							if(DBGetContactSetting(tempContact, AIM_PROTO, nm, &dbv))
 							{
-								DBWriteContactSettingString(tempContact,AIM_PROTO,nm,group);
+								BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
+								if(bUtfReadyDB==1)
+									DBWriteContactSettingStringUtf(tempContact,AIM_PROTO,nm,group);
+								else
+									DBWriteContactSettingString(tempContact,AIM_PROTO,nm,group);
 							}
 							else if(_strcmpi(dbv.pszVal,group)!=0)
 							{
@@ -384,7 +394,8 @@ void aim_buddy_parseconfig(char *config)
 								mir_snprintf(mbuf, sizeof(mbuf),"toc2_remove_buddy %s \"%s\"",nm,group);
 								aim_toc_sflapsend(mbuf, -1, TYPE_DATA);
 							}
-							DBFreeVariant(&dbv);
+							if(dbv.pszVal)
+								DBFreeVariant(&dbv);
 						}
                     }
                 }
