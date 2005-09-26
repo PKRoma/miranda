@@ -28,12 +28,12 @@ void aim_group_create(char *group)
     int i;
     char str[50], name[256];
     DBVARIANT dbv;
-
+	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
     if (!group)
         return;
     for (i = 0;; i++) {
         itoa(i, str, 10);
-        if (DBGetContactSetting(NULL, "CListGroups", str, &dbv))
+        if (DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv))
             break;
         if (dbv.pszVal[0] != '\0' && !strcmp(dbv.pszVal + 1, group)) {
             DBFreeVariant(&dbv);
@@ -42,16 +42,20 @@ void aim_group_create(char *group)
         DBFreeVariant(&dbv);
     }
     name[0] = 1 | GROUPF_EXPANDED;
-    strncpy(name + 1, group, sizeof(name) - 1);
+    strncpy(name + 1, group,strlen(group));
     name[strlen(group) + 1] = '\0';
-    DBWriteContactSettingString(NULL, "CListGroups", str, name);
+
+   	if(bUtfReadyDB==1)
+		DBWriteContactSettingStringUtf(NULL, "CListGroups", str, name);
+	else
+		DBWriteContactSettingString(NULL, "CListGroups", str, name);
     CallServiceSync(MS_CLUI_GROUPADDED, i + 1, 0);
 }
 
 void aim_group_adduser(HANDLE hContact, char *group)
 {
     DBVARIANT dbv;
-
+	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
     if (!hContact || !group)
         return;
     if (!DBGetContactSetting(hContact, "CList", "Group", &dbv)) {
@@ -59,9 +63,13 @@ void aim_group_adduser(HANDLE hContact, char *group)
             DBFreeVariant(&dbv);
             return;
         }
-        DBFreeVariant(&dbv);
+	if(dbv.pszVal!=NULL)
+		DBFreeVariant(&dbv);
     }
-    DBWriteContactSettingString(hContact, "CList", "Group", group);
+	if(bUtfReadyDB==1)
+		DBWriteContactSettingStringUtf(hContact, "CList", "Group", group);
+	else
+		DBWriteContactSettingString(hContact, "CList", "Group", group);
 }
 
 // end big o hack
