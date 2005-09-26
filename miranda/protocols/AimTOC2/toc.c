@@ -232,7 +232,8 @@ int aim_toc_parse(char *buf, int len)
 	int d,e,f,g,pw,sn;
 	char code[15];
     hdr = (struct toc_sflap_hdr *) buf;
-
+	if(!tdt)
+		return 0;
     if (tdt->state == STATE_FLAPON) {
         struct signon so;
         char host[256];
