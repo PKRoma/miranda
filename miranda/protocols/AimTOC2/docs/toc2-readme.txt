@@ -15,6 +15,10 @@ Frequently Asked Questions(FAQs)
 
 	A: Sync your buddies by either right clicking and clicking sync or selecting the full list sync in the AIM main menu properties.
 
+	Q: The default server will not connect!
+
+	A: Sometimes, the aimexpress.oscar.aol.com server hangs, try toc.oscar.aol.com and port 5190 instead.
+
 Contact:
 
 	Original Author: Robert Rainwater (rainwater at miranda-im.org)
@@ -28,6 +32,11 @@ Still need help?
 	icq id: 197688952
 
 Change Log:
+
+Version 1.4.1.8
+	
+	-Added a extra check so that miranda doesn't crash if tdt is a zero pointer.
+	-Added utf support for group names.(If the database supports utf.
 
 Version 1.4.1.7
 	
