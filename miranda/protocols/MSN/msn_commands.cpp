@@ -1646,7 +1646,7 @@ LBL_InvalidCommand:
 				msnProductID = "msmsgs@msnmsgr.com";
 			}
          else if ( !strcmp( protocol1, "MSNP11" )) {
-				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 7.0.0816 MSMSGS %s", tEmail );
+				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 7.0.0813 MSMSGS %s", tEmail );
 				msnProtChallenge = "CFHUR$52U_{VIX5T";
 				msnProductID = "PROD0101{0RM?UBW";
 			}
