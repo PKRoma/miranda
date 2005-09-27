@@ -538,33 +538,6 @@
 			<File
 				RelativePath="core\modules.h">
 			</File>
-			<File
-				RelativePath="..\plugins\db3x\utf.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-			</File>
 		</Filter>
 		<Filter
 			Name="Modules"
@@ -2832,6 +2805,9 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\utils\utf.c">
 				</File>
 				<File
 					RelativePath="modules\utils\utils.c">

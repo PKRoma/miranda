@@ -369,29 +369,6 @@ SOURCE=.\core\modules.c
 
 SOURCE=.\core\modules.h
 # End Source File
-# Begin Source File
-
-SOURCE=..\plugins\db3x\utf.c
-
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ENDIF 
-
-# End Source File
 # End Group
 # Begin Group "Modules"
 
@@ -758,6 +735,10 @@ SOURCE=.\modules\utils\path.c
 # Begin Source File
 
 SOURCE=.\modules\utils\resizer.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\utils\utf.c
 # End Source File
 # Begin Source File
 

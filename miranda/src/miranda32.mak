@@ -191,6 +191,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\commonheaders.sbr" \
 	"$(INTDIR)\miranda.sbr" \
 	"$(INTDIR)\modules.sbr" \
+	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\addcontact.sbr" \
 	"$(INTDIR)\autoaway.sbr" \
 	"$(INTDIR)\button.sbr" \
@@ -250,8 +251,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\resizer.sbr" \
 	"$(INTDIR)\utils.sbr" \
 	"$(INTDIR)\windowlist.sbr" \
-	"$(INTDIR)\visibility.sbr" \
-	"$(INTDIR)\utf.sbr"
+	"$(INTDIR)\visibility.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -264,6 +264,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\miranda.obj" \
 	"$(INTDIR)\modules.obj" \
+	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\addcontact.obj" \
 	"$(INTDIR)\autoaway.obj" \
 	"$(INTDIR)\button.obj" \
@@ -324,8 +325,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\windowlist.obj" \
 	"$(INTDIR)\visibility.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\utf.obj"
+	"$(INTDIR)\resource.res"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -493,6 +493,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\commonheaders.sbr" \
 	"$(INTDIR)\miranda.sbr" \
 	"$(INTDIR)\modules.sbr" \
+	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\addcontact.sbr" \
 	"$(INTDIR)\autoaway.sbr" \
 	"$(INTDIR)\button.sbr" \
@@ -552,8 +553,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\resizer.sbr" \
 	"$(INTDIR)\utils.sbr" \
 	"$(INTDIR)\windowlist.sbr" \
-	"$(INTDIR)\visibility.sbr" \
-	"$(INTDIR)\utf.sbr"
+	"$(INTDIR)\visibility.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -566,6 +566,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\miranda.obj" \
 	"$(INTDIR)\modules.obj" \
+	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\addcontact.obj" \
 	"$(INTDIR)\autoaway.obj" \
 	"$(INTDIR)\button.obj" \
@@ -626,8 +627,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\windowlist.obj" \
 	"$(INTDIR)\visibility.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\utf.obj"
+	"$(INTDIR)\resource.res"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -794,6 +794,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\commonheaders.sbr" \
 	"$(INTDIR)\miranda.sbr" \
 	"$(INTDIR)\modules.sbr" \
+	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\addcontact.sbr" \
 	"$(INTDIR)\autoaway.sbr" \
 	"$(INTDIR)\button.sbr" \
@@ -853,8 +854,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\resizer.sbr" \
 	"$(INTDIR)\utils.sbr" \
 	"$(INTDIR)\windowlist.sbr" \
-	"$(INTDIR)\visibility.sbr" \
-	"$(INTDIR)\utf.sbr"
+	"$(INTDIR)\visibility.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -867,6 +867,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\miranda.obj" \
 	"$(INTDIR)\modules.obj" \
+	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\addcontact.obj" \
 	"$(INTDIR)\autoaway.obj" \
 	"$(INTDIR)\button.obj" \
@@ -927,8 +928,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\windowlist.obj" \
 	"$(INTDIR)\visibility.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\utf.obj"
+	"$(INTDIR)\resource.res"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1096,6 +1096,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\commonheaders.sbr" \
 	"$(INTDIR)\miranda.sbr" \
 	"$(INTDIR)\modules.sbr" \
+	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\addcontact.sbr" \
 	"$(INTDIR)\autoaway.sbr" \
 	"$(INTDIR)\button.sbr" \
@@ -1155,8 +1156,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\resizer.sbr" \
 	"$(INTDIR)\utils.sbr" \
 	"$(INTDIR)\windowlist.sbr" \
-	"$(INTDIR)\visibility.sbr" \
-	"$(INTDIR)\utf.sbr"
+	"$(INTDIR)\visibility.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1169,6 +1169,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\miranda.obj" \
 	"$(INTDIR)\modules.obj" \
+	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\addcontact.obj" \
 	"$(INTDIR)\autoaway.obj" \
 	"$(INTDIR)\button.obj" \
@@ -1229,8 +1230,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\windowlist.obj" \
 	"$(INTDIR)\visibility.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\utf.obj"
+	"$(INTDIR)\resource.res"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1405,50 +1405,6 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_UNICODE" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\modules.obj"	"$(INTDIR)\modules.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF 
-
-SOURCE=..\plugins\db3x\utf.c
-
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\utf.obj"	"$(INTDIR)\utf.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\utf.obj"	"$(INTDIR)\utf.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\utf.obj"	"$(INTDIR)\utf.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_UNICODE" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\utf.obj"	"$(INTDIR)\utf.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1833,6 +1789,12 @@ SOURCE=.\modules\utils\path.c
 SOURCE=.\modules\utils\resizer.c
 
 "$(INTDIR)\resizer.obj"	"$(INTDIR)\resizer.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\utils\utf.c
+
+"$(INTDIR)\utf.obj"	"$(INTDIR)\utf.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

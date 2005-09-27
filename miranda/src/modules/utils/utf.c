@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -21,8 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "commonheaders.h"
-#include "database.h"
+#include "../../core/commonheaders.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Utf8Decode - converts UTF8-encoded string to the UCS2/MBCS format
@@ -38,7 +37,7 @@ void Utf8Decode( char* str, wchar_t** ucs2 )
 	len = strlen( str );
 	if ( len < 2 ) {
 		if ( ucs2 != NULL ) {
-			*ucs2 = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
+			*ucs2 = ( wchar_t* )malloc(( len+1 )*sizeof( wchar_t ));
 			MultiByteToWideChar( CP_ACP, 0, str, len, *ucs2, len );
 			( *ucs2 )[ len ] = 0;
 		}
@@ -77,7 +76,7 @@ void Utf8Decode( char* str, wchar_t** ucs2 )
 
 	if ( ucs2 != NULL ) {
 		int fullLen = ( len+1 )*sizeof( wchar_t );
-		*ucs2 = ( wchar_t* )mir_alloc( fullLen );
+		*ucs2 = ( wchar_t* )malloc( fullLen );
 		memcpy( *ucs2, tempBuf, fullLen );
 	}
 
@@ -97,7 +96,7 @@ char* Utf8Encode( const char* src )
 		return NULL;
 
 	len = strlen( src );
-	result = ( char* )mir_alloc( len*3 + 1 );
+	result = ( char* )malloc( len*3 + 1 );
 	if ( result == NULL )
 		return NULL;
 
@@ -136,7 +135,7 @@ char* Utf8Encode( const char* src )
 char* Utf8EncodeUcs2( const wchar_t* src )
 {
 	int len = wcslen( src );
-	char* result = ( char* )mir_alloc( len*3 + 1 );
+	char* result = ( char* )malloc( len*3 + 1 );
 	if ( result == NULL )
 		return NULL;
 
