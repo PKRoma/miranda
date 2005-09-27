@@ -33,7 +33,7 @@ void aim_group_create(char *group)
         return;
     for (i = 0;; i++) {
         itoa(i, str, 10);
-        if (DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv))
+        if (DBGetContactSetting(NULL, "CListGroups", str, &dbv))
             break;
         if (dbv.pszVal[0] != '\0' && !strcmp(dbv.pszVal + 1, group)) {
             DBFreeVariant(&dbv);
@@ -42,9 +42,8 @@ void aim_group_create(char *group)
         DBFreeVariant(&dbv);
     }
     name[0] = 1 | GROUPF_EXPANDED;
-    strncpy(name + 1, group,strlen(group));
+    strncpy(name + 1, group, sizeof(name) - 1);
     name[strlen(group) + 1] = '\0';
-
    	if(bUtfReadyDB==1)
 		DBWriteContactSettingStringUtf(NULL, "CListGroups", str, name);
 	else
