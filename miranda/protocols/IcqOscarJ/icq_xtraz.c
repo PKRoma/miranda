@@ -283,10 +283,9 @@ void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCooki
   char *szResBody = MangleXml(szResponse, nResponseLen);
   int nBodyLen = strlennull(szResBody) + 21;
   char *szBody = (char*)malloc(nBodyLen);
-  int bAdded;
-  HANDLE hContact = HContactFromUIN(dwUin, &bAdded);
+  HANDLE hContact = HContactFromUIN(dwUin, NULL);
 
-  if (!CheckContactCapabilities(hContact, CAPF_XTRAZ))
+  if (hContact != INVALID_HANDLE_VALUE && !CheckContactCapabilities(hContact, CAPF_XTRAZ))
     return; // Contact does not support xtraz, do not send anything
 
   if (validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
