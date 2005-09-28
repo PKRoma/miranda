@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -102,6 +102,6 @@ int InitWindowList(void)
 	CreateServiceFunction(MS_UTILS_BROADCASTTOWINDOWLIST,BroadcastToWindowList);
 	CreateServiceFunction(MS_UTILS_BROADCASTTOWINDOWLIST_ASYNC,BroadcastToWindowListAsync);
 	CreateServiceFunction(MS_UTILS_FINDWINDOWINLIST,FindInWindowList);
-	HookEvent(ME_SYSTEM_MODULESLOADED,HookShutdown);	
+	HookEvent(ME_SYSTEM_MODULESLOADED,HookShutdown);
 	return 0;
 }

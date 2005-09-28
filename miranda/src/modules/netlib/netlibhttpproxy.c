@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -77,7 +77,7 @@ static int HttpGatewaySendGet(struct NetlibConnection *nlc)
 
 	nlcSend=*nlc;
 	nlcSend.usingHttpGateway=0;
-	
+
 	if (nlc->nlhpi.szHttpGetUrl != NULL) {
 
 		Netlib_Logf(nlc->nlu,"%s %d: Sending data.[ICQ GET] ",__FILE__,__LINE__);
@@ -102,7 +102,7 @@ static int HttpGatewaySendGet(struct NetlibConnection *nlc)
 
 			free(p);
 	}
-	 
+
 	if(NetlibHttpSendRequest((WPARAM)&nlcSend,(LPARAM)&nlhrSend)==SOCKET_ERROR) {
 		struct NetlibHTTPProxyPacketQueue *p = nlc->pHttpProxyPacketQueue;
 
@@ -221,9 +221,9 @@ int NetlibHttpGatewayPost(struct NetlibConnection *nlc,const char *buf,int len,i
 {
 		struct NetlibHTTPProxyPacketQueue *p;
 
-        if (nlc->nlhpi.szHttpGetUrl != NULL) 
+        if (nlc->nlhpi.szHttpGetUrl != NULL)
                return NetlibHttpGatewayOLDPost(nlc, buf, len, flags);
-        
+
         /*
          * Gena01 - many changes here, do compare against the other version.
          *
@@ -234,13 +234,13 @@ int NetlibHttpGatewayPost(struct NetlibConnection *nlc,const char *buf,int len,i
          * Impact: NONE! Since currently miranda doesn't allow szHttpGetUrl to be NULL, it will not connect
          *         with the new plugins that use this code.
          */
-         
+
          p = malloc(sizeof(struct NetlibHTTPProxyPacketQueue));
          p->dataBuffer = malloc(len);
          memcpy(p->dataBuffer, buf, len);
          p->dataBufferLen = len;
          p->next = NULL;
-         
+
          /*
           * Now check to see where to insert this in our queue
           */
@@ -248,16 +248,16 @@ int NetlibHttpGatewayPost(struct NetlibConnection *nlc,const char *buf,int len,i
                 nlc->pHttpProxyPacketQueue = p;
         } else {
                 struct NetlibHTTPProxyPacketQueue *t = nlc->pHttpProxyPacketQueue;
-                
-                while (t->next != NULL) 
+
+                while (t->next != NULL)
                         t = t->next;
-                
+
                 t->next = p;
         }
-        
+
 
         /*
-         * Gena01 - fake a Send!! tell 'em all is ok. We catch errors in Recv. 
+         * Gena01 - fake a Send!! tell 'em all is ok. We catch errors in Recv.
          */
         return len;
 }
@@ -548,7 +548,7 @@ int NetlibInitHttpConnection(struct NetlibConnection *nlc,struct NetlibUser *nlu
 	nlc->usingHttpGateway=1;
 
 	/* don't send anything if only using POST? */
-	if(nlc->nlhpi.szHttpGetUrl!= NULL) 
+	if(nlc->nlhpi.szHttpGetUrl!= NULL)
 	if(!HttpGatewaySendGet(nlc))
 		return 0;
 

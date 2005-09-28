@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -81,7 +81,7 @@ static CredHandle hNtlmClientCredential;
 //free() the return value
 static void NtlmDestroy(void)
 {
-	if (pSecurityFunctions) 
+	if (pSecurityFunctions)
 	{
 		pSecurityFunctions->DeleteSecurityContext(&hNtlmClientContext);
 		pSecurityFunctions->FreeCredentialsHandle(&hNtlmClientCredential);
@@ -253,7 +253,7 @@ static int SendHttpRequestAndData(struct NetlibConnection *nlc,struct ResizableC
 	int bytesSent;
 
 	if((nlhr->requestType==REQUEST_POST)) {
-		if(sendContentLengthHeader) 
+		if(sendContentLengthHeader)
 			AppendToCharBuffer(httpRequest,"Content-Length: %d\r\n\r\n",nlhr->dataLength);
 		else
 			AppendToCharBuffer(httpRequest,"\r\n");
@@ -645,7 +645,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		hConnection=(HANDLE)NetlibOpenConnection((WPARAM)nlu,(LPARAM)&nloc);
 		if(hConnection==NULL) return (int)(HANDLE)NULL;
 	}
-	
+
 	{
 		NETLIBHTTPREQUEST nlhrSend;
 		int i,doneUserAgentHeader=0;
@@ -681,7 +681,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		}
 		if(!doneUserAgentHeader) free(nlhrSend.headers);
 	}
-	
+
 	{
 		nlhrReply=(NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection,0);
 		if(nlhrReply==NULL) {

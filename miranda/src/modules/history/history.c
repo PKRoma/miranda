@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -143,19 +143,19 @@ static void GetFileDescription( DBEVENTINFO *dbei, TCHAR* buf, int cbBuf )
 static void GetObjectDescription( DBEVENTINFO *dbei, TCHAR* str, int cbStr )
 {
 	switch( dbei->eventType ) {
-	case EVENTTYPE_MESSAGE: 
-		GetMessageDescription( dbei, str, cbStr ); 
+	case EVENTTYPE_MESSAGE:
+		GetMessageDescription( dbei, str, cbStr );
 		break;
 
 	case EVENTTYPE_URL:
 		GetUrlDescription( dbei, str, cbStr );
 		break;
 
-	case EVENTTYPE_FILE:    
-		GetFileDescription( dbei, str, cbStr ); 
+	case EVENTTYPE_FILE:
+		GetFileDescription( dbei, str, cbStr );
 		break;
 
-	default:	
+	default:
 		str[ 0 ] = 0;
 }	}
 
@@ -164,7 +164,7 @@ static void GetObjectSummary( DBEVENTINFO *dbei, TCHAR* str, int cbStr )
 	TCHAR* pszSrc;
 
 	switch( dbei->eventType ) {
-	case EVENTTYPE_MESSAGE: 
+	case EVENTTYPE_MESSAGE:
 		if ( dbei->flags & DBEF_SENT )   pszSrc = TranslateT( "Outgoing Message" );
 		else                             pszSrc = TranslateT( "Incoming Message" );
 		break;
@@ -174,7 +174,7 @@ static void GetObjectSummary( DBEVENTINFO *dbei, TCHAR* str, int cbStr )
       else                             pszSrc = TranslateT( "Incoming URL" );
 		break;
 
-	case EVENTTYPE_FILE: 
+	case EVENTTYPE_FILE:
 		if ( dbei->flags & DBEF_SENT )   pszSrc = TranslateT( "Outgoing File" );
 		else                             pszSrc = TranslateT( "Incoming File" );
 		break;
@@ -265,13 +265,13 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	switch (msg)
 	{
 		case WM_INITDIALOG:
-		{	
+		{
 			TCHAR* contactName, str[200];
 
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
 			hContact = (HANDLE)lParam;
-         WindowList_Add(hWindowList,hwndDlg,hContact);			
+         WindowList_Add(hWindowList,hwndDlg,hContact);
 			Utils_RestoreWindowPosition(hwndDlg,hContact,"History","");
 			contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,GCDNF_TCHAR);
 			mir_sntprintf(str,SIZEOF(str),TranslateT("History for %s"),contactName);
@@ -285,7 +285,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			THistoryThread *hInfo = (THistoryThread*)malloc(sizeof(THistoryThread));
          EnableWindow(GetDlgItem(hwndDlg, IDC_LIST), FALSE);
 			hInfo->hContact = hContact;
-			hInfo->hwnd = hwndDlg;			
+			hInfo->hwnd = hwndDlg;
 			forkthread(FillHistoryThread, 0, hInfo);
 			return TRUE;
 		}
@@ -297,7 +297,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		}
         case WM_GETMINMAXINFO:
         {
-            ((MINMAXINFO*)lParam)->ptMinTrackSize.x=300; 
+            ((MINMAXINFO*)lParam)->ptMinTrackSize.x=300;
             ((MINMAXINFO*)lParam)->ptMinTrackSize.y=230;
         }
 		case WM_SIZE:
@@ -411,7 +411,7 @@ static BOOL CALLBACK DlgProcHistoryFind(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	switch (msg) {
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
-			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);	
+			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 			return TRUE;
 
 		case WM_COMMAND:
@@ -430,7 +430,7 @@ static BOOL CALLBACK DlgProcHistoryFind(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				case IDCANCEL:
 					DestroyWindow(hwndDlg);
 					return TRUE;
-				
+
 			}
 			break;
 	}

@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -78,7 +78,7 @@ static void FilenameToFileList(HWND hwndDlg, struct FileDlgData *dat, const char
 			int nNumberOfFiles = 0;
 			int nTemp;
 			int fileOffset;
-			
+
 			// :NOTE: The first string in the buffer is the directory, followed by a
 			// NULL separated list of all files
 
@@ -343,12 +343,12 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		}
 		case WM_DESTROY:
 			if(dat->hPreshutdownEvent) UnhookEvent(dat->hPreshutdownEvent);
-			if(dat->hwndTransfer) DestroyWindow(dat->hwndTransfer);	
+			if(dat->hwndTransfer) DestroyWindow(dat->hwndTransfer);
 			FreeFilesMatrix(&dat->files);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)OldSendEditProc);
 			DestroyIcon(dat->hUIIcons[2]);
 			DestroyIcon(dat->hUIIcons[1]);
-			DestroyIcon(dat->hUIIcons[0]);			
+			DestroyIcon(dat->hUIIcons[0]);
 			free(dat);
 			return TRUE;
 	}

@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -131,11 +131,11 @@ void GetSensiblyFormattedSize(DWORD size,char *szOut,int cchOut,int unitsOverrid
 }
 
 // Tripple redirection sucks but is needed to nullify the array pointer
-void FreeFilesMatrix(char ***files) 
+void FreeFilesMatrix(char ***files)
 {
 
 	char **pFile;
-	
+
 	if (*files == NULL)
 		return;
 
@@ -237,7 +237,7 @@ int FilePreBuildContactMenu(WPARAM wParam,LPARAM lParam) {
 		mi.flags = CMIM_FLAGS|CMIM_ICON;
 		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_FILE);
 
-		for(i=0;i<hFileMenuCount;i++) 
+		for(i=0;i<hFileMenuCount;i++)
 			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hFileMenu[i], (LPARAM)&mi);
 	}
 	return 0;
@@ -272,14 +272,14 @@ int LoadSendRecvFileModule(void)
     // Upgrade Routine for File Received Path - Remove me after 0.3.4
 	{
         DBVARIANT dbv;
-        
+
 	    if(!DBGetContactSetting(NULL,"SRFile","RecvFilesDir",&dbv)) {
             char szPath[MAX_PATH];
 
             mir_snprintf(szPath, sizeof(szPath), "%s%s%s", dbv.pszVal, dbv.pszVal[strlen(dbv.pszVal)-1]=='\\'?"":"\\" , "%userid%");
             DBFreeVariant(&dbv);
             DBWriteContactSettingString(NULL,"SRFile","RecvFilesDirAdv",szPath);
-            DBDeleteContactSetting(NULL,"SRFile","RecvFilesDir"); 
+            DBDeleteContactSetting(NULL,"SRFile","RecvFilesDir");
         }
     }
     // End Upgrade

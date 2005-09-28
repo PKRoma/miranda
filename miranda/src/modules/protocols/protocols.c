@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -69,7 +69,7 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 
 static int Proto_ValidTypingContact(HANDLE hContact, char *szProto) {
 	DWORD protoCaps;
-	
+
 	if (!hContact || !szProto) return 0;
 	protoCaps=CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_4,0);
 	if (!(protoCaps&PF4_SUPPORTTYPING)) return 0;
