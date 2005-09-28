@@ -761,8 +761,8 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 							p++;
 							if (( item = JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 								JABBER_RESOURCE_STATUS *r = item->resource;
-								for ( i=0; i<item->resourceCount && strcmp( r[i].resourceName, p ); i++ );
-								if ( i >= item->resourceCount )
+								for ( i=0; i < item->resourceCount && strcmp( r->resourceName, p ); i++, r++ );
+								if ( i >= item->resourceCount || ( r->version == NULL && r->system == NULL && r->software == NULL ))
 									JabberSend( info->s, "<iq type='get' to='%s'><query xmlns='jabber:iq:version'/></iq>", from );
 					}	}	}
 
@@ -1111,8 +1111,8 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 							if ( osvi.dwMinorVersion == 90 ) os = JabberTextEncode( JTranslate( "Windows ME" ));
 						}
 						break;
-					}
-				}
+				}	}
+
 				if ( os == NULL ) os = JabberTextEncode( JTranslate( "Windows" ));
 				JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
 				if (( resultId = JabberTextEncode( idStr )) != NULL ) {
@@ -1141,28 +1141,24 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, from ))!=NULL && ( r=item->resource )!=NULL ) {
 					if (( p=strchr( from, '/' ))!=NULL && p[1]!='\0' ) {
 						p++;
-						for ( i=0; i<item->resourceCount && strcmp( r[i].resourceName, p ); i++ );
+						for ( i=0; i<item->resourceCount && strcmp( r->resourceName, p ); i++, r++ );
 						if ( i < item->resourceCount ) {
-							if ( r[i].software ) free( r[i].software );
+							if ( r->software ) free( r->software );
 							if (( n=JabberXmlGetChild( queryNode, "name" ))!=NULL && n->text )
-								r[i].software = JabberTextDecode( n->text );
+								r->software = JabberTextDecode( n->text );
 							else
-								r[i].software = NULL;
-							if ( r[i].version ) free( r[i].version );
+								r->software = NULL;
+							if ( r->version ) free( r->version );
 							if (( n=JabberXmlGetChild( queryNode, "version" ))!=NULL && n->text )
-								r[i].version = JabberTextDecode( n->text );
+								r->version = JabberTextDecode( n->text );
 							else
-								r[i].version = NULL;
-							if ( r[i].system ) free( r[i].system );
+								r->version = NULL;
+							if ( r->system ) free( r->system );
 							if (( n=JabberXmlGetChild( queryNode, "os" ))!=NULL && n->text )
-								r[i].system = JabberTextDecode( n->text );
+								r->system = JabberTextDecode( n->text );
 							else
-								r[i].system = NULL;
-						}
-					}
-				}
-			}
-		}
+								r->system = NULL;
+		}	}	}	}	}	
 	}
 	// RECVED: <iq type='set'><si xmlns='http://jabber.org/protocol/si' ...
 	else if ( !strcmp( type, "set" ) && ( siNode=JabberXmlGetChildWithGivenAttrValue( node, "si", "xmlns", "http://jabber.org/protocol/si" ))!=NULL && ( profile=JabberXmlGetAttrValue( siNode, "profile" ))!=NULL ) {
@@ -1197,9 +1193,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 					SetEvent( item->ft->hFileEvent );	// Simulate the termination of file server connection
 			}
 			i++;
-		}
-	}
-}
+}	}	}
 
 static void JabberProcessRegIq( XmlNode *node, void *userdata )
 {
@@ -1207,18 +1201,16 @@ static void JabberProcessRegIq( XmlNode *node, void *userdata )
 	XmlNode *errorNode;
 	char* type, *str;
 	char text[256];
-	unsigned int id;
 	char* p, *q;
 
 	if ( !node->name || strcmp( node->name, "iq" )) return;
 	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
 	if (( type=JabberXmlGetAttrValue( node, "type" )) == NULL ) return;
 
-	id = -1;
-	if (( str=JabberXmlGetAttrValue( node, "id" )) != NULL ) {
+	unsigned int id = -1;
+	if (( str=JabberXmlGetAttrValue( node, "id" )) != NULL )
 		if ( !strncmp( str, JABBER_IQID, strlen( JABBER_IQID )) )
 			id = atoi( str+strlen( JABBER_IQID ));
-	}
 
 	if ( !strcmp( type, "result" )) {
 
@@ -1242,8 +1234,7 @@ static void JabberProcessRegIq( XmlNode *node, void *userdata )
 			JabberSend( info->s, "</stream:stream>" );
 			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )JTranslate( "Registration successful" ));
 			info->reg_done = TRUE;
-		}
-	}
+	}	}
 
 	else if ( !strcmp( type, "error" )) {
 		errorNode = JabberXmlGetChild( node, "error" );
@@ -1252,9 +1243,7 @@ static void JabberProcessRegIq( XmlNode *node, void *userdata )
 		free( str );
 		info->reg_done = TRUE;
 		JabberSend( info->s, "</stream:stream>" );
-	}
-
-}
+}	}
 
 static void __cdecl JabberKeepAliveThread( JABBER_SOCKET s )
 {
