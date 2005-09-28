@@ -135,6 +135,7 @@ int aim_toc_login(HANDLE hConn)
             free(tdt->username);
         free(tdt);
     }
+	tdt=NULL;
     tdt = malloc(sizeof(struct toc_data));
     tdt->password = NULL;
     tdt->username = NULL;
@@ -232,8 +233,6 @@ int aim_toc_parse(char *buf, int len)
 	int d,e,f,g,pw,sn;
 	char code[15];
     hdr = (struct toc_sflap_hdr *) buf;
-	if(!tdt)
-		return 0;
     if (tdt->state == STATE_FLAPON) {
         struct signon so;
         char host[256];
@@ -335,6 +334,42 @@ int aim_toc_parse(char *buf, int len)
             else
 			{
                 MessageBox(0, buf, Translate(ch), MB_OK | MB_ICONINFORMATION);
+			}
+		}
+    }
+	if (!_strcmpi(c, "INSERTED2"))
+	{
+        char* ch=strtok(NULL, ":");
+		char buf[256];
+		if(!_strcmpi(ch,"b"))
+		{
+			HANDLE hContact;
+			char nm[33],group[MSG_LEN];
+			ch=strtok(NULL, ":");
+			mir_snprintf(nm, sizeof(nm),ch);
+			ch=strtok(NULL, ":");
+			mir_snprintf(group, sizeof(group),ch);
+			mir_snprintf(buf, sizeof(buf), Translate("Buddy Added Successfully!"));	
+			hContact = aim_buddy_get(nm, 1, 1, 1, group);
+			if (hContact)
+			{
+				BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
+				DBWriteContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 1);
+				if(bUtfReadyDB==1)
+					DBWriteContactSettingStringUtf(hContact,AIM_PROTO,"Group",group);
+				else
+					DBWriteContactSettingString(hContact,AIM_PROTO,"Group",group);
+			}		
+			if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SE, AIM_KEY_SE_DEF)) 
+			{
+				if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) 
+				{
+					aim_util_shownotification(Translate(ch), buf, NIIF_INFO);
+				}
+				else
+				{
+					MessageBox(0, buf, Translate(ch), MB_OK | MB_ICONINFORMATION);
+				}
 			}
 		}
     }
