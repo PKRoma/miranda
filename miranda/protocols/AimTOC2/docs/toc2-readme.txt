@@ -32,6 +32,11 @@ Still need help?
 	icq id: 197688952
 
 Change Log:
+Version 1.4.1.9
+
+	-Removed the check added in 1.4.1.8. On further inspection tdt should never be dereferenced- initiated to NULL, free'd, and reinitialized as needed.
+	-Fixed utf bugs that caused groups to not be added to miranda; which, in turn caused users in those groups to not display.
+	-Added support for the "INSERTED2" command(buddies that are added to the server-side list from other clients- will be added in real time to miranda's list.
 
 Version 1.4.1.8
 	
