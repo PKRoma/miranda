@@ -9,15 +9,15 @@ Frequently Asked Questions(FAQs)
 
 	Q: Profiles don't work?
 
-	A: Profiles will only work from the default server & port. If they still aren't working re-login.
+	A: Profiles will only work from the aimexpress.oscar.aol.com port 5190. If they still aren't working re-login.
 
 	Q: My buddies don't appear as online?
 
 	A: Sync your buddies by either right clicking and clicking sync or selecting the full list sync in the AIM main menu properties.
 
-	Q: The default server will not connect!
+	Q: The aimexpress.oscar.aol.com server will not connect!
 
-	A: Sometimes, the aimexpress.oscar.aol.com server hangs, try toc.oscar.aol.com and port 5190 instead.
+	A: Sometimes, the aimexpress.oscar.aol.com server hangs, try toc.oscar.aol.com and port 5190 instead. NOTE: profiles will not work from this server.
 
 Contact:
 

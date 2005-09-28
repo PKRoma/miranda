@@ -68,7 +68,7 @@ BEGIN
     LTEXT           "Port:",IDC_STDLPORT,173,104,25,8
     EDITTEXT        IDC_TOCPORT,199,102,29,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Reset",IDC_RESETSERVER,235,102,34,12
-    LTEXT           "Note: Use port 0 to connect on a random port\r\nNote: Profiles will only work on the default server and port.",
+    LTEXT           "Note: Use port 0 to connect on a random port\r\nNote: Profiles will only work from aimexpress.oscar.aol.com:5190.",
                     IDC_STATIC,12,119,255,18
     CONTROL         "Show tooltip messages",IDC_SHOWERRORS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,138,255,10
