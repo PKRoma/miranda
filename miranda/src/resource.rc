@@ -2150,7 +2150,7 @@ IDI_DETAILSLOGO         ICON    DISCARDABLE     "res\\detailsl.ico"
 IDI_RECVMSG             ICON    DISCARDABLE     "res\\message.ico"
 IDI_SENDMSG             ICON    DISCARDABLE     "res\\reply.ico"
 IDI_URL                 ICON    DISCARDABLE     "res\\url.ico"
-IDI_NA                  ICON    DISCARDABLE     "res\\NA2.ico"
+IDI_NA                  ICON    DISCARDABLE     "res\\na2.ico"
 IDI_AWAY                ICON    DISCARDABLE     "res\\away.ico"
 IDI_FREE4CHAT           ICON    DISCARDABLE     "res\\freechat.ico"
 IDI_ONLINE              ICON    DISCARDABLE     "res\\online2.ico"
@@ -2180,7 +2180,7 @@ IDI_DOWNARROW           ICON    DISCARDABLE     "res\\downarrow.ico"
 //
 
 IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "res\\hyperlin.cur"
-IDC_DROP                CURSOR  DISCARDABLE     "res\\DRAGCOPY.CUR"
+IDC_DROP                CURSOR  DISCARDABLE     "res\\dragcopy.cur"
 IDC_DROPUSER            CURSOR  DISCARDABLE     "res\\dropuser.cur"
 
 /////////////////////////////////////////////////////////////////////////////
