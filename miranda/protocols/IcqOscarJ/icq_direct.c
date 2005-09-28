@@ -141,9 +141,12 @@ void CloseContactDirectConns(HANDLE hContact)
   {
     if (directConnList[i] && directConnList[i]->hContact == hContact)
     {
-      int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)directConnList[i]->hConnection, (LPARAM)0);
+      HANDLE hConnection = directConnList[i]->hConnection;
+      int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)hConnection, 0);
+
+      directConnList[i]->hConnection = NULL; // do not allow reuse
       if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
-      Netlib_CloseHandle(directConnList[i]->hConnection);
+      Netlib_CloseHandle(hConnection);
     }
   }
 
