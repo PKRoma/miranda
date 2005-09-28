@@ -218,7 +218,7 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 		LeaveCriticalSection( &csLists );
 		return 0;
 	}
-	i--;
+	JABBER_LIST_ITEM* LI = &lists[i-1];
 
 	int bIsNewResource = false;
 
@@ -226,11 +226,11 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 		if (( q=strchr( p, '/' )) != NULL ) {
 			char* resource = q+1;
 			if ( resource[0] ) {
-				JABBER_RESOURCE_STATUS* r = lists[i].resource;
+				JABBER_RESOURCE_STATUS* r = LI->resource;
 				if ( r == NULL ) {
 					r = ( JABBER_RESOURCE_STATUS * ) malloc( sizeof( JABBER_RESOURCE_STATUS ));
 					bIsNewResource = true;
-					lists[i].resourceCount = 1;
+					LI->resourceCount = 1;
 
 					memset( r, 0, sizeof JABBER_RESOURCE_STATUS );
 					r->status = status;
@@ -239,30 +239,28 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 						r->statusMessage = _strdup( statusMessage );
 				}
 				else {
-					int resourceCount = lists[i].resourceCount;
-					r = lists[i].resource;
-					for ( j=0; j<resourceCount; j++ ) {
-						if ( !strcmp( r[j].resourceName, resource )) {
+					for ( j=0; j < LI->resourceCount; j++, r++ ) {
+						if ( !strcmp( r->resourceName, resource )) {
 							// Already exist, update status and statusMessage
-							r[j].status = status;
-							replaceStr( r[j].statusMessage, statusMessage );
+							r->status = status;
+							replaceStr( r->statusMessage, statusMessage );
 							break;
 					}	}
 
-					if ( j >= resourceCount ) {
+					if ( j >= LI->resourceCount ) {
 						// Not already exist, add new resource
-						r = ( JABBER_RESOURCE_STATUS * ) realloc( r, ( resourceCount+1 )*sizeof( JABBER_RESOURCE_STATUS ));
+						r = ( JABBER_RESOURCE_STATUS * ) realloc( LI->resource, ( LI->resourceCount+1 )*sizeof( JABBER_RESOURCE_STATUS ));
 						bIsNewResource = true;
-						JABBER_RESOURCE_STATUS* r2 = r + resourceCount;
+						JABBER_RESOURCE_STATUS* r2 = r + LI->resourceCount;
 						memset( r2, 0, sizeof JABBER_RESOURCE_STATUS );
 						r2->status = status;
 						r2->resourceName = _strdup( resource );
 						if ( statusMessage )
 							r2->statusMessage = _strdup( statusMessage );
-						lists[i].resourceCount++;
+						LI->resourceCount++;
 				}	}
 
-				lists[i].resource = r;
+				LI->resource = r;
 #ifdef _DEBUG
 				PrintResource( i );
 #endif
@@ -270,12 +268,12 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 		}
 		else {
 			// No resource, update the main statusMessage
-			if ( lists[i].statusMessage != NULL )
-				free( lists[i].statusMessage );
+			if ( LI->statusMessage != NULL )
+				free( LI->statusMessage );
 			if ( statusMessage )
-				lists[i].statusMessage = _strdup( statusMessage );
+				LI->statusMessage = _strdup( statusMessage );
 			else
-				lists[i].statusMessage = NULL;
+				LI->statusMessage = NULL;
 	}	}
 
 	LeaveCriticalSection( &csLists );
@@ -284,51 +282,45 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 
 void JabberListRemoveResource( JABBER_LIST list, const char* jid )
 {
-	int i, j, resourceCount;
+	int j;
 	char* p, *q;
-	char* resource;
-	JABBER_RESOURCE_STATUS *r;
 
 	EnterCriticalSection( &csLists );
-	i = JabberListExist( list, jid );
-	if ( !i || lists[i-1].resource==NULL ) {
+	int i = JabberListExist( list, jid );
+	JABBER_LIST_ITEM* LI = &lists[i-1];
+	if ( !i || LI == NULL ) {
 		LeaveCriticalSection( &csLists );
 		return;
 	}
-	i--;
 
 	if (( p=strchr( jid, '@' )) != NULL ) {
 		if (( q=strchr( p, '/' )) != NULL ) {
-			resource = q+1;
+			char* resource = q+1;
 			if ( resource[0] ) {
-				r = lists[i].resource;
-				resourceCount = lists[i].resourceCount;
-				for ( j=0; j<resourceCount; j++ ) {
-					if ( !strcmp( r[j].resourceName, resource ))
+				JABBER_RESOURCE_STATUS* r = LI->resource;
+				for ( j=0; j < LI->resourceCount; j++, r++ ) {
+					if ( !strcmp( r->resourceName, resource ))
 						break;
 				}
-				if ( j < resourceCount ) {
+				if ( j < LI->resourceCount ) {
 					// Found resource to be removed
-					if ( lists[i].defaultResource == j )
-						lists[i].defaultResource = -1;
-					else if ( lists[i].defaultResource > j )
-						lists[i].defaultResource--;
-					if ( r[j].resourceName ) free( r[j].resourceName );
-					if ( r[j].statusMessage ) free( r[j].statusMessage );
-					if ( r[j].software ) free( r[j].software );
-					if ( r[j].version ) free( r[j].version );
-					if ( r[j].system ) free( r[j].system );
-					if ( resourceCount == 1 ) {
+					if ( LI->defaultResource == j )
+						LI->defaultResource = -1;
+					else if ( LI->defaultResource > j )
+						LI->defaultResource--;
+					if ( r->resourceName ) free( r->resourceName );
+					if ( r->statusMessage ) free( r->statusMessage );
+					if ( r->software ) free( r->software );
+					if ( r->version ) free( r->version );
+					if ( r->system ) free( r->system );
+					if ( LI->resourceCount-- == 1 ) {
 						free( r );
-						r = NULL;
+						LI->resource = NULL;
 					}
 					else {
-						resourceCount--;
-						memmove( r+j, r+j+1, ( resourceCount-j )*sizeof( JABBER_RESOURCE_STATUS ));
-						r = ( JABBER_RESOURCE_STATUS * )realloc( r, resourceCount*sizeof( JABBER_RESOURCE_STATUS ));
+						memmove( r, r+1, ( LI->resourceCount-j )*sizeof( JABBER_RESOURCE_STATUS ));
+						LI->resource = ( JABBER_RESOURCE_STATUS * )realloc( LI->resource, LI->resourceCount*sizeof( JABBER_RESOURCE_STATUS ));
 					}
-					lists[i].resourceCount--;
-					lists[i].resource = r;
 #ifdef _DEBUG
 					PrintResource( i );
 #endif
@@ -340,26 +332,23 @@ void JabberListRemoveResource( JABBER_LIST list, const char* jid )
 char* JabberListGetBestResourceNamePtr( const char* jid )
 {
 	char* res;
-	int i;
 
 	EnterCriticalSection( &csLists );
-	i = JabberListExist( LIST_ROSTER, jid );
-	if ( !i || lists[i-1].resource==NULL ) {
+	int i = JabberListExist( LIST_ROSTER, jid );
+	JABBER_LIST_ITEM* LI = &lists[i-1];
+	if ( !i || LI == NULL ) {
 		LeaveCriticalSection( &csLists );
 		return NULL;
 	}
-	i--;
 
-	if ( lists[i].resourceCount == 1 ) {
-		res = lists[i].resource[0].resourceName;
-	}
+	if ( LI->resourceCount == 1 )
+		res = LI->resource[0].resourceName;
 	else {
 		res = NULL;
-		if ( lists[i].resourceMode==RSMODE_MANUAL || lists[i].resourceMode==RSMODE_LASTSEEN ) {
-			if ( lists[i].defaultResource>=0 && lists[i].defaultResource<lists[i].resourceCount )
-				res = lists[i].resource[lists[i].defaultResource].resourceName;
-		}
-	}
+		if ( LI->resourceMode == RSMODE_MANUAL || LI->resourceMode == RSMODE_LASTSEEN ) {
+			if ( LI->defaultResource>=0 && LI->defaultResource < LI->resourceCount )
+				res = LI->resource[ LI->defaultResource ].resourceName;
+	}	}
 
 	LeaveCriticalSection( &csLists );
 	return res;
@@ -367,28 +356,23 @@ char* JabberListGetBestResourceNamePtr( const char* jid )
 
 char* JabberListGetBestClientResourceNamePtr( const char* jid )
 {
-	char* res;
-	int i, status, s;
-	BOOL foundBetter;
-	JABBER_RESOURCE_STATUS *r;
-	int resourceCount;
-
 	EnterCriticalSection( &csLists );
-	i = JabberListExist( LIST_ROSTER, jid );
-	if ( !i || lists[i-1].resource==NULL ) {
+	int i = JabberListExist( LIST_ROSTER, jid );
+	JABBER_LIST_ITEM* LI = &lists[i-1];
+
+	if ( !i || LI == NULL ) {
 		LeaveCriticalSection( &csLists );
 		return NULL;
 	}
-	i--;
 
-	if (( res=JabberListGetBestResourceNamePtr( jid )) == NULL ) {
-		r = lists[i].resource;
-		resourceCount = lists[i].resourceCount;
-		status = ID_STATUS_OFFLINE;
+	char* res = JabberListGetBestResourceNamePtr( jid );
+	if ( res == NULL ) {
+		JABBER_RESOURCE_STATUS* r = LI->resource;
+		int status = ID_STATUS_OFFLINE;
 		res = NULL;
-		for ( i=0; i<resourceCount; i++ ) {
-			s = r[i].status;
-			foundBetter = FALSE;
+		for ( i=0; i < LI->resourceCount; i++ ) {
+			int s = r[i].status;
+			BOOL foundBetter = FALSE;
 			switch ( s ) {
 			case ID_STATUS_FREECHAT:
 				foundBetter = TRUE;
@@ -398,24 +382,22 @@ char* JabberListGetBestClientResourceNamePtr( const char* jid )
 					foundBetter = TRUE;
 				break;
 			case ID_STATUS_DND:
-				if ( status!=ID_STATUS_FREECHAT && status!=ID_STATUS_ONLINE )
+				if ( status != ID_STATUS_FREECHAT && status != ID_STATUS_ONLINE )
 					foundBetter = TRUE;
 				break;
 			case ID_STATUS_AWAY:
-				if ( status!=ID_STATUS_FREECHAT && status!=ID_STATUS_ONLINE && status!=ID_STATUS_DND )
+				if ( status != ID_STATUS_FREECHAT && status != ID_STATUS_ONLINE && status != ID_STATUS_DND )
 					foundBetter = TRUE;
 				break;
 			case ID_STATUS_NA:
-				if ( status!=ID_STATUS_FREECHAT && status!=ID_STATUS_ONLINE && status!=ID_STATUS_DND && status!=ID_STATUS_AWAY )
+				if ( status != ID_STATUS_FREECHAT && status != ID_STATUS_ONLINE && status != ID_STATUS_DND && status != ID_STATUS_AWAY )
 					foundBetter = TRUE;
 				break;
 			}
 			if ( foundBetter ) {
 				res = r[i].resourceName;
 				status = s;
-			}
-		}
-	}
+	}	}	}
 
 	LeaveCriticalSection( &csLists );
 	return res;
@@ -423,10 +405,8 @@ char* JabberListGetBestClientResourceNamePtr( const char* jid )
 
 int JabberListFindNext( JABBER_LIST list, int fromOffset )
 {
-	int i;
-
 	EnterCriticalSection( &csLists );
-	i = ( fromOffset>=0 ) ? fromOffset : 0;
+	int i = ( fromOffset>=0 ) ? fromOffset : 0;
 	for( ; i<count; i++ )
 		if ( lists[i].list == list ) {
 		  	LeaveCriticalSection( &csLists );
@@ -438,10 +418,8 @@ int JabberListFindNext( JABBER_LIST list, int fromOffset )
 
 JABBER_LIST_ITEM *JabberListGetItemPtr( JABBER_LIST list, const char* jid )
 {
-	int i;
-
 	EnterCriticalSection( &csLists );
-	i = JabberListExist( list, jid );
+	int i = JabberListExist( list, jid );
 	if ( !i ) {
 		LeaveCriticalSection( &csLists );
 		return NULL;

@@ -709,7 +709,7 @@ int JabberSearchByEmail( WPARAM wParam, LPARAM lParam )
 	JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultSetSearch );
 	JabberSend( jabberThreadInfo->s, 
 		"<iq type='set' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:search'><email>%s</email></query></iq>", 
-		iqId, UTF8(( char* )lParam));
+		iqId, szServerName, UTF8(( char* )lParam));
 	return iqId;
 }
 
