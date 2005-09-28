@@ -36,6 +36,7 @@ void pthread_r(struct pthread_arg *fa)
         callercode(arg);
     }
     __finally {
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
         CallService(MS_SYSTEM_THREAD_POP, 0, 0);
     }
 }
