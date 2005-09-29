@@ -2287,55 +2287,7 @@ IDB_SORTCOLDOWN         BITMAP  DISCARDABLE     "res\\sortcold.bmp"
 
 1                       24      DISCARDABLE     "miranda32.exe.manifest"
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,4,3,0
- PRODUCTVERSION 0,4,3,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x40004L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
-            VALUE "CompanyName", " \0"
-            VALUE "FileDescription", "Miranda IM\0"
-            VALUE "FileVersion", "0.4.3 alpha\0"
-            VALUE "InternalName", "miranda32\0"
-            VALUE "LegalCopyright", "Copyright © 2000-2005 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "miranda32.exe\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Miranda IM\0"
-            VALUE "ProductVersion", "0.4.3 alpha\0"
-            VALUE "SpecialBuild", "\0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x0, 1200
-    END
-END
-
-#endif    // !_MAC
-
-#endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
 
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -2343,6 +2295,7 @@ END
 // Generated from the TEXTINCLUDE 3 resource.
 //
 
+#include "version.rc"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
