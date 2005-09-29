@@ -55,7 +55,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../include/m_button.h"
 #include "../../include/m_file.h"
 #include "../../include/m_ignore.h"
-#include "../../include/m_chat.h"
+#include "../../plugins/chat unstable/m_chat.h"
 #include "m_ircscript.h"
 #include "resource.h"
 #include "irclib.h"
@@ -197,6 +197,7 @@ typedef struct PREFERENCES_TYPE			// Preferences structure
 	BYTE ManualHost;
 	BYTE OldStyleModes;
 	BYTE ChannelAwayNotification;
+	BYTE SendNotice;
 	POINT ListSize;
 	COLORREF colors[16];
 	HICON hIcon[13];

@@ -142,6 +142,7 @@ void InitPrefs(void)
 	prefs->IPFromServer = DBGetContactSettingByte(NULL,IRCPROTONAME, "IPFromServer", 0);
 	prefs->DisconnectDCCChats = DBGetContactSettingByte(NULL,IRCPROTONAME, "DisconnectDCCChats", 1);
 	prefs->OldStyleModes = DBGetContactSettingByte(NULL,IRCPROTONAME, "OldStyleModes", 0);
+	prefs->SendNotice = DBGetContactSettingByte(NULL,IRCPROTONAME, "SendNotice", 1);
 	prefs->MyHost[0] = '\0';
 	prefs->colors[0] = RGB(255,255,255);
 	prefs->colors[1] = RGB(0,0,0);
@@ -592,6 +593,7 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			CheckDlgButton(hwndDlg, IDC_FAST, DBGetContactSettingByte(NULL, IRCPROTONAME, "DCCMode", 0)==1?BST_CHECKED:BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_DISC, prefs->DisconnectDCCChats?BST_CHECKED:BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_PASSIVE, prefs->DCCPassive?BST_CHECKED:BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SENDNOTICE, prefs->SendNotice?BST_CHECKED:BST_UNCHECKED);
 
 			SendDlgItemMessage(hwndDlg, IDC_COMBO, CB_ADDSTRING, (WPARAM)0,(LPARAM) "256");
 			SendDlgItemMessage(hwndDlg, IDC_COMBO, CB_ADDSTRING, (WPARAM)0,(LPARAM) "512");
@@ -727,6 +729,9 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 							prefs->DCCPassive = IsDlgButtonChecked(hwndDlg,IDC_PASSIVE)== BST_CHECKED?1:0;
 							DBWriteContactSettingByte(NULL,IRCPROTONAME,"DccPassive",prefs->DCCPassive);
 							
+							prefs->SendNotice = IsDlgButtonChecked(hwndDlg,IDC_SENDNOTICE)== BST_CHECKED?1:0;
+							DBWriteContactSettingByte(NULL,IRCPROTONAME,"SendNotice",prefs->SendNotice);
+
 							if(IsDlgButtonChecked(hwndDlg,IDC_SLOW)== BST_CHECKED)
 								DBWriteContactSettingByte(NULL,IRCPROTONAME,"DCCMode",0);
 							else 

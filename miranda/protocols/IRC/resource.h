@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by IRC.rc
 //
 #define ID_INFO_QUERY                   3
@@ -145,6 +145,8 @@
 #define IDC_PASSIVE                     1191
 #define IDC_TIME                        1192
 #define IDN_NO                          1192
+#define IDC_PASSIVE2                    1192
+#define IDC_SENDNOTICE                  1192
 #define IDC_SLOW                        1193
 #define IDC_FAST                        1194
 #define IDC_COMBO                       1196

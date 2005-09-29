@@ -320,7 +320,8 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 				DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 				
 				mir_snprintf(szTemp, sizeof(szTemp), "/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [Reverse transfer]", dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024);
-				PostIrcMessage(szTemp);
+				if(prefs->SendNotice)
+					PostIrcMessage(szTemp);
 
 			}
 			else // ... normal filetransfer.
@@ -337,7 +338,9 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 					DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 					
 					mir_snprintf(szTemp, sizeof(szTemp), "/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [IP: %s]", dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024, ConvertIntegerToIP(ulAdr));
-					PostIrcMessage(szTemp);
+					
+					if(prefs->SendNotice)
+						PostIrcMessage(szTemp);
 				}
 				else
 					DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), Translate("DCC ERROR: Unable to bind local port"), NULL, NULL, NULL, true, false); 

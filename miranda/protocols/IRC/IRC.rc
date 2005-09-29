@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -28,19 +28,19 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MAIN                ICON    DISCARDABLE     "Icons/irc.ico"
-IDI_ADD                 ICON    DISCARDABLE     "Icons\\add.ico"
-IDI_BLOCK               ICON    DISCARDABLE     "Icons\\block.ico"
-IDI_DELETE              ICON    DISCARDABLE     "Icons\\delete.ico"
-IDI_GO                  ICON    DISCARDABLE     "Icons\\go.ico"
-IDI_WHOIS               ICON    DISCARDABLE     "Icons\\help.ico"
-IDI_LIST                ICON    DISCARDABLE     "Icons\\list.ico"
-IDI_MANAGER             ICON    DISCARDABLE     "Icons\\manager.ico"
-IDI_QUICK               ICON    DISCARDABLE     "Icons\\quick.ico"
-IDI_RENAME              ICON    DISCARDABLE     "Icons\\rename.ico"
-IDI_SHOW                ICON    DISCARDABLE     "Icons\\show.ico"
-IDI_LOGO                ICON    DISCARDABLE     "Icons\\world.ico"
-IDI_DCC                 ICON    DISCARDABLE     "Icons\\dcc.ico"
+IDI_MAIN                ICON                    "Icons/irc.ico"
+IDI_ADD                 ICON                    "Icons\\add.ico"
+IDI_BLOCK               ICON                    "Icons\\block.ico"
+IDI_DELETE              ICON                    "Icons\\delete.ico"
+IDI_GO                  ICON                    "Icons\\go.ico"
+IDI_WHOIS               ICON                    "Icons\\help.ico"
+IDI_LIST                ICON                    "Icons\\list.ico"
+IDI_MANAGER             ICON                    "Icons\\manager.ico"
+IDI_QUICK               ICON                    "Icons\\quick.ico"
+IDI_RENAME              ICON                    "Icons\\rename.ico"
+IDI_SHOW                ICON                    "Icons\\show.ico"
+IDI_LOGO                ICON                    "Icons\\world.ico"
+IDI_DCC                 ICON                    "Icons\\dcc.ico"
 #endif    // Neutral (Default) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -60,9 +60,9 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 IDD_PREFS_CONNECT DIALOGEX 0, 0, 315, 235
-STYLE DS_CENTER | WS_POPUP | WS_VISIBLE
+STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_SERVERCOMBO,10,34,125,90,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
@@ -164,8 +164,9 @@ BEGIN
                     SS_LEFTNOWORDWRAP | WS_GROUP,158,220,115,8
 END
 
-IDD_INFO DIALOG DISCARDABLE  0, 0, 267, 193
-STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_INFO DIALOG  0, 0, 267, 193
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "User information"
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -213,8 +214,8 @@ BEGIN
 END
 
 IDD_NICK DIALOGEX 0, 0, 180, 90
-STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Question"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -232,9 +233,9 @@ BEGIN
 END
 
 IDD_PREFS_OTHER DIALOGEX 0, 0, 294, 214
-STYLE DS_CENTER | WS_POPUP | WS_VISIBLE
+STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Enable",IDC_PERFORM,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,15,107,10
@@ -265,11 +266,11 @@ BEGIN
 END
 
 IDD_ADDSERVER DIALOGEX 0, 0, 182, 136
-STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | 
-    WS_CAPTION | WS_SYSMENU
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | 
+    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW | WS_EX_CONTROLPARENT
 CAPTION "Add server"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_ADD_COMBO,7,20,168,90,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
@@ -294,9 +295,9 @@ BEGIN
     GROUPBOX        "SSL",IDC_STATIC,136,38,39,67
 END
 
-IDD_LIST DIALOG DISCARDABLE  0, 0, 198, 172
-STYLE DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | 
-    WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+IDD_LIST DIALOG  0, 0, 198, 172
+STYLE DS_SETFONT | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | 
+    WS_VISIBLE | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Channels on server"
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -309,8 +310,8 @@ BEGIN
 END
 
 IDD_QUICKCONN DIALOGEX 0, 0, 201, 148
-STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -343,8 +344,8 @@ BEGIN
                     154,70,35,8,WS_EX_TRANSPARENT
 END
 
-IDD_USERINFO DIALOG DISCARDABLE  0, 0, 222, 132
-STYLE DS_CENTER | WS_CHILD | WS_VISIBLE
+IDD_USERINFO DIALOG  0, 0, 222, 132
+STYLE DS_SETFONT | DS_CENTER | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_WILDCARD,12,91,40,12,ES_AUTOHSCROLL
@@ -367,10 +368,10 @@ BEGIN
 END
 
 IDD_CHANMANAGER DIALOGEX 0, 0, 250, 250
-STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CLIPSIBLINGS | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CLIPSIBLINGS | 
+    WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_TOPIC,13,55,192,103,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
                     WS_VSCROLL | WS_TABSTOP
@@ -428,8 +429,8 @@ BEGIN
 END
 
 IDD_QUESTION DIALOGEX 0, 0, 230, 97
-STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Question"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -448,8 +449,8 @@ BEGIN
 END
 
 IDD_INIT DIALOGEX 0, 0, 211, 102
-STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | 
-    WS_CAPTION | WS_SYSMENU
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | 
+    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Miranda IRC"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -470,9 +471,9 @@ BEGIN
 END
 
 IDD_PREFS_CTCP DIALOGEX 0, 0, 294, 214
-STYLE DS_CENTER | WS_POPUP | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_COMBO,98,36,52,85,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
@@ -504,11 +505,13 @@ BEGIN
     CONTROL         "Get IP address from server",IDC_FROMSERVER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,27,170,113,10
     LTEXT           "Auto-accept from:",IDC_STATIC,10,100,82,8
+    CONTROL         "Send notice",IDC_SENDNOTICE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,182,37,101,10
 END
 
 IDD_MESSAGEBOX DIALOGEX 0, 0, 220, 68
-STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW | WS_EX_CONTROLPARENT
 CAPTION "CTCP Chat Request"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -520,9 +523,9 @@ BEGIN
 END
 
 IDD_PREFS_IGNORE DIALOGEX 0, 0, 294, 214
-STYLE DS_CENTER | WS_POPUP | WS_VISIBLE
+STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Enable (*)",IDC_ENABLEIGNORE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,12,78,10
@@ -550,10 +553,10 @@ BEGIN
 END
 
 IDD_ADDIGNORE DIALOGEX 0, 0, 220, 126
-STYLE DS_SYSMODAL | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | 
-    WS_CAPTION | WS_SYSMENU
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | 
+    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW | WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_MASK,7,15,137,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_NETWORK,150,15,63,14,ES_AUTOHSCROLL
@@ -585,7 +588,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_PREFS_CONNECT, DIALOG
     BEGIN
@@ -821,7 +824,7 @@ END
 // Menu
 //
 
-IDR_MENU MENU DISCARDABLE 
+IDR_MENU MENU 
 BEGIN
     POPUP "menu1"
     BEGIN
@@ -894,9 +897,9 @@ LANGUAGE LANG_SWEDISH, SUBLANG_DEFAULT
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_SERVER              ICON    DISCARDABLE     "Icons\\server.ico"
-IDI_PART                ICON    DISCARDABLE     "Icons\\part.ico"
-IDI_JOIN                ICON    DISCARDABLE     "Icons\\join.ico"
+IDI_SERVER              ICON                    "Icons\\server.ico"
+IDI_PART                ICON                    "Icons\\part.ico"
+IDI_JOIN                ICON                    "Icons\\join.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -904,18 +907,18 @@ IDI_JOIN                ICON    DISCARDABLE     "Icons\\join.ico"
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
