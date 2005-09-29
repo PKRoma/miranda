@@ -1,13 +1,11 @@
-<?xml version="1.0" encoding="windows-1251"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="chat"
-	ProjectGUID="{268BD296-8DD3-4715-A386-CF120398EC98}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	ProjectGUID="{6E4D567E-19F1-4819-AB46-AD058B52F9C2}"
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -15,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../bin7/Debug/Plugins"
-			IntermediateDirectory="../../bin7/Debug/Obj/$(ProjectName)"
+			OutputDirectory=".\.\bin\Debug\Plugins"
+			IntermediateDirectory=".\Debug"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -24,12 +22,14 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CHAT_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="chat.h"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\Debug/chat.pch"
+				AssemblerListingLocation=".\Debug/"
+				ObjectFile=".\Debug/"
+				ProgramDataBaseFileName=".\Debug/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"/>
@@ -37,12 +37,14 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="shlwapi.lib Version.lib"
-				LinkIncremental="1"
+				AdditionalDependencies="odbc32.lib odbccp32.lib shlwapi.lib Version.lib"
+				OutputFile="../../bin/Debug/Plugins/chat.dll"
+				LinkIncremental="0"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\Debug/chat.pdb"
 				BaseAddress="0x54110000"
+				ImportLibrary=".\Debug/chat.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -75,21 +77,23 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="../../bin7/Debug/Plugins"
-			IntermediateDirectory="../../bin7/Debug/Obj/$(ProjectName)"
+			OutputDirectory=".\.\bin\Debug\Plugins"
+			IntermediateDirectory=".\chat___Win32_Debug_Unicode"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="1">
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CHAT_EXPORTS;UNICODE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="chat.h"
+				RuntimeLibrary="1"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\chat___Win32_Debug_Unicode/chat.pch"
+				AssemblerListingLocation=".\chat___Win32_Debug_Unicode/"
+				ObjectFile=".\chat___Win32_Debug_Unicode/"
+				ProgramDataBaseFileName=".\chat___Win32_Debug_Unicode/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"/>
@@ -97,11 +101,13 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="shlwapi.lib Version.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib Version.lib shlwapi.lib"
+				OutputFile="../../bin/Debug/Plugins/chat.dll"
+				LinkIncremental="0"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				ProgramDatabaseFile=".\chat___Win32_Debug_Unicode/chat.pdb"
+				ImportLibrary=".\chat___Win32_Debug_Unicode/chat.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -134,44 +140,37 @@
 		</Configuration>
 		<Configuration
 			Name="Release Unicode|Win32"
-			OutputDirectory="../../bin7/Release/Plugins"
-			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
+			OutputDirectory=".\.\bin\Release\Plugins"
+			IntermediateDirectory=".\chat___Win32_Release_Unicode"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
+				Optimization="2"
 				InlineFunctionExpansion="1"
-				FavorSizeOrSpeed="2"
-				OmitFramePointers="TRUE"
-				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CHAT_EXPORTS;UNICODE"
 				StringPooling="TRUE"
-				ExceptionHandling="FALSE"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="chat.h"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\chat___Win32_Release_Unicode/chat.pch"
+				AssemblerListingLocation=".\chat___Win32_Release_Unicode/"
+				ObjectFile=".\chat___Win32_Release_Unicode/"
+				ProgramDataBaseFileName=".\chat___Win32_Release_Unicode/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
+				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="shlwapi.lib Version.lib"
-				LinkIncremental="1"
+				AdditionalDependencies="odbc32.lib odbccp32.lib Version.lib shlwapi.lib"
+				OutputFile="../../bin/Release/Plugins/chat.dll"
+				LinkIncremental="0"
 				SuppressStartupBanner="TRUE"
-				GenerateDebugInformation="TRUE"
-				GenerateMapFile="TRUE"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
-				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				ProgramDatabaseFile=".\chat___Win32_Release_Unicode/chat.pdb"
+				ImportLibrary=".\chat___Win32_Release_Unicode/chat.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -204,45 +203,40 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="../../bin7/Release/Plugins"
-			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
+			OutputDirectory=".\.\bin\Release\Plugins"
+			IntermediateDirectory=".\Release"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
+				Optimization="2"
 				InlineFunctionExpansion="1"
-				FavorSizeOrSpeed="2"
-				OmitFramePointers="TRUE"
-				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CHAT_EXPORTS"
 				StringPooling="TRUE"
-				ExceptionHandling="FALSE"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="chat.h"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\Release/chat.pch"
+				AssemblerListingLocation=".\Release/"
+				ObjectFile=".\Release/"
+				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
+				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="shlwapi.lib Version.lib"
-				LinkIncremental="1"
+				AdditionalDependencies="odbc32.lib odbccp32.lib shlwapi.lib Version.lib"
+				OutputFile="../../bin/Release/Plugins/chat.dll"
+				LinkIncremental="0"
 				SuppressStartupBanner="TRUE"
-				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\Release/chat.pdb"
 				GenerateMapFile="TRUE"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
+				MapFileName=".\Release/chat.map"
 				BaseAddress="0x54110000"
-				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				ImportLibrary=".\Release/chat.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -251,6 +245,73 @@
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
 				TypeLibraryName=".\Release/chat.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1053"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release Internal|Win32"
+			OutputDirectory="c:/program files/miranda im/plugins"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="1"
+				EnableFiberSafeOptimizations="TRUE"
+				OptimizeForProcessor="3"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CHAT_EXPORTS;UNICODE"
+				StringPooling="TRUE"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="TRUE"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\chat___Win32_Release_Unicode/chat.pch"
+				AssemblerListingLocation=".\chat___Win32_Release_Unicode/"
+				ObjectFile=".\chat___Win32_Release_Unicode/"
+				ProgramDataBaseFileName=".\chat___Win32_Release_Unicode/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="odbc32.lib odbccp32.lib Version.lib shlwapi.lib"
+				OutputFile="../../bin/Release/Plugins/chat.dll"
+				LinkIncremental="0"
+				SuppressStartupBanner="TRUE"
+				ProgramDatabaseFile=".\chat___Win32_Release_Unicode/chat.pdb"
+				ImportLibrary=".\chat___Win32_Release_Unicode/chat.lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\chat___Win32_Release_Unicode/chat.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
@@ -312,6 +373,13 @@
 						Optimization="2"
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Internal|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="colorchooser.c">
@@ -344,6 +412,13 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Internal|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -378,6 +453,13 @@
 						Optimization="2"
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Internal|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="main.c">
@@ -387,8 +469,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"
-						BasicRuntimeChecks="3"
-						UsePrecompiledHeader="1"/>
+						BasicRuntimeChecks="3"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug Unicode|Win32">
@@ -396,24 +477,28 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"
-						BasicRuntimeChecks="3"
-						UsePrecompiledHeader="1"/>
+						BasicRuntimeChecks="3"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"
-						UsePrecompiledHeader="1"/>
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"
-						UsePrecompiledHeader="1"/>
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Internal|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -448,6 +533,13 @@
 						Optimization="2"
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Internal|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="message.c">
@@ -480,6 +572,13 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Internal|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -514,6 +613,53 @@
 						Optimization="2"
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Internal|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="richutil.c">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Internal|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="services.c">
@@ -546,6 +692,13 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Internal|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -580,6 +733,13 @@
 						Optimization="2"
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Internal|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="window.c">
@@ -613,6 +773,13 @@
 						Optimization="2"
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;$(NoInherit)"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Internal|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;CHAT_EXPORTS;UNICODE;$(NoInherit)"/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -624,6 +791,9 @@
 			<File
 				RelativePath="m_chat.h">
 			</File>
+			<File
+				RelativePath="richutil.h">
+			</File>
 			<Filter
 				Name="Other"
 				Filter="">
@@ -631,10 +801,13 @@
 					RelativePath="AggressiveOptimize.h">
 				</File>
 				<File
-					RelativePath="m_smileyadd.h">
+					RelativePath="IcoLib.h">
 				</File>
 				<File
-					RelativePath="m_uninstaller.h">
+					RelativePath="..\..\include\m_popup.h">
+				</File>
+				<File
+					RelativePath="m_smileyadd.h">
 				</File>
 				<File
 					RelativePath="resource.h">

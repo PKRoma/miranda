@@ -353,6 +353,7 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 				mir_snprintf(szTemp, sizeof(szTemp), "%s", gcw->pszName);
 			si->hContact = CList_AddRoom((char *)gcw->pszModule, (char *)gcw->pszID, szTemp, si->iType); 
 			DBWriteContactSettingString(si->hContact, si->pszModule , "Topic", "");
+			DBDeleteContactSetting(si->hContact, "CList", "StatusMsg");
 			if(si->pszStatusbarText)
 				DBWriteContactSettingString(si->hContact, si->pszModule, "StatusBar", si->pszStatusbarText);
 			else
@@ -785,6 +786,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 				if (si->hWnd)
 					g_TabSession.pszTopic = si->pszTopic;
 				DBWriteContactSettingString(si->hContact, si->pszModule , "Topic", RemoveFormatting(si->pszTopic));
+				DBWriteContactSettingString(si->hContact, "CList" , "StatusMsg", RemoveFormatting(si->pszTopic));
 			}
 		}
 	}break;
