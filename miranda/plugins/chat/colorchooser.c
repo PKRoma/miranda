@@ -73,7 +73,6 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	{
 	case WM_INITDIALOG:
 	{
-		WINDOWINFO winf;
 		RECT rc;
 		int iSquareRoot;
 		int width ;
@@ -85,9 +84,6 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		iCurrentHotTrack = -2;
 		bChoosing = FALSE;
 
-		winf.cbSize = sizeof(winf);
-		GetWindowInfo(hwndDlg, &winf);
-
 		iSquareRoot = (int)sqrt(pCC->pModule->nColorCount);
 		
 		iColumns = iSquareRoot * iSquareRoot == pCC->pModule->nColorCount?iSquareRoot:iSquareRoot+1;
@@ -97,7 +93,7 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		rc.right =  100 +  iColumns * 25 + 1;
 		rc.bottom = iRows * 20 + 100 + 20;
 
-		AdjustWindowRectEx(&rc, winf.dwStyle, FALSE, winf.dwExStyle);
+		AdjustWindowRectEx(&rc, GetWindowLong(hwndDlg, GWL_STYLE), FALSE, GetWindowLong(hwndDlg, GWL_EXSTYLE));
 
 		width = rc.right - rc.left;
 		height = rc.bottom - rc.top;
