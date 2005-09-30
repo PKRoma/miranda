@@ -33,6 +33,14 @@ Still need help?
 
 Change Log:
 
+Version 1.4.2.1
+
+	-Added support for the "DELETE2" command- so online buddies that are removed from another client will turn offline on miranda.
+	-Fixed "INSERTED2" command to display the buddy that is added instead of the group name.(Same goes for DELETED2)
+	-Added checking for NULL groups in the "INSERTED2 and DELETED2" commands- so that a pagefault doesn't occur.
+	-Changed the default server to toc.oscar.aol.com- so people stop whining about not being able to connect.
+	-Just a note: if a buddy and group are added at the same time then the INSERTED2 and DELETED2 commands behave strangely(extra delimeter, empty groups, garbage before the buddy name, very random).
+
 Version 1.4.2.0
 
 	-Added Borkra's hang on exit fix(see pthread.c).
