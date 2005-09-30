@@ -350,27 +350,60 @@ int aim_toc_parse(char *buf, int len)
 			ch=strtok(NULL, ":");
 			mir_snprintf(nm, sizeof(nm),ch);
 			ch=strtok(NULL, ":");
-			mir_snprintf(group, sizeof(group),ch);
-			mir_snprintf(buf, sizeof(buf), Translate("Buddy Added Successfully!"));	
-			hContact = aim_buddy_get(nm, 1, 1, 1, group);
-			if (hContact)
+			if(ch)
 			{
-				BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
-				DBWriteContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 1);
-				if(bUtfReadyDB==1)
-					DBWriteContactSettingStringUtf(hContact,AIM_PROTO,"Group",group);
-				else
-					DBWriteContactSettingString(hContact,AIM_PROTO,"Group",group);
-			}		
-			if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SE, AIM_KEY_SE_DEF)) 
-			{
-				if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) 
+				mir_snprintf(group, sizeof(group),ch);
+				mir_snprintf(buf, sizeof(buf), Translate("Buddy Added Successfully!"));	
+				hContact = aim_buddy_get(nm, 1, 1, 1, group);
+				if (hContact)
 				{
-					aim_util_shownotification(Translate(ch), buf, NIIF_INFO);
+					BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
+					DBWriteContactSettingByte(hContact, AIM_PROTO, AIM_KEY_LL, 1);
+					if(bUtfReadyDB==1)
+						DBWriteContactSettingStringUtf(hContact,AIM_PROTO,"Group",group);
+					else
+						DBWriteContactSettingString(hContact,AIM_PROTO,"Group",group);
+				}		
+				if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SE, AIM_KEY_SE_DEF)) 
+				{
+					if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) 
+					{
+						aim_util_shownotification(nm, buf, NIIF_INFO);
+					}
+					else
+					{
+						MessageBox(0, buf,nm, MB_OK | MB_ICONINFORMATION);
+					}
 				}
-				else
+			}
+		}
+    }
+	if (!_strcmpi(c, "DELETED2"))
+	{
+        char* ch=strtok(NULL, ":");
+		char buf[256];
+		if(!_strcmpi(ch,"b"))
+		{
+			HANDLE hContact;
+			ch=strtok(NULL, ":");
+			if(ch)
+			{
+				mir_snprintf(buf, sizeof(buf), Translate("Buddy removed from another client."));	
+				hContact = aim_buddy_get(ch, 0, 0, 0, 0);
+				if (hContact)
 				{
-					MessageBox(0, buf, Translate(ch), MB_OK | MB_ICONINFORMATION);
+					DBWriteContactSettingWord(hContact, AIM_PROTO, AIM_KEY_ST, ID_STATUS_OFFLINE);	
+				}		
+				if (DBGetContactSettingByte(NULL, AIM_PROTO, AIM_KEY_SE, AIM_KEY_SE_DEF)) 
+				{
+					if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) 
+					{
+						aim_util_shownotification(ch, buf, NIIF_INFO);
+					}
+					else
+					{
+						MessageBox(0, buf,ch, MB_OK | MB_ICONINFORMATION);
+					}
 				}
 			}
 		}
