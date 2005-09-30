@@ -806,8 +806,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             case DM_UPDATETITLE:
             {
                 HANDLE hContact = 0;
-                TCHAR *szNewTitle;
-                struct MessageWindowData *dat = 0;
+                TCHAR *szNewTitle = NULL;
+                struct MessageWindowData *dat = NULL;
                 
                 if(wParam == 0) {            // no hContact given - obtain the hContact for the active tab
                     if(pContainer->hwndActive && IsWindow(pContainer->hwndActive))
