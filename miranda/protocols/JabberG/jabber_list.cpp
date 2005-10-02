@@ -29,40 +29,6 @@ static CRITICAL_SECTION csLists;
 
 static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item );
 
-#ifdef _DEBUG
-static void PrintResource( int index )
-{
-	if ( index<0 || index>=count ) {
-		JabberLog( "PrintResource(): index out-of-bound" );
-		return;
-	}
-
-	int resourceCount = lists[index].resourceCount;
-	if ( resourceCount <= 0 ) {
-		JabberLog( "Resource count is zero" );
-		return;
-	}
-
-	char* str = ( char* )malloc( resourceCount * 48 );
-	if ( str == NULL )
-		return;
-
-	char* p = str;
-	for ( int i=0; i < resourceCount; i++ ) {
-		JABBER_RESOURCE_STATUS* resource = &( lists[index].resource[i] );
-		sprintf( p, "( %d )", resource->status );
-		for ( ; *p!='\0'; p++ );
-		if ( resource->resourceName )
-			sprintf( p, "%s-", resource->resourceName );
-		else
-			strcpy( p, "( NULL )" );
-		for ( ; *p!='\0'; p++ );
-	}
-	JabberLog( "Resource is now '%s'", str );
-	free( str );
-}
-#endif
-
 void JabberListInit( void )
 {
 	lists = NULL;
@@ -100,12 +66,14 @@ static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item )
 
 	if ( item->jid ) free( item->jid );
 	if ( item->nick ) free( item->nick );
-	for ( i=0; i<item->resourceCount; i++ ) {
-		if ( item->resource[i].resourceName ) free( item->resource[i].resourceName );
-		if ( item->resource[i].statusMessage ) free( item->resource[i].statusMessage );
-		if ( item->resource[i].software ) free( item->resource[i].software );
-		if ( item->resource[i].version ) free( item->resource[i].version );
-		if ( item->resource[i].system ) free( item->resource[i].system );
+
+	JABBER_RESOURCE_STATUS* r = item->resource;
+	for ( i=0; i<item->resourceCount; i++, r++ ) {
+		if ( r->resourceName ) free( r->resourceName );
+		if ( r->statusMessage ) free( r->statusMessage );
+		if ( r->software ) free( r->software );
+		if ( r->version ) free( r->version );
+		if ( r->system ) free( r->system );
 	}
 	if ( item->resource ) free( item->resource );
 	if ( item->statusMessage ) free( item->statusMessage );
@@ -227,54 +195,31 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 			char* resource = q+1;
 			if ( resource[0] ) {
 				JABBER_RESOURCE_STATUS* r = LI->resource;
-				if ( r == NULL ) {
-					r = ( JABBER_RESOURCE_STATUS * ) malloc( sizeof( JABBER_RESOURCE_STATUS ));
-					bIsNewResource = true;
-					LI->resourceCount = 1;
+				for ( j=0; j < LI->resourceCount; j++, r++ ) {
+					if ( !strcmp( r->resourceName, resource )) {
+						// Already exist, update status and statusMessage
+						r->status = status;
+						replaceStr( r->statusMessage, statusMessage );
+						break;
+				}	}
 
+				if ( j >= LI->resourceCount ) {
+					// Not already exist, add new resource
+					LI->resource = ( JABBER_RESOURCE_STATUS * ) realloc( LI->resource, ( LI->resourceCount+1 )*sizeof( JABBER_RESOURCE_STATUS ));
+					bIsNewResource = true;
+					r = LI->resource + LI->resourceCount++;
 					memset( r, 0, sizeof JABBER_RESOURCE_STATUS );
 					r->status = status;
+					r->affiliation = AFFILIATION_NONE;
+					r->role = ROLE_NONE;
 					r->resourceName = _strdup( resource );
 					if ( statusMessage )
 						r->statusMessage = _strdup( statusMessage );
-				}
-				else {
-					for ( j=0; j < LI->resourceCount; j++, r++ ) {
-						if ( !strcmp( r->resourceName, resource )) {
-							// Already exist, update status and statusMessage
-							r->status = status;
-							replaceStr( r->statusMessage, statusMessage );
-							break;
-					}	}
-
-					if ( j >= LI->resourceCount ) {
-						// Not already exist, add new resource
-						r = ( JABBER_RESOURCE_STATUS * ) realloc( LI->resource, ( LI->resourceCount+1 )*sizeof( JABBER_RESOURCE_STATUS ));
-						bIsNewResource = true;
-						JABBER_RESOURCE_STATUS* r2 = r + LI->resourceCount;
-						memset( r2, 0, sizeof JABBER_RESOURCE_STATUS );
-						r2->status = status;
-						r2->resourceName = _strdup( resource );
-						if ( statusMessage )
-							r2->statusMessage = _strdup( statusMessage );
-						LI->resourceCount++;
-				}	}
-
-				LI->resource = r;
-#ifdef _DEBUG
-				PrintResource( i );
-#endif
-			}
+			}	}
 		}
-		else {
-			// No resource, update the main statusMessage
-			if ( LI->statusMessage != NULL )
-				free( LI->statusMessage );
-			if ( statusMessage )
-				LI->statusMessage = _strdup( statusMessage );
-			else
-				LI->statusMessage = NULL;
-	}	}
+		// No resource, update the main statusMessage
+		else replaceStr( LI->statusMessage, statusMessage );
+	}
 
 	LeaveCriticalSection( &csLists );
 	return bIsNewResource;
@@ -320,11 +265,7 @@ void JabberListRemoveResource( JABBER_LIST list, const char* jid )
 					else {
 						memmove( r, r+1, ( LI->resourceCount-j )*sizeof( JABBER_RESOURCE_STATUS ));
 						LI->resource = ( JABBER_RESOURCE_STATUS * )realloc( LI->resource, LI->resourceCount*sizeof( JABBER_RESOURCE_STATUS ));
-					}
-#ifdef _DEBUG
-					PrintResource( i );
-#endif
-	}	}	}	}
+	}	}	}	}	}
 
 	LeaveCriticalSection( &csLists );
 }

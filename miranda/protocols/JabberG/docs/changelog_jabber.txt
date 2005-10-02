@@ -17,6 +17,8 @@ Version 0.4.1.2
 [!] bug #0001423 fixed: Leaving a jabber conference closes the chat.dll container window.
 [!] bug #0001355 fixed: Switching presence to 'Invisible' causes me to exit MUC
 [!] bug #0001490 fixed: Options about subscriptions/authorisation are not showing up when type of subcr is "none" for a contact
+[!] bug #0001485 fixed: Conferences: toggle voice/toggle moderator commands
+[!] bug #0001481 fixed: Conferences: moderator controls/list management
 [!] fixed the crash when two or more chats were opened
 
 Version 0.4.1.1

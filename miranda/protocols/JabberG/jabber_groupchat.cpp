@@ -546,20 +546,26 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		// Check additional MUC info for this user
 		if ( xNode != NULL ) {
 			if (( itemNode=JabberXmlGetChild( xNode, "item" )) != NULL ) {
-				for ( i=0; i<item->resourceCount && strcmp( item->resource[i].resourceName, nick ); i++ );
+				JABBER_RESOURCE_STATUS* r = item->resource;
+				for ( i=0; i<item->resourceCount && strcmp( r->resourceName, nick ); i++, r++ );
 				if ( i < item->resourceCount ) {
-					item->resource[i].affiliation = AFFILIATION_NONE;
-					item->resource[i].role = ROLE_NONE;
 					if (( str=JabberXmlGetAttrValue( itemNode, "affiliation" )) != NULL ) {
-						if ( !strcmp( str, "owner" )) item->resource[i].affiliation = AFFILIATION_OWNER;
-						else if ( !strcmp( str, "admin" )) item->resource[i].affiliation = AFFILIATION_ADMIN;
-						else if ( !strcmp( str, "member" )) item->resource[i].affiliation = AFFILIATION_MEMBER;
-						else if ( !strcmp( str, "outcast" )) item->resource[i].affiliation = AFFILIATION_OUTCAST;
+						if ( !strcmp( str, "owner" )) r->affiliation = AFFILIATION_OWNER;
+						else if ( !strcmp( str, "admin" )) r->affiliation = AFFILIATION_ADMIN;
+						else if ( !strcmp( str, "member" )) r->affiliation = AFFILIATION_MEMBER;
+						else if ( !strcmp( str, "outcast" )) r->affiliation = AFFILIATION_OUTCAST;
 					}
 					if (( str=JabberXmlGetAttrValue( itemNode, "role" )) != NULL ) {
-						if ( !strcmp( str, "moderator" )) item->resource[i].role = ROLE_MODERATOR;
-						else if ( !strcmp( str, "participant" )) item->resource[i].role = ROLE_PARTICIPANT;
-						else if ( !strcmp( str, "visitor" )) item->resource[i].role = ROLE_VISITOR;
+						JABBER_GC_ROLE newRole = r->role;
+
+						if ( !strcmp( str, "moderator" ))         newRole = ROLE_MODERATOR;
+						else if ( !strcmp( str, "participant" ))  newRole = ROLE_PARTICIPANT;
+						else if ( !strcmp( str, "visitor" ))      newRole = ROLE_VISITOR;
+						else                                      newRole = ROLE_NONE;
+
+						if ( newRole != r->role && r->role != ROLE_NONE )
+							JabberGcLogUpdateMemberStatus( item, nick, 10 );
+						r->role = newRole;
 			}	}	}
 
 			if ( sttGetStatusCode( xNode ) == 201 )

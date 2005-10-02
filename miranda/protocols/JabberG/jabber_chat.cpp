@@ -115,7 +115,6 @@ int JabberGcInit( WPARAM wParam, LPARAM lParam )
 	}
 
 	gce.cbSize = sizeof(GCEVENT);
-	gce.dwItemData = wParam;
 	gce.pDest = &gcd;
 	gcd.iType = GC_EVENT_CONTROL;
 	JCallService(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gce);
@@ -157,7 +156,7 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick, int acti
 			if ( !strcmp( nick, JS.resourceName )) {
 				if ( action != 1 ) {
 					gce.bAddToLog = false;
-					gcd.iType = GC_EVENT_ADDSTATUS;
+					gcd.iType = ( action == 10 ) ? GC_EVENT_REMOVESTATUS : GC_EVENT_ADDSTATUS;
 				}
 				else gcd.iType = GC_EVENT_JOIN;
 				gce.pszStatus = JTranslate( sttRoles[ JS.role ] );
@@ -414,22 +413,22 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		break;
 
 	case IDM_VOICE:
-		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(item->nick), 
+		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(him->resourceName), 
 			"role", ( him->role == ROLE_PARTICIPANT ) ? "visitor" : "participant" );
 		break;
 
 	case IDM_MODERATOR:
-		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(item->nick), 
-			"role", ( him->affiliation == ROLE_MODERATOR ) ? "participant" : "moderator" );
+		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(him->resourceName), 
+			"role", ( him->role == ROLE_MODERATOR ) ? "participant" : "moderator" );
 		break;
 
 	case IDM_ADMIN:
-		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(item->nick), 
+		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(him->resourceName), 
 			"affiliation", ( him->affiliation==AFFILIATION_ADMIN )? "member" : "admin" );
 		break;
 
 	case IDM_OWNER:
-		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(item->nick), 
+		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(him->resourceName), 
 			"affiliation", ( him->affiliation==AFFILIATION_OWNER ) ? "admin" : "owner" );
 		break;
 }	}
@@ -584,19 +583,19 @@ void JabberDeleteMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, char* jid )
 
 	switch ( jidListInfo->type ) {
 	case MUC_VOICELIST:		// change role to visitor ( from participant )
-		JabberAdminSet( roomJid, xmlnsAdmin, "jid", roomJid, "role", "visitor" );
+		JabberAdminSet( roomJid, xmlnsAdmin, "jid", jid, "role", "visitor" );
 		break;
 	case MUC_BANLIST:		// change affiliation to none ( from outcast )
 	case MUC_MEMBERLIST:	// change affiliation to none ( from member )
-		JabberAdminSet( roomJid, xmlnsAdmin, "jid", roomJid, "affiliation", "none" );
+		JabberAdminSet( roomJid, xmlnsAdmin, "jid", jid, "affiliation", "none" );
 		break;
 	case MUC_MODERATORLIST:	// change role to participant ( from moderator )
-		JabberAdminSet( roomJid, xmlnsAdmin, "jid", roomJid, "role", "participant" );
+		JabberAdminSet( roomJid, xmlnsAdmin, "jid", jid, "role", "participant" );
 		break;
 	case MUC_ADMINLIST:		// change affiliation to member ( from admin )
-		JabberAdminSet( roomJid, xmlnsOwner, "jid", roomJid, "affiliation", "member" );
+		JabberAdminSet( roomJid, xmlnsOwner, "jid", jid, "affiliation", "member" );
 		break;
 	case MUC_OWNERLIST:		// change affiliation to admin ( from owner )
-		JabberAdminSet( roomJid, xmlnsOwner, "jid", roomJid, "affiliation", "admin" );
+		JabberAdminSet( roomJid, xmlnsOwner, "jid", jid, "affiliation", "admin" );
 		break;
 }	}

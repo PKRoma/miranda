@@ -272,25 +272,6 @@ struct JABBER_MUC_JIDLIST_INFO
 	char* type2str( void ) const;
 };
 
-struct JABBER_GCLOG_INFO
-{
-	char* roomJid;		// stored in UTF-8
-	int hSplitterPos;	// position from right edge
-	int vSplitterPos;	// position from bottom edge
-	int hSplitterMinAbove;
-	int hSplitterMinBelow;
-	int vSplitterMinRight;
-	int vSplitterMinLeft;
-	WNDPROC oldEditWndProc;
-	WNDPROC oldHSplitterWndProc;
-	WNDPROC oldVSplitterWndProc;
-	HWND hwndSetTopic;
-	HWND hwndChangeNick;
-	HWND hwndKickReason;
-	HWND hwndDestroyReason;
-	int nFlash;
-};
-
 typedef void ( *JABBER_FORM_SUBMIT_FUNC )( char* submitStr, void *userdata );
 typedef void ( __cdecl *JABBER_THREAD_FUNC )( void * );
 
