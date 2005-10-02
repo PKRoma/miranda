@@ -149,57 +149,6 @@ void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP )
 	Netlib_CloseHandle( hNewConnection );
 }
 
-void sttStartFileSend( ThreadData* info, const char* Invcommand, const char* Invcookie )
-{
-	if ( strcmpi( Invcommand,"ACCEPT" ))
-		return;
-
-	bool bHasError = false;
-	NETLIBBINDOLD nlb = {0};
-	char ipaddr[256];
-
-	filetransfer* ft = info->mMsnFtp; info->mMsnFtp = NULL;
-	if ( ft != NULL ) {
-		if ( MSN_GetMyHostAsString( ipaddr, sizeof ipaddr ))
-			bHasError = true;
-		else {
-			nlb.cbSize = sizeof nlb;
-			nlb.pfnNewConnection = MSN_ConnectionProc;
-			nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
-			if (( ft->mIncomingBoundPort = ( HANDLE )MSN_CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb)) == NULL ) {
-				MSN_DebugLog( "Unable to bind the port for incoming transfers" );
-				bHasError = true;
-			}
-			else ft->mIncomingPort = nlb.wPort;
-	}	}
-	else bHasError = true;
-
-	char command[ 1024 ];
-	int  nBytes = mir_snprintf( command, sizeof( command ),
-		"MIME-Version: 1.0\r\n"
-		"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
-		"Invitation-Command: %s\r\n"
-		"Invitation-Cookie: %s\r\n"
-		"IP-Address: %s\r\n"
-		"Port: %i\r\n"
-		"AuthCookie: %i\r\n"
-		"Launch-Application: FALSE\r\n"
-		"Request-Data: IP-Address:\r\n\r\n",
-		( bHasError ) ? "CANCEL" : "ACCEPT",
-		Invcookie, ipaddr, nlb.wPort, WORD((( double )rand() / ( double )RAND_MAX ) * 4294967295 ));
-	info->sendPacket( "MSG", "N %d\r\n%s", nBytes, command );
-
-	if ( bHasError ) delete ft;
-	else {
-		ft->hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-
-		ThreadData* newThread = new ThreadData;
-		newThread->mType = SERVER_FILETRANS;
-		newThread->mCaller = 2;
-		newThread->mMsnFtp = ft;
-		newThread->startThread(( pThreadFunc )MSNSendfileThread );
-}	}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // Processes e-mail notification
 
@@ -389,7 +338,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 	}
 
 	if ( Invcommand != NULL && Invcookie != NULL && Port == NULL && AuthCookie == NULL && SessionID == NULL ) { // send 1
-		sttStartFileSend( info, Invcommand, Invcookie );
+		ft_startFileSend( info, Invcommand, Invcookie );
 		return;
 	}
 

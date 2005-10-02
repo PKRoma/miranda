@@ -442,6 +442,8 @@ filetransfer* __stdcall p2p_getSessionByID( long ID );
 filetransfer* __stdcall p2p_getSessionByMsgID( long ID );
 filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID );
 
+void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Invcookie );
+
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Message queue
 

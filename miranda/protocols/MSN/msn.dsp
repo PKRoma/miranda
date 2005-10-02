@@ -122,6 +122,10 @@ SOURCE=.\msn_errors.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\msn_ftold.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\msn_global.h
 # End Source File
 # Begin Source File

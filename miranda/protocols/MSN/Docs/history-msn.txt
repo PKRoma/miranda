@@ -11,6 +11,7 @@ Version 0.4.1.2
 [!] fix for initial email notification in the MSNP11 mode
 [!] fix for the "User is already in your contact list" error
 [!] BYE command was handled incorrectly
+[!] fix for the old MSN file transfers: a received file cannot be opened
 
 Version 0.4.1.1
 ===============

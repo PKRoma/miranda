@@ -269,6 +269,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\msn_ftold.cpp">
+			</File>
+			<File
 				RelativePath="msn_global.h">
 			</File>
 			<File
