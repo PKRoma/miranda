@@ -195,8 +195,8 @@ typedef struct {
 
 static void FillHistoryThread(THistoryThread *hInfo)
 {
-	TCHAR str[200];
-	char  eventText[256],strdatetime[64];
+	TCHAR str[200], eventText[256];
+	char  strdatetime[64];
 	HANDLE hDbEvent;
 	DBEVENTINFO dbei;
 	int newBlobSize,oldBlobSize,i;
@@ -228,8 +228,12 @@ static void FillHistoryThread(THistoryThread *hInfo)
 		GetObjectSummary(&dbei,str,SIZEOF(str));
 		if(str[0]) {
 			CallService(MS_DB_TIME_TIMESTAMPTOSTRING,dbei.timestamp,(LPARAM)&dbtts);
-			wsprintfA(eventText,"%s: %s",strdatetime,str);
-			i=SendMessageA(hwndList,LB_ADDSTRING,0,(LPARAM)eventText);
+			#if defined( _UNICODE )
+				mir_sntprintf( eventText, SIZEOF(eventText), _T("%S: %s"), strdatetime, str );
+			#else
+				mir_sntprintf( eventText, SIZEOF(eventText), "%s: %s", strdatetime, str );
+			#endif
+			i=SendMessage(hwndList,LB_ADDSTRING,0,(LPARAM)eventText);
 			SendMessage(hwndList,LB_SETITEMDATA,i,(LPARAM)hDbEvent);
 		}
 		hDbEvent=(HANDLE)CallService(MS_DB_EVENT_FINDPREV,(WPARAM)hDbEvent,0);

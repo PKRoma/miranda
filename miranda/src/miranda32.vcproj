@@ -2931,13 +2931,6 @@
 					</FileConfiguration>
 				</File>
 			</Filter>
-			<Filter
-				Name="updatecheck"
-				Filter="">
-				<File
-					RelativePath=".\modules\updatecheck\updatecheck.c">
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Resources"
