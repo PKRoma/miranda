@@ -155,8 +155,12 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick, int acti
 			JABBER_RESOURCE_STATUS& JS = item->resource[i];
 			if ( !strcmp( nick, JS.resourceName )) {
 				if ( action != 1 ) {
-					gce.bAddToLog = false;
-					gcd.iType = ( action == 10 ) ? GC_EVENT_REMOVESTATUS : GC_EVENT_ADDSTATUS;
+					if ( action == 10 ) {
+						gcd.iType = GC_EVENT_REMOVESTATUS;
+						gce.bAddToLog = false;
+					}
+					else gcd.iType = GC_EVENT_ADDSTATUS;
+					gce.pszText = Translate( "Moderator" );
 				}
 				else gcd.iType = GC_EVENT_JOIN;
 				gce.pszStatus = JTranslate( sttRoles[ JS.role ] );
