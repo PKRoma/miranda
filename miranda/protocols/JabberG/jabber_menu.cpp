@@ -67,8 +67,8 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal );
 		JFreeVariant( &dbv );
 		if ( item != NULL ) {
-			sttEnableMenuItem( hMenuRequestAuth, item->subscription == SUB_FROM );
-			sttEnableMenuItem( hMenuGrantAuth, item->subscription == SUB_TO );
+			sttEnableMenuItem( hMenuRequestAuth, item->subscription == SUB_FROM || item->subscription == SUB_NONE );
+			sttEnableMenuItem( hMenuGrantAuth, item->subscription == SUB_TO || item->subscription == SUB_NONE );
 			return 0;
 	}	}
 

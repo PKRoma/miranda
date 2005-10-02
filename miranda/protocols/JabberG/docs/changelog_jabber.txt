@@ -16,6 +16,7 @@ Version 0.4.1.2
 [!] bug #0001316 fixed: User appears to part/rejoin on nick change in conference
 [!] bug #0001423 fixed: Leaving a jabber conference closes the chat.dll container window.
 [!] bug #0001355 fixed: Switching presence to 'Invisible' causes me to exit MUC
+[!] bug #0001490 fixed: Options about subscriptions/authorisation are not showing up when type of subcr is "none" for a contact
 [!] fixed the crash when two or more chats were opened
 
 Version 0.4.1.1
