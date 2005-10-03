@@ -536,6 +536,7 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
         int iSecIMStatus = 0;
+        
         SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
         if(myGlobals.g_SecureIMAvail) {

@@ -3020,17 +3020,29 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     int bufSize = 0, memRequired = 0, isUnicode = 0;
                     char *streamOut = NULL;
                     TCHAR *decoded = NULL, *converted = NULL;
+                    FINDTEXTEXA fi = {0};
+                    int final_sendformat = dat->SendFormat;
+                    
+                    // don't parse text formatting when the message contains curly braces - these are used by the rtf syntax
+                    // and the parser currently cannot handle them properly in the text - XXX needs to be fixed later.
+                    
+                    fi.chrg.cpMin = 0;
+                    fi.chrg.cpMax = -1;
+                    fi.lpstrText = "{";
+                    final_sendformat = SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) == -1 ? final_sendformat : 0;
+                    fi.lpstrText = "}";
+                    final_sendformat = SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) == -1 ? final_sendformat : 0;
                     
                     if (!IsWindowEnabled(GetDlgItem(hwndDlg, IDOK)))
                         break;
 
                     TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CUSTOM, tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND);
 #if defined( _UNICODE )
-                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, dat->SendFormat ? 0 : (CP_UTF8 << 16) | (SF_TEXT|SF_USECODEPAGE));
+                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, final_sendformat ? 0 : (CP_UTF8 << 16) | (SF_TEXT|SF_USECODEPAGE));
                     if(streamOut != NULL) {
                         decoded = Utf8_Decode(streamOut);
                         if(decoded != NULL) {
-                            if(dat->SendFormat) {
+                            if(final_sendformat) {
                                 DoRtfToTags(decoded, dat);
                                 DoTrimMessage(decoded);
                             }
@@ -3062,12 +3074,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         free(streamOut);
                     }
 #else                    
-                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, dat->SendFormat ? (SF_RTFNOOBJS|SFF_PLAINRTF) : (SF_TEXT));
+                    streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, final_sendformat ? (SF_RTFNOOBJS|SFF_PLAINRTF) : (SF_TEXT));
                     if(streamOut != NULL) {
                         converted = (TCHAR *)malloc((lstrlenA(streamOut) + 2)* sizeof(TCHAR));
                         if(converted != NULL) {
                             _tcscpy(converted, streamOut);
-                            if(dat->SendFormat) {
+                            if(final_sendformat) {
                                 DoRtfToTags(converted, dat);
                                 DoTrimMessage(converted);
                             }
