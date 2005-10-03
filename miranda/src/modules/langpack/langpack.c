@@ -91,27 +91,62 @@ static DWORD LangPackHash(const char *szStr)
 #if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined __GNUC__
 	__asm {				//this is mediocrely optimised, but I'm sure it's good enough
 		xor  edx,edx
-			mov  esi,szStr
-			xor  cl,cl
+		mov  esi,szStr
+		xor  cl,cl
 lph_top:
 		xor  eax,eax
-			and  cl,31
-			mov  al,[esi]
-			inc  esi
-				test al,al
-				jz   lph_end
-				rol  eax,cl
-				add  cl,5
-				xor  edx,eax
-				jmp  lph_top
+		and  cl,31
+		mov  al,[esi]
+		inc  esi
+		test al,al
+		jz   lph_end
+		rol  eax,cl
+		add  cl,5
+		xor  edx,eax
+		jmp  lph_top
 lph_end:
-			mov  eax,edx
+		mov  eax,edx
 	}
 #else
 	DWORD hash=0;
 	int i;
 	int shift=0;
 	for(i=0;szStr[i];i++) {
+		hash^=szStr[i]<<shift;
+		if(shift>24) hash^=(szStr[i]>>(32-shift))&0x7F;
+		shift=(shift+5)&0x1F;
+	}
+	return hash;
+#endif
+}
+
+static DWORD LangPackHashW(const char *szStr)
+{
+#if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined __GNUC__
+	__asm {				//this is mediocrely optimised, but I'm sure it's good enough
+		xor  edx,edx
+		mov  esi,szStr
+		xor  cl,cl
+lph_top:
+		xor  eax,eax
+		and  cl,31
+		mov  al,[esi]
+		inc  esi
+		inc  esi
+		test al,al
+		jz   lph_end
+		rol  eax,cl
+		add  cl,5
+		xor  edx,eax
+		jmp  lph_top
+lph_end:
+		mov  eax,edx
+	}
+#else
+	DWORD hash=0;
+	int i;
+	int shift=0;
+	for(i=0;szStr[i];i+=2) {
 		hash^=szStr[i]<<shift;
 		if(shift>24) hash^=(szStr[i]>>(32-shift))&0x7F;
 		shift=(shift+5)&0x1F;
@@ -243,7 +278,7 @@ char *LangPackTranslateString(const char *szEnglish, const int W)
 
 	if ( langPack.entryCount == 0 || szEnglish == NULL ) return (char*)szEnglish;
 
-	key.englishHash=LangPackHash(szEnglish);
+	key.englishHash = W ? LangPackHashW(szEnglish) : LangPackHash(szEnglish);
 	entry=(struct LangPackEntry*)bsearch(&key,langPack.entry,langPack.entryCount,sizeof(struct LangPackEntry),(int(*)(const void*,const void*))SortLangPackHashesProc2);
 	if(entry==NULL) return (char*)szEnglish;
 	while(entry>langPack.entry)
