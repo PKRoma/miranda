@@ -42,20 +42,21 @@ static int TranslateMenu(WPARAM wParam,LPARAM lParam)
 		mii.fMask = MIIM_TYPE|MIIM_SUBMENU;
 		mii.dwTypeData = ( char* )str;
 		mii.cch = SIZEOF(str);
-		GetMenuItemInfoA(hMenu, i, TRUE, &mii);
-		if ( mii.cch && mii.dwTypeData ) {
-			int doUnicode = isUnicode;
-			char* result = LangPackTranslateString( mii.dwTypeData, isUnicode );
-			if ( result == mii.dwTypeData )
-				doUnicode = 0;
+		if ( isUnicode )
+			GetMenuItemInfoW(hMenu, i, TRUE, ( MENUITEMINFOW* )&mii);
+		else
+			GetMenuItemInfoA(hMenu, i, TRUE, &mii);
 
-			mii.dwTypeData = result;
-			mii.fMask = MIIM_TYPE;
-			if ( doUnicode )
-				SetMenuItemInfoW( hMenu, i, TRUE, ( MENUITEMINFOW* )&mii );
-			else
-				SetMenuItemInfoA( hMenu, i, TRUE, ( MENUITEMINFOA* )&mii );
-		}
+		if ( mii.cch && mii.dwTypeData ) {
+			char* result = LangPackTranslateString( mii.dwTypeData, isUnicode );
+			if ( result != mii.dwTypeData ) {
+				mii.dwTypeData = result;
+				mii.fMask = MIIM_TYPE;
+				if ( isUnicode )
+					SetMenuItemInfoW( hMenu, i, TRUE, ( MENUITEMINFOW* )&mii );
+				else
+					SetMenuItemInfoA( hMenu, i, TRUE, ( MENUITEMINFOA* )&mii );
+		}	}
 
 		if ( mii.hSubMenu!=NULL ) TranslateMenu((WPARAM)mii.hSubMenu, lParam);
 	}
@@ -65,14 +66,18 @@ static int TranslateMenu(WPARAM wParam,LPARAM lParam)
 static void TranslateWindow( HWND hwnd, int flags )
 {
 	char title[2048];
-	GetWindowTextA(hwnd, title, sizeof( title ));
+	if ( flags & LANG_UNICODE )
+		GetWindowTextW(hwnd, ( WCHAR* )title, sizeof( title )/sizeof( wchar_t ));
+	else
+		GetWindowTextA(hwnd, title, sizeof( title ));
 	{
 		char* result = LangPackTranslateString(title, flags);
-		if (( flags & LANG_UNICODE ) && result != title )
-			SetWindowTextW(hwnd, ( WCHAR* )result );
-		else
-			SetWindowTextA(hwnd, result );
-}	}
+		if ( result != title ) {
+			if ( flags & LANG_UNICODE )
+				SetWindowTextW(hwnd, ( WCHAR* )result );
+			else 
+				SetWindowTextA(hwnd, result );
+}	}	}
 
 static BOOL CALLBACK TranslateDialogEnumProc(HWND hwnd,LPARAM lParam)
 {
