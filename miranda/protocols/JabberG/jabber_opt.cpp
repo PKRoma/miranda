@@ -215,6 +215,8 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if ( port <= 0 ) enableRegister = FALSE;
 
 			CheckDlgButton( hwndDlg, IDC_USE_SSL, JGetByte( "UseSSL", FALSE ));
+			CheckDlgButton( hwndDlg, IDC_USE_TLS, JGetByte( "UseTLS", FALSE ));
+			EnableWindow(GetDlgItem( hwndDlg, IDC_USE_TLS ), !JGetByte( "UseSSL", FALSE ));
 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_BUTTON_REGISTER ), enableRegister );
 
@@ -324,11 +326,14 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			break;
 		case IDC_USE_SSL:
 			if ( !IsDlgButtonChecked( hwndDlg, IDC_MANUAL )) {
-				if ( IsDlgButtonChecked( hwndDlg, IDC_USE_SSL ))
+				if ( IsDlgButtonChecked( hwndDlg, IDC_USE_SSL )) {
+					EnableWindow(GetDlgItem( hwndDlg, IDC_USE_TLS ), FALSE );
 					SetDlgItemInt( hwndDlg, IDC_PORT, 5223, FALSE );
-				else
+				}
+				else {
+					EnableWindow(GetDlgItem( hwndDlg, IDC_USE_TLS ), TRUE );
 					SetDlgItemInt( hwndDlg, IDC_PORT, 5222, FALSE );
-			}
+			}	}
 			// Fall through
 		case IDC_SAVEPASSWORD:
 		case IDC_KEEPALIVE:
@@ -391,6 +396,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				JSetWord( NULL, "Port", port );
 
 				JSetByte( "UseSSL", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_USE_SSL ));
+				JSetByte( "UseTLS", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_USE_TLS ));
 
 				JSetByte( "ManualConnect", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_MANUAL ));
 

@@ -38,6 +38,7 @@ static void JabberProcessProtocol( XmlNode *node, void *userdata );
 static void JabberProcessMessage( XmlNode *node, void *userdata );
 static void JabberProcessPresence( XmlNode *node, void *userdata );
 static void JabberProcessIq( XmlNode *node, void *userdata );
+static void JabberProcessProceed( XmlNode *node, void *userdata );
 static void JabberProcessRegIq( XmlNode *node, void *userdata );
 
 static VOID CALLBACK JabberDummyApcFunc( DWORD param )
@@ -340,6 +341,17 @@ LBL_Exit:
 		for ( ;; ) {
 			int recvResult, bytesParsed;
 
+			if ( !sslMode ) if (info->useSSL){
+				ssl = JabberSslHandleToSsl( info->s );
+				sslMode = TRUE;
+				JabberXmlDestroyState(&xmlState);
+				JabberXmlInitState( &xmlState );
+				JabberXmlSetCallback( &xmlState, 1, ELEM_OPEN, JabberProcessStreamOpening, info );
+				JabberXmlSetCallback( &xmlState, 1, ELEM_CLOSE, JabberProcessStreamClosing, info );
+				JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
+				JabberSend( info->s, "<?xml version='1.0' encoding='UTF-8'?><stream:stream to='%s' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>", UTF8(info->server) );
+			}
+
 			if ( sslMode )
 				recvResult = pfn_SSL_read( ssl, buffer+datalen, jabberNetworkBufferSize-datalen );
 			else
@@ -468,6 +480,12 @@ static void JabberProcessStreamOpening( XmlNode *node, void *userdata )
 	if ( node->name==NULL || strcmp( node->name, "stream:stream" ))
 		return;
 
+	if ( !info->useSSL && hLibSSL != NULL && JGetByte( "UseTLS", FALSE )) {
+		JabberLog( "Requesting TLS" );
+		JabberSend( info->s, "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>" );
+		return;
+	} 
+
 	if ( info->type == JABBER_SESSION_NORMAL ) {
 		if (( sid=JabberXmlGetAttrValue( node, "id" )) != NULL ) {
 			if ( streamId ) free( streamId );
@@ -510,15 +528,50 @@ static void JabberProcessProtocol( XmlNode *node, void *userdata )
 			JabberProcessPresence( node, userdata );
 		else if ( !strcmp( node->name, "iq" ))
 			JabberProcessIq( node, userdata );
+		else if ( !strcmp( node->name, "proceed" ))
+			JabberProcessProceed( node, userdata );
 		else
 			JabberLog( "Invalid top-level tag ( only <message/> <presence/> and <iq/> allowed )" );
 	}
 	else if ( info->type == JABBER_SESSION_REGISTER ) {
 		if ( !strcmp( node->name, "iq" ))
 			JabberProcessRegIq( node, userdata );
+		else if ( !strcmp( node->name, "proceed"))
+			JabberProcessProceed( node, userdata );
 		else
 			JabberLog( "Invalid top-level tag ( only <iq/> allowed )" );
 }	}
+
+static void JabberProcessProceed( XmlNode *node, void *userdata )
+{
+	struct ThreadData *info;
+	char* type;
+	node = node;
+	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
+	if (( type = JabberXmlGetAttrValue( node, "xmlns" )) != NULL && !strcmp( type, "error" ))
+		return;
+	if ( !strcmp( type, "urn:ietf:params:xml:ns:xmpp-tls" )){
+		JabberLog("Staring TLS...");
+		int socket = JCallService( MS_NETLIB_GETSOCKET, ( WPARAM ) info->s, 0 );
+		PVOID ssl;
+		if (( ssl=pfn_SSL_new( jabberSslCtx )) != NULL ) {
+			JabberLog( "SSL create context ok" );
+			if ( pfn_SSL_set_fd( ssl, socket ) > 0 ) {
+				JabberLog( "SSL set fd ok" );
+				if ( pfn_SSL_connect( ssl ) > 0 ) {
+					JabberLog( "SSL negotiation ok" );
+					JabberSslAddHandle( info->s, ssl );	// This make all communication on this handle use SSL
+					info->useSSL = true;
+					JabberLog( "SSL enabled for handle = %d", info->s );
+				} 
+				else {
+					JabberLog( "SSL negotiation failed" );
+					pfn_SSL_free( ssl );
+			}	} 
+			else {
+				JabberLog( "SSL set fd failed" );
+				pfn_SSL_free( ssl );
+}	}	}	}
 
 static void JabberProcessMessage( XmlNode *node, void *userdata )
 {

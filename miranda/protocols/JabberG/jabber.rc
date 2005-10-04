@@ -77,7 +77,9 @@ BEGIN
     LTEXT           "Port:",IDC_STATIC,19,89,45,8
     EDITTEXT        IDC_PORT,70,87,26,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Use SSL",IDC_USE_SSL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,104,88,140,10
+                    WS_TABSTOP,104,88,54,10
+    CONTROL         "Use TLS",IDC_USE_TLS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,165,88,80,10
     PUSHBUTTON      "Register new user",IDC_BUTTON_REGISTER,165,19,78,13
     CONTROL         "List of public servers",IDC_LINK_PUBLIC_SERVER,
                     "Hyperlink",WS_TABSTOP,165,74,79,11
