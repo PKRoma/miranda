@@ -21,6 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "jabber.h"
+
+#include <WinDNS.h>   // requires Windows Platform SDK
+
 #include "jabber_ssl.h"
 #include "jabber_list.h"
 #include "jabber_iq.h"
@@ -91,6 +94,42 @@ static VOID CALLBACK JabberOfflineChatWindows( DWORD )
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
 	CallService( MS_GC_EVENT, SESSION_TERMINATE, (LPARAM)&gce );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+typedef DNS_STATUS (WINAPI *DNSQUERYA)(IN PCSTR pszName, IN WORD wType, IN DWORD Options, IN PIP4_ARRAY aipServers OPTIONAL, IN OUT PDNS_RECORD *ppQueryResults OPTIONAL, IN OUT PVOID *pReserved OPTIONAL);
+typedef void (WINAPI *DNSFREELIST)(IN OUT PDNS_RECORD pRecordList, IN DNS_FREE_TYPE FreeType);
+
+static int xmpp_client_query( char* domain )
+{
+	HINSTANCE hDnsapi = LoadLibraryA( "dnsapi.dll" );
+	if ( hDnsapi == NULL )
+		return 0;
+
+	DNSQUERYA pDnsQuery_A = (DNSQUERYA)GetProcAddress(hDnsapi, "DnsQuery_A");
+	DNSFREELIST pDnsRecordListFree = (DNSFREELIST)GetProcAddress(hDnsapi, "DnsRecordListFree");
+	if ( pDnsQuery_A == NULL || pDnsQuery_A == NULL ) {
+		//dnsapi.dll is not the needed dnsapi ;)
+		FreeLibrary( hDnsapi );
+		return 0;
+	}
+
+   char temp[256];
+	mir_snprintf( temp, sizeof temp, "_xmpp-client._tcp.%s", domain );
+
+	DNS_RECORD *results = NULL;
+	DNS_STATUS status = pDnsQuery_A(temp, DNS_TYPE_SRV, DNS_QUERY_STANDARD, NULL, &results, NULL);
+	if (FAILED(status)||!results || results[0].Data.Srv.pNameTarget == 0||results[0].wType != DNS_TYPE_SRV) {
+		FreeLibrary(hDnsapi);
+		return NULL;
+	}
+
+	strncpy(domain, results[0].Data.Srv.pNameTarget, 127);
+	int port = results[0].Data.Srv.wPort;
+	pDnsRecordListFree(results, DnsFreeRecordList);
+	FreeLibrary(hDnsapi);
+	return port;
 }
 
 void __cdecl JabberServerThread( struct ThreadData *info )
@@ -219,7 +258,19 @@ LBL_Exit:
 		goto LBL_Exit;
 	}
 
-	char* connectHost = ( info->manualHost[0] ) ? info->manualHost : info->server;
+	char connectHost[128];
+	if ( info->manualHost[0] == 0 ) { 
+		int port_temp;
+		strncpy( connectHost, info->server, 128 );
+		if ( port_temp = xmpp_client_query( connectHost )) { // port_temp will be > 0 if resolution is successful
+			JabberLog("%s%s resolved to %s:%d","_xmpp-client._tcp.",info->server,connectHost,port_temp);
+			if (info->port==0 || info->port==5222)
+				info->port = port_temp;
+		} 
+		else JabberLog("%s%s not resolved", "_xmpp-client._tcp.", connectHost);
+	}
+	else strncpy(connectHost,info->manualHost,128); // do not resolve if manual host is selected
+
 	JabberLog( "Thread type=%d server='%s' port='%d'", info->type, connectHost, info->port );
 
 	int jabberNetworkBufferSize = 2048;
