@@ -58,7 +58,7 @@ Version 0.9.9.98 - 2005/08/25
         + added ability to render transparent PNG images when set as local contact pictures by
           the avatar service. NOTE: unicode version only.
 
-        ! fixed bug with formatting parser - ignore message when they contain curly braces ( {
+        ! fixed bug with formatting parser - ignore messages when they contain curly braces ( {
           and } ) to avoid conflicts with the rtf syntax.
 
 Version 0.9.9.97 - 2005/07/23

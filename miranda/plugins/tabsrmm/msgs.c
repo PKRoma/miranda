@@ -838,6 +838,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     static char *szUpdateUrl = "http://miranda.or.at/files/tabsrmm/tabsrmm.zip";
     static char *szPrefix = "tabsrmm ";
 #endif
+    hEventDispatch = HookEvent(ME_DB_EVENT_ADDED, DispatchNewEvent);
+    hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
     ZeroMemory(&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
     mi.position = -2000090000;
@@ -1145,8 +1147,6 @@ int LoadSendRecvMessageModule(void)
     hUserPrefsWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
     
     InitOptions();
-    hEventDispatch = HookEvent(ME_DB_EVENT_ADDED, DispatchNewEvent);
-    hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
     hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
     hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
     HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
