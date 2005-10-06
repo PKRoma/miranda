@@ -259,6 +259,9 @@ ULONG JabberForkThread( void ( __cdecl *threadcode )( void* ), unsigned long sta
 
 void JabberSetServerStatus( int iNewStatus )
 {
+	if ( jabberConnected )
+		return;
+
 	// change status
 	int oldStatus = jabberStatus;
 	switch ( iNewStatus ) {
