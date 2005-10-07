@@ -1549,18 +1549,7 @@ LBL_InvalidCommand:
 
 					msnLoggedIn = true;
 					sttListNumber = 0;
-
-					char tOldDate[ 100 ], tNewDate[ 100 ];
-					if ( MSN_GetStaticString( "LastSyncTime", NULL, tOldDate, sizeof tOldDate ))
-						strcpy( tOldDate, "2004-07-01T00:00:00.0000000-07:00" );
-
-					SYSTEMTIME T;
-					GetSystemTime( &T );
-					mir_snprintf( tNewDate, sizeof tNewDate, "%04d-%02d-%02dT%02d:%02d:%02d.0000000-07:00",
-						T.wYear, T.wMonth, T.wDay, T.wHour, T.wMinute, T.wSecond );
-					MSN_SetString( NULL, "LastSyncTime", tNewDate );
-
-					info->sendPacket( "SYN", "%s %s", tNewDate, tOldDate );
+					info->sendPacket( "SYN", "0 0" );
 				}
 				else {
 					MSN_DebugLog( "Unknown security package '%s'", data.security );

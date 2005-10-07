@@ -484,11 +484,11 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Performs the MSN Passport login via SSL3
+// Checks the MSN Passport redirector site
 
-int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
+int MSN_CheckRedirector()
 {
-	parResult = NULL;
+	int retVal = 0;
 	SSL_Base* pAgent;
 	if ( MSN_GetByte( "UseOpenSSL", 0 ))
 		pAgent = new SSL_OpenSsl();
@@ -502,27 +502,51 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 		return 2;
 	}
 
-	int retVal = 0;
+	char* msnLoginHost = pAgent->getSslResult( "https://nexus.passport.com/rdr/pprdr.asp", NULL );
 	if ( msnLoginHost == NULL ) {
-		msnLoginHost = pAgent->getSslResult( "https://nexus.passport.com/rdr/pprdr.asp", NULL );
-		if ( msnLoginHost == NULL ) {
-			retVal = 1;
+		retVal = 1;
 LBL_Exit:
-			delete pAgent;
-			return retVal;
-		}
+		delete pAgent;
+		MSN_DebugLog( "MSN_CheckRedirector exited with errorCode = %d", retVal );
+		return retVal;
+	}
 
-		char* p = strstr( msnLoginHost, "DALogin=" );
-		if ( p == NULL ) {
-			free( msnLoginHost ); msnLoginHost = NULL;
-			retVal = 2;
-			goto LBL_Exit;
-		}
+	char* p = strstr( msnLoginHost, "DALogin=" );
+	if ( p == NULL ) {
+		free( msnLoginHost ); msnLoginHost = NULL;
+		retVal = 2;
+		goto LBL_Exit;
+	}
 
-		strcpy( msnLoginHost, "https://" );
-		strdel( msnLoginHost+8, int( p-msnLoginHost ));
-		if (( p = strchr( msnLoginHost, ',' )) != 0 )
-			*p = 0;
+	strcpy( msnLoginHost, "https://" );
+	strdel( msnLoginHost+8, int( p-msnLoginHost ));
+	if (( p = strchr( msnLoginHost, ',' )) != 0 )
+		*p = 0;
+
+	MSN_SetString( NULL, "MsnPassportHost", msnLoginHost );
+	MSN_DebugLog( "MSN Passport login host is set to '%s'", msnLoginHost );
+	goto LBL_Exit;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Performs the MSN Passport login via SSL3
+
+int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
+{
+	int retVal = 0;
+	parResult = NULL;
+	SSL_Base* pAgent;
+	if ( MSN_GetByte( "UseOpenSSL", 0 ))
+		pAgent = new SSL_OpenSsl();
+	else
+		pAgent = new SSL_WinInet();
+	if ( pAgent == NULL )
+		return 1;
+
+	if ( pAgent->init() ) {
+		delete pAgent;
+		return 2;
 	}
 
 	char szEmail[ MSN_MAX_EMAIL_LEN ];
@@ -546,15 +570,24 @@ LBL_Exit:
 	strcat( szAuthInfo+nBytes, "," );
 	strcat( szAuthInfo+nBytes, authChallengeInfo );
 
-	char* tResult = pAgent->getSslResult( msnLoginHost, szAuthInfo );
-	if ( tResult == NULL ) {
+	char szPassportHost[ 256 ];
+	if ( MSN_GetStaticString( "MsnPassportHost", NULL, szPassportHost, sizeof( szPassportHost ))) {
 		retVal = 3;
+LBL_Exit:
+		delete pAgent;
+		MSN_DebugLog( "MSN_CheckRedirector exited with errorCode = %d", retVal );
+		return retVal;
+	}
+
+	char* tResult = pAgent->getSslResult( szPassportHost, szAuthInfo );
+	if ( tResult == NULL ) {
+		retVal = 4;
 		goto LBL_Exit;
 	}
 
 	if (( p = strstr( tResult, "from-PP=" )) == NULL )	{
 		free( tResult );
-		retVal = 4;
+		retVal = 5;
 		goto LBL_Exit;
 	}
 

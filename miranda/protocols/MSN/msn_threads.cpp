@@ -33,9 +33,8 @@ extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
 
 HANDLE hKeepAliveThreadEvt = NULL;
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
 //	Keep-alive thread for the main connection
-//=======================================================================================
 
 extern int msnPingTimeout;
 
@@ -61,13 +60,28 @@ void __cdecl msn_keepAliveThread( void* )
 				msnNsThread->send( "PNG\r\n", 5 );
 }	}
 
-//=======================================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
+//	MSN redirector detection thread - refreshes the information about the redirector
+
+static bool sttRedirectorWasChecked = false;
+
+void __cdecl msn_RedirectorThread( ThreadData* info )
+{
+	extern int MSN_CheckRedirector();
+	MSN_CheckRedirector();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 //	MSN server thread - read and process commands from a server
-//=======================================================================================
 
 void __cdecl MSNServerThread( ThreadData* info )
 {
 	MSN_DebugLog( "Thread started: server='%s', type=%d", info->mServer, info->mType );
+
+	if ( !sttRedirectorWasChecked ) {
+		sttRedirectorWasChecked = true;
+		MSN_StartThread(( pThreadFunc )msn_RedirectorThread, NULL );
+	}
 
 	NETLIBOPENCONNECTION tConn = { 0 };
 	tConn.cbSize = sizeof( tConn );
@@ -223,10 +237,9 @@ LBL_Exit:
 	MSN_DebugLog( "Thread [%d] ending now", GetCurrentThreadId() );
 }
 
-/*=======================================================================================
- * Added by George B. Hazan (ghazan@postman.ru)
- * The following code is required to abortively stop all started threads upon exit
- *=======================================================================================*/
+/////////////////////////////////////////////////////////////////////////////////////////
+//  Added by George B. Hazan (ghazan@postman.ru)
+//  The following code is required to abortively stop all started threads upon exit
 
 static ThreadData*		sttThreads[ MAX_THREAD_COUNT ];	// up to MAX_THREAD_COUNT threads
 static CRITICAL_SECTION	sttLock;

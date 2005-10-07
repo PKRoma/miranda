@@ -569,7 +569,6 @@ extern	int			msnStatusMode,
 
 extern	char*       msnProtChallenge;
 extern	char*       msnProductID;
-extern   char*       msnLoginHost;
 
 extern	char*			ModuleName;
 extern	char*	      mailsoundname;

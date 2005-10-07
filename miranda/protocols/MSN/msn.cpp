@@ -70,8 +70,6 @@ MSN_StatusMessage msnModeMsgs[ MSN_NUM_MODES ] = {
 	{ ID_STATUS_OUTTOLUNCH, NULL } };
 
 char* msnProtocolName = NULL;
-char* msnLoginHost = NULL;
-
 char* msnProtChallenge = NULL;
 char* msnProductID  = NULL;
 
@@ -137,6 +135,9 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	}
 
 	char szBuffer[ MAX_PATH ];
+
+	if ( MSN_GetStaticString( "MsnPassportHost", NULL, szBuffer, sizeof szBuffer ))
+		MSN_SetString( NULL, "MsnPassportHost", "https://loginnet.passport.com/login2.srf" );
 
 	WORD wPort = MSN_GetWord( NULL, "YourPort", 0xFFFF );
 	if ( wPort != 0xFFFF ) {
@@ -358,7 +359,6 @@ int __declspec( dllexport ) Unload( void )
 	if ( MSPAuth ) free( MSPAuth );
 	if ( rru ) free( rru );
 
-	if ( msnLoginHost ) free( msnLoginHost );
 	if ( msnExternalIP ) free( msnExternalIP );
 	return 0;
 }
