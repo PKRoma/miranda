@@ -60,6 +60,7 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 		clmi.pszName = JTranslate(( JGetWord( hContact, "Status", 0 ) == ID_STATUS_ONLINE ) ? "&Leave" : "&Join" );
 		clmi.flags = CMIM_NAME | CMIM_FLAGS;
 		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuJoinLeave, ( LPARAM )&clmi );
+		return 0;
 	}
 
 	DBVARIANT dbv;
