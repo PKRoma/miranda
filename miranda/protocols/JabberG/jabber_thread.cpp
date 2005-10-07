@@ -912,7 +912,6 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 						status = ID_STATUS_INVISIBLE;
 
 					p = JabberTextDecode( statusNode->text );
-					JabberListAddResource( LIST_ROSTER, from, status, p );
 					if (( hContact = JabberHContactFromJID( from )) != NULL) {
 						if ( p )
 							DBWriteContactSettingString(hContact, "CList", "StatusMsg", p);
