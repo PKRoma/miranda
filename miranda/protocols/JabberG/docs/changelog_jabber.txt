@@ -11,6 +11,7 @@ Version 0.4.1.2
 [+] wish #0001252: Add support for TLS
 [+] wish #0001319: Conference nicknames should be stored & reused
 [+] wish #0001331: Support for sending and receiving actions (/me)
+[+] wish #0001356: Don't show 'user joined' events when first joining a MUC
 [+] wish #0001508: Support for _xmpp-client._tcp SRV DNS records (thanks yb for a patch)
 [!] important bug fixed: Jabber contact list maybe messed up under Win9x
 [!] numerous fixes for the groupchat administration

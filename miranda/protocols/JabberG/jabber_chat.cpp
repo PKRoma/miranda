@@ -81,17 +81,6 @@ int JabberGcInit( WPARAM wParam, LPARAM lParam )
 	GCEVENT gce = {0};
 
 	char* szNick = JabberNickFromJID( item->jid );
-	HANDLE hContact = JabberHContactFromJID( item->jid );
-	if ( hContact != NULL ) {
-		DBVARIANT dbv;
-		if ( !JGetStringUtf( hContact, "MyNick", &dbv )) {
-			if ( !strcmp( dbv.pszVal, szNick ))
-				JDeleteSetting( hContact, "MyNick" );
-			else 
-				replaceStr( szNick, dbv.pszVal );
-			JFreeVariant( &dbv );
-	}	}
-
 	gcw.cbSize = sizeof(GCSESSION);
 	gcw.iType = GCW_CHATROOM;
 	gcw.pszModule = jabberProtoName;
@@ -101,6 +90,22 @@ int JabberGcInit( WPARAM wParam, LPARAM lParam )
 	gcw.bDisableNickList = FALSE;
 	JCallService(MS_GC_NEWSESSION, NULL, (LPARAM)&gcw);
 	free( szNick );
+
+	HANDLE hContact = JabberHContactFromJID( item->jid );
+	if ( hContact != NULL ) {
+		char* myNick = JabberNickFromJID( jabberJID );
+
+		DBVARIANT dbv;
+		if ( !JGetStringUtf( hContact, "MyNick", &dbv )) {
+			if ( !strcmp( dbv.pszVal, myNick ))
+				JDeleteSetting( hContact, "MyNick" );
+			else 
+				JSetStringUtf( hContact, "MyNick", item->nick );
+			JFreeVariant( &dbv );
+		}
+		else JSetStringUtf( hContact, "MyNick", item->nick );
+		free( myNick );
+	}
 
 	item->bChatActive = TRUE;
 
@@ -142,8 +147,10 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick, int acti
 	gce.pszNick = dispNick;
 	gce.pszUID = nick;
 	gce.pDest = &gcd;
-	gce.bAddToLog = TRUE;
-	gce.time = time(0);
+	if ( item->bChatActive == 2 ) {
+		gce.bAddToLog = TRUE;
+		gce.time = time(0);
+	}
 
 	switch( action ) {
 	case -1:     gcd.iType = GC_EVENT_PART;      break;

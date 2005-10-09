@@ -336,10 +336,6 @@ void JabberGroupchatJoinRoom( const char* server, const char* room, const char* 
 	JABBER_LIST_ITEM* item = JabberListAdd( LIST_CHATROOM, text );
 	replaceStr( item->nick, nick );
 
-	HANDLE hContact = JabberHContactFromJID( text );
-	if ( hContact != NULL )
-		JSetStringUtf( hContact, "MyNick", nick );
-
 	int status = ( jabberStatus == ID_STATUS_INVISIBLE ) ? ID_STATUS_ONLINE : jabberStatus;
 	if ( password && password[0]!='\0' ) {
 		char passwordText[256];
@@ -730,6 +726,8 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 	gce.pszText = msgText;
 	gce.bIsMe = lstrcmpA( nick, item->nick ) == 0;
 	JCallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
+
+	item->bChatActive = 2;
 
 	if ( gcd.iType == GC_EVENT_TOPIC ) {
 		gce.bAddToLog = FALSE;
