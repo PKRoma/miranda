@@ -168,12 +168,12 @@ void __cdecl JabberServerThread( struct ThreadData *info )
 		}
 		else {
 			JabberLog( "Thread ended, login name is not configured" );
-			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
+			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 LBL_FatalError:
 			jabberThreadInfo = NULL;
 			oldStatus = jabberStatus;
 			jabberStatus = ID_STATUS_OFFLINE;
-			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 LBL_Exit:
 			free( info );
 			return;
@@ -184,7 +184,7 @@ LBL_Exit:
 			JFreeVariant( &dbv );
 		}
 		else {
-			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
+			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
 			JabberLog( "Thread ended, login server is not configured" );
 			goto LBL_FatalError;
 		}
@@ -212,7 +212,7 @@ LBL_Exit:
 			CloseHandle( hEventPasswdDlg );
 			//if (( p=( char* )DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_PASSWORD ), NULL, JabberPasswordDlgProc, ( LPARAM )jidStr )) != onlinePassword ) {
 			if ( onlinePassword[0] == ( char ) -1 ) {
-				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
+				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 				JabberLog( "Thread ended, password request dialog was canceled" );
 				goto LBL_FatalError;
 			}
@@ -221,7 +221,7 @@ LBL_Exit:
 		}
 		else {
 			if ( DBGetContactSetting( NULL, jabberProtoName, "Password", &dbv )) {
-				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
+				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 				JabberLog( "Thread ended, password is not configured" );
 				goto LBL_FatalError;
 			}
@@ -279,8 +279,8 @@ LBL_Exit:
 		if ( info->type == JABBER_SESSION_NORMAL ) {
 			oldStatus = jabberStatus;
 			jabberStatus = ID_STATUS_OFFLINE;
-			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
-			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
+			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 			jabberThreadInfo = NULL;
 		}
 		else if ( info->type == JABBER_SESSION_REGISTER ) {
@@ -297,8 +297,8 @@ LBL_Exit:
 			if ( jabberThreadInfo == info ) {
 				oldStatus = jabberStatus;
 				jabberStatus = ID_STATUS_OFFLINE;
-				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
-				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
+				JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 				jabberThreadInfo = NULL;
 		}	}
 		else if ( info->type == JABBER_SESSION_REGISTER )
@@ -349,8 +349,8 @@ LBL_Exit:
 			if ( info->type == JABBER_SESSION_NORMAL ) {
 				oldStatus = jabberStatus;
 				jabberStatus = ID_STATUS_OFFLINE;
-				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
-				ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
+				JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
 				if ( jabberThreadInfo == info )
 					jabberThreadInfo = NULL;
 			}
@@ -467,7 +467,7 @@ LBL_Exit:
 			// Set status to offline
 			oldStatus = jabberStatus;
 			jabberStatus = ID_STATUS_OFFLINE;
-			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 
 			// Set all contacts to offline
 			HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
@@ -496,7 +496,7 @@ LBL_Exit:
 		if ( info->type == JABBER_SESSION_NORMAL ) {
 			oldStatus = jabberStatus;
 			jabberStatus = ID_STATUS_OFFLINE;
-			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 	}	}
 
 	Netlib_CloseHandle( info->s );
@@ -806,7 +806,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 							id = atoi(( idNode->text )+strlen( JABBER_IQID ));
 
 					if ( id == item->idMsgAckPending )
-						ProtoBroadcastAck( jabberProtoName, JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
+						JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
 				}
 
 				HANDLE hContact;
@@ -1098,13 +1098,10 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		// ACTION: notify Miranda throuch CHAINRECV
 		else if ( !strcmp( xmlns, "jabber:iq:oob" )) {
 			if (( jid=JabberXmlGetAttrValue( node, "from" ))!=NULL && ( n=JabberXmlGetChild( queryNode, "url" ))!=NULL && n->text!=NULL ) {
-				JABBER_FILE_TRANSFER *ft;
-
 				str = n->text;	// URL of the file to get
-				ft = ( JABBER_FILE_TRANSFER * ) malloc( sizeof( JABBER_FILE_TRANSFER ));
-				memset( ft, 0, sizeof( JABBER_FILE_TRANSFER ));
+				filetransfer* ft = new filetransfer;
 				ft->jid = _strdup( JabberUrlDecode( jid ));
-				ft->hContact = JabberHContactFromJID( jid );
+				ft->std.hContact = JabberHContactFromJID( jid );
 				ft->type = FT_OOB;
 				ft->httpHostName = NULL;
 				ft->httpPort = 80;
@@ -1156,7 +1153,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 						pre.szMessage = szBlob;
 						pre.lParam = 0;
 						ccs.szProtoService = PSR_FILE;
-						ccs.hContact = ft->hContact;
+						ccs.hContact = ft->std.hContact;
 						ccs.wParam = 0;
 						ccs.lParam = ( LPARAM )&pre;
 						JCallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
@@ -1171,7 +1168,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 						JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s' id='%s'><error code='406'>File transfer refused</error></iq>", ft->jid, ft->iqId );
 					else
 						JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s'><error code='406'>File transfer refused</error></iq>", ft->jid );
-					JabberFileFreeFt( ft );
+					delete ft;
 		}	}	}
 
 		// RECVED: bytestream initiation request

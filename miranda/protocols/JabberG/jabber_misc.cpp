@@ -286,5 +286,5 @@ void JabberSetServerStatus( int iNewStatus )
 
 	// send presence update
 	JabberSendPresence( jabberStatus );
-	ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+	JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 }

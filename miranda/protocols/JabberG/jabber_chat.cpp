@@ -87,10 +87,8 @@ int JabberGcInit( WPARAM wParam, LPARAM lParam )
 		if ( !JGetStringUtf( hContact, "MyNick", &dbv )) {
 			if ( !strcmp( dbv.pszVal, szNick ))
 				JDeleteSetting( hContact, "MyNick" );
-			else {
-				free( szNick );
-				szNick = strdup( dbv.pszVal );
-			}
+			else 
+				replaceStr( szNick, dbv.pszVal );
 			JFreeVariant( &dbv );
 	}	}
 

@@ -115,8 +115,11 @@ int JabberMenuJoinLeave( WPARAM wParam, LPARAM lParam )
 		strncpy( szNick, dbv.pszVal, sizeof( szNick ));
 		JFreeVariant( &dbv );
 	}
-	else if ( JGetStaticString( "Nick", NULL, szNick, sizeof szNick )) 
-		return 0;
+	else if ( !JGetStringUtf( NULL, "Nick", &dbv )) {
+		strncpy( szNick, dbv.pszVal, sizeof( szNick ));
+		JFreeVariant( &dbv );
+	}
+	else return 0;
 
 	if ( JGetWord(( HANDLE )wParam, "Status", 0 ) != ID_STATUS_ONLINE ) {
 		if ( !jabberChatDllPresent ) {
@@ -131,8 +134,8 @@ int JabberMenuJoinLeave( WPARAM wParam, LPARAM lParam )
 		*p++ = 0;
 		JabberGroupchatJoinRoom( p, szJid, szNick, "" );
 	}
-	else 
-	{	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, szJid );
+	else {
+		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, szJid );
 		if ( item != NULL )
 			JabberGcQuit( item, 0, NULL );
 	}

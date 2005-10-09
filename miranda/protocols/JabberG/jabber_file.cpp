@@ -29,36 +29,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static char* fileBaseName;
 static char* filePathName;
 
-static int JabberFileReceiveParse( JABBER_FILE_TRANSFER *ft, char* buffer, int datalen );
+static int JabberFileReceiveParse( filetransfer* ft, char* buffer, int datalen );
 static void JabberFileServerConnection( HANDLE hNewConnection, DWORD dwRemoteIP );
-static int JabberFileSendParse( JABBER_SOCKET s, JABBER_FILE_TRANSFER *ft, char* buffer, int datalen );
-
-void JabberFileFreeFt( JABBER_FILE_TRANSFER *ft )
-{
-	int i;
-
-	if ( ft->jid ) free( ft->jid );
-	if ( ft->iqId ) free( ft->iqId );
-	if ( ft->httpHostName ) free( ft->httpHostName );
-	if ( ft->httpPath ) free( ft->httpPath );
-	if ( ft->szSavePath ) free( ft->szSavePath );
-	if ( ft->szDescription ) free( ft->szDescription );
-	if ( ft->fullFileName ) free( ft->fullFileName );
-	if ( ft->files ) {
-		for ( i=0; i<ft->fileCount; i++ ) {
-			if ( ft->files[i] ) free( ft->files[i] );
-		}
-		free( ft->files );
-	}
-	if ( ft->fileSize ) free( ft->fileSize );
-	if ( ft->fileName ) free( ft->fileName );
-	if ( ft->sid ) free( ft->sid );
-	free( ft );
-}
+static int JabberFileSendParse( JABBER_SOCKET s, filetransfer* ft, char* buffer, int datalen );
 
 #define JABBER_NETWORK_BUFFER_SIZE 2048
 
-void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft )
+void __cdecl JabberFileReceiveThread( filetransfer* ft )
 {
 	char* buffer;
 	int datalen;
@@ -70,8 +47,8 @@ void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft )
 
 	if (( buffer=( char* )malloc( JABBER_NETWORK_BUFFER_SIZE )) == NULL ) {
 		JabberLog( "Cannot allocate network buffer, thread ended" );
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
-		JabberFileFreeFt( ft );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+		delete ft;
 		return;
 	}
 
@@ -83,9 +60,9 @@ void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft )
 	s = ( HANDLE ) JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) hNetlibUser, ( LPARAM )&nloc );
 	if ( s == NULL ) {
 		JabberLog( "Connection failed ( %d ), thread ended", WSAGetLastError());
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 		free( buffer );
-		JabberFileFreeFt( ft );
+		delete ft;
 		return;
 	}
 
@@ -97,7 +74,7 @@ void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft )
 	JabberLog( "Entering file_receive recv loop" );
 	datalen = 0;
 
-	while ( ft->state!=FT_DONE && ft->state!=FT_ERROR ) {
+	while ( ft->state != FT_DONE && ft->state != FT_ERROR ) {
 		int recvResult, bytesParsed;
 
 		JabberLog( "Waiting for data..." );
@@ -119,18 +96,18 @@ void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft )
 	if ( ft->state==FT_RECEIVING || ft->state==FT_DONE )
 		_close( ft->fileId );
 
-	if ( ft->state==FT_DONE || ( ft->state==FT_RECEIVING && ft->fileTotalSize<0 ))
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
+	if ( ft->state==FT_DONE || ( ft->state==FT_RECEIVING && ft->std.currentFileSize < 0 ))
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
 	else
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 
 	JabberLog( "Thread ended: type=file_receive server='%s'", ft->httpHostName );
 
 	free( buffer );
-	JabberFileFreeFt( ft );
+	delete ft;
 }
 
-static int JabberFileReceiveParse( JABBER_FILE_TRANSFER *ft, char* buffer, int datalen )
+static int JabberFileReceiveParse( filetransfer* ft, char* buffer, int datalen )
 {
 	char* p, *q, *s, *eob;
 	char* str;
@@ -151,42 +128,41 @@ static int JabberFileReceiveParse( JABBER_FILE_TRANSFER *ft, char* buffer, int d
 						// looking for "HTTP/1.1 200 OK"
 						if ( sscanf( str, "HTTP/%*d.%*d %d %*s", &code )==1 && code==200 ) {
 							ft->state = FT_INITIALIZING;
-							ft->fileTotalSize = -1;
+							ft->std.currentFileSize = -1;
 							JabberLog( "Change to FT_INITIALIZING" );
-							ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0 );
+							JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0 );
 						}
 					}
 					else {	// FT_INITIALIZING
 						if ( str[0] == '\0' ) {
-							ft->fullFileName = ( char* )malloc( strlen( ft->szSavePath ) + strlen( ft->httpPath ) + 2 );
-							strcpy( ft->fullFileName, ft->szSavePath );
-							if ( ft->fullFileName[strlen( ft->fullFileName )-1] != '\\' )
-								strcat( ft->fullFileName, "\\" );
+							replaceStr( ft->std.currentFile, ( char* )malloc( strlen( ft->std.workingDir ) + strlen( ft->httpPath ) + 2 ));
+							strcpy( ft->std.currentFile, ft->std.workingDir );
+							if ( ft->std.currentFile[strlen( ft->std.currentFile )-1] != '\\' )
+								strcat( ft->std.currentFile, "\\" );
 							if (( s=strrchr( ft->httpPath, '/' )) != NULL )
 								s++;
 							else
 								s = ft->httpPath;
 							s = _strdup( s );
 							JabberHttpUrlDecode( s );
-							strcat( ft->fullFileName, s );
+							strcat( ft->std.currentFile, s );
 							free( s );
-							JabberLog( "Saving to [%s]", ft->fullFileName );
-							ft->fileId = _open( ft->fullFileName, _O_BINARY|_O_WRONLY|_O_CREAT|_O_TRUNC, _S_IREAD|_S_IWRITE );
+							JabberLog( "Saving to [%s]", ft->std.currentFile );
+							ft->fileId = _open( ft->std.currentFile, _O_BINARY|_O_WRONLY|_O_CREAT|_O_TRUNC, _S_IREAD|_S_IWRITE );
 							if ( ft->fileId < 0 ) {
 								ft->state = FT_ERROR;
 								break;
 							}
 							ft->state = FT_RECEIVING;
-							ft->fileReceivedBytes = 0;
+							ft->std.currentFileSize = 0;
 							JabberLog( "Change to FT_RECEIVING" );
 						}
 						else if (( s=strchr( str, ':' )) != NULL ) {
 							*s = '\0';
-							if ( !strcmp( str, "Content-Length" )) {
-								ft->fileTotalSize = strtol( s+1, NULL, 10 );
-							}
-						}
-					}
+							if ( !strcmp( str, "Content-Length" ))
+								ft->std.totalBytes = strtol( s+1, NULL, 10 );
+					}	}
+
 					free( str );
 					q += 2;
 					num += ( q-p );
@@ -203,11 +179,10 @@ static int JabberFileReceiveParse( JABBER_FILE_TRANSFER *ft, char* buffer, int d
 		}
 		else if ( ft->state == FT_RECEIVING ) {
 			int bufferSize, remainingBytes, writeSize;
-			PROTOFILETRANSFERSTATUS pfts;
 
-			if ( ft->fileTotalSize<0 || ft->fileReceivedBytes<ft->fileTotalSize ) {
+			if ( ft->std.currentFileSize < 0 || ft->std.currentFileProgress < ft->std.currentFileSize ) {
 				bufferSize = eob - p;
-				remainingBytes = ft->fileTotalSize - ft->fileReceivedBytes;
+				remainingBytes = ft->std.currentFileSize - ft->std.currentFileProgress;
 				if ( remainingBytes < bufferSize )
 					writeSize = remainingBytes;
 				else
@@ -217,23 +192,10 @@ static int JabberFileReceiveParse( JABBER_FILE_TRANSFER *ft, char* buffer, int d
 					ft->state = FT_ERROR;
 				}
 				else {
-					ft->fileReceivedBytes += writeSize;
-					memset( &pfts, 0, sizeof( PROTOFILETRANSFERSTATUS ));
-					pfts.cbSize = sizeof( PROTOFILETRANSFERSTATUS );
-					pfts.hContact = ft->hContact;
-					pfts.sending = FALSE;
-					pfts.files = NULL;
-					pfts.totalFiles = 1;
-					pfts.currentFileNumber = 0;
-					pfts.totalBytes = ft->fileTotalSize;
-					pfts.totalProgress = ft->fileReceivedBytes;
-					pfts.workingDir = ft->szSavePath;
-					pfts.currentFile = ft->fullFileName;
-					pfts.currentFileSize = ft->fileTotalSize;
-					pfts.currentFileProgress = ft->fileReceivedBytes;
-					pfts.currentFileTime = 0;
-					ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&pfts );
-					if ( ft->fileReceivedBytes == ft->fileTotalSize )
+					ft->std.currentFileProgress += writeSize;
+					ft->std.totalProgress += writeSize;
+					JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
+					if ( ft->std.currentFileProgress == ft->std.currentFileSize )
 						ft->state = FT_DONE;
 				}
 			}
@@ -248,7 +210,7 @@ static int JabberFileReceiveParse( JABBER_FILE_TRANSFER *ft, char* buffer, int d
 	return num;
 }
 
-void __cdecl JabberFileServerThread( JABBER_FILE_TRANSFER *ft )
+void __cdecl JabberFileServerThread( filetransfer* ft )
 {
 	NETLIBBIND nlb = {0};
 	JABBER_SOCKET s;
@@ -273,8 +235,8 @@ void __cdecl JabberFileServerThread( JABBER_FILE_TRANSFER *ft )
 	s = ( HANDLE ) JCallService( MS_NETLIB_BINDPORT, ( WPARAM ) hNetlibUser, ( LPARAM )&nlb );
 	if ( s == NULL ) {
 		JabberLog( "Cannot allocate port to bind for file server thread, thread ended." );
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
-		JabberFileFreeFt( ft );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+		delete ft;
 		return;
 	}
 
@@ -295,15 +257,15 @@ void __cdecl JabberFileServerThread( JABBER_FILE_TRANSFER *ft )
 
 	if ( resource != NULL ) {
 		ft->state = FT_CONNECTING;
-		for ( i=0; i<ft->fileCount && ft->state!=FT_ERROR && ft->state!=FT_DENIED; i++ ) {
-			ft->currentFile = i;
+		for ( i=0; i < ft->std.totalFiles && ft->state!=FT_ERROR && ft->state!=FT_DENIED; i++ ) {
+			ft->std.currentFileNumber = i;
 			ft->state = FT_CONNECTING;
 			if ( ft->httpPath ) free( ft->httpPath );
 			ft->httpPath = NULL;
-			if (( p=strrchr( ft->files[i], '\\' )) != NULL )
+			if (( p=strrchr( ft->std.files[i], '\\' )) != NULL )
 				p++;
 			else
-				p = ft->files[i];
+				p = ft->std.files[i];
 			in.S_un.S_addr = jabberLocalIP;
 			if (( pFileName=JabberHttpUrlEncode( p )) != NULL ) {
 				id = JabberSerialNext();
@@ -332,7 +294,7 @@ void __cdecl JabberFileServerThread( JABBER_FILE_TRANSFER *ft )
 				free( pFileName );
 			}
 			JabberLog( "File sent, advancing to the next file..." );
-			ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0 );
+			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0 );
 		}
 		CloseHandle( hEvent );
 		ft->hFileEvent = NULL;
@@ -351,20 +313,20 @@ void __cdecl JabberFileServerThread( JABBER_FILE_TRANSFER *ft )
 	switch ( ft->state ) {
 	case FT_DONE:
 		JabberLog( "Finish successfully" );
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
 		break;
 	case FT_DENIED:
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_DENIED, ft, 0 );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DENIED, ft, 0 );
 		break;
 	default: // FT_ERROR:
 		JabberLog( "Finish with errors" );
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 		break;
 	}
 
 	JabberLog( "Thread ended: type=file_send" );
 
-	JabberFileFreeFt( ft );
+	delete ft;
 }
 
 static void JabberFileServerConnection( JABBER_SOCKET hConnection, DWORD dwRemoteIP )
@@ -377,7 +339,7 @@ static void JabberFileServerConnection( JABBER_SOCKET hConnection, DWORD dwRemot
 	JABBER_LIST_ITEM *item;
 	char* buffer;
 	int datalen;
-	JABBER_FILE_TRANSFER *ft;
+	filetransfer* ft;
 	char szPort[20];
 
 	localPort = 0;
@@ -444,7 +406,7 @@ static void JabberFileServerConnection( JABBER_SOCKET hConnection, DWORD dwRemot
 	free( buffer );
 }
 
-static int JabberFileSendParse( JABBER_SOCKET s, JABBER_FILE_TRANSFER *ft, char* buffer, int datalen )
+static int JabberFileSendParse( JABBER_SOCKET s, filetransfer* ft, char* buffer, int datalen )
 {
 	char* p, *q, *t, *eob;
 	char* str;
@@ -452,7 +414,6 @@ static int JabberFileSendParse( JABBER_SOCKET s, JABBER_FILE_TRANSFER *ft, char*
 	int currentFile;
 	int fileId;
 	int numRead;
-	char* fileBuffer;
 
 	eob = buffer + datalen;
 	p = buffer;
@@ -482,17 +443,16 @@ static int JabberFileSendParse( JABBER_SOCKET s, JABBER_FILE_TRANSFER *ft, char*
 		}
 		else {	// FT_INITIALIZING
 			if ( str[0] == '\0' ) {
-				PROTOFILETRANSFERSTATUS pfts;
 				struct _stat statbuf;
 
 				free( str );
 				num += 2;
 
-				currentFile = ft->currentFile;
-				if (( t=strrchr( ft->files[currentFile], '\\' )) != NULL )
+				currentFile = ft->std.currentFileNumber;
+				if (( t=strrchr( ft->std.files[ currentFile ], '\\' )) != NULL )
 					t++;
 				else
-					t = ft->files[currentFile];
+					t = ft->std.files[currentFile];
 				if ( ft->httpPath==NULL || strcmp( ft->httpPath, t )) {
 					if ( ft->httpPath == NULL )
 						JabberLog( "Requested file name does not matched ( httpPath==NULL )" );
@@ -501,9 +461,9 @@ static int JabberFileSendParse( JABBER_SOCKET s, JABBER_FILE_TRANSFER *ft, char*
 					ft->state = FT_ERROR;
 					break;
 				}
-				JabberLog( "Sending [%s]", ft->files[currentFile] );
-				_stat( ft->files[currentFile], &statbuf );	// file size in statbuf.st_size
-				if (( fileId=_open( ft->files[currentFile], _O_BINARY|_O_RDONLY )) < 0 ) {
+				JabberLog( "Sending [%s]", ft->std.files[ currentFile ] );
+				_stat( ft->std.files[ currentFile ], &statbuf );	// file size in statbuf.st_size
+				if (( fileId=_open( ft->std.files[currentFile], _O_BINARY|_O_RDONLY )) < 0 ) {
 					JabberLog( "File cannot be opened" );
 					ft->state = FT_ERROR;
 					free( ft->httpPath );
@@ -511,33 +471,21 @@ static int JabberFileSendParse( JABBER_SOCKET s, JABBER_FILE_TRANSFER *ft, char*
 					break;
 				}
 				JabberSend( s, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n\r\n", statbuf.st_size );
-				memset( &pfts, 0, sizeof( PROTOFILETRANSFERSTATUS ));
-				pfts.cbSize = sizeof( PROTOFILETRANSFERSTATUS );
-				pfts.hContact = ft->hContact;
-				pfts.sending = TRUE;
-				pfts.files = ft->files;
-				pfts.totalFiles = ft->fileCount;
-				pfts.currentFileNumber = ft->currentFile;
-				pfts.totalBytes = ft->allFileTotalSize;
-				pfts.workingDir = NULL;
-				pfts.currentFile = ft->files[ft->currentFile];
-				pfts.currentFileSize = statbuf.st_size;
-				pfts.currentFileTime = 0;
-				ft->fileReceivedBytes = 0;
-				fileBuffer = ( char* )malloc( 2048 );
+
+				ft->std.sending = TRUE;
+				ft->std.currentFileProgress = 0;
 				JabberLog( "Sending file data..." );
-				while (( numRead=_read( fileId, fileBuffer, 2048 )) > 0 ) {
+
+				char fileBuffer[ 2048 ];
+				while (( numRead = _read( fileId, fileBuffer, 2048 )) > 0 ) {
 					if ( Netlib_Send( s, fileBuffer, numRead, 0 ) != numRead ) {
 						ft->state = FT_ERROR;
 						break;
 					}
-					ft->fileReceivedBytes += numRead;
-					ft->allFileReceivedBytes += numRead;
-					pfts.totalProgress = ft->allFileReceivedBytes;
-					pfts.currentFileProgress = ft->fileReceivedBytes;
-					ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&pfts );
+					ft->std.currentFileProgress += numRead;
+					ft->std.totalProgress += numRead;
+					JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
 				}
-				free( fileBuffer );
 				_close( fileId );
 				if ( ft->state != FT_ERROR )
 					ft->state = FT_DONE;
@@ -545,8 +493,8 @@ static int JabberFileSendParse( JABBER_SOCKET s, JABBER_FILE_TRANSFER *ft, char*
 				free( ft->httpPath );
 				ft->httpPath = NULL;
 				break;
-			}
-		}
+		}	}
+
 		free( str );
 		q += 2;
 		num += ( q-p );
@@ -555,3 +503,36 @@ static int JabberFileSendParse( JABBER_SOCKET s, JABBER_FILE_TRANSFER *ft, char*
 	
 	return num;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// filetransfer class members
+
+filetransfer::filetransfer()
+{
+	memset( this, 0, sizeof( filetransfer ));
+	fileId = -1;
+	std.cbSize = sizeof( std );
+}
+
+filetransfer::~filetransfer()
+{
+	if ( fileId != -1 )
+		close( fileId );
+
+	if ( jid ) free( jid );
+	if ( sid ) free( sid );
+	if ( fileSize ) free( fileSize );
+	if ( iqId ) free( iqId );
+	if ( httpHostName ) free( httpHostName );
+	if ( httpPath ) free( httpPath );
+	if ( szDescription ) free( szDescription );
+
+	if ( std.workingDir ) free( std.workingDir );
+	if ( std.currentFile ) free( std.currentFile );
+
+	if ( std.files ) {
+		for ( int i=0; i < std.totalFiles; i++ )
+			if ( std.files[i] ) free( std.files[i] );
+
+		free( std.files );
+}	}

@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "jabber_iq.h"
 #include "jabber_byte.h"
 
-void JabberFtCancel( JABBER_FILE_TRANSFER *ft )
+void JabberFtCancel( filetransfer* ft )
 {
 	JABBER_LIST_ITEM *item;
 	JABBER_BYTE_TRANSFER *jbt;
@@ -42,8 +42,8 @@ void JabberFtCancel( JABBER_FILE_TRANSFER *ft )
 		if ( item->ft == ft ) {
 			JabberLog( "Canceling file sending session while in si negotiation" );
 			JabberListRemoveByIndex( i );
-			ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
-			JabberFileFreeFt( ft );
+			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+			delete ft;
 			return;
 		}
 	}
@@ -53,8 +53,8 @@ void JabberFtCancel( JABBER_FILE_TRANSFER *ft )
 		if ( item->ft == ft ) {
 			JabberLog( "Canceling file receiving session while in si negotiation" );
 			JabberListRemoveByIndex( i );
-			ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
-			JabberFileFreeFt( ft );
+			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+			delete ft;
 			return;
 		}
 	}
@@ -77,7 +77,7 @@ static void JabberFtSiResult( XmlNode *iqNode, void *userdata );
 static BOOL JabberFtSend( HANDLE hConn, void *userdata );
 static void JabberFtSendFinal( BOOL success, void *userdata );
 
-void JabberFtInitiate( char* jid, JABBER_FILE_TRANSFER *ft )
+void JabberFtInitiate( char* jid, filetransfer* ft )
 {
 	int iqId;
 	char* rs, *filename, *encFilename, *encDesc, *p;
@@ -88,16 +88,16 @@ void JabberFtInitiate( char* jid, JABBER_FILE_TRANSFER *ft )
 
 	if ( jid==NULL || ft==NULL || !jabberOnline ||
 		( rs=JabberListGetBestClientResourceNamePtr( jid ))==NULL ) {
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
-		JabberFileFreeFt( ft );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+		delete ft;
 		return;
 	}
 	iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_NONE, JabberFtSiResult );
 	mir_snprintf( idStr, sizeof( idStr ), JABBER_IQID"%d", iqId );
 	if (( item=JabberListAdd( LIST_FTSEND, idStr )) == NULL ) {
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
-		JabberFileFreeFt( ft );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+		delete ft;
 		return;
 	}
 	item->ft = ft;
@@ -107,7 +107,7 @@ void JabberFtInitiate( char* jid, JABBER_FILE_TRANSFER *ft )
 	sid[8] = '\0';
 	if ( ft->sid != NULL ) free( ft->sid );
 	ft->sid = _strdup( sid );
-	filename = ft->files[ft->currentFile];
+	filename = ft->std.files[ ft->std.currentFileNumber ];
 	if (( p=strrchr( filename, '\\' )) != NULL )
 		filename = p+1;
 	if (( encFilename=JabberTextEncode( filename )) != NULL ) {
@@ -128,8 +128,7 @@ void JabberFtInitiate( char* jid, JABBER_FILE_TRANSFER *ft )
 						"</feature>"
 					"</si>"
 				"</iq>",
-				iqId, jid, rs, sid, encFilename, ft->fileSize[ft->currentFile], encDesc
-			 );
+				iqId, jid, rs, sid, encFilename, ft->fileSize[ ft->std.currentFileNumber ], encDesc );
 			free( encDesc );
 		}
 		free( encFilename );
@@ -188,8 +187,8 @@ static void JabberFtSiResult( XmlNode *iqNode, void *userdata )
 	}
 	else if ( !strcmp( type, "error" )) {
 		JabberLog( "File transfer stream initiation request denied" );
-		ProtoBroadcastAck( jabberProtoName, item->ft->hContact, ACKTYPE_FILE, ACKRESULT_DENIED, item->ft, 0 );
-		JabberFileFreeFt( item->ft );
+		JSendBroadcast( item->ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DENIED, item->ft, 0 );
+		delete item->ft;
 		item->ft = NULL;
 	}
 
@@ -198,32 +197,24 @@ static void JabberFtSiResult( XmlNode *iqNode, void *userdata )
 
 static BOOL JabberFtSend( HANDLE hConn, void *userdata )
 {
-	JABBER_FILE_TRANSFER *ft = ( JABBER_FILE_TRANSFER * ) userdata;
-	PROTOFILETRANSFERSTATUS pfts;
+	filetransfer* ft = ( filetransfer* ) userdata;
+
 	struct _stat statbuf;
 	int fd;
 	char* buffer;
 	int numRead;
 
-	JabberLog( "Sending [%s]", ft->files[ft->currentFile] );
-	_stat( ft->files[ft->currentFile], &statbuf );	// file size in statbuf.st_size
-	if (( fd=_open( ft->files[ft->currentFile], _O_BINARY|_O_RDONLY )) < 0 ) {
+	JabberLog( "Sending [%s]", ft->std.files[ ft->std.currentFileNumber ] );
+	_stat( ft->std.files[ ft->std.currentFileNumber ], &statbuf );	// file size in statbuf.st_size
+	if (( fd=_open( ft->std.files[ ft->std.currentFileNumber ], _O_BINARY|_O_RDONLY )) < 0 ) {
 		JabberLog( "File cannot be opened" );
 		return FALSE;
 	}
-	memset( &pfts, 0, sizeof( PROTOFILETRANSFERSTATUS ));
-	pfts.cbSize = sizeof( PROTOFILETRANSFERSTATUS );
-	pfts.hContact = ft->hContact;
-	pfts.sending = TRUE;
-	pfts.files = ft->files;
-	pfts.totalFiles = ft->fileCount;
-	pfts.currentFileNumber = ft->currentFile;
-	pfts.totalBytes = ft->allFileTotalSize;
-	pfts.workingDir = NULL;
-	pfts.currentFile = ft->files[ft->currentFile];
-	pfts.currentFileSize = statbuf.st_size;
-	pfts.currentFileTime = 0;
-	ft->fileReceivedBytes = 0;
+
+	ft->std.sending = TRUE;
+	ft->std.currentFileSize = statbuf.st_size;
+	ft->std.currentFileProgress = 0;
+
 	if (( buffer=( char* )malloc( 2048 )) != NULL ) {
 		while (( numRead=_read( fd, buffer, 2048 )) > 0 ) {
 			if ( Netlib_Send( hConn, buffer, numRead, 0 ) != numRead ) {
@@ -231,29 +222,26 @@ static BOOL JabberFtSend( HANDLE hConn, void *userdata )
 				_close( fd );
 				return FALSE;
 			}
-			ft->fileReceivedBytes += numRead;
-			ft->allFileReceivedBytes += numRead;
-			pfts.totalProgress = ft->allFileReceivedBytes;
-			pfts.currentFileProgress = ft->fileReceivedBytes;
-			ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&pfts );
+			ft->std.currentFileProgress += numRead;
+			ft->std.totalProgress += numRead;
+			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
 		}
 		free( buffer );
 	}
 	_close( fd );
-	ft->currentFile++;
-
+	ft->std.currentFileNumber++;
 	return TRUE;
 }
 
 static void JabberFtSendFinal( BOOL success, void *userdata )
 {
-	JABBER_FILE_TRANSFER *ft = ( JABBER_FILE_TRANSFER * ) userdata;
+	filetransfer* ft = ( filetransfer* )userdata;
 	JABBER_BYTE_TRANSFER *jbt;
 
 	if ( success ) {
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0 );
-		if ( ft->currentFile < ft->fileCount ) {
-			ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0 );
+		if ( ft->std.currentFileNumber < ft->std.totalFiles ) {
+			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
 			return;
 			// Start Bytestream session
 			jbt = ( JABBER_BYTE_TRANSFER * ) malloc( sizeof( JABBER_BYTE_TRANSFER ));
@@ -266,13 +254,13 @@ static void JabberFtSendFinal( BOOL success, void *userdata )
 			JabberForkThread(( JABBER_THREAD_FUNC )JabberByteSendThread, 0, jbt );
 		}
 		else
-			ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
+			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
 	}
 	else {
 		JabberLog( "File transfer complete with error" );
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 	}
-	JabberFileFreeFt( ft );
+	delete ft;
 }
 
 ///////////////// File receiving through stream initiation /////////////////////////
@@ -317,7 +305,6 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 
 			if ( i < fieldNode->numChild ) {
 				// Found known stream mechanism
-				JABBER_FILE_TRANSFER *ft;
 				CCSDATA ccs;
 				PROTORECVEVENT pre;
 				char* szBlob, *desc;
@@ -328,16 +315,14 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 					desc = _strdup( "" );
 				if ( desc != NULL ) {
 					if (( localFilename=JabberTextDecode( filename )) != NULL ) {
-						ft = ( JABBER_FILE_TRANSFER * ) malloc( sizeof( JABBER_FILE_TRANSFER ));
-						ZeroMemory( ft, sizeof( JABBER_FILE_TRANSFER ));
+						filetransfer* ft = new filetransfer;
 						ft->jid = _strdup( JabberUrlDecode( from ));
-						ft->hContact = JabberHContactFromJID( from );
+						ft->std.hContact = JabberHContactFromJID( from );
 						ft->sid = _strdup( sid );
 						ft->iqId = ( szId )?_strdup( szId ):NULL;
 						ft->type = ftType;
-						ft->fileName = localFilename;
-						ft->fileTotalSize = filesize;
-						ft->fileId = -1;
+						ft->std.currentFile = localFilename;
+						ft->std.totalBytes = ft->std.currentFileSize = filesize;
 						szBlob = ( char* )malloc( sizeof( DWORD )+ strlen( localFilename ) + strlen( desc ) + 2 );
 						*(( PDWORD ) szBlob ) = ( DWORD )ft;
 						strcpy( szBlob + sizeof( DWORD ), localFilename );
@@ -347,7 +332,7 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 						pre.szMessage = szBlob;
 						pre.lParam = 0;
 						ccs.szProtoService = PSR_FILE;
-						ccs.hContact = ft->hContact;
+						ccs.hContact = ft->std.hContact;
 						ccs.wParam = 0;
 						ccs.lParam = ( LPARAM )&pre;
 						JCallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
@@ -367,7 +352,7 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 	JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s'%s%s%s><error code='400' type='cancel'><bad-request xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><bad-profile xmlns='http://jabber.org/protocol/si'/></error></iq>", from, ( szId )?" id='":"", ( szId )?szId:"", ( szId )?"'":"" );
 }
 
-void JabberFtAcceptSiRequest( JABBER_FILE_TRANSFER *ft )
+void JabberFtAcceptSiRequest( filetransfer* ft )
 {
 	JABBER_LIST_ITEM *item;
 	char* szId;
@@ -426,47 +411,34 @@ BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode )
 
 static int JabberFtReceive( HANDLE hConn, void *userdata, char* buffer, int datalen )
 {
-	JABBER_FILE_TRANSFER *ft = ( JABBER_FILE_TRANSFER * ) userdata;
+	filetransfer* ft = ( filetransfer* )userdata;
 	int remainingBytes, writeSize;
-	PROTOFILETRANSFERSTATUS pfts;
 
 	if ( ft->fileId < 0 ) {
-		ft->fullFileName = ( char* )malloc( strlen( ft->szSavePath ) + strlen( ft->fileName ) + 2 );
-		if ( ft->szSavePath[strlen( ft->szSavePath )-1] == '\\' )
-			sprintf( ft->fullFileName, "%s%s", ft->szSavePath, ft->fileName );
+		char* szFullName = ( char* )alloca( strlen( ft->std.workingDir ) + strlen( ft->std.currentFile ) + 2 );
+		if ( ft->std.workingDir[strlen( ft->std.workingDir )-1] == '\\' )
+			sprintf( szFullName, "%s%s", ft->std.workingDir, ft->std.currentFile );
 		else
-			sprintf( ft->fullFileName, "%s\\%s", ft->szSavePath, ft->fileName );
-		JabberLog( "Saving to [%s]", ft->fullFileName );
-		ft->fileId = _open( ft->fullFileName, _O_BINARY|_O_WRONLY|_O_CREAT|_O_TRUNC, _S_IREAD|_S_IWRITE );
+			sprintf( szFullName, "%s\\%s", ft->std.workingDir, ft->std.currentFile );
+		replaceStr( ft->std.currentFile, szFullName );
+		JabberLog( "Saving to [%s]", ft->std.currentFile );
+		ft->fileId = _open( ft->std.currentFile, _O_BINARY|_O_WRONLY|_O_CREAT|_O_TRUNC, _S_IREAD|_S_IWRITE );
 		if ( ft->fileId < 0 )	return -1;
-		ft->fileReceivedBytes = 0;
+		ft->std.currentFileProgress = 0;
 	}
-	remainingBytes = ft->fileTotalSize - ft->fileReceivedBytes;
+
+	remainingBytes = ft->std.currentFileSize - ft->std.currentFileProgress;
 	if ( remainingBytes > 0 ) {
 		writeSize = ( remainingBytes<datalen ) ? remainingBytes : datalen;
 		if ( _write( ft->fileId, buffer, writeSize ) != writeSize ) {
 			JabberLog( "_write() error" );
 			return -1;
 		}
-		else {
-			ft->fileReceivedBytes += writeSize;
-			ZeroMemory( &pfts, sizeof( PROTOFILETRANSFERSTATUS ));
-			pfts.cbSize = sizeof( PROTOFILETRANSFERSTATUS );
-			pfts.hContact = ft->hContact;
-			pfts.sending = FALSE;
-			pfts.totalFiles = 1;
-			pfts.totalBytes = ft->fileTotalSize;
-			pfts.totalProgress = ft->fileReceivedBytes;
-			pfts.workingDir = ft->szSavePath;
-			pfts.currentFile = ft->fullFileName;
-			pfts.currentFileSize = ft->fileTotalSize;
-			pfts.currentFileProgress = ft->fileReceivedBytes;
-			ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&pfts );
-			if ( ft->fileReceivedBytes == ft->fileTotalSize )
-				return 0;
-			else
-				return writeSize;
-		}
+		
+		ft->std.currentFileProgress += writeSize;
+		ft->std.totalProgress += writeSize;
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
+		return ( ft->std.currentFileSize == ft->std.currentFileProgress ) ? 0 : writeSize;
 	}
 
 	return 0;
@@ -474,16 +446,15 @@ static int JabberFtReceive( HANDLE hConn, void *userdata, char* buffer, int data
 
 static void JabberFtReceiveFinal( BOOL success, void *userdata )
 {
-	JABBER_FILE_TRANSFER *ft = ( JABBER_FILE_TRANSFER * ) userdata;
+	filetransfer* ft = ( filetransfer* )userdata;
 
-	if ( ft->fileId >= 0 ) _close( ft->fileId );
 	if ( success ) {
 		JabberLog( "File transfer complete successfully" );
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
 	}
 	else {
 		JabberLog( "File transfer complete with error" );
-		ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 	}
-	JabberFileFreeFt( ft );
+	delete ft;
 }

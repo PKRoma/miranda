@@ -331,10 +331,14 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 void JabberGroupchatJoinRoom( const char* server, const char* room, const char* nick, const char* password )
 {
 	char text[128];
-	mir_snprintf( text, sizeof( text ), "%s@%s/%s", room, server, nick );
+	mir_snprintf( text, sizeof text, "%s@%s/%s", room, server, nick );
 
 	JABBER_LIST_ITEM* item = JabberListAdd( LIST_CHATROOM, text );
 	replaceStr( item->nick, nick );
+
+	HANDLE hContact = JabberHContactFromJID( text );
+	if ( hContact != NULL )
+		JSetStringUtf( hContact, "MyNick", nick );
 
 	int status = ( jabberStatus == ID_STATUS_INVISIBLE ) ? ID_STATUS_ONLINE : jabberStatus;
 	if ( password && password[0]!='\0' ) {

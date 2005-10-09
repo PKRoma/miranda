@@ -195,9 +195,14 @@ struct JABBER_REG_ACCOUNT
 typedef enum { FT_SI, FT_OOB, FT_BYTESTREAM } JABBER_FT_TYPE;
 typedef enum { FT_CONNECTING, FT_INITIALIZING, FT_RECEIVING, FT_DONE, FT_ERROR, FT_DENIED } JABBER_FILE_STATE;
 
-struct JABBER_FILE_TRANSFER
-{ 
-	HANDLE hContact;
+struct filetransfer
+{
+	filetransfer();
+	~filetransfer();
+
+	PROTOFILETRANSFERSTATUS std;
+
+//	HANDLE hContact;
 	JABBER_FT_TYPE type;
 	JABBER_SOCKET s;
 	JABBER_FILE_STATE state;
@@ -213,23 +218,11 @@ struct JABBER_FILE_TRANSFER
 	char* httpHostName;
 	WORD httpPort;
 	char* httpPath;
-	char* szSavePath;
-	long fileReceivedBytes;
-	long fileTotalSize;
-	char* fullFileName;
-	char* fileName;
 
 	// Used by file sending only
 	HANDLE hFileEvent;
-	int fileCount;
-	char* *files;
 	long *fileSize;
-	//char* httpPath;			// Name of the requested file
-	//long fileTotalSize;		// Size of the current file ( file being sent )
-	long allFileTotalSize;
-	long allFileReceivedBytes;
 	char* szDescription;
-	int currentFile;
 };
 
 struct JABBER_SEARCH_RESULT
@@ -337,9 +330,8 @@ void JabberGcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode* reason );
 
 //---- jabber_file.c ------------------------------------------------
 
-void JabberFileFreeFt( JABBER_FILE_TRANSFER *ft );
-void __cdecl JabberFileReceiveThread( JABBER_FILE_TRANSFER *ft );
-void __cdecl JabberFileServerThread( JABBER_FILE_TRANSFER *ft );
+void __cdecl JabberFileReceiveThread( filetransfer* ft );
+void __cdecl JabberFileServerThread( filetransfer* ft );
 
 //---- jabber_form.c ------------------------------------------------
 
@@ -349,10 +341,10 @@ void JabberFormCreateDialog( XmlNode *xNode, char* defTitle, JABBER_FORM_SUBMIT_
 
 //---- jabber_ft.c --------------------------------------------------
 
-void JabberFtCancel( JABBER_FILE_TRANSFER *ft );
-void JabberFtInitiate( char* jid, JABBER_FILE_TRANSFER *ft );
+void JabberFtCancel( filetransfer* ft );
+void JabberFtInitiate( char* jid, filetransfer* ft );
 void JabberFtHandleSiRequest( XmlNode *iqNode );
-void JabberFtAcceptSiRequest( JABBER_FILE_TRANSFER *ft );
+void JabberFtAcceptSiRequest( filetransfer* ft );
 BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode );
 
 //---- jabber_groupchat.c -------------------------------------------

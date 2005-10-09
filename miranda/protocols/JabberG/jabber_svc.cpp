@@ -243,8 +243,8 @@ static void __cdecl JabberBasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 	jsr.hdr.email = jsb->jid;
 	strncpy( jsr.jid, jsb->jid, sizeof( jsr.jid ));
 	jsr.jid[sizeof( jsr.jid )-1] = '\0';
-	ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) jsb->hSearch, ( LPARAM )&jsr );
-	ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) jsb->hSearch, 0 );
+	JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) jsb->hSearch, ( LPARAM )&jsr );
+	JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) jsb->hSearch, 0 );
 	free( jsb );
 }
 
@@ -441,13 +441,11 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 
 int JabberFileAllow( WPARAM wParam, LPARAM lParam )
 {
-	CCSDATA *ccs = ( CCSDATA * ) lParam;
-	JABBER_FILE_TRANSFER *ft;
-
 	if ( !jabberOnline ) return 0;
 
-	ft = ( JABBER_FILE_TRANSFER * ) ccs->wParam;
-	ft->szSavePath = _strdup(( char* )ccs->lParam );
+	CCSDATA *ccs = ( CCSDATA * ) lParam;
+	filetransfer* ft = ( filetransfer* ) ccs->wParam;
+	ft->std.workingDir = _strdup(( char* )ccs->lParam );
 	switch ( ft->type ) {
 	case FT_OOB:
 		JabberForkThread(( JABBER_THREAD_FUNC )JabberFileReceiveThread, 0, ft );
@@ -465,14 +463,13 @@ int JabberFileAllow( WPARAM wParam, LPARAM lParam )
 int JabberFileCancel( WPARAM wParam, LPARAM lParam )
 {
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
-	JABBER_FILE_TRANSFER *ft = ( JABBER_FILE_TRANSFER * ) ccs->wParam;
+	filetransfer* ft = ( filetransfer* ) ccs->wParam;
 	HANDLE hEvent;
 
 	JabberLog( "Invoking FileCancel()" );
 	if ( ft->type == FT_OOB ) {
 		if ( ft->s ) {
 			JabberLog( "FT canceled" );
-			//ProtoBroadcastAck( jabberProtoName, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 			JabberLog( "Closing ft->s = %d", ft->s );
 			ft->state = FT_ERROR;
 			Netlib_CloseHandle( ft->s );
@@ -494,14 +491,11 @@ int JabberFileCancel( WPARAM wParam, LPARAM lParam )
 
 int JabberFileDeny( WPARAM wParam, LPARAM lParam )
 {
-	CCSDATA *ccs = ( CCSDATA * ) lParam;
-	JABBER_FILE_TRANSFER *ft;
-	char* szId;
-
 	if ( !jabberOnline ) return 1;
 
-	ft = ( JABBER_FILE_TRANSFER * ) ccs->wParam;
-	szId = ft->iqId;
+	CCSDATA *ccs = ( CCSDATA * ) lParam;
+	filetransfer* ft = ( filetransfer* )ccs->wParam;
+	char* szId = ft->iqId;
 	switch ( ft->type ) {
 	case FT_OOB:
 		JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s'%s%s%s><error code='406'>File transfer refused</error></iq>", ft->jid, ( szId )?" id='":"", ( szId )?szId:"", ( szId )?"'":"" );
@@ -510,7 +504,7 @@ int JabberFileDeny( WPARAM wParam, LPARAM lParam )
 		JabberSend( jabberThreadInfo->s, "<iq type='error' to='%s'%s%s%s><error code='403' type='cancel'><forbidden xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><text xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'>File transfer refused</text></error></iq>", ft->jid, ( szId )?" id='":"", ( szId )?szId:"", ( szId )?"'":"" );
 		break;
 	}
-	JabberFileFreeFt( ft );
+	delete ft;
 	return 0;
 }
 
@@ -551,13 +545,13 @@ static void __cdecl JabberGetAwayMsgThread( HANDLE hContact )
 							strcat( str, r[i].statusMessage );
 						}
 					}
-					ProtoBroadcastAck( jabberProtoName, hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )str );
+					JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )str );
 					free( str );
 					return;
 				}
 			}
 			else if ( item->statusMessage != NULL ) {
-				ProtoBroadcastAck( jabberProtoName, hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )item->statusMessage );
+				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )item->statusMessage );
 				return;
 			}
 		}
@@ -565,8 +559,8 @@ static void __cdecl JabberGetAwayMsgThread( HANDLE hContact )
 			JFreeVariant( &dbv );
 		}
 	}
-	//ProtoBroadcastAck( jabberProtoName, hContact, ACKTYPE_AWAYMSG, ACKRESULT_FAILED, ( HANDLE ) 1, ( LPARAM )0 );
-	ProtoBroadcastAck( jabberProtoName, hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )"" );
+	//JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_FAILED, ( HANDLE ) 1, ( LPARAM )0 );
+	JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )"" );
 }
 
 int JabberGetAwayMsg( WPARAM wParam, LPARAM lParam )
@@ -772,63 +766,64 @@ int JabberSearchByName( WPARAM wParam, LPARAM lParam )
 
 int JabberSendFile( WPARAM wParam, LPARAM lParam )
 {
+	if ( !jabberOnline ) return 0;
+
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
+	if ( JGetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE ) 
+		return 0;
+
+	DBVARIANT dbv;
+	if ( JGetStringUtf( ccs->hContact, "jid", &dbv )) 
+		return 0;
+
 	char* *files = ( char* * ) ccs->lParam;
-	JABBER_FILE_TRANSFER *ft;
 	int i, j;
 	struct _stat statbuf;
-	DBVARIANT dbv;
-	JABBER_LIST_ITEM *item;
+	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal );
+	if ( item == NULL )
+		return 0;
 
-	if ( !jabberOnline ) return 0;
-	if ( JGetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE ) return 0;
-	if ( JGetStringUtf( ccs->hContact, "jid", &dbv )) return 0;
+	// Check if another file transfer session request is pending ( waiting for disco result )
+	if ( item->ft != NULL ) return 0;
 
-	if (( item=JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal )) != NULL ) {
-		// Check if another file transfer session request is pending ( waiting for disco result )
-		if ( item->ft != NULL ) return 0;
+	filetransfer* ft = new filetransfer;
+	ft->std.hContact = ccs->hContact;
+	while( files[ ft->std.totalFiles ] != NULL )
+		ft->std.totalFiles++;
 
-		ft = ( JABBER_FILE_TRANSFER * ) malloc( sizeof( JABBER_FILE_TRANSFER ));
-		ZeroMemory( ft, sizeof( JABBER_FILE_TRANSFER ));
-		for( ft->fileCount=0; files[ft->fileCount]; ft->fileCount++ );
-		ft->files = ( char* * ) malloc( sizeof( char* )* ft->fileCount );
-		ft->fileSize = ( long * ) malloc( sizeof( long ) * ft->fileCount );
-		for( i=j=0; i<ft->fileCount; i++ ) {
-			if ( _stat( files[i], &statbuf ))
-				JabberLog( "'%s' is an invalid filename", files[i] );
-			else {
-				ft->files[j] = _strdup( files[i] );
-				ft->fileSize[j] = statbuf.st_size;
-				j++;
-				ft->allFileTotalSize += statbuf.st_size;
-			}
-		}
-		ft->fileCount = j;
-		ft->szDescription = _strdup(( char* )ccs->wParam );
-		ft->hContact = ccs->hContact;
-		ft->jid = _strdup( dbv.pszVal );
-		JFreeVariant( &dbv );
-
-		if ( item->cap == 0 ) {
-			int iqId;
-			char* rs;
-
-			// Probe client capability
-			if (( rs=JabberListGetBestClientResourceNamePtr( item->jid )) != NULL ) {
-				item->ft = ft;
-				iqId = JabberSerialNext();
-				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoClientInfo );
-				JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s/%s'><query xmlns='http://jabber.org/protocol/disco#info'/></iq>", iqId, item->jid, rs );
-			}
-		}
-		else if (( item->cap&CLIENT_CAP_FILE ) && ( item->cap&CLIENT_CAP_BYTESTREAM )) {
-			// Use the new standard file transfer
-			JabberFtInitiate( item->jid, ft );
-		}
+	ft->std.files = ( char** ) malloc( sizeof( char* )* ft->std.totalFiles );
+	ft->fileSize = ( long* ) malloc( sizeof( long ) * ft->std.totalFiles );
+	for( i=j=0; i < ft->std.totalFiles; i++ ) {
+		if ( _stat( files[i], &statbuf ))
+			JabberLog( "'%s' is an invalid filename", files[i] );
 		else {
-			// Use the jabber:iq:oob file transfer
-			JabberForkThread(( JABBER_THREAD_FUNC )JabberFileServerThread, 0, ft );
+			ft->std.files[j] = _strdup( files[i] );
+			ft->fileSize[j] = statbuf.st_size;
+			j++;
+			ft->std.totalBytes += statbuf.st_size;
 	}	}
+
+	ft->szDescription = _strdup(( char* )ccs->wParam );
+	ft->jid = _strdup( dbv.pszVal );
+	JFreeVariant( &dbv );
+
+	if ( item->cap == 0 ) {
+		int iqId;
+		char* rs;
+
+		// Probe client capability
+		if (( rs=JabberListGetBestClientResourceNamePtr( item->jid )) != NULL ) {
+			item->ft = ft;
+			iqId = JabberSerialNext();
+			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoClientInfo );
+			JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s/%s'><query xmlns='http://jabber.org/protocol/disco#info'/></iq>", iqId, item->jid, rs );
+		}
+	}
+	else if (( item->cap & CLIENT_CAP_FILE ) && ( item->cap & CLIENT_CAP_BYTESTREAM ))
+		// Use the new standard file transfer
+		JabberFtInitiate( item->jid, ft );
+	else // Use the jabber:iq:oob file transfer
+		JabberForkThread(( JABBER_THREAD_FUNC )JabberFileServerThread, 0, ft );
 
 	return ( int )( HANDLE ) ft;
 }
@@ -840,7 +835,7 @@ static void __cdecl JabberSendMessageAckThread( HANDLE hContact )
 {
 	SleepEx( 10, TRUE );
 	JabberLog( "Broadcast ACK" );
-	ProtoBroadcastAck( jabberProtoName, hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
+	JSendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
 	JabberLog( "Returning from thread" );
 }
 
@@ -852,7 +847,7 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 
 	DBVARIANT dbv;
 	if ( !jabberOnline || JGetStringUtf( ccs->hContact, "jid", &dbv )) {
-		ProtoBroadcastAck( jabberProtoName, ccs->hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) 1, 0 );
+		JSendBroadcast( ccs->hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) 1, 0 );
 		return 0;
 	}
 
@@ -1048,7 +1043,7 @@ int JabberSetStatus( WPARAM wParam, LPARAM lParam )
 
 		int oldStatus = jabberStatus;
 		jabberStatus = jabberDesiredStatus = ID_STATUS_OFFLINE;
-		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 	}
 	else if ( !jabberConnected && !( jabberStatus >= ID_STATUS_CONNECTING && jabberStatus < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES )) {
 		if ( jabberConnected )
@@ -1062,7 +1057,7 @@ int JabberSetStatus( WPARAM wParam, LPARAM lParam )
 
 		int oldStatus = jabberStatus;
 		jabberStatus = ID_STATUS_CONNECTING;
-		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
+		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 		thread->hThread = ( HANDLE ) JabberForkThread(( JABBER_THREAD_FUNC )JabberServerThread, 0, thread );
 	}
 	else JabberSetServerStatus( desiredStatus );

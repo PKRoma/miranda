@@ -86,7 +86,7 @@ static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item )
 	if ( item->name ) free( item->name );
 	if ( item->type ) free( item->type );
 	if ( item->service ) free( item->service );
-	if ( item->list==LIST_ROSTER && item->ft ) JabberFileFreeFt( item->ft );
+	if ( item->list==LIST_ROSTER && item->ft ) delete item->ft;
 }
 
 int JabberListExist( JABBER_LIST list, const char* jid )

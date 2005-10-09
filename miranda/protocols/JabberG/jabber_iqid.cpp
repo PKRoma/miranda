@@ -113,7 +113,7 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 		JabberSend( info->s, "</stream:stream>" );
 		mir_snprintf( text, sizeof( text ), "%s %s@%s.", JTranslate( "Authentication failed for" ), info->username, info->server );
 		MessageBox( NULL, text, JTranslate( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
-		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		jabberThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
@@ -860,13 +860,13 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 		}
 
 		if ( hContact != NULL )
-			ProtoBroadcastAck( jabberProtoName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
+			JSendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
 		else if ( hwndJabberVcard )
 			SendMessage( hwndJabberVcard, WM_JABBER_REFRESH, 0, 0 );
 	}
 	else if ( !strcmp( type, "error" )) {
 		if ( hContact != NULL )
-			ProtoBroadcastAck( jabberProtoName, hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, ( HANDLE ) 1, 0 );
+			JSendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, ( HANDLE ) 1, 0 );
 }	}
 
 void JabberIqResultSetVcard( XmlNode *iqNode, void *userdata )
@@ -918,21 +918,18 @@ void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata )
 						jsr.hdr.email = JabberTextDecode( n->text );
 					else
 						jsr.hdr.email = _strdup( "" );
-					ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) id, ( LPARAM )&jsr );
+					JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) id, ( LPARAM )&jsr );
 					free( jsr.hdr.nick );
 					free( jsr.hdr.firstName );
 					free( jsr.hdr.lastName );
 					free( jsr.hdr.email );
 		}	}	}
 
-		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
+		JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
 	}
-	else if ( !strcmp( type, "error" )) {
-		// ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_FAILED, ( HANDLE ) id, 0 );
-		// There is no ACKRESULT_FAILED for ACKTYPE_SEARCH : ) look at findadd.c
-		// So we will just send a SUCCESS
-		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
-}	}
+	else if ( !strcmp( type, "error" ))
+		JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
+}
 
 void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
 {
@@ -989,17 +986,14 @@ void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
 				else if ( !strcmp( fieldName, "email" )) 
                jsr.hdr.email = ( n->text != NULL ) ? JabberUtf8Decode( n->text, 0 ) : "";
 			}
-			ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) id, ( LPARAM )&jsr );
+			JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) id, ( LPARAM )&jsr );
 		}
 
-		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
+		JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
 	}
-	else if ( !strcmp( type, "error" )) {
-		// ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_FAILED, ( HANDLE ) id, 0 );
-		// There is no ACKRESULT_FAILED for ACKTYPE_SEARCH : ) look at findadd.c
-		// So we will just send a SUCCESS
-		ProtoBroadcastAck( jabberProtoName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
-}	}
+	else if ( !strcmp( type, "error" ))
+		JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
+}
 
 void JabberIqResultSetPassword( XmlNode *iqNode, void *userdata )
 {
@@ -1136,11 +1130,9 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 
 	// Check for pending file transfer session request
 	if ( item->ft != NULL ) {
-		JABBER_FILE_TRANSFER *ft;
-
-		ft = item->ft;
+		filetransfer* ft = item->ft;
 		item->ft = NULL;
-		if (( item->cap&CLIENT_CAP_FILE ) && ( item->cap&CLIENT_CAP_BYTESTREAM ))
+		if (( item->cap & CLIENT_CAP_FILE ) && ( item->cap & CLIENT_CAP_BYTESTREAM ))
 			JabberFtInitiate( item->jid, ft );
 		else
 			JabberForkThread(( JABBER_THREAD_FUNC )JabberFileServerThread, 0, ft );

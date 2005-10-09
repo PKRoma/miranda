@@ -130,7 +130,7 @@ struct JABBER_LIST_ITEM
 
 	// LIST_FILE
 	// jid = string representation of port number
-	JABBER_FILE_TRANSFER *ft;
+	filetransfer* ft;
 	WORD port;
 
 	// LIST_BYTE
