@@ -2067,7 +2067,7 @@ void MoveFonts()
             DBWriteContactSettingString(NULL, FONTMODULE, szTemp, "Arial");
             
         _snprintf(szTemp, sizeof(szTemp), "Font%dCol", i);
-        DBWriteContactSettingDword(NULL, FONTMODULE, szTemp, DBGetContactSettingDword(NULL, SRMSGMOD_T, szTemp, RGB(224,224,224)));
+        DBWriteContactSettingDword(NULL, FONTMODULE, szTemp, DBGetContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetSysColor(COLOR_BTNTEXT)));
         DBDeleteContactSetting(NULL, SRMSGMOD_T, szTemp);
         
         _snprintf(szTemp, sizeof(szTemp), "Font%dSize", i);
