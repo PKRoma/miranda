@@ -446,6 +446,10 @@ int JabberFileAllow( WPARAM wParam, LPARAM lParam )
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
 	filetransfer* ft = ( filetransfer* ) ccs->wParam;
 	ft->std.workingDir = _strdup(( char* )ccs->lParam );
+	int len = strlen( ft->std.workingDir )-1;
+	if ( ft->std.workingDir[len] == '//' || ft->std.workingDir[len] == '\\' )
+		ft->std.workingDir[len] = 0;
+
 	switch ( ft->type ) {
 	case FT_OOB:
 		JabberForkThread(( JABBER_THREAD_FUNC )JabberFileReceiveThread, 0, ft );
@@ -505,6 +509,29 @@ int JabberFileDeny( WPARAM wParam, LPARAM lParam )
 		break;
 	}
 	delete ft;
+	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// JabberFileResume - processes file renaming etc
+
+int JabberFileResume( WPARAM wParam, LPARAM lParam )
+{
+	filetransfer* ft = ( filetransfer* )wParam;
+	if ( !jabberConnected || ft == NULL )
+		return 1;
+
+	PROTOFILERESUME *pfr = (PROTOFILERESUME*)lParam;
+	if ( pfr->action == FILERESUME_RENAME ) {
+		if ( ft->wszFileName != NULL ) {
+			free( ft->wszFileName );
+			ft->wszFileName = NULL;
+		}
+
+		replaceStr( ft->std.currentFile, pfr->szFilename );
+	}
+
+	SetEvent( ft->hWaitEvent );
 	return 0;
 }
 
@@ -717,7 +744,7 @@ int JabberSearchByName( WPARAM wParam, LPARAM lParam )
 	PROTOSEARCHBYNAME *psbn = ( PROTOSEARCHBYNAME * ) lParam;
 	char*  text = ( char* )alloca( 1024 ); *text = 0;
 	size_t len = 0;
-	BOOL   bIsExtFormat = JGetByte( "ExtendedSearch", 0 );
+	BOOL   bIsExtFormat = JGetByte( "ExtendedSearch", TRUE );
 
 	if ( psbn->pszNick[0] != '\0' ) {
 		if ( bIsExtFormat )
@@ -1144,13 +1171,15 @@ int JabberSvcInit( void )
 	JCreateServiceFunction( PS_SETSTATUS, JabberSetStatus );
 	JCreateServiceFunction( PS_GETSTATUS, JabberGetStatus );
 	JCreateServiceFunction( PS_SETAWAYMSG, JabberSetAwayMsg );
+	JCreateServiceFunction( PS_FILERESUME, JabberFileResume );
+
 	JCreateServiceFunction( PSS_GETINFO, JabberGetInfo );
 	JCreateServiceFunction( PSS_SETAPPARENTMODE, JabberSetApparentMode );
 	JCreateServiceFunction( PSS_MESSAGE, JabberSendMessage );
 	JCreateServiceFunction( PSS_GETAWAYMSG, JabberGetAwayMsg );
 	JCreateServiceFunction( PSS_FILEALLOW, JabberFileAllow );
-	JCreateServiceFunction( PSS_FILEDENY, JabberFileDeny );
 	JCreateServiceFunction( PSS_FILECANCEL, JabberFileCancel );
+	JCreateServiceFunction( PSS_FILEDENY, JabberFileDeny );
 	JCreateServiceFunction( PSS_FILE, JabberSendFile );
 	JCreateServiceFunction( PSR_MESSAGE, JabberRecvMessage );
 	JCreateServiceFunction( PSR_FILE, JabberRecvFile );

@@ -57,6 +57,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_message.h>
 #include <m_skin.h>
 #include <m_chat.h>
+#include <win2k.h>
 
 #include "jabber_xml.h"
 #include "jabber_byte.h"
@@ -200,6 +201,10 @@ struct filetransfer
 	filetransfer();
 	~filetransfer();
 
+	void close();
+	void complete();
+	int  create();	
+
 	PROTOFILETRANSFERSTATUS std;
 
 //	HANDLE hContact;
@@ -207,9 +212,12 @@ struct filetransfer
 	JABBER_SOCKET s;
 	JABBER_FILE_STATE state;
 	char* jid;
-	int fileId;
+	int   fileId;
 	char* iqId;
 	char* sid;
+	int   bCompleted;
+	HANDLE hWaitEvent;
+	WCHAR* wszFileName;
 
 	// For type == FT_BYTESTREAM
 	JABBER_BYTE_TRANSFER *jbt;

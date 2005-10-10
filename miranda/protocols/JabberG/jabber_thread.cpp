@@ -1100,6 +1100,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 			if (( jid=JabberXmlGetAttrValue( node, "from" ))!=NULL && ( n=JabberXmlGetChild( queryNode, "url" ))!=NULL && n->text!=NULL ) {
 				str = n->text;	// URL of the file to get
 				filetransfer* ft = new filetransfer;
+				ft->std.totalFiles = 1;
 				ft->jid = _strdup( JabberUrlDecode( jid ));
 				ft->std.hContact = JabberHContactFromJID( jid );
 				ft->type = FT_OOB;

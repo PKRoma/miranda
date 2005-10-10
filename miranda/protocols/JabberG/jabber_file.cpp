@@ -135,21 +135,13 @@ static int JabberFileReceiveParse( filetransfer* ft, char* buffer, int datalen )
 					}
 					else {	// FT_INITIALIZING
 						if ( str[0] == '\0' ) {
-							replaceStr( ft->std.currentFile, ( char* )malloc( strlen( ft->std.workingDir ) + strlen( ft->httpPath ) + 2 ));
-							strcpy( ft->std.currentFile, ft->std.workingDir );
-							if ( ft->std.currentFile[strlen( ft->std.currentFile )-1] != '\\' )
-								strcat( ft->std.currentFile, "\\" );
 							if (( s=strrchr( ft->httpPath, '/' )) != NULL )
 								s++;
 							else
 								s = ft->httpPath;
-							s = _strdup( s );
-							JabberHttpUrlDecode( s );
-							strcat( ft->std.currentFile, s );
-							free( s );
-							JabberLog( "Saving to [%s]", ft->std.currentFile );
-							ft->fileId = _open( ft->std.currentFile, _O_BINARY|_O_WRONLY|_O_CREAT|_O_TRUNC, _S_IREAD|_S_IWRITE );
-							if ( ft->fileId < 0 ) {
+							ft->std.currentFile = _strdup( s );
+							JabberHttpUrlDecode( ft->std.currentFile );
+							if ( ft->create() == -1 ) {
 								ft->state = FT_ERROR;
 								break;
 							}
@@ -516,8 +508,15 @@ filetransfer::filetransfer()
 
 filetransfer::~filetransfer()
 {
-	if ( fileId != -1 )
-		close( fileId );
+	JabberLog( "Destroying file transfer session %08p", this );
+
+	if ( !bCompleted )
+		JSendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, this, 0 );
+
+	close();
+
+	if ( hWaitEvent != INVALID_HANDLE_VALUE )
+		CloseHandle( hWaitEvent );
 
 	if ( jid ) free( jid );
 	if ( sid ) free( sid );
@@ -536,3 +535,68 @@ filetransfer::~filetransfer()
 
 		free( std.files );
 }	}
+
+void filetransfer::close()
+{
+	if ( fileId != -1 ) {
+		_close( fileId );
+		fileId = -1;
+}	}
+
+void filetransfer::complete()
+{
+	close();
+
+	bCompleted = true;
+	JSendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, this, 0);
+}
+
+int filetransfer::create()
+{
+	if ( fileId != -1 )
+		return fileId;
+
+	char filefull[ MAX_PATH ];
+	mir_snprintf( filefull, sizeof filefull, "%s\\%s", std.workingDir, std.currentFile );
+	replaceStr( std.currentFile, filefull );
+
+	if ( hWaitEvent != INVALID_HANDLE_VALUE )
+		CloseHandle( hWaitEvent );
+   hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+
+	if ( JSendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, this, ( LPARAM )&std ))
+		WaitForSingleObject( hWaitEvent, INFINITE );
+
+	if ( IsWinVerNT() && wszFileName != NULL ) {
+		WCHAR wszTemp[ MAX_PATH ];
+		_snwprintf( wszTemp, sizeof wszTemp, L"%S\\%s", std.workingDir, wszFileName );
+		wszTemp[ MAX_PATH-1 ] = 0;
+		fileId = _wopen( wszTemp, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+		if ( fileId != -1 ) {
+			WIN32_FIND_DATAW data;
+			HANDLE hFind = FindFirstFileW( wszFileName, &data );
+			if ( hFind != INVALID_HANDLE_VALUE ) {
+				free( std.currentFile );
+
+            char tShortName[ 20 ];
+				WideCharToMultiByte( CP_ACP, 0, 
+					( data.cAlternateFileName[0] != 0 ) ? data.cAlternateFileName : data.cFileName, 
+					-1, tShortName, sizeof tShortName, 0, 0 );
+				mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", std.workingDir, tShortName );
+				std.currentFile = strdup( filefull );
+				JabberLog( "Saving to [%s]", std.currentFile );
+				FindClose( hFind );
+	}	}	}
+
+	if ( fileId == -1 ) {
+		JabberLog( "Saving to [%s]", std.currentFile );
+		fileId = _open( std.currentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE );
+	}
+
+	if ( fileId == -1 )
+		JabberLog( "Cannot create file '%s' during a file transfer", filefull );
+	else if ( std.currentFileSize != 0 )
+		_chsize( fileId, std.currentFileSize );
+
+	return fileId;
+}

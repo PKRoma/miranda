@@ -1028,10 +1028,6 @@ static void SetServerVcard()
 		free( text );
 }	}
 
-#define WinVerMajor()      LOBYTE( LOWORD( GetVersion()) )
-#define WinVerMinor()      HIBYTE( LOWORD( GetVersion()) )
-#define IsWinVerXPPlus()   ( WinVerMajor()>=5 && LOWORD( GetVersion())!=5 )
-
 static void ThemeDialogBackground( HWND hwnd ) {
 	if ( IsWinVerXPPlus()) {
 		static HMODULE hThemeAPI = NULL;

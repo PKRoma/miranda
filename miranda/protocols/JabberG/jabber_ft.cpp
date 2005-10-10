@@ -321,6 +321,7 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 						ft->sid = _strdup( sid );
 						ft->iqId = ( szId )?_strdup( szId ):NULL;
 						ft->type = ftType;
+						ft->std.totalFiles = 1;
 						ft->std.currentFile = localFilename;
 						ft->std.totalBytes = ft->std.currentFileSize = filesize;
 						szBlob = ( char* )malloc( sizeof( DWORD )+ strlen( localFilename ) + strlen( desc ) + 2 );
@@ -412,24 +413,12 @@ BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode )
 static int JabberFtReceive( HANDLE hConn, void *userdata, char* buffer, int datalen )
 {
 	filetransfer* ft = ( filetransfer* )userdata;
-	int remainingBytes, writeSize;
+	if ( ft->create() == -1 )
+		return -1;
 
-	if ( ft->fileId < 0 ) {
-		char* szFullName = ( char* )alloca( strlen( ft->std.workingDir ) + strlen( ft->std.currentFile ) + 2 );
-		if ( ft->std.workingDir[strlen( ft->std.workingDir )-1] == '\\' )
-			sprintf( szFullName, "%s%s", ft->std.workingDir, ft->std.currentFile );
-		else
-			sprintf( szFullName, "%s\\%s", ft->std.workingDir, ft->std.currentFile );
-		replaceStr( ft->std.currentFile, szFullName );
-		JabberLog( "Saving to [%s]", ft->std.currentFile );
-		ft->fileId = _open( ft->std.currentFile, _O_BINARY|_O_WRONLY|_O_CREAT|_O_TRUNC, _S_IREAD|_S_IWRITE );
-		if ( ft->fileId < 0 )	return -1;
-		ft->std.currentFileProgress = 0;
-	}
-
-	remainingBytes = ft->std.currentFileSize - ft->std.currentFileProgress;
+	int remainingBytes = ft->std.currentFileSize - ft->std.currentFileProgress;
 	if ( remainingBytes > 0 ) {
-		writeSize = ( remainingBytes<datalen ) ? remainingBytes : datalen;
+		int writeSize = ( remainingBytes<datalen ) ? remainingBytes : datalen;
 		if ( _write( ft->fileId, buffer, writeSize ) != writeSize ) {
 			JabberLog( "_write() error" );
 			return -1;
@@ -450,11 +439,9 @@ static void JabberFtReceiveFinal( BOOL success, void *userdata )
 
 	if ( success ) {
 		JabberLog( "File transfer complete successfully" );
-		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
+		ft->complete();
 	}
-	else {
-		JabberLog( "File transfer complete with error" );
-		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
-	}
+	else JabberLog( "File transfer complete with error" );
+
 	delete ft;
 }
