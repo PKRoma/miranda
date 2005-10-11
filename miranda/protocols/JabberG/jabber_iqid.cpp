@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "resource.h"
 #include "jabber_list.h"
 #include "jabber_iq.h"
+#include "sha1.h"
 
 extern char* streamId;
 extern char* jabberVcardPhotoFileName;
@@ -1137,3 +1138,76 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 		else
 			JabberForkThread(( JABBER_THREAD_FUNC )JabberFileServerThread, 0, ft );
 }	}
+
+void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
+{
+	struct ThreadData *info = ( struct ThreadData * ) userdata;
+	char* type;
+
+	// RECVED: agent list
+	// ACTION: refresh agent list dialog
+	JabberLog( "<iq/> iqIdResultGetAvatar" );
+	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL )   return;
+	if ( strcmp( type, "result" ))                                  return;
+
+	char* from = JabberUrlDecode( JabberXmlGetAttrValue( iqNode, "from" ));
+	if ( from == NULL )
+		return;
+	HANDLE hContact = JabberHContactFromJID( from );
+	if ( hContact == NULL )
+		return;
+
+	XmlNode *queryNode = JabberXmlGetChild( iqNode, "query" );
+	if ( queryNode == NULL ) 
+		return;
+
+	char* xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
+	if ( lstrcmpA( xmlns, "jabber:iq:avatar" ))
+		return;
+
+	XmlNode* n = JabberXmlGetChild( queryNode, "data" );
+	if ( n == NULL )
+		return;
+
+	char* mimeType = JabberXmlGetAttrValue( n, "mimetype" );
+	int pictureType = 0;
+	if ( mimeType == NULL ) return;
+	if ( !strcmp( mimeType, "image/jpeg" )) pictureType = PA_FORMAT_JPEG;
+	else if ( !strcmp( mimeType, "image/png" )) pictureType = PA_FORMAT_PNG;
+	else if ( !strcmp( mimeType, "image/gif" )) pictureType = PA_FORMAT_GIF;
+	else if ( !strcmp( mimeType, "image/bmp" )) pictureType = PA_FORMAT_BMP;
+	else {
+		JabberLog( "Invalid mime type specified for picture: %s", mimeType );
+		return;
+	}
+	JSetByte( hContact, "AvatarType", pictureType );
+
+	int resultLen = 0;
+	char* body = JabberBase64Decode( n->text, &resultLen );
+
+	char buffer[ 41 ];
+	uint8_t digest[20];
+	SHA1Context sha;
+	SHA1Reset( &sha );
+	SHA1Input( &sha, ( const unsigned __int8* )body, resultLen );
+	SHA1Result( &sha, digest );
+	for ( int i=0; i<20; i++ )
+		sprintf( buffer+( i<<1 ), "%02x", digest[i] );
+	JSetString( hContact, "AvatarSaved", buffer );
+
+	PROTO_AVATAR_INFORMATION AI;
+	AI.cbSize = sizeof AI;
+	AI.format = pictureType;
+	AI.hContact = hContact;
+	JabberGetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
+
+	FILE* out = fopen( AI.filename, "wb" );
+	if ( out != NULL ) {
+		fwrite( body, resultLen, 1, out );
+		fclose( out );
+		JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, HANDLE( &AI ), NULL );
+	}
+	else JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, HANDLE( &AI ), NULL );
+
+	free( body );
+}

@@ -52,6 +52,7 @@ void JabberIqAdd( unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC fu
 JABBER_IQ_PFUNC JabberIqFetchXmlnsFunc( char* xmlns );
 
 void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata );
+void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata );
 void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata );
 void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata );

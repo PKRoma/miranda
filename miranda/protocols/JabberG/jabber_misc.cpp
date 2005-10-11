@@ -217,6 +217,42 @@ HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripR
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// JabberGetAvatarFileName() - gets a file name for the avatar image
+
+void JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
+{
+	JCallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
+
+	int tPathLen = strlen( pszDest );
+	tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\Jabber\\"  );
+	CreateDirectory( pszDest, NULL );
+
+	if ( hContact != NULL ) {
+		char str[ 256 ];
+		DBVARIANT dbv;
+		if ( !JGetStringUtf( hContact, "jid", &dbv )) {
+			strncpy( str, dbv.pszVal, sizeof str );
+			str[ sizeof(str)-1 ] = 0;
+			JFreeVariant( &dbv );
+		}
+		else ltoa(( long )hContact, str, 10 );
+
+		char* szFileType;
+		switch( JGetByte( hContact, "AvatarType", PA_FORMAT_PNG )) {
+			case PA_FORMAT_JPEG: szFileType = "jpg";   break;
+			case PA_FORMAT_PNG:  szFileType = "png";   break;
+			case PA_FORMAT_GIF:  szFileType = "gif";   break;
+			case PA_FORMAT_BMP:  szFileType = "bmp";   break;
+		}
+
+		char* hash = JabberSha1( str );
+		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s.%s", hash, szFileType );
+		free( hash );
+	}
+	else mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s avatar.png", jabberProtoName );
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // JabberForkThread()
 
 struct FORK_ARG {

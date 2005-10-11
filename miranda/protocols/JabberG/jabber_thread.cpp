@@ -826,137 +826,147 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 	HANDLE hContact;
 	XmlNode *showNode, *statusNode;
 	JABBER_LIST_ITEM *item;
-	char* from, *type, *nick, *show;
-	int status, count, i;
+	char* from, *nick, *show;
+	int count, i;
 	char* p;
 
 	if ( !node || !node->name || strcmp( node->name, "presence" )) return;
 	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
+	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL ) return;
 
-	if (( from = JabberXmlGetAttrValue( node, "from" )) != NULL ) {
-		JabberUrlDecode( from );
+	JabberUrlDecode( from ); 
+	if ( JabberListExist( LIST_CHATROOM, from )) {
+		JabberGroupchatProcessPresence( node, userdata );
+		return;
+	}
 
-		if ( JabberListExist( LIST_CHATROOM, from ))
-			JabberGroupchatProcessPresence( node, userdata );
+	char* type = JabberXmlGetAttrValue( node, "type" );
+	if ( type == NULL || ( !strcmp( type, "available" )) ) {
+		if (( nick=JabberNickFromJID( from )) == NULL )
+			return;
+		if (( hContact = JabberHContactFromJID( from )) == NULL )
+			hContact = JabberDBCreateContact( from, nick, FALSE, TRUE );
+		if ( !JabberListExist( LIST_ROSTER, from )) {
+			JabberLog( "Receive presence online from %s ( who is not in my roster )", from );
+			JabberListAdd( LIST_ROSTER, from );
+		}
+		int status = ID_STATUS_ONLINE;
+		if (( showNode = JabberXmlGetChild( node, "show" )) != NULL ) {
+			if (( show = showNode->text ) != NULL ) {
+				if ( !strcmp( show, "away" )) status = ID_STATUS_AWAY;
+				else if ( !strcmp( show, "xa" )) status = ID_STATUS_NA;
+				else if ( !strcmp( show, "dnd" )) status = ID_STATUS_DND;
+				else if ( !strcmp( show, "chat" )) status = ID_STATUS_FREECHAT;
+		}	}
 
-		else {
-			type = JabberXmlGetAttrValue( node, "type" );
+		// Send version query if this is the new resource
+		if (( p=strchr( from, '@' )) != NULL ) {
+			if (( p=strchr( p, '/' ))!=NULL && p[1]!='\0' ) {
+				p++;
+				if (( item = JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
+					JABBER_RESOURCE_STATUS *r = item->resource;
+					for ( i=0; i < item->resourceCount && strcmp( r->resourceName, p ); i++, r++ );
+					if ( i >= item->resourceCount || ( r->version == NULL && r->system == NULL && r->software == NULL ))
+						JabberSend( info->s, "<iq type='get' to='%s'><query xmlns='jabber:iq:version'/></iq>", from );
+		}	}	}
 
-			if ( type==NULL || ( !strcmp( type, "available" )) ) {
-				if (( nick=JabberNickFromJID( from )) != NULL ) {
-					if (( hContact = JabberHContactFromJID( from )) == NULL )
-						hContact = JabberDBCreateContact( from, nick, FALSE, TRUE );
-					if ( !JabberListExist( LIST_ROSTER, from )) {
-						JabberLog( "Receive presence online from %s ( who is not in my roster )", from );
-						JabberListAdd( LIST_ROSTER, from );
-					}
-					status = ID_STATUS_ONLINE;
-					if (( showNode = JabberXmlGetChild( node, "show" )) != NULL ) {
-						if (( show = showNode->text ) != NULL ) {
-							if ( !strcmp( show, "away" )) status = ID_STATUS_AWAY;
-							else if ( !strcmp( show, "xa" )) status = ID_STATUS_NA;
-							else if ( !strcmp( show, "dnd" )) status = ID_STATUS_DND;
-							else if ( !strcmp( show, "chat" )) status = ID_STATUS_FREECHAT;
-					}	}
+		if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL && statusNode->text != NULL )
+			p = JabberTextDecode( statusNode->text );
+		else
+			p = NULL;
+		JabberListAddResource( LIST_ROSTER, from, status, p );
+		if ( p ) {
+			DBWriteContactSettingString( hContact, "CList", "StatusMsg", p );
+			free( p );
+		}
+		else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 
-					// Send version query if this is the new resource
-					if (( p=strchr( from, '@' )) != NULL ) {
-						if (( p=strchr( p, '/' ))!=NULL && p[1]!='\0' ) {
-							p++;
-							if (( item = JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
-								JABBER_RESOURCE_STATUS *r = item->resource;
-								for ( i=0; i < item->resourceCount && strcmp( r->resourceName, p ); i++, r++ );
-								if ( i >= item->resourceCount || ( r->version == NULL && r->system == NULL && r->software == NULL ))
-									JabberSend( info->s, "<iq type='get' to='%s'><query xmlns='jabber:iq:version'/></iq>", from );
-					}	}	}
+		// Determine status to show for the contact
+		if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
+			count = item->resourceCount;
+			for ( i=0; i<count; i++ )
+				status = JabberCombineStatus( status, item->resource[i].status );
+			item->status = status;
+		}
 
-					if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL && statusNode->text != NULL )
-						p = JabberTextDecode( statusNode->text );
-					else
-						p = NULL;
-					JabberListAddResource( LIST_ROSTER, from, status, p );
-					if ( p ) {
-						DBWriteContactSettingString( hContact, "CList", "StatusMsg", p );
-						free( p );
-					}
-					else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+		if ( strchr( from, '@' )!=NULL || JGetByte( "ShowTransport", TRUE )==TRUE )
+			if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
+				JSetWord( hContact, "Status", ( WORD )status );
 
-					// Determine status to show for the contact
-					if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
-						count = item->resourceCount;
-						for ( i=0; i<count; i++ )
-							status = JabberCombineStatus( status, item->resource[i].status );
-						item->status = status;
-					}
+		if ( strchr( from, '@' )==NULL && hwndJabberAgents )
+			SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+		JabberLog( "%s ( %s ) online, set contact status to %d", nick, from, status );
+		free( nick );
 
-					if ( strchr( from, '@' )!=NULL || JGetByte( "ShowTransport", TRUE )==TRUE ) {
-						if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
-							JSetWord( hContact, "Status", ( WORD )status );
-					}
-					if ( strchr( from, '@' )==NULL && hwndJabberAgents )
-						SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-					JabberLog( "%s ( %s ) online, set contact status to %d", nick, from, status );
-					free( nick );
-				}
+		XmlNode* xNode = JabberXmlGetChild( node, "x" );
+		if ( xNode != NULL && !lstrcmpA( JabberXmlGetAttrValue( xNode, "xmlns" ), "jabber:x:avatar" ))
+			if (( xNode = JabberXmlGetChild( xNode, "hash" )) != NULL && xNode->text != NULL )
+				JSetString( hContact, "AvatarHash", xNode->text );
+		return;
+	}
+	
+	if ( !strcmp( type, "unavailable" )) {
+		if ( !JabberListExist( LIST_ROSTER, from )) {
+			JabberLog( "Receive presence offline from %s ( who is not in my roster )", from );
+			JabberListAdd( LIST_ROSTER, from );
+		}
+		else JabberListRemoveResource( LIST_ROSTER, from );
+
+		int status = ID_STATUS_OFFLINE;
+		if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL ) {
+			if ( JGetByte( "OfflineAsInvisible", FALSE ) == TRUE ) 
+				status = ID_STATUS_INVISIBLE;
+
+			p = JabberTextDecode( statusNode->text );
+			if (( hContact = JabberHContactFromJID( from )) != NULL) {
+				if ( p )
+					DBWriteContactSettingString(hContact, "CList", "StatusMsg", p);
+				else
+					DBDeleteContactSetting(hContact, "CList", "StatusMsg");
 			}
-			else if ( !strcmp( type, "unavailable" )) {
-				if ( !JabberListExist( LIST_ROSTER, from )) {
-					JabberLog( "Receive presence offline from %s ( who is not in my roster )", from );
-					JabberListAdd( LIST_ROSTER, from );
-				}
-				else JabberListRemoveResource( LIST_ROSTER, from );
+			if (p) free(p);
+		} 
+		if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
+			// Determine status to show for the contact based on the remaining resources
+			status = ID_STATUS_OFFLINE;
+			count = item->resourceCount;
+			for ( i=0; i<count; i++ )
+				status = JabberCombineStatus( status, item->resource[i].status );
+			item->status = status;
+		}
+		if (( hContact=JabberHContactFromJID( from )) != NULL ) {
+			if ( strchr( from, '@' )!=NULL || JGetByte( "ShowTransport", TRUE )==TRUE )
+				if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
+					JSetWord( hContact, "Status", ( WORD )status );
 
-				status = ID_STATUS_OFFLINE;
-				if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL ) {
-					if ( JGetByte( "OfflineAsInvisible", FALSE ) == TRUE ) 
-						status = ID_STATUS_INVISIBLE;
-
-					p = JabberTextDecode( statusNode->text );
-					if (( hContact = JabberHContactFromJID( from )) != NULL) {
-						if ( p )
-							DBWriteContactSettingString(hContact, "CList", "StatusMsg", p);
-						else
-							DBDeleteContactSetting(hContact, "CList", "StatusMsg");
-					}
-					if (p) free(p);
-				} 
-				if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
-					// Determine status to show for the contact based on the remaining resources
-					status = ID_STATUS_OFFLINE;
-					count = item->resourceCount;
-					for ( i=0; i<count; i++ )
-						status = JabberCombineStatus( status, item->resource[i].status );
-					item->status = status;
-				}
-				if (( hContact=JabberHContactFromJID( from )) != NULL ) {
-					if ( strchr( from, '@' )!=NULL || JGetByte( "ShowTransport", TRUE )==TRUE ) {
-						if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
-							JSetWord( hContact, "Status", ( WORD )status );
-					}
-					JabberLog( "%s offline, set contact status to %d", from, status );
-				}
-				if ( strchr( from, '@' )==NULL && hwndJabberAgents )
+			JabberLog( "%s offline, set contact status to %d", from, status );
+		}
+		if ( strchr( from, '@' )==NULL && hwndJabberAgents )
+			SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+		return;
+	}
+	
+	if ( !strcmp( type, "subscribe" )) {
+		if ( strchr( from, '@' ) == NULL ) {
+			// automatically send authorization allowed to agent/transport
+			JabberSend( info->s, "<presence to='%s' type='subscribed'/>", from );
+		}
+		else if (( nick=JabberNickFromJID( from )) != NULL ) {
+			JabberLog( "%s ( %s ) requests authorization", nick, from );
+			JabberDBAddAuthRequest( from, nick );
+			free( nick );
+		}
+		return;
+	}
+	
+	if ( !strcmp( type, "subscribed" )) {
+		if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
+			if ( item->subscription == SUB_FROM ) item->subscription = SUB_BOTH;
+			else if ( item->subscription == SUB_NONE ) {
+				item->subscription = SUB_TO;
+				if ( hwndJabberAgents && strchr( from, '@' )==NULL )
 					SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-			}
-			else if ( !strcmp( type, "subscribe" )) {
-				if ( strchr( from, '@' ) == NULL ) {
-					// automatically send authorization allowed to agent/transport
-					JabberSend( info->s, "<presence to='%s' type='subscribed'/>", from );
-				}
-				else if (( nick=JabberNickFromJID( from )) != NULL ) {
-					JabberLog( "%s ( %s ) requests authorization", nick, from );
-					JabberDBAddAuthRequest( from, nick );
-					free( nick );
-				}
-			}
-			else if ( !strcmp( type, "subscribed" )) {
-				if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
-					if ( item->subscription == SUB_FROM ) item->subscription = SUB_BOTH;
-					else if ( item->subscription == SUB_NONE ) {
-						item->subscription = SUB_TO;
-						if ( hwndJabberAgents && strchr( from, '@' )==NULL )
-							SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-}	}	}	}	}	}
+}	}	}	}
 
 static void JabberProcessIq( XmlNode *node, void *userdata )
 {

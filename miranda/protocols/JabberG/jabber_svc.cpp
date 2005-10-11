@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "jabber.h"
+#include <io.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "resource.h"
@@ -535,6 +536,44 @@ int JabberFileResume( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberGetAvatarInfo - retrieves the avatar info
+
+static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
+{
+	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
+
+	char szHashValue[ MAX_PATH ];
+	if ( JGetStaticString( "AvatarHash", AI->hContact, szHashValue, sizeof szHashValue ))
+		return GAIR_NOAVATAR;
+
+	JabberGetAvatarFileName( AI->hContact, AI->filename, sizeof AI->filename );
+	AI->format = ( AI->hContact == NULL ) ? PA_FORMAT_PNG : JGetByte( AI->hContact, "AvatarType", 0 );
+
+	if ( ::access( AI->filename, 0 ) == 0 ) {
+		char szSavedHash[ 256 ];
+		if ( !JGetStaticString( "AvatarSaved", AI->hContact, szSavedHash, sizeof szSavedHash ))
+			if ( !strcmp( szSavedHash, szHashValue ))
+				return GAIR_SUCCESS;
+	}
+
+	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL && jabberOnline ) {
+		DBVARIANT dbv;
+		if ( !JGetStringUtf( AI->hContact, "jid", &dbv )) {
+			JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal );
+
+			int iqId = JabberSerialNext();
+			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetAvatar );
+			JabberSend( jabberThreadInfo->s, 
+				"<iq type='get' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:avatar'/></iq>",
+				dbv.pszVal, item->resource[0].resourceName, iqId );
+			JFreeVariant( &dbv );
+			return GAIR_WAITFOR;
+	}	}
+
+	return GAIR_NOAVATAR;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetAwayMsg - returns a contact's away message
 
@@ -604,18 +643,20 @@ int JabberGetAwayMsg( WPARAM wParam, LPARAM lParam )
 
 int JabberGetCaps( WPARAM wParam, LPARAM lParam )
 {
-	if ( wParam == PFLAGNUM_1 )
+	switch( wParam ) {
+	case PFLAGNUM_1:
 		return PF1_IM|PF1_AUTHREQ|PF1_SERVERCLIST|PF1_MODEMSG|PF1_BASICSEARCH|PF1_SEARCHBYEMAIL|PF1_SEARCHBYNAME|PF1_FILE|PF1_VISLIST|PF1_INVISLIST;
-	if ( wParam == PFLAGNUM_2 )
-		return PF2_ONLINE|PF2_INVISIBLE|PF2_SHORTAWAY|PF2_LONGAWAY|PF2_HEAVYDND|PF2_FREECHAT;
-	if ( wParam == PFLAGNUM_3 )
-		return PF2_ONLINE|PF2_SHORTAWAY|PF2_LONGAWAY|PF2_HEAVYDND|PF2_FREECHAT;
-	if ( wParam == PFLAGNUM_4 )
-		return PF4_FORCEAUTH|PF4_NOCUSTOMAUTH|PF4_SUPPORTTYPING;
-	if ( wParam == PFLAG_UNIQUEIDTEXT )
+	case PFLAGNUM_2:
+		return PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_HEAVYDND | PF2_FREECHAT;
+	case PFLAGNUM_3:
+		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_HEAVYDND | PF2_FREECHAT;
+	case PFLAGNUM_4:
+		return PF4_FORCEAUTH | PF4_NOCUSTOMAUTH | PF4_SUPPORTTYPING | PF4_AVATARS;
+	case PFLAG_UNIQUEIDTEXT:
 		return ( int ) JTranslate( "JID" );
-	if ( wParam == PFLAG_UNIQUEIDSETTING )
+	case PFLAG_UNIQUEIDSETTING:
 		return ( int ) "jid";
+	}
 	return 0;
 }
 
@@ -1169,6 +1210,7 @@ int JabberSvcInit( void )
 	JCreateServiceFunction( PS_AUTHALLOW, JabberAuthAllow );
 	JCreateServiceFunction( PS_AUTHDENY, JabberAuthDeny );
 	JCreateServiceFunction( PS_SETSTATUS, JabberSetStatus );
+	JCreateServiceFunction( PS_GETAVATARINFO, JabberGetAvatarInfo );
 	JCreateServiceFunction( PS_GETSTATUS, JabberGetStatus );
 	JCreateServiceFunction( PS_SETAWAYMSG, JabberSetAwayMsg );
 	JCreateServiceFunction( PS_FILERESUME, JabberFileResume );

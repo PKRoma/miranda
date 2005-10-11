@@ -376,6 +376,7 @@ void   JabberContactListCreateGroup( char* groupName );
 void   JabberDBAddAuthRequest( char* jid, char* nick );
 HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripResource );
 ULONG  JabberForkThread( void ( __cdecl *threadcode )( void* ), unsigned long stacksize, void *arg );
+void   JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
 void   JabberSetServerStatus( int iNewStatus );
 
 //---- jabber_svc.c -------------------------------------------------
