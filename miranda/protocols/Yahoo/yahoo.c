@@ -13,7 +13,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <malloc.h>
-
+#include <io.h>
 /*
  * Miranda headers
  */
@@ -234,6 +234,13 @@ void get_fd(int id, int fd, int error, void *data)
 				if (dw) {
 					//dw = send(fd, buf, dw, 0);
 					dw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
+					
+					if (dw < 1) {
+						LOG(("Upload Failed. Send error?"));
+						error = 1;
+						break;
+					}
+					
 					size += dw;
 					
 					if(GetTickCount() >= lNotify + 500 || dw < 1024 || size == statbuf.st_size) {
@@ -382,7 +389,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 				do {
 					dw = Netlib_Recv((HANDLE)fd, buf, 1024, MSG_NODUMP);
 				
-					if (dw) {
+					if (dw > 0) {
 						WriteFile(myhFile, buf, dw, &c, NULL);
 						rsize += dw;
 						
@@ -398,6 +405,10 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 						ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & pfts);
 						lNotify = GetTickCount();
 						}
+					} else if (dw < 0) {
+						LOG(("Recv Failed! Socket Error?"));
+						error = 1;
+						break;
 					}
 					
 					if (sf->cancel) {
@@ -838,9 +849,13 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 				do {
 					dw = Netlib_Recv((HANDLE)fd, buf, 4096, MSG_NODUMP);
 				
-					if (dw) {
+					LOG(("Got %d bytes!", dw));
+					
+					if (dw > 0) {
 						CopyMemory(&pBuff[rsize], buf, dw);
 						rsize += dw;
+					} else if (dw < 0) {
+						error = 1;
 					}
 					
 				} while ( dw > 0 );
@@ -890,6 +905,9 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 			}
 			
 			GlobalFree( pDib );
+	} else {
+			//GetAvatarFileName(hContact, buf, 1024);
+			buf[0]='\0';
 	}
 
 	FREE(pBuff);
@@ -938,17 +956,22 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 	}
 	
 	if (!cksum || cksum == -1) {
+		LOG(("[ext_yahoo_got_picture] Resetting avatar."));
         yahoo_reset_avatar(hContact);
 	} else {
+		char z[1024];
+		
 		if (pic_url == NULL) {
 			LOG(("[ext_yahoo_got_picture] WARNING: Empty URL for avatar?"));
 			return;
 		}
 		
-		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
+		GetAvatarFileName(hContact, z, 1024);
+		
+		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum || _access( z, 0 ) != 0 ) {
 			struct avatar_info *avt;
 			
-			YAHOO_DebugLog("[ext_yahoo_got_picture] Checksums don't match. Current: %lu, New: %d",DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum);
+			YAHOO_DebugLog("[ext_yahoo_got_picture] Checksums don't match or avatar file is missing. Current: %lu, New: %d",DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum);
 			avt = malloc(sizeof(struct avatar_info));
 			avt->who = _strdup(who);
 			avt->pic_url = _strdup(pic_url);
