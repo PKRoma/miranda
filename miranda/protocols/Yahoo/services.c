@@ -1332,8 +1332,12 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		YAHOO_DebugLog("[YAHOO_GETAVATARINFO]");
 	}
 
-	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+	if (!YAHOO_GetByte( "ShowAvatars", 0 ) || !yahooLoggedIn) {
+		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] %s", yahooLoggedIn ? "We are not using/showing avatars!" : "We are not logged in. Can't load avatars now!");
+		
 		if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) != 0) {
+			YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Removing avatar information!");
+			
 			GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename);
 			DeleteFile(AI->filename);
 		}
@@ -1353,11 +1357,14 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		} else {
 			/* need to request it again? */
 			if (YAHOO_GetWord(AI->hContact, "PictLoading", 0) != 0) {
+				YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Waiting for avatar to load!");
 				return GAIR_WAITFOR;
 			} else if ( yahooLoggedIn ) {
 				DBVARIANT dbv;
 	  
 				if (!DBGetContactSetting(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+					YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Requesting avatar!");
+					
 					YAHOO_request_avatar(dbv.pszVal/*who */);
 					DBFreeVariant(&dbv);
 					return GAIR_WAITFOR;
