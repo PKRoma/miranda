@@ -51,9 +51,12 @@ int PASCAL recv(SOCKET s, char FAR *buf, int len, int flags)
 	RecvResult = Netlib_Recv((HANDLE)s, buf, len, 0);
 	
 	//LOG(("Got bytes: %d, len: %d", RecvResult, len));
-	
-	return RecvResult;
+    if (RecvResult == SOCKET_ERROR) {
+        LOG(("Receive Error."));
+        return 0;
+    }
 
+	return RecvResult;
 }
 
 extern yahoo_local_account * ylad;
