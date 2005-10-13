@@ -104,9 +104,9 @@
 #include "log.h"
 #include "channels.h"
 #include "forkthread.h"
-#include "ui/askauthentication.h"
-#include "ui/userinfotab.h"
-#include "ui/loginpassword.h"
+#include "UI/askauthentication.h"
+#include "UI/userinfotab.h"
+#include "UI/loginpassword.h"
 
 #include "changeinfo/changeinfo.h"
 #include "icq_popups.h"
