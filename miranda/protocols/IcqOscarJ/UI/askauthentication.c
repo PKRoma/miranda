@@ -51,9 +51,8 @@ int icq_RequestAuthorization(WPARAM wParam, LPARAM lParam)
 
 static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-
-  static char szReason[256];
-  static HANDLE hContact;
+  HANDLE hContact;
+  char szReason[256];
 
 
   switch (msg)
@@ -69,9 +68,9 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
     SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
     SendDlgItemMessage(hwndDlg, IDC_EDITAUTH, EM_LIMITTEXT, (WPARAM)255, 0);
     SetDlgItemText(hwndDlg, IDC_EDITAUTH, Translate("Please authorize me to add you to my contact list."));
-    
+
     return TRUE;
-    
+
   case WM_COMMAND:
     {
       switch (LOWORD(wParam))
@@ -79,13 +78,15 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
       case IDOK:
         {
           DWORD dwUin;
-          
-          if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
-            return TRUE; // Invalid contact
-          
+
+          hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
+
           if (!icqOnline)
             return TRUE;
-          
+
+          if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
+            return TRUE; // Invalid contact
+
           GetDlgItemText(hwndDlg, IDC_EDITAUTH, szReason, 255);
           icq_sendAuthReqServ(dwUin, szReason);
           EndDialog(hwndDlg, 0);
