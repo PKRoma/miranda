@@ -115,6 +115,10 @@ const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x8
 const capstr capStr20012  = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xbc, 0xd2, 0x00, 0x04, 0xac, 0x96, 0xdd, 0x96};
 const capstr capAimIcon   = {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
 const capstr capUim       = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
+const capstr capRambler   = {0x7E, 0x11, 0xB7, 0x78, 0xA3, 0x53, 0x49, 0x26, 0xA8, 0x02, 0x44, 0x73, 0x52, 0x08, 0xC4, 0x2A};
+const capstr capAbv       = {0x00, 0xE7, 0xE0, 0xDF, 0xA9, 0xD0, 0x4F, 0xe1, 0x91, 0x62, 0xC8, 0x90, 0x9A, 0x13, 0x2A, 0x1B};
+const capstr capNetvigator= {0x4C, 0x6B, 0x90, 0xA3, 0x3D, 0x2D, 0x48, 0x0E, 0x89, 0xD6, 0x2E, 0x4B, 0x2C, 0x10, 0xD9, 0x9F};
+
 
 static BOOL hasRichText, hasRichChecked;
 
@@ -239,6 +243,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
   else if ((dwFT1 & 0xFFFFFFF0) == 0x494D2B00 && !dwFT2 && !dwFT3)
   { // last byte of FT1: (5 = Win32, 3 = SmartPhone, Pocket PC)
     szClient = "IM+";
+  }
+  else if (dwFT1 == 0x3B4C4C0C && !dwFT2 && dwFT3 == 0x3B7248ed)
+  {
+    szClient = "KXicq2";
   }
   else if (dwFT1 == dwFT2 && dwFT2 == dwFT3 && wVersion == 8)
   {
@@ -423,7 +431,22 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           {
             *dwClientId = 0;
             if (CheckContactCapabilities(hContact, CAPF_AIM_FILE))
-              szClient = "icq5";
+            {
+              strcpy(szClientBuf, "icq5");
+              if (MatchCap(caps, wLen, &capRambler, 0x10))
+              {
+                strcat(szClientBuf, " (Rambler)");
+              }
+              else if (MatchCap(caps, wLen, &capAbv, 0x10))
+              {
+                strcat(szClientBuf, " (Abv)");
+              }
+              else if (MatchCap(caps, wLen, &capNetvigator, 0x10))
+              {
+                strcat(szClientBuf, " (Netvigator)");
+              }
+              szClient = szClientBuf;
+            }
             else
               szClient = "ICQ Lite v4";
           }
@@ -452,11 +475,11 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             NetLog_Server("Forcing simple messages (QNext client).");
             szClient = "QNext";
           }
-          if (szClient == NULL)
-          { // still unknown client, try Agile
-            if (CheckContactCapabilities(hContact, CAPF_UTF) && !hasCapRichText(caps, wLen) && !dwFT1 && !dwFT2 && !dwFT3)
-              szClient = "Agile Messenger";
-          }
+        if (szClient == NULL)
+        { // still unknown client, try Agile
+          if (CheckContactCapabilities(hContact, CAPF_UTF) && !hasCapRichText(caps, wLen) && !dwFT1 && !dwFT2 && !dwFT3)
+            szClient = "Agile Messenger";
+        }
       }
     }
     else if (!dwUin)
