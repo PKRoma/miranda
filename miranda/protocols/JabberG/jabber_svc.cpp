@@ -358,7 +358,7 @@ void sttRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		return;
 	
 	if ( cws->value.type == DBVT_DELETED ) {
-		JabberAddContactToRoster( item->jid, ( char* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, ( WPARAM )hContact, GCDNF_NOMYHANDLE ), item->group );
+		JabberAddContactToRoster( item->jid, UTF8(( char* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, ( WPARAM )hContact, GCDNF_NOMYHANDLE )), item->group );
 		return;
 	}
 
