@@ -847,7 +847,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 		}
 		else {
 			TCHAR szNew[2];
-			szNew[0] = (char) wParam;
+			szNew[0] = (TCHAR) wParam;
 			szNew[1] = '\0';
 			if (lstrlen(dat->szQuickSearch) >= sizeof(dat->szQuickSearch) - 1) {
 				MessageBeep(MB_OK);
