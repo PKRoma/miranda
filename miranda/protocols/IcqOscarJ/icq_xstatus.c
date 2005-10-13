@@ -40,6 +40,7 @@
 
 extern void setUserInfo();
 
+static int bStatusMenu = 0;
 static HANDLE hHookExtraIconsRebuild = NULL;
 static HANDLE hHookExtraIconsApply = NULL;
 static HANDLE hXStatusIcons[24];
@@ -55,6 +56,7 @@ static void setContactExtraIcon(HANDLE hContact, HANDLE hIcon)
   iec.ColumnType = EXTRA_ICON_ADV1;
   CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
 }
+
 
 
 static int CListMW_ExtraIconsRebuild(WPARAM wParam, LPARAM lParam) 
@@ -81,9 +83,10 @@ static int CListMW_ExtraIconsRebuild(WPARAM wParam, LPARAM lParam)
 }
 
 
+
 static int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam) 
 {
-  if(gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
+  if (gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
   {
     DWORD bXStatus = ICQGetContactSettingByte((HANDLE)wParam, "XStatusId", 0);
 
@@ -100,11 +103,20 @@ static int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
 }
 
 
+
 void InitXStatusEvents()
 {
-  hHookExtraIconsRebuild = HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, CListMW_ExtraIconsRebuild);
-  hHookExtraIconsApply = HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY, CListMW_ExtraIconsApply);
+  if (!hHookExtraIconsRebuild)
+  {
+    if (bStatusMenu = ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
+      hHookExtraIconsRebuild = HookEvent(ME_CLIST_PREBUILDSTATUSMENU, CListMW_ExtraIconsRebuild);
+    else
+      hHookExtraIconsRebuild = HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, CListMW_ExtraIconsRebuild);
+  }
+  if (!hHookExtraIconsApply)
+    hHookExtraIconsApply = HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY, CListMW_ExtraIconsApply);
 }
+
 
 
 void UninitXStatusEvents()
@@ -115,6 +127,7 @@ void UninitXStatusEvents()
   if (hHookExtraIconsApply)
     UnhookEvent(hHookExtraIconsApply);
 }
+
 
 
 const capstr capXStatus[24] = {
@@ -233,17 +246,17 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam
         return 0;
       }
       if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000) 
-      {      //ctrl-a
+      { // ctrl-a
         SendMessage(hwnd, EM_SETSEL, 0, -1);
         return 0;
       }
       if (wParam == 23 && GetKeyState(VK_CONTROL) & 0x8000) 
-      {     // ctrl-w
+      { // ctrl-w
         SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
         return 0;
       }
       if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) 
-      {    //ctrl-backspace
+      { // ctrl-backspace
         DWORD start, end;
         TCHAR *text;
         int textLen;
@@ -372,6 +385,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 }
 
 
+
 static void setXStatus(BYTE bXStatus)
 {
   CLISTMENUITEM mi;
@@ -424,6 +438,7 @@ static void setXStatus(BYTE bXStatus)
     setUserInfo();
   }
 }
+
 
 
 static int menuXStatus0(WPARAM wParam,LPARAM lParam)
@@ -552,12 +567,13 @@ static int menuXStatus24(WPARAM wParam,LPARAM lParam)
 }
 
 
+
 void InitXStatusItems()
 {
   CLISTMENUITEM mi;
   int i = 0;
   char srvFce[MAX_PATH + 64];
-  char szItem[MAX_PATH + 14];
+  char szItem[MAX_PATH + 64];
 
   BYTE bXStatus = ICQGetContactSettingByte(NULL, "XStatusId", 0);
   HIMAGELIST CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 24, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
@@ -608,7 +624,10 @@ void InitXStatusItems()
     mi.flags = bXStatus == i?CMIF_CHECKED:0;
     mi.pszName = Translate(i?nameXStatus[i-1]:"None");
     mi.pszService = srvFce;
-    hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+    if (bStatusMenu)
+      hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDSTATUSMENUITEM, 0, (LPARAM)&mi);
+    else
+      hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
     if (i) DestroyIcon(mi.hIcon);
   }
   ImageList_Destroy(CSImages);

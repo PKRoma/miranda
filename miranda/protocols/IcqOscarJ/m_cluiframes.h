@@ -243,3 +243,13 @@ must be popupname=lparam to place your items in right popup of main menu.
 //needed by cluiframes module to add frames menu to main menu.
 //it just calls NotifyEventHooks(hPreBuildFrameMenuEvent,wParam,lParam);
 #define MS_CLIST_FRAMEMENUNOTIFY          "CList/ContextFrameMenuNotify"
+
+
+//#define FONTID_STATUS 8
+//#define FONTID_FRAMETITLE 9
+
+//#undef FONTID_MAX
+//#define FONTID_MAX 9
+
+#define ME_CLIST_PREBUILDSTATUSMENU "CList/PreBuildStatusMenu"
+#define MS_CLIST_ADDSTATUSMENUITEM "CList/AddStatusMenuItem"

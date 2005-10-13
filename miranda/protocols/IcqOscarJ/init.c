@@ -55,7 +55,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,5),
+  PLUGIN_MAKE_VERSION(0,3,6,6),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@users.sourceforge.net",
@@ -251,6 +251,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
     mi.pszService = pszServiceName;
     hUserMenuGrant = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
   }
+
+  InitXStatusEvents();
 
   return 0;
 }
