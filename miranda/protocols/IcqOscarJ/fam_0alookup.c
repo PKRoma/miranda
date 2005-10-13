@@ -122,6 +122,7 @@ void handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie)
     { // collect the results
       sr.hdr.nick = getStrFromChain(pChain, 1, (WORD)i);
       if (!sr.hdr.nick) break;
+      sr.uid = sr.hdr.nick;
       // broadcast the result
       if (pCookie->dwMainId)
         ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)pCookie->dwMainId, (LPARAM)&sr);

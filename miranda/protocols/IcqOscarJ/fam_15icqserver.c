@@ -626,6 +626,7 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
         break;
       unpackByte(&databuf, &sr.auth);
 
+      sr.uid = NULL; // icq contact
       // Finally, broadcast the result
       ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)wCookie, (LPARAM)&sr);
       

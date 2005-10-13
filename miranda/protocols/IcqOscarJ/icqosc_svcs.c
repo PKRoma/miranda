@@ -466,9 +466,15 @@ static VOID CALLBACK CheekySearchTimerProc(HWND hwnd, UINT uMsg, UINT idEvent, D
 
   isr.hdr.cbSize = sizeof(isr);
   if (cheekySearchUin)
+  {
     isr.hdr.nick = "";
+    isr.uid = NULL;
+  }
   else
+  {
     isr.hdr.nick = cheekySearchUid;
+    isr.uid = cheekySearchUid;
+  }
   isr.hdr.firstName = "";
   isr.hdr.lastName = "";
   isr.hdr.email = "";
@@ -667,10 +673,11 @@ static HANDLE AddToListByUID(char *szUID, DWORD dwFlags)
 }
 
 
+
 int IcqAddToList(WPARAM wParam, LPARAM lParam)
 {
   if (lParam)
-  {
+  { // this should be only from search
     ICQSEARCHRESULT *isr = (ICQSEARCHRESULT*)lParam;
 
     if (isr->hdr.cbSize == sizeof(ICQSEARCHRESULT))
@@ -687,62 +694,70 @@ int IcqAddToList(WPARAM wParam, LPARAM lParam)
 
 
 
-// Todo: This function needs to be rewritten
 int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
 {
   DBEVENTINFO dbei = {0};
-  DWORD uin;
+  DWORD uin = 0;
+  uid_str uid = {0};
 
 
   dbei.cbSize = sizeof(dbei);
-  dbei.cbBlob = sizeof(DWORD);
-  dbei.pBlob = (PBYTE)&uin;
+
+  if ((dbei.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, lParam, 0)) == -1)
+    return 0;
+
+  dbei.pBlob = (PBYTE)_alloca(dbei.cbBlob + 1);
+  dbei.pBlob[dbei.cbBlob] = '\0';
 
   if (CallService(MS_DB_EVENT_GET, lParam, (LPARAM)&dbei))
-    return 0;
+    return 0; // failed to get event
 
   if (strcmp(dbei.szModule, gpszICQProtoName))
-    return 0;
-
+    return 0; // this event is not ours
 
   if (dbei.eventType == EVENTTYPE_CONTACTS)
   {
-    int i;
-    char* pbOffset;
+    int i, ci = HIWORD(wParam);
+    char* pbOffset, *pbEnd;
 
-
-    dbei.pBlob = (PBYTE)malloc(dbei.cbBlob+1);
-    dbei.pBlob[dbei.cbBlob] = '\0';
-    if (CallService(MS_DB_EVENT_GET, lParam, (LPARAM)&dbei))
-    {
-      SAFE_FREE(&dbei.pBlob);
-      return 0;
-    }
-
-    uin = 0;
-
-    for (i = 0, pbOffset = (char*)dbei.pBlob; i <= HIWORD(wParam); i++)
+    for (i = 0, pbOffset = (char*)dbei.pBlob, pbEnd = pbOffset + dbei.cbBlob; i <= ci; i++)
     {
       pbOffset += strlennull((char*)pbOffset) + 1;  // Nick
-      if (pbOffset-dbei.pBlob >= (int)dbei.cbBlob)
-        break;
-      uin = atoi((char*)pbOffset);
+      if (pbOffset >= pbEnd) break;
+      if (i = ci)
+      { // we found the contact, get uid
+        if (IsStringUIN((char*)pbOffset))
+          uin = atoi((char*)pbOffset);
+        else
+        {
+          uin = 0;
+          strcpy(uid, (char*)pbOffset);
+        }
+      }
       pbOffset += strlennull((char*)pbOffset) + 1;  // Uin
-      if (pbOffset-dbei.pBlob >= (int)dbei.cbBlob)
-        break;
+      if (pbOffset >= pbEnd) break;
     }
-    SAFE_FREE(&dbei.pBlob);
   }
   else if (dbei.eventType != EVENTTYPE_AUTHREQUEST && dbei.eventType != EVENTTYPE_ADDED)
   {
     return 0;
+  }
+  else // auth req or added event
+  {
+    HANDLE hContact = ((HANDLE*)dbei.pBlob)[1]; // this sucks - awaiting new auth system
+
+    if (ICQGetContactSettingUID(hContact, &uin, &uid))
+      return 0;
   }
 
   if (uin != 0)
   {
     return (int)AddToListByUIN(uin, LOWORD(wParam)); // Success
   }
-
+  else if (strlennull(uid))
+  { // add aim contact
+    return (int)AddToListByUID(uid, LOWORD(wParam)); // Success
+  }
 
   return 0; // Failure
 }
@@ -1961,7 +1976,7 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
   PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
   ICQSEARCHRESULT** isrList = (ICQSEARCHRESULT**)pre->szMessage;
   int i;
-  char szUin[17];
+  char szUin[UINMAXLEN];
   PBYTE pBlob;
 
 
@@ -1969,9 +1984,11 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
 
   for (i = 0; i < pre->lParam; i++)
   {
-    dbei.cbBlob += strlennull(isrList[i]->hdr.nick) + 1;
-    _itoa(isrList[i]->uin, szUin, 10);
-    dbei.cbBlob += strlennull(szUin) + 1;
+    dbei.cbBlob += strlennull(isrList[i]->hdr.nick) + 2; // both trailing zeros
+    if (isrList[i]->uin)
+      dbei.cbBlob += getUINLen(isrList[i]->uin);
+    else 
+      dbei.cbBlob += strlennull(isrList[i]->uid);
   }
   dbei.cbSize = sizeof(dbei);
   dbei.szModule = gpszICQProtoName;
@@ -1981,9 +1998,16 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
   dbei.pBlob = (PBYTE)malloc(dbei.cbBlob);
   for (i = 0, pBlob = dbei.pBlob; i < pre->lParam; i++)
   {
-    strcpy(pBlob, isrList[i]->hdr.nick); pBlob += strlennull(pBlob) + 1;
-    _itoa(isrList[i]->uin, szUin, 10);
-    strcpy(pBlob, szUin); pBlob += strlennull(pBlob) + 1;
+    strcpy(pBlob, isrList[i]->hdr.nick);
+    pBlob += strlennull(pBlob) + 1;
+    if (isrList[i]->uin)
+    {
+      _itoa(isrList[i]->uin, szUin, 10);
+      strcpy(pBlob, szUin);
+    }
+    else // aim contact
+      strcpy(pBlob, isrList[i]->uid);
+    pBlob += strlennull(pBlob) + 1;
   }
 
   CallService(MS_DB_EVENT_ADD, (WPARAM)ccs->hContact, (LPARAM)&dbei);

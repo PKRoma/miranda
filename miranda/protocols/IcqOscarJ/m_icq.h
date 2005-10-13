@@ -52,6 +52,7 @@ typedef struct {   //extended search result structure, used for all searches
   PROTOSEARCHRESULT hdr;
   DWORD uin;
   BYTE auth;
+  char* uid;
 } ICQSEARCHRESULT;
 #define MS_ICQ_SEARCHBYEMAIL   "/SearchByEmail"
 

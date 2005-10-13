@@ -1545,21 +1545,32 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
       valid = 1;
       isrList = (ICQSEARCHRESULT**)malloc(nContacts * sizeof(ICQSEARCHRESULT*));
       for (i = 0; i < nContacts; i++)
-      { // TODO: accept messages with AIM contacts
+      {
         isrList[i] = (ICQSEARCHRESULT*)calloc(1, sizeof(ICQSEARCHRESULT));
         isrList[i]->hdr.cbSize = sizeof(ICQSEARCHRESULT);
-        isrList[i]->uin = atoi(pszMsgField[1 + i * 2]);
-        if (isrList[i]->uin == 0)
-          valid = 0;
+        if (IsStringUIN(pszMsgField[1 + i * 2]))
+        { // icq contact
+          isrList[i]->uin = atoi(pszMsgField[1 + i * 2]);
+          isrList[i]->uid = NULL;
+          if (isrList[i]->uin == 0)
+            valid = 0;
+        }
+        else
+        { // aim contact
+          isrList[i]->uin = 0;
+          isrList[i]->uid = pszMsgField[1 + i * 2];
+          if (!strlennull(isrList[i]->uid))
+            valid = 0;
+        }
         isrList[i]->hdr.nick = pszMsgField[2 + i * 2];
       }
 
       if (!valid)
       {
         if (bThruDC)
-          NetLog_Direct("Malformed contacts message (most probably contained AIM contacts)");
+          NetLog_Direct("Malformed '%s' message", "contacts");
         else
-          NetLog_Server("Malformed contacts message (most probably contained AIM contacts)");
+          NetLog_Server("Malformed '%s' message", "contacts");
       }
       else
       {
@@ -1590,7 +1601,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
         handleSmsReceipt(pMsg, dwDataLen);
         break;
 
-      case 1111:      /* icqmail 'you've got mail' - not processed */
+      case 1111:    /* icqmail 'you've got mail' - not processed */
         break;
     }
     break;

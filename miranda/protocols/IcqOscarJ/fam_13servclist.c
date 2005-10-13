@@ -143,7 +143,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
     break;
   }
 
-  case SRV_SSI_UPTODATE: // SRV_REPLYROSTEROK
+  case ICQ_LISTS_UPTODATE: // SRV_REPLYROSTEROK
   {
     servlistcookie* sc;
 
