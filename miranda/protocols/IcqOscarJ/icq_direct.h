@@ -65,9 +65,9 @@ typedef struct {
   DWORD dwLastNotify;
   DWORD TS1;
   DWORD TS2;
-  int   nVersion; // Was this sent with a v7 or a v8 packet?
-  BOOL bDC;       // Was this received over a DC or through server?
-  BOOL bEmptyDesc; // Was the description empty ?
+  int   nVersion;   // Was this sent with a v7 or a v8 packet?
+  BOOL bDC;         // Was this received over a DC or through server?
+  BOOL bEmptyDesc;  // Was the description empty ?
 } filetransfer;
 
 #define DIRECTCONN_STANDARD   0
@@ -91,13 +91,21 @@ typedef struct {
   DWORD dwConnCookie;
   int initialised;
   DWORD dwThreadId;
-  icq_packet *packetToSend;
   filetransfer *ft;
   DWORD dwReqId;  // Reverse Connect request cookie
 } directconnect;
 
+typedef struct {
+  HANDLE hContact;
+  DWORD dwUin;
+  int type;
+  filetransfer *ft;
+
+} reverse_cookie;
+
 void OpenDirectConnection(HANDLE hContact, int type, void *pvExtra);
 int IsDirectConnectionOpen(HANDLE hContact, int type);
+void CloseDirectConnection(directconnect *dc);
 void CloseContactDirectConns(HANDLE hContact);
 int SendDirectMessage(HANDLE hContact, icq_packet *pkt);
 int sendDirectPacket(HANDLE hConnection, icq_packet *pkt);

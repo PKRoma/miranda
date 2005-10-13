@@ -42,8 +42,8 @@ typedef struct directthreadstartinfo_t
 {
   int type;           // Only valid for outgoing connections
   int incoming;       // 1=incoming, 0=outgoing
-  HANDLE hConnection;  // only valid for incoming connections, handle to the connection
-  HANDLE hContact;  // Only valid for outgoing connections
+  HANDLE hConnection; // only valid for incoming connections, handle to the connection
+  HANDLE hContact;    // Only valid for outgoing connections
   void* pvExtra;      // Only valid for outgoing connections
 } directthreadstartinfo;
 
@@ -74,7 +74,8 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo* dtsi);
 static void sendPeerInit_v78(directconnect* dc);
 static int DecryptDirectPacket(directconnect* dc, PBYTE buf, WORD wLen);
 static void sendPeerInitAck(directconnect* dc);
-
+static void sendPeerMsgInit(directconnect* dc, DWORD dwSeq);
+static void sendPeerFileInit(directconnect* dc);
 
 
 void InitDirectConns(void)
@@ -327,9 +328,8 @@ void icq_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP)
 
 
 
-// Called from icq_AcceptFileTransfer to open a standard DC and send a 'file accept'
-// Called from icq_InitFileSend to open a standard DC and send a 'file send request'
-// Called from handleMessageAck to open a file DC when a file send request has been accepted
+// Called from handleRecvServMsgType2 to open a reverse typed DC
+// Called from handleFileAck to open a file DC when a file send request has been accepted
 void OpenDirectConnection(HANDLE hContact, int type, void* pvExtra)
 {
   pthread_t tid;
@@ -340,24 +340,31 @@ void OpenDirectConnection(HANDLE hContact, int type, void* pvExtra)
   dtsi->type = type;
   dtsi->incoming = 0;
   dtsi->hContact = hContact;
-  if (type == DIRECTCONN_STANDARD)
-  {
-    if (pvExtra)
-    {
-      dtsi->pvExtra = malloc(sizeof(icq_packet));
-      memcpy(dtsi->pvExtra, pvExtra, sizeof(icq_packet));
-    }
-    else
-      dtsi->pvExtra = pvExtra;
-  }
-  else
-  {
-    dtsi->pvExtra = pvExtra;
-  }
+  dtsi->pvExtra = pvExtra;
 
   tid.hThread = (HANDLE)forkthreadex(NULL, 0, icq_directThread, dtsi, 0, &tid.dwThreadId);
   CloseHandle(tid.hThread);
 }
+
+
+
+// Safely close NetLib connection - do not corrupt direct connection list
+void CloseDirectConnection(directconnect *dc)
+{
+  EnterCriticalSection(&directConnListMutex);
+
+  if (dc->hConnection)
+  {
+    Netlib_CloseHandle(dc->hConnection);
+#ifdef _DEBUG
+    NetLog_Direct("Direct conn closed (%p)", dc->hConnection);
+#endif
+    dc->hConnection = NULL;
+  }
+
+  LeaveCriticalSection(&directConnListMutex);
+}
+
 
 
 // This should be called only if connection already exists
@@ -420,7 +427,6 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
   dc.dwThreadId = GetCurrentThreadId();
   dc.incoming = dtsi->incoming;
   dc.hConnection = dtsi->hConnection;
-  dc.packetToSend = NULL;
   dc.ft = NULL;
 
   if (!dc.incoming)
@@ -443,7 +449,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 
     if (dc.type == DIRECTCONN_STANDARD)
     {
-      dc.packetToSend = (icq_packet*)dtsi->pvExtra;
+      // do nothing - some specific init for msg sessions
     }
     else if (dc.type == DIRECTCONN_FILE)
     {
@@ -491,7 +497,29 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     }
 
     if (dc.hConnection == NULL)
-    { // TODO: we should request reverse here - if it is not already reverse
+    {
+      if (dc.type != DIRECTCONN_REVERSE)
+      { // try reverse connect
+        reverse_cookie *pCookie = (reverse_cookie*)malloc(sizeof(reverse_cookie));
+        DWORD dwCookie;
+
+        NetLog_Direct("connect() failed (%d), trying reverse.", GetLastError());
+
+        if (pCookie)
+        { // ini cookie
+          pCookie->hContact = dc.hContact;
+          pCookie->dwUin = dc.dwRemoteUin;
+          pCookie->type = dc.type;
+          pCookie->ft = dc.ft;
+          dwCookie = AllocateCookie(0, dc.dwRemoteUin, pCookie);
+          icq_sendReverseReq(dc.dwRemoteUin, dwCookie, dc.dwRemotePort);
+          RemoveDirectConnFromList(&dc);
+
+          return 0;
+        }
+        else
+          NetLog_Direct("Reverse failed (%s)", "malloc failed");
+      }
       NetLog_Direct("connect() failed (%d)", GetLastError());
       RemoveDirectConnFromList(&dc);
       if (dc.type == DIRECTCONN_FILE) 
@@ -510,7 +538,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     else
     {
       NetLog_Direct("Error: Unsupported direct protocol: %d, closing.", dc.wVersion);
-      Netlib_CloseHandle(dc.hConnection);
+      CloseDirectConnection(&dc);
       RemoveDirectConnFromList(&dc);
 
       return 0;
@@ -550,7 +578,6 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
         else if (dc.packetPending)
         { // do we expect packet soon?
           NetLog_Direct("Keeping connection, packet pending.");
-          break;
         }
         else
         {
@@ -601,14 +628,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
   // End of packet receiving loop
 
   Netlib_CloseHandle(hPacketRecver);
-
-  if(dc.hConnection)
-  {
-    Netlib_CloseHandle(dc.hConnection);
-#ifdef _DEBUG
-    NetLog_Direct("Direct conn closed (%p)", dc.hConnection);
-#endif
-  }
+  CloseDirectConnection(&dc);
 
   if (dc.ft)
   {
@@ -668,12 +688,46 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 #endif
       if (dc->incoming && dc->type == DIRECTCONN_REVERSE)
       {
+        reverse_cookie* pCookie;
+        DWORD dwCookieUin;
+
         dc->incoming = 0;
-        // TODO: find cookie set params and send file_init of msg_init
+
+        if (FindCookie(dc->dwReqId, &dwCookieUin, &pCookie) && pCookie)
+        { // valid reverse DC, check and init session
+          if (pCookie->dwUin == dc->dwRemoteUin)
+          { // valid connection
+            dc->type = pCookie->type;
+            dc->ft = pCookie->ft;
+            dc->hContact = pCookie->hContact;
+            if (dc->type == DIRECTCONN_STANDARD)
+            { // init message session
+              sendPeerMsgInit(dc, 0);
+            }
+            else if (dc->type == DIRECTCONN_FILE)
+            { // init file session
+              sendPeerFileInit(dc);
+              dc->initialised = 1;
+            }
+            break;
+          }
+          else
+          {
+            NetLog_Direct("Error: Invalid connection (UINs does not match).");
+            CloseDirectConnection(dc);
+            return;
+          }
+        }
+        else
+        {
+          NetLog_Direct("Error: Received unexpected reverse DC, closing.");
+          CloseDirectConnection(dc);
+          return; 
+        }
       }
       break;
 
-    case PEER_INIT:     /* connect packet */
+    case PEER_INIT:       /* connect packet */
 #ifdef _DEBUG
       NetLog_Direct("Received PEER_INIT");
 #endif
@@ -690,7 +744,6 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
         DWORD dwUin;
         DWORD dwPort;
         DWORD dwCookie;
-        icq_packet packet;
         HANDLE hContact;
 
         if (wLen != 0x30)
@@ -710,12 +763,11 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
         if (dwUin != dwLocalUIN)
         {
           NetLog_Direct("Error: Received PEER_INIT targeted to %u", dwUin);
-          Netlib_CloseHandle(dc->hConnection);
-          dc->hConnection = NULL;
+          CloseDirectConnection(dc);
           return;
         }
         
-        buf += 2;    /* 00 00 */
+        buf += 2;   /* 00 00 */
         unpackLEDWord(&buf, &dc->dwRemotePort);
         unpackLEDWord(&buf, &dc->dwRemoteUin);
         unpackDWord(&buf, &dc->dwRemoteExternalIP);
@@ -735,16 +787,14 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
         if (hContact == INVALID_HANDLE_VALUE)
         {
           NetLog_Direct("Error: Received PEER_INIT from %u not on my list", dwUin);
-          Netlib_CloseHandle(dc->hConnection);
-          dc->hConnection = NULL;
-          return;     /* don't allow direct connection with people not on my clist */
+          CloseDirectConnection(dc);
+          return;   /* don't allow direct connection with people not on my clist */
         }
 
         if (dwCookie != ICQGetContactSettingDword(hContact, "DirectCookie", 0))
         {
           NetLog_Direct("Error: Received PEER_INIT with broken cookie");
-          Netlib_CloseHandle(dc->hConnection);
-          dc->hConnection = NULL;
+          CloseDirectConnection(dc);
           return;
         }
 
@@ -774,7 +824,8 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
           }
           else if (dc->type == DIRECTCONN_STANDARD)
           { // send PEER_MSGINIT
-            directPacketInit(&packet, 33);
+            sendPeerMsgInit(dc, 0);
+/*            directPacketInit(&packet, 33);
             packByte(&packet, PEER_MSG_INIT);
             packLEDWord(&packet, 10);         // unknown
             packLEDWord(&packet, 1);          // message connection
@@ -782,29 +833,32 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
             packGUID(&packet, PSIG_MESSAGE);  // message type GUID
             packLEWord(&packet, 1);           // delimiter
             packLEWord(&packet, 4);
-            sendDirectPacket(dc->hConnection, &packet);
+            sendDirectPacket(dc->hConnection, &packet);*/
           }
-          else if(dc->type == DIRECTCONN_FILE)
+          else if (dc->type == DIRECTCONN_FILE)
           {
-            DBVARIANT dbv;
+            sendPeerFileInit(dc);
+/*            DBVARIANT dbv;
             char* szNick;
+            int nNickLen;
 
             dbv.type = DBVT_DELETED;
             if (ICQGetContactSetting(NULL, "Nick", &dbv))
               szNick = "";
             else
               szNick = dbv.pszVal;
+            nNickLen = strlennull(szNick);
 
-            directPacketInit(&packet, (WORD)(20 + strlennull(szNick)));
-            packByte(&packet, PEER_FILE_INIT);     /* packet type */
-            packLEDWord(&packet, 0);   /* unknown */
+            directPacketInit(&packet, (WORD)(20 + nNickLen));
+            packByte(&packet, PEER_FILE_INIT);  // packet type 
+            packLEDWord(&packet, 0);            // unknown 
             packLEDWord(&packet, dc->ft->dwFileCount);
             packLEDWord(&packet, dc->ft->dwTotalSize);
             packLEDWord(&packet, dc->ft->dwTransferSpeed);
-            packLEWord(&packet, (WORD)(strlennull(szNick) + 1));
-            packBuffer(&packet, szNick, (WORD)(strlennull(szNick) + 1));
+            packLEWord(&packet, (WORD)(nNickLen + 1));
+            packBuffer(&packet, szNick, (WORD)(nNickLen + 1));
             sendDirectPacket(dc->hConnection, &packet);
-            ICQFreeVariant(&dbv);
+            ICQFreeVariant(&dbv);*/
             dc->initialised = 1;
           }
         }
@@ -812,28 +866,25 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
       else
       {
         NetLog_Direct("Unsupported direct protocol: %d, closing connection", dc->wVersion);
-        Netlib_CloseHandle(dc->hConnection);
-        dc->hConnection = NULL;
+        CloseDirectConnection(dc);
       }
       break;
 
-    case PEER_MSG:    /* messaging packets */
+    case PEER_MSG:        /* messaging packets */
 #ifdef _DEBUG
       NetLog_Direct("Received PEER_MSG from %u", dc->dwRemoteUin);
 #endif
       handleDirectMessage(dc, buf + 1, (WORD)(wLen - 1));
       break;
 
-    case PEER_MSG_INIT:    /* init message connection */
+    case PEER_MSG_INIT:   /* init message connection */
       { // it is sent by both contains GUID of message channel
         DWORD q1,q2,q3,q4;
-        icq_packet packet;
 
         if (!gbDCMsgEnabled)
         { // DC messaging disabled, close connection
           NetLog_Direct("Messaging DC requested, denied");
-          Netlib_CloseHandle(dc->hConnection);
-          dc->hConnection = NULL;
+          CloseDirectConnection(dc);
           break;
         }
 
@@ -856,7 +907,7 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
         unpackDWord(&buf, &q3);
         unpackDWord(&buf, &q4);
         if (!CompareGUIDs(q1,q2,q3,q4,PSIG_MESSAGE))
-        { // This is not for normal messages, useless so kill. */
+        { // This is not for normal messages, useless so kill.
           if (CompareGUIDs(q1,q2,q3,q4,PSIG_STATUS_PLUGIN))
           {
             NetLog_Direct("Status Manager Plugin connections not supported, closing.");
@@ -869,15 +920,14 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
           {
             NetLog_Direct("Unknown connection type init, closing.");
           }
-
-          Netlib_CloseHandle(dc->hConnection);
-          dc->hConnection = NULL;
+          CloseDirectConnection(dc);
           break;
         }
 
         if (dc->incoming)
         { // reply with our PEER_MSG_INIT
-          directPacketInit(&packet, 33);
+          sendPeerMsgInit(dc, 1);
+/*          directPacketInit(&packet, 33);
           packByte(&packet, 3);
           packLEDWord(&packet, 10); // unknown
           packLEDWord(&packet, 1);  // message connection
@@ -888,18 +938,10 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
           packLEWord(&packet, 4);
           packDWord(&packet, 0);    // second part of Message GUID
           packDWord(&packet, 0);
-          sendDirectPacket(dc->hConnection, &packet);
+          sendDirectPacket(dc->hConnection, &packet);*/
         }
         else
         { // connection initialized, ready to send message packet
-          if (dc->packetToSend != NULL)
-          { // any packet to send
-            if (dc->packetToSend->pData[2] == 2)
-              EncryptDirectPacket(dc, dc->packetToSend);
-            sendDirectPacket(dc->hConnection, dc->packetToSend);
-            SAFE_FREE(&dc->packetToSend);
-            dc->packetToSend = NULL;
-          }
         }
         NetLog_Direct("Direct message session ready.");
         dc->initialised = 1;
@@ -1179,7 +1221,7 @@ static void sendPeerInit_v78(directconnect* dc)
   packLEDWord(&packet, dwLocalUIN);          // Our UIN
   packDWord(&packet, dwLocalExternalIP);     // Our external IP
   packDWord(&packet, dwLocalInternalIP);     // Our internal IP
-  packByte(&packet, DC_TYPE);                 // TCP connection flags
+  packByte(&packet, DC_TYPE);                // TCP connection flags
   packLEDWord(&packet, wListenPort);         // Our port
   packLEDWord(&packet, dc->dwConnCookie);    // DC cookie
   packLEDWord(&packet, WEBFRONTPORT);        // Unknown
@@ -1211,4 +1253,73 @@ static void sendPeerInitAck(directconnect* dc)
 #ifdef _DEBUG
   NetLog_Direct("Sent PEER_INIT_ACK to %u on %s DC", dc->dwRemoteUin, dc->incoming?"incoming":"outgoing");
 #endif
+}
+
+
+
+// Sends a PEER_MSG_INIT packet through a DC
+// -----------------------------------------------------------------------
+// This packet starts message session.
+static void sendPeerMsgInit(directconnect* dc, DWORD dwSeq)
+{
+  icq_packet packet;
+
+  directPacketInit(&packet, 33);
+  packByte(&packet, PEER_MSG_INIT);
+  packLEDWord(&packet, 10);           // unknown
+  packLEDWord(&packet, 1);            // message connection
+  packLEDWord(&packet, dwSeq);        // sequence is 0,1
+  if (!dwSeq)
+  {
+    packGUID(&packet, PSIG_MESSAGE);  // message type GUID
+    packLEWord(&packet, 1);           // delimiter
+    packLEWord(&packet, 4);
+  }
+  else
+  {
+    packDWord(&packet, 0);            // first part of Message GUID
+    packDWord(&packet, 0);
+    packLEWord(&packet, 1);           // delimiter
+    packLEWord(&packet, 4);
+    packDWord(&packet, 0);            // second part of Message GUID
+    packDWord(&packet, 0);
+  }
+  sendDirectPacket(dc->hConnection, &packet);
+#ifdef _DEBUG
+  NetLog_Direct("Sent PEER_MSG_INIT to %u on %s DC", dc->dwRemoteUin, dc->incoming?"incoming":"outgoing");
+#endif
+}
+
+
+
+// Sends a PEER_FILE_INIT packet through a DC
+// -----------------------------------------------------------------------
+// This packet configures file-transfer session.
+static void sendPeerFileInit(directconnect* dc)
+{
+  icq_packet packet;
+  DBVARIANT dbv;
+  char* szNick;
+  int nNickLen;
+
+  dbv.type = DBVT_DELETED;
+  if (ICQGetContactSetting(NULL, "Nick", &dbv))
+    szNick = "";
+  else
+    szNick = dbv.pszVal;
+  nNickLen = strlennull(szNick);
+
+  directPacketInit(&packet, (WORD)(20 + nNickLen));
+  packByte(&packet, PEER_FILE_INIT);  /* packet type */
+  packLEDWord(&packet, 0);            /* unknown */
+  packLEDWord(&packet, dc->ft->dwFileCount);
+  packLEDWord(&packet, dc->ft->dwTotalSize);
+  packLEDWord(&packet, dc->ft->dwTransferSpeed);
+  packLEWord(&packet, (WORD)(nNickLen + 1));
+  packBuffer(&packet, szNick, (WORD)(nNickLen + 1));
+  sendDirectPacket(dc->hConnection, &packet);
+#ifdef _DEBUG
+  NetLog_Direct("Sent PEER_FILE_INIT to %u on %s DC", dc->dwRemoteUin, dc->incoming?"incoming":"outgoing");
+#endif
+  ICQFreeVariant(&dbv);
 }

@@ -109,9 +109,9 @@ static void file_sendNextFile(directconnect* dc)
 
   if (dc->ft->iCurrentFile >= (int)dc->ft->dwFileCount)
   {
-    Netlib_CloseHandle(dc->hConnection);
-    dc->hConnection = dc->ft->hConnection = NULL;
     ICQBroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, dc->ft, 0);
+    CloseDirectConnection(dc);
+    dc->ft->hConnection = NULL;
     return;
   }
 
@@ -119,8 +119,8 @@ static void file_sendNextFile(directconnect* dc)
   if (_stat(dc->ft->szThisFile, &statbuf))
   {
     icq_LogMessage(LOG_ERROR, Translate("Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it."));
-    Netlib_CloseHandle(dc->hConnection);
-    dc->hConnection = dc->ft->hConnection = NULL;
+    CloseDirectConnection(dc);
+    dc->ft->hConnection = NULL;
     return;
   }
 
@@ -174,8 +174,8 @@ static void file_sendNextFile(directconnect* dc)
     if (dc->ft->fileId == -1)
     {
       icq_LogMessage(LOG_ERROR, Translate("Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it."));
-      Netlib_CloseHandle(dc->hConnection);
-      dc->hConnection = dc->ft->hConnection = NULL;
+      CloseDirectConnection(dc);
+      dc->ft->hConnection = NULL;
       return;
     }
 
@@ -366,8 +366,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
         if (dc->ft == NULL)
         {
           NetLog_Direct("Unexpected file receive");
-          Netlib_CloseHandle(dc->hConnection);
-          dc->hConnection = NULL;
+          CloseDirectConnection(dc);
           return;
         }
         dc->ft->dwFileCount = dwFileCount;
@@ -477,8 +476,8 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
           if (dc->ft->fileId == -1)
           {
             icq_LogMessage(LOG_ERROR, Translate("Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder."));
-            Netlib_CloseHandle(dc->hConnection);
-            dc->hConnection = dc->ft->hConnection = NULL;
+            CloseDirectConnection(dc);
+            dc->ft->hConnection = NULL;
             break;
           }
         }

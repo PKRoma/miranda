@@ -1571,15 +1571,13 @@ void icq_sendYouWereAddedServ(DWORD dwUin, DWORD dwMyUin)
   dwID2 = RandRange(0, 0x00FF);
 
   packServMsgSendHeader(&packet, 0, dwID1, dwID2, dwUin, NULL, 0x0004, 17);
-  packWord(&packet, 0x0005);    // TLV(5)
+  packWord(&packet, 0x0005);      // TLV(5)
   packWord(&packet, 0x0009);
   packLEDWord(&packet, dwMyUin);
   packByte(&packet, MTYPE_ADDED);
-  packByte(&packet, 0);      // msg-flags
-/*  packLEWord(&packet, 0x0001);  // len of NTS
-  packByte(&packet, 0);      // NTS*/
-  packEmptyMsg(&packet);
-  packDWord(&packet, 0x00060000);  // TLV(6)
+  packByte(&packet, 0);           // msg-flags
+  packEmptyMsg(&packet);          // NTS
+  packDWord(&packet, 0x00060000); // TLV(6)
 
   sendServPacket(&packet);
 }
@@ -1635,6 +1633,45 @@ void icq_sendXtrazResponseServ(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCoo
   packLEDWord(&packet, nBodyLen + 4);
   packLEDWord(&packet, nBodyLen);
   packBuffer(&packet, szBody, (WORD)nBodyLen);
+
+  // Send the monster
+  sendServPacket(&packet);
+}
+
+
+
+void icq_sendReverseReq(DWORD dwUin, DWORD dwCookie, DWORD dwRemotePort)
+{
+  icq_packet packet;
+  DWORD dwID1;
+  DWORD dwID2;
+
+  dwID1 = time(NULL);
+  dwID2 = RandRange(0, 0x00FF);
+
+  packServMsgSendHeader(&packet, dwCookie, dwID1, dwID2, dwUin, NULL, 2, 0x47);
+
+  // TLV(5) header
+  packWord(&packet, 0x05);              // Type
+  packWord(&packet, 0x43);              // Len
+  // TLV(5) data
+  packWord(&packet, 0);                 // Command
+  packLEDWord(&packet, dwID1);          // msgid1
+  packLEDWord(&packet, dwID2);          // msgid2
+  packGUID(&packet, MCAP_REVERSE_REQ);  // capabilities (4 dwords)
+  packDWord(&packet, 0x000A0002);       // TLV: 0x0A Acktype: 1 for normal, 2 for ack
+  packWord(&packet, 1);
+  packDWord(&packet, 0x000F0000);       // TLV: 0x0F empty
+  packDWord(&packet, 0x2711001B);       // TLV: 0x2711 Content
+  // TLV(0x2711) data
+  packLEDWord(&packet, dwLocalUIN);     // Our UIN
+  packDWord(&packet, dwLocalExternalIP);// IP to connect to
+  packLEDWord(&packet, wListenPort);    // Port to connect to
+  packByte(&packet, DC_TYPE);           // generic DC type
+  packDWord(&packet, dwRemotePort);     // unknown
+  packDWord(&packet, wListenPort);      // port again ?
+  packLEWord(&packet, ICQ_VERSION);     // DC Version
+  packLEDWord(&packet, dwCookie);       // Req Cookie
 
   // Send the monster
   sendServPacket(&packet);

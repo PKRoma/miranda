@@ -211,7 +211,7 @@
 
 
 /* Channels */
-#define  ICQ_LOGIN_CHAN             0x01
+#define ICQ_LOGIN_CHAN              0x01
 #define ICQ_DATA_CHAN               0x02
 #define ICQ_ERROR_CHAN              0x03
 #define ICQ_CLOSE_CHAN              0x04
@@ -318,7 +318,7 @@
 #define ICQ_LISTS_UPDATEGROUP       0x0009
 #define ICQ_LISTS_REMOVEFROMLIST    0x000A
 #define ICQ_LISTS_ACK               0x000E
-#define SRV_SSI_UPTODATE            0x000F
+#define ICQ_LISTS_UPTODATE          0x000F
 #define ICQ_LISTS_CLI_MODIFYSTART   0x0011
 #define ICQ_LISTS_CLI_MODIFYEND     0x0012
 #define ICQ_LISTS_GRANTAUTH         0x0014
@@ -496,7 +496,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030605
+#define ICQ_PLUG_VERSION            0x80030606
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32
@@ -504,7 +504,7 @@
 #define MAX_MESSAGESNACSIZE         8000
 #define CLIENTRATELIMIT             0
 #define UPDATE_THRESHOLD            1209600 // Two weeks
-#define COOKIE_TIMEOUT              3600 // One hour
+#define COOKIE_TIMEOUT              3600    // One hour
 #define WEBFRONTPORT                0x50
 #define CLIENTFEATURES              0x3
 #define URL_FORGOT_PASSWORD         "https://www.icq.com/password/"
