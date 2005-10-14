@@ -112,6 +112,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
   pluginLink = link;
 
+  gbUnicodeAPI = (GetVersion() & 0x80000000) == 0;
+
   srand(time(NULL));
   _tzset();
 

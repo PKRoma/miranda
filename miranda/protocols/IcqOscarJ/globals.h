@@ -67,4 +67,6 @@ DWORD dwLocalUIN;
 char gpszPassword[16];
 BYTE gbRememberPwd;
 
+BYTE gbUnicodeAPI;
+
 #endif /* __GLOBALS_H */

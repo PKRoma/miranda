@@ -276,7 +276,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam
       }
       break;
   }
-  return CallWindowProc(OldMessageEditProc,hwnd,msg,wParam,lParam);
+  if (gbUnicodeAPI)
+    return CallWindowProcW(OldMessageEditProc,hwnd,msg,wParam,lParam);
+  else
+    return CallWindowProcA(OldMessageEditProc,hwnd,msg,wParam,lParam);
 }
 
 
@@ -300,8 +303,16 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
       dat->bXStatus = (BYTE)lParam;
       SendDlgItemMessage(hwndDlg, IDC_XTITLE, EM_LIMITTEXT, 256, 0);
       SendDlgItemMessage(hwndDlg, IDC_XMSG, EM_LIMITTEXT, 1024, 0);
-      OldMessageEditProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
-      OldMessageEditProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
+      if (gbUnicodeAPI)
+      {
+        OldMessageEditProc = (WNDPROC)SetWindowLongW(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
+        OldMessageEditProc = (WNDPROC)SetWindowLongW(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
+      }
+      else
+      {
+        OldMessageEditProc = (WNDPROC)SetWindowLongA(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
+        OldMessageEditProc = (WNDPROC)SetWindowLongA(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
+      }
       {  
         char str[256], format[128];
         GetWindowText(hwndDlg, format, sizeof(format));
@@ -310,21 +321,18 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
       }
       GetDlgItemText(hwndDlg,IDOK,dat->okButtonFormat,sizeof(dat->okButtonFormat));
       {  
-        DBVARIANT dbv;
         char szSetting[64];
+        char* szValue;
 
         sprintf(szSetting, "XStatus%dName", dat->bXStatus);
-        if (!ICQGetContactSetting(NULL, szSetting, &dbv))
-        {
-          SetDlgItemText(hwndDlg,IDC_XTITLE,dbv.pszVal);
-          ICQFreeVariant(&dbv);
-        }
+        szValue = ICQGetContactSettingUtf(NULL, szSetting, "");
+        SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szValue);
+        SAFE_FREE(&szValue);
+
         sprintf(szSetting, "XStatus%dMsg", dat->bXStatus);
-        if (!ICQGetContactSetting(NULL, szSetting, &dbv))
-        {
-          SetDlgItemText(hwndDlg,IDC_XMSG,dbv.pszVal);
-          ICQFreeVariant(&dbv);
-        }
+        szValue = ICQGetContactSettingUtf(NULL, szSetting, "");
+        SetDlgItemTextUtf(hwndDlg, IDC_XMSG, szValue);
+        SAFE_FREE(&szValue);
       }
       dat->countdown=5;
       SendMessage(hwndDlg, WM_TIMER, 0, 0);
@@ -362,22 +370,32 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 
     case WM_DESTROY:
       {
-        char str[1025];
         char szSetting[64];
+        char* szValue;
 
-        GetDlgItemText(hwndDlg,IDC_XMSG,str,sizeof(str));
+        szValue = GetDlgItemTextUtf(hwndDlg,IDC_XMSG);
         sprintf(szSetting, "XStatus%dMsg", dat->bXStatus);
-        ICQWriteContactSettingString(NULL, szSetting, str);
-        ICQWriteContactSettingString(NULL, "XStatusMsg", str);
-        GetDlgItemText(hwndDlg,IDC_XTITLE,str,sizeof(str));
+        ICQWriteContactSettingUtf(NULL, szSetting, szValue);
+        ICQWriteContactSettingUtf(NULL, "XStatusMsg", szValue);
+        SAFE_FREE(&szValue);
+        szValue = GetDlgItemTextUtf(hwndDlg,IDC_XTITLE);
         sprintf(szSetting, "XStatus%dName", dat->bXStatus);
-        ICQWriteContactSettingString(NULL, szSetting, str);
-        ICQWriteContactSettingString(NULL, "XStatusName", str);
+        ICQWriteContactSettingUtf(NULL, szSetting, szValue);
+        ICQWriteContactSettingUtf(NULL, "XStatusName", szValue);
+        SAFE_FREE(&szValue);
 
         setUserInfo();
       }
-      SetWindowLong(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)OldMessageEditProc);
-      SetWindowLong(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)OldMessageEditProc);
+      if (gbUnicodeAPI)
+      {
+        SetWindowLongW(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)OldMessageEditProc);
+        SetWindowLongW(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)OldMessageEditProc);
+      }
+      else
+      {
+        SetWindowLongA(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)OldMessageEditProc);
+        SetWindowLongA(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)OldMessageEditProc);
+      }
       SAFE_FREE(&dat);
       break;
   }
@@ -405,25 +423,19 @@ static void setXStatus(BYTE bXStatus)
 
   if (bXStatus)
   {
-    DBVARIANT dbv;
     char szSetting[64];
+    char* szUtf;
 
     sprintf(szSetting, "XStatus%dName", bXStatus);
-    if (!ICQGetContactSetting(NULL, szSetting, &dbv))
-    {
-      ICQWriteContactSettingString(NULL, "XStatusName", dbv.pszVal);
-      ICQFreeVariant(&dbv);
-    }
-    else 
-      ICQWriteContactSettingString(NULL, "XStatusName", Translate(nameXStatus[bXStatus-1]));
+    szUtf = ICQGetContactSettingUtf(NULL, szSetting, Translate(nameXStatus[bXStatus-1]));
+    ICQWriteContactSettingUtf(NULL, "XStatusName", szUtf);
+    SAFE_FREE(&szUtf);
+
     sprintf(szSetting, "XStatus%dMsg", bXStatus);
-    if (!ICQGetContactSetting(NULL, szSetting, &dbv))
-    {
-      ICQWriteContactSettingString(NULL, "XStatusMsg", dbv.pszVal);
-      ICQFreeVariant(&dbv);
-    }
-    else 
-      ICQDeleteContactSetting(NULL, "XStatusMsg");
+    szUtf = ICQGetContactSettingUtf(NULL, szSetting, "");
+    ICQWriteContactSettingUtf(NULL, "XStatusMsg", szUtf);
+    SAFE_FREE(&szUtf);
+
     sprintf(szSetting, "XStatus%dStat", bXStatus);
     if (!ICQGetContactSettingByte(NULL, szSetting, 0))
       CreateDialogParam(hInst,MAKEINTRESOURCE(IDD_SETXSTATUS),NULL,SetXStatusDlgProc,(LPARAM)bXStatus);

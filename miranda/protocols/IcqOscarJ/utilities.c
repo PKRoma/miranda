@@ -1527,3 +1527,60 @@ char* GetUserPassword(BOOL bAlways)
 
   return NULL;
 }
+
+
+
+
+char* GetDlgItemTextUtf(HWND hwndDlg, int iItem)
+{
+  HWND hItem = GetDlgItem(hwndDlg, iItem);
+
+  if (gbUnicodeAPI)
+  {
+    wchar_t* usText;
+    int nLen = GetWindowTextLengthW(hItem);
+
+    usText = (wchar_t*)_alloca((nLen+2)*sizeof(wchar_t));
+    GetWindowTextW(hItem, usText, nLen + 1);
+    return make_utf8_string(usText);
+  }
+  else
+  {
+    char* szAnsi;
+    char* szUtf;
+    int nLen = GetWindowTextLengthA(hItem);
+
+    szAnsi = (char*)_alloca(nLen+2);
+    GetWindowTextA(hItem, szAnsi, nLen + 1);
+    if (strlennull(szAnsi))
+    {
+      utf8_encode(szAnsi, &szUtf);
+      return szUtf;
+    }
+    else
+      return strdup("");
+  }
+}
+
+
+
+void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const char* szText)
+{
+  if (gbUnicodeAPI)
+  {
+    wchar_t* usText = make_unicode_string(szText);
+
+    SetDlgItemTextW(hwndDlg, iItem, usText);
+    SAFE_FREE(&usText);
+  }
+  else
+  {
+    char* szAnsi;
+
+    if (utf8_decode(szText, &szAnsi))
+    {
+      SetDlgItemTextA(hwndDlg, iItem, szAnsi);
+      SAFE_FREE(&szAnsi);
+    }
+  }
+}

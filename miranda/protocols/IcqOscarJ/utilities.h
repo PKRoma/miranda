@@ -135,4 +135,8 @@ int __fastcall ICQTranslateDialog(HWND hwndDlg);
 char* GetUserPassword(BOOL bAlways);
 
 
+char* GetDlgItemTextUtf(HWND hwndDlg, int iItem);
+void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const char* szText);
+
+
 #endif /* __UTILITIES_H */
