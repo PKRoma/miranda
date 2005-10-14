@@ -95,7 +95,7 @@ void UninitDirectConns(void)
 {
   int i;
   
-
+/*
   EnterCriticalSection(&directConnListMutex);
 
   for (i = 0; i < directConnCount; i++)
@@ -109,6 +109,8 @@ void UninitDirectConns(void)
   }
 
   LeaveCriticalSection(&directConnListMutex);
+*/
+  CloseContactDirectConns(NULL);
 
   for(;;)
   {
@@ -140,7 +142,7 @@ void CloseContactDirectConns(HANDLE hContact)
 
   for (i = 0; i < directConnCount; i++)
   {
-    if (directConnList[i] && directConnList[i]->hContact == hContact)
+    if (directConnList[i] && (!hContact || directConnList[i]->hContact == hContact))
     {
       HANDLE hConnection = directConnList[i]->hConnection;
       int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)hConnection, 0);
@@ -695,6 +697,7 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 
         if (FindCookie(dc->dwReqId, &dwCookieUin, &pCookie) && pCookie)
         { // valid reverse DC, check and init session
+          FreeCookie(dc->dwReqId);
           if (pCookie->dwUin == dc->dwRemoteUin)
           { // valid connection
             dc->type = pCookie->type;
@@ -709,10 +712,12 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
               sendPeerFileInit(dc);
               dc->initialised = 1;
             }
+            SAFE_FREE(&pCookie);
             break;
           }
           else
           {
+            SAFE_FREE(&pCookie);
             NetLog_Direct("Error: Invalid connection (UINs does not match).");
             CloseDirectConnection(dc);
             return;

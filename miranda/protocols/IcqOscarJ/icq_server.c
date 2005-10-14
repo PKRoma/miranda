@@ -173,6 +173,9 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   {
     SetCurrentStatus(ID_STATUS_OFFLINE);
   }
+  
+  // Close all open DC connections
+  CloseContactDirectConns(NULL);
 
   // Offline all contacts
   {
