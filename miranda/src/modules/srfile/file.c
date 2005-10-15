@@ -113,7 +113,7 @@ int SRFile_GetRegValue(HKEY hKeyBase,const char *szSubKey,const char *szValue,ch
 	return 1;
 }
 
-void GetSensiblyFormattedSize(DWORD size,char *szOut,int cchOut,int unitsOverride,int appendUnits,int *unitsUsed)
+void GetSensiblyFormattedSize(DWORD size,TCHAR *szOut,int cchOut,int unitsOverride,int appendUnits,int *unitsUsed)
 {
 	if(!unitsOverride) {
 		if(size<1000) unitsOverride=UNITS_BYTES;
@@ -123,10 +123,10 @@ void GetSensiblyFormattedSize(DWORD size,char *szOut,int cchOut,int unitsOverrid
 	}
 	if(unitsUsed) *unitsUsed=unitsOverride;
 	switch(unitsOverride) {
-		case UNITS_BYTES: mir_snprintf(szOut,cchOut,"%u%s%s",size,appendUnits?" ":"",appendUnits?Translate("bytes"):""); break;
-		case UNITS_KBPOINT1: mir_snprintf(szOut,cchOut,"%.1lf%s",size/1024.0,appendUnits?" KB":""); break;
-		case UNITS_KBPOINT0: mir_snprintf(szOut,cchOut,"%u%s",size/1024,appendUnits?" KB":""); break;
-		default: mir_snprintf(szOut,cchOut,"%.2lf%s",size/1048576.0,appendUnits?" MB":""); break;
+		case UNITS_BYTES: mir_sntprintf(szOut,cchOut,_T("%u%s%s"),size,appendUnits?_T(" "):_T(""),appendUnits?TranslateT("bytes"):_T("")); break;
+		case UNITS_KBPOINT1: mir_sntprintf(szOut,cchOut,_T("%.1lf%s"),size/1024.0,appendUnits?_T(" KB"):_T("")); break;
+		case UNITS_KBPOINT0: mir_sntprintf(szOut,cchOut,_T("%u%s"),size/1024,appendUnits?_T(" KB"):_T("")); break;
+		default: mir_sntprintf(szOut,cchOut,_T("%.2lf%s"),size/1048576.0,appendUnits?_T(" MB"):_T("")); break;
 	}
 }
 

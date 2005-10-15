@@ -222,14 +222,11 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 		if(failures) {
 			//infuriatingly vague error message. fixme.
 			if(dat->searchCount==0) {
-				//MessageBoxA(hwndDlg,Translate("None of the messaging protocols were able to initiate the search. Please correct the fault and try again."),Translate("Search"),MB_OK);
 				forkthread(BeginSearchFailed,0,NULL);
 				free(dat->search);
 				dat->search=NULL;
 				return 1;
-			}
-			//MessageBoxA(hwndDlg,Translate("One or more of the messaging protocols failed to initiate the search, however some were successful. Please correct the fault if you wish to search using the other protocols."),Translate("Search"),MB_OK);
-		}
+		}	}
 	}
 	else {
 		dat->search=(struct ProtoSearchInfo*)malloc(sizeof(struct ProtoSearchInfo));
@@ -238,7 +235,6 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 		dat->search[0].szProto=szProto;
 		if(dat->search[0].hProcess==NULL) {
 			//infuriatingly vague error message. fixme.
-			//MessageBoxA(hwndDlg,Translate("The messaging protocol reported an error initiating the search. Please correct the fault and try again."),Translate("Search"),MB_OK);
 			forkthread(BeginSearchFailed,0,(void*)_strdup(szProto));
 			free(dat->search);
 			dat->search=NULL;
@@ -251,21 +247,29 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 
 void SetStatusBarSearchInfo(HWND hwndStatus,struct FindAddDlgData *dat)
 {
-	if(dat->searchCount==0)
-		SendMessageA(hwndStatus,SB_SETTEXTA,0,(LPARAM)Translate("Idle"));
-	else {
-		char str[256],szProtoName[64];
+	TCHAR str[256];
+
+	if (dat->searchCount != 0 ) {
+		char szProtoName[64];
 		int i;
 
-		lstrcpyA(str,Translate("Searching"));
-		for(i=0;i<dat->searchCount;i++) {
-			lstrcatA(str,i?",":" ");
+		lstrcpy( str, TranslateT("Searching"));
+		for( i=0; i <dat->searchCount; i++ ) {
+			lstrcat(str, i ? _T(",") : _T( " " ));
 			CallProtoService(dat->search[i].szProto,PS_GETNAME,sizeof(szProtoName),(LPARAM)szProtoName);
-			lstrcatA(str,szProtoName);
-		}
-		SendMessageA(hwndStatus,SB_SETTEXTA,0,(LPARAM)str);
-	}
-}
+			#if !defined( _UNICODE )
+				lstrcatA( str, szProtoName );
+			#else
+				{	TCHAR wszProtoName[50];
+					MultiByteToWideChar( CP_ACP, 0, szProtoName, -1, wszProtoName, sizeof(wszProtoName));
+					lstrcat(str, wszProtoName);
+				}
+			#endif
+	}	}
+	else lstrcpy(str, TranslateT("Idle"));
+		
+	SendMessage( hwndStatus, SB_SETTEXT, 0, (LPARAM)str );
+}	
 
 struct ProtoResultsSummary {
 	const char *szProto;

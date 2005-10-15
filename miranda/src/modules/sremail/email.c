@@ -40,7 +40,7 @@ static int SendEMailCommand(WPARAM wParam,LPARAM lParam)
 	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
 	if(szProto==NULL || DBGetContactSetting((HANDLE)wParam,szProto,"e-mail",&dbv)) {
 		if(DBGetContactSetting((HANDLE)wParam,"UserInfo","Mye-mail0",&dbv)) {
-			MessageBoxA((HWND)lParam,Translate("User has not registered an e-mail address"),Translate("Send e-mail"),MB_OK);
+			MessageBox((HWND)lParam,TranslateT("User has not registered an e-mail address"),TranslateT("Send e-mail"),MB_OK);
 			return 1;
 		}
 	}

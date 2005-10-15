@@ -29,7 +29,7 @@ static void SetFileListAndSizeControls(HWND hwndDlg,struct FileDlgData *dat)
 {
 	int fileCount=0,dirCount=0,totalSize=0,i;
 	struct _stat statbuf;
-	char str[64];
+	TCHAR str[64];
 
 	for(i=0;dat->files[i];i++) {
 		if(_stat(dat->files[i],&statbuf)==0) {
@@ -38,23 +38,23 @@ static void SetFileListAndSizeControls(HWND hwndDlg,struct FileDlgData *dat)
 			totalSize+=statbuf.st_size;
 		}
 	}
-	GetSensiblyFormattedSize(totalSize,str,sizeof(str),0,1,NULL);
-	SetDlgItemTextA(hwndDlg,IDC_TOTALSIZE,str);
+	GetSensiblyFormattedSize(totalSize,str,SIZEOF(str),0,1,NULL);
+	SetDlgItemText(hwndDlg,IDC_TOTALSIZE,str);
 	if(i>1) {
-		char szFormat[32];
+		TCHAR szFormat[32];
 		if(fileCount && dirCount) {
-			wsprintfA(szFormat,"%s, %s",Translate(fileCount==1?"%d file":"%d files"),Translate(dirCount==1?"%d directory":"%d directories"));
-			wsprintfA(str,szFormat,fileCount,dirCount);
+			mir_sntprintf(szFormat,SIZEOF(szFormat),_T("%s, %s"),TranslateTS(fileCount==1?_T("%d file"):_T("%d files")),TranslateTS(dirCount==1?_T("%d directory"):_T("%d directories")));
+			mir_sntprintf(str,SIZEOF(str),szFormat,fileCount,dirCount);
 		}
 		else if(fileCount) {
-			lstrcpyA(szFormat,Translate("%d files"));
-			wsprintfA(str,szFormat,fileCount);
+			lstrcpy(szFormat,TranslateT("%d files"));
+			mir_sntprintf(str,SIZEOF(str),szFormat,fileCount);
 		}
 		else {
-			lstrcpyA(szFormat,Translate("%d directories"));
-			wsprintfA(str,szFormat,dirCount);
+			lstrcpy(szFormat,TranslateT("%d directories"));
+			mir_sntprintf(str,SIZEOF(str),szFormat,dirCount);
 		}
-		SetDlgItemTextA(hwndDlg,IDC_FILE,str);
+		SetDlgItemText(hwndDlg,IDC_FILE,str);
 	}
 	else SetDlgItemTextA(hwndDlg,IDC_FILE,dat->files[0]);
 }

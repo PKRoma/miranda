@@ -484,13 +484,11 @@ static BOOL CALLBACK NotesDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 int DetailsInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
-	char *szProto;
 
 	if ((HANDLE)lParam == NULL)
 		return 0;
 
-	szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
-	if (szProto == NULL)
+	if ( CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0) == 0 )
 		return 0;
 
 	odp.cbSize=sizeof(odp);

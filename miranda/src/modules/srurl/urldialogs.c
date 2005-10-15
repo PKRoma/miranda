@@ -51,9 +51,9 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			{
 				DBEVENTINFO dbei;
-				char *contactName;
-				char str[128];
 				DBTIMETOSTRING dbtts;
+				TCHAR* contactName;
+				TCHAR  msg[128];
 
 				ZeroMemory(&dbei,sizeof(dbei));
 				dbei.cbSize=sizeof(dbei);
@@ -66,17 +66,18 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 				CallService(MS_DB_EVENT_MARKREAD,(WPARAM)dat->hContact,(LPARAM)dat->hDbEvent);
 
-				contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-				mir_snprintf(str,sizeof(str),Translate("URL from %s"),contactName);
-				SetWindowTextA(hwndDlg,str);
-				SetDlgItemTextA(hwndDlg,IDC_FROM,contactName);
+				contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR);
+				mir_sntprintf(msg,SIZEOF(msg),TranslateT("URL from %s"),contactName);
+				SetWindowText(hwndDlg,msg);
+				SetDlgItemText(hwndDlg,IDC_FROM,contactName);
 				SendDlgItemMessage(hwndDlg,IDOK,BUTTONSETARROW,1,0);
-				dbtts.szDest=str;
-				dbtts.cbDest=sizeof(str);
-				dbtts.szFormat="t d";
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRING,dbei.timestamp,(LPARAM)&dbtts);
-				SetDlgItemTextA(hwndDlg,IDC_DATE,str);
-			}
+				{	char str[128];
+					dbtts.szDest=str;
+					dbtts.cbDest=sizeof(str);
+					dbtts.szFormat="t d";
+					CallService(MS_DB_TIME_TIMESTAMPTOSTRING,dbei.timestamp,(LPARAM)&dbtts);
+					SetDlgItemTextA(hwndDlg,IDC_DATE,str);
+			}	}
 
 			// From message dlg
 			if (!DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0))
@@ -536,7 +537,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (wParam==0)
 			{//ICQ sendurl timed out
 				KillTimer(hwndDlg,0);
-				MessageBoxA(hwndDlg,Translate("Send timed out"),"",MB_OK);
+				MessageBox(hwndDlg,TranslateT("Send timed out"),_T(""),MB_OK);
 				EnableWindow(GetDlgItem(hwndDlg,IDOK),TRUE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_URLS),TRUE);
 				SendDlgItemMessage(hwndDlg,IDC_MESSAGE,EM_SETREADONLY,FALSE,0);

@@ -245,6 +245,17 @@ static void CheckSearchTypeRadioButton(HWND hwndDlg,int idControl)
 		CheckDlgButton(hwndDlg,controls[i],idControl==controls[i]?BST_CHECKED:BST_UNCHECKED);
 }
 
+static TCHAR sttErrMsg[] = _T( "You haven't filled in the search field. Please enter a search term and try again.");
+static TCHAR sttErrTitle[] = _T( "Search" );
+
+static void SetListItemText( HWND hwndDlg, int idx, int col, char* szText )
+{
+	if ( lstrlenA( szText ))
+		ListView_SetItemTextA( GetDlgItem(hwndDlg,IDC_RESULTS), idx, col, szText );
+	else
+		ListView_SetItemText( GetDlgItem(hwndDlg,IDC_RESULTS), idx, col, TranslateT("<not specified>"));
+}
+
 static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct FindAddDlgData *dat;
@@ -453,7 +464,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					char *szUniqueId;
 					szUniqueId=(char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0);
 					if(szUniqueId) SetDlgItemTextA(hwndDlg,IDC_BYPROTOID,szUniqueId);
-					else SetDlgItemTextA(hwndDlg,IDC_BYPROTOID,Translate("Handle"));
+					else SetDlgItemText(hwndDlg,IDC_BYPROTOID,TranslateT("Handle"));
 					if(protoCaps&PF1_NUMERICUSERID) SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE)|ES_NUMBER);
 					else SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE)&~ES_NUMBER);
 				}
@@ -594,7 +605,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 					HideAdvancedSearchDlg(hwndDlg,dat);
 					if(dat->searchCount) {	 //cancel search
-						SetDlgItemTextA(hwndDlg,IDOK,Translate("&Search"));
+						SetDlgItemText(hwndDlg,IDOK,TranslateT("&Search"));
 						if(dat->hResultHook) {UnhookEvent(dat->hResultHook); dat->hResultHook=NULL;}
 						if(dat->search) {free(dat->search); dat->search=NULL;}
 						dat->searchCount=0;
@@ -611,7 +622,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						GetDlgItemTextA(hwndDlg,IDC_PROTOID,str,sizeof(str));
 						FindAddTrimR(str);
 						if(str[0]==0)
-							MessageBoxA(hwndDlg,Translate("You haven't filled in the search field. Please enter a search term and try again."),Translate("Search"),MB_OK);
+							MessageBox(hwndDlg,sttErrMsg,sttErrTitle,MB_OK);
 						else
 							BeginSearch(hwndDlg,dat,szProto,PS_BASICSEARCH,PF1_BASICSEARCH,str);
 					}
@@ -620,7 +631,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						GetDlgItemTextA(hwndDlg,IDC_EMAIL,str,sizeof(str));
 						FindAddTrimR(str);
 						if(str[0]==0)
-							MessageBoxA(hwndDlg,Translate("You haven't filled in the search field. Please enter a search term and try again."),Translate("Search"),MB_OK);
+							MessageBox(hwndDlg,sttErrMsg,sttErrTitle,MB_OK);
 						else
 							BeginSearch(hwndDlg,dat,szProto,PS_SEARCHBYEMAIL,PF1_SEARCHBYEMAIL,str);
 					}
@@ -634,13 +645,13 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						psbn.pszLastName=last;
 						psbn.pszNick=nick;
 						if(nick[0]==0 && first[0]==0 && last[0]==0)
-							MessageBoxA(hwndDlg,Translate("You haven't filled in the search field. Please enter a search term and try again."),Translate("Search"),MB_OK);
+							MessageBox(hwndDlg,sttErrMsg,sttErrTitle,MB_OK);
 						else
 							BeginSearch(hwndDlg,dat,szProto,PS_SEARCHBYNAME,PF1_SEARCHBYNAME,&psbn);
 					}
 					else if(IsDlgButtonChecked(hwndDlg,IDC_BYADVANCED)) {
 						if(dat->hwndAdvSearch==NULL)
-							MessageBoxA(hwndDlg,Translate("You haven't filled in the search field. Please enter a search term and try again."),Translate("Search"),MB_OK);
+							MessageBox(hwndDlg,sttErrMsg,sttErrTitle,MB_OK);
 						else
 							BeginSearch(hwndDlg,dat,szProto,PS_SEARCHBYADVANCED,PF1_EXTSEARCHUI,dat->hwndAdvSearch);
 					}
@@ -657,7 +668,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					SetStatusBarSearchInfo(GetDlgItem(hwndDlg,IDC_STATUSBAR),dat);
 					SetStatusBarResultInfo(hwndDlg,dat);
 					StartThrobber(hwndDlg,dat);
-					SetDlgItemTextA(hwndDlg,IDOK,Translate("Cancel"));
+					SetDlgItemText(hwndDlg, IDOK, TranslateT("Cancel"));
 					break;
 				}
 				case IDC_ADD:
@@ -719,7 +730,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					dat->search=NULL;
 					UnhookEvent(dat->hResultHook);
 					dat->hResultHook=NULL;
-					SetDlgItemTextA(hwndDlg,IDOK,Translate("&Search"));
+					SetDlgItemText(hwndDlg, IDOK, TranslateT("&Search"));
 					StopThrobber(hwndDlg,dat);
 				}
 				SetStatusBarSearchInfo(GetDlgItem(hwndDlg,IDC_STATUSBAR),dat);
@@ -753,10 +764,10 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				}
 				i=ListView_InsertItem(GetDlgItem(hwndDlg,IDC_RESULTS), &lvi);
 				col=1;
-				ListView_SetItemTextA(GetDlgItem(hwndDlg,IDC_RESULTS),i,col++,lstrlenA(psr->nick)?psr->nick:Translate("<not specified>"));
-				ListView_SetItemTextA(GetDlgItem(hwndDlg,IDC_RESULTS),i,col++,lstrlenA(psr->firstName)?psr->firstName:Translate("<not specified>"));
-				ListView_SetItemTextA(GetDlgItem(hwndDlg,IDC_RESULTS),i,col++,lstrlenA(psr->lastName)?psr->lastName:Translate("<not specified>"));
-				ListView_SetItemTextA(GetDlgItem(hwndDlg,IDC_RESULTS),i,col++,lstrlenA(psr->email)?psr->email:Translate("<not specified>"));
+				SetListItemText(hwndDlg, i, col++, psr->nick );
+				SetListItemText(hwndDlg, i, col++, psr->firstName );
+				SetListItemText(hwndDlg, i, col++, psr->lastName );
+				SetListItemText(hwndDlg, i, col++, psr->email );
 				if(!lstrcmpA(ack->szModule,"ICQ")) {
 					char str[15];
 					ICQSEARCHRESULT *isr=(ICQSEARCHRESULT*)psr;

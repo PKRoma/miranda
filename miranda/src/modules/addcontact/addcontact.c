@@ -26,11 +26,10 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 	{
 		case WM_INITDIALOG:
 			{
-				char szTitle[128],idstr[4],szUin[10];
+				char idstr[4],szUin[10];
 				DBVARIANT dbv;
 				int groupId;
 				DWORD flags=0;
-				char *szName;
 				
 				acs=(ADDCONTACTSTRUCT *)lparam;
 				SetWindowLong(hdlg,GWL_USERDATA,(LONG)acs);
@@ -50,17 +49,28 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 					ltoa(dwUin,szUin,10);
 					acs->szProto = dbei.szModule;
 				}
-				
-				szName=acs->handleType==HANDLE_CONTACT?(char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)acs->handle,0):(acs->handleType==HANDLE_EVENT?szUin:acs->psr->nick);
-				if (szName && strlen(szName)) {
-					mir_snprintf(szTitle,128,Translate("Add %s"),szName);
+				{	TCHAR* szName;
+					if ( acs->handleType == HANDLE_CONTACT )
+						szName = (TCHAR*)CallService( MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)acs->handle, GCDNF_TCHAR );
+					else {
+						char* p = (acs->handleType == HANDLE_EVENT) ? szUin : acs->psr->nick;
+						#if defined( _UNICODE )
+							szName =( TCHAR* )alloca( 128*sizeof( TCHAR ));
+							MultiByteToWideChar( CP_ACP, 0, p, -1, szName, 128 );
+						#else
+							szName = p;
+						#endif
+					}
+               
+					if ( lstrlen( szName )) {
+						TCHAR  szTitle[128];
+						mir_sntprintf( szTitle, SIZEOF(szTitle), TranslateT("Add %s"), szName );
+						SetWindowText( hdlg, szTitle );
+					}
+					else SetWindowText( hdlg, TranslateT("Add Contact"));
 				}
-				else {
-					mir_snprintf(szTitle,128,Translate("Add Contact"),szName);
-				}
-				SetWindowTextA(hdlg,szTitle);
 				
-				if ( acs->handleType==HANDLE_CONTACT && acs->handle ) {
+				if ( acs->handleType == HANDLE_CONTACT && acs->handle ) {
 					if ( acs->szProto == NULL || (acs->szProto != NULL && strcmp(acs->szProto,"") == 0) ) 
 						acs->szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)acs->handle,0);
 				}
@@ -89,7 +99,7 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 					EnableWindow(GetDlgItem(hdlg,IDC_AUTHREQ),FALSE);
 					EnableWindow(GetDlgItem(hdlg,IDC_AUTHGB),FALSE);
 				}
-				SetDlgItemTextA(hdlg,IDC_AUTHREQ,Translate("Please authorize my request and add me to your contact list."));
+				SetDlgItemText(hdlg,IDC_AUTHREQ,TranslateT("Please authorize my request and add me to your contact list."));
 				EnableWindow(GetDlgItem(hdlg,IDC_AUTHREQ),IsDlgButtonChecked(hdlg,IDC_AUTH));
 				EnableWindow(GetDlgItem(hdlg,IDC_AUTHGB),IsDlgButtonChecked(hdlg,IDC_AUTH));
 			}
@@ -118,8 +128,6 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 				case IDOK:
 					{
 						HANDLE hcontact=INVALID_HANDLE_VALUE;
-						char szHandle[256];
-						
 						if(acs->handleType==HANDLE_EVENT)
 						{
 							DBEVENTINFO dbei;
@@ -147,16 +155,16 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 
 								GetDlgItemTextA(hdlg,IDC_AUTHREQ,szReason,256);
 								CallContactService(hcontact,PSS_AUTHREQUEST,0,(LPARAM)szReason);
-							}
-						}
+						}	}
 						
-						if(GetDlgItemTextA(hdlg,IDC_MYHANDLE,szHandle,128))
-							DBWriteContactSettingString(hcontact,"CList","MyHandle",szHandle);
+						{	TCHAR szHandle[256];
+							if ( GetDlgItemText( hdlg, IDC_MYHANDLE, szHandle, SIZEOF(szHandle)))
+								DBWriteContactSettingTString( hcontact, "CList", "MyHandle", szHandle );
 
-						GetDlgItemTextA(hdlg,IDC_GROUP,szHandle,256);
-						if(lstrcmpA(szHandle,Translate("None")))
-							DBWriteContactSettingString(hcontact,"CList","Group",szHandle);
-
+							GetDlgItemText( hdlg, IDC_GROUP, szHandle, SIZEOF(szHandle));
+							if ( lstrcmp( szHandle, TranslateT( "None" )))
+								DBWriteContactSettingTString( hcontact, "CList", "Group", szHandle );
+						}
 						DBDeleteContactSetting(hcontact,"CList","NotOnList");
 					}
 					// fall through

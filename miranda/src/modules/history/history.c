@@ -332,7 +332,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					int index;
 					index = SendDlgItemMessage(hwndDlg,IDC_LIST,LB_GETCURSEL,0,0);
 					if(index==LB_ERR) break;
-					if (MessageBoxA(hwndDlg,Translate("Are you sure you want to delete this history item?"),Translate("Delete History"),MB_YESNO|MB_ICONQUESTION)==IDYES) {
+					if (MessageBox(hwndDlg,TranslateT("Are you sure you want to delete this history item?"),TranslateT("Delete History"),MB_YESNO|MB_ICONQUESTION)==IDYES) {
 						hDbevent = (HANDLE)SendDlgItemMessage(hwndDlg,IDC_LIST,LB_GETITEMDATA,index,0);
 						CallService(MS_DB_EVENT_DELETE,(WPARAM)hContact,(LPARAM)hDbevent);
 						SendMessage(hwndDlg,DM_HREBUILD,0,0);

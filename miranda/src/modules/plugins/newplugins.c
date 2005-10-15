@@ -434,9 +434,9 @@ static int isPluginOnWhiteList(char * pluginname)
 int CListFailed(int result)
 {
 	// result = 0, no clist_* can be found
-	MessageBoxA(0, result ? 
-	Translate("Unable to start any of the installed contact list plugins, I even ignored your preferences for which contact list couldn't load any.") 
-	: Translate("Can't find a contact list plugin! you need clist_classic or clist_mw.") , "", MB_OK | MB_ICONINFORMATION);
+	MessageBox(0, result ? 
+	TranslateT("Unable to start any of the installed contact list plugins, I even ignored your preferences for which contact list couldn't load any.") 
+	: TranslateT("Can't find a contact list plugin! you need clist_classic or clist_mw.") , _T(""), MB_OK | MB_ICONINFORMATION);
 	return 1;
 }
 

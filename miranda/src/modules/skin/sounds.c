@@ -327,7 +327,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						SetDlgItemTextA(hwndDlg, IDC_LOCATION, dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}
-					else SetDlgItemTextA(hwndDlg, IDC_LOCATION, Translate("<not specified>"));
+					else SetDlgItemText(hwndDlg, IDC_LOCATION, TranslateT("<not specified>"));
 					SendMessage(hwndDlg, DM_SHOWPANE, 0, 0);
 				}
 			}

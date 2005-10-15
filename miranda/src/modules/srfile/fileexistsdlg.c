@@ -203,7 +203,7 @@ BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	fts=(PROTOFILETRANSFERSTATUS*)GetWindowLong(hwndDlg,GWL_USERDATA);
 	switch(msg) {
 		case WM_INITDIALOG:
-		{	char szSize[64];
+		{	TCHAR szSize[64];
 			struct _stat statbuf;
 			struct loadiconsstartinfo *lisi;
 			HWND hwndFocus;
@@ -216,16 +216,16 @@ BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)fts);
 			SetDlgItemTextA(hwndDlg,IDC_FILENAME,fts->currentFile);
 			SetControlToUnixTime(hwndDlg,IDC_NEWDATE,fts->currentFileTime);
-			GetSensiblyFormattedSize(fts->currentFileSize,szSize,sizeof(szSize),0,1,NULL);
-			SetDlgItemTextA(hwndDlg,IDC_NEWSIZE,szSize);
+			GetSensiblyFormattedSize(fts->currentFileSize,szSize,SIZEOF(szSize),0,1,NULL);
+			SetDlgItemText(hwndDlg,IDC_NEWSIZE,szSize);
 
 			pfnIconWindowProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_EXISTINGICON),GWL_WNDPROC,(LONG)IconCtrlSubclassProc);
 
 			hwndFocus=GetDlgItem(hwndDlg,IDC_RESUME);
 			if(_stat(fts->currentFile,&statbuf)==0) {
 				SetControlToUnixTime(hwndDlg,IDC_EXISTINGDATE,statbuf.st_mtime);
-				GetSensiblyFormattedSize(statbuf.st_size,szSize,sizeof(szSize),0,1,NULL);
-				SetDlgItemTextA(hwndDlg,IDC_EXISTINGSIZE,szSize);
+				GetSensiblyFormattedSize(statbuf.st_size,szSize,SIZEOF(szSize),0,1,NULL);
+				SetDlgItemText(hwndDlg,IDC_EXISTINGSIZE,szSize);
 				if(statbuf.st_size>(int)fts->currentFileSize) {
 					EnableWindow(GetDlgItem(hwndDlg,IDC_RESUME),FALSE);
 					hwndFocus=GetDlgItem(hwndDlg,IDC_OVERWRITE);

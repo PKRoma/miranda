@@ -66,14 +66,14 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				{
                     if (iState) {
                         iState = 0;
-                        SetDlgItemTextA(hwndDlg, IDC_CONTRIBLINK, Translate("Credits >"));
+                        SetDlgItemText(hwndDlg, IDC_CONTRIBLINK, TranslateT("Credits >"));
                         ShowWindow(GetDlgItem(hwndDlg, IDC_DEVS), SW_SHOW);
                         ShowWindow(GetDlgItem(hwndDlg, IDC_BUILDTIME), SW_SHOW);
                         ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_HIDE);
                     }
                     else {
                         iState = 1;
-                        SetDlgItemTextA(hwndDlg, IDC_CONTRIBLINK, Translate("< About"));
+                        SetDlgItemText(hwndDlg, IDC_CONTRIBLINK, TranslateT("< About"));
                         ShowWindow(GetDlgItem(hwndDlg, IDC_DEVS), SW_HIDE);
                         ShowWindow(GetDlgItem(hwndDlg, IDC_BUILDTIME), SW_HIDE);
                         ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_SHOW);

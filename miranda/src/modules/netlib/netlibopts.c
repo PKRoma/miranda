@@ -65,7 +65,7 @@ static const UINT incomingConnectionsControls[]={
 static const UINT specifyPortsControls[]={
 	IDC_STATIC51,IDC_PORTSRANGE,
 	IDC_STATIC52};
-static const char *szProxyTypes[]={"<mixed>","SOCKS4","SOCKS5","HTTP","HTTPS"};
+static const TCHAR* szProxyTypes[]={_T("<mixed>"),_T("SOCKS4"),_T("SOCKS5"),_T("HTTP"),_T("HTTPS")};
 static const WORD oftenProxyPorts[]={1080,1080,1080,8080,8080};
 
 #define M_REFRESHALL      (WM_USER+100)
@@ -86,7 +86,7 @@ static void EnableMultipleControls(HWND hwndDlg,const UINT *controls,int cContro
 static void AddProxyTypeItem(HWND hwndDlg,int type,int selectType)
 {
 	int i;
-	i=SendDlgItemMessageA(hwndDlg,IDC_PROXYTYPE,CB_ADDSTRING,0,(LPARAM)(type==0?Translate(szProxyTypes[type]):szProxyTypes[type]));
+	i=SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_ADDSTRING,0,(LPARAM)(type==0?TranslateTS(szProxyTypes[type]):szProxyTypes[type]));
 	SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_SETITEMDATA,i,type);
 	if(type==selectType) SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_SETCURSEL,i,0);
 }
@@ -258,7 +258,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		{	int iUser,iItem;
 
 			TranslateDialogDefault(hwndDlg);
-			iItem=SendDlgItemMessageA(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)Translate("<All connections>"));
+			iItem=SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)TranslateT("<All connections>"));
 			SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_SETITEMDATA,iItem,(LPARAM)-1);
 			SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_SETCURSEL,iItem,0);
 			EnterCriticalSection(&csNetlibUser);
@@ -323,11 +323,11 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		}
 		case M_REFRESHENABLING:
 		{	int selectedProxyType;
-			char str[80];
+			TCHAR str[80];
 
 			selectedProxyType=SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_GETCURSEL,0,0),0);
-			wsprintfA(str,Translate("(often %d)"),oftenProxyPorts[selectedProxyType]);
-			SetDlgItemTextA(hwndDlg,IDC_STOFTENPORT,str);
+			wsprintf(str,TranslateT("(often %d)"),oftenProxyPorts[selectedProxyType]);
+			SetDlgItemText(hwndDlg,IDC_STOFTENPORT,str);
 			if(IsDlgButtonChecked(hwndDlg,IDC_USEPROXY)!=BST_UNCHECKED) {
 				int enableAuth=0,enableUser=0,enablePass=0,enableNtlm=0;
 				EnableMultipleControls(hwndDlg,useProxyControls,sizeof(useProxyControls)/sizeof(useProxyControls[0]),TRUE);

@@ -217,7 +217,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 					break;
 				case IDC_MSG:
 					KillTimer(hwndDlg,1);
-					SetDlgItemTextA(hwndDlg,IDOK,Translate("OK"));
+					SetDlgItemText(hwndDlg,IDOK,TranslateT("OK"));
 					break;
 			}
 			break;

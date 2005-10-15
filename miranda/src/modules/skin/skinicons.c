@@ -333,9 +333,9 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			}
 			ListView_SetImageList(GetDlgItem(hwndDlg,IDC_PREVIEW),ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,0,30),LVSIL_NORMAL);
 			ListView_SetIconSpacing(GetDlgItem(hwndDlg,IDC_PREVIEW),56,67);
-			i=SendDlgItemMessageA(hwndDlg,IDC_CATEGORYLIST,LB_ADDSTRING,0,(LPARAM)Translate("Main Icons"));
+			i=SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_ADDSTRING,0,(LPARAM)TranslateT("Main Icons"));
 			SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_SETITEMDATA,i,0);
-			i=SendDlgItemMessageA(hwndDlg,IDC_CATEGORYLIST,LB_ADDSTRING,0,(LPARAM)Translate("Global Status Icons"));
+			i=SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_ADDSTRING,0,(LPARAM)TranslateT("Global Status Icons"));
 			SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_SETITEMDATA,i,0);
 			CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protoList);
 			for(i=0;i<protoCount;i++) {

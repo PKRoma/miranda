@@ -184,7 +184,7 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		case WM_SHOWWINDOW:
 		{
 			if ( wParam ) { 
-				SetWindowTextA(dat->hwndOK,Translate("&Create"));
+				SetWindowText( dat->hwndOK, TranslateT("&Create"));
 				SendMessage(hwndDlg,WM_USER+2,0,0);
 			}
 			break;
@@ -256,7 +256,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		{
 			HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
 			HIMAGELIST hImgList=0;
-			LVCOLUMNA col;
+			LVCOLUMN col;
 
 			TranslateDialogDefault(hwndDlg);
 			
@@ -264,14 +264,14 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 
 			// set columns
-			col.mask=LVCF_TEXT | LVCF_WIDTH;
-			col.pszText = Translate("Profile");
+			col.mask = LVCF_TEXT | LVCF_WIDTH;
+			col.pszText = TranslateT("Profile");
 			col.cx=225;
-			SendMessageA( hwndList, LVM_INSERTCOLUMNA, 0, (LPARAM)&col );
+			ListView_InsertColumn( hwndList, 0, &col );
 
-			col.pszText = Translate("Size");
+			col.pszText = TranslateT("Size");
 			col.cx=100;
-			SendMessageA( hwndList, LVM_INSERTCOLUMNA, 1, (LPARAM)&col );
+			ListView_InsertColumn( hwndList, 1, &col );
 
 			// icons
 			hImgList=ImageList_Create(16,16,ILC_COLOR16|ILC_MASK, 1, 1);
@@ -295,7 +295,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		case WM_SHOWWINDOW:
 		{
 			if ( wParam ) {
-				SetWindowTextA(dat->hwndOK,Translate("&Run"));
+				SetWindowText(dat->hwndOK,TranslateT("&Run"));
 				EnableWindow(dat->hwndOK, ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST))==1);
 			}
 			break;

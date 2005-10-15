@@ -73,7 +73,7 @@ static BOOL CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,
 			SetDlgItemTextA(hwndDlg,IDC_MSG,(const char*)ack->lParam);
 			ShowWindow(GetDlgItem(hwndDlg,IDC_RETRIEVING),SW_HIDE);
 			ShowWindow(GetDlgItem(hwndDlg,IDC_MSG),SW_SHOW);
-			SetDlgItemTextA(hwndDlg,IDOK,Translate("&Close"));
+			SetDlgItemText(hwndDlg,IDOK,TranslateT("&Close"));
 			break;
 		}
 		case WM_COMMAND:
