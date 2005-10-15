@@ -16,11 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+#include <tchar.h>
 #include <windows.h>
-#include "resource.h"
 #include <newpluginapi.h>
 #include <m_langpack.h>
 #include "help.h"
+
+#include "resource.h"
 
 extern HINSTANCE hInst;
 static HHOOK hMessageHook;
@@ -90,7 +92,7 @@ static LRESULT CALLBACK DialogBoxSubclassProc(HWND hwndDlg,UINT message,WPARAM w
 			if(type==CTLTYPE_LISTVIEW || type==CTLTYPE_TREEVIEW || type==CTLTYPE_DATETIME || type==CTLTYPE_STATUSBAR || type==CTLTYPE_HYPERLINK || type==CTLTYPE_CLC)
 				break;
 			hMenu=CreatePopupMenu();
-			AppendMenu(hMenu,MF_STRING,1,Translate(hwndCtl==hwndDlg?"&What's This Dialog?":"&What's This?"));
+			AppendMenu(hMenu,MF_STRING,1,TranslateTS(hwndCtl==hwndDlg ? _T("&What's This Dialog?") : _T("&What's This?")));
 			switch(TrackPopupMenu(hMenu,TPM_RIGHTBUTTON|TPM_RETURNCMD,pt.x,pt.y,0,hwndDlg,NULL)) {
 				case 1:
 					if(!IsWindow(hwndHelpDlg))
@@ -127,9 +129,9 @@ static LRESULT CALLBACK HelpSendMessageHookProc(int code,WPARAM wParam,LPARAM lP
 	if(code>=0) {
 		switch(msg->message) {
 			case WM_INITDIALOG:
-				{	char szClassName[32];
+				{	TCHAR szClassName[32];
 					GetClassName(msg->hwnd,szClassName,sizeof(szClassName));
-					if(lstrcmp(szClassName,"#32770")) break;
+					if(lstrcmp(szClassName,_T("#32770"))) break;
 				}
 				dlgBoxSubclass=(struct DlgBoxSubclassData*)realloc(dlgBoxSubclass,sizeof(struct DlgBoxSubclassData)*(dlgBoxSubclassCount+1));
 				dlgBoxSubclass[dlgBoxSubclassCount].hwndDlg=msg->hwnd;

@@ -16,15 +16,18 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
+#define _WIN32_WINNT 0x0500
 #include <windows.h>
-#include <commctrl.h>
-#include <richedit.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <newpluginapi.h>
 #include <m_utils.h>
-#include <m_clc.h>
 #include "help.h"
+
+#include <commctrl.h>
+#include <richedit.h>
+#include <m_clc.h>
 
 #ifdef EDITOR
 extern const char *szControlTypeNames[]={
@@ -37,11 +40,11 @@ extern const char *szControlTypeNames[]={
 
 int GetControlType(HWND hwndCtl)
 {
-	char szClassName[32];
+	TCHAR szClassName[32];
 	DWORD style;
 	GetClassName(hwndCtl,szClassName,sizeof(szClassName));
-	if(!lstrcmp(szClassName,"#32770")) return CTLTYPE_DIALOG;
-	else if(!lstrcmp(szClassName,"Static")) {
+	if(!lstrcmp(szClassName,_T("#32770"))) return CTLTYPE_DIALOG;
+	else if(!lstrcmp(szClassName,_T("Static"))) {
 		style=GetWindowLong(hwndCtl,GWL_STYLE);
 		switch(style&SS_TYPEMASK) {
 			case SS_BITMAP:
@@ -61,7 +64,7 @@ int GetControlType(HWND hwndCtl)
 		}
 		return CTLTYPE_TEXT;
 	}
-	else if(!lstrcmp(szClassName,"Button")) {
+	else if(!lstrcmp(szClassName,_T("Button"))) {
 		style=GetWindowLong(hwndCtl,GWL_STYLE);
 		switch(style&0x1f) {
 			case BS_CHECKBOX:
@@ -77,18 +80,18 @@ int GetControlType(HWND hwndCtl)
 		}
 		return CTLTYPE_BUTTON;
 	}
-	else if(!lstrcmp(szClassName,"Edit")) {
+	else if(!lstrcmp(szClassName,_T("Edit"))) {
 		GetClassName(GetParent(hwndCtl),szClassName,sizeof(szClassName));
-		if(!lstrcmp(szClassName,"ComboBox")) return CTLTYPE_COMBO;
+		if(!lstrcmp(szClassName,_T("ComboBox"))) return CTLTYPE_COMBO;
 		if(GetClassName(GetWindow(hwndCtl,GW_HWNDNEXT),szClassName,sizeof(szClassName)) && !lstrcmp(szClassName,UPDOWN_CLASS))
 			return CTLTYPE_SPINEDIT;
 		return CTLTYPE_EDIT;
 	}
-	else if(!lstrcmp(szClassName,"RichEdit") || !lstrcmp(szClassName,RICHEDIT_CLASS))
+	else if(!lstrcmp(szClassName,_T("RichEdit")) || !lstrcmp(szClassName,RICHEDIT_CLASS))
 		return CTLTYPE_EDIT;
-	else if(!lstrcmp(szClassName,"ListBox")) return CTLTYPE_LIST;
-	else if(!lstrcmp(szClassName,"ComboBox") || !lstrcmp(szClassName,WC_COMBOBOXEX)) return CTLTYPE_COMBO;
-	else if(!lstrcmp(szClassName,"ScrollBar")) return CTLTYPE_SCROLLBAR;
+	else if(!lstrcmp(szClassName,_T("ListBox"))) return CTLTYPE_LIST;
+	else if(!lstrcmp(szClassName,_T("ComboBox")) || !lstrcmp(szClassName,WC_COMBOBOXEX)) return CTLTYPE_COMBO;
+	else if(!lstrcmp(szClassName,_T("ScrollBar"))) return CTLTYPE_SCROLLBAR;
 	else if(!lstrcmp(szClassName,UPDOWN_CLASS)) return CTLTYPE_SPINEDIT;
 	else if(!lstrcmp(szClassName,PROGRESS_CLASS)) return CTLTYPE_PROGRESS;
 	else if(!lstrcmp(szClassName,TRACKBAR_CLASS)) return CTLTYPE_TRACKBAR;

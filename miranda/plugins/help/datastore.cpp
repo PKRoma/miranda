@@ -17,12 +17,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include <windows.h>
-#include <time.h>
-#include <process.h>
+#include <stdio.h>
 #include <newpluginapi.h>
 #include <m_netlib.h>
 #include <m_langpack.h>
 #include "help.h"
+
+#include <process.h>
+#include <time.h>
 
 #define DIALOGCACHEEXPIRY    10*60    //delete from cache after n seconds
 
@@ -108,7 +110,7 @@ static void DownloaderThread(struct DownloaderThreadStartParams *dtsp)
 	free(url.sz);
 	if(nlhrReply) {
 		if(nlhrReply->resultCode<200 || nlhrReply->resultCode>=300) {
-			MessageBox(NULL,Translate("The help server replied with a failure code."),nlhrReply->szResultDescr,MB_OK);
+			MessageBoxA(NULL,Translate("The help server replied with a failure code."),nlhrReply->szResultDescr,MB_OK);
 		}
 		else if(nlhrReply->dataLength) {
 			int i;
@@ -128,8 +130,8 @@ static void DownloaderThread(struct DownloaderThreadStartParams *dtsp)
 					pszTagEnd=strchr(pszData+i+1,'>');
 					if(pszTagEnd==NULL) break;
 					for(iNameEnd=i+1;pszData[iNameEnd] && pszData[iNameEnd]!='>' && !isspace(pszData[iNameEnd]);iNameEnd++);
-					lstrcpyn(szTagName,pszData+i+1,min(sizeof(szTagName),iNameEnd-i));
-					if(!lstrcmpi(szTagName,"dialog") && !inDialogTag) {
+					lstrcpynA(szTagName,pszData+i+1,min(sizeof(szTagName),iNameEnd-i));
+					if(!lstrcmpiA(szTagName,"dialog") && !inDialogTag) {
 						dialog.szId=GetHtmlTagAttribute(pszData+i,"id");
 						dialog.szModule=GetHtmlTagAttribute(pszData+i,"module");
 						if(dialog.szId && dialog.szModule)
@@ -140,12 +142,12 @@ static void DownloaderThread(struct DownloaderThreadStartParams *dtsp)
 						}
 						processed=1;
 					}
-					else if(!lstrcmpi(szTagName,"/dialog")) {
+					else if(!lstrcmpiA(szTagName,"/dialog")) {
 						inDialogTag=0;
 						processed=1;
 					}
 					else if(inDialogTag) {
-						if(!lstrcmpi(szTagName,"control") && !inControlTag) {
+						if(!lstrcmpiA(szTagName,"control") && !inControlTag) {
 							char *szId,*szType;
 							dialog.controlCount++;
 							dialog.control=(struct DlgControlData*)realloc(dialog.control,sizeof(struct DlgControlData)*dialog.controlCount);
@@ -164,33 +166,33 @@ static void DownloaderThread(struct DownloaderThreadStartParams *dtsp)
 							if(szType) free(szType);
 							processed=1;
 						}
-						else if(!lstrcmpi(szTagName,"/control")) {
+						else if(!lstrcmpiA(szTagName,"/control")) {
 							inControlTag=0;
 							processed=1;
 						}
 						else if(inControlTag) {
-							if(!lstrcmpi(szTagName,"title") && !inTitleTag) {
+							if(!lstrcmpiA(szTagName,"title") && !inTitleTag) {
 								if(content.sz) free(content.sz);
 								content.sz=NULL;
 								content.cbAlloced=content.iEnd=0;
 								inTitleTag=1;
 								processed=1;
 							}
-							else if(!lstrcmpi(szTagName,"text") && !inTextTag) {
+							else if(!lstrcmpiA(szTagName,"text") && !inTextTag) {
 								if(content.sz) free(content.sz);
 								content.sz=NULL;
 								content.cbAlloced=content.iEnd=0;
 								inTextTag=1;
 								processed=1;
 							}
-							else if(!lstrcmpi(szTagName,"/title") && inTitleTag) {
+							else if(!lstrcmpiA(szTagName,"/title") && inTitleTag) {
 								control->szTitle=content.sz;
 								content.sz=NULL;
 								content.cbAlloced=content.iEnd=0;
 								inTitleTag=0;
 								processed=1;
 							}
-							else if(!lstrcmpi(szTagName,"/text") && inTextTag) {
+							else if(!lstrcmpiA(szTagName,"/text") && inTextTag) {
 								control->szText=content.sz;
 								content.sz=NULL;
 								content.cbAlloced=content.iEnd=0;
@@ -238,7 +240,7 @@ static void DownloaderThread(struct DownloaderThreadStartParams *dtsp)
 		}
 		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT,0,(LPARAM)nlhrReply);
 	}
-	else MessageBox(NULL,Translate("Help can't connect to the server, it may be temporarily down. Please try again later."),Translate("Help"),MB_OK);
+	else MessageBox(NULL,TranslateT("Help can't connect to the server, it may be temporarily down. Please try again later."),TranslateT("Help"),MB_OK);
 	free(dtsp->szDlgId);
 	free(dtsp->szModule);
 	free(dtsp);
@@ -252,7 +254,7 @@ int GetControlHelp(const char *pszDlgId,const char *pszModule,int ctrlId,char **
 
 	EnterCriticalSection(&csDialogCache);
 	for(i=0;i<dialogCacheCount;i++) {
-		if(lstrcmp(pszDlgId,dialogCache[i].szId)) continue;
+		if(lstrcmpA(pszDlgId,dialogCache[i].szId)) continue;
 		for(j=0;j<dialogCache[i].controlCount;j++) {
 			if(ctrlId!=dialogCache[i].control[j].id) continue;
 			if(ppszTitle) *ppszTitle=dialogCache[i].control[j].szTitle;

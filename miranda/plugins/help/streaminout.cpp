@@ -17,13 +17,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include <windows.h>
-#include <richedit.h>
 #if !defined(VK_OEM_PLUS)
 #define _WIN32_WINNT 0x0500
 #include <win2k.h>
 #endif
 #include <newpluginapi.h>
 #include "help.h"
+
+#include <richedit.h>
 
 struct EditStreamData {
 	PBYTE pbBuff;
@@ -99,7 +100,7 @@ struct {
 char *GetHtmlTagAttribute(const char *pszTag,const char *pszAttr)
 {
 	int iAttrName,iAttrNameEnd,iAttrEquals,iAttrValue,iAttrValueEnd,iAttrEnd;
-	int attrLen=lstrlen(pszAttr);
+	int attrLen=lstrlenA(pszAttr);
 
 	for(iAttrName=0;!isspace(pszTag[iAttrName]) && pszTag[iAttrName]!='>';iAttrName++);
 	for(;;) {
@@ -157,17 +158,17 @@ void StreamInHtml(HWND hwndEdit,const char *szHtml)
 			pszTagEnd=strchr(pszHtml+1,'>');
 			if(pszTagEnd==NULL) break;
 			for(iNameEnd=1;pszHtml[iNameEnd] && pszHtml[iNameEnd]!='>' && !isspace(pszHtml[iNameEnd]);iNameEnd++);
-			lstrcpyn(szTagName,pszHtml+1,min(sizeof(szTagName),iNameEnd));
-			if(!lstrcmpi(szTagName,"br")) charCount++;
-			else if(!lstrcmpi(szTagName,"p")) charCount+=2;
+			lstrcpynA(szTagName,pszHtml+1,min(sizeof(szTagName),iNameEnd));
+			if(!lstrcmpiA(szTagName,"br")) charCount++;
+			else if(!lstrcmpiA(szTagName,"p")) charCount+=2;
 			for(i=0;i<sizeof(simpleHtmlRtfConversions)/sizeof(simpleHtmlRtfConversions[0]);i++) {
-				if(!lstrcmpi(szTagName,simpleHtmlRtfConversions[i].szHtml)) {
+				if(!lstrcmpiA(szTagName,simpleHtmlRtfConversions[i].szHtml)) {
 					AppendToCharBuffer(&body,"\\%s ",simpleHtmlRtfConversions[i].szRtf);
 					break;
 				}
 			}
 			if(i==sizeof(simpleHtmlRtfConversions)/sizeof(simpleHtmlRtfConversions[0])) {
-				if(!lstrcmpi(szTagName,"a")) {
+				if(!lstrcmpiA(szTagName,"a")) {
 					if(szThisTagHref) free(szThisTagHref);
 					szThisTagHref=GetHtmlTagAttribute(pszHtml,"href");
 #ifdef EDITOR
@@ -180,7 +181,7 @@ void StreamInHtml(HWND hwndEdit,const char *szHtml)
 					hyperlink[hyperlinkCount-1].szLink=NULL;
 #endif
 				}
-				else if(!lstrcmpi(szTagName,"/a")) {
+				else if(!lstrcmpiA(szTagName,"/a")) {
 					if(szThisTagHref) {
 #ifdef EDITOR
 						AppendToCharBuffer(&body,":%s\\strike0 ",szThisTagHref);
@@ -192,9 +193,9 @@ void StreamInHtml(HWND hwndEdit,const char *szHtml)
 						szThisTagHref=NULL;
 					}
 				}
-				else if(!lstrcmpi(szTagName,"font")) {
+				else if(!lstrcmpiA(szTagName,"font")) {
 					char *szColour=GetHtmlTagAttribute(pszHtml,"color");
-					if(szColour && szColour[0]=='#' && lstrlen(szColour)==7) {	 //can't cope with colour names
+					if(szColour && szColour[0]=='#' && lstrlenA(szColour)==7) {	 //can't cope with colour names
 						COLORREF colour;
 						int i;
 						char szRed[3],szGreen[3],szBlue[3];
@@ -222,7 +223,7 @@ void StreamInHtml(HWND hwndEdit,const char *szHtml)
 
 			pszTagEnd=strchr(pszHtml+1,';');
 			if(pszTagEnd==NULL) break;
-			lstrcpyn(szTag,pszHtml+1,min(sizeof(szTag),pszTagEnd-pszHtml));
+			lstrcpynA(szTag,pszHtml+1,min(sizeof(szTag),pszTagEnd-pszHtml));
 			if(szTag[0]=='#') {
 				int ch;
 				if(szTag[1]=='x' || szTag[1]=='X') ch=strtol(szTag+2,NULL,0x10);
@@ -232,7 +233,7 @@ void StreamInHtml(HWND hwndEdit,const char *szHtml)
 			}
 			else {
 				for(i=0;i<sizeof(htmlSymbolChars)/sizeof(htmlSymbolChars[0]);i++) {
-					if(!lstrcmpi(szTag,htmlSymbolChars[i].szSym)) {
+					if(!lstrcmpiA(szTag,htmlSymbolChars[i].szSym)) {
 						AppendCharToCharBuffer(&body,htmlSymbolChars[i].ch);
 						charCount++;
 						break;
