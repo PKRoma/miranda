@@ -40,8 +40,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TranslateW(s)   ((WCHAR*)CallService(MS_LANGPACK_TRANSLATESTRING,LANG_UNICODE,(LPARAM)(s)))
 #if defined( _UNICODE )
 	#define TranslateT(s) TranslateW(_T(s))
+	#define TranslateTS(s) TranslateW(s)
 #else
 	#define TranslateT(s) Translate(s)
+	#define TranslateTS(s) Translate(s)
 #endif
 
 //translates a dialog into the user's local language	  v0.1.1.0+
