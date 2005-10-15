@@ -86,6 +86,26 @@ struct RTFColorTable rtf_ctable[] = {
  * for the avatar w/o disturbing the toolbar too much.
  */
 
+void MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, int bmWidth, int bmHeight, HDC hdcMem)
+{
+    HDC hdcTemp = CreateCompatibleDC(hdcDraw);
+    HBITMAP hbmTemp = CreateCompatibleBitmap(hdcMem, bmWidth, bmHeight);
+    HBITMAP hbmOld = SelectObject(hdcTemp, hbmTemp);
+    BLENDFUNCTION bf = {0};
+
+    bf.SourceConstantAlpha = 255;
+    bf.AlphaFormat = AC_SRC_ALPHA;
+    bf.BlendOp = AC_SRC_OVER;
+    
+    SetStretchBltMode(hdcTemp, HALFTONE);
+    StretchBlt(hdcTemp, 0, 0, bmWidth, bmHeight, hdcDraw, left, top, width, height, SRCCOPY);
+    AlphaBlend(hdcTemp, 0, 0, bmWidth, bmHeight, hdcMem, 0, 0, bmWidth, bmHeight, bf);
+    StretchBlt(hdcDraw, left, top, width, height, hdcTemp, 0, 0, bmWidth, bmHeight, SRCCOPY);
+    SelectObject(hdcTemp, hbmOld);
+    DeleteObject(hbmTemp);
+    DeleteDC(hdcTemp);
+}
+
 void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo)
 {
     RECT rc;
@@ -1849,14 +1869,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                 rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 2;
                 SetStretchBltMode(hdcDraw, HALFTONE);
                 if(aceFlags & AVS_PREMULTIPLIED) {
-                    if(g_gdiplusToken) {
-                        DrawEdge(hdcDraw, &rc, BDR_SUNKENINNER, BF_RECT);
-                        DrawWithGDIp(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
-                    }
-                    else {
-                        Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
-                        StretchBlt(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                    }
+                    DrawEdge(hdcDraw, &rc, BDR_SUNKENINNER, BF_RECT);
+                    //DrawWithGDIp(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
+                    MY_AlphaBlend(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
                 }
                 else {
                     Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
@@ -1866,18 +1881,10 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             else {
                 SetStretchBltMode(hdcDraw, HALFTONE);
                 if(aceFlags & AVS_PREMULTIPLIED) {
-                    if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
-                        if(g_gdiplusToken)
-                            DrawWithGDIp(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
-                        else
-                            StretchBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                    }
-                    else {
-                        if(g_gdiplusToken)
-                            DrawWithGDIp(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, bminfo.bmWidth, bminfo.bmHeight, dat->ace, hbmAvatar);
-                        else
-                            StretchBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                    }
+                    if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
+                        MY_AlphaBlend(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
+                    else
+                        MY_AlphaBlend(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
                 }
                 else {
                     if(dat->iRealAvatarHeight != bminfo.bmHeight) {
