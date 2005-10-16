@@ -44,7 +44,7 @@ void SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify);
 void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szResponse, int nResponseLen, BOOL bThruDC);
 
 // custom status support
-void InitXStatusItems();
+void InitXStatusItems(BOOL bAllowStatus);
 void InitXStatusEvents();
 void UninitXStatusEvents();
 

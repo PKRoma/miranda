@@ -42,6 +42,7 @@ extern void setUserInfo();
 
 static int bStatusMenu = 0;
 static HANDLE hHookExtraIconsRebuild = NULL;
+static HANDLE hHookStatusBuild = NULL;
 static HANDLE hHookExtraIconsApply = NULL;
 static HANDLE hXStatusIcons[24];
 static HANDLE hXStatusItems[25];
@@ -104,15 +105,22 @@ static int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
 
 
 
+int CListMW_BuildStatusItems(WPARAM wParam, LPARAM lParam)
+{
+  InitXStatusItems(TRUE);
+}
+
+
+
 void InitXStatusEvents()
 {
-  if (!hHookExtraIconsRebuild)
-  {
+  if (!hHookStatusBuild)
     if (bStatusMenu = ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
-      hHookExtraIconsRebuild = HookEvent(ME_CLIST_PREBUILDSTATUSMENU, CListMW_ExtraIconsRebuild);
-    else
-      hHookExtraIconsRebuild = HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, CListMW_ExtraIconsRebuild);
-  }
+      hHookStatusBuild = HookEvent(ME_CLIST_PREBUILDSTATUSMENU, CListMW_BuildStatusItems);
+
+  if (!hHookExtraIconsRebuild)
+    hHookExtraIconsRebuild = HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, CListMW_ExtraIconsRebuild);
+
   if (!hHookExtraIconsApply)
     hHookExtraIconsApply = HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY, CListMW_ExtraIconsApply);
 }
@@ -121,6 +129,9 @@ void InitXStatusEvents()
 
 void UninitXStatusEvents()
 {
+  if (hHookStatusBuild)
+    UnhookEvent(hHookStatusBuild);
+
   if (hHookExtraIconsRebuild)
     UnhookEvent(hHookExtraIconsRebuild);
 
@@ -580,7 +591,7 @@ static int menuXStatus24(WPARAM wParam,LPARAM lParam)
 
 
 
-void InitXStatusItems()
+void InitXStatusItems(BOOL bAllowStatus)
 {
   CLISTMENUITEM mi;
   int i = 0;
@@ -636,9 +647,9 @@ void InitXStatusItems()
     mi.flags = bXStatus == i?CMIF_CHECKED:0;
     mi.pszName = Translate(i?nameXStatus[i-1]:"None");
     mi.pszService = srvFce;
-    if (bStatusMenu)
+    if (bStatusMenu && bAllowStatus)
       hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDSTATUSMENUITEM, 0, (LPARAM)&mi);
-    else
+    else if (!bStatusMenu)
       hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
     if (i) DestroyIcon(mi.hIcon);
   }

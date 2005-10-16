@@ -324,7 +324,8 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   char szBuffer[MAX_PATH+64];
   char* modules[5] = {0,0,0,0,0};
 
-  InitXStatusItems();
+  InitXStatusEvents();
+  InitXStatusItems(FALSE);
 
   strcpy(pszP2PName, gpszICQProtoName);
   strcat(pszP2PName, "P2P");
@@ -372,8 +373,6 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
   InitDB();
   InitPopUps();
-
-  InitXStatusEvents();
 
   return 0;
 }
