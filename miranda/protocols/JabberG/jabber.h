@@ -330,6 +330,11 @@ extern const char xmlnsOwner[], xmlnsAdmin[];
  * Function declarations
  *******************************************************************/
 
+//---- jabber_bitmap.cpp ----------------------------------------------
+
+HBITMAP __stdcall JabberBitmapToAvatar( HBITMAP hBitmap );
+int     __stdcall JabberEnterBitmapName( char* szDest );
+
 //---- jabber_chat.cpp ----------------------------------------------
 
 void JabberGcLogCreate( JABBER_LIST_ITEM* item );
@@ -451,6 +456,7 @@ void          __stdcall JabberSendPresence( int );
 void          __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 char*         __stdcall JabberGetClientJID( const char* jid, char*, size_t );
 char*         __stdcall JabberStripJid( const char* jid, char* dest, size_t destLen );
+int           __stdcall JabberGetPictureType( const char* buf );
 
 //---- jabber_vcard.c -----------------------------------------------
 

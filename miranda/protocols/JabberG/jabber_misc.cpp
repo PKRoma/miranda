@@ -227,6 +227,14 @@ void JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 	tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\Jabber\\"  );
 	CreateDirectory( pszDest, NULL );
 
+	char* szFileType;
+	switch( JGetByte( hContact, "AvatarType", PA_FORMAT_PNG )) {
+		case PA_FORMAT_JPEG: szFileType = "jpg";   break;
+		case PA_FORMAT_PNG:  szFileType = "png";   break;
+		case PA_FORMAT_GIF:  szFileType = "gif";   break;
+		case PA_FORMAT_BMP:  szFileType = "bmp";   break;
+	}
+
 	if ( hContact != NULL ) {
 		char str[ 256 ];
 		DBVARIANT dbv;
@@ -237,19 +245,11 @@ void JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 		}
 		else ltoa(( long )hContact, str, 10 );
 
-		char* szFileType;
-		switch( JGetByte( hContact, "AvatarType", PA_FORMAT_PNG )) {
-			case PA_FORMAT_JPEG: szFileType = "jpg";   break;
-			case PA_FORMAT_PNG:  szFileType = "png";   break;
-			case PA_FORMAT_GIF:  szFileType = "gif";   break;
-			case PA_FORMAT_BMP:  szFileType = "bmp";   break;
-		}
-
 		char* hash = JabberSha1( str );
 		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s.%s", hash, szFileType );
 		free( hash );
 	}
-	else mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s avatar.png", jabberProtoName );
+	else mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s avatar.%s", jabberProtoName, szFileType );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

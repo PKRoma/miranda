@@ -101,10 +101,9 @@ int JabberSvcUninit( void );
 
 BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvReserved )
 {
-#ifdef _DEBUG
-	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-#endif
-
+	#ifdef _DEBUG
+		_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+	#endif
 	hInst = hModule;
 	return TRUE;
 }
@@ -165,7 +164,14 @@ int JabberGcMenuHook( WPARAM, LPARAM );
 int JabberGcInit( WPARAM, LPARAM );
 
 static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-HANDLE hChatEvent = NULL, hChatMenu = NULL, hInitChat = NULL, hEvInitChat = NULL;
+HANDLE hChatEvent = NULL, 
+       hChatMenu = NULL, 
+		 hInitChat = NULL, 
+		 hEvInitChat = NULL,
+		 hEvModulesLoaded = NULL,
+		 hEvOptInit = NULL,
+		 hEvPreShutdown = NULL,
+		 hEvUserInfoInit = NULL;
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
@@ -237,9 +243,9 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
 	jabberMainThreadId = GetCurrentThreadId();
 
-	HookEvent( ME_OPT_INITIALISE, JabberOptInit );
-	HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
-	HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown );
+	hEvOptInit       = HookEvent( ME_OPT_INITIALISE, JabberOptInit );
+	hEvModulesLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
+	hEvPreShutdown   = HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown );
 
 	// Register protocol module
 	PROTOCOLDESCRIPTOR pd;
@@ -290,9 +296,13 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	OutputDebugString( "Unloading..." );
 #endif
 
-	if ( hChatEvent  ) UnhookEvent( hChatEvent );
-	if ( hChatMenu   ) UnhookEvent( hChatMenu );
-	if ( hEvInitChat ) UnhookEvent( hEvInitChat );
+	if ( hChatEvent  )      UnhookEvent( hChatEvent );
+	if ( hChatMenu   )      UnhookEvent( hChatMenu );
+	if ( hEvInitChat )      UnhookEvent( hEvInitChat );
+	if ( hEvModulesLoaded ) UnhookEvent( hEvModulesLoaded );
+	if ( hEvOptInit  )      UnhookEvent( hEvOptInit );
+	if ( hEvPreShutdown )   UnhookEvent( hEvPreShutdown );
+	if ( hEvUserInfoInit )  UnhookEvent( hEvUserInfoInit );
 
 	if ( hInitChat )
 		DestroyHookableEvent( hInitChat );

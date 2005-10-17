@@ -93,8 +93,8 @@ int __stdcall JabberSend( HANDLE hConn, const char* fmt, ... )
 				memcpy( szLogBuffer+strlen( szLogBuffer ), str, size+1 /* also copy \0 */ );
 				Netlib_Logf( hNetlibUser, "%s", szLogBuffer );	// %s to protect against when fmt tokens are in szLogBuffer causing crash
 				free( szLogBuffer );
-			}
-		}
+		}	}
+
 		result = pfn_SSL_write( ssl, str, size );
 	}
 	else
@@ -667,35 +667,40 @@ static char b64table[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 
 char* __stdcall JabberBase64Encode( const char* buffer, int bufferLen )
 {
-	int n;
+	if ( buffer==NULL || bufferLen<=0 ) 
+		return NULL;
+
+	char* res = (char*)malloc(((( bufferLen+2 )*4 )/3 ) + 1);
+	if ( res == NULL ) 
+		return NULL;
+
 	unsigned char igroup[3];
-	char* p, *peob;
-	char* res, *r;
-	int c = 0;
-
-	if ( buffer==NULL || bufferLen<=0 ) return NULL;
-	if (( res=( char* )malloc(( (( bufferLen+2 )/3 )*4 ) + 1 )) == NULL ) return NULL;
-
-	for ( p=( char* )buffer,peob=p+bufferLen,r=res; p<peob; ) {
-		igroup[0] = igroup[1] = igroup[2] = 0;
+	int nGroups = 0;
+	char *r = res;
+	const char* peob = buffer + bufferLen;
+	for ( const char* p = buffer; p < peob; ) {
+		igroup[ 0 ] = igroup[ 1 ] = igroup[ 2 ] = 0;
+		int n;
 		for ( n=0; n<3; n++ ) {
 			if ( p >= peob ) break;
 			igroup[n] = ( unsigned char ) *p;
 			p++;
 		}
+
 		if ( n > 0 ) {
 			r[0] = b64table[ igroup[0]>>2 ];
 			r[1] = b64table[ (( igroup[0]&3 )<<4 ) | ( igroup[1]>>4 ) ];
 			r[2] = b64table[ (( igroup[1]&0xf )<<2 ) | ( igroup[2]>>6 ) ];
 			r[3] = b64table[ igroup[2]&0x3f ];
+
 			if ( n < 3 ) {
 				r[3] = '=';
 				if ( n < 2 )
 					r[2] = '=';
 			}
 			r += 4;
-		}
-	}
+	}	}
+
 	*r = '\0';
 
 	return res;
@@ -868,8 +873,13 @@ void __stdcall JabberSendPresenceTo( int status, char* to, char* extra )
 	// Note: jabberModeMsg is already encoded using JabberTextEncode()
 	EnterCriticalSection( &modeMsgMutex );
 
-	char priorityStr[ 32 ];
-	mir_snprintf( priorityStr, sizeof priorityStr, "<priority>%d</priority>", JGetWord( NULL, "Priority", 0 ));
+	char priorityStr[ 200 ];
+	int bytes = mir_snprintf( priorityStr, sizeof priorityStr, "<priority>%d</priority>", JGetWord( NULL, "Priority", 0 ));
+	{
+		char hashValue[ 50 ];
+		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof hashValue ))
+			mir_snprintf( priorityStr+bytes, sizeof(priorityStr)-bytes, "<x xmlns='jabber:x:avatar'><hash>%s</hash></x>", hashValue );
+	}
 
 	char toStr[ 512 ];
 	if ( to != NULL )
@@ -1011,4 +1021,19 @@ char* __stdcall JabberStripJid( const char* jid, char* dest, size_t destLen )
 	}
 
 	return dest;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberGetPictureType - tries to autodetect the picture type from the buffer
+
+int __stdcall JabberGetPictureType( const char* buf )
+{
+	if ( buf != NULL ) {
+		if ( memcmp( buf, "GIF89", 5 ) == 0 )   return PA_FORMAT_GIF;
+		if ( memcmp( buf, "\x89PNG", 4 ) == 0 ) return PA_FORMAT_PNG;
+		if ( memcmp( buf, "BM", 2 ) == 0 )      return PA_FORMAT_BMP;
+		if ( memcmp( buf+6, "JFIF", 4 ) == 0 )  return PA_FORMAT_JPEG;
+	}
+	
+	return PA_FORMAT_UNKNOWN;
 }

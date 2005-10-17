@@ -21,38 +21,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "jabber.h"
+
 #include <commctrl.h>
 #include "jabber_list.h"
 #include "resource.h"
+#include "sha1.h"
 
-static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
-static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
-
-int JabberUserInfoInit( WPARAM wParam, LPARAM lParam )
-{
-	if ( !JCallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )jabberProtoName ))
-		return 0;
-
-	HANDLE hContact = ( HANDLE )lParam;
-	char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-	if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
-		OPTIONSDIALOGPAGE odp = {0};
-		odp.cbSize = sizeof( odp );
-		odp.hIcon = NULL;
-		odp.hInstance = hInst;
-		odp.pfnDlgProc = JabberUserInfoDlgProc;
-		odp.position = -2000000000;
-		odp.pszTemplate = MAKEINTRESOURCE( IDD_INFO_JABBER );
-		odp.pszTitle = jabberModuleName;
-		JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
-		odp.pfnDlgProc = JabberUserPhotoDlgProc;
-		odp.position = 2000000000;
-		odp.pszTemplate = MAKEINTRESOURCE( IDD_VCARD_PHOTO );
-		odp.pszTitle = JTranslate( "Photo" );
-		JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
-	}
-	return 0;
-}
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberUserInfoDlgProc - main user info dialog
 
 static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -184,6 +160,9 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 	}
 	return FALSE;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberUserPhotoDlgProc - Jabber photo dialog
 
 typedef struct {
 	HANDLE hContact;
@@ -337,18 +316,14 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		}
 		else {
 			BITMAP bm;
-			HDC hdcMem;
-			HWND hwndCanvas;
-			HDC hdcCanvas;
 			POINT ptSize, ptOrg, pt, ptFitSize;
 			RECT rect;
-			HBITMAP hBitmap;
 
 			SetDlgItemText( hwndDlg, IDC_CANVAS, "" );
-			hBitmap = photoInfo->hBitmap;
-			hwndCanvas = GetDlgItem( hwndDlg, IDC_CANVAS );
-			hdcCanvas = GetDC( hwndCanvas );
-			hdcMem = CreateCompatibleDC( hdcCanvas );
+			HBITMAP hBitmap = photoInfo->hBitmap;
+			HWND hwndCanvas = GetDlgItem( hwndDlg, IDC_CANVAS );
+			HDC hdcCanvas = GetDC( hwndCanvas );
+			HDC hdcMem = CreateCompatibleDC( hdcCanvas );
 			SelectObject( hdcMem, hBitmap );
 			SetMapMode( hdcMem, GetMapMode( hdcCanvas ));
 			GetObject( hBitmap, sizeof( BITMAP ), ( LPVOID ) &bm );
@@ -393,4 +368,163 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		break;
 	}
 	return FALSE;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberSetAvatarDlgProc - avatar options dialog procedure
+
+static HBITMAP hAvatar;
+static char szFileName[ MAX_PATH ];
+
+static void sttSaveAvatar()
+{
+	char tFileName[ MAX_PATH ];
+	JabberGetAvatarFileName( NULL, tFileName, sizeof tFileName );
+
+	if ( CopyFile( szFileName, tFileName, FALSE ) == FALSE ) {
+		JabberLog( "Copy failed with error %d", GetLastError() );
+		return;
+	}
+
+	SHA1Context ctx;
+	uint8_t digest[20];
+	SHA1Reset( &ctx );
+
+	FILE* in = fopen( tFileName, "rb" );
+	if ( in == NULL )
+		return;
+
+	char buf[ 512 ];
+	bool bIsFirst = true;
+	int  pictureType;
+	while( !feof( in )) {
+		int bytes = fread( buf, sizeof buf, 1, in );
+		if ( bIsFirst ) {
+			pictureType = JabberGetPictureType( buf );
+			bIsFirst = false;
+		}
+		SHA1Input( &ctx, ( const unsigned __int8* )buf, bytes );
+	}
+	fclose( in );
+
+	if ( pictureType == PA_FORMAT_UNKNOWN )
+		return;
+
+	SHA1Result( &ctx, digest );
+	for ( int i=0; i<20; i++ )
+		sprintf( buf+( i<<1 ), "%02x", digest[i] );
+   JSetString( NULL, "AvatarHash", buf );
+	JSetByte( "AvatarType", pictureType );
+
+	JabberGetAvatarFileName( NULL, szFileName, MAX_PATH );
+	if ( strcmp( szFileName, tFileName ))
+		MoveFile( tFileName, szFileName );
+}
+
+static BOOL CALLBACK JabberSetAvatarDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+	switch ( msg ) {
+	case WM_INITDIALOG:
+		TranslateDialogDefault( hwndDlg );
+		{
+			hAvatar = NULL;
+			szFileName[0] = 0;
+
+			BOOL tValue = JGetByte( "EnableAvatars", 0 );
+			CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS,	tValue );
+			if ( tValue ) {
+				char szAvatar[ MAX_PATH ];
+				JabberGetAvatarFileName( NULL, szAvatar, sizeof szAvatar );
+				hAvatar = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szAvatar );
+				if ( hAvatar )
+	            SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)hAvatar );
+		}	}
+
+		return TRUE;
+
+	case WM_COMMAND:
+		if ( HIWORD( wParam ) == BN_CLICKED )
+			switch( LOWORD( wParam )) {
+			case IDC_SETAVATAR: 
+				if ( JabberEnterBitmapName( szFileName ) == ERROR_SUCCESS ) {
+					HBITMAP hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFileName );
+					if ( hBitmap != NULL ) {
+						hAvatar = hBitmap;
+		            hBitmap = ( HBITMAP )SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)hBitmap );
+						if ( hBitmap )
+							DeleteObject( hBitmap );
+
+						sttSaveAvatar();
+						if ( jabberConnected )
+							JabberSendPresence( jabberDesiredStatus );
+						RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
+				}	}
+				break;
+
+			case IDC_DELETEAVATAR:
+				char tFileName[ MAX_PATH ];
+				JabberGetAvatarFileName( NULL, tFileName, sizeof tFileName );
+				DeleteFile( tFileName );
+				JDeleteSetting( NULL, "AvatarHash" );
+				JDeleteSetting( NULL, "AvatarType" );
+
+				DeleteObject( hAvatar ); hAvatar = NULL;
+            HBITMAP hBitmap = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)NULL );
+				if ( hBitmap )
+					DeleteObject( hBitmap );
+
+				if ( jabberConnected )
+					JabberSendPresence( jabberDesiredStatus );
+				break;
+			}
+		break;
+
+	case WM_DESTROY:
+		if ( hAvatar )
+			DeleteObject( hAvatar );
+	}
+
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberUserInfoInit - initializes user info option dialogs
+
+int JabberUserInfoInit( WPARAM wParam, LPARAM lParam )
+{
+	if ( !JCallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )jabberProtoName ))
+		return 0;
+
+	OPTIONSDIALOGPAGE odp = {0};
+	odp.cbSize = sizeof( odp );
+	odp.hInstance = hInst;
+
+	HANDLE hContact = ( HANDLE )lParam;
+	if ( hContact == NULL ) {
+		char szTitle[256];
+		mir_snprintf( szTitle, sizeof( szTitle ), "%s %s", jabberProtoName, JTranslate( "Avatar" ));
+
+		odp.pfnDlgProc = JabberSetAvatarDlgProc;
+		odp.position = -2000000000;
+		odp.pszTemplate = MAKEINTRESOURCE( IDD_OPT_SETAVATAR );
+		odp.pszTitle = szTitle;
+		JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
+      return 0;
+	}
+
+	char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+	if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
+		odp.pfnDlgProc = JabberUserInfoDlgProc;
+		odp.position = -2000000000;
+		odp.pszTemplate = MAKEINTRESOURCE( IDD_INFO_JABBER );
+		odp.pszTitle = jabberModuleName;
+		JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
+
+		odp.pfnDlgProc = JabberUserPhotoDlgProc;
+		odp.position = 2000000000;
+		odp.pszTemplate = MAKEINTRESOURCE( IDD_VCARD_PHOTO );
+		odp.pszTitle = JTranslate( "Photo" );
+		JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
+	}
+	return 0;
 }

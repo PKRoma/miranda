@@ -553,6 +553,19 @@ BEGIN
     EDITTEXT        IDC_NICK,99,74,105,12,ES_AUTOHSCROLL
 END
 
+IDD_OPT_SETAVATAR DIALOGEX 0, 0, 222, 137
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_AVATAR,"Static",SS_BITMAP | SS_CENTERIMAGE | 
+                    SS_SUNKEN,9,11,96,96
+    LTEXT           "Note: Only JPGs and GIFs\nImage size max 64x64\nFile size max 6kB",
+                    IDC_STATIC,112,54,106,34
+    PUSHBUTTON      "Set",IDC_SETAVATAR,9,119,45,13
+    PUSHBUTTON      "Delete",IDC_DELETEAVATAR,63,119,41,13
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -754,6 +767,15 @@ BEGIN
         RIGHTMARGIN, 228
         TOPMARGIN, 7
         BOTTOMMARGIN, 107
+    END
+
+    IDD_OPT_SETAVATAR, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 218
+        VERTGUIDE, 9
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 132
     END
 END
 #endif    // APSTUDIO_INVOKED

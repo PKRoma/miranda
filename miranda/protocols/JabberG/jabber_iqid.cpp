@@ -1169,21 +1169,26 @@ void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 	if ( n == NULL )
 		return;
 
-	char* mimeType = JabberXmlGetAttrValue( n, "mimetype" );
-	int pictureType = 0;
-	if ( mimeType == NULL ) return;
-	if ( !strcmp( mimeType, "image/jpeg" )) pictureType = PA_FORMAT_JPEG;
-	else if ( !strcmp( mimeType, "image/png" )) pictureType = PA_FORMAT_PNG;
-	else if ( !strcmp( mimeType, "image/gif" )) pictureType = PA_FORMAT_GIF;
-	else if ( !strcmp( mimeType, "image/bmp" )) pictureType = PA_FORMAT_BMP;
-	else {
-		JabberLog( "Invalid mime type specified for picture: %s", mimeType );
-		return;
-	}
-	JSetByte( hContact, "AvatarType", pictureType );
-
 	int resultLen = 0;
 	char* body = JabberBase64Decode( n->text, &resultLen );
+
+	int pictureType;
+	char* mimeType = JabberXmlGetAttrValue( n, "mimetype" );
+	if ( mimeType != NULL ) {
+		if ( !strcmp( mimeType, "image/jpeg" ))     pictureType = PA_FORMAT_JPEG;
+		else if ( !strcmp( mimeType, "image/png" )) pictureType = PA_FORMAT_PNG;
+		else if ( !strcmp( mimeType, "image/gif" )) pictureType = PA_FORMAT_GIF;
+		else if ( !strcmp( mimeType, "image/bmp" )) pictureType = PA_FORMAT_BMP;
+		else {
+LBL_ErrFormat:
+			JabberLog( "Invalid mime type specified for picture: %s", mimeType );
+			free( body );
+			return;
+	}	}
+	else if (( pictureType = JabberGetPictureType( body )) == PA_FORMAT_UNKNOWN )
+		goto LBL_ErrFormat;
+
+	JSetByte( hContact, "AvatarType", pictureType );
 
 	char buffer[ 41 ];
 	uint8_t digest[20];

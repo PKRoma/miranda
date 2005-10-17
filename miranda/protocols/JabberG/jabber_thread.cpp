@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "jabber.h"
 
+#include <io.h>
 #include <WinDNS.h>   // requires Windows Platform SDK
 
 #include "jabber_ssl.h"
@@ -876,7 +877,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			p = NULL;
 		JabberListAddResource( LIST_ROSTER, from, status, p );
 		if ( p ) {
-			DBWriteContactSettingString( hContact, "CList", "StatusMsg", p );
+			DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", p );
 			free( p );
 		}
 		else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
@@ -967,6 +968,102 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 				if ( hwndJabberAgents && strchr( from, '@' )==NULL )
 					SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
 }	}	}	}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Handles various <iq... requests
+
+static void JabberProcessIqVersion( char* idStr, XmlNode* node )
+{
+	char* from, *resultId;
+	if (( from=JabberXmlGetAttrValue( node, "from" )) == NULL )
+		return;
+
+	char* str = JabberGetVersionText();
+	char* version = JabberTextEncode( str );
+	char* os = NULL;
+
+	OSVERSIONINFO osvi = { 0 };
+	osvi.dwOSVersionInfoSize = sizeof( OSVERSIONINFO );
+	if ( GetVersionEx( &osvi )) {
+		switch ( osvi.dwPlatformId ) {
+		case VER_PLATFORM_WIN32_NT:
+			if ( osvi.dwMajorVersion == 5 ) {
+				if ( osvi.dwMinorVersion == 2 ) os = JabberTextEncode( JTranslate( "Windows Server 2003" ));
+				else if ( osvi.dwMinorVersion == 1 ) os = JabberTextEncode( JTranslate( "Windows XP" ));
+				else if ( osvi.dwMinorVersion == 0 ) os = JabberTextEncode( JTranslate( "Windows 2000" ));
+			}
+			else if ( osvi.dwMajorVersion <= 4 ) {
+				os = JabberTextEncode( JTranslate( "Windows NT" ));
+			}
+			break;
+		case VER_PLATFORM_WIN32_WINDOWS:
+			if ( osvi.dwMajorVersion == 4 ) {
+				if ( osvi.dwMinorVersion == 0 ) os = JabberTextEncode( JTranslate( "Windows 95" ));
+				if ( osvi.dwMinorVersion == 10 ) os = JabberTextEncode( JTranslate( "Windows 98" ));
+				if ( osvi.dwMinorVersion == 90 ) os = JabberTextEncode( JTranslate( "Windows ME" ));
+			}
+			break;
+	}	}
+
+	if ( os == NULL ) os = JabberTextEncode( JTranslate( "Windows" ));
+
+	char mversion[64];
+	JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
+	if (( resultId = JabberTextEncode( idStr )) != NULL ) {
+		JabberSend( jabberThreadInfo->s, "<iq type='result' id='%s' to='%s'><query xmlns='jabber:iq:version'><name>Jabber Protocol Plugin ( Miranda IM %s )</name><version>%s</version><os>%s</os></query></iq>", resultId, from, mversion, version?version:"", os?os:"" );
+		free( resultId );
+	}
+	else JabberSend( jabberThreadInfo->s, "<iq type='result' to='%s'><query xmlns='jabber:iq:version'><name>Jabber Protocol Plugin ( Miranda IM %s )</name><version>%s</version><os>%s</os></query></iq>", from, mversion, version?version:"", os?os:"" );
+
+	if ( str ) free( str );
+	if ( version ) free( version );
+	if ( os ) free( os );
+}
+
+static void JabberProcessIqAvatar( char* idStr, XmlNode* node )
+{
+	char* from;
+	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL )
+		return;
+
+	int pictureType = JGetByte( "AvatarType", PA_FORMAT_UNKNOWN );
+	if ( pictureType == PA_FORMAT_UNKNOWN )
+		return;
+
+	char* szMimeType;
+	switch( pictureType ) {
+		case PA_FORMAT_JPEG:	 szMimeType = "image/jpeg";   break;
+		case PA_FORMAT_GIF:	 szMimeType = "image/gif";    break;
+		case PA_FORMAT_PNG:	 szMimeType = "image/png";    break;
+		case PA_FORMAT_BMP:	 szMimeType = "image/bmp";    break;
+		default:	return;
+	}
+
+	char szFileName[ MAX_PATH ];
+	JabberGetAvatarFileName( NULL, szFileName, MAX_PATH );
+
+	FILE* in = fopen( szFileName, "rb" );
+	if ( in == NULL )
+		return;
+
+	long bytes = filelength( fileno( in ));
+	char* buffer = ( char* )malloc( bytes*4/3 + bytes + 1000 );
+	if ( buffer == NULL ) {
+		fclose( in );
+		return;
+	}
+
+	fread( buffer, bytes, 1, in );
+	fclose( in );
+
+	char* str = JabberBase64Encode( buffer, bytes );
+	char* resultId = JabberTextEncode( idStr );
+	JabberSend( jabberThreadInfo->s,    
+		"<iq type='result' id='%s' to='%s'><query xmlns='jabber:iq:avatar'><data mimetype='%s'>%s</data></query></iq>",
+		resultId, from, szMimeType, str );
+	free( resultId );
+	free( str );
+}
 
 static void JabberProcessIq( XmlNode *node, void *userdata )
 {
@@ -1192,51 +1289,10 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 
 		// RECVED: software version query
 		// ACTION: return my software version
-		if ( !strcmp( xmlns, "jabber:iq:version" )) {
-			char* from, *resultId, *version, *os;
-			OSVERSIONINFO osvi;
-			char mversion[64];
-
-			if (( from=JabberXmlGetAttrValue( node, "from" ))!=NULL ) {
-				str = JabberGetVersionText();
-				version = JabberTextEncode( str );
-				os = NULL;
-				memset( &osvi, 0, sizeof( OSVERSIONINFO ));
-				osvi.dwOSVersionInfoSize = sizeof( OSVERSIONINFO );
-				if ( GetVersionEx( &osvi )) {
-					switch ( osvi.dwPlatformId ) {
-					case VER_PLATFORM_WIN32_NT:
-						if ( osvi.dwMajorVersion == 5 ) {
-							if ( osvi.dwMinorVersion == 2 ) os = JabberTextEncode( JTranslate( "Windows Server 2003" ));
-							else if ( osvi.dwMinorVersion == 1 ) os = JabberTextEncode( JTranslate( "Windows XP" ));
-							else if ( osvi.dwMinorVersion == 0 ) os = JabberTextEncode( JTranslate( "Windows 2000" ));
-						}
-						else if ( osvi.dwMajorVersion <= 4 ) {
-							os = JabberTextEncode( JTranslate( "Windows NT" ));
-						}
-						break;
-					case VER_PLATFORM_WIN32_WINDOWS:
-						if ( osvi.dwMajorVersion == 4 ) {
-							if ( osvi.dwMinorVersion == 0 ) os = JabberTextEncode( JTranslate( "Windows 95" ));
-							if ( osvi.dwMinorVersion == 10 ) os = JabberTextEncode( JTranslate( "Windows 98" ));
-							if ( osvi.dwMinorVersion == 90 ) os = JabberTextEncode( JTranslate( "Windows ME" ));
-						}
-						break;
-				}	}
-
-				if ( os == NULL ) os = JabberTextEncode( JTranslate( "Windows" ));
-				JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
-				if (( resultId = JabberTextEncode( idStr )) != NULL ) {
-					JabberSend( jabberThreadInfo->s, "<iq type='result' id='%s' to='%s'><query xmlns='jabber:iq:version'><name>Jabber Protocol Plugin ( Miranda IM %s )</name><version>%s</version><os>%s</os></query></iq>", resultId, from, mversion, version?version:"", os?os:"" );
-					free( resultId );
-				}
-				else JabberSend( jabberThreadInfo->s, "<iq type='result' to='%s'><query xmlns='jabber:iq:version'><name>Jabber Protocol Plugin ( Miranda IM %s )</name><version>%s</version><os>%s</os></query></iq>", from, mversion, version?version:"", os?os:"" );
-
-				if ( str ) free( str );
-				if ( version ) free( version );
-				if ( os ) free( os );
-			}
-		}
+		if ( !strcmp( xmlns, "jabber:iq:version" ))
+			JabberProcessIqVersion( idStr, node );
+		else if ( !strcmp( xmlns, "jabber:iq:avatar" ))
+			JabberProcessIqAvatar( idStr, node );
 	}
 	// RECVED: <iq type='result'><query ...
 	else if ( !strcmp( type, "result" ) && queryNode!=NULL && ( xmlns=JabberXmlGetAttrValue( queryNode, "xmlns" ))!=NULL ) {
