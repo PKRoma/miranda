@@ -197,9 +197,11 @@ LBL_Reread:		DBWriteContactSettingString( pData->hContact, "ContactPhoto", "File
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact = ( HANDLE )lParam;
+	if ( hContact == NULL )
+		return 0;
 
 	char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-	if (( szProto == NULL || strcmp( szProto, msnProtocolName )) && hContact )
+	if ( lstrcmp( szProto, msnProtocolName ))
 		return 0;
 
 	if ( !MyOptions.EnableAvatars )
@@ -216,7 +218,6 @@ int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 	odp.position = -1900000000;
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_USEROPTS);
 	odp.pszTitle = Translate(msnProtocolName);
-
 	MSN_CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	return 0;
 }
