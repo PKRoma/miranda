@@ -58,6 +58,10 @@ cd ..\db3x
 nmake /f db3x.mak CFG="db3x - Win32 Release"
 if errorlevel 1 goto :Error
 
+cd ..\help
+nmake /f help.mak CFG="help - Win32 Release"
+if errorlevel 1 goto :Error
+
 cd ..\import
 nmake /f import.mak CFG="import - Win32 Release"
 if errorlevel 1 goto :Error
