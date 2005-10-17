@@ -360,10 +360,9 @@ static int MenuItem_DeleteContact(WPARAM wParam, LPARAM lParam)
                     if (status == ID_STATUS_OFFLINE || (status >= ID_STATUS_CONNECTING && status < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES)) {
                         // Set a flag so we remember to delete the contact when the protocol goes online the next time
                         DBWriteContactSettingByte((HANDLE) wParam, "CList", "Delete", 1);
-                        MessageBoxA(NULL,
-                                   Translate
-                                   ("This contact is on an instant messaging system which stores its contact list on a central server. The contact will be removed from the server and from your contact list when you next connect to that network."),
-                                   Translate("Delete Contact"), MB_OK);
+                        MessageBox( NULL,
+                                   TranslateT("This contact is on an instant messaging system which stores its contact list on a central server. The contact will be removed from the server and from your contact list when you next connect to that network."),
+                                   TranslateT("Delete Contact"), MB_OK);
                         return 0;
                     }
                 }

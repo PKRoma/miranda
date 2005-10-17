@@ -239,8 +239,6 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 
 	CallContactService((HANDLE) wParam, PSS_GETINFO, SGIF_MINIMAL, 0);
 	buffer = Translate("(Unknown Contact)");
-	//buffer = (char*)mir_alloc(strlen(Translate("'(Unknown Contact)'"))+1);
-	//mir_snprintf(buffer,strlen(Translate("'(Unknown Contact)'"))+1,"%s",Translate("'(Unknown Contact)'"));
 	return (int) buffer;
 }
 

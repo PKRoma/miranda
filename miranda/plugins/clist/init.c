@@ -67,7 +67,7 @@ int LoadCLUIModule();
 static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBoxA( NULL, Translate( "This plugin requires db3x plugin version 0.5.1.0 or later" ), "CList", MB_OK );
+		MessageBox( NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("CList"), MB_OK );
 		return 1;
 	}
 

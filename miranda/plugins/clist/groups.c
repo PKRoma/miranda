@@ -220,7 +220,7 @@ static int RenameGroupWithMove(int groupId, const TCHAR *szName, int move)
 	HANDLE hContact;
 
 	if (GroupNameExists(szName, groupId)) {
-		MessageBoxA(NULL, Translate("You already have a group with that name. Please enter a unique name for the group."), Translate("Rename Group"),
+		MessageBox(NULL, TranslateT("You already have a group with that name. Please enter a unique name for the group."), TranslateT("Rename Group"),
 			MB_OK);
 		return 1;
 	}

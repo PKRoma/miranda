@@ -479,9 +479,17 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	return FALSE;
 }
 
-static const char *szFontIdDescr[FONTID_MAX + 1] =
-{ "Standard contacts", "Online contacts to whom you have a different visibility", "Offline contacts", "Contacts which are 'not on list'",
-"Groups", "Group member counts", "Dividers", "Offline contacts to whom you have a different visibility" };
+static const TCHAR* szFontIdDescr[FONTID_MAX + 1] =
+{ 
+	_T("Standard contacts"),
+	_T("Online contacts to whom you have a different visibility"),
+	_T("Offline contacts"),
+	_T("Contacts which are 'not on list'"),
+	_T("Groups"),
+	_T("Group member counts"),
+	_T("Dividers"),
+	_T("Offline contacts to whom you have a different visibility")
+};
 
 #define SAMEASF_FACE   1
 #define SAMEASF_SIZE   2
@@ -561,7 +569,7 @@ static void SwitchTextDlgToMode(HWND hwndDlg, int expert)
 	ShowWindow(GetDlgItem(hwndDlg, IDC_SAMECOLOUR), expert ? SW_SHOW : SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_STSIZETEXT), expert ? SW_HIDE : SW_SHOW);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_STCOLOURTEXT), expert ? SW_HIDE : SW_SHOW);
-	SetDlgItemTextA(hwndDlg, IDC_STASTEXT, Translate(expert ? "as:" : "based on:"));
+	SetDlgItemText(hwndDlg, IDC_STASTEXT, TranslateTS(expert ? _T("as:") : _T("based on:")));
 	{
 		UTILRESIZEDIALOG urd = { 0 };
 		urd.cbSize = sizeof(urd);
@@ -621,7 +629,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				fontSettings[fontId].charset = lf.lfCharSet;
 				fontSettings[fontId].colour = colour;
 				lstrcpyA(fontSettings[fontId].szFace, lf.lfFaceName);
-				itemId = SendDlgItemMessageA(hwndDlg, IDC_FONTID, CB_ADDSTRING, 0, (LPARAM) Translate(szFontIdDescr[fontId]));
+				itemId = SendDlgItemMessage(hwndDlg, IDC_FONTID, CB_ADDSTRING, 0, (LPARAM) TranslateTS( szFontIdDescr[fontId] ));
 				SendDlgItemMessage(hwndDlg, IDC_FONTID, CB_SETITEMDATA, itemId, fontId);
 			}
 			SendDlgItemMessage(hwndDlg, IDC_FONTID, CB_SETCURSEL, 0, 0);
@@ -653,7 +661,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				int j, id, itemId;
 				char szText[256];
 				SendDlgItemMessage(hwndDlg, IDC_SAMEAS, CB_RESETCONTENT, 0, 0);
-				itemId = SendDlgItemMessageA(hwndDlg, IDC_SAMEAS, CB_ADDSTRING, 0, (LPARAM) Translate("<none>"));
+				itemId = SendDlgItemMessage(hwndDlg, IDC_SAMEAS, CB_ADDSTRING, 0, (LPARAM) TranslateT("<none>"));
 				SendDlgItemMessage(hwndDlg, IDC_SAMEAS, CB_SETITEMDATA, itemId, 0xFF);
 				if (0xFF == fontSettings[i].sameAs)
 					SendDlgItemMessage(hwndDlg, IDC_SAMEAS, CB_SETCURSEL, itemId, 0);
@@ -662,7 +670,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					id = SendDlgItemMessage(hwndDlg, IDC_FONTID, CB_GETITEMDATA, j, 0);
 					if (id == i)
 						continue;
-					itemId = SendDlgItemMessageA(hwndDlg, IDC_SAMEAS, CB_ADDSTRING, 0, (LPARAM) szText);
+					itemId = SendDlgItemMessage(hwndDlg, IDC_SAMEAS, CB_ADDSTRING, 0, (LPARAM) szText);
 					SendDlgItemMessage(hwndDlg, IDC_SAMEAS, CB_SETITEMDATA, itemId, id);
 					if (id == fontSettings[i].sameAs)
 						SendDlgItemMessage(hwndDlg, IDC_SAMEAS, CB_SETCURSEL, itemId, 0);
