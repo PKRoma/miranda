@@ -141,6 +141,40 @@ echo #endif    // !_MAC                                                         
 echo.                                                                              >>..\src\version.rc
 echo #endif    // English (U.S.) resources                                         >>..\src\version.rc
 echo.                                                                              >>..\src\version.rc
+
+for /F "delims=-/. tokens=1,2,3" %%i in ('date /T') do call :SetBuildDate %%i %%j %%k
+for /F "delims=:/. tokens=1,2" %%i in ('time /T') do call :SetBuildTime %%i %%j
+
+echo ^<?xml version="1.0" ?^>                                                      >%temp%\index.xml
+echo ^<rss version="2.0"^>                                                         >>%temp%\index.xml
+echo      ^<channel^>                                                              >>%temp%\index.xml
+echo           ^<title^>Miranda IM Alpha Builds^</title^>                          >>%temp%\index.xml
+echo           ^<link^>http://files.miranda-im.org/builds/^</link^>                >>%temp%\index.xml
+echo           ^<language^>en-us^</language^>                                      >>%temp%\index.xml
+echo           ^<lastBuildDate^>%yy%-%mm%-%dd% %hh%:%mn%^</lastBuildDate^>         >>%temp%\index.xml
+echo           ^<item^>                                                            >>%temp%\index.xml
+echo                ^<title^>Miranda 0.4.3.0 alpha %2^</title^>                    >>%temp%\index.xml
+echo 			   ^<link^>http://files.miranda-im.org/builds/?%yy%%mm%%dd%%hh%%mn%^</link^> >>%temp%\index.xml
+echo                ^<description^>                                                >>%temp%\index.xml
+echo                     Miranda 0.4.3.0 alpha %2 is now available at http://files.miranda-im.org/builds/miranda-v%1a%2.zip >>%temp%\index.xml
+echo                ^</description^>                                               >>%temp%\index.xml
+echo                ^<pubDate^>%yy%-%mm%-%dd% %hh%:%mn%^</pubDate^>                 >>%temp%\index.xml
+echo                ^<category^>Nightly Builds</category^>                         >>%temp%\index.xml
+echo                ^<author^>Miranda IM Development Team^</author^>               >>%temp%\index.xml
+echo           ^</item^>                                                           >>%temp%\index.xml
+echo      ^</channel^>                                                             >>%temp%\index.xml
+echo ^</rss^>                                                                      >>%temp%\index.xml
+goto :eof
+
+:SetBuildDate
+set dd=%1
+set mm=%2
+set yy=%3
+goto :eof
+
+:SetBuildTime
+set hh=%1
+set mn=%2
 goto :eof
 
 :Pack
