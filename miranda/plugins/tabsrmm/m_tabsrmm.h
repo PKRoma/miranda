@@ -466,6 +466,8 @@ typedef struct _globals {
     struct infopanelconfig ipConfig;
     COLORREF crDefault, crIncoming, crOutgoing;
     BOOL bUnicodeBuild;
+    BYTE bClipBorder;
+    BOOL bRoundedCorner;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

@@ -1138,6 +1138,10 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
             SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETACCEL, 0, (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", 1000));
             SetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, myGlobals.szDefaultTitleFormat);
             SendDlgItemMessage(hwndDlg, IDC_DEFAULTTITLEFORMAT, EM_LIMITTEXT, TITLE_FORMATLEN - 1, 0);
+            CheckDlgButton(hwndDlg, IDC_ROUNDEDCORNERS, myGlobals.bRoundedCorner);
+            SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
+            SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_SETPOS, 0, (int)myGlobals.bClipBorder);
+            
             if(!ServiceExists("Utils/SnapWindowProc"))
                 EnableWindow(GetDlgItem(hwndDlg, IDC_USESNAPPING), FALSE);
             else
@@ -1175,6 +1179,20 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", GetDlgItemInt(hwndDlg, IDC_FLASHINTERVAL, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "nrflash", GetDlgItemInt(hwndDlg, IDC_NRFLASH, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING));
+
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "bclip", (BYTE)SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_GETPOS, 0, 0));
+                            myGlobals.bClipBorder = SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_GETPOS, 0, 0);
+
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "brounded", IsDlgButtonChecked(hwndDlg, IDC_ROUNDEDCORNERS) ? 1 : 0);
+                            myGlobals.bRoundedCorner = IsDlgButtonChecked(hwndDlg, IDC_ROUNDEDCORNERS) ? 1 : 0;
+
+                            if(myGlobals.bClipBorder == 0 && myGlobals.bRoundedCorner == 0) {
+                                struct ContainerWindowData *pContainer = pFirstContainer;
+                                while(pContainer) {
+                                    SetWindowRgn(pContainer->hwnd, NULL, TRUE);
+                                    pContainer = pContainer->pNextContainer;
+                                }
+                            }
                             GetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, szDefaultName, TITLE_FORMATLEN);
 #if defined(_UNICODE)
                             szDefault = Utf8_Encode(szDefaultName);
@@ -2003,6 +2021,8 @@ void ReloadGlobals()
      myGlobals.m_smcxicon = GetSystemMetrics(SM_CXSMICON);
      myGlobals.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
      myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
+     myGlobals.bClipBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, "bclip", 0);
+     myGlobals.bRoundedCorner = DBGetContactSettingByte(NULL, SRMSGMOD_T, "brounded", 0);
      myGlobals.m_PasteAndSend = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "pasteandsend", 0);
      myGlobals.m_szNoStatus = TranslateT("No status message available");
      myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN);

@@ -800,8 +800,21 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     						mathWndInfo.bottom=windRect.bottom;
     						CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
     			}
-#endif                
-            break;
+#endif          
+                if(myGlobals.bClipBorder != 0 || myGlobals.bRoundedCorner) {
+                    int clip = myGlobals.bClipBorder;
+                    RECT rcWindow;
+                    HRGN rgn;
+                    
+                    GetWindowRect(hwndDlg, &rcWindow);
+                    if(myGlobals.bRoundedCorner)
+                        rgn = CreateRoundRectRgn(clip, clip, (rcWindow.right - rcWindow.left) - clip + 1, (rcWindow.bottom - rcWindow.top) - clip, 8 + clip, 8 + clip);
+                    else
+                        rgn = CreateRectRgn(clip, clip, (rcWindow.right - rcWindow.left) - clip, (rcWindow.bottom - rcWindow.top) - clip);
+                    SetWindowRgn(hwndDlg, rgn, TRUE);
+                    DeleteObject(rgn);
+                }
+                break;
             } 
             case DM_UPDATETITLE:
             {

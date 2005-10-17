@@ -20,7 +20,32 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-Avatar service - load and maintain contact avatars
+Avatar service 
+
+- load and maintain a cache of contact avatars.
+- draw avatars to a given target device context
+- maintain per protocol fallback images
+
+The avatar service builds on top of Mirandas core bitmap loading service (MS_UTILS_LOADBITMAP).
+However, if imgdecoder.dll is installed in mirandas main or Plugins directory, it can be used
+to support PNG images. The avatar service loads 32bit PNG images and peforms alpha channel
+premultiplication so that these images can be rendered by using the Win32 AlphaBlend() API.
+
+The cache grows on demand only, that is, no avatars are PREloaded. An avatar is only loaded
+if a plugin requests this by using the MS_AV_GETAVATAR service. Since avatars may update
+asynchronously, the avatar iamge may not be ready when a plugin calls the service. In that
+case, an event (ME_AV_AVATARCHANGED) is fired when a contacts avatar changes. This event
+is also fired, when a contact avatar changes automatically.
+
+The service takes care about protocol capabilites (does not actively fetch avatars for 
+protocols which do not report avatar capabilities via PF4_AVATARS or for protocols which
+have been disabled in the option dialog). It also does not actively fetch avatars for
+protocols which are in invisible status mode (may cause privacy issues and some protocols
+like MSN don't allow any outbound client communication when in invisible status mode).
+
+- TODO
+- maintain recent avatars (store the last hashes to avoid re-fetching)
+- cache expiration, based on least recently used algorithm.
 
 (c) 2005 by Nightwish, silvercircle@gmail.com
 
@@ -50,7 +75,34 @@ struct avatarCacheEntry {
     char szFilename[MAX_PATH];      // filename of the avatar (absolute path)
 };
 
+typedef struct avatarCacheEntry AVATARCACHEENTRY;
+
+#define AVDRQ_FALLBACKPROTO 1       // use the protocol picture as fallback (currently not used)
+#define AVDRQ_FAILIFNOTCACHED 2     // don't create a cache entry if it doesn't already exist. (currently not working)
+#define AVDRQ_ROUNDEDCORNER 4       // draw with rounded corners
+#define AVDRQ_DRAWBORDER 8          // draw a border around the picture
+#define AVDRQ_PROTOPICT  16         // draw a protocol picture (if available).
+
+// request to draw a contacts picture. See MS_AV_DRAWAVATAR service description
+
+typedef struct _avatarDrawRequest {
+    DWORD  cbSize;                  // set this to sizeof(AVATARDRAWREQUEST) - mandatory, service will return failure code if 
+                                    // cbSize is wrong
+    HANDLE hContact;                // the contact for which the avatar should be drawn. set it to 0 to draw a protocol picture
+    HDC    hTargetDC;               // target device context
+    RECT   rcDraw;                  // target rectangle. The avatar will be centered within the rectangle and scaled to fit.
+    DWORD  dwFlags;                 // flags (see above for valid bitflags)
+    DWORD  dwReserved;              // for future use
+    DWORD  dwInternal;              // don't use it
+    COLORREF clrBorder;             // color for the border  (used with AVDRQ_DRAWBORDER)
+    UCHAR  radius;                  // radius (used with AVDRQ_ROUNDEDCORNER)
+    UCHAR  alpha;                   // alpha value for semi-transparent avatars (valid values form 1 to 255, if it is set to 0
+                                    // the avatar won't be transparent.
+    char   *szProto;                // only used when AVDRQ_PROTOPICT is set
+} AVATARDRAWREQUEST;
+
 #define INITIAL_AVATARCACHESIZE 300
+#define CACHE_GROWSTEP 50
 
 #define AVS_MODULE "AVS_Settings"          // db settings module path
 #define PPICT_MODULE "AVS_ProtoPics"   // protocol pictures are saved here
@@ -89,6 +141,19 @@ struct avatarCacheEntry {
 // wParam = (HANDLE)hContact
 
 #define MS_AV_CONTACTOPTIONS "SV_Avatars/ContactOptions"
+
+// draw an avatar picture
+// 
+// wParam = 0 (not used)
+// lParam = AVATARDRAWREQUEST *avdr
+// draw a contact picture to a destination device context. see description of
+// the AVATARDRAWREQUEST structure for more information on how to use this
+// service.
+// return value: 0 -> failure, avatar probably not available, or not ready. The drawing
+// service DOES schedule an avatar update so your plugin will be notified by the ME_AV_AVATARCHANGED
+// event when the requested avatar is ready for use.
+
+#define MS_AV_DRAWAVATAR "SV_Avatars/Draw"
 
 // fired when the contacts avatar changes
 // wParam = hContact
