@@ -1338,8 +1338,9 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) != 0) {
 			YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Removing avatar information!");
 			
-			GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename);
-			DeleteFile(AI->filename);
+			DBWriteContactSettingDword(AI->hContact, yahooProtocolName, "PictCK", 0);
+			//GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename);
+			//DeleteFile(AI->filename);
 		}
 
 		return GAIR_NOAVATAR;

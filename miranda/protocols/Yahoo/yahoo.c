@@ -994,8 +994,8 @@ void yahoo_reset_avatar(HANDLE 	hContact)
 	AI.cbSize = sizeof AI;
 	AI.format = PA_FORMAT_BMP;
 	AI.hContact = hContact;
-	GetAvatarFileName(AI.hContact, AI.filename, sizeof AI.filename);
-	DeleteFile(AI.filename);
+	//GetAvatarFileName(AI.hContact, AI.filename, sizeof AI.filename);
+	//DeleteFile(AI.filename);
 
 	DBDeleteContactSetting(AI.hContact, "ContactPhoto", "File");	
 	
