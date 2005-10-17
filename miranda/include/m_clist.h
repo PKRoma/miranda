@@ -50,6 +50,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //returns NULL if the status mode was unknown
 #define GSMDF_PREFIXONLINE  1   //prefix "Online: " to all status modes that
                   //imply online, eg "Online: Away"
+#define GCMDF_UNICODE        2      //will return TCHAR* instead of char*
+#if defined( _UNICODE )
+	#define GCMDF_TCHAR       GCMDF_UNICODE      //will return TCHAR* instead of char*
+#else
+	#define GCMDF_TCHAR       0      //will return char*, as usual
+#endif
 #define MS_CLIST_GETSTATUSMODEDESCRIPTION  "CList/GetStatusModeDescription"
 
 //add a new item to the main menu
