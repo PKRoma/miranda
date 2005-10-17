@@ -386,7 +386,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 				ci.dwFlag = CNF_DISPLAY;
 				if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 					// CNF_DISPLAY always returns a string type
-					szName = ci.pszVal;
+					szName = (char *)ci.pszVal;
 				}
 			}
 			else
