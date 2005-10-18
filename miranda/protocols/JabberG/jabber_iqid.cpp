@@ -529,7 +529,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 								JSetStringUtf( hContact, "Street", text );
 							}
 							else {
-								JSetString( hContact, "Street", m->text );
+								JSetStringUtf( hContact, "Street", m->text );
 								if (( m=JabberXmlGetChild( n, "EXTADR" )) == NULL )
 									m = JabberXmlGetChild( n, "EXTADD" );
 								if ( m!=NULL && m->text!=NULL ) {
