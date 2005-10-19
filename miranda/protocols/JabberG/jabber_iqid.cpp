@@ -1206,6 +1206,8 @@ LBL_ErrFormat:
 	AI.hContact = hContact;
 	JabberGetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
 
+	DBWriteContactSettingString( hContact, "ContactPhoto", "File", AI.filename );
+
 	FILE* out = fopen( AI.filename, "wb" );
 	if ( out != NULL ) {
 		fwrite( body, resultLen, 1, out );
