@@ -832,6 +832,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			return 0;
 		if (pAck->type != ACKTYPE_AVATAR)
 			return 0;
+		if (pAck->result == ACKRESULT_STATUS) {
+			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
+			break;
+		}			
 		if (pai==NULL)
 			return 0;
 		if (pAck->result == ACKRESULT_SUCCESS) {
@@ -839,9 +843,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai->filename);
 				ShowAvatar(hwndDlg, dat);
 			}
-		}
-		else if (pAck->result == ACKRESULT_STATUS) {
-			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 		}
 		else if (pAck->result == ACKRESULT_FAILED) {
 			DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, "");
