@@ -398,7 +398,7 @@ static void sttSaveAvatar()
 	bool bIsFirst = true;
 	int  pictureType;
 	while( !feof( in )) {
-		int bytes = fread( buf, sizeof buf, 1, in );
+		int bytes = fread( buf, 1, sizeof buf, in );
 		if ( bIsFirst ) {
 			pictureType = JabberGetPictureType( buf );
 			bIsFirst = false;
@@ -430,7 +430,7 @@ static BOOL CALLBACK JabberSetAvatarDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			hAvatar = NULL;
 			szFileName[0] = 0;
 
-			BOOL tValue = JGetByte( "EnableAvatars", 0 );
+			BOOL tValue = JGetByte( "EnableAvatars", 1 );
 			CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS,	tValue );
 			if ( tValue ) {
 				char szAvatar[ MAX_PATH ];

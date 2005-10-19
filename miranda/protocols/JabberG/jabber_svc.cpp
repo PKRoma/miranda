@@ -544,23 +544,27 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
 
 	char szHashValue[ MAX_PATH ];
-	if ( JGetStaticString( "AvatarHash", AI->hContact, szHashValue, sizeof szHashValue ))
+	if ( JGetStaticString( "AvatarHash", AI->hContact, szHashValue, sizeof szHashValue )) {
+		JabberLog( "No avatar" );
 		return GAIR_NOAVATAR;
+	}
 
 	JabberGetAvatarFileName( AI->hContact, AI->filename, sizeof AI->filename );
 	AI->format = ( AI->hContact == NULL ) ? PA_FORMAT_PNG : JGetByte( AI->hContact, "AvatarType", 0 );
 
 	if ( ::access( AI->filename, 0 ) == 0 ) {
 		char szSavedHash[ 256 ];
-		if ( !JGetStaticString( "AvatarSaved", AI->hContact, szSavedHash, sizeof szSavedHash ))
-			if ( !strcmp( szSavedHash, szHashValue ))
+		if ( !JGetStaticString( "AvatarSaved", AI->hContact, szSavedHash, sizeof szSavedHash )) {
+			if ( !strcmp( szSavedHash, szHashValue )) {
+				JabberLog( "Avatar is Ok: %s == %s", szSavedHash, szHashValue );
 				return GAIR_SUCCESS;
-	}
+	}	}	}
 
 	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL && jabberOnline ) {
 		DBVARIANT dbv;
 		if ( !JGetStringUtf( AI->hContact, "jid", &dbv )) {
 			JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal );
+			JabberLog( "Rereading avatar for %s", dbv.pszVal );
 
 			int iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetAvatar );
@@ -571,6 +575,7 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 			return GAIR_WAITFOR;
 	}	}
 
+	JabberLog( "No avatar" );
 	return GAIR_NOAVATAR;
 }
 
