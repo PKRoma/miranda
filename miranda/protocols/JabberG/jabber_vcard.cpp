@@ -82,11 +82,12 @@ static void SetDialogField( HWND hwndDlg, int nDlgItem, char* key )
 	DBVARIANT dbv;
 
 	if ( !DBGetContactSetting( NULL, jabberProtoName, key, &dbv )) {
-		SetDlgItemText( hwndDlg, nDlgItem, dbv.pszVal );
+		char* str = JabberUnixToDos( dbv.pszVal );
+		SetDlgItemText( hwndDlg, nDlgItem, str );
+		free( str );
 		JFreeVariant( &dbv );
 	}
-	else
-		SetDlgItemText( hwndDlg, nDlgItem, "" );
+	else SetDlgItemText( hwndDlg, nDlgItem, "" );
 }
 
 static BOOL CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
