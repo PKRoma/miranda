@@ -422,8 +422,11 @@ BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			ypos = 14;
 			if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
 				// use new jabber:x:data form
-				if (( n=JabberXmlGetChild( xNode, "instructions" ))!=NULL && n->text!=NULL )
-					SetDlgItemText( hwndDlg, IDC_INSTRUCTION, n->text );
+				if (( n=JabberXmlGetChild( xNode, "instructions" ))!=NULL && n->text!=NULL ) {
+					char* str = JabberTextDecode( n->text );
+					SetDlgItemText( hwndDlg, IDC_INSTRUCTION, str );
+					free( str );
+				}
 				JabberFormCreateUI( hFrame, xNode, &i /*dummy*/ );
 			}
 			else {
