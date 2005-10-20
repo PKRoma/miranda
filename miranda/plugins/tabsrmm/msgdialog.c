@@ -4644,10 +4644,7 @@ verify:
 
             if(dat->hwndTip) {
                 RECT rc;
-                char szTitle[256];
-#if defined(_UNICODE)
-                const wchar_t *szTitleW;
-#endif                
+                TCHAR szTitle[256];
                 UINT id = wParam;
 
                 if(id == 0)
@@ -4671,25 +4668,35 @@ verify:
                     {
                         DBVARIANT dbv;
 
-                        if(!DBGetContactSetting(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusName", &dbv)) {
-                            if(dbv.type == DBVT_ASCIIZ)
-                                mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), "%nick%", dbv.pszVal);
+                        if(!DBGetContactSettingTString(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusName", &dbv)) {
+                            if(lstrlen(dbv.ptszVal) > 1) {
+                                _sntprintf(szTitle, safe_sizeof(szTitle), _T("Extended status for %s: %s"), dat->szNickname, dbv.ptszVal);
+                                szTitle[safe_sizeof(szTitle) - 1] = 0;
+                            }
                             DBFreeVariant(&dbv);
                         }
-                        else if(dat->xStatus > 0 && dat->xStatus <= 24)
-                            mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), "%nick%", xStatusDescr[dat->xStatus - 1]);
+                        else if(dat->xStatus > 0 && dat->xStatus <= 24) {
+                            WCHAR xStatusDescW[100];
+                            MultiByteToWideChar(CP_ACP, 0, xStatusDescr[dat->xStatus - 1], -1, xStatusDescW, 90);
+                            _sntprintf(szTitle, safe_sizeof(szTitle), _T("Extended status for %s: %s"), dat->szNickname, xStatusDescW);
+                            szTitle[safe_sizeof(szTitle) - 1] = 0;
+                        }
                         else
                             return 0;
                         break;
                     }
-                    case IDC_PANELSTATUS:
-                        mir_snprintf(szTitle, sizeof(szTitle), Translate("Status message for %s (%s)"), "%nick%", dat->szStatus);
+                    case IDC_PANELSTATUS: 
+                    {
+                        WCHAR szwStatus[100];
+                        MultiByteToWideChar(CP_ACP, 0, dat->szStatus, -1, szwStatus, 90);
+                        _sntprintf(szTitle, safe_sizeof(szTitle), _T("Status message for %s (%s)"), dat->szNickname, szwStatus);
+                        szTitle[safe_sizeof(szTitle) - 1] = 0;
                         break;
+                    }
                     default:
-                        mir_snprintf(szTitle, sizeof(szTitle), Translate("tabSRMM Information"));
+                        _sntprintf(szTitle, safe_sizeof(szTitle), _T("tabSRMM Information"));
                 }
-                szTitleW = EncodeWithNickname(szTitle, dat->szNickname, dat->codePage);
-                SendMessage(dat->hwndTip, TTM_SETTITLE, 1, (LPARAM)szTitleW);
+                SendMessage(dat->hwndTip, TTM_SETTITLE, 1, (LPARAM)szTitle);
 #else
                 switch(id) {
                     case IDC_PANELNICK:
@@ -4938,8 +4945,9 @@ verify:
                     if(dat->dwFlags & MWF_ERRORSTATE)
                         SendMessage(hwndDlg, WM_COMMAND, IDC_CANCELSEND, 0);
                     else {
-                        char szBuffer[256];
-                        mir_snprintf(szBuffer, sizeof(szBuffer), Translate("Message delivery in progress (%d unsent). You cannot close the session right now"), dat->iOpenJobs);
+                        TCHAR szBuffer[256];
+                        _sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Message delivery in progress (%d unsent). You cannot close the session right now"), dat->iOpenJobs);
+                        szBuffer[safe_sizeof(szBuffer) - 1] = 0;
                         SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)szBuffer);
                         return TRUE;
                     }

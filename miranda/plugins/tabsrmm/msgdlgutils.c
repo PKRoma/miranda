@@ -1657,6 +1657,17 @@ void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat)
     }
 }
 
+
+int MY_DBFreeVariant(DBVARIANT *dbv)
+{
+    return DBFreeVariant(dbv);
+}
+
+int MY_DBGetContactSettingTString(HANDLE hContact, char *szModule, char *szSetting, DBVARIANT *dbv)
+{
+    return(DBGetContactSettingTString(hContact, szModule, szSetting, dbv));
+}
+
 // free() the return value
 
 TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting)
@@ -1695,7 +1706,7 @@ void LoadTimeZone(HWND hwndDlg, struct MessageWindowData *dat)
 void HandlePasteAndSend(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if(!myGlobals.m_PasteAndSend) {
-        SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)Translate("The 'paste and send' feature is disabled. You can enable it on the 'General' options page in the 'Sending Messages' section"));
+        SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)TranslateT("The 'paste and send' feature is disabled. You can enable it on the 'General' options page in the 'Sending Messages' section"));
         return;                                     // feature disabled
     }
     

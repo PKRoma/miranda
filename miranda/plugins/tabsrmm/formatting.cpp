@@ -324,6 +324,9 @@ nosimpletags:
 static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x"), _T("%m")};
 #define NR_VARS 7
 
+extern "C" int MY_DBGetContactSettingTString(HANDLE hContact, char *szModule, char *szSetting, DBVARIANT *dbv);
+extern "C" int MY_DBFreeVariant(DBVARIANT *dbv);
+
 extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus)
 {
     TCHAR *szResult = 0;
@@ -394,8 +397,12 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                 TCHAR *result = NULL;
                 
                 if(xStatus > 0 && xStatus <= 24) {
-                    if((result = MY_DBGetContactSettingString(hContact, (char *)szProto, "XStatusName")) != NULL)
-                        _tcsncpy(szTemp, result, 500);
+                    DBVARIANT dbv = {0};
+                    
+                    if(!MY_DBGetContactSettingTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
+                        _tcsncpy(szTemp, dbv.ptszVal, 500);
+                        MY_DBFreeVariant(&dbv);
+                    }
                     else
                         szFinalStatus = (char *)szStatus;
                 }
