@@ -812,7 +812,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     else
                         rgn = CreateRectRgn(clip, clip, (rcWindow.right - rcWindow.left) - clip, (rcWindow.bottom - rcWindow.top) - clip);
                     SetWindowRgn(hwndDlg, rgn, TRUE);
-                    DeleteObject(rgn);
                 }
                 break;
             } 

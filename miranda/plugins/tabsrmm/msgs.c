@@ -1028,6 +1028,7 @@ int SplitmsgShutdown(void)
     DestroyCursor(myGlobals.hCurSplitWE);
     DeleteObject(myGlobals.m_hFontWebdings);
     UnhookEvent(hEventDbEventAdded);
+    UnhookEvent(hEventDispatch);
     UnhookEvent(hEventDbSettingChange);
     UnhookEvent(hEventContactDeleted);
     UnhookEvent(hEvent_FontService);
