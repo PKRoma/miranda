@@ -826,6 +826,8 @@ static void sttInitFileTransfer(
 	{	const char* p = tFileInfo2[ "AppID" ];
 		if ( p )
 			dwAppID = atol( p );
+		if ( dwAppID == 12 )
+			dwAppID = 1;
 	}
 	{	const char* p = tFileInfo2[ "Context" ];
 		if ( p ) {

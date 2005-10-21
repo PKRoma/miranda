@@ -11,6 +11,7 @@ Version 0.4.1.2
 [!] fix for initial email notification in the MSNP11 mode
 [!] fix for the "User is already in your contact list" error
 [!] bug 0001427 fixed: Error 540 during login on slow connections
+[!] bug 0001468 fixed: MSN 7.5 users cannot load Miranda users avatar.
 [!] BYE command was handled incorrectly
 [!] fix for the old MSN file transfers: a received file cannot be opened
 
