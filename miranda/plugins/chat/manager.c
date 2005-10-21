@@ -522,9 +522,11 @@ BOOL SM_GiveStatus(char *pszID, char * pszModule, char * pszUID,  char * pszStat
 		if (!lstrcmpiA(pTemp->pszID,pszID) && !lstrcmpiA(pTemp->pszModule,pszModule))
 		{
 			USERINFO * ui = UM_GiveStatus(pTemp->pUsers, pszUID, TM_StringToWord(pTemp->pStatuses, pszStatus));
-			SM_MoveUser(pTemp->pszID, pTemp->pszModule, ui->pszUID);
-			if(pTemp->hWnd)
-				SendMessage(pTemp->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
+			if (ui) {
+				SM_MoveUser(pTemp->pszID, pTemp->pszModule, ui->pszUID);
+				if(pTemp->hWnd)
+					SendMessage(pTemp->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
+			}
 			return TRUE;
 		}
 		pLast = pTemp;
