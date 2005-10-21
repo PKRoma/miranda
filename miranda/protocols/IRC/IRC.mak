@@ -92,7 +92,7 @@ LINK32_OBJS= \
 !ELSEIF  "$(CFG)" == "IRC - Win32 Debug"
 
 OUTDIR=.\Debug
-INTDIR=.\Debug/Intermediate
+INTDIR=.\Debug
 
 ALL : "..\..\bin\Debug\plugins\IRC.dll"
 
@@ -112,18 +112,15 @@ CLEAN :
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\windows.obj"
-	-@erase "$(OUTDIR)\Intermediate\IRC.map"
 	-@erase "$(OUTDIR)\IRC.exp"
 	-@erase "$(OUTDIR)\IRC.lib"
+	-@erase "$(OUTDIR)\IRC.map"
 	-@erase "$(OUTDIR)\IRC.pdb"
 	-@erase "..\..\bin\Debug\plugins\IRC.dll"
 	-@erase "..\..\bin\Debug\plugins\IRC.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
-
-"$(INTDIR)" :
-    if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
 CPP_PROJ=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
@@ -155,8 +152,8 @@ LINK32_OBJS= \
 
 !ELSEIF  "$(CFG)" == "IRC - Win32 Release SSL"
 
-OUTDIR=.\IRC___Win32_Release_SSL
-INTDIR=.\IRC___Win32_Release_SSL
+OUTDIR=.\Release_SSL
+INTDIR=.\Release_SSL
 
 ALL : "..\..\bin\Release\plugins\IRC.dll"
 
@@ -213,8 +210,8 @@ LINK32_OBJS= \
 
 !ELSEIF  "$(CFG)" == "IRC - Win32 Debug SSL"
 
-OUTDIR=.\IRC___Win32_Debug_SSL
-INTDIR=.\IRC___Win32_Debug_SSL
+OUTDIR=.\Debug_SSL
+INTDIR=.\Debug_SSL
 
 ALL : "..\..\bin\Debug\plugins\IRC.dll"
 
