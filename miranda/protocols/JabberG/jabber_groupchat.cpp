@@ -496,7 +496,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 	struct ThreadData *info;
 	XmlNode *showNode, *statusNode, *errorNode, *itemNode, *n;
 	char* from;
-	int status;
+	int status, newRes;
 	char* str;
 	int i;
 	BOOL roomCreated;
@@ -538,7 +538,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 			str = JabberTextDecode( statusNode->text );
 		else
 			str = NULL;
-		int newRes = JabberListAddResource( LIST_CHATROOM, from, status, str );
+		newRes = ( JabberListAddResource( LIST_CHATROOM, from, status, str ) == 0 ) ? 0 : GC_EVENT_JOIN;
 		if ( str ) free( str );
 
 		roomCreated = FALSE;
@@ -563,8 +563,10 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 						else if ( !strcmp( str, "visitor" ))      newRole = ROLE_VISITOR;
 						else                                      newRole = ROLE_NONE;
 
-						if ( newRole != r->role && r->role != ROLE_NONE )
-							JabberGcLogUpdateMemberStatus( item, nick, 10 );
+						if ( newRole != r->role && r->role != ROLE_NONE ) {
+							JabberGcLogUpdateMemberStatus( item, nick, GC_EVENT_REMOVESTATUS );
+							newRes = GC_EVENT_ADDSTATUS;
+						}
 						r->role = newRole;
 			}	}	}
 
@@ -623,12 +625,12 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 
 				case 307:
 					JabberListRemoveResource( LIST_CHATROOM, from );
-					JabberGcLogUpdateMemberStatus( item, nick, -2 );
+					JabberGcLogUpdateMemberStatus( item, nick, GC_EVENT_KICK );
 					return;
 		}	}	}
 
 		JabberListRemoveResource( LIST_CHATROOM, from );
-		JabberGcLogUpdateMemberStatus( item, nick, -1 );
+		JabberGcLogUpdateMemberStatus( item, nick, GC_EVENT_PART );
 	}
 	else if ( !strcmp( type, "error" )) {
 		errorNode = JabberXmlGetChild( node, "error" );

@@ -152,22 +152,22 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick, int acti
 		gce.time = time(0);
 	}
 
-	switch( action ) {
-	case -1:     gcd.iType = GC_EVENT_PART;      break;
-	case -2:     gcd.iType = GC_EVENT_KICK;		gce.pszStatus = "Moderator";    break;
+	switch( gcd.iType = action ) {
+	case GC_EVENT_PART:  break;
+	case GC_EVENT_KICK:  gce.pszStatus = "Moderator";    break;
 	default:
 		for ( int i=0; i < item->resourceCount; i++ ) {
 			JABBER_RESOURCE_STATUS& JS = item->resource[i];
 			if ( !strcmp( nick, JS.resourceName )) {
-				if ( action != 1 ) {
-					if ( action == 10 ) {
-						gcd.iType = GC_EVENT_REMOVESTATUS;
+				if ( action != GC_EVENT_JOIN ) {
+					switch( action ) {
+					case 0: 
+						gcd.iType = GC_EVENT_ADDSTATUS;
+					case GC_EVENT_REMOVESTATUS:
 						gce.bAddToLog = false;
 					}
-					else gcd.iType = GC_EVENT_ADDSTATUS;
 					gce.pszText = Translate( "Moderator" );
 				}
-				else gcd.iType = GC_EVENT_JOIN;
 				gce.pszStatus = JTranslate( sttRoles[ JS.role ] );
 				gce.bIsMe = ( lstrcmpA( myNick, nick ) == 0 );
 				break;
@@ -191,7 +191,7 @@ void JabberGcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 	}
 	else {
 		char* myNick = JabberNickFromJID( jabberJID );
-		JabberGcLogUpdateMemberStatus( item, myNick, -2 );
+		JabberGcLogUpdateMemberStatus( item, myNick, GC_EVENT_KICK );
 		free( myNick );
 		JCallService( MS_GC_EVENT,  SESSION_OFFLINE, ( LPARAM )&gce );
 	}
