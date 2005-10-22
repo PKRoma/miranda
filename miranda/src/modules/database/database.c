@@ -251,10 +251,6 @@ int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg)
 	return 1;
 }
 
-void UnloadDatabaseModule(void)
-{
-}
-
 // enumerate all plugins that had valid DatabasePluginInfo()
 static int FindDbPluginForProfile(char * pluginname, DATABASELINK * dblink, LPARAM lParam)
 {

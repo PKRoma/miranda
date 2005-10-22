@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int InitialiseModularEngine(void);
 void DestroyingModularEngine(void);
 void DestroyModularEngine(void);
-void UnloadDatabaseModule(void);
 int UnloadNewPluginsModule(void);
 
 DWORD (WINAPI *MyMsgWaitForMultipleObjectsEx)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD);
@@ -315,7 +314,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (InitialiseModularEngine())
 	{
 		NotifyEventHooks(hShutdownEvent,0,0);
-		UnloadDatabaseModule();
 		UnloadNewPluginsModule();
 		DestroyModularEngine();
 		return 1;
@@ -371,7 +369,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 		} // while
 	}
-	UnloadDatabaseModule();  
 	UnloadNewPluginsModule();
 	DestroyModularEngine();
 	CloseHandle(hStackMutex);
