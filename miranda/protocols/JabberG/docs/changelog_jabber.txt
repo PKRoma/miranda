@@ -4,6 +4,10 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.4.1.3
+===============
+[+] wish #0001541: Conferences: show kick/ban msgs
+
 Version 0.4.1.2
 ===============
 [+] added GNUPG support (many thanks to Karl-Heinz Pennemann for a patch)

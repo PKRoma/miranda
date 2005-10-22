@@ -375,10 +375,9 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 				SetDlgItemText( hwndDlg, IDC_NICK, szNick );
 			else {
 				char* nick = JabberNickFromJID( jabberJID );
-				if ( nick != NULL ) {
-					SetDlgItemText( hwndDlg, IDC_NICK, nick );
-					free( nick );
-		}	}	}
+				SetDlgItemText( hwndDlg, IDC_NICK, nick );
+				free( nick );
+		}	}
 		return TRUE;
 
 	case WM_COMMAND:
@@ -564,7 +563,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 						else                                      newRole = ROLE_NONE;
 
 						if ( newRole != r->role && r->role != ROLE_NONE ) {
-							JabberGcLogUpdateMemberStatus( item, nick, GC_EVENT_REMOVESTATUS );
+							JabberGcLogUpdateMemberStatus( item, nick, GC_EVENT_REMOVESTATUS, NULL );
 							newRes = GC_EVENT_ADDSTATUS;
 						}
 						r->role = newRole;
@@ -575,7 +574,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		}
 
 		// Update groupchat log window
-		JabberGcLogUpdateMemberStatus( item, nick, newRes );
+		JabberGcLogUpdateMemberStatus( item, nick, newRes, NULL );
 
 		// Update room status
 		//if ( item->status != ID_STATUS_ONLINE ) {
@@ -602,21 +601,19 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 	else if ( !strcmp( type, "unavailable" )) {
 		if ( xNode != NULL && item->nick != NULL ) {
 			itemNode = JabberXmlGetChild( xNode, "item" );
+			XmlNode* reasonNode = JabberXmlGetChild( itemNode, "reason" );
 
 			if ( !strcmp( nick, item->nick )) {
 				int iStatus = sttGetStatusCode( xNode );
 				switch( iStatus ) {
 				case 301:	case 307:
-					JabberGcQuit( item, iStatus, itemNode );
+					JabberGcQuit( item, iStatus, reasonNode );
 					break;
 
 				case 303:
 					sttRenameParticipantNick( item, nick, itemNode );
 					return;
-				}
-
-				replaceStr( item->nick, NULL );
-			}	
+			}	}	
 			else {
 				switch( sttGetStatusCode( xNode )) {
 				case 303:
@@ -625,12 +622,12 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 
 				case 307:
 					JabberListRemoveResource( LIST_CHATROOM, from );
-					JabberGcLogUpdateMemberStatus( item, nick, GC_EVENT_KICK );
+					JabberGcLogUpdateMemberStatus( item, nick, GC_EVENT_KICK, reasonNode );
 					return;
 		}	}	}
 
 		JabberListRemoveResource( LIST_CHATROOM, from );
-		JabberGcLogUpdateMemberStatus( item, nick, GC_EVENT_PART );
+		JabberGcLogUpdateMemberStatus( item, nick, GC_EVENT_PART, NULL );
 	}
 	else if ( !strcmp( type, "error" )) {
 		errorNode = JabberXmlGetChild( node, "error" );

@@ -89,23 +89,20 @@ int JabberGcInit( WPARAM wParam, LPARAM lParam )
 	gcw.pszStatusbarText = NULL;
 	gcw.bDisableNickList = FALSE;
 	JCallService(MS_GC_NEWSESSION, NULL, (LPARAM)&gcw);
-	free( szNick );
 
 	HANDLE hContact = JabberHContactFromJID( item->jid );
 	if ( hContact != NULL ) {
-		char* myNick = JabberNickFromJID( jabberJID );
-
 		DBVARIANT dbv;
 		if ( !JGetStringUtf( hContact, "MyNick", &dbv )) {
-			if ( !strcmp( dbv.pszVal, myNick ))
+			if ( !strcmp( dbv.pszVal, szNick ))
 				JDeleteSetting( hContact, "MyNick" );
 			else 
 				JSetStringUtf( hContact, "MyNick", item->nick );
 			JFreeVariant( &dbv );
 		}
 		else JSetStringUtf( hContact, "MyNick", item->nick );
-		free( myNick );
 	}
+	free( szNick );
 
 	item->bChatActive = TRUE;
 
@@ -134,10 +131,16 @@ void JabberGcLogCreate( JABBER_LIST_ITEM* item )
 	NotifyEventHooks( hInitChat, (WPARAM)item, 0 );
 }
 
-void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick, int action )
+void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick, int action, XmlNode* reason )
 {
 	char* dispNick = NEWSTR_ALLOCA( nick );
 	JabberUtf8Decode( dispNick, NULL );
+
+	char* szReason = NULL;
+	if ( reason != NULL && reason->text != NULL ) {
+		szReason = NEWSTR_ALLOCA( reason->text );
+		JabberUtf8Decode( szReason, NULL );
+	}
 
 	char* myNick = JabberNickFromJID( jabberJID );
 
@@ -147,6 +150,7 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick, int acti
 	gce.pszNick = dispNick;
 	gce.pszUID = nick;
 	gce.pDest = &gcd;
+	gce.pszText = szReason;
 	if ( item->bChatActive == 2 ) {
 		gce.bAddToLog = TRUE;
 		gce.time = time(0);
@@ -154,7 +158,7 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick, int acti
 
 	switch( gcd.iType = action ) {
 	case GC_EVENT_PART:  break;
-	case GC_EVENT_KICK:  gce.pszStatus = "Moderator";    break;
+	case GC_EVENT_KICK:  gce.pszStatus = Translate( "Moderator" );  break;
 	default:
 		for ( int i=0; i < item->resourceCount; i++ ) {
 			JABBER_RESOURCE_STATUS& JS = item->resource[i];
@@ -191,9 +195,9 @@ void JabberGcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 	}
 	else {
 		char* myNick = JabberNickFromJID( jabberJID );
-		JabberGcLogUpdateMemberStatus( item, myNick, GC_EVENT_KICK );
+		JabberGcLogUpdateMemberStatus( item, myNick, GC_EVENT_KICK, reason );
 		free( myNick );
-		JCallService( MS_GC_EVENT,  SESSION_OFFLINE, ( LPARAM )&gce );
+		JCallService( MS_GC_EVENT, SESSION_OFFLINE, ( LPARAM )&gce );
 	}
 
 	DBDeleteContactSetting( JabberHContactFromJID( item->jid ), "CList", "Hidden" );
