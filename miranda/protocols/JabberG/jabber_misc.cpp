@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
@@ -29,22 +34,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void JabberAddContactToRoster( const char* jid, const char* nick, const char* grpName )
 {
 	if ( grpName != NULL )
-		JabberSend( jabberThreadInfo->s, 
-			"<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'><group>%s</group></item></query></iq>", 
+		JabberSend( jabberThreadInfo->s,
+			"<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'><group>%s</group></item></query></iq>",
 			nick, jid, grpName );
 	else
-		JabberSend( jabberThreadInfo->s, 
-			"<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'/></query></iq>", 
+		JabberSend( jabberThreadInfo->s,
+			"<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'/></query></iq>",
 			nick, jid );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// JabberChatDllError() - missing CHAT.DLL 
+// JabberChatDllError() - missing CHAT.DLL
 
 void JabberChatDllError()
 {
-	MessageBox( NULL, 
-		JTranslate( "CHAT plugin is required for conferences. Install it before chatting" ), 
+	MessageBox( NULL,
+		JTranslate( "CHAT plugin is required for conferences. Install it before chatting" ),
 		JTranslate( "Jabber Error Message" ), MB_OK|MB_SETFOREGROUND );
 }
 
@@ -58,7 +63,7 @@ int JabberCompareJids( const char* jid1, const char* jid2 )
 
 	// match only node@domain part
 	char szTempJid1[ JABBER_MAX_JID_LEN ], szTempJid2[ JABBER_MAX_JID_LEN ];
-	return JabberUtfCompareI( 
+	return JabberUtfCompareI(
 		JabberStripJid( jid1, szTempJid1, sizeof szTempJid1 ),
 		JabberStripJid( jid2, szTempJid2, sizeof szTempJid2 ));
 }
@@ -129,7 +134,7 @@ void JabberDBAddAuthRequest( char* jid, char* nick )
 		if (( q=strchr( p, '/' )) != NULL )
 			*q = '\0';
 	}
-	
+
 	if (( hContact=JabberHContactFromJID( jid )) == NULL ) {
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_ADD, 0, 0 );
 		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )jabberProtoName );
@@ -179,7 +184,7 @@ HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripR
 	if (( p=strchr( s, '@' )) != NULL )
 		if (( q=strchr( p, '/' )) != NULL )
 			*q = '\0';
-	
+
 	if ( !stripResource && q!=NULL )	// so that resource is not stripped
 		*q = '/';
 	len = strlen( s );
@@ -262,7 +267,7 @@ struct FORK_ARG {
 };
 
 static void __cdecl forkthread_r( struct FORK_ARG *fa )
-{	
+{
 	void ( *callercode )( void* ) = fa->threadcode;
 	void *arg = fa->arg;
 	JCallService( MS_SYSTEM_THREAD_PUSH, 0, 0 );
@@ -271,7 +276,7 @@ static void __cdecl forkthread_r( struct FORK_ARG *fa )
 		callercode( arg );
 	} __finally {
 		JCallService( MS_SYSTEM_THREAD_POP, 0, 0 );
-	} 
+	}
 	return;
 }
 

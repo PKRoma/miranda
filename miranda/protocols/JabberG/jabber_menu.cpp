@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
@@ -107,7 +112,7 @@ int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
 int JabberMenuJoinLeave( WPARAM wParam, LPARAM lParam )
 {
 	char szNick[ 256 ], szJid[ JABBER_MAX_JID_LEN ];
-	if ( JGetStaticString( "ChatRoomID", ( HANDLE )wParam, szJid,  sizeof szJid  )) 
+	if ( JGetStaticString( "ChatRoomID", ( HANDLE )wParam, szJid,  sizeof szJid  ))
 		return 0;
 
 	DBVARIANT dbv;
@@ -126,7 +131,7 @@ int JabberMenuJoinLeave( WPARAM wParam, LPARAM lParam )
 			JabberChatDllError();
 			return 0;
 		}
-		
+
 		char* p = strchr( szJid, '@' );
 		if ( p == NULL )
 			return 0;

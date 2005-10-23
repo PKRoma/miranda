@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
@@ -629,7 +634,7 @@ char* __stdcall JabberTextEncodeW( const wchar_t* str )
 		case '>':   wcscpy( d, L"&gt;" );		d += 4;	break;
 		case '<':	wcscpy( d, L"&lt;" );		d += 4;	break;
 		case '\"':  wcscpy( d, L"&quot;" );	d += 6;	break;
-		default:		
+		default:
 			if ( *s > 0 && *s < 0x20 && *s != 0x09 && *s != 0x0a && *s != 0x0d )
 				*d++ = ' ';
 			else
@@ -661,17 +666,17 @@ char* __stdcall JabberTextDecode( const char* str )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// JabberBase64Encode 
+// JabberBase64Encode
 
 static char b64table[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 char* __stdcall JabberBase64Encode( const char* buffer, int bufferLen )
 {
-	if ( buffer==NULL || bufferLen<=0 ) 
+	if ( buffer==NULL || bufferLen<=0 )
 		return NULL;
 
 	char* res = (char*)malloc(((( bufferLen+2 )*4 )/3 ) + 1);
-	if ( res == NULL ) 
+	if ( res == NULL )
 		return NULL;
 
 	unsigned char igroup[3];
@@ -980,7 +985,7 @@ void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt
 
 char* __stdcall JabberGetClientJID( const char* jid, char* dest, size_t destLen )
 {
-	if ( jid == NULL ) 
+	if ( jid == NULL )
 		return NULL;
 
 	size_t len = strlen( jid );
@@ -1034,6 +1039,6 @@ int __stdcall JabberGetPictureType( const char* buf )
 		if ( memcmp( buf, "BM", 2 ) == 0 )      return PA_FORMAT_BMP;
 		if ( memcmp( buf+6, "JFIF", 4 ) == 0 )  return PA_FORMAT_JPEG;
 	}
-	
+
 	return PA_FORMAT_UNKNOWN;
 }

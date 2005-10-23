@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
@@ -52,10 +57,10 @@ int JabberSendGetVcard( const char* jid )
 {
 	int iqId = JabberSerialNext();
 	JabberIqAdd( iqId, ( jid == jabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, JabberIqResultGetVcard );
-	JabberSend( jabberThreadInfo->s, 
-		"<iq type='get' id='"JABBER_IQID"%d' to='%s'><vCard xmlns='vcard-temp' prodid='-//HandGen//NONSGML vGen v1.0//EN' version='2.0' /></iq>", 
+	JabberSend( jabberThreadInfo->s,
+		"<iq type='get' id='"JABBER_IQID"%d' to='%s'><vCard xmlns='vcard-temp' prodid='-//HandGen//NONSGML vGen v1.0//EN' version='2.0' /></iq>",
 		iqId, jid );
-	return 0;	
+	return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

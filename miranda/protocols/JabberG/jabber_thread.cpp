@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
@@ -260,14 +265,14 @@ LBL_Exit:
 	}
 
 	char connectHost[128];
-	if ( info->manualHost[0] == 0 ) { 
+	if ( info->manualHost[0] == 0 ) {
 		int port_temp;
 		strncpy( connectHost, info->server, 128 );
 		if ( port_temp = xmpp_client_query( connectHost )) { // port_temp will be > 0 if resolution is successful
 			JabberLog("%s%s resolved to %s:%d","_xmpp-client._tcp.",info->server,connectHost,port_temp);
 			if (info->port==0 || info->port==5222)
 				info->port = port_temp;
-		} 
+		}
 		else JabberLog("%s%s not resolved", "_xmpp-client._tcp.", connectHost);
 	}
 	else strncpy(connectHost,info->manualHost,128); // do not resolve if manual host is selected
@@ -536,7 +541,7 @@ static void JabberProcessStreamOpening( XmlNode *node, void *userdata )
 		JabberLog( "Requesting TLS" );
 		JabberSend( info->s, "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>" );
 		return;
-	} 
+	}
 
 	if ( info->type == JABBER_SESSION_NORMAL ) {
 		if (( sid=JabberXmlGetAttrValue( node, "id" )) != NULL ) {
@@ -615,11 +620,11 @@ static void JabberProcessProceed( XmlNode *node, void *userdata )
 					JabberSslAddHandle( info->s, ssl );	// This make all communication on this handle use SSL
 					info->useSSL = true;
 					JabberLog( "SSL enabled for handle = %d", info->s );
-				} 
+				}
 				else {
 					JabberLog( "SSL negotiation failed" );
 					pfn_SSL_free( ssl );
-			}	} 
+			}	}
 			else {
 				JabberLog( "SSL set fd failed" );
 				pfn_SSL_free( ssl );
@@ -835,7 +840,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL ) return;
 
-	JabberUrlDecode( from ); 
+	JabberUrlDecode( from );
 	if ( JabberListExist( LIST_CHATROOM, from )) {
 		JabberGroupchatProcessPresence( node, userdata );
 		return;
@@ -912,7 +917,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 		}	}	}
 		return;
 	}
-	
+
 	if ( !strcmp( type, "unavailable" )) {
 		if ( !JabberListExist( LIST_ROSTER, from )) {
 			JabberLog( "Receive presence offline from %s ( who is not in my roster )", from );
@@ -922,7 +927,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 
 		int status = ID_STATUS_OFFLINE;
 		if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL ) {
-			if ( JGetByte( "OfflineAsInvisible", FALSE ) == TRUE ) 
+			if ( JGetByte( "OfflineAsInvisible", FALSE ) == TRUE )
 				status = ID_STATUS_INVISIBLE;
 
 			p = JabberTextDecode( statusNode->text );
@@ -933,7 +938,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 					DBDeleteContactSetting(hContact, "CList", "StatusMsg");
 			}
 			if (p) free(p);
-		} 
+		}
 		if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 			// Determine status to show for the contact based on the remaining resources
 			status = ID_STATUS_OFFLINE;
@@ -953,7 +958,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
 		return;
 	}
-	
+
 	if ( !strcmp( type, "subscribe" )) {
 		if ( strchr( from, '@' ) == NULL ) {
 			// automatically send authorization allowed to agent/transport
@@ -966,7 +971,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 		}
 		return;
 	}
-	
+
 	if ( !strcmp( type, "subscribed" )) {
 		if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 			if ( item->subscription == SUB_FROM ) item->subscription = SUB_BOTH;
@@ -1065,7 +1070,7 @@ static void JabberProcessIqAvatar( char* idStr, XmlNode* node )
 
 	char* str = JabberBase64Encode( buffer, bytes );
 	char* resultId = JabberTextEncode( idStr );
-	JabberSend( jabberThreadInfo->s,    
+	JabberSend( jabberThreadInfo->s,
 		"<iq type='result' id='%s' to='%s'><query xmlns='jabber:iq:avatar'><data mimetype='%s'>%s</data></query></iq>",
 		resultId, from, szMimeType, str );
 	free( resultId );
@@ -1332,7 +1337,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 								r->system = JabberTextDecode( n->text );
 							else
 								r->system = NULL;
-		}	}	}	}	}	
+		}	}	}	}	}
 	}
 	// RECVED: <iq type='set'><si xmlns='http://jabber.org/protocol/si' ...
 	else if ( !strcmp( type, "set" ) && ( siNode=JabberXmlGetChildWithGivenAttrValue( node, "si", "xmlns", "http://jabber.org/protocol/si" ))!=NULL && ( profile=JabberXmlGetAttrValue( siNode, "profile" ))!=NULL ) {

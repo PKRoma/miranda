@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
@@ -92,7 +97,7 @@ void JabberIqResultBrowseRooms( XmlNode *iqNode, void *userdata )
 void JabberSetMucConfig( char* submitStr, void *userdata )
 {
 	if ( jabberThreadInfo && userdata )
-		JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s%s</query></iq>", 
+		JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s%s</query></iq>",
 			( char* )userdata, xmlnsOwner, submitStr );
 }
 
@@ -303,7 +308,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 					hti.pt.x = ( short ) LOWORD( GetMessagePos());
 					hti.pt.y = ( short ) HIWORD( GetMessagePos());
 					ScreenToClient( nm->hdr.hwndFrom, &hti.pt );
-					if ( ListView_SubItemHitTest( nm->hdr.hwndFrom, &hti ) == -1 ) 
+					if ( ListView_SubItemHitTest( nm->hdr.hwndFrom, &hti ) == -1 )
 						break;
 
 					if ( hti.iSubItem != 1 )
@@ -531,6 +536,6 @@ char* JABBER_MUC_JIDLIST_INFO::type2str() const
 		case MUC_ADMINLIST:     return JTranslate( "Admin List" );
 		case MUC_OWNERLIST:     return JTranslate( "Owner List" );
 	}
-	
+
 	return JTranslate( "JID List" );
 }

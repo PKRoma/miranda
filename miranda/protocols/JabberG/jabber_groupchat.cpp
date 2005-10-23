@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
@@ -132,7 +137,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					if ( !DBGetContactSetting( NULL, jabberProtoName, text, &dbv )) {
 						SendDlgItemMessage( hwndDlg, IDC_SERVER, CB_ADDSTRING, 0, ( LPARAM )dbv.pszVal );
 						JFreeVariant( &dbv );
-			}	}	}	
+			}	}	}
 		}
 		else EnableWindow( GetDlgItem( hwndDlg, IDC_JOIN ), FALSE );
 		return TRUE;
@@ -503,7 +508,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 	if ( !node || !node->name || strcmp( node->name, "presence" )) return;
 	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
 	if (( from=JabberXmlGetAttrValue( node, "from" )) == NULL ) return;
-	
+
 	char* nick = strchr( from, '/' );
 	if ( nick == NULL || nick[1] == '\0' )
 		return;
@@ -592,7 +597,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 			// Request room config
 			int iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetMuc );
-			JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s</query></iq>", 
+			JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'>%s</query></iq>",
 				iqId, item->jid, xmlnsOwner );
 		}
 
@@ -613,7 +618,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 				case 303:
 					sttRenameParticipantNick( item, nick, itemNode );
 					return;
-			}	}	
+			}	}
 			else {
 				switch( sttGetStatusCode( xNode )) {
 				case 303:
@@ -657,7 +662,7 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL ) return;
 	if (( item = JabberListGetItemPtr( LIST_CHATROOM, from )) == NULL ) return;
-	
+
 	if (( type = JabberXmlGetAttrValue( node, "type" )) == NULL ) return;
 	if ( !strcmp( type, "error" ))
 		return;

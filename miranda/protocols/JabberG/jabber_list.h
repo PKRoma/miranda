@@ -17,6 +17,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #ifndef _JABBER_LIST_H_
@@ -72,7 +77,7 @@ typedef enum {			// initial default to RSMODE_LASTSEEN
 
 #define CLIENT_CAP_FILE			( CLIENT_CAP_SI | CLIENT_CAP_SIFILE )
 
-struct JABBER_RESOURCE_STATUS 
+struct JABBER_RESOURCE_STATUS
 {
 	int status;
 	char* resourceName;	// in UTF-8
@@ -85,7 +90,7 @@ struct JABBER_RESOURCE_STATUS
 	JABBER_GC_ROLE role;
 };
 
-struct JABBER_LIST_ITEM 
+struct JABBER_LIST_ITEM
 {
 	JABBER_LIST list;
 	char* jid;

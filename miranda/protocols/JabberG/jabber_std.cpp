@@ -19,11 +19,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
 
-HANDLE __stdcall JCreateServiceFunction( 
+HANDLE __stdcall JCreateServiceFunction(
 	const char* szService,
 	MIRANDASERVICE serviceProc )
 {

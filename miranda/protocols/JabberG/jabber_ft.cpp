@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
@@ -423,7 +428,7 @@ static int JabberFtReceive( HANDLE hConn, void *userdata, char* buffer, int data
 			JabberLog( "_write() error" );
 			return -1;
 		}
-		
+
 		ft->std.currentFileProgress += writeSize;
 		ft->std.totalProgress += writeSize;
 		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );

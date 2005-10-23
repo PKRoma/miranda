@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
@@ -444,7 +449,7 @@ static BOOL CALLBACK JabberSetAvatarDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	case WM_COMMAND:
 		if ( HIWORD( wParam ) == BN_CLICKED )
 			switch( LOWORD( wParam )) {
-			case IDC_SETAVATAR: 
+			case IDC_SETAVATAR:
 				if ( JabberEnterBitmapName( szFileName ) == ERROR_SUCCESS ) {
 					HBITMAP hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFileName );
 					if ( hBitmap != NULL ) {

@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
@@ -144,7 +149,7 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 		return;
 
 	XmlNode* queryNode = JabberXmlGetChild( iqNode, "query" );
-   if ( queryNode == NULL ) 
+   if ( queryNode == NULL )
 		return;
 
 	if ( lstrcmpA( JabberXmlGetAttrValue( queryNode, "xmlns" ), "jabber:iq:roster" ))
@@ -199,7 +204,7 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 			// Add the jid ( with empty resource ) to Miranda contact list.
 			hContact = JabberDBCreateContact( jid, nick, FALSE, TRUE );
 		}
-      
+
 		if ( JGetByte( hContact, "ChatRoom", 0 ))
 			QueueUserAPC( sttCreateRoom, hMainThread, ( ULONG_PTR )jid );
 
@@ -877,7 +882,7 @@ void JabberIqResultSetVcard( XmlNode *iqNode, void *userdata )
 {
 	JabberLog( "<iq/> iqIdSetVcard" );
 	char* type = JabberXmlGetAttrValue( iqNode, "type" );
-	if ( type == NULL ) 
+	if ( type == NULL )
 		return;
 
 	if ( hwndJabberVcard )
@@ -972,7 +977,7 @@ void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
 
 				if ( !strcmp( fieldName, "jid" )) {
 					strncpy( jsr.jid, JabberUrlDecode( n->text ), sizeof( jsr.jid ));
-					jsr.jid[sizeof( jsr.jid )-1] = '\0'; 
+					jsr.jid[sizeof( jsr.jid )-1] = '\0';
 					JabberLog( "Result jid=%s", jsr.jid );
 				}
 				else if ( !strcmp( fieldName, "nickname" ))
@@ -987,7 +992,7 @@ void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
 				}
 				else if ( !strcmp( fieldName, "family" ))
                jsr.hdr.lastName = ( n->text != NULL ) ? JabberUtf8Decode( n->text, 0 ) : "";
-				else if ( !strcmp( fieldName, "email" )) 
+				else if ( !strcmp( fieldName, "email" ))
                jsr.hdr.email = ( n->text != NULL ) ? JabberUtf8Decode( n->text, 0 ) : "";
 			}
 			JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) id, ( LPARAM )&jsr );
@@ -1004,7 +1009,7 @@ void JabberIqResultSetPassword( XmlNode *iqNode, void *userdata )
 	JabberLog( "<iq/> iqIdSetPassword" );
 
 	char* type = JabberXmlGetAttrValue( iqNode, "type" );
-	if ( type == NULL ) 
+	if ( type == NULL )
 		return;
 
 	if ( !strcmp( type, "result" )) {
@@ -1113,7 +1118,7 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 
 	if ( strcmp( type, "result" ) != 0 )
 		return;
-	if (( item=JabberListGetItemPtr( LIST_ROSTER, JabberUrlDecode( from ))) == NULL ) 
+	if (( item=JabberListGetItemPtr( LIST_ROSTER, JabberUrlDecode( from ))) == NULL )
 		return;
 
 	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
@@ -1161,7 +1166,7 @@ void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 		return;
 
 	XmlNode *queryNode = JabberXmlGetChild( iqNode, "query" );
-	if ( queryNode == NULL ) 
+	if ( queryNode == NULL )
 		return;
 
 	char* xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );

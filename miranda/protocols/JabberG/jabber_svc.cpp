@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
@@ -356,7 +361,7 @@ void sttRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 	JFreeVariant( &jid );
 	if ( item == NULL )
 		return;
-	
+
 	if ( cws->value.type == DBVT_DELETED ) {
 		JabberAddContactToRoster( item->jid, UTF8(( char* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, ( WPARAM )hContact, GCDNF_NOMYHANDLE )), item->group );
 		return;
@@ -401,7 +406,7 @@ void sttAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		JFreeVariant( &jid );
 		return;
 	}
-	
+
 	if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
 		JabberAddContactToRoster( jid.pszVal, nick, dbv.pszVal );
 		JFreeVariant( &dbv );
@@ -417,7 +422,7 @@ void sttAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact = ( HANDLE ) wParam;
-	if ( hContact == NULL || !jabberConnected ) 
+	if ( hContact == NULL || !jabberConnected )
 		return 0;
 
 	DBCONTACTWRITESETTING* cws = ( DBCONTACTWRITESETTING* )lParam;
@@ -568,7 +573,7 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 
 			int iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetAvatar );
-			JabberSend( jabberThreadInfo->s, 
+			JabberSend( jabberThreadInfo->s,
 				"<iq type='get' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:avatar'/></iq>",
 				dbv.pszVal, item->resource[0].resourceName, iqId );
 			JFreeVariant( &dbv );
@@ -670,7 +675,7 @@ int JabberGetCaps( WPARAM wParam, LPARAM lParam )
 
 int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 {
-	if ( !jabberOnline ) 
+	if ( !jabberOnline )
 		return 1;
 
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
@@ -774,8 +779,8 @@ int JabberSearchByEmail( WPARAM wParam, LPARAM lParam )
 
 	int iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultSetSearch );
-	JabberSend( jabberThreadInfo->s, 
-		"<iq type='set' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:search'><email>%s</email></query></iq>", 
+	JabberSend( jabberThreadInfo->s,
+		"<iq type='set' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:search'><email>%s</email></query></iq>",
 		iqId, szServerName, UTF8(( char* )lParam));
 	return iqId;
 }
@@ -820,15 +825,15 @@ int JabberSearchByName( WPARAM wParam, LPARAM lParam )
 	int iqId = JabberSerialNext();
 	if ( bIsExtFormat ) {
 		JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultExtSearch );
-		JabberSend( jabberThreadInfo->s, 
+		JabberSend( jabberThreadInfo->s,
 			"<iq type='set' id='"JABBER_IQID"%d' to='%s' xml:lang='en'>"
-			"<query xmlns='jabber:iq:search'><x xmlns='jabber:x:data' type='submit'>%s</x></query></iq>", 
+			"<query xmlns='jabber:iq:search'><x xmlns='jabber:x:data' type='submit'>%s</x></query></iq>",
 			iqId, szServerName, text );
 	}
 	else {
 		JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultSetSearch );
-		JabberSend( jabberThreadInfo->s, 
-			"<iq type='set' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:search'>%s</query></iq>", 
+		JabberSend( jabberThreadInfo->s,
+			"<iq type='set' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:search'>%s</query></iq>",
 			iqId, szServerName, text );
 	}
 	return iqId;
@@ -842,11 +847,11 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 	if ( !jabberOnline ) return 0;
 
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
-	if ( JGetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE ) 
+	if ( JGetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE )
 		return 0;
 
 	DBVARIANT dbv;
-	if ( JGetStringUtf( ccs->hContact, "jid", &dbv )) 
+	if ( JGetStringUtf( ccs->hContact, "jid", &dbv ))
 		return 0;
 
 	char* *files = ( char* * ) ccs->lParam;
@@ -902,7 +907,7 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// JabberSendMessage - sends a message 
+// JabberSendMessage - sends a message
 
 static void __cdecl JabberSendMessageAckThread( HANDLE hContact )
 {
@@ -933,7 +938,7 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 	if ( pdest != NULL ) {
 		pdest = strstr( pszSrc, epilog );
 		int result = ( pdest ) ? strlen( prolog ) : 0;
-		
+
 		char* tempstring = ( char* )alloca( strlen( pszSrc ));
 		strncpy( tempstring, pszSrc+strlen(prolog), strlen(pszSrc)-strlen(epilog)-result );
 		pszSrc = tempstring;
@@ -968,7 +973,7 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 				if ( !isEncrypted )
 					JabberSend( jabberThreadInfo->s, "<message to='%s' type='%s' id='"JABBER_IQID"%d'><body>%s</body><x xmlns='jabber:x:event'><composing/></x></message>", szClientJid, msgType, id, msg );
 				else
-					JabberSend( jabberThreadInfo->s, "<message to='%s' type='%s' id='"JABBER_IQID"%d'><body>[This message is encrypted.]</body><x xmlns='jabber:x:encrypted'>%s</x><x xmlns='jabber:x:event'><composing/></x></message>", 
+					JabberSend( jabberThreadInfo->s, "<message to='%s' type='%s' id='"JABBER_IQID"%d'><body>[This message is encrypted.]</body><x xmlns='jabber:x:encrypted'>%s</x><x xmlns='jabber:x:event'><composing/></x></message>",
 						szClientJid, msgType, id, msg );
 			}
 			JabberForkThread( JabberSendMessageAckThread, 0, ( void* )ccs->hContact );

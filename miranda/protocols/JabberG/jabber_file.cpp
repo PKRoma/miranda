@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+File name      : $Source$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
 */
 
 #include "jabber.h"
@@ -198,7 +203,7 @@ static int JabberFileReceiveParse( filetransfer* ft, char* buffer, int datalen )
 			break;
 		}
 	}
-	
+
 	return num;
 }
 
@@ -492,7 +497,7 @@ static int JabberFileSendParse( JABBER_SOCKET s, filetransfer* ft, char* buffer,
 		num += ( q-p );
 		p = q;
 	}
-	
+
 	return num;
 }
 
@@ -579,8 +584,8 @@ int filetransfer::create()
 				free( std.currentFile );
 
             char tShortName[ 20 ];
-				WideCharToMultiByte( CP_ACP, 0, 
-					( data.cAlternateFileName[0] != 0 ) ? data.cAlternateFileName : data.cFileName, 
+				WideCharToMultiByte( CP_ACP, 0,
+					( data.cAlternateFileName[0] != 0 ) ? data.cAlternateFileName : data.cFileName,
 					-1, tShortName, sizeof tShortName, 0, 0 );
 				mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", std.workingDir, tShortName );
 				std.currentFile = strdup( filefull );
