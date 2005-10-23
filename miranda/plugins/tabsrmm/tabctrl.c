@@ -404,7 +404,7 @@ void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct 
      * for top row tabs, it's easy. Just draw to the provided dc (it's a mem dc already)
      */
     
-    FillRect(pDC, rcItem, GetSysColorBrush(COLOR_3DFACE));
+    //FillRect(pDC, rcItem, GetSysColorBrush(COLOR_3DFACE));
     if(!bBottom) {
         if(bBody) 
             DrawThemesPart(tabdat, pDC, 9, 0, rcItem);	// TABP_PANE id = 9 

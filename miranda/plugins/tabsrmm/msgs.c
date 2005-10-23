@@ -837,6 +837,12 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     static char *szUpdateUrl = "http://miranda.or.at/files/tabsrmm/tabsrmm.zip";
     static char *szPrefix = "tabsrmm ";
 #endif
+#if defined(_UNICODE)
+    if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
+        MessageBox(NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("tabSRMM (Unicode)"), MB_OK );
+        return 1;
+    }
+#endif    
     hEventDispatch = HookEvent(ME_DB_EVENT_ADDED, DispatchNewEvent);
     hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
     ZeroMemory(&mi, sizeof(mi));

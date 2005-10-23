@@ -334,8 +334,6 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
     int i, tempmark = 0;
     TCHAR szTemp[512];
     
-    OutputDebugString(_T("foo"));
-    
     std::wstring title(szFormat);
 
     while(TRUE) {
@@ -385,8 +383,21 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                 break;
             }
             case 'x': {
+                char *szFinalStatus = NULL;
+                
                 if(xStatus > 0 && xStatus <= 24) {
-                    MultiByteToWideChar(CP_ACP, 0, xStatusDescr[xStatus - 1], -1, szTemp, 500);
+                    DBVARIANT dbv = {0};
+
+                    if(!MY_DBGetContactSettingTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
+                        _tcsncpy(szTemp, dbv.ptszVal, 500);
+                        szTemp[500] = 0;
+                        MY_DBFreeVariant(&dbv);
+                    }
+                    else
+                        szFinalStatus = (char *)xStatusDescr[xStatus - 1];
+                    if(szFinalStatus)
+                        MultiByteToWideChar(CP_ACP, 0, szFinalStatus, -1, szTemp, 500);
+
                     title.insert(tempmark + 2, szTemp);
                 }
                 title.erase(tempmark, 2);
@@ -394,17 +405,17 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
             }
             case 'm': {
                 char *szFinalStatus = NULL;
-                TCHAR *result = NULL;
                 
                 if(xStatus > 0 && xStatus <= 24) {
                     DBVARIANT dbv = {0};
                     
                     if(!MY_DBGetContactSettingTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
                         _tcsncpy(szTemp, dbv.ptszVal, 500);
+                        szTemp[500] = 0;
                         MY_DBFreeVariant(&dbv);
                     }
                     else
-                        szFinalStatus = (char *)szStatus;
+                        szFinalStatus = (char *)xStatusDescr[xStatus - 1];
                 }
                 else
                     szFinalStatus = (char *)szStatus;
@@ -414,9 +425,6 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 
                 title.insert(tempmark + 2, szTemp);
                 title.erase(tempmark, 2);
-                
-                if(result)
-                    free(result);
                 break;
             }
             default:

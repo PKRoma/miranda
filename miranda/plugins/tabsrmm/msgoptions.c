@@ -1181,15 +1181,22 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING));
 
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "bclip", (BYTE)SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_GETPOS, 0, 0));
-                            myGlobals.bClipBorder = SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_GETPOS, 0, 0);
+                            myGlobals.bClipBorder = (BYTE)SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_GETPOS, 0, 0);
 
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "brounded", IsDlgButtonChecked(hwndDlg, IDC_ROUNDEDCORNERS) ? 1 : 0);
                             myGlobals.bRoundedCorner = IsDlgButtonChecked(hwndDlg, IDC_ROUNDEDCORNERS) ? 1 : 0;
-
-                            if(myGlobals.bClipBorder == 0 && myGlobals.bRoundedCorner == 0) {
+                            {
                                 struct ContainerWindowData *pContainer = pFirstContainer;
                                 while(pContainer) {
-                                    SetWindowRgn(pContainer->hwnd, NULL, TRUE);
+                                    RECT rcWindow;
+                                    GetWindowRect(pContainer->hwnd, &rcWindow);
+                                    if(myGlobals.bClipBorder == 0 && myGlobals.bRoundedCorner == 0) {
+                                        SetWindowRgn(pContainer->hwnd, NULL, TRUE);
+                                        SetWindowPos(pContainer->hwnd, 0, rcWindow.left, rcWindow.top, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top - 1, SWP_NOZORDER | SWP_NOMOVE | SWP_FRAMECHANGED);
+                                        SetWindowPos(pContainer->hwnd, 0, rcWindow.left, rcWindow.top, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top, SWP_NOZORDER | SWP_NOMOVE | SWP_FRAMECHANGED);
+                                    }
+                                    else
+                                        SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
                                     pContainer = pContainer->pNextContainer;
                                 }
                             }

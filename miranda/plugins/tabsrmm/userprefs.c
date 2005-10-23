@@ -72,20 +72,21 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
         case WM_INITDIALOG:
         {
             DBVARIANT dbv;
-            char szBuffer[80];
+            TCHAR szBuffer[180];
             DWORD sCodePage, contact_gmt_diff;
             int i, offset;
-            char *contactName = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)lParam, 0);
             BYTE bOverride = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "mwoverride", 0);
             BYTE bIEView = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "ieview", 0);
             int iLocalFormat = DBGetContactSettingDword((HANDLE)lParam, SRMSGMOD_T, "sendformat", 0);
             BYTE bRTL = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "RTL", 0);
             BYTE bLTR = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "RTL", 1);
             BYTE bSplit = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "splitoverride", 0);
+            TCHAR contactName[100];
+            char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)lParam, 0);
+
             hContact = (HANDLE)lParam;
+            
             WindowList_Add(hUserPrefsWindowList, hwndDlg, hContact);
-            mir_snprintf(szBuffer, sizeof(szBuffer), Translate("Set options for %s"), contactName);
-            SetWindowTextA(hwndDlg, szBuffer);
             TranslateDialogDefault(hwndDlg);
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
             EnableWindow(GetDlgItem(hwndDlg, IDC_IEVIEWMODE), ServiceExists(MS_IEVIEW_WINDOW) ? TRUE : FALSE);
@@ -130,11 +131,16 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_SETCURSEL, (WPARAM)i, 0);
                 }
             }
+            MY_GetContactDisplayNameW(hContact, contactName, 84, szProto, sCodePage);
+            _sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Set options for %s"), contactName);
+            szBuffer[safe_sizeof(szBuffer) - 1] = 0;
             CheckDlgButton(hwndDlg, IDC_FORCEANSI, DBGetContactSettingByte(hContact, SRMSGMOD_T, "forceansi", 0) ? 1 : 0);
 #else
+            mir_snprintf(szBuffer, sizeof(szBuffer), Translate("Set options for %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
             EnableWindow(GetDlgItem(hwndDlg, IDC_CODEPAGES), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_FORCEANSI), FALSE);
 #endif            
+            SetWindowText(hwndDlg, szBuffer);
             if(DBGetContactSettingByte(hContact, SRMSGMOD_T, "private_bg", 0)) {
                 CheckDlgButton(hwndDlg, IDC_USEPRIVATEIMAGE, TRUE);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_GETBGIMAGE), TRUE);
@@ -150,8 +156,8 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             SendDlgItemMessageA(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)Translate("<default, no change>"));
             timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone",-1));
             for(i = -12; i <= 12; i++) {
-                _snprintf(szBuffer, 20, "GMT %c %d", i < 0 ? '-' : '+', abs(i));
-                SendDlgItemMessageA(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)szBuffer);
+                _sntprintf(szBuffer, 20, TranslateT("GMT %c %d"), i < 0 ? '-' : '+', abs(i));
+                SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)szBuffer);
             }
             if(timezone != -1) {
                 contact_gmt_diff = timezone > 128 ? 256 - timezone : 0 - timezone;
