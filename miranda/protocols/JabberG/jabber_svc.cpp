@@ -917,6 +917,9 @@ static void __cdecl JabberSendMessageAckThread( HANDLE hContact )
 	JabberLog( "Returning from thread" );
 }
 
+static char PGP_PROLOG[] = "-----BEGIN PGP MESSAGE-----\r\n\r\n";
+static char PGP_EPILOG[] = "\r\n-----END PGP MESSAGE-----\r\n";
+
 int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 {
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
@@ -930,17 +933,15 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 	}
 
 	char* pszSrc = ( char* )ccs->lParam, *msg;
-	char* prolog = JabberUtf8Encode("-----BEGIN PGP MESSAGE-----\r\n\r\n");
-	char* epilog = JabberUtf8Encode("\r\n-----END PGP MESSAGE-----\r\n");
 	int  isEncrypted;
 
-	char* pdest = strstr( pszSrc, prolog );//pdest-string+1 is index of first occurence
+	char* pdest = strstr( pszSrc, PGP_PROLOG );//pdest-string+1 is index of first occurence
 	if ( pdest != NULL ) {
-		pdest = strstr( pszSrc, epilog );
-		int result = ( pdest ) ? strlen( prolog ) : 0;
+		pdest = strstr( pszSrc, PGP_EPILOG );
+		int result = ( pdest ) ? strlen( PGP_PROLOG ) : 0;
 
 		char* tempstring = ( char* )alloca( strlen( pszSrc ));
-		strncpy( tempstring, pszSrc+strlen(prolog), strlen(pszSrc)-strlen(epilog)-result );
+		strncpy( tempstring, pszSrc+strlen(PGP_PROLOG), strlen(pszSrc)-strlen(PGP_EPILOG)-result );
 		pszSrc = tempstring;
 		isEncrypted = 1;
 	}

@@ -878,11 +878,11 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 
 		if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL && statusNode->text != NULL )
 			p = JabberTextDecode( statusNode->text );
-		else
+		else 
 			p = NULL;
 		JabberListAddResource( LIST_ROSTER, from, status, p );
 		if ( p ) {
-			DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", p );
+			DBWriteContactSettingString( hContact, "CList", "StatusMsg", p );
 			free( p );
 		}
 		else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
@@ -934,7 +934,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			if (( hContact = JabberHContactFromJID( from )) != NULL) {
 				if ( p )
 					DBWriteContactSettingString(hContact, "CList", "StatusMsg", p);
-				else
+				else 
 					DBDeleteContactSetting(hContact, "CList", "StatusMsg");
 			}
 			if (p) free(p);

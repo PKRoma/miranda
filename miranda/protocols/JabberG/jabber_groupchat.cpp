@@ -540,7 +540,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 
 		if (( statusNode=JabberXmlGetChild( node, "status" ))!=NULL && statusNode->text!=NULL )
 			str = JabberTextDecode( statusNode->text );
-		else
+		else 
 			str = NULL;
 		newRes = ( JabberListAddResource( LIST_CHATROOM, from, status, str ) == 0 ) ? 0 : GC_EVENT_JOIN;
 		if ( str ) free( str );
