@@ -693,7 +693,10 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 				else if ( !strcmp( n->name, "DESC" )) {
 					if ( !hasDesc && n->text!=NULL ) {
 						hasDesc = TRUE;
-						JSetStringUtf( hContact, "About", JabberUrlDecode( n->text ));
+						char* szMemo = JabberUnixToDos( n->text );
+						JabberUrlDecode( szMemo );
+						JSetStringUtf( hContact, "About", szMemo );
+						free( szMemo );
 					}
 				}
 				else if ( !strcmp( n->name, "PHOTO" )) {

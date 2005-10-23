@@ -42,10 +42,8 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 	case WM_JABBER_REFRESH:
 		{
 			DBVARIANT dbv;
-			int count, index;
 			JABBER_LIST_ITEM *item;
 			JABBER_RESOURCE_STATUS *r;
-			char* localResource;
 
 			HWND hwndList = GetDlgItem( hwndDlg, IDC_INFO_RESOURCE );
 			SendMessage( hwndList, LB_RESETCONTENT, 0, 0 );
@@ -60,15 +58,16 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 
 			HANDLE hContact = ( HANDLE ) GetWindowLong( hwndDlg, GWL_USERDATA );
 			if ( !JGetStringUtf( hContact, "jid", &dbv )) {
-				char* jid = dbv.pszVal;
-				SetDlgItemText( hwndDlg, IDC_INFO_JID, jid );
+				char* jid = NEWSTR_ALLOCA( dbv.pszVal );
+				SetDlgItemText( hwndDlg, IDC_INFO_JID, JabberTextDecode( jid ));
+
 				if ( jabberOnline ) {
-					if (( item=JabberListGetItemPtr( LIST_ROSTER, jid )) != NULL ) {
+					if (( item=JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal )) != NULL ) {
 						if (( r=item->resource ) != NULL ) {
-							count = item->resourceCount;
+							int count = item->resourceCount;
 							for ( int i=0; i<count; i++ ) {
-								localResource = JabberTextDecode( r[i].resourceName );
-								index = SendMessage( hwndList, LB_ADDSTRING, 0, ( LPARAM )localResource );
+								char* localResource = JabberTextDecode( r[i].resourceName );
+								int index = SendMessage( hwndList, LB_ADDSTRING, 0, ( LPARAM )localResource );
 								SendMessage( hwndList, LB_SETITEMDATA, index, ( LPARAM )r[i].resourceName );
 								free( localResource );
 						}	}
