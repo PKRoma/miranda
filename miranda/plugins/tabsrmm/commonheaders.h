@@ -81,3 +81,10 @@ typedef unsigned short wchar_t;
 
 #endif
 
+extern struct MM_INTERFACE memoryManagerInterface;
+
+#define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
+#define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
+#define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
+
+

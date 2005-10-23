@@ -2231,37 +2231,40 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
 int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int size, const char *szProto, UINT codePage)
 {
 	CONTACTINFO ci;
-
-    if(!myGlobals.bUnicodeBuild) {
-        char *szBasenick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
-        MultiByteToWideChar(codePage, 0, szBasenick, -1, szwBuf, size);
-        szwBuf[size - 1] = 0;
-        return 0;
+    char *szBasenick = NULL;
+        
+    if(myGlobals.bUnicodeBuild) {
+    	ZeroMemory(&ci, sizeof(ci));
+    	ci.cbSize = sizeof(ci);
+    	ci.hContact = hContact;
+        ci.szProto = (char *)szProto;
+    	ci.dwFlag = CNF_DISPLAY;
+    	#if defined( _UNICODE )
+    		ci.dwFlag += CNF_UNICODE;
+    	#endif
+    	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+    		if (ci.type == CNFT_ASCIIZ) {
+                size_t len = lstrlenW(ci.pszVal);
+                wcsncpy(szwBuf, ci.pszVal, size);
+                szwBuf[size - 1] = 0;
+                mir_free(ci.pszVal);
+                return 0;
+    		}
+    		if (ci.type == CNFT_DWORD) {
+                _ltow(ci.dVal, szwBuf, 10 );
+                szwBuf[size - 1] = 0;
+                return 0;
+    		}
+    	}
     }
-	ZeroMemory(&ci, sizeof(ci));
-	ci.cbSize = sizeof(ci);
-	ci.hContact = hContact;
-    ci.szProto = (char *)szProto;
-	ci.dwFlag = CNF_DISPLAY;
-	#if defined( _UNICODE )
-		ci.dwFlag += CNF_UNICODE;
-	#endif
-	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-		if (ci.type == CNFT_ASCIIZ) {
-            size_t len = lstrlenW(ci.pszVal);
-            wcsncpy(szwBuf, ci.pszVal, size);
-            szwBuf[size - 1] = 0;
-            return 0;
-		}
-		if (ci.type == CNFT_DWORD) {
-            _ltow(ci.dVal, szwBuf, 10 );
-            szwBuf[size - 1] = 0;
-            return 0;
-		}
-	}
+    szBasenick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
+    MultiByteToWideChar(codePage, 0, szBasenick, -1, szwBuf, size);
+    szwBuf[size - 1] = 0;
+    return 0;    
+    /*
 	CallContactService(hContact, PSS_GETINFO, SGIF_MINIMAL, 0);
 	wcsncpy(szwBuf, TranslateT("(Unknown Contact)"), size);
     szwBuf[size - 1] = 0;
-    return 0;
+    return 0;*/
 }
 #endif

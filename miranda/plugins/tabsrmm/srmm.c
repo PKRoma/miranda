@@ -35,6 +35,7 @@ int ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, i
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
+struct MM_INTERFACE memoryManagerInterface;
 
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
@@ -78,6 +79,11 @@ __declspec(dllexport)
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
     pluginLink = link;
+
+    memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
+    memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
+    CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &memoryManagerInterface);
+    
     return LoadSendRecvMessageModule();
 }
 
