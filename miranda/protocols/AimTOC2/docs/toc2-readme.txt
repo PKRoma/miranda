@@ -3,6 +3,14 @@ Aim TOC2 readme
 
 Frequently Asked Questions(FAQs)
 
+	Q: I downloaded the plugin what do I do next?
+	
+	A: Verify that you have downloaded the plugin by checking to see if "AIM.dll" exist in the zip file you downloaded. If not you most likely downloaded the sourcecode. Next, exit miranda-im and move the "AIM.dll" to the plugins folder of your miranda directory(likely: "C:\Program Files\Miranda IM\plugins"). Then restart miranda.
+
+	Q: I followed the instructions, but the plugin doesn't show up in my plugin list now?
+
+	A: You have an older version of Miranda IM. You need to update to 0.4.x or newer.
+
 	Q: Connection Problems?
 
 	A: Reset your server & port to the default by pressing reset on the options dialog.
@@ -32,6 +40,12 @@ Still need help?
 	icq id: 197688952
 
 Change Log:
+
+Version 1.4.2.2
+
+	-Added new main menu command to purge all miranda-aim buddies.
+	-Added support for html tags in profiles.
+	-Added a fix so that aim.dll will not be detected as not running in the version info plugin.
 
 Version 1.4.2.1
 
