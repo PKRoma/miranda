@@ -18,7 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "aim.h"
-
+#include "buddies.h"
 pthread_mutex_t connectionHandleMutex;
 pthread_mutex_t modeMsgsMutex;
 static HANDLE hSyncListMenu;
@@ -343,6 +343,11 @@ static int SyncBuddyWithServer(WPARAM wParam, LPARAM lParam)
 	aim_toc_sflapsend(buf, -1, TYPE_DATA);
 	return 0;
 }
+static int ClearBuddyList(WPARAM wParam, LPARAM lParam)
+{
+	aim_remove_all_buddies();
+	return 0;
+}
 static int SyncBuddyListWithServer(WPARAM wParam, LPARAM lParam)
 {
 	int ssilist=1;
@@ -539,7 +544,18 @@ void aim_services_register(HINSTANCE hInstance)
 		mi2.pszService = szService;
 		hSyncListMenu=(HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi2 );
 	}
-		
+	CreateServiceFunction( "AIM/ClearList", ClearBuddyList );
+	memset( &mi, 0, sizeof( mi ));
+	mi.pszPopupName = "AIM";
+    mi.cbSize = sizeof( mi );
+    mi.popupPosition = 500090000;
+	mi.position = 500090000;
+    mi.hIcon = LoadIcon(hInstance,MAKEINTRESOURCE( IDI_GDELETE ));
+	mi.pszContactOwner = AIM_PROTO;
+    mi.pszName = Translate( "Clear Client-Side Buddy List" );
+    mi.pszService = "AIM/ClearList";
+	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
 	CreateServiceFunction( "AIM/ShowProfile", ShowProfile );
 	memset( &mi3, 0, sizeof( mi3 ));
 	mi3.pszPopupName = "Show Profile";
