@@ -523,6 +523,22 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		break;
 }	}
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// Sends a private message to a chat user
+
+static void sttSendPrivateMessage( JABBER_LIST_ITEM* item, const char* nick )
+{
+	char szFullJid[ 256 ];
+	mir_snprintf( szFullJid, sizeof szFullJid, "%s/%s", item->jid, nick );
+	HANDLE hContact = JabberDBCreateContact( szFullJid, NULL, TRUE, FALSE );
+	if ( hContact != NULL ) {
+		DBWriteContactSettingByte( hContact, "CList", "NotInList", 1 );
+		JCallService( MS_MSG_SENDMESSAGE, ( WPARAM )hContact, 0 );
+}	}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// General chat event processing hook
+
 int JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 {
 	GCHOOK* gch = ( GCHOOK* )lParam;
@@ -547,6 +563,10 @@ int JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 					JabberSend( jabberThreadInfo->s, "<message to='%s' type='groupchat'><body>%s</body></message>", item->jid, str );
 					free( str );
 		}	}	}
+		break;
+
+	case GC_USER_PRIVMESS:
+		sttSendPrivateMessage( item, gch->pszUID );
 		break;
 
 	case GC_USER_LOGMENU:

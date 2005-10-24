@@ -123,36 +123,20 @@ void JabberContactListCreateGroup( char* groupName )
 
 void JabberDBAddAuthRequest( char* jid, char* nick )
 {
-	char* s, *p, *q;
-	DBEVENTINFO dbei = {0};
-	PBYTE pCurBlob;
-	HANDLE hContact;
-
-	// strip resource if present
-	s = _strdup( jid );
-	if (( p=strchr( s, '@' )) != NULL ) {
-		if (( q=strchr( p, '/' )) != NULL )
-			*q = '\0';
-	}
-
-	if (( hContact=JabberHContactFromJID( jid )) == NULL ) {
-		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_ADD, 0, 0 );
-		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )jabberProtoName );
-		JSetStringUtf( hContact, "jid", s );
-	}
-	else JDeleteSetting( hContact, "Hidden" );
-
+	HANDLE hContact = JabberDBCreateContact( jid, NULL, FALSE, TRUE );
+	JDeleteSetting( hContact, "Hidden" );
 	JSetString( hContact, "Nick", nick );
 
 	//blob is: uin( DWORD ), hContact( HANDLE ), nick( ASCIIZ ), first( ASCIIZ ), last( ASCIIZ ), email( ASCIIZ ), reason( ASCIIZ )
 	//blob is: 0( DWORD ), hContact( HANDLE ), nick( ASCIIZ ), ""( ASCIIZ ), ""( ASCIIZ ), email( ASCIIZ ), ""( ASCIIZ )
+	DBEVENTINFO dbei = {0};
 	dbei.cbSize = sizeof( DBEVENTINFO );
 	dbei.szModule = jabberProtoName;
 	dbei.timestamp = ( DWORD )time( NULL );
 	dbei.flags = 0;
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
 	dbei.cbBlob = sizeof( DWORD )+ sizeof( HANDLE ) + strlen( nick ) + strlen( jid ) + 5;
-	pCurBlob = dbei.pBlob = ( PBYTE ) malloc( dbei.cbBlob );
+	PBYTE pCurBlob = dbei.pBlob = ( PBYTE ) malloc( dbei.cbBlob );
 	*(( PDWORD ) pCurBlob ) = 0; pCurBlob += sizeof( DWORD );
 	*(( PHANDLE ) pCurBlob ) = hContact; pCurBlob += sizeof( HANDLE );
 	strcpy(( char* )pCurBlob, nick ); pCurBlob += strlen( nick )+1;

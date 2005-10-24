@@ -171,6 +171,7 @@ int JabberGcInit( WPARAM, LPARAM );
 static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 HANDLE hChatEvent = NULL,
        hChatMenu = NULL,
+		 hChatMess = NULL,
 		 hInitChat = NULL,
 		 hEvInitChat = NULL,
 		 hEvModulesLoaded = NULL,
@@ -303,6 +304,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 
 	if ( hChatEvent  )      UnhookEvent( hChatEvent );
 	if ( hChatMenu   )      UnhookEvent( hChatMenu );
+	if ( hChatMess   )      UnhookEvent( hChatMess );
 	if ( hEvInitChat )      UnhookEvent( hEvInitChat );
 	if ( hEvModulesLoaded ) UnhookEvent( hEvModulesLoaded );
 	if ( hEvOptInit  )      UnhookEvent( hEvOptInit );
