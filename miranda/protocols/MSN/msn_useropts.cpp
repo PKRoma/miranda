@@ -194,30 +194,125 @@ LBL_Reread:		DBWriteContactSettingString( pData->hContact, "ContactPhoto", "File
 	return FALSE;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// AvatarDlgProc - MSN avatar option page dialog procedure.
+
+static HBITMAP hAvatar = NULL;
+
+static bool sttSetAvatar( HWND hwndDlg )
+{
+	char szFileName[ MAX_PATH ];
+	if ( MSN_EnterBitmapFileName( szFileName ) != ERROR_SUCCESS )
+		return false;
+
+	HBITMAP hBitmap = MSN_LoadPictureToBitmap( szFileName );
+	if ( hBitmap == NULL )
+		return false;
+
+	if (( hBitmap = MSN_StretchBitmap( hBitmap )) == NULL )
+		return false;
+
+	if ( hAvatar != NULL ) {
+		DeleteObject( hAvatar );
+		hAvatar = NULL;
+	}
+
+	MSN_SaveBitmapAsAvatar( hAvatar = hBitmap );
+
+	if ( msnLoggedIn )
+		MSN_SetServerStatus( msnStatusMode );
+
+	return true;
+}
+
+BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	static RECT r;
+
+	switch ( msg ) {
+	case WM_INITDIALOG:
+		TranslateDialogDefault( hwndDlg );
+
+		hAvatar = NULL;
+		if ( MSN_GetByte( "EnableAvatars", 0 )) {
+			if ( MSN_LoadPngModule() ) {
+				char tBuffer[ MAX_PATH ];
+				MSN_GetAvatarFileName( NULL, tBuffer, sizeof tBuffer );
+				hAvatar = MSN_LoadPictureToBitmap( tBuffer );
+				if ( hAvatar != NULL )
+		         SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)hAvatar );
+			}	
+			else MSN_SetByte( "EnableAvatars", 0 );
+		}
+		return TRUE;
+
+	case WM_COMMAND:
+		if ( HIWORD( wParam ) == BN_CLICKED ) {
+			switch( LOWORD( wParam )) {
+			case IDC_SETAVATAR:
+				if ( sttSetAvatar( hwndDlg ))
+		         SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)hAvatar );
+				break;
+
+			case IDC_DELETEAVATAR:
+				if ( hAvatar != NULL ) {
+					DeleteObject( hAvatar );
+					hAvatar = NULL;
+				}
+
+				char tFileName[ MAX_PATH ];
+				MSN_GetAvatarFileName( NULL, tFileName, sizeof tFileName );
+				DeleteFile( tFileName );
+				DBDeleteContactSetting( NULL, msnProtocolName, "PictObject" );
+				InvalidateRect( hwndDlg, NULL, TRUE );
+				break;
+		}	}
+		break;
+
+	case WM_DESTROY:
+		if ( hAvatar != NULL )
+			DeleteObject( hAvatar );
+		break;
+	}
+
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MsnOnDetailsInit - initializes user info dialog pages.
+
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 {
+	OPTIONSDIALOGPAGE odp;
+	odp.cbSize = sizeof(odp);
+	odp.hIcon = NULL;
+	odp.hInstance = hInst;
+
 	HANDLE hContact = ( HANDLE )lParam;
-	if ( hContact == NULL )
+	if ( hContact == NULL ) {
+		if ( MyOptions.EnableAvatars ) {
+			char szTitle[256];
+			mir_snprintf( szTitle, sizeof( szTitle ), "%s %s", msnProtocolName, MSN_Translate( "Avatar" ));
+
+			odp.pfnDlgProc = AvatarDlgProc;
+			odp.position = 1900000000;
+			odp.pszTemplate = MAKEINTRESOURCE(IDD_SETAVATAR);
+			odp.pszTitle = szTitle;
+			MSN_CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+		}
 		return 0;
+	}
 
 	char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
 	if ( lstrcmp( szProto, msnProtocolName ))
 		return 0;
 
-	if ( !MyOptions.EnableAvatars )
-		return 0;
-
-	if ( !MSN_GetDword( hContact, "FlagBits", 0 ))
-		return 0;
-
-	OPTIONSDIALOGPAGE odp;
-	odp.cbSize = sizeof(odp);
-	odp.hIcon = NULL;
-	odp.hInstance = hInst;
-	odp.pfnDlgProc = MsnDlgProc;
-	odp.position = -1900000000;
-	odp.pszTemplate = MAKEINTRESOURCE(IDD_USEROPTS);
-	odp.pszTitle = Translate(msnProtocolName);
-	MSN_CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+	if ( MyOptions.EnableAvatars && MSN_GetDword( hContact, "FlagBits", 0 )) {
+		odp.pfnDlgProc = MsnDlgProc;
+		odp.position = -1900000000;
+		odp.pszTemplate = MAKEINTRESOURCE(IDD_USEROPTS);
+		odp.pszTitle = Translate(msnProtocolName);
+		MSN_CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+	}
 	return 0;
 }

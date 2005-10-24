@@ -177,28 +177,28 @@ void		__stdcall	LoadOptions( void );
 int		__stdcall	MSN_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 #endif
 
-HANDLE	__stdcall	MSN_CreateProtoServiceFunction( const char*, MIRANDASERVICE );
+HANDLE	__stdcall   MSN_CreateProtoServiceFunction( const char*, MIRANDASERVICE );
 void     __stdcall   MSN_EnableMenuItems( BOOL );
-void     __fastcall	MSN_FreeVariant( DBVARIANT* dbv );
-char*		__stdcall	MSN_GetContactName( HANDLE hContact );
-DWORD		__stdcall	MSN_GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
-DWORD		__stdcall	MSN_GetByte( const char* valueName, int parDefltValue );
-int		__stdcall	MSN_GetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len );
+void     __fastcall  MSN_FreeVariant( DBVARIANT* dbv );
+char*		__stdcall   MSN_GetContactName( HANDLE hContact );
+DWORD		__stdcall   MSN_GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
+DWORD		__stdcall   MSN_GetByte( const char* valueName, int parDefltValue );
+int		__stdcall   MSN_GetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len );
 WORD     __stdcall   MSN_GetWord( HANDLE hContact, const char* valueName, int parDefltValue );
-int		__stdcall	MSN_SendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
-DWORD		__stdcall	MSN_SetByte( const char* valueName, int parValue );
-DWORD		__stdcall	MSN_SetDword( HANDLE hContact, const char* valueName, DWORD parValue );
-DWORD		__stdcall	MSN_SetWord( HANDLE hContact, const char* valueName, int parValue );
-DWORD		__stdcall	MSN_SetString( HANDLE hContact, const char* valueName, const char* parValue );
-DWORD		__stdcall	MSN_SetStringUtf( HANDLE hContact, const char* valueName, char* parValue );
-void     __cdecl		MSN_ShowError( const char* msgtext, ... );
-char*		__stdcall	MSN_Translate( const char* str );
+int		__stdcall   MSN_SendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
+DWORD		__stdcall   MSN_SetByte( const char* valueName, int parValue );
+DWORD		__stdcall   MSN_SetDword( HANDLE hContact, const char* valueName, DWORD parValue );
+DWORD		__stdcall   MSN_SetWord( HANDLE hContact, const char* valueName, int parValue );
+DWORD		__stdcall   MSN_SetString( HANDLE hContact, const char* valueName, const char* parValue );
+DWORD		__stdcall   MSN_SetStringUtf( HANDLE hContact, const char* valueName, char* parValue );
+void     __cdecl     MSN_ShowError( const char* msgtext, ... );
+char*		__stdcall   MSN_Translate( const char* str );
 
-int		__stdcall	MSN_BitmapToAvatarDibBits( HBITMAP hBitmap, BITMAPINFOHEADER*& ppDib, BYTE*& ppDibBits );
-int		__stdcall	MSN_DibBitsToAvatar( BITMAPINFOHEADER* pDib, BYTE* pDibBits );
-int		__stdcall	MSN_EnterBitmapFileName( char* szDest );
-HBITMAP	__stdcall	MSN_LoadPictureToBitmap( const char* pszFileName );
-int		__stdcall	MSN_PngToDibBits( const char* pszFileName, BITMAPINFOHEADER*& ppDib, BYTE*& ppDibBits );
+int		__stdcall   MSN_EnterBitmapFileName( char* szDest );
+HBITMAP	__stdcall   MSN_LoadPictureToBitmap( const char* pszFileName );
+int      __stdcall   MSN_SaveBitmapAsAvatar( HBITMAP hBitmap );
+HBITMAP  __stdcall   MSN_StretchBitmap( HBITMAP hBitmap );
+
 
 VOID		CALLBACK MSNMainTimerProc( HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime );
 LRESULT	CALLBACK NullWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

@@ -28,15 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_BitmapToAvatarDibBits - rescales a bitmap to 96x96 pixels and creates a DIB from it
 
-int __stdcall MSN_BitmapToAvatarDibBits( HBITMAP hBitmap, BITMAPINFOHEADER*& ppDib, BYTE*& ppDibBits )
+HBITMAP __stdcall MSN_StretchBitmap( HBITMAP hBitmap )
 {
-	BITMAP bmp;
-	HDC hDC = CreateCompatibleDC( NULL );
-	SelectObject( hDC, hBitmap );
-	GetObject( hBitmap, sizeof( BITMAP ), &bmp );
-
-	HDC hBmpDC = CreateCompatibleDC( hDC );
-
 	BITMAPINFO bmStretch = { 0 }; 
 	bmStretch.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	bmStretch.bmiHeader.biWidth = 96;
@@ -48,10 +41,16 @@ int __stdcall MSN_BitmapToAvatarDibBits( HBITMAP hBitmap, BITMAPINFOHEADER*& ppD
 	HBITMAP hStretchedBitmap = CreateDIBSection( NULL, &bmStretch, DIB_RGB_COLORS, ( void** )&ptPixels, NULL, 0);
 	if ( hStretchedBitmap == NULL ) {
 		MSN_DebugLog( "Bitmap creation failed with error %d", GetLastError() );
-		return 1;
+		return NULL;
 	}
 
-	SelectObject( hBmpDC, hStretchedBitmap );
+	BITMAP bmp;
+	HDC hDC = CreateCompatibleDC( NULL );
+	HBITMAP hOldBitmap1 = ( HBITMAP )SelectObject( hDC, hBitmap );
+	GetObject( hBitmap, sizeof( BITMAP ), &bmp );
+
+	HDC hBmpDC = CreateCompatibleDC( hDC );
+	HBITMAP hOldBitmap2 = ( HBITMAP )SelectObject( hBmpDC, hStretchedBitmap );
 	int side, dx, dy;
 
 	if ( bmp.bmWidth > bmp.bmHeight ) {
@@ -67,45 +66,58 @@ int __stdcall MSN_BitmapToAvatarDibBits( HBITMAP hBitmap, BITMAPINFOHEADER*& ppD
 
 	SetStretchBltMode( hBmpDC, HALFTONE );
 	StretchBlt( hBmpDC, 0, 0, 96, 96, hDC, dx, dy, side, side, SRCCOPY );
+
+	SelectObject( hDC, hOldBitmap1 );
 	DeleteObject( hBitmap );
 	DeleteDC( hDC );
+
+	SelectObject( hBmpDC, hOldBitmap2 );
+	DeleteDC( hBmpDC );
+	return hStretchedBitmap;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MSN_SaveBitmapAsAvatar - updates the avatar database settins and file from a bitmap
+
+int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap ) 
+{
+	if ( !MSN_LoadPngModule())
+		return 1;
+
+	HDC hdc = CreateCompatibleDC( NULL );
+	HBITMAP hOldBitmap = ( HBITMAP )SelectObject( hdc, hBitmap );
 
 	BITMAPINFO* bmi = ( BITMAPINFO* )alloca( sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 );
 	memset( bmi, 0, sizeof BITMAPINFO );
 	bmi->bmiHeader.biSize = 0x28;
-	if ( GetDIBits( hBmpDC, hStretchedBitmap, 0, 96, NULL, bmi, DIB_RGB_COLORS ) == 0 ) {
+	if ( GetDIBits( hdc, hBitmap, 0, 96, NULL, bmi, DIB_RGB_COLORS ) == 0 ) {
 		TWinErrorCode errCode;
 		MSN_ShowError( "Unable to get the bitmap: error %d (%s)", errCode.mErrorCode, errCode.getText() );
 		return 2;
 	}
 
-	ppDib = ( BITMAPINFOHEADER* )GlobalAlloc( LPTR, sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 + bmi->bmiHeader.biSizeImage );
-	if ( ppDib == NULL )
+	BITMAPINFOHEADER* pDib;
+	BYTE* pDibBits;
+	pDib = ( BITMAPINFOHEADER* )GlobalAlloc( LPTR, sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 + bmi->bmiHeader.biSizeImage );
+	if ( pDib == NULL )
 		return 3;
 
-	memcpy( ppDib, bmi, sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 );
-	ppDibBits = (( BYTE* )ppDib ) + sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256;
+	memcpy( pDib, bmi, sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 );
+	pDibBits = (( BYTE* )pDib ) + sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256;
 
-	GetDIBits( hBmpDC, hStretchedBitmap, 0, ppDib->biHeight, ppDibBits, ( BITMAPINFO* )ppDib, DIB_RGB_COLORS );
-	DeleteObject( hStretchedBitmap );
-	DeleteDC( hBmpDC );
-	return ERROR_SUCCESS;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MSN_DibBitsToAvatar - updates the avatar database settins and file from a DIB
-
-int __stdcall MSN_DibBitsToAvatar( BITMAPINFOHEADER* pDib, BYTE* pDibBits )
-{
-	if ( !MSN_LoadPngModule())
-		return 1;
+	GetDIBits( hdc, hBitmap, 0, pDib->biHeight, pDibBits, ( BITMAPINFO* )pDib, DIB_RGB_COLORS );
+	SelectObject( hdc, hOldBitmap );
+	DeleteDC( hdc );
 
 	long dwPngSize = 0;
-	if ( dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, NULL, &dwPngSize ) == 0 )
+	if ( dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, NULL, &dwPngSize ) == 0 ) {
+		GlobalFree( pDib );
 		return 2;
+	}
 
 	BYTE* pPngMemBuffer = new BYTE[ dwPngSize ];
 	dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, pPngMemBuffer, &dwPngSize );
+	GlobalFree( pDib );
 
 	SHA1Context sha1ctx;
 	BYTE sha1c[ SHA1HashSize ], sha1d[ SHA1HashSize ];
@@ -205,25 +217,8 @@ HBITMAP __stdcall MSN_LoadPictureToBitmap( const char* pszFileName )
 	if ( memicmp( pszFileName + strlen(pszFileName)-4, ".PNG", 4 ) != 0 )
 		return ( HBITMAP )MSN_CallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )pszFileName );
 
-	BITMAPINFOHEADER* pDib;
-	BYTE* pDibBits;
-	if ( MSN_PngToDibBits( pszFileName, pDib, pDibBits ))
-		return NULL;
-
-	HDC sDC = GetDC( NULL );
-	HBITMAP hBitmap = CreateDIBitmap( sDC, pDib, CBM_INIT, pDibBits, ( BITMAPINFO* )pDib, DIB_PAL_COLORS );
-	SelectObject( sDC, hBitmap );
-	DeleteDC( sDC );
-	return hBitmap;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MSN_PngToDibBits - loads a PNG image into the DIB
-
-int __stdcall MSN_PngToDibBits( const char* pszFileName, BITMAPINFOHEADER*& ppDib, BYTE*& ppDibBits )
-{
 	if ( !MSN_LoadPngModule())
-		return 1;
+		return NULL;
 
 	HANDLE hFile = NULL, hMap = NULL;
 	BYTE* ppMap = NULL;
@@ -234,9 +229,12 @@ int __stdcall MSN_PngToDibBits( const char* pszFileName, BITMAPINFOHEADER*& ppDi
 			if (( ppMap = ( BYTE* )::MapViewOfFile( hMap, FILE_MAP_READ, 0, 0, 0 )) != NULL )
 				cbFileSize = GetFileSize( hFile, NULL );
 
+	BITMAPINFOHEADER* pDib;
+	BYTE* pDibBits;
+
 	if ( cbFileSize != 0 ) {
-		if ( png2dibConvertor(( char* )ppMap, cbFileSize, &ppDib ))
-			ppDibBits = ( BYTE* )( ppDib+1 );
+		if ( png2dibConvertor(( char* )ppMap, cbFileSize, &pDib ))
+			pDibBits = ( BYTE* )( pDib+1 );
 		else
 			cbFileSize = 0;
 	}
@@ -245,5 +243,13 @@ int __stdcall MSN_PngToDibBits( const char* pszFileName, BITMAPINFOHEADER*& ppDi
 	if ( hMap  != NULL )	CloseHandle( hMap );
 	if ( hFile != NULL ) CloseHandle( hFile );
 
-	return ( cbFileSize != 0 ) ? ERROR_SUCCESS : 2;
+	if ( cbFileSize == 0 )
+		return NULL;
+
+	HDC sDC = GetDC( NULL );
+	HBITMAP hBitmap = CreateDIBitmap( sDC, pDib, CBM_INIT, pDibBits, ( BITMAPINFO* )pDib, DIB_PAL_COLORS );
+	SelectObject( sDC, hBitmap );
+	DeleteDC( sDC );
+	GlobalFree( pDib );
+	return hBitmap;
 }

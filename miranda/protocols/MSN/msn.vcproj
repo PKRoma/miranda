@@ -44,9 +44,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/filealign:512"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
-				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="TRUE"

@@ -39,37 +39,6 @@ extern char *rru;
 
 BOOL CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// avatar setting code
-
-static BITMAPINFOHEADER*	pDib = NULL;
-static BYTE*					pDibBits = NULL;
-
-static void sttSetAvatar( HWND hwndDlg )
-{
-	if ( !MSN_LoadPngModule() )
-		return;
-
-	char szFileName[ MAX_PATH ];
-	if ( MSN_EnterBitmapFileName( szFileName ) != ERROR_SUCCESS )
-		return;
-
-	HBITMAP hBitmap = MSN_LoadPictureToBitmap( szFileName );
-	if ( hBitmap == NULL )
-		return;
-
-	if ( pDib != NULL ) {
-	   GlobalFree( pDib );
-		pDib = NULL;
-		pDibBits = NULL;
-	}
-
-	if ( MSN_BitmapToAvatarDibBits( hBitmap, pDib, pDibBits ) != ERROR_SUCCESS )
-		return;
-
-	InvalidateRect( hwndDlg, NULL, TRUE );
-}
-
 static void __cdecl sttUploadGroups( void* )
 {
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
@@ -89,8 +58,6 @@ static void __cdecl sttUploadGroups( void* )
 
 static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	static RECT r;
-
 	switch ( msg ) {
 	case WM_INITDIALOG: {
 		TranslateDialogDefault( hwndDlg );
@@ -137,40 +104,8 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			EnableWindow( GetDlgItem( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS ), FALSE );
 		}
 		else CheckDlgButton( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS, msnOtherContactsBlocked );
-
-		// avatar preparation code
-		pDib = NULL;
-		pDibBits = NULL;
-
-		GetWindowRect( GetDlgItem( hwndDlg, IDC_AVATAR ), &r );
-		ScreenToClient( hwndDlg, ( LPPOINT )&r );
-
-		tValue = MSN_GetByte( "EnableAvatars", 0 );
-		CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS,	tValue );
-		if ( tValue ) {
-			if ( !MSN_LoadPngModule() ) {
-				MSN_SetByte( "EnableAvatars", 0 );
-				CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS,	FALSE );
-			}
-			else {
-				MSN_GetAvatarFileName( NULL, tBuffer, sizeof tBuffer );
-				MSN_PngToDibBits( tBuffer, pDib, pDibBits );
-		}	}
 		return TRUE;
 	}
-	case WM_DESTROY:
-		if ( pDib != NULL )
-		   GlobalFree( pDib );
-		break;
-
-	case WM_PAINT:
-		if ( pDib != NULL ) {
-			PAINTSTRUCT ps;
-			HDC hdc = BeginPaint( hwndDlg, &ps );
-			SetDIBitsToDevice( hdc, r.left, r.top, 96, 96, 0, 0, 0, 96, pDibBits, ( BITMAPINFO* )pDib, DIB_RGB_COLORS );
-			EndPaint( hwndDlg, &ps );
-		}
-		break;
 
 	case WM_COMMAND:
 		if ( LOWORD( wParam ) == IDC_NEWMSNACCOUNTLINK ) {
@@ -212,20 +147,6 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 																"Do you want to upload your groups to the server?" ),
 											MSN_Translate( "MSN Protocol" ), MB_YESNOCANCEL ))
 						(new ThreadData())->startThread( sttUploadGroups );
-				goto LBL_Apply;
-
-			case IDC_SETAVATAR:
-				sttSetAvatar( hwndDlg );
-				goto LBL_Apply;
-
-			case IDC_DELETEAVATAR:
-				if ( pDib != NULL ) {
-					GlobalFree( pDib );
-					pDib = NULL;
-					pDibBits = NULL;
-				}
-
-				InvalidateRect( hwndDlg, NULL, TRUE );
 				goto LBL_Apply;
 
 			case IDC_RUN_APP_ON_HOTMAIL: {
@@ -332,30 +253,7 @@ LBL_Continue:
 				break;
 			}
 
-			tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_AVATARS );
-			{
-				char tFileName[ MAX_PATH ];
-				MSN_GetAvatarFileName( NULL, tFileName, sizeof tFileName );
-
-				if ( tValue == FALSE ) {
-LBL_Del:			DeleteFile( tFileName );
-					DBDeleteContactSetting( NULL, msnProtocolName, "PictObject" );
-
-					GlobalFree( pDib ); pDib = NULL; pDibBits = NULL;
-					InvalidateRect( hwndDlg, NULL, TRUE );
-				}
-				else {
-					if ( pDib == NULL || pDibBits == NULL )
-						goto LBL_Del;
-
-					MSN_DibBitsToAvatar( pDib, pDibBits );
-				}
-
-				if ( msnLoggedIn )
-					MSN_SetServerStatus( msnStatusMode );
-			}
-			MSN_SetByte( "EnableAvatars", tValue );
-
+			MSN_SetByte( "EnableAvatars", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_AVATARS ));
 			MSN_SetByte( "SendFontInfo", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SENDFONTINFO ));
 			MSN_SetByte( "RunMailerOnHotmail", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_RUN_APP_ON_HOTMAIL ));
 			MSN_SetByte( "NeverUpdateNickname", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USE_OWN_NICKNAME ));

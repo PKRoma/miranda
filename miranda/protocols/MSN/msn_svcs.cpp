@@ -956,12 +956,11 @@ static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 	if ( hBitmap == NULL )
 		return 1;
 
-	BITMAPINFOHEADER* pDib;
-	BYTE* pDibBits;
-	if ( MSN_BitmapToAvatarDibBits( hBitmap, pDib, pDibBits ))
+	if (( hBitmap = MSN_StretchBitmap( hBitmap )) == NULL )
 		return 2;
 
-	MSN_DibBitsToAvatar( pDib, pDibBits );
+	MSN_SaveBitmapAsAvatar( hBitmap );
+	DeleteObject( hBitmap );
 	if ( msnLoggedIn )
 		MSN_SetServerStatus( msnStatusMode );
 	return 0;
