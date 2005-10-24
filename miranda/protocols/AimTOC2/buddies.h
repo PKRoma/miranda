@@ -32,5 +32,5 @@ void aim_buddy_parseconfig(char *config);
 void aim_buddy_updateconfig(int ssilist);
 int aim_buddy_cfglen();
 void aim_buddy_delaydeletefree();
-
+void aim_remove_all_buddies();
 #endif

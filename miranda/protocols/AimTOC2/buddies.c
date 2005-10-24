@@ -39,7 +39,30 @@ static void aim_buddy_delaydelete(char *szUser)
     hUserDeletedCount++;
     pthread_mutex_unlock(&buddyMutex);
 }
-
+void aim_remove_all_buddies()
+{
+	HANDLE hContact;
+    char *szProto;
+	if(IDOK==MessageBox(0,Translate("Continuing with this operation will disconnect you from aim, remove all of your miranda buddies, their histories, and any settings you have for them.\r\n(Note: When reconnecting to miranda-aim any buddy on your server-side list will reappear.)\r\nClick \"Ok\" to continue"),Translate("Warning"), MB_OKCANCEL | MB_ICONEXCLAMATION))
+	{
+        aim_toc_disconnect();
+        aim_util_broadcaststatus(ID_STATUS_OFFLINE);
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		while (hContact)
+		{
+			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+			if (szProto != NULL && !strcmp(szProto, AIM_PROTO))
+			{
+				if (DBGetContactSettingByte(hContact, AIM_PROTO, AIM_CHAT, 0) == 0)
+				{
+					HANDLE tempContact=hContact;
+					hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+					CallService(MS_DB_CONTACT_DELETE, (WPARAM) tempContact, 0);
+				}
+			}
+		}
+	}
+}
 void aim_buddy_delaydeletefree()
 {
     int i;
