@@ -128,7 +128,7 @@ void aim_userinfo_send()
     }
     else
         mir_snprintf(buf, sizeof(buf), "%s", Translate(AIM_STR_PR));
-    aim_util_escape(buf);
+    aim_util_profile_escape(buf);
     mir_snprintf(buf2, sizeof(buf2), "toc_set_info \"%s\"", buf);
     aim_toc_sflapsend(buf2, -1, TYPE_DATA);
 }

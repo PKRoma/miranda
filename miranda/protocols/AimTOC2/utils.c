@@ -240,7 +240,64 @@ int aim_util_escape(char *msg)
     free(cpy);
     return cnt;
 }
+int aim_util_profile_escape(char *msg)
+{
+    char *c, *cpy;
+    int cnt = 0;
 
+    if (strlen(msg) > MSG_LEN) {
+        LOG(LOG_WARN, "Truncating message to %d bytes.  The world is coming to an end!", MSG_LEN);
+        msg[MSG_LEN - 1] = '\0';
+    }
+    cpy = _strdup(msg);
+    c = cpy;
+    while (*c) {
+        switch (*c) {
+            case '\r':
+                // turn carriage return into and html <BR> tag
+                // aim clients only understand html
+                if (*(c + 1) == '\n') {
+                    msg[cnt++] = '<';
+                    msg[cnt++] = 'B';
+                    msg[cnt++] = 'R';
+                    msg[cnt++] = '>';
+                    c++;
+                }
+                else {
+                    msg[cnt++] = *c;
+                }
+                break;
+            case '\n':
+                // same as above except there wasn't a \r in front of it
+                msg[cnt++] = '<';
+                msg[cnt++] = 'B';
+                msg[cnt++] = 'R';
+                msg[cnt++] = '>';
+                break;
+            case '&':
+                msg[cnt++] = '&';
+                msg[cnt++] = 'a';
+                msg[cnt++] = 'm';
+                msg[cnt++] = 'p';
+                msg[cnt++] = ';';
+                break;
+            case '"':
+            case '$':
+            case '[':
+            case ']':
+            case '(':
+            case ')':
+            case '\\':
+                msg[cnt++] = '\\';      // fall-through
+            default:
+                msg[cnt++] = *c;
+        }
+        c++;
+    }
+    msg[cnt] = '\0';
+    free(cpy);
+    return cnt;
+}
 void aim_util_browselostpwd()
 {
     CallService(MS_UTILS_OPENURL, (WPARAM) 1, (LPARAM) AIM_LOSTPW);
