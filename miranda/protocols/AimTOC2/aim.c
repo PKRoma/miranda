@@ -53,7 +53,7 @@ int aim_modulesloaded(WPARAM wParam, LPARAM lParam)
 {
     NETLIBUSER nlu;
     char szP2P[128];
-
+	DBDeleteContactSetting(NULL, "PluginDisable","AIM.dll");
     mir_snprintf(szP2P, sizeof(szP2P), "%sP2P", AIM_PROTO);
     ZeroMemory(&nlu, sizeof(nlu));
     nlu.cbSize = sizeof(nlu);
