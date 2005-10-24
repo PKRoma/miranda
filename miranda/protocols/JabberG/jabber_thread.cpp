@@ -833,7 +833,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 	XmlNode *showNode, *statusNode;
 	JABBER_LIST_ITEM *item;
 	char* from, *nick, *show;
-	int count, i;
+	int i;
 	char* p;
 
 	if ( !node || !node->name || strcmp( node->name, "presence" )) return;
@@ -889,8 +889,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 
 		// Determine status to show for the contact
 		if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
-			count = item->resourceCount;
-			for ( i=0; i<count; i++ )
+			for ( i=0; i < item->resourceCount; i++ )
 				status = JabberCombineStatus( status, item->resource[i].status );
 			item->status = status;
 		}
@@ -942,8 +941,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 		if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 			// Determine status to show for the contact based on the remaining resources
 			status = ID_STATUS_OFFLINE;
-			count = item->resourceCount;
-			for ( i=0; i<count; i++ )
+			for ( i=0; i < item->resourceCount; i++ )
 				status = JabberCombineStatus( status, item->resource[i].status );
 			item->status = status;
 		}
