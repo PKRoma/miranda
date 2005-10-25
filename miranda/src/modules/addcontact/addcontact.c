@@ -78,8 +78,8 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 				for(groupId=0;groupId<999;groupId++)
 				{
 					itoa(groupId,idstr,10);
-					if(DBGetContactSetting(NULL,"CListGroups",idstr,&dbv)) break;
-					SendDlgItemMessageA(hdlg,IDC_GROUP,CB_ADDSTRING,0,(LPARAM)(dbv.pszVal+1));
+					if(DBGetContactSettingTString(NULL,"CListGroups",idstr,&dbv)) break;
+					SendDlgItemMessage(hdlg,IDC_GROUP,CB_ADDSTRING,0,(LPARAM)(dbv.ptszVal+1));
 				}
 				DBFreeVariant(&dbv);
 				SendDlgItemMessage(hdlg,IDC_GROUP,CB_INSERTSTRING,0,(LPARAM)TranslateT("None"));
