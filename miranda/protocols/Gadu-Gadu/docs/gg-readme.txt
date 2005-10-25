@@ -52,8 +52,7 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 4. Todo
 -------
- - Use a list of GG servers instead of one address when connecting
- - Show ignored contacts that they are blocked (aka org. GG client blocking)
+ - Enable/disable features that need more bandwidth, i.e. image sending
  - Animated GIFs support (image sending)
  - Full Netlib integration
  - Voice chat
