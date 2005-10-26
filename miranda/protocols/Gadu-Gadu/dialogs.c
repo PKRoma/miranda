@@ -282,10 +282,11 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 EnableWindow(GetDlgItem(hwndDlg, IDC_IGNORECONF), FALSE);
                 CheckDlgButton(hwndDlg, IDC_IGNORECONF, TRUE);
             }
-            CheckDlgButton(hwndDlg, IDC_POPUPIMG, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_POPUPIMG, GG_KEYDEF_POPUPIMG));
+            CheckDlgButton(hwndDlg, IDC_IMGRECEIVE, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGRECEIVE, GG_KEYDEF_IMGRECEIVE));
             CheckDlgButton(hwndDlg, IDC_SHOWNOTONMYLIST, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWNOTONMYLIST, GG_KEYDEF_SHOWNOTONMYLIST));
 
             EnableWindow(GetDlgItem(hwndDlg, IDC_LEAVESTATUS), IsDlgButtonChecked(hwndDlg, IDC_LEAVESTATUSMSG));
+            EnableWindow(GetDlgItem(hwndDlg, IDC_IMGMETHOD), IsDlgButtonChecked(hwndDlg, IDC_IMGRECEIVE));
             SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_ADDSTRING, 0, (LPARAM)Translate("<Last Status>"));  // 0
             SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_ADDSTRING, 0, (LPARAM)Translate("Online"));         // ID_STATUS_ONLINE
             SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_ADDSTRING, 0, (LPARAM)Translate("Away"));           // ID_STATUS_AWAY
@@ -304,6 +305,11 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 default:
                     SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_SETCURSEL, 0, 0);
             }
+
+            SendDlgItemMessage(hwndDlg, IDC_IMGMETHOD, CB_ADDSTRING, 0, (LPARAM)Translate("System tray icon"));
+            SendDlgItemMessage(hwndDlg, IDC_IMGMETHOD, CB_ADDSTRING, 0, (LPARAM)Translate("Popup window"));
+            SendDlgItemMessage(hwndDlg, IDC_IMGMETHOD, CB_SETCURSEL, 
+				DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGMETHOD, GG_KEYDEF_IMGMETHOD), 0);
 
             SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_ADDSTRING, 0, (LPARAM)Translate("Allow"));
             SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_ADDSTRING, 0, (LPARAM)Translate("Ask"));
@@ -340,12 +346,17 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				case IDC_UIN:
 				{
 					gg_optsdlgcheck(hwndDlg);
-					return TRUE;
+					return FALSE;
 				}
                 case IDC_LEAVESTATUSMSG:
                 {
                     EnableWindow(GetDlgItem(hwndDlg, IDC_LEAVESTATUS), IsDlgButtonChecked(hwndDlg, IDC_LEAVESTATUSMSG));
-                    return TRUE;
+                    return FALSE;
+                }
+                case IDC_IMGRECEIVE:
+                {
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_IMGMETHOD), IsDlgButtonChecked(hwndDlg, IDC_IMGRECEIVE));
+                    return FALSE;
                 }
                 case IDC_LOSTPASS:
                 {
@@ -366,7 +377,7 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						GG_PROTONAME,
 						MB_OKCANCEL | MB_ICONQUESTION) == IDOK)
 							gg_remindpassword(uin, email);
-                    return TRUE;
+                    return FALSE;
                 }
 				case IDC_CREATEACCOUNT:
 				case IDC_REMOVEACCOUNT:
@@ -494,8 +505,11 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_LEAVESTATUSMSG, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LEAVESTATUSMSG));
                     if(ggGCEnabled)
                         DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IGNORECONF));
-                    DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_POPUPIMG, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_POPUPIMG));
+                    DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGRECEIVE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IMGRECEIVE));
                     DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWNOTONMYLIST, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTONMYLIST));
+
+                    DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGMETHOD, 
+						SendDlgItemMessage(hwndDlg, IDC_IMGMETHOD, CB_GETCURSEL, 0, 0));
 
                     // Write leave status
                     switch(SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_GETCURSEL, 0, 0))

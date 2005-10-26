@@ -589,7 +589,7 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     GlobalFree(dat->lpImages->hPicture);
                     free(dat->lpImages);
                 }
-                if(!(dat->lpImages = gg_img_loadpicture(0, dat->hContact, szFileName))
+                if(!(dat->lpImages = gg_img_loadpicture(0, dat->hContact, szFileName)))
                 {
                     EndDialog(hwndDlg, 0);
                     return FALSE;
@@ -656,7 +656,7 @@ extern "C" BOOL gg_img_opened(uin_t uin)
 
 ////////////////////////////////////////////////////////////////////////////
 // Image Module : Looking for window entry, create if not found
-extern "C" int gg_img_display(uin_t uin, HANDLE hContact, GGIMAGEENTRY *img)
+extern "C" int gg_img_display(HANDLE hContact, GGIMAGEENTRY *img)
 {
     if(WaitForSingleObject(hImgMutex, 20000) == WAIT_TIMEOUT)
     {
@@ -682,7 +682,8 @@ extern "C" int gg_img_display(uin_t uin, HANDLE hContact, GGIMAGEENTRY *img)
     if(!dat)
     {
         dat = gg_img_recvdlg(hContact);
-        dat->uin = uin;
+        dat->uin = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
+
         if(WaitForSingleObject(dat->hEvent, 10000) == WAIT_TIMEOUT) // Waiting 10 seconds for handle
         {
 #ifdef DEBUGMODE
@@ -715,7 +716,7 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
     GGIMAGEENTRY *dat;
     dat = (GGIMAGEENTRY *)malloc(sizeof(GGIMAGEENTRY));
     memset(dat, 0, sizeof(GGIMAGEENTRY) );
-    dat->lpNext =0;
+    dat->lpNext = 0;
 
     if(szFileName)
     {
@@ -819,16 +820,16 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
 // Image Recv : AddEvent proc
 int gg_img_recvimage(WPARAM wParam, LPARAM lParam)
 {
-    CLISTEVENT *cle = (CLISTEVENT *)lParam;
-    struct gg_event* e = (struct gg_event *)cle->lParam;
+#ifdef DEBUGMODE
+    gg_netlog("gg_img_recvimage(%x, %x): Popup new image.", wParam, lParam);
+#endif
 
-    GGIMAGEENTRY *img = gg_img_loadpicture(e, cle->hContact, 0);
+    CLISTEVENT *cle = (CLISTEVENT *)lParam;
+    GGIMAGEENTRY *img = (GGIMAGEENTRY *)cle->lParam;
 
     if(!img) return FALSE;
 
-    gg_img_display(
-        e->event.image_reply.sender,
-        gg_getcontact(e->event.image_reply.sender, 1, 0, NULL), img);
+	gg_img_display(cle->hContact, img);
 
 	return FALSE;
 }

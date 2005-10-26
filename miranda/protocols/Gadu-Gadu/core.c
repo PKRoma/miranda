@@ -165,7 +165,7 @@ uint32_t gg_dnslookup(char *host)
     struct hostent *he;
 
     ip = inet_addr(host);
-    if (ip != INADDR_NONE)
+    if(ip != INADDR_NONE)
     {
 #ifdef DEBUGMODE
         gg_netlog("gg_dnslookup(): Parameter \"%s\" is already IP number.", host);
@@ -283,7 +283,12 @@ start:
 
     // Client version and misc settings
     p.client_version = GG_DEFAULT_CLIENT_VERSION;
-	// p.has_audio = 1;
+
+	// Use audio
+	/* p.has_audio = 1; */
+
+	// Use async connections
+	/* p.async = 1; */
 
 	// Send Era Omnix info if set
 	p.era_omnix = DBGetContactSettingByte(NULL, GG_PROTO, "EraOmnix", 0);
@@ -321,7 +326,7 @@ start:
     if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_MANUALHOST, GG_KEYDEF_MANUALHOST))
     {
         DBVARIANT dbv;
-        if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_SERVERHOSTS, &dbv))
+        if(!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_SERVERHOSTS, &dbv))
         {
             hostcount = gg_decodehosts(dbv.pszVal, hosts, 64);
             hostnum ++;
@@ -355,7 +360,7 @@ start:
     }
 
     // Readup password
-    if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) {
+    if(!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) {
         CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
         p.password = _strdup(dbv.pszVal);
         DBFreeVariant(&dbv);
@@ -377,7 +382,7 @@ start:
     }
 
     // Readup number
-    if (!(p.uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0)))
+    if(!(p.uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0)))
     {
 #ifdef DEBUGMODE
         gg_netlog("gg_mainthread(%x): No Gadu-Gadu number specified. Exiting.", thread);
@@ -419,7 +424,7 @@ start:
 	if(thread->dcc && DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_FORWARDING, GG_KEYDEF_FORWARDING))
 	{
 		DBVARIANT dbv;
-		if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_FORWARDHOST, &dbv))
+		if(!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_FORWARDHOST, &dbv))
 		{
 			if(!(p.external_addr = gg_dnslookup(dbv.pszVal)))
             {
@@ -467,7 +472,7 @@ start:
 			// Lookup for error desciption
 			if(errno == EACCES)
 			{
-				for(i = 0; reason[i].type; i++) if (reason[i].type == gg_failno)
+				for(i = 0; reason[i].type; i++) if(reason[i].type == gg_failno)
 				{
 					perror = Translate(reason[i].str);
 					break;
@@ -517,7 +522,6 @@ start:
             gg_broadcastnewstatus(ggDesiredStatus);    // Set just status (startup status)
         else
             gg_refreshstatus(ggDesiredStatus);         // Inform about my status
-
         // Mark was connected
         connected = TRUE;
     }
@@ -529,7 +533,7 @@ start:
     {
         // Connection broken/closed
         // pthread_mutex_lock(&threadMutex);
-        if (!(e = gg_watch_fd(thread->sess)))
+        if(!(e = gg_watch_fd(thread->sess)))
         {
 #ifdef DEBUGMODE
             gg_netlog("gg_mainthread(%x): Connection closed.", thread);
@@ -613,7 +617,7 @@ start:
                 // Store next search UIN
                 nextUIN = gg_pubdir50_next(res);
 
-                if ((count = gg_pubdir50_count(res)) > 0)
+                if((count = gg_pubdir50_count(res)) > 0)
                 {
                     for (i = 0; i < count; i++)
                     {
@@ -736,7 +740,7 @@ start:
                 switch (e->event.userlist.type)
                 {
                     case GG_USERLIST_GET_REPLY:
-                        if (e->event.userlist.reply)
+                        if(e->event.userlist.reply)
                         {
                             gg_parsecontacts(e->event.userlist.reply);
                             MessageBox(
@@ -771,7 +775,7 @@ start:
             // Received message
             case GG_EVENT_MSG:
                 // This is CTCP request
-                if ((e->event.msg.msgclass & GG_CLASS_CTCP))
+                if((e->event.msg.msgclass & GG_CLASS_CTCP))
                 {
                     gg_dccconnect(e->event.msg.sender);
                 }
@@ -817,8 +821,9 @@ start:
                         CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
                     }
 
-                    // richedit format included
-                    if ( e->event.msg.formats_length )
+                    // RichEdit format included (image)
+                    if( e->event.msg.formats_length 
+						&& DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGRECEIVE, GG_KEYDEF_IMGRECEIVE))
                     {
                        char *formats;
                        int len, formats_len, add_ptr;
@@ -830,7 +835,7 @@ start:
                         while ( len < formats_len )
                         {
                             add_ptr = sizeof(struct gg_msg_richtext_format);
-                            if ( ((struct gg_msg_richtext_format*)formats)->font & GG_FONT_IMAGE)
+                            if( ((struct gg_msg_richtext_format*)formats)->font & GG_FONT_IMAGE)
                             {
                                 gg_image_request(thread->sess, e->event.msg.sender,
                                 ((struct gg_msg_image_request*)(formats+4))->size,
@@ -841,7 +846,7 @@ start:
 #endif
                                 add_ptr += sizeof(struct gg_msg_richtext_format);
                             }
-                            if ( ((struct gg_msg_richtext_format*)formats)->font & GG_FONT_COLOR)
+                            if( ((struct gg_msg_richtext_format*)formats)->font & GG_FONT_COLOR)
                                 add_ptr += 3;
                             len += add_ptr;
                             formats += add_ptr;
@@ -855,28 +860,37 @@ start:
                 // Get rid of empty image
                 if(!e->event.image_reply.size || !e->event.image_reply.image)
                     break;
-                if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_POPUPIMG, GG_KEYDEF_POPUPIMG) || gg_img_opened(e->event.image_reply.sender))
+                if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGMETHOD, GG_KEYDEF_IMGMETHOD) || gg_img_opened(e->event.image_reply.sender))
                 {
-                    CLISTEVENT cle;
-                    cle.cbSize = sizeof(CLISTEVENT);
-                    cle.lParam = (LPARAM)e;
-                    cle.hContact = gg_getcontact(e->event.image_reply.sender, 1, 0, NULL);
-                    gg_img_recvimage((WPARAM)0, (LPARAM)&cle);
+					HANDLE hContact = gg_getcontact(e->event.image_reply.sender, 1, 0, NULL);
+					void *img = (void *)gg_img_loadpicture(e, hContact, 0);
+					if(img)
+						gg_img_display(hContact, img);
                 }
                 else
                 {
-                    CLISTEVENT cle;
-                    char service[128]; snprintf(service, sizeof(service), "%s%s", GG_PROTO, GGS_RECVIMAGE);
+					HANDLE hContact = gg_getcontact(e->event.image_reply.sender, 1, 0, NULL);
+					void *img = (void *)gg_img_loadpicture(e, hContact, 0);
+					if(img)
+					{
+						CLISTEVENT cle;
+						char service[128]; snprintf(service, sizeof(service), GGS_RECVIMAGE, GG_PROTO);
 
-                    cle.cbSize = sizeof(CLISTEVENT);
-                    cle.hContact = gg_getcontact(e->event.image_reply.sender, 1, 0, NULL);
-                    cle.hIcon = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(IDI_IMAGE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);//LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CHPASS));
-                    cle.flags = CLEF_URGENT;
-                    cle.hDbEvent = (HANDLE)("img");
-                    cle.lParam = (LPARAM)e;
-                    cle.pszService = service;
-                    cle.pszTooltip = Translate("Image received");
-                    CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
+						cle.cbSize = sizeof(CLISTEVENT);
+						cle.hContact = hContact;
+						cle.hIcon = (HICON) LoadImage(hInstance, 
+							MAKEINTRESOURCE(IDI_IMAGE), 
+							IMAGE_ICON, 
+							GetSystemMetrics(SM_CXSMICON), 
+							GetSystemMetrics(SM_CYSMICON), 
+							0); // LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CHPASS));
+						cle.flags = CLEF_URGENT;
+						cle.hDbEvent = (HANDLE)("img");
+						cle.lParam = (LPARAM) img;
+						cle.pszService = service;
+						cle.pszTooltip = Translate("Image received");
+						CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
+					}
                 }
                 break;
 
@@ -932,7 +946,7 @@ start:
 void gg_broadcastnewstatus(int s)
 {
     int oldStatus = ggStatus;
-    if (oldStatus == s)
+    if(oldStatus == s)
         return;
     ggStatus = s;
 
@@ -964,7 +978,7 @@ int gg_userdeleted(WPARAM wParam, LPARAM lParam)
         gcd.pszModule = GG_PROTO;
         gce.pDest = &gcd;
         gcd.pszID = dbv.pszVal;
-        CallService(MS_GC_EVENT, WINDOW_TERMINATE, (LPARAM)&gce);
+        CallService(MS_GC_EVENT, SESSION_TERMINATE, (LPARAM)&gce);
 
 		DBFreeVariant(&dbv);
 	}
@@ -979,20 +993,28 @@ int gg_userdeleted(WPARAM wParam, LPARAM lParam)
 int gg_dbsettingchanged(WPARAM wParam, LPARAM lParam)
 {
     DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
+    HANDLE hContact = (HANDLE) wParam;
+    char *szProto = NULL;
 
-    if ((HANDLE) wParam == NULL)
+    // Check if the contact is NULL or we are not online
+    if(!hContact || !gg_isonline())
         return 0;
-    if (!gg_isonline())
+
+    // Fetch protocol name and check if it's our
+    if(!(szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0)) || strcmp(szProto, GG_PROTO))
         return 0;
 
     // If ignorance changed
-    if (!strcmp(cws->szModule, "Ignore") && !strcmp(cws->szSetting, "Mask1"))
-        gg_notifyuser((HANDLE) wParam, 1);
+    if(!strcmp(cws->szModule, "Ignore") && !strcmp(cws->szSetting, "Mask1"))
+    {
+        gg_notifyuser(hContact, 1);
+        return 0;
+    }
 
     // Renamed
-    if (ggGCEnabled && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, "Nick") && cws->value.pszVal)
+    if(ggGCEnabled && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, "Nick") && cws->value.pszVal)
     {
-        DBVARIANT dbv; HANDLE hContact = (HANDLE) wParam;
+        DBVARIANT dbv;
         int type = DBGetContactSettingByte(hContact, GG_PROTO, "ChatRoom", 0);
         // Change window name
         if(type && !DBGetContactSetting(hContact, GG_PROTO, "ChatRoomID", &dbv))
@@ -1004,7 +1026,7 @@ int gg_dbsettingchanged(WPARAM wParam, LPARAM lParam)
                 GCEVENT gce;
                 GCDEST gcd;
                 gce.cbSize = sizeof(GCEVENT);
-                gcd.iType = GC_EVENT_CHWINNAME;
+                gcd.iType = GC_EVENT_CHANGESESSIONAME;
                 gcd.pszModule = GG_PROTO;
                 gce.pDest = &gcd;
                 gcd.pszID = dbv.pszVal;
@@ -1025,7 +1047,7 @@ int gg_dbsettingchanged(WPARAM wParam, LPARAM lParam)
     }
 
     // Blocked icon
-    if (!strcmp(cws->szModule, "Icons"))
+    if(!strcmp(cws->szModule, "Icons"))
     {
         char strFmt[16];
         sprintf(strFmt, "%s%d", GG_PROTO, ID_STATUS_DND);
@@ -1033,27 +1055,23 @@ int gg_dbsettingchanged(WPARAM wParam, LPARAM lParam)
             gg_refreshblockedicon();
     }
 
-    if (!strcmp(cws->szModule, "CList"))
+    // Contact list changes
+    if(!strcmp(cws->szModule, "CList"))
     {
         // If name changed... change nick
-        if (!strcmp(cws->szSetting, "MyHandle") && cws->value.type == DBVT_ASCIIZ && cws->value.pszVal)
-        {
-            DBWriteContactSettingString((HANDLE) wParam, GG_PROTO, GG_KEY_NICK, cws->value.pszVal);
-        }
+        if(!strcmp(cws->szSetting, "MyHandle") && cws->value.type == DBVT_ASCIIZ && cws->value.pszVal)
+            DBWriteContactSettingString(hContact, GG_PROTO, GG_KEY_NICK, cws->value.pszVal);
+
         // If not on list changed
-        if (!strcmp(cws->szSetting, "NotOnList"))
+        if(!strcmp(cws->szSetting, "NotOnList"))
         {
-            if (DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0))
+            if(DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
                 return 0;
-            if (cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0))
+            if(cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0))
             {
-                char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
                 // Notify user normally this time if added to the list permanently
-                if (szProto && !strcmp(szProto, GG_PROTO))
-                {
-                    DBDeleteContactSetting((HANDLE) wParam, GG_PROTO, GG_KEY_DELETEUSER); // What is it ?? I don't remember
-                    gg_notifyuser((HANDLE) wParam, 1);
-                }
+                DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_DELETEUSER); // What is it ?? I don't remember
+                gg_notifyuser((HANDLE) wParam, 1);
             }
         }
     }
@@ -1075,7 +1093,7 @@ void gg_setalloffline()
     while (hContact)
     {
         szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-        if (szProto != NULL && !strcmp(szProto, GG_PROTO))
+        if(szProto != NULL && !strcmp(szProto, GG_PROTO))
         {
             DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, ID_STATUS_OFFLINE);
             // Clear IP and port settings
@@ -1151,7 +1169,7 @@ void gg_notifyall()
     while (hContact)
     {
         szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-        if (szProto != NULL && !strcmp(szProto, GG_PROTO)) count ++;
+        if(szProto != NULL && !strcmp(szProto, GG_PROTO)) count ++;
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
 
@@ -1164,7 +1182,7 @@ void gg_notifyall()
     while (hContact && cc < count)
     {
         szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-        if (szProto != NULL && !strcmp(szProto, GG_PROTO) && (uins[cc] = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)))
+        if(szProto != NULL && !strcmp(szProto, GG_PROTO) && (uins[cc] = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)))
         {
             if((DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD) ID_STATUS_ONLINE) == ID_STATUS_OFFLINE) ||
 				DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
@@ -1203,12 +1221,12 @@ HANDLE gg_getcontact(uin_t uin, int create, int inlist, char *szNick)
     hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
     while (hContact) {
         szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-        if (szProto != NULL && !strcmp(szProto, GG_PROTO))
+        if(szProto != NULL && !strcmp(szProto, GG_PROTO))
         {
-            if ((uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0) == uin
+            if((uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0) == uin
                 && DBGetContactSettingByte(hContact, GG_PROTO, "ChatRoom", 0) == 0)
             {
-                if (inlist)
+                if(inlist)
                 {
                     DBDeleteContactSetting(hContact, "CList", "NotOnList");
                     DBDeleteContactSetting(hContact, "CList", "Hidden");
@@ -1218,11 +1236,11 @@ HANDLE gg_getcontact(uin_t uin, int create, int inlist, char *szNick)
         }
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
-    if (!create) return NULL;
+    if(!create) return NULL;
 
     hContact = (HANDLE) CallService(MS_DB_CONTACT_ADD, 0, 0);
 
-    if (!hContact)
+    if(!hContact)
     {
 #ifdef DEBUGMODE
         gg_netlog("gg_getcontact(): Failed to create Gadu-Gadu contact %s", szNick);
@@ -1230,7 +1248,7 @@ HANDLE gg_getcontact(uin_t uin, int create, int inlist, char *szNick)
         return NULL;
     }
 
-    if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) GG_PROTO) != 0)
+    if(CallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) GG_PROTO) != 0)
     {
         // For some reason we failed to register the protocol for this contact
         CallService(MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
@@ -1243,7 +1261,7 @@ HANDLE gg_getcontact(uin_t uin, int create, int inlist, char *szNick)
 #ifdef DEBUGMODE
     gg_netlog("gg_getcontact(): Added buddy: %d", uin);
 #endif
-    if (!inlist)
+    if(!inlist)
     {
         DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
         //DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
@@ -1261,7 +1279,7 @@ HANDLE gg_getcontact(uin_t uin, int create, int inlist, char *szNick)
 
         pthread_mutex_lock(&threadMutex);
         // Search for that nick
-        if (req = gg_pubdir50_new(GG_PUBDIR50_SEARCH))
+        if(req = gg_pubdir50_new(GG_PUBDIR50_SEARCH))
         {
             // Add uin and search it
             gg_pubdir50_add(req, GG_PUBDIR50_UIN, ditoa(uin));

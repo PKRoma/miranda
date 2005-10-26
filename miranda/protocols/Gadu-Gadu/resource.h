@@ -110,19 +110,20 @@
 #define IDC_VERSION				456
 #define IDC_TOKEN				457
 #define IDC_IGNORECONF          458
-#define IDC_POPUPIMG            456
-#define IDC_SHOWNOTONMYLIST     457
+#define IDC_SHOWNOTONMYLIST     459
+#define IDC_IMGRECEIVE          460
+#define IDC_IMGMETHOD           461
 
-#define IDC_IMAGECLOSE        	459
-#define IDC_TABCONTROL        	460
-#define IDC_IMAGE_SEND        	461
-#define IDC_IMAGE_SAVE        	462
+#define IDC_IMAGECLOSE        	462
+#define IDC_TABCONTROL        	463
+#define IDC_IMAGE_SEND        	464
+#define IDC_IMAGE_SAVE        	465
 
-#define IDC_GC_POLICY_TOTAL     463
-#define IDC_GC_POLICY_UNKNOWN   464
-#define IDC_GC_POLICY_DEFAULT   465
-#define IDC_GC_COUNT_TOTAL      466
-#define IDC_GC_COUNT_UNKNOWN    467
+#define IDC_GC_POLICY_TOTAL     466
+#define IDC_GC_POLICY_UNKNOWN   467
+#define IDC_GC_POLICY_DEFAULT   468
+#define IDC_GC_COUNT_TOTAL      469
+#define IDC_GC_COUNT_UNKNOWN    470
 
 #define IDC_IMG_DELETE          1010
 #define IDC_IMG_SEND            1011

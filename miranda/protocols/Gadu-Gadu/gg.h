@@ -68,8 +68,8 @@ extern "C" {
 #include <m_clc.h>
 #include <m_message.h>
 
-// Groupchat (chat.dll) plugin
-#include "../../plugins/chat/m_chat.h"
+// Groupchat is now in miranda headers
+#include <m_chat.h>
 
 // Visual C++ extras
 #ifdef _MSC_VER
@@ -178,8 +178,11 @@ extern char *ggProtoError;
 #define GG_KEY_IGNORECONF	    "IgnoreConf"    // Ignore incoming conference messages
 #define GG_KEYDEF_IGNORECONF	0
 
-#define GG_KEY_POPUPIMG	        "PopupImg"      // Popup image window automatically
-#define GG_KEYDEF_POPUPIMG	    1
+#define GG_KEY_IMGRECEIVE	    "ReceiveImg"    // Popup image window automatically
+#define GG_KEYDEF_IMGRECEIVE	1
+
+#define GG_KEY_IMGMETHOD	    "PopupImg"      // Popup image window automatically
+#define GG_KEYDEF_IMGMETHOD		1
 
 // Hidden option
 #define GG_KEY_STARTINVISIBLE   "StartInvisible"// Starts as invisible

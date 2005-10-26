@@ -1,7 +1,8 @@
 /*
-AOL Instant Messenger Plugin for Miranda IM
+pthread Portable implementation
 
 Copyright (c) 2003 Robert Rainwater
+Copyright (c) 2003-2005 Adam Strzelecki
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,12 +27,21 @@ typedef struct
     DWORD dwThreadId;
 }
 pthread_t;
+
 typedef int pthread_attr_t;
 typedef CRITICAL_SECTION pthread_mutex_t;
 
-int pthread_create(pthread_t * tid, const pthread_attr_t * attr, void *(__stdcall * thread_start) (void *), void *param);
-int pthread_join(pthread_t * tid, void **value_ptr);
-int pthread_detach(pthread_t * tid);
+/* create thread */
+int pthread_create(pthread_t *tid, const pthread_attr_t *attr, void *(__stdcall *thread_start) (void *), void *param);
+/* wait for thread termination */
+int pthread_join(pthread_t *tid, void **value_ptr);
+/* detach a thread */
+int pthread_detach(pthread_t *tid);
+/* get calling thread's ID */
+pthread_t *pthread_self(void);
+/* cancel execution of a thread */
+void pthread_exit(void *value_ptr);
+
 #define pthread_mutex_init(pmutex, pattr)    InitializeCriticalSection(pmutex)
 #define pthread_mutex_destroy(pmutex)        DeleteCriticalSection(pmutex)
 #define pthread_mutex_lock(pmutex)           EnterCriticalSection(pmutex)

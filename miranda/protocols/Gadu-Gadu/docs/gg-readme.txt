@@ -59,6 +59,12 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.3.5: 2005-10-26
+ - Fix: Image reception on system tray was broken
+ - Fix: Plugin was writing junk entries to other protocols contacts
+ - Fix: Upgrade new chat API
+ - Image reception can now be triggered
+ - Small code formatting fixes
 0.0.3.4: 2005-07-23
  - Fix: Connection server config was broken
  - Fix: Password retrieval was broken

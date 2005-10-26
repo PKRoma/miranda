@@ -826,6 +826,6 @@ void gg_registerservices()
 	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSR_FILE);
     CreateServiceFunction(service, gg_recvfile);
 
-   	snprintf(service, sizeof(service), "%s%s", GG_PROTO, GGS_RECVIMAGE);
+   	snprintf(service, sizeof(service), GGS_RECVIMAGE, GG_PROTO);
     CreateServiceFunction(service, gg_img_recvimage);
 }

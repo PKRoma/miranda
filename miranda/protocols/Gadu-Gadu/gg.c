@@ -25,7 +25,7 @@
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
     "Gadu-Gadu Protocol",
-    PLUGIN_MAKE_VERSION(0, 0, 3, 4),
+    PLUGIN_MAKE_VERSION(0, 0, 3, 5),
     "Provides support for Gadu-Gadu protocol",
     "Adam Strzelecki",
     "ono+miranda@java.pl",
@@ -170,15 +170,39 @@ void gg_cleanuplastplugin(DWORD version)
 	// Remove bad e-mail and phones from
 	if(version < PLUGIN_MAKE_VERSION(0, 0, 1, 4))
 	{
+#ifdef DEBUGMODE
+		gg_netlog("gg_cleanuplastplugin(%d): Cleaning junk Phone settings from < 0.0.1.4 ...", version);
+#endif
 		// Look for contact in DB
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-		while (hContact) {
+		while (hContact) 
+		{
 			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (szProto != NULL && !strcmp(szProto, GG_PROTO))
+			if(szProto != NULL && !strcmp(szProto, GG_PROTO))
 			{
 				// Do contact cleanup
 				DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_EMAIL);
 				DBDeleteContactSetting(hContact, GG_PROTO, "Phone");
+			}
+			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+		}
+	}
+
+	// Remove GG entries for non GG contacts
+	if(version < PLUGIN_MAKE_VERSION(0, 0, 3, 5))
+	{
+#ifdef DEBUGMODE
+		gg_netlog("gg_cleanuplastplugin(%d): Cleaning junk Nick settings from < 0.0.3.5 ...", version);
+#endif
+		// Look for contact in DB
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		while (hContact) 
+		{
+			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+			if(szProto != NULL && strcmp(szProto, GG_PROTO))
+			{
+				// Do nick entry cleanup
+				DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_NICK);
 			}
 			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 		}

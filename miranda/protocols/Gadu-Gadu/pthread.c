@@ -36,7 +36,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <excpt.h>
 
-// Safe thread code for Miranda IM
+/***********************************/
+/* Safe thread code for Miranda IM */
+
 struct FORK_ARG {
 	HANDLE hEvent;
 	void (__cdecl *threadcode)(void*);
@@ -47,16 +49,20 @@ struct FORK_ARG {
 unsigned __stdcall forkthreadex_r(void *param)
 {
     struct FORK_ARG *fa = (struct FORK_ARG *)param;
-	unsigned (__stdcall * threadcode) (void *)=fa->threadcodeex;
-	void *arg=fa->arg;
+	unsigned (__stdcall * threadcode) (void *) = fa->threadcodeex;
+	void *arg = fa->arg;
 	unsigned long rc;
 
-	CallService(MS_SYSTEM_THREAD_PUSH,0,0);
+	CallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
 	SetEvent(fa->hEvent);
-	__try {
-		rc=threadcode(arg);
-	} __finally {
-		CallService(MS_SYSTEM_THREAD_POP,0,0);
+	/* Push, execute and pop thread */
+	__try 
+	{
+		rc = threadcode(arg);
+	} 
+	__finally 
+	{
+		CallService(MS_SYSTEM_THREAD_POP, 0, 0);
 	}
 	return rc;
 }
@@ -64,7 +70,7 @@ unsigned __stdcall forkthreadex_r(void *param)
 unsigned long forkthreadex(
 	void *sec,
 	unsigned stacksize,
-	unsigned (__stdcall *threadcode)(void*),
+	unsigned (__stdcall *threadcode)(void *),
 	void *arg,
 	unsigned cf,
 	unsigned *thraddr
@@ -72,34 +78,71 @@ unsigned long forkthreadex(
 {
 	unsigned long rc;
 	struct FORK_ARG fa;
-	fa.threadcodeex=threadcode;
-	fa.arg=arg;
-	fa.hEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
-	rc=_beginthreadex(sec,stacksize,forkthreadex_r,&fa,0,thraddr);
-	if (rc) {
+	fa.threadcodeex = threadcode;
+	fa.arg = arg;
+	fa.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	/* Wait until thread is pushed into the Miranda IM thread stack */
+	if(rc = _beginthreadex(sec, stacksize, forkthreadex_r, &fa, 0, thraddr)) 
 		WaitForSingleObject(fa.hEvent,INFINITE);
-	}
 	CloseHandle(fa.hEvent);
 	return rc;
 }
 
-// Minipthread code from Miranda IM source
-GGINLINE int pthread_create(pthread_t * tid, const pthread_attr_t * attr, void *(__stdcall * thread_start) (void *), void *param)
+/****************************************/
+/* Portable pthread code for Miranda IM */
+
+/* create thread */
+GGINLINE int pthread_create(pthread_t *tid, const pthread_attr_t *attr, void *(__stdcall * thread_start) (void *), void *param)
 {
     tid->hThread = (HANDLE) forkthreadex(NULL, 0, (unsigned (__stdcall *) (void *)) thread_start, param, 0, (unsigned *) &tid->dwThreadId);
     return 0;
 }
 
-int pthread_detach(pthread_t * tid)
+/* detach a thread */
+int pthread_detach(pthread_t *tid)
 {
     CloseHandle(tid->hThread);
     return 0;
 }
 
-int pthread_join(pthread_t * tid, void **value_ptr)
+/* wait for thread termination */
+int pthread_join(pthread_t *tid, void **value_ptr)
 {
-    if (tid->dwThreadId == GetCurrentThreadId())
+    if(tid->dwThreadId == GetCurrentThreadId())
         return 0;
+
     WaitForSingleObject(tid->hThread, INFINITE);
     return 0;
 }
+
+/* This code is not used */
+
+#if 0
+
+/* get calling thread's ID */
+pthread_t *pthread_self(void)
+{
+	static int poolId = 0;
+	static pthread_t tidPool[32];
+	/* mark & round pool to 32 items */
+	pthread_t *tid = &tidPool[poolId ++];
+	poolId %= 32;
+
+	tid->hThread = GetCurrentThread();
+	tid->dwThreadId = GetCurrentThreadId();
+	return tid;
+}
+
+/* cancel execution of a thread */
+int pthread_cancel(pthread_t *thread)
+{
+	return TerminateThread(thread->hThread, 0) ? 0 : 3 /*ESRCH*/;
+}
+
+/* terminate thread */
+void pthread_exit(void *value_ptr)
+{
+	_endthreadex((unsigned)value_ptr);
+}
+
+#endif

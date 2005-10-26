@@ -166,7 +166,7 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
     }
 
     // Window terminated
-    if(gch->pDest && (gch->pDest->iType == GC_USER_TERMINATE) && gch->pDest->pszID)
+    if(gch->pDest && (gch->pDest->iType == SESSION_TERMINATE) && gch->pDest->pszID)
     {
         // Remove contact from contact list (duh!) should be done by chat.dll !!
         HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -258,7 +258,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 	gg_gc_chat *chat;
 	char *senderName, status[256], *name, id[32];
     uin_t uin; DBVARIANT dbv;
-	GCWINDOW gcwindow;
+	GCSESSION gcwindow;
     GCDEST gcdest = {GG_PROTO, 0, GC_EVENT_ADDGROUP};
     GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
 
@@ -369,7 +369,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
     // Create new chat window
     senderName = sender ? (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(sender, 1, 0, NULL), 0) : NULL;
     snprintf(status, 255, sender ? Translate("%s initiated the conference.") : Translate("This is my own conference."), senderName);
-	gcwindow.cbSize		= sizeof(GCWINDOW);
+	gcwindow.cbSize		= sizeof(GCSESSION);
 	gcwindow.iType		= GCW_CHATROOM;
 	gcwindow.pszModule  = GG_PROTO;
 	gcwindow.pszName	= sender ? senderName : Translate("Conference");
@@ -383,7 +383,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
     *name = '#'; strcpy(name + 1, gcwindow.pszName);
     gcwindow.pszName = name;
     // Create new room
-    if(CallService(MS_GC_NEWCHAT, 0, (LPARAM) &gcwindow))
+    if(CallService(MS_GC_NEWSESSION, 0, (LPARAM) &gcwindow))
     {
 #ifdef DEBUGMODE
         gg_netlog("gg_gc_egetchat(): Cannot create new chat window %s.", chat->id);
@@ -447,8 +447,8 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
         CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
     }
     gcdest.iType = GC_EVENT_CONTROL;
-    CallService(MS_GC_EVENT, WINDOW_INITDONE, (LPARAM)&gcevent);
-    CallService(MS_GC_EVENT, WINDOW_ONLINE, (LPARAM)&gcevent);
+    CallService(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gcevent);
+    CallService(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gcevent);
 
 #ifdef DEBUGMODE
     gg_netlog("gg_gc_egetchat(): Returning new chat window %s, count %d.", chat->id, chat->recipients_count);
