@@ -14,13 +14,14 @@
 #pragma link "Ws2_32.lib"  /* W Borlandzie linkuje biblioteke z socketami */
 #endif
 
+
+/* Socket function is already declared in winsock2.h */
+/* #define socket(af, type, protocol) WSASocket(af, type, protocol, 0, 0, WSA_FLAG_OVERLAPPED) */
+#define write(handle, buf, len)	send(handle, (void *)(buf), len, 0)
+#define read(handle, buf, len)	recv(handle, (void *)(buf), len, 0)
+
 #undef ASSIGN_SOCKETS_TO_THREADS /* gg_connect bedzie zapisywal nr socketa na liscie,
 				     tak zeby mozna go bylo zamknac w polaczeniach synchronicznych (z innego watku) */
-
-#define socket(af,type,protocol) WSASocket(af,type,protocol,0,0,WSA_FLAG_OVERLAPPED)
-#define write(handle,buf,len) send(handle,(const char*)buf,len,0)
-#define read(handle,buf,len) recv(handle,(const char*)buf,len,0)
-
 #ifdef ASSIGN_SOCKETS_TO_THREADS
 #  define close(handle)			gg_win32_thread_socket(-1,handle)
 #else
