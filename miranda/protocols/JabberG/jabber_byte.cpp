@@ -422,7 +422,7 @@ static int JabberByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char
 				break;
 			}
 			jbt->state = JBT_RECVING;
-			JabberSend( jabberThreadInfo->s, "<iq type='result' to='%s' id='%s'><query xmlns='http://jabber.org/protocol/bytestreams'><streamhost-used jid='%s'/></query></iq>", jbt->srcJID, jbt->iqId, UTF8(jbt->streamhostJID));
+			JabberSend( jabberThreadInfo->s, "<iq type='result' to='%s' id='%s'><query xmlns='http://jabber.org/protocol/bytestreams'><streamhost-used jid='%s'/></query></iq>", jbt->srcJID, jbt->iqId, TXT(jbt->streamhostJID));
 		}
 		else
 			jbt->state = JBT_SOCKSERR;

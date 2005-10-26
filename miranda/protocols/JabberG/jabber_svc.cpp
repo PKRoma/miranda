@@ -345,7 +345,7 @@ void sttRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		JabberLog( "Group set to %s", cws->value.pszVal );
 		switch( cws->value.type ) {
 			case DBVT_ASCIIZ:	JabberAddContactToRoster( item->jid, nick, UTF8( cws->value.pszVal ));  break;
-			case DBVT_UTF8:   JabberAddContactToRoster( item->jid, nick, cws->value.pszVal );         break;
+			case DBVT_UTF8:   JabberAddContactToRoster( item->jid, nick, cws->value.pszVal );        break;
 	}	}
 
 	free( nick );
@@ -363,14 +363,17 @@ void sttRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		return;
 
 	if ( cws->value.type == DBVT_DELETED ) {
-		JabberAddContactToRoster( item->jid, UTF8(( char* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, ( WPARAM )hContact, GCDNF_NOMYHANDLE )), item->group );
+		char* nick = ( char* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, ( WPARAM )hContact, GCDNF_NOMYHANDLE );
+		JabberAddContactToRoster( item->jid, UTF8(nick), item->group );
+		mir_free(nick);
 		return;
 	}
 
-	char* newNick = NULL;	bool isFree = false;
+	char* newNick; bool bNeedsFree = false;
 	switch( cws->value.type ) {
-		case DBVT_ASCIIZ: newNick = JabberTextEncode( cws->value.pszVal ); isFree = true;	break;
-		case DBVT_UTF8:   newNick = cws->value.pszVal;											break;
+		case DBVT_ASCIIZ: newNick = JabberTextEncode( cws->value.pszVal ); bNeedsFree = true; break;
+		case DBVT_UTF8:   newNick = cws->value.pszVal;  break;
+		default: return;
 	}
 
 	if ( cws->value.pszVal != NULL && lstrcmp( item->nick, newNick )) {
@@ -378,7 +381,7 @@ void sttRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		JabberAddContactToRoster( item->jid, newNick, item->group );
 	}
 
-	if ( isFree )
+	if ( bNeedsFree )
 		free( newNick );
 }
 
@@ -781,7 +784,7 @@ int JabberSearchByEmail( WPARAM wParam, LPARAM lParam )
 	JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultSetSearch );
 	JabberSend( jabberThreadInfo->s,
 		"<iq type='set' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:search'><email>%s</email></query></iq>",
-		iqId, szServerName, UTF8(( char* )lParam));
+		iqId, szServerName, TXT(( char* )lParam));
 	return iqId;
 }
 
@@ -799,23 +802,23 @@ int JabberSearchByName( WPARAM wParam, LPARAM lParam )
 
 	if ( psbn->pszNick[0] != '\0' ) {
 		if ( bIsExtFormat )
-			len += mir_snprintf( text, 1024-len, "<field var='user'><value>%s</value></field>", UTF8(psbn->pszNick));
+			len += mir_snprintf( text, 1024-len, "<field var='user'><value>%s</value></field>", TXT(psbn->pszNick));
 		else
-			len += mir_snprintf( text, 1024-len, "<nick>%s</nick>", UTF8(psbn->pszNick));
+			len += mir_snprintf( text, 1024-len, "<nick>%s</nick>", TXT(psbn->pszNick));
 	}
 
 	if ( psbn->pszFirstName[0] != '\0' ) {
 		if ( bIsExtFormat )
-			len += mir_snprintf( text+len, 1024-len, "<field var='fn'><value>%s</value></field>", UTF8(psbn->pszFirstName));
+			len += mir_snprintf( text+len, 1024-len, "<field var='fn'><value>%s</value></field>", TXT(psbn->pszFirstName));
 		else
-			len += mir_snprintf( text+len, 1024-len, "<first>%s</first>", UTF8(psbn->pszFirstName));
+			len += mir_snprintf( text+len, 1024-len, "<first>%s</first>", TXT(psbn->pszFirstName));
 	}
 
 	if ( psbn->pszLastName[0] != '\0' ) {
 		if ( bIsExtFormat )
-			len += mir_snprintf( text+len, 1024-len, "<field var='given'><value>%s</value></field>", UTF8(psbn->pszLastName));
+			len += mir_snprintf( text+len, 1024-len, "<field var='given'><value>%s</value></field>", TXT(psbn->pszLastName));
 		else
-			len += mir_snprintf( text+len, 1024-len, "<last>%s</last>", UTF8(psbn->pszLastName));
+			len += mir_snprintf( text+len, 1024-len, "<last>%s</last>", TXT(psbn->pszLastName));
 	}
 
 	char szServerName[100];

@@ -33,14 +33,23 @@ Last change by : $Author$
 
 void JabberAddContactToRoster( const char* jid, const char* nick, const char* grpName )
 {
-	if ( grpName != NULL )
+	char* szJid  = JabberUrlEncode( jid );
+	char* szNick = JabberUrlEncode( nick );
+
+	if ( grpName != NULL ) {
+		char* szGroup = JabberUrlEncode( grpName );
 		JabberSend( jabberThreadInfo->s,
 			"<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'><group>%s</group></item></query></iq>",
-			nick, jid, grpName );
+			szNick, szJid, szGroup );
+		free( szGroup );
+	}
 	else
 		JabberSend( jabberThreadInfo->s,
 			"<iq type='set'><query xmlns='jabber:iq:roster'><item name='%s' jid='%s'/></query></iq>",
-			nick, jid );
+			szNick, szJid );
+
+	free( szNick );
+	free( szJid );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -151,7 +160,7 @@ void JabberDBAddAuthRequest( char* jid, char* nick )
 
 ///////////////////////////////////////////////////////////////////////////////
 // JabberDBCreateContact()
-// jid & nick are passed in UTF8
+// jid & nick are passed in TXT
 
 HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripResource )
 {

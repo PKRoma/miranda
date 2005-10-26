@@ -97,7 +97,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JabberListRemoveList( LIST_AGENT );
 			iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
-			JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>", iqId, UTF8(jabberThreadInfo->server));
+			JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>", iqId, TXT(jabberThreadInfo->server));
 
 			SendMessage( hwndDlg, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
 		}
@@ -267,7 +267,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JabberListRemoveList( LIST_AGENT );
 			iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
-			JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>", iqId, UTF8(text));
+			JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>", iqId, TXT(text));
 			return TRUE;
 		case IDC_AGENT_LOGON:
 		case IDC_AGENT_LOGOFF:

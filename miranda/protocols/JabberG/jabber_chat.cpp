@@ -353,7 +353,7 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 						GetDlgItemText( hwndDlg, IDC_REASON, text, sizeof( text ));
 						iqId = JabberSerialNext();
 						JabberSend( jabberThreadInfo->s, "<message id='"JABBER_IQID"%d' to='%s'><x xmlns='http://jabber.org/protocol/muc#user'><invite to='%s'><reason>%s</reason></invite></x></message>",
-							iqId, UTF8(room), UTF8(pUser), UTF8(text));
+							iqId, TXT(room), TXT(pUser), TXT(text));
 			}	}	}
 			// Fall through
 		case IDCANCEL:
@@ -420,33 +420,33 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		mir_snprintf( szBuffer, sizeof szBuffer, "%s %s", JTranslate( "Reason to kick" ), dispNick );
 		if ( JabberEnterString( szBuffer, sizeof szBuffer ))
 			JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<item nick='%s' role='none'><reason>%s</reason></item></query></iq>",
-				item->jid, xmlnsAdmin, him->resourceName, UTF8(szBuffer));
+				item->jid, xmlnsAdmin, him->resourceName, TXT(szBuffer));
 		break;
 
 	case IDM_BAN:
 		mir_snprintf( szBuffer, sizeof szBuffer, "%s %s", JTranslate( "Reason to ban" ), dispNick );
 		if ( JabberEnterString( szBuffer, sizeof szBuffer ))
 			JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<item nick='%s' affiliation='outcast'><reason>%s</reason></item></query></iq>",
-				item->jid, xmlnsAdmin, him->resourceName, UTF8(szBuffer));
+				item->jid, xmlnsAdmin, him->resourceName, TXT(szBuffer));
 		break;
 
 	case IDM_VOICE:
-		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(him->resourceName),
+		JabberAdminSet( item->jid, xmlnsAdmin, "nick", TXT(him->resourceName),
 			"role", ( him->role == ROLE_PARTICIPANT ) ? "visitor" : "participant" );
 		break;
 
 	case IDM_MODERATOR:
-		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(him->resourceName),
+		JabberAdminSet( item->jid, xmlnsAdmin, "nick", TXT(him->resourceName),
 			"role", ( him->role == ROLE_MODERATOR ) ? "participant" : "moderator" );
 		break;
 
 	case IDM_ADMIN:
-		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(him->resourceName),
+		JabberAdminSet( item->jid, xmlnsAdmin, "nick", TXT(him->resourceName),
 			"affiliation", ( him->affiliation==AFFILIATION_ADMIN )? "member" : "admin" );
 		break;
 
 	case IDM_OWNER:
-		JabberAdminSet( item->jid, xmlnsAdmin, "nick", UTF8(him->resourceName),
+		JabberAdminSet( item->jid, xmlnsAdmin, "nick", TXT(him->resourceName),
 			"affiliation", ( him->affiliation==AFFILIATION_OWNER ) ? "admin" : "owner" );
 		break;
 }	}
@@ -484,7 +484,7 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		mir_snprintf( szBuffer, sizeof szBuffer, "%s %s", JTranslate( "Set topic for" ), gch->pDest->pszID );
 		if ( JabberEnterString( szBuffer, sizeof szBuffer ))
 			JabberSend( jabberThreadInfo->s, "<message to='%s' type='groupchat'><subject>%s</subject></message>",
-				gch->pDest->pszID, UTF8(szBuffer));
+				gch->pDest->pszID, TXT(szBuffer));
 		break;
 
 	case IDM_NICK:
@@ -493,7 +493,7 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 			JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, gch->pDest->pszID );
 			if ( item != NULL ) {
 				char text[ 1024 ];
-				mir_snprintf( text, sizeof( text ), "%s/%s", gch->pDest->pszID, UTF8(szBuffer));
+				mir_snprintf( text, sizeof( text ), "%s/%s", gch->pDest->pszID, TXT(szBuffer));
 				JabberSendPresenceTo( jabberStatus, text, NULL );
 		}	}
 		break;
@@ -516,7 +516,7 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 			break;
 
 		JabberSend( jabberThreadInfo->s, "<iq type='set' to='%s'>%s<destroy><reason>%s</reason></destroy></query></iq>",
-			gch->pDest->pszID, xmlnsOwner, UTF8(szBuffer));
+			gch->pDest->pszID, xmlnsOwner, TXT(szBuffer));
 
 	case IDM_LEAVE:
 		JabberGcQuit( item, 0, 0 );

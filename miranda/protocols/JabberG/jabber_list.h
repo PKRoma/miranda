@@ -126,7 +126,7 @@ struct JABBER_LIST_ITEM
 
 	// LIST_CHATROOM
 	// jid = room JID
-	// char* nick;	// my nick in this chat room ( SPECIAL: in UTF8 )
+	// char* nick;	// my nick in this chat room ( SPECIAL: in TXT )
 	// JABBER_RESOURCE_STATUS *resource;	// participant nicks in this room
 	BOOL bChatActive;
 	HWND hwndGcListBan;

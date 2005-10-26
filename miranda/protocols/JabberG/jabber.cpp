@@ -47,6 +47,8 @@ PLUGININFO pluginInfo = {
 	0
 };
 
+MM_INTERFACE memoryManagerInterface;
+
 HANDLE hMainThread = NULL;
 DWORD jabberMainThreadId;
 char* jabberProtoName;	// "JABBER"
@@ -228,6 +230,9 @@ static int iconList[] = {
 extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 {
 	pluginLink = link;
+
+	memoryManagerInterface.cbSize = sizeof(MM_INTERFACE);
+	JCallService(MS_SYSTEM_GET_MMI,0,(LPARAM)&memoryManagerInterface);
 
 	char text[_MAX_PATH];
 	char* p, *q;

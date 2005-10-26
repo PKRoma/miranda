@@ -334,7 +334,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 						if (*p == '\0')
 							break;
 
-						JabberAddMucListItem( jidListInfo, ( char* )UTF8( p ));
+						JabberAddMucListItem( jidListInfo, ( char* )TXT( p ));
 					}
 					else {
 						//delete

@@ -471,23 +471,52 @@ int           JabberWsSend( JABBER_SOCKET s, char* data, int datalen );
 int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen );
 
 ///////////////////////////////////////////////////////////////////////////////
-// UTF8 encode helper
+// TXT encode helper
 
-class UTFEncoder {
+class TextEncoder {
 	char* m_body;
 
 public:
-	__forceinline UTFEncoder( const char* pSrc ) :
+	__forceinline TextEncoder( const char* pSrc ) :
 		m_body( JabberTextEncode( pSrc ))
 		{}
 
-	__forceinline ~UTFEncoder()
+	__forceinline ~TextEncoder()
 		{  free( m_body );
 		}
 
 	__forceinline const char* str() const { return m_body; }
 };
 
-#define UTF8(A) UTFEncoder(A).str()
+#define TXT(A) TextEncoder(A).str()
+
+///////////////////////////////////////////////////////////////////////////////
+// UTF encode helper
+
+class Utf8Encoder {
+	char* m_body;
+
+public:
+	__forceinline Utf8Encoder( const char* pSrc ) :
+		m_body( JabberUtf8Encode( pSrc ))
+		{}
+
+	__forceinline ~Utf8Encoder()
+		{  free( m_body );
+		}
+
+	__forceinline const char* str() const { return m_body; }
+};
+
+#define UTF8(A) Utf8Encoder(A).str()
+
+///////////////////////////////////////////////////////////////////////////////
+// memory interface
+
+extern MM_INTERFACE memoryManagerInterface;
+
+#define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
+#define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
+#define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
 
 #endif

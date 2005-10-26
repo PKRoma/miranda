@@ -60,7 +60,7 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 			}	}
 		}
 		else if ( JabberXmlGetChild( queryNode, "password" ) != NULL ) {
-			mir_snprintf( text, sizeof( text ), "<password>%s</password>", UTF8( info->password ));
+			mir_snprintf( text, sizeof( text ), "<password>%s</password>", TXT( info->password ));
 		}
 		else {
 			JabberLog( "No known authentication mechanism accepted by the server." );

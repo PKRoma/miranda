@@ -203,7 +203,7 @@ LBL_Exit:
 
 		char jidStr[128];
 		mir_snprintf( jidStr, sizeof( jidStr ), "%s@%s/%s", info->username, info->server, info->resource );
-		strncpy( info->fullJID, UTF8(jidStr), sizeof( info->fullJID )-1 );
+		strncpy( info->fullJID, TXT(jidStr), sizeof( info->fullJID )-1 );
 
 		if ( JGetByte( "SavePassword", TRUE ) == FALSE ) {
 			mir_snprintf( jidStr, sizeof( jidStr ), "%s@%s", info->username, info->server );
@@ -390,7 +390,7 @@ LBL_Exit:
 		JabberXmlSetCallback( &xmlState, 1, ELEM_CLOSE, JabberProcessStreamClosing, info );
 		JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
 
-		JabberSend( info->s, "<?xml version='1.0' encoding='UTF-8'?><stream:stream to='%s' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>", UTF8(info->server) );
+		JabberSend( info->s, "<?xml version='1.0' encoding='UTF-8'?><stream:stream to='%s' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>", TXT(info->server) );
 
 		JabberLog( "Entering main recv loop" );
 		datalen = 0;
@@ -406,7 +406,7 @@ LBL_Exit:
 				JabberXmlSetCallback( &xmlState, 1, ELEM_OPEN, JabberProcessStreamOpening, info );
 				JabberXmlSetCallback( &xmlState, 1, ELEM_CLOSE, JabberProcessStreamClosing, info );
 				JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
-				JabberSend( info->s, "<?xml version='1.0' encoding='UTF-8'?><stream:stream to='%s' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>", UTF8(info->server) );
+				JabberSend( info->s, "<?xml version='1.0' encoding='UTF-8'?><stream:stream to='%s' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>", TXT(info->server) );
 			}
 
 			if ( sslMode )
@@ -551,11 +551,11 @@ static void JabberProcessStreamOpening( XmlNode *node, void *userdata )
 
 		int iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetAuth );
-		JabberSend( info->s, "<iq type='get' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:auth'><username>%s</username></query></iq>", iqId, UTF8(info->username));
+		JabberSend( info->s, "<iq type='get' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:auth'><username>%s</username></query></iq>", iqId, TXT(info->username));
 	}
 	else if ( info->type == JABBER_SESSION_REGISTER ) {
 		iqIdRegGetReg = JabberSerialNext();
-		JabberSend( info->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:register'/></iq>", iqIdRegGetReg, UTF8(info->server));
+		JabberSend( info->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='jabber:iq:register'/></iq>", iqIdRegGetReg, TXT(info->server));
 		SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 50, ( LPARAM )JTranslate( "Requesting registration instruction..." ));
 	}
 	else JabberSend( info->s, "</stream:stream>" );

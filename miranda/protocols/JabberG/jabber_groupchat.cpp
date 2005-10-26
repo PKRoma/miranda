@@ -414,7 +414,7 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 
 				GetDlgItemText( hwndDlg, IDC_PASSWORD, text, sizeof( text ));
 				char* password = NEWSTR_ALLOCA( text );
-				JabberGroupchatJoinRoom( server, room, UTF8(nick), password );
+				JabberGroupchatJoinRoom( server, room, TXT(nick), password );
 			}
 			// fall through
 		case IDCANCEL:
@@ -785,7 +785,7 @@ static BOOL CALLBACK JabberGroupchatInviteAcceptDlgProc( HWND hwndDlg, UINT msg,
 				room = strtok( roomJid, "@" );
 				server = strtok( NULL, "@" );
 				GetDlgItemText( hwndDlg, IDC_NICK, text, sizeof( text ));
-				JabberGroupchatJoinRoom( server, room, UTF8(text), inviteInfo->password );
+				JabberGroupchatJoinRoom( server, room, TXT(text), inviteInfo->password );
 			}
 			// Fall through
 		case IDCANCEL:
