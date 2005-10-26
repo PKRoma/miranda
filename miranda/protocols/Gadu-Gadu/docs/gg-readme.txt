@@ -65,6 +65,7 @@ Note: For secure connections this plugin requires OpenSSL DLL
  - Fix: Upgrade new chat API
  - Image reception can now be triggered
  - Small code formatting fixes
+ - SSL connections are disabled now by default
 0.0.3.4: 2005-07-23
  - Fix: Connection server config was broken
  - Fix: Password retrieval was broken
