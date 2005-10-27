@@ -47,6 +47,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SBT_TOOLTIPS 0x0800
 #define DFCS_HOT 0x1000
 
+#if defined(_UNICODE)
+    #define TTM_SETTITLE (WM_USER+33)
+#else
+    #define TTM_SETTITLE (WM_USER+32)
+#endif
+
 #define FLASHW_STOP 0
 #define FLASHW_TRAY 0x00000002
 #define FLASHW_CAPTION 0x00000001

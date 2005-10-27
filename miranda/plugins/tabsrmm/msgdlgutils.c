@@ -86,6 +86,8 @@ struct RTFColorTable rtf_ctable[] = {
  * for the avatar w/o disturbing the toolbar too much.
  */
 
+
+
 void MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, int bmWidth, int bmHeight, HDC hdcMem)
 {
     HDC hdcTemp = CreateCompatibleDC(hdcDraw);
