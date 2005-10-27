@@ -95,6 +95,7 @@ typedef struct
     PROTOSEARCHRESULT hdr;
     uin_t uin;
 } GGSEARCHRESULT;
+
 typedef struct
 {
     int mode;
@@ -103,6 +104,7 @@ typedef struct
 	char *email;
 	HFONT hBoldFont;
 } GGUSERUTILDLGDATA;
+
 typedef struct
 {
     list_t watches, transfers, requests;
@@ -113,10 +115,19 @@ typedef struct
     HANDLE event;
 } GGTHREAD;
 
+typedef struct
+{
+    uin_t *recipients;
+    int recipients_count;
+    char id[32];
+    BOOL ignore;
+} GGGC;
+
 // Main strings
 extern char ggProto[];
 extern char *ggProtoName;
 extern char *ggProtoError;
+
 #define GG_PROTO 		 ggProto     	// Protocol ID
 #define GG_PROTONAME	 ggProtoName	// Protocol Name
 #define GG_PROTOERROR	 ggProtoError  	// Protocol Error
@@ -292,6 +303,7 @@ extern struct gg_status_msgs ggModeMsg;
 extern uin_t nextUIN;
 extern int ggListRemove;
 extern int ggGCEnabled;
+extern list_t ggGCList;
 
 // Screen saver
 #ifndef SPI_GETSCREENSAVERRUNNING
@@ -352,6 +364,7 @@ void *__stdcall gg_img_dlgthread(void *empty);
 int gg_gc_load();
 int gg_gc_unload();
 char * gg_gc_getchat(uin_t sender, uin_t *recipients, int recipients_count);
+GGGC *gg_gc_lookup(char *id);
 int gg_gc_changenick(HANDLE hContact, char *pszNick);
 int gg_getinfo(WPARAM wParam, LPARAM lParam);
 void gg_remindpassword(uin_t uin, const char *email);

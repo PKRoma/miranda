@@ -59,11 +59,13 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
-0.0.3.5: 2005-10-26
+0.0.3.5: 2005-10-27
+ - Fix: Groupchat fixed for database locks
+ - Fix: Upgrade new chat API
  - Fix: Image reception on system tray was broken
  - Fix: Plugin was writing junk entries to other protocols contacts
- - Fix: Upgrade new chat API
  - Image reception can now be triggered
+ - Images are now scalled to their real size if possible
  - Small code formatting fixes
  - SSL connections are disabled now by default
 0.0.3.4: 2005-07-23

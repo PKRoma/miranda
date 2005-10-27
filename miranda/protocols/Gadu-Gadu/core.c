@@ -969,19 +969,29 @@ int gg_userdeleted(WPARAM wParam, LPARAM lParam)
     uin = (uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
     type = DBGetContactSettingByte(hContact, GG_PROTO, "ChatRoom", 0);
 
+	// Terminate conference if contact is deleted
 	if(type && !DBGetContactSetting(hContact, GG_PROTO, "ChatRoomID", &dbv) && ggGCEnabled)
 	{
-        GCEVENT gce;
-        GCDEST gcd;
-        gce.cbSize = sizeof(GCEVENT);
-        gcd.iType = GC_EVENT_CONTROL;
-        gcd.pszModule = GG_PROTO;
-        gce.pDest = &gcd;
-        gcd.pszID = dbv.pszVal;
-        CallService(MS_GC_EVENT, SESSION_TERMINATE, (LPARAM)&gce);
+		GCDEST gcdest = {GG_PROTO, dbv.pszVal, GC_EVENT_CONTROL};
+		GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
+	    GGGC *chat = gg_gc_lookup(dbv.pszVal);
+
+#ifdef DEBUGMODE
+        gg_netlog("gg_gc_event(): Terminating chat %x, id %s from contact list...", chat, dbv.pszVal);
+#endif
+		if(chat)
+		{
+			// Destroy chat entry
+			free(chat->recipients);
+			list_remove(&ggGCList, chat, 1);
+			// Terminate chat window / shouldn't cascade entry is deleted
+	        CallService(MS_GC_EVENT, SESSION_TERMINATE, (LPARAM)&gcevent);
+		}
 
 		DBFreeVariant(&dbv);
+		return 0;
 	}
+
     pthread_mutex_lock(&threadMutex);
     if(uin && gg_isonline()) gg_remove_notify_ex(ggThread->sess, uin, GG_USER_NORMAL);
     pthread_mutex_unlock(&threadMutex);
@@ -1011,39 +1021,35 @@ int gg_dbsettingchanged(WPARAM wParam, LPARAM lParam)
         return 0;
     }
 
-    // Renamed
-    if(ggGCEnabled && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, "Nick") && cws->value.pszVal)
+	// Contact is being renamed
+    if(ggGCEnabled && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, "Nick") 
+		&& cws->value.pszVal)
     {
+		// Groupchat window contact is being renamed
         DBVARIANT dbv;
         int type = DBGetContactSettingByte(hContact, GG_PROTO, "ChatRoom", 0);
-        // Change window name
         if(type && !DBGetContactSetting(hContact, GG_PROTO, "ChatRoomID", &dbv))
         {
             // Most important... check redundancy (fucking cascading)
             static int cascade = 0;
-            if(!cascade)
+            if(!cascade && dbv.pszVal)
             {
-                GCEVENT gce;
-                GCDEST gcd;
-                gce.cbSize = sizeof(GCEVENT);
-                gcd.iType = GC_EVENT_CHANGESESSIONAME;
-                gcd.pszModule = GG_PROTO;
-                gce.pDest = &gcd;
-                gcd.pszID = dbv.pszVal;
-                gce.pszText = cws->value.pszVal;
+				GCDEST gcdest = {GG_PROTO, dbv.pszVal, GC_EVENT_CHANGESESSIONAME};
+				GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
+                gcevent.pszText = cws->value.pszVal;
 #ifdef DEBUGMODE
                 gg_netlog("gg_dbsettingchanged(): Conference %s was renamed to %s.", dbv.pszVal, cws->value.pszVal);
 #endif
-                cascade = 1;
-                if(dbv.pszVal) CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
-
-                DBFreeVariant(&dbv);
+				// Mark cascading
+                /* FIXME */ cascade = 1;
+				CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+                /* FIXME */ cascade = 0;
             }
-            else
-                cascade = 0;
+            DBFreeVariant(&dbv);
         }
-        // Change contact name on all chats
-        else gg_gc_changenick(hContact, cws->value.pszVal);
+        else
+	        // Change contact name on all chats
+			gg_gc_changenick(hContact, cws->value.pszVal);
     }
 
     // Blocked icon

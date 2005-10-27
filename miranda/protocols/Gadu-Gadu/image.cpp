@@ -110,14 +110,12 @@ int gg_img_load()
 // Image Module : closing dialogs, sync objects
 int gg_img_unload()
 {
-    int i=0;
-
     // Close event & mutex
     CloseHandle(hImgMutex);
 
     // Delete all / release all dialogs
     while(gg_imagedlgs && gg_img_remove((GGIMAGEDLGDATA *)gg_imagedlgs->data));
-    list_destroy(gg_imagedlgs, 1);
+	list_destroy(gg_imagedlgs, 1);
 
     return FALSE;
 }
@@ -258,6 +256,64 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
                     rect.left + size.cx - oldSize.cx, \
                     rect.top, \
                     0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW)
+
+////////////////////////////////////////////////////////////////////////////
+// Fit window size to image size
+BOOL gg_img_fit(HWND hwndDlg)
+{
+    GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	RECT dlgRect, imgRect;
+
+	// Check if image is loaded
+	if(!dat || !dat->lpImages || !dat->lpImages->imagePicture)
+		return FALSE;
+
+	GGIMAGEENTRY *img = dat->lpImages;
+
+	// Go to last image
+	while(img->lpNext && img->lpNext->imagePicture)
+		img = img->lpNext;
+
+	// Get rects of display
+    GetWindowRect(hwndDlg, &dlgRect);
+    GetClientRect(GetDlgItem(hwndDlg, IDC_IMG_IMAGE), &imgRect);
+
+    long hmWidth;
+    long hmHeight;
+    img->imagePicture->get_Width(&hmWidth);
+    img->imagePicture->get_Height(&hmHeight);
+
+	HDC hdc = GetDC(hwndDlg);
+
+    // Convert himetric to pixels
+    int nWidth = MulDiv(hmWidth, GetDeviceCaps(hdc, LOGPIXELSX), HIMETRIC_INCH);
+    int nHeight = MulDiv(hmHeight, GetDeviceCaps(hdc, LOGPIXELSY), HIMETRIC_INCH);
+	int rWidth = 0;
+	int rHeight = 0;
+	int sWidth = GetDeviceCaps(hdc, HORZRES);
+	int sHeight = GetDeviceCaps(hdc, VERTRES);
+
+	ReleaseDC(hwndDlg, hdc);
+
+	if((imgRect.right - imgRect.left) < nWidth)
+		rWidth = nWidth - imgRect.right + imgRect.left;
+	if((imgRect.bottom - imgRect.top) < nWidth)
+		rHeight = nHeight - imgRect.bottom + imgRect.top;
+
+	// Check if anything needs resize
+	if(!rWidth && !rHeight)
+		return FALSE;
+
+    SetWindowPos(hwndDlg, NULL,
+		(dlgRect.left - rWidth / 2) > 0 ? (dlgRect.left - rWidth / 2) : 0,
+		(dlgRect.top - rHeight / 2) > 0 ? (dlgRect.top - rHeight / 2) : 0,
+		(dlgRect.right - dlgRect.left + rWidth > sWidth) ? sWidth : (dlgRect.right - dlgRect.left + rWidth), 
+		(dlgRect.bottom - dlgRect.top + rHeight > sHeight) ? sHeight : (dlgRect.bottom - dlgRect.top + rHeight), 
+		SWP_SHOWWINDOW | SWP_NOZORDER /* | SWP_NOACTIVATE */);
+
+	return TRUE;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////
 // Send / Recv main dialog proc
@@ -557,7 +613,9 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 }
                 dat->nImg = ++ dat->nImgTotal;
             }
-            InvalidateRect(hwndDlg,0,0);
+			// Fit window to image
+			if(!gg_img_fit(hwndDlg))
+				InvalidateRect(hwndDlg, 0, 0);
             return TRUE;
 
         case WM_CHOOSEIMG:
@@ -594,7 +652,8 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     EndDialog(hwndDlg, 0);
                     return FALSE;
                 }
-                ShowWindow(hwndDlg, SW_SHOW);
+				if(!gg_img_fit(hwndDlg))
+					ShowWindow(hwndDlg, SW_SHOW);
             }
             else
             {
@@ -858,6 +917,7 @@ int gg_img_add(GGIMAGEDLGDATA *dat)
 }
 
 ////////////////////////////////////////////////////////////////////////////
+// Removes dat structure
 int gg_img_remove(GGIMAGEDLGDATA *dat)
 {
     if(!dat) return FALSE;
@@ -870,6 +930,11 @@ int gg_img_remove(GGIMAGEDLGDATA *dat)
         return FALSE;
     }
 
+	// Rather destroy window instead of just removing structures
+	if(dat->hWnd && IsWindow(dat->hWnd) && DestroyWindow(dat->hWnd))
+		return TRUE;
+
+	// If not succeded to destroy window.. just remove the structure
     GGIMAGEENTRY *temp, *img = dat->lpImages;
 
     while(temp = img)
@@ -880,6 +945,7 @@ int gg_img_remove(GGIMAGEDLGDATA *dat)
         GlobalFree(temp->hPicture);
         free(temp);
     }
+
     list_remove(&gg_imagedlgs, dat, 1);
 
     ReleaseMutex(hImgMutex);
