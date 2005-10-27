@@ -1402,7 +1402,7 @@ void gg_changecontactstatus(uin_t uin, int status, const char *idescr, int time,
     DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, (WORD)status_gg2m(status));
 
 	// Check if there's description and if it's not empty
-    if(idescr && *idescr != '\n' && *idescr != 0)
+    if(idescr && *idescr)
     {
 #ifdef DEBUGMODE
         gg_netlog("gg_changecontactstatus(): Saving for %d status desct \"%s\".", uin, idescr);

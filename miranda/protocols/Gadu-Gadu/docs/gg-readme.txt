@@ -60,6 +60,7 @@ Note: For secure connections this plugin requires OpenSSL DLL
 5. History
 ----------
 0.0.3.5: 2005-10-27
+ - Fix: Descriptions beginning with new line were not shown
  - Fix: Groupchat fixed for database locks
  - Fix: Upgrade new chat API
  - Fix: Image reception on system tray was broken
