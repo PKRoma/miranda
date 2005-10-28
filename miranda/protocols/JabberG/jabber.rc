@@ -408,7 +408,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,92,58,50,14
 END
 
-IDD_OPT_JABBER2 DIALOGEX 0, 0, 222, 148
+IDD_OPT_JABBER2 DIALOGEX 0, 0, 222, 173
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -422,23 +422,31 @@ BEGIN
     CONTROL         "Specify external address",IDC_DIRECT_MANUAL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,9,30,101,10
     EDITTEXT        IDC_DIRECT_ADDR,117,29,81,12,ES_AUTOHSCROLL
-    GROUPBOX        "Miscellaneous",IDC_STATIC,2,77,216,66
+    GROUPBOX        "Miscellaneous",IDC_STATIC,2,75,216,93
     CONTROL         "Show transport agents on contact list",
                     IDC_SHOW_TRANSPORT,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,9,90,202,11
+                    WS_TABSTOP,9,142,202,11
     CONTROL         "Automatically add contact when accept authorization",
                     IDC_AUTO_ADD,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,9,103,203,12
+                    WS_TABSTOP,9,86,203,12
     CONTROL         "Send messages slower, but with full acknowledgement",
                     IDC_MSG_ACK,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,9,116,203,12
+                    WS_TABSTOP,9,120,203,12
     CONTROL         "Allow file sending through direct peer-to-peer connection",
                     IDC_DIRECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,18,
                     202,10
     CONTROL         "Specify proxy server",IDC_PROXY_MANUAL,"Button",
                     BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,9,54,102,10
     CONTROL         "Disable main menu",IDC_DISABLE_MAINMENU,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,9,128,202,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,9,131,202,9
+    CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,9,153,209,10
+    CONTROL         "Automatically join conferences on login",IDC_AUTOJOIN,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,9,97,
+                    202,10
+    CONTROL         "Autoaccept multiuser chat invitations",
+                    IDC_AUTO_ACCEPT_MUC,"Button",BS_AUTOCHECKBOX | 
+                    WS_DISABLED | WS_TABSTOP,9,109,202,9
 END
 
 IDD_GROUPCHAT DIALOGEX 0, 0, 306, 208
@@ -710,7 +718,7 @@ BEGIN
         RIGHTMARGIN, 218
         VERTGUIDE, 9
         TOPMARGIN, 3
-        BOTTOMMARGIN, 143
+        BOTTOMMARGIN, 168
     END
 
     IDD_GROUPCHAT, DIALOG

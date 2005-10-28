@@ -462,6 +462,9 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		CheckDlgButton( hwndDlg, IDC_AUTO_ADD, JGetByte( "AutoAdd", TRUE ));
 		CheckDlgButton( hwndDlg, IDC_MSG_ACK, JGetByte( "MsgAck", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_DISABLE_MAINMENU, JGetByte( "DisableMainMenu", FALSE ));
+		CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS, JGetByte( "EnableAvatars", TRUE ));
+		CheckDlgButton( hwndDlg, IDC_AUTO_ACCEPT_MUC, JGetByte( "AutoAcceptMUC", FALSE ));
+		CheckDlgButton( hwndDlg, IDC_AUTOJOIN, JGetByte( "AutoJoinConferences", FALSE ));
 		return TRUE;
 	}
 	case WM_COMMAND:
@@ -470,31 +473,27 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		case IDC_DIRECT_ADDR:
 		case IDC_PROXY_ADDR:
 			if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
-				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+				goto LBL_Apply;
 			break;
 		case IDC_DIRECT:
 			bChecked = IsDlgButtonChecked( hwndDlg, IDC_DIRECT );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_MANUAL ), bChecked );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), ( bChecked && IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL )) );
-			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-			break;
+			goto LBL_Apply;
 		case IDC_DIRECT_MANUAL:
 			bChecked = IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), bChecked );
-			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-			break;
+			goto LBL_Apply;
 		case IDC_PROXY:
 			bChecked = IsDlgButtonChecked( hwndDlg, IDC_PROXY );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_MANUAL ), bChecked );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), ( bChecked && IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL )) );
-			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-			break;
+			goto LBL_Apply;
 		case IDC_PROXY_MANUAL:
 			bChecked = IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), bChecked );
-			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-			break;
 		default:
+		LBL_Apply:
 			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			break;
 		}
@@ -532,9 +531,12 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				index++;
 			}
 
-			JSetByte( "AutoAdd", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_AUTO_ADD ));
-			JSetByte( "MsgAck", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_MSG_ACK ));
-			JSetByte( "DisableMainMenu", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DISABLE_MAINMENU ));
+			JSetByte( "AutoAdd",             ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTO_ADD ));
+			JSetByte( "MsgAck",              ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_MSG_ACK ));
+			JSetByte( "DisableMainMenu",     ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_MAINMENU ));
+			JSetByte( "EnableAvatars",       ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_AVATARS ));
+			JSetByte( "AutoAcceptMUC",       ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTO_ACCEPT_MUC ));
+			JSetByte( "AutoJoinConferences", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOJOIN ));
 			return TRUE;
 		}
 		break;

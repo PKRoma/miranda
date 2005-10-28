@@ -1149,6 +1149,9 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 
 void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 {
+	if ( !JGetByte( "EnableAvatars", TRUE ))
+		return;
+
 	struct ThreadData *info = ( struct ThreadData * ) userdata;
 	char* type;
 

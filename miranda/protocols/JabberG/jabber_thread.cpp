@@ -905,7 +905,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 
 		XmlNode* xNode = JabberXmlGetChild( node, "x" );
 		if ( xNode != NULL && !lstrcmpA( JabberXmlGetAttrValue( xNode, "xmlns" ), "jabber:x:avatar" )) {
-			if (( xNode = JabberXmlGetChild( xNode, "hash" )) != NULL && xNode->text != NULL ) {
+			if (( xNode = JabberXmlGetChild( xNode, "hash" )) != NULL && xNode->text != NULL && JGetByte( "EnableAvatars", TRUE )) {
 				JSetString( hContact, "AvatarHash", xNode->text );
 
 				char szSavedHash[ 100 ];
@@ -1032,6 +1032,9 @@ static void JabberProcessIqVersion( char* idStr, XmlNode* node )
 
 static void JabberProcessIqAvatar( char* idStr, XmlNode* node )
 {
+	if ( !JGetByte( "EnableAvatars", TRUE ))
+		return;
+
 	char* from;
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL )
 		return;

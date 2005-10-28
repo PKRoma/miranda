@@ -549,6 +549,9 @@ int JabberFileResume( WPARAM wParam, LPARAM lParam )
 
 static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
+	if ( !JGetByte( "EnableAvatars", TRUE ))
+		return GAIR_NOAVATAR;
+
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
 
 	char szHashValue[ MAX_PATH ];

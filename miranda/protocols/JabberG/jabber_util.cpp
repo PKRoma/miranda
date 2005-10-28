@@ -880,6 +880,8 @@ void __stdcall JabberSendPresenceTo( int status, char* to, char* extra )
 
 	char priorityStr[ 200 ];
 	int bytes = mir_snprintf( priorityStr, sizeof priorityStr, "<priority>%d</priority>", JGetWord( NULL, "Priority", 0 ));
+
+	if ( JGetByte( "EnableAvatars", TRUE ))
 	{
 		char hashValue[ 50 ];
 		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof hashValue ))
