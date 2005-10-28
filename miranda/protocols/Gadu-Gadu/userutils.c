@@ -386,9 +386,9 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Change Password : Init
-void gg_initchpass()
+/* DEPRECATED: We change password now in options
+void gg_chpass_init()
 {
-/*	We change password now in options
 
 	// Rest depreciated
     CLISTMENUITEM mi;
@@ -406,5 +406,5 @@ void gg_initchpass()
     mi.pszName = Translate("Change Password...");
     mi.pszService = service;
     CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
-*/
 }
+*/

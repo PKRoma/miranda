@@ -48,20 +48,21 @@ char ggProto[64] = GGDEF_PROTO;		        // proto id get from DLL name   (def GG
 char *ggProtoName = NULL;					// proto name get from DLL name (def Gadu-Gadu from GG.dll or GGdebug.dll)
 char *ggProtoError = NULL;					// proto error get from DLL name (def Gadu-Gadu from GG.dll or GGdebug.dll)
 
-// status messages
+// Status messages
 struct gg_status_msgs ggModeMsg;
 
-// Event Hooks
+// Event hooks
 static HANDLE hHookOptsInit;
 static HANDLE hHookUserInfoInit;
 static HANDLE hHookModulesLoaded;
+static HANDLE hHookPreShutdown;
 static HANDLE hHookSettingDeleted;
 static HANDLE hHookSettingChanged;
 
 static unsigned long crc_table[256];
 
 //////////////////////////////////////////////////////////
-// extra winsock function for error description
+// Extra winsock function for error description
 char *ws_strerror(int code)
 {
     static char err_desc[160];
@@ -81,12 +82,12 @@ char *ws_strerror(int code)
         return err_desc;
     }
 
-    // return normal error
+    // Return normal error
     return strerror(code);
 }
 
 //////////////////////////////////////////////////////////
-// build the crc table
+// Build the crc table
 void crc_gentable(void)
 {
     unsigned long crc, poly;
@@ -108,7 +109,7 @@ void crc_gentable(void)
 }
 
 //////////////////////////////////////////////////////////
-// calculate the crc value
+// Calculate the crc value
 unsigned long crc_get(char *mem)
 {
     register unsigned long crc = 0xFFFFFFFF;
@@ -120,7 +121,7 @@ unsigned long crc_get(char *mem)
 
 void gg_refreshblockedicon()
 {
-    // store blocked icon
+    // Store blocked icon
     char strFmt1[MAX_PATH], strFmt2[MAX_PATH];
     GetModuleFileName(hInstance, strFmt1, sizeof(strFmt1));
     sprintf(strFmt2, "%s,-%d", strFmt1, IDI_STOP);
@@ -152,7 +153,7 @@ const char *http_error_string(int h)
 }
 
 //////////////////////////////////////////////////////////
-// gets plugin info
+// Gets plugin info
 DWORD gMirandaVersion = 0;
 __declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
@@ -161,7 +162,7 @@ __declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 }
 
 //////////////////////////////////////////////////////////
-// cleanups from last plugin
+// Cleanups from last plugin
 void gg_cleanuplastplugin(DWORD version)
 {
     HANDLE hContact;
@@ -175,7 +176,7 @@ void gg_cleanuplastplugin(DWORD version)
 #endif
 		// Look for contact in DB
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-		while (hContact) 
+		while (hContact)
 		{
 			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 			if(szProto != NULL && !strcmp(szProto, GG_PROTO))
@@ -196,7 +197,7 @@ void gg_cleanuplastplugin(DWORD version)
 #endif
 		// Look for contact in DB
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-		while (hContact) 
+		while (hContact)
 		{
 			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 			if(szProto != NULL && strcmp(szProto, GG_PROTO))
@@ -213,7 +214,7 @@ void gg_cleanuplastplugin(DWORD version)
 }
 
 //////////////////////////////////////////////////////////
-// when miranda loaded its modules
+// When miranda loaded its modules
 int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 {
     NETLIBUSER nlu = { 0 };
@@ -229,8 +230,8 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
     nlu.szSettingsModule = GG_PROTO;
     nlu.szDescriptiveName = title;
     hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
-    hHookOptsInit = HookEvent(ME_OPT_INITIALISE, gg_optionsinit);
-    hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, gg_detailsinit);
+    hHookOptsInit = HookEvent(ME_OPT_INITIALISE, gg_options_init);
+    hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, gg_details_init);
     hHookSettingDeleted = HookEvent(ME_DB_CONTACT_DELETED, gg_userdeleted);
     hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, gg_dbsettingchanged);
 
@@ -238,12 +239,12 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 	gg_ssl_init();
 
 	// Init misc thingies
-    //gg_inituserinfo();
-    gg_initkeepalive();
-    gg_initimport();
-    gg_initchpass();
-    gg_img_load();
-    gg_gc_load();
+    /* gg_userinfo_init(); DEPRECATED */
+    gg_keepalive_init();
+    gg_import_init();
+    /* gg_chpass_init(); DEPRECATED */
+    gg_img_init();
+    gg_gc_init();
 
 	// Make error message
 	error = Translate("Error");
@@ -255,6 +256,19 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 	// Do last plugin cleanup if not actual version
 	if((version = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
 		gg_cleanuplastplugin(version);
+
+    return 0;
+}
+
+//////////////////////////////////////////////////////////
+// When Miranda starting shutdown sequence
+int gg_preshutdown(WPARAM wParam, LPARAM lParam)
+{
+#ifdef DEBUGMODE
+    gg_netlog("gg_preshutdown(): signalling shutdown...");
+#endif
+	// Shutdown some modules before unload
+	gg_img_shutdown();
 
     return 0;
 }
@@ -308,15 +322,26 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	init_protonames();
 
     pluginLink = link;
+
+    // Hook system events
     hHookModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, gg_modulesloaded);
+    hHookPreShutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, gg_preshutdown);
+
+    // Prepare protocol name
     ZeroMemory(&pd, sizeof(pd));
     ZeroMemory(&ggModeMsg, sizeof(ggModeMsg));
     pd.cbSize = sizeof(pd);
     pd.szName = GG_PROTO;
     pd.type = PROTOTYPE_PROTOCOL;
+
+    // Register module
     CallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM) & pd);
+
+    // Init mutex
     pthread_mutex_init(&threadMutex, NULL);
     pthread_mutex_init(&modeMsgsMutex, NULL);
+
+    // Register services
     gg_registerservices();
     gg_setalloffline();
     gg_refreshblockedicon();
@@ -334,14 +359,18 @@ int __declspec(dllexport) Unload()
 #ifdef DEBUGMODE
     gg_netlog("Unload(): destroying plugin");
 #endif
-    //gg_destroyuserinfo();
-    gg_destroykeepalive();
-    gg_img_unload();
-    gg_gc_unload();
+    /* gg_userinfo_destroy(); */
+    gg_keepalive_destroy();
+    gg_img_destroy();
+    gg_gc_destroy();
+
     pthread_mutex_destroy(&threadMutex);
     pthread_mutex_destroy(&modeMsgsMutex);
-    LocalEventUnhook(hHookOptsInit);
+
     LocalEventUnhook(hHookModulesLoaded);
+    LocalEventUnhook(hHookPreShutdown);
+
+    LocalEventUnhook(hHookOptsInit);
     LocalEventUnhook(hHookSettingDeleted);
     LocalEventUnhook(hHookSettingChanged);
 #ifdef DEBUGMODE
@@ -361,6 +390,7 @@ int __declspec(dllexport) Unload()
 
 	// Uninit SSL library
 	gg_ssl_uninit();
+
     // Cleanup WinSock
     WSACleanup();
     return 0;

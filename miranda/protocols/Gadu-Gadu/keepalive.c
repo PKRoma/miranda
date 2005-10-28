@@ -33,14 +33,14 @@ static void CALLBACK gg_keepalive(HWND hwnd, UINT message, UINT idEvent, DWORD d
     }
 }
 
-void gg_initkeepalive()
+void gg_keepalive_init()
 {
     if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_KEEPALIVE, GG_KEYDEF_KEEPALIVE)) {
         hTimer = SetTimer(NULL, 0, 1000 * 60, gg_keepalive);
     }
 }
 
-void gg_destroykeepalive()
+void gg_keepalive_destroy()
 {
 #ifdef DEBUGMODE
     gg_netlog("gg_destroykeepalive(): Killing Timer");

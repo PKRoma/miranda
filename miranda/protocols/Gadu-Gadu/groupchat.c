@@ -42,7 +42,7 @@ list_t ggGCList = NULL;
 ////////////////////////////////////////////////////////////////////////////////
 // Inits Gadu-Gadu groupchat module using chat.dll
 
-int gg_gc_load()
+int gg_gc_init()
 {
     // Chat.dll required Miranda version 0.4 or higher
 	if(gMirandaVersion && gMirandaVersion >= PLUGIN_MAKE_VERSION(0, 4, 0, 0) && ServiceExists(MS_GC_REGISTER))
@@ -110,7 +110,7 @@ int gg_gc_load()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Releases Gadu-Gadu groupchat module using chat.dll
-int gg_gc_unload()
+int gg_gc_destroy()
 {
     list_t l;
     for(l = ggGCList; l; l = l->next)
@@ -121,7 +121,8 @@ int gg_gc_unload()
     list_destroy(ggGCList, 1); ggGCList = NULL;
     LocalEventUnhook(hHookGCUserEvent);
     LocalEventUnhook(hHookGCMenuBuild);
-    if(hEventGGGetChat) DestroyHookableEvent(hEventGGGetChat);
+    if(hEventGGGetChat)
+        DestroyHookableEvent(hEventGGGetChat);
 
 	return 1;
 }
@@ -153,10 +154,10 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
 	uin_t uin;
 
     // Check if we got our protocol, and fields are set
-    if(!gch 
-		|| !gch->pDest 
-		|| !gch->pDest->pszID 
-		|| !gch->pDest->pszModule 
+    if(!gch
+		|| !gch->pDest
+		|| !gch->pDest->pszID
+		|| !gch->pDest->pszModule
 		|| lstrcmpi(gch->pDest->pszModule, GG_PROTO)
 	    || !(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
 		|| !(chat = gg_gc_lookup(gch->pDest->pszID)))

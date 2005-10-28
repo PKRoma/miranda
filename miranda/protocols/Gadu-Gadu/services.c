@@ -34,7 +34,7 @@ list_t ggThreadList = NULL;
 
 //////////////////////////////////////////////////////////
 // Status mode -> DB
-char *StatusModeToDbSetting(int status, const char *suffix)
+char *gg_status2db(int status, const char *suffix)
 {
     char *prefix;
     static char str[64];

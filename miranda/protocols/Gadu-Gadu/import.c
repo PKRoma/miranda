@@ -624,8 +624,8 @@ static int gg_export_server(WPARAM wParam, LPARAM lParam)
 }
 
 //////////////////////////////////////////////////////////
-// import menus and stuff
-void gg_initimport()
+// Import menus and stuff
+void gg_import_init()
 {
     CLISTMENUITEM mi;
 	char service[64];

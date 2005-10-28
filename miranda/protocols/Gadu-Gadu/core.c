@@ -63,7 +63,7 @@ void gg_disconnect()
             {
                 case ID_STATUS_ONLINE:
                     if(!(szMsg = ggModeMsg.szOnline) &&
-                        !DBGetContactSetting(NULL, "SRAway", StatusModeToDbSetting(ID_STATUS_ONLINE, "Default"), &dbv))
+                        !DBGetContactSetting(NULL, "SRAway", gg_status2db(ID_STATUS_ONLINE, "Default"), &dbv))
                     {
                         szMsg = dbMsg = strdup(dbv.pszVal);
                         DBFreeVariant(&dbv);
@@ -71,7 +71,7 @@ void gg_disconnect()
                     break;
                 case ID_STATUS_AWAY:
                     if(!(szMsg = ggModeMsg.szAway) &&
-                        !DBGetContactSetting(NULL, "SRAway", StatusModeToDbSetting(ID_STATUS_AWAY, "Default"), &dbv))
+                        !DBGetContactSetting(NULL, "SRAway", gg_status2db(ID_STATUS_AWAY, "Default"), &dbv))
                     {
                         szMsg = dbMsg = strdup(dbv.pszVal);
                         DBFreeVariant(&dbv);
@@ -79,7 +79,7 @@ void gg_disconnect()
                     break;
                 case ID_STATUS_INVISIBLE:
                     if(!(szMsg = ggModeMsg.szInvisible) &&
-                        !DBGetContactSetting(NULL, "SRAway", StatusModeToDbSetting(ID_STATUS_INVISIBLE, "Default"), &dbv))
+                        !DBGetContactSetting(NULL, "SRAway", gg_status2db(ID_STATUS_INVISIBLE, "Default"), &dbv))
                     {
                         szMsg = dbMsg = strdup(dbv.pszVal);
                         DBFreeVariant(&dbv);

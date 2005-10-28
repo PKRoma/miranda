@@ -27,6 +27,7 @@
 #define WM_ADDIMAGE  WM_USER + 1
 #define WM_SENDIMG   WM_USER + 2
 #define WM_CHOOSEIMG WM_USER + 3
+#define TIMERID_FLASHWND WM_USER + 4
 
 ////////////////////////////////////////////////////////////////////////////
 // Image Window : Data
@@ -76,7 +77,7 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
 
 ////////////////////////////////////////////////////////////////////////////
 // Image Module : Adding item to contact menu, creating sync objects
-int gg_img_load()
+int gg_img_init()
 {
     CLISTMENUITEM mi;
     ZeroMemory(&mi,sizeof(mi));
@@ -108,14 +109,52 @@ int gg_img_load()
 
 ////////////////////////////////////////////////////////////////////////////
 // Image Module : closing dialogs, sync objects
-int gg_img_unload()
+int gg_img_shutdown()
 {
+#ifdef DEBUGMODE
+	gg_netlog("gg_img_shutdown(): Closing all dialogs...");
+#endif
+	// Rather destroy window instead of just removing structures
+	list_t l;
+	for(l = gg_imagedlgs; l;)
+	{
+		GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)l->data;
+		l = l->next;
+
+		if(dat && dat->hWnd)
+		{
+			if(IsWindow(dat->hWnd))
+			{
+				// Post message async, since it maybe be different thread
+				if(!PostMessage(dat->hWnd, WM_CLOSE, 0, 0))
+				{
+#ifdef DEBUGMODE
+		            gg_netlog("gg_img_shutdown(): Image dlg %x cannot be released !!", dat->hWnd);
+#endif
+				}
+			}
+#ifdef DEBUGMODE
+			else
+		        gg_netlog("gg_img_shutdown(): Image dlg %x not exists, but structure does !!", dat->hWnd);
+#endif
+		}
+	}
+
+	return FALSE;
+}
+
+////////////////////////////////////////////////////////////////////////////
+// Image Module : destroying list
+int gg_img_destroy()
+{
+    // Release all dialogs
+    while(gg_imagedlgs && gg_img_remove((GGIMAGEDLGDATA *)gg_imagedlgs->data));
+
+	// Destroy list
+	list_destroy(gg_imagedlgs, 1);
+
     // Close event & mutex
     CloseHandle(hImgMutex);
-
-    // Delete all / release all dialogs
-    while(gg_imagedlgs && gg_img_remove((GGIMAGEDLGDATA *)gg_imagedlgs->data));
-	list_destroy(gg_imagedlgs, 1);
 
     return FALSE;
 }
@@ -428,6 +467,21 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             EndDialog(hwndDlg, 0);
             break;
 
+		// Flash the window
+		case WM_TIMER:
+			if(wParam == TIMERID_FLASHWND) 
+				FlashWindow(hwndDlg, TRUE);
+			break;
+
+		// Kill the timer
+		case WM_ACTIVATE:
+			if(LOWORD(wParam) != WA_ACTIVE)
+				break;
+		case WM_MOUSEACTIVATE:
+			if(KillTimer(hwndDlg, TIMERID_FLASHWND))
+				FlashWindow(hwndDlg, FALSE);
+			break;
+
         case WM_PAINT:
             if (dat->lpImages)
             {
@@ -653,7 +707,7 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     return FALSE;
                 }
 				if(!gg_img_fit(hwndDlg))
-					ShowWindow(hwndDlg, SW_SHOW);
+					InvalidateRect(hwndDlg, 0, 0);
             }
             else
             {
@@ -727,15 +781,17 @@ extern "C" int gg_img_display(HANDLE hContact, GGIMAGEENTRY *img)
 
     list_t l = gg_imagedlgs;
     GGIMAGEDLGDATA *dat;
+	// Look for already open dialog
     while(l)
     {
         dat = (GGIMAGEDLGDATA *)l->data;
-        if (dat->hContact == hContact)
+		if(dat->bReceiving && dat->hContact == hContact)
         {
             break;
         }
         l = l->next;
     }
+
     if(!l) dat = NULL;
 
     if(!dat)
@@ -759,8 +815,14 @@ extern "C" int gg_img_display(HANDLE hContact, GGIMAGEENTRY *img)
     }
 
     SendMessage(dat->hWnd, WM_ADDIMAGE, 0, (LPARAM)img);
-    SetForegroundWindow(dat->hWnd);
+	if(/*DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0 && */
+		GetActiveWindow() != dat->hWnd && GetForegroundWindow() != dat->hWnd)
+		SetTimer(dat->hWnd, TIMERID_FLASHWND, 900, NULL);    
+
+	/* DEPRECATED: No more grabbing the focus... just flashing
+	SetForegroundWindow(dat->hWnd);
     SetFocus(dat->hWnd);
+	*/
 
     ReleaseMutex(hImgMutex);
     return TRUE;
@@ -930,13 +992,10 @@ int gg_img_remove(GGIMAGEDLGDATA *dat)
         return FALSE;
     }
 
-	// Rather destroy window instead of just removing structures
-	if(dat->hWnd && IsWindow(dat->hWnd) && DestroyWindow(dat->hWnd))
-		return TRUE;
-
-	// If not succeded to destroy window.. just remove the structure
+	// Remove the structure
     GGIMAGEENTRY *temp, *img = dat->lpImages;
 
+	// Destroy picture handle
     while(temp = img)
     {
         img = img->lpNext;
@@ -946,6 +1005,7 @@ int gg_img_remove(GGIMAGEDLGDATA *dat)
         free(temp);
     }
 
+	// Remove from list
     list_remove(&gg_imagedlgs, dat, 1);
 
     ReleaseMutex(hImgMutex);

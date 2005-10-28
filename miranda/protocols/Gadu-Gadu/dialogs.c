@@ -179,7 +179,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 
 ////////////////////////////////////////////////////////////////////////////////
 // Options Page : Init
-int gg_optionsinit(WPARAM wParam, LPARAM lParam)
+int gg_options_init(WPARAM wParam, LPARAM lParam)
 {
 	char title[64];
     OPTIONSDIALOGPAGE odp = { 0 };
@@ -852,7 +852,7 @@ static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 ////////////////////////////////////////////////////////////////////////////////
 // Info Page : Init
-int gg_detailsinit(WPARAM wParam, LPARAM lParam)
+int gg_details_init(WPARAM wParam, LPARAM lParam)
 {
     char* szProto;
     szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);

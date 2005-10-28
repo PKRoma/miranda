@@ -59,11 +59,12 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
-0.0.3.5: 2005-10-27
+0.0.3.5: 2005-10-28
  - Fix: Descriptions beginning with new line were not shown
  - Fix: Groupchat fixed for database locks
  - Fix: Upgrade new chat API
  - Fix: Image reception on system tray was broken
+ - Fix: Image windows are now closed on Miranda exit
  - Fix: Plugin was writing junk entries to other protocols contacts
  - Image reception can now be triggered
  - Images are now scalled to their real size if possible

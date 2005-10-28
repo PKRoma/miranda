@@ -310,30 +310,28 @@ extern list_t ggGCList;
 #define SPI_GETSCREENSAVERRUNNING 114
 #endif
 
-// Methods
 /////////////////////////////////////////////////
+// Methods
 
+/* Helper functions */
 const char *http_error_string(int h);
 unsigned long crc_get(char *mem);
+int status_m2gg(int status, int descr);
+int status_gg2s(int status);
+char *gg_status2db(int status, const char *suffix);
+char *ws_strerror(int code);
+uint32_t swap32(uint32_t x);
+
+/* Global GG functions */
 void gg_refreshblockedicon();
 void gg_notifyuser(HANDLE hContact, int refresh);
 void gg_setalloffline();
 void gg_disconnect();
 void gg_cleanupthreads();
 int gg_refreshstatus(int status);
-int status_m2gg(int status, int descr);
-int status_gg2s(int status);
-void gg_initimport();
-void gg_initchpass();
 HANDLE gg_getcontact(uin_t uin, int create, int inlist, char *nick);
-void gg_initkeepalive();
-void gg_destroykeepalive();
-int gg_optionsinit(WPARAM wParam, LPARAM lParam);
-int gg_detailsinit(WPARAM wParam, LPARAM lParam);
 void gg_registerservices();
 void *__stdcall gg_mainthread(void *empty);
-void gg_inituserinfo();
-void gg_destroyuserinfo();
 int gg_isonline();
 int gg_netlog(const char *fmt, ...);
 int gg_netsend(HANDLE s, char *data, int datalen);
@@ -342,7 +340,6 @@ int gg_userdeleted(WPARAM wParam, LPARAM lParam);
 int gg_dbsettingchanged(WPARAM wParam, LPARAM lParam);
 void gg_notifyall();
 void gg_changecontactstatus(uin_t uin, int status, const char *idescr, int time, uint32_t remote_ip, uint16_t remote_port, uint32_t version);
-char *StatusModeToDbSetting(int status, const char *suffix);
 char *gg_getstatusmsg(int status);
 void gg_dccstart(GGTHREAD *thread);
 void gg_waitdcc(GGTHREAD *thread);
@@ -354,23 +351,40 @@ int gg_filedeny(WPARAM wParam, LPARAM lParam);
 int gg_filecancel(WPARAM wParam, LPARAM lParam);
 int gg_gettoken();
 void gg_parsecontacts(char *contacts);
-int gg_img_load();
-int gg_img_unload();
+int gg_getinfo(WPARAM wParam, LPARAM lParam);
+void gg_remindpassword(uin_t uin, const char *email);
+void gg_dccwait(GGTHREAD *thread);
+
+/* Misc module initializers & destroyers */
+void gg_import_init();
+void gg_chpass_init();
+void gg_userinfo_init();
+void gg_userinfo_destroy();
+
+/* Keep-alive module */
+void gg_keepalive_init();
+void gg_keepalive_destroy();
+
+/* Image reception functions */
+int gg_img_init();
+int gg_img_destroy();
+int gg_img_shutdown();
 int gg_img_recvimage(WPARAM wParam, LPARAM lParam);
 int gg_img_sendimage(WPARAM wParam, LPARAM lParam);
 int gg_img_sendonrequest(struct gg_event* e);
 BOOL gg_img_opened(uin_t uin);
 void *__stdcall gg_img_dlgthread(void *empty);
-int gg_gc_load();
-int gg_gc_unload();
+
+/* UI page initializers */
+int gg_options_init(WPARAM wParam, LPARAM lParam);
+int gg_details_init(WPARAM wParam, LPARAM lParam);
+
+/* Groupchat functions */
+int gg_gc_init();
+int gg_gc_destroy();
 char * gg_gc_getchat(uin_t sender, uin_t *recipients, int recipients_count);
 GGGC *gg_gc_lookup(char *id);
 int gg_gc_changenick(HANDLE hContact, char *pszNick);
-int gg_getinfo(WPARAM wParam, LPARAM lParam);
-void gg_remindpassword(uin_t uin, const char *email);
-char *ws_strerror(int code);
-void gg_dccwait(GGTHREAD *thread);
-uint32_t swap32(uint32_t x);
 #define UIN2ID(uin,id) itoa(uin,id,10)
 
 // Debug functions
