@@ -64,7 +64,7 @@ extern PSLWA pSetLayeredWindowAttributes;
 wchar_t *testTooltip = L"Ein tooltip text zum testen";
 char *xStatusDescr[] = { "Angry", "Duck", "Tired", "Party", "Beer", "Thinking", "Eating", "TV", "Friends", "Coffee",
                          "Music", "Business", "Camera", "Funny", "Phone", "Games", "College", "Shopping", "Sick", "Sleeping",
-                         "Surfing", "@Internet", "Engeieering", "Typing"};
+                         "Surfing", "@Internet", "Engineering", "Typing"};
                          
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
