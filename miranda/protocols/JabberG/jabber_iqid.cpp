@@ -1199,6 +1199,16 @@ LBL_ErrFormat:
 	else if (( pictureType = JabberGetPictureType( body )) == PA_FORMAT_UNKNOWN )
 		goto LBL_ErrFormat;
 
+	PROTO_AVATAR_INFORMATION AI;
+	AI.cbSize = sizeof AI;
+	AI.format = pictureType;
+	AI.hContact = hContact;
+
+	if ( JGetByte( hContact, "AvatarType", PA_FORMAT_UNKNOWN ) != pictureType ) {
+		JabberGetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
+		DeleteFile( AI.filename );
+	}
+
 	JSetByte( hContact, "AvatarType", pictureType );
 
 	char buffer[ 41 ];
@@ -1211,10 +1221,6 @@ LBL_ErrFormat:
 		sprintf( buffer+( i<<1 ), "%02x", digest[i] );
 	JSetString( hContact, "AvatarSaved", buffer );
 
-	PROTO_AVATAR_INFORMATION AI;
-	AI.cbSize = sizeof AI;
-	AI.format = pictureType;
-	AI.hContact = hContact;
 	JabberGetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
 
 	DBWriteContactSettingString( hContact, "ContactPhoto", "File", AI.filename );

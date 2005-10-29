@@ -32,16 +32,10 @@ Last change by : $Author$
 
 int __stdcall JabberEnterBitmapName( char* szDest )
 {
-	char szFilter[ 512 ];
-	mir_snprintf( szFilter, sizeof( szFilter ),
-		"%s%c*.BMP;*.RLE;*.JPG;*.JPEG;*.GIF;*.PNG%c%s%c*.BMP;*.RLE%c%s%c*.JPG;*.JPEG%c%s%c*.GIF%c%s%c%c0",
-			JTranslate( "All Bitmaps" ), 0, 0,
-			JTranslate( "Windows Bitmaps" ), 0, 0,
-			JTranslate( "JPEG Bitmaps" ), 0, 0,
-			JTranslate( "GIF Bitmaps" ), 0, 0,
-			JTranslate( "All Files" ), 0, 0, 0 );
-
 	*szDest = 0;
+
+	char szFilter[ 512 ];
+	JCallService( MS_UTILS_GETBITMAPFILTERSTRINGS, sizeof szFilter, ( LPARAM )szFilter );
 
 	char str[ MAX_PATH ]; str[0] = 0;
 	OPENFILENAME ofn = {0};
