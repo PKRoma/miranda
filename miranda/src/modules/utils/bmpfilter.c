@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <ocidl.h>
 #include <olectl.h>
 
+#include "m_png.h"
+
 static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 {
 	IPicture *pic;
@@ -37,15 +39,59 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 	char szFilename[MAX_PATH];
 	int filenameLen;
     
-    if (!CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szFile, (LPARAM)szFilename))
-        mir_snprintf(szFilename, sizeof(szFilename), "%s", szFile);
+	if (!CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szFile, (LPARAM)szFilename))
+		mir_snprintf(szFilename, sizeof(szFilename), "%s", szFile);
 	filenameLen=lstrlenA(szFilename);
 	if(filenameLen>4) {
-		if(!lstrcmpiA(szFilename+filenameLen-4,".bmp") || !lstrcmpiA(szFilename+filenameLen-4,".rle")) {
+		char* pszExt = szFilename+filenameLen-4;
+		if ( !lstrcmpiA( pszExt,".bmp" ) || !lstrcmpiA( pszExt, ".rle" )) {
 			//LoadImage can do this much faster
-			return (int)LoadImageA(GetModuleHandle(NULL),szFilename,IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
+			return (int)LoadImageA( GetModuleHandle(NULL), szFilename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
 		}
-	}
+
+		if ( !lstrcmpiA( pszExt, ".png" )) {
+			HANDLE hFile, hMap = NULL;
+			BYTE* ppMap = NULL;
+			long  cbFileSize = 0;
+			BITMAPINFOHEADER* pDib;
+			BYTE* pDibBits;
+
+			if ( !ServiceExists( MS_PNG2DIB )) {
+				MessageBox( NULL, TranslateT( "You need the png2dib plugin v. 0.1.3.x or later to process PNG images" ), TranslateT( "Error" ), MB_OK );
+				return (int)(HBITMAP)NULL;
+			}
+
+			if (( hFile = CreateFileA( szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE )
+				if (( hMap = CreateFileMapping( hFile, NULL, PAGE_READONLY, 0, 0, NULL )) != NULL )
+					if (( ppMap = ( BYTE* )MapViewOfFile( hMap, FILE_MAP_READ, 0, 0, 0 )) != NULL )
+						cbFileSize = GetFileSize( hFile, NULL );
+
+			if ( cbFileSize != 0 ) {
+				PNG2DIB param;
+				param.pSource = ppMap;
+				param.cbSourceSize = cbFileSize;
+				param.pResult = &pDib;
+				if ( CallService( MS_PNG2DIB, 0, ( LPARAM )&param ))
+					pDibBits = ( BYTE* )( pDib+1 );
+				else
+					cbFileSize = 0;
+			}
+
+			if ( ppMap != NULL )	UnmapViewOfFile( ppMap );
+			if ( hMap  != NULL )	CloseHandle( hMap );
+			if ( hFile != NULL ) CloseHandle( hFile );
+
+			if ( cbFileSize == 0 )
+				return (int)(HBITMAP)NULL;
+
+			{	HDC sDC = GetDC( NULL );
+				HBITMAP hBitmap = CreateDIBitmap( sDC, pDib, CBM_INIT, pDibBits, ( BITMAPINFO* )pDib, DIB_PAL_COLORS );
+				SelectObject( sDC, hBitmap );
+				DeleteDC( sDC );
+				GlobalFree( pDib );
+				return (int)hBitmap;
+	}	}	}
+
 	OleInitialize(NULL);
 	MultiByteToWideChar(CP_ACP,0,szFilename,-1,pszwFilename,MAX_PATH);
 	if(S_OK!=OleLoadPicturePath(pszwFilename,NULL,0,0,&IID_IPicture,(PVOID*)&pic)) {
@@ -87,9 +133,9 @@ static int BmpFilterGetStrings(WPARAM wParam,LPARAM lParam)
 	char *filter=(char*)lParam,*pfilter;
 
 	lstrcpynA(filter,Translate("All Bitmaps"),bytesLeft); bytesLeft-=lstrlenA(filter);
-	strncat(filter," (*.bmp;*.jpg;*.gif)",bytesLeft);
+	strncat(filter," (*.bmp;*.jpg;*.gif;*.png)",bytesLeft);
 	pfilter=filter+lstrlenA(filter)+1; bytesLeft=wParam-(pfilter-filter);
-	lstrcpynA(pfilter,"*.BMP;*.RLE;*.JPG;*.JPEG;*.GIF",bytesLeft);
+	lstrcpynA(pfilter,"*.BMP;*.RLE;*.JPG;*.JPEG;*.GIF;*.PNG",bytesLeft);
 	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
 
 	lstrcpynA(pfilter,Translate("Windows Bitmaps"),bytesLeft); bytesLeft-=lstrlenA(pfilter);
@@ -108,6 +154,12 @@ static int BmpFilterGetStrings(WPARAM wParam,LPARAM lParam)
 	strncat(pfilter," (*.gif)",bytesLeft);
 	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
 	lstrcpynA(pfilter,"*.GIF",bytesLeft);
+	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+
+	lstrcpynA(pfilter,Translate("PNG Bitmaps"),bytesLeft); bytesLeft-=lstrlenA(pfilter);
+	strncat(pfilter," (*.png)",bytesLeft);
+	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	lstrcpynA(pfilter,"*.PNG",bytesLeft);
 	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
 
 	lstrcpynA(pfilter,Translate("All Files"),bytesLeft); bytesLeft-=lstrlenA(pfilter);
