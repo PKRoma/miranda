@@ -195,7 +195,6 @@ void     __cdecl     MSN_ShowError( const char* msgtext, ... );
 char*		__stdcall   MSN_Translate( const char* str );
 
 int		__stdcall   MSN_EnterBitmapFileName( char* szDest );
-HBITMAP	__stdcall   MSN_LoadPictureToBitmap( const char* pszFileName );
 int      __stdcall   MSN_SaveBitmapAsAvatar( HBITMAP hBitmap );
 HBITMAP  __stdcall   MSN_StretchBitmap( HBITMAP hBitmap );
 

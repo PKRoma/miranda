@@ -952,7 +952,7 @@ static int MsnSetApparentMode( WPARAM wParam, LPARAM lParam )
 
 static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 {
-	HBITMAP hBitmap = MSN_LoadPictureToBitmap(( const char* )lParam );
+	HBITMAP hBitmap = ( HBITMAP )MSN_CallService( MS_UTILS_LOADBITMAP, 0, lParam );
 	if ( hBitmap == NULL )
 		return 1;
 

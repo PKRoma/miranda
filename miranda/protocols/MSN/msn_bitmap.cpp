@@ -178,21 +178,14 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MSN_LoadPictureToBitmap - retrieves a bitmap handle for any kind of pictures
+// MSN_EnterBitmapFileName - enters a bitmap filename
 
 int __stdcall MSN_EnterBitmapFileName( char* szDest )
 {
-	char szFilter[ 512 ];
-	mir_snprintf( szFilter, sizeof( szFilter ),
-		"%s%c*.BMP;*.RLE;*.JPG;*.JPEG;*.GIF;*.PNG%c%s%c*.BMP;*.RLE%c%s%c*.JPG;*.JPEG%c%s%c*.GIF%c%s%c*.PNG%c%s%c*%c%c0",
-			MSN_Translate( "All Bitmaps" ), 0, 0,
-			MSN_Translate( "Windows Bitmaps" ), 0, 0,
-			MSN_Translate( "JPEG Bitmaps" ), 0, 0,
-			MSN_Translate( "GIF Bitmaps" ), 0, 0,
-			MSN_Translate( "PNG Bitmaps" ), 0, 0,
-			MSN_Translate( "All Files" ), 0, 0, 0 );
-
 	*szDest = 0;
+
+	char szFilter[ 512 ];
+	MSN_CallService( MS_UTILS_GETBITMAPFILTERSTRINGS, sizeof szFilter, ( LPARAM )szFilter );
 
 	char str[ MAX_PATH ]; str[0] = 0;
 	OPENFILENAME ofn = {0};
@@ -207,49 +200,4 @@ int __stdcall MSN_EnterBitmapFileName( char* szDest )
 		return 1;
 
 	return ERROR_SUCCESS;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MSN_LoadPictureToBitmap - retrieves a bitmap handle for any kind of pictures
-
-HBITMAP __stdcall MSN_LoadPictureToBitmap( const char* pszFileName )
-{
-	if ( memicmp( pszFileName + strlen(pszFileName)-4, ".PNG", 4 ) != 0 )
-		return ( HBITMAP )MSN_CallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )pszFileName );
-
-	if ( !MSN_LoadPngModule())
-		return NULL;
-
-	HANDLE hFile = NULL, hMap = NULL;
-	BYTE* ppMap = NULL;
-	long  cbFileSize = 0;
-
-	if (( hFile = CreateFile( pszFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE )
-		if (( hMap = CreateFileMapping( hFile, NULL, PAGE_READONLY, 0, 0, NULL )) != NULL )
-			if (( ppMap = ( BYTE* )::MapViewOfFile( hMap, FILE_MAP_READ, 0, 0, 0 )) != NULL )
-				cbFileSize = GetFileSize( hFile, NULL );
-
-	BITMAPINFOHEADER* pDib;
-	BYTE* pDibBits;
-
-	if ( cbFileSize != 0 ) {
-		if ( png2dibConvertor(( char* )ppMap, cbFileSize, &pDib ))
-			pDibBits = ( BYTE* )( pDib+1 );
-		else
-			cbFileSize = 0;
-	}
-
-	if ( ppMap != NULL )	UnmapViewOfFile( ppMap );
-	if ( hMap  != NULL )	CloseHandle( hMap );
-	if ( hFile != NULL ) CloseHandle( hFile );
-
-	if ( cbFileSize == 0 )
-		return NULL;
-
-	HDC sDC = GetDC( NULL );
-	HBITMAP hBitmap = CreateDIBitmap( sDC, pDib, CBM_INIT, pDibBits, ( BITMAPINFO* )pDib, DIB_PAL_COLORS );
-	SelectObject( sDC, hBitmap );
-	DeleteDC( sDC );
-	GlobalFree( pDib );
-	return hBitmap;
 }

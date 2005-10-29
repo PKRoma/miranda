@@ -205,7 +205,7 @@ static bool sttSetAvatar( HWND hwndDlg )
 	if ( MSN_EnterBitmapFileName( szFileName ) != ERROR_SUCCESS )
 		return false;
 
-	HBITMAP hBitmap = MSN_LoadPictureToBitmap( szFileName );
+	HBITMAP hBitmap = ( HBITMAP )MSN_CallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szFileName );
 	if ( hBitmap == NULL )
 		return false;
 
@@ -238,7 +238,7 @@ BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 			if ( MSN_LoadPngModule() ) {
 				char tBuffer[ MAX_PATH ];
 				MSN_GetAvatarFileName( NULL, tBuffer, sizeof tBuffer );
-				hAvatar = MSN_LoadPictureToBitmap( tBuffer );
+				hAvatar = ( HBITMAP )MSN_CallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )tBuffer );
 				if ( hAvatar != NULL )
 		         SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)hAvatar );
 			}	
