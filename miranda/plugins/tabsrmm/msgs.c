@@ -1128,9 +1128,13 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
 
 int LoadSendRecvMessageModule(void)
 {
-    const time_t now = time(NULL);
-    struct tm gmt = *gmtime(&now);
-    time_t gmt_time = mktime(&gmt);
+    _tzset();
+    {
+        const time_t now = time(NULL);
+        struct tm gmt = *gmtime(&now);
+        time_t gmt_time = mktime(&gmt);
+        myGlobals.local_gmt_diff = (int)difftime(now, gmt_time);
+    }
 
     if (LoadLibraryA("riched20.dll") == NULL) {
         if (IDYES !=
@@ -1181,8 +1185,6 @@ int LoadSendRecvMessageModule(void)
     ReloadTabConfig();
     NEN_ReadOptions(&nen_options);
 
-    myGlobals.local_gmt_diff = (int)difftime(now, gmt_time);
-    
     myGlobals.g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) myGlobals.g_hMenuContext, 0);   
     
