@@ -1128,12 +1128,38 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
 
 int LoadSendRecvMessageModule(void)
 {
-    _tzset();
+    int nOffset = 0;
     {
+        TIME_ZONE_INFORMATION tzinfo;
+        DWORD dwResult;
+
+
+        dwResult = GetTimeZoneInformation(&tzinfo);
+
+        switch(dwResult)
+        {
+
+        case TIME_ZONE_ID_STANDARD:
+          nOffset = -(tzinfo.Bias + tzinfo.StandardBias) * 60;
+          break;
+
+        case TIME_ZONE_ID_DAYLIGHT:
+          nOffset = -(tzinfo.Bias + tzinfo.DaylightBias) * 60;
+          break;
+
+        case TIME_ZONE_ID_UNKNOWN:
+        case TIME_ZONE_ID_INVALID:
+        default:
+          nOffset = 0;
+          break;
+
+        }
+
+/*
         const time_t now = time(NULL);
         struct tm gmt = *gmtime(&now);
         time_t gmt_time = mktime(&gmt);
-        myGlobals.local_gmt_diff = (int)difftime(now, gmt_time);
+        myGlobals.local_gmt_diff = (int)difftime(now, gmt_time);*/
     }
 
     if (LoadLibraryA("riched20.dll") == NULL) {
@@ -1207,6 +1233,7 @@ int LoadSendRecvMessageModule(void)
     if(!(myGlobals.m_GlobalContainerFlags & CNT_NEWCONTAINERFLAGS))
         myGlobals.m_GlobalContainerFlags = CNT_FLAGS_DEFAULT;
     myGlobals.m_GlobalContainerTrans = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containertrans", CNT_TRANS_DEFAULT);
+    myGlobals.local_gmt_diff = nOffset;
     return 0;
 }
 
