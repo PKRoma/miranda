@@ -175,7 +175,7 @@ BOOL __declspec(dllexport) mempng2dib(
 	// row_bytes is the width x number of channels
 	ulRowBytes = png_get_rowbytes(png_ptr, info_ptr);
 	ulChannels = png_get_channels(png_ptr, info_ptr);
-   wDIRowBytes = (WORD) (( 3 * iWidth + 3L) >> 2) << 2;
+    wDIRowBytes = (WORD) (( ulChannels * iWidth + 3L) >> 2) << 2;
 
 	// now we can allocate memory to store the image
 	{	DWORD cbMemSize = sizeof( BITMAPINFOHEADER );
@@ -193,9 +193,9 @@ BOOL __declspec(dllexport) mempng2dib(
 		pbmih->biWidth = iWidth;
 		pbmih->biHeight = iHeight;
 		pbmih->biPlanes = 1;
-		pbmih->biBitCount = 24;
+		pbmih->biBitCount = ulChannels * 8;
 		pbmih->biCompression = 0;
-		pbmih->biSizeImage = iWidth * iHeight * 3;
+		pbmih->biSizeImage = iWidth * iHeight * ulChannels;
 
 		pbImageData += sizeof( BITMAPINFOHEADER );
 	}
@@ -215,20 +215,22 @@ BOOL __declspec(dllexport) mempng2dib(
 	for ( i = iHeight-1; i >= 0; i-- )
 	{
 		int j;
+        png_byte a;
 		png_bytep s = ppbRowPointers[i];
 		BYTE* dest = pbImageData; pbImageData += wDIRowBytes;
-
+        
 		for ( j = 0; j < iWidth; j++ ) {
 			png_byte r = *s++;
 			png_byte g = *s++;
 			png_byte b = *s++;
-
 			if ( ulChannels == 4 )
-				s++;
+				a = *s++;
 
 			*dest++ = b;
 			*dest++ = g;
 			*dest++ = r;
+            if ( ulChannels == 4 )
+                *dest++ = a;
 	}	}
 
 	png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
