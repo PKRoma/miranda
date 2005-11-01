@@ -70,6 +70,10 @@ cd ..\mwclist
 nmake /f mwclist.mak CFG="mwclist - Win32 Release"
 if errorlevel 1 goto :Error
 
+cd ..\png2dib
+nmake /f png2dib.mak CFG="png2dib - Win32 Release"
+if errorlevel 1 goto :Error
+
 cd ..\srmm
 nmake /f srmm.mak CFG="srmm - Win32 Release"
 if errorlevel 1 goto :Error

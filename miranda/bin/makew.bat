@@ -54,20 +54,8 @@ cd ..\clist
 nmake /f clist.mak CFG="clist - Win32 Release Unicode"
 if errorlevel 1 goto :Error
 
-cd ..\db3x
-nmake /f db3x.mak CFG="db3x - Win32 Release"
-if errorlevel 1 goto :Error
-
 cd ..\help
-nmake /f help.mak CFG="help - Win32 Release"
-if errorlevel 1 goto :Error
-
-cd ..\import
-nmake /f import.mak CFG="import - Win32 Release"
-if errorlevel 1 goto :Error
-
-cd ..\mwclist
-nmake /f mwclist.mak CFG="mwclist - Win32 Release"
+nmake /f help.mak CFG="help - Win32 Release Unicode"
 if errorlevel 1 goto :Error
 
 cd ..\srmm
@@ -81,13 +69,13 @@ rem ---------------------------------------------------------------------------
 cd "..\..\bin\Release Unicode"
 copy ..\release\dbtool.exe
 copy ..\release\Plugins\AIM.dll      Plugins
-copy ..\release\Plugins\clist_mw.dll Plugins
 copy ..\release\Plugins\dbx_3x.dll   Plugins
 copy ..\release\Plugins\ICQ.dll      Plugins
 copy ..\release\Plugins\import.dll   Plugins
 copy ..\release\Plugins\IRC.dll      Plugins
 copy ..\release\Plugins\jabber.dll   Plugins
 copy ..\release\Plugins\msn.dll      Plugins
+copy ..\release\Plugins\png2dib.dll  Plugins
 copy ..\release\Plugins\Yahoo.dll    Plugins
 
 for /F "tokens=1,2 delims= " %%i in (..\build.no) do call :Pack %%i %%j
