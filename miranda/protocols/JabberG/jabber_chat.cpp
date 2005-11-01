@@ -530,9 +530,11 @@ static void sttSendPrivateMessage( JABBER_LIST_ITEM* item, const char* nick )
 {
 	char szFullJid[ 256 ];
 	mir_snprintf( szFullJid, sizeof szFullJid, "%s/%s", item->jid, nick );
-	HANDLE hContact = JabberDBCreateContact( szFullJid, NULL, TRUE, FALSE );
+	HANDLE hContact = JabberDBCreateContact( szFullJid, NULL, FALSE, FALSE );
 	if ( hContact != NULL ) {
-		DBWriteContactSettingByte( hContact, "CList", "NotInList", 1 );
+		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
+		JSetStringUtf( hContact, "Nick", nick );
+		DBWriteContactSettingDword( hContact, "Ignore", "Mask1", 0 );
 		JCallService( MS_MSG_SENDMESSAGE, ( WPARAM )hContact, 0 );
 }	}
 

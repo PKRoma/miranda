@@ -129,7 +129,11 @@ HANDLE __stdcall JabberHContactFromJID( const char* jid )
 				result = JGetStringUtf( hContact, "ChatRoomID", &dbv );
 
 			if ( !result ) {
-				int result = JabberCompareJids( jid, dbv.pszVal );
+				int result;
+				if ( JGetByte( hContact, "ChatRoom", 0 ))
+					result = JabberUtfCompareI( jid, dbv.pszVal );
+				else
+					result = JabberCompareJids( jid, dbv.pszVal );
 				JFreeVariant( &dbv );
 				if ( !result ) {
 					hContactMatched = hContact;
