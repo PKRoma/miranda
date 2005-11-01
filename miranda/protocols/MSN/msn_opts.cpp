@@ -86,6 +86,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			EnableWindow( wnd, FALSE );
 
 		CheckDlgButton( hwndDlg, IDC_DISABLE_MAIN_MENU, MSN_GetByte( "DisableSetNickname", 0 ));
+		CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS,    MSN_GetByte( "EnableAvatars", 0 ));
 		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,      MSN_GetByte( "SendFontInfo", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USE_OWN_NICKNAME,  MSN_GetByte( "NeverUpdateNickname", 0 ));
 		CheckDlgButton( hwndDlg, IDC_AWAY_AS_BRB,       MSN_GetByte( "AwayAsBrb", 0 ));
@@ -425,10 +426,10 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					reconnectRequired = true;
 			}
 
-			MSN_SetByte( "UseIeProxy",  ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY  ));
-			MSN_SetByte( "KeepAlive",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_KEEPALIVE   ));
-			MSN_SetByte( "AutoGetHost", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOGETHOST ));
-			MSN_SetByte( "SlowSend",    ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SLOWSEND    ));
+			MSN_SetByte( "UseIeProxy",    ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY    ));
+			MSN_SetByte( "KeepAlive",     ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_KEEPALIVE     ));
+			MSN_SetByte( "AutoGetHost",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOGETHOST   ));
+			MSN_SetByte( "SlowSend",      ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SLOWSEND      ));
 
 			GetDlgItemText( hwndDlg, IDC_YOURHOST, str, sizeof( str ));
 			MSN_SetString( NULL, "YourHost", str );
