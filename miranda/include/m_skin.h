@@ -97,7 +97,7 @@ __inline static int SkinAddNewSoundEx(const char *name,const char *section,const
 	ZeroMemory(&ssd,sizeof(ssd));
 	ssd.cbSize=sizeof(ssd);
 	ssd.pszName=name;
-    ssd.pszSection=section;
+	ssd.pszSection=section;
 	ssd.pszDescription=description;
 	return CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
 }
@@ -108,7 +108,7 @@ __inline static int SkinAddNewSound(const char *name,const char *description,con
 	ZeroMemory(&ssd,sizeof(ssd));
 	ssd.cbSize=sizeof(ssd);
 	ssd.pszName=name;
-    ssd.pszDescription=description;
+	ssd.pszDescription=description;
 	ssd.pszDefaultFile=defaultFile;
 	return CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
 }

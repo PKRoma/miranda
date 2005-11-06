@@ -62,11 +62,6 @@ typedef struct {
 #define LPTDF_NOIGNOREEDIT   1     //translate all edit controls. By default
                    //non-read-only edit controls are not translated
 #define LPTDF_NOTITLE        2     //do not translate the title of the dialog
-#if defined( _UNICODE )
-	#define LPTDF_UNICODE     LANG_UNICODE
-#else
-	#define LPTDF_UNICODE     0
-#endif
 
 #define MS_LANGPACK_TRANSLATEDIALOG  "LangPack/TranslateDialog"
 __inline static int TranslateDialogDefault(HWND hwndDlg)
@@ -76,7 +71,7 @@ __inline static int TranslateDialogDefault(HWND hwndDlg)
 	lptd.flags=0;
 	lptd.hwndDlg=hwndDlg;
 	lptd.ignoreControls=NULL;
-	return CallService(MS_LANGPACK_TRANSLATEDIALOG,LPTDF_UNICODE,(LPARAM)&lptd);
+	return CallService(MS_LANGPACK_TRANSLATEDIALOG,0,(LPARAM)&lptd);
 }
 
 //translates a menu into the user's local language	  v0.1.1.0+
@@ -85,6 +80,10 @@ __inline static int TranslateDialogDefault(HWND hwndDlg)
 //returns 0 on success, nonzero on failure
 #define MS_LANGPACK_TRANSLATEMENU    "LangPack/TranslateMenu"
 
+//returns the codepage used in the language pack 	  v0.4.3.0+
+//wParam=0
+//lParam=0
+//returns the codepage stated in the langpack, or CP_ACP if no langpack installed
+#define MS_LANGPACK_GETCODEPAGE      "LangPack/GetCodePage"
+
 #endif // M_LANGPACK_H__
-
-

@@ -49,17 +49,21 @@ Prior to v0.1.2.1 the options dialog would resize to fit the largest page, but
 since then it is fixed in size. The largest page that fits neatly is 314x240
 DLUs.
 */
-#define OPTIONSDIALOGPAGE_V0100_SIZE   0x18
-#define OPTIONSDIALOGPAGE_V0120_SIZE   0x28
 typedef struct {
 	int cbSize;
 	int position;        //a position number, lower numbers are topmost
-	char *pszTitle;
+	union {
+		char* pszTitle;
+		TCHAR* ptszTitle;
+	};
 	DLGPROC pfnDlgProc;
 	char *pszTemplate;
 	HINSTANCE hInstance;
 	HICON hIcon;		 //v0.1.0.1+
-	char *pszGroup;		 //v0.1.0.1+
+	union {
+		char* pszGroup;		 //v0.1.0.1+
+		TCHAR* ptszGroup;		 //v0.1.0.1+
+	};
 	int groupPosition;	 //v0.1.0.1+
 	HICON hGroupIcon;	 //v0.1.0.1+
 	DWORD flags;         //v0.1.2.1+
@@ -68,9 +72,16 @@ typedef struct {
 	UINT *expertOnlyControls;
 	int nExpertOnlyControls;    //v0.1.2.1+  these controls will be hidden in simple mode. Array must remain valid for duration of dlg.
 } OPTIONSDIALOGPAGE;
-#define ODPF_SIMPLEONLY   1	  //page is only shown when in simple mode
-#define ODPF_EXPERTONLY   2	  //         "                 expert mode
-#define ODPF_BOLDGROUPS   4   //give group box titles a bold font
+#define ODPF_SIMPLEONLY   1	// page is only shown when in simple mode
+#define ODPF_EXPERTONLY   2	//         "                 expert mode
+#define ODPF_BOLDGROUPS   4   // give group box titles a bold font
+#define ODPF_UNICODE      8   // string fields in OPTIONSDIALOGPAGE are WCHAR*
+
+#if defined( _UNICODE )
+	#define ODPF_TCHAR     ODPF_UNICODE
+#else
+	#define ODPF_TCHAR     0
+#endif
 
 #define PSN_EXPERTCHANGED 2    //sent to pages via WM_NOTIFY when the expert checkbox is clicked. lParam=new state
 #define PSM_ISEXPERT      (WM_USER+101)   //returns true/false

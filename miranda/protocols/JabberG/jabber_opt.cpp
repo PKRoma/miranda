@@ -555,7 +555,7 @@ int JabberOptInit( WPARAM wParam, LPARAM lParam )
 
 	odp.cbSize = sizeof( odp );
 	odp.hInstance = hInst;
-	odp.pszGroup = JTranslate( "Network" );
+	odp.pszGroup = "Network";
 	odp.pszTemplate = MAKEINTRESOURCE( IDD_OPT_JABBER );
 	odp.pszTitle = jabberModuleName;
 	odp.flags = ODPF_BOLDGROUPS;

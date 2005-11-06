@@ -143,7 +143,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			case IDC_MANAGEGROUPS:
 				if ( IsDlgButtonChecked( hwndDlg, IDC_MANAGEGROUPS ))
-					if ( IDYES == MessageBox( hwndDlg, 
+					if ( IDYES == MessageBox( hwndDlg,
 											MSN_Translate( "Server groups import may change your contact list layout after next login. "
 																"Do you want to upload your groups to the server?" ),
 											MSN_Translate( "MSN Protocol" ), MB_YESNOCANCEL ))
@@ -596,7 +596,7 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 	odp.hInstance					= hInst;
 	odp.pszTemplate				= MAKEINTRESOURCE(IDD_OPT_MSN);
 	odp.pszTitle					= msnProtocolName;
-	odp.pszGroup					= MSN_Translate("Network");
+	odp.pszGroup					= "Network";
 	odp.flags						= ODPF_BOLDGROUPS;
 	odp.nIDBottomSimpleControl = IDC_STMSNGROUP;
 	odp.pfnDlgProc					= DlgProcMsnOpts;
@@ -608,7 +608,7 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 	odp.position		= -790000001;
 	odp.pszTemplate	= MAKEINTRESOURCE(IDD_OPT_MSN_CONN);
 	odp.pszTitle		= szTitle;
-	odp.pszGroup		= MSN_Translate("Network");
+	odp.pszGroup		= "Network";
 	odp.flags         = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
 	odp.pfnDlgProc		= DlgProcMsnConnOpts;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
@@ -618,7 +618,7 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 	odp.position		= -790000002;
 	odp.pszTemplate	= MAKEINTRESOURCE(IDD_LISTSMGR);
 	odp.pszTitle		= szTitle;
-	odp.pszGroup		= MSN_Translate("Network");
+	odp.pszGroup		= "Network";
 	odp.flags         = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
 	odp.pfnDlgProc		= DlgProcMsnServLists;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
@@ -629,8 +629,8 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 		odp.position		= 100000000;
 		odp.hInstance		= hInst;
 		odp.pszTemplate	= MAKEINTRESOURCE( IDD_HOTMAIL_OPT_POPUP );
-		odp.pszTitle		= MSN_Translate( msnProtocolName );
-		odp.pszGroup		= MSN_Translate("Popups");
+		odp.pszTitle		= msnProtocolName;
+		odp.pszGroup		= "Popups";
 		odp.groupPosition	= 910000000;
 		odp.flags			= ODPF_BOLDGROUPS;
 		odp.pfnDlgProc		= DlgProcHotmailPopUpOpts;

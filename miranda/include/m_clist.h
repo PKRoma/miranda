@@ -70,14 +70,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //cause the position numbers to be placed in brackets after the menu items
 typedef struct {
 	int cbSize;			//size in bytes of this structure
-	char *pszName;		//text of the menu item
+	union {
+      char*  pszName;      //text of the menu item
+		TCHAR* ptszName;     //Unicode text of the menu item
+	};
 	DWORD flags;		//flags
 	int position;		//approx position on the menu. lower numbers go nearer the top
 	HICON hIcon;		//icon to put by the item. If this was not loaded from
 	                    //a resource, you can delete it straight after the call
-	char *pszService;	//name of service to call when the item gets selected
-	char *pszPopupName;	//name of the popup menu that this item is on. If this
-						//is NULL the item is on the root of the menu
+	char* pszService;	//name of service to call when the item gets selected
+	union {
+		char* pszPopupName;  //name of the popup menu that this item is on. If this
+									//is NULL the item is on the root of the menu
+		TCHAR* ptszPopupName;
+	};
+
 	int popupPosition;	//position of the popup menu on the root menu. Ignored
 						//if pszPopupName is NULL or the popup menu already
 						//existed
