@@ -24,6 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
+void Utf8Decode( char* str, wchar_t** ucs2 );
+
+
 #define SVS_NORMAL        0
 #define SVS_GENDER        1
 #define SVS_ZEROISUNSPEC  2
@@ -124,7 +127,9 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 	else
 		SetDlgItemTextA(hwndDlg, idCtrl, pstr);
 
+#if defined( _UNICODE )
 LBL_Exit:
+#endif
 	EnableWindow(GetDlgItem(hwndDlg, idCtrl), !unspecified);
 	DBFreeVariant(&dbv);
 }

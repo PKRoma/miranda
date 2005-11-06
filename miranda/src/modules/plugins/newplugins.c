@@ -411,7 +411,7 @@ int LoadNewPluginsModuleInfos(void)
 
 static void SetPluginOnWhiteList(char * pluginname, int allow)
 {
-	DBWriteContactSettingByte(NULL, PLUGINDISABLELIST, pluginname, allow ? 0 : 1);
+	DBWriteContactSettingByte(NULL, PLUGINDISABLELIST, pluginname, (BYTE)(allow ? 0 : 1));
 }
 
 // returns 1 if the plugin should be enabled within this profile, filename is always lower case

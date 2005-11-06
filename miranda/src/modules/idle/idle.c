@@ -201,7 +201,7 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
             for (j = 0; j<sizeof(aa_Status)/sizeof(aa_Status[0]) ;j++) {
 				SendDlgItemMessageA(hwndDlg, IDC_AASTATUS, CB_ADDSTRING, 0, (LPARAM)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)aa_Status[j], 0) );
 			}
-            j = IdleGetStatusIndex(DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0));
+            j = IdleGetStatusIndex((WORD)(DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0)));
             SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_SETCURSEL, j, 0);
 			SendMessage(hwndDlg, WM_USER+2, 0, 0);
 			return TRUE;
@@ -249,18 +249,18 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			if ( hdr && hdr->code == PSN_APPLY ) {
 				int method = IsDlgButtonChecked(hwndDlg, IDC_IDLEONWINDOWS) == BST_CHECKED;
 				int mins = SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_GETPOS, 0, 0);
-				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLETIME1ST, HIWORD(mins) == 0 ? LOWORD(mins) : 10 );
-				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_USERIDLECHECK, IsDlgButtonChecked(hwndDlg, IDC_IDLESHORT) == BST_CHECKED);
-				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEMETHOD, method ? 0 : 1);
-				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONSAVER, IsDlgButtonChecked(hwndDlg, IDC_SCREENSAVER) == BST_CHECKED);
-				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONLOCK, IsDlgButtonChecked(hwndDlg, IDC_LOCKED) == BST_CHECKED);
-				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEPRIVATE, IsDlgButtonChecked(hwndDlg, IDC_IDLEPRIVATE) == BST_CHECKED);
-                DBWriteContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0);
-				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLESTATUSLOCK, IsDlgButtonChecked(hwndDlg, IDC_IDLESTATUSLOCK)==BST_CHECKED?1:0);
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLETIME1ST, (BYTE)(HIWORD(mins) == 0 ? LOWORD(mins) : 10));
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_USERIDLECHECK, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_IDLESHORT) == BST_CHECKED));
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEMETHOD, (BYTE)(method ? 0 : 1));
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONSAVER, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_SCREENSAVER) == BST_CHECKED));
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONLOCK, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_LOCKED) == BST_CHECKED));
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEPRIVATE, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_IDLEPRIVATE) == BST_CHECKED));
+                DBWriteContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0));
+				DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLESTATUSLOCK, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_IDLESTATUSLOCK)==BST_CHECKED?1:0));
 				{
 					int curSel = SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_GETCURSEL, 0, 0);
 					if ( curSel != CB_ERR ) {
-						DBWriteContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, aa_Status[curSel]);
+						DBWriteContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, (WORD)(aa_Status[curSel]));
 					}
 				}
 				// destroy any current idle and reset settings.
