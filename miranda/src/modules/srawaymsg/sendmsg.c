@@ -374,18 +374,16 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 static int AwayMsgOptInitialise(WPARAM wParam,LPARAM lParam)
 {
-	OPTIONSDIALOGPAGE odp;
-
-	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize=sizeof(odp);
-	odp.position=870000000;
-	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_AWAYMSG);
-	odp.pszTitle=Translate("Status Messages");
-	odp.pszGroup=Translate("Status");
-	odp.pfnDlgProc=DlgProcAwayMsgOpts;
-	odp.flags=ODPF_BOLDGROUPS;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	OPTIONSDIALOGPAGE odp = { 0 };
+	odp.cbSize = sizeof(odp);
+	odp.position = 870000000;
+	odp.hInstance = GetModuleHandle(NULL);
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_AWAYMSG);
+	odp.pszTitle = "Status Messages";
+	odp.pszGroup = "Status";
+	odp.pfnDlgProc = DlgProcAwayMsgOpts;
+	odp.flags = ODPF_BOLDGROUPS;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;
 }
 

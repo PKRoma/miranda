@@ -212,17 +212,16 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 int FileOptInitialise(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp={0};
-
-	odp.cbSize=sizeof(odp);
-	odp.position=900000000;
-	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_FILETRANSFER);
-	odp.pszTitle=Translate("File Transfers");
-	odp.pszGroup=Translate("Events");
-	odp.pfnDlgProc=DlgProcFileOpts;
-	odp.flags=ODPF_BOLDGROUPS;
-	odp.nIDBottomSimpleControl=IDC_VIRUSSCANNERGROUP;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	odp.cbSize = sizeof(odp);
+	odp.position = 900000000;
+	odp.hInstance = GetModuleHandle(NULL);
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_FILETRANSFER);
+	odp.pszTitle = "File Transfers";
+	odp.pszGroup = "Events";
+	odp.pfnDlgProc = DlgProcFileOpts;
+	odp.flags = ODPF_BOLDGROUPS;
+	odp.nIDBottomSimpleControl = IDC_VIRUSSCANNERGROUP;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;
 }
 

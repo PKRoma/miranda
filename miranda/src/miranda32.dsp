@@ -347,6 +347,10 @@ SOURCE=.\core\miranda.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\core\miranda.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\core\modules.c
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"

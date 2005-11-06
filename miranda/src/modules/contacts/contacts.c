@@ -20,7 +20,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern HWND hwndContactTree;
 
 #define NAMEORDERCOUNT 8
-static char *nameOrderDescr[NAMEORDERCOUNT]={"My custom name (not moveable)","Nick","FirstName","E-mail","LastName","Username","FirstName LastName","'(Unknown Contact)' (not moveable)"};
+static TCHAR* nameOrderDescr[ NAMEORDERCOUNT ] = 
+{
+	_T( "My custom name (not moveable)" ), 
+	_T( "Nick" ),
+	_T( "FirstName" ),
+	_T( "E-mail" ),
+	_T( "LastName" ),
+	_T( "Username" ),
+	_T( "FirstName LastName" ),
+	_T( "'(Unknown Contact)' (not moveable)" ) 
+};
+
 BYTE nameOrder[NAMEORDERCOUNT];
 
 static int GetDatabaseString( CONTACTINFO *ci, const char* setting, DBVARIANT* dbv )
@@ -315,17 +326,16 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 			dat->dragging=0;
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_NAMEORDER),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_NAMEORDER),GWL_STYLE)|TVS_NOHSCROLL);
-			{	TVINSERTSTRUCTA tvis;
+			{	TVINSERTSTRUCT tvis;
 				int i;
-				tvis.hParent=NULL;
-				tvis.hInsertAfter=TVI_LAST;
-				tvis.item.mask=TVIF_TEXT|TVIF_PARAM;
+				tvis.hParent = NULL;
+				tvis.hInsertAfter = TVI_LAST;
+				tvis.item.mask = TVIF_TEXT|TVIF_PARAM;
 				for(i=0; i < SIZEOF(nameOrderDescr); i++ ) {
-					tvis.item.lParam=nameOrder[i];
-					tvis.item.pszText=Translate(nameOrderDescr[nameOrder[i]]);
-					SendMessageA( GetDlgItem(hwndDlg,IDC_NAMEORDER), TVM_INSERTITEMA, 0, (LPARAM)&tvis );
-				}
-			}
+					tvis.item.lParam = nameOrder[i];
+					tvis.item.pszText = TranslateTS( nameOrderDescr[ nameOrder[i]] );
+					TreeView_InsertItem( GetDlgItem(hwndDlg,IDC_NAMEORDER), &tvis );
+			}	}
 			return TRUE;
 		}
 		case WM_NOTIFY:
@@ -335,18 +345,18 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					{	DBCONTACTWRITESETTING cws;
 						TVITEM tvi;
 						int i;
-						cws.szModule="Contact";
-						cws.szSetting="NameOrder";
-						cws.value.type=DBVT_BLOB;
+						cws.szModule = "Contact";
+						cws.szSetting = "NameOrder";
+						cws.value.type = DBVT_BLOB;
 						cws.value.cpbVal = SIZEOF(nameOrderDescr);
-						cws.value.pbVal=nameOrder;
-						tvi.hItem=TreeView_GetRoot(GetDlgItem(hwndDlg,IDC_NAMEORDER));
+						cws.value.pbVal = nameOrder;
+						tvi.hItem = TreeView_GetRoot(GetDlgItem(hwndDlg,IDC_NAMEORDER));
 						i=0;
-						while(tvi.hItem!=NULL) {
-							tvi.mask=TVIF_PARAM|TVIF_HANDLE;
-							TreeView_GetItem(GetDlgItem(hwndDlg,IDC_NAMEORDER),&tvi);
-							nameOrder[i++]=(BYTE)tvi.lParam;
-							tvi.hItem=TreeView_GetNextSibling(GetDlgItem(hwndDlg,IDC_NAMEORDER),tvi.hItem);
+						while( tvi.hItem != NULL ) {
+							tvi.mask = TVIF_PARAM | TVIF_HANDLE;
+							TreeView_GetItem( GetDlgItem(hwndDlg,IDC_NAMEORDER), &tvi );
+							nameOrder[i++] = (BYTE)tvi.lParam;
+							tvi.hItem = TreeView_GetNextSibling(GetDlgItem(hwndDlg,IDC_NAMEORDER),tvi.hItem);
 						}
 						CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)(HANDLE)NULL,(LPARAM)&cws);
 						CallService(MS_CLIST_INVALIDATEDISPLAYNAME,(WPARAM)INVALID_HANDLE_VALUE,0);
@@ -427,19 +437,18 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
-static int ContactOptInit(WPARAM wParam,LPARAM lParam) {
-	OPTIONSDIALOGPAGE odp;
-
-	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize=sizeof(odp);
-	odp.position=-1000000000;
-	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CONTACT);
-	odp.pszGroup=Translate("Contact List");
-	odp.pszTitle=Translate("Contact Display");
-	odp.pfnDlgProc=ContactOpts;
-	odp.flags=ODPF_BOLDGROUPS;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+static int ContactOptInit(WPARAM wParam,LPARAM lParam)
+{
+	OPTIONSDIALOGPAGE odp = { 0 };
+	odp.cbSize = sizeof(odp);
+	odp.position = -1000000000;
+	odp.hInstance = GetModuleHandle(NULL);
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CONTACT);
+	odp.pszGroup = "Contact List";
+	odp.pszTitle = "Contact Display";
+	odp.pfnDlgProc = ContactOpts;
+	odp.flags = ODPF_BOLDGROUPS;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;
 }
 

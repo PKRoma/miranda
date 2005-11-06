@@ -497,16 +497,18 @@ int NetlibOptInitialise(WPARAM wParam,LPARAM lParam)
 	for(i=0,optionsCount=0;i<netlibUserCount;i++)
 		if(!(netlibUser[i]->user.flags&NUF_NOOPTIONS)) optionsCount++;
 	LeaveCriticalSection(&csNetlibUser);
-	if(optionsCount==0) return 0;
-	odp.cbSize=sizeof(odp);
-	odp.position=900000000;
-	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_NETLIB);
-	odp.pszTitle=Translate("Network");
-	odp.pfnDlgProc=DlgProcNetlibOpts;
-	odp.flags=ODPF_BOLDGROUPS;
-	odp.expertOnlyControls=expertOnlyControls;
-	odp.nExpertOnlyControls=sizeof(expertOnlyControls)/sizeof(expertOnlyControls[0]);
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	if ( optionsCount == 0 ) 
+		return 0;
+
+	odp.cbSize = sizeof(odp);
+	odp.position = 900000000;
+	odp.hInstance = GetModuleHandle(NULL);
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_NETLIB);
+	odp.pszTitle = "Network";
+	odp.pfnDlgProc = DlgProcNetlibOpts;
+	odp.flags = ODPF_BOLDGROUPS;
+	odp.expertOnlyControls = expertOnlyControls;
+	odp.nExpertOnlyControls = SIZEOF( expertOnlyControls );
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;
 }

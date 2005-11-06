@@ -739,15 +739,14 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 static int PluginOptionsInit(WPARAM wParam, LPARAM lParam)
 {
-	OPTIONSDIALOGPAGE odp;
-	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize=sizeof(odp);
-	odp.hInstance=GetModuleHandle(NULL);
-	odp.pfnDlgProc=DlgPluginOpt;
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_PLUGINS);
-	odp.position=1300000000;	
-	odp.pszTitle=Translate("Plugins");
-	odp.flags=ODPF_BOLDGROUPS;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	OPTIONSDIALOGPAGE odp = { 0 };
+	odp.cbSize = sizeof(odp);
+	odp.hInstance = GetModuleHandle(NULL);
+	odp.pfnDlgProc = DlgPluginOpt;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_PLUGINS);
+	odp.position = 1300000000;	
+	odp.pszTitle = "Plugins";
+	odp.flags = ODPF_BOLDGROUPS;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;
 }

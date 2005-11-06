@@ -191,7 +191,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\commonheaders.sbr" \
 	"$(INTDIR)\miranda.sbr" \
 	"$(INTDIR)\modules.sbr" \
-	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\addcontact.sbr" \
 	"$(INTDIR)\autoaway.sbr" \
 	"$(INTDIR)\button.sbr" \
@@ -249,6 +248,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\openurl.sbr" \
 	"$(INTDIR)\path.sbr" \
 	"$(INTDIR)\resizer.sbr" \
+	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\utils.sbr" \
 	"$(INTDIR)\windowlist.sbr" \
 	"$(INTDIR)\visibility.sbr"
@@ -264,7 +264,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\miranda.obj" \
 	"$(INTDIR)\modules.obj" \
-	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\addcontact.obj" \
 	"$(INTDIR)\autoaway.obj" \
 	"$(INTDIR)\button.obj" \
@@ -322,6 +321,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\openurl.obj" \
 	"$(INTDIR)\path.obj" \
 	"$(INTDIR)\resizer.obj" \
+	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\windowlist.obj" \
 	"$(INTDIR)\visibility.obj" \
@@ -493,7 +493,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\commonheaders.sbr" \
 	"$(INTDIR)\miranda.sbr" \
 	"$(INTDIR)\modules.sbr" \
-	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\addcontact.sbr" \
 	"$(INTDIR)\autoaway.sbr" \
 	"$(INTDIR)\button.sbr" \
@@ -551,6 +550,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\openurl.sbr" \
 	"$(INTDIR)\path.sbr" \
 	"$(INTDIR)\resizer.sbr" \
+	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\utils.sbr" \
 	"$(INTDIR)\windowlist.sbr" \
 	"$(INTDIR)\visibility.sbr"
@@ -566,7 +566,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\miranda.obj" \
 	"$(INTDIR)\modules.obj" \
-	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\addcontact.obj" \
 	"$(INTDIR)\autoaway.obj" \
 	"$(INTDIR)\button.obj" \
@@ -624,6 +623,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\openurl.obj" \
 	"$(INTDIR)\path.obj" \
 	"$(INTDIR)\resizer.obj" \
+	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\windowlist.obj" \
 	"$(INTDIR)\visibility.obj" \
@@ -794,7 +794,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\commonheaders.sbr" \
 	"$(INTDIR)\miranda.sbr" \
 	"$(INTDIR)\modules.sbr" \
-	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\addcontact.sbr" \
 	"$(INTDIR)\autoaway.sbr" \
 	"$(INTDIR)\button.sbr" \
@@ -852,6 +851,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\openurl.sbr" \
 	"$(INTDIR)\path.sbr" \
 	"$(INTDIR)\resizer.sbr" \
+	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\utils.sbr" \
 	"$(INTDIR)\windowlist.sbr" \
 	"$(INTDIR)\visibility.sbr"
@@ -867,7 +867,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\miranda.obj" \
 	"$(INTDIR)\modules.obj" \
-	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\addcontact.obj" \
 	"$(INTDIR)\autoaway.obj" \
 	"$(INTDIR)\button.obj" \
@@ -925,6 +924,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\openurl.obj" \
 	"$(INTDIR)\path.obj" \
 	"$(INTDIR)\resizer.obj" \
+	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\windowlist.obj" \
 	"$(INTDIR)\visibility.obj" \
@@ -1096,7 +1096,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\commonheaders.sbr" \
 	"$(INTDIR)\miranda.sbr" \
 	"$(INTDIR)\modules.sbr" \
-	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\addcontact.sbr" \
 	"$(INTDIR)\autoaway.sbr" \
 	"$(INTDIR)\button.sbr" \
@@ -1154,6 +1153,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\openurl.sbr" \
 	"$(INTDIR)\path.sbr" \
 	"$(INTDIR)\resizer.sbr" \
+	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\utils.sbr" \
 	"$(INTDIR)\windowlist.sbr" \
 	"$(INTDIR)\visibility.sbr"
@@ -1169,7 +1169,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\miranda.obj" \
 	"$(INTDIR)\modules.obj" \
-	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\addcontact.obj" \
 	"$(INTDIR)\autoaway.obj" \
 	"$(INTDIR)\button.obj" \
@@ -1227,6 +1226,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\openurl.obj" \
 	"$(INTDIR)\path.obj" \
 	"$(INTDIR)\resizer.obj" \
+	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\windowlist.obj" \
 	"$(INTDIR)\visibility.obj" \

@@ -334,20 +334,18 @@ static BOOL CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 static UINT expertOnlyControls[]={IDC_STCHECKMARKS};
 static int IgnoreOptInitialise(WPARAM wParam,LPARAM lParam)
 {
-	OPTIONSDIALOGPAGE odp;
-
-	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize=sizeof(odp);
-	odp.position=900000000;
-	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_IGNORE);
-	odp.pszTitle=Translate("Ignore");
-	odp.pszGroup=Translate("Events");
-	odp.pfnDlgProc=DlgProcIgnoreOpts;
-	odp.flags=ODPF_BOLDGROUPS;
-	odp.expertOnlyControls=expertOnlyControls;
-	odp.nExpertOnlyControls=sizeof(expertOnlyControls)/sizeof(expertOnlyControls[0]);
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	OPTIONSDIALOGPAGE odp = { 0 };
+	odp.cbSize = sizeof(odp);
+	odp.position = 900000000;
+	odp.hInstance = GetModuleHandle(NULL);
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_IGNORE);
+	odp.pszTitle = "Ignore";
+	odp.pszGroup = "Events";
+	odp.pfnDlgProc = DlgProcIgnoreOpts;
+	odp.flags = ODPF_BOLDGROUPS;
+	odp.expertOnlyControls = expertOnlyControls;
+	odp.nExpertOnlyControls = SIZEOF( expertOnlyControls );
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp);
 	return 0;
 }
 

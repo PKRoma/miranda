@@ -22,62 +22,53 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "../../core/commonheaders.h"
 
-char *LangPackTranslateString(const char *szEnglish, const int W);
+#if defined( _UNICODE )
+	#define FLAGS LANG_UNICODE
+#else
+	#define FLAGS 0
+#endif
 
 static int TranslateString(WPARAM wParam,LPARAM lParam)
 {
-    return (int)LangPackTranslateString((const char *)lParam, (wParam & LANG_UNICODE) ? 1 : 0);
+	return (int)LangPackTranslateString((const char *)lParam, (wParam & LANG_UNICODE) ? 1 : 0);
 }
 
 static int TranslateMenu(WPARAM wParam,LPARAM lParam)
 {
-	HMENU hMenu=(HMENU)wParam;
-	int i;
-	MENUITEMINFOA mii;
-	wchar_t str[256];
-	int isUnicode = (lParam & LANG_UNICODE) ? 1 : 0;
+	HMENU        hMenu = ( HMENU )wParam;
+	int          i;
+	MENUITEMINFO mii;
+	TCHAR        str[256];
 
 	mii.cbSize = MENUITEMINFO_V4_SIZE;
 	for ( i = GetMenuItemCount( hMenu )-1; i >= 0; i--) {
 		mii.fMask = MIIM_TYPE|MIIM_SUBMENU;
-		mii.dwTypeData = ( char* )str;
+		mii.dwTypeData = ( TCHAR* )str;
 		mii.cch = SIZEOF(str);
-		if ( isUnicode )
-			GetMenuItemInfoW(hMenu, i, TRUE, ( MENUITEMINFOW* )&mii);
-		else
-			GetMenuItemInfoA(hMenu, i, TRUE, &mii);
+		GetMenuItemInfo(hMenu, i, TRUE, ( MENUITEMINFOW* )&mii);
 
 		if ( mii.cch && mii.dwTypeData ) {
-			char* result = LangPackTranslateString( mii.dwTypeData, isUnicode );
+			TCHAR* result = ( TCHAR* )LangPackTranslateString(( const char* )mii.dwTypeData, FLAGS );
 			if ( result != mii.dwTypeData ) {
 				mii.dwTypeData = result;
 				mii.fMask = MIIM_TYPE;
-				if ( isUnicode )
-					SetMenuItemInfoW( hMenu, i, TRUE, ( MENUITEMINFOW* )&mii );
-				else
-					SetMenuItemInfoA( hMenu, i, TRUE, ( MENUITEMINFOA* )&mii );
+				SetMenuItemInfo( hMenu, i, TRUE, &mii );
 		}	}
 
-		if ( mii.hSubMenu!=NULL ) TranslateMenu((WPARAM)mii.hSubMenu, lParam);
+		if ( mii.hSubMenu != NULL ) TranslateMenu(( WPARAM )mii.hSubMenu, lParam);
 	}
 	return 0;
 }
 
 static void TranslateWindow( HWND hwnd, int flags )
 {
-	char title[2048];
-	if ( flags & LANG_UNICODE )
-		GetWindowTextW(hwnd, ( WCHAR* )title, sizeof( title )/sizeof( wchar_t ));
-	else
-		GetWindowTextA(hwnd, title, sizeof( title ));
+	TCHAR title[2048];
+	GetWindowText(hwnd, title, SIZEOF( title ));
 	{
-		char* result = LangPackTranslateString(title, flags);
-		if ( result != title ) {
-			if ( flags & LANG_UNICODE )
-				SetWindowTextW(hwnd, ( WCHAR* )result );
-			else 
-				SetWindowTextA(hwnd, result );
-}	}	}
+		TCHAR* result = ( TCHAR* )LangPackTranslateString(( const char* )title, FLAGS );
+		if ( result != title )
+			SetWindowText(hwnd, result );
+}	}
 
 static BOOL CALLBACK TranslateDialogEnumProc(HWND hwnd,LPARAM lParam)
 {
@@ -105,11 +96,13 @@ static int TranslateDialog(WPARAM wParam,LPARAM lParam)
 	if(!(lptd->flags&LPTDF_NOTITLE))
 		TranslateWindow( lptd->hwndDlg, wParam );
 
-	if ( wParam & LANG_UNICODE )
-		lptd->flags += LANG_UNICODE;
-
 	EnumChildWindows(lptd->hwndDlg,TranslateDialogEnumProc,lParam);
 	return 0;
+}
+
+static int GetDefaultCodePage(WPARAM wParam,LPARAM lParam)
+{
+	return LangPackGetDefaultCodePage();
 }
 
 int LoadLangPackServices(void)
@@ -117,6 +110,7 @@ int LoadLangPackServices(void)
 	CreateServiceFunction(MS_LANGPACK_TRANSLATESTRING,TranslateString);
 	CreateServiceFunction(MS_LANGPACK_TRANSLATEMENU,TranslateMenu);
 	CreateServiceFunction(MS_LANGPACK_TRANSLATEDIALOG,TranslateDialog);
+	CreateServiceFunction(MS_LANGPACK_GETCODEPAGE,GetDefaultCodePage);
 	return 0;
 }
 

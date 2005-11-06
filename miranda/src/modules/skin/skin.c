@@ -39,25 +39,25 @@ static int SkinSystemShutdown(WPARAM wParam,LPARAM lParam)
 static UINT iconsExpertOnlyControls[]={IDC_IMPORT};
 static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
 {
-	OPTIONSDIALOGPAGE odp;
-	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize=sizeof(odp);
-	odp.pszGroup=Translate("Events");
-	odp.position=-200000000;
-	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SOUND);
-	odp.pszTitle=Translate("Sounds");
-	odp.pfnDlgProc=DlgProcSoundOpts;
-	odp.flags=ODPF_BOLDGROUPS;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-	odp.position=-180000000;
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_ICONS);
-	odp.pszTitle=Translate("Icons");
-	odp.pszGroup=Translate("Contact List");
-	odp.pfnDlgProc=DlgProcIconsOpts;
-	odp.expertOnlyControls=iconsExpertOnlyControls;
-	odp.nExpertOnlyControls=sizeof(iconsExpertOnlyControls)/sizeof(iconsExpertOnlyControls[0]);
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	OPTIONSDIALOGPAGE odp = { 0 };
+	odp.cbSize = sizeof(odp);
+	odp.position = -200000000;
+	odp.hInstance = GetModuleHandle(NULL);
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_SOUND);
+	odp.pszGroup = "Events";
+	odp.pszTitle = "Sounds";
+	odp.pfnDlgProc = DlgProcSoundOpts;
+	odp.flags = ODPF_BOLDGROUPS;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+
+	odp.position = -180000000;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICONS);
+	odp.pszTitle = "Icons";
+	odp.pszGroup = "Contact List";
+	odp.pfnDlgProc = DlgProcIconsOpts;
+	odp.expertOnlyControls = iconsExpertOnlyControls;
+	odp.nExpertOnlyControls = SIZEOF( iconsExpertOnlyControls );
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;
 }
 

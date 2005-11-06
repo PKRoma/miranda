@@ -101,23 +101,30 @@ static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM lParam)
 
 static int AddDetailsPage(WPARAM wParam,LPARAM lParam)
 {
-	OPTIONSDIALOGPAGE *odp=(OPTIONSDIALOGPAGE*)lParam;
+	OPTIONSDIALOGPAGE *odp=(OPTIONSDIALOGPAGE*)lParam, *dst;
 	struct DetailsPageInit *opi=(struct DetailsPageInit*)wParam;
 
 	if(odp==NULL||opi==NULL) return 1;
-	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE) && odp->cbSize!=OPTIONSDIALOGPAGE_V0120_SIZE) return 1;
+	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE)) return 1;
 	opi->odp=(OPTIONSDIALOGPAGE*)realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
-	opi->odp[opi->pageCount].cbSize=sizeof(OPTIONSDIALOGPAGE);
-	opi->odp[opi->pageCount].hInstance=odp->hInstance;
-	opi->odp[opi->pageCount].pfnDlgProc=odp->pfnDlgProc;
-	opi->odp[opi->pageCount].position=odp->position;
-	opi->odp[opi->pageCount].pszTitle=_strdup(odp->pszTitle);
-	if((DWORD)odp->pszTemplate&0xFFFF0000) opi->odp[opi->pageCount].pszTemplate=_strdup(odp->pszTemplate);
-	else opi->odp[opi->pageCount].pszTemplate=odp->pszTemplate;
-	opi->odp[opi->pageCount].pszGroup=NULL;
-	opi->odp[opi->pageCount].groupPosition=odp->groupPosition;
-	opi->odp[opi->pageCount].hGroupIcon=odp->hGroupIcon;
-	opi->odp[opi->pageCount].hIcon=odp->hIcon;
+	dst = opi->odp + opi->pageCount;
+	dst->cbSize = sizeof(OPTIONSDIALOGPAGE);
+	dst->hInstance = odp->hInstance;
+	dst->pfnDlgProc = odp->pfnDlgProc;
+	dst->position = odp->position;
+	if((DWORD)odp->pszTemplate&0xFFFF0000) dst->pszTemplate = _strdup(odp->pszTemplate);
+	else dst->pszTemplate = odp->pszTemplate;
+	if ( odp->flags & ODPF_UNICODE ) {
+		dst->ptszTitle = (odp->ptszTitle==0) ? NULL : wcsdup(odp->ptszTitle);
+		dst->ptszGroup = (odp->ptszGroup==0) ? NULL : wcsdup(odp->ptszGroup);
+	}
+	else {
+		dst->pszTitle = (odp->pszTitle==0) ? NULL : _strdup(odp->pszTitle);
+		dst->pszGroup = (odp->pszGroup==0) ? NULL : _strdup(odp->pszGroup);
+	}
+	dst->groupPosition = odp->groupPosition;
+	dst->hGroupIcon = odp->hGroupIcon;
+	dst->hIcon = odp->hIcon;
 	opi->pageCount++;
 	return 0;
 }

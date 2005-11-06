@@ -324,9 +324,9 @@ static int RestoreWindowPosition(WPARAM wParam,LPARAM lParam)
 		wp.rcNormalPosition.bottom=wp.rcNormalPosition.top+DBGetContactSettingDword(swp->hContact,swp->szModule,szSettingName,-1);
 	}
 	wp.flags=0;
-	if(wParam&RWPF_NOACTIVATE) {
+	if(wParam&RWPF_NOACTIVATE)
 		wp.showCmd = SW_SHOWNOACTIVATE;
-	}
+
 	SetWindowPlacement(swp->hwnd,&wp);
 	return 0;
 }
@@ -359,6 +359,6 @@ int LoadUtilsModule(void)
 	InitHyperlink();
 	InitColourPicker();
 	InitBitmapFilter();
-    InitPathUtils();
+	InitPathUtils();
 	return 0;
 }

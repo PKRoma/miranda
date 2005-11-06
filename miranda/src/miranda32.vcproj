@@ -45,6 +45,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib odbc32.lib odbccp32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -180,8 +181,8 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib odbc32.lib odbccp32.lib"
-				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
@@ -491,6 +492,9 @@
 						PrecompiledHeaderThrough="commonheaders.h"
 						BrowseInformation="1"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\core\miranda.h">
 			</File>
 			<File
 				RelativePath="core\modules.c">

@@ -275,17 +275,16 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 static int IdleOptInit(WPARAM wParam, LPARAM lParam)
 {
-	OPTIONSDIALOGPAGE odp;
-	ZeroMemory(&odp, sizeof(odp));
-	odp.cbSize=sizeof(odp);
-	odp.position=100000000;
-	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_IDLE);
-	odp.pszGroup=Translate("Status");
-	odp.pszTitle=Translate("Idle");
-	odp.pfnDlgProc=IdleOptsDlgProc;
-	odp.flags=ODPF_BOLDGROUPS;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
+	OPTIONSDIALOGPAGE odp = { 0 };
+	odp.cbSize = sizeof(odp);
+	odp.position = 100000000;
+	odp.hInstance = GetModuleHandle(NULL);
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_IDLE);
+	odp.pszGroup = "Status";
+	odp.pszTitle = "Idle";
+	odp.pfnDlgProc = IdleOptsDlgProc;
+	odp.flags = ODPF_BOLDGROUPS;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;
 }
 

@@ -536,7 +536,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 static int AddProfileManagerPage(struct DetailsPageInit * opi, OPTIONSDIALOGPAGE * odp)
 {
 	if(opi==NULL||odp==NULL);
-	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE) && odp->cbSize!=OPTIONSDIALOGPAGE_V0120_SIZE) return 1;
+	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE)) return 1;
 	opi->odp=(OPTIONSDIALOGPAGE*)realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
 	opi->odp[opi->pageCount].cbSize=sizeof(OPTIONSDIALOGPAGE);
 	opi->odp[opi->pageCount].hInstance=odp->hInstance;

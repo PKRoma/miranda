@@ -292,6 +292,28 @@ char *LangPackTranslateString(const char *szEnglish, const int W)
 	return W ? (char *)entry->wlocal : entry->local;
 }
 
+int LangPackGetDefaultCodePage()
+{
+	return (langPack.defaultANSICp == 0) ? CP_ACP : langPack.defaultANSICp;
+}
+
+TCHAR* LangPackPcharToTchar( const char* pszStr )
+{
+	if ( pszStr == NULL )
+		return NULL;
+
+	#if defined( _UNICODE )
+	{	int len = strlen( pszStr );
+		TCHAR* result = ( TCHAR* )alloca(( len+1 )*sizeof( TCHAR ));
+		MultiByteToWideChar( LangPackGetDefaultCodePage(), 0, pszStr, -1, result, len );
+		result[len] = 0;
+		return wcsdup( TranslateW( result ));
+	}
+	#else
+		return _strdup( Translate( pszStr ));
+	#endif
+}
+
 static int LangPackShutdown(WPARAM wParam,LPARAM lParam)
 {
 	int i;

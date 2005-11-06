@@ -277,18 +277,16 @@ static BOOL CALLBACK DlgProcVisibilityOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
 static int VisibilityOptInitialise(WPARAM wParam,LPARAM lParam)
 {
-	OPTIONSDIALOGPAGE odp;
-
-	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize=sizeof(odp);
-	odp.position=850000000;
-	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_VISIBILITY);
-	odp.pszTitle=Translate("Visibility");
-	odp.pszGroup=Translate("Status");
-	odp.pfnDlgProc=DlgProcVisibilityOpts;
-	odp.flags=ODPF_BOLDGROUPS;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	OPTIONSDIALOGPAGE odp = { 0 };
+	odp.cbSize = sizeof(odp);
+	odp.position = 850000000;
+	odp.hInstance = GetModuleHandle(NULL);
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_VISIBILITY);
+	odp.pszTitle = "Visibility";
+	odp.pszGroup = "Status";
+	odp.pfnDlgProc = DlgProcVisibilityOpts;
+	odp.flags = ODPF_BOLDGROUPS;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;
 }
 
