@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 
 static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+void Utf8Decode( char* str, wchar_t** ucs2 );
 
 HIMAGELIST himlCListClc;
 static HANDLE hClcWindowList;

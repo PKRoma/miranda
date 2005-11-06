@@ -439,7 +439,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						DBDeleteContactSetting(NULL, "CLC", "SelBkColour");
 					else
 						DBWriteContactSettingDword(NULL, "CLC", "SelBkColour", col);
-					DBWriteContactSettingByte(NULL, "CLC", "UseWinColours", IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR));
+					DBWriteContactSettingByte(NULL, "CLC", "UseWinColours", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR)));
 				}
 				{
 					char str[MAX_PATH], strrel[MAX_PATH];
