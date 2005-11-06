@@ -181,7 +181,7 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	char *buffer;
 	int bufferAlloced, bufferEnd;
 	int i;
-	LOGFONTA lf;
+	LOGFONT lf;
 	COLORREF colour;
 	HDC hdc;
 
@@ -229,7 +229,7 @@ static char *CreateRTFTail(struct MessageWindowData *dat)
 static char *SetToStyle(int style)
 {
 	static char szStyle[128];
-	LOGFONTA lf;
+	LOGFONT lf;
 
 	LoadMsgDlgFont(style, &lf, NULL);
 	wsprintfA(szStyle, "\\f%u\\cf%u\\b%d\\i%d\\fs%u", style, style, lf.lfWeight >= FW_BOLD ? 1 : 0, lf.lfItalic, 2 * abs(lf.lfHeight) * 74 / logPixelSY);

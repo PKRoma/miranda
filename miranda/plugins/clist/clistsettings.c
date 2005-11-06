@@ -344,25 +344,28 @@ int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 
 char* u2a( wchar_t* src )
 {
-	int cbLen = WideCharToMultiByte( CP_ACP, 0, src, -1, NULL, 0, NULL, NULL );
+	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
+
+	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
 	char* result = ( char* )mir_alloc( cbLen+1 );
 	if ( result == NULL )
 		return NULL;
 
-	WideCharToMultiByte( CP_ACP, 0, src, -1, result, cbLen, NULL, NULL );
+	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
 	result[ cbLen ] = 0;
 	return result;
 }
 
 wchar_t* a2u( char* src )
 {
-	int cbLen = MultiByteToWideChar( CP_ACP, 0, src, -1, NULL, 0 );
+	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
+
+	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
 	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
 	if ( result == NULL )
 		return NULL;
 
-	MultiByteToWideChar( CP_ACP, 0, src, -1, result, cbLen );
+	MultiByteToWideChar( codepage, 0, src, -1, result, cbLen );
 	result[ cbLen ] = 0;
 	return result;
 }
-

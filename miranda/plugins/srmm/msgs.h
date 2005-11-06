@@ -117,7 +117,7 @@ void FreeMsgLogIcons(void);
 #define MSGFONTID_MESSAGEAREA 8
 #define MSGFONTID_NOTICE      9
 
-void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour);
+void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF* colour);
 extern const int msgDlgFontCount;
 
 #define LOADHISTORY_UNREAD    0

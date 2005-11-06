@@ -185,7 +185,7 @@ typedef struct COMMAND_INFO_TYPE
 } COMMAND_INFO;
 
 typedef struct{
-	LOGFONTA	lf;
+	LOGFONT	lf;
 	COLORREF color;
 }FONTINFO;
 
@@ -407,7 +407,7 @@ int					GetTextPixelSize(char * pszText, HFONT hFont, BOOL bWidth);
 //options.c
 int					OptionsInit(void);
 int					OptionsUnInit(void);
-void				LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour);
+void				LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
 void				LoadGlobalSettings(void);
 void				AddIcons(void);
 HICON				LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);

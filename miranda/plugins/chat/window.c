@@ -567,7 +567,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			    int iLen;
 				GETTEXTLENGTHEX gtl = {0};
 				SETTEXTEX ste;
-				LOGFONTA lf;
+				LOGFONT lf;
 				char *lpPrevCmd = SM_GetPrevCommand(Parentsi->pszID, Parentsi->pszModule);
 
 				SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);

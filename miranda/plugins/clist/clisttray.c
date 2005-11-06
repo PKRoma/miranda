@@ -578,22 +578,22 @@ int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 			}
 		else if (msg->lParam == WM_RBUTTONUP) {
 			HMENU hMenu;
-			MENUITEMINFOA mi;
+			MENUITEMINFO mi;
 			POINT pt;
 			hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
 			hMenu = GetSubMenu(hMenu, 0);
-			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, LPTDF_UNICODE);
+			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, 0);
 
 			ZeroMemory(&mi, sizeof(mi));
 			mi.cbSize = MENUITEMINFO_V4_SIZE;
 			mi.fMask = MIIM_SUBMENU | MIIM_TYPE;
 			mi.fType = MFT_STRING;
 			mi.hSubMenu = (HMENU) CallService(MS_CLIST_MENUGETMAIN, 0, 0);
-			mi.dwTypeData = Translate("&Main Menu");
-			InsertMenuItemA(hMenu, 1, TRUE, &mi);
+			mi.dwTypeData = TranslateT("&Main Menu");
+			InsertMenuItem(hMenu, 1, TRUE, &mi);
 			mi.hSubMenu = (HMENU) CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
-			mi.dwTypeData = Translate("&Status");
-			InsertMenuItemA(hMenu, 2, TRUE, &mi);
+			mi.dwTypeData = TranslateT("&Status");
+			InsertMenuItem(hMenu, 2, TRUE, &mi);
 			SetMenuDefaultItem(hMenu, ID_TRAY_HIDE, FALSE);
 
 			SetForegroundWindow(msg->hwnd);

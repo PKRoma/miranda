@@ -134,7 +134,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 	switch (msg) {
 	case WM_CREATE:
-		CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), LPTDF_UNICODE);
+		CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), 0);
 		DrawMenuBar(hwnd);
 
 		//create the status wnd
@@ -147,7 +147,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		CluiProtocolStatusChanged(0, 0);
 
 		{
-			MENUITEMINFOA mii;
+			MENUITEMINFO mii;
 			ZeroMemory(&mii, sizeof(mii));
 			mii.cbSize = MENUITEMINFO_V4_SIZE;
 			mii.fMask = MIIM_TYPE | MIIM_DATA;
@@ -156,7 +156,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			mii.dwItemData = MENU_MIRANDAMENU;
 			mii.fType = MFT_OWNERDRAW;
 			mii.dwTypeData = NULL;
-			SetMenuItemInfoA(GetMenu(hwnd), 0, TRUE, &mii);
+			SetMenuItemInfo(GetMenu(hwnd), 0, TRUE, &mii);
 		}
 
 		//delay creation of CLC so that it can get the status icons right the first time (needs protocol modules loaded)
@@ -582,7 +582,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if (PtInRect(&rc, pt)) {
 				HMENU hMenu;
 				hMenu = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 1);
-				CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, LPTDF_UNICODE);
+				CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, 0);
 				CheckMenuItem(hMenu, POPUP_HIDEOFFLINE,
 					DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) ? MF_CHECKED : MF_UNCHECKED);
 				CheckMenuItem(hMenu, POPUP_HIDEOFFLINEROOT, SendMessage(hwndContactTree, CLM_GETHIDEOFFLINEROOT, 0, 0) ? MF_CHECKED : MF_UNCHECKED);

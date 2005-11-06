@@ -30,8 +30,11 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static UINT expertOnlyControls[] =
-{ IDC_BRINGTOFRONT, IDC_AUTOSIZE, IDC_STATIC21, IDC_MAXSIZEHEIGHT, IDC_MAXSIZESPIN, IDC_STATIC22, IDC_AUTOSIZEUPWARD, IDC_SHOWMAINMENU,
-IDC_SHOWCAPTION, IDC_CLIENTDRAG };
+{ 
+	IDC_BRINGTOFRONT, IDC_AUTOSIZE, IDC_STATIC21, IDC_MAXSIZEHEIGHT, IDC_MAXSIZESPIN, 
+	IDC_STATIC22, IDC_AUTOSIZEUPWARD, IDC_SHOWMAINMENU, IDC_SHOWCAPTION, IDC_CLIENTDRAG
+};
+
 int CluiOptInit(WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
@@ -41,16 +44,17 @@ int CluiOptInit(WPARAM wParam, LPARAM lParam)
 	odp.position = 0;
 	odp.hInstance = g_hInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLUI);
-	odp.pszTitle = Translate("Window");
-	odp.pszGroup = Translate("Contact List");
+	odp.pszTitle = "Window";
+	odp.pszGroup = "Contact List";
 	odp.pfnDlgProc = DlgProcCluiOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	odp.nIDBottomSimpleControl = IDC_STWINDOWGROUP;
 	odp.expertOnlyControls = expertOnlyControls;
 	odp.nExpertOnlyControls = sizeof(expertOnlyControls) / sizeof(expertOnlyControls[0]);
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_SBAR);
-	odp.pszTitle = Translate("Status Bar");
+	odp.pszTitle = "Status Bar";
 	odp.pfnDlgProc = DlgProcSBarOpts;
 	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
 	odp.nIDBottomSimpleControl = 0;
@@ -120,9 +124,10 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENT), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_DROPSHADOW), FALSE);
 		}
-		else
+		else 
 			CheckDlgButton(hwndDlg, IDC_TRANSPARENT,
-			DBGetContactSettingByte(NULL, "CList", "Transparent", SETTING_TRANSPARENT_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
+				DBGetContactSettingByte(NULL, "CList", "Transparent", SETTING_TRANSPARENT_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
+
 		if (!IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT)) {
 			EnableWindow(GetDlgItem(hwndDlg, IDC_STATIC11), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_STATIC12), FALSE);
@@ -190,82 +195,79 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
 	case WM_NOTIFY:
-		switch (((LPNMHDR) lParam)->code) {
-	case PSN_APPLY:
-		DBWriteContactSettingByte(NULL, "CList", "OnTop", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ONTOP));
-		DBWriteContactSettingByte(NULL, "CList", "ToolWindow", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TOOLWND));
-		DBWriteContactSettingByte(NULL, "CList", "BringToFront", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_BRINGTOFRONT));
-		DBWriteContactSettingByte(NULL, "CLUI", "FadeInOut", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FADEINOUT));
-		DBWriteContactSettingByte(NULL, "CLUI", "AutoSize", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOSIZE));
-		DBWriteContactSettingByte(NULL, "CLUI", "MaxSizeHeight", (BYTE) GetDlgItemInt(hwndDlg, IDC_MAXSIZEHEIGHT, NULL, FALSE));
-		DBWriteContactSettingByte(NULL, "CLUI", "AutoSizeUpward", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOSIZEUPWARD));
-		DBWriteContactSettingByte(NULL, "CList", "AutoHide", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOHIDE));
-		DBWriteContactSettingWord(NULL, "CList", "HideTime", (WORD) SendDlgItemMessage(hwndDlg, IDC_HIDETIMESPIN, UDM_GETPOS, 0, 0));
-		DBWriteContactSettingByte(NULL, "CList", "Transparent", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT));
-		DBWriteContactSettingByte(NULL, "CList", "Alpha", (BYTE) SendDlgItemMessage(hwndDlg, IDC_TRANSACTIVE, TBM_GETPOS, 0, 0));
-		DBWriteContactSettingByte(NULL, "CList", "AutoAlpha", (BYTE) SendDlgItemMessage(hwndDlg, IDC_TRANSINACTIVE, TBM_GETPOS, 0, 0));
-		DBWriteContactSettingByte(NULL, "CList", "WindowShadow", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DROPSHADOW));
-		DBWriteContactSettingByte(NULL, "CList", "OnDesktop", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP));
-		DBWriteContactSettingByte(NULL, "CLUI", "ShowCaption", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWCAPTION));
-		DBWriteContactSettingByte(NULL, "CLUI", "ShowMainMenu", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWMAINMENU));
-		DBWriteContactSettingByte(NULL, "CLUI", "ClientAreaDrag", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CLIENTDRAG));
-		DBWriteContactSettingByte(NULL, "CList", "Min2Tray", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY));
-		{
-			TCHAR title[256];
-			GetDlgItemText(hwndDlg, IDC_TITLETEXT, title, sizeof(title));
-			DBWriteContactSettingTString(NULL, "CList", "TitleText", title);
-			SetWindowText(hwndContactList, title);
-		}
-		LoadCluiGlobalOpts();
-		SetWindowPos(hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_ONTOP) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0,
-			SWP_NOMOVE | SWP_NOSIZE);
-		if (IsDlgButtonChecked(hwndDlg, IDC_TOOLWND)) {
-			// Window must be hidden to dynamically remove the taskbar button.
-			// See http://msdn.microsoft.com/library/en-us/shellcc/platform/shell/programmersguide/shell_int/shell_int_programming/taskbar.asp
-			WINDOWPLACEMENT p;
-			p.length = sizeof(p);
-			GetWindowPlacement(hwndContactList, &p);
-			ShowWindow(hwndContactList, SW_HIDE);
-			SetWindowLong(hwndContactList, GWL_EXSTYLE,
-				GetWindowLong(hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE);
-			SetWindowPlacement(hwndContactList, &p);
-		}
-		else
-			SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
-		if (IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP)) {
-			HWND hProgMan = FindWindowA("Progman", NULL);
-			if (IsWindow(hProgMan))
-				SetParent(hwndContactList, hProgMan);
-		}
-		else {
-			SetParent(hwndContactList, NULL);
-		}
-		if (IsDlgButtonChecked(hwndDlg, IDC_SHOWCAPTION))
-			SetWindowLong(hwndContactList, GWL_STYLE,
-			GetWindowLong(hwndContactList, GWL_STYLE) | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
-		else
-			SetWindowLong(hwndContactList, GWL_STYLE,
-			GetWindowLong(hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX));
-		if (!IsDlgButtonChecked(hwndDlg, IDC_SHOWMAINMENU))
-			SetMenu(hwndContactList, NULL);
-		else
-			SetMenu(hwndContactList, hMenuMain);
-		SetWindowPos(hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-		RedrawWindow(hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
-		if (IsIconic(hwndContactList) && !IsDlgButtonChecked(hwndDlg, IDC_TOOLWND))
-			ShowWindow(hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY) ? SW_HIDE : SW_SHOW);
-		if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT)) {
-			SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
-			if (MySetLayeredWindowAttributes)
-				MySetLayeredWindowAttributes(hwndContactList, RGB(0, 0, 0),
-				(BYTE) DBGetContactSettingByte(NULL, "CList", "AutoAlpha", SETTING_AUTOALPHA_DEFAULT),
-				LWA_ALPHA);
-		}
-		else {
-			SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
-		}
-		SendMessage(hwndContactTree, WM_SIZE, 0, 0);        //forces it to send a cln_listsizechanged
-		return TRUE;
+		if (((LPNMHDR) lParam)->code == PSN_APPLY) {
+			DBWriteContactSettingByte(NULL, "CList", "OnTop", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ONTOP));
+			DBWriteContactSettingByte(NULL, "CList", "ToolWindow", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TOOLWND));
+			DBWriteContactSettingByte(NULL, "CList", "BringToFront", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_BRINGTOFRONT));
+			DBWriteContactSettingByte(NULL, "CLUI", "FadeInOut", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FADEINOUT));
+			DBWriteContactSettingByte(NULL, "CLUI", "AutoSize", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOSIZE));
+			DBWriteContactSettingByte(NULL, "CLUI", "MaxSizeHeight", (BYTE) GetDlgItemInt(hwndDlg, IDC_MAXSIZEHEIGHT, NULL, FALSE));
+			DBWriteContactSettingByte(NULL, "CLUI", "AutoSizeUpward", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOSIZEUPWARD));
+			DBWriteContactSettingByte(NULL, "CList", "AutoHide", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOHIDE));
+			DBWriteContactSettingWord(NULL, "CList", "HideTime", (WORD) SendDlgItemMessage(hwndDlg, IDC_HIDETIMESPIN, UDM_GETPOS, 0, 0));
+			DBWriteContactSettingByte(NULL, "CList", "Transparent", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT));
+			DBWriteContactSettingByte(NULL, "CList", "Alpha", (BYTE) SendDlgItemMessage(hwndDlg, IDC_TRANSACTIVE, TBM_GETPOS, 0, 0));
+			DBWriteContactSettingByte(NULL, "CList", "AutoAlpha", (BYTE) SendDlgItemMessage(hwndDlg, IDC_TRANSINACTIVE, TBM_GETPOS, 0, 0));
+			DBWriteContactSettingByte(NULL, "CList", "WindowShadow", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DROPSHADOW));
+			DBWriteContactSettingByte(NULL, "CList", "OnDesktop", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP));
+			DBWriteContactSettingByte(NULL, "CLUI", "ShowCaption", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWCAPTION));
+			DBWriteContactSettingByte(NULL, "CLUI", "ShowMainMenu", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWMAINMENU));
+			DBWriteContactSettingByte(NULL, "CLUI", "ClientAreaDrag", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CLIENTDRAG));
+			DBWriteContactSettingByte(NULL, "CList", "Min2Tray", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY));
+			{
+				TCHAR title[256];
+				GetDlgItemText(hwndDlg, IDC_TITLETEXT, title, sizeof(title));
+				DBWriteContactSettingTString(NULL, "CList", "TitleText", title);
+				SetWindowText(hwndContactList, title);
+			}
+			LoadCluiGlobalOpts();
+			SetWindowPos(hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_ONTOP) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0,
+				SWP_NOMOVE | SWP_NOSIZE);
+			if (IsDlgButtonChecked(hwndDlg, IDC_TOOLWND)) {
+				// Window must be hidden to dynamically remove the taskbar button.
+				// See http://msdn.microsoft.com/library/en-us/shellcc/platform/shell/programmersguide/shell_int/shell_int_programming/taskbar.asp
+				WINDOWPLACEMENT p;
+				p.length = sizeof(p);
+				GetWindowPlacement(hwndContactList, &p);
+				ShowWindow(hwndContactList, SW_HIDE);
+				SetWindowLong(hwndContactList, GWL_EXSTYLE,
+					GetWindowLong(hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE);
+				SetWindowPlacement(hwndContactList, &p);
+			}
+			else SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
+
+			if (IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP)) {
+				HWND hProgMan = FindWindowA("Progman", NULL);
+				if (IsWindow(hProgMan))
+					SetParent(hwndContactList, hProgMan);
+			}
+			else SetParent(hwndContactList, NULL);
+
+			if (IsDlgButtonChecked(hwndDlg, IDC_SHOWCAPTION))
+				SetWindowLong(hwndContactList, GWL_STYLE,
+				GetWindowLong(hwndContactList, GWL_STYLE) | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+			else
+				SetWindowLong(hwndContactList, GWL_STYLE,
+				GetWindowLong(hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX));
+			if (!IsDlgButtonChecked(hwndDlg, IDC_SHOWMAINMENU))
+				SetMenu(hwndContactList, NULL);
+			else
+				SetMenu(hwndContactList, hMenuMain);
+			SetWindowPos(hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+			RedrawWindow(hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
+			if (IsIconic(hwndContactList) && !IsDlgButtonChecked(hwndDlg, IDC_TOOLWND))
+				ShowWindow(hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY) ? SW_HIDE : SW_SHOW);
+			if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT)) {
+				SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
+				if (MySetLayeredWindowAttributes)
+					MySetLayeredWindowAttributes(hwndContactList, RGB(0, 0, 0),
+					(BYTE) DBGetContactSettingByte(NULL, "CList", "AutoAlpha", SETTING_AUTOALPHA_DEFAULT),
+					LWA_ALPHA);
+			}
+			else SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+
+			SendMessage(hwndContactTree, WM_SIZE, 0, 0);        //forces it to send a cln_listsizechanged
+			return TRUE;
 		}
 		break;
 	}
@@ -314,33 +316,32 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
 	case WM_NOTIFY:
-		switch (((LPNMHDR) lParam)->code) {
-	case PSN_APPLY:
-		DBWriteContactSettingByte(NULL, "CLUI", "ShowSBar", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSBAR));
-		DBWriteContactSettingByte(NULL, "CLUI", "SBarShow",
-			(BYTE) ((IsDlgButtonChecked(hwndDlg, IDC_SHOWICON) ? 1 : 0) |
-			(IsDlgButtonChecked(hwndDlg, IDC_SHOWPROTO) ? 2 : 0) |
-			(IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUS) ? 4 : 0)));
-		DBWriteContactSettingByte(NULL, "CLUI", "SBarRightClk", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_RIGHTMIRANDA));
-		DBWriteContactSettingByte(NULL, "CLUI", "EqualSections", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EQUALSECTIONS));
-		DBWriteContactSettingByte(NULL, "CLUI", "SBarBevel", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SBPANELBEVEL));
-		LoadCluiGlobalOpts();
-		if (DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) != (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWGRIP)) {
-			HWND parent = GetParent(hwndStatus);
-			int flags = WS_CHILD | CCS_BOTTOM;
-			DBWriteContactSettingByte(NULL, "CLUI", "ShowGrip", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWGRIP));
-			ShowWindow(hwndStatus, SW_HIDE);
-			DestroyWindow(hwndStatus);
-			flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? WS_VISIBLE : 0;
-			flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) ? SBARS_SIZEGRIP : 0;
-			hwndStatus = CreateWindow(STATUSCLASSNAME, NULL, flags, 0, 0, 0, 0, parent, NULL, g_hInst, NULL);
-		}
-		if (IsDlgButtonChecked(hwndDlg, IDC_SHOWSBAR))
-			ShowWindow(hwndStatus, SW_SHOW);
-		else
-			ShowWindow(hwndStatus, SW_HIDE);
-		SendMessage(hwndContactList, WM_SIZE, 0, 0);
-		return TRUE;
+		if (((LPNMHDR) lParam)->code == PSN_APPLY ) {
+			DBWriteContactSettingByte(NULL, "CLUI", "ShowSBar", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSBAR));
+			DBWriteContactSettingByte(NULL, "CLUI", "SBarShow",
+				(BYTE) ((IsDlgButtonChecked(hwndDlg, IDC_SHOWICON) ? 1 : 0) |
+				(IsDlgButtonChecked(hwndDlg, IDC_SHOWPROTO) ? 2 : 0) |
+				(IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUS) ? 4 : 0)));
+			DBWriteContactSettingByte(NULL, "CLUI", "SBarRightClk", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_RIGHTMIRANDA));
+			DBWriteContactSettingByte(NULL, "CLUI", "EqualSections", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EQUALSECTIONS));
+			DBWriteContactSettingByte(NULL, "CLUI", "SBarBevel", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SBPANELBEVEL));
+			LoadCluiGlobalOpts();
+			if (DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) != (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWGRIP)) {
+				HWND parent = GetParent(hwndStatus);
+				int flags = WS_CHILD | CCS_BOTTOM;
+				DBWriteContactSettingByte(NULL, "CLUI", "ShowGrip", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWGRIP));
+				ShowWindow(hwndStatus, SW_HIDE);
+				DestroyWindow(hwndStatus);
+				flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? WS_VISIBLE : 0;
+				flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) ? SBARS_SIZEGRIP : 0;
+				hwndStatus = CreateWindow(STATUSCLASSNAME, NULL, flags, 0, 0, 0, 0, parent, NULL, g_hInst, NULL);
+			}
+			if (IsDlgButtonChecked(hwndDlg, IDC_SHOWSBAR))
+				ShowWindow(hwndStatus, SW_SHOW);
+			else
+				ShowWindow(hwndStatus, SW_HIDE);
+			SendMessage(hwndContactList, WM_SIZE, 0, 0);
+			return TRUE;
 		}
 		break;
 	}

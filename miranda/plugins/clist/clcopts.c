@@ -47,23 +47,22 @@ static void GetDefaultFontSetting(int i, LOGFONTA * lf, COLORREF * colour)
 	*colour = GetSysColor(COLOR_WINDOWTEXT);
 	lf->lfHeight = 8;
 	switch (i) {
-		  case FONTID_GROUPS:
-			  lf->lfWeight = FW_BOLD;
-			  break;
-		  case FONTID_GROUPCOUNTS:
-			  *colour = GetSysColor(COLOR_3DSHADOW);
-			  break;
-		  case FONTID_OFFINVIS:
-		  case FONTID_INVIS:
-			  lf->lfItalic = !lf->lfItalic;
-			  break;
-		  case FONTID_DIVIDERS:
-			  break;
-		  case FONTID_NOTONLIST:
-			  *colour = GetSysColor(COLOR_3DSHADOW);
-			  break;
-	}
-}
+	case FONTID_GROUPS:
+		lf->lfWeight = FW_BOLD;
+		break;
+	case FONTID_GROUPCOUNTS:
+		*colour = GetSysColor(COLOR_3DSHADOW);
+		break;
+	case FONTID_OFFINVIS:
+	case FONTID_INVIS:
+		lf->lfItalic = !lf->lfItalic;
+		break;
+	case FONTID_DIVIDERS:
+		break;
+	case FONTID_NOTONLIST:
+		*colour = GetSysColor(COLOR_3DSHADOW);
+		break;
+}	}
 
 void GetFontSetting(int i, LOGFONTA * lf, COLORREF * colour)
 {
@@ -108,19 +107,21 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
 	odp.cbSize = sizeof(odp);
 	odp.position = 0;
 	odp.hInstance = g_hInst;
-	odp.pszGroup = Translate("Contact List");
+	odp.pszGroup = "Contact List";
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLC);
-	odp.pszTitle = Translate("List");
+	odp.pszTitle = "List";
 	odp.pfnDlgProc = DlgProcClcMainOpts;
 	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCBKG);
-	odp.pszTitle = Translate("List Background");
+	odp.pszTitle = "List Background";
 	odp.pfnDlgProc = DlgProcClcBkgOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCTEXT);
-	odp.pszTitle = Translate("List Text");
+	odp.pszTitle = "List Text";
 	odp.pfnDlgProc = DlgProcClcTextOpts;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 	return 0;
@@ -152,6 +153,7 @@ struct CheckBoxValues_t
 	DWORD style;
 	char *szDescr;
 };
+
 static const struct CheckBoxValues_t greyoutValues[] = {
 	{GREYF_UNFOCUS, "Not focused"},
 	{MODEF_OFFLINE, "Offline"},

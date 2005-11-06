@@ -107,6 +107,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="comctl32.lib"
 				OutputFile="$(OutDir)/clist_classic.dll"
 				LinkIncremental="1"
@@ -246,9 +247,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="comctl32.lib"
 				OutputFile="$(OutDir)/clist_classic.dll"
-				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
