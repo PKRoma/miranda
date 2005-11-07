@@ -41,6 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/dbx_3x.dll"
+				LinkIncremental="0"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
@@ -108,7 +109,6 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				OutputFile="$(OutDir)/dbx_3x.dll"
-				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"

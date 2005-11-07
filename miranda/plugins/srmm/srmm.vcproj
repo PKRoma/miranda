@@ -40,6 +40,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib"
+				LinkIncremental="0"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
@@ -242,6 +243,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib"
+				LinkIncremental="0"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
@@ -550,10 +552,10 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="..\..\src\res\addcontact.ico">
+				RelativePath="..\..\Miranda-IM\res\addcontact.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico">
+				RelativePath="..\..\src\res\addcontact.ico">
 			</File>
 			<File
 				RelativePath="res\Clock32.ico">
@@ -577,16 +579,16 @@
 				RelativePath="res\Downarrow8.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur">
-			</File>
-			<File
 				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur">
+				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
+			</File>
+			<File
+				RelativePath="..\..\src\res\dropuser.cur">
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\history.ico">
@@ -598,10 +600,10 @@
 				RelativePath="res\History8.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur">
+				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
+				RelativePath="..\..\src\res\hyperlin.cur">
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\multisend.ico">

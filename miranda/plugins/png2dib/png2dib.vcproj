@@ -107,6 +107,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				LinkIncremental="0"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\png2dib.def"
 				GenerateDebugInformation="TRUE"
