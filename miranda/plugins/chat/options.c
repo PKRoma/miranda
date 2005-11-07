@@ -300,14 +300,10 @@ static INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM p
 
 static void LoadLogFonts(void)
 {
-	LOGFONT lf;
 	int i;
 
 	for( i = 0; i<OPTIONS_FONTCOUNT; i++)
 		LoadMsgDlgFont(i, &aFonts[i].lf, &aFonts[i].color);
-
-	lf = aFonts[2].lf ;
-	lf = aFonts[10].lf ;
 }
 
 void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF* colour)
@@ -822,6 +818,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 		HDC hdc;
 		SIZE fontSize;
 		int iItem = mis->itemData - 1;
+
 		hFont = CreateFont(fontOptionsList[iItem].size, 0, 0, 0,
 						fontOptionsList[iItem].style & FONTF_BOLD ? FW_BOLD : FW_NORMAL,
 						fontOptionsList[iItem].style & FONTF_ITALIC ? 1 : 0, 0, 0, fontOptionsList[iItem].charset, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, fontOptionsList[iItem].szFace);

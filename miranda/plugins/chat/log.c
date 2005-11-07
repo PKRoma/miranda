@@ -633,6 +633,12 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 }
 
+#if defined( _UNICODE )
+	#define RTF_FORMAT "{\\f%u\\fnil\\fcharset%u %S;}"
+#else
+	#define RTF_FORMAT "{\\f%u\\fnil\\fcharset%u %s;}"
+#endif
+
 char * Log_CreateRtfHeader(MODULEINFO * mi)
 {
 	char *buffer;
@@ -660,7 +666,7 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
     Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 	for (i = 0; i < 17 ; i++)
 	{
-		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u %s;}", i, aFonts[i].lf.lfCharSet, aFonts[i].lf.lfFaceName);
+		Log_Append(&buffer, &bufferEnd, &bufferAlloced, RTF_FORMAT, i, aFonts[i].lf.lfCharSet, aFonts[i].lf.lfFaceName);
 	}
 
 	// colour table
