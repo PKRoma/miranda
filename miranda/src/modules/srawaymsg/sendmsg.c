@@ -296,7 +296,10 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			dat->oldPage=-1;
 			for(i=0;i<sizeof(statusModes)/sizeof(statusModes[0]);i++) {
 				if(!(protoModeMsgFlags&Proto_Status2Flag(statusModes[i]))) continue;
-				j=SendDlgItemMessageA(hwndDlg,IDC_STATUS,CB_ADDSTRING,0,(LPARAM)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModes[i],0));
+				{	TCHAR* ptszDescr = LangPackPcharToTchar(( LPCSTR )CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, statusModes[i], 0 ));
+					j = SendDlgItemMessage( hwndDlg, IDC_STATUS, CB_ADDSTRING, 0, (LPARAM)ptszDescr );
+					free( ptszDescr );
+				}
 				SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETITEMDATA,j,statusModes[i]);
 				dat->info[j].ignore=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Ignore"),0);
 				dat->info[j].noDialog=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"NoDlg"),0);

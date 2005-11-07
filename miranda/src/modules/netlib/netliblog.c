@@ -59,8 +59,8 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			CheckDlgButton(hwndDlg,IDC_TEXTDUMPS,logOptions.textDumps?BST_CHECKED:BST_UNCHECKED);
 			CheckDlgButton(hwndDlg,IDC_AUTODETECTTEXT,logOptions.autoDetectText?BST_CHECKED:BST_UNCHECKED);
 			{	int i;
-				for(i=0;i<sizeof(szTimeFormats)/sizeof(szTimeFormats[0]);i++)
-					SendDlgItemMessageA(hwndDlg,IDC_TIMEFORMAT,CB_ADDSTRING,0,(LPARAM)Translate(szTimeFormats[i]));
+				for( i=0; i < SIZEOF(szTimeFormats); i++ )
+					SendDlgItemMessage(hwndDlg,IDC_TIMEFORMAT,CB_ADDSTRING,0,(LPARAM)TranslateTS( szTimeFormats[i] ));
 			}
 			SendDlgItemMessage(hwndDlg,IDC_TIMEFORMAT,CB_SETCURSEL,logOptions.timeFormat,0);
 			CheckDlgButton(hwndDlg,IDC_SHOWNAMES,logOptions.showUser?BST_CHECKED:BST_UNCHECKED);
