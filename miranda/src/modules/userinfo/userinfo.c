@@ -114,14 +114,12 @@ static int AddDetailsPage(WPARAM wParam,LPARAM lParam)
 	dst->position = odp->position;
 	if((DWORD)odp->pszTemplate&0xFFFF0000) dst->pszTemplate = _strdup(odp->pszTemplate);
 	else dst->pszTemplate = odp->pszTemplate;
-	if ( odp->flags & ODPF_UNICODE ) {
+	if ( odp->flags & ODPF_UNICODE )
 		dst->ptszTitle = (odp->ptszTitle==0) ? NULL : wcsdup(odp->ptszTitle);
-		dst->ptszGroup = (odp->ptszGroup==0) ? NULL : wcsdup(odp->ptszGroup);
-	}
-	else {
+	else
 		dst->pszTitle = (odp->pszTitle==0) ? NULL : _strdup(odp->pszTitle);
-		dst->pszGroup = (odp->pszGroup==0) ? NULL : _strdup(odp->pszGroup);
-	}
+
+	dst->pszGroup = NULL;
 	dst->groupPosition = odp->groupPosition;
 	dst->hGroupIcon = odp->hGroupIcon;
 	dst->hIcon = odp->hIcon;
