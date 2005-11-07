@@ -68,7 +68,7 @@ struct avatarCacheEntry {
     HBITMAP hbmPic;                 // bitmap handle of the picutre itself
     DWORD dwFlags;                  // see above for flag values
     LONG bmHeight, bmWidth;         // bitmap dimensions
-    time_t t_lastAccess;            // last access time (currently unused, but plugins should still
+    DWORD t_lastAccess;            // last access time (currently unused, but plugins should still
                                     // use it whenever they access the avatar. may be used in the future
                                     // to implement cache expiration
     LPVOID lpDIBSection;

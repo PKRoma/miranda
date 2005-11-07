@@ -15,7 +15,7 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.98 - 2005/08/25
+Version 0.9.9.98 - 2005/11/07
 
         * several sanity checks added (pointers, window handles)
         
@@ -64,6 +64,12 @@ Version 0.9.9.98 - 2005/08/25
         * several unicode fixes (status messages, xstatus messages and names, title bar format
           (%m variable) and more.
 
+		* upgraded build environment to Visual C++ 8.0 (VSNET 2005).
+		  New project file(s) are added to the source tree. tabSRMM_8.sln and tabSRMM_8.vcproj
+		  are VC++ 8 compatible project files and can only be used with visual studio 2005.
+		  The project files for Visual Studio .NET 2003 (tabSRMM.sln and tabSRMM.vcproj) are
+		  still available.
+		
 Version 0.9.9.97 - 2005/07/23
 
         ! extended status tooltip working with all (recent) ICQ.dll builds. 

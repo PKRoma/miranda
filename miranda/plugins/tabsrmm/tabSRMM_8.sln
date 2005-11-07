@@ -1,0 +1,45 @@
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tabSRMM", "tabsrmm_8.vcproj", "{8954217B-1306-4250-854D-6BF6BE5E57C9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ICONS", "icons\default\default_8.vcproj", "{8CA07E0A-0632-4F95-B411-CDFAF048821B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ICONSXP", "icons\ICONSXP\ICONSXP_8.vcproj", "{987C5A57-A46B-4779-BB85-077E21F7BF7F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug Unicode|Win32 = Debug Unicode|Win32
+		Debug|Win32 = Debug|Win32
+		Release Unicode|Win32 = Release Unicode|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8954217B-1306-4250-854D-6BF6BE5E57C9}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
+		{8954217B-1306-4250-854D-6BF6BE5E57C9}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
+		{8954217B-1306-4250-854D-6BF6BE5E57C9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8954217B-1306-4250-854D-6BF6BE5E57C9}.Debug|Win32.Build.0 = Debug|Win32
+		{8954217B-1306-4250-854D-6BF6BE5E57C9}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
+		{8954217B-1306-4250-854D-6BF6BE5E57C9}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{8954217B-1306-4250-854D-6BF6BE5E57C9}.Release|Win32.ActiveCfg = Release|Win32
+		{8954217B-1306-4250-854D-6BF6BE5E57C9}.Release|Win32.Build.0 = Release|Win32
+		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
+		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Debug Unicode|Win32.Build.0 = Debug|Win32
+		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Debug|Win32.Build.0 = Debug|Win32
+		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Release Unicode|Win32.Build.0 = Release|Win32
+		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Release|Win32.ActiveCfg = Release|Win32
+		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Release|Win32.Build.0 = Release|Win32
+		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
+		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Debug Unicode|Win32.Build.0 = Debug|Win32
+		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Debug|Win32.Build.0 = Debug|Win32
+		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release Unicode|Win32.Build.0 = Release|Win32
+		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release|Win32.ActiveCfg = Release|Win32
+		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

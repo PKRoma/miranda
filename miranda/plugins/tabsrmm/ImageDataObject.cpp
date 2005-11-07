@@ -59,11 +59,9 @@ extern "C" int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF 
         if (sizeX != 0) IconSizeX = sizeX;
         if (sizeY != 0) IconSizeY = sizeY;
     }
-
     RECT rc;
     BITMAPINFOHEADER bih = {0};
     int widthBytes;
-
     theIcon->hBkgBrush = CreateSolidBrush(backgroundColor);
     bih.biSize = sizeof(bih);
     bih.biBitCount = 24;
@@ -124,7 +122,6 @@ bool CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap)
         pOleClientSite->Release();
         return false; 
     }
-
     sc = ::StgCreateDocfileOnILockBytes(lpLockBytes,
                                         STGM_SHARE_EXCLUSIVE|STGM_CREATE|STGM_READWRITE, 0, &pStorage);
     if (sc != S_OK) {

@@ -135,7 +135,7 @@ struct LogStreamData
     DBEVENTINFO *dbei;
 };
 
-static __inline char *GetRTFFont(DWORD dwIndex)
+static __forceinline char *GetRTFFont(DWORD dwIndex)
 {
     return rtfFonts + (dwIndex * RTFCACHELINESIZE);
 }
@@ -987,7 +987,9 @@ nogroup:
                         case EVENTTYPE_ERRMSG:
                         {
                             TCHAR *msg, *formatted;
+#if defined(_UNICODE)
                             int wlen;
+#endif
                             if(dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_ERRMSG) {
                                 if(dbei.eventType == EVENTTYPE_ERRMSG && dbei.cbBlob == 0)
                                     break;
