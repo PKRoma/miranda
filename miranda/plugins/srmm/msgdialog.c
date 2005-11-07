@@ -1,8 +1,8 @@
 /*
 SRMM
 
-Copyright 2000-2005 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2005 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -357,7 +357,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		}
 		else if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
 			if (pdat->cmdList) {
-				if (!pdat->cmdListCurrent) 
+				if (!pdat->cmdListCurrent)
 					pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
 				if (pdat->cmdListCurrent->next) {
 					pdat->cmdListCurrent = pdat->cmdListCurrent->next;
@@ -522,7 +522,7 @@ static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus)
 
 void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
 	DBVARIANT dbv;
-	
+
 	if (dat->avatarPic) {
 		DeleteObject(dat->avatarPic);
         dat->avatarPic=0;
@@ -661,7 +661,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			// Make them flat buttons
 			{
 				int i;
-				
+
 				SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONSETASFLATBTN, 0, 0);
 				for (i = 0; i < sizeof(buttonLineControls) / sizeof(buttonLineControls[0]); i++)
 					SendMessage(GetDlgItem(hwndDlg, buttonLineControls[i]), BUTTONSETASFLATBTN, 0, 0);
@@ -827,7 +827,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		ACKDATA *pAck = (ACKDATA *)lParam;
 		PROTO_AVATAR_INFORMATION *pai = (PROTO_AVATAR_INFORMATION *)pAck->hProcess;
 		HWND hwnd = 0;
-		
+
 		if (pAck->hContact!=dat->hContact)
 			return 0;
 		if (pAck->type != ACKTYPE_AVATAR)
@@ -835,7 +835,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if (pAck->result == ACKRESULT_STATUS) {
 			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 			break;
-		}			
+		}
 		if (pai==NULL)
 			return 0;
 		if (pAck->result == ACKRESULT_SUCCESS) {
@@ -867,7 +867,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			double aspect = 0;
 
 			aspect = (double)dat->limitAvatarH / (double)bminfo.bmHeight;
-			dat->avatarWidth = (int)(bminfo.bmWidth * aspect + 2); 
+			dat->avatarWidth = (int)(bminfo.bmWidth * aspect + 2);
 			dat->avatarHeight = dat->limitAvatarH + 2;
 		}
 		ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_SHOW);
@@ -899,7 +899,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	{
 		PROTO_AVATAR_INFORMATION pai;
 		int caps = 0, result;
-		
+
 		SetWindowLong(hwndDlg, DWL_MSGRESULT, 0);
         if (!(g_dat->flags&SMF_AVATAR)||!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS)) {
 			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
@@ -951,7 +951,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			CONTACTINFO ci;
 			char buf[128];
 			HGLOBAL hData;
-			
+
 			buf[0] = 0;
 			if(dat->hContact) {
 				ZeroMemory(&ci, sizeof(ci));
@@ -1049,7 +1049,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					CONTACTINFO ci;
 					char buf[128];
 					int statusIcon = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON);
-					
+
 					buf[0] = 0;
 					dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
 					contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
@@ -1133,11 +1133,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	case DM_GETWINDOWSTATE:
 		{
 			UINT state = 0;
-			
+
 			state |= MSG_WINDOW_STATE_EXISTS;
-			if (IsWindowVisible(hwndDlg)) 
+			if (IsWindowVisible(hwndDlg))
 				state |= MSG_WINDOW_STATE_VISIBLE;
-			if (GetFocus()==hwndDlg) 
+			if (GetFocus()==hwndDlg)
 				state |= MSG_WINDOW_STATE_FOCUS;
 			if (IsIconic(hwndDlg))
 				state |= MSG_WINDOW_STATE_ICONIC;
@@ -1205,7 +1205,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			urd.lpTemplate = MAKEINTRESOURCEA(IDD_MSG);
 			urd.pfnResizer = MessageDialogResize;
 			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
-			// The statusbar sometimes draws over these 2 controls so 
+			// The statusbar sometimes draws over these 2 controls so
 			// redraw them
 			if (dat->hwndStatus) {
 				RedrawWindow(GetDlgItem(hwndDlg, IDOK), NULL, NULL, RDW_INVALIDATE);
@@ -1296,7 +1296,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	case WM_TIMER:
 		if (wParam == TIMERID_MSGSEND) {
 			KillTimer(hwndDlg, wParam);
-			ShowWindow(hwndDlg, SW_SHOW);
+			ShowWindow(hwndDlg, SW_SHOWNORMAL);
 			EnableWindow(hwndDlg, FALSE);
 			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) Translate("The message send timed out."));
 		}
@@ -1413,7 +1413,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							double aspect = 0, w = 0;
 
 							aspect = (double)dat->limitAvatarH / (double)bminfo.bmHeight;
-							w = (double)bminfo.bmWidth * aspect; 
+							w = (double)bminfo.bmWidth * aspect;
 							SetStretchBltMode(dis->hDC, HALFTONE);
                      StretchBlt(dis->hDC, 1, 1, dat->avatarWidth-2, dat->avatarHeight-2, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
 						}
@@ -1666,12 +1666,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			if (ack->type != ACKTYPE_MESSAGE)
 				break;
-			if (dat->sendCount==0) 
+			if (dat->sendCount==0)
 				break;
 			switch (ack->result) {
 				case ACKRESULT_FAILED:
 					KillTimer(hwndDlg, TIMERID_MSGSEND);
-					ShowWindow(hwndDlg, SW_SHOW);
+					ShowWindow(hwndDlg, SW_SHOWNORMAL);
 					EnableWindow(hwndDlg, FALSE);
 					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) strdup((char *) ack->lParam));
 					return 0;
