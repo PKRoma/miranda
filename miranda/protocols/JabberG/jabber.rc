@@ -440,7 +440,7 @@ BEGIN
     CONTROL         "Disable main menu",IDC_DISABLE_MAINMENU,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,9,131,202,9
     CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,9,153,209,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,9,153,201,10
     CONTROL         "Automatically join conferences on login",IDC_AUTOJOIN,
                     "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,9,97,
                     202,10
