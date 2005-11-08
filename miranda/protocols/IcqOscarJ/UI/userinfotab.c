@@ -448,6 +448,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
   char* pstr;
   char szStatus[MAX_PATH];
   int unspecified = 0;
+  int bUtf = 0;
 
   dbv.type = DBVT_DELETED;
 
@@ -542,21 +543,24 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       }
       else if (special == SVS_STATUSID)
       {
-        char szXStatus[MAX_PATH] = {0};
+        char* pXName;
         BYTE bXStatus = ICQGetContactSettingByte(hContact, "XStatusId", 0);
 
         ZeroMemory(szStatus, sizeof(szStatus));
         null_snprintf(szStatus, sizeof(szStatus), MirandaStatusToString(dbv.wVal));
         if (bXStatus)
         {
-          if (ICQGetContactStaticString(hContact, "XStatusName", szXStatus, MAX_PATH) || !strlennull(szXStatus))
+          pXName = ICQGetContactSettingUtf(hContact, "XStatusName", "");
+          if (!strlennull(pXName))
           {
             null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szStatus, Translate(nameXStatus[bXStatus-1]));
           }
           else
           {
-            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szStatus, szXStatus);
+            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szStatus, pXName);
+            bUtf = 1;
           }
+          SAFE_FREE(&pXName);
         }
         pstr = szStatus;
         unspecified = 0;
@@ -608,6 +612,8 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
   EnableWindow(GetDlgItem(hwndDlg, idCtrl), !unspecified);
   if (unspecified)
     SetDlgItemText(hwndDlg, idCtrl, Translate("<not specified>"));
+  else if (bUtf)
+    SetDlgItemTextUtf(hwndDlg, idCtrl, pstr);
   else
     SetDlgItemText(hwndDlg, idCtrl, pstr);
   
