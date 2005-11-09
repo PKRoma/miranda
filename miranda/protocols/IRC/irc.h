@@ -22,10 +22,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _IRCWIN_H_
 #define _IRCWIN_H_
 
-#pragma warning( disable : 4786 ) // limitation in MSVC's debugger.
+// disable a lot of warnings. It should comppile on VS 6 also
+#pragma warning( disable : 4076 ) 
+#pragma warning( disable : 4786 ) 
+#pragma warning( disable : 4996 ) 
 
 #define WIN32_LEAN_AND_MEAN	
-#include "AggressiveOptimize.h"
+//#include "AggressiveOptimize.h"
 #include <windows.h>
 #include <shlwapi.h>
 #include <shlobj.h>

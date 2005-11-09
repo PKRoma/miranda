@@ -189,7 +189,7 @@ String CIrcMessage::AsString() const
 }
 
 ////////////////////////////////////////////////////////////////////
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 
 int CSSLSession::SSLInit() 
 {
@@ -284,7 +284,7 @@ int CSSLSession::SSLDisconnect(void) {
 
 	return nSSLret;
 }
-#endif
+//#endif
 ////////////////////////////////////////////////////////////////////
 
 CIrcSession::CIrcSession(IIrcSessionMonitor* pMonitor)	
@@ -321,7 +321,7 @@ bool CIrcSession::Connect(const CIrcSessionInfo& info)
 
 		FindLocalIP(con); // get the local ip used for filetransfers etc
 
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 
 		if(info.iSSL > 0)
 		{
@@ -335,7 +335,7 @@ bool CIrcSession::Connect(const CIrcSessionInfo& info)
 				return false;
 			}
 		}
-#endif
+//#endif
 
 		if(Miranda_Terminated())
 		{
@@ -391,10 +391,10 @@ void CIrcSession::Disconnect(void)
 
 	int i = 0;
 	while(
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 		
 		sslSession.nSSLConnected && sslSession.m_ssl || !sslSession.nSSLConnected && 
-#endif		
+//#endif		
 		con)
 	{
 		Sleep(50);
@@ -402,9 +402,9 @@ void CIrcSession::Disconnect(void)
 			break;
 		i++;
 	}
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 	sslSession.SSLDisconnect(); // Close SSL connection
-#endif
+//#endif
 
 	if(con)
 		Netlib_CloseHandle(con);
@@ -440,13 +440,13 @@ int CIrcSession::NLSend( const unsigned char* buf, int cbBuf)
 
 		if(	Scripting_TriggerMSPRawOut(&pszTemp) && pszTemp )
 		{
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 			if(sslSession.nSSLConnected == 1) 
 			{
 				iVal = pSSL_write(sslSession.m_ssl, pszTemp, lstrlen(pszTemp));	
 			} 
 			else 
-#endif
+//#endif
 				if (con)
 					iVal = Netlib_Send(con, (const char*)pszTemp, lstrlen(pszTemp), MSG_DUMPASTEXT);
 		}
@@ -458,13 +458,13 @@ int CIrcSession::NLSend( const unsigned char* buf, int cbBuf)
 	else
 	{
 
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 		if(sslSession.nSSLConnected == 1) 
 		{
 			return pSSL_write(sslSession.m_ssl, buf, cbBuf);	
 		} 
 		else 
-#endif
+//#endif
 			if (con)
 				return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
 	}
@@ -487,13 +487,13 @@ int CIrcSession::NLSend( const char* fmt, ...)
 int CIrcSession::NLSendNoScript( const unsigned char* buf, int cbBuf)
 {
 
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 	if(sslSession.nSSLConnected == 1) 
 	{
 		return pSSL_write(sslSession.m_ssl, buf, cbBuf);	
 	} 
 	else 
-#endif
+//#endif
 		if (con)
 			return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
 
@@ -503,11 +503,11 @@ int CIrcSession::NLSendNoScript( const unsigned char* buf, int cbBuf)
 int CIrcSession::NLReceive(unsigned char* buf, int cbBuf)
 {
 	int n = 0;
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 	if(sslSession.nSSLConnected == 1) 
 		n = pSSL_read(sslSession.m_ssl, buf, cbBuf);
 	 else 
-#endif
+//#endif
 		 n = Netlib_Recv(con, (char*)buf, cbBuf, MSG_DUMPASTEXT);
 	
 	return n;
@@ -1233,7 +1233,7 @@ int CDccSession::SetupConnection() {
 			pfts.files =				file;
 			pfts.totalProgress =		0;
 			pfts.currentFileProgress =	0;
-			pfts.currentFileTime =		time(0);
+			pfts.currentFileTime =		(unsigned long)time(0);
 
 		}
 
@@ -1782,7 +1782,7 @@ void CDccSession::DoChatReceive() {
 				ccs.wParam = 0;
 				ccs.lParam = (LPARAM) &pre;
 				pre.flags = 0;
-				pre.timestamp = time(NULL);
+				pre.timestamp = (DWORD)time(NULL);
 				pre.szMessage = DoColorCodes(pStart, true, false); // remove color codes
 				pre.lParam = 0;
 				CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
@@ -1844,13 +1844,14 @@ void DoIncomingDcc(HANDLE hConnection, DWORD dwRemoteIP, void * p1)
 void DoIdent(HANDLE hConnection, DWORD dwRemoteIP, void* extra)
 {
 	char szBuf[1024];
+	char* p;
 	int cbRead = Netlib_Recv(hConnection, szBuf, sizeof(szBuf)-1, 0);
 	if( cbRead == SOCKET_ERROR || cbRead == 0)
 		return ;
 	szBuf[cbRead] = '\0';
 
 	// strip CRLF from query
-	for(char* p = szBuf; *p && *p != '\r' && *p != '\n'; ++p)
+	for(p = szBuf; *p && *p != '\r' && *p != '\n'; ++p)
 		;
 	*p = '\0';
 

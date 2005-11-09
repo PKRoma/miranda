@@ -168,7 +168,7 @@ char * GetWordAddress(const char * text, int index)
 	for (int i =0; i < index; i++) {
 		temp = strchr(temp, ' ');
 		if (!temp)
-			temp = strchr (text, '\0');
+			temp = (char *)strchr (text, '\0');
 		else
 			while (*temp == ' ')
 				temp++;

@@ -899,7 +899,7 @@ LANGUAGE LANG_SWEDISH, SUBLANG_DEFAULT
 // remains consistent on all systems.
 IDI_SERVER              ICON                    "Icons\\server.ico"
 IDI_PART                ICON                    "Icons\\part.ico"
-IDI_JOIN                ICON                    "Icons\\join.ico"
+IDI_JOIN                ICON                    "Icons\\go.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

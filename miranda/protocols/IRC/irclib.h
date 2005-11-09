@@ -28,10 +28,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <map>
 #include <set>
 
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 #include <openssl/ssl.h>
 //#include "../../openssl-0.9.7d/include/openssl/err.h"
-#endif
+//#endif
 
 void DoIdent(HANDLE hConnection, DWORD dwRemoteIP, void* extra);
 void DoIncomingDcc(HANDLE hConnection, DWORD dwRemoteIP, void* extra);
@@ -64,7 +64,7 @@ typedef struct {
 	HANDLE	hContact;
 } DCCINFO;
 
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 // OpenSSL stuff
 typedef int			(*tSSL_library_init)		(void);
 typedef SSL_CTX*	(*tSSL_CTX_new)				(SSL_METHOD *meth);
@@ -103,7 +103,7 @@ static tSSL_free					pSSL_free;
 //static tERR_lib_error_string		pERR_lib_error_string;
 //static tERR_func_error_string		pERR_func_error_string;
 //static tERR_reason_error_string		pERR_reason_error_string;
-#endif 
+//#endif 
 
 static const char* endl = "\r\n";
 
@@ -166,7 +166,7 @@ struct CIrcSessionInfo
 
 ////////////////////////////////////////////////////////////////////
 
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 // Handles to the SSL libraries
 static SSL_CTX* m_ssl_ctx;	// SSL context, valid for all threads	
 
@@ -185,7 +185,7 @@ public:
 
 };
 
-#endif
+//#endif
 ////////////////////////////////////////////////////////////////////
 
 class CIrcDefaultMonitor; // foreward
@@ -242,9 +242,9 @@ public :
 protected :
 //	Socket m_socket;
 	CIrcSessionInfo m_info;
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 	CSSLSession sslSession;
-#endif
+//#endif
 	HANDLE con;
 	HANDLE hBindPort;
 	void DoReceive();

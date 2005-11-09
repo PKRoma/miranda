@@ -44,7 +44,7 @@ PLUGININFO			pluginInfo=
 {						// Information about the plugin
 						sizeof( PLUGININFO ),
 						"IRC Protocol",
-						PLUGIN_MAKE_VERSION( 0,6,3,5 ),
+						PLUGIN_MAKE_VERSION( 0,6,3,6 ),
 						"IRC protocol for Miranda IM.",
 						"MatriX",
 						"i_am_matrix@users.sourceforge.net",
@@ -148,9 +148,9 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	InitializeCriticalSection(&cs);
 	InitializeCriticalSection(&m_gchook);
 
-#ifdef IRC_SSL
+//#ifdef IRC_SSL
 	m_ssleay32 = LoadLibrary("ssleay32.dll");
-#endif
+//#endif
 
 	monitor = new CMyMonitor;
 	g_ircSession.AddIrcMonitor(monitor);

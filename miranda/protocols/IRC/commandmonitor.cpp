@@ -306,7 +306,7 @@ static int AddOutgoingMessageToDB(HANDLE hContact, char *msg)
 	ZeroMemory(&dbei, sizeof(dbei));
 	dbei.cbSize = sizeof(dbei);
 	dbei.szModule = IRCPROTONAME;
-	dbei.timestamp = time(NULL);
+	dbei.timestamp = (DWORD)time(NULL);
 	dbei.flags = DBEF_SENT;
 	dbei.eventType = EVENTTYPE_MESSAGE;
 	dbei.cbBlob = strlen(S.c_str()) + 1;
@@ -912,7 +912,7 @@ bool CMyMonitor::OnIrc_PRIVMSG(const CIrcMessage* pmsg)
 			ccs.wParam = 0;
 			ccs.lParam = (LPARAM) & pre;
 			pre.flags = 0;
-			pre.timestamp = time(NULL);
+			pre.timestamp = (DWORD)time(NULL);
 			pre.szMessage = (char *)mess.c_str();
 			pre.lParam = 0;
 			DBWriteContactSettingString(ccs.hContact, IRCPROTONAME, "User", pmsg->prefix.sUser.c_str());
@@ -948,6 +948,15 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 		String mess = pmsg->parameters[1];
 		mess.erase(0,1);
 		mess.erase(mess.length()-1,1);
+		
+		// exploit???
+		if(mess.find(1) != string::npos || mess.find("%newl") != string::npos )
+		{
+			char temp[4096];
+			mir_snprintf(temp, 4096, Translate("CTCP ERROR: Malformed CTCP command received from %s!%s@%s. Possible attempt to take control of your irc client registered"), pmsg->prefix.sNick.c_str(), pmsg->prefix.sUser.c_str(), pmsg->prefix.sHost.c_str());
+			DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
+			return true;
+		}
 
 		// extract the type of ctcp command
 		String ocommand = GetWord(mess.c_str(), 0);
@@ -1431,7 +1440,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 								di->sToken = sTokenBackup;
 
 							pre.flags = 0;
-							pre.timestamp = time(NULL);
+							pre.timestamp = (DWORD)time(NULL);
 
 							szBlob = (char *) malloc(sizeof(DWORD) + di->sFile.length() + 3);
 							*((PDWORD) szBlob) = (DWORD) di;
@@ -1482,7 +1491,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 					if (pmsg->m_bIncoming && command == "ping")
 					{
 						SetActiveWindow(whois_hWnd);
-						int s = time(0) - atol(GetWordAddress(mess.c_str(), 1));
+						int s = (int)time(0) - (int)atol(GetWordAddress(mess.c_str(), 1));
 						char szTemp[30];
 						if (s==1)
 							mir_snprintf(szTemp, sizeof(szTemp), "%u second", s); 
@@ -1501,7 +1510,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 			//... else show the reply in the current window
 			if (pmsg->m_bIncoming && command == "ping")
 			{
-				int s = time(0) - atol(GetWordAddress(mess.c_str(), 1));
+				int s = (int)time(0) - (int)atol(GetWordAddress(mess.c_str(), 1));
 				mir_snprintf(temp, sizeof(temp), Translate("CTCP PING reply from %s: %u sec(s)"), pmsg->prefix.sNick.c_str(), s); 
 				DoEvent(GC_EVENT_INFORMATION, NULL, NULL, temp, NULL, NULL, NULL, true, false); 
 			}
