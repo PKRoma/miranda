@@ -25,11 +25,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _CHAT_H_
 
 #pragma warning( disable : 4786 ) // limitation in MSVC's debugger.
+#pragma warning( disable : 4996 ) // limitation in MSVC's debugger.
 
 #define WIN32_LEAN_AND_MEAN	
 #define _WIN32_WINNT 0x0501
 
-#include "AggressiveOptimize.h"
+//#include "AggressiveOptimize.h"
 #include <tchar.h>
 #include <windows.h>
 #include <commctrl.h>
@@ -341,6 +342,7 @@ typedef struct GlobalLogSettings_t {
 	BOOL		TabRestore;
 	BOOL		LogLimitNames;
 	BOOL		TabsAtBottom;
+	BOOL		TimeStampEventColour;
 	DWORD		dwIconFlags;
 	DWORD		dwTrayIconFlags;
 	DWORD		dwPopupFlags;

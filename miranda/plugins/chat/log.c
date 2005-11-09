@@ -423,8 +423,26 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 				bufferEnd += logIconBmpSize[iIndex];
 			}
 
-			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", Log_SetStyle(0, 0 ));
-
+			if(g_Settings.TimeStampEventColour)
+			{
+				// colored timestamps
+				static char szStyle[256];
+				int iii;
+				if(lin->pszNick && lin->iType == GC_EVENT_MESSAGE)
+				{
+					iii = lin->bIsMe ? 2 : 1;
+					mir_snprintf(szStyle, sizeof(szStyle), "\\f0\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", iii+1, aFonts[0].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[0].lf.lfItalic, 2 * abs(aFonts[0].lf.lfHeight) * 74 / logPixelSY);
+					Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", szStyle);
+				}
+				else
+				{
+					iii = lin->bIsHighlighted?16:EventToIndex(lin);
+					mir_snprintf(szStyle, sizeof(szStyle), "\\f0\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", iii+1, aFonts[0].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[0].lf.lfItalic, 2 * abs(aFonts[0].lf.lfHeight) * 74 / logPixelSY);
+					Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", szStyle);
+				}
+			}
+			else
+				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", Log_SetStyle(0, 0 ));
 			// insert a TAB if necessary to put the timestamp in the right position
 			if (g_Settings.dwIconFlags)
 				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\tab ");

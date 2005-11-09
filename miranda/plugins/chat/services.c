@@ -47,6 +47,7 @@ static HANDLE     hServiceRegister = NULL,
 #define SIZEOF_STRUCT_GCREGISTER_V1 28
 #define SIZEOF_STRUCT_GCWINDOW_V1	32
 #define SIZEOF_STRUCT_GCEVENT_V1	44
+#define SIZEOF_STRUCT_GCEVENT_V2	48
 
 void HookEvents(void)
 {
@@ -736,7 +737,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	if(gcd== NULL)
 		return GC_EVENT_ERROR;
 
-	if(gce->cbSize != SIZEOF_STRUCT_GCEVENT_V1)
+	if(gce->cbSize != SIZEOF_STRUCT_GCEVENT_V1 && gce->cbSize != SIZEOF_STRUCT_GCEVENT_V2)
 		return GC_EVENT_WRONGVER;
 
 	EnterCriticalSection(&cs);

@@ -51,7 +51,7 @@ PLUGININFO pluginInfo = {
 	#else
 		"Chat",
 	#endif
-	PLUGIN_MAKE_VERSION(0,3,2,0),
+	PLUGIN_MAKE_VERSION(0,3,2,1),
 	"Provides chat rooms for protocols supporting it",
 	"MatriX",
 	"i_am_matrix@users.sourceforge.net",
@@ -140,15 +140,15 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
 		iSize = sizeof(GCREGISTER);
 		mir_snprintf(szTemp, sizeof(szTemp), "%u", iSize);
-		MessageBox(NULL, szTemp, "GCREGISTER", MB_OK);
+		MessageBoxA(NULL, szTemp, "GCREGISTER", MB_OK);
 
-		iSize = sizeof(GCWINDOW);
+		iSize = sizeof(GCSESSION);
 		mir_snprintf(szTemp, sizeof(szTemp), "%u", iSize);
-		MessageBox(NULL, szTemp, "GCWINDOW", MB_OK);
+		MessageBoxA(NULL, szTemp, "GCWINDOW", MB_OK);
 
 		iSize = sizeof(GCEVENT);
 		mir_snprintf(szTemp, sizeof(szTemp), "%u", iSize);
-		MessageBox(NULL, szTemp, "GCEVENT", MB_OK);
+		MessageBoxA(NULL, szTemp, "GCEVENT", MB_OK);
 
 	}
 	*/

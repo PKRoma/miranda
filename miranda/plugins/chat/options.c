@@ -107,6 +107,7 @@ static struct branch_t branch1[] = {
 static struct branch_t branch2[] = {
 	{_T("Prefix all events with a timestamp"), "ShowTimeStamp", 0,1, NULL},
 	{_T("Only prefix with timestamp if it has changed"), "ShowTimeStampIfChanged", 0,0, NULL},
+	{_T("Timestamp has same colour as the event"), "TimeStampEventColour", 0,0, NULL},
 	{_T("Indent the second line of a message"), "LogIndentEnabled", 0,1, NULL},
 	{_T("Limit user names in the message log to 20 characters"), "LogLimitNames", 0,1, NULL},
 	{_T("Add \':\' to auto-completed user names"), "AddColonToAutoComplete", 0, 1, NULL},
@@ -1275,6 +1276,7 @@ void LoadGlobalSettings(void)
 	g_Settings.TabRestore = DBGetContactSettingByte(NULL, "Chat", "TabRestore", 0);
 	g_Settings.SoundsFocus = DBGetContactSettingByte(NULL, "Chat", "SoundsFocus", 0);
 	g_Settings.ShowTimeIfChanged = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowTimeStampIfChanged", 0);
+	g_Settings.TimeStampEventColour = (BOOL)DBGetContactSettingByte(NULL, "Chat", "TimeStampEventColour", 0);
 	g_Settings.iEventLimit = DBGetContactSettingWord(NULL, "Chat", "LogLimit", 100);
 	g_Settings.dwIconFlags = DBGetContactSettingDword(NULL, "Chat", "IconFlags", 0x0000);
 	g_Settings.dwTrayIconFlags = DBGetContactSettingDword(NULL, "Chat", "TrayIconFlags", 0x1000);
