@@ -422,7 +422,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 		struct ClcContact *contact;
 		if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 			break;
-		lstrcpyn(contact->szText, ( TCHAR* )lParam, sizeof(contact->szText));
+		lstrcpyn(contact->szText, ( TCHAR* )lParam, SIZEOF( contact->szText ));
 		SortCLC(hwnd, dat, 1);
 		InvalidateRect(hwnd, NULL, FALSE);
 		break;

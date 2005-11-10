@@ -558,7 +558,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
         pts[6].y = pts[5].y;
         pts[7].x = pts[0].x;
         pts[7].y = pts[4].y;
-        hRgn = CreatePolygonRgn(pts, sizeof(pts) / sizeof(pts[0]), ALTERNATE);
+        hRgn = CreatePolygonRgn(pts, SIZEOF(pts), ALTERNATE);
         hBrush = CreateSolidBrush(dat->fontInfo[FONTID_CONTACTS].colour);
         hoBrush = (HBRUSH) SelectObject(hdcMem, hBrush);
         FillRgn(hdcMem, hRgn, hBrush);
@@ -592,7 +592,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
         greyGreen = GetGValue(greyColour) * 2;
         greyBlue = GetBValue(greyColour) * 2;
         if (divide3[0] == 255) {
-            for (i = 0; i < sizeof(divide3) / sizeof(divide3[0]); i++)
+            for (i = 0; i < SIZEOF(divide3); i++)
                 divide3[i] = (i + 1) / 3;
         }
         for (i = 4 * clRect.right * clRect.bottom - 4; i >= 0; i -= 4) {

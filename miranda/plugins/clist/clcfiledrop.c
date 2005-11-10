@@ -140,7 +140,7 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragEnter(struct CDropTarget *lpThis, 
     shortPt.x = pt.x;
     shortPt.y = pt.y;
     hwnd = WindowFromPoint(shortPt);
-    GetClassName(hwnd, szWindowClass, sizeof(szWindowClass));
+    GetClassName(hwnd, szWindowClass, SIZEOF(szWindowClass));
     if (!lstrcmp(szWindowClass, CLISTCONTROL_CLASS)) {
         struct ClcData *dat;
         hwndCurrentDrag = hwnd;
@@ -223,7 +223,7 @@ static STDMETHODIMP_(HRESULT) CDropTarget_Drop(struct CDropTarget *lpThis, IData
         fileCount = DragQueryFile(hDrop, -1, NULL, 0);
         ppFiles = NULL;
         for (i = 0; i < fileCount; i++) {
-            DragQueryFileA(hDrop, i, szFilename, sizeof(szFilename));
+            DragQueryFileA(hDrop, i, szFilename, SIZEOF(szFilename));
             AddToFileList(&ppFiles, &totalCount, szFilename);
         }
 

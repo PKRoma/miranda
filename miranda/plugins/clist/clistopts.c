@@ -48,7 +48,7 @@ int CListOptInit(WPARAM wParam, LPARAM lParam)
     odp.flags = ODPF_BOLDGROUPS;
     odp.nIDBottomSimpleControl = IDC_STCLISTGROUP;
     odp.expertOnlyControls = expertOnlyControls;
-    odp.nExpertOnlyControls = sizeof(expertOnlyControls) / sizeof(expertOnlyControls[0]);
+    odp.nExpertOnlyControls = SIZEOF(expertOnlyControls);
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
     odp.position = -900000000;
@@ -171,7 +171,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 for (i = 0; i < count; i++) {
                     if (protos[i]->type != PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
                         continue;
-                    CallProtoService(protos[i]->szName, PS_GETNAME, sizeof(szName), (LPARAM) szName);
+                    CallProtoService(protos[i]->szName, PS_GETNAME, SIZEOF(szName), (LPARAM) szName);
                     item = SendDlgItemMessageA(hwndDlg, IDC_PRIMARYSTATUS, CB_ADDSTRING, 0, (LPARAM) szName);
                     SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_SETITEMDATA, item, (LPARAM) protos[i]);
                     if (dbv.type == DBVT_ASCIIZ && !lstrcmpA(dbv.pszVal, protos[i]->szName))
@@ -346,7 +346,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                     DBWriteContactSettingWord(NULL, "CList", "HKReadMsg", (WORD) SendDlgItemMessage(hwndDlg, IDC_HKREADMSG, HKM_GETHOTKEY, 0, 0));
                     DBWriteContactSettingByte(NULL, "CList", "HKEnNetSearch", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_NETSEARCH));
                     DBWriteContactSettingWord(NULL, "CList", "HKNetSearch", (WORD) SendDlgItemMessage(hwndDlg, IDC_HKSEARCH, HKM_GETHOTKEY, 0, 0));
-                    GetDlgItemTextA(hwndDlg, IDC_SEARCHURL, str, sizeof(str));
+                    GetDlgItemTextA(hwndDlg, IDC_SEARCHURL, str, SIZEOF(str));
                     DBWriteContactSettingString(NULL, "CList", "SearchUrl", str);
                     DBWriteContactSettingByte(NULL, "CList", "HKSearchNewWnd", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SEARCHNEWWND));
                     DBWriteContactSettingByte(NULL, "CList", "HKEnShowOptions", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWOPTIONS));

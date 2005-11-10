@@ -114,13 +114,13 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		char profile[MAX_PATH];
 		int rc;
 		// wParam = (ATOM)hProfileAtom, lParam = 0
-		if (GlobalGetAtomNameA((ATOM) wParam, profile, sizeof(profile))) {
+		if (GlobalGetAtomNameA((ATOM) wParam, profile, SIZEOF(profile))) {
 			char path[MAX_PATH];
 			char file[MAX_PATH];
 			char p[MAX_PATH];
-			CallService(MS_DB_GETPROFILEPATH, sizeof(path), (LPARAM) & path);
-			CallService(MS_DB_GETPROFILENAME, sizeof(file), (LPARAM) & file);
-			mir_snprintf(p, sizeof(p), "%s\\%s", path, file);
+			CallService(MS_DB_GETPROFILEPATH, SIZEOF(path), (LPARAM) & path);
+			CallService(MS_DB_GETPROFILENAME, SIZEOF(file), (LPARAM) & file);
+			mir_snprintf(p, SIZEOF(p), "%s\\%s", path, file);
 			rc = lstrcmpiA(profile, p) == 0;
 			ReplyMessage(rc);
 			if (rc) { 
@@ -639,7 +639,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					if (CallProtoService(szProto, PS_GETNAME, sizeof(szName), (LPARAM) szName)) {
 						strcpy(szName, szProto);
 					}           //if
-					if (lstrlenA(szName) < sizeof(szName) - 1)
+					if (lstrlenA(szName) < SIZEOF(szName) - 1)
 						lstrcatA(szName, " ");
 					GetTextExtentPoint32A(dis->hDC, szName, lstrlenA(szName), &textSize);
 					TextOutA(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - textSize.cy) >> 1, szName, lstrlenA(szName));
@@ -842,9 +842,9 @@ int LoadCLUIModule(void)
 	RegisterClass(&wndclass);
 
 	if (DBGetContactSettingTString(NULL, "CList", "TitleText", &dbv))
-		lstrcpyn(titleText, _T(MIRANDANAME), sizeof(titleText));
+		lstrcpyn(titleText, _T(MIRANDANAME), SIZEOF( titleText ));
 	else {
-		lstrcpyn(titleText, dbv.ptszVal, sizeof(titleText));
+		lstrcpyn(titleText, dbv.ptszVal, SIZEOF(titleText));
 		DBFreeVariant(&dbv);
 	}
 	hwndContactList = CreateWindowEx(

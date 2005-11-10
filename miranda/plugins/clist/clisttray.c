@@ -107,36 +107,36 @@ static char *TrayIconMakeTooltip(const char *szPrefix, const char *szProto)
 				if (protos[i]->type == PROTOTYPE_PROTOCOL)
 					return TrayIconMakeTooltip(szPrefix, protos[i]->szName);
 		if (szPrefix && szPrefix[0]) {
-			lstrcpynA(szTip, szPrefix, sizeof(szTip));
+			lstrcpynA(szTip, szPrefix, SIZEOF(szTip));
 			if (!DBGetContactSettingByte(NULL, "CList", "AlwaysStatus", SETTING_ALWAYSSTATUS_DEFAULT))
 				return szTip;
 		}
 		else
 			szTip[0] = '\0';
-		szTip[sizeof(szTip) - 1] = '\0';
+		szTip[ SIZEOF(szTip) - 1] = '\0';
 		for (i = count - 1; i >= 0; i--) {
 			if (protos[i]->type != PROTOTYPE_PROTOCOL)
 				continue;
-			CallProtoService(protos[i]->szName, PS_GETNAME, sizeof(szProtoName), (LPARAM) szProtoName);
+			CallProtoService(protos[i]->szName, PS_GETNAME, SIZEOF(szProtoName), (LPARAM) szProtoName);
 			szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, CallProtoService(protos[i]->szName, PS_GETSTATUS, 0, 0), 0);
 			if (szTip[0])
-				strncat(szTip, szSeparator, sizeof(szTip) - 1 - strlen(szTip));
-			strncat(szTip, szProtoName, sizeof(szTip) - 1 - strlen(szTip));
-			strncat(szTip, " ", sizeof(szTip) - 1 - strlen(szTip));
-			strncat(szTip, szStatus, sizeof(szTip) - 1 - strlen(szTip));
+				strncat(szTip, szSeparator, SIZEOF(szTip) - 1 - strlen(szTip));
+			strncat(szTip, szProtoName, SIZEOF(szTip) - 1 - strlen(szTip));
+			strncat(szTip, " ", SIZEOF(szTip) - 1 - strlen(szTip));
+			strncat(szTip, szStatus, SIZEOF(szTip) - 1 - strlen(szTip));
 		}
 	}
 	else {
-		CallProtoService(szProto, PS_GETNAME, sizeof(szProtoName), (LPARAM) szProtoName);
+		CallProtoService(szProto, PS_GETNAME, SIZEOF(szProtoName), (LPARAM) szProtoName);
 		szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, CallProtoService(szProto, PS_GETSTATUS, 0, 0), 0);
 		if (szPrefix && szPrefix[0]) {
 			if (DBGetContactSettingByte(NULL, "CList", "AlwaysStatus", SETTING_ALWAYSSTATUS_DEFAULT))
-				mir_snprintf(szTip, sizeof(szTip), "%s%s%s %s", szPrefix, szSeparator, szProtoName, szStatus);
+				mir_snprintf(szTip, SIZEOF(szTip), "%s%s%s %s", szPrefix, szSeparator, szProtoName, szStatus);
 			else
-				lstrcpynA(szTip, szPrefix, sizeof(szTip));
+				lstrcpynA(szTip, szPrefix, SIZEOF(szTip));
 		}
 		else
-			mir_snprintf(szTip, sizeof(szTip), "%s %s", szProtoName, szStatus);
+			mir_snprintf(szTip, SIZEOF(szTip), "%s %s", szProtoName, szStatus);
 	}
 	return szTip;
 }

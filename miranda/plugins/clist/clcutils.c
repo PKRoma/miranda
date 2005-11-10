@@ -59,7 +59,7 @@ char *GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact)
 	}
 	if (onlineCount == 0 && dat->exStyle & CLS_EX_HIDECOUNTSWHENEMPTY)
 		return "";
-	mir_snprintf(szName, sizeof(szName), "(%u/%u)", onlineCount, totalCount);
+	mir_snprintf(szName, SIZEOF(szName), "(%u/%u)", onlineCount, totalCount);
 	return szName;
 }
 
@@ -375,18 +375,16 @@ void EndRename(HWND hwnd, struct ClcData *dat, int save)
 	if (save) {
 		TCHAR text[120];
 		struct ClcContact *contact;
-		GetWindowText(hwndEdit, text, sizeof(text));
+		GetWindowText(hwndEdit, text, SIZEOF(text));
 		if (GetRowByIndex(dat, dat->selection, &contact, NULL) != -1) {
 			if (lstrcmp(contact->szText, text)) {
 				if (contact->type == CLCIT_GROUP && !_tcsstr(text, _T("\\"))) {
 					TCHAR szFullName[256];
-					if (contact->group->parent && contact->group->parent->parent) {
-						_sntprintf(szFullName, sizeof(szFullName), _T("%s\\%s"),
-							GetGroupNameT(contact->group->parent->groupId, NULL),
-							text);
-						szFullName[ sizeof( szFullName )-1 ] = 0;
-					}
-					else lstrcpyn(szFullName, text, sizeof(szFullName));
+					if (contact->group->parent && contact->group->parent->parent)
+						mir_sntprintf( szFullName, SIZEOF(szFullName), _T("%s\\%s"),
+							GetGroupNameT(contact->group->parent->groupId, NULL), text);
+					else 
+						lstrcpyn( szFullName, text, SIZEOF( szFullName ));
 					RenameGroupT( contact->groupId, szFullName );
 				}
 				else if (contact->type == CLCIT_CONTACT) {

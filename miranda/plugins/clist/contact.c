@@ -74,7 +74,7 @@ void ChangeContactIcon(HANDLE hContact, int iIcon, int add)
 static int GetStatusModeOrdering(int statusMode)
 {
 	int i;
-	for (i = 0; i < sizeof(statusModeOrder) / sizeof(statusModeOrder[0]); i++)
+	for (i = 0; i < SIZEOF(statusModeOrder); i++)
 		if (statusModeOrder[i].status == statusMode)
 			return statusModeOrder[i].order;
 	return 1000;
@@ -148,8 +148,8 @@ int CompareContacts(WPARAM wParam, LPARAM lParam)
 	}
 
 	nameb = GetContactDisplayNameW( a, 0);
-	_tcsncpy(namea, nameb, sizeof(namea)/sizeof(TCHAR));
-	namea[sizeof(namea) - 1] = 0;
+	_tcsncpy(namea, nameb, SIZEOF(namea));
+	namea[ SIZEOF(namea)-1 ] = 0;
 	nameb = GetContactDisplayNameW( b, 0);
 
 	//otherwise just compare names

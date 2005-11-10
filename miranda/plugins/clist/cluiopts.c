@@ -50,7 +50,7 @@ int CluiOptInit(WPARAM wParam, LPARAM lParam)
 	odp.flags = ODPF_BOLDGROUPS;
 	odp.nIDBottomSimpleControl = IDC_STWINDOWGROUP;
 	odp.expertOnlyControls = expertOnlyControls;
-	odp.nExpertOnlyControls = sizeof(expertOnlyControls) / sizeof(expertOnlyControls[0]);
+	odp.nExpertOnlyControls = SIZEOF(expertOnlyControls);
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_SBAR);
@@ -216,7 +216,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			DBWriteContactSettingByte(NULL, "CList", "Min2Tray", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY));
 			{
 				TCHAR title[256];
-				GetDlgItemText(hwndDlg, IDC_TITLETEXT, title, sizeof(title));
+				GetDlgItemText(hwndDlg, IDC_TITLETEXT, title, SIZEOF(title));
 				DBWriteContactSettingTString(NULL, "CList", "TitleText", title);
 				SetWindowText(hwndContactList, title);
 			}

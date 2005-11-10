@@ -75,8 +75,8 @@ int CluiProtocolStatusChanged(WPARAM wParam, LPARAM lParam)
             if (showOpts & 1)
                 x += GetSystemMetrics(SM_CXSMICON);
             if (showOpts & 2) {
-                CallProtoService(proto[i]->szName, PS_GETNAME, sizeof(szName), (LPARAM) szName);
-                if (showOpts & 4 && lstrlenA(szName) < sizeof(szName) - 1)
+                CallProtoService(proto[i]->szName, PS_GETNAME, SIZEOF(szName), (LPARAM) szName);
+                if (showOpts & 4 && lstrlenA(szName) < SIZEOF(szName) - 1)
                     lstrcatA(szName, " ");
                 GetTextExtentPoint32A(hdc, szName, lstrlenA(szName), &textSize);
                 x += textSize.cx;
@@ -129,7 +129,7 @@ static int GroupAdded(WPARAM wParam, LPARAM lParam)
         TCHAR szFocusClass[64];
         HWND hwndFocus = GetFocus();
 
-        GetClassName(hwndFocus, szFocusClass, sizeof(szFocusClass));
+        GetClassName(hwndFocus, szFocusClass, SIZEOF(szFocusClass));
         if (!lstrcmp(szFocusClass, CLISTCONTROL_CLASS)) {
             hItem = (HANDLE) SendMessage(hwndFocus, CLM_FINDGROUP, wParam, 0);
             if (hItem)

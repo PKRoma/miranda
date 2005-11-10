@@ -183,10 +183,10 @@ int IconFromStatusMode(const char *szProto, int status)
 {
     int index, i;
 
-    for (index = 0; index < sizeof(statusModeList) / sizeof(statusModeList[0]); index++)
+    for (index = 0; index < SIZEOF(statusModeList); index++)
         if (status == statusModeList[index])
             break;
-    if (index == sizeof(statusModeList) / sizeof(statusModeList[0]))
+    if (index == SIZEOF(statusModeList))
         index = 0;
     if (szProto == NULL)
         return index + 1;
@@ -242,7 +242,7 @@ static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
             continue;
         protoIconIndex = (struct ProtoIconIndex *) mir_realloc(protoIconIndex, sizeof(struct ProtoIconIndex) * (protoIconIndexCount + 1));
         protoIconIndex[protoIconIndexCount].szProto = protoList[i]->szName;
-        for (j = 0; j < sizeof(statusModeList) / sizeof(statusModeList[0]); j++) {
+        for (j = 0; j < SIZEOF(statusModeList); j++) {
             iImg = ImageList_AddIcon(hCListImages, LoadSkinnedProtoIcon(protoList[i]->szName, statusModeList[j]));
             if (j == 0)
                 protoIconIndex[protoIconIndexCount].iIconBase = iImg;
@@ -286,8 +286,8 @@ static BOOL CALLBACK AskForConfirmationDlgProc(HWND hWnd, UINT msg, WPARAM wPara
                 TCHAR szFormat[256];
                 TCHAR szFinal[256];
 
-                GetDlgItemText(hWnd, IDC_TOPLINE, szFormat, sizeof(szFormat));
-                mir_sntprintf(szFinal, sizeof(szFinal), szFormat, GetContactDisplayNameW((HANDLE)lParam, 0));
+                GetDlgItemText(hWnd, IDC_TOPLINE, szFormat, SIZEOF(szFormat));
+                mir_sntprintf(szFinal, SIZEOF(szFinal), szFormat, GetContactDisplayNameW((HANDLE)lParam, 0));
                 SetDlgItemText(hWnd, IDC_TOPLINE, szFinal);
             }
             SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
@@ -471,7 +471,7 @@ int LoadContactListModule(void)
     ImageList_AddIcon(hCListImages, LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_BLANK)));
     {
         int i;
-        for (i = 0; i < sizeof(statusModeList) / sizeof(statusModeList[0]); i++)
+        for (i = 0; i < SIZEOF(statusModeList); i++)
             ImageList_AddIcon(hCListImages, LoadSkinnedIcon(skinIconStatusList[i]));
     }
     //see IMAGE_GROUP... in clist.h if you add more images above here
@@ -620,12 +620,12 @@ static int CListIconsChanged(WPARAM wParam, LPARAM lParam)
 {
     int i, j;
 
-    for (i = 0; i < sizeof(statusModeList) / sizeof(statusModeList[0]); i++)
+    for (i = 0; i < SIZEOF(statusModeList); i++)
         ImageList_ReplaceIcon(hCListImages, i + 1, LoadSkinnedIcon(skinIconStatusList[i]));
     ImageList_ReplaceIcon(hCListImages, IMAGE_GROUPOPEN, LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
     ImageList_ReplaceIcon(hCListImages, IMAGE_GROUPSHUT, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
     for (i = 0; i < protoIconIndexCount; i++)
-        for (j = 0; j < sizeof(statusModeList) / sizeof(statusModeList[0]); j++)
+        for (j = 0; j < SIZEOF(statusModeList); j++)
             ImageList_ReplaceIcon(hCListImages, protoIconIndex[i].iIconBase + j, LoadSkinnedProtoIcon(protoIconIndex[i].szProto, statusModeList[j]));
     TrayIconIconsChanged();
     InvalidateRect((HWND) CallService(MS_CLUI_GETHWND, 0, 0), NULL, TRUE);

@@ -141,7 +141,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu, int uItem, BOOL fByPositio
 		TCHAR str[32];
 		mii.fMask = MIIM_SUBMENU | MIIM_DATA | MIIM_TYPE;
 		mii.dwTypeData = str;
-		mii.cch = sizeof(str);
+		mii.cch = SIZEOF(str);
 		GetMenuItemInfo(hMenu, uItem, TRUE, &mii);
 		if (mii.fType == MFT_STRING && !_tcscmp(mii.dwTypeData, TranslateT("E&xit"))) {
 			//make sure we keep the separator before the exit menu item
@@ -196,7 +196,7 @@ static int AddMainMenuItem(WPARAM wParam, LPARAM lParam)
 		if (i < 0) {
 			mii.fMask = MIIM_SUBMENU | MIIM_DATA | MIIM_TYPE;
 			for (i = GetMenuItemCount(hMenu) - 1; i >= 0; i--) {
-				mii.cch = sizeof(str);
+				mii.cch = SIZEOF(str);
 				mii.dwTypeData = str;
 				GetMenuItemInfo(hMenu, i, TRUE, &mii);
 				if (mii.fType == MFT_SEPARATOR)
@@ -365,11 +365,11 @@ int MenuProcessCommand(WPARAM wParam, LPARAM lParam)
 	if (HIWORD(wParam) & MPCF_MAINMENU) {
 		int newStatus, protoIndex;
 		CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & proto);
-		if (LOWORD(wParam) >= ID_STATUS_OFFLINE + sizeof(statusModeList) / sizeof(statusModeList[0])
-			&& LOWORD(wParam) < ID_STATUS_OFFLINE + (protoCount + 1) * sizeof(statusModeList) / sizeof(statusModeList[0])) {
+		if (LOWORD(wParam) >= ID_STATUS_OFFLINE + SIZEOF(statusModeList)
+			&& LOWORD(wParam) < ID_STATUS_OFFLINE + (protoCount + 1) * SIZEOF(statusModeList)) {
 				// one of the protocol-specific status menus
-				protoIndex = (LOWORD(wParam) - ID_STATUS_OFFLINE) / (sizeof(statusModeList) / sizeof(statusModeList[0])) - 1;
-				newStatus = (LOWORD(wParam) - ID_STATUS_OFFLINE) % (sizeof(statusModeList) / sizeof(statusModeList[0])) + ID_STATUS_OFFLINE;
+				protoIndex = (LOWORD(wParam) - ID_STATUS_OFFLINE) / SIZEOF(statusModeList) - 1;
+				newStatus = (LOWORD(wParam) - ID_STATUS_OFFLINE) % SIZEOF(statusModeList) + ID_STATUS_OFFLINE;
 				// let the world know, this need's the translated ID_STATUS_* NOT LOWORD(wParam)
 				// which is offseted by some degree depending on protocol used
 				CallProtoService(proto[protoIndex]->szName, PS_SETSTATUS, newStatus, 0);
@@ -585,10 +585,10 @@ static int MenuIconsChanged(WPARAM wParam, LPARAM lParam)
 			if (proto[i]->type != PROTOTYPE_PROTOCOL)
 				continue;
 			flags = CallProtoService(proto[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0);
-			for (j = 0; j < sizeof(statusModeList) / sizeof(statusModeList[0]); j++) {
+			for (j = 0; j < SIZEOF(statusModeList); j++) {
 				if (!(flags & statusModePf2List[j]))
 					continue;
-				if (!GetMenuItemInfo(hStatusMenu, (i + 1) * sizeof(statusModeList) / sizeof(statusModeList[0]) + statusModeList[j], FALSE, &mii))
+				if (!GetMenuItemInfo(hStatusMenu, (i + 1) * SIZEOF(statusModeList) + statusModeList[j], FALSE, &mii))
 					continue;
 				if ((mii.dwItemData & MENU_CUSTOMITEMMAIN) != MENU_CUSTOMITEMMAIN)
 					continue;
@@ -596,7 +596,7 @@ static int MenuIconsChanged(WPARAM wParam, LPARAM lParam)
 					LoadSkinnedProtoIcon(proto[i]->szName, statusModeList[j]));
 	}	}	}
 
-	for (i = 0; i < sizeof(statusModeList) / sizeof(statusModeList[0]); i++) {
+	for (i = 0; i < SIZEOF(statusModeList); i++) {
 		if (!GetMenuItemInfo(hStatusMenu, statusModeList[i], FALSE, &mii))
 			continue;
 		if ((mii.dwItemData & MENU_CUSTOMITEMMAIN) != MENU_CUSTOMITEMMAIN)
@@ -728,7 +728,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
 			/* if a single network protocol is used, load the iconset for the global menu by name */
 			if (networkProtoCount == 1)
 				szProto = szLastProto;
-			for (i = 0; i < sizeof(statusModeList) / sizeof(statusModeList[0]); i++) {
+			for (i = 0; i < SIZEOF(statusModeList); i++) {
 				GiveExistingItemAnIcon(statusModeList[i], LoadSkinnedProtoIcon(szProto, statusModeList[i]));
 			}
 			HookEvent(ME_SKIN_ICONSCHANGED, MenuIconsChanged);
@@ -754,7 +754,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
 				int j;
 				HMENU hMenu = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CLISTMENU)), 1);
 				ZeroMemory(&mii, sizeof(mii));
-				for (j = 0; j < sizeof(statusModeList) / sizeof(statusModeList[0]); j++) {
+				for (j = 0; j < SIZEOF(statusModeList); j++) {
 					if (!(flags & statusModePf2List[j]))
 						DeleteMenu(hMenu, statusModeList[j], MF_BYCOMMAND);
 					else if (moreflags & statusModePf2List[j] && j > 0)
@@ -763,7 +763,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
 						TCHAR text[128], *ptab;
 						mii.cbSize = MENUITEMINFO_V4_SIZE;
 						mii.fMask = MIIM_TYPE;
-						mii.cch = sizeof(text);
+						mii.cch = SIZEOF(text);
 						mii.dwTypeData = text;
 						GetMenuItemInfo(hMenu, statusModeList[j], FALSE, &mii);
 						_tcscpy(text, TranslateTS(text));
@@ -786,7 +786,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
 						}
 						else
 							mii.fMask = MIIM_ID | MIIM_TYPE;
-						mii.wID = statusModeList[j] + (i + 1) * sizeof(statusModeList) / sizeof(statusModeList[0]);
+						mii.wID = statusModeList[j] + (i + 1) * SIZEOF(statusModeList);
 						SetMenuItemInfo(hMenu, statusModeList[j], FALSE, &mii);
 					}
 				}
@@ -812,7 +812,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
 				}
 				mii.fType = MFT_STRING;
 				mii.hSubMenu = hMenu;
-				CallProtoService(proto[i]->szName, PS_GETNAME, sizeof(protoName), (LPARAM) protoName);
+				CallProtoService(proto[i]->szName, PS_GETNAME, SIZEOF(protoName), (LPARAM) protoName);
 				{	TCHAR* ptszProtoName = LangPackPcharToTchar(protoName);
 					mii.dwTypeData = ptszProtoName;
 					InsertMenuItem(hStatusMenu, 0, TRUE, &mii);
@@ -821,7 +821,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
 			statusFlags |= flags;
 			statusFlags ^= moreflags;
 		}
-		for (i = 0; i < sizeof(statusModeList) / sizeof(statusModeList[0]); i++)
+		for (i = 0; i < SIZEOF(statusModeList); i++)
 			if (!(statusFlags & statusModePf2List[i]))
 				DeleteMenu(hStatusMenu, statusModeList[i], MF_BYCOMMAND);
 		return 0;
@@ -867,10 +867,10 @@ static int MenuProtoAck(WPARAM wParam, LPARAM lParam)
 			if (!strcmp(proto[i]->szName, ack->szModule))
 				break;
 		//hProcess is previous mode, lParam is new mode
-		if ((int) ack->hProcess >= ID_STATUS_OFFLINE && (int) ack->hProcess < ID_STATUS_OFFLINE + sizeof(statusModeList) / sizeof(statusModeList[0]))
-			CheckMenuItem(hStatusMenu, (i + 1) * sizeof(statusModeList) / sizeof(statusModeList[0]) + (int) ack->hProcess, MF_BYCOMMAND | MF_UNCHECKED);
-		if (ack->lParam >= ID_STATUS_OFFLINE && ack->lParam < ID_STATUS_OFFLINE + sizeof(statusModeList) / sizeof(statusModeList[0]))
-			CheckMenuItem(hStatusMenu, (i + 1) * sizeof(statusModeList) / sizeof(statusModeList[0]) + ack->lParam, MF_BYCOMMAND | MF_CHECKED);
+		if ((int) ack->hProcess >= ID_STATUS_OFFLINE && (int) ack->hProcess < ID_STATUS_OFFLINE + SIZEOF(statusModeList))
+			CheckMenuItem(hStatusMenu, (i + 1) * SIZEOF(statusModeList) + (int) ack->hProcess, MF_BYCOMMAND | MF_UNCHECKED);
+		if (ack->lParam >= ID_STATUS_OFFLINE && ack->lParam < ID_STATUS_OFFLINE + SIZEOF(statusModeList))
+			CheckMenuItem(hStatusMenu, (i + 1) * SIZEOF(statusModeList) + ack->lParam, MF_BYCOMMAND | MF_CHECKED);
 		return 0;
 }
 

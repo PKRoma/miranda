@@ -34,14 +34,14 @@ static int AddItemToGroup(struct ClcGroup *group, int iAboveItem)
 	memmove(group->contact + iAboveItem + 1, group->contact + iAboveItem, sizeof(struct ClcContact) * (group->contactCount - iAboveItem - 1));
 	group->contact[iAboveItem].type = CLCIT_DIVIDER;
 	group->contact[iAboveItem].flags = 0;
-	memset(group->contact[iAboveItem].iExtraImage, 0xFF, sizeof(group->contact[iAboveItem].iExtraImage));
+	memset(group->contact[iAboveItem].iExtraImage, 0xFF, SIZEOF(group->contact[iAboveItem].iExtraImage));
 	group->contact[iAboveItem].szText[0] = '\0';
 	return iAboveItem;
 }
 
 struct ClcGroup *AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers)
 {
-	TCHAR *pBackslash, *pNextField, szThisField[sizeof(dat->list.contact[0].szText)];
+	TCHAR *pBackslash, *pNextField, szThisField[ SIZEOF(dat->list.contact[0].szText) ];
 	struct ClcGroup *group = &dat->list;
 	int i, compareResult;
 
@@ -51,11 +51,11 @@ struct ClcGroup *AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, D
 	do {
 		pBackslash = _tcschr(pNextField, '\\');
 		if (pBackslash == NULL) {
-			lstrcpyn(szThisField, pNextField, sizeof(szThisField));
+			lstrcpyn(szThisField, pNextField, SIZEOF(szThisField));
 			pNextField = NULL;
 		}
 		else {
-			lstrcpyn(szThisField, pNextField, min(sizeof(szThisField), pBackslash - pNextField + 1));
+			lstrcpyn(szThisField, pNextField, min( SIZEOF(szThisField), pBackslash - pNextField + 1 ));
 			pNextField = pBackslash + 1;
 		}
 		compareResult = 1;
@@ -87,7 +87,7 @@ struct ClcGroup *AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, D
 				return NULL;
 			i = AddItemToGroup(group, i);
 			group->contact[i].type = CLCIT_GROUP;
-			lstrcpyn(group->contact[i].szText, szThisField, sizeof(group->contact[i].szText));
+			lstrcpyn(group->contact[i].szText, szThisField, SIZEOF( group->contact[i].szText ));
 			group->contact[i].groupId = (WORD) (pNextField ? 0 : groupId);
 			group->contact[i].group = (struct ClcGroup *) mir_alloc(sizeof(struct ClcGroup));
 			group->contact[i].group->parent = group;
@@ -162,7 +162,7 @@ int AddInfoItemToGroup(struct ClcGroup *group, int flags, const TCHAR *pszText)
 	group->contact[i].type = CLCIT_INFO;
 	group->contact[i].flags = (BYTE) flags;
 	group->contact[i].hContact = (HANDLE)++ iInfoItemUniqueHandle;
-	lstrcpyn(group->contact[i].szText, pszText, sizeof(group->contact[i].szText));
+	lstrcpyn(group->contact[i].szText, pszText, SIZEOF( group->contact[i].szText ));
 	return i;
 }
 
@@ -197,7 +197,7 @@ static void AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDL
 	idleMode = szProto != NULL ? DBGetContactSettingDword(hContact, szProto, "IdleTS", 0) : 0;
 	if (idleMode)
 		group->contact[i].flags |= CONTACTF_IDLE;
-	lstrcpyn(group->contact[i].szText, GetContactDisplayNameW(hContact,0), sizeof(group->contact[i].szText));
+	lstrcpyn(group->contact[i].szText, GetContactDisplayNameW(hContact,0), SIZEOF(group->contact[i].szText));
 }
 
 void AddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int updateTotalCount, int checkHideOffline)
@@ -667,7 +667,7 @@ void SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 			for (i = 0; i < savedContactCount; i++)
 				if (savedContact[i].hContact == group->contact[group->scanIndex].hContact) {
 					CopyMemory(group->contact[group->scanIndex].iExtraImage, savedContact[i].iExtraImage,
-						sizeof(group->contact[group->scanIndex].iExtraImage));
+						SIZEOF(group->contact[group->scanIndex].iExtraImage));
 					if (savedContact[i].checked)
 						group->contact[group->scanIndex].flags |= CONTACTF_CHECKED;
 					break;

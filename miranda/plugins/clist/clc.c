@@ -378,7 +378,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 						}
 						group = group->parent;
 						nameLen = lstrlen(group->contact[i].szText);
-						if (lstrlen(szFullName) + 1 + nameLen > sizeof(szFullName)) {
+						if (lstrlen(szFullName) + 1 + nameLen > SIZEOF(szFullName)) {
 							szFullName[0] = '\0';
 							break;
 						}
@@ -457,15 +457,15 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			struct ClcContact *contact;
 			BYTE iExtraImage[MAXEXTRACOLUMNS];
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
-				memset(iExtraImage, 0xFF, sizeof(iExtraImage));
+				memset(iExtraImage, 0xFF, SIZEOF(iExtraImage));
 			else
-				CopyMemory(iExtraImage, contact->iExtraImage, sizeof(iExtraImage));
+				CopyMemory(iExtraImage, contact->iExtraImage, SIZEOF(iExtraImage));
 			DeleteItemFromTree(hwnd, (HANDLE) wParam);
 			if (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0)) {
 				NMCLISTCONTROL nm;
 				AddContactToTree(hwnd, dat, (HANDLE) wParam, 1, 1);
 				if (FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
-					CopyMemory(contact->iExtraImage, iExtraImage, sizeof(iExtraImage));
+					CopyMemory(contact->iExtraImage, iExtraImage, SIZEOF(iExtraImage));
 				nm.hdr.code = CLN_CONTACTMOVED;
 				nm.hdr.hwndFrom = hwnd;
 				nm.hdr.idFrom = GetDlgCtrlID(hwnd);
@@ -545,7 +545,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 				break;
 
-			lstrcpyn(contact->szText, GetContactDisplayNameW((HANDLE)wParam,0), sizeof(contact->szText));
+			lstrcpyn(contact->szText, GetContactDisplayNameW((HANDLE)wParam,0), SIZEOF(contact->szText));
 			SortCLC(hwnd, dat, 1);
 			break;
 		}
@@ -557,7 +557,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				break;
 			contact->proto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
 			CallService(MS_CLIST_INVALIDATEDISPLAYNAME, wParam, 0);
-			lstrcpyn(contact->szText, GetContactDisplayNameW((HANDLE)wParam,0), sizeof(contact->szText));
+			lstrcpyn(contact->szText, GetContactDisplayNameW((HANDLE)wParam,0), SIZEOF(contact->szText));
 			SortCLC(hwnd, dat, 1);
 			break;
 		}
@@ -850,7 +850,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			TCHAR szNew[2];
 			szNew[0] = (TCHAR) wParam;
 			szNew[1] = '\0';
-			if (lstrlen(dat->szQuickSearch) >= sizeof(dat->szQuickSearch) - 1) {
+			if (lstrlen(dat->szQuickSearch) >= SIZEOF(dat->szQuickSearch) - 1) {
 				MessageBeep(MB_OK);
 				break;
 			}
@@ -1161,8 +1161,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 						DBWriteContactSettingTString(contact->hContact, "CList", "Group", szGroup);
 					else if (contact->type == CLCIT_GROUP) {        //dropee is a group
 						TCHAR szNewName[120];
-						_sntprintf(szNewName, sizeof(szNewName), _T("%s\\%s"), szGroup, contact->szText);
-						szNewName[ sizeof(szNewName)-1 ] = 0;
+						mir_sntprintf(szNewName, SIZEOF(szNewName), _T("%s\\%s"), szGroup, contact->szText);
 						RenameGroupT( contact->groupId, szNewName );
 					}
 					break;
@@ -1207,7 +1206,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 							DBDeleteContactSetting(contact->hContact, "CList", "Group");
 						else if (contact->type == CLCIT_GROUP) {    //dropee is a group
 							TCHAR szNewName[120];
-							lstrcpyn(szNewName, contact->szText, sizeof(szNewName));
+							lstrcpyn(szNewName, contact->szText, SIZEOF(szNewName));
 							RenameGroupT( contact->groupId, szNewName );
 						}
 					}
