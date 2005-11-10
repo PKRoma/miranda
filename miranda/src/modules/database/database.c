@@ -41,11 +41,11 @@ int getProfilePath(char * buf, size_t cch)
 	if ( p != 0 ) *p=0;
 	// change to this location, or "." wont expand properly
 	_chdir(buf);
-	GetPrivateProfileStringA("Database", "ProfileDir", ".", profiledir, sizeof(profiledir), mirandabootini);
+	GetPrivateProfileStringA("Database", "ProfileDir", ".", profiledir, SIZEOF(profiledir), mirandabootini);
 	// get the string containing envars and maybe relative paths
 	// get rid of the vars 
-	ExpandEnvironmentStringsA(profiledir, exprofiledir, sizeof(exprofiledir));
-	if ( _fullpath(profiledir, exprofiledir, sizeof(profiledir)) != 0 ) {
+	ExpandEnvironmentStringsA(profiledir, exprofiledir, SIZEOF(exprofiledir));
+	if ( _fullpath(profiledir, exprofiledir, SIZEOF(profiledir)) != 0 ) {
 		/* XXX: really use CreateDirectory()? it only creates the last dir given a\b\c, SHCreateDirectory() 
 		does what we want however thats 2000+ only  */
 		DWORD dw = INVALID_FILE_ATTRIBUTES;
@@ -84,7 +84,7 @@ static int getProfile1(char * szProfile, size_t cch, char * profiledir, BOOL * n
 	WIN32_FIND_DATAA ffd;
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	unsigned int found=0;
-	mir_snprintf(searchspec,sizeof(searchspec),"%s\\*.dat", profiledir);
+	mir_snprintf(searchspec,SIZEOF(searchspec),"%s\\*.dat", profiledir);
 	hFind = FindFirstFileA(searchspec, &ffd);
 	if ( hFind != INVALID_HANDLE_VALUE ) 
 	{
@@ -125,12 +125,12 @@ static int getProfileCmdLineArgs(char * szProfile, size_t cch)
 		if(szCmdLine[0]=='"') {
 			szEndOfParam=strchr(szCmdLine+1,'"');
 			if(szEndOfParam==NULL) break;
-			lstrcpynA(szThisParam,szCmdLine+1,min(sizeof(szThisParam),szEndOfParam-szCmdLine));
+			lstrcpynA(szThisParam,szCmdLine+1,min( SIZEOF(szThisParam),szEndOfParam-szCmdLine));
 			szCmdLine=szEndOfParam+1;
 		}
 		else {
 			szEndOfParam=szCmdLine+strcspn(szCmdLine," \t");
-			lstrcpynA(szThisParam,szCmdLine,min(sizeof(szThisParam),szEndOfParam-szCmdLine+1));
+			lstrcpynA(szThisParam,szCmdLine,min( SIZEOF(szThisParam),szEndOfParam-szCmdLine+1));
 			szCmdLine=szEndOfParam;
 		}
 		while(*szCmdLine && *szCmdLine<=' ') szCmdLine++;
@@ -148,9 +148,9 @@ static int getProfileCmdLine(char * szProfile, size_t cch, char * profiledir)
 	char buf[MAX_PATH];
 	HANDLE hFile;
 	int rc;
-	if ( getProfileCmdLineArgs(buf,sizeof(buf)) ) {
+	if ( getProfileCmdLineArgs(buf, SIZEOF(buf)) ) {
 		// have something that looks like a .dat, with or without .dat in the filename
-		if ( !isValidProfileName(buf) ) mir_snprintf(buf,sizeof(buf)-5,"%s.dat",buf);
+		if ( !isValidProfileName(buf) ) mir_snprintf(buf, SIZEOF(buf)-5,"%s.dat",buf);
 		// expand the relative to a full path , which might fail
 		if ( _fullpath(szProfile, buf, cch) != 0 ) {
 			hFile=CreateFileA(szProfile, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
@@ -170,7 +170,7 @@ static int showProfileManager(void)
 	// is control pressed?
 	if (GetAsyncKeyState(VK_CONTROL)&0x8000) return 1;
 	// wanna show it?
-	GetPrivateProfileStringA("Database", "ShowProfileMgr", "never", Mgr, sizeof(Mgr), mirandabootini);
+	GetPrivateProfileStringA("Database", "ShowProfileMgr", "never", Mgr, SIZEOF(Mgr), mirandabootini);
 	if ( strcmpi(Mgr,"yes") == 0 ) return 1;
 	return 0;
 }
@@ -181,11 +181,11 @@ static int getProfileAutoRun(char * szProfile, size_t cch, char * profiledir)
 	char Mgr[32];
 	char env_profile[MAX_PATH];
 	char exp_profile[MAX_PATH];
-	GetPrivateProfileStringA("Database", "ShowProfileMgr", "", Mgr, sizeof(Mgr), mirandabootini);
+	GetPrivateProfileStringA("Database", "ShowProfileMgr", "", Mgr, SIZEOF(Mgr), mirandabootini);
 	if ( lstrcmpiA(Mgr,"never") ) return 0;		
-	GetPrivateProfileStringA("Database", "DefaultProfile", "", env_profile, sizeof(env_profile), mirandabootini);
+	GetPrivateProfileStringA("Database", "DefaultProfile", "", env_profile, SIZEOF(env_profile), mirandabootini);
 	if ( lstrlenA(env_profile) == 0 ) return 0;
-	ExpandEnvironmentStringsA(env_profile, exp_profile, sizeof(exp_profile));
+	ExpandEnvironmentStringsA(env_profile, exp_profile, SIZEOF(exp_profile));
 	mir_snprintf(szProfile, cch, "%s\\%s.dat", profiledir, exp_profile);
 	return 1;
 }
@@ -198,7 +198,7 @@ static int getProfile(char * szProfile, size_t cch)
 	char profiledir[MAX_PATH];
 	PROFILEMANAGERDATA pd;
 	ZeroMemory(&pd,sizeof(pd));
-	getProfilePath(profiledir,sizeof(profiledir));
+	getProfilePath(profiledir,SIZEOF(profiledir));
 	if ( getProfileCmdLine(szProfile, cch, profiledir) ) return 1;
 	if ( getProfileAutoRun(szProfile, cch, profiledir) ) return 1;
 	if ( !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
@@ -220,7 +220,7 @@ int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg)
 	file++;
 	if ( hFile != INVALID_HANDLE_VALUE ) {		
 		CloseHandle(hFile);		
-		mir_snprintf(buf,sizeof(buf),Translate("The profile '%s' already exists. Do you want to move it to the "
+		mir_snprintf(buf, SIZEOF(buf), Translate("The profile '%s' already exists. Do you want to move it to the "
 			"Recycle Bin? \n\nWARNING: The profile will be deleted if Recycle Bin is disabled.\nWARNING: A profile may contain confidential information and should be properly deleted."),file);
 		// file already exists!
 		if ( MessageBoxA(hwndDlg, buf, Translate("The profile already exists"), MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2) != IDYES ) return 0;
@@ -232,9 +232,9 @@ int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg)
 			sf.wFunc=FO_DELETE;
 			sf.pFrom=szName;
 			sf.fFlags=FOF_NOCONFIRMATION|FOF_NOERRORUI|FOF_SILENT;
-			mir_snprintf(szName,sizeof(szName),"%s\0",profile);
+			mir_snprintf(szName, SIZEOF(szName),"%s\0",profile);
 			if ( SHFileOperationA(&sf) != 0 ) {
-				mir_snprintf(buf,sizeof(buf),Translate("Couldn't move '%s' to the Recycle Bin, Please select another profile name."),file);
+				mir_snprintf(buf, SIZEOF(buf),Translate("Couldn't move '%s' to the Recycle Bin, Please select another profile name."),file);
 				MessageBoxA(0,buf,Translate("Problem moving profile"),MB_ICONINFORMATION|MB_OK);
 				return 0;
 			}
@@ -243,7 +243,7 @@ int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg)
 	}
 	// ask the database to create the profile
 	if ( link->makeDatabase(profile,&err) ) { 
-		mir_snprintf(buf,sizeof(buf),Translate("Unable to create the profile '%s', the error was %x"),file, err);
+		mir_snprintf(buf, SIZEOF(buf),Translate("Unable to create the profile '%s', the error was %x"),file, err);
 		MessageBoxA(hwndDlg,buf,Translate("Problem creating profile"),MB_ICONERROR|MB_OK);
 		return 0;
 	}
@@ -255,7 +255,7 @@ int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg)
 static int FindDbPluginForProfile(char * pluginname, DATABASELINK * dblink, LPARAM lParam)
 {
 	char * szProfile = (char *) lParam;
-	if ( dblink && dblink->cbSize==sizeof(DATABASELINK) ) {
+	if ( dblink && dblink->cbSize == sizeof(DATABASELINK) ) {
 		int err=0;
 		int rc=0;
 		// liked the profile?
@@ -322,7 +322,7 @@ int LoadDatabaseModule(void)
 	// load the older basic services of the db
 	InitTime();
 	// find out which profile to load
-	if ( getProfile(szProfile, sizeof(szProfile)) ) {
+	if ( getProfile(szProfile, SIZEOF(szProfile)) ) {
 		int rc;
 		PLUGIN_DB_ENUM dbe;
 		dbe.cbSize=sizeof(PLUGIN_DB_ENUM);
@@ -335,7 +335,7 @@ int LoadDatabaseModule(void)
 				// no plugins at all
 				char buf[256];
 				char * p = strrchr(szProfile,'\\');
-				mir_snprintf(buf,sizeof(buf),Translate("Miranda is unable to open '%s' because you do not have any profile plugins installed.\nYou need to install dbx_3x.dll or equivalent."), p ? ++p : szProfile );
+				mir_snprintf(buf,SIZEOF(buf),Translate("Miranda is unable to open '%s' because you do not have any profile plugins installed.\nYou need to install dbx_3x.dll or equivalent."), p ? ++p : szProfile );
 				MessageBoxA(0,buf,Translate("No profile support installed!"),MB_OK | MB_ICONERROR);
 				break;
 			}
@@ -351,7 +351,7 @@ int LoadDatabaseModule(void)
 					// file isn't locked, just no driver could open it.
 					char buf[256];
 					char * p = strrchr(szProfile,'\\');
-					mir_snprintf(buf,sizeof(buf),Translate("Miranda was unable to open '%s', its in an unknown format.\nThis profile might also be damaged, please run DB-tool which should be installed."), p ? ++p : szProfile);
+					mir_snprintf(buf,SIZEOF(buf),Translate("Miranda was unable to open '%s', its in an unknown format.\nThis profile might also be damaged, please run DB-tool which should be installed."), p ? ++p : szProfile);
 					MessageBoxA(0,buf,Translate("Miranda can't understand that profile"),MB_OK | MB_ICONERROR);
 					CloseHandle(hFile);					
 				}

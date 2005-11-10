@@ -40,7 +40,7 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 	int filenameLen;
     
 	if (!CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szFile, (LPARAM)szFilename))
-		mir_snprintf(szFilename, sizeof(szFilename), "%s", szFile);
+		mir_snprintf(szFilename, SIZEOF(szFilename), "%s", szFile);
 	filenameLen=lstrlenA(szFilename);
 	if(filenameLen>4) {
 		char* pszExt = szFilename+filenameLen-4;

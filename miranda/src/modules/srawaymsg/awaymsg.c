@@ -54,11 +54,11 @@ static BOOL CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,
 				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
 				dwStatus = DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE);
 				status=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,dwStatus,0);
-				GetWindowTextA(hwndDlg,format,sizeof(format));
-				mir_snprintf(str,sizeof(str),format,status,contactName);
+				GetWindowTextA(hwndDlg,format,SIZEOF(format));
+				mir_snprintf(str,SIZEOF(str),format,status,contactName);
 				SetWindowTextA(hwndDlg,str);
-				GetDlgItemTextA(hwndDlg,IDC_RETRIEVING,format,sizeof(format));
-				mir_snprintf(str,sizeof(str),format,status);
+				GetDlgItemTextA(hwndDlg,IDC_RETRIEVING,format,SIZEOF(format));
+				mir_snprintf(str,SIZEOF(str),format,status);
 				SetDlgItemTextA(hwndDlg,IDC_RETRIEVING,str);
 				SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedProtoIcon(szProto, dwStatus));
 			}

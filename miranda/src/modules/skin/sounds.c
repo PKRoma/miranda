@@ -99,7 +99,7 @@ static HTREEITEM FindNamedTreeItemAtRoot(HWND hwndTree, const TCHAR* name)
 
 	tvi.mask = TVIF_TEXT;
 	tvi.pszText = str;
-	tvi.cchTextMax = sizeof(str);
+	tvi.cchTextMax = SIZEOF(str);
 	tvi.hItem = TreeView_GetRoot(hwndTree);
 	while( tvi.hItem != NULL ) {
 		TreeView_GetItem( hwndTree, &tvi );
@@ -233,7 +233,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			if (tvi.lParam==-1) break;
 			str[0] = 0;
 			if (soundList[tvi.lParam].tempFile) {
-				mir_snprintf(strFull, sizeof(strFull), "%s", soundList[tvi.lParam].tempFile);
+				mir_snprintf(strFull, SIZEOF(strFull), "%s", soundList[tvi.lParam].tempFile);
 			}
 			else {
 				if (DBGetContactSettingByte(NULL, "SkinSoundsOff", soundList[tvi.lParam].name, 0)==0) {
@@ -245,7 +245,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					}
 				}
 			}
-			mir_snprintf(strFull, sizeof(strFull), "%s", soundList[tvi.lParam].tempFile?soundList[tvi.lParam].tempFile:"");
+			mir_snprintf(strFull, SIZEOF(strFull), "%s", soundList[tvi.lParam].tempFile?soundList[tvi.lParam].tempFile:"");
 			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)strFull, (LPARAM)str);
 			ZeroMemory(&ofn, sizeof(ofn));
 			ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
@@ -254,7 +254,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			ofn.lpstrFilter = "Wave Files (*.wav)\0*.WAV\0All Files (*)\0*\0";
 			ofn.lpstrFile = str;
 			ofn.Flags = OFN_FILEMUSTEXIST|OFN_HIDEREADONLY;
-			ofn.nMaxFile = sizeof(str);
+			ofn.nMaxFile = SIZEOF(str);
 			ofn.nMaxFileTitle = MAX_PATH;
 			ofn.lpstrDefExt = "wav";
 			if(!GetOpenFileNameA(&ofn)) break;
@@ -319,7 +319,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						char buf[256];
 						DBVARIANT dbv;
 
-						mir_snprintf(buf, sizeof(buf), "%s: %s", soundList[tvi.lParam].section, soundList[tvi.lParam].description);
+						mir_snprintf(buf, SIZEOF(buf), "%s: %s", soundList[tvi.lParam].section, soundList[tvi.lParam].description);
 						SetDlgItemTextA(hwndDlg, IDC_NAMEVAL, buf);
 						if (soundList[tvi.lParam].tempFile) 
 							SetDlgItemTextA(hwndDlg, IDC_LOCATION, soundList[tvi.lParam].tempFile);

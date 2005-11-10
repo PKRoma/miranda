@@ -246,8 +246,8 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 			waitHandles[1]=nlc->hOkToCloseEvent;
 			waitHandles[2]=nlc->ncsRecv.hMutex;
 			waitHandles[3]=nlc->ncsSend.hMutex;
-			waitResult=WaitForMultipleObjects(sizeof(waitHandles)/sizeof(waitHandles[0]),waitHandles,TRUE,INFINITE);
-			if(waitResult<WAIT_OBJECT_0 || waitResult>=WAIT_OBJECT_0+sizeof(waitHandles)/sizeof(waitHandles[0])) {
+			waitResult=WaitForMultipleObjects( SIZEOF(waitHandles),waitHandles,TRUE,INFINITE);
+			if(waitResult<WAIT_OBJECT_0 || waitResult >= WAIT_OBJECT_0 + SIZEOF(waitHandles)) {
 				ReleaseMutex(hConnectionHeaderMutex);
 				SetLastError(ERROR_INVALID_PARAMETER);	  //already been closed
 				return 0;

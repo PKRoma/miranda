@@ -157,7 +157,7 @@ static void OpenURLThread(void *arg)
 	wsprintfA(szSubkey,"%s\\shell\\open\\command",pszProtocol);
 	if(RegOpenKeyExA(HKEY_CURRENT_USER,szSubkey,0,KEY_QUERY_VALUE,&hKey)==ERROR_SUCCESS
 	   || RegOpenKeyExA(HKEY_CLASSES_ROOT,szSubkey,0,KEY_QUERY_VALUE,&hKey)==ERROR_SUCCESS) {
-		dataLength=sizeof(szCommandName);
+		dataLength=SIZEOF(szCommandName);
 		if(RegQueryValueEx(hKey,NULL,NULL,NULL,(PBYTE)szCommandName,&dataLength)==ERROR_SUCCESS) {
 			strlwr(szCommandName);
 			if(strstr(szCommandName,"mozilla") || strstr(szCommandName,"netscape"))

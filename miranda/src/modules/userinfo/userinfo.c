@@ -171,7 +171,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				else
 					name = ( TCHAR* )CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, GCDNF_TCHAR);
 
-				GetWindowText( hwndDlg, oldTitle, sizeof( oldTitle ));
+				GetWindowText( hwndDlg, oldTitle, SIZEOF( oldTitle ));
 				mir_sntprintf( newTitle, SIZEOF(newTitle), oldTitle, name );
 				SetWindowText( hwndDlg, newTitle );
 				SetDlgItemText( hwndDlg, IDC_NAME, name );
@@ -290,7 +290,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			}
 			ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);
 			dat->updateAnimFrame=0;
-			GetDlgItemTextA(hwndDlg,IDC_UPDATING,dat->szUpdating,sizeof(dat->szUpdating));
+			GetDlgItemTextA(hwndDlg,IDC_UPDATING,dat->szUpdating,SIZEOF(dat->szUpdating));
 			SendMessage(hwndDlg,M_CHECKONLINE,0,0);
 			if(!IsWindowEnabled(GetDlgItem(hwndDlg,IDC_UPDATE)))
 				ShowWindow(GetDlgItem(hwndDlg,IDC_UPDATING),SW_HIDE);
@@ -487,7 +487,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				TCHAR name[128];
 				tci.mask=TCIF_TEXT;
 				tci.pszText=name;
-				tci.cchTextMax=sizeof(name);
+				tci.cchTextMax=SIZEOF(name);
 				TabCtrl_GetItem(GetDlgItem(hwndDlg,IDC_TABS),dat->currentPage,&tci);
 				DBWriteContactSettingTString(NULL,"UserInfo","LastTab",name);
 			}

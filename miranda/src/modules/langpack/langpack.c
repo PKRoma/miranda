@@ -188,13 +188,13 @@ static int LoadLangPack(const TCHAR *szLangPack)
 	lstrcpy(langPack.filename,szLangPack);
 	fp = _tfopen(szLangPack,_T("rt"));
 	if(fp==NULL) return 1;
-	fgets(line,sizeof(line),fp);
+	fgets(line,SIZEOF(line),fp);
 	TrimString(line);
 	if(lstrcmpA(line,"Miranda Language Pack Version 1")) {fclose(fp); return 2;}
 	//headers
 	while(!feof(fp)) {
 		startOfLine=ftell(fp);
-		if(fgets(line,sizeof(line),fp)==NULL) break;
+		if(fgets(line,SIZEOF(line),fp)==NULL) break;
 		TrimString(line);
 		if(IsEmpty(line) || line[0]==';' || line[0]==0) continue;
 		if(line[0]=='[') break;
@@ -220,7 +220,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 	fseek(fp,startOfLine,SEEK_SET);
 	entriesAlloced=0;
 	while(!feof(fp)) {
-		if(fgets(line,sizeof(line),fp)==NULL) break;
+		if(fgets(line,SIZEOF(line),fp)==NULL) break;
 		if(IsEmpty(line) || line[0]==';' || line[0]==0) continue;
 		TrimStringSimple(line);
 		ConvertBackslashes(line);
@@ -339,7 +339,7 @@ int LoadLangPackModule(void)
 	ZeroMemory(&langPack,sizeof(langPack));
 	HookEvent(ME_SYSTEM_SHUTDOWN,LangPackShutdown);
 	LoadLangPackServices();
-	GetModuleFileName(GetModuleHandle(NULL),szSearch,sizeof(szSearch));
+	GetModuleFileName(GetModuleHandle(NULL),szSearch,SIZEOF(szSearch));
 	str2=_tcsrchr(szSearch,'\\');
 	if(str2!=NULL) *str2=0;
 	else str2=szSearch;

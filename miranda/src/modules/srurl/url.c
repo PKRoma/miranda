@@ -60,7 +60,7 @@ static int UrlEventAdded(WPARAM wParam,LPARAM lParam)
 	cle.hIcon=LoadSkinnedIcon(SKINICON_EVENT_URL);
 	cle.pszService="SRUrl/ReadUrl";
 	contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0);
-	mir_snprintf(szTooltip,sizeof(szTooltip),Translate("URL from %s"),contactName);
+	mir_snprintf(szTooltip,SIZEOF(szTooltip),Translate("URL from %s"),contactName);
 	cle.pszTooltip=szTooltip;
 	CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cle);
 	return 0;
@@ -93,7 +93,7 @@ static void RestoreUnreadUrlAlerts(void)
 			if(!(dbei.flags&(DBEF_SENT|DBEF_READ)) && dbei.eventType==EVENTTYPE_URL) {
 				cle.hContact=hContact;
 				cle.hDbEvent=hDbEvent;
-				mir_snprintf(toolTip,sizeof(toolTip),Translate("URL from %s"),(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
+				mir_snprintf(toolTip,SIZEOF(toolTip),Translate("URL from %s"),(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
 				cle.pszTooltip=toolTip;
 				CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cle);
 			}

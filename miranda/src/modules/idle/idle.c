@@ -172,7 +172,7 @@ static BOOL IsScreenSaverRunning()
 
 int IdleGetStatusIndex(WORD status) {
     int j;
-    for (j = 0; j<sizeof(aa_Status)/sizeof(aa_Status[0]) ;j++) {
+    for (j = 0; j < SIZEOF(aa_Status); j++ ) {
         if (aa_Status[j]==status) return j;
     }
     return 0;

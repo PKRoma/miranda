@@ -252,12 +252,12 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 						switch(ci.type) {
 							case CNFT_ASCIIZ:
 								hasName = 1;
-								mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+								mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
 								free(ci.pszVal);
 								break;
 							case CNFT_DWORD:
 								hasName = 1;
-								mir_snprintf(buf, sizeof(buf),"%u",ci.dVal);
+								mir_snprintf(buf, SIZEOF(buf),"%u",ci.dVal);
 								break;
 						}
 					}

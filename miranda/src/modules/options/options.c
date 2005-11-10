@@ -75,7 +75,7 @@ static HTREEITEM FindNamedTreeItemAtRoot(HWND hwndTree, const TCHAR* name)
 
 	tvi.mask = TVIF_TEXT;
 	tvi.pszText = str;
-	tvi.cchTextMax = sizeof( str );
+	tvi.cchTextMax = SIZEOF( str );
 	tvi.hItem = TreeView_GetRoot( hwndTree );
 	while( tvi.hItem != NULL ) {
 		SendMessage( hwndTree, TVM_GETITEM, 0, (LPARAM)&tvi );
@@ -91,7 +91,7 @@ static BOOL CALLBACK BoldGroupTitlesEnumChildren(HWND hwnd,LPARAM lParam)
 {
 	TCHAR szClass[64];
 
-	GetClassName(hwnd,szClass,sizeof(szClass));
+	GetClassName(hwnd,szClass,SIZEOF(szClass));
 	if(!lstrcmp(szClass,_T("Button")) && (GetWindowLong(hwnd,GWL_STYLE)&0x0F)==BS_GROUPBOX)
 		SendMessage(hwnd,WM_SETFONT,lParam,0);
 	return TRUE;
@@ -104,7 +104,7 @@ static void SaveOptionsTreeState(HWND hdlg) {
 	char buf[130],str[128];
 	tvi.mask = TVIF_TEXT | TVIF_STATE;
 	tvi.pszText = str;
-	tvi.cchTextMax = sizeof(str);
+	tvi.cchTextMax = SIZEOF(str);
 	tvi.hItem = TreeView_GetRoot( GetDlgItem( hdlg, IDC_PAGETREE ));
 	while ( tvi.hItem != NULL ) {
 		if ( SendMessageA( GetDlgItem(hdlg,IDC_PAGETREE), TVM_GETITEMA, 0, (LPARAM)&tvi )) {
@@ -283,7 +283,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		}
 		tvi.mask = TVIF_TEXT | TVIF_STATE;
 		tvi.pszText = str;
-		tvi.cchTextMax = sizeof(str);
+		tvi.cchTextMax = SIZEOF(str);
 		tvi.hItem = TreeView_GetRoot(GetDlgItem(hdlg,IDC_PAGETREE));
 		while ( tvi.hItem != NULL ) {
 			if ( SendMessageA( GetDlgItem(hdlg,IDC_PAGETREE), TVM_GETITEMA, 0, (LPARAM)&tvi )) {

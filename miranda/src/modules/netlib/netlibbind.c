@@ -208,7 +208,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		nlbp->wPort=nlb->wPort;
 		nlb->dwInternalIP=ntohl(sin.sin_addr.S_un.S_addr);
 
-		gethostname(hostname,sizeof(hostname));
+		gethostname(hostname,SIZEOF(hostname));
 		he=gethostbyname(hostname);
 		if(he->h_addr_list[0])
 			nlb->dwInternalIP=ntohl(*(PDWORD)he->h_addr_list[0]);

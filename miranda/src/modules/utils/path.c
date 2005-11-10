@@ -43,7 +43,7 @@ static int pathToRelative(WPARAM wParam, LPARAM lParam)
     else {
         char szTmp[MAX_PATH];
 
-        mir_snprintf(szTmp, sizeof(szTmp), "%s", pSrc);
+        mir_snprintf(szTmp, SIZEOF(szTmp), "%s", pSrc);
         strlwr(szTmp);
         if (strstr(szTmp, szMirandaPath)) {
             mir_snprintf(pOut, MAX_PATH, "%s", pSrc+strlen(szMirandaPath));
@@ -73,7 +73,7 @@ static int pathToAbsolute(WPARAM wParam, LPARAM lParam) {
 int InitPathUtils(void)
 {
 	char *p = 0;
-	GetModuleFileNameA(GetModuleHandle(NULL), szMirandaPath, sizeof(szMirandaPath));
+	GetModuleFileNameA(GetModuleHandle(NULL), szMirandaPath, SIZEOF(szMirandaPath));
 	p=strrchr(szMirandaPath,'\\');
 	if (p&&p+1) *(p+1)=0;
     strlwr(szMirandaPath);

@@ -37,8 +37,8 @@ static void SetControlToUnixTime(HWND hwndDlg, UINT idCtrl, time_t unixTime)
 	filetime.dwHighDateTime=liFiletime.HighPart;
 	filetime.dwLowDateTime=liFiletime.LowPart;
 	FileTimeToSystemTime(&filetime,&st);
-	GetTimeFormatA(LOCALE_USER_DEFAULT,0,&st,NULL,szTime,sizeof(szTime));
-	GetDateFormatA(LOCALE_USER_DEFAULT,DATE_SHORTDATE,&st,NULL,szDate,sizeof(szDate));
+	GetTimeFormatA(LOCALE_USER_DEFAULT,0,&st,NULL,szTime,SIZEOF(szTime));
+	GetDateFormatA(LOCALE_USER_DEFAULT,DATE_SHORTDATE,&st,NULL,szDate,SIZEOF(szDate));
 	wsprintfA(szOutput,"%s %s",szDate,szTime);
 	SetDlgItemTextA(hwndDlg,idCtrl,szOutput);
 }
@@ -59,7 +59,7 @@ static void DoAnnoyingShellCommand(HWND hwnd,const char *szFilename,int cmd,POIN
 		if(SHGetDesktopFolder(&pDesktopFolder)==NOERROR) {
 			WCHAR wszFilename[MAX_PATH];
 			ITEMIDLIST *pCurrentIdl;
-			MultiByteToWideChar(CP_ACP,0,szFilename,-1,wszFilename,sizeof(wszFilename));
+			MultiByteToWideChar(CP_ACP,0,szFilename,-1,wszFilename,SIZEOF(wszFilename));
 			if(pDesktopFolder->lpVtbl->ParseDisplayName(pDesktopFolder,NULL,NULL,wszFilename,NULL,&pCurrentIdl,NULL)==NOERROR) {
 				if(pCurrentIdl->mkid.cb) {
 					ITEMIDLIST *pidl,*pidlNext,*pidlFilename;
@@ -157,7 +157,7 @@ void __cdecl LoadIconsAndTypesThread(struct loadiconsstartinfo *info)
 		pszFilename=strrchr(info->szFilename,'\\');
 		if(pszFilename==NULL) pszFilename=info->szFilename;
 		pszExtension=strrchr(pszFilename,'.');
-		if(pszExtension) lstrcpynA(szExtension,pszExtension+1,sizeof(szExtension));
+		if(pszExtension) lstrcpynA(szExtension,pszExtension+1,SIZEOF(szExtension));
 		else {pszExtension="."; szExtension[0]='\0';}
 		CharUpperA(szExtension);
 		if(fileInfo.szTypeName[0]=='\0')
@@ -167,15 +167,15 @@ void __cdecl LoadIconsAndTypesThread(struct loadiconsstartinfo *info)
 		SendDlgItemMessage(info->hwndDlg,IDC_EXISTINGICON,STM_SETICON,(WPARAM)fileInfo.hIcon,0);
 		szIconFile[0]='\0';
 		if(!lstrcmpA(szExtension,"EXE")) {
-			SRFile_GetRegValue(HKEY_LOCAL_MACHINE,"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Icons","2",szIconFile,sizeof(szIconFile));
+			SRFile_GetRegValue(HKEY_LOCAL_MACHINE,"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Icons","2",szIconFile,SIZEOF(szIconFile));
 		}
 		else {
 			char szTypeName[MAX_PATH];
-			if(SRFile_GetRegValue(HKEY_CLASSES_ROOT,pszExtension,NULL,szTypeName,sizeof(szTypeName))) {
+			if(SRFile_GetRegValue(HKEY_CLASSES_ROOT,pszExtension,NULL,szTypeName,SIZEOF(szTypeName))) {
 				lstrcatA(szTypeName,"\\DefaultIcon");
-				if(SRFile_GetRegValue(HKEY_CLASSES_ROOT,szTypeName,NULL,szIconFile,sizeof(szIconFile))) {
+				if(SRFile_GetRegValue(HKEY_CLASSES_ROOT,szTypeName,NULL,szIconFile,SIZEOF(szIconFile))) {
 					if(strstr(szIconFile,"%1"))
-						SRFile_GetRegValue(HKEY_LOCAL_MACHINE,"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Icons","0",szIconFile,sizeof(szIconFile));
+						SRFile_GetRegValue(HKEY_LOCAL_MACHINE,"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Icons","0",szIconFile,SIZEOF(szIconFile));
 					else szIconFile[0]='\0';
 				}
 			}
@@ -249,7 +249,7 @@ BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				case IDC_OPENFOLDER:
 				{	char szFile[MAX_PATH];
 					char *pszLastBackslash;
-					lstrcpynA(szFile,fts->currentFile,sizeof(szFile));
+					lstrcpynA(szFile,fts->currentFile,SIZEOF(szFile));
 					pszLastBackslash=strrchr(szFile,'\\');
 					if(pszLastBackslash) *pszLastBackslash='\0';
 					ShellExecuteA(hwndDlg,NULL,szFile,NULL,NULL,SW_SHOW);
@@ -275,7 +275,7 @@ BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					char filter[512],*pfilter;
 					char str[MAX_PATH];
 
-					lstrcpynA(str,fts->currentFile,sizeof(str));
+					lstrcpynA(str,fts->currentFile,SIZEOF(str));
 					ofn.lStructSize=OPENFILENAME_SIZE_VERSION_400;
 					ofn.hwndOwner=hwndDlg;
 					ofn.Flags=OFN_PATHMUSTEXIST|OFN_OVERWRITEPROMPT|OFN_HIDEREADONLY;
@@ -287,7 +287,7 @@ BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					*pfilter='\0';
 					ofn.lpstrFilter=filter;
 					ofn.lpstrFile=str;
-					ofn.nMaxFile=sizeof(str);
+					ofn.nMaxFile=SIZEOF(str);
 					ofn.nMaxFileTitle=MAX_PATH;
 					if(!GetSaveFileNameA(&ofn)) break;
 					pfr.szFilename=_strdup(str);

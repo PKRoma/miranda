@@ -45,10 +45,10 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,(WPARAM)hFont,0);
 			}
 			{	char productVersion[56],str[64];
-				CallService(MS_SYSTEM_GETVERSIONTEXT,sizeof(productVersion),(LPARAM)productVersion);
-				mir_snprintf(str,sizeof(str),"%s %s", Translate("Version"), productVersion);
+				CallService(MS_SYSTEM_GETVERSIONTEXT,SIZEOF(productVersion),(LPARAM)productVersion);
+				mir_snprintf(str,SIZEOF(str),"%s %s", Translate("Version"), productVersion);
 				SetDlgItemTextA(hwndDlg,IDC_VERSION,str);
-				mir_snprintf(str,sizeof(str),Translate("Built %s %s"),__DATE__,__TIME__);
+				mir_snprintf(str,SIZEOF(str),Translate("Built %s %s"),__DATE__,__TIME__);
 				SetDlgItemTextA(hwndDlg,IDC_BUILDTIME,str);
 			}
 			ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_HIDE);

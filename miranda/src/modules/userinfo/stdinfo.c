@@ -57,7 +57,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 				else if(special==SVS_MONTH) {
 					if(dbv.bVal>0 && dbv.bVal<=12) {
 						pstr=str;
-						GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_SABBREVMONTHNAME1-1+dbv.bVal,str,sizeof(str));
+						GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_SABBREVMONTHNAME1-1+dbv.bVal,str,SIZEOF(str));
 					}
 					else unspecified=1;
 				}
@@ -170,7 +170,7 @@ static BOOL CALLBACK SummaryDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		case IDC_EMAIL:
 			if(IsWindowEnabled(GetDlgItem(hwndDlg,IDC_EMAIL))) {
 				char szExec[264],szEmail[256];
-				GetDlgItemTextA(hwndDlg,IDC_EMAIL,szEmail,sizeof(szEmail));
+				GetDlgItemTextA(hwndDlg,IDC_EMAIL,szEmail,SIZEOF(szEmail));
 				lstrcpyA(szExec,"mailto:");
 				lstrcatA(szExec,szEmail);
 				ShellExecuteA(hwndDlg,"open",szExec,NULL,NULL,SW_SHOW);
@@ -223,7 +223,7 @@ static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					lift.QuadPart-=(__int64)timezone*BIGI(30)*BIGI(60)*BIGI(10000000);
 					*(__int64*)&ft=lift.QuadPart;
 					FileTimeToSystemTime(&ft,&st);
-					GetTimeFormatA(LOCALE_USER_DEFAULT,0,&st,NULL,szTime,sizeof(szTime));
+					GetTimeFormatA(LOCALE_USER_DEFAULT,0,&st,NULL,szTime,SIZEOF(szTime));
 					SetDlgItemTextA(hwndDlg,IDC_LOCALTIME,szTime);
 				}
 			}
@@ -298,7 +298,7 @@ static BOOL CALLBACK WorkDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		case IDC_WEBPAGE:
 			if(IsWindowEnabled(GetDlgItem(hwndDlg,IDC_WEBPAGE))) {
 				char szPage[256];
-				GetDlgItemTextA(hwndDlg,IDC_WEBPAGE,szPage,sizeof(szPage));
+				GetDlgItemTextA(hwndDlg,IDC_WEBPAGE,szPage,SIZEOF(szPage));
 				CallService(MS_UTILS_OPENURL,1,(LPARAM)szPage);
 			}
 			break;
@@ -423,7 +423,7 @@ static BOOL CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		case IDC_WEBPAGE:
 			if(IsWindowEnabled(GetDlgItem(hwndDlg,IDC_WEBPAGE))) {
 				char szPage[256];
-				GetDlgItemTextA(hwndDlg,IDC_WEBPAGE,szPage,sizeof(szPage));
+				GetDlgItemTextA(hwndDlg,IDC_WEBPAGE,szPage,SIZEOF(szPage));
 				CallService(MS_UTILS_OPENURL,1,(LPARAM)szPage);
 			}
 			break;
@@ -464,7 +464,7 @@ static BOOL CALLBACK NotesDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					{	HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
 						if(GetWindowTextLength(GetDlgItem(hwndDlg,IDC_MYNOTES))) {
 							char text[2048];
-							GetDlgItemTextA(hwndDlg,IDC_MYNOTES,text,sizeof(text));
+							GetDlgItemTextA(hwndDlg,IDC_MYNOTES,text,SIZEOF(text));
 							DBWriteContactSettingString(hContact,"UserInfo","MyNotes",text);
 						}
 						else DBDeleteContactSetting(hContact,"UserInfo","MyNotes");

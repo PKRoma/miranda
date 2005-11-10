@@ -335,14 +335,14 @@ static int GetCountryByNumber(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 
-	for(i=0;i<sizeof(countries)/sizeof(countries[0]);i++)
+	for(i=0; i < SIZEOF(countries); i++ )
 		if((int)wParam==countries[i].id) return (int)countries[i].szName;
 	return (int)(char*)NULL;
 }
 
 static int GetCountryList(WPARAM wParam,LPARAM lParam)
 {
-	*(int*)wParam=sizeof(countries)/sizeof(countries[0]);
+	*(int*)wParam = SIZEOF(countries);
 	*(struct CountryListEntry**)lParam=countries;
 	return 0;
 }

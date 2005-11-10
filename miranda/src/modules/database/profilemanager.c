@@ -76,14 +76,14 @@ static int findProfiles(char * szProfileDir, ENUMPROFILECALLBACK callback, LPARA
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATAA ffd;
 	char searchspec[MAX_PATH];
-	mir_snprintf(searchspec, sizeof(searchspec), "%s\\*.dat", szProfileDir);
+	mir_snprintf(searchspec, SIZEOF(searchspec), "%s\\*.dat", szProfileDir);
 	hFind = FindFirstFileA(searchspec, &ffd);
 	if ( hFind != INVALID_HANDLE_VALUE ) {
 		do { 			
 			if ( !(ffd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName) ) 
 			{
 				char buf[MAX_PATH];
-				mir_snprintf(buf,sizeof(buf),"%s\\%s",szProfileDir, ffd.cFileName);
+				mir_snprintf(buf,SIZEOF(buf),"%s\\%s",szProfileDir, ffd.cFileName);
 				if ( !callback(buf, ffd.cFileName, lParam) ) break;
 			}
 		} while ( FindNextFileA(hFind, &ffd) );
@@ -108,7 +108,7 @@ static int FindDbProviders(char * pluginname, DATABASELINK * dblink, LPARAM lPar
 	HWND hwndCombo = GetDlgItem(hwndDlg, IDC_PROFILEDRIVERS);
 	char szName[64];
 
-	if ( dblink->getFriendlyName(szName,sizeof(szName),1) == 0 ) {
+	if ( dblink->getFriendlyName(szName,SIZEOF(szName),1) == 0 ) {
 		// add to combo box
 		LRESULT index = SendMessageA(hwndCombo, CB_ADDSTRING, 0, (LPARAM)Translate(szName));
 		SendMessage(hwndCombo, CB_SETITEMDATA, index, (LPARAM)dblink);
@@ -121,10 +121,10 @@ static int checkAutoCreateProfile(char * profile)
 {
 	char ac[MAX_PATH];
 	char env_profile[MAX_PATH];
-	GetPrivateProfileStringA("Database", "AutoCreate", "no", ac, sizeof(ac), mirandabootini);
+	GetPrivateProfileStringA("Database", "AutoCreate", "no", ac, SIZEOF(ac), mirandabootini);
 	if ( lstrcmpiA(ac,"yes") != 0 ) return 0;
-	GetPrivateProfileStringA("Database", "DefaultProfile", "", ac, sizeof(ac), mirandabootini);
-	ExpandEnvironmentStringsA(ac, env_profile, sizeof(env_profile));	
+	GetPrivateProfileStringA("Database", "DefaultProfile", "", ac, SIZEOF(ac), mirandabootini);
+	ExpandEnvironmentStringsA(ac, env_profile, SIZEOF(env_profile));	
 	if ( profile != NULL ) strcpy(profile, env_profile);
 	return lstrlenA(env_profile) > 0;
 }
@@ -196,7 +196,7 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				char szName[MAX_PATH];						
 				LRESULT curSel = SendDlgItemMessage(hwndDlg,IDC_PROFILEDRIVERS,CB_GETCURSEL,0,0);				
 				if ( curSel == CB_ERR ) break; // should never happen				
-				GetWindowTextA(GetDlgItem(hwndDlg,IDC_PROFILENAME),szName,sizeof(szName));
+				GetWindowTextA(GetDlgItem(hwndDlg,IDC_PROFILENAME),szName,SIZEOF(szName));
 				if ( lstrlenA(szName) == 0 ) break;
 				mir_snprintf(dat->pd->szProfile,MAX_PATH,"%s\\%s.dat",dat->pd->szProfileDir,szName);
 				dat->pd->newProfile=1;
@@ -233,7 +233,7 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 		FILE * fp = fopen(fullpath, "r+");
 		item.iImage = fp != NULL ? 0 : 1;
 		if ( stat(fullpath, &statbuf) == 0) {
-			mir_snprintf(sizeBuf,sizeof(sizeBuf),"%u KB", statbuf.st_size / 1024);			
+			mir_snprintf(sizeBuf,SIZEOF(sizeBuf),"%u KB", statbuf.st_size / 1024);			
 		}
 		if ( fp ) fclose(fp);
 	}
@@ -323,7 +323,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						item.mask = LVIF_TEXT;
 						item.iItem = ListView_GetNextItem(hwndList, -1, LVNI_SELECTED | LVNI_ALL);
 						item.pszText = profile;
-						item.cchTextMax = sizeof(profile);						
+						item.cchTextMax = SIZEOF(profile);						
 						if ( SendMessageA(hwndList, LVM_GETITEMA, 0, (LPARAM)&item) && dat ) {
 							mir_snprintf(dat->pd->szProfile, MAX_PATH, "%s\\%s.dat", dat->pd->szProfileDir, profile);
 							if ( hdr->code == NM_DBLCLK ) EndDialog(GetParent(hwndDlg), 1);								
@@ -567,8 +567,8 @@ int getProfileManager(PROFILEMANAGERDATA * pd)
 	
 	{ // remember what the default profile is, if any.
 		char defaultProfile[MAX_PATH];
-		GetPrivateProfileStringA("Database", "DefaultProfile", "", defaultProfile, sizeof(defaultProfile), mirandabootini);
-		ExpandEnvironmentStringsA(defaultProfile, szDefaultMirandaProfile, sizeof(szDefaultMirandaProfile));
+		GetPrivateProfileStringA("Database", "DefaultProfile", "", defaultProfile, SIZEOF(defaultProfile), mirandabootini);
+		ExpandEnvironmentStringsA(defaultProfile, szDefaultMirandaProfile, SIZEOF(szDefaultMirandaProfile));
 	}
 
 	{

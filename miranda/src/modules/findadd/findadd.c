@@ -241,7 +241,7 @@ static void CheckSearchTypeRadioButton(HWND hwndDlg,int idControl)
 {
 	int i;
 	int controls[]={IDC_BYPROTOID,IDC_BYEMAIL,IDC_BYNAME,IDC_BYADVANCED};
-	for(i=0;i<sizeof(controls)/sizeof(controls[0]);i++)
+	for( i=0; i < SIZEOF(controls); i++ )
 		CheckDlgButton(hwndDlg,controls[i],idControl==controls[i]?BST_CHECKED:BST_UNCHECKED);
 }
 
@@ -319,7 +319,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				ReleaseDC(GetDlgItem(hwndDlg,IDC_STATUSBAR),hdc);
 				partWidth[1]=partWidth[0]+150;
 				partWidth[2]=-1;
-				SendDlgItemMessage(hwndDlg,IDC_STATUSBAR,SB_SETPARTS,sizeof(partWidth)/sizeof(partWidth[0]),(LPARAM)partWidth);
+				SendDlgItemMessage(hwndDlg,IDC_STATUSBAR,SB_SETPARTS,SIZEOF(partWidth),(LPARAM)partWidth);
 				SendDlgItemMessage(hwndDlg,IDC_STATUSBAR,SB_SETTEXT,1|SBT_OWNERDRAW,0);
 				SetStatusBarSearchInfo(GetDlgItem(hwndDlg,IDC_STATUSBAR),dat);
 			}
@@ -362,7 +362,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					caps=(DWORD)CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_1,0);
 					if (!(caps&PF1_BASICSEARCH) && !(caps&PF1_EXTSEARCH) && !(caps&PF1_SEARCHBYEMAIL) && !(caps&PF1_SEARCHBYNAME))
 						continue;
-					CallProtoService(protos[i]->szName,PS_GETNAME,sizeof(szProtoName),(LPARAM)szProtoName);
+					CallProtoService(protos[i]->szName,PS_GETNAME,SIZEOF(szProtoName),(LPARAM)szProtoName);
 					#if !defined( _UNICODE )
 						cbei.pszText=(char*)szProtoName;
 					#else
@@ -619,7 +619,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					dat->hResultHook=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_SEARCHACK);
 					if(IsDlgButtonChecked(hwndDlg,IDC_BYPROTOID)) {
 						char str[256];
-						GetDlgItemTextA(hwndDlg,IDC_PROTOID,str,sizeof(str));
+						GetDlgItemTextA(hwndDlg,IDC_PROTOID,str,SIZEOF(str));
 						FindAddTrimR(str);
 						if(str[0]==0)
 							MessageBox(hwndDlg,sttErrMsg,sttErrTitle,MB_OK);
@@ -628,7 +628,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 					else if(IsDlgButtonChecked(hwndDlg,IDC_BYEMAIL)) {
 						char str[256];
-						GetDlgItemTextA(hwndDlg,IDC_EMAIL,str,sizeof(str));
+						GetDlgItemTextA(hwndDlg,IDC_EMAIL,str,SIZEOF(str));
 						FindAddTrimR(str);
 						if(str[0]==0)
 							MessageBox(hwndDlg,sttErrMsg,sttErrTitle,MB_OK);
@@ -638,9 +638,9 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					else if(IsDlgButtonChecked(hwndDlg,IDC_BYNAME)) {
 						char nick[256],first[256],last[256];
 						PROTOSEARCHBYNAME psbn;
-						GetDlgItemTextA(hwndDlg,IDC_NAMENICK,nick,sizeof(nick));
-						GetDlgItemTextA(hwndDlg,IDC_NAMEFIRST,first,sizeof(first));
-						GetDlgItemTextA(hwndDlg,IDC_NAMELAST,last,sizeof(last));
+						GetDlgItemTextA(hwndDlg,IDC_NAMENICK,nick,SIZEOF(nick));
+						GetDlgItemTextA(hwndDlg,IDC_NAMEFIRST,first,SIZEOF(first));
+						GetDlgItemTextA(hwndDlg,IDC_NAMELAST,last,SIZEOF(last));
 						psbn.pszFirstName=first;
 						psbn.pszLastName=last;
 						psbn.pszNick=nick;

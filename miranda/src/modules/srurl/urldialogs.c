@@ -73,7 +73,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				SendDlgItemMessage(hwndDlg,IDOK,BUTTONSETARROW,1,0);
 				{	char str[128];
 					dbtts.szDest=str;
-					dbtts.cbDest=sizeof(str);
+					dbtts.cbDest=SIZEOF(str);
 					dbtts.szFormat="t d";
 					CallService(MS_DB_TIME_TIMESTAMPTOSTRING,dbei.timestamp,(LPARAM)&dbtts);
 					SetDlgItemTextA(hwndDlg,IDC_DATE,str);
@@ -149,12 +149,12 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							switch(ci.type) {
 							case CNFT_ASCIIZ:
 								hasName = 1;
-								mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+								mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
 								free(ci.pszVal);
 								break;
 							case CNFT_DWORD:
 								hasName = 1;
-								mir_snprintf(buf, sizeof(buf),"%u",ci.dVal);
+								mir_snprintf(buf, SIZEOF(buf),"%u",ci.dVal);
 								break;
 							}
 						}
@@ -164,13 +164,13 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						SetDlgItemTextA(hwndDlg,IDC_NAME,hasName?buf:contactName);
 
 						szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE),0);
-						mir_snprintf(newtitle,sizeof(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
+						mir_snprintf(newtitle,SIZEOF(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
 					}
 				}
 				else
-					lstrcpynA(newtitle, pszNewTitleStart, sizeof(newtitle));
+					lstrcpynA(newtitle, pszNewTitleStart, SIZEOF(newtitle));
 
-				GetWindowTextA(hwndDlg,oldtitle,sizeof(oldtitle));
+				GetWindowTextA(hwndDlg,oldtitle,SIZEOF(oldtitle));
 
 				if(lstrcmpA(newtitle,oldtitle))	   //swt() flickers even if the title hasn't actually changed
 					SetWindowTextA(hwndDlg,newtitle);
@@ -194,7 +194,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						hSubMenu=GetSubMenu(hMenu,6);
 						CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hSubMenu,0);
 						GetWindowRect((HWND)lParam, &rc);
-						GetDlgItemTextA(hwndDlg, IDC_URL, url, sizeof(url));
+						GetDlgItemTextA(hwndDlg, IDC_URL, url, SIZEOF(url));
 						switch(TrackPopupMenu(hSubMenu,TPM_RETURNCMD,rc.left,rc.bottom,0,hwndDlg,NULL)) {
 							case IDM_OPENNEW:
 								CallService(MS_UTILS_OPENURL,1,(LPARAM)url);
@@ -256,7 +256,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			break;
 		case WM_DESTROY:
 			WindowList_Remove(hUrlWindowList, hwndDlg);
-			{int i;for(i=0;i<sizeof(dat->hIcons)/sizeof(dat->hIcons[0]);i++)DestroyIcon(dat->hIcons[i]);}
+			{int i;for(i=0; i < SIZEOF(dat->hIcons); i++ ) DestroyIcon(dat->hIcons[i]);}
 			free(dat);
 			Utils_SaveWindowPosition(hwndDlg,NULL,"SRUrl","recv");
 			break;
@@ -367,7 +367,7 @@ static void AddBrowserPageToCombo(char *url,HWND hwndCombo)
 		char szExistingUrl[1024];
 
 		for(i=SendMessage(hwndCombo,CB_GETCOUNT,0,0)-1;i>=0;i--) {
-			if(SendMessage(hwndCombo,CB_GETLBTEXTLEN,i,0)>=sizeof(szExistingUrl))
+			if(SendMessage(hwndCombo,CB_GETLBTEXTLEN,i,0) >= SIZEOF(szExistingUrl))
 				continue;
 			SendMessageA(hwndCombo,CB_GETLBTEXT,i,(LPARAM)szExistingUrl);
 			if(!lstrcmpA(szExistingUrl,url)) return;
@@ -585,12 +585,12 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							switch(ci.type) {
 							case CNFT_ASCIIZ:
 								hasName = 1;
-								mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+								mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
 								free(ci.pszVal);
 								break;
 							case CNFT_DWORD:
 								hasName = 1;
-								mir_snprintf(buf, sizeof(buf),"%u",ci.dVal);
+								mir_snprintf(buf, SIZEOF(buf),"%u",ci.dVal);
 								break;
 							}
 						}
@@ -599,13 +599,13 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						SetDlgItemTextA(hwndDlg,IDC_NAME,hasName?buf:contactName);
 
 						szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE),0);
-						mir_snprintf(newtitle,sizeof(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
+						mir_snprintf(newtitle,SIZEOF(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
 					}
 				}
 				else
-					lstrcpynA(newtitle, pszNewTitleStart, sizeof(newtitle));
+					lstrcpynA(newtitle, pszNewTitleStart, SIZEOF(newtitle));
 
-				GetWindowTextA(hwndDlg,oldtitle,sizeof(oldtitle));
+				GetWindowTextA(hwndDlg,oldtitle,SIZEOF(oldtitle));
 
 				if(lstrcmpA(newtitle,oldtitle))	   //swt() flickers even if the title hasn't actually changed
 					SetWindowTextA(hwndDlg,newtitle);
@@ -720,7 +720,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 		case WM_DESTROY:
 			WindowList_Remove(hUrlWindowList, hwndDlg);
-			{int i;for(i=0;i<sizeof(dat->hIcons)/sizeof(dat->hIcons[0]);i++)DestroyIcon(dat->hIcons[i]);}
+			{int i;for(i=0; i < SIZEOF(dat->hIcons); i++ ) DestroyIcon(dat->hIcons[i]);}
 			SetWindowLong(GetWindow(GetDlgItem(hwndDlg,IDC_URLS),GW_CHILD),GWL_WNDPROC,(LONG)OldSendEditProc);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_MESSAGE),GWL_WNDPROC,(LONG)OldSendEditProc);
 			if(dat->hAckEvent) UnhookEvent(dat->hAckEvent);

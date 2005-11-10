@@ -205,8 +205,8 @@ static void WriteSettingsStructToDb(const char *szSettingsModule,NETLIBUSERSETTI
 		DBWriteContactSettingWord(NULL,szSettingsModule,"NLProxyPort",(WORD)settings->wProxyPort);
 		DBWriteContactSettingByte(NULL,szSettingsModule,"NLUseProxyAuth",(BYTE)settings->useProxyAuth);
 		DBWriteContactSettingString(NULL,szSettingsModule,"NLProxyAuthUser",settings->szProxyAuthUser?settings->szProxyAuthUser:"");
-		lstrcpynA(szEncodedPassword,settings->szProxyAuthPassword?settings->szProxyAuthPassword:"",sizeof(szEncodedPassword));
-		CallService(MS_DB_CRYPT_ENCODESTRING,sizeof(szEncodedPassword),(LPARAM)szEncodedPassword);
+		lstrcpynA(szEncodedPassword,settings->szProxyAuthPassword?settings->szProxyAuthPassword:"",SIZEOF(szEncodedPassword));
+		CallService(MS_DB_CRYPT_ENCODESTRING,SIZEOF(szEncodedPassword),(LPARAM)szEncodedPassword);
 		DBWriteContactSettingString(NULL,szSettingsModule,"NLProxyAuthPassword",szEncodedPassword);
 		DBWriteContactSettingByte(NULL,szSettingsModule,"NLUseProxyAuthNtlm",(BYTE)settings->useProxyAuthNtlm);
 		DBWriteContactSettingByte(NULL,szSettingsModule,"NLDnsThroughProxy",(BYTE)settings->dnsThroughProxy);
@@ -293,7 +293,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				CopySettingsStruct(&settings,&tempSettings[iUser].settings);
 				flags=tempSettings[iUser].flags;
 			}
-			ShowMultipleControls(hwndDlg,outgoingConnectionsControls,sizeof(outgoingConnectionsControls)/sizeof(outgoingConnectionsControls[0]),flags&NUF_OUTGOING?SW_SHOW:SW_HIDE);
+			ShowMultipleControls(hwndDlg,outgoingConnectionsControls,SIZEOF(outgoingConnectionsControls),flags&NUF_OUTGOING?SW_SHOW:SW_HIDE);
 			CheckDlgButton(hwndDlg,IDC_USEPROXY,settings.useProxy);
 			SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_RESETCONTENT,0,0);
 			if(settings.proxyType==0) AddProxyTypeItem(hwndDlg,0,settings.proxyType);
@@ -310,7 +310,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			CheckDlgButton(hwndDlg,IDC_PROXYDNS,settings.dnsThroughProxy);
 			CheckDlgButton(hwndDlg,IDC_PROXYAUTHNTLM,settings.useProxyAuthNtlm);
 
-			ShowMultipleControls(hwndDlg,incomingConnectionsControls,sizeof(incomingConnectionsControls)/sizeof(incomingConnectionsControls[0]),flags&NUF_INCOMING?SW_SHOW:SW_HIDE);
+			ShowMultipleControls(hwndDlg,incomingConnectionsControls,SIZEOF(incomingConnectionsControls),flags&NUF_INCOMING?SW_SHOW:SW_HIDE);
 			CheckDlgButton(hwndDlg,IDC_SPECIFYPORTS,settings.specifyIncomingPorts);
 			SetDlgItemTextA(hwndDlg,IDC_PORTSRANGE,settings.szIncomingPorts?settings.szIncomingPorts:"");
 
@@ -330,7 +330,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SetDlgItemText(hwndDlg,IDC_STOFTENPORT,str);
 			if(IsDlgButtonChecked(hwndDlg,IDC_USEPROXY)!=BST_UNCHECKED) {
 				int enableAuth=0,enableUser=0,enablePass=0,enableNtlm=0;
-				EnableMultipleControls(hwndDlg,useProxyControls,sizeof(useProxyControls)/sizeof(useProxyControls[0]),TRUE);
+				EnableMultipleControls(hwndDlg,useProxyControls,SIZEOF(useProxyControls),TRUE);
 				if(selectedProxyType==0) {
 					int i;
 					for(i=0;i<tempSettingsCount;i++) {
@@ -368,9 +368,9 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				EnableWindow(GetDlgItem(hwndDlg,IDC_PROXYPASS),enablePass);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_PROXYAUTHNTLM),enableNtlm);
 			}
-			else EnableMultipleControls(hwndDlg,useProxyControls,sizeof(useProxyControls)/sizeof(useProxyControls[0]),FALSE);
-			EnableMultipleControls(hwndDlg,specifyPortsControls,sizeof(specifyPortsControls)/sizeof(specifyPortsControls[0]),IsDlgButtonChecked(hwndDlg,IDC_SPECIFYPORTS)!=BST_UNCHECKED);
-			EnableMultipleControls(hwndDlg,specifyOPortsControls,sizeof(specifyOPortsControls)/sizeof(specifyOPortsControls[0]),IsDlgButtonChecked(hwndDlg,IDC_SPECIFYPORTSO)!=BST_UNCHECKED);
+			else EnableMultipleControls(hwndDlg,useProxyControls,SIZEOF(useProxyControls),FALSE);
+			EnableMultipleControls(hwndDlg,specifyPortsControls,SIZEOF(specifyPortsControls),IsDlgButtonChecked(hwndDlg,IDC_SPECIFYPORTS)!=BST_UNCHECKED);
+			EnableMultipleControls(hwndDlg,specifyOPortsControls,SIZEOF(specifyOPortsControls),IsDlgButtonChecked(hwndDlg,IDC_SPECIFYPORTSO)!=BST_UNCHECKED);
 			break;
 		}
 		case WM_COMMAND:

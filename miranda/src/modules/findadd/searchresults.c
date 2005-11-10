@@ -191,10 +191,10 @@ static void BeginSearchFailed(void * arg)
 {
 	char buf[128];
 	if ( arg != NULL ) { 
-		mir_snprintf(buf,sizeof(buf),Translate("Could not start a search on '%s', there was a problem - is %s connected?"),arg,arg);
+		mir_snprintf(buf,SIZEOF(buf),Translate("Could not start a search on '%s', there was a problem - is %s connected?"),arg,arg);
 		free((char*)arg);
 	}
-	else strncpy(buf,Translate("Could not search on any of the protocols, are you online?"),sizeof(buf));
+	else strncpy(buf,Translate("Could not search on any of the protocols, are you online?"),SIZEOF(buf));
 	MessageBoxA(0,buf,Translate("Problem with search"),MB_OK | MB_ICONERROR);
 }
 
@@ -256,12 +256,12 @@ void SetStatusBarSearchInfo(HWND hwndStatus,struct FindAddDlgData *dat)
 		lstrcpy( str, TranslateT("Searching"));
 		for( i=0; i <dat->searchCount; i++ ) {
 			lstrcat(str, i ? _T(",") : _T( " " ));
-			CallProtoService(dat->search[i].szProto,PS_GETNAME,sizeof(szProtoName),(LPARAM)szProtoName);
+			CallProtoService(dat->search[i].szProto,PS_GETNAME,SIZEOF(szProtoName),(LPARAM)szProtoName);
 			#if !defined( _UNICODE )
 				lstrcatA( str, szProtoName );
 			#else
 				{	TCHAR wszProtoName[50];
-					MultiByteToWideChar( CP_ACP, 0, szProtoName, -1, wszProtoName, sizeof(wszProtoName));
+					MultiByteToWideChar( CP_ACP, 0, szProtoName, -1, wszProtoName, SIZEOF(wszProtoName));
 					lstrcat(str, wszProtoName);
 				}
 			#endif
@@ -311,7 +311,7 @@ void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
 		char szProtoName[64];
 		char substr[64];
 
-		CallProtoService(subtotal[0].szProto,PS_GETNAME,sizeof(szProtoName),(LPARAM)szProtoName);
+		CallProtoService(subtotal[0].szProto,PS_GETNAME,SIZEOF(szProtoName),(LPARAM)szProtoName);
 		if(subtotalCount==1) {
 			if(total==1) wsprintfA(str,Translate("1 %s user found"),szProtoName);
 			else wsprintfA(str,Translate("%d %s users found"),total,szProtoName);
@@ -320,7 +320,7 @@ void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
 			wsprintfA(str,Translate("%d users found ("),total);
 			for(i=0;i<subtotalCount;i++) {
 				if(i) {
-					CallProtoService(subtotal[i].szProto,PS_GETNAME,sizeof(szProtoName),(LPARAM)szProtoName);
+					CallProtoService(subtotal[i].szProto,PS_GETNAME,SIZEOF(szProtoName),(LPARAM)szProtoName);
 					lstrcatA(str,", ");
 				}
 				wsprintfA(substr,"%d %s",subtotal[i].count,szProtoName);

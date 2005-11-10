@@ -67,9 +67,9 @@ static void __cdecl RunVirusScannerThread(struct virusscanthreadstartinfo *info)
 			if(pszReplace) {
 				if(info->szFile[lstrlenA(info->szFile)-1]=='\\') info->szFile[lstrlenA(info->szFile)-1]='\0';
 				*pszReplace=0;
-				mir_snprintf(szCmdLine,sizeof(szCmdLine),"%s\"%s\"%s",dbv.pszVal,info->szFile,pszReplace+2);
+				mir_snprintf(szCmdLine,SIZEOF(szCmdLine),"%s\"%s\"%s",dbv.pszVal,info->szFile,pszReplace+2);
 			}
-			else lstrcpynA(szCmdLine,dbv.pszVal,sizeof(szCmdLine));
+			else lstrcpynA(szCmdLine,dbv.pszVal,SIZEOF(szCmdLine));
 			if(CreateProcessA(NULL,szCmdLine,NULL,NULL,FALSE,0,NULL,NULL,&si,&pi)) {
 				if(WaitForSingleObject(pi.hProcess,3600*1000)==WAIT_OBJECT_0)
 					PostMessage(info->hwndReply,M_VIRUSSCANDONE,info->returnCode,0);
@@ -89,7 +89,7 @@ static void SetFilenameControls(HWND hwndDlg,PROTOFILETRANSFERSTATUS *fts)
 	HWND hwndFilename;
 
 	{	TCHAR msg[MAX_PATH];
-		GetDlgItemText(hwndDlg,IDC_FILENAME,msg,sizeof(msg));
+		GetDlgItemText(hwndDlg,IDC_FILENAME,msg,SIZEOF(msg));
 		if(msg[0]) return;
 
 		wsprintf(msg,TranslateT("Current file (%d of %d)"),fts->currentFileNumber+1,fts->totalFiles);
@@ -97,7 +97,7 @@ static void SetFilenameControls(HWND hwndDlg,PROTOFILETRANSFERSTATUS *fts)
 	}
 
 	hwndFilename=GetDlgItem(hwndDlg,IDC_FILENAME);
-	lstrcpynA(str,fts->currentFile,sizeof(str));
+	lstrcpynA(str,fts->currentFile,SIZEOF(str));
 	if(strchr(str,'\\')) {
 		RECT rcFilename;
 		HDC hdc;
@@ -151,7 +151,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			dat->transferStatus.currentFileNumber=-1;
 			if(dat->send) {
 				char szMsg[450];
-				GetDlgItemTextA(GetParent(hwndDlg),IDC_MSG,szMsg,sizeof(szMsg));
+				GetDlgItemTextA(GetParent(hwndDlg),IDC_MSG,szMsg,SIZEOF(szMsg));
 				dat->fs=(HANDLE)CallContactService(dat->hContact,PSS_FILE,(WPARAM)szMsg,(LPARAM)dat->files);
 				SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Request sent, waiting for acceptance..."));
 				SetOpenFileButtonStyle(GetDlgItem(hwndDlg,IDC_OPENFILE),dat->files[1]!=NULL,1);
@@ -160,7 +160,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			else {	//recv
 				char szSavePath[MAX_PATH];
 
-				GetDlgItemTextA(GetParent(hwndDlg),IDC_FILEDIR,szSavePath,sizeof(szSavePath));
+				GetDlgItemTextA(GetParent(hwndDlg),IDC_FILEDIR,szSavePath,SIZEOF(szSavePath));
 				CreateDirectoryTree(szSavePath);
 				dat->fs=(HANDLE)CallContactService(dat->hContact,PSS_FILEALLOW,(WPARAM)dat->fs,(LPARAM)szSavePath);
 				dat->transferStatus.workingDir=_strdup(szSavePath);
@@ -202,7 +202,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		case WM_TIMER:
 			MoveMemory(dat->bytesRecvedHistory+1,dat->bytesRecvedHistory,sizeof(dat->bytesRecvedHistory)-sizeof(dat->bytesRecvedHistory[0]));
 			dat->bytesRecvedHistory[0]=dat->transferStatus.totalProgress;
-			if(dat->bytesRecvedHistorySize<sizeof(dat->bytesRecvedHistory)/sizeof(dat->bytesRecvedHistory[0]))
+			if ( dat->bytesRecvedHistorySize < SIZEOF(dat->bytesRecvedHistory))
 				dat->bytesRecvedHistorySize++;
 
 			{	TCHAR szSpeed[32], szTime[32], szDisplay[96];
@@ -217,7 +217,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					li.QuadPart=BIGI(10000000)*(dat->transferStatus.currentFileSize-dat->transferStatus.currentFileProgress)*dat->bytesRecvedHistorySize/(dat->bytesRecvedHistory[0]-dat->bytesRecvedHistory[dat->bytesRecvedHistorySize-1]);
 					ft.dwHighDateTime=li.HighPart; ft.dwLowDateTime=li.LowPart;
 					FileTimeToSystemTime(&ft,&st);
-					GetTimeFormat(LOCALE_USER_DEFAULT,TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,&st,NULL,szTime,sizeof(szTime));
+					GetTimeFormat(LOCALE_USER_DEFAULT,TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,&st,NULL,szTime,SIZEOF(szTime));
 				}
 				mir_sntprintf(szDisplay,SIZEOF(szDisplay),_T("%s/%s  (%s %s)"),szSpeed,TranslateT("sec"),szTime,TranslateT("remaining"));
 				SetDlgItemText(hwndDlg,IDC_CURRENTSPEED,szDisplay);
@@ -225,7 +225,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					li.QuadPart=BIGI(10000000)*(dat->transferStatus.totalBytes-dat->transferStatus.totalProgress)*dat->bytesRecvedHistorySize/(dat->bytesRecvedHistory[0]-dat->bytesRecvedHistory[dat->bytesRecvedHistorySize-1]);
 					ft.dwHighDateTime=li.HighPart; ft.dwLowDateTime=li.LowPart;
 					FileTimeToSystemTime(&ft,&st);
-					GetTimeFormat(LOCALE_USER_DEFAULT,TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,&st,NULL,szTime,sizeof(szTime));
+					GetTimeFormat(LOCALE_USER_DEFAULT,TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,&st,NULL,szTime,SIZEOF(szTime));
 				}
 				mir_sntprintf(szDisplay,SIZEOF(szDisplay),_T("%s/%s  (%s %s)"),szSpeed,TranslateT("sec"),szTime,TranslateT("remaining"));
 				SetDlgItemText(hwndDlg,IDC_ALLSPEED,szDisplay);
@@ -484,8 +484,8 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					else {	 //sending
 						DBEVENTINFO dbei={0};
 						char szMsg[450],szFilenames[1024];
-						GetDlgItemTextA(GetParent(hwndDlg),IDC_FILE,szFilenames,sizeof(szFilenames));
-						GetDlgItemTextA(GetParent(hwndDlg),IDC_MSG,szMsg,sizeof(szMsg));
+						GetDlgItemTextA(GetParent(hwndDlg),IDC_FILE,szFilenames,SIZEOF(szFilenames));
+						GetDlgItemTextA(GetParent(hwndDlg),IDC_MSG,szMsg,SIZEOF(szMsg));
 						dbei.cbSize=sizeof(dbei);
 						dbei.szModule=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
 						dbei.eventType=EVENTTYPE_FILE;

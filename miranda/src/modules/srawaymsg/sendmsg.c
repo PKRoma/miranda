@@ -86,9 +86,9 @@ static int GetAwayMessage(WPARAM wParam, LPARAM lParam)
 		for(i=0;dbv.pszVal[i];i++) {
 			if(dbv.pszVal[i]!='%') continue;
 			if(!_strnicmp(dbv.pszVal+i,"%time%",6))
-				GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_NOSECONDS,NULL,NULL,substituteStr,sizeof(substituteStr));
+				GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_NOSECONDS,NULL,NULL,substituteStr,SIZEOF(substituteStr));
 			else if(!_strnicmp(dbv.pszVal+i,"%date%",6))
-				GetDateFormatA(LOCALE_USER_DEFAULT,DATE_SHORTDATE,NULL,NULL,substituteStr,sizeof(substituteStr));
+				GetDateFormatA(LOCALE_USER_DEFAULT,DATE_SHORTDATE,NULL,NULL,substituteStr,SIZEOF(substituteStr));
 			else continue;
 			if(lstrlenA(substituteStr)>6) dbv.pszVal=(char*)realloc(dbv.pszVal,lstrlenA(dbv.pszVal)+1+lstrlenA(substituteStr)-6);
 			MoveMemory(dbv.pszVal+i+lstrlenA(substituteStr),dbv.pszVal+i+6,lstrlenA(dbv.pszVal)-i-5);
@@ -185,11 +185,11 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			SendDlgItemMessage(hwndDlg,IDC_MSG,EM_LIMITTEXT,1024,0);
 			OldMessageEditProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
 			{	char str[256],format[128];
-				GetWindowTextA(hwndDlg,format,sizeof(format));
-				mir_snprintf(str,sizeof(str),format,(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,dat->statusMode,0));
+				GetWindowTextA(hwndDlg,format,SIZEOF(format));
+				mir_snprintf(str,SIZEOF(str),format,(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,dat->statusMode,0));
 				SetWindowTextA(hwndDlg,str);
 			}
-			GetDlgItemTextA(hwndDlg,IDOK,dat->okButtonFormat,sizeof(dat->okButtonFormat));
+			GetDlgItemTextA(hwndDlg,IDOK,dat->okButtonFormat,SIZEOF(dat->okButtonFormat));
 			{	char *msg=(char*)GetAwayMessage((WPARAM)dat->statusMode,0);
 				SetDlgItemTextA(hwndDlg,IDC_MSG,msg);
 				free(msg);
@@ -204,7 +204,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 		case WM_TIMER:
 			if(dat->countdown==-1) {DestroyWindow(hwndDlg); break;}
 			{	char str[64];
-				mir_snprintf(str,sizeof(str),dat->okButtonFormat,dat->countdown);
+				mir_snprintf(str,SIZEOF(str),dat->okButtonFormat,dat->countdown);
 				SetDlgItemTextA(hwndDlg,IDOK,str);
 			}
 			dat->countdown--;
@@ -226,7 +226,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			break;
 		case WM_DESTROY:
 			{	char str[1024];
-				GetDlgItemTextA(hwndDlg,IDC_MSG,str,sizeof(str));
+				GetDlgItemTextA(hwndDlg,IDC_MSG,str,SIZEOF(str));
 				ChangeAllProtoMessages(dat->szProto,dat->statusMode,str);
 				DBWriteContactSettingString(NULL,"SRAway",StatusModeToDbSetting(dat->statusMode,"Msg"),str);
 			}
@@ -277,7 +277,7 @@ struct AwayMsgInfo {
 	char msg[1024];
 };
 struct AwayMsgDlgData {
-	struct AwayMsgInfo info[sizeof(statusModes)/sizeof(statusModes[0])];
+	struct AwayMsgInfo info[ SIZEOF(statusModes) ];
 	int oldPage;
 };
 static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -294,7 +294,7 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			dat=(struct AwayMsgDlgData*)malloc(sizeof(struct AwayMsgDlgData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 			dat->oldPage=-1;
-			for(i=0;i<sizeof(statusModes)/sizeof(statusModes[0]);i++) {
+			for( i=0; i < SIZEOF(statusModes); i++ ) {
 				if(!(protoModeMsgFlags&Proto_Status2Flag(statusModes[i]))) continue;
 				{	TCHAR* ptszDescr = LangPackPcharToTchar(( LPCSTR )CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, statusModes[i], 0 ));
 					j = SendDlgItemMessage( hwndDlg, IDC_STATUS, CB_ADDSTRING, 0, (LPARAM)ptszDescr );
@@ -323,7 +323,7 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 							dat->info[dat->oldPage].ignore=IsDlgButtonChecked(hwndDlg,IDC_DONTREPLY);
 							dat->info[dat->oldPage].noDialog=IsDlgButtonChecked(hwndDlg,IDC_NODIALOG);
 							dat->info[dat->oldPage].usePrevious=IsDlgButtonChecked(hwndDlg,IDC_USEPREVIOUS);
-							GetDlgItemTextA(hwndDlg,IDC_MSG,dat->info[dat->oldPage].msg,sizeof(dat->info[dat->oldPage].msg));
+							GetDlgItemTextA(hwndDlg,IDC_MSG,dat->info[dat->oldPage].msg,SIZEOF(dat->info[dat->oldPage].msg));
 						}
 						CheckDlgButton(hwndDlg,IDC_DONTREPLY,i<0?0:dat->info[i].ignore);
 						CheckDlgButton(hwndDlg,IDC_NODIALOG,i<0?0:dat->info[i].noDialog);

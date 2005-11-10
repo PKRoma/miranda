@@ -212,7 +212,7 @@ static void FillHistoryThread(THistoryThread *hInfo)
 	dbei.pBlob=NULL;
 	oldBlobSize=0;
 	hDbEvent=(HANDLE)CallService(MS_DB_EVENT_FINDLAST,(WPARAM)hInfo->hContact,0);
-	dbtts.cbDest=sizeof(strdatetime);
+	dbtts.cbDest=SIZEOF(strdatetime);
 	dbtts.szDest=strdatetime;
 	dbtts.szFormat="d t";
 	hwndList=GetDlgItem(hInfo->hwnd,IDC_LIST);

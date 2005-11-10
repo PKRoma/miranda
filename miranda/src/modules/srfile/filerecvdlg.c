@@ -137,7 +137,7 @@ void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir)
 		szRecvFilesDir=_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
-    lstrcpynA(szTemp,szRecvFilesDir,sizeof(szTemp));
+    lstrcpynA(szTemp,szRecvFilesDir,SIZEOF(szTemp));
     if (hContact) {
         CONTACTINFO ci;
         char szNick[64];
@@ -153,28 +153,28 @@ void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir)
         ci.hContact = hContact;
         ci.szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
         ci.dwFlag = CNF_UNIQUEID;
-        mir_snprintf(szProto, sizeof(szProto), "%s", ci.szProto);
+        mir_snprintf(szProto, SIZEOF(szProto), "%s", ci.szProto);
         if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
             switch (ci.type) {
                 case CNFT_ASCIIZ:
-                    mir_snprintf(szUsername, sizeof(szUsername), "%s", ci.pszVal);
+                    mir_snprintf(szUsername, SIZEOF(szUsername), "%s", ci.pszVal);
                     miranda_sys_free(ci.pszVal);
                     break;
                 case CNFT_DWORD:
-                    mir_snprintf(szUsername, sizeof(szUsername), "%u", ci.dVal);
+                    mir_snprintf(szUsername, SIZEOF(szUsername), "%u", ci.dVal);
                     break;
             }
         }
-        mir_snprintf(szNick, sizeof(szNick), "%s", (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
+        mir_snprintf(szNick, SIZEOF(szNick), "%s", (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
         if (lstrlenA(szUsername)==0) {
-            mir_snprintf(szUsername, sizeof(szUsername), "%s", (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
+            mir_snprintf(szUsername, SIZEOF(szUsername), "%s", (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
         }
         RemoveInvalidFilenameChars(szNick);
         RemoveInvalidFilenameChars(szUsername);
         RemoveInvalidFilenameChars(szProto);
-        ReplaceStr(szTemp, sizeof(szTemp), "%nick%", szNick);
-        ReplaceStr(szTemp, sizeof(szTemp), "%userid%", szUsername);
-        ReplaceStr(szTemp, sizeof(szTemp), "%proto%", szProto);
+        ReplaceStr(szTemp, SIZEOF(szTemp), "%nick%", szNick);
+        ReplaceStr(szTemp, SIZEOF(szTemp), "%userid%", szUsername);
+        ReplaceStr(szTemp, SIZEOF(szTemp), "%proto%", szProto);
     }
 	lstrcpynA(szDir,szTemp,cchDir);
 	free(szRecvFilesDir);
@@ -223,7 +223,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 			contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
 			SetDlgItemTextA(hwndDlg,IDC_FROM,contactName);
-			GetContactReceivedFilesDir(dat->hContact,szPath,sizeof(szPath));
+			GetContactReceivedFilesDir(dat->hContact,szPath,SIZEOF(szPath));
 			SetDlgItemTextA(hwndDlg,IDC_FILEDIR,szPath);
 			{	int i;
 				char idstr[32];
@@ -250,15 +250,15 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
 				CallService(MS_DB_EVENT_GET,(WPARAM)dat->hDbEvent,(LPARAM)&dbei);
 				dat->fs=(HANDLE)*(PDWORD)dbei.pBlob;
-				lstrcpynA(szPath, dbei.pBlob+4, min(dbei.cbBlob+1,sizeof(szPath)));
+				lstrcpynA(szPath, dbei.pBlob+4, min(dbei.cbBlob+1,SIZEOF(szPath)));
 				SetDlgItemTextA(hwndDlg,IDC_FILENAMES,szPath);
-				lstrcpynA(szPath, dbei.pBlob+4+strlen(dbei.pBlob+4)+1, min(dbei.cbBlob-4-strlen(dbei.pBlob+4),sizeof(szPath)));
+				lstrcpynA(szPath, dbei.pBlob+4+strlen(dbei.pBlob+4)+1, min(dbei.cbBlob-4-strlen(dbei.pBlob+4),SIZEOF(szPath)));
 				SetDlgItemTextA(hwndDlg,IDC_MSG,szPath);
 				free(dbei.pBlob);
 
 				dbtts.szFormat="t d";
 				dbtts.szDest=szPath;
-				dbtts.cbDest=sizeof(szPath);
+				dbtts.cbDest=SIZEOF(szPath);
 				CallService(MS_DB_TIME_TIMESTAMPTOSTRING,dbei.timestamp,(LPARAM)&dbtts);
 				SetDlgItemTextA(hwndDlg,IDC_DATE,szPath);
 			}
@@ -281,12 +281,12 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 						switch(ci.type) {
 							case CNFT_ASCIIZ:
 								hasName = 1;
-								mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+								mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
 								free(ci.pszVal);
 								break;
 							case CNFT_DWORD:
 								hasName = 1;
-								mir_snprintf(buf, sizeof(buf),"%u",ci.dVal);
+								mir_snprintf(buf, SIZEOF(buf),"%u",ci.dVal);
 								break;
 						}
 					}
@@ -340,8 +340,8 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				{
 					char szDirName[MAX_PATH],szExistingDirName[MAX_PATH];
 
-					GetDlgItemTextA(hwndDlg,IDC_FILEDIR,szDirName,sizeof(szDirName));
-					GetLowestExistingDirName(szDirName,szExistingDirName,sizeof(szExistingDirName));
+					GetDlgItemTextA(hwndDlg,IDC_FILEDIR,szDirName,SIZEOF(szDirName));
+					GetLowestExistingDirName(szDirName,szExistingDirName,SIZEOF(szExistingDirName));
 					if(BrowseForFolder(hwndDlg,szExistingDirName))
 						SetDlgItemTextA(hwndDlg,IDC_FILEDIR,szExistingDirName);
 					return TRUE;
@@ -350,8 +350,8 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 					if(dat->hwndTransfer) return SendMessage(dat->hwndTransfer,msg,wParam,lParam);
 					{	//most recently used directories
 						char szRecvDir[MAX_PATH],szDefaultRecvDir[MAX_PATH];
-						GetDlgItemTextA(hwndDlg,IDC_FILEDIR,szRecvDir,sizeof(szRecvDir));
-						GetContactReceivedFilesDir(NULL,szDefaultRecvDir,sizeof(szDefaultRecvDir));
+						GetDlgItemTextA(hwndDlg,IDC_FILEDIR,szRecvDir,SIZEOF(szRecvDir));
+						GetContactReceivedFilesDir(NULL,szDefaultRecvDir,SIZEOF(szDefaultRecvDir));
 						if(_strnicmp(szRecvDir,szDefaultRecvDir,lstrlenA(szDefaultRecvDir))) {
 							char idstr[32];
 							int i;

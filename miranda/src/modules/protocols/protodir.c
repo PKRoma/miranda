@@ -183,7 +183,7 @@ void contactDir_Proto_Walk(contactDir * cd)
 		// and how we'll get the reset
 		dbvProto.type=DBVT_ASCIIZ;
 		dbvProto.pszVal = (char *) &buf;
-		dbvProto.cchVal = sizeof(buf);
+		dbvProto.cchVal = SIZEOF(buf);
 		// figure out what hContact/Protocol/p is
 		if ( CallService(MS_DB_CONTACT_GETSETTINGSTATIC,(WPARAM)hContact, (LPARAM)&gsProto) == 0 ) {
 			contactDir_Contact_Add(cd, hContact, buf, NULL);
@@ -240,7 +240,7 @@ void UninitContactDir(void)
 		for ( j = 0; j< condir.protoCache.realCount; j++) {
 			char buf[128];
 			contactEntry * p = condir.protoCache.items[j];
-			mir_snprintf(buf,sizeof(buf)," [%s] %s @ %x \n", p->proto, p->id ? p->id : "", p->hContact);
+			mir_snprintf(buf,SIZEOF(buf)," [%s] %s @ %x \n", p->proto, p->id ? p->id : "", p->hContact);
 			OutputDebugString(buf);
 		}
 	}

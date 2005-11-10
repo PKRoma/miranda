@@ -419,7 +419,7 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					tvis.item.mask=TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT|TVIF_PARAM;
 					tvis.item.stateMask=0xFFFFFFFF;
 					tvis.item.pszText=name;
-					tvis.item.cchTextMax=sizeof(name);
+					tvis.item.cchTextMax=SIZEOF(name);
 					tvis.item.hItem=dat->hDragItem;
 					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_NAMEORDER),&tvis.item);
 					TreeView_DeleteItem(GetDlgItem(hwndDlg,IDC_NAMEORDER),dat->hDragItem);

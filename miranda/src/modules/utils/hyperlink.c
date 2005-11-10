@@ -86,7 +86,7 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT message,WPARAM wParam,LP
 			return (LRESULT)dat->hSetFont;
 		case IM_MEASURETEXT:
 		{	char text[256];
-			GetWindowTextA(hwnd,text,sizeof(text));
+			GetWindowTextA(hwnd,text,SIZEOF(text));
 			lParam=(LPARAM)text;
 			//fall thru
 		case WM_SETTEXT:

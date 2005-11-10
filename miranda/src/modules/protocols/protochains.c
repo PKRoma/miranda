@@ -108,7 +108,7 @@ static int Proto_GetContactBaseProto(WPARAM wParam,LPARAM lParam)
 
 	dbv.type=DBVT_ASCIIZ;
 	dbv.pszVal=name;
-	dbv.cchVal=sizeof(name);
+	dbv.cchVal=SIZEOF(name);
 	dbcgs.pValue=&dbv;
 	dbcgs.szModule="Protocol";
 	dbcgs.szSetting="p";

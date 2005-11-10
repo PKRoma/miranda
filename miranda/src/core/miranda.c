@@ -178,7 +178,7 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 #ifdef _DEBUG
 		{
 			char szBuf[64];
-			mir_snprintf(szBuf,sizeof(szBuf),"*** pushing thread (%x)\n",GetCurrentThreadId());
+			mir_snprintf(szBuf,SIZEOF(szBuf),"*** pushing thread (%x)\n",GetCurrentThreadId());
 			OutputDebugStringA(szBuf);
 		}
 #endif
@@ -245,7 +245,7 @@ static void InsertRegistryKey(void)
 		DWORD dw;
 		if(RegCreateKeyExA(HKEY_LOCAL_MACHINE,"SOFTWARE\\Miranda",0,NULL,0,KEY_CREATE_SUB_KEY|KEY_SET_VALUE,NULL,&hKey,&dw)==ERROR_SUCCESS) {
 			char str[MAX_PATH],*str2;
-			GetModuleFileNameA(NULL,str,sizeof(str));
+			GetModuleFileNameA(NULL,str,SIZEOF(str));
 			str2=strrchr(str,'\\');
 			if(str2!=NULL) *str2=0;
 			RegSetValueExA(hKey,"Install_Dir",0,REG_SZ,(PBYTE)str,lstrlenA(str)+1);
@@ -398,7 +398,7 @@ static int GetMirandaVersion(WPARAM wParam,LPARAM lParam)
 	VS_FIXEDFILEINFO *vsffi;
 	DWORD ver;
 
-	GetModuleFileNameA(NULL,filename,sizeof(filename));
+	GetModuleFileNameA(NULL,filename,SIZEOF(filename));
 	verInfoSize=GetFileVersionInfoSizeA(filename,&unused);
 	pVerInfo=malloc(verInfoSize);
 	GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);
@@ -419,7 +419,7 @@ static int GetMirandaVersionText(WPARAM wParam,LPARAM lParam)
 	UINT blockSize;
 	PVOID pVerInfo;
 
-	GetModuleFileNameA(NULL,filename,sizeof(filename));
+	GetModuleFileNameA(NULL,filename,SIZEOF(filename));
 	verInfoSize=GetFileVersionInfoSizeA(filename,&unused);
 	pVerInfo=malloc(verInfoSize);
 	GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);

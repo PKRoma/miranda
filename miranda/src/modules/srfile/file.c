@@ -80,7 +80,7 @@ static int FileEventAdded(WPARAM wParam,LPARAM lParam)
 		cle.hIcon=LoadSkinnedIcon(SKINICON_EVENT_FILE);
 		cle.pszService="SRFile/RecvFile";
 		contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0);
-		mir_snprintf(szTooltip,sizeof(szTooltip),Translate("File from %s"),contactName);
+		mir_snprintf(szTooltip,SIZEOF(szTooltip),Translate("File from %s"),contactName);
 		cle.pszTooltip=szTooltip;
 		CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cle);
 	}
@@ -92,7 +92,7 @@ void CreateDirectoryTree(char *szDir)
 	DWORD dwAttributes;
 	char *pszLastBackslash,szTestDir[MAX_PATH];
 
-	lstrcpynA(szTestDir,szDir,sizeof(szTestDir));
+	lstrcpynA(szTestDir,szDir,SIZEOF(szTestDir));
 	if((dwAttributes=GetFileAttributesA(szTestDir))!=0xffffffff
 	   && dwAttributes&FILE_ATTRIBUTE_DIRECTORY) return;
 	pszLastBackslash=strrchr(szTestDir,'\\');
@@ -276,7 +276,7 @@ int LoadSendRecvFileModule(void)
 	    if(!DBGetContactSetting(NULL,"SRFile","RecvFilesDir",&dbv)) {
             char szPath[MAX_PATH];
 
-            mir_snprintf(szPath, sizeof(szPath), "%s%s%s", dbv.pszVal, dbv.pszVal[strlen(dbv.pszVal)-1]=='\\'?"":"\\" , "%userid%");
+            mir_snprintf(szPath, SIZEOF(szPath), "%s%s%s", dbv.pszVal, dbv.pszVal[strlen(dbv.pszVal)-1]=='\\'?"":"\\" , "%userid%");
             DBFreeVariant(&dbv);
             DBWriteContactSettingString(NULL,"SRFile","RecvFilesDirAdv",szPath);
             DBDeleteContactSetting(NULL,"SRFile","RecvFilesDir");

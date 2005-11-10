@@ -197,7 +197,7 @@ static int HttpPeekFirstResponseLine(struct NetlibConnection *nlc,DWORD dwTimeou
 	char *peol;
 
 	for(;;) {
-		bytesPeeked=RecvWithTimeoutTime(nlc,dwTimeoutTime,buffer,sizeof(buffer)-1,MSG_PEEK|recvFlags);
+		bytesPeeked=RecvWithTimeoutTime(nlc,dwTimeoutTime,buffer,SIZEOF(buffer)-1,MSG_PEEK|recvFlags);
 		if(bytesPeeked==0 || bytesPeeked==SOCKET_ERROR) {
 			if(bytesPeeked==0) SetLastError(ERROR_HANDLE_EOF);
 			return 0;
@@ -209,7 +209,7 @@ static int HttpPeekFirstResponseLine(struct NetlibConnection *nlc,DWORD dwTimeou
 				SetLastError(ERROR_BAD_FORMAT);
 				return 0;
 			}
-			if(bytesPeeked==sizeof(buffer)-1) {
+			if(bytesPeeked==SIZEOF(buffer)-1) {
 				SetLastError(ERROR_BUFFER_OVERFLOW);
 				return 0;
 			}
@@ -348,7 +348,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 		else {
 			NETLIBBASE64 nlb64;
 			char szAuth[512];
-			mir_snprintf(szAuth,sizeof(szAuth),"%s:%s",nlc->nlu->settings.szProxyAuthUser,nlc->nlu->settings.szProxyAuthPassword);
+			mir_snprintf(szAuth,SIZEOF(szAuth),"%s:%s",nlc->nlu->settings.szProxyAuthUser,nlc->nlu->settings.szProxyAuthPassword);
 			nlb64.cbDecoded=lstrlenA(szAuth);
 			nlb64.pbDecoded=szAuth;
 			nlb64.cchEncoded=Netlib_GetBase64EncodedBufferSize(nlb64.cbDecoded);
@@ -442,7 +442,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 				int recvResult;
 
 				while(contentLength) {
-					recvResult=NLRecv(nlc,trashBuf,sizeof(trashBuf),nlhr->flags&NLHRF_NODUMP?MSG_NODUMP:MSG_DUMPASTEXT|MSG_DUMPPROXY);
+					recvResult=NLRecv(nlc,trashBuf,SIZEOF(trashBuf),nlhr->flags&NLHRF_NODUMP?MSG_NODUMP:MSG_DUMPASTEXT|MSG_DUMPPROXY);
 					if(recvResult==0 || recvResult==SOCKET_ERROR) {
 						if(recvResult==0) SetLastError(ERROR_HANDLE_EOF);
 						if(szHost) free(szHost);
@@ -539,7 +539,7 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 		return (int)(NETLIBHTTPREQUEST*)NULL;
 	}
 	for(;;) {
-		bytesPeeked=RecvWithTimeoutTime(nlc,dwRequestTimeoutTime,buffer,sizeof(buffer)-1,MSG_PEEK|lParam);
+		bytesPeeked=RecvWithTimeoutTime(nlc,dwRequestTimeoutTime,buffer,SIZEOF(buffer)-1,MSG_PEEK|lParam);
 		if(bytesPeeked==0 || bytesPeeked==SOCKET_ERROR) {
 			NetlibLeaveNestedCS(&nlc->ncsRecv);
 			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
@@ -556,7 +556,7 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 					SetLastError(ERROR_BAD_FORMAT);
 					return (int)(NETLIBHTTPREQUEST*)NULL;
 				}
-				if((bytesPeeked==sizeof(buffer)-1 && pbuffer==buffer)	//buffer overflow
+				if((bytesPeeked == SIZEOF(buffer)-1 && pbuffer==buffer)	//buffer overflow
 				   || (pbuffer!=buffer && NLRecv(nlc,buffer,pbuffer-buffer,lParam|MSG_DUMPASTEXT)==SOCKET_ERROR)) {	 //error removing read bytes from buffer
 					NetlibLeaveNestedCS(&nlc->ncsRecv);
 					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
@@ -630,7 +630,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		phost=strstr(nlhr->szUrl,"://");
 		if(phost==NULL) phost=nlhr->szUrl;
 		else phost+=3;
-		lstrcpynA(szHost,phost,sizeof(szHost));
+		lstrcpynA(szHost,phost,SIZEOF(szHost));
 		ppath=strchr(szHost,'/');
 		if(ppath) *ppath='\0';
 		nloc.cbSize=sizeof(nloc);
@@ -666,13 +666,13 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 			CopyMemory(nlhrSend.headers,nlhr->headers,sizeof(NETLIBHTTPHEADER)*nlhr->headersCount);
 			nlhrSend.headers[nlhrSend.headersCount-1].szName="User-Agent";
 			nlhrSend.headers[nlhrSend.headersCount-1].szValue=szUserAgent;
-			CallService(MS_SYSTEM_GETVERSIONTEXT,sizeof(szMirandaVer),(LPARAM)szMirandaVer);
+			CallService(MS_SYSTEM_GETVERSIONTEXT,SIZEOF(szMirandaVer),(LPARAM)szMirandaVer);
 			pspace=strchr(szMirandaVer,' ');
 			if(pspace) {
 				*pspace++='\0';
-				mir_snprintf(szUserAgent,sizeof(szUserAgent),"Miranda/%s (%s)",szMirandaVer,pspace);
+				mir_snprintf(szUserAgent,SIZEOF(szUserAgent),"Miranda/%s (%s)",szMirandaVer,pspace);
 			}
-			else mir_snprintf(szUserAgent,sizeof(szUserAgent),"Miranda/%s",szMirandaVer);
+			else mir_snprintf(szUserAgent,SIZEOF(szUserAgent),"Miranda/%s",szMirandaVer);
 		}
 		if(NetlibHttpSendRequest((WPARAM)hConnection,(LPARAM)&nlhrSend)==SOCKET_ERROR) {
 			if(!doneUserAgentHeader) free(nlhrSend.headers);

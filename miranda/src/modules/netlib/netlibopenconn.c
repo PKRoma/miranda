@@ -118,10 +118,10 @@ static int NetlibInitSocks4Connection(struct NetlibConnection *nlc,struct Netlib
 		return 0;
 	}
 
-	len=NLRecv(nlc,reply,sizeof(reply),MSG_DUMPPROXY);
-	if(len<sizeof(reply) || reply[1]!=90) {
-		if(len!=SOCKET_ERROR) {
-			if(len<sizeof(reply)) SetLastError(ERROR_BAD_FORMAT);
+	len=NLRecv(nlc,reply,SIZEOF(reply),MSG_DUMPPROXY);
+	if(len < sizeof(reply) || reply[1]!=90) {
+		if(len != SOCKET_ERROR) {
+			if (len < SIZEOF(reply)) SetLastError(ERROR_BAD_FORMAT);
 			else switch(reply[1]) {
 				case 91: SetLastError(ERROR_ACCESS_DENIED); break;
 				case 92: SetLastError(ERROR_CONNECTION_UNAVAIL); break;
@@ -188,7 +188,7 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 			return 0;
 		}
 
-		len=NLRecv(nlc,buf,sizeof(buf),MSG_DUMPPROXY);
+		len=NLRecv(nlc,buf,SIZEOF(buf),MSG_DUMPPROXY);
 		if(len<2 || buf[1]) {
 			if(len!=SOCKET_ERROR) {
 				if(len<2) SetLastError(ERROR_BAD_FORMAT);
@@ -240,7 +240,7 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 		return 0;
 	}
 
-	len=NLRecv(nlc,buf,sizeof(buf),MSG_DUMPPROXY);
+	len=NLRecv(nlc,buf,SIZEOF(buf),MSG_DUMPPROXY);
 	if(len<7 || buf[0]!=5 || buf[1]) {
 		if(len!=SOCKET_ERROR) {
 			if(len<7 || buf[0]!=5) SetLastError(ERROR_BAD_FORMAT);
@@ -275,7 +275,7 @@ static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibU
 	nlhrSend.requestType=REQUEST_CONNECT;
 	nlhrSend.flags=NLHRF_DUMPPROXY|NLHRF_SMARTAUTHHEADER;
 	if(nlu->settings.dnsThroughProxy) {
-		mir_snprintf(szUrl,sizeof(szUrl),"%s:%u",nloc->szHost,nloc->wPort);
+		mir_snprintf(szUrl,SIZEOF(szUrl),"%s:%u",nloc->szHost,nloc->wPort);
 		if(inet_addr(nloc->szHost)==INADDR_NONE) {
 			httpHeaders[0].szName="Host";
 			httpHeaders[0].szValue=szUrl;
@@ -287,7 +287,7 @@ static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibU
 		DWORD ip=DnsLookup(nlu,nloc->szHost);
 		if(ip==0) return 0;
 		addr.S_un.S_addr=ip;
-		mir_snprintf(szUrl,sizeof(szUrl),"%s:%u",inet_ntoa(addr),nloc->wPort);
+		mir_snprintf(szUrl,SIZEOF(szUrl),"%s:%u",inet_ntoa(addr),nloc->wPort);
 	}
 	nlhrSend.szUrl=szUrl;
 	nlhrSend.headers=httpHeaders;

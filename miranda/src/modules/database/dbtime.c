@@ -123,19 +123,19 @@ static int TimestampToString(WPARAM wParam,LPARAM lParam)
 	for(pFormat=tts->szFormat,pDest=tts->szDest;*pFormat;pFormat++) {
 		switch(*pFormat) {
 			case 't':
-				GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_NOSECONDS,&st,NULL,dateTimeStr,sizeof(dateTimeStr));
+				GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_NOSECONDS,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
 				break;
 			case 's':
-				GetTimeFormatA(LOCALE_USER_DEFAULT,0,&st,NULL,dateTimeStr,sizeof(dateTimeStr));
+				GetTimeFormatA(LOCALE_USER_DEFAULT,0,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
 				break;
 			case 'm':
-				GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_NOMINUTESORSECONDS,&st,NULL,dateTimeStr,sizeof(dateTimeStr));
+				GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_NOMINUTESORSECONDS,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
 				break;
 			case 'd':
-				GetDateFormatA(LOCALE_USER_DEFAULT,DATE_SHORTDATE,&st,NULL,dateTimeStr,sizeof(dateTimeStr));
+				GetDateFormatA(LOCALE_USER_DEFAULT,DATE_SHORTDATE,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
 				break;
 			case 'D':
-				GetDateFormatA(LOCALE_USER_DEFAULT,DATE_LONGDATE,&st,NULL,dateTimeStr,sizeof(dateTimeStr));
+				GetDateFormatA(LOCALE_USER_DEFAULT,DATE_LONGDATE,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
 				break;
 			default:
 				if(destCharsLeft) {

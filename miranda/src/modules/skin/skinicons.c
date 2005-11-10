@@ -59,16 +59,16 @@ static UINT otherIconToResourceId[]={IDI_MIRANDA,IDI_MIRANDA,IDI_MIRANDA,IDI_GRO
 
 struct ProtoIcons {
 	char *szProto;
-	HICON hIcons[sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0])];
+	HICON hIcons[ SIZEOF(skinIconStatusToIdStatus) ];
 } static *protoIcons;
 static int protoIconsCount;
 static HICON hEventIcons[3],hOtherIcons[6];
-static HICON hStatusIcons[sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0])];
+static HICON hStatusIcons[ SIZEOF(skinIconStatusToIdStatus) ];
 
 static int IdStatusToSkinIconStatus(int idStatus)
 {
 	int i;
-	for(i=0;i<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);i++)
+	for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ )
 		if(skinIconStatusToIdStatus[i]==idStatus) return i;
 	return SKINICON_STATUS_OFFLINE;
 }
@@ -106,7 +106,7 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 		int j;
 		protoIcons=(struct ProtoIcons*)realloc(protoIcons,sizeof(struct ProtoIcons)*(protoIconsCount+1));
 		protoIcons[protoIconsCount].szProto=_strdup(szProto);
-		for(j=0;j<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);j++)
+		for( j=0; j < SIZEOF(skinIconStatusToIdStatus); j++ )
 		{
 			protoIcons[protoIconsCount].hIcons[j]=ImportIcon(szProto,j);
 		}//for
@@ -118,14 +118,14 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 static int LoadSkinIcon(WPARAM wParam,LPARAM lParam)
 {
 	if(wParam<SKINICON_EVENT_MESSAGE) {
-		if(wParam>=sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0])) return (int)(HICON)NULL;
+		if(wParam>=SIZEOF(skinIconStatusToIdStatus)) return (int)(HICON)NULL;
 		return LoadSkinProtoIcon((WPARAM)(char*)NULL,skinIconStatusToIdStatus[wParam]);
 	}
 	if(wParam<SKINICON_OTHER_MIRANDA) {
-		if(wParam-SKINICON_EVENT_MESSAGE>=sizeof(hEventIcons)/sizeof(hEventIcons[0])) return (int)(HICON)NULL;
+		if(wParam-SKINICON_EVENT_MESSAGE>=SIZEOF(hEventIcons)) return (int)(HICON)NULL;
 		return (int)hEventIcons[wParam-SKINICON_EVENT_MESSAGE];
 	}
-	if(wParam-SKINICON_OTHER_MIRANDA>=sizeof(hOtherIcons)/sizeof(hOtherIcons[0])) return (int)(HICON)NULL;
+	if(wParam-SKINICON_OTHER_MIRANDA>=SIZEOF(hOtherIcons)) return (int)(HICON)NULL;
 	return (int)hOtherIcons[wParam-SKINICON_OTHER_MIRANDA];
 }
 
@@ -138,7 +138,7 @@ static HICON ExtractIconFromPath(const char *path)
 
 	if (path == NULL) return (HICON)NULL;
 
-	lstrcpynA(file,path,sizeof(file));
+	lstrcpynA(file,path,SIZEOF(file));
 	comma=strrchr(file,',');
 	if(comma==NULL) n=0;
 	else {n=atoi(comma+1); *comma=0;}
@@ -161,7 +161,7 @@ static HICON ImportIcon(const char *szProto,int n)
 			szSetting[0]='p';
 			_itoa(i,szSetting+1,10);
 			if(DBGetContactSetting(NULL,"Icons",szSetting,&dbv)) break;
-			mir_snprintf(szSetting,sizeof(szSetting),"%s%d",dbv.pszVal,skinIconStatusToIdStatus[n]);
+			mir_snprintf(szSetting,SIZEOF(szSetting),"%s%d",dbv.pszVal,skinIconStatusToIdStatus[n]);
 			DBFreeVariant(&dbv);
 			if(!DBGetContactSetting(NULL,"Icons",szSetting,&dbv)) {
 				hIcon=ExtractIconFromPath(dbv.pszVal);
@@ -177,7 +177,7 @@ static HICON ImportIcon(const char *szProto,int n)
 	use the index 'n' directly. */
 	if (szProto) {
 	//
-		mir_snprintf(szSetting,sizeof(szSetting),"%s%d",szProto,skinIconStatusToIdStatus[n]);
+		mir_snprintf(szSetting,SIZEOF(szSetting),"%s%d",szProto,skinIconStatusToIdStatus[n]);
 	} else {
 		_itoa(n,szSetting,10);
 	} //if
@@ -195,7 +195,7 @@ static HICON ImportIcon(const char *szProto,int n)
 		GetModuleFileNameA(GetModuleHandle(NULL), szPath, MAX_PATH);
 		str=strrchr(szPath,'\\');
 		if(str!=NULL) *str=0;
-		mir_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\proto_%s.dll,%d", szPath, szProto, -(int)skinIconStatusToResourceId[n]);
+		mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Icons\\proto_%s.dll,%d", szPath, szProto, -(int)skinIconStatusToResourceId[n]);
 		hIcon=ExtractIconFromPath(szFullPath);
 		if (hIcon) return hIcon;
 		/* looking for a protocol icon and it wasn't found, use internal */
@@ -210,12 +210,12 @@ static void LoadAllIcons(void)
 	int i,j,z;
 	char szSetting[128];
 	
-	for(i=0;i<sizeof(hEventIcons)/sizeof(hEventIcons[0]);i++)
+	for( i=0; i < SIZEOF(hEventIcons); i++ )
 		hEventIcons[i]=ImportIcon(NULL,i+SKINICON_EVENT_MESSAGE);
-	for(i=0;i<sizeof(hOtherIcons)/sizeof(hOtherIcons[0]);i++)
+	for( i=0; i < SIZEOF(hOtherIcons); i++ )
 		hOtherIcons[i]=ImportIcon(NULL,i+SKINICON_OTHER_MIRANDA);
 	ZeroMemory(hStatusIcons,sizeof(hStatusIcons));
-	for(i=0;i<sizeof(hStatusIcons)/sizeof(hStatusIcons[0]);i++) 
+	for( i=0; i < SIZEOF(hStatusIcons); i++ ) 
 	{
 		_itoa(skinIconStatusToIdStatus[i], szSetting, 10);
 		hStatusIcons[i] = NULL;
@@ -238,7 +238,7 @@ static void LoadAllIcons(void)
 		if (!z) {
 			protoIcons=(struct ProtoIcons*)realloc(protoIcons,sizeof(struct ProtoIcons)*(protoIconsCount+1));
 			protoIcons[protoIconsCount].szProto=dbv.pszVal;
-			for(j=0;j<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);j++)
+			for( j=0; j < SIZEOF(skinIconStatusToIdStatus); j++ )
 			{
 				protoIcons[protoIconsCount].hIcons[j]=ImportIcon(dbv.pszVal,j);
 			}//for
@@ -251,19 +251,18 @@ static void LoadAllIcons(void)
 void FreeAllIcons(void)
 {
 	int i,j;
-	for(i=0;i<sizeof(hOtherIcons)/sizeof(hOtherIcons[0]);i++) DestroyIcon(hOtherIcons[i]);
-	for(i=0;i<sizeof(hEventIcons)/sizeof(hEventIcons[0]);i++) DestroyIcon(hEventIcons[i]);
-	for(i=0;i<protoIconsCount;i++) {
-		for(j=0;j<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);j++) {
+	for( i=0; i < SIZEOF(hOtherIcons); i++ ) DestroyIcon(hOtherIcons[i]);
+	for( i=0; i < SIZEOF(hEventIcons); i++ ) DestroyIcon(hEventIcons[i]);
+	for( i=0; i < protoIconsCount;i++) {
+		for( j=0; j < SIZEOF(skinIconStatusToIdStatus); j++ ) {
 			if(hStatusIcons[i]==protoIcons[i].hIcons[j]) continue;
 			DestroyIcon(protoIcons[i].hIcons[j]);
 		}
 		free(protoIcons[i].szProto);
 	}
 	free(protoIcons);
-	for(i=0;i<sizeof(hStatusIcons)/sizeof(hStatusIcons[0]);i++) {
+	for( i=0; i < SIZEOF(hStatusIcons); i++ )
 		DestroyIcon(hStatusIcons[i]);
-	}
 }
 
 int InitSkinIcons(void)
@@ -343,7 +342,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				TCHAR str[128];
 				char protoName[96];
 				if(protoList[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protoList[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
-				CallProtoService(protoList[i]->szName,PS_GETNAME,sizeof(protoName),(LPARAM)protoName);
+				CallProtoService(protoList[i]->szName,PS_GETNAME,SIZEOF(protoName),(LPARAM)protoName);
 				{	TCHAR* ptszProtoName = LangPackPcharToTchar( protoName );
 					mir_sntprintf( str, SIZEOF(str), TranslateT("%s Icons"), ptszProtoName );
 					free( ptszProtoName );
@@ -358,7 +357,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				dat->protoIcons[i].proto=proto;
 				dat->protoIcons[i].iconPath=(char**)malloc(sizeof(char*) * SIZEOF(skinIconStatusToIdStatus));
 				for( j=0; j < SIZEOF(skinIconStatusToIdStatus); j++ ) {
-					mir_snprintf(szSetting,sizeof(szSetting),"%s%d",proto->szName,skinIconStatusToIdStatus[j]);
+					mir_snprintf(szSetting,SIZEOF(szSetting),"%s%d",proto->szName,skinIconStatusToIdStatus[j]);
 					if(DBGetContactSetting(NULL,"Icons",szSetting,&dbv))
 						dat->protoIcons[i].iconPath[j]=NULL;
 					else
@@ -428,7 +427,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						GetModuleFileNameA(GetModuleHandle(NULL), szPath, MAX_PATH);
 						str=strrchr(szPath,'\\');
 						if(str!=NULL) *str=0;
-						mir_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\proto_%s.dll,%d", szPath, dat->protoIcons[i].proto->szName, -(int)skinIconStatusToResourceId[lvi.iItem]);
+						mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Icons\\proto_%s.dll,%d", szPath, dat->protoIcons[i].proto->szName, -(int)skinIconStatusToResourceId[lvi.iItem]);
 						hIcon=ExtractIconFromPath(szFullPath);
 					}
 					if(hIcon==NULL) hIcon=ExtractIconFromPath(dat->mainStatusPath[lvi.iItem]);
@@ -477,17 +476,17 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
 				if(proto==NULL) {
 					if (ico->main) {
-						for(i=0;i<sizeof(mainIcons)/sizeof(mainIcons[0]);i++)
+						for( i=0; i < SIZEOF(mainIcons); i++ )
 							if(mainIcons[i].id==ico->id) break;
-						if(i<sizeof(mainIcons)/sizeof(mainIcons[0])) {
+						if( i < SIZEOF(mainIcons)) {
 							if(dat->mainIconPath[i]!=NULL) free(dat->mainIconPath[i]);
 							dat->mainIconPath[i]=_strdup(ico->description);
 						}
 					}
 					else {
-						for(i=0;i<sizeof(skinIconStatusToResourceId)/sizeof(skinIconStatusToResourceId[0]);i++)
+						for( i=0; i < SIZEOF(skinIconStatusToResourceId); i++ )
 							if(i==ico->id) break;
-						if(i<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0])) {
+						if( i < SIZEOF(skinIconStatusToIdStatus)) {
 							if(dat->mainStatusPath[i]!=NULL) free(dat->mainStatusPath[i]);
 							dat->mainStatusPath[i]=_strdup(ico->description);
 						}
@@ -530,7 +529,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				ofn.lpstrFilter = filter;
 				ofn.lpstrFile = filetmp;
 				ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-				ofn.nMaxFile = sizeof(filename);
+				ofn.nMaxFile = SIZEOF(filename);
 				ofn.nMaxFileTitle = MAX_PATH;
 				ofn.lpstrDefExt = "dll";
 				if(GetOpenFileNameA(&ofn)) {
@@ -542,7 +541,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)filetmp, (LPARAM)filename);
 					ico.description=path;
 					if(SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETCURSEL,0,0)==0) {
-						for(i=0;i<sizeof(mainIcons)/sizeof(mainIcons[0]);i++) {
+						for( i=0; i < SIZEOF(mainIcons); i++ ) {
 							hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)(mainIcons[i].id<SKINICON_OTHER_MIRANDA?eventIconToResourceId[mainIcons[i].id-SKINICON_EVENT_MESSAGE]:otherIconToResourceId[mainIcons[i].id-SKINICON_OTHER_MIRANDA]));
 							if(hIcon==NULL) continue;
 							ico.id=mainIcons[i].id;
@@ -552,7 +551,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						}
 					}
 					else if(SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETCURSEL,0,0)==1) {
-						for(i=0;i<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);i++) {
+						for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ ) {
 							hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)skinIconStatusToResourceId[i]);
 							if(hIcon==NULL) continue;
 							ico.id=i;
@@ -564,7 +563,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					else {
 						PROTOCOLDESCRIPTOR *proto;
 						proto=(PROTOCOLDESCRIPTOR*)SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETCURSEL,0,0),0);
-						for(i=0;i<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);i++) {
+						for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ ) {
 							hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)skinIconStatusToResourceId[i]);
 							if(hIcon==NULL) continue;
 							ico.id=i;
@@ -579,7 +578,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			}
 			else if(LOWORD(wParam)==IDC_GETMORE) {
 				char szVer[64],szUrl[256];
-				CallService(MS_SYSTEM_GETVERSIONTEXT,sizeof(szVer),(LPARAM)szVer);
+				CallService(MS_SYSTEM_GETVERSIONTEXT,SIZEOF(szVer),(LPARAM)szVer);
 				while(strchr(szVer,' ')) *strchr(szVer,' ')='_';
 				wsprintfA(szUrl,"http://www.miranda-im.org/download/index.php",szVer);
 				CallService(MS_UTILS_OPENURL,1,(LPARAM)szUrl);
@@ -652,14 +651,14 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					char szSetting[64];
 					DWORD flags;
 					PROTOCOLDESCRIPTOR *proto;
-					for(i=0;i<sizeof(mainIcons)/sizeof(mainIcons[0]);i++) {
+					for( i=0; i < SIZEOF(mainIcons); i++ ) {
 						_itoa(mainIcons[i].id,szSetting,10);
 						if(dat->mainIconPath[i]==NULL)
 							DBDeleteContactSetting(NULL,"Icons",szSetting);
 						else
 							DBWriteContactSettingString(NULL,"Icons",szSetting,dat->mainIconPath[i]);
 					}
-					for(i=0;i<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);i++) {
+					for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ ) {
 						_itoa(skinIconStatusToIdStatus[i],szSetting,10);
 						if(dat->mainStatusPath[i]==NULL)
 							DBDeleteContactSetting(NULL,"Icons",szSetting);
@@ -667,9 +666,9 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 							DBWriteContactSettingString(NULL,"Icons",szSetting,dat->mainStatusPath[i]);
 					}
 					for(i=0;i<dat->protoCount;i++) {
-						for(j=0;j<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);j++) {
+						for( j=0; j < SIZEOF(skinIconStatusToIdStatus); j++ ) {
 							flags=(DWORD)CallProtoService(dat->protoIcons[i].proto->szName,PS_GETCAPS,PFLAGNUM_2,0);
-							mir_snprintf(szSetting,sizeof(szSetting),"%s%d",dat->protoIcons[i].proto->szName,skinIconStatusToIdStatus[j]);
+							mir_snprintf(szSetting,SIZEOF(szSetting),"%s%d",dat->protoIcons[i].proto->szName,skinIconStatusToIdStatus[j]);
 							if(dat->protoIcons[i].iconPath[j]==NULL || !(flags&skinIconStatusToPf2[j]))
 								DBDeleteContactSetting(NULL,"Icons",szSetting);
 							else
@@ -696,14 +695,14 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		case WM_DESTROY:
 		{	int i,j;
 			DestroyWindow(dat->hwndIndex);
-			for(i=0;i<sizeof(mainIcons)/sizeof(mainIcons[0]);i++)
+			for( i=0; i < SIZEOF(mainIcons); i++ )
 				if(dat->mainIconPath[i]!=NULL) free(dat->mainIconPath[i]);
 			free(dat->mainIconPath);
-			for(i=0;i<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);i++)
+			for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ )
 				if(dat->mainStatusPath[i]!=NULL) free(dat->mainStatusPath[i]);
 			free(dat->mainStatusPath);
 			for(i=0;i<dat->protoCount;i++) {
-				for(j=0;j<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);j++) {
+				for( j=0; j < SIZEOF(skinIconStatusToIdStatus); j++ ) {
 					if(dat->protoIcons[i].iconPath[j]!=NULL) free(dat->protoIcons[i].iconPath[j]);
 				}
 				free(dat->protoIcons[i].iconPath);
@@ -731,7 +730,7 @@ static int IsMirandaIconSet(const char *filename)
 {
 	int i;
 	if(_access(filename,0)!=0) return 0;
-	for(i=0;i<sizeof(mirandaIconSetIds)/sizeof(mirandaIconSetIds[0]);i++)
+	for( i=0; i < SIZEOF(mirandaIconSetIds); i++ )
 		if(!IconExists(filename,mirandaIconSetIds[i])) return 0;
 	return 1;
 }
@@ -796,7 +795,7 @@ BOOL CALLBACK DlgProcIconIndex(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			ListView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_PREVIEW));
 			hIml=ListView_GetImageList(GetDlgItem(hwndDlg,IDC_PREVIEW),LVSIL_NORMAL);
 			ImageList_RemoveAll(hIml);
-			GetDlgItemTextA(hwndDlg,IDC_ICONSET,filename,sizeof(filename));
+			GetDlgItemTextA(hwndDlg,IDC_ICONSET,filename,SIZEOF(filename));
 
 			isMiranda=IsMirandaIconSet(filename);
 			ShowWindow(GetDlgItem(hwndDlg,IDC_IMPORTMULTI),isMiranda);
@@ -820,7 +819,7 @@ BOOL CALLBACK DlgProcIconIndex(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			lvi.iSubItem=0;
 			lvi.iItem=0;
 			if(isMiranda) {
-				for(i=0;i<sizeof(mainIcons)/sizeof(mainIcons[0]);i++) {
+				for( i=0; i < SIZEOF(mainIcons); i++ ) {
 					hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)(mainIcons[i].id<SKINICON_OTHER_MIRANDA?eventIconToResourceId[mainIcons[i].id-SKINICON_EVENT_MESSAGE]:otherIconToResourceId[mainIcons[i].id-SKINICON_OTHER_MIRANDA]));
 					if(hIcon==NULL) continue;
 					lvi.iImage=ImageList_AddIcon(hIml,hIcon);
@@ -830,7 +829,7 @@ BOOL CALLBACK DlgProcIconIndex(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					SendMessageA( GetDlgItem(hwndDlg,IDC_PREVIEW), LVM_INSERTITEMA, 0, (LPARAM)&lvi );
 					lvi.iItem++;
 				}
-				for(i=0;i<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);i++) {
+				for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ ) {
 					hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)skinIconStatusToResourceId[i]);
 					if(hIcon==NULL) continue;
 					lvi.iImage=ImageList_AddIcon(hIml,hIcon);
@@ -861,7 +860,7 @@ BOOL CALLBACK DlgProcIconIndex(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					OPENFILENAMEA ofn;
 					char filter[512],*pfilter;
 
-					GetDlgItemTextA(hwndDlg,IDC_ICONSET,str,sizeof(str));
+					GetDlgItemTextA(hwndDlg,IDC_ICONSET,str,SIZEOF(str));
 					ZeroMemory(&ofn, sizeof(ofn));
 					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 					ofn.hwndOwner = GetParent(hwndDlg);
@@ -880,7 +879,7 @@ BOOL CALLBACK DlgProcIconIndex(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					ofn.lpstrFilter = filter;
 					ofn.lpstrFile = str;
 					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-					ofn.nMaxFile = sizeof(str);
+					ofn.nMaxFile = SIZEOF(str);
 					ofn.nMaxFileTitle = MAX_PATH;
 					ofn.lpstrDefExt = "dll";
 					if(!GetOpenFileNameA(&ofn)) break;
@@ -889,7 +888,7 @@ BOOL CALLBACK DlgProcIconIndex(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				}
 				case IDC_GETMORE:
 				{	char szVer[64],szUrl[256];
-					CallService(MS_SYSTEM_GETVERSIONTEXT,sizeof(szVer),(LPARAM)szVer);
+					CallService(MS_SYSTEM_GETVERSIONTEXT,SIZEOF(szVer),(LPARAM)szVer);
 					while(strchr(szVer,' ')) *strchr(szVer,' ')='_';
 					wsprintfA(szUrl,"http://www.miranda-im.org/download/index.php",szVer);
 					CallService(MS_UTILS_OPENURL,1,(LPARAM)szUrl);
@@ -910,11 +909,11 @@ BOOL CALLBACK DlgProcIconIndex(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					struct IconPreview ico;
 					HICON hIcon;
 
-					GetDlgItemTextA(hwndDlg,IDC_ICONSET,filetmp,sizeof(filetmp));
+					GetDlgItemTextA(hwndDlg,IDC_ICONSET,filetmp,SIZEOF(filetmp));
 					CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)filetmp, (LPARAM)filename);
 					ico.description=path;
 					if(IsDlgButtonChecked(hwndDlg,IDC_TOMAIN)) {
-						for(i=0;i<sizeof(mainIcons)/sizeof(mainIcons[0]);i++) {
+						for( i=0; i < SIZEOF(mainIcons); i++ ) {
 							hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)(mainIcons[i].id<SKINICON_OTHER_MIRANDA?eventIconToResourceId[mainIcons[i].id-SKINICON_EVENT_MESSAGE]:otherIconToResourceId[mainIcons[i].id-SKINICON_OTHER_MIRANDA]));
 							if(hIcon==NULL) continue;
 							ico.id=mainIcons[i].id;
@@ -924,7 +923,7 @@ BOOL CALLBACK DlgProcIconIndex(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						}
 					}
 					if(IsDlgButtonChecked(hwndDlg,IDC_TODEFICON)) {
-						for(i=0;i<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);i++) {
+						for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ ) {
 							hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)skinIconStatusToResourceId[i]);
 							if(hIcon==NULL) continue;
 							ico.id=i;
@@ -936,7 +935,7 @@ BOOL CALLBACK DlgProcIconIndex(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					if(IsDlgButtonChecked(hwndDlg,IDC_TOPROTO)) {
 						PROTOCOLDESCRIPTOR *proto;
 						proto=(PROTOCOLDESCRIPTOR*)SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCURSEL,0,0),0);
-						for(i=0;i<sizeof(skinIconStatusToIdStatus)/sizeof(skinIconStatusToIdStatus[0]);i++) {
+						for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ ) {
 							hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)skinIconStatusToResourceId[i]);
 							if(hIcon==NULL) continue;
 							ico.id=i;
@@ -1001,8 +1000,8 @@ BOOL CALLBACK DlgProcIconIndex(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				if(dropHiLite!=-1) {
 					char path[MAX_PATH],fullPath[MAX_PATH],filename[MAX_PATH];
 					LVITEM lvi;
-					GetDlgItemTextA(hwndDlg,IDC_ICONSET,fullPath,sizeof(fullPath));
-                    CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)fullPath, (LPARAM)filename);
+					GetDlgItemTextA(hwndDlg,IDC_ICONSET,fullPath,SIZEOF(fullPath));
+					CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)fullPath, (LPARAM)filename);
 					lvi.mask=LVIF_PARAM;
 					lvi.iItem=dragItem; lvi.iSubItem=0;
 					ListView_GetItem(GetDlgItem(hwndDlg,IDC_PREVIEW),&lvi);
