@@ -39,7 +39,7 @@ nmake /f Yahoo.mak CFG="Yahoo - Win32 Release"
 if errorlevel 1 goto :Error
 
 cd ..\IRC
-nmake /f IRC.mak CFG="IRC - Win32 Release SSL"
+nmake /f IRC.mak CFG="IRC - Win32 Release"
 if errorlevel 1 goto :Error
 
 rem ---------------------------------------------------------------------------
