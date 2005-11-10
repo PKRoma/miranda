@@ -133,8 +133,6 @@ echo END                                                                        
 echo.                                                                              >>..\src\version.rc
 echo #endif    // !_MAC                                                            >>..\src\version.rc
 echo.                                                                              >>..\src\version.rc
-echo #endif    // English (U.S.) resources                                         >>..\src\version.rc
-echo.                                                                              >>..\src\version.rc
 
 for /F "delims=-/. tokens=1,2,3" %%i in ('date /T') do call :SetBuildDate %%i %%j %%k
 for /F "delims=:/. tokens=1,2" %%i in ('time /T') do call :SetBuildTime %%i %%j
