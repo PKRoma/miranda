@@ -453,9 +453,6 @@ extern "C" const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNi
     stringW[255] = 0;
     msg.assign(stringW);
     if((mark = msg.find(L"%nick%")) != msg.npos) {
-        //wchar_t szNickW[128];
-        //MultiByteToWideChar(codePage, 0, szNick, -1, szNickW, 128);
-        //szNickW[127] = 0;
         msg.erase(mark, 6);
         msg.insert(mark, szNick, lstrlenW(szNick));
     }

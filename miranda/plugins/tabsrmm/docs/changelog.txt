@@ -15,6 +15,17 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.99 - 2005/11/11
+
+		* improvments for own avatar display. Now, this uses the avatar service (minimum
+		  version 0.0.1.11) for managing your own avatars. tabSRMM now always shows the proper
+		  avatar you have configured for a given protocol under Main Menu -> View/Change my details.
+		  
+		  Setting your own avatar in the message window is possible (right click your avatar image
+		  and choose "Set your avatar...". However, the menu entry may appear grayed which means
+		  that the protocol does not support setting the avatar from "outside" its own option
+		  pages. Currently, only MSN allows to set the avatar using an external service.
+
 Version 0.9.9.98 - 2005/11/07
 
         * several sanity checks added (pointers, window handles)

@@ -97,17 +97,10 @@ void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl)
     int i;
 
     for(i = 0; i <= TMPL_ERRMSG; i++) {
-        if(DBGetContactSetting(hContact, rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[i], &dbv))
+        if(DBGetContactSettingTString(hContact, rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[i], &dbv))
             continue;
-        if(dbv.type == DBVT_ASCIIZ) {
-#if defined(_UNICODE)
-            wchar_t *decoded = Utf8_Decode(dbv.pszVal);
-            mir_snprintfW(tSet->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
-            free(decoded);
-#else
-            mir_snprintf(tSet->szTemplates[i], TEMPLATE_LENGTH, "%s", dbv.pszVal);
-#endif            
-        }
+        if(dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR)
+			mir_sntprintf(tSet->szTemplates[i], TEMPLATE_LENGTH, _T("%s"), dbv.ptszVal);
         DBFreeVariant(&dbv);
     }
 }
@@ -254,7 +247,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     break;
                 case IDC_SAVETEMPLATE:
                 {
-                    TCHAR newTemplate[TEMPLATE_LENGTH];
+                    TCHAR newTemplate[TEMPLATE_LENGTH + 2];
 
                     GetWindowText(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), newTemplate, TEMPLATE_LENGTH);
                     CopyMemory(tSet->szTemplates[teInfo->inEdit], newTemplate, sizeof(TCHAR) * TEMPLATE_LENGTH);
@@ -265,15 +258,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
-#if defined(_UNICODE)
-                    {
-                        char *encoded = Utf8_Encode(newTemplate);
-                        DBWriteContactSettingString(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], encoded);
-                        free(encoded);
-                    }
-#else
-                    DBWriteContactSettingString(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], newTemplate);
-#endif
+					DBWriteContactSettingTString(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], newTemplate);
                     SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
                     break;
                 }

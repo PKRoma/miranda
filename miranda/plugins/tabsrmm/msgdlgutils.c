@@ -82,11 +82,9 @@ struct RTFColorTable rtf_ctable[] = {
 };
 
 /*
- * calculates avatar layouting, based on splitter position to find the optimal size
- * for the avatar w/o disturbing the toolbar too much.
+ * draw transparent avatar image. Get around crappy image rescaling quality of the
+ * AlphaBlend() API.
  */
-
-
 
 void MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, int bmWidth, int bmHeight, HDC hdcMem)
 {
@@ -107,6 +105,11 @@ void MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, i
     DeleteObject(hbmTemp);
     DeleteDC(hdcTemp);
 }
+
+/*
+ * calculates avatar layouting, based on splitter position to find the optimal size
+ * for the avatar w/o disturbing the toolbar too much.
+ */
 
 void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo)
 {
@@ -280,8 +283,13 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
             EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(MS_AV_GETAVATARBITMAP) ? MF_ENABLED : MF_GRAYED));
             szText = Translate("Contact picture settings...");
         }
-        else
+		else {
+			char szServiceName[100];
+
+			mir_snprintf(szServiceName, 100, "%s/SetAvatar", dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+			EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(szServiceName) ? MF_ENABLED : MF_GRAYED));
             szText = Translate("Set your avatar...");
+		}
         mii.dwTypeData = szText;
         mii.cch = lstrlenA(szText) + 1;
         SetMenuItemInfoA(submenu, ID_PICMENU_SETTINGS, FALSE, &mii);
@@ -373,38 +381,14 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                         if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
                             if (GetOpenFileNameA(&ofn)) {
                                 if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL && menuId == MENU_PICMENU) {
-                                    char szNewPath[MAX_PATH + 1], szOldPath[MAX_PATH + 1];
-                                    char szBasename[_MAX_FNAME], szExt[_MAX_EXT];
                                     char szServiceName[50], *szProto;
 
-                                    _splitpath(FileName, NULL, NULL, szBasename, szExt);
-                                    mir_snprintf(szNewPath, MAX_PATH, "%s%s_avatar%s", myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto, szExt);
-                                    /*
-                                     * delete all old avatars
-                                     */
-                                    strncpy(szOldPath, szNewPath, MAX_PATH);
-                                    DeleteFileA(szOldPath);
-                                    strncpy(&szOldPath[lstrlenA(szOldPath) - 3], "bmp", 3);
-                                    DeleteFileA(szOldPath);
-                                    strncpy(&szOldPath[lstrlenA(szOldPath) - 3], "jpg", 3);
-                                    DeleteFileA(szOldPath);
-                                    strncpy(&szOldPath[lstrlenA(szOldPath) - 3], "gif", 3);
-                                    DeleteFileA(szOldPath);
-
-                                    CopyFileA(FileName, szNewPath, FALSE);
-                                    LoadOwnAvatar(hwndDlg, dat);
-                                    WindowList_Broadcast(hMessageWindowList, DM_CHANGELOCALAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0);
-                                    /*
-                                     * try to set it for the protocol (note: currently, only possible for MSN
-                                     */
                                     szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
                                     mir_snprintf(szServiceName, sizeof(szServiceName), "%s/SetAvatar", szProto);
                                     if(ServiceExists(szServiceName)) {
                                         if(CallProtoService(szProto, "/SetAvatar", 0, (LPARAM)FileName) != 0)
                                             _DebugMessage(hwndDlg, dat, Translate("Failed to set avatar for %s"), szProto);
                                     }
-                                    else
-                                        _DebugMessage(hwndDlg, dat, Translate("The current protocol doesn't support setting your avatar from the message window"));
                                 }
                                 else {
                                     char szFinalPath[MAX_PATH];
@@ -613,7 +597,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
         case 3:             // on, if present
         {
             HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : 0);
-            if((hbm && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) || (hbm && hbm != myGlobals.g_hbmUnknown))
+            if((hbm && hbm != myGlobals.g_hbmUnknown && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) || (hbm && hbm != myGlobals.g_hbmUnknown))
                 dat->showPic = 1;
             else
                 dat->showPic = 0;
@@ -1403,7 +1387,6 @@ void SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
 
 void FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat)
 {
-//    int historyMode = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY);
     int historyMode = DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_LOADHISTORY, -1);
     if(historyMode == -1) 
         historyMode = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY);
@@ -1617,6 +1600,30 @@ void GetDataDir()
 
 void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
 {
+	AVATARCACHEENTRY *ace = NULL;
+	
+	if(ServiceExists(MS_AV_GETMYAVATAR))
+		ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETMYAVATAR, 0, (LPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto));
+
+	if(ace)
+		dat->hOwnPic = ace->hbmPic;
+	else
+		dat->hOwnPic = myGlobals.g_hbmUnknown;
+
+    if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+        BITMAP bm;
+        
+        dat->iRealAvatarHeight = 0;
+        AdjustBottomAvatarDisplay(hwndDlg, dat);
+        GetObject(dat->hOwnPic, sizeof(bm), &bm);
+        CalcDynamicAvatarSize(hwndDlg, dat, &bm);
+        SendMessage(hwndDlg, WM_SIZE, 0, 0);
+    }
+}
+
+/*
+void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
+{
     char szBasename[MAX_PATH + 1];
     HBITMAP hbm = 0;
     
@@ -1644,7 +1651,7 @@ void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
         CalcDynamicAvatarSize(hwndDlg, dat, &bm);
         SendMessage(hwndDlg, WM_SIZE, 0, 0);
     }
-}
+}  */
 
 void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 {
@@ -2240,10 +2247,7 @@ int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int siz
     	ci.cbSize = sizeof(ci);
     	ci.hContact = hContact;
         ci.szProto = (char *)szProto;
-    	ci.dwFlag = CNF_DISPLAY;
-    	#if defined( _UNICODE )
-    		ci.dwFlag += CNF_UNICODE;
-    	#endif
+    	ci.dwFlag = CNF_DISPLAY | CNF_UNICODE;
     	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
     		if (ci.type == CNFT_ASCIIZ) {
                 size_t len = lstrlenW(ci.pszVal);
@@ -2259,14 +2263,9 @@ int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int siz
     		}
     	}
     }
-    szBasenick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
+    szBasenick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_UNICODE);
     MultiByteToWideChar(codePage, 0, szBasenick, -1, szwBuf, size);
     szwBuf[size - 1] = 0;
     return 0;    
-    /*
-	CallContactService(hContact, PSS_GETINFO, SGIF_MINIMAL, 0);
-	wcsncpy(szwBuf, TranslateT("(Unknown Contact)"), size);
-    szwBuf[size - 1] = 0;
-    return 0;*/
 }
 #endif

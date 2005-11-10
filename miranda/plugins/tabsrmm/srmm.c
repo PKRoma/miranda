@@ -52,7 +52,7 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(0, 9, 9, 98),
+    PLUGIN_MAKE_VERSION(0, 9, 9, 99),
     "Send and receive instant messages, using a split mode interface and tab containers.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
@@ -101,7 +101,7 @@ int _DebugTRACE(const char *fmt, ...)
     va_list va;
     va_start(va, fmt);
     _vsnprintf(debug, ibsize, fmt, va);
-    OutputDebugStringA(debug);
+    OutputDebugString(debug);
 }
 #endif
 
@@ -157,19 +157,6 @@ int _DebugPopup(HANDLE hContact, const char *fmt, ...)
             CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
         }
     }
-    return 0;
-}
-
-int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...)
-{
-    va_list va;
-    char    debug[1024];
-    int     ibsize = 1023;
-
-    va_start(va, fmt);
-    _vsnprintf(debug, ibsize, fmt, va);
-
-    LogErrorMessage(hwndDlg, dat, -1, debug);
     return 0;
 }
 
@@ -312,4 +299,17 @@ void FirstTimeConfig()
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "firstrun", 0))
         return;
     CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FIRSTTIME), 0, DlgProcFirsttime, 0);
+}
+
+int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...)
+{
+    va_list va;
+    char    debug[1024];
+    int     ibsize = 1023;
+
+    va_start(va, fmt);
+    _vsnprintf(debug, ibsize, fmt, va);
+
+    LogErrorMessage(hwndDlg, dat, -1, debug);
+    return 0;
 }

@@ -82,11 +82,7 @@ char szMsgPrefixColon[5], szMsgPrefixNoColon[5];
 DWORD dwExtraLf = 0;
 
 int g_groupBreak = TRUE;
-#if defined(_UNICODE)
-    static TCHAR szMyName[110];
-#else
-    static char *szMyName = NULL;
-#endif    
+static TCHAR szMyName[110];
 static TCHAR *szYourName = NULL;
 
 static char *szDivider = "\\strike-----------------------------------------------------------------------------------------------------------------------------------\\strike0";
@@ -1237,6 +1233,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     FINDTEXTEXA fi;
     struct tm tm_now, tm_today;
     time_t now;
+
     /*
      * calc time limit for grouping
      */
@@ -1249,7 +1246,6 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     tm_today.tm_hour = tm_today.tm_min = tm_today.tm_sec = 0;
     today = mktime(&tm_today);
 
-    // IEVIew MOD Begin
     if (dat->hwndLog != 0) {
         IEVIEWEVENT event;
         
@@ -1279,7 +1275,6 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
         return;
     }
-    // IEVIew MOD End
 
     // separator strings used for grid lines, message separation and so on...
     
@@ -1296,20 +1291,20 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     strcpy(szMsgPrefixNoColon, " ");
 
     ZeroMemory(&ci, sizeof(ci));
-#if defined(_UNICODE)
-    MY_GetContactDisplayNameW(0, szMyName, 100, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->codePage);
-#else    
     ci.cbSize = sizeof(ci);
     ci.hContact = NULL;
     ci.szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
     ci.dwFlag = CNF_DISPLAY;
-    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-        // CNF_DISPLAY always returns a string type
-        szMyName = ci.pszVal;
-    }
-    else
-        szMyName = NULL;
-#endif    
+#if defined(_UNICODE)
+	ci.dwFlag |= CNF_UNICODE;
+#endif
+	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+		_tcsncpy(szMyName, ci.pszVal, 100);
+		szMyName[99] = 0;
+	}
+	else
+		_tcsncpy(szMyName, _T("(Unknown Contact)"), 99);
+
     szYourName = dat->szNickname;
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, TRUE, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXGETSEL, 0, (LPARAM) & oldSel);

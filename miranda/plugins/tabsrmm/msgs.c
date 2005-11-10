@@ -62,6 +62,7 @@ TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSet
 static void InitREOleCallback(void);
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam);
 static int AvatarChanged(WPARAM wParam, LPARAM lParam);
+static int MyAvatarChanged(WPARAM wParam, LPARAM lParam);
 
 HANDLE hMessageWindowList, hUserPrefsWindowList;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted, hEventDispatch, hEvent_ttbInit, hTTB_Slist, hTTB_Tray, hEvent_FontService;
@@ -864,8 +865,10 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     }
     if(ServiceExists(MS_SKIN2_ADDICON))
         HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
-    if(ServiceExists(MS_AV_GETAVATARBITMAP))
+	if(ServiceExists(MS_AV_GETAVATARBITMAP)) {
        HookEvent(ME_AV_AVATARCHANGED, AvatarChanged);
+	   HookEvent(ME_AV_MYAVATARCHANGED, MyAvatarChanged);
+	}
     HookEvent(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
     RestoreUnreadMessageAlerts();
     for(i = 0; i < NR_BUTTONBARICONS; i++)
@@ -1081,6 +1084,20 @@ int SplitmsgShutdown(void)
     if(myGlobals.szDefaultTitleFormat)
         free(myGlobals.szDefaultTitleFormat);
     return 0;
+}
+
+static int MyAvatarChanged(WPARAM wParam, LPARAM lParam)
+{
+	struct ContainerWindowData *pContainer = pFirstContainer;
+
+	if(wParam == 0 || IsBadReadPtr((void *)wParam, 4))
+		return 0;
+
+	while(pContainer) {
+		BroadCastContainer(pContainer, DM_MYAVATARCHANGED, wParam, lParam);
+		pContainer = pContainer->pNextContainer;
+	}
+	return 0;
 }
 
 static int AvatarChanged(WPARAM wParam, LPARAM lParam)

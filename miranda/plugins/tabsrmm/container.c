@@ -163,7 +163,7 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
         if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0)) {
             do {
                 _snprintf(szCounter, 8, "%d", i);
-                if (DBGetContactSetting(NULL, szKey, szCounter, &dbv)) {
+                if (DBGetContactSettingTString(NULL, szKey, szCounter, &dbv)) {
                     if (iFirstFree != -1) {
                         pContainer->iContainerIndex = iFirstFree;
                         _snprintf(szCounter, 8, "%d", iFirstFree);
@@ -171,37 +171,18 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
                     else {
                         pContainer->iContainerIndex = i;
                     }
-    #if defined (_UNICODE)
-                    _DBWriteContactSettingWString(NULL, szKey, szCounter, name);
-    #else
-                    DBWriteContactSettingString(NULL, szKey, szCounter, name);
-    #endif                
+					DBWriteContactSettingTString(NULL, szKey, szCounter, name);
                     BuildContainerMenu();
                     break;
                 } else {
-    #if defined (_UNICODE)
-                    if (dbv.type == DBVT_ASCIIZ) {
-                        WCHAR *wszString = Utf8_Decode(dbv.pszVal);
-                        if(!_tcsncmp(wszString, name, CONTAINER_NAMELEN)) {
+                    if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR) {
+                        if(!_tcsncmp(dbv.ptszVal, name, CONTAINER_NAMELEN)) {
                             pContainer->iContainerIndex = i;
                             iFound = TRUE;
                         }
-                        else if (!_tcsncmp(wszString, _T("**free**"), CONTAINER_NAMELEN)) {
+                        else if (!_tcsncmp(dbv.ptszVal, _T("**free**"), CONTAINER_NAMELEN))
                             iFirstFree =  i;
-                        }
-                        free(wszString);
                     }
-    #else
-                    if (dbv.type == DBVT_ASCIIZ) {
-                        if (!strncmp(dbv.pszVal, name, CONTAINER_NAMELEN)) {        // found the name...
-                            pContainer->iContainerIndex = i;
-                            iFound = TRUE;
-                        }
-                        else if (!strncmp(dbv.pszVal, "**free**", CONTAINER_NAMELEN)) {
-                            iFirstFree = i;
-                        }
-                    }
-    #endif                
                     DBFreeVariant(&dbv);
                 }
             } while ( ++i && iFound == FALSE);
@@ -1129,14 +1110,8 @@ panel_found:
                                 TabCtrl_GetItem(hwndTab, iItem, &item);
                                 mir_snprintf(szIndex, 8, "%d", iSelection - IDM_CONTAINERMENU);
                                 if(iSelection - IDM_CONTAINERMENU >= 0) {
-                                    if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
-#if defined (_UNICODE)
-                                        WCHAR *wszTemp = Utf8_Decode(dbv.pszVal);
-                                        SendMessage((HWND)item.lParam, DM_CONTAINERSELECTED, 0, (LPARAM) wszTemp);
-                                        free(wszTemp);
-#else
-                                        SendMessage((HWND)item.lParam, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.pszVal);
-#endif
+                                    if(!DBGetContactSettingTString(NULL, szKey, szIndex, &dbv)) {
+                                        SendMessage((HWND)item.lParam, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.ptszVal);
                                         DBFreeVariant(&dbv);
                                     }
                                 }
@@ -2210,48 +2185,35 @@ int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen)
     }
     
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0)) {        // use clist group names for containers...
-        if(DBGetContactSetting(hContact, "CList", "Group", &dbv)) {
+        if(DBGetContactSettingTString(hContact, "CList", "Group", &dbv)) {
             _tcsncpy(szName, _T("default"), iNameLen);
             return 0;
         }
         else {
-            if(strlen(dbv.pszVal) > CONTAINER_NAMELEN)
-                dbv.pszVal[CONTAINER_NAMELEN] = '\0';
-#if defined (_UNICODE)
-            MultiByteToWideChar(CP_ACP, 0, dbv.pszVal, -1, szName, iNameLen);
+            if(lstrlen(dbv.ptszVal) > CONTAINER_NAMELEN)
+                dbv.ptszVal[CONTAINER_NAMELEN] = '\0';
+            _tcsncpy(szName, dbv.ptszVal, iNameLen);
             szName[iNameLen] = '\0';
-#else
-            strncpy(szName, dbv.pszVal, iNameLen);
-            szName[iNameLen] = '\0';
-#endif
             DBFreeVariant(&dbv);
             return dbv.cchVal;
         }
     }
 #if defined (_UNICODE)
-    if (DBGetContactSetting(hContact, SRMSGMOD_T, "containerW", &dbv)) {
+    if (DBGetContactSettingTString(hContact, SRMSGMOD_T, "containerW", &dbv)) {
 #else        
-    if (DBGetContactSetting(hContact, SRMSGMOD_T, "container", &dbv)) {
+    if (DBGetContactSettingTString(hContact, SRMSGMOD_T, "container", &dbv)) {
 #endif        
         _tcsncpy(szName, _T("default"), iNameLen);
         return 0;
     }
-#if defined (_UNICODE)
-    if (dbv.type == DBVT_ASCIIZ) {
-        WCHAR *wszString = Utf8_Decode(dbv.pszVal);
-        _tcsncpy(szName, wszString, iNameLen);
+    if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR) {
+        _tcsncpy(szName, dbv.ptszVal, iNameLen);
+		szName[iNameLen] = 0;
         DBFreeVariant(&dbv);
-        free(wszString);
         return dbv.cpbVal;
     }
-#else
-    if (dbv.type == DBVT_ASCIIZ) {
-        strncpy(szName, dbv.pszVal, iNameLen);
-        DBFreeVariant(&dbv);
-        return dbv.cchVal;
-    }
-#endif    
-    return 0;
+    DBFreeVariant(&dbv);
+	return 0;
 }
 
 /*
@@ -2277,19 +2239,13 @@ int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const
 
     do {
         _snprintf(szCounter, 8, "%d", iCounter);
-        if (DBGetContactSetting(NULL, szKey, szCounter, &dbv))
+        if (DBGetContactSettingTString(NULL, szKey, szCounter, &dbv))
             break;      // end of loop...
         else {        // found...
             iCounter++;
-            if (dbv.type == DBVT_ASCIIZ) {
-#if defined(_UNICODE)
-                WCHAR wszTemp[CONTAINER_NAMELEN + 10];
-                WCHAR *wszTemp1 = Utf8_Decode(dbv.pszVal);
-                wcsncpy(wszTemp, wszTemp1, CONTAINER_NAMELEN);
-                free(wszTemp1);
-#else                    
-                char *wszTemp = dbv.pszVal;
-#endif                    
+            if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR) {
+                TCHAR *wszTemp = dbv.ptszVal;
+
                 if(!_tcsncmp(wszTemp, _T("**free**"), _tcslen(wszTemp))) {
                     DBFreeVariant(&dbv);
                     continue;
@@ -2350,43 +2306,29 @@ void DeleteContainer(int iIndex)
 #if defined (_UNICODE)
     char *szKey = "TAB_ContainersW";
     char *szSettingP = "CNTW_";
+	char *szSubKey = "containerW";
 #else    
     char *szSettingP = "CNT_";
     char *szKey = "TAB_ContainersW";
+	char *szSubKey = "container";
 #endif    
     HANDLE hhContact;
     _snprintf(szIndex, 8, "%d", iIndex);
     
     
-    if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
-        if(dbv.type == DBVT_ASCIIZ) {
-#if defined (_UNICODE)
-            WCHAR wszContainerName[CONTAINER_NAMELEN + 2];
-            WCHAR *wszTemp = Utf8_Decode(dbv.pszVal);
-            _tcsncpy(wszContainerName, wszTemp, CONTAINER_NAMELEN + 1);
-            free(wszTemp);
-            _DBWriteContactSettingWString(NULL, szKey, szIndex, _T("**free**"));
-#else
-            DBWriteContactSettingString(NULL, szKey, szIndex, "**free**");
-#endif            
+    if(!DBGetContactSettingTString(NULL, szKey, szIndex, &dbv)) {
+        if(dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR) {
+            TCHAR *wszContainerName = dbv.ptszVal;
+			DBWriteContactSettingTString(NULL, szKey, szIndex, _T("**free**"));
+
             hhContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
             while (hhContact) {
                 DBVARIANT dbv_c;
-#if defined (_UNICODE)
-                if (!DBGetContactSetting(hhContact, SRMSGMOD_T, "containerW", &dbv_c)) {
-                    WCHAR *wszString = Utf8_Decode(dbv_c.pszVal);
-                    if(_tcscmp(wszString, wszContainerName) && lstrlenW(wszString) == lstrlenW(wszContainerName)) {
+                if (!DBGetContactSettingTString(hhContact, SRMSGMOD_T, szSubKey, &dbv_c)) {
+                    TCHAR *wszString = dbv_c.ptszVal;
+                    if(_tcscmp(wszString, wszContainerName) && lstrlen(wszString) == lstrlen(wszContainerName))
                         DBDeleteContactSetting(hhContact, SRMSGMOD_T, "containerW");
-#else                    
-                if (!DBGetContactSetting(hhContact, SRMSGMOD_T, "container", &dbv_c)) {
-                    if(!strcmp(dbv_c.pszVal, dbv.pszVal) && strlen(dbv_c.pszVal) == strlen(dbv.pszVal)) {
-                        DBDeleteContactSetting(hhContact, SRMSGMOD_T, "container");
-#endif                    
-                    }
                     DBFreeVariant(&dbv_c);
-#if defined(_UNICODE)
-                    free(wszString);
-#endif                    
                 }
                 hhContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hhContact, 0);
             }
@@ -2413,53 +2355,32 @@ void RenameContainer(int iIndex, const TCHAR *szNew)
 #if defined (_UNICODE)
     char *szKey = "TAB_ContainersW";
     char *szSettingP = "CNTW_";
+	char *szSubKey = "containerW";
 #else    
     char *szSettingP = "CNT_";
     char *szKey = "TAB_ContainersW";
+	char *szSubKey = "container";
 #endif    
     char szIndex[10];
     HANDLE hhContact;
-    // DWORD dwFlags, dwTrans, dwWidth, dwHeight, dwX, dwY;
 
     _snprintf(szIndex, 8, "%d", iIndex);
-     if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
-#if defined(_UNICODE)
-        WCHAR wszContainerName[CONTAINER_NAMELEN + 2];
-        WCHAR *wszString = Utf8_Decode(dbv.pszVal);
-        _tcsncpy(wszContainerName, wszString, CONTAINER_NAMELEN + 1);
-        free(wszString);
-#endif        
+     if(!DBGetContactSettingTString(NULL, szKey, szIndex, &dbv)) {
         if (szNew != NULL) {
             if (_tcslen(szNew) != 0)
-#if defined(_UNICODE)
-                _DBWriteContactSettingWString(NULL, szKey, szIndex, (wchar_t *)szNew);
-#else            
-                DBWriteContactSettingString(NULL, szKey, szIndex, szNew);
-#endif                
+                DBWriteContactSettingTString(NULL, szKey, szIndex, szNew);
         }
         hhContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
         while (hhContact) {
             DBVARIANT dbv_c;
-#if defined(_UNICODE)
-            if (!DBGetContactSetting(hhContact, SRMSGMOD_T, "containerW", &dbv_c)) {
-                WCHAR *wszTemp = Utf8_Decode(dbv_c.pszVal);
-                if(!_tcscmp(wszContainerName, wszTemp) && lstrlenW(wszContainerName) == lstrlenW(wszTemp)) {
-                    if(szNew != NULL) {
-                        if(lstrlenW(szNew) != 0)
-                            _DBWriteContactSettingWString(hhContact, SRMSGMOD_T, "containerW", (wchar_t *)szNew);
-#else                
-            if (!DBGetContactSetting(hhContact, SRMSGMOD_T, "container", &dbv_c)) {
-                if(!strcmp(dbv.pszVal, dbv_c.pszVal) && strlen(dbv_c.pszVal) == strlen(dbv.pszVal)) {
+            if (!DBGetContactSettingTString(hhContact, SRMSGMOD_T, szSubKey, &dbv_c)) {
+                if(!_tcscmp(dbv.ptszVal, dbv_c.ptszVal) && lstrlen(dbv_c.ptszVal) == lstrlen(dbv.ptszVal)) {
                     if (szNew != NULL) {
-                        if (strlen(szNew) != 0)
-                            DBWriteContactSettingString(hhContact, SRMSGMOD_T, "container", szNew);
-#endif                        
+                        if (lstrlen(szNew) != 0)
+                            DBWriteContactSettingTString(hhContact, SRMSGMOD_T, szSubKey, szNew);
                     }
                 }
                 DBFreeVariant(&dbv_c);
-#if defined(_UNICODE)
-                free(wszTemp);
-#endif                
             }
             hhContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hhContact, 0);
         }
@@ -2503,24 +2424,14 @@ HMENU BuildContainerMenu()
     hMenu = CreateMenu();
     do {
         _snprintf(szCounter, 8, "%d", i);
-        if(DBGetContactSetting(NULL, szKey, szCounter, &dbv))
+        if(DBGetContactSettingTString(NULL, szKey, szCounter, &dbv))
             break;
 
-#if defined (_UNICODE)
-        if (dbv.type == DBVT_ASCIIZ) {
-            WCHAR *wszString = Utf8_Decode(dbv.pszVal);
-            if (_tcsncmp(wszString, _T("**free**"), CONTAINER_NAMELEN)) {
-                AppendMenu(hMenu, MF_STRING, IDM_CONTAINERMENU + i, wszString);
-            }
-            free(wszString);
-        }
-#else
-        if (dbv.type == DBVT_ASCIIZ) {
-            if (strncmp(dbv.pszVal, "**free**", CONTAINER_NAMELEN)) {
-                AppendMenu(hMenu, MF_STRING, IDM_CONTAINERMENU + i, dbv.pszVal);
+        if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR) {
+            if (_tcsncmp(dbv.ptszVal, _T("**free**"), CONTAINER_NAMELEN)) {
+                AppendMenu(hMenu, MF_STRING, IDM_CONTAINERMENU + i, dbv.ptszVal);
             }
         }
-#endif                
         DBFreeVariant(&dbv);
         i++;
     } while ( TRUE );

@@ -2925,14 +2925,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #endif    
                 _snprintf(szIndex, 8, "%d", iSelection - IDM_CONTAINERMENU);
                 if(iSelection - IDM_CONTAINERMENU >= 0) {
-                    if(!DBGetContactSetting(NULL, szKey, szIndex, &dbv)) {
-#if defined(_UNICODE)
-                        WCHAR *wszTemp = Utf8_Decode(dbv.pszVal);
-                        SendMessage(hwndDlg, DM_CONTAINERSELECTED, 0, (LPARAM) wszTemp);
-                        free(wszTemp);
-#else                        
-                        SendMessage(hwndDlg, DM_CONTAINERSELECTED, 0, (LPARAM) dbv.pszVal);
-#endif                        
+                    if(!DBGetContactSettingTString(NULL, szKey, szIndex, &dbv)) {
+                        SendMessage(hwndDlg, DM_CONTAINERSELECTED, 0, (LPARAM)dbv.ptszVal);
                         DBFreeVariant(&dbv);
                     }
                 }
@@ -4533,9 +4527,9 @@ verify:
                 if (pNewContainer == NULL)
                     pNewContainer = CreateContainer(szNewName, FALSE, dat->hContact);
 #if defined (_UNICODE)
-                _DBWriteContactSettingWString(dat->hContact, SRMSGMOD_T, "containerW", szNewName);
+                DBWriteContactSettingTString(dat->hContact, SRMSGMOD_T, "containerW", szNewName);
 #else
-                DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "container", szNewName);
+                DBWriteContactSettingTString(dat->hContact, SRMSGMOD_T, "container", szNewName);
 #endif                
                 PostMessage(myGlobals.g_hwndHotkeyHandler, DM_DOCREATETAB, (WPARAM)pNewContainer, (LPARAM)dat->hContact);
                 if (iOldItems > 1)                // there were more than 1 tab, container is still valid
@@ -4573,56 +4567,6 @@ verify:
                 }
                 break;
             }
-                
-        /*
-         * force a reload of the avatar by using the PS_GETAVATARINFO proto service
-         *
-        case DM_RETRIEVEAVATAR:
-        {
-            PROTO_AVATAR_INFORMATION pai_s;
-            int pCaps = 0;
-            int result;
-            
-            SetWindowLong(hwndDlg, DWL_MSGRESULT, 0);
-            if(dat->szProto) {
-                if(dat->wStatus == ID_STATUS_OFFLINE)
-                    return 0;
-                pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
-                if(!(pCaps & PF4_AVATARS))
-                    return 0;
-                
-                ZeroMemory((void *)&pai_s, sizeof(pai_s));
-                pai_s.cbSize = sizeof(pai_s);
-                pai_s.hContact = dat->hContact;
-                pai_s.format = PA_FORMAT_UNKNOWN;
-                strcpy(pai_s.filename, "X");
-                result = CallProtoService(dat->szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai_s);
-                if(result == GAIR_WAITFOR) {
-                    _DebugPopup(dat->hContact, "Refreshing avatar...");
-                }
-                else if(result == GAIR_SUCCESS) {
-                    if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0)) {
-                        DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "MOD_Pic", pai_s.filename);
-                        DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File",pai_s.filename);
-                        ShowPicture(hwndDlg, dat, FALSE, TRUE);
-                    }
-                }
-                SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
-            }
-            return 1;
-        } */
-        /*
-         * broadcast to change the OWN avatar...
-         * proto is in wParam (char *)
-         * meta-contact aware
-         */
-        case DM_CHANGELOCALAVATAR:
-        {
-            if(wParam == 0 || strcmp((char *)wParam, dat->bIsMeta ? dat->szMetaProto : dat->szProto))
-                break;                  // don't match
-            LoadOwnAvatar(hwndDlg, dat);
-            break;
-        }
         /*
          * broadcasted when GLOBAL info panel setting changes
          */
@@ -4849,6 +4793,14 @@ verify:
             ConfigureSmileyButton(hwndDlg, dat);
             SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
             break;
+		case DM_MYAVATARCHANGED:
+			{
+				char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+
+				if(!strcmp((char *)wParam, szProto) && lstrlenA(szProto) == lstrlenA((char *)wParam))
+					LoadOwnAvatar(hwndDlg, dat);
+				break;
+			}
         case WM_INPUTLANGCHANGE:
             return DefWindowProc(hwndDlg, WM_INPUTLANGCHANGE, wParam, lParam);
 
@@ -5053,9 +5005,6 @@ verify:
                     free(dat->hQueuedEvents);
             }
             
-            if (dat->hOwnPic && dat->hOwnPic != myGlobals.g_hbmUnknown)
-                DeleteObject(dat->hOwnPic);
-
             if (dat->hbmMsgArea && dat->hbmMsgArea != myGlobals.m_hbmMsgArea)
                 DeleteObject(dat->hbmMsgArea);
             
