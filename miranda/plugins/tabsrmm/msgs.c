@@ -823,21 +823,22 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     DBVARIANT dbv;
     MENUITEMINFOA mii = {0};
     HMENU submenu;
+    static Update upd = {0};
 #if defined(_UNICODE)
-    static Update upd = {0};
-    static char *component = "tabSRMM (Unicode)";
     static char szCurrentVersion[30];
-    static char *szVersionUrl = "http://miranda.or.at/files/tabsrmm/version.txt";
+    static char *szVersionUrl = "http://miranda.or.at/files/tabsrmm/tabsrmm.txt";
     static char *szUpdateUrl = "http://miranda.or.at/files/tabsrmm/tabsrmmW.zip";
-    static char *szPrefix = "tabsrmm ";
+    static char *szFLVersionUrl = "http://miranda-im.org/download/details.php?action=viewfile&id=2457";
+    static char *szFLUpdateurl = "http://www.miranda-im.org/download/feed.php?dlfile=2457";
 #else
-    static Update upd = {0};
-    static char *component = "tabSRMM (ANSI)";
     static char szCurrentVersion[30];
     static char *szVersionUrl = "http://miranda.or.at/files/tabsrmm/version.txt";
     static char *szUpdateUrl = "http://miranda.or.at/files/tabsrmm/tabsrmm.zip";
+    static char *szFLVersionUrl = "http://miranda-im.org/download/details.php?action=viewfile&id=1401";
+    static char *szFLUpdateurl = "http://www.miranda-im.org/download/feed.php?dlfile=1401";
+#endif    
     static char *szPrefix = "tabsrmm ";
-#endif
+
 #if defined(_UNICODE)
     if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
         MessageBox(NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("tabSRMM (Unicode)"), MB_OK );
@@ -968,20 +969,26 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     // updater plugin support
 
     upd.cbSize = sizeof(upd);
-    upd.szComponentName = component;
-    upd.szVersionURL = szVersionUrl;
-    upd.pbVersionPrefix = szPrefix;
-    upd.cpbVersionPrefix = lstrlenA(szPrefix);
+    upd.szComponentName = pluginInfo.shortName;
+    upd.pbVersion = (BYTE *)CreateVersionStringPlugin(&pluginInfo, szCurrentVersion);
+    upd.cpbVersion = strlen((char *)upd.pbVersion);
+    upd.szVersionURL = szFLVersionUrl;
+    upd.szUpdateURL = szFLUpdateurl;
+    upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Updater ";
 
-    upd.szUpdateURL = szUpdateUrl;
-
-    CreateVersionStringPlugin(&pluginInfo, szCurrentVersion);
+    upd.szBetaUpdateURL = szUpdateUrl;
+    upd.szBetaVersionURL = szVersionUrl;
+    upd.pbBetaVersionPrefix = (BYTE *)szPrefix;
     upd.pbVersion = szCurrentVersion;
     upd.cpbVersion = lstrlenA(szCurrentVersion);
+
+    upd.cpbVersionPrefix = strlen((char *)upd.pbVersionPrefix);
+    upd.cpbBetaVersionPrefix = strlen((char *)upd.pbBetaVersionPrefix);
+    
     if(ServiceExists(MS_UPDATE_REGISTER))
         CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 
-    return 0;
+	return 0;
 }
 
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)

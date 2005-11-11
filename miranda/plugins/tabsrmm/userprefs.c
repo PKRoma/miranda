@@ -75,6 +75,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             TCHAR szBuffer[180];
             DWORD sCodePage, contact_gmt_diff;
             int i, offset;
+			DWORD maxhist = DBGetContactSettingDword((HANDLE)lParam, SRMSGMOD_T, "maxhist", 0);
             BYTE bOverride = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "mwoverride", 0);
             BYTE bIEView = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "ieview", 0);
             int iLocalFormat = DBGetContactSettingDword((HANDLE)lParam, SRMSGMOD_T, "sendformat", 0);
@@ -117,7 +118,13 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             CheckDlgButton(hwndDlg, IDC_PRIVATESPLITTER, bSplit);
             CheckDlgButton(hwndDlg, IDC_TEMPLOVERRIDE, DBGetContactSettingByte(hContact, TEMPLATES_MODULE, "enabled", 0));
             CheckDlgButton(hwndDlg, IDC_RTLTEMPLOVERRIDE, DBGetContactSettingByte(hContact, RTLTEMPLATES_MODULE, "enabled", 0));
-            
+
+            SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 5));
+            SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETPOS, 0, maxhist);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TRIMSPIN), maxhist != 0);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TRIM), maxhist != 0);
+			CheckDlgButton(hwndDlg, IDC_ALWAYSTRIM2, maxhist != 0);
+
 #if defined(_UNICODE)
             hCpCombo = GetDlgItem(hwndDlg, IDC_CODEPAGES);
             sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
@@ -174,6 +181,10 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 case IDCANCEL:
                     DestroyWindow(hwndDlg);
                     break;
+				case IDC_ALWAYSTRIM2:
+					EnableWindow(GetDlgItem(hwndDlg, IDC_TRIMSPIN), IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
+					EnableWindow(GetDlgItem(hwndDlg, IDC_TRIM), IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
+					break;
                 case IDC_USEPRIVATEIMAGE:
                     EnableWindow(GetDlgItem(hwndDlg, IDC_GETBGIMAGE), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATEIMAGE));
                     break;
@@ -288,6 +299,12 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             }
                         }
                     }
+
+					if(IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2))
+						DBWriteContactSettingDword(hContact, SRMSGMOD_T, "maxhist", (DWORD)SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_GETPOS, 0, 0));
+					else
+						DBWriteContactSettingDword(hContact, SRMSGMOD_T, "maxhist", 0);
+
                     if(hWnd && dat)
                         SendMessage(hWnd, DM_CONFIGURETOOLBAR, 0, 1);
                     DestroyWindow(hwndDlg);

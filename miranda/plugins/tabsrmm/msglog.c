@@ -701,6 +701,14 @@ nogroup:
     showTime = dat->dwFlags & MWF_LOG_SHOWTIME;
     showDate = dat->dwFlags & MWF_LOG_SHOWDATES;
 
+	if(dat->hHistoryEvents) {
+		if(dat->curHistory == dat->maxHistory) {
+			MoveMemory(dat->hHistoryEvents, &dat->hHistoryEvents[1], sizeof(HANDLE) * (dat->maxHistory - 1));
+			dat->curHistory--;
+		}
+		dat->hHistoryEvents[dat->curHistory++] = hDbEvent;
+	}
+
     while(i < iTemplateLen) {
         ci = szTemplate[i];
         if(ci == '%') {
@@ -739,6 +747,9 @@ nogroup:
                 }
             }
             switch(cc) {
+				case 'V':
+					//AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\fs0\\\expnd-40 ~-%d-~", hDbEvent);
+					break;
                 case 'I':
                 {
                     if(dat->dwFlags & MWF_LOG_SHOWICONS) {
@@ -1162,7 +1173,10 @@ skip:
             i++;
         }
     }
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMicroLf);
+	if(dat->hHistoryEvents)
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMicroLf, MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0), hDbEvent);
+	else
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMicroLf);
     
     if(streamData->dbei == 0)
         free(dbei.pBlob);
@@ -1284,7 +1298,10 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     
     mir_snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", GetRTFFont(H_MSGFONTID_YOURTIME));
     strcpy(szSep2, fAppend ? "\\par\\sl0" : "\\sl1000");
-    mir_snprintf(szMicroLf, sizeof(szMicroLf), "%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), GetRTFFont(MSGDLGFONTCOUNT));
+	if(dat->hHistoryEvents)
+		mir_snprintf(szMicroLf, sizeof(szMicroLf), "%s%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), "\\v\\cf%d \ ~-%d-~\\v0 ", GetRTFFont(MSGDLGFONTCOUNT));
+	else
+		mir_snprintf(szMicroLf, sizeof(szMicroLf), "%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), GetRTFFont(MSGDLGFONTCOUNT));
     mir_snprintf(szExtraLf, sizeof(szExtraLf), dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? "\\par\\sl-%d\\highlight%s \\par" : "\\par\\sl-%d \\par", dwExtraLf * 15, "%d");
               
     strcpy(szMsgPrefixColon, ": ");
@@ -1301,10 +1318,21 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 		_tcsncpy(szMyName, ci.pszVal, 100);
 		szMyName[99] = 0;
+#if defined(_UNICODE)
+		if(!_tcscmp(szMyName, TranslateT("'(Unknown Contact)'"))) {
+			mir_free(ci.pszVal);
+			ci.dwFlag &= ~CNF_UNICODE;
+			if(!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM)&ci)) {
+				MultiByteToWideChar(dat->codePage, 0, (char *)ci.pszVal, -1, szMyName, 110);
+				szMyName[109] = 0;
+				goto szMyName_done;
+			}
+		}
+#endif
 	}
 	else
 		_tcsncpy(szMyName, _T("(Unknown Contact)"), 99);
-
+szMyName_done:
     szYourName = dat->szNickname;
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, TRUE, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXGETSEL, 0, (LPARAM) & oldSel);
@@ -1455,6 +1483,24 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
 	// mathMod end
 #endif    
 
+	if(dat->hHistoryEvents && dat->curHistory == dat->maxHistory) {
+		char szPattern[50];
+		FINDTEXTEXA fi;
+
+		_snprintf(szPattern, 40, "~-%d-~", dat->hHistoryEvents[0]);
+		//_DebugPopup(dat->hContact, "search for: %s", szPattern);
+		fi.lpstrText = szPattern;
+		fi.chrg.cpMin = 0;
+		fi.chrg.cpMax = -1;
+		if(SendMessageA(hwndrtf, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) != 0) {
+			CHARRANGE sel;
+			//_DebugPopup(dat->hContact, "found first event at %d", fi.chrgText.cpMin);
+			sel.cpMin = 0;
+			sel.cpMax = 20;
+	        SendMessage(hwndrtf, EM_SETSEL, 0, fi.chrgText.cpMax + 1);
+		    SendMessageA(hwndrtf, EM_REPLACESEL, TRUE, (LPARAM)"");
+		}
+	}
     SendMessage(hwndDlg, DM_FORCESCROLL, 0, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, TRUE, 0);
     InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);

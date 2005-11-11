@@ -26,6 +26,49 @@ Version 0.9.9.99 - 2005/11/11
 		  that the protocol does not support setting the avatar from "outside" its own option
 		  pages. Currently, only MSN allows to set the avatar using an external service.
 
+		+ added workaround for the "Unknown Contact" problem with some protocols (fallback to 
+		  non-unicode nickname).
+		  
+		+ added EXPERIMENTAL feature - real time message log trimming.
+		  
+		  What the.... ? 
+		  
+		  This feature was inspired (or suggested) by one user on the forum. At first,
+		  i thought that it is almost impossible to implement with the rich edit control as
+		  our message history viewer. But I found a reasonable way to do it anyway.
+		  
+		  It is for people who are rarely closing their message windows. As a result, a growing
+		  message history in the chat window(s) may consume HUGE amounts of memory, especially when
+		  emoticons and message log icons are enabled.
+		  
+		  The solution? Trim the message log to a maximum number of events (e.g. 200) - older events
+		  will disappear from the top of the message history and only the N most recent events
+		  will remain in the chat window. As a result, memory requirements may drop significantly.
+
+		  The feature is different from the already exsting "load N number of old history events",
+		  because it works in "real time". Whenever a new message is sent or received, the 
+		  message history will be trimmed at the top so that only old text will disappear.
+		  
+		  How to use?
+		  Set the global limit for all message windows on the "Message Log" options page. A per-
+		  contact setting is also available in the "tabSRMM settings" dialog which you can reach
+		  from the contacts context menu. The per contact setting overrides the global value.
+		  
+		  NOTE: changing this setting will not affect message windows which are already open,
+				so you need to close and re-open them.
+		  
+		  One word of warning, though. This feature has a side effect. In order to "know" where to cut
+		  off the message history, markers need to be placed in the text. The markers are hidden
+		  number sequences (which actually correspond to database event handles), but when you copy
+		  text from the log, the rich edit control will copy the hidden text. As far as I know, there
+		  is no way to avoid this.
+		  
+		  Also, depending on your template, the top of the message log may not always look perfectly
+		  formatted, because text is removed from the top only.
+		  
+		  NOTE2: won't work with IEView as IEView uses a completely different way of displaying
+				 messages.
+		  
 Version 0.9.9.98 - 2005/11/07
 
         * several sanity checks added (pointers, window handles)

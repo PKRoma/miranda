@@ -334,6 +334,8 @@ struct MessageWindowData {
     struct MessageWindowTheme theme;
     struct avatarCacheEntry *ace;
     COLORREF avatarbg;
+	HANDLE *hHistoryEvents;
+	int maxHistory, curHistory;
 };
 
 typedef struct _recentinfo {

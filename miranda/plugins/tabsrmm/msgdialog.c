@@ -592,6 +592,30 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                             ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_SHOW);
                         else
                             ShowWindow(GetDlgItem(hwndDlg, IDC_MULTIPLEICON), SW_HIDE);
+
+                        if(mwdat->sendMode & SMODE_MULTIPLE) {
+                            HANDLE hItem;
+							HWND hwndClist;
+
+                            hwndClist = CreateWindowExA(0, "CListControl", "", WS_TABSTOP | WS_VISIBLE | WS_CHILD | 0x248, 184, 0, 30, 30, GetParent(hwnd), (HMENU)IDC_CLIST, g_hInst, NULL);
+                            hItem = (HANDLE) SendMessage(hwndClist, CLM_FINDCONTACT, (WPARAM) mwdat->hContact, 0);
+                            if (hItem)
+                                SendMessage(hwndClist, CLM_SETCHECKMARK, (WPARAM) hItem, 1);
+                            
+                            if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_DISABLEGROUPS && !DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
+                                SendMessage(hwndClist, CLM_SETUSEGROUPS, (WPARAM) FALSE, 0);
+                            else
+                                SendMessage(hwndClist, CLM_SETUSEGROUPS, (WPARAM) TRUE, 0);
+                            if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS && DBGetContactSettingByte(NULL, "CList", "HideEmptyGroups", SETTING_USEGROUPS_DEFAULT))
+                                SendMessage(hwndClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
+                            else
+                                SendMessage(hwndClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) FALSE, 0);
+                        }
+						else {
+							if(IsWindow(GetDlgItem(GetParent(hwnd), IDC_CLIST)))
+								DestroyWindow(GetDlgItem(GetParent(hwnd), IDC_CLIST));
+							ShowWindow(GetDlgItem(GetParent(hwnd), IDC_MULTIPLEICON), SW_HIDE);
+						}
                         SendMessage(hwndDlg, WM_SIZE, 0, 0);
                         SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
                         ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (mwdat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
@@ -1083,6 +1107,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->iCurrentQueueError = -1;
                 dat->history[dat->iHistorySize].szText = (TCHAR *)malloc((HISTORY_INITIAL_ALLOCSIZE + 1) * sizeof(TCHAR));
                 dat->history[dat->iHistorySize].lLen = HISTORY_INITIAL_ALLOCSIZE;
+				
+				/*
+				 * message history limit
+				 * hHistoryEvents holds up to n event handles
+				 */
+
+				dat->maxHistory = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "maxhist", DBGetContactSettingDword(NULL, SRMSGMOD_T, "maxhist", 0));
+				dat->curHistory = 0;
+				if(dat->maxHistory)
+					dat->hHistoryEvents = (HANDLE *)malloc(dat->maxHistory * sizeof(HANDLE));
+				else
+					dat->hHistoryEvents = NULL;
 
                 if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1)) {
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
@@ -2387,8 +2423,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if (dat->iTabID == -1)
                         MessageBoxA(0, "DBEVENTADDED Critical: iTabID == -1", "Error", MB_OK);
                     
-                    dat->dwLastActivity = GetTickCount();
-                    dat->pContainer->dwLastActivity = dat->dwLastActivity;
+                    //dat->dwLastActivity = GetTickCount();
+                    //dat->pContainer->dwLastActivity = dat->dwLastActivity;
                     // tab flashing
                     if ((IsIconic(dat->pContainer->hwnd) || TabCtrl_GetCurSel(hwndTab) != dat->iTabID) && !(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
                         switch (dbei.eventType) {
@@ -4981,6 +5017,8 @@ verify:
                 DeleteObject(dat->hInputBkgBrush);
             if (dat->sendBuffer != NULL)
                 free(dat->sendBuffer);
+			if (dat->hHistoryEvents)
+				free(dat->hHistoryEvents);
             {
                 int i;
                 // input history stuff (free everything)

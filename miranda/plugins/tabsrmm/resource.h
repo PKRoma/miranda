@@ -147,7 +147,9 @@
 #define IDC_LOADTIMESPIN                1089
 #define IDC_LOADTIME                    1090
 #define IDC_CMDEDITHEADERS              1091
+#define IDC_TRIM                        1091
 #define IDC_FONTLIST                    1092
+#define IDC_TRIMSPIN                    1092
 #define IDC_USEOSD                      1093
 #define IDC_CHOOSEFONT                  1094
 #define IDC_CHKACTTE_DISMISS            1095
@@ -182,6 +184,7 @@
 #define IDC_BKGCOLOUR                   1122
 #define IDC_INPUTBKG                    1123
 #define IDC_MATH_BKGCOLOUR              1124
+#define IDC_INFOPANELBG                 1124
 #define IDC_BKGOUTGOING                 1125
 #define IDC_BKGINCOMING                 1126
 #define IDC_FONTCOLOR                   1127
@@ -376,9 +379,11 @@
 #define IDC_USEPRIVATETITLE             1289
 #define IDC_SHOWAVATARS                 1289
 #define IDC_ROUNDEDCORNERS              1289
+#define IDC_ALWAYSTRIM                  1289
 #define IDC_SYNCSOUNDS                  1290
 #define IDC_FLASHLABEL                  1290
 #define IDC_SHOWINFOPANEL               1290
+#define IDC_ALWAYSTRIM2                 1290
 #define IDC_NOSKINNING                  1291
 #define IDC_AVADYNAMIC                  1292
 #define IDC_FLATTABS2                   1292

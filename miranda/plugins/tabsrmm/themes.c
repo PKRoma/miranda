@@ -298,7 +298,7 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
                 wchar_t *decoded;
                 GetPrivateProfileStringA("Templates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
                 if(dat == 0)
-                    DBWriteContactSettingString(NULL, TEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
+                    DBWriteContactSettingStringUtf(NULL, TEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
                 decoded = Utf8_Decode(szTemplateBuffer);
                 if(dat == 0)
                     mir_snprintfW(LTR_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
@@ -307,7 +307,7 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
                 free(decoded);
                 GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
                 if(dat == 0)
-                    DBWriteContactSettingString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
+                    DBWriteContactSettingStringUtf(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
                 decoded = Utf8_Decode(szTemplateBuffer);
                 if(dat == 0)
                     mir_snprintfW(RTL_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
@@ -346,8 +346,7 @@ char *GetThemeFileName(int iMode)
     OPENFILENAMEA ofn={0};
     char szFilter[MAX_PATH];
 
-    strncpy(szFilter, "tabSRMM themes_*.tabsrmm", MAX_PATH);
-    szFilter[14] = '\0';
+    strncpy(szFilter, "tabSRMM themes\0*.tabsrmm\0\0", MAX_PATH);
     ofn.lStructSize= OPENFILENAME_SIZE_VERSION_400;
     ofn.hwndOwner=0;
     ofn.lpstrFile = szFilename;
