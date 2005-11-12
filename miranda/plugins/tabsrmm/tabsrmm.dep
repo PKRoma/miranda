@@ -1,0 +1,611 @@
+# Microsoft Developer Studio Generated Dependency File, included by tabsrmm.mak
+
+.\container.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\m_avatars.h"\
+	".\m_MathModule.h"\
+	".\m_metacontacts.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\containeroptions.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\m_avatars.h"\
+	".\m_tabsrmm.h"\
+	".\msgs.h"\
+	".\templates.h"\
+	
+
+eventpopups.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icq.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\m_avatars.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\m_tabsrmm.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\formatting.cpp : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\msgdlgutils.h"\
+	
+
+.\hotkeyhandler.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\m_avatars.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+ImageDataObject.cpp : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\ImageDataObject.h"\
+	
+
+msgdialog.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\m_avatars.h"\
+	".\m_ieview.h"\
+	".\m_MathModule.h"\
+	".\m_metacontacts.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\sendqueue.h"\
+	".\templates.h"\
+	
+
+msgdlgutils.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\m_avatars.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+msglog.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\m_avatars.h"\
+	".\m_fontservice.h"\
+	".\m_ieview.h"\
+	".\m_MathModule.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+msgoptions.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\m_avatars.h"\
+	".\m_fontservice.h"\
+	".\m_ieview.h"\
+	".\m_MathModule.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\templates.h"\
+	
+
+msgs.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_fontservice.h"\
+	".\m_ieview.h"\
+	".\m_MathModule.h"\
+	".\m_metacontacts.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_tabsrmm.h"\
+	".\m_toptoolbar.h"\
+	".\m_updater.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\selectcontainer.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\m_avatars.h"\
+	".\m_tabsrmm.h"\
+	".\msgs.h"\
+	".\templates.h"\
+	
+
+sendqueue.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\m_avatars.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\sendqueue.h"\
+	".\templates.h"\
+	
+
+srmm.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\m_avatars.h"\
+	".\m_ieview.h"\
+	".\m_popup.h"\
+	".\m_tabsrmm.h"\
+	".\msgs.h"\
+	".\templates.h"\
+	".\URLCtrl.h"\
+	
+
+.\tabctrl.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\m_avatars.h"\
+	".\m_tabsrmm.h"\
+	".\msgs.h"\
+	".\templates.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
+
+templates.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\m_avatars.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	".\URLCtrl.h"\
+	
+
+.\themes.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\m_avatars.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\templates.h"\
+	
+
+trayicon.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\m_avatars.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\m_tabsrmm.h"\
+	".\m_toptoolbar.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+TSButton.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\m_avatars.h"\
+	".\m_tabsrmm.h"\
+	".\msgs.h"\
+	".\templates.h"\
+	
+
+.\URLCtrl.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\URLCtrl.h"\
+	
+
+userprefs.c : \
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\m_avatars.h"\
+	".\m_ieview.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\msgwindow.rc : \
+	"..\..\include\statusmodes.h"\
+	
+
+.\resource.rc : \
+	"..\..\include\statusmodes.h"\
+	"..\..\src\res\dragcopy.cur"\
+	"..\..\src\res\dropuser.cur"\
+	"..\..\src\res\hyperlin.cur"\
+	".\res\checked.ico"\
+	".\res\expand.ico"\
+	".\res\leftarrow.ico"\
+	".\res\pulldown.ico"\
+	".\res\pullup.ico"\
+	".\res\rightarrow.ico"\
+	".\res\unchecked.ico"\
+	".\res\xstatus.bmp"\
+	

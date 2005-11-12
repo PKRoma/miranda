@@ -32,6 +32,10 @@ typedef unsigned short wchar_t;
 
 #define _WIN32_IE 0x0501
 
+#if defined( UNICODE ) && !defined( _UNICODE )
+#define _UNICODE
+#endif
+
 #include <tchar.h>
 
 #define _WIN32_WINNT 0x0501
