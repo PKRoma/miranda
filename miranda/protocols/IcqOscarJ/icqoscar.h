@@ -110,6 +110,7 @@
 
 #include "changeinfo/changeinfo.h"
 #include "icq_popups.h"
+#include "iconlib.h"
 
 #include "md5.h"
 

@@ -30,30 +30,69 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Support for IcoLib plug-in
 //
 // -----------------------------------------------------------------------------
 
-#ifndef __ICQ_XTRAZ_H
-#define __ICQ_XTRAZ_H
+#include "icqoscar.h"
+#include "m_icolib.h"
 
-void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC);
-void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char* szMsg, int nMsgLen);
 
-DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify);
-void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szResponse, int nResponseLen, BOOL bThruDC);
+static int bIcoReady = 0;
 
-// custom status support
-void InitXStatusItems(BOOL bAllowStatus);
-void InitXStatusEvents();
-void UninitXStatusEvents();
 
-void InitXStatusIcons();
-void ChangedIconsXStatus();
-HICON GetXStatusIcon(int bStatus);
+void InitIconLib()
+{ // check plugin presence, init variables
+  bIcoReady = ServiceExists(MS_SKIN2_GETICON);
+}
 
-void handleXStatusCaps(HANDLE hContact, char* caps, int capsize);
 
-int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam);
 
-#endif /* __ICQ_XTRAZ_H */
+void IconLibDefine(const char* desc, const char* section, const char* ident, HICON icon)
+{
+  if (bIcoReady)
+  {
+		SKINICONDESC3 sid = {0};
+		char szTemp[MAX_PATH + 128];
+
+		sid.cx = sid.cy = 16;
+		sid.cbSize = sizeof(SKINICONDESC2);
+		sid.pszSection = Translate(section);
+		sid.pszDefaultFile = NULL;
+		sid.pszDescription = Translate(desc);
+		null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
+		sid.pszName = szTemp;
+		sid.iDefaultIndex = 0;
+    sid.hDefaultIcon = icon;
+
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+  }
+}
+
+
+
+HICON IconLibProcess(HICON icon, const char* ident)
+{
+  if (bIcoReady)
+  {
+		char szTemp[MAX_PATH + 128];
+    HICON hNew;
+
+		null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
+		hNew = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
+    if (hNew) return hNew;
+  }
+
+  return icon;
+}
+
+
+
+HANDLE IconLibHookIconsChanged(MIRANDAHOOK hook)
+{
+  if (bIcoReady)
+  {
+    return HookEvent(ME_SKIN2_ICONSCHANGED, hook);
+  }
+  return NULL;
+}

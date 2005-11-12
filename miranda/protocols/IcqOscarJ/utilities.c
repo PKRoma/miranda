@@ -901,10 +901,10 @@ int null_snprintf(char *buffer, size_t count, const char* fmt, ...)
   va_list va;
   int len;
 
+  ZeroMemory(buffer, count);
   va_start(va, fmt);
   len = _vsnprintf(buffer, count-1, fmt, va);
   va_end(va);
-  buffer[count-1] = 0;
   return len;
 }
 
@@ -1583,4 +1583,14 @@ void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const char* szText)
       SAFE_FREE(&szAnsi);
     }
   }
+}
+
+
+
+LONG SetWindowLongUtf(HWND hWnd, int nIndex, LONG dwNewLong)
+{
+  if (gbUnicodeAPI)
+    return SetWindowLongW(hWnd, nIndex, dwNewLong);
+  else
+    return SetWindowLongA(hWnd, nIndex, dwNewLong);
 }

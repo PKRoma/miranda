@@ -77,6 +77,10 @@ typedef struct {
 // wParam=(WPARAM)hContact;
 #define MS_GRANT_AUTH "/GrantAuth"
 
+// Display XStatus detail
+// wParam=(WPARAM)hContact;
+#define MS_XSTATUS_SHOWDETAILS "/ShowXStatusDetails"
+
 //Send an SMS via the ICQ network
 //wParam=(WPARAM)(const char*)szPhoneNumber
 //lParam=(LPARAM)(const char*)szMessage
@@ -116,7 +120,7 @@ typedef struct {
 //ASCIIZ    text, usually of the form "Subject: %s\r\n%s"
 //ASCIIZ    from name
 //ASCIIZ    from e-mail
-#define ICQEVENTTYPE_EMAILEXPRESS 2002    //database event type
+#define ICQEVENTTYPE_EMAILEXPRESS 2002  //database event type
 
 //www pager
 //db event added to NULL contact
@@ -124,7 +128,7 @@ typedef struct {
 //ASCIIZ    text, usually "Sender IP: xxx.xxx.xxx.xxx\r\n%s"
 //ASCIIZ    from name
 //ASCIIZ    from e-mail
-#define ICQEVENTTYPE_WEBPAGER 2003    //database event type
+#define ICQEVENTTYPE_WEBPAGER   2003    //database event type
 
 //for server-side lists, used internally only
 //hProcess=dwSequence
@@ -135,6 +139,16 @@ typedef struct {
 //hProcess=Rate class ID
 //lParam=server's status code
 #define ICQACKTYPE_RATEWARNING  1004
+
+//received Xtraz Notify response
+//hProcess=dwSequence
+//lParam=contents of RES node
+#define ICQACKTYPE_XTRAZNOTIFY_RESPONSE 1005
+
+//received Custom Status details response
+//hProcess=dwSequence
+//lParam=0
+#define ICQACKTYPE_XSTATUS_RESPONSE 1006
 
 
 // Change nickname in White pages

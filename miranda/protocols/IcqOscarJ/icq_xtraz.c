@@ -141,7 +141,7 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
 
 
 
-void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nMsgLen)
+void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char* szMsg, int nMsgLen)
 {
   char *szRes, *szEnd;
   int nResLen;
@@ -161,6 +161,8 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
     nResLen = szEnd - szRes;
 
     szRes = DemangleXml(szRes, nResLen);
+
+    ICQBroadcastAck(hContact, ICQACKTYPE_XTRAZNOTIFY_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, (LPARAM)szRes);
 
     szNode = strstr(szRes, "<val srv_id='");
     if (szNode) szEnd = strstr(szNode, ">"); else szEnd = NULL;
@@ -217,6 +219,7 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
               *szEnd = '\0';
               ICQWriteContactSettingUtf(hContact, "XStatusMsg", szNode);
             }
+            ICQBroadcastAck(hContact, ICQACKTYPE_XSTATUS_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
           }
           else
             NetLog_Server("Error: Invalid sender information");
@@ -238,7 +241,7 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, char* szMsg, int nM
 
 
 
-void SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
+DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
 {
   char *szQueryBody = MangleXml(szQuery, strlennull(szQuery));
   char *szNotifyBody = MangleXml(szNotify, strlennull(szNotify));
@@ -249,10 +252,10 @@ void SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
   message_cookie_data* pCookieData;
 
   if (!CheckContactCapabilities(hContact, CAPF_XTRAZ))
-    return; // Contact does not support xtraz, do not send anything
+    return 0; // Contact does not support xtraz, do not send anything
 
   if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
-    return; // Invalid contact
+    return 0; // Invalid contact
 
   nBodyLen = null_snprintf(szBody, nBodyLen, "<N><QUERY>%s</QUERY><NOTIFY>%s</NOTIFY></N>", szQueryBody, szNotifyBody);
   SAFE_FREE(&szQueryBody);
@@ -273,7 +276,10 @@ void SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
       icq_sendXtrazRequestServ(dwUin, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
 
     SAFE_FREE(&szBody);
+
+    return dwCookie;
   }
+  return 0;
 }
 
 

@@ -42,8 +42,10 @@ HANDLE hHookUserInfoInit = NULL;
 HANDLE hHookOptionInit = NULL;
 HANDLE hHookUserMenu = NULL;
 HANDLE hHookIdleEvent = NULL;
+HANDLE hHookIconsChanged = NULL;
 static HANDLE hUserMenuAuth = NULL;
 static HANDLE hUserMenuGrant = NULL;
+static HANDLE hUserMenuXStatus = NULL;
 
 extern HANDLE hServerConn;
 extern icq_mode_messages modeMsgs;
@@ -55,7 +57,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,6),
+  PLUGIN_MAKE_VERSION(0,3,6,7),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@users.sourceforge.net",
@@ -67,6 +69,7 @@ PLUGININFO pluginInfo = {
 
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam);
 static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
+static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
 
 
@@ -141,7 +144,11 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   InitializeCriticalSection(&connectionHandleMutex);
   InitializeCriticalSection(&localSeqMutex);
   InitializeCriticalSection(&modeMsgsMutex);
-  InitCookies();
+
+  // Initialize core modules
+  InitDB();       // DB interface
+  InitCookies();  // cookie utils
+  InitCache();    // contacts cache
 
   // Register the module
   ZeroMemory(&pd, sizeof(pd));
@@ -152,9 +159,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
   // Initialize status message struct
   ZeroMemory(&modeMsgs, sizeof(icq_mode_messages));
-
-  // contacts cache
-  InitCache();
 
   // Reset a bunch of session specific settings
   ResetSettingsOnLoad();
@@ -219,41 +223,12 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
   gnCurrentStatus = ID_STATUS_OFFLINE;
 
-  hHookUserMenu = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, icq_PrebuildContactMenu);
+  ICQCreateServiceFunction(MS_REQ_AUTH, icq_RequestAuthorization);
+  ICQCreateServiceFunction(MS_GRANT_AUTH, IcqGrantAuthorization);
 
-  {
-    CLISTMENUITEM mi;
-    char pszServiceName[MAX_PATH+30];
+  ICQCreateServiceFunction(MS_XSTATUS_SHOWDETAILS, IcqShowXStatusDetails);
 
-    strcpy(pszServiceName, gpszICQProtoName);
-    strcat(pszServiceName, MS_REQ_AUTH);
-    CreateServiceFunction(pszServiceName, icq_RequestAuthorization);
-
-    ZeroMemory(&mi, sizeof(mi));
-    mi.cbSize = sizeof(mi);
-    mi.position = 1000030000;
-    mi.flags = 0;
-    mi.hIcon = NULL; // TODO: add icon
-    mi.pszContactOwner = gpszICQProtoName;
-    mi.pszName = Translate("Request authorization");
-    mi.pszService = pszServiceName;
-    hUserMenuAuth = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-
-    strcpy(pszServiceName, gpszICQProtoName);
-    strcat(pszServiceName, MS_GRANT_AUTH);
-    CreateServiceFunction(pszServiceName, IcqGrantAuthorization);
-
-    ZeroMemory(&mi, sizeof(mi));
-    mi.cbSize = sizeof(mi);
-    mi.position = 1000029999;
-    mi.flags = 0;
-    mi.hIcon = NULL; // TODO: add icon
-    mi.pszContactOwner = gpszICQProtoName;
-    mi.pszName = Translate("Grant authorization");
-    mi.pszService = pszServiceName;
-    hUserMenuGrant = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-  }
-
+  // This must be here - the events are called too early, WTF?
   InitXStatusEvents();
 
   return 0;
@@ -264,6 +239,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 int __declspec(dllexport) Unload(void)
 {
   if (gbXStatusEnabled) gbXStatusEnabled = 10; // block clist changing
+
+  UninitXStatusEvents();
 
   if (hServerConn)
   {
@@ -293,6 +270,8 @@ int __declspec(dllexport) Unload(void)
   SAFE_FREE(&modeMsgs.szDnd);
   SAFE_FREE(&modeMsgs.szFfc);
 
+  if (hHookIconsChanged)
+    UnhookEvent(hHookIconsChanged);
 
   if (hHookUserInfoInit)
     UnhookEvent(hHookUserInfoInit);
@@ -309,10 +288,9 @@ int __declspec(dllexport) Unload(void)
   if (hHookIdleEvent)
     UnhookEvent(hHookIdleEvent);
 
-  UninitXStatusEvents();
-
   return 0;
 }
+
 
 
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
@@ -323,9 +301,6 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   char pszSrvGroupsName[MAX_PATH+10];
   char szBuffer[MAX_PATH+64];
   char* modules[5] = {0,0,0,0,0};
-
-  InitXStatusEvents();
-  InitXStatusItems(FALSE);
 
   strcpy(pszP2PName, gpszICQProtoName);
   strcat(pszP2PName, "P2P");
@@ -368,11 +343,57 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
   hHookOptionInit = HookEvent(ME_OPT_INITIALISE, IcqOptInit);
   hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, OnDetailsInit);
-
+  hHookUserMenu = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, icq_PrebuildContactMenu);
   hHookIdleEvent = HookEvent(ME_IDLE_CHANGED, IcqIdleChanged);
 
-  InitDB();
+  // Init extra optional modules
   InitPopUps();
+  InitIconLib();
+
+  hHookIconsChanged = IconLibHookIconsChanged(IconLibIconsChanged);
+
+  IconLibDefine(Translate("Request authorisation"), Translate(gpszICQProtoName), "req_auth", NULL);
+  IconLibDefine(Translate("Grant authorisation"), Translate(gpszICQProtoName), "grant_auth", NULL);
+
+  // Initialize IconLib icons
+  InitXStatusIcons();
+  InitXStatusEvents();
+  InitXStatusItems(FALSE);
+
+  {
+    CLISTMENUITEM mi;
+    char pszServiceName[MAX_PATH+30];
+
+    strcpy(pszServiceName, gpszICQProtoName);
+    strcat(pszServiceName, MS_REQ_AUTH);
+
+    ZeroMemory(&mi, sizeof(mi));
+    mi.cbSize = sizeof(mi);
+    mi.position = 1000030000;
+    mi.flags = 0;
+    mi.hIcon = IconLibProcess(NULL, "req_auth");
+    mi.pszContactOwner = gpszICQProtoName;
+    mi.pszName = Translate("Request authorization");
+    mi.pszService = pszServiceName;
+    hUserMenuAuth = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+
+    strcpy(pszServiceName, gpszICQProtoName);
+    strcat(pszServiceName, MS_GRANT_AUTH);
+
+    mi.position = 1000029999;
+    mi.hIcon = IconLibProcess(NULL, "grant_auth");
+    mi.pszName = Translate("Grant authorization");
+    hUserMenuGrant = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+
+    strcpy(pszServiceName, gpszICQProtoName);
+    strcat(pszServiceName, MS_XSTATUS_SHOWDETAILS);
+
+    mi.position = -2000004999;
+    mi.hIcon = NULL; // dynamically updated
+    mi.pszName = Translate("Show custom status details");
+    mi.flags=CMIF_NOTOFFLINE;
+    hUserMenuXStatus = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+  }
 
   return 0;
 }
@@ -382,24 +403,59 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 {
   CLISTMENUITEM mi;
+  BYTE bXStatus;
   
   ZeroMemory(&mi, sizeof(mi));
   mi.cbSize = sizeof(mi);
-  if (!DBGetContactSettingByte((HANDLE)wParam, gpszICQProtoName, "Auth", 0))
+  if (!ICQGetContactSettingByte((HANDLE)wParam, "Auth", 0))
     mi.flags = CMIM_FLAGS | CMIM_NAME | CMIF_HIDDEN;
   else
     mi.flags = CMIM_FLAGS | CMIM_NAME;
   mi.pszName = Translate("Request authorization");
 
-  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hUserMenuAuth, (LPARAM) & mi);
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuAuth, (LPARAM)&mi);
 
-  if (!DBGetContactSettingByte((HANDLE)wParam, gpszICQProtoName, "Grant", 0))
+  if (!ICQGetContactSettingByte((HANDLE)wParam, "Grant", 0))
     mi.flags = CMIM_FLAGS | CMIM_NAME | CMIF_HIDDEN;
   else
     mi.flags = CMIM_FLAGS | CMIM_NAME;
   mi.pszName = Translate("Grant authorization");
 
-  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hUserMenuGrant, (LPARAM) & mi);
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuGrant, (LPARAM)&mi);
+
+  bXStatus = ICQGetContactSettingByte((HANDLE)wParam, "XStatusId", 0);
+  if (!bXStatus)
+    mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+  else
+  {
+    mi.flags = CMIM_FLAGS | CMIM_ICON;
+    mi.hIcon = GetXStatusIcon(bXStatus);
+  }
+
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuXStatus, (LPARAM)&mi);
+
+  return 0;
+}
+
+
+
+static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam)
+{
+  CLISTMENUITEM mi;
+
+  ZeroMemory(&mi, sizeof(mi));
+  mi.cbSize = sizeof(mi);
+
+  mi.flags = CMIM_FLAGS | CMIM_ICON;
+  mi.hIcon = IconLibProcess(NULL, "req_auth");
+
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuAuth, (LPARAM)&mi);
+
+  mi.hIcon = IconLibProcess(NULL, "grant_auth");
+
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuGrant, (LPARAM)&mi);
+
+  ChangedIconsXStatus();
 
   return 0;
 }

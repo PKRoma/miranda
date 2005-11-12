@@ -30,30 +30,19 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Headers for IconLib Plugin support
 //
 // -----------------------------------------------------------------------------
 
-#ifndef __ICQ_XTRAZ_H
-#define __ICQ_XTRAZ_H
+#ifndef __ICONLIB_H
+#define __ICONLIB_H
 
-void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC);
-void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char* szMsg, int nMsgLen);
 
-DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify);
-void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szResponse, int nResponseLen, BOOL bThruDC);
+void InitIconLib();
 
-// custom status support
-void InitXStatusItems(BOOL bAllowStatus);
-void InitXStatusEvents();
-void UninitXStatusEvents();
+void IconLibDefine(const char* desc, const char* section, const char* ident, HICON icon);
+HICON IconLibProcess(HICON icon, const char* ident);
+HANDLE IconLibHookIconsChanged(MIRANDAHOOK hook);
 
-void InitXStatusIcons();
-void ChangedIconsXStatus();
-HICON GetXStatusIcon(int bStatus);
 
-void handleXStatusCaps(HANDLE hContact, char* caps, int capsize);
-
-int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam);
-
-#endif /* __ICQ_XTRAZ_H */
+#endif /* __ICONLIB_H */

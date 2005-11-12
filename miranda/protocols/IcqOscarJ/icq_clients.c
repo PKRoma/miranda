@@ -114,6 +114,7 @@ const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x8
 const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capStr20012  = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xbc, 0xd2, 0x00, 0x04, 0xac, 0x96, 0xdd, 0x96};
 const capstr capAimIcon   = {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
+const capstr capAimChat   = {0x74, 0x8F, 0x24, 0x20, 0x62, 0x87, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capUim       = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
 const capstr capRambler   = {0x7E, 0x11, 0xB7, 0x78, 0xA3, 0x53, 0x49, 0x26, 0xA8, 0x02, 0x44, 0x73, 0x52, 0x08, 0xC4, 0x2A};
 const capstr capAbv       = {0x00, 0xE7, 0xE0, 0xDF, 0xA9, 0xD0, 0x4F, 0xe1, 0x91, 0x62, 0xC8, 0x90, 0x9A, 0x13, 0x2A, 0x1B};
@@ -452,6 +453,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           }
         }
         else if (wVersion == 7)
+        {
           if (hasCapRichText(caps, wLen))
             szClient = "GnomeICU"; // this is an exception
           else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
@@ -468,13 +470,25 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             szClient = "Icq2Go! (Java)";
           else 
             szClient = "Icq2Go!";
+        }
         else if (wVersion == 0xA)
+        {
           if (!hasCapRichText(caps, wLen) && !CheckContactCapabilities(hContact, CAPF_UTF))
           { // this is bad, but we must do it - try to detect QNext
             ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
             NetLog_Server("Forcing simple messages (QNext client).");
             szClient = "QNext";
           }
+        }
+        else if (wVersion == 0)
+        {
+          if (CheckContactCapabilities(hContact, CAPF_TYPING) && MatchCap(caps, wLen, &capIs2001, 0x10) &&
+            MatchCap(caps, wLen, &capIs2002, 0x10) && MatchCap(caps, wLen, &capStr20012, 0x10) && wLen==0x40 && !dwFT1 && !dwFT2 && !dwFT3)
+            szClient = cliSpamBot;
+          if (MatchCap(caps, wLen, &capAimChat, 0x10) && !dwFT1 && !dwFT2 && !dwFT3)
+            szClient = "Easy Message";
+        }
+
         if (szClient == NULL)
         { // still unknown client, try Agile
           if (CheckContactCapabilities(hContact, CAPF_UTF) && !hasCapRichText(caps, wLen) && !dwFT1 && !dwFT2 && !dwFT3)

@@ -393,7 +393,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
             memcpy(szMsg, buf, dwDataLength);
           szMsg[dwDataLength] = '\0';
 
-          handleXtrazNotifyResponse(dwCookieUin, dc->hContact, szMsg, dwDataLength);
+          handleXtrazNotifyResponse(dwCookieUin, dc->hContact, wCookie, szMsg, dwDataLength);
 
           SAFE_FREE(&pCookieData);
           FreeCookie(wCookie);

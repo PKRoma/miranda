@@ -1967,7 +1967,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
               memcpy(szMsg, buf, dwDataLen);
             szMsg[dwDataLen] = '\0';
 
-            handleXtrazNotifyResponse(dwUin, hContact, szMsg, dwDataLen);
+            handleXtrazNotifyResponse(dwUin, hContact, wCookie, szMsg, dwDataLen);
 
             SAFE_FREE(&pCookieData);
             FreeCookie(wCookie);

@@ -137,6 +137,7 @@ char* GetUserPassword(BOOL bAlways);
 
 char* GetDlgItemTextUtf(HWND hwndDlg, int iItem);
 void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const char* szText);
+LONG SetWindowLongUtf(HWND hWnd, int nIndex, LONG dwNewLong);
 
 
 #endif /* __UTILITIES_H */

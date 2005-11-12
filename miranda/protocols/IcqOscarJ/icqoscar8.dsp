@@ -130,6 +130,10 @@ SOURCE=.\i18n.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\iconlib.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\icq_advsearch.h
 # End Source File
 # Begin Source File
@@ -464,6 +468,10 @@ SOURCE=.\forkthread.c
 # Begin Source File
 
 SOURCE=.\i18n.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\iconlib.c
 # End Source File
 # Begin Source File
 

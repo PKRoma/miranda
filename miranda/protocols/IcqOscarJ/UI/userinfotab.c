@@ -546,18 +546,20 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
         char* pXName;
         BYTE bXStatus = ICQGetContactSettingByte(hContact, "XStatusId", 0);
 
-        ZeroMemory(szStatus, sizeof(szStatus));
         null_snprintf(szStatus, sizeof(szStatus), MirandaStatusToString(dbv.wVal));
         if (bXStatus)
         {
+          char szXStatus[MAX_PATH];
+
+          strcpy(szXStatus, szStatus);
           pXName = ICQGetContactSettingUtf(hContact, "XStatusName", "");
           if (!strlennull(pXName))
           {
-            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szStatus, Translate(nameXStatus[bXStatus-1]));
+            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szXStatus, Translate(nameXStatus[bXStatus-1]));
           }
           else
           {
-            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szStatus, pXName);
+            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szXStatus, pXName);
             bUtf = 1;
           }
           SAFE_FREE(&pXName);

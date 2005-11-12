@@ -31,9 +31,23 @@ ______________
   if you have an old account they can receive added notification.
 
 
+TO-DO List
+__________
+
+0.3.9
+  Manage server-list dialog now groups requests - much faster
+  Full support for sub-groups in Manage server-list dialog
+  Real Level 1 rate management (will solve multi-recipient message problems)
+  AIM file transfers (OFT) - like icq5 (including transfer thru server)
+
+0.5
+  Account management (together with Miranda core changes)
+  Multi-user chat (Xtraz based)
+
+
+
 Changes
 _______
-
 
 0.3.6
 
@@ -71,9 +85,9 @@ Improvements:
   Small improvements to client detection
   Uses newer capabilities format (cuts incoming traffic)
   Display error messages using PopUp Plugin
-TODO:  Support for unicode database module (clist data)
-TODO:  Support for Iconlib
-TODO:  Manage server-list dialog now groups requests - much faster
+  Support for Iconlib Plugin
+  Support for unicode database module (clist data)
+TODO: Level 2 Rate management for Status & Xtraz replies, Xtraz requests
 
 
 0.3.5.2
