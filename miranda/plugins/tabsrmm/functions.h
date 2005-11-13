@@ -93,3 +93,4 @@ void FS_RegisterFonts();
 void MoveFonts();
 
 extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);
+void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);

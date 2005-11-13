@@ -212,7 +212,9 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
     char szBuf[512], szTemp[100], szAppname[100];
     int i;
     int version;
+#if defined(_UNICODE)
     char szTemplateBuffer[TEMPLATE_LENGTH * 3 + 2];
+#endif
     char bSize = 0;
     HDC hdc;
     int charset;

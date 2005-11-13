@@ -318,7 +318,7 @@ struct MessageWindowData {
     TCHAR newtitle[130];        // tab title...
     LCID lcid;
     char  lcID[4];
-    int   panelHeight;
+    int   panelHeight, panelWidth;
     WORD wApparentMode;
     DWORD idle;
     HWND hwndTip;

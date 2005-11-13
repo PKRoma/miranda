@@ -108,16 +108,15 @@ BEGIN
     LTEXT           "",IDC_LOGFROZENTEXT,10,3,200,10
     CONTROL         "",IDC_PANELPIC,"Button",BS_OWNERDRAW,154,0,34,25
     CONTROL         "",IDC_PANELSTATUS,"Static",SS_OWNERDRAW | 
-                    SS_CENTERIMAGE | WS_GROUP,10,1,100,14
+                    SS_CENTERIMAGE | WS_GROUP,10,16,100,14
     CONTROL         "",IDC_PANELNICK,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
                     WS_GROUP,5,1,100,14
     CONTROL         "",IDC_PANELUIN,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
                     WS_GROUP,5,16,100,14
     CONTROL         "",IDC_TOGGLENOTES,"TSButtonClass",WS_TABSTOP,0,3,4,28,
                     0x18000000L
-    CONTROL         "",IDC_APPARENTMODE,"TSButtonClass",WS_TABSTOP,174,16,16,
+    CONTROL         "",IDC_APPARENTMODE,"TSButtonClass",WS_TABSTOP,174,1,16,
                     14,0x18000000L
-    CONTROL         "",IDC_READSTATUS,"Button",BS_AUTOCHECKBOX,174,2,12,12
     EDITTEXT        IDC_NOTES,5,2,141,13,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_WANTRETURN | WS_VSCROLL,WS_EX_RIGHT | 
                     WS_EX_RTLREADING

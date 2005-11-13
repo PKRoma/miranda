@@ -1,7 +1,7 @@
 /*
 Miranda SmileyAdd Plugin
 Plugin support header file
-Copyright (C) 2004 Rein-Peter de Boer (peacow), and followers
+Copyright (C) 2004 Rein-Peter de Boer (peacow) and followers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -36,12 +36,7 @@ typedef struct
 								//if you prefer those icons. 
 								//If not found or NULL, "Standard" will be used
 	BOOL useSounds;				//NOT IMPLEMENTED YET, set to FALSE
-	BOOL disableRedraw;			//If true then no redraw/refresh will be done. For performance
-								//this is recommend. Disable redraw, etc yourself first, and then
-								//refresh after the call to smileyadd.. This will give YOU the 
-								//control on what en where to refresh. 
-								//->>everything will be screwed up and not restored.
-								//TRUE is recommended -> disable&save redraw, restore yourself.
+	BOOL disableRedraw;			//Parameter have been depricated, have no effect on operation
 } SMADD_RICHEDIT2;
 
 #define MS_SMILEYADD_REPLACESMILEYS  "SmileyAdd/ReplaceSmileys"
@@ -50,7 +45,7 @@ typedef struct
 typedef struct 
 {
 	int cbSize;					//size of the structure
-	const char* Protocolname;	//protocol to use... if you have defined a protocol, you can 
+	char* Protocolname;			//protocol to use... if you have defined a protocol, you can 
 								//use your own protocol name. Smiley add will automatically 
 								//select the smileypack that is defined for your protocol.
 								//Or, use "Standard" for standard smiley set. Or "ICQ", "MSN"
@@ -70,23 +65,6 @@ typedef struct
 #define MS_SMILEYADD_SHOWSELECTION  "SmileyAdd/ShowSmileySelection"
 
 
-
-//find smiley
-//wParam = (WPARAM) 0; not used
-//lParam = (LPARAM) (SMADD_GETICON*) &smgi;  //pointer to SMADD_GETICON
-//return: TRUE if SmileySequence starts with a smiley, FALSE if not
-typedef struct 
-{
-	int cbSize;             //size of the structure
-	char* Protocolname;     //   "             "
-	char* SmileySequence;   //character string containing the smiley 
-	HICON SmileyIcon;       //RETURN VALUE: this is filled with the icon handle... 
-							//do not destroy!
-	unsigned Smileylength;  //length of the smiley that is found.
-} SMADD_GETICON;
-
-#define MS_SMILEYADD_GETSMILEYICON "SmileyAdd/GetSmileyIcon"
-
 //get smiley button icon
 //wParam = (WPARAM) 0; not used
 //lParam = (LPARAM) (SMADD_INFO*) &smgi;  //pointer to SMADD_INFO
@@ -96,18 +74,21 @@ typedef struct
 	char* Protocolname;     //   "             "
 	HICON ButtonIcon;       //RETURN VALUE: this is filled with the icon handle
 							//of the smiley that can be used on the button
-							//do not destroy! NULL if the buttonicon is not defined...
+							//if used with GETINFO do not destroy!
+							//if used with GETINFO2 handle must be destroyed by user!
+							//NULL if the buttonicon is not defined...
 	int NumberOfVisibleSmileys;    //Number of visible smileys defined.
 	int NumberOfSmileys;    //Number of total smileys defined
 } SMADD_INFO;
 
-#define MS_SMILEYADD_GETINFO "SmileyAdd/GetInfo"
+#define MS_SMILEYADD_GETINFO2 "SmileyAdd/GetInfo2"
 
 // Event notifies that options have changed 
 // Message dialogs usually need to redraw it's content on reception of this event
 #define ME_SMILEYADD_OPTIONSCHANGED  "SmileyAdd/OptionsChanged"
 
-//find smiley in text
+//find smiley in text, API could be called iterativly, on each iteration the remainder 
+//of the string after last smiley processed  
 //wParam = (WPARAM) 0; not used
 //lParam = (LPARAM) (SMADD_PARSE*) &smgp;  //pointer to SMADD_PARSE
 typedef struct 
@@ -122,29 +103,81 @@ typedef struct
 	char* str;                  //String to parse 
 	HICON SmileyIcon;           //RETURN VALUE: the Icon handle is responsibility of the reciever 
 							    //it must be destroyed with DestroyIcon when not needed.
-	int startChar;              //Starting smiley character
-	int size;                   //Number of characters in smiley (0 if not found)
+	unsigned startChar;         //Starting smiley character 
+								//Because of iterative nature of the API caller should set this 
+								//parameter to correct value
+	unsigned size;              //Number of characters in smiley (0 if not found)
+								//Because of iterative nature of the API caller should set this 
+								//parameter to correct value 
 } SMADD_PARSE;
 
 #define MS_SMILEYADD_PARSE "SmileyAdd/Parse"
 
+//find smiley in text, API could be called iterativly, on each iteration the remainder 
+//of the string after last smiley processed  
+//wParam = (WPARAM) 0; not used
+//lParam = (LPARAM) (SMADD_PARSE*) &smgp;  //pointer to SMADD_PARSE
+typedef struct 
+{
+	int cbSize;                 //size of the structure
+	const char* Protocolname;	//protocol to use... if you have defined a protocol, u can 
+								//use your own protocol name. Smiley add wil automatically 
+								//select the smileypack that is defined for your protocol.
+								//Or, use "Standard" for standard smiley set. Or "ICQ", "MSN"
+								//if you prefer those icons. 
+								//If not found or NULL: "Standard" will be used
+	wchar_t* str;                  //String to parse 
+	HICON SmileyIcon;           //RETURN VALUE: the Icon handle is responsibility of the reciever 
+							    //it must be destroyed with DestroyIcon when not needed.
+	unsigned startChar;         //Starting smiley character 
+								//Because of iterative nature of the API caller should set this 
+								//parameter to correct value
+	unsigned size;              //Number of characters in smiley (0 if not found)
+								//Because of iterative nature of the API caller should set this 
+								//parameter to correct value 
+} SMADD_PARSEW;
+
+#define MS_SMILEYADD_PARSEW "SmileyAdd/ParseW"
 //find smiley in text
 //wParam = (WPARAM) 0; not used
 //lParam = (LPARAM) (SMADD_REGCAT*) &smgp;  //pointer to SMADD_REGCAT
 typedef struct 
 {
 	int cbSize;                 //size of the structure
-	char* name;                 //smiley categorie name for reference
-	char* dispname;             //smiley categorie name for display 
+	char* name;                 //smiley category name for reference
+	char* dispname;             //smiley category name for display 
 } SMADD_REGCAT;
 
-#define MS_SMILEYADD_REGCAT "SmileyAdd/RegisterCategorie"
+#define MS_SMILEYADD_REGISTERCATEGORY "SmileyAdd/RegisterCategory"
+
 
 //
 //
-//Below are some older structures used for previous smileyadd versions, still supported
+//Below are some older structures used for previous SmileyAdd versions, still supported
 //
 //
+
+
+// This API have been depricated in favor of MS_SMILEYADD_GETINFO2
+#define MS_SMILEYADD_GETINFO  "SmileyAdd/GetInfo"
+
+
+//find smiley, this API have been supreceeded with MS_SMILEYADD_PARSE[W]
+//wParam = (WPARAM) 0; not used
+//lParam = (LPARAM) (SMADD_GETICON*) &smgi;  //pointer to SMADD_GETICON
+//return: TRUE if SmileySequence starts with a smiley, FALSE if not
+typedef struct 
+{
+	int cbSize;             //size of the structure
+	char* Protocolname;     //   "             "
+	char* SmileySequence;   //character string containing the smiley 
+	HICON SmileyIcon;       //RETURN VALUE: this is filled with the icon handle... 
+							//do not destroy!
+	int  Smileylength;		//length of the smiley that is found.
+} SMADD_GETICON;
+
+#define MS_SMILEYADD_GETSMILEYICON "SmileyAdd/GetSmileyIcon"
+
 
 //version for smileyadd < 1.5
 typedef struct 
@@ -165,6 +198,7 @@ typedef struct
 	LPARAM targetWParam;		//Target WParam to be sent (LParam will be char* to select smiley)
 								//see the example file.
 } SMADD_SHOWSEL;
+
 
 //version for smileyadd < 1.2
 typedef struct 

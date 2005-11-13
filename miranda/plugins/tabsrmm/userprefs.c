@@ -268,7 +268,9 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         if(hWnd && dat)
                             dat->sendMode = IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? dat->sendMode | SMODE_FORCEANSI : dat->sendMode & ~SMODE_FORCEANSI;
                     }
-#endif              
+#else
+					newCodePage = CP_ACP;
+#endif
                     if(IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE)) {
                         if(!DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
                             AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites, newCodePage);

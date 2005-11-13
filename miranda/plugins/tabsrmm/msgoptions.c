@@ -92,7 +92,7 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
     }
     if (lf) {
         HDC hdc = GetDC(NULL);
-        _snprintf(str, sizeof(str), "Font%dSize", i);
+        mir_snprintf(str, sizeof(str), "Font%dSize", i);
         if(i == H_MSGFONTID_DIVIDERS)
             lf->lfHeight = 5;
         else {
@@ -108,13 +108,13 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
         lf->lfWidth = 0;
         lf->lfEscapement = 0;
         lf->lfOrientation = 0;
-        _snprintf(str, sizeof(str), "Font%dSty", i);
+        mir_snprintf(str, sizeof(str), "Font%dSty", i);
         style = DBGetContactSettingByte(NULL, FONTMODULE, str, fontOptionsList[0].defStyle);
         lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
         lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
         lf->lfUnderline = style & FONTF_UNDERLINE ? 1 : 0;
         lf->lfStrikeOut = 0;
-        _snprintf(str, sizeof(str), "Font%dSet", i);
+        mir_snprintf(str, sizeof(str), "Font%dSet", i);
         if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT)
             lf->lfCharSet = SYMBOL_CHARSET;
         else
@@ -123,16 +123,19 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
         lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
         lf->lfQuality = DEFAULT_QUALITY;
         lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-        _snprintf(str, sizeof(str), "Font%d", i);
+        mir_snprintf(str, sizeof(str), "Font%d", i);
         if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT) {
             lstrcpynA(lf->lfFaceName, "Webdings", LF_FACESIZE);
             lf->lfCharSet = SYMBOL_CHARSET;
         }
         else {
-            if (DBGetContactSetting(NULL, FONTMODULE, str, &dbv))
+			if (DBGetContactSetting(NULL, FONTMODULE, str, &dbv)) {
                 lstrcpynA(lf->lfFaceName, fontOptionsList[0].szDefFace, LF_FACESIZE);
+				lf->lfFaceName[LF_FACESIZE - 1] = 0;
+			}
             else {
                 lstrcpynA(lf->lfFaceName, dbv.pszVal, LF_FACESIZE);
+				lf->lfFaceName[LF_FACESIZE - 1] = 0;
                 DBFreeVariant(&dbv);
             }
         }

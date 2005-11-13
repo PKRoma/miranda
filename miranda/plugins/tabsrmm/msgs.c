@@ -1112,11 +1112,20 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
     struct avatarCacheEntry *ace = (struct avatarCacheEntry *)lParam;
     HWND hwnd = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
 
-    if(hwnd) {
+	if(wParam == 0) {			// protocol picture has changed...
+		WindowList_Broadcast(hMessageWindowList, DM_PROTOAVATARCHANGED, wParam, lParam);
+		return 0;
+	}
+	if(hwnd) {
         struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
         if(dat) {
             dat->ace = ace;
+			dat->panelWidth = -1;				// force new size calculations
             ShowPicture(hwnd, dat, TRUE);
+			if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+				InvalidateRect(GetDlgItem(hwnd, IDC_PANELPIC), NULL, TRUE);
+				SendMessage(hwnd, WM_SIZE, 0, 0);
+			}
         }
     }
     return 0;

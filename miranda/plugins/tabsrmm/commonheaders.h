@@ -21,6 +21,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#if defined( UNICODE ) && !defined( _UNICODE )
+	#define _UNICODE
+#endif
+
 #ifdef __GNUWIN32__
 
 #define OLERENDER_FORMAT 2
@@ -87,5 +91,4 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
 #define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
 #define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
-
 

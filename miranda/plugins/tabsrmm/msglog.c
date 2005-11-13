@@ -1332,7 +1332,9 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 	}
 	else
 		_tcsncpy(szMyName, _T("(Unknown Contact)"), 99);
+#if defined(_UNICODE)
 szMyName_done:
+#endif
     szYourName = dat->szNickname;
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, TRUE, 0);
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXGETSEL, 0, (LPARAM) & oldSel);
