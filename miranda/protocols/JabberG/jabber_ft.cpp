@@ -85,7 +85,7 @@ static void JabberFtSendFinal( BOOL success, void *userdata );
 void JabberFtInitiate( char* jid, filetransfer* ft )
 {
 	int iqId;
-	char* rs, *filename, *encFilename, *encDesc, *p;
+	char* rs, *filename, *p;
 	char idStr[32];
 	JABBER_LIST_ITEM *item;
 	int i;
@@ -115,29 +115,24 @@ void JabberFtInitiate( char* jid, filetransfer* ft )
 	filename = ft->std.files[ ft->std.currentFileNumber ];
 	if (( p=strrchr( filename, '\\' )) != NULL )
 		filename = p+1;
-	if (( encFilename=JabberTextEncode( filename )) != NULL ) {
-		if (( encDesc=JabberTextEncode( ft->szDescription )) != NULL ) {
-			JabberSend( jabberThreadInfo->s,
-				"<iq type='set' id='"JABBER_IQID"%d' to='%s/%s'>"
-					"<si xmlns='http://jabber.org/protocol/si' id='%s' mime-type='binary/octet-stream' profile='http://jabber.org/protocol/si/profile/file-transfer'>"
-						"<file xmlns='http://jabber.org/protocol/si/profile/file-transfer' name='%s' size='%d'>"
-							"<desc>%s</desc>"
-							//"<range/>"
-						"</file>"
-						"<feature xmlns='http://jabber.org/protocol/feature-neg'>"
-							"<x xmlns='jabber:x:data' type='form'>"
-								"<field var='stream-method' type='list-single'>"
-									"<option><value>http://jabber.org/protocol/bytestreams</value></option>"
-								"</field>"
-							"</x>"
-						"</feature>"
-					"</si>"
-				"</iq>",
-				iqId, jid, rs, sid, encFilename, ft->fileSize[ ft->std.currentFileNumber ], encDesc );
-			free( encDesc );
-		}
-		free( encFilename );
-	}
+
+	JabberSend( jabberThreadInfo->s,
+		"<iq type='set' id='"JABBER_IQID"%d' to='%s/%s'>"
+			"<si xmlns='http://jabber.org/protocol/si' id='%s' mime-type='binary/octet-stream' profile='http://jabber.org/protocol/si/profile/file-transfer'>"
+				"<file xmlns='http://jabber.org/protocol/si/profile/file-transfer' name='%s' size='%d'>"
+					"<desc>%s</desc>"
+					//"<range/>"
+				"</file>"
+				"<feature xmlns='http://jabber.org/protocol/feature-neg'>"
+					"<x xmlns='jabber:x:data' type='form'>"
+						"<field var='stream-method' type='list-single'>"
+							"<option><value>http://jabber.org/protocol/bytestreams</value></option>"
+						"</field>"
+					"</x>"
+				"</feature>"
+			"</si>"
+		"</iq>",
+		iqId, jid, rs, sid, UTF8(filename), ft->fileSize[ ft->std.currentFileNumber ], UTF8(ft->szDescription));
 }
 
 static void JabberFtSiResult( XmlNode *iqNode, void *userdata )
@@ -234,37 +229,29 @@ static BOOL JabberFtSend( HANDLE hConn, void *userdata )
 		free( buffer );
 	}
 	_close( fd );
-	ft->std.currentFileNumber++;
 	return TRUE;
 }
 
 static void JabberFtSendFinal( BOOL success, void *userdata )
 {
 	filetransfer* ft = ( filetransfer* )userdata;
-	JABBER_BYTE_TRANSFER *jbt;
 
-	if ( success ) {
-		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0 );
-		if ( ft->std.currentFileNumber < ft->std.totalFiles ) {
-			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
-			return;
-			// Start Bytestream session
-			jbt = ( JABBER_BYTE_TRANSFER * ) malloc( sizeof( JABBER_BYTE_TRANSFER ));
-			ZeroMemory( jbt, sizeof( JABBER_BYTE_TRANSFER ));
-			jbt->srcJID = _strdup( jabberThreadInfo->fullJID );
-			//jbt->dstJID = _strdup(); /******************/
-			jbt->pfnSend = JabberFtSend;
-			jbt->pfnFinal = JabberFtSendFinal;
-			jbt->userdata = ft;
-			JabberForkThread(( JABBER_THREAD_FUNC )JabberByteSendThread, 0, jbt );
-		}
-		else
-			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
-	}
-	else {
+	if ( !success ) {
 		JabberLog( "File transfer complete with error" );
 		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 	}
+	else {
+		if ( ft->std.currentFileNumber < ft->std.totalFiles-1 ) {
+			ft->std.currentFileNumber++;
+			replaceStr( ft->std.currentFile, ft->std.files[ ft->std.currentFileNumber ] );
+			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0 );
+			JabberFtInitiate( ft->jid, ft );
+			return;
+		}
+
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
+	}
+
 	delete ft;
 }
 
