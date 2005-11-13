@@ -267,14 +267,6 @@ void LoadIcons(void)
 
 void FreeIcons(void)
 {
-//	int i;
-	/*
-	for(i = 0; i < 30; i++)
-	{
-		if ( hIcons[i] )
-			DestroyIcon(hIcons[i]);
-	}
-	*/
 	FreeMsgLogBitmaps();
 	ImageList_Destroy(hImageList);
 	ImageList_Destroy(hIconsList);

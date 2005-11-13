@@ -31,6 +31,7 @@ extern struct MM_INTERFACE		mmi ;
 
 SESSION_INFO * m_WndList = 0;
 TABLIST * g_TabList = 0;
+MODULEINFO *m_ModList = 0;
 
 void SetActiveSession(char * pszID, char * pszModule)
 {
@@ -1045,7 +1046,6 @@ char * SM_GetUsers(SESSION_INFO * si)
 //		that has registered with the plugin
 //---------------------------------------------------
 
-MODULEINFO *m_ModList = 0;
 
 MODULEINFO * MM_AddModule(char * pszModule)
 {

@@ -422,6 +422,7 @@ void           DestroyServiceFunctions(void);
 void				CreateHookableEvents(void);
 void				TabsInit(void);
 int					ModulesLoaded(WPARAM wParam,LPARAM lParam);
+int					SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
 int					PreShutdown(WPARAM wParam,LPARAM lParam);
 int					IconsChanged(WPARAM wParam,LPARAM lParam);
 void				ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground);

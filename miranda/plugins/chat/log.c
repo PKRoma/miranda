@@ -430,7 +430,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 				int iii;
 				if(lin->pszNick && lin->iType == GC_EVENT_MESSAGE)
 				{
-					iii = lin->bIsMe ? 2 : 1;
+					iii = lin->bIsHighlighted?16:(lin->bIsMe ? 2 : 1);
 					mir_snprintf(szStyle, sizeof(szStyle), "\\f0\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", iii+1, aFonts[0].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[0].lf.lfItalic, 2 * abs(aFonts[0].lf.lfHeight) * 74 / logPixelSY);
 					Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", szStyle);
 				}
@@ -608,7 +608,8 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		{
 			SMADD_RICHEDIT2 sm;
 
-			newsel.cpMin = newsel.cpMax - lstrlenA(lin->pszText) - 10;
+//			newsel.cpMin = newsel.cpMax - lstrlenA(lin->pszText) - 10;
+			newsel.cpMin = sel.cpMin;
 			if(newsel.cpMin < 0)
 				newsel.cpMin = 0;
 			ZeroMemory(&sm, sizeof(sm));
@@ -622,7 +623,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		}
 
 		// scroll log to bottom if the log was previously scrolled to bottom, else restore old position
-		if (  (UINT)scroll.nPos >= (UINT)scroll.nMax-scroll.nPage-5 || scroll.nMax-scroll.nMin-scroll.nPage < 50)
+		if (bRedraw ||  (UINT)scroll.nPos >= (UINT)scroll.nMax-scroll.nPage-5 || scroll.nMax-scroll.nMin-scroll.nPage < 50)
 		{ 
 			SendMessage(GetParent(hwndRich), GC_SCROLLTOBOTTOM, 0, 0);
 		}

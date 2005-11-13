@@ -32,6 +32,7 @@ HANDLE				g_hModulesLoaded;
 HANDLE				g_hSystemPreShutdown;
 HANDLE				g_hHookContactDblClick;
 HANDLE				g_hIconsChanged;
+HANDLE				g_hSmileyOptionsChanged = NULL;
 HANDLE				g_hIconsChanged2;
 SESSION_INFO		g_TabSession;
 CRITICAL_SECTION	cs;
@@ -66,6 +67,8 @@ void UnhookEvents(void)
 	UnhookEvent(g_hHookContactDblClick);
 	UnhookEvent(g_hIconsChanged);
 	UnhookEvent(g_hIconsChanged2);
+	if(g_hSmileyOptionsChanged)
+		UnhookEvent(g_hSmileyOptionsChanged);
 	DeleteCriticalSection(&cs);
 	return;
 }
@@ -134,7 +137,10 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	g_hIconsChanged2 =	HookEvent(ME_SKIN2_ICONSCHANGED, IconsChanged);
 
 	if(ServiceExists(MS_SMILEYADD_SHOWSELECTION))
+	{
 		SmileyAddInstalled = TRUE;
+		g_hSmileyOptionsChanged = HookEvent(ME_SMILEYADD_OPTIONSCHANGED, SmileyOptionsChanged);		
+	}
 	if(ServiceExists(MS_POPUP_ADDPOPUPEX))
 		PopUpInstalled = TRUE;
 	if (ServiceExists(MS_IEVIEW_WINDOW))
@@ -142,6 +148,13 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	CList_SetAllOffline(TRUE);
 
  	return 0;
+}
+
+
+int SmileyOptionsChanged(WPARAM wParam,LPARAM lParam)
+{
+	SM_BroadcastMessage(NULL, GC_REDRAWLOG, 0, 1, FALSE);
+	return 0;
 }
 
 int PreShutdown(WPARAM wParam,LPARAM lParam)
