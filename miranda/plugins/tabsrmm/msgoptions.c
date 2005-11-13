@@ -318,6 +318,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
     0, "Allow the toolbar to hide the send button", 1, LOI_TYPE_SETTING, (UINT_PTR)"hidesend", 1,
     0, "Flash contact list and tray icons for new events in unfocused windows", 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
     0, "Delete temporary contacts on close", 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
+    0, "Retrieve status message when hovering info panel", 0, LOI_TYPE_SETTING, (UINT_PTR)"dostatusmsg", 0,
     0, "Enable event API (support for third party plugins)", 0, LOI_TYPE_SETTING, (UINT_PTR)"eventapi", 2,
     0, "Don't send UNICODE parts for 7bit ANSI messages (saves db space)", 1, LOI_TYPE_SETTING, (UINT_PTR)"7bitasANSI", 2,
     0, "Always keep the button bar at full width", 0, LOI_TYPE_SETTING, (UINT_PTR)"alwaysfulltoolbar", 1,

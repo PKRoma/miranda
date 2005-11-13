@@ -751,7 +751,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
         return 0;
     
     if(hwnd) {
-        if(strstr("Status,Nick,ApparentMode,Default,ForceSend,IdleTS,XStatusId", cws->szSetting))
+        if(strstr("MyHandle,Status,Nick,ApparentMode,Default,ForceSend,IdleTS,XStatusId", cws->szSetting))
             SendMessage(hwnd, DM_UPDATETITLE, 0, 0);
     }
     
