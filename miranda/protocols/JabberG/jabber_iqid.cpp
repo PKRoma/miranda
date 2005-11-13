@@ -386,6 +386,95 @@ void JabberIqResultSetRegister( XmlNode *iqNode, void *userdata )
 			free( str );
 }	}	}
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberIqResultGetVcard - processes the server-side v-card
+
+static void JabberIqResultGetVcardPhoto( const char* jid, XmlNode* n, HANDLE hContact, BOOL& hasPhoto )
+{
+	if ( hasPhoto ) return;
+
+	XmlNode* o = JabberXmlGetChild( n, "BINVAL" );
+	if ( o == NULL || o->text == NULL ) return;
+
+	int bufferLen;
+	char* buffer = JabberBase64Decode( o->text, &bufferLen );
+	if ( buffer == NULL ) return;
+
+	XmlNode* m = JabberXmlGetChild( n, "TYPE" );
+	if ( m == NULL || m->text == NULL ) {
+LBL_NoTypeSpecified:
+		char* szPicType;
+
+		switch( JabberGetPictureType( buffer )) {
+		case PA_FORMAT_GIF:	szPicType = "image/gif";	break;
+		case PA_FORMAT_BMP:  szPicType = "image/bmp";	break;
+		case PA_FORMAT_PNG:  szPicType = "image/png";	break;
+		case PA_FORMAT_JPEG: szPicType = "image/jpeg";	break;
+		default:
+			goto LBL_Ret;
+		}
+
+		replaceStr( jabberVcardPhotoType, szPicType );
+	}
+	else {
+		if ( strcmp( m->text, "image/jpeg" ) && strcmp( m->text, "image/png" ) && strcmp( m->text, "image/gif" ) && strcmp( m->text, "image/bmp" ))
+			goto LBL_NoTypeSpecified;
+
+		replaceStr( jabberVcardPhotoType, m->text );
+	}
+
+	DWORD nWritten;
+	char szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
+	JABBER_LIST_ITEM *item;
+	DBVARIANT dbv;
+
+	if ( GetTempPath( sizeof( szTempPath ), szTempPath ) <= 0 )
+		lstrcpy( szTempPath, ".\\" );
+	if ( !GetTempFileName( szTempPath, "jab", 0, szTempFileName )) {
+LBL_Ret:	
+		free( buffer );
+		return;
+	}
+
+	JabberLog( "Picture file name set to %s", szTempFileName );
+
+	HANDLE hFile = CreateFile( szTempFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+   if ( hFile == INVALID_HANDLE_VALUE )
+		goto LBL_Ret;
+
+	JabberLog( "Writing %d bytes", bufferLen );
+	if ( !WriteFile( hFile, buffer, bufferLen, &nWritten, NULL ))
+		goto LBL_Ret;
+
+	JabberLog( "%d bytes written", nWritten );
+	if ( hContact == NULL ) {
+		hasPhoto = TRUE;
+		if ( jabberVcardPhotoFileName ) {
+			DeleteFile( jabberVcardPhotoFileName );
+			free( jabberVcardPhotoFileName );
+		}
+		replaceStr( jabberVcardPhotoFileName, szTempFileName );
+		JabberLog( "My picture saved to %s", szTempFileName );
+	}
+	else if ( !JGetStringUtf( hContact, "jid", &dbv )) {
+		if (( item = JabberListGetItemPtr( LIST_ROSTER, jid )) != NULL ) {
+			hasPhoto = TRUE;
+			if ( item->photoFileName )
+				DeleteFile( item->photoFileName );
+			replaceStr( item->photoFileName, szTempFileName );
+			JabberLog( "Contact's picture saved to %s", szTempFileName );
+		}
+		JFreeVariant( &dbv );
+	}
+
+	CloseHandle( hFile );
+
+	if ( !hasPhoto )
+		DeleteFile( szTempFileName );
+
+	goto LBL_Ret;
+}
+
 void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 {
 	XmlNode *vCardNode, *m, *n, *o;
@@ -704,54 +793,9 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 						free( szMemo );
 					}
 				}
-				else if ( !strcmp( n->name, "PHOTO" )) {
-					if ( !hasPhoto && ( m=JabberXmlGetChild( n, "TYPE" ))!=NULL && m->text!=NULL && ( !strcmp( m->text, "image/jpeg" ) || !strcmp( m->text, "image/gif" ) || !strcmp( m->text, "image/bmp" )) ) {
-						if (( o=JabberXmlGetChild( n, "BINVAL" ))!=NULL && o->text ) {
-							char* buffer;
-							int bufferLen;
-							DWORD nWritten;
-							char szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
-							HANDLE hFile;
-							JABBER_LIST_ITEM *item;
-
-							if ( GetTempPath( sizeof( szTempPath ), szTempPath ) <= 0 )
-								lstrcpy( szTempPath, ".\\" );
-							if ( GetTempFileName( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
-								JabberLog( "Picture file name set to %s", szTempFileName );
-								if (( buffer=JabberBase64Decode( o->text, &bufferLen )) != NULL ) {
-									if (( hFile=CreateFile( szTempFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
-										JabberLog( "Writing %d bytes", bufferLen );
-										if ( WriteFile( hFile, buffer, bufferLen, &nWritten, NULL )) {
-											JabberLog( "%d bytes written", nWritten );
-											if ( hContact == NULL ) {
-												hasPhoto = TRUE;
-												if ( jabberVcardPhotoFileName ) {
-													DeleteFile( jabberVcardPhotoFileName );
-													free( jabberVcardPhotoFileName );
-												}
-												jabberVcardPhotoFileName = _strdup( szTempFileName );
-												if ( jabberVcardPhotoType ) free( jabberVcardPhotoType );
-												jabberVcardPhotoType = _strdup( m->text );
-												JabberLog( "My picture saved to %s", szTempFileName );
-											}
-											else if ( !JGetStringUtf( hContact, "jid", &dbv )) {
-												if (( item = JabberListGetItemPtr( LIST_ROSTER, jid )) != NULL ) {
-													hasPhoto = TRUE;
-													if ( item->photoFileName )
-														DeleteFile( item->photoFileName );
-													item->photoFileName = _strdup( szTempFileName );
-													JabberLog( "Contact's picture saved to %s", szTempFileName );
-												}
-												JFreeVariant( &dbv );
-										}	}
-
-										CloseHandle( hFile );
-									}
-									free( buffer );
-								}
-								if ( !hasPhoto )
-									DeleteFile( szTempFileName );
-		}	}	}	}	}	}
+				else if ( !strcmp( n->name, "PHOTO" ))
+					JabberIqResultGetVcardPhoto( jid, n, hContact, hasPhoto );
+		}	}
 
 		if ( !hasFn )
 			JDeleteSetting( hContact, "FullName" );
