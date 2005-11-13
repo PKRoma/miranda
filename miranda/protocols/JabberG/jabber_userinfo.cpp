@@ -505,14 +505,16 @@ int JabberUserInfoInit( WPARAM wParam, LPARAM lParam )
 
 	HANDLE hContact = ( HANDLE )lParam;
 	if ( hContact == NULL ) {
-		char szTitle[256];
-		mir_snprintf( szTitle, sizeof( szTitle ), "%s %s", jabberProtoName, JTranslate( "Avatar" ));
+		if ( JGetByte( "EnableAvatars", TRUE )) {
+			char szTitle[256];
+			mir_snprintf( szTitle, sizeof( szTitle ), "%s %s", jabberProtoName, JTranslate( "Avatar" ));
 
-		odp.pfnDlgProc = JabberSetAvatarDlgProc;
-		odp.position = 2000000001;
-		odp.pszTemplate = MAKEINTRESOURCE( IDD_OPT_SETAVATAR );
-		odp.pszTitle = szTitle;
-		JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
+			odp.pfnDlgProc = JabberSetAvatarDlgProc;
+			odp.position = 2000000001;
+			odp.pszTemplate = MAKEINTRESOURCE( IDD_OPT_SETAVATAR );
+			odp.pszTitle = szTitle;
+			JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
+		}
       return 0;
 	}
 
