@@ -847,7 +847,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 	}
 
 	char* type = JabberXmlGetAttrValue( node, "type" );
-	if ( type == NULL || ( !strcmp( type, "available" )) ) {
+	if ( type == NULL || !strcmp( type, "available" )) {
 		if (( nick=JabberNickFromJID( from )) == NULL )
 			return;
 		if (( hContact = JabberHContactFromJID( from )) == NULL )
@@ -1076,6 +1076,7 @@ static void JabberProcessIqAvatar( char* idStr, XmlNode* node )
 		resultId, from, szMimeType, str );
 	free( resultId );
 	free( str );
+	free( buffer );
 }
 
 static void JabberProcessIq( XmlNode *node, void *userdata )
