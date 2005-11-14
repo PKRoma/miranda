@@ -28,11 +28,13 @@ $Id$
 #include "commonheaders.h"
 #pragma hdrstop
 #include "msgs.h"
+#include "nen.h"
 
 int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
 extern struct ContainerWindowData *pFirstContainer;
 extern MYGLOBALS myGlobals;
 char *GetThemeFileName(int iMode);
+extern NEN_OPTIONS nen_options;
 
 void ReloadGlobalContainerSettings()
 {
@@ -270,6 +272,12 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
             SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_ACTIVE, TBM_SETPOS, TRUE, (LPARAM) LOWORD(dwTransparency));
             SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_INACTIVE, TBM_SETPOS, TRUE, (LPARAM) HIWORD(dwTransparency));
+
+			EnableWindow(GetDlgItem(hwndDlg, IDC_O_DONTREPORT), nen_options.bSimpleMode == 0);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_SYNCSOUNDS), nen_options.bSimpleMode == 0);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_DONTREPORTUNFOCUSED2), nen_options.bSimpleMode == 0);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_ALWAYSPOPUPSINACTIVE), nen_options.bSimpleMode == 0);
+
             break;
         }
         case DM_SC_BUILDLIST: {

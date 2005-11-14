@@ -108,6 +108,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->bFloaterInWin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, 1);
     options->bFloaterOnlyMin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, 0);
     options->dwRemoveMask = DBGetContactSettingDword(NULL, MODULE, OPT_REMOVEMASK, 0);
+	options->bSimpleMode = DBGetContactSettingByte(NULL, MODULE, OPT_SIMPLEOPT, 1);
     CheckForRemoveMask();
     return 0;
 }
@@ -153,6 +154,7 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
     DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, options->bFloaterInWin);
     DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, options->bFloaterOnlyMin);
     DBWriteContactSettingDword(NULL, MODULE, OPT_REMOVEMASK, options->dwRemoveMask);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_SIMPLEOPT, options->bSimpleMode);
     return 0;
 }
 
@@ -290,8 +292,15 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETPOS, 0, (LPARAM)options->iLimitPreview);
             EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
             EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+			
+            SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Don't use simple mode"));
+            SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Notify always"));
+            SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Notify for unfocused sessions"));
+            SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Notify only when no window is open"));
+			EnableWindow(GetDlgItem(hWnd, IDC_EVENTOPTIONS), options->bSimpleMode == 0);
+			SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_SETCURSEL, options->bSimpleMode, 0);
             
-            iIndex = SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)Translate("<None>"));
+			iIndex = SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)Translate("<None>"));
             SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
             
             if(ServiceExists(MS_POPUP_ADDPOPUPEX)) {
@@ -323,6 +332,10 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                     case IDC_PREVIEW:
                         PopupPreview(options);
                         break;
+					case IDC_SIMPLEMODE:
+						options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
+						EnableWindow(GetDlgItem(hWnd, IDC_EVENTOPTIONS), options->bSimpleMode == 0);
+						break;
                     case IDC_POPUPSTATUSMODES:
                         {   
                             HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hWnd, DlgProcSetupStatusModes, DBGetContactSettingDword(0, MODULE, "statusmask", (DWORD)-1));
@@ -340,7 +353,8 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                         options->iDelayFile = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_FILE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_FILE, NULL, FALSE);
                         options->iDelayOthers = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_OTHERS)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_OTHERS, NULL, FALSE);
                         options->iAnnounceMethod = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETITEMDATA, (WPARAM)SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETCURSEL, 0, 0), 0);
-                        
+						options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
+
                         if(IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW))
                             options->iLimitPreview = GetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, NULL, FALSE);
                         else
@@ -799,13 +813,11 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
 
         mir_snprintf(pud.lpzText, MAX_SECONDLINE, "%s", GetPreview(eventType, (char *)dbe.pBlob));
     }
-        
     if(iPreviewLimit > 4 && iPreviewLimit < lstrlenA(pud.lpzText)) {
         iPreviewLimit = iPreviewLimit <= MAX_SECONDLINE ? iPreviewLimit : MAX_SECONDLINE;
         strncpy(&pud.lpzText[iPreviewLimit - 4], "...", 3);
         pud.lpzText[iPreviewLimit -1] = 0;
     }
-
     pdata->eventData = (EVENT_DATA *)malloc(NR_MERGED * sizeof(EVENT_DATA));
     pdata->eventData[0].hEvent = hEvent;
     pdata->eventData[0].timestamp = dbe.timestamp;
@@ -813,7 +825,7 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
     pdata->eventData[0].szText[MAX_SECONDLINE - 1] = 0;
     pdata->nrEventsAlloced = NR_MERGED;
     pdata->nrMerged = 1;
-    
+
     PopupCount++;
 
     PopUpList[NumberPopupData(NULL)] = pdata;
@@ -1107,7 +1119,8 @@ int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT 
     //CHANGE: iSeconds is -1 because I use my timer to hide popup
     switch (eventType) {
         case EVENTTYPE_MESSAGE:
-            if (!(pluginOptions->maskNotify&MASK_MESSAGE)) return 1;
+            if (!pluginOptions->bSimpleMode && !(pluginOptions->maskNotify&MASK_MESSAGE)) 
+				return 1;
             pud.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
             pud.colorBack = pluginOptions->bDefaultColorMsg ? 0 : pluginOptions->colBackMsg;
             pud.colorText = pluginOptions->bDefaultColorMsg ? 0 : pluginOptions->colTextMsg;
@@ -1115,7 +1128,8 @@ int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT 
             iSeconds = pluginOptions->iDelayMsg;
             break;
         case EVENTTYPE_URL:
-            if (!(pluginOptions->maskNotify&MASK_URL)) return 1;
+            if (!pluginOptions->bSimpleMode && !(pluginOptions->maskNotify&MASK_URL)) 
+				return 1;
             pud.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_URL);
             pud.colorBack = pluginOptions->bDefaultColorUrl ? 0 : pluginOptions->colBackUrl;
             pud.colorText = pluginOptions->bDefaultColorUrl ? 0 : pluginOptions->colTextUrl;
@@ -1123,7 +1137,8 @@ int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT 
             iSeconds = pluginOptions->iDelayUrl;
             break;
         case EVENTTYPE_FILE:
-            if (!(pluginOptions->maskNotify&MASK_FILE)) return 1;
+            if (!pluginOptions->bSimpleMode && !(pluginOptions->maskNotify&MASK_FILE)) 
+				return 1;
             pud.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_FILE);
             pud.colorBack = pluginOptions->bDefaultColorFile ? 0 : pluginOptions->colBackFile;
             pud.colorText = pluginOptions->bDefaultColorFile ? 0 : pluginOptions->colTextFile;
@@ -1131,7 +1146,8 @@ int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT 
             iSeconds = pluginOptions->iDelayFile;
             break;
         default:
-            if (!(pluginOptions->maskNotify&MASK_OTHER)) return 1;
+            if (!pluginOptions->bSimpleMode && !(pluginOptions->maskNotify&MASK_OTHER)) 
+				return 1;
             pud.lchIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
             pud.colorBack = pluginOptions->bDefaultColorOthers ? 0 : pluginOptions->colBackOthers;
             pud.colorText = pluginOptions->bDefaultColorOthers ? 0 : pluginOptions->colTextOthers;
@@ -1212,6 +1228,7 @@ int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT 
 
     return 0;
 }
+
 #endif
 
 int PopupPreview(NEN_OPTIONS *pluginOptions)
@@ -1463,6 +1480,7 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
     return 0;
 }
 
+
 int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto, struct MessageWindowData *dat)
 {
     if(nen_options.iDisable)                          // no popups at all. Period
@@ -1470,6 +1488,31 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
     /*
      * check the status mode against the status mask
      */
+
+	if(nen_options.bSimpleMode) {
+	    if(nen_options.bNoRSS && szProto != NULL && !strncmp(szProto, "RSS", 3))
+		    return 0;
+		switch(nen_options.bSimpleMode) {
+			case 1:
+				goto passed;
+			case 3:
+				if(!windowOpen)
+					goto passed;
+				else
+					return 0;
+			case 2:
+				if(!windowOpen)
+					goto passed;
+				if(pContainer != NULL) {
+					if(IsIconic(pContainer->hwnd) || GetForegroundWindow() != pContainer->hwnd)
+						goto passed;
+				}
+				return 0;
+			default:
+				return 0;
+		}
+	}
+
     if(nen_options.dwStatusMask != -1) {
         DWORD dwStatus = 0;
         if(szProto != NULL) {

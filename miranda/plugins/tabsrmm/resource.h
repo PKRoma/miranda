@@ -343,6 +343,7 @@
 #define IDC_ANNOUNCEMETHOD              1265
 #define IDC_MODIFIERS                   1266
 #define IDC_TEXTFORMATTING              1266
+#define IDC_SIMPLEMODE                  1266
 #define IDC_AVATARMODE                  1267
 #define IDC_BIDI                        1267
 #define IDC_MODIFIERS2                  1267
@@ -353,6 +354,7 @@
 #define IDC_TIMEZONE                    1269
 #define IDC_NOTIFYTYPE2                 1270
 #define IDC_SENDFORMATTING              1270
+#define IDC_CODEPAGES2                  1270
 #define IDC_TOOLBARHIDEMODE             1271
 #define IDC_EMPTYLINEFIX                1272
 #define IDC_SPLITTERSTATICEDGES         1273

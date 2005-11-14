@@ -89,7 +89,18 @@ Version 0.9.9.99 - 2005/11/11
 
 		! bugfix - message window did not react on manual nick name changes on the contact list
 		  (changing CList/MyHAndle).
-		  		  		  		  		  
+
+		+ added a "simple" event popup configuration mode. Its on options->Message Window->Event 
+		  notifications and knows 3 modes:
+		  * Notify always -> popups will show for each message
+		  * Notify for unfocused sessions -> popups will show for minimized or background message
+		    windows.
+		  * Notify only when no window is open -> Message popups will only appear when no message
+		    window is open for that contact.
+		    
+		  The simple mode skips some of the advanced popup configuration options, including the 
+		  "per container settings". It also skips the "Sync sounds" option.
+				  		  		  		  		  
 Version 0.9.9.98 - 2005/11/07
 
         * several sanity checks added (pointers, window handles)

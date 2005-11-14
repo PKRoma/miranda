@@ -1678,7 +1678,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE) | (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
-                    //SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES), GWL_STYLE, (GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_STYLE) | ES_RIGHT) & ~ES_LEFT);
                     SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
                 } else {
@@ -3969,6 +3968,9 @@ quote_from_last:
                                             if(dat->pContainer->hWndOptions == 0)
                                                 CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), dat->pContainer->hwnd, DlgProcContainerOptions, (LPARAM) dat->pContainer);
                                             break;
+										case 0x03:				// ctrl - c (open user preferences)
+											CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)dat->hContact, 0);
+											break;
                                         case 0x04:              // ctrl - d  (paste and send)
                                             HandlePasteAndSend(hwndDlg, dat);
                                             break;

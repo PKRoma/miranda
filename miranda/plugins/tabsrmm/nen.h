@@ -100,6 +100,7 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #define OPT_FLOATERINWIN "floater_win"
 #define OPT_FLOATERONLYMIN "floater_onlymin"
 #define OPT_REMOVEMASK "removemask"
+#define OPT_SIMPLEOPT "simplemode"
 
 typedef struct {
     BOOL bPreview;
@@ -148,6 +149,7 @@ typedef struct {
     BOOL floaterMode;
     BOOL bFloaterInWin;
     BOOL bFloaterOnlyMin;
+	BYTE bSimpleMode;
     DWORD dwRemoveMask;
 } NEN_OPTIONS;
 

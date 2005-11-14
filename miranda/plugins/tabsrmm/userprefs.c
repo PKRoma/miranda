@@ -82,6 +82,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             BYTE bRTL = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "RTL", 0);
             BYTE bLTR = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "RTL", 1);
             BYTE bSplit = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "splitoverride", 0);
+			BYTE bInfoPanel = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "infopanel", 0);
             TCHAR contactName[100];
             char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)lParam, 0);
 
@@ -92,20 +93,25 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
             EnableWindow(GetDlgItem(hwndDlg, IDC_IEVIEWMODE), ServiceExists(MS_IEVIEW_WINDOW) ? TRUE : FALSE);
 
-            SendDlgItemMessageA(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Use global Setting"));
-            SendDlgItemMessageA(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Force IEView"));
-            SendDlgItemMessageA(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Force Default Message Log"));
+            SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use Global Setting"));
+            SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always On"));
+            SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always Off"));
+            SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_SETCURSEL, bInfoPanel == 0 ? 0 : (bInfoPanel == 1 ? 1 : 2), 0);
+
+			SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use global Setting"));
+            SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Force IEView"));
+            SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Force Default Message Log"));
             SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, bIEView == 0 ? 0 : (bIEView == 1 ? 1 : 2), 0);
             
-            SendDlgItemMessageA(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)Translate("Global Setting"));
-            SendDlgItemMessageA(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)Translate("Simple Tags (*/_)"));
-            SendDlgItemMessageA(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)Translate("BBCode"));
-            SendDlgItemMessageA(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)Translate("Force Off"));
+            SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Global Setting"));
+            SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Simple Tags (*/_)"));
+            SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("BBCode"));
+            SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Force Off"));
             SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_SETCURSEL, iLocalFormat == 0 ? 0 : (iLocalFormat == -1 ? 3 : (iLocalFormat == SENDFORMAT_BBCODE ? 1 : 2)), 0);
             
-            SendDlgItemMessageA(hwndDlg, IDC_BIDI, CB_INSERTSTRING, -1, (LPARAM)Translate("Use Default"));
-            SendDlgItemMessageA(hwndDlg, IDC_BIDI, CB_INSERTSTRING, -1, (LPARAM)Translate("Always LTR"));
-            SendDlgItemMessageA(hwndDlg, IDC_BIDI, CB_INSERTSTRING, -1, (LPARAM)Translate("Always RTL"));
+            SendDlgItemMessage(hwndDlg, IDC_BIDI, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use Default"));
+            SendDlgItemMessage(hwndDlg, IDC_BIDI, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always LTR"));
+            SendDlgItemMessage(hwndDlg, IDC_BIDI, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always RTL"));
             SendDlgItemMessage(hwndDlg, IDC_BIDI, CB_SETCURSEL, (bLTR == 1 && bRTL == 0) ? 0 : (bLTR == 0 ? 1 : 2), 0);
             
             if(CheckMenuItem(myGlobals.g_hMenuFavorites, (UINT_PTR)lParam, MF_BYCOMMAND | MF_UNCHECKED) == -1)
@@ -218,7 +224,8 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     HWND hWnd = WindowList_Find(hMessageWindowList, hContact);
                     DWORD sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
                     DWORD oldTZ = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone",-1));
-                    
+                    BYTE bInfoPanel, bOldInfoPanel = DBGetContactSettingByte(hContact, SRMSGMOD_T, "infopanel", 0);
+
                     if(hWnd)
                         dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
 
@@ -302,6 +309,12 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         }
                     }
 
+					bInfoPanel = (BYTE)SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_GETCURSEL, 0, 0);
+					if(bInfoPanel != bOldInfoPanel) {
+						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "infopanel", bInfoPanel == 0 ? 0 : (bInfoPanel == 1 ? 1 : -1));
+						if(hWnd && dat)
+							SendMessage(hWnd, DM_SETINFOPANEL, 0, 0);
+					}
 					if(IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2))
 						DBWriteContactSettingDword(hContact, SRMSGMOD_T, "maxhist", (DWORD)SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_GETPOS, 0, 0));
 					else

@@ -28,8 +28,8 @@ $Id$
  */
 
 #include "commonheaders.h"
-#pragma hdrstop
 
+#pragma hdrstop
 #include "../../include/m_clc.h"
 #include "../../include/m_clui.h"
 #include "../../include/m_userinfo.h"
@@ -39,14 +39,11 @@ $Id$
 #include "msgs.h"
 #include "m_popup.h"
 #include "nen.h"
-#include "m_smileyadd.h"
 #include "m_metacontacts.h"
 #include "msgdlgutils.h"
+#include "m_smileyadd.h"
 #include "m_ieview.h"
 #include "functions.h"
-
-#include <math.h>
-#include <stdlib.h>
 
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
@@ -1294,7 +1291,7 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
         switch (ci.type) {
             case CNFT_ASCIIZ:
                 mir_snprintf(dat->uin, sizeof(dat->uin), "%s", ci.pszVal);
-                miranda_sys_free(ci.pszVal);
+                mir_free(ci.pszVal);
                 break;
             case CNFT_DWORD:
                 mir_snprintf(dat->uin, sizeof(dat->uin), "%u", ci.dVal);
@@ -1311,7 +1308,7 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
         switch (ci.type) {
             case CNFT_ASCIIZ:
                 mir_snprintf(dat->myUin, sizeof(dat->myUin), "%s", ci.pszVal);
-                miranda_sys_free(ci.pszVal);
+                mir_free(ci.pszVal);
                 break;
             case CNFT_DWORD:
                 mir_snprintf(dat->myUin, sizeof(dat->myUin), "%u", ci.dVal);
@@ -1496,13 +1493,17 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
     if(nen_options.iNoSounds)
         return;
     
-    if(dwFlags & CNT_NOSOUND)
-        iPlay = FALSE;
-    else if(dwFlags & CNT_SYNCSOUNDS) {
-        iPlay = !MessageWindowOpened(0, (LPARAM)hwnd);
-    }
-    else
-        iPlay = TRUE;
+	if(nen_options.bSimpleMode == 0) {
+		if(dwFlags & CNT_NOSOUND)
+			iPlay = FALSE;
+		else if(dwFlags & CNT_SYNCSOUNDS) {
+			iPlay = !MessageWindowOpened(0, (LPARAM)hwnd);
+		}
+		else
+			iPlay = TRUE;
+	}
+	else 
+		iPlay = TRUE;
     if (iPlay) {
         if(GetForegroundWindow() == pContainer->hwnd && pContainer->hwndActive == hwnd)
             SkinPlaySound("RecvMsgActive");
@@ -2027,7 +2028,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT)
             DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         dis->rcItem.left +=2;
-        if(dat->szNickname) {
+        if(dat->szNickname[0]) {
             HFONT hOldFont = 0;
             
             if(dat->xStatus > 0 && dat->xStatus <= 24) {
@@ -2082,7 +2083,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             hOldFont = SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_UIN]);
             SetTextColor(dis->hDC, myGlobals.ipConfig.clrs[IPFONTID_UIN]);
         }
-        if(dat->uin) {
+        if(dat->uin[0]) {
             SIZE sUIN, sTime;
             if(dat->idle) {
                 time_t diff = time(NULL) - dat->idle;
@@ -2183,11 +2184,11 @@ void LoadOverrideTheme(HWND hwndDlg, struct MessageWindowData *dat)
             }
             if(dat->pContainer->ltr_templates == NULL) {
                 dat->pContainer->ltr_templates = (TemplateSet *)malloc(sizeof(TemplateSet));
-                CopyMemory(dat->ltr_templates, &LTR_Active, sizeof(TemplateSet));
+                CopyMemory(dat->pContainer->ltr_templates, &LTR_Active, sizeof(TemplateSet));
             }
             if(dat->pContainer->rtl_templates == NULL) {
                 dat->pContainer->rtl_templates = (TemplateSet *)malloc(sizeof(TemplateSet));
-                CopyMemory(dat->rtl_templates, &RTL_Active, sizeof(TemplateSet));
+                CopyMemory(dat->pContainer->rtl_templates, &RTL_Active, sizeof(TemplateSet));
             }
             
             if(dat->pContainer->logFonts == NULL)
