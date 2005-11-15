@@ -183,7 +183,7 @@ int gg_options_init(WPARAM wParam, LPARAM lParam)
 {
 	char title[64];
     OPTIONSDIALOGPAGE odp = { 0 };
-	strncpy(title, sizeof(title), GG_PROTONAME);
+	strncpy(title, GG_PROTONAME, sizeof(title));
 
     odp.cbSize = sizeof(odp);
     odp.position = 1003000;
