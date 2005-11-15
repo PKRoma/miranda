@@ -59,6 +59,9 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.3.6: 2005-11-15
+ - Fix: String overflows (injections) that may be caused for example by too long
+   translations or too long incoming filenames
 0.0.3.5: 2005-10-28
  - Fix: Descriptions beginning with new line were not shown
  - Fix: Groupchat fixed for database locks
