@@ -224,10 +224,12 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
     char szFileName[MAX_PATH];
 
     char szFilter[128], *pFilter = szFilter;
-    strcpy(pFilter, Translate("Image files (*.bmp,*.jpg,*.gif)"));
+    strncpy(pFilter, Translate("Image files (*.bmp,*.jpg,*.gif)"), sizeof(szFilter));
     pFilter += strlen(pFilter) + 1;
-    strcpy(pFilter, "*.bmp;*.jpg;*.gif");
+	if(pFilter >= szFilter + sizeof(szFilter)) return 0;
+    strncpy(pFilter, "*.bmp;*.jpg;*.gif", sizeof(szFilter) - (pFilter - szFilter));
     pFilter += strlen(pFilter) + 1;
+	if(pFilter >= szFilter + sizeof(szFilter)) return 0;
     *pFilter = 0;
 
     memset(&ofn, 0, sizeof(OPENFILENAME));
@@ -237,7 +239,7 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
     ofn.lStructSize = sizeof(OPENFILENAME);
     ofn.hwndOwner = hwnd;
     ofn.hInstance = hInstance;
-    strcpy(szFileName, dat->lpszFileName);
+    strncpy(szFileName, dat->lpszFileName, sizeof(szFileName));
     ofn.lpstrFile = szFileName;
     ofn.lpstrFilter = szFilter;
     ofn.nMaxFile = MAX_PATH;
@@ -675,10 +677,12 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
         case WM_CHOOSEIMG:
         {
             char szFilter[128], *pFilter = szFilter;
-            strcpy(pFilter, Translate("Image files (*.bmp,*.jpg,*.gif)"));
+            strncpy(pFilter, Translate("Image files (*.bmp,*.jpg,*.gif)"), sizeof(szFilter));
             pFilter += strlen(pFilter) + 1;
-            strcpy(pFilter, "*.bmp;*.jpg;*.gif");
+			if(pFilter >= szFilter + sizeof(szFilter)) return FALSE;
+            strncpy(pFilter, "*.bmp;*.jpg;*.gif", sizeof(szFilter) - (pFilter - szFilter));
             pFilter += strlen(pFilter) + 1;
+			if(pFilter >= szFilter + sizeof(szFilter)) return FALSE;
             *pFilter = 0;
 
             OPENFILENAME ofn;
@@ -859,12 +863,12 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
         char szFileTitle[MAX_PATH];
         GetFileTitle(szFileName, szFileTitle, MAX_PATH);
         dat->lpszFileName = (char *)malloc(strlen(szFileTitle) + 1);
-        strcpy(dat->lpszFileName, szFileTitle);
+        strncpy(dat->lpszFileName, szFileTitle, sizeof(dat->lpszFileName));
     }
     else
     {
         dat->lpszFileName = (char *)malloc(strlen(e->event.image_reply.filename) + 1);
-        strcpy(dat->lpszFileName, e->event.image_reply.filename);
+        strncpy(dat->lpszFileName, e->event.image_reply.filename, sizeof(dat->lpszFileName));
     }
 
     /////////////////////

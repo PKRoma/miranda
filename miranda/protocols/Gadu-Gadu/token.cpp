@@ -121,7 +121,7 @@ int gg_gettoken()
 	if(!(h = gg_token(0)) || gg_token_watch_fd(h) || h->state == GG_STATE_ERROR || h->state != GG_STATE_DONE)
 	{
 		char error[128];
-		sprintf(error, Translate("Token retrieval failed because of error:\n\t%s"), http_error_string(h ? h->error : 0));
+		snprintf(error, sizeof(error), Translate("Token retrieval failed because of error:\n\t%s"), http_error_string(h ? h->error : 0));
 		MessageBox(
 				NULL,
 				error,
@@ -135,7 +135,7 @@ int gg_gettoken()
 	if (!(t = (struct gg_token *)h->data) || (!h->body))
 	{
 		char error[128];
-		sprintf(error, Translate("Token retrieval failed because of error:\n\t%s"), http_error_string(h ? h->error : 0));
+		snprintf(error, sizeof(error), Translate("Token retrieval failed because of error:\n\t%s"), http_error_string(h ? h->error : 0));
 		MessageBox(
 				NULL,
 				error,
@@ -147,7 +147,7 @@ int gg_gettoken()
 	}
 
 	// Return token id
-	strcpy(strtokenid, t->tokenid);
+	strncpy(strtokenid, t->tokenid, sizeof(strtokenid));
 	tokenwidth = t->width;
 	tokenheight = t->height;
 	// Load bitmap

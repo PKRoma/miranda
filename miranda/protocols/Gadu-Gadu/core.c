@@ -480,7 +480,7 @@ start:
 			}
 			if(!perror)
 			{
-				sprintf(error, Translate("Connection cannot be established because of error:\n\t%s"), strerror(errno));
+				snprintf(error, sizeof(error), Translate("Connection cannot be established because of error:\n\t%s"), strerror(errno));
 				perror = error;
 			}
 #ifdef DEBUGMODE
@@ -644,11 +644,11 @@ start:
                             char strFmt2[64];
                             GGSEARCHRESULT sr;
 
-                            sprintf(strFmt2, "%s", (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status_gg2m(atoi(__status)), 0));
+                            snprintf(strFmt2, sizeof(strFmt2), "%s", (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status_gg2m(atoi(__status)), 0));
                             if(__city)
                             {
-                                sprintf(strFmt1, ", %s %s", Translate("City:"), __city);
-                                strcat(strFmt2, strFmt1);
+                                snprintf(strFmt1, sizeof(strFmt1), ", %s %s", Translate("City:"), __city);
+                                strncat(strFmt2, strFmt1, sizeof(strFmt2) - strlen(strFmt2));
                             }
                             if(__birthyear)
                             {
@@ -658,11 +658,11 @@ start:
 
                                 if(br < (lt->tm_year + 1900) && br > 1900)
                                 {
-                                    sprintf(strFmt1, ", %s %d", Translate("Age:"), (lt->tm_year + 1900) - br);
-                                    strcat(strFmt2, strFmt1);
+                                    snprintf(strFmt1, sizeof(strFmt1), ", %s %d", Translate("Age:"), (lt->tm_year + 1900) - br);
+                                    strncat(strFmt2, strFmt1, sizeof(strFmt2) - strlen(strFmt2));
                                 }
                             }
-                            sprintf(strFmt1, "GG: %d", uin);
+                            snprintf(strFmt1, sizeof(strFmt1), "GG: %d", uin);
 
                             sr.hdr.cbSize = sizeof(sr);
                             sr.hdr.nick = (char *)__nick;
@@ -1056,7 +1056,7 @@ int gg_dbsettingchanged(WPARAM wParam, LPARAM lParam)
     if(!strcmp(cws->szModule, "Icons"))
     {
         char strFmt[16];
-        sprintf(strFmt, "%s%d", GG_PROTO, ID_STATUS_DND);
+        snprintf(strFmt, sizeof(strFmt), "%s%d", GG_PROTO, ID_STATUS_DND);
         if(!strcmp(cws->szSetting, strFmt) && cws->value.type == DBVT_DELETED)
             gg_refreshblockedicon();
     }

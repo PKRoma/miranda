@@ -40,19 +40,20 @@ char *gg_status2db(int status, const char *suffix)
     static char str[64];
 
     switch(status) {
-            case ID_STATUS_AWAY: prefix="Away";	break;
-            case ID_STATUS_NA: prefix="Na";	break;
-            case ID_STATUS_DND: prefix="Dnd"; break;
-            case ID_STATUS_OCCUPIED: prefix="Occupied"; break;
-            case ID_STATUS_FREECHAT: prefix="FreeChat"; break;
-            case ID_STATUS_ONLINE: prefix="On"; break;
-            case ID_STATUS_OFFLINE: prefix="Off"; break;
-            case ID_STATUS_INVISIBLE: prefix="Inv"; break;
-            case ID_STATUS_ONTHEPHONE: prefix="Otp"; break;
-            case ID_STATUS_OUTTOLUNCH: prefix="Otl"; break;
-            default: return NULL;
+        case ID_STATUS_AWAY:		prefix = "Away";	break;
+        case ID_STATUS_NA:			prefix = "Na";	break;
+        case ID_STATUS_DND:			prefix = "Dnd"; break;
+        case ID_STATUS_OCCUPIED:	prefix = "Occupied"; break;
+        case ID_STATUS_FREECHAT:	prefix = "FreeChat"; break;
+        case ID_STATUS_ONLINE:		prefix = "On"; break;
+        case ID_STATUS_OFFLINE:		prefix = "Off"; break;
+        case ID_STATUS_INVISIBLE:	prefix = "Inv"; break;
+        case ID_STATUS_ONTHEPHONE:	prefix = "Otp"; break;
+        case ID_STATUS_OUTTOLUNCH:	prefix = "Otl"; break;
+        default: return NULL;
     }
-    strcpy(str, prefix); strcat(str, suffix);
+    strncpy(str, prefix, sizeof(str)); 
+	strncat(str, suffix, sizeof(str) - strlen(str));
     return str;
 }
 
@@ -362,23 +363,23 @@ static int gg_searchbydetails(WPARAM wParam, LPARAM lParam)
     if(psbn->pszNick)
     {
         gg_pubdir50_add(req, GG_PUBDIR50_NICKNAME, psbn->pszNick);
-        strcat(data, psbn->pszNick);
+        strncat(data, psbn->pszNick, sizeof(data) - strlen(data));
     }
-    strcat(data, ".");
+    strncat(data, ".", sizeof(data) - strlen(data));
 
     if(psbn->pszFirstName)
     {
         gg_pubdir50_add(req, GG_PUBDIR50_FIRSTNAME, psbn->pszFirstName);
-        strcat(data, psbn->pszFirstName);
+        strncat(data, psbn->pszFirstName, sizeof(data) - strlen(data));
     }
-    strcat(data, ".");
+    strncat(data, ".", sizeof(data) - strlen(data));
 
     if(psbn->pszLastName)
     {
         gg_pubdir50_add(req, GG_PUBDIR50_LASTNAME, psbn->pszLastName);
-        strcat(data, psbn->pszLastName);
+        strncat(data, psbn->pszLastName, sizeof(data) - strlen(data));
     }
-    strcat(data, ".");
+    strncat(data, ".", sizeof(data) - strlen(data));
 
     // Count crc & check if the data was equal if yes do same search with shift
     crc = crc_get(data);
@@ -649,33 +650,33 @@ int gg_searchbyadvanced(WPARAM wParam, LPARAM lParam)
     if(strlen(text))
     {
         gg_pubdir50_add(req, GG_PUBDIR50_FIRSTNAME, text);
-        strcat(data, text);
+        strncat(data, text, sizeof(data) - strlen(data));
     }
-    /* 1 */ strcat(data, ".");
+    /* 1 */ strncat(data, ".", sizeof(data) - strlen(data));
 
     GetDlgItemText(hwndDlg, IDC_LASTNAME, text, sizeof(text));
     if(strlen(text))
     {
         gg_pubdir50_add(req, GG_PUBDIR50_LASTNAME, text);
-        strcat(data, text);
+        strncat(data, text, sizeof(data) - strlen(data));
     }
-    /* 2 */ strcat(data, ".");
+    /* 2 */ strncat(data, ".", sizeof(data) - strlen(data));
 
     GetDlgItemText(hwndDlg, IDC_NICKNAME, text, sizeof(text));
     if(strlen(text))
     {
         gg_pubdir50_add(req, GG_PUBDIR50_NICKNAME, text);
-        strcat(data, text);
+        strncat(data, text, sizeof(data) - strlen(data));
     }
-    /* 3 */ strcat(data, ".");
+    /* 3 */ strncat(data, ".", sizeof(data) - strlen(data));
 
     GetDlgItemText(hwndDlg, IDC_CITY, text, sizeof(text));
     if(strlen(text))
     {
         gg_pubdir50_add(req, GG_PUBDIR50_CITY, text);
-        strcat(data, text);
+        strncat(data, text, sizeof(data) - strlen(data));
     }
-    /* 4 */ strcat(data, ".");
+    /* 4 */ strncat(data, ".", sizeof(data) - strlen(data));
 
     GetDlgItemText(hwndDlg, IDC_AGEFROM, text, sizeof(text));
     if(strlen(text))
@@ -699,32 +700,32 @@ int gg_searchbyadvanced(WPARAM wParam, LPARAM lParam)
             yearFrom = 0;
         else
             yearFrom = ay - yearFrom;
-        sprintf(text, "%d %d", yearFrom, yearTo);
+        snprintf(text, sizeof(text), "%d %d", yearFrom, yearTo);
 
         gg_pubdir50_add(req, GG_PUBDIR50_BIRTHYEAR, text);
-        strcat(data, text);
+        strncat(data, text, sizeof(data) - strlen(data));
     }
-    /* 5 */ strcat(data, ".");
+    /* 5 */ strncat(data, ".", sizeof(data) - strlen(data));
 
     switch(SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_GETCURSEL, 0, 0))
     {
         case 1:
             gg_pubdir50_add(req, GG_PUBDIR50_GENDER, GG_PUBDIR50_GENDER_MALE);
-            strcat(data, GG_PUBDIR50_GENDER_FEMALE);
+            strncat(data, GG_PUBDIR50_GENDER_FEMALE, sizeof(data) - strlen(data));
             break;
         case 2:
             gg_pubdir50_add(req, GG_PUBDIR50_GENDER, GG_PUBDIR50_GENDER_FEMALE);
-            strcat(data, GG_PUBDIR50_GENDER_MALE);
+            strncat(data, GG_PUBDIR50_GENDER_MALE, sizeof(data) - strlen(data));
             break;
     }
-    /* 6 */ strcat(data, ".");
+    /* 6 */ strncat(data, ".", sizeof(data) - strlen(data));
 
     if(IsDlgButtonChecked(hwndDlg, IDC_ONLYCONNECTED))
     {
         gg_pubdir50_add(req, GG_PUBDIR50_ACTIVE, GG_PUBDIR50_ACTIVE_TRUE);
-        strcat(data, GG_PUBDIR50_ACTIVE_TRUE);
+        strncat(data, GG_PUBDIR50_ACTIVE_TRUE, sizeof(data) - strlen(data));
     }
-    /* 7 */ strcat(data, ".");
+    /* 7 */ strncat(data, ".", sizeof(data) - strlen(data));
 
     // No data entered
     if(strlen(data) <= 7 || (strlen(data) == 8 && IsDlgButtonChecked(hwndDlg, IDC_ONLYCONNECTED))) return 0;

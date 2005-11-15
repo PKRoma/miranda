@@ -338,7 +338,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
             char *senderName = unknownSender ?
                 Translate("Unknown") : ((char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(sender, 0, 0, NULL), 0));
             char error[256];
-            sprintf(error, Translate("%s has initiated conference with %d participants (%d unknowns).\nDo you want do participate ?"),
+            snprintf(error, sizeof(error), Translate("%s has initiated conference with %d participants (%d unknowns).\nDo you want do participate ?"),
                 senderName, recipients_count + 1, unknown);
             chat->ignore = (MessageBox(
                 NULL,

@@ -345,7 +345,7 @@ static int gg_import_server(WPARAM wParam, LPARAM lParam)
     if (gg_userlist_request(ggThread->sess, GG_USERLIST_GET, NULL) == -1)
     {
         char error[128];
-        sprintf(error, Translate("List cannot be imported because of error:\n\t%s"), strerror(errno));
+        snprintf(error, sizeof(error), Translate("List cannot be imported because of error:\n\t%s"), strerror(errno));
         MessageBox(
             NULL,
             error,
@@ -395,7 +395,7 @@ static int gg_remove_server(WPARAM wParam, LPARAM lParam)
     if (gg_userlist_request(ggThread->sess, GG_USERLIST_PUT, NULL) == -1)
     {
         char error[128];
-        sprintf(error, Translate("List cannot be removeed because of error:\n\t%s"), strerror(errno));
+        snprintf(error, sizeof(error), Translate("List cannot be removeed because of error:\n\t%s"), strerror(errno));
         MessageBox(
             NULL,
             error,
@@ -441,16 +441,20 @@ static int gg_import_text(WPARAM wParam, LPARAM lParam)
     ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
     ofn.hwndOwner = NULL;
     ofn.hInstance = NULL;
-    strcpy(filter, Translate("Text files"));
-    strcat(filter, " (*.txt)");
-    pfilter = filter + strlen(filter)+1;
-    strcpy(pfilter,"*.TXT");
-    pfilter = pfilter + strlen(pfilter)+1;
-    strcpy(pfilter, Translate("All Files"));
-    strcat(pfilter, " (*)");
-    pfilter = pfilter+strlen(pfilter)+1;
-    strcpy(pfilter, "*");
-    pfilter = pfilter+strlen(pfilter)+1;
+    strncpy(filter, Translate("Text files"), sizeof(filter));
+    strncat(filter, " (*.txt)", sizeof(filter) - strlen(filter));
+    pfilter = filter + strlen(filter) + 1;
+	if(pfilter >= filter + sizeof(filter)) return 0;
+    strncpy(pfilter, "*.TXT", sizeof(filter) - (pfilter - filter));
+    pfilter = pfilter + strlen(pfilter) + 1;
+	if(pfilter >= filter + sizeof(filter)) return 0;
+    strncpy(pfilter, Translate("All Files"), sizeof(filter) - (pfilter - filter));
+    strncat(pfilter, " (*)", sizeof(filter) - (pfilter - filter) - strlen(pfilter));
+    pfilter = pfilter + strlen(pfilter) + 1;
+	if(pfilter >= filter + sizeof(filter)) return 0;
+    strncpy(pfilter, "*", sizeof(filter) - (pfilter - filter));
+    pfilter = pfilter + strlen(pfilter) + 1;
+	if(pfilter >= filter + sizeof(filter)) return 0;
     *pfilter = '\0';
     ofn.lpstrFilter = filter;
     ofn.lpstrFile = str;
@@ -485,7 +489,7 @@ static int gg_import_text(WPARAM wParam, LPARAM lParam)
     else
     {
         char error[128];
-        sprintf(error, Translate("List cannot be exported to file \"%s\" because of error:\n\t%s"), str, strerror(errno));
+        snprintf(error, sizeof(error), Translate("List cannot be exported to file \"%s\" because of error:\n\t%s"), str, strerror(errno));
         MessageBox(
             NULL,
             error,
@@ -504,23 +508,27 @@ static int gg_export_text(WPARAM wParam, LPARAM lParam)
     char filter[512], *pfilter;
     FILE *f;
 
-    strcpy(str, Translate("contacts"));
-    strcat(str, ".txt");
+    strncpy(str, Translate("contacts"), sizeof(str));
+    strncat(str, ".txt", sizeof(str) - strlen(str));
 
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
     ofn.hwndOwner = NULL;
     ofn.hInstance = NULL;
-    strcpy(filter, Translate("Text files"));
-    strcat(filter, " (*.txt)");
-    pfilter = filter + strlen(filter)+1;
-    strcpy(pfilter,"*.TXT");
-    pfilter = pfilter + strlen(pfilter)+1;
-    strcpy(pfilter, Translate("All Files"));
-    strcat(pfilter, " (*)");
-    pfilter = pfilter+strlen(pfilter)+1;
-    strcpy(pfilter, "*");
-    pfilter = pfilter+strlen(pfilter)+1;
+    strncpy(filter, Translate("Text files"), sizeof(filter));
+    strncat(filter, " (*.txt)", sizeof(filter) - strlen(filter));
+    pfilter = filter + strlen(filter) + 1;
+	if(pfilter >= filter + sizeof(filter)) return 0;
+    strncpy(pfilter, "*.TXT", sizeof(filter) - (pfilter - filter));
+    pfilter = pfilter + strlen(pfilter) + 1;
+	if(pfilter >= filter + sizeof(filter)) return 0;
+    strncpy(pfilter, Translate("All Files"), sizeof(filter) - (pfilter - filter));
+    strncat(pfilter, " (*)", sizeof(filter) - (pfilter - filter) - strlen(pfilter));
+    pfilter = pfilter + strlen(pfilter) + 1;
+	if(pfilter >= filter + sizeof(filter)) return 0;
+    strncpy(pfilter, "*", sizeof(filter) - (pfilter - filter));
+    pfilter = pfilter + strlen(pfilter) + 1;
+	if(pfilter >= filter + sizeof(filter)) return 0;
     *pfilter = '\0';
     ofn.lpstrFilter = filter;
     ofn.lpstrFile = str;
@@ -551,7 +559,7 @@ static int gg_export_text(WPARAM wParam, LPARAM lParam)
     else
     {
         char error[128];
-        sprintf(error, Translate("List cannot be exported to file \"%s\" because of error:\n\t%s"), str, strerror(errno));
+        snprintf(error, sizeof(error), Translate("List cannot be exported to file \"%s\" because of error:\n\t%s"), str, strerror(errno));
         MessageBox(
             NULL,
             error,
@@ -603,7 +611,7 @@ static int gg_export_server(WPARAM wParam, LPARAM lParam)
     if (gg_userlist_request(ggThread->sess, GG_USERLIST_PUT, contacts) == -1)
     {
         char error[128];
-        sprintf(error, Translate("List cannot be exported because of error:\n\t%s"), strerror(errno));
+        snprintf(error, sizeof(error), Translate("List cannot be exported because of error:\n\t%s"), strerror(errno));
         MessageBox(
             NULL,
             error,

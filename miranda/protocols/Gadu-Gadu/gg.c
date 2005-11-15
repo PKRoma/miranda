@@ -25,7 +25,7 @@
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
     "Gadu-Gadu Protocol",
-    PLUGIN_MAKE_VERSION(0, 0, 3, 5),
+    PLUGIN_MAKE_VERSION(0, 0, 3, 6),
     "Provides support for Gadu-Gadu protocol",
     "Adam Strzelecki",
     "ono+miranda@java.pl",
@@ -76,9 +76,9 @@ char *ws_strerror(int code)
                   NULL, WSAGetLastError(), 0, buff,
                   sizeof(buff), NULL);
         if(len == 0)
-            sprintf(err_desc, "WinSock %u: Unknown error.", WSAGetLastError());
+            snprintf(err_desc, sizeof(err_desc), "WinSock %u: Unknown error.", WSAGetLastError());
         else
-            sprintf(err_desc, "WinSock %d: %s", WSAGetLastError(), buff);
+            snprintf(err_desc, sizeof(err_desc), "WinSock %d: %s", WSAGetLastError(), buff);
         return err_desc;
     }
 
@@ -124,8 +124,8 @@ void gg_refreshblockedicon()
     // Store blocked icon
     char strFmt1[MAX_PATH], strFmt2[MAX_PATH];
     GetModuleFileName(hInstance, strFmt1, sizeof(strFmt1));
-    sprintf(strFmt2, "%s,-%d", strFmt1, IDI_STOP);
-    sprintf(strFmt1, "%s%d", GG_PROTO, ID_STATUS_DND);
+    snprintf(strFmt2, sizeof(strFmt2), "%s,-%d", strFmt1, IDI_STOP);
+    snprintf(strFmt1, sizeof(strFmt1), "%s%d", GG_PROTO, ID_STATUS_DND);
     DBWriteContactSettingString(NULL, "Icons", strFmt1, strFmt2);
 }
 
@@ -221,9 +221,9 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 	char title[64], *error;
 	DWORD version;
 
-	strcpy(title, GG_PROTONAME);
-	strcat(title, " ");
-	strcat(title, Translate("connection"));
+	strncpy(title, GG_PROTONAME, sizeof(title));
+	strncat(title, " ", sizeof(title) - strlen(title));
+	strncat(title, Translate("connection"), sizeof(title) - strlen(title));
 
     nlu.cbSize = sizeof(nlu);
     nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;
@@ -249,9 +249,9 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 	// Make error message
 	error = Translate("Error");
 	ggProtoError = malloc(strlen(ggProtoName) + strlen(error) + 2);
-	strcpy(ggProtoError, ggProtoName);
-	strcat(ggProtoError, " ");
-	strcat(ggProtoError, error);
+	strncpy(ggProtoError, ggProtoName, sizeof(ggProtoError));
+	strncat(ggProtoError, " ", sizeof(ggProtoError) - strlen(ggProtoError));
+	strncat(ggProtoError, error, sizeof(ggProtoError) - strlen(ggProtoError));
 
 	// Do last plugin cleanup if not actual version
 	if((version = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
@@ -285,7 +285,7 @@ void init_protonames()
 	GetModuleFileName(hInstance, text, sizeof(text));
     if((hFind = FindFirstFile(text, &ffd)) != INVALID_HANDLE_VALUE)
     {
-        strcpy(text, ffd.cFileName);
+        strncpy(text, ffd.cFileName, sizeof(text));
         FindClose(hFind);
     }
     // Check if we have relative or full path
@@ -454,8 +454,8 @@ void gg_debughandler(int level, const char *format, va_list ap)
 	char *nl = strrchr(szFormat, '\n');
 	if(nl) *nl = 0;
 
-	strcpy(szText, GG_PROTO);
-	strcat(szText, "      >> libgadu << \0");
+	strncpy(szText, GG_PROTO, sizeof(szText));
+	strncat(szText, "      >> libgadu << \0", sizeof(szText) - strlen(szText));
 
     _vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), szFormat, ap);
     CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
@@ -468,8 +468,8 @@ int gg_netlog(const char *fmt, ...)
 {
     va_list va;
     char szText[1024];
-	strcpy(szText, GG_PROTO);
-	strcat(szText, "::\0");
+	strncpy(szText, GG_PROTO, sizeof(szText));
+	strncat(szText, "::\0", sizeof(szText) - strlen(szText));
 
     va_start(va, fmt);
     _vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), fmt, va);

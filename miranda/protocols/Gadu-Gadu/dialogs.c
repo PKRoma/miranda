@@ -65,7 +65,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
                             if(dbv.cVal==-100) unspecified=1;
                             else {
                                     pstr=str;
-                                    sprintf(str,dbv.cVal?"GMT%+d:%02d":"GMT",-dbv.cVal/2,(dbv.cVal&1)*30);
+                                    snprintf(str,sizeof(str),dbv.cVal?"GMT%+d:%02d":"GMT",-dbv.cVal/2,(dbv.cVal&1)*30);
                             }
                     }
                     else {
@@ -183,7 +183,7 @@ int gg_options_init(WPARAM wParam, LPARAM lParam)
 {
 	char title[64];
     OPTIONSDIALOGPAGE odp = { 0 };
-	strcpy(title, GG_PROTONAME);
+	strncpy(title, sizeof(title), GG_PROTONAME);
 
     odp.cbSize = sizeof(odp);
     odp.position = 1003000;
@@ -195,8 +195,8 @@ int gg_options_init(WPARAM wParam, LPARAM lParam)
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
-	strcat(title, " ");
-	strcat(title, Translate("Advanced"));
+	strncat(title, " ", sizeof(title) - strlen(title));
+	strncat(title, Translate("Advanced"), sizeof(title) - strlen(title));
     odp.cbSize = sizeof(odp);
     odp.position = 1003000;
     odp.hInstance = hInstance;

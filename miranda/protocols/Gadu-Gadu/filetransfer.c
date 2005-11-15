@@ -288,8 +288,8 @@ void *__stdcall gg_dccmainthread(void *empty)
 					{
 						PROTOFILETRANSFERSTATUS pfts;
 						dcc->tick = tick;
-						strcpy(filename, dcc->folder);
-						strcat(filename, dcc->file_info.filename);
+						strncpy(filename, dcc->folder, sizeof(filename));
+						strncat(filename, dcc->file_info.filename, sizeof(filename) - strlen(filename));
 						memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
 						pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
 						pfts.hContact = (HANDLE)dcc->contact;
@@ -318,8 +318,8 @@ void *__stdcall gg_dccmainthread(void *empty)
 					if(dcc->file_fd)
 					{
 						PROTOFILETRANSFERSTATUS pfts;
-						strcpy(filename, dcc->folder);
-						strcat(filename, dcc->file_info.filename);
+						strncpy(filename, dcc->folder, sizeof(filename));
+						strncat(filename, dcc->file_info.filename, sizeof(filename) - strlen(filename));
 						memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
 						pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
 						pfts.hContact = (HANDLE)dcc->contact;
@@ -638,8 +638,8 @@ int gg_fileallow(WPARAM wParam, LPARAM lParam)
 	CCSDATA *ccs = (CCSDATA *) lParam;
 	struct gg_dcc *dcc = (struct gg_dcc *) ccs->wParam;
 	char fileName[MAX_PATH];
-	strcpy(fileName, (char *) ccs->lParam);
-	strcat(fileName, dcc->file_info.filename);
+	strncpy(fileName, (char *) ccs->lParam, sizeof(fileName));
+	strncat(fileName, dcc->file_info.filename, sizeof(fileName) - strlen(fileName));
 	dcc->folder = strdup((char *) ccs->lParam);
 	dcc->tick = 0;
 
