@@ -101,8 +101,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			break;
 		for (tgroup = group; tgroup; tgroup = tgroup->parent)
 			SetGroupExpand(hwnd, dat, tgroup, 1);
-		EnsureVisible(hwnd, dat, GetRowsPriorTo(&dat->list, group, ((unsigned) contact - (unsigned) group->contact) / sizeof(struct ClcContact)),
-			0);
+		EnsureVisible(hwnd, dat, GetRowsPriorTo(&dat->list, group, ((unsigned) contact - (unsigned) group->contact) / sizeof(struct ClcContact)), 0);
 		break;
 	}
 

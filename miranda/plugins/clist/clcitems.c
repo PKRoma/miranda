@@ -172,12 +172,18 @@ static void AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDL
 	WORD apparentMode;
 	DWORD idleMode;
 
-	int i;
+	int i, index = -1;
 
-	for (i = group->contactCount - 1; i >= 0; i--)
-		if (group->contact[i].type != CLCIT_INFO || !(group->contact[i].flags & CLCIIF_BELOWCONTACTS))
-			break;
-	i = AddItemToGroup(group, i + 1);
+	for (i = group->contactCount - 1; i >= 0; i--) {
+		if (group->contact[i].hContact == hContact )
+			return;
+
+		if ( index == -1 )
+			if (group->contact[i].type != CLCIT_INFO || !(group->contact[i].flags & CLCIIF_BELOWCONTACTS))
+				index = i;
+	}
+
+	i = AddItemToGroup(group, index + 1);
 	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 	group->contact[i].type = CLCIT_CONTACT;
 	group->contact[i].iImage = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) hContact, 0);

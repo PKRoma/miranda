@@ -1133,8 +1133,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 			if (dat->iHotTrack == -1)
 				ReleaseCapture();
 		}
-		else
-			ReleaseCapture();
+		else ReleaseCapture();
 		KillTimer(hwnd, TIMERID_DRAGAUTOSCROLL);
 		if (dat->dragStage == (DRAGSTAGE_NOTMOVED | DRAGSTAGEF_MAYBERENAME))
 			SetTimer(hwnd, TIMERID_RENAME, GetDoubleClickTime(), NULL);
@@ -1157,9 +1156,9 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 					GetRowByIndex(dat, dat->selection, &contact, NULL);
 					szGroup = GetGroupNameT(contact->groupId, NULL);
 					GetRowByIndex(dat, dat->iDragItem, &contact, NULL);
-					if (contact->type == CLCIT_CONTACT)     //dropee is a contact
+					if (contact->type == CLCIT_CONTACT) //dropee is a contact
 						DBWriteContactSettingTString(contact->hContact, "CList", "Group", szGroup);
-					else if (contact->type == CLCIT_GROUP) {        //dropee is a group
+					else if (contact->type == CLCIT_GROUP) { //dropee is a group
 						TCHAR szNewName[120];
 						mir_sntprintf(szNewName, SIZEOF(szNewName), _T("%s\\%s"), szGroup, contact->szText);
 						RenameGroupT( contact->groupId, szNewName );

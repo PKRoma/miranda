@@ -81,11 +81,7 @@ void GetFontSetting(int i, LOGFONTA * lf, COLORREF * colour)
 	wsprintfA(idstr, "Font%dSize", i);
 	lf->lfHeight = (char) DBGetContactSettingByte(NULL, "CLC", idstr, lf->lfHeight);
 	wsprintfA(idstr, "Font%dSty", i);
-	style =
-		(BYTE) DBGetContactSettingByte(NULL, "CLC", idstr,
-		(lf->lfWeight ==
-		FW_NORMAL ? 0 : DBFONTF_BOLD) | (lf->lfItalic ? DBFONTF_ITALIC : 0) | (lf->
-		lfUnderline ? DBFONTF_UNDERLINE : 0));
+	style = (BYTE) DBGetContactSettingByte(NULL, "CLC", idstr, (lf->lfWeight == FW_NORMAL ? 0 : DBFONTF_BOLD) | (lf->lfItalic ? DBFONTF_ITALIC : 0) | (lf->lfUnderline ? DBFONTF_UNDERLINE : 0));
 	lf->lfWidth = lf->lfEscapement = lf->lfOrientation = 0;
 	lf->lfWeight = style & DBFONTF_BOLD ? FW_BOLD : FW_NORMAL;
 	lf->lfItalic = (style & DBFONTF_ITALIC) != 0;
@@ -623,8 +619,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					DeleteObject(hFont);
 					fontSettings[fontId].size = (char) size.cy;
 				}
-				else
-					fontSettings[fontId].size = (char) lf.lfHeight;
+				else fontSettings[fontId].size = (char) lf.lfHeight;
 				fontSettings[fontId].charset = lf.lfCharSet;
 				fontSettings[fontId].colour = colour;
 				lstrcpyA(fontSettings[fontId].szFace, lf.lfFaceName);
@@ -636,21 +631,16 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				SendDlgItemMessageA(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM) fontSizes[i]);
 		}
 		SendDlgItemMessage(hwndDlg, IDC_ROWHEIGHTSPIN, UDM_SETRANGE, 0, MAKELONG(255, 0));
-		SendDlgItemMessage(hwndDlg, IDC_ROWHEIGHTSPIN, UDM_SETPOS, 0,
-			MAKELONG(DBGetContactSettingByte(NULL, "CLC", "RowHeight", CLCDEFAULT_ROWHEIGHT), 0));
+		SendDlgItemMessage(hwndDlg, IDC_ROWHEIGHTSPIN, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingByte(NULL, "CLC", "RowHeight", CLCDEFAULT_ROWHEIGHT), 0));
 		SendMessage(hwndDlg, M_REBUILDFONTGROUP, 0, 0);
 		SendMessage(hwndDlg, M_SAVEFONT, 0, 0);
 		SendDlgItemMessage(hwndDlg, IDC_HOTCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_HOTTEXTCOLOUR);
-		SendDlgItemMessage(hwndDlg, IDC_HOTCOLOUR, CPM_SETCOLOUR, 0,
-			DBGetContactSettingDword(NULL, "CLC", "HotTextColour", CLCDEFAULT_HOTTEXTCOLOUR));
-		CheckDlgButton(hwndDlg, IDC_GAMMACORRECT,
-			DBGetContactSettingByte(NULL, "CLC", "GammaCorrect", CLCDEFAULT_GAMMACORRECT) ? BST_CHECKED : BST_UNCHECKED);
+		SendDlgItemMessage(hwndDlg, IDC_HOTCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLC", "HotTextColour", CLCDEFAULT_HOTTEXTCOLOUR));
+		CheckDlgButton(hwndDlg, IDC_GAMMACORRECT, DBGetContactSettingByte(NULL, "CLC", "GammaCorrect", CLCDEFAULT_GAMMACORRECT) ? BST_CHECKED : BST_UNCHECKED);
 		SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_SELTEXTCOLOUR);
-		SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_SETCOLOUR, 0,
-			DBGetContactSettingDword(NULL, "CLC", "SelTextColour", CLCDEFAULT_SELTEXTCOLOUR));
+		SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLC", "SelTextColour", CLCDEFAULT_SELTEXTCOLOUR));
 		SendDlgItemMessage(hwndDlg, IDC_QUICKCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_QUICKSEARCHCOLOUR);
-		SendDlgItemMessage(hwndDlg, IDC_QUICKCOLOUR, CPM_SETCOLOUR, 0,
-			DBGetContactSettingDword(NULL, "CLC", "QuickSearchColour", CLCDEFAULT_QUICKSEARCHCOLOUR));
+		SendDlgItemMessage(hwndDlg, IDC_QUICKCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLC", "QuickSearchColour", CLCDEFAULT_QUICKSEARCHCOLOUR));
 		return TRUE;
 	case M_REBUILDFONTGROUP:       //remake all the needed controls when the user changes the font selector at the top
 		{
@@ -933,59 +923,58 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		}
 	case WM_NOTIFY:
 		switch (((LPNMHDR) lParam)->idFrom) {
-	case 0:
-		switch (((LPNMHDR) lParam)->code) {
-	case PSN_APPLY:
-		{
-			int i;
-			char str[20];
-
-			// Force min height calculation
-			// This prevents users from setting the row height to be too low
-			SendMessage(hwndDlg, M_REDOROWHEIGHT, 0, 0);
-			for (i = 0; i <= FONTID_MAX; i++) {
-				wsprintfA(str, "Font%dName", i);
-				DBWriteContactSettingString(NULL, "CLC", str, fontSettings[i].szFace);
-				wsprintfA(str, "Font%dSet", i);
-				DBWriteContactSettingByte(NULL, "CLC", str, fontSettings[i].charset);
-				wsprintfA(str, "Font%dSize", i);
-				DBWriteContactSettingByte(NULL, "CLC", str, fontSettings[i].size);
-				wsprintfA(str, "Font%dSty", i);
-				DBWriteContactSettingByte(NULL, "CLC", str, fontSettings[i].style);
-				wsprintfA(str, "Font%dCol", i);
-				DBWriteContactSettingDword(NULL, "CLC", str, fontSettings[i].colour);
-				wsprintfA(str, "Font%dAs", i);
-				DBWriteContactSettingWord(NULL, "CLC", str, (WORD) ((fontSettings[i].sameAsFlags << 8) | fontSettings[i].sameAs));
+		case 0:
+			switch (((LPNMHDR) lParam)->code) {
+			case PSN_APPLY:
+			{
+				int i;
+				char str[20];
+	
+				// Force min height calculation
+				// This prevents users from setting the row height to be too low
+				SendMessage(hwndDlg, M_REDOROWHEIGHT, 0, 0);
+				for (i = 0; i <= FONTID_MAX; i++) {
+					wsprintfA(str, "Font%dName", i);
+					DBWriteContactSettingString(NULL, "CLC", str, fontSettings[i].szFace);
+					wsprintfA(str, "Font%dSet", i);
+					DBWriteContactSettingByte(NULL, "CLC", str, fontSettings[i].charset);
+					wsprintfA(str, "Font%dSize", i);
+					DBWriteContactSettingByte(NULL, "CLC", str, fontSettings[i].size);
+					wsprintfA(str, "Font%dSty", i);
+					DBWriteContactSettingByte(NULL, "CLC", str, fontSettings[i].style);
+					wsprintfA(str, "Font%dCol", i);
+					DBWriteContactSettingDword(NULL, "CLC", str, fontSettings[i].colour);
+					wsprintfA(str, "Font%dAs", i);
+					DBWriteContactSettingWord(NULL, "CLC", str, (WORD) ((fontSettings[i].sameAsFlags << 8) | fontSettings[i].sameAs));
+				}
 			}
-		}
-		{
-			COLORREF col;
-			col = SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_GETCOLOUR, 0, 0);
-			if (col == CLCDEFAULT_SELTEXTCOLOUR)
-				DBDeleteContactSetting(NULL, "CLC", "SelTextColour");
-			else
-				DBWriteContactSettingDword(NULL, "CLC", "SelTextColour", col);
-			col = SendDlgItemMessage(hwndDlg, IDC_HOTCOLOUR, CPM_GETCOLOUR, 0, 0);
-			if (col == CLCDEFAULT_HOTTEXTCOLOUR)
-				DBDeleteContactSetting(NULL, "CLC", "HotTextColour");
-			else
-				DBWriteContactSettingDword(NULL, "CLC", "HotTextColour", col);
-			col = SendDlgItemMessage(hwndDlg, IDC_QUICKCOLOUR, CPM_GETCOLOUR, 0, 0);
-			if (col == CLCDEFAULT_QUICKSEARCHCOLOUR)
-				DBDeleteContactSetting(NULL, "CLC", "QuickSearchColour");
-			else
-				DBWriteContactSettingDword(NULL, "CLC", "QuickSearchColour", col);
-		}
-		DBWriteContactSettingByte(NULL, "CLC", "RowHeight",
-			(BYTE) SendDlgItemMessage(hwndDlg, IDC_ROWHEIGHTSPIN, UDM_GETPOS, 0, 0));
-		DBWriteContactSettingByte(NULL, "CLC", "GammaCorrect", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_GAMMACORRECT));
-		ClcOptionsChanged();
-		return TRUE;
-	case PSN_EXPERTCHANGED:
-		SwitchTextDlgToMode(hwndDlg, ((PSHNOTIFY *) lParam)->lParam);
-		break;
-		}
-		break;
+			{
+				COLORREF col;
+				col = SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_GETCOLOUR, 0, 0);
+				if (col == CLCDEFAULT_SELTEXTCOLOUR)
+					DBDeleteContactSetting(NULL, "CLC", "SelTextColour");
+				else
+					DBWriteContactSettingDword(NULL, "CLC", "SelTextColour", col);
+				col = SendDlgItemMessage(hwndDlg, IDC_HOTCOLOUR, CPM_GETCOLOUR, 0, 0);
+				if (col == CLCDEFAULT_HOTTEXTCOLOUR)
+					DBDeleteContactSetting(NULL, "CLC", "HotTextColour");
+				else
+					DBWriteContactSettingDword(NULL, "CLC", "HotTextColour", col);
+				col = SendDlgItemMessage(hwndDlg, IDC_QUICKCOLOUR, CPM_GETCOLOUR, 0, 0);
+				if (col == CLCDEFAULT_QUICKSEARCHCOLOUR)
+					DBDeleteContactSetting(NULL, "CLC", "QuickSearchColour");
+				else
+					DBWriteContactSettingDword(NULL, "CLC", "QuickSearchColour", col);
+			}
+			DBWriteContactSettingByte(NULL, "CLC", "RowHeight", (BYTE) SendDlgItemMessage(hwndDlg, IDC_ROWHEIGHTSPIN, UDM_GETPOS, 0, 0));
+			DBWriteContactSettingByte(NULL, "CLC", "GammaCorrect", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_GAMMACORRECT));
+			ClcOptionsChanged();
+			return TRUE;
+			case PSN_EXPERTCHANGED:
+				SwitchTextDlgToMode(hwndDlg, ((PSHNOTIFY *) lParam)->lParam);
+				break;
+			}
+			break;
 		}
 		break;
 	case WM_DESTROY:
