@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "../../core/commonheaders.h"
 
+#define OPTIONPAGE_OLD_SIZE 40
+
 static HANDLE hOptionsInitEvent;
 static HWND hwndOptions=NULL;
 
@@ -577,10 +579,11 @@ static int AddOptionsPage(WPARAM wParam,LPARAM lParam)
 	struct OptionsPageInit *opi=(struct OptionsPageInit*)wParam;
 	
 	if(odp==NULL||opi==NULL) return 1;
-	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE)) return 1;
+	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE) && odp->cbSize != OPTIONPAGE_OLD_SIZE) return 1;
 	opi->odp=(OPTIONSDIALOGPAGE*)realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
 	dst = opi->odp + opi->pageCount;
-	memcpy( dst, odp, sizeof(OPTIONSDIALOGPAGE));
+	memset( dst, 0, sizeof( OPTIONSDIALOGPAGE ));
+	memcpy( dst, odp, odp->cbSize );
 
 	if ( odp->ptszTitle != NULL ) {
 		#if defined( _UNICODE )
