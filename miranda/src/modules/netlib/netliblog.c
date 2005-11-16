@@ -45,7 +45,13 @@ struct {
 } logOptions;
 static __int64 mirandaStartTime,perfCounterFreq;
 
-static const char *szTimeFormats[]={"No times","Standard hh:mm:ss times","Times in milliseconds","Times in microseconds"};
+static const TCHAR* szTimeFormats[] = 
+{
+	_T( "No times" ),
+	_T( "Standard hh:mm:ss times" ),
+	_T( "Times in milliseconds" ),
+	_T( "Times in microseconds" )
+};
 
 static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
