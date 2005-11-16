@@ -100,6 +100,7 @@ static struct branch_t branch1[] = {
 	{_T("Show button menus when right clicking the buttons"), "RightClickFilter", 0,0, NULL},
 	{_T("Show new windows cascaded"), "CascadeWindows", 0,1, NULL},
 	{_T("Save the size and position of chat rooms"), "SavePosition", 0,0, NULL},
+	{_T("Show the topic of the room on your contact list (if supported)"), "TopicOnClist", 0, 0, NULL},
 	{_T("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0, NULL},
 	{_T("Do not pop up the window when joining a chat room"), "PopupOnJoin", 0,0, NULL},
 	{_T("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0,0, NULL}

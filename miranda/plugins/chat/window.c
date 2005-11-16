@@ -38,6 +38,8 @@ static WNDPROC OldNicklistProc;
 static WNDPROC OldTabProc;
 static WNDPROC OldFilterButtonProc;
 static WNDPROC OldLogProc;
+static HKL hkl = NULL;
+
 typedef struct
 {
 	time_t lastEnterTime;
@@ -1642,9 +1644,68 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 		} break;
 
+/*
+		AUTOLOCALE SUPPORT EVENTUALLY
 
 
+        case WM_INPUTLANGCHANGE:
+        if (GetFocus() == hwndDlg && GetForegroundWindow() == hwndDlg && GetActiveWindow() == hwndDlg) 
+		{
+			char szKLName[KL_NAMELENGTH + 1];
 
+			if((HKL)lParam != hkl) 
+			{
+				hkl = (HKL)lParam;
+				ActivateKeyboardLayout(hkl, 0);
+				GetKeyboardLayoutNameA(szKLName);
+				DBWriteContactSettingString(si->hContact, SRMSGMOD_T, "locale", szKLName);
+				GetLocaleID(dat, szKLName);
+				UpdateReadChars(hwndDlg, dat);
+			}
+        }break;
+
+        case DM_LOADLOCALE:
+
+            if(dat->dwFlags & MWF_WASBACKGROUNDCREATE)
+                break;
+            if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
+                DBVARIANT dbv;
+                int res;
+                char szKLName[KL_NAMELENGTH+1];
+                UINT flags = KLF_ACTIVATE;
+
+                res = DBGetContactSetting(dat->hContact, SRMSGMOD_T, "locale", &dbv);
+                if (res == 0 && dbv.type == DBVT_ASCIIZ) {
+                    
+                    dat->hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
+                    PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+                    GetLocaleID(dat, dbv.pszVal);
+                    DBFreeVariant(&dbv);
+                } else {
+                    GetKeyboardLayoutNameA(szKLName);
+                    dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
+                    DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
+                    GetLocaleID(dat, szKLName);
+                }
+                UpdateReadChars(hwndDlg, dat);
+            }
+            return 0;
+        case DM_SETLOCALE:
+            if(dat->dwFlags & MWF_WASBACKGROUNDCREATE)
+                break;
+            if (dat->pContainer->hwndActive == hwndDlg && myGlobals.m_AutoLocaleSupport && dat->hContact != 0 && dat->pContainer->hwnd == GetForegroundWindow() && dat->pContainer->hwnd == GetActiveWindow()) {
+                if (lParam == 0) {
+                    if (GetKeyboardLayout(0) != dat->hkl) {
+                        ActivateKeyboardLayout(dat->hkl, 0);
+                    }
+                } else {
+                    dat->hkl = (HKL) lParam;
+                    ActivateKeyboardLayout(dat->hkl, 0);
+                }
+            }
+            return 0;
+
+*/
 
 
 		case GC_REDRAWWINDOW:

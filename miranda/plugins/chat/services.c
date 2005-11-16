@@ -800,7 +800,8 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 				if (si->hWnd)
 					g_TabSession.pszTopic = si->pszTopic;
 				DBWriteContactSettingString(si->hContact, si->pszModule , "Topic", RemoveFormatting(si->pszTopic));
-				DBWriteContactSettingString(si->hContact, "CList" , "StatusMsg", RemoveFormatting(si->pszTopic));
+				if(DBGetContactSettingByte(NULL, "Chat", "TopicOnClist", 0))
+					DBWriteContactSettingString(si->hContact, "CList" , "StatusMsg", RemoveFormatting(si->pszTopic));
 			}
 		}
 	}break;
