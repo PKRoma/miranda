@@ -111,7 +111,7 @@ __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
  * Parameters: void
  */
 
-__declspec(dllexport)int Unload(void)
+int __declspec(dllexport) Unload(void)
 {
 	YAHOO_DebugLog("Unload");
 	
