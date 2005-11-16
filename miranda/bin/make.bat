@@ -78,6 +78,10 @@ cd ..\srmm
 nmake /f srmm.mak CFG="srmm - Win32 Release"
 if errorlevel 1 goto :Error
 
+cd ..\tabSRMM
+nmake /f tabSRMM.mak CFG="tabSRMM - Win32 Release"
+if errorlevel 1 goto :Error
+
 rem ---------------------------------------------------------------------------
 rem Zip it
 rem ---------------------------------------------------------------------------
@@ -171,7 +175,7 @@ goto :eof
 
 :Pack
 del %Temp%\miranda-v%1a%2.zip
-7za.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2.zip ./* ..\ChangeLog
+7za.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2.zip ./* ..\ChangeLog.txt
 goto :eof
 
 :Error
