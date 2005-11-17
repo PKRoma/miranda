@@ -69,7 +69,7 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
   char szAvtCaption[MAX_PATH+8];
 
   szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
-  if ((szProto == NULL || strcmp(szProto, gpszICQProtoName)) && lParam)
+  if ((strcmpnull(szProto, gpszICQProtoName)) && lParam)
     return 0;
 
   odp.cbSize = sizeof(odp);
