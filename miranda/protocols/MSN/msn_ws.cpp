@@ -261,6 +261,16 @@ int ThreadData::recv( char* data, long datalen )
 	NETLIBBUFFER nlb = { data, datalen, 0 };
 
 LBL_RecvAgain:
+	if ( !mIsMainThread && !MyOptions.UseGateway && !MyOptions.UseProxy ) {
+		NETLIBSELECT nls = { 0 };
+		nls.cbSize = sizeof( nls );
+		nls.dwTimeout = 60000;
+		nls.hReadConns[0] = s;
+		if ( MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls ) == 0 ) {
+			MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
+			return 0;
+	}	}
+
 	int ret = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )s, ( LPARAM )&nlb );
 	if ( ret == 0 ) {
 		MSN_DebugLog( "Connection closed gracefully" );

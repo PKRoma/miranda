@@ -876,6 +876,7 @@ static void sttInitFileTransfer(
 			delete ft;
 			return;
 		}
+		MSN_DebugLog( "My avatar file opened for %s as %08p::%d", szContactEmail, ft, ft->fileId );
 		ft->std.totalBytes = filelength( ft->fileId );
 
 		p2p_sendAck( ft, info, hdrdata );
@@ -1315,7 +1316,11 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 					tHdr->mFlags = 0x20;
 					tHdr->mAckSessionID = ft->p2p_acksessid;
 
-					::read( ft->fileId, p, cbPortion );
+					int tBytes = ::read( ft->fileId, p, cbPortion );
+					MSN_DebugLog( "read %d bytes of %d from %08p::%d", tBytes, cbPortion, ft, ft->fileId );
+					if ( tBytes <= 0 )
+						return;
+
 					p += cbPortion;
 					*( long* )p = 0x01000000; p += sizeof( long );
 					info->sendRawMessage( 'D', buf, int( p - buf ));

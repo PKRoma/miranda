@@ -359,6 +359,7 @@ struct ThreadData
 
 	HANDLE         s;	               // NetLib connection for the thread
 	char				mChatID[10];
+	bool				mIsMainThread;
 
 	//----| for gateways |----------------------------------------------------------------
 	char           mSessionID[ 50 ]; // Gateway session ID

@@ -142,13 +142,12 @@ void __cdecl MSNServerThread( ThreadData* info )
 		info->send( "VER MSNFTP\r\n", 12 );
 	}
 
-	bool tIsMainThread = false;
 	if ( info->mType == SERVER_NOTIFICATION )
-		tIsMainThread = true;
+		info->mIsMainThread = true;
 	else if ( info->mType == SERVER_DISPATCH && MyOptions.UseGateway )
-		tIsMainThread = true;
+		info->mIsMainThread = true;
 
-	if ( tIsMainThread ) {
+	if ( info->mIsMainThread ) {
 		MSN_EnableMenuItems( TRUE );
 
 		msnNsThread = info;
@@ -223,7 +222,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	}	}
 
 LBL_Exit:
-	if ( tIsMainThread ) {
+	if ( info->mIsMainThread ) {
 		MSN_GoOffline();
 		msnNsThread = NULL;
 		if ( hKeepAliveThreadEvt )
