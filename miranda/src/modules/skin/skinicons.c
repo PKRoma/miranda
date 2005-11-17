@@ -768,12 +768,12 @@ BOOL CALLBACK DlgProcIconIndex(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				originalPreviewHeight=rc.bottom-rc.top;
 			}
 			{	int i,item;
-				char text[128];
+				TCHAR text[128];
 				LPARAM lData;
-				for(i=SendDlgItemMessage(hwndParent,IDC_CATEGORYLIST,LB_GETCOUNT,0,0)-1;i>=2;i--) {
+				for ( i = SendDlgItemMessage(hwndParent,IDC_CATEGORYLIST,LB_GETCOUNT,0,0)-1; i >= 2; i-- ) {
 					SendDlgItemMessage(hwndParent,IDC_CATEGORYLIST,LB_GETTEXT,i,(LPARAM)text);
 					lData=SendDlgItemMessage(hwndParent,IDC_CATEGORYLIST,LB_GETITEMDATA,i,0);
-					item=SendDlgItemMessageA(hwndDlg,IDC_PROTOLIST,CB_ADDSTRING,0,(LPARAM)text);
+					item = SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_ADDSTRING,0,(LPARAM)text);
 					SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_SETITEMDATA,item,lData);
 				}
 				SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_SETCURSEL,0,0);
