@@ -476,7 +476,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       icq_EnableMultipleControls(hwndDlg, icqAimControls, sizeof(icqAimControls)/sizeof(icqAimControls[0]), icqOnline?FALSE:TRUE);
 
       hCpCombo = GetDlgItem(hwndDlg, IDC_UTFCODEPAGE);
-      sCodePage = ICQGetContactSettingWord(NULL, "AnsiCodepage", CP_ACP);
+      sCodePage = ICQGetContactSettingWord(NULL, "AnsiCodePage", CP_ACP);
       EnumSystemCodePagesA(FillCpCombo, CP_INSTALLED);
       SendDlgItemMessageA(hwndDlg, IDC_UTFCODEPAGE, CB_INSERTSTRING, 0, (LPARAM)Translate("System default codepage"));
       if(sCodePage == 0)
@@ -523,7 +523,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       {
         int i = SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETCURSEL, 0, 0);
         gwAnsiCodepage = (WORD)SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETITEMDATA, (WPARAM)i, 0);
-        ICQWriteContactSettingWord(NULL, "AnsiCodepage", gwAnsiCodepage);
+        ICQWriteContactSettingWord(NULL, "AnsiCodePage", gwAnsiCodepage);
       }
       ICQWriteContactSettingByte(NULL, "UtfEnabled", gbUtfEnabled);
       gbTempVisListEnabled = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_TEMPVISIBLE);
