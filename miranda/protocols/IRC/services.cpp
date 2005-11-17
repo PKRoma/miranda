@@ -1586,6 +1586,10 @@ static int Service_GetAwayMessage(WPARAM wParam, LPARAM lParam)
 	CCSDATA *ccs = (CCSDATA *) lParam;
 	WhoisAwayReply = "";	
 	DBVARIANT dbv;
+
+	// bypass chat contacts.
+	if(DBGetContactSettingByte(ccs->hContact, IRCPROTONAME, "ChatRoom", 0) == 0)
+
 	if (ccs->hContact && !DBGetContactSetting(ccs->hContact, IRCPROTONAME, "Nick", &dbv) && dbv.type == DBVT_ASCIIZ )
 	{
 		int i = DBGetContactSettingWord(ccs->hContact,IRCPROTONAME, "Status", ID_STATUS_OFFLINE);
@@ -1599,6 +1603,7 @@ static int Service_GetAwayMessage(WPARAM wParam, LPARAM lParam)
 			g_ircSession << CIrcMessage(S.c_str(), false, false);
 		DBFreeVariant( &dbv);
 	}
+
 	return 1;
 }
 

@@ -1703,12 +1703,12 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 					{
 						command = GetWord(dbv.pszVal, i);
 						i++;
-						String S = command.substr(1, command.length());
-						if( !lstrcmpi((char *)sChanName.c_str(), (char *)S.c_str()))
-							break;
-
 						if(command != "")
 						{
+							String S = command.substr(1, command.length());
+							if( !lstrcmpi((char *)sChanName.c_str(), (char *)S.c_str()))
+								break;
+
 							save += command;
 							save += " ";
 						}
