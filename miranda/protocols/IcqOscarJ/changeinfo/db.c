@@ -64,7 +64,7 @@ void LoadSettingsFromDb(int keepChanged)
       switch(dbv.type) 
       {
         case DBVT_ASCIIZ:
-          setting[i].value=(LPARAM)_strdup(dbv.pszVal);
+          setting[i].value=(LPARAM)null_strdup(dbv.pszVal);
           break;
         case DBVT_WORD:
           if(setting[i].displayType&LIF_SIGNED) 

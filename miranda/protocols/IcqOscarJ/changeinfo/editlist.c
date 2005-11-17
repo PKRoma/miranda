@@ -139,7 +139,7 @@ void EndListEdit(int save)
       { 
         setting[iEditItem].changed=strcmpnull(szNewValue,(char*)setting[iEditItem].value);
         SAFE_FREE(&(char*)setting[iEditItem].value);
-        setting[iEditItem].value=(LPARAM)_strdup(szNewValue);
+        setting[iEditItem].value=(LPARAM)null_strdup(szNewValue);
       }
       else 
       {
