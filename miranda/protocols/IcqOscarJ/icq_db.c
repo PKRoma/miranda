@@ -61,7 +61,30 @@ WORD ICQGetContactSettingWord(HANDLE hContact, const char* szSetting, WORD wDef)
 
 DWORD ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef)
 {
-  return DBGetContactSettingDword(hContact, gpszICQProtoName, szSetting, dwDef);
+  DBVARIANT dbv;
+  DBCONTACTGETSETTING cgs;
+  DWORD dwRes;
+
+  cgs.szModule = gpszICQProtoName;
+  cgs.szSetting = szSetting;
+  cgs.pValue = &dbv;
+  if (CallService(MS_DB_CONTACT_GETSETTING,(WPARAM)hContact,(LPARAM)&cgs))
+    return dwDef; // not found, give default
+
+  if (dbv.type != DBVT_DWORD)
+    dwRes = dwDef; // invalid type, give default
+  else // found and valid, give result
+    dwRes = dbv.dVal;
+
+  ICQFreeVariant(&dbv);
+	return dwRes;
+}
+
+
+
+DWORD ICQGetContactSettingUIN(HANDLE hContact)
+{
+  return ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
 }
 
 
@@ -74,7 +97,7 @@ int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid)
   *pdwUin = 0;
   if (ppszUid) *ppszUid[0] = '\0';
 
-  if (!DBGetContactSetting(hContact, gpszICQProtoName, UNIQUEIDSETTING, &dbv))
+  if (!ICQGetContactSetting(hContact, UNIQUEIDSETTING, &dbv))
   {
     if (dbv.type == DBVT_DWORD)
     {
@@ -113,15 +136,15 @@ char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* 
   if (bUtfReadyDB)
   {
     if (DBGetContactSettingStringUtf(hContact, szModule, szSetting, &dbv))
-      return strdup(szDef);
+      return null_strdup(szDef);
     
-    szRes = strdup(dbv.pszVal);
+    szRes = null_strdup(dbv.pszVal);
     DBFreeVariant(&dbv);
   }
   else
   { // old DB, we need to convert the string to UTF-8
     if (DBGetContactSetting(hContact, szModule, szSetting, &dbv))
-      return strdup(szDef);
+      return null_strdup(szDef);
 
     if (strlennull(dbv.pszVal))
     {
@@ -130,7 +153,7 @@ char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* 
       nResult = utf8_encode(dbv.pszVal, &szRes);
     }
     else 
-      szRes = strdup("");
+      szRes = null_strdup("");
 
     DBFreeVariant(&dbv);
   }
@@ -297,7 +320,7 @@ HANDLE ICQFindFirstContact()
   HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
   char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
-  if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
+  if (!strcmpnull(szProto, gpszICQProtoName))
   {
     return hContact;
   }
@@ -313,7 +336,7 @@ HANDLE ICQFindNextContact(HANDLE hContact)
   while (hContact != NULL)
   {
     char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-    if (szProto != NULL && !strcmp(szProto, gpszICQProtoName))
+    if (!strcmpnull(szProto, gpszICQProtoName))
     {
       return hContact;
     }
