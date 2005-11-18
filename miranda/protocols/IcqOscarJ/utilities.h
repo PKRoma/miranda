@@ -92,6 +92,7 @@ void SetContactHidden(HANDLE hContact, BYTE bHidden);
 size_t __fastcall strlennull(const char *string);
 int __fastcall strcmpnull(const char *str1, const char *str2);
 int null_snprintf(char *buffer, size_t count, const char* fmt, ...);
+char* __fastcall null_strdup(const char *string);
 
 char *DemangleXml(const char *string, int len);
 char *MangleXml(const char *string, int len);

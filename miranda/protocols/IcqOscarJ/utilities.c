@@ -648,8 +648,8 @@ void InitCache(void)
   {
     DWORD dwUin;
 
-    if (!ICQGetContactSettingUID(hContact, &dwUin, NULL))
-      AddToCache(hContact, dwUin);
+    dwUin = ICQGetContactSettingUIN(hContact);
+    if (dwUin) AddToCache(hContact, dwUin);
 
     hContact = ICQFindNextContact(hContact);
   }
@@ -738,7 +738,8 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
   {
     DWORD dwUin;
 
-    if (!ICQGetContactSettingUID(hContact, &dwUin, NULL) && dwUin == uin)
+    dwUin = ICQGetContactSettingUIN(hContact);
+    if (dwUin == uin)
     {
       AddToCache(hContact, dwUin);
       return hContact;
@@ -813,7 +814,7 @@ HANDLE HContactFromUID(char* pszUID, int *Added)
     {
       if (!dwUin && !stricmp(szUid, pszUID))
       {
-        if (strcmp(szUid, pszUID))
+        if (strcmpnull(szUid, pszUID))
         { // fix case in SN
           ICQWriteContactSettingString(hContact, UNIQUEIDSETTING, pszUID);
         }
@@ -858,9 +859,9 @@ HANDLE HContactFromUID(char* pszUID, int *Added)
 char *NickFromHandle(HANDLE hContact)
 {
   if (hContact == INVALID_HANDLE_VALUE)
-    return _strdup("<invalid>");
+    return null_strdup("<invalid>");
 
-  return _strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+  return null_strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
 }
 
 
@@ -906,6 +907,16 @@ int null_snprintf(char *buffer, size_t count, const char* fmt, ...)
   len = _vsnprintf(buffer, count-1, fmt, va);
   va_end(va);
   return len;
+}
+
+
+
+char* __fastcall null_strdup(const char *string)
+{
+  if (string)
+    return strdup(string);
+
+  return NULL;
 }
 
 
@@ -1146,10 +1157,7 @@ void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckT
   pArgs->hSequence = (HANDLE)dwCookie;
   pArgs->nAckResult = nAckResult;
   pArgs->nAckType = nAckType;
-  if (pszMessage)
-    pArgs->pszMessage = (LPARAM)strdup(pszMessage);
-  else
-    pArgs->pszMessage = (LPARAM)NULL;
+  pArgs->pszMessage = (LPARAM)null_strdup(pszMessage);
 
   forkthread(icq_ProtocolAckThread, 0, pArgs);
 }
@@ -1417,7 +1425,7 @@ void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
         }
         else
         { // some file already defined, check if it is not the same, if yes, set link
-          if (!strcmp(dbv.pszVal, szFile))
+          if (!strcmpnull(dbv.pszVal, szFile))
           {
             DBWriteContactSettingByte(hContact, "ContactPhoto", "ICQLink", 1);
           }
@@ -1558,7 +1566,7 @@ char* GetDlgItemTextUtf(HWND hwndDlg, int iItem)
       return szUtf;
     }
     else
-      return strdup("");
+      return null_strdup("");
   }
 }
 
