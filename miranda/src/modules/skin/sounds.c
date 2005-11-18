@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 
 struct SoundItem {
 	char*  name;
@@ -70,7 +70,6 @@ static int SkinPlaySoundDefault(WPARAM wParam, LPARAM lParam)
 static int ServiceSkinPlaySound(WPARAM wParam, LPARAM lParam)
 {
 	char * pszSoundName = (char *)lParam;
-	int playSoundFlags = SND_ASYNC | SND_FILENAME | SND_NOWAIT;
 	int j;
 
 	for (j=0; j<soundCount; j++) {

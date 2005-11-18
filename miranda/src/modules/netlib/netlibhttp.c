@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 #define SECURITY_WIN32
 #include <security.h>
 #include "netlib.h"
@@ -56,21 +56,6 @@ static void AppendToCharBuffer(struct ResizableCharBuffer *rcb,const char *fmt,.
 	}
 	va_end(va);
 	rcb->iEnd+=charsDone;
-}
-
-static void ConcatToCharBuffer(struct ResizableCharBuffer *rcb,const char *buff, int size)
-{
-	if(rcb->cbAlloced==0) {
-		rcb->cbAlloced=size;
-		rcb->sz=(char*)malloc(rcb->cbAlloced);
-		memcpy(rcb->sz, buff, size);
-		rcb->iEnd+=size;
-	}else {
-		rcb->cbAlloced+=size;
-		rcb->sz=(char*)realloc(rcb->sz,rcb->cbAlloced);
-		memcpy(rcb->sz + rcb->iEnd, buff, size);
-		rcb->iEnd+=size;
-	}
 }
 
 

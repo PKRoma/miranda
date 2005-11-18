@@ -21,7 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 #include "dblists.h"
 
 /* a simple sorted list implementation */
@@ -58,7 +58,8 @@ void* List_Find( SortedList* p_list, void* p_value )
 
 int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 {
-   int low = 0, high = p_list->realCount-1, found = 0;
+   int low  = 0;
+   int high = p_list->realCount-1;
 
    while( low <= high )
    {  

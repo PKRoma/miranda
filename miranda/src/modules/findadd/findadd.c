@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 // TODO: Remove this
 #include <m_icq.h>
 #include "findadd.h"
@@ -863,11 +863,9 @@ int LoadFindAddModule(void)
 
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-	
 	CLISTMENUITEM mi;
 	int netProtoCount, protoCount, i;
 	PROTOCOLDESCRIPTOR **protos;
-	DWORD dwFlags = 0;
 
 	// Make sure we have some networks to search on.
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protos);

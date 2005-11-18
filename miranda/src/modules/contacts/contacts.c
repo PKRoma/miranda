@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 
 extern HWND hwndContactTree;
 
@@ -134,7 +134,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 		case CNF_GENDER:
 		{
 			BYTE i;
-			if (i=DBGetContactSettingByte(ci->hContact,ci->szProto,"Gender",0)) {
+			if (i=(BYTE)DBGetContactSettingByte(ci->hContact,ci->szProto,"Gender",0)) {
 				ci->type = CNFT_BYTE;
 				ci->bVal = i;
 				return 0;
@@ -257,7 +257,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 									}
 									else {
 										char buf[ 40 ];
-										ltoa( value, buf, 10 );
+										_ltoa( value, buf, 10 );
 										ci->pszVal = ( TCHAR* )_strdup(buf);
 									}
 									ci->type = CNFT_ASCIIZ;
@@ -297,7 +297,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 						break;
 					case 7:
 						if ( ci->dwFlag & CNF_UNICODE )
-							ci->pszVal = ( TCHAR* )wcsdup( TranslateW( L"'(Unknown Contact)'" ));
+							ci->pszVal = ( TCHAR* )_wcsdup( TranslateW( L"'(Unknown Contact)'" ));
 						else
 							ci->pszVal = ( TCHAR* )_strdup( Translate("'(Unknown Contact)'"));
 						ci->type = CNFT_ASCIIZ;
@@ -453,11 +453,16 @@ static int ContactOptInit(WPARAM wParam,LPARAM lParam)
 }
 
 int LoadContactsModule(void) {
-	{	// Load the name order
-		int i;
+	{
+		// Load the name order
+		BYTE i;
 		DBVARIANT dbv;
-		for(i=0;i<NAMEORDERCOUNT;i++) nameOrder[i]=i;
-		if(!DBGetContactSetting(NULL,"Contact","NameOrder",&dbv)) {
+
+		for(i=0; i<NAMEORDERCOUNT; i++)
+			nameOrder[i]=i;
+
+		if(!DBGetContactSetting(NULL,"Contact","NameOrder",&dbv))
+		{
 			CopyMemory(nameOrder,dbv.pbVal,dbv.cpbVal);
 			DBFreeVariant(&dbv);
 		}

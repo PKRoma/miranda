@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 
 BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -70,7 +70,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 				}
 				else {
 					unspecified=(special==SVS_ZEROISUNSPEC && dbv.bVal==0);
-					pstr=itoa(special==SVS_SIGNED?dbv.cVal:dbv.bVal,str,10);
+					pstr=_itoa(special==SVS_SIGNED?dbv.cVal:dbv.bVal,str,10);
 				}
 				break;
 			case DBVT_WORD:
@@ -88,7 +88,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 				}
 				else {
 					unspecified=(special==SVS_ZEROISUNSPEC && dbv.wVal==0);
-					pstr=itoa(special==SVS_SIGNED?dbv.sVal:dbv.wVal,str,10);
+					pstr=_itoa(special==SVS_SIGNED?dbv.sVal:dbv.wVal,str,10);
 				}
 				break;
 			case DBVT_DWORD:
@@ -99,7 +99,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 					pstr=inet_ntoa(ia);
 					if(dbv.dVal==0) unspecified=1;
 				}
-				else pstr=itoa(special==SVS_SIGNED?dbv.lVal:dbv.dVal,str,10);
+				else pstr=_itoa(special==SVS_SIGNED?dbv.lVal:dbv.dVal,str,10);
 				break;
 			case DBVT_ASCIIZ:
 				unspecified=(special==SVS_ZEROISUNSPEC && dbv.pszVal[0]=='\0');

@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 #include "profilemanager.h"
 
 
@@ -171,7 +171,7 @@ static int showProfileManager(void)
 	if (GetAsyncKeyState(VK_CONTROL)&0x8000) return 1;
 	// wanna show it?
 	GetPrivateProfileStringA("Database", "ShowProfileMgr", "never", Mgr, SIZEOF(Mgr), mirandabootini);
-	if ( strcmpi(Mgr,"yes") == 0 ) return 1;
+	if ( _strcmpi(Mgr,"yes") == 0 ) return 1;
 	return 0;
 }
 
@@ -318,16 +318,23 @@ static int FindMirandaForProfile(char * szProfile)
 
 int LoadDatabaseModule(void)
 {
+	int iReturn = 0;
 	char szProfile[MAX_PATH];
+	szProfile[0]=0;
+
 	// load the older basic services of the db
 	InitTime();
+
 	// find out which profile to load
-	if ( getProfile(szProfile, SIZEOF(szProfile)) ) {
+	if ( getProfile(szProfile, SIZEOF(szProfile)) )
+	{
 		int rc;
 		PLUGIN_DB_ENUM dbe;
+
 		dbe.cbSize=sizeof(PLUGIN_DB_ENUM);
 		dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginForProfile;
 		dbe.lParam=(LPARAM)szProfile;
+
 		// find a driver to support the given profile
 		rc=CallService(MS_PLUGINS_ENUMDBPLUGINS, 0, (LPARAM)&dbe);
 		switch ( rc ) {
@@ -358,10 +365,13 @@ int LoadDatabaseModule(void)
 				break;
 			}
 		}
-		return rc != 0;
-	} else {
-		return 1;
+		iReturn = (rc != 0);
 	}
-	return 0;
+	else
+	{
+		iReturn = 1;
+	}
+
+	return iReturn;
 }
 

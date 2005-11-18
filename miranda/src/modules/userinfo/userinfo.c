@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 #define UPDATEANIMFRAMES 20
 
 int DetailsInit(WPARAM wParam,LPARAM lParam);
@@ -115,7 +115,7 @@ static int AddDetailsPage(WPARAM wParam,LPARAM lParam)
 	if((DWORD)odp->pszTemplate&0xFFFF0000) dst->pszTemplate = _strdup(odp->pszTemplate);
 	else dst->pszTemplate = odp->pszTemplate;
 	if ( odp->flags & ODPF_UNICODE )
-		dst->ptszTitle = (odp->ptszTitle==0) ? NULL : wcsdup(odp->ptszTitle);
+		dst->ptszTitle = (odp->ptszTitle==0) ? NULL : _wcsdup(odp->ptszTitle);
 	else
 		dst->pszTitle = (odp->pszTitle==0) ? NULL : _strdup(odp->pszTitle);
 

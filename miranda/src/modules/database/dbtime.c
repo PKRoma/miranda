@@ -21,7 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 #include "database.h"
 
 static int daysInMonth[12]={31,28,31,30,31,30,31,31,30,31,30,31};
@@ -75,33 +75,51 @@ static int TimestampToLocal(WPARAM wParam,LPARAM lParam)
 	LARGE_INTEGER liFiletime;
 	FILETIME filetime;
 	SYSTEMTIME st;
+	int iReturn = 0;
 
 	GetTimeZoneInformation(&tzInfo);
-	if(tzInfo.StandardDate.wMonth==0) {	 //no daylight savings time
-		return (int)(wParam-tzInfo.Bias*60);
+	if(tzInfo.StandardDate.wMonth==0)
+	{
+		//no daylight savings time
+		iReturn = (int)(wParam-tzInfo.Bias*60);
 	}
-	//this huge number is the difference between 1970 and 1601 in seconds
-	liFiletime.QuadPart=(11644473600i64+(__int64)wParam)*10000000;
-	filetime.dwHighDateTime=liFiletime.HighPart;
-	filetime.dwLowDateTime=liFiletime.LowPart;
-	FileTimeToSystemTime(&filetime,&st);
-	if(tzInfo.DaylightDate.wMonth<tzInfo.StandardDate.wMonth) {
-		//northern hemisphere
-		if(CompareSystemTimes(&st,&tzInfo.DaylightDate)<0 ||
-		   CompareSystemTimes(&st,&tzInfo.StandardDate)>0) {
-		    return (int)(wParam-(tzInfo.Bias+tzInfo.StandardBias)*60);
+	else
+	{
+		//this huge number is the difference between 1970 and 1601 in seconds
+		liFiletime.QuadPart=(11644473600i64+(__int64)wParam)*10000000;
+		filetime.dwHighDateTime=liFiletime.HighPart;
+		filetime.dwLowDateTime=liFiletime.LowPart;
+		FileTimeToSystemTime(&filetime,&st);
+
+		if(tzInfo.DaylightDate.wMonth<tzInfo.StandardDate.wMonth)
+		{
+			//northern hemisphere
+			if(CompareSystemTimes(&st,&tzInfo.DaylightDate)<0 ||
+			   CompareSystemTimes(&st,&tzInfo.StandardDate)>0)
+			{
+				iReturn = (int)(wParam-(tzInfo.Bias+tzInfo.StandardBias)*60);
+			}
+			else
+			{
+				iReturn = (int)(wParam-(tzInfo.Bias+tzInfo.DaylightBias)*60);
+			}
 		}
-	    return (int)(wParam-(tzInfo.Bias+tzInfo.DaylightBias)*60);
-	}
-	else {
-		//southern hemisphere
-		if(CompareSystemTimes(&st,&tzInfo.StandardDate)<0 ||
-		   CompareSystemTimes(&st,&tzInfo.DaylightDate)>0) {
-		    return (int)(wParam-(tzInfo.Bias+tzInfo.DaylightBias)*60);
+		else
+		{
+			//southern hemisphere
+			if(CompareSystemTimes(&st,&tzInfo.StandardDate)<0 ||
+			   CompareSystemTimes(&st,&tzInfo.DaylightDate)>0)
+			{
+				iReturn = (int)(wParam-(tzInfo.Bias+tzInfo.DaylightBias)*60);
+			}
+			else
+			{
+				iReturn = (int)(wParam-(tzInfo.Bias+tzInfo.StandardBias)*60);
+			}
 		}
-	    return (int)(wParam-(tzInfo.Bias+tzInfo.StandardBias)*60);
 	}
-	return 0;
+
+	return iReturn;
 }
 
 static int TimestampToString(WPARAM wParam,LPARAM lParam)

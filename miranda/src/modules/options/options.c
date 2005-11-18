@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 
 #define OPTIONPAGE_OLD_SIZE 40
 
@@ -205,14 +205,14 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			if ( odp[i].pszTitle == NULL )
 				dat->opd[i].pszTitle = NULL;
 			else if ( odp[i].flags & ODPF_UNICODE )
-				dat->opd[i].pszTitle = ( TCHAR* )wcsdup( odp[i].ptszTitle );
+				dat->opd[i].pszTitle = ( TCHAR* )_wcsdup( odp[i].ptszTitle );
 			else
 				dat->opd[i].pszTitle = ( TCHAR* )_strdup( odp[i].pszTitle );
 
 			if ( odp[i].pszGroup == NULL )
             dat->opd[i].pszGroup = NULL;
 			else if ( odp[i].flags & ODPF_UNICODE )
-				dat->opd[i].pszGroup = ( TCHAR* )wcsdup( odp[i].ptszGroup );
+				dat->opd[i].pszGroup = ( TCHAR* )_wcsdup( odp[i].ptszGroup );
 			else
 				dat->opd[i].pszGroup = ( TCHAR* )_strdup( odp[i].pszGroup );
 

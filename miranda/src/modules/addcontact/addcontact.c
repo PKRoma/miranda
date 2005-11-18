@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 
 BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 {
@@ -46,7 +46,7 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 					dbei.cbBlob=sizeof(DWORD);
 					dbei.pBlob=(PBYTE)&dwUin;
 					CallService(MS_DB_EVENT_GET,(WPARAM)acs->handle,(LPARAM)&dbei);
-					ltoa(dwUin,szUin,10);
+					_ltoa(dwUin,szUin,10);
 					acs->szProto = dbei.szModule;
 				}
 				{	TCHAR* szName;
@@ -77,7 +77,7 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 
 				for(groupId=0;groupId<999;groupId++)
 				{
-					itoa(groupId,idstr,10);
+					_itoa(groupId,idstr,10);
 					if(DBGetContactSettingTString(NULL,"CListGroups",idstr,&dbv)) break;
 					SendDlgItemMessage(hdlg,IDC_GROUP,CB_ADDSTRING,0,(LPARAM)(dbv.ptszVal+1));
 					DBFreeVariant(&dbv);
@@ -232,8 +232,3 @@ int LoadAddContactModule(void)
 	CreateServiceFunction(MS_ADDCONTACT_SHOW,AddContactDialog);
 	return 0;
 }
-
-					
-
-
-

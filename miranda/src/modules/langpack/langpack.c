@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 
 int LoadLangPackServices(void);
 
@@ -59,12 +59,14 @@ static void TrimStringSimple(char *str)
 	if (str[lstrlenA(str)-1] == '\r') str[lstrlenA(str)-1] = '\0';
 }
 
-static int IsEmpty(char *str) {
+static int IsEmpty(char *str)
+{
 	int i = 0;
-	int len = lstrlenA(str);
 
-	while (str[i]) {
-		if (str[i]!=' '&&str[i]!='\r'&&str[i]!='\n') return 0;
+	while (str[i])
+	{
+		if (str[i]!=' '&&str[i]!='\r'&&str[i]!='\n')
+			return 0;
 		i++;
 	}
 	return 1;

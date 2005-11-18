@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 
 static char szMirandaPath[MAX_PATH];
 
@@ -44,7 +44,7 @@ static int pathToRelative(WPARAM wParam, LPARAM lParam)
         char szTmp[MAX_PATH];
 
         mir_snprintf(szTmp, SIZEOF(szTmp), "%s", pSrc);
-        strlwr(szTmp);
+        _strlwr(szTmp);
         if (strstr(szTmp, szMirandaPath)) {
             mir_snprintf(pOut, MAX_PATH, "%s", pSrc+strlen(szMirandaPath));
             return strlen(pOut);
@@ -76,7 +76,7 @@ int InitPathUtils(void)
 	GetModuleFileNameA(GetModuleHandle(NULL), szMirandaPath, SIZEOF(szMirandaPath));
 	p=strrchr(szMirandaPath,'\\');
 	if (p&&p+1) *(p+1)=0;
-    strlwr(szMirandaPath);
+    _strlwr(szMirandaPath);
     CreateServiceFunction(MS_UTILS_PATHTORELATIVE, pathToRelative);
     CreateServiceFunction(MS_UTILS_PATHTOABSOLUTE, pathToAbsolute);
     return 0;

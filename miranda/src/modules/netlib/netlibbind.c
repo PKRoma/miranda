@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 #include "netlib.h"
 
 //mask must be 8192 bytes, returns number of bits set
@@ -78,7 +78,7 @@ static DWORD __stdcall NetlibBindAcceptThread(struct NetlibBoundPort *nlbp)
 	int sinLen;
 	struct NetlibConnection *nlc;
 
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 	Netlib_Logf(nlbp->nlu,"(%d) Port %u opened for incoming connections",nlbp->s,nlbp->wPort);
 	for(;;) {
 		sinLen=sizeof(sin);

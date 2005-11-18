@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 #include <ctype.h>
 
 #define DDEMESSAGETIMEOUT  1000
@@ -159,7 +159,7 @@ static void OpenURLThread(void *arg)
 	   || RegOpenKeyExA(HKEY_CLASSES_ROOT,szSubkey,0,KEY_QUERY_VALUE,&hKey)==ERROR_SUCCESS) {
 		dataLength=SIZEOF(szCommandName);
 		if(RegQueryValueEx(hKey,NULL,NULL,NULL,(PBYTE)szCommandName,&dataLength)==ERROR_SUCCESS) {
-			strlwr(szCommandName);
+			_strlwr(szCommandName);
 			if(strstr(szCommandName,"mozilla") || strstr(szCommandName,"netscape"))
 				success=(DdeOpenUrl("mozilla",hUrlInfo->szUrl,hUrlInfo->newWindow,hwndDdeMsg)==0 || DdeOpenUrl("netscape",hUrlInfo->szUrl,hUrlInfo->newWindow,hwndDdeMsg)==0);
 			else if(strstr(szCommandName,"iexplore") || strstr(szCommandName,"msimn"))

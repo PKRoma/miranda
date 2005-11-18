@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 #include <io.h>
 
 /***********W*A*R*N*I*N*G*************
@@ -89,7 +89,7 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 				if (protoCount) {
 					for (j=0;j<protoCount;j++) {	
 						if (proto[j]->type!=PROTOTYPE_PROTOCOL) continue;
-						if (!strcmpi(proto[j]->szName,protoIcons[0].szProto)) return (int)hIcon;
+						if (!_strcmpi(proto[j]->szName,protoIcons[0].szProto)) return (int)hIcon;
 					} //for
 				} else {
 					return (int)hIcon;
@@ -585,8 +585,9 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				break;
 			}
 			else if(wParam==MAKEWPARAM(IDC_CATEGORYLIST,CBN_SELCHANGE)) {
-				if(dat->protoCount>1) {
-					int i=SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETCURSEL,0,0);
+				if(dat->protoCount>1)
+				{
+					SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETCURSEL,0,0);
 				}
 				SendMessage(hwndDlg,DM_REBUILDICONSPREVIEW,0,0);
 			}

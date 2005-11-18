@@ -21,7 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 #include "profilemanager.h"
 #include <sys/stat.h>
 
@@ -597,11 +597,18 @@ int getProfileManager(PROFILEMANAGERDATA * pd)
 	prof.pd=pd;
 	prof.psh=&psh;
 	rc=DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_PROFILEMANAGER),NULL,DlgProfileManager,(LPARAM)&prof);
-	for(i=0;i<opi.pageCount;i++) {
-		free((char*)opi.odp[i].pszTitle);
-		if(opi.odp[i].pszGroup!=NULL) free(opi.odp[i].pszGroup);
-		if((DWORD)opi.odp[i].pszTemplate&0xFFFF0000) free((char*)opi.odp[i].pszTemplate);
+
+	if (rc != -1)
+	{
+		for(i=0;i<opi.pageCount;i++)
+		{
+			free((char*)opi.odp[i].pszTitle);
+			if(opi.odp[i].pszGroup!=NULL) free(opi.odp[i].pszGroup);
+			if((DWORD)opi.odp[i].pszTemplate&0xFFFF0000) free((char*)opi.odp[i].pszTemplate);
+		}
 	}
-	if ( opi.odp != NULL ) free(opi.odp);
+	if ( opi.odp != NULL )
+		free(opi.odp);
+
 	return rc;
 }
