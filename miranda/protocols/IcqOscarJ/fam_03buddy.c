@@ -35,7 +35,6 @@
 // -----------------------------------------------------------------------------
 
 #include "icqoscar.h"
-#include "m_cluiframes.h"
 
 static void handleUserOffline(BYTE* buf, WORD wPackLen);
 static void handleUserOnline(BYTE* buf, WORD wPackLen);
