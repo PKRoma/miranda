@@ -366,11 +366,11 @@ void yahoo_http_get(int id, const char *url, const char *cookies,
 
 	snprintf(buff, sizeof(buff), 
 			"GET %s HTTP/1.1\r\n"
-			"Host: %s:%d\r\n"
+			"Host: %s\r\n"
 			"User-Agent: Mozilla/4.01 [en] (Win95; I)\r\n"
 			"Cookie: %s\r\n"
 			"\r\n",
-			path, host, port, cookies);
+			path, host, cookies);
 	
 	yahoo_send_http_request(id, host, port, buff, callback, data);
 }
@@ -447,7 +447,8 @@ void yahoo_get_url_fd(int id, const char *url, const struct yahoo_data *yd,
 {
 	char buff[1024];
 	struct url_data *ud = y_new0(struct url_data, 1);
-	snprintf(buff, sizeof(buff), "Y=%s; T=%s", yd->cookie_y, yd->cookie_t);
+	//snprintf(buff, sizeof(buff), "Y=%s; T=%s", yd->cookie_y, yd->cookie_t);
+	buff[0]='\0'; /*don't send them our cookies!! */
 	ud->callback = callback;
 	ud->user_data = data;
 	yahoo_http_get(id, url, buff, yahoo_got_url_fd, ud);
