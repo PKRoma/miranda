@@ -87,7 +87,7 @@ Improvements:
   Display error messages using PopUp Plugin
   Support for Iconlib Plugin
   Support for unicode database module (clist data)
-TODO: Level 2 Rate management for Status & Xtraz replies, Xtraz requests
+  Level 2 Rate management for Status & Xtraz replies, Xtraz requests (useful with many contaccts in list)
 
 
 0.3.5.2
