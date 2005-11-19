@@ -381,9 +381,9 @@ void icq_login(const char* szPassword)
 
   // Server host name
   if (ICQGetContactStaticString(NULL, "OscarServer", szServer, MAX_PATH))
-    stsi->nloc.szHost = _strdup(DEFAULT_SERVER_HOST);
+    stsi->nloc.szHost = null_strdup(DEFAULT_SERVER_HOST);
   else
-    stsi->nloc.szHost = _strdup(szServer);
+    stsi->nloc.szHost = null_strdup(szServer);
 
   // Server port
   stsi->nloc.wPort = (WORD)ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);

@@ -178,6 +178,10 @@ SOURCE=.\icq_popups.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\icq_rates.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\icq_server.h
 # End Source File
 # Begin Source File
@@ -496,6 +500,10 @@ SOURCE=.\icq_infoupdate.c
 # Begin Source File
 
 SOURCE=.\icq_packet.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\icq_rates.c
 # End Source File
 # Begin Source File
 

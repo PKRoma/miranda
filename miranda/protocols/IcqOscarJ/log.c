@@ -73,8 +73,8 @@ void icq_LogMessage(int level, const char *szMsg)
         return; // Popup showed successfuly
     }
     lmi = (LogMessageInfo*)malloc(sizeof(LogMessageInfo));
-    lmi->szMsg = _strdup(szMsg);
-    lmi->szTitle = _strdup(Translate(szLevelDescr[level]));
+    lmi->szMsg = null_strdup(szMsg);
+    lmi->szTitle = null_strdup(Translate(szLevelDescr[level]));
     forkthread(icq_LogMessageThread, 0, lmi);
   }
 }

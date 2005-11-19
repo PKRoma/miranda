@@ -491,7 +491,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
     ack->hash = (char*)malloc(hashlen);
     memcpy(ack->hash, hash, hashlen); // copy the data
     ack->hashlen = hashlen;
-    ack->szFile = _strdup(file); // we duplicate the string
+    ack->szFile = null_strdup(file); // we duplicate the string
     dwCookie = AllocateCookie(6, dwUin, ack);
 
     packet.wLen = 12 + nUinLen + hashlen;
@@ -543,12 +543,12 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
     }
     ar->type = 1; // get avatar
     ar->dwUin = dwUin;
-    ar->szUid = strdup(szUid);
+    ar->szUid = null_strdup(szUid);
     ar->hContact = hContact;
     ar->hash = (char*)malloc(hashlen);
     memcpy(ar->hash, hash, hashlen); // copy the data
     ar->hashlen = hashlen;
-    ar->szFile = _strdup(file); // duplicate the string
+    ar->szFile = null_strdup(file); // duplicate the string
     ar->pNext = pendingRequests;
     pendingRequests = ar;
   }

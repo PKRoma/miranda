@@ -57,7 +57,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,7),
+  PLUGIN_MAKE_VERSION(0,3,6,8),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@users.sourceforge.net",
@@ -124,13 +124,15 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   {
     char* str1;
     char str2[MAX_PATH];
+    int nProtoNameLen;
 
     GetModuleFileName(hInst, str2, MAX_PATH);
     str1 = strrchr(str2, '\\');
-    if (str1 != NULL && (strlennull(str1+1) > 4))
+    nProtoNameLen = strlennull(str1);
+    if (str1 != NULL && (nProtoNameLen > 5))
     {
-      strncpy(gpszICQProtoName, str1+1, strlennull(str1+1)-4);
-      gpszICQProtoName[strlennull(str1+1)-3] = 0;
+      strncpy(gpszICQProtoName, str1+1, nProtoNameLen-5);
+      gpszICQProtoName[nProtoNameLen-4] = 0;
     }
     CharUpper(gpszICQProtoName);
   }
@@ -149,6 +151,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   InitDB();       // DB interface
   InitCookies();  // cookie utils
   InitCache();    // contacts cache
+  InitRates();    // rate management
 
   // Register the module
   ZeroMemory(&pd, sizeof(pd));
@@ -259,6 +262,7 @@ int __declspec(dllexport) Unload(void)
 
   Netlib_CloseHandle(ghDirectNetlibUser);
   Netlib_CloseHandle(ghServerNetlibUser);
+  UninitRates();
   UninitCookies();
   UninitCache();
   DeleteCriticalSection(&modeMsgsMutex);

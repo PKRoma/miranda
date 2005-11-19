@@ -108,6 +108,8 @@
 #include "UI/userinfotab.h"
 #include "UI/loginpassword.h"
 
+#include "icq_rates.h"
+
 #include "changeinfo/changeinfo.h"
 #include "icq_popups.h"
 #include "iconlib.h"

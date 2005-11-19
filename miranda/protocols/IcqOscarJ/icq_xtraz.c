@@ -94,7 +94,7 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
               szXMsg = ICQGetContactSettingUtf(NULL, "XStatusMsg", "");
               
               nResponseLen = 212 + strlennull(szXName) + strlennull(szXMsg) + UINMAXLEN + 2;
-              szResponse = (char*)malloc(nResponseLen + 1);
+              szResponse = (char*)_alloca(nResponseLen + 1);
               // send response
               nResponseLen = null_snprintf(szResponse, nResponseLen, 
                 "<ret event='OnRemoteNotification'>"
@@ -111,11 +111,22 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
               SAFE_FREE(&szXMsg);
 
               if (gbXStatusEnabled)
-                SendXtrazNotifyResponse(dwUin, dwMID, dwMID2, wCookie, szResponse, nResponseLen, bThruDC);
+              {
+                rate_record rr = {0};
+
+                rr.bType = RIT_XSTATUS_RESPONSE;
+                rr.dwUin = dwUin;
+                rr.dwMid1 = dwMID;
+                rr.dwMid2 = dwMID2;
+                rr.wCookie = wCookie;
+                rr.szData = szResponse;
+                rr.bThruDC = bThruDC;
+                rr.rate_group = 0x102;
+                if (bThruDC || !handleRateItem(&rr, TRUE))
+                  SendXtrazNotifyResponse(dwUin, dwMID, dwMID2, wCookie, szResponse, nResponseLen, bThruDC);
+              }
               else
                 NetLog_Server("XStatus Disabled");
-
-              SAFE_FREE(&szResponse);
             }
             else
               NetLog_Server("Error: We are not in XStatus, skipping");
@@ -243,11 +254,11 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char*
 
 DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
 {
-  char *szQueryBody = MangleXml(szQuery, strlennull(szQuery));
-  char *szNotifyBody = MangleXml(szNotify, strlennull(szNotify));
+  char *szQueryBody;
+  char *szNotifyBody;
   DWORD dwUin;
-  int nBodyLen = strlennull(szQueryBody) + strlennull(szNotifyBody) + 41;
-  char *szBody = (char*)malloc(nBodyLen);
+  int nBodyLen;
+  char *szBody;
   DWORD dwCookie;
   message_cookie_data* pCookieData;
 
@@ -257,6 +268,10 @@ DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
   if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
     return 0; // Invalid contact
 
+  szQueryBody = MangleXml(szQuery, strlennull(szQuery));
+  szNotifyBody = MangleXml(szNotify, strlennull(szNotify));
+  nBodyLen = strlennull(szQueryBody) + strlennull(szNotifyBody) + 41;
+  szBody = (char*)_alloca(nBodyLen);
   nBodyLen = null_snprintf(szBody, nBodyLen, "<N><QUERY>%s</QUERY><NOTIFY>%s</NOTIFY></N>", szQueryBody, szNotifyBody);
   SAFE_FREE(&szQueryBody);
   SAFE_FREE(&szNotifyBody);
@@ -275,8 +290,6 @@ DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
     else
       icq_sendXtrazRequestServ(dwUin, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
 
-    SAFE_FREE(&szBody);
-
     return dwCookie;
   }
   return 0;
@@ -288,11 +301,14 @@ void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCooki
 {
   char *szResBody = MangleXml(szResponse, nResponseLen);
   int nBodyLen = strlennull(szResBody) + 21;
-  char *szBody = (char*)malloc(nBodyLen);
+  char *szBody = (char*)_alloca(nBodyLen);
   HANDLE hContact = HContactFromUIN(dwUin, NULL);
 
   if (hContact != INVALID_HANDLE_VALUE && !CheckContactCapabilities(hContact, CAPF_XTRAZ))
+  {
+    SAFE_FREE(&szResBody);
     return; // Contact does not support xtraz, do not send anything
+  }
 
   if (validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
   { // apply privacy rules
@@ -306,7 +322,5 @@ void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCooki
       icq_sendXtrazResponseDirect(dwUin, hContact, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
     else
       icq_sendXtrazResponseServ(dwUin, dwMID, dwMID2, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
-
-    SAFE_FREE(&szBody);
   }
 }

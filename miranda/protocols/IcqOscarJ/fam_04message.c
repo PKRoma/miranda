@@ -716,7 +716,6 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
         {
           char* szMsg;
 
-
           szMsg = (char *)malloc(wMsgLen + 1);
           memcpy(szMsg, pDataBuf, wMsgLen);
           szMsg[wMsgLen] = '\0';
@@ -768,7 +767,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
       }
     }
     else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PSIG_INFO_PLUGIN))
-    { // info manager plugin
+    { // info manager plugin - obsolete
       BYTE bLevel;
 
       pDataBuf += 16;  /* unused stuff */
@@ -792,13 +791,13 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
 
       if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PMSG_QUERY_INFO))
       {
-        NetLog_Server("User %u requests our %s plugin list. NOT SUPPORTED YET", dwUin, "info");
+        NetLog_Server("User %u requests our %s plugin list. NOT SUPPORTED", dwUin, "info");
       }
       else
         NetLog_Server("Unknown %s Manager message from %u", "Info", dwUin);
     }
     else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PSIG_STATUS_PLUGIN))
-    { // status manager plugin
+    { // status manager plugin - obsolete
       BYTE bLevel;
 
       pDataBuf += 16;  /* unused stuff */
@@ -822,7 +821,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
 
       if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PMSG_QUERY_STATUS))
       {
-        NetLog_Server("User %u requests our %s plugin list. NOT SUPPORTED YET", dwUin, "status");
+        NetLog_Server("User %u requests our %s plugin list. NOT SUPPORTED", dwUin, "status");
       }
       else
         NetLog_Server("Unknown %s Manager message from %u", "Status", dwUin);
@@ -1260,7 +1259,7 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, DWORD dwLeng
 
 /* this function also processes direct packets, so it should be bulletproof */
 /* pMsg points to the beginning of the message */
-void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, DWORD dwRecvTimestamp2, WORD wCookie, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC)
+void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC)
 {
   char* szMsg;
   char* pszMsgField[2*MAX_CONTACTSSEND+1];
@@ -1342,17 +1341,19 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
 
             if (utf8_decode(szMsg, &szAnsiMessage))
             {
-              if (!strcmp(szMsg, szAnsiMessage))
+              if (!strcmpnull(szMsg, szAnsiMessage))
               {
                 SAFE_FREE(&szMsg);
                 szMsg = szAnsiMessage;
               }
               else
               {
-                usMsg = malloc((strlennull(szAnsiMessage)+1)*(sizeof(wchar_t)+1));
-                memcpy((char*)usMsg, szAnsiMessage, strlennull(szAnsiMessage)+1);
+                int nMsgLen = strlennull(szAnsiMessage) + 1;
+
+                usMsg = malloc((nMsgLen)*(sizeof(wchar_t) + 1));
+                memcpy((char*)usMsg, szAnsiMessage, nMsgLen);
                 usMsgW = make_unicode_string(szMsg);
-                memcpy((char*)usMsg+strlennull(szAnsiMessage)+1, (char*)usMsgW, (strlennull(szAnsiMessage)+1)*sizeof(wchar_t));
+                memcpy((char*)usMsg + nMsgLen, (char*)usMsgW, nMsgLen*sizeof(wchar_t));
                 SAFE_FREE(&usMsgW);
                 SAFE_FREE(&szAnsiMessage);
                 SAFE_FREE(&szMsg);
@@ -1688,7 +1689,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
       NetLog_Direct("Received Xtraz Notify Request from %u", dwUin);
     else
       NetLog_Server("Received Xtraz Notify Request from %u", dwUin);
-    handleXtrazNotify(dwUin, dwRecvTimestamp, dwRecvTimestamp2, wCookie, szMsg, wMsgLen, bThruDC);
+    handleXtrazNotify(dwUin, dwMsgID, dwMsgID2, wCookie, szMsg, wMsgLen, bThruDC);
     break;
 
   case MTYPE_AUTOAWAY:
@@ -1700,7 +1701,19 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwRecvTimestamp, D
       char** szMsg = MirandaStatusToAwayMsg(AwayMsgTypeToStatus(type));
 
       if (szMsg)
-        icq_sendAwayMsgReplyServ(dwUin, dwRecvTimestamp, dwRecvTimestamp2, wCookie, (BYTE)type, szMsg);
+      {
+        rate_record rr = {0};
+
+        rr.bType = RIT_AWAYMSG_RESPONSE;
+        rr.dwUin = dwUin;
+        rr.dwMid1 = dwMsgID;
+        rr.dwMid2 = dwMsgID2;
+        rr.wCookie = wCookie;
+        rr.msgType = type;
+        rr.rate_group = 0x102;
+        if (!handleRateItem(&rr, TRUE))
+          icq_sendAwayMsgReplyServ(dwUin, dwMsgID, dwMsgID2, wCookie, (BYTE)type, szMsg);
+      }
 
       break;
     }
@@ -2052,7 +2065,7 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
     }
     if (wError == 9 && pCookieData->bMessageType == MTYPE_AUTOAWAY)
     { // we failed to request away message the normal way, try it AIM way
-       icq_packet packet;
+      icq_packet packet;
 
       packet.wLen = 13 + getUINLen(dwUin);
       write_flap(&packet, ICQ_DATA_CHAN);
@@ -2071,33 +2084,33 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
     {
 
     case 0x0002:     // Server rate limit exceeded
-      pszErrorMessage = strdup(Translate("You are sending too fast. Wait a while and try again.\nSNAC(4.1) Error x02"));
+      pszErrorMessage = Translate("You are sending too fast. Wait a while and try again.\nSNAC(4.1) Error x02");
       break;
 
     case 0x0003:     // Client rate limit exceeded
-      pszErrorMessage = strdup(Translate("You are sending too fast. Wait a while and try again.\nSNAC(4.1) Error x03"));
+      pszErrorMessage = Translate("You are sending too fast. Wait a while and try again.\nSNAC(4.1) Error x03");
       break;
 
     case 0x0004:     // Recipient is not logged in (resend in a offline message)
       if (pCookieData->bMessageType != MTYPE_PLUGIN) // TODO: this needs better solution
         ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
-      pszErrorMessage = strdup(Translate("The user has logged off. Select 'Retry' to send an offline message.\nSNAC(4.1) Error x04"));
+      pszErrorMessage = Translate("The user has logged off. Select 'Retry' to send an offline message.\nSNAC(4.1) Error x04");
       break;
 
     case 0x0009:     // Not supported by client (resend in a simpler format)
-      pszErrorMessage = strdup(Translate("The receiving client does not support this type of message.\nSNAC(4.1) Error x09"));
+      pszErrorMessage = Translate("The receiving client does not support this type of message.\nSNAC(4.1) Error x09");
       break;
 
     case 0x000A:     // Refused by client
-      pszErrorMessage = strdup(Translate("You sent too long message. The receiving client does not support it.\nSNAC(4.1) Error x0A"));
+      pszErrorMessage = Translate("You sent too long message. The receiving client does not support it.\nSNAC(4.1) Error x0A");
       break;
 
     case 0x000E:     // Incorrect SNAC format
-      pszErrorMessage = strdup(Translate("The SNAC format was rejected by the server.\nSNAC(4.1) Error x0E"));
+      pszErrorMessage = Translate("The SNAC format was rejected by the server.\nSNAC(4.1) Error x0E");
       break;
 
     case 0x0013:     // User temporarily unavailable
-      pszErrorMessage = strdup(Translate("The user is temporarily unavailable. Wait a while and try again.\nSNAC(4.1) Error x13"));
+      pszErrorMessage = Translate("The user is temporarily unavailable. Wait a while and try again.\nSNAC(4.1) Error x13");
       break;
 
     case 0x0001:     // Invalid SNAC header
@@ -2118,7 +2131,7 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
     case 0x0017:     // Server queue full
     case 0x0018:     // Not while on AOL
     default:
-      if (pszErrorMessage = malloc(256))
+      if (pszErrorMessage = _alloca(256))
         null_snprintf(pszErrorMessage, 256, Translate("SNAC(4.1) SENDMSG Error (x%02x)"), wError);
       break;
     }
@@ -2165,8 +2178,6 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 
     if (pCookieData->bMessageType != MTYPE_FILEREQ)
       SAFE_FREE(&pCookieData);
-
-    SAFE_FREE(&pszErrorMessage);
   }
   else
   {

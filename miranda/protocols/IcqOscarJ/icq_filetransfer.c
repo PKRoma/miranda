@@ -39,11 +39,11 @@
 
 static void file_buildProtoFileTransferStatus(filetransfer* ft, PROTOFILETRANSFERSTATUS* pfts)
 {
-  memset(pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
+  ZeroMemory(pfts, sizeof(PROTOFILETRANSFERSTATUS));
   pfts->cbSize = sizeof(PROTOFILETRANSFERSTATUS);
   pfts->hContact = ft->hContact;
   pfts->sending = ft->sending;
-  if(ft->sending)
+  if (ft->sending)
     pfts->files = ft->files;
   else
     pfts->files = NULL;  /* FIXME */
@@ -65,9 +65,9 @@ static void file_sendTransferSpeed(directconnect* dc)
   icq_packet packet;
 
   directPacketInit(&packet, 5);
-  packByte(&packet, PEER_FILE_SPEED);       /* Ident */
+  packByte(&packet, PEER_FILE_SPEED);    /* Ident */
   packLEDWord(&packet, dc->ft->dwTransferSpeed);
-  sendDirectPacket(dc->hConnection, &packet);
+  sendDirectPacket(dc, &packet);
 }
 
 
@@ -89,11 +89,11 @@ static void file_sendNick(directconnect* dc)
   wNickLen = strlennull(szNick);
 
   directPacketInit(&packet, (WORD)(8 + wNickLen));
-  packByte(&packet, PEER_FILE_INIT_ACK);        /* Ident */
+  packByte(&packet, PEER_FILE_INIT_ACK); /* Ident */
   packLEDWord(&packet, dc->ft->dwTransferSpeed);
   packLEWord(&packet, (WORD)(wNickLen + 1));
   packBuffer(&packet, szNick, (WORD)(wNickLen + 1));
-  sendDirectPacket(dc->hConnection, &packet);
+  sendDirectPacket(dc, &packet);
   ICQFreeVariant(&dbv);
 }
 
@@ -105,6 +105,7 @@ static void file_sendNextFile(directconnect* dc)
   struct _stat statbuf;
   char *pszThisFileName;
   char szThisSubDir[MAX_PATH];
+  WORD wThisFileNameLen, wThisSubDirLen;
 
 
   if (dc->ft->iCurrentFile >= (int)dc->ft->dwFileCount)
@@ -115,7 +116,7 @@ static void file_sendNextFile(directconnect* dc)
     return;
   }
 
-  dc->ft->szThisFile = _strdup(dc->ft->files[dc->ft->iCurrentFile]);
+  dc->ft->szThisFile = null_strdup(dc->ft->files[dc->ft->iCurrentFile]);
   if (_stat(dc->ft->szThisFile, &statbuf))
   {
     icq_LogMessage(LOG_ERROR, Translate("Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it."));
@@ -184,49 +185,51 @@ static void file_sendNextFile(directconnect* dc)
   dc->ft->dwThisFileDate = statbuf.st_mtime;
   dc->ft->dwFileBytesDone = 0;
 
+  wThisFileNameLen = strlennull(pszThisFileName);
+  wThisSubDirLen = strlennull(szThisSubDir);
 
-  directPacketInit(&packet, (WORD)(20 + strlennull(pszThisFileName) + strlennull(szThisSubDir)));
-  packByte(&packet, PEER_FILE_NEXTFILE);      /* Ident */
+  directPacketInit(&packet, (WORD)(20 + wThisFileNameLen + wThisSubDirLen));
+  packByte(&packet, PEER_FILE_NEXTFILE); /* Ident */
   packByte(&packet, (BYTE)((statbuf.st_mode & _S_IFDIR) != 0)); // Is subdir
-  packLEWord(&packet, (WORD)(strlennull(pszThisFileName) + 1));
-  packBuffer(&packet, pszThisFileName, (WORD)(strlennull(pszThisFileName) + 1));
-  packLEWord(&packet, (WORD)(strlennull(szThisSubDir) + 1));
-  packBuffer(&packet, szThisSubDir, (WORD)(strlennull(szThisSubDir) + 1));
+  packLEWord(&packet, (WORD)(wThisFileNameLen + 1));
+  packBuffer(&packet, pszThisFileName, (WORD)(wThisFileNameLen + 1));
+  packLEWord(&packet, (WORD)(wThisSubDirLen + 1));
+  packBuffer(&packet, szThisSubDir, (WORD)(wThisSubDirLen + 1));
   packLEDWord(&packet, dc->ft->dwThisFileSize);
   packLEDWord(&packet, statbuf.st_mtime);
   packLEDWord(&packet, dc->ft->dwTransferSpeed);
 
-  sendDirectPacket(dc->hConnection, &packet);
+  sendDirectPacket(dc, &packet);
 
   ICQBroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, dc->ft, 0);
 }
 
 
 
-static void file_sendResume(filetransfer* ft)
+static void file_sendResume(directconnect* dc)
 {
   icq_packet packet;
 
   directPacketInit(&packet, 17);
-  packByte(&packet, PEER_FILE_RESUME);        /* Ident */
-  packLEDWord(&packet, ft->dwFileBytesDone);  /* file resume */
-  packLEDWord(&packet, 0);                    /* unknown */
-  packLEDWord(&packet, ft->dwTransferSpeed);
-  packLEDWord(&packet, ft->iCurrentFile + 1); /* file number */
-  sendDirectPacket(ft->hConnection, &packet);
+  packByte(&packet, PEER_FILE_RESUME);            /* Ident */
+  packLEDWord(&packet, dc->ft->dwFileBytesDone);  /* file resume */
+  packLEDWord(&packet, 0);                        /* unknown */
+  packLEDWord(&packet, dc->ft->dwTransferSpeed);
+  packLEDWord(&packet, dc->ft->iCurrentFile + 1); /* file number */
+  sendDirectPacket(dc, &packet);
 }
 
 
 
 static void file_sendData(directconnect* dc)
 {
-  icq_packet packet;
   BYTE buf[2048];
   int bytesRead = 0;
 
-
   if (!dc->ft->currentIsDir)
   {
+    icq_packet packet;
+
     if (dc->ft->fileId == -1)
       return;
     bytesRead = _read(dc->ft->fileId, buf, sizeof(buf));
@@ -234,15 +237,15 @@ static void file_sendData(directconnect* dc)
       return;
 
     directPacketInit(&packet, (WORD)(1 + bytesRead));
-    packByte(&packet, 6);      /* Ident */
+    packByte(&packet, PEER_FILE_DATA);   /* Ident */
     packBuffer(&packet, buf, (WORD)bytesRead);
-    sendDirectPacket(dc->hConnection, &packet);
+    sendDirectPacket(dc, &packet);
   }
 
   dc->ft->dwBytesDone += bytesRead;
   dc->ft->dwFileBytesDone += bytesRead;
 
-  if(GetTickCount() > dc->ft->dwLastNotify + 500 || bytesRead == 0)
+  if (GetTickCount() > dc->ft->dwLastNotify + 500 || bytesRead == 0)
   {
     PROTOFILETRANSFERSTATUS pfts;
 
@@ -273,10 +276,14 @@ void handleFileTransferIdle(directconnect* dc)
 void icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
 {
   int openFlags;
+  directconnect *dc;
 
 
   if (ft->hConnection == NULL)
     return;
+
+  dc = FindFileTransferDC(ft);
+  if (!dc) return; // something is broken...
 
   switch (action)
   {
@@ -297,7 +304,7 @@ void icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
     case FILERESUME_RENAME:
       openFlags = _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY;
       SAFE_FREE(&ft->szThisFile);
-      ft->szThisFile = _strdup(szFilename);
+      ft->szThisFile = null_strdup(szFilename);
       ft->dwFileBytesDone = 0;
       break;
   }
@@ -318,7 +325,7 @@ void icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
 
   ft->dwBytesDone += ft->dwFileBytesDone;
 
-  file_sendResume(ft);
+  file_sendResume(dc);
 
   ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
 }
@@ -482,7 +489,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
           }
         }
       }
-      file_sendResume(dc->ft);
+      file_sendResume(dc);
       ICQBroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, dc->ft, 0);
       break;
 
@@ -531,7 +538,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
         wLen = 0;
       dc->ft->dwBytesDone += wLen;
       dc->ft->dwFileBytesDone += wLen;
-      if(GetTickCount() > dc->ft->dwLastNotify + 500 || wLen < 2048) 
+      if (GetTickCount() > dc->ft->dwLastNotify + 500 || wLen < 2048) 
       {
         PROTOFILETRANSFERSTATUS pfts;
 

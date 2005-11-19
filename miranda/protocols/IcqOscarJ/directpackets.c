@@ -41,6 +41,8 @@ extern HANDLE hsmsgrequest;
 extern CRITICAL_SECTION modeMsgsMutex;
 extern WORD wListenPort;
 
+extern packEmptyMsg(icq_packet *packet);
+
 
 void packDirectMsgHeader(icq_packet* packet, WORD wDataLen, WORD wCommand, DWORD dwCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wX1, WORD wX2)
 {
@@ -60,13 +62,14 @@ void packDirectMsgHeader(icq_packet* packet, WORD wDataLen, WORD wCommand, DWORD
 }
 
 
+
 void icq_sendDirectMsgAck(directconnect* dc, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, char* szCap)
 {
   icq_packet packet;
 
   packDirectMsgHeader(&packet, (WORD)(bMsgType==MTYPE_PLAIN ? (szCap ? 53 : 11) : 3), DIRECT_ACK, wCookie, bMsgType, bMsgFlags, 0, 0);
-  packLEWord(&packet, 1);   /* empty message */
-  packByte(&packet, 0);    /* message */
+  packEmptyMsg(&packet);   /* empty message */
+
   if (bMsgType == MTYPE_PLAIN)
   {
     packMsgColorInfo(&packet);
@@ -78,10 +81,11 @@ void icq_sendDirectMsgAck(directconnect* dc, WORD wCookie, BYTE bMsgType, BYTE b
     }
   }
   EncryptDirectPacket(dc, &packet);
-  sendDirectPacket(dc->hConnection, &packet);
+  sendDirectPacket(dc, &packet);
 
   NetLog_Direct("Sent acknowledgement thru direct connection");
 }
+
 
 
 DWORD icq_sendGetAwayMsgDirect(HANDLE hContact, int type)
@@ -96,14 +100,14 @@ DWORD icq_sendGetAwayMsgDirect(HANDLE hContact, int type)
   pCookieData->nAckType = (BYTE)type;
 
   packDirectMsgHeader(&packet, 3, DIRECT_MESSAGE, dwCookie, (BYTE)type, 3, 1, 0);
-  packLEWord(&packet, 1);      /* length of message */
-  packByte(&packet, 0);       /* message */
+  packEmptyMsg(&packet);  // message
 
   if (SendDirectMessage(hContact, &packet))
     return dwCookie; // Success
   else 
     return 0;
 }
+
 
 
 void icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE msgType, const char** szMsg)
@@ -126,12 +130,13 @@ void icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE msgType, c
       packBuffer(&packet, *szMsg, (WORD)(wMsgLen + 1));
       EncryptDirectPacket(dc, &packet);
 
-      sendDirectPacket(dc->hConnection, &packet);
+      sendDirectPacket(dc, &packet);
     }
 
     LeaveCriticalSection(&modeMsgsMutex);
   }
 }
+
 
 
 void icq_sendFileAcceptDirect(HANDLE hContact, filetransfer* ft)
@@ -152,6 +157,7 @@ void icq_sendFileAcceptDirect(HANDLE hContact, filetransfer* ft)
 
   NetLog_Direct("Sent file accept direct, port %u", wListenPort);
 }
+
 
 
 void icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, char *szReason)
@@ -175,6 +181,7 @@ void icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, char *szReason)
 }
 
 
+
 int icq_sendFileSendDirectv7(DWORD dwUin, HANDLE hContact, WORD wCookie, char* pszFiles, char* pszDescription, DWORD dwTotalSize)
 {
   icq_packet packet;
@@ -194,13 +201,13 @@ int icq_sendFileSendDirectv7(DWORD dwUin, HANDLE hContact, WORD wCookie, char* p
 }
 
 
+
 int icq_sendFileSendDirectv8(DWORD dwUin, HANDLE hContact, WORD wCookie, char *pszFiles, char *szDescription, DWORD dwTotalSize)
 {
   icq_packet packet;
 
   packDirectMsgHeader(&packet, (WORD)(0x2E + 22 + strlennull(szDescription) + strlennull(pszFiles)+1), DIRECT_MESSAGE, wCookie, MTYPE_PLUGIN, 0, 0, 0);
-  packLEWord(&packet, 1); // message
-  packByte(&packet, 0);
+  packEmptyMsg(&packet);  // message
   packPluginTypeId(&packet, MTYPE_FILEREQ);
 
   packLEDWord(&packet, (WORD)(18 + strlennull(szDescription) + strlennull(pszFiles)+1)); // Remaining length
@@ -219,6 +226,7 @@ int icq_sendFileSendDirectv8(DWORD dwUin, HANDLE hContact, WORD wCookie, char *p
 }
 
 
+
 DWORD icq_SendDirectMessage(DWORD dwUin, HANDLE hContact, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap)
 {
   icq_packet packet;
@@ -230,7 +238,7 @@ DWORD icq_SendDirectMessage(DWORD dwUin, HANDLE hContact, const char *szMessage,
   // Pack the standard header
   packDirectMsgHeader(&packet, (WORD)(nBodyLength + (szCap ? 53:11)), DIRECT_MESSAGE, dwCookie, pCookieData->bMessageType, 0, 0, 0);
 
-  packLEWord(&packet, (WORD)(nBodyLength+1));             // Length of message
+  packLEWord(&packet, (WORD)(nBodyLength+1));            // Length of message
   packBuffer(&packet, szMessage, (WORD)(nBodyLength+1)); // Message
   packMsgColorInfo(&packet);
   if (szCap)
@@ -250,13 +258,13 @@ DWORD icq_SendDirectMessage(DWORD dwUin, HANDLE hContact, const char *szMessage,
 }
 
 
+
 void icq_sendXtrazRequestDirect(DWORD dwUin, HANDLE hContact, DWORD dwCookie, char* szBody, int nBodyLen, WORD wType)
 {
   icq_packet packet;
 
   packDirectMsgHeader(&packet, (WORD)(11 + getPluginTypeIdLen(wType) + nBodyLen), DIRECT_MESSAGE, dwCookie, MTYPE_PLUGIN, 0, 0, 1);
-  packLEWord(&packet, 1); // message
-  packByte(&packet, 0);
+  packEmptyMsg(&packet);  // message (unused)
   packPluginTypeId(&packet, wType);
 
   packLEDWord(&packet, nBodyLen + 4);
@@ -267,14 +275,14 @@ void icq_sendXtrazRequestDirect(DWORD dwUin, HANDLE hContact, DWORD dwCookie, ch
 }
 
 
+
 void icq_sendXtrazResponseDirect(DWORD dwUin, HANDLE hContact, WORD wCookie, char* szBody, int nBodyLen, WORD wType)
 {
   icq_packet packet;
 
   packDirectMsgHeader(&packet, (WORD)(getPluginTypeIdLen(wType) + 11 + nBodyLen), DIRECT_ACK, wCookie, MTYPE_PLUGIN, 0, 0, 0);
   //
-  packLEWord(&packet, 1); // Message len
-  packByte(&packet, 0);   // Message (unused)
+  packEmptyMsg(&packet);  // Message (unused)
 
   packPluginTypeId(&packet, wType);
 

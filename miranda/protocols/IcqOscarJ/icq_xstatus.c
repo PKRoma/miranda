@@ -50,21 +50,36 @@ static HANDLE hXStatusRoot = 0;
 
 
 
-static DWORD sendXStatusDetailsRequest(HANDLE hContact, int bHard)
+DWORD sendXStatusDetailsRequest(HANDLE hContact)
 {
   char *szNotify;
   int nNotifyLen;
   DWORD dwCookie;
 
   nNotifyLen = 94 + UINMAXLEN;
-  szNotify = (char*)malloc(nNotifyLen);
+  szNotify = (char*)_alloca(nNotifyLen);
   nNotifyLen = null_snprintf(szNotify, nNotifyLen, "<srv><id>cAwaySrv</id><req><id>AwayStat</id><trans>1</trans><senderId>%d</senderId></req></srv>", dwLocalUIN);
-  // TODO: this should be postponed
+
   dwCookie = SendXtrazNotifyRequest(hContact, "<Q><PluginID>srvMng</PluginID></Q>", szNotify);
 
-  SAFE_FREE(&szNotify);
-
   return dwCookie;
+}
+
+
+
+static DWORD requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
+{
+  rate_record rr = {0};
+
+  rr.hContact = hContact;
+  rr.bType = RIT_XSTATUS_REQUEST;
+  rr.rate_group = 0x101; // request
+  rr.nMinDelay = 500;    // delay at least 500ms
+
+  if (!handleRateItem(&rr, bAllowDelay))
+    return sendXStatusDetailsRequest(hContact);
+
+  return 0;
 }
 
 
@@ -265,7 +280,7 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
         ICQWriteContactSettingString(hContact, "XStatusName", (char*)nameXStatus[i]);
 
         if (ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
-          sendXStatusDetailsRequest(hContact, 0);
+          requestXStatusDetails(hContact, TRUE);
 
         hIcon = hXStatusIcons[i];
 
@@ -430,7 +445,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
           ShowWindow(GetDlgItem(hwndDlg, IDC_RETRXSTATUS), SW_SHOW);
           ShowWindow(GetDlgItem(hwndDlg, IDC_XMSG), SW_HIDE);
           ShowWindow(GetDlgItem(hwndDlg, IDC_XTITLE), SW_HIDE);
-          dat->iEvent = sendXStatusDetailsRequest(dat->hContact, 1);
+          dat->iEvent = requestXStatusDetails(dat->hContact, FALSE);
         }
         else
         {

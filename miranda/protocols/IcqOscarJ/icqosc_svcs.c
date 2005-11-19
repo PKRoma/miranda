@@ -58,7 +58,7 @@ int IcqGetCaps(WPARAM wParam, LPARAM lParam)
     nReturn = PF1_IM | PF1_URL | PF1_AUTHREQ | PF1_BASICSEARCH | PF1_ADDSEARCHRES |
       PF1_VISLIST | PF1_INVISLIST | PF1_MODEMSG | PF1_FILE | PF1_EXTSEARCH |
       PF1_EXTSEARCHUI | PF1_SEARCHBYEMAIL | PF1_SEARCHBYNAME |
-      PF1_INDIVMODEMSG | PF1_ADDED | PF1_CONTACT;
+      PF1_ADDED | PF1_CONTACT;
     if (!gbAimEnabled)
       nReturn |= PF1_NUMERICUSERID;
     if (gbSsiEnabled && ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
@@ -356,14 +356,10 @@ int IcqSetAwayMsg(WPARAM wParam, LPARAM lParam)
   }
 
   // Free old message
-  if (ppszMsg)
-    SAFE_FREE(ppszMsg);
+  SAFE_FREE(ppszMsg);
 
   // Set new message
-  if (lParam)
-    *ppszMsg = _strdup((char*)lParam);
-  else
-    *ppszMsg = NULL;
+  *ppszMsg = null_strdup((char*)lParam);
 
   if (gbAimEnabled && (gnCurrentStatus == (int)wParam))
     icq_sendSetAimAwayMsgServ(*ppszMsg);
@@ -397,7 +393,7 @@ int IcqAuthAllow(WPARAM wParam, LPARAM lParam)
     if (dbei.eventType != EVENTTYPE_AUTHREQUEST)
       return 1;
 
-    if (strcmp(dbei.szModule, gpszICQProtoName))
+    if (strcmpnull(dbei.szModule, gpszICQProtoName))
       return 1;
 
     hContact = (HANDLE)body[1]; // this is bad - needs new auth system
@@ -437,7 +433,7 @@ int IcqAuthDeny(WPARAM wParam, LPARAM lParam)
     if (dbei.eventType != EVENTTYPE_AUTHREQUEST)
       return 1;
 
-    if (strcmp(dbei.szModule, gpszICQProtoName))
+    if (strcmpnull(dbei.szModule, gpszICQProtoName))
       return 1;
 
     hContact = (HANDLE)body[1]; // this is bad - needs new auth system
@@ -536,7 +532,7 @@ int IcqBasicSearch(WPARAM wParam, LPARAM lParam)
         {
           cheekySearchId = GenerateCookie(0);
           cheekySearchUin = dwUin;
-          cheekySearchUid = strdup(pszUIN);
+          cheekySearchUid = null_strdup(pszUIN);
           SetTimer(NULL, 0, 10, CheekySearchTimerProc); // The caller needs to get this return value before the results
           nHandle = cheekySearchId;
         }
@@ -712,7 +708,7 @@ int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
   if (CallService(MS_DB_EVENT_GET, lParam, (LPARAM)&dbei))
     return 0; // failed to get event
 
-  if (strcmp(dbei.szModule, gpszICQProtoName))
+  if (strcmpnull(dbei.szModule, gpszICQProtoName))
     return 0; // this event is not ours
 
   if (dbei.eventType == EVENTTYPE_CONTACTS)
@@ -845,7 +841,7 @@ int IcqFileAllow(WPARAM wParam, LPARAM lParam)
     {
       filetransfer* ft = ((filetransfer *)ccs->wParam);
 
-      ft->szSavePath = _strdup((char *)ccs->lParam);
+      ft->szSavePath = null_strdup((char *)ccs->lParam);
       AddExpectedFileRecv(ft);
 
       // Was request received thru DC and have we a open DC, send through that
@@ -1533,12 +1529,12 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
           for(i = 0; i < nContacts; i++)
           {
             szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContactsList[i], 0);
-            if (szProto == NULL || strcmp(szProto, gpszICQProtoName))
+            if (strcmpnull(szProto, gpszICQProtoName))
               break; // Abort if a non icq contact is found
             if (ICQGetContactSettingUID(hContactsList[i], &contacts[i].uin, &szUid))
               break; // Abort if invalid contact
-            contacts[i].uid = contacts[i].uin?NULL:_strdup(szUid);
-            contacts[i].szNick = NickFromHandle(hContactsList[i]); //_strdup((char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContactsList[i], 0));
+            contacts[i].uid = contacts[i].uin?NULL:null_strdup(szUid);
+            contacts[i].szNick = NickFromHandle(hContactsList[i]);
             // Compute this contact's length
             nBodyLength += getUIDLen(contacts[i].uin, contacts[i].uid) + 1;
             nBodyLength += strlennull(contacts[i].szNick) + 1;
@@ -1708,14 +1704,14 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
             ft->dwTotalSize = 0;
             for (i = 0; i < (int)ft->dwFileCount; i++)
             {
-              ft->files[i] = _strdup(files[i]);
+              ft->files[i] = null_strdup(files[i]);
 
               if (_stat(files[i], &statbuf))
                 NetLog_Server("IcqSendFile() was passed invalid filename(s)");
               else
                 ft->dwTotalSize += statbuf.st_size;
             }
-            ft->szDescription = _strdup(pszDesc);
+            ft->szDescription = null_strdup(pszDesc);
             ft->dwUin = dwUin;
             ft->hContact = hContact;
             ft->dwTransferSpeed = 100;

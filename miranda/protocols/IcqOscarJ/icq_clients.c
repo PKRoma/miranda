@@ -404,7 +404,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         { // try to determine 2001-2003 versions
           if (MatchCap(caps, wLen, &capIs2001, 0x10))
             if (!dwFT1 && !dwFT2 && !dwFT3)
-              szClient = "ICQ for Pocket PC";
+              if (hasCapRichText(caps, wLen))
+                szClient = "TICQClient";
+              else
+                szClient = "ICQ for Pocket PC";
             else
             {
               *dwClientId = 0;

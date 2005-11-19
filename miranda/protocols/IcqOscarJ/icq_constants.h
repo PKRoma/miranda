@@ -488,6 +488,7 @@
 #define SSI_ITEM_PRESENCE           0x0005  // Presence info (if others can see your idle status, etc)
 #define SSI_ITEM_UNKNOWN1           0x0009  // Unknown. ICQ2k shortcut bar items ?
 #define SSI_ITEM_IGNORE             0x000e  // Ignore list record.
+#define SSI_ITEM_LASTUPDATE         0x000f  // Item that contain roster update time (name: "LastUpdateDate")
 #define SSI_ITEM_NONICQ             0x0010  // Non-ICQ contact (to send SMS). Name: 1#EXT, 2#EXT, etc
 #define SSI_ITEM_UNKNOWN2           0x0011  // Unknown.
 #define SSI_ITEM_IMPORTTIME         0x0013  // Item that contain roster import time (name: "Import time")
@@ -496,7 +497,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030607
+#define ICQ_PLUG_VERSION            0x80030608
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

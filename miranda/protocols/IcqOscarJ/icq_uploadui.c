@@ -124,7 +124,7 @@ static void DeleteOtherContactsFromControl(HWND hCtrl)
     if (hItem)
     {
       szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-      if (szProto == NULL || lstrcmp(szProto, gpszICQProtoName))
+      if (strcmpnull(szProto, gpszICQProtoName))
         SendMessage(hCtrl, CLM_DELETEITEM, (WPARAM)hItem, 0);
     }
     hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
@@ -183,7 +183,7 @@ static int GroupEnumIdsEnumProc(const char *szSetting,LPARAM lParam)
     cgs.szSetting=szSetting;
     cgs.pValue=&dbv;
     if(CallService(MS_DB_CONTACT_GETSETTINGSTATIC,(WPARAM)NULL,(LPARAM)&cgs))
-      return 0;
+      return 0; // this converts all string types to DBVT_ASCIIZ
     if(dbv.type!=DBVT_ASCIIZ)
     { // it is not a cached server-group name
       return 0;
@@ -230,7 +230,7 @@ static DWORD sendUploadGroup(WORD wAction, WORD wGroupId, char* szItemName)
     dwCookie = AllocateCookie(wAction, 0, ack);
     ack->lParam = dwCookie;
 
-    icq_sendGroup(dwCookie, wAction, ack->wGroupId, szItemName, NULL, 0);
+    icq_sendGroupUtf(dwCookie, wAction, ack->wGroupId, szItemName, NULL, 0);
 
     return dwCookie;
   }
@@ -320,7 +320,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       char szLastLogLine[256];
 
       // Is this an ack we are waiting for?
-      if (lstrcmp(ack->szModule, gpszICQProtoName))
+      if (strcmpnull(ack->szModule, gpszICQProtoName))
         break;
 
       if (ack->type == ICQACKTYPE_RATEWARNING)
@@ -412,8 +412,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
           int groupSize;
           servlistcookie* ack;
 
-          setServerGroupName(wNewGroupId, szNewGroupName); // add group to list
-          setServerGroupID(szNewGroupName, wNewGroupId); // grouppath is known
+          setServerGroupNameUtf(wNewGroupId, szNewGroupName); // add group to list
+          setServerGroupIDUtf(szNewGroupName, wNewGroupId); // grouppath is known
 
           groupData = collectGroups(&groupSize);
           groupData = realloc(groupData, groupSize+2);
@@ -430,7 +430,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             ack->szGroupName = NULL;
             dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
 
-            icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, ack->szGroupName, groupData, groupSize);
+            icq_sendGroupUtf(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, ack->szGroupName, groupData, groupSize);
           }
           SAFE_FREE(&groupData);
         }
@@ -448,7 +448,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
           servlistcookie* ack;
 
           FreeServerID(wNewGroupId, SSIT_GROUP);
-          setServerGroupName(wNewGroupId, NULL); // remove group from list
+          setServerGroupNameUtf(wNewGroupId, NULL); // remove group from list
           removeGroupPathLinks(wNewGroupId); // grouppath is known
 
           groupData = collectGroups(&groupSize);
@@ -463,7 +463,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             ack->szGroupName = NULL;
             dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
 
-            icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, ack->szGroupName, groupData, groupSize);
+            icq_sendGroupUtf(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, ack->szGroupName, groupData, groupSize);
           }
           SAFE_FREE(&groupData);
         }
@@ -600,29 +600,21 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             // Is this one out of sync?
             if (bUidOk && (isChecked != isOnServer))
             {
-              DBVARIANT dbv;
-
               // Only upload custom nicks
               pszNick = UniGetContactSettingUtf(hContact, "CList", "MyHandle", NULL);
               pszNote = UniGetContactSettingUtf(hContact, "UserInfo", "MyNotes", NULL);
 
               if (isChecked)
               {  // Queue for uploading
-                pszGroup = NULL;
-                if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
-                {
-                  if (dbv.pszVal && strlennull(dbv.pszVal) > 0)
-                    pszGroup = _strdup(dbv.pszVal);
-                  ICQFreeVariant(&dbv);
-                }
-                if (!pszGroup) pszGroup = _strdup(DEFAULT_SS_GROUP);
+                pszGroup = UniGetContactSettingUtf(hContact, "CList", "Group", NULL);
+                if (!strlennull(pszGroup)) pszGroup = null_strdup(DEFAULT_SS_GROUP);
 
                 // Get group ID from cache, if not ready use parent group, if still not ready create one
-                wNewGroupId = getServerGroupID(pszGroup);
+                wNewGroupId = getServerGroupIDUtf(pszGroup);
                 if (!wNewGroupId && strstr(pszGroup, "\\") != NULL)
                 { // if it is sub-group, take master parent
                   strstr(pszGroup, "\\")[0] = '\0'; 
-                  wNewGroupId = getServerGroupID(pszGroup);
+                  wNewGroupId = getServerGroupIDUtf(pszGroup);
                 }
                 if (!wNewGroupId && currentAction != ACTION_ADDGROUP)
                 { // if the group still does not exist and there was no try before, try to add group
@@ -695,21 +687,14 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             else if (bUidOk && isChecked)
             { // the contact is and should be on server, check if it is in correct group, move otherwise
               WORD wCurrentGroupId = ICQGetContactSettingWord(hContact, "SrvGroupId", 0);
-              DBVARIANT dbv;
 
-              pszGroup = NULL;
-              if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
-              {
-                if (dbv.pszVal && strlennull(dbv.pszVal) > 0)
-                  pszGroup = _strdup(dbv.pszVal);
-                ICQFreeVariant(&dbv);
-              }
-              if (!pszGroup) pszGroup = _strdup(DEFAULT_SS_GROUP);
-              wNewGroupId = getServerGroupID(pszGroup);
+              pszGroup = UniGetContactSettingUtf(hContact, "CList", "Group", NULL);
+              if (!strlennull(pszGroup)) pszGroup = null_strdup(DEFAULT_SS_GROUP);
+              wNewGroupId = getServerGroupIDUtf(pszGroup);
               if (!wNewGroupId && strstr(pszGroup, "\\") != NULL)
               { // if it is sub-group, take master parent
                 strstr(pszGroup, "\\")[0] = '\0'; 
-                wNewGroupId = getServerGroupID(pszGroup);
+                wNewGroupId = getServerGroupIDUtf(pszGroup);
               }
               if (!wNewGroupId && currentAction != ACTION_ADDGROUP)
               { // if the group still does not exist and there was no try before, try to add group
@@ -884,7 +869,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
           {
             if (!CheckServerID((WORD)(wNewGroupId+1), 0) || countGroupLevel((WORD)(wNewGroupId+1)) == 0)
             { // is next id an sub-group, if yes, we cannot delete this group
-              char* pszGroup = getServerGroupName(wNewGroupId);
+              char* pszGroup = getServerGroupNameUtf(wNewGroupId);
               currentAction = ACTION_REMOVEGROUP;
               AppendToUploadLog(hwndDlg, Translate("Deleting group \"%s\"..."), pszGroup); 
               currentSequence = sendUploadGroup(ICQ_LISTS_REMOVEFROMLIST, wNewGroupId, pszGroup);
@@ -1007,7 +992,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 if (hItem == (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0))
                 {
                   szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-                  if (szProto == NULL || lstrcmp(szProto, gpszICQProtoName))
+                  if (strcmpnull(szProto, gpszICQProtoName))
                     SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_DELETEITEM, (WPARAM)hItem, 0);
                   break; // exit loop
                 }
@@ -1034,7 +1019,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 if (hItem)
                 {
                   szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-                  if (szProto == NULL || lstrcmp(szProto, gpszICQProtoName))
+                  if (strcmpnull(szProto, gpszICQProtoName))
                     SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_DELETEITEM, (WPARAM)hItem, 0);
                 }
                 hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);

@@ -82,14 +82,12 @@ void UninitServerLists(void);
 
 void* collectGroups(int *count);
 void* collectBuddyGroup(WORD wGroupID, int *count);
-char* getServerGroupName(WORD wGroupID);
 char* getServerGroupNameUtf(WORD wGroupID);
-void setServerGroupName(WORD wGroupID, const char* szGroupName);
 void setServerGroupNameUtf(WORD wGroupID, const char* szGroupNameUtf);
-WORD getServerGroupID(const char* szPath);
-void setServerGroupID(const char* szPath, WORD wGroupID);
+WORD getServerGroupIDUtf(const char* szPath);
+void setServerGroupIDUtf(const char* szPath, WORD wGroupID);
 int IsServerGroupsDefined();
-char* makeGroupPath(WORD wGroupId);
+char* makeGroupPathUtf(WORD wGroupId);
 WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam);
 void removeGroupPathLinks(WORD wGroupID);
 int countGroupLevel(WORD wGroupId);
@@ -102,7 +100,6 @@ void FlushSrvGroupsCache();
 
 DWORD icq_sendBuddyUtf(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, WORD wGroupId, WORD wContactId, const char *szNick, const char*szNote, int authRequired, WORD wItemType);
 DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent);
-DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent);
 
 // id type groups
 #define SSIT_ITEM 0

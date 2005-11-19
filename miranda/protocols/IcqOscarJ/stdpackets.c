@@ -911,7 +911,7 @@ void icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2
 
     EnterCriticalSection(&modeMsgsMutex);
 
-    if (*szMsg != NULL)
+    if (szMsg && *szMsg)
     {
       wMsgLen = strlennull(*szMsg);
 
@@ -960,7 +960,7 @@ DWORD SearchByUin(DWORD dwUin)
 
   // Initialize our handy data buffer
   pBuffer.wPlace = 0;
-  pBuffer.pData = (BYTE *)calloc(1, wInfoLen);
+  pBuffer.pData = (BYTE *)_alloca(wInfoLen);
   pBuffer.wLen = wInfoLen;
 
   // Initialize our handy data buffer
@@ -970,7 +970,6 @@ DWORD SearchByUin(DWORD dwUin)
 
   // Send it off for further packing
   dwCookie = sendTLVSearchPacket(SEARCHTYPE_UID, pBuffer.pData, META_SEARCH_UIN, wInfoLen, FALSE);
-  SAFE_FREE(&pBuffer.pData);
 
   return dwCookie;
 }
@@ -1002,7 +1001,7 @@ DWORD SearchByNames(char* pszNick, char* pszFirstName, char* pszLastName)
 
   // Initialize our handy data buffer
   pBuffer.wPlace = 0;
-  pBuffer.pData = (BYTE*)calloc(1, wInfoLen);
+  pBuffer.pData = (BYTE*)_alloca(wInfoLen);
   pBuffer.wLen = wInfoLen;
 
 
@@ -1036,7 +1035,6 @@ DWORD SearchByNames(char* pszNick, char* pszFirstName, char* pszLastName)
 
   // Send it off for further packing
   dwCookie = sendTLVSearchPacket(SEARCHTYPE_NAMES, pBuffer.pData, META_SEARCH_GENERIC, wInfoLen, FALSE);
-  SAFE_FREE(&pBuffer.pData);
 
   return dwCookie;
 }
@@ -1062,7 +1060,7 @@ DWORD SearchByEmail(char* pszEmail)
 
     // Initialize our handy data buffer
     pBuffer.wPlace = 0;
-    pBuffer.pData = (BYTE *)calloc(1, wInfoLen);
+    pBuffer.pData = (BYTE *)_alloca(wInfoLen);
     pBuffer.wLen = wInfoLen;
 
     // Pack the search details
@@ -1074,7 +1072,6 @@ DWORD SearchByEmail(char* pszEmail)
 
     // Send it off for further packing
     dwCookie = sendTLVSearchPacket(SEARCHTYPE_EMAIL, pBuffer.pData, META_SEARCH_EMAIL, wInfoLen, FALSE);
-    SAFE_FREE(&pBuffer.pData);
   }
 
   return dwCookie;
@@ -1176,7 +1173,7 @@ DWORD icq_searchAimByEmail(char* pszEmail, DWORD dwSearchId)
   if (pCookie)
   {
     pCookie->dwMainId = dwSearchId;
-    pCookie->szObject = strdup(pszEmail);
+    pCookie->szObject = null_strdup(pszEmail);
     dwCookie = AllocateCookie(ICQ_LOOKUP_REQUEST, 0, pCookie);
   }
   else
@@ -1230,7 +1227,7 @@ DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
   strftime(szTime, sizeof(szTime), "%a, %d %b %Y %H:%M:%S GMT", gmtime(&now));
                               /* Sun, 00 Jan 0000 00:00:00 GMT */
 
-  szMyNick = _strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)(HANDLE)NULL, 0));
+  szMyNick = null_strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)(HANDLE)NULL, 0));
   nBufferSize = 1 + strlennull(szMyNick) + strlennull(szPhoneNumber) + strlennull(szMsg) + sizeof("<icq_sms_message><destination></destination><text></text><codepage>1252</codepage><encoding>utf8</encoding><senders_UIN>0000000000</senders_UIN><senders_name></senders_name><delivery_receipt>Yes</delivery_receipt><time>Sun, 00 Jan 0000 00:00:00 GMT</time></icq_sms_message>");
 
   if (szBuffer = (char *)malloc(nBufferSize))
@@ -1354,7 +1351,7 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list,
       {
         ack->dwAction = SSA_PRIVACY_ADD;
         ack->dwUin = dwUin;
-        ack->szUID = strdup(szUID);
+        ack->szUID = null_strdup(szUID);
         ack->hContact = hContact;
         ack->wGroupId = 0;
         ack->wContactId = wContactId;
@@ -1390,7 +1387,7 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list,
         {
           ack->dwAction = SSA_PRIVACY_REMOVE; // remove privacy item
           ack->dwUin = dwUin;
-          ack->szUID = strdup(szUID);
+          ack->szUID = null_strdup(szUID);
           ack->hContact = hContact;
           ack->wGroupId = 0;
           ack->wContactId = wContactId;

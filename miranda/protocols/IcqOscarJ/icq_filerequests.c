@@ -161,8 +161,8 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
     memset(ft, 0, sizeof(filetransfer));
     ft->status = 0;
     ft->dwCookie = dwCookie;
-    ft->szFilename = _strdup(pszFileName);
-    ft->szDescription = _strdup(pszDescription);
+    ft->szFilename = null_strdup(pszFileName);
+    ft->szDescription = null_strdup(pszDescription);
     ft->dwUin = dwUin;
     ft->fileId = -1;
     ft->dwTotalSize = dwFileSize;

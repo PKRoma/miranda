@@ -47,7 +47,6 @@ static int nIDListCount = 0;
 static int nIDListSize = 0;
 
 
-//typedef void (*PENDINGCALLBACK)(const char *szGroupPath, GROUPADDCALLBACK ofCallBack, servlistcookie* ack);
 
 // cookie struct for pending records
 typedef struct ssipendingitem_t
@@ -216,7 +215,7 @@ static BOOL AddPendingOperation(HANDLE hContact, const char* szGroup, servlistco
   {
     pItem->ofCallback = ofEvent;
     pItem->pCookie = cookie;
-    pItem->szGroupPath = szGroup?_strdup(szGroup):NULL; // we need to duplicate the string
+    pItem->szGroupPath = null_strdup(szGroup); // we need to duplicate the string
     bRes = FALSE;
 
     NetLog_Server("Operation postponed.");
@@ -665,40 +664,6 @@ DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *
 }
 
 
-
-DWORD icq_sendGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent)
-{
-  int nNameLen;
-  char* szUtfName = NULL;
-  DWORD dwRes;
-
-  // Prepare custom utf-8 group name
-  if (szName && (strlennull(szName) > 0))
-  {
-    int nResult;
-
-    nResult = utf8_encode(szName, &szUtfName);
-    nNameLen = strlennull(szUtfName);
-  }
-  else
-  {
-    nNameLen = 0;
-  }
-  if (nNameLen == 0 && wGroupId != 0)
-  {
-    NetLog_Server("Group upload failed (GroupName missing).");
-    return 0; // without name we could not change the group
-  }
-
-  // Build the packet
-  dwRes = icq_sendGroupUtf(dwCookie, wAction, wGroupId, szUtfName, pContent, cbContent);
-
-  SAFE_FREE(&szUtfName);
-
-  return dwRes;
-}
-
-
 /*****************************************
  *
  *     --- Contact DB Utilities ---
@@ -710,7 +675,7 @@ static int GroupNamesEnumProc(const char *szSetting,LPARAM lParam)
   if (lParam)
   {
     char** block = (char**)malloc(2*sizeof(char*));
-    block[1] = _strdup(szSetting);
+    block[1] = null_strdup(szSetting);
     block[0] = ((char**)lParam)[0];
     ((char**)lParam)[0] = (char*)block;
   }
@@ -744,33 +709,22 @@ void DeleteModuleEntries(const char* szModule)
 
 int IsServerGroupsDefined()
 {
-  DBCONTACTENUMSETTINGS dbces;
+  int iRes = 1;
 
-  char szModule[MAX_PATH+9];
+  if (ICQGetContactSettingDword(NULL, "Version", 0) < 0x00030608)
+  { // group cache & linking data too old, flush, reload from server
+    char szModule[MAX_PATH+9];
 
-  strcpy(szModule, gpszICQProtoName);
-  strcat(szModule, "Groups");
-
-  dbces.pfnEnumProc = &GroupNamesEnumProc;
-  dbces.szModule = szModule;
-  dbces.lParam = 0;
-
-  if (CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces))
-    return 0; // no groups defined
-
-  strcpy(szModule, gpszICQProtoName);
-  strcat(szModule, "SrvGroups");
-
-  if (CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces))
-  { // old version of groups, remove old settings and force to reload all info
     strcpy(szModule, gpszICQProtoName);
-    strcat(szModule, "Groups");
+    strcat(szModule, "Groups"); // flush obsolete linking data
     DeleteModuleEntries(szModule);
 
-    return 0; // no groups defined
+    iRes = 0; // no groups defined, or older version
   }
-  else 
-    return 1;
+  // store our current version
+  ICQWriteContactSettingDword(NULL, "Version", ICQ_PLUG_VERSION & 0x00FFFFFF);
+
+  return iRes;
 }
 
 
@@ -861,7 +815,7 @@ static int GroupLinksEnumProc(const char *szSetting,LPARAM lParam)
   if (DBGetContactSettingWord(NULL, ((char**)lParam)[2], szSetting, 0) == (WORD)((char**)lParam)[1])
   {
     char** block = (char**)malloc(2*sizeof(char*));
-    block[1] = _strdup(szSetting);
+    block[1] = null_strdup(szSetting);
     block[0] = ((char**)lParam)[0];
     ((char**)lParam)[0] = (char*)block;
   }
@@ -917,61 +871,12 @@ char* getServerGroupNameUtf(WORD wGroupID)
 
   if (!CheckServerID(wGroupID, 0))
   { // check if valid id, if not give empty and remove
-    DBDeleteContactSetting(NULL, szModule, szGroup);
-    return NULL;
-  }
-
-  return UniGetContactSettingUtf(NULL, szModule, szGroup, NULL);
-}
-
-
-
-char* getServerGroupName(WORD wGroupID)
-{
-  DBVARIANT dbv;
-  char szModule[MAX_PATH+9];
-  char szGroup[16];
-  char *szRes;
-
-  strcpy(szModule, gpszICQProtoName);
-  strcat(szModule, "SrvGroups");
-  _itoa(wGroupID, szGroup, 0x10);
-
-  if (!CheckServerID(wGroupID, 0))
-  { // check if valid id, if not give empty and remove
     NetLog_Server("Removing group %u from cache...", wGroupID);
     DBDeleteContactSetting(NULL, szModule, szGroup);
     return NULL;
   }
 
-  if (DBGetContactSetting(NULL, szModule, szGroup, &dbv))
-    szRes = NULL;
-  else
-    szRes = _strdup(dbv.pszVal);
-  ICQFreeVariant(&dbv);
-
-  return szRes;
-}
-
-
-
-void setServerGroupName(WORD wGroupID, const char* szGroupName)
-{
-  char szModule[MAX_PATH+9];
-  char szGroup[16];
-
-  strcpy(szModule, gpszICQProtoName);
-  strcat(szModule, "SrvGroups");
-  _itoa(wGroupID, szGroup, 0x10);
-
-  if (szGroupName)
-    DBWriteContactSettingString(NULL, szModule, szGroup, szGroupName);
-  else
-  {
-    DBDeleteContactSetting(NULL, szModule, szGroup);
-    removeGroupPathLinks(wGroupID);
-  }
-  return;
+  return UniGetContactSettingUtf(NULL, szModule, szGroup, NULL);
 }
 
 
@@ -997,7 +902,7 @@ void setServerGroupNameUtf(WORD wGroupID, const char* szGroupNameUtf)
  
 
 
-WORD getServerGroupID(const char* szPath)
+WORD getServerGroupIDUtf(const char* szPath)
 {
   char szModule[MAX_PATH+6];
   WORD wGroupId;
@@ -1019,7 +924,7 @@ WORD getServerGroupID(const char* szPath)
 
 
 
-void setServerGroupID(const char* szPath, WORD wGroupID)
+void setServerGroupIDUtf(const char* szPath, WORD wGroupID)
 {
   char szModule[MAX_PATH+6];
 
@@ -1037,10 +942,10 @@ void setServerGroupID(const char* szPath, WORD wGroupID)
 
 
 // copied from groups.c - horrible, but only possible as this is not available as service
-int GroupNameExists(const char *name,int skipGroup)
+int GroupNameExistsUtf(const char *name,int skipGroup)
 {
   char idstr[33];
-  DBVARIANT dbv;
+  char* szGroup;
   int i;
 
   if (name == NULL) return 1; // no group always exists
@@ -1048,14 +953,16 @@ int GroupNameExists(const char *name,int skipGroup)
   {
     if(i==skipGroup) continue;
     itoa(i,idstr,10);
-    if(DBGetContactSetting(NULL,"CListGroups",idstr,&dbv)) break;
-    if(!strcmp(dbv.pszVal+1,name)) 
+    szGroup = UniGetContactSettingUtf(NULL, "CListGroups", idstr, "");
+    if (!strlennull(szGroup)) break;
+    if (!strcmpnull(szGroup+1, name)) 
     {
-      ICQFreeVariant(&dbv);
+      SAFE_FREE(&szGroup);
       return 1;
     }
-    ICQFreeVariant(&dbv);
+    SAFE_FREE(&szGroup);
   }
+  SAFE_FREE(&szGroup);
   return 0;
 }
 
@@ -1083,15 +990,29 @@ int countGroupLevel(WORD wGroupId)
 
 
 
+int CreateCListGroup(const char* szGroupName)
+{
+  char* szTmp;
+  int hGroup;
+
+  hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
+  utf8_decode(szGroupName, &szTmp); // TODO: this is horrible, get unicode service ready!!
+  CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szTmp);
+  SAFE_FREE(&szTmp);
+  return hGroup;
+}
+
+
+
 // demangle group path
-char* makeGroupPath(WORD wGroupId)
+char* makeGroupPathUtf(WORD wGroupId)
 {
   char* szGroup = NULL;
 
-  if (szGroup = getServerGroupName(wGroupId))
+  if (szGroup = getServerGroupNameUtf(wGroupId))
   { // this groupid is not valid
     while (strstr(szGroup, "\\")!=NULL) *strstr(szGroup, "\\") = '_'; // remove invalid char
-    if (getServerGroupID(szGroup) == wGroupId)
+    if (getServerGroupIDUtf(szGroup) == wGroupId)
     { // this grouppath is known and is for this group, set user group
       return szGroup;
     }
@@ -1108,12 +1029,11 @@ char* makeGroupPath(WORD wGroupId)
         { // this is just an ordinary group
           int hGroup;
 
-          if (!GroupNameExists(szGroup, -1))
+          if (!GroupNameExistsUtf(szGroup, -1))
           { // if the group does not exist, create it
-            hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
-            CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szGroup);
+            hGroup = CreateCListGroup(szGroup);
           }
-          setServerGroupID(szGroup, wGroupId); // set grouppath id
+          setServerGroupIDUtf(szGroup, wGroupId); // set grouppath id
           return szGroup;
         }
         while ((levnew >= level) && (levnew != -1))
@@ -1123,18 +1043,15 @@ char* makeGroupPath(WORD wGroupId)
         }
         if (levnew == -1)
         { // that was not a sub-group, it was just a group starting with >
-          int hGroup;
-
-          if (!GroupNameExists(szGroup, -1))
+          if (!GroupNameExistsUtf(szGroup, -1))
           { // if the group does not exist, create it
-            hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
-            CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szGroup);
+            int hGroup = CreateCListGroup(szGroup);
           }
-          setServerGroupID(szGroup, wGroupId); // set grouppath id
+          setServerGroupIDUtf(szGroup, wGroupId); // set grouppath id
           return szGroup;
         }
 
-        szTempGroup = makeGroupPath(wId);
+        szTempGroup = makeGroupPathUtf(wId);
 
         szTempGroup = realloc(szTempGroup, strlennull(szGroup)+strlennull(szTempGroup)+2);
         strcat(szTempGroup, "\\");
@@ -1142,20 +1059,17 @@ char* makeGroupPath(WORD wGroupId)
         SAFE_FREE(&szGroup);
         szGroup = szTempGroup;
         
-        if (getServerGroupID(szGroup) == wGroupId)
+        if (getServerGroupIDUtf(szGroup) == wGroupId)
         { // known path, give
           return szGroup;
         }
         else
         { // unknown path, create
-          int hGroup;
-
-          if (!GroupNameExists(szGroup, -1))
+          if (!GroupNameExistsUtf(szGroup, -1))
           { // if the group does not exist, create it
-            hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
-            CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szGroup);
+            int hGroup = CreateCListGroup(szGroup);
           }
-          setServerGroupID(szGroup, wGroupId); // set grouppath id
+          setServerGroupIDUtf(szGroup, wGroupId); // set grouppath id
           return szGroup;
         }
       }
@@ -1163,12 +1077,11 @@ char* makeGroupPath(WORD wGroupId)
       { // create that group
         int hGroup;
 
-        if (!GroupNameExists(szGroup, -1))
+        if (!GroupNameExistsUtf(szGroup, -1))
         { // if the group does not exist, create it
-          hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
-          CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szGroup);
+          hGroup = CreateCListGroup(szGroup);
         }
-        setServerGroupID(szGroup, wGroupId); // set grouppath id
+        setServerGroupIDUtf(szGroup, wGroupId); // set grouppath id
         return szGroup;
       }
     }
@@ -1241,7 +1154,7 @@ void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
         dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, 0, ack);
 
         sendAddStart(0);
-        icq_sendGroup(dwCookie, ICQ_LISTS_ADDTOLIST, ack->wGroupId, szSubGroup, NULL, 0);
+        icq_sendGroupUtf(dwCookie, ICQ_LISTS_ADDTOLIST, ack->wGroupId, szSubGroup, NULL, 0);
 
         SAFE_FREE(&szGroup);
         return;
@@ -1267,7 +1180,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
 
   if (!szGroup || szGroup[0]=='\0') szGroup = DEFAULT_SS_GROUP;
 
-  if (wGroupID = getServerGroupID(szGroup))
+  if (wGroupID = getServerGroupIDUtf(szGroup))
   {
     if (ofCallback) ofCallback(wGroupID, (LPARAM)lParam);
     return wGroupID; // if the path is known give the id
@@ -1283,7 +1196,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
       ack->hContact = NULL;
       ack->wContactId = 0;
       ack->wGroupId = GenerateServerId(SSIT_GROUP);
-      ack->szGroupName = _strdup(szGroup); // we need that name
+      ack->szGroupName = null_strdup(szGroup); // we need that name
       ack->dwAction = SSA_GROUP_ADD;
       ack->dwUin = 0;
       ack->ofCallback = ofCallback;
@@ -1291,14 +1204,14 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
       dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, 0, ack);
 
       sendAddStart(0);
-      icq_sendGroup(dwCookie, ICQ_LISTS_ADDTOLIST, ack->wGroupId, szGroup, NULL, 0);
+      icq_sendGroupUtf(dwCookie, ICQ_LISTS_ADDTOLIST, ack->wGroupId, szGroup, NULL, 0);
 
       return 0;
     }
   }
   else
   { // this is a sub-group
-    char* szSub = _strdup(szGroup); // create subgroup, recursive, event-driven, possibly relocate 
+    char* szSub = null_strdup(szGroup); // create subgroup, recursive, event-driven, possibly relocate
     servlistcookie* ack;
     char *szLast;
 
@@ -1317,7 +1230,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
       WORD wRes;
       ack->lParam = (LPARAM)lParam;
       ack->ofCallback = ofCallback;
-      ack->szGroupName = _strdup(szLast); // groupname
+      ack->szGroupName = null_strdup(szLast); // groupname
       wRes = makeGroupId(szSub, madeMasterGroupId, ack);
       SAFE_FREE(&szSub);
 
@@ -1330,7 +1243,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
   if (strstr(szGroup, "\\") != NULL)
   { // we failed to get grouppath, trim it by one group
     WORD wRes;
-    char *szLast = _strdup(szGroup);
+    char *szLast = null_strdup(szGroup);
     char *szLess = szLast;
 
     while (strstr(szLast, "\\") != NULL)
@@ -1392,7 +1305,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
 
   ack->dwAction = SSA_CONTACT_ADD;
   ack->dwUin = dwUin;
-  ack->szUID = strdup(szUid);
+  ack->szUID = null_strdup(szUid);
   ack->wGroupId = wGroupID;
   ack->wContactId = wItemID;
 
@@ -1417,7 +1330,7 @@ DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup)
   else
   {
     ack->hContact = hContact;
-    ack->szGroupName = _strdup(pszNick); // we need this for resending
+    ack->szGroupName = null_strdup(pszNick); // we need this for resending
 
     if (AddPendingOperation(hContact, pszGroup, ack, addServContactReady))
       makeGroupId(pszGroup, addServContactReady, ack);
@@ -1471,7 +1384,7 @@ DWORD removeServContact(HANDLE hContact)
   {
     ack->dwAction = SSA_CONTACT_REMOVE;
     ack->dwUin = dwUin;
-    ack->szUID = strdup(szUid);
+    ack->szUID = null_strdup(szUid);
     ack->hContact = hContact;
     ack->wGroupId = wGroupID;
     ack->wContactId = wItemID;
@@ -1512,9 +1425,6 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   wItemID = ICQGetContactSettingWord(ack->hContact, "ServerId", 0);
   wGroupID = ICQGetContactSettingWord(ack->hContact, "SrvGroupId", 0);
 
-  // Read nick name from DB
-  pszNick = ack->szGroupName = UniGetContactSettingUtf(ack->hContact, "CList", "MyHandle", NULL);
-    
   if (!wItemID) 
   { // We have no ID, so try to simply add the contact to serv-list 
     NetLog_Server("Unable to move contact (no ItemID) -> trying to add");
@@ -1545,6 +1455,9 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
     return;
   }
 
+  // Read nick name from DB
+  pszNick = ack->szGroupName = UniGetContactSettingUtf(ack->hContact, "CList", "MyHandle", NULL);
+
   // Read comment from DB
   pszNote = UniGetContactSettingUtf(ack->hContact, "UserInfo", "MyNotes", NULL);
 
@@ -1553,7 +1466,7 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   ack->szGroupName = NULL;
   ack->dwAction = SSA_CONTACT_SET_GROUP;
   ack->dwUin = dwUin;
-  ack->szUID = strdup(szUid);
+  ack->szUID = null_strdup(szUid);
   ack->wGroupId = wGroupID;
   ack->wContactId = wItemID;
   ack->wNewContactId = GenerateServerId(SSIT_ITEM); // icq5 recreates also this, imitate
@@ -1588,7 +1501,7 @@ DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup)
 {
   servlistcookie* ack;
 
-  if (!GroupNameExists(pszNewGroup, -1) && (pszNewGroup != NULL) && (pszNewGroup[0]!='\0'))
+  if (!GroupNameExistsUtf(pszNewGroup, -1) && (pszNewGroup != NULL) && (pszNewGroup[0]!='\0'))
   { // the contact moved to non existing group, do not do anything: MetaContact hack
     NetLog_Server("Contact not moved - probably hiding by MetaContacts.");
     return 0;
@@ -1677,7 +1590,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
     ack->wContactId = wItemID;
     ack->wGroupId = wGroupID;
     ack->dwUin = dwUin;
-    ack->szUID = strdup(szUid);
+    ack->szUID = null_strdup(szUid);
     ack->hContact = hContact;
 
     dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, dwUin, ack);
@@ -1751,7 +1664,7 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
     ack->wContactId = wItemID;
     ack->wGroupId = wGroupID;
     ack->dwUin = dwUin;
-    ack->szUID = strdup(szUid);
+    ack->szUID = null_strdup(szUid);
     ack->hContact = hContact;
 
     dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, dwUin, ack);
@@ -1819,7 +1732,7 @@ void renameServGroup(WORD wGroupId, char* szGroupName)
 
     AddGroupRename(wGroupId);
 
-    icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, wGroupId, szGroup, groupData, groupSize);
+    icq_sendGroupUtf(dwCookie, ICQ_LISTS_UPDATEGROUP, wGroupId, szGroup, groupData, groupSize);
     SAFE_FREE(&groupData);
   }
 }
@@ -1849,16 +1762,16 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
     char* szProto;
 
     szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)wParam, 0);
-    if (szProto && !strcmp(szProto, gpszICQProtoName))
+    if (!strcmpnull(szProto, gpszICQProtoName))
       ;// our contact, fine; otherwise return
     else 
       return 0;
   }
   
-  if (!strcmp(cws->szModule, "CList"))
+  if (!strcmpnull(cws->szModule, "CList"))
   {
     // Has a temporary contact just been added permanently?
-    if (!strcmp(cws->szSetting, "NotOnList") &&
+    if (!strcmpnull(cws->szSetting, "NotOnList") &&
       (cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)) &&
       ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
     {
@@ -1876,10 +1789,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
         pszNick = UniGetContactSettingUtf((HANDLE)wParam, "CList", "MyHandle", NULL);
 
         // Read group from DB
-        if (DBGetContactSetting((HANDLE)wParam, "CList", "Group", &dbvGroup))
-          pszGroup = NULL; // if not read, no group
-        else
-          pszGroup = dbvGroup.pszVal;
+        pszGroup = UniGetContactSettingUtf((HANDLE)wParam, "CList", "Group", NULL);
 
         addServContact((HANDLE)wParam, pszNick, pszGroup);
 
@@ -1889,7 +1799,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
     }
 
     // Has contact been renamed?
-    if (!strcmp(cws->szSetting, "MyHandle") &&
+    if (!strcmpnull(cws->szSetting, "MyHandle") &&
       ICQGetContactSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))
     {
       char* szNick = UniGetContactSettingUtf((HANDLE)wParam, "CList", "MyHandle", NULL);
@@ -1901,49 +1811,48 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
     }
 
     // Has contact been moved to another group?
-    if (!strcmp(cws->szSetting, "Group") &&
+    if (!strcmpnull(cws->szSetting, "Group") &&
       ICQGetContactSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))
-    {
-      if (cws->value.type == DBVT_ASCIIZ && cws->value.pszVal != 0)
-      { // Test if group was not renamed...
-        WORD wGroupId = ICQGetContactSettingWord((HANDLE)wParam, "SrvGroupId", 0);
-        char* szGroup = makeGroupPath(wGroupId);
-        int bRenamed = 0;
-        int bMoved = 1;
+    { // Test if group was not renamed...
+      WORD wGroupId = ICQGetContactSettingWord((HANDLE)wParam, "SrvGroupId", 0);
+      char* szGroup = makeGroupPathUtf(wGroupId);
+      char* szNewGroup;
+      int bRenamed = 0;
+      int bMoved = 1;
 
-        if (wGroupId && !GroupNameExists(szGroup, -1))
-        { // if we moved from non-existing group, it can be rename
-          if (!getServerGroupID(cws->value.pszVal))
-          { // the target group is not known - it is probably rename
-            if (getServerGroupID(szGroup))
-            { // source group not known -> already renamed
-              if (!IsGroupRenamed(wGroupId))
-              { // is rename in progress ?
-                bRenamed = 1; // TODO: we should really check if group was not moved to sub-group
-                NetLog_Server("Group %x renamed to ""%s"".", wGroupId, cws->value.pszVal);
-              }
-              else // if rename in progress do not move contacts
-                bMoved = 0;
+      // Read group from DB
+      szNewGroup = UniGetContactSettingUtf((HANDLE)wParam, "CList", "Group", NULL);
+
+      if (szNewGroup && wGroupId && !GroupNameExistsUtf(szGroup, -1))
+      { // if we moved from non-existing group, it can be rename
+        if (!getServerGroupIDUtf(szNewGroup))
+        { // the target group is not known - it is probably rename
+          if (getServerGroupIDUtf(szGroup))
+          { // source group not known -> already renamed
+            if (!IsGroupRenamed(wGroupId))
+            { // is rename in progress ?
+              bRenamed = 1; // TODO: we should really check if group was not moved to sub-group
+              NetLog_Server("Group %x renamed to ""%s"".", wGroupId, szNewGroup);
             }
+            else // if rename in progress do not move contacts
+              bMoved = 0;
           }
         }
-        SAFE_FREE(&szGroup);
+      }
+      SAFE_FREE(&szGroup);
 
-        if (bRenamed)
-          renameServGroup(wGroupId, cws->value.pszVal);
-        else if (bMoved)
-          moveServContactGroup((HANDLE)wParam, cws->value.pszVal);
-      }
-      else
-      {
-        moveServContactGroup((HANDLE)wParam, NULL);
-      }
-    }    
+      if (bRenamed)
+        renameServGroup(wGroupId, szNewGroup);
+      else if (bMoved)
+        moveServContactGroup((HANDLE)wParam, szNewGroup);
+
+      SAFE_FREE(&szNewGroup);
+    }
   }
 
-  if (!strcmp(cws->szModule, "UserInfo"))
+  if (!strcmpnull(cws->szModule, "UserInfo"))
   {
-    if (!strcmp(cws->szSetting, "MyNotes") &&
+    if (!strcmpnull(cws->szSetting, "MyNotes") &&
       ICQGetContactSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))
     {
       char* szNote = UniGetContactSettingUtf((HANDLE)wParam, "UserInfo", "MyNotes", NULL);
@@ -1954,7 +1863,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
     }
   }
 
-  if (!strcmp(cws->szModule, "ContactPhoto"))
+  if (!strcmpnull(cws->szModule, "ContactPhoto"))
   { // contact photo changed ?
     ContactPhotoSettingChanged((HANDLE)wParam);
   }
@@ -2008,7 +1917,7 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
         {
           ack->dwAction = SSA_PRIVACY_REMOVE;
           ack->dwUin = dwUIN;
-          ack->szUID = strdup(szUID);
+          ack->szUID = null_strdup(szUID);
           ack->hContact = (HANDLE)wParam;
           ack->wGroupId = 0;
           ack->wContactId = wVisibleID;
@@ -2032,7 +1941,7 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
         {
           ack->dwAction = SSA_PRIVACY_REMOVE;
           ack->dwUin = dwUIN;
-          ack->szUID = strdup(szUID);
+          ack->szUID = null_strdup(szUID);
           ack->hContact = (HANDLE)wParam;
           ack->wGroupId = 0;
           ack->wContactId = wInvisibleID;
@@ -2056,7 +1965,7 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
         {
           ack->dwAction = SSA_PRIVACY_REMOVE; // remove privacy item
           ack->dwUin = dwUIN;
-          ack->szUID = strdup(szUID);
+          ack->szUID = null_strdup(szUID);
           ack->hContact = (HANDLE)wParam;
           ack->wGroupId = 0;
           ack->wContactId = wIgnoreID;

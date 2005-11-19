@@ -58,6 +58,7 @@ static unsigned char client_check_data[] = {
 };
 
 static directconnect** directConnList = NULL;
+static int directConnSize = 0;
 static int directConnCount = 0;
 static int mutexesInited = 0;
 static CRITICAL_SECTION directConnListMutex;
@@ -87,40 +88,18 @@ void InitDirectConns(void)
     InitializeCriticalSection(&expectedFileRecvMutex);
   }
   directConnCount = 0;
+  directConnSize = 0;
 }
 
 
 
 void UninitDirectConns(void)
 {
-  int i;
-  
-/*
-  EnterCriticalSection(&directConnListMutex);
-
-  for (i = 0; i < directConnCount; i++)
-  {
-    if (directConnList[i])
-    {
-      int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)directConnList[i]->hConnection, (LPARAM)0);
-      if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
-      Netlib_CloseHandle(directConnList[i]->hConnection);
-    }
-  }
-
-  LeaveCriticalSection(&directConnListMutex);
-*/
   CloseContactDirectConns(NULL);
 
   for(;;)
   {
-    for (i = 0; i < directConnCount; i++)
-    {
-      if (directConnList[i])
-        break;
-    }
-
-    if (i == directConnCount)
+    if (!directConnCount)
       break;
 
     Sleep(10);     /* yeah, ugly */
@@ -142,7 +121,7 @@ void CloseContactDirectConns(HANDLE hContact)
 
   for (i = 0; i < directConnCount; i++)
   {
-    if (directConnList[i] && (!hContact || directConnList[i]->hContact == hContact))
+    if (!hContact || directConnList[i]->hContact == hContact)
     {
       HANDLE hConnection = directConnList[i]->hConnection;
       int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)hConnection, 0);
@@ -158,21 +137,28 @@ void CloseContactDirectConns(HANDLE hContact)
 
 
 
+static void ResizeDirectList(int nSize)
+{
+  if ((directConnSize < nSize) || ((directConnSize > nSize + 6) && nSize))
+  {
+    if (directConnSize < nSize)
+      directConnSize += 4;
+    else
+      directConnSize -= 4;
+
+    directConnList = (directconnect**)realloc(directConnList, sizeof(directconnect*) * directConnSize);
+  }
+}
+
+
+
 static void AddDirectConnToList(directconnect* dc)
 {
-  int i;
-
   EnterCriticalSection(&directConnListMutex);
 
-  for (i = 0; i < directConnCount; i++)
-  {
-    if (directConnList[i] == NULL)
-      break;
-  }
-
-  if (i == directConnCount)
-    directConnList = (directconnect**)realloc(directConnList, sizeof(directconnect*) * ++directConnCount);
-  directConnList[i] = dc;
+  ResizeDirectList(directConnCount + 1);
+  directConnList[directConnCount] = dc;
+  directConnCount++;
 
   LeaveCriticalSection(&directConnListMutex);
 }
@@ -189,12 +175,36 @@ static RemoveDirectConnFromList(directconnect* dc)
   {
     if (directConnList[i] == dc)
     {
-      directConnList[i] = NULL;
+      directConnCount--;
+      directConnList[i] = directConnList[directConnCount];
+      ResizeDirectList(directConnCount);
       break;
     }
   }
 
   LeaveCriticalSection(&directConnListMutex);
+}
+
+
+
+directconnect* FindFileTransferDC(filetransfer* ft)
+{
+  int i;
+  directconnect* dc = NULL;
+
+  EnterCriticalSection(&directConnListMutex);
+
+  for (i = 0; i < directConnCount; i++)
+  {
+    if (directConnList[i] && directConnList[i]->ft == ft)
+    {
+      dc = directConnList[i];
+      break;
+    }
+  }
+
+  LeaveCriticalSection(&directConnListMutex);
+  return dc;
 }
 
 
@@ -240,16 +250,16 @@ filetransfer *FindExpectedFileRecv(DWORD dwUin, DWORD dwTotalSize)
 
 
 
-int sendDirectPacket(HANDLE hConnection, icq_packet* pkt)
+int sendDirectPacket(directconnect* dc, icq_packet* pkt)
 {
   int nResult;
 
-  nResult = Netlib_Send(hConnection, (const char*)pkt->pData, pkt->wLen + 2, 0);
+  nResult = Netlib_Send(dc->hConnection, (const char*)pkt->pData, pkt->wLen + 2, 0);
 
   if (nResult == SOCKET_ERROR)
   {
-    NetLog_Direct("Direct %p socket error: %d, closing", hConnection, GetLastError());
-    Netlib_CloseHandle(hConnection);
+    NetLog_Direct("Direct %p socket error: %d, closing", dc->hConnection, GetLastError());
+    CloseDirectConnection(dc);
   }
   
   SAFE_FREE(&pkt->pData);
@@ -391,7 +401,7 @@ int SendDirectMessage(HANDLE hContact, icq_packet *pkt)
         if (pkt->pData[2] == 2)
           EncryptDirectPacket(directConnList[i], pkt);
 
-        sendDirectPacket(directConnList[i]->hConnection, pkt);
+        sendDirectPacket(directConnList[i], pkt);
         directConnList[i]->packetPending = 0; // packet done
 
         LeaveCriticalSection(&directConnListMutex);
@@ -830,40 +840,10 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
           else if (dc->type == DIRECTCONN_STANDARD)
           { // send PEER_MSGINIT
             sendPeerMsgInit(dc, 0);
-/*            directPacketInit(&packet, 33);
-            packByte(&packet, PEER_MSG_INIT);
-            packLEDWord(&packet, 10);         // unknown
-            packLEDWord(&packet, 1);          // message connection
-            packLEDWord(&packet, 0);          // sequence is 0
-            packGUID(&packet, PSIG_MESSAGE);  // message type GUID
-            packLEWord(&packet, 1);           // delimiter
-            packLEWord(&packet, 4);
-            sendDirectPacket(dc->hConnection, &packet);*/
           }
           else if (dc->type == DIRECTCONN_FILE)
           {
             sendPeerFileInit(dc);
-/*            DBVARIANT dbv;
-            char* szNick;
-            int nNickLen;
-
-            dbv.type = DBVT_DELETED;
-            if (ICQGetContactSetting(NULL, "Nick", &dbv))
-              szNick = "";
-            else
-              szNick = dbv.pszVal;
-            nNickLen = strlennull(szNick);
-
-            directPacketInit(&packet, (WORD)(20 + nNickLen));
-            packByte(&packet, PEER_FILE_INIT);  // packet type 
-            packLEDWord(&packet, 0);            // unknown 
-            packLEDWord(&packet, dc->ft->dwFileCount);
-            packLEDWord(&packet, dc->ft->dwTotalSize);
-            packLEDWord(&packet, dc->ft->dwTransferSpeed);
-            packLEWord(&packet, (WORD)(nNickLen + 1));
-            packBuffer(&packet, szNick, (WORD)(nNickLen + 1));
-            sendDirectPacket(dc->hConnection, &packet);
-            ICQFreeVariant(&dbv);*/
             dc->initialised = 1;
           }
         }
@@ -932,18 +912,6 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
         if (dc->incoming)
         { // reply with our PEER_MSG_INIT
           sendPeerMsgInit(dc, 1);
-/*          directPacketInit(&packet, 33);
-          packByte(&packet, 3);
-          packLEDWord(&packet, 10); // unknown
-          packLEDWord(&packet, 1);  // message connection
-          packLEDWord(&packet, 1);  // sequence
-          packDWord(&packet, 0);    // first part of Message GUID
-          packDWord(&packet, 0);
-          packLEWord(&packet, 1);   // delimiter
-          packLEWord(&packet, 4);
-          packDWord(&packet, 0);    // second part of Message GUID
-          packDWord(&packet, 0);
-          sendDirectPacket(dc->hConnection, &packet);*/
         }
         else
         { // connection initialized, ready to send message packet
@@ -1236,7 +1204,7 @@ static void sendPeerInit_v78(directconnect* dc)
   else
     packDWord(&packet, 0);                   // Unknown
 
-  sendDirectPacket(dc->hConnection, &packet);
+  sendDirectPacket(dc, &packet);
 #ifdef _DEBUG
   NetLog_Direct("Sent PEER_INIT to %u on %s DC", dc->dwRemoteUin, dc->incoming?"incoming":"outgoing");
 #endif
@@ -1254,7 +1222,7 @@ static void sendPeerInitAck(directconnect* dc)
   directPacketInit(&packet, 4);              // Packet length
   packLEDWord(&packet, PEER_INIT_ACK);       // 
 
-  sendDirectPacket(dc->hConnection, &packet);
+  sendDirectPacket(dc, &packet);
 #ifdef _DEBUG
   NetLog_Direct("Sent PEER_INIT_ACK to %u on %s DC", dc->dwRemoteUin, dc->incoming?"incoming":"outgoing");
 #endif
@@ -1289,7 +1257,7 @@ static void sendPeerMsgInit(directconnect* dc, DWORD dwSeq)
     packDWord(&packet, 0);            // second part of Message GUID
     packDWord(&packet, 0);
   }
-  sendDirectPacket(dc->hConnection, &packet);
+  sendDirectPacket(dc, &packet);
 #ifdef _DEBUG
   NetLog_Direct("Sent PEER_MSG_INIT to %u on %s DC", dc->dwRemoteUin, dc->incoming?"incoming":"outgoing");
 #endif
@@ -1322,7 +1290,7 @@ static void sendPeerFileInit(directconnect* dc)
   packLEDWord(&packet, dc->ft->dwTransferSpeed);
   packLEWord(&packet, (WORD)(nNickLen + 1));
   packBuffer(&packet, szNick, (WORD)(nNickLen + 1));
-  sendDirectPacket(dc->hConnection, &packet);
+  sendDirectPacket(dc, &packet);
 #ifdef _DEBUG
   NetLog_Direct("Sent PEER_FILE_INIT to %u on %s DC", dc->dwRemoteUin, dc->incoming?"incoming":"outgoing");
 #endif

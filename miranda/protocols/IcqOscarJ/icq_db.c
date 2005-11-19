@@ -114,7 +114,7 @@ int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid)
       else
         NetLog_Server("AOL screennames not accepted");
     }
-    DBFreeVariant(&dbv);
+    ICQFreeVariant(&dbv);
   }
   return iRes;
 }
@@ -139,7 +139,7 @@ char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* 
       return null_strdup(szDef);
     
     szRes = null_strdup(dbv.pszVal);
-    DBFreeVariant(&dbv);
+    ICQFreeVariant(&dbv);
   }
   else
   { // old DB, we need to convert the string to UTF-8
@@ -155,7 +155,7 @@ char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* 
     else 
       szRes = null_strdup("");
 
-    DBFreeVariant(&dbv);
+    ICQFreeVariant(&dbv);
   }
   return szRes;
 }
@@ -275,7 +275,7 @@ void TestDBBlobIssue()
   DBWriteContactSettingBlob(NULL, gpszICQProtoName, "BlobTestItem", "Test", 4); // write blob
   if (!DBGetContactSetting(NULL, gpszICQProtoName, "BlobTestItem", &dbv)) // try to read it back
   { // we were able to read it, the DB finally work correctly, hurrah
-    DBFreeVariant(&dbv); 
+    ICQFreeVariant(&dbv); 
   }
   else // the crap is still in the cache, we need to use workaround for avatars to work properly
   {

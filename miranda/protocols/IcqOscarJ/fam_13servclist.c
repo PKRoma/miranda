@@ -42,7 +42,7 @@ extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
 
 extern void setUserInfo();
-extern int GroupNameExists(const char *name,int skipGroup);
+extern int GroupNameExistsUtf(const char *name,int skipGroup);
 
 BOOL bIsSyncingCL = FALSE;
 
@@ -406,8 +406,8 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         servlistcookie* ack;
         DWORD dwCookie;
 
-        setServerGroupName(sc->wGroupId, sc->szGroupName); // add group to namelist
-        setServerGroupID(makeGroupPath(sc->wGroupId), sc->wGroupId); // add group to known
+        setServerGroupNameUtf(sc->wGroupId, sc->szGroupName); // add group to namelist
+        setServerGroupIDUtf(makeGroupPathUtf(sc->wGroupId), sc->wGroupId); // add group to known
 
         groupData = collectGroups(&groupSize);
         groupData = realloc(groupData, groupSize+2);
@@ -422,7 +422,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
           ack->szGroupName = NULL;
           dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
 
-          icq_sendGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, ack->szGroupName, groupData, groupSize);
+          icq_sendGroupUtf(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, ack->szGroupName, groupData, groupSize);
         }
         sendAddEnd(); // end server modifications here
 
@@ -649,9 +649,9 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       }
       else
       { 
-        setServerGroupName(sc->wGroupId, sc->szGroupName);
+        setServerGroupNameUtf(sc->wGroupId, sc->szGroupName);
         removeGroupPathLinks(sc->wGroupId);
-        setServerGroupID(makeGroupPath(sc->wGroupId), sc->wGroupId);
+        setServerGroupIDUtf(makeGroupPathUtf(sc->wGroupId), sc->wGroupId);
       }
       RemoveGroupRename(sc->wGroupId);
       break;
@@ -848,9 +848,9 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
             NetLog_Server("SSI added new %s contact '%s'", "ICQ", szRecordName);
 
-            if (szGroup = makeGroupPath(wGroupId))
+            if (szGroup = makeGroupPathUtf(wGroupId))
             { // try to get Miranda Group path from groupid, if succeeded save to db
-              DBWriteContactSettingString(hContact, "CList", "Group", szGroup);
+              UniWriteContactSettingUtf(hContact, "CList", "Group", szGroup);
 
               SAFE_FREE(&szGroup);
             }
@@ -878,27 +878,29 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
           if (!bAdded && (wOldGroupId != wGroupId) && ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD))
           { // contact has been moved on the server
-            char* szOldGroup = getServerGroupName(wOldGroupId);
-            char* szGroup = getServerGroupName(wGroupId);
+            char* szOldGroup = getServerGroupNameUtf(wOldGroupId);
+            char* szGroup = getServerGroupNameUtf(wGroupId);
 
             if (!szOldGroup)
             { // old group is not known, most probably not created subgroup
-              DBVARIANT dbv;
+              char* szTmp = UniGetContactSettingUtf(hContact, "CList", "Group", "");
 
-              if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
-              { // get group from CList
-                if (dbv.pszVal && strlennull(dbv.pszVal) > 0)
-                  szOldGroup = _strdup(dbv.pszVal);
-                ICQFreeVariant(&dbv);
+              if (strlennull(szTmp))
+              { // got group from CList
+                SAFE_FREE(&szOldGroup);
+                szOldGroup = szTmp;
               }
-              if (!szOldGroup) szOldGroup = _strdup(DEFAULT_SS_GROUP);
+              else
+                SAFE_FREE(&szTmp);
+
+              if (!szOldGroup) szOldGroup = null_strdup(DEFAULT_SS_GROUP);
             }
 
             if (!szGroup || strlennull(szGroup)>=strlennull(szOldGroup) || strnicmp(szGroup, szOldGroup, strlennull(szGroup)))
             { // contact moved to new group or sub-group or not to master group
               bRegroup = 1;
             }
-            if (bRegroup && !stricmp(DEFAULT_SS_GROUP, szGroup) && !GroupNameExists(szGroup, -1))
+            if (bRegroup && !stricmp(DEFAULT_SS_GROUP, szGroup) && !GroupNameExistsUtf(szGroup, -1))
             { // is it the default "General" group ? yes, does it exists in CL ?
               bRegroup = 0; // if no, do not move to it - cause it would hide the contact
             }
@@ -910,9 +912,9 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
           { // if we should load server details or contact was just added, update its group
             char* szGroup;
 
-            if (szGroup = makeGroupPath(wGroupId))
+            if (szGroup = makeGroupPathUtf(wGroupId))
             { // try to get Miranda Group path from groupid, if succeeded save to db
-              DBWriteContactSettingString(hContact, "CList", "Group", szGroup);
+              UniWriteContactSettingUtf(hContact, "CList", "Group", szGroup);
 
               SAFE_FREE(&szGroup);
             }
@@ -947,7 +949,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
                     if (szOldNick = UniGetContactSettingUtf(hContact,"CList","MyHandle",""))
                     {
-                      if ((lstrcmp(szOldNick, pszNick)) && (strlennull(pszNick) > 0))
+                      if ((strcmpnull(szOldNick, pszNick)) && (strlennull(pszNick) > 0))
                       {
                         // Yes, we really do need to delete it first. Otherwise the CLUI nick
                         // cache isn't updated (I'll look into it)
@@ -1000,7 +1002,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
                     if (szOldComment = UniGetContactSettingUtf(hContact,"UserInfo","MyNotes",""))
                     {
-                      if ((lstrcmp(szOldComment, pszComment)) && (strlennull(pszComment) > 0))
+                      if ((strcmpnull(szOldComment, pszComment)) && (strlennull(pszComment) > 0))
                       {
                         UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
                       }
@@ -1063,7 +1065,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
           NetLog_Server("Group %s added to known groups.", szRecordName);
 
           /* demangle full grouppath, create groups, set it to known */
-          pszName = makeGroupPath(wGroupId); 
+          pszName = makeGroupPathUtf(wGroupId); 
           SAFE_FREE(&pszName);
 
           /* TLV contains a TLV(C8) with a list of WORDs of contained contact IDs */
@@ -1329,7 +1331,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
         ack->wGroupId = 0;
         ack->szGroupName = "";
         seq = AllocateCookie(ICQ_LISTS_ADDTOLIST, 0, ack);
-        icq_sendGroup(seq, ICQ_LISTS_ADDTOLIST, 0, ack->szGroupName, NULL, 0);
+        icq_sendGroupUtf(seq, ICQ_LISTS_ADDTOLIST, 0, ack->szGroupName, NULL, 0);
       }
     }
     // serv-list sync finished, clear just added contacts
