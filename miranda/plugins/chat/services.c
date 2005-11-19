@@ -677,6 +677,8 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 		{
 			g_TabSession.hWnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHANNEL), NULL, RoomWndProc, (LPARAM)&g_TabSession);
 		}
+		SetWindowLong(g_TabSession.hWnd, GWL_EXSTYLE, GetWindowLong(g_TabSession.hWnd, GWL_EXSTYLE) | WS_EX_APPWINDOW);
+
 		// if the session was not the current tab we need to tell the window to
 		// redraw to show the contents of the current SESSION_INFO
 		if(!si->hWnd)
@@ -717,6 +719,7 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 	{
 		si->hWnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHANNEL), NULL, RoomWndProc, (LPARAM)si);
 	}
+	SetWindowLong(si->hWnd, GWL_EXSTYLE, GetWindowLong(si->hWnd, GWL_EXSTYLE) | WS_EX_APPWINDOW);
 	if(!IsWindowVisible(si->hWnd) || wp == WINDOW_HIDDEN)
 		SendMessage(si->hWnd, GC_EVENT_CONTROL + WM_USER + 500, wp, 0);
 	else
