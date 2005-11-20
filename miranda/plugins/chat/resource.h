@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by chat.rc
 //
 #define IDD_CHANNEL                     101
@@ -122,13 +122,17 @@
 #define ID_CLOSE                        40022
 #define ID_CLOSEOTHER                   40023
 #define ID_LOCKPOSITION                 40024
+#define ID_Menu                         40026
+#define ID_SEARCH_GOOGLE                40027
+#define ID_SEARCH_WIKIPEDIA             40028
+#define ID_WIKIPEDIA_                   40029
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        163
-#define _APS_NEXT_COMMAND_VALUE         40026
+#define _APS_NEXT_COMMAND_VALUE         40030
 #define _APS_NEXT_CONTROL_VALUE         1076
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

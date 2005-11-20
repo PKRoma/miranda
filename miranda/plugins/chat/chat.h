@@ -518,7 +518,7 @@ void				CheckColorsInModule(char * pszModule);
 char*				my_strstri(char *s1, char *s2) ;
 int					GetRichTextLength(HWND hwnd);
 BOOL				IsHighlighted(SESSION_INFO * si, char * pszText);
-UINT				CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO * si, char * pszUID);
+UINT				CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO * si, char * pszUID, char * pszWordText);
 void				DestroyGCMenu(HMENU *hMenu, int iIndex);
 BOOL				DoEventHookAsync(HWND hwnd, char * pszID, char * pszModule, int iType, char * pszUID, char * pszText, DWORD dwItem);
 BOOL				DoEventHook(char * pszID, char * pszModule, int iType, char * pszUID, char * pszText, DWORD dwItem);

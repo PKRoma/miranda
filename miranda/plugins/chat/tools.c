@@ -745,7 +745,7 @@ BOOL LogToFile(SESSION_INFO * si, GCEVENT * gce)
 
 
 
-UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO * si, char * pszUID)
+UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO * si, char * pszUID, char * pszWordText)
 {
 	GCMENUITEMS gcmi = {0};
 	int i;
@@ -763,11 +763,26 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 
 		EnableMenuItem(*hMenu, ID_CLEARLOG, MF_ENABLED);
 		EnableMenuItem(*hMenu, ID_COPYALL, MF_ENABLED);
+//		EnableMenuItem(*hMenu, 4, MF_BYPOSITION|MF_GRAYED);
+				ModifyMenuA(*hMenu, 4, MF_GRAYED|MF_BYPOSITION, 4, NULL);
 		if (!i)
 		{
 			EnableMenuItem(*hMenu, ID_COPYALL, MF_BYCOMMAND | MF_GRAYED);
 			EnableMenuItem(*hMenu, ID_CLEARLOG, MF_BYCOMMAND | MF_GRAYED);
+			if(pszWordText && pszWordText[0])
+			{
+				ModifyMenuA(*hMenu, 4, MF_ENABLED|MF_BYPOSITION, 4, NULL);
+				//EnableMenuItem(*hMenu, 4, MF_BYPOSITION|MF_ENABLED);
+			}
 		}
+		if(pszWordText && pszWordText[0])
+		{
+			char szMenuText[4096];
+			mir_snprintf(szMenuText, 4096, "Look up \'%s\':", pszWordText);
+			ModifyMenuA(*hMenu, 4, MF_STRING|MF_BYPOSITION, 4, szMenuText); 
+		}
+		else
+			ModifyMenuA(*hMenu, 4, MF_STRING|MF_GRAYED|MF_BYPOSITION, 4, "No word to look up"); 
 		gcmi.Type = MENU_ON_LOG;
 	}
 	else if(iIndex == 0)

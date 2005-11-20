@@ -1199,7 +1199,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 				if(hti.pt.x == -1 && hti.pt.y == -1)
 					hti.pt.y += height - 4;
 				ClientToScreen(hwnd, &hti.pt);
-				uID = CreateGCMenu(hwnd, &hMenu, 0, hti.pt, parentdat, uinew.pszUID); 
+				uID = CreateGCMenu(hwnd, &hMenu, 0, hti.pt, parentdat, uinew.pszUID, NULL); 
 
 				switch (uID) 
 				{
@@ -2665,12 +2665,56 @@ LABEL_SHOWWINDOW:
 					POINT pt;
 					UINT uID = 0;
 					HMENU hMenu = 0;
+					char pszWord[4096];
 
 					pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
 					pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
 					ClientToScreen(pNmhdr->hwndFrom, &pt);
+
+					{ // fixing stuff for searches
+						long iCharIndex, iLineIndex, iChars, start, end, iRes;
+						POINTL ptl;
+
+						pszWord[0] = '\0';
+						ptl.x = (LONG)pt.x;
+						ptl.y = (LONG)pt.y;
+						ScreenToClient(GetDlgItem(hwndDlg, IDC_LOG), (LPPOINT)&ptl);
+						iCharIndex = SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_CHARFROMPOS, 0, (LPARAM)&ptl);
+						if (iCharIndex < 0)
+							break;
+						iLineIndex = SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXLINEFROMCHAR, 0, (LPARAM)iCharIndex); 
+						iChars = SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_LINEINDEX, (WPARAM)iLineIndex, 0 ); 
+						start = SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_FINDWORDBREAK, WB_LEFT, iCharIndex);//-iChars; 
+						end = SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_FINDWORDBREAK, WB_RIGHT, iCharIndex);//-iChars; 
+							
+						if(end - start > 0)
+						{
+							TEXTRANGE tr;
+							CHARRANGE cr;
+							static char szTrimString[] = ":;,.!?\'\"><()[] ";
+							ZeroMemory(&tr, sizeof(TEXTRANGE));
+							
+							cr.cpMin = start;
+							cr.cpMax = end;
+							tr.chrg = cr;
+							tr.lpstrText = (LPWSTR)pszWord;
+							iRes = SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_GETTEXTRANGE, 0, (LPARAM)&tr);
+							
+							if(iRes > 0)
+							{
+								int iLen = lstrlenA(pszWord)-1;
+								while(iLen >= 0 && strchr(szTrimString, pszWord[iLen]))
+								{
+									pszWord[iLen] = '\0';
+									iLen--;
+								}
+							}
+
+						}
+
+					}
 					
-					uID = CreateGCMenu(hwndDlg, &hMenu, 1, pt, si, NULL);
+					uID = CreateGCMenu(hwndDlg, &hMenu, 1, pt, si, NULL, pszWord);
 					switch (uID) 
 					{
 					case 0:
@@ -2700,13 +2744,34 @@ LABEL_SHOWWINDOW:
 								PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
 							}
 						}break;
+                     case ID_SEARCH_GOOGLE:
+						{
+							char szURL[4096] = "http://www.google.com/search?q=";
+							if(pszWord[0])
+							{
+								lstrcatA(szURL, pszWord);
+								CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
+							}
+
+							PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
+						}break;
+                     case ID_SEARCH_WIKIPEDIA:
+						{
+							char szURL[4096] = "http://en.wikipedia.org/wiki/";
+							if(pszWord[0])
+							{
+								lstrcatA(szURL, pszWord);
+								CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
+							}
+							PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
+						}break;
 				   default:
 						PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
 						DoEventHookAsync(hwndDlg, si->pszID, si->pszModule, GC_USER_LOGMENU, NULL, NULL, (LPARAM)uID);
 						break;
 
 					}
-					DestroyGCMenu(&hMenu, 3);
+					DestroyGCMenu(&hMenu, 5);
 				}
 			}break;
 
