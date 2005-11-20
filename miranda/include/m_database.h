@@ -553,11 +553,18 @@ szFormat can have the following special characters:
 All other characters are copied across to szDest as-is
 */
 typedef struct {
-	char *szFormat;		//format string, as above
-	char *szDest;		//place to put the output string
-	int cbDest;			//maximum number of bytes to put in szDest
+	char *szFormat;  // format string, as above
+	char *szDest;    // place to put the output string
+	int cbDest;      // maximum number of bytes to put in szDest
 } DBTIMETOSTRING;
 #define MS_DB_TIME_TIMESTAMPTOSTRING  "DB/Time/TimestampToString"
+
+typedef struct {
+	TCHAR *szFormat; // format string, as above
+	TCHAR *szDest;	  // place to put the output string
+	int cbDest;      // maximum number of bytes to put in szDest
+} DBTIMETOSTRINGT;
+#define MS_DB_TIME_TIMESTAMPTOSTRINGT "DB/Time/TimestampToStringT"
 
 /*************************** Random *******************************/
 

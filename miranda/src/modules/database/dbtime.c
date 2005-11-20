@@ -173,9 +173,67 @@ static int TimestampToString(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+#if defined( _UNICODE )
+static int TimestampToStringW(WPARAM wParam,LPARAM lParam)
+{
+	DBTIMETOSTRINGT *tts = ( DBTIMETOSTRINGT* )lParam;
+	LARGE_INTEGER liFiletime;
+	FILETIME filetime;
+	SYSTEMTIME st;
+	TCHAR dateTimeStr[64];
+	TCHAR *pDest,*pFormat;
+	int destCharsLeft, dateTimeStrLen;
+
+	//this huge number is the difference between 1970 and 1601 in seconds
+	liFiletime.QuadPart = (11644473600i64+(__int64)(DWORD)TimestampToLocal(wParam,0))*10000000;
+	filetime.dwHighDateTime = liFiletime.HighPart;
+	filetime.dwLowDateTime = liFiletime.LowPart;
+	FileTimeToSystemTime(&filetime,&st);
+	destCharsLeft = tts->cbDest;
+	for ( pFormat = tts->szFormat, pDest=tts->szDest; *pFormat; pFormat++ ) {
+		switch(*pFormat) {
+		case 't':
+			GetTimeFormat(LOCALE_USER_DEFAULT,TIME_NOSECONDS,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
+			break;
+		case 's':
+			GetTimeFormat(LOCALE_USER_DEFAULT,0,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
+			break;
+		case 'm':
+			GetTimeFormat(LOCALE_USER_DEFAULT,TIME_NOMINUTESORSECONDS,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
+			break;
+		case 'd':
+			GetDateFormat(LOCALE_USER_DEFAULT,DATE_SHORTDATE,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
+			break;
+		case 'D':
+			GetDateFormat(LOCALE_USER_DEFAULT,DATE_LONGDATE,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
+			break;
+		default:
+			if ( destCharsLeft ) {
+				*pDest++ = *pFormat;
+				destCharsLeft--;
+			}
+			continue;
+		}
+		dateTimeStrLen = _tcslen(dateTimeStr);
+		if (destCharsLeft < dateTimeStrLen) dateTimeStrLen = destCharsLeft;
+		CopyMemory(pDest, dateTimeStr, dateTimeStrLen*sizeof(TCHAR));
+		destCharsLeft -= dateTimeStrLen;
+		pDest += dateTimeStrLen;
+	}
+	if ( destCharsLeft ) *pDest=0;
+	else tts->szDest[ tts->cbDest-1 ] = 0;
+	return 0;
+}
+#endif
+
 int InitTime(void)
 {
-	CreateServiceFunction(MS_DB_TIME_TIMESTAMPTOLOCAL,TimestampToLocal);
-	CreateServiceFunction(MS_DB_TIME_TIMESTAMPTOSTRING,TimestampToString);
+	CreateServiceFunction(MS_DB_TIME_TIMESTAMPTOLOCAL, TimestampToLocal);
+	CreateServiceFunction(MS_DB_TIME_TIMESTAMPTOSTRING, TimestampToString);
+	#if defined( _UNICODE )
+		CreateServiceFunction(MS_DB_TIME_TIMESTAMPTOSTRINGT, TimestampToStringW);
+	#else
+		CreateServiceFunction(MS_DB_TIME_TIMESTAMPTOSTRINGT, TimestampToString);
+	#endif
 	return 0;
 } 

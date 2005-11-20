@@ -195,12 +195,11 @@ typedef struct {
 
 static void FillHistoryThread(THistoryThread *hInfo)
 {
-	TCHAR str[200], eventText[256];
-	char  strdatetime[64];
+	TCHAR str[200], eventText[256], strdatetime[64];
 	HANDLE hDbEvent;
 	DBEVENTINFO dbei;
 	int newBlobSize,oldBlobSize,i;
-	DBTIMETOSTRING dbtts;
+	DBTIMETOSTRINGT dbtts;
 	HWND hwndList;
 
 	SendDlgItemMessage(hInfo->hwnd,IDC_LIST,LB_RESETCONTENT,0,0);
@@ -212,9 +211,9 @@ static void FillHistoryThread(THistoryThread *hInfo)
 	dbei.pBlob=NULL;
 	oldBlobSize=0;
 	hDbEvent=(HANDLE)CallService(MS_DB_EVENT_FINDLAST,(WPARAM)hInfo->hContact,0);
-	dbtts.cbDest=SIZEOF(strdatetime);
-	dbtts.szDest=strdatetime;
-	dbtts.szFormat="d t";
+	dbtts.cbDest = SIZEOF(strdatetime);
+	dbtts.szDest = strdatetime;
+	dbtts.szFormat = _T("d t");
 	hwndList=GetDlgItem(hInfo->hwnd,IDC_LIST);
 	while(hDbEvent!=NULL) {
 		if (!IsWindow(hInfo->hwnd)) break;
@@ -223,18 +222,14 @@ static void FillHistoryThread(THistoryThread *hInfo)
 			dbei.pBlob=(PBYTE)realloc(dbei.pBlob,newBlobSize);
 			oldBlobSize=newBlobSize;
 		}
-		dbei.cbBlob=oldBlobSize;
-		CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
+		dbei.cbBlob = oldBlobSize;
+		CallService( MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei );
 		GetObjectSummary(&dbei,str,SIZEOF(str));
 		if(str[0]) {
-			CallService(MS_DB_TIME_TIMESTAMPTOSTRING,dbei.timestamp,(LPARAM)&dbtts);
-			#if defined( _UNICODE )
-				mir_sntprintf( eventText, SIZEOF(eventText), _T("%S: %s"), strdatetime, str );
-			#else
-				mir_sntprintf( eventText, SIZEOF(eventText), "%s: %s", strdatetime, str );
-			#endif
-			i=SendMessage(hwndList,LB_ADDSTRING,0,(LPARAM)eventText);
-			SendMessage(hwndList,LB_SETITEMDATA,i,(LPARAM)hDbEvent);
+			CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dbei.timestamp,( LPARAM )&dbtts );
+			mir_sntprintf( eventText, SIZEOF(eventText), _T("%s: %s"), strdatetime, str );
+			i = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)eventText );
+			SendMessage(hwndList, LB_SETITEMDATA, i, (LPARAM)hDbEvent);
 		}
 		hDbEvent=(HANDLE)CallService(MS_DB_EVENT_FINDPREV,(WPARAM)hDbEvent,0);
 	}

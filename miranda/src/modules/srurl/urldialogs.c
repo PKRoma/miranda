@@ -51,7 +51,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			{
 				DBEVENTINFO dbei;
-				DBTIMETOSTRING dbtts;
+				DBTIMETOSTRINGT dbtts;
 				TCHAR* contactName;
 				TCHAR  msg[128];
 
@@ -71,12 +71,12 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				SetWindowText(hwndDlg,msg);
 				SetDlgItemText(hwndDlg,IDC_FROM,contactName);
 				SendDlgItemMessage(hwndDlg,IDOK,BUTTONSETARROW,1,0);
-				{	char str[128];
-					dbtts.szDest=str;
-					dbtts.cbDest=SIZEOF(str);
-					dbtts.szFormat="t d";
-					CallService(MS_DB_TIME_TIMESTAMPTOSTRING,dbei.timestamp,(LPARAM)&dbtts);
-					SetDlgItemTextA(hwndDlg,IDC_DATE,str);
+				{	TCHAR str[128];
+					dbtts.szFormat = _T("t d");
+					dbtts.szDest = str;
+					dbtts.cbDest = SIZEOF(str);
+					CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dbei.timestamp, (LPARAM)&dbtts);
+					SetDlgItemText(hwndDlg, IDC_DATE, str);
 			}	}
 
 			// From message dlg
