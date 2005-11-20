@@ -690,7 +690,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 								hBr = GetSysColorBrush(COLOR_MENUBAR);
 								FillRect(dis->hDC, &dis->rcItem, hBr);
 								DeleteObject(hBr);
-							}   //if
+							} //if
 							/* draw the icon */
 							DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
 								(dis->rcItem.right + dis->rcItem.left - GetSystemMetrics(SM_CXSMICON)) / 2 +
@@ -714,8 +714,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 								(dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2 +
 								(dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0,
 								DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
-						}       //if
-					}           //if
+						} //if
+					} //if
 					DestroyIcon(hIcon);
 					return TRUE;
 				}
@@ -823,7 +823,7 @@ int LoadCLUIModule(void)
 	HookEvent(ME_SKIN_ICONSCHANGED, CluiIconsChanged);
 	HookEvent(ME_OPT_INITIALISE, CluiOptInit);
 	hContactDraggingEvent = CreateHookableEvent(ME_CLUI_CONTACTDRAGGING);
-	hContactDroppedEvent = CreateHookableEvent(ME_CLUI_CONTACTDROPPED);
+	hContactDroppedEvent  = CreateHookableEvent(ME_CLUI_CONTACTDROPPED);
 	hContactDragStopEvent = CreateHookableEvent(ME_CLUI_CONTACTDRAGSTOP);
 	LoadCluiServices();
 
@@ -874,8 +874,7 @@ int LoadCLUIModule(void)
 			ShowWindow(hwndContactList, SW_SHOW);
 		else if (state == SETTING_STATE_MINIMIZED)
 			ShowWindow(hwndContactList, SW_SHOWMINIMIZED);
-		SetWindowPos(hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0,
-			0, SWP_NOSIZE | SWP_NOMOVE);
+		SetWindowPos(hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 	}
 	{
 		CLISTMENUITEM mi;

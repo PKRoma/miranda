@@ -39,10 +39,10 @@ static int cycleTimerId = 0, cycleStep = 0;
 
 struct trayIconInfo_t
 {
-    int id;
-    char *szProto;
-    HICON hBaseIcon;
-    int isBase;
+	int id;
+	char *szProto;
+	HICON hBaseIcon;
+	int isBase;
 };
 static struct trayIconInfo_t *trayIcon = NULL;
 static int trayIconCount;
@@ -232,8 +232,7 @@ static int TrayIconInit(HWND hwnd)
 		}
 	}
 	trayIconCount = count;
-	trayIcon = (struct trayIconInfo_t *) mir_alloc(sizeof(struct trayIconInfo_t) * count);
-	ZeroMemory(trayIcon, sizeof(struct trayIconInfo_t) * count);
+	trayIcon = (struct trayIconInfo_t *) mir_calloc(sizeof(struct trayIconInfo_t) * count);
 	if (DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI &&
 		(averageMode <= 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT))) {
 			int i;
@@ -444,13 +443,7 @@ void TrayIconUpdateBase(const char *szChangedProto)
 						szProto = NULL;
 					else
 						szProto = dbv.pszVal;
-					changed =
-						TrayIconSetBaseInfo(ImageList_GetIcon
-						(hCListImages,
-						IconFromStatusMode(szProto,
-						szProto ? CallProtoService(szProto, PS_GETSTATUS, 0,
-						0) : CallService(MS_CLIST_GETSTATUSMODE, 0, 0)),
-						ILD_NORMAL), NULL);
+					changed = TrayIconSetBaseInfo(ImageList_GetIcon(hCListImages,IconFromStatusMode(szProto,szProto ? CallProtoService(szProto, PS_GETSTATUS, 0,0) : CallService(MS_CLIST_GETSTATUSMODE, 0, 0)),ILD_NORMAL), NULL);
 					DBFreeVariant(&dbv);
 					break;
 				}
@@ -543,19 +536,18 @@ int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 {
 	MSG *msg = (MSG *) wParam;
 	switch (msg->message) {
-	case WM_CREATE:{
+	case WM_CREATE: {
 		WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
 		PostMessage(msg->hwnd, TIM_CREATE, 0, 0);
 		break;
-						}
+	}
 	case TIM_CREATE:
 		TrayIconInit(msg->hwnd);
 		break;
 	case WM_ACTIVATE:
 		if (DBGetContactSettingByte(NULL, "CList", "AutoHide", SETTING_AUTOHIDE_DEFAULT)) {
 			if (LOWORD(msg->wParam) == WA_INACTIVE)
-				autoHideTimerId =
-				SetTimer(NULL, 0, 1000 * DBGetContactSettingWord(NULL, "CList", "HideTime", SETTING_HIDETIME_DEFAULT), TrayIconAutoHideTimer);
+				autoHideTimerId = SetTimer(NULL, 0, 1000 * DBGetContactSettingWord(NULL, "CList", "HideTime", SETTING_HIDETIME_DEFAULT), TrayIconAutoHideTimer);
 			else
 				KillTimer(NULL, autoHideTimerId);
 		}

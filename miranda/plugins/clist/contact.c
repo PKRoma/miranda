@@ -27,33 +27,19 @@ extern HANDLE hContactIconChangedEvent;
 
 static int sortByStatus;
 static int sortByProto;
-struct
-{
-    int status, order;
-}
-statusModeOrder[] =
-{
-    {
-    ID_STATUS_OFFLINE, 500}
-    , {
-    ID_STATUS_ONLINE, 0}
-    , {
-    ID_STATUS_AWAY, 200}
-    , {
-    ID_STATUS_DND, 400}
-    , {
-    ID_STATUS_NA, 450}
-    , {
-    ID_STATUS_OCCUPIED, 100}
-    , {
-    ID_STATUS_FREECHAT, 50}
-    , {
-    ID_STATUS_INVISIBLE, 20}
-    , {
-    ID_STATUS_ONTHEPHONE, 150}
-    , {
-    ID_STATUS_OUTTOLUNCH, 425}
-};
+struct {
+	int status,order;
+} statusModeOrder[]={
+	{ID_STATUS_OFFLINE,500},
+	{ID_STATUS_ONLINE,0},
+	{ID_STATUS_AWAY,200},
+	{ID_STATUS_DND,400},
+	{ID_STATUS_NA,450},
+	{ID_STATUS_OCCUPIED,100},
+	{ID_STATUS_FREECHAT,50},
+	{ID_STATUS_INVISIBLE,20},
+	{ID_STATUS_ONTHEPHONE,150},
+	{ID_STATUS_OUTTOLUNCH,425}};
 
 static int GetContactStatus(HANDLE hContact)
 {
