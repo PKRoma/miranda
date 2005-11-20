@@ -177,6 +177,9 @@
 				RelativePath="i18n.h">
 			</File>
 			<File
+				RelativePath=".\iconlib.h">
+			</File>
+			<File
 				RelativePath="icq_advsearch.h">
 			</File>
 			<File
@@ -202,6 +205,9 @@
 			</File>
 			<File
 				RelativePath="icq_packet.h">
+			</File>
+			<File
+				RelativePath=".\icq_rates.h">
 			</File>
 			<File
 				RelativePath="icq_server.h">
@@ -999,6 +1005,9 @@
 			</FileConfiguration>
 		</File>
 		<File
+			RelativePath=".\iconlib.c">
+		</File>
+		<File
 			RelativePath="icq_avatar.c">
 			<FileConfiguration
 				Name="Release|Win32">
@@ -1110,6 +1119,9 @@
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
+		</File>
+		<File
+			RelativePath=".\icq_rates.c">
 		</File>
 		<File
 			RelativePath="icq_server.c">
