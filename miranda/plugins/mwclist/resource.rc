@@ -859,7 +859,7 @@ END
 //
 
 IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "res\\hyperlin.cur"
-IDC_DROP                CURSOR  DISCARDABLE     "res\\DRAGCOPY.CUR"
+IDC_DROP                CURSOR  DISCARDABLE     "res\\dragcopy.cur"
 IDC_DROPUSER            CURSOR  DISCARDABLE     "res\\dropuser.cur"
 
 /////////////////////////////////////////////////////////////////////////////

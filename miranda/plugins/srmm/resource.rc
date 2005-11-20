@@ -316,7 +316,7 @@ IDI_ADDCONTACT32        ICON    DISCARDABLE     "res\\add32.ico"
 //
 
 IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "../../src/res/hyperlin.cur"
-IDC_DROP                CURSOR  DISCARDABLE     "../../src/res/DRAGCOPY.CUR"
+IDC_DROP                CURSOR  DISCARDABLE     "../../src/res/dragcopy.cur"
 IDC_DROPUSER            CURSOR  DISCARDABLE     "../../src/res/dropuser.cur"
 
 /////////////////////////////////////////////////////////////////////////////

@@ -36,7 +36,7 @@ Last change by : $Author$
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "libpng\png.h"
+#include "libpng/png.h"
 
 #include "newpluginapi.h"
 #include "version.h"
@@ -218,7 +218,7 @@ BOOL __declspec(dllexport) mempng2dib(
         png_byte a;
 		png_bytep s = ppbRowPointers[i];
 		BYTE* dest = pbImageData; pbImageData += wDIRowBytes;
-        
+
 		for ( j = 0; j < iWidth; j++ ) {
 			png_byte r = *s++;
 			png_byte g = *s++;
