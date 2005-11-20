@@ -77,10 +77,10 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_MSN                 ICON                    "Icos\\msn.ico"
-IDI_LIST_FL             ICON                    "icos\\list_fl.ico"
-IDI_LIST_AL             ICON                    "icos\\list_al.ico"
-IDI_LIST_BL             ICON                    "icos\\list_bl.ico"
-IDI_LIST_RL             ICON                    "icos\\list_rl.ico"
+IDI_LIST_FL             ICON                    "Icos\\list_fl.ico"
+IDI_LIST_AL             ICON                    "Icos\\list_al.ico"
+IDI_LIST_BL             ICON                    "Icos\\list_bl.ico"
+IDI_LIST_RL             ICON                    "Icos\\list_rl.ico"
 IDI_MSNBLOCK            ICON                    "Icos\\msnblock.ico"
 IDI_INBOX               ICON                    "Icos\\inbox.ico"
 IDI_INVITE              ICON                    "Icos\\invite.ico"

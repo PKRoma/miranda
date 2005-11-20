@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
-#include "..\..\include\m_history.h"
+#include "../../include/m_history.h"
 
 static LONG sttChatID = 0;
 extern HANDLE hInitChat;
@@ -275,7 +275,7 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 					break;
 				}
 				break;
-			}			
+			}
 /*	haven't implemented in chat.dll
 			case GC_USER_TYPNOTIFY: {
 				int chatID = atoi(p);
