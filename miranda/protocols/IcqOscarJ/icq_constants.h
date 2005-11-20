@@ -187,12 +187,14 @@
 #define MTYPE_GREETINGCARD          0x101 // Request for Contacts
 #define MTYPE_REQUESTCONTACTS       0x102 // Greeting Card
 #define MTYPE_MESSAGE               0x103 // Message+
+#define MTYPE_STATUSMSGEXT          0x104 // StatusMsgExt (2003b)
 #define MTYPE_SCRIPT_INVITATION     0x201 // Xtraz Invitation
 #define MTYPE_SCRIPT_DATA           0x202 // Xtraz Message
 #define MTYPE_SCRIPT_NOTIFY         0x208 // Xtraz Response
 
 // Message Plugin Type GUIDs
-#define MGTYPE_MESSAGE_s            0xBE6B7305, 0x0FC2104F, 0xA6DE4DB1, 0xE3564B0E 
+#define MGTYPE_MESSAGE_s            0xBE6B7305, 0x0FC2104F, 0xA6DE4DB1, 0xE3564B0E
+#define MGTYPE_STATUSMSGEXT_s       0x0811a18b, 0xce6c1847, 0xa5916f18, 0xdcc76f1a
 #define MGTYPE_FILE_s               0xF02D12D9, 0x3091D311, 0x8DD70010, 0x4B06462E
 #define MGTYPE_WEBURL_s             0x371C5872, 0xE987D411, 0xA4C100D0, 0xB759B1D9
 #define MGTYPE_CONTACTS_s           0x2A0E7D46, 0x7676D411, 0xBCE60004, 0xAC961EA6 
@@ -203,6 +205,7 @@
 // Message Plugin Sub-Type IDs
 #define MGTYPE_STANDARD_SEND        0x00
 #define MGTYPE_CONTACTS_REQUEST     0x02
+#define MGTYPE_STATUSMSGEXT_REPLY   0x03
 #define MGTYPE_SCRIPT_INVITATION    0x01
 #define MGTYPE_SCRIPT_DATA          0x02
 #define MGTYPE_SCRIPT_USER_REMOVE   0x04

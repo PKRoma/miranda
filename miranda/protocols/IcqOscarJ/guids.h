@@ -56,6 +56,7 @@ static plugin_guid PMSG_QUERY_STATUS     = {PMSG_QUERY_STATUS_s};
 
 // Message GUIDs
 static plugin_guid MGTYPE_MESSAGE        = {MGTYPE_MESSAGE_s};
+static plugin_guid MGTYPE_STATUSMSGEXT   = {MGTYPE_STATUSMSGEXT_s};
 static plugin_guid MGTYPE_FILE           = {MGTYPE_FILE_s};
 static plugin_guid MGTYPE_WEBURL         = {MGTYPE_WEBURL_s};
 static plugin_guid MGTYPE_CONTACTS       = {MGTYPE_CONTACTS_s};

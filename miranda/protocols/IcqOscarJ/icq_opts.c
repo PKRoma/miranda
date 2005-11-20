@@ -49,57 +49,63 @@ static const char* szLogLevelDescr[] = {"Display all problems", "Display problem
 int IcqOptInit(WPARAM wParam, LPARAM lParam)
 {
   OPTIONSDIALOGPAGE odp = {0};
-  char* pszTreeItemName = NULL;
-  int nNameLen = 0;
+  char* pszTreeItemName;
+  int nNameLen;
+  char* pszLocalProtoName;
+  char* pszLocalOptName;
+  int nLocalProtoNameLen;
 
 
   odp.cbSize = sizeof(odp);
   odp.position = -800000000;
   odp.hInstance = hInst;
 
+  pszLocalProtoName = Translate(gpszICQProtoName);
+  nLocalProtoNameLen = strlennull(pszLocalProtoName);
+
   // Add "icq" option
   odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQ);
   odp.pszGroup = Translate("Network");
-  odp.pszTitle = Translate(gpszICQProtoName);
+  odp.pszTitle = pszLocalProtoName;
   odp.pfnDlgProc = DlgProcIcqOpts;
   odp.flags = ODPF_BOLDGROUPS;
   odp.nIDBottomSimpleControl = IDC_STICQGROUP;
   CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
 
   // Add "contacts" option
-  nNameLen = strlennull(Translate(gpszICQProtoName)) + 1 + strlennull(Translate("Contacts"));
-  pszTreeItemName = calloc(1, nNameLen+1);
-  null_snprintf(pszTreeItemName, nNameLen+1, "%s %s", Translate(gpszICQProtoName), Translate("Contacts"));
+  pszLocalOptName = Translate("%s Contacts");
+  nNameLen = nLocalProtoNameLen + strlennull(pszLocalOptName);
+  pszTreeItemName = _alloca(nNameLen+1);
+  null_snprintf(pszTreeItemName, nNameLen+1, pszLocalOptName, pszLocalProtoName);
   odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQCONTACTS);
   odp.pszTitle = pszTreeItemName;
   odp.pfnDlgProc = DlgProcIcqContactsOpts;
   odp.nIDBottomSimpleControl = 0;
   CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
-  SAFE_FREE(&pszTreeItemName);
   
   // Add "features" option
-  nNameLen = strlennull(Translate(gpszICQProtoName)) + 1 + strlennull(Translate("Features"));
-  pszTreeItemName = calloc(1, nNameLen+1);
-  null_snprintf(pszTreeItemName, nNameLen+1, "%s %s", Translate(gpszICQProtoName), Translate("Features"));
+  pszLocalOptName = Translate("%s Features");
+  nNameLen = nLocalProtoNameLen + strlennull(pszLocalOptName);
+  pszTreeItemName = _alloca(nNameLen+1);
+  null_snprintf(pszTreeItemName, nNameLen+1, pszLocalOptName, pszLocalProtoName);
   odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQFEATURES);
   odp.pszTitle = pszTreeItemName;
   odp.pfnDlgProc = DlgProcIcqFeaturesOpts;
   odp.flags |= ODPF_EXPERTONLY;
   odp.nIDBottomSimpleControl = 0;
   CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
-  SAFE_FREE(&pszTreeItemName);
 
   // Add "privacy" option
-  nNameLen = strlennull(Translate(gpszICQProtoName)) + 1 + strlennull(Translate("Privacy"));
-  pszTreeItemName = calloc(1, nNameLen+1);
-  null_snprintf(pszTreeItemName, nNameLen+1, "%s %s", Translate(gpszICQProtoName), Translate("Privacy"));
+  pszLocalOptName = Translate("%s Privacy");
+  nNameLen = nLocalProtoNameLen + strlennull(pszLocalOptName);
+  pszTreeItemName = _alloca(nNameLen+1);
+  null_snprintf(pszTreeItemName, nNameLen+1, pszLocalOptName, pszLocalProtoName);
   odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQPRIVACY);
   odp.pszTitle = pszTreeItemName;
   odp.pfnDlgProc = DlgProcIcqPrivacyOpts;
   odp.flags = ODPF_BOLDGROUPS;
   odp.nIDBottomSimpleControl = 0;
   CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
-  SAFE_FREE(&pszTreeItemName);
 
   InitPopupOpts(wParam);
 

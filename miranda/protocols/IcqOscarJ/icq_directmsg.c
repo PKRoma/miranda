@@ -284,10 +284,9 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
   szMsgType = (char *)malloc(dwMsgTypeLen + 1);
   memcpy(szMsgType, buf, dwMsgTypeLen);
   szMsgType[dwMsgTypeLen] = '\0';
-  //typeId = TypeStringToTypeId(szMsgType);
   typeId = TypeGUIDToTypeId(q1,q2,q3,q4,qt);
   if (!typeId)
-    NetLog_Direct("Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt);
+    NetLog_Direct("Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt,szMsgType);
 
   buf += dwMsgTypeLen;
   wLen -= (WORD)dwMsgTypeLen;
