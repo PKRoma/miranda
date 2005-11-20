@@ -232,7 +232,8 @@ static int TrayIconInit(HWND hwnd)
 		}
 	}
 	trayIconCount = count;
-	trayIcon = (struct trayIconInfo_t *) mir_calloc(sizeof(struct trayIconInfo_t) * count);
+	trayIcon = (struct trayIconInfo_t *) mir_alloc(sizeof(struct trayIconInfo_t) * count);
+	ZeroMemory(trayIcon, sizeof(struct trayIconInfo_t) * count);
 	if (DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI &&
 		(averageMode <= 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT))) {
 			int i;
