@@ -72,8 +72,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr /FD /c
-# SUBTRACT CPP /YX
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /I "../../core" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr /Yu"commonheaders.h" /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -131,8 +130,7 @@ LINK32=link.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr /FD /c
 # SUBTRACT BASE CPP /YX
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr /FD /c
-# SUBTRACT CPP /YX
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr /Yu"commonheaders.h" /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -307,12 +305,16 @@ SOURCE=.\core\commonheaders.c
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
+# ADD CPP /Yc"commonheaders.h"
+
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
 # ADD BASE CPP /Yc"commonheaders.h"
 # ADD CPP /Yc"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+# ADD CPP /Yc"commonheaders.h"
 
 !ENDIF 
 
@@ -393,7 +395,7 @@ SOURCE=.\modules\addcontact\addcontact.c
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"../../core/commonheaders.h"
-# ADD CPP /Yu"../../core/commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
