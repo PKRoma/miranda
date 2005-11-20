@@ -2691,7 +2691,7 @@ LABEL_SHOWWINDOW:
 						{
 							TEXTRANGE tr;
 							CHARRANGE cr;
-							static char szTrimString[] = ":;,.!?\'\"><()[] ";
+							static char szTrimString[] = ":;,.!?\'\"><()[]- \r\n";
 							ZeroMemory(&tr, sizeof(TEXTRANGE));
 							
 							cr.cpMin = start;
