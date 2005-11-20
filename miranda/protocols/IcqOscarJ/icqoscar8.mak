@@ -25,10 +25,6 @@ NULL=
 NULL=nul
 !ENDIF 
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "icqoscar8 - Win32 Release"
 
 OUTDIR=.\Release
@@ -89,6 +85,8 @@ CLEAN :
 	-@erase "$(INTDIR)\forkthread.sbr"
 	-@erase "$(INTDIR)\i18n.obj"
 	-@erase "$(INTDIR)\i18n.sbr"
+	-@erase "$(INTDIR)\iconlib.obj"
+	-@erase "$(INTDIR)\iconlib.sbr"
 	-@erase "$(INTDIR)\icq_advsearch.obj"
 	-@erase "$(INTDIR)\icq_advsearch.sbr"
 	-@erase "$(INTDIR)\icq_avatar.obj"
@@ -119,6 +117,8 @@ CLEAN :
 	-@erase "$(INTDIR)\icq_packet.sbr"
 	-@erase "$(INTDIR)\icq_popups.obj"
 	-@erase "$(INTDIR)\icq_popups.sbr"
+	-@erase "$(INTDIR)\icq_rates.obj"
+	-@erase "$(INTDIR)\icq_rates.sbr"
 	-@erase "$(INTDIR)\icq_server.obj"
 	-@erase "$(INTDIR)\icq_server.sbr"
 	-@erase "$(INTDIR)\icq_servlist.obj"
@@ -166,8 +166,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yu"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x417 /fo"$(INTDIR)\resources.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc" 
@@ -213,12 +247,14 @@ BSC32_SBRS= \
 	"$(INTDIR)\capabilities.sbr" \
 	"$(INTDIR)\forkthread.sbr" \
 	"$(INTDIR)\i18n.sbr" \
+	"$(INTDIR)\iconlib.sbr" \
 	"$(INTDIR)\icq_avatar.sbr" \
 	"$(INTDIR)\icq_clients.sbr" \
 	"$(INTDIR)\icq_fieldnames.sbr" \
 	"$(INTDIR)\icq_http.sbr" \
 	"$(INTDIR)\icq_infoupdate.sbr" \
 	"$(INTDIR)\icq_packet.sbr" \
+	"$(INTDIR)\icq_rates.sbr" \
 	"$(INTDIR)\icq_server.sbr" \
 	"$(INTDIR)\icq_servlist.sbr" \
 	"$(INTDIR)\icq_xstatus.sbr" \
@@ -278,12 +314,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\capabilities.obj" \
 	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\i18n.obj" \
+	"$(INTDIR)\iconlib.obj" \
 	"$(INTDIR)\icq_avatar.obj" \
 	"$(INTDIR)\icq_clients.obj" \
 	"$(INTDIR)\icq_fieldnames.obj" \
 	"$(INTDIR)\icq_http.obj" \
 	"$(INTDIR)\icq_infoupdate.obj" \
 	"$(INTDIR)\icq_packet.obj" \
+	"$(INTDIR)\icq_rates.obj" \
 	"$(INTDIR)\icq_server.obj" \
 	"$(INTDIR)\icq_servlist.obj" \
 	"$(INTDIR)\icq_xstatus.obj" \
@@ -360,6 +398,8 @@ CLEAN :
 	-@erase "$(INTDIR)\forkthread.sbr"
 	-@erase "$(INTDIR)\i18n.obj"
 	-@erase "$(INTDIR)\i18n.sbr"
+	-@erase "$(INTDIR)\iconlib.obj"
+	-@erase "$(INTDIR)\iconlib.sbr"
 	-@erase "$(INTDIR)\icq_advsearch.obj"
 	-@erase "$(INTDIR)\icq_advsearch.sbr"
 	-@erase "$(INTDIR)\icq_avatar.obj"
@@ -390,6 +430,8 @@ CLEAN :
 	-@erase "$(INTDIR)\icq_packet.sbr"
 	-@erase "$(INTDIR)\icq_popups.obj"
 	-@erase "$(INTDIR)\icq_popups.sbr"
+	-@erase "$(INTDIR)\icq_rates.obj"
+	-@erase "$(INTDIR)\icq_rates.sbr"
 	-@erase "$(INTDIR)\icq_server.obj"
 	-@erase "$(INTDIR)\icq_server.sbr"
 	-@erase "$(INTDIR)\icq_servlist.obj"
@@ -438,8 +480,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MTd /W3 /Gm /GX /Zi /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yu"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resources.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc" 
@@ -485,12 +561,14 @@ BSC32_SBRS= \
 	"$(INTDIR)\capabilities.sbr" \
 	"$(INTDIR)\forkthread.sbr" \
 	"$(INTDIR)\i18n.sbr" \
+	"$(INTDIR)\iconlib.sbr" \
 	"$(INTDIR)\icq_avatar.sbr" \
 	"$(INTDIR)\icq_clients.sbr" \
 	"$(INTDIR)\icq_fieldnames.sbr" \
 	"$(INTDIR)\icq_http.sbr" \
 	"$(INTDIR)\icq_infoupdate.sbr" \
 	"$(INTDIR)\icq_packet.sbr" \
+	"$(INTDIR)\icq_rates.sbr" \
 	"$(INTDIR)\icq_server.sbr" \
 	"$(INTDIR)\icq_servlist.sbr" \
 	"$(INTDIR)\icq_xstatus.sbr" \
@@ -550,12 +628,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\capabilities.obj" \
 	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\i18n.obj" \
+	"$(INTDIR)\iconlib.obj" \
 	"$(INTDIR)\icq_avatar.obj" \
 	"$(INTDIR)\icq_clients.obj" \
 	"$(INTDIR)\icq_fieldnames.obj" \
 	"$(INTDIR)\icq_http.obj" \
 	"$(INTDIR)\icq_infoupdate.obj" \
 	"$(INTDIR)\icq_packet.obj" \
+	"$(INTDIR)\icq_rates.obj" \
 	"$(INTDIR)\icq_server.obj" \
 	"$(INTDIR)\icq_servlist.obj" \
 	"$(INTDIR)\icq_xstatus.obj" \
@@ -573,36 +653,6 @@ LINK32_OBJS= \
 <<
 
 !ENDIF 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -836,6 +886,11 @@ SOURCE=.\i18n.c
 "$(INTDIR)\i18n.obj"	"$(INTDIR)\i18n.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
+SOURCE=.\iconlib.c
+
+"$(INTDIR)\iconlib.obj"	"$(INTDIR)\iconlib.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
+
+
 SOURCE=.\icq_avatar.c
 
 "$(INTDIR)\icq_avatar.obj"	"$(INTDIR)\icq_avatar.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
@@ -864,6 +919,11 @@ SOURCE=.\icq_infoupdate.c
 SOURCE=.\icq_packet.c
 
 "$(INTDIR)\icq_packet.obj"	"$(INTDIR)\icq_packet.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
+
+
+SOURCE=.\icq_rates.c
+
+"$(INTDIR)\icq_rates.obj"	"$(INTDIR)\icq_rates.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
 SOURCE=.\icq_server.c
