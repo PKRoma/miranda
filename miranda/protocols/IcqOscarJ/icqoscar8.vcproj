@@ -44,13 +44,16 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
 				AdditionalDependencies="wsock32.lib comctl32.lib"
 				OutputFile="$(OutDir)/icq.dll"
-				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
 				ImportLibrary=""
 				TargetMachine="1"/>
 			<Tool
@@ -96,7 +99,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;icqoscar8_EXPORTS"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="icqoscar.h"
 				BrowseInformation="1"
