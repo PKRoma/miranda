@@ -25,16 +25,12 @@ NULL=
 NULL=nul
 !ENDIF 
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "IRC - Win32 Release"
 
 OUTDIR=.\Release
 INTDIR=.\Release
 
-ALL : "..\..\bin\Release\plugins\IRC.dll"
+ALL : "..\..\bin\release\plugins\IRC.dll"
 
 
 CLEAN :
@@ -54,101 +50,13 @@ CLEAN :
 	-@erase "$(OUTDIR)\IRC.exp"
 	-@erase "$(OUTDIR)\IRC.lib"
 	-@erase "$(OUTDIR)\IRC.map"
-	-@erase "..\..\bin\Release\plugins\IRC.dll"
+	-@erase "..\..\bin\release\plugins\IRC.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MT /W3 /GX /O2 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\IRC.res" /d "NDEBUG" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc" 
-BSC32_SBRS= \
-	
-LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:no /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /machine:I386 /out:"../../bin/Release/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" 
-LINK32_OBJS= \
-	"$(INTDIR)\clist.obj" \
-	"$(INTDIR)\commandmonitor.obj" \
-	"$(INTDIR)\input.obj" \
-	"$(INTDIR)\irclib.obj" \
-	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\options.obj" \
-	"$(INTDIR)\output.obj" \
-	"$(INTDIR)\scripting.obj" \
-	"$(INTDIR)\services.obj" \
-	"$(INTDIR)\tools.obj" \
-	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\IRC.res"
-
-"..\..\bin\Release\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ELSEIF  "$(CFG)" == "IRC - Win32 Debug"
-
-OUTDIR=.\Debug
-INTDIR=.\Debug
-
-ALL : "..\..\bin\Debug\plugins\IRC.dll"
-
-
-CLEAN :
-	-@erase "$(INTDIR)\clist.obj"
-	-@erase "$(INTDIR)\commandmonitor.obj"
-	-@erase "$(INTDIR)\input.obj"
-	-@erase "$(INTDIR)\IRC.res"
-	-@erase "$(INTDIR)\irclib.obj"
-	-@erase "$(INTDIR)\main.obj"
-	-@erase "$(INTDIR)\options.obj"
-	-@erase "$(INTDIR)\output.obj"
-	-@erase "$(INTDIR)\scripting.obj"
-	-@erase "$(INTDIR)\services.obj"
-	-@erase "$(INTDIR)\tools.obj"
-	-@erase "$(INTDIR)\vc60.idb"
-	-@erase "$(INTDIR)\vc60.pdb"
-	-@erase "$(INTDIR)\windows.obj"
-	-@erase "$(OUTDIR)\IRC.exp"
-	-@erase "$(OUTDIR)\IRC.lib"
-	-@erase "$(OUTDIR)\IRC.map"
-	-@erase "$(OUTDIR)\IRC.pdb"
-	-@erase "..\..\bin\Debug\plugins\IRC.dll"
-	-@erase "..\..\bin\Debug\plugins\IRC.ilk"
-
-"$(OUTDIR)" :
-    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
-
-CPP_PROJ=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\IRC.res" /d "_DEBUG" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc" 
-BSC32_SBRS= \
-	
-LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:yes /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/Debug/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /pdbtype:sept 
-LINK32_OBJS= \
-	"$(INTDIR)\clist.obj" \
-	"$(INTDIR)\commandmonitor.obj" \
-	"$(INTDIR)\input.obj" \
-	"$(INTDIR)\irclib.obj" \
-	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\options.obj" \
-	"$(INTDIR)\output.obj" \
-	"$(INTDIR)\scripting.obj" \
-	"$(INTDIR)\services.obj" \
-	"$(INTDIR)\tools.obj" \
-	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\IRC.res"
-
-"..\..\bin\Debug\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -179,6 +87,132 @@ LINK32_OBJS= \
    $(CPP) @<<
    $(CPP_PROJ) $< 
 <<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC=rc.exe
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\IRC.res" /d "NDEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc" 
+BSC32_SBRS= \
+	
+LINK32=link.exe
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:no /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /machine:I386 /out:"../../bin/release/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" 
+LINK32_OBJS= \
+	"$(INTDIR)\clist.obj" \
+	"$(INTDIR)\commandmonitor.obj" \
+	"$(INTDIR)\input.obj" \
+	"$(INTDIR)\irclib.obj" \
+	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\output.obj" \
+	"$(INTDIR)\scripting.obj" \
+	"$(INTDIR)\services.obj" \
+	"$(INTDIR)\tools.obj" \
+	"$(INTDIR)\windows.obj" \
+	"$(INTDIR)\IRC.res"
+
+"..\..\bin\release\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ELSEIF  "$(CFG)" == "IRC - Win32 Debug"
+
+OUTDIR=.\Debug
+INTDIR=.\Debug
+
+ALL : "..\..\bin\debug\plugins\IRC.dll"
+
+
+CLEAN :
+	-@erase "$(INTDIR)\clist.obj"
+	-@erase "$(INTDIR)\commandmonitor.obj"
+	-@erase "$(INTDIR)\input.obj"
+	-@erase "$(INTDIR)\IRC.res"
+	-@erase "$(INTDIR)\irclib.obj"
+	-@erase "$(INTDIR)\main.obj"
+	-@erase "$(INTDIR)\options.obj"
+	-@erase "$(INTDIR)\output.obj"
+	-@erase "$(INTDIR)\scripting.obj"
+	-@erase "$(INTDIR)\services.obj"
+	-@erase "$(INTDIR)\tools.obj"
+	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\windows.obj"
+	-@erase "$(OUTDIR)\IRC.exp"
+	-@erase "$(OUTDIR)\IRC.lib"
+	-@erase "$(OUTDIR)\IRC.map"
+	-@erase "$(OUTDIR)\IRC.pdb"
+	-@erase "..\..\bin\debug\plugins\IRC.dll"
+	-@erase "..\..\bin\debug\plugins\IRC.ilk"
+
+"$(OUTDIR)" :
+    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
+
+CPP=cl.exe
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC=rc.exe
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\IRC.res" /d "_DEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc" 
+BSC32_SBRS= \
+	
+LINK32=link.exe
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:yes /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/debug/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /pdbtype:sept 
+LINK32_OBJS= \
+	"$(INTDIR)\clist.obj" \
+	"$(INTDIR)\commandmonitor.obj" \
+	"$(INTDIR)\input.obj" \
+	"$(INTDIR)\irclib.obj" \
+	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\output.obj" \
+	"$(INTDIR)\scripting.obj" \
+	"$(INTDIR)\services.obj" \
+	"$(INTDIR)\tools.obj" \
+	"$(INTDIR)\windows.obj" \
+	"$(INTDIR)\IRC.res"
+
+"..\..\bin\debug\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
