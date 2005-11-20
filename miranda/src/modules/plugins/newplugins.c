@@ -165,7 +165,10 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 			// check clist ?
 			if ( checkTypeAPI == CHECKAPI_CLIST ) {				
 				bpi->clistlink = (CList_Initialise) GetProcAddress(h, "CListInitialise");
-				if ( bpi->clistlink ) {					
+				#if defined( _UNICODE )
+					if ( pi->isTransient == UNICODE_AWARE )
+				#endif
+				if ( bpi->clistlink ) {
 					// nothing more can be done here, this export is a load function
 					bpi->hInst=h;
 					if ( exports != NULL ) *exports=1;
@@ -453,12 +456,11 @@ static pluginEntry * getCListModule(char * exe, char * slice, int useWhiteList)
 		if ( useWhiteList ? isPluginOnWhiteList(p->pluginname) : 1 ) {
 			if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_CLIST, NULL) ) {
 				p->bpi = bpi;
-				p->pclass |= PCLASS_LAST | PCLASS_OK | PCLASS_BASICAPI;						
+				p->pclass |= PCLASS_LAST | PCLASS_OK | PCLASS_BASICAPI;
 				if ( bpi.clistlink(&pluginCoreLink) == 0 ) {
 					p->bpi=bpi;
 					p->pclass |= PCLASS_LOADED;
 					return p;
-					break;
 				} else { 
 					Plugin_Uninit(p); 
 					LL_Remove(&pluginListHead, p);
