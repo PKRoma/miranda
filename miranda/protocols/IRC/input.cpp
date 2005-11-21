@@ -822,7 +822,7 @@ bool PostIrcMessage(const char * fmt, ...)
 bool PostIrcMessageWnd(char* window, HANDLE hContact, const char * szBuf)
 {
 	DBVARIANT dbv;
-	char windowname[255];
+	char windowname[256];
 
 	BYTE bDCC = 0;
 	

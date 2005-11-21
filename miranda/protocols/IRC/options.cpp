@@ -76,7 +76,8 @@ void InitPrefs(void)
 	GetPrefsString("ServerName", prefs->ServerName, 101, "");
 	GetPrefsString("PortStart", prefs->PortStart, 6, "");
 	GetPrefsString("PortEnd", prefs->PortEnd, 6, "");
-	GetPrefsString("Password", prefs->Password, 501, "");
+	GetPrefsString("Password", prefs->Password, 499, "");
+	CallService(MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)prefs->Password);
 	if(!GetPrefsString("PNick", prefs->Nick, 30, ""))
 	{
 		GetPrefsString("Nick", prefs->Nick, 30, "");
@@ -1443,7 +1444,9 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 								GetDlgItemText(hwndDlg,IDC_PORT2, prefs->PortEnd, 6);
 								DBWriteContactSettingString(NULL,IRCPROTONAME,"PortEnd",prefs->PortEnd);
 								GetDlgItemText(hwndDlg,IDC_PASS, prefs->Password, 500);
+								CallService(MS_DB_CRYPT_ENCODESTRING, 499, (LPARAM)prefs->Password);
 								DBWriteContactSettingString(NULL,IRCPROTONAME,"Password",prefs->Password);
+								CallService(MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)prefs->Password);
 							}
 							else
 							{

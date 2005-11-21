@@ -44,7 +44,7 @@ PLUGININFO			pluginInfo=
 {						// Information about the plugin
 						sizeof( PLUGININFO ),
 						"IRC Protocol",
-						PLUGIN_MAKE_VERSION( 0,6,3,6 ),
+						PLUGIN_MAKE_VERSION( 0,6,3,7 ),
 						"IRC protocol for Miranda IM.",
 						"MatriX",
 						"i_am_matrix@users.sourceforge.net",
@@ -198,7 +198,22 @@ void UpgradeCheck(void)
 			DBDeleteContactSetting(NULL, IRCPROTONAME,	"AutoOnlineNotifTempAlso");
 			
 		}
-		
+		if(dwVersion < PLUGIN_MAKE_VERSION(0,6,3,7))
+		{
+			DBVARIANT dbv;
+			char pw[600] = {0};
+			if(!DBGetContactSetting(NULL, IRCPROTONAME, "Password", &dbv) && dbv.type==DBVT_ASCIIZ)
+			{
+				lstrcpyn(pw, dbv.pszVal, 599);
+				DBFreeVariant(&dbv);
+			}
+			if(lstrlenA(pw) > 0)
+			{
+				CallService(MS_DB_CRYPT_ENCODESTRING, 499, (LPARAM)pw);
+				DBWriteContactSettingString(NULL, IRCPROTONAME, "Password", pw);
+				MessageBoxA(NULL, Translate("To increase security the saved password for your\n default network is now encrypted."), Translate("IRC"), MB_OK);			
+			}
+		}		
 	}
 	DBWriteContactSettingDword(NULL, IRCPROTONAME, "OldVersion", pluginInfo.version);
 	return;
