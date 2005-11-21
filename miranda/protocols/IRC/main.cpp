@@ -211,7 +211,7 @@ void UpgradeCheck(void)
 			{
 				CallService(MS_DB_CRYPT_ENCODESTRING, 499, (LPARAM)pw);
 				DBWriteContactSettingString(NULL, IRCPROTONAME, "Password", pw);
-				MessageBoxA(NULL, Translate("To increase security the saved password for your\n default network is now encrypted."), Translate("IRC"), MB_OK);			
+				MessageBoxA(NULL, Translate("To increase security the saved password for your\n default network is now encrypted."), IRCPROTONAME, MB_OK|MB_ICONINFORMATION);			
 			}
 		}		
 	}
