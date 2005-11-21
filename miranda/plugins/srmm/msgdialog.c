@@ -580,6 +580,12 @@ static void NotifyTyping(struct MessageWindowData *dat, int mode)
 	CallService(MS_PROTO_SELFISTYPING, (WPARAM) dat->hContact, dat->nTypeMode);
 }
 
+#if defined( _UNICODE )
+	#define TITLE_FORMAT _T("%s (%S): %s")
+#else
+	#define TITLE_FORMAT _T("%s (%s): %s")
+#endif
+
 BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct MessageWindowData *dat;
@@ -1031,7 +1037,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (hFont != NULL && hFont != (HFONT) SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT, 0, 0))
 				DeleteObject(hFont);
 			LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, NULL);
-			hFont = CreateFontIndirectA(&lf);
+			hFont = CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, WM_SETFONT, (WPARAM) hFont, MAKELPARAM(TRUE, 0));
 		}
 		SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -1039,11 +1045,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		break;
 	case DM_UPDATETITLE:
 		{
-			char newtitle[256], oldtitle[256];
-			char *szStatus, *contactName, *pszNewTitleEnd;
+			TCHAR newtitle[256], oldtitle[256];
+			char *szStatus;
+			TCHAR *contactName, *pszNewTitleEnd;
 			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) wParam;
 
-			pszNewTitleEnd = "Message Session";
+			pszNewTitleEnd = _T("Message Session");
 			if (dat->hContact) {
 				if (dat->szProto) {
 					CONTACTINFO ci;
@@ -1052,7 +1059,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 					buf[0] = 0;
 					dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
-					contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
+					contactName = ( TCHAR* )CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, GCDNF_TCHAR);
 					ZeroMemory(&ci, sizeof(ci));
 					ci.cbSize = sizeof(ci);
 					ci.hContact = dat->hContact;
@@ -1069,12 +1076,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							break;
 						}
 					}
-					SetDlgItemTextA(hwndDlg, IDC_NAME, buf[0] ? buf : contactName);
+					if ( buf[0] )
+						SetDlgItemTextA(hwndDlg, IDC_NAME, buf );
+					else
+						SetDlgItemText(hwndDlg, IDC_NAME, contactName);
+
 					szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE), 0);
 					if (statusIcon)
-						mir_snprintf(newtitle, sizeof(newtitle), "%s - %s", contactName, Translate(pszNewTitleEnd));
+						mir_sntprintf(newtitle, sizeof(newtitle), _T("%s - %s"), contactName, TranslateTS(pszNewTitleEnd));
 					else
-						mir_snprintf(newtitle, sizeof(newtitle), "%s (%s): %s", contactName, szStatus, Translate(pszNewTitleEnd));
+						mir_sntprintf(newtitle, sizeof(newtitle), TITLE_FORMAT, contactName, szStatus, TranslateTS(pszNewTitleEnd));
 					if (!cws || (!strcmp(cws->szModule, dat->szProto) && !strcmp(cws->szSetting, "Status"))) {
 						InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), NULL, TRUE);
 						if (statusIcon) {
@@ -1121,11 +1132,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						dat->wOldStatus = dat->wStatus;
 				}
 			}
-			else
-				lstrcpynA(newtitle, pszNewTitleEnd, sizeof(newtitle));
-			GetWindowTextA(hwndDlg, oldtitle, sizeof(oldtitle));
-			if (lstrcmpA(newtitle, oldtitle)) { //swt() flickers even if the title hasn't actually changed
-				SetWindowTextA(hwndDlg, newtitle);
+			else lstrcpyn(newtitle, pszNewTitleEnd, SIZEOF(newtitle));
+
+			GetWindowText(hwndDlg, oldtitle, SIZEOF(oldtitle));
+			if ( lstrcmp(newtitle, oldtitle )) { //swt() flickers even if the title hasn't actually changed
+				SetWindowText(hwndDlg, newtitle);
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			}
 			break;
