@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // - Support for bitmap buttons (simple call to DrawIconEx())
 extern HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
+extern BOOL g_skinnedContainers;
+extern StatusItems_t StatusItems[];
 
 static LRESULT CALLBACK TSButtonWndProc(HWND hwnd, UINT  msg, WPARAM wParam, LPARAM lParam);
 
@@ -40,9 +42,11 @@ typedef struct {
 	HANDLE  hThemeButton;
 	HANDLE  hThemeToolbar;
     BOOL    bThemed;
+	BOOL	bTitleButton;
 	char	cHot;
 	int     flatBtn;
     int     dimmed;
+	struct ContainerWindowData *pContainer;
 } MButtonCtrl;
 
 // External theme methods and properties
@@ -73,7 +77,7 @@ int LoadTSButtonModule(void)
 	wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
 	wc.cbWndExtra     = sizeof(MButtonCtrl*);
 	wc.hbrBackground  = 0;
-	wc.style          = CS_GLOBALCLASS;
+	wc.style          = CS_GLOBALCLASS | CS_PARENTDC;
 	RegisterClassExA(&wc);
 	InitializeCriticalSection(&csTips);
 	return 0;
@@ -160,45 +164,62 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 
 		// Draw the flat button
 		if (ctl->flatBtn) {
-			if (ctl->hThemeToolbar && ctl->bThemed) {
-                RECT rc = rcClient;
-				int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
-                if(rc.right < 20 || rc.bottom < 20)
-                    InflateRect(&rc, 2, 2);
-                if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
-					MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
+			if(ctl->pContainer && ctl->pContainer->bSkinned) {
+				StatusItems_t *item;
+				if(ctl->bTitleButton)
+					item = &StatusItems[ctl->stateId == PBS_NORMAL ? ID_EXTBKTITLEBUTTON : (ctl->stateId == PBS_HOT ? ID_EXTBKTITLEBUTTONMOUSEOVER : ID_EXTBKTITLEBUTTONPRESSED)];
+				else
+					item = &StatusItems[(ctl->stateId == PBS_NORMAL || ctl->stateId == PBS_DISABLED) ? ID_EXTBKBUTTONSNPRESSED : (ctl->stateId == PBS_HOT ? ID_EXTBKBUTTONSMOUSEOVER : ID_EXTBKBUTTONSPRESSED)];
+				SkinDrawBG(ctl->hwnd, ctl->pContainer->hwnd,  ctl->pContainer, &rcClient, hdcMem);
+				if(!item->IGNORED) {
+					RECT rc1 = rcClient;
+					rc1.left += item->MARGIN_LEFT; rc1.right -= item->MARGIN_RIGHT;
+					rc1.top += item->MARGIN_TOP; rc1.bottom -= item->MARGIN_BOTTOM;
+					DrawAlpha(hdcMem, &rc1, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+							  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
 				}
-				MyDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
 			}
 			else {
-				HBRUSH hbr;
-                RECT rc = rcClient;
-				
-				if (ctl->stateId==PBS_PRESSED||ctl->stateId==PBS_HOT)
-					hbr = GetSysColorBrush(COLOR_3DLIGHT);
+				if (ctl->hThemeToolbar && ctl->bThemed) {
+					RECT rc = rcClient;
+					int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
+					if(rc.right < 20 || rc.bottom < 20)
+						InflateRect(&rc, 2, 2);
+					if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
+						MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
+					}
+					MyDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
+				}
 				else {
-					HDC dc;
-					HWND hwndParent;
+					HBRUSH hbr;
+					RECT rc = rcClient;
+					
+					if (ctl->stateId==PBS_PRESSED||ctl->stateId==PBS_HOT) {
+						hbr = GetSysColorBrush(COLOR_3DLIGHT);
+						FillRect(hdcMem, &rc, hbr);
+					}
+					else {
+						HDC dc;
+						HWND hwndParent;
 
-					hwndParent = GetParent(ctl->hwnd);
-					dc=GetDC(hwndParent);
-					hbr = (HBRUSH)SendMessage(hwndParent, WM_CTLCOLORDLG, (WPARAM)dc, (LPARAM)hwndParent);
-					ReleaseDC(hwndParent,dc);
+						hwndParent = GetParent(ctl->hwnd);
+						dc=GetDC(hwndParent);
+						hbr = (HBRUSH)SendMessage(hwndParent, WM_CTLCOLORDLG, (WPARAM)dc, (LPARAM)hwndParent);
+						ReleaseDC(hwndParent,dc);
+						if(hbr) {
+							FillRect(hdcMem, &rc, hbr);
+							DeleteObject(hbr);
+						}
+					}
+					if (ctl->stateId==PBS_HOT||ctl->focus) {
+						if (ctl->pbState)
+							DrawEdge(hdcMem,&rc, EDGE_ETCHED,BF_RECT|BF_SOFT);
+						else 
+							DrawEdge(hdcMem,&rc, BDR_RAISEDOUTER,BF_RECT|BF_SOFT);
+					}
+					else if (ctl->stateId==PBS_PRESSED)
+						DrawEdge(hdcMem, &rc, BDR_SUNKENOUTER,BF_RECT|BF_SOFT);
 				}
-                if(rc.right < 20 || rc.bottom < 20);
-                    //InflateRect(&rc, 1, 1);
-				if (hbr) {
-					FillRect(hdcMem, &rc, hbr);
-					DeleteObject(hbr);
-				}
-				if (ctl->stateId==PBS_HOT||ctl->focus) {
-					if (ctl->pbState)
-						DrawEdge(hdcMem,&rc, EDGE_ETCHED,BF_RECT|BF_SOFT);
-					else 
-                        DrawEdge(hdcMem,&rc, BDR_RAISEDOUTER,BF_RECT|BF_SOFT);
-				}
-				else if (ctl->stateId==PBS_PRESSED)
-					DrawEdge(hdcMem, &rc, BDR_SUNKENOUTER,BF_RECT|BF_SOFT);
 			}
 		}
 		else {
@@ -311,8 +332,9 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			bct->hThemeToolbar = NULL;
 			bct->cHot = 0;
 			bct->flatBtn = 0;
-            bct->bThemed = FALSE;
+            bct->bThemed = bct->bTitleButton = FALSE;
             bct->dimmed = 0;
+			bct->pContainer = NULL;
             LoadTheme(bct);
 			SetWindowLong(hwndDlg, 0, (LONG)bct);
 			if (((CREATESTRUCTA *)lParam)->lpszName) SetWindowTextA(hwndDlg, ((CREATESTRUCTA *)lParam)->lpszName);
@@ -363,6 +385,17 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			}
 			break;
 		}
+		case WM_KEYUP:
+			if (bct->stateId!=PBS_DISABLED && wParam == VK_SPACE && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
+				if (bct->pushBtn) {
+					if (bct->pbState) bct->pbState = 0;
+					else bct->pbState = 1;
+					InvalidateRect(bct->hwnd, NULL, TRUE);
+				}
+				SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM)hwndDlg);
+				return 0;
+			}
+			break;
 		case WM_SYSKEYUP:
 			if (bct->stateId!=PBS_DISABLED && bct->cHot && bct->cHot == tolower((int)wParam)) {
 				if (bct->pushBtn) {
@@ -484,6 +517,12 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
         case BUTTONSETASFLATBTN + 11:
             bct->dimmed = lParam ? TRUE : FALSE;
             break;
+		case BUTTONSETASFLATBTN + 12:
+			bct->pContainer = (struct ContainerWindowData *)lParam;
+			break;
+		case BUTTONSETASFLATBTN + 13:
+			bct->bTitleButton = TRUE;
+			break;
 		case BUTTONADDTOOLTIP:
 		{
 			TOOLINFOA ti;

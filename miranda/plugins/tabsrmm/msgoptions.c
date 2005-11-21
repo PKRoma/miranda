@@ -53,6 +53,7 @@ void CreateImageList(BOOL bInitial);
 void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, wchar_t *value);
 BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+void GetDefaultContainerTitleFormat();
 
 struct FontOptionsList
 {
@@ -91,7 +92,6 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
         *colour = DBGetContactSettingDword(NULL, FONTMODULE, str, GetSysColor(COLOR_BTNTEXT));
     }
     if (lf) {
-        HDC hdc = GetDC(NULL);
         mir_snprintf(str, sizeof(str), "Font%dSize", i);
         if(i == H_MSGFONTID_DIVIDERS)
             lf->lfHeight = 5;
@@ -102,8 +102,6 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
             else
                 lf->lfHeight = (LONG)bSize;
         }
-
-        ReleaseDC(NULL,hdc);				
         
         lf->lfWidth = 0;
         lf->lfEscapement = 0;
@@ -168,11 +166,12 @@ static const char *szFontIdDescr[MSGDLGFONTCOUNT] = {
         "* Symbols (outgoing)"};
 
 static const char *szIPFontDescr[IPFONTCOUNT] = {
-        "Nickname", 
-        "UIN",
-        "Status",
-        "Protocol",
-        "Contacts local time"};
+        "Infopanel / Nickname", 
+        "Infopanel / UIN",
+        "Infopanel / Status",
+        "Infopanel / Protocol",
+        "Infopanel / Contacts local time",
+		"Window caption (skinned mode"};
 
         /*
  * Font Service support
@@ -212,7 +211,7 @@ void FS_RegisterFonts()
     }
 
     fid.cbSize = sizeof(fid);
-    strncpy(fid.group, "TabSRMM", sizeof(fid.group));
+    strncpy(fid.group, "TabSRMM Message log", sizeof(fid.group));
     strncpy(fid.dbSettingsGroup, FONTMODULE, sizeof(fid.dbSettingsGroup));
     fid.flags = FIDF_DEFAULTVALID | FIDF_ALLOWEFFECTS;
     for(i = 0; i < MSGDLGFONTCOUNT; i++) {
@@ -253,7 +252,7 @@ void FS_RegisterFonts()
         CallService(MS_FONT_REGISTER, (WPARAM)&fid, 0);
     }
 
-    strncpy(cid.group, "TabSRMM - Infopanel", sizeof(cid.group));
+    strncpy(cid.group, "TabSRMM - other", sizeof(cid.group));
     strncpy(cid.name, "Background - Infopanel fields", sizeof(cid.name));
     strncpy(cid.setting, "ipfieldsbg", sizeof(cid.setting));
     cid.defcolour = DBGetContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE));
@@ -264,7 +263,7 @@ void FS_RegisterFonts()
     cid.defcolour = DBGetContactSettingDword(NULL, FONTMODULE, "col_clock", GetSysColor(COLOR_WINDOWTEXT));
     CallService(MS_COLOUR_REGISTER, (WPARAM)&cid, 0);
     
-    strncpy(fid.group, "TabSRMM - Infopanel", sizeof(fid.group));
+    strncpy(fid.group, "TabSRMM - other", sizeof(fid.group));
     fid.flags = FIDF_DEFAULTVALID | FIDF_ALLOWEFFECTS | FIDF_SAVEACTUALHEIGHT;
     myGlobals.ipConfig.isValid = TRUE;
     for(i = 0; i < IPFONTCOUNT; i++) {
@@ -372,11 +371,14 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 i++;
             }
             
-            SendDlgItemMessageA(hwndDlg, IDC_NOTIFYTYPE, CB_INSERTSTRING, -1, (LPARAM)Translate("None"));
-            SendDlgItemMessageA(hwndDlg, IDC_NOTIFYTYPE, CB_INSERTSTRING, -1, (LPARAM)Translate("Tray notifications"));
-            SendDlgItemMessageA(hwndDlg, IDC_NOTIFYTYPE, CB_INSERTSTRING, -1, (LPARAM)Translate("Popups"));
+            SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1, (LPARAM)TranslateT("None"));
+            SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Automatic"));
+            SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Sunken"));
+            SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1, (LPARAM)TranslateT("1 pixel solid"));
+            SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Rounded border"));
+			SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", RGB(0, 0, 0)));
 
-            SendDlgItemMessage(hwndDlg, IDC_NOTIFYTYPE, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "debuginfo", 0), 0);
+            SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", 1), 0);
 
             SendDlgItemMessageA(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Globally on"));
             SendDlgItemMessageA(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("On for protocols with avatar support"));
@@ -428,7 +430,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                         return TRUE;
                     break;
                 }
-                case IDC_NOTIFYTYPE:
+                case IDC_AVATARBORDER:
                 case IDC_AVATARDISPLAY:
                     if(HIWORD(wParam) != CBN_SELCHANGE || (HWND)lParam != GetFocus())
                         return TRUE;
@@ -475,7 +477,8 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             TVITEMA item = {0};
                             int i = 0;
                             
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "debuginfo", (BYTE) SendDlgItemMessage(hwndDlg, IDC_NOTIFYTYPE, CB_GETCURSEL, 0, 0));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", (BYTE) SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_GETCURSEL, 0, 0));
+							DBWriteContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", (BYTE) SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_GETCURSEL, 0, 0));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatardisplaymode", (BYTE) SendDlgItemMessage(hwndDlg, IDC_AVATARDISPLAY, CB_GETCURSEL, 0, 0));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tbarhidemode", (BYTE)SendDlgItemMessage(hwndDlg, IDC_TOOLBARHIDEMODE, CB_GETCURSEL, 0, 0));
@@ -1191,7 +1194,6 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
                     switch (((LPNMHDR) lParam)->code) {
 						case PSN_APPLY: {
                             BOOL translated;
-                            char *szDefault = 0;
                             TCHAR szDefaultName[TITLE_FORMATLEN + 2];
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", IsDlgButtonChecked(hwndDlg, IDC_CONTAINERGROUPMODE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "limittabs", IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS));
@@ -1206,37 +1208,13 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "brounded", IsDlgButtonChecked(hwndDlg, IDC_ROUNDEDCORNERS) ? 1 : 0);
                             myGlobals.bRoundedCorner = IsDlgButtonChecked(hwndDlg, IDC_ROUNDEDCORNERS) ? 1 : 0;
-                            {
-                                struct ContainerWindowData *pContainer = pFirstContainer;
-                                while(pContainer) {
-                                    RECT rcWindow;
-                                    GetWindowRect(pContainer->hwnd, &rcWindow);
-                                    if(myGlobals.bClipBorder == 0 && myGlobals.bRoundedCorner == 0) {
-                                        SetWindowRgn(pContainer->hwnd, NULL, TRUE);
-                                        SetWindowPos(pContainer->hwnd, 0, rcWindow.left, rcWindow.top, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top - 1, SWP_NOZORDER | SWP_NOMOVE | SWP_FRAMECHANGED);
-                                        SetWindowPos(pContainer->hwnd, 0, rcWindow.left, rcWindow.top, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top, SWP_NOZORDER | SWP_NOMOVE | SWP_FRAMECHANGED);
-                                    }
-                                    else
-                                        SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
-                                    pContainer = pContainer->pNextContainer;
-                                }
-                            }
                             GetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, szDefaultName, TITLE_FORMATLEN);
 #if defined(_UNICODE)
-                            szDefault = Utf8_Encode(szDefaultName);
-                            DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformatW", szDefault);
-                            free(szDefault);
+                            DBWriteContactSettingWString(NULL, SRMSGMOD_T, "titleformatW", szDefaultName);
 #else                            
                             DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformat", szDefaultName);
 #endif
-                            if(myGlobals.szDefaultTitleFormat)
-                                free(myGlobals.szDefaultTitleFormat);
-#if defined(_UNICODE)
-                            myGlobals.szDefaultTitleFormat = MY_DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformatW");
-#else
-                            myGlobals.szDefaultTitleFormat = MY_DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat");
-#endif                            
-                            
+							GetDefaultContainerTitleFormat();
                             myGlobals.g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING);
                             BuildContainerMenu();
                             return TRUE;
@@ -2055,6 +2033,8 @@ void ReloadGlobals()
      myGlobals.m_PasteAndSend = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "pasteandsend", 0);
      myGlobals.m_szNoStatus = TranslateT("No status message available");
      myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN);
+	 myGlobals.bAvatarBoderType = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", 1);
+
      switch(myGlobals.ipConfig.borderStyle) {
          case IPFIELD_SUNKEN:
              myGlobals.ipConfig.edgeType = BDR_SUNKENINNER;
@@ -2149,4 +2129,30 @@ void MoveFonts()
         DBDeleteContactSetting(NULL, SRMSGMOD_T, colornames[i].szSetting);
         i++;
     }
+}
+
+void GetDefaultContainerTitleFormat()
+{
+	DBVARIANT dbv = {0};
+#if defined(_UNICODE)
+	if(DBGetContactSettingTString(NULL, SRMSGMOD_T, "titleformatW", &dbv)) {
+        DBWriteContactSettingTString(NULL, SRMSGMOD_T, "titleformatW", _T("%n - %s"));
+		_tcsncpy(myGlobals.szDefaultTitleFormat, L"%n - %s", safe_sizeof(myGlobals.szDefaultTitleFormat));
+	}
+	else {
+		_tcsncpy(myGlobals.szDefaultTitleFormat, dbv.ptszVal, safe_sizeof(myGlobals.szDefaultTitleFormat));
+		DBFreeVariant(&dbv);
+	}
+	myGlobals.szDefaultTitleFormat[255] = 0;
+#else
+	if(DBGetContactSetting(NULL, SRMSGMOD_T, "titleformat", &dbv)) {
+        DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformat", "%n - %s");
+		_tcsncpy(myGlobals.szDefaultTitleFormat, "%n - %s", sizeof(myGlobals.szDefaultTitleFormat));
+	}
+	else {
+		_tcsncpy(myGlobals.szDefaultTitleFormat, dbv.pszVal, sizeof(myGlobals.szDefaultTitleFormat));
+		DBFreeVariant(&dbv);
+	}
+	myGlobals.szDefaultTitleFormat[255] = 0;
+#endif
 }

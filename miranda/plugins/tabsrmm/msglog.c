@@ -193,7 +193,18 @@ void CacheLogFonts()
             myGlobals.ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
             myGlobals.ipConfig.clrs[i] = clr;
         }
+		myGlobals.hFontCaption = myGlobals.ipConfig.hFonts[IPFONTCOUNT - 1];
     }
+	else {
+		 NONCLIENTMETRICS ncm = {0};
+
+		 ncm.cbSize = sizeof(ncm);
+		 SystemParametersInfo(SPI_GETNONCLIENTMETRICS, 0, &ncm, 0);
+		 if(myGlobals.hFontCaption)
+			 DeleteObject(myGlobals.hFontCaption);
+		 myGlobals.hFontCaption = CreateFontIndirect(&ncm.lfCaptionFont);
+	}
+
     if(myGlobals.ipConfig.bkgBrush)
         DeleteObject(myGlobals.ipConfig.bkgBrush);
     
@@ -1437,7 +1448,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
             SendMessage(hwndrtf, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
             crDefault = cf2.crBackColor == 0 ? (dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? (bDirection == '>' ? dat->theme.outbg : dat->theme.inbg) : dat->theme.bg) : cf2.crBackColor;
             CacheIconToBMP(&theIcon, Logicons[bIconIndex], crDefault, 0, 0);
-            //ImageDataInsertBitmap(ole, theIcon.hBmp);
+            ImageDataInsertBitmap(ole, theIcon.hBmp);
             DeleteCachedIcon(&theIcon);
             fi.chrg.cpMin = cr.cpMax + 6;
         }

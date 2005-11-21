@@ -108,7 +108,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
     options->bFloaterInWin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, 1);
     options->bFloaterOnlyMin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, 0);
     options->dwRemoveMask = DBGetContactSettingDword(NULL, MODULE, OPT_REMOVEMASK, 0);
-	options->bSimpleMode = DBGetContactSettingByte(NULL, MODULE, OPT_SIMPLEOPT, 1);
+	options->bSimpleMode = DBGetContactSettingByte(NULL, MODULE, OPT_SIMPLEOPT, 0);
     CheckForRemoveMask();
     return 0;
 }

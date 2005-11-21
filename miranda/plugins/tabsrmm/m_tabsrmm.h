@@ -134,7 +134,7 @@ typedef struct {
 #define AVATARMODE_STATIC 1
 
 #define MSGDLGFONTCOUNT 22
-#define IPFONTCOUNT 5
+#define IPFONTCOUNT 6
 
 /*
  * info panel field edges
@@ -185,7 +185,8 @@ struct ContainerWindowData {
     POINT ptLast;
 	DWORD dwTransparency;
     int   iContainerIndex;
-    int   tBorder, tBorder_outer;
+    int   tBorder;
+	int	  tBorder_outer_left, tBorder_outer_right, tBorder_outer_top, tBorder_outer_bottom;
     HANDLE hContactFrom;
     BOOL  isCloned;
     HMENU hMenu;
@@ -205,6 +206,10 @@ struct ContainerWindowData {
     LOGFONTA *logFonts;
     COLORREF *fontColors;
     char *rtfFonts;
+	HDC cachedDC;
+	HBITMAP cachedHBM, oldHBM;
+	SIZE oldDCSize;
+	BOOL bSkinned;
 };
 
 #define STICK_ICON_MSG 10
@@ -394,6 +399,7 @@ typedef struct _globals {
     int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_FontServiceAvail;
     HICON g_IconMsgEvent, g_IconTypingEvent, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
     HICON g_IconFolder, g_IconChecked, g_IconUnchecked;
+	HICON g_closeGlyph, g_maxGlyph, g_minGlyph;
     HIMAGELIST g_hImageList;
     int g_nrProtos;
     HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
@@ -452,7 +458,7 @@ typedef struct _globals {
     BYTE m_ExtraRedraws;
     char szDataPath[MAX_PATH + 1];
     int  m_panelHeight;
-    TCHAR *szDefaultTitleFormat;
+    TCHAR szDefaultTitleFormat[256];
     DWORD m_GlobalContainerFlags;
     DWORD m_GlobalContainerTrans;
     WINDOWPLACEMENT m_GlobalContainerWpos;
@@ -470,6 +476,9 @@ typedef struct _globals {
     BOOL bUnicodeBuild;
     BYTE bClipBorder;
     BOOL bRoundedCorner;
+	BYTE bAvatarBoderType;
+	HFONT hFontCaption;
+	COLORREF skinDefaultFontColor;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

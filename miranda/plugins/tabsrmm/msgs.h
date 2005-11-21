@@ -263,7 +263,7 @@ struct ProtocolData {
 #define DM_PROTOAVATARCHANGED (WM_USER+84)
 #define DM_SMILEYOPTIONSCHANGED (WM_USER+85)
 #define DM_MYAVATARCHANGED	 (WM_USER+86)
-
+#define DM_PRINTCLIENT		 (WM_USER+87)
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define MINSPLITTERY         52
@@ -377,6 +377,8 @@ extern const int msgDlgFontCount;
 #define IDM_MOREOPTIONS (WM_USER +4)
 
 typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
+typedef BOOL (WINAPI *PULW)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD);
+typedef BOOL (WINAPI *PFWEX)(FLASHWINFO *);
 
 // constants for the container management functions
 
@@ -514,3 +516,115 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 
 #define RTFCACHELINESIZE 128
 
+/*
+ * skinning stuff - most is taken from clist_nicer as I'am using basically the same skinning engine
+ */
+
+typedef struct _tagImageItem {
+    char szName[40];
+    HBITMAP hbm;
+    BYTE bLeft, bRight, bTop, bBottom;      // sizing margins
+    BYTE alpha;
+    DWORD dwFlags;
+    HDC hdc;
+    HBITMAP hbmOld;
+    LONG inner_height, inner_width;
+    LONG width, height;
+    BLENDFUNCTION bf;
+    LPVOID lpDIBSection;
+    BYTE bStretch;
+    struct _tagImageItem *nextItem;
+	HBRUSH fillBrush;
+} ImageItem;
+
+typedef struct {
+    char szName[40];
+    char szDBname[40];
+    int statusID;
+
+    BYTE GRADIENT;
+    BYTE CORNER;
+
+    DWORD COLOR;
+    DWORD COLOR2;
+
+    BYTE COLOR2_TRANSPARENT;
+
+    DWORD TEXTCOLOR;
+
+    int ALPHA;
+
+    int MARGIN_LEFT;
+    int MARGIN_TOP;
+    int MARGIN_RIGHT;
+    int MARGIN_BOTTOM;
+
+    BYTE IGNORED;
+    BYTE RADIUS;
+    ImageItem *imageItem;
+} StatusItems_t;
+
+#define ID_EXTBKCONTAINER 0
+#define ID_EXTBKBUTTONBAR 1
+#define ID_EXTBKBUTTONSPRESSED 2
+#define ID_EXTBKBUTTONSNPRESSED 3
+#define ID_EXTBKBUTTONSMOUSEOVER 4
+#define ID_EXTBKINFOPANEL 5
+#define ID_EXTBKTITLEBUTTON 6
+#define ID_EXTBKTITLEBUTTONMOUSEOVER 7
+#define ID_EXTBKTITLEBUTTONPRESSED 8
+#define ID_EXTBKTABPAGE 9
+#define ID_EXTBKTABITEM 10
+#define ID_EXTBKTABITEMACTIVE 11
+#define ID_EXTBKTABITEMBOTTOM 12
+#define ID_EXTBKTABITEMACTIVEBOTTOM 13
+#define ID_EXTBK_LAST 13
+
+#define CLCDEFAULT_GRADIENT 0
+#define CLCDEFAULT_CORNER 0
+
+#define CLCDEFAULT_COLOR 0xE0E0E0
+#define CLCDEFAULT_COLOR2 0xE0E0E0
+
+#define CLCDEFAULT_TEXTCOLOR 0x000000
+
+#define CLCDEFAULT_COLOR2_TRANSPARENT 1
+
+#define CLCDEFAULT_ALPHA 85
+#define CLCDEFAULT_MRGN_LEFT 0
+#define CLCDEFAULT_MRGN_TOP 0
+#define CLCDEFAULT_MRGN_RIGHT 0
+#define CLCDEFAULT_MRGN_BOTTOM 0
+#define CLCDEFAULT_IGNORE 1
+
+// FLAGS
+#define CORNER_NONE 0
+#define CORNER_ACTIVE 1
+#define CORNER_TL 2
+#define CORNER_TR 4
+#define CORNER_BR 8
+#define CORNER_BL 16
+
+#define GRADIENT_NONE 0
+#define GRADIENT_ACTIVE 1
+#define GRADIENT_LR 2
+#define GRADIENT_RL 4
+#define GRADIENT_TB 8
+#define GRADIENT_BT 16
+
+#define IMAGE_PERPIXEL_ALPHA 1
+#define IMAGE_FLAG_DIVIDED 2
+#define IMAGE_FILLSOLID 4
+
+#define IMAGE_STRETCH_V 1
+#define IMAGE_STRETCH_H 2
+#define IMAGE_STRETCH_B 4
+
+void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
+void IMG_InitDecoder();
+void LoadSkinItems(char *file);
+void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc);
+void IMG_LoadItems(char *szFileName);
+void IMG_DeleteItems();
+void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE, ImageItem *imageItem);
+void SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget);

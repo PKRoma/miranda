@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 $Id$
 
+Themes and skinning for tabSRMM
+
 */
 
 #include "commonheaders.h"
@@ -41,6 +43,99 @@ $Id$
 
 extern char *TemplateNames[];
 extern TemplateSet LTR_Active, RTL_Active;
+extern MYGLOBALS myGlobals;
+
+typedef  DWORD  (__stdcall *pfnImgNewDecoder)(void ** ppDecoder); 
+typedef DWORD (__stdcall *pfnImgDeleteDecoder)(void * pDecoder);
+typedef  DWORD  (__stdcall *pfnImgNewDIBFromFile)(LPVOID /*in*/pDecoder, LPCSTR /*in*/pFileName, LPVOID /*out*/*pImg);
+typedef DWORD (__stdcall *pfnImgDeleteDIBSection)(LPVOID /*in*/pImg);
+typedef DWORD (__stdcall *pfnImgGetHandle)(LPVOID /*in*/pImg, HBITMAP /*out*/*pBitmap, LPVOID /*out*/*ppDIBBits);
+
+static pfnImgNewDecoder ImgNewDecoder = 0;
+static pfnImgDeleteDecoder ImgDeleteDecoder = 0;
+static pfnImgNewDIBFromFile ImgNewDIBFromFile = 0;
+static pfnImgDeleteDIBSection ImgDeleteDIBSection = 0;
+static pfnImgGetHandle ImgGetHandle = 0;
+
+static BOOL g_imgDecoderAvail = FALSE;
+HMODULE g_hModuleImgDecoder = 0;
+
+static void __inline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal, 
+					  ULONG ulBitmapHeight, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue, UCHAR ubRed2, 
+					  UCHAR ubGreen2, UCHAR ubBlue2, DWORD FLG_GRADIENT, BOOL transparent, UINT32 y, UCHAR *ubAlpha);
+
+static void __inline gradientHorizontal( UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal, 
+					  ULONG ulBitmapWidth, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue,  UCHAR ubRed2, 
+					  UCHAR ubGreen2, UCHAR ubBlue2, DWORD FLG_GRADIENT, BOOL transparent, UINT32 x, UCHAR *ubAlpha);
+
+
+static ImageItem *g_ImageItems = NULL;
+HBRUSH g_ContainerColorKeyBrush = 0;
+COLORREF g_ContainerColorKey = 0;
+SIZE g_titleBarButtonSize = {0};
+
+extern BOOL g_skinnedContainers;
+extern BOOL g_framelessSkinmode;
+
+StatusItems_t StatusItems[] = {
+    {"Container", "TSKIN_Container", ID_EXTBKCONTAINER,
+        CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Toolbar", "TSKIN_Container", ID_EXTBKBUTTONBAR,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+	}, {"{-}Buttonpressed", "TSKIN_BUTTONSPRESSED", ID_EXTBKBUTTONSPRESSED,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Buttonnotpressed", "TSKIN_BUTTONSNPRESSED", ID_EXTBKBUTTONSNPRESSED,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Buttonmouseover", "TSKIN_BUTTONSMOUSEOVER", ID_EXTBKBUTTONSMOUSEOVER,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Infopanelfield", "TSKIN_INFOPANELFIELD", ID_EXTBKINFOPANEL,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+	}, {"Titlebutton", "TSKIN_TITLEBUTTON", ID_EXTBKTITLEBUTTON,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Titlebuttonmouseover", "TSKIN_TITLEBUTTONHOVER", ID_EXTBKTITLEBUTTONMOUSEOVER,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Titlebuttonpressed", "TSKIN_TITLEBUTTONPRESSED", ID_EXTBKTITLEBUTTONPRESSED,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Tabpage", "TSKIN_TABPAGE", ID_EXTBKTABPAGE,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Tabitem", "TSKIN_TABITEM", ID_EXTBKTABITEM,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Tabitem_active", "TSKIN_TABITEMACTIVE", ID_EXTBKTABITEMACTIVE,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Tabitem_bottom", "TSKIN_TABITEMBOTTOM", ID_EXTBKTABITEMBOTTOM,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Tabitem_active_bottom", "TSKIN_TABITEMACTIVEBOTTOM", ID_EXTBKTABITEMACTIVEBOTTOM,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+	}
+};
 
 static void LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF *colour, const char *szIniFilename)
 {
@@ -143,7 +238,6 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
         DWORD style;
         char bSize;
         DWORD dwSize;
-        HDC hDC = GetDC(NULL);
         for(i = 0; i < MSGDLGFONTCOUNT; i++) {
             sprintf(szTemp, "Font%d", i);
             strcpy(szAppname, szTemp);
@@ -159,7 +253,6 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
             WritePrivateProfileStringA(szAppname, "Set", _itoa(dat->theme.logFonts[i].lfCharSet, szBuf, 10), szIniFilename);
             WritePrivateProfileStringA(szAppname, "Inherit", _itoa(DBGetContactSettingWord(NULL, FONTMODULE, szTemp, 0), szBuf, 10), szIniFilename);
         }
-        ReleaseDC(NULL, hDC);
         WritePrivateProfileStringA("Message Log", "BackgroundColor", _itoa(dat->theme.bg, szBuf, 10), szIniFilename);
         WritePrivateProfileStringA("Message Log", "IncomingBG", _itoa(dat->theme.inbg, szBuf, 10), szIniFilename);
         WritePrivateProfileStringA("Message Log", "OutgoingBG", _itoa(dat->theme.outbg, szBuf, 10), szIniFilename);
@@ -346,13 +439,11 @@ char *GetThemeFileName(int iMode)
 {
     static char szFilename[MAX_PATH];
     OPENFILENAMEA ofn={0};
-    char szFilter[MAX_PATH];
 
-    strncpy(szFilter, "tabSRMM themes\0*.tabsrmm\0\0", MAX_PATH);
+    ofn.lpstrFilter = "tabSRMM themes\0*.tabsrmm\0\0";
     ofn.lStructSize= OPENFILENAME_SIZE_VERSION_400;
     ofn.hwndOwner=0;
     ofn.lpstrFile = szFilename;
-    ofn.lpstrFilter = szFilter;
     ofn.lpstrInitialDir = ".";
     ofn.nMaxFile = MAX_PATH;
     ofn.nMaxFileTitle = MAX_PATH;
@@ -372,3 +463,827 @@ char *GetThemeFileName(int iMode)
     }
 }
 
+BYTE __forceinline percent_to_byte(UINT32 percent)
+{
+    return(BYTE) ((FLOAT) (((FLOAT) percent) / 100) * 255);
+}
+
+COLORREF __forceinline revcolref(COLORREF colref)
+{
+    return RGB(GetBValue(colref), GetGValue(colref), GetRValue(colref));
+}
+
+DWORD __forceinline argb_from_cola(COLORREF col, UINT32 alpha)
+{
+    return((BYTE) percent_to_byte(alpha) << 24 | col);
+}
+
+
+void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, BYTE RADIUS, ImageItem *imageItem)
+{
+    HBRUSH BrMask;
+    HBRUSH holdbrush;
+    HDC hdc;
+    BLENDFUNCTION bf;
+    HBITMAP hbitmap;
+    HBITMAP holdbitmap;
+    BITMAPINFO bmi;
+    VOID *pvBits;
+    UINT32 x, y;
+    ULONG ulBitmapWidth, ulBitmapHeight;
+    UCHAR ubAlpha = 0xFF;
+    UCHAR ubRedFinal = 0xFF;
+    UCHAR ubGreenFinal = 0xFF;
+    UCHAR ubBlueFinal = 0xFF;
+    UCHAR ubRed;        
+    UCHAR ubGreen;
+    UCHAR ubBlue;
+    UCHAR ubRed2;        
+    UCHAR ubGreen2;
+    UCHAR ubBlue2;
+
+    int realx;  
+
+    FLOAT fAlphaFactor; 
+    LONG realHeight = (rc->bottom - rc->top);
+    LONG realWidth = (rc->right - rc->left);
+    LONG realHeightHalf = realHeight >> 1;
+
+    if(imageItem) {
+        IMG_RenderImageItem(hdcwnd, imageItem, rc);
+        return;
+    }
+
+    if (rc == NULL)
+        return;
+
+    if (rc->right < rc->left || rc->bottom < rc->top || (realHeight <= 0) || (realWidth <= 0))
+        return;
+
+    hdc = CreateCompatibleDC(hdcwnd);
+    if (!hdc)
+        return;
+
+    ZeroMemory(&bmi, sizeof(BITMAPINFO));
+
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+
+    if (FLG_GRADIENT & GRADIENT_ACTIVE && (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_RL)) {
+        bmi.bmiHeader.biWidth = ulBitmapWidth = realWidth;
+        bmi.bmiHeader.biHeight = ulBitmapHeight = 1;
+    } else if (FLG_GRADIENT & GRADIENT_ACTIVE && (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT)) {
+        bmi.bmiHeader.biWidth = ulBitmapWidth = 1;
+        bmi.bmiHeader.biHeight = ulBitmapHeight = realHeight;
+    } else {
+        bmi.bmiHeader.biWidth = ulBitmapWidth = 1;
+        bmi.bmiHeader.biHeight = ulBitmapHeight = 1;
+    }
+
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+    bmi.bmiHeader.biSizeImage = ulBitmapWidth * ulBitmapHeight * 4;
+
+    if (ulBitmapWidth <= 0 || ulBitmapHeight <= 0)
+        return;
+
+    hbitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0x0);
+    if (hbitmap == NULL || pvBits == NULL) {
+        DeleteDC(hdc);
+        return;
+    }
+
+    holdbitmap = SelectObject(hdc, hbitmap);
+
+    // convert basecolor to RGB and then merge alpha so its ARGB
+    basecolor = argb_from_cola(revcolref(basecolor), alpha);
+    basecolor2 = argb_from_cola(revcolref(basecolor2), alpha);
+
+    ubRed = (UCHAR) (basecolor >> 16);
+    ubGreen = (UCHAR) (basecolor >> 8);
+    ubBlue = (UCHAR) basecolor;
+
+    ubRed2 = (UCHAR) (basecolor2 >> 16);
+    ubGreen2 = (UCHAR) (basecolor2 >> 8);
+    ubBlue2 = (UCHAR) basecolor2;
+
+    //DRAW BASE - make corner space 100% transparent
+    for (y = 0; y < ulBitmapHeight; y++) {
+        for (x = 0 ; x < ulBitmapWidth ; x++) {
+            if (FLG_GRADIENT & GRADIENT_ACTIVE) {
+                if (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_RL) {
+                    realx = x + realHeightHalf;
+                    realx = (ULONG) realx > ulBitmapWidth ? ulBitmapWidth : realx;
+                    gradientHorizontal(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapWidth, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, realx, &ubAlpha);
+                } else if (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT)
+                    gradientVertical(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapHeight, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, y, &ubAlpha);
+
+                fAlphaFactor = (float) ubAlpha / (float) 0xff;
+                ((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR) (ubRedFinal * fAlphaFactor) << 16) | ((UCHAR) (ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR) (ubBlueFinal * fAlphaFactor));
+            } else {
+                ubAlpha = percent_to_byte(alpha);
+                ubRedFinal = ubRed;
+                ubGreenFinal = ubGreen;
+                ubBlueFinal = ubBlue;
+                fAlphaFactor = (float) ubAlpha / (float) 0xff;
+
+                ((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR) (ubRedFinal * fAlphaFactor) << 16) | ((UCHAR) (ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR) (ubBlueFinal * fAlphaFactor));
+            }
+        }
+    }
+    bf.BlendOp = AC_SRC_OVER;
+    bf.BlendFlags = 0;
+    bf.SourceConstantAlpha = (UCHAR) (basecolor >> 24);
+    bf.AlphaFormat = AC_SRC_ALPHA; // so it will use our specified alpha value
+
+    AlphaBlend(hdcwnd, rc->left + realHeightHalf, rc->top, (realWidth - realHeightHalf * 2), realHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
+
+    SelectObject(hdc, holdbitmap);
+    DeleteObject(hbitmap);
+
+    // corners
+    BrMask = CreateSolidBrush(RGB(0xFF, 0x00, 0xFF)); 
+    {
+        bmi.bmiHeader.biWidth = ulBitmapWidth = realHeightHalf;
+        bmi.bmiHeader.biHeight = ulBitmapHeight = realHeight;
+        bmi.bmiHeader.biSizeImage = ulBitmapWidth * ulBitmapHeight * 4;
+
+        if (ulBitmapWidth <= 0 || ulBitmapHeight <= 0) {
+            DeleteDC(hdc);
+            DeleteObject(BrMask);
+            return;
+        }
+
+        // TL+BL CORNER
+        hbitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0x0);
+
+        if(hbitmap == 0 || pvBits == NULL)  {
+            DeleteObject(BrMask);
+            DeleteDC(hdc);
+            return;
+        }
+ 
+        holdbrush = SelectObject(hdc, BrMask);
+        holdbitmap = SelectObject(hdc, hbitmap);
+        RoundRect(hdc, -1, -1, ulBitmapWidth * 2 + 1, (realHeight + 1), RADIUS, RADIUS);
+
+        for (y = 0; y < ulBitmapHeight; y++) {
+            for (x = 0; x < ulBitmapWidth; x++) {
+                if (((((UINT32 *) pvBits)[x + y * ulBitmapWidth]) << 8) == 0xFF00FF00 || (y< ulBitmapHeight >> 1 && !(FLG_CORNER & CORNER_BL && FLG_CORNER & CORNER_ACTIVE)) || (y > ulBitmapHeight >> 2 && !(FLG_CORNER & CORNER_TL && FLG_CORNER & CORNER_ACTIVE))) {
+                    if (FLG_GRADIENT & GRADIENT_ACTIVE) {
+                        if (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_RL)
+                            gradientHorizontal(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, realWidth, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, x, &ubAlpha);
+                        else if (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT)
+                            gradientVertical(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapHeight, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, y, &ubAlpha);
+
+                        fAlphaFactor = (float) ubAlpha / (float) 0xff;
+                        ((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR) (ubRedFinal * fAlphaFactor) << 16) | ((UCHAR) (ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR) (ubBlueFinal * fAlphaFactor));
+                    } else {
+                        ubAlpha = percent_to_byte(alpha);
+                        ubRedFinal = ubRed;
+                        ubGreenFinal = ubGreen;
+                        ubBlueFinal = ubBlue;
+                        fAlphaFactor = (float) ubAlpha / (float) 0xff;
+
+                        ((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR) (ubRedFinal * fAlphaFactor) << 16) | ((UCHAR) (ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR) (ubBlueFinal * fAlphaFactor));
+                    }
+                }
+            }
+        }           
+        AlphaBlend(hdcwnd, rc->left, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
+        SelectObject(hdc, holdbitmap);
+        DeleteObject(hbitmap);
+
+        // TR+BR CORNER
+        hbitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0x0);
+
+        //SelectObject(hdc, BrMask); // already BrMask?
+        holdbitmap = SelectObject(hdc, hbitmap);
+        RoundRect(hdc, -1 - ulBitmapWidth, -1, ulBitmapWidth + 1, (realHeight + 1), RADIUS, RADIUS);
+
+        for (y = 0; y < ulBitmapHeight; y++) {
+            for (x = 0; x < ulBitmapWidth; x++) {
+                if (((((UINT32 *) pvBits)[x + y * ulBitmapWidth]) << 8) == 0xFF00FF00 || (y< ulBitmapHeight >> 1 && !(FLG_CORNER & CORNER_BR && FLG_CORNER & CORNER_ACTIVE)) || (y > ulBitmapHeight >> 1 && !(FLG_CORNER & CORNER_TR && FLG_CORNER & CORNER_ACTIVE))) {
+                    if (FLG_GRADIENT & GRADIENT_ACTIVE) {
+                        if (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_RL) {
+                            realx = x + realWidth;
+                            realx = realx > realWidth ? realWidth : realx;
+                            gradientHorizontal(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, realWidth, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, realx, &ubAlpha);
+                        } else if (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT)
+                            gradientVertical(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapHeight, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, y, &ubAlpha);
+
+                        fAlphaFactor = (float) ubAlpha / (float) 0xff;
+                        ((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR) (ubRedFinal * fAlphaFactor) << 16) | ((UCHAR) (ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR) (ubBlueFinal * fAlphaFactor));
+                    } else {
+                        ubAlpha = percent_to_byte(alpha);
+                        ubRedFinal = ubRed;
+                        ubGreenFinal = ubGreen;
+                        ubBlueFinal = ubBlue;
+                        fAlphaFactor = (float) ubAlpha / (float) 0xff;
+
+                        ((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR) (ubRedFinal * fAlphaFactor) << 16) | ((UCHAR) (ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR) (ubBlueFinal * fAlphaFactor));
+                    }
+                }
+            }
+        }           
+        AlphaBlend(hdcwnd, rc->right - realHeightHalf, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
+    }   
+    SelectObject(hdc, holdbitmap);
+    DeleteObject(hbitmap);
+    SelectObject(hdc, holdbrush);
+    DeleteObject(BrMask);
+    DeleteDC(hdc);
+}
+
+static void __forceinline gradientHorizontal(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal, ULONG ulBitmapWidth, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue, UCHAR ubRed2, UCHAR ubGreen2, UCHAR ubBlue2, DWORD FLG_GRADIENT, BOOL transparent, UINT32 x, UCHAR *ubAlpha)
+{
+    FLOAT fSolidMulti, fInvSolidMulti;
+
+    // solid to transparent
+    if (transparent) {
+        *ubAlpha = (UCHAR) ((float) x / (float) ulBitmapWidth * 255);
+        *ubAlpha = FLG_GRADIENT & GRADIENT_LR ? 0xFF - (*ubAlpha) : (*ubAlpha);
+        *ubRedFinal = ubRed; *ubGreenFinal = ubGreen; *ubBlueFinal = ubBlue;
+    } else { // solid to solid2
+        if (FLG_GRADIENT & GRADIENT_LR) {
+            fSolidMulti = ((float) x / (float) ulBitmapWidth);  
+            fInvSolidMulti = 1 - fSolidMulti;
+        } else {
+            fInvSolidMulti = ((float) x / (float) ulBitmapWidth);                                   
+            fSolidMulti = 1 - fInvSolidMulti;
+        }
+
+        *ubRedFinal = (UCHAR) (((float) ubRed * (float) fInvSolidMulti)) + (((float) ubRed2 * (float) fSolidMulti));
+        *ubGreenFinal = (UCHAR) (UCHAR) (((float) ubGreen * (float) fInvSolidMulti)) + (((float) ubGreen2 * (float) fSolidMulti));
+        *ubBlueFinal = (UCHAR) (((float) ubBlue * (float) fInvSolidMulti)) + (UCHAR) (((float) ubBlue2 * (float) fSolidMulti));
+
+        *ubAlpha = 0xFF;
+    }
+}
+
+static void __forceinline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal, ULONG ulBitmapHeight, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue, UCHAR ubRed2, UCHAR ubGreen2, UCHAR ubBlue2, DWORD FLG_GRADIENT, BOOL transparent, UINT32 y, UCHAR *ubAlpha)
+{
+    FLOAT fSolidMulti, fInvSolidMulti;
+
+    // solid to transparent
+    if (transparent) {
+        *ubAlpha = (UCHAR) ((float) y / (float) ulBitmapHeight * 255);              
+        *ubAlpha = FLG_GRADIENT & GRADIENT_BT ? 0xFF - *ubAlpha : *ubAlpha;
+        *ubRedFinal = ubRed; *ubGreenFinal = ubGreen; *ubBlueFinal = ubBlue;
+    } else { // solid to solid2
+        if (FLG_GRADIENT & GRADIENT_BT) {
+            fSolidMulti = ((float) y / (float) ulBitmapHeight); 
+            fInvSolidMulti = 1 - fSolidMulti;
+        } else {
+            fInvSolidMulti = ((float) y / (float) ulBitmapHeight);  
+            fSolidMulti = 1 - fInvSolidMulti;
+        }                           
+
+        *ubRedFinal = (UCHAR) (((float) ubRed * (float) fInvSolidMulti)) + (((float) ubRed2 * (float) fSolidMulti));
+        *ubGreenFinal = (UCHAR) (UCHAR) (((float) ubGreen * (float) fInvSolidMulti)) + (((float) ubGreen2 * (float) fSolidMulti));
+        *ubBlueFinal = (UCHAR) (((float) ubBlue * (float) fInvSolidMulti)) + (UCHAR) (((float) ubBlue2 * (float) fSolidMulti));
+
+        *ubAlpha = 0xFF;
+    }
+}
+
+/*
+ * render a skin image to the given rect.
+ * all parameters are in ImageItem already pre-configured
+ */
+
+// XXX add support for more stretching options (stretch/tile divided image parts etc.
+
+void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
+{
+    BYTE l = item->bLeft, r = item->bRight, t = item->bTop, b = item->bBottom;
+    LONG width = rc->right - rc->left;
+    LONG height = rc->bottom - rc->top;
+
+    if(item->dwFlags & IMAGE_FLAG_DIVIDED) {
+        // top 3 items
+
+        AlphaBlend(hdc, rc->left, rc->top, l, t, item->hdc, 0, 0, l, t, item->bf);
+        AlphaBlend(hdc, rc->left + l, rc->top, width - l - r, t, item->hdc, l, 0, item->inner_width, t, item->bf);
+        AlphaBlend(hdc, rc->right - r, rc->top, r, t, item->hdc, item->width - r, 0, r, t, item->bf);
+
+        // middle 3 items
+
+        AlphaBlend(hdc, rc->left, rc->top + t, l, height - t - b, item->hdc, 0, t, l, item->inner_height, item->bf);
+		/*
+		 * use solid fill for the "center" area -> better performance when only the margins of an item
+		 * are usually visible (like the background of the tab pane)
+		 */
+		if(item->dwFlags & IMAGE_FILLSOLID && item->fillBrush) {
+			RECT rcFill;
+			rcFill.left = rc->left + l; rcFill.top = rc->top +t;
+			rcFill.right = rc->right - r; rcFill.bottom = rc->bottom - b;
+			FillRect(hdc, &rcFill, item->fillBrush);
+		}
+		else
+			AlphaBlend(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, item->hdc, l, t, item->inner_width, item->inner_height, item->bf);
+
+        AlphaBlend(hdc, rc->right - r, rc->top + t, r, height - t - b, item->hdc, item->width - r, t, r, item->inner_height, item->bf);
+
+        // bottom 3 items
+
+        AlphaBlend(hdc, rc->left, rc->bottom - b, l, b, item->hdc, 0, item->height - b, l, b, item->bf);
+        AlphaBlend(hdc, rc->left + l, rc->bottom - b, width - l - r, b, item->hdc, l, item->height - b, item->inner_width, b, item->bf);
+        AlphaBlend(hdc, rc->right - r, rc->bottom - b, r, b, item->hdc, item->width - r, item->height - b, r, b, item->bf);
+    }
+    else {
+        switch(item->bStretch) {
+            case IMAGE_STRETCH_H:
+                // tile image vertically, stretch to width
+            {
+                LONG top = rc->top;
+
+                do {
+                    if(top + item->height <= rc->bottom) {
+                        AlphaBlend(hdc, rc->left, top, width, item->height, item->hdc, 0, 0, item->width, item->height, item->bf);
+                        top += item->height;
+                    }
+                    else {
+                        AlphaBlend(hdc, rc->left, top, width, rc->bottom - top, item->hdc, 0, 0, item->width, rc->bottom - top, item->bf);
+                        break;
+                    }
+                } while (TRUE);
+                break;
+            }
+            case IMAGE_STRETCH_V:
+                // tile horizontally, stretch to height
+            {
+                LONG left = rc->left;
+
+                do {
+                    if(left + item->width <= rc->right) {
+                        AlphaBlend(hdc, left, rc->top, item->width, height, item->hdc, 0, 0, item->width, item->height, item->bf);
+                        left += item->width;
+                    }
+                    else {
+                        AlphaBlend(hdc, left, rc->top, rc->right - left, height, item->hdc, 0, 0, rc->right - left, item->height, item->bf);
+                        break;
+                    }
+                } while (TRUE);
+                break;
+            }
+            case IMAGE_STRETCH_B:
+                // stretch the image in both directions...
+                AlphaBlend(hdc, rc->left, rc->top, width, height, item->hdc, 0, 0, item->width, item->height, item->bf);
+                break;
+            /*
+            case IMAGE_STRETCH_V:
+                // stretch vertically, draw 3 horizontal tiles...
+                AlphaBlend(hdc, rc->left, rc->top, l, height, item->hdc, 0, 0, l, item->height, item->bf);
+                AlphaBlend(hdc, rc->left + l, rc->top, width - l - r, height, item->hdc, l, 0, item->inner_width, item->height, item->bf);
+                AlphaBlend(hdc, rc->right - r, rc->top, r, height, item->hdc, item->width - r, 0, r, item->height, item->bf);
+                break;
+            case IMAGE_STRETCH_H:
+                // stretch horizontally, draw 3 vertical tiles...
+                AlphaBlend(hdc, rc->left, rc->top, width, t, item->hdc, 0, 0, item->width, t, item->bf);
+                AlphaBlend(hdc, rc->left, rc->top + t, width, height - t - b, item->hdc, 0, t, item->width, item->inner_height, item->bf);
+                AlphaBlend(hdc, rc->left, rc->bottom - b, width, b, item->hdc, 0, item->height - b, item->width, b, item->bf);
+                break;
+            */
+            default:
+                break;
+        }
+    }
+}
+
+void IMG_InitDecoder()
+{
+    if((g_hModuleImgDecoder = LoadLibraryA("imgdecoder.dll")) == 0) {
+        if((g_hModuleImgDecoder = LoadLibraryA("plugins\\imgdecoder.dll")) != 0)
+            g_imgDecoderAvail = TRUE;
+    }
+    else
+        g_imgDecoderAvail = TRUE;
+
+    if(g_hModuleImgDecoder) {
+        ImgNewDecoder = (pfnImgNewDecoder )GetProcAddress(g_hModuleImgDecoder, "ImgNewDecoder");
+        ImgDeleteDecoder=(pfnImgDeleteDecoder )GetProcAddress(g_hModuleImgDecoder, "ImgDeleteDecoder");
+        ImgNewDIBFromFile=(pfnImgNewDIBFromFile)GetProcAddress(g_hModuleImgDecoder, "ImgNewDIBFromFile");
+        ImgDeleteDIBSection=(pfnImgDeleteDIBSection)GetProcAddress(g_hModuleImgDecoder, "ImgDeleteDIBSection");
+        ImgGetHandle=(pfnImgGetHandle)GetProcAddress(g_hModuleImgDecoder, "ImgGetHandle");
+	} 
+}
+
+static DWORD __fastcall HexStringToLong(const char *szSource)
+{
+    char *stopped;
+    COLORREF clr = strtol(szSource, &stopped, 16);
+    if(clr == -1)
+        return clr;
+    return(RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr)));
+}
+
+static StatusItems_t StatusItem_Default = {
+    "Container", "EXBK_Offline", ID_EXTBKCONTAINER,
+    CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
+    CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+    CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+};
+
+static void ReadItem(StatusItems_t *this_item, char *szItem, char *file)
+{
+    char buffer[512], def_color[20];
+    COLORREF clr;
+	StatusItems_t *defaults = &StatusItem_Default;
+
+	//MessageBoxA(0, szItem, this_item->szName, MB_OK);
+
+	this_item->ALPHA = (int)GetPrivateProfileIntA(szItem, "Alpha", defaults->ALPHA, file);
+    this_item->ALPHA = min(this_item->ALPHA, 100);
+    
+    clr = RGB(GetBValue(defaults->COLOR), GetGValue(defaults->COLOR), GetRValue(defaults->COLOR));
+    _snprintf(def_color, 15, "%6.6x", clr);
+    GetPrivateProfileStringA(szItem, "Color1", def_color, buffer, 400, file);
+    this_item->COLOR = HexStringToLong(buffer);
+
+    clr = RGB(GetBValue(defaults->COLOR2), GetGValue(defaults->COLOR2), GetRValue(defaults->COLOR2));
+    _snprintf(def_color, 15, "%6.6x", clr);
+    GetPrivateProfileStringA(szItem, "Color2", def_color, buffer, 400, file);
+    this_item->COLOR2 = HexStringToLong(buffer);
+    
+    this_item->COLOR2_TRANSPARENT = (BYTE)GetPrivateProfileIntA(szItem, "COLOR2_TRANSPARENT", defaults->COLOR2_TRANSPARENT, file);
+
+    this_item->CORNER = defaults->CORNER & CORNER_ACTIVE ? defaults->CORNER : 0;
+    GetPrivateProfileStringA(szItem, "Corner", "None", buffer, 400, file);
+    if(strstr(buffer, "tl"))
+        this_item->CORNER |= CORNER_TL;
+    if(strstr(buffer, "tr"))
+        this_item->CORNER |= CORNER_TR;
+    if(strstr(buffer, "bl"))
+        this_item->CORNER |= CORNER_BL;
+    if(strstr(buffer, "br"))
+        this_item->CORNER |= CORNER_BR;
+    if(this_item->CORNER)
+        this_item->CORNER |= CORNER_ACTIVE;
+
+    this_item->GRADIENT = defaults->GRADIENT & GRADIENT_ACTIVE ?  defaults->GRADIENT : 0;
+    GetPrivateProfileStringA(szItem, "Gradient", "None", buffer, 400, file);
+    if(strstr(buffer, "left"))
+        this_item->GRADIENT = GRADIENT_RL;
+    else if(strstr(buffer, "right"))
+        this_item->GRADIENT = GRADIENT_LR;
+    else if(strstr(buffer, "up"))
+        this_item->GRADIENT = GRADIENT_BT;
+    else if(strstr(buffer, "down"))
+        this_item->GRADIENT = GRADIENT_TB;
+    if(this_item->GRADIENT)
+        this_item->GRADIENT |= GRADIENT_ACTIVE;
+
+    this_item->MARGIN_LEFT = GetPrivateProfileIntA(szItem, "Left", defaults->MARGIN_LEFT, file);
+    this_item->MARGIN_RIGHT = GetPrivateProfileIntA(szItem, "Right", defaults->MARGIN_RIGHT, file);
+    this_item->MARGIN_TOP = GetPrivateProfileIntA(szItem, "Top", defaults->MARGIN_TOP, file);
+    this_item->MARGIN_BOTTOM = GetPrivateProfileIntA(szItem, "Bottom", defaults->MARGIN_BOTTOM, file);
+    this_item->RADIUS = GetPrivateProfileIntA(szItem, "Radius", defaults->RADIUS, file);
+
+    GetPrivateProfileStringA(szItem, "Textcolor", "ffffffff", buffer, 400, file);
+    this_item->TEXTCOLOR = HexStringToLong(buffer);
+	this_item->IGNORED = 0;
+}
+
+void IMG_ReadItem(const char *itemname, const char *szFileName)
+{
+    ImageItem tmpItem = {0}, *newItem = NULL;
+    char buffer[512], szItemNr[30];
+    char szFinalName[MAX_PATH];
+    HDC hdc = GetDC(0);
+    int i, n;
+    BOOL alloced = FALSE;
+    char szDrive[MAX_PATH], szPath[MAX_PATH];
+    
+    GetPrivateProfileStringA(itemname, "Image", "None", buffer, 500, szFileName);
+    if(strcmp(buffer, "None")) {
+        strncpy(tmpItem.szName, &itemname[1], sizeof(tmpItem.szName));
+        tmpItem.szName[sizeof(tmpItem.szName) - 1] = 0;
+        _splitpath(szFileName, szDrive, szPath, NULL, NULL);
+        mir_snprintf(szFinalName, MAX_PATH, "%s\\%s\\%s", szDrive, szPath, buffer);
+        tmpItem.alpha = GetPrivateProfileIntA(itemname, "Alpha", 100, szFileName);
+        tmpItem.alpha = min(tmpItem.alpha, 100);
+        tmpItem.alpha = (BYTE)((FLOAT)(((FLOAT) tmpItem.alpha) / 100) * 255);
+        tmpItem.bf.SourceConstantAlpha = tmpItem.alpha;
+        tmpItem.bLeft = GetPrivateProfileIntA(itemname, "Left", 0, szFileName);
+        tmpItem.bRight = GetPrivateProfileIntA(itemname, "Right", 0, szFileName);
+        tmpItem.bTop = GetPrivateProfileIntA(itemname, "Top", 0, szFileName);
+        tmpItem.bBottom = GetPrivateProfileIntA(itemname, "Bottom", 0, szFileName);
+		GetPrivateProfileStringA(itemname, "Fillcolor", "None", buffer, 500, szFileName);
+		if(strcmp(buffer, "None")) {
+			COLORREF fillColor = HexStringToLong(buffer);
+			tmpItem.fillBrush = CreateSolidBrush(fillColor);
+			tmpItem.dwFlags |= IMAGE_FILLSOLID;
+		}
+		else
+			tmpItem.fillBrush = 0;
+		GetPrivateProfileStringA(itemname, "Colorkey", "None", buffer, 500, szFileName);
+		if(strcmp(buffer, "None")) {
+			g_ContainerColorKey = HexStringToLong(buffer);
+			if(g_ContainerColorKeyBrush)
+				DeleteObject(g_ContainerColorKeyBrush);
+			g_ContainerColorKeyBrush = CreateSolidBrush(g_ContainerColorKey);
+		}
+        GetPrivateProfileStringA(itemname, "Stretch", "None", buffer, 500, szFileName);
+        if(buffer[0] == 'B' || buffer[0] == 'b')
+            tmpItem.bStretch = IMAGE_STRETCH_B;
+        else if(buffer[0] == 'h' || buffer[0] == 'H')
+            tmpItem.bStretch = IMAGE_STRETCH_V;
+        else if(buffer[0] == 'w' || buffer[0] == 'W')
+            tmpItem.bStretch = IMAGE_STRETCH_H;
+        tmpItem.hbm = 0;
+        for(n = 0;;n++) {
+            mir_snprintf(szItemNr, 30, "Item%d", n);
+            GetPrivateProfileStringA(itemname, szItemNr, "None", buffer, 500, szFileName);
+            if(!strcmp(buffer, "None"))
+                break;
+            for(i = 0; i <= ID_EXTBK_LAST; i++) {
+                if(!_stricmp(StatusItems[i].szName[0] == '{' ? &StatusItems[i].szName[3] : StatusItems[i].szName, buffer)) {
+                    if(!alloced) {
+                        IMG_CreateItem(&tmpItem, szFinalName, hdc);
+                        if(tmpItem.hbm) {
+                            newItem = malloc(sizeof(ImageItem));
+                            ZeroMemory(newItem, sizeof(ImageItem));
+                            *newItem = tmpItem;
+                            StatusItems[i].imageItem = newItem;
+                            if(g_ImageItems == NULL)
+                                g_ImageItems = newItem;
+                            else {
+                                ImageItem *pItem = g_ImageItems;
+
+                                while(pItem->nextItem != 0)
+                                    pItem = pItem->nextItem;
+                                pItem->nextItem = newItem;
+                            }
+                            alloced = TRUE;
+                            //_DebugPopup(0, "successfully assigned %s to %s with %s (handle: %d), p = %d", itemname, buffer, szFinalName, newItem->hbm, newItem);
+                        }
+                    }
+                    else if(newItem != NULL)
+                        StatusItems[i].imageItem = newItem;
+                }
+            }
+        }
+    }
+    ReleaseDC(0, hdc);
+}
+
+static void PreMultiply(HBITMAP hBitmap, int mode)
+{
+	BYTE *p = NULL;
+	DWORD dwLen;
+    int width, height, x, y;
+    BITMAP bmp;
+    BYTE alpha;
+    
+	GetObject(hBitmap, sizeof(bmp), &bmp);
+    width = bmp.bmWidth;
+	height = bmp.bmHeight;
+	dwLen = width * height * 4;
+	p = (BYTE *)malloc(dwLen);
+    if(p) {
+        GetBitmapBits(hBitmap, dwLen, p);
+        for (y = 0; y < height; ++y) {
+            BYTE *px = p + width * 4 * y;
+
+            for (x = 0; x < width; ++x) {
+                if(mode) {
+                    alpha = px[3];
+                    px[0] = px[0] * alpha/255;
+                    px[1] = px[1] * alpha/255;
+                    px[2] = px[2] * alpha/255;
+                }
+                else
+                    px[3] = 255;
+                px += 4;
+            }
+        }
+        dwLen = SetBitmapBits(hBitmap, dwLen, p);
+        free(p);
+    }
+}
+
+static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
+{
+    LPVOID imgDecoder = NULL;
+    LPVOID pImg = NULL;
+    HBITMAP hBitmap = 0;
+    LPVOID pBitmapBits = NULL;
+    LPVOID m_pImgDecoder = NULL;
+
+    if(!g_imgDecoderAvail)
+        return 0;
+    
+    ImgNewDecoder(&m_pImgDecoder);
+    if (!ImgNewDIBFromFile(m_pImgDecoder, (char *)szFilename, &pImg))
+        ImgGetHandle(pImg, &hBitmap, (LPVOID *)&pBitmapBits);
+    ImgDeleteDecoder(m_pImgDecoder);
+    if(hBitmap == 0)
+        return 0;
+    item->lpDIBSection = pImg;
+    return hBitmap;
+}
+
+static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
+{
+    HBITMAP hbm = LoadPNG(fileName, item);
+    BITMAP bm;
+
+    if(hbm) {
+        item->hbm = hbm;
+        item->bf.BlendFlags = 0;
+        item->bf.BlendOp = AC_SRC_OVER;
+        item->bf.AlphaFormat = 0;
+        
+        GetObject(hbm, sizeof(bm), &bm);
+        if(bm.bmBitsPixel == 32) {
+            PreMultiply(hbm, 1);
+            item->dwFlags |= IMAGE_PERPIXEL_ALPHA;
+            item->bf.AlphaFormat = AC_SRC_ALPHA;
+        }
+        item->width = bm.bmWidth;
+        item->height = bm.bmHeight;
+        item->inner_height = item->height - item->bTop - item->bBottom;
+        item->inner_width = item->width - item->bLeft - item->bRight;
+        if(item->bTop && item->bBottom && item->bLeft && item->bRight) {
+            item->dwFlags |= IMAGE_FLAG_DIVIDED;
+            if(item->inner_height <= 0 || item->inner_width <= 0) {
+                DeleteObject(hbm);
+                item->hbm = 0;
+                return;
+            }
+        }
+        item->hdc = CreateCompatibleDC(hdc);
+        item->hbmOld = SelectObject(item->hdc, item->hbm);
+    }
+}
+
+static void IMG_DeleteItem(ImageItem *item)
+{
+    SelectObject(item->hdc, item->hbmOld);
+    DeleteObject(item->hbm);
+    DeleteDC(item->hdc);
+    if(item->lpDIBSection && ImgDeleteDIBSection)
+        ImgDeleteDIBSection(item->lpDIBSection);
+	if(item->fillBrush)
+		DeleteObject(item->fillBrush);
+}
+
+void IMG_DeleteItems()
+{
+    ImageItem *pItem = g_ImageItems, *pNextItem;
+
+    while(pItem) {
+        IMG_DeleteItem(pItem);
+        pNextItem = pItem->nextItem;
+        free(pItem);
+        pItem = pNextItem;
+    }
+    g_ImageItems = NULL;
+	
+	if(myGlobals.g_closeGlyph)
+		DestroyIcon(myGlobals.g_closeGlyph);
+	if(myGlobals.g_minGlyph)
+		DestroyIcon(myGlobals.g_minGlyph);
+	if(myGlobals.g_maxGlyph)
+		DestroyIcon(myGlobals.g_maxGlyph);
+	if(g_ContainerColorKeyBrush)
+		DeleteObject(g_ContainerColorKeyBrush);
+	if(myGlobals.hFontCaption)
+		DeleteObject(myGlobals.hFontCaption);
+
+	if(g_imgDecoderAvail && g_hModuleImgDecoder) {
+		FreeLibrary(g_hModuleImgDecoder);
+		g_hModuleImgDecoder = 0;
+	}
+}
+
+void IMG_LoadItems(char *szFileName)
+{
+    char *szSections = NULL;
+    char *p;
+    HANDLE hFile;
+    ImageItem *pItem = g_ImageItems, *pNextItem;
+    int i;
+    
+    if((hFile = CreateFileA(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
+        return;
+
+    CloseHandle(hFile);
+    
+    while(pItem) {
+        IMG_DeleteItem(pItem);
+        pNextItem = pItem->nextItem;
+        free(pItem);
+        pItem = pNextItem;
+    }
+    g_ImageItems = NULL;
+
+    for(i = 0; i <= ID_EXTBK_LAST; i++)
+        StatusItems[i].imageItem = NULL;
+    
+    szSections = malloc(3002);
+    ZeroMemory(szSections, 3002);
+    p = szSections;
+    GetPrivateProfileSectionNamesA(szSections, 3000, szFileName);
+    
+    szSections[3001] = szSections[3000] = 0;
+    p = szSections;
+    while(lstrlenA(p) > 1) {
+        if(p[0] == '$')
+            IMG_ReadItem(p, szFileName);
+        p += (lstrlenA(p) + 1);
+    }
+    free(szSections);
+}
+
+static void SkinLoadIcon(char *file, char *name, HICON *hIcon)
+{
+	char buffer[512];
+	if(*hIcon != 0)
+		DestroyIcon(*hIcon);
+	GetPrivateProfileStringA("Global", name, "none", buffer, 500, file);
+	buffer[500] = 0;
+
+	if(strcmp(buffer, "none")) {
+		char szDrive[MAX_PATH], szDir[MAX_PATH], szImagePath[MAX_PATH];
+		
+		_splitpath(file, szDrive, szDir, NULL, NULL);
+		mir_snprintf(szImagePath, MAX_PATH, "%s\\%s\\%s", szDrive, szDir, buffer);
+		if(hIcon)
+			*hIcon = LoadImageA(0, szImagePath, IMAGE_ICON, 16, 16, LR_LOADFROMFILE);
+	}
+}
+
+void LoadSkinItems(char *file)
+{
+    char *p;
+    char *szSections = malloc(3002);
+    int i = 1;
+    UINT data;
+	char buffer[500];
+
+    if(!(GetPrivateProfileIntA("Global", "Version", 0, file) >= 1 && GetPrivateProfileIntA("Global", "Signature", 0, file) == 101))
+		return;
+
+	if(!g_imgDecoderAvail)
+		return;
+
+	g_skinnedContainers = TRUE;
+
+	ZeroMemory(szSections, 3000);
+    p = szSections;
+    GetPrivateProfileSectionNamesA(szSections, 3000, file);
+    szSections[3001] = szSections[3000] = 0;
+    p = szSections;
+    while(lstrlenA(p) > 1) {
+        if(p[0] != '%') {
+            p += (lstrlenA(p) + 1);
+            continue;
+        }
+		for(i = 0; i <= ID_EXTBK_LAST; i++) {
+			if(!_stricmp(&p[1], StatusItems[i].szName[0] == '{' ? &StatusItems[i].szName[3] : StatusItems[i].szName)) {
+				ReadItem(&StatusItems[i], p, file);
+				break;
+			}
+		}
+        p += (lstrlenA(p) + 1);
+        i++;
+    }
+	SkinLoadIcon(file, "CloseGlyph", &myGlobals.g_closeGlyph);
+	SkinLoadIcon(file, "MaximizeGlyph", &myGlobals.g_maxGlyph);
+	SkinLoadIcon(file, "MinimizeGlyph", &myGlobals.g_minGlyph);
+	data = GetPrivateProfileIntA("Global", "SbarHeight", 0, file);
+	DBWriteContactSettingByte(0, SRMSGMOD_T, "sbarheight", (BYTE)data);
+	GetPrivateProfileStringA("Global", "FontColor", "None", buffer, 500, file);
+	g_titleBarButtonSize.cx = GetPrivateProfileIntA("Global", "TitleButtonWidth", 24, file);
+	g_titleBarButtonSize.cy = GetPrivateProfileIntA("Global", "TitleButtonHeight", 12, file);
+	g_framelessSkinmode = GetPrivateProfileIntA("Global", "framelessmode", 0, file);
+	if(strcmp(buffer, "None"))
+		myGlobals.skinDefaultFontColor = HexStringToLong(buffer);
+	else
+		myGlobals.skinDefaultFontColor = GetSysColor(COLOR_BTNTEXT);
+	buffer[499] = 0;
+    free(szSections);
+}
+
+void SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget)
+{
+	RECT rcWindow;
+	POINT pt;
+	LONG width = rcClient->right - rcClient->left;
+	LONG height = rcClient->bottom - rcClient->top;
+	HDC dc;
+
+	GetWindowRect(hwndClient, &rcWindow);
+	pt.x = rcWindow.left;
+	pt.y = rcWindow.top;
+	ScreenToClient(hwnd, &pt);
+	if(pContainer)
+		dc = pContainer->cachedDC;
+	else
+		dc = GetDC(hwnd);
+	BitBlt(hdcTarget, rcClient->left, rcClient->top, width, height, dc, pt.x, pt.y, SRCCOPY);
+	if(!pContainer)
+		ReleaseDC(hwnd, dc);
+}

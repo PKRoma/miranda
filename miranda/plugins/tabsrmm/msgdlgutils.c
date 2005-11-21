@@ -1,4 +1,4 @@
-es/*
+/*
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
@@ -64,6 +64,7 @@ void CacheMsgLogIcons(), CacheLogFonts();
 void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
 int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
 extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern StatusItems_t StatusItems[];
 
 extern void DrawWithGDIp(HDC hDC, DWORD x, DWORD y, DWORD width, DWORD height, DWORD srcWidth, DWORD srcHeight, struct avatarCacheEntry *ace, HBITMAP hbm);
 
@@ -159,6 +160,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
                 else
                     dat->pic.cy = dat->bottomOffset;
         }
+		dat->pic.cy--;
     }
     else if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
         if(dat->dwFlags & MWF_WASBACKGROUNDCREATE || dat->pContainer->dwFlags & CNT_DEFERREDCONFIGURE || dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED || IsIconic(dat->pContainer->hwnd))
@@ -529,7 +531,7 @@ void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
         int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
         _snprintf(buf, sizeof(buf), "%s %d/%d", dat->lcID, dat->iOpenJobs, len);
-        SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 1, (LPARAM) buf);
+        SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 1 | SBT_NOBORDERS, (LPARAM) buf);
     }
 }
 
@@ -541,12 +543,14 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
         SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
         SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
         if(myGlobals.g_SecureIMAvail) {
+			SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, 2 | SBT_NOBORDERS, (LPARAM)"");
             if((iSecIMStatus = CallService("SecureIM/IsContactSecured", (WPARAM)dat->hContact, 0)) != 0)
                 SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)myGlobals.g_buttonBarIcons[14]);
             else
                 SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)myGlobals.g_buttonBarIcons[15]);
         }
-        SendMessage(dat->pContainer->hwndStatus, SB_SETICON, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)(dat->pContainer->dwFlags & CNT_NOSOUND ? myGlobals.g_buttonBarIcons[23] : myGlobals.g_buttonBarIcons[22]));
+		SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, (myGlobals.g_SecureIMAvail ? 3 : 2) | SBT_NOBORDERS, (LPARAM)"");
+        SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (myGlobals.g_SecureIMAvail ? 3 : 2), (LPARAM)(dat->pContainer->dwFlags & CNT_NOSOUND ? myGlobals.g_buttonBarIcons[23] : myGlobals.g_buttonBarIcons[22]));
         UpdateReadChars(hwndDlg, dat);
         UpdateStatusBarTooltips(hwndDlg, dat, iSecIMStatus);
     }
@@ -623,10 +627,11 @@ void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode)
         char szTipText[64];
         int nParts = SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0);
 
-        if(iMode)
-            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, nParts - 1, (LPARAM)myGlobals.g_buttonBarIcons[12]);
+        SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, (nParts - 1) | SBT_NOBORDERS, (LPARAM)"");
+		if(iMode)
+            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (nParts - 1), (LPARAM)myGlobals.g_buttonBarIcons[12]);
         else
-            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, nParts - 1, (LPARAM)myGlobals.g_buttonBarIcons[13]);
+            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (nParts - 1), (LPARAM)myGlobals.g_buttonBarIcons[13]);
 
         mir_snprintf(szTipText, sizeof(szTipText), Translate("Sending typing notifications is: %s"), iMode ? "Enabled" : "Disabled");
         SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, myGlobals.g_SecureIMAvail ? 4 : 3, (LPARAM)szTipText);
@@ -1518,7 +1523,8 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 
 void ConfigureSideBar(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    if(!dat->pContainer->dwFlags & CNT_SIDEBAR)
+    return;
+	if(!dat->pContainer->dwFlags & CNT_SIDEBAR)
         return;
     CheckDlgButton(dat->pContainer->hwnd, IDC_SBAR_TOGGLEFORMAT, dat->SendFormat != 0 ? BST_CHECKED : BST_UNCHECKED);
 }
@@ -1620,38 +1626,6 @@ void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
     }
 }
 
-/*
-void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
-{
-    char szBasename[MAX_PATH + 1];
-    HBITMAP hbm = 0;
-    
-    if(dat->hOwnPic != 0 && dat->hOwnPic != myGlobals.g_hbmUnknown)
-        DeleteObject(dat->hOwnPic);
-
-    // try .gif first
-    
-    mir_snprintf(szBasename, MAX_PATH, "%s%s_avatar.gif", myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
-    if((hbm = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szBasename)) == 0) {
-        strncpy(&szBasename[lstrlenA(szBasename) - 3], "jpg", 3);
-        if((hbm = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szBasename)) == 0) {
-            strncpy(&szBasename[lstrlenA(szBasename) - 3], "bmp", 3);
-            if((hbm = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szBasename)) == 0)
-                hbm = myGlobals.g_hbmUnknown;
-        }
-    }
-    dat->hOwnPic = hbm;
-    if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
-        BITMAP bm;
-        
-        dat->iRealAvatarHeight = 0;
-        AdjustBottomAvatarDisplay(hwndDlg, dat);
-        GetObject(dat->hOwnPic, sizeof(bm), &bm);
-        CalcDynamicAvatarSize(hwndDlg, dat, &bm);
-        SendMessage(hwndDlg, WM_SIZE, 0, 0);
-    }
-}  */
-
 void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if(dat->wApparentMode == ID_STATUS_OFFLINE) {
@@ -1661,7 +1635,8 @@ void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat)
     else if(dat->wApparentMode == ID_STATUS_ONLINE || dat->wApparentMode == 0) {
         CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_UNCHECKED);
         SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? LoadSkinnedIcon(SKINICON_STATUS_INVISIBLE) : LoadSkinnedIcon(SKINICON_STATUS_ONLINE)));
-        SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASFLATBTN, 0, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? 1 : 0));
+		if(!dat->pContainer->bSkinned)
+			SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASFLATBTN, 0, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? 1 : 0));
     }
 }
 
@@ -1736,15 +1711,19 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         return 0;
     if(dat->dwFlags & MWF_INITMODE)
         return 0;
-    
-    if(dis->CtlType == ODT_BUTTON && dis->CtlID == IDC_TOGGLESIDEBAR) {
+
+    /*if(dis->CtlType == ODT_BUTTON && dis->CtlID == IDC_TOGGLESIDEBAR) {
         HICON hIcon;
         DWORD bStyle = 0;
-        if(dat->pContainer->dwFlags & CNT_SIDEBAR)
-            bStyle = DFCS_PUSHED;
-        else
-            bStyle = DFCS_FLAT;
-        DrawFrameControl(dis->hDC, &dis->rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | bStyle);
+		if(dat->pContainer->bSkinned)
+			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
+		else {
+			if(dat->pContainer->dwFlags & CNT_SIDEBAR)
+				bStyle = DFCS_PUSHED;
+			else
+				bStyle = DFCS_FLAT;
+			DrawFrameControl(dis->hDC, &dis->rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | bStyle);
+		}
         hIcon = myGlobals.g_buttonBarIcons[25];
         DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
                   (dis->rcItem.right + dis->rcItem.left - myGlobals.m_smcxicon) / 2,
@@ -1752,7 +1731,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                   myGlobals.m_smcxicon, myGlobals.m_smcyicon,
                   DST_ICON | DSS_NORMAL);
         return TRUE;
-    } else if (dis->CtlType == ODT_MENU && dis->hwndItem == (HWND)GetSubMenu(myGlobals.g_hMenuContext, 7)) {
+    } else */
+	if (dis->CtlType == ODT_MENU && dis->hwndItem == (HWND)GetSubMenu(myGlobals.g_hMenuContext, 7)) {
         RECT rc = { 0 };
         HBRUSH old, col;
         COLORREF clr;
@@ -1791,7 +1771,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         DeleteObject(col);
         return TRUE;
     } else if ((dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown) && dat->showPic) || (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL && (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown))) {
-        HPEN hPen, hOldPen;
         HBRUSH hOldBrush;
         BITMAP bminfo;
         double dAspect = 0, dNewWidth = 0, dNewHeight = 0;
@@ -1802,7 +1781,10 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         BOOL bPanelPic = dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC);
         DWORD aceFlags = 0;
         HBRUSH bgBrush = 0;
-        
+        BYTE borderType = myGlobals.bAvatarBoderType;
+		HPEN hPenBorder = CreatePen(PS_SOLID, 1, (COLORREF)DBGetContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", RGB(0, 0, 0))), hPenOld = 0;
+		HRGN clipRgn = 0;
+
         if(bPanelPic) {
             GetObject(dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown, sizeof(bminfo), &bminfo);
 			if(dat->ace)
@@ -1833,6 +1815,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         hbmDraw = CreateCompatibleBitmap(dis->hDC, cx, cy);
         hbmOld = SelectObject(hdcDraw, hbmDraw);
         
+		hPenOld = SelectObject(hdcDraw, hPenBorder);
+
         if(bPanelPic) {
             if(bminfo.bmHeight > bminfo.bmWidth) {
                 if(bminfo.bmHeight > 0)
@@ -1865,31 +1849,46 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                 dNewWidth = (double)(rc.right) * 0.8;
             iMaxHeight = dat->iRealAvatarHeight;
         }
-        hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
-        hOldPen = SelectObject(hdcDraw, hPen);
         bgBrush = CreateSolidBrush(dat->avatarbg);
         hOldBrush = SelectObject(hdcDraw, bgBrush);
 		rcFrame = rcClient;
 		if(bPanelPic)
 			rcFrame.left = rcClient.right - dat->panelWidth;
-        FillRect(hdcDraw, &rcFrame, bgBrush);
-        if(!bPanelPic) {
+        if(dat->pContainer->bSkinned)
+			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rcFrame, hdcDraw);
+		else
+			FillRect(hdcDraw, &rcFrame, bgBrush);
+
+		if(borderType == 1)
+			borderType = aceFlags & AVS_PREMULTIPLIED ? 2 : 3;
+
+		if(!bPanelPic) {
             if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
-                if(aceFlags & AVS_PREMULTIPLIED) {
-                    RECT rcEdge = {0, 0, dat->pic.cx, dat->pic.cy};
-                    DrawEdge(hdcDraw, &rcEdge, BDR_SUNKENINNER, BF_RECT);
-                }
-                else
-                    Rectangle(hdcDraw, 0, 0, dat->pic.cx, dat->pic.cy);
+				if(borderType) {
+					RECT rcEdge = {0, 0, dat->pic.cx, dat->pic.cy};
+					if(borderType == 2)
+						DrawEdge(hdcDraw, &rcEdge, BDR_SUNKENINNER, BF_RECT);
+					else if(borderType == 3)
+	                    Rectangle(hdcDraw, 0, 0, dat->pic.cx, dat->pic.cy);
+					else if(borderType == 4) {
+						clipRgn = CreateRoundRectRgn(0, 0, dat->pic.cx, dat->pic.cy, 4, 4);
+						SelectClipRgn(hdcDraw, clipRgn);
+					}
+				}
             }
             else {
                 top = (dat->pic.cy - dat->iRealAvatarHeight) / 2;
-                if(aceFlags & AVS_PREMULTIPLIED) {
+                if(borderType) {
                     RECT rcEdge = {0, top - 1, dat->pic.cx, top + dat->iRealAvatarHeight + 1};
-                    DrawEdge(hdcDraw, &rcEdge, BDR_SUNKENINNER, BF_RECT);
+					if(borderType == 2)
+						DrawEdge(hdcDraw, &rcEdge, BDR_SUNKENINNER, BF_RECT);
+					else if(borderType == 3)
+						Rectangle(hdcDraw, rcEdge.left, rcEdge.top, rcEdge.right, rcEdge.bottom);
+					else if(borderType == 4) {
+						clipRgn = CreateRoundRectRgn(rcEdge.left, rcEdge.top, rcEdge.right, rcEdge.bottom, 4, 4);
+						SelectClipRgn(hdcDraw, clipRgn);
+					}
                 }
-                else
-                    Rectangle(hdcDraw, 0, top - 1, dat->pic.cx, top + dat->iRealAvatarHeight + 1);
             }
         }
         if(((dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown)) && dat->showPic) || bPanelPic) {
@@ -1897,49 +1896,66 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             HBITMAP hbmAvatar = bPanelPic ? (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown) : (dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown));
             HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, hbmAvatar);
             if(bPanelPic) {
+				LONG width_off = borderType ? 0 : 2;
+
                 rcFrame = rcClient;
                 rcFrame.left = rcFrame.right - ((LONG)dNewWidth + 2);
                 rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 2;
                 SetStretchBltMode(hdcDraw, HALFTONE);
                 if(aceFlags & AVS_PREMULTIPLIED) {
-                    DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
-                    MY_AlphaBlend(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
+					if(borderType == 2)
+						DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
+					else if(borderType == 3)
+						Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
+					else if(borderType == 4) {
+						clipRgn = CreateRoundRectRgn(rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom, 4, 4);
+						SelectClipRgn(hdcDraw, clipRgn);
+					}
+					MY_AlphaBlend(hdcDraw, rcFrame.left + (borderType ? 1 : 0), borderType ? 1 : 0, (int)dNewWidth + width_off, (int)dNewHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
                 }
                 else {
-                    Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
-                    StretchBlt(hdcDraw, rcFrame.left + 1, 1, (int)dNewWidth, (int)dNewHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+					if(borderType == 2)
+						DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
+					else if(borderType == 3)
+						Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
+					else if(borderType == 4) {
+						clipRgn = CreateRoundRectRgn(rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom, 4, 4);
+						SelectClipRgn(hdcDraw, clipRgn);
+					}
+                    StretchBlt(hdcDraw, rcFrame.left + (borderType ? 1 : 0), borderType ? 1 : 0, (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
                 }
             }
             else {
+				LONG width_off = borderType ? 0 : 2;
+				LONG xy_off = borderType ? 1 : 0;
+
                 SetStretchBltMode(hdcDraw, HALFTONE);
                 if(aceFlags & AVS_PREMULTIPLIED) {
                     if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                        MY_AlphaBlend(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
+                        MY_AlphaBlend(hdcDraw, xy_off, xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
                     else
-                        MY_AlphaBlend(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
+						MY_AlphaBlend(hdcDraw, xy_off, top - (borderType ? 0 : 1), (int)dNewWidth + width_off, iMaxHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
                 }
                 else {
-                    if(dat->iRealAvatarHeight != bminfo.bmHeight) {
-                        if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                            StretchBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                        else
-                            StretchBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                    }
-                    else {
-                        if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                            BitBlt(hdcDraw, 1, 1, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
-                        else
-                            BitBlt(hdcDraw, 1, top, (int)dNewWidth, iMaxHeight, hdcMem, 0, 0, SRCCOPY);
-                    }
+                    if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
+                        StretchBlt(hdcDraw, xy_off, xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                    else
+						StretchBlt(hdcDraw, xy_off, top - (borderType ? 0 : 1), (int)dNewWidth + width_off, iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
                 }
             }
+			if(clipRgn) {
+				HBRUSH hbr = CreateSolidBrush((COLORREF)DBGetContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", RGB(0, 0, 0)));
+				FrameRgn(hdcDraw, clipRgn, hbr, 1, 1);
+				DeleteObject(hbr);
+				DeleteObject(clipRgn);
+			}
             DeleteObject(hbmMem);
             DeleteDC(hdcMem);
         }
-        SelectObject(hdcDraw, hOldPen);
+        SelectObject(hdcDraw, hPenOld);
         SelectObject(hdcDraw, hOldBrush);
         DeleteObject(bgBrush);
-        DeleteObject(hPen);
+        DeleteObject(hPenBorder);
         BitBlt(dis->hDC, 0, 0, cx, cy, hdcDraw, 0, 0, SRCCOPY);
         SelectObject(hdcDraw, hbmOld);
         DeleteObject(hbmDraw);
@@ -1965,26 +1981,28 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             GetTextExtentPoint32A(dis->hDC, szProto, lstrlenA(szProto), &sProto);
         }
     
-        dat->panelStatusCX = sStatus.cx + sProto.cx + 16 + 14;
+        dat->panelStatusCX = sStatus.cx + sProto.cx + 14;
         
         if(dat->panelStatusCX != oldPanelStatusCX)
             SendMessage(hwndDlg, WM_SIZE, 0, 0);
     
         GetClientRect(dis->hwndItem, &rc);
-        FillRect(dis->hDC, &rc, myGlobals.ipConfig.bkgBrush);
-        SetBkColor(dis->hDC, myGlobals.ipConfig.clrBackground);
-        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT)
+		if(dat->pContainer->bSkinned) {
+			StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
+			RECT rc = dis->rcItem;
+			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
+			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
+			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
+			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+					  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+		}
+		else
+			FillRect(dis->hDC, &rc, myGlobals.ipConfig.bkgBrush);
+		SetBkMode(dis->hDC, TRANSPARENT);
+        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && !dat->pContainer->bSkinned)
             DrawEdge(dis->hDC, &rc, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         
-        if(dat->hTabStatusIcon) {
-            if(dat->dwEventIsShown & MWF_SHOW_ISIDLE && myGlobals.m_IdleDetect) {
-                ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, dat->hTabStatusIcon);
-                ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 4, (rc.bottom + rc.top - myGlobals.m_smcyicon) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
-            }
-            else
-                DrawIconEx(dis->hDC, 4, (rc.bottom + rc.top - myGlobals.m_smcyicon) / 2, dat->hTabStatusIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
-        }
-        rc.left += 20;
+		rc.left += 3;
         if(dat->szStatus) {
             if(config) {
                 SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_STATUS]);
@@ -2020,12 +2038,28 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 
 		GetTextExtentPoint32A(dis->hDC, "Name:", 5, &dat->szLabel);
         rc.right = rc.left + dat->szLabel.cx + 3;
-        FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
+        SetBkMode(dis->hDC, TRANSPARENT);
+		if(dat->pContainer->bSkinned) {
+			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
+			SetTextColor(dis->hDC, myGlobals.skinDefaultFontColor);
+		}
+		else {
+			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
+			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
+		}
         DrawTextA(dis->hDC, "Name:", 5, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
         dis->rcItem.left += (dat->szLabel.cx + 3);
-        FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
-        SetBkColor(dis->hDC, myGlobals.ipConfig.clrBackground);
-        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT)
+		if(dat->pContainer->bSkinned) {
+			StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
+			RECT rc = dis->rcItem;
+			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
+			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
+			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+					  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+		}
+		else
+			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
+        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && !dat->pContainer->bSkinned)
             DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         dis->rcItem.left +=2;
         if(dat->szNickname[0]) {
@@ -2069,14 +2103,32 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         BOOL config = myGlobals.ipConfig.isValid;
         HFONT hOldFont = 0;
         RECT rc = dis->rcItem;
-        rc.right = rc.left + dat->szLabel.cx + 3;
-        FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
+
+		if(dat->pContainer->bSkinned) {
+			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
+			SetTextColor(dis->hDC, myGlobals.skinDefaultFontColor);
+		}
+		else {
+			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
+			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
+		}
+
+		SetBkMode(dis->hDC, TRANSPARENT);
         DrawTextA(dis->hDC, "UIN:", 4, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+
+		rc.right = rc.left + dat->szLabel.cx + 3;
         dis->rcItem.left += (dat->szLabel.cx + 3);
-        
-        FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
-        SetBkColor(dis->hDC, myGlobals.ipConfig.clrBackground);
-        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT)
+		if(dat->pContainer->bSkinned) {
+			StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
+			RECT rc = dis->rcItem;
+			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
+			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
+			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+					  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+		}
+		else
+			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
+        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && !dat->pContainer->bSkinned)
             DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         dis->rcItem.left +=2;
         if(config) {
@@ -2138,7 +2190,33 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         if(config && hOldFont)
             SelectObject(dis->hDC, hOldFont);
         return TRUE;
-    }
+	}
+	else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICTEXT) || dis->hwndItem == GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT)) {
+		TCHAR szWindowText[256];
+		if(dat->pContainer->bSkinned) {
+			SetTextColor(dis->hDC, myGlobals.skinDefaultFontColor);
+			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
+		}
+		else {
+			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
+			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
+		}
+		GetWindowText(dis->hwndItem, szWindowText, 255);
+		szWindowText[255] = 0;
+		SetBkMode(dis->hDC, TRANSPARENT);
+		DrawText(dis->hDC, szWindowText, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_NOCLIP | DT_END_ELLIPSIS);
+		return TRUE;
+	}
+	else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICERRORICON) || dis->hwndItem == GetDlgItem(hwndDlg, IDC_MULTIPLEICON)) {
+		_DebugPopup(0, "draw icon");
+		if(dat->pContainer->bSkinned)
+			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
+		else
+			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
+		DrawIconEx(dis->hDC, (dis->rcItem.right - dis->rcItem.left) / 2 - 8, (dis->rcItem.bottom - dis->rcItem.top) / 2 - 8,
+				   (HICON)SendMessage(dis->hwndItem, STM_GETICON, 0, 0), 16, 16, 0, 0, DI_NORMAL);
+		return TRUE;
+	}
     return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 }
 
@@ -2203,10 +2281,7 @@ void LoadOverrideTheme(HWND hwndDlg, struct MessageWindowData *dat)
             dat->theme.logFonts = dat->pContainer->logFonts;
             dat->theme.fontColors = dat->pContainer->fontColors;
             dat->theme.rtfFonts = dat->pContainer->rtfFonts;
-            if(bReadTemplates)
-                ReadThemeFromINI(dat->pContainer->szThemeFile, dat, 0);
-            else
-                ReadThemeFromINI(dat->pContainer->szThemeFile, dat, 1);
+			ReadThemeFromINI(dat->pContainer->szThemeFile, dat, bReadTemplates ? 0 : 1);
             dat->dwFlags = dat->theme.dwFlags;
             dat->theme.left_indent *= 15;
             dat->theme.right_indent *= 15;

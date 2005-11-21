@@ -100,7 +100,28 @@ Version 0.9.9.99 - 2005/11/11
 		    
 		  The simple mode skips some of the advanced popup configuration options, including the 
 		  "per container settings". It also skips the "Sync sounds" option.
-				  		  		  		  		  
+
+		+ added the per contact infopanel setting to the per contact settings dialog.
+
+		+ added option to specify the type of border for the avatar(s) in the message window.
+		  There are 5 options:
+		  * None
+		  * Automatic
+		  * Sunken
+		  * 1 pixel solid
+		  * rounded border
+		  
+		  Automatic means that it will draw a solid border for normal avatars, while for transparent
+		  or semi-transparent images, a sunken frame will be drawn.
+		  The color for solid borders can be configured aswell. 
+		  
+		  The options are on the "General" tab, in the "Avatar options" section.
+
+		* fixed bug with non-appearing message log icons
+		
+		* fixed wrong hotkey Ctrl-C was opening the user preferences dialog instead of doing the
+		  usual copy action. User preferences is now on Alt-C
+		  		  
 Version 0.9.9.98 - 2005/11/07
 
         * several sanity checks added (pointers, window handles)

@@ -101,7 +101,7 @@ int _DebugTRACE(const char *fmt, ...)
     va_list va;
     va_start(va, fmt);
     _vsnprintf(debug, ibsize, fmt, va);
-    OutputDebugStringA(debug);
+    OutputDebugString(debug);
 }
 #endif
 
@@ -120,15 +120,11 @@ int _DebugPopup(HANDLE hContact, const char *fmt, ...)
     va_list va;
     char    debug[1024];
     int     ibsize = 1023;
-    BYTE want_debuginfo = DBGetContactSettingByte(NULL, "Tab_SRMsg", "debuginfo", 0);
 
-    if(!want_debuginfo)
-        return 0;
-    
     va_start(va, fmt);
     _vsnprintf(debug, ibsize, fmt, va);
     
-    if(want_debuginfo == 2 && CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
+    if(CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
         ZeroMemory((void *)&ppd, sizeof(ppd));
         ppd.lchContact = hContact;
         ppd.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
@@ -142,20 +138,18 @@ int _DebugPopup(HANDLE hContact, const char *fmt, ...)
         ppd.colorBack = RGB(255,0,0);
         CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
     }
-    else {
-        if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
-            MIRANDASYSTRAYNOTIFY tn;
-            char szTitle[128];
-            
-            tn.szProto = NULL;
-            tn.cbSize = sizeof(tn);
-            _snprintf(szTitle, sizeof(szTitle), Translate("tabSRMM Message (%s)"), (hContact != 0) ? (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0) : Translate("Global"));
-            tn.szInfoTitle = szTitle;
-            tn.szInfo = debug;
-            tn.dwInfoFlags = NIIF_INFO;
-            tn.uTimeout = 1000 * 4;
-            CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
-        }
+    else if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
+        MIRANDASYSTRAYNOTIFY tn;
+        char szTitle[128];
+        
+        tn.szProto = NULL;
+        tn.cbSize = sizeof(tn);
+        _snprintf(szTitle, sizeof(szTitle), Translate("tabSRMM Message (%s)"), (hContact != 0) ? (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0) : Translate("Global"));
+        tn.szInfoTitle = szTitle;
+        tn.szInfo = debug;
+        tn.dwInfoFlags = NIIF_INFO;
+        tn.uTimeout = 1000 * 4;
+        CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
     }
     return 0;
 }
@@ -286,9 +280,11 @@ static BOOL CALLBACK DlgProcFirsttime(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 }
 				case IDCANCEL:
 					DestroyWindow(hwndDlg);
-                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "firstrun", 1);
 					return TRUE;
 			}
+			break;
+		case WM_DESTROY:
+            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "firstrun", 1);
 			break;
 	}
 	return FALSE;
