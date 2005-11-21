@@ -105,7 +105,7 @@ HANDLE __stdcall YAHOO_CreateProtoServiceFunction(
 
 int __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 
-#ifdef __MINGW32__
+#ifdef __GNUC__
 int YAHOO_DebugLog( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 #else
 int YAHOO_DebugLog( const char *fmt, ... );

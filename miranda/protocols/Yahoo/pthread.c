@@ -20,7 +20,7 @@
 
 /* Gena01 - added some defined to fix compilation with mingw gcc */
 /* __try/__finally taken from abiword patch found on the web */
-#ifdef __MINGW32__
+#ifdef __GNUC__
 
 #if 0
  #include <crtdbg.h>
