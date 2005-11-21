@@ -189,6 +189,11 @@ void get_fd(int id, int fd, int error, void *data)
 	DWORD dw;
 	struct _stat statbuf;
 	
+	if (fd < 0) {
+		LOG(("[get_fd] Connect Failed!"));
+		error = 1;
+	}
+
 	if (_stat( sf->filename, &statbuf ) != 0 )
 		error = 1;
 	
@@ -305,6 +310,11 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
     long rsize = 0;
 	DWORD dw, c;
 
+	if (fd < 0) {
+		LOG(("[get_url] Connect Failed!"));
+		error = 1;
+	}
+	
     if(!error) {
 		HANDLE myhFile;
 		PROTOFILETRANSFERSTATUS pfts;
@@ -1823,8 +1833,10 @@ int ext_yahoo_connect(char *h, int p)
     ncon.wPort = p;
     
     con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibUser, (LPARAM) & ncon);
-    if (!con) 
+    if (con == NULL)  {
+		LOG(("ERROR: Connect Failed!"));
         return -1;
+	}
 
     return (int)con;
 }
@@ -1908,7 +1920,7 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 {
 	int ret=1;
 
-	LOG(("yahoo_callback"));
+	LOG(("[yahoo_callback] id: %d, fd: %d", c->id, c->fd));
 	if(c->id < 0) {
 		connect_complete(c->data, c->fd, cond);
 	} else if (c->fd > 0) {
@@ -1928,21 +1940,22 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 int ext_yahoo_connect_async(int id, char *host, int port, 
 		yahoo_connect_callback callback, void *data)
 {
-    int error;
+    int res;
     
     LOG(("ext_yahoo_connect_async %s:%d", host, port));
     
-    error = ext_yahoo_connect(host, port);
+    res = ext_yahoo_connect(host, port);
 
-	if(error != -1) {
+	//if(res >= 0 ) {
 		//LOG(("Connected fd: %d, error: %d", hServerConn, error));
 		
-		callback(error, 0, data);
+		callback(res, 0, data);
 		return 0;
-	} else {
+	/*} else {
 		//close(servfd);
+		
 		return -1;
-	}
+	}*/
 
     
     
