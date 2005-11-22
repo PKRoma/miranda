@@ -77,6 +77,7 @@ int ThreadData::send( char* data, int datalen )
 		return FALSE;
 	}
 
+	mWaitPeriod = 60;
 	return TRUE;
 }
 
@@ -262,11 +263,17 @@ int ThreadData::recv( char* data, long datalen )
 
 LBL_RecvAgain:
 	if ( !mIsMainThread && !MyOptions.UseGateway && !MyOptions.UseProxy ) {
-		NETLIBSELECT nls = { 0 };
-		nls.cbSize = sizeof( nls );
-		nls.dwTimeout = 60000;
-		nls.hReadConns[0] = s;
-		if ( MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls ) == 0 ) {
+		mWaitPeriod = 60;
+		while ( --mWaitPeriod >= 0 ) {
+			NETLIBSELECT nls = { 0 };
+			nls.cbSize = sizeof( nls );
+			nls.dwTimeout = 1000;
+			nls.hReadConns[0] = s;
+			if ( MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls ) != 0 )
+				break;
+		}
+
+		if ( mWaitPeriod < 0 ) {
 			MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
 			return 0;
 	}	}
