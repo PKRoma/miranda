@@ -712,13 +712,33 @@ void ext_yahoo_chat_message(int id, char *who, char *room, char *msg, int msgtyp
 
 void YAHOO_request_avatar(const char* who)
 {
+	time_t  last_chk, cur_time;
+	HANDLE 	hContact = 0;
+	
 	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
 		LOG(("Avatars disabled, but available for: %s", who));
 		return;
 	}
 	
-	LOG(("Requesting Avatar for: %s", who));
-	yahoo_request_buddy_avatar(ylad->id, who);
+	hContact = getbuddyH(who);
+	
+	if (!hContact)
+		return;
+	
+	time(&cur_time);
+	last_chk = DBGetContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", 0);
+	
+	/*
+	 * time() - in seconds ( 60*60 = 1 hour)
+	 */
+	if (last_chk == 0 || (cur_time - last_chk) >= 3600) {
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", cur_time);
+
+		LOG(("Requesting Avatar for: %s", who));
+		yahoo_request_buddy_avatar(ylad->id, who);
+	} else {
+		LOG(("Avatar Not Available for: %s (Flood Check in Effect)", who));
+	}
 }
 
 /* Other handlers */
@@ -849,22 +869,25 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	struct avatar_info *avt = (struct avatar_info *) data;
 		
 	LOG(("Getting file: %s size: %lu", filename, size));
-	pBuff = malloc(size);
-	if (!pBuff) 
-		error = 1;
 	
 	if (!size) /* empty file or some file loading error. don't crash! */
         error = 1;
-        
-	hContact = getbuddyH(avt->who);
+    
+	if (!error) {
+		pBuff = malloc(size);
+		if (!pBuff) 
+			error = 1;
+	}
 	
+	hContact = getbuddyH(avt->who);
+		
 	if (!hContact){
 		error = 1;
-	} else {
+	} else if (!error) {
 		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", avt->cksum);
 		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 1);
 	}
-
+	
     if(!error) {
 				
 				do {
@@ -887,7 +910,8 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 		LOG(("WARNING: Checksum updated during download?!"));
 		error = 1; /* don't use this one? */
 	} 
-    LOG(("File download complete!"));
+    
+	LOG(("File download complete!?"));
 
 //    ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
 	if (!error) {
@@ -953,7 +977,6 @@ static void __cdecl yahoo_recv_avatarthread(void *pavt)
 		YAHOO_DebugLog("AVT IS NULL!!!");
 		return;
 	}
-	//YAHOO_DebugLog("who %s, msg: %s, filename: %s ", sf->who, sf->msg, sf->filename);
 	
 	LOG(("yahoo_recv_avatarthread who:%s url:%s checksum: %d", avt->who, avt->pic_url, avt->cksum));
 	yahoo_get_url_handle(ylad->id, avt->pic_url, &get_picture, avt);
