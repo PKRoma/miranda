@@ -48,7 +48,7 @@ int PASCAL recv(SOCKET s, char FAR *buf, int len, int flags)
 	if (yahooStatus == ID_STATUS_OFFLINE) 
 		LOG(("WARNING:WE ARE OFFLINE!!"));
 	
-	RecvResult = Netlib_Recv((HANDLE)s, buf, len, 0);
+	RecvResult = Netlib_Recv((HANDLE)s, buf, len, (len == 1) ? MSG_NODUMP : 0);
 	
 	//LOG(("Got bytes: %d, len: %d", RecvResult, len));
     if (RecvResult == SOCKET_ERROR) {
