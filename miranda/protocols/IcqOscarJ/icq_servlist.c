@@ -1425,6 +1425,9 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   wItemID = ICQGetContactSettingWord(ack->hContact, "ServerId", 0);
   wGroupID = ICQGetContactSettingWord(ack->hContact, "SrvGroupId", 0);
 
+  // Read nick name from DB
+  pszNick = ack->szGroupName = UniGetContactSettingUtf(ack->hContact, "CList", "MyHandle", NULL);
+
   if (!wItemID) 
   { // We have no ID, so try to simply add the contact to serv-list 
     NetLog_Server("Unable to move contact (no ItemID) -> trying to add");
@@ -1437,6 +1440,7 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   { // Only move the contact if it had an GroupID
     RemovePendingOperation(ack->hContact, 0);
     NetLog_Server("Failed to move contact to group on server side list (%s)", "no Group");
+    SAFE_FREE(&pszNick);
     return;
   }
 
@@ -1444,6 +1448,7 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   { // Only move the contact if it had different GroupID
     RemovePendingOperation(ack->hContact, 1);
     NetLog_Server("Contact not moved to group on server side list (same Group)");
+    SAFE_FREE(&pszNick);
     return;
   }
 
@@ -1452,11 +1457,9 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   { // Could not do anything without uin
     RemovePendingOperation(ack->hContact, 0);
     NetLog_Server("Failed to move contact to group on server side list (%s)", "no UID");
+    SAFE_FREE(&pszNick);
     return;
   }
-
-  // Read nick name from DB
-  pszNick = ack->szGroupName = UniGetContactSettingUtf(ack->hContact, "CList", "MyHandle", NULL);
 
   // Read comment from DB
   pszNote = UniGetContactSettingUtf(ack->hContact, "UserInfo", "MyNotes", NULL);
