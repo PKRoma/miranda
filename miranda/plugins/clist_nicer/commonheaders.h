@@ -21,12 +21,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include <malloc.h>
+#include <tchar.h>
 
 #ifdef _DEBUG
-#	define _CRTDBG_MAP_ALLOC
-#	include <stdlib.h>
-#	include <crtdbg.h>
+#   define _CRTDBG_MAP_ALLOC
+#   include <stdlib.h>
+#   include <crtdbg.h>
+#else
+#	include <malloc.h>
 #endif
 
 #define _WIN32_WINNT 0x0501
@@ -44,7 +46,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "forkthread.h"
 #include <win2k.h>
 #include <newpluginapi.h>
-#include <m_clist.h>
+#include "m_clist.h"
 #include <m_clc.h>
 #include <m_clui.h>
 #include <m_plugins.h>
@@ -59,11 +61,40 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_contacts.h>
 #include <m_file.h>
 #include <m_addcontact.h>
+#include "m_avatars.h"
+#include "extbackg.h"
 #include "clc.h"
 #include "clist.h"
 #include "alphablend.h"
-#include "extBackg.h"
-#include "wallpaper.h"
+#include "rowheight_funcs.h"
+#include "m_genmenu.h"
+#include "CLUIFrames/genmenu.h"
+#include "m_genmenu.h"
+#include "m_cluiframes.h"
+#include "m_clui.h"
+#include "icolib.h"
+#include "m_popup.h"
+#include "m_metacontacts.h"
+#include "m_fontservice.h"
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// NEEDS TO GO AWAY when we get REAL unicode
+// 
+
+#if !defined(_UNICODE)
+
+#define ptszVal pszVal
+
+#define DBWriteContactSettingTString(a, b, c, d) DBWriteContactSettingString((a), (b), (c), (d))
+#define DBWriteContactSettingWString(a, b, c, d) DBWriteContactSettingString((a), (b), (c), (d))
+
+#undef DBGetContactSettingTString
+#undef DBGetContactSettingWString
+
+#define DBGetContactSettingTString(a,b,c,d) DBGetContactSetting(a,b,c,d)
+#define DBGetContactSettingWString(a,b,c,d) DBGetContactSetting(a,b,c,d)
+
+#endif
 
 // shared vars
 extern HINSTANCE g_hInst;
@@ -78,17 +109,42 @@ extern HINSTANCE g_hInst;
 
 */
 
+#define MAX_REGS(_A_) (sizeof(_A_)/sizeof(_A_[0]))
+
 extern struct MM_INTERFACE memoryManagerInterface;
 
 #define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
 #define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
 #define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
 
-__inline char * mir_strdup(const char * src)
+__forceinline char * mir_strdup(const char *src)
 {
-	char * p = 0;
-	if ( src == NULL ) return NULL;
-	p=mir_alloc( strlen(src)+1 );
-	strcpy(p, src);
-	return p;
+    char *p = 0;
+    if (src == NULL)
+        return NULL;
+    p = (char *)mir_alloc(strlen(src) + 1);
+    strcpy(p, src);
+    return p;
 }
+
+typedef  int  (__cdecl *pfnDrawAvatar)(HDC hdcOrig, HDC hdcMem, RECT *rc, struct ClcContact *contact, int y, struct ClcData *dat, int selected, WORD cstatus, int rowHeight);
+typedef  void (__cdecl *pfnDrawAlpha)(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE, ImageItem *item);
+
+static char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting)
+{
+	char *str=NULL;
+	DBVARIANT dbv;
+	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
+	if(dbv.type==DBVT_ASCIIZ)
+		str=mir_strdup(dbv.pszVal);
+	DBFreeVariant(&dbv);
+	return str;
+}
+
+#define safe_sizeof(a) (sizeof((a)) / sizeof((a)[0]))
+
+extern BOOL __forceinline GetItemByStatus(int status, StatusItems_t *retitem);
+
+void GDIp_DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE);
+void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE, ImageItem *item);
+

@@ -38,23 +38,37 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLCDEFAULT_MRGN_BOTTOM 0
 #define CLCDEFAULT_IGNORE 0
 
-#define ID_EXTBKSELECTION		40100
-#define ID_EXTBKEXPANDEDGROUP	40101
-#define ID_EXTBKCOLLAPSEDDGROUP	40102
-#define ID_EXTBKFIRSTITEM		40103
-#define ID_EXTBKSINGLEITEM		40104
-#define ID_EXTBKLASTITEM		40105
+#define ID_EXTBKEXPANDEDGROUP   40081
+#define ID_EXTBKCOLLAPSEDDGROUP 40082
+#define ID_EXTBKEMPTYGROUPS     40083
+#define ID_EXTBKFIRSTITEM       40084
+#define ID_EXTBKSINGLEITEM      40085
+#define ID_EXTBKLASTITEM        40086
 
-#define ID_EXTBKEMPTYGROUPS		40106
 
-#define ID_EXTBKFIRSTITEM_NG	40107
-#define ID_EXTBKSINGLEITEM_NG	40108
-#define ID_EXTBKLASTITEM_NG		40109
+#define ID_EXTBKFIRSTITEM_NG    40087
+#define ID_EXTBKSINGLEITEM_NG   40088
+#define ID_EXTBKLASTITEM_NG     40089
 
-#define ID_EXTBKSEPARATOR		40110
+#define ID_EXTBKEVEN_CNTCTPOS   40090
+#define ID_EXTBKODD_CNTCTPOS    40091
 
-#define ID_EXTBKEVEN_CNTCTPOS	40111
-#define ID_EXTBKODD_CNTCTPOS	40112
+#define ID_EXTBKSELECTION       40092
+#define ID_EXTBKHOTTRACK        40093
+#define ID_EXTBKFRAMETITLE      40094
+#define ID_EXTBKEVTAREA         40095
+#define ID_EXTBKSTATUSBAR       40096
+#define ID_EXTBKBUTTONBAR       40097
+#define ID_EXTBKBUTTONSPRESSED  40098
+#define ID_EXTBKBUTTONSNPRESSED 40099
+#define ID_EXTBKBUTTONSMOUSEOVER 40100
+#define ID_EXTBKTBBUTTONSPRESSED  40101
+#define ID_EXTBKTBBUTTONSNPRESSED 40102
+#define ID_EXTBKTBBUTTONMOUSEOVER 40103
+#define ID_EXTBKSTATUSFLOATER	40104
+#define ID_EXTBK_LAST_D         40104
+
+#define ID_EXTBKSEPARATOR       40200
 
 // FLAGS
 #define CORNER_NONE 0
@@ -71,44 +85,70 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GRADIENT_TB 8
 #define GRADIENT_BT 16
 
+#define IMAGE_PERPIXEL_ALPHA 1
+#define IMAGE_FLAG_DIVIDED 2
+
+#define IMAGE_STRETCH_V 1
+#define IMAGE_STRETCH_H 2
+#define IMAGE_STRETCH_B 4
+
+typedef struct _tagImageItem {
+    char szName[40];
+    HBITMAP hbm;
+    BYTE bLeft, bRight, bTop, bBottom;      // sizing margins
+    BYTE alpha;
+    DWORD dwFlags;
+    HDC hdc;
+    HBITMAP hbmOld;
+    LONG inner_height, inner_width;
+    LONG width, height;
+    BLENDFUNCTION bf;
+    LPVOID lpDIBSection;
+    BYTE bStretch;
+    struct _tagImageItem *nextItem;
+} ImageItem;
+
 typedef struct {
-	char *szName;
-	char *szDBname;
-	int statusID;
+    char szName[40];
+    char szDBname[40];
+    int statusID;
 
-	BYTE GRADIENT;
-	BYTE CORNER;
+    BYTE GRADIENT;
+    BYTE CORNER;
 
-	DWORD COLOR;
-	DWORD COLOR2;
+    DWORD COLOR;
+    DWORD COLOR2;
 
-	BYTE COLOR2_TRANSPARENT;
+    BYTE COLOR2_TRANSPARENT;
 
-	DWORD TEXTCOLOR;
-	
-	int ALPHA;
+    DWORD TEXTCOLOR;
 
-	int MARGIN_LEFT;
-	int MARGIN_TOP;
-	int MARGIN_RIGHT;
-	int MARGIN_BOTTOM;
+    int ALPHA;
 
-	BYTE IGNORED;
+    int MARGIN_LEFT;
+    int MARGIN_TOP;
+    int MARGIN_RIGHT;
+    int MARGIN_BOTTOM;
+
+    BYTE IGNORED;
+    DWORD BORDERSTYLE;
+    ImageItem *imageItem;
 } StatusItems_t;
 
 typedef struct {
-	BOOL bGRADIENT;
-	BOOL bCORNER;
-	BOOL bCOLOR;
-	BOOL bCOLOR2;
-	BOOL bCOLOR2_TRANSPARENT;
-	BOOL bTEXTCOLOR;
-	BOOL bALPHA;
-	BOOL bMARGIN_LEFT;
-	BOOL bMARGIN_TOP;
-	BOOL bMARGIN_RIGHT;
-	BOOL bMARGIN_BOTTOM;
-	BOOL bIGNORED;
+    BOOL bGRADIENT;
+    BOOL bCORNER;
+    BOOL bCOLOR;
+    BOOL bCOLOR2;
+    BOOL bCOLOR2_TRANSPARENT;
+    BOOL bTEXTCOLOR;
+    BOOL bALPHA;
+    BOOL bMARGIN_LEFT;
+    BOOL bMARGIN_TOP;
+    BOOL bMARGIN_RIGHT;
+    BOOL bMARGIN_BOTTOM;
+    BOOL bIGNORED;
+    BOOL bBORDERSTYLE;
 } ChangedSItems_t;
 
 BOOL CheckItem(int item, HWND hwndDlg);
@@ -120,7 +160,15 @@ void import(char *file, HWND hwndDlg);
 
 void SaveLatestChanges(HWND hwndDlg);
 void LoadExtBkSettingsFromDB();
+void IMG_LoadItems();
+void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc);
+void IMG_DeleteItem(ImageItem *item);
+void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
+void IMG_InitDecoder();
+void LoadPerContactSkins(char *file);
+
 void SaveCompleteStructToDB();
+StatusItems_t *GetProtocolStatusItem(const char *szProto);
 
 void OnListItemsChange(HWND hwndDlg);
 
@@ -131,6 +179,21 @@ void SaveNonStatusItemsSettings(HWND hwndDlg);
 void FillItemList(HWND hwndDlg);
 void FillOptionDialogByCurrentSel(HWND hwndDlg);
 void ReActiveCombo(HWND hwndDlg);
-BOOL GetItemByStatus(int status, StatusItems_t* retitem);
+//BOOL __fastcall GetItemByStatus(int status, StatusItems_t *retitem);
 
 void FillOptionDialogByStatusItem(HWND hwndDlg, StatusItems_t *item);
+
+#define MS_SKIN_DRAWGLYPH "ModernList/DrawGlyph"
+
+/* EVENTS */
+#define ME_SKIN_SERVICESCREATED "ModernList/ServicesCreated"
+
+/* DRAWGLYPH Request structure */
+typedef struct s_SKINDRAWREQUEST
+{
+  char szObjectID[255];      // Unic Object ID (path) to paint
+  RECT rcDestRect;           // Rectangle to fit
+  RECT rcClipRect;           // Rectangle to paint in.
+  HDC hDC;                   // Handler to device context to paint in. 
+} SKINDRAWREQUEST,*LPSKINDRAWREQUEST;
+
