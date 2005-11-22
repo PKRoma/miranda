@@ -1112,6 +1112,20 @@ int YahooFileAllow(WPARAM wParam,LPARAM lParam)
 int YahooFileDeny(WPARAM wParam,LPARAM lParam) 
 {
 	/* deny file receive request.. just ignore it! */
+	CCSDATA *ccs = (CCSDATA *) lParam;
+    y_filetransfer *ft = (y_filetransfer *) ccs->wParam;
+	
+	YAHOO_DebugLog("[YahooFileDeny]");
+	
+	if ( !yahooLoggedIn || ft == NULL ) {
+		YAHOO_DebugLog("[YahooFileResume] Not logged-in or some other error!");
+		return 1;
+	}
+
+	if (ft->ftoken != NULL) {
+		YAHOO_DebugLog("[] DC Detected: Denying File Transfer!");
+		YAHOO_FT_cancel(ft->who, ft->filename, ft->ftoken, 2);	
+	}
 	return 0;
 }
 

@@ -186,6 +186,7 @@ typedef struct {
 	char *who;
 	char *msg;
 	char *filename;
+	char *ftoken;
 	HANDLE hContact;
 	int  cancel;
 	char *url;
@@ -197,6 +198,7 @@ typedef struct {
 
 void YAHOO_SendFile(y_filetransfer *ft);
 void YAHOO_RecvFile(y_filetransfer *ft);
+void YAHOO_FT_cancel(const char *buddy, const char *filename, const char *ft_token, int command);
 void YAHOO_request_avatar(const char* who);
 void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen);
 #define FILERESUME_CANCEL	11

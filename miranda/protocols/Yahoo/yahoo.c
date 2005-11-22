@@ -303,6 +303,11 @@ void YAHOO_SendFile(y_filetransfer *sf)
 	yahoo_send_file(ylad->id, sf->who, sf->msg, sf->filename, tFileSize, &get_fd, sf);
 }
 
+void YAHOO_FT_cancel(const char *buddy, const char *filename, const char *ft_token, int command)
+{
+	yahoo_ftdc_cancel(ylad->id, buddy, filename, ft_token, command);	
+}
+
 void get_url(int id, int fd, int error,	const char *filename, unsigned long size, void *data) 
 {
     y_filetransfer *sf = (y_filetransfer*) data;
@@ -312,6 +317,12 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 
 	if (fd < 0) {
 		LOG(("[get_url] Connect Failed!"));
+		
+		if (sf->ftoken != NULL) {
+			LOG(("[get_url] DC Detected: asking sender to upload to Yahoo FileServers!"));
+			YAHOO_FT_cancel(sf->who, sf->filename, sf->ftoken, 3);	
+		}
+		
 		error = 1;
 	}
 	
@@ -1589,7 +1600,7 @@ void ext_yahoo_system_message(int id, char *msg)
 	LOG(("Yahoo System Message: %s", msg));
 }
 
-void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, char *msg, char *fname, unsigned long fesize)
+void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, char *msg, char *fname, unsigned long fesize, char *ft_token)
 {
     CCSDATA ccs;
     PROTORECVEVENT pre;
@@ -1597,7 +1608,7 @@ void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, ch
 	char *szBlob;
 	y_filetransfer *ft;
 	
-    LOG(("[ext_yahoo_got_file] id: %i, ident:%s, who: %s, url: %s, expires: %lu, msg: %s, fname: %s, fsize: %lu", id, me, who, url, expires, msg, fname, fesize));
+    LOG(("[ext_yahoo_got_file] id: %i, ident:%s, who: %s, url: %s, expires: %lu, msg: %s, fname: %s, fsize: %lu ftoken: %s", id, me, who, url, expires, msg, fname, fesize, ft_token == NULL ? "NULL" : ft_token));
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) 
@@ -1637,6 +1648,7 @@ void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, ch
 	ft->url = strdup(url);
 	ft->fsize = fesize;
 	ft->cancel = 0;
+	ft->ftoken = (ft_token == NULL) ? NULL : strdup(ft_token);
 	
     // blob is DWORD(*ft), ASCIIZ(filenames), ASCIIZ(description)
     szBlob = (char *) malloc(sizeof(DWORD) + lstrlen(ft->filename) + lstrlen(ft->msg) + 2);
