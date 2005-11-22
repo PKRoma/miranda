@@ -1210,7 +1210,7 @@ static char* convertMsgToUserSpecificAnsi(HANDLE hContact, const char* szMsg)
 { // this needs valid "Unicode" buffer from SRMM !!!
   WORD wCP = ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage);
   int nMsgLen = strlennull(szMsg);
-  wchar_t* usMsg = (wchar_t*)(szMsg + nMsgLen);
+  wchar_t* usMsg = (wchar_t*)(szMsg + nMsgLen + 1);
   char* szAnsi = NULL;
 
   if (wCP != CP_ACP)
