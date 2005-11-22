@@ -175,7 +175,12 @@ static int AppendToBufferWithRTF(char **buffer, int *cbBufferEnd, int *cbBufferA
 	return _mbslen(*buffer + *cbBufferEnd);
 }
 
-//free() the return value
+#if defined( _UNICODE )
+	#define FONT_FORMAT "{\\f%u\\fnil\\fcharset%u %S;}"
+#else
+	#define FONT_FORMAT "{\\f%u\\fnil\\fcharset%u %s;}"
+#endif
+
 static char *CreateRTFHeader(struct MessageWindowData *dat)
 {
 	char *buffer;
@@ -195,7 +200,7 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 	for (i = 0; i < msgDlgFontCount; i++) {
 		LoadMsgDlgFont(i, &lf, NULL);
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u %s;}", i, lf.lfCharSet, lf.lfFaceName);
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, FONT_FORMAT, i, lf.lfCharSet, lf.lfFaceName);
 	}
 	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}{\\colortbl ");
 	for (i = 0; i < msgDlgFontCount; i++) {
