@@ -1107,9 +1107,6 @@ int SplitmsgShutdown(void)
         DeleteCachedIcon(&ttb_Slist);
     if(ttb_Traymenu.hBmp)
         DeleteCachedIcon(&ttb_Traymenu);
-    
-    if(myGlobals.szDefaultTitleFormat)
-        free(myGlobals.szDefaultTitleFormat);
 
 	IMG_DeleteItems();
     return 0;
