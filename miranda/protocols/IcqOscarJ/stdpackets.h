@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Low-level functions that really sends data to server
 //
 // -----------------------------------------------------------------------------
 
