@@ -441,7 +441,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_conf_message)(int id, char *who, char *room, 
  * 	fname- the file name if direct transfer
  * 	fsize- the file size if direct transfer
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, char *me, char *who, char *url, long expires, char *msg, char *fname, unsigned long fesize);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, char *me, char *who, char *url, long expires, char *msg, char *fname, unsigned long fesize, char *ft_token);
 
 
 

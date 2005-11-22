@@ -194,6 +194,7 @@ const char  * yahoo_get_profile_url( void );
 
 void yahoo_request_buddy_avatar(int id, const char *buddy);
 
+void yahoo_ftdc_cancel(int id, const char *buddy, const char *filename, const char *ft_token, int command);
 #include "yahoo_httplib.h"
 
 #ifdef __cplusplus

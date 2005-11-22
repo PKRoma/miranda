@@ -1313,7 +1313,7 @@ static void yahoo_process_filetransfer(struct yahoo_input_data *yid, struct yaho
 	long expires=0;
 
 	char *service=NULL;
-
+	char *ft_token=NULL;
 	char *filename=NULL;
 	unsigned long filesize=0L;
 
@@ -1333,11 +1333,15 @@ static void yahoo_process_filetransfer(struct yahoo_input_data *yid, struct yaho
 
 		if (pair->key == 27)
 			filename = pair->value;
+		
 		if (pair->key == 28)
 			filesize = atol(pair->value);
 
 		if (pair->key == 49)
 			service = pair->value;
+		
+		if (pair->key == 53)
+			ft_token = pair->value;
 	}
 
 	if(pkt->service == YAHOO_SERVICE_P2PFILEXFER) {
@@ -1355,7 +1359,7 @@ static void yahoo_process_filetransfer(struct yahoo_input_data *yid, struct yaho
 			*tmp = '\0';
 	}
 	if(url && from)
-		YAHOO_CALLBACK(ext_yahoo_got_file)(yd->client_id, to, from, url, expires, msg, filename, filesize);
+		YAHOO_CALLBACK(ext_yahoo_got_file)(yd->client_id, to, from, url, expires, msg, filename, filesize, ft_token);
 
 }
 
@@ -5205,3 +5209,26 @@ void yahoo_request_buddy_avatar(int id, const char *buddy)
 	yahoo_packet_free(pkt);
 }
 
+void yahoo_ftdc_cancel(int id, const char *buddy, const char *filename, const char *ft_token, int command)
+{
+	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
+	struct yahoo_data *yd;
+	struct yahoo_packet *pkt = NULL;
+
+	if(!yid)
+		return;
+
+	yd = yid->yd;
+
+	pkt = yahoo_packet_new(YAHOO_SERVICE_P2PFILEXFER, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	yahoo_packet_hash(pkt, 5, buddy);
+	yahoo_packet_hash(pkt, 49, "FILEXFER");
+	yahoo_packet_hash(pkt, 1, yd->user);
+	yahoo_packet_hash(pkt, 13, (command == 2) ? "2" : "3");
+	yahoo_packet_hash(pkt, 27, filename);
+	yahoo_packet_hash(pkt, 53, ft_token);
+	
+	yahoo_send_packet(yid, pkt, 0);
+	yahoo_packet_free(pkt);
+
+}
