@@ -1239,7 +1239,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
       DWORD dwUin;
       uid_str szUID;
       wchar_t* pszText;
-         // TODO: this was not working, removed check
+      // TODO: this was not working, removed check
       if (!gbUtfEnabled || /*(ccs->wParam & PREF_UNICODE == PREF_UNICODE) ||*/ 
         (!CheckContactCapabilities(ccs->hContact, CAPF_UTF)) || (!ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1)))
       {  // send as unicode only if marked as unicode & unicode enabled
@@ -1277,15 +1277,21 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
       else
       {
         message_cookie_data* pCookieData;
+        BOOL plain_ascii = IsUnicodeAscii(pszText, wcslen(pszText));
 
-        if ((wRecipientStatus == ID_STATUS_OFFLINE) || IsUnicodeAscii(pszText, wcslen(pszText)))
+        if ((wRecipientStatus == ID_STATUS_OFFLINE) || plain_ascii)
         { // send as plain if no special char or user offline
-          char* szAnsi = convertMsgToUserSpecificAnsi(ccs->hContact, (char*)ccs->lParam);
+          char* szAnsi;
           int nRes;
 
-          if (szAnsi) ccs->lParam = (LPARAM)szAnsi;
+          if (!plain_ascii)
+          {
+            szAnsi = convertMsgToUserSpecificAnsi(ccs->hContact, (char*)ccs->lParam);
+            if (szAnsi) ccs->lParam = (LPARAM)szAnsi;
+          }
           nRes = IcqSendMessage(wParam, lParam);
-          SAFE_FREE(&szAnsi);
+          if (!plain_ascii)
+            SAFE_FREE(&szAnsi);
 
           return nRes;
         };
