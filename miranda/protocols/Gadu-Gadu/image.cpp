@@ -348,8 +348,8 @@ BOOL gg_img_fit(HWND hwndDlg)
     SetWindowPos(hwndDlg, NULL,
 		(dlgRect.left - rWidth / 2) > 0 ? (dlgRect.left - rWidth / 2) : 0,
 		(dlgRect.top - rHeight / 2) > 0 ? (dlgRect.top - rHeight / 2) : 0,
-		(dlgRect.right - dlgRect.left + rWidth > sWidth) ? sWidth : (dlgRect.right - dlgRect.left + rWidth), 
-		(dlgRect.bottom - dlgRect.top + rHeight > sHeight) ? sHeight : (dlgRect.bottom - dlgRect.top + rHeight), 
+		(dlgRect.right - dlgRect.left + rWidth > sWidth) ? sWidth : (dlgRect.right - dlgRect.left + rWidth),
+		(dlgRect.bottom - dlgRect.top + rHeight > sHeight) ? sHeight : (dlgRect.bottom - dlgRect.top + rHeight),
 		SWP_SHOWWINDOW | SWP_NOZORDER /* | SWP_NOACTIVATE */);
 
 	return TRUE;
@@ -471,7 +471,7 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 		// Flash the window
 		case WM_TIMER:
-			if(wParam == TIMERID_FLASHWND) 
+			if(wParam == TIMERID_FLASHWND)
 				FlashWindow(hwndDlg, TRUE);
 			break;
 
@@ -821,7 +821,7 @@ extern "C" int gg_img_display(HANDLE hContact, GGIMAGEENTRY *img)
     SendMessage(dat->hWnd, WM_ADDIMAGE, 0, (LPARAM)img);
 	if(/*DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0 && */
 		GetActiveWindow() != dat->hWnd && GetForegroundWindow() != dat->hWnd)
-		SetTimer(dat->hWnd, TIMERID_FLASHWND, 900, NULL);    
+		SetTimer(dat->hWnd, TIMERID_FLASHWND, 900, NULL);
 
 	/* DEPRECATED: No more grabbing the focus... just flashing
 	SetForegroundWindow(dat->hWnd);
@@ -863,12 +863,12 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
         char szFileTitle[MAX_PATH];
         GetFileTitle(szFileName, szFileTitle, MAX_PATH);
         dat->lpszFileName = (char *)malloc(strlen(szFileTitle) + 1);
-        strncpy(dat->lpszFileName, szFileTitle, sizeof(dat->lpszFileName));
+        strcpy(dat->lpszFileName, szFileTitle);
     }
     else
     {
         dat->lpszFileName = (char *)malloc(strlen(e->event.image_reply.filename) + 1);
-        strncpy(dat->lpszFileName, e->event.image_reply.filename, sizeof(dat->lpszFileName));
+        strcpy(dat->lpszFileName, e->event.image_reply.filename);
     }
 
     /////////////////////
