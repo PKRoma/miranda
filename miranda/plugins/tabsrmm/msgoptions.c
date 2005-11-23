@@ -1140,7 +1140,9 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 	switch (msg) {
         case WM_INITDIALOG:
         {
-            TranslateDialogDefault(hwndDlg);
+			DBVARIANT dbv = {0};
+
+			TranslateDialogDefault(hwndDlg);
 
             CheckDlgButton(hwndDlg, IDC_CONTAINERGROUPMODE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0));
             CheckDlgButton(hwndDlg, IDC_LIMITTABS, DBGetContactSettingByte(NULL, SRMSGMOD_T, "limittabs", 0));
@@ -1165,17 +1167,64 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
             CheckDlgButton(hwndDlg, IDC_ROUNDEDCORNERS, myGlobals.bRoundedCorner);
             SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
             SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_SETPOS, 0, (int)myGlobals.bClipBorder);
-            
+			CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0) ? 1 : 0);
+			SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_USESKIN, BN_CLICKED), 0);
+
             if(!ServiceExists("Utils/SnapWindowProc"))
                 EnableWindow(GetDlgItem(hwndDlg, IDC_USESNAPPING), FALSE);
             else
                 CheckDlgButton(hwndDlg, IDC_USESNAPPING, DBGetContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", 0));
-            
+
+			if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv))
+				SetDlgItemTextA(hwndDlg, IDC_CONTAINERSKIN, dbv.pszVal);
 		 return TRUE;
 		}
         case WM_COMMAND:
             switch(LOWORD(wParam)) {
+				case IDC_GETCONTAINERSKINNAME:
+					{
+						char szFilename[MAX_PATH];
+						OPENFILENAMEA ofn={0};
+
+						szFilename[0] = 0;
+						_DebugPopup(0, "get name");
+						ofn.lpstrFilter = "tabSRMM skins\0*.tsk\0\0";
+						ofn.lStructSize= OPENFILENAME_SIZE_VERSION_400;
+						ofn.hwndOwner=0;
+						ofn.lpstrFile = szFilename;
+						ofn.lpstrInitialDir = ".";
+						ofn.nMaxFile = MAX_PATH;
+						ofn.nMaxFileTitle = MAX_PATH;
+						ofn.Flags = OFN_HIDEREADONLY;
+						ofn.lpstrDefExt = "tsk";
+						if(GetOpenFileNameA(&ofn)) {
+							char szFinalName[MAX_PATH];
+
+							CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFilename, (LPARAM)szFinalName);
+							DBWriteContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", szFinalName);
+							SetDlgItemTextA(hwndDlg, IDC_CONTAINERSKIN, szFinalName);
+							ReloadContainerSkin();
+						}
+						break;
+					}
+				case IDC_RELOAD:
+					ReloadContainerSkin();
+					break;
+				case IDC_USESKIN:
+					{
+						BYTE useskin = IsDlgButtonChecked(hwndDlg, IDC_USESKIN) ? 1 : 0;
+
+						EnableWindow(GetDlgItem(hwndDlg, IDC_CONTAINERSKIN), useskin ? TRUE : FALSE);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_GETCONTAINERSKINNAME), useskin ? TRUE : FALSE);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), useskin ? TRUE : FALSE);
+						if(lParam) {
+							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useskin", useskin);
+							ReloadContainerSkin();
+						}
+						break;
+					}
                 case IDC_TABLIMIT:
+				case IDC_CONTAINERSKIN:
                     if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
                         return TRUE;
                     break;
@@ -1195,6 +1244,8 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 						case PSN_APPLY: {
                             BOOL translated;
                             TCHAR szDefaultName[TITLE_FORMATLEN + 2];
+							char szFilename[MAX_PATH], szFinalName[MAX_PATH];
+
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", IsDlgButtonChecked(hwndDlg, IDC_CONTAINERGROUPMODE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "limittabs", IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS));
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "maxtabs", GetDlgItemInt(hwndDlg, IDC_TABLIMIT, &translated, FALSE));
@@ -1217,6 +1268,10 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 							GetDefaultContainerTitleFormat();
                             myGlobals.g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING);
                             BuildContainerMenu();
+							GetDlgItemTextA(hwndDlg, IDC_CONTAINERSKIN, szFilename, MAX_PATH);
+							szFilename[MAX_PATH - 1] = 0;
+							CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFilename, (LPARAM)szFinalName);
+							DBWriteContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", szFinalName);
                             return TRUE;
                         }
                     }

@@ -44,6 +44,7 @@ Themes and skinning for tabSRMM
 extern char *TemplateNames[];
 extern TemplateSet LTR_Active, RTL_Active;
 extern MYGLOBALS myGlobals;
+extern struct ContainerWindowData *pFirstContainer;
 
 typedef  DWORD  (__stdcall *pfnImgNewDecoder)(void ** ppDecoder); 
 typedef DWORD (__stdcall *pfnImgDeleteDecoder)(void * pDecoder);
@@ -75,7 +76,7 @@ COLORREF g_ContainerColorKey = 0;
 SIZE g_titleBarButtonSize = {0};
 
 extern BOOL g_skinnedContainers;
-extern BOOL g_framelessSkinmode;
+extern BOOL g_framelessSkinmode, g_compositedWindow;
 
 StatusItems_t StatusItems[] = {
     {"Container", "TSKIN_Container", ID_EXTBKCONTAINER,
@@ -131,6 +132,10 @@ StatusItems_t StatusItems[] = {
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
         CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
     }, {"Tabitem_active_bottom", "TSKIN_TABITEMACTIVEBOTTOM", ID_EXTBKTABITEMACTIVEBOTTOM,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Inputbox", "TSKIN_INPUTBOX", ID_EXTBKINPUTBOX,
         CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
         CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
@@ -520,7 +525,39 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolo
     if (rc->right < rc->left || rc->bottom < rc->top || (realHeight <= 0) || (realWidth <= 0))
         return;
 
-    hdc = CreateCompatibleDC(hdcwnd);
+	if(FLG_CORNER == 0) {
+		GRADIENT_RECT grect;
+		TRIVERTEX tvtx[2];
+		int orig = 1, dest = 0;
+
+		if(FLG_GRADIENT == GRADIENT_LR || FLG_GRADIENT == GRADIENT_TB) {
+			orig = 0;
+			dest = 1;
+		}
+
+		tvtx[0].x = rc->left;
+		tvtx[0].y = rc->top;
+		tvtx[1].x = rc->right;
+		tvtx[1].y = rc->bottom;
+
+		tvtx[orig].Red = (COLOR16)GetRValue(basecolor) << 8;
+		tvtx[orig].Blue = (COLOR16)GetBValue(basecolor) << 8;
+		tvtx[orig].Green = (COLOR16)GetGValue(basecolor) << 8;
+		tvtx[orig].Alpha = (COLOR16) alpha << 8;
+
+		tvtx[dest].Red = (COLOR16)GetRValue(basecolor2) << 8;
+		tvtx[dest].Blue = (COLOR16)GetBValue(basecolor2) << 8;
+		tvtx[dest].Green = (COLOR16)GetGValue(basecolor2) << 8;
+		tvtx[dest].Alpha = (COLOR16) alpha << 8;
+
+		grect.UpperLeft = 0;
+		grect.LowerRight = 1;
+
+		GradientFill(hdcwnd, tvtx, 2, &grect, 1, (FLG_GRADIENT == GRADIENT_TB || FLG_GRADIENT == GRADIENT_BT) ? GRADIENT_FILL_RECT_V : GRADIENT_FILL_RECT_H);
+		return 0;
+	}
+
+	hdc = CreateCompatibleDC(hdcwnd);
     if (!hdc)
         return;
 
@@ -760,95 +797,189 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
     LONG width = rc->right - rc->left;
     LONG height = rc->bottom - rc->top;
 
-    if(item->dwFlags & IMAGE_FLAG_DIVIDED) {
-        // top 3 items
+	if(item->dwFlags & IMAGE_PERPIXEL_ALPHA) {
+		if(item->dwFlags & IMAGE_FLAG_DIVIDED) {
+			// top 3 items
 
-        AlphaBlend(hdc, rc->left, rc->top, l, t, item->hdc, 0, 0, l, t, item->bf);
-        AlphaBlend(hdc, rc->left + l, rc->top, width - l - r, t, item->hdc, l, 0, item->inner_width, t, item->bf);
-        AlphaBlend(hdc, rc->right - r, rc->top, r, t, item->hdc, item->width - r, 0, r, t, item->bf);
+			AlphaBlend(hdc, rc->left, rc->top, l, t, item->hdc, 0, 0, l, t, item->bf);
+			AlphaBlend(hdc, rc->left + l, rc->top, width - l - r, t, item->hdc, l, 0, item->inner_width, t, item->bf);
+			AlphaBlend(hdc, rc->right - r, rc->top, r, t, item->hdc, item->width - r, 0, r, t, item->bf);
 
-        // middle 3 items
+			// middle 3 items
 
-        AlphaBlend(hdc, rc->left, rc->top + t, l, height - t - b, item->hdc, 0, t, l, item->inner_height, item->bf);
-		/*
-		 * use solid fill for the "center" area -> better performance when only the margins of an item
-		 * are usually visible (like the background of the tab pane)
-		 */
-		if(item->dwFlags & IMAGE_FILLSOLID && item->fillBrush) {
-			RECT rcFill;
-			rcFill.left = rc->left + l; rcFill.top = rc->top +t;
-			rcFill.right = rc->right - r; rcFill.bottom = rc->bottom - b;
-			FillRect(hdc, &rcFill, item->fillBrush);
+			AlphaBlend(hdc, rc->left, rc->top + t, l, height - t - b, item->hdc, 0, t, l, item->inner_height, item->bf);
+			/*
+			 * use solid fill for the "center" area -> better performance when only the margins of an item
+			 * are usually visible (like the background of the tab pane)
+			 */
+			if(item->dwFlags & IMAGE_FILLSOLID && item->fillBrush) {
+				RECT rcFill;
+				rcFill.left = rc->left + l; rcFill.top = rc->top +t;
+				rcFill.right = rc->right - r; rcFill.bottom = rc->bottom - b;
+				FillRect(hdc, &rcFill, item->fillBrush);
+			}
+			else
+				AlphaBlend(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, item->hdc, l, t, item->inner_width, item->inner_height, item->bf);
+
+			AlphaBlend(hdc, rc->right - r, rc->top + t, r, height - t - b, item->hdc, item->width - r, t, r, item->inner_height, item->bf);
+
+			// bottom 3 items
+
+			AlphaBlend(hdc, rc->left, rc->bottom - b, l, b, item->hdc, 0, item->height - b, l, b, item->bf);
+			AlphaBlend(hdc, rc->left + l, rc->bottom - b, width - l - r, b, item->hdc, l, item->height - b, item->inner_width, b, item->bf);
+			AlphaBlend(hdc, rc->right - r, rc->bottom - b, r, b, item->hdc, item->width - r, item->height - b, r, b, item->bf);
 		}
-		else
-			AlphaBlend(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, item->hdc, l, t, item->inner_width, item->inner_height, item->bf);
+		else {
+			switch(item->bStretch) {
+				case IMAGE_STRETCH_H:
+					// tile image vertically, stretch to width
+				{
+					LONG top = rc->top;
 
-        AlphaBlend(hdc, rc->right - r, rc->top + t, r, height - t - b, item->hdc, item->width - r, t, r, item->inner_height, item->bf);
+					do {
+						if(top + item->height <= rc->bottom) {
+							AlphaBlend(hdc, rc->left, top, width, item->height, item->hdc, 0, 0, item->width, item->height, item->bf);
+							top += item->height;
+						}
+						else {
+							AlphaBlend(hdc, rc->left, top, width, rc->bottom - top, item->hdc, 0, 0, item->width, rc->bottom - top, item->bf);
+							break;
+						}
+					} while (TRUE);
+					break;
+				}
+				case IMAGE_STRETCH_V:
+					// tile horizontally, stretch to height
+				{
+					LONG left = rc->left;
 
-        // bottom 3 items
+					do {
+						if(left + item->width <= rc->right) {
+							AlphaBlend(hdc, left, rc->top, item->width, height, item->hdc, 0, 0, item->width, item->height, item->bf);
+							left += item->width;
+						}
+						else {
+							AlphaBlend(hdc, left, rc->top, rc->right - left, height, item->hdc, 0, 0, rc->right - left, item->height, item->bf);
+							break;
+						}
+					} while (TRUE);
+					break;
+				}
+				case IMAGE_STRETCH_B:
+					// stretch the image in both directions...
+					AlphaBlend(hdc, rc->left, rc->top, width, height, item->hdc, 0, 0, item->width, item->height, item->bf);
+					break;
+				/*
+				case IMAGE_STRETCH_V:
+					// stretch vertically, draw 3 horizontal tiles...
+					AlphaBlend(hdc, rc->left, rc->top, l, height, item->hdc, 0, 0, l, item->height, item->bf);
+					AlphaBlend(hdc, rc->left + l, rc->top, width - l - r, height, item->hdc, l, 0, item->inner_width, item->height, item->bf);
+					AlphaBlend(hdc, rc->right - r, rc->top, r, height, item->hdc, item->width - r, 0, r, item->height, item->bf);
+					break;
+				case IMAGE_STRETCH_H:
+					// stretch horizontally, draw 3 vertical tiles...
+					AlphaBlend(hdc, rc->left, rc->top, width, t, item->hdc, 0, 0, item->width, t, item->bf);
+					AlphaBlend(hdc, rc->left, rc->top + t, width, height - t - b, item->hdc, 0, t, item->width, item->inner_height, item->bf);
+					AlphaBlend(hdc, rc->left, rc->bottom - b, width, b, item->hdc, 0, item->height - b, item->width, b, item->bf);
+					break;
+				*/
+				default:
+					break;
+			}
+		}
+	}
+	else {
+		if(item->dwFlags & IMAGE_FLAG_DIVIDED) {
+			// top 3 items
 
-        AlphaBlend(hdc, rc->left, rc->bottom - b, l, b, item->hdc, 0, item->height - b, l, b, item->bf);
-        AlphaBlend(hdc, rc->left + l, rc->bottom - b, width - l - r, b, item->hdc, l, item->height - b, item->inner_width, b, item->bf);
-        AlphaBlend(hdc, rc->right - r, rc->bottom - b, r, b, item->hdc, item->width - r, item->height - b, r, b, item->bf);
-    }
-    else {
-        switch(item->bStretch) {
-            case IMAGE_STRETCH_H:
-                // tile image vertically, stretch to width
-            {
-                LONG top = rc->top;
+			SetStretchBltMode(hdc, HALFTONE);
+			StretchBlt(hdc, rc->left, rc->top, l, t, item->hdc, 0, 0, l, t, SRCCOPY);
+			StretchBlt(hdc, rc->left + l, rc->top, width - l - r, t, item->hdc, l, 0, item->inner_width, t, SRCCOPY);
+			StretchBlt(hdc, rc->right - r, rc->top, r, t, item->hdc, item->width - r, 0, r, t, SRCCOPY);
 
-                do {
-                    if(top + item->height <= rc->bottom) {
-                        AlphaBlend(hdc, rc->left, top, width, item->height, item->hdc, 0, 0, item->width, item->height, item->bf);
-                        top += item->height;
-                    }
-                    else {
-                        AlphaBlend(hdc, rc->left, top, width, rc->bottom - top, item->hdc, 0, 0, item->width, rc->bottom - top, item->bf);
-                        break;
-                    }
-                } while (TRUE);
-                break;
-            }
-            case IMAGE_STRETCH_V:
-                // tile horizontally, stretch to height
-            {
-                LONG left = rc->left;
+			// middle 3 items
 
-                do {
-                    if(left + item->width <= rc->right) {
-                        AlphaBlend(hdc, left, rc->top, item->width, height, item->hdc, 0, 0, item->width, item->height, item->bf);
-                        left += item->width;
-                    }
-                    else {
-                        AlphaBlend(hdc, left, rc->top, rc->right - left, height, item->hdc, 0, 0, rc->right - left, item->height, item->bf);
-                        break;
-                    }
-                } while (TRUE);
-                break;
-            }
-            case IMAGE_STRETCH_B:
-                // stretch the image in both directions...
-                AlphaBlend(hdc, rc->left, rc->top, width, height, item->hdc, 0, 0, item->width, item->height, item->bf);
-                break;
-            /*
-            case IMAGE_STRETCH_V:
-                // stretch vertically, draw 3 horizontal tiles...
-                AlphaBlend(hdc, rc->left, rc->top, l, height, item->hdc, 0, 0, l, item->height, item->bf);
-                AlphaBlend(hdc, rc->left + l, rc->top, width - l - r, height, item->hdc, l, 0, item->inner_width, item->height, item->bf);
-                AlphaBlend(hdc, rc->right - r, rc->top, r, height, item->hdc, item->width - r, 0, r, item->height, item->bf);
-                break;
-            case IMAGE_STRETCH_H:
-                // stretch horizontally, draw 3 vertical tiles...
-                AlphaBlend(hdc, rc->left, rc->top, width, t, item->hdc, 0, 0, item->width, t, item->bf);
-                AlphaBlend(hdc, rc->left, rc->top + t, width, height - t - b, item->hdc, 0, t, item->width, item->inner_height, item->bf);
-                AlphaBlend(hdc, rc->left, rc->bottom - b, width, b, item->hdc, 0, item->height - b, item->width, b, item->bf);
-                break;
-            */
-            default:
-                break;
-        }
-    }
+			StretchBlt(hdc, rc->left, rc->top + t, l, height - t - b, item->hdc, 0, t, l, item->inner_height, SRCCOPY);
+			/*
+			 * use solid fill for the "center" area -> better performance when only the margins of an item
+			 * are usually visible (like the background of the tab pane)
+			 */
+			if(item->dwFlags & IMAGE_FILLSOLID && item->fillBrush) {
+				RECT rcFill;
+				rcFill.left = rc->left + l; rcFill.top = rc->top +t;
+				rcFill.right = rc->right - r; rcFill.bottom = rc->bottom - b;
+				FillRect(hdc, &rcFill, item->fillBrush);
+			}
+			else
+				StretchBlt(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, item->hdc, l, t, item->inner_width, item->inner_height, SRCCOPY);
+
+			StretchBlt(hdc, rc->right - r, rc->top + t, r, height - t - b, item->hdc, item->width - r, t, r, item->inner_height, SRCCOPY);
+
+			// bottom 3 items
+
+			StretchBlt(hdc, rc->left, rc->bottom - b, l, b, item->hdc, 0, item->height - b, l, b, SRCCOPY);
+			StretchBlt(hdc, rc->left + l, rc->bottom - b, width - l - r, b, item->hdc, l, item->height - b, item->inner_width, b, SRCCOPY);
+			StretchBlt(hdc, rc->right - r, rc->bottom - b, r, b, item->hdc, item->width - r, item->height - b, r, b, SRCCOPY);
+		}
+		else {
+			switch(item->bStretch) {
+				case IMAGE_STRETCH_H:
+					// tile image vertically, stretch to width
+				{
+					LONG top = rc->top;
+
+					do {
+						if(top + item->height <= rc->bottom) {
+							StretchBlt(hdc, rc->left, top, width, item->height, item->hdc, 0, 0, item->width, item->height, SRCCOPY);
+							top += item->height;
+						}
+						else {
+							StretchBlt(hdc, rc->left, top, width, rc->bottom - top, item->hdc, 0, 0, item->width, rc->bottom - top, SRCCOPY);
+							break;
+						}
+					} while (TRUE);
+					break;
+				}
+				case IMAGE_STRETCH_V:
+					// tile horizontally, stretch to height
+				{
+					LONG left = rc->left;
+
+					do {
+						if(left + item->width <= rc->right) {
+							StretchBlt(hdc, left, rc->top, item->width, height, item->hdc, 0, 0, item->width, item->height, SRCCOPY);
+							left += item->width;
+						}
+						else {
+							StretchBlt(hdc, left, rc->top, rc->right - left, height, item->hdc, 0, 0, rc->right - left, item->height, SRCCOPY);
+							break;
+						}
+					} while (TRUE);
+					break;
+				}
+				case IMAGE_STRETCH_B:
+					// stretch the image in both directions...
+					StretchBlt(hdc, rc->left, rc->top, width, height, item->hdc, 0, 0, item->width, item->height, SRCCOPY);
+					break;
+				/*
+				case IMAGE_STRETCH_V:
+					// stretch vertically, draw 3 horizontal tiles...
+					AlphaBlend(hdc, rc->left, rc->top, l, height, item->hdc, 0, 0, l, item->height, item->bf);
+					AlphaBlend(hdc, rc->left + l, rc->top, width - l - r, height, item->hdc, l, 0, item->inner_width, item->height, item->bf);
+					AlphaBlend(hdc, rc->right - r, rc->top, r, height, item->hdc, item->width - r, 0, r, item->height, item->bf);
+					break;
+				case IMAGE_STRETCH_H:
+					// stretch horizontally, draw 3 vertical tiles...
+					AlphaBlend(hdc, rc->left, rc->top, width, t, item->hdc, 0, 0, item->width, t, item->bf);
+					AlphaBlend(hdc, rc->left, rc->top + t, width, height - t - b, item->hdc, 0, t, item->width, item->inner_height, item->bf);
+					AlphaBlend(hdc, rc->left, rc->bottom - b, width, b, item->hdc, 0, item->height - b, item->width, b, item->bf);
+					break;
+				*/
+				default:
+					break;
+			}
+		}
+	}
 }
 
 void IMG_InitDecoder()
@@ -867,6 +998,14 @@ void IMG_InitDecoder()
         ImgDeleteDIBSection=(pfnImgDeleteDIBSection)GetProcAddress(g_hModuleImgDecoder, "ImgDeleteDIBSection");
         ImgGetHandle=(pfnImgGetHandle)GetProcAddress(g_hModuleImgDecoder, "ImgGetHandle");
 	} 
+}
+
+void IMG_FreeDecoder()
+{
+	if(g_imgDecoderAvail && g_hModuleImgDecoder) {
+		FreeLibrary(g_hModuleImgDecoder);
+		g_hModuleImgDecoder = 0;
+	}
 }
 
 static DWORD __fastcall HexStringToLong(const char *szSource)
@@ -992,6 +1131,9 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
         else if(buffer[0] == 'w' || buffer[0] == 'W')
             tmpItem.bStretch = IMAGE_STRETCH_H;
         tmpItem.hbm = 0;
+		if(GetPrivateProfileIntA(itemname, "Perpixel", 0, szFileName))
+			tmpItem.dwFlags |= IMAGE_PERPIXEL_ALPHA;
+
         for(n = 0;;n++) {
             mir_snprintf(szItemNr, 30, "Item%d", n);
             GetPrivateProfileStringA(itemname, szItemNr, "None", buffer, 500, szFileName);
@@ -1096,9 +1238,8 @@ static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
         item->bf.AlphaFormat = 0;
         
         GetObject(hbm, sizeof(bm), &bm);
-        if(bm.bmBitsPixel == 32) {
+        if(bm.bmBitsPixel == 32 && item->dwFlags & IMAGE_PERPIXEL_ALPHA) {
             PreMultiply(hbm, 1);
-            item->dwFlags |= IMAGE_PERPIXEL_ALPHA;
             item->bf.AlphaFormat = AC_SRC_ALPHA;
         }
         item->width = bm.bmWidth;
@@ -1152,10 +1293,9 @@ void IMG_DeleteItems()
 	if(myGlobals.hFontCaption)
 		DeleteObject(myGlobals.hFontCaption);
 
-	if(g_imgDecoderAvail && g_hModuleImgDecoder) {
-		FreeLibrary(g_hModuleImgDecoder);
-		g_hModuleImgDecoder = 0;
-	}
+	myGlobals.g_minGlyph = myGlobals.g_maxGlyph = myGlobals.g_closeGlyph = 0;
+	myGlobals.hFontCaption = 0;
+	g_ContainerColorKeyBrush = 0;
 }
 
 void IMG_LoadItems(char *szFileName)
@@ -1259,6 +1399,15 @@ void LoadSkinItems(char *file)
 	g_titleBarButtonSize.cx = GetPrivateProfileIntA("Global", "TitleButtonWidth", 24, file);
 	g_titleBarButtonSize.cy = GetPrivateProfileIntA("Global", "TitleButtonHeight", 12, file);
 	g_framelessSkinmode = GetPrivateProfileIntA("Global", "framelessmode", 0, file);
+	g_compositedWindow = GetPrivateProfileIntA("Global", "compositedwindow", 0, file);
+	
+	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_left", (BYTE)GetPrivateProfileIntA("ClientArea", "Left", 0, file));
+	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_right", (BYTE)GetPrivateProfileIntA("ClientArea", "Right", 0, file));
+	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_top", (BYTE)GetPrivateProfileIntA("ClientArea", "Top", 0, file));
+	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_bottom", (BYTE)GetPrivateProfileIntA("ClientArea", "Bottom", 0, file));
+
+	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder", (BYTE)GetPrivateProfileIntA("ClientArea", "Inner", 0, file));
+
 	if(strcmp(buffer, "None"))
 		myGlobals.skinDefaultFontColor = HexStringToLong(buffer);
 	else
@@ -1286,4 +1435,38 @@ void SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContain
 	BitBlt(hdcTarget, rcClient->left, rcClient->top, width, height, dc, pt.x, pt.y, SRCCOPY);
 	if(!pContainer)
 		ReleaseDC(hwnd, dc);
+}
+
+void ReloadContainerSkin()
+{
+	DBVARIANT dbv = {0};
+	char szFinalPath[MAX_PATH];
+	int i;
+
+	g_skinnedContainers = g_framelessSkinmode = g_compositedWindow = FALSE;
+
+	if(pFirstContainer) {
+		if(MessageBox(0, TranslateT("All message containers need to close before the skin can be changed\nProceed?"), TranslateT("Change skin"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
+			struct ContainerWindowData *pContainer = pFirstContainer;
+			while(pFirstContainer)
+				SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
+		}
+		else
+			return;
+	}
+
+	for(i = 0; i <= ID_EXTBK_LAST; i++)
+		StatusItems[i].IGNORED = 1;
+
+	IMG_DeleteItems();
+
+	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0))
+		return;
+
+	if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
+		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFinalPath);
+		LoadSkinItems(szFinalPath);
+		IMG_LoadItems(szFinalPath);
+		DBFreeVariant(&dbv);
+	}
 }

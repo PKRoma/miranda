@@ -54,7 +54,9 @@
 #define IDI_BLOCKED                     325
 #define IDI_STATUSDEPEND                326
 #define IDC_READNEXT                    1000
+#define IDC_MINIMIZE                    1000
 #define IDC_APPLY                       1001
+#define IDC_MAXIMIZE                    1001
 #define IDC_DROP                        1002
 #define IDC_MESSAGE                     1002
 #define IDC_HYPERLINKHAND               1003
@@ -78,8 +80,6 @@
 #define IDC_NAME                        1022
 #define IDC_CHKACTL_REMOVE              1023
 #define IDC_CLOSE                       1024
-#define IDC_MINIMIZE					1000
-#define IDC_MAXIMIZE					1001
 #define IDC_SAVE                        1025
 #define IDC_CHKACTR_DISMISS             1026
 #define IDC_MULTIPLEICON                1027
@@ -160,7 +160,6 @@
 #define IDC_NORSS                       1099
 #define IDC_DETAILS                     1100
 #define IDC_ADD                         1101
-#define IDC_USERMENU                    1102
 #define IDC_RTL                         1103
 #define IDC_PIC                         1104
 #define IDC_SLIST                       1104
@@ -251,6 +250,7 @@
 #define IDC_ALWAYSFIXED                 1182
 #define IDC_CNTPRIVATE                  1182
 #define IDC_IEVEIW                      1182
+#define IDC_USESKIN                     1182
 #define IDC_NEWSPLITLAYOUT              1183
 #define IDC_O_NOTABS                    1184
 #define IDC_DONTREPORTUNFOCUSED         1185
@@ -299,11 +299,10 @@
 #define IDC_BUTTON1                     1223
 #define IDC_UPDATEPREVIEW               1223
 #define IDC_MODIFY                      1223
-//#define IDC_SIDEBARUP                   1223
 #define IDC_SAVESIZEASGLOBAL            1223
+#define IDC_GETCONTAINERSKINNAME        1223
 #define IDC_CREATENEW                   1224
 #define IDC_RTLMODIFY                   1224
-//#define IDC_SIDEBARDOWN                 1224
 #define IDC_SENDLATER                   1226
 #define IDC_RETRY                       1227
 #define IDC_SETUPAUTOCREATEMODES        1228
@@ -471,12 +470,12 @@
 #define IDC_BUTTON2                     1376
 #define IDC_GETBGIMAGE                  1376
 #define IDC_SELECTTHEME                 1376
+#define IDC_RELOAD                      1376
 #define IDC_LOGOPTIONS                  1377
 #define IDC_WINDOWOPTIONS               1378
 #define IDC_TRAYCONTAINER               1379
 #define IDC_EVENTOPTIONS                1380
 #define IDC_VARIABLESHELP               1381
-//#define IDC_SIDEBAR                     1382
 #define IDC_TXTCLRNORMAL                1383
 #define IDC_TXTCLRACTIVE                1384
 #define IDC_TABMSGOPTIONS               1384
@@ -497,6 +496,7 @@
 #define IDC_INFOPANEL                   1395
 #define IDC_SUPPORT                     1396
 #define IDC_FANCYTHEME                  1397
+#define IDC_CONTAINERSKIN               1398
 #define IDC_WHITERECT                   2000
 #define IDC_TABSRMM                     2001
 #define IDC_COPYRIGHT                   2002
@@ -693,7 +693,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        9
 #define _APS_NEXT_COMMAND_VALUE         40228
-#define _APS_NEXT_CONTROL_VALUE         1398
+#define _APS_NEXT_CONTROL_VALUE         1399
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

@@ -1311,7 +1311,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 	mir_snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", GetRTFFont(H_MSGFONTID_YOURTIME));
 	strcpy(szSep2, fAppend ? "\\par\\sl0" : "\\sl1000");
 	if(dat->hHistoryEvents)
-		mir_snprintf(szMicroLf, sizeof(szMicroLf), "%s%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), "\\v\\cf%d \\ ~-%d-~\\v0 ", GetRTFFont(MSGDLGFONTCOUNT));
+		mir_snprintf(szMicroLf, sizeof(szMicroLf), "%s%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), "\\v\\cf%d \\ ~-+%d+-~\\v0 ", GetRTFFont(MSGDLGFONTCOUNT));
 	else
 		mir_snprintf(szMicroLf, sizeof(szMicroLf), "%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), GetRTFFont(MSGDLGFONTCOUNT));
 	mir_snprintf(szExtraLf, sizeof(szExtraLf), dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? "\\par\\sl-%d\\highlight%s \\par" : "\\par\\sl-%d \\par", dwExtraLf * 15, "%d");
@@ -1499,7 +1499,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
 		char szPattern[50];
 		FINDTEXTEXA fi;
 
-		_snprintf(szPattern, 40, "~-%d-~", dat->hHistoryEvents[0]);
+		_snprintf(szPattern, 40, "~-+%d+-~", dat->hHistoryEvents[0]);
 		//_DebugPopup(dat->hContact, "search for: %s", szPattern);
 		fi.lpstrText = szPattern;
 		fi.chrg.cpMin = 0;

@@ -36,6 +36,7 @@ extern struct ContainerWindowData *pFirstContainer;
 extern HINSTANCE g_hInst;
 extern PSLWA pSetLayeredWindowAttributes;
 extern StatusItems_t StatusItems[];
+extern BOOL g_framelessSkinmode;
 
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -668,12 +669,14 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             break;
         }
         case WM_ERASEBKGND:
+			if(tabdat->pContainer->bSkinned)
+				return TRUE;
             return 0;
         case WM_PAINT:
         {
             PAINTSTRUCT ps;
             HDC hdcreal, hdc;
-            RECT rectTemp, rctPage, rctActive, rcItem;
+            RECT rectTemp, rctPage, rctActive, rcItem, rctClip;
             RECT rectUpDn = {0,0,0,0};
             int nCount = TabCtrl_GetItemCount(hwnd), i;
             TCITEM item = {0};
@@ -699,12 +702,14 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
              * draw everything to a memory dc to avoid flickering
              */
             
-            hdc = CreateCompatibleDC(hdcreal);
+			hdc = CreateCompatibleDC(hdcreal);
             bmpMem = CreateCompatibleBitmap(hdcreal, cx, cy);
 
             bmpOld = SelectObject(hdc, bmpMem);
 
-            //if(ps.fErase)
+			if(nCount == 1 && tabdat->pContainer->dwFlags & CNT_HIDETABS)
+	            rctClip = rctPage;
+
 			if(tabdat->pContainer->bSkinned)
 				SkinDrawBG(hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, &rctPage, hdc);
 			else
@@ -733,7 +738,14 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 }
             }
             
-            hPenOld = SelectObject(hdc, myGlobals.tabConfig.m_hPenLight);
+			if(nCount > 1 || !(tabdat->pContainer->dwFlags & CNT_HIDETABS)) {
+				rctClip = rctPage;
+				InflateRect(&rctClip, -tabdat->pContainer->tBorder, -tabdat->pContainer->tBorder);
+				if(dwStyle & TCS_BUTTONS)
+					rctClip.top += tabdat->pContainer->tBorder;
+			}
+
+			hPenOld = SelectObject(hdc, myGlobals.tabConfig.m_hPenLight);
             /*
              * visual style support
              */
@@ -893,6 +905,8 @@ page_done:
             /*
              * finally, bitblt the contents of the memory dc to the real dc
              */
+			//if(!tabdat->pContainer->bSkinned)
+			ExcludeClipRect(hdcreal, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
             BitBlt(hdcreal, 0, 0, cx, cy, hdc, 0, 0, SRCCOPY);
             SelectObject(hdc, bmpOld);
             DeleteObject(bmpMem);

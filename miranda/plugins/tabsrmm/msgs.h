@@ -264,6 +264,8 @@ struct ProtocolData {
 #define DM_SMILEYOPTIONSCHANGED (WM_USER+85)
 #define DM_MYAVATARCHANGED	 (WM_USER+86)
 #define DM_PRINTCLIENT		 (WM_USER+87)
+#define DM_IEVIEWOPTIONSCHANGED (WM_USER+88)
+
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define MINSPLITTERY         52
@@ -578,7 +580,8 @@ typedef struct {
 #define ID_EXTBKTABITEMACTIVE 11
 #define ID_EXTBKTABITEMBOTTOM 12
 #define ID_EXTBKTABITEMACTIVEBOTTOM 13
-#define ID_EXTBK_LAST 13
+#define ID_EXTBKINPUTBOX 14
+#define ID_EXTBK_LAST 14
 
 #define CLCDEFAULT_GRADIENT 0
 #define CLCDEFAULT_CORNER 0
@@ -628,3 +631,5 @@ void IMG_LoadItems(char *szFileName);
 void IMG_DeleteItems();
 void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE, ImageItem *imageItem);
 void SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget);
+
+void ReloadContainerSkin();

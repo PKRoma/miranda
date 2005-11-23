@@ -121,7 +121,14 @@ Version 0.9.9.99 - 2005/11/11
 		
 		* fixed wrong hotkey Ctrl-C was opening the user preferences dialog instead of doing the
 		  usual copy action. User preferences is now on Alt-C
-		  		  
+		  
+		+ some smoother and less "jumpy" resizing when switching tabs after container size changed.
+		
+		+ when using the "Trim message log feature", the message input area now tries to delete the
+		  invisible markers when copying text from the message log to the message input area.
+
+		+ new hotkey: Alt-F (send file, brings up the send file dialog)
+				  		  
 Version 0.9.9.98 - 2005/11/07
 
         * several sanity checks added (pointers, window handles)

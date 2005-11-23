@@ -129,6 +129,7 @@ static struct SIDEBARITEM sbarItems[] = {
 extern StatusItems_t StatusItems[];
 BOOL g_skinnedContainers = FALSE;
 BOOL g_framelessSkinmode = FALSE;
+BOOL g_compositedWindow = FALSE;
 
 extern HBRUSH g_ContainerColorKeyBrush;
 extern COLORREF g_ContainerColorKey;
@@ -351,7 +352,7 @@ void DrawSideBar(HWND hwndDlg, struct ContainerWindowData *pContainer, RECT *rc,
     //SetWindowPos(GetDlgItem(hwndDlg, IDC_SIDEBAR), HWND_BOTTOM, 0, 0, SIDEBARWIDTH - 2, (rc->bottom - rc->top) - menuSep - pContainer->statusBarHeight, SWP_DRAWFRAME);
 }
 
-BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 		case WM_NCPAINT:
@@ -404,7 +405,6 @@ BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					}
 					hdc = pContainer->cachedDC;
 					FillRect(hdc, &rcClient, g_ContainerColorKeyBrush);
-					/*
 					if(myGlobals.bClipBorder != 0 || myGlobals.bRoundedCorner) {
 						int clip = myGlobals.bClipBorder;
 
@@ -413,7 +413,7 @@ BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						else
 							rgn = CreateRectRgn(clip, clip, rcClient.right - clip, rcClient.bottom - clip);
 						SelectClipRgn(hdc, rgn);
-					}*/
+					}
 					DrawAlpha(hdc, &rcClient, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 							  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
 					
@@ -555,11 +555,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }*/
                 pContainer->sb_FirstButton = 0;
 				pContainer->bSkinned = g_skinnedContainers;
-				if(pContainer->bSkinned) {
-					SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
-					//SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) | CS_DROPSHADOW);
-					SetClassLong(hwndTab, GCL_STYLE, GetClassLong(hwndTab, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
-				}
+				SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
+				SetClassLong(hwndTab, GCL_STYLE, GetClassLong(hwndTab, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
+
+				if(IsWinVerXPPlus() && !g_framelessSkinmode)
+					SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) | CS_DROPSHADOW);
+	
 				/*
 				 * additional system menu items...
 				 */
@@ -937,7 +938,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             break;
     		//mathMod end
 #endif            
-        case WM_SIZE: { 
+			case WM_SIZE: { 
                 RECT rcClient, rcUnadjusted;
                 int i = 0;
                 TCITEM item = {0};
@@ -1003,23 +1004,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 1);
                 
                 RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
-				if(pContainer->bSkinned) {
-					/*
-					if(myGlobals.bClipBorder != 0 || myGlobals.bRoundedCorner) {
-						int clip = myGlobals.bClipBorder;
-						HRGN rgn;
-
-						if(myGlobals.bRoundedCorner)
-							rgn = CreateRoundRectRgn(clip, clip, rcUnadjusted.right - clip + 1, rcUnadjusted.bottom - clip, 8 + clip, 8 + clip);
-						else
-							rgn = CreateRectRgn(clip, clip, rcUnadjusted.right - clip, rcUnadjusted.bottom - clip);
-						SetWindowRgn(hwndDlg, rgn, TRUE);
-					}
-					else*/
-						RedrawWindow(hwndDlg, NULL, NULL, RDW_UPDATENOW | RDW_FRAME | RDW_INVALIDATE);
-				}
-				else
-					RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
+				RedrawWindow(hwndDlg, NULL, NULL, (pContainer->bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
                 
                 if(pContainer->hwndStatus)
                     InvalidateRect(pContainer->hwndStatus, NULL, FALSE);
@@ -1737,10 +1722,8 @@ panel_found:
             BYTE bFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
 			UINT sBarHeight;
 
-            ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_HIDE);
-            
             //if(!myGlobals.m_SideBarEnabled)
-                pContainer->dwFlags &= ~CNT_SIDEBAR;
+            pContainer->dwFlags &= ~CNT_SIDEBAR;
             
             //ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBAR), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
             //ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
@@ -1754,7 +1737,7 @@ panel_found:
             }*/
 
             ws = wsold = GetWindowLong(hwndDlg, GWL_STYLE);
-			ws = (pContainer->dwFlags & CNT_NOTITLE) ? ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN) : ws | WS_CAPTION | WS_OVERLAPPEDWINDOW;
+			ws = (pContainer->dwFlags & CNT_NOTITLE) ? ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN) : ws | WS_CAPTION | WS_OVERLAPPEDWINDOW;
 			SetWindowLong(hwndDlg, GWL_STYLE, ws);
 
             pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 2);
@@ -1781,7 +1764,7 @@ panel_found:
                 DWORD exold;
 				ex = exold = GetWindowLong(hwndDlg, GWL_EXSTYLE);
 				ex = (pContainer->dwFlags & CNT_TRANSPARENCY || (pContainer->bSkinned && g_framelessSkinmode)) ? ex | WS_EX_LAYERED : ex & ~WS_EX_LAYERED;
-				ex = (pContainer->bSkinned && g_framelessSkinmode) ? ex | WS_EX_COMPOSITED : ex & ~WS_EX_COMPOSITED;
+				ex = (pContainer->bSkinned && g_compositedWindow) ? ex | WS_EX_COMPOSITED : ex & ~WS_EX_COMPOSITED;
 				SetWindowLong(hwndDlg, GWL_EXSTYLE, ex);
 				if (pContainer->dwFlags & CNT_TRANSPARENCY || pContainer->bSkinned) {
 					DWORD trans = LOWORD(pContainer->dwTransparency);
@@ -1855,7 +1838,6 @@ panel_found:
                 if(pContainer->hMenu) {
                     SetMenu(hwndDlg, NULL);
                 }
-                ShowWindow(GetDlgItem(hwndDlg, IDC_STATICCONTROL), SW_HIDE);
             }
             else {
                 if(pContainer->hMenu == 0) {
