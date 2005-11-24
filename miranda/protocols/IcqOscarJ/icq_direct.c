@@ -269,6 +269,30 @@ int sendDirectPacket(directconnect* dc, icq_packet* pkt)
 
 
 
+directthreadstartinfo* CreateDTSI(HANDLE hContact, HANDLE hConnection, int type)
+{
+  directthreadstartinfo* dtsi;
+
+  dtsi = (directthreadstartinfo*)malloc(sizeof(directthreadstartinfo));
+  dtsi->hContact = hContact;
+  dtsi->hConnection = hConnection;
+  if (type == -1)
+  {
+    dtsi->type = 0;
+    dtsi->incoming = 1;
+  }
+  else
+  {
+    dtsi->type = type;
+    dtsi->incoming = 0;
+  }
+  dtsi->pvExtra = NULL;
+
+  return dtsi;
+}
+
+
+
 // Check if we have an open and initialized DC with type
 // 'type' to the specified contact
 BOOL IsDirectConnectionOpen(HANDLE hContact, int type)
@@ -300,21 +324,11 @@ BOOL IsDirectConnectionOpen(HANDLE hContact, int type)
   LeaveCriticalSection(&directConnListMutex);
   
   if (!bIsCreated && !bIsOpen && type == DIRECTCONN_STANDARD && gbDCMsgEnabled == 2)
-  { // Create a new connection
-    pthread_t tid;
-    directthreadstartinfo* dtsi;
-
-    // do not try to open DC to offline contact
+  { // do not try to open DC to offline contact
     if (ICQGetContactStatus(hContact) == ID_STATUS_OFFLINE) return FALSE;
 
-    dtsi = (directthreadstartinfo*)malloc(sizeof(directthreadstartinfo));
-    dtsi->type = DIRECTCONN_STANDARD;
-    dtsi->incoming = 0;
-    dtsi->hContact = hContact;
-    dtsi->pvExtra = NULL; // we send nothing
-
-    tid.hThread = (HANDLE)forkthreadex(NULL, 0, icq_directThread, dtsi, 0, &tid.dwThreadId);
-    CloseHandle(tid.hThread);
+    // Create a new connection
+    OpenDirectConnection(hContact, DIRECTCONN_STANDARD, NULL);
   }
 
   return bIsOpen;
@@ -326,32 +340,23 @@ BOOL IsDirectConnectionOpen(HANDLE hContact, int type)
 // one of our incomming DC ports
 void icq_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP)
 {
-  directthreadstartinfo* dtsi;
   pthread_t tid;
 
   // Start a new thread for the incomming connection
-  dtsi = (directthreadstartinfo*)malloc(sizeof(directthreadstartinfo));
-  dtsi->hConnection = hNewConnection;
-  dtsi->incoming = 1;
-
-  tid.hThread = (HANDLE)forkthreadex(NULL, 0, icq_directThread, dtsi, 0, &tid.dwThreadId);
+  tid.hThread = (HANDLE)forkthreadex(NULL, 0, icq_directThread, CreateDTSI(NULL, hNewConnection, -1), 0, &tid.dwThreadId);
   CloseHandle(tid.hThread);
 }
 
 
 
-// Called from handleRecvServMsgType2 to open a reverse typed DC
-// Called from handleFileAck to open a file DC when a file send request has been accepted
+// Opens direct connection of specified type to specified contact
 void OpenDirectConnection(HANDLE hContact, int type, void* pvExtra)
 {
   pthread_t tid;
   directthreadstartinfo* dtsi;
 
   // Create a new connection
-  dtsi = (directthreadstartinfo*)malloc(sizeof(directthreadstartinfo));
-  dtsi->type = type;
-  dtsi->incoming = 0;
-  dtsi->hContact = hContact;
+  dtsi = CreateDTSI(hContact, NULL, type);
   dtsi->pvExtra = pvExtra;
 
   tid.hThread = (HANDLE)forkthreadex(NULL, 0, icq_directThread, dtsi, 0, &tid.dwThreadId);
@@ -425,7 +430,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 {
   WORD wLen;
   int i;
-  directconnect dc;
+  directconnect dc = {0};
   NETLIBPACKETRECVER packetRecv={0};
   HANDLE hPacketRecver;
   int recvResult;
