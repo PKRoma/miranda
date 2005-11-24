@@ -50,8 +50,6 @@ extern int cookieDataLen;
 extern char* migratedServer;
 extern CRITICAL_SECTION modeMsgsMutex;
 
-typedef unsigned char capstr[0x10];
-
 extern const capstr capXStatus[];
 
 int isMigrating;
