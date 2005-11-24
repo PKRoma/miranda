@@ -51,6 +51,7 @@
 #include <fcntl.h>
 #include <crtdbg.h>
 #include <process.h>
+#include <malloc.h>
 
 // Miranda IM SDK includes
 #include <newpluginapi.h> // This must be included first
