@@ -71,6 +71,7 @@ static void EscapesToMultiline(char *str,PDWORD selStart,PDWORD selEnd)
 }
 
 
+
 static void EscapesToBinary(char *str)
 {
   int i;
@@ -96,6 +97,7 @@ static void EscapesToBinary(char *str)
       }
   }
 }
+
 
 
 char *BinaryToEscapes(char *str)
@@ -145,6 +147,7 @@ char *BinaryToEscapes(char *str)
 }
 
 
+
 static LRESULT CALLBACK StringEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
   switch(msg) 
@@ -171,6 +174,7 @@ static LRESULT CALLBACK StringEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,
   }
   return CallWindowProc(OldStringEditProc,hwnd,msg,wParam,lParam);
 }
+
 
 
 static LRESULT CALLBACK ExpandButtonSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
@@ -231,6 +235,7 @@ static LRESULT CALLBACK ExpandButtonSubclassProc(HWND hwnd,UINT msg,WPARAM wPara
 }
 
 
+
 void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
 {
   char *szValue;
@@ -285,6 +290,8 @@ void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
   PostMessage(hwndEdit,WM_KEYDOWN,wVKey,0);
 }
 
+
+
 void EndStringEdit(int save)
 {
   if(hwndEdit==NULL || iEditItem==-1) return;
@@ -313,7 +320,7 @@ void EndStringEdit(int save)
       if((setting[iEditItem].displayType&LIF_PASSWORD && strcmpnull(text,"                ")) ||
         (!(setting[iEditItem].displayType&LIF_PASSWORD) && strcmpnull(text,(char*)setting[iEditItem].value)))
       {
-        SAFE_FREE(&(char*)setting[iEditItem].value);
+        SAFE_FREE((char**)&setting[iEditItem].value);
         if(text[0])
           setting[iEditItem].value=(LPARAM)text;
         else
@@ -335,6 +342,7 @@ void EndStringEdit(int save)
   if(hwndUpDown!=NULL) DestroyWindow(hwndUpDown);
   hwndUpDown=NULL;
 }
+
 
 
 int IsStringEditWindow(HWND hwnd)

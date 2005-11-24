@@ -77,6 +77,7 @@ static LRESULT CALLBACK ListEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LP
 }
 
 
+
 void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
 {
   int j,n;
@@ -123,6 +124,7 @@ void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
 }
 
 
+
 void EndListEdit(int save)
 {
   if(hwndListEdit==NULL || iEditItem==-1) return;
@@ -132,19 +134,19 @@ void EndListEdit(int save)
     LPARAM newValue;
     i=SendMessage(hwndListEdit,LB_GETCURSEL,0,0);
     newValue=SendMessage(hwndListEdit,LB_GETITEMDATA,i,0);
-    if(setting[iEditItem].dbType==DBVT_ASCIIZ) 
+    if (setting[iEditItem].dbType==DBVT_ASCIIZ) 
     {
       char *szNewValue = (((ListTypeDataItem*)setting[iEditItem].pList)[i].szValue);
       if(newValue || setting[iEditItem].displayType&LIF_ZEROISVALID) 
       { 
         setting[iEditItem].changed=strcmpnull(szNewValue,(char*)setting[iEditItem].value);
-        SAFE_FREE(&(char*)setting[iEditItem].value);
+        SAFE_FREE((char**)&setting[iEditItem].value);
         setting[iEditItem].value=(LPARAM)null_strdup(szNewValue);
       }
       else 
       {
         setting[iEditItem].changed=(char*)setting[iEditItem].value!=NULL;
-        SAFE_FREE(&(char*)setting[iEditItem].value);
+        SAFE_FREE((char**)&setting[iEditItem].value);
       }
     }
     else 
@@ -159,6 +161,7 @@ void EndListEdit(int save)
   DestroyWindow(hwndListEdit);
   hwndListEdit=NULL;
 }
+
 
 
 int IsListEditWindow(HWND hwnd)

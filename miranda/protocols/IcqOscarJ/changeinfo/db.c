@@ -46,7 +46,7 @@ void LoadSettingsFromDb(int keepChanged)
     if(keepChanged && setting[i].changed) continue;
     if(setting[i].dbType==DBVT_ASCIIZ) 
     {
-      SAFE_FREE(&(char*)setting[i].value);
+      SAFE_FREE((char**)&setting[i].value);
     }
     else if(!keepChanged) 
       setting[i].value = 0;
@@ -90,14 +90,16 @@ void LoadSettingsFromDb(int keepChanged)
 }
 
 
+
 void FreeStoredDbSettings(void)
 {
   int i;
 
   for(i=0;i<settingCount;i++)
     if(setting[i].dbType==DBVT_ASCIIZ)
-      SAFE_FREE(&(char*)setting[i].value);
+      SAFE_FREE((char**)&setting[i].value);
 }
+
 
 
 int ChangesMade(void)
@@ -110,6 +112,7 @@ int ChangesMade(void)
 }
 
 
+
 void ClearChangeFlags(void)
 {
   int i;
@@ -117,6 +120,7 @@ void ClearChangeFlags(void)
   for(i=0;i<settingCount;i++)
     setting[i].changed=0;
 }
+
 
 
 static BOOL CALLBACK PwConfirmDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -156,6 +160,7 @@ static BOOL CALLBACK PwConfirmDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 }
 
 
+
 int SaveSettingsToDb(HWND hwndDlg)
 {
   int i,ret=1;
@@ -173,7 +178,9 @@ int SaveSettingsToDb(HWND hwndDlg)
       case DBVT_ASCIIZ:
         if(setting[i].displayType&LIF_PASSWORD) 
         {
-          if(strlennull((char*)setting[i].value)>8 || strlennull((char*)setting[i].value)<1) 
+          int nSettingLen = strlennull((char*)setting[i].value);
+
+          if (nSettingLen>8 || nSettingLen<1) 
           {
             MessageBox(hwndDlg,Translate("The ICQ server does not support passwords longer than 8 characters. Please use a shorter password."),Translate("Change ICQ Details"),MB_OK);
             ret=0;
