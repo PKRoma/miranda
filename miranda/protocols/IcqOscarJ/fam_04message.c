@@ -1057,6 +1057,13 @@ int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4,
       nTypeID = MTYPE_SCRIPT_DATA;
     }
   }
+  else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_STATUSMSGEXT))
+  {
+    if (wType == 3) // is this only for NA or generally for every ???
+    {
+      nTypeID = MTYPE_STATUSMSGEXT;
+    }
+  }
   else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_XTRAZ_SCRIPT))
   {
     if (wType==MGTYPE_SCRIPT_INVITATION)
@@ -1589,7 +1596,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       for (i = 0; i < nContacts; i++)
         SAFE_FREE(&isrList[i]);
 
-      SAFE_FREE(&(void*)isrList);
+      SAFE_FREE((void**)&isrList);
     }
     break;
 

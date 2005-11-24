@@ -108,7 +108,7 @@ void UninitDirectConns(void)
   DeleteCriticalSection(&directConnListMutex);
   DeleteCriticalSection(&expectedFileRecvMutex);
 
-  SAFE_FREE(&(void*)directConnList);
+  SAFE_FREE((void**)&directConnList);
 }
 
 
@@ -667,7 +667,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
       int i;
       for (i = 0; i < (int)dc.ft->dwFileCount; i++)
         SAFE_FREE(&dc.ft->files[i]);
-      SAFE_FREE(&(char*)dc.ft->files);
+      SAFE_FREE((char**)&dc.ft->files);
     }
     SAFE_FREE(&dc.ft);
     _chdir("\\");    /* so we don't leave a subdir handle open so it can't be deleted */

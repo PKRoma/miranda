@@ -1138,7 +1138,7 @@ void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
   else if (pArguments->nAckResult == ACKRESULT_FAILED)
     NetLog_Server("Message delivery failed");
 
-  SAFE_FREE(&(char *)pArguments->pszMessage);
+  SAFE_FREE((char **)&pArguments->pszMessage);
   SAFE_FREE(&pArguments);
 
   return;

@@ -81,7 +81,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
     hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&info.nloc);
   }
 
-  SAFE_FREE(&(void*)info.nloc.szHost);
+  SAFE_FREE((void**)&info.nloc.szHost);
 
 
   // Login error

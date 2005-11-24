@@ -184,7 +184,7 @@ BOOL IsContactJustAdded(HANDLE hContact)
 void FlushJustAddedContacts()
 {
   EnterCriticalSection(&servlistMutex);
-  SAFE_FREE((void*)&pdwJustAddedList);
+  SAFE_FREE((void**)&pdwJustAddedList);
   nJustAddedSize = 0;
   nJustAddedCount = 0;
   LeaveCriticalSection(&servlistMutex);
@@ -302,9 +302,9 @@ void FlushPendingOperations()
 
   for (i = 0; i<nPendingCount; i++)
   {
-    SAFE_FREE(&(void*)pdwPendingList[i]);
+    SAFE_FREE((void**)&pdwPendingList[i]);
   }
-  SAFE_FREE(&(void*)pdwPendingList);
+  SAFE_FREE((void**)&pdwPendingList);
   nPendingCount = 0;
   nPendingSize = 0;
 
@@ -945,7 +945,7 @@ void setServerGroupIDUtf(const char* szPath, WORD wGroupID)
 int GroupNameExistsUtf(const char *name,int skipGroup)
 {
   char idstr[33];
-  char* szGroup;
+  char* szGroup = NULL;
   int i;
 
   if (name == NULL) return 1; // no group always exists
@@ -1786,7 +1786,6 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
       {
         char *pszNick;
         char *pszGroup;
-        DBVARIANT dbvGroup;
 
         // Read nick name from DB
         pszNick = UniGetContactSettingUtf((HANDLE)wParam, "CList", "MyHandle", NULL);
@@ -1797,7 +1796,6 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
         addServContact((HANDLE)wParam, pszNick, pszGroup);
 
         SAFE_FREE(&pszNick);
-        ICQFreeVariant(&dbvGroup);
       }
     }
 

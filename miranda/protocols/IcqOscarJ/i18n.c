@@ -125,7 +125,7 @@ char* detect_decode_utf8(const char *from)
   char* temp = NULL;
 
   if (IsUSASCII(from, strlennull(from)) || !UTF8_IsValid(from) || !utf8_decode(from, &temp)) return (char*)from;
-  SAFE_FREE(&(char*)from);
+  SAFE_FREE((char**)&from);
 
   return temp;
 }

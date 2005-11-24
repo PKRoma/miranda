@@ -105,7 +105,7 @@ static void RatesTimer1()
     memmove(&pendingList1[0], &pendingList1[1], (pendingListSize1 - 1)*sizeof(rate_record*));
   }
   else
-    SAFE_FREE(&(void*)pendingList1);
+    SAFE_FREE((void**)&pendingList1);
   pendingListSize1--;
   nLev = rGroupXtrazRequest*20/19 + (GetTickCount() - tGroupXtrazRequest)/20;
   rGroupXtrazRequest = nLev < 4500 ? nLev : 4500;
@@ -182,7 +182,7 @@ static void RatesTimer2()
     memmove(&pendingList2[0], &pendingList2[1], (pendingListSize2 - 1)*sizeof(rate_record*));
   }
   else
-    SAFE_FREE(&(void*)pendingList2);
+    SAFE_FREE((void**)&pendingList2);
   pendingListSize2--;
   nLev = rGroupMsgResponse*80/79 + (GetTickCount() - tGroupMsgResponse)/80;
   rGroupMsgResponse = nLev < 6000 ? nLev : 6000;
@@ -295,6 +295,6 @@ void InitRates()
 
 void UninitRates()
 {
-  SAFE_FREE(&(void*)pendingList1);
-  SAFE_FREE(&(void*)pendingList2);
+  SAFE_FREE((void**)&pendingList1);
+  SAFE_FREE((void**)&pendingList2);
 }
