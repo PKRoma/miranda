@@ -44,16 +44,22 @@ typedef struct {
     char *szTitle;
 } LogMessageInfo;
 
+static BOOL bErrorVisible = FALSE;
+
 static void __cdecl icq_LogMessageThread(void* arg) 
 {
   LogMessageInfo *err = (LogMessageInfo*)arg;
+
   if (!err) return;
+  bErrorVisible = TRUE;
   if (err->szMsg&&err->szTitle)
     MessageBox(NULL, err->szMsg, err->szTitle, MB_OK);
   SAFE_FREE(&err->szMsg);
   SAFE_FREE(&err->szTitle);
   SAFE_FREE(&err);
+  bErrorVisible = FALSE;
 }
+
 
 
 void icq_LogMessage(int level, const char *szMsg)
@@ -72,10 +78,13 @@ void icq_LogMessage(int level, const char *szMsg)
       if (!ShowPopUpMsg(NULL, Translate(szLevelDescr[level]), szMsg, (BYTE)level))
         return; // Popup showed successfuly
     }
-    lmi = (LogMessageInfo*)malloc(sizeof(LogMessageInfo));
-    lmi->szMsg = null_strdup(szMsg);
-    lmi->szTitle = null_strdup(Translate(szLevelDescr[level]));
-    forkthread(icq_LogMessageThread, 0, lmi);
+    if (!bErrorVisible || !ICQGetContactSettingByte(NULL, "IgnoreMultiErrorBox", 0))
+    { // error not shown or allowed multi - show messagebox
+      lmi = (LogMessageInfo*)malloc(sizeof(LogMessageInfo));
+      lmi->szMsg = null_strdup(szMsg);
+      lmi->szTitle = null_strdup(Translate(szLevelDescr[level]));
+      forkthread(icq_LogMessageThread, 0, lmi);
+    }
   }
 }
 
