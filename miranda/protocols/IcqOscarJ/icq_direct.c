@@ -428,12 +428,10 @@ int SendDirectMessage(HANDLE hContact, icq_packet *pkt)
 // Called from SendDirectMessage when a new outgoing dc is done
 static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 {
-  WORD wLen;
-  int i;
   directconnect dc = {0};
   NETLIBPACKETRECVER packetRecv={0};
   HANDLE hPacketRecver;
-  int recvResult;
+  BOOL bFirstPacket = TRUE;
 
 
   srand(time(NULL));
@@ -570,6 +568,8 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 
   while(dc.hConnection)
   {
+    int recvResult;
+
     packetRecv.dwTimeout = dc.wantIdleTime ? 0 : 600000;
 
     recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM)hPacketRecver, (LPARAM)&packetRecv);
@@ -613,9 +613,23 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
       packetRecv.bytesUsed = packetRecv.bytesAvailable;
     else
     {
+      int i;
+
       for (i = 0; i + 2 <= packetRecv.bytesAvailable;)
-      {
-        wLen = *(WORD*)(packetRecv.buffer + i);
+      { 
+        WORD wLen = *(WORD*)(packetRecv.buffer + i);
+
+        if (bFirstPacket)
+        {
+          if (wLen > 64)
+          { // roughly check first packet size
+            NetLog_Direct("Error: Overflowed packet, closing connection.");
+            CloseDirectConnection(&dc);
+            break;
+          }
+          bFirstPacket = FALSE;
+        }
+
         if (wLen + 2 + i > packetRecv.bytesAvailable)
           break;
 
@@ -665,6 +679,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     if (dc.ft->files)
     {
       int i;
+
       for (i = 0; i < (int)dc.ft->dwFileCount; i++)
         SAFE_FREE(&dc.ft->files[i]);
       SAFE_FREE((char**)&dc.ft->files);
