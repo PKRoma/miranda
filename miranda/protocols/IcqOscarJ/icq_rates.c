@@ -63,7 +63,7 @@ typedef struct rate_delay_args_s
 
 void __cdecl rateDelayThread(rate_delay_args* pArgs)
 {
-  Sleep(pArgs->nDelay);
+  SleepEx(pArgs->nDelay, TRUE);
   pArgs->delaycode();
 
   SAFE_FREE(&pArgs);
@@ -76,9 +76,9 @@ void InitDelay(int nDelay, void (*delaycode)())
 {
   rate_delay_args* pArgs;
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
   NetLog_Server("Delay %dms", nDelay);
-#endif
+//#endif
 
   pArgs = malloc(sizeof(rate_delay_args)); // This will be freed in the new thread
 
@@ -297,4 +297,5 @@ void UninitRates()
 {
   SAFE_FREE((void**)&pendingList1);
   SAFE_FREE((void**)&pendingList2);
+  DeleteCriticalSection(&ratesMutex);
 }
