@@ -2076,7 +2076,7 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 
       packet.wLen = 13 + getUINLen(dwUin);
       write_flap(&packet, ICQ_DATA_CHAN);
-      packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, dwSequence);
+      packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, (WORD)dwSequence);
       packWord(&packet, 0x03);
       packUIN(&packet, dwUin);
 
