@@ -114,6 +114,20 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
 
 
 
+static void LoadDBCheckState(HWND hwndDlg, int idCtrl, const char* szSetting, BYTE bDef)
+{
+  CheckDlgButton(hwndDlg, idCtrl, ICQGetContactSettingByte(NULL, szSetting, bDef));
+}
+
+
+
+static void StoreDBCheckState(HWND hwndDlg, int idCtrl, const char* szSetting)
+{
+  ICQWriteContactSettingByte(NULL, szSetting, (BYTE)IsDlgButtonChecked(hwndDlg, idCtrl));
+}
+
+
+
 static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   switch (msg)
@@ -145,13 +159,14 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       }
       
       SetDlgItemInt(hwndDlg, IDC_ICQPORT, ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT), FALSE);
-      CheckDlgButton(hwndDlg, IDC_KEEPALIVE, ICQGetContactSettingByte(NULL, "KeepAlive", 0));
-      CheckDlgButton(hwndDlg, IDC_USEGATEWAY, ICQGetContactSettingByte(NULL, "UseGateway", 0));
-      CheckDlgButton(hwndDlg, IDC_SLOWSEND, ICQGetContactSettingByte(NULL, "SlowSend", 1));
+      LoadDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive", 0);
+      LoadDBCheckState(hwndDlg, IDC_USEGATEWAY, "UseGateway", 0);
+      LoadDBCheckState(hwndDlg, IDC_SLOWSEND, "SlowSend", 1);
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 3));
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 3-ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING));
       SetDlgItemText(hwndDlg, IDC_LEVELDESCR, Translate(szLogLevelDescr[3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)]));
       ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_HIDE);
+      LoadDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox", 0);
       
       return TRUE;
     }
@@ -227,9 +242,10 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
           GetDlgItemText(hwndDlg,IDC_ICQSERVER, str, sizeof(str));
           ICQWriteContactSettingString(NULL, "OscarServer", str);
           ICQWriteContactSettingWord(NULL, "OscarPort", (WORD)GetDlgItemInt(hwndDlg, IDC_ICQPORT, NULL, FALSE));
-          ICQWriteContactSettingByte(NULL, "KeepAlive", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_KEEPALIVE));
-          ICQWriteContactSettingByte(NULL, "UseGateway", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_USEGATEWAY));
-          ICQWriteContactSettingByte(NULL, "SlowSend", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SLOWSEND));
+          StoreDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive");
+          StoreDBCheckState(hwndDlg, IDC_USEGATEWAY, "UseGateway");
+          StoreDBCheckState(hwndDlg, IDC_SLOWSEND, "SlowSend");
+          StoreDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox");
           ICQWriteContactSettingByte(NULL, "ShowLogLevel", (BYTE)(3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)));
 
           return TRUE;
@@ -273,10 +289,10 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
       CheckDlgButton(hwndDlg, IDC_DCALLOW_AUTH, (nDcType == 2));
       CheckDlgButton(hwndDlg, IDC_ADD_ANY, (nAddAuth == 0));
       CheckDlgButton(hwndDlg, IDC_ADD_AUTH, (nAddAuth == 1));
-      CheckDlgButton(hwndDlg, IDC_WEBAWARE, ICQGetContactSettingByte(NULL, "WebAware", 0));
-      CheckDlgButton(hwndDlg, IDC_PUBLISHPRIMARY, ICQGetContactSettingByte(NULL, "PublishPrimaryEmail", 0));
-      CheckDlgButton(hwndDlg, IDC_STATUSMSG_CLIST, ICQGetContactSettingByte(NULL, "StatusMsgReplyCList", 0));
-      CheckDlgButton(hwndDlg, IDC_STATUSMSG_VISIBLE, ICQGetContactSettingByte(NULL, "StatusMsgReplyVisible", 0));
+      LoadDBCheckState(hwndDlg, IDC_WEBAWARE, "WebAware", 0);
+      LoadDBCheckState(hwndDlg, IDC_PUBLISHPRIMARY, "PublishPrimaryEmail", 0);
+      LoadDBCheckState(hwndDlg, IDC_STATUSMSG_CLIST, "StatusMsgReplyCList", 0);
+      LoadDBCheckState(hwndDlg, IDC_STATUSMSG_VISIBLE, "StatusMsgReplyVisible", 0);
       if (!ICQGetContactSettingByte(NULL, "StatusMsgReplyCList", 0))
         EnableWindow(GetDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE), FALSE);
 
@@ -300,7 +316,7 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
       if (IsDlgButtonChecked(hwndDlg, IDC_STATUSMSG_CLIST)) 
       {
         EnableWindow(GetDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE), TRUE);
-        CheckDlgButton(hwndDlg, IDC_STATUSMSG_VISIBLE, ICQGetContactSettingByte(NULL, "StatusMsgReplyVisible", 0));
+        LoadDBCheckState(hwndDlg, IDC_STATUSMSG_VISIBLE, "StatusMsgReplyVisible", 0);
       }
       else 
       {
@@ -468,7 +484,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       CheckDlgButton(hwndDlg, IDC_UTFENABLE, bData?TRUE:FALSE);
       CheckDlgButton(hwndDlg, IDC_UTFALL, bData==2?TRUE:FALSE);
       icq_EnableMultipleControls(hwndDlg, icqUnicodeControls, sizeof(icqUnicodeControls)/sizeof(icqUnicodeControls[0]), bData?TRUE:FALSE);
-      CheckDlgButton(hwndDlg, IDC_TEMPVISIBLE, ICQGetContactSettingByte(NULL, "TempVisListEnabled",DEFAULT_TEMPVIS_ENABLED));
+      LoadDBCheckState(hwndDlg, IDC_TEMPVISIBLE, "TempVisListEnabled",DEFAULT_TEMPVIS_ENABLED);
       bData = ICQGetContactSettingByte(NULL, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
       CheckDlgButton(hwndDlg, IDC_DCENABLE, bData?TRUE:FALSE);
       CheckDlgButton(hwndDlg, IDC_DCPASSIVE, bData==1?TRUE:FALSE);
@@ -476,9 +492,9 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       bData = ICQGetContactSettingByte(NULL, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED);
       CheckDlgButton(hwndDlg, IDC_XSTATUSENABLE, bData);
       icq_EnableMultipleControls(hwndDlg, icqXStatusControls, sizeof(icqXStatusControls)/sizeof(icqXStatusControls[0]), bData);
-      CheckDlgButton(hwndDlg, IDC_XSTATUSAUTO, ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO));
-      CheckDlgButton(hwndDlg, IDC_KILLSPAMBOTS, ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED));
-      CheckDlgButton(hwndDlg, IDC_AIMENABLE, ICQGetContactSettingByte(NULL, "AimEnabled",DEFAULT_AIM_ENABLED));
+      LoadDBCheckState(hwndDlg, IDC_XSTATUSAUTO, "XStatusAuto", DEFAULT_XSTATUS_AUTO);
+      LoadDBCheckState(hwndDlg, IDC_KILLSPAMBOTS, "KillSpambots", DEFAULT_KILLSPAM_ENABLED);
+      LoadDBCheckState(hwndDlg, IDC_AIMENABLE, "AimEnabled", DEFAULT_AIM_ENABLED);
       icq_EnableMultipleControls(hwndDlg, icqAimControls, sizeof(icqAimControls)/sizeof(icqAimControls[0]), icqOnline?FALSE:TRUE);
 
       hCpCombo = GetDlgItem(hwndDlg, IDC_UTFCODEPAGE);
@@ -541,9 +557,9 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       ICQWriteContactSettingByte(NULL, "DirectMessaging", gbDCMsgEnabled);
       gbXStatusEnabled = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_XSTATUSENABLE);
       ICQWriteContactSettingByte(NULL, "XStatusEnabled", gbXStatusEnabled);
-      ICQWriteContactSettingByte(NULL, "XStatusAuto", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_XSTATUSAUTO));
-      ICQWriteContactSettingByte(NULL, "KillSpambots", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_KILLSPAMBOTS));
-      ICQWriteContactSettingByte(NULL, "AimEnabled", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_AIMENABLE));
+      StoreDBCheckState(hwndDlg, IDC_XSTATUSAUTO, "XStatusAuto");
+      StoreDBCheckState(hwndDlg, IDC_KILLSPAMBOTS , "KillSpambots");
+      StoreDBCheckState(hwndDlg, IDC_AIMENABLE, "AimEnabled");
       return TRUE;
     }
     break;
@@ -561,13 +577,13 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
   {
   case WM_INITDIALOG:
     ICQTranslateDialog(hwndDlg);
-    CheckDlgButton(hwndDlg, IDC_ENABLE, ICQGetContactSettingByte(NULL, "UseServerCList",DEFAULT_SS_ENABLED));
-    CheckDlgButton(hwndDlg, IDC_ADDSERVER, ICQGetContactSettingByte(NULL, "ServerAddRemove",DEFAULT_SS_ADDSERVER));
-    CheckDlgButton(hwndDlg, IDC_LOADFROMSERVER, ICQGetContactSettingByte(NULL, "LoadServerDetails",DEFAULT_SS_LOAD));
-    CheckDlgButton(hwndDlg, IDC_SAVETOSERVER, ICQGetContactSettingByte(NULL, "StoreServerDetails",DEFAULT_SS_STORE));
-    CheckDlgButton(hwndDlg, IDC_ENABLEAVATARS, ICQGetContactSettingByte(NULL, "AvatarsEnabled",DEFAULT_AVATARS_ENABLED));
-    CheckDlgButton(hwndDlg, IDC_AUTOLOADAVATARS, ICQGetContactSettingByte(NULL, "AvatarsAutoLoad",DEFAULT_LOAD_AVATARS));
-    CheckDlgButton(hwndDlg, IDC_LINKAVATARS, ICQGetContactSettingByte(NULL, "AvatarsAutoLink",DEFAULT_LINK_AVATARS));
+    LoadDBCheckState(hwndDlg, IDC_ENABLE, "UseServerCList", DEFAULT_SS_ENABLED);
+    LoadDBCheckState(hwndDlg, IDC_ADDSERVER, "ServerAddRemove", DEFAULT_SS_ADDSERVER);
+    LoadDBCheckState(hwndDlg, IDC_LOADFROMSERVER, "LoadServerDetails", DEFAULT_SS_LOAD);
+    LoadDBCheckState(hwndDlg, IDC_SAVETOSERVER, "StoreServerDetails", DEFAULT_SS_STORE);
+    LoadDBCheckState(hwndDlg, IDC_ENABLEAVATARS, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
+    LoadDBCheckState(hwndDlg, IDC_AUTOLOADAVATARS, "AvatarsAutoLoad", DEFAULT_LOAD_AVATARS);
+    LoadDBCheckState(hwndDlg, IDC_LINKAVATARS, "AvatarsAutoLink", DEFAULT_LINK_AVATARS);
 
     icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), 
       ICQGetContactSettingByte(NULL, "UseServerCList", DEFAULT_SS_ENABLED)?TRUE:FALSE);
@@ -610,13 +626,13 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
     switch (((LPNMHDR)lParam)->code)
     {
     case PSN_APPLY:
-      ICQWriteContactSettingByte(NULL,"UseServerCList",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLE));
-      ICQWriteContactSettingByte(NULL,"ServerAddRemove",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ADDSERVER));
-      ICQWriteContactSettingByte(NULL,"LoadServerDetails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LOADFROMSERVER));
-      ICQWriteContactSettingByte(NULL,"StoreServerDetails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SAVETOSERVER));
-      ICQWriteContactSettingByte(NULL,"AvatarsEnabled",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ENABLEAVATARS));
-      ICQWriteContactSettingByte(NULL,"AvatarsAutoLoad",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOLOADAVATARS));
-      ICQWriteContactSettingByte(NULL,"AvatarsAutoLink",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LINKAVATARS));
+      StoreDBCheckState(hwndDlg, IDC_ENABLE, "UseServerCList");
+      StoreDBCheckState(hwndDlg, IDC_ADDSERVER, "ServerAddRemove");
+      StoreDBCheckState(hwndDlg, IDC_LOADFROMSERVER, "LoadServerDetails");
+      StoreDBCheckState(hwndDlg, IDC_SAVETOSERVER, "StoreServerDetails");
+      StoreDBCheckState(hwndDlg, IDC_ENABLEAVATARS, "AvatarsEnabled");
+      StoreDBCheckState(hwndDlg, IDC_AUTOLOADAVATARS, "AvatarsAutoLoad");
+      StoreDBCheckState(hwndDlg, IDC_LINKAVATARS, "AvatarsAutoLink");
 
       return TRUE;
     }
