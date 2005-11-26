@@ -45,6 +45,7 @@ static int nUserCount = 0;
 static int bPendingUsers = 0;
 static BOOL bEnabled = TRUE;
 static BOOL bPaused = FALSE;
+static BOOL bRunning = FALSE;
 static DWORD tLast;
 typedef struct s_userinfo {
   DWORD dwUin;
@@ -118,9 +119,9 @@ BOOL icq_QueueUser(HANDLE hContact)
     // Add to list
     if (!bFound)
     {
-      DWORD dwUin;
+      DWORD dwUin = ICQGetContactSettingUIN(hContact);
 
-      if (!ICQGetContactSettingUID(hContact, &dwUin, NULL))
+      if (dwUin)
       {
         userList[nFirstFree].dwUin = dwUin;
         userList[nFirstFree].hContact = hContact;
@@ -236,9 +237,10 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 {
   int i;
   DWORD dwWait;
-  BOOL bKeepRunning = TRUE;
 
-  while (bKeepRunning)
+  bRunning = TRUE;
+
+  while (bRunning)
   {
     // Wait for a while
     ResetEvent(hQueueEvent);
@@ -251,28 +253,20 @@ void __cdecl icq_InfoUpdateThread(void* arg)
     else
     { // we need to slow down the process or icq will kick us
       dwWait = WaitForSingleObjectEx(hDummyEvent, 1000, TRUE);
-      while (dwWait == WAIT_TIMEOUT)
-      {
+      while (bRunning && dwWait == WAIT_TIMEOUT)
+      { // wait for new work or until we should end
         dwWait = WaitForSingleObjectEx(hQueueEvent, 10000, TRUE);
-
-        if (Miranda_Terminated())
-          bKeepRunning = FALSE;
-
-        if (!bKeepRunning) return;
       }
     }
+    if (!bRunning) return;
 
     switch (dwWait) 
     {
     case WAIT_IO_COMPLETION:
       // Possible shutdown in progress
-      if (Miranda_Terminated())
-        bKeepRunning = FALSE;
       break;
-      
+
     case WAIT_OBJECT_0:
-      if (Miranda_Terminated())
-        bKeepRunning = FALSE;
     case WAIT_TIMEOUT:
       // Time to check for new users
       if (!bEnabled) continue; // we can't send requests now
@@ -293,7 +287,7 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 #ifdef _DEBUG
       NetLog_Server("Users %u", nUserCount);
 #endif
-      if (nUserCount > 0 && icqOnline)
+      if (nUserCount && icqOnline)
       {
         EnterCriticalSection(&listmutex);
         for (i = 0; i<LISTSIZE; i++)
@@ -332,7 +326,7 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 
     default:
       // Something strange happened. Exit
-      bKeepRunning = FALSE;
+      bRunning = FALSE;
       break;
     }
   }
@@ -345,6 +339,9 @@ void __cdecl icq_InfoUpdateThread(void* arg)
 // Clean up before exit
 void icq_InfoUpdateCleanup(void)
 {
+  bRunning = FALSE;
+  SetEvent(hDummyEvent); // break timeout
+  SetEvent(hQueueEvent); // break queue loop
   // Uninit mutex
   DeleteCriticalSection(&listmutex);
   CloseHandle(hQueueEvent);
