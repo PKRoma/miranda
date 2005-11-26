@@ -47,6 +47,7 @@ static BOOL bEnabled = TRUE;
 static BOOL bPaused = FALSE;
 static BOOL bRunning = FALSE;
 static DWORD tLast;
+static HANDLE hInfoThread = NULL;
 typedef struct s_userinfo {
   DWORD dwUin;
   HANDLE hContact;
@@ -55,7 +56,7 @@ static userinfo userList[LISTSIZE];
 
 
 // Retrieve users' info
-void __cdecl icq_InfoUpdateThread(void* arg);
+unsigned __stdcall icq_InfoUpdateThread(void* arg);
 
 
 
@@ -79,7 +80,7 @@ void icq_InitInfoUpdate(void)
       userList[i].hContact = NULL;
     }
     
-    forkthread(icq_InfoUpdateThread, 0, 0);
+    hInfoThread = (HANDLE)forkthreadex(NULL, 0, icq_InfoUpdateThread, 0, 0, (DWORD*)&hInfoThread);
   }
 
   bPendingUsers = 0;
@@ -233,7 +234,7 @@ void icq_PauseUserLookup()
 
 
 
-void __cdecl icq_InfoUpdateThread(void* arg)
+unsigned __stdcall icq_InfoUpdateThread(void* arg)
 {
   int i;
   DWORD dwWait;
@@ -258,7 +259,7 @@ void __cdecl icq_InfoUpdateThread(void* arg)
         dwWait = WaitForSingleObjectEx(hQueueEvent, 10000, TRUE);
       }
     }
-    if (!bRunning) return;
+    if (!bRunning) break;
 
     switch (dwWait) 
     {
@@ -331,7 +332,7 @@ void __cdecl icq_InfoUpdateThread(void* arg)
     }
   }
 
-  return;
+  return 0;
 }
 
 
@@ -342,8 +343,10 @@ void icq_InfoUpdateCleanup(void)
   bRunning = FALSE;
   SetEvent(hDummyEvent); // break timeout
   SetEvent(hQueueEvent); // break queue loop
+  if (hInfoThread) WaitForSingleObjectEx(hInfoThread, INFINITE, TRUE);
   // Uninit mutex
   DeleteCriticalSection(&listmutex);
   CloseHandle(hQueueEvent);
   CloseHandle(hDummyEvent);
+  CloseHandle(hInfoThread);
 }
