@@ -115,7 +115,7 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
   unpackLEWord(&buf, &wTextLen);
   if (wTextLen > 0)
   {
-    pszText = malloc(wTextLen+1);
+    pszText = _alloca(wTextLen+1);
     unpackString(&buf, pszText, wTextLen);
     pszText[wTextLen] = '\0';
   }
@@ -228,10 +228,8 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
   }
   else
     NetLog_Direct("Unknown wCommand, packet skipped");
-
-  // Clean up allocated memory
-  SAFE_FREE(&pszText);
 }
+
 
 
 void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD wCommand, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wStatus, WORD wFlags, char* pszText)
@@ -281,7 +279,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
     NetLog_Direct("Error: Sanity checking failed (%d) in handleDirectGreetingMessage, len is %u", 1, dwMsgTypeLen);
     return;
   }
-  szMsgType = (char *)malloc(dwMsgTypeLen + 1);
+  szMsgType = (char *)_alloca(dwMsgTypeLen + 1);
   memcpy(szMsgType, buf, dwMsgTypeLen);
   szMsgType[dwMsgTypeLen] = '\0';
   typeId = TypeGUIDToTypeId(q1,q2,q3,q4,qt);
@@ -320,30 +318,26 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
   {
     char* szMsg;
 
-    
     NetLog_Direct("This is file request");
-    szMsg = malloc(dwDataLength+1);
+    szMsg = _alloca(dwDataLength+1);
     unpackString(&buf, szMsg, (WORD)dwDataLength);
     szMsg[dwDataLength] = '\0';
     wLen = wLen - (WORD)dwDataLength;
 
     handleFileRequest(buf, wLen, dc->dwRemoteUin, wCookie, 0, 0, szMsg, 8, TRUE);
-    SAFE_FREE(&szMsg);
   }
   else if (typeId == MTYPE_FILEREQ && wCommand == DIRECT_ACK)
   {
     char* szMsg;
 
-    
     NetLog_Direct("This is file ack");
-    szMsg = malloc(dwDataLength+1);
+    szMsg = _alloca(dwDataLength+1);
     unpackString(&buf, szMsg, (WORD)dwDataLength);
     szMsg[dwDataLength] = '\0';
     wLen = wLen - (WORD)dwDataLength;
 
     // 50 - file request granted/refused
     handleFileAck(buf, wLen, dc->dwRemoteUin, wCookie, wStatus, szMsg);
-    SAFE_FREE(&szMsg);
   }
   else if (typeId && wCommand == DIRECT_MESSAGE)
   {
@@ -352,6 +346,17 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
       icq_sendDirectMsgAck(dc, wCookie, (BYTE)typeId, 0, CAP_RTFMSGS);
     }
     handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, typeId, 0, 0, dwLengthToEnd, (WORD)dwDataLength, buf, TRUE);
+  }
+  else if (typeId == MTYPE_STATUSMSGEXT && wCommand == DIRECT_ACK)
+  { // especially for icq2003b
+    char* szMsg;
+
+    NetLog_Direct("This is extended status reply");
+    szMsg = _alloca(dwDataLength+1);
+    unpackString(&buf, szMsg, (WORD)dwDataLength);
+    szMsg[dwDataLength] = '\0';
+
+    handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, (int)(qt + 0xE7), 3, 2, (DWORD)wLen, (WORD)dwDataLength, szMsg, TRUE);
   }
   else if (typeId && wCommand == DIRECT_ACK)
   {
@@ -387,7 +392,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
         {
           char *szMsg;
 
-          szMsg = (char*)malloc(dwDataLength + 1);
+          szMsg = (char*)_alloca(dwDataLength + 1);
           if (dwDataLength > 0)
             memcpy(szMsg, buf, dwDataLength);
           szMsg[dwDataLength] = '\0';
@@ -416,6 +421,4 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
   {
     NetLog_Direct("Unsupported plugin message type '%s'", szMsgType);
   }
-
-  SAFE_FREE(&szMsgType);
 }

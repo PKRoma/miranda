@@ -1019,7 +1019,11 @@ int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4,
 {
   int nTypeID = MTYPE_UNKNOWN;
 
-  if (wType==MGTYPE_STANDARD_SEND)
+  if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_STATUSMSGEXT))
+  {
+    nTypeID = MTYPE_STATUSMSGEXT;
+  }
+  else if (wType==MGTYPE_STANDARD_SEND)
   {
     if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_WEBURL))
     {
@@ -1055,13 +1059,6 @@ int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4,
     else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_XTRAZ_SCRIPT))
     {
       nTypeID = MTYPE_SCRIPT_DATA;
-    }
-  }
-  else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_STATUSMSGEXT))
-  {
-    if (wType == 3) // is this only for NA or generally for every ???
-    {
-      nTypeID = MTYPE_STATUSMSGEXT;
     }
   }
   else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_XTRAZ_SCRIPT))
@@ -1198,7 +1195,7 @@ static void handleSmsReceipt(unsigned char *buf, DWORD dwDataLen)
 
 
 
-static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, DWORD dwLengthToEnd, WORD wMsgLen, PBYTE buf, BYTE bFlags)
+static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, WORD wMsgLen, PBYTE buf, BYTE bFlags)
 {
   if (bFlags == 3)
   {
@@ -1287,7 +1284,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
   if (wAckType == 2)
   {
-    handleMessageAck(dwUin, wCookie, type, dwDataLen, wMsgLen, pMsg, (BYTE)flags);
+    handleMessageAck(dwUin, wCookie, type, wMsgLen, pMsg, (BYTE)flags);
     return;
   }
 
