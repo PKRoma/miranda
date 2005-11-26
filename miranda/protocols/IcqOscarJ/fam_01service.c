@@ -45,7 +45,7 @@ extern DWORD dwLocalInternalIP;
 extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
 extern DWORD dwLocalDirectConnCookie;
-extern char* cookieData;
+extern BYTE* cookieData;
 extern int cookieDataLen;
 extern char* migratedServer;
 extern CRITICAL_SECTION modeMsgsMutex;

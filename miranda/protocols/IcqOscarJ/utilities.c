@@ -789,7 +789,7 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
   }
 
   // not in list, check that uin do not belong to us
-  if (ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0) == uin)
+  if (ICQGetContactSettingUIN(NULL) == uin)
     return NULL;
 
   return INVALID_HANDLE_VALUE;

@@ -41,7 +41,7 @@ extern int isMigrating;
 extern WORD wServSequence;
 extern WORD wLocalSequence;
 extern HANDLE hServerConn;
-extern char *cookieData;
+extern BYTE *cookieData;
 extern int cookieDataLen;
 extern char *migratedServer;
 extern int isMigrating;
@@ -59,7 +59,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
   WORD wCookieLen;
   WORD i;
   char* newServer;
-  char* cookie;
+  BYTE* cookie;
   char servip[16];
   oscar_tlv_chain* chain = NULL;
   WORD wError;

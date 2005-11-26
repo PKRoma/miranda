@@ -41,7 +41,7 @@
 extern int isLoginServer;
 extern WORD wLocalSequence;
 
-char* cookieData;
+BYTE* cookieData;
 int cookieDataLen = 0;
 
 
@@ -50,7 +50,7 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 {
   icq_packet packet;
   WORD wUinLen;
-  char szUin[10];
+  char szUin[UINMAXLEN];
 
 
   // isLoginServer is "1" if we just received SRV_HELLO
