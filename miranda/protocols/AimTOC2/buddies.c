@@ -59,6 +59,14 @@ void aim_remove_all_buddies()
 					hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 					CallService(MS_DB_CONTACT_DELETE, (WPARAM) tempContact, 0);
 				}
+				else
+				{
+					hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+				}
+			}
+			else
+			{
+				hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 			}
 		}
 	}
