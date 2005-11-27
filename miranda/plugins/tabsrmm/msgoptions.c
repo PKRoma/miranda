@@ -1217,6 +1217,9 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 						EnableWindow(GetDlgItem(hwndDlg, IDC_CONTAINERSKIN), useskin ? TRUE : FALSE);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_GETCONTAINERSKINNAME), useskin ? TRUE : FALSE);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), useskin ? TRUE : FALSE);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_ROUNDEDCORNERS), useskin ? TRUE : FALSE);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_CLIPSPIN), useskin ? TRUE : FALSE);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_CLIP), useskin ? TRUE : FALSE);
 						if(lParam) {
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useskin", useskin);
 							ReloadContainerSkin();

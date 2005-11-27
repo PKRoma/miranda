@@ -1127,7 +1127,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 pszIDCSAVE_close = Translate("Close session");
                 pszIDCSAVE_save = Translate("Save and close session");
 
-                dat->hContact = newData->hContact;
+				dat->hContact = newData->hContact;
                 WindowList_Add(hMessageWindowList, hwndDlg, dat->hContact);
                 BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
                 
@@ -1189,6 +1189,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					dat->hHistoryEvents = (HANDLE *)malloc(dat->maxHistory * sizeof(HANDLE));
 				else
 					dat->hHistoryEvents = NULL;
+
+				//SetWindowLong(hwndDlg, GWL_EXSTYLE, GetWindowLong(hwndDlg, GWL_EXSTYLE) | WS_EX_TRANSPARENT);
 
 				if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1)) {
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
@@ -2002,7 +2004,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 
                 if(dat->dwFlags & MWF_NEEDCHECKSIZE)
-                    PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);
+                    PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);		
 
                 if(dat->dwFlags & MWF_DEFERREDSCROLL)
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
@@ -2084,7 +2086,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->dwFlags &= ~MWF_DEFERREDREMAKELOG;
                 }
                 if(dat->dwFlags & MWF_NEEDCHECKSIZE)
-                    PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);
+                    PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);			
 
                 if(dat->dwFlags & MWF_DEFERREDSCROLL)
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
@@ -4118,7 +4120,7 @@ quote_from_last:
                                     SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, DM_SELECT_PREV, 0);
                                     return 1;
                                 }
-								if(LOBYTE(VkKeyScan((TCHAR)wp)) == 'C') {
+								if(wp == 'C') {
 									CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)dat->hContact, 0);
 									return 1;
 								}

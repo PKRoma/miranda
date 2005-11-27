@@ -1674,7 +1674,7 @@ TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSet
 
 void LoadTimeZone(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    dat->timezone = (DWORD)DBGetContactSettingByte(dat->hContact,"UserInfo","Timezone", DBGetContactSettingByte(dat->hContact, dat->szProto,"Timezone",-1));
+    dat->timezone = (DWORD)(DBGetContactSettingByte(dat->hContact,"UserInfo","Timezone", DBGetContactSettingByte(dat->hContact, dat->szProto,"Timezone",-1)));
     if(dat->timezone != -1) {
         DWORD contact_gmt_diff;
         contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;

@@ -723,7 +723,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                     uiBottom = 8;
                 }
                 else {
-                    rctPage.top = rc1.bottom;
+                    rctPage.top = rc1.bottom + 2;
                     uiBottom = 0;
                 }
             }
@@ -741,8 +741,10 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			if(nCount > 1 || !(tabdat->pContainer->dwFlags & CNT_HIDETABS)) {
 				rctClip = rctPage;
 				InflateRect(&rctClip, -tabdat->pContainer->tBorder, -tabdat->pContainer->tBorder);
-				if(dwStyle & TCS_BUTTONS)
-					rctClip.top += tabdat->pContainer->tBorder;
+				if(dwStyle & TCS_BUTTONS) {
+					//rctClip.top += 1;
+					//rctClip.bottom -= 1;
+				}
 			}
 
 			hPenOld = SelectObject(hdc, myGlobals.tabConfig.m_hPenLight);

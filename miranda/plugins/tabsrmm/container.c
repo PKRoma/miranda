@@ -354,6 +354,8 @@ void DrawSideBar(HWND hwndDlg, struct ContainerWindowData *pContainer, RECT *rc,
 
 static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
 	switch(msg) {
 		case WM_NCPAINT:
 			{
@@ -364,8 +366,6 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
 				HDC hdc;
 				RECT rcText;
 				StatusItems_t *item = &StatusItems[0];
-				struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
-				//HWND hwndDlg = pContainer->hwnd;
 				HRGN rgn = 0;
 				HICON hIcon;
 				TCHAR szWindowText[512];
@@ -378,10 +378,10 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
 				if(!pContainer->bSkinned)
 					break;
 
-				hdcReal = BeginPaint(hwndDlg, &ps);
-
 				if(!g_framelessSkinmode)
 					CallWindowProc(DefDlgProc, hwndDlg, msg, wParam, lParam);
+
+				hdcReal = BeginPaint(hwndDlg, &ps);
 
 				GetClientRect(hwndDlg, &rcClient);
 				width = rcClient.right - rcClient.left;
@@ -399,6 +399,7 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
 						HDC dc = GetDC(NULL);
 						int wscreen = GetDeviceCaps(dc, HORZRES);
 						int hscreen = GetDeviceCaps(dc, VERTRES);
+						ReleaseDC(NULL, dc);
 						pContainer->cachedDC = CreateCompatibleDC(hdcReal);
 						pContainer->cachedHBM = CreateCompatibleBitmap(hdcReal, wscreen, hscreen);
 						pContainer->oldHBM = SelectObject(pContainer->cachedDC, pContainer->cachedHBM);
@@ -450,9 +451,7 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
 			}
 		case WM_SETTEXT:
 			{
-				struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
-
-				if(pContainer->bSkinned) {
+				if(pContainer && pContainer->bSkinned) {
 					DefDlgProc(hwndDlg, msg, wParam, lParam);
 					return 0;
 				}
@@ -466,8 +465,11 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
                 int k = 0;
                 int clip = myGlobals.bClipBorder;
                 
-				//if(!pContainer->bSkinned)
-				//	break;
+				if(!pContainer)
+					break;
+
+				if(!(pContainer->dwFlags & CNT_NOTITLE))
+					break;
 
 				GetWindowRect(hwndDlg, &r);
                 GetCursorPos(&pt);
@@ -1223,15 +1225,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                 nPanel = nm->dwItemSpec; 
                             }
 panel_found:                            
-                            /*
-                            if(nPanel == 0) {
-                                SendMessage(pContainer->hwndStatus, SB_GETRECT, 0, (LPARAM)&rc);
-                                if(nm->pt.x > rc.left && nm->pt.x < rc.left + 18) {
-                                    if(((LPNMHDR)lParam)->code == NM_CLICK)
-                                        SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
-                                    break;
-                                }
-                            } */
                             if(nPanel == nParts - 1)
                                 SendMessage(pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
                             else if(nPanel == nParts - 2) {
@@ -1261,6 +1254,7 @@ panel_found:
                             if((HWND)item.lParam != pContainer->hwndActive)
                                 ShowWindow(pContainer->hwndActive, SW_HIDE);
                             pContainer->hwndActive = (HWND) item.lParam;
+                            SendMessage((HWND)item.lParam, DM_SAVESIZE, 0, 0);
                             ShowWindow((HWND)item.lParam, SW_SHOW);
                             if(!IsIconic(hwndDlg))
                                 SetFocus(pContainer->hwndActive);

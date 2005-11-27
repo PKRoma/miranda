@@ -20,11 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-<<<<<<< msgs.c
 $Id$
-=======
-$Id$
->>>>>>> 1.153
 
 */
 #include "commonheaders.h"
@@ -991,6 +987,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
         CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 
 	//FirstTimeConfig();
+    CacheLogFonts();
 	IMG_InitDecoder();
 	ReloadContainerSkin();
 	return 0;
@@ -1120,8 +1117,8 @@ int SplitmsgShutdown(void)
         DeleteCachedIcon(&ttb_Slist);
     if(ttb_Traymenu.hBmp)
         DeleteCachedIcon(&ttb_Traymenu);
-
-    IMG_DeleteItems();
+    
+	IMG_DeleteItems();
 	IMG_FreeDecoder();
     return 0;
 }
@@ -1282,7 +1279,6 @@ int LoadSendRecvMessageModule(void)
     LoadDefaultTemplates();
 
     MoveFonts();
-    CacheLogFonts();
     BuildCodePageList();
     myGlobals.m_VSApiEnabled = InitVSApi();
 	GetDefaultContainerTitleFormat();
