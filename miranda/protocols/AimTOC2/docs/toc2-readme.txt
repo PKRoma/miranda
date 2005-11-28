@@ -3,6 +3,10 @@ Aim TOC2 readme
 
 Frequently Asked Questions(FAQs)
 
+	Q: Why isn't this plugin updated frequently and When will this plugin get new features?
+	
+	A: My development is now focused on a newer OSCAR based plugin called AimOSCAR. New features will be added to that plugin and most likely never added to this plugin.
+
 	Q: I downloaded the plugin what do I do next?
 	
 	A: Verify that you have downloaded the plugin by checking to see if "AIM.dll" exist in the zip file you downloaded. If not you most likely downloaded the sourcecode. Next, exit miranda-im and move the "AIM.dll" to the plugins folder of your miranda directory(likely: "C:\Program Files\Miranda IM\plugins"). Then restart miranda.
@@ -40,6 +44,10 @@ Still need help?
 	icq id: 197688952
 
 Change Log:
+
+Version 1.4.2.3
+
+	-Fixed command that purges miranda-aim buddies. Froze Miranda if other protocol buddies existed. 
 
 Version 1.4.2.2
 
