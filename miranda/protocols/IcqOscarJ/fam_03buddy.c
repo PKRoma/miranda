@@ -422,6 +422,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   {
     if (ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED))
     { // kill spammer
+      icq_DequeueUser(dwUIN);
       AddToSpammerList(dwUIN);
       if (ICQGetContactSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
         ShowPopUpMsg(hContact, Translate("Spambot Detected"), Translate("Contact deleted & further events blocked."), POPTYPE_SPAM);
