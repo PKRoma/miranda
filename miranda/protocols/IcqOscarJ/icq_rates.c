@@ -107,21 +107,34 @@ static void RatesTimer1()
   else
     SAFE_FREE((void**)&pendingList1);
   pendingListSize1--;
-  nLev = rGroupXtrazRequest*20/19 + (GetTickCount() - tGroupXtrazRequest)/20;
+  nLev = rGroupXtrazRequest*19/20 + (GetTickCount() - tGroupXtrazRequest)/20;
   rGroupXtrazRequest = nLev < 4500 ? nLev : 4500;
   tGroupXtrazRequest = GetTickCount();
-  if (pendingListSize1)
+  if (pendingListSize1 && icqOnline)
   { // in queue remains some items, setup timer
     int nDelay = (3800 - rGroupXtrazRequest)*20;
 
     if (nDelay < 10) nDelay = 10;
     InitDelay(nDelay, RatesTimer1);
   }
+  if (!icqOnline)
+  {
+    int i;
+
+    for (i=0; i<pendingListSize1; i++) SAFE_FREE(&pendingList1[i]);
+    SAFE_FREE((void**)&pendingList1);
+    pendingListSize1 = 0;
+  }
   LeaveCriticalSection(&ratesMutex);
 
-  NetLog_Server("Rates: Resuming Xtraz request.");
-  if (item->bType = RIT_XSTATUS_REQUEST)
-    sendXStatusDetailsRequest(item->hContact);
+  if (icqOnline)
+  {
+    NetLog_Server("Rates: Resuming Xtraz request.");
+    if (item->bType = RIT_XSTATUS_REQUEST)
+      sendXStatusDetailsRequest(item->hContact);
+  }
+  else
+    NetLog_Server("Rates: Discarding request.");
   SAFE_FREE(&item);
 }
 
@@ -130,6 +143,8 @@ static void RatesTimer1()
 static void putItemToQueue1(rate_record *item, int nLev)
 {
   int nDelay = (3800 - nLev)*20;
+
+  if (!icqOnline) return;
 
   NetLog_Server("Rates: Delaying operation.");
 
@@ -184,27 +199,40 @@ static void RatesTimer2()
   else
     SAFE_FREE((void**)&pendingList2);
   pendingListSize2--;
-  nLev = rGroupMsgResponse*80/79 + (GetTickCount() - tGroupMsgResponse)/80;
+  nLev = rGroupMsgResponse*79/80 + (GetTickCount() - tGroupMsgResponse)/80;
   rGroupMsgResponse = nLev < 6000 ? nLev : 6000;
   tGroupMsgResponse = GetTickCount();
-  if (pendingListSize2)
+  if (pendingListSize2 && icqOnline)
   { // in queue remains some items, setup timer
     int nDelay = (4500 - rGroupMsgResponse)*80;
 
     if (nDelay < 10) nDelay = 10;
     InitDelay(nDelay, RatesTimer2);
   }
+  if (!icqOnline)
+  {
+    int i;
+
+    for (i=0; i<pendingListSize2; i++) SAFE_FREE(&pendingList2[i]);
+    SAFE_FREE((void**)&pendingList2);
+    pendingListSize2 = 0;
+  }
   LeaveCriticalSection(&ratesMutex);
 
-  NetLog_Server("Rates: Resuming message response.");
-  if (item->bType == RIT_AWAYMSG_RESPONSE)
+  if (icqOnline)
   {
-    icq_sendAwayMsgReplyServ(item->dwUin, item->dwMid1, item->dwMid2, item->wCookie, item->msgType, MirandaStatusToAwayMsg(AwayMsgTypeToStatus(item->msgType)));
+    NetLog_Server("Rates: Resuming message response.");
+    if (item->bType == RIT_AWAYMSG_RESPONSE)
+    {
+      icq_sendAwayMsgReplyServ(item->dwUin, item->dwMid1, item->dwMid2, item->wCookie, item->msgType, MirandaStatusToAwayMsg(AwayMsgTypeToStatus(item->msgType)));
+    }
+    else if (item->bType == RIT_XSTATUS_RESPONSE)
+    {
+      SendXtrazNotifyResponse(item->dwUin, item->dwMid1, item->dwMid2, item->wCookie, item->szData, strlennull(item->szData), item->bThruDC);
+    }
   }
-  else if (item->bType == RIT_XSTATUS_RESPONSE)
-  {
-    SendXtrazNotifyResponse(item->dwUin, item->dwMid1, item->dwMid2, item->wCookie, item->szData, strlennull(item->szData), item->bThruDC);
-  }
+  else
+    NetLog_Server("Rates: Discarding response.");
   SAFE_FREE(&item->szData);
   SAFE_FREE(&item);
 }
@@ -215,6 +243,8 @@ static void putItemToQueue2(rate_record *item, int nLev)
 {
   int nDelay = (4500 - nLev)*80;
   rate_record *tmp;
+
+  if (!icqOnline) return;
 
   NetLog_Server("Rates: Delaying operation.");
 
@@ -242,7 +272,7 @@ int handleRateItem(rate_record *item, BOOL bAllowDelay)
 
   if (item->rate_group == 0x101)
   { // xtraz request
-    int nLev = rGroupXtrazRequest*20/19 + (tNow - tGroupXtrazRequest)/20;
+    int nLev = rGroupXtrazRequest*19/20 + (tNow - tGroupXtrazRequest)/20;
 
     if ((nLev < 3800 || item->nMinDelay) && bAllowDelay)
     { // limit reached or min delay configured, add to queue
@@ -258,7 +288,7 @@ int handleRateItem(rate_record *item, BOOL bAllowDelay)
   }
   else if (item->rate_group == 0x102)
   { // msg response
-    int nLev = rGroupMsgResponse*80/79 + (tNow - tGroupMsgResponse)/80;
+    int nLev = rGroupMsgResponse*79/80 + (tNow - tGroupMsgResponse)/80;
 
     if (nLev < 4500)
     { // limit reached or min delay configured, add to queue

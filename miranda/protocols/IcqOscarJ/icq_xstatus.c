@@ -74,7 +74,7 @@ static DWORD requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
   rr.hContact = hContact;
   rr.bType = RIT_XSTATUS_REQUEST;
   rr.rate_group = 0x101; // request
-  rr.nMinDelay = 500;    // delay at least 500ms
+  rr.nMinDelay = 1000;    // delay at least 1s
 
   if (!handleRateItem(&rr, bAllowDelay))
     return sendXStatusDetailsRequest(hContact);
