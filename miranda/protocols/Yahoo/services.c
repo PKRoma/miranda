@@ -1353,6 +1353,8 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 			YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Removing avatar information!");
 			
 			DBWriteContactSettingDword(AI->hContact, yahooProtocolName, "PictCK", 0);
+			DBWriteContactSettingDword(AI->hContact, yahooProtocolName, "PictLastCheck", 0);
+			DBWriteContactSettingDword(AI->hContact, yahooProtocolName, "PictLoading", 0);
 			//GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename);
 			//DeleteFile(AI->filename);
 		}

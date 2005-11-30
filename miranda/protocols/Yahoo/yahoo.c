@@ -731,7 +731,9 @@ void YAHOO_request_avatar(const char* who)
 	/*
 	 * time() - in seconds ( 60*60 = 1 hour)
 	 */
-	if (last_chk == 0 || (cur_time - last_chk) >= 3600) {
+	if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) == 0 || 
+		last_chk == 0 || (cur_time - last_chk) >= 3600) {
+			
 		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", cur_time);
 
 		LOG(("Requesting Avatar for: %s", who));
@@ -911,6 +913,7 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 		error = 1; /* don't use this one? */
 	} 
     
+	DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
 	LOG(("File download complete!?"));
 
 //    ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
@@ -919,7 +922,7 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
             BITMAPINFOHEADER* pDib;
 			
 			//---- Converting memory buffer to bitmap and saving it to disk
-			if ( !YAHOO_LoadPngModule() )
+			if ( !YAHOO_LoadPngModule() ) 
 				return;
 
 			if ( !png2dibConvertor( pBuff, rsize, &pDib )) {
@@ -945,8 +948,10 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 				CloseHandle(myhFile);
 				
 				DBWriteContactSettingString(hContact, "ContactPhoto", "File", buf);
+				DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", 0);
 			} else {
 				LOG(("Can not open file for writing: %s", buf));
+				error = 1;
 			}
 			
 			GlobalFree( pDib );
@@ -956,8 +961,6 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	}
 
 	FREE(pBuff);
-
-	DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
 
 	AI.cbSize = sizeof AI;
 	AI.format = PA_FORMAT_BMP;
@@ -992,6 +995,11 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 		
 	LOG(("ext_yahoo_got_picture for %s with url %s (checksum: %d)", who, pic_url, cksum));
 	
+	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+		LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
+		return;
+	}
+		
 	hContact = getbuddyH(who);
 	
 	if (!hContact) {
