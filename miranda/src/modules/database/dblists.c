@@ -58,25 +58,35 @@ void* List_Find( SortedList* p_list, void* p_value )
 
 int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 {
-   int low  = 0;
-   int high = p_list->realCount-1;
+	if ( p_list->sortFunc == NULL ) {
+		int i;
+		for ( i=0; i < p_list->realCount; i++ )
+			if ( p_list->items[i] == p_value ) {
+				*p_index = i;
+				return(1);
+			}
+	}
+	else {
+		int low  = 0;
+		int high = p_list->realCount-1;
 
-   while( low <= high )
-   {  
-		int i = ( low+high )/2;
-      int result = p_list->sortFunc( p_list->items[ i ], p_value );
-      if ( result == 0 )
-		{	*p_index = i;
-			return(1);
+		while( low <= high )
+		{  
+			int i = ( low+high )/2;
+			int result = p_list->sortFunc( p_list->items[ i ], p_value );
+			if ( result == 0 )
+			{	*p_index = i;
+				return(1);
+			}
+
+			if ( result < 0 )
+				low = i+1;
+			else
+				high = i-1;
 		}
 
-		if ( result < 0 )
-         low = i+1;
-      else
-			high = i-1;
-   }
-
-	*p_index = low;
+		*p_index = low;
+	}
    return 0;
 }
 

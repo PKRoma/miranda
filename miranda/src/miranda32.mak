@@ -59,10 +59,38 @@ CLEAN :
 	-@erase "$(INTDIR)\bmpfilter.sbr"
 	-@erase "$(INTDIR)\button.obj"
 	-@erase "$(INTDIR)\button.sbr"
+	-@erase "$(INTDIR)\clc.obj"
+	-@erase "$(INTDIR)\clc.sbr"
+	-@erase "$(INTDIR)\clcfiledrop.obj"
+	-@erase "$(INTDIR)\clcfiledrop.sbr"
+	-@erase "$(INTDIR)\clcidents.obj"
+	-@erase "$(INTDIR)\clcidents.sbr"
+	-@erase "$(INTDIR)\clcitems.obj"
+	-@erase "$(INTDIR)\clcitems.sbr"
+	-@erase "$(INTDIR)\clcmsgs.obj"
+	-@erase "$(INTDIR)\clcmsgs.sbr"
+	-@erase "$(INTDIR)\clcutils.obj"
+	-@erase "$(INTDIR)\clcutils.sbr"
+	-@erase "$(INTDIR)\clistcore.obj"
+	-@erase "$(INTDIR)\clistcore.sbr"
+	-@erase "$(INTDIR)\clistevents.obj"
+	-@erase "$(INTDIR)\clistevents.sbr"
+	-@erase "$(INTDIR)\clistmod.obj"
+	-@erase "$(INTDIR)\clistmod.sbr"
+	-@erase "$(INTDIR)\clistsettings.obj"
+	-@erase "$(INTDIR)\clistsettings.sbr"
+	-@erase "$(INTDIR)\clisttray.obj"
+	-@erase "$(INTDIR)\clisttray.sbr"
+	-@erase "$(INTDIR)\clui.obj"
+	-@erase "$(INTDIR)\clui.sbr"
+	-@erase "$(INTDIR)\cluiservices.obj"
+	-@erase "$(INTDIR)\cluiservices.sbr"
 	-@erase "$(INTDIR)\colourpicker.obj"
 	-@erase "$(INTDIR)\colourpicker.sbr"
 	-@erase "$(INTDIR)\commonheaders.obj"
 	-@erase "$(INTDIR)\commonheaders.sbr"
+	-@erase "$(INTDIR)\contact.obj"
+	-@erase "$(INTDIR)\contact.sbr"
 	-@erase "$(INTDIR)\contactinfo.obj"
 	-@erase "$(INTDIR)\contactinfo.sbr"
 	-@erase "$(INTDIR)\contacts.obj"
@@ -73,6 +101,8 @@ CLEAN :
 	-@erase "$(INTDIR)\dblists.sbr"
 	-@erase "$(INTDIR)\dbtime.obj"
 	-@erase "$(INTDIR)\dbtime.sbr"
+	-@erase "$(INTDIR)\Docking.obj"
+	-@erase "$(INTDIR)\Docking.sbr"
 	-@erase "$(INTDIR)\email.obj"
 	-@erase "$(INTDIR)\email.sbr"
 	-@erase "$(INTDIR)\file.obj"
@@ -89,6 +119,8 @@ CLEAN :
 	-@erase "$(INTDIR)\filexferdlg.sbr"
 	-@erase "$(INTDIR)\findadd.obj"
 	-@erase "$(INTDIR)\findadd.sbr"
+	-@erase "$(INTDIR)\groups.obj"
+	-@erase "$(INTDIR)\groups.sbr"
 	-@erase "$(INTDIR)\help.obj"
 	-@erase "$(INTDIR)\help.sbr"
 	-@erase "$(INTDIR)\history.obj"
@@ -99,6 +131,8 @@ CLEAN :
 	-@erase "$(INTDIR)\idle.sbr"
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\ignore.sbr"
+	-@erase "$(INTDIR)\keyboard.obj"
+	-@erase "$(INTDIR)\keyboard.sbr"
 	-@erase "$(INTDIR)\langpack.obj"
 	-@erase "$(INTDIR)\langpack.sbr"
 	-@erase "$(INTDIR)\lpservices.obj"
@@ -251,7 +285,24 @@ BSC32_SBRS= \
 	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\utils.sbr" \
 	"$(INTDIR)\windowlist.sbr" \
-	"$(INTDIR)\visibility.sbr"
+	"$(INTDIR)\visibility.sbr" \
+	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\clc.sbr" \
+	"$(INTDIR)\clcfiledrop.sbr" \
+	"$(INTDIR)\clcidents.sbr" \
+	"$(INTDIR)\clcitems.sbr" \
+	"$(INTDIR)\clcmsgs.sbr" \
+	"$(INTDIR)\clcutils.sbr" \
+	"$(INTDIR)\clistcore.sbr" \
+	"$(INTDIR)\clistevents.sbr" \
+	"$(INTDIR)\clistmod.sbr" \
+	"$(INTDIR)\clistsettings.sbr" \
+	"$(INTDIR)\clisttray.sbr" \
+	"$(INTDIR)\clui.sbr" \
+	"$(INTDIR)\cluiservices.sbr" \
+	"$(INTDIR)\contact.sbr" \
+	"$(INTDIR)\Docking.sbr" \
+	"$(INTDIR)\groups.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -325,7 +376,24 @@ LINK32_OBJS= \
 	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\windowlist.obj" \
 	"$(INTDIR)\visibility.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\keyboard.obj" \
+	"$(INTDIR)\clc.obj" \
+	"$(INTDIR)\clcfiledrop.obj" \
+	"$(INTDIR)\clcidents.obj" \
+	"$(INTDIR)\clcitems.obj" \
+	"$(INTDIR)\clcmsgs.obj" \
+	"$(INTDIR)\clcutils.obj" \
+	"$(INTDIR)\clistcore.obj" \
+	"$(INTDIR)\clistevents.obj" \
+	"$(INTDIR)\clistmod.obj" \
+	"$(INTDIR)\clistsettings.obj" \
+	"$(INTDIR)\clisttray.obj" \
+	"$(INTDIR)\clui.obj" \
+	"$(INTDIR)\cluiservices.obj" \
+	"$(INTDIR)\contact.obj" \
+	"$(INTDIR)\Docking.obj" \
+	"$(INTDIR)\groups.obj"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -360,10 +428,38 @@ CLEAN :
 	-@erase "$(INTDIR)\bmpfilter.sbr"
 	-@erase "$(INTDIR)\button.obj"
 	-@erase "$(INTDIR)\button.sbr"
+	-@erase "$(INTDIR)\clc.obj"
+	-@erase "$(INTDIR)\clc.sbr"
+	-@erase "$(INTDIR)\clcfiledrop.obj"
+	-@erase "$(INTDIR)\clcfiledrop.sbr"
+	-@erase "$(INTDIR)\clcidents.obj"
+	-@erase "$(INTDIR)\clcidents.sbr"
+	-@erase "$(INTDIR)\clcitems.obj"
+	-@erase "$(INTDIR)\clcitems.sbr"
+	-@erase "$(INTDIR)\clcmsgs.obj"
+	-@erase "$(INTDIR)\clcmsgs.sbr"
+	-@erase "$(INTDIR)\clcutils.obj"
+	-@erase "$(INTDIR)\clcutils.sbr"
+	-@erase "$(INTDIR)\clistcore.obj"
+	-@erase "$(INTDIR)\clistcore.sbr"
+	-@erase "$(INTDIR)\clistevents.obj"
+	-@erase "$(INTDIR)\clistevents.sbr"
+	-@erase "$(INTDIR)\clistmod.obj"
+	-@erase "$(INTDIR)\clistmod.sbr"
+	-@erase "$(INTDIR)\clistsettings.obj"
+	-@erase "$(INTDIR)\clistsettings.sbr"
+	-@erase "$(INTDIR)\clisttray.obj"
+	-@erase "$(INTDIR)\clisttray.sbr"
+	-@erase "$(INTDIR)\clui.obj"
+	-@erase "$(INTDIR)\clui.sbr"
+	-@erase "$(INTDIR)\cluiservices.obj"
+	-@erase "$(INTDIR)\cluiservices.sbr"
 	-@erase "$(INTDIR)\colourpicker.obj"
 	-@erase "$(INTDIR)\colourpicker.sbr"
 	-@erase "$(INTDIR)\commonheaders.obj"
 	-@erase "$(INTDIR)\commonheaders.sbr"
+	-@erase "$(INTDIR)\contact.obj"
+	-@erase "$(INTDIR)\contact.sbr"
 	-@erase "$(INTDIR)\contactinfo.obj"
 	-@erase "$(INTDIR)\contactinfo.sbr"
 	-@erase "$(INTDIR)\contacts.obj"
@@ -374,6 +470,8 @@ CLEAN :
 	-@erase "$(INTDIR)\dblists.sbr"
 	-@erase "$(INTDIR)\dbtime.obj"
 	-@erase "$(INTDIR)\dbtime.sbr"
+	-@erase "$(INTDIR)\Docking.obj"
+	-@erase "$(INTDIR)\Docking.sbr"
 	-@erase "$(INTDIR)\email.obj"
 	-@erase "$(INTDIR)\email.sbr"
 	-@erase "$(INTDIR)\file.obj"
@@ -390,6 +488,8 @@ CLEAN :
 	-@erase "$(INTDIR)\filexferdlg.sbr"
 	-@erase "$(INTDIR)\findadd.obj"
 	-@erase "$(INTDIR)\findadd.sbr"
+	-@erase "$(INTDIR)\groups.obj"
+	-@erase "$(INTDIR)\groups.sbr"
 	-@erase "$(INTDIR)\help.obj"
 	-@erase "$(INTDIR)\help.sbr"
 	-@erase "$(INTDIR)\history.obj"
@@ -400,12 +500,15 @@ CLEAN :
 	-@erase "$(INTDIR)\idle.sbr"
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\ignore.sbr"
+	-@erase "$(INTDIR)\keyboard.obj"
+	-@erase "$(INTDIR)\keyboard.sbr"
 	-@erase "$(INTDIR)\langpack.obj"
 	-@erase "$(INTDIR)\langpack.sbr"
 	-@erase "$(INTDIR)\lpservices.obj"
 	-@erase "$(INTDIR)\lpservices.sbr"
 	-@erase "$(INTDIR)\miranda.obj"
 	-@erase "$(INTDIR)\miranda.sbr"
+	-@erase "$(INTDIR)\miranda32.pch"
 	-@erase "$(INTDIR)\modules.obj"
 	-@erase "$(INTDIR)\modules.sbr"
 	-@erase "$(INTDIR)\netlib.obj"
@@ -484,7 +587,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32 
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
 BSC32=bscmake.exe
@@ -553,7 +656,24 @@ BSC32_SBRS= \
 	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\utils.sbr" \
 	"$(INTDIR)\windowlist.sbr" \
-	"$(INTDIR)\visibility.sbr"
+	"$(INTDIR)\visibility.sbr" \
+	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\clc.sbr" \
+	"$(INTDIR)\clcfiledrop.sbr" \
+	"$(INTDIR)\clcidents.sbr" \
+	"$(INTDIR)\clcitems.sbr" \
+	"$(INTDIR)\clcmsgs.sbr" \
+	"$(INTDIR)\clcutils.sbr" \
+	"$(INTDIR)\clistcore.sbr" \
+	"$(INTDIR)\clistevents.sbr" \
+	"$(INTDIR)\clistmod.sbr" \
+	"$(INTDIR)\clistsettings.sbr" \
+	"$(INTDIR)\clisttray.sbr" \
+	"$(INTDIR)\clui.sbr" \
+	"$(INTDIR)\cluiservices.sbr" \
+	"$(INTDIR)\contact.sbr" \
+	"$(INTDIR)\Docking.sbr" \
+	"$(INTDIR)\groups.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -627,7 +747,24 @@ LINK32_OBJS= \
 	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\windowlist.obj" \
 	"$(INTDIR)\visibility.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\keyboard.obj" \
+	"$(INTDIR)\clc.obj" \
+	"$(INTDIR)\clcfiledrop.obj" \
+	"$(INTDIR)\clcidents.obj" \
+	"$(INTDIR)\clcitems.obj" \
+	"$(INTDIR)\clcmsgs.obj" \
+	"$(INTDIR)\clcutils.obj" \
+	"$(INTDIR)\clistcore.obj" \
+	"$(INTDIR)\clistevents.obj" \
+	"$(INTDIR)\clistmod.obj" \
+	"$(INTDIR)\clistsettings.obj" \
+	"$(INTDIR)\clisttray.obj" \
+	"$(INTDIR)\clui.obj" \
+	"$(INTDIR)\cluiservices.obj" \
+	"$(INTDIR)\contact.obj" \
+	"$(INTDIR)\Docking.obj" \
+	"$(INTDIR)\groups.obj"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -662,10 +799,38 @@ CLEAN :
 	-@erase "$(INTDIR)\bmpfilter.sbr"
 	-@erase "$(INTDIR)\button.obj"
 	-@erase "$(INTDIR)\button.sbr"
+	-@erase "$(INTDIR)\clc.obj"
+	-@erase "$(INTDIR)\clc.sbr"
+	-@erase "$(INTDIR)\clcfiledrop.obj"
+	-@erase "$(INTDIR)\clcfiledrop.sbr"
+	-@erase "$(INTDIR)\clcidents.obj"
+	-@erase "$(INTDIR)\clcidents.sbr"
+	-@erase "$(INTDIR)\clcitems.obj"
+	-@erase "$(INTDIR)\clcitems.sbr"
+	-@erase "$(INTDIR)\clcmsgs.obj"
+	-@erase "$(INTDIR)\clcmsgs.sbr"
+	-@erase "$(INTDIR)\clcutils.obj"
+	-@erase "$(INTDIR)\clcutils.sbr"
+	-@erase "$(INTDIR)\clistcore.obj"
+	-@erase "$(INTDIR)\clistcore.sbr"
+	-@erase "$(INTDIR)\clistevents.obj"
+	-@erase "$(INTDIR)\clistevents.sbr"
+	-@erase "$(INTDIR)\clistmod.obj"
+	-@erase "$(INTDIR)\clistmod.sbr"
+	-@erase "$(INTDIR)\clistsettings.obj"
+	-@erase "$(INTDIR)\clistsettings.sbr"
+	-@erase "$(INTDIR)\clisttray.obj"
+	-@erase "$(INTDIR)\clisttray.sbr"
+	-@erase "$(INTDIR)\clui.obj"
+	-@erase "$(INTDIR)\clui.sbr"
+	-@erase "$(INTDIR)\cluiservices.obj"
+	-@erase "$(INTDIR)\cluiservices.sbr"
 	-@erase "$(INTDIR)\colourpicker.obj"
 	-@erase "$(INTDIR)\colourpicker.sbr"
 	-@erase "$(INTDIR)\commonheaders.obj"
 	-@erase "$(INTDIR)\commonheaders.sbr"
+	-@erase "$(INTDIR)\contact.obj"
+	-@erase "$(INTDIR)\contact.sbr"
 	-@erase "$(INTDIR)\contactinfo.obj"
 	-@erase "$(INTDIR)\contactinfo.sbr"
 	-@erase "$(INTDIR)\contacts.obj"
@@ -676,6 +841,8 @@ CLEAN :
 	-@erase "$(INTDIR)\dblists.sbr"
 	-@erase "$(INTDIR)\dbtime.obj"
 	-@erase "$(INTDIR)\dbtime.sbr"
+	-@erase "$(INTDIR)\Docking.obj"
+	-@erase "$(INTDIR)\Docking.sbr"
 	-@erase "$(INTDIR)\email.obj"
 	-@erase "$(INTDIR)\email.sbr"
 	-@erase "$(INTDIR)\file.obj"
@@ -692,6 +859,8 @@ CLEAN :
 	-@erase "$(INTDIR)\filexferdlg.sbr"
 	-@erase "$(INTDIR)\findadd.obj"
 	-@erase "$(INTDIR)\findadd.sbr"
+	-@erase "$(INTDIR)\groups.obj"
+	-@erase "$(INTDIR)\groups.sbr"
 	-@erase "$(INTDIR)\help.obj"
 	-@erase "$(INTDIR)\help.sbr"
 	-@erase "$(INTDIR)\history.obj"
@@ -702,6 +871,8 @@ CLEAN :
 	-@erase "$(INTDIR)\idle.sbr"
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\ignore.sbr"
+	-@erase "$(INTDIR)\keyboard.obj"
+	-@erase "$(INTDIR)\keyboard.sbr"
 	-@erase "$(INTDIR)\langpack.obj"
 	-@erase "$(INTDIR)\langpack.sbr"
 	-@erase "$(INTDIR)\lpservices.obj"
@@ -854,7 +1025,24 @@ BSC32_SBRS= \
 	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\utils.sbr" \
 	"$(INTDIR)\windowlist.sbr" \
-	"$(INTDIR)\visibility.sbr"
+	"$(INTDIR)\visibility.sbr" \
+	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\clc.sbr" \
+	"$(INTDIR)\clcfiledrop.sbr" \
+	"$(INTDIR)\clcidents.sbr" \
+	"$(INTDIR)\clcitems.sbr" \
+	"$(INTDIR)\clcmsgs.sbr" \
+	"$(INTDIR)\clcutils.sbr" \
+	"$(INTDIR)\clistcore.sbr" \
+	"$(INTDIR)\clistevents.sbr" \
+	"$(INTDIR)\clistmod.sbr" \
+	"$(INTDIR)\clistsettings.sbr" \
+	"$(INTDIR)\clisttray.sbr" \
+	"$(INTDIR)\clui.sbr" \
+	"$(INTDIR)\cluiservices.sbr" \
+	"$(INTDIR)\contact.sbr" \
+	"$(INTDIR)\Docking.sbr" \
+	"$(INTDIR)\groups.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -928,7 +1116,24 @@ LINK32_OBJS= \
 	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\windowlist.obj" \
 	"$(INTDIR)\visibility.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\keyboard.obj" \
+	"$(INTDIR)\clc.obj" \
+	"$(INTDIR)\clcfiledrop.obj" \
+	"$(INTDIR)\clcidents.obj" \
+	"$(INTDIR)\clcitems.obj" \
+	"$(INTDIR)\clcmsgs.obj" \
+	"$(INTDIR)\clcutils.obj" \
+	"$(INTDIR)\clistcore.obj" \
+	"$(INTDIR)\clistevents.obj" \
+	"$(INTDIR)\clistmod.obj" \
+	"$(INTDIR)\clistsettings.obj" \
+	"$(INTDIR)\clisttray.obj" \
+	"$(INTDIR)\clui.obj" \
+	"$(INTDIR)\cluiservices.obj" \
+	"$(INTDIR)\contact.obj" \
+	"$(INTDIR)\Docking.obj" \
+	"$(INTDIR)\groups.obj"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -963,10 +1168,38 @@ CLEAN :
 	-@erase "$(INTDIR)\bmpfilter.sbr"
 	-@erase "$(INTDIR)\button.obj"
 	-@erase "$(INTDIR)\button.sbr"
+	-@erase "$(INTDIR)\clc.obj"
+	-@erase "$(INTDIR)\clc.sbr"
+	-@erase "$(INTDIR)\clcfiledrop.obj"
+	-@erase "$(INTDIR)\clcfiledrop.sbr"
+	-@erase "$(INTDIR)\clcidents.obj"
+	-@erase "$(INTDIR)\clcidents.sbr"
+	-@erase "$(INTDIR)\clcitems.obj"
+	-@erase "$(INTDIR)\clcitems.sbr"
+	-@erase "$(INTDIR)\clcmsgs.obj"
+	-@erase "$(INTDIR)\clcmsgs.sbr"
+	-@erase "$(INTDIR)\clcutils.obj"
+	-@erase "$(INTDIR)\clcutils.sbr"
+	-@erase "$(INTDIR)\clistcore.obj"
+	-@erase "$(INTDIR)\clistcore.sbr"
+	-@erase "$(INTDIR)\clistevents.obj"
+	-@erase "$(INTDIR)\clistevents.sbr"
+	-@erase "$(INTDIR)\clistmod.obj"
+	-@erase "$(INTDIR)\clistmod.sbr"
+	-@erase "$(INTDIR)\clistsettings.obj"
+	-@erase "$(INTDIR)\clistsettings.sbr"
+	-@erase "$(INTDIR)\clisttray.obj"
+	-@erase "$(INTDIR)\clisttray.sbr"
+	-@erase "$(INTDIR)\clui.obj"
+	-@erase "$(INTDIR)\clui.sbr"
+	-@erase "$(INTDIR)\cluiservices.obj"
+	-@erase "$(INTDIR)\cluiservices.sbr"
 	-@erase "$(INTDIR)\colourpicker.obj"
 	-@erase "$(INTDIR)\colourpicker.sbr"
 	-@erase "$(INTDIR)\commonheaders.obj"
 	-@erase "$(INTDIR)\commonheaders.sbr"
+	-@erase "$(INTDIR)\contact.obj"
+	-@erase "$(INTDIR)\contact.sbr"
 	-@erase "$(INTDIR)\contactinfo.obj"
 	-@erase "$(INTDIR)\contactinfo.sbr"
 	-@erase "$(INTDIR)\contacts.obj"
@@ -977,6 +1210,8 @@ CLEAN :
 	-@erase "$(INTDIR)\dblists.sbr"
 	-@erase "$(INTDIR)\dbtime.obj"
 	-@erase "$(INTDIR)\dbtime.sbr"
+	-@erase "$(INTDIR)\Docking.obj"
+	-@erase "$(INTDIR)\Docking.sbr"
 	-@erase "$(INTDIR)\email.obj"
 	-@erase "$(INTDIR)\email.sbr"
 	-@erase "$(INTDIR)\file.obj"
@@ -993,6 +1228,8 @@ CLEAN :
 	-@erase "$(INTDIR)\filexferdlg.sbr"
 	-@erase "$(INTDIR)\findadd.obj"
 	-@erase "$(INTDIR)\findadd.sbr"
+	-@erase "$(INTDIR)\groups.obj"
+	-@erase "$(INTDIR)\groups.sbr"
 	-@erase "$(INTDIR)\help.obj"
 	-@erase "$(INTDIR)\help.sbr"
 	-@erase "$(INTDIR)\history.obj"
@@ -1003,12 +1240,15 @@ CLEAN :
 	-@erase "$(INTDIR)\idle.sbr"
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\ignore.sbr"
+	-@erase "$(INTDIR)\keyboard.obj"
+	-@erase "$(INTDIR)\keyboard.sbr"
 	-@erase "$(INTDIR)\langpack.obj"
 	-@erase "$(INTDIR)\langpack.sbr"
 	-@erase "$(INTDIR)\lpservices.obj"
 	-@erase "$(INTDIR)\lpservices.sbr"
 	-@erase "$(INTDIR)\miranda.obj"
 	-@erase "$(INTDIR)\miranda.sbr"
+	-@erase "$(INTDIR)\miranda32.pch"
 	-@erase "$(INTDIR)\modules.obj"
 	-@erase "$(INTDIR)\modules.sbr"
 	-@erase "$(INTDIR)\netlib.obj"
@@ -1087,7 +1327,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32 
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
 BSC32=bscmake.exe
@@ -1156,7 +1396,24 @@ BSC32_SBRS= \
 	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\utils.sbr" \
 	"$(INTDIR)\windowlist.sbr" \
-	"$(INTDIR)\visibility.sbr"
+	"$(INTDIR)\visibility.sbr" \
+	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\clc.sbr" \
+	"$(INTDIR)\clcfiledrop.sbr" \
+	"$(INTDIR)\clcidents.sbr" \
+	"$(INTDIR)\clcitems.sbr" \
+	"$(INTDIR)\clcmsgs.sbr" \
+	"$(INTDIR)\clcutils.sbr" \
+	"$(INTDIR)\clistcore.sbr" \
+	"$(INTDIR)\clistevents.sbr" \
+	"$(INTDIR)\clistmod.sbr" \
+	"$(INTDIR)\clistsettings.sbr" \
+	"$(INTDIR)\clisttray.sbr" \
+	"$(INTDIR)\clui.sbr" \
+	"$(INTDIR)\cluiservices.sbr" \
+	"$(INTDIR)\contact.sbr" \
+	"$(INTDIR)\Docking.sbr" \
+	"$(INTDIR)\groups.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1230,7 +1487,24 @@ LINK32_OBJS= \
 	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\windowlist.obj" \
 	"$(INTDIR)\visibility.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\keyboard.obj" \
+	"$(INTDIR)\clc.obj" \
+	"$(INTDIR)\clcfiledrop.obj" \
+	"$(INTDIR)\clcidents.obj" \
+	"$(INTDIR)\clcitems.obj" \
+	"$(INTDIR)\clcmsgs.obj" \
+	"$(INTDIR)\clcutils.obj" \
+	"$(INTDIR)\clistcore.obj" \
+	"$(INTDIR)\clistevents.obj" \
+	"$(INTDIR)\clistmod.obj" \
+	"$(INTDIR)\clistsettings.obj" \
+	"$(INTDIR)\clisttray.obj" \
+	"$(INTDIR)\clui.obj" \
+	"$(INTDIR)\cluiservices.obj" \
+	"$(INTDIR)\contact.obj" \
+	"$(INTDIR)\Docking.obj" \
+	"$(INTDIR)\groups.obj"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1294,9 +1568,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
-"$(INTDIR)\commonheaders.obj"	"$(INTDIR)\commonheaders.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\commonheaders.obj"	"$(INTDIR)\commonheaders.sbr"	"$(INTDIR)\miranda32.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1314,9 +1588,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
-"$(INTDIR)\commonheaders.obj"	"$(INTDIR)\commonheaders.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\commonheaders.obj"	"$(INTDIR)\commonheaders.sbr"	"$(INTDIR)\miranda32.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1338,9 +1612,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
-"$(INTDIR)\miranda.obj"	"$(INTDIR)\miranda.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\miranda.obj"	"$(INTDIR)\miranda.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1358,9 +1632,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
-"$(INTDIR)\miranda.obj"	"$(INTDIR)\miranda.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\miranda.obj"	"$(INTDIR)\miranda.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1382,9 +1656,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
-"$(INTDIR)\modules.obj"	"$(INTDIR)\modules.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\modules.obj"	"$(INTDIR)\modules.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1402,9 +1676,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
-"$(INTDIR)\modules.obj"	"$(INTDIR)\modules.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\modules.obj"	"$(INTDIR)\modules.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1426,9 +1700,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
-"$(INTDIR)\addcontact.obj"	"$(INTDIR)\addcontact.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\addcontact.obj"	"$(INTDIR)\addcontact.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1446,9 +1720,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
-"$(INTDIR)\addcontact.obj"	"$(INTDIR)\addcontact.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\addcontact.obj"	"$(INTDIR)\addcontact.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1813,6 +2087,108 @@ SOURCE=.\modules\utils\windowlist.c
 SOURCE=.\modules\visibility\visibility.c
 
 "$(INTDIR)\visibility.obj"	"$(INTDIR)\visibility.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\clc.c
+
+"$(INTDIR)\clc.obj"	"$(INTDIR)\clc.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\clcfiledrop.c
+
+"$(INTDIR)\clcfiledrop.obj"	"$(INTDIR)\clcfiledrop.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\clcidents.c
+
+"$(INTDIR)\clcidents.obj"	"$(INTDIR)\clcidents.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\clcitems.c
+
+"$(INTDIR)\clcitems.obj"	"$(INTDIR)\clcitems.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\clcmsgs.c
+
+"$(INTDIR)\clcmsgs.obj"	"$(INTDIR)\clcmsgs.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\clcutils.c
+
+"$(INTDIR)\clcutils.obj"	"$(INTDIR)\clcutils.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\clistcore.c
+
+"$(INTDIR)\clistcore.obj"	"$(INTDIR)\clistcore.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\clistevents.c
+
+"$(INTDIR)\clistevents.obj"	"$(INTDIR)\clistevents.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\clistmod.c
+
+"$(INTDIR)\clistmod.obj"	"$(INTDIR)\clistmod.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\clistsettings.c
+
+"$(INTDIR)\clistsettings.obj"	"$(INTDIR)\clistsettings.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\clisttray.c
+
+"$(INTDIR)\clisttray.obj"	"$(INTDIR)\clisttray.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\clui.c
+
+"$(INTDIR)\clui.obj"	"$(INTDIR)\clui.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\cluiservices.c
+
+"$(INTDIR)\cluiservices.obj"	"$(INTDIR)\cluiservices.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\contact.c
+
+"$(INTDIR)\contact.obj"	"$(INTDIR)\contact.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\Docking.c
+
+"$(INTDIR)\Docking.obj"	"$(INTDIR)\Docking.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\groups.c
+
+"$(INTDIR)\groups.obj"	"$(INTDIR)\groups.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\modules\clist\keyboard.c
+
+"$(INTDIR)\keyboard.obj"	"$(INTDIR)\keyboard.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

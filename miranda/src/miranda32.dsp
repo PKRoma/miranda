@@ -744,6 +744,82 @@ SOURCE=.\modules\utils\windowlist.c
 SOURCE=.\modules\visibility\visibility.c
 # End Source File
 # End Group
+# Begin Group "clist"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\modules\clist\clc.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\clc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\clcfiledrop.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\clcidents.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\clcitems.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\clcmsgs.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\clcutils.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\clistcore.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\clistevents.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\clistmod.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\clistsettings.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\clisttray.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\clui.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\cluiservices.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\contact.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\Docking.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\groups.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\keyboard.c
+# End Source File
+# End Group
 # End Group
 # Begin Group "Resources"
 

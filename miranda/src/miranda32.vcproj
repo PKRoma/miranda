@@ -307,6 +307,9 @@
 				RelativePath="..\include\m_clist.h">
 			</File>
 			<File
+				RelativePath="..\include\m_clistint.h">
+			</File>
+			<File
 				RelativePath="..\include\m_clui.h">
 			</File>
 			<File
@@ -2933,6 +2936,64 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+				</File>
+			</Filter>
+			<Filter
+				Name="clist"
+				Filter="">
+				<File
+					RelativePath=".\modules\clist\clc.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clc.h">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clcfiledrop.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clcidents.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clcitems.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clcmsgs.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clcutils.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clistcore.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clistevents.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clistmod.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clistsettings.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clisttray.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clui.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\cluiservices.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\contact.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\Docking.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\groups.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\keyboard.c">
 				</File>
 			</Filter>
 		</Filter>

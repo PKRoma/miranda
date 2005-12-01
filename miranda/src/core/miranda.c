@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
+#include "../modules/database/dblists.h"
 
 int InitialiseModularEngine(void);
 void DestroyingModularEngine(void);
@@ -468,6 +469,22 @@ int GetMemoryManagerInterface(WPARAM wParam, LPARAM lParam)
 	return 1;
 }
 
+int GetListInterface(WPARAM wParam, LPARAM lParam)
+{
+	struct LIST_INTERFACE *li = (struct LIST_INTERFACE*) lParam;
+	if (li || li->cbSize == sizeof(struct LIST_INTERFACE)) 
+	{
+		li->List_Create   = List_Create;
+		li->List_Destroy  = List_Destroy;
+		li->List_Find     = List_Find;
+		li->List_GetIndex = List_GetIndex;
+		li->List_Insert   = List_Insert;
+		li->List_Remove   = List_Remove;
+		return 0;
+	}
+	return 1;
+}
+
 int LoadSystemModule(void)
 {
 	InitCommonControls();
@@ -484,7 +501,7 @@ int LoadSystemModule(void)
 	CreateServiceFunction(MS_SYSTEM_GETVERSIONTEXT,GetMirandaVersionText);
 	CreateServiceFunction(MS_SYSTEM_WAITONHANDLE,WaitOnHandle);
 	CreateServiceFunction(MS_SYSTEM_REMOVEWAIT,RemoveWait);
+	CreateServiceFunction(MS_SYSTEM_GET_LI,GetListInterface);
 	CreateServiceFunction(MS_SYSTEM_GET_MMI,GetMemoryManagerInterface);
 	return 0;
 }
-

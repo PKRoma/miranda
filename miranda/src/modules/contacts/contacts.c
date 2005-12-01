@@ -17,8 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-extern HWND hwndContactTree;
-
 #define NAMEORDERCOUNT 8
 static TCHAR* nameOrderDescr[ NAMEORDERCOUNT ] = 
 {

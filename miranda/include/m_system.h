@@ -128,6 +128,39 @@ struct MM_INTERFACE {
 
 #define MS_SYSTEM_GET_MMI  "Miranda/System/GetMMI"
 
+/* Returns the pointer to the simple lists manager.
+If the sortFunc member of the list gets assigned, the list becomes sorted
+
+wParam=0, lParam = 0
+*/
+
+typedef int ( *FSortFunc )( void*, void* );
+
+typedef struct
+{
+	void**		items;
+	int			realCount;
+	int			limit;
+	int			increment;
+
+	FSortFunc	sortFunc;
+}
+	SortedList;
+
+struct LIST_INTERFACE {
+	int    cbSize;
+
+   SortedList* ( *List_Create )( int, int );
+	void        ( *List_Destroy )( SortedList* );
+
+	void*	( *List_Find )( SortedList*, void* );
+	int	( *List_GetIndex )( SortedList*, void*, int* );
+	int   ( *List_Insert )( SortedList*, void*, int );
+	int   ( *List_Remove )( SortedList*, int );
+};
+
+#define MS_SYSTEM_GET_LI  "Miranda/System/GetLI"
+
 /*
 
 	-- Thread Safety --

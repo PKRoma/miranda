@@ -116,6 +116,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLM_SETEXTRACOLUMNS   (CLM_FIRST+30)   //wParam=number of extra columns (zero to MAXEXTRACOLUMNS from clc.h, currently 16)
 #define CLM_SETEXTRAIMAGE     (CLM_FIRST+31)   //wParam=hItem, lParam=MAKELPARAM(iColumn (0 based),iImage). iImage=0xFF is a blank
 #define CLM_SETEXTRAIMAGELIST (CLM_FIRST+32)   //lParam=HIMAGELIST
+
 #define FONTID_CONTACTS    0
 #define FONTID_INVIS       1
 #define FONTID_OFFLINE     2
@@ -124,7 +125,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FONTID_GROUPCOUNTS 5
 #define FONTID_DIVIDERS    6
 #define FONTID_OFFINVIS    7
-#define FONTID_MAX         7
+#define FONTID_STATUSMSG   8
+#define FONTID_GROUPSCLOSED   9
+#define FONTID_CONTACTSHOVER	10
+#define FONTID_MAX				10
+
 #define CLM_SETFONT           (CLM_FIRST+33)   //wParam=hFont, lParam=MAKELPARAM(fRedraw,fontId)
 #define CLM_SETINDENT         (CLM_FIRST+34)   //wParam=new indent, default is 3 pixels
 #define CLM_SETITEMTEXT       (CLM_FIRST+35)   //wParam=hItem, lParam=(char*)pszNewText
