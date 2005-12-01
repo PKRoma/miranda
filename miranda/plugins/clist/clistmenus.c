@@ -21,7 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include "clist.h"
 
 #define FIRSTCUSTOMMENUITEMID   30000
 #define MENU_CUSTOMITEMMAIN      0x80000000
@@ -164,10 +163,10 @@ static int AddMainMenuItem(WPARAM wParam, LPARAM lParam)
 
 	if (mi==NULL || mi->cbSize != sizeof(CLISTMENUITEM))
 		return 0;
-	mainMenuItem = (struct CListMenuItem *) mir_realloc(mainMenuItem, sizeof(struct CListMenuItem) * (mainItemCount + 1));
+	mainMenuItem = (struct CListMenuItem *) realloc(mainMenuItem, sizeof(struct CListMenuItem) * (mainItemCount + 1));
 	mainMenuItem[mainItemCount].id = nextMenuId++;
 	mainMenuItem[mainItemCount].mi = *mi;
-	mainMenuItem[mainItemCount].mi.pszService = mir_strdup(mi->pszService);
+	mainMenuItem[mainItemCount].mi.pszService = strdup(mi->pszService);
 	mainMenuItem[mainItemCount].mi.pszContactOwner = NULL;
 	mainMenuItem[mainItemCount].mi.pszName = NULL;
 	if (mi->hIcon == NULL)
@@ -287,13 +286,13 @@ static int AddContactMenuItem(WPARAM wParam, LPARAM lParam)
 
 	if (mi==NULL || mi->cbSize != sizeof(CLISTMENUITEM))
 		return 0;
-	contextMenuItem = (struct CListMenuItem *) mir_realloc(contextMenuItem, sizeof(struct CListMenuItem) * (contextItemCount + 1));
+	contextMenuItem = (struct CListMenuItem *) realloc(contextMenuItem, sizeof(struct CListMenuItem) * (contextItemCount + 1));
 	contextMenuItem[contextItemCount].id = nextMenuId++;
 	contextMenuItem[contextItemCount].mi = *mi;
-	contextMenuItem[contextItemCount].mi.pszService = mir_strdup(mi->pszService);
+	contextMenuItem[contextItemCount].mi.pszService = strdup(mi->pszService);
 	contextMenuItem[contextItemCount].mi.ptszName = LangPackPcharToTchar(mi->pszName);
 	if (mi->pszContactOwner != NULL)
-		contextMenuItem[contextItemCount].mi.pszContactOwner = mir_strdup(mi->pszContactOwner);
+		contextMenuItem[contextItemCount].mi.pszContactOwner = strdup(mi->pszContactOwner);
 	if (mi->hIcon == NULL)
 		contextMenuItem[contextItemCount].iconId = -1;
 	else
@@ -326,7 +325,7 @@ static int ModifyCustomMenuItem(WPARAM wParam, LPARAM lParam)
 	mii.cbSize = MENUITEMINFO_V4_SIZE;
 	if (mi->flags & CMIM_NAME) {
 		if (clmi->mi.pszName != NULL)
-			mir_free(clmi->mi.pszName);
+			free(clmi->mi.pszName);
 		clmi->mi.ptszName = LangPackPcharToTchar(mi->pszName);
 		if (wParam & MENU_CUSTOMITEMMAIN) {
 			mii.fMask = IsWinVer98Plus()? MIIM_STRING : MIIM_TYPE;
@@ -469,10 +468,10 @@ static int BuildContactMenu(WPARAM wParam, LPARAM lParam)
 	isOnline = szProto != NULL && ID_STATUS_OFFLINE != DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
 	chatRoom = szProto?DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0):0;
 	if ( contextItemCount ) {
-		itemOrder = (int *) mir_alloc(sizeof(int) * contextItemCount);
+		itemOrder = (int *) malloc(sizeof(int) * contextItemCount);
 		ZeroMemory(itemOrder, sizeof(int) * contextItemCount);
 	} else {
-		itemOrder = (int *) mir_alloc(sizeof(int) * 1);
+		itemOrder = (int *) malloc(sizeof(int) * 1);
 		ZeroMemory(itemOrder, sizeof(int) * 1);
 	}
 	itemCount = 0;
@@ -560,7 +559,7 @@ static int BuildContactMenu(WPARAM wParam, LPARAM lParam)
 		InsertMenuItem(hMenu, 0, TRUE, &mii);
 #endif
 	}
-	mir_free(itemOrder);
+	free(itemOrder);
 	return (int) hMenu;
 }
 
@@ -611,7 +610,7 @@ static void GiveExistingItemAnIcon(UINT id, HICON hIcon)
 {
 	MENUITEMINFO mii;
 
-	mainMenuItem = (struct CListMenuItem *) mir_realloc(mainMenuItem, sizeof(struct CListMenuItem) * (mainItemCount + 1));
+	mainMenuItem = (struct CListMenuItem *) realloc(mainMenuItem, sizeof(struct CListMenuItem) * (mainItemCount + 1));
 	mii.cbSize = sizeof(mii);
 	mii.fMask = MIIM_BITMAP | MIIM_DATA;
 	mii.dwItemData = MENU_CUSTOMITEMMAIN | mainItemCount;
@@ -773,7 +772,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
 						if (IsWinVer98Plus()) {
 							mii.cbSize = sizeof(mii);
 							mii.fMask = MIIM_ID | MIIM_BITMAP | MIIM_DATA | MIIM_STRING;
-							mainMenuItem = (struct CListMenuItem *) mir_realloc(mainMenuItem, sizeof(struct CListMenuItem) * (mainItemCount + 1));
+							mainMenuItem = (struct CListMenuItem *)realloc(mainMenuItem, sizeof(struct CListMenuItem) * (mainItemCount + 1));
 							mainMenuItem[mainItemCount].iconId =
 								ImageList_AddIcon(hImlMenuIcons, LoadSkinnedProtoIcon(proto[i]->szName, statusModeList[j]));
 							mainMenuItem[mainItemCount].id = 0xFFFF;
@@ -794,7 +793,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
 					HICON hIcon;
 					mii.cbSize = sizeof(mii);
 					mii.fMask = MIIM_SUBMENU | MIIM_BITMAP | MIIM_DATA | MIIM_STRING;
-					mainMenuItem = (struct CListMenuItem *) mir_realloc(mainMenuItem, sizeof(struct CListMenuItem) * (mainItemCount + 1));
+					mainMenuItem = (struct CListMenuItem *) realloc(mainMenuItem, sizeof(struct CListMenuItem) * (mainItemCount + 1));
 					hIcon = (HICON) CallProtoService(proto[i]->szName, PS_LOADICON, PLI_PROTOCOL | PLIF_SMALL, 0);
 					mainMenuItem[mainItemCount].iconId = ImageList_AddIcon(hImlMenuIcons, hIcon);
 					DestroyIcon(hIcon);
@@ -929,20 +928,20 @@ void UninitCustomMenus(void)
 	ImageList_Destroy(hImlMenuIcons);
 	for (i = 0; i < mainItemCount; i++) {
 		if (mainMenuItem[i].mi.pszName != NULL)
-			mir_free(mainMenuItem[i].mi.pszName);
+			free(mainMenuItem[i].mi.pszName);
 		if (mainMenuItem[i].mi.pszService != NULL)
-			mir_free(mainMenuItem[i].mi.pszService);
+			free(mainMenuItem[i].mi.pszService);
 	}
 	for (i = 0; i < contextItemCount; i++) {
 		if (contextMenuItem[i].mi.pszName != NULL)
-			mir_free(contextMenuItem[i].mi.pszName);
+			free(contextMenuItem[i].mi.pszName);
 		if (contextMenuItem[i].mi.pszService != NULL)
-			mir_free(contextMenuItem[i].mi.pszService);
+			free(contextMenuItem[i].mi.pszService);
 		if (contextMenuItem[i].mi.pszContactOwner != NULL)
-			mir_free(contextMenuItem[i].mi.pszContactOwner);
+			free(contextMenuItem[i].mi.pszContactOwner);
 	}
-	mir_free(mainMenuItem);
-	mir_free(contextMenuItem);
+	free(mainMenuItem);
+	free(contextMenuItem);
 	DestroyMenu(hStatusMenu);
 	DestroyMenu(hMainMenu);
 	DestroyMenu(hRootMenu);

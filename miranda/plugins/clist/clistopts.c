@@ -22,47 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-extern HWND hwndContactTree;    // nasty
-
-int HotKeysRegister(HWND hwnd);
-void HotKeysUnregister(HWND hwnd);
-void LoadContactTree(void);
-void SortContacts(void);
-void TrayIconIconsChanged(void);
-
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-static UINT expertOnlyControls[] = { IDC_ALWAYSSTATUS };
-int CListOptInit(WPARAM wParam, LPARAM lParam)
-{
-	OPTIONSDIALOGPAGE odp;
-
-	ZeroMemory(&odp, sizeof(odp));
-	odp.cbSize = sizeof(odp);
-	odp.position = -1000000000;
-	odp.hInstance = g_hInst;
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLIST);
-	odp.pszTitle = "Contact List";
-	odp.pfnDlgProc = DlgProcGenOpts;
-	odp.flags = ODPF_BOLDGROUPS;
-	odp.nIDBottomSimpleControl = IDC_STCLISTGROUP;
-	odp.expertOnlyControls = expertOnlyControls;
-	odp.nExpertOnlyControls = SIZEOF(expertOnlyControls);
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-
-	odp.position = -900000000;
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
-	odp.pszTitle = "Hotkeys";
-	odp.pszGroup = "Events";
-	odp.pfnDlgProc = DlgProcHotkeyOpts;
-	odp.nIDBottomSimpleControl = 0;
-	odp.nExpertOnlyControls = 0;
-	odp.expertOnlyControls = NULL;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-	return 0;
-}
-
 static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
@@ -261,9 +220,9 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETITEMDATA,
 					SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETCURSEL, 0, 0),
 					0))->szName);
-				TrayIconIconsChanged();
-				LoadContactTree();  /* this won't do job properly since it only really works when changes happen */
-				SendMessage(hwndContactTree, CLM_AUTOREBUILD, 0, 0);        /* force reshuffle */
+				pcli->pfnTrayIconIconsChanged();
+				pcli->pfnLoadContactTree();  /* this won't do job properly since it only really works when changes happen */
+				pcli->pfnInvalidateDisplayNameCacheEntry( INVALID_HANDLE_VALUE );        /* force reshuffle */
 				return TRUE;
 			}
 			break;
@@ -339,7 +298,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		case PSN_APPLY:
 			{
 				char str[256];
-				HotKeysUnregister((HWND) CallService(MS_CLUI_GETHWND, 0, 0));
+				pcli->pfnHotKeysUnregister((HWND) CallService(MS_CLUI_GETHWND, 0, 0));
 				DBWriteContactSettingByte(NULL, "CList", "HKEnShowHide", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWHIDE));
 				DBWriteContactSettingWord(NULL, "CList", "HKShowHide", (WORD) SendDlgItemMessage(hwndDlg, IDC_HKSHOWHIDE, HKM_GETHOTKEY, 0, 0));
 				DBWriteContactSettingByte(NULL, "CList", "HKEnReadMsg", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_READMSG));
@@ -350,13 +309,45 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				DBWriteContactSettingString(NULL, "CList", "SearchUrl", str);
 				DBWriteContactSettingByte(NULL, "CList", "HKSearchNewWnd", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SEARCHNEWWND));
 				DBWriteContactSettingByte(NULL, "CList", "HKEnShowOptions", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWOPTIONS));
-				DBWriteContactSettingWord(NULL, "CList", "HKShowOptions",
-					(WORD) SendDlgItemMessage(hwndDlg, IDC_HKSHOWOPTIONS, HKM_GETHOTKEY, 0, 0));
-				HotKeysRegister((HWND) CallService(MS_CLUI_GETHWND, 0, 0));
+				DBWriteContactSettingWord(NULL, "CList", "HKShowOptions", (WORD) SendDlgItemMessage(hwndDlg, IDC_HKSHOWOPTIONS, HKM_GETHOTKEY, 0, 0));
+				pcli->pfnHotKeysRegister((HWND) CallService(MS_CLUI_GETHWND, 0, 0));
 				return TRUE;
 			}
 		}
 		break;
 	}
 	return FALSE;
+}
+
+/****************************************************************************************/
+
+static UINT expertOnlyControls[] = { IDC_ALWAYSSTATUS };
+
+int CListOptInit(WPARAM wParam, LPARAM lParam)
+{
+	OPTIONSDIALOGPAGE odp;
+
+	ZeroMemory(&odp, sizeof(odp));
+	odp.cbSize = sizeof(odp);
+	odp.position = -1000000000;
+	odp.hInstance = g_hInst;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLIST);
+	odp.pszTitle = "Contact List";
+	odp.pfnDlgProc = DlgProcGenOpts;
+	odp.flags = ODPF_BOLDGROUPS;
+	odp.nIDBottomSimpleControl = IDC_STCLISTGROUP;
+	odp.expertOnlyControls = expertOnlyControls;
+	odp.nExpertOnlyControls = SIZEOF(expertOnlyControls);
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+
+	odp.position = -900000000;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
+	odp.pszTitle = "Hotkeys";
+	odp.pszGroup = "Events";
+	odp.pfnDlgProc = DlgProcHotkeyOpts;
+	odp.nIDBottomSimpleControl = 0;
+	odp.nExpertOnlyControls = 0;
+	odp.expertOnlyControls = NULL;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+	return 0;
 }

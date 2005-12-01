@@ -22,47 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-void LoadCluiGlobalOpts();
-extern HWND hwndContactList, hwndContactTree, hwndStatus;
-extern HMENU hMenuMain;
 extern BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD);
-static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-static UINT expertOnlyControls[] =
-{ 
-	IDC_BRINGTOFRONT, IDC_AUTOSIZE, IDC_STATIC21, IDC_MAXSIZEHEIGHT, IDC_MAXSIZESPIN, 
-	IDC_STATIC22, IDC_AUTOSIZEUPWARD, IDC_SHOWMAINMENU, IDC_SHOWCAPTION, IDC_CLIENTDRAG
-};
-
-int CluiOptInit(WPARAM wParam, LPARAM lParam)
-{
-	OPTIONSDIALOGPAGE odp;
-
-	ZeroMemory(&odp, sizeof(odp));
-	odp.cbSize = sizeof(odp);
-	odp.position = 0;
-	odp.hInstance = g_hInst;
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLUI);
-	odp.pszTitle = "Window";
-	odp.pszGroup = "Contact List";
-	odp.pfnDlgProc = DlgProcCluiOpts;
-	odp.flags = ODPF_BOLDGROUPS;
-	odp.nIDBottomSimpleControl = IDC_STWINDOWGROUP;
-	odp.expertOnlyControls = expertOnlyControls;
-	odp.nExpertOnlyControls = SIZEOF(expertOnlyControls);
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_SBAR);
-	odp.pszTitle = "Status Bar";
-	odp.pfnDlgProc = DlgProcSBarOpts;
-	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
-	odp.nIDBottomSimpleControl = 0;
-	odp.nExpertOnlyControls = 0;
-	odp.expertOnlyControls = NULL;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-	return 0;
-}
 
 static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -218,55 +178,55 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				TCHAR title[256];
 				GetDlgItemText(hwndDlg, IDC_TITLETEXT, title, SIZEOF(title));
 				DBWriteContactSettingTString(NULL, "CList", "TitleText", title);
-				SetWindowText(hwndContactList, title);
+				SetWindowText(pcli->hwndContactList, title);
 			}
-			LoadCluiGlobalOpts();
-			SetWindowPos(hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_ONTOP) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0,
+			pcli->pfnLoadCluiGlobalOpts();
+			SetWindowPos(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_ONTOP) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0,
 				SWP_NOMOVE | SWP_NOSIZE);
 			if (IsDlgButtonChecked(hwndDlg, IDC_TOOLWND)) {
 				// Window must be hidden to dynamically remove the taskbar button.
 				// See http://msdn.microsoft.com/library/en-us/shellcc/platform/shell/programmersguide/shell_int/shell_int_programming/taskbar.asp
 				WINDOWPLACEMENT p;
 				p.length = sizeof(p);
-				GetWindowPlacement(hwndContactList, &p);
-				ShowWindow(hwndContactList, SW_HIDE);
-				SetWindowLong(hwndContactList, GWL_EXSTYLE,
-					GetWindowLong(hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE);
-				SetWindowPlacement(hwndContactList, &p);
+				GetWindowPlacement(pcli->hwndContactList, &p);
+				ShowWindow(pcli->hwndContactList, SW_HIDE);
+				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE,
+					GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE);
+				SetWindowPlacement(pcli->hwndContactList, &p);
 			}
-			else SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
+			else SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
 
 			if (IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP)) {
 				HWND hProgMan = FindWindowA("Progman", NULL);
 				if (IsWindow(hProgMan))
-					SetParent(hwndContactList, hProgMan);
+					SetParent(pcli->hwndContactList, hProgMan);
 			}
-			else SetParent(hwndContactList, NULL);
+			else SetParent(pcli->hwndContactList, NULL);
 
 			if (IsDlgButtonChecked(hwndDlg, IDC_SHOWCAPTION))
-				SetWindowLong(hwndContactList, GWL_STYLE,
-				GetWindowLong(hwndContactList, GWL_STYLE) | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+				SetWindowLong(pcli->hwndContactList, GWL_STYLE,
+				GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
 			else
-				SetWindowLong(hwndContactList, GWL_STYLE,
-				GetWindowLong(hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX));
+				SetWindowLong(pcli->hwndContactList, GWL_STYLE,
+				GetWindowLong(pcli->hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX));
 			if (!IsDlgButtonChecked(hwndDlg, IDC_SHOWMAINMENU))
-				SetMenu(hwndContactList, NULL);
+				SetMenu(pcli->hwndContactList, NULL);
 			else
-				SetMenu(hwndContactList, hMenuMain);
-			SetWindowPos(hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-			RedrawWindow(hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
-			if (IsIconic(hwndContactList) && !IsDlgButtonChecked(hwndDlg, IDC_TOOLWND))
-				ShowWindow(hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY) ? SW_HIDE : SW_SHOW);
+				SetMenu(pcli->hwndContactList, pcli->hMenuMain);
+			SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+			RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
+			if (IsIconic(pcli->hwndContactList) && !IsDlgButtonChecked(hwndDlg, IDC_TOOLWND))
+				ShowWindow(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY) ? SW_HIDE : SW_SHOW);
 			if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT)) {
-				SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
+				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
 				if (MySetLayeredWindowAttributes)
-					MySetLayeredWindowAttributes(hwndContactList, RGB(0, 0, 0),
+					MySetLayeredWindowAttributes(pcli->hwndContactList, RGB(0, 0, 0),
 					(BYTE) DBGetContactSettingByte(NULL, "CList", "AutoAlpha", SETTING_AUTOALPHA_DEFAULT),
 					LWA_ALPHA);
 			}
-			else SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+			else SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 
-			SendMessage(hwndContactTree, WM_SIZE, 0, 0);        //forces it to send a cln_listsizechanged
+			SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);        //forces it to send a cln_listsizechanged
 			return TRUE;
 		}
 		break;
@@ -325,25 +285,62 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			DBWriteContactSettingByte(NULL, "CLUI", "SBarRightClk", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_RIGHTMIRANDA));
 			DBWriteContactSettingByte(NULL, "CLUI", "EqualSections", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EQUALSECTIONS));
 			DBWriteContactSettingByte(NULL, "CLUI", "SBarBevel", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SBPANELBEVEL));
-			LoadCluiGlobalOpts();
+			pcli->pfnLoadCluiGlobalOpts();
 			if (DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) != (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWGRIP)) {
-				HWND parent = GetParent(hwndStatus);
+				HWND parent = GetParent(pcli->hwndStatus);
 				int flags = WS_CHILD | CCS_BOTTOM;
 				DBWriteContactSettingByte(NULL, "CLUI", "ShowGrip", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWGRIP));
-				ShowWindow(hwndStatus, SW_HIDE);
-				DestroyWindow(hwndStatus);
+				ShowWindow(pcli->hwndStatus, SW_HIDE);
+				DestroyWindow(pcli->hwndStatus);
 				flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? WS_VISIBLE : 0;
 				flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) ? SBARS_SIZEGRIP : 0;
-				hwndStatus = CreateWindow(STATUSCLASSNAME, NULL, flags, 0, 0, 0, 0, parent, NULL, g_hInst, NULL);
+				pcli->hwndStatus = CreateWindow(STATUSCLASSNAME, NULL, flags, 0, 0, 0, 0, parent, NULL, g_hInst, NULL);
 			}
 			if (IsDlgButtonChecked(hwndDlg, IDC_SHOWSBAR))
-				ShowWindow(hwndStatus, SW_SHOW);
+				ShowWindow(pcli->hwndStatus, SW_SHOW);
 			else
-				ShowWindow(hwndStatus, SW_HIDE);
-			SendMessage(hwndContactList, WM_SIZE, 0, 0);
+				ShowWindow(pcli->hwndStatus, SW_HIDE);
+			SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 			return TRUE;
 		}
 		break;
 	}
 	return FALSE;
+}
+
+/****************************************************************************************/
+
+static UINT expertOnlyControls[] =
+{ 
+	IDC_BRINGTOFRONT, IDC_AUTOSIZE, IDC_STATIC21, IDC_MAXSIZEHEIGHT, IDC_MAXSIZESPIN, 
+	IDC_STATIC22, IDC_AUTOSIZEUPWARD, IDC_SHOWMAINMENU, IDC_SHOWCAPTION, IDC_CLIENTDRAG
+};
+
+int CluiOptInit(WPARAM wParam, LPARAM lParam)
+{
+	OPTIONSDIALOGPAGE odp;
+
+	ZeroMemory(&odp, sizeof(odp));
+	odp.cbSize = sizeof(odp);
+	odp.position = 0;
+	odp.hInstance = g_hInst;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLUI);
+	odp.pszTitle = "Window";
+	odp.pszGroup = "Contact List";
+	odp.pfnDlgProc = DlgProcCluiOpts;
+	odp.flags = ODPF_BOLDGROUPS;
+	odp.nIDBottomSimpleControl = IDC_STWINDOWGROUP;
+	odp.expertOnlyControls = expertOnlyControls;
+	odp.nExpertOnlyControls = SIZEOF(expertOnlyControls);
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_SBAR);
+	odp.pszTitle = "Status Bar";
+	odp.pfnDlgProc = DlgProcSBarOpts;
+	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
+	odp.nIDBottomSimpleControl = 0;
+	odp.nExpertOnlyControls = 0;
+	odp.expertOnlyControls = NULL;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+	return 0;
 }

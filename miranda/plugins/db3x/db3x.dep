@@ -1,7 +1,15 @@
 # Microsoft Developer Studio Generated Dependency File, included by db3x.mak
 
 .\commonheaders.c : \
+	"..\..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\win2k.h"\
+	".\commonheaders.h"\
 	
 
 .\database.c : \
@@ -17,7 +25,6 @@
 .\dbcontacts.c : \
 	"..\..\include\m_plugins.h"\
 	".\database.h"\
-	".\dblists.h"\
 	
 
 .\dbevents.c : \
@@ -35,11 +42,6 @@
 	".\database.h"\
 	
 
-.\dblists.c : \
-	"..\..\include\m_plugins.h"\
-	".\dblists.h"\
-	
-
 .\dbmodulechain.c : \
 	"..\..\include\m_plugins.h"\
 	".\database.h"\
@@ -48,7 +50,6 @@
 .\dbsettings.c : \
 	"..\..\include\m_plugins.h"\
 	".\database.h"\
-	".\dblists.h"\
 	
 
 .\encrypt.c : \

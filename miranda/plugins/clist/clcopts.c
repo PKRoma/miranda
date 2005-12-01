@@ -20,108 +20,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
 #include "commonheaders.h"
 
 #define DBFONTF_BOLD       1
 #define DBFONTF_ITALIC     2
 #define DBFONTF_UNDERLINE  4
-
-static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-DWORD GetDefaultExStyle(void)
-{
-	BOOL param;
-	DWORD ret = CLCDEFAULT_EXSTYLE;
-	if (SystemParametersInfo(SPI_GETLISTBOXSMOOTHSCROLLING, 0, &param, FALSE) && !param)
-		ret |= CLS_EX_NOSMOOTHSCROLLING;
-	if (SystemParametersInfo(SPI_GETHOTTRACKING, 0, &param, FALSE) && !param)
-		ret &= ~CLS_EX_TRACKSELECT;
-	return ret;
-}
-
-static void GetDefaultFontSetting(int i, LOGFONTA * lf, COLORREF * colour)
-{
-	SystemParametersInfoA(SPI_GETICONTITLELOGFONT, sizeof(LOGFONTA), lf, FALSE);
-	*colour = GetSysColor(COLOR_WINDOWTEXT);
-	lf->lfHeight = 8;
-	switch (i) {
-	case FONTID_GROUPS:
-		lf->lfWeight = FW_BOLD;
-		break;
-	case FONTID_GROUPCOUNTS:
-		*colour = GetSysColor(COLOR_3DSHADOW);
-		break;
-	case FONTID_OFFINVIS:
-	case FONTID_INVIS:
-		lf->lfItalic = !lf->lfItalic;
-		break;
-	case FONTID_DIVIDERS:
-		break;
-	case FONTID_NOTONLIST:
-		*colour = GetSysColor(COLOR_3DSHADOW);
-		break;
-}	}
-
-void GetFontSetting(int i, LOGFONTA * lf, COLORREF * colour)
-{
-	DBVARIANT dbv;
-	char idstr[10];
-	BYTE style;
-
-	GetDefaultFontSetting(i, lf, colour);
-	wsprintfA(idstr, "Font%dName", i);
-	if (!DBGetContactSetting(NULL, "CLC", idstr, &dbv)) {
-		lstrcpyA(lf->lfFaceName, dbv.pszVal);
-		mir_free(dbv.pszVal);
-	}
-	wsprintfA(idstr, "Font%dCol", i);
-	*colour = DBGetContactSettingDword(NULL, "CLC", idstr, *colour);
-	wsprintfA(idstr, "Font%dSize", i);
-	lf->lfHeight = (char) DBGetContactSettingByte(NULL, "CLC", idstr, lf->lfHeight);
-	wsprintfA(idstr, "Font%dSty", i);
-	style = (BYTE) DBGetContactSettingByte(NULL, "CLC", idstr, (lf->lfWeight == FW_NORMAL ? 0 : DBFONTF_BOLD) | (lf->lfItalic ? DBFONTF_ITALIC : 0) | (lf->lfUnderline ? DBFONTF_UNDERLINE : 0));
-	lf->lfWidth = lf->lfEscapement = lf->lfOrientation = 0;
-	lf->lfWeight = style & DBFONTF_BOLD ? FW_BOLD : FW_NORMAL;
-	lf->lfItalic = (style & DBFONTF_ITALIC) != 0;
-	lf->lfUnderline = (style & DBFONTF_UNDERLINE) != 0;
-	lf->lfStrikeOut = 0;
-	wsprintfA(idstr, "Font%dSet", i);
-	lf->lfCharSet = DBGetContactSettingByte(NULL, "CLC", idstr, lf->lfCharSet);
-	lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
-	lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
-	lf->lfQuality = DEFAULT_QUALITY;
-	lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-}
-
-int ClcOptInit(WPARAM wParam, LPARAM lParam)
-{
-	OPTIONSDIALOGPAGE odp;
-
-	ZeroMemory(&odp, sizeof(odp));
-	odp.cbSize = sizeof(odp);
-	odp.position = 0;
-	odp.hInstance = g_hInst;
-	odp.pszGroup = "Contact List";
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLC);
-	odp.pszTitle = "List";
-	odp.pfnDlgProc = DlgProcClcMainOpts;
-	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCBKG);
-	odp.pszTitle = "List Background";
-	odp.pfnDlgProc = DlgProcClcBkgOpts;
-	odp.flags = ODPF_BOLDGROUPS;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCTEXT);
-	odp.pszTitle = "List Text";
-	odp.pfnDlgProc = DlgProcClcTextOpts;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-	return 0;
-}
 
 struct CheckBoxToStyleEx_t
 {
@@ -129,6 +33,7 @@ struct CheckBoxToStyleEx_t
 	DWORD flag;
 	int not;
 }
+
 static const checkBoxToStyleEx[] = {
 	{IDC_DISABLEDRAGDROP, CLS_EX_DISABLEDRAGDROP, 0},
 	{IDC_NOTEDITLABELS, CLS_EX_EDITLABELS, 1},
@@ -220,7 +125,7 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			GetWindowLong(GetDlgItem(hwndDlg, IDC_HIDEOFFLINEOPTS), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
 		{
 			int i;
-			DWORD exStyle = DBGetContactSettingDword(NULL, "CLC", "ExStyle", GetDefaultExStyle());
+			DWORD exStyle = DBGetContactSettingDword(NULL, "CLC", "ExStyle", pcli->pfnGetDefaultExStyle());
 			for (i = 0; i < SIZEOF(checkBoxToStyleEx); i++)
 				CheckDlgButton(hwndDlg, checkBoxToStyleEx[i].id,
 				(exStyle & checkBoxToStyleEx[i].flag) ^ (checkBoxToStyleEx[i].flag *
@@ -310,7 +215,7 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				DBWriteContactSettingByte(NULL, "CLC", "GroupIndent",
 					(BYTE) SendDlgItemMessage(hwndDlg, IDC_GROUPINDENTSPIN, UDM_GETPOS, 0, 0));
 				DBWriteContactSettingByte(NULL, "CLC", "NoVScrollBar", (BYTE) (IsDlgButtonChecked(hwndDlg, IDC_NOSCROLLBAR) ? 1 : 0));
-				ClcOptionsChanged();
+				pcli->pfnClcOptionsChanged();
 				return TRUE;
 			}
 			break;
@@ -464,7 +369,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						flags |= CLBF_PROPORTIONAL;
 					DBWriteContactSettingWord(NULL, "CLC", "BkBmpUse", flags);
 				}
-				ClcOptionsChanged();
+				pcli->pfnClcOptionsChanged();
 				return TRUE;
 			}
 			break;
@@ -498,7 +403,7 @@ struct
 	char size;
 	BYTE style;
 	BYTE charset;
-	char szFace[LF_FACESIZE];
+	TCHAR szFace[LF_FACESIZE];
 }
 static fontSettings[FONTID_MAX + 1];
 #include <poppack.h>
@@ -594,14 +499,14 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		forkthread(FillFontListThread, 0, hwndDlg);
 		{
 			int i, itemId, fontId;
-			LOGFONTA lf;
+			LOGFONT lf;
 			COLORREF colour;
 			WORD sameAs;
 			char str[32];
 
 			for (i = 0; i <= FONTID_MAX; i++) {
 				fontId = fontListOrder[i];
-				GetFontSetting(fontId, &lf, &colour);
+				pcli->pfnGetFontSetting(fontId, &lf, &colour);
 				wsprintfA(str, "Font%dAs", fontId);
 				sameAs = DBGetContactSettingWord(NULL, "CLC", str, fontSameAsDefault[fontId]);
 				fontSettings[fontId].sameAsFlags = HIBYTE(sameAs);
@@ -611,7 +516,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				if (lf.lfHeight < 0) {
 					HDC hdc;
 					SIZE size;
-					HFONT hFont = CreateFontIndirectA(&lf);
+					HFONT hFont = CreateFontIndirect(&lf);
 					hdc = GetDC(hwndDlg);
 					SelectObject(hdc, hFont);
 					GetTextExtentPoint32A(hdc, "_W", 2, &size);
@@ -622,7 +527,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				else fontSettings[fontId].size = (char) lf.lfHeight;
 				fontSettings[fontId].charset = lf.lfCharSet;
 				fontSettings[fontId].colour = colour;
-				lstrcpyA(fontSettings[fontId].szFace, lf.lfFaceName);
+				lstrcpy(fontSettings[fontId].szFace, lf.lfFaceName);
 				itemId = SendDlgItemMessage(hwndDlg, IDC_FONTID, CB_ADDSTRING, 0, (LPARAM) TranslateTS( szFontIdDescr[fontId] ));
 				SendDlgItemMessage(hwndDlg, IDC_FONTID, CB_SETITEMDATA, itemId, fontId);
 			}
@@ -767,7 +672,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		if (fontSettings[wParam].sameAs == 0xFF)
 			break;
 		if (fontSettings[wParam].sameAsFlags & SAMEASF_FACE) {
-			lstrcpyA(fontSettings[wParam].szFace, fontSettings[fontSettings[wParam].sameAs].szFace);
+			lstrcpy(fontSettings[wParam].szFace, fontSettings[fontSettings[wParam].sameAs].szFace);
 			fontSettings[wParam].charset = fontSettings[fontSettings[wParam].sameAs].charset;
 		}
 		if (fontSettings[wParam].sameAsFlags & SAMEASF_SIZE)
@@ -793,7 +698,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			(IsDlgButtonChecked(hwndDlg, IDC_SAMESTYLE) ? SAMEASF_STYLE : 0) | (IsDlgButtonChecked(hwndDlg, IDC_SAMECOLOUR) ? SAMEASF_COLOUR : 0);
 		fontSettings[wParam].sameAs =
 			(BYTE) SendDlgItemMessage(hwndDlg, IDC_SAMEAS, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_SAMEAS, CB_GETCURSEL, 0, 0), 0);
-		GetDlgItemTextA(hwndDlg, IDC_TYPEFACE, fontSettings[wParam].szFace, SIZEOF( fontSettings[wParam].szFace ));
+		GetDlgItemText(hwndDlg, IDC_TYPEFACE, fontSettings[wParam].szFace, SIZEOF( fontSettings[wParam].szFace ));
 		fontSettings[wParam].charset =
 			(BYTE) SendDlgItemMessage(hwndDlg, IDC_SCRIPT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_SCRIPT, CB_GETCURSEL, 0, 0), 0);
 		fontSettings[wParam].size = (char) GetDlgItemInt(hwndDlg, IDC_FONTSIZE, NULL, FALSE);
@@ -816,16 +721,16 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 		}
 	case M_LOADFONT:       //load font wParam into the controls
-		SetDlgItemTextA(hwndDlg, IDC_TYPEFACE, fontSettings[wParam].szFace);
+		SetDlgItemText(hwndDlg, IDC_TYPEFACE, fontSettings[wParam].szFace);
 		SendMessage(hwndDlg, M_FILLSCRIPTCOMBO, wParam, 0);
 		SetDlgItemInt(hwndDlg, IDC_FONTSIZE, fontSettings[wParam].size, FALSE);
 		CheckDlgButton(hwndDlg, IDC_BOLD, fontSettings[wParam].style & DBFONTF_BOLD ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_ITALIC, fontSettings[wParam].style & DBFONTF_ITALIC ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_UNDERLINE, fontSettings[wParam].style & DBFONTF_UNDERLINE ? BST_CHECKED : BST_UNCHECKED);
 		{
-			LOGFONTA lf;
+			LOGFONT lf;
 			COLORREF colour;
-			GetDefaultFontSetting(wParam, &lf, &colour);
+			pcli->pfnGetDefaultFontSetting(wParam, &lf, &colour);
 			SendDlgItemMessage(hwndDlg, IDC_COLOUR, CPM_SETDEFAULTCOLOUR, 0, colour);
 		}
 		SendDlgItemMessage(hwndDlg, IDC_COLOUR, CPM_SETCOLOUR, 0, fontSettings[wParam].colour);
@@ -834,7 +739,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		fontSettings[wParam].sameAsFlags = 0;
 		if (fontSettings[wParam].sameAs == 0xFF)
 			break;
-		if (!lstrcmpA(fontSettings[wParam].szFace, fontSettings[fontSettings[wParam].sameAs].szFace) &&
+		if (!lstrcmp(fontSettings[wParam].szFace, fontSettings[fontSettings[wParam].sameAs].szFace) &&
 			fontSettings[wParam].charset == fontSettings[fontSettings[wParam].sameAs].charset)
 			fontSettings[wParam].sameAsFlags |= SAMEASF_FACE;
 		if (fontSettings[wParam].size == fontSettings[fontSettings[wParam].sameAs].size)
@@ -935,7 +840,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				SendMessage(hwndDlg, M_REDOROWHEIGHT, 0, 0);
 				for (i = 0; i <= FONTID_MAX; i++) {
 					wsprintfA(str, "Font%dName", i);
-					DBWriteContactSettingString(NULL, "CLC", str, fontSettings[i].szFace);
+					DBWriteContactSettingTString(NULL, "CLC", str, fontSettings[i].szFace);
 					wsprintfA(str, "Font%dSet", i);
 					DBWriteContactSettingByte(NULL, "CLC", str, fontSettings[i].charset);
 					wsprintfA(str, "Font%dSize", i);
@@ -968,7 +873,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			}
 			DBWriteContactSettingByte(NULL, "CLC", "RowHeight", (BYTE) SendDlgItemMessage(hwndDlg, IDC_ROWHEIGHTSPIN, UDM_GETPOS, 0, 0));
 			DBWriteContactSettingByte(NULL, "CLC", "GammaCorrect", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_GAMMACORRECT));
-			ClcOptionsChanged();
+			pcli->pfnClcOptionsChanged();
 			return TRUE;
 			case PSN_EXPERTCHANGED:
 				SwitchTextDlgToMode(hwndDlg, ((PSHNOTIFY *) lParam)->lParam);
@@ -985,4 +890,34 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		break;
 	}
 	return FALSE;
+}
+
+/****************************************************************************************/
+
+int ClcOptInit(WPARAM wParam, LPARAM lParam)
+{
+	OPTIONSDIALOGPAGE odp;
+
+	ZeroMemory(&odp, sizeof(odp));
+	odp.cbSize = sizeof(odp);
+	odp.position = 0;
+	odp.hInstance = g_hInst;
+	odp.pszGroup = "Contact List";
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLC);
+	odp.pszTitle = "List";
+	odp.pfnDlgProc = DlgProcClcMainOpts;
+	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCBKG);
+	odp.pszTitle = "List Background";
+	odp.pfnDlgProc = DlgProcClcBkgOpts;
+	odp.flags = ODPF_BOLDGROUPS;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCTEXT);
+	odp.pszTitle = "List Text";
+	odp.pfnDlgProc = DlgProcClcTextOpts;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+	return 0;
 }

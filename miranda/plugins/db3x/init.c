@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_plugins.h>
 
 struct MM_INTERFACE memoryManagerInterface;
+struct LIST_INTERFACE li;
 extern char szDbPath[MAX_PATH];
 
 HINSTANCE g_hInst=NULL;
@@ -115,6 +116,9 @@ static int LoadDatabase( char * profile, void * plink )
 	// set the memory manager
 	memoryManagerInterface.cbSize=sizeof(struct MM_INTERFACE);
 	CallService(MS_SYSTEM_GET_MMI,0,(LPARAM)&memoryManagerInterface);
+	// set the lists manager;
+	li.cbSize = sizeof( li );
+	CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li);
 	// inject all APIs and hooks into the core
 	return LoadDatabaseModule();
 }

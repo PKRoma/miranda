@@ -153,106 +153,6 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\clc.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\clcfiledrop.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\clcidents.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\clcitems.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\clcmsgs.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\clcopts.c
 
 !IF  "$(CFG)" == "clist - Win32 Release"
@@ -293,67 +193,7 @@ SOURCE=.\clcpaint.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\clcutils.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\clistevents.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\clistmenus.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\clistmod.c
 
 !IF  "$(CFG)" == "clist - Win32 Release"
 
@@ -393,87 +233,7 @@ SOURCE=.\clistopts.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\clistsettings.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\clisttray.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\clui.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\cluiopts.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\cluiservices.c
 
 !IF  "$(CFG)" == "clist - Win32 Release"
 
@@ -513,67 +273,7 @@ SOURCE=.\commonheaders.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\contact.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docking.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\forkthread.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\groups.c
 
 !IF  "$(CFG)" == "clist - Win32 Release"
 
@@ -610,30 +310,6 @@ SOURCE=.\init.c
 
 !ENDIF 
 
-# End Source File
-# Begin Source File
-
-SOURCE=.\keyboard.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=..\db3x\utf.c
 # End Source File
 # End Group
 # Begin Group "Header Files"

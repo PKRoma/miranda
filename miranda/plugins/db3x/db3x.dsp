@@ -94,17 +94,7 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=.\commonheaders.c
-
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
 # ADD CPP /Yc"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-# ADD CPP /Yc"commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -186,19 +176,6 @@ SOURCE=.\dbini.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\dblists.c
-
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\dbmodulechain.c
 
 !IF  "$(CFG)" == "db3x - Win32 Release"
@@ -264,10 +241,6 @@ SOURCE=.\commonheaders.h
 # Begin Source File
 
 SOURCE=.\database.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\dblists.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

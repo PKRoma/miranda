@@ -25,8 +25,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 HINSTANCE g_hInst = 0;
 PLUGINLINK *pluginLink;
+CLIST_INTERFACE* pcli = NULL;
+HIMAGELIST himlCListClc = NULL;
+HANDLE hStatusModeChangeEvent;
+
+extern int currentDesiredStatusMode;
+
 struct MM_INTERFACE memoryManagerInterface;
-extern HWND hwndContactList;
+BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD) = NULL;
+
+int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
+int InitCustomMenus(void);
+void UninitCustomMenus(void);
 
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
@@ -55,24 +65,30 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 
 __declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 3, 0))
 		return NULL;
 	return &pluginInfo;
 }
 
-int LoadContactListModule(void);
-int LoadCLCModule(void);
-int LoadCLUIModule();
+int CListOptInit(WPARAM wParam, LPARAM lParam);
+void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint);
 
-static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
+static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBox( NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("CList"), MB_OK );
-		return 1;
-	}
-
-	LoadCLUIModule();
+	himlCListClc = (HIMAGELIST) CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
 	return 0;
+}
+
+static int SetStatusMode(WPARAM wParam, LPARAM lParam)
+{
+	//todo: check wParam is valid so people can't use this to run random menu items
+	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
+	return 0;
+}
+
+static int GetStatusMode(WPARAM wParam, LPARAM lParam)
+{
+	return currentDesiredStatusMode;
 }
 
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
@@ -82,15 +98,27 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	#ifdef _DEBUG
 		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	#endif
+
 	// get the internal malloc/free()
 	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) & memoryManagerInterface);
-	rc = LoadContactListModule();
-	if (rc == 0)
-		rc = LoadCLCModule();
-	HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
-	return rc;
+
+	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
+	pcli->pfnPaintClc = PaintClc;
+
+	MySetLayeredWindowAttributes = (BOOL(WINAPI *) (HWND, COLORREF, BYTE, DWORD)) GetProcAddress(
+		LoadLibraryA("user32.dll"), "SetLayeredWindowAttributes");
+
+	HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
+	HookEvent(ME_OPT_INITIALISE, CListOptInit);
+
+	hStatusModeChangeEvent = CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
+
+	InitCustomMenus();
+	CreateServiceFunction(MS_CLIST_SETSTATUSMODE, SetStatusMode);
+	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
+	return 0;
 }
 
 // a plugin loader aware of CList exports will never call this.
@@ -101,7 +129,6 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 int __declspec(dllexport) Unload(void)
 {
-	if (IsWindow(hwndContactList))
-		DestroyWindow(hwndContactList);
+	UninitCustomMenus();
 	return 0;
 }

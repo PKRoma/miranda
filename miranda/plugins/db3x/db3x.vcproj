@@ -318,29 +318,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="dblists.c">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;DB3X_EXPORTS;$(NoInherit)"
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;DB3X_EXPORTS;$(NoInherit)"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="dbmodulechain.c">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -467,9 +444,6 @@
 			</File>
 			<File
 				RelativePath="database.h">
-			</File>
-			<File
-				RelativePath="dblists.h">
 			</File>
 		</Filter>
 		<Filter
