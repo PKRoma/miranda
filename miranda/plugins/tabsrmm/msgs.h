@@ -381,6 +381,8 @@ extern const int msgDlgFontCount;
 typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
 typedef BOOL (WINAPI *PULW)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD);
 typedef BOOL (WINAPI *PFWEX)(FLASHWINFO *);
+typedef BOOL (WINAPI *PAB)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
+typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
 
 // constants for the container management functions
 

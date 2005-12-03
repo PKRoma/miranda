@@ -4018,10 +4018,8 @@ quote_from_last:
                             LPARAM lp = ((MSGFILTER *) lParam)->lParam;
                             CHARFORMAT2 cf2;
 
-                            if(wp == VK_BROWSER_BACK || wp == VK_BROWSER_FORWARD) {
-                                _DebugPopup(dat->hContact, "browser key");
+                            if(wp == VK_BROWSER_BACK || wp == VK_BROWSER_FORWARD)
                                 return 1;
-                            }
                             if(msg == WM_CHAR) {
                                 if((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
                                     switch (wp) {

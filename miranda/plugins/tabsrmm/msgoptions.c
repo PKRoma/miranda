@@ -1169,6 +1169,7 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
             SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_SETPOS, 0, (int)myGlobals.bClipBorder);
 			CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0) ? 1 : 0);
 			SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_USESKIN, BN_CLICKED), 0);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_USESKIN), IsWinVer2000Plus() ? TRUE : FALSE);
 
             if(!ServiceExists("Utils/SnapWindowProc"))
                 EnableWindow(GetDlgItem(hwndDlg, IDC_USESNAPPING), FALSE);
@@ -1212,7 +1213,7 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 					break;
 				case IDC_USESKIN:
 					{
-						BYTE useskin = IsDlgButtonChecked(hwndDlg, IDC_USESKIN) ? 1 : 0;
+						BYTE useskin = (IsDlgButtonChecked(hwndDlg, IDC_USESKIN) && IsWinVer2000Plus()) ? 1 : 0;
 
 						EnableWindow(GetDlgItem(hwndDlg, IDC_CONTAINERSKIN), useskin ? TRUE : FALSE);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_GETCONTAINERSKINNAME), useskin ? TRUE : FALSE);

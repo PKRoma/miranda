@@ -171,7 +171,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="comctl32.lib msimg32.lib"
+				AdditionalDependencies="comctl32.lib"
 				OutputFile="$(OutDir)\tabsrmm_unicode.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -274,7 +274,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="comctl32.lib msimg32.lib"
+				AdditionalDependencies="comctl32.lib"
 				OutputFile="$(OutDir)\tabsrmm.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -726,6 +726,17 @@
 			<File
 				RelativePath=".\themes.c"
 				>
+				<FileConfiguration
+					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						InlineFunctionExpansion="0"
+						FavorSizeOrSpeed="1"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="trayicon.c"
@@ -898,19 +909,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\res\dragcopy.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\res\dropuser.cur"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -922,11 +933,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
@@ -942,11 +953,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
+				RelativePath="..\..\src\res\hyperlin.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur"
+				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
 				>
 			</File>
 			<File
@@ -1066,11 +1077,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File
@@ -1151,6 +1162,10 @@
 			</File>
 			<File
 				RelativePath=".\docs\readme.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\skin\tabsrmm.tsk"
 				>
 			</File>
 		</Filter>

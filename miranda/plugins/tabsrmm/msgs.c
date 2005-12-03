@@ -76,6 +76,8 @@ HMODULE hDLL;
 PSLWA pSetLayeredWindowAttributes = 0;
 PULW pUpdateLayeredWindow = 0;
 PFWEX MyFlashWindowEx = 0;
+PAB MyAlphaBlend = 0;
+PGF MyGradientFill = 0;
 
 extern struct ContainerWindowData *pFirstContainer;
 extern BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -871,11 +873,12 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 #if defined(_UNICODE)
     ConvertAllToUTF8();
 #endif    
-	//hDLL = LoadLibraryA("user32");
 	hDLL = GetModuleHandleA("user32");
 	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL,"SetLayeredWindowAttributes");
 	pUpdateLayeredWindow = (PULW) GetProcAddress(hDLL, "UpdateLayeredWindow");
 	MyFlashWindowEx = (PFWEX) GetProcAddress(hDLL, "FlashWindowEx");
+	MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlendA");
+	MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFillA");
 
     mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_BITMAP;

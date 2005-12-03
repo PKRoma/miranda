@@ -51,6 +51,7 @@ extern LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
 extern COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
 extern TemplateSet LTR_Active, RTL_Active;
 extern DWORD g_gdiplusToken;
+extern PAB MyAlphaBlend;
 
 extern HMODULE g_hInst;
 extern HANDLE hMessageWindowList;
@@ -97,7 +98,12 @@ void MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, i
     
     SetStretchBltMode(hdcTemp, HALFTONE);
     StretchBlt(hdcTemp, 0, 0, bmWidth, bmHeight, hdcDraw, left, top, width, height, SRCCOPY);
-    AlphaBlend(hdcTemp, 0, 0, bmWidth, bmHeight, hdcMem, 0, 0, bmWidth, bmHeight, bf);
+	if(MyAlphaBlend)
+		MyAlphaBlend(hdcTemp, 0, 0, bmWidth, bmHeight, hdcMem, 0, 0, bmWidth, bmHeight, bf);
+	else {
+		SetStretchBltMode(hdcTemp, HALFTONE);
+		StretchBlt(hdcTemp, 0, 0, bmWidth, bmHeight, hdcMem, 0, 0, bmWidth, bmHeight, SRCCOPY);
+	}
     StretchBlt(hdcDraw, left, top, width, height, hdcTemp, 0, 0, bmWidth, bmHeight, SRCCOPY);
     SelectObject(hdcTemp, hbmOld);
     DeleteObject(hbmTemp);
