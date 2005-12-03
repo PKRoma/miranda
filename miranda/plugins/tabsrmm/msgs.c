@@ -877,8 +877,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL,"SetLayeredWindowAttributes");
 	pUpdateLayeredWindow = (PULW) GetProcAddress(hDLL, "UpdateLayeredWindow");
 	MyFlashWindowEx = (PFWEX) GetProcAddress(hDLL, "FlashWindowEx");
-	MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlendA");
-	MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFillA");
+	MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
+	MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
 
     mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_BITMAP;
