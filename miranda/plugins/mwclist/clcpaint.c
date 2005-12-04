@@ -25,8 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clc.h"
 //#include <gdiplus.h>
 
-extern int hClcProtoCount;
-extern ClcProtoStatus *clcProto;
 extern HIMAGELIST himlCListClc;
 static BYTE divide3[765]={255};
 int MetaIgnoreEmptyExtra;
@@ -110,8 +108,8 @@ static int GetGeneralisedStatus(void)
 	status=ID_STATUS_OFFLINE;
 	statusOnlineness=0;
 
-	for (i=0;i<hClcProtoCount;i++) {
-		thisStatus = clcProto[i].dwStatus;
+	for (i=0;i<pcli->hClcProtoCount;i++) {
+		thisStatus = pcli->clcProto[i].dwStatus;
 		if(thisStatus==ID_STATUS_INVISIBLE) return ID_STATUS_INVISIBLE;
 		thisOnlineness=GetStatusOnlineness(thisStatus);
 		if(thisOnlineness>statusOnlineness) {
@@ -127,9 +125,9 @@ static int GetRealStatus(struct ClcContact * contact, int status)
 	int i;
 	char *szProto=contact->proto;
 	if (!szProto) return status;
-	for (i=0;i<hClcProtoCount;i++) {
-		if (!lstrcmp(clcProto[i].szProto,szProto)) {
-			return clcProto[i].dwStatus;
+	for (i=0;i<pcli->hClcProtoCount;i++) {
+		if (!lstrcmpA(pcli->clcProto[i].szProto,szProto)) {
+			return pcli->clcProto[i].dwStatus;
 		}
 	}
 	return status;
@@ -288,7 +286,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 	for(index=0;y<rcPaint->bottom;) 
 	{
 		if (subindex==-1)
-			if (group->scanIndex==group->contactCount) 
+			if (group->scanIndex==group->cl.count) 
 			{
 				group=group->parent;
 				indent--;
@@ -310,12 +308,12 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			
 			if (subindex==-1)
 			{
-				Drawing=&(group->contact[group->scanIndex]);
+				Drawing=group->cl.items[group->scanIndex];
 				subident=0;
 			}
 			else
 			{
-				Drawing=&(group->contact[group->scanIndex].subcontacts[subindex]);
+				Drawing=&(group->cl.items[group->scanIndex]->subcontacts[subindex]);
 				subident=dat->rowHeight/2;
 			}
 			//alternating grey
@@ -333,14 +331,14 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			//setup
 			if(Drawing->type==CLCIT_GROUP)
 			{
-					if (Drawing->group->expanded) 
-					{
-						ChangeToFont(hdcMem,dat,FONTID_GROUPS,&fontHeight);
-					}
-					else 
-					{
-						ChangeToFont(hdcMem,dat,FONTID_GROUPSCLOSED,&fontHeight);
-					}
+				if (Drawing->group->expanded) 
+				{
+					ChangeToFont(hdcMem,dat,FONTID_GROUPS,&fontHeight);
+				}
+				else 
+				{
+					ChangeToFont(hdcMem,dat,FONTID_GROUPSCLOSED,&fontHeight);
+				}
 			}
 			else if(Drawing->type==CLCIT_INFO) {
 				if(Drawing->flags&CLCIIF_GROUPFONT) ChangeToFont(hdcMem,dat,FONTID_GROUPS,&fontHeight);
@@ -352,9 +350,9 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				ChangeToFont(hdcMem,dat,FONTID_NOTONLIST,&fontHeight);
 			else if ( Drawing->type==CLCIT_CONTACT && 
 				(	
-					(Drawing->flags&CONTACTF_INVISTO && (!Drawing->isSubcontact) && GetRealStatus(&group->contact[group->scanIndex], status) != ID_STATUS_INVISIBLE )
+					(Drawing->flags&CONTACTF_INVISTO && (!Drawing->isSubcontact) && GetRealStatus(group->cl.items[group->scanIndex], status) != ID_STATUS_INVISIBLE )
 					||
-					(Drawing->flags&CONTACTF_VISTO && (!Drawing->isSubcontact) && GetRealStatus(&group->contact[group->scanIndex], status)==ID_STATUS_INVISIBLE)
+					(Drawing->flags&CONTACTF_VISTO && (!Drawing->isSubcontact) && GetRealStatus(group->cl.items[group->scanIndex], status)==ID_STATUS_INVISIBLE)
 				) 
 			) 
 			{
@@ -370,14 +368,13 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			width=textSize.cx;
 			if(Drawing->type==CLCIT_GROUP) {
 		
-				szCounts=GetGroupCountsText(dat,&group->contact[group->scanIndex]);
+				szCounts=GetGroupCountsText(dat,group->cl.items[group->scanIndex]);
 				if(szCounts[0]) {
-					GetTextExtentPoint32(hdcMem," ",1,&spaceSize);
+					GetTextExtentPoint32A(hdcMem," ",1,&spaceSize);
 					ChangeToFont(hdcMem,dat,FONTID_GROUPCOUNTS,&fontHeight);
-					GetTextExtentPoint32(hdcMem,szCounts,lstrlen(szCounts),&countsSize);
+					GetTextExtentPoint32A(hdcMem,szCounts,lstrlenA(szCounts),&countsSize);
 					width+=spaceSize.cx+countsSize.cx;
 				}
-
 			}
 
 			if((style&CLS_CHECKBOXES && Drawing->type==CLCIT_CONTACT) ||
@@ -396,7 +393,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						ImageList_DrawEx(dat->himlHighlight,0,hdcMem,x,y,min(width+5,clRect.right-x),dat->rowHeight,CLR_NONE,CLR_NONE,dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25);
 						SetTextColor(hdcMem,dat->selTextColour);
 						break;
-						};
+						}
 				case 1:
 					{
    					  ImageList_DrawEx(dat->himlHighlight,0,hdcMem,0,y,clRect.right,
@@ -404,7 +401,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						  dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25);
 						 SetTextColor(hdcMem,dat->selTextColour);
 						 break;
-					};
+					}
 
 				case 2:
 					{
@@ -413,13 +410,13 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 						  dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25);
 						  SetTextColor(hdcMem,dat->selTextColour);
 						  break;
-					};
+					}
 				case 3:
 					{
 						SetTextColor(hdcMem,dat->selTextColour);	
 						break;
-					};
-				};
+					}
+				}
 			}
 			else if(hottrack)
 				SetHotTrackColour(hdcMem,dat);
@@ -432,7 +429,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				// THEME
 				if (IsWinVerXPPlus()) {
 					if (!themeAPIHandle) {
-						themeAPIHandle = GetModuleHandle("uxtheme");
+						themeAPIHandle = GetModuleHandleA("uxtheme");
 						if (themeAPIHandle) {
 							MyOpenThemeData = (HANDLE (WINAPI *)(HWND,LPCWSTR))MGPROC("OpenThemeData");
 							MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))MGPROC("CloseThemeData");
@@ -477,7 +474,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				int mode=ILD_NORMAL;
 				if(hottrack) {colourFg=dat->hotTextColour;}
 				else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST && (!Drawing->isSubcontact)) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
-				if (Drawing->type==CLCIT_CONTACT && dat->showIdle && (Drawing->flags&CONTACTF_IDLE)&& (!Drawing->isSubcontact) && GetRealStatus(&group->contact[group->scanIndex],ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE)
+				if (Drawing->type==CLCIT_CONTACT && dat->showIdle && (Drawing->flags&CONTACTF_IDLE)&& (!Drawing->isSubcontact) && GetRealStatus(group->cl.items[group->scanIndex],ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE)
 					mode=ILD_SELECTED;
 				ImageList_DrawEx(himlCListClc,iImage,hdcMem,dat->leftMargin+subident+indent*dat->groupIndent+checkboxWidth,y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
 			}
@@ -498,7 +495,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				RECT rc;
 				if(szCounts[0]) {
 					struct ClcGroup *clcg;
-					
+
 					clcg=(struct ClcGroup *)Drawing;
 
 					fontHeight=dat->fontInfo[FONTID_GROUPS].fontHeight;
@@ -508,8 +505,8 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					rc.top=y+((dat->rowHeight-fontHeight)>>1);
 					rc.bottom=rc.top+textSize.cy;
 					if(rc.right<rc.left+4) rc.right=clRect.right+1;
-					else TextOut(hdcMem,rc.right,rc.top+groupCountsFontTopShift,szCounts,lstrlen(szCounts));
-					
+					else TextOutA(hdcMem,rc.right,rc.top+groupCountsFontTopShift,szCounts,lstrlenA(szCounts));
+
 					//ChangeToFont(hdcMem,dat,FONTID_GROUPS,&fontHeight);
 					if (Drawing->group->expanded) 
 					{
@@ -529,12 +526,12 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				}
 				else TextOut(hdcMem,dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace,y+((dat->rowHeight-fontHeight)>>1),Drawing->szText,lstrlen(Drawing->szText));
 				if(dat->exStyle&CLS_EX_LINEWITHGROUPS) {
-				//calc if extra icons present
-				int enabledextraicons=0;
-				for(iImage=0;iImage<dat->extraColumnsCount;iImage++) {
-					if(Drawing->iExtraImage[iImage]==0xFF) continue;
-					enabledextraicons++;
-				};
+					//calc if extra icons present
+					int enabledextraicons=0;
+					for(iImage=0;iImage<dat->extraColumnsCount;iImage++) {
+						if(Drawing->iExtraImage[iImage]==0xFF) continue;
+						enabledextraicons++;
+					}
 					rc.top=y+(dat->rowHeight>>1); rc.bottom=rc.top+2;
 					rc.left=dat->leftMargin+subident+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace+width+3;
 					rc.right=clRect.right-1-dat->extraColumnSpacing*enabledextraicons;
@@ -550,14 +547,14 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				rc.right=clRect.right;
 				if (Drawing->type=CLCIT_CONTACT)
 				{
-					
-					
+
+
 					if (PtInRect(&rc,pt))
 					{
 						ChangeToFont(hdcMem,dat,FONTID_CONTACTSHOVER,&fontHeight);
 					}
 				}
-				
+
 				DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&rc,DT_END_ELLIPSIS);
 
 			}
@@ -570,140 +567,111 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 
 			if (dat->style&CLS_SHOWSTATUSMESSAGES)
 			{							
-					// status message
-					if (group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags & CONTACTF_STATUSMSG) {
-						char * szText = group->contact[group->scanIndex].szStatusMsg;
-						RECT rc;
-						rc.left=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace;
-						rc.top=y+dat->rowHeight+((dat->rowHeight-fontHeight)>>1);
-						rc.right=(clRect.right - clRect.left);
-						rc.bottom=rc.top+dat->rowHeight;
-						ChangeToFont(hdcMem,dat,FONTID_STATUSMSG,&fontHeight);
-						//ExtTextOut(hdcMem,rc.left,rc.top,ETO_CLIPPED,&rc,szText,lstrlen(szText),NULL);
-						DrawText(hdcMem, szText, lstrlen(szText), &rc, DT_SINGLELINE | DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
-					}		
+				// status message
+				if (group->cl.items[group->scanIndex]->type==CLCIT_CONTACT && group->cl.items[group->scanIndex]->flags & CONTACTF_STATUSMSG) {
+					char * szText = group->cl.items[group->scanIndex]->szStatusMsg;
+					RECT rc;
+					rc.left=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace;
+					rc.top=y+dat->rowHeight+((dat->rowHeight-fontHeight)>>1);
+					rc.right=(clRect.right - clRect.left);
+					rc.bottom=rc.top+dat->rowHeight;
+					ChangeToFont(hdcMem,dat,FONTID_STATUSMSG,&fontHeight);
+					//ExtTextOut(hdcMem,rc.left,rc.top,ETO_CLIPPED,&rc,szText,lstrlen(szText),NULL);
+					DrawTextA(hdcMem, szText, lstrlenA(szText), &rc, DT_SINGLELINE | DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+				}		
 			}
-
-/*
-			//extra icons
-			if (!(DBGetContactSettingByte(NULL,"CLC","MetaHideExtra",0) && Drawing->isSubcontact))
-			{
-			int c=dat->extraColumnsCount;
-			for(iImage=dat->extraColumnsCount-1;iImage>=0;iImage--) {
-					COLORREF colourFg=dat->selBkColour;
-					int mode=ILD_NORMAL;
-					if(Drawing->iExtraImage[iImage]==0xFF) continue;
-					if(selected) mode=ILD_SELECTED;
-					else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
-						else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST && (!Drawing->isSubcontact)) 
-						{
-							colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;
-						}			
-					if (DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",1)) c--; else c=iImage;
-					ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-c),y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
-				}
-			}
-*/
 
 			if (!Drawing->isSubcontact || (DBGetContactSettingByte(NULL,"CLC","MetaHideExtra",0)==0))
 			{
-			
-			//extra icons
-			if (!(style&CLS_EX_MULTICOLUMNALIGNLEFT))
-			{
 
-				int c=dat->extraColumnsCount;
-				for(iImage=dat->extraColumnsCount-1;iImage>=0;iImage--) {
-					  COLORREF colourFg=dat->selBkColour;
-					  int mode=ILD_NORMAL;
-                        
-					  if(Drawing->iExtraImage[iImage]==0xFF) continue;
-					  if(selected) mode=ILD_SELECTED;
-					  else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
-					  else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
-					  {				  
+				//extra icons
+				if (!(style&CLS_EX_MULTICOLUMNALIGNLEFT))
+				{
+					int c=dat->extraColumnsCount;
+					for(iImage=dat->extraColumnsCount-1;iImage>=0;iImage--) {
+						COLORREF colourFg=dat->selBkColour;
+						int mode=ILD_NORMAL;
 
-					  }
-					  if (dat->MetaIgnoreEmptyExtra) c--; else c=iImage;
+						if(Drawing->iExtraImage[iImage]==0xFF) continue;
+						if(selected) mode=ILD_SELECTED;
+						else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
+						else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
+						{				  
 
-						  testrc.left=clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-c);
-						  testrc.top=(y+((dat->rowHeight-16)>>1));
-						  testrc.right=testrc.left+16;
-						  testrc.bottom=testrc.top+16;
-						  if (!PtInRect(&testrc,pt))
-						  {
+						}
+						if (dat->MetaIgnoreEmptyExtra) c--; else c=iImage;
+
+						testrc.left=clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-c);
+						testrc.top=(y+((dat->rowHeight-16)>>1));
+						testrc.right=testrc.left+16;
+						testrc.bottom=testrc.top+16;
+						if (!PtInRect(&testrc,pt))
+						{
 							mode=ILD_NORMAL;
-						  }
+						}
 
-
-					  ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-c),y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
-					
+						ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-c),y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
 					}
-			//SetPixel(hdcMem,pt.x-2,pt.y-2,0x00ff00);
-			//OutputDebugString("SetPixel...\r\n");
-
-			}
-			else
-			{
-				int ic=0;	
-				for(iImage=0;iImage<dat->extraColumnsCount;iImage++) {
+				}
+				else
+				{
+					int ic=0;	
+					for(iImage=0;iImage<dat->extraColumnsCount;iImage++) {
 						COLORREF colourFg=dat->selBkColour;
 						int mode=ILD_NORMAL;
 						int x;
 
-						//if(group->contact[group->scanIndex].iExtraImage[iImage]==0xFF) continue;
-					/*	
+						//if(group->cl.items[group->scanIndex].iExtraImage[iImage]==0xFF) continue;
+						/*	
 						if(selected) mode=ILD_SELECTED;
 						else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
-						else if(group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
-						
+						else if(group->cl.items[group->scanIndex]->type==CLCIT_CONTACT && group->cl.items[group->scanIndex]->flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
+
 						x=(dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace-2+width);
 						x+=16;
 						x=x+dat->extraColumnSpacing*(ic);
-						if (iImage==dat->extraColumnsCount-1) {x=clRect.right-18;};
-						ImageList_DrawEx(dat->himlExtraColumns,group->contact[group->scanIndex].iExtraImage[iImage],hdcMem,
-							x,
-							y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
-					*/
-					  if(Drawing->iExtraImage[iImage]==0xFF) continue;
-					  //if(selected) mode=ILD_SELECTED;
-					  else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
-					  else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
-      
-					  x=(dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace-2+width);
-					  x+=16;
-					  x=x+dat->extraColumnSpacing*(ic);
-					  if (iImage==dat->extraColumnsCount-1) {x=clRect.right-18;};
-					  ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,
-							x,
-							y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
-						
-					ic++;
-					}
-			}
-		};
+						if (iImage==dat->extraColumnsCount-1) {x=clRect.right-18;}
+						ImageList_DrawEx(dat->himlExtraColumns,group->cl.items[group->scanIndex].iExtraImage[iImage],hdcMem,
+						x,
+						y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
+						*/
+						if(Drawing->iExtraImage[iImage]==0xFF) continue;
+						//if(selected) mode=ILD_SELECTED;
+						else if(hottrack) {mode=ILD_FOCUS; colourFg=dat->hotTextColour;}
+						else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) {colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; mode=ILD_BLEND50;}
 
-	}
+						x=(dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace-2+width);
+						x+=16;
+						x=x+dat->extraColumnSpacing*(ic);
+						if (iImage==dat->extraColumnsCount-1) {x=clRect.right-18;}
+						ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,
+							x,
+							y+((dat->rowHeight-16)>>1),0,0,CLR_NONE,colourFg,mode);
+
+						ic++;
+					}
+				}
+			}
+		}
 		index++;
 		y+=dat->rowHeight;
 
-		if (group->contact[group->scanIndex].type==CLCIT_CONTACT && group->contact[group->scanIndex].flags & CONTACTF_STATUSMSG) {
+		if (group->cl.items[group->scanIndex]->type==CLCIT_CONTACT && group->cl.items[group->scanIndex]->flags & CONTACTF_STATUSMSG) {
 			y+=dat->rowHeight;
 			index++;
 		}
 
 		//increment by subcontacts
-		if (group->contact[group->scanIndex].subcontacts!=NULL && group->contact[group->scanIndex].type!=CLCIT_GROUP)
-			if (group->contact[group->scanIndex].SubExpanded)
-			if (subindex<group->contact[group->scanIndex].SubAllocated-1)
-				subindex++;
-			else subindex=-1;
+		if (group->cl.items[group->scanIndex]->subcontacts!=NULL && group->cl.items[group->scanIndex]->type!=CLCIT_GROUP)
+			if (group->cl.items[group->scanIndex]->SubExpanded)
+				if (subindex<group->cl.items[group->scanIndex]->SubAllocated-1)
+					subindex++;
+				else subindex=-1;
 
-		if(subindex==-1)
-		{
-			if(group->contact[group->scanIndex].type==CLCIT_GROUP && group->contact[group->scanIndex].group->expanded) 
+		if(subindex==-1) {
+			if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP && group->cl.items[group->scanIndex]->group->expanded) 
 			{
-				group=group->contact[group->scanIndex].group;
+				group=group->cl.items[group->scanIndex]->group;
 				indent++;
 				group->scanIndex=0;
 				subindex=-1;
@@ -711,7 +679,6 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			}
 			group->scanIndex++;
 		}
-		
 	}
 	if(dat->iInsertionMark!=-1) {	//insertion mark
 		HBRUSH hBrush,hoBrush;
@@ -726,7 +693,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 		pts[5].x=pts[2].x+1;      pts[5].y=pts[1].y+2;
 		pts[6].x=pts[1].x;        pts[6].y=pts[5].y;
 		pts[7].x=pts[0].x;        pts[7].y=pts[4].y;
-		hRgn=CreatePolygonRgn(pts,sizeof(pts)/sizeof(pts[0]),ALTERNATE);
+		hRgn=CreatePolygonRgn(pts,SIZEOF(pts),ALTERNATE);
 		hBrush=CreateSolidBrush(dat->fontInfo[FONTID_CONTACTS].colour);
 		hoBrush=(HBRUSH)SelectObject(hdcMem,hBrush);
 		FillRgn(hdcMem,hRgn,hBrush);
@@ -756,7 +723,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 		greyGreen=GetGValue(greyColour)*2;
 		greyBlue=GetBValue(greyColour)*2;
 		if(divide3[0]==255) {
-			for(i=0;i<sizeof(divide3)/sizeof(divide3[0]);i++) divide3[i]=(i+1)/3;
+			for(i=0; i < SIZEOF(divide3); i++) divide3[i]=(i+1)/3;
 		}
 		for(i=4*clRect.right*clRect.bottom-4;i>=0;i-=4) {
 			bits[i]=divide3[bits[i]+greyBlue];
@@ -770,15 +737,14 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 	SelectObject(hdcMem,oldbmp);
 	DeleteObject(hBmpOsb);
 	DeleteDC(hdcMem);
-
 }
 
 void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 {
 	if (SED.cbSize==sizeof(SED)&&SED.PaintClc!=NULL)
 	{
-		SED.PaintClc(hwnd,dat,hdc,rcPaint,hClcProtoCount,clcProto,himlCListClc);
+		SED.PaintClc(hwnd,dat,hdc,rcPaint,pcli->hClcProtoCount,pcli->clcProto,himlCListClc);
 		return;
 	}
 	InternalPaintClc(hwnd,dat,hdc,rcPaint);
-};
+}

@@ -41,10 +41,13 @@ void FreeDisplayNameCache(void)
 {
 	if ( clistCache != NULL ) {
 		int i;
-		for ( i = 0; i < clistCache->realCount; i++)
+		for ( i = 0; i < clistCache->realCount; i++) {
 			cli.pfnFreeCacheItem(( ClcCacheEntryBase* )clistCache->items[i] );
+			free( clistCache->items[i] );
+		}
 
 		List_Destroy( clistCache ); 
+		free(clistCache);
 		clistCache = NULL;
 }	}
 
@@ -52,42 +55,52 @@ void FreeDisplayNameCache(void)
 
 ClcCacheEntryBase* fnCreateCacheItem( HANDLE hContact )
 {
-	DBVARIANT dbv;
 	ClcCacheEntryBase* p = ( ClcCacheEntryBase* )calloc( sizeof( ClcCacheEntryBase ), 1 );
 	if ( p == NULL )
 		return NULL;
 
-	if ( !DBGetContactSettingTString( hContact, "CList", "Group", &dbv )) {
-		p->group = _tcsdup( dbv.ptszVal );
-		free( dbv.ptszVal );
-	}
-	else p->group = _tcsdup( _T("") );
-
 	p->hContact = hContact;
-	p->isHidden = DBGetContactSettingByte( hContact, "CList", "Hidden", 0 );
 	return p;
+}
+
+void fnCheckCacheItem( ClcCacheEntryBase* p )
+{
+	DBVARIANT dbv;
+	if ( p->group == NULL ) {
+		if ( !DBGetContactSettingTString( p->hContact, "CList", "Group", &dbv )) {
+			p->group = _tcsdup( dbv.ptszVal );
+			free( dbv.ptszVal );
+		}
+		else p->group = _tcsdup( _T("") );
+	}
+
+	if ( p->isHidden == -1 )
+		p->isHidden = DBGetContactSettingByte( p->hContact, "CList", "Hidden", 0 );
 }
 
 void fnFreeCacheItem( ClcCacheEntryBase* p )
 {
-	if ( p->name ) free( p->name );
+	if ( p->name ) { free( p->name ); p->name = NULL; }
 	#if defined( _UNICODE )
-		if ( p->wszName ) free( p->wszName);
+		if ( p->szName ) { free( p->szName); p->szName = NULL; }
 	#endif
-	if ( p->group ) free( p->group );
-	free( p );
+	if ( p->group ) { free( p->group ); p->group = NULL; }
+	p->isHidden = -1;
 }
 
 ClcCacheEntryBase* fnGetCacheEntry(HANDLE hContact)
 {
+	ClcCacheEntryBase* p;
 	int idx;
-	if ( List_GetIndex( clistCache, &hContact, &idx ))
-		return ( ClcCacheEntryBase* )clistCache->items[idx];
-
-	{	ClcCacheEntryBase* p = cli.pfnCreateCacheItem( hContact );
+	if ( !List_GetIndex( clistCache, &hContact, &idx ))
+	{	p = cli.pfnCreateCacheItem( hContact );
 		List_Insert( clistCache, p, idx );
-		return p;
-}	}
+	}
+	else p = ( ClcCacheEntryBase* )clistCache->items[idx];
+
+	cli.pfnCheckCacheItem( p );
+	return p;
+}
 
 void fnInvalidateDisplayNameCacheEntry(HANDLE hContact)
 {
@@ -98,10 +111,9 @@ void fnInvalidateDisplayNameCacheEntry(HANDLE hContact)
 	}
 	else {
 		int idx;
-		if ( List_GetIndex( clistCache, &hContact, &idx )) {
+		if ( List_GetIndex( clistCache, &hContact, &idx ))
 			cli.pfnFreeCacheItem(( ClcCacheEntryBase* )clistCache->items[idx] );
-			List_Remove( clistCache, idx );
-}	}	}
+}	}
 
 TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 {
@@ -109,15 +121,12 @@ TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 	TCHAR *buffer;
 	ClcCacheEntryBase* cacheEntry = NULL;
 
-	if ( mode != GCDNF_NOMYHANDLE) {
+	if ( mode & GCDNF_NOCACHE )
+		mode &= ~GCDNF_NOCACHE;
+	else if ( mode != GCDNF_NOMYHANDLE) {
 		cacheEntry = cli.pfnGetCacheEntry( hContact );
-		#if defined( _UNICODE )
-			if ( cacheEntry->wszName )
-				return cacheEntry->wszName;
-		#else
-			if ( cacheEntry->name )
-				return cacheEntry->name;
-		#endif
+		if ( cacheEntry->name )
+			return cacheEntry->name;
 	}
 	ZeroMemory(&ci, sizeof(ci));
 	ci.cbSize = sizeof(ci);
@@ -139,11 +148,9 @@ TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 				return buffer;
 			}
 			else {
+				cacheEntry->name = ci.pszVal;
 				#if defined( _UNICODE )
-					cacheEntry->wszName = ci.pszVal;
-					cacheEntry->name = u2a( ci.pszVal );
-				#else
-					cacheEntry->name = ci.pszVal;
+					cacheEntry->szName = u2a( ci.pszVal );
 				#endif
 				return ci.pszVal;
 		}	}
@@ -157,11 +164,10 @@ TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 			else {
 				buffer = (TCHAR*) malloc(15 * sizeof( TCHAR ));
 				_ltot(ci.dVal, buffer, 10 );
+				cacheEntry->name = buffer;
 				#if defined( _UNICODE )
-					cacheEntry->wszName = buffer;
-					cacheEntry->name = u2a( buffer );
+					cacheEntry->szName = u2a( buffer );
 				#else
-					cacheEntry->name = buffer;
 				#endif
 				return buffer;
 	}	}	}
@@ -182,8 +188,13 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 
 	if ((int) lParam != GCDNF_NOMYHANDLE) {
 		cacheEntry = cli.pfnGetCacheEntry((HANDLE) wParam);
-		if ( cacheEntry->name )
-			return (int)cacheEntry->name;
+		#if defined( _UNICODE )
+			if ( cacheEntry->szName )
+				return (int)cacheEntry->szName;
+		#else
+			if ( cacheEntry->name )
+				return (int)cacheEntry->name;
+		#endif
 	}
 	ZeroMemory(&ci, sizeof(ci));
 	ci.cbSize = sizeof(ci);
@@ -207,13 +218,13 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 				return (int) buffer;
 			}
 			else {
+				cacheEntry->name = ci.pszVal;
 				#if defined( _UNICODE )
-					cacheEntry->wszName = ci.pszVal;
-					cacheEntry->name = u2a( ci.pszVal );
+					cacheEntry->szName = u2a( ci.pszVal );
+					return (int)cacheEntry->szName;
 				#else
-					cacheEntry->name = ci.pszVal;
+					return (int)cacheEntry->name;
 				#endif
-				return (int) cacheEntry->name;
 			}
 		}
 		if (ci.type == CNFT_DWORD) {
@@ -225,9 +236,11 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 			else {
 				buffer = ( char* )malloc(15);
 				ltoa(ci.dVal, buffer, 10 );
-				cacheEntry->name = buffer;
 				#if defined( _UNICODE )
-					cacheEntry->wszName = a2u( buffer );
+					cacheEntry->szName = buffer;
+					cacheEntry->name = a2u( buffer );
+				#else
+					cacheEntry->name = buffer;
 				#endif
 				return (int) buffer;
 	}	}	}

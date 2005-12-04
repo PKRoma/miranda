@@ -281,7 +281,7 @@ void fnAddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int upd
 struct ClcGroup* fnRemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct ClcContact *contact, int updateTotalCount)
 {
 	int iContact;
-	if ( !List_GetIndex(( SortedList* )&group->cl, contact, &iContact ))
+	if (( iContact = List_IndexOf(( SortedList* )&group->cl, contact )) == -1 )
 		return group;
 
 	if (contact->type == CLCIT_GROUP) {
@@ -292,7 +292,9 @@ struct ClcGroup* fnRemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct
 	if (updateTotalCount && contact->type == CLCIT_CONTACT)
 		group->totalMembers--;
 
+	free( group->cl.items[iContact] );
 	List_Remove(( SortedList* )&group->cl, iContact );
+
 	if ((GetWindowLong(hwnd, GWL_STYLE) & CLS_HIDEEMPTYGROUPS) && group->cl.count == 0) {
 		int i;
 		if (group->parent == NULL)
@@ -557,11 +559,8 @@ void fnSortCLC(HWND hwnd, struct ClcData *dat, int useInsertionSort)
 			group->scanIndex++;
 		}
 		if (hSelItem)
-			if (cli.pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL)) {
-				int idx;
-				if ( List_GetIndex((SortedList*)&selgroup->cl,selcontact,&idx ))
-					dat->selection = cli.pfnGetRowsPriorTo(&dat->list, selgroup, idx );
-			}
+			if (cli.pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
+				dat->selection = cli.pfnGetRowsPriorTo(&dat->list, selgroup, List_IndexOf((SortedList*)&selgroup->cl,selcontact));
 	}
 	dat->needsResort = 0;
 	InvalidateRect(hwnd, NULL, FALSE);

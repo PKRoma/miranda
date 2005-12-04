@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=mwclist - Win32 Release
+CFG=mwclist - Win32 Debug Unicode
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,12 +13,14 @@ CFG=mwclist - Win32 Release
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "mwclist.mak" CFG="mwclist - Win32 Release"
+!MESSAGE NMAKE /f "mwclist.mak" CFG="mwclist - Win32 Debug Unicode"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "mwclist - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "mwclist - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "mwclist - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "mwclist - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -81,12 +83,68 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug/plugins/clist_mw.dll" /pdbtype:sept
 
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "mwclist___Win32_Release_Unicode"
+# PROP BASE Intermediate_Dir "mwclist___Win32_Release_Unicode"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "./Release_Unicode"
+# PROP Intermediate_Dir "./Release_Unicode"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /O2 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "mwclist_EXPORTS" /Yu"commonheaders.h" /FD /c
+# ADD CPP /nologo /MD /W3 /O2 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "mwclist_EXPORTS" /Yu"commonheaders.h" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x809 /d "NDEBUG"
+# ADD RSC /l 0x809 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib /nologo /base:"0x6590000" /dll /machine:I386 /out:"../../bin/release/plugins/clist_mw.dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib /nologo /base:"0x6590000" /dll /machine:I386 /out:"../../bin/release Unicode/plugins/clist_mw.dll"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "mwclist___Win32_Debug_Unicode"
+# PROP BASE Intermediate_Dir "mwclist___Win32_Debug_Unicode"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "mwclist___Win32_Debug_Unicode"
+# PROP Intermediate_Dir "mwclist___Win32_Debug_Unicode"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "mwclist_EXPORTS" /Yu"commonheaders.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "mwclist_EXPORTS" /Yu"commonheaders.h" /FD /GZ /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x809 /d "_DEBUG"
+# ADD RSC /l 0x809 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug/plugins/clist_mw.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/clist_mw.dll" /pdbtype:sept
+
 !ENDIF 
 
 # Begin Target
 
 # Name "mwclist - Win32 Release"
 # Name "mwclist - Win32 Debug"
+# Name "mwclist - Win32 Release Unicode"
+# Name "mwclist - Win32 Debug Unicode"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -141,18 +199,12 @@ SOURCE=.\clc.c
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
 
-!ENDIF 
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
 
-# End Source File
-# Begin Source File
-
-SOURCE=.\clcfiledrop.c
-
-!IF  "$(CFG)" == "mwclist - Win32 Release"
-
+# ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -167,6 +219,13 @@ SOURCE=.\clcidents.c
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
 
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
+
 !ENDIF 
 
 # End Source File
@@ -180,18 +239,12 @@ SOURCE=.\clcitems.c
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
 
-!ENDIF 
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
 
-# End Source File
-# Begin Source File
-
-SOURCE=.\clcmsgs.c
-
-!IF  "$(CFG)" == "mwclist - Win32 Release"
-
+# ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -206,6 +259,13 @@ SOURCE=.\clcopts.c
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
 
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
+
 !ENDIF 
 
 # End Source File
@@ -218,6 +278,13 @@ SOURCE=.\clcpaint.c
 # ADD CPP /Yu"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -232,18 +299,12 @@ SOURCE=.\clcutils.c
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
 
-!ENDIF 
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
 
-# End Source File
-# Begin Source File
-
-SOURCE=.\clistevents.c
-
-!IF  "$(CFG)" == "mwclist - Win32 Release"
-
+# ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -258,6 +319,13 @@ SOURCE=.\clistmenus.c
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
 
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
+
 !ENDIF 
 
 # End Source File
@@ -270,6 +338,13 @@ SOURCE=.\clistmod.c
 # ADD CPP /Yu"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -284,6 +359,13 @@ SOURCE=.\clistopts.c
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
 
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
+
 !ENDIF 
 
 # End Source File
@@ -296,6 +378,13 @@ SOURCE=.\clistsettings.c
 # ADD CPP /Yu"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -310,6 +399,13 @@ SOURCE=.\clisttray.c
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
 
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
+
 !ENDIF 
 
 # End Source File
@@ -322,6 +418,13 @@ SOURCE=.\clui.c
 # ADD CPP /Yu"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -336,6 +439,13 @@ SOURCE=.\cluiopts.c
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
 
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
+
 !ENDIF 
 
 # End Source File
@@ -349,23 +459,20 @@ SOURCE=.\cluiservices.c
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
 
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
+
 !ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\commonheaders.c
-
-!IF  "$(CFG)" == "mwclist - Win32 Release"
-
 # ADD CPP /Yc"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
-
-# ADD CPP /Yc"commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -377,26 +484,12 @@ SOURCE=.\contact.c
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
 
-!ENDIF 
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
 
-# End Source File
-# Begin Source File
-
-SOURCE=.\dblists.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\dblists.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docking.c
-
-!IF  "$(CFG)" == "mwclist - Win32 Release"
-
+# ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -410,6 +503,13 @@ SOURCE=.\forkthread.c
 # ADD CPP /Yu"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -428,19 +528,6 @@ SOURCE=.\groupmenu.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\groups.c
-
-!IF  "$(CFG)" == "mwclist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\init.c
 
 !IF  "$(CFG)" == "mwclist - Win32 Release"
@@ -448,6 +535,13 @@ SOURCE=.\init.c
 # ADD CPP /Yu"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -461,6 +555,13 @@ SOURCE=.\keyboard.c
 # ADD CPP /Yu"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
+
+# ADD BASE CPP /Yu"commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -500,10 +601,6 @@ SOURCE=.\genmenu.h
 # Begin Source File
 
 SOURCE=.\IcoLib.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\m_clc.h
 # End Source File
 # Begin Source File
 

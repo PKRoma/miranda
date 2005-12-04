@@ -174,7 +174,7 @@ IDI_RENAME              ICON    DISCARDABLE     "res\\rename.ico"
 IDI_DELETE              ICON    DISCARDABLE     "res\\delete.ico"
 IDI_NOTICK              ICON    DISCARDABLE     "res\\notick.ico"
 IDI_TICK                ICON    DISCARDABLE     "res\\notick1.ico"
-IDI_BLANK1              ICON    DISCARDABLE     "res\\blank1.ico"
+IDI_BLANK               ICON    DISCARDABLE     "res\\blank.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

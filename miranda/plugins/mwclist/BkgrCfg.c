@@ -84,7 +84,7 @@ static BOOL CALLBACK DlgProcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					{
 						int retval = CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)dat->item[indx].filename);
 						if(!retval || retval == CALLSERVICE_NOTFOUND)
-							lstrcpyn(dat->item[indx].filename, dbv.pszVal, MAX_PATH);
+							lstrcpynA(dat->item[indx].filename, dbv.pszVal, MAX_PATH);
 						mir_free(dbv.pszVal);
 					}
 					else
@@ -98,7 +98,7 @@ static BOOL CALLBACK DlgProcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			PostMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_BKGRLIST, CBN_SELCHANGE), 0);
 			{
 				HRESULT (STDAPICALLTYPE *MySHAutoComplete)(HWND,DWORD);
-				MySHAutoComplete=(HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(GetModuleHandle("shlwapi"),"SHAutoComplete");
+				MySHAutoComplete=(HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
 				if(MySHAutoComplete) MySHAutoComplete(GetDlgItem(hwndDlg,IDC_FILENAME),1);
 			}
 			return TRUE;
@@ -121,7 +121,7 @@ static BOOL CALLBACK DlgProcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			dat->item[indx].useBitmap = IsDlgButtonChecked(hwndDlg,IDC_BITMAP);
 			dat->item[indx].bkColor = SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR,0,0);
 			dat->item[indx].selColor = SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_GETCOLOUR,0,0);
-			GetDlgItemText(hwndDlg, IDC_FILENAME, dat->item[indx].filename, sizeof(dat->item[indx].filename));
+			GetDlgItemTextA(hwndDlg, IDC_FILENAME, dat->item[indx].filename, sizeof(dat->item[indx].filename));
 			{
 				WORD flags = 0;
 				if(IsDlgButtonChecked(hwndDlg,IDC_STRETCHH)) flags |= CLB_STRETCHH;
@@ -148,7 +148,7 @@ static BOOL CALLBACK DlgProcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, dat->item[indx].bkColor);
 			SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_SETDEFAULTCOLOUR, 0, DEFAULT_SELBKCOLOUR);
 			SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_SETCOLOUR, 0, dat->item[indx].selColor);
-			SetDlgItemText(hwndDlg, IDC_FILENAME, dat->item[indx].filename);	
+			SetDlgItemTextA(hwndDlg, IDC_FILENAME, dat->item[indx].filename);	
 
 			CheckDlgButton(hwndDlg,IDC_STRETCHH, flags&CLB_STRETCHH?BST_CHECKED:BST_UNCHECKED);
 			CheckDlgButton(hwndDlg,IDC_STRETCHV,flags&CLB_STRETCHV?BST_CHECKED:BST_UNCHECKED);
@@ -164,7 +164,7 @@ static BOOL CALLBACK DlgProcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				char *sz = bkgrList[indx] + strlen(bkgrList[indx]) + 1;
 				sz += strlen(sz) + 1;
 				visibility = (WORD)~(*(DWORD*)(sz));
-//M_BKGR_BACKCOLOR,M_BKGR_SELECTCOLOR,M_BKGR_ALLOWBITMAPS,M_BKGR_STRETCH,M_BKGR_TILE};
+//M_BKGR_BACKCOLOR,M_BKGR_SELECTCOLOR,M_BKGR_ALLOWBITMAPS,M_BKGR_STRETCH,M_BKGR_TILE}
 				if(visibility & M_BKGR_BACKCOLOR)
 				{
 					SetWindowPos(GetDlgItem(hwndDlg, IDC_BC_STATIC), 0,
@@ -214,10 +214,10 @@ static BOOL CALLBACK DlgProcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			if(LOWORD(wParam) == IDC_BROWSE)
 			{
 				char str[MAX_PATH];
-				OPENFILENAME ofn={0};
+				OPENFILENAMEA ofn={0};
 				char filter[512];
 
-				GetDlgItemText(hwndDlg,IDC_FILENAME, str, sizeof(str));
+				GetDlgItemTextA(hwndDlg,IDC_FILENAME, str, sizeof(str));
 				ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 				ofn.hwndOwner = hwndDlg;
 				ofn.hInstance = NULL;
@@ -228,8 +228,8 @@ static BOOL CALLBACK DlgProcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				ofn.nMaxFile = sizeof(str);
 				ofn.nMaxFileTitle = MAX_PATH;
 				ofn.lpstrDefExt = "bmp";
-				if(!GetOpenFileName(&ofn)) break;
-				SetDlgItemText(hwndDlg, IDC_FILENAME, str);
+				if(!GetOpenFileNameA(&ofn)) break;
+				SetDlgItemTextA(hwndDlg, IDC_FILENAME, str);
 			}
 			else
 				if(LOWORD(wParam) == IDC_FILENAME && HIWORD(wParam) != EN_CHANGE) break;
@@ -253,7 +253,7 @@ static BOOL CALLBACK DlgProcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					indx = SendDlgItemMessage(hwndDlg, IDC_BKGRLIST, CB_GETITEMDATA, indx, 0);					
 					dat->item[indx].changed = TRUE;
 				
-				};							
+				}							
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0,0);
 			}
 			break;
@@ -333,7 +333,6 @@ static int BkgrCfg_Register(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-
 int OnOptionsInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
@@ -342,9 +341,9 @@ int OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.cbSize = sizeof(odp);
 	odp.position = 0;
 	odp.hInstance = g_hInst;
-	odp.pszGroup = Translate("Customize");
-	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_CLCBKG2);
-	odp.pszTitle = Translate("Backgrounds");
+	odp.pszGroup = "Customize";
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCBKG2);
+	odp.pszTitle = "Backgrounds";
 	odp.pfnDlgProc = DlgProcBkgOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	
@@ -360,15 +359,9 @@ int BGModuleLoad()
 	CreateServiceFunction(MS_BACKGROUNDCONFIG_REGISTER, BkgrCfg_Register);
 
 	hEventBkgrChanged = CreateHookableEvent(ME_BACKGROUNDCONFIG_CHANGED);
-/* //DEBUG
-	CallService(MS_BACKGROUNDCONFIG_REGISTER, (WPARAM)"Contact List Background/CLC", CLB_STRETCHH|CLB_STRETCHV);
-	CallService(MS_BACKGROUNDCONFIG_REGISTER, (WPARAM)"Contact List Background/CLC", CLB_STRETCHH|CLBF_TILEV);
-	CallService(MS_BACKGROUNDCONFIG_REGISTER, (WPARAM)"Contact List Background/CLC", CLBF_PROPORTIONAL);
-	CallService(MS_BACKGROUNDCONFIG_REGISTER, (WPARAM)"Contact List Background/CLC", CLBF_TILEVTOROWHEIGHT|CLBF_TILEH);
-*/	
-
 	return 0;
 }
+
 int BGModuleUnload(void)
 {
 	if(bkgrList != NULL)

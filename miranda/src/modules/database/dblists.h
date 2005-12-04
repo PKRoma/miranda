@@ -32,4 +32,4 @@ void*	List_Find( SortedList*, void* );
 int	List_GetIndex( SortedList*, void*, int* );
 int   List_Insert( SortedList*, void*, int );
 int   List_Remove( SortedList*, int );
-
+int   List_IndexOf( SortedList*, void* );

@@ -24,7 +24,7 @@ int FreeOwnerDataFrameMenu (WPARAM wParam,LPARAM lParam)
 		FreeAndNil(&cmep);
 	}
 	return(0);
-};
+}
 
 static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 {
@@ -47,13 +47,13 @@ static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 	{
 		lpFrameMenuExecParam fmep;
 		fmep=(lpFrameMenuExecParam)mir_alloc(sizeof(FrameMenuExecParam));
-		if (fmep==NULL){return(0);};
+		if (fmep==NULL){return(0);}
 		fmep->szServiceName=mir_strdup(mi->pszService);
 		fmep->Frameid=mi->popupPosition;
 		fmep->param1=(int)mi->pszContactOwner;
 		
 		tmi.ownerdata=fmep;
-	};
+	}
 	
 	return(CallService(MO_ADDNEWMENUITEM,(WPARAM)hFrameMenuObject,(LPARAM)&tmi));
 }
@@ -67,7 +67,7 @@ static int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 		if (fmep->szServiceName!=NULL){
 			mir_free(fmep->szServiceName);
 			fmep->szServiceName=NULL;
-		};
+		}
 		mir_free(fmep);
 	}
 	*/
@@ -80,11 +80,11 @@ static int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 //lparam - lparam from winproc
 int FrameMenuExecService(WPARAM wParam,LPARAM lParam) {
 	lpFrameMenuExecParam fmep=(lpFrameMenuExecParam)wParam;
-	if (fmep==NULL){return(-1);};
+	if (fmep==NULL){return(-1);}
 		CallService(fmep->szServiceName,lParam,fmep->param1);	
 
 		return(0);
-};
+}
 
 //true - ok,false ignore
 int FrameMenuCheckService(WPARAM wParam,LPARAM lParam) {
@@ -93,7 +93,7 @@ int FrameMenuCheckService(WPARAM wParam,LPARAM lParam) {
 	lpFrameMenuExecParam fmep;
 	TMO_MenuItem mi;
 
-	if (pcpp==NULL){return(FALSE);};
+	if (pcpp==NULL){return(FALSE);}
 	if (CallService(MO_GETMENUITEM,(WPARAM)pcpp->MenuItemHandle,(LPARAM)&mi)==0)
 	{
 		fmep=mi.ownerdata;
@@ -101,17 +101,17 @@ int FrameMenuCheckService(WPARAM wParam,LPARAM lParam) {
 		{
 		//pcpp->wParam  -  frameid
 		if (((WPARAM)fmep->Frameid==pcpp->wParam)||fmep->Frameid==-1) return(TRUE);	
-		};
+		}
 
-	};
+	}
 	return(FALSE);
-};
+}
 
 static int ContextFrameMenuNotify(WPARAM wParam,LPARAM lParam)
 {
 	NotifyEventHooks(hPreBuildFrameMenuEvent,wParam,lParam);
 	return(0);
-};
+}
 
 static int BuildContextFrameMenu(WPARAM wParam,LPARAM lParam)
 {
@@ -144,11 +144,11 @@ int val;
 
 	val=CallService(MS_INT_MENUMEASUREITEM,wParam,lParam);
 	if (val) return(val);
-};
+}
 return CallService(MS_CLIST_MENUMEASUREITEM,wParam,lParam);
 
 
-};
+}
 
 
 int DrawItemProxy(WPARAM wParam,LPARAM lParam) {
@@ -160,7 +160,7 @@ int val;
 }
 return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
 
-};
+}
 
 
 
@@ -170,11 +170,11 @@ if (InternalGenMenuModule)
 	int val;
 	val=CallService(MS_INT_MENUPROCESSCOMMAND,wParam,lParam);
 	if (val) return(val);
-};
+}
  
 return CallService(MS_CLIST_MENUPROCESSCOMMAND,wParam,lParam);
 
-};
+}
 
 int ModifyMenuItemProxy(WPARAM wParam,LPARAM lParam) {
 if (InternalGenMenuModule) 
@@ -182,11 +182,11 @@ if (InternalGenMenuModule)
 	int val;
 	val=CallService(MS_INT_MODIFYMENUITEM,wParam,lParam);
 	if (val) return(val);
-};
+}
  
 return CallService(MS_CLIST_MODIFYMENUITEM,wParam,lParam);
 
-};
+}
 
 
 int InitFramesMenus(void)
@@ -199,7 +199,7 @@ if (!ServiceExists(MO_REMOVEMENUOBJECT))
 	InitGenMenu();
 	InitCustomMenus();
 	InternalGenMenuModule=TRUE;
-};
+}
 
 if (ServiceExists(MO_REMOVEMENUOBJECT))
 {
@@ -239,8 +239,8 @@ int UnitFramesMenu()
 	if (ServiceExists(MO_REMOVEMENUOBJECT)) 
 	{
 		CallService(MO_REMOVEMENUOBJECT,hFrameMenuObject,0);
-		if (InternalGenMenuModule){UnitGenMenu();};
-	};
+		if (InternalGenMenuModule){UnitGenMenu();}
+	}
 */
 	return(0);
-};
+}

@@ -22,8 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-int EventsProcessTrayDoubleClick(void);
-int ShowHide(WPARAM wParam,LPARAM lParam);
 int InitSkinHotKeys(void);
 int RegistersAllHotkey(HWND hwnd); 
 int UnRegistersAllHotkey(HWND hwnd);
@@ -59,41 +57,39 @@ static void WordToModAndVk(WORD w,UINT *mod,UINT *vk)
 
 int hkHideShow(WPARAM wParam,LPARAM lParam)
 {
-    ShowHide(0,0);
-    
+	pcli->pfnShowHide(0,0);
 	return 0;
 }
 
 int hkSearch(WPARAM wParam,LPARAM lParam)
 {
-
 	DBVARIANT dbv={0};
-        if(!DBGetContactSetting(NULL,"CList","SearchUrl",&dbv)) {
-            CallService(MS_UTILS_OPENURL,DBGetContactSettingByte(NULL,"CList","HKSearchNewWnd",0),(LPARAM)dbv.pszVal);
-            mir_free(dbv.pszVal);
-		};
+	if(!DBGetContactSetting(NULL,"CList","SearchUrl",&dbv)) {
+		CallService(MS_UTILS_OPENURL,DBGetContactSettingByte(NULL,"CList","HKSearchNewWnd",0),(LPARAM)dbv.pszVal);
+		mir_free(dbv.pszVal);
+	}
 	return 0;
 }
 
 int hkRead(WPARAM wParam,LPARAM lParam)
 {
-        if(EventsProcessTrayDoubleClick()==0) return TRUE;
-        SetForegroundWindow((HWND)CallService(MS_CLUI_GETHWND,0,0));
-        SetFocus((HWND)CallService(MS_CLUI_GETHWND,0,0));
-return 0;
+	if( pcli->pfnEventsProcessTrayDoubleClick()==0) return TRUE;
+	SetForegroundWindow((HWND)CallService(MS_CLUI_GETHWND,0,0));
+	SetFocus((HWND)CallService(MS_CLUI_GETHWND,0,0));
+	return 0;
 }
 
 int hkOpts(WPARAM wParam,LPARAM lParam)
 {
-        CallService("Options/OptionsCommand",0, 0);
-		return 0;
+	CallService("Options/OptionsCommand",0, 0);
+	return 0;
 }
 
 int hkCloseMiranda(WPARAM wParam,LPARAM lParam)
 {
-SendMessage((HWND)CallService(MS_CLUI_GETHWND,0,0),WM_COMMAND,ID_ICQ_EXIT,0);
-return 0;
-};
+	SendMessage((HWND)CallService(MS_CLUI_GETHWND,0,0),WM_COMMAND,ID_ICQ_EXIT,0);
+	return 0;
+}
 
 int hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 {
@@ -102,7 +98,7 @@ int hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 		PostMessage((HWND)CallService(MS_CLUI_GETHWND,0,0), WM_COMMAND, nStatus, 0);
 
 	return 0;
-};
+}
 
 int hkAllOffline(WPARAM wParam,LPARAM lParam)
 {
@@ -222,12 +218,10 @@ int RegistersAllHotkey(HWND hwnd)
 	{
 		phi=&HotKeyList[i];
 		if(DBGetContactSettingByte(NULL, "SkinHotKeysOff", phi->name, 0)==0) {
-        //if (!aOpts) aOpts = GlobalAddAtom("HKEnShowOptions");
-		if(!phi->aAtom) phi->aAtom=GlobalAddAtom(phi->name);
-		WordToModAndVk((WORD)DBGetContactSettingWord(NULL,"SkinHotKeys",phi->name,0),&mod,&vk);
-		RegisterHotKey(hwnd,phi->aAtom,mod,vk);
-	}
-
+			if(!phi->aAtom) phi->aAtom=GlobalAddAtomA(phi->name);
+			WordToModAndVk((WORD)DBGetContactSettingWord(NULL,"SkinHotKeys",phi->name,0),&mod,&vk);
+			RegisterHotKey(hwnd,phi->aAtom,mod,vk);
+		}
 	}
 	return 0;
 }
@@ -245,34 +239,15 @@ int UnRegistersAllHotkey(HWND hwnd)
         UnregisterHotKey(hwnd, phi->aAtom);
         GlobalDeleteAtom(phi->aAtom);
 		phi->aAtom=(ATOM)NULL;
-		};
+		}
 
 	}
 return 0;
-};
+}
 
 
 int HotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam)
 {
- /*
-	if (wParam==aHide)
-        ShowHide(0,0);
-    else if (wParam==aSearch) {
-        DBVARIANT dbv;
-        if(!DBGetContactSetting(NULL,"CList","SearchUrl",&dbv)) {
-            CallService(MS_UTILS_OPENURL,DBGetContactSettingByte(NULL,"CList","HKSearchNewWnd",0),(LPARAM)dbv.pszVal);
-            mir_free(dbv.pszVal);
-        }
-    }
-    else if (wParam==aRead) {
-        if(EventsProcessTrayDoubleClick()==0) return TRUE;
-        SetForegroundWindow(hwnd);
-        SetFocus(hwnd);
-    }
-    else if (wParam==aOpts) {
-        CallService("Options/OptionsCommand",0, 0);
-    }
-*/
 	return TRUE;
 } 
 
@@ -343,7 +318,6 @@ static int ServiceSkinAddNewHotKey(WPARAM wParam,LPARAM lParam)
 
     if (ssd->DefHotKey) {
         DBVARIANT dbv={0};
-
         if (DBGetContactSetting(NULL, "SkinHotKeys", HotKeyList[HotKeyCount].name, &dbv)) {
             DBWriteContactSettingWord(NULL, "SkinHotKeys", HotKeyList[HotKeyCount].name, (WORD)ssd->DefHotKey);
         }
@@ -387,7 +361,7 @@ static int ServiceSkinPlayHotKey(WPARAM wParam, LPARAM lParam)
 
 static HTREEITEM FindNamedTreeItemAtRoot(HWND hwndTree,const char *name)
 {
-	TVITEM tvi;
+	TVITEMA tvi;
 	char str[128];
 
 	tvi.mask=TVIF_TEXT;
@@ -422,48 +396,48 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		}
         case DM_REBUILD_STREE:
         {
-            TVINSERTSTRUCT tvis;
+            TVINSERTSTRUCTA tvis;
             int i;
 
             TreeView_SelectItem(hwndTree ,NULL);
             ShowWindow(hwndTree,SW_HIDE);
             TreeView_DeleteAllItems(hwndTree);
-			tvis.hParent=NULL;
-			tvis.hInsertAfter=TVI_SORT;
-			tvis.item.mask=TVIF_TEXT|TVIF_STATE|TVIF_PARAM;
-			tvis.item.state=tvis.item.stateMask=TVIS_EXPANDED;
-			for(i=0;i<HotKeyCount;i++) {
-                tvis.item.stateMask=TVIS_EXPANDED;
-                tvis.item.state=TVIS_EXPANDED;
 				tvis.hParent=NULL;
-				tvis.hParent=FindNamedTreeItemAtRoot(hwndTree,HotKeyList[i].section);
-				if(tvis.hParent==NULL) {
-                 	tvis.item.lParam=-1;
-					tvis.item.pszText=HotKeyList[i].section;
-					tvis.hParent=TreeView_InsertItem(hwndTree,&tvis);
-                    tvis.item.stateMask=TVIS_STATEIMAGEMASK;
-                    tvis.item.state=INDEXTOSTATEIMAGEMASK(0);
-                    TreeView_SetItem(hwndTree,&tvis.item);
+				tvis.hInsertAfter=TVI_SORT;
+				tvis.item.mask=TVIF_TEXT|TVIF_STATE|TVIF_PARAM;
+				tvis.item.state=tvis.item.stateMask=TVIS_EXPANDED;
+				for(i=0;i<HotKeyCount;i++) {
+					tvis.item.stateMask=TVIS_EXPANDED;
+					tvis.item.state=TVIS_EXPANDED;
+					tvis.hParent=NULL;
+					tvis.hParent=FindNamedTreeItemAtRoot(hwndTree,HotKeyList[i].section);
+					if(tvis.hParent==NULL) {
+						tvis.item.lParam=-1;
+						tvis.item.pszText=HotKeyList[i].section;
+						tvis.hParent=TreeView_InsertItem(hwndTree,&tvis);
+						tvis.item.stateMask=TVIS_STATEIMAGEMASK;
+						tvis.item.state=INDEXTOSTATEIMAGEMASK(0);
+						TreeView_SetItem(hwndTree,&tvis.item);
+					}
+					tvis.item.stateMask=TVIS_STATEIMAGEMASK;
+					tvis.item.state=INDEXTOSTATEIMAGEMASK(!DBGetContactSettingByte(NULL,"SkinHotKeysOff",HotKeyList[i].name,0)?2:1);
+					tvis.item.lParam=i;
+					tvis.item.pszText=HotKeyList[i].description;
+					TreeView_InsertItem(hwndTree,&tvis);
 				}
-                tvis.item.stateMask=TVIS_STATEIMAGEMASK;
-		        tvis.item.state=INDEXTOSTATEIMAGEMASK(!DBGetContactSettingByte(NULL,"SkinHotKeysOff",HotKeyList[i].name,0)?2:1);
-				tvis.item.lParam=i;
-				tvis.item.pszText=HotKeyList[i].description;
-				TreeView_InsertItem(hwndTree,&tvis);
-            }
-            {
-                TVITEM tvi;
-                tvi.hItem = TreeView_GetRoot(hwndTree);
-                while(tvi.hItem!=NULL) {
-                    tvi.mask = TVIF_PARAM|TVIF_HANDLE|TVIF_STATE;
-                    TreeView_GetItem(hwndTree, &tvi);
-                    if (tvi.lParam==-1) {
-                        TreeView_SetItemState(hwndTree, tvi.hItem, INDEXTOSTATEIMAGEMASK(0), TVIS_STATEIMAGEMASK);
-                    }
-                    tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
-                }
-            }
-            ShowWindow(hwndTree, SW_SHOW);
+				{
+					TVITEM tvi;
+					tvi.hItem = TreeView_GetRoot(hwndTree);
+					while(tvi.hItem!=NULL) {
+						tvi.mask = TVIF_PARAM|TVIF_HANDLE|TVIF_STATE;
+						TreeView_GetItem(hwndTree, &tvi);
+						if (tvi.lParam==-1) {
+							TreeView_SetItemState(hwndTree, tvi.hItem, INDEXTOSTATEIMAGEMASK(0), TVIS_STATEIMAGEMASK);
+						}
+						tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
+					}
+				}
+				ShowWindow(hwndTree, SW_SHOW);
             break;
         }
         case DM_HIDEPANE:
@@ -521,34 +495,33 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			}
 			if(LOWORD(wParam)==IDC_CHANGE) {
 				char str[MAX_PATH], strFull[MAX_PATH];
-				OPENFILENAME ofn;
-                TVITEM tvi;
-                HTREEITEM hti;
+				OPENFILENAMEA ofn;
+            TVITEM tvi;
+            HTREEITEM hti;
 
-                ZeroMemory(&tvi,sizeof(tvi));
-                ZeroMemory(&hti,sizeof(hti));
-                hti=TreeView_GetSelection(hwndTree);
-                if (hti==NULL) break;
-                tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM|TVIF_TEXT;
-                tvi.hItem = hti;
-                if (TreeView_GetItem(hwndTree, &tvi)==FALSE) break;
-                if (tvi.lParam==-1) break;
-                str[0] = 0;
-                if (HotKeyList[tvi.lParam].tempFile) {
-                    _snprintf(strFull, sizeof(strFull), "%s", HotKeyList[tvi.lParam].tempFile);
-                }
-                else {
-                    if (DBGetContactSettingByte(NULL, "SkinHotKeysOff", HotKeyList[tvi.lParam].name, 0)==0) {
-                        DBVARIANT dbv={0};
-
-                        if (DBGetContactSetting(NULL, "SkinHotKeys", HotKeyList[tvi.lParam].name, &dbv)==0) {                           
-                            //CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)str);
-                            DBFreeVariant(&dbv);
-                        }
-                    }
-                }
-                _snprintf(strFull, sizeof(strFull), "%s", HotKeyList[tvi.lParam].tempFile?HotKeyList[tvi.lParam].tempFile:"");
-                CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)strFull, (LPARAM)str);
+            ZeroMemory(&tvi,sizeof(tvi));
+            ZeroMemory(&hti,sizeof(hti));
+            hti=TreeView_GetSelection(hwndTree);
+            if (hti==NULL) break;
+            tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM|TVIF_TEXT;
+            tvi.hItem = hti;
+            if (TreeView_GetItem(hwndTree, &tvi)==FALSE) break;
+            if (tvi.lParam==-1) break;
+            str[0] = 0;
+            if (HotKeyList[tvi.lParam].tempFile) {
+               _snprintf(strFull, SIZEOF(strFull), "%s", HotKeyList[tvi.lParam].tempFile);
+            }
+            else {
+               if (DBGetContactSettingByte(NULL, "SkinHotKeysOff", HotKeyList[tvi.lParam].name, 0)==0) {
+                  DBVARIANT dbv={0};
+                  if (DBGetContactSetting(NULL, "SkinHotKeys", HotKeyList[tvi.lParam].name, &dbv)==0) {                           
+                        //CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)str);
+                        DBFreeVariant(&dbv);
+                  }
+               }
+            }
+            _snprintf(strFull, SIZEOF(strFull), "%s", HotKeyList[tvi.lParam].tempFile?HotKeyList[tvi.lParam].tempFile:"");
+            CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)strFull, (LPARAM)str);
 				ZeroMemory(&ofn, sizeof(ofn));
 				ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 				ofn.hwndOwner = GetParent(hwndDlg);
@@ -556,13 +529,13 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				ofn.lpstrFilter = "Wave Files (*.wav)\0*.WAV\0All Files (*)\0*\0";
 				ofn.lpstrFile = str;
 				ofn.Flags = OFN_FILEMUSTEXIST|OFN_HIDEREADONLY;
-				ofn.nMaxFile = sizeof(str);
+				ofn.nMaxFile = SIZEOF(str);
 				ofn.nMaxFileTitle = MAX_PATH;
 				ofn.lpstrDefExt = "wav";
-				if(!GetOpenFileName(&ofn)) break;
+				if(!GetOpenFileNameA(&ofn)) break;
                 CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)str, (LPARAM)strFull);
                 HotKeyList[tvi.lParam].tempFile = _strdup(strFull);
-                SetDlgItemText(hwndDlg, IDC_LOCATION, strFull);
+                SetDlgItemTextA(hwndDlg, IDC_LOCATION, strFull);
 			}
 			if(LOWORD(wParam)==IDC_GETMORE) {
 				CallService(MS_UTILS_OPENURL,1,(LPARAM)"http://www.miranda-im.org/download/index.php?action=display&id=5");
@@ -586,7 +559,7 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				HotKeyList[tvi.lParam].DefHotKey=(WORD)SendDlgItemMessage(hwndDlg,IDC_SETHOTKEY,HKM_GETHOTKEY,0,0);
 				DBWriteContactSettingWord(NULL,"SkinHotKeys",HotKeyList[tvi.lParam].name,(WORD)SendDlgItemMessage(hwndDlg,IDC_SETHOTKEY,HKM_GETHOTKEY,0,0));
 			
-			};
+			}
 
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
@@ -638,17 +611,16 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
                         case TVN_SELCHANGED:
                         {
                             NMTREEVIEW *pnmtv = (NMTREEVIEW*)lParam;
-							TVITEM tvi = pnmtv->itemNew;
+									TVITEM tvi = pnmtv->itemNew;
 
                             if (tvi.lParam==-1) {
                                 SendMessage(hwndDlg, DM_HIDEPANE, 0, 0);
                             }
                             else {
                                 char buf[256];
-                                DBVARIANT dbv={0};
-                                
-                                _snprintf(buf, sizeof(buf), "%s: %s", HotKeyList[tvi.lParam].section, HotKeyList[tvi.lParam].description);
-                                SetDlgItemText(hwndDlg, IDC_NAMEVAL, buf);
+                                DBVARIANT dbv={0};                                
+                                _snprintf(buf, SIZEOF(buf), "%s: %s", HotKeyList[tvi.lParam].section, HotKeyList[tvi.lParam].description);
+                                SetDlgItemTextA(hwndDlg, IDC_NAMEVAL, buf);
 								SendDlgItemMessage(hwndDlg,IDC_SETHOTKEY,HKM_SETHOTKEY,DBGetContactSettingWord(NULL,"SkinHotKeys",HotKeyList[tvi.lParam].name,HotKeyList[tvi.lParam].DefHotKey ),0);
 								
 								/*
@@ -665,7 +637,7 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
                                 }
                                 else 
 								*/
-								SetDlgItemText(hwndDlg, IDC_LOCATION, Translate("<not specified>"));
+								SetDlgItemTextA(hwndDlg, IDC_LOCATION, Translate("<not specified>"));
                                 SendMessage(hwndDlg, DM_SHOWPANE, 0, 0);
                             }
                             break;

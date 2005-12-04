@@ -480,6 +480,7 @@ int GetListInterface(WPARAM wParam, LPARAM lParam)
 		li->List_GetIndex = List_GetIndex;
 		li->List_Insert   = List_Insert;
 		li->List_Remove   = List_Remove;
+		li->List_IndexOf  = List_IndexOf;
 		return 0;
 	}
 	return 1;

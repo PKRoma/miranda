@@ -157,6 +157,7 @@ struct LIST_INTERFACE {
 	int	( *List_GetIndex )( SortedList*, void*, int* );
 	int   ( *List_Insert )( SortedList*, void*, int );
 	int   ( *List_Remove )( SortedList*, int );
+	int   ( *List_IndexOf )( SortedList*, void* );
 };
 
 #define MS_SYSTEM_GET_LI  "Miranda/System/GetLI"

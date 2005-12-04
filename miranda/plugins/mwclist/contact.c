@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "clist.h"
 
-int GetContactDisplayName(WPARAM wParam,LPARAM lParam);
 extern HANDLE hContactIconChangedEvent;
 extern int GetContactCachedStatus(HANDLE hContact);
 extern char *GetContactCachedProtocol(HANDLE hContact);
@@ -69,7 +68,7 @@ void ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 static int GetStatusModeOrdering(int statusMode)
 {
 	int i;
-	for(i=0;i<sizeof(statusModeOrder)/sizeof(statusModeOrder[0]);i++)
+	for(i=0; i< SIZEOF(statusModeOrder); i++)
 		if(statusModeOrder[i].status==statusMode) return statusModeOrder[i].order;
 	return 1000;
 }
@@ -96,7 +95,7 @@ void LoadContactTree(void)
 		cacheEntry=GetContactFullCacheEntry(hContact);
 		if (cacheEntry==NULL)
 		{
-			MessageBox(0,"Fail To Get CacheEntry for hContact","!!!!!",0);
+			MessageBoxA(0,"Fail To Get CacheEntry for hContact","!!!!!",0);
 			break;
 		}
 		status=cacheEntry->status;
@@ -117,7 +116,7 @@ void LoadContactTree(void)
 	//sprintf(buf,"%s %s took %i ms",__FILE__,__LINE__,tick);
 	sprintf(buf,"LoadContactTree %d \r\n",tick);
 
-	OutputDebugString(buf);
+	OutputDebugStringA(buf);
 	}
 }
 
@@ -127,7 +126,7 @@ int CompareContacts(WPARAM wParam,LPARAM lParam)
 {
 	HANDLE a=(HANDLE)wParam,b=(HANDLE)lParam;
 //	char namea[128],*nameb;
-	char *namea,*nameb;
+	TCHAR *namea,*nameb;
 	int statusa,statusb;
 	char *szProto1,*szProto2;
 	int rc;
@@ -160,12 +159,12 @@ int CompareContacts(WPARAM wParam,LPARAM lParam)
 			{
 			if((statusa==ID_STATUS_OFFLINE)!=(statusb==ID_STATUS_OFFLINE)) {
 				return 2*(statusa==ID_STATUS_OFFLINE)-1;
-			};
+			}
 		}
 	}
 
 	//otherwise just compare names
-	return _stricmp(namea,nameb);
+	return _tcsicmp(namea,nameb);
 	
 }
 
@@ -196,19 +195,5 @@ int ContactChangeGroup(WPARAM wParam,LPARAM lParam)
 	else
 		DBWriteContactSettingString((HANDLE)wParam,"CList","Group",(char*)CallService(MS_CLIST_GROUPGETNAME2,lParam,(LPARAM)(int*)NULL));
 	CallService(MS_CLUI_CONTACTADDED,wParam,ExtIconFromStatusMode((HANDLE)wParam,(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0),GetContactStatus((HANDLE)wParam)));
-	return 0;
-}
-
-int SetHideOffline(WPARAM wParam,LPARAM lParam)
-{
-	OutputDebugString("=>SetHideOffline Before\r\n");
-	switch((int)wParam) {
-		case 0: DBWriteContactSettingByte(NULL,"CList","HideOffline",0); break;
-		case 1: DBWriteContactSettingByte(NULL,"CList","HideOffline",1); break;
-		case -1: DBWriteContactSettingByte(NULL,"CList","HideOffline",(BYTE)!DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)); break;
-	}
-	
-	LoadContactTree();
-	OutputDebugString("=>SetHideOffline Done\r\n");
 	return 0;
 }

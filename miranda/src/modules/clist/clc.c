@@ -36,9 +36,14 @@ static HANDLE hClcSettingsChanged;
 
 void FreeDisplayNameCache(void);
 
+void fnClcBroadcast( int msg, WPARAM wParam, LPARAM lParam )
+{
+	WindowList_Broadcast(hClcWindowList, msg, wParam, lParam);
+}
+
 void fnClcOptionsChanged(void)
 {
-    WindowList_Broadcast(hClcWindowList, INTM_RELOADOPTIONS, 0, 0);
+	WindowList_Broadcast(hClcWindowList, INTM_RELOADOPTIONS, 0, 0);
 }
 
 static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
@@ -250,7 +255,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		dat->list.hideOffline = 0;
 		dat->needsResort = 1;
 		cli.pfnLoadClcOptions(hwnd, dat);
-		if (!IsWindowVisible(hwnd)) 
+		if (!IsWindowVisible(hwnd))
 			SetTimer(hwnd,TIMERID_REBUILDAFTER,10,NULL);
 		else
 			cli.pfnRebuildEntireList(hwnd,dat);
@@ -512,11 +517,9 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 					hSelItem = cli.pfnContactToHItem(selcontact);
 				cli.pfnRemoveItemFromGroup(hwnd, group, contact, 0);
 				if (hSelItem)
-					if (cli.pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL)) {
-						int idx;
-						if ( List_GetIndex(( SortedList* )&selgroup->cl, selcontact, &idx ))
-							dat->selection = cli.pfnGetRowsPriorTo(&dat->list, selgroup, idx );
-					}
+					if (cli.pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
+						dat->selection = cli.pfnGetRowsPriorTo(&dat->list, selgroup, List_IndexOf(( SortedList* )&selgroup->cl, selcontact));
+
 				recalcScrollBar = 1;
 			}
 			else {
@@ -547,7 +550,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 			break;
 		contact->proto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
-		CallService(MS_CLIST_INVALIDATEDISPLAYNAME, wParam, 0);
+		cli.pfnInvalidateDisplayNameCacheEntry((HANDLE)wParam);
 		lstrcpyn(contact->szText, cli.pfnGetContactDisplayName((HANDLE)wParam,0), SIZEOF(contact->szText));
 		SortClcByTimer(hwnd);
 		break;
@@ -709,7 +712,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		case VK_RETURN: cli.pfnDoSelectionDefaultAction(hwnd, dat); return 0;
 		case VK_F2:     cli.pfnBeginRenameSelection(hwnd, dat); return 0;
 		case VK_DELETE: cli.pfnDeleteFromContactList(hwnd, dat); return 0;
-		default: 
+		default:
 			{
 				NMKEY nmkey;
 				nmkey.hdr.hwndFrom = hwnd;
@@ -914,7 +917,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 				cli.pfnSetGroupExpand(hwnd, dat, contact->group, -1);
 				if (dat->selection != -1) {
 					dat->selection =
-						cli.pfnGetRowsPriorTo(&dat->list, selgroup, ((unsigned) selcontact - (unsigned) selgroup->cl.items) / sizeof(struct ClcContact));
+						cli.pfnGetRowsPriorTo(&dat->list, selgroup, List_IndexOf((SortedList*)&selgroup->cl,selcontact));
 					if (dat->selection == -1)
 						dat->selection = cli.pfnGetRowsPriorTo(&dat->list, contact->group, -1);
 				}
@@ -1150,7 +1153,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 				SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) & nm);
 				break;
 			}
-			default: 
+			default:
 				{
 					struct ClcGroup *group;
 					struct ClcContact *contact;

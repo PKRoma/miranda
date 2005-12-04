@@ -203,7 +203,7 @@ int lParam;
 //lParam=(LPARAM)(CLISTMENUITEM*)&mi
 //returns a handle to the new item, or NULL on failure
 //the service that is called when the item is clicked is called with
-//wParam=0, lParam=hwndContactList
+//wParam=0, lParam=pcli->hwndContactList
 //dividers are inserted every 100000 positions
 //pszContactOwner is ignored for this service.
 //there is a #define PUTPOSITIONSINMENU in clistmenus.c which, when set, will
@@ -332,7 +332,7 @@ sense to store all this information in memory, etc.
 //a system message). szServiceName will be called when the user double clicks
 //the icon, at which point the event will be removed from the contact list's
 //queue automatically
-//pszService is called with wParam=(WPARAM)(HWND)hwndContactList,
+//pszService is called with wParam=(WPARAM)(HWND)pcli->hwndContactList,
 //lParam=(LPARAM)(CLISTEVENT*)cle. Its return value is ignored. cle is
 //invalidated when your service returns, so take copies of any important
 //information in it.

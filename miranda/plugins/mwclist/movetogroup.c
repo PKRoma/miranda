@@ -4,7 +4,6 @@ HANDLE hModulesLoaded,hOnCntMenuBuild;
 HANDLE prevmenu=0;
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
 
-extern HWND hwndContactList;
 HWND hwndTopToolBar=0;
 
 //service
@@ -16,7 +15,6 @@ HWND hwndTopToolBar=0;
 static int AddGroupItem(int rootid,char *name,int pos,int poppos,WPARAM wParam)
 {
 	CLISTMENUITEM mi={0};
-
 	
 	mi.cbSize=sizeof(mi);
 	mi.hIcon=NULL;//LoadIcon(hInst,MAKEINTRESOURCE(IDI_MIRANDA));
@@ -43,7 +41,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	
 	if (prevmenu!=0){
 		CallService(MS_CLIST_REMOVECONTACTMENUITEM,(WPARAM)prevmenu,(LPARAM)0);
-	};
+	}
 	
 	
 	ZeroMemory(&mi,sizeof(mi));
@@ -71,15 +69,15 @@ while (TRUE)
 	itoa(i,intname,10);
 	grpname=DBGetString(0,"CListGroups",intname);
 
-	if (grpname==NULL ){break;};
+	if (grpname==NULL ){break;}
 	if (strlen(grpname)==0)
 	{
 		break;
-	};
+	}
 	if (grpname[0]==0)
 	{
 		break;
-	};
+	}
 	AddGroupItem((int)menuid,&(grpname[1]),grpid++,i+1,wParam);
 	/*
 	mi.cbSize=sizeof(mi);
@@ -95,10 +93,10 @@ while (TRUE)
 	*/
 	i++;
 	mir_free(grpname);
-};
+}
 free(intname);
 return 0;
-};
+}
 
 static int MTG_DOMOVE(WPARAM wParam,LPARAM lParam)
 {
@@ -108,9 +106,9 @@ static int MTG_DOMOVE(WPARAM wParam,LPARAM lParam)
 
 if (lParam==0)
 {
-	MessageBox(0,"Wrong version of New menu system - please update.","MoveToGroup",0);
+	MessageBoxA(0,"Wrong version of New menu system - please update.","MoveToGroup",0);
 	return(0);
-};
+}
 lParam--;
 	if (lParam==-2)//root level
 	{
@@ -125,28 +123,28 @@ lParam--;
 		correctgrpname=&(grpname[1]);
 		DBWriteContactSettingString((HANDLE)wParam,"CList","Group",correctgrpname);
 		mir_free(grpname);
-	};
+	}
 	
 	
 	free (intname);
 return 0;
-};
+}
 static int OnmodulesLoad(WPARAM wParam,LPARAM lParam)
 {
-//hwndContactList=CallService(MS_CLUI_GETHWND,0,0);
+//pcli->hwndContactList=CallService(MS_CLUI_GETHWND,0,0);
 
 if (!ServiceExists(MS_CLIST_REMOVECONTACTMENUITEM))
 {
-	MessageBox(0,"New menu system not found - plugin disabled.","MoveToGroup",0);
+	MessageBoxA(0,"New menu system not found - plugin disabled.","MoveToGroup",0);
 	return(0);
-};
+}
 	hOnCntMenuBuild=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnContactMenuBuild);	
 	CreateServiceFunction(MTG_MOVE,MTG_DOMOVE);
-	//hFrameTopWindow=addTopToolBarWindow(hwndContactList);
+	//hFrameTopWindow=addTopToolBarWindow(pcli->hwndContactList);
 	//LoadInternalButtons(CallService(MS_CLUI_GETHWNDTREE,0,0));
 
 return(0);
-};
+}
 
 
 int LoadMoveToGroup()
@@ -159,7 +157,7 @@ int LoadMoveToGroup()
 
 int UnloadMoveToGroup(void)
 {
-	//if (hFrameTopWindow!=NULL){CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameTopWindow,(LPARAM)0);};
+	//if (hFrameTopWindow!=NULL){CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameTopWindow,(LPARAM)0);}
 
 	//DestroyServiceFunction();
 	UnhookEvent(hModulesLoaded);

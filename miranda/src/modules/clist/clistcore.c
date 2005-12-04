@@ -28,6 +28,7 @@ CLIST_INTERFACE cli = { 0 };
 
 /* clc.h */
 void   fnClcOptionsChanged( void );
+void   fnClcBroadcast( int msg, WPARAM wParam, LPARAM lParam );
 LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /* clcfiledrop.c */
@@ -101,6 +102,7 @@ void   fnInvalidateDisplayNameCacheEntry(HANDLE hContact);
 
 ClcCacheEntryBase* fnGetCacheEntry( HANDLE hContact );
 ClcCacheEntryBase* fnCreateCacheItem ( HANDLE hContact );
+void fnCheckCacheItem( ClcCacheEntryBase* p );
 void fnFreeCacheItem( ClcCacheEntryBase* p );
 
 /* clisttray.c */
@@ -151,6 +153,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.version = 1;
 
 		cli.pfnClcOptionsChanged               = fnClcOptionsChanged;
+		cli.pfnClcBroadcast                    = fnClcBroadcast;
 		cli.pfnContactListControlWndProc       = fnContactListControlWndProc;
 
 		cli.pfnRegisterFileDropping            = fnRegisterFileDropping;
@@ -208,6 +211,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnGetContactDisplayName			   = fnGetContactDisplayName;
 		cli.pfnInvalidateDisplayNameCacheEntry = fnInvalidateDisplayNameCacheEntry;
 		cli.pfnCreateCacheItem                 = fnCreateCacheItem;
+		cli.pfnCheckCacheItem                  = fnCheckCacheItem;
 		cli.pfnFreeCacheItem                   = fnFreeCacheItem;
 		cli.pfnGetCacheEntry                   = fnGetCacheEntry;
 															 

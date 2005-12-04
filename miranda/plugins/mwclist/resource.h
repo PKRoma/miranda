@@ -122,7 +122,6 @@
 #define IDI_ICQC7                       275
 #define IDI_ICQC8                       276
 #define IDI_EMAIL                       277
-#define IDI_BLANK1                      278
 #define IDD_OPT_META_CLC                279
 #define IDD_DIALOG1                     280
 #define IDI_NEWGROUP                    282
@@ -644,7 +643,7 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        347

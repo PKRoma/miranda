@@ -3,6 +3,8 @@
 .\CLUIFrames\cluiframes.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -24,22 +26,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\CLUIFrames\extraimage.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -61,22 +64,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\CLUIFrames\framesmenu.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -98,22 +102,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\CLUIFrames\protocolorder.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -135,22 +140,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\CLUIFrames\statusbar.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -172,22 +178,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\BkgrCfg.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -209,22 +216,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clc.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -246,22 +254,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clcfiledrop.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -283,22 +292,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clcidents.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -320,7 +330,6 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
@@ -330,12 +339,15 @@
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clcitems.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -357,7 +369,6 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
@@ -367,12 +378,15 @@
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clcmsgs.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -394,7 +408,6 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
@@ -404,12 +417,15 @@
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clcopts.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -431,7 +447,6 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
@@ -441,12 +456,15 @@
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clcpaint.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -468,7 +486,6 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
@@ -478,12 +495,15 @@
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clcutils.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -505,7 +525,6 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
@@ -515,12 +534,15 @@
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clistevents.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -542,22 +564,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clistmenus.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -579,22 +602,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clistmod.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -616,22 +640,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clistopts.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -653,7 +678,6 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
@@ -663,12 +687,15 @@
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clistsettings.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -690,7 +717,6 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
@@ -700,12 +726,15 @@
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clisttray.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -727,22 +756,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\clui.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -764,22 +794,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\cluiopts.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -801,22 +832,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\cluiservices.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -838,7 +870,6 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
@@ -848,12 +879,15 @@
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\commonheaders.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -875,22 +909,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\contact.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -912,22 +947,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\dblists.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -953,18 +989,20 @@
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\Docking.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -986,22 +1024,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\forkthread.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -1023,22 +1062,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\genmenu.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -1060,22 +1100,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\genmenuopt.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -1097,22 +1138,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\groupmenu.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -1134,22 +1176,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\groups.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -1171,22 +1214,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\init.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -1208,22 +1252,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\keyboard.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -1245,22 +1290,23 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 
 .\movetogroup.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -1282,16 +1328,15 @@
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
-	".\dblists.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clc.h"\
 	".\m_clist.h"\
 	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
+	".\m_mwclc.h"\
 	".\statusmodes.h"\
 	
 

@@ -140,9 +140,9 @@ typedef struct {
 typedef struct
 {
 	HANDLE hContact;
-	char *name;
+	TCHAR* name;
 	#if defined( _UNICODE )
-		wchar_t *wszName;
+		char* szName;
 	#endif
 	TCHAR* group;
 	int    isHidden;
@@ -234,6 +234,7 @@ typedef struct
 	/* clistsettings.c */
 	ClcCacheEntryBase* ( *pfnGetCacheEntry )( HANDLE hContact );
 	ClcCacheEntryBase* ( *pfnCreateCacheItem )( HANDLE hContact );
+	void               ( *pfnCheckCacheItem )( ClcCacheEntryBase* );
 	void               ( *pfnFreeCacheItem )( ClcCacheEntryBase* );
 
 	TCHAR* ( *pfnGetContactDisplayName )( HANDLE hContact, int mode );

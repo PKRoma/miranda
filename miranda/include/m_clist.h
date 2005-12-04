@@ -180,6 +180,8 @@ sense to store all this information in memory, etc.
 //information before they call this service again.
 #define GCDNF_NOMYHANDLE     1      //will never return the user's custom name
 #define GCDNF_UNICODE        2      //will return TCHAR* instead of char*
+#define GCDNF_NOCACHE        4      //will not use the cache
+
 #if defined( _UNICODE )
 	#define GCDNF_TCHAR       GCDNF_UNICODE      //will return TCHAR* instead of char*
 #else

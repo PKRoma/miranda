@@ -25,10 +25,34 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 HINSTANCE g_hInst = 0;
 PLUGINLINK * pluginLink;
+CLIST_INTERFACE* pcli = NULL;
+
+struct LIST_INTERFACE li;
 struct MM_INTERFACE memoryManagerInterface;
 static HANDLE hCListShutdown = 0;
-extern HWND hwndContactList;
 extern int LoadMoveToGroup();
+
+void CluiProtocolStatusChanged( void );
+int  FindRowByText(HWND hwnd,struct ClcData *dat,const TCHAR *text,int prefixOk);
+
+void CheckPDNCE(pdisplayNameCacheEntry);
+void RebuildEntireList(HWND hwnd,struct ClcData *dat);
+void RecalcScrollBar(HWND hwnd,struct ClcData *dat);
+
+struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
+struct ClcGroup* ( *saveRemoveItemFromGroup )(HWND hwnd,struct ClcGroup *group,struct ClcContact *contact,int updateTotalCount);
+
+LRESULT ( CALLBACK *saveContactListControlWndProc )( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
+LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+int ( *saveAddItemToGroup )( struct ClcGroup *group, int iAboveItem );
+int AddItemToGroup(struct ClcGroup *group, int iAboveItem);
+
+int ( *saveTrayIconProcessMessage )(WPARAM wParam,LPARAM lParam);
+int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
 
 //from bgrcfg
 extern int BGModuleLoad();
@@ -43,7 +67,7 @@ PLUGININFO pluginInfo = {
 	"bethoven@mailgate.ru" ,
 	"Copyright 2000-2005 Miranda-IM project ["__DATE__" "__TIME__"]",
 	"http://www.miranda-im.org",
-	0,
+	UNICODE_AWARE,
 	DEFMOD_CLISTALL
 };
 
@@ -53,7 +77,6 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 	DisableThreadLibraryCalls(g_hInst);
 	return TRUE;
 }
-
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
@@ -67,20 +90,19 @@ int LoadCLUIModule();
 
 static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-
-__try	
-	{
-	int *disableDefaultModule = 0;
-	disableDefaultModule=(int*)CallService(MS_PLUGINS_GETDISABLEDEFAULTARRAY,0,0);
-	if(!disableDefaultModule[DEFMOD_UICLUI]) if( LoadCLUIModule()) return 1;
+	__try	{
+		int *disableDefaultModule = 0;
+		disableDefaultModule=(int*)CallService(MS_PLUGINS_GETDISABLEDEFAULTARRAY,0,0);
+		if(!disableDefaultModule[DEFMOD_UICLUI]) if( LoadCLUIModule()) return 1;
 	}
-__except (exceptFunction(GetExceptionInformation()) ) 
-{ 
+	__except (exceptFunction(GetExceptionInformation()) ) 
+	{	
 		return 0; 
-} 
+	} 
 
 	return 0;
 }
+
 int SetDrawer(WPARAM wParam,LPARAM lParam)
 {
 	pDrawerServiceStruct DSS=(pDrawerServiceStruct)wParam;
@@ -96,40 +118,85 @@ int SetDrawer(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+static struct ClcContact* fnCreateClcContact( void )
+{
+	return (struct ClcContact*)calloc( sizeof( struct ClcContact ), 1 );
+}
+
+static ClcCacheEntryBase* fnCreateCacheItem( HANDLE hContact )
+{
+	pdisplayNameCacheEntry p = (pdisplayNameCacheEntry)calloc( sizeof( displayNameCacheEntry ), 1 );
+	if ( p )
+		p->hContact = hContact;
+	return (ClcCacheEntryBase*)p;
+}
 
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc=0;
 	pluginLink=link;
-#ifdef _DEBUG
-	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif
+	#ifdef _DEBUG
+		_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	#endif
+
 	// get the internal malloc/free()
-	__try{
-	
-OutputDebugString("CListInitialise ClistMW\r\n");
+	__try {
+		
+		OutputDebugStringA("CListInitialise ClistMW\r\n");
 
+		memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
+		CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM)&memoryManagerInterface);
 
-	memset(&memoryManagerInterface,0,sizeof(memoryManagerInterface));
-	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
-	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM)&memoryManagerInterface);
-	
-	memset(&SED,0,sizeof(SED));
-	CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);
+		li.cbSize = sizeof(li);
+		CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
 
-	rc=LoadContactListModule();
-	if (rc==0) rc=LoadCLCModule();
+		pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
+		pcli->pfnCheckCacheItem = CheckPDNCE;
+		pcli->pfnCluiProtocolStatusChanged = CluiProtocolStatusChanged;
+		pcli->pfnCreateClcContact = fnCreateClcContact;
+		pcli->pfnCreateCacheItem = fnCreateCacheItem;
+		pcli->pfnFindRowByText = FindRowByText;
+		pcli->pfnFindItem = FindItem;
+		pcli->pfnGetRowsPriorTo = GetRowsPriorTo;
+		pcli->pfnGetRowByIndex = GetRowByIndex;
+		pcli->pfnPaintClc = PaintClc;
+		pcli->pfnRebuildEntireList = RebuildEntireList;
+		pcli->pfnRecalcScrollBar = RecalcScrollBar;
 
-	HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
-	LoadMoveToGroup();
-	BGModuleLoad();	
+		saveAddGroup = pcli->pfnAddGroup;
+		pcli->pfnAddGroup = AddGroup;
 
-OutputDebugString("CListInitialise ClistMW...Done\r\n");
-}
-__except (exceptFunction(GetExceptionInformation()) ) 
-{ 
+		saveAddItemToGroup = pcli->pfnAddItemToGroup;
+		pcli->pfnAddItemToGroup = AddItemToGroup;
+
+		saveRemoveItemFromGroup = pcli->pfnRemoveItemFromGroup;
+		pcli->pfnRemoveItemFromGroup = RemoveItemFromGroup;
+
+		saveContactListControlWndProc = pcli->pfnContactListControlWndProc;
+		pcli->pfnContactListControlWndProc = ContactListControlWndProc;
+
+		saveTrayIconProcessMessage = pcli->pfnTrayIconProcessMessage;
+		pcli->pfnTrayIconProcessMessage = TrayIconProcessMessage;
+
+		saveContactListWndProc = pcli->pfnContactListWndProc;
+		pcli->pfnContactListWndProc = ContactListWndProc;
+
+		memset(&SED,0,sizeof(SED));
+		CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);
+
+		rc=LoadContactListModule();
+		if (rc==0) rc=LoadCLCModule();
+
+		HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
+		LoadMoveToGroup();
+		BGModuleLoad();	
+
+		OutputDebugStringA("CListInitialise ClistMW...Done\r\n");
+	}
+	__except (exceptFunction(GetExceptionInformation()) ) 
+	{ 
 		return 0; 
-} 
+	} 
 
 	return rc;
 }
@@ -137,18 +204,17 @@ __except (exceptFunction(GetExceptionInformation()) )
 // never called by a newer plugin loader.
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
-	OutputDebugString("Load ClistMW\r\n");
-	MessageBox(0,"You Running Old Miranda, use >30-10-2004 version!","MultiWindow Clist",0);
+	OutputDebugStringA("Load ClistMW\r\n");
+	MessageBoxA(0,"You Running Old Miranda, use >30-10-2004 version!","MultiWindow Clist",0);
 	CListInitialise(link);
 	return 1;
 }
 
 int __declspec(dllexport) Unload(void)
 {
-	OutputDebugString("Unloading ClistMW\r\n");
-	if (IsWindow(hwndContactList)) DestroyWindow(hwndContactList);
+	OutputDebugStringA("Unloading ClistMW\r\n");
+	if (IsWindow(pcli->hwndContactList)) DestroyWindow(pcli->hwndContactList);
 	BGModuleUnload();
-	hwndContactList=0;
+	pcli->hwndContactList=0;
 	return 0;
 }
-

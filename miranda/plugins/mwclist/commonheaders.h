@@ -25,6 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //#include "AggressiveOptimize.h"
 
+#if defined( UNICODE ) && !defined( _UNICODE )
+#define _UNICODE
+#endif
+
 #include <malloc.h>
 
 #ifdef _DEBUG
@@ -43,7 +47,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <io.h>
 #include <string.h>
 #include <direct.h>
-#include "m_clist.h"
 #include "resource.h"
 #include "forkthread.h"
 #include <win2k.h>
@@ -56,17 +59,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_options.h>
 #include <m_protosvc.h>
 #include <m_utils.h>
+#include <m_clc.h>
+#include <m_clist.h>
+#include <m_clistint.h>
 #include <m_skin.h>
 #include <m_contacts.h>
 #include <m_plugins.h>
 #include "m_genmenu.h"
 #include "genmenu.h"
 #include "m_clui.h"
-#include "m_clc.h"
+#include "m_mwclc.h"
 #include "clc.h"
 #include "clist.h"
 #include "icolib.h"
-#include "dblists.h"
 #include <m_userinfo.h>
 #include ".\CLUIFrames\cluiframes.h"
 #include ".\CLUIFrames\m_cluiframes.h"
@@ -75,9 +80,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_file.h>
 #include <m_addcontact.h>
 #include "m_fontservice.h"
-
-
-#define CLS_CONTACTLIST 1
 
 // shared vars
 extern HINSTANCE g_hInst;
@@ -92,6 +94,7 @@ extern HINSTANCE g_hInst;
 
 */
 
+extern struct LIST_INTERFACE li;
 extern struct MM_INTERFACE memoryManagerInterface;
 
 #define alloc(n) mir_alloc(n)
@@ -115,10 +118,10 @@ static int mir_realloc_proxy(void *ptr,int size)
 	if (IsBadCodePtr(ptr))
 	{
 		char buf[256];
-		wsprintf(buf,"Bad code ptr in mir_realloc_proxy ptr: %x\r\n",ptr);
+		wsprintfA(buf,"Bad code ptr in mir_realloc_proxy ptr: %x\r\n",ptr);
 		//ASSERT("Bad code ptr");
 		DebugBreak();
-		OutputDebugStr(buf);
+		OutputDebugStringA(buf);
 		return 0;
 	}
 	memoryManagerInterface.mmi_realloc(ptr,size);
@@ -132,10 +135,10 @@ static int mir_free_proxy(void *ptr)
 	if (ptr==NULL||IsBadCodePtr(ptr))
 	{
 		char buf[256];
-		wsprintf(buf,"Bad code ptr in mir_free_proxy ptr: %x\r\n",ptr);
+		wsprintfA(buf,"Bad code ptr in mir_free_proxy ptr: %x\r\n",ptr);
 		//ASSERT("Bad code ptr");
 		DebugBreak();
-		OutputDebugStr(buf);
+		OutputDebugStringA(buf);
 		return 0;
 	}
 	memoryManagerInterface.mmi_free(ptr);
@@ -154,7 +157,7 @@ static int __cdecl MyStrCmp (const char *a, const char *b)
 	//OutputDebugStr("MY\r\n");
 	//undef();
 	return (strcmp(a,b));
-};
+}
 
 static int __cdecl MyStrLen (const char *a)
 {
@@ -167,7 +170,7 @@ static int __cdecl MyStrLen (const char *a)
 	//OutputDebugStr("MY\r\n");
 	//undef();
 	return (strlen(a));
-};
+}
 
 #define strcmp(a,b) MyStrCmp(a,b)
 #define strlen(a) MyStrLen(a)
@@ -181,7 +184,7 @@ __inline void *mir_calloc( size_t num, size_t size )
 	if (p==NULL) return NULL;
 	memset(p,0,num*size);
 	return p;
-};
+}
 
 __inline char * mir_strdup(const char * src)
 {
@@ -214,7 +217,7 @@ static DWORD exceptFunction(LPEXCEPTION_POINTERS EP)
 		EP->ExceptionRecord->ExceptionFlags,
 		EP->ExceptionRecord->ExceptionAddress
 		);
-	OutputDebugStr(buf);
+	OutputDebugStringA(buf);
 	MessageBoxA(0,buf,"clist_mw Exception",0);
 
     

@@ -28,7 +28,6 @@ int AddContactMenuItem(WPARAM wParam, LPARAM lParam);
 int ContactChangeGroup(WPARAM wParam, LPARAM lParam);
 int InitCListEvents(void);
 void UninitCListEvents(void);
-void InitDisplayNameCache(void);
 int ContactSettingChanged(WPARAM wParam, LPARAM lParam);
 int ContactAdded(WPARAM wParam, LPARAM lParam);
 int ContactDeleted(WPARAM wParam, LPARAM lParam);

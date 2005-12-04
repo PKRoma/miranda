@@ -24,13 +24,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _CLIST_H_
 
 void LoadContactTree(void);
-int IconFromStatusMode(const char *szProto,int status);
 int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status);
 HTREEITEM GetTreeItemByHContact(HANDLE hContact);
 void TrayIconUpdateWithImageList(int iImage,const char *szNewTip,char *szPreferredProto);
 void SortContacts(void);
 void ChangeContactIcon(HANDLE hContact,int iIcon,int add);
-int GetContactInfosForSort(HANDLE hContact,char **Proto,char **Name,int *Status);
+int GetContactInfosForSort(HANDLE hContact,char **Proto,TCHAR **Name,int *Status);
 
 typedef struct  {
 int idxClientIcon;
@@ -40,16 +39,18 @@ int ClientID;
 
 typedef struct  {
 	HANDLE hContact;
-	char *name;
-	int NameHash;
-	char *szProto;
-	boolean protoNotExists;
-	int ProtoHash;
-	int	  status;
+	TCHAR *name;
+	#if defined( _UNICODE )
+		char *szName;
+	#endif
+	TCHAR* szGroup;
 	int Hidden;
 	int noHiddenOffline;
 
-	char *szGroup;
+	char *szProto;
+	boolean protoNotExists;
+	int	  status;
+
 	int i;
 	int ApparentMode;
 	int NotOnList;

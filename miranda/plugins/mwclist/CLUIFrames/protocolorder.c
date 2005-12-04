@@ -15,7 +15,6 @@ struct ProtocolOrderData {
 	HTREEITEM hDragItem;
 };
 
-
 #define PrVer 3
 
 char **settingname;
@@ -24,12 +23,12 @@ int arrlen;
 int EnumProc (const char *szSetting,LPARAM lParam)
 {
 	
-	if (szSetting==NULL){return(1);};
+	if (szSetting==NULL){return(1);}
 	arrlen++;
 	settingname=(char **)realloc(settingname,arrlen*sizeof(char *));
 	settingname[arrlen-1]=strdup(szSetting);
 	return(1);
-};
+}
 
 int  DeleteAllSettingInProtocols()
 {
@@ -44,19 +43,19 @@ dbces.ofsSettings=0;
 CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
 
 //delete all settings
-if (arrlen==0){return(0);};
+if (arrlen==0){return(0);}
 {
 	int i;
 	for (i=0;i<arrlen;i++)
 	{
 	  DBDeleteContactSetting(0,"Protocols",settingname[i]);
 	  free(settingname[i]);
-	};
+	}
 	free(settingname);
 	settingname=NULL;
-};
+}
 return(0);
-};
+}
 
 
 int CheckProtocolOrder()
@@ -73,15 +72,15 @@ int CheckProtocolOrder()
 	//curproto=0;
 	//curproto[1]='22';
 	protochanged=FALSE;
-	OutputDebugStr("Calling CheckProtocolOrder\r\n");
+	OutputDebugStringA("Calling CheckProtocolOrder\r\n");
 
 	ver=DBGetContactSettingDword(0,"Protocols","PrVer",-1);
-	if (ver!=PrVer){protochanged=TRUE;};
+	if (ver!=PrVer){protochanged=TRUE;}
 	
 	StoredProtoCount=-1;
 	if (!protochanged) StoredProtoCount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 	
-	if (StoredProtoCount==-1){protochanged=TRUE;};
+	if (StoredProtoCount==-1){protochanged=TRUE;}
 	if (!protochanged)
 	{
 		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
@@ -93,19 +92,19 @@ int CheckProtocolOrder()
 		v++;
 		}
 	
-		if (StoredProtoCount!=v){protochanged=TRUE;};
-	};
+		if (StoredProtoCount!=v){protochanged=TRUE;}
+	}
 	if (!protochanged)
 	{
 			for(i=0;i<StoredProtoCount;i++) {
 				itoa(i,(char *)&buf,10);
 				curproto=DBGetString(NULL,"Protocols",buf);
-				if (curproto==NULL){protochanged=TRUE;break;};
-				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)curproto)==0){protochanged=TRUE;break;};		
+				if (curproto==NULL){protochanged=TRUE;break;}
+				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)curproto)==0){protochanged=TRUE;break;}		
 				
-				if (curproto!=NULL){ mir_free(curproto);};
-			};
-	};		
+				if (curproto!=NULL){ mir_free(curproto);}
+			}
+	}		
 	if (protochanged)
 	{
 		//reseting all settings;
@@ -130,7 +129,7 @@ int CheckProtocolOrder()
 				DBWriteContactSettingDword(0,"Protocols",(char *)&buf,1);
 				
 			v++;
-			};
+			}
 		DBDeleteContactSetting(0,"Protocols","ProtoCount");
 		DBWriteContactSettingDword(0,"Protocols","ProtoCount",v);
 		DBWriteContactSettingDword(0,"Protocols","PrVer",PrVer);
@@ -139,11 +138,11 @@ int CheckProtocolOrder()
 	else
 	{
 		return(0);
-	};
+	}
 	
 
 
-};
+}
 
 int FillTree(HWND hwnd)
 {
@@ -162,13 +161,13 @@ int FillTree(HWND hwnd)
 //			CheckProtocolOrder();
 			TreeView_DeleteAllItems(hwnd);
 			count=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
-			if (count==-1){return(FALSE);};
+			if (count==-1){return(FALSE);}
 
 			for(i=0;i<count;i++) {
 				//if(protos[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
 				itoa(i,	(char *)&buf,10);
 				szSTName=DBGetString(0,"Protocols",(char *)&buf);
-				if (szSTName==NULL){continue;};
+				if (szSTName==NULL){continue;}
 				
 				CallProtoService(szSTName,PS_GETNAME,sizeof(szName),(LPARAM)szName);
 				PD=(ProtocolData*)malloc(sizeof(ProtocolData));
@@ -183,15 +182,15 @@ int FillTree(HWND hwnd)
 				PD->protopos=DBGetContactSettingDword(0,"Protocols",(char *)&buf,-1);
 					
 				tvis.item.lParam=(LPARAM)PD;
-				tvis.item.pszText=Translate(szName);
+				tvis.item.pszText=TranslateTS(szName);
 				tvis.item.iImage=tvis.item.iSelectedImage=PD->show;
 				TreeView_InsertItem(hwnd,&tvis);
 				//tvis.item.iImage=tvis.item.iSelectedImage=PD->show;
 				//TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_PROTOCOLVISIBILITY),&tvis);
-			};
+			}
 			
 			return(0);
-};
+}
 
 static BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {	struct ProtocolOrderData *dat;
@@ -238,10 +237,10 @@ static BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							CluiProtocolStatusChanged(0,0);
 							SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 				return(0);			
-				};
-			};
+				}
+			}
 			break;
-			};
+			}
 		case WM_NOTIFY:
 			switch(((LPNMHDR)lParam)->idFrom) {		
 			case 0: 
@@ -251,13 +250,13 @@ static BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						{	
 							TVITEM tvi;
 							int count;
-							char idstr[33];
+							TCHAR idstr[33];
 							char buf[10];
 
 							tvi.hItem=TreeView_GetRoot(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
-							tvi.cchTextMax=32;
+							tvi.cchTextMax=SIZEOF(idstr)-1;
 							tvi.mask=TVIF_TEXT|TVIF_PARAM|TVIF_HANDLE;
-							tvi.pszText=(char *)&idstr;
+							tvi.pszText=(TCHAR*)&idstr;
 							//CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 							//count--;
 							count=0;
@@ -340,7 +339,7 @@ static BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							
 							
 							
-							};
+							}
 						}
 					break;
 			}
@@ -384,7 +383,7 @@ static BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvi);
 				if(hti.flags&(TVHT_ONITEM|TVHT_ONITEMRIGHT)) {
 					TVINSERTSTRUCT tvis;
-					char name[128];
+					TCHAR name[128];
 					tvis.item.mask=TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
 					tvis.item.stateMask=0xFFFFFFFF;
 					tvis.item.pszText=name;
@@ -415,7 +414,7 @@ static int ProtocolOrderInit(WPARAM wParam,LPARAM lParam) {
 	odp.cbSize=sizeof(odp);
 	odp.position=-1000000000;
 	odp.hInstance=g_hInst;//GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_PROTOCOLORDER);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_PROTOCOLORDER);
 	odp.pszGroup=Translate("Contact List");
 	odp.pszTitle=Translate("Protocols");
 	odp.pfnDlgProc=ProtocolOrderOpts;

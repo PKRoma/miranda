@@ -26,9 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //loads of stuff that didn't really fit anywhere else
 
-extern HANDLE hHideInfoTipEvent;
-extern void InvalidateDisplayNameCacheEntry(HANDLE hContact);
-
 char *GetGroupCountsText(struct ClcData *dat,struct ClcContact *contact)
 {
 	static char szName[32];
@@ -43,22 +40,22 @@ char *GetGroupCountsText(struct ClcData *dat,struct ClcContact *contact)
 	totalCount=group->totalMembers;
 	group->scanIndex=0;
 	for(;;) {
-		if(group->scanIndex==group->contactCount) {
+		if(group->scanIndex==group->cl.count) {
 			if(group==topgroup) break;
 			group=group->parent;
 		}
-		else if(group->contact[group->scanIndex].type==CLCIT_GROUP) {
-			group=group->contact[group->scanIndex].group;
+		else if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP) {
+			group=group->cl.items[group->scanIndex]->group;
 			group->scanIndex=0;
 			totalCount+=group->totalMembers;
 			continue;
 		}
-		else if(group->contact[group->scanIndex].type==CLCIT_CONTACT)
-			if(group->contact[group->scanIndex].flags&CONTACTF_ONLINE && !group->contact[group->scanIndex].isSubcontact) onlineCount++;
+		else if(group->cl.items[group->scanIndex]->type==CLCIT_CONTACT)
+			if(group->cl.items[group->scanIndex]->flags&CONTACTF_ONLINE && !group->cl.items[group->scanIndex]->isSubcontact) onlineCount++;
 		group->scanIndex++;
 	}
 	if(onlineCount==0 && dat->exStyle&CLS_EX_HIDECOUNTSWHENEMPTY) return "";
-	_snprintf(szName,sizeof(szName),"(%u/%u)",onlineCount,totalCount);
+	_snprintf(szName,SIZEOF(szName),"(%u/%u)",onlineCount,totalCount);
 	return szName;
 }
 
@@ -135,7 +132,7 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 				x=(dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace-2+width);
 				x+=16;
 				x=x+dat->extraColumnSpacing*(ic);
-				if (i==dat->extraColumnsCount-1) {x=clRect.right-18;};
+				if (i==dat->extraColumnsCount-1) {x=clRect.right-18;}
 			}else
 			{
 				x=clRect.right-dat->extraColumnSpacing*(dat->extraColumnsCount-i);
@@ -169,10 +166,10 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 		char *szCounts;
 		szCounts=GetGroupCountsText(dat,hitcontact);
 		if(szCounts[0]) {
-			GetTextExtentPoint32(hdc," ",1,&textSize);
+			GetTextExtentPoint32A(hdc," ",1,&textSize);
 			width+=textSize.cx;
 			SelectObject(hdc,dat->fontInfo[FONTID_GROUPCOUNTS].hFont);
-			GetTextExtentPoint32(hdc,szCounts,lstrlen(szCounts),&textSize);
+			GetTextExtentPoint32A(hdc,szCounts,lstrlenA(szCounts),&textSize);
 			width+=textSize.cx;
 		}
 	}
@@ -238,9 +235,9 @@ void EnsureVisible(HWND hwnd,struct ClcData *dat,int iItem,int partialOk)
 
 	if (dat==NULL||IsBadCodePtr((void *)dat)) 
 	{
-		OutputDebugStr("dat is null __FILE____LINE__");
+		OutputDebugStringA("dat is null __FILE____LINE__");
 		return ;
-	};
+	}
 
 	GetClientRect(hwnd,&clRect);
 	itemy=iItem*dat->rowHeight;
@@ -358,30 +355,30 @@ void DoSelectionDefaultAction(HWND hwnd,struct ClcData *dat)
 		CallService(MS_CLIST_CONTACTDOUBLECLICKED,(WPARAM)contact->hContact,0);
 }
 
-int FindRowByText(HWND hwnd,struct ClcData *dat,const char *text,int prefixOk)
+int FindRowByText(HWND hwnd,struct ClcData *dat,const TCHAR *text,int prefixOk)
 {
 	struct ClcGroup *group=&dat->list;
 	int testlen=lstrlen(text);
 
 	group->scanIndex=0;
 	for(;;) {
-		if(group->scanIndex==group->contactCount) {
+		if(group->scanIndex==group->cl.count) {
 			group=group->parent;
 			if(group==NULL) break;
 			group->scanIndex++;
 			continue;
 		}
-		if(group->contact[group->scanIndex].type!=CLCIT_DIVIDER) {
-			if((prefixOk && !_strnicmp(text,group->contact[group->scanIndex].szText,testlen)) ||
-			   (!prefixOk && !lstrcmpi(text,group->contact[group->scanIndex].szText))) {
+		if(group->cl.items[group->scanIndex]->type!=CLCIT_DIVIDER) {
+			if((prefixOk && !_tcsnicmp(text,group->cl.items[group->scanIndex]->szText,testlen)) ||
+			   (!prefixOk && !lstrcmpi(text,group->cl.items[group->scanIndex]->szText))) {
 				struct ClcGroup *contactGroup=group;
 				int contactScanIndex=group->scanIndex;
 				for(;group;group=group->parent) SetGroupExpand(hwnd,dat,group,1);
 				return GetRowsPriorTo(&dat->list,contactGroup,contactScanIndex);
 			}
-			if(group->contact[group->scanIndex].type==CLCIT_GROUP) {
-				if(!(dat->exStyle&CLS_EX_QUICKSEARCHVISONLY) || group->contact[group->scanIndex].group->expanded) {
-					group=group->contact[group->scanIndex].group;
+			if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP) {
+				if(!(dat->exStyle&CLS_EX_QUICKSEARCHVISONLY) || group->cl.items[group->scanIndex]->group->expanded) {
+					group=group->cl.items[group->scanIndex]->group;
 					group->scanIndex=0;
 					continue;
 				}
@@ -399,27 +396,27 @@ void EndRename(HWND hwnd,struct ClcData *dat,int save)
 	if(dat->hwndRenameEdit==NULL) return;
 	dat->hwndRenameEdit=NULL;
 	if(save) {
-		char text[120];
+		TCHAR text[120];
 		struct ClcContact *contact;
-		GetWindowText(hwndEdit,text,sizeof(text));
+		GetWindowText(hwndEdit,text,SIZEOF(text));
 		if(GetRowByIndex(dat,dat->selection,&contact,NULL)!=-1) {
 			if(lstrcmp(contact->szText,text)) {
-				if(contact->type==CLCIT_GROUP&&!strstr(text,"\\")) {
-					char szFullName[256];
+				if(contact->type==CLCIT_GROUP && !_tcschr(text,'\\')) {
+					TCHAR szFullName[256];
 					if(contact->group->parent && contact->group->parent->parent)
-						_snprintf(szFullName,sizeof(szFullName),"%s\\%s",(char*)CallService(MS_CLIST_GROUPGETNAME2,(WPARAM)contact->group->parent->groupId,(LPARAM)(int*)NULL),text);
-					else lstrcpyn(szFullName,text,sizeof(szFullName));
-					CallService(MS_CLIST_GROUPRENAME,contact->groupId,(LPARAM)szFullName);
+						mir_sntprintf(szFullName,SIZEOF(szFullName),_T("%s\\%s"),pcli->pfnGetGroupName(contact->group->parent->groupId,NULL),text);
+					else lstrcpyn(szFullName,text,SIZEOF(szFullName));
+					pcli->pfnRenameGroup(contact->groupId,szFullName);
 				}
 				else if(contact->type==CLCIT_CONTACT) {
-					char *otherName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)contact->hContact,GCDNF_NOMYHANDLE);
-					InvalidateDisplayNameCacheEntry(contact->hContact);
+					TCHAR *otherName = pcli->pfnGetContactDisplayName(contact->hContact,GCDNF_NOMYHANDLE);
+					pcli->pfnInvalidateDisplayNameCacheEntry(contact->hContact);
 					if(text[0]=='\0') {
 						DBDeleteContactSetting(contact->hContact,"CList","MyHandle");
 					}
 					else {
 						if(!lstrcmp(otherName,text)) DBDeleteContactSetting(contact->hContact,"CList","MyHandle");
-						else DBWriteContactSettingString(contact->hContact,"CList","MyHandle",text);
+						else DBWriteContactSettingTString(contact->hContact,"CList","MyHandle",text);
 					}
 					if (otherName) mir_free(otherName);
 				}
@@ -494,7 +491,7 @@ void BeginRenameSelection(HWND hwnd,struct ClcData *dat)
 	GetClientRect(hwnd,&clRect);
 	x=indent*dat->groupIndent+dat->iconXSpace-2+subident;
 	y=dat->selection*dat->rowHeight-dat->yScroll;
-	dat->hwndRenameEdit=CreateWindow("EDIT",contact->szText,WS_CHILD|WS_BORDER|ES_AUTOHSCROLL,x,y,clRect.right-x,dat->rowHeight,hwnd,NULL,g_hInst,NULL);
+	dat->hwndRenameEdit=CreateWindow(_T("EDIT"),contact->szText,WS_CHILD|WS_BORDER|ES_AUTOHSCROLL,x,y,clRect.right-x,dat->rowHeight,hwnd,NULL,g_hInst,NULL);
 	OldRenameEditWndProc=(WNDPROC)SetWindowLong(dat->hwndRenameEdit,GWL_WNDPROC,(LONG)RenameEditSubclassProc);
 	SendMessage(dat->hwndRenameEdit,WM_SETFONT,(WPARAM)(contact->type==CLCIT_GROUP?dat->fontInfo[FONTID_GROUPS].hFont:dat->fontInfo[FONTID_CONTACTS].hFont),0);
 	SendMessage(dat->hwndRenameEdit,EM_SETMARGINS,EC_LEFTMARGIN|EC_RIGHTMARGIN|EC_USEFONTINFO,0);
@@ -604,7 +601,7 @@ void HideInfoTip(HWND hwnd,struct ClcData *dat)
 	it.hItem=(HANDLE)((unsigned)dat->hInfoTipItem&~HCONTACT_ISGROUP);
 	it.cbSize=sizeof(it);
 	dat->hInfoTipItem=NULL;
-	NotifyEventHooks(hHideInfoTipEvent,0,(LPARAM)&it);
+//	NotifyEventHooks(hHideInfoTipEvent,0,(LPARAM)&it);
 }
 
 void NotifyNewContact(HWND hwnd,HANDLE hContact)
@@ -620,6 +617,8 @@ void NotifyNewContact(HWND hwnd,HANDLE hContact)
 
 void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 {
+	dat->style=GetWindowLong(hwnd,GWL_STYLE);
+	dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",1);
 	dat->rowHeight=DBGetContactSettingByte(NULL,"CLC","RowHeight",CLCDEFAULT_ROWHEIGHT);
 	{	int i;
 		LOGFONT lf;
@@ -640,7 +639,7 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 			}
 			dat->fontInfo[i].changed=0;
 			holdfont=SelectObject(hdc,dat->fontInfo[i].hFont);
-			GetTextExtentPoint32(hdc,"x",1,&fontSize);
+			GetTextExtentPoint32(hdc,_T("x"),1,&fontSize);
 			dat->fontInfo[i].fontHeight=fontSize.cy;
 			if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
 			if(holdfont) SelectObject(hdc,holdfont);
@@ -695,43 +694,42 @@ void RecalculateGroupCheckboxes(HWND hwnd,struct ClcData *dat)
 	group=&dat->list;
 	group->scanIndex=GSIF_ALLCHECKED;
 	for(;;) {
-		if((group->scanIndex&GSIF_INDEXMASK)==group->contactCount) {
+		if((group->scanIndex&GSIF_INDEXMASK)==group->cl.count) {
 			check=(group->scanIndex&(GSIF_HASMEMBERS|GSIF_ALLCHECKED))==(GSIF_HASMEMBERS|GSIF_ALLCHECKED);
 			group=group->parent;
 			if(group==NULL) break;
-			if(check) group->contact[(group->scanIndex&GSIF_INDEXMASK)].flags|=CONTACTF_CHECKED;
+			if(check) group->cl.items[(group->scanIndex&GSIF_INDEXMASK)]->flags|=CONTACTF_CHECKED;
 			else {
-				group->contact[(group->scanIndex&GSIF_INDEXMASK)].flags&=~CONTACTF_CHECKED;
+				group->cl.items[(group->scanIndex&GSIF_INDEXMASK)]->flags&=~CONTACTF_CHECKED;
 				group->scanIndex&=~GSIF_ALLCHECKED;
 			}
 		}
-		else if(group->contact[(group->scanIndex&GSIF_INDEXMASK)].type==CLCIT_GROUP) {
-			group=group->contact[(group->scanIndex&GSIF_INDEXMASK)].group;
+		else if(group->cl.items[(group->scanIndex&GSIF_INDEXMASK)]->type==CLCIT_GROUP) {
+			group=group->cl.items[(group->scanIndex&GSIF_INDEXMASK)]->group;
 			group->scanIndex=GSIF_ALLCHECKED;
 			continue;
 		}
-		else if(group->contact[(group->scanIndex&GSIF_INDEXMASK)].type==CLCIT_CONTACT) {
+		else if(group->cl.items[(group->scanIndex&GSIF_INDEXMASK)]->type==CLCIT_CONTACT) {
 			group->scanIndex|=GSIF_HASMEMBERS;
-			if(!(group->contact[(group->scanIndex&GSIF_INDEXMASK)].flags&CONTACTF_CHECKED))
+			if(!(group->cl.items[(group->scanIndex&GSIF_INDEXMASK)]->flags&CONTACTF_CHECKED))
 				group->scanIndex&=~GSIF_ALLCHECKED;
 		}
 		group->scanIndex++;
-	}
-}
+}	}
 
 void SetGroupChildCheckboxes(struct ClcGroup *group,int checked)
 {
 	int i;
 
-	for(i=0;i<group->contactCount;i++) {
-		if(group->contact[i].type==CLCIT_GROUP) {
-			SetGroupChildCheckboxes(group->contact[i].group,checked);
-			if(checked) group->contact[i].flags|=CONTACTF_CHECKED;
-			else group->contact[i].flags&=~CONTACTF_CHECKED;
+	for(i=0;i<group->cl.count;i++) {
+		if(group->cl.items[i]->type==CLCIT_GROUP) {
+			SetGroupChildCheckboxes(group->cl.items[i]->group,checked);
+			if(checked) group->cl.items[i]->flags|=CONTACTF_CHECKED;
+			else group->cl.items[i]->flags&=~CONTACTF_CHECKED;
 		}
-		else if(group->contact[i].type==CLCIT_CONTACT) {
-			if(checked) group->contact[i].flags|=CONTACTF_CHECKED;
-			else group->contact[i].flags&=~CONTACTF_CHECKED;
+		else if(group->cl.items[i]->type==CLCIT_CONTACT) {
+			if(checked) group->cl.items[i]->flags|=CONTACTF_CHECKED;
+			else group->cl.items[i]->flags&=~CONTACTF_CHECKED;
 		}
 	}
 }

@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "clc.h"
+#include "../database/dblists.h"
 
 //processing of all the CLM_ messages incoming
 
@@ -103,7 +104,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 			break;
 		for (tgroup = group; tgroup; tgroup = tgroup->parent)
 			cli.pfnSetGroupExpand(hwnd, dat, tgroup, 1);
-		cli.pfnEnsureVisible(hwnd, dat, cli.pfnGetRowsPriorTo(&dat->list, group, ((unsigned) contact - (unsigned) group->cl.items) / sizeof(struct ClcContact)), 0);
+		cli.pfnEnsureVisible(hwnd, dat, cli.pfnGetRowsPriorTo(&dat->list, group, List_IndexOf((SortedList*)&group->cl,contact)), 0);
 		break;
 	}
 
@@ -215,7 +216,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 		if (wParam != CLGN_ROOT) {
 			if (!cli.pfnFindItem(hwnd, dat, (HANDLE) lParam, &contact, &group, NULL))
 				return (LRESULT) (HANDLE) NULL;
-			i = ((int) contact - (int) group->cl.items) / sizeof(struct ClcContact);
+			i = List_IndexOf((SortedList*)&group->cl,contact);
 		}
 		switch (wParam) {
 		case CLGN_ROOT:
@@ -313,7 +314,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 			break;
 		for (tgroup = group; tgroup; tgroup = tgroup->parent)
 			cli.pfnSetGroupExpand(hwnd, dat, tgroup, 1);
-		dat->selection = cli.pfnGetRowsPriorTo(&dat->list, group, ((unsigned) contact - (unsigned) group->cl.items) / sizeof(struct ClcContact));
+		dat->selection = cli.pfnGetRowsPriorTo(&dat->list, group, List_IndexOf((SortedList*)&group->cl,contact));
 		cli.pfnEnsureVisible(hwnd, dat, dat->selection, 0);
 		break;
 	}

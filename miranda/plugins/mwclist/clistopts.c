@@ -25,13 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clist.h"
 #include "m_clc.h"
 
-extern HWND hwndContactTree; // nasty
-
 int HotKeysRegister(HWND hwnd);
 void HotKeysUnregister(HWND hwnd);
 void LoadContactTree(void);
 void SortContacts(void);
-void TrayIconIconsChanged(void);
 
 static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -46,7 +43,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.cbSize=sizeof(odp);
 	odp.position=-1000000000;
 	odp.hInstance=g_hInst;
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_CLIST);
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLIST);
 	odp.pszTitle=Translate("Contact List");
 	odp.pfnDlgProc=DlgProcGenOpts;
 	odp.flags=ODPF_BOLDGROUPS;
@@ -54,25 +51,15 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.expertOnlyControls=expertOnlyControls;
 	odp.nExpertOnlyControls=sizeof(expertOnlyControls)/sizeof(expertOnlyControls[0]);
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-/*
-	odp.position=-900000000;
-	odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_HOTKEY);
-	odp.pszTitle=Translate("Hotkeys");
+
+	odp.cbSize=sizeof(odp);
 	odp.pszGroup=Translate("Events");
-	odp.pfnDlgProc=DlgProcHotkeyOpts;
-	odp.nIDBottomSimpleControl=0;
-	odp.nExpertOnlyControls=0;
-	odp.expertOnlyControls=NULL;
+	odp.position=-200000000;
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_HOTKEYS);
+	odp.pszTitle=Translate("Hotkeys2");
+	odp.pfnDlgProc=DlgProcHotKeyOpts2;
+	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-*/
-    odp.cbSize=sizeof(odp);
-    odp.pszGroup=Translate("Events");
-    odp.position=-200000000;
-    odp.pszTemplate=MAKEINTRESOURCE(IDD_OPT_HOTKEYS);
-    odp.pszTitle=Translate("Hotkeys2");
-    odp.pfnDlgProc=DlgProcHotKeyOpts2;
-    odp.flags=ODPF_BOLDGROUPS;
-    CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	return 0;
 }
 
@@ -85,7 +72,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			HANDLE hContact=(HANDLE)wParam;
 			DBCONTACTWRITESETTING * ws = (DBCONTACTWRITESETTING *)lParam;
 			if ( hContact == NULL && ws != NULL && ws->szModule != NULL && ws->szSetting != NULL
-				&& lstrcmpi(ws->szModule,"CList")==0 && lstrcmpi(ws->szSetting,"UseGroups")==0
+				&& lstrcmpiA(ws->szModule,"CList")==0 && lstrcmpiA(ws->szSetting,"UseGroups")==0
 				&& IsWindowVisible(hwndDlg) ) {
 				CheckDlgButton(hwndDlg,IDC_DISABLEGROUPS,ws->value.bVal == 0);
 			}
@@ -165,10 +152,10 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_SETITEMDATA,item,(LPARAM)0);
 				for(i=0;i<count;i++) {
 					if(protos[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
-					CallProtoService(protos[i]->szName,PS_GETNAME,sizeof(szName),(LPARAM)szName);
+					CallProtoService(protos[i]->szName,PS_GETNAME,SIZEOF(szName),(LPARAM)szName);
 					item=SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_ADDSTRING,0,(LPARAM)szName);
 					SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_SETITEMDATA,item,(LPARAM)protos[i]);
-					if(dbv.type==DBVT_ASCIIZ && !lstrcmp(dbv.pszVal,protos[i]->szName))
+					if(dbv.type==DBVT_ASCIIZ && !lstrcmpA(dbv.pszVal,protos[i]->szName))
 						SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_SETCURSEL,item,0);
 				}
 			}
@@ -231,9 +218,9 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							if (!SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_GETCURSEL,0,0),0)) 
 								DBDeleteContactSetting(NULL, "CList","PrimaryStatus");
 							else DBWriteContactSettingString(NULL,"CList","PrimaryStatus",((PROTOCOLDESCRIPTOR*)SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_GETCURSEL,0,0),0))->szName);
-							TrayIconIconsChanged();
+							pcli->pfnTrayIconIconsChanged();
 							LoadContactTree(); /* this won't do job properly since it only really works when changes happen */
-							SendMessage(hwndContactTree,CLM_AUTOREBUILD,0,0); /* force reshuffle */
+							SendMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0); /* force reshuffle */
 							return TRUE;
 					}
 					break;
@@ -270,10 +257,10 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg,IDC_HKSEARCH,HKM_SETHOTKEY,DBGetContactSettingWord(NULL,"CList","HKNetSearch",MAKEWORD('S',HOTKEYF_CONTROL|HOTKEYF_SHIFT)),0);
 			SendDlgItemMessage(hwndDlg,IDC_HKSHOWOPTIONS,HKM_SETHOTKEY,DBGetContactSettingWord(NULL,"CList","HKShowOptions",MAKEWORD('O',HOTKEYF_CONTROL|HOTKEYF_SHIFT)),0);
 			if(!DBGetContactSetting(NULL,"CList","SearchUrl",&dbv)) {
-				SetDlgItemText(hwndDlg,IDC_SEARCHURL,dbv.pszVal);
+				SetDlgItemTextA(hwndDlg,IDC_SEARCHURL,dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
-			else SetDlgItemText(hwndDlg,IDC_SEARCHURL,"http://www.google.com/");
+			else SetDlgItemTextA(hwndDlg,IDC_SEARCHURL,"http://www.google.com/");
 			CheckDlgButton(hwndDlg, IDC_SEARCHNEWWND, DBGetContactSettingByte(NULL,"CList","HKSearchNewWnd",0) ? BST_CHECKED : BST_UNCHECKED);
 			return TRUE;
 		}
@@ -310,7 +297,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					DBWriteContactSettingWord(NULL,"CList","HKReadMsg",(WORD)SendDlgItemMessage(hwndDlg,IDC_HKREADMSG,HKM_GETHOTKEY,0,0));
 					DBWriteContactSettingByte(NULL,"CList","HKEnNetSearch",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_NETSEARCH));
 					DBWriteContactSettingWord(NULL,"CList","HKNetSearch",(WORD)SendDlgItemMessage(hwndDlg,IDC_HKSEARCH,HKM_GETHOTKEY,0,0));
-					GetDlgItemText(hwndDlg,IDC_SEARCHURL,str,sizeof(str));
+					GetDlgItemTextA(hwndDlg,IDC_SEARCHURL,str,SIZEOF(str));
 					DBWriteContactSettingString(NULL,"CList","SearchUrl",str);
 					DBWriteContactSettingByte(NULL,"CList","HKSearchNewWnd",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SEARCHNEWWND));
 					DBWriteContactSettingByte(NULL,"CList","HKEnShowOptions",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWOPTIONS));
