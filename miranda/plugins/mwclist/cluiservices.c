@@ -27,6 +27,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
 extern int CreateTimerForConnectingIcon(WPARAM,LPARAM);
 
+void FreeProtocolData()
+{
+	//free protocol data
+	int nPanel;
+	int nParts=SendMessage(pcli->hwndStatus,SB_GETPARTS,0,0);
+	for (nPanel=0;nPanel<nParts;nPanel++)
+	{
+		ProtocolData *PD;
+		PD=(ProtocolData *)SendMessage(pcli->hwndStatus,SB_GETTEXT,(WPARAM)nPanel,(LPARAM)0);
+		if (PD!=NULL&&!IsBadCodePtr((void *)PD))
+		{
+			SendMessage(pcli->hwndStatus,SB_SETTEXT,(WPARAM)nPanel|SBT_OWNERDRAW,(LPARAM)0);
+			if (PD->RealName) mir_free(PD->RealName);
+			if (PD) mir_free(PD);
+}	}	}
+
 void CluiProtocolStatusChanged( void )
 {
 	int protoCount,i;
@@ -57,20 +73,7 @@ void CluiProtocolStatusChanged( void )
 	
 	OutputDebugStringA("CluiProtocolStatusChanged");
 	OutputDebugStringA("\r\n");
-	{
-		//free protocol data
-		int nPanel;
-		int nParts=SendMessage(pcli->hwndStatus,SB_GETPARTS,0,0);
-		for (nPanel=0;nPanel<nParts;nPanel++)
-		{
-			ProtocolData *PD;
-			PD=(ProtocolData *)SendMessage(pcli->hwndStatus,SB_GETTEXT,(WPARAM)nPanel,(LPARAM)0);
-			if (PD!=NULL&&!IsBadCodePtr((void *)PD))
-			{
-				SendMessage(pcli->hwndStatus,SB_SETTEXT,(WPARAM)nPanel|SBT_OWNERDRAW,(LPARAM)0);
-				if (PD->RealName) mir_free(PD->RealName);
-				if (PD) mir_free(PD);
-	}	}	}
+	FreeProtocolData();
 	
 	SendMessage(pcli->hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders); 
 	

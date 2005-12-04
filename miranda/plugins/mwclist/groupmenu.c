@@ -536,21 +536,17 @@ static int AddSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 
 	tmi.ownerdata=NULL;
 	
-	{
-		lpSubGroupMenuExecParam mmep;
-		mmep=(lpSubGroupMenuExecParam)mir_calloc(1,sizeof(SubGroupMenuExecParam));
-		if(mmep==NULL){return(0);}
+	{	lpSubGroupMenuExecParam mmep = (lpSubGroupMenuExecParam)mir_calloc(1,sizeof(SubGroupMenuExecParam));
+		if ( mmep == NULL)
+			return 0;
 		
 		//we need just one parametr.
 		mmep->szServiceName=mir_strdup(mi->pszService);
 		mmep->Param1=mi->popupPosition;
-		if (gmp!=NULL)
-		{
-			mmep->Param1=gmp->wParam;
-			mmep->Param2=gmp->lParam;
-
+		if ( gmp != NULL ) {
+			mmep->Param1 = gmp->wParam;
+			mmep->Param2 = gmp->lParam;
 		}
-		
 		
 		tmi.ownerdata=mmep;
 	}

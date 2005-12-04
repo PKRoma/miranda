@@ -142,8 +142,8 @@ static int AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
 		if(mmep==NULL){return(0);}
 		
 		//we need just one parametr.
-		mmep->szServiceName=mir_strdup(mi->pszService);
-		mmep->Param1=mi->popupPosition;
+		mmep->szServiceName = mi->pszService;
+		mmep->Param1 = mi->popupPosition;
 		
 		tmi.ownerdata=mmep;
 	}

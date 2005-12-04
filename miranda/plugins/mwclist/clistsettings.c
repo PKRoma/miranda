@@ -62,12 +62,13 @@ void InitDisplayNameCache(SortedList *list)
 
 void FreeDisplayNameCacheItem( pdisplayNameCacheEntry p )
 {
-	if ( p->name) mir_free(p->name);
+	if ( p->name) { mir_free(p->name); p->name = NULL; }
 	#if defined( _UNICODE )
-		if ( p->szName) mir_free(p->szName);
+		if ( p->szName) { mir_free(p->szName); p->szName = NULL; }
 	#endif
-//	if ( p->szProto) mir_free(p->szProto);
-	if ( p->szGroup) mir_free(p->szGroup);
+	if ( p->szProto) { mir_free(p->szProto); p->szProto = NULL; }
+	if ( p->szGroup) { mir_free(p->szGroup); p->szGroup = NULL; }
+	if ( p->MirVer)  { mir_free(p->MirVer);  p->MirVer  = NULL; }
 }
 
 void FreeDisplayNameCache(SortedList *list)
@@ -159,14 +160,6 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 		if (pdnce->MirVer!=NULL)
 			GetClientIconByMirVer(pdnce);
 	}
-}
-
-pdisplayNameCacheEntry GetDisplayNameCacheEntry(HANDLE hContact)
-{
-	pdisplayNameCacheEntry pdnce = ( pdisplayNameCacheEntry )mir_calloc(1,sizeof(displayNameCacheEntry));
-	pdnce->hContact = hContact;
-	if (pdnce!=NULL) CheckPDNCE(pdnce);
-	return (pdnce);
 }
 
 void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntry pdnce,int SettingType)
@@ -313,7 +306,6 @@ int InvalidateDisplayName(WPARAM wParam,LPARAM lParam)
 int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING*)lParam;
-	DBVARIANT dbv;
 	pdisplayNameCacheEntry pdnce;
 
 	// Early exit
@@ -322,13 +314,10 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 
 	__try  
 	{
-		dbv.pszVal = NULL;
 		pdnce = (pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
-
 		if (pdnce == NULL)
 		{
 			OutputDebugStringA("!!! Very bad pdnce not found.");
-			if (dbv.pszVal) mir_free(dbv.pszVal);
 			return 0;
 		}
 
@@ -349,7 +338,6 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 
 							if (cws->value.wVal == ID_STATUS_OFFLINE) {
 								ChangeContactIcon((HANDLE)wParam, ExtIconFromStatusMode((HANDLE)wParam,cws->szModule, cws->value.wVal), 0); //by FYR
-								if (dbv.pszVal) mir_free(dbv.pszVal);
 								return 0;
 							}
 							ChangeContactIcon((HANDLE)wParam, ExtIconFromStatusMode((HANDLE)wParam,cws->szModule, cws->value.wVal), 0); //by FYR
@@ -363,17 +351,12 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 				else if (!strcmp(cws->szModule,"MetaContacts"))
 				{
 					PostMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0);
-					DBFreeVariant(&dbv);
 					return 0;
 				}
-				else
-				{
-					DBFreeVariant(&dbv);
-					return 0;
-				}
+				else return 0;
+
 				SortContacts();
-			}
-		}
+		}	}
 
 		if(!strcmp(cws->szModule,"CList")) {
 			/*
@@ -382,26 +365,21 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 			*/
 
 			//name is null or (setting is myhandle)
-			if(pdnce->name == NULL||(!strcmp(cws->szSetting,"MyHandle")) ) {
+			if(pdnce->name == NULL||(!strcmp(cws->szSetting,"MyHandle")) )
 				InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);
-			}
 
-			if((!strcmp(cws->szSetting,"Group")) ) {
+			if((!strcmp(cws->szSetting,"Group")) )
 				InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);
-			}
 
 			if(!strcmp(cws->szSetting,"Hidden")) {
 				InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);		
 				if(cws->value.type == DBVT_DELETED || cws->value.bVal == 0) {
 					char *szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
 					ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto == NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),1);  //by FYR
-				}
-			}
+			}	}
 
-			if(!strcmp(cws->szSetting,"noOffline")) {
-				InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);		
-			}
-
+			if(!strcmp(cws->szSetting,"noOffline"))
+				InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);
 		}
 
 		if(!strcmp(cws->szModule,"Protocol")) {
@@ -415,15 +393,9 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 				ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto == NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),0); //by FYR
 			}
 		}
-
-		// Clean up
-		if (dbv.pszVal)
-			mir_free(dbv.pszVal);
-
 	} 
 	__except (exceptFunction(GetExceptionInformation()) ) 
 	{ 
-		return 0; 
 	} 
 
 	return 0;

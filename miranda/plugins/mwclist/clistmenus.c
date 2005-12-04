@@ -621,7 +621,7 @@ int freeownerdataformenus()
 	}
 	}
 	*/
-return(1);
+	return(1);
 }
 
 int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
@@ -639,11 +639,16 @@ int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 	b2=DBGetString(NULL,"Protocols",buf);
 	OutputDebugStringA("GetProtoIndexByPos \r\n");
 	
-	if (b2)
+	if (b2) {
 		for (p=0; p<protoCnt; p++)
-			if (strcmp(proto[p]->szName,b2)==0)
-						return p;
-return -1;
+			if (strcmp(proto[p]->szName,b2)==0) {
+				mir_free(b2);
+				return p;
+			}
+		mir_free(b2);
+	}
+
+	return -1;
 }
 
 int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)

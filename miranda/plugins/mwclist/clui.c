@@ -894,8 +894,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_DESTROY:
 		{
 			//saving state
-			int state = DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);				
+			int state = DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
 			
+			FreeProtocolData();
 			if ( hSettingChangedHook != 0 )
 				UnhookEvent(hSettingChangedHook);
 			

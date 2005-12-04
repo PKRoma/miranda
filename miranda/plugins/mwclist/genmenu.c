@@ -214,6 +214,7 @@ void RemoveAndClearOneObject(int arpos)
 	MenuObjects[arpos].MenuItemsCount=0;
 
 	FreeAndNil(&MenuObjects[arpos].FreeService);
+	FreeAndNil(&MenuObjects[arpos].onAddService);
 	FreeAndNil(&MenuObjects[arpos].CheckService);
 	FreeAndNil(&MenuObjects[arpos].ExecService);
 	FreeAndNil(&MenuObjects[arpos].Name);
@@ -608,7 +609,6 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
 	PMO_MenuItem pmi=(PMO_MenuItem)lParam;
 	int objidx,menuobjecthandle;
 	int miidx,result;
-	int res;
 	
 	if (!isGenMenuInited) return -1;	
 	if (pmi==NULL){return(-1);}
@@ -622,8 +622,7 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
 	if(!(pmi->flags&CMIF_ROOTPOPUP||pmi->flags&CMIF_CHILDPOPUP)){
 		//old mode
 		unlockmo();
-		res=(int)MO_AddOldNewMenuItem(wParam,lParam);
-		return(res);
+		return MO_AddOldNewMenuItem(wParam,lParam);
 	}
 
 	MenuObjects[objidx].MenuItems=(PMO_IntMenuItem)mir_realloc(MenuObjects[objidx].MenuItems,sizeof(TMO_IntMenuItem)*(MenuObjects[objidx].MenuItemsCount+1));
@@ -714,7 +713,7 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
 				tmi.ownerdata=0;
 				tmi.root=-1;
 				//copy pszPopupName
-				tmi.pszName = mir_strdup((char *)pmi->root);
+				tmi.pszName = (char*)pmi->root;
 				oldroot=MO_AddNewMenuItem(wParam,(LPARAM)&tmi);
 			}
 			pmi->root=oldroot;

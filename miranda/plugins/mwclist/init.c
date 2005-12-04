@@ -157,7 +157,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		pcli->pfnCreateCacheItem = fnCreateCacheItem;
 		pcli->pfnFindRowByText = FindRowByText;
 		pcli->pfnFindItem = FindItem;
-//		pcli->pfnFreeCacheItem = FreeDisplayNameCacheItem;
+		pcli->pfnFreeCacheItem = FreeDisplayNameCacheItem;
 		pcli->pfnGetRowsPriorTo = GetRowsPriorTo;
 		pcli->pfnGetRowByIndex = GetRowByIndex;
 		pcli->pfnHitTest = HitTest;
