@@ -3312,8 +3312,6 @@ int LoadCLUIFramesModule(void)
 	wndclass.lpszClassName = CLUIFrameTitleBarClassName;
 	RegisterClassA(&wndclass);
 
-	pcli->hwndContactList=(HWND)CallService(MS_CLUI_GETHWND,0,0);
-	//pcli->hwndStatus=FindWindowEx(pcli->hwndContactList,NULL,"msctls_statusbar32",NULL);
 	//container helper
 	
 	cntclass.style         = CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW|( IsWinVerXPPlus()  ? CS_DROPSHADOW : 0);
@@ -3359,10 +3357,9 @@ int LoadCLUIFramesModule(void)
 	CreateServiceFunction(CLUIFRAMESSETALIGN,CLUIFramesSetAlign);
 	CreateServiceFunction(CLUIFRAMESMOVEUPDOWN,CLUIFramesMoveUpDown);
 
-
-		CreateServiceFunction(CLUIFRAMESSETALIGNALTOP,CLUIFramesSetAlignalTop);
-		CreateServiceFunction(CLUIFRAMESSETALIGNALCLIENT,CLUIFramesSetAlignalClient);
-		CreateServiceFunction(CLUIFRAMESSETALIGNALBOTTOM,CLUIFramesSetAlignalBottom);
+	CreateServiceFunction(CLUIFRAMESSETALIGNALTOP,CLUIFramesSetAlignalTop);
+	CreateServiceFunction(CLUIFRAMESSETALIGNALCLIENT,CLUIFramesSetAlignalClient);
+	CreateServiceFunction(CLUIFRAMESSETALIGNALBOTTOM,CLUIFramesSetAlignalBottom);
 
 	CreateServiceFunction("Set_Floating",CLUIFrameSetFloat);
 	hWndExplorerToolBar	=FindWindowExA(0,0,"Shell_TrayWnd",NULL);

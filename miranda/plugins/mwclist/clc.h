@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -22,6 +22,32 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #ifndef _CLC_H_
 #define _CLC_H_
+
+#define CLB_TOPLEFT       0
+#define CLB_STRETCHV      1
+#define CLB_STRETCHH      2	 //and tile vertically
+#define CLB_STRETCH       3
+
+#define CLBM_TYPE         0x00FF
+
+#define CLBF_TILEH        0x1000
+#define CLBF_TILEV        0x2000
+#define CLBF_PROPORTIONAL 0x4000
+#define CLBF_SCROLL       0x8000
+#define CLBF_TILEVTOROWHEIGHT        0x0100
+
+#define FONTID_CONTACTS    0
+#define FONTID_INVIS       1
+#define FONTID_OFFLINE     2
+#define FONTID_NOTONLIST   3
+#define FONTID_GROUPS      4
+#define FONTID_GROUPCOUNTS 5
+#define FONTID_DIVIDERS    6
+#define FONTID_OFFINVIS    7
+#define FONTID_STATUSMSG   8
+#define FONTID_GROUPSCLOSED   9
+#define FONTID_CONTACTSHOVER	10
+#define FONTID_MAX				10
 
 #define TIMERID_DELAYEDREPAINT   16
 #define TIMERID_SUBEXPAND 21

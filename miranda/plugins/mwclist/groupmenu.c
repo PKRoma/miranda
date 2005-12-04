@@ -211,26 +211,26 @@ return(0);
 
 int HideGroupsHelper(WPARAM wParam,LPARAM lParam)
 {
-	int newVal=!(GetWindowLong((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),GWL_STYLE)&CLS_HIDEEMPTYGROUPS);
+	int newVal=!(GetWindowLong(pcli->hwndContactTree,GWL_STYLE)&CLS_HIDEEMPTYGROUPS);
 	DBWriteContactSettingByte(NULL,"CList","HideEmptyGroups",(BYTE)newVal);
-	SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_SETHIDEEMPTYGROUPS,newVal,0);
+	SendMessage(pcli->hwndContactTree,CLM_SETHIDEEMPTYGROUPS,newVal,0);
 	return 0;
 }
 
 int UseGroupsHelper(WPARAM wParam,LPARAM lParam)
 {	
-	int newVal=!(GetWindowLong((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),GWL_STYLE)&CLS_USEGROUPS);
+	int newVal=!(GetWindowLong(pcli->hwndContactTree,GWL_STYLE)&CLS_USEGROUPS);
 	DBWriteContactSettingByte(NULL,"CList","UseGroups",(BYTE)newVal);
-	SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_SETUSEGROUPS,newVal,0);
+	SendMessage(pcli->hwndContactTree,CLM_SETUSEGROUPS,newVal,0);
 	return 0;
 }
 
 int HideOfflineRootHelper(WPARAM wParam,LPARAM lParam)
 {
 SendMessage(
-			(HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),
+			pcli->hwndContactTree,
 			CLM_SETHIDEOFFLINEROOT,
-			!SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_GETHIDEOFFLINEROOT,0,0),
+			!SendMessage(pcli->hwndContactTree,CLM_GETHIDEOFFLINEROOT,0,0),
 			0);
 	return 0;
 }
@@ -632,26 +632,26 @@ return(0);
 /*
 int HideSubGroupsHelper(WPARAM wParam,LPARAM lParam)
 {
-	int newVal=!(GetWindowLong((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),GWL_STYLE)&CLS_HIDEEMPTYSubGroupS);
+	int newVal=!(GetWindowLong(pcli->hwndContactTree,GWL_STYLE)&CLS_HIDEEMPTYSubGroupS);
 	DBWriteContactSettingByte(NULL,"CList","HideEmptySubGroups",(BYTE)newVal);
-	SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_SETHIDEEMPTYSubGroupS,newVal,0);
+	SendMessage(pcli->hwndContactTree,CLM_SETHIDEEMPTYSubGroupS,newVal,0);
 	return 0;
 }
 
 int UseSubGroupsHelper(WPARAM wParam,LPARAM lParam)
 {	
-	int newVal=!(GetWindowLong((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),GWL_STYLE)&CLS_USESubGroupS);
+	int newVal=!(GetWindowLong(pcli->hwndContactTree,GWL_STYLE)&CLS_USESubGroupS);
 	DBWriteContactSettingByte(NULL,"CList","UseSubGroups",(BYTE)newVal);
-	SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_SETUSESubGroupS,newVal,0);
+	SendMessage(pcli->hwndContactTree,CLM_SETUSESubGroupS,newVal,0);
 	return 0;
 }
 
 int HideOfflineRootHelper(WPARAM wParam,LPARAM lParam)
 {
 SendMessage(
-			(HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),
+			pcli->hwndContactTree,
 			CLM_SETHIDEOFFLINEROOT,
-			!SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_GETHIDEOFFLINEROOT,0,0),
+			!SendMessage(pcli->hwndContactTree,CLM_GETHIDEOFFLINEROOT,0,0),
 			0);
 	return 0;
 }
@@ -659,7 +659,7 @@ SendMessage(
 //wparam menu handle to pass to clc.c
 int GroupMenuExecProxy(WPARAM wParam,LPARAM lParam)
 {
-	SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),WM_COMMAND,wParam,0);
+	SendMessage(pcli->hwndContactTree,WM_COMMAND,wParam,0);
 	return 0;
 }
 

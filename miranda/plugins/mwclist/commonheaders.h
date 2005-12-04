@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2004 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2004 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -107,7 +107,7 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
 
 #ifndef CS_DROPSHADOW
-#define CS_DROPSHADOW 0x00020000	
+#define CS_DROPSHADOW 0x00020000
 #endif
 
 #ifndef MYCMP
@@ -148,9 +148,9 @@ static int mir_free_proxy(void *ptr)
 
 static int __cdecl MyStrCmp (const char *a, const char *b)
 {
-	
+
 	if (a==NULL&&b==NULL) return 0;
-	if ((int)a<1000||(int)b<1000||IsBadCodePtr((FARPROC)a)||IsBadCodePtr((FARPROC)b)) 
+	if ((int)a<1000||(int)b<1000||IsBadCodePtr((FARPROC)a)||IsBadCodePtr((FARPROC)b))
 	{
 		return 1;
 	}
@@ -161,9 +161,9 @@ static int __cdecl MyStrCmp (const char *a, const char *b)
 
 static int __cdecl MyStrLen (const char *a)
 {
-	
+
 	if (a==NULL) return 0;
-	if ((int)a<1000||IsBadCodePtr((FARPROC)a)) 
+	if ((int)a<1000||IsBadCodePtr((FARPROC)a))
 	{
 		return 0;
 	}
@@ -206,12 +206,12 @@ static char *DBGetString(HANDLE hContact,const char *szModule,const char *szSett
 	return str;
 }
 
-static DWORD exceptFunction(LPEXCEPTION_POINTERS EP) 
-{ 
-    //printf("1 ");                     // printed first 
+static DWORD exceptFunction(LPEXCEPTION_POINTERS EP)
+{
+    //printf("1 ");                     // printed first
 	char buf[4096];
-	
-	
+
+
 	sprintf(buf,"\r\nExceptCode: %x\r\nExceptFlags: %x\r\nExceptAddress: %x\r\n",
 		EP->ExceptionRecord->ExceptionCode,
 		EP->ExceptionRecord->ExceptionFlags,
@@ -220,9 +220,9 @@ static DWORD exceptFunction(LPEXCEPTION_POINTERS EP)
 	OutputDebugStringA(buf);
 	MessageBoxA(0,buf,"clist_mw Exception",0);
 
-    
-	return EXCEPTION_EXECUTE_HANDLER; 
-} 
+
+	return EXCEPTION_EXECUTE_HANDLER;
+}
 //from bkg options
 
 //  Register of plugin's user
