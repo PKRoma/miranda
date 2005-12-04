@@ -949,8 +949,6 @@ int LoadCLUIModule(void)
 	laster=GetLastError();
 	PreCreateCLC(pcli->hwndContactList);
 
-	LoadCLUIFramesModule();
-	LoadExtraImageFunc();	
 	// create status bar frame
 	CreateStatusBarhWnd(pcli->hwndContactList);				
 

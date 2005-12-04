@@ -298,6 +298,9 @@ LBL_Exit:
 
 int LoadCLCModule(void)
 {
+	LoadCLUIFramesModule();
+	LoadExtraImageFunc();	
+
 	himlCListClc=(HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
 	
 	HookEvent(ME_SYSTEM_MODULESLOADED,ClcModulesLoaded);
