@@ -60,15 +60,23 @@ void InitDisplayNameCache(SortedList *list)
 		i++;
 }	}
 
+void FreeDisplayNameCacheItem( pdisplayNameCacheEntry p )
+{
+	if ( p->name) mir_free(p->name);
+	#if defined( _UNICODE )
+		if ( p->szName) mir_free(p->szName);
+	#endif
+//	if ( p->szProto) mir_free(p->szProto);
+	if ( p->szGroup) mir_free(p->szGroup);
+}
+
 void FreeDisplayNameCache(SortedList *list)
 {
 	int i;
 
 	for( i=0; i < list->realCount; i++) {
-		pdisplayNameCacheEntry pdnce = ( pdisplayNameCacheEntry )list->items[i];
-		if (pdnce&&pdnce->name) mir_free(pdnce->name);
-		if (pdnce&&pdnce->szGroup) mir_free(pdnce->szGroup);
-		mir_free(pdnce);
+		FreeDisplayNameCacheItem(( pdisplayNameCacheEntry )list->items[i] );
+		mir_free(list->items[i]);
 	}
 	
 	li.List_Destroy(list);
@@ -231,8 +239,6 @@ char *GetContactCachedProtocol(HANDLE hContact)
 
 char *GetProtoForContact(HANDLE hContact)
 {
-	char *szProto=NULL;
-		//szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 	DBVARIANT dbv;
 	DBCONTACTGETSETTING dbcgs;
 	char name[32];
@@ -244,9 +250,7 @@ char *GetProtoForContact(HANDLE hContact)
 	dbcgs.szModule="Protocol";
 	dbcgs.szSetting="p";
 	if(CallService(MS_DB_CONTACT_GETSETTINGSTATIC,(WPARAM)hContact,(LPARAM)&dbcgs)) return NULL;
-	szProto=mir_strdup(dbcgs.pValue->pszVal);
-	if (szProto == NULL) return(NULL);
-		return((szProto));
+	return mir_strdup(dbcgs.pValue->pszVal);
 }
 
 int GetStatusForContact(HANDLE hContact,char *szProto)
@@ -292,7 +296,6 @@ int GetContactInfosForSort(HANDLE hContact,char **Proto,TCHAR **Name,int *Status
 	}
 	return (0);
 }
-
 
 int GetContactCachedStatus(HANDLE hContact)
 {

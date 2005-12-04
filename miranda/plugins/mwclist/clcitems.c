@@ -658,11 +658,13 @@ struct SavedContactState_t {
 	int checked;
 };
 
-struct SavedGroupState_t {
-	int groupId,expanded;
+struct SavedGroupState_t
+{
+	int groupId, expanded;
 };
 
-struct SavedInfoState_t {
+struct SavedInfoState_t
+{
 	int parentId;
 	struct ClcContact contact;
 };
@@ -687,7 +689,7 @@ void SaveStateAndRebuildList(HWND hwnd,struct ClcData *dat)
 	KillTimer(hwnd,TIMERID_RENAME);
 	EndRename(hwnd,dat,1);
 
-	group=&dat->list;
+	group = &dat->list;
 	group->scanIndex=0;
 	for(;;) {
 		if(group->scanIndex==group->cl.count) {

@@ -127,6 +127,20 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	}
 
 	switch (msg) {
+	case WM_NCCREATE:
+	{
+		MENUITEMINFO mii;
+		ZeroMemory(&mii, sizeof(mii));
+		mii.cbSize = MENUITEMINFO_V4_SIZE;
+		mii.fMask = MIIM_TYPE | MIIM_DATA;
+		himlMirandaIcon = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR32 | ILC_MASK, 1, 1);
+		ImageList_AddIcon(himlMirandaIcon, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
+		mii.dwItemData = MENU_MIRANDAMENU;
+		mii.fType = MFT_OWNERDRAW;
+		mii.dwTypeData = NULL;
+		SetMenuItemInfo(GetMenu(hwnd), 0, TRUE, &mii);
+		break;
+	}
 	case WM_CREATE:
 		CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), 0);
 		DrawMenuBar(hwnd);
@@ -139,19 +153,6 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			cli.hwndStatus = CreateWindow(STATUSCLASSNAME, NULL, flags, 0, 0, 0, 0, hwnd, NULL, cli.hInst, NULL);
 		}
 		cli.pfnCluiProtocolStatusChanged();
-
-		{
-			MENUITEMINFO mii;
-			ZeroMemory(&mii, sizeof(mii));
-			mii.cbSize = MENUITEMINFO_V4_SIZE;
-			mii.fMask = MIIM_TYPE | MIIM_DATA;
-			himlMirandaIcon = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR32 | ILC_MASK, 1, 1);
-			ImageList_AddIcon(himlMirandaIcon, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
-			mii.dwItemData = MENU_MIRANDAMENU;
-			mii.fType = MFT_OWNERDRAW;
-			mii.dwTypeData = NULL;
-			SetMenuItemInfo(GetMenu(hwnd), 0, TRUE, &mii);
-		}
 
 		//delay creation of CLC so that it can get the status icons right the first time (needs protocol modules loaded)
 		PostMessage(hwnd, M_CREATECLC, 0, 0);

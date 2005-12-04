@@ -33,9 +33,9 @@ static HANDLE hCListShutdown = 0;
 extern int LoadMoveToGroup();
 
 void CluiProtocolStatusChanged( void );
-int  FindRowByText(HWND hwnd,struct ClcData *dat,const TCHAR *text,int prefixOk);
-
 void CheckPDNCE(pdisplayNameCacheEntry);
+int  FindRowByText(HWND hwnd,struct ClcData *dat,const TCHAR *text,int prefixOk);
+void FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
 void RebuildEntireList(HWND hwnd,struct ClcData *dat);
 void RecalcScrollBar(HWND hwnd,struct ClcData *dat);
 
@@ -157,11 +157,14 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		pcli->pfnCreateCacheItem = fnCreateCacheItem;
 		pcli->pfnFindRowByText = FindRowByText;
 		pcli->pfnFindItem = FindItem;
+//		pcli->pfnFreeCacheItem = FreeDisplayNameCacheItem;
 		pcli->pfnGetRowsPriorTo = GetRowsPriorTo;
 		pcli->pfnGetRowByIndex = GetRowByIndex;
+		pcli->pfnHitTest = HitTest;
 		pcli->pfnPaintClc = PaintClc;
 		pcli->pfnRebuildEntireList = RebuildEntireList;
 		pcli->pfnRecalcScrollBar = RecalcScrollBar;
+		pcli->pfnScrollTo = ScrollTo;
 
 		saveAddGroup = pcli->pfnAddGroup;
 		pcli->pfnAddGroup = AddGroup;

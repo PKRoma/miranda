@@ -298,16 +298,6 @@ void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	
 	}
 	ScrollTo(hwnd,dat,dat->yScroll,1);
-	
-	
-	
-	
-	
-	//nm.hdr.code=CLN_LISTSIZECHANGE;
-	//nm.hdr.hwndFrom=hwnd;
-	//nm.hdr.idFrom=GetDlgCtrlID(hwnd);
-	//nm.pt.y=si.nMax;
-	//SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 }
 
 void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int newState)

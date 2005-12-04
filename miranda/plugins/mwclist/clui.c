@@ -29,7 +29,6 @@
 extern int DefaultImageListColorDepth;
 
 static HMODULE hUserDll;
-static HIMAGELIST himlMirandaIcon;
 HMENU hMenuMain;
 static HANDLE hContactDraggingEvent,hContactDroppedEvent,hContactDragStopEvent;
 UINT hMsgGetProfile=0;
@@ -388,12 +387,6 @@ int CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
 }
 // Restore protocols to the last global status.
 // Used to reconnect on restore after standby.
-static void RestoreMode()
-{
-	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
-	if (nStatus != ID_STATUS_OFFLINE)
-		PostMessage(pcli->hwndContactList, WM_COMMAND, nStatus, 0);
-}
 
 int OnSettingChanging(WPARAM wParam,LPARAM lParam)
 {
@@ -609,18 +602,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		//create the status wnd
 		//pcli->hwndStatus = CreateStatusWindow(WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), "", hwnd, 0);	
 		CluiProtocolStatusChanged(0,0);
-	
-		{	MENUITEMINFO mii;
-			ZeroMemory(&mii,sizeof(mii));
-			mii.cbSize=MENUITEMINFO_V4_SIZE;
-			mii.fMask=MIIM_TYPE|MIIM_DATA;
-			himlMirandaIcon=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),DefaultImageListColorDepth|ILC_MASK,1,1);
-			ImageList_AddIcon(himlMirandaIcon,LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
-			mii.dwItemData=MENU_MIRANDAMENU;
-			mii.fType=MFT_OWNERDRAW;
-			mii.dwTypeData=NULL;
-			SetMenuItemInfo(GetMenu(hwnd),0,TRUE,&mii);
-		}
 		
 		hMsgGetProfile = RegisterWindowMessageA( "Miranda::GetProfile" ); // don't localise
 		
@@ -631,10 +612,12 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		}
 		transparentFocus=1;
 
+		#ifndef _DEBUG
 		{	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
 			if ( nStatus != ID_STATUS_OFFLINE )
 				PostMessage(hwnd, WM_COMMAND, nStatus, 0);
 		}
+		#endif
 		return FALSE;
 
 	case M_SETALLEXTRAICONS:
@@ -932,16 +915,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	return saveContactListWndProc( hwnd, msg, wParam, lParam );
 }
 
-static int CluiIconsChanged(WPARAM wParam,LPARAM lParam)
-{
-	ImageList_ReplaceIcon(himlMirandaIcon,0,LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
-	DrawMenuBar(pcli->hwndContactList);
-	ReloadExtraIcons();
-	SetAllExtraIcons(pcli->hwndContactTree,0);
-
-	return 0;
-}
-
 int LoadCLUIModule(void)
 {
 	DBVARIANT dbv;
@@ -957,7 +930,6 @@ int LoadCLUIModule(void)
 	}
 
 	HookEvent(ME_SYSTEM_MODULESLOADED,CluiModulesLoaded);
-	HookEvent(ME_SKIN_ICONSCHANGED,CluiIconsChanged);
 	HookEvent(ME_OPT_INITIALISE,CluiOptInit);
 	hContactDraggingEvent=CreateHookableEvent(ME_CLUI_CONTACTDRAGGING);
 	hContactDroppedEvent=CreateHookableEvent(ME_CLUI_CONTACTDROPPED);

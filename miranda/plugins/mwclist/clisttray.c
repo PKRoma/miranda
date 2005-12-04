@@ -221,6 +221,8 @@ int FreeOwnerDataTrayMenu (WPARAM wParam,LPARAM lParam)
 	return(0);
 }
 
+HANDLE hPreBuildTrayMenuEvent;
+
 void InitTrayMenus(void)
 {
 	TMenuParam tmp;
@@ -234,7 +236,11 @@ void InitTrayMenus(void)
 	tmp.name="Tray Menu";
 	hTrayMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	
-	
+	CreateServiceFunction(MS_CLIST_ADDTRAYMENUITEM,AddTrayMenuItem);
+	CreateServiceFunction(MS_CLIST_REMOVETRAYMENUITEM,RemoveTrayMenuItem);
+	CreateServiceFunction(MS_CLIST_MENUBUILDTRAY,BuildTrayMenu);
+	hPreBuildTrayMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDTRAYMENU);
+		
 	op.Handle=(int)hTrayMenuObject;
 	op.Setting=OPT_USERDEFINEDITEMS;
 	op.Value=(int)TRUE;

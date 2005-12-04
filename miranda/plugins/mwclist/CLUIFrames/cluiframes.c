@@ -1687,7 +1687,7 @@ static int UpdateTBToolTip(int framepos)
 		ti.uFlags=TTF_IDISHWND|TTF_SUBCLASS ;
 		ti.uId=(UINT)Frames[framepos].TitleBar.hwnd;
 		
-		return(SendMessage(Frames[framepos].TitleBar.hwndTip,TTM_UPDATETIPTEXT ,(WPARAM)0,(LPARAM)&ti));
+		return(SendMessageA(Frames[framepos].TitleBar.hwndTip,TTM_UPDATETIPTEXTA ,(WPARAM)0,(LPARAM)&ti));
 		}	
 
 }
