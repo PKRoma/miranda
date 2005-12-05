@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -36,73 +36,6 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern void OnStatusBarBackgroundChange();
 
-DWORD GetDefaultExStyle(void)
-{
-	BOOL param;
-	DWORD ret=CLCDEFAULT_EXSTYLE;
-	if(SystemParametersInfo(SPI_GETLISTBOXSMOOTHSCROLLING,0,&param,FALSE) && !param)
-		ret|=CLS_EX_NOSMOOTHSCROLLING;
-	if(SystemParametersInfo(SPI_GETHOTTRACKING,0,&param,FALSE) && !param)
-		ret&=~CLS_EX_TRACKSELECT;
-	return ret;
-}
-
-static void GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour)
-{
-	SystemParametersInfo(SPI_GETICONTITLELOGFONT,sizeof(LOGFONT),lf,FALSE);
-	*colour=GetSysColor(COLOR_WINDOWTEXT);
-	switch(i) {
-		case FONTID_GROUPS:
-			lf->lfWeight=FW_BOLD;
-			break;
-		case FONTID_GROUPCOUNTS:
-			lf->lfHeight=(int)(lf->lfHeight*.75);
-			*colour=GetSysColor(COLOR_3DSHADOW);
-			break;
-		case FONTID_OFFINVIS:
-		case FONTID_INVIS:
-			lf->lfItalic=!lf->lfItalic;
-			break;
-		case FONTID_DIVIDERS:
-			lf->lfHeight=(int)(lf->lfHeight*.75);
-			break;
-		case FONTID_NOTONLIST:
-			*colour=GetSysColor(COLOR_3DSHADOW);
-			break;
-	}
-}
-
-void GetFontSetting(int i,LOGFONT *lf,COLORREF *colour)
-{
-	DBVARIANT dbv;
-	char idstr[20];
-	BYTE style;
-
-	GetDefaultFontSetting(i,lf,colour);
-	wsprintfA(idstr,"Font%dName",i);
-	if(!DBGetContactSettingTString(NULL,"CLC",idstr,&dbv)) {
-		lstrcpy(lf->lfFaceName,dbv.ptszVal);
-		mir_free(dbv.ptszVal);
-	}
-	wsprintfA(idstr,"Font%dCol",i);
-	*colour=DBGetContactSettingDword(NULL,"CLC",idstr,*colour);
-	wsprintfA(idstr,"Font%dSize",i);
-	lf->lfHeight=(char)DBGetContactSettingByte(NULL,"CLC",idstr,lf->lfHeight);
-	wsprintfA(idstr,"Font%dSty",i);
-	style=(BYTE)DBGetContactSettingByte(NULL,"CLC",idstr,(lf->lfWeight==FW_NORMAL?0:DBFONTF_BOLD)|(lf->lfItalic?DBFONTF_ITALIC:0)|(lf->lfUnderline?DBFONTF_UNDERLINE:0));
-	lf->lfWidth=lf->lfEscapement=lf->lfOrientation=0;
-	lf->lfWeight=style&DBFONTF_BOLD?FW_BOLD:FW_NORMAL;
-	lf->lfItalic=(style&DBFONTF_ITALIC)!=0;
-	lf->lfUnderline=(style&DBFONTF_UNDERLINE)!=0;
-	lf->lfStrikeOut=0;
-	wsprintfA(idstr,"Font%dSet",i);
-	lf->lfCharSet=DBGetContactSettingByte(NULL,"CLC",idstr,lf->lfCharSet);
-	lf->lfOutPrecision=OUT_DEFAULT_PRECIS;
-	lf->lfClipPrecision=CLIP_DEFAULT_PRECIS;
-	lf->lfQuality=DEFAULT_QUALITY;
-	lf->lfPitchAndFamily=DEFAULT_PITCH|FF_DONTCARE;
-}
-
 int BgClcChange(WPARAM wParam,LPARAM lParam)
 {
 	pcli->pfnClcOptionsChanged();
@@ -130,7 +63,7 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc=DlgProcClcMainOpts;
 	odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-	
+
 	if (!ServiceExists(MS_BACKGROUNDCONFIG_REGISTER))
 	{
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLCBKG);
@@ -144,7 +77,7 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pszTitle=Translate("List Text");
 	odp.pfnDlgProc=DlgProcClcTextOpts;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-	
+
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_META_CLC);
 	odp.pszTitle=Translate("List MetaContacts");
 	odp.pfnDlgProc=DlgProcClcMetaOpts;
@@ -264,8 +197,8 @@ static BOOL CALLBACK DlgProcClcMetaOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			return TRUE;
 		case WM_NOTIFY:
-			
-			switch(t->idFrom) 
+
+			switch(t->idFrom)
 			{
 				case 0:
 					switch (t->code)
@@ -275,7 +208,7 @@ static BOOL CALLBACK DlgProcClcMetaOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 							DBWriteContactSettingByte(NULL,"CLC","MetaDoubleClick",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_METADBLCLK)); // by FYR
 							DBWriteContactSettingByte(NULL,"CLC","MetaHideExtra",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_METASUBEXTRA)); // by FYR
 							DBWriteContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_METASUBEXTRA_IGN)); // by FYR
-							DBWriteContactSettingByte(NULL,"CLC","MetaHideOfflineSub",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_METASUB_HIDEOFFLINE)); // by FYR					
+							DBWriteContactSettingByte(NULL,"CLC","MetaHideOfflineSub",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_METASUB_HIDEOFFLINE)); // by FYR
 							pcli->pfnClcOptionsChanged();
 							return TRUE;
 					}
@@ -299,7 +232,7 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_GREYOUTOPTS),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_GREYOUTOPTS),GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_HIDEOFFLINEOPTS),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_HIDEOFFLINEOPTS),GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
 			{	int i;
-				DWORD exStyle=DBGetContactSettingDword(NULL,"CLC","ExStyle",GetDefaultExStyle());
+				DWORD exStyle=DBGetContactSettingDword(NULL,"CLC","ExStyle",pcli->pfnGetDefaultExStyle());
 				for(i=0;i < SIZEOF(checkBoxToStyleEx); i++)
 					CheckDlgButton(hwndDlg,checkBoxToStyleEx[i].id,(exStyle&checkBoxToStyleEx[i].flag)^(checkBoxToStyleEx[i].flag*checkBoxToStyleEx[i].not)?BST_CHECKED:BST_UNCHECKED);
 			}
@@ -309,18 +242,18 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				SendDlgItemMessage(hwndDlg,IDC_SMOOTHTIMESPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CLC","ScrollTime",CLCDEFAULT_SCROLLTIME),0));
 			}
 			CheckDlgButton(hwndDlg,IDC_IDLE,DBGetContactSettingByte(NULL,"CLC","ShowIdle",CLCDEFAULT_SHOWIDLE)?BST_CHECKED:BST_UNCHECKED);
-			
+
 	/*		CheckDlgButton(hwndDlg, IDC_META, DBGetContactSettingByte(NULL,"CLC","Meta",0) ? BST_CHECKED : BST_UNCHECKED); /// by FYR
 			CheckDlgButton(hwndDlg, IDC_METADBLCLK, DBGetContactSettingByte(NULL,"CLC","MetaDoubleClick",0) ? BST_CHECKED : BST_UNCHECKED); /// by FYR
 			CheckDlgButton(hwndDlg, IDC_METASUBEXTRA, DBGetContactSettingByte(NULL,"CLC","MetaHideExtra",1) ? BST_CHECKED : BST_UNCHECKED); /// by FYR
-	*/		
+	*/
 			SendDlgItemMessage(hwndDlg,IDC_LEFTMARGINSPIN,UDM_SETRANGE,0,MAKELONG(64,0));
 			SendDlgItemMessage(hwndDlg,IDC_LEFTMARGINSPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL,"CLC","LeftMargin",CLCDEFAULT_LEFTMARGIN),0));
 			SendDlgItemMessage(hwndDlg,IDC_GROUPINDENTSPIN,UDM_SETRANGE,0,MAKELONG(50,0));
 			SendDlgItemMessage(hwndDlg,IDC_GROUPINDENTSPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL,"CLC","GroupIndent",CLCDEFAULT_GROUPINDENT),0));
 			CheckDlgButton(hwndDlg,IDC_GREYOUT,DBGetContactSettingDword(NULL,"CLC","GreyoutFlags",CLCDEFAULT_GREYOUTFLAGS)?BST_CHECKED:BST_UNCHECKED);
 
-			
+
 			EnableWindow(GetDlgItem(hwndDlg,IDC_SMOOTHTIME),IsDlgButtonChecked(hwndDlg,IDC_NOTNOSMOOTHSCROLLING));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_GREYOUTOPTS),IsDlgButtonChecked(hwndDlg,IDC_GREYOUT));
 			FillCheckBoxTree(GetDlgItem(hwndDlg,IDC_GREYOUTOPTS),greyoutValues,SIZEOF(greyoutValues),DBGetContactSettingDword(NULL,"CLC","FullGreyoutFlags",CLCDEFAULT_FULLGREYOUTFLAGS));
@@ -380,8 +313,8 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	/*						DBWriteContactSettingByte(NULL,"CLC","Meta",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_META)); // by FYR
 							DBWriteContactSettingByte(NULL,"CLC","MetaDoubleClick",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_METADBLCLK)); // by FYR
 							DBWriteContactSettingByte(NULL,"CLC","MetaHideExtra",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_METASUBEXTRA)); // by FYR
-			
-	*/						
+
+	*/
 							DBWriteContactSettingByte(NULL,"CLC","ShowIdle",(BYTE)(IsDlgButtonChecked(hwndDlg,IDC_IDLE)?1:0));
 							DBWriteContactSettingDword(NULL,"CLC","OfflineModes",MakeCheckBoxTreeFlags(GetDlgItem(hwndDlg,IDC_HIDEOFFLINEOPTS)));
 							DBWriteContactSettingByte(NULL,"CLC","LeftMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_LEFTMARGINSPIN,UDM_GETPOS,0,0));
@@ -423,7 +356,7 @@ static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wPar
 					if (CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szPath))
 						SetDlgItemTextA(hwndDlg,IDC_FILENAME,szPath);
 				}
-				else 
+				else
 					mir_free(dbv.pszVal);
 			}
 		}
@@ -500,7 +433,7 @@ static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wPar
 					if(col==CLCDEFAULT_SELBKCOLOUR) DBDeleteContactSetting(NULL,"StatusBar","SelBkColour");
 					else DBWriteContactSettingDword(NULL,"StatusBar","SelBkColour",col);
 				}
-				{	
+				{
 					char str[MAX_PATH],strrel[MAX_PATH];
 					GetDlgItemTextA(hwndDlg,IDC_FILENAME,str,SIZEOF(str));
 					if (ServiceExists(MS_UTILS_PATHTORELATIVE)) {
@@ -530,7 +463,7 @@ static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wPar
 
 					DBWriteContactSettingByte(NULL,"StatusBar","HiLightMode",(BYTE)hil);
 				}
-				
+
 				pcli->pfnClcOptionsChanged();
 				OnStatusBarBackgroundChange();
 				return TRUE;
@@ -631,7 +564,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					if(col==CLCDEFAULT_SELBKCOLOUR) DBDeleteContactSetting(NULL,"CLC","SelBkColour");
 					else DBWriteContactSettingDword(NULL,"CLC","SelBkColour",col);
 				}
-				{	
+				{
 					char str[MAX_PATH],strrel[MAX_PATH];
 					GetDlgItemTextA(hwndDlg,IDC_FILENAME,str,SIZEOF(str));
 					if (ServiceExists(MS_UTILS_PATHTORELATIVE)) {
@@ -663,8 +596,20 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	return FALSE;
 }
 
-static const char *szFontIdDescr[FONTID_MAX+1]=
-	{"Standard contacts","Online contacts to whom you have a different visibility","Offline contacts","Contacts which are 'not on list'","Groups","Group member counts","Dividers","Offline contacts to whom you have a different visibility", "Status messages","Group Closed","Hover Contacts"};
+static const TCHAR *szFontIdDescr[FONTID_MAX+1]=
+{
+	_T("Standard contacts"),
+	_T("Online contacts to whom you have a different visibility"),
+	_T("Offline contacts"),
+	_T("Contacts which are 'not on list'"),
+	_T("Groups"),
+	_T("Group member counts"),
+	_T("Dividers"),
+	_T("Offline contacts to whom you have a different visibility"),
+	_T("Status messages"),
+	_T("Group Closed"),
+	_T("Hover Contacts")
+};
 
 #define SAMEASF_FACE   1
 #define SAMEASF_SIZE   2
@@ -740,7 +685,7 @@ static void SwitchTextDlgToMode(HWND hwndDlg,int expert)
 	ShowWindow(GetDlgItem(hwndDlg,IDC_SAMECOLOUR),expert?SW_SHOW:SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg,IDC_STSIZETEXT),expert?SW_HIDE:SW_SHOW);
 	ShowWindow(GetDlgItem(hwndDlg,IDC_STCOLOURTEXT),expert?SW_HIDE:SW_SHOW);
-	SetDlgItemTextA(hwndDlg,IDC_STASTEXT,Translate(expert?"as:":"based on:"));
+	SetDlgItemText(hwndDlg,IDC_STASTEXT,TranslateTS( expert ? _T("as:") : _T("based on:" )));
 	{	UTILRESIZEDIALOG urd={0};
 		urd.cbSize=sizeof(urd);
 		urd.hwndDlg=hwndDlg;
@@ -765,7 +710,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		TranslateDialogDefault(hwndDlg);
 		if(!SendMessage(GetParent(hwndDlg),PSM_ISEXPERT,0,0))
 			SwitchTextDlgToMode(hwndDlg,0);
-			forkthread(FillFontListThread,0,hwndDlg);				
+			forkthread(FillFontListThread,0,hwndDlg);
 		{	int i,itemId,fontId;
 			LOGFONT lf;
 			COLORREF colour;
@@ -774,7 +719,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 			for(i=0;i<=FONTID_MAX;i++) {
 				fontId=fontListOrder[i];
-				GetFontSetting(fontId,&lf,&colour);
+				pcli->pfnGetFontSetting(fontId,&lf,&colour);
 				wsprintfA(str,"Font%dAs",fontId);
 				sameAs=DBGetContactSettingWord(NULL,"CLC",str,fontSameAsDefault[fontId]);
 				fontSettings[fontId].sameAsFlags=HIBYTE(sameAs);
@@ -795,7 +740,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				fontSettings[fontId].charset=lf.lfCharSet;
 				fontSettings[fontId].colour=colour;
 				lstrcpy(fontSettings[fontId].szFace,lf.lfFaceName);
-				itemId=SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_ADDSTRING,0,(LPARAM)Translate(szFontIdDescr[fontId]));
+				itemId=SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_ADDSTRING,0,(LPARAM)TranslateTS(szFontIdDescr[fontId]));
 				SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_SETITEMDATA,itemId,fontId);
 			}
 			SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_SETCURSEL,0,0);
@@ -824,9 +769,9 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	{	int i=SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_GETCURSEL,0,0),0);
 		SendMessage(hwndDlg,M_SETSAMEASBOXES,i,0);
 		{	int j,id,itemId;
-			char szText[256];
+			TCHAR szText[256];
 			SendDlgItemMessage(hwndDlg,IDC_SAMEAS,CB_RESETCONTENT,0,0);
-			itemId=SendDlgItemMessage(hwndDlg,IDC_SAMEAS,CB_ADDSTRING,0,(LPARAM)Translate("<none>"));
+			itemId=SendDlgItemMessage(hwndDlg,IDC_SAMEAS,CB_ADDSTRING,0,(LPARAM)TranslateT("<none>"));
 			SendDlgItemMessage(hwndDlg,IDC_SAMEAS,CB_SETITEMDATA,itemId,0xFF);
 			if(0xFF==fontSettings[i].sameAs)
 				SendDlgItemMessage(hwndDlg,IDC_SAMEAS,CB_SETCURSEL,itemId,0);
@@ -907,11 +852,11 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SendDlgItemMessage(hwndDlg,IDC_SAMPLE,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDC_FONTID,WM_GETFONT,0,0),0);
 			DeleteObject(hFontSample);
 		}
-		lf.lfHeight=GetDlgItemInt(hwndDlg,IDC_FONTSIZE,NULL,FALSE);			
+		lf.lfHeight=GetDlgItemInt(hwndDlg,IDC_FONTSIZE,NULL,FALSE);
 		{
-			HDC hdc=GetDC(NULL);				
+			HDC hdc=GetDC(NULL);
 			lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-			ReleaseDC(NULL,hdc);				
+			ReleaseDC(NULL,hdc);
 		}
 		lf.lfWidth=lf.lfEscapement=lf.lfOrientation=0;
 		lf.lfWeight=IsDlgButtonChecked(hwndDlg,IDC_BOLD)?FW_BOLD:FW_NORMAL;
@@ -963,16 +908,16 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	{	int i;
 		int minHeight=1;//GetSystemMetrics(SM_CYSMICON) +1;
 		for(i=0;i<=FONTID_MAX;i++)
-		{	
+		{
 			SIZE fontSize;
-			HFONT hFont, oldfnt; 
+			HFONT hFont, oldfnt;
 			HDC hdc=GetDC(NULL);
 			LOGFONT lf;
-			lf.lfHeight=fontSettings[i].size;			
+			lf.lfHeight=fontSettings[i].size;
 			{
-				HDC hdc=GetDC(NULL);				
+				HDC hdc=GetDC(NULL);
 				lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-				ReleaseDC(NULL,hdc);				
+				ReleaseDC(NULL,hdc);
 			}
 			lf.lfWidth=lf.lfEscapement=lf.lfOrientation=0;
 			lf.lfWeight=(fontSettings[i].style&DBFONTF_BOLD)?FW_BOLD:FW_NORMAL;
@@ -985,7 +930,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			lf.lfQuality=DEFAULT_QUALITY;
 			lf.lfPitchAndFamily=DEFAULT_PITCH|FF_DONTCARE;
 			_tcscpy(lf.lfFaceName,fontSettings[i].szFace);
-			
+
 			hFont=CreateFontIndirect(&lf);
 			oldfnt=(HFONT)SelectObject(hdc,(HFONT)hFont);
 			GetTextExtentPoint32A(hdc,"x",1,&fontSize);
@@ -993,7 +938,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SelectObject(hdc,oldfnt);
 			DeleteObject(hFont);
 			ReleaseDC(NULL,hdc);
-			
+
 
 		}
 		//i=SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_GETPOS,0,0);
@@ -1012,7 +957,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		CheckDlgButton(hwndDlg,IDC_UNDERLINE,fontSettings[wParam].style&DBFONTF_UNDERLINE?BST_CHECKED:BST_UNCHECKED);
 		{	LOGFONT lf;
 			COLORREF colour;
-			GetDefaultFontSetting(wParam,&lf,&colour);
+			pcli->pfnGetDefaultFontSetting(wParam,&lf,&colour);
 			SendDlgItemMessage(hwndDlg,IDC_COLOUR,CPM_SETDEFAULTCOLOUR,0,colour);
 		}
 		SendDlgItemMessage(hwndDlg,IDC_COLOUR,CPM_SETCOLOUR,0,fontSettings[wParam].colour);
@@ -1141,8 +1086,8 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					if (IsDlgButtonChecked(hwndDlg,IDC_HILIGHTMODE3))  hil=3;
 
 					DBWriteContactSettingByte(NULL,"CLC","HiLightMode",(BYTE)hil);
-				}					
-				
+				}
+
 				pcli->pfnClcOptionsChanged();
 				return TRUE;
 			case PSN_EXPERTCHANGED:

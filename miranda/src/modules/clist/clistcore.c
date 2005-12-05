@@ -26,6 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 CLIST_INTERFACE cli = { 0 };
 
+int LoadContactListModule2( void );
+int LoadCLCModule( void );
+
 /* clc.h */
 void   fnClcOptionsChanged( void );
 void   fnClcBroadcast( int msg, WPARAM wParam, LPARAM lParam );
@@ -74,6 +77,7 @@ int   fnFindRowByText (HWND hwnd, struct ClcData *dat, const TCHAR *text, int pr
 void  fnEndRename (HWND hwnd, struct ClcData *dat, int save );
 void  fnDeleteFromContactList ( HWND hwnd, struct ClcData *dat );
 void  fnBeginRenameSelection ( HWND hwnd, struct ClcData *dat );
+void  fnCalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
 int   fnGetDropTargetInformation ( HWND hwnd, struct ClcData *dat, POINT pt );
 int   fnClcStatusToPf2 ( int status );
 int   fnIsHiddenMode ( struct ClcData *dat, int status );
@@ -81,6 +85,7 @@ void  fnHideInfoTip ( HWND hwnd, struct ClcData *dat );
 void  fnNotifyNewContact ( HWND hwnd, HANDLE hContact );
 DWORD fnGetDefaultExStyle ( void );
 void  fnGetSetting ( int i, LOGFONT* lf, COLORREF* colour );
+void  fnGetDefaultFontSetting(int i, LOGFONT* lf, COLORREF* colour);
 void  fnGetFontSetting ( int i, LOGFONT* lf, COLORREF* colour );
 void  fnLoadClcOptions ( HWND hwnd, struct ClcData *dat );
 void  fnRecalculateGroupCheckboxes ( HWND hwnd, struct ClcData *dat );
@@ -193,12 +198,14 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnEndRename					         = fnEndRename;
 		cli.pfnDeleteFromContactList	         = fnDeleteFromContactList;
 		cli.pfnBeginRenameSelection		      = fnBeginRenameSelection;
+		cli.pfnCalcEipPosition                 = fnCalcEipPosition;
 		cli.pfnGetDropTargetInformation        = fnGetDropTargetInformation;
 		cli.pfnClcStatusToPf2				      = fnClcStatusToPf2;
 		cli.pfnIsHiddenMode				         = fnIsHiddenMode;
 		cli.pfnHideInfoTip					      = fnHideInfoTip;
 		cli.pfnNotifyNewContact			         = fnNotifyNewContact;
 		cli.pfnGetDefaultExStyle               = fnGetDefaultExStyle;
+		cli.pfnGetDefaultFontSetting           = fnGetDefaultFontSetting;
 		cli.pfnGetFontSetting					   = fnGetFontSetting;
 		cli.pfnLoadClcOptions					   = fnLoadClcOptions;
 		cli.pfnRecalculateGroupCheckboxes	   = fnRecalculateGroupCheckboxes;

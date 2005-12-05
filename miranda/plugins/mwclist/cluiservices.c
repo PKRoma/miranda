@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
 extern int CreateTimerForConnectingIcon(WPARAM,LPARAM);
 
-void FreeProtocolData()
+void FreeProtocolData( void )
 {
 	//free protocol data
 	int nPanel;

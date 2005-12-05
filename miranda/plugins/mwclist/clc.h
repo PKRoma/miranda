@@ -156,45 +156,26 @@ void SaveStateAndRebuildList(HWND hwnd,struct ClcData *dat);
 LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
 
 //clcutils.c
-void EnsureVisible(HWND hwnd,struct ClcData *dat,int iItem,int partialOk);
 void RecalcScrollBar(HWND hwnd,struct ClcData *dat);
-void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int newState);
-void DoSelectionDefaultAction(HWND hwnd,struct ClcData *dat);
-void EndRename(HWND hwnd,struct ClcData *dat,int save);
-void DeleteFromContactList(HWND hwnd,struct ClcData *dat);
 void BeginRenameSelection(HWND hwnd,struct ClcData *dat);
-char *GetGroupCountsText(struct ClcData *dat,struct ClcContact *contact);
 int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact **contact,struct ClcGroup **group,DWORD *flags);
 void ScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth);
-#define DROPTARGET_OUTSIDE    0
-#define DROPTARGET_ONSELF     1
-#define DROPTARGET_ONNOTHING  2
-#define DROPTARGET_ONGROUP    3
-#define DROPTARGET_ONCONTACT  4
-#define DROPTARGET_INSERTION  5
-int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt);
-int ClcStatusToPf2(int status);
-int IsHiddenMode(struct ClcData *dat,int status);
-void HideInfoTip(HWND hwnd,struct ClcData *dat);
-void NotifyNewContact(HWND hwnd,HANDLE hContact);
 void LoadClcOptions(HWND hwnd,struct ClcData *dat);
-void RecalculateGroupCheckboxes(HWND hwnd,struct ClcData *dat);
-void SetGroupChildCheckboxes(struct ClcGroup *group,int checked);
-void InvalidateItem(HWND hwnd,struct ClcData *dat,int iItem);
 
 //clcpaint.c
 void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint);
 
 //clcopts.c
 int ClcOptInit(WPARAM wParam,LPARAM lParam);
-DWORD GetDefaultExStyle(void);
-void GetFontSetting(int i,LOGFONT *lf,COLORREF *colour);
 
 //clcfiledrop.c
 void InitFileDropping(void);
 void FreeFileDropping(void);
 void RegisterFileDropping(HWND hwnd);
 void UnregisterFileDropping(HWND hwnd);
+
+//cluiservices.c
+void FreeProtocolData( void );
 
 int GetContactCachedStatus(HANDLE hContact);
 char *GetContactCachedProtocol(HANDLE hContact);

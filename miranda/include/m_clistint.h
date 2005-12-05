@@ -210,6 +210,7 @@ typedef struct
 	void  ( *pfnEndRename )(HWND hwnd, struct ClcData *dat, int save );
 	void  ( *pfnDeleteFromContactList )( HWND hwnd, struct ClcData *dat );
 	void  ( *pfnBeginRenameSelection )( HWND hwnd, struct ClcData *dat );
+	void  ( *pfnCalcEipPosition )( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
 	int   ( *pfnGetDropTargetInformation )( HWND hwnd, struct ClcData *dat, POINT pt );
 	int   ( *pfnClcStatusToPf2 )( int status );
    int   ( *pfnIsHiddenMode )( struct ClcData *dat, int status );

@@ -146,7 +146,7 @@ int CheckProtocolOrder()
 
 int FillTree(HWND hwnd)
 {
-			TVINSERTSTRUCT tvis;
+			TVINSERTSTRUCTA tvis;
 			ProtocolData *PD;
 			char szName[64];
 			char *szSTName;
@@ -182,9 +182,9 @@ int FillTree(HWND hwnd)
 				PD->protopos=DBGetContactSettingDword(0,"Protocols",(char *)&buf,-1);
 					
 				tvis.item.lParam=(LPARAM)PD;
-				tvis.item.pszText=TranslateTS(szName);
+				tvis.item.pszText=Translate(szName);
 				tvis.item.iImage=tvis.item.iSelectedImage=PD->show;
-				TreeView_InsertItem(hwnd,&tvis);
+			   SendMessageA(hwnd, TVM_INSERTITEMA, 0, (LPARAM)&tvis );
 				//tvis.item.iImage=tvis.item.iSelectedImage=PD->show;
 				//TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_PROTOCOLVISIBILITY),&tvis);
 			}

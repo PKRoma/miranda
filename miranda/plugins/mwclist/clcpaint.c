@@ -163,7 +163,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 //
 
 
-	if(dat->greyoutFlags&ClcStatusToPf2(status) || style&WS_DISABLED) grey=1;
+	if(dat->greyoutFlags & pcli->pfnClcStatusToPf2(status) || style&WS_DISABLED) grey=1;
 	else if(GetFocus()!=hwnd && dat->greyoutFlags&GREYF_UNFOCUS) grey=1;
 	GetClientRect(hwnd,&clRect);
 	
@@ -368,7 +368,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			width=textSize.cx;
 			if(Drawing->type==CLCIT_GROUP) {
 		
-				szCounts=GetGroupCountsText(dat,group->cl.items[group->scanIndex]);
+				szCounts = pcli->pfnGetGroupCountsText(dat,group->cl.items[group->scanIndex]);
 				if(szCounts[0]) {
 					GetTextExtentPoint32A(hdcMem," ",1,&spaceSize);
 					ChangeToFont(hdcMem,dat,FONTID_GROUPCOUNTS,&fontHeight);

@@ -34,8 +34,9 @@ extern int LoadMoveToGroup();
 
 void CluiProtocolStatusChanged( void );
 void CheckPDNCE(pdisplayNameCacheEntry);
-int  FindRowByText(HWND hwnd,struct ClcData *dat,const TCHAR *text,int prefixOk);
 void FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
+void GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
+void CalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
 void RebuildEntireList(HWND hwnd,struct ClcData *dat);
 void RecalcScrollBar(HWND hwnd,struct ClcData *dat);
 
@@ -47,6 +48,8 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+void ( *saveLoadClcOptions )(HWND hwnd,struct ClcData *dat);
 
 int ( *saveAddItemToGroup )( struct ClcGroup *group, int iAboveItem );
 int AddItemToGroup(struct ClcGroup *group, int iAboveItem);
@@ -151,13 +154,14 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
 
 		pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
+		pcli->pfnCalcEipPosition = CalcEipPosition;
 		pcli->pfnCheckCacheItem = CheckPDNCE;
 		pcli->pfnCluiProtocolStatusChanged = CluiProtocolStatusChanged;
 		pcli->pfnCreateClcContact = fnCreateClcContact;
 		pcli->pfnCreateCacheItem = fnCreateCacheItem;
-		pcli->pfnFindRowByText = FindRowByText;
 		pcli->pfnFindItem = FindItem;
 		pcli->pfnFreeCacheItem = FreeDisplayNameCacheItem;
+		pcli->pfnGetDefaultFontSetting = GetDefaultFontSetting;
 		pcli->pfnGetRowsPriorTo = GetRowsPriorTo;
 		pcli->pfnGetRowByIndex = GetRowByIndex;
 		pcli->pfnHitTest = HitTest;
@@ -183,6 +187,9 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 		saveContactListWndProc = pcli->pfnContactListWndProc;
 		pcli->pfnContactListWndProc = ContactListWndProc;
+
+		saveLoadClcOptions = pcli->pfnLoadClcOptions;
+		pcli->pfnLoadClcOptions = LoadClcOptions;
 
 		memset(&SED,0,sizeof(SED));
 		CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);

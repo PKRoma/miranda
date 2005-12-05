@@ -176,10 +176,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		if(szProto==NULL) status=ID_STATUS_OFFLINE;
 		else status=cacheEntry->status;
 		
-		shouldShow=(GetWindowLong(hwnd,GWL_STYLE)&CLS_SHOWHIDDEN
-			         || !cacheEntry->Hidden)
-				&& (!IsHiddenMode(dat,status)||cacheEntry->noHiddenOffline
-					   || CallService(MS_CLIST_GETCONTACTICON,wParam,0)!=lParam);	//this means an offline msg is flashing, so the contact should be shown
+		shouldShow=(GetWindowLong(hwnd,GWL_STYLE)&CLS_SHOWHIDDEN || !cacheEntry->Hidden) && (!pcli->pfnIsHiddenMode(dat,status)||cacheEntry->noHiddenOffline || CallService(MS_CLIST_GETCONTACTICON,wParam,0)!=lParam);	//this means an offline msg is flashing, so the contact should be shown
 		if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL)) {				
 			if(shouldShow) {					
 				AddContactToTree(hwnd,dat,(HANDLE)wParam,0,0);
@@ -188,7 +185,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL);
 				if (contact) {						
 					contact->iImage=(WORD)lParam;
-					NotifyNewContact(hwnd,(HANDLE)wParam);
+					pcli->pfnNotifyNewContact(hwnd,(HANDLE)wParam);
 					dat->NeedResort=1;
 				}
 			}				
@@ -216,7 +213,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				int oldflags;
 				contact->iImage=(WORD)lParam;
 				oldflags=contact->flags;
-				if(!IsHiddenMode(dat,status)||cacheEntry->noHiddenOffline) contact->flags|=CONTACTF_ONLINE;
+				if(!pcli->pfnIsHiddenMode(dat,status)||cacheEntry->noHiddenOffline) contact->flags|=CONTACTF_ONLINE;
 				else contact->flags&=~CONTACTF_ONLINE;
 				if (oldflags!=contact->flags)
 					dat->NeedResort=1;
@@ -284,12 +281,13 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		break;
 	}
 
-	saveContactListControlWndProc(hwnd, msg, wParam, lParam);
-
-	switch (msg) {
-		case WM_CREATE:
-			forkthread(StatusUpdaterThread,0,0);
-			break;
+	{	LRESULT res = saveContactListControlWndProc(hwnd, msg, wParam, lParam);
+		switch (msg) {
+			case WM_CREATE:
+				forkthread(StatusUpdaterThread,0,0);
+				break;
+		}
+		return res;
 	}
 
 LBL_Exit:

@@ -169,7 +169,7 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 	//SetClcContactCacheItem(dat,hContact,&(group->cl.items[i]));
 
 	szProto=cacheEntry->szProto;
-	if(szProto!=NULL&&!IsHiddenMode(dat,cacheEntry->status))
+	if(szProto!=NULL&&!pcli->pfnIsHiddenMode(dat,cacheEntry->status))
 		group->cl.items[i]->flags|=CONTACTF_ONLINE;
 	apparentMode=szProto!=NULL?cacheEntry->ApparentMode:0;
 	if(apparentMode==ID_STATUS_OFFLINE)	group->cl.items[i]->flags|=CONTACTF_INVISTO;
@@ -239,7 +239,7 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 			DWORD groupFlags;
 			TCHAR *szGroupName;
 			if(!(style&CLS_HIDEEMPTYGROUPS)) {/*mir_free(dbv.pszVal);*/return;}
-			if(checkHideOffline && IsHiddenMode(dat,status)) {
+			if(checkHideOffline && pcli->pfnIsHiddenMode(dat,status)) {
 				for(i=1;;i++) {
 					szGroupName = pcli->pfnGetGroupName(i,&groupFlags);
 					if(szGroupName==NULL) {/*mir_free(dbv.pszVal);*/ return;}   //never happens
@@ -260,7 +260,7 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 	//	mir_free(dbv.pszVal);
 	}
 	if(checkHideOffline) {
-		if(IsHiddenMode(dat,status) && (style&CLS_HIDEOFFLINE || group->hideOffline)) {
+		if(pcli->pfnIsHiddenMode(dat,status) && (style&CLS_HIDEOFFLINE || group->hideOffline)) {
 			if(updateTotalCount) group->totalMembers++;
 			return;
 		}
@@ -391,11 +391,11 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 				if(!(style&CLS_NOHIDEOFFLINE) && (style&CLS_HIDEOFFLINE || group->hideOffline)) {
 					//szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 					if(cacheEntry->szProto==NULL) {
-						if(!IsHiddenMode(dat,ID_STATUS_OFFLINE)||cacheEntry->noHiddenOffline)
+						if(!pcli->pfnIsHiddenMode(dat,ID_STATUS_OFFLINE)||cacheEntry->noHiddenOffline)
 							cont=AddContactToGroup(dat,group,cacheEntry);
 					}
 					else
-						if(!IsHiddenMode(dat,cacheEntry->status)||cacheEntry->noHiddenOffline)
+						if(!pcli->pfnIsHiddenMode(dat,cacheEntry->status)||cacheEntry->noHiddenOffline)
 							cont=AddContactToGroup(dat,group,cacheEntry);
 				}
 				else cont=AddContactToGroup(dat,group,cacheEntry);
@@ -684,10 +684,10 @@ void SaveStateAndRebuildList(HWND hwnd,struct ClcData *dat)
 
 	int tick=GetTickCount();
 	int allocstep=1024;
-	HideInfoTip(hwnd,dat);
+	pcli->pfnHideInfoTip(hwnd,dat);
 	KillTimer(hwnd,TIMERID_INFOTIP);
 	KillTimer(hwnd,TIMERID_RENAME);
-	EndRename(hwnd,dat,1);
+	pcli->pfnEndRename(hwnd,dat,1);
 
 	group = &dat->list;
 	group->scanIndex=0;
@@ -795,7 +795,7 @@ void SaveStateAndRebuildList(HWND hwnd,struct ClcData *dat)
 		*group->cl.items[j] = savedInfo[i].contact;
 	}
 	if(savedInfo) mir_free(savedInfo);
-	RecalculateGroupCheckboxes(hwnd,dat);
+	pcli->pfnRecalculateGroupCheckboxes(hwnd,dat);
 
 	RecalcScrollBar(hwnd,dat);
 	nm.hdr.code=CLN_LISTREBUILT;

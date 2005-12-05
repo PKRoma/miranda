@@ -461,8 +461,8 @@ void fnBeginRenameSelection(HWND hwnd, struct ClcData *dat)
 {
 	struct ClcContact *contact;
 	struct ClcGroup *group;
-	int indent, x, y;
 	RECT clRect;
+	POINT pt;
 
 	KillTimer(hwnd, TIMERID_RENAME);
 	ReleaseCapture();
@@ -472,19 +472,24 @@ void fnBeginRenameSelection(HWND hwnd, struct ClcData *dat)
 		return;
 	if (contact->type != CLCIT_CONTACT && contact->type != CLCIT_GROUP)
 		return;
-	for (indent = 0; group->parent; indent++, group = group->parent);
 	GetClientRect(hwnd, &clRect);
-	x = indent * dat->groupIndent + dat->iconXSpace - 2;
-	y = dat->selection * dat->rowHeight - dat->yScroll;
+	cli.pfnCalcEipPosition( dat, contact, group, &pt );
 	dat->hwndRenameEdit =
-		CreateWindow( _T("EDIT"), contact->szText, WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, x, y, clRect.right - x, dat->rowHeight, hwnd, NULL, cli.hInst, NULL);
+		CreateWindow( _T("EDIT"), contact->szText, WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, pt.x, pt.y, clRect.right - pt.x, dat->rowHeight, hwnd, NULL, cli.hInst, NULL);
 	OldRenameEditWndProc = (WNDPROC) SetWindowLong(dat->hwndRenameEdit, GWL_WNDPROC, (LONG) RenameEditSubclassProc);
-	SendMessage(dat->hwndRenameEdit, WM_SETFONT,
-		(WPARAM) (contact->type == CLCIT_GROUP ? dat->fontInfo[FONTID_GROUPS].hFont : dat->fontInfo[FONTID_CONTACTS].hFont), 0);
+	SendMessage(dat->hwndRenameEdit, WM_SETFONT, (WPARAM) (contact->type == CLCIT_GROUP ? dat->fontInfo[FONTID_GROUPS].hFont : dat->fontInfo[FONTID_CONTACTS].hFont), 0);
 	SendMessage(dat->hwndRenameEdit, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN | EC_USEFONTINFO, 0);
 	SendMessage(dat->hwndRenameEdit, EM_SETSEL, 0, (LPARAM) (-1));
 	ShowWindow(dat->hwndRenameEdit, SW_SHOW);
 	SetFocus(dat->hwndRenameEdit);
+}
+
+void fnCalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result)
+{
+	int indent;
+	for (indent = 0; group->parent; indent++, group = group->parent);
+	result->x = indent * dat->groupIndent + dat->iconXSpace - 2;
+	result->y = dat->selection * dat->rowHeight - dat->yScroll;
 }
 
 int fnGetDropTargetInformation(HWND hwnd, struct ClcData *dat, POINT pt)
@@ -661,7 +666,7 @@ void fnGetFontSetting(int i, LOGFONT* lf, COLORREF* colour)
 	char idstr[10];
 	BYTE style;
 
-	fnGetDefaultFontSetting(i, lf, colour);
+	cli.pfnGetDefaultFontSetting(i, lf, colour);
 	wsprintfA(idstr, "Font%dName", i);
 	if ( !DBGetContactSettingTString(NULL, "CLC", idstr, &dbv )) {
 		lstrcpy(lf->lfFaceName, dbv.ptszVal);
@@ -695,6 +700,7 @@ void fnLoadClcOptions(HWND hwnd, struct ClcData *dat)
 		SIZE fontSize;
 		HDC hdc = GetDC(hwnd);
 		HFONT hFont = GetCurrentObject(hdc, OBJ_FONT);
+		HFONT holdfont;	
 
 		for (i = 0; i <= FONTID_MAX; i++) {
 			if (!dat->fontInfo[i].changed)
@@ -710,9 +716,12 @@ void fnLoadClcOptions(HWND hwnd, struct ClcData *dat)
 				lf.lfHeight = height;
 			}
 			dat->fontInfo[i].changed = 0;
-			SelectObject(hdc, dat->fontInfo[i].hFont);
-			GetTextExtentPoint32A(hdc, "x", 1, &fontSize);
+			holdfont = SelectObject(hdc,dat->fontInfo[i].hFont);
+			GetTextExtentPoint32(hdc, _T("x"), 1, &fontSize);
 			dat->fontInfo[i].fontHeight = fontSize.cy;
+			if (fontSize.cy > dat->rowHeight) 
+				dat->rowHeight = fontSize.cy;
+			if (holdfont) SelectObject(hdc, holdfont);
 		}
 		SelectObject(hdc,hFont);
 		ReleaseDC(hwnd, hdc);
