@@ -34,9 +34,31 @@ extern int currentDesiredStatusMode;
 struct MM_INTERFACE memoryManagerInterface;
 BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD) = NULL;
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// external functions
+
 int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
 int InitCustomMenus(void);
 void UninitCustomMenus(void);
+
+void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint);
+
+int ClcOptInit(WPARAM wParam, LPARAM lParam);
+int CluiOptInit(WPARAM wParam, LPARAM lParam);
+int CListOptInit(WPARAM wParam, LPARAM lParam);
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// dll stub
+
+BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
+{
+	g_hInst = hInstDLL;
+	DisableThreadLibraryCalls(g_hInst);
+	return TRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// returns the plugin information
 
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
@@ -56,13 +78,6 @@ PLUGININFO pluginInfo = {
 	DEFMOD_CLISTALL
 };
 
-BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
-{
-	g_hInst = hInstDLL;
-	DisableThreadLibraryCalls(g_hInst);
-	return TRUE;
-}
-
 __declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 3, 0))
@@ -70,14 +85,28 @@ __declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 	return &pluginInfo;
 }
 
-int CListOptInit(WPARAM wParam, LPARAM lParam);
-void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint);
+/////////////////////////////////////////////////////////////////////////////////////////
+// called when all modules got loaded
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	himlCListClc = (HIMAGELIST) CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
 	return 0;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// options iniatialization
+
+static int OnOptsInit(WPARAM wParam, LPARAM lParam)
+{
+	ClcOptInit(wParam, lParam);
+	CluiOptInit(wParam, lParam);
+	CListOptInit(wParam, lParam);
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// menu status services
 
 static int SetStatusMode(WPARAM wParam, LPARAM lParam)
 {
@@ -90,6 +119,9 @@ static int GetStatusMode(WPARAM wParam, LPARAM lParam)
 {
 	return currentDesiredStatusMode;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// main clist initialization routine
 
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
@@ -111,7 +143,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		LoadLibraryA("user32.dll"), "SetLayeredWindowAttributes");
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
-	HookEvent(ME_OPT_INITIALISE, CListOptInit);
+	HookEvent(ME_OPT_INITIALISE, OnOptsInit);
 
 	hStatusModeChangeEvent = CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
 
@@ -121,11 +153,16 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
 // a plugin loader aware of CList exports will never call this.
+
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
 	return 1;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// a plugin unloader
 
 int __declspec(dllexport) Unload(void)
 {
