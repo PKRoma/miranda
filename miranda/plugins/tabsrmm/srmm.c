@@ -101,7 +101,7 @@ int _DebugTRACE(const char *fmt, ...)
     va_list va;
     va_start(va, fmt);
     _vsnprintf(debug, ibsize, fmt, va);
-    OutputDebugString(debug);
+    OutputDebugStringA(debug);
 }
 #endif
 
