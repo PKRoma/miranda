@@ -546,19 +546,6 @@ extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM 
 
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {     
-	LRESULT result=0;
-	MSG m;
-	m.hwnd=hwnd;
-	m.message=msg;
-	m.wParam=wParam;
-	m.lParam=lParam;
-	if ( pcli->pfnDocking_ProcessWindowMessage(( WPARAM )&m, ( LPARAM )&result ))
-		return result;
-	if ( pcli->pfnTrayIconProcessMessage(( WPARAM )&m, ( LPARAM )&result ))
-		return result;
-	if( pcli->pfnHotkeysProcessMessage(( WPARAM )&m, ( LPARAM )&result ))
-		return result;
-
 	/*
 	This registers a window message with RegisterWindowMessage() and then waits for such a message,
 	if it gets it, it tries to open a file mapping object and then maps it to this process space,

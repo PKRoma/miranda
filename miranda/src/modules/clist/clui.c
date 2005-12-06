@@ -92,18 +92,6 @@ static void DisconnectAll()
 #define M_CREATECLC  (WM_USER+1)
 LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	LRESULT result;
-	MSG m;
-	m.hwnd = hwnd;
-	m.message = msg;
-	m.wParam = wParam;
-	m.lParam = lParam;
-	if (CallService(MS_CLIST_DOCKINGPROCESSMESSAGE, (WPARAM) & m, (LPARAM) & result))
-		return result;
-	if (CallService(MS_CLIST_TRAYICONPROCESSMESSAGE, (WPARAM) & m, (LPARAM) & result))
-		return result;
-	if (CallService(MS_CLIST_HOTKEYSPROCESSMESSAGE, (WPARAM) & m, (LPARAM) & result))
-		return result;
 	if (msg == uMsgProcessProfile) {
 		char profile[MAX_PATH];
 		int rc;
@@ -796,6 +784,27 @@ static int MenuItem_RenameContact(WPARAM wParam, LPARAM lParam)
 #define CS_DROPSHADOW 0x00020000
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+// this is the smalles available window procedure
+
+LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	LRESULT result;
+	MSG m;
+	m.hwnd=hwnd;
+	m.message=msg;
+	m.wParam=wParam;
+	m.lParam=lParam;
+	if ( cli.pfnDocking_ProcessWindowMessage(( WPARAM )&m, ( LPARAM )&result ))
+		return result;
+	if ( cli.pfnTrayIconProcessMessage(( WPARAM )&m, ( LPARAM )&result ))
+		return result;
+	if ( cli.pfnHotkeysProcessMessage(( WPARAM )&m, ( LPARAM )&result ))
+		return result;
+
+	return cli.pfnContactListWndProc( hwnd, msg, wParam, lParam );
+}
+
 int LoadCLUIModule(void)
 {
 	WNDCLASS wndclass;
@@ -831,7 +840,7 @@ int LoadCLUIModule(void)
 
 	wndclass.style = CS_HREDRAW | CS_VREDRAW | (IsWinVerXPPlus()
 		&& DBGetContactSettingByte(NULL, "CList", "WindowShadow", 0) == 1 ? CS_DROPSHADOW : 0);
-	wndclass.lpfnWndProc = cli.pfnContactListWndProc;
+	wndclass.lpfnWndProc = ContactListWndProc;
 	wndclass.cbClsExtra = 0;
 	wndclass.cbWndExtra = 0;
 	wndclass.hInstance = cli.hInst;

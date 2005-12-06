@@ -123,6 +123,9 @@ static int GetStatusMode(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // main clist initialization routine
 
+LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc = 0;
@@ -138,6 +141,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	pcli->pfnPaintClc = PaintClc;
+	saveContactListWndProc = pcli->pfnContactListWndProc; pcli->pfnContactListWndProc = ContactListWndProc;
 
 	MySetLayeredWindowAttributes = (BOOL(WINAPI *) (HWND, COLORREF, BYTE, DWORD)) GetProcAddress(
 		LoadLibraryA("user32.dll"), "SetLayeredWindowAttributes");
