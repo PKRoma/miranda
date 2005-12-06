@@ -1,893 +1,212 @@
 # Microsoft Developer Studio Generated Dependency File, included by mwclist.mak
 
 .\CLUIFrames\cluiframes.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\CLUIFrames\extraimage.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\CLUIFrames\framesmenu.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\CLUIFrames\protocolorder.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\CLUIFrames\statusbar.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\BkgrCfg.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\clc.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
-	
-
-.\clcfiledrop.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
-	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
-	".\m_genmenu.h"\
-	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\clcidents.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clc.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\clcitems.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clc.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
-	
-
-.\clcmsgs.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
-	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clc.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
-	".\m_genmenu.h"\
-	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\clcopts.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clc.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\clcpaint.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clc.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\clcutils.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clc.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
-	
-
-.\clistevents.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
-	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
-	".\m_genmenu.h"\
-	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\clistmenus.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\clistmod.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\clistopts.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clc.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\clistsettings.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clc.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\clisttray.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\clui.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\cluiopts.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\cluiservices.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clc.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\commonheaders.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
 	"..\..\include\m_clistint.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -912,432 +231,90 @@
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\contact.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
-	
-
-.\dblists.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\dblists.h"\
-	".\forkthread.h"\
-	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
-	".\m_genmenu.h"\
-	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
-	
-
-.\Docking.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
-	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
-	".\m_genmenu.h"\
-	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\forkthread.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\genmenu.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\genmenuopt.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\groupmenu.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
-	
-
-.\groups.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
-	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
-	".\m_genmenu.h"\
-	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\init.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\keyboard.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\movetogroup.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\BkgrCfg.h"\
+	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
-	".\m_clist.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
-	".\m_mwclc.h"\
-	".\statusmodes.h"\
 	
 
 .\resource.rc : \
@@ -1353,7 +330,7 @@
 	".\res\addgoupp.ico"\
 	".\res\AgileMobile.ico"\
 	".\res\AlIcq.ico"\
-	".\res\blank1.ico"\
+	".\res\blank.ico"\
 	".\res\Center.ico"\
 	".\res\delete.ico"\
 	".\res\dragcopy.cur"\

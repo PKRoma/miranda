@@ -1320,7 +1320,7 @@ int InitGenMenu()
 }
 int UnitGenMenu()
 {
-OutputDebugStringA("GenMenu ShutDown ...\r\n");
+	OutputDebugStringA("GenMenu ShutDown ...\r\n");
 	lockmo();
 	MO_RemoveAllObjects();	
 	isGenMenuInited=FALSE;
@@ -1344,12 +1344,10 @@ OutputDebugStringA("GenMenu ShutDown ...\r\n");
 
 	DestroyServiceFunction(MO_SETOPTIONSMENUOBJECT);
 	DestroyServiceFunction(MO_SETOPTIONSMENUITEM);
-	DestroyHookableEvent(ME_OPT_INITIALISE);
 	unlockmo();
 
 	DeleteCriticalSection(&csMenuHook);
 	OutputDebugStringA("GenMenu ShutDown Done\r\n");
-
 	return(0);
 }
 
