@@ -142,7 +142,7 @@ static int AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
 		if(mmep==NULL){return(0);}
 		
 		//we need just one parametr.
-		mmep->szServiceName = mi->pszService;
+		mmep->szServiceName = mir_strdup(mi->pszService);
 		mmep->Param1 = mi->popupPosition;
 		
 		tmi.ownerdata=mmep;
@@ -152,18 +152,15 @@ static int AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
 	op.Value=(int)mi->pszService;
 	CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
 	return(op.Handle);
-
-//	mainItemCount++;
-//	return MENU_CUSTOMITEMMAIN|(mainMenuItem[mainItemCount-1].id);
 }
 
-int TrayMenuCheckService(WPARAM wParam,LPARAM lParam) {
-//not used
+int TrayMenuCheckService(WPARAM wParam,LPARAM lParam) 
+{
 	return(0);
 }
 
-int TrayMenuonAddService(WPARAM wParam,LPARAM lParam) {
-
+int TrayMenuonAddService(WPARAM wParam,LPARAM lParam) 
+{
 	MENUITEMINFO *mii=(MENUITEMINFO* )wParam;
 	if (mii==NULL) return 0;
 
@@ -236,6 +233,10 @@ void InitTrayMenus(void)
 	tmp.name="Tray Menu";
 	hTrayMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	
+	CreateServiceFunction("CLISTMENUSTRAY/ExecService",TrayMenuExecService);
+	CreateServiceFunction("CLISTMENUSTRAY/FreeOwnerDataTrayMenu",FreeOwnerDataTrayMenu);
+	CreateServiceFunction("CLISTMENUSTRAY/TrayMenuonAddService",TrayMenuonAddService);
+
 	CreateServiceFunction(MS_CLIST_ADDTRAYMENUITEM,AddTrayMenuItem);
 	CreateServiceFunction(MS_CLIST_REMOVETRAYMENUITEM,RemoveTrayMenuItem);
 	CreateServiceFunction(MS_CLIST_MENUBUILDTRAY,BuildTrayMenu);

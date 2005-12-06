@@ -36,6 +36,8 @@ int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam);
 void InitDisplayNameCache(SortedList *list);
 void FreeDisplayNameCache(SortedList *list);
 
+void UnloadCLUIModule( void );
+
 extern int sortByStatus;
 struct ClcContact * hitcontact=NULL;
 
@@ -147,6 +149,7 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam)
 static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 {
 	UnhookEvent(hSettingChanged1);
+	UnloadCLUIModule();
 	return 0;
 }
 

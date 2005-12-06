@@ -721,6 +721,11 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			DBWriteContactSettingDword(NULL, "CList", "Width", (DWORD) (rc.right - rc.left));
 		}
 
+		if ( cli.hwndStatus ) {
+			DestroyWindow( cli.hwndStatus );
+			cli.hwndStatus = NULL;
+		}
+
 		// Disconnect all protocols
 		DisconnectAll();
 

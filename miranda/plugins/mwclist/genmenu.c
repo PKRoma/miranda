@@ -201,9 +201,8 @@ void RemoveAndClearOneObject(int arpos)
 		for (j=0;j<MenuObjects[arpos].MenuItemsCount;j++)
 		{
 			if (MenuObjects[arpos].FreeService)
-			{
 				CallService(MenuObjects[arpos].FreeService,(WPARAM)MenuObjects[arpos].MenuItems[j].globalid,(LPARAM)MenuObjects[arpos].MenuItems[j].mi.ownerdata);
-			}
+
 			FreeAndNil(&MenuObjects[arpos].MenuItems[j].mi.pszName);
 			FreeAndNil(&MenuObjects[arpos].MenuItems[j].UniqName);
 			FreeAndNil(&MenuObjects[arpos].MenuItems[j].CustomName);
@@ -492,12 +491,13 @@ int MO_SetOptionsMenuObject(WPARAM wParam,LPARAM lParam)
 		case OPT_MENUOBJECT_SET_ONADD_SERVICE:
 			FreeAndNil(&MenuObjects[pimoidx].onAddService);
 			MenuObjects[pimoidx].onAddService=mir_strdup((char *)lpop->Value);
+			break;
 
 		case OPT_MENUOBJECT_SET_FREE_SERVICE:
 			FreeAndNil(&MenuObjects[pimoidx].FreeService);
 			MenuObjects[pimoidx].FreeService=mir_strdup((char *)lpop->Value);
-
 			break;
+
 		case OPT_USERDEFINEDITEMS:
 			MenuObjects[pimoidx].bUseUserDefinedItems=(BOOL)lpop->Value;
 			break;

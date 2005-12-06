@@ -597,7 +597,10 @@ int CreateStatusBarFrame()
 
 int RecreateStatusBar(HWND parent)
 {
-	if (pcli->hwndStatus) DestroyWindow(pcli->hwndStatus);
+	if (pcli->hwndStatus) {
+		FreeProtocolData();
+		DestroyWindow(pcli->hwndStatus);
+	}
 	pcli->hwndStatus=0;
 	if (hFrameHelperStatusBar) CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameHelperStatusBar,0);
 

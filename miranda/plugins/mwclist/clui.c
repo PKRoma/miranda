@@ -951,3 +951,12 @@ int LoadCLUIModule(void)
 
 	return 0;
 }
+
+void UnloadCLUIModule()
+{
+	int i;
+
+	for ( i=0; i < SIZEOF(CycleStartTick); i++ )
+		if ( CycleStartTick[i].szProto != NULL )
+			mir_free(CycleStartTick[i].szProto);
+}

@@ -119,7 +119,7 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 	}	}
 
 	if (pdnce->status == 0)
-		pdnce->status=GetStatusForContact(pdnce->hContact,pdnce->szProto);
+		pdnce->status = GetStatusForContact(pdnce->hContact,pdnce->szProto);
 
 	if (pdnce->szGroup == NULL)
 	{
@@ -140,7 +140,7 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 		pdnce->noHiddenOffline=DBGetContactSettingByte(pdnce->hContact,"CList","noOffline",0);
 
 	if ( pdnce->IdleTS == -1 )
-		pdnce->IdleTS=DBGetContactSettingDword(pdnce->hContact,pdnce->szProto,"IdleTS",0);
+		pdnce->IdleTS = DBGetContactSettingDword(pdnce->hContact,pdnce->szProto,"IdleTS",0);
 
 	if (pdnce->ApparentMode == -1)
 		pdnce->ApparentMode=DBGetContactSettingWord(pdnce->hContact,pdnce->szProto,"ApparentMode",0);
@@ -176,6 +176,7 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 
 		pdnce->Hidden=-1;
 		pdnce->protoNotExists=FALSE;
+		if (pdnce->szProto) mir_free(pdnce->szProto);
 		pdnce->szProto=NULL;
 		pdnce->status=0;
 		pdnce->IdleTS=-1;
@@ -198,6 +199,7 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 		pdnce->name=NULL;
 		if (pdnce->szGroup) mir_free(pdnce->szGroup);
 		pdnce->szGroup=NULL;
+		if (pdnce->szProto) mir_free(pdnce->szProto);
 		pdnce->szProto=NULL;
 		pdnce->MirVer=NULL;
 		pdnce->ci.ClientID=-1;
@@ -225,9 +227,10 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 char *GetContactCachedProtocol(HANDLE hContact)
 {
 	pdisplayNameCacheEntry cacheEntry = (pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
-	if (cacheEntry&&cacheEntry->szProto) return cacheEntry->szProto;
-	
-	return (NULL);
+	if (cacheEntry&&cacheEntry->szProto) 
+		return cacheEntry->szProto;
+
+	return NULL;
 }
 
 char *GetProtoForContact(HANDLE hContact)
