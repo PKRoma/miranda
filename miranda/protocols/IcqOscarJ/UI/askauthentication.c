@@ -67,7 +67,7 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
     ICQTranslateDialog(hwndDlg);
     SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
     SendDlgItemMessage(hwndDlg, IDC_EDITAUTH, EM_LIMITTEXT, (WPARAM)255, 0);
-    SetDlgItemText(hwndDlg, IDC_EDITAUTH, Translate("Please authorize me to add you to my contact list."));
+    SetDlgItemText(hwndDlg, IDC_EDITAUTH, ICQTranslate("Please authorize me to add you to my contact list."));
 
     return TRUE;
 

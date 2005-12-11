@@ -42,7 +42,7 @@ int InitChangeDetails(WPARAM wParam,LPARAM lParam)
 
   if((HANDLE)lParam != NULL) return 0;
 
-  null_snprintf(title, sizeof(title),"%s %s", Translate(gpszICQProtoName), Translate("Details"));
+  null_snprintf(title, sizeof(title), ICQTranslate("%s Details"), ICQTranslate(gpszICQProtoName));
 
   odp.cbSize=sizeof(odp);
   odp.hIcon = NULL;

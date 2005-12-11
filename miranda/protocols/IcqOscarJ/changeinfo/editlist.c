@@ -99,7 +99,7 @@ void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
   itemHeight=SendMessage(hwndListEdit,LB_GETITEMHEIGHT,0,0);
   for(j=0;j<setting[i].listCount;j++) 
   {
-    n=SendMessage(hwndListEdit,LB_ADDSTRING,0,(LPARAM)Translate(((ListTypeDataItem*)setting[i].pList)[j].szValue));
+    n=SendMessage(hwndListEdit,LB_ADDSTRING,0,(LPARAM)ICQTranslate(((ListTypeDataItem*)setting[i].pList)[j].szValue));
     SendMessage(hwndListEdit,LB_SETITEMDATA,n,((ListTypeDataItem*)setting[i].pList)[j].id);
     if((setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,((ListTypeDataItem*)setting[i].pList)[j].szValue))
        || ((char*)setting[i].value==NULL && ((ListTypeDataItem*)setting[i].pList)[j].id==0))

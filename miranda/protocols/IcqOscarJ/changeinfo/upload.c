@@ -87,7 +87,7 @@ int UploadSettings(HWND hwndParent)
 
   if (!icqOnline) 
   {
-    MessageBox(hwndParent, Translate("You are not currently connected to the ICQ network. You must be online in order to update your information on the server."), Translate("Change ICQ Details"), MB_OK);
+    MessageBox(hwndParent, ICQTranslate("You are not currently connected to the ICQ network. You must be online in order to update your information on the server."), ICQTranslate("Change ICQ Details"), MB_OK);
     return 0;
   }
 

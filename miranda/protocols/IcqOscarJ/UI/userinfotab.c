@@ -78,7 +78,7 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
   odp.pfnDlgProc = IcqDlgProc;
   odp.position = -1900000000;
   odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_ICQ);
-  odp.pszTitle = Translate(gpszICQProtoName);
+  odp.pszTitle = ICQTranslate(gpszICQProtoName);
 
   CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 
@@ -93,10 +93,10 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
       odp.position = -1899999998;
       odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_AVATAR);
       if (lParam != 0)
-        odp.pszTitle = Translate("Avatar");
+        odp.pszTitle = ICQTranslate("Avatar");
       else
       {
-        null_snprintf(szAvtCaption, sizeof(szAvtCaption), "%s %s", Translate(gpszICQProtoName), Translate("Avatar"));
+        null_snprintf(szAvtCaption, sizeof(szAvtCaption), "%s %s", ICQTranslate(gpszICQProtoName), ICQTranslate("Avatar"));
         odp.pszTitle = szAvtCaption;
       }
 
@@ -167,7 +167,7 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 SetValue(hwndDlg, IDC_PORT, hContact, (char*)DBVT_WORD, (char*)wListenPort, SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)8, SVS_ICQVERSION);
                 SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, "Miranda IM", SVS_ZEROISUNSPEC);
-                SetDlgItemText(hwndDlg, IDC_SUPTIME, Translate("Member since:"));
+                SetDlgItemText(hwndDlg, IDC_SUPTIME, ICQTranslate("Member since:"));
                 SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "MemberTS", SVS_TIMESTAMP);
                 SetValue(hwndDlg, IDC_STATUS, hContact, (char*)DBVT_WORD, (char*)gnCurrentStatus, SVS_STATUSID);
               }
@@ -207,6 +207,7 @@ static char* ChooseAvatarFileName()
   char str[MAX_PATH];
   char szFilter[512];
   OPENFILENAME ofn = {0};
+
   str[0] = 0;
   szDest[0]='\0';
   CallService(MS_UTILS_GETBITMAPFILTERSTRINGS,sizeof(szFilter),(LPARAM)szFilter);
@@ -360,51 +361,15 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
       {
         char* szFile;
         AvtDlgProcData* pData = (AvtDlgProcData*)GetWindowLong(hwndDlg, GWL_USERDATA);
+
         if (szFile = ChooseAvatarFileName())
         { // user selected file for his avatar
-          char szMyFile[MAX_PATH+1];
-          int dwPaFormat = DetectAvatarFormat(szFile);
-
           HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
 
-          GetFullAvatarFileName(0, NULL, dwPaFormat, szMyFile, MAX_PATH);
-          if (!CopyFile(szFile, szMyFile, FALSE))
-          {
-            NetLog_Server("Failed to copy our avatar to local storage.");
-            strcpy(szMyFile, szFile);
-          }
+          if (!IcqSetMyAvatar(0, (LPARAM)szFile)) // set avatar
+            avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
 
-          if (avt)
-          {
-            char* hash;
-            hash = calcMD5Hash(szMyFile);
-            if (hash)
-            {
-              char* ihash = malloc(0x14);
-              if (ihash)
-              { // upload hash to server
-                ihash[0] = 0;    //unknown
-                ihash[1] = 1;    //hash type
-                ihash[2] = 1;    //hash status
-                ihash[3] = 0x10; //hash len
-                memcpy(ihash+4, hash, 0x10);
-                updateServAvatarHash(ihash+2, 0x12);
-
-                if (ICQWriteContactSettingBlob(NULL, "AvatarHash", ihash, 0x14))
-                {
-                  NetLog_Server("Failed to save avatar hash.");
-                  DeleteObject(avt);
-                  avt = 0;
-                }
-                ICQWriteContactSettingString(NULL, "AvatarFile", szMyFile);
-
-                SAFE_FREE(&ihash);
-              }
-              SAFE_FREE(&hash);
-            }
-          }
           SAFE_FREE(&szFile);
-          if (avt) avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
           if (avt) DeleteObject(avt); // we release old avatar if any
         }
       }
@@ -412,14 +377,11 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
     case IDC_DELETEAVATAR:
       {
         HBITMAP avt;
-        BYTE bEmptyAvatar[7] = {0x00,0x05,0x02,0x01,0xD2,0x04,0x72};
 
         avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
         RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
         if (avt) DeleteObject(avt); // we release old avatar if any
-        ICQDeleteContactSetting(NULL, "AvatarFile");
-        ICQDeleteContactSetting(NULL, "AvatarHash");
-        updateServAvatarHash(bEmptyAvatar, 7); // clear hash on server
+        IcqSetMyAvatar(0, 0); // clear hash on server
       }
       break;
     }
@@ -492,9 +454,9 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       if (special == SVS_GENDER)
       {
         if (dbv.cVal == 'M')
-          pstr = Translate("Male");
+          pstr = ICQTranslate("Male");
         else if (dbv.cVal == 'F')
-          pstr = Translate("Female");
+          pstr = ICQTranslate("Female");
         else
           unspecified = 1;
       }
@@ -555,7 +517,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
           pXName = ICQGetContactSettingUtf(hContact, "XStatusName", "");
           if (!strlennull(pXName))
           {
-            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szXStatus, Translate(nameXStatus[bXStatus-1]));
+            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szXStatus, ICQTranslate(nameXStatus[bXStatus-1]));
           }
           else
           {
@@ -601,7 +563,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
     case DBVT_ASCIIZ:
       unspecified = (special == SVS_ZEROISUNSPEC && dbv.pszVal[0] == '\0');
       pstr = dbv.pszVal;
-      if (idCtrl == IDC_UIN) SetDlgItemText(hwndDlg, IDC_UINSTATIC, Translate("ScreenName:"));
+      if (idCtrl == IDC_UIN) SetDlgItemText(hwndDlg, IDC_UINSTATIC, ICQTranslate("ScreenName:"));
       break;
       
     default:
@@ -613,7 +575,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
   
   EnableWindow(GetDlgItem(hwndDlg, idCtrl), !unspecified);
   if (unspecified)
-    SetDlgItemText(hwndDlg, idCtrl, Translate("<not specified>"));
+    SetDlgItemText(hwndDlg, idCtrl, ICQTranslate("<not specified>"));
   else if (bUtf)
     SetDlgItemTextUtf(hwndDlg, idCtrl, pstr);
   else

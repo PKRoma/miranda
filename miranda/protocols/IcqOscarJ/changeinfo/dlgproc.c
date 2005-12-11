@@ -51,9 +51,9 @@ static void PaintItemSetting(HDC hdc,RECT *rc,int i,UINT itemState)
     SetTextColor(hdc,GetSysColor(COLOR_GRAYTEXT));
 
     if (setting[i].displayType&LIF_CHANGEONLY)
-      text=Translate("<unremovable once applied>");
+      text=ICQTranslate("<unremovable once applied>");
     else
-      text=Translate("<empty>");
+      text=ICQTranslate("<empty>");
   }
   else 
   {
@@ -71,12 +71,12 @@ static void PaintItemSetting(HDC hdc,RECT *rc,int i,UINT itemState)
       case LI_LIST:
         if(setting[i].dbType==DBVT_ASCIIZ) 
         {
-          text=Translate((char*)setting[i].value);
+          text=ICQTranslate((char*)setting[i].value);
         }
         else 
         {
           int j;
-          text=Translate("Unknown value");
+          text=ICQTranslate("Unknown value");
           for(j=0;j<setting[i].listCount;j++)
             if(((ListTypeDataItem*)setting[i].pList)[j].id==setting[i].value) 
             {
@@ -189,7 +189,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
             case PSN_APPLY:
               if(ChangesMade()) 
               {
-                if(IDYES!=MessageBox(hwndDlg,Translate("You've made some changes to your ICQ details but it has not been saved to the server. Are you sure you want to close this dialog?"),Translate("Change ICQ Details"),MB_YESNOCANCEL))
+                if(IDYES!=MessageBox(hwndDlg,ICQTranslate("You've made some changes to your ICQ details but it has not been saved to the server. Are you sure you want to close this dialog?"),ICQTranslate("Change ICQ Details"),MB_YESNOCANCEL))
                 {
                   SetWindowLong(hwndDlg,DWL_MSGRESULT,PSNRET_INVALID_NOCHANGEPAGE);
                   return TRUE;
@@ -251,7 +251,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                   {
                     RECT rcLine;
                     SIZE textSize;
-                    char *szText = Translate(setting[cd->nmcd.lItemlParam].szDescription);
+                    char *szText = ICQTranslate(setting[cd->nmcd.lItemlParam].szDescription);
                     HFONT hoFont;
 
                     hoFont = (HFONT)SelectObject(cd->nmcd.hdc, hListFont);
@@ -290,7 +290,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                     ListView_GetSubItemRect(hwndList,cd->nmcd.dwItemSpec,1,LVIR_BOUNDS,&rc2);
                     rc.right=rc2.left;
                     rc.left+=2;
-                    DrawText(cd->nmcd.hdc,Translate(setting[cd->nmcd.lItemlParam].szDescription),-1,&rc,DT_END_ELLIPSIS|DT_LEFT|DT_NOCLIP|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER);
+                    DrawText(cd->nmcd.hdc,ICQTranslate(setting[cd->nmcd.lItemlParam].szDescription),-1,&rc,DT_END_ELLIPSIS|DT_LEFT|DT_NOCLIP|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER);
                   }
                   else 
                     PaintItemSetting(cd->nmcd.hdc,&rc,cd->nmcd.lItemlParam,cd->nmcd.uItemState);
@@ -400,7 +400,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
           if(!SaveSettingsToDb(hwndDlg)) break;
           EnableWindow(GetDlgItem(hwndDlg,IDC_SAVE),FALSE);
           EnableWindow(GetDlgItem(hwndDlg,IDC_LIST),FALSE);
-          SetDlgItemText(hwndDlg,IDC_UPLOADING,Translate("Upload in progress..."));
+          SetDlgItemText(hwndDlg,IDC_UPLOADING,ICQTranslate("Upload in progress..."));
           EnableWindow(GetDlgItem(hwndDlg,IDC_UPLOADING),TRUE);
           ShowWindow(GetDlgItem(hwndDlg,IDC_UPLOADING),SW_SHOW);
           hAckHook=HookEventMessage(ME_PROTO_ACK,hwndDlg,DM_PROTOACK);
@@ -431,7 +431,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
         hUpload[i]=NULL;
         for(done=0,i=0;i<sizeof(hUpload)/sizeof(hUpload[0]);i++)
           done+=hUpload[i]==NULL;
-        wsprintf(str,"%s%d%%",Translate("Upload in progress..."),100*done/(sizeof(hUpload)/sizeof(hUpload[0])));
+        wsprintf(str,"%s%d%%",ICQTranslate("Upload in progress..."),100*done/(sizeof(hUpload)/sizeof(hUpload[0])));
         SetDlgItemText(hwndDlg,IDC_UPLOADING,str);
         if(done<sizeof(hUpload)/sizeof(hUpload[0])) break;
 
@@ -439,7 +439,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
         UnhookEvent(hAckHook); hAckHook=NULL;
         EnableWindow(GetDlgItem(hwndDlg,IDC_LIST),TRUE);
         EnableWindow(GetDlgItem(hwndDlg,IDC_UPLOADING),FALSE);
-        SetDlgItemText(hwndDlg,IDC_UPLOADING,Translate("Upload complete"));
+        SetDlgItemText(hwndDlg,IDC_UPLOADING,ICQTranslate("Upload complete"));
         SendMessage(GetParent(hwndDlg),PSM_FORCECHANGED,0,0);
       }
       else if (ack->result==ACKRESULT_FAILED)
@@ -448,7 +448,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
         hAckHook=NULL;
         EnableWindow(GetDlgItem(hwndDlg,IDC_LIST),TRUE);
         EnableWindow(GetDlgItem(hwndDlg,IDC_UPLOADING),FALSE);
-        SetDlgItemText(hwndDlg,IDC_UPLOADING,Translate("Upload FAILED"));
+        SetDlgItemText(hwndDlg,IDC_UPLOADING,ICQTranslate("Upload FAILED"));
         SendMessage(GetParent(hwndDlg),PSM_FORCECHANGED,0,0);
       }
       break;

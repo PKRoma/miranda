@@ -145,7 +145,7 @@ static BOOL CALLBACK PwConfirmDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
             GetDlgItemText(hwndDlg,IDC_PASSWORD,szTest,sizeof(szTest));
             if(strcmpnull(szTest, Pass)) 
             {
-              MessageBox(hwndDlg,Translate("This password does not match the password you originally entered. Check Caps Lock and try again."),Translate("Change ICQ Details"),MB_OK);
+              MessageBox(hwndDlg,ICQTranslate("This password does not match the password you originally entered. Check Caps Lock and try again."),ICQTranslate("Change ICQ Details"),MB_OK);
               SendDlgItemMessage(hwndDlg,IDC_PASSWORD,EM_SETSEL,0,(LPARAM)-1);
               break;
             }
@@ -182,7 +182,7 @@ int SaveSettingsToDb(HWND hwndDlg)
 
           if (nSettingLen>8 || nSettingLen<1) 
           {
-            MessageBox(hwndDlg,Translate("The ICQ server does not support passwords longer than 8 characters. Please use a shorter password."),Translate("Change ICQ Details"),MB_OK);
+            MessageBox(hwndDlg,ICQTranslate("The ICQ server does not support passwords longer than 8 characters. Please use a shorter password."),ICQTranslate("Change ICQ Details"),MB_OK);
             ret=0;
             break;
           }
