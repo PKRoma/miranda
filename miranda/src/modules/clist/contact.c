@@ -25,8 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HANDLE hContactIconChangedEvent;
 
-static int sortByStatus;
-static int sortByProto;
+int sortByStatus;
+int sortByProto;
 struct {
 	int status,order;
 } statusModeOrder[]={
@@ -57,7 +57,7 @@ void fnChangeContactIcon(HANDLE hContact, int iIcon, int add)
 	NotifyEventHooks(hContactIconChangedEvent, (WPARAM) hContact, iIcon);
 }
 
-static int GetStatusModeOrdering(int statusMode)
+int GetStatusModeOrdering(int statusMode)
 {
 	int i;
 	for (i = 0; i < SIZEOF(statusModeOrder); i++)
@@ -92,20 +92,15 @@ void fnLoadContactTree(void)
 	CallService(MS_CLUI_LISTENDREBUILD, 0, 0);
 }
 
-#define SAFESTRING(a) a?a:""
-
-int fnCompareContacts(WPARAM wParam, LPARAM lParam)
+int fnCompareContacts(const struct ClcContact* c1, const struct ClcContact* c2)
 {
-	HANDLE a = (HANDLE) wParam, b = (HANDLE) lParam;
+	HANDLE a = c1->hContact, b = c2->hContact;
 	TCHAR namea[128], *nameb;
 	int statusa, statusb;
-	char *szProto1, *szProto2;
 	int rc;
 
-	szProto1 = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) a, 0);
-	szProto2 = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) b, 0);
-	statusa = DBGetContactSettingWord((HANDLE) a, SAFESTRING(szProto1), "Status", ID_STATUS_OFFLINE);
-	statusb = DBGetContactSettingWord((HANDLE) b, SAFESTRING(szProto2), "Status", ID_STATUS_OFFLINE);
+	statusa = DBGetContactSettingWord((HANDLE) a, c1->proto, "Status", ID_STATUS_OFFLINE);
+	statusb = DBGetContactSettingWord((HANDLE) b, c2->proto, "Status", ID_STATUS_OFFLINE);
 
 	if (sortByProto) {
 		/* deal with statuses, online contacts have to go above offline */
@@ -113,8 +108,8 @@ int fnCompareContacts(WPARAM wParam, LPARAM lParam)
 			return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
 		}
 		/* both are online, now check protocols */
-		rc = strcmp(SAFESTRING(szProto1), SAFESTRING(szProto2));        /* strcmp() doesn't like NULL so feed in "" as needed */
-		if (rc != 0 && (szProto1 != NULL && szProto2 != NULL))
+		rc = lstrcmpA( c1->proto, c2->proto);
+		if (rc != 0 && (c1->proto != NULL && c2->proto != NULL))
 			return rc;
 		/* protocols are the same, order by display name */
 	}
@@ -141,8 +136,6 @@ int fnCompareContacts(WPARAM wParam, LPARAM lParam)
 	//otherwise just compare names
 	return _tcsicmp(namea, nameb);
 }
-
-#undef SAFESTRING
 
 static int resortTimerId = 0;
 static VOID CALLBACK SortContactsTimer(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)

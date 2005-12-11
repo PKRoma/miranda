@@ -268,8 +268,8 @@ void fnRecalcScrollBar(HWND hwnd, struct ClcData *dat)
 		if (dat->noVScrollbar == 0)
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 	}
-	else
-		SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+	else SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+
 	cli.pfnScrollTo(hwnd, dat, dat->yScroll, 1);
 	nm.hdr.code = CLN_LISTSIZECHANGE;
 	nm.hdr.hwndFrom = hwnd;

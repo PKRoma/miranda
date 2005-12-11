@@ -101,56 +101,6 @@ void LoadContactTree(void)
     CallService(MS_CLUI_LISTENDREBUILD, 0, 0);
 }
 
-#define SAFESTRING(a) a?a:""
-
-int CompareContacts(WPARAM wParam, LPARAM lParam)
-{
-    HANDLE a = (HANDLE) wParam,b = (HANDLE) lParam;
-    TCHAR namea[128], *nameb;
-    int statusa, statusb;
-    char *szProto1, *szProto2;
-    int rc;
-
-    szProto1 = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) a, 0);
-    szProto2 = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) b, 0);
-    statusa = DBGetContactSettingWord((HANDLE) a, SAFESTRING(szProto1), "Status", ID_STATUS_OFFLINE);
-    statusb = DBGetContactSettingWord((HANDLE) b, SAFESTRING(szProto2), "Status", ID_STATUS_OFFLINE);
-
-    if (sortByProto) {
-    /* deal with statuses, online contacts have to go above offline */
-        if ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE)) {
-            return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
-        }
-    /* both are online, now check protocols */
-        rc = strcmp(SAFESTRING(szProto1), SAFESTRING(szProto2)); /* strcmp() doesn't like NULL so feed in "" as needed */
-        if (rc != 0 && (szProto1 != NULL && szProto2 != NULL))
-            return rc;
-    /* protocols are the same, order by display name */
-    }
-
-    if (sortByStatus) {
-        int ordera, orderb;
-        ordera = GetStatusModeOrdering(statusa);
-        orderb = GetStatusModeOrdering(statusb);
-        if (ordera != orderb)
-            return ordera - orderb;
-    } else {
-    //one is offline: offline goes below online
-        if ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE)) {
-            return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
-        }
-    }
-
-    nameb = pcli->pfnGetContactDisplayName(a, 0);
-    _tcsncpy(namea, nameb, safe_sizeof(namea));
-    namea[safe_sizeof(namea) - 1] = 0;
-    nameb = pcli->pfnGetContactDisplayName(b, 0);
-
-    //otherwise just compare names
-    return CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE, namea, -1, nameb, -1) - 2;
-    //return _tcsicmp(namea,nameb);
-}
-
 static int __forceinline GetProtoIndex(char * szName)
 {
     DWORD i;
@@ -176,9 +126,8 @@ static int __forceinline GetProtoIndex(char * szName)
     return -1;
 }
 
-int InternalCompareContacts(WPARAM wParam, LPARAM lParam)
+int CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2)
 {
-    struct ClcContact *c1 = (struct ClcContact *) wParam, *c2 = (struct ClcContact *) lParam;
     HANDLE a = c1->hContact, b = c2->hContact;
     //TCHAR namea[128], *nameb;
     TCHAR *namea, *nameb;

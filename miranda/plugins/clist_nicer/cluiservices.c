@@ -68,7 +68,7 @@ void FreeProtocolData( void )
 			if (PD) mir_free(PD);
 }	}	}
 
-int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
+void CluiProtocolStatusChanged()
 {
 	int protoCount,i;
 	PROTOCOLDESCRIPTOR **proto;
@@ -91,15 +91,15 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	BYTE windowStyle;
 
 	if (pcli->hwndStatus == 0 || g_shutDown) 
-		return 0;
+		return;
 
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&protoCount, (LPARAM)&proto);
 	if (protoCount == 0) 
-		return 0;
+		return;
 
 	storedcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 	if (storedcount==-1)
-		return 0;
+		return;
 
 	FreeProtocolData();
 
@@ -186,7 +186,7 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 	if (partCount==0) {
 		SendMessage(pcli->hwndStatus,SB_SIMPLE,TRUE,0);
 		free(partWidths);
-		return 0;
+		return;
 	}
 	SendMessage(pcli->hwndStatus,SB_SIMPLE,FALSE,0);
 
@@ -306,7 +306,6 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 			InvalidateRect(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS), NULL, TRUE);
 			InvalidateRect(GetDlgItem(pcli->hwndContactList, IDC_TBTOPSTATUS), NULL, TRUE);
 			SFL_Update(hIcon, iIcon, hCListImages, szStatus, TRUE);
-		}
-	}
-	return 0;
+	}	}
+	return;
 }

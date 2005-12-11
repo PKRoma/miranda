@@ -523,11 +523,66 @@ int fnShowHide(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// old evil code. hopefully it will be deleted soon, cause nobody uses it now
+
+#define SAFESTRING(a) a?a:""
+
+int GetStatusModeOrdering(int statusMode);
+extern int sortByStatus, sortByProto;
+
+static int CompareContacts( WPARAM wParam, LPARAM lParam )
+{
+	HANDLE a = (HANDLE) wParam, b = (HANDLE) lParam;
+	TCHAR namea[128], *nameb;
+	int statusa, statusb;
+	char *szProto1, *szProto2;
+	int rc;
+
+	szProto1 = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) a, 0);
+	szProto2 = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) b, 0);
+	statusa = DBGetContactSettingWord((HANDLE) a, SAFESTRING(szProto1), "Status", ID_STATUS_OFFLINE);
+	statusb = DBGetContactSettingWord((HANDLE) b, SAFESTRING(szProto2), "Status", ID_STATUS_OFFLINE);
+
+	if (sortByProto) {
+		/* deal with statuses, online contacts have to go above offline */
+		if ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE)) {
+			return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
+		}
+		/* both are online, now check protocols */
+		rc = strcmp(SAFESTRING(szProto1), SAFESTRING(szProto2));        /* strcmp() doesn't like NULL so feed in "" as needed */
+		if (rc != 0 && (szProto1 != NULL && szProto2 != NULL))
+			return rc;
+		/* protocols are the same, order by display name */
+	}
+
+	if (sortByStatus) {
+		int ordera, orderb;
+		ordera = GetStatusModeOrdering(statusa);
+		orderb = GetStatusModeOrdering(statusb);
+		if (ordera != orderb)
+			return ordera - orderb;
+	}
+	else {
+		//one is offline: offline goes below online
+		if ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE)) {
+			return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
+		}
+	}
+
+	nameb = cli.pfnGetContactDisplayName( a, 0);
+	_tcsncpy(namea, nameb, SIZEOF(namea));
+	namea[ SIZEOF(namea)-1 ] = 0;
+	nameb = cli.pfnGetContactDisplayName( b, 0);
+
+	//otherwise just compare names
+	return _tcsicmp(namea, nameb);
+}
+
 /***************************************************************************************/
 
 static int TrayIconProcessMessageStub( WPARAM wParam, LPARAM lParam ) {	return cli.pfnTrayIconProcessMessage( wParam, lParam ); }
 static int TrayIconPauseAutoHideStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnTrayIconPauseAutoHide( wParam, lParam ); }
-static int CompareContactsStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnCompareContacts( wParam, lParam ); }
 static int ShowHideStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnShowHide( wParam, lParam ); }
 static int SetHideOfflineStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnSetHideOffline( wParam, lParam ); }
 static int Docking_ProcessWindowMessageStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnDocking_ProcessWindowMessage( wParam, lParam ); }
@@ -550,7 +605,7 @@ int LoadContactListModule2(void)
 	CreateServiceFunction(MS_CLIST_INVALIDATEDISPLAYNAME, InvalidateDisplayName);
 	CreateServiceFunction(MS_CLIST_TRAYICONPROCESSMESSAGE, TrayIconProcessMessageStub );
 	CreateServiceFunction(MS_CLIST_PAUSEAUTOHIDE, TrayIconPauseAutoHideStub);
-	CreateServiceFunction(MS_CLIST_CONTACTSCOMPARE, CompareContactsStub);
+	CreateServiceFunction(MS_CLIST_CONTACTSCOMPARE, CompareContacts);
 	CreateServiceFunction(MS_CLIST_CONTACTCHANGEGROUP, ContactChangeGroup);
 	CreateServiceFunction(MS_CLIST_SHOWHIDE, ShowHideStub);
 	CreateServiceFunction(MS_CLIST_SETHIDEOFFLINE, SetHideOfflineStub);

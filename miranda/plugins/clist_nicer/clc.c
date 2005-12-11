@@ -188,7 +188,7 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 	}
 	else if(szProto == NULL && wParam == 0) {
 		if(!__strcmp(cws->szSetting, "XStatusId"))
-			CluiProtocolStatusChanged(0, 0);
+			CluiProtocolStatusChanged();
 		else if (!__strcmp(cws->szModule, "CListGroups"))
 			pcli->pfnClcBroadcast(INTM_GROUPSCHANGED, wParam, lParam);
 		return 0;
@@ -489,7 +489,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			int index;
 
 			if (!wParam)
-				CluiProtocolStatusChanged(0, 0);
+				CluiProtocolStatusChanged();
 
 			szProto = (char *)cws->szModule;
 

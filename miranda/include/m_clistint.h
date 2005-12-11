@@ -261,7 +261,7 @@ typedef struct
 	/* contact.c */
 	void ( *pfnChangeContactIcon )( HANDLE hContact, int iIcon, int add );
 	void ( *pfnLoadContactTree )( void );
-	int  ( *pfnCompareContacts )( WPARAM wParam, LPARAM lParam );
+	int  ( *pfnCompareContacts )( const struct ClcContact *contact1, const struct ClcContact *contact2 );
 	void ( *pfnSortContacts )( void );
 	int  ( *pfnSetHideOffline )( WPARAM wParam, LPARAM lParam );
 

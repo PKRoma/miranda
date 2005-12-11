@@ -398,32 +398,31 @@ void EnsureVisible(HWND hwnd,struct ClcData *dat,int iItem,int partialOk)
 
 void RecalcScrollBar(HWND hwnd, struct ClcData *dat)
 {
-    SCROLLINFO si = {0};
-    RECT clRect;
-    NMCLISTCONTROL nm;
+	SCROLLINFO si = {0};
+	RECT clRect;
+	NMCLISTCONTROL nm;
 
-	RowHeights_CalcRowHeights(dat, hwnd);
-    
-    GetClientRect(hwnd, &clRect);
-    si.cbSize = sizeof(si);
-    si.fMask = SIF_ALL;
-    si.nMin = 0;
-   	si.nMax=RowHeights_GetTotalHeight(dat)-1;
-    si.nPage = clRect.bottom;
-    si.nPos = dat->yScroll;
+	GetClientRect(hwnd, &clRect);
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_ALL;
+	si.nMin = 0;
+	si.nMax = RowHeights_GetTotalHeight(dat)-1;
+	si.nPage = clRect.bottom;
+	si.nPos = dat->yScroll;
 
-    if (GetWindowLong(hwnd, GWL_STYLE) & CLS_CONTACTLIST) {
-        if (dat->noVScrollbar == 0)
-            SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-    } else
-        SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-    ScrollTo(hwnd, dat, dat->yScroll, 1);
-    nm.hdr.code = CLN_LISTSIZECHANGE;
-    nm.hdr.hwndFrom = hwnd;
-    nm.hdr.idFrom = GetDlgCtrlID(hwnd);
-    nm.pt.y = si.nMax;
-    if(!during_sizing)
-        SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) &nm);
+	if (GetWindowLong(hwnd, GWL_STYLE) & CLS_CONTACTLIST) {
+		if (dat->noVScrollbar == 0)
+			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+	}
+	else SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+
+	ScrollTo(hwnd, dat, dat->yScroll, 1);
+	nm.hdr.code = CLN_LISTSIZECHANGE;
+	nm.hdr.hwndFrom = hwnd;
+	nm.hdr.idFrom = GetDlgCtrlID(hwnd);
+	nm.pt.y = si.nMax;
+	if(!during_sizing)
+		SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) &nm);
 }
 
 void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int newState)

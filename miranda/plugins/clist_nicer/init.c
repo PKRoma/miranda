@@ -157,7 +157,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	// get the clist interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;
-	pcli->pfnCompareContacts = InternalCompareContacts;
+	pcli->pfnCluiProtocolStatusChanged = CluiProtocolStatusChanged;
+	pcli->pfnCompareContacts = CompareContacts;
 	pcli->pfnCreateClcContact = CreateClcContact;
 	pcli->pfnGetDefaultFontSetting = GetDefaultFontSetting;
 	pcli->pfnHitTest = HitTest;

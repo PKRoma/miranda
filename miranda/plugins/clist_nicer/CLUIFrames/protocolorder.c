@@ -9,7 +9,6 @@ extern int DefaultImageListColorDepth;
 
 extern HINSTANCE g_hInst;
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
-extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 extern int MenuModulesLoaded(WPARAM wParam,LPARAM lParam);
 extern int TrayIconIconsChanged();
 
@@ -251,7 +250,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                         DBWriteContactSettingDword(0,"Protocols","ProtoCount",-1);
                         CheckProtocolOrder();
                         FillTree(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
-                        CluiProtocolStatusChanged(0,0);
+                        CluiProtocolStatusChanged();
                         SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
                             //BuildStatusMenu(0,0);
                         return(0);          
@@ -295,7 +294,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
                                     count++;
                                 }
-                                CluiProtocolStatusChanged(0,0);
+                                CluiProtocolStatusChanged();
                                 MenuModulesLoaded(0,0);
                                 TrayIconIconsChanged();
                                 pcli->pfnClcOptionsChanged();

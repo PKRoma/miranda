@@ -268,7 +268,7 @@ void SetStatusBarSearchInfo(HWND hwndStatus,struct FindAddDlgData *dat)
 	}	}
 	else lstrcpy(str, TranslateT("Idle"));
 		
-	SendMessage( cli.hwndStatus, SB_SETTEXT, 0, (LPARAM)str );
+	SendMessage( hwndStatus, SB_SETTEXT, 0, (LPARAM)str );
 }	
 
 struct ProtoResultsSummary {
@@ -330,7 +330,7 @@ void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
 		}
 		free(subtotal);
 	}
-	SendMessageA(cli.hwndStatus,SB_SETTEXTA,2,(LPARAM)str);
+	SendMessageA(hwndStatus,SB_SETTEXTA,2,(LPARAM)str);
 }
 
 void CreateResultsColumns(HWND hwndResults,struct FindAddDlgData *dat,char *szProto)

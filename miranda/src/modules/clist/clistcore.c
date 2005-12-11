@@ -130,7 +130,7 @@ void fnDrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, HICON eventIcon);
 /* contact.c */
 void fnChangeContactIcon ( HANDLE hContact, int iIcon, int add );
 void fnLoadContactTree ( void );
-int  fnCompareContacts ( WPARAM wParam, LPARAM lParam );
+int  fnCompareContacts ( const struct ClcContact *contact1, const struct ClcContact *contact2);
 void fnSortContacts ( void );
 int  fnSetHideOffline ( WPARAM wParam, LPARAM lParam );
 

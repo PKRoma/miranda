@@ -39,7 +39,6 @@ int EventsProcessContactDoubleClick(HANDLE hContact);
 int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam);
 int TrayIconPauseAutoHide(WPARAM wParam, LPARAM lParam);
 void TrayIconIconsChanged(void);
-int CompareContacts(WPARAM wParam, LPARAM lParam);
 int SetHideOffline(WPARAM wParam, LPARAM lParam);
 static int CListIconsChanged(WPARAM wParam, LPARAM lParam);
 int MenuProcessCommand(WPARAM wParam, LPARAM lParam);

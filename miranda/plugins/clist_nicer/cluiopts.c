@@ -30,7 +30,6 @@ extern BOOL(WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern struct CluiData g_CluiData;
 extern pfnDrawAlpha pDrawAlpha;
 extern DWORD g_gdiplusToken;
-extern int CluiProtocolStatusChanged(WPARAM wParam, LPARAM lParam);
 extern WNDPROC OldStatusBarProc;
 extern HANDLE hPreBuildStatusMenuEvent;
 extern SIZE g_oldSize;
@@ -475,7 +474,7 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
                     ConfigureCLUIGeometry();
                     SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-                    CluiProtocolStatusChanged(0, 0);
+                    CluiProtocolStatusChanged();
                     PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
                     return TRUE;
             }

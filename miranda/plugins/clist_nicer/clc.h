@@ -432,7 +432,7 @@ int LoadCLCButtonModule(void);
 void SetButtonStates(HWND hwnd);
 void ConfigureCLUIGeometry();
 void IcoLibReloadIcons();
-int InternalCompareContacts(WPARAM contact1, LPARAM contact2);
+int CompareContacts(const struct ClcContact* p1, const struct ClcContact* p2);
 int MyGetEvent(WPARAM wParam, LPARAM lParam);
 void PaintNotifyArea(HDC hDC, RECT *rc);
 int AvatarChanged(WPARAM wParam, LPARAM lParam);
@@ -468,7 +468,7 @@ void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const char *szText, BOO
 int ClcOptInit(WPARAM wParam, LPARAM lParam);
 DWORD GetDefaultExStyle(void);
 void GetFontSetting(int i, LOGFONTA *lf, COLORREF *colour);
-int CluiProtocolStatusChanged(WPARAM wParam, LPARAM lParam);
+void CluiProtocolStatusChanged( void );
 
 //clistsettings.c
 char *u2a(wchar_t *src);

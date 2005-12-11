@@ -1022,7 +1022,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			if(!g_CluiData.bFirstRun)
 				ConfigureEventArea(hwnd);
-			CluiProtocolStatusChanged(0, 0);
+			CluiProtocolStatusChanged();
 			ConfigureCLUIGeometry();
 			for (i = 0; ; i++) {
 				if (top_buttons[i].szTooltip == NULL)
@@ -1089,7 +1089,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			transparentFocus = 1;
 
-	#ifndef _DEBUG
+	//#ifndef _DEBUG
 			// Miranda is starting up! Restore last status mode.
 			// This is not done in debug builds because frequent
 			// reconnections will get you banned from the servers.
@@ -1098,7 +1098,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				if (nStatus != ID_STATUS_OFFLINE)
 					PostMessage(hwnd, WM_COMMAND, nStatus, 0);
 			}
-	#endif
+	//#endif
 			return FALSE;
 		}
 	case WM_NCCREATE:
@@ -2130,7 +2130,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
 		return 0;
 	case CLUIINTM_STATUSBARUPDATE:
-		CluiProtocolStatusChanged(0, 0);
+		CluiProtocolStatusChanged();
 		return 0;
 	case WM_DESTROY:
 		if(g_CluiData.hdcBg) {
@@ -2144,6 +2144,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			DeleteObject(g_CluiData.bmpBackground);
 		}
 		DestroyMenu(g_CluiData.hMenuButtons);
+		FreeProtocolData();
 
 		CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);
 		UnLoadCLUIFramesModule();
@@ -2152,8 +2153,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	}
 	return saveContactListWndProc(hwnd, msg, wParam, lParam);
 }
-
-
 
 #ifndef CS_DROPSHADOW
 #define CS_DROPSHADOW 0x00020000    
