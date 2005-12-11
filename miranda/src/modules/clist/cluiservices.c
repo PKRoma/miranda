@@ -190,7 +190,7 @@ int fnCluiProtocolStatusChanged(void)
 				continue;
 			x = 2;
 			if (showOpts & 1)
-				x += GetSystemMetrics(SM_CXSMICON);
+				x += g_IconWidth;
 			if (showOpts & 2) {
 				CallProtoService(proto[i]->szName, PS_GETNAME, SIZEOF(szName), (LPARAM) szName);
 				if (showOpts & 4 && lstrlenA(szName) < SIZEOF(szName) - 1)
@@ -215,7 +215,7 @@ int fnCluiProtocolStatusChanged(void)
 		return 0;
 	}
 	partWidths[partCount - 1] = -1;
-	SendMessage(cli.hwndStatus, SB_SETMINHEIGHT, GetSystemMetrics(SM_CYSMICON), 0);
+	SendMessage(cli.hwndStatus, SB_SETMINHEIGHT, g_IconHeight, 0);
 	SendMessage(cli.hwndStatus, SB_SETPARTS, partCount, (LPARAM) partWidths);
 	free(partWidths);
 	flags = SBT_OWNERDRAW;

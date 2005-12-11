@@ -25,7 +25,6 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-extern HWND hwndContactList, hwndContactTree, hwndStatus;
 extern HMENU hMenuMain;
 extern BOOL(WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern struct CluiData g_CluiData;
@@ -33,7 +32,7 @@ extern pfnDrawAlpha pDrawAlpha;
 extern DWORD g_gdiplusToken;
 extern int CluiProtocolStatusChanged(WPARAM wParam, LPARAM lParam);
 extern WNDPROC OldStatusBarProc;
-extern HANDLE hClcWindowList, hPreBuildStatusMenuEvent;
+extern HANDLE hPreBuildStatusMenuEvent;
 extern SIZE g_oldSize;
 extern POINT g_oldPos;
 extern HIMAGELIST himlExtraImages;
@@ -251,7 +250,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                         
                         DBWriteContactSettingDword(NULL, "CLUIFrames", "GapBetweenFrames", g_CluiData.gapBetweenFrames);
                         DBWriteContactSettingByte(NULL, "CList", "OnTop", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ONTOP));
-                        SetWindowPos(hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_ONTOP) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                        SetWindowPos(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_ONTOP) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
                         g_CluiData.bCLeft = (BYTE)SendDlgItemMessage(hwndDlg, IDC_CLEFTSPIN, UDM_GETPOS, 0, 0);
                         g_CluiData.bCRight = (BYTE)SendDlgItemMessage(hwndDlg, IDC_CRIGHTSPIN, UDM_GETPOS, 0, 0);
@@ -260,7 +259,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
                         DBWriteContactSettingDword(NULL, "CLUI", "clmargins", MAKELONG(MAKEWORD(g_CluiData.bCLeft, g_CluiData.bCRight), MAKEWORD(g_CluiData.bCTop, g_CluiData.bCBottom)));
                         ConfigureCLUIGeometry();
-                        SendMessage(hwndContactList, WM_SIZE, 0, 0);
+                        SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
                         
                         DBWriteContactSettingByte(NULL, "CList", "BringToFront", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_BRINGTOFRONT));
                         if (windowStyle != SETTING_WINDOWSTYLE_DEFAULT) {
@@ -268,20 +267,20 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
             // See http://msdn.microsoft.com/library/en-us/shellcc/platform/shell/programmersguide/shell_int/shell_int_programming/taskbar.asp
                             WINDOWPLACEMENT p;
                             p.length = sizeof(p);
-                            GetWindowPlacement(hwndContactList, &p);
-                            ShowWindow(hwndContactList, SW_HIDE);
-                            SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW);
-                            SetWindowPlacement(hwndContactList, &p);
-                            ShowWindow(hwndContactList, SW_SHOW);
+                            GetWindowPlacement(pcli->hwndContactList, &p);
+                            ShowWindow(pcli->hwndContactList, SW_HIDE);
+                            SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW);
+                            SetWindowPlacement(pcli->hwndContactList, &p);
+                            ShowWindow(pcli->hwndContactList, SW_SHOW);
                         } else
-                            SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
+                            SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
 
                         if (IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP)) {
                             HWND hProgMan = FindWindowA("Progman", NULL);
                             if (IsWindow(hProgMan))
-                                SetParent(hwndContactList, hProgMan);
+                                SetParent(pcli->hwndContactList, hProgMan);
                         } else
-                            SetParent(hwndContactList, NULL);
+                            SetParent(pcli->hwndContactList, NULL);
 
                         __setFlag(CLUI_SHOWCLIENTICONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWCLIENTICONS));
                         __setFlag(CLUI_SHOWXSTATUS, IsDlgButtonChecked(hwndDlg, IDC_SHOWEXTENDEDSTATUS));
@@ -302,27 +301,27 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                         DBWriteContactSettingByte(NULL, "CLUI", "ShowMainMenu", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWMAINMENU));
                         DBWriteContactSettingByte(NULL, "CLUI", "ClientAreaDrag", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CLIENTDRAG));
 
-                        ApplyCLUIBorderStyle(hwndContactList);
-                        ShowWindow(hwndContactList, SW_SHOW);
-                        SendMessage(hwndContactList, WM_SIZE, 0, 0);
-                        SetWindowPos(hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-                        RedrawWindow(hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
+                        ApplyCLUIBorderStyle(pcli->hwndContactList);
+                        ShowWindow(pcli->hwndContactList, SW_SHOW);
+                        SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+                        SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+                        RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
                         
                         if (!IsDlgButtonChecked(hwndDlg, IDC_SHOWMAINMENU))
-                            SetMenu(hwndContactList, NULL);
+                            SetMenu(pcli->hwndContactList, NULL);
                         else
-                            SetMenu(hwndContactList, hMenuMain);
+                            SetMenu(pcli->hwndContactList, hMenuMain);
 
-                        SetWindowPos(hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-                        RedrawWindow(hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
+                        SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+                        RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
 
                         DBWriteContactSettingByte(NULL, "CList", "Min2Tray", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY));
-                        if (IsIconic(hwndContactList) && windowStyle != SETTING_WINDOWSTYLE_TOOLWINDOW)
-                            ShowWindow(hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY) ? SW_HIDE : SW_SHOW); {
+                        if (IsIconic(pcli->hwndContactList) && windowStyle != SETTING_WINDOWSTYLE_TOOLWINDOW)
+                            ShowWindow(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY) ? SW_HIDE : SW_SHOW); {
                             TCHAR title[256];
                             GetDlgItemText(hwndDlg, IDC_TITLETEXT, title, sizeof(title));
                             DBWriteContactSettingTString(NULL, "CList", "TitleText", title);
-                            SetWindowText(hwndContactList, title);
+                            SetWindowText(pcli->hwndContactList, title);
                         }
                         g_CluiData.dwFlags = IsDlgButtonChecked(hwndDlg, IDC_ROUNDEDBORDER) ? g_CluiData.dwFlags | CLUI_FRAME_ROUNDEDFRAME : g_CluiData.dwFlags & ~CLUI_FRAME_ROUNDEDFRAME;
                         DBWriteContactSettingByte(NULL, "CLUI", "AutoSize", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOSIZE));
@@ -349,34 +348,34 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
                         DBWriteContactSettingByte(NULL, "CLC", "ExIconScale", g_CluiData.exIconScale);
                         if (g_CluiData.bLayeredHack && MySetLayeredWindowAttributes)
-                            SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
+                            SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
 
                         if(g_CLUISkinnedBkColorRGB)
                             g_CluiData.colorkey = g_CLUISkinnedBkColorRGB;
                         else if(g_CluiData.bClipBorder == 0 && !(g_CluiData.dwFlags & CLUI_FRAME_ROUNDEDFRAME))
                             g_CluiData.colorkey = DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR);
                         else {
-                            SendMessage(hwndContactList, WM_SIZE, 0, 0);
+                            SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
                             g_CluiData.colorkey = RGB(255, 0, 255);
                         }
                          if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT) || IsDlgButtonChecked(hwndDlg, IDC_FULLTRANSPARENT)) {
                             if(MySetLayeredWindowAttributes) {
-                                SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
-                                SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
-                                MySetLayeredWindowAttributes(hwndContactList, 0, 255, LWA_ALPHA | LWA_COLORKEY);
-                                MySetLayeredWindowAttributes(hwndContactList, g_CluiData.bFullTransparent ? g_CluiData.colorkey : 0, 
+                                SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+                                SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
+                                MySetLayeredWindowAttributes(pcli->hwndContactList, 0, 255, LWA_ALPHA | LWA_COLORKEY);
+                                MySetLayeredWindowAttributes(pcli->hwndContactList, g_CluiData.bFullTransparent ? g_CluiData.colorkey : 0, 
                                                             IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT) ? g_CluiData.autoalpha : 255, 
                                                             (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT) ? LWA_ALPHA : 0) | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
                             }
                         } else {
                             if (MySetLayeredWindowAttributes)
-                                MySetLayeredWindowAttributes(hwndContactList, RGB(0, 0, 0), 255, LWA_ALPHA);
+                                MySetLayeredWindowAttributes(pcli->hwndContactList, RGB(0, 0, 0), 255, LWA_ALPHA);
                             if(!g_CluiData.bLayeredHack)
-                                SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+                                SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
                         }
                         
-                        SendMessage(hwndContactTree, WM_SIZE, 0, 0);    //forces it to send a cln_listsizechanged
-                        PostMessage(hwndContactList, CLUIINTM_REDRAW, 0, 0);
+                        SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);    //forces it to send a cln_listsizechanged
+                        PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
                         if(oldexIconScale != g_CluiData.exIconScale) {
                             ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
                             if(g_CluiData.IcoLib_Avail)
@@ -386,7 +385,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                                 NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
                                 ReloadExtraIcons();
                             }
-                            WindowList_Broadcast(hClcWindowList, CLM_AUTOREBUILD, 0, 0);
+                            pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
                         }
                         g_CluiData.fadeinout = oldFading;
                         return TRUE;
@@ -455,29 +454,29 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     DBWriteContactSettingByte(NULL, "CLUI", "xstatus_sbar", g_CluiData.bShowXStatusOnSbar);
                     DBWriteContactSettingByte(NULL, "CLUI", "SBarBevel", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SBPANELBEVEL));
                     if (DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) != (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWGRIP)) {
-                        HWND parent = GetParent(hwndStatus);
+                        HWND parent = GetParent(pcli->hwndStatus);
                         int flags = WS_CHILD | CCS_BOTTOM;
                         DBWriteContactSettingByte(NULL, "CLUI", "ShowGrip", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWGRIP));
-                        ShowWindow(hwndStatus, SW_HIDE);
-                        SetWindowLong(hwndStatus, GWL_WNDPROC, (LONG)OldStatusBarProc);
-                        DestroyWindow(hwndStatus);
+                        ShowWindow(pcli->hwndStatus, SW_HIDE);
+                        SetWindowLong(pcli->hwndStatus, GWL_WNDPROC, (LONG)OldStatusBarProc);
+                        DestroyWindow(pcli->hwndStatus);
                         flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? WS_VISIBLE : 0;
                         flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) ? SBARS_SIZEGRIP : 0;
-                        hwndStatus = CreateWindow(STATUSCLASSNAME, NULL, flags, 0, 0, 0, 0, parent, NULL, g_hInst, NULL);
-                        OldStatusBarProc = (WNDPROC)SetWindowLong(hwndStatus, GWL_WNDPROC, (LONG)NewStatusBarWndProc);
+                        pcli->hwndStatus = CreateWindow(STATUSCLASSNAME, NULL, flags, 0, 0, 0, 0, parent, NULL, g_hInst, NULL);
+                        OldStatusBarProc = (WNDPROC)SetWindowLong(pcli->hwndStatus, GWL_WNDPROC, (LONG)NewStatusBarWndProc);
                     }
                     if (IsDlgButtonChecked(hwndDlg, IDC_SHOWSBAR)) {
-                        ShowWindow(hwndStatus, SW_SHOW);
+                        ShowWindow(pcli->hwndStatus, SW_SHOW);
                         g_CluiData.dwFlags |= CLUI_FRAME_SBARSHOW;
                     } else {
-                        ShowWindow(hwndStatus, SW_HIDE);
+                        ShowWindow(pcli->hwndStatus, SW_HIDE);
                         g_CluiData.dwFlags &= ~CLUI_FRAME_SBARSHOW;
                     }
                     DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
                     ConfigureCLUIGeometry();
-                    SendMessage(hwndContactList, WM_SIZE, 0, 0);
+                    SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
                     CluiProtocolStatusChanged(0, 0);
-                    PostMessage(hwndContactList, CLUIINTM_REDRAW, 0, 0);
+                    PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
                     return TRUE;
             }
             break;
@@ -612,7 +611,7 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     break;
                 case IDC_SHOWMETA:
                     __setFlag(CLUI_USEMETAICONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWMETA));
-                    WindowList_Broadcast(hClcWindowList, CLM_AUTOREBUILD, 0, 0);
+                    pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
                     break;
             }
             if ((LOWORD(wParam) == IDC_RADIUS || LOWORD(wParam) == IDC_AVATARHEIGHT || LOWORD(wParam) == IDC_AVATARPADDING) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
@@ -680,9 +679,9 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     DBWriteContactSettingByte(NULL, "CLC", "MirrorDC", g_CluiData.bUseDCMirroring);
                     DBWriteContactSettingByte(NULL, "CLC", "ShowLocalTime", g_CluiData.bShowLocalTime);
                     DBWriteContactSettingByte(NULL, "CLC", "SelectiveLocalTime", g_CluiData.bShowLocalTimeSelective);
-                    KillTimer(hwndContactTree, TIMERID_REFRESH);
+                    KillTimer(pcli->hwndContactTree, TIMERID_REFRESH);
                     if(g_CluiData.bShowLocalTime)
-                        SetTimer(hwndContactTree, TIMERID_REFRESH, 65000, NULL);
+                        SetTimer(pcli->hwndContactTree, TIMERID_REFRESH, 65000, NULL);
                     DBWriteContactSettingDword(NULL, "CLC", "avatarborder", g_CluiData.avatarBorder);
                     DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
                     DBWriteContactSettingDword(NULL, "CLC", "avatarradius", g_CluiData.avatarRadius);
@@ -695,12 +694,12 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                         pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS  && g_gdiplusToken) ? GDIp_DrawAlpha : DrawAlpha;
                     ConfigureFrame();
                     ConfigureCLUIGeometry();
-                    ConfigureEventArea(hwndContactList);
-                    SendMessage(hwndContactTree, WM_SIZE, 0, 0);
-                    SendMessage(hwndContactList, WM_SIZE, 0, 0);
+                    ConfigureEventArea(pcli->hwndContactList);
+                    SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);
+                    SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 					if(bOldMirrorMode != g_CluiData.bUseDCMirroring)
-						WindowList_Broadcast(hClcWindowList, CLM_AUTOREBUILD, 0, 0);
-                    PostMessage(hwndContactList, CLUIINTM_REDRAW, 0, 0);
+						pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+                    PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
                     return TRUE;
                 }
             }
@@ -730,15 +729,15 @@ void ApplyCLUIBorderStyle(HWND hwnd)
     if (windowStyle == SETTING_WINDOWSTYLE_DEFAULT || windowStyle == SETTING_WINDOWSTYLE_TOOLWINDOW) {
         WINDOWPLACEMENT p;
         p.length = sizeof(p);
-        GetWindowPlacement(hwndContactList, &p);
-        ShowWindow(hwndContactList, SW_HIDE);
-        SetWindowLong(hwndContactList, GWL_STYLE, GetWindowLong(hwndContactList, GWL_STYLE) | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_POPUPWINDOW | WS_THICKFRAME);
+        GetWindowPlacement(pcli->hwndContactList, &p);
+        ShowWindow(pcli->hwndContactList, SW_HIDE);
+        SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_POPUPWINDOW | WS_THICKFRAME);
         p.showCmd = SW_HIDE;
-        SetWindowPlacement(hwndContactList, &p);
+        SetWindowPlacement(pcli->hwndContactList, &p);
     } else if(windowStyle == SETTING_WINDOWSTYLE_THINBORDER) {
-        SetWindowLong(hwndContactList, GWL_STYLE, GetWindowLong(hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_THICKFRAME));
-        SetWindowLong(hwndContactList, GWL_STYLE, GetWindowLong(hwndContactList, GWL_STYLE) | WS_BORDER);
+        SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_THICKFRAME));
+        SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_BORDER);
     }
     else
-        SetWindowLong(hwndContactList, GWL_STYLE, GetWindowLong(hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_THICKFRAME));
+        SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_THICKFRAME));
 }

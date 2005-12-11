@@ -32,13 +32,14 @@ struct MM_INTERFACE memoryManagerInterface;
 static HANDLE hCListShutdown = 0;
 extern int LoadMoveToGroup();
 
-void CluiProtocolStatusChanged( void );
-void CheckPDNCE(pdisplayNameCacheEntry);
-void FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
-void GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
-void CalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
-void RebuildEntireList(HWND hwnd,struct ClcData *dat);
-void RecalcScrollBar(HWND hwnd,struct ClcData *dat);
+HMENU BuildGroupPopupMenu( struct ClcGroup* group );
+void  CluiProtocolStatusChanged( void );
+void  CheckPDNCE(pdisplayNameCacheEntry);
+void  FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
+void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
+void  CalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
+void  RebuildEntireList(HWND hwnd,struct ClcData *dat);
+void  RecalcScrollBar(HWND hwnd,struct ClcData *dat);
 
 struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
 struct ClcGroup* ( *saveRemoveItemFromGroup )(HWND hwnd,struct ClcGroup *group,struct ClcContact *contact,int updateTotalCount);
@@ -154,6 +155,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
 
 		pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
+		pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;
 		pcli->pfnCalcEipPosition = CalcEipPosition;
 		pcli->pfnCheckCacheItem = CheckPDNCE;
 		pcli->pfnCluiProtocolStatusChanged = CluiProtocolStatusChanged;

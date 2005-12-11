@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // - Support for bitmap buttons (simple call to DrawIconEx())
 extern HINSTANCE g_hInst;
 extern LONG g_cxsmIcon, g_cysmIcon;
-extern HWND hwndContactList;
 extern struct CluiData g_CluiData;
 extern pfnDrawAlpha pDrawAlpha;
 extern StatusItems_t *StatusItems;
@@ -195,7 +194,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
                 if(ctl->bSkinned) {      // skinned
                     RECT rcParent;
                     POINT pt;
-                    HWND hwndParent = hwndContactList;
+                    HWND hwndParent = pcli->hwndContactList;
                     StatusItems_t *item;
                     int item_id;
                     
@@ -203,7 +202,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
                     pt.x = rcParent.left;
                     pt.y = rcParent.top;
                     
-                    ScreenToClient(hwndContactList, &pt);
+                    ScreenToClient(pcli->hwndContactList, &pt);
                     
                     if(HIWORD(ctl->bSkinned))
                         item_id = ctl->stateId == PBS_HOT ? ID_EXTBKTBBUTTONMOUSEOVER : (ctl->stateId == PBS_PRESSED ? ID_EXTBKTBBUTTONSPRESSED : ID_EXTBKTBBUTTONSNPRESSED);
@@ -269,7 +268,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
                 GetWindowRect(ctl->hwnd, &rcParent);
                 pt.x = rcParent.left;
                 pt.y = rcParent.top;
-                ScreenToClient(hwndContactList, &pt);
+                ScreenToClient(pcli->hwndContactList, &pt);
                 BitBlt(hdcMem, 0, 0, rcClient.right, rcClient.bottom, g_CluiData.hdcBg, pt.x, pt.y, SRCCOPY);
 
                 if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {

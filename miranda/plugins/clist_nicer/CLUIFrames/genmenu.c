@@ -90,7 +90,7 @@ int GetObjIdxByItemId(const int MenuItemId)
 //return 0-erorr,1-ok
 int GetAllIdx(const int globid,int *pobjidx,int *pmenuitemidx)
 {
-  int objid,menuitemid;//id 
+  int objid,menuitemid;//id
   int objidx,menuitemidx;//pos in array
 
   if (pobjidx==NULL||pmenuitemidx==NULL){return(0);};
@@ -144,7 +144,7 @@ int MO_DrawMenuItem(WPARAM wParam,LPARAM lParam)
   int y,objidx,menuitemidx;
   LPDRAWITEMSTRUCT dis=(LPDRAWITEMSTRUCT)lParam;
 
-  if (!isGenMenuInited) return -1;	
+  if (!isGenMenuInited) return -1;
 
   if (dis==NULL){return(FALSE);};
 
@@ -210,6 +210,7 @@ void RemoveAndClearOneObject(int arpos)
   FreeAndNil(&MenuObjects[arpos].MenuItems);
   MenuObjects[arpos].MenuItemsCount=0;
   FreeAndNil(&MenuObjects[arpos].FreeService);
+  FreeAndNil(&MenuObjects[arpos].onAddService);
   FreeAndNil(&MenuObjects[arpos].CheckService);
   FreeAndNil(&MenuObjects[arpos].ExecService);
   FreeAndNil(&MenuObjects[arpos].Name);
@@ -236,7 +237,7 @@ int MO_RemoveMenuObject(WPARAM wParam,LPARAM lParam)
 {
   int objidx;
 
-  if (!isGenMenuInited) return -1;	
+  if (!isGenMenuInited) return -1;
   lockmo();
 
 
@@ -260,7 +261,7 @@ int MO_ProcessHotKeys(WPARAM wParam,LPARAM lParam)
   int i;
   int vKey=(int)lParam;
 
-  if (!isGenMenuInited) return -1;	
+  if (!isGenMenuInited) return -1;
   lockmo();
   objidx=GetMenuObjbyId((int)wParam);
   if (objidx==-1){unlockmo();return(FALSE);};
@@ -296,7 +297,7 @@ int MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
   if (pimi!=NULL){
     *mi=(pimi->mi);
     unlockmo();
-    return(0);	
+    return(0);
   };
   unlockmo();
   return(-1);
@@ -321,7 +322,7 @@ int MO_ModifyMenuItem(WPARAM wParam,LPARAM lParam)
 
   if(pmiparam->flags&CMIM_NAME) {
     FreeAndNil(&pimi->mi.pszName);
-    pimi->mi.pszName=mir_strdup(pmiparam->pszName);	
+    pimi->mi.pszName=mir_strdup(pmiparam->pszName);
   }
   if(pmiparam->flags&CMIM_FLAGS) {
     oldflags=(pimi->mi.flags&CMIF_ROOTPOPUP)|(pimi->mi.flags&CMIF_CHILDPOPUP);
@@ -349,7 +350,7 @@ int MO_ModifyMenuItem(WPARAM wParam,LPARAM lParam)
 //NULL on error.
 int MO_MenuItemGetOwnerData(WPARAM wParam,LPARAM lParam)
 {
-  int objid,menuitemid;//id 
+  int objid,menuitemid;//id
   int objidx,menuitemidx;//pos in array
   int res=0;
 
@@ -367,7 +368,7 @@ int MO_MenuItemGetOwnerData(WPARAM wParam,LPARAM lParam)
 
 PMO_IntMenuItem MO_GetIntMenuItem(int globid)
 {
-  int objid,menuitemid;//id 
+  int objid,menuitemid;//id
   int objidx,menuitemidx;//pos in array
 
   UnpackGlobalId(globid,&objid,&menuitemid);
@@ -394,7 +395,7 @@ int MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam)
         int globid;
         globid=getGlobalId(MenuObjects[i].id,MenuObjects[i].MenuItems[j].id);
         unlockmo();
-        return(MO_ProcessCommand(globid,lParam));			
+        return(MO_ProcessCommand(globid,lParam));
       };
     };
   };
@@ -452,7 +453,7 @@ int MO_SetOptionsMenuItem(WPARAM wParam,LPARAM lParam)
         pimi->UniqName=mir_strdup((char*)lpop->Value);
       }
       break;
-    }; 
+    };
     return(1);
   }
   __finally
@@ -488,23 +489,24 @@ int MO_SetOptionsMenuObject(WPARAM wParam,LPARAM lParam)
     case OPT_MENUOBJECT_SET_ONADD_SERVICE:
       FreeAndNil(&MenuObjects[pimoidx].onAddService);
       MenuObjects[pimoidx].onAddService=mir_strdup((char *)lpop->Value);
+      break;
 
     case OPT_MENUOBJECT_SET_FREE_SERVICE:
       FreeAndNil(&MenuObjects[pimoidx].FreeService);
       MenuObjects[pimoidx].FreeService=mir_strdup((char *)lpop->Value);
-
       break;
+
     case OPT_USERDEFINEDITEMS:
       MenuObjects[pimoidx].bUseUserDefinedItems=(BOOL)lpop->Value;
       break;
-    }; 
+    };
     return(1);
   }
   __finally
   {
     unlockmo();
   }
-  return 1;	
+  return 1;
 };
 
 //wparam=0;
@@ -568,7 +570,7 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
   int miidx,result;
   int res;
 
-  if (!isGenMenuInited) return -1;	
+  if (!isGenMenuInited) return -1;
   if (pmi==NULL){return(-1);};
   lockmo();
   menuobjecthandle=wParam;
@@ -596,7 +598,7 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
   MenuObjects[objidx].MenuItems[miidx].mi.pszName=mir_strdup(pmi->pszName);
   MenuObjects[objidx].MenuItems[miidx].iconId=-1;
   MenuObjects[objidx].MenuItems[miidx].OverrideShow=TRUE;
-#ifdef _DEBUG	
+#ifdef _DEBUG
 
   {
     char buf[256];
@@ -609,14 +611,14 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
 #endif
 
   MenuObjects[objidx].MenuItems[miidx].IconRegistred=FALSE;
-  if(TRUE/*pmi->hIcon!=NULL*/) 
+  if(TRUE/*pmi->hIcon!=NULL*/)
   {
     if(pmi->hIcon!=NULL) MenuObjects[objidx].MenuItems[miidx].iconId=ImageList_AddIcon(MenuObjects[objidx].hMenuIcons,pmi->hIcon);
 
   }
 
 
-  //if(pmi->hIcon!=NULL) MenuObjects[objidx].MenuItems[miidx].iconId=pmi->hIcon;	
+  //if(pmi->hIcon!=NULL) MenuObjects[objidx].MenuItems[miidx].iconId=pmi->hIcon;
   result=getGlobalId(wParam,MenuObjects[objidx].MenuItems[miidx].id);
   MenuObjects[objidx].MenuItemsCount++;
   unlockmo();
@@ -633,7 +635,7 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
   int objidx;
   int oldroot,i;
 
-  if (!isGenMenuInited) return -1;	
+  if (!isGenMenuInited) return -1;
   if (pmi==NULL){return(-1);};
   objidx=GetMenuObjbyId(wParam);
   if (objidx==-1){return(-1);};
@@ -652,7 +654,7 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
   {
     //no,search for needed root and create it if need
 
-    oldroot=-1;		
+    oldroot=-1;
     for(i=0;i<MenuObjects[objidx].MenuItemsCount;i++) {
       if(MenuObjects[objidx].MenuItems[i].mi.pszName ==NULL) continue;
       if((MenuObjects[objidx].MenuItems[i].mi.flags&CMIF_ROOTPOPUP)&&(!strcmp(MenuObjects[objidx].MenuItems[i].mi.pszName,(char *)pmi->root))) {
@@ -670,7 +672,7 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
       tmi.ownerdata=0;
       tmi.root=-1;
       //copy pszPopupName
-      tmi.pszName=mir_strdup((char *)pmi->root);
+      tmi.pszName=(char *)pmi->root;
       oldroot=MO_AddNewMenuItem(wParam,(LPARAM)&tmi);
     };
     pmi->root=oldroot;
@@ -684,8 +686,8 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
 
 static int WhereToPlace(HMENU hMenu,PMO_MenuItem mi,MENUITEMINFOA *mii,ListParam *param)
 {
-  int i=0;			
-  PMO_IntMenuItem pimi;	
+  int i=0;
+  PMO_IntMenuItem pimi;
 
 
   mii->fMask=MIIM_SUBMENU|MIIM_DATA;
@@ -695,7 +697,7 @@ static int WhereToPlace(HMENU hMenu,PMO_MenuItem mi,MENUITEMINFOA *mii,ListParam
     //if(mii->hSubMenu==NULL /*&& (mii->dwItemData&param->cntFlag)==0*/) continue;
 
     pimi=MO_GetIntMenuItem(mii->dwItemData);
-    if(pimi!=NULL){	
+    if(pimi!=NULL){
       if(pimi->mi.position<=mi->position) break;
     };
   }
@@ -709,9 +711,9 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
   int thisItemPosition,needSeparator,itemidx;
   MENUITEMINFOA mii;
   PMO_IntMenuItem MenuItems=NULL;
-  PMO_IntMenuItem pimi=NULL;	
+  PMO_IntMenuItem pimi=NULL;
 
-  int objid,menuitemid;//id 
+  int objid,menuitemid;//id
   int objidx,menuitemidx;//pos in array
   needSeparator=0;
 
@@ -722,7 +724,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
   if ((objidx==-1)||(menuitemidx==-1)){return;};
 
   MenuItems=MenuObjects[objidx].MenuItems;
-  itemidx=menuitemidx;	
+  itemidx=menuitemidx;
   //timi=
   thisItemPosition=(MenuItems)[itemidx].mi.position;
 
@@ -759,7 +761,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
     pimi=MO_GetIntMenuItem(mii.dwItemData);
     if (pimi!=NULL)
       if(mii.fType==MFT_SEPARATOR) needSeparator=0;
-      else needSeparator=((pimi->mi.position)/SEPARATORPOSITIONINTERVAL)!=thisItemPosition/SEPARATORPOSITIONINTERVAL;	
+      else needSeparator=((pimi->mi.position)/SEPARATORPOSITIONINTERVAL)!=thisItemPosition/SEPARATORPOSITIONINTERVAL;
       if(needSeparator) {
         mii.fMask=MIIM_TYPE;
         mii.fType=MFT_SEPARATOR;
@@ -810,7 +812,7 @@ int MO_BuildMenu(WPARAM wParam,LPARAM lParam)
     char buf[256];
     wsprintfA(buf,"build %s, %d ms\r\n",MenuObjects[pimoidx].Name,tick);
   }
-  unlockmo();	
+  unlockmo();
 
   return(res);
 };
@@ -829,9 +831,9 @@ char DBString[256];
 DBVARIANT dbv;
 
 // check if it visible
-wsprintf(DBString, "%s_visible", menuItemName); 
-DBWriteContactSettingByte(NULL, "MainMenuItems", DBString,DBGetContactSettingByte(NULL, "MainMenuItems", DBString, 1)); 
-if (!DBGetContactSettingByte(NULL, "MainMenuItems", DBString, 1)) 
+wsprintf(DBString, "%s_visible", menuItemName);
+DBWriteContactSettingByte(NULL, "MainMenuItems", DBString,DBGetContactSettingByte(NULL, "MainMenuItems", DBString, 1));
+if (!DBGetContactSettingByte(NULL, "MainMenuItems", DBString, 1))
 return 0;  // find out what value to return if not getting added
 
 
@@ -878,7 +880,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
   onAddproc=MenuObjects[pimoidx].onAddService;
 
   localparam=*param;
-  wsprintfA(MenuNameItems, "%s_Items", MenuObjects[pimoidx].Name); 
+  wsprintfA(MenuNameItems, "%s_Items", MenuObjects[pimoidx].Name);
   /*
   while((rootlevel==-1)&&(GetMenuItemCount(hMenu)>(param->cntFlag==MENU_CUSTOMITEMMAIN?1:0)) )
   DeleteMenu(hMenu,0,MF_BYPOSITION);
@@ -904,7 +906,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
     if (rootlevel==-1&&mi->root==-1&&MenuObjects[pimoidx].bUseUserDefinedItems)
     {
 
-      char menuItemName[256];	
+      char menuItemName[256];
       char DBString[256];
       DBVARIANT dbv;
 
@@ -920,12 +922,12 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 
 
       // check if it visible
-      wsprintfA(DBString, "%s_visible", menuItemName); 
+      wsprintfA(DBString, "%s_visible", menuItemName);
       if (DBGetContactSettingByte(NULL, MenuNameItems, DBString, -1)==-1)
-        DBWriteContactSettingByte(NULL,MenuNameItems, DBString,1); 
+        DBWriteContactSettingByte(NULL,MenuNameItems, DBString,1);
 
       MenuItems[j].OverrideShow=TRUE;
-      if (!DBGetContactSettingByte(NULL, MenuNameItems, DBString, 1)) 
+      if (!DBGetContactSettingByte(NULL, MenuNameItems, DBString, 1))
       {
         MenuItems[j].OverrideShow=FALSE;
         continue;  // find out what value to return if not getting added
@@ -945,7 +947,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 
       wsprintfA(DBString, "%s_pos", menuItemName);
       if (DBGetContactSettingDword(NULL, MenuNameItems, DBString, -1)==-1)
-        DBWriteContactSettingDword(NULL,MenuNameItems, DBString,mi->position); 
+        DBWriteContactSettingDword(NULL,MenuNameItems, DBString,mi->position);
 
       mi->position = DBGetContactSettingDword(NULL, MenuNameItems, DBString, mi->position);
 
@@ -989,11 +991,11 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 
           hSubMenu=CreatePopupMenu();
           mii.hSubMenu=hSubMenu;
-          mii.hbmpItem=HBMMENU_CALLBACK;					
+          mii.hbmpItem=HBMMENU_CALLBACK;
           mii.dwTypeData=(MenuItems[j].CustomName)?(MenuItems[j].CustomName):(mi->pszName);
 #ifdef PUTPOSITIONSONMENU
           if (GetKeyState(VK_CONTROL)&0x8000)
-          {char str[256];				
+          {char str[256];
           wsprintfA(str,"%s (%d,id %x)",mi->pszName,mi->position,mii.dwItemData);
           mii.dwTypeData=str;
           };
@@ -1029,7 +1031,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
         mii.dwTypeData=(MenuItems[j].CustomName)?(MenuItems[j].CustomName):(mi->pszName);
 #ifdef PUTPOSITIONSONMENU
         if (GetKeyState(VK_CONTROL)&0x8000)
-        {char str[256];				
+        {char str[256];
         wsprintfA(str,"%s (%d,id %x)",mi->pszName,mi->position,mii.dwItemData);
         //TRACE(str);
         mii.dwTypeData=str;
@@ -1074,7 +1076,7 @@ int RecursiveRemoveChilds(int pos,ListParam *param)
   ListParam localparam;
   int rootid;
   int i=0;
-  int menuitemid;//id 
+  int menuitemid;//id
   int objidx;//pos in array
   int *MenuItemsCount;
   PMO_IntMenuItem *MenuItems=NULL;
@@ -1121,9 +1123,9 @@ int RecursiveRemoveChilds(int pos,ListParam *param)
         continue;
       }
     }
-  }	
+  }
   i=GetMenuItembyId(objidx,menuitemid);
-  if(i>=0&&i<*MenuItemsCount) {	
+  if(i>=0&&i<*MenuItemsCount) {
     FreeAndNil(&((*MenuItems)[i].mi.pszName));
     FreeAndNil(&((*MenuItems)[i].CustomName));
     FreeAndNil(&((*MenuItems)[i].UniqName));
@@ -1193,7 +1195,7 @@ int InitGenMenu()
 int UnitGenMenu()
 {
   lockmo();
-  MO_RemoveAllObjects();	
+  MO_RemoveAllObjects();
   isGenMenuInited=FALSE;
 
 
@@ -1223,4 +1225,3 @@ int UnitGenMenu()
 
   return(0);
 };
-

@@ -25,11 +25,8 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-extern HWND hwndContactTree; // nasty
 extern struct CluiData g_CluiData;      // even more nasty :)
 
-int HotKeysRegister(HWND hwnd);
-void HotKeysUnregister(HWND hwnd);
 void LoadContactTree(void);
 void SortContacts(void);
 void TrayIconIconsChanged(void);
@@ -231,7 +228,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                                 DBWriteContactSettingString(NULL, "CList", "PrimaryStatus", ((PROTOCOLDESCRIPTOR *) SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETCURSEL, 0, 0), 0))->szName);
                             TrayIconIconsChanged();
                             LoadContactTree(); /* this won't do job properly since it only really works when changes happen */
-                            SendMessage(hwndContactTree, CLM_AUTOREBUILD, 0, 0); /* force reshuffle */
+                            SendMessage(pcli->hwndContactTree, CLM_AUTOREBUILD, 0, 0); /* force reshuffle */
                             g_CluiData.dwFlags = IsDlgButtonChecked(hwndDlg, IDC_EVENTSONTOP) ? g_CluiData.dwFlags | CLUI_STICKYEVENTS : g_CluiData.dwFlags & ~CLUI_STICKYEVENTS;
                             DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
                             return TRUE;
@@ -304,7 +301,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 case PSN_APPLY:
                     {
                         char str[256];
-                        HotKeysUnregister((HWND) CallService(MS_CLUI_GETHWND, 0, 0));
+                        pcli->pfnHotKeysUnregister((HWND) CallService(MS_CLUI_GETHWND, 0, 0));
                         DBWriteContactSettingByte(NULL, "CList", "HKEnShowHide", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWHIDE));
                         DBWriteContactSettingWord(NULL, "CList", "HKShowHide", (WORD) SendDlgItemMessage(hwndDlg, IDC_HKSHOWHIDE, HKM_GETHOTKEY, 0, 0));
                         DBWriteContactSettingByte(NULL, "CList", "HKEnReadMsg", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_READMSG));
@@ -316,7 +313,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                         DBWriteContactSettingByte(NULL, "CList", "HKSearchNewWnd", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SEARCHNEWWND));
                         DBWriteContactSettingByte(NULL, "CList", "HKEnShowOptions", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWOPTIONS));
                         DBWriteContactSettingWord(NULL, "CList", "HKShowOptions", (WORD) SendDlgItemMessage(hwndDlg, IDC_HKSHOWOPTIONS, HKM_GETHOTKEY, 0, 0));
-                        HotKeysRegister((HWND) CallService(MS_CLUI_GETHWND, 0, 0));
+                        pcli->pfnHotKeysRegister((HWND) CallService(MS_CLUI_GETHWND, 0, 0));
                         return TRUE;
                     }
             }

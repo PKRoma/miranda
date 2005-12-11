@@ -44,15 +44,15 @@ struct ClcData {
 	int rowHeight;
 	int yScroll;
 	int selection;
-	struct ClcFontInfo fontInfo[FONTID_MAX+1];
+	struct ClcFontInfo fontInfo[FONTID_MAX + 1];
 	int scrollTime;
 	HIMAGELIST himlHighlight;
 	int groupIndent;
 	TCHAR szQuickSearch[128];
 	int iconXSpace;
 	HWND hwndRenameEdit;
-	COLORREF bkColour,selBkColour,selTextColour,hotTextColour,quickSearchColour;
-	int iDragItem,iInsertionMark;
+	COLORREF bkColour, selBkColour, selTextColour, hotTextColour, quickSearchColour;
+	int iDragItem, iInsertionMark;
 	int dragStage;
 	POINT ptDragStart;
 	int dragAutoScrolling;
@@ -60,7 +60,7 @@ struct ClcData {
 	int leftMargin;
 	int insertionMarkHitHeight;
 	HBITMAP hBmpBackground;
-	int backgroundBmpUse,bkChanged;
+	int backgroundBmpUse, bkChanged;
 	int iHotTrack;
 	int gammaCorrection;
 	DWORD greyoutFlags;			  //see m_clc.h
@@ -79,6 +79,9 @@ struct ClcData {
 	int useWindowsColours;
 	int needsResort;
 };
+
+//clc.c
+extern int g_IconWidth, g_IconHeight;
 
 //clcidents.c
 int GetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);

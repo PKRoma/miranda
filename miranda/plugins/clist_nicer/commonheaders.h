@@ -46,7 +46,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "forkthread.h"
 #include <win2k.h>
 #include <newpluginapi.h>
-#include "m_clist.h"
+#include <m_clist.h>
+#include <m_clistint.h>
 #include <m_clc.h>
 #include <m_clui.h>
 #include <m_plugins.h>
@@ -111,6 +112,7 @@ extern HINSTANCE g_hInst;
 
 #define MAX_REGS(_A_) (sizeof(_A_)/sizeof(_A_[0]))
 
+extern struct LIST_INTERFACE li;
 extern struct MM_INTERFACE memoryManagerInterface;
 
 #define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)

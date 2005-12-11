@@ -30,7 +30,6 @@ static POINT ptMouse = {0};
 static RECT rcMouse = {0};
 static int timer_set = 0, tooltip_active = 0;
 extern HANDLE hStatusBarShowToolTipEvent, hStatusBarHideToolTipEvent;
-extern HWND hwndContactList;
 extern pfnDrawAlpha pDrawAlpha;
 extern struct CluiData g_CluiData;
 extern int g_shutDown;
@@ -111,7 +110,7 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 GetWindowRect(hwnd, &rcWindow);
                 pt.x = rcWindow.left;
                 pt.y = rcWindow.top;
-                ScreenToClient(hwndContactList, &pt);
+                ScreenToClient(pcli->hwndContactList, &pt);
                 
                 hbmMem = CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);
                 hbmOld = SelectObject(hdcMem, hbmMem);
@@ -134,7 +133,7 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                     SendMessage(hwnd, SB_GETRECT, i, (LPARAM)&dis.rcItem);
                     OffsetRect(&dis.rcItem, 0, -b_offset);
                     dis.itemData = SendMessage(hwnd, SB_GETTEXTA, i, 0);
-                    SendMessage(hwndContactList, WM_DRAWITEM, 0, (LPARAM)&dis);
+                    SendMessage(pcli->hwndContactList, WM_DRAWITEM, 0, (LPARAM)&dis);
                 }
                 BitBlt(hdc, 0, 0, rcClient.right, rcClient.bottom, hdcMem, 0, 0, SRCCOPY);
                 if(hOldFont)
@@ -171,7 +170,7 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                                 char szTipText[256], *szStatus = NULL;
                                 WORD wStatus;
                                 ti.cbSize = sizeof(ti);
-                                ti.isTreeFocused = GetFocus() == hwndContactList ? 1 : 0;
+                                ti.isTreeFocused = GetFocus() == pcli->hwndContactList ? 1 : 0;
                                 wStatus = (WORD)CallProtoService(PD->RealName, PS_GETSTATUS, 0, 0);
                                 szStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wStatus, 0);
                                 mir_snprintf(szTipText, 256, "<b>%s</b>: %s", PD->RealName, szStatus);

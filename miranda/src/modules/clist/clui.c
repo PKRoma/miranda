@@ -89,6 +89,67 @@ static void DisconnectAll()
 	}
 }
 
+void fnDrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, HICON eventIcon)
+{
+	if (!IsWinVerXPPlus()) {
+		FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
+		if (dis->itemState & ODS_HOTLIGHT)
+			DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
+		else if (dis->itemState & ODS_SELECTED)
+			DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
+		if (eventIcon != 0) {
+			DrawState(dis->hDC, NULL, NULL, (LPARAM) eventIcon, 0, 2, (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+			DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0, 4 + g_IconWidth, (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+		} 
+		else DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0, (dis->rcItem.right + dis->rcItem.left - g_IconWidth) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+	}
+	else {
+		HBRUSH hBr;
+		BOOL bfm = FALSE;
+		SystemParametersInfo(SPI_GETFLATMENU, 0, &bfm, 0);
+		if (bfm) {
+			/* flat menus: fill with COLOR_MENUHILIGHT and outline with COLOR_HIGHLIGHT, otherwise use COLOR_MENUBAR */
+			if (dis->itemState & ODS_SELECTED || dis->itemState & ODS_HOTLIGHT) {
+				/* selected or hot lighted, no difference */
+				hBr = GetSysColorBrush(COLOR_MENUHILIGHT);
+				FillRect(dis->hDC, &dis->rcItem, hBr);
+				DeleteObject(hBr);
+				/* draw the frame */
+				hBr = GetSysColorBrush(COLOR_HIGHLIGHT);
+				FrameRect(dis->hDC, &dis->rcItem, hBr);
+				DeleteObject(hBr);
+			} else {
+				/* flush the DC with the menu bar colour (only supported on XP) and then draw the icon */
+				hBr = GetSysColorBrush(COLOR_MENUBAR);
+				FillRect(dis->hDC, &dis->rcItem, hBr);
+				DeleteObject(hBr);
+			} //if
+			/* draw the icon */
+			if (eventIcon != 0) {
+				DrawState(dis->hDC, NULL, NULL, (LPARAM) eventIcon, 0, 2, (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+				DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0, 4 + g_IconWidth, (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+			} 
+			else DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0, (dis->rcItem.right + dis->rcItem.left - g_IconWidth) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+		} 
+		else {
+			/* non-flat menus, flush the DC with a normal menu colour */
+			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
+			if (dis->itemState & ODS_HOTLIGHT)
+				DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
+			else if (dis->itemState & ODS_SELECTED)
+				DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
+
+			if (eventIcon != 0) {
+				DrawState(dis->hDC, NULL, NULL, (LPARAM) eventIcon, 0, 2, (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+				DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0, 4 + g_IconWidth, (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+			}
+			else DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0, (dis->rcItem.right + dis->rcItem.left - g_IconWidth) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
+	}	}
+
+	DestroyIcon(hIcon);
+	return;
+}
+
 #define M_CREATECLC  (WM_USER+1)
 LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -121,13 +182,13 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		ZeroMemory(&mii, sizeof(mii));
 		mii.cbSize = MENUITEMINFO_V4_SIZE;
 		mii.fMask = MIIM_TYPE | MIIM_DATA;
-		himlMirandaIcon = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR32 | ILC_MASK, 1, 1);
+		himlMirandaIcon = ImageList_Create(g_IconWidth, g_IconHeight, ILC_COLOR32 | ILC_MASK, 1, 1);
 		ImageList_AddIcon(himlMirandaIcon, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 		mii.dwItemData = MENU_MIRANDAMENU;
 		mii.fType = MFT_OWNERDRAW;
 		mii.dwTypeData = NULL;
 		SetMenuItemInfo(GetMenu(hwnd), 0, TRUE, &mii);
-		break;
+		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 	case WM_CREATE:
 		CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), 0);
@@ -504,41 +565,37 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						return SendMessage(hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(pt.x, pt.y));
 					}
 					break;
-				}
-			}
+			}	}
 		}
 		else if (((LPNMHDR) lParam)->hwndFrom == cli.hwndStatus) {
-			switch (((LPNMHDR) lParam)->code) {
-			case NM_CLICK:
-				{
-					unsigned int nParts, nPanel;
-					NMMOUSE *nm = (NMMOUSE *) lParam;
-					HMENU hMenu;
-					RECT rc;
-					POINT pt;
+			if (((LPNMHDR) lParam)->code == NM_CLICK)
+			{
+				unsigned int nParts, nPanel;
+				NMMOUSE *nm = (NMMOUSE *) lParam;
+				HMENU hMenu;
+				RECT rc;
+				POINT pt;
 
-					hMenu = (HMENU) CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
-					nParts = SendMessage(cli.hwndStatus, SB_GETPARTS, 0, 0);
-					if (nm->dwItemSpec == 0xFFFFFFFE) {
-						nPanel = nParts - 1;
-						SendMessage(cli.hwndStatus, SB_GETRECT, nPanel, (LPARAM) & rc);
-						if (nm->pt.x < rc.left)
-							return FALSE;
-					}
-					else {
-						nPanel = nm->dwItemSpec;
-					}
-					if (nParts > 1)
-						hMenu = GetSubMenu(hMenu, nPanel);
+				hMenu = (HMENU) CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
+				nParts = SendMessage(cli.hwndStatus, SB_GETPARTS, 0, 0);
+				if (nm->dwItemSpec == 0xFFFFFFFE) {
+					nPanel = nParts - 1;
 					SendMessage(cli.hwndStatus, SB_GETRECT, nPanel, (LPARAM) & rc);
-					pt.x = rc.left;
-					pt.y = rc.top;
-					ClientToScreen(cli.hwndStatus, &pt);
-					TrackPopupMenu(hMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN, pt.x, pt.y, 0, hwnd, NULL);
+					if (nm->pt.x < rc.left)
+						return FALSE;
 				}
-			}
-		}
+				else nPanel = nm->dwItemSpec;
+
+				if (nParts > 1)
+					hMenu = GetSubMenu(hMenu, nPanel);
+				SendMessage(cli.hwndStatus, SB_GETRECT, nPanel, (LPARAM) & rc);
+				pt.x = rc.left;
+				pt.y = rc.top;
+				ClientToScreen(cli.hwndStatus, &pt);
+				TrackPopupMenu(hMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN, pt.x, pt.y, 0, hwnd, NULL);
+		}	}
 		return FALSE;
+
 	case WM_CONTEXTMENU:
 		{
 			RECT rc;
@@ -580,13 +637,12 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					hMenu = (HMENU) CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
 				TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
 				return 0;
-			}
-		}
+		}	}
 		break;
 
 	case WM_MEASUREITEM:
 		if (((LPMEASUREITEMSTRUCT) lParam)->itemData == MENU_MIRANDAMENU) {
-			((LPMEASUREITEMSTRUCT) lParam)->itemWidth = GetSystemMetrics(SM_CXSMICON) * 4 / 3;
+			((LPMEASUREITEMSTRUCT) lParam)->itemWidth = g_IconWidth * 4 / 3;
 			((LPMEASUREITEMSTRUCT) lParam)->itemHeight = 0;
 			return TRUE;
 		}
@@ -605,9 +661,9 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				if (showOpts & 1) {
 					HICON hIcon;
 					hIcon = LoadSkinnedProtoIcon(szProto, status);
-					DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - GetSystemMetrics(SM_CYSMICON)) >> 1, hIcon,
-						GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
-					x += GetSystemMetrics(SM_CXSMICON) + 2;
+					DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - g_IconHeight) >> 1, hIcon,
+						g_IconWidth, g_IconHeight, 0, NULL, DI_NORMAL);
+					x += g_IconWidth + 2;
 				}
 				else
 					x += 2;
@@ -634,73 +690,13 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			else if (dis->CtlType == ODT_MENU) {
 				if (dis->itemData == MENU_MIRANDAMENU) {
 					HICON hIcon = ImageList_GetIcon(himlMirandaIcon, 0, ILD_NORMAL);
-					if (!IsWinVerXPPlus()) {
-						FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
-						if (dis->itemState & ODS_HOTLIGHT)
-							DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
-						else if (dis->itemState & ODS_SELECTED)
-							DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
-						DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-							(dis->rcItem.right + dis->rcItem.left - GetSystemMetrics(SM_CXSMICON)) / 2 +
-							(dis->itemState & ODS_SELECTED ? 1 : 0),
-							(dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2 +
-							(dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0,
-							DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
-					}
-					else {
-						HBRUSH hBr;
-						BOOL bfm = FALSE;
-						SystemParametersInfo(SPI_GETFLATMENU, 0, &bfm, 0);
-						if (bfm) {
-							/* flat menus: fill with COLOR_MENUHILIGHT and outline with COLOR_HIGHLIGHT, otherwise use COLOR_MENUBAR */
-							if (dis->itemState & ODS_SELECTED || dis->itemState & ODS_HOTLIGHT) {
-								/* selected or hot lighted, no difference */
-								hBr = GetSysColorBrush(COLOR_MENUHILIGHT);
-								FillRect(dis->hDC, &dis->rcItem, hBr);
-								DeleteObject(hBr);
-								/* draw the frame */
-								hBr = GetSysColorBrush(COLOR_HIGHLIGHT);
-								FrameRect(dis->hDC, &dis->rcItem, hBr);
-								DeleteObject(hBr);
-							}
-							else {
-								/* flush the DC with the menu bar colour (only supported on XP) and then draw the icon */
-								hBr = GetSysColorBrush(COLOR_MENUBAR);
-								FillRect(dis->hDC, &dis->rcItem, hBr);
-								DeleteObject(hBr);
-							} //if
-							/* draw the icon */
-							DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-								(dis->rcItem.right + dis->rcItem.left - GetSystemMetrics(SM_CXSMICON)) / 2 +
-								(dis->itemState & ODS_SELECTED ? 1 : 0),
-								(dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2 +
-								(dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0,
-								DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
-						}
-						else {
-							/* non-flat menus, flush the DC with a normal menu colour */
-							FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
-							if (dis->itemState & ODS_HOTLIGHT) {
-								DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
-							}
-							else if (dis->itemState & ODS_SELECTED) {
-								DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
-							}   //if
-							DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-								(dis->rcItem.right + dis->rcItem.left - GetSystemMetrics(SM_CXSMICON)) / 2 +
-								(dis->itemState & ODS_SELECTED ? 1 : 0),
-								(dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2 +
-								(dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0,
-								DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
-						} //if
-					} //if
-					DestroyIcon(hIcon);
+					fnDrawMenuItem(dis, hIcon, NULL);
 					return TRUE;
 				}
 				return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
-			}
-			return 0;
-		}
+		}	}
+		return 0;
+		
 	case WM_CLOSE:
 		if (DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT))
 			CallService(MS_CLIST_SHOWHIDE, 0, 0);
@@ -737,6 +733,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	default:
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
+
 	return TRUE;
 }
 

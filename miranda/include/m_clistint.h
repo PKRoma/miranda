@@ -161,8 +161,9 @@ typedef struct
 	ClcProtoStatus *clcProto;
 
 	/* clc.h */
-	void ( *pfnClcOptionsChanged )( void );
-	void ( *pfnClcBroadcast )( int, WPARAM, LPARAM );
+	void  ( *pfnClcOptionsChanged )( void );
+	void  ( *pfnClcBroadcast )( int, WPARAM, LPARAM );
+	HMENU ( *pfnBuildGroupPopupMenu )( struct ClcGroup* );
 
 	LRESULT ( CALLBACK *pfnContactListControlWndProc )( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
@@ -185,6 +186,7 @@ typedef struct
 	void ( *pfnFreeGroup )( struct ClcGroup *group );
 	int  ( *pfnAddInfoItemToGroup )(struct ClcGroup *group, int flags, const TCHAR *pszText);
 	int  ( *pfnAddItemToGroup )( struct ClcGroup *group,int iAboveItem );
+	int  ( *pfnAddContactToGroup )( struct ClcData *dat, struct ClcGroup *group, HANDLE hContact );
 	void ( *pfnAddContactToTree )( HWND hwnd, struct ClcData *dat, HANDLE hContact, int updateTotalCount, int checkHideOffline);
 	void ( *pfnDeleteItemFromTree )( HWND hwnd, HANDLE hItem );
 	void ( *pfnRebuildEntireList )( HWND hwnd, struct ClcData *dat );
@@ -252,8 +254,9 @@ typedef struct
 	/* clui.c */
 	LRESULT ( CALLBACK *pfnContactListWndProc )( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
-	void ( *pfnLoadCluiGlobalOpts )( void );
 	void ( *pfnCluiProtocolStatusChanged )( void );
+	void ( *pfnDrawMenuItem )( LPDRAWITEMSTRUCT, HICON, HICON );
+	void ( *pfnLoadCluiGlobalOpts )( void );
 
 	/* contact.c */
 	void ( *pfnChangeContactIcon )( HANDLE hContact, int iIcon, int add );

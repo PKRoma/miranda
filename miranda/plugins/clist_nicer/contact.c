@@ -25,9 +25,7 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-int GetContactDisplayName(WPARAM wParam, LPARAM lParam);
 extern HANDLE hContactIconChangedEvent;
-extern HWND hwndContactList;
 extern struct CluiData g_CluiData;
 
 static int sortByStatus;
@@ -75,7 +73,7 @@ void LoadContactTree(void)
     
     CallService(MS_CLUI_LISTBEGINREBUILD, 0, 0);
     for (i = 1; ; i++) {
-        if (GetGroupNameT(i, NULL) == NULL)
+        if (pcli->pfnGetGroupName(i, NULL) == NULL)
             break;
         CallService(MS_CLUI_GROUPADDED, i, 0);
     }
@@ -143,10 +141,10 @@ int CompareContacts(WPARAM wParam, LPARAM lParam)
         }
     }
 
-    nameb = GetContactDisplayNameW(a, 0);
+    nameb = pcli->pfnGetContactDisplayName(a, 0);
     _tcsncpy(namea, nameb, safe_sizeof(namea));
     namea[safe_sizeof(namea) - 1] = 0;
-    nameb = GetContactDisplayNameW(b, 0);
+    nameb = pcli->pfnGetContactDisplayName(b, 0);
 
     //otherwise just compare names
     return CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE, namea, -1, nameb, -1) - 2;
@@ -235,12 +233,8 @@ int InternalCompareContacts(WPARAM wParam, LPARAM lParam)
         }
     }
 
-    /*nameb = GetContactDisplayNameW(a, 0);
-    _tcsncpy(namea, nameb, sizeof(namea) / sizeof(TCHAR));
-    namea[sizeof(namea) - 1] = 0;
-    nameb = GetContactDisplayNameW(b, 0);*/
-    namea = GetContactDisplayNameW(a, 0);
-    nameb = GetContactDisplayNameW(b, 0);
+    namea = pcli->pfnGetContactDisplayName(a, 0);
+    nameb = pcli->pfnGetContactDisplayName(b, 0);
     
     //otherwise just compare names
     return CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE, namea, -1, nameb, -1) - 2;
@@ -257,28 +251,6 @@ static VOID CALLBACK SortContactsTimer(HWND hwnd, UINT message, UINT idEvent, DW
     CallService(MS_CLUI_SORTLIST, 0, 0);
 }
 
-void SortContacts(void)
-{
-    //avoid doing lots of resorts in quick succession
-    sortByStatus = DBGetContactSettingByte(NULL, "CList", "SortByStatus", SETTING_SORTBYSTATUS_DEFAULT);
-    sortByProto = DBGetContactSettingByte(NULL, "CList", "SortByProto", SETTING_SORTBYPROTO_DEFAULT);
-    if (resortTimerId)
-        KillTimer(NULL, resortTimerId);
-    // setting this to a higher delay causes shutdown waits.
-    resortTimerId = SetTimer(NULL, 0, 500, SortContactsTimer);
-}
-
-int ContactChangeGroup(WPARAM wParam, LPARAM lParam)
-{
-    CallService(MS_CLUI_CONTACTDELETED, wParam, 0);
-    if ((HANDLE) lParam == NULL)
-        DBDeleteContactSetting((HANDLE) wParam, "CList", "Group");
-    else
-        DBWriteContactSettingTString((HANDLE) wParam, "CList", "Group", GetGroupNameT(lParam, NULL));
-    CallService(MS_CLUI_CONTACTADDED, wParam, IconFromStatusMode((char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0), GetContactStatus((HANDLE) wParam), (HANDLE) wParam, NULL));
-    return 0;
-}
-
 int SetHideOffline(WPARAM wParam, LPARAM lParam)
 {
     switch ((int) wParam) {
@@ -289,7 +261,7 @@ int SetHideOffline(WPARAM wParam, LPARAM lParam)
         case -1:
             DBWriteContactSettingByte(NULL, "CList", "HideOffline", (BYTE) ! DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT)); break;
     }
-    SetButtonStates(hwndContactList);
+    SetButtonStates(pcli->hwndContactList);
     LoadContactTree();
     return 0;
 }

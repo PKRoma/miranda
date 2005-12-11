@@ -12,8 +12,6 @@ extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSett
 extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 extern int MenuModulesLoaded(WPARAM wParam,LPARAM lParam);
 extern int TrayIconIconsChanged();
-extern void ClcOptionsChanged(void);
-
 
 struct ProtocolOrderData {
     int dragging;
@@ -300,7 +298,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                                 CluiProtocolStatusChanged(0,0);
                                 MenuModulesLoaded(0,0);
                                 TrayIconIconsChanged();
-                                ClcOptionsChanged();
+                                pcli->pfnClcOptionsChanged();
                             }
                     }
                     break;

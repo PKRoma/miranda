@@ -28,9 +28,9 @@ static int last_selcount = 0;
 static int last_indizes[64];
 extern int g_hottrack;
 extern struct CluiData g_CluiData;
-extern HWND hwndContactList, g_hwndViewModeFrame;
+extern HWND g_hwndViewModeFrame;
 extern HIMAGELIST himlExtraImages;
-extern HANDLE hPreBuildStatusMenuEvent, hClcWindowList;
+extern HANDLE hPreBuildStatusMenuEvent;
 
 typedef  DWORD  (__stdcall *pfnImgNewDecoder)(void ** ppDecoder); 
 typedef DWORD (__stdcall *pfnImgDeleteDecoder)(void * pDecoder);
@@ -56,6 +56,7 @@ int ID_EXTBK_LAST = ID_EXTBK_LAST_D;
 
 void SetTBSKinned(int mode);
 void ReloadThemedOptions();
+void ReloadExtraIcons();
 
 static StatusItems_t _StatusItems[] = {
     {"Offline", "EXBK_Offline", ID_STATUS_OFFLINE, 
@@ -558,19 +559,19 @@ void SetButtonToSkinned()
 {
     int bSkinned = g_CluiData.bSkinnedButtonMode = DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0);
 
-    SendDlgItemMessage(hwndContactList, IDC_TBMENU, BM_SETSKINNED, 0, bSkinned);
-    SendDlgItemMessage(hwndContactList, IDC_TBGLOBALSTATUS, BM_SETSKINNED, 0, bSkinned);
+    SendDlgItemMessage(pcli->hwndContactList, IDC_TBMENU, BM_SETSKINNED, 0, bSkinned);
+    SendDlgItemMessage(pcli->hwndContactList, IDC_TBGLOBALSTATUS, BM_SETSKINNED, 0, bSkinned);
     if(bSkinned) {
-        SendDlgItemMessage(hwndContactList, IDC_TBMENU, BUTTONSETASFLATBTN, 0, 0);
-        SendDlgItemMessage(hwndContactList, IDC_TBGLOBALSTATUS, BUTTONSETASFLATBTN, 0, 0);
-        SendDlgItemMessage(hwndContactList, IDC_TBGLOBALSTATUS, BUTTONSETASFLATBTN + 10, 0, 0);
-        SendDlgItemMessage(hwndContactList, IDC_TBMENU, BUTTONSETASFLATBTN + 10, 0, 0);
+        SendDlgItemMessage(pcli->hwndContactList, IDC_TBMENU, BUTTONSETASFLATBTN, 0, 0);
+        SendDlgItemMessage(pcli->hwndContactList, IDC_TBGLOBALSTATUS, BUTTONSETASFLATBTN, 0, 0);
+        SendDlgItemMessage(pcli->hwndContactList, IDC_TBGLOBALSTATUS, BUTTONSETASFLATBTN + 10, 0, 0);
+        SendDlgItemMessage(pcli->hwndContactList, IDC_TBMENU, BUTTONSETASFLATBTN + 10, 0, 0);
     }
     else {
-        SendDlgItemMessage(hwndContactList, IDC_TBMENU, BUTTONSETASFLATBTN, 0, 1);
-        SendDlgItemMessage(hwndContactList, IDC_TBGLOBALSTATUS, BUTTONSETASFLATBTN, 0, 1);
-        SendDlgItemMessage(hwndContactList, IDC_TBGLOBALSTATUS, BUTTONSETASFLATBTN + 10, 0, 1);
-        SendDlgItemMessage(hwndContactList, IDC_TBMENU, BUTTONSETASFLATBTN + 10, 0, 1);
+        SendDlgItemMessage(pcli->hwndContactList, IDC_TBMENU, BUTTONSETASFLATBTN, 0, 1);
+        SendDlgItemMessage(pcli->hwndContactList, IDC_TBGLOBALSTATUS, BUTTONSETASFLATBTN, 0, 1);
+        SendDlgItemMessage(pcli->hwndContactList, IDC_TBGLOBALSTATUS, BUTTONSETASFLATBTN + 10, 0, 1);
+        SendDlgItemMessage(pcli->hwndContactList, IDC_TBMENU, BUTTONSETASFLATBTN + 10, 0, 1);
     }
     SendMessage(g_hwndViewModeFrame, WM_USER + 100, 0, 0);
 }
@@ -1172,7 +1173,7 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
     ImageItem tmpItem = {0}, *newItem = NULL;
     char buffer[512], szItemNr[30];
     char szFinalName[MAX_PATH];
-    HDC hdc = GetDC(hwndContactList);
+    HDC hdc = GetDC(pcli->hwndContactList);
     int i, n;
     BOOL alloced = FALSE;
     char szDrive[MAX_PATH], szPath[MAX_PATH];
@@ -1253,7 +1254,7 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
             }
         }
     }
-    ReleaseDC(hwndContactList, hdc);
+    ReleaseDC(pcli->hwndContactList, hdc);
 }
 
 static void PreMultiply(HBITMAP hBitmap, int mode)
@@ -1628,10 +1629,10 @@ void import(char *file, HWND hwndDlg)
     SetTBSKinned(g_CluiData.bSkinnedToolbar);
     // refresh
     FillOptionDialogByCurrentSel(hwndDlg);
-    ClcOptionsChanged();
+    pcli->pfnClcOptionsChanged();
     ConfigureCLUIGeometry();
-    SendMessage(hwndContactList, WM_SIZE, 0, 0);
-    RedrawWindow(hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
+    SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+    RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
     if(oldexIconScale != g_CluiData.exIconScale) {
         ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
         if(g_CluiData.IcoLib_Avail)
@@ -1641,7 +1642,7 @@ void import(char *file, HWND hwndDlg)
             NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
             ReloadExtraIcons();
         }
-        WindowList_Broadcast(hClcWindowList, CLM_AUTOREBUILD, 0, 0);
+        pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
     }
 }
 

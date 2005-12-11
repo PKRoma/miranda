@@ -29,9 +29,11 @@ CLIST_INTERFACE cli = { 0 };
 int LoadContactListModule2( void );
 int LoadCLCModule( void );
 
-/* clc.h */
+/* clc.c */
 void   fnClcOptionsChanged( void );
 void   fnClcBroadcast( int msg, WPARAM wParam, LPARAM lParam );
+HMENU  fnBuildGroupPopupMenu( struct ClcGroup* group );
+
 LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /* clcfiledrop.c */
@@ -53,6 +55,7 @@ void fnFreeGroup ( struct ClcGroup *group );
 int  fnAddInfoItemToGroup (struct ClcGroup *group, int flags, const TCHAR *pszText);
 int  fnAddItemToGroup( struct ClcGroup *group,int iAboveItem );
 void fnAddContactToTree ( HWND hwnd, struct ClcData *dat, HANDLE hContact, int updateTotalCount, int checkHideOffline);
+int  fnAddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact);
 void fnDeleteItemFromTree ( HWND hwnd, HANDLE hItem );
 void fnRebuildEntireList ( HWND hwnd, struct ClcData *dat );
 int  fnGetGroupContentsCount ( struct ClcGroup *group, int visibleOnly );
@@ -122,6 +125,7 @@ int  fnTrayIconProcessMessage ( WPARAM wParam, LPARAM lParam );
 LRESULT CALLBACK fnContactListWndProc ( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 void fnLoadCluiGlobalOpts( void );
 int  fnCluiProtocolStatusChanged(void);
+void fnDrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, HICON eventIcon);
 
 /* contact.c */
 void fnChangeContactIcon ( HANDLE hContact, int iIcon, int add );
@@ -160,6 +164,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnClcOptionsChanged               = fnClcOptionsChanged;
 		cli.pfnClcBroadcast                    = fnClcBroadcast;
 		cli.pfnContactListControlWndProc       = fnContactListControlWndProc;
+		cli.pfnBuildGroupPopupMenu             = fnBuildGroupPopupMenu;
 
 		cli.pfnRegisterFileDropping            = fnRegisterFileDropping;
 		cli.pfnUnregisterFileDropping          = fnUnregisterFileDropping;
@@ -176,6 +181,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnRemoveItemFromGroup		         = fnRemoveItemFromGroup;
 		cli.pfnFreeGroup					         = fnFreeGroup;
 		cli.pfnAddInfoItemToGroup		         = fnAddInfoItemToGroup;
+		cli.pfnAddContactToGroup               = fnAddContactToGroup;
 		cli.pfnAddContactToTree                = fnAddContactToTree;
 		cli.pfnDeleteItemFromTree		         = fnDeleteItemFromTree;
 		cli.pfnRebuildEntireList			      = fnRebuildEntireList;
@@ -232,6 +238,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnContactListWndProc				   = fnContactListWndProc;
 		cli.pfnLoadCluiGlobalOpts              = fnLoadCluiGlobalOpts;
 		cli.pfnCluiProtocolStatusChanged       = fnCluiProtocolStatusChanged;
+		cli.pfnDrawMenuItem                    = fnDrawMenuItem;
 															 
 		cli.pfnChangeContactIcon					= fnChangeContactIcon;
 		cli.pfnLoadContactTree					   = fnLoadContactTree;

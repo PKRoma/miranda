@@ -34,6 +34,8 @@ HANDLE hHideInfoTipEvent;
 static HANDLE hAckHook;
 static HANDLE hClcSettingsChanged;
 
+int g_IconWidth, g_IconHeight;
+
 void FreeDisplayNameCache(void);
 
 void fnClcBroadcast( int msg, WPARAM wParam, LPARAM lParam )
@@ -46,13 +48,30 @@ void fnClcOptionsChanged(void)
 	WindowList_Broadcast(hClcWindowList, INTM_RELOADOPTIONS, 0, 0);
 }
 
+HMENU fnBuildGroupPopupMenu( struct ClcGroup* group )
+{
+	static HMENU result = NULL;
+
+	if ( result == NULL ) {
+      result = GetSubMenu(LoadMenu(cli.hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 2);
+		CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) result, 0);
+	}
+	CheckMenuItem(result, POPUP_GROUPHIDEOFFLINE, group->hideOffline ? MF_CHECKED : MF_UNCHECKED);
+	return result;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// standard CLC services
+
 static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 {
 	char *szProto;
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 	if ( (HANDLE)wParam != NULL && !strcmp(cws->szModule, "CList")) {
-		if (!strcmp(cws->szSetting, "MyHandle"))
+		if (!strcmp(cws->szSetting, "MyHandle")) {
+			cli.pfnInvalidateDisplayNameCacheEntry((HANDLE) wParam);
 			WindowList_Broadcast(hClcWindowList, INTM_NAMECHANGED, wParam, lParam);
+		}
 		else if (!strcmp(cws->szSetting, "Group"))
 			WindowList_Broadcast(hClcWindowList, INTM_GROUPCHANGED, wParam, lParam);
 		else if (!strcmp(cws->szSetting, "Hidden"))
@@ -186,6 +205,9 @@ static void SortClcByTimer( HWND hwnd )
 
 int LoadCLCModule(void)
 {
+	g_IconWidth = GetSystemMetrics(SM_CXSMICON);
+	g_IconHeight = GetSystemMetrics(SM_CYSMICON);
+
 	hClcWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	hShowInfoTipEvent = CreateHookableEvent(ME_CLC_SHOWINFOTIP);
 	hHideInfoTipEvent = CreateHookableEvent(ME_CLC_HIDEINFOTIP);
@@ -229,30 +251,19 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			for (i = 0; i <= FONTID_MAX; i++)
 				dat->fontInfo[i].changed = 1;
 		}
-		dat->yScroll = 0;
 		dat->selection = -1;
 		dat->iconXSpace = 20;
 		dat->checkboxSize = 13;
 		dat->dragAutoScrollHeight = 30;
-		dat->himlHighlight = NULL;
-		dat->hBmpBackground = NULL;
-		dat->hwndRenameEdit = NULL;
 		dat->iDragItem = -1;
 		dat->iInsertionMark = -1;
 		dat->insertionMarkHitHeight = 5;
-		dat->szQuickSearch[0] = 0;
-		dat->bkChanged = 0;
 		dat->iHotTrack = -1;
 		dat->infoTipTimeout = DBGetContactSettingWord(NULL, "CLC", "InfoTipHoverTime", 750);
 		dat->hInfoTipItem = NULL;
 		dat->himlExtraColumns = NULL;
-		dat->extraColumnsCount = 0;
 		dat->extraColumnSpacing = 20;
-		dat->showSelAlways = 0;
-		memset( &dat->list.cl, 0, sizeof( dat->list.cl ));
 		dat->list.cl.increment = 30;
-		dat->list.parent = NULL;
-		dat->list.hideOffline = 0;
 		dat->needsResort = 1;
 		cli.pfnLoadClcOptions(hwnd, dat);
 		if (!IsWindowVisible(hwnd))
@@ -883,6 +894,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		}
 		break;
 
+	case WM_MBUTTONDOWN:
 	case WM_LBUTTONDOWN:
 	{
 		struct ClcContact *contact;
@@ -1228,9 +1240,10 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 		if (dat->selection != -1 && hitFlags & (CLCHT_ONITEMICON | CLCHT_ONITEMCHECK | CLCHT_ONITEMLABEL)) {
 			if (contact->type == CLCIT_GROUP) {
-				hMenu = GetSubMenu(LoadMenu(cli.hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 2);
-				CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, 0);
-				CheckMenuItem(hMenu, POPUP_GROUPHIDEOFFLINE, contact->group->hideOffline ? MF_CHECKED : MF_UNCHECKED);
+				hMenu = cli.pfnBuildGroupPopupMenu(contact->group);
+				ClientToScreen(hwnd, &pt);
+				TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
+				return 0;
 			}
 			else if (contact->type == CLCIT_CONTACT)
 				hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) contact->hContact, 0);

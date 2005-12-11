@@ -42,7 +42,6 @@ static BYTE divide3[765] = {255};
 extern char *im_clients[];
 extern HICON im_clienthIcons[];
 extern HICON overlayicons[];
-extern HWND hwndContactTree, hwndContactList;
 #if defined(_UNICODE)
     extern TCHAR statusNames[12][124];
 #else
@@ -165,8 +164,8 @@ static int __fastcall GetGeneralisedStatus(void)
     status = ID_STATUS_OFFLINE;
     statusOnlineness = 0;
 
-    for (i = 0; i < hClcProtoCount; i++) {
-        thisStatus = clcProto[i].dwStatus;
+    for (i = 0; i < pcli->hClcProtoCount; i++) {
+        thisStatus = pcli->clcProto[i].dwStatus;
         if (thisStatus == ID_STATUS_INVISIBLE)
             return ID_STATUS_INVISIBLE;
         thisOnlineness = GetStatusOnlineness(thisStatus);
@@ -184,9 +183,9 @@ static int __fastcall GetRealStatus(struct ClcContact *contact, int status)
     char *szProto = contact->proto;
     if (!szProto)
         return status;
-    for (i = 0; i < hClcProtoCount; i++) {
-        if (!lstrcmpA(clcProto[i].szProto, szProto)) {
-            return clcProto[i].dwStatus;
+    for (i = 0; i < pcli->hClcProtoCount; i++) {
+        if (!lstrcmpA(pcli->clcProto[i].szProto, szProto)) {
+            return pcli->clcProto[i].dwStatus;
         }
     }
     return status;
@@ -241,14 +240,14 @@ static void InitThemeAPI()
 
 void PaintNotifyArea(HDC hDC, RECT *rc)
 {
-    struct ClcData *dat = (struct ClcData *) GetWindowLong(hwndContactTree, 0);
+    struct ClcData *dat = (struct ClcData *) GetWindowLong(pcli->hwndContactTree, 0);
     int iCount;
     static int ev_lastIcon = 0;
 
 	rc->left += 26;             // button
     iCount = GetMenuItemCount(g_CluiData.hMenuNotify);
     if (g_CluiData.hUpdateContact != 0) {
-        TCHAR *szName = GetContactDisplayNameW(g_CluiData.hUpdateContact, 0);
+        TCHAR *szName = pcli->pfnGetContactDisplayName(g_CluiData.hUpdateContact, 0);
         int iIcon = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) g_CluiData.hUpdateContact, 0);
 
         ImageList_DrawEx(hCListImages, iIcon, hDC, rc->left, (rc->bottom + rc->top - g_cysmIcon) / 2, g_cxsmIcon, g_cysmIcon, CLR_NONE, CLR_NONE, ILD_NORMAL);
@@ -266,7 +265,7 @@ void PaintNotifyArea(HDC hDC, RECT *rc)
         mii.fMask = MIIM_DATA;
         GetMenuItemInfo(g_CluiData.hMenuNotify, iCount - 1, TRUE, &mii);
         nmi = (struct NotifyMenuItemExData *) mii.dwItemData;
-        szName = GetContactDisplayNameW(nmi->hContact, 0);
+        szName = pcli->pfnGetContactDisplayName(nmi->hContact, 0);
         iIcon = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) nmi->hContact, 0);
         ImageList_DrawEx(hCListImages, iIcon, hDC, rc->left, (rc->bottom + rc->top - g_cysmIcon) / 2, g_cxsmIcon, g_cysmIcon, CLR_NONE, CLR_NONE, ILD_NORMAL);
         rc->left += 18;
@@ -532,7 +531,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
     GetTextExtentPoint32(hdcMem, contact->szText, lstrlen(contact->szText), &textSize);
     width = textSize.cx;
     if (type == CLCIT_GROUP) {
-        szCounts = GetGroupCountsText(dat, contact);
+        szCounts = pcli->pfnGetGroupCountsText(dat, contact);
         if (szCounts[0]) {
             GetTextExtentPoint32(hdcMem, _T(" "), 1, &spaceSize);
             ChangeToFont(hdcMem, dat, FONTID_GROUPCOUNTS, &fontHeight);
@@ -587,7 +586,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 
     // check for special cases (first item, single item, last item)
     // this will only change the shape for this status. Color will be blended over with ALPHA value                                     
-            if (!ssingleitem->IGNORED && scanIndex == 0 && group->contactCount == 1 && group->parent != NULL) {
+            if (!ssingleitem->IGNORED && scanIndex == 0 && group->cl.count == 1 && group->parent != NULL) {
                 rc.left = ssingleitem->MARGIN_LEFT + bg_indent_l;
                 rc.top = y + ssingleitem->MARGIN_TOP;
                 rc.right = clRect->right - ssingleitem->MARGIN_RIGHT - bg_indent_r;
@@ -609,7 +608,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
                 }
                 if (!selected || selBlend)
                     DrawAlpha(hdcMem, &rc, ssingleitem->COLOR, ssingleitem->ALPHA, ssingleitem->COLOR2, ssingleitem->COLOR2_TRANSPARENT, ssingleitem->GRADIENT, ssingleitem->CORNER, ssingleitem->BORDERSTYLE, ssingleitem->imageItem);
-            } else if (scanIndex == 0 && group->contactCount > 1 && !sfirstitem->IGNORED && group->parent != NULL) {
+            } else if (scanIndex == 0 && group->cl.count > 1 && !sfirstitem->IGNORED && group->parent != NULL) {
                 rc.left = sfirstitem->MARGIN_LEFT + bg_indent_l;
                 rc.top = y + sfirstitem->MARGIN_TOP;
                 rc.right = clRect->right - sfirstitem->MARGIN_RIGHT - bg_indent_r;
@@ -631,7 +630,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
                 }
                 if (!selected || selBlend)
                     DrawAlpha(hdcMem, &rc, sfirstitem->COLOR, sfirstitem->ALPHA, sfirstitem->COLOR2, sfirstitem->COLOR2_TRANSPARENT, sfirstitem->GRADIENT, sfirstitem->CORNER, sfirstitem->BORDERSTYLE, sfirstitem->imageItem);
-            } else if (scanIndex == group->contactCount - 1 && !slastitem->IGNORED && group->parent != NULL) {
+            } else if (scanIndex == group->cl.count - 1 && !slastitem->IGNORED && group->parent != NULL) {
     // last item of group                                                                       
                 rc.left = slastitem->MARGIN_LEFT + bg_indent_l;
                 rc.top = y + slastitem->MARGIN_TOP;
@@ -658,7 +657,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
                 // - - - Non-grouped items - - -                    
                 if (type != CLCIT_GROUP // not a group
                     && group->parent == NULL // not grouped
-                    && !sfirstitem_NG->IGNORED && scanIndex != group->contactCount - 1 && !(*bFirstNGdrawn)) {
+                    && !sfirstitem_NG->IGNORED && scanIndex != group->cl.count - 1 && !(*bFirstNGdrawn)) {
     // first NON-grouped
                 *bFirstNGdrawn = TRUE;                       
                 rc.left = sfirstitem_NG->MARGIN_LEFT + bg_indent_l;
@@ -683,7 +682,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
                 if (!selected || selBlend)
                     DrawAlpha(hdcMem, &rc, sfirstitem_NG->COLOR, sfirstitem_NG->ALPHA, sfirstitem_NG->COLOR2, sfirstitem_NG->COLOR2_TRANSPARENT, sfirstitem_NG->GRADIENT, sfirstitem_NG->CORNER, sfirstitem->BORDERSTYLE, sfirstitem->imageItem);
             } else if (type != CLCIT_GROUP // not a group
-                       && group->parent == NULL && !slastitem_NG->IGNORED && scanIndex == group->contactCount - 1 && (*bFirstNGdrawn)) {
+                       && group->parent == NULL && !slastitem_NG->IGNORED && scanIndex == group->cl.count - 1 && (*bFirstNGdrawn)) {
     // last item of list (NON-group)
     // last NON-grouped
                 rc.left = slastitem_NG->MARGIN_LEFT + bg_indent_l;
@@ -755,7 +754,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
         StatusItems_t *scollapsed = &StatusItems[ID_EXTBKCOLLAPSEDDGROUP - ID_STATUS_OFFLINE];
         
         ChangeToFont(hdcMem, dat, FONTID_GROUPS, &fontHeight);
-        if (contact->group->contactCount == 0) {
+        if (contact->group->cl.count == 0) {
             if (!sempty->IGNORED) {
                 rc.left = sempty->MARGIN_LEFT + bg_indent_l;
                 rc.top = y + sempty->MARGIN_TOP;
@@ -909,7 +908,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
                 colourFg = dat->fontInfo[FONTID_NOTONLIST].colour; 
                 mode = ILD_BLEND50;
             }
-            if (type == CLCIT_CONTACT && dat->showIdle && (flags & CONTACTF_IDLE) && GetRealStatus(&group->contact[scanIndex], ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+            if (type == CLCIT_CONTACT && dat->showIdle && (flags & CONTACTF_IDLE) && GetRealStatus(group->cl.items[scanIndex], ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
                 mode = ILD_SELECTED;
             
             if(pi_selectiveIcon && av_right) {
@@ -1353,7 +1352,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
     g_selectiveIcon = (g_CluiData.dwFlags & CLUI_FRAME_SELECTIVEICONS) && (g_CluiData.dwFlags & CLUI_FRAME_AVATARS) && !dat->bisEmbedded;
     g_exIconSpacing = g_CluiData.exIconScale + 2;
     
-    if (dat->greyoutFlags & ClcStatusToPf2(my_status) || style & WS_DISABLED)
+    if (dat->greyoutFlags & pcli->pfnClcStatusToPf2(my_status) || style & WS_DISABLED)
         grey = 1;
     else if (GetFocus() != hwnd && dat->greyoutFlags & GREYF_UNFOCUS)
         grey = 1;
@@ -1484,7 +1483,7 @@ bgdone:
         CreateG(hdcMem);
 
     for (index = 0; y< rcPaint->bottom;) {
-        if (group->scanIndex == group->contactCount) {
+        if (group->scanIndex == group->cl.count) {
             group = group->parent;
             indent--;
             if (group == NULL) {
@@ -1496,13 +1495,13 @@ bgdone:
 
         line_num++;
 		if (y > rcPaint->top - dat->row_heights[line_num] && y <= rcPaint->bottom) {
-			RowHeights_GetRowHeight(dat, hwnd, &(group->contact[group->scanIndex]), line_num, style);
-			PaintItem(hdcMem, group, &group->contact[group->scanIndex], indent, y, dat, index, hwnd, style, &clRect, &bFirstNGdrawn, groupCountsFontTopShift, dat->row_heights[line_num]);
+			RowHeights_GetRowHeight(dat, hwnd, group->cl.items[group->scanIndex], line_num, style);
+			PaintItem(hdcMem, group, group->cl.items[group->scanIndex], indent, y, dat, index, hwnd, style, &clRect, &bFirstNGdrawn, groupCountsFontTopShift, dat->row_heights[line_num]);
 		}
         index++;
         y += dat->row_heights[line_num];
-        if (group->contact[group->scanIndex].type == CLCIT_GROUP && group->contact[group->scanIndex].group->expanded) {
-            group = group->contact[group->scanIndex].group;
+        if (group->cl.items[group->scanIndex]->type == CLCIT_GROUP && group->cl.items[group->scanIndex]->group->expanded) {
+            group = group->cl.items[group->scanIndex]->group;
             indent++;
             group->scanIndex = 0;
             continue;

@@ -164,7 +164,7 @@ int fnAddInfoItemToGroup(struct ClcGroup *group, int flags, const TCHAR *pszText
 	return i;
 }
 
-static void AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact)
+int fnAddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact)
 {
 	char *szProto;
 	WORD apparentMode;
@@ -175,7 +175,7 @@ static void AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDL
 	dat->needsResort = 1;
 	for (i = group->cl.count - 1; i >= 0; i--) {
 		if (group->cl.items[i]->hContact == hContact )
-			return;
+			return i;
 
 		if ( index == -1 )
 			if (group->cl.items[i]->type != CLCIT_INFO || !(group->cl.items[i]->flags & CLCIIF_BELOWCONTACTS))
@@ -203,6 +203,7 @@ static void AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDL
 	if (idleMode)
 		group->cl.items[i]->flags |= CONTACTF_IDLE;
 	lstrcpyn(group->cl.items[i]->szText, cli.pfnGetContactDisplayName(hContact,0), SIZEOF(group->cl.items[i]->szText));
+	return i;
 }
 
 void fnAddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int updateTotalCount, int checkHideOffline)
@@ -273,7 +274,7 @@ void fnAddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int upd
 			return;
 		}
 	}
-	AddContactToGroup(dat, group, hContact);
+	fnAddContactToGroup(dat, group, hContact);
 	if (updateTotalCount)
 		group->totalMembers++;
 }
@@ -387,13 +388,13 @@ void fnRebuildEntireList(HWND hwnd, struct ClcData *dat)
 					szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 					if (szProto == NULL) {
 						if (!cli.pfnIsHiddenMode(dat, ID_STATUS_OFFLINE))
-							AddContactToGroup(dat, group, hContact);
+							fnAddContactToGroup(dat, group, hContact);
 					}
 					else if (!cli.pfnIsHiddenMode(dat, DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE)))
-						AddContactToGroup(dat, group, hContact);
+						fnAddContactToGroup(dat, group, hContact);
 				}
 				else
-					AddContactToGroup(dat, group, hContact);
+					fnAddContactToGroup(dat, group, hContact);
 			}
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
@@ -455,7 +456,7 @@ static int __cdecl GroupSortProc(const struct ClcContact *contact1, const struct
 
 static int __cdecl ContactSortProc(const struct ClcContact **contact1, const struct ClcContact **contact2)
 {
-	int result = CallService(MS_CLIST_CONTACTSCOMPARE, (WPARAM) contact1[0]->hContact, (LPARAM) contact2[0]->hContact);
+	int result = cli.pfnCompareContacts( contact1[0], contact2[0] );
 	if (result)
 		return result;
 	//nothing to distinguish them, so make sure they stay in the same order

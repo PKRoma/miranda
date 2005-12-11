@@ -150,7 +150,7 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 	
 	while(TRUE)
 	{
-        if (group->scanIndex==group->contactCount) 
+        if (group->scanIndex==group->cl.count) 
 		{
 			group=group->parent;
 			indent--;
@@ -160,15 +160,14 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 		}
 
 		// Get item to draw
-		Drawing = &(group->contact[group->scanIndex]);
-
+		Drawing = group->cl.items[group->scanIndex];
 		line_num++;
 
 		// Calc row height
 		RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num, GetWindowLong(hwnd, GWL_STYLE));
 
-		if(group->contact[group->scanIndex].type==CLCIT_GROUP && /*!IsBadCodePtr((FARPROC)group->contact[group->scanIndex].group) && */ group->contact[group->scanIndex].group->expanded) {
-			group=group->contact[group->scanIndex].group;
+		if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP && /*!IsBadCodePtr((FARPROC)group->cl.items[group->scanIndex]->group) && */ group->cl.items[group->scanIndex]->group->expanded) {
+			group=group->cl.items[group->scanIndex]->group;
 			indent++;
 			group->scanIndex=0;
 			subindex=-1;

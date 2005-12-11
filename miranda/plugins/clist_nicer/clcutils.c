@@ -31,48 +31,11 @@ UNICODE done
 #endif
 //loads of stuff that didn't really fit anywhere else
 
-extern HANDLE hHideInfoTipEvent;
-extern void InvalidateDisplayNameCacheEntry(HANDLE hContact);
 extern struct CluiData g_CluiData;
-extern HWND hwndContactList;
 
 extern struct ExtraCache *g_ExtraCache;
 extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
 extern int g_isConnecting, during_sizing;
-
-char * GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact)
-{
-    static char szName[32];
-    int onlineCount, totalCount;
-    struct ClcGroup *group, *topgroup;
-
-    if (contact->type != CLCIT_GROUP || !(dat->exStyle & CLS_EX_SHOWGROUPCOUNTS))
-        return "";
-
-    group = topgroup = contact->group;
-    onlineCount = 0;
-    totalCount = group->totalMembers;
-    group->scanIndex = 0;
-    for (; ;) {
-        if (group->scanIndex == group->contactCount) {
-            if (group == topgroup)
-                break;            
-            group = group->parent;
-        } else if (group->contact[group->scanIndex].type == CLCIT_GROUP) {
-            group = group->contact[group->scanIndex].group;
-            group->scanIndex = 0;
-            totalCount += group->totalMembers;
-            continue;
-        } else if (group->contact[group->scanIndex].type == CLCIT_CONTACT)
-            if (group->contact[group->scanIndex].flags & CONTACTF_ONLINE)
-                onlineCount++;
-        group->scanIndex++;
-    }
-    if (onlineCount == 0 && dat->exStyle & CLS_EX_HIDECOUNTSWHENEMPTY)
-        return "";
-    _snprintf(szName, sizeof(szName), "(%u/%u)", onlineCount, totalCount);
-    return szName;
-}
 
 /*
  * performs hit-testing for reversed (mirrored) contact rows when using RTL
@@ -157,7 +120,7 @@ int RTL_HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct Clc
     width = textSize.cx;
     if (hitcontact->type == CLCIT_GROUP) {
         char *szCounts;
-        szCounts = GetGroupCountsText(dat, hitcontact);
+        szCounts = pcli->pfnGetGroupCountsText(dat, hitcontact);
         if (szCounts[0]) {
             GetTextExtentPoint32A(hdc, " ", 1, &textSize);
             width += textSize.cx;
@@ -219,9 +182,8 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
     }
    	hit = RowHeights_HitTest(dat, dat->yScroll + testy);
 	if (hit != -1) 
-		hit = GetRowByIndex(dat, hit, &hitcontact, &hitgroup);
+		hit = pcli->pfnGetRowByIndex(dat, hit, &hitcontact, &hitgroup);
 
-    //hit = GetRowByIndex(dat, (testy + dat->yScroll) / (dat->rowHeight ? dat->rowHeight : 1), &hitcontact, &hitgroup);
     if (hit == -1) {
         if (flags)
             *flags |= CLCHT_NOWHERE | CLCHT_BELOWITEMS;
@@ -305,7 +267,7 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
     width = textSize.cx;
     if (hitcontact->type == CLCIT_GROUP) {
         char *szCounts;
-        szCounts = GetGroupCountsText(dat, hitcontact);
+        szCounts = pcli->pfnGetGroupCountsText(dat, hitcontact);
         if (szCounts[0]) {
             GetTextExtentPoint32A(hdc, " ", 1, &textSize);
             width += textSize.cx;
@@ -333,74 +295,73 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
 
 void UpdateIfLocked(HWND hwnd, struct ClcData *dat)
 {
-    if(g_isConnecting && dat->forceScroll) {
-        dat->forcePaint = TRUE;
-        UpdateWindow(hwnd);
-    }
+	if(g_isConnecting && dat->forceScroll) {
+		dat->forcePaint = TRUE;
+		UpdateWindow(hwnd);
+	}
 }
 
 void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 {
-    DWORD startTick, nowTick;
-    int oldy = dat->yScroll;
-    RECT clRect, rcInvalidate;
-    int maxy, previousy;
+	DWORD startTick, nowTick;
+	int oldy = dat->yScroll;
+	RECT clRect, rcInvalidate;
+	int maxy, previousy;
 
-    if (dat->iHotTrack != -1 && dat->yScroll != desty) {
-        InvalidateItem(hwnd, dat, dat->iHotTrack);
-        UpdateIfLocked(hwnd, dat);
-        dat->iHotTrack = -1;
-        ReleaseCapture();
-    }
-    GetClientRect(hwnd, &clRect);
-    rcInvalidate = clRect;
+	if (dat->iHotTrack != -1 && dat->yScroll != desty) {
+		InvalidateItem(hwnd, dat, dat->iHotTrack);
+		UpdateIfLocked(hwnd, dat);
+		dat->iHotTrack = -1;
+		ReleaseCapture();
+	}
+	GetClientRect(hwnd, &clRect);
+	rcInvalidate = clRect;
 
-    //maxy = dat->rowHeight * GetGroupContentsCount(&dat->list, 1) - clRect.bottom;
-   	maxy=RowHeights_GetTotalHeight(dat)-clRect.bottom;
-    if (desty > maxy)
-        desty = maxy;
-    if (desty < 0)
-        desty = 0;
-    if (abs(desty - dat->yScroll) < 4)
-        noSmooth = 1;
-    if (!noSmooth && dat->exStyle & CLS_EX_NOSMOOTHSCROLLING)
-        noSmooth = 1;
-    previousy = dat->yScroll;
-    if (!noSmooth) {
-        startTick = GetTickCount();
-        for (; ;) {
-            nowTick = GetTickCount();
-            if (nowTick >= startTick + dat->scrollTime)
-                break;
-            dat->yScroll = oldy + (desty - oldy) * (int) (nowTick - startTick) / dat->scrollTime;
-            if (dat->backgroundBmpUse & CLBF_SCROLL || dat->hBmpBackground == NULL)
-                ScrollWindowEx(hwnd, 0, previousy - dat->yScroll, NULL, NULL, NULL, NULL, SW_INVALIDATE);
-            else
-                InvalidateRect(hwnd, NULL, FALSE);
-            previousy = dat->yScroll;
-            SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
-            dat->forcePaint = TRUE;
-            UpdateWindow(hwnd);
-        }
-    }
-    dat->yScroll = desty;
-    if (dat->backgroundBmpUse & CLBF_SCROLL || dat->hBmpBackground == NULL) {
-        if(!noSmooth) {
-            ScrollWindowEx(hwnd, 0, previousy - dat->yScroll, NULL, NULL, NULL, NULL, SW_INVALIDATE);
-            UpdateIfLocked(hwnd, dat);
-        }
-        else {
-            InvalidateRect(hwnd, NULL, FALSE);
-            UpdateIfLocked(hwnd, dat);
-        }
-    }
-    else {
-        InvalidateRect(hwnd, NULL, FALSE);
-        UpdateIfLocked(hwnd, dat);
-    }
+	maxy=RowHeights_GetTotalHeight(dat)-clRect.bottom;
+	if (desty > maxy)
+		desty = maxy;
+	if (desty < 0)
+		desty = 0;
+	if (abs(desty - dat->yScroll) < 4)
+		noSmooth = 1;
+	if (!noSmooth && dat->exStyle & CLS_EX_NOSMOOTHSCROLLING)
+		noSmooth = 1;
+	previousy = dat->yScroll;
+	if (!noSmooth) {
+		startTick = GetTickCount();
+		for (; ;) {
+			nowTick = GetTickCount();
+			if (nowTick >= startTick + dat->scrollTime)
+				break;
+			dat->yScroll = oldy + (desty - oldy) * (int) (nowTick - startTick) / dat->scrollTime;
+			if (dat->backgroundBmpUse & CLBF_SCROLL || dat->hBmpBackground == NULL)
+				ScrollWindowEx(hwnd, 0, previousy - dat->yScroll, NULL, NULL, NULL, NULL, SW_INVALIDATE);
+			else
+				InvalidateRect(hwnd, NULL, FALSE);
+			previousy = dat->yScroll;
+			SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
+			dat->forcePaint = TRUE;
+			UpdateWindow(hwnd);
+		}
+	}
+	dat->yScroll = desty;
+	if (dat->backgroundBmpUse & CLBF_SCROLL || dat->hBmpBackground == NULL) {
+		if(!noSmooth) {
+			ScrollWindowEx(hwnd, 0, previousy - dat->yScroll, NULL, NULL, NULL, NULL, SW_INVALIDATE);
+			UpdateIfLocked(hwnd, dat);
+		}
+		else {
+			InvalidateRect(hwnd, NULL, FALSE);
+			UpdateIfLocked(hwnd, dat);
+		}
+	}
+	else {
+		InvalidateRect(hwnd, NULL, FALSE);
+		UpdateIfLocked(hwnd, dat);
+	}
 
-    SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
-    dat->forceScroll = 0;
+	SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
+	dat->forceScroll = 0;
 }
 
 void EnsureVisible(HWND hwnd,struct ClcData *dat,int iItem,int partialOk)
@@ -483,11 +444,11 @@ void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int new
 	InvalidateRect(hwnd,NULL,FALSE);
 
 	if (group->expanded)
-		contentCount=GetGroupContentsCount(group,1);
+		contentCount = pcli->pfnGetGroupContentsCount(group,1);
 	else
-		contentCount=0;
+		contentCount = 0;
 
-	groupy=GetRowsPriorTo(&dat->list,group,-1);
+	groupy=pcli->pfnGetRowsPriorTo(&dat->list,group,-1);
 	if(dat->selection>groupy && dat->selection<groupy+contentCount) dat->selection=groupy;
 	RecalcScrollBar(hwnd,dat);
 
@@ -508,143 +469,34 @@ void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int new
 	SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 }
 
-void DoSelectionDefaultAction(HWND hwnd, struct ClcData *dat)
-{
-    struct ClcContact *contact;
-
-    if (dat->selection == -1)
-        return;
-    dat->szQuickSearch[0] = 0;
-    if (GetRowByIndex(dat, dat->selection, &contact, NULL) == -1)
-        return;
-    if (contact->type == CLCIT_GROUP)
-        SetGroupExpand(hwnd, dat, contact->group, -1);
-    if (contact->type == CLCIT_CONTACT)
-        CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM) contact->hContact, 0);
-}
-
-int FindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefixOk)
-{
-    struct ClcGroup *group = &dat->list;
-    int testlen = lstrlen(text);
-
-    group->scanIndex = 0;
-    for (; ;) {
-        if (group->scanIndex == group->contactCount) {
-            group = group->parent;
-            if (group == NULL)
-                break;
-            group->scanIndex++;
-            continue;
-        }
-        if (group->contact[group->scanIndex].type != CLCIT_DIVIDER) {
-            if ((prefixOk && !_tcsnicmp(text, group->contact[group->scanIndex].szText, testlen)) || (!prefixOk && !lstrcmpi(text, group->contact[group->scanIndex].szText))) {
-                struct ClcGroup *contactGroup = group;
-                int contactScanIndex = group->scanIndex;
-                for (; group; group = group->parent) {
-                    SetGroupExpand(hwnd, dat, group, 1);
-                }
-                return GetRowsPriorTo(&dat->list, contactGroup, contactScanIndex);
-            }
-            if (group->contact[group->scanIndex].type == CLCIT_GROUP) {
-                if (!(dat->exStyle & CLS_EX_QUICKSEARCHVISONLY) || group->contact[group->scanIndex].group->expanded) {
-                    group = group->contact[group->scanIndex].group;
-                    group->scanIndex = 0;
-                    continue;
-                }
-            }
-        }
-        group->scanIndex++;
-    }
-    return -1;
-}
-
-void EndRename(HWND hwnd, struct ClcData *dat, int save)
-{
-    HWND hwndEdit = dat->hwndRenameEdit;
-
-    if (dat->hwndRenameEdit == NULL)
-        return;
-    dat->hwndRenameEdit = NULL;
-    if (save) {
-        TCHAR text[120];
-        struct ClcContact *contact;
-        GetWindowText(hwndEdit, text, safe_sizeof(text));
-        //MessageBox(0, text, L"foo", MB_RTLREADING | MB_RIGHT);
-        if (GetRowByIndex(dat, dat->selection, &contact, NULL) != -1) {
-            if (lstrcmp(contact->szText, text)) {
-                if (contact->type == CLCIT_GROUP && !_tcsstr(text, _T("\\"))) {
-                    TCHAR szFullName[256];
-                    if (contact->group->parent && contact->group->parent->parent) {
-                        _sntprintf(szFullName, safe_sizeof(szFullName), _T("%s\\%s"), GetGroupNameT(contact->group->parent->groupId, NULL), text);
-                        szFullName[safe_sizeof(szFullName) - 1] = 0;
-                    } else
-                        lstrcpyn(szFullName, text, safe_sizeof(szFullName));
-                    RenameGroupT(contact->groupId, szFullName);
-                } else if (contact->type == CLCIT_CONTACT) {
-                    TCHAR *otherName = GetContactDisplayNameW(contact->hContact, GCDNF_NOMYHANDLE);
-                    InvalidateDisplayNameCacheEntry(contact->hContact);
-                    if (text[0] == '\0') {
-                        DBDeleteContactSetting(contact->hContact, "CList", "MyHandle");
-                    } else {
-                        if (!lstrcmp(otherName, text))
-                            DBDeleteContactSetting(contact->hContact, "CList", "MyHandle");
-                        else
-                            DBWriteContactSettingTString(contact->hContact, "CList", "MyHandle", text);
-                    }
-                    if (otherName)
-                        mir_free(otherName);
-                }
-            }
-        }
-    }
-    DestroyWindow(hwndEdit);
-}
-
-void DeleteFromContactList(HWND hwnd, struct ClcData *dat)
-{
-    struct ClcContact *contact;
-    if (dat->selection == -1)
-        return;
-    dat->szQuickSearch[0] = 0;
-    if (GetRowByIndex(dat, dat->selection, &contact, NULL) == -1)
-        return;
-    switch (contact->type) {
-        case CLCIT_GROUP:
-            CallService(MS_CLIST_GROUPDELETE, (WPARAM) (HANDLE) contact->groupId, 0); break;
-        case CLCIT_CONTACT:
-            CallService("CList/DeleteContactCommand", (WPARAM) (HANDLE) contact->hContact, (LPARAM) hwnd); break;
-    }
-}
-
 static WNDPROC OldRenameEditWndProc;
 static LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    switch (msg) {
-        case WM_KEYDOWN:
-            switch (wParam) {
-                case VK_RETURN:
-                    EndRename(GetParent(hwnd), (struct ClcData *) GetWindowLong(GetParent(hwnd), 0), 1);
-                    return 0;
-                case VK_ESCAPE:
-                    EndRename(GetParent(hwnd), (struct ClcData *) GetWindowLong(GetParent(hwnd), 0), 0);
-                    return 0;
-            }
-            break;
-        case WM_GETDLGCODE:
-            if (lParam) {
-                MSG *msg = (MSG *) lParam;
-                if (msg->message == WM_KEYDOWN && msg->wParam == VK_TAB)
-                    return 0;
-                if (msg->message == WM_CHAR && msg->wParam == '\t')
-                    return 0;
-            }
-            return DLGC_WANTMESSAGE;
-        case WM_KILLFOCUS:
-            EndRename(GetParent(hwnd), (struct ClcData *) GetWindowLong(GetParent(hwnd), 0), 1);
-            return 0;
-    }
-    return CallWindowProc(OldRenameEditWndProc, hwnd, msg, wParam, lParam);
+	switch (msg) {
+	case WM_KEYDOWN:
+		switch (wParam) {
+	case VK_RETURN:
+		pcli->pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLong(GetParent(hwnd), 0), 1);
+		return 0;
+	case VK_ESCAPE:
+		pcli->pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLong(GetParent(hwnd), 0), 0);
+		return 0;
+		}
+		break;
+	case WM_GETDLGCODE:
+		if (lParam) {
+			MSG *msg = (MSG *) lParam;
+			if (msg->message == WM_KEYDOWN && msg->wParam == VK_TAB)
+				return 0;
+			if (msg->message == WM_CHAR && msg->wParam == '\t')
+				return 0;
+		}
+		return DLGC_WANTMESSAGE;
+	case WM_KILLFOCUS:
+		pcli->pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLong(GetParent(hwnd), 0), 1);
+		return 0;
+	}
+	return CallWindowProc(OldRenameEditWndProc, hwnd, msg, wParam, lParam);
 }
 
 void BeginRenameSelection(HWND hwnd, struct ClcData *dat)
@@ -657,7 +509,7 @@ void BeginRenameSelection(HWND hwnd, struct ClcData *dat)
     KillTimer(hwnd, TIMERID_RENAME);
     ReleaseCapture();
     dat->iHotTrack = -1;
-    dat->selection = GetRowByIndex(dat, dat->selection, &contact, &group);
+    dat->selection = pcli->pfnGetRowByIndex(dat, dat->selection, &contact, &group);
     if (dat->selection == -1)
         return;
     if (contact->type != CLCIT_CONTACT && contact->type != CLCIT_GROUP)
@@ -717,7 +569,7 @@ int GetDropTargetInformation(HWND hwnd, struct ClcData *dat, POINT pt)
         return DROPTARGET_OUTSIDE;
 
     hit = HitTest(hwnd, dat, pt.x, pt.y, &contact, &group, &hitFlags);
-    GetRowByIndex(dat, dat->iDragItem, &movecontact, &movegroup);
+    pcli->pfnGetRowByIndex(dat, dat->iDragItem, &movecontact, &movegroup);
     if (hit == dat->iDragItem)
         return DROPTARGET_ONSELF;
     if (hit == -1 || hitFlags & CLCHT_ONITEMEXTRA)
@@ -733,7 +585,7 @@ int GetDropTargetInformation(HWND hwnd, struct ClcData *dat, POINT pt)
     //could be insertion mark (above)
             topItem = hit - 1; bottomItem = hit;
             bottomcontact = contact;
-            topItem = GetRowByIndex(dat, topItem, &topcontact, &topgroup);
+            topItem = pcli->pfnGetRowByIndex(dat, topItem, &topcontact, &topgroup);
             ok = 1;
         }
         //if (pt.y + dat->yScroll >= (hit + 1) * dat->rowHeight - dat->insertionMarkHitHeight) {
@@ -741,7 +593,7 @@ int GetDropTargetInformation(HWND hwnd, struct ClcData *dat, POINT pt)
     //could be insertion mark (below)
             topItem = hit; bottomItem = hit + 1;
             topcontact = contact; topgroup = group;
-            bottomItem = GetRowByIndex(dat, bottomItem, &bottomcontact, NULL);
+            bottomItem = pcli->pfnGetRowByIndex(dat, bottomItem, &bottomcontact, NULL);
             ok = 1;
         }
         if (ok) {
@@ -786,232 +638,58 @@ int GetDropTargetInformation(HWND hwnd, struct ClcData *dat, POINT pt)
     return DROPTARGET_ONCONTACT;
 }
 
-int ClcStatusToPf2(int status)
-{
-    switch (status) {
-        case ID_STATUS_ONLINE:
-            return PF2_ONLINE;
-        case ID_STATUS_AWAY:
-            return PF2_SHORTAWAY;
-        case ID_STATUS_DND:
-            return PF2_HEAVYDND;
-        case ID_STATUS_NA:
-            return PF2_LONGAWAY;
-        case ID_STATUS_OCCUPIED:
-            return PF2_LIGHTDND;
-        case ID_STATUS_FREECHAT:
-            return PF2_FREECHAT;
-        case ID_STATUS_INVISIBLE:
-            return PF2_INVISIBLE;
-        case ID_STATUS_ONTHEPHONE:
-            return PF2_ONTHEPHONE;
-        case ID_STATUS_OUTTOLUNCH:
-            return PF2_OUTTOLUNCH;
-        case ID_STATUS_OFFLINE:
-            return MODEF_OFFLINE;
-    }
-    return 0;
-}
-
-int IsHiddenMode(struct ClcData *dat, int status)
-{
-    return dat->offlineModes & ClcStatusToPf2(status);
-}
-
-void HideInfoTip(HWND hwnd, struct ClcData *dat)
-{
-    CLCINFOTIP it = {
-        0
-    };
-
-    if (dat->hInfoTipItem == NULL)
-        return;
-    it.isGroup = IsHContactGroup(dat->hInfoTipItem);
-    it.hItem = (HANDLE) ((unsigned) dat->hInfoTipItem & ~HCONTACT_ISGROUP);
-    it.cbSize = sizeof(it);
-    dat->hInfoTipItem = NULL;
-    NotifyEventHooks(hHideInfoTipEvent, 0, (LPARAM) &it);
-}
-
-void NotifyNewContact(HWND hwnd, HANDLE hContact)
-{
-    NMCLISTCONTROL nm;
-    nm.hdr.code = CLN_NEWCONTACT;
-    nm.hdr.hwndFrom = hwnd;
-    nm.hdr.idFrom = GetDlgCtrlID(hwnd);
-    nm.flags = 0;
-    nm.hItem = hContact;
-    SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) &nm);
-}
+extern void ( *saveLoadClcOptions )(HWND hwnd,struct ClcData *dat);
 
 void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 {
-    dat->min_row_heigh = (int)DBGetContactSettingByte(NULL,"CLC","RowHeight",CLCDEFAULT_ROWHEIGHT);
-    dat->group_row_height = (int)DBGetContactSettingByte(NULL,"CLC","GRowHeight",CLCDEFAULT_ROWHEIGHT);
-    dat->row_border = 0;
-    {
-        int i;
-        LOGFONTA lf;
-        SIZE fontSize;
-        HDC hdc = GetDC(hwnd);
-        HFONT hFont = NULL, hFont1;
-        HFONT hFontOld;
-        hFontOld = SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
-        for (i = 0; i <= FONTID_MAX; i++) {
-            if (!dat->fontInfo[i].changed)
-                DeleteObject(dat->fontInfo[i].hFont);
-            GetFontSetting(i, &lf, &dat->fontInfo[i].colour); 
-            {
-                LONG height;
-                HDC hdc = GetDC(NULL);
-                height = lf.lfHeight;
-                lf.lfHeight = -MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-                ReleaseDC(NULL, hdc);                
-                dat->fontInfo[i].hFont = CreateFontIndirectA(&lf);
-                lf.lfHeight = height;
-            }
-            dat->fontInfo[i].changed = 0;
-            SelectObject(hdc, dat->fontInfo[i].hFont);
-            hFont1 = SelectObject(hdc, dat->fontInfo[i].hFont);
-            if (hFont == NULL)
-                hFont = hFont1;
-            GetTextExtentPoint32A(hdc, "x", 1, &fontSize);
-            dat->fontInfo[i].fontHeight = fontSize.cy;
-        //if(fontSize.cy>dat->rowHeight) dat->rowHeight=fontSize.cy;
-        }
-        SelectObject(hdc, hFontOld);
-        ReleaseDC(hwnd, hdc);
-    }
-    dat->leftMargin = DBGetContactSettingByte(NULL, "CLC", "LeftMargin", CLCDEFAULT_LEFTMARGIN);
-    dat->rightMargin = DBGetContactSettingByte(NULL, "CLC", "RightMargin", CLCDEFAULT_LEFTMARGIN);
-    dat->exStyle = DBGetContactSettingDword(NULL, "CLC", "ExStyle", GetDefaultExStyle());
-    dat->scrollTime = DBGetContactSettingWord(NULL, "CLC", "ScrollTime", CLCDEFAULT_SCROLLTIME);
-    dat->groupIndent = DBGetContactSettingByte(NULL, "CLC", "GroupIndent", CLCDEFAULT_GROUPINDENT);
-    dat->gammaCorrection = DBGetContactSettingByte(NULL, "CLC", "GammaCorrect", CLCDEFAULT_GAMMACORRECT);
-    dat->showIdle = DBGetContactSettingByte(NULL, "CLC", "ShowIdle", CLCDEFAULT_SHOWIDLE);
-    dat->noVScrollbar = DBGetContactSettingByte(NULL, "CLC", "NoVScrollBar", 0); 
-    SendMessage(hwnd, INTM_SCROLLBARCHANGED, 0, 0);
-    if (!dat->bkChanged) {
-        DBVARIANT dbv;
-        dat->bkColour = DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR);
+	saveLoadClcOptions(hwnd, dat);
+
+	dat->min_row_heigh = (int)DBGetContactSettingByte(NULL,"CLC","RowHeight",CLCDEFAULT_ROWHEIGHT);
+	dat->group_row_height = (int)DBGetContactSettingByte(NULL,"CLC","GRowHeight",CLCDEFAULT_ROWHEIGHT);
+	dat->row_border = 0;
+	dat->rightMargin = DBGetContactSettingByte(NULL, "CLC", "RightMargin", CLCDEFAULT_LEFTMARGIN);
+	if (!dat->bkChanged) {
 		if(g_CluiData.hBrushCLCBk)
 			DeleteObject(g_CluiData.hBrushCLCBk);
 		g_CluiData.hBrushCLCBk = CreateSolidBrush(dat->bkColour);
-        if (dat->hBmpBackground) {
-            if(g_CluiData.hdcPic) {
-                SelectObject(g_CluiData.hdcPic, g_CluiData.hbmPicOld);
-                DeleteDC(g_CluiData.hdcPic);
-                g_CluiData.hdcPic = 0;
-                g_CluiData.hbmPicOld = 0;
-            }
-            DeleteObject(dat->hBmpBackground); dat->hBmpBackground = NULL;
-        }
-        if (DBGetContactSettingByte(NULL, "CLC", "UseBitmap", CLCDEFAULT_USEBITMAP)) {
-            if (!DBGetContactSetting(NULL, "CLC", "BkBitmap", &dbv)) {
-                dat->hBmpBackground = (HBITMAP) CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM) dbv.pszVal);
-                mir_free(dbv.pszVal);
-            }
-        }
-        dat->backgroundBmpUse = DBGetContactSettingWord(NULL, "CLC", "BkBmpUse", CLCDEFAULT_BKBMPUSE);
-        g_CluiData.bmpBackground = dat->hBmpBackground;
-        if(g_CluiData.bmpBackground) {
-            HDC hdcThis = GetDC(hwndContactList);
-            GetObject(g_CluiData.bmpBackground, sizeof(g_CluiData.bminfoBg), &(g_CluiData.bminfoBg));
-            g_CluiData.hdcPic = CreateCompatibleDC(hdcThis);
-            g_CluiData.hbmPicOld = SelectObject(g_CluiData.hdcPic, g_CluiData.bmpBackground);
-            ReleaseDC(hwndContactList, hdcThis);
-        }
-    }
-    if (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
-        char wpbuf[MAX_PATH];
-        if (dat->hBmpBackground) {
-            DeleteObject(dat->hBmpBackground); dat->hBmpBackground = NULL;
-        }
-        SystemParametersInfoA(SPI_GETDESKWALLPAPER, MAX_PATH, wpbuf, 0);
+		if (dat->hBmpBackground) {
+			if(g_CluiData.hdcPic) {
+				SelectObject(g_CluiData.hdcPic, g_CluiData.hbmPicOld);
+				DeleteDC(g_CluiData.hdcPic);
+				g_CluiData.hdcPic = 0;
+				g_CluiData.hbmPicOld = 0;
+			}
+			DeleteObject(dat->hBmpBackground); dat->hBmpBackground = NULL;
+		}
+		g_CluiData.bmpBackground = dat->hBmpBackground;
+		if(g_CluiData.bmpBackground) {
+			HDC hdcThis = GetDC(pcli->hwndContactList);
+			GetObject(g_CluiData.bmpBackground, sizeof(g_CluiData.bminfoBg), &(g_CluiData.bminfoBg));
+			g_CluiData.hdcPic = CreateCompatibleDC(hdcThis);
+			g_CluiData.hbmPicOld = SelectObject(g_CluiData.hdcPic, g_CluiData.bmpBackground);
+			ReleaseDC(pcli->hwndContactList, hdcThis);
+		}
+	}
+	if (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
+		char wpbuf[MAX_PATH];
+		if (dat->hBmpBackground) {
+			DeleteObject(dat->hBmpBackground); dat->hBmpBackground = NULL;
+		}
+		SystemParametersInfoA(SPI_GETDESKWALLPAPER, MAX_PATH, wpbuf, 0);
 
-        // we have a wallpaper string
-        if (strlen(wpbuf) > 0) {
-            dat->hBmpBackground = LoadImageA(NULL, wpbuf, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-        }
-        g_CluiData.bmpBackground = dat->hBmpBackground;
-        if(g_CluiData.bmpBackground) {
-            HDC hdcThis = GetDC(hwndContactList);
-            GetObject(g_CluiData.bmpBackground, sizeof(g_CluiData.bminfoBg), &(g_CluiData.bminfoBg));
-            g_CluiData.hdcPic = CreateCompatibleDC(hdcThis);
-            g_CluiData.hbmPicOld = SelectObject(g_CluiData.hdcPic, g_CluiData.bmpBackground);
-            ReleaseDC(hwndContactList, hdcThis);
-        }
-    }
-
-    dat->greyoutFlags = DBGetContactSettingDword(NULL, "CLC", "GreyoutFlags", CLCDEFAULT_GREYOUTFLAGS);
-    dat->offlineModes = DBGetContactSettingDword(NULL, "CLC", "OfflineModes", CLCDEFAULT_OFFLINEMODES);
-    //dat->selBkColour=DBGetContactSettingDword(NULL,"CLC","SelBkColour",CLCDEFAULT_SELBKCOLOUR);
-    dat->selTextColour = DBGetContactSettingDword(NULL, "CLC", "SelTextColour", CLCDEFAULT_SELTEXTCOLOUR);
-    dat->hotTextColour = DBGetContactSettingDword(NULL, "CLC", "HotTextColour", CLCDEFAULT_HOTTEXTCOLOUR);
-    dat->quickSearchColour = DBGetContactSettingDword(NULL, "CLC", "QuickSearchColour", CLCDEFAULT_QUICKSEARCHCOLOUR);
-    dat->useWindowsColours = DBGetContactSettingByte(NULL, "CLC", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS); {
-        NMHDR hdr;
-        hdr.code = CLN_OPTIONSCHANGED;
-        hdr.hwndFrom = hwnd;
-        hdr.idFrom = GetDlgCtrlID(hwnd);
-        SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) &hdr);
-    }
-    SendMessage(hwnd, WM_SIZE, 0, 0);
-}
-
-#define GSIF_HASMEMBERS   0x80000000
-#define GSIF_ALLCHECKED   0x40000000
-#define GSIF_INDEXMASK    0x3FFFFFFF
-void RecalculateGroupCheckboxes(HWND hwnd, struct ClcData *dat)
-{
-    struct ClcGroup *group;
-    int check;
-
-    group = &dat->list;
-    group->scanIndex = GSIF_ALLCHECKED;
-    for (; ;) {
-        if ((group->scanIndex & GSIF_INDEXMASK) == group->contactCount) {
-            check = (group->scanIndex & (GSIF_HASMEMBERS | GSIF_ALLCHECKED)) == (GSIF_HASMEMBERS | GSIF_ALLCHECKED);
-            group = group->parent;
-            if (group == NULL)
-                break;
-            if (check)
-                group->contact[(group->scanIndex & GSIF_INDEXMASK)].flags |= CONTACTF_CHECKED;
-            else {
-                group->contact[(group->scanIndex & GSIF_INDEXMASK)].flags &= ~CONTACTF_CHECKED;
-                group->scanIndex &= ~GSIF_ALLCHECKED;
-            }
-        } else if (group->contact[(group->scanIndex & GSIF_INDEXMASK)].type == CLCIT_GROUP) {
-            group = group->contact[(group->scanIndex & GSIF_INDEXMASK)].group;
-            group->scanIndex = GSIF_ALLCHECKED;
-            continue;
-        } else if (group->contact[(group->scanIndex & GSIF_INDEXMASK)].type == CLCIT_CONTACT) {
-            group->scanIndex |= GSIF_HASMEMBERS;
-            if (!(group->contact[(group->scanIndex & GSIF_INDEXMASK)].flags & CONTACTF_CHECKED))
-                group->scanIndex &= ~GSIF_ALLCHECKED;
-        }
-        group->scanIndex++;
-    }
-}
-
-void SetGroupChildCheckboxes(struct ClcGroup *group, int checked)
-{
-    int i;
-
-    for (i = 0; i< group->contactCount; i++) {
-        if (group->contact[i].type == CLCIT_GROUP) {
-            SetGroupChildCheckboxes(group->contact[i].group, checked);
-            if (checked)
-                group->contact[i].flags |= CONTACTF_CHECKED;
-            else
-                group->contact[i].flags &= ~CONTACTF_CHECKED;
-        } else if (group->contact[i].type == CLCIT_CONTACT) {
-            if (checked)
-                group->contact[i].flags |= CONTACTF_CHECKED;
-            else
-                group->contact[i].flags &= ~CONTACTF_CHECKED;
-        }
-    }
+		// we have a wallpaper string
+		if (strlen(wpbuf) > 0) {
+			dat->hBmpBackground = LoadImageA(NULL, wpbuf, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		}
+		g_CluiData.bmpBackground = dat->hBmpBackground;
+		if(g_CluiData.bmpBackground) {
+			HDC hdcThis = GetDC(pcli->hwndContactList);
+			GetObject(g_CluiData.bmpBackground, sizeof(g_CluiData.bminfoBg), &(g_CluiData.bminfoBg));
+			g_CluiData.hdcPic = CreateCompatibleDC(hdcThis);
+			g_CluiData.hbmPicOld = SelectObject(g_CluiData.hdcPic, g_CluiData.bmpBackground);
+			ReleaseDC(pcli->hwndContactList, hdcThis);
+		}
+	}
 }
 
 void InvalidateItem(HWND hwnd, struct ClcData *dat, int iItem)
@@ -1026,7 +704,6 @@ void InvalidateItem(HWND hwnd, struct ClcData *dat, int iItem)
     //    rc.bottom = rc.top + dat->rowHeight;
         InvalidateRect(hwnd, &rc, FALSE);
     }
-    //InvalidateRect(hwnd,NULL,FALSE); // workaround
 }
 
 BYTE MY_DBGetContactSettingByte(HANDLE hContact, char *szModule, char *szSetting, BYTE defaultval)

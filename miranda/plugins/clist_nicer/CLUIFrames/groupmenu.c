@@ -45,7 +45,6 @@ HANDLE hNewSubGroupMenuItem;
 int NewGroupIconidx;
 extern struct CluiData g_CluiData;
 
-extern HWND hwndContactTree;
 extern HIMAGELIST hCListImages;
 extern HICON LoadIconFromExternalFile (char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx);
 
@@ -257,17 +256,17 @@ static int OnBuildGroupMenu(WPARAM wParam,LPARAM lParam)
 
     ZeroMemory(&mi,sizeof(mi));
     mi.cbSize = sizeof(mi);
-    mi.flags = CMIM_FLAGS | (SendMessage(hwndContactTree,CLM_GETHIDEOFFLINEROOT,0,0)?CMIF_CHECKED:0);
+    mi.flags = CMIM_FLAGS | (SendMessage(pcli->hwndContactTree,CLM_GETHIDEOFFLINEROOT,0,0)?CMIF_CHECKED:0);
     CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hHideOfflineUsersOutHereMenuItem, (LPARAM)&mi);    
 
     ZeroMemory(&mi,sizeof(mi));
     mi.cbSize = sizeof(mi);
-    mi.flags = CMIM_FLAGS | (GetWindowLong(hwndContactTree,GWL_STYLE)&CLS_HIDEEMPTYGROUPS?CMIF_CHECKED:0);
+    mi.flags = CMIM_FLAGS | (GetWindowLong(pcli->hwndContactTree,GWL_STYLE)&CLS_HIDEEMPTYGROUPS?CMIF_CHECKED:0);
     CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hHideEmptyGroupsMenuItem, (LPARAM)&mi);    
 
     ZeroMemory(&mi,sizeof(mi));
     mi.cbSize = sizeof(mi);
-    mi.flags = CMIM_FLAGS | (GetWindowLong(hwndContactTree,GWL_STYLE)&CLS_USEGROUPS?0:CMIF_CHECKED);
+    mi.flags = CMIM_FLAGS | (GetWindowLong(pcli->hwndContactTree,GWL_STYLE)&CLS_USEGROUPS?0:CMIF_CHECKED);
     CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hDisableGroupsMenuItem, (LPARAM)&mi);
 
     ZeroMemory(&mi,sizeof(mi));

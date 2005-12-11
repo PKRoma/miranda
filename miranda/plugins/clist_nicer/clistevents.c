@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 
 void TrayIconSetToBase(char *szPreferredProto);
-int GetContactDisplayName(WPARAM wParam, LPARAM lParam);
 
 static int RemoveEvent(WPARAM wParam, LPARAM lParam);
 static HWND hwndEventFrame = 0;
@@ -32,22 +31,22 @@ HFONT __fastcall ChangeToFont(HDC hdc, struct ClcData *dat, int id, int *fontHei
 extern pfnDrawAlpha pDrawAlpha;
 extern struct ClcData *g_clcData;
 
-extern HWND hwndContactTree, hwndContactList;
-extern HANDLE hClcWindowList;
 extern struct CluiData g_CluiData;
 extern StatusItems_t *StatusItems;
 
 HWND g_hwndEventArea = 0;
 
 struct CListEvent {
-    int imlIconIndex;
-    int imlIconOverlayIndex;
-    int flashesDone;
-    int menuId;
-    CLISTEVENT cle;
+	int imlIconIndex;
+	int flashesDone;
+	CLISTEVENT cle;
+
+	int menuId;
+	int imlIconOverlayIndex;
 };
-static struct CListEvent *event;
-static int eventCount;
+
+static struct CListEvent *event = NULL;
+static int eventCount = 0;
 
 struct CListImlIcon {
     int index;
@@ -124,7 +123,7 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
                     if (nmi) {
                         iIcon = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) nmi->hContact, 0);
                         hIcon = ImageList_GetIcon(hCListImages, iIcon, ILD_NORMAL);
-                        CLN_DrawMenuItem(dis, hIcon, nmi->hIcon);
+                        pcli->pfnDrawMenuItem(dis, hIcon, nmi->hIcon);
                         return TRUE;
                     }
                 }
@@ -266,15 +265,7 @@ static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD
             szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) event[0].cle.hContact, 0);
         TrayIconUpdateWithImageList((iconsOn || disableTrayFlash) ? event[0].imlIconIndex : event[0].imlIconOverlayIndex, event[0].cle.pszTooltip, szProto, event[0].cle.hContact);
     }
-    /*
-    for(i=0;i<eventCount;i++) {     
-    for(j=0;j<i;j++) if(event[j].cle.hContact==event[i].cle.hContact) break;
-    if(j<i) continue;               
-    ChangeContactIcon(event[i].cle.hContact, iconsOn || disableIconFlash ? event[i].imlIconIndex : event[i].imlIconOverlayIndex ,0);
-    if(event[i].cle.flags&CLEF_ONLYAFEW) {
-        if(0==--event[i].flashesDone) RemoveEvent((WPARAM)event[i].cle.hContact,(LPARAM)event[i].cle.hDbEvent);
-    }
-    }*/
+
     for (i = 0; i < eventCount; i++) {
         if (event[i].cle.flags & CLEF_ONLYAFEW) {
             if (0 == --event[i].flashesDone) {
@@ -293,7 +284,7 @@ static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD
     iconsOn = !iconsOn;
 }
 
-static int AddEvent(WPARAM wParam, LPARAM lParam)
+int AddEvent(WPARAM wParam, LPARAM lParam)
 {
     MENUITEMINFO mii = {0};
     CLISTEVENT *cle = (CLISTEVENT *) lParam;
@@ -352,7 +343,7 @@ static int AddEvent(WPARAM wParam, LPARAM lParam)
                 }
             }
             szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) event[i].cle.hContact, 0);
-            szName = GetContactDisplayNameW(event[i].cle.hContact, 0);
+            szName = pcli->pfnGetContactDisplayName(event[i].cle.hContact, 0);
             if (szProto && szName) {
                 nmi = (struct NotifyMenuItemExData *) malloc(sizeof(struct NotifyMenuItemExData));
                 if (nmi) {
@@ -389,10 +380,10 @@ static int AddEvent(WPARAM wParam, LPARAM lParam)
             g_CluiData.hUpdateContact = event[i].cle.hContact;
         }
         if (g_CluiData.dwFlags & CLUI_STICKYEVENTS) {
-            hItem = (HANDLE) SendMessage(hwndContactTree, CLM_FINDCONTACT, (WPARAM) event[i].cle.hContact, 0);
+            hItem = (HANDLE) SendMessage(pcli->hwndContactTree, CLM_FINDCONTACT, (WPARAM) event[i].cle.hContact, 0);
             if (hItem) {
-                SendMessage(hwndContactTree, CLM_SETSTICKY, (WPARAM) hItem, 1);
-                WindowList_Broadcast(hClcWindowList, INTM_PROTOCHANGED, (WPARAM) event[i].cle.hContact, 0);
+                SendMessage(pcli->hwndContactTree, CLM_SETSTICKY, (WPARAM) hItem, 1);
+                pcli->pfnClcBroadcast(INTM_PROTOCHANGED, (WPARAM) event[i].cle.hContact, 0);
             }
         }
         if (eventCount > 0) {
@@ -413,7 +404,7 @@ static int AddEvent(WPARAM wParam, LPARAM lParam)
 // wParam=(WPARAM)(HANDLE)hContact
 // lParam=(LPARAM)(HANDLE)hDbEvent
 // Returns 0 if the event was successfully removed, or nonzero if the event was not found
-static int RemoveEvent(WPARAM wParam, LPARAM lParam)
+int RemoveEvent(WPARAM wParam, LPARAM lParam)
 {
     HANDLE hItem;
     int i, j;
@@ -498,10 +489,10 @@ static int RemoveEvent(WPARAM wParam, LPARAM lParam)
     if (bUnstick) {
     // clear "sticky" (sort) status
 
-        hItem = (HANDLE) SendMessage(hwndContactTree, CLM_FINDCONTACT, wParam, 0);
+        hItem = (HANDLE) SendMessage(pcli->hwndContactTree, CLM_FINDCONTACT, wParam, 0);
         if (hItem) {
-            SendMessage(hwndContactTree, CLM_SETSTICKY, (WPARAM) hItem, 0);
-            WindowList_Broadcast(hClcWindowList, INTM_PROTOCHANGED, wParam, 0);
+            SendMessage(pcli->hwndContactTree, CLM_SETSTICKY, (WPARAM) hItem, 0);
+            pcli->pfnClcBroadcast(INTM_PROTOCHANGED, wParam, 0);
         }
     }
 
@@ -523,90 +514,6 @@ int MyGetEvent(WPARAM wParam, LPARAM lParam)
             return(int) &event[i].cle;
     }
     return(int) (CLISTEVENT *) NULL;
-}
-
-static int GetEvent(WPARAM wParam, LPARAM lParam)
-{
-    int i;
-
-    if ((HANDLE) wParam == INVALID_HANDLE_VALUE) {
-        if (lParam >= eventCount)
-            return(int) (CLISTEVENT *) NULL;
-        return(int) &event[lParam].cle;
-    }
-    for (i = 0; i < eventCount; i++) {
-        if (event[i].cle.hContact == (HANDLE) wParam)
-            if (lParam-- == 0)
-                return(int) &event[i].cle;
-    }
-    return(int) (CLISTEVENT *) NULL;
-}
-
-int EventsProcessContactDoubleClick(HANDLE hContact)
-{
-    int i;
-    HANDLE hDbEvent;
-
-    for (i = 0; i < eventCount; i++) {
-        if (event[i].cle.hContact == hContact) {
-            hDbEvent = event[i].cle.hDbEvent;
-            CallService(event[i].cle.pszService, (WPARAM) (HWND) NULL, (LPARAM) &event[i].cle);
-            RemoveEvent((WPARAM) hContact, (LPARAM) hDbEvent);
-            return 0;
-        }
-    }
-    return 1;
-}
-
-int EventsProcessTrayDoubleClick(void)
-{
-    if (eventCount) {
-        HANDLE hContact, hDbEvent;
-        hContact = event[0].cle.hContact;
-        hDbEvent = event[0].cle.hDbEvent;
-        CallService(event[0].cle.pszService, (WPARAM) NULL, (LPARAM) &event[0].cle);
-        RemoveEvent((WPARAM) hContact, (LPARAM) hDbEvent);
-        return 0;
-    }
-    return 1;
-}
-
-static int RemoveEventsForContact(WPARAM wParam, LPARAM lParam)
-{
-    int j, hit;
-
-    /*
-    the for(;;) loop is used here since the eventCount can not be relied upon to take us
-    thru the event[] array without suffering from shortsightedness about how many unseen
-    events remain, e.g. three events, we remove the first, we're left with 2, the event
-    loop exits at 2 and we never see the real new 2.
-    */
-
-    for (; eventCount > 0;) {
-        for (hit = 0, j = 0; j < eventCount; j++) {
-            if (event[j].cle.hContact == (HANDLE) wParam) {
-                RemoveEvent(wParam, (LPARAM) event[j].cle.hDbEvent);
-                hit = 1;
-            }
-        }
-        if (j == eventCount && hit == 0)
-            return 0; /* got to the end of the array and didnt remove anything */
-    }
-
-    return 0;
-}
-
-int InitCListEvents(void)
-{
-    event = NULL;
-    eventCount = 0;
-    disableTrayFlash = DBGetContactSettingByte(NULL, "CList", "DisableTrayFlash", 0);
-    disableIconFlash = DBGetContactSettingByte(NULL, "CList", "NoIconBlink", 0);
-    CreateServiceFunction(MS_CLIST_ADDEVENT, AddEvent);
-    CreateServiceFunction(MS_CLIST_REMOVEEVENT, RemoveEvent);
-    CreateServiceFunction(MS_CLIST_GETEVENT, GetEvent);
-    HookEvent(ME_DB_CONTACT_DELETED, RemoveEventsForContact);
-    return 0;
 }
 
 void UninitCListEvents(void)

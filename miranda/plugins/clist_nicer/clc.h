@@ -90,71 +90,48 @@ struct ClcGroup;
 #define ECF_RTLSTATUSMSG 2
 
 struct ExtraCache {
-    BYTE iExtraImage[MAXEXTRACOLUMNS];
-    HANDLE hContact;
-    BYTE iExtraValid;
-    BYTE valid;
-    TCHAR *statusMsg;
-    BYTE bStatusMsgValid;
-    DWORD timezone;
-    DWORD timediff;
-    DWORD dwCFlags;
-    StatusItems_t *status_item, *proto_status_item;
+	BYTE iExtraImage[MAXEXTRACOLUMNS];
+	HANDLE hContact;
+	BYTE iExtraValid;
+	BYTE valid;
+	TCHAR *statusMsg;
+	BYTE bStatusMsgValid;
+	DWORD timezone;
+	DWORD timediff;
+	DWORD dwCFlags;
+	StatusItems_t *status_item, *proto_status_item;
 };
 
 struct ClcContact {
-    BYTE type;
-    BYTE flags;
-    union {
-        struct {
-            WORD iImage;
-            HANDLE hContact;
-            BOOL bIsMeta;
-            HANDLE hSubContact;
-            BYTE xStatus;
-            char *metaProto;
-            int clientId;
-            DWORD codePage;
-            struct avatarCacheEntry *ace;
-            //LPVOID gdipObject;
-            //BYTE bStatusMsgValid;
-            //TCHAR statusMsg[SMSG_MAXLEN];
-            WORD wStatus;
-        };
-        struct {
-            WORD groupId;
-            struct ClcGroup *group;
-            int isRtl;
-        };
-    };
-    BYTE iExtraImage[MAXEXTRACOLUMNS];
-    //BYTE iExtraValid;
-    int extraCacheEntry;
-    TCHAR szText[120 - MAXEXTRACOLUMNS];
-    char *proto;    // MS_PROTO_GETBASEPROTO
-    int avatarLeft, extraIconRightBegin;
-};
+	BYTE type;
+	BYTE flags;
+	union {
+		struct {
+			WORD iImage;
+			HANDLE hContact;
+		};
+		struct {
+			WORD groupId;
+			struct ClcGroup *group;
+		};
+	};
+	BYTE iExtraImage[MAXEXTRACOLUMNS];
+	TCHAR szText[120 - MAXEXTRACOLUMNS];
+	char * proto;    // MS_PROTO_GETBASEPROTO
 
-#define GROUP_ALLOCATE_STEP  8
-struct ClcGroup {
-    int contactCount, allocedCount;
-    struct ClcContact *contact;
-    int expanded, hideOffline, groupId;
-    struct ClcGroup *parent;
-    int scanIndex;
-    int totalMembers;
+	// inherited from standard
+	BOOL bIsMeta;
+	HANDLE hSubContact;
+	BYTE xStatus;
+	char *metaProto;
+	int clientId;
+	DWORD codePage;
+	struct avatarCacheEntry *ace;
+	WORD wStatus;
+	int extraCacheEntry;
+	int avatarLeft, extraIconRightBegin;
+	int isRtl;
 };
-
-struct ClcFontInfo {
-    HFONT hFont;
-    int fontHeight, changed;
-    COLORREF colour;
-};
-
-typedef struct {
-    char *szProto;
-    DWORD dwStatus;
-} ClcProtoStatus;
 
 #define DRAGSTAGE_NOTMOVED  0
 #define DRAGSTAGE_ACTIVE    1
@@ -162,68 +139,68 @@ typedef struct {
 #define DRAGSTAGEF_MAYBERENAME  0x8000
 #define DRAGSTAGEF_OUTSIDE      0x4000
 
-#undef FONTID_MAX
 #define FONTID_STATUS      8
 #define FONTID_FRAMETITLE  9
 #define FONTID_EVENTAREA   10
 #define FONTID_TIMESTAMP   11
-#define FONTID_MAX         11
 
 struct ClcData {
-    struct ClcGroup list;
+	struct ClcGroup list;
+	int rowHeight;
+	int yScroll;
+	int selection;
+	struct ClcFontInfo fontInfo[FONTID_MAX + 1];
+	int scrollTime;
+	HIMAGELIST himlHighlight;
+	int groupIndent;
+	TCHAR szQuickSearch[128];
+	int iconXSpace;
+	HWND hwndRenameEdit;
+	COLORREF bkColour, selBkColour, selTextColour, hotTextColour, quickSearchColour;
+	int iDragItem, iInsertionMark;
+	int dragStage;
+	POINT ptDragStart;
+	int dragAutoScrolling;
+	int dragAutoScrollHeight;
+	int leftMargin;
+	int insertionMarkHitHeight;
+	HBITMAP hBmpBackground;
+	int backgroundBmpUse, bkChanged;
+	int iHotTrack;
+	int gammaCorrection;
+	DWORD greyoutFlags;           //see m_clc.h
+	DWORD offlineModes;
+	DWORD exStyle;
+	POINT ptInfoTip;
+	int infoTipTimeout;
+	HANDLE hInfoTipItem;
+	HIMAGELIST himlExtraColumns;
+	int extraColumnsCount;
+	int extraColumnSpacing;
+	int checkboxSize;
+	int showSelAlways;
+	int showIdle;
+	int noVScrollbar;
+	int useWindowsColours;
+	BOOL bNeedSort;
 
-    int max_row_height;
-    int *row_heights;
-    int row_heights_size;
-    int row_heights_allocated;
+	int max_row_height;
+	int *row_heights;
+	int row_heights_size;
+	int row_heights_allocated;
 
-    int row_border;
-    int min_row_heigh, group_row_height;
+	int row_border;
+	int min_row_heigh, group_row_height;
 
-    //int rowHeight;
-    int yScroll;
-    int selection;
-    struct ClcFontInfo fontInfo[FONTID_MAX + 1];
-    int currentFontID;
-    int scrollTime;
-    HIMAGELIST himlHighlight;
-    int groupIndent;
-    TCHAR szQuickSearch[128];
-    int iconXSpace;
-    HWND hwndRenameEdit;
-    COLORREF bkColour, selBkColour, selTextColour, hotTextColour, quickSearchColour;
-    int iDragItem, iInsertionMark;
-    int dragStage;
-    POINT ptDragStart;
-    int dragAutoScrolling;
-    int dragAutoScrollHeight;
-    int leftMargin, rightMargin;
-    int insertionMarkHitHeight;
-    HBITMAP hBmpBackground;
-    int backgroundBmpUse, bkChanged;
-    int iHotTrack;
-    int gammaCorrection;
-    DWORD greyoutFlags;           //see m_clc.h
-    DWORD offlineModes;
-    DWORD exStyle;
-    POINT ptInfoTip;
-    int infoTipTimeout;
-    HANDLE hInfoTipItem;
-    HIMAGELIST himlExtraColumns;
-    int extraColumnsCount;
-    int extraColumnSpacing;
-    int checkboxSize;
-    int showSelAlways;
-    int showIdle;
-    int noVScrollbar;
-    int useWindowsColours;
-    BYTE SelectMode;
-    BYTE isMultiSelect;
-    HWND hwndParent;
-    DWORD lastSort;
-    BOOL bNeedSort, bNeedPaint, bisEmbedded;
-    DWORD lastRepaint;
-    BOOL forcePaint, forceScroll;
+	int currentFontID;
+	int rightMargin;
+	BYTE SelectMode;
+	BYTE isMultiSelect;
+	HWND hwndParent;
+	DWORD lastSort;
+	BOOL bNeedPaint, bisEmbedded;
+	DWORD lastRepaint;
+	BOOL forcePaint, forceScroll;
 };
 
 #define CLUI_FRAME_SHOWTOPBUTTONS 1
@@ -269,106 +246,106 @@ struct ClcData {
 #define CLUI_FLOATER_EVENTS 4
 
 struct CluiData {
-    DWORD dwFlags;
-    DWORD topOffset, bottomOffset;
-    int statusBarHeight;
-    int soundsOff;
-    BYTE tabSRMM_Avail;
-    BYTE IcoLib_Avail;
-    BYTE bMetaAvail;
-    BYTE bAvatarServiceAvail;
-    HICON hIconVisible, hIconInvisible, hIconChatactive, hIconConnecting;
-    DWORD dwButtonHeight, dwButtonWidth;
-    DWORD toolbarVisibility;
-    DWORD winFlags;
-    DWORD winFlagsEx;
-    HMENU hMenuButtons;
-    int notifyActive;
-    int hIconNotify;
-    HMENU hMenuNotify;
-    int iLastEventAdded;
-    int wNextMenuID;
-    HANDLE hUpdateContact;
-    DWORD sortTimer;
-    char *szNoEvents;
-    BOOL forceResize;
-    BOOL neeedSnap;
-    COLORREF avatarBorder;
-    HBRUSH hBrushAvatarBorder, hBrushColorKey;
+	DWORD dwFlags;
+	DWORD topOffset, bottomOffset;
+	int statusBarHeight;
+	int soundsOff;
+	BYTE tabSRMM_Avail;
+	BYTE IcoLib_Avail;
+	BYTE bMetaAvail;
+	BYTE bAvatarServiceAvail;
+	HICON hIconVisible, hIconInvisible, hIconChatactive, hIconConnecting;
+	DWORD dwButtonHeight, dwButtonWidth;
+	DWORD toolbarVisibility;
+	DWORD winFlags;
+	DWORD winFlagsEx;
+	HMENU hMenuButtons;
+	int notifyActive;
+	int hIconNotify;
+	HMENU hMenuNotify;
+	int iLastEventAdded;
+	int wNextMenuID;
+	HANDLE hUpdateContact;
+	DWORD sortTimer;
+	char *szNoEvents;
+	BOOL forceResize;
+	BOOL neeedSnap;
+	COLORREF avatarBorder;
+	HBRUSH hBrushAvatarBorder, hBrushColorKey;
 	HBRUSH hBrushCLCBk;
-    DWORD avatarRadius;
-    int avatarSize;
-    BOOL bForceRefetchOnPaint;
-    BYTE dualRowMode;
-    BYTE avatarPadding;
-    BYTE cornerRadius;
-    BYTE isTransparent;
-    BYTE alpha, autoalpha;
-    BYTE fadeinout;
-    BYTE autosize;
-    BYTE gapBetweenFrames;
-    BYTE titleBarHeight;
-    DWORD dwExtraImageMask;
-    BYTE bClipBorder, bRowSpacing;
-    HBITMAP bmpBackground, hbmBgOld, hbmBg;
-    HDC hdcBg;
-    HDC hdcPic;
-    HBITMAP hbmPicOld;
-    BITMAP bminfoBg;
-    SIZE dcSize;
-    POINT ptW;
-    BOOL bWallpaperMode;
-    BOOL bNoOfflineAvatars;
-    BOOL bEventAreaEnabled;
-    BOOL bFullTransparent;
-    BOOL bDblClkAvatars;
-    BOOL bApplyIndentToBg;
-    BOOL bEqualSections;
-    DWORD bFilterEffective;
-    BOOL bCenterStatusIcons;
-    BOOL bSkinnedToolbar;
-    BOOL bSkinnedStatusBar;
-    BOOL bUsePerProto;
-    BOOL bOverridePerStatusColors;
-    BOOL bDontSeparateOffline;
-    TCHAR groupFilter[2048];
-    char protoFilter[2048];
-    char varFilter[2048];
-    char current_viewmode[256], old_viewmode[256];
-    BYTE boldHideOffline;
-    DWORD statusMaskFilter;
-    DWORD stickyMaskFilter;
-    DWORD filterFlags;
-    COLORREF colorkey;
-    char szMetaName[256];
-    BOOL bMetaEnabled;
-    BOOL bSecIMAvail;
-    BOOL bNoTrayTips;
-    int exIconScale;
-    DWORD local_gmt_diff;
-    BOOL bShowLocalTime;
-    BOOL bShowLocalTimeSelective;
-    BOOL bShowXStatusOnSbar;
-    BOOL bLayeredHack;
-    HPEN hPen3DBright, hPen3DDark;
-    BYTE bSkinnedButtonMode;
-    BYTE bFirstRun;
-    BYTE bUseDCMirroring;
-    BYTE bCLeft, bCRight, bCTop, bCBottom;
+	DWORD avatarRadius;
+	int avatarSize;
+	BOOL bForceRefetchOnPaint;
+	BYTE dualRowMode;
+	BYTE avatarPadding;
+	BYTE cornerRadius;
+	BYTE isTransparent;
+	BYTE alpha, autoalpha;
+	BYTE fadeinout;
+	BYTE autosize;
+	BYTE gapBetweenFrames;
+	BYTE titleBarHeight;
+	DWORD dwExtraImageMask;
+	BYTE bClipBorder, bRowSpacing;
+	HBITMAP bmpBackground, hbmBgOld, hbmBg;
+	HDC hdcBg;
+	HDC hdcPic;
+	HBITMAP hbmPicOld;
+	BITMAP bminfoBg;
+	SIZE dcSize;
+	POINT ptW;
+	BOOL bWallpaperMode;
+	BOOL bNoOfflineAvatars;
+	BOOL bEventAreaEnabled;
+	BOOL bFullTransparent;
+	BOOL bDblClkAvatars;
+	BOOL bApplyIndentToBg;
+	BOOL bEqualSections;
+	DWORD bFilterEffective;
+	BOOL bCenterStatusIcons;
+	BOOL bSkinnedToolbar;
+	BOOL bSkinnedStatusBar;
+	BOOL bUsePerProto;
+	BOOL bOverridePerStatusColors;
+	BOOL bDontSeparateOffline;
+	TCHAR groupFilter[2048];
+	char protoFilter[2048];
+	char varFilter[2048];
+	char current_viewmode[256], old_viewmode[256];
+	BYTE boldHideOffline;
+	DWORD statusMaskFilter;
+	DWORD stickyMaskFilter;
+	DWORD filterFlags;
+	COLORREF colorkey;
+	char szMetaName[256];
+	BOOL bMetaEnabled;
+	BOOL bSecIMAvail;
+	BOOL bNoTrayTips;
+	int exIconScale;
+	DWORD local_gmt_diff;
+	BOOL bShowLocalTime;
+	BOOL bShowLocalTimeSelective;
+	BOOL bShowXStatusOnSbar;
+	BOOL bLayeredHack;
+	HPEN hPen3DBright, hPen3DDark;
+	BYTE bSkinnedButtonMode;
+	BYTE bFirstRun;
+	BYTE bUseDCMirroring;
+	BYTE bCLeft, bCRight, bCTop, bCBottom;
 	BYTE bUseFloater;
 };
 
 struct IconDesc {
-    char *szName;
-    char *szDesc;
-    int uId;           // icon ID
+	char *szName;
+	char *szDesc;
+	int uId;           // icon ID
 };
 
 struct NotifyMenuItemExData {
-    HANDLE hContact;
-    int iIcon;              // icon index in the image list
-    HICON hIcon;            // corresponding icon handle
-    HANDLE hDbEvent;
+	HANDLE hContact;
+	int iIcon;              // icon index in the image list
+	HICON hIcon;            // corresponding icon handle
+	HANDLE hDbEvent;
 };
 
 #define BUTTON_HEIGHT_D 21
@@ -378,48 +355,38 @@ struct NotifyMenuItemExData {
 #define TOPBUTTON_PUSH 1
 
 struct CluiTopButton {
-    HWND hwnd;
-    HICON hIcon, hAltIcon;
-    UINT id, idIcon, idAltIcon;
-    char *szIcoLibIcon, *szIcoLibAltIcon;
-    DWORD flags;
-    DWORD visibilityOrder;
-    char *szTooltip;
+	HWND hwnd;
+	HICON hIcon, hAltIcon;
+	UINT id, idIcon, idAltIcon;
+	char *szIcoLibIcon, *szIcoLibAltIcon;
+	DWORD flags;
+	DWORD visibilityOrder;
+	char *szTooltip;
 };
 
 struct TrayIconInfo {
-    union {
-        HICON hIcon;
-        int iIcon;
-    };
+	union {
+		HICON hIcon;
+		int iIcon;
+	};
 };
 
 typedef struct {
-    char protoName[50];
-    UINT menuID;
-    BOOL added;
-    HICON hIcon;
+	char protoName[50];
+	UINT menuID;
+	BOOL added;
+	HICON hIcon;
 } protoMenu;
 
-//clc.c
-void ClcOptionsChanged(void);
-
 //clcidents.c
-int GetRowsPriorTo(struct ClcGroup *group, struct ClcGroup *subgroup, int contactIndex);
 int FindItem(HWND hwnd, struct ClcData *dat, HANDLE hItem, struct ClcContact **contact, struct ClcGroup **subgroup, int *isVisible);
-int GetRowByIndex(struct ClcData *dat, int testindex, struct ClcContact **contact, struct ClcGroup **subgroup);
-HANDLE ContactToHItem(struct ClcContact *contact);
 HANDLE ContactToItemHandle(struct ClcContact *contact, DWORD *nmFlags);
 
 //clcitems.c
-struct ClcGroup *AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers);
-void FreeGroup(struct ClcGroup *group);
 int AddInfoItemToGroup(struct ClcGroup *group, int flags, const TCHAR *pszText);
 void RebuildEntireList(HWND hwnd, struct ClcData *dat);
-struct ClcGroup *RemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct ClcContact *contact, int updateTotalCount);
 void DeleteItemFromTree(HWND hwnd, HANDLE hItem);
 void AddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int updateTotalCount, int checkHideOffline);
-void __fastcall SortCLC(HWND hwnd, struct ClcData *dat, int useInsertionSort);
 void __fastcall ReallySortCLC(HWND hwnd, struct ClcData *dat, int useInsertionSort);
 int GetGroupContentsCount(struct ClcGroup *group, int visibleOnly);
 void SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat);
@@ -433,10 +400,8 @@ void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 void SetGroupExpand(HWND hwnd, struct ClcData *dat, struct ClcGroup *group, int newState);
 void DoSelectionDefaultAction(HWND hwnd, struct ClcData *dat);
 int FindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefixOk);
-void EndRename(HWND hwnd, struct ClcData *dat, int save);
 void DeleteFromContactList(HWND hwnd, struct ClcData *dat);
 void BeginRenameSelection(HWND hwnd, struct ClcData *dat);
-char *GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact);
 int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcContact **contact, struct ClcGroup **group, DWORD *flags);
 void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth);
 #define DROPTARGET_OUTSIDE    0
@@ -446,9 +411,6 @@ void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth);
 #define DROPTARGET_ONCONTACT  4
 #define DROPTARGET_INSERTION  5
 int GetDropTargetInformation(HWND hwnd, struct ClcData *dat, POINT pt);
-int ClcStatusToPf2(int status);
-int IsHiddenMode(struct ClcData *dat, int status);
-void HideInfoTip(HWND hwnd, struct ClcData *dat);
 void NotifyNewContact(HWND hwnd, HANDLE hContact);
 void LoadClcOptions(HWND hwnd, struct ClcData *dat);
 void RecalculateGroupCheckboxes(HWND hwnd, struct ClcData *dat);
@@ -457,12 +419,13 @@ void InvalidateItem(HWND hwnd, struct ClcData *dat, int iItem);
 BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto);
 int __fastcall GetStatusOnlineness(int status);
 void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat);
-void CLN_DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, HICON eventIcon);
 extern LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void HideShowNotifyFrame();
 int GetProtocolVisibility(char * ProtoName);
 DWORD GetCLUIWindowStyle(BYTE style);
 void ApplyCLUIBorderStyle(HWND hwnd);
+
+void FreeProtocolData( void );
 
 void GetClientID(struct ClcContact *contact, char *client);
 int LoadCLCButtonModule(void);
@@ -507,24 +470,28 @@ DWORD GetDefaultExStyle(void);
 void GetFontSetting(int i, LOGFONTA *lf, COLORREF *colour);
 int CluiProtocolStatusChanged(WPARAM wParam, LPARAM lParam);
 
-
 //clistsettings.c
-TCHAR *GetContactDisplayNameW(HANDLE hContact, int mode);
 char *u2a(wchar_t *src);
 wchar_t *a2u(char *src);
 
-//clcfiledrop.c
-void InitFileDropping(void);
-void FreeFileDropping(void);
-void RegisterFileDropping(HWND hwnd);
-void UnregisterFileDropping(HWND hwnd);
+#define NIIF_INTERN_UNICODE 0x00000100
 
-//groups.c
-TCHAR *GetGroupNameT(int idx, DWORD *pdwFlags);
-int RenameGroupT(int idx, TCHAR *tszNewName);
+#define SETTING_WINDOWSTYLE_DEFAULT 0
 
+#define SETTING_TRAYICON_SINGLE   0
+#define SETTING_TRAYICON_CYCLE    1
+#define SETTING_TRAYICON_MULTI    2
 
-#define CLCDEFAULT_ROWHEIGHT     17
+#define SETTING_STATE_HIDDEN      0
+#define SETTING_STATE_MINIMIZED   1
+#define SETTING_STATE_NORMAL      2
+
+#define SETTING_BRINGTOFRONT_DEFAULT 0
+
+#define SETTING_WINDOWSTYLE_TOOLWINDOW 1
+#define SETTING_WINDOWSTYLE_THINBORDER 2
+#define SETTING_WINDOWSTYLE_NOBORDER 4
+
 #define CLCDEFAULT_EXSTYLE       (CLS_EX_EDITLABELS|CLS_EX_TRACKSELECT|CLS_EX_SHOWGROUPCOUNTS|CLS_EX_HIDECOUNTSWHENEMPTY|CLS_EX_TRACKSELECT|CLS_EX_NOTRANSLUCENTSEL)  //plus CLS_EX_NOSMOOTHSCROLL is got from the system
 #define CLCDEFAULT_SCROLLTIME    150
 #define CLCDEFAULT_GROUPINDENT   5

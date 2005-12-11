@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -39,17 +39,14 @@ int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
 void InitDisplayNameCache(void);
 void FreeDisplayNameCache(void);
 void InitTray(void);
+void LoadCLUIModule();
 
 HANDLE hContactDoubleClicked, hContactIconChangedEvent;
 HIMAGELIST hCListImages;
 BOOL(WINAPI * MySetProcessWorkingSetSize) (HANDLE, SIZE_T, SIZE_T);
 extern BYTE nameOrder[];
-static int statusModeList[] =
-{ ID_STATUS_OFFLINE, ID_STATUS_ONLINE, ID_STATUS_AWAY, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_DND, ID_STATUS_FREECHAT, ID_STATUS_INVISIBLE,
-ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH };
-static int skinIconStatusList[] =
-{ SKINICON_STATUS_OFFLINE, SKINICON_STATUS_ONLINE, SKINICON_STATUS_AWAY, SKINICON_STATUS_NA, SKINICON_STATUS_OCCUPIED, SKINICON_STATUS_DND,
-SKINICON_STATUS_FREE4CHAT, SKINICON_STATUS_INVISIBLE, SKINICON_STATUS_ONTHEPHONE, SKINICON_STATUS_OUTTOLUNCH };
+static int statusModeList[] = { ID_STATUS_OFFLINE, ID_STATUS_ONLINE, ID_STATUS_AWAY, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_DND, ID_STATUS_FREECHAT, ID_STATUS_INVISIBLE, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH };
+static int skinIconStatusList[] = { SKINICON_STATUS_OFFLINE, SKINICON_STATUS_ONLINE, SKINICON_STATUS_AWAY, SKINICON_STATUS_NA, SKINICON_STATUS_OCCUPIED, SKINICON_STATUS_DND, SKINICON_STATUS_FREE4CHAT, SKINICON_STATUS_INVISIBLE, SKINICON_STATUS_ONTHEPHONE, SKINICON_STATUS_OUTTOLUNCH };
 struct ProtoIconIndex
 {
 	char *szProto;
@@ -229,18 +226,14 @@ static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-
 static int ContactDoubleClicked(WPARAM wParam, LPARAM lParam)
 {
-
 	// Check and an event from the CList queue for this hContact
 	if (cli.pfnEventsProcessContactDoubleClick((HANDLE) wParam))
 		NotifyEventHooks(hContactDoubleClicked, wParam, 0);
 
 	return 0;
-
 }
-
 
 static BOOL CALLBACK AskForConfirmationDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -300,8 +293,6 @@ static BOOL CALLBACK AskForConfirmationDlgProc(HWND hWnd, UINT msg, WPARAM wPara
 
 }
 
-
-
 static int MenuItem_DeleteContact(WPARAM wParam, LPARAM lParam)
 {
 	//see notes about deleting contacts on PF1_SERVERCLIST servers in m_protosvc.h
@@ -322,16 +313,16 @@ static int MenuItem_DeleteContact(WPARAM wParam, LPARAM lParam)
 	case IDYES:
 		{
 			char *szProto;
-	
+
 			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
 			if (szProto != NULL) {
 				// Check if protocol uses server side lists
 				DWORD caps;
-	
+
 				caps = (DWORD) CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0);
 				if (caps & PF1_SERVERCLIST) {
 					int status;
-					
+
 					status = CallProtoService(szProto, PS_GETSTATUS, 0, 0);
 					if (status == ID_STATUS_OFFLINE || (status >= ID_STATUS_CONNECTING && status < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES)) {
 						// Set a flag so we remember to delete the contact when the protocol goes online the next time
@@ -399,7 +390,7 @@ static int CListIconsChanged(WPARAM wParam, LPARAM lParam)
 }
 
 /*
-Begin of Hrk's code for bug 
+Begin of Hrk's code for bug
 */
 #define GWVS_HIDDEN 1
 #define GWVS_VISIBLE 2

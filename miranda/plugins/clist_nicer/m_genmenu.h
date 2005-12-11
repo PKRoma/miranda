@@ -47,6 +47,161 @@ of this item.Must be used two new flags CMIF_ROOTPOPUP and CMIF_CHILDPOPUP
 ownerdata is passed to callback services(ExecService and CheckService) 
 when building menu or processed command.
 */
+
+/*GENMENU_MODULE*/
+/*
+Changes:
+
+28-04-2003
+Moved all general stuff to genmenu.c(m_genmenu.h,genmenu.h),
+so removed all frames stuff.
+
+
+Changes:
+
+28-12-2002
+
+Contact menu item service called with wparam=hcontact,lparam=popupPosition -
+plugin may add different menu items with some service.
+(old behavior wparam=hcontact lparam=0)
+
+
+
+25-11-2002		Full support of runtime build of all menus.
+				Contact			MS_CLIST_ADDCONTACTMENUITEM
+								MS_CLIST_REMOVECONTACTMENUITEM
+								MS_CLIST_MENUBUILDCONTACT
+								ME_CLIST_PREBUILDCONTACTMENU
+
+				MainMenu		MS_CLIST_ADDMAINMENUITEM
+								MS_CLIST_REMOVEMAINMENUITEM
+								MS_CLIST_MENUBUILDMAIN
+								ME_CLIST_PREBUILDMAINMENU
+
+				FrameMenu		MS_CLIST_ADDCONTEXTFRAMEMENUITEM
+								MS_CLIST_REMOVECONTEXTFRAMEMENUITEM
+								MS_CLIST_MENUBUILDFRAMECONTEXT
+								ME_CLIST_PREBUILDFRAMEMENU
+
+				For All menus may be used
+								MS_CLIST_MODIFYMENUITEM
+
+				All menus supported any level of popups
+				(pszPopupName=(char *)hMenuItem - for make child of popup)
+*/
+
+// SubGroup MENU
+//remove a item from SubGroup menu
+//wParam=hMenuItem returned by MS_CLIST_ADDSubGroupMENUITEM
+//lParam=0
+//returns 0 on success, nonzero on failure
+#define MS_CLIST_REMOVESUBGROUPMENUITEM					"CList/RemoveSubGroupMenuItem"
+
+//builds the SubGroup menu
+//wParam=lParam=0
+//returns a HMENU identifying the menu.
+#define MS_CLIST_MENUBUILDSUBGROUP							"CList/MenuBuildSubGroup"
+
+//add a new item to the SubGroup menus
+//wParam=lpGroupMenuParam, params to call when exec menuitem
+//lParam=(LPARAM)(CLISTMENUITEM*)&mi
+#define MS_CLIST_ADDSUBGROUPMENUITEM						"CList/AddSubGroupMenuItem"
+
+//the SubGroup menu is about to be built
+//wParam=lParam=0
+#define ME_CLIST_PREBUILDSUBGROUPMENU						"CList/PreBuildSubGroupMenu"
+
+// SubGroup MENU
+
+// Group MENU
+typedef struct{
+int wParam;
+int lParam;
+}GroupMenuParam,*lpGroupMenuParam;
+
+//remove a item from Group menu
+//wParam=hMenuItem returned by MS_CLIST_ADDGroupMENUITEM
+//lParam=0
+//returns 0 on success, nonzero on failure
+#define MS_CLIST_REMOVEGROUPMENUITEM					"CList/RemoveGroupMenuItem"
+
+//builds the Group menu
+//wParam=lParam=0
+//returns a HMENU identifying the menu.
+#define MS_CLIST_MENUBUILDGROUP							"CList/MenuBuildGroup"
+
+//add a new item to the Group menus
+//wParam=lpGroupMenuParam, params to call when exec menuitem
+//lParam=(LPARAM)(CLISTMENUITEM*)&mi
+#define MS_CLIST_ADDGROUPMENUITEM						"CList/AddGroupMenuItem"
+
+//the Group menu is about to be built
+//wParam=lParam=0
+#define ME_CLIST_PREBUILDGROUPMENU						"CList/PreBuildGroupMenu"
+
+// Group MENU
+
+
+// TRAY MENU
+//remove a item from tray menu
+//wParam=hMenuItem returned by MS_CLIST_ADDTRAYMENUITEM
+//lParam=0
+//returns 0 on success, nonzero on failure
+#define MS_CLIST_REMOVETRAYMENUITEM					"CList/RemoveTrayMenuItem"
+
+//builds the tray menu
+//wParam=lParam=0
+//returns a HMENU identifying the menu.
+#define MS_CLIST_MENUBUILDTRAY						"CList/MenuBuildTray"
+
+//add a new item to the tray menus
+//wParam=0
+//lParam=(LPARAM)(CLISTMENUITEM*)&mi
+#define MS_CLIST_ADDTRAYMENUITEM					"CList/AddTrayMenuItem"
+
+//the tray menu is about to be built
+//wParam=lParam=0
+#define ME_CLIST_PREBUILDTRAYMENU					"CList/PreBuildTrayMenu"
+
+
+
+// TRAY MENU
+
+
+//remove a item from main menu
+//wParam=hMenuItem returned by MS_CLIST_ADDMAINMENUITEM
+//lParam=0
+//returns 0 on success, nonzero on failure
+#define MS_CLIST_REMOVEMAINMENUITEM					"CList/RemoveMainMenuItem"
+
+//builds the main menu
+//wParam=lParam=0
+//returns a HMENU identifying the menu.
+#define MS_CLIST_MENUBUILDMAIN						"CList/MenuBuildMain"
+
+
+
+//the main menu is about to be built
+//wParam=lParam=0
+#define ME_CLIST_PREBUILDMAINMENU					"CList/PreBuildMainMenu"
+
+
+
+
+//remove a item from contact menu
+//wParam=hMenuItem returned by MS_CLIST_ADDCONTACTMENUITEM
+//lParam=0
+//returns 0 on success, nonzero on failure
+#define MS_CLIST_REMOVECONTACTMENUITEM			"CList/RemoveContactMenuItem"
+/*GENMENU_MODULE*/
+
+/*GENMENU_MODULE*/
+#define CMIF_ROOTPOPUP  128   //root item for new popup(save return id for childs)
+#define CMIF_CHILDPOPUP 256   //child for rootpopup menu
+/*GENMENU_MODULE*/
+
+#define SETTING_NOOFFLINEBOTTOM_DEFAULT 0
+
 typedef struct{
 int cbSize;
 char *pszName;

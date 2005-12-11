@@ -113,6 +113,11 @@ int GetProtocolVisibility(char * ProtoName)
 	return 0;
 }
 
+HMENU BuildGroupPopupMenu( struct ClcGroup* group )
+{
+	return (HMENU)CallService(MS_CLIST_MENUBUILDSUBGROUP,(WPARAM)group,0);
+}
+
 void SortClcByTimer (HWND hwnd)
 {
 	KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);

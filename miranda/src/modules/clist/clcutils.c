@@ -67,7 +67,7 @@ int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCo
 {
 	struct ClcContact *hitcontact;
 	struct ClcGroup *hitgroup;
-	int hit, indent, width, i, cxSmIcon;
+	int hit, indent, width, i;
 	int checkboxWidth;
 	SIZE textSize;
 	HDC hdc;
@@ -129,12 +129,12 @@ int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCo
 			*flags |= CLCHT_ONITEMICON;
 		return hit;
 	}
-	cxSmIcon = GetSystemMetrics(SM_CXSMICON);
+
 	for (i = 0; i < dat->extraColumnsCount; i++) {
 		if (hitcontact->iExtraImage[i] == 0xFF)
 			continue;
 		if (testx >= clRect.right - dat->extraColumnSpacing * (dat->extraColumnsCount - i) &&
-			testx < clRect.right - dat->extraColumnSpacing * (dat->extraColumnsCount - i) + cxSmIcon) {
+			testx < clRect.right - dat->extraColumnSpacing * (dat->extraColumnsCount - i) + g_IconWidth ) {
 				if (flags)
 					*flags |= CLCHT_ONITEMEXTRA | (i << 24);
 				return hit;

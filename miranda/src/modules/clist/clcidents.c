@@ -34,10 +34,10 @@ contains routines to convert between them.
 3) hItem handle. Either the hContact or (hGroup|HCONTACT_ISGROUP). Used
    exclusively externally
 
-1->2: cli.pfnGetRowsPriorTo()
-1->3: cli.pfnContactToHItem()
-3->1: cli.pfnFindItem()
-2->1: cli.pfnGetRowByIndex()
+1->2: GetRowsPriorTo()
+1->3: ContactToHItem()
+3->1: FindItem()
+2->1: GetRowByIndex()
 */
 
 int fnGetRowsPriorTo(struct ClcGroup *group, struct ClcGroup *subgroup, int contactIndex)

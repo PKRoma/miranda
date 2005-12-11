@@ -5,7 +5,6 @@
 int hFrameMenuObject;
 static HANDLE hPreBuildFrameMenuEvent;
 extern int InitCustomMenus(void);
-extern HWND hwndContactList;
 
 //contactmenu exec param(ownerdata)
 //also used in checkservice
@@ -86,7 +85,7 @@ int FrameMenuExecService(WPARAM wParam,LPARAM lParam) {
         return(-1);
 
     CallService(fmep->szServiceName,lParam,fmep->param1);
-    RedrawWindow(hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
+    RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
 	return(0);
 }
 

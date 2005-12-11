@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma hdrstop
 
+#define ME_CLIST_PREBUILDSTATUSMENU "CList/PreBuildStatusMenu"
+#define MS_CLIST_ADDSTATUSMENUITEM "CList/AddStatusMenuItem"
 
 #define FIRSTCUSTOMMENUITEMID	30000
 #define MENU_CUSTOMITEMMAIN		0x80000000
@@ -78,7 +80,6 @@ int hStatusMenuHandlesCnt;
 
 extern HANDLE hStatusModeChangeEvent;
 extern int  CheckProtocolOrder();
-extern HWND hwndContactList;
 extern int g_shutDown;
 
 //mainmenu exec param(ownerdata)
@@ -151,8 +152,8 @@ static int BuildMainMenu(WPARAM wParam,LPARAM lParam)
     NotifyEventHooks(hPreBuildMainMenuEvent,(WPARAM)0,(LPARAM)0);
 
     CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
-    if(hwndContactList)
-        DrawMenuBar(hwndContactList);
+    if(pcli->hwndContactList)
+        DrawMenuBar(pcli->hwndContactList);
     tick=GetTickCount()-tick;
     return(int)hMenu;
 }
@@ -546,24 +547,21 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 
 int FreeOwnerDataStatusMenu (WPARAM wParam,LPARAM lParam)
 {
-    lpStatusMenuExecParam smep;
-    smep=(lpStatusMenuExecParam)lParam;
-
-    if (smep!=NULL) {
-		if (smep->custom) {
-            FreeAndNil(&smep->proto);
-        }
-		else
+	lpStatusMenuExecParam smep = (lpStatusMenuExecParam)lParam;
+	if ( smep != NULL) {
+		if (smep->proto)
+			FreeAndNil(&smep->proto);
+		if (smep->svc)
 			FreeAndNil(&smep->svc);
-        FreeAndNil(&smep);
-    }
+		FreeAndNil(&smep);
+	}
 
-    return(0);
-};
+	return(0);
+}
 
 static int MenuProcessHotkey(WPARAM vKey,LPARAM lParam)
 {
-    int res;
+	int res;
 /*
     if(lParam&MPCF_MAINMENU) {
         if(vKey>='0' && vKey<='9' && GetKeyState(VK_CONTROL)&0x8000 && !(GetKeyState(VK_MENU)&0x8000) && !(GetKeyState(VK_SHIFT)&0x8000)) {
@@ -760,11 +758,11 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
         op.Handle=hStatusMenuObject;
         op.Setting=OPT_MENUOBJECT_SET_FREE_SERVICE;
         op.Value=(int)"CLISTMENUS/FreeOwnerDataStatusMenu";
+        CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 
         op.Handle=hStatusMenuObject;
         op.Setting=OPT_USERDEFINEDITEMS;
         op.Value=(int)TRUE;
-
         CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
     }
 
@@ -906,7 +904,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
                     tmi.root=-1;
                     tmi.hotKey=MAKELPARAM(MOD_CONTROL,'0'+j);
                     tmi.pszName=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModeList[j],0);
-                    wsprintfA((LPCSTR)buf,"%s\tCtrl+%c",tmi.pszName,'0'+j);
+                    wsprintfA((LPSTR)buf,"%s\tCtrl+%c",tmi.pszName,'0'+j);
                     tmi.pszName=(char *)buf;
                     {
                                         //owner data

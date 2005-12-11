@@ -4,7 +4,6 @@ HANDLE hModulesLoaded,hOnCntMenuBuild;
 HANDLE prevmenu=0;
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
 
-extern HWND hwndContactList;
 HWND hwndTopToolBar=0;
 
 //service
