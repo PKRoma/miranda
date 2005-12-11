@@ -31,9 +31,7 @@ $Id$
 #define TIMERID_VIEWMODEEXPIRE 100
 
 extern int _DebugPopup(HANDLE hContact, const char *fmt, ...);
-extern HWND hwndContactList;
 extern struct CluiData g_CluiData;
-extern HANDLE hClcWindowList;
 extern HIMAGELIST hCListImages;
 
 typedef int (__cdecl *pfnEnumCallback)(char *szName);
@@ -393,7 +391,7 @@ void SaveState()
         unsigned int stickies = 0;
         DWORD dwGlobalMask, dwLocalMask;
         
-        szModeName = malloc(iLen + 1);
+        szModeName = ( char* )malloc(iLen + 1);
         if(szModeName) {
             DWORD options;
             //char *vastring = NULL;
@@ -562,7 +560,7 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             for(i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++)
                 ImageList_AddIcon(himlViewModes, LoadSkinnedProtoIcon(NULL, i));
 
-            hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_MINIMIZE), IMAGE_ICON, 16, 16, 0);
+            hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_MINIMIZE), IMAGE_ICON, 16, 16, 0);
             nullImage = ImageList_AddIcon(himlViewModes, hIcon);
             DestroyIcon(hIcon);
             GetClientRect(hwndDlg, &rcClient);
@@ -626,7 +624,7 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                         char szSetting[256];
                         int iLen = SendDlgItemMessage(hwndDlg, IDC_VIEWMODES, LB_GETTEXTLEN, SendDlgItemMessage(hwndDlg, IDC_VIEWMODES, LB_GETCURSEL, 0, 0), 0);
                         if(iLen) {
-                            char *szBuf = malloc(iLen + 1);
+                            char *szBuf = ( char* )malloc(iLen + 1);
                             if(szBuf) {
                                 HANDLE hContact;
                                 
@@ -644,7 +642,7 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                                 DBDeleteContactSetting(NULL, CLVM_MODULE, szBuf);
                                 if(!strcmp(g_CluiData.current_viewmode, szBuf) && lstrlenA(szBuf) == lstrlenA(g_CluiData.current_viewmode)) {
                                     g_CluiData.bFilterEffective = 0;
-                                    WindowList_Broadcast(hClcWindowList, CLM_AUTOREBUILD, 0, 0);
+                                    pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
                                     SetWindowTextA(hwndSelector, Translate("No view mode"));
                                 }
                                 hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -909,7 +907,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
             GetClientRect(hwnd, &rc);
             hbm = CreateCompatibleBitmap(hdc, rc.right, rc.bottom);
-            hbmold = SelectObject(hdcMem, hbm);
+            hbmold = (HBITMAP)SelectObject(hdcMem, hbm);
 
             if(g_CluiData.bWallpaperMode)
                 SkinDrawBg(hwnd, hdcMem);
@@ -934,7 +932,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                         POINT pt;
                         RECT rcCLUI;
 
-                        GetWindowRect(hwndContactList, &rcCLUI);
+                        GetWindowRect(pcli->hwndContactList, &rcCLUI);
                         GetCursorPos(&pt);
                         if(PtInRect(&rcCLUI, pt))
                             break;
@@ -978,11 +976,11 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                 }
                 case IDC_RESETMODES:
                     g_CluiData.bFilterEffective = 0;
-                    WindowList_Broadcast(hClcWindowList, CLM_AUTOREBUILD, 0, 0);
+                    pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
                     SetWindowTextA(GetDlgItem(hwnd, IDC_SELECTMODE), Translate("No view mode"));
                     CallService(MS_CLIST_SETHIDEOFFLINE, (WPARAM)g_CluiData.boldHideOffline, 0);
                     g_CluiData.boldHideOffline = (BYTE)-1;
-                    SetButtonStates(hwndContactList);
+                    SetButtonStates(pcli->hwndContactList);
                     g_CluiData.current_viewmode[0] = 0;
                     g_CluiData.old_viewmode[0] = 0;
                     break;
@@ -1029,7 +1027,7 @@ void CreateViewModeFrame()
     frame.TBname = "View modes";
     frame.Flags=F_VISIBLE|F_NOBORDER|F_SHOWTBTIP;
     frame.align = alTop;
-    frame.hWnd = CreateWindowEx(0, _T("CLVMFrameWindow"), _T("CLVM"), WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_CLIPCHILDREN, 0, 0, 20, 20, hwndContactList, (HMENU) 0, g_hInst, NULL);
+    frame.hWnd = CreateWindowEx(0, _T("CLVMFrameWindow"), _T("CLVM"), WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_CLIPCHILDREN, 0, 0, 20, 20, pcli->hwndContactList, (HMENU) 0, g_hInst, NULL);
     g_hwndViewModeFrame = frame.hWnd;
     hCLVMFrame = (HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&frame,(LPARAM)0);
     CallService(MS_CLIST_FRAMES_UPDATEFRAME, (WPARAM)hCLVMFrame, FU_FMPOS);
@@ -1142,7 +1140,7 @@ void ApplyViewMode(const char *name)
     
     CallService(MS_CLIST_SETHIDEOFFLINE, 0, 0);
     SetWindowTextA(hwndSelector, name);
-    WindowList_Broadcast(hClcWindowList, CLM_AUTOREBUILD, 0, 0);
-    SetButtonStates(hwndContactList);
+    pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+    SetButtonStates(pcli->hwndContactList);
 }
 

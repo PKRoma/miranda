@@ -1638,7 +1638,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="viewmodes.cpp"
+				RelativePath="viewmodes.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
