@@ -44,8 +44,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				LinkIncremental="1"
+				AdditionalDependencies="comctl32.lib"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
@@ -112,6 +113,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="comctl32.lib"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				BaseAddress="0x22000000"
