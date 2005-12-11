@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /* a simple sorted list implementation */
 
-typedef int ( *FSortFunc )( void*, void* );
-
 SortedList* List_Create( int, int );
 void List_Destroy( SortedList* );
 
