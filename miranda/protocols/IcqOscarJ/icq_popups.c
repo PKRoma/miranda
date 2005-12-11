@@ -62,8 +62,8 @@ void InitPopupOpts(WPARAM wParam)
     odp.position = 100000000;
     odp.hInstance = hInst;
     odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_POPUPS);
-    odp.pszTitle = Translate(gpszICQProtoName);
-    odp.pszGroup = Translate("Popups");
+    odp.pszTitle = ICQTranslate(gpszICQProtoName);
+    odp.pszGroup = ICQTranslate("Popups");
     odp.groupPosition = 900000000;
     odp.pfnDlgProc = DlgProcIcqPopupOpts;
     odp.flags = ODPF_BOLDGROUPS;
@@ -116,11 +116,15 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
     switch (LOWORD(wParam))
     {
     case IDC_PREVIEW:
-      ShowPopUpMsg(NULL,Translate("Popup Title"), Translate("Sample Note"), LOG_NOTE);
-      ShowPopUpMsg(NULL,Translate("Popup Title"), Translate("Sample Warning"), LOG_WARNING);
-      ShowPopUpMsg(NULL,Translate("Popup Title"), Translate("Sample Error"), LOG_ERROR);
-      ShowPopUpMsg(NULL,Translate("Popup Title"), Translate("Sample Fatal"), LOG_FATAL);
-      ShowPopUpMsg(NULL,Translate("Popup Title"), Translate("Sample Spambot"), POPTYPE_SPAM);
+      {
+        char* pszTitle = ICQTranslate("Popup Title");
+
+        ShowPopUpMsg(NULL, pszTitle, ICQTranslate("Sample Note"), LOG_NOTE);
+        ShowPopUpMsg(NULL, pszTitle, ICQTranslate("Sample Warning"), LOG_WARNING);
+        ShowPopUpMsg(NULL, pszTitle, ICQTranslate("Sample Error"), LOG_ERROR);
+        ShowPopUpMsg(NULL, pszTitle, ICQTranslate("Sample Fatal"), LOG_FATAL);
+        ShowPopUpMsg(NULL, pszTitle, ICQTranslate("Sample Spambot"), POPTYPE_SPAM);
+      }
       break;
 
     case IDC_POPUPS_ENABLED:
@@ -239,7 +243,7 @@ int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE b
     ppd.iSeconds = ICQGetContactSettingDword(NULL, szSetting, ppd.iSeconds);
 
     lstrcpyn(ppd.lpzContactName, szTitle, MAX_CONTACTNAME);
-    lstrcpyn(ppd.lpzText, Translate(szMsg), MAX_SECONDLINE);
+    lstrcpyn(ppd.lpzText, szMsg, MAX_SECONDLINE);
     ppd.lchContact = NULL;
     ppd.PluginWindowProc = NULL;
     ppd.PluginData = NULL;

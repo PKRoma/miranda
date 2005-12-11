@@ -120,7 +120,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
 
   if (!pszDescription || (strlennull(pszDescription) == 0))
   {
-    pszDescription = Translate("No description given");
+    pszDescription = ICQTranslate("No description given");
     bEmptyDesc = TRUE;
   }
   

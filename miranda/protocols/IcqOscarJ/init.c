@@ -57,7 +57,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,8),
+  PLUGIN_MAKE_VERSION(0,3,6,9),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@users.sourceforge.net",
@@ -207,6 +207,10 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PSS_ADDED, IcqSendYouWereAdded);
   ICQCreateServiceFunction(PSS_USERISTYPING, IcqSendUserIsTyping);
   ICQCreateServiceFunction(PS_GETAVATARINFO, IcqGetAvatarInfo);
+  ICQCreateServiceFunction(PS_ICQ_GETMYAVATARMAXSIZE, IcqGetMaxAvatarSize);
+  ICQCreateServiceFunction(PS_ICQ_ISAVATARFORMATSUPPORTED, IcqAvatarFormatSupported);
+  ICQCreateServiceFunction(PS_ICQ_GETMYAVATAR, IcqGetMyAvatar);
+  ICQCreateServiceFunction(PS_ICQ_SETMYAVATAR, IcqSetMyAvatar);
 
   {
     char pszServiceName[MAX_PATH + 32];
@@ -320,7 +324,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   CallService("DBEditorpp/RegisterModule",(WPARAM)modules,(LPARAM)4);
 
 
-  null_snprintf(szBuffer, sizeof szBuffer, Translate("%s server connection"), gpszICQProtoName);
+  null_snprintf(szBuffer, sizeof szBuffer, ICQTranslate("%s server connection"), gpszICQProtoName);
   nlu.cbSize = sizeof(nlu);
   nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS; 
   nlu.szDescriptiveName = szBuffer;
@@ -338,7 +342,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   }
   ghServerNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-  null_snprintf(szBuffer, sizeof szBuffer, Translate("%s client-to-client connections"), gpszICQProtoName);
+  null_snprintf(szBuffer, sizeof szBuffer, ICQTranslate("%s client-to-client connections"), gpszICQProtoName);
   nlu.flags = NUF_OUTGOING | NUF_INCOMING;
   nlu.szDescriptiveName = szBuffer;
   nlu.szSettingsModule = pszP2PName;
@@ -356,8 +360,8 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
   hHookIconsChanged = IconLibHookIconsChanged(IconLibIconsChanged);
 
-  IconLibDefine(Translate("Request authorisation"), Translate(gpszICQProtoName), "req_auth", NULL);
-  IconLibDefine(Translate("Grant authorisation"), Translate(gpszICQProtoName), "grant_auth", NULL);
+  IconLibDefine(ICQTranslate("Request authorisation"), ICQTranslate(gpszICQProtoName), "req_auth", NULL);
+  IconLibDefine(ICQTranslate("Grant authorisation"), ICQTranslate(gpszICQProtoName), "grant_auth", NULL);
 
   // Initialize IconLib icons
   InitXStatusIcons();
@@ -377,7 +381,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     mi.flags = 0;
     mi.hIcon = IconLibProcess(NULL, "req_auth");
     mi.pszContactOwner = gpszICQProtoName;
-    mi.pszName = Translate("Request authorization");
+    mi.pszName = ICQTranslate("Request authorization");
     mi.pszService = pszServiceName;
     hUserMenuAuth = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
@@ -386,7 +390,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
     mi.position = 1000029999;
     mi.hIcon = IconLibProcess(NULL, "grant_auth");
-    mi.pszName = Translate("Grant authorization");
+    mi.pszName = ICQTranslate("Grant authorization");
     hUserMenuGrant = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
     strcpy(pszServiceName, gpszICQProtoName);
@@ -394,7 +398,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
     mi.position = -2000004999;
     mi.hIcon = NULL; // dynamically updated
-    mi.pszName = Translate("Show custom status details");
+    mi.pszName = ICQTranslate("Show custom status details");
     mi.flags=CMIF_NOTOFFLINE;
     hUserMenuXStatus = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
   }
@@ -415,7 +419,7 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
     mi.flags = CMIM_FLAGS | CMIM_NAME | CMIF_HIDDEN;
   else
     mi.flags = CMIM_FLAGS | CMIM_NAME;
-  mi.pszName = Translate("Request authorization");
+  mi.pszName = ICQTranslate("Request authorization");
 
   CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuAuth, (LPARAM)&mi);
 
@@ -423,7 +427,7 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
     mi.flags = CMIM_FLAGS | CMIM_NAME | CMIF_HIDDEN;
   else
     mi.flags = CMIM_FLAGS | CMIM_NAME;
-  mi.pszName = Translate("Grant authorization");
+  mi.pszName = ICQTranslate("Grant authorization");
 
   CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuGrant, (LPARAM)&mi);
 

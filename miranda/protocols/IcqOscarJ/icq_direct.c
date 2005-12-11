@@ -450,7 +450,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     dc.dwRemoteExternalIP = ICQGetContactSettingDword(dtsi->hContact, "IP", 0);
     dc.dwRemoteInternalIP = ICQGetContactSettingDword(dtsi->hContact, "RealIP", 0);
     dc.dwRemotePort = ICQGetContactSettingWord(dtsi->hContact, "UserPort", 0);
-    dc.dwRemoteUin = ICQGetContactSettingDword(dtsi->hContact, UNIQUEIDSETTING, 0);
+    dc.dwRemoteUin = ICQGetContactSettingUIN(dtsi->hContact);
     dc.wVersion = ICQGetContactSettingWord(dtsi->hContact, "Version", 0);
     dc.dwConnCookie = ICQGetContactSettingDword(dtsi->hContact, "DirectCookie", 0);
 
@@ -504,13 +504,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     nloc.wPort = (WORD)dc.dwRemotePort;
     NetLog_Direct("%sConnecting to %s:%u", dc.type==DIRECTCONN_REVERSE?"Reverse ":"", nloc.szHost, nloc.wPort);
 
-    dc.hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghDirectNetlibUser, (LPARAM)&nloc);
-    if (!dc.hConnection && (GetLastError() == 87)) 
-    { // this ensures that an old Miranda can also connect
-      nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
-      dc.hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghDirectNetlibUser, (LPARAM)&nloc);
-    }
-
+    dc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, &nloc);
     if (dc.hConnection == NULL)
     {
       if (dc.type != DIRECTCONN_REVERSE)
@@ -816,30 +810,47 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
         }
         unpackLEDWord(&buf, &dwCookie);
 
-        /* 12 more bytes of unknown stuff */
-
-        hContact = HContactFromUIN(dc->dwRemoteUin, NULL);
-        if (hContact == INVALID_HANDLE_VALUE)
-        {
-          NetLog_Direct("Error: Received PEER_INIT from %u not on my list", dwUin);
-          CloseDirectConnection(dc);
-          return;   /* don't allow direct connection with people not on my clist */
-        }
-
-        if (dwCookie != ICQGetContactSettingDword(hContact, "DirectCookie", 0))
-        {
-          NetLog_Direct("Error: Received PEER_INIT with broken cookie");
-          CloseDirectConnection(dc);
-          return;
-        }
-
         buf += 8; // Unknown stuff
-
         unpackLEDWord(&buf, &dc->dwReqId);
+
+        if (dc->dwRemoteUin || !dc->dwReqId)
+        { // OMG! Licq sends on reverse connection empty uin
+          hContact = HContactFromUIN(dc->dwRemoteUin, NULL);
+          if (hContact == INVALID_HANDLE_VALUE)
+          {
+            NetLog_Direct("Error: Received PEER_INIT from %u not on my list", dwUin);
+            CloseDirectConnection(dc);
+            return;   /* don't allow direct connection with people not on my clist */
+          }
+
+          if (dwCookie != ICQGetContactSettingDword(hContact, "DirectCookie", 0))
+          {
+            NetLog_Direct("Error: Received PEER_INIT with broken cookie");
+            CloseDirectConnection(dc);
+            return;
+          }
+        }
 
         if (dc->incoming && dc->dwReqId)
         { // this is reverse connection
           dc->type = DIRECTCONN_REVERSE;
+          if (!dc->dwRemoteUin)
+          { // we need to load cookie (licq)
+            reverse_cookie* pCookie;
+            DWORD dwCookieUin;
+
+            if (FindCookie(dc->dwReqId, &dwCookieUin, &pCookie) && pCookie)
+            { // valid reverse DC, check and init session
+              dc->dwRemoteUin = pCookie->dwUin;
+              dc->hContact = pCookie->hContact;
+            }
+            else
+            {
+              NetLog_Direct("Error: Received unexpected reverse DC, closing.");
+              CloseDirectConnection(dc);
+              return; 
+            }
+          }
         }
 
         sendPeerInitAck(dc); // ack good PEER_INIT packet

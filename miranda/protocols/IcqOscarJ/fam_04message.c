@@ -313,32 +313,10 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
               {
                 char *utf = make_utf8_string(usMsg);
                 int nUtfLen = strlennull(utf);
-                char *tmp;
-                int i,j;
-                BOOL tag = FALSE;
 
                 SAFE_FREE(&usMsg);
-                tmp = (char*)malloc(nUtfLen + 1);
-                for (i=0,j=0;i<nUtfLen + 1;i++)
-                {
-                  if (!tag && utf[i] == '<')
-                  {
-                    tag = TRUE;
-                  }
-                  else if (tag && utf[i] == '>')
-                  {
-                    tag = FALSE;
-                  }
-                  else if (!tag)
-                  {
-                    tmp[j] = utf[i];
-                    j++;
-                  }
-                  tmp[j] = '\0';
-                }
-                SAFE_FREE(&utf);
-                utf = DemangleXml(tmp, strlennull(tmp));
-                SAFE_FREE(&tmp);
+                utf = EliminateHtml(utf, nUtfLen);
+
                 usMsg = make_unicode_string(utf);
                 SAFE_FREE(&utf);
                 SetContactCapabilities(hContact, CAPF_UTF);
@@ -368,31 +346,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
               szMsg[wMsgLen] = '\0';
               if (!dwUin)
               {
-                char *tmp;
-                int i,j;
-                BOOL tag = FALSE;
-
-                tmp = (char*)malloc(wMsgLen + 1);
-                for (i=0,j=0;i<wMsgLen + 1;i++)
-                {
-                  if (!tag && szMsg[i] == '<')
-                  {
-                    tag = TRUE;
-                  }
-                  else if (tag && szMsg[i] == '>')
-                  {
-                    tag = FALSE;
-                  }
-                  else if (!tag)
-                  {
-                    tmp[j] = szMsg[i];
-                    j++;
-                  }
-                  tmp[j] = '\0';
-                }
-                SAFE_FREE(&szMsg);
-                szMsg = DemangleXml(tmp, strlennull(tmp));
-                SAFE_FREE(&tmp);
+                szMsg = EliminateHtml(szMsg, wMsgLen);
               }
 
               break;
@@ -2088,33 +2042,33 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
     {
 
     case 0x0002:     // Server rate limit exceeded
-      pszErrorMessage = Translate("You are sending too fast. Wait a while and try again.\nSNAC(4.1) Error x02");
+      pszErrorMessage = ICQTranslate("You are sending too fast. Wait a while and try again.\r\nSNAC(4.1) Error x02");
       break;
 
     case 0x0003:     // Client rate limit exceeded
-      pszErrorMessage = Translate("You are sending too fast. Wait a while and try again.\nSNAC(4.1) Error x03");
+      pszErrorMessage = ICQTranslate("You are sending too fast. Wait a while and try again.\r\nSNAC(4.1) Error x03");
       break;
 
     case 0x0004:     // Recipient is not logged in (resend in a offline message)
-      if (pCookieData->bMessageType != MTYPE_PLUGIN) // TODO: this needs better solution
+      if (pCookieData->bMessageType != MTYPE_PLUGIN && pCookieData->bMessageType != MTYPE_AUTOAWAY) // TODO: this needs better solution
         ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
-      pszErrorMessage = Translate("The user has logged off. Select 'Retry' to send an offline message.\nSNAC(4.1) Error x04");
+      pszErrorMessage = ICQTranslate("The user has logged off. Select 'Retry' to send an offline message.\r\nSNAC(4.1) Error x04");
       break;
 
     case 0x0009:     // Not supported by client (resend in a simpler format)
-      pszErrorMessage = Translate("The receiving client does not support this type of message.\nSNAC(4.1) Error x09");
+      pszErrorMessage = ICQTranslate("The receiving client does not support this type of message.\r\nSNAC(4.1) Error x09");
       break;
 
     case 0x000A:     // Refused by client
-      pszErrorMessage = Translate("You sent too long message. The receiving client does not support it.\nSNAC(4.1) Error x0A");
+      pszErrorMessage = ICQTranslate("You sent too long message. The receiving client does not support it.\r\nSNAC(4.1) Error x0A");
       break;
 
     case 0x000E:     // Incorrect SNAC format
-      pszErrorMessage = Translate("The SNAC format was rejected by the server.\nSNAC(4.1) Error x0E");
+      pszErrorMessage = ICQTranslate("The SNAC format was rejected by the server.\nSNAC(4.1) Error x0E");
       break;
 
     case 0x0013:     // User temporarily unavailable
-      pszErrorMessage = Translate("The user is temporarily unavailable. Wait a while and try again.\nSNAC(4.1) Error x13");
+      pszErrorMessage = ICQTranslate("The user is temporarily unavailable. Wait a while and try again.\r\nSNAC(4.1) Error x13");
       break;
 
     case 0x0001:     // Invalid SNAC header
@@ -2136,7 +2090,7 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
     case 0x0018:     // Not while on AOL
     default:
       if (pszErrorMessage = _alloca(256))
-        null_snprintf(pszErrorMessage, 256, Translate("SNAC(4.1) SENDMSG Error (x%02x)"), wError);
+        null_snprintf(pszErrorMessage, 256, ICQTranslate("SNAC(4.1) SENDMSG Error (x%02x)"), wError);
       break;
     }
 
@@ -2339,19 +2293,19 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
   {
 
   case 0:
-    pszErrorMsg = Translate("** This message was blocked by the ICQ server ** The message was invalid.");
+    pszErrorMsg = ICQTranslate("** This message was blocked by the ICQ server ** The message was invalid.");
     break;
 
   case 1:
-    pszErrorMsg = Translate("** This message was blocked by the ICQ server ** The message was too long.");
+    pszErrorMsg = ICQTranslate("** This message was blocked by the ICQ server ** The message was too long.");
     break;
 
   case 2:
-    pszErrorMsg = Translate("** This message was blocked by the ICQ server ** The sender has flooded the server.");
+    pszErrorMsg = ICQTranslate("** This message was blocked by the ICQ server ** The sender has flooded the server.");
     break;
 
   case 4:
-    pszErrorMsg = Translate("** This message was blocked by the ICQ server ** You are too evil.");
+    pszErrorMsg = ICQTranslate("** This message was blocked by the ICQ server ** You are too evil.");
     break;
 
   default:

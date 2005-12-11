@@ -265,7 +265,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
       if (!migratedServer || !cookieData)
       {
-        icq_LogMessage(LOG_FATAL, Translate("A server migration has failed because the server returned invalid data. You must reconnect manually."));
+        icq_LogMessage(LOG_FATAL, ICQTranslate("A server migration has failed because the server returned invalid data. You must reconnect manually."));
         SAFE_FREE(&migratedServer);
         SAFE_FREE(&cookieData);
         cookieDataLen = 0;
@@ -326,7 +326,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         SetCurrentStatus(icqGoingOnlineStatus);
 
         NetLog_Server(" *** Yeehah, login sequence complete");
-
 
         /* Get Offline Messages Reqeust */
         packet.wLen = 24;
@@ -428,12 +427,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       nloc.szHost = pServer; // this is horrible assumption - there should not be port
       nloc.wPort = ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
 
-      hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
-      if (!hConnection && (GetLastError() == 87))
-      { // this ensures, an old Miranda will be able to connect also
-        nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
-        hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
-      }
+      hConnection = NetLib_OpenConnection(ghServerNetlibUser, &nloc);
       
       if (hConnection == NULL)
       {
@@ -774,8 +768,9 @@ void setUserInfo()
 #ifdef DBG_CAPXTRAZ
   wAdditionalData += 16;
 #endif
-  if (gbAvatarsEnabled)
-    wAdditionalData += 16;
+#ifdef DBG_XTRAZ_MUC
+  wAdditionalData += 16;
+#endif
   if (bXStatus)
     wAdditionalData += 16;
 
@@ -826,10 +821,11 @@ void setUserInfo()
     packDWord(&packet, 0x4e34f5a0);
   }
 #endif
-  if (gbAvatarsEnabled)
+#ifdef DBG_CAPXTRAZ_MUC
   {
-    packNewCap(&packet, 0x134C);    // CAP_AVATAR
-  } // Broadcasts the capability to provide Avatar
+    packNewCap(&packet, 0x134C);    // CAP_XTRAZ_MUC
+  } // Broadcasts the capability handle Xtraz multi-user chat
+#endif
   if (gbAimEnabled)
   {
     packNewCap(&packet, 0x134D);    // Tells the server we can speak to AIM

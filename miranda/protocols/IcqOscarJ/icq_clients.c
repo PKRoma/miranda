@@ -145,7 +145,7 @@ char* cliIM2       = "IM2";
 char* cliSpamBot   = "Spam Bot";
 
 
-char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE* caps, WORD wLen, DWORD* dwClientId)
+char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, DWORD* dwClientId)
 {
   LPSTR szClient = NULL;
   static char szClientBuf[64];
@@ -403,9 +403,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         if (wVersion == 8 && (MatchCap(caps, wLen, &capStr20012, 0x10) || CheckContactCapabilities(hContact, CAPF_SRV_RELAY)))
         { // try to determine 2001-2003 versions
           if (MatchCap(caps, wLen, &capIs2001, 0x10))
+          {
             if (!dwFT1 && !dwFT2 && !dwFT3)
               if (hasCapRichText(caps, wLen))
-                szClient = "TICQClient";
+                szClient = "TICQClient"; // possibly also older GnomeICU
               else
                 szClient = "ICQ for Pocket PC";
             else
@@ -413,21 +414,27 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               *dwClientId = 0;
               szClient = "ICQ 2001";
             }
-            else if (MatchCap(caps, wLen, &capIs2002, 0x10))
+          }
+          else if (MatchCap(caps, wLen, &capIs2002, 0x10))
+          {
+            *dwClientId = 0;
+            szClient = "ICQ 2002";
+          }
+          else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY || CAPF_UTF) && hasCapRichText(caps, wLen))
+          {
+            if (!dwFT1 && !dwFT2 && !dwFT3)
+            {
+              if (!dwWebPort)
+                szClient = "GnomeICU 0.99.5+"; // no other way
+              else
+                szClient = "IC@";
+              }
+            else
             {
               *dwClientId = 0;
-              szClient = "ICQ 2002";
+              szClient = "ICQ 2002/2003a";
             }
-            else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY || CAPF_UTF) && hasCapRichText(caps, wLen))
-            {
-              if (!dwFT1 && !dwFT2 && !dwFT3)
-                szClient = "GnomeICU"; // no other way
-              else
-              {
-                *dwClientId = 0;
-                szClient = "ICQ 2002/2003a";
-              }
-            }
+          }
         }
         else if (wVersion == 9)
         { // try to determine lite versions

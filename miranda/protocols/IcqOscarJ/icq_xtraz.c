@@ -44,9 +44,14 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
 {
   char *szWork, *szEnd, *szNotify, *szQuery;
   int nNotifyLen, nQueryLen;
+  HANDLE hContact;
 
   szNotify = strstr(szMsg, "<NOTIFY>");
   szQuery = strstr(szMsg, "<QUERY>");
+
+  hContact = HContactFromUIN(dwUin, NULL);
+  if (hContact) // user sent us xtraz, he supports it
+    SetContactCapabilities(hContact, CAPF_XTRAZ);
 
   if (szNotify && szQuery)
   { // valid request

@@ -749,6 +749,8 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
             SAFE_FREE(&reqdata->pData);
             break;
           }
+          // loose the loop
+          if (pendingRequests) SleepEx(500, TRUE);
 
           SAFE_FREE(&reqdata);
         }
@@ -770,6 +772,9 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
     currentAvatarThread = NULL; // this is horrible, rewrite
   }
   SAFE_FREE(&atsi);
+
+  NetLog_Server("%s thread ended.", "Avatar");
+  
   return 0;
 }
 
@@ -813,7 +818,7 @@ int handleAvatarPackets(unsigned char* buf, int buflen, avatarthreadstartinfo* a
       break;
 
     default:
-      NetLog_Server("Warning: Unhandled Avatar FLAP Channel: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
+      NetLog_Server("Warning: Unhandled %s FLAP Channel: Channel %u, Seq %u, Length %u bytes", "Avatar", channel, sequence, datalen);
       break;
     }
 

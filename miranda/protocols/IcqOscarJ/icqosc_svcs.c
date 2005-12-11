@@ -45,6 +45,8 @@ int icqGoingOnlineStatus;
 extern CRITICAL_SECTION modeMsgsMutex;
 extern WORD wListenPort;
 
+extern char* calcMD5Hash(char* szFile);
+
 
 int IcqGetCaps(WPARAM wParam, LPARAM lParam)
 {
@@ -85,7 +87,7 @@ int IcqGetCaps(WPARAM wParam, LPARAM lParam)
     break;
 
   case PFLAG_UNIQUEIDTEXT:
-    nReturn = (int)Translate("User ID");
+    nReturn = (int)ICQTranslate("User ID");
     break;
 
   case PFLAG_UNIQUEIDSETTING:
@@ -109,7 +111,7 @@ int IcqGetName(WPARAM wParam, LPARAM lParam)
 {
   if (lParam)
   {
-    strncpy((char *)lParam, Translate(gpszICQProtoName), wParam);
+    strncpy((char *)lParam, ICQTranslate(gpszICQProtoName), wParam);
 
     return 0; // Success
   }
@@ -212,6 +214,107 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
 
 
+int IcqGetMaxAvatarSize(WPARAM wParam, LPARAM lParam)
+{
+  if (wParam) *((int*)wParam) = 64;
+  if (lParam) *((int*)lParam) = 64;
+
+  return 0;
+}
+
+
+
+int IcqAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
+{
+  if (lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF)
+    return -2;
+  else
+    return 0;
+}
+
+
+
+int IcqGetMyAvatar(WPARAM wParam, LPARAM lParam)
+{
+  if (!gbAvatarsEnabled) return -2;
+
+  if (!wParam) return -3;
+
+  if (!ICQGetContactStaticString(NULL, "AvatarFile", (char*)wParam, (int)lParam))
+  {
+    if (!access((char*)wParam, 0)) return 0;
+  }
+  return -1;
+}
+
+
+
+int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
+{
+  char* szFile = (char*)lParam;
+  int iRet = -1;
+
+  if (!gbAvatarsEnabled || !gbSsiEnabled) return -2;
+
+  if (szFile)
+  { // set file for avatar
+    char szMyFile[MAX_PATH+1];
+    int dwPaFormat = DetectAvatarFormat(szFile);
+    char* hash;
+    HBITMAP avt;
+
+    avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
+    if (!avt) return iRet;
+    DeleteObject(avt);
+
+    GetFullAvatarFileName(0, NULL, dwPaFormat, szMyFile, MAX_PATH);
+    if (!CopyFile(szFile, szMyFile, FALSE))
+    {
+      NetLog_Server("Failed to copy our avatar to local storage.");
+      return iRet;
+    }
+
+    hash = calcMD5Hash(szMyFile);
+    if (hash)
+    {
+      char* ihash = malloc(0x14);
+      if (ihash)
+      { // upload hash to server
+        ihash[0] = 0;    //unknown
+        ihash[1] = 1;    //hash type
+        ihash[2] = 1;    //hash status
+        ihash[3] = 0x10; //hash len
+        memcpy(ihash+4, hash, 0x10);
+        updateServAvatarHash(ihash+2, 0x12);
+
+        if (ICQWriteContactSettingBlob(NULL, "AvatarHash", ihash, 0x14))
+        {
+          NetLog_Server("Failed to save avatar hash.");
+        }
+
+        ICQWriteContactSettingString(NULL, "AvatarFile", szMyFile);
+        iRet = 0;
+
+        SAFE_FREE(&ihash);
+      }
+      SAFE_FREE(&hash);
+    }
+  }
+  else
+  { // delete user avatar
+    BYTE bEmptyAvatar[7] = {0x00,0x05,0x02,0x01,0xD2,0x04,0x72};
+
+    ICQDeleteContactSetting(NULL, "AvatarFile");
+    ICQDeleteContactSetting(NULL, "AvatarHash");
+    updateServAvatarHash(bEmptyAvatar, 7); // clear hash on server
+    iRet = 0;
+  }
+
+  return iRet;
+}
+
+
+
 int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 {
   int nNewStatus = MirandaStatusToSupported(wParam);
@@ -254,12 +357,12 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
           UpdateGlobalSettings();
 
           // Read UIN from database
-          dwLocalUIN = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
+          dwLocalUIN = ICQGetContactSettingUIN(NULL);
           if (dwLocalUIN == 0)
           {
             SetCurrentStatus(ID_STATUS_OFFLINE);
 
-            icq_LogMessage(LOG_FATAL, Translate("You have not entered a ICQ number.\nConfigure this in Options->Network->ICQ and try again."));
+            icq_LogMessage(LOG_FATAL, ICQTranslate("You have not entered a ICQ number.\nConfigure this in Options->Network->ICQ and try again."));
             return 0;
           }
 
@@ -1094,7 +1197,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
       if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUID))
       { // Invalid contact
         dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("The receiver has an invalid user ID."));
+        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The receiver has an invalid user ID."));
         return dwCookie;
       }
 
@@ -1109,12 +1212,12 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
       if (!icqOnline)
       {
         dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("You cannot send messages when you are offline."));
+        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("You cannot send messages when you are offline."));
       }
       else if ((wRecipientStatus == ID_STATUS_OFFLINE) && (strlennull(pszText) > 450))
       {
         dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("Messages to offline contacts must be shorter than 450 characters."));
+        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("Messages to offline contacts must be shorter than 450 characters."));
       }
       // Looks OK
       else
@@ -1256,7 +1359,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
       if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUID))
       { // Invalid contact
         dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("The receiver has an invalid user ID."));
+        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The receiver has an invalid user ID."));
         return dwCookie;
       }
 
@@ -1271,7 +1374,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
       if (!icqOnline)
       {
         dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, Translate("You cannot send messages when you are offline."));
+        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("You cannot send messages when you are offline."));
       }
       // Looks OK
       else
@@ -1388,7 +1491,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
       if (ICQGetContactSettingUID(ccs->hContact, &dwUin, NULL))
       { // Invalid contact
         dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_URL, Translate("The receiver has an invalid user ID."));
+        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_URL, ICQTranslate("The receiver has an invalid user ID."));
         return dwCookie;
       }
 
@@ -1398,7 +1501,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
       if (!icqOnline)
       {
         dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_URL, Translate("You cannot send messages when you are offline."));
+        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_URL, ICQTranslate("You cannot send messages when you are offline."));
       }
       // Looks OK
       else
@@ -1498,7 +1601,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
       if (ICQGetContactSettingUID(ccs->hContact, &dwUin, NULL))
       { // Invalid contact
         dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("The receiver has an invalid user ID."));
+        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, ICQTranslate("The receiver has an invalid user ID."));
         return dwCookie;
       }
 
@@ -1509,12 +1612,12 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
       if (!icqOnline)
       {
         dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("You cannot send messages when you are offline."));
+        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, ICQTranslate("You cannot send messages when you are offline."));
       }
       else if (!hContactsList || (nContacts < 1) || (nContacts > MAX_CONTACTSSEND))
       {
         dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("Bad data (internal error #1)"));
+        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, ICQTranslate("Bad data (internal error #1)"));
       }
       // OK
       else
@@ -1636,7 +1739,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
           else
           {
             dwCookie = GenerateCookie(0);
-            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, Translate("Bad data (internal error #2)"));
+            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, ICQTranslate("Bad data (internal error #2)"));
           }
 
           for(i = 0; i < nContacts; i++)
@@ -1824,7 +1927,7 @@ int IcqSendYouWereAdded(WPARAM wParam, LPARAM lParam)
       if (ICQGetContactSettingUID(ccs->hContact, &dwUin, NULL))
         return 1; // Invalid contact
 
-      dwMyUin = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
+      dwMyUin = ICQGetContactSettingUIN(NULL);
 
       if (dwUin)
       {

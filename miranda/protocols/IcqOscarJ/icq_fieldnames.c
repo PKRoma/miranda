@@ -268,7 +268,7 @@ char* LookupFieldName(struct fieldnames_t* table, int code)
     for(i = 0; table[i].code != -1 && table[i].text; i++)
     {
       if (table[i].code == code)
-        return Translate(table[i].text);
+        return ICQTranslate(table[i].text);
     }
     
     // Tried to get unexisting field name, you have an

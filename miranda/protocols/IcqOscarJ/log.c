@@ -75,14 +75,14 @@ void icq_LogMessage(int level, const char *szMsg)
 
     if (ICQGetContactSettingByte(NULL, "PopupsLogEnabled", DEFAULT_LOG_POPUPS_ENABLED))
     {
-      if (!ShowPopUpMsg(NULL, Translate(szLevelDescr[level]), szMsg, (BYTE)level))
+      if (!ShowPopUpMsg(NULL, ICQTranslate(szLevelDescr[level]), szMsg, (BYTE)level))
         return; // Popup showed successfuly
     }
     if (!bErrorVisible || !ICQGetContactSettingByte(NULL, "IgnoreMultiErrorBox", 0))
     { // error not shown or allowed multi - show messagebox
       lmi = (LogMessageInfo*)malloc(sizeof(LogMessageInfo));
       lmi->szMsg = null_strdup(szMsg);
-      lmi->szTitle = null_strdup(Translate(szLevelDescr[level]));
+      lmi->szTitle = null_strdup(ICQTranslate(szLevelDescr[level]));
       forkthread(icq_LogMessageThread, 0, lmi);
     }
   }
@@ -136,6 +136,6 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
       break;
   }
 
-  null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?Translate(szMsg):"", szMsg?"\r\n\r\n":"", pszErrorMsg, Translate("error"), dwError);
+  null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?ICQTranslate(szMsg):"", szMsg?"\r\n\r\n":"", pszErrorMsg, ICQTranslate("error"), dwError);
   icq_LogMessage(level, szBuf);
 }

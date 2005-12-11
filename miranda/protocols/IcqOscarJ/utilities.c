@@ -1007,6 +1007,46 @@ char *MangleXml(const char *string, int len)
 
 
 
+char *EliminateHtml(const char *string, int len)
+{
+  char *tmp = (char*)malloc(len + 1);
+  int i,j;
+  BOOL tag = FALSE;
+  char *res;
+
+  for (i=0,j=0;i<len + 1;i++)
+  {
+    if (!tag && string[i] == '<')
+    {
+      if ((i + 4 <= len) && !strnicmp(string + i, "<br>", 4))
+      { // insert newline
+        tmp[j] = '\r';
+        j++;
+        tmp[j] = '\n';
+        j++;
+      }
+      tag = TRUE;
+    }
+    else if (tag && string[i] == '>')
+    {
+      tag = FALSE;
+    }
+    else if (!tag)
+    {
+      tmp[j] = string[i];
+      j++;
+    }
+    tmp[j] = '\0';
+  }
+  SAFE_FREE((void**)&string);
+  res = DemangleXml(tmp, strlennull(tmp));
+  SAFE_FREE(&tmp);
+
+  return res;
+}
+
+
+
 void ResetSettingsOnListReload()
 {
   HANDLE hContact;
@@ -1453,6 +1493,19 @@ void ContactPhotoSettingChanged(HANDLE hContact)
 
 
 
+HANDLE NetLib_OpenConnection(HANDLE hUser, NETLIBOPENCONNECTION* nloc)
+{
+  HANDLE hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hUser, (LPARAM)nloc);
+  if (!hConnection && (GetLastError() == 87))
+  { // this ensures, an old Miranda will be able to connect also
+    nloc->cbSize = NETLIBOPENCONNECTION_V1_SIZE;
+    hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hUser, (LPARAM)nloc);
+  }
+  return hConnection;
+}
+
+
+
 int NetLog_Server(const char *fmt,...)
 {
   va_list va;
@@ -1513,6 +1566,13 @@ int __fastcall ICQTranslateDialog(HWND hwndDlg)
   lptd.hwndDlg=hwndDlg;
   lptd.ignoreControls=NULL;
   return CallService(MS_LANGPACK_TRANSLATEDIALOG,0,(LPARAM)&lptd);
+}
+
+
+
+char* __fastcall ICQTranslate(const char* src)
+{
+  return (char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)src);
 }
 
 

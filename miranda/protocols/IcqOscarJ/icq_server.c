@@ -74,12 +74,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
   // Connect to the login server
   NetLog_Server("Authenticating to server");
-  hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&info.nloc);
-  if (!hServerConn && (GetLastError() == 87))
-  {
-    info.nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
-    hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&info.nloc);
-  }
+  hServerConn = NetLib_OpenConnection(ghServerNetlibUser, &info.nloc);
 
   SAFE_FREE((void**)&info.nloc.szHost);
 
@@ -207,7 +202,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   FlushPendingOperations(); // clear pending operations list
   FlushGroupRenames();      // clear group rename in progress list
 
-  NetLog_Server("Server thread ended.");
+  NetLog_Server("%s thread ended.", "Server");
 
   return 0;
 }
@@ -295,7 +290,7 @@ static int handleServerPackets(unsigned char* buf, int len, serverthread_start_i
       break;
 
     default:
-      NetLog_Server("Warning: Unhandled Server FLAP Channel: Channel %u, Seq %u, Length %u bytes", channel, sequence, datalen);
+      NetLog_Server("Warning: Unhandled %s FLAP Channel: Channel %u, Seq %u, Length %u bytes", "Server", channel, sequence, datalen);
       break;
     }
 
@@ -373,7 +368,7 @@ void icq_login(const char* szPassword)
   DWORD dwUin;
 
 
-  dwUin = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
+  dwUin = ICQGetContactSettingUIN(NULL);
   stsi = (serverthread_start_info*)calloc(sizeof(serverthread_start_info), 1);
   stsi->nloc.cbSize = sizeof(NETLIBOPENCONNECTION);
   stsi->nloc.flags = 0;

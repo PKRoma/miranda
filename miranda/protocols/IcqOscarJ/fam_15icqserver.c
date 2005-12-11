@@ -757,7 +757,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
   {
 
   case META_BASIC_USERINFO:
-    NetLog_Server("SNAC(0x15,0x3): META_BASIC_USERINFO for %u", dwCookieUin);
+    NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "BASIC", dwCookieUin);
     if (bResultCode == 0x0A)
     {
       if (bOK) bOK = writeDbInfoSettingString(hContact, "Nick", &databuf, &wPacketLen);
@@ -791,7 +791,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
     break;
     
   case META_WORK_USERINFO:
-    NetLog_Server("SNAC(0x15,0x3): META_WORK_USERINFO for %u", dwCookieUin);
+    NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "WORK", dwCookieUin);
     if (bResultCode == 0x0A)
     {
       if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyCity", &databuf, &wPacketLen);
@@ -810,7 +810,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
     break;
 
   case META_MORE_USERINFO:
-    NetLog_Server("SNAC(0x15,0x3): META_MORE_USERINFO for %u", dwCookieUin);
+    NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "MORE", dwCookieUin);
     if (bResultCode == 0x0A)
     {
       if (bOK) bOK = writeDbInfoSettingWord(hContact, "Age", &databuf, &wPacketLen);
@@ -854,7 +854,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
     break;
 
   case META_NOTES_USERINFO:
-    NetLog_Server("SNAC(0x15,0x3): META_NOTES_USERINFO for %u", dwCookieUin);
+    NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "NOTES", dwCookieUin);
     if (bResultCode == 0x0A)
     {
       if (bOK) bOK = writeDbInfoSettingString(hContact, "About", &databuf, &wPacketLen);
@@ -862,7 +862,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
     break;
     
   case META_EMAIL_USERINFO:
-    NetLog_Server("SNAC(0x15,0x3): META_EMAIL_USERINFO for %u", dwCookieUin);
+    NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "EMAIL", dwCookieUin);
     if (bResultCode == 0x0A)
     {
       int nCount = 0;
@@ -929,7 +929,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
     break;
 
   case META_INTERESTS_USERINFO:
-    NetLog_Server("SNAC(0x15,0x3): META_INTERESTS_USERINFO for %u", dwCookieUin);
+    NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "INTERESTS", dwCookieUin);
     if (bResultCode == 0x0A)
     {
       int i, count;
@@ -967,7 +967,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
     break;
     
   case META_AFFILATIONS_USERINFO:
-    NetLog_Server("SNAC(0x15,0x3): META_AFFILATIONS_USERINFO for %u", dwCookieUin);
+    NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "AFFILATIONS", dwCookieUin);
     if (bResultCode == 0x0A)
     {
       int i;
@@ -1037,7 +1037,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 
   // This is either a auto update reply or a GetInfo Minimal reply
   case META_SHORT_USERINFO: 
-    NetLog_Server("SNAC(0x15,0x3): META_SHORT_USERINFO for %u", dwCookieUin);
+    NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "SHORT", dwCookieUin);
     if (bResultCode == 0xA)
     {
       if (bOK) bOK = writeDbInfoSettingString(hContact, "Nick", &databuf, &wPacketLen);
@@ -1048,7 +1048,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
     break;
     
   case META_HPAGECAT_USERINFO:
-    NetLog_Server("SNAC(0x15,0x3): META_HPAGECAT_USERINFO for %u", dwCookieUin);
+    NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "HPAGECAT", dwCookieUin);
     break;
 
   default:

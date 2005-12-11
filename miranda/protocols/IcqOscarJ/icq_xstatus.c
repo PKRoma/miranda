@@ -71,6 +71,9 @@ static DWORD requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
 {
   rate_record rr = {0};
 
+  if (!CheckContactCapabilities(hContact, CAPF_XTRAZ))
+    return 0; // Contact does not support xtraz, do not request details
+
   rr.hContact = hContact;
   rr.bType = RIT_XSTATUS_REQUEST;
   rr.rate_group = 0x101; // request
@@ -387,7 +390,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         ShowWindow(GetDlgItem(hwndDlg, IDC_RETRXSTATUS), SW_HIDE);
         ShowWindow(GetDlgItem(hwndDlg, IDC_XMSG), SW_SHOW);
         ShowWindow(GetDlgItem(hwndDlg, IDC_XTITLE), SW_SHOW);
-        SetDlgItemText(hwndDlg,IDOK,Translate("Close"));
+        SetDlgItemText(hwndDlg,IDOK,ICQTranslate("Close"));
         UnhookEvent(dat->hEvent); dat->hEvent = NULL;
         szText = ICQGetContactSettingUtf(dat->hContact, "XStatusName", "");
         SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
@@ -440,7 +443,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         SendMessage(GetDlgItem(hwndDlg, IDC_XMSG), EM_SETREADONLY, 1, 0);
         if (!ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
         {
-          SetDlgItemText(hwndDlg,IDOK,Translate("Cancel"));
+          SetDlgItemText(hwndDlg,IDOK,ICQTranslate("Cancel"));
           dat->hEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_PROTOACK);
           ShowWindow(GetDlgItem(hwndDlg, IDC_RETRXSTATUS), SW_SHOW);
           ShowWindow(GetDlgItem(hwndDlg, IDC_XMSG), SW_HIDE);
@@ -451,7 +454,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         {
           char *szText;
 
-          SetDlgItemText(hwndDlg,IDOK,Translate("Close"));
+          SetDlgItemText(hwndDlg,IDOK,ICQTranslate("Close"));
           dat->hEvent = NULL;
           szText = ICQGetContactSettingUtf(dat->hContact, "XStatusName", "");
           SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
@@ -464,7 +467,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
       {  
         char str[256], format[128];
         GetWindowText(hwndDlg, format, sizeof(format));
-        null_snprintf(str, sizeof(str), format, dat->bXStatus?Translate(nameXStatus[dat->bXStatus-1]):"");
+        null_snprintf(str, sizeof(str), format, dat->bXStatus?ICQTranslate(nameXStatus[dat->bXStatus-1]):"");
         SetWindowText(hwndDlg, str);
       }
       return TRUE;
@@ -494,7 +497,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
           if (!dat->bAction)
           { // set our xStatus
             KillTimer(hwndDlg,1);
-            SetDlgItemText(hwndDlg,IDOK,Translate("OK"));
+            SetDlgItemText(hwndDlg,IDOK,ICQTranslate("OK"));
           }
           break;
       }
@@ -558,7 +561,7 @@ static void setXStatus(BYTE bXStatus)
     char* szUtf;
 
     sprintf(szSetting, "XStatus%dName", bXStatus);
-    szUtf = ICQGetContactSettingUtf(NULL, szSetting, Translate(nameXStatus[bXStatus-1]));
+    szUtf = ICQGetContactSettingUtf(NULL, szSetting, ICQTranslate(nameXStatus[bXStatus-1]));
     ICQWriteContactSettingUtf(NULL, "XStatusName", szUtf);
     SAFE_FREE(&szUtf);
 
@@ -729,7 +732,7 @@ void InitXStatusItems(BOOL bAllowStatus)
 
   if (!gbXStatusEnabled) return;
 
-  null_snprintf(szItem, sizeof(szItem), Translate("%s Custom Status"), gpszICQProtoName);
+  null_snprintf(szItem, sizeof(szItem), ICQTranslate("%s Custom Status"), gpszICQProtoName);
   mi.cbSize = sizeof(mi);
   mi.pszPopupName = szItem;
   mi.popupPosition= 500084000;
@@ -776,7 +779,7 @@ void InitXStatusItems(BOOL bAllowStatus)
     }
 
     mi.flags = bXStatus == i?CMIF_CHECKED:0;
-    mi.pszName = Translate(i?nameXStatus[i-1]:"None");
+    mi.pszName = ICQTranslate(i?nameXStatus[i-1]:"None");
     mi.pszService = srvFce;
     mi.pszContactOwner = gpszICQProtoName;
 
@@ -797,7 +800,7 @@ void InitXStatusIcons()
   char szSection[MAX_PATH + 64];
   int i;
   
-  sprintf(szSection, Translate("%s/Custom Status"), gpszICQProtoName);
+  sprintf(szSection, ICQTranslate("%s/Custom Status"), gpszICQProtoName);
 
   for (i = 0; i < 29; i++) 
   {
@@ -805,7 +808,7 @@ void InitXStatusIcons()
     char szTemp[64];
 
     null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", i);
-    IconLibDefine(nameXStatus[i], szSection, szTemp, hXIcon);
+    IconLibDefine(ICQTranslate(nameXStatus[i]), szSection, szTemp, hXIcon);
     DestroyIcon(hXIcon);
   }
 

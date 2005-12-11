@@ -95,7 +95,7 @@ DWORD icq_sendGetAwayMsgDirect(HANDLE hContact, int type)
   message_cookie_data *pCookieData = NULL;
 
   pCookieData = malloc(sizeof(message_cookie_data));
-  dwCookie = AllocateCookie(0, ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0), (void*)pCookieData);
+  dwCookie = AllocateCookie(0, ICQGetContactSettingUIN(hContact), (void*)pCookieData);
   pCookieData->bMessageType = MTYPE_AUTOAWAY;
   pCookieData->nAckType = (BYTE)type;
 

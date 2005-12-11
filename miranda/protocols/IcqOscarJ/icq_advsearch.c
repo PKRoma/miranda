@@ -52,7 +52,7 @@ static void InitComboBox(HWND hwndCombo,struct fieldnames_t *names)
   {
     if (names[i].text == NULL)
       break;
-    iItem = SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)Translate(names[i].text));
+    iItem = SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)ICQTranslate(names[i].text));
     SendMessage(hwndCombo, CB_SETITEMDATA, iItem,names[i].code);
   }
 }
@@ -88,7 +88,7 @@ BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, L
         {
           if (countries[i].id == 0 || countries[i].id == 0xFFFF)
             continue;
-          iItem = SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_ADDSTRING, 0, (LPARAM)Translate(countries[i].szName));
+          iItem = SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_ADDSTRING, 0, (LPARAM)ICQTranslate(countries[i].szName));
           SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_SETITEMDATA, iItem, countries[i].id);
         }
       }

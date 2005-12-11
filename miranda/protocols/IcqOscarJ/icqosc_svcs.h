@@ -84,5 +84,10 @@ int IcqRecvAuth(WPARAM wParam, LPARAM lParam);
 int IcqIdleChanged(WPARAM wParam, LPARAM lParam);
 
 int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam);
+int IcqGetMaxAvatarSize(WPARAM wParam, LPARAM lParam);
+int IcqAvatarFormatSupported(WPARAM wParam, LPARAM lParam);
+int IcqGetMyAvatar(WPARAM wParam, LPARAM lParam);
+int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam);
+
 
 #endif /* __ICQOSC_SVCS_H */

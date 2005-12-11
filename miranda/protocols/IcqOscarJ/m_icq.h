@@ -275,3 +275,28 @@ typedef struct {
 //msgType is one of the ICQ_MSGTYPE_GET###MSG constants in icq_constants.h
 //uin is the UIN of the contact requesting our status message
 #define ME_ICQ_STATUSMSGREQ      "/StatusMsgReq"
+
+
+//set owner avatar
+//wParam=0
+//lParam=(const char *)Avatar file name
+//return=0 for sucess
+#define PS_ICQ_SETMYAVATAR "/SetMyAvatar"
+
+//get current owner avatar
+//wParam=(char *)Buffer to file name
+//lParam=(int)Buffer size
+//return=0 for sucess
+#define PS_ICQ_GETMYAVATAR "/GetMyAvatar"
+
+//get size limit for avatar image
+//wParam=(int *)max width of avatar - will be set
+//lParam=(int *)max height of avatar - will be set
+//return=0 for sucess
+#define PS_ICQ_GETMYAVATARMAXSIZE "/GetMyAvatarMaxSize"
+
+//check if image format supported for avatars
+//wParam = 0
+//lParam = PA_FORMAT_*   // avatar format
+//return = 1 (supported) or 0 (not supported)
+#define PS_ICQ_ISAVATARFORMATSUPPORTED "/IsAvatarFormatSupported"

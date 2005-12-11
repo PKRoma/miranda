@@ -65,7 +65,7 @@ BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
       ICQTranslateDialog(hwndDlg);
       SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
 
-      dwUIN = ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0);
+      dwUIN = ICQGetContactSettingUIN(NULL);
 
       if (dwUIN)
       {

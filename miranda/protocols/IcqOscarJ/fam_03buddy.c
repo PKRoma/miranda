@@ -45,7 +45,7 @@ extern DWORD dwLocalDirectConnCookie;
 
 extern const capstr capAimIcon;
 extern const char* cliSpamBot;
-extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE* caps, WORD wLen, DWORD* dwClientId);
+extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, DWORD* dwClientId);
 
 
 void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
@@ -107,6 +107,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   DWORD dwUIN;
   uid_str szUID;
   DWORD dwDirectConnCookie;
+  DWORD dwWebPort;
   DWORD dwFT1, dwFT2, dwFT3;
   LPSTR szClient = 0;
   DWORD dwClientId = 0;
@@ -180,7 +181,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         unpackByte(&pBuffer,  &nTCPFlag);
         unpackWord(&pBuffer,  &wVersion);
         unpackDWord(&pBuffer, &dwDirectConnCookie);
-        pBuffer += 4; // Web front port
+        unpackDWord(&pBuffer, &dwWebPort); // Web front port
         pBuffer += 4; // Client features
 
         // Get faked time signatures, used to identify clients
@@ -202,6 +203,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         dwPort = 0;
         nTCPFlag = 0;
         dwDirectConnCookie = 0;
+        dwWebPort = 0;
         dwFT1 = dwFT2 = dwFT3 = 0;
       }
 
@@ -346,7 +348,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           // handle Xtraz status
           handleXStatusCaps(hContact, capBuf, capLen);
 
-          szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, capBuf, capLen, &dwClientId);
+          szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, dwDirectConnCookie, dwWebPort, capBuf, capLen, &dwClientId);
         }
 
 #ifdef _DEBUG
@@ -425,7 +427,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       icq_DequeueUser(dwUIN);
       AddToSpammerList(dwUIN);
       if (ICQGetContactSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
-        ShowPopUpMsg(hContact, Translate("Spambot Detected"), Translate("Contact deleted & further events blocked."), POPTYPE_SPAM);
+        ShowPopUpMsg(hContact, ICQTranslate("Spambot Detected"), ICQTranslate("Contact deleted & further events blocked."), POPTYPE_SPAM);
       CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 
       NetLog_Server("Contact %u deleted", dwUIN);

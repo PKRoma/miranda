@@ -233,6 +233,7 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
           szMsg = malloc(pTLV->wLen + 1);
           memcpy(szMsg, pTLV->pData, pTLV->wLen);
           szMsg[pTLV->wLen] = '\0';
+          szMsg = EliminateHtml(szMsg, pTLV->wLen);
         }
         // Free TLV chain
         disposeChain(&pChain);

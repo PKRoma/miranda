@@ -60,12 +60,12 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
   odp.position = -800000000;
   odp.hInstance = hInst;
 
-  pszLocalProtoName = Translate(gpszICQProtoName);
+  pszLocalProtoName = ICQTranslate(gpszICQProtoName);
   nLocalProtoNameLen = strlennull(pszLocalProtoName);
 
   // Add "icq" option
   odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQ);
-  odp.pszGroup = Translate("Network");
+  odp.pszGroup = ICQTranslate("Network");
   odp.pszTitle = pszLocalProtoName;
   odp.pfnDlgProc = DlgProcIcqOpts;
   odp.flags = ODPF_BOLDGROUPS;
@@ -73,7 +73,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
   CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
 
   // Add "contacts" option
-  pszLocalOptName = Translate("%s Contacts");
+  pszLocalOptName = ICQTranslate("%s Contacts");
   nNameLen = nLocalProtoNameLen + strlennull(pszLocalOptName);
   pszTreeItemName = _alloca(nNameLen+1);
   null_snprintf(pszTreeItemName, nNameLen+1, pszLocalOptName, pszLocalProtoName);
@@ -84,7 +84,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
   CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
   
   // Add "features" option
-  pszLocalOptName = Translate("%s Features");
+  pszLocalOptName = ICQTranslate("%s Features");
   nNameLen = nLocalProtoNameLen + strlennull(pszLocalOptName);
   pszTreeItemName = _alloca(nNameLen+1);
   null_snprintf(pszTreeItemName, nNameLen+1, pszLocalOptName, pszLocalProtoName);
@@ -96,7 +96,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
   CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
 
   // Add "privacy" option
-  pszLocalOptName = Translate("%s Privacy");
+  pszLocalOptName = ICQTranslate("%s Privacy");
   nNameLen = nLocalProtoNameLen + strlennull(pszLocalOptName);
   pszTreeItemName = _alloca(nNameLen+1);
   null_snprintf(pszTreeItemName, nNameLen+1, pszLocalOptName, pszLocalProtoName);
@@ -139,7 +139,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
       ICQTranslateDialog(hwndDlg);
 
-      SetDlgItemInt(hwndDlg, IDC_ICQNUM, ICQGetContactSettingDword(NULL, UNIQUEIDSETTING, 0), FALSE);
+      SetDlgItemInt(hwndDlg, IDC_ICQNUM, ICQGetContactSettingUIN(NULL), FALSE);
 
       if (!ICQGetContactStaticString(NULL, "Password", pszPwd, sizeof(pszPwd)))
       {
@@ -164,7 +164,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       LoadDBCheckState(hwndDlg, IDC_SLOWSEND, "SlowSend", 1);
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 3));
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 3-ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING));
-      SetDlgItemText(hwndDlg, IDC_LEVELDESCR, Translate(szLogLevelDescr[3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)]));
+      SetDlgItemText(hwndDlg, IDC_LEVELDESCR, ICQTranslate(szLogLevelDescr[3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)]));
       ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_HIDE);
       LoadDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox", 0);
       
@@ -172,7 +172,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
     }
     
   case WM_HSCROLL:
-    SetDlgItemText(hwndDlg, IDC_LEVELDESCR, Translate(szLogLevelDescr[3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL,TBM_GETPOS, 0, 0)]));
+    SetDlgItemText(hwndDlg, IDC_LEVELDESCR, ICQTranslate(szLogLevelDescr[3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL,TBM_GETPOS, 0, 0)]));
     SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
     break;
     
@@ -458,7 +458,7 @@ static BOOL CALLBACK FillCpCombo(LPCSTR str)
   for (i=0; cpTable[i].cpName != NULL && cpTable[i].cpId!=cp; i++);
   if (cpTable[i].cpName != NULL) 
   {
-    LRESULT iIndex = SendMessageA(hCpCombo, CB_ADDSTRING, -1, (LPARAM) Translate(cpTable[i].cpName));
+    LRESULT iIndex = SendMessageA(hCpCombo, CB_ADDSTRING, -1, (LPARAM) ICQTranslate(cpTable[i].cpName));
     SendMessage(hCpCombo, CB_SETITEMDATA, (WPARAM)iIndex, cpTable[i].cpId);
   }
   return TRUE;
@@ -500,7 +500,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       hCpCombo = GetDlgItem(hwndDlg, IDC_UTFCODEPAGE);
       sCodePage = ICQGetContactSettingWord(NULL, "AnsiCodePage", CP_ACP);
       EnumSystemCodePagesA(FillCpCombo, CP_INSTALLED);
-      SendDlgItemMessageA(hwndDlg, IDC_UTFCODEPAGE, CB_INSERTSTRING, 0, (LPARAM)Translate("System default codepage"));
+      SendDlgItemMessageA(hwndDlg, IDC_UTFCODEPAGE, CB_INSERTSTRING, 0, (LPARAM)ICQTranslate("System default codepage"));
       if(sCodePage == 0)
         SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_SETCURSEL, (WPARAM)0, 0);
       else 

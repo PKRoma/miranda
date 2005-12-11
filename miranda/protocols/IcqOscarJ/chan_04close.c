@@ -133,7 +133,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 
   if (!newServer || !cookie)
   {
-    icq_LogMessage(LOG_FATAL, Translate("You could not sign on because the server returned invalid data. Try again."));
+    icq_LogMessage(LOG_FATAL, ICQTranslate("You could not sign on because the server returned invalid data. Try again."));
 
     SAFE_FREE(&newServer);
     SAFE_FREE(&cookie);
@@ -168,12 +168,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
     }
 
     NetLog_Server("Connecting to %s", newServer);
-    hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
-    if (!hServerConn && (GetLastError() == 87))
-    { // this ensures that an old Miranda can also connect
-      nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
-      hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
-    }
+    hServerConn = NetLib_OpenConnection(ghServerNetlibUser, &nloc);
     if (hServerConn == NULL)
     {
       SAFE_FREE(&cookie);
@@ -222,7 +217,7 @@ static void handleMigration()
   NetLog_Server("Migrating to %s", migratedServer);
   if (!migratedServer || !cookieData)
   {
-    icq_LogMessage(LOG_FATAL, Translate("You have been disconnected from the ICQ network because the current server shut down."));
+    icq_LogMessage(LOG_FATAL, ICQTranslate("You have been disconnected from the ICQ network because the current server shut down."));
 
     SAFE_FREE(&migratedServer);
     SAFE_FREE(&cookieData);
@@ -259,12 +254,7 @@ static void handleMigration()
   if (!ICQGetContactSettingByte(NULL, "UseGateway", 0) || !ICQGetContactSettingByte(NULL, "NLUseProxy", 0))
   {
     // Open connection to new server
-    hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
-    if (!hServerConn && (GetLastError() == 87))
-    { // this ensures that an old Miranda can also connect
-      nloc.cbSize = NETLIBOPENCONNECTION_V1_SIZE;
-      hServerConn = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)ghServerNetlibUser, (LPARAM)&nloc);
-    }
+    hServerConn = NetLib_OpenConnection(ghServerNetlibUser, &nloc);
     if (hServerConn == NULL)
     {
       icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to migrated ICQ communication server");
@@ -308,44 +298,44 @@ static void handleSignonError(WORD wError)
   case 0x06:
   case 0x07:
     ICQBroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
-    null_snprintf(msg, 250, Translate("Connection failed.\nYour ICQ number or password was rejected (%d)."), wError);
+    null_snprintf(msg, 250, ICQTranslate("Connection failed.\nYour ICQ number or password was rejected (%d)."), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
 
   case 0x14:
   case 0x15:
-    null_snprintf(msg, 250, Translate("Connection failed.\nThe server is temporally unavailable (%d)."), wError);
+    null_snprintf(msg, 250, ICQTranslate("Connection failed.\nThe server is temporally unavailable (%d)."), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
 
   case 0x16:
   case 0x17:
-    null_snprintf(msg, 250, Translate("Connection failed.\nServer has too many connections from your IP (%d)."), wError);
+    null_snprintf(msg, 250, ICQTranslate("Connection failed.\nServer has too many connections from your IP (%d)."), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
 
   case 0x18:
   case 0x1D:
-    null_snprintf(msg, 250, Translate("Connection failed.\nYou have connected too quickly,\nplease wait and retry 10 to 20 minutes later (%d)."), wError);
+    null_snprintf(msg, 250, ICQTranslate("Connection failed.\nYou have connected too quickly,\nplease wait and retry 10 to 20 minutes later (%d)."), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
 
   case 0x1B:
-    icq_LogMessage(LOG_FATAL, Translate("Connection failed.\nThe server did not accept this client version."));
+    icq_LogMessage(LOG_FATAL, ICQTranslate("Connection failed.\nThe server did not accept this client version."));
     break;
 
   case 0x1C:
-    icq_LogMessage(LOG_WARNING, Translate("The server sent warning, this version is getting old.\nTry to look for a new one."));
+    icq_LogMessage(LOG_WARNING, ICQTranslate("The server sent warning, this version is getting old.\nTry to look for a new one."));
 
   case 0x1E:
-    icq_LogMessage(LOG_FATAL, Translate("Connection failed.\nYou were rejected by the server for an unknown reason.\nThis can happen if the UIN is already connected."));
+    icq_LogMessage(LOG_FATAL, ICQTranslate("Connection failed.\nYou were rejected by the server for an unknown reason.\nThis can happen if the UIN is already connected."));
     break;
 
   case 0:
     break;
 
   default:
-    null_snprintf(msg, 50, Translate("Connection failed.\nUnknown error during sign on: 0x%02x"), wError);
+    null_snprintf(msg, 50, ICQTranslate("Connection failed.\nUnknown error during sign on: 0x%02x"), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
   }
@@ -363,12 +353,12 @@ static void handleRuntimeError(WORD wError)
   case 0x01:
   {
     ICQBroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
-    icq_LogMessage(LOG_FATAL, Translate("You have been disconnected from the ICQ network because you logged on from another location using the same ICQ number."));
+    icq_LogMessage(LOG_FATAL, ICQTranslate("You have been disconnected from the ICQ network because you logged on from another location using the same ICQ number."));
     break;
   }
 
   default:
-    null_snprintf(msg, 50, Translate("Unknown runtime error: 0x%02x"), wError);
+    null_snprintf(msg, 50, ICQTranslate("Unknown runtime error: 0x%02x"), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
   }

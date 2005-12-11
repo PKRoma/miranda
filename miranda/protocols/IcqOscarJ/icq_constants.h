@@ -205,7 +205,6 @@
 // Message Plugin Sub-Type IDs
 #define MGTYPE_STANDARD_SEND        0x00
 #define MGTYPE_CONTACTS_REQUEST     0x02
-#define MGTYPE_STATUSMSGEXT_REPLY   0x03
 #define MGTYPE_SCRIPT_INVITATION    0x01
 #define MGTYPE_SCRIPT_DATA          0x02
 #define MGTYPE_SCRIPT_USER_REMOVE   0x04
@@ -500,7 +499,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030608
+#define ICQ_PLUG_VERSION            0x80030609
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

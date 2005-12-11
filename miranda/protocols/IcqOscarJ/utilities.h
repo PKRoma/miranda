@@ -96,6 +96,7 @@ char* __fastcall null_strdup(const char *string);
 
 char *DemangleXml(const char *string, int len);
 char *MangleXml(const char *string, int len);
+char *EliminateHtml(const char *string, int len);
 
 void ResetSettingsOnListReload(void);
 void ResetSettingsOnConnect(void);
@@ -126,15 +127,16 @@ void __fastcall SAFE_FREE(void** p);
 void LinkContactPhotoToFile(HANDLE hContact, char* szFile);
 void ContactPhotoSettingChanged(HANDLE hContact);
 
+HANDLE NetLib_OpenConnection(HANDLE hUser, NETLIBOPENCONNECTION* nloc);
 int NetLog_Server(const char *fmt,...);
 int NetLog_Direct(const char *fmt,...);
 
 int ICQBroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam);
 
 int __fastcall ICQTranslateDialog(HWND hwndDlg);
+char* __fastcall ICQTranslate(const char* src);
 
 char* GetUserPassword(BOOL bAlways);
-
 
 char* GetDlgItemTextUtf(HWND hwndDlg, int iItem);
 void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const char* szText);

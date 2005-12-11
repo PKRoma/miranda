@@ -256,7 +256,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 
         if (sc->dwAction==SSA_CHECK_ROSTER)
         { // the serv-list is unavailable turn it off
-          icq_LogMessage(LOG_ERROR, Translate("Server contact list is unavailable, Miranda will use local contact list."));
+          icq_LogMessage(LOG_ERROR, ICQTranslate("Server contact list is unavailable, Miranda will use local contact list."));
           gbSsiEnabled = 0;
           handleServUINSettings(wListenPort, dwLocalInternalIP);
         }
@@ -293,7 +293,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Renaming of server contact failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, Translate("Renaming of server contact failed."));
+        icq_LogMessage(LOG_WARNING, ICQTranslate("Renaming of server contact failed."));
       }
       SAFE_FREE(&sc->szUID);
       break;
@@ -303,7 +303,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Update of server contact's comment failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, Translate("Update of server contact's comment failed."));
+        icq_LogMessage(LOG_WARNING, ICQTranslate("Update of server contact's comment failed."));
       }
       SAFE_FREE(&sc->szUID);
       break;
@@ -313,7 +313,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Adding of privacy item to server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, Translate("Adding of privacy item to server list failed."));
+        icq_LogMessage(LOG_WARNING, ICQTranslate("Adding of privacy item to server list failed."));
       }
       SAFE_FREE(&sc->szUID);
       break;
@@ -323,7 +323,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Removing of privacy item from server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, Translate("Removing of privacy item from server list failed."));
+        icq_LogMessage(LOG_WARNING, ICQTranslate("Removing of privacy item from server list failed."));
       }
       FreeServerID(sc->wContactId, SSIT_ITEM); // release server id
       SAFE_FREE(&sc->szUID);
@@ -352,7 +352,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         RemovePendingOperation(sc->hContact, 0);
 
         NetLog_Server("Adding of contact to server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, Translate("Adding of contact to server list failed."));
+        icq_LogMessage(LOG_WARNING, ICQTranslate("Adding of contact to server list failed."));
         SAFE_FREE(&sc->szUID);
       }
       else
@@ -397,7 +397,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       {
         FreeServerID(sc->wGroupId, SSIT_GROUP);
         NetLog_Server("Adding of group to server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, Translate("Adding of group to server list failed."));
+        icq_LogMessage(LOG_WARNING, ICQTranslate("Adding of group to server list failed."));
       }
       else // group added, we need to update master group
       {
@@ -488,7 +488,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       else
       {
         NetLog_Server("Removing of contact from server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, Translate("Removing of contact from server list failed."));
+        icq_LogMessage(LOG_WARNING, ICQTranslate("Removing of contact from server list failed."));
         sendAddEnd(); // end server modifications here
         SAFE_FREE(&sc->szUID);
       }
@@ -499,7 +499,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Updating of group on server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, Translate("Updating of group on server list failed."));
+        icq_LogMessage(LOG_WARNING, ICQTranslate("Updating of group on server list failed."));
       }
       SAFE_FREE(&sc->szGroupName);
       break;
@@ -510,7 +510,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Removing of group from server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, Translate("Removing of group from server list failed."));
+        icq_LogMessage(LOG_WARNING, ICQTranslate("Removing of group from server list failed."));
       }
       else // group removed, we need to update master group
       {
@@ -548,7 +548,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       {
         RemovePendingOperation(sc->hContact, 0);
         NetLog_Server("Moving of user to another group on server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, Translate("Moving of user to another group on server list failed."));
+        icq_LogMessage(LOG_WARNING, ICQTranslate("Moving of user to another group on server list failed."));
         if (!sc->lParam) // is this first ack ?
         {
           sc->lParam = -1;
@@ -645,7 +645,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Renaming of server group failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, Translate("Renaming of server group failed."));
+        icq_LogMessage(LOG_WARNING, ICQTranslate("Renaming of server group failed."));
       }
       else
       { 
