@@ -213,7 +213,7 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 					LI->resource = ( JABBER_RESOURCE_STATUS * ) realloc( LI->resource, ( LI->resourceCount+1 )*sizeof( JABBER_RESOURCE_STATUS ));
 					bIsNewResource = true;
 					r = LI->resource + LI->resourceCount++;
-					memset( r, 0, sizeof JABBER_RESOURCE_STATUS );
+					memset( r, 0, sizeof( JABBER_RESOURCE_STATUS ));
 					r->status = status;
 					r->affiliation = AFFILIATION_NONE;
 					r->role = ROLE_NONE;

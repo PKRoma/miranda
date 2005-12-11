@@ -109,7 +109,7 @@ int MSN_ChatInit( WPARAM wParam, LPARAM lParam );
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Main DLL function
 
-BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
+extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
 	hInst = hinstDLL;
 	return TRUE;
@@ -253,7 +253,7 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Performs a primary set of actions upon plugin loading
 
-int __declspec(dllexport) Load( PLUGINLINK* link )
+extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 {
 	pluginLink = link;
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &msnMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
@@ -318,7 +318,7 @@ int __declspec(dllexport) Load( PLUGINLINK* link )
 
 extern char* rru;
 
-int __declspec( dllexport ) Unload( void )
+extern "C" int __declspec( dllexport ) Unload( void )
 {
 	if ( msnLoggedIn )
 		msnNsThread->sendPacket( "OUT", NULL );
@@ -366,7 +366,7 @@ int __declspec( dllexport ) Unload( void )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MirandaPluginInfo - returns an information about a plugin
 
-__declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
+extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
 	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 4, 0, 0 )) {
 		MessageBox( NULL, "The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.4.0 or later.", "MSN Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );

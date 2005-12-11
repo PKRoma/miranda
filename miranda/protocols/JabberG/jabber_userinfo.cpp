@@ -130,7 +130,8 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 						JABBER_RESOURCE_STATUS *r;
 
 						if ( szResource != ( char* )LB_ERR && item != NULL && ( r=item->resource ) != NULL ) {
-							for ( int i=0; i<item->resourceCount && strcmp( r[i].resourceName, szResource ); i++ );
+							int i;
+							for ( i=0; i<item->resourceCount && strcmp( r[i].resourceName, szResource ); i++ );
 							if ( i < item->resourceCount ) {
 								if ( r[i].software != NULL ) {
 									SetDlgItemText( hwndDlg, IDC_SOFTWARE, r[i].software );

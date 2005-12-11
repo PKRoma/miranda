@@ -732,7 +732,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 			JabberUrlDecodeW( wszMessage );
 			WCHAR* p = JabberUnixToDosW( wszMessage );
 			free( wszMessage );
-			wszMessage = ( p == NULL ) ? L"" : p;
+			wszMessage = ( p == NULL ) ? (WCHAR*)L"" : p;
 		}
 
 		int cbAnsiLen = strlen( szMessage )+1, cbWideLen = wcslen( wszMessage )+1;
@@ -755,7 +755,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 				if ( item->resourceMode==RSMODE_LASTSEEN && ( fromResource=strchr( from, '/' ))!=NULL ) {
 					fromResource++;
 					if ( *fromResource != '\0' ) {
-						for ( i=0; i<item->resourceCount; i++ ) {
+						for ( int i=0; i<item->resourceCount; i++ ) {
 							if ( !strcmp( item->resource[i].resourceName, fromResource )) {
 								item->defaultResource = i;
 								break;

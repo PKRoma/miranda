@@ -1025,7 +1025,7 @@ void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
 					JabberLog( "Result jid=%s", jsr.jid );
 				}
 				else if ( !strcmp( fieldName, "nickname" ))
-					jsr.hdr.nick = ( n->text != NULL ) ? JabberUtf8Decode( n->text, 0 ) : "";
+					jsr.hdr.nick = ( n->text != NULL ) ? JabberUtf8Decode( n->text, 0 ) : (char*)"";
 				else if ( !strcmp( fieldName, "fn" )) {
 					if ( n->text != NULL )
 	               jsr.hdr.firstName = JabberUtf8Decode( n->text, 0 );
@@ -1035,9 +1035,9 @@ void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
 	               jsr.hdr.firstName = JabberUtf8Decode( n->text, 0 );
 				}
 				else if ( !strcmp( fieldName, "family" ))
-               jsr.hdr.lastName = ( n->text != NULL ) ? JabberUtf8Decode( n->text, 0 ) : "";
+               jsr.hdr.lastName = ( n->text != NULL ) ? JabberUtf8Decode( n->text, 0 ) : (char*)"";
 				else if ( !strcmp( fieldName, "email" ))
-               jsr.hdr.email = ( n->text != NULL ) ? JabberUtf8Decode( n->text, 0 ) : "";
+               jsr.hdr.email = ( n->text != NULL ) ? JabberUtf8Decode( n->text, 0 ) : (char*)"";
 			}
 			JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) id, ( LPARAM )&jsr );
 		}

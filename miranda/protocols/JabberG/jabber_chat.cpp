@@ -587,7 +587,7 @@ int JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 
 void JabberAddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, char* str )
 {
-	char* field = strchr(str,'@') ? "jid" : "nick";
+	const char* field = strchr(str,'@') ? "jid" : "nick";
 	char* roomJid = jidListInfo->roomJid;
 
 	switch (jidListInfo->type) {
