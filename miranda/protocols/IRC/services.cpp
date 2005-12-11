@@ -1382,7 +1382,7 @@ void ConnectToServer(void)
 	bTempDisableCheck = false;
 	bTempForceCheck = false;
 	iTempCheckTime = 0;
-	sChannelPrefixes = "#";
+	sChannelPrefixes = "&#";
 	sUserModes = "ov";
 	sUserModePrefixes = "@+";
 	sChannelModes = "btnimklps";
