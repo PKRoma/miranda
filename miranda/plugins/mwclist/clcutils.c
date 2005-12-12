@@ -273,7 +273,13 @@ extern void ( *saveLoadClcOptions )(HWND hwnd,struct ClcData *dat);
 
 void LoadClcOptions(HWND hwnd,struct ClcData *dat)
 {
+	int i;
+
 	dat->style=GetWindowLong(hwnd,GWL_STYLE);
 	dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",1);
 	saveLoadClcOptions( hwnd, dat );
+
+	for (i = 0; i <= FONTID_MAX; i++)
+		if (dat->fontInfo[i].fontHeight > dat->rowHeight) 
+			dat->rowHeight = dat->fontInfo[i].fontHeight;
 }
