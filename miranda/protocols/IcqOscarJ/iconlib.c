@@ -57,9 +57,9 @@ void IconLibDefine(const char* desc, const char* section, const char* ident, HIC
 
 		sid.cx = sid.cy = 16;
 		sid.cbSize = sizeof(SKINICONDESC2);
-		sid.pszSection = section;
+		sid.pszSection = (char*)section;
 		sid.pszDefaultFile = NULL;
-		sid.pszDescription = desc;
+		sid.pszDescription = (char*)desc;
 		null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
 		sid.pszName = szTemp;
 		sid.iDefaultIndex = 0;
