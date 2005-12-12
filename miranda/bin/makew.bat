@@ -58,6 +58,10 @@ cd ..\help
 nmake /f help.mak CFG="help - Win32 Release Unicode"
 if errorlevel 1 goto :Error
 
+cd ..\mwclist
+nmake /f mwclist.mak CFG="mwclist - Win32 Release Unicode"
+if errorlevel 1 goto :Error
+
 cd ..\srmm
 nmake /f srmm.mak CFG="srmm - Win32 Release Unicode"
 if errorlevel 1 goto :Error
