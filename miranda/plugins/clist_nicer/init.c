@@ -161,12 +161,15 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnCompareContacts = CompareContacts;
 	pcli->pfnCreateClcContact = CreateClcContact;
 	pcli->pfnGetDefaultFontSetting = GetDefaultFontSetting;
+	pcli->pfnGetRowBottomY = RowHeights_GetItemBottomY;
+	pcli->pfnGetRowHeight = RowHeights_GetHeight;
+	pcli->pfnGetRowTopY = RowHeights_GetItemTopY;
+	pcli->pfnGetRowTotalHeight = RowHeights_GetTotalHeight;
 	pcli->pfnHitTest = HitTest;
 //	pcli->pfnIconFromStatusMode = IconFromStatusMode;
-	pcli->pfnInvalidateItem = InvalidateItem;
 	pcli->pfnPaintClc = PaintClc;
 	pcli->pfnRebuildEntireList = RebuildEntireList;
-	pcli->pfnRecalcScrollBar = RecalcScrollBar;
+	pcli->pfnGetRowHeight = RowHeights_GetHeight;
 	pcli->pfnScrollTo = ScrollTo;
 
 	saveAddContactToGroup = pcli->pfnAddContactToGroup; pcli->pfnAddContactToGroup = AddContactToGroup;

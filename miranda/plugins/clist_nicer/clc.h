@@ -146,7 +146,7 @@ struct ClcContact {
 
 struct ClcData {
 	struct ClcGroup list;
-	int rowHeight;
+	int max_row_height;
 	int yScroll;
 	int selection;
 	struct ClcFontInfo fontInfo[FONTID_MAX + 1];
@@ -184,7 +184,6 @@ struct ClcData {
 	int useWindowsColours;
 	BOOL bNeedSort;
 
-	int max_row_height;
 	int *row_heights;
 	int row_heights_size;
 	int row_heights_allocated;
@@ -395,8 +394,6 @@ void SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat);
 LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //clcutils.c
-void EnsureVisible(HWND hwnd, struct ClcData *dat, int iItem, int partialOk);
-void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 void SetGroupExpand(HWND hwnd, struct ClcData *dat, struct ClcGroup *group, int newState);
 void DoSelectionDefaultAction(HWND hwnd, struct ClcData *dat);
 int FindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefixOk);
@@ -415,7 +412,6 @@ void NotifyNewContact(HWND hwnd, HANDLE hContact);
 void LoadClcOptions(HWND hwnd, struct ClcData *dat);
 void RecalculateGroupCheckboxes(HWND hwnd, struct ClcData *dat);
 void SetGroupChildCheckboxes(struct ClcGroup *group, int checked);
-void InvalidateItem(HWND hwnd, struct ClcData *dat, int iItem);
 BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto);
 int __fastcall GetStatusOnlineness(int status);
 void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat);

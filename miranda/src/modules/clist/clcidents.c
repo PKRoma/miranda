@@ -105,12 +105,13 @@ int fnFindItem(HWND hwnd, struct ClcData *dat, HANDLE hItem, struct ClcContact *
 				if (!nowVisible)
 					*isVisible = 0;
 				else {
-					if ((index + 1) * dat->rowHeight < dat->yScroll)
+					int posY = cli.pfnGetRowTopY(dat, index+1);
+					if (posY < dat->yScroll)
 						*isVisible = 0;
 					else {
 						RECT clRect;
 						GetClientRect(hwnd, &clRect);
-						if (index * dat->rowHeight >= dat->yScroll + clRect.bottom)
+						if (posY >= dat->yScroll + clRect.bottom)
 							*isVisible = 0;
 						else
 							*isVisible = 1;

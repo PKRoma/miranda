@@ -128,6 +128,12 @@ void RecalculateGroupCheckboxes(HWND hwnd,struct ClcData *dat);
 void SetGroupChildCheckboxes(struct ClcGroup *group,int checked);
 void InvalidateItem(HWND hwnd,struct ClcData *dat,int iItem);
 
+int fnGetRowBottomY(struct ClcData *dat, int item);
+int fnGetRowHeight(struct ClcData *dat, int item);
+int fnGetRowTopY(struct ClcData *dat, int item);
+int fnGetRowTotalHeight(struct ClcData *dat);
+int fnRowHitTest(struct ClcData *dat, int y);
+
 //clcpaint.c
 void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint);
 

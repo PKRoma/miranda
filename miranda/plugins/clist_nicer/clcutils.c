@@ -309,7 +309,7 @@ void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 	int maxy, previousy;
 
 	if (dat->iHotTrack != -1 && dat->yScroll != desty) {
-		InvalidateItem(hwnd, dat, dat->iHotTrack);
+		pcli->pfnInvalidateItem(hwnd, dat, dat->iHotTrack);
 		UpdateIfLocked(hwnd, dat);
 		dat->iHotTrack = -1;
 		ReleaseCapture();
@@ -364,67 +364,6 @@ void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 	dat->forceScroll = 0;
 }
 
-void EnsureVisible(HWND hwnd,struct ClcData *dat,int iItem,int partialOk)
-{
-	int itemy,newy;
-	int moved=0;
-	RECT clRect;
-
-	GetClientRect(hwnd,&clRect);
-	itemy = RowHeights_GetItemTopY(dat,iItem);
-	if(partialOk) {
-		if(itemy+dat->row_heights[iItem]-1<dat->yScroll) { 
-            newy=itemy; 
-            moved=1;
-        }
-		else if(itemy>=dat->yScroll+clRect.bottom) {
-            newy=itemy-clRect.bottom+dat->row_heights[iItem]; 
-            moved=1;
-        }
-	}
-	else {
-		if(itemy<dat->yScroll) {
-            newy=itemy; 
-            moved=1;
-        }
-		else if(itemy>=dat->yScroll+clRect.bottom-dat->row_heights[iItem]) {
-            newy=itemy-clRect.bottom+dat->row_heights[iItem]; 
-            moved=1;
-        }
-	}
-	if(moved)
-		ScrollTo(hwnd,dat,newy,0);
-}
-
-void RecalcScrollBar(HWND hwnd, struct ClcData *dat)
-{
-	SCROLLINFO si = {0};
-	RECT clRect;
-	NMCLISTCONTROL nm;
-
-	GetClientRect(hwnd, &clRect);
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_ALL;
-	si.nMin = 0;
-	si.nMax = RowHeights_GetTotalHeight(dat)-1;
-	si.nPage = clRect.bottom;
-	si.nPos = dat->yScroll;
-
-	if (GetWindowLong(hwnd, GWL_STYLE) & CLS_CONTACTLIST) {
-		if (dat->noVScrollbar == 0)
-			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-	}
-	else SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-
-	ScrollTo(hwnd, dat, dat->yScroll, 1);
-	nm.hdr.code = CLN_LISTSIZECHANGE;
-	nm.hdr.hwndFrom = hwnd;
-	nm.hdr.idFrom = GetDlgCtrlID(hwnd);
-	nm.pt.y = si.nMax;
-	if(!during_sizing)
-		SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) &nm);
-}
-
 void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int newState)
 {
 	int contentCount;
@@ -449,7 +388,7 @@ void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int new
 
 	groupy=pcli->pfnGetRowsPriorTo(&dat->list,group,-1);
 	if(dat->selection>groupy && dat->selection<groupy+contentCount) dat->selection=groupy;
-	RecalcScrollBar(hwnd,dat);
+	pcli->pfnRecalcScrollBar(hwnd,dat);
 
 	GetClientRect(hwnd,&clRect);
 	newy=dat->yScroll;
@@ -553,90 +492,6 @@ void BeginRenameSelection(HWND hwnd, struct ClcData *dat)
     SetFocus(dat->hwndRenameEdit);
 }
 
-int GetDropTargetInformation(HWND hwnd, struct ClcData *dat, POINT pt)
-{
-    RECT clRect;
-    int hit;
-    struct ClcContact *contact, *movecontact;
-    struct ClcGroup *group, *movegroup;
-    DWORD hitFlags;
-
-    GetClientRect(hwnd, &clRect);
-    dat->selection = dat->iDragItem;
-    dat->iInsertionMark = -1;
-    if (!PtInRect(&clRect, pt))
-        return DROPTARGET_OUTSIDE;
-
-    hit = HitTest(hwnd, dat, pt.x, pt.y, &contact, &group, &hitFlags);
-    pcli->pfnGetRowByIndex(dat, dat->iDragItem, &movecontact, &movegroup);
-    if (hit == dat->iDragItem)
-        return DROPTARGET_ONSELF;
-    if (hit == -1 || hitFlags & CLCHT_ONITEMEXTRA)
-        return DROPTARGET_ONNOTHING;
-
-    if (movecontact->type == CLCIT_GROUP) {
-        struct ClcContact *bottomcontact = NULL, *topcontact = NULL;
-        struct ClcGroup *topgroup = NULL;
-        int topItem = -1,bottomItem;
-        int ok = 0;
-        //if (pt.y + dat->yScroll< hit*dat->rowHeight + dat->insertionMarkHitHeight) {
-		if(pt.y+dat->yScroll<RowHeights_GetItemTopY(dat,hit)+dat->insertionMarkHitHeight) {
-    //could be insertion mark (above)
-            topItem = hit - 1; bottomItem = hit;
-            bottomcontact = contact;
-            topItem = pcli->pfnGetRowByIndex(dat, topItem, &topcontact, &topgroup);
-            ok = 1;
-        }
-        //if (pt.y + dat->yScroll >= (hit + 1) * dat->rowHeight - dat->insertionMarkHitHeight) {
-		if(pt.y+dat->yScroll>=RowHeights_GetItemTopY(dat,hit+1)-dat->insertionMarkHitHeight) {
-    //could be insertion mark (below)
-            topItem = hit; bottomItem = hit + 1;
-            topcontact = contact; topgroup = group;
-            bottomItem = pcli->pfnGetRowByIndex(dat, bottomItem, &bottomcontact, NULL);
-            ok = 1;
-        }
-        if (ok) {
-            ok = 0;
-            if (bottomItem == -1 || bottomcontact->type != CLCIT_GROUP) {
-    //need to special-case moving to end
-                if (topItem != dat->iDragItem) {
-                    for (; topgroup; topgroup = topgroup->parent) {
-                        if (topgroup == movecontact->group)
-                            break;
-                        if (topgroup == movecontact->group->parent) {
-                            ok = 1; break;
-                        }
-                    }
-                    if (ok)
-                        bottomItem = topItem + 1;
-                }
-            } else if (bottomItem != dat->iDragItem && bottomcontact->type == CLCIT_GROUP && bottomcontact->group->parent == movecontact->group->parent) {
-                if (bottomcontact != movecontact + 1)
-                    ok = 1;
-            }
-            if (ok) {
-                dat->iInsertionMark = bottomItem;
-                dat->selection = -1;
-                return DROPTARGET_INSERTION;
-            }
-        }
-    }
-    if (contact->type == CLCIT_GROUP) {
-        if (dat->iInsertionMark == -1) {
-            if (movecontact->type == CLCIT_GROUP) {
-                //check not moving onto its own subgroup
-                for (; group; group = group->parent) {
-                    if (group == movecontact->group)
-                        return DROPTARGET_ONSELF;
-                }
-            }
-            dat->selection = hit;
-            return DROPTARGET_ONGROUP;
-        }
-    }
-    return DROPTARGET_ONCONTACT;
-}
-
 extern void ( *saveLoadClcOptions )(HWND hwnd,struct ClcData *dat);
 
 void LoadClcOptions(HWND hwnd, struct ClcData *dat)
@@ -689,20 +544,6 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 			ReleaseDC(pcli->hwndContactList, hdcThis);
 		}
 	}
-}
-
-void InvalidateItem(HWND hwnd, struct ClcData *dat, int iItem)
-{
-    RECT rc;
-
-    if(iItem >= 0) {
-        GetClientRect(hwnd, &rc);
-        rc.top=RowHeights_GetItemTopY(dat,iItem)-dat->yScroll;
-        rc.bottom=rc.top+dat->row_heights[iItem];
-    //    rc.top = iItem * dat->rowHeight - dat->yScroll;
-    //    rc.bottom = rc.top + dat->rowHeight;
-        InvalidateRect(hwnd, &rc, FALSE);
-    }
 }
 
 BYTE MY_DBGetContactSettingByte(HANDLE hContact, char *szModule, char *szSetting, BYTE defaultval)

@@ -459,7 +459,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			dat->bNeedSort = FALSE;
 		}
 		if(lParam)
-			RecalcScrollBar(hwnd, dat);
+			pcli->pfnRecalcScrollBar(hwnd, dat);
 		break;
 
 	case INTM_IDLECHANGED:
@@ -612,7 +612,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			}
 			InvalidateRect(hwnd, NULL, FALSE);
 			if (dat->selection != -1)
-				EnsureVisible(hwnd, dat, dat->selection, 0);
+				pcli->pfnEnsureVisible(hwnd, dat, dat->selection, 0);
 			if(hitFlags & CLCHT_ONAVATAR && g_CluiData.bDblClkAvatars) {
 				CallService(MS_USERINFO_SHOWDIALOG, (WPARAM)contact->hContact, 0);
 				break;
@@ -643,7 +643,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			if (pt.x == -1 && pt.y == -1) {
 				dat->selection = pcli->pfnGetRowByIndex(dat, dat->selection, &contact, NULL);
 				if (dat->selection != -1)
-					EnsureVisible(hwnd, dat, dat->selection, 0);
+					pcli->pfnEnsureVisible(hwnd, dat, dat->selection, 0);
 				pt.x = dat->iconXSpace + 15;
 				pt.y = RowHeights_GetItemTopY(dat, dat->selection) - dat->yScroll + (int)(dat->row_heights[dat->selection]*.7);
 				//pt.y = dat->selection * dat->rowHeight - dat->yScroll + (int) (dat->rowHeight * .7);
@@ -654,7 +654,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			}
 			InvalidateRect(hwnd, NULL, FALSE);
 			if (dat->selection != -1)
-				EnsureVisible(hwnd, dat, dat->selection, 0);
+				pcli->pfnEnsureVisible(hwnd, dat, dat->selection, 0);
 			UpdateWindow(hwnd);
 
 			if (dat->selection != -1 && hitFlags & (CLCHT_ONITEMICON | CLCHT_ONITEMCHECK | CLCHT_ONITEMLABEL)) {

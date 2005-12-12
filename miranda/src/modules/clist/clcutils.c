@@ -96,7 +96,9 @@ int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCo
 			*flags |= CLCHT_INLEFTMARGIN | CLCHT_NOWHERE;
 		return -1;
 	}
-	hit = cli.pfnGetRowByIndex(dat, (testy + dat->yScroll) / dat->rowHeight, &hitcontact, &hitgroup);
+	hit = cli.pfnRowHitTest(dat, dat->yScroll + testy);
+	if ( hit != -1 )
+		hit = cli.pfnGetRowByIndex(dat, hit, &hitcontact, &hitgroup);
 	if (hit == -1) {
 		if (flags)
 			*flags |= CLCHT_NOWHERE | CLCHT_BELOWITEMS;
@@ -184,7 +186,7 @@ void fnScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 	}
 	GetClientRect(hwnd, &clRect);
 	rcInvalidate = clRect;
-	maxy = dat->rowHeight * cli.pfnGetGroupContentsCount(&dat->list, 1) - clRect.bottom;
+	maxy = cli.pfnGetRowTotalHeight(dat) - clRect.bottom;
 	if (desty > maxy)
 		desty = maxy;
 	if (desty < 0)
@@ -220,34 +222,34 @@ void fnScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 
 void fnEnsureVisible(HWND hwnd, struct ClcData *dat, int iItem, int partialOk)
 {
-	int itemy, newy;
+	int itemy, itemh = cli.pfnGetRowHeight(dat, iItem), newY;
 	int moved = 0;
 	RECT clRect;
 
 	GetClientRect(hwnd, &clRect);
-	itemy = iItem * dat->rowHeight;
+	itemy = cli.pfnGetRowTopY(dat, iItem);
 	if (partialOk) {
-		if (itemy + dat->rowHeight - 1 < dat->yScroll) {
-			newy = itemy;
+		if (itemy + itemh - 1 < dat->yScroll) {
+			newY = itemy;
 			moved = 1;
 		}
 		else if (itemy >= dat->yScroll + clRect.bottom) {
-			newy = itemy - clRect.bottom + dat->rowHeight;
+			newY = itemy - clRect.bottom + itemh;
 			moved = 1;
 		}
 	}
 	else {
 		if (itemy < dat->yScroll) {
-			newy = itemy;
+			newY = itemy;
 			moved = 1;
 		}
-		else if (itemy >= dat->yScroll + clRect.bottom - dat->rowHeight) {
-			newy = itemy - clRect.bottom + dat->rowHeight;
+		else if (itemy >= dat->yScroll + clRect.bottom - itemh) {
+			newY = itemy - clRect.bottom + itemh;
 			moved = 1;
 		}
 	}
 	if (moved)
-		cli.pfnScrollTo(hwnd, dat, newy, 0);
+		cli.pfnScrollTo(hwnd, dat, newY, 0);
 }
 
 void fnRecalcScrollBar(HWND hwnd, struct ClcData *dat)
@@ -260,7 +262,7 @@ void fnRecalcScrollBar(HWND hwnd, struct ClcData *dat)
 	si.cbSize = sizeof(si);
 	si.fMask = SIF_ALL;
 	si.nMin = 0;
-	si.nMax = dat->rowHeight * cli.pfnGetGroupContentsCount(&dat->list, 1);
+	si.nMax = cli.pfnGetRowTotalHeight(dat)-1;
 	si.nPage = clRect.bottom;
 	si.nPos = dat->yScroll;
 
@@ -282,7 +284,7 @@ void fnSetGroupExpand(HWND hwnd, struct ClcData *dat, struct ClcGroup *group, in
 {
 	int contentCount;
 	int groupy;
-	int newy;
+	int newY, posY;
 	RECT clRect;
 	NMCLISTCONTROL nm;
 
@@ -299,13 +301,15 @@ void fnSetGroupExpand(HWND hwnd, struct ClcData *dat, struct ClcGroup *group, in
 	if (dat->selection > groupy && dat->selection < groupy + contentCount)
 		dat->selection = groupy;
 	GetClientRect(hwnd, &clRect);
-	newy = dat->yScroll;
-	if ((groupy + contentCount + 1) * dat->rowHeight >= newy + clRect.bottom)
-		newy = (groupy + contentCount + 1) * dat->rowHeight - clRect.bottom;
-	if (newy > groupy * dat->rowHeight)
-		newy = groupy * dat->rowHeight;
+	newY = dat->yScroll;
+	posY = cli.pfnGetRowBottomY(dat, groupy + contentCount);
+	if (posY >= newY + clRect.bottom)
+		newY = posY - clRect.bottom;
+	posY = cli.pfnGetRowTopY(dat, groupy);
+	if (newY > posY)
+		newY = posY;
 	cli.pfnRecalcScrollBar(hwnd, dat);
-	cli.pfnScrollTo(hwnd, dat, newy, 0);
+	cli.pfnScrollTo(hwnd, dat, newY, 0);
 	nm.hdr.code = CLN_EXPANDED;
 	nm.hdr.hwndFrom = hwnd;
 	nm.hdr.idFrom = GetDlgCtrlID(hwnd);
@@ -463,6 +467,7 @@ void fnBeginRenameSelection(HWND hwnd, struct ClcData *dat)
 	struct ClcGroup *group;
 	RECT clRect;
 	POINT pt;
+	int h;
 
 	KillTimer(hwnd, TIMERID_RENAME);
 	ReleaseCapture();
@@ -474,8 +479,8 @@ void fnBeginRenameSelection(HWND hwnd, struct ClcData *dat)
 		return;
 	GetClientRect(hwnd, &clRect);
 	cli.pfnCalcEipPosition( dat, contact, group, &pt );
-	dat->hwndRenameEdit =
-		CreateWindow( _T("EDIT"), contact->szText, WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, pt.x, pt.y, clRect.right - pt.x, dat->rowHeight, hwnd, NULL, cli.hInst, NULL);
+	h = cli.pfnGetRowTopY(dat, dat->selection);
+	dat->hwndRenameEdit = CreateWindow( _T("EDIT"), contact->szText, WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, pt.x, pt.y, clRect.right - pt.x, h, hwnd, NULL, cli.hInst, NULL);
 	OldRenameEditWndProc = (WNDPROC) SetWindowLong(dat->hwndRenameEdit, GWL_WNDPROC, (LONG) RenameEditSubclassProc);
 	SendMessage(dat->hwndRenameEdit, WM_SETFONT, (WPARAM) (contact->type == CLCIT_GROUP ? dat->fontInfo[FONTID_GROUPS].hFont : dat->fontInfo[FONTID_CONTACTS].hFont), 0);
 	SendMessage(dat->hwndRenameEdit, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN | EC_USEFONTINFO, 0);
@@ -489,7 +494,7 @@ void fnCalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct 
 	int indent;
 	for (indent = 0; group->parent; indent++, group = group->parent);
 	result->x = indent * dat->groupIndent + dat->iconXSpace - 2;
-	result->y = dat->selection * dat->rowHeight - dat->yScroll;
+	result->y = cli.pfnGetRowTopY(dat, dat->selection) - dat->yScroll;
 }
 
 int fnGetDropTargetInformation(HWND hwnd, struct ClcData *dat, POINT pt)
@@ -518,7 +523,7 @@ int fnGetDropTargetInformation(HWND hwnd, struct ClcData *dat, POINT pt)
 		struct ClcGroup *topgroup = NULL;
 		int topItem = -1, bottomItem;
 		int ok = 0;
-		if (pt.y + dat->yScroll < hit * dat->rowHeight + dat->insertionMarkHitHeight) {
+		if (pt.y + dat->yScroll < cli.pfnGetRowTopY(dat, hit) + dat->insertionMarkHitHeight) {
 			//could be insertion mark (above)
 			topItem = hit - 1;
 			bottomItem = hit;
@@ -526,7 +531,7 @@ int fnGetDropTargetInformation(HWND hwnd, struct ClcData *dat, POINT pt)
 			topItem = cli.pfnGetRowByIndex(dat, topItem, &topcontact, &topgroup);
 			ok = 1;
 		}
-		if (pt.y + dat->yScroll >= (hit + 1) * dat->rowHeight - dat->insertionMarkHitHeight) {
+		if (pt.y + dat->yScroll >= cli.pfnGetRowBottomY(dat, hit+1) - dat->insertionMarkHitHeight) {
 			//could be insertion mark (below)
 			topItem = hit;
 			bottomItem = hit + 1;
@@ -826,7 +831,32 @@ void fnInvalidateItem(HWND hwnd, struct ClcData *dat, int iItem)
 {
 	RECT rc;
 	GetClientRect(hwnd, &rc);
-	rc.top = iItem * dat->rowHeight - dat->yScroll;
-	rc.bottom = rc.top + dat->rowHeight;
+	rc.top = cli.pfnGetRowTopY(dat, iItem) - dat->yScroll;
+	rc.bottom = rc.top + cli.pfnGetRowHeight(dat, iItem);
 	InvalidateRect(hwnd, &rc, FALSE);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// row coord functions
+
+int fnGetRowTopY(struct ClcData *dat, int item)
+{	return item * dat->rowHeight;
+}
+
+int fnGetRowBottomY(struct ClcData *dat, int item)
+{	return (item+1) * dat->rowHeight;
+}
+
+int fnGetRowTotalHeight(struct ClcData *dat)
+{	return dat->rowHeight * cli.pfnGetGroupContentsCount(&dat->list, 1);
+}
+
+int fnGetRowHeight(struct ClcData *dat, int item)
+{	return dat->rowHeight;
+}
+
+int fnRowHitTest(struct ClcData *dat, int y)
+{	if (!dat->rowHeight)
+		return y;
+	return y / dat->rowHeight;
 }

@@ -33,16 +33,7 @@ int RowHeights_GetTotalHeight(struct ClcData *dat);
 // Return the line that pos_y is at or -1 (using stored data). Y start at 0
 int RowHeights_HitTest(struct ClcData *dat, int pos_y);
 
-
-
-
-
-
-
-
-
-
-
-
+// Returns the height of the chosen row
+int RowHeights_GetHeight(struct ClcData *dat, int item);
 
 #endif // __ROWHEIGHT_FUNCS_H__

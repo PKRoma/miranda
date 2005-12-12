@@ -217,6 +217,11 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnRecalculateGroupCheckboxes	   = fnRecalculateGroupCheckboxes;
 		cli.pfnSetGroupChildCheckboxes		   = fnSetGroupChildCheckboxes;
 		cli.pfnInvalidateItem					   = fnInvalidateItem;
+		cli.pfnGetRowBottomY                   = fnGetRowBottomY;
+		cli.pfnGetRowHeight                    = fnGetRowHeight;
+		cli.pfnGetRowTopY                      = fnGetRowTopY;
+		cli.pfnGetRowTotalHeight               = fnGetRowTotalHeight;
+		cli.pfnRowHitTest                      = fnRowHitTest;
 															 
 		cli.pfnEventsProcessContactDoubleClick = fnEventsProcessContactDoubleClick;
 		cli.pfnEventsProcessTrayDoubleClick	   = fnEventsProcessTrayDoubleClick;

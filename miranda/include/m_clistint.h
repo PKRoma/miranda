@@ -226,6 +226,12 @@ typedef struct
 	void  ( *pfnSetGroupChildCheckboxes )( struct ClcGroup *group, int checked );
 	void  ( *pfnInvalidateItem )( HWND hwnd, struct ClcData *dat, int iItem );
 
+	int   ( *pfnGetRowBottomY )(struct ClcData *dat, int item);
+	int   ( *pfnGetRowHeight )(struct ClcData *dat, int item);
+	int   ( *pfnGetRowTopY )(struct ClcData *dat, int item);
+	int   ( *pfnGetRowTotalHeight )(struct ClcData *dat);
+	int   ( *pfnRowHitTest )(struct ClcData *dat, int y);
+
 	/* clistevents.c */
 	int   ( *pfnEventsProcessContactDoubleClick )( HANDLE hContact );
 	int   ( *pfnEventsProcessTrayDoubleClick )( void );

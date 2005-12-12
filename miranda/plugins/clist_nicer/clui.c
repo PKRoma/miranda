@@ -1089,7 +1089,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			transparentFocus = 1;
 
-	//#ifndef _DEBUG
+#ifndef _DEBUG
 			// Miranda is starting up! Restore last status mode.
 			// This is not done in debug builds because frequent
 			// reconnections will get you banned from the servers.
@@ -1098,7 +1098,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				if (nStatus != ID_STATUS_OFFLINE)
 					PostMessage(hwnd, WM_COMMAND, nStatus, 0);
 			}
-	//#endif
+#endif
 			return FALSE;
 		}
 	case WM_NCCREATE:

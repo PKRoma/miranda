@@ -869,8 +869,8 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			ClientToScreen(hwnd, &it.ptCursor);
 			ClientToScreen(hwnd, &ptClientOffset);
 			it.isTreeFocused = GetFocus() == hwnd;
-			it.rcItem.top = hit * dat->rowHeight - dat->yScroll;
-			it.rcItem.bottom = it.rcItem.top + dat->rowHeight;
+			it.rcItem.top = cli.pfnGetRowTopY(dat, hit) - dat->yScroll;
+			it.rcItem.bottom = it.rcItem.top + cli.pfnGetRowHeight(dat, hit);
 			OffsetRect(&it.rcItem, ptClientOffset.x, ptClientOffset.y);
 			it.isGroup = contact->type == CLCIT_GROUP;
 			it.hItem = contact->type == CLCIT_GROUP ? (HANDLE) contact->groupId : contact->hContact;
@@ -1226,7 +1226,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			if (dat->selection != -1)
 				cli.pfnEnsureVisible(hwnd, dat, dat->selection, 0);
 			pt.x = dat->iconXSpace + 15;
-			pt.y = dat->selection * dat->rowHeight - dat->yScroll + (int) (dat->rowHeight * .7);
+			pt.y = cli.pfnGetRowTopY(dat, dat->selection) - dat->yScroll + (int)(cli.pfnGetRowHeight(dat, dat->selection) * .7);
 			hitFlags = dat->selection == -1 ? CLCHT_NOWHERE : CLCHT_ONITEMLABEL;
 		}
 		else {
