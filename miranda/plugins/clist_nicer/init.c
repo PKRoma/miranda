@@ -169,6 +169,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 //	pcli->pfnIconFromStatusMode = IconFromStatusMode;
 	pcli->pfnPaintClc = PaintClc;
 	pcli->pfnRebuildEntireList = RebuildEntireList;
+	pcli->pfnRowHitTest = RowHeights_HitTest;
 	pcli->pfnGetRowHeight = RowHeights_GetHeight;
 	pcli->pfnScrollTo = ScrollTo;
 

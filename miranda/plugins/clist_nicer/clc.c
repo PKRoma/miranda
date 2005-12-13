@@ -591,7 +591,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 								mir_free(szEmail);
 								ShellExecuteA(hwnd,"open",buf,NULL,NULL,SW_SHOW);
 							}
-							break;
+							return TRUE;
 						}
 						if(column == 1) {
 							char *homepage = NULL;
@@ -605,7 +605,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 								ShellExecuteA(hwnd,"open",homepage,NULL,NULL,SW_SHOW);
 								mir_free(homepage);
 							}
-							break;
+							return TRUE;
 						}
 					}
 				}
@@ -615,13 +615,13 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				pcli->pfnEnsureVisible(hwnd, dat, dat->selection, 0);
 			if(hitFlags & CLCHT_ONAVATAR && g_CluiData.bDblClkAvatars) {
 				CallService(MS_USERINFO_SHOWDIALOG, (WPARAM)contact->hContact, 0);
-				break;
+				return TRUE;
 			}
-			if (!(hitFlags & (CLCHT_ONITEMICON | CLCHT_ONITEMLABEL | CLCHT_ONITEMSPACE)))
-				break;
-			UpdateWindow(hwnd);
-			pcli->pfnDoSelectionDefaultAction(hwnd, dat);
-			break;
+			if ( hitFlags & (CLCHT_ONITEMICON | CLCHT_ONITEMLABEL | CLCHT_ONITEMSPACE)) {
+				UpdateWindow(hwnd);
+				pcli->pfnDoSelectionDefaultAction(hwnd, dat);
+			}
+			return TRUE;
 		}
 	case WM_CONTEXTMENU:
 		{
