@@ -512,6 +512,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 				if (contact) {
 					contact->iImage = (WORD) lParam;
 					cli.pfnNotifyNewContact(hwnd, (HANDLE) wParam);
+					dat->needsResort = 1;
 			}	}
 		}
 		else {              //item in list already
@@ -540,6 +541,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 				else
 					contact->flags &= ~CONTACTF_ONLINE;
 			}
+			dat->needsResort = 1;
 		}
 		SortClcByTimer(hwnd);
 		break;
