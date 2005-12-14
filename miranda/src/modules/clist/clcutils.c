@@ -479,7 +479,7 @@ void fnBeginRenameSelection(HWND hwnd, struct ClcData *dat)
 		return;
 	GetClientRect(hwnd, &clRect);
 	cli.pfnCalcEipPosition( dat, contact, group, &pt );
-	h = cli.pfnGetRowTopY(dat, dat->selection);
+	h = cli.pfnGetRowHeight(dat, dat->selection);
 	dat->hwndRenameEdit = CreateWindow( _T("EDIT"), contact->szText, WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, pt.x, pt.y, clRect.right - pt.x, h, hwnd, NULL, cli.hInst, NULL);
 	OldRenameEditWndProc = (WNDPROC) SetWindowLong(dat->hwndRenameEdit, GWL_WNDPROC, (LONG) RenameEditSubclassProc);
 	SendMessage(dat->hwndRenameEdit, WM_SETFONT, (WPARAM) (contact->type == CLCIT_GROUP ? dat->fontInfo[FONTID_GROUPS].hFont : dat->fontInfo[FONTID_CONTACTS].hFont), 0);
