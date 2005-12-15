@@ -55,14 +55,26 @@ capstr* MatchCap(char* buf, int bufsize, const capstr* cap, int capsize)
 }
 
 
+
+static void makeClientVersion(char *szBuf, const char* szClient, unsigned v1, unsigned v2, unsigned v3, unsigned v4)
+{
+  if (v4) 
+    null_snprintf(szBuf, 64, "%s%u.%u.%u.%u", szClient, v1, v2, v3, v4);
+  else if (v3) 
+    null_snprintf(szBuf, 64, "%s%u.%u.%u", szClient, v1, v2, v3);
+  else
+    null_snprintf(szBuf, 64, "%s%u.%u", szClient, v1, v2);
+}
+
+
+
 static void verToStr(char* szStr, int v)
 {
-  if (v&0xFF)
-    sprintf(szStr, "%s%u.%u.%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF, v&0x80000000?" alpha":"");
-  else if ((v>>8)&0xFF)
-    sprintf(szStr, "%s%u.%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0x80000000?" alpha":"");
-  else
-    sprintf(szStr, "%s%u.%u%s", szStr, (v>>24)&0x7F, (v>>16)&0xFF, v&0x80000000?" alpha":"");
+  char szVer[64];
+
+  makeClientVersion(szVer, "", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF); 
+  strcat(szStr, szVer);
+  if (v&0x80000000) strcat(szStr, " alpha");
 }
 
 
@@ -106,6 +118,7 @@ const capstr capLicq      = {'L', 'i', 'c', 'q', ' ', 'c', 'l', 'i', 'e', 'n', '
 const capstr capKopete    = {'K', 'o', 'p', 'e', 't', 'e', ' ', 'I', 'C', 'Q', ' ', ' ', 0, 0, 0, 0};
 const capstr capmIcq      = {'m', 'I', 'C', 'Q', ' ', 0xA9, ' ', 'R', '.', 'K', '.', ' ', 0, 0, 0, 0};
 const capstr capAndRQ     = {'&', 'R', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
+const capstr capRAndQ     = {'R', '&', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
 const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
 const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F}; // IM2 Ext Msg
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
@@ -135,8 +148,8 @@ static BOOL hasCapRichText(BYTE* caps, WORD wLen)
 
 
 char* cliLibicq2k  = "libicq2000";
-char* cliLicqVer   = "Licq %u.%u";
-char* cliLicqVerL  = "Licq %u.%u.%u";
+char* cliLicqVer   = "Licq ";
+//char* cliLicqVerL  = "Licq %u.%u.%u";
 char* cliCentericq = "Centericq";
 char* cliLibicqUTF = "libicq2000 (Unicode)";
 char* cliTrillian  = "Trillian";
@@ -176,14 +189,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
   else if ((dwFT1 & 0xFF7F0000) == 0x7D000000)
   { // This is probably an Licq client
     DWORD ver = dwFT1 & 0xFFFF;
-    if (ver % 10)
-    {
-      null_snprintf(szClientBuf, 64, cliLicqVerL, ver / 1000, (ver / 10) % 100, ver % 10);
-    }
-    else
-    {
-      null_snprintf(szClientBuf, 64, cliLicqVer, ver / 1000, (ver / 10) % 100);
-    }
+
+    makeClientVersion(szClientBuf, cliLicqVer, ver / 1000, (ver / 10) % 100, ver % 10, 0);
     if (dwFT1 & 0x00800000)
       strcat(szClientBuf, "/SSL");
 
@@ -203,10 +210,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
     unsigned ver2 = (dwFT2>>16)&0xFF;
     unsigned ver3 = (dwFT2>>8)&0xFF;
   
-    if (ver3) 
-      null_snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u.%u", ver1, ver2, ver3);
-    else  
-      null_snprintf(szClientBuf, sizeof(szClientBuf), "Alicq %u.%u", ver1, ver2);
+    makeClientVersion(szClientBuf, "Alicq ", ver1, ver2, ver3, 0);
+
     szClient = szClientBuf;
   }
   else if (dwFT1 == 0xFFFFFF7F)
@@ -296,14 +301,12 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         unsigned ver2 = (*capId)[0xD];
         unsigned ver3 = (*capId)[0xE];
 
-        if (ver3) 
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u.%u", ver1, ver2, ver3);
-        else  
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", ver1, ver2);
+        makeClientVersion(szClientBuf, "SIM ", ver1, ver2, ver3, 0);
         if ((*capId)[0xF] & 0x80) 
           strcat(szClientBuf,"/Win32");
         else if ((*capId)[0xF] & 0x40) 
           strcat(szClientBuf,"/MacOS X");
+
         szClient = szClientBuf;
       }
       else if (capId = MatchCap(caps, wLen, &capLicq, 0xC))
@@ -312,13 +315,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         unsigned ver2 = (*capId)[0xD] % 100;
         unsigned ver3 = (*capId)[0xE];
 
-        if (ver3) 
-          null_snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVerL, ver1, ver2, ver3);
-        else  
-          null_snprintf(szClientBuf, sizeof(szClientBuf), cliLicqVer, ver1, ver2);
-
+        makeClientVersion(szClientBuf, cliLicqVer, ver1, ver2, ver3, 0);
         if ((*capId)[0xF]) 
           strcat(szClientBuf,"/SSL");
+
         szClient = szClientBuf;
       }
       else if (capId = MatchCap(caps, wLen, &capKopete, 0xC))
@@ -328,12 +328,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         unsigned ver3 = (*capId)[0xE];
         unsigned ver4 = (*capId)[0xF];
 
-        if (ver4) 
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u.%u", ver1, ver2, ver3, ver4);
-        else if (ver3) 
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u.%u", ver1, ver2, ver3);
-        else
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "Kopete %u.%u", ver1, ver2);
+        makeClientVersion(szClientBuf, "Kopete ", ver1, ver2, ver3, ver4);
+
         szClient = szClientBuf;
       }
       else if (capId = MatchCap(caps, wLen, &capmIcq, 0xC))
@@ -343,12 +339,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         unsigned ver3 = (*capId)[0xE];
         unsigned ver4 = (*capId)[0xF];
 
-        if (ver4) 
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
-        else if (ver3) 
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u.%u", ver1, ver2, ver3);
-        else
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "mICQ %u.%u", ver1, ver2);
+        makeClientVersion(szClientBuf, "mICQ ", ver1, ver2, ver3, ver4);
+
         szClient = szClientBuf;
       }
       else if (MatchCap(caps, wLen, &capIm2, 0x10))
@@ -362,12 +354,19 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         unsigned ver3 = (*capId)[0xA];
         unsigned ver4 = (*capId)[9];
 
-        if (ver4) 
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u.%u", ver1, ver2, ver3, ver4);
-        else if (ver3) 
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u.%u", ver1, ver2, ver3);
-        else
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "&RQ %u.%u", ver1, ver2);
+        makeClientVersion(szClientBuf, "&RQ ", ver1, ver2, ver3, ver4);
+
+        szClient = szClientBuf;
+      }
+      else if (capId = MatchCap(caps, wLen, &capRAndQ, 9))
+      {
+        unsigned ver1 = (*capId)[0xC];
+        unsigned ver2 = (*capId)[0xB];
+        unsigned ver3 = (*capId)[0xA];
+        unsigned ver4 = (*capId)[9];
+
+        makeClientVersion(szClientBuf, "R&Q ", ver1, ver2, ver3, ver4);
+
         szClient = szClientBuf;
       }
       else if (capId = MatchCap(caps, wLen, &capQip, 0xE))
