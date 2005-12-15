@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -23,6 +23,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
+
+BYTE __forceinline percent_to_byte(UINT32 percent)
+{
+    return(BYTE) ((FLOAT) (((FLOAT) percent) / 100) * 255);
+}
 
 HWND g_hwndSFL = 0;
 HDC g_SFLCachedDC = 0;
@@ -176,7 +181,7 @@ void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const char *szText, BOO
 	bf.SourceConstantAlpha = item->IGNORED ? 255 : percent_to_byte(item->ALPHA);
 
 	rcStatusArea = rcClient;
-	
+
 	if(g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS)
 		rcStatusArea.bottom = 20;
 

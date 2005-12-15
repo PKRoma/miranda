@@ -4,6 +4,7 @@
 
 #include <malloc.h>
 #include <string>
+#include <tchar.h>
 
 #ifdef _DEBUG
 #	define _CRTDBG_MAP_ALLOC

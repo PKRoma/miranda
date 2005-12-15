@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2004 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2004 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -58,13 +58,13 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 PLUGININFO pluginInfo = {
 #if defined(_UNICODE)
-	sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 5, 1, 16), 
+	sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 5, 1, 16),
 #else
-	sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 5, 1, 15), 
-#endif    
-		"Display contacts, event notifications, protocol status", 
-		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2005 Miranda-IM project", "http://www.miranda-im.org", 
-		UNICODE_AWARE, 
+	sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 5, 1, 16),
+#endif
+		"Display contacts, event notifications, protocol status",
+		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2005 Miranda-IM project", "http://www.miranda-im.org",
+		UNICODE_AWARE,
 		DEFMOD_CLISTALL
 };
 
@@ -109,14 +109,14 @@ __declspec(dllexport) PLUGININFO * MirandaPluginInfo(DWORD mirandaVersion)
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 2, 0))
 #else
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 1))
-#endif        
+#endif
 		return NULL;
 	return &pluginInfo;
 }
 
 int LoadContactListModule(void);
-int LoadCLCModule(void); 
-int LoadCLUIModule(); 
+int LoadCLCModule(void);
+int LoadCLUIModule();
 int InitGdiPlus();
 
 static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
@@ -126,7 +126,7 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 		MessageBox(NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("CList Nicer+"), MB_OK );
 		return 1;
 	}
-#endif    
+#endif
 	InitGdiPlus();
 	LoadCLUIModule();
 
@@ -144,7 +144,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pluginLink = link;
 #ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif  
+#endif
 	// get the internal malloc/free()
 	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
