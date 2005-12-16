@@ -42,7 +42,6 @@
 oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs)
 {
   oscar_tlv_chain *now, *chain = NULL;
-  oscar_tlv *now_tlv = NULL;
   WORD now_tlv_len;
   int len = wLen;
 
@@ -58,34 +57,23 @@ oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs)
       return NULL;
     }
 
-    now_tlv = (oscar_tlv *)malloc(sizeof(oscar_tlv));
-
-    if (!now_tlv)
-    {
-      SAFE_FREE(&now);
-      disposeChain(&chain);
-      return NULL;
-    }
-    now->tlv = now_tlv;
-
-    unpackWord(buf, &(now_tlv->wType));
+    unpackWord(buf, &(now->tlv.wType));
     unpackWord(buf, &now_tlv_len);
-    now_tlv->wLen = now_tlv_len;
+    now->tlv.wLen = now_tlv_len;
     len -= 4;
 
     if (now_tlv_len < 1)
     {
-      now_tlv->pData = NULL;
+      now->tlv.pData = NULL;
     }
     else if (now_tlv_len <= len)
     {
-      now_tlv->pData = (BYTE *)malloc(now_tlv_len);
-      if (now_tlv->pData)
-        memcpy(now_tlv->pData, *buf, now_tlv_len);
+      now->tlv.pData = (BYTE *)malloc(now_tlv_len);
+      if (now->tlv.pData)
+        memcpy(now->tlv.pData, *buf, now_tlv_len);
     }
     else
     { // the packet is shorter than it should be
-      SAFE_FREE(&now_tlv);
       SAFE_FREE(&now);
       return chain; // give at least the rest of chain
     }
@@ -113,14 +101,11 @@ oscar_tlv* getTLV(oscar_tlv_chain *list, WORD wType, WORD wIndex)
 
   while (list)
   {
-    if (list->tlv) 
-    {
-      if (list->tlv->wType == wType)
-        i++;
-      if (i >= wIndex)
-        return list->tlv;
-      list = list->next;
-    }
+    if (list->tlv.wType == wType)
+      i++;
+    if (i >= wIndex)
+      return &list->tlv;
+    list = list->next;
   }
 
   return NULL;
@@ -222,11 +207,7 @@ void disposeChain(oscar_tlv_chain **list)
   {
     oscar_tlv_chain *temp;
 
-    if (now->tlv) /* Possibly null if malloc failed on it in readintotlvchain*/
-    {
-      SAFE_FREE(&now->tlv->pData);
-      SAFE_FREE(&now->tlv);
-    }
+    SAFE_FREE(&now->tlv.pData);
 
     temp = now->next;
     SAFE_FREE(&now);
