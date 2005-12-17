@@ -27,6 +27,9 @@ HINSTANCE g_hInst = 0;
 PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli = NULL;
 
+extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
+extern BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst,SIZE *psize, HDC hdcSrc, POINT *pptSrc, COLORREF crKey, BLENDFUNCTION *pblend, DWORD dwFlags);
+
 struct LIST_INTERFACE li;
 struct MM_INTERFACE memoryManagerInterface;
 
@@ -121,12 +124,20 @@ int InitGdiPlus();
 
 static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
+	HMODULE hUserDll;
 #if defined(_UNICODE)
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
 		MessageBox(NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("CList Nicer+"), MB_OK );
 		return 1;
 	}
 #endif
+
+	hUserDll = GetModuleHandleA("user32.dll");
+	if (hUserDll) {
+		MySetLayeredWindowAttributes = (BOOL(WINAPI *)(HWND, COLORREF, BYTE, DWORD))GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
+		MyUpdateLayeredWindow = (BOOL (WINAPI *)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD))GetProcAddress(hUserDll, "UpdateLayeredWindow");
+	}
+	LoadExtBkSettingsFromDB();
 	InitGdiPlus();
 	LoadCLUIModule();
 

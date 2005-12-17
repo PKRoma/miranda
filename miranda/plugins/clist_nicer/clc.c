@@ -199,7 +199,6 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 static int ClcModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	// Load the settings for the extended background features from the DB
-	LoadExtBkSettingsFromDB();
 	return 0;
 }
 

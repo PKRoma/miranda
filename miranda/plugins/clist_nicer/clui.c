@@ -2268,11 +2268,6 @@ int LoadCLUIModule(void)
 	TCHAR titleText[256];
 	BYTE windowStyle;
 
-	hUserDll = LoadLibraryA("user32.dll");
-	if (hUserDll) {
-		MySetLayeredWindowAttributes = (BOOL(WINAPI *)(HWND, COLORREF, BYTE, DWORD))GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
-		MyUpdateLayeredWindow = (BOOL (WINAPI *)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD))GetProcAddress(hUserDll, "UpdateLayeredWindow");
-	}
 	HookEvent(ME_SYSTEM_MODULESLOADED, CluiModulesLoaded);
 	HookEvent(ME_OPT_INITIALISE, CluiOptInit);
 	HookEvent(ME_MC_DEFAULTTCHANGED, MetaChanged);
