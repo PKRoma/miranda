@@ -10,7 +10,6 @@ extern int DefaultImageListColorDepth;
 extern HINSTANCE g_hInst;
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
 extern int MenuModulesLoaded(WPARAM wParam,LPARAM lParam);
-extern int TrayIconIconsChanged();
 
 struct ProtocolOrderData {
     int dragging;
@@ -296,7 +295,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                                 }
                                 CluiProtocolStatusChanged();
                                 MenuModulesLoaded(0,0);
-                                TrayIconIconsChanged();
+                                pcli->pfnTrayIconIconsChanged();
                                 pcli->pfnClcOptionsChanged();
                             }
                     }

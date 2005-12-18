@@ -121,14 +121,18 @@ struct ClcGroup* fnAddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName,
 	return group;
 }
 
+void fnFreeContact(struct ClcContact* p)
+{
+	if (p->type == CLCIT_GROUP) {
+		cli.pfnFreeGroup(p->group);
+		free(p->group);
+}	}
+
 void fnFreeGroup(struct ClcGroup *group)
 {
 	int i;
 	for (i = 0; i < group->cl.count; i++) {
-		if (group->cl.items[i]->type == CLCIT_GROUP) {
-			cli.pfnFreeGroup(group->cl.items[i]->group);
-			free(group->cl.items[i]->group);
-		}
+		cli.pfnFreeContact(group->cl.items[i]);
 		free(group->cl.items[i]);
 	}
 	if (group->cl.count)
@@ -285,14 +289,10 @@ struct ClcGroup* fnRemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct
 	if (( iContact = List_IndexOf(( SortedList* )&group->cl, contact )) == -1 )
 		return group;
 
-	if (contact->type == CLCIT_GROUP) {
-		cli.pfnFreeGroup(contact->group);
-		free(contact->group);
-	}
-
 	if (updateTotalCount && contact->type == CLCIT_CONTACT)
 		group->totalMembers--;
 
+	cli.pfnFreeContact( group->cl.items[iContact] );
 	free( group->cl.items[iContact] );
 	List_Remove(( SortedList* )&group->cl, iContact );
 
@@ -564,7 +564,7 @@ void fnSortCLC(HWND hwnd, struct ClcData *dat, int useInsertionSort)
 				dat->selection = cli.pfnGetRowsPriorTo(&dat->list, selgroup, List_IndexOf((SortedList*)&selgroup->cl,selcontact));
 	}
 	dat->needsResort = 0;
-	InvalidateRect(hwnd, NULL, FALSE);
+	cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 	cli.pfnRecalcScrollBar(hwnd, dat);
 }
 

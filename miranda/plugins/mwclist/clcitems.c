@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_metacontacts.h"
 
 extern int ( *saveAddItemToGroup )( struct ClcGroup *group, int iAboveItem );
+extern int ( *saveAddInfoItemToGroup )(struct ClcGroup *group,int flags,const TCHAR *pszText);
 extern struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
 
 //routines for managing adding/removal of items in the list, including sorting
@@ -112,27 +113,9 @@ void FreeGroup(struct ClcGroup *group)
 	ClearRowByIndexCache();
 }
 
-static int iInfoItemUniqueHandle=0;
 int AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText)
 {
-	int i=0;
-
-	if(flags&CLCIIF_BELOWCONTACTS)
-		i=group->cl.count;
-	else if(flags&CLCIIF_BELOWGROUPS) {
-		for(;i<group->cl.count;i++)
-			if(group->cl.items[i]->type==CLCIT_CONTACT) break;
-	}
-	else
-		for(;i<group->cl.count;i++)
-			if(group->cl.items[i]->type!=CLCIT_INFO) break;
-	i=AddItemToGroup(group,i);
-	iInfoItemUniqueHandle=(iInfoItemUniqueHandle+1)&0xFFFF;
-	if(iInfoItemUniqueHandle==0) ++iInfoItemUniqueHandle;
-	group->cl.items[i]->type=CLCIT_INFO;
-	group->cl.items[i]->flags=(BYTE)flags;
-	group->cl.items[i]->hContact=(HANDLE)++iInfoItemUniqueHandle;
-	lstrcpyn(group->cl.items[i]->szText,pszText,SIZEOF(group->cl.items[i]->szText));
+	int i = saveAddInfoItemToGroup( group, flags, pszText );
 	ClearRowByIndexCache();
 	return i;
 }

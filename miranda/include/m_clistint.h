@@ -183,7 +183,9 @@ typedef struct
 	struct ClcGroup* ( *pfnAddGroup )( HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers );
 	struct ClcGroup* ( *pfnRemoveItemFromGroup )(HWND hwnd, struct ClcGroup *group, struct ClcContact *contact, int updateTotalCount);
 
+	void ( *pfnFreeContact )( struct ClcContact *contact );
 	void ( *pfnFreeGroup )( struct ClcGroup *group );
+
 	int  ( *pfnAddInfoItemToGroup )(struct ClcGroup *group, int flags, const TCHAR *pszText);
 	int  ( *pfnAddItemToGroup )( struct ClcGroup *group,int iAboveItem );
 	int  ( *pfnAddContactToGroup )( struct ClcData *dat, struct ClcGroup *group, HANDLE hContact );
@@ -263,6 +265,8 @@ typedef struct
 	void ( *pfnCluiProtocolStatusChanged )( void );
 	void ( *pfnDrawMenuItem )( LPDRAWITEMSTRUCT, HICON, HICON );
 	void ( *pfnLoadCluiGlobalOpts )( void );
+	BOOL ( *pfnInvalidateRect )( HWND hwnd, CONST RECT* lpRect,BOOL bErase );
+	void ( *pfnOnCreateClc )( void );
 
 	/* contact.c */
 	void ( *pfnChangeContactIcon )( HANDLE hContact, int iIcon, int add );

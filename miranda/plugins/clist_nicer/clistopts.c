@@ -29,7 +29,6 @@ extern struct CluiData g_CluiData;      // even more nasty :)
 
 void LoadContactTree(void);
 void SortContacts(void);
-void TrayIconIconsChanged(void);
 
 static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -226,7 +225,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                                 DBDeleteContactSetting(NULL, "CList", "PrimaryStatus");
                             else
                                 DBWriteContactSettingString(NULL, "CList", "PrimaryStatus", ((PROTOCOLDESCRIPTOR *) SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETCURSEL, 0, 0), 0))->szName);
-                            TrayIconIconsChanged();
+                            pcli->pfnTrayIconIconsChanged();
                             LoadContactTree(); /* this won't do job properly since it only really works when changes happen */
                             SendMessage(pcli->hwndContactTree, CLM_AUTOREBUILD, 0, 0); /* force reshuffle */
                             g_CluiData.dwFlags = IsDlgButtonChecked(hwndDlg, IDC_EVENTSONTOP) ? g_CluiData.dwFlags | CLUI_STICKYEVENTS : g_CluiData.dwFlags & ~CLUI_STICKYEVENTS;

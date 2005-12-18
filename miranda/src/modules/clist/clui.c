@@ -341,6 +341,9 @@ int LoadCLUIModule(void)
 		if (IsWindow(hProgMan))
 			SetParent(cli.hwndContactList, hProgMan);
 	}
+
+	cli.pfnOnCreateClc();
+
 	{
 		int state = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
 		cli.hMenuMain = GetMenu(cli.hwndContactList);
@@ -712,7 +715,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		id = GetMenuItemID((HMENU) lParam, LOWORD(wParam)); /* LOWORD(wParam) contains the menu pos in its parent menu */
 		if (id != (-1))
 			SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(id, 0), 0);
-		break;
+		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 	case WM_SYSCOMMAND:
 		if (wParam == SC_MAXIMIZE)

@@ -607,13 +607,6 @@ void TrayIconSetToBase(char *szPreferredProto)
 	}
 }
 
-void TrayIconIconsChanged(void)
-{
-	HWND hwnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
-	TrayIconDestroy(hwnd);
-	TrayIconInit(hwnd);
-}
-
 static int autoHideTimerId;
 static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
 {

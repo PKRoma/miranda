@@ -117,10 +117,10 @@ __declspec(dllexport) PLUGININFO * MirandaPluginInfo(DWORD mirandaVersion)
 	return &pluginInfo;
 }
 
-int LoadContactListModule(void);
-int LoadCLCModule(void);
-int LoadCLUIModule();
-int InitGdiPlus();
+int  LoadContactListModule(void);
+int  LoadCLCModule(void);
+void LoadCLUIModule( void );
+int  InitGdiPlus();
 
 static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
@@ -139,7 +139,6 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 	}
 	LoadExtBkSettingsFromDB();
 	InitGdiPlus();
-	LoadCLUIModule();
 
 	if(ServiceExists(MS_MC_DISABLEHIDDENGROUP))
 		CallService(MS_MC_DISABLEHIDDENGROUP, 1, 0);
@@ -178,6 +177,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnGetRowTotalHeight = RowHeights_GetTotalHeight;
 	pcli->pfnHitTest = HitTest;
 //	pcli->pfnIconFromStatusMode = IconFromStatusMode;
+	pcli->pfnOnCreateClc = LoadCLUIModule;
 	pcli->pfnPaintClc = PaintClc;
 	pcli->pfnRebuildEntireList = RebuildEntireList;
 	pcli->pfnRowHitTest = RowHeights_HitTest;

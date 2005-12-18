@@ -123,7 +123,7 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragOver(struct CDropTarget *lpThis, D
 
 	if (dat->selection != hit) {
 		dat->selection = hit;
-		InvalidateRect(hwndCurrentDrag, NULL, FALSE);
+		cli.pfnInvalidateRect(hwndCurrentDrag, NULL, FALSE);
 		lpThis->pDropTargetHelper->lpVtbl->Show(lpThis->pDropTargetHelper, FALSE);
 		UpdateWindow(hwndCurrentDrag);
 		lpThis->pDropTargetHelper->lpVtbl->Show(lpThis->pDropTargetHelper, TRUE);
@@ -163,7 +163,7 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragLeave(struct CDropTarget *lpThis)
 		dat = (struct ClcData *) GetWindowLong(hwndCurrentDrag, 0);
 		dat->showSelAlways = 0;
 		dat->selection = originalSelection;
-		InvalidateRect(hwndCurrentDrag, NULL, FALSE);
+		cli.pfnInvalidateRect(hwndCurrentDrag, NULL, FALSE);
 	}
 	hwndCurrentDrag = NULL;
 	return S_OK;

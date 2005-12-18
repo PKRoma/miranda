@@ -55,6 +55,9 @@ void ( *saveLoadClcOptions )(HWND hwnd,struct ClcData *dat);
 int ( *saveAddItemToGroup )( struct ClcGroup *group, int iAboveItem );
 int AddItemToGroup(struct ClcGroup *group, int iAboveItem);
 
+int ( *saveAddInfoItemToGroup)(struct ClcGroup *group,int flags,const TCHAR *pszText);
+int AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
+
 int ( *saveTrayIconProcessMessage )(WPARAM wParam,LPARAM lParam);
 int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
 
@@ -174,6 +177,9 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 		saveAddGroup = pcli->pfnAddGroup;
 		pcli->pfnAddGroup = AddGroup;
+
+		saveAddInfoItemToGroup = pcli->pfnAddInfoItemToGroup;
+		pcli->pfnAddInfoItemToGroup = AddInfoItemToGroup;
 
 		saveAddItemToGroup = pcli->pfnAddItemToGroup;
 		pcli->pfnAddItemToGroup = AddItemToGroup;

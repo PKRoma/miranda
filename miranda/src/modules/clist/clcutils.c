@@ -206,7 +206,7 @@ void fnScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 			if (dat->backgroundBmpUse & CLBF_SCROLL || dat->hBmpBackground == NULL)
 				ScrollWindowEx(hwnd, 0, previousy - dat->yScroll, NULL, NULL, NULL, NULL, SW_INVALIDATE);
 			else
-				InvalidateRect(hwnd, NULL, FALSE);
+				cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 			previousy = dat->yScroll;
 			SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
 			UpdateWindow(hwnd);
@@ -216,7 +216,7 @@ void fnScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 	if (dat->backgroundBmpUse & CLBF_SCROLL || dat->hBmpBackground == NULL)
 		ScrollWindowEx(hwnd, 0, previousy - dat->yScroll, NULL, NULL, NULL, NULL, SW_INVALIDATE);
 	else
-		InvalidateRect(hwnd, NULL, FALSE);
+		cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 	SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
 }
 
@@ -295,7 +295,7 @@ void fnSetGroupExpand(HWND hwnd, struct ClcData *dat, struct ClcGroup *group, in
 			return;
 		group->expanded = newState != 0;
 	}
-	InvalidateRect(hwnd, NULL, FALSE);
+	cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 	contentCount = cli.pfnGetGroupContentsCount(group, 1);
 	groupy = cli.pfnGetRowsPriorTo(&dat->list, group, -1);
 	if (dat->selection > groupy && dat->selection < groupy + contentCount)
@@ -830,10 +830,13 @@ void fnSetGroupChildCheckboxes(struct ClcGroup *group, int checked)
 void fnInvalidateItem(HWND hwnd, struct ClcData *dat, int iItem)
 {
 	RECT rc;
+	if ( iItem == -1 )
+		return;
+
 	GetClientRect(hwnd, &rc);
 	rc.top = cli.pfnGetRowTopY(dat, iItem) - dat->yScroll;
 	rc.bottom = rc.top + cli.pfnGetRowHeight(dat, iItem);
-	InvalidateRect(hwnd, &rc, FALSE);
+	cli.pfnInvalidateRect(hwnd, &rc, FALSE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

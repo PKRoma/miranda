@@ -327,7 +327,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 		dat->hBmpBackground = (HBITMAP) lParam;
 		dat->backgroundBmpUse = wParam;
 		dat->bkChanged = 1;
-		InvalidateRect(hwnd, NULL, FALSE);
+		cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 		break;
 
 	case CLM_SETBKCOLOR:
@@ -337,7 +337,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 		}
 		dat->bkColour = wParam;
 		dat->bkChanged = 1;
-		InvalidateRect(hwnd, NULL, FALSE);
+		cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 		break;
 
 	case CLM_SETCHECKMARK:
@@ -350,7 +350,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 		else
 			contact->flags &= ~CONTACTF_CHECKED;
 		cli.pfnRecalculateGroupCheckboxes(hwnd, dat);
-		InvalidateRect(hwnd, NULL, FALSE);
+		cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 		break;
 	}
 
@@ -358,7 +358,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 		if (wParam > MAXEXTRACOLUMNS)
 			return 0;
 		dat->extraColumnsCount = wParam;
-		InvalidateRect(hwnd, NULL, FALSE);
+		cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 		break;
 
 	case CLM_SETEXTRAIMAGE:
@@ -369,13 +369,13 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 			return 0;
 		contact->iExtraImage[LOWORD(lParam)] = (BYTE) HIWORD(lParam);
-		InvalidateRect(hwnd, NULL, FALSE);
+		cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 		break;
 	}
 
 	case CLM_SETEXTRAIMAGELIST:
 		dat->himlExtraColumns = (HIMAGELIST) lParam;
-		InvalidateRect(hwnd, NULL, FALSE);
+		cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 		break;
 
 	case CLM_SETFONT:
@@ -394,7 +394,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 			ReleaseDC(hwnd, hdc);
 		}
 		if (LOWORD(lParam))
-			InvalidateRect(hwnd, NULL, FALSE);
+			cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 		break;
 
 	case CLM_SETGREYOUTFLAGS:
@@ -416,7 +416,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_SETINDENT:
 		dat->groupIndent = wParam;
-		InvalidateRect(hwnd, NULL, FALSE);
+		cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 		break;
 
 	case CLM_SETITEMTEXT:
@@ -426,13 +426,13 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 			break;
 		lstrcpyn(contact->szText, ( TCHAR* )lParam, SIZEOF( contact->szText ));
 		cli.pfnSortCLC(hwnd, dat, 1);
-		InvalidateRect(hwnd, NULL, FALSE);
+		cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 		break;
 	}
 
 	case CLM_SETLEFTMARGIN:
 		dat->leftMargin = wParam;
-		InvalidateRect(hwnd, NULL, FALSE);
+		cli.pfnInvalidateRect(hwnd, NULL, FALSE);
 		break;
 
 	case CLM_SETOFFLINEMODES:

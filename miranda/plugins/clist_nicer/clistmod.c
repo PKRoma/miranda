@@ -38,7 +38,6 @@ void TrayIconUpdateBase(const char *szChangedProto);
 int EventsProcessContactDoubleClick(HANDLE hContact);
 int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam);
 int TrayIconPauseAutoHide(WPARAM wParam, LPARAM lParam);
-void TrayIconIconsChanged(void);
 int SetHideOffline(WPARAM wParam, LPARAM lParam);
 static int CListIconsChanged(WPARAM wParam, LPARAM lParam);
 int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
@@ -247,7 +246,7 @@ static int CListIconsChanged(WPARAM wParam, LPARAM lParam)
 			ImageList_ReplaceIcon(hCListImages, protoIconIndex[i].iIconBase + j, LoadSkinnedProtoIcon(protoIconIndex[i].szProto, statusModeList[j]));
 		}
 	}
-	TrayIconIconsChanged();
+	pcli->pfnTrayIconIconsChanged();
 	InvalidateRect((HWND) CallService(MS_CLUI_GETHWND, 0, 0), NULL, TRUE);
 	return 0;
 }

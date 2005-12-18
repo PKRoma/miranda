@@ -2261,12 +2261,9 @@ static int CLN_ShowAbout(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int LoadCLUIModule(void)
+void LoadCLUIModule(void)
 {
 	WNDCLASS wndclass;
-	DBVARIANT dbv;
-	TCHAR titleText[256];
-	BYTE windowStyle;
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, CluiModulesLoaded);
 	HookEvent(ME_OPT_INITIALISE, CluiOptInit);
@@ -2287,15 +2284,8 @@ int LoadCLUIModule(void)
 	wndclass.hbrBackground = (HBRUSH) (COLOR_3DFACE);
 	wndclass.lpszMenuName = 0;
 	wndclass.lpszClassName = _T("EventAreaClass");
-
 	RegisterClass(&wndclass);
 
-	if (DBGetContactSettingTString(NULL, "CList", "TitleText", &dbv))
-		lstrcpyn(titleText, _T(MIRANDANAME), sizeof(titleText));
-	else {
-		lstrcpyn(titleText, dbv.ptszVal, sizeof(titleText));
-		DBFreeVariant(&dbv);
-	}
 	oldhideoffline=DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
 	cluiPos.left = DBGetContactSettingDword(NULL, "CList", "x", 600);
 	cluiPos.top = DBGetContactSettingDword(NULL, "CList", "y", 200);
@@ -2303,7 +2293,6 @@ int LoadCLUIModule(void)
 	cluiPos.bottom = DBGetContactSettingDword(NULL, "CList", "Height", 350);
 
 	LoadExtraIconModule();
-	windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT);
 	SFL_RegisterWindowClass();
 
 	//laster=GetLastError();

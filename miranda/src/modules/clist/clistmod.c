@@ -258,7 +258,7 @@ static int CListIconsChanged(WPARAM wParam, LPARAM lParam)
 		for (j = 0; j < SIZEOF(statusModeList); j++)
 			ImageList_ReplaceIcon(hCListImages, protoIconIndex[i].iIconBase + j, LoadSkinnedProtoIcon(protoIconIndex[i].szProto, statusModeList[j]));
 	cli.pfnTrayIconIconsChanged();
-	InvalidateRect((HWND) CallService(MS_CLUI_GETHWND, 0, 0), NULL, TRUE);
+	cli.pfnInvalidateRect((HWND) CallService(MS_CLUI_GETHWND, 0, 0), NULL, TRUE);
 	return 0;
 }
 
