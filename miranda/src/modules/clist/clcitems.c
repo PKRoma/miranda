@@ -135,7 +135,7 @@ void fnFreeGroup(struct ClcGroup *group)
 		cli.pfnFreeContact(group->cl.items[i]);
 		free(group->cl.items[i]);
 	}
-	if (group->cl.count)
+	if (group->cl.items)
 		free(group->cl.items);
 	group->cl.limit = group->cl.count = 0;
 	group->cl.items = NULL;
