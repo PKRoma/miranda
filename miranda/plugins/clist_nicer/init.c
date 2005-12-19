@@ -22,13 +22,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
+#include "cluiframes/cluiframes.h"
 
 HINSTANCE g_hInst = 0;
 PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli = NULL;
 
+#define DEFAULT_TB_VISIBILITY (1 | 2 | 4 | 8 | 16 | 32)
+char *szNoevets = "No events...";
+extern HICON im_clienthIcons[NR_CLIENTS];
+extern HICON overlayicons[10];
+
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst,SIZE *psize, HDC hdcSrc, POINT *pptSrc, COLORREF crKey, BLENDFUNCTION *pblend, DWORD dwFlags);
+extern struct CluiData g_CluiData;
+extern struct ExtraCache *g_ExtraCache;
+extern int g_nextExtraCacheEntry;
+extern int g_maxExtraCacheEntry;
+extern pfnDrawAlpha pDrawAlpha;
+extern DWORD g_gdiplusToken;
+extern HANDLE hSoundHook, hIcoLibChanged;
+extern HIMAGELIST himlExtraImages;
 
 struct LIST_INTERFACE li;
 struct MM_INTERFACE memoryManagerInterface;
@@ -124,21 +138,12 @@ int  InitGdiPlus();
 
 static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-	HMODULE hUserDll;
 #if defined(_UNICODE)
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
 		MessageBox(NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("CList Nicer+"), MB_OK );
 		return 1;
 	}
 #endif
-
-	hUserDll = GetModuleHandleA("user32.dll");
-	if (hUserDll) {
-		MySetLayeredWindowAttributes = (BOOL(WINAPI *)(HWND, COLORREF, BYTE, DWORD))GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
-		MyUpdateLayeredWindow = (BOOL (WINAPI *)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD))GetProcAddress(hUserDll, "UpdateLayeredWindow");
-	}
-	LoadExtBkSettingsFromDB();
-	InitGdiPlus();
 
 	if(ServiceExists(MS_MC_DISABLEHIDDENGROUP))
 		CallService(MS_MC_DISABLEHIDDENGROUP, 1, 0);
@@ -151,10 +156,23 @@ int MenuModulesLoaded(WPARAM wParam, LPARAM lParam);
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc = 0;
+	HMODULE hUserDll;
+	HMENU hMenuButtonList;
+
 	pluginLink = link;
 #ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+
+	LoadExtBkSettingsFromDB();
+	InitGdiPlus();
+
+	hUserDll = GetModuleHandleA("user32.dll");
+	if (hUserDll) {
+		MySetLayeredWindowAttributes = (BOOL(WINAPI *)(HWND, COLORREF, BYTE, DWORD))GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
+		MyUpdateLayeredWindow = (BOOL (WINAPI *)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD))GetProcAddress(hUserDll, "UpdateLayeredWindow");
+	}
+
 	// get the internal malloc/free()
 	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
@@ -163,6 +181,92 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	// get the list control interface
 	li.cbSize = sizeof(li);
 	CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
+
+	ZeroMemory((void*) &g_CluiData, sizeof(g_CluiData));
+	g_CluiData.bMetaAvail = ServiceExists(MS_MC_GETDEFAULTCONTACT) ? TRUE : FALSE;
+	if(g_CluiData.bMetaAvail)
+		mir_snprintf(g_CluiData.szMetaName, 256, "%s", (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0));
+	else
+		strncpy(g_CluiData.szMetaName, "MetaContacts", 255);
+
+	g_ExtraCache = malloc(sizeof(struct ExtraCache) * EXTRAIMAGECACHESIZE);
+	ZeroMemory(g_ExtraCache, sizeof(struct ExtraCache) * EXTRAIMAGECACHESIZE);
+	g_nextExtraCacheEntry = 0;
+	g_maxExtraCacheEntry = EXTRAIMAGECACHESIZE;
+
+	g_CluiData.bMetaEnabled = DBGetContactSettingByte(NULL, "MetaContacts", "Enabled", 1);
+	g_CluiData.bAvatarServiceAvail = ServiceExists(MS_AV_GETAVATARBITMAP) ? TRUE : FALSE;
+	if(g_CluiData.bAvatarServiceAvail)
+		HookEvent(ME_AV_AVATARCHANGED, AvatarChanged);
+	g_CluiData.tabSRMM_Avail = ServiceExists("SRMsg_MOD/GetWindowFlags") ? TRUE : FALSE;
+	g_CluiData.IcoLib_Avail = ServiceExists(MS_SKIN2_ADDICON) ? TRUE : FALSE;
+	g_CluiData.toolbarVisibility = DBGetContactSettingDword(NULL, "CLUI", "TBVisibility", DEFAULT_TB_VISIBILITY);
+	g_CluiData.hMenuButtons = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 3);
+	g_CluiData.hMenuNotify = CreatePopupMenu();
+	g_CluiData.wNextMenuID = 1;
+	g_CluiData.sortTimer = DBGetContactSettingDword(NULL, "CLC", "SortTimer", 150);
+	g_CluiData.szNoEvents = Translate(szNoevets);
+	g_CluiData.avatarBorder = (COLORREF)DBGetContactSettingDword(NULL, "CLC", "avatarborder", 0);
+	g_CluiData.avatarRadius = (COLORREF)DBGetContactSettingDword(NULL, "CLC", "avatarradius", 4);
+	g_CluiData.hBrushAvatarBorder = CreateSolidBrush(g_CluiData.avatarBorder);
+	g_CluiData.avatarSize = DBGetContactSettingWord(NULL,"CList", "AvatarSize", 24);
+	g_CluiData.dualRowMode = DBGetContactSettingByte(NULL, "CLC", "DualRowMode", 0);
+	g_CluiData.avatarPadding = DBGetContactSettingByte(NULL, "CList", "AvatarPadding", 0);
+	g_CluiData.isTransparent = DBGetContactSettingByte(NULL, "CList", "Transparent", 0);
+	g_CluiData.alpha = DBGetContactSettingByte(NULL, "CList", "Alpha", SETTING_ALPHA_DEFAULT);
+	g_CluiData.autoalpha = DBGetContactSettingByte(NULL, "CList", "AutoAlpha", SETTING_ALPHA_DEFAULT);
+	g_CluiData.fadeinout = DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", 0);
+	g_CluiData.autosize = DBGetContactSettingByte(NULL, "CLUI", "AutoSize", 0);
+	g_CluiData.titleBarHeight = DEFAULT_TITLEBAR_HEIGHT;
+	g_CluiData.dwExtraImageMask = DBGetContactSettingDword(NULL, "CLUI", "ximgmask", 0);
+	g_CluiData.bNoOfflineAvatars = DBGetContactSettingByte(NULL, "CList", "NoOfflineAV", 1);
+	g_CluiData.bFullTransparent = DBGetContactSettingByte(NULL, "CLUI", "fulltransparent", 0);
+	g_CluiData.bDblClkAvatars = DBGetContactSettingByte(NULL, "CLC", "dblclkav", 0);
+	g_CluiData.bEqualSections = DBGetContactSettingByte(NULL, "CLUI", "EqualSections", 0);
+	g_CluiData.bCenterStatusIcons = DBGetContactSettingByte(NULL, "CLC", "si_centered", 1);
+	g_CluiData.boldHideOffline = (BYTE)-1;
+	g_CluiData.bSecIMAvail = ServiceExists("SecureIM/IsContactSecured") ? 1 : 0;
+	g_CluiData.bNoTrayTips = DBGetContactSettingByte(NULL, "CList", "NoTrayTips", 0);
+	g_CluiData.bShowLocalTime = DBGetContactSettingByte(NULL, "CLC", "ShowLocalTime", 1);
+	g_CluiData.bShowLocalTimeSelective = DBGetContactSettingByte(NULL, "CLC", "SelectiveLocalTime", 1);
+	g_CluiData.bDontSeparateOffline = DBGetContactSettingByte(NULL, "CList", "DontSeparateOffline", 0);
+	g_CluiData.bShowXStatusOnSbar = DBGetContactSettingByte(NULL, "CLUI", "xstatus_sbar", 0);
+	g_CluiData.bLayeredHack = DBGetContactSettingByte(NULL, "CLUI", "layeredhack", 1);
+	g_CluiData.bFirstRun = DBGetContactSettingByte(NULL, "CLUI", "firstrun", 1);
+	if(g_CluiData.bFirstRun)
+		DBWriteContactSettingByte(NULL, "CLUI", "firstrun", 0);
+	if(!pDrawAlpha)
+		pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS  && g_gdiplusToken) ? GDIp_DrawAlpha : DrawAlpha;
+
+	_tzset();
+	{
+		DWORD now = time(NULL);
+		struct tm gmt = *gmtime(&now);
+		DWORD gmt_time = mktime(&gmt);
+		g_CluiData.local_gmt_diff = (int)difftime(now, gmt_time);
+
+	}
+	ReloadThemedOptions();
+	Reload3dBevelColors();
+	himlExtraImages = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 30, 2);
+	ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
+	ZeroMemory((void *)im_clienthIcons, sizeof(HICON) * NR_CLIENTS);
+	ZeroMemory((void *)overlayicons, sizeof(HICON) * 10);
+
+	CLN_LoadAllIcons(1);
+
+	g_CluiData.dwFlags = DBGetContactSettingDword(NULL, "CLUI", "Frameflags", CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_USEEVENTAREA | CLUI_FRAME_STATUSICONS | CLUI_FRAME_SHOWBOTTOMBUTTONS);
+	g_CluiData.dwFlags |= (DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? CLUI_FRAME_SBARSHOW : 0);
+	g_CluiData.soundsOff = DBGetContactSettingByte(NULL, "CLUI", "NoSounds", 0);
+
+	pDrawAlpha = NULL;
+	if(!pDrawAlpha) {
+		pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS && g_gdiplusToken) ? GDIp_DrawAlpha : DrawAlpha;
+	}
+
+	if(DBGetContactSettingByte(NULL, "Skin", "UseSound", 0) != g_CluiData.soundsOff)
+		DBWriteContactSettingByte(NULL, "Skin", "UseSound", g_CluiData.soundsOff ? 0 : 1);
+
 
 	// get the clist interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);

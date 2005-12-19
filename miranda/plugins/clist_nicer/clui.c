@@ -74,7 +74,6 @@ HIMAGELIST himlExtraImages = 0;
 RECT cluiPos;
 DWORD g_gdiplusToken = 0;
 
-char *szNoevets = "No events...";
 #if defined(_UNICODE)
 TCHAR statusNames[12][124];
 #else
@@ -164,8 +163,6 @@ static struct CluiTopButton top_buttons[] = {
 		0, 0, 0, IDC_TBMENU, IDI_MINIMIZE, 0, "", NULL, TOPBUTTON_PUSH, 0, "Open main menu", 
 		(HWND) - 1, 0, 0, 0, 0, 0, 0, 0, 0
 };
-
-#define DEFAULT_TB_VISIBILITY (1 | 2 | 4 | 8 | 16 | 32)
 
 static struct IconDesc myIcons[] = {
 	"CLN_online", "Toggle show online/offline", -IDI_HIDEOFFLINE, 
@@ -916,97 +913,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			HICON hIcon;
 			HMENU hMenuButtonList;
 			//InstallDialogBoxHook();
-			ZeroMemory((void*) &g_CluiData, sizeof(g_CluiData));
-			g_CluiData.bMetaAvail = ServiceExists(MS_MC_GETDEFAULTCONTACT) ? TRUE : FALSE;
-			if(g_CluiData.bMetaAvail)
-				mir_snprintf(g_CluiData.szMetaName, 256, "%s", (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0));
-			else
-				strncpy(g_CluiData.szMetaName, "MetaContacts", 255);
-
-			g_ExtraCache = malloc(sizeof(struct ExtraCache) * EXTRAIMAGECACHESIZE);
-			ZeroMemory(g_ExtraCache, sizeof(struct ExtraCache) * EXTRAIMAGECACHESIZE);
-			g_nextExtraCacheEntry = 0;
-			g_maxExtraCacheEntry = EXTRAIMAGECACHESIZE;
-
-			g_CluiData.bMetaEnabled = DBGetContactSettingByte(NULL, "MetaContacts", "Enabled", 1);
-			g_CluiData.bAvatarServiceAvail = ServiceExists(MS_AV_GETAVATARBITMAP) ? TRUE : FALSE;
-			if(g_CluiData.bAvatarServiceAvail)
-				HookEvent(ME_AV_AVATARCHANGED, AvatarChanged);
-			g_CluiData.tabSRMM_Avail = ServiceExists("SRMsg_MOD/GetWindowFlags") ? TRUE : FALSE;
-			g_CluiData.IcoLib_Avail = ServiceExists(MS_SKIN2_ADDICON) ? TRUE : FALSE;
-			g_CluiData.toolbarVisibility = DBGetContactSettingDword(NULL, "CLUI", "TBVisibility", DEFAULT_TB_VISIBILITY);
-			g_CluiData.hMenuButtons = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 3);
-			g_CluiData.hMenuNotify = CreatePopupMenu();
-			g_CluiData.wNextMenuID = 1;
-			g_CluiData.sortTimer = DBGetContactSettingDword(NULL, "CLC", "SortTimer", 150);
-			g_CluiData.szNoEvents = Translate(szNoevets);
-			g_CluiData.avatarBorder = (COLORREF)DBGetContactSettingDword(NULL, "CLC", "avatarborder", 0);
-			g_CluiData.avatarRadius = (COLORREF)DBGetContactSettingDword(NULL, "CLC", "avatarradius", 4);
-			g_CluiData.hBrushAvatarBorder = CreateSolidBrush(g_CluiData.avatarBorder);
-			g_CluiData.avatarSize = DBGetContactSettingWord(NULL,"CList", "AvatarSize", 24);
-			g_CluiData.dualRowMode = DBGetContactSettingByte(NULL, "CLC", "DualRowMode", 0);
-			g_CluiData.avatarPadding = DBGetContactSettingByte(NULL, "CList", "AvatarPadding", 0);
-			g_CluiData.isTransparent = DBGetContactSettingByte(NULL, "CList", "Transparent", 0);
-			g_CluiData.alpha = DBGetContactSettingByte(NULL, "CList", "Alpha", SETTING_ALPHA_DEFAULT);
-			g_CluiData.autoalpha = DBGetContactSettingByte(NULL, "CList", "AutoAlpha", SETTING_ALPHA_DEFAULT);
-			g_CluiData.fadeinout = DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", 0);
-			g_CluiData.autosize = DBGetContactSettingByte(NULL, "CLUI", "AutoSize", 0);
-			g_CluiData.titleBarHeight = DEFAULT_TITLEBAR_HEIGHT;
-			g_CluiData.dwExtraImageMask = DBGetContactSettingDword(NULL, "CLUI", "ximgmask", 0);
-			g_CluiData.bNoOfflineAvatars = DBGetContactSettingByte(NULL, "CList", "NoOfflineAV", 1);
-			g_CluiData.bFullTransparent = DBGetContactSettingByte(NULL, "CLUI", "fulltransparent", 0);
-			g_CluiData.bDblClkAvatars = DBGetContactSettingByte(NULL, "CLC", "dblclkav", 0);
-			g_CluiData.bEqualSections = DBGetContactSettingByte(NULL, "CLUI", "EqualSections", 0);
-			g_CluiData.bCenterStatusIcons = DBGetContactSettingByte(NULL, "CLC", "si_centered", 1);
-			g_CluiData.boldHideOffline = (BYTE)-1;
-			g_CluiData.bSecIMAvail = ServiceExists("SecureIM/IsContactSecured") ? 1 : 0;
-			g_CluiData.bNoTrayTips = DBGetContactSettingByte(NULL, "CList", "NoTrayTips", 0);
-			g_CluiData.bShowLocalTime = DBGetContactSettingByte(NULL, "CLC", "ShowLocalTime", 1);
-			g_CluiData.bShowLocalTimeSelective = DBGetContactSettingByte(NULL, "CLC", "SelectiveLocalTime", 1);
-			g_CluiData.bDontSeparateOffline = DBGetContactSettingByte(NULL, "CList", "DontSeparateOffline", 0);
-			g_CluiData.bShowXStatusOnSbar = DBGetContactSettingByte(NULL, "CLUI", "xstatus_sbar", 0);
-			g_CluiData.bLayeredHack = DBGetContactSettingByte(NULL, "CLUI", "layeredhack", 1);
-			g_CluiData.bFirstRun = DBGetContactSettingByte(NULL, "CLUI", "firstrun", 1);
-			if(g_CluiData.bFirstRun)
-				DBWriteContactSettingByte(NULL, "CLUI", "firstrun", 0);
-			if(!pDrawAlpha)
-				pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS  && g_gdiplusToken) ? GDIp_DrawAlpha : DrawAlpha;
-
-			_tzset();
-			{
-				DWORD now = time(NULL);
-				struct tm gmt = *gmtime(&now);
-				DWORD gmt_time = mktime(&gmt);
-				g_CluiData.local_gmt_diff = (int)difftime(now, gmt_time);
-
-			}
-			ReloadThemedOptions();
-			Reload3dBevelColors();
-			himlExtraImages = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 30, 2);
-			ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
-			hMenuButtonList = GetSubMenu(g_CluiData.hMenuButtons, 0);
-			DeleteMenu(hMenuButtonList, 0, MF_BYPOSITION);
-			ZeroMemory((void *)im_clienthIcons, sizeof(HICON) * NR_CLIENTS);
-			ZeroMemory((void *)overlayicons, sizeof(HICON) * 10);
-
-			CLN_LoadAllIcons(1);
-
-			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), 0);
-			DrawMenuBar(hwnd);
-			g_CluiData.dwFlags = DBGetContactSettingDword(NULL, "CLUI", "Frameflags", CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_USEEVENTAREA | CLUI_FRAME_STATUSICONS | CLUI_FRAME_SHOWBOTTOMBUTTONS);
-			g_CluiData.dwFlags |= (DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? CLUI_FRAME_SBARSHOW : 0);
-			g_CluiData.soundsOff = DBGetContactSettingByte(NULL, "CLUI", "NoSounds", 0);
-
-			pDrawAlpha = NULL;
-			if(!pDrawAlpha) {
-				pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS && g_gdiplusToken) ? GDIp_DrawAlpha : DrawAlpha;
-			}
-
-			if (g_CluiData.soundsOff)
-				hSoundHook = HookEvent(ME_SKIN_PLAYINGSOUND, ClcSoundHook);
-			if(DBGetContactSettingByte(NULL, "Skin", "UseSound", 0) != g_CluiData.soundsOff)
-				DBWriteContactSettingByte(NULL, "Skin", "UseSound", g_CluiData.soundsOff ? 0 : 1);
-
 			//create the status wnd
 			{
 				int flags = WS_CHILD | CCS_BOTTOM;
@@ -1020,6 +926,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				OldStatusBarProc = (WNDPROC)SetWindowLong(pcli->hwndStatus, GWL_WNDPROC, (LONG)NewStatusBarWndProc);
 				SetClassLong(pcli->hwndStatus, GCL_STYLE, GetClassLong(pcli->hwndStatus, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 			}
+			hMenuButtonList = GetSubMenu(g_CluiData.hMenuButtons, 0);
+			DeleteMenu(hMenuButtonList, 0, MF_BYPOSITION);
+
 			if(!g_CluiData.bFirstRun)
 				ConfigureEventArea(hwnd);
 			CluiProtocolStatusChanged();
@@ -1059,6 +968,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 				SendMessage(top_buttons[i].hwnd, BUTTONADDTOOLTIP, (WPARAM) Translate(top_buttons[i].szTooltip), 0);
 			}
+			if (g_CluiData.soundsOff)
+				hSoundHook = HookEvent(ME_SKIN_PLAYINGSOUND, ClcSoundHook);
+			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), 0);
+			DrawMenuBar(hwnd);
 			SetButtonStyle();
 			if(g_CluiData.bSkinnedToolbar)
 				SetTBSKinned(1);
