@@ -157,7 +157,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc = 0;
 	HMODULE hUserDll;
-	HMENU hMenuButtonList;
 
 	pluginLink = link;
 #ifdef _DEBUG
