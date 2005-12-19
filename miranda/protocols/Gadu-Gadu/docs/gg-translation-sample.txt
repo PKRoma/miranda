@@ -239,6 +239,8 @@ Obrazek od %s
 Obrazek dla %s
 [Image files (*.bmp,*.jpg,*.gif)]
 Pliki obrazów (*.bmp,*.jpg,*.gif)
+[Image files (*.bmp,*.jpg,*.gif,*.png)]
+Pliki obrazów (*.bmp,*.jpg,*.gif,*.png)
 [Select picture to send]
 Wybierz obrazek do wys³ania
 [Could not load image. Image might have unsupported file format.]

@@ -59,6 +59,9 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.3.7: 2005-12-19
+ - Image sending and receiving now uses ImgDecoder if present for PNG images
+ - Fix: String fix for error dialogs' titles
 0.0.3.6: 2005-11-15
  - Fix: String overflows (injections) that may be caused for example by too long
    translations or too long incoming filenames

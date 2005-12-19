@@ -249,11 +249,11 @@ int gg_img_paint(HWND hwnd, GGIMAGEENTRY *dat)
 						(rc.right - rc.left) * nHeight / nWidth,
 						0, hmHeight, hmWidth, -hmHeight, &rc);
 				else if(hdcBmp)
-					StretchBlt(hdc, 
+					StretchBlt(hdc,
 						rc.left,
 						((rc.top + rc.bottom) - (rc.right - rc.left) * nHeight / nWidth) / 2,
 						(rc.right - rc.left),
-						(rc.right - rc.left) * nHeight / nWidth, 
+						(rc.right - rc.left) * nHeight / nWidth,
 						hdcBmp, 0, 0, nWidth, nHeight, SRCCOPY);
 			}
             else
@@ -266,7 +266,7 @@ int gg_img_paint(HWND hwnd, GGIMAGEENTRY *dat)
 						(rc.bottom - rc.top),
 						0, hmHeight, hmWidth, -hmHeight, &rc);
 				else if(hdcBmp)
-					StretchBlt(hdc, 
+					StretchBlt(hdc,
 						((rc.left + rc.right) - (rc.bottom - rc.top) * nWidth / nHeight) / 2,
 						rc.top,
 						(rc.bottom - rc.top) * nWidth / nHeight,
@@ -283,7 +283,7 @@ int gg_img_paint(HWND hwnd, GGIMAGEENTRY *dat)
 					nWidth, nHeight,
 					0, hmHeight, hmWidth, -hmHeight, &rc);
 			else if(hdcBmp)
-				BitBlt(hdc, 
+				BitBlt(hdc,
 					(rc.left + rc.right - nWidth) / 2,
 					(rc.top + rc.bottom - nHeight) / 2,
 					nWidth, nHeight,
@@ -1024,13 +1024,16 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
 	if(hImgDecoder)
 	{
 		char *szTempFile = NULL;
+		int error = -1;
 		if(hImageFile) CloseHandle(hImageFile);
 		// Prepare temporary file for reading
 		if(!szFileName)
 		{
+			char *szTempPath = (char *)malloc(MAX_PATH);
 			szTempFile = (char *)malloc(MAX_PATH);
-			if(GetTempPath(MAX_PATH, szTempFile)
-				&& (hImageFile = CreateFile(szTempFile, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0)))
+			if(GetTempPath(MAX_PATH, szTempPath) 
+				&& GetTempFileName(szTempPath, "miranda", 0, szTempFile)
+				&& (hImageFile = CreateFile(szTempFile, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE)
 			{
 				DWORD dwWritten = 0;
 				if(WriteFile(hImageFile, e->event.image_reply.image, e->event.image_reply.size, &dwWritten, NULL)
@@ -1040,6 +1043,7 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
 				hImageFile = NULL;
 				szFileName = szTempFile;
 			}
+			free(szTempPath);
 		}
 		// Load image from file
 		if(szFileName)
@@ -1051,8 +1055,6 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
 			if(!ImgNewDIBFromFile(pDecoder, szFileName, &(dat->lpDIBSection)))
 				ImgGetHandle(dat->lpDIBSection, &(dat->hBitmap), (LPVOID *)&pBits);
 			ImgDeleteDecoder(pDecoder);
-			if(dat->hBitmap)
-				return dat;
 		}
 		if(szTempFile)
 		{
@@ -1060,6 +1062,9 @@ extern "C" GGIMAGEENTRY * gg_img_loadpicture(struct gg_event* e, HANDLE hContact
 			if(szFileName) DeleteFile(szFileName);
 			free(szTempFile);
 		}
+
+        // If everything is fine return the handle
+        if(dat->hBitmap) return dat;
 	}
 
 	////////////////////////////////////////////////////////////////////
@@ -1169,7 +1174,7 @@ int gg_img_remove(GGIMAGEDLGDATA *dat)
     while(temp = img)
     {
         img = img->lpNext;
-		gg_img_releasepicture(img);
+		gg_img_releasepicture(temp);
     }
 
 	// Remove from list
