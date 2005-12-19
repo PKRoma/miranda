@@ -25,7 +25,7 @@
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
     "Gadu-Gadu Protocol",
-    PLUGIN_MAKE_VERSION(0, 0, 3, 6),
+    PLUGIN_MAKE_VERSION(0, 0, 3, 7),
     "Provides support for Gadu-Gadu protocol",
     "Adam Strzelecki",
     "ono+miranda@java.pl",
@@ -218,22 +218,28 @@ void gg_cleanuplastplugin(DWORD version)
 int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 {
     NETLIBUSER nlu = { 0 };
-	char title[64], *error;
-	DWORD version;
+	char *szTitle = NULL,
+         *szError = NULL,
+         *szConnection = NULL;
+	DWORD dwVersion = 0;
 
-	strncpy(title, GG_PROTONAME, sizeof(title));
-	strncat(title, " ", sizeof(title) - strlen(title));
-	strncat(title, Translate("connection"), sizeof(title) - strlen(title));
+	szConnection = Translate("connection");
+	szTitle = malloc(strlen(GG_PROTONAME) + strlen(szConnection) + 2);
+	strcpy(szTitle, GG_PROTONAME);
+	strcat(szTitle, " ");
+	strcat(szTitle, szConnection);
 
     nlu.cbSize = sizeof(nlu);
     nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;
     nlu.szSettingsModule = GG_PROTO;
-    nlu.szDescriptiveName = title;
+    nlu.szDescriptiveName = szTitle;
     hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
     hHookOptsInit = HookEvent(ME_OPT_INITIALISE, gg_options_init);
     hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, gg_details_init);
     hHookSettingDeleted = HookEvent(ME_DB_CONTACT_DELETED, gg_userdeleted);
     hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, gg_dbsettingchanged);
+
+    free(szTitle);
 
 	// Init SSL library
 	gg_ssl_init();
@@ -247,15 +253,15 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
     gg_gc_init();
 
 	// Make error message
-	error = Translate("Error");
-	ggProtoError = malloc(strlen(ggProtoName) + strlen(error) + 2);
-	strncpy(ggProtoError, ggProtoName, sizeof(ggProtoError));
-	strncat(ggProtoError, " ", sizeof(ggProtoError) - strlen(ggProtoError));
-	strncat(ggProtoError, error, sizeof(ggProtoError) - strlen(ggProtoError));
+	szError = Translate("Error");
+	ggProtoError = malloc(strlen(GG_PROTONAME) + strlen(szError) + 2);
+	strcpy(ggProtoError, GG_PROTONAME);
+	strcat(ggProtoError, " ");
+	strcat(ggProtoError, szError);
 
 	// Do last plugin cleanup if not actual version
-	if((version = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
-		gg_cleanuplastplugin(version);
+	if((dwVersion = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
+		gg_cleanuplastplugin(dwVersion);
 
     return 0;
 }
