@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Gadu-Gadu Plugin for Miranda IM
 //
-// Copyright (c) 2003 Adam Strzelecki <ono+miranda@java.pl>
+// Copyright (c) 2003-2006 Adam Strzelecki <ono+miranda@java.pl>
 // 
 // Portions taken from:
 //   Jabber Protocol Plugin for Miranda IM
