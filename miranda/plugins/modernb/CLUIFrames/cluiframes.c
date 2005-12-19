@@ -4310,45 +4310,42 @@ int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
     return 0;
 }
 
-
-static CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
+static int CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
 {
-  CLUIFramesLoadMainMenu(0,0);
-  CLUIFramesCreateMenuForFrame(-1,-1,000010000,MS_CLIST_ADDCONTEXTFRAMEMENUITEM);
-}
-static CLUIFrameOnModulesUnload(WPARAM wParam,LPARAM lParam)
-{
-  //
-
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIVisible, 1 );
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITitle, 1 );
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITBVisible, 1 );
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMILock, 1 );
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIColl, 1 );
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIFloating, 1 ); 	
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignTop, 1 );
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignClient, 1 );
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignBottom, 1 );
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIBorder, 1 );
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignRoot, 1 );
-
-
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIPosUp, 1 );
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIPosDown, 1 );
-  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIPosRoot, 1 );
-
-
-  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIVisible, 1 );
-  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMITitle, 1 );
-  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMITBVisible, 1 );
-  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMILock, 1 );
-  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIColl, 1 );
-  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIFloating, 1 ); 	
-  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIBorder, 1 );
-  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIAlignRoot, 1 );
-  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIPosRoot, 1 );
+	CLUIFramesLoadMainMenu(0,0);
+	CLUIFramesCreateMenuForFrame(-1,-1,000010000,MS_CLIST_ADDCONTEXTFRAMEMENUITEM);
+	return 0;
 }
 
+static int CLUIFrameOnModulesUnload(WPARAM wParam,LPARAM lParam)
+{
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIVisible, 1 );
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITitle, 1 );
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITBVisible, 1 );
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMILock, 1 );
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIColl, 1 );
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIFloating, 1 ); 	
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignTop, 1 );
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignClient, 1 );
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignBottom, 1 );
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIBorder, 1 );
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignRoot, 1 );
+
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIPosUp, 1 );
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIPosDown, 1 );
+	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIPosRoot, 1 );
+
+	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIVisible, 1 );
+	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMITitle, 1 );
+	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMITBVisible, 1 );
+	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMILock, 1 );
+	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIColl, 1 );
+	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIFloating, 1 ); 	
+	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIBorder, 1 );
+	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIAlignRoot, 1 );
+	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIPosRoot, 1 );
+	return 0;
+}
 
 int LoadCLUIFramesModule(void)
 {
