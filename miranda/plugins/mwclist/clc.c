@@ -36,6 +36,7 @@ int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam);
 void InitDisplayNameCache(SortedList *list);
 void FreeDisplayNameCache(SortedList *list);
 
+void LoadExtraImageFunc( void );
 void UnloadCLUIModule( void );
 
 extern int sortByStatus;
@@ -167,7 +168,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	switch (msg) {
 	case WM_CREATE:
 		dat = (struct ClcData*)calloc( sizeof(struct ClcData), 1);
-		SetWindowLong(hwnd,0,dat);
+		SetWindowLong(hwnd,0,(LPARAM)dat);
 		InitDisplayNameCache(&dat->lCLCContactsCache);
 		break;
 

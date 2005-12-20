@@ -25,7 +25,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static int GetHwnd(WPARAM wParam, LPARAM lParam)
 {
-	return (int) cli.hwndContactList;
+	return (int)cli.hwndContactList;
+}
+
+static int GetHwndTree(WPARAM wParam,LPARAM lParam)
+{
+	return (int)cli.hwndContactTree;
 }
 
 static int CluiProtocolStatusChanged(WPARAM wParam, LPARAM lParam)
@@ -130,6 +135,7 @@ static int GetCaps(WPARAM wParam, LPARAM lParam)
 int LoadCluiServices(void)
 {
 	CreateServiceFunction(MS_CLUI_GETHWND, GetHwnd);
+	CreateServiceFunction(MS_CLUI_GETHWNDTREE,GetHwndTree);
 	CreateServiceFunction(MS_CLUI_PROTOCOLSTATUSCHANGED, CluiProtocolStatusChanged);
 	CreateServiceFunction(MS_CLUI_GROUPADDED, GroupAdded);
 	CreateServiceFunction(MS_CLUI_CONTACTSETICON, ContactSetIcon);

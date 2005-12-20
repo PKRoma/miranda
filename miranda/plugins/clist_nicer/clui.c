@@ -2213,7 +2213,6 @@ void LoadCLUIModule(void)
 	LoadCLUIFramesModule();
 
 	CreateServiceFunction("CLN/About",CLN_ShowAbout);
-	return 0;
 }
 
 static struct {UINT id; char *name;} _tagFSINFO[] = {

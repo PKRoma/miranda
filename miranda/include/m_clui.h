@@ -36,6 +36,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //do whatever it is you are trying to do.
 #define MS_CLUI_GETHWND     "CLUI/GetHwnd"
 
+//get ContactTree hwnd
+#define MS_CLUI_GETHWNDTREE     "CLUI/GetHwndTree"
+
 //change protocol-specific status indicators
 //wParam=new status
 //lParam=(LPARAM)(const char*)szProtocolID

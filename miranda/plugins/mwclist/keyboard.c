@@ -33,7 +33,8 @@ static ATOM aSearch = 0;
 static ATOM aOpts = 0;
 
 typedef struct {
-	char *name,*section,*description,*tempFile,*pszService;
+	char  *pszService,*tempFile,*name;
+   TCHAR *section,*description;
 	int DefHotKey;
 	ATOM aAtom;
 
@@ -133,8 +134,6 @@ int HotKeysRegister(HWND hwnd)
 	CreateServiceFunction("CLIST/HK/RestoreStatus",hkRestoreStatus);
 	CreateServiceFunction("CLIST/HK/AllOffline",hkAllOffline);
 
-
-
 	shk.cbSize=sizeof(shk);
 	shk.pszDescription="Show Hide Contact List";
 	shk.pszName="ShowHide";
@@ -150,7 +149,6 @@ int HotKeysRegister(HWND hwnd)
 	shk.DefHotKey=841;
 	CallService(MS_SKIN_ADDHOTKEY,0,(LPARAM)&shk);
 
-
 	shk.pszDescription="Search in site";
 	shk.pszName="SearchInWeb";
 	shk.pszSection="Main";
@@ -158,15 +156,12 @@ int HotKeysRegister(HWND hwnd)
 	shk.DefHotKey=846;
 	CallService(MS_SKIN_ADDHOTKEY,0,(LPARAM)&shk);	
 
-
-
 	shk.pszDescription="Open Options Page";
 	shk.pszName="ShowOptions";
 	shk.pszSection="Main";
 	shk.pszService="CLIST/HK/Opts";
 	shk.DefHotKey=847;
 	CallService(MS_SKIN_ADDHOTKEY,0,(LPARAM)&shk);	
-
 
 	shk.pszDescription="Open Find User Dialog";
 	shk.pszName="FindUsers";
@@ -182,7 +177,6 @@ int HotKeysRegister(HWND hwnd)
 	shk.DefHotKey=0;
 	CallService(MS_SKIN_ADDHOTKEY,0,(LPARAM)&shk);	
 
-
 	shk.pszDescription="Restore last status";
 	shk.pszName="RestoreLastStatus";
 	shk.pszSection="Status";
@@ -196,7 +190,6 @@ int HotKeysRegister(HWND hwnd)
 	shk.pszService="CLIST/HK/AllOffline";
 	shk.DefHotKey=0;
 	CallService(MS_SKIN_ADDHOTKEY,0,(LPARAM)&shk);	
-
 
 	RegistersAllHotkey(hwnd);
 	return 0;
@@ -236,7 +229,6 @@ int UnRegistersAllHotkey(HWND hwnd)
 			GlobalDeleteAtom(phi->aAtom);
 			phi->aAtom=(ATOM)NULL;
 		}
-
 	}
 	return 0;
 }
@@ -271,8 +263,6 @@ int HotkeysProcessMessage(WPARAM wParam,LPARAM lParam)
 	return FALSE;
 }
 
-
-
 ////////////////////NEWWWWWWWWWW
 
 pHotKeyItem GetHotKeyItemByAtom(ATOM a)
@@ -305,8 +295,8 @@ static int ServiceSkinAddNewHotKey(WPARAM wParam,LPARAM lParam)
 	HotKeyList=(HotKeyItem*)mir_realloc(HotKeyList,sizeof(HotKeyItem)*(HotKeyCount+1));
 
 	HotKeyList[HotKeyCount].name=mir_strdup(ssd->pszName);
-	HotKeyList[HotKeyCount].description=mir_strdup(ssd->pszDescription);
-	HotKeyList[HotKeyCount].section=mir_strdup( ssd->cbSize==sizeof(SKINHOTKEYDESCEX) ? ssd->pszSection : "Other" );
+	HotKeyList[HotKeyCount].description = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR,0,(LPARAM)ssd->pszDescription);
+	HotKeyList[HotKeyCount].section = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR,0,(LPARAM)( ssd->cbSize==sizeof(SKINHOTKEYDESCEX) ? ssd->pszSection : "Other" ));
 	HotKeyList[HotKeyCount].pszService=mir_strdup(ssd->pszService);
 	HotKeyList[HotKeyCount].DefHotKey=ssd->DefHotKey;
 	HotKeyList[HotKeyCount].aAtom=0;
@@ -314,6 +304,7 @@ static int ServiceSkinAddNewHotKey(WPARAM wParam,LPARAM lParam)
 
 	if (ssd->DefHotKey) {
 		DBVARIANT dbv={0};
+
 		if (DBGetContactSetting(NULL, "SkinHotKeys", HotKeyList[HotKeyCount].name, &dbv)) {
 			DBWriteContactSettingWord(NULL, "SkinHotKeys", HotKeyList[HotKeyCount].name, (WORD)ssd->DefHotKey);
 		}
@@ -355,18 +346,20 @@ static int ServiceSkinPlayHotKey(WPARAM wParam, LPARAM lParam)
 	return 1;
 }
 
-static HTREEITEM FindNamedTreeItemAtRoot(HWND hwndTree,const char *name)
+static HTREEITEM FindNamedTreeItemAtRoot(HWND hwndTree,const TCHAR *name)
 {
-	TVITEMA tvi;
-	char str[128];
+	TVITEM tvi;
+	TCHAR str[128]={0};
 
 	tvi.mask=TVIF_TEXT;
 	tvi.pszText=str;
-	tvi.cchTextMax=sizeof(str);
+	tvi.cchTextMax=SIZEOF(str);
 	tvi.hItem=TreeView_GetRoot(hwndTree);
 	while(tvi.hItem!=NULL) {
-		SendMessageA(hwndTree, TVM_GETITEMA, 0, (LPARAM)&tvi);
-		if(!strcmpi(str,name)) return tvi.hItem;
+		TreeView_GetItem(hwndTree,&tvi);
+		if(!lstrcmpi(str,name)) 
+			return tvi.hItem;
+
 		tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
 	}
 	return NULL;
@@ -380,20 +373,18 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	static HWND hwndTree = NULL;
 	switch (msg) {
 	case WM_INITDIALOG:
-		{	
-			TranslateDialogDefault(hwndDlg);
-			hwndTree = GetDlgItem(hwndDlg, IDC_HOTKEYTREE);
-			SetWindowLong(hwndTree,GWL_STYLE,GetWindowLong(hwndTree,GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
-			SendMessage(hwndDlg, DM_HIDEPANE, 0, 0);
-			SendMessage(hwndDlg, DM_REBUILD_STREE, 0, 0);
-			TreeView_SetItemState(hwndTree, 0, TVIS_SELECTED, TVIS_SELECTED);
-			return TRUE;
-		}
+		TranslateDialogDefault(hwndDlg);
+		hwndTree = GetDlgItem(hwndDlg, IDC_HOTKEYTREE);
+		SetWindowLong(hwndTree,GWL_STYLE,GetWindowLong(hwndTree,GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
+		SendMessage(hwndDlg, DM_HIDEPANE, 0, 0);
+		SendMessage(hwndDlg, DM_REBUILD_STREE, 0, 0);
+		TreeView_SetItemState(hwndTree, 0, TVIS_SELECTED, TVIS_SELECTED);
+		return TRUE;
+
 	case DM_REBUILD_STREE:
 		{
-			TVINSERTSTRUCTA tvis;
+			TVINSERTSTRUCT tvis;
 			int i;
-
 			TreeView_SelectItem(hwndTree ,NULL);
 			ShowWindow(hwndTree,SW_HIDE);
 			TreeView_DeleteAllItems(hwndTree);
@@ -409,16 +400,16 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				if(tvis.hParent==NULL) {
 					tvis.item.lParam=-1;
 					tvis.item.pszText=HotKeyList[i].section;
-					tvis.hParent=tvis.item.hItem=(HTREEITEM)SendMessageA(hwndTree,TVM_INSERTITEMA,0,(LPARAM)&tvis);
+					tvis.hParent = tvis.item.hItem = TreeView_InsertItem(hwndTree,&tvis);
 					tvis.item.stateMask=TVIS_STATEIMAGEMASK;
 					tvis.item.state=INDEXTOSTATEIMAGEMASK(0);
-					SendMessageA(hwndTree,TVM_SETITEMA,0,(LPARAM)&tvis.item);
+					TreeView_SetItem(hwndTree,&tvis.item);
 				}
 				tvis.item.stateMask=TVIS_STATEIMAGEMASK;
 				tvis.item.state=INDEXTOSTATEIMAGEMASK(!DBGetContactSettingByte(NULL,"SkinHotKeysOff",HotKeyList[i].name,0)?2:1);
 				tvis.item.lParam=i;
 				tvis.item.pszText=HotKeyList[i].description;
-				SendMessageA(hwndTree,TVM_INSERTITEMA,0,(LPARAM)&tvis);
+				TreeView_InsertItem(hwndTree,&tvis);
 			}
 			{
 				TVITEM tvi;
@@ -509,6 +500,7 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			else {
 				if (DBGetContactSettingByte(NULL, "SkinHotKeysOff", HotKeyList[tvi.lParam].name, 0)==0) {
 					DBVARIANT dbv={0};
+
 					if (DBGetContactSetting(NULL, "SkinHotKeys", HotKeyList[tvi.lParam].name, &dbv)==0) {                           
 						//CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)str);
 						DBFreeVariant(&dbv);
@@ -612,13 +604,12 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 						SendMessage(hwndDlg, DM_HIDEPANE, 0, 0);
 					}
 					else {
-						char buf[256];
-						DBVARIANT dbv={0};                                
-						_snprintf(buf, SIZEOF(buf), "%s: %s", HotKeyList[tvi.lParam].section, HotKeyList[tvi.lParam].description);
-						SetDlgItemTextA(hwndDlg, IDC_NAMEVAL, buf);
+						TCHAR buf[256];
+						mir_sntprintf(buf, SIZEOF(buf), _T("%s: %s"), HotKeyList[tvi.lParam].section, HotKeyList[tvi.lParam].description);
+						SetDlgItemText(hwndDlg, IDC_NAMEVAL, buf);
 						SendDlgItemMessage(hwndDlg,IDC_SETHOTKEY,HKM_SETHOTKEY,DBGetContactSettingWord(NULL,"SkinHotKeys",HotKeyList[tvi.lParam].name,HotKeyList[tvi.lParam].DefHotKey ),0);
 
-						SetDlgItemTextA(hwndDlg, IDC_LOCATION, Translate("<not specified>"));
+						SetDlgItemText(hwndDlg, IDC_LOCATION, TranslateT("<not specified>"));
 						SendMessage(hwndDlg, DM_SHOWPANE, 0, 0);
 					}
 					break;
@@ -666,6 +657,8 @@ void UninitSkinHotKeys(void)
 		mir_free(HotKeyList[i].name);
 		mir_free(HotKeyList[i].section);
 		mir_free(HotKeyList[i].description);
+		mir_free(HotKeyList[i].pszService);
+
 		//		if (HotKeyList[i].tempFile) free(HotKeyList[i].tempFile);
 	}
 	if(HotKeyCount) mir_free(HotKeyList);

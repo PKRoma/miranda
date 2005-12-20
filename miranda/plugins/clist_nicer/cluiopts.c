@@ -25,6 +25,8 @@ UNICODE done
 */
 #include "commonheaders.h"
 
+void ReloadExtraIcons( void );
+
 extern HMENU hMenuMain;
 extern BOOL(WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern struct CluiData g_CluiData;

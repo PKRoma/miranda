@@ -86,4 +86,9 @@ __inline static int TranslateDialogDefault(HWND hwndDlg)
 //returns the codepage stated in the langpack, or CP_ACP if no langpack installed
 #define MS_LANGPACK_GETCODEPAGE      "LangPack/GetCodePage"
 
+//returns the strdup/wcsdup of lparam according to the langpack  v0.4.3.0+
+//wParam=0
+//lParam=(LPARAM)(char*)source string
+//returns the codepage stated in the langpack, or CP_ACP if no langpack installed
+#define MS_LANGPACK_PCHARTOTCHAR     "LangPack/PcharToTchar"
 #endif // M_LANGPACK_H__
