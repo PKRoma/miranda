@@ -413,7 +413,7 @@ int GetStatusName(TCHAR *text, int text_size, struct ClcContact *contact, BOOL x
 
 	// Get Status name
 	{
-		TCHAR *tmp = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)contact->status, 0);
+		TCHAR *tmp = pcli->pfnGetStatusModeDescription(contact->status, 0);
 		lstrcpyn(text, tmp, text_size);
 		//CopySkipUnPrintableChars(text, dbv.pszVal, text_size-1);
 		if (text[0] != '\0')

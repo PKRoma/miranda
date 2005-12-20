@@ -135,7 +135,7 @@ static TCHAR *TrayIconMakeTooltip(const TCHAR *szPrefix,const char *szProto) //T
 		szProtoName=szProtoNameTemp;
 #endif
 
-			szStatus=(TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0),0);
+			szStatus=pcli->pfnGetStatusModeDescription(CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0),0);
 			if(szTip[0]) _tcsncat(szTip,szSeparator,sizeof(szTip)/sizeof(TCHAR)-1-lstrlen(szTip));
 			_tcsncat(szTip,szProtoName,sizeof(szTip)/sizeof(TCHAR)-1-lstrlen(szTip));
 			_tcsncat(szTip,TEXT(" "),sizeof(szTip)/sizeof(TCHAR)-1-lstrlen(szTip));
@@ -149,7 +149,7 @@ static TCHAR *TrayIconMakeTooltip(const TCHAR *szPrefix,const char *szProto) //T
 #else
 		szProtoName=szProtoNameTemp;
 #endif
-		szStatus=(TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,CallProtoService(szProto,PS_GETSTATUS,0,0),0);
+		szStatus = pcli->pfnGetStatusModeDescription(CallProtoService(szProto,PS_GETSTATUS,0,0),0);
 		if(szPrefix && szPrefix[0]) {
 			if(DBGetContactSettingByte(NULL,"CList","AlwaysStatus",SETTING_ALWAYSSTATUS_DEFAULT))
 				_sntprintf(szTip,sizeof(szTip),_T("%s%s%s %s"),szPrefix,szSeparator,szProtoName,szStatus);

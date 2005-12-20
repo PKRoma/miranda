@@ -122,13 +122,10 @@ void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis)
 		x+=textSize.cx;
 	}
 	if(showOpts&4) {
-		char *szStatus;
-		szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,status,0);
-		if (!szStatus) szStatus="";
-		GetTextExtentPoint32A(dis->hDC,szStatus,lstrlenA(szStatus),&textSize);
-		TextOutA(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-textSize.cy)>>1,szStatus,lstrlenA(szStatus));
-
-
+		TCHAR *szStatus = pcli->pfnGetStatusModeDescription(status,0);
+		if (!szStatus) szStatus = _T("");
+		GetTextExtentPoint32(dis->hDC,szStatus,lstrlen(szStatus),&textSize);
+		TextOut(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-textSize.cy)>>1,szStatus,lstrlen(szStatus));
 	}
 	SelectClipRgn(dis->hDC, NULL);
 	DeleteObject(hrgn);
