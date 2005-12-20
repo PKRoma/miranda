@@ -91,7 +91,7 @@ static BOOL CALLBACK DlgProcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						*dat->item[indx].filename = 0;
 				}
 				dat->item[indx].flags = DBGetContactSettingWord(NULL,module,"BkBmpUse", DEFAULT_BKBMPUSE);
-				jndx = SendMessage(hList, CB_ADDSTRING, 0, (LPARAM)Translate(bkgrList[indx]));
+				jndx = SendMessageA(hList, CB_ADDSTRING, 0, (LPARAM)Translate(bkgrList[indx]));
 				SendMessage(hList, CB_SETITEMDATA, jndx, indx);
 			}
 			SendMessage(hList, CB_SETCURSEL, 0, 0);

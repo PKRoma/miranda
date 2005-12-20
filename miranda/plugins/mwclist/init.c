@@ -38,8 +38,12 @@ void  CheckPDNCE(pdisplayNameCacheEntry);
 void  FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
 void  CalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
+int   HotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
+int   HotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
+int   HotKeysRegister(HWND hwnd);
 void  RebuildEntireList(HWND hwnd,struct ClcData *dat);
 void  RecalcScrollBar(HWND hwnd,struct ClcData *dat);
+int   UnRegistersAllHotkey(HWND hwnd);
 
 struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
 struct ClcGroup* ( *saveRemoveItemFromGroup )(HWND hwnd,struct ClcGroup *group,struct ClcContact *contact,int updateTotalCount);
@@ -170,6 +174,10 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		pcli->pfnGetRowsPriorTo = GetRowsPriorTo;
 		pcli->pfnGetRowByIndex = GetRowByIndex;
 		pcli->pfnHitTest = HitTest;
+		pcli->pfnHotKeysProcess = HotKeysProcess;
+		pcli->pfnHotkeysProcessMessage = HotkeysProcessMessage;
+		pcli->pfnHotKeysRegister = HotKeysRegister;
+		pcli->pfnHotKeysUnregister = UnRegistersAllHotkey;
 		pcli->pfnPaintClc = PaintClc;
 		pcli->pfnRebuildEntireList = RebuildEntireList;
 		pcli->pfnRecalcScrollBar = RecalcScrollBar;
