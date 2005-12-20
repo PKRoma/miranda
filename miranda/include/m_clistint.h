@@ -239,8 +239,9 @@ typedef struct
 	int   ( *pfnEventsProcessTrayDoubleClick )( void );
 
 	/* clistmod.c */
-	int   ( *pfnIconFromStatusMode )( const char *szProto, int status );
-	int   ( *pfnShowHide )( WPARAM, LPARAM );
+	int    ( *pfnIconFromStatusMode )( const char *szProto, int status );
+	int    ( *pfnShowHide )( WPARAM, LPARAM );
+	TCHAR* ( *pfnGetStatusModeDescription )( int mode, int flags );
 
 	/* clistsettings.c */
 	ClcCacheEntryBase* ( *pfnGetCacheEntry )( HANDLE hContact );

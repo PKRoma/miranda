@@ -57,64 +57,82 @@ static int protoIconIndexCount;
 static HANDLE hProtoAckHook;
 static HANDLE hContactSettingChanged;
 
-static int GetStatusModeDescription(WPARAM wParam, LPARAM lParam)
+TCHAR* fnGetStatusModeDescription( int mode, int flags )
 {
-	static char szMode[64];
-	char *descr;
-	int noPrefixReqd = 0;
-	switch (wParam) {
+	static TCHAR szMode[64];
+	TCHAR* descr;
+	int    noPrefixReqd = 0;
+	switch (mode) {
 	case ID_STATUS_OFFLINE:
-		descr = Translate("Offline");
+		descr = TranslateT("Offline");
 		noPrefixReqd = 1;
 		break;
 	case ID_STATUS_CONNECTING:
-		descr = Translate("Connecting");
+		descr = TranslateT("Connecting");
 		noPrefixReqd = 1;
 		break;
 	case ID_STATUS_ONLINE:
-		descr = Translate("Online");
+		descr = TranslateT("Online");
 		noPrefixReqd = 1;
 		break;
 	case ID_STATUS_AWAY:
-		descr = Translate("Away");
+		descr = TranslateT("Away");
 		break;
 	case ID_STATUS_DND:
-		descr = Translate("DND");
+		descr = TranslateT("DND");
 		break;
 	case ID_STATUS_NA:
-		descr = Translate("NA");
+		descr = TranslateT("NA");
 		break;
 	case ID_STATUS_OCCUPIED:
-		descr = Translate("Occupied");
+		descr = TranslateT("Occupied");
 		break;
 	case ID_STATUS_FREECHAT:
-		descr = Translate("Free for chat");
+		descr = TranslateT("Free for chat");
 		break;
 	case ID_STATUS_INVISIBLE:
-		descr = Translate("Invisible");
+		descr = TranslateT("Invisible");
 		break;
 	case ID_STATUS_OUTTOLUNCH:
-		descr = Translate("Out to lunch");
+		descr = TranslateT("Out to lunch");
 		break;
 	case ID_STATUS_ONTHEPHONE:
-		descr = Translate("On the phone");
+		descr = TranslateT("On the phone");
 		break;
 	case ID_STATUS_IDLE:
-		descr = Translate("Idle");
+		descr = TranslateT("Idle");
 		break;
 	default:
-		if (wParam > ID_STATUS_CONNECTING && wParam < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES) {
-			wsprintfA(szMode, Translate("Connecting (attempt %d)"), wParam - ID_STATUS_CONNECTING + 1);
-			return (int) szMode;
+		if (mode > ID_STATUS_CONNECTING && mode < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES) {
+			mir_sntprintf(szMode, SIZEOF(szMode), TranslateT("Connecting (attempt %d)"), mode - ID_STATUS_CONNECTING + 1);
+			return szMode;
 		}
-		return (int) (char *) NULL;
+		return NULL;
 	}
-	if (noPrefixReqd || !(lParam & GSMDF_PREFIXONLINE))
-		return (int) descr;
-	lstrcpyA(szMode, Translate("Online"));
-	lstrcatA(szMode, ": ");
-	lstrcatA(szMode, descr);
-	return (int) szMode;
+	if (noPrefixReqd || !(flags & GSMDF_PREFIXONLINE))
+		return descr;
+
+	lstrcpy(szMode, TranslateT("Online"));
+	lstrcat(szMode, _T(": "));
+	lstrcat(szMode, descr);
+	return szMode;
+}
+
+static int GetStatusModeDescription(WPARAM wParam, LPARAM lParam)
+{
+	#ifdef UNICODE
+		if ( !( lParam & CNF_UNICODE ))
+		{
+			static char szMode[64]={0};
+			TCHAR* buf1 = (TCHAR*)cli.pfnGetStatusModeDescription(wParam,lParam);
+			char *buf2=u2a(buf1);
+			_snprintf(szMode,sizeof(szMode),"%s",buf2);
+			free(buf2);
+			return (int)szMode;
+		}
+	#endif
+
+	return (int)cli.pfnGetStatusModeDescription(wParam,lParam);
 }
 
 static int ProtocolAck(WPARAM wParam, LPARAM lParam)

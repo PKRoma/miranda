@@ -101,8 +101,9 @@ int   fnEventsProcessContactDoubleClick( HANDLE hContact );
 int   fnEventsProcessTrayDoubleClick( void );
 
 /* clistmod.c */
-int   fnIconFromStatusMode(const char *szProto, int status);
-int   fnShowHide( WPARAM wParam, LPARAM lParam );
+int    fnIconFromStatusMode(const char *szProto, int status);
+int    fnShowHide( WPARAM wParam, LPARAM lParam );
+TCHAR* fnGetStatusModeDescription( int wParam, int lParam);
 
 /* clistsettings.c */
 TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode );
@@ -268,6 +269,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 								
 		cli.pfnIconFromStatusMode              = fnIconFromStatusMode;
 		cli.pfnShowHide                        = fnShowHide;
+		cli.pfnGetStatusModeDescription        = fnGetStatusModeDescription;
 
 		cli.pfnGetGroupName						   = fnGetGroupName;
 		cli.pfnRenameGroup                     = fnRenameGroup;
