@@ -75,7 +75,7 @@ static int CreateGroup(WPARAM wParam, LPARAM lParam)
 		if (DBGetContactSettingTString(NULL, "CListGroups", str, &dbv))
 			return 0;
 
-		mir_sntprintf( newBaseName, SIZEOF(newBaseName), _T("%s\\%s"), dbv.pszVal + 1, TranslateT("New Group"));
+		mir_sntprintf( newBaseName, SIZEOF(newBaseName), _T("%s\\%s"), dbv.ptszVal + 1, TranslateT("New Group"));
 		free(dbv.pszVal);
 	}
 	else lstrcpyn( newBaseName, TranslateT( "New Group" ), SIZEOF( newBaseName ));
