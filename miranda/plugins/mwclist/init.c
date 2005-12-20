@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2004 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2004 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -71,7 +71,11 @@ extern int BGModuleUnload();
 
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
-	"MultiWindow Contact List",
+	#if defined( _UNICODE )
+		"MultiWindow Contact List Unicode",
+	#else
+		"MultiWindow Contact List",
+	#endif
 	PLUGIN_MAKE_VERSION(0,3,4,6),
 	"Display contacts, event notifications, protocol status with MW modifications",
 	"",
@@ -96,8 +100,8 @@ __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 }
 
 int LoadContactListModule(void);
-int LoadCLCModule(void); 
-int LoadCLUIModule(); 
+int LoadCLCModule(void);
+int LoadCLUIModule();
 
 static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
@@ -106,10 +110,10 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 		disableDefaultModule=(int*)CallService(MS_PLUGINS_GETDISABLEDEFAULTARRAY,0,0);
 		if(!disableDefaultModule[DEFMOD_UICLUI]) if( LoadCLUIModule()) return 1;
 	}
-	__except (exceptFunction(GetExceptionInformation()) ) 
-	{	
-		return 0; 
-	} 
+	__except (exceptFunction(GetExceptionInformation()) )
+	{
+		return 0;
+	}
 
 	return 0;
 }
@@ -122,7 +126,7 @@ int SetDrawer(WPARAM wParam,LPARAM lParam)
 	if (DSS->PluginName==NULL) return -1;
 	if (!ServiceExists(DSS->GetDrawFuncsServiceName)) return -1;
 
-	
+
 	SED.cbSize=sizeof(SED);
 	SED.PaintClc=(void (__cdecl *)(HWND,struct ClcData *,HDC,RECT *,int ,ClcProtoStatus *,HIMAGELIST))CallService(DSS->GetDrawFuncsServiceName,CLUI_EXT_FUNC_PAINTCLC,0);
 	if (!SED.PaintClc) return -1;
@@ -152,7 +156,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	// get the internal malloc/free()
 	__try {
-		
+
 		OutputDebugStringA("CListInitialise ClistMW\r\n");
 
 		memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
@@ -215,14 +219,14 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 		HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
 		LoadMoveToGroup();
-		BGModuleLoad();	
+		BGModuleLoad();
 
 		OutputDebugStringA("CListInitialise ClistMW...Done\r\n");
 	}
-	__except (exceptFunction(GetExceptionInformation()) ) 
-	{ 
-		return 0; 
-	} 
+	__except (exceptFunction(GetExceptionInformation()) )
+	{
+		return 0;
+	}
 
 	return rc;
 }
