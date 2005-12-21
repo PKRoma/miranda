@@ -1367,6 +1367,9 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
+				RelativePath=".\res\&amp;RQ.ico">
+			</File>
+			<File
 				RelativePath="res\1.ico">
 			</File>
 			<File
@@ -1394,10 +1397,22 @@
 				RelativePath="res\addcontact.ico">
 			</File>
 			<File
+				RelativePath=".\res\addgoupp.ico">
+			</File>
+			<File
+				RelativePath=".\res\AgileMobile.ico">
+			</File>
+			<File
+				RelativePath=".\res\AlIcq.ico">
+			</File>
+			<File
 				RelativePath="res\away.ico">
 			</File>
 			<File
 				RelativePath="res\blank.ico">
+			</File>
+			<File
+				RelativePath=".\res\Center.ico">
 			</File>
 			<File
 				RelativePath="res\changefont.ico">
@@ -1436,6 +1451,15 @@
 				RelativePath="res\freechat.ico">
 			</File>
 			<File
+				RelativePath=".\res\Gaim.ico">
+			</File>
+			<File
+				RelativePath=".\res\globus.ico">
+			</File>
+			<File
+				RelativePath=".\res\Gnomeicu.ico">
+			</File>
+			<File
 				RelativePath="res\groupope.ico">
 			</File>
 			<File
@@ -1451,10 +1475,58 @@
 				RelativePath="res\hyperlin.cur">
 			</File>
 			<File
+				RelativePath=".\res\ico00001.ico">
+			</File>
+			<File
+				RelativePath=".\res\ico00002.ico">
+			</File>
+			<File
+				RelativePath=".\res\ico00003.ico">
+			</File>
+			<File
+				RelativePath=".\res\ico00004.ico">
+			</File>
+			<File
+				RelativePath=".\res\ico00005.ico">
+			</File>
+			<File
+				RelativePath=".\res\icon2.ico">
+			</File>
+			<File
+				RelativePath=".\res\IcqMac.ico">
+			</File>
+			<File
+				RelativePath=".\res\IM+.ico">
+			</File>
+			<File
+				RelativePath=".\res\IM2.ico">
+			</File>
+			<File
 				RelativePath="res\invisible.ico">
 			</File>
 			<File
+				RelativePath=".\res\Kopete.ico">
+			</File>
+			<File
+				RelativePath=".\res\L.ico">
+			</File>
+			<File
+				RelativePath=".\res\L4.ico">
+			</File>
+			<File
+				RelativePath=".\res\L5.ico">
+			</File>
+			<File
+				RelativePath=".\res\LibIcq2000.ico">
+			</File>
+			<File
+				RelativePath=".\res\Licq.ico">
+			</File>
+			<File
 				RelativePath="res\message.ico">
+			</File>
+			<File
+				RelativePath=".\res\Micq.ico">
 			</File>
 			<File
 				RelativePath="res\miranda.ico">
@@ -1463,10 +1535,19 @@
 				RelativePath="res\mirandaw.ico">
 			</File>
 			<File
+				RelativePath=".\res\Mob2Icq.ico">
+			</File>
+			<File
+				RelativePath=".\res\MobiCQ2.ico">
+			</File>
+			<File
 				RelativePath="res\multisend.ico">
 			</File>
 			<File
 				RelativePath="res\na2.ico">
+			</File>
+			<File
+				RelativePath=".\res\NICQ2.ico">
 			</File>
 			<File
 				RelativePath="res\notick.ico">
@@ -1493,6 +1574,12 @@
 				RelativePath="res\outtolun.ico">
 			</File>
 			<File
+				RelativePath=".\res\PSI.ico">
+			</File>
+			<File
+				RelativePath=".\res\QIP.ico">
+			</File>
+			<File
 				RelativePath="res\rename.ico">
 			</File>
 			<File
@@ -1508,6 +1595,9 @@
 				RelativePath="res\sendmail.ico">
 			</File>
 			<File
+				RelativePath=".\res\Sim.ico">
+			</File>
+			<File
 				RelativePath="res\smalldot.ico">
 			</File>
 			<File
@@ -1520,7 +1610,19 @@
 				RelativePath="res\sortcolu.bmp">
 			</File>
 			<File
+				RelativePath=".\res\Spambot.ico">
+			</File>
+			<File
+				RelativePath=".\res\Sticq.ico">
+			</File>
+			<File
+				RelativePath=".\res\Stricq.ico">
+			</File>
+			<File
 				RelativePath="res\timestamp.ico">
+			</File>
+			<File
+				RelativePath=".\res\Trillian.ico">
 			</File>
 			<File
 				RelativePath="res\url.ico">
@@ -1529,7 +1631,19 @@
 				RelativePath="res\useronli.ico">
 			</File>
 			<File
+				RelativePath=".\res\Vicq.ico">
+			</File>
+			<File
 				RelativePath="res\viewdetails.ico">
+			</File>
+			<File
+				RelativePath=".\res\WebIcq.ico">
+			</File>
+			<File
+				RelativePath=".\res\Yamigo.ico">
+			</File>
+			<File
+				RelativePath=".\res\Ysm.ico">
 			</File>
 		</Filter>
 	</Files>
