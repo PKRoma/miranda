@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -30,61 +30,61 @@ LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_SMS                 ICON    DISCARDABLE     "res\\sms.ico"
-IDI_ICQC1               ICON    DISCARDABLE     "res\\1.ico"
-IDI_ICQC2               ICON    DISCARDABLE     "res\\2.ico"
-IDI_ICQC3               ICON    DISCARDABLE     "res\\3.ico"
-IDI_ICQC4               ICON    DISCARDABLE     "res\\4.ico"
-IDI_ICQC5               ICON    DISCARDABLE     "res\\5.ico"
-IDI_ICQC6               ICON    DISCARDABLE     "res\\6.ico"
-IDI_ICQC7               ICON    DISCARDABLE     "res\\7.ico"
-IDI_ICQC8               ICON    DISCARDABLE     "res\\8.ico"
-IDI_EMAIL               ICON    DISCARDABLE     "res\\sendmail.ico"
-IDI_NEWGROUP2           ICON    DISCARDABLE     "res\\addgoupp.ico"
-IDI_CLIENTTRILLIAN      ICON    DISCARDABLE     "res\\Trillian.ico"
-IDI_CLIENTRQ            ICON    DISCARDABLE     "res\\&RQ.ico"
-IDI_CLIENTGAIM          ICON    DISCARDABLE     "res\\Gaim.ico"
-IDI_CLIENTIM2           ICON    DISCARDABLE     "res\\IM2.ico"
-IDI_CLIENTKOPETE        ICON    DISCARDABLE     "res\\Kopete.ico"
-IDI_CLIENTLICQ          ICON    DISCARDABLE     "res\\Licq.ico"
-IDI_CLIENTQIP           ICON    DISCARDABLE     "res\\QIP.ico"
-IDI_CLIENTSIM           ICON    DISCARDABLE     "res\\Sim.ico"
-IDI_CLIENTAGILE         ICON    DISCARDABLE     "res\\AgileMobile.ico"
-IDI_CLIENTGNOMEICU      ICON    DISCARDABLE     "res\\Gnomeicu.ico"
-IDI_CLIENTMOBICQ        ICON    DISCARDABLE     "res\\MobiCQ2.ico"
-IDI_CLIENTSPAMBOT       ICON    DISCARDABLE     "res\\Spambot.ico"
-IDI_CLIENTICQMAC        ICON    DISCARDABLE     "res\\IcqMac.ico"
-IDI_CLIENTIMPLUS        ICON    DISCARDABLE     "res\\IM+.ico"
-IDI_CLIENTYSM           ICON    DISCARDABLE     "res\\Ysm.ico"
-IDI_CLIENTYAMIGO        ICON    DISCARDABLE     "res\\Yamigo.ico"
-IDI_CLIENTWEBICQ        ICON    DISCARDABLE     "res\\WebIcq.ico"
-IDI_CLIENTVICQ          ICON    DISCARDABLE     "res\\Vicq.ico"
-IDI_CLIENTSTRICQ        ICON    DISCARDABLE     "res\\Stricq.ico"
-IDI_CLIENTSTICQ         ICON    DISCARDABLE     "res\\Sticq.ico"
-IDI_CLIENTNICQ2         ICON    DISCARDABLE     "res\\NICQ2.ico"
-IDI_CLIENTPSI           ICON    DISCARDABLE     "res\\PSI.ico"
-IDI_CLIENTMOB2ICQ       ICON    DISCARDABLE     "res\\Mob2Icq.ico"
-IDI_CLIENTMICQ          ICON    DISCARDABLE     "res\\Micq.ico"
-IDI_CLIENTLIBICQ2000    ICON    DISCARDABLE     "res\\LibIcq2000.ico"
-IDI_CLIENTCENTERICQ     ICON    DISCARDABLE     "res\\Center.ico"
-IDI_CLIENTALICQ         ICON    DISCARDABLE     "res\\AlIcq.ico"
-IDI_CLIENTMIRANDA       ICON    DISCARDABLE     "res\\icon2.ico"
-IDI_CLIENTICQ2000       ICON    DISCARDABLE     "res\\ico00001.ico"
-IDI_CLIENTICQ2001       ICON    DISCARDABLE     "res\\ico00002.ico"
-IDI_CLIENTICQ2003       ICON    DISCARDABLE     "res\\ico00003.ico"
-IDI_CLIENTICQLITE       ICON    DISCARDABLE     "res\\L.ico"
-IDI_CLIENTICQLITE4      ICON    DISCARDABLE     "res\\L4.ico"
-IDI_CLIENTICQLITE5      ICON    DISCARDABLE     "res\\L5.ico"
-IDI_CLIENTICQGOF        ICON    DISCARDABLE     "res\\ico00004.ico"
-IDI_CLIENTICQGOJ        ICON    DISCARDABLE     "res\\ico00005.ico"
+IDI_SMS                 ICON                    "res\\sms.ico"
+IDI_ICQC1               ICON                    "res\\1.ico"
+IDI_ICQC2               ICON                    "res\\2.ico"
+IDI_ICQC3               ICON                    "res\\3.ico"
+IDI_ICQC4               ICON                    "res\\4.ico"
+IDI_ICQC5               ICON                    "res\\5.ico"
+IDI_ICQC6               ICON                    "res\\6.ico"
+IDI_ICQC7               ICON                    "res\\7.ico"
+IDI_ICQC8               ICON                    "res\\8.ico"
+IDI_EMAIL               ICON                    "res\\sendmail.ico"
+IDI_NEWGROUP2           ICON                    "res\\addgoupp.ico"
+IDI_CLIENTTRILLIAN      ICON                    "res\\Trillian.ico"
+IDI_CLIENTRQ            ICON                    "res\\&RQ.ico"
+IDI_CLIENTGAIM          ICON                    "res\\Gaim.ico"
+IDI_CLIENTIM2           ICON                    "res\\IM2.ico"
+IDI_CLIENTKOPETE        ICON                    "res\\Kopete.ico"
+IDI_CLIENTLICQ          ICON                    "res\\Licq.ico"
+IDI_CLIENTQIP           ICON                    "res\\QIP.ico"
+IDI_CLIENTSIM           ICON                    "res\\Sim.ico"
+IDI_CLIENTAGILE         ICON                    "res\\AgileMobile.ico"
+IDI_CLIENTGNOMEICU      ICON                    "res\\Gnomeicu.ico"
+IDI_CLIENTMOBICQ        ICON                    "res\\MobiCQ2.ico"
+IDI_CLIENTSPAMBOT       ICON                    "res\\Spambot.ico"
+IDI_CLIENTICQMAC        ICON                    "res\\IcqMac.ico"
+IDI_CLIENTIMPLUS        ICON                    "res\\IM+.ico"
+IDI_CLIENTYSM           ICON                    "res\\Ysm.ico"
+IDI_CLIENTYAMIGO        ICON                    "res\\Yamigo.ico"
+IDI_CLIENTWEBICQ        ICON                    "res\\WebIcq.ico"
+IDI_CLIENTVICQ          ICON                    "res\\Vicq.ico"
+IDI_CLIENTSTRICQ        ICON                    "res\\Stricq.ico"
+IDI_CLIENTSTICQ         ICON                    "res\\Sticq.ico"
+IDI_CLIENTNICQ2         ICON                    "res\\NICQ2.ico"
+IDI_CLIENTPSI           ICON                    "res\\PSI.ico"
+IDI_CLIENTMOB2ICQ       ICON                    "res\\Mob2Icq.ico"
+IDI_CLIENTMICQ          ICON                    "res\\Micq.ico"
+IDI_CLIENTLIBICQ2000    ICON                    "res\\LibIcq2000.ico"
+IDI_CLIENTCENTERICQ     ICON                    "res\\Center.ico"
+IDI_CLIENTALICQ         ICON                    "res\\AlIcq.ico"
+IDI_CLIENTMIRANDA       ICON                    "res\\icon2.ico"
+IDI_CLIENTICQ2000       ICON                    "res\\ico00001.ico"
+IDI_CLIENTICQ2001       ICON                    "res\\ico00002.ico"
+IDI_CLIENTICQ2003       ICON                    "res\\ico00003.ico"
+IDI_CLIENTICQLITE       ICON                    "res\\L.ico"
+IDI_CLIENTICQLITE4      ICON                    "res\\L4.ico"
+IDI_CLIENTICQLITE5      ICON                    "res\\L5.ico"
+IDI_CLIENTICQGOF        ICON                    "res\\ico00004.ico"
+IDI_CLIENTICQGOJ        ICON                    "res\\ico00005.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_DIALOG1 DIALOG DISCARDABLE  0, 0, 186, 95
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_DIALOG1 DIALOG  0, 0, 186, 95
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -93,7 +93,7 @@ BEGIN
 END
 
 IDD_OPT_CLCBKG2 DIALOGEX 0, 0, 234, 164
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -132,7 +132,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
@@ -169,12 +169,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_GLOBUS              ICON    DISCARDABLE     "res\\globus.ico"
-IDI_RENAME              ICON    DISCARDABLE     "res\\rename.ico"
-IDI_DELETE              ICON    DISCARDABLE     "res\\delete.ico"
-IDI_NOTICK              ICON    DISCARDABLE     "res\\notick.ico"
-IDI_TICK                ICON    DISCARDABLE     "res\\notick1.ico"
-IDI_BLANK               ICON    DISCARDABLE     "res\\blank.ico"
+IDI_GLOBUS              ICON                    "res\\globus.ico"
+IDI_RENAME              ICON                    "res\\rename.ico"
+IDI_DELETE              ICON                    "res\\delete.ico"
+IDI_NOTICK              ICON                    "res\\notick.ico"
+IDI_TICK                ICON                    "res\\notick1.ico"
+IDI_BLANK               ICON                    "res\\blank.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -182,7 +182,7 @@ IDI_BLANK               ICON    DISCARDABLE     "res\\blank.ico"
 //
 
 IDD_OPT_GENMENU DIALOGEX 0, 0, 306, 241
-STYLE WS_CHILD
+STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "Tree1",IDC_MENUITEMS,"SysTreeView32",TVS_SHOWSELALWAYS | 
@@ -206,8 +206,8 @@ BEGIN
 END
 
 IDD_DELETECONTACT DIALOGEX 0, 0, 284, 90
-STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
-    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | 
+    DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Delete Contact"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -226,7 +226,7 @@ BEGIN
 END
 
 IDD_OPT_HOTKEY DIALOGEX 0, 0, 238, 136
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -253,8 +253,8 @@ BEGIN
                     WS_TABSTOP,92,105,93,12
 END
 
-IDD_OPT_CLIST DIALOGEX 0, 0, 314, 204
-STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
+IDD_OPT_CLIST DIALOGEX 0, 0, 314, 206
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -282,7 +282,7 @@ BEGIN
     CONTROL         "Sort contacts by status",IDC_SORTBYSTATUS,"Button",
                     BS_AUTORADIOBUTTON,153,38,89,10
     CONTROL         "Sort contacts by protocol",IDC_SORTBYPROTO,"Button",
-                    BS_AUTORADIOBUTTON,153,50,151,10
+                    BS_AUTORADIOBUTTON,153,51,151,10
     CONTROL         "Single click interface",IDC_ONECLK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,151,82,150,10
     CONTROL         "Always show status in tooltip",IDC_ALWAYSSTATUS,"Button",
@@ -294,44 +294,44 @@ BEGIN
     LTEXT           "ms, delay between icon blinking",IDC_STATIC,203,124,102,
                     8
     CONTROL         "Show",IDC_DONTCYCLE,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,10,154,97,10
+                    WS_GROUP,10,155,97,10
     COMBOBOX        IDC_PRIMARYSTATUS,107,153,78,70,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     LTEXT           "icon when statuses differ",IDC_STATIC,189,155,116,8,NOT 
                     WS_GROUP
     CONTROL         "Cycle icons every",IDC_CYCLE,"Button",
-                    BS_AUTORADIOBUTTON,10,172,97,10
+                    BS_AUTORADIOBUTTON,10,170,97,10
     EDITTEXT        IDC_CYCLETIME,107,170,30,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Spin1",IDC_CYCLETIMESPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,137,168,
                     11,14
-    LTEXT           "seconds, when statuses differ",IDC_STATIC,173,172,132,8,
+    LTEXT           "seconds, when statuses differ",IDC_STATIC,154,172,151,8,
                     NOT WS_GROUP
     CONTROL         "Show multiple icons",IDC_MULTITRAY,"Button",
-                    BS_AUTORADIOBUTTON,9,182,98,10
+                    BS_AUTORADIOBUTTON,9,184,98,10
     CONTROL         "Only when statuses differ",IDC_ALWAYSMULTI,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,107,182,198,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,107,184,198,10
     GROUPBOX        "Contact List",IDC_STCLISTGROUP,2,2,135,139
     GROUPBOX        "System tray icon",IDC_STATIC,143,71,169,70
     GROUPBOX        "System tray icon when using multiple protocols",
-                    IDC_STATIC,2,142,310,54
+                    IDC_STATIC,2,142,310,57
     GROUPBOX        "Contact List Sorting",IDC_STATIC,143,2,169,69,WS_GROUP
     CONTROL         "Spin5",IDC_BLINKSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | 
                     UDS_HOTTRACK,177,109,11,12
     CONTROL         "Dont move offline user to bottom",IDC_NOOFFLINEMOVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,168,25,131,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,168,26,131,10
     CONTROL         "Pin to desktop",IDC_ONDESKTOP,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,120,128,15
+                    WS_TABSTOP,10,120,125,15
     CONTROL         "Disable icon blinking",IDC_ICONBLINK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,84,97,10
 END
 
 IDD_OPT_CLUI DIALOGEX 0, 0, 313, 232
-STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Window",IDC_STWINDOWGROUP,4,4,305,121
     CONTROL         "Always on top",IDC_ONTOP,"Button",BS_AUTOCHECKBOX | 
@@ -404,7 +404,7 @@ BEGIN
 END
 
 IDD_OPT_CLC DIALOGEX 0, 0, 314, 251
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -427,8 +427,8 @@ BEGIN
                     WS_TABSTOP,11,88,179,10
     LTEXT           "'Hide Offline' means to hide:",IDC_STATIC,191,10,112,8
     CONTROL         "Tree1",IDC_HIDEOFFLINEOPTS,"SysTreeView32",
-                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | 
-                    WS_BORDER | WS_TABSTOP,191,20,112,80
+                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | WS_BORDER | 
+                    WS_TABSTOP | 0x4000,191,20,112,80
     GROUPBOX        "Groups",IDC_STATIC,2,120,148,121
     CONTROL         "Draw a line alongside group names",IDC_LINEWITHGROUPS,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,11,
@@ -472,8 +472,8 @@ BEGIN
     CONTROL         "Grey out entire list when:",IDC_GREYOUT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,165,195,139,10
     CONTROL         "Tree1",IDC_GREYOUTOPTS,"SysTreeView32",
-                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | 
-                    WS_BORDER | WS_TABSTOP,165,205,139,30
+                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | WS_BORDER | 
+                    WS_TABSTOP | 0x4000,165,205,139,30
     CONTROL         "Dim idle contacts",IDC_IDLE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,11,102,153,10
     CONTROL         "Hide vertical scrollbar",IDC_NOSCROLLBAR,"Button",
@@ -481,7 +481,7 @@ BEGIN
 END
 
 IDD_OPT_CLCTEXT DIALOGEX 0, 0, 277, 256
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -548,7 +548,7 @@ BEGIN
 END
 
 IDD_OPT_CLCBKG DIALOGEX 0, 0, 235, 151
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -578,7 +578,7 @@ BEGIN
 END
 
 IDD_OPT_CLCTEXTSIMPLE DIALOGEX 0, 0, 277, 240
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -625,7 +625,7 @@ BEGIN
 END
 
 IDD_OPT_HOTKEYS DIALOGEX 0, 0, 285, 240
-STYLE DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -649,7 +649,7 @@ BEGIN
 END
 
 IDD_OPT_META_CLC DIALOGEX 0, 0, 259, 97
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -675,7 +675,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_DELETECONTACT, DIALOG
     BEGIN
@@ -703,7 +703,7 @@ BEGIN
         VERTGUIDE, 10
         VERTGUIDE, 107
         TOPMARGIN, 2
-        BOTTOMMARGIN, 202
+        BOTTOMMARGIN, 204
         HORZGUIDE, 182
         HORZGUIDE, 196
     END
@@ -831,12 +831,12 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
@@ -844,7 +844,7 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -858,16 +858,16 @@ END
 // Cursor
 //
 
-IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "res\\hyperlin.cur"
-IDC_DROP                CURSOR  DISCARDABLE     "res\\dragcopy.cur"
-IDC_DROPUSER            CURSOR  DISCARDABLE     "res\\dropuser.cur"
+IDC_HYPERLINKHAND       CURSOR                  "res\\hyperlin.cur"
+IDC_DROP                CURSOR                  "res\\dragcopy.cur"
+IDC_DROPUSER            CURSOR                  "res\\dropuser.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_CLISTMENU MENU DISCARDABLE 
+IDR_CLISTMENU MENU 
 BEGIN
     POPUP "&¤"
     BEGIN
@@ -889,7 +889,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT MENU DISCARDABLE 
+IDR_CONTEXT MENU 
 BEGIN
     POPUP "Tray"
     BEGIN
@@ -919,7 +919,6 @@ BEGIN
 END
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -942,18 +941,15 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
-            VALUE "CompanyName", " \0"
-            VALUE "FileDescription", "Miranda IM Contact List\0"
-            VALUE "FileVersion", "0.3.4 alpha\0"
-            VALUE "InternalName", "mwclist\0"
-            VALUE "LegalCopyright", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Oberg, Robert Rainwater, Sam Kothari and Lyon Lim\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "mwclist.dll\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Miranda IM Contact List\0"
-            VALUE "ProductVersion", "0.3.4 alpha\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
+            VALUE "CompanyName", " "
+            VALUE "FileDescription", "Miranda IM Contact List"
+            VALUE "FileVersion", "0.3.4 alpha"
+            VALUE "InternalName", "mwclist"
+            VALUE "LegalCopyright", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Oberg, Robert Rainwater, Sam Kothari and Lyon Lim"
+            VALUE "OriginalFilename", "mwclist.dll"
+            VALUE "ProductName", "Miranda IM Contact List"
+            VALUE "ProductVersion", "0.3.4 alpha"
         END
     END
     BLOCK "VarFileInfo"
@@ -961,8 +957,6 @@ BEGIN
         VALUE "Translation", 0x0, 1200
     END
 END
-
-#endif    // !_MAC
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
@@ -982,8 +976,8 @@ LANGUAGE LANG_DUTCH, SUBLANG_DUTCH
 // Dialog
 //
 
-IDD_OPT_PROTOCOLORDER DIALOG DISCARDABLE  0, 0, 300, 211
-STYLE WS_CHILD
+IDD_OPT_PROTOCOLORDER DIALOG  0, 0, 300, 211
+STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     CTEXT           "Note: Miranda IM will have to be restarted for changes to take effect.",
@@ -1003,7 +997,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_OPT_PROTOCOLORDER, DIALOG
     BEGIN
@@ -1040,7 +1034,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_CAN
 //
 
 IDD_OPT_SBAR DIALOGEX 0, 0, 178, 211
-STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -1079,7 +1073,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_OPT_SBAR, DIALOG
     BEGIN

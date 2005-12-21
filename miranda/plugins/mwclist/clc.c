@@ -35,6 +35,7 @@ int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam);
 
 void InitDisplayNameCache(SortedList *list);
 void FreeDisplayNameCache(SortedList *list);
+void LoadExtraImageFunc( void );
 
 void LoadExtraImageFunc( void );
 void UnloadCLUIModule( void );
