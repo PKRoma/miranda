@@ -121,7 +121,7 @@ TCHAR* fnGetStatusModeDescription( int mode, int flags )
 static int GetStatusModeDescription(WPARAM wParam, LPARAM lParam)
 {
 	#ifdef UNICODE
-		if ( !( lParam & CNF_UNICODE ))
+		if ( !( lParam & GCMDF_TCHAR ))
 		{
 			static char szMode[64]={0};
 			TCHAR* buf1 = (TCHAR*)cli.pfnGetStatusModeDescription(wParam,lParam);
