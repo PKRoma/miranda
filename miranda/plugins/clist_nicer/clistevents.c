@@ -279,7 +279,7 @@ static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD
         }
         if (j < i)
             continue;
-        ChangeContactIcon(event[i].cle.hContact, iconsOn || disableIconFlash ? event[i].imlIconIndex : event[i].imlIconOverlayIndex, 0);
+        pcli->pfnChangeContactIcon(event[i].cle.hContact, iconsOn || disableIconFlash ? event[i].imlIconIndex : event[i].imlIconOverlayIndex, 0);
     }
     iconsOn = !iconsOn;
 }
@@ -322,7 +322,7 @@ int AddEvent(WPARAM wParam, LPARAM lParam)
         //szFinalProto = DivertProtoToSubcontact(event[0].cle.hContact, szProto);
         TrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : event[0].imlIconOverlayIndex, event[0].cle.pszTooltip, szProto, event[0].cle.hContact);
     }
-    ChangeContactIcon(cle->hContact, event[eventCount - 1].imlIconIndex, 1);
+    pcli->pfnChangeContactIcon(cle->hContact, event[eventCount - 1].imlIconIndex, 1);
     //SortContacts();
     if (g_CluiData.dwFlags & CLUI_FRAME_USEEVENTAREA) {
         if (event[i].cle.hContact != 0 && event[i].cle.hDbEvent != (HANDLE) 1 && !(event[i].cle.flags & CLEF_ONLYAFEW)) {
@@ -426,7 +426,7 @@ int RemoveEvent(WPARAM wParam, LPARAM lParam)
     // Update contact's icon
     szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
 
-    ChangeContactIcon(event[i].cle.hContact, IconFromStatusMode(szProto, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(event[i].cle.hContact, szProto, "Status", ID_STATUS_OFFLINE), event[i].cle.hContact, NULL), 0);
+    pcli->pfnChangeContactIcon(event[i].cle.hContact, IconFromStatusMode(szProto, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(event[i].cle.hContact, szProto, "Status", ID_STATUS_OFFLINE), event[i].cle.hContact, NULL), 0);
 
     // remove event from the notify menu
 

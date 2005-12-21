@@ -25,7 +25,6 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-extern HANDLE hContactIconChangedEvent;
 extern struct CluiData g_CluiData;
 
 static int sortByStatus;
@@ -44,12 +43,6 @@ static int GetContactStatus(HANDLE hContact)
     if (szProto == NULL)
         return ID_STATUS_OFFLINE;
     return DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
-}
-
-void ChangeContactIcon(HANDLE hContact, int iIcon, int add)
-{
-    CallService(add ? MS_CLUI_CONTACTADDED : MS_CLUI_CONTACTSETICON, (WPARAM) hContact, iIcon);
-    NotifyEventHooks(hContactIconChangedEvent, (WPARAM) hContact, iIcon);
 }
 
 static int GetStatusModeOrdering(int statusMode)
@@ -83,7 +76,7 @@ void LoadContactTree(void)
     while (hContact != NULL) {
         status = GetContactStatus(hContact);
         if ((!hideOffline || status != ID_STATUS_OFFLINE) && !CLVM_GetContactHiddenStatus(hContact, NULL, NULL))
-            ChangeContactIcon(hContact, IconFromStatusMode((char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0), status, hContact, NULL), 1);
+            pcli->pfnChangeContactIcon(hContact, IconFromStatusMode((char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0), status, hContact, NULL), 1);
 
         if(mc_disablehgh && !mc_hgh_removed) {
             if(!DBGetContactSetting(hContact, "CList", "Group", &dbv)) {

@@ -136,7 +136,7 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 					szProto_s = NULL;
 				else
 					szProto_s = cws->value.pszVal;
-				ChangeContactIcon((HANDLE) wParam, IconFromStatusMode(szProto_s, szProto_s == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) wParam, szProto_s, "Status", ID_STATUS_OFFLINE), (HANDLE) wParam, NULL), 0);
+				pcli->pfnChangeContactIcon((HANDLE) wParam, IconFromStatusMode(szProto_s, szProto_s == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) wParam, szProto_s, "Status", ID_STATUS_OFFLINE), (HANDLE) wParam, NULL), 0);
 			}
 			// something is being written to a protocol module
 			if (!__strcmp(szProto, cws->szModule)) {
@@ -147,13 +147,13 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 						if (DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT)) {
 							// User's state is changing, and we are hideOffline-ing
 							if (cws->value.wVal == ID_STATUS_OFFLINE) {
-								ChangeContactIcon((HANDLE) wParam, IconFromStatusMode(cws->szModule, cws->value.wVal, (HANDLE) wParam, NULL), 0);
+								pcli->pfnChangeContactIcon((HANDLE) wParam, IconFromStatusMode(cws->szModule, cws->value.wVal, (HANDLE) wParam, NULL), 0);
 								CallService(MS_CLUI_CONTACTDELETED, wParam, 0);
 								return 0;
 							}
-							ChangeContactIcon((HANDLE) wParam, IconFromStatusMode(cws->szModule, cws->value.wVal, (HANDLE) wParam, NULL), 1);
+							pcli->pfnChangeContactIcon((HANDLE) wParam, IconFromStatusMode(cws->szModule, cws->value.wVal, (HANDLE) wParam, NULL), 1);
 						}
-						ChangeContactIcon((HANDLE) wParam, IconFromStatusMode(cws->szModule, cws->value.wVal, (HANDLE) wParam, NULL), 0);
+						pcli->pfnChangeContactIcon((HANDLE) wParam, IconFromStatusMode(cws->szModule, cws->value.wVal, (HANDLE) wParam, NULL), 0);
 					}
 					SendMessage(pcli->hwndContactTree, INTM_STATUSCHANGED, wParam, lParam);
 					return 0;
@@ -553,7 +553,6 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		}
 		else if (wParam == TIMERID_SORT) {
 			KillTimer(hwnd, TIMERID_SORT);
-			dat->bNeedSort = FALSE;
 			pcli->pfnSortCLC(hwnd, dat, 1);
 		}
 		else if(wParam == TIMERID_REFRESH)

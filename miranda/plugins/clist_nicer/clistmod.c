@@ -42,7 +42,7 @@ int SetHideOffline(WPARAM wParam, LPARAM lParam);
 static int CListIconsChanged(WPARAM wParam, LPARAM lParam);
 int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
 
-HANDLE hContactDoubleClicked, hStatusModeChangeEvent, hContactIconChangedEvent;
+HANDLE hContactDoubleClicked, hStatusModeChangeEvent;
 HIMAGELIST hCListImages;
 extern int currentDesiredStatusMode;
 

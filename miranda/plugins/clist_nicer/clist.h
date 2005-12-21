@@ -25,7 +25,6 @@ int IconFromStatusMode(const char *szProto, int status, HANDLE hContact, HICON *
 HTREEITEM GetTreeItemByHContact(HANDLE hContact);
 void TrayIconUpdateWithImageList(int iImage, const char *szNewTip, char *szPreferredProto, HANDLE hContact);
 void SortContacts(void);
-void ChangeContactIcon(HANDLE hContact, int iIcon, int add);
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)_alloca(strlen(A)+1),A)
 

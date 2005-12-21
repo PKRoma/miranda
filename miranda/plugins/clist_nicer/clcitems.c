@@ -46,6 +46,7 @@ extern struct ExtraCache *g_ExtraCache;
 extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
 
 extern int ( *saveAddContactToGroup )(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact);
+extern int ( *saveAddInfoItemToGroup )(struct ClcGroup *group, int flags, const TCHAR *pszText);
 extern struct ClcGroup* ( *saveAddGroup )(HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers);
 
 //routines for managing adding/removal of items in the list, including sorting
@@ -59,6 +60,20 @@ struct ClcContact* CreateClcContact( void )
 		p->avatarLeft = p->extraIconRightBegin = -1;
 	}
 	return p;
+}
+
+int AddInfoItemToGroup(struct ClcGroup *group, int flags, const TCHAR *pszText)
+{
+	int i = saveAddInfoItemToGroup(group, flags, pszText);
+	struct ClcContact* p = group->cl.items[i];
+	p->codePage = 0;
+	p->clientId = -1;
+	p->bIsMeta = 0;
+	p->xStatus = 0;
+	p->ace = NULL;
+	p->extraCacheEntry = -1;
+	p->avatarLeft = p->extraIconRightBegin = -1;
+	return i;
 }
 
 struct ClcGroup *AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers)
@@ -77,6 +92,7 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 	int i = saveAddContactToGroup( dat, group, hContact );
 	struct ClcContact* p = group->cl.items[i];
 
+	p->wStatus = DBGetContactSettingWord(hContact, p->proto, "Status", ID_STATUS_OFFLINE);
 	p->xStatus = DBGetContactSettingByte(hContact, p->proto, "XStatusId", 0);
 	if (p->proto)
 		p->bIsMeta = !strcmp(p->proto, "MetaContacts");

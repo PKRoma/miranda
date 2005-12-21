@@ -37,6 +37,8 @@ extern struct ExtraCache *g_ExtraCache;
 extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
 extern int g_isConnecting, during_sizing;
 
+extern void ( *saveRecalcScrollBar )(HWND hwnd, struct ClcData *dat);
+
 /*
  * performs hit-testing for reversed (mirrored) contact rows when using RTL
  * shares all the init stuff with HitTest()
@@ -362,6 +364,12 @@ void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 
 	SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
 	dat->forceScroll = 0;
+}
+
+void RecalcScrollBar(HWND hwnd, struct ClcData *dat)
+{
+	RowHeights_CalcRowHeights(dat, hwnd);
+	saveRecalcScrollBar(hwnd, dat);
 }
 
 void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int newState)

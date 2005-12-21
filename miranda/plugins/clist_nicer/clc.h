@@ -382,10 +382,8 @@ int FindItem(HWND hwnd, struct ClcData *dat, HANDLE hItem, struct ClcContact **c
 HANDLE ContactToItemHandle(struct ClcContact *contact, DWORD *nmFlags);
 
 //clcitems.c
-int AddInfoItemToGroup(struct ClcGroup *group, int flags, const TCHAR *pszText);
 void RebuildEntireList(HWND hwnd, struct ClcData *dat);
 void DeleteItemFromTree(HWND hwnd, HANDLE hItem);
-void AddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int updateTotalCount, int checkHideOffline);
 void __fastcall ReallySortCLC(HWND hwnd, struct ClcData *dat, int useInsertionSort);
 int GetGroupContentsCount(struct ClcGroup *group, int visibleOnly);
 void SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat);
@@ -408,7 +406,6 @@ void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth);
 #define DROPTARGET_ONCONTACT  4
 #define DROPTARGET_INSERTION  5
 int GetDropTargetInformation(HWND hwnd, struct ClcData *dat, POINT pt);
-void NotifyNewContact(HWND hwnd, HANDLE hContact);
 void LoadClcOptions(HWND hwnd, struct ClcData *dat);
 void RecalculateGroupCheckboxes(HWND hwnd, struct ClcData *dat);
 void SetGroupChildCheckboxes(struct ClcGroup *group, int checked);
