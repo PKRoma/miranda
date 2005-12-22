@@ -101,7 +101,7 @@ int _DebugTRACE(const char *fmt, ...)
     va_list va;
     va_start(va, fmt);
     _vsnprintf(debug, ibsize, fmt, va);
-    OutputDebugStringA(debug);
+    OutputDebugString(debug);
 }
 #endif
 
@@ -181,10 +181,18 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			{	char str[64];
                 DWORD v = pluginInfo.version;
+				char szVersion[512], *found = NULL, buildstr[50] = "";
+				UINT build_nr = 0;
+
+				CallService(MS_SYSTEM_GETVERSIONTEXT, 500, szVersion);
+				if((found = strchr(szVersion, '#')) != NULL) {
+					build_nr = atoi(found + 1);
+					mir_snprintf(buildstr, 50, "[Build #%d]", build_nr);
+				}
 #if defined(_UNICODE)
-                mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d (Unicode)", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)));
+				mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d (Unicode) %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
 #else
-				mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)));
+				mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
 #endif                
 				SetDlgItemTextA(hwndDlg,IDC_VERSION,str);
 				mir_snprintf(str,sizeof(str),Translate("Built %s %s"),__DATE__,__TIME__);
