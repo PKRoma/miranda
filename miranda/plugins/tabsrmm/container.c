@@ -2431,7 +2431,7 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
                 int nCount = TabCtrl_GetItemCount(hwndTab);
                 RECT rcItem;
                 TabCtrl_GetItemRect(hwndTab, nCount - 1, &rcItem);
-                rc->top = pContainer->tBorder_outer_top;
+                //rc->top = pContainer->tBorder_outer_top;
                 rc->bottom = rcItem.top;
             }
             else {

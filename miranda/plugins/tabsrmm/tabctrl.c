@@ -741,10 +741,6 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			if(nCount > 1 || !(tabdat->pContainer->dwFlags & CNT_HIDETABS)) {
 				rctClip = rctPage;
 				InflateRect(&rctClip, -tabdat->pContainer->tBorder, -tabdat->pContainer->tBorder);
-				if(dwStyle & TCS_BUTTONS && dwStyle & TCS_BOTTOM) {
-					//rctClip.top += 2;
-					//rctClip.bottom -= 1;
-				}
 			}
 
 			hPenOld = SelectObject(hdc, myGlobals.tabConfig.m_hPenLight);
@@ -753,9 +749,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
              */
             
             if(!bClassicDraw && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
-                RECT rcClient;
-                
-                rcClient = rctPage;
+                RECT rcClient = rctPage;
                 if(dwStyle & TCS_BOTTOM) {
                     rcClient.bottom = rctPage.bottom;
                     uiFlags |= uiBottom;
