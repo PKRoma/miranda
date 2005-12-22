@@ -43,9 +43,7 @@ struct {
 
 static int GetContactStatus(HANDLE hContact)
 {
-	char *szProto;
-
-	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+	char* szProto = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 	if (szProto == NULL)
 		return ID_STATUS_OFFLINE;
 	return DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);

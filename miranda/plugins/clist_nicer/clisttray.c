@@ -33,11 +33,9 @@ static VOID CALLBACK TrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, D
 
 extern HIMAGELIST hCListImages;
 extern int currentStatusMenuItem, currentDesiredStatusMode;
-extern BOOL(WINAPI *MySetProcessWorkingSetSize)(HANDLE, SIZE_T, SIZE_T);
 
 extern struct CluiData g_CluiData;
 
-static UINT WM_TASKBARCREATED;
 static int cycleTimerId = 0,cycleStep = 0;
 
 struct trayIconInfo_t {
@@ -55,7 +53,8 @@ POINT tray_hover_pos = {0};
 // don't move to win2k.h, need new and old versions to work on 9x/2000/XP
 #define NIF_STATE       0x00000008
 #define NIF_INFO        0x00000010
-typedef struct {
+typedef struct
+{
 	DWORD cbSize;
 	HWND hWnd;
 	UINT uID;
@@ -66,7 +65,8 @@ typedef struct {
 	DWORD dwState;
 	DWORD dwStateMask;
 	CHAR szInfo[256];
-	union {
+	union
+	{
 		UINT uTimeout;
 		UINT uVersion;
 	};
@@ -437,18 +437,6 @@ int TrayIconSetBaseInfo(HICON hIcon, const char *szPreferredProto)
 	return -1;
 }
 
-void TrayIconUpdateWithImageList(int iImage, const char *szNewTip, char *szPreferredProto, HANDLE hContact)
-{
-	HICON hIcon;
-
-	// a meta contact has to flash in the tray, but the meta contact protocol is hidden by the protocol
-	// configuration - so redirect it to the actual protocol icon
-
-	hIcon = ImageList_GetIcon(hCListImages, iImage, ILD_NORMAL);
-	TrayIconUpdate(hIcon, szNewTip, szPreferredProto, 0);
-	DestroyIcon(hIcon);
-}
-
 static VOID CALLBACK TrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
 {
 	int count;
@@ -607,31 +595,11 @@ void TrayIconSetToBase(char *szPreferredProto)
 	}
 }
 
-static int autoHideTimerId;
-static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
-{
-	HWND hwndClui;
-	KillTimer(hwnd, idEvent);
-	hwndClui = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
-	if (GetActiveWindow() == hwndClui)
-		return;
-	ShowWindow(hwndClui, SW_HIDE);
-	if (MySetProcessWorkingSetSize != NULL)
-		MySetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
-}
+/////////////////////////////////////////////////////////////////////////////////////////
 
-int TrayIconPauseAutoHide(WPARAM wParam, LPARAM lParam)
-{
-	if (DBGetContactSettingByte(NULL, "CList", "AutoHide", SETTING_AUTOHIDE_DEFAULT)) {
-		if (GetActiveWindow() != (HWND) CallService(MS_CLUI_GETHWND, 0, 0)) {
-			KillTimer(NULL, autoHideTimerId);
-			autoHideTimerId = SetTimer(NULL, 0, 1000 * DBGetContactSettingWord(NULL, "CList", "HideTime", SETTING_HIDETIME_DEFAULT), TrayIconAutoHideTimer);
-		}
-	}
-	return 0;
-}
+extern int ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
 
-void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD elapsed)
+static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD elapsed)
 {
 	if(!g_trayTooltipActive && !g_CluiData.bNoTrayTips) {
 		CLCINFOTIP ti = {0};
@@ -651,27 +619,7 @@ void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD elaps
 int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 {
 	MSG *msg = (MSG *) wParam;
-	switch (msg->message) {
-	case WM_CREATE:
-		{
-			WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
-			PostMessage(msg->hwnd, TIM_CREATE, 0, 0);           
-			break;
-		}
-	case TIM_CREATE:
-		TrayIconInit(msg->hwnd);
-		break;
-	case WM_ACTIVATE:
-		if (DBGetContactSettingByte(NULL, "CList", "AutoHide", SETTING_AUTOHIDE_DEFAULT)) {
-			if (LOWORD(msg->wParam) == WA_INACTIVE)
-				autoHideTimerId = SetTimer(NULL, 0, 1000 * DBGetContactSettingWord(NULL, "CList", "HideTime", SETTING_HIDETIME_DEFAULT), TrayIconAutoHideTimer);
-			else
-				KillTimer(NULL, autoHideTimerId);
-		}
-		break;
-	case WM_DESTROY:
-		TrayIconDestroy(msg->hwnd);
-		break;
+	switch( msg->message ) {
 	case TIM_CALLBACK:
 		if (msg->lParam == WM_RBUTTONDOWN || msg->lParam == WM_LBUTTONDOWN) {
 			KillTimer(pcli->hwndContactList, TIMERID_TRAYHOVER);
@@ -697,52 +645,20 @@ int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 				}
 				break;
 			}
-			else {
-				GetCursorPos(&tray_hover_pos);
-				SetTimer(pcli->hwndContactList, TIMERID_TRAYHOVER, 600, TrayToolTipTimerProc);
-			}
-		}
-		else if (msg->lParam == WM_RBUTTONUP) {
-			HMENU hMenu;
-			MENUITEMINFOA mi;
-			POINT pt;
-			hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
-			hMenu = GetSubMenu(hMenu, 0);
-			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, 0);
 
-			ZeroMemory(&mi, sizeof(mi));
-			mi.cbSize = MENUITEMINFO_V4_SIZE;
-			mi.fMask = MIIM_SUBMENU | MIIM_TYPE;
-			mi.fType = MFT_STRING;
-			mi.hSubMenu = (HMENU) CallService(MS_CLIST_MENUGETMAIN, 0, 0);
-			mi.dwTypeData = Translate("&Main Menu");
-			InsertMenuItemA(hMenu, 1, TRUE, &mi);
-			mi.hSubMenu = (HMENU) CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
-			mi.dwTypeData = Translate("&Status");
-			InsertMenuItemA(hMenu, 2, TRUE, &mi);
-			SetMenuDefaultItem(hMenu, ID_TRAY_HIDE, FALSE);
-
-			SetForegroundWindow(msg->hwnd);
-			SetFocus(msg->hwnd);
-			GetCursorPos(&pt);
-			TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN, pt.x, pt.y, 0, msg->hwnd, NULL);
+			GetCursorPos(&tray_hover_pos);
+			SetTimer(pcli->hwndContactList, TIMERID_TRAYHOVER, 600, TrayToolTipTimerProc);
 		}
+		else break;
 		*((LRESULT *) lParam) = 0;
 		return TRUE;
-	default:
-		if (msg->message == WM_TASKBARCREATED) {
-			TrayIconTaskbarCreated(msg->hwnd);
-			*((LRESULT *) lParam) = 0;
-			return TRUE;
-	}	}
+	}
 
-	return FALSE;
+	return saveTrayIconProcessMessage(wParam, lParam);
 }
 
-int CListTrayNotify(WPARAM wParam, LPARAM lParam)
+int CListTrayNotify( MIRANDASYSTRAYNOTIFY *msn )
 {
-	MIRANDASYSTRAYNOTIFY *msn = (MIRANDASYSTRAYNOTIFY *) lParam;
-
 #if defined(_UNICODE)
 	if(msn->dwInfoFlags & NIIF_INTERN_UNICODE) {
 		if (msn && msn->cbSize == sizeof(MIRANDASYSTRAYNOTIFY) && msn->szInfo && msn->szInfoTitle) {

@@ -116,6 +116,7 @@ void fnCheckCacheItem( ClcCacheEntryBase* p );
 void fnFreeCacheItem( ClcCacheEntryBase* p );
 
 /* clisttray.c */
+int  fnCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn);
 void fnTrayIconUpdateWithImageList ( int iImage, const char *szNewTip, char *szPreferredProto );
 void fnTrayIconUpdateBase ( const char *szChangedProto );
 void fnTrayIconSetToBase ( char *szPreferredProto );
@@ -251,6 +252,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnTrayIconIconsChanged            = fnTrayIconIconsChanged;
 		cli.pfnTrayIconPauseAutoHide			   = fnTrayIconPauseAutoHide;
 		cli.pfnTrayIconProcessMessage			   = fnTrayIconProcessMessage;
+		cli.pfnCListTrayNotify                 = fnCListTrayNotify;
 															 
 		cli.pfnContactListWndProc				   = fnContactListWndProc;
 		cli.pfnLoadCluiGlobalOpts              = fnLoadCluiGlobalOpts;

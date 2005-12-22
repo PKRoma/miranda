@@ -36,29 +36,12 @@ int GetContactStatusMessage(WPARAM wParam, LPARAM lParam);
 int CListOptInit(WPARAM wParam, LPARAM lParam);
 void TrayIconUpdateBase(const char *szChangedProto);
 int EventsProcessContactDoubleClick(HANDLE hContact);
-int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam);
-int TrayIconPauseAutoHide(WPARAM wParam, LPARAM lParam);
 int SetHideOffline(WPARAM wParam, LPARAM lParam);
-static int CListIconsChanged(WPARAM wParam, LPARAM lParam);
 int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
 
 HANDLE hContactDoubleClicked, hStatusModeChangeEvent;
 HIMAGELIST hCListImages;
 extern int currentDesiredStatusMode;
-
-BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE, SIZE_T, SIZE_T);
-extern BYTE nameOrder[];
-static int statusModeList[] = {
-	ID_STATUS_OFFLINE, ID_STATUS_ONLINE, ID_STATUS_AWAY, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_DND, ID_STATUS_FREECHAT, ID_STATUS_INVISIBLE, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH
-};
-static int skinIconStatusList[] = {
-	SKINICON_STATUS_OFFLINE, SKINICON_STATUS_ONLINE, SKINICON_STATUS_AWAY, SKINICON_STATUS_NA, SKINICON_STATUS_OCCUPIED, SKINICON_STATUS_DND, SKINICON_STATUS_FREE4CHAT, SKINICON_STATUS_INVISIBLE, SKINICON_STATUS_ONTHEPHONE, SKINICON_STATUS_OUTTOLUNCH
-};
-struct ProtoIconIndex {
-	char *szProto;
-	int iIconBase;
-} static *protoIconIndex;
-static int protoIconIndexCount;
 
 extern struct CluiData g_CluiData;
 
@@ -74,10 +57,8 @@ static int GetStatusMode(WPARAM wParam, LPARAM lParam)
 	return currentDesiredStatusMode;
 }
 
-
 int IconFromStatusMode(const char *szProto, int status, HANDLE hContact, HICON *phIcon)
 {
-	int index, i;
 	char *szFinalProto;
 	int finalStatus;
 
@@ -99,22 +80,8 @@ int IconFromStatusMode(const char *szProto, int status, HANDLE hContact, HICON *
 		else if(szProto)
 			*phIcon = g_CluiData.hIconConnecting;;
 	}
-	for (index = 0; index < sizeof(statusModeList) / sizeof(statusModeList[0]); index++) {
-		if (finalStatus == statusModeList[index])
-			break;
-	}
-	if (index == sizeof(statusModeList) / sizeof(statusModeList[0]))
-		index = 0;
-	if (szFinalProto == NULL)
-		return index + 1;
-	for (i = 0; i < protoIconIndexCount; i++) {
-		if (strcmp(szFinalProto, protoIconIndex[i].szProto))
-			continue;
-		return protoIconIndex[i].iIconBase + index;
-	}
-	return 1;
+	return pcli->pfnIconFromStatusMode(szFinalProto, finalStatus);
 }
-
 
 static int MenuItem_LockAvatar(WPARAM wParam, LPARAM lParam)
 {
@@ -136,23 +103,8 @@ int LoadContactListModule(void)
 	CreateServiceFunction(MS_CLIST_SETSTATUSMODE, SetStatusMode);
 	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
 	CreateServiceFunction("CList/GetContactStatusMsg", GetContactStatusMessage);
-	CreateServiceFunction(MS_CLIST_TRAYICONPROCESSMESSAGE, TrayIconProcessMessage);
-	CreateServiceFunction(MS_CLIST_PAUSEAUTOHIDE, TrayIconPauseAutoHide);
-	MySetProcessWorkingSetSize = (BOOL(WINAPI *)(HANDLE, SIZE_T, SIZE_T))GetProcAddress(GetModuleHandleA("kernel32"), "SetProcessWorkingSetSize");
 	InitCustomMenus();
 	IMG_InitDecoder();
-
-	hCListImages = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 13, 0);
-	HookEvent(ME_SKIN_ICONSCHANGED, CListIconsChanged);
-	ImageList_AddIcon(hCListImages, LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_BLANK))); {
-		int i;
-		for (i = 0; i < sizeof(statusModeList) / sizeof(statusModeList[0]); i++) {
-			ImageList_AddIcon(hCListImages, LoadSkinnedIcon(skinIconStatusList[i]));
-		}
-	}
-	//see IMAGE_GROUP... in clist.h if you add more images above here
-	ImageList_AddIcon(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
-	ImageList_AddIcon(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
 	return 0;
 }
 
@@ -230,23 +182,4 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 		else //There are dots which are visible, but they are not as many as the ones we counted: it's partially covered.
 			return GWVS_PARTIALLY_COVERED;
 	}
-}
-
-static int CListIconsChanged(WPARAM wParam, LPARAM lParam)
-{
-	int i, j;
-
-	for (i = 0; i < sizeof(statusModeList) / sizeof(statusModeList[0]); i++) {
-		ImageList_ReplaceIcon(hCListImages, i + 1, LoadSkinnedIcon(skinIconStatusList[i]));
-	}
-	ImageList_ReplaceIcon(hCListImages, IMAGE_GROUPOPEN, LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
-	ImageList_ReplaceIcon(hCListImages, IMAGE_GROUPSHUT, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
-	for (i = 0; i < protoIconIndexCount; i++) {
-		for (j = 0; j < sizeof(statusModeList) / sizeof(statusModeList[0]); j++) {
-			ImageList_ReplaceIcon(hCListImages, protoIconIndex[i].iIconBase + j, LoadSkinnedProtoIcon(protoIconIndex[i].szProto, statusModeList[j]));
-		}
-	}
-	pcli->pfnTrayIconIconsChanged();
-	InvalidateRect((HWND) CallService(MS_CLUI_GETHWND, 0, 0), NULL, TRUE);
-	return 0;
 }

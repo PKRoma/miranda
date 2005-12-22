@@ -39,10 +39,11 @@ extern int LoadMoveToGroup();
 int OnSkinLoad(WPARAM wParam, LPARAM lParam);
 void UninitSkinHotKeys();
 
-void CheckPDNCE(pdisplayNameCacheEntry pdnce);
+void  CalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
+void  CheckPDNCE(pdisplayNameCacheEntry pdnce);
+int   CListTrayNotify(MIRANDASYSTRAYNOTIFY *msn);
 void  FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
-void  CalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
 int   HotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
 int   HotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
 int   HotKeysRegister(HWND hwnd);
@@ -175,6 +176,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	// get the contact list interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	pcli->pfnCheckCacheItem = CheckPDNCE;
+	pcli->pfnCListTrayNotify = CListTrayNotify;
 	pcli->pfnCreateClcContact = fnCreateClcContact;
 	pcli->pfnCreateCacheItem = fnCreateCacheItem;
 	pcli->pfnFreeCacheItem = FreeDisplayNameCacheItem;

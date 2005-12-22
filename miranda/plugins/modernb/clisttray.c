@@ -747,9 +747,8 @@ int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 	return FALSE;
 }
 
-int CListTrayNotify(WPARAM wParam,LPARAM lParam)
+int CListTrayNotify(MIRANDASYSTRAYNOTIFY *msn)
 {
-	MIRANDASYSTRAYNOTIFY *msn=(MIRANDASYSTRAYNOTIFY*)lParam;
 	if (msn && msn->cbSize==sizeof(MIRANDASYSTRAYNOTIFY) && msn->szInfo && msn->szInfoTitle) {
 		if (trayIcon) {
 			NOTIFYICONDATA_NEW nid={0};

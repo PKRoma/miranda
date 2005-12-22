@@ -263,7 +263,7 @@ static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD
             szProto = NULL;
         else
             szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) event[0].cle.hContact, 0);
-        TrayIconUpdateWithImageList((iconsOn || disableTrayFlash) ? event[0].imlIconIndex : event[0].imlIconOverlayIndex, event[0].cle.pszTooltip, szProto, event[0].cle.hContact);
+        pcli->pfnTrayIconUpdateWithImageList((iconsOn || disableTrayFlash) ? event[0].imlIconIndex : event[0].imlIconOverlayIndex, event[0].cle.pszTooltip, szProto, event[0].cle.hContact);
     }
 
     for (i = 0; i < eventCount; i++) {
@@ -320,7 +320,7 @@ int AddEvent(WPARAM wParam, LPARAM lParam)
         iconsOn = 1;
         flashTimerId = SetTimer(NULL, 0, DBGetContactSettingWord(NULL, "CList", "IconFlashTime", 550), IconFlashTimer);
         //szFinalProto = DivertProtoToSubcontact(event[0].cle.hContact, szProto);
-        TrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : event[0].imlIconOverlayIndex, event[0].cle.pszTooltip, szProto, event[0].cle.hContact);
+        pcli->pfnTrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : event[0].imlIconOverlayIndex, event[0].cle.pszTooltip, szProto, event[0].cle.hContact);
     }
     pcli->pfnChangeContactIcon(cle->hContact, event[eventCount - 1].imlIconIndex, 1);
     //SortContacts();
@@ -483,7 +483,7 @@ int RemoveEvent(WPARAM wParam, LPARAM lParam)
             szProto = NULL;
         else
             szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) event[0].cle.hContact, 0);
-        TrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : event[0].imlIconOverlayIndex, event[0].cle.pszTooltip, szProto, event[0].cle.hContact);
+        pcli->pfnTrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : event[0].imlIconOverlayIndex, event[0].cle.pszTooltip, szProto, event[0].cle.hContact);
     }
 
     if (bUnstick) {

@@ -259,6 +259,7 @@ typedef struct
 	void ( *pfnTrayIconIconsChanged )( void );
 	int  ( *pfnTrayIconPauseAutoHide )( WPARAM wParam, LPARAM lParam );
 	int  ( *pfnTrayIconProcessMessage )( WPARAM wParam, LPARAM lParam );
+	int  ( *pfnCListTrayNotify )( MIRANDASYSTRAYNOTIFY* );
 
 	/* clui.c */
 	LRESULT ( CALLBACK *pfnContactListWndProc )( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );

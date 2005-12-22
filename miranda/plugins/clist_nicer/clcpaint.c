@@ -36,7 +36,7 @@ extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
 
 extern int hClcProtoCount;
 extern ClcProtoStatus *clcProto;
-extern HIMAGELIST himlCListClc, hCListImages;
+extern HIMAGELIST hCListImages;
 extern struct CluiData g_CluiData;
 static BYTE divide3[765] = {255};
 extern char *im_clients[];
@@ -51,7 +51,6 @@ extern TCHAR *statusNames[];
 extern LONG g_cxsmIcon, g_cysmIcon;
 extern DWORD g_gdiplusToken;
 extern StatusItems_t *StatusItems;
-//pfnDrawAvatar DrawAvatar = NULL;
 pfnDrawAlpha pDrawAlpha = NULL;
 
 void DrawWithGDIp(HDC hDC, DWORD x, DWORD y, DWORD width, DWORD height, UCHAR alpha, struct ClcContact *contact);
@@ -912,7 +911,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 				mode = ILD_SELECTED;
 
 			if(pi_selectiveIcon && av_right) {
-				ImageList_DrawEx(himlCListClc, iImage, hdcMem, rcContent.right - 18, (twoRows && type == CLCIT_CONTACT && !g_CluiData.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
+				ImageList_DrawEx(hCListImages, iImage, hdcMem, rcContent.right - 18, (twoRows && type == CLCIT_CONTACT && !g_CluiData.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
 				rcContent.right -= 18;
 			}
 			else {
@@ -920,7 +919,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 				BOOL centered = FALSE;
 				offset +=  (type != CLCIT_CONTACT || avatar_done || !(av_wanted) ? 20 : dwFlags & CLUI_FRAME_ALWAYSALIGNNICK && av_left && g_selectiveIcon ? g_CluiData.avatarSize + 2 : 20);
 				centered = (g_CluiData.bCenterStatusIcons && offset == g_CluiData.avatarSize + 2);
-				ImageList_DrawEx(himlCListClc, iImage, hdcMem,  centered ? rcContent.left + offset / 2 - 10 : rcContent.left, (twoRows && type == CLCIT_CONTACT && !g_CluiData.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
+				ImageList_DrawEx(hCListImages, iImage, hdcMem,  centered ? rcContent.left + offset / 2 - 10 : rcContent.left, (twoRows && type == CLCIT_CONTACT && !g_CluiData.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
 				rcContent.left += offset;
 			}
 		}

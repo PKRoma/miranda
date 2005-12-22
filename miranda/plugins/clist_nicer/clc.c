@@ -43,7 +43,7 @@ extern struct ExtraCache *g_ExtraCache;
 extern int disableTrayFlash, disableIconFlash;
 extern COLORREF g_CLUISkinnedBkColorRGB;
 
-HIMAGELIST himlCListClc;
+HIMAGELIST hCListImages;
 extern HIMAGELIST himlExtraImages;
 
 HANDLE hSoundHook = 0, hIcoLibChanged = 0;
@@ -242,7 +242,7 @@ int LoadCLCModule(void)
 	g_cysmIcon = GetSystemMetrics(SM_CYSMICON);
 
 	LoadCLCButtonModule();
-	himlCListClc = (HIMAGELIST) CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
+	hCListImages = (HIMAGELIST) CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, ClcModulesLoaded);
 	hClcSettingsChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ClcSettingChanged);

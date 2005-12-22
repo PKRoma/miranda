@@ -47,8 +47,10 @@ extern HIMAGELIST himlExtraImages;
 struct LIST_INTERFACE li;
 struct MM_INTERFACE memoryManagerInterface;
 
-HMENU BuildGroupPopupMenu( struct ClcGroup* group );
+HMENU  BuildGroupPopupMenu( struct ClcGroup* group );
+int    CListTrayNotify( MIRANDASYSTRAYNOTIFY *msn );
 struct ClcContact* CreateClcContact( void );
+void   ReloadThemedOptions();
 
 int AddEvent(WPARAM wParam, LPARAM lParam);
 int RemoveEvent(WPARAM wParam, LPARAM lParam);
@@ -75,6 +77,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT message, WPARAM wParam, LPAR
 
 LRESULT ( CALLBACK *saveContactListControlWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+int ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
+int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam);
 
 void ( *saveRecalcScrollBar )(HWND hwnd, struct ClcData *dat);
 void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
@@ -158,6 +163,10 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 }
 
 int MenuModulesLoaded(WPARAM wParam, LPARAM lParam);
+
+static int fnIconFromStatusMode( const char* szProto, int status )
+{	return IconFromStatusMode( szProto, status, NULL, NULL );
+}
 
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
@@ -276,6 +285,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	// get the clist interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;
+	pcli->pfnCListTrayNotify = CListTrayNotify;
 	pcli->pfnCluiProtocolStatusChanged = CluiProtocolStatusChanged;
 	pcli->pfnCompareContacts = CompareContacts;
 	pcli->pfnCreateClcContact = CreateClcContact;
@@ -301,6 +311,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	saveLoadClcOptions = pcli->pfnLoadClcOptions; pcli->pfnLoadClcOptions = LoadClcOptions;
 	saveProcessExternalMessages = pcli->pfnProcessExternalMessages; pcli->pfnProcessExternalMessages = ProcessExternalMessages;
 	saveRecalcScrollBar = pcli->pfnRecalcScrollBar; pcli->pfnRecalcScrollBar = RecalcScrollBar;
+	saveTrayIconProcessMessage = pcli->pfnTrayIconProcessMessage; pcli->pfnTrayIconProcessMessage = TrayIconProcessMessage;
 
 	rc = LoadContactListModule();
 	if (rc == 0)

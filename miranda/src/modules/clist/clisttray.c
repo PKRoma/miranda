@@ -364,9 +364,7 @@ static int TrayIconSetBaseInfo(HICON hIcon, const char *szPreferredProto)
 
 void fnTrayIconUpdateWithImageList(int iImage, const char *szNewTip, char *szPreferredProto)
 {
-	HICON hIcon;
-
-	hIcon = ImageList_GetIcon(hCListImages, iImage, ILD_NORMAL);
+	HICON hIcon = ImageList_GetIcon(hCListImages, iImage, ILD_NORMAL);
 	TrayIconUpdate(hIcon, szNewTip, szPreferredProto, 0);
 	DestroyIcon(hIcon);
 }
@@ -523,8 +521,7 @@ int fnTrayIconPauseAutoHide(WPARAM wParam, LPARAM lParam)
 	if (DBGetContactSettingByte(NULL, "CList", "AutoHide", SETTING_AUTOHIDE_DEFAULT)) {
 		if (GetActiveWindow() != (HWND) CallService(MS_CLUI_GETHWND, 0, 0)) {
 			KillTimer(NULL, autoHideTimerId);
-			autoHideTimerId =
-				SetTimer(NULL, 0, 1000 * DBGetContactSettingWord(NULL, "CList", "HideTime", SETTING_HIDETIME_DEFAULT), TrayIconAutoHideTimer);
+			autoHideTimerId = SetTimer(NULL, 0, 1000 * DBGetContactSettingWord(NULL, "CList", "HideTime", SETTING_HIDETIME_DEFAULT), TrayIconAutoHideTimer);
 		}
 	}
 	return 0;
@@ -604,9 +601,8 @@ int fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-int CListTrayNotify(WPARAM wParam, LPARAM lParam)
+int fnCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn)
 {
-	MIRANDASYSTRAYNOTIFY *msn = (MIRANDASYSTRAYNOTIFY *) lParam;
 	if (msn && msn->cbSize == sizeof(MIRANDASYSTRAYNOTIFY) && msn->szInfo && msn->szInfoTitle) {
 		if (trayIcon) {
 			NOTIFYICONDATA_NEW nid = { 0 };
@@ -646,6 +642,12 @@ int CListTrayNotify(WPARAM wParam, LPARAM lParam)
 	return 1;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
+static int pfnCListTrayNotifyStub(WPARAM wParam, LPARAM lParam )
+{	return cli.pfnCListTrayNotify(( MIRANDASYSTRAYNOTIFY* )lParam );
+}
+
 void InitTray(void)
 {
 	HINSTANCE hLib;
@@ -660,8 +662,8 @@ void InitTray(void)
 		}
 		FreeLibrary(hLib);
 	}
-	if (dviShell.dwMajorVersion >= 5) {
-		CreateServiceFunction(MS_CLIST_SYSTRAY_NOTIFY, CListTrayNotify);
-	}
+	if (dviShell.dwMajorVersion >= 5)
+		CreateServiceFunction(MS_CLIST_SYSTRAY_NOTIFY, pfnCListTrayNotifyStub );
+
 	return;
 }
