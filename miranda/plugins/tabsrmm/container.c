@@ -638,7 +638,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 #else
                 char *szSetting = "CNT_";
 #endif                
-                char szCName[CONTAINER_NAMELEN + 10];
+                char szCName[CONTAINER_NAMELEN + 20];
                 /*
                  * retrieve the container window geometry information from the database.
                  */
@@ -657,7 +657,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                 SetWindowPos(hwndDlg, 0, 50, 50, 450, 300, SWP_NOZORDER | SWP_NOACTIVATE);
                     }
                     else {
-                        mir_snprintf(szCName, 40, "%s%d", szSetting, pContainer->iContainerIndex);
+                        mir_snprintf(szCName, sizeof(szCName), "%s%d", szSetting, pContainer->iContainerIndex);
                         if (Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, szCName)) {
                             if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, szCName))
                                 if(Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split"))
@@ -1731,7 +1731,7 @@ panel_found:
             }*/
 
             ws = wsold = GetWindowLong(hwndDlg, GWL_STYLE);
-			ws = (pContainer->dwFlags & CNT_NOTITLE) ? ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN) : ws | WS_CAPTION | WS_OVERLAPPEDWINDOW;
+			ws = (pContainer->dwFlags & CNT_NOTITLE) ? ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN | (g_framelessSkinmode ? 0 : WS_SYSMENU)) : ws | WS_CAPTION | WS_OVERLAPPEDWINDOW;
 			SetWindowLong(hwndDlg, GWL_STYLE, ws);
 
             pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 2);

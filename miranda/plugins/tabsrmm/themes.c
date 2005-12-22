@@ -1470,7 +1470,7 @@ void ReloadContainerSkin()
 	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0))
 		return;
 
-	if(pSetLayeredWindowAttributes == 0 || !g_imgDecoderAvail)
+	if(pSetLayeredWindowAttributes == 0 || !g_imgDecoderAvail || MyAlphaBlend == 0)
 		return;
 
 	if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
