@@ -300,13 +300,15 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     offset = SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETCURSEL, 0, 0);
                     if(offset > 0) {
                         BYTE timezone = (13 - offset) * 2;
-                        if(timezone != (BYTE)oldTZ) {
+                        if(timezone != (BYTE)oldTZ)
                             DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (BYTE)timezone);
-                            if(hWnd && dat) {
-                                LoadTimeZone(hWnd, dat);
-                                InvalidateRect(GetDlgItem(hWnd, IDC_PANELUIN), NULL, FALSE);
-                            }
-                        }
+                    }
+					else
+						DBDeleteContactSetting(hContact, "UserInfo", "Timezone");
+
+                    if(hWnd && dat) {
+                        LoadTimeZone(hWnd, dat);
+                        InvalidateRect(GetDlgItem(hWnd, IDC_PANELUIN), NULL, FALSE);
                     }
 
 					bInfoPanel = (BYTE)SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_GETCURSEL, 0, 0);
