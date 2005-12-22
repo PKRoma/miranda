@@ -1539,10 +1539,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					break;
 				}
 			}
-			else {
-				if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), (LPARAM) (HANDLE) NULL))
-					break;
-			}
+			else if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), (LPARAM) (HANDLE) NULL))
+					return 0;
+
 			switch (LOWORD(wParam)) {
 			case ID_TRAY_EXIT:
 			case ID_ICQ_EXIT:
