@@ -278,7 +278,7 @@ void fnAddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int upd
 			return;
 		}
 	}
-	fnAddContactToGroup(dat, group, hContact);
+	cli.pfnAddContactToGroup(dat, group, hContact);
 	if (updateTotalCount)
 		group->totalMembers++;
 }
@@ -388,13 +388,12 @@ void fnRebuildEntireList(HWND hwnd, struct ClcData *dat)
 					szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 					if (szProto == NULL) {
 						if (!cli.pfnIsHiddenMode(dat, ID_STATUS_OFFLINE))
-							fnAddContactToGroup(dat, group, hContact);
+							cli.pfnAddContactToGroup(dat, group, hContact);
 					}
 					else if (!cli.pfnIsHiddenMode(dat, DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE)))
-						fnAddContactToGroup(dat, group, hContact);
+						cli.pfnAddContactToGroup(dat, group, hContact);
 				}
-				else
-					fnAddContactToGroup(dat, group, hContact);
+				else cli.pfnAddContactToGroup(dat, group, hContact);
 			}
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
