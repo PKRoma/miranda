@@ -38,7 +38,7 @@ extern int dock_prevent_moving;
 extern HINSTANCE g_hInst;
 extern BOOL ON_EDGE_SIZING;
 extern BOOL (WINAPI *MySetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);
-extern BOOL InvalidateRectZ(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+extern BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
 extern int OnShowHide(HWND hwnd, int mode);
 
 extern BYTE UseKeyColor;
@@ -204,7 +204,7 @@ int RepaintSubContainers()
     if (!Frames[i].floating && Frames[i].OwnerWindow!=(HWND)0 &&Frames[i].OwnerWindow!=(HWND)-2 && Frames[i].visible && !Frames[i].needhide )
     {
       RedrawWindow(Frames[i].hWnd,NULL,NULL,RDW_ALLCHILDREN|RDW_UPDATENOW|RDW_INVALIDATE|RDW_FRAME);
-      //InvalidateRectZ(Frames[i].hWnd,NULL,FALSE);
+      //skinInvalidateRect(Frames[i].hWnd,NULL,FALSE);
     };
   return 0;
 }
@@ -2129,9 +2129,9 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
   RemoveItemFromList(pos,&Frames,&nFramescount);
 
   ulockfrm();
-  InvalidateRectZ(pcli->hwndContactList,NULL,TRUE);
+  skinInvalidateRect(pcli->hwndContactList,NULL,TRUE);
   CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
-  InvalidateRectZ(pcli->hwndContactList,NULL,TRUE);
+  skinInvalidateRect(pcli->hwndContactList,NULL,TRUE);
 
   return(0);
 };
@@ -2718,7 +2718,7 @@ int CLUIFramesOnClistResize2(WPARAM wParam,LPARAM lParam, int mode)
   ulockfrm();
   tick=GetTickCount()-tick;
 
-  //	if (pcli->hwndContactList!=0) InvalidateRectZ(pcli->hwndContactList,NULL,TRUE);
+  //	if (pcli->hwndContactList!=0) skinInvalidateRect(pcli->hwndContactList,NULL,TRUE);
   //	if (pcli->hwndContactList!=0) UpdateWindow(pcli->hwndContactList);
   //    for(i=0;i<nFramescount;i++){
 
@@ -2938,7 +2938,7 @@ int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
   ulockfrm();
   tick=GetTickCount()-tick;
 
-  if (pcli->hwndContactList!=0) InvalidateRectZ(pcli->hwndContactList,NULL,TRUE);
+  if (pcli->hwndContactList!=0) skinInvalidateRect(pcli->hwndContactList,NULL,TRUE);
   if (pcli->hwndContactList!=0) UpdateWindow(pcli->hwndContactList);
 
   if(lParam==2) RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_UPDATENOW|RDW_ALLCHILDREN|RDW_ERASE|RDW_INVALIDATE);
@@ -2958,7 +2958,7 @@ static COLORREF bkColour;
 static COLORREF SelBkColour;
 boolean AlignCOLLIconToLeft; //will hide frame icon
 
-int OnFrameTitleBarBackgroundChange()
+int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
 {
   {	
     DBVARIANT dbv;
@@ -2979,7 +2979,7 @@ int OnFrameTitleBarBackgroundChange()
   };
 
   //		RecreateStatusBar(CallService(MS_CLUI_GETHWND,0,0));
-  //		if (pcli->hwndStatus) InvalidateRectZ(pcli->hwndStatus,NULL,TRUE);
+  //		if (pcli->hwndStatus) skinInvalidateRect(pcli->hwndStatus,NULL,TRUE);
   CLUIFramesOnClistResize(0,0);
   return 0;
 }
@@ -3000,7 +3000,7 @@ HBRUSH hBrushAlternateGrey=NULL;
 
 HFONT hFont;
 
-//InvalidateRectZ(hwnd,0,FALSE);
+//skinInvalidateRect(hwnd,0,FALSE);
 
 hFont=(HFONT)SendMessage(hwnd,WM_GETFONT,0,0);
 
@@ -3273,12 +3273,12 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
   case WM_USER+100:
     return 1;    
   case WM_ENABLE:
-    if (hwnd!=0) InvalidateRectZ(hwnd,NULL,FALSE);
+    if (hwnd!=0) skinInvalidateRect(hwnd,NULL,FALSE);
     return 0;
     /*
     case WM_PRINT:
     case WM_PRINTCLIENT:
-    InvalidateRectZ(hwnd,NULL,FALSE);
+    skinInvalidateRect(hwnd,NULL,FALSE);
     {
     RECT rect;
     HDC dc;
@@ -4310,42 +4310,45 @@ int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
     return 0;
 }
 
-static int CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
+
+static CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
 {
-	CLUIFramesLoadMainMenu(0,0);
-	CLUIFramesCreateMenuForFrame(-1,-1,000010000,MS_CLIST_ADDCONTEXTFRAMEMENUITEM);
-	return 0;
+  CLUIFramesLoadMainMenu(0,0);
+  CLUIFramesCreateMenuForFrame(-1,-1,000010000,MS_CLIST_ADDCONTEXTFRAMEMENUITEM);
+}
+static CLUIFrameOnModulesUnload(WPARAM wParam,LPARAM lParam)
+{
+  //
+
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIVisible, 1 );
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITitle, 1 );
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITBVisible, 1 );
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMILock, 1 );
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIColl, 1 );
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIFloating, 1 ); 	
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignTop, 1 );
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignClient, 1 );
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignBottom, 1 );
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIBorder, 1 );
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignRoot, 1 );
+
+
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIPosUp, 1 );
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIPosDown, 1 );
+  CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIPosRoot, 1 );
+
+
+  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIVisible, 1 );
+  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMITitle, 1 );
+  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMITBVisible, 1 );
+  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMILock, 1 );
+  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIColl, 1 );
+  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIFloating, 1 ); 	
+  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIBorder, 1 );
+  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIAlignRoot, 1 );
+  CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIPosRoot, 1 );
 }
 
-static int CLUIFrameOnModulesUnload(WPARAM wParam,LPARAM lParam)
-{
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIVisible, 1 );
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITitle, 1 );
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITBVisible, 1 );
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMILock, 1 );
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIColl, 1 );
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIFloating, 1 ); 	
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignTop, 1 );
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignClient, 1 );
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignBottom, 1 );
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIBorder, 1 );
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIAlignRoot, 1 );
-
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIPosUp, 1 );
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIPosDown, 1 );
-	CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIPosRoot, 1 );
-
-	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIVisible, 1 );
-	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMITitle, 1 );
-	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMITBVisible, 1 );
-	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMILock, 1 );
-	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIColl, 1 );
-	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIFloating, 1 ); 	
-	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIBorder, 1 );
-	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIAlignRoot, 1 );
-	CallService( MO_REMOVEMENUITEM, ( LPARAM )contMIPosRoot, 1 );
-	return 0;
-}
 
 int LoadCLUIFramesModule(void)
 {
