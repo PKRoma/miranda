@@ -143,6 +143,7 @@ struct ClcContact {
 #define FONTID_FRAMETITLE  9
 #define FONTID_EVENTAREA   10
 #define FONTID_TIMESTAMP   11
+#define FONTID_LAST        FONTID_TIMESTAMP
 
 struct ClcData {
 	struct ClcGroup list;
@@ -444,6 +445,7 @@ void ReloadExtraInfo(HANDLE hContact);
 //clcpaint.c
 void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint);
 void Reload3dBevelColors();
+void ReloadThemedOptions();
 void SetButtonToSkinned();
 void RTL_DetectAndSet(struct ClcContact *contact, HANDLE hContact);
 void RTL_DetectGroupName(struct ClcContact *group);

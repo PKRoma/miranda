@@ -612,7 +612,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
     return FALSE;
 }
 
-static const TCHAR *szFontIdDescr[FONTID_MAX + 1] = {
+static const TCHAR *szFontIdDescr[FONTID_LAST+ 1] = {
     _T("Standard contacts"), 
     _T("Online contacts to whom you have a different visibility"), 
     _T("Offline contacts"), 
@@ -639,15 +639,15 @@ struct {
     BYTE style;
     BYTE charset;
     TCHAR szFace[LF_FACESIZE];
-} static fontSettings[FONTID_MAX + 1];
+} static fontSettings[FONTID_LAST+1];
 #include <poppack.h>
-static WORD fontSameAsDefault[FONTID_MAX + 1] = {
+static WORD fontSameAsDefault[FONTID_LAST+1] = {
     0x00FF, 0x0B00, 0x0F00, 0x0700, 0x0B00, 0x0104, 0x0D00, 0x0000, 0x0000
 };
 static char *fontSizes[] = {
     "8", "10", "14", "16", "18", "20", "24", "8", "8", "8", "8", "8", "8"
 };
-static int fontListOrder[FONTID_MAX + 1] = {
+static int fontListOrder[FONTID_LAST+1] = {
     FONTID_CONTACTS, FONTID_INVIS, FONTID_OFFLINE, FONTID_OFFINVIS, FONTID_NOTONLIST, FONTID_GROUPS, FONTID_GROUPCOUNTS, 
     FONTID_DIVIDERS, FONTID_STATUS, FONTID_FRAMETITLE, FONTID_EVENTAREA, FONTID_TIMESTAMP
 };
@@ -717,7 +717,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 WORD sameAs;
                 char str[32];
 
-                for (i = 0; i <= FONTID_MAX; i++) {
+                for (i = 0; i <= FONTID_LAST; i++) {
                     fontId = fontListOrder[i];
                     pcli->pfnGetFontSetting(fontId, &lf, &colour);
                     wsprintfA(str, "Font%dAs", fontId);
@@ -772,7 +772,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                     SendDlgItemMessage(hwndDlg, IDC_SAMEAS, CB_SETITEMDATA, itemId, 0xFF);
                     if (0xFF == fontSettings[i].sameAs)
                         SendDlgItemMessage(hwndDlg, IDC_SAMEAS, CB_SETCURSEL, itemId, 0);
-                    for (j = 0; j <= FONTID_MAX; j++) {
+                    for (j = 0; j <= FONTID_LAST; j++) {
                         SendDlgItemMessageA(hwndDlg, IDC_FONTID, CB_GETLBTEXT, j, (LPARAM) szText);
                         id = SendDlgItemMessage(hwndDlg, IDC_FONTID, CB_GETITEMDATA, j, 0);
                         if (id == i)
@@ -897,7 +897,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
     //recalculate the 'same as' settings for all fonts but wParam
             {
                 int i;
-                for (i = 0; i <= FONTID_MAX; i++) {
+                for (i = 0; i <= FONTID_LAST; i++) {
                     if (i == (int) wParam)
                         continue;
                     SendMessage(hwndDlg, M_RECALCONEFONT, i, 0);
@@ -920,7 +920,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
             {
                 int i;
                 int minHeight = 10;
-                for (i = 0; i <= FONTID_MAX; i++) {
+                for (i = 0; i <= FONTID_LAST; i++) {
                     if (fontSettings[i].size > minHeight)
                         minHeight = fontSettings[i].size;
                 }
@@ -1034,7 +1034,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                                 int i;
                                 char str[20];
 
-                                for (i = 0; i <= FONTID_MAX; i++) {
+                                for (i = 0; i <= FONTID_LAST; i++) {
                                     wsprintfA(str, "Font%dName", i);
                                     DBWriteContactSettingTString(NULL, "CLC", str, fontSettings[i].szFace);
                                     wsprintfA(str, "Font%dSet", i);

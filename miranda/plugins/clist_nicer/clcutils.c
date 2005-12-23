@@ -471,7 +471,7 @@ void BeginRenameSelection(HWND hwnd, struct ClcData *dat)
     h=dat->row_heights[dat->selection];
     {
         int i;
-        for (i=0; i<=FONTID_MAX; i++)
+        for (i=0; i <= FONTID_LAST; i++)
            if (h<dat->fontInfo[i].fontHeight+2) h=dat->fontInfo[i].fontHeight+2;
     }
 #if defined(_UNICODE)

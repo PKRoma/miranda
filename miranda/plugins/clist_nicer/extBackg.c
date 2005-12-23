@@ -1026,7 +1026,7 @@ void export(char *file)
             WritePrivateProfileStructA("ExtBKSettings", buffer, &(StatusItems[n].BORDERSTYLE), sizeof(StatusItems[n].BORDERSTYLE), file);
         }
     }
-    for(n = 0; n <= FONTID_MAX; n++) {
+    for(n = 0; n <= FONTID_LAST; n++) {
         mir_snprintf(szSection, 255, "Font%d", n);
         
         mir_snprintf(szKey, 255, "Font%dName", n);
@@ -1550,7 +1550,7 @@ void import(char *file, HWND hwndDlg)
     data = 0;
     GetPrivateProfileStructA("Global", "Version", &version, 4, file);
     if(version >= 2) {
-        for(n = 0; n <= FONTID_MAX; n++) {
+        for(n = 0; n <= FONTID_LAST; n++) {
             mir_snprintf(szSection, 255, "Font%d", n);
 
             mir_snprintf(szKey, 255, "Font%dName", n);
