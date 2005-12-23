@@ -960,6 +960,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					PostMessage(hwnd, WM_COMMAND, nStatus, 0);
 			}
 #endif
+			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), 0);
 			return FALSE;
 		}
 	case WM_NCCREATE:
@@ -1012,7 +1013,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			if (g_CluiData.soundsOff)
 				hSoundHook = HookEvent(ME_SKIN_PLAYINGSOUND, ClcSoundHook);
-			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), 0);
 			DrawMenuBar(hwnd);
 			SetButtonStyle();
 			if(g_CluiData.bSkinnedToolbar)
