@@ -156,6 +156,12 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 	}
 #endif
 
+	g_CluiData.bMetaAvail = ServiceExists(MS_MC_GETDEFAULTCONTACT) ? TRUE : FALSE;
+	if(g_CluiData.bMetaAvail)
+		mir_snprintf(g_CluiData.szMetaName, 256, "%s", (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0));
+	else
+		strncpy(g_CluiData.szMetaName, "MetaContacts", 255);
+
 	if(ServiceExists(MS_MC_DISABLEHIDDENGROUP))
 		CallService(MS_MC_DISABLEHIDDENGROUP, 1, 0);
 
@@ -208,12 +214,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
 
 	ZeroMemory((void*) &g_CluiData, sizeof(g_CluiData));
-	g_CluiData.bMetaAvail = ServiceExists(MS_MC_GETDEFAULTCONTACT) ? TRUE : FALSE;
-	if(g_CluiData.bMetaAvail)
-		mir_snprintf(g_CluiData.szMetaName, 256, "%s", (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0));
-	else
-		strncpy(g_CluiData.szMetaName, "MetaContacts", 255);
-
 	g_ExtraCache = malloc(sizeof(struct ExtraCache) * EXTRAIMAGECACHESIZE);
 	ZeroMemory(g_ExtraCache, sizeof(struct ExtraCache) * EXTRAIMAGECACHESIZE);
 	g_nextExtraCacheEntry = 0;
