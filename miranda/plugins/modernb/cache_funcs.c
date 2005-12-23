@@ -21,24 +21,49 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Created by Pescuma
+Modified by FYR
 
 */
+
+/************************************************************************/
+/*             Module for working with lines text and avatars           */
+/************************************************************************/
+
 #include "commonheaders.h"
 #include "cache_funcs.h"
 
-typedef struct _AskChain {
-  HANDLE ContactRequest;
-  struct AskChain *Next;
-}AskChain;
 
-extern int CopySkipUnPrintableChars(TCHAR *to, TCHAR * buf, DWORD size);
+/*
+ *	Module Prototypes
+ */
+int CopySkipUnPrintableChars(TCHAR *to, TCHAR * buf, DWORD size);
+typedef BOOL (* ExecuteOnAllContactsFuncPtr) (struct ClcContact *contact, BOOL subcontact, void *param);
+BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param);
+BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param);
+
+/*
+ *	Module global variables to implement away messages requests queue
+ *  need to avoid disconnection from server (ICQ)
+ */
+
+#define ASKPERIOD 3000
+
+typedef struct _AskChain {
+	HANDLE ContactRequest;
+	struct AskChain *Next;
+}AskChain;
 
 AskChain * FirstChain=NULL;
 AskChain * LastChain=NULL;
 BOOL LockChainAddition=0;
 BOOL LockChainDeletion=0;
 DWORD RequestTick=0;
+BOOL ISTREADSTARTED=0;
 
+
+/*
+ *  Add contact handle to requests queue
+ */
 int AddHandleToChain(HANDLE hContact)
 {
   AskChain * workChain;
@@ -81,6 +106,10 @@ int AddHandleToChain(HANDLE hContact)
   return 1;
 }
 
+
+/*
+ *	Gets handle from queue for request
+ */
 HANDLE GetCurrChain()
 {
   struct AskChain * workChain;
@@ -102,9 +131,10 @@ HANDLE GetCurrChain()
   return res;
 }
 
-#define ASKPERIOD 3000
-BOOL ISTREADSTARTED=0;
 
+/*
+ *	Tread sub to ask protocol to retrieve away message
+ */
 int AskStatusMessageThread(HWND hwnd)
 {
   DWORD time;
@@ -160,6 +190,10 @@ int AskStatusMessageThread(HWND hwnd)
 }
 
 
+
+/*
+ *	Sub to be called outside on status changing to retrieve away message
+ */
 void ReAskStatusMessage(HANDLE wParam)
 {
   int res;
@@ -173,12 +207,6 @@ void ReAskStatusMessage(HANDLE wParam)
 	else return;
   }
   res=AddHandleToChain(wParam); 
-  //if (res) {
-		//char buf[256];
-		//pdisplayNameCacheEntry pdnce = pcli->pfnGetCacheEntry((HANDLE)wParam);
-		//_snprintf(buf,sizeof(buf),"XXXXX Asked PSS_GETAWAYMSG for %s(%x)\n",pdnce->name,wParam);
-		//TRACE(buf);
-  //}
   if (!ISTREADSTARTED && res) 
   {
     TRACE("....start ask thread\n");
@@ -189,13 +217,12 @@ void ReAskStatusMessage(HANDLE wParam)
 
 
 
-typedef BOOL (* ExecuteOnAllContactsFuncPtr) (struct ClcContact *contact, BOOL subcontact, void *param);
-BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param);
-BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param);
 
 
 
-// Get timezone for contact
+/*
+ *	Get time zone for contact
+ */
 void Cache_GetTimezone(struct ClcData *dat, struct ClcContact *contact)
 {
 	contact->timezone = (DWORD)DBGetContactSettingByte(contact->hContact,"UserInfo","Timezone", 
@@ -215,7 +242,9 @@ void Cache_GetTimezone(struct ClcData *dat, struct ClcContact *contact)
 }
 
 
-// Get all lines of text
+/*
+ *	Get all lines of text
+ */ 
 void Cache_GetText(struct ClcData *dat, struct ClcContact *contact)
 {
 	Cache_GetFirstLineText(dat, contact);
@@ -223,7 +252,9 @@ void Cache_GetText(struct ClcData *dat, struct ClcContact *contact)
 	Cache_GetThirdLineText(dat, contact);
 }
 
-
+/*
+*	Destroy smiley list
+*/ 
 void Cache_DestroySmileyList( SortedList* p_list )
 {
 	if ( p_list == NULL )
@@ -252,7 +283,10 @@ void Cache_DestroySmileyList( SortedList* p_list )
 	li.List_Destroy( p_list );
 }
 
-// Generate the list of smileys / text to be drawn
+
+/*
+* Parsing of text for smiley
+*/
 void Cache_ReplaceSmileys(struct ClcData *dat, struct ClcContact *contact, TCHAR *text, int text_size, SortedList **plText, 
 						 int *max_smiley_height, BOOL replace_smileys)
 {
@@ -382,10 +416,12 @@ void Cache_ReplaceSmileys(struct ClcData *dat, struct ClcContact *contact, TCHAR
 	}
 }
 
-// -1 for XStatus, 1 for Status
+/*
+ *	Getting Status name
+ *  -1 for XStatus, 1 for Status
+ */
 int GetStatusName(TCHAR *text, int text_size, struct ClcContact *contact, BOOL xstatus_has_priority) 
 {
-	//DBVARIANT dbv;
 	BOOL noAwayMsg=FALSE;
 	BOOL noXstatus=FALSE;
 	// Hide status text if Offline  /// no offline		
@@ -413,7 +449,7 @@ int GetStatusName(TCHAR *text, int text_size, struct ClcContact *contact, BOOL x
 
 	// Get Status name
 	{
-		TCHAR *tmp = pcli->pfnGetStatusModeDescription(contact->status, 0);
+		TCHAR *tmp = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)contact->status, GCMDF_TCHAR_MY);
 		lstrcpyn(text, tmp, text_size);
 		//CopySkipUnPrintableChars(text, dbv.pszVal, text_size-1);
 		if (text[0] != '\0')
@@ -438,7 +474,10 @@ int GetStatusName(TCHAR *text, int text_size, struct ClcContact *contact, BOOL x
 	return 1;
 }
 
-// -1 for XStatus, 1 for Status
+/*
+*	Getting Status message (Away message)
+*  -1 for XStatus, 1 for Status
+*/
 int GetStatusMessage(TCHAR *text, int text_size, struct ClcContact *contact, BOOL xstatus_has_priority) 
 {
 	DBVARIANT dbv;
@@ -498,8 +537,9 @@ int GetStatusMessage(TCHAR *text, int text_size, struct ClcContact *contact, BOO
 }
 
 
-
-// Get the text based on the settings for a especific line
+/*
+ *	Get the text for specified lines
+ */
 void Cache_GetLineText(struct ClcContact *contact, int type, LPTSTR text, int text_size, TCHAR *variable_text, BOOL xstatus_has_priority, BOOL show_status_if_no_away, BOOL use_name_and_message_for_xstatus, BOOL contact_time_show_only_if_different)
 {
 	text[0] = '\0';
@@ -606,6 +646,9 @@ void Cache_GetLineText(struct ClcContact *contact, int type, LPTSTR text, int te
 
 }
 
+/*
+*	Get the text for First Line
+*/
 void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact)
 {
 	lstrcpyn(contact->szText, pcli->pfnGetContactDisplayName(contact->hContact,0),sizeof(contact->szText));
@@ -613,6 +656,9 @@ void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact)
 		&contact->iTextMaxSmileyHeight,dat->first_line_draw_smileys);
 }
 
+/*
+*	Get the text for Second Line
+*/
 void Cache_GetSecondLineText(struct ClcData *dat, struct ClcContact *contact)
 {
   TCHAR Text[120-MAXEXTRACOLUMNS]={0};
@@ -630,6 +676,9 @@ void Cache_GetSecondLineText(struct ClcData *dat, struct ClcContact *contact)
 
 }
 
+/*
+*	Get the text for Third Line
+*/
 void Cache_GetThirdLineText(struct ClcData *dat, struct ClcContact *contact)
 {
   TCHAR Text[120-MAXEXTRACOLUMNS]={0};
@@ -647,6 +696,39 @@ void Cache_GetThirdLineText(struct ClcData *dat, struct ClcContact *contact)
 }
 
 
+
+/*
+*	Copy string with removing Escape chars from text
+*/
+int CopySkipUnPrintableChars(TCHAR *to, TCHAR * buf, DWORD size)
+{
+	DWORD i;
+	BOOL keep=0;
+	TCHAR * cp=to;
+	for (i=0; i<size; i++)
+	{
+		if (buf[i]==0) break;
+		if (buf[i]>0 && buf[i]<' ')
+		{
+			*cp=' ';
+			if (!keep) cp++;
+			keep=1;
+		}
+		else
+		{     
+			keep=0;
+			*cp=buf[i];
+			cp++;
+		} 
+	}
+	*cp=0;
+	return i;
+}
+
+
+/*
+ *	Avatar working routines
+ */
 // If ExecuteOnAllContactsFuncPtr returns FALSE, stop loop
 // Return TRUE if finished, FALSE if was stoped
 BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param)
@@ -700,30 +782,6 @@ BOOL ReduceAvatarPosition(struct ClcContact *contact, BOOL subcontact, void *par
 	return TRUE;
 }
 
-int CopySkipUnPrintableChars(TCHAR *to, TCHAR * buf, DWORD size)
-{
-  DWORD i;
-  BOOL keep=0;
-  TCHAR * cp=to;
-  for (i=0; i<size; i++)
-  {
-    if (buf[i]==0) break;
-    if (buf[i]<' ')
-    {
-      *cp=' ';
-      if (!keep) cp++;
-      keep=1;
-    }
-    else
-    {     
-      keep=0;
-      *cp=buf[i];
-      cp++;
-    } 
-  }
-  *cp=0;
-  return i;
-}
 
 void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 {
@@ -861,40 +919,3 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 
 
 
-
-/*------------
-void Cache_GetStatusMessage(struct ClcContact *contact)
-{
-	DBVARIANT dbv;
-
-	contact->szStatusMsg[0] = '\0';
-
-	// Get XStatusMsg
-	if (contact->hContact && contact->proto)
-	{
-		// Try to get XStatusMsg
-		if (!DBGetContactSetting(contact->hContact, contact->proto, "XStatusMsg", &dbv)) 
-		{
-			lstrcpynA(contact->szStatusMsg, dbv.pszVal, sizeof(contact->szStatusMsg));
-			DBFreeVariant(&dbv);
-		}
-		// Get StatusMsg
-	  if (contact->szStatusMsg[0] == '\0')
-	  {
-		  if (!DBGetContactSetting(contact->hContact, "CList", "StatusMsg", &dbv)) 
-		  {
-  			lstrcpynA(contact->szStatusMsg, dbv.pszVal, sizeof(contact->szStatusMsg));
-        {
-          int i;
-          for (i=0; i<sizeof(contact->szStatusMsg); i++)
-          {
-            if (contact->szStatusMsg[i]==0) break;
-            else if ((BYTE)contact->szStatusMsg[i]<32) 
-              contact->szStatusMsg[i]=(char)32;
-          }
-        }
-	  		DBFreeVariant(&dbv);
-		  }
-	  }
-  }
-}-------------*/
