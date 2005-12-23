@@ -199,13 +199,14 @@ void FS_RegisterFonts()
     colornames[2].defclr = GetSysColor(COLOR_3DFACE);
     
     cid.cbSize = sizeof(cid);
-    strncpy(cid.group, "TabSRMM", sizeof(cid.group));
+    strncpy(cid.group, "TabSRMM Message log", sizeof(cid.group));
     strncpy(cid.dbSettingsGroup, FONTMODULE, sizeof(cid.dbSettingsGroup));
     while(colornames[i].szName != NULL) {
         strncpy(cid.name, colornames[i].szName, sizeof(cid.name));
         strncpy(cid.setting, colornames[i].szSetting, sizeof(cid.setting));
         cid.defcolour = DBGetContactSettingDword(NULL, colornames[i].szModule, colornames[i].szSetting, RGB(224, 224, 224));
         CallService(MS_COLOUR_REGISTER, (WPARAM)&cid, 0);
+		//MessageBoxA(0, colornames[i].szName, colornames[i].szSetting, MB_OK);
         cid.order++;
         i++;
     }

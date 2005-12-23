@@ -15,7 +15,7 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 0.9.9.99 - 2005/11/11
+Version 0.9.9.99 - 2005/12/23 - happy Xmas :)
 
 		* improvments for own avatar display. Now, this uses the avatar service (minimum
 		  version 0.0.1.11) for managing your own avatars. tabSRMM now always shows the proper
@@ -128,6 +128,8 @@ Version 0.9.9.99 - 2005/11/11
 		  invisible markers when copying text from the message log to the message input area.
 
 		+ new hotkey: Alt-F (send file, brings up the send file dialog)
+		
+		! fixed a few minor visual glitches (button mode tabs clipping issues)
 				  		  
 Version 0.9.9.98 - 2005/11/07
 
