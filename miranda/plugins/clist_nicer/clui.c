@@ -38,7 +38,7 @@ int g_fading_active = 0;
 
 static RECT g_PreSizeRect, g_SizingRect;
 static int g_sizingmethod;
-static LONG g_CLUI_x_off, g_CLUI_y_off, g_CLUI_y1_off;
+static LONG g_CLUI_x_off, g_CLUI_y_off, g_CLUI_y1_off, g_CLUI_x1_off;
 static RECT rcWPC;
 
 static HMODULE hUserDll;
@@ -910,10 +910,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_CREATE:
 		{
 			int i;
-			HICON hIcon;
-			HMENU hMenuButtonList;
-			//InstallDialogBoxHook();
-			//create the status wnd
 			{
 				int flags = WS_CHILD | CCS_BOTTOM;
 				flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? WS_VISIBLE : 0;
@@ -926,13 +922,59 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				OldStatusBarProc = (WNDPROC)SetWindowLong(pcli->hwndStatus, GWL_WNDPROC, (LONG)NewStatusBarWndProc);
 				SetClassLong(pcli->hwndStatus, GCL_STYLE, GetClassLong(pcli->hwndStatus, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 			}
-			hMenuButtonList = GetSubMenu(g_CluiData.hMenuButtons, 0);
-			DeleteMenu(hMenuButtonList, 0, MF_BYPOSITION);
-
 			if(!g_CluiData.bFirstRun)
 				ConfigureEventArea(hwnd);
 			CluiProtocolStatusChanged();
 			ConfigureCLUIGeometry();
+			for(i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
+#if defined(_UNICODE)
+				char *szTemp = Translate((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0));
+				MultiByteToWideChar(CP_ACP, 0, szTemp, -1, &statusNames[i - ID_STATUS_OFFLINE][0], 100);
+				statusNames[i - ID_STATUS_OFFLINE][100] = 0;
+#else
+				statusNames[i - ID_STATUS_OFFLINE] = Translate(((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0)));
+#endif
+			}
+			//delay creation of CLC so that it can get the status icons right the first time (needs protocol modules loaded)
+			PostMessage(hwnd, M_CREATECLC, 0, 0);
+			SFL_Create();
+			if (MySetLayeredWindowAttributes && g_CluiData.bLayeredHack) {
+				SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | (WS_EX_LAYERED));
+				MySetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 255, LWA_ALPHA);
+			}
+
+			if (g_CluiData.isTransparent && MySetLayeredWindowAttributes != NULL) {
+				SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+				if (MySetLayeredWindowAttributes)
+					MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), g_CluiData.alpha, LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
+			}
+			transparentFocus = 1;
+
+#ifndef _DEBUG
+			// Miranda is starting up! Restore last status mode.
+			// This is not done in debug builds because frequent
+			// reconnections will get you banned from the servers.
+			{
+				int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
+				if (nStatus != ID_STATUS_OFFLINE)
+					PostMessage(hwnd, WM_COMMAND, nStatus, 0);
+			}
+#endif
+			return FALSE;
+		}
+	case WM_NCCREATE:
+		{
+			LPCREATESTRUCT p = (LPCREATESTRUCT)lParam;
+			p->style &= ~(CS_HREDRAW | CS_VREDRAW);
+		}
+		break;
+	case M_CREATECLC:
+		{
+			int i;
+			HICON hIcon;
+			HMENU hMenuButtonList = GetSubMenu(g_CluiData.hMenuButtons, 0);
+			DeleteMenu(hMenuButtonList, 0, MF_BYPOSITION);
+
 			for (i = 0; ; i++) {
 				if (top_buttons[i].szTooltip == NULL)
 					break;
@@ -978,53 +1020,11 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			ConfigureFrame();
 			SetButtonStates(hwnd); 
 
-			for(i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
-#if defined(_UNICODE)
-				char *szTemp = Translate((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0));
-				MultiByteToWideChar(CP_ACP, 0, szTemp, -1, &statusNames[i - ID_STATUS_OFFLINE][0], 100);
-				statusNames[i - ID_STATUS_OFFLINE][100] = 0;
-#else
-				statusNames[i - ID_STATUS_OFFLINE] = Translate(((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0)));
-#endif
-			}
-			//delay creation of CLC so that it can get the status icons right the first time (needs protocol modules loaded)
-			PostMessage(hwnd, M_CREATECLC, 0, 0);
-			SFL_Create();
-			if (MySetLayeredWindowAttributes && g_CluiData.bLayeredHack) {
-				SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | (WS_EX_LAYERED));
-				MySetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 255, LWA_ALPHA);
-			}
-
-			if (g_CluiData.isTransparent && MySetLayeredWindowAttributes != NULL) {
-				SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-				if (MySetLayeredWindowAttributes)
-					MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), g_CluiData.alpha, LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
-			}
-			transparentFocus = 1;
-
-#ifndef _DEBUG
-			// Miranda is starting up! Restore last status mode.
-			// This is not done in debug builds because frequent
-			// reconnections will get you banned from the servers.
-			{
-				int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
-				if (nStatus != ID_STATUS_OFFLINE)
-					PostMessage(hwnd, WM_COMMAND, nStatus, 0);
-			}
-#endif
-			return FALSE;
+			CreateCLC(hwnd);
+			g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
+			PostMessage(hwnd, WM_SIZE, 0, 0);
+			return 0;
 		}
-	case WM_NCCREATE:
-		{
-			LPCREATESTRUCT p = (LPCREATESTRUCT)lParam;
-			p->style &= ~(CS_HREDRAW | CS_VREDRAW);
-		}
-		break;
-	case M_CREATECLC:
-		CreateCLC(hwnd);
-		g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
-		return 0;
-
 	case WM_ERASEBKGND:
 		if(g_CluiData.bSkinnedButtonMode)
 			return TRUE;
@@ -1150,22 +1150,26 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			EndPaint(hwnd, &ps);
 			return 0;
 		}
-	case WM_ENTERSIZEMOVE:
-		{
-			RECT rc;
-			POINT pt = {0};
+    case WM_ENTERSIZEMOVE:
+        {
+            RECT rc;
+            POINT pt = {0};
 
-			GetWindowRect(hwnd, &g_PreSizeRect);
-			GetClientRect(hwnd, &rc);
+            GetWindowRect(hwnd, &g_PreSizeRect);
+            GetClientRect(hwnd, &rc);
+            ClientToScreen(hwnd, &pt);
+            g_CLUI_x_off = pt.x - g_PreSizeRect.left;
+            g_CLUI_y_off = pt.y - g_PreSizeRect.top;
+			pt.x = rc.right;
 			ClientToScreen(hwnd, &pt);
-			g_CLUI_x_off = pt.x - g_PreSizeRect.left;
-			g_CLUI_y_off = pt.y - g_PreSizeRect.top;
-			pt.y = rc.bottom;
-			ClientToScreen(hwnd, &pt);
-			g_CLUI_y1_off = g_PreSizeRect.bottom - pt.y;
-			//g_CluiData.neeedSnap = TRUE;
-			break;
-		}
+			g_CLUI_x1_off = g_PreSizeRect.right - pt.x;
+			pt.x = 0;
+            pt.y = rc.bottom;
+            ClientToScreen(hwnd, &pt);
+            g_CLUI_y1_off = g_PreSizeRect.bottom - pt.y;
+            //g_CluiData.neeedSnap = TRUE;
+            break;
+        }
 	case WM_EXITSIZEMOVE:
 		//g_CluiData.neeedSnap = FALSE;
 		PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
@@ -1207,11 +1211,12 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					HDWP PosBatch;
 					int res;
 
-					during_sizing = 1;
-					new_window_rect.left = 0;
-					new_window_rect.right = wp->cx - (2 * g_CLUI_x_off);
-					new_window_rect.top = 0;
-					new_window_rect.bottom = wp->cy - g_CLUI_y_off - g_CLUI_y1_off;
+                    during_sizing = 1;
+                    new_window_rect.left = 0;
+                    new_window_rect.right = wp->cx - (g_CLUI_x_off + g_CLUI_x1_off);
+                    new_window_rect.top = 0;
+                    new_window_rect.bottom = wp->cy - g_CLUI_y_off - g_CLUI_y1_off;
+					
 					PosBatch = BeginDeferWindowPos(25);
 					SizeFramesByWindowRect(&new_window_rect, &PosBatch);
 					dock_prevent_moving=0;
@@ -1270,12 +1275,21 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			g_CluiData.forceResize = FALSE;
 			PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
 		}
-		if (wParam == SIZE_MINIMIZED) {
-			if (DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT)) {
-				ShowWindow(hwnd, SW_HIDE);
-				DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
-			} else
-				DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_MINIMIZED);
+        if (wParam == SIZE_MINIMIZED) {
+            if (DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT)) {
+                ShowWindow(hwnd, SW_HIDE);
+                DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
+            } else
+                DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_MINIMIZED);
+        }
+		else if(wParam == SIZE_RESTORED) {
+			if(DBGetContactSettingByte(NULL, "CList", "State", 0) == SETTING_STATE_MINIMIZED || DBGetContactSettingByte(NULL, "CList", "State", 0) == SETTING_STATE_HIDDEN) {
+				ShowWindow(hwnd, SW_RESTORE);
+				_DebugPopup(0, "restored");
+				DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
+				PostMessage(hwnd, WM_SIZE, 0, 0);
+				PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
+			}
 		}
 	case WM_MOVE:
 		if (!IsIconic(hwnd)) {
@@ -1293,13 +1307,13 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_SETFOCUS:
 		SetFocus(pcli->hwndContactTree);
 		return 0;
-
-	case CLUIINTM_REMOVEFROMTASKBAR:
-		RemoveFromTaskBar(hwnd);
-		return 0;
-	case WM_NCACTIVATE:
-		//PostMessage(hwnd, CLUIINTM_REMOVEFROMTASKBAR, 0, 0);
-		break;
+    case CLUIINTM_REMOVEFROMTASKBAR:
+		{
+			BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT);
+			if(windowStyle == SETTING_WINDOWSTYLE_DEFAULT)
+				RemoveFromTaskBar(hwnd);
+			return 0;
+		}
 	case WM_ACTIVATE:
 		if(g_fading_active) {
 			if(wParam != WA_INACTIVE && g_CluiData.isTransparent)
@@ -1319,6 +1333,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				transparentFocus = 1;
 			}
 		}
+		PostMessage(hwnd, CLUIINTM_REMOVEFROMTASKBAR, 0, 0);
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 
 	case WM_SETCURSOR:
@@ -1420,7 +1435,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if (!g_CluiData.fadeinout || !IsWinVer2000Plus())
 				break;
 
+            PostMessage(hwnd, CLUIINTM_REMOVEFROMTASKBAR, 0, 0);
 			g_fading_active = 1;
+
 			if (wParam) {
 				sourceAlpha = 0;
 				destAlpha = g_CluiData.isTransparent ? g_CluiData.alpha : 255;
@@ -1465,7 +1482,16 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			break;
 		}
-
+    case WM_SYSCOMMAND:
+        if (wParam == SC_MAXIMIZE)
+            return 0;
+		else if(wParam == SC_MINIMIZE) {
+			if(DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) == SETTING_WINDOWSTYLE_DEFAULT) {
+				CallService(MS_CLIST_SHOWHIDE, 0, 0);
+				return 0;
+			}
+		}
+        return DefWindowProc(hwnd, msg, wParam, lParam);
 	case WM_COMMAND:
 		{
 			DWORD dwOldFlags = g_CluiData.dwFlags;
@@ -2037,7 +2063,13 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			return 0;
 		}
-
+	case WM_CLOSE:
+        if (DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) != SETTING_WINDOWSTYLE_DEFAULT || 
+            DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT))
+			CallService(MS_CLIST_SHOWHIDE, 0, 0);
+        else
+            SendMessage(hwnd, WM_COMMAND, ID_ICQ_EXIT, 0);
+        return FALSE;
 	case CLUIINTM_REDRAW:
 		RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
 		return 0;

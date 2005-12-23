@@ -151,13 +151,24 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 #if defined(_UNICODE)
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBox(NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("CList Nicer+"), MB_OK );
+		MessageBox(NULL, TranslateT( "This plugin requires miranda database plugin version 0.5.1.0 or later" ), _T("CList Nicer+"), MB_OK );
 		return 1;
 	}
 #endif
 
 	if(ServiceExists(MS_MC_DISABLEHIDDENGROUP))
 		CallService(MS_MC_DISABLEHIDDENGROUP, 1, 0);
+
+	g_CluiData.bAvatarServiceAvail = ServiceExists(MS_AV_GETAVATARBITMAP) ? TRUE : FALSE;
+	if(g_CluiData.bAvatarServiceAvail)
+		HookEvent(ME_AV_AVATARCHANGED, AvatarChanged);
+	g_CluiData.tabSRMM_Avail = ServiceExists("SRMsg_MOD/GetWindowFlags") ? TRUE : FALSE;
+	g_CluiData.IcoLib_Avail = ServiceExists(MS_SKIN2_ADDICON) ? TRUE : FALSE;
+
+	ZeroMemory((void *)im_clienthIcons, sizeof(HICON) * NR_CLIENTS);
+	ZeroMemory((void *)overlayicons, sizeof(HICON) * 10);
+
+	CLN_LoadAllIcons(1);
 
 	return 0;
 }
@@ -209,11 +220,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	g_maxExtraCacheEntry = EXTRAIMAGECACHESIZE;
 
 	g_CluiData.bMetaEnabled = DBGetContactSettingByte(NULL, "MetaContacts", "Enabled", 1);
-	g_CluiData.bAvatarServiceAvail = ServiceExists(MS_AV_GETAVATARBITMAP) ? TRUE : FALSE;
-	if(g_CluiData.bAvatarServiceAvail)
-		HookEvent(ME_AV_AVATARCHANGED, AvatarChanged);
-	g_CluiData.tabSRMM_Avail = ServiceExists("SRMsg_MOD/GetWindowFlags") ? TRUE : FALSE;
-	g_CluiData.IcoLib_Avail = ServiceExists(MS_SKIN2_ADDICON) ? TRUE : FALSE;
 	g_CluiData.toolbarVisibility = DBGetContactSettingDword(NULL, "CLUI", "TBVisibility", DEFAULT_TB_VISIBILITY);
 	g_CluiData.hMenuButtons = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 3);
 	g_CluiData.hMenuNotify = CreatePopupMenu();
@@ -249,8 +255,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	g_CluiData.bFirstRun = DBGetContactSettingByte(NULL, "CLUI", "firstrun", 1);
 	if(g_CluiData.bFirstRun)
 		DBWriteContactSettingByte(NULL, "CLUI", "firstrun", 0);
-	if(!pDrawAlpha)
-		pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS  && g_gdiplusToken) ? GDIp_DrawAlpha : DrawAlpha;
 
 	_tzset();
 	{
@@ -264,10 +268,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	Reload3dBevelColors();
 	himlExtraImages = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 30, 2);
 	ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
-	ZeroMemory((void *)im_clienthIcons, sizeof(HICON) * NR_CLIENTS);
-	ZeroMemory((void *)overlayicons, sizeof(HICON) * 10);
-
-	CLN_LoadAllIcons(1);
 
 	g_CluiData.dwFlags = DBGetContactSettingDword(NULL, "CLUI", "Frameflags", CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_USEEVENTAREA | CLUI_FRAME_STATUSICONS | CLUI_FRAME_SHOWBOTTOMBUTTONS);
 	g_CluiData.dwFlags |= (DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? CLUI_FRAME_SBARSHOW : 0);
