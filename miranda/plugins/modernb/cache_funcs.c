@@ -772,6 +772,17 @@ BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFun
 	return TRUE;
 }
 
+BOOL UpdateAllAvatarsProxy(struct ClcContact *contact, BOOL subcontact, void *param)
+{
+	Cache_GetAvatar((struct ClcData *)param, contact);
+	return TRUE;
+}
+
+void UpdateAllAvatars(struct ClcData *dat)
+{
+	ExecuteOnAllContacts(dat,UpdateAllAvatarsProxy,dat);
+}
+
 BOOL ReduceAvatarPosition(struct ClcContact *contact, BOOL subcontact, void *param)
 {
 	if (contact->avatar_pos >= *((int *)param))

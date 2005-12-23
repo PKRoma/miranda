@@ -29,7 +29,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
 int HideWindow(HWND hwndContactList, int mode);
 extern int SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam);
-extern int DefaultImageListColorDepth;
+extern void InitTray(void);
+
 void InitGroupMenus(void);
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 int AddMainMenuItem(WPARAM wParam,LPARAM lParam);
@@ -45,18 +46,18 @@ int CListOptInit(WPARAM wParam,LPARAM lParam);
 int SkinOptInit(WPARAM wParam,LPARAM lParam);
 void TrayIconUpdateBase(const char *szChangedProto);
 int EventsProcessContactDoubleClick(HANDLE hContact);
-int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
+
 int TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam);
-int CompareContacts(WPARAM wParam,LPARAM lParam);
+int CompareContacts(const struct ClcContact *contact1,const struct ClcContact *contact2);
 int ContactChangeGroup(WPARAM wParam,LPARAM lParam);
 void InitTrayMenus(void);
 
-extern BOOL InvalidateRectZ(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+extern BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
 extern int ActivateSubContainers(BOOL active);
 extern int BehindEdgeSettings;
 
 HANDLE hStatusModeChangeEvent,hContactIconChangedEvent;
-HIMAGELIST hCListImages;
+HIMAGELIST hCListImages=NULL;
 extern int currentDesiredStatusMode;
 BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
 extern BYTE nameOrder[];
@@ -112,9 +113,10 @@ static int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 {
 	UnhookEvent(hSettingChanged);
 	UninitCustomMenus();
-	UninitCListEvents();
+	//UninitCListEvents();
 	return 0;
 }
+extern int ToggleHideOffline(WPARAM wParam,LPARAM lParam);
 
 int LoadContactListModule(void)
 {
@@ -134,14 +136,16 @@ int LoadContactListModule(void)
 	CreateServiceFunction(MS_CLIST_TRAYICONPROCESSMESSAGE,TrayIconProcessMessage);
 	CreateServiceFunction(MS_CLIST_PAUSEAUTOHIDE,TrayIconPauseAutoHide);
 	CreateServiceFunction(MS_CLIST_CONTACTCHANGEGROUP,ContactChangeGroup);
-
+	CreateServiceFunction(MS_CLIST_TOGGLEHIDEOFFLINE,ToggleHideOffline);
 	CreateServiceFunction(MS_CLIST_GETCONTACTICON,GetContactIcon);
+
 	MySetProcessWorkingSetSize=(BOOL (WINAPI*)(HANDLE,SIZE_T,SIZE_T))GetProcAddress(GetModuleHandle(TEXT("kernel32")),"SetProcessWorkingSetSize");
 	hCListImages = ImageList_Create(16, 16, ILC_MASK|ILC_COLOR32, 32, 0);
 
-	InitCListEvents();
+	//InitCListEvents();
 	InitCustomMenus();
-	InitTrayMenus();
+	InitTray();
+
 	return 0;
 }
 

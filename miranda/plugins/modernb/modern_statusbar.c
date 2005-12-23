@@ -150,7 +150,7 @@ int ModernDrawStatusBar(HWND hwnd, HDC hDC)
   if (GetParent(hwnd)==pcli->hwndContactList)
     return ModernDrawStatusBarWorker(hwnd,hDC);
   else
-    InvalidateRectZ(hwnd,NULL,FALSE);
+    skinInvalidateRect(hwnd,NULL,FALSE);
   return 0;
 }
 

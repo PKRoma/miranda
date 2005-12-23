@@ -23,6 +23,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_clc.h"
 #include "clc.h"
+#include "commonprototypes.h"
+
+#define CacheArrSize 255
+struct ClcGroup *CacheIndex[CacheArrSize]={NULL};
+boolean CacheIndexClear=TRUE;
 
 /* the CLC uses 3 different ways to identify elements in its list, this file
 contains routines to convert between them.
@@ -40,8 +45,6 @@ exclusively externally
 3->1: FindItem()
 2->1: GetRowByIndex()
 */
-extern void CheckPDNCE(pdisplayNameCacheEntry pdnce);
-
 
 int GetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex)
 {
@@ -79,65 +82,6 @@ int GetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactI
 	}
 	return -1;
 }
-
-void ClearClcContactCache(struct ClcData *dat,HANDLE hContact)
-{
-	/*
-	pdisplayNameCacheEntry cacheEntry;
-
-	if (hContact==INVALID_HANDLE_VALUE)
-	{
-	int i,tick;
-	tick=GetTickCount();
-
-	for(i=0;i<(dat->lCLCContactsCache.realCount);i++)
-	{
-	pdisplayNameCacheEntry pdnce;
-	pdnce=dat->lCLCContactsCache.items[i];
-	pdnce->ClcContact=NULL;
-	}
-
-	//FreeDisplayNameCache(&dat->lCLCContactsCache);
-	//InitDisplayNameCache(&dat->lCLCContactsCache);			
-	tick=GetTickCount()-tick;
-
-	{ char buf[256];
-	sprintf	(buf,"Clear full cache %d ms\r\n",tick);
-	TRACE(buf);		
-	}
-	}
-	else if(!IsHContactGroup(hContact)&&!IsHContactInfo(hContact))
-	{
-	{
-	//				char buf[255];
-	//sprintf(buf,"ClearCache %x,%x\r\n",dat,hContact);
-	//TRACE(buf);
-	}
-	cacheEntry=GetCLCFullCacheEntry(dat,hContact);
-	if (cacheEntry!=NULL)
-	{
-	cacheEntry->ClcContact=NULL;
-	}
-	}
-	*/
-}
-
-/*
-void SetClcContactCacheItem(struct ClcData *dat,HANDLE hContact,void *contact)
-{
-pdisplayNameCacheEntry cacheEntry;
-if(!IsHContactGroup(hContact)&&!IsHContactInfo(hContact))
-{
-cacheEntry=GetCLCFullCacheEntry(dat,hContact);
-if (cacheEntry!=NULL)
-{
-cacheEntry->ClcContact=contact;
-};
-}
-
-}
-*/
-
 
 int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible, BOOL isIgnoreSubcontacts)
 {
@@ -231,9 +175,7 @@ int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **cont
 
 	return 0;
 }
-#define CacheArrSize 255
-struct ClcGroup *CacheIndex[CacheArrSize]={NULL};
-boolean CacheIndexClear=TRUE;
+
 void ClearRowByIndexCache()
 {
 	if (!CacheIndexClear) 
@@ -249,12 +191,6 @@ int GetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,
 	struct ClcGroup *group=&dat->list;
 
 	if (testindex<0) return (-1);
-	//	if (FALSE&&(testindex>0)&&testindex<CacheArrSize&&CacheIndex[testindex]!=NULL)
-	//	{
-	//					if(contact) *contact=&(CacheIndex[testindex])->cl.items[group->scanIndex];
-	//					if(subgroup) *subgroup=(CacheIndex[testindex]);
-	//					return (testindex);
-	//	}else
 	{
 		group->scanIndex=0;
 		for(;;) {
@@ -302,10 +238,6 @@ int GetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,
 
 					}
 					index++;
-					/*			if ((group->cl.items[group->scanIndex]->type==CLCIT_CONTACT) && (group->cl.items[group->scanIndex].flags & CONTACTF_STATUSMSG)) {
-					index++;
-					}
-					*/
 					if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP && group->cl.items[group->scanIndex]->group->expanded) {
 						group=group->cl.items[group->scanIndex]->group;
 						group->scanIndex=0;

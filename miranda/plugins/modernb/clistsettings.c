@@ -59,31 +59,32 @@ static int handleCompare( void* c1, void* c2 )
 	return p1 - p2;
 }
 
-void InitDisplayNameCache(SortedList *list)
-{
-	int i, idx;
-	HANDLE hContact;
 
-	memset(list,0,sizeof(SortedList));
-	list->sortFunc = handleCompare;
-	list->increment = 100;
 
-	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
-	i=0;
-	while (hContact!=0)
-	{
-		displayNameCacheEntry *pdnce = mir_calloc(1,sizeof(displayNameCacheEntry));
-		pdnce->hContact = hContact;
-		InvalidateDisplayNameCacheEntryByPDNE(hContact,pdnce,0);
-		li.List_GetIndex(list,pdnce,&idx);
-		li.List_Insert(list,pdnce,idx);
-		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
-		i++;
-}	}
+//	int i, idx;
+//	HANDLE hContact;
+//
+//	memset(list,0,sizeof(SortedList));
+//	list->sortFunc = handleCompare;
+//	list->increment = 100;
+//
+//	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
+//	i=0;
+//	while (hContact!=0)
+//	{
+//		displayNameCacheEntry *pdnce = mir_calloc(1,sizeof(displayNameCacheEntry));
+//		pdnce->hContact = hContact;
+//		InvalidateDisplayNameCacheEntryByPDNE(hContact,pdnce,0);
+//		li.List_GetIndex(list,pdnce,&idx);
+//		li.List_Insert(list,pdnce,idx);
+//		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
+//		i++;
+//}	}
 
 void FreeDisplayNameCacheItem( pdisplayNameCacheEntry p )
 {
-	if ( p->name) { mir_free(p->name); p->name = NULL; }
+	if ( p->name && p->name!=UnknownConctactTranslatedName) mir_free(p->name);
+	p->name = NULL; 
 	#if defined( _UNICODE )
 		if ( p->szName) { mir_free(p->szName); p->szName = NULL; }
 	#endif
@@ -130,7 +131,7 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 				{
 					if(pdnce->szProto&&pdnce->name) 
 					{
-						mir_free(pdnce->name);
+						if (pdnce->name!=UnknownConctactTranslatedName) mir_free(pdnce->name);
 						pdnce->name=NULL;
 					}
 				}
@@ -328,15 +329,16 @@ int GetStatusForContact(HANDLE hContact,char *szProto)
 TCHAR* GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown)
 {
 	TCHAR* result = pcli->pfnGetContactDisplayName(hContact, flag | GCDNF_NOCACHE);
-
+	BOOL itUnknown;
+	if (UnknownConctactTranslatedName == NULL)
+		UnknownConctactTranslatedName = TranslateT("(Unknown Contact)");
+	itUnknown=lstrcmp(result ,UnknownConctactTranslatedName) == 0;
+	if (itUnknown) result=UnknownConctactTranslatedName;
 	if (isUnknown) {
-		if (UnknownConctactTranslatedName == NULL)
-			UnknownConctactTranslatedName = TranslateT("'(Unknown Contact)'");
-
-		*isUnknown = lstrcmp(result ,UnknownConctactTranslatedName) == 0;
+		*isUnknown = itUnknown;
 	}
 
-	return result;
+	return (result);
 }
 
 int GetContactInfosForSort(HANDLE hContact,char **Proto,TCHAR **Name,int *Status)

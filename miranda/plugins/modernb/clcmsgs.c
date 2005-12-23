@@ -23,11 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_clc.h"
 #include "clc.h"
-extern BOOL InvalidateRectZ(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+extern BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
 extern ON_SETALLEXTRAICON_CYCLE;
-extern BYTE LOCK_REPAINTING;
 extern BOOL CLM_AUTOREBUILD_WAS_POSTED;
-#define UNLOCK_REPAINT 13315
+
 //processing of all the CLM_ messages incoming
 
 extern LRESULT ( *saveProcessExternalMessages )(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
@@ -38,13 +37,13 @@ LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wP
 	case CLM_AUTOREBUILD:
 		KillTimer(hwnd,TIMERID_REBUILDAFTER);
 		// Give some time to gather other events too		
-		SetTimer(hwnd,TIMERID_REBUILDAFTER,500,NULL);
+		SetTimer(hwnd,TIMERID_REBUILDAFTER,50,NULL);
 		CLM_AUTOREBUILD_WAS_POSTED=FALSE;
 		return 0;
 
 	case CLM_SETEXTRACOLUMNSSPACE:
 		dat->extraColumnSpacing=(int)wParam;
-		InvalidateRectZ(hwnd,NULL,FALSE);
+		skinInvalidateRect(hwnd,NULL,FALSE);
 		return 0;
 
 	case CLM_SETFONT:
@@ -55,7 +54,7 @@ LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wP
 		RowHeights_GetMaxRowHeight(dat, hwnd);
 
 		if(LOWORD(lParam))
-			InvalidateRectZ(hwnd,NULL,FALSE);
+			skinInvalidateRect(hwnd,NULL,FALSE);
 		return 0;
 
 	case CLM_SETHIDEEMPTYGROUPS:

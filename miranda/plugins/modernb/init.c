@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
+#include "commonprototypes.h"
 
 #include <time.h>
 
@@ -47,10 +48,17 @@ void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
 int   HotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
 int   HotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
 int   HotKeysRegister(HWND hwnd);
+extern int GetContactIcon(WPARAM wParam,LPARAM lParam);
 void  RebuildEntireList(HWND hwnd,struct ClcData *dat);
 void  RecalcScrollBar(HWND hwnd,struct ClcData *dat);
 int   UnRegistersAllHotkey(HWND hwnd);
 
+extern int GetContactIcon(WPARAM wParam,LPARAM lParam);
+extern void TrayIconUpdateBase(char *szChangedProto);
+extern void TrayIconSetToBase(char *szPreferredProto);
+extern void TrayIconIconsChanged(void);
+extern void fnCluiProtocolStatusChanged(void);
+extern HMENU BuildGroupPopupMenu(struct ClcGroup *group);
 struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
 
 int ( *saveAddItemToGroup )( struct ClcGroup *group, int iAboveItem );
@@ -65,6 +73,8 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+int (* saveTrayIconProcessMessage) ( WPARAM wParam, LPARAM lParam );
+
 void ( *saveDeleteItemFromTree )(HWND hwnd, HANDLE hItem);
 void DeleteItemFromTree(HWND hwnd, HANDLE hItem);
 
@@ -73,6 +83,9 @@ void FreeContact( struct ClcContact* );
 
 void ( *saveFreeGroup )( struct ClcGroup* );
 void FreeGroup( struct ClcGroup* );
+
+void ( *saveChangeContactIcon)(HANDLE hContact,int iIcon,int add);
+void ChangeContactIcon(HANDLE hContact,int iIcon,int add);
 
 LRESULT ( *saveProcessExternalMessages )(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
 LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
@@ -118,7 +131,10 @@ int MakeVer(a,b,c,d)
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,4,0,0) ) return NULL;
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,4,3,42) ) 
+	{
+		return NULL;
+	}
     pluginInfo.version=MakeVer(PRODUCT_VERSION);
 	return &pluginInfo;
 }
@@ -152,7 +168,10 @@ static ClcCacheEntryBase* fnCreateCacheItem( HANDLE hContact )
 {
 	pdisplayNameCacheEntry p = (pdisplayNameCacheEntry)calloc( sizeof( displayNameCacheEntry ), 1 );
 	if ( p )
+	{
 		p->hContact = hContact;
+		InvalidateDisplayNameCacheEntryByPDNE(hContact,p,0); //TODO should be in core
+	}
 	return (ClcCacheEntryBase*)p;
 }
 
@@ -173,18 +192,20 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	li.cbSize = sizeof(li);
 	CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
 
+	CreateServiceFunction(MS_CLIST_GETCONTACTICON,GetContactIcon);
+
 	// get the contact list interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
-	pcli->pfnCheckCacheItem = CheckPDNCE;
-	pcli->pfnCListTrayNotify = CListTrayNotify;
+	pcli->pfnCheckCacheItem = (void ( * )( ClcCacheEntryBase* )) CheckPDNCE;
+//	pcli->pfnCListTrayNotify = CListTrayNotify;
 	pcli->pfnCreateClcContact = fnCreateClcContact;
 	pcli->pfnCreateCacheItem = fnCreateCacheItem;
-	pcli->pfnFreeCacheItem = FreeDisplayNameCacheItem;
+	pcli->pfnFreeCacheItem = (void( * )( ClcCacheEntryBase* ))FreeDisplayNameCacheItem;
 	pcli->pfnGetRowBottomY = RowHeights_GetItemBottomY;
 	pcli->pfnGetRowHeight = RowHeights_GetHeight;
 	pcli->pfnGetRowTopY = RowHeights_GetItemTopY;
 	pcli->pfnGetRowTotalHeight = RowHeights_GetTotalHeight;
-	pcli->pfnInvalidateRect = InvalidateRectZ;
+	pcli->pfnInvalidateRect = skinInvalidateRect;
 	pcli->pfnOnCreateClc = LoadCLUIModule;
 	pcli->pfnHotKeysProcess = HotKeysProcess;
 	pcli->pfnHotkeysProcessMessage = HotkeysProcessMessage;
@@ -197,6 +218,21 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnScrollTo = ScrollTo;
 	pcli->pfnShowHide = ShowHide;
 
+	pcli->pfnCluiProtocolStatusChanged=fnCluiProtocolStatusChanged;
+	pcli->pfnBeginRenameSelection=BeginRenameSelection;
+	pcli->pfnHitTest=HitTest;
+	pcli->pfnCompareContacts=CompareContacts;
+
+	pcli->pfnBuildGroupPopupMenu=BuildGroupPopupMenu;
+
+
+	saveTrayIconProcessMessage=pcli->pfnTrayIconProcessMessage; pcli->pfnTrayIconProcessMessage=TrayIconProcessMessage;
+	pcli->pfnTrayIconUpdateBase=(void (*)( const char *szChangedProto ))TrayIconUpdateBase;
+	pcli->pfnTrayIconUpdateWithImageList=(void (*) ( int iImage, const char *szNewTip, char *szPreferredProto ))TrayIconUpdateWithImageList;
+	pcli->pfnTrayIconSetToBase=TrayIconSetToBase;
+	pcli->pfnTrayIconIconsChanged=TrayIconIconsChanged;
+
+
 	saveAddGroup = pcli->pfnAddGroup; pcli->pfnAddGroup = AddGroup;
 	saveAddInfoItemToGroup = pcli->pfnAddInfoItemToGroup; pcli->pfnAddInfoItemToGroup = AddInfoItemToGroup;
 	saveAddItemToGroup = pcli->pfnAddItemToGroup; pcli->pfnAddItemToGroup = AddItemToGroup;
@@ -206,6 +242,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	saveFreeContact = pcli->pfnFreeContact; pcli->pfnFreeContact = FreeContact;
 	saveFreeGroup = pcli->pfnFreeGroup; pcli->pfnFreeGroup = FreeGroup;
 	saveProcessExternalMessages = pcli->pfnProcessExternalMessages; pcli->pfnProcessExternalMessages = ProcessExternalMessages;
+
+	saveChangeContactIcon = pcli->pfnChangeContactIcon; pcli->pfnChangeContactIcon = ChangeContactIcon;
 
 	memset(&SED,0,sizeof(SED));
 	CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);

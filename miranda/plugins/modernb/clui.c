@@ -48,7 +48,6 @@ extern BYTE CALLED_FROM_SHOWHIDE;
 #define MENU_STATUSMENU         0xFFFF1235
 
 extern BOOL TransparentFlag;
-extern int DefaultImageListColorDepth;
 extern void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
 extern sCurrentWindowImageData * cachedWindow;
 int BehindEdge_State;
@@ -454,7 +453,7 @@ int BehindEdge_Show()
 }
 
 
-BOOL InvalidateRectZ(HWND hWnd, CONST RECT* lpRect,BOOL bErase )
+BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase )
 {
 
 	if (IsInMainWindow(hWnd) && LayeredFlag)// && IsWindowVisible(hWnd))
@@ -2824,14 +2823,14 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					static RECT rcWindow,rcTree,rcTree2,rcWorkArea,rcOld;
 					int maxHeight,newHeight;
 					int winstyle;
-					if (disableautoupd==1){break;};
+					if (disableautoupd==1){return 0;};
 					if (during_sizing)
 						rcWindow=sizing_rect;
 					else					
 						GetWindowRect(hwnd,&rcWindow);
-					if(!DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)){break;}
-					if(CallService(MS_CLIST_DOCKINGISDOCKED,0,0)) break;
-					if (hFrameContactTree==0)break;
+					if(!DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)){return 0;}
+					if(CallService(MS_CLIST_DOCKINGISDOCKED,0,0)) return 0;
+					if (hFrameContactTree==0)return 0;
 					maxHeight=DBGetContactSettingByte(NULL,"CLUI","MaxSizeHeight",75);
 					rcOld=rcWindow;
 					GetWindowRect(pcli->hwndContactTree,&rcTree);
@@ -2857,7 +2856,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					}
 					lastreqh=nmc->pt.y;
 					newHeight=max(CLUIFramesGetMinHeight(),max(nmc->pt.y,3)+1+((winstyle&WS_BORDER)?2:0)+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top));
-					if (newHeight==(rcWindow.bottom-rcWindow.top)) break;
+					if (newHeight==(rcWindow.bottom-rcWindow.top)) return 0;
 
 					if(newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)
 						newHeight=(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100;
@@ -2870,7 +2869,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						rcWindow.bottom=rcWindow.top+newHeight;
 						if(rcWindow.bottom>rcWorkArea.bottom) rcWindow.bottom=rcWorkArea.bottom;
 					}
-					if (requr==1){break;};
+					if (requr==1){return 0;};
 					requr=1;					
 					if (during_sizing)
 					{
@@ -2885,10 +2884,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					}
 					called_from_cln=1;
 					if (!during_sizing)
-						SetWindowPos(hwnd,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER|SWP_NOACTIVATE/*|SWP_NOREDRAW*/);
+						SetWindowPos(hwnd,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER|SWP_NOACTIVATE);
 					else
 					{
-						SetWindowPos(hwnd,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER|SWP_NOACTIVATE/*|SWP_NOREDRAW*/);
+						SetWindowPos(hwnd,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER|SWP_NOACTIVATE);
 					}
 					requr=0;
 					called_from_cln=0;

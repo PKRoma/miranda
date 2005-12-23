@@ -2,7 +2,7 @@
 #include "..\SkinEngine.h"
 
 BOOL ON_SETALLEXTRAICON_CYCLE=0;
-extern int DefaultImageListColorDepth;
+
 //int ImageList_AddIcon_FixAlpha(HIMAGELIST himl,HICON hicon);
 
 #define EXTRACOLUMNCOUNT 7
@@ -19,7 +19,7 @@ extern HIMAGELIST hCListImages;
 
 extern int CluiIconsChanged(WPARAM,LPARAM);
 extern int ClcIconsChanged(WPARAM,LPARAM);
-extern BOOL InvalidateRectZ(HWND hWnd, CONST RECT* lpRect,BOOL bErase);
+extern BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase);
 
 void SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 void LoadExtraImageFunc();
@@ -496,7 +496,7 @@ pdisplayNameCacheEntry pdnce;
 		DBWriteContactSettingDword((HANDLE)0,"CLUI","PF:Last SetAllExtraIcons Time:",tick);
 	}	
     ON_SETALLEXTRAICON_CYCLE=0;
-    //InvalidateRectZ(hwndList,NULL,FALSE);
+    //skinInvalidateRect(hwndList,NULL,FALSE);
     Sleep(0);
 
   

@@ -56,11 +56,41 @@ static int GetContactStatus(HANDLE hContact)
 	return (GetContactCachedStatus(hContact));
 }
 
+extern void ( *saveChangeContactIcon)(HANDLE hContact,int iIcon,int add);
 void ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 {
+	pdisplayNameCacheEntry cacheEntry;
+	HANDLE hMostMeta=NULL;
+	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)hContact);
+	if (iIcon)
+		if (cacheEntry)
+			if (!MyStrCmp(cacheEntry->szProto,"MetaContacts"))
+				if (!DBGetContactSettingByte(NULL,"CLC","Meta",0))
+				{
+					int iMetaStatusIcon;
+					char * szMetaProto;
+					int MetaStatus;
+					szMetaProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);
+					MetaStatus=DBGetContactSettingWord(hContact,szMetaProto,"Status",ID_STATUS_OFFLINE);
+					iMetaStatusIcon=pcli->pfnIconFromStatusMode(szMetaProto,MetaStatus);
+					if (iIcon==iMetaStatusIcon) //going to set meta icon but need to set most online icon
+					{
+							hMostMeta=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
+							if (hMostMeta!=0)            
+							{   
+							char * szRealProto;
+							int RealStatus;					
+						
+							szRealProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hMostMeta,0);
+							RealStatus=DBGetContactSettingWord(hMostMeta,szRealProto,"Status",ID_STATUS_OFFLINE);
+							iIcon=pcli->pfnIconFromStatusMode(szRealProto,RealStatus);
+
+						}
+					}
+				}
 	//clui MS_CLUI_CONTACTADDED MS_CLUI_CONTACTSETICON this methods is null
+	saveChangeContactIcon((HANDLE) hContact,(int) iIcon,(int) add);
 	//CallService(add?MS_CLUI_CONTACTADDED:MS_CLUI_CONTACTSETICON,(WPARAM)hContact,iIcon);
-	NotifyEventHooks(hContactIconChangedEvent,(WPARAM)hContact,iIcon);
 }
 
 static int GetStatusModeOrdering(int statusMode)
@@ -162,15 +192,28 @@ int GetProtoIndex(char * szName)
     return -1;
 }
 
-int CompareContacts2(WPARAM wParam,LPARAM lParam, int by)
+int CompareContacts2(const struct ClcContact *contact1,const struct ClcContact *contact2, int by)
 {
-	HANDLE a=(HANDLE)wParam,b=(HANDLE)lParam;
+
+	HANDLE a;
+	HANDLE b;
 	TCHAR *namea, *nameb;
 	int statusa,statusb;
 	char *szProto1,*szProto2;
 	
-	GetContactInfosForSort(a,&szProto1,&namea,&statusa);
-	GetContactInfosForSort(b,&szProto2,&nameb,&statusb);
+	if ((int)contact1<100 || (int)contact2<100) return 0;
+	
+	a=contact1->hContact;
+	b=contact2->hContact;
+	
+	namea=(TCHAR *)contact1->szText;
+	statusa=contact1->status;
+	szProto1=contact1->proto;
+	
+	nameb=(TCHAR *)contact2->szText;
+	statusb=contact2->status;
+	szProto2=contact2->proto;
+
 
 	if (by==1) { //status
 		int ordera,orderb;
@@ -200,12 +243,12 @@ int CompareContacts2(WPARAM wParam,LPARAM lParam, int by)
 	return 0;
 }
 
-int CompareContacts(WPARAM wParam,LPARAM lParam)
+int CompareContacts(const struct ClcContact *contact1,const struct ClcContact *contact2)
 {
 	int i, r;
 	
 	for (i=0; i<sizeof(sortBy)/sizeof(char*); i++) {
-		r=CompareContacts2(wParam, lParam, sortBy[i]);
+		r=CompareContacts2(contact1, contact2, sortBy[i]);
 		if (r!=0)
 			return r;
 	}

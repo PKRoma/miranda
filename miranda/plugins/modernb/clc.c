@@ -20,6 +20,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
+/************************************************************************/
+/*       Module responsible for working with contact list control       */
+/************************************************************************/
 #include "commonheaders.h"
 #include "m_clc.h"
 #include "clc.h"
@@ -27,50 +31,28 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_skin.h"
 #include "commonprototypes.h"
 
-int DefaultImageListColorDepth=ILC_COLOR32;
 
-HIMAGELIST himlCListClc;
+/*
+ *	Private module variables
+ */
 static HANDLE hShowInfoTipEvent;
-HANDLE hHideInfoTipEvent;
 static HANDLE hAckHook, hAvatarChanged;
-extern int BehindEdgeSettings;
-
 static HANDLE hSettingChanged1;
-static HANDLE hSettingChanged2;
-extern BOOL InvalidateRectZ(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
-extern int BgStatusBarChange(WPARAM wParam,LPARAM lParam);
-
-extern int IsInMainWindow(HWND hwnd);
-extern int BgClcChange(WPARAM wParam,LPARAM lParam);
-extern int BgMenuChange(WPARAM wParam,LPARAM lParam);
-extern int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam);
-extern int UpdateFrameImage(WPARAM /*hWnd*/, LPARAM/*sPaintRequest*/);
-extern int InvalidateFrameImage(WPARAM wParam, LPARAM lParam);
-
-extern void CacheContactAvatar(struct ClcData *dat, struct ClcContact *contact, BOOL changed);
-
-extern int GetStatusForContact(HANDLE hContact,char *szProto);
-extern int GetContactIconC(pdisplayNameCacheEntry cacheEntry);
-extern int GetContactIcon(WPARAM wParam,LPARAM lParam);
-
-extern int TestCursorOnBorders();
-extern int SizingOnBorder(POINT ,int);
-
-extern int BehindEdge_State;
-
-int hClcProtoCount = 0;
-ClcProtoStatus *clcProto = NULL;
-extern int sortBy[3];
-struct ClcContact * hitcontact=NULL;
 static POINT HitPoint;
 static int mUpped;
-BYTE LOCK_REPAINTING=0;
-#define UNLOCK_REPAINT 13315
+static BYTE IsDragToScrollMode=0;
+static int StartDragPos=0;
+static int StartScrollPos=0;
 
-BYTE IsDragToScrollMode=0;
-int StartDragPos=0;
-int StartScrollPos=0;
+/*
+ *	Global variables
+ */
+int hClcProtoCount = 0;
+ClcProtoStatus *clcProto = NULL;
+HIMAGELIST himlCListClc=NULL;
+struct ClcContact * hitcontact=NULL;
 
+extern void UpdateAllAvatars(struct ClcData *dat);
 
 struct AvatarOverlayIconConfig 
 {
@@ -91,99 +73,18 @@ struct AvatarOverlayIconConfig
 	{ "AVATAR_OVERLAY_PHONE", "On the phone", IDI_AVATAR_OVERLAY_PHONE, NULL},
 	{ "AVATAR_OVERLAY_LUNCH", "Out to lunch", IDI_AVATAR_OVERLAY_LUNCH, NULL}
 };
-
-
-int ExitDragToScroll(void);
-
-extern tPaintCallbackProc ClcPaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
-
-
-int EnterDragToScroll(HWND hwnd, int Y)
-{
-	struct ClcData * dat;
-	if (IsDragToScrollMode) return 0;
-	dat=(struct ClcData*)GetWindowLong(hwnd,0);
-	if (!dat) return 0;
-	StartDragPos=Y;
-	StartScrollPos=dat->yScroll;
-	IsDragToScrollMode=1;
-	SetCapture(hwnd);
-	return 1;
-}
-int ProceedDragToScroll(HWND hwnd, int Y)
-{
-	int pos,dy;
-	if (!IsDragToScrollMode) return 0;
-	if(GetCapture()!=hwnd) ExitDragToScroll();
-	dy=StartDragPos-Y;
-	pos=StartScrollPos+dy;
-	if (pos<0) 
-		pos=0;
-	SendMessage(hwnd, WM_VSCROLL,MAKEWPARAM(SB_THUMBTRACK,pos),0);
-	return 1;
-}
-
-int ExitDragToScroll()
-{
-	if (!IsDragToScrollMode) return 0;
-	IsDragToScrollMode=0;
-	ReleaseCapture();
-	return 1;
-}
-
-int GetProtocolVisibility(char * ProtoName)
-//{
-//	char buf[255];
-//	return DBGetContactSettingByte(0,"Protocols",buf,0);
-//}
-{
-	int i;
-	int res=0;
-	DBVARIANT dbv={0};
-	char buf2[15];
-	int count;
-	if (!ProtoName) return 0;
-	count=(int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
-	if (count==-1) return 1;
-	for (i=0; i<count; i++)
-	{
-		itoa(i,buf2,10);
-		if (!DBGetContactSetting(NULL,"Protocols",buf2,&dbv))
-		{
-			if (MyStrCmp(ProtoName,dbv.pszVal)==0)
-			{
-				mir_free(dbv.pszVal);
-				DBFreeVariant(&dbv);
-				itoa(i+400,buf2,10);
-				res= DBGetContactSettingDword(NULL,"Protocols",buf2,0);
-				return res;
-			}
-			mir_free(dbv.pszVal);
-			DBFreeVariant(&dbv);
-		}
-	}
-	return 0;
-}
-
+/*
+*	Smiley Add option is changed Event hook 
+*/
 int SmileyAddOptionsChanged(WPARAM wParam,LPARAM lParam)
 {
 	pcli->pfnClcBroadcast( CLM_AUTOREBUILD,0,0);
 	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
 	return 0;
 }
-
-void ClcOptionsChanged(void)
-{
-	pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
-	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
-}
-
-void SortClcByTimer (HWND hwnd)
-{
-	KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
-	SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10),NULL);
-}
-
+/*
+ *	Contact setting is changed event hook
+ */
 static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
@@ -217,9 +118,10 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 		}
 		else if (!strcmp(cws->szModule,"CList")) 
 		{
+			/*
 			if(!strcmp(cws->szSetting,"MyHandle"))
 				pcli->pfnClcBroadcast( INTM_NAMECHANGED,wParam,lParam);
-			else if(!strcmp(cws->szSetting,"Group"))
+    		else if(!strcmp(cws->szSetting,"Group"))
 				pcli->pfnClcBroadcast( INTM_GROUPCHANGED,wParam,lParam);
 			else if(!strcmp(cws->szSetting,"Hidden"))
 				pcli->pfnClcBroadcast( INTM_HIDDENCHANGED,wParam,lParam);
@@ -231,7 +133,9 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 				pcli->pfnClcBroadcast( INTM_STATUSCHANGED,wParam,0);
 			else if(!strcmp(cws->szSetting,"NameOrder"))
 				pcli->pfnClcBroadcast( INTM_NAMEORDERCHANGED,0,0);
-			else if(!strcmp(cws->szSetting,"StatusMsg")) 
+			else
+			*/
+			if(!strcmp(cws->szSetting,"StatusMsg")) 
 				pcli->pfnClcBroadcast( INTM_STATUSMSGCHANGED,wParam,0);    
 		}
 		else if(!strcmp(cws->szModule,"ContactPhoto")) 
@@ -239,7 +143,7 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 			if (!strcmp(cws->szSetting,"File")) 
 				pcli->pfnClcBroadcast( INTM_AVATARCHANGED,wParam,0);
 		}
-		else 
+		else if(0) //turn off
 		{
 			pdisplayNameCacheEntry pdnce =(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
 
@@ -269,7 +173,9 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-// IcoLib hook to handle icon changes
+/*
+ *	IcoLib hook to handle icon changes
+ */
 static int ReloadAvatarOverlayIcons(WPARAM wParam, LPARAM lParam) 
 {
 	int i;
@@ -284,6 +190,9 @@ static int ReloadAvatarOverlayIcons(WPARAM wParam, LPARAM lParam)
 }
 
 
+/*
+ *	clc modules loaded hook
+ */
 static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	PROTOCOLDESCRIPTOR **proto;
 	int protoCount,i;
@@ -359,6 +268,9 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	return 0;
 }
 
+/*
+ *	Proto ack hook
+ */
 int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 {
 	ACKDATA *ack=(ACKDATA*)lParam;
@@ -401,6 +313,9 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+/*
+ *	Shutting down clc (unhook hooked event)
+ */
 static int ClcShutdown(WPARAM wParam,LPARAM lParam)
 {
 	UnhookEvent(hAckHook);
@@ -409,10 +324,111 @@ static int ClcShutdown(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+
+int AvatarChanged(WPARAM wParam, LPARAM lParam)
+{
+	pcli->pfnClcBroadcast(INTM_AVATARCHANGED, wParam, lParam);
+	return 0;
+}
+/*
+*	Drag-to-scroll implementation
+*/
+int EnterDragToScroll(HWND hwnd, int Y)
+{
+	struct ClcData * dat;
+	if (IsDragToScrollMode) return 0;
+	dat=(struct ClcData*)GetWindowLong(hwnd,0);
+	if (!dat) return 0;
+	StartDragPos=Y;
+	StartScrollPos=dat->yScroll;
+	IsDragToScrollMode=1;
+	SetCapture(hwnd);
+	return 1;
+}
+int ExitDragToScroll()
+{
+	if (!IsDragToScrollMode) return 0;
+	IsDragToScrollMode=0;
+	ReleaseCapture();
+	return 1;
+}
+
+int ProceedDragToScroll(HWND hwnd, int Y)
+{
+	int pos,dy;
+	if (!IsDragToScrollMode) return 0;
+	if(GetCapture()!=hwnd) ExitDragToScroll();
+	dy=StartDragPos-Y;
+	pos=StartScrollPos+dy;
+	if (pos<0) 
+		pos=0;
+	SendMessage(hwnd, WM_VSCROLL,MAKEWPARAM(SB_THUMBTRACK,pos),0);
+	return 1;
+}
+
+
+/*
+*	Is protocol visible?
+*/
+int GetProtocolVisibility(char * ProtoName)
+{
+	int i;
+	int res=0;
+	DBVARIANT dbv={0};
+	char buf2[15];
+	int count;
+	if (!ProtoName) return 0;
+	count=(int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
+	if (count==-1) return 1;
+	for (i=0; i<count; i++)
+	{
+		itoa(i,buf2,10);
+		if (!DBGetContactSetting(NULL,"Protocols",buf2,&dbv))
+		{
+			if (MyStrCmp(ProtoName,dbv.pszVal)==0)
+			{
+				mir_free(dbv.pszVal);
+				DBFreeVariant(&dbv);
+				itoa(i+400,buf2,10);
+				res= DBGetContactSettingDword(NULL,"Protocols",buf2,0);
+				return res;
+			}
+			mir_free(dbv.pszVal);
+			DBFreeVariant(&dbv);
+		}
+	}
+	return 0;
+}
+
+
+
+
+
+/*
+*	Calling after contact list option is changed
+*/
+void ClcOptionsChanged(void)
+{
+	pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
+	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
+}
+
+/*
+*	Setup pendent (by timer) resorting
+*/
+void SortClcByTimer (HWND hwnd)
+{
+	KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
+	SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10),NULL);
+}
+
+/*
+*	Loading CLC module (hooking event)
+*/
 int LoadCLCModule(void)
 {
 	himlCListClc=(HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
-
+//	hCListImages=himlCListClc;
 	hSettingChanged1=HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ClcSettingChanged);
 	HookEvent(ME_OPT_INITIALISE,ClcOptInit);
 	hAckHook=(HANDLE)HookEvent(ME_PROTO_ACK,ClcProtoAck);
@@ -420,14 +436,9 @@ int LoadCLCModule(void)
 	return 0;
 }
 
-int AvatarChanged(WPARAM wParam, LPARAM lParam)
-{
-	pcli->pfnClcBroadcast(  INTM_AVATARCHANGED, wParam, lParam);
-	return 0;
-}
-
-extern LRESULT ( CALLBACK *saveContactListControlWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
+/*
+ *	Contact list control window procedure
+ */
 LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {     
 	struct ClcData *dat;
@@ -460,10 +471,10 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			dat->IsMetaContactsEnabled=
 				DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
 			dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1);
-			InitDisplayNameCache(&dat->lCLCContactsCache);
+			//InitDisplayNameCache(&dat->lCLCContactsCache);
 
 			LoadClcOptions(hwnd,dat);
-			RebuildEntireList(hwnd,dat);
+			pcli->pfnRebuildEntireList(hwnd,dat);
 
 			TRACE("Create New ClistControl END\r\n");
 			SetTimer(hwnd,TIMERID_INVALIDATE,2000,NULL);
@@ -471,10 +482,47 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		}
 	case WM_NCHITTEST:
 		{
-
-			break;//return 0;
+			int result=DefWindowProc(hwnd,WM_NCHITTEST,wParam,lParam);
+			return result;
 		}
 
+	case WM_COMMAND:
+		{
+			struct ClcContact *contact;
+			int hit = pcli->pfnGetRowByIndex(dat, dat->selection, &contact, NULL);
+			if (hit == -1)
+				return 0;
+			if (contact->type == CLCIT_CONTACT)
+				if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) contact->hContact))
+					return 0;
+			switch (LOWORD(wParam)) 
+			{
+			case POPUP_NEWSUBGROUP:
+				if (contact->type != CLCIT_GROUP)
+					return 0;
+				SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~CLS_HIDEEMPTYGROUPS);
+				CallService(MS_CLIST_GROUPCREATE, contact->groupId, 0);
+				return 0;
+			case POPUP_RENAMEGROUP:
+				pcli->pfnBeginRenameSelection(hwnd, dat);
+				return 0;
+			case POPUP_DELETEGROUP:
+				if (contact->type != CLCIT_GROUP)
+					return 0;
+				CallService(MS_CLIST_GROUPDELETE, contact->groupId, 0);
+				return 0;
+			case POPUP_GROUPHIDEOFFLINE:
+				if (contact->type != CLCIT_GROUP)
+					return 0;
+				CallService(MS_CLIST_GROUPSETFLAGS, contact->groupId,
+					MAKELPARAM(contact->group->hideOffline ? 0 : GROUPF_HIDEOFFLINE, GROUPF_HIDEOFFLINE));
+				return 0;
+			}
+			if (contact->type == CLCIT_GROUP)
+				if (CallService(MO_PROCESSCOMMANDBYMENUIDENT,LOWORD(wParam),(LPARAM)hwnd))
+					return 0;
+			return 0;
+		}
 	case WM_SIZE:
 		pcli->pfnEndRename(hwnd,dat,1);
 		KillTimer(hwnd,TIMERID_INFOTIP);
@@ -486,220 +534,79 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		{
 			struct ClcContact *contact=NULL;
 			struct ClcGroup *group=NULL;
-			int recalcScrollBar=0,shouldShow;
-			int moveToGroup=0;
 			BOOL image_is_special;
 			pdisplayNameCacheEntry cacheEntry;
+			int iIcon=(int)lParam;
+			HANDLE hContact=(HANDLE)wParam;
 
-			WORD status;
-			char *szProto;
-			int NeedResort=0;
-			BOOL curisspecial=FALSE;
-			dat->NeedResort=0;
+			int ret=saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 			cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
 
-			//szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
-			//szProto=GetContactCachedProtocol((HANDLE)wParam);
-			szProto=cacheEntry->szProto;
-			if(szProto==NULL) status=ID_STATUS_OFFLINE;
-			else status=cacheEntry->status;
-
-			if (GetContactIconC(cacheEntry) != lParam)
+			if(FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL,FALSE)) 
 			{
-				image_is_special = TRUE;
-				NeedResort=0;
-			}
-			else
-			{
-				image_is_special = FALSE;
-				NeedResort=1;
-			}
-			shouldShow=(GetWindowLong(hwnd,GWL_STYLE)&CLS_SHOWHIDDEN
-				|| !cacheEntry->Hidden)
-				&& (!pcli->pfnIsHiddenMode(dat,status)||cacheEntry->noHiddenOffline
-				|| image_is_special);	//this means an offline msg is flashing, so the contact should be shown
 
-			if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL,FALSE)) 
-			{
-				if(shouldShow) 
-				{
-					if (cacheEntry->HiddenSubcontact)
-					{
-						dat->NeedResort=1;
-						NeedResort=1;
-						recalcScrollBar=1;
-					}
-					else
-					{
-						AddContactToTree(hwnd,dat,(HANDLE)wParam,0,0);
-						dat->NeedResort=1;
-						recalcScrollBar=1;
-						FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE);
-						if (contact) 
-						{
-							contact->iImage=(WORD)lParam;
-							pcli->pfnNotifyNewContact(hwnd,(HANDLE)wParam);
-							dat->NeedResort=1;
-							NeedResort=1;
-
-							// Propagate icon to parent
-							if (0&&contact->isSubcontact)
+				HANDLE hMostMeta=NULL;								
+				if (iIcon&&0)
+					if (cacheEntry)
+						if (!MyStrCmp(cacheEntry->szProto,"MetaContacts"))
+							if (!DBGetContactSettingByte(NULL,"CLC","Meta",0))
 							{
-								if (image_is_special)
+								int iMetaStatusIcon;
+								char * szMetaProto;
+								int MetaStatus;
+								szMetaProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);
+								MetaStatus=DBGetContactSettingWord(hContact,szMetaProto,"Status",ID_STATUS_OFFLINE);
+								iMetaStatusIcon=pcli->pfnIconFromStatusMode(szMetaProto,MetaStatus);
+								if (iIcon==iMetaStatusIcon) //going to set meta icon but need to set most online icon
 								{
-									PostMessage(hwnd, INTM_ICONCHANGED, (WPARAM) contact->/*by_fyr_*/subcontacts/*by_fyr_*/->hContact, 
-										lParam);
-								}
-								else
-								{
-									PostMessage(hwnd, INTM_ICONCHANGED, (WPARAM) contact->/*by_fyr_*/subcontacts/*by_fyr_*/->hContact, 
-										(LPARAM) GetContactIcon((WPARAM) contact->/*by_fyr_*/subcontacts/*by_fyr_*/->hContact, 0));
+									hMostMeta=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
+									if (hMostMeta!=0)            
+									{   
+										char * szRealProto;
+										int RealStatus;					
+
+										szRealProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hMostMeta,0);
+										RealStatus=DBGetContactSettingWord(hMostMeta,szRealProto,"Status",ID_STATUS_OFFLINE);
+										contact->iImage=pcli->pfnIconFromStatusMode(szRealProto,RealStatus);
+									}
 								}
 							}
-						}
-					}				
+				contact->iImage=iIcon;	
+				{
+					int ic=GetContactIconC(cacheEntry);
+					if (ic != iIcon)
+						image_is_special = TRUE;
+					else
+						image_is_special = FALSE;
+					contact->image_is_special=image_is_special;
 				}
 			}
-			else 
-			{
-				//item in list already
-				DWORD style=GetWindowLong(hwnd,GWL_STYLE);				
-
-				if(contact->iImage==(WORD)lParam) break;				
-
-				if ((sortBy[0]==1 || sortBy[1]==1 || sortBy[2]==1)||
-					(style&CLS_NOHIDEOFFLINE) || (style&CLS_HIDEOFFLINE && ! group->hideOffline) || 
-					(!DBGetContactSettingByte(NULL,"CList","NoOfflineBottom",SETTING_NOOFFLINEBOTTOM_DEFAULT))
-					)
-				{
-					if (!image_is_special || contact->image_is_special!=image_is_special)
-					{
-						dat->NeedResort=1;
-						NeedResort=1;
-					}
-				}
-
-				if(!shouldShow && !(style&CLS_NOHIDEOFFLINE) && (style&CLS_HIDEOFFLINE || group->hideOffline)) 
-				{
-					HANDLE hSelItem;
-					struct ClcContact *selcontact;
-					struct ClcGroup *selgroup;
-					if(GetRowByIndex(dat,dat->selection,&selcontact,NULL)==-1) hSelItem=NULL;
-					else hSelItem=ContactToHItem(selcontact);
-					pcli->pfnRemoveItemFromGroup(hwnd,group,contact,0);
-					contact=NULL;
-					if(hSelItem)
-						if(FindItem(hwnd,dat,hSelItem,&selcontact,&selgroup,NULL,FALSE))
-							dat->selection=GetRowsPriorTo(&dat->list,selgroup,selcontact-selgroup->cl.items[0]);
-					recalcScrollBar=1;
-					dat->NeedResort=1;
-					NeedResort=1;
-
-				}
-				else 
-				{
-					int oldflags;
-					contact->iImage=(WORD)lParam;
-
-					oldflags=contact->flags;
-					if(!pcli->pfnIsHiddenMode(dat,status)||cacheEntry->noHiddenOffline) contact->flags|=CONTACTF_ONLINE;
-					else contact->flags&=~CONTACTF_ONLINE;
-
-					if (oldflags!=contact->flags)
-					{
-						dat->NeedResort=1;
-						NeedResort=1;
-						moveToGroup=2;
-					}
-
-					//Propagate icon to parent
-					if (contact->isSubcontact)
-					{
-						if (image_is_special)
-						{
-							SendMessage(hwnd, INTM_ICONCHANGED, (WPARAM) contact->/*by_fyr_*/subcontacts/*by_fyr_*/->hContact, 
-								lParam);
-						}
-						else
-						{
-							SendMessage(hwnd, INTM_ICONCHANGED, (WPARAM) contact->/*by_fyr_*/subcontacts/*by_fyr_*/->hContact, 
-								(LPARAM) GetContactIcon((WPARAM) contact->/*by_fyr_*/subcontacts/*by_fyr_*/->hContact, 0));
-						}
-					}
-				}
-			}
-
-			if (contact != NULL)
-			{
-				if (!IsBadWritePtr(contact, sizeof(struct ClcContact)))
-				{
-					contact->image_is_special = image_is_special;
-					contact->status = status;
-					if (DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0) && moveToGroup)
-					{
-						if (contact->hContact)
-							pcli->pfnClcBroadcast( INTM_GROUPCHANGED,(WPARAM)contact->hContact,0);
-					}
-				}
-#ifdef _DEBUG
-				else
-				{
-					log1("IsBadWritePtr(contact, sizeof(ClcContact)) | INTM_ICONCHANGED  [%08x]", contact);
-					break;
-				}
-#endif
-			}
-			if (NeedResort)// || image_is_special)
-			{
-				pcli->pfnSortContacts();
-				//SortCLC(hwnd,dat,1);
-				//RecalcScrollBar(hwnd,dat);             
-			}
-			if(recalcScrollBar) 
-			{
-				RecalcScrollBar(hwnd,dat); 	
-			}
-
-			PostMessage(hwnd,INTM_INVALIDATE,0,0);
-
-			//InvalidateItemByHandle(hwnd,(HANDLE)wParam);
-			break;
+			
+			return 0;
 		}
 
 	case INTM_AVATARCHANGED:
 		{
 			struct ClcContact *contact;
-			if (!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) 
-				break;
-
-			//ShowTracePopup("INTM_AVATARCHANGED");
-
-			Cache_GetAvatar(dat, contact); 
-			InvalidateRect(hwnd, NULL, FALSE);
-			break;
+			if (FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) 
+				Cache_GetAvatar(dat, contact); 
+			else if (dat->use_avatar_service && !wParam)
+				UpdateAllAvatars(dat);
+			skinInvalidateRect(hwnd, NULL, FALSE);
+			return 0;
 		}
 
 	case INTM_TIMEZONECHANGED:
 		{
 			struct ClcContact *contact;
-
 			if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) break;
-
 			if (!IsBadWritePtr(contact, sizeof(struct ClcContact)))
 			{
 				Cache_GetTimezone(dat,contact);
 				Cache_GetText(dat, contact);
-
 				RecalcScrollBar(hwnd,dat);
 			}
-#ifdef _DEBUG
-			else
-			{
-				log1("IsBadWritePtr(contact, sizeof(ClcContact)) | INTM_TIMEZONECHANGED  [%x]", contact);
-			}
-#endif
-
-			break;
+			return 0;
 		}
 
 	case INTM_NAMECHANGED:
@@ -707,26 +614,14 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			struct ClcContact *contact;
 			pcli->pfnInvalidateDisplayNameCacheEntry((HANDLE)wParam);
 			if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) break;
-
 			lstrcpyn(contact->szText, pcli->pfnGetContactDisplayName((HANDLE)wParam,0),sizeof(contact->szText));
-
 			if (!IsBadWritePtr(contact, sizeof(struct ClcContact)))
 			{
 				Cache_GetText(dat,contact);
-
 				RecalcScrollBar(hwnd,dat);
 			}
-#ifdef _DEBUG
-			else
-			{
-				log1("IsBadWritePtr(contact, sizeof(ClcContact)) | INTM_NAMECHANGED  [%x]", contact);
-			}
-#endif
-
 			dat->NeedResort=1;
-			//SortCLC(hwnd,dat,1);		
-			pcli->pfnSortContacts(); /*SortClcByTimer(hwnd);*/
-
+			pcli->pfnSortContacts();
 			break;
 		}
 
@@ -734,29 +629,16 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		{
 			struct ClcContact *contact;
 			HANDLE hContact = (HANDLE)wParam;
-
 			if (hContact == NULL || IsHContactInfo(hContact) || IsHContactGroup(hContact))
 				break;
-
 			if (!FindItem(hwnd,dat,hContact,&contact,NULL,NULL,FALSE)) 
 				break;
-			//  }
-
-			//ShowTracePopup("INTM_STATUSMSGCHANGED");
-			///	case INTM_STATUSMSGCHANGED:
 			if (!IsBadWritePtr(contact, sizeof(struct ClcContact)))
 			{
 				Cache_GetText(dat,contact);
 				RecalcScrollBar(hwnd,dat);
 				PostMessage(hwnd,INTM_INVALIDATE,0,0);
 			}
-#ifdef _DEBUG
-			else
-			{
-				log1("IsBadWritePtr(contact, sizeof(ClcContact)) | INTM_STATUSMSGCHANGED  [%08x]", contact);
-			}
-#endif
-
 			break;
 		}
 
@@ -768,66 +650,58 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			if(contact->type!=CLCIT_CONTACT) break;
 			if(dbcws->value.type==DBVT_DELETED || dbcws->value.bVal==0) contact->flags&=~CONTACTF_NOTONLIST;
 			else contact->flags|=CONTACTF_NOTONLIST;
-			InvalidateRectZ(hwnd,NULL,FALSE);
+			skinInvalidateRect(hwnd,NULL,FALSE);
 			break;
+		}
+	case INTM_SCROLLBARCHANGED:
+		{
+			if (GetWindowLong(hwnd, GWL_STYLE) & CLS_CONTACTLIST) 
+		{
+			if (dat->noVScrollbar) ShowScrollBar(hwnd, SB_VERT, FALSE);
+			else pcli->pfnRecalcScrollBar(hwnd, dat);
+		}
+			return 0;
 		}
 
 	case INTM_STATUSCHANGED:
-		TRACE("INTM_STATUSCHANGED\n");
-
-		if (wParam != 0)
 		{
-			pdisplayNameCacheEntry pdnce = (pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
-			if (pdnce && pdnce->szProto)
+			TRACE("INTM_STATUSCHANGED\n");
+			if (wParam != 0)
 			{
-				struct ClcContact *contact;
-				pdnce->status = GetStatusForContact(pdnce->hContact,pdnce->szProto);
-
-				//if (!pdnce->ClcContact)
+				pdisplayNameCacheEntry pdnce = (pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
+				if (pdnce && pdnce->szProto)
 				{
-
-					int *isv={0};
-					void *z={0};
-
-					int ret;
-					ret=FindItem(hwnd,dat,pdnce->hContact,(struct ClcContact ** )&z,(struct  ClcGroup** )&isv,NULL,0);
-					if (ret==0)  
+					struct ClcContact *contact=NULL;
+					int *isv=NULL;
+					pdnce->status = GetStatusForContact(pdnce->hContact,pdnce->szProto);
+					FindItem(hwnd,dat,pdnce->hContact,(struct ClcContact ** )&contact,(struct  ClcGroup** )&isv,NULL,0);
+					if (contact) 
 					{
-						contact=NULL;
-						TRACE("INTM_STATUSCHANGED: OBJRCT NOT FOUND\n");
-						pdnce->ClcContact=NULL;
-					} //(Not in list yet. or hidden) //strange
-					else 
-					{
-						contact=z;
-						pdnce->ClcContact=(void *)z;
-					}		
-				}
-				if (contact) 
-				{
-					/*if (dat->seco)*/
-					//if (pdnce->status!=ID_STATUS_OFFLINE && !lParam && (dat->second_line_type==TEXT_STATUS_MESSAGE || dat->third_line_type==TEXT_STATUS_MESSAGE))
-					//	ReAskStatusMessage((HANDLE)wParam);
-					contact->status = pdnce->status;
-					Cache_GetText(dat,contact);		
+						contact->status = pdnce->status;
+						Cache_GetText(dat,contact);		
+					}
 				}
 			}
+			pcli->pfnSortContacts();
+			PostMessage(hwnd,INTM_INVALIDATE,0,0);
+			break;
 		}
-		pcli->pfnSortContacts();
-		PostMessage(hwnd,INTM_INVALIDATE,0,0);
-		break;
-
-	case WM_NCPAINT:
-		return 0;
+	case INTM_RELOADOPTIONS:
+		{
+			pcli->pfnLoadClcOptions(hwnd,dat);
+			LoadClcOptions(hwnd,dat);
+			pcli->pfnSaveStateAndRebuildList(hwnd,dat);
+			pcli->pfnSortCLC(hwnd,dat,1);
+			if (IsWindowVisible(hwnd))
+				pcli->pfnInvalidateRect(GetParent(hwnd), NULL, FALSE);
+			break;
+		}
 
 	case WM_PAINT:
-		{	HDC hdc;
+		{	
+			HDC hdc;
 			PAINTSTRUCT ps;          
-			/* we get so many InvalidateRectZ()'s that there is no point painting,
-			Windows in theory shouldn't queue up WM_PAINTs in this case but it does so
-			we'll just ignore them */
-
-			if (IsWindowVisible(hwnd) && !LOCK_REPAINTING) 
+			if (IsWindowVisible(hwnd)) 
 			{
 				HWND h;
 				h=GetParent(hwnd);  
@@ -908,7 +782,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 								DBWriteContactSettingByte(contact->hContact,"CList","Expanded",0);
 								ht=contact;
 								dat->NeedResort=1;
-								SortCLC(hwnd,dat,1);		
+								pcli->pfnSortCLC(hwnd,dat,1);		
 								RecalcScrollBar(hwnd,dat);
 								hitcontact=NULL;	
 							}
@@ -925,7 +799,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 								DBWriteContactSettingByte(contact->hContact,"CList","Expanded",1);
 								ht=contact;
 								dat->NeedResort=1;
-								SortCLC(hwnd,dat,1);		
+								pcli->pfnSortCLC(hwnd,dat,1);		
 								RecalcScrollBar(hwnd,dat);
 								if (ht) 
 								{
@@ -986,7 +860,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				if(dat->selection>=pcli->pfnGetGroupContentsCount(&dat->list,1))
 					dat->selection=pcli->pfnGetGroupContentsCount(&dat->list,1)-1;
 				if(dat->selection<0) dat->selection=0;
-				InvalidateRectZ(hwnd,NULL,FALSE);
+				skinInvalidateRect(hwnd,NULL,FALSE);
 				pcli->pfnEnsureVisible(hwnd,dat,dat->selection,0);
 				UpdateWindow(hwnd);
 				SetCapture(hwnd);
@@ -999,41 +873,17 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 	case WM_TIMER:
 		{
-			if (wParam==TIMERID_REBUILDAFTER)
-			{                                                                           
-				KillTimer(hwnd,TIMERID_REBUILDAFTER);
-#ifdef _DEBUG
-				TRACE("Delayed REBUILDAFTER\r\n");
-#endif
-				//InvalidateRectZ(hwnd,NULL,FALSE);
-				SaveStateAndRebuildList(hwnd,dat);
-				break;
-			}
-			else if (wParam==TIMERID_INVALIDATE)
+			if (wParam==TIMERID_INVALIDATE)
 			{
 				time_t cur_time=(time(NULL)/60);
 				if (cur_time!=dat->last_tick_time)
 				{
-					InvalidateRectZ(hwnd,NULL,FALSE);
+					skinInvalidateRect(hwnd,NULL,FALSE);
 					dat->last_tick_time=cur_time;
 				}
 				break;
 			}
-			else if (wParam==TIMERID_DELAYEDRESORTCLC)
-			{
-				if (!dat) break;
-				KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
-#ifdef _DEBUG
-				TRACE("Delayed Sort CLC\r\n");
-#endif
-				//SetTimer(hwnd,UNLOCK_REPAINT,100,NULL);
-				SortCLC(hwnd,dat,1);
-				InvalidateRectZ(hwnd,NULL,FALSE);
-				//RecalcScrollBar(hwnd,dat);
-				break;
-			}
-
-			if (wParam==TIMERID_SUBEXPAND) 
+			else if (wParam==TIMERID_SUBEXPAND) 
 			{		
 				struct ClcContact * ht=NULL;
 				KillTimer(hwnd,TIMERID_SUBEXPAND);
@@ -1042,13 +892,11 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 					if (hitcontact->SubExpanded) hitcontact->SubExpanded=0; else hitcontact->SubExpanded=1;
 					DBWriteContactSettingByte(hitcontact->hContact,"CList","Expanded",hitcontact->SubExpanded);
 					if (hitcontact->SubExpanded)
-					{
 						ht=&(hitcontact->subcontacts[hitcontact->SubAllocated-1]);
-					}
 				}
 
 				dat->NeedResort=1;
-				SortCLC(hwnd,dat,1);		
+				pcli->pfnSortCLC(hwnd,dat,1);		
 				RecalcScrollBar(hwnd,dat);
 				if (ht) 
 				{
@@ -1066,38 +914,6 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				break;
 			}			
 
-			if(wParam==TIMERID_RENAME)
-				BeginRenameSelection(hwnd,dat);
-			else if(wParam==TIMERID_DRAGAUTOSCROLL)
-				ScrollTo(hwnd,dat,dat->yScroll+dat->dragAutoScrolling*dat->max_row_height*2,0);
-			else if(wParam==TIMERID_INFOTIP) {
-				CLCINFOTIP it;
-				struct ClcContact *contact;
-				int hit;
-				RECT clRect;
-				POINT ptClientOffset={0};
-
-				KillTimer(hwnd,wParam);
-				GetCursorPos(&it.ptCursor);
-				ScreenToClient(hwnd,&it.ptCursor);
-				if(it.ptCursor.x!=dat->ptInfoTip.x || it.ptCursor.y!=dat->ptInfoTip.y) break;
-				GetClientRect(hwnd,&clRect);
-				it.rcItem.left=0; it.rcItem.right=clRect.right;
-				hit=HitTest(hwnd,dat,it.ptCursor.x,it.ptCursor.y,&contact,NULL,NULL);
-				if(hit==-1) break;
-				if(contact->type!=CLCIT_GROUP && contact->type!=CLCIT_CONTACT) break;
-				ClientToScreen(hwnd,&it.ptCursor);
-				ClientToScreen(hwnd,&ptClientOffset);
-				it.isTreeFocused=GetFocus()==hwnd;
-				it.rcItem.top=RowHeights_GetItemTopY(dat,hit)-dat->yScroll;
-				it.rcItem.bottom=it.rcItem.top+dat->row_heights[hit];
-				OffsetRect(&it.rcItem,ptClientOffset.x,ptClientOffset.y);
-				it.isGroup=contact->type==CLCIT_GROUP;
-				it.hItem=contact->type==CLCIT_GROUP?(HANDLE)contact->groupId:contact->hContact;
-				it.cbSize=sizeof(it);
-				dat->hInfoTipItem=ContactToHItem(contact);				
-				NotifyEventHooks(hShowInfoTipEvent,0,(LPARAM)&it);
-			}
 			break;
 		}
 	case WM_SETCURSOR: 
@@ -1133,108 +949,103 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 					return 0;
 				}
 			}
-			//original
-			//    case: WM_LBUTTONDOWN:
-			{	struct ClcContact *contact;
-			struct ClcGroup *group;
-			int hit;
-			DWORD hitFlags;
-			mUpped=0;
-			if(GetFocus()!=hwnd) SetFocus(hwnd);
-			pcli->pfnHideInfoTip(hwnd,dat);
-			KillTimer(hwnd,TIMERID_INFOTIP);
-			KillTimer(hwnd,TIMERID_RENAME);
-			KillTimer(hwnd,TIMERID_SUBEXPAND);
+			{	
+				struct ClcContact *contact;
+				struct ClcGroup *group;
+				int hit;
+				DWORD hitFlags;
+				mUpped=0;
+				if(GetFocus()!=hwnd) SetFocus(hwnd);
+				pcli->pfnHideInfoTip(hwnd,dat);
+				KillTimer(hwnd,TIMERID_INFOTIP);
+				KillTimer(hwnd,TIMERID_RENAME);
+				KillTimer(hwnd,TIMERID_SUBEXPAND);
 
-			pcli->pfnEndRename(hwnd,dat,1);
-			dat->ptDragStart.x=(short)LOWORD(lParam);
-			dat->ptDragStart.y=(short)HIWORD(lParam);
-			dat->szQuickSearch[0]=0;
-			hit=HitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),&contact,&group,&hitFlags);
-			if(hit!=-1) {
-				if(hit==dat->selection && hitFlags&CLCHT_ONITEMLABEL && dat->exStyle&CLS_EX_EDITLABELS) {
-					SetCapture(hwnd);
-					dat->iDragItem=dat->selection;
-					dat->dragStage=DRAGSTAGE_NOTMOVED|DRAGSTAGEF_MAYBERENAME;
-					dat->dragAutoScrolling=0;
-					break;
-				}
-			}
-			if(hit!=-1 && contact->type==CLCIT_CONTACT && contact->SubAllocated && !contact->isSubcontact)
-				if(hitFlags&CLCHT_ONITEMICON && dat->expandMeta) {
-					BYTE doubleClickExpand=DBGetContactSettingByte(NULL,"CLC","MetaDoubleClick",0);
-
-					hitcontact=contact;				
-					HitPoint.x= (short)LOWORD(lParam);
-					HitPoint.y= (short)HIWORD(lParam);
-					mUpped=0;
-					// SetCapture(hwnd);
-					if ((GetKeyState(VK_SHIFT)&0x8000)||(GetKeyState(VK_CONTROL)&0x8000) || (GetKeyState(VK_MENU)&0x8000))
-					{
-						mUpped=1;
-						hitcontact=contact;	
-						KillTimer(hwnd,TIMERID_SUBEXPAND);
-						SetTimer(hwnd,TIMERID_SUBEXPAND,0,NULL);
+				pcli->pfnEndRename(hwnd,dat,1);
+				dat->ptDragStart.x=(short)LOWORD(lParam);
+				dat->ptDragStart.y=(short)HIWORD(lParam);
+				dat->szQuickSearch[0]=0;
+				hit=HitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),&contact,&group,&hitFlags);
+				if(hit!=-1) {
+					if(hit==dat->selection && hitFlags&CLCHT_ONITEMLABEL && dat->exStyle&CLS_EX_EDITLABELS) {
+						SetCapture(hwnd);
+						dat->iDragItem=dat->selection;
+						dat->dragStage=DRAGSTAGE_NOTMOVED|DRAGSTAGEF_MAYBERENAME;
+						dat->dragAutoScrolling=0;
+						return TRUE;
 					}
-					//break;
 				}
-				else
-					hitcontact=NULL;
+				if(hit!=-1 && contact->type==CLCIT_CONTACT && contact->SubAllocated && !contact->isSubcontact)
+					if(hitFlags&CLCHT_ONITEMICON && dat->expandMeta) {
+						BYTE doubleClickExpand=DBGetContactSettingByte(NULL,"CLC","MetaDoubleClick",0);
 
-
-
-
-			if(hit!=-1 && contact->type==CLCIT_GROUP)
-				if(hitFlags&CLCHT_ONITEMICON) {
-					struct ClcGroup *selgroup;
-					struct ClcContact *selcontact;
-					dat->selection=GetRowByIndex(dat,dat->selection,&selcontact,&selgroup);
-					pcli->pfnSetGroupExpand(hwnd,dat,contact->group,-1);
-					if(dat->selection!=-1) {
-						dat->selection=GetRowsPriorTo(&dat->list,selgroup,((unsigned)selcontact-(unsigned)selgroup->cl.items)/sizeof(struct ClcContact));
-						if(dat->selection==-1) dat->selection=GetRowsPriorTo(&dat->list,contact->group,-1);
+						hitcontact=contact;				
+						HitPoint.x= (short)LOWORD(lParam);
+						HitPoint.y= (short)HIWORD(lParam);
+						mUpped=0;
+						// SetCapture(hwnd);
+						if ((GetKeyState(VK_SHIFT)&0x8000)||(GetKeyState(VK_CONTROL)&0x8000) || (GetKeyState(VK_MENU)&0x8000))
+						{
+							mUpped=1;
+							hitcontact=contact;	
+							KillTimer(hwnd,TIMERID_SUBEXPAND);
+							SetTimer(hwnd,TIMERID_SUBEXPAND,0,NULL);
+						}
+						//break;
 					}
-					InvalidateRectZ(hwnd,NULL,FALSE);
+					else
+						hitcontact=NULL;
+				if(hit!=-1 && contact->type==CLCIT_GROUP)
+					if(hitFlags&CLCHT_ONITEMICON) {
+						struct ClcGroup *selgroup;
+						struct ClcContact *selcontact;
+						dat->selection=GetRowByIndex(dat,dat->selection,&selcontact,&selgroup);
+						pcli->pfnSetGroupExpand(hwnd,dat,contact->group,-1);
+						if(dat->selection!=-1) {
+							dat->selection=GetRowsPriorTo(&dat->list,selgroup,((unsigned)selcontact-(unsigned)selgroup->cl.items)/sizeof(struct ClcContact));
+							if(dat->selection==-1) dat->selection=GetRowsPriorTo(&dat->list,contact->group,-1);
+						}
+						skinInvalidateRect(hwnd,NULL,FALSE);
+						UpdateWindow(hwnd);
+						return TRUE;
+					}
+					if(hit!=-1 && hitFlags&CLCHT_ONITEMCHECK) {
+						NMCLISTCONTROL nm;
+						contact->flags^=CONTACTF_CHECKED;
+						if(contact->type==CLCIT_GROUP) pcli->pfnSetGroupChildCheckboxes(contact->group,contact->flags&CONTACTF_CHECKED);
+						pcli->pfnRecalculateGroupCheckboxes(hwnd,dat);
+						skinInvalidateRect(hwnd,NULL,FALSE);
+						nm.hdr.code=CLN_CHECKCHANGED;
+						nm.hdr.hwndFrom=hwnd;
+						nm.hdr.idFrom=GetDlgCtrlID(hwnd);
+						nm.flags=0;
+						nm.hItem=ContactToItemHandle(contact,&nm.flags);
+						SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
+					}
+					if(!(hitFlags&(CLCHT_ONITEMICON|CLCHT_ONITEMLABEL|CLCHT_ONITEMCHECK))) {
+						NMCLISTCONTROL nm;
+						nm.hdr.code=NM_CLICK;
+						nm.hdr.hwndFrom=hwnd;
+						nm.hdr.idFrom=GetDlgCtrlID(hwnd);
+						nm.flags=0;
+						if(hit==-1) nm.hItem=NULL;
+						else nm.hItem=ContactToItemHandle(contact,&nm.flags);
+						nm.iColumn=hitFlags&CLCHT_ONITEMEXTRA?HIBYTE(HIWORD(hitFlags)):-1;
+						nm.pt=dat->ptDragStart;
+						SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
+					}
+					if(hitFlags&(CLCHT_ONITEMCHECK|CLCHT_ONITEMEXTRA)) return 0;
+					dat->selection=hit;
+					skinInvalidateRect(hwnd,NULL,FALSE);
+					if(dat->selection!=-1) pcli->pfnEnsureVisible(hwnd,dat,hit,0);
 					UpdateWindow(hwnd);
-					break;
-				}
-				if(hit!=-1 && hitFlags&CLCHT_ONITEMCHECK) {
-					NMCLISTCONTROL nm;
-					contact->flags^=CONTACTF_CHECKED;
-					if(contact->type==CLCIT_GROUP) pcli->pfnSetGroupChildCheckboxes(contact->group,contact->flags&CONTACTF_CHECKED);
-					pcli->pfnRecalculateGroupCheckboxes(hwnd,dat);
-					InvalidateRectZ(hwnd,NULL,FALSE);
-					nm.hdr.code=CLN_CHECKCHANGED;
-					nm.hdr.hwndFrom=hwnd;
-					nm.hdr.idFrom=GetDlgCtrlID(hwnd);
-					nm.flags=0;
-					nm.hItem=ContactToItemHandle(contact,&nm.flags);
-					SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
-				}
-				if(!(hitFlags&(CLCHT_ONITEMICON|CLCHT_ONITEMLABEL|CLCHT_ONITEMCHECK))) {
-					NMCLISTCONTROL nm;
-					nm.hdr.code=NM_CLICK;
-					nm.hdr.hwndFrom=hwnd;
-					nm.hdr.idFrom=GetDlgCtrlID(hwnd);
-					nm.flags=0;
-					if(hit==-1) nm.hItem=NULL;
-					else nm.hItem=ContactToItemHandle(contact,&nm.flags);
-					nm.iColumn=hitFlags&CLCHT_ONITEMEXTRA?HIBYTE(HIWORD(hitFlags)):-1;
-					nm.pt=dat->ptDragStart;
-					SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
-				}
-				if(hitFlags&(CLCHT_ONITEMCHECK|CLCHT_ONITEMEXTRA)) break;
-				dat->selection=hit;
-				InvalidateRectZ(hwnd,NULL,FALSE);
-				if(dat->selection!=-1) pcli->pfnEnsureVisible(hwnd,dat,hit,0);
-				UpdateWindow(hwnd);
-				if(dat->selection!=-1 && (contact->type==CLCIT_CONTACT || contact->type==CLCIT_GROUP) && !(hitFlags&(CLCHT_ONITEMEXTRA|CLCHT_ONITEMCHECK))) {
-					SetCapture(hwnd);
-					dat->iDragItem=dat->selection;
-					dat->dragStage=DRAGSTAGE_NOTMOVED;
-					dat->dragAutoScrolling=0;
-				}
-				break;
+					if(dat->selection!=-1 && (contact->type==CLCIT_CONTACT || contact->type==CLCIT_GROUP) && !(hitFlags&(CLCHT_ONITEMEXTRA|CLCHT_ONITEMCHECK))) {
+						SetCapture(hwnd);
+						dat->iDragItem=dat->selection;
+						dat->dragStage=DRAGSTAGE_NOTMOVED;
+						dat->dragAutoScrolling=0;
+					}
+					return TRUE;
 			}
 		}		
 	case WM_CAPTURECHANGED:
@@ -1260,7 +1071,6 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			{
 				if (BehindEdgeSettings) UpdateTimer(0);
 				TestCursorOnBorders();
-				// return k?k:DefWindowProc(hwnd,msg,wParam,lParam);
 			}
 			if (ProceedDragToScroll(hwnd, (short)HIWORD(lParam))) return 0;
 			if(hitcontact!=NULL)
@@ -1272,24 +1082,24 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				ym=GetSystemMetrics(SM_CYDOUBLECLK);
 				if(abs(HitPoint.x-x)>xm || abs(HitPoint.y-y)>ym)
 				{
-					// ReleaseCapture();
 					if (mUpped==1)
 					{
 						KillTimer(hwnd,TIMERID_SUBEXPAND);
 						SetTimer(hwnd,TIMERID_SUBEXPAND,0,NULL);
 						mUpped=0;
 					}
-					else                                                   {
+					else                                                   
+					{
 						KillTimer(hwnd,TIMERID_SUBEXPAND);
 						hitcontact=NULL;
-						//SetTimer(hwnd,TIMERID_SUBEXPAND,0,NULL);
 						mUpped=0;
 					}
 				}
 			}
 
 
-			if(dat->iDragItem==-1) {
+			if(dat->iDragItem==-1) 
+			{
 				int iOldHotTrack=dat->iHotTrack;
 				if(dat->hwndRenameEdit!=NULL) break;
 				if(GetKeyState(VK_MENU)&0x8000 || GetKeyState(VK_F10)&0x8000) break;
@@ -1309,7 +1119,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 					dat->ptInfoTip.y=(short)HIWORD(lParam);
 					SetTimer(hwnd,TIMERID_INFOTIP,dat->infoTipTimeout,NULL);
 				}
-				break;
+				return 0;
 			}
 			if((dat->dragStage&DRAGSTAGEM_STAGE)==DRAGSTAGE_NOTMOVED && !(dat->exStyle&CLS_EX_DISABLEDRAGDROP)) {
 				if(abs((short)LOWORD(lParam)-dat->ptDragStart.x)>=GetSystemMetrics(SM_CXDRAG) || abs((short)HIWORD(lParam)-dat->ptDragStart.y)>=GetSystemMetrics(SM_CYDRAG))
@@ -1324,7 +1134,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				GetClientRect(hwnd,&clRect);
 				pt.x=(short)LOWORD(lParam); pt.y=(short)HIWORD(lParam);
 				hNewCursor=LoadCursor(NULL, IDC_NO);
-				InvalidateRectZ(hwnd,NULL,FALSE);
+				skinInvalidateRect(hwnd,NULL,FALSE);
 				if(dat->dragAutoScrolling)
 				{KillTimer(hwnd,TIMERID_DRAGAUTOSCROLL); dat->dragAutoScrolling=0;}
 				target=GetDropTargetInformation(hwnd,dat,pt);
@@ -1352,9 +1162,9 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			if (contSour->type==CLCIT_CONTACT && MyStrCmp(contSour->proto,"MetaContacts"))
 			{
 				if (!contSour->isSubcontact)
-					hNewCursor=LoadCursorA(g_hInst, MAKEINTRESOURCEA(IDC_DROPUSER));  /// Add to meta
+					hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
 				else
-					hNewCursor=LoadCursorA(g_hInst, MAKEINTRESOURCEA(IDC_DROPMETA));
+					hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPMETA));
 			}
 
 		}
@@ -1368,11 +1178,11 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			if (contSour->type==CLCIT_CONTACT && MyStrCmp(contSour->proto,"MetaContacts"))
 			{
 				if (!contSour->isSubcontact)
-					hNewCursor=LoadCursorA(g_hInst, MAKEINTRESOURCEA(IDC_DROPUSER));  /// Add to meta
+					hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
 				else
 					if  (contSour->subcontacts==contDest)
-						hNewCursor=LoadCursorA(g_hInst, MAKEINTRESOURCEA(IDC_DEFAULTSUB)); ///MakeDefault
-					else hNewCursor=LoadCursorA(g_hInst, MAKEINTRESOURCEA(IDC_REGROUP));
+						hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DEFAULTSUB)); ///MakeDefault
+					else hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_REGROUP));
 			}
 		}
 		break;
@@ -1385,22 +1195,22 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			if (contSour->type==CLCIT_CONTACT && MyStrCmp(contSour->proto,"MetaContacts"))
 			{
 				if (!contSour->isSubcontact)
-					hNewCursor=LoadCursorA(g_hInst, MAKEINTRESOURCEA(IDC_DROPUSER));  /// Add to meta
+					hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
 				else
 					if (contDest->subcontacts==contSour->subcontacts)
 						break;
-					else  hNewCursor=LoadCursorA(g_hInst, MAKEINTRESOURCEA(IDC_REGROUP));
+					else  hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_REGROUP));
 			}
 		}
 		break;
 	case DROPTARGET_ONGROUP:
 		{
-			hNewCursor=LoadCursorA(g_hInst, MAKEINTRESOURCEA(IDC_DROPUSER));
+			hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));
 		}				
 		break;
 	case DROPTARGET_INSERTION:
 
-		hNewCursor=LoadCursorA(g_hInst, MAKEINTRESOURCEA(IDC_DROPUSER));
+		hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));
 		break;
 	case DROPTARGET_OUTSIDE:
 		{	NMCLISTCONTROL nm;
@@ -1435,14 +1245,15 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 						struct ClcContact *contSour;
 						GetRowByIndex(dat,dat->iDragItem,&contSour,NULL);
 						if (!contSour->isSubcontact)
-							hNewCursor=LoadCursorA(g_hInst, MAKEINTRESOURCEA(IDC_DROPUSER));
+							hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));
 					}
 					break;
 					}
 				}
 				SetCursor(hNewCursor);
+				return 0;
 			}
-			break;
+			return 0;
 		}
 	case WM_LBUTTONUP:         
 		{    
@@ -1453,29 +1264,28 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				BYTE doubleClickExpand=DBGetContactSettingByte(NULL,"CLC","MetaDoubleClick",0);
 				SetTimer(hwnd,TIMERID_SUBEXPAND,GetDoubleClickTime()*doubleClickExpand,NULL);
 			}
-			else
-			{
-				ReleaseCapture();
-			}
+			else ReleaseCapture();
 			if(dat->iDragItem==-1) break;       
 			SetCursor((HCURSOR)GetClassLong(hwnd,GCL_HCURSOR));
-			if(dat->exStyle&CLS_EX_TRACKSELECT) {
+			if(dat->exStyle&CLS_EX_TRACKSELECT) 
+			{
 				dat->iHotTrack=HitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),NULL,NULL,NULL);
 				if(dat->iHotTrack==-1) ReleaseCapture();
 			}
-			else 
-				if (hitcontact==NULL) ReleaseCapture();
+			else if (hitcontact==NULL) ReleaseCapture();
 			KillTimer(hwnd,TIMERID_DRAGAUTOSCROLL);
 			if(dat->dragStage==(DRAGSTAGE_NOTMOVED|DRAGSTAGEF_MAYBERENAME))
 				SetTimer(hwnd,TIMERID_RENAME,GetDoubleClickTime(),NULL);
-			else if((dat->dragStage&DRAGSTAGEM_STAGE)==DRAGSTAGE_ACTIVE) {
+			else if((dat->dragStage&DRAGSTAGEM_STAGE)==DRAGSTAGE_ACTIVE) 
+			{
 				POINT pt;
 				int target;         
 				TCHAR Wording[500];
 				int res=0;
 				pt.x=(short)LOWORD(lParam); pt.y=(short)HIWORD(lParam);
 				target=GetDropTargetInformation(hwnd,dat,pt);
-				switch(target) {
+				switch(target) 
+				{
 				case DROPTARGET_ONSELF:
 					break;
 				case DROPTARGET_ONCONTACT:
@@ -1667,9 +1477,11 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 							CallService(MS_CLIST_GROUPRENAME,contact->groupId,(LPARAM)szNewName);
 						}
 						break;
-					}
+
+				}
 				case DROPTARGET_INSERTION:
-					{	struct ClcContact *contact,*destcontact;
+					{
+						struct ClcContact *contact,*destcontact;
 						struct ClcGroup *destgroup;
 						GetRowByIndex(dat,dat->iDragItem,&contact,NULL);
 						if(GetRowByIndex(dat,dat->iInsertionMark,&destcontact,&destgroup)==-1 || destgroup!=contact->group->parent)
@@ -1682,7 +1494,8 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 						break;
 					}
 				case DROPTARGET_OUTSIDE:
-					{	NMCLISTCONTROL nm;
+					{
+						NMCLISTCONTROL nm;
 						struct ClcContact *contact;
 						GetRowByIndex(dat,dat->iDragItem,&contact,NULL);
 						nm.hdr.code=CLN_DROPPED;
@@ -1695,7 +1508,8 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 						break;
 					}
 				default:
-					{	struct ClcGroup *group;
+					{	
+						struct ClcGroup *group;
 						struct ClcContact *contact;
 						GetRowByIndex(dat,dat->iDragItem,&contact,&group);
 						if(group->parent) 
@@ -1734,10 +1548,10 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				}
 			}
 
-			InvalidateRectZ(hwnd,NULL,FALSE);
+			skinInvalidateRect(hwnd,NULL,FALSE);
 			dat->iDragItem=-1;
 			dat->iInsertionMark=-1;
-			break;
+			return 0;
 		}
 	case WM_LBUTTONDBLCLK:
 		KillTimer(hwnd,TIMERID_SUBEXPAND);
@@ -1752,6 +1566,5 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		RowHeights_Free(dat);
 		break;
 	}
-
 	return saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 }

@@ -26,8 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonprototypes.h"
 
 //loads of stuff that didn't really fit anywhere else
-extern BOOL InvalidateRectZ(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
-extern HANDLE hHideInfoTipEvent;
+extern BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+
 extern BOOL ON_SIZING_CYCLE;
 
 BOOL RectHitTest(RECT *rc, int testx, int testy)
@@ -171,7 +171,7 @@ void ScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth)
 	if((dat->backgroundBmpUse&CLBF_SCROLL || dat->hBmpBackground==NULL) && FALSE)
 		ScrollWindowEx(hwnd,0,previousy-dat->yScroll,NULL,NULL,NULL,NULL,SW_INVALIDATE);
 	else
-		InvalidateRectZ(hwnd,NULL,FALSE);
+		skinInvalidateRect(hwnd,NULL,FALSE);
 	SetScrollPos(hwnd,SB_VERT,dat->yScroll,TRUE);
 }
 
@@ -182,17 +182,13 @@ void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	RECT clRect;
 	NMCLISTCONTROL nm;
 
-#ifdef _DEBUG
 	TRACE("RecalcScrollBar\r\n");
-#endif
-
 	RowHeights_CalcRowHeights(dat, hwnd);
 
 	GetClientRect(hwnd,&clRect);
 	si.cbSize=sizeof(si);
 	si.fMask=SIF_ALL;
 	si.nMin=0;
-	//si.nMax=dat->rowHeight*GetGroupContentsCount(&dat->list,2)-1;
 	si.nMax=RowHeights_GetTotalHeight(dat)-1;
 	si.nPage=clRect.bottom;
 	si.nPos=dat->yScroll;
@@ -208,7 +204,6 @@ void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	si.cbSize=sizeof(si);
 	si.fMask=SIF_ALL;
 	si.nMin=0;
-	//si.nMax=dat->rowHeight*GetGroupContentsCount(&dat->list,2)-1;
 	si.nMax=RowHeights_GetTotalHeight(dat)-1;
 	si.nPage=clRect.bottom;
 	si.nPos=dat->yScroll;
@@ -216,23 +211,18 @@ void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	if ( GetWindowLong(hwnd,GWL_STYLE)&CLS_CONTACTLIST ) {
 		if ( dat->noVScrollbar==0 ) SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
 		//else SetScrollInfo(hwnd,SB_VERT,&si,FALSE);
-	} else SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
+	} 
+	else 
+		SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
 	ON_SIZING_CYCLE=1;
 	ScrollTo(hwnd,dat,dat->yScroll,1);
 	ON_SIZING_CYCLE=0;
-	//ShowScrollBar(hwnd,SB_VERT,dat->noVScrollbar==1 ? FALSE : TRUE);
-	//nm.hdr.code=CLN_LISTSIZECHANGE;
-	//nm.hdr.hwndFrom=hwnd;
-	//nm.hdr.idFrom=GetDlgCtrlID(hwnd);
-	//nm.pt.y=si.nMax;
-	//SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 }
 
 
 static WNDPROC OldRenameEditWndProc;
 static LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	// struct ClcData* dat=(struct ClcData*)GetWindowLong(hwnd,GWL_USERDATA);   
 	switch(msg) {
 		case WM_KEYDOWN:
 			switch(wParam) {
@@ -288,7 +278,7 @@ void BeginRenameSelection(HWND hwnd,struct ClcData *dat)
 	{
 		int i;
 		for (i=0; i<=FONTID_MAX; i++)
-			if (h<dat->fontInfo[i].fontHeight+2) h=dat->fontInfo[i].fontHeight+2;
+			if (h<dat->fontInfo[i].fontHeight+4) h=dat->fontInfo[i].fontHeight+4;
 	}
 	//TODO contact->pos_label 
 
@@ -296,12 +286,20 @@ void BeginRenameSelection(HWND hwnd,struct ClcData *dat)
 	{
 
 		RECT rectW;      
+		int h2;
 		GetWindowRect(hwnd,&rectW);
 		//       w=contact->pos_full_first_row.right-contact->pos_full_first_row.left;
 		//       h=contact->pos_full_first_row.bottom-contact->pos_full_first_row.top;
 		//w=clRect.right-x;
-		x+=rectW.left;//+contact->pos_full_first_row.left;
-		y+=rectW.top;//+contact->pos_full_first_row.top;
+		//w=clRect.right-x;
+		//x+=rectW.left;//+contact->pos_full_first_row.left;
+		//y+=rectW.top;//+contact->pos_full_first_row.top;
+		x=contact->pos_rename_rect.left+rectW.left;
+		y=contact->pos_label.top+rectW.top;
+		w=contact->pos_rename_rect.right-contact->pos_rename_rect.left;
+		h2=contact->pos_label.bottom-contact->pos_label.top+4;
+		h=h2;//max(h,h2);
+
 	}
 
 	{
@@ -412,7 +410,6 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 { 
 	int i;
-	//	dat->rowHeight=DBGetContactSettingByte(NULL,"CLC","RowHeight",CLCDEFAULT_ROWHEIGHT);
 	{	
 		LOGFONTA lf;
 		HFONT holdfont;
@@ -631,7 +628,6 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 	dat->showIdle=DBGetContactSettingByte(NULL,"CLC","ShowIdle",CLCDEFAULT_SHOWIDLE);
 	dat->noVScrollbar=DBGetContactSettingByte(NULL,"CLC","NoVScrollBar",0);
 	SendMessage(hwnd,INTM_SCROLLBARCHANGED,0,0);
-	//ShowScrollBar(hwnd,SB_VERT,dat->noVScrollbar==1 ? FALSE : TRUE);
 	if(!dat->bkChanged) {
 		DBVARIANT dbv;
 		dat->bkColour=DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR);
@@ -670,46 +666,14 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 	dat->quickSearchColour=DBGetContactSettingDword(NULL,"CLC","QuickSearchColour",CLCDEFAULT_QUICKSEARCHCOLOUR);
 	dat->IsMetaContactsEnabled=
 		DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
-	{
-
 		dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",1);
 		dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1);
-		/*
-		style=GetWindowLong(hwnd,GWL_STYLE);
-		if (dat->MetaIgnoreEmptyExtra) 
-		style&=CLS_EX_MULTICOLUMNALIGNLEFT;
-		else
-		style&=!(CLS_EX_MULTICOLUMNALIGNLEFT)
-		*/
-	}
-	{	NMHDR hdr;
+	{
+		NMHDR hdr;
 	hdr.code=CLN_OPTIONSCHANGED;
 	hdr.hwndFrom=hwnd;
 	hdr.idFrom=GetDlgCtrlID(hwnd);
 	SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&hdr);
 	}
 	SendMessage(hwnd,WM_SIZE,0,0);
-}
-
-void InvalidateItemByHandle(HWND hwnd, HANDLE hItem)
-{
-	struct ClcData *dat;
-	int k=0;
-	dat=(struct ClcData*)GetWindowLong(hwnd,0);
-	if (dat)
-	{
-		if(hItem)
-		{
-			struct ClcContact *selcontact;
-			struct ClcGroup *selgroup;
-			if(FindItem(hwnd,dat,hItem,&selcontact,&selgroup,NULL,FALSE))
-			{
-				k=GetRowsPriorTo(&dat->list,selgroup,selcontact-selgroup->cl.items[0]);
-				k+=selcontact->isSubcontact;
-				pcli->pfnInvalidateItem(hwnd,dat,k);
-			}
-
-		}
-	}
-
 }

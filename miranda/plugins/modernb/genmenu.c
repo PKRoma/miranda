@@ -1249,7 +1249,7 @@ int RegisterOneIcon(int mo,int mi)
 
     char mn[255];
 	HICON defic=0;
-    sprintf(mn,"Menu icons/%s",MenuObjects[mo].Name);
+    sprintf(mn,Translate("Menu icons/%s"),MenuObjects[mo].Name);
 	defic=ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
     newIcon=LoadIconFromLibrary(
       mn,

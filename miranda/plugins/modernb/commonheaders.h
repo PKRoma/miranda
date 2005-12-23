@@ -109,6 +109,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_avatars.h"
 #include "m_smileyadd.h"
 
+#define CLS_CONTACTLIST 1
+
 // shared vars
 extern HINSTANCE g_hInst;
 
@@ -200,8 +202,10 @@ extern int ShowWindowNew(HWND hwnd, int cmd);
 
 #ifdef UNICODE
 	#define DBGetStringT(a,b,c) DBGetStringW(a,b,c)
+	#define GCMDF_TCHAR_MY GCMDF_TCHAR|CNF_UNICODE
 #else
 	#define DBGetStringT(a,b,c) DBGetStringA(a,b,c)
+	#define GCMDF_TCHAR_MY 0
 #endif
 
 extern char* Utf8EncodeUcs2( const wchar_t* src );

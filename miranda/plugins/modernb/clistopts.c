@@ -204,27 +204,27 @@ static BOOL CALLBACK DlgProcItemRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						{
 						case ITEM_AVATAR:
 							{
-								pos = SendMessage(hwndList, LB_INSERTSTRING, pos-1, (LPARAM) Translate("Avatar"));
+								pos = SendMessage(hwndList, LB_INSERTSTRING, pos-1, (LPARAM) TranslateT("Avatar"));
 								break;
 							}
 						case ITEM_ICON:
 							{
-								pos = SendMessage(hwndList, LB_INSERTSTRING, pos-1, (LPARAM) Translate("Icon"));
+								pos = SendMessage(hwndList, LB_INSERTSTRING, pos-1, (LPARAM) TranslateT("Icon"));
 								break;
 							}
 						case ITEM_TEXT:
 							{
-								pos = SendMessage(hwndList, LB_INSERTSTRING, pos-1, (LPARAM) Translate("Text"));
+								pos = SendMessage(hwndList, LB_INSERTSTRING, pos-1, (LPARAM) TranslateT("Text"));
 								break;
 							}
 						case ITEM_EXTRA_ICONS:
 							{
-								pos = SendMessage(hwndList, LB_INSERTSTRING, pos-1, (LPARAM) Translate("Extra icons"));
+								pos = SendMessage(hwndList, LB_INSERTSTRING, pos-1, (LPARAM) TranslateT("Extra icons"));
 								break;
 							}
 						case ITEM_CONTACT_TIME:
 							{
-								pos = SendMessage(hwndList, LB_INSERTSTRING, pos-1, (LPARAM) Translate("Contact time"));
+								pos = SendMessage(hwndList, LB_INSERTSTRING, pos-1, (LPARAM) TranslateT("Contact time"));
 								break;
 							}
 						}
@@ -256,27 +256,27 @@ static BOOL CALLBACK DlgProcItemRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						{
 						case ITEM_AVATAR:
 							{
-								pos = SendMessage(hwndList, LB_INSERTSTRING, pos+1, (LPARAM) Translate("Avatar"));
+								pos = SendMessage(hwndList, LB_INSERTSTRING, pos+1, (LPARAM) TranslateT("Avatar"));
 								break;
 							}
 						case ITEM_ICON:
 							{
-								pos = SendMessage(hwndList, LB_INSERTSTRING, pos+1, (LPARAM) Translate("Icon"));
+								pos = SendMessage(hwndList, LB_INSERTSTRING, pos+1, (LPARAM) TranslateT("Icon"));
 								break;
 							}
 						case ITEM_TEXT:
 							{
-								pos = SendMessage(hwndList, LB_INSERTSTRING, pos+1, (LPARAM) Translate("Text"));
+								pos = SendMessage(hwndList, LB_INSERTSTRING, pos+1, (LPARAM) TranslateT("Text"));
 								break;
 							}
 						case ITEM_EXTRA_ICONS:
 							{
-								pos = SendMessage(hwndList, LB_INSERTSTRING, pos+1, (LPARAM) Translate("Extra icons"));
+								pos = SendMessage(hwndList, LB_INSERTSTRING, pos+1, (LPARAM) TranslateT("Extra icons"));
 								break;
 							}
 						case ITEM_CONTACT_TIME:
 							{
-								pos = SendMessage(hwndList, LB_INSERTSTRING, pos+1, (LPARAM) Translate("Contact time"));
+								pos = SendMessage(hwndList, LB_INSERTSTRING, pos+1, (LPARAM) TranslateT("Contact time"));
 								break;
 							}
 						}

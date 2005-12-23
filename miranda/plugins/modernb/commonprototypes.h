@@ -1,7 +1,7 @@
 #include "clist.h"
 #include "CLUIFRAMES\cluiframes.h"
 extern int BltBackImage (HWND destHWND, HDC destDC, RECT * BltClientRect);
-extern BOOL InvalidateRectZ(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+extern BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
 extern int GetProtocolVisibility(char * ProtoName);
 extern int GetConnectingIconService(WPARAM wParam,LPARAM lParam);
 extern BOOL TextOutS(HDC hdc, int x, int y, LPCTSTR lpString, int nCount);
@@ -77,3 +77,66 @@ extern BOOL ImageList_DrawEx_New( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,i
 
 extern int OnMoving(HWND hwnd,RECT *lParam);
 extern int CLUIFramesOnClistResize2(WPARAM wParam,LPARAM lParam, int mode);
+
+extern BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+extern int BgStatusBarChange(WPARAM wParam,LPARAM lParam);
+
+extern int IsInMainWindow(HWND hwnd);
+extern int BgClcChange(WPARAM wParam,LPARAM lParam);
+extern int BgMenuChange(WPARAM wParam,LPARAM lParam);
+extern int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam);
+extern int UpdateFrameImage(WPARAM /*hWnd*/, LPARAM/*sPaintRequest*/);
+extern int InvalidateFrameImage(WPARAM wParam, LPARAM lParam);
+
+extern void CacheContactAvatar(struct ClcData *dat, struct ClcContact *contact, BOOL changed);
+
+extern int GetStatusForContact(HANDLE hContact,char *szProto);
+extern int GetContactIconC(pdisplayNameCacheEntry cacheEntry);
+extern int GetContactIcon(WPARAM wParam,LPARAM lParam);
+
+extern int TestCursorOnBorders();
+extern int SizingOnBorder(POINT ,int);
+
+extern int BehindEdge_State;
+extern int BehindEdgeSettings;
+extern int sortBy[3];
+
+extern tPaintCallbackProc ClcPaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
+extern LRESULT ( CALLBACK *saveContactListControlWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+extern void CheckPDNCE(pdisplayNameCacheEntry pdnce);
+
+extern int ( *saveAddItemToGroup )( struct ClcGroup *group, int iAboveItem );
+extern int ( *saveAddInfoItemToGroup )(struct ClcGroup *group,int flags,const TCHAR *pszText);
+
+extern void ( *saveDeleteItemFromTree )(HWND hwnd, HANDLE hItem);
+extern void ( *saveFreeContact )( struct ClcContact* );
+extern void ( *saveFreeGroup )( struct ClcGroup* );
+
+extern CLIST_INTERFACE * pcli;
+
+extern struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
+
+//routines for managing adding/removal of items in the list, including sorting
+extern BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+extern int CompareContacts(const struct ClcContact *contact1,const struct ClcContact *contact2);
+
+extern BOOL FillRect255Alpha(HDC memdc,RECT *fr);
+extern BOOL LOCK_IMAGE_UPDATING;
+
+extern int StartGDIPlus();
+extern int TerminateGDIPlus();
+extern BYTE gdiPlusFail;
+extern int CallTest(HDC hdc, int x, int y, char * Text);
+extern BOOL DrawIconExS(HDC hdc,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWidth, UINT istepIfAniCur, HBRUSH hbrFlickerFreeDraw, UINT diFlags);
+
+extern int hClcProtoCount;
+extern int IsInMainWindow(HWND hwnd);
+extern ClcProtoStatus *clcProto;
+extern HIMAGELIST himlCListClc;
+extern HIMAGELIST hCListImages;
+extern void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntry pdnce,int SettingType);
+extern int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
+
+extern int InitCListEvents(void);
+extern void UninitCListEvents(void);

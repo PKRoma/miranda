@@ -3,7 +3,7 @@
 // written by daniel vijge
 // gpl license ect...
 #include "..\commonheaders.h"
-extern int DefaultImageListColorDepth;
+
 
 extern HINSTANCE g_hInst;
 extern char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);

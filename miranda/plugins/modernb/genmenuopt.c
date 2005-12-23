@@ -10,7 +10,7 @@
 #define TreeView_GetItemA(hwnd, pitem) \
 	(BOOL)SendMessageA((hwnd), TVM_GETITEMA, 0, (LPARAM)(TV_ITEM *)(pitem))
 
-extern int DefaultImageListColorDepth;
+
 extern PIntMenuObject MenuObjects;
 extern int MenuObjectsCount;
 //extern int ImageList_AddIcon_FixAlpha(HIMAGELIST himl,HICON hicon);

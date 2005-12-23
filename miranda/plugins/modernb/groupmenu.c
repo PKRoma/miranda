@@ -64,7 +64,7 @@ static int RemoveGroupMenuItem(WPARAM wParam,LPARAM lParam)
 }
 
 
-static int BuildGroupMenu(WPARAM wParam,LPARAM lParam)
+int BuildGroupMenu(WPARAM wParam,LPARAM lParam)
 {
 	int tick;
 	HMENU hMenu;
@@ -211,17 +211,17 @@ return(0);
 
 int HideGroupsHelper(WPARAM wParam,LPARAM lParam)
 {
-	int newVal=!(GetWindowLong((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),GWL_STYLE)&CLS_HIDEEMPTYGROUPS);
+	int newVal=!(GetWindowLong(pcli->hwndContactTree,GWL_STYLE)&CLS_HIDEEMPTYGROUPS);
 	DBWriteContactSettingByte(NULL,"CList","HideEmptyGroups",(BYTE)newVal);
-	SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_SETHIDEEMPTYGROUPS,newVal,0);
+	SendMessage(pcli->hwndContactTree,CLM_SETHIDEEMPTYGROUPS,newVal,0);
 	return 0;
 }
 
 int UseGroupsHelper(WPARAM wParam,LPARAM lParam)
 {	
-	int newVal=!(GetWindowLong((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),GWL_STYLE)&CLS_USEGROUPS);
+	int newVal=!(GetWindowLong(pcli->hwndContactTree,GWL_STYLE)&CLS_USEGROUPS);
 	DBWriteContactSettingByte(NULL,"CList","UseGroups",(BYTE)newVal);
-	SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_SETUSEGROUPS,newVal,0);
+	SendMessage(pcli->hwndContactTree,CLM_SETUSEGROUPS,newVal,0);
 	return 0;
 }
 
@@ -491,7 +491,7 @@ static int OnBuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 	
 	return 0;
 };
-static int BuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
+int BuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 {
 	int tick;
 	HMENU hMenu;
@@ -517,6 +517,11 @@ static int BuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 	return (int)hMenu;
 }
 
+HMENU BuildGroupPopupMenu(struct ClcGroup *group)
+{
+	//HWND wnd=GetForegroundWindow();
+	return (HMENU)CallService(MS_CLIST_MENUBUILDSUBGROUP,(WPARAM)group,0);
+}
 static int AddSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
@@ -632,7 +637,7 @@ int SubGroupMenuExecService(WPARAM wParam,LPARAM lParam) {
 			CallService(mmep->szServiceName,mmep->Param1,lParam);	
 		}else
 		{
-			CallService(mmep->szServiceName,mmep->Param1,mmep->Param2);	
+			CallService(mmep->szServiceName,mmep->Param1,lParam);	
 		}
 		
 	};
@@ -681,7 +686,7 @@ SendMessage(
 //lparam WM_COMMAND HWND
 int GroupMenuExecProxy(WPARAM wParam,LPARAM lParam)
 {
-  SendMessage(lParam?(HWND)lParam:(HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),WM_COMMAND,wParam,0);
+  SendMessage(lParam?(HWND)lParam:(HWND)pcli->hwndContactTree,WM_COMMAND,wParam,0);
 	return 0;
 };
 

@@ -208,7 +208,7 @@ int lParam;
                   //imply online, eg "Online: Away"
 #define GCMDF_UNICODE        2      //will return TCHAR* instead of char*
 #if defined( _UNICODE )
-	#define GCMDF_TCHAR       GCMDF_UNICODE      //will return TCHAR* instead of char*
+	#define GCMDF_TCHAR       GCMDF_UNICODE|CNF_UNICODE       //will return TCHAR* instead of char*
 #else
 	#define GCMDF_TCHAR       0      //will return char*, as usual
 #endif

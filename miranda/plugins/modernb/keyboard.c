@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-int EventsProcessTrayDoubleClick(void);
+//int EventsProcessTrayDoubleClick(void);
 int InitSkinHotKeys(void);
 int RegistersAllHotkey(HWND hwnd); 
 int UnRegistersAllHotkey(HWND hwnd);
@@ -73,7 +73,7 @@ int hkSearch(WPARAM wParam,LPARAM lParam)
 
 int hkRead(WPARAM wParam,LPARAM lParam)
 {
-	if(EventsProcessTrayDoubleClick()==0) return TRUE;
+	//if(EventsProcessTrayDoubleClick()==0) return TRUE;
 	SetForegroundWindow((HWND)CallService(MS_CLUI_GETHWND,0,0));
 	SetFocus((HWND)CallService(MS_CLUI_GETHWND,0,0));
 	return 0;

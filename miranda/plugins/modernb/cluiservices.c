@@ -25,17 +25,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "commonprototypes.h"
 
+
 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 {
    InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);
 	return 0;
 }
 
+void fnCluiProtocolStatusChanged(void)
+{
+	CluiProtocolStatusChanged(0,0);
+}
+
 int SortList(WPARAM wParam,LPARAM lParam)
 {
-	//unnecessary: CLC does this automatically
-  //  SortClcByTimer(pcli->hwndContactList);
- //   HANDLE hClcWindowList1=(HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
     pcli->pfnClcBroadcast( WM_TIMER,TIMERID_DELAYEDRESORTCLC,0);
     pcli->pfnClcBroadcast( INTM_SCROLLBARCHANGED,0,0);
     

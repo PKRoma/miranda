@@ -33,22 +33,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MIN_TEXT_WIDTH 20
 
-extern int StartGDIPlus();
-extern int TerminateGDIPlus();
-extern BYTE gdiPlusFail;
-extern int CallTest(HDC hdc, int x, int y, char * Text);
-extern BOOL DrawIconExS(HDC hdc,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWidth, UINT istepIfAniCur, HBRUSH hbrFlickerFreeDraw, UINT diFlags);
+static HMODULE  themeAPIHandle = NULL; // handle to uxtheme.dll
+static HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
+static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
+static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
+#define MGPROC(x) GetProcAddress(themeAPIHandle,x)
 
-
-//#include <gdiplus.h>
-//#include <gdiplus.h>
 tPaintCallbackProc ClcPaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint,HRGN rgn,  DWORD dFlags, void * CallBackData);
-extern int hClcProtoCount;
-extern int IsInMainWindow(HWND hwnd);
-extern ClcProtoStatus *clcProto;
-extern HIMAGELIST himlCListClc;
+//#include <gdiplus.h>
 static BYTE divide3[765]={255};
-int MetaIgnoreEmptyExtra;
 
 extern struct AvatarOverlayIconConfig 
 {
@@ -230,12 +223,6 @@ int GetBasicFontID(struct ClcContact * contact)
 	}
 }
 
-static HMODULE  themeAPIHandle = NULL; // handle to uxtheme.dll
-static HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
-static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
-static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
-
-#define MGPROC(x) GetProcAddress(themeAPIHandle,x)
 
 RECT GetRectangleEx(struct ClcData *dat, RECT *row_rc, RECT *free_row_rc, int *left_pos, int *right_pos, BOOL left, int real_width, int width, int height, int horizontal_space, BOOL ignore_align)
 {
@@ -584,7 +571,7 @@ _inline char * GetCLCContactRowBackObject(struct ClcGroup * group, struct ClcCon
 #else
 		AppendChar(buf,BUFSIZE,b2);
 #endif
-		free(b2);		
+		mir_free(b2);		
 	}
 	return mir_strdup(buf);  
 }
@@ -890,17 +877,8 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 							{
 								int item;
 
-								//if (Drawing->image_is_special || Drawing->iImage == -1)
-								{
-									// Get protocol icon
 									item = ExtIconFromStatusMode(Drawing->hContact, Drawing->proto,
 										Drawing->proto==NULL ? ID_STATUS_OFFLINE : Drawing->status);
-								}
-								//else
-								{
-									//	item = Drawing->iImage;
-								}
-
 								if (item != -1)
 									ImageList_DrawEx_New(himlCListClc, item, hdcMem, 
 									real_rc.left,  real_rc.top,ICON_HEIGHT,ICON_HEIGHT,
@@ -1380,7 +1358,12 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 		}
 
 		// Store pos
+		//
+		selection_text_rc.left=text_rc.left;
+		selection_text_rc.right=text_rc.right;
+
 		Drawing->pos_label = selection_text_rc;
+		Drawing->pos_rename_rect=free_row_rc;
 
 		// Selection background
 		if (selected || hottrack)
@@ -1440,6 +1423,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 
 				rc.left = rc.right + 6 + text_size.cx;
 				rc.right = free_row_rc.right;
+				if (!LayeredFlag)
 				DrawEdge(hdcMem,&rc,BDR_SUNKENOUTER,BF_RECT);
 				break;
 			}
@@ -1496,24 +1480,31 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 				}
 
 				// Update free
-				if (dat->exStyle&CLS_EX_LINEWITHGROUPS) 
+				if (!LayeredFlag &&dat->exStyle&CLS_EX_LINEWITHGROUPS) 
 				{
-					if (dat->text_align_right)
-						free_row_rc.right -= text_rc.right - text_rc.left;
-					else
-						free_row_rc.left += text_rc.right - text_rc.left;
 
-					if (free_row_rc.right > free_row_rc.left + 6)
+					//	free_row_rc.right -= text_rc.right - text_rc.left;
+					//else
+					//  free_row_rc.left += text_rc.right - text_rc.left;
+					//if (free_row_rc.right > free_row_rc.left + 6)
 					{
-						RECT rc = free_row_rc;
-						rc.top += (rc.bottom - rc.top) >> 1;
-						rc.bottom = rc.top + 2;
-						if (dat->text_align_right)
-							rc.right -= 6;
-						else
-							rc.left += 6;
+						RECT rc1 = free_row_rc;
+						RECT rc2 = free_row_rc;
+						rc1.right=text_rc.left-3;
+						rc2.left=text_rc.right+3;
+						rc1.top += (rc1.bottom - rc1.top) >> 1;
+						rc1.bottom = rc1.top + 2;
+						rc2.top += (rc2.bottom - rc2.top) >> 1;
+						rc2.bottom = rc2.top + 2;
 
-						DrawEdge(hdcMem,&rc,BDR_SUNKENOUTER,BF_RECT);
+						//if (dat->text_align_right)
+						//	rc.right -= 6;
+						//else
+
+						if (rc1.right-rc1.left>=6)
+ 							DrawEdge(hdcMem,&rc1,BDR_SUNKENOUTER,BF_RECT);
+						if (rc2.right-rc2.left>=6)
+							DrawEdge(hdcMem,&rc2,BDR_SUNKENOUTER,BF_RECT);
 					}
 				}
 				break;
@@ -1841,7 +1832,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			ZeroMemory(&Drawing->pos_avatar, sizeof(Drawing->pos_avatar));
 			ZeroMemory(&Drawing->pos_icon, sizeof(Drawing->pos_icon));
 			ZeroMemory(&Drawing->pos_label, sizeof(Drawing->pos_label));
-			//      ZeroMemory(&Drawing->pos_full_first_row, sizeof(Drawing->pos_full_first_row));
+		    ZeroMemory(&Drawing->pos_rename_rect, sizeof(Drawing->pos_rename_rect));
 			ZeroMemory(&Drawing->pos_extra, sizeof(Drawing->pos_extra));
 
 
@@ -2015,39 +2006,6 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 		if (a)
 			BitBlt(hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem2,rcPaint->left,rcPaint->top,SRCCOPY);
 	}
-		/* {
-		PBYTE bits;
-		BITMAPINFOHEADER bmih={0};
-		int i;
-		int greyRed,greyGreen,greyBlue;
-		COLORREF greyColour;
-		if (!hBmpOsb) 
-			hBmpOsb=GetCurrentObject(hdc,OBJ_BITMAP);
-		bmih.biBitCount=32;
-		bmih.biSize=sizeof(bmih);
-		bmih.biCompression=BI_RGB;
-		bmih.biHeight=-clRect.bottom;
-		bmih.biPlanes=1;
-		bmih.biWidth=clRect.right;
-		bits=(PBYTE)mir_alloc(4*bmih.biWidth*-bmih.biHeight);
-		GetDIBits(hdc,hBmpOsb,0,clRect.bottom,bits,(BITMAPINFO*)&bmih,DIB_RGB_COLORS);
-		greyColour=GetSysColor(COLOR_3DFACE);
-		greyRed=GetRValue(greyColour)*2;
-		greyGreen=GetGValue(greyColour)*2;
-		greyBlue=GetBValue(greyColour)*2;
-		if(divide3[0]==255) {
-			for(i=0;i<sizeof(divide3)/sizeof(divide3[0]);i++) divide3[i]=(i+1)/3;
-		}
-		for(i=4*clRect.right*clRect.bottom-4;i>=0;i-=4) {
-			bits[i]=divide3[bits[i]+greyBlue];
-			bits[i+1]=divide3[bits[i+1]+greyGreen];
-			bits[i+2]=divide3[bits[i+2]+greyRed];
-		}
-		SetDIBitsToDevice(hdc,0,0,clRect.right,clRect.bottom,0,0,0,clRect.bottom,bits,(BITMAPINFO*)&bmih,DIB_RGB_COLORS);
-		mir_free(bits);
-	}*/
-
-	// Restore some draw states
 	if (old_bk_mode != TRANSPARENT)
 		SetBkMode(hdcMem, old_bk_mode);
 

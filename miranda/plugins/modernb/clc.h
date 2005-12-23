@@ -226,6 +226,7 @@ struct ClcContact {
 	RECT pos_avatar;
 	RECT pos_icon;
 	RECT pos_label;
+	RECT pos_rename_rect;
 	RECT pos_contact_time;
 	RECT pos_extra[MAXEXTRACOLUMNS];
 };
@@ -403,7 +404,6 @@ void DeleteItemFromTree(HWND hwnd,HANDLE hItem);
 void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
 void SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort);
 int GetNewSelection(struct ClcGroup *group,int selection, int direction);
-void SaveStateAndRebuildList(HWND hwnd,struct ClcData *dat);
 
 //clcmsgs.c
 LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
@@ -475,6 +475,7 @@ ExternDrawer SED;
 //wParam=0
 //lParam=(LPARAM)(SKINHOTKEYDESC*)ssd;
 //returns 0 on success, nonzero otherwise
+/*
 typedef struct {
 	int cbSize;
 	const char *pszName;		   //name to refer to sound when playing and in db
@@ -485,7 +486,7 @@ typedef struct {
 
 	int DefHotKey; //default hot key for action
 } SKINHOTKEYDESCEX;
-
+*/
 #define MS_SKIN_ADDHOTKEY      "Skin/HotKeys/AddNew"
 #define MS_SKIN_PLAYHOTKEY		"Skin/HotKeys/Run"
 
