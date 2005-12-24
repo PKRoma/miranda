@@ -286,7 +286,6 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			}
 			else dat->bisEmbedded = TRUE;
 		}
-		LoadClcOptions(hwnd, dat);
 		if(GetParent(hwnd) == pcli->hwndContactList && MySetLayeredWindowAttributes != 0 && g_CluiData.bFullTransparent) {
 			if(g_CLUISkinnedBkColorRGB)
 				Tweak_It(g_CLUISkinnedBkColorRGB);

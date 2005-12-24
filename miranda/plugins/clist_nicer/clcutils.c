@@ -520,9 +520,8 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 				DeleteDC(g_CluiData.hdcPic);
 				g_CluiData.hdcPic = 0;
 				g_CluiData.hbmPicOld = 0;
-			}
-			DeleteObject(dat->hBmpBackground); dat->hBmpBackground = NULL;
-		}
+		}	}
+
 		g_CluiData.bmpBackground = dat->hBmpBackground;
 		if(g_CluiData.bmpBackground) {
 			HDC hdcThis = GetDC(pcli->hwndContactList);

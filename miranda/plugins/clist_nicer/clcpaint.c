@@ -1409,43 +1409,43 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 				maxy = dat->backgroundBmpUse & CLBF_TILEV ? maxy = rcPaint->bottom : y + 1;
 				if (!DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
 					switch (dat->backgroundBmpUse & CLBM_TYPE) {
-	case CLB_STRETCH:
-		if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
-			if (clRect.right * bmp.bmHeight < clRect.bottom * bmp.bmWidth) {
-				desth = clRect.bottom;
-				destw = desth * bmp.bmWidth / bmp.bmHeight;
-			} else {
-				destw = clRect.right;
-				desth = destw * bmp.bmHeight / bmp.bmWidth;
-			}
-		} else {
-			destw = clRect.right;
-			desth = clRect.bottom;
-		}
-		break;
-	case CLB_STRETCHH:
-		if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
-			destw = clRect.right;
-			desth = destw * bmp.bmHeight / bmp.bmWidth;
-		} else {
-			destw = clRect.right;
-			desth = bmp.bmHeight;
-		}
-		break;
-	case CLB_STRETCHV:
-		if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
-			desth = clRect.bottom;
-			destw = desth * bmp.bmWidth / bmp.bmHeight;
-		} else {
-			destw = bmp.bmWidth;
-			desth = clRect.bottom;
-		}
-		break;
-	default:
-		//clb_topleft
-		destw = bmp.bmWidth;
-		desth = bmp.bmHeight;
-		break;
+					case CLB_STRETCH:
+						if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
+							if (clRect.right * bmp.bmHeight < clRect.bottom * bmp.bmWidth) {
+								desth = clRect.bottom;
+								destw = desth * bmp.bmWidth / bmp.bmHeight;
+							} else {
+								destw = clRect.right;
+								desth = destw * bmp.bmHeight / bmp.bmWidth;
+							}
+						} else {
+							destw = clRect.right;
+							desth = clRect.bottom;
+						}
+						break;
+					case CLB_STRETCHH:
+						if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
+							destw = clRect.right;
+							desth = destw * bmp.bmHeight / bmp.bmWidth;
+						} else {
+							destw = clRect.right;
+							desth = bmp.bmHeight;
+						}
+						break;
+					case CLB_STRETCHV:
+						if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
+							desth = clRect.bottom;
+							destw = desth * bmp.bmWidth / bmp.bmHeight;
+						} else {
+							destw = bmp.bmWidth;
+							desth = clRect.bottom;
+						}
+						break;
+					default:
+						//clb_topleft
+						destw = bmp.bmWidth;
+						desth = bmp.bmHeight;
+						break;
 					}
 				} else {
 					destw = bmp.bmWidth;
