@@ -174,14 +174,7 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 	ZeroMemory((void *)im_clienthIcons, sizeof(HICON) * NR_CLIENTS);
 	ZeroMemory((void *)overlayicons, sizeof(HICON) * 10);
 
-    g_CluiData.bMetaAvail = ServiceExists(MS_MC_GETDEFAULTCONTACT) ? TRUE : FALSE;
-    if(g_CluiData.bMetaAvail)
-        mir_snprintf(g_CluiData.szMetaName, 256, "%s", (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0));
-    else
-        strncpy(g_CluiData.szMetaName, "MetaContacts", 255);
-
 	CLN_LoadAllIcons(1);
-
 	return 0;
 }
 
