@@ -206,6 +206,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnGetRowTopY = RowHeights_GetItemTopY;
 	pcli->pfnGetRowTotalHeight = RowHeights_GetTotalHeight;
 	pcli->pfnInvalidateRect = skinInvalidateRect;
+
 	pcli->pfnOnCreateClc = LoadCLUIModule;
 	pcli->pfnHotKeysProcess = HotKeysProcess;
 	pcli->pfnHotkeysProcessMessage = HotkeysProcessMessage;

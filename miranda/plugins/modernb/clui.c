@@ -73,6 +73,7 @@ extern int docked;
 BOOL DestMode;
 BYTE ANIMATION_IS_IN_PROGRESS=0;
 BOOL SHOWHIDE_CALLED_FROM_ANIMATION=0;
+BOOL firstTimeCallFlag=FALSE;
 int SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam);
 extern tPaintCallbackProc ClcPaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
 extern int LoadModernButtonModule(void);
@@ -234,6 +235,7 @@ void ChangeWindowMode()
 	LONG styleMaskEx=WS_EX_TOOLWINDOW|WS_EX_LAYERED;
 	LONG curStyle,curStyleEx;
 	if (!pcli->hwndContactList) return;
+
 	IsInChangingMode=TRUE;
 	TransparentFlag=IsWinVer2000Plus()&&DBGetContactSettingByte( NULL,"CList","Transparent",SETTING_TRANSPARENT_DEFAULT);
 	SmoothAnimation=IsWinVer2000Plus()&&DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", 1);
@@ -291,7 +293,12 @@ void ChangeWindowMode()
 		}
 		SetWindowText(pcli->hwndContactList,titleText);
 	}
-
+	if (IsOnDesktop || (DBGetContactSettingByte(NULL,"CList","OnDesktop", 0) && !firstTimeCallFlag))
+	{
+			SetParent(pcli->hwndContactList,NULL);
+			SetParentForContainers(NULL);
+			IsOnDesktop=0;
+	}
 	//5- TODO Apply Style
 	curStyleEx=GetWindowLong(pcli->hwndContactList,GWL_EXSTYLE);
 	curStyle=GetWindowLong(pcli->hwndContactList,GWL_STYLE);	
@@ -346,6 +353,7 @@ void ChangeWindowMode()
 		RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
 	} 			
 	IsInChangingMode=FALSE;
+	firstTimeCallFlag=TRUE;
 }
 
 int UpdateTimer(BYTE BringIn)
@@ -2600,7 +2608,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 #endif
 
 				if(IsWindowVisible(pcli->hwndStatus)) SkinInvalidateFrame(pcli->hwndStatus,NULL,0);//InvalidateRectZ(pcli->hwndStatus,NULL,TRUE);
-				TrayIconUpdateBase(pt->szProto);
+				if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)!=SETTING_TRAYICON_CYCLE) TrayIconUpdateBase(pt->szProto);
 
 			}
 			SkinInvalidateFrame(pcli->hwndStatus,NULL,0);

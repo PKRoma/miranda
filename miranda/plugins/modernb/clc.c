@@ -432,6 +432,7 @@ int LoadCLCModule(void)
 	hSettingChanged1=HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ClcSettingChanged);
 	HookEvent(ME_OPT_INITIALISE,ClcOptInit);
 	hAckHook=(HANDLE)HookEvent(ME_PROTO_ACK,ClcProtoAck);
+  HookEvent(ME_SYSTEM_MODULESLOADED, ClcModulesLoaded);
 	HookEvent(ME_SYSTEM_SHUTDOWN,ClcShutdown);
 	return 0;
 }

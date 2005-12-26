@@ -421,13 +421,13 @@ static int TrayIconSetBaseInfo(HICON hIcon, char *szPreferredProto)
         return -1;
 
     //if there wasn't a specific icon, there will only be one suitable
-/*	for(i=0;i<trayIconCount;i++) {
+	for(i=0;i<trayIconCount;i++) {
 		if(trayIcon[i].id==0) continue;
 		DestroyIcon(trayIcon[i].hBaseIcon);
 		trayIcon[i].hBaseIcon=hIcon;
 		return i;
 	}
-    */
+    
 	return -1;
 }
 
@@ -466,6 +466,7 @@ void TrayIconUpdateBase(char *szChangedProto)
 	int averageMode=0;
 	HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
 	TRACE(szChangedProto); TRACE("\n");
+	
 	if(cycleTimerId) {KillTimer(NULL,cycleTimerId); cycleTimerId=0;}
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 	for(i=0,netProtoCount=0;i<count;i++) {
@@ -475,6 +476,7 @@ void TrayIconUpdateBase(char *szChangedProto)
 		if(averageMode==0) averageMode=CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0);
 		else if(averageMode!=CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0)) {averageMode=-1; break;}
 	}
+	
 	if(netProtoCount>1) {
 		if(averageMode>0) {
 			if(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI) {
@@ -533,10 +535,33 @@ void TrayIconUpdateBase(char *szChangedProto)
 					if (!trayIcon) 
 					{
 						TrayIconRemove(NULL,NULL);
-					} else if(DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT))
-						changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0)),ILD_NORMAL),szChangedProto);
-					else 
-                    {       if (GetProtocolVisibility(szChangedProto))
+					} else 
+						
+						if(DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT))
+						{
+							if (GetProtocolVisibility(szChangedProto))
+							{
+							
+								int status;
+								status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
+								if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+								{
+									//
+									HICON hIcon;
+									hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);;										
+									if (hIcon)
+									{
+										changed=TrayIconSetBaseInfo(hIcon,szChangedProto);						
+										TrayIconUpdate(hIcon,NULL,szChangedProto,1);					
+										DestroyIcon(hIcon);
+									}
+								}
+								else
+									changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0)),ILD_NORMAL),szChangedProto);
+							}
+						}
+						else 
+		                {       if (GetProtocolVisibility(szChangedProto))
                             {
                                 int i;
                                 int avg;
@@ -599,8 +624,9 @@ void TrayIconUpdateBase(char *szChangedProto)
 					}
 	};
 
-	if(changed!=-1 && trayIcon[changed].isBase)
+	if(changed!=-1) // && trayIcon[changed].isBase)
 		TrayIconUpdate(trayIcon[changed].hBaseIcon,NULL,szChangedProto/*trayIcon[changed].szProto*/,1);  // by FYR (No suitable protocol)
+
 }
 
 void TrayIconSetToBase(char *szPreferredProto)
@@ -617,7 +643,7 @@ void TrayIconSetToBase(char *szPreferredProto)
 	for(i=0;i<trayIconCount;i++) {
 		if(trayIcon[i].id==0) continue;
 		TrayIconUpdate(trayIcon[i].hBaseIcon,NULL,trayIcon[i].szProto/* szPreferredProto*/,1);
-	//	return;
+		//return; //Need to restore all icons if no preffered found
 	}
     return;
 }

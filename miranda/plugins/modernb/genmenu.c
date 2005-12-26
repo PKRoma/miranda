@@ -1379,3 +1379,19 @@ int UnitGenMenu()
   return(0);
 };
 
+TMO_IntMenuItem * GetMenuItemByGlobalID(int globalMenuID)
+{
+	int ObjId; 
+	int ItemId; 
+	int pimoidx; 
+	int itempos; 
+
+	ObjId=HIWORD(globalMenuID);
+	ItemId=LOWORD(globalMenuID);
+	pimoidx=GetMenuObjbyId(ObjId);
+	itempos=GetMenuItembyId(pimoidx,ItemId);
+	if (pimoidx<MenuObjectsCount && itempos<MenuObjects[pimoidx].MenuItemsCount)
+		if(MenuObjects[pimoidx].MenuItems[itempos].globalid==globalMenuID) return (&(MenuObjects[pimoidx].MenuItems[itempos]));
+	else 
+		return NULL;
+}

@@ -458,8 +458,19 @@ int SetToolTip(HWND hwnd, TCHAR * tip)
   if (!tip) return 0;
   EnterCriticalSection(&csTips);
   if (!hwndToolTips) {
-    hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, TEXT(""), WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
+  //  hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, TEXT(""), WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
+
+	hwndToolTips = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL,
+		WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		hwnd, NULL, GetModuleHandle(NULL),
+		NULL);
+
+	SetWindowPos(hwndToolTips, HWND_TOPMOST,0, 0, 0, 0,
+		SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
   }
+
   ZeroMemory(&ti, sizeof(ti));
   ti.cbSize = sizeof(ti);
   ti.uFlags = TTF_IDISHWND;
@@ -472,6 +483,7 @@ int SetToolTip(HWND hwnd, TCHAR * tip)
   ti.uId = (UINT)hwnd;
   ti.lpszText=(TCHAR*)tip;
   SendMessage(hwndToolTips,TTM_ADDTOOL,0,(LPARAM)&ti);
+
   LeaveCriticalSection(&csTips);
   return 0;
 }

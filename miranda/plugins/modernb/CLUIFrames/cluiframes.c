@@ -3851,15 +3851,15 @@ LRESULT CALLBACK CLUIFrameSubContainerProc(HWND hwnd, UINT msg, WPARAM wParam, L
   case WM_SYSCOMMAND:
     TRACE("WM_SYSCOMMAND\n");
     return SendMessage((HWND)CallService(MS_CLUI_GETHWND,0,0),msg,wParam,lParam); 
-  case WM_CREATE:
-    {
-      int framepos;
-      lockfrm();
-      framepos=id2pos(Frameid);
       //SetWindowPos(Frames[framepos].TitleBar.hwndTip, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE  );
-      ulockfrm();
-      return(0);
-    };
+  //  {
+  //  //  int framepos;
+  //   // lockfrm();
+  //   // framepos=id2pos(Frameid);
+  //    //SetWindowPos(Frames[framepos].TitleBar.hwndTip, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE  );
+  //  //  ulockfrm();
+  //  //  return(0);
+  //  };
   case WM_MOVE:
     {
       if (docked) 
