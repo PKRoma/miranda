@@ -92,9 +92,11 @@ ClcCacheEntryBase* fnGetCacheEntry(HANDLE hContact)
 {
 	ClcCacheEntryBase* p;
 	int idx;
-	if ( !List_GetIndex( clistCache, &hContact, &idx ))
-	{	p = cli.pfnCreateCacheItem( hContact );
-		List_Insert( clistCache, p, idx );
+	if ( !List_GetIndex( clistCache, &hContact, &idx )) {	
+		if (( p = cli.pfnCreateCacheItem( hContact )) != NULL ) {
+			List_Insert( clistCache, p, idx );
+			cli.pfnInvalidateDisplayNameCacheEntry( p );
+		}
 	}
 	else p = ( ClcCacheEntryBase* )clistCache->items[idx];
 

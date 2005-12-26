@@ -448,9 +448,9 @@ int fnGetGroupContentsCount(struct ClcGroup *group, int visibleOnly)
 	return count;
 }
 
-static int __cdecl GroupSortProc(const struct ClcContact *contact1, const struct ClcContact *contact2)
+static int __cdecl GroupSortProc(const struct ClcContact **contact1, const struct ClcContact **contact2)
 {
-	return lstrcmpi(contact1->szText, contact2->szText);
+	return lstrcmpi(contact1[0]->szText, contact2[0]->szText);
 }
 
 static int __cdecl ContactSortProc(const struct ClcContact **contact1, const struct ClcContact **contact2)
