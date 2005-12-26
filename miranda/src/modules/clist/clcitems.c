@@ -561,10 +561,11 @@ void fnSortCLC(HWND hwnd, struct ClcData *dat, int useInsertionSort)
 		if (hSelItem)
 			if (cli.pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
 				dat->selection = cli.pfnGetRowsPriorTo(&dat->list, selgroup, List_IndexOf((SortedList*)&selgroup->cl,selcontact));
+				
+		cli.pfnRecalcScrollBar(hwnd, dat);				
 	}
 	dat->needsResort = 0;
 	cli.pfnInvalidateRect(hwnd, NULL, FALSE);
-	cli.pfnRecalcScrollBar(hwnd, dat);
 }
 
 struct SavedContactState_t
