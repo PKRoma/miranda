@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             May 2005 (v0.4.0.1)
+                             January 2006 (v0.4.0.2)
 
                           http://www.miranda-im.org
 
@@ -28,6 +28,11 @@ to list all the important ones without getting too technical.
 
 If you want to see the full changelogs, go here:
 http://files.miranda-im.org/builds/ChangeLog
+
+* New in 0.4.0.2
+Bugfixes:
+Enhancements:
+
 
 * New in 0.4.0.1
 Bugfixes:
@@ -418,8 +423,8 @@ Run the installer and follow the instructions.
 3. General Notes
 ----------------
 
-Unlock the power of your new Miranda IM with plugins! There are now more
-than 200 plugins available as free downloads:
+Unlock the power of your new Miranda IM with plugins! There are now around
+500 plugins available as free downloads:
 http://www.miranda-im.org/download/index.php
 
 
@@ -481,14 +486,10 @@ The official webpage for the Miranda IM project is www.miranda-im.org.
 b) Authors
 
 Martin Öberg		 - Project Manager / Developer
-			   strickz at miranda-im.org
+			   martin.oberg at miranda-im.org
 Robert Rainwater	 - Developer
-			   rainwater at miranda-im.org
 Sam			 - Developer
-			   egodust at miranda-im.org
 Lyon Lymliz		 - Webmaster
-			   lynlimz at miranda-im.org
-Santithorn Bunchua	 - Jabber developer
 George Hazan		 - MSN developer
 Jörgen Persson		 - IRC developer
 
@@ -525,8 +526,9 @@ will increase.
 Miranda IM is released under the terms of the GNU General Public License. See
 "License.txt" for more details.
 
-Miranda IM is copyright 2000-2003 by Richard Hughes, Roland Rabien,
-Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari, and Lyon Lim.
+Miranda IM is copyright 2000-2006 by Richard Hughes, Roland Rabien,
+Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari, Lyon Lim and
+George Ghazan.
 
 The plugins included with this release is copyrighted by their authors. See the
 documentation for each plugin for more information.
