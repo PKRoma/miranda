@@ -31,6 +31,7 @@ int LoadSendRecvMessageModule(void);
 int SplitmsgShutdown(void);
 int LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int i, char *szMsg);
 int ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced);
+DWORD g_mirandaVersion = 0;
 
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
@@ -71,7 +72,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 __declspec(dllexport)
      PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
+    g_mirandaVersion = mirandaVersion;
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
         return NULL;
     return &pluginInfo;
 }
@@ -184,7 +186,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				char szVersion[512], *found = NULL, buildstr[50] = "";
 				UINT build_nr = 0;
 
-				CallService(MS_SYSTEM_GETVERSIONTEXT, 500, szVersion);
+				CallService(MS_SYSTEM_GETVERSIONTEXT, 500, (LPARAM)szVersion);
 				if((found = strchr(szVersion, '#')) != NULL) {
 					build_nr = atoi(found + 1);
 					mir_snprintf(buildstr, 50, "[Build #%d]", build_nr);

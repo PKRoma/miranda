@@ -560,8 +560,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 				SetClassLong(hwndTab, GCL_STYLE, GetClassLong(hwndTab, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 
-				if(IsWinVerXPPlus() && !g_framelessSkinmode)
+				if(IsWinVerXPPlus() && !g_framelessSkinmode && myGlobals.m_dropShadow)
 					SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) | CS_DROPSHADOW);
+				else
+					SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) & ~CS_DROPSHADOW);
 	
 				/*
 				 * additional system menu items...

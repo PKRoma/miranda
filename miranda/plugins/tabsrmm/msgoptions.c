@@ -1171,6 +1171,7 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 			CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0) ? 1 : 0);
 			SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_USESKIN, BN_CLICKED), 0);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_USESKIN), IsWinVer2000Plus() ? TRUE : FALSE);
+			CheckDlgButton(hwndDlg, IDC_DROPSHADOW, myGlobals.m_dropShadow);
 
             if(!ServiceExists("Utils/SnapWindowProc"))
                 EnableWindow(GetDlgItem(hwndDlg, IDC_USESNAPPING), FALSE);
@@ -1258,6 +1259,8 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", GetDlgItemInt(hwndDlg, IDC_FLASHINTERVAL, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "nrflash", GetDlgItemInt(hwndDlg, IDC_NRFLASH, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING));
+							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "dropshadow", IsDlgButtonChecked(hwndDlg, IDC_DROPSHADOW) ? 1 : 0);
+							myGlobals.m_dropShadow = IsDlgButtonChecked(hwndDlg, IDC_DROPSHADOW) ? 1 : 0;
 
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "bclip", (BYTE)SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_GETPOS, 0, 0));
                             myGlobals.bClipBorder = (BYTE)SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_GETPOS, 0, 0);
@@ -2094,6 +2097,7 @@ void ReloadGlobals()
      myGlobals.m_szNoStatus = TranslateT("No status message available");
      myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN);
 	 myGlobals.bAvatarBoderType = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", 1);
+     myGlobals.m_dropShadow = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "dropshadow", 0);
 
      switch(myGlobals.ipConfig.borderStyle) {
          case IPFIELD_SUNKEN:

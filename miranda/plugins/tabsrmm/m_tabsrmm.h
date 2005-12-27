@@ -479,6 +479,7 @@ typedef struct _globals {
 	BYTE bAvatarBoderType;
 	HFONT hFontCaption;
 	COLORREF skinDefaultFontColor;
+	BYTE m_dropShadow;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
