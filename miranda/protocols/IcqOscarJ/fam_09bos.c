@@ -91,7 +91,7 @@ static void handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLength)
 
       disposeChain(&pChain);
 
-      NetLog_Server("SRV_PRIVACY_RIGHTS_REPLY: Max visible %u, max invisible %u", wMaxVisibleContacts, wMaxInvisibleContacts);
+      NetLog_Server("PRIVACY: Max visible %u, max invisible %u items.", wMaxVisibleContacts, wMaxInvisibleContacts);
 
       // Success
       return;
@@ -118,9 +118,8 @@ void makeContactTemporaryVisible(HANDLE hContact)
 
   nUinLen = getUINLen(dwUin);
 
-  packet.wLen = nUinLen + 11;
-  write_flap(&packet, 2);
-  packFNACHeader(&packet, ICQ_BOS_FAMILY, ICQ_CLI_ADDTEMPVISIBLE, 0, ICQ_CLI_ADDTEMPVISIBLE<<0x10);
+  serverPacketInit(&packet, (WORD)(nUinLen + 11));
+  packFNACHeader(&packet, ICQ_BOS_FAMILY, ICQ_CLI_ADDTEMPVISIBLE);
   packUIN(&packet, dwUin);
   sendServPacket(&packet);
 
@@ -133,64 +132,7 @@ void makeContactTemporaryVisible(HANDLE hContact)
 
 
 
-static char* buildTempVisUinList()
-{
-  char* szList;
-  HANDLE hContact;
-  WORD wCurrentLen = 0;
-  DWORD dwUIN;
-  char szUin[UINMAXLEN];
-  char szLen[2];
-
-
-  szList = (char*)calloc(CallService(MS_DB_CONTACT_GETCOUNT, 0, 0), UINMAXLEN);
-  szLen[1] = '\0';
-
-  hContact = ICQFindFirstContact();
-
-  while(hContact != NULL)
-  {
-    if (ICQGetContactSettingByte(hContact, "TemporaryVisible", 0)
-      && (!ICQGetContactSettingUID(hContact, &dwUIN, NULL)))
-    {
-      _itoa(dwUIN, szUin, 10);
-      szLen[0] = strlennull(szUin);
-
-      wCurrentLen += szLen[0] + 1;
-
-      strcat(szList, szLen); // add to list
-      strcat(szList, szUin);
-
-      // clear flag
-      ICQDeleteContactSetting(hContact, "TemporaryVisible");
-    }
-
-    hContact = ICQFindNextContact(hContact);
-  }
-
-  return szList;
-}
-
-
-
 void clearTemporaryVisibleList()
-{ // browse clist, remove all temporary visible contacts
-  char* szList;
-  int nListLen;
-  icq_packet packet;
-
-
-  szList = buildTempVisUinList();
-  nListLen = strlennull(szList);
-
-  if (nListLen)
-  {
-    packet.wLen = nListLen + 10;
-    write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_BOS_FAMILY, ICQ_CLI_REMOVETEMPVISIBLE, 0, ICQ_CLI_REMOVETEMPVISIBLE<<0x10);
-    packBuffer(&packet, szList, (WORD)nListLen);
-    sendServPacket(&packet);
-  }
-
-  SAFE_FREE(&szList);
+{ // remove all temporary visible contacts
+  sendEntireListServ(ICQ_BOS_FAMILY, ICQ_CLI_REMOVETEMPVISIBLE, BUL_TEMPVISIBLE);
 }

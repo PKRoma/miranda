@@ -64,9 +64,8 @@ static void packServMsgSendHeader(icq_packet *p, DWORD dwSequence, DWORD dwID1, 
 
   nUinLen = getUIDLen(dwUin, szUID);
 
-  p->wLen = 21 + nUinLen + wLen;
-  write_flap(p, ICQ_DATA_CHAN);
-  packFNACHeader(p, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, 0, dwSequence | ICQ_MSG_SRV_SEND<<0x10);
+  serverPacketInit(p, (WORD)(21 + nUinLen + wLen));
+  packFNACHeaderFull(p, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, 0, dwSequence | ICQ_MSG_SRV_SEND<<0x10);
   packLEDWord(p, dwID1);         // Msg ID part 1
   packLEDWord(p, dwID2);         // Msg ID part 2
   packWord(p, wFmt);             // Message channel
@@ -77,9 +76,8 @@ static void packServMsgSendHeader(icq_packet *p, DWORD dwSequence, DWORD dwID1, 
 
 static void packServIcqExtensionHeader(icq_packet *p, WORD wLen, WORD wType, WORD wSeq)
 {
-  p->wLen = 24 + wLen;
-  write_flap(p, ICQ_DATA_CHAN);
-  packFNACHeader(p, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, wSeq | CLI_META_REQ<<0x10);
+  serverPacketInit(p, (WORD)(24 + wLen));
+  packFNACHeaderFull(p, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, wSeq | CLI_META_REQ<<0x10);
   packWord(p, 0x01);               // TLV type 1
   packWord(p, (WORD)(10 + wLen));  // TLV len
   packLEWord(p, (WORD)(8 + wLen)); // Data chunk size (TLV.Length-2)
@@ -172,22 +170,21 @@ static void packServAdvancedMsgReply(icq_packet *p, DWORD dwUin, DWORD dwTimesta
 
   nUinLen = getUINLen(dwUin);
 
-  p->wLen = nUinLen + 74 + wLen;
-  write_flap(p, ICQ_DATA_CHAN);
-  packFNACHeader(p, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE, 0, ICQ_MSG_RESPONSE<<0x10 | (wCookie & 0x7FFF));
+  serverPacketInit(p, (WORD)(nUinLen + 74 + wLen));
+  packFNACHeaderFull(p, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE, 0, ICQ_MSG_RESPONSE<<0x10 | (wCookie & 0x7FFF));
   packLEDWord(p, dwTimestamp);   // Msg ID part 1
   packLEDWord(p, dwTimestamp2);  // Msg ID part 2
   packWord(p, 0x02);             // Channel
   packUIN(p, dwUin);             // Your UIN
-  packWord(p, 0x03);           // Unknown
-  packLEWord(p, 0x1B);         // Unknown
-  packByte(p, ICQ_VERSION);     // Protocol version
+  packWord(p, 0x03);             // Unknown
+  packLEWord(p, 0x1B);           // Unknown
+  packByte(p, ICQ_VERSION);      // Protocol version
   packGUID(p, PSIG_MESSAGE);
   packDWord(p, CLIENTFEATURES);
   packDWord(p, DC_TYPE);
-  packLEWord(p, wCookie);   // Reference
+  packLEWord(p, wCookie);  // Reference
   packLEWord(p, 0x0E);     // Unknown
-  packLEWord(p, wCookie);   // Reference
+  packLEWord(p, wCookie);  // Reference
   packDWord(p, 0);         // Unknown
   packDWord(p, 0);         // Unknown
   packDWord(p, 0);         // Unknown
@@ -221,25 +218,36 @@ void packEmptyMsg(icq_packet *packet)
  *
  */
 
+void icq_sendCloseConnection()
+{
+  icq_packet packet;
+
+  packet.wLen = 0;
+  write_flap(&packet, ICQ_CLOSE_CHAN);
+  sendServPacket(&packet);
+}
+
+
+
 void icq_requestnewfamily(WORD wFamily, void (*familyhandler)(HANDLE hConn, char* cookie, WORD cookieLen))
 {
   icq_packet packet;
-  DWORD wIdent;
+  DWORD dwIdent;
   familyrequest_rec* request;
 
   request = (familyrequest_rec*)malloc(sizeof(familyrequest_rec));
   request->wFamily = wFamily;
   request->familyhandler = familyhandler;
 
-  wIdent = AllocateCookie(ICQ_CLIENT_NEW_SERVICE, 0, request); // generate and alloc cookie
+  dwIdent = AllocateCookie(ICQ_CLIENT_NEW_SERVICE, 0, request); // generate and alloc cookie
 
-  packet.wLen = 12;
-  write_flap(&packet, 2);
-  packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_NEW_SERVICE, 0, wIdent);
+  serverPacketInit(&packet, 12);
+  packFNACHeaderFull(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_NEW_SERVICE, 0, dwIdent);
   packWord(&packet, wFamily);
 
   sendServPacket(&packet);
 }
+
 
 
 void icq_setidle(int bAllow)
@@ -249,9 +257,8 @@ void icq_setidle(int bAllow)
   if (bAllow!=gbIdleAllow)
   {
     /* SNAC 1,11 */
-    packet.wLen = 14;
-    write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_IDLE, 0, ICQ_CLIENT_SET_IDLE<<0x10);
+    serverPacketInit(&packet, 14);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_IDLE);
     if (bAllow==1)
     {
       packDWord(&packet, 0x0000003C);
@@ -296,9 +303,8 @@ void icq_setstatus(WORD wStatus)
   }
 
   // Pack data in packet
-  packet.wLen = 18;
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS, 0, ICQ_CLIENT_SET_STATUS<<0x10);
+  serverPacketInit(&packet, 18);
+  packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
   packWord(&packet, 0x06);    // TLV 6
   packWord(&packet, 0x04);    // TLV length
   packWord(&packet, wFlags);  // Status flags
@@ -307,6 +313,7 @@ void icq_setstatus(WORD wStatus)
   // Send packet
   sendServPacket(&packet);
 }
+
 
 
 DWORD icq_SendChannel1Message(DWORD dwUin, char *szUID, HANDLE hContact, char *pszText, message_cookie_data *pCookieData)
@@ -589,9 +596,8 @@ DWORD icq_sendGetAimProfileServ(HANDLE hContact, char* szUid)
   pCookieData->bRequestType = REQUESTTYPE_PROFILE;
   pCookieData->hContact = hContact;
 
-  packet.wLen = 13 + bUIDlen;
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, dwCookie);
+  serverPacketInit(&packet, (WORD)(13 + bUIDlen));
+  packFNACHeaderFull(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, dwCookie);
   packWord(&packet, 0x01); // request profile info
   packByte(&packet, bUIDlen);
   packBuffer(&packet, szUid, bUIDlen);
@@ -640,9 +646,8 @@ DWORD icq_sendGetAimAwayMsgServ(char *szUID, int type)
   pCookieData->bMessageType = MTYPE_AUTOAWAY;
   pCookieData->nAckType = (BYTE)type;
 
-  packet.wLen = 13 + bUIDlen;
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, dwCookie);
+  serverPacketInit(&packet, (WORD)(13 + bUIDlen));
+  packFNACHeaderFull(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, dwCookie);
   packWord(&packet, 0x03);
   packByte(&packet, bUIDlen);
   packBuffer(&packet, szUID, bUIDlen);
@@ -663,9 +668,8 @@ void icq_sendSetAimAwayMsgServ(char *szMsg)
   dwCookie = GenerateCookie(ICQ_LOCATION_SET_USER_INFO);
 
   if (wMsgLen > 0x1000) wMsgLen = 0x1000; // limit length
-  packet.wLen = 51 + wMsgLen;
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, dwCookie);
+  serverPacketInit(&packet, (WORD)(51 + wMsgLen));
+  packFNACHeaderFull(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, dwCookie);
   packTLV(&packet, 0x03, 0x21, "text/x-aolrtf; charset=\"us-ascii\"");
   packTLV(&packet, 0x04, wMsgLen, szMsg);
 
@@ -1180,9 +1184,8 @@ DWORD icq_searchAimByEmail(char* pszEmail, DWORD dwSearchId)
     return 0;
 
   wEmailLen = strlennull(pszEmail);
-  packet.wLen = 10 + wEmailLen;
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_LOOKUP_FAMILY, ICQ_LOOKUP_REQUEST, 0, dwCookie);
+  serverPacketInit(&packet, (WORD)(10 + wEmailLen));
+  packFNACHeaderFull(&packet, ICQ_LOOKUP_FAMILY, ICQ_LOOKUP_REQUEST, 0, dwCookie);
   packBuffer(&packet, pszEmail, wEmailLen);
 
   sendServPacket(&packet);
@@ -1299,9 +1302,8 @@ void icq_sendNewContact(DWORD dwUin, char* szUid)
 
   nUinLen = getUIDLen(dwUin, szUid);
 
-  packet.wLen = nUinLen + 11;
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_BUDDY_FAMILY, ICQ_USER_ADDTOLIST, 0, ICQ_USER_ADDTOLIST<<0x10);
+  serverPacketInit(&packet, (WORD)(nUinLen + 11));
+  packFNACHeader(&packet, ICQ_BUDDY_FAMILY, ICQ_USER_ADDTOLIST);
   packUID(&packet, dwUin, szUid);
 
   sendServPacket(&packet);
@@ -1312,7 +1314,7 @@ void icq_sendNewContact(DWORD dwUin, char* szUid)
 // list==0: visible list
 // list==1: invisible list
 void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list, int add)
-{
+{ // TODO: This needs grouping & rate management
   // Tell server to change our server-side contact visbility list
   if (gbSsiEnabled)
   {
@@ -1429,9 +1431,8 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list,
 
     nUinLen = getUIDLen(dwUin, szUID);
 
-    packet.wLen = nUinLen + 1 + 10;
-    write_flap(&packet, ICQ_DATA_CHAN);
-    packFNACHeader(&packet, ICQ_BOS_FAMILY, wSnac, 0, wSnac<<0x10);
+    serverPacketInit(&packet, (WORD)(nUinLen + 11));
+    packFNACHeader(&packet, ICQ_BOS_FAMILY, wSnac);
     packUID(&packet, dwUin, szUID);
 
     sendServPacket(&packet);
@@ -1443,9 +1444,9 @@ void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list,
 void icq_sendEntireVisInvisList(int list)
 {
   if (list)
-    sendEntireListServ(9, 7, 7, BUL_INVISIBLE);
+    sendEntireListServ(ICQ_BOS_FAMILY, ICQ_CLI_ADDINVISIBLE, BUL_INVISIBLE);
   else
-    sendEntireListServ(9, 5, 7, BUL_VISIBLE);
+    sendEntireListServ(ICQ_BOS_FAMILY, ICQ_CLI_ADDVISIBLE, BUL_VISIBLE);
 }
 
 
@@ -1472,10 +1473,8 @@ void icq_sendGrantAuthServ(DWORD dwUin, char *szUid, char *szMsg)
     nMsglen = 0;
   }
 
-  packet.wLen = 15 + nUinlen + nMsglen;
-
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_GRANTAUTH, 0, ICQ_LISTS_GRANTAUTH<<0x10);
+  serverPacketInit(&packet, (WORD)(15 + nUinlen + nMsglen));
+  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_GRANTAUTH);
   packUID(&packet, dwUin, szUid);
   packWord(&packet, (WORD)nMsglen);
   packBuffer(&packet, szUtfMsg, nMsglen);
@@ -1508,10 +1507,8 @@ void icq_sendAuthReqServ(DWORD dwUin, char *szMsg)
     nMsglen = 0;
   }
 
-  packet.wLen = 15 + nUinlen + nMsglen;
-
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REQUESTAUTH, 0, ICQ_LISTS_REQUESTAUTH<<0x10);
+  serverPacketInit(&packet, (WORD)(15 + nUinlen + nMsglen));
+  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REQUESTAUTH);
   packUIN(&packet, dwUin);
   packWord(&packet, (WORD)nMsglen);
   packBuffer(&packet, szUtfMsg, nMsglen);
@@ -1544,9 +1541,8 @@ void icq_sendAuthResponseServ(DWORD dwUin, char* szUid, int auth, char *szReason
     nReasonlen = 0;
   }
 
-  p.wLen = 16 + nUinlen + nReasonlen;
-  write_flap(&p, ICQ_DATA_CHAN);
-  packFNACHeader(&p, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_AUTHRESPONSE, 0, ICQ_LISTS_CLI_AUTHRESPONSE<<0x10);
+  serverPacketInit(&p, (WORD)(16 + nUinlen + nReasonlen));
+  packFNACHeader(&p, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_AUTHRESPONSE);
   packUIN(&p, dwUin);
   packByte(&p, (BYTE)auth);
   packWord(&p, nReasonlen);

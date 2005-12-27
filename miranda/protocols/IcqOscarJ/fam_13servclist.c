@@ -54,6 +54,12 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen);
 void sendRosterAck(void);
 
 
+static WORD swapWord(WORD val)
+{
+  return (val & 0xFF)<<8 | (val>>8);
+}
+
+
 
 void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {
@@ -99,7 +105,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
         { // limits for item types
           WORD* pMax = (WORD*)pTLV->pData;
 
-          NetLog_Server("SSI: Max %d contacts, %d groups, %d permit, %d deny, %d ignore items.", pMax[0], pMax[1], pMax[2], pMax[3], pMax[14]);
+          NetLog_Server("SSI: Max %d contacts, %d groups, %d permit, %d deny, %d ignore items.", swapWord(pMax[0]), swapWord(pMax[1]), swapWord(pMax[2]), swapWord(pMax[3]), swapWord(pMax[14]));
         }
 
         disposeChain(&chain);
@@ -1613,9 +1619,8 @@ void updateServVisibilityCode(BYTE bCode)
     dwCookie = AllocateCookie(wCommand, 0, ack); // take cookie
 
     // Build and send packet
-    packet.wLen = 25;
-    write_flap(&packet, ICQ_DATA_CHAN);
-    packFNACHeader(&packet, ICQ_LISTS_FAMILY, wCommand, 0, dwCookie);
+    serverPacketInit(&packet, 25);
+    packFNACHeaderFull(&packet, ICQ_LISTS_FAMILY, wCommand, 0, dwCookie);
     packWord(&packet, 0);                   // Name (null)
     packWord(&packet, 0);                   // GroupID (0 if not relevant)
     packWord(&packet, wVisibilityID);       // EntryID
@@ -1671,9 +1676,8 @@ void updateServAvatarHash(char* pHash, int size)
     dwCookie = AllocateCookie(wCommand, 0, ack); // take cookie
 
     // Build and send packet
-    packet.wLen = 29 + size;
-    write_flap(&packet, ICQ_DATA_CHAN);
-    packFNACHeader(&packet, ICQ_LISTS_FAMILY, wCommand, 0, dwCookie);
+    serverPacketInit(&packet, (WORD)(29 + size));
+    packFNACHeaderFull(&packet, ICQ_LISTS_FAMILY, wCommand, 0, dwCookie);
     packWord(&packet, 1);                   // Name length
     packByte(&packet, '1');                 // Name
     packWord(&packet, 0);                   // GroupID (0 if not relevant)
@@ -1711,9 +1715,8 @@ void updateServAvatarHash(char* pHash, int size)
     dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, 0, ack); // take cookie
 
     // Build and send packet
-    packet.wLen = 20;
-    write_flap(&packet, ICQ_DATA_CHAN);
-    packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REMOVEFROMLIST, 0, dwCookie);
+    serverPacketInit(&packet, 20);
+    packFNACHeaderFull(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REMOVEFROMLIST, 0, dwCookie);
     packWord(&packet, 0);                   // Name (null)
     packWord(&packet, 0);                   // GroupID (0 if not relevant)
     packWord(&packet, wAvatarID);           // EntryID
@@ -1751,9 +1754,8 @@ void sendAddStart(int bImport)
     }
   }
 
-  packet.wLen = bImport?14:10;
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYSTART, 0, ICQ_LISTS_CLI_MODIFYSTART<<0x10);
+  serverPacketInit(&packet, (WORD)(bImport?14:10));
+  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYSTART);
   if (bImport) packDWord(&packet, 1<<0x10); 
   sendServPacket(&packet);
 }
@@ -1766,9 +1768,8 @@ void sendAddEnd(void)
 {
   icq_packet packet;
 
-  packet.wLen = 10;
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYEND, 0, ICQ_LISTS_CLI_MODIFYEND<<0x10);
+  serverPacketInit(&packet, 10);
+  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_MODIFYEND);
   sendServPacket(&packet);
 }
 
@@ -1779,9 +1780,8 @@ void sendRosterAck(void)
 {
   icq_packet packet;
 
-  packet.wLen = 10;
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_GOTLIST, 0, ICQ_LISTS_GOTLIST<<0x10);
+  serverPacketInit(&packet, 10);
+  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_GOTLIST);
   sendServPacket(&packet);
 
 #ifdef _DEBUG

@@ -499,9 +499,8 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
       ack->szFile = null_strdup(file); // we duplicate the string
       dwCookie = AllocateCookie(ICQ_AVATAR_GET_REQUEST, dwUin, ack);
 
-      packet.wLen = 12 + nUinLen + hashlen;
-      write_flap(&packet, 2);
-      packFNACHeader(&packet, ICQ_AVATAR_FAMILY, ICQ_AVATAR_GET_REQUEST, 0, dwCookie);
+      serverPacketInit(&packet, (WORD)(12 + nUinLen + hashlen));
+      packFNACHeaderFull(&packet, ICQ_AVATAR_FAMILY, ICQ_AVATAR_GET_REQUEST, 0, dwCookie);
       packUID(&packet, dwUin, szUid);
       packByte(&packet, 1); // unknown, probably type of request: 1 = get icon :)
       packBuffer(&packet, hash, (unsigned short)hashlen);
@@ -594,9 +593,8 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
 
     dwCookie = AllocateCookie(ICQ_AVATAR_UPLOAD_REQUEST, 0, ack);
 
-    packet.wLen = 14 + datalen;
-    write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_AVATAR_FAMILY, ICQ_AVATAR_UPLOAD_REQUEST, 0, dwCookie);
+    serverPacketInit(&packet, (WORD)(14 + datalen));
+    packFNACHeaderFull(&packet, ICQ_AVATAR_FAMILY, ICQ_AVATAR_UPLOAD_REQUEST, 0, dwCookie);
     packWord(&packet, 1); // unknown, probably reference
     packWord(&packet, (WORD)datalen);
     packBuffer(&packet, data, (unsigned short)datalen);
@@ -901,7 +899,7 @@ void handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthreadstartinfo *
 
     atsi->wLocalSequence = (WORD)RandRange(0, 0xffff); 
 
-    write_flap(&packet, 1);
+    write_flap(&packet, ICQ_LOGIN_CHAN);
     packDWord(&packet, 0x00000001);
     packTLV(&packet, 0x06, (WORD)atsi->wCookieLen, atsi->pCookie);
 
@@ -970,9 +968,8 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 #endif
 
     // Miranda mimics the behaviour of Icq5
-    packet.wLen = 18;
-    write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_FAMILIES, 0, ICQ_CLIENT_FAMILIES<<0x10);
+    serverPacketInit(&packet, 18);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_FAMILIES);
     packDWord(&packet, 0x00010004);
     packDWord(&packet, 0x00100001);
     sendAvatarPacket(&packet, atsi);
@@ -985,9 +982,8 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     NetLog_Server("Server told me his Family versions");
     NetLog_Server("Requesting Rate Information");
 #endif
-    packet.wLen = 10;
-    write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_REQ_RATE_INFO, 0, ICQ_CLIENT_REQ_RATE_INFO<<0x10);
+    serverPacketInit(&packet, 10);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_REQ_RATE_INFO);
     sendAvatarPacket(&packet, atsi);
     break;
 
@@ -997,18 +993,16 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     NetLog_Server("Sending Rate Info Ack");
 #endif
     /* Don't really care about this now, just send the ack */
-    packet.wLen = 20; // TODO: add rate management to request queue (0.5+)
-    write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_RATE_ACK, 0, ICQ_CLIENT_RATE_ACK<<0x10);
+    serverPacketInit(&packet, 20); // TODO: add rate management to request queue (0.5+)
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_RATE_ACK);
     packDWord(&packet, 0x00010002);
     packDWord(&packet, 0x00030004);
     packWord(&packet, 0x0005);
     sendAvatarPacket(&packet, atsi);
 
     // send cli_ready
-    packet.wLen = 26;
-    write_flap(&packet, 2);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY, 0, ICQ_CLIENT_READY<<0x10);
+    serverPacketInit(&packet, 26);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY);
     packDWord(&packet, 0x00010004);
     packDWord(&packet, 0x001008E4);
     packDWord(&packet, 0x00100001);
@@ -1025,9 +1019,8 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
   case ICQ_SERVER_PAUSE:
     NetLog_Server("Avatar server is going down in a few seconds... (Flags: %u, Ref: %u)", pSnacHeader->wFlags, pSnacHeader->dwRef);
     // This is the list of groups that we want to have on the next server
-    packet.wLen = 14;
-    write_flap(&packet, ICQ_DATA_CHAN);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_PAUSE_ACK, 0, ICQ_CLIENT_PAUSE_ACK<<0x10);
+    serverPacketInit(&packet, 14);
+    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_PAUSE_ACK);
     packWord(&packet,ICQ_SERVICE_FAMILY);
     packWord(&packet,ICQ_AVATAR_FAMILY);
     sendAvatarPacket(&packet, atsi);

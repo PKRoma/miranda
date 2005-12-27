@@ -584,10 +584,8 @@ DWORD icq_sendBuddyUtf(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, W
   // Build the packet
   wTLVlen = (nNickLen?4+nNickLen:0) + (nNoteLen?4+nNoteLen:0) + (authRequired?4:0);
 
-  packet.wLen = nUinLen + 20 + wTLVlen;  
-  
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_LISTS_FAMILY, wAction, 0, dwCookie);
+  serverPacketInit(&packet, (WORD)(nUinLen + 20 + wTLVlen));
+  packFNACHeaderFull(&packet, ICQ_LISTS_FAMILY, wAction, 0, dwCookie);
   packWord(&packet, (WORD)nUinLen);
   if (dwUin)
     packBuffer(&packet, szUin, (WORD)nUinLen);
@@ -639,10 +637,8 @@ DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *
 
   // Build the packet
   wTLVlen = (cbContent?4+cbContent:0);
-  packet.wLen = nNameLen + 20 + wTLVlen;
-
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_LISTS_FAMILY, wAction, 0, dwCookie);
+  serverPacketInit(&packet, (WORD)(nNameLen + 20 + wTLVlen));
+  packFNACHeaderFull(&packet, ICQ_LISTS_FAMILY, wAction, 0, dwCookie);
   packWord(&packet, (WORD)nNameLen);
   if (nNameLen) packBuffer(&packet, szName, (WORD)nNameLen);
   packWord(&packet, wGroupId);

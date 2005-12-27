@@ -67,6 +67,14 @@ void __fastcall write_flap(icq_packet* pPacket, BYTE byFlapChannel)
 
 
 
+void __fastcall serverPacketInit(icq_packet* pPacket, WORD wSize)
+{
+  pPacket->wLen = wSize;
+  write_flap(pPacket, ICQ_DATA_CHAN);
+}
+
+
+
 void __fastcall directPacketInit(icq_packet* pPacket, DWORD dwSize)
 {
   pPacket->wPlace = 0;
@@ -209,7 +217,17 @@ void __fastcall packUID(icq_packet* pPacket, DWORD dwUin, char* szUid)
 
 
 
-void packFNACHeader(icq_packet* pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSeq)
+void packFNACHeader(icq_packet* pPacket, WORD wFamily, WORD wSubtype)
+{
+  packWord(pPacket, wFamily);   // Family type
+  packWord(pPacket, wSubtype);  // Family subtype
+  packDWord(pPacket, 0);        // SNAC flags // SNAC request id (sequence)
+  packWord(pPacket, wSubtype);  // SNAC request id (command)
+}
+
+
+
+void packFNACHeaderFull(icq_packet* pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSeq)
 {
   WORD wSeq = (WORD)dwSeq & 0x7FFF; // this is necessary, if that bit is there we get disconnected
 

@@ -327,15 +327,11 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
     // New status is OFFLINE
     if (nNewStatus == ID_STATUS_OFFLINE)
     {
-      icq_packet packet;
-
       // for quick logoff
       icqGoingOnlineStatus = nNewStatus;
 
       // Send disconnect packet
-      packet.wLen = 0;
-      write_flap(&packet, ICQ_CLOSE_CHAN);
-      sendServPacket(&packet);
+      icq_sendCloseConnection();
 
       icq_serverDisconnect(FALSE);
 

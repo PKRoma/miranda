@@ -97,7 +97,7 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
       packet.wLen = cookieDataLen + 8;
       wLocalSequence = (WORD)RandRange(0, 0xffff);
       
-      write_flap(&packet, 1);
+      write_flap(&packet, ICQ_LOGIN_CHAN);
       packDWord(&packet, 0x00000001);
       packTLV(&packet, 0x06, (WORD)cookieDataLen, cookieData);
       

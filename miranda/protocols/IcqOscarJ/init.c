@@ -57,7 +57,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,9),
+  PLUGIN_MAKE_VERSION(0,3,6,10),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@users.sourceforge.net",
@@ -251,11 +251,7 @@ int __declspec(dllexport) Unload(void)
 
   if (hServerConn)
   {
-    icq_packet packet;
-
-    packet.wLen = 0;
-    write_flap(&packet, ICQ_CLOSE_CHAN);
-    sendServPacket(&packet);
+    icq_sendCloseConnection();
 
     icq_serverDisconnect(TRUE);
   }

@@ -84,6 +84,8 @@ typedef struct search_cookie_s
 
 void packMsgColorInfo(icq_packet *packet);
 
+void icq_sendCloseConnection();
+
 void icq_requestnewfamily(WORD wFamily, void (*familyhandler)(HANDLE hConn, char* cookie, WORD cookieLen));
 
 void icq_setidle(int bAllow);

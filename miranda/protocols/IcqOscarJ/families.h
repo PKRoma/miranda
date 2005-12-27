@@ -87,7 +87,8 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 #define BUL_ALLCONTACTS   0
 #define BUL_VISIBLE       1
 #define BUL_INVISIBLE     2
-void sendEntireListServ(WORD wFamily, WORD wSubtype, WORD wFlags, int listType);
+#define BUL_TEMPVISIBLE   4
+void sendEntireListServ(WORD wFamily, WORD wSubtype, int listType);
 void updateServVisibilityCode(BYTE bCode);
 void updateServAvatarHash(char* pHash, int size);
 void sendAddStart(int bImport);

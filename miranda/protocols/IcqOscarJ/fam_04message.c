@@ -40,6 +40,7 @@
 icq_mode_messages modeMsgs;
 CRITICAL_SECTION modeMsgsMutex;
 
+static void handleReplyICBM(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2);
 static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, DWORD dwTS1, DWORD dwTS2);
@@ -83,14 +84,61 @@ void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
     handleTypingNotification(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
-    // Stuff we don't care about
   case ICQ_MSG_SRV_REPLYICBM:      // SNAC(4, 0x05) SRV_REPLYICBM
+    handleReplyICBM(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
   default:
     NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_MSG_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
   }
+}
+
+
+
+static void handleReplyICBM(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
+{ // we don't care about the stuff, just change the params
+  icq_packet packet;
+
+  // Set message parameters for channel 1 (CLI_SET_ICBM_PARAMS)
+  serverPacketInit(&packet, 26);
+  packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS);
+  packWord(&packet, 0x0001);              // Channel
+#ifdef DBG_CAPMTN
+  packDWord(&packet, 0x0000000B);         // Flags
+#else
+  packDWord(&packet, 0x00000003);         // Flags
+#endif
+  packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
+  packWord(&packet, 0x03E7);              // Max sender warning level
+  packWord(&packet, 0x03E7);              // Max receiver warning level
+  packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
+  packWord(&packet, 0x0000);              // Unknown
+  sendServPacket(&packet);
+
+  // Set message parameters for channel 2 (CLI_SET_ICBM_PARAMS)
+  serverPacketInit(&packet, 26);
+  packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS);
+  packWord(&packet, 0x0002);              // Channel
+  packDWord(&packet, 0x00000003);         // Flags
+  packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
+  packWord(&packet, 0x03E7);              // Max sender warning level
+  packWord(&packet, 0x03E7);              // Max receiver warning level
+  packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
+  packWord(&packet, 0x0000);              // Unknown
+  sendServPacket(&packet);
+
+  // Set message parameters for channel 4 (CLI_SET_ICBM_PARAMS)
+  serverPacketInit(&packet, 26);
+  packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS);
+  packWord(&packet, 0x0004);              // Channel
+  packDWord(&packet, 0x00000003);         // Flags
+  packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
+  packWord(&packet, 0x03E7);              // Max sender warning level
+  packWord(&packet, 0x03E7);              // Max receiver warning level
+  packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
+  packWord(&packet, 0x0000);              // Unknown
+  sendServPacket(&packet);
 }
 
 
@@ -2025,9 +2073,8 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
     { // we failed to request away message the normal way, try it AIM way
       icq_packet packet;
 
-      packet.wLen = 13 + getUINLen(dwUin);
-      write_flap(&packet, ICQ_DATA_CHAN);
-      packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, (WORD)dwSequence);
+      serverPacketInit(&packet, (WORD)(13 + getUINLen(dwUin)));
+      packFNACHeaderFull(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, (WORD)dwSequence);
       packWord(&packet, 0x03);
       packUIN(&packet, dwUin);
 
@@ -2433,9 +2480,8 @@ void sendTypingNotification(HANDLE hContact, WORD wMTNCode)
 
   byUinlen = getUIDLen(dwUin, szUID);
 
-  p.wLen = 23 + byUinlen;
-  write_flap(&p, ICQ_DATA_CHAN);
-  packFNACHeader(&p, ICQ_MSG_FAMILY, ICQ_MSG_MTN, 0, ICQ_MSG_MTN<<0x10);
+  serverPacketInit(&p, (WORD)(23 + byUinlen));
+  packFNACHeader(&p, ICQ_MSG_FAMILY, ICQ_MSG_MTN);
   packLEDWord(&p, 0x0000);          // Msg ID
   packLEDWord(&p, 0x0000);          // Msg ID
   packWord(&p, 0x01);               // Channel

@@ -363,9 +363,8 @@ static void parseEndOfOfflineMessages(unsigned char *databuf, WORD wPacketLen)
 
   // Send 'got offline msgs'
   // This will delete the messages stored on server
-  packet.wLen = 24;
-  write_flap(&packet, ICQ_DATA_CHAN);
-  packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, CLI_META_REQ<<0x10);
+  serverPacketInit(&packet, 24);
+  packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ);
   packWord(&packet, 1);             // TLV Type
   packWord(&packet, 10);            // TLV Length
   packLEWord(&packet, 8);           // Data length

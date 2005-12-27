@@ -56,6 +56,7 @@ typedef struct icq_packet_s
 
 void write_httphdr(icq_packet *d, WORD wType, DWORD dwSeq);
 void __fastcall write_flap(icq_packet *, BYTE);
+void __fastcall serverPacketInit(icq_packet *, WORD);
 void __fastcall directPacketInit(icq_packet *, DWORD);
 
 void __fastcall packByte(icq_packet *, BYTE);
@@ -71,7 +72,8 @@ int __fastcall getUINLen(DWORD dwUin);
 int __fastcall getUIDLen(DWORD dwUin, char* szUid);
 void __fastcall packUIN(icq_packet *pPacket, DWORD dwUin);
 void __fastcall packUID(icq_packet *pPacket, DWORD dwUin, char* szUid);
-void packFNACHeader(icq_packet *d, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD wSeq);
+void packFNACHeader(icq_packet *d, WORD wFamily, WORD wSubtype);
+void packFNACHeaderFull(icq_packet *d, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD wSeq);
 
 void __fastcall packLEWord(icq_packet *, WORD);
 void __fastcall packLEDWord(icq_packet *, DWORD);

@@ -65,6 +65,8 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
   WORD wError;
   NETLIBOPENCONNECTION nloc = {0};
 
+  icq_sendCloseConnection(); // imitate icq5 behaviour
+
   if (!ICQGetContactSettingByte(NULL, "UseGateway", 0) || !ICQGetContactSettingByte(NULL, "NLUseProxy", 0))
   { // close connection only if not in gateway mode
     Netlib_CloseHandle(hServerConn);

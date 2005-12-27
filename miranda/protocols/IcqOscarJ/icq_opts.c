@@ -334,10 +334,10 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
     switch (((LPNMHDR)lParam)->code) 
     {
       case PSN_APPLY:
-        ICQWriteContactSettingByte(NULL, "WebAware", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_WEBAWARE));
-        ICQWriteContactSettingByte(NULL, "PublishPrimaryEmail", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_PUBLISHPRIMARY));
-        ICQWriteContactSettingByte(NULL, "StatusMsgReplyCList", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_STATUSMSG_CLIST));
-        ICQWriteContactSettingByte(NULL, "StatusMsgReplyVisible", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_STATUSMSG_VISIBLE));
+        StoreDBCheckState(hwndDlg, IDC_WEBAWARE, "WebAware");
+        StoreDBCheckState(hwndDlg, IDC_PUBLISHPRIMARY, "PublishPrimaryEmail");
+        StoreDBCheckState(hwndDlg, IDC_STATUSMSG_CLIST, "StatusMsgReplyCList");
+        StoreDBCheckState(hwndDlg, IDC_STATUSMSG_VISIBLE, "StatusMsgReplyVisible");
         if (IsDlgButtonChecked(hwndDlg, IDC_DCALLOW_AUTH))
           ICQWriteContactSettingByte(NULL, "DCType", 2);
         else if (IsDlgButtonChecked(hwndDlg, IDC_DCALLOW_CLIST))

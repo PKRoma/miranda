@@ -149,7 +149,6 @@ static BOOL hasCapRichText(BYTE* caps, WORD wLen)
 
 char* cliLibicq2k  = "libicq2000";
 char* cliLicqVer   = "Licq ";
-//char* cliLicqVerL  = "Licq %u.%u.%u";
 char* cliCentericq = "Centericq";
 char* cliLibicqUTF = "libicq2000 (Unicode)";
 char* cliTrillian  = "Trillian";
