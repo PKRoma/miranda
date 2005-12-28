@@ -300,6 +300,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		KillTimer(hwnd, TIMERID_INFOTIP);
 		KillTimer(hwnd, TIMERID_RENAME);
 		pcli->pfnRecalcScrollBar(hwnd, dat);
+LBL_Def:
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 
 	case INTM_METACHANGED:
@@ -319,7 +320,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				}
 			}
 			SendMessage(hwnd, INTM_NAMEORDERCHANGED, wParam, lParam);
-			break;
+			goto LBL_Def;
 		}
 	case INTM_METACHANGEDEVENT:
 		{
@@ -328,7 +329,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				break;
 			if(lParam == 0)
 				SendMessage(hwnd, CLM_AUTOREBUILD, 0, 0);
-			break;
+			goto LBL_Def;
 		}
 	case INTM_NAMECHANGED:
 		{
@@ -342,7 +343,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			dat->bNeedSort = TRUE;
 			PostMessage(hwnd, INTM_SORTCLC, 0, 0);
 			// XXX SortCLC(hwnd, dat, 1);
-			break;
+			goto LBL_Def;
 		}
 
 	case INTM_CODEPAGECHANGED:
@@ -353,7 +354,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			contact->codePage = DBGetContactSettingDword((HANDLE) wParam, "Tab_SRMsg", "ANSIcodepage", DBGetContactSettingDword((HANDLE)wParam, "UserInfo", "ANSIcodepage", CP_ACP));
 			// XXX InvalidateRect(hwnd, NULL, FALSE);
 			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
-			break;
+			goto LBL_Def;
 		}
 	case INTM_AVATARCHANGED:
 		{
@@ -366,11 +367,11 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				InvalidateRect(hwnd, NULL, FALSE);
 				UpdateWindow(hwnd);
 				g_CluiData.bForceRefetchOnPaint = FALSE;
-				break;
+				goto LBL_Def;
 			}
 
 			if(!FindItem(hwnd, dat, (HANDLE)wParam, &contact, NULL, NULL))
-				break;
+				return 0;
 			/*
 			if(contact->ace) {
 			if(!(contact->ace->dwFlags & AVS_PROTOPIC))
@@ -380,7 +381,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			contact->ace = cEntry;
 			// XXX InvalidateRect(hwnd, NULL, FALSE);
 			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
-			break;
+			goto LBL_Def;
 		}
 	case INTM_STATUSMSGCHANGED:
 		{
@@ -396,7 +397,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			}
 			GetCachedStatusMsg(index, szProto);
 			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
-			break;
+			goto LBL_Def;
 		}
 	case INTM_STATUSCHANGED:
 		{
@@ -419,7 +420,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			contact->wStatus = wStatus;
 			//dat->bNeedSort = TRUE;
 			//PostMessage(hwnd, INTM_SORTCLC, 0, 0);
-			break;
+			goto LBL_Def;
 		}
 	case INTM_PROTOCHANGED:
 		{
@@ -437,7 +438,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			dat->bNeedSort = TRUE;
 			PostMessage(hwnd, INTM_SORTCLC, 0, 0);
 			// XXX SortCLC(hwnd, dat, 1);
-			break;
+			goto LBL_Def;
 		}
 
 	case INTM_INVALIDATE:
@@ -447,7 +448,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			SetTimer(hwnd, TIMERID_PAINT, 100, NULL);
 			dat->bNeedPaint = TRUE;
 		}
-		break;
+		goto LBL_Def;
 
 	case INTM_SORTCLC:
 		//KillTimer(hwnd, TIMERID_SORT);
@@ -458,7 +459,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		}
 		if(lParam)
 			pcli->pfnRecalcScrollBar(hwnd, dat);
-		break;
+		goto LBL_Def;
 
 	case INTM_IDLECHANGED:
 		{
@@ -477,7 +478,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			}
 			// XXX InvalidateRect(hwnd, NULL, FALSE);
 			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
-			break;
+			goto LBL_Def;
 		}
 	case INTM_XSTATUSCHANGED:
 		{
@@ -501,7 +502,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				break;
 			GetCachedStatusMsg(index, szProto);
 			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
-			break;
+			goto LBL_Def;
 		}
 	case INTM_CLIENTCHANGED:
 		{
@@ -522,7 +523,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			}
 			// XXX InvalidateRect(hwnd, NULL, FALSE);
 			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
-			break;
+			goto LBL_Def;
 		}
 	case WM_PAINT:
 		{
@@ -538,7 +539,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				}
 			}
 			EndPaint(hwnd, &ps);
-			break;
+			goto LBL_Def;
 		}
 
 	case WM_MOUSEWHEEL:
@@ -549,13 +550,13 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		if (wParam == TIMERID_PAINT) {
 			KillTimer(hwnd, TIMERID_PAINT);
 			InvalidateRect(hwnd, NULL, FALSE);
+			goto LBL_Def;
 		}
-		else if (wParam == TIMERID_SORT) {
-			KillTimer(hwnd, TIMERID_SORT);
-			pcli->pfnSortCLC(hwnd, dat, 1);
-		}
-		else if(wParam == TIMERID_REFRESH)
+		
+		if (wParam == TIMERID_REFRESH) {
 			InvalidateRect(hwnd, NULL, FALSE);
+			goto LBL_Def;
+		}
 		break;
 
 	case WM_LBUTTONDBLCLK:
