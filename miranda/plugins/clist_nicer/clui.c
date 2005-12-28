@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -114,9 +114,9 @@ extern int dock_prevent_moving;
 char *im_clients[] = {
 	"MIRANDA","&RQ","TRILLIAN","GAIM","IM2","KOPETE","LICQ","QIP","SIM",
 		"ICQ 2000","ICQ 2001B","ICQ 200","ICQ2GO! (FLASH)","ICQ2GO!","ICQ5","ICQ LITE V5","ICQ LITE V4","ICQ LITE",
-		"AGILE","GNOMEICU","MOBICQ", "JIMM", "LIBICQ2000", 
-		"CENTERICQ", "IMPLUS", "SPAM BOT", "ICQ FOR MAC", 
-		"ALICQ", "NICQ", "PSI", "STICQ", "STRICQ", "VICQ", 
+		"AGILE","GNOMEICU","MOBICQ", "JIMM", "LIBICQ2000",
+		"CENTERICQ", "IMPLUS", "SPAM BOT", "ICQ FOR MAC",
+		"ALICQ", "NICQ", "PSI", "STICQ", "STRICQ", "VICQ",
 		"WEBICQ", "YAMIGO", "YSM", NULL
 };
 
@@ -125,8 +125,8 @@ static char *im_clients_descr[] = {
 		"LICQ","QIP","SIM",
 		"ICQ2000","ICQ2001","ICQ2003","ICQ2Go! (Flash)","ICQ2Go! (Java)","icq5","ICQ Lite v5","ICQ Lite v4","ICQ Lite",
 		"Agile Messenger","GnomeICU","mobicq / JIMM", "mobicq / JIMM", "libICQ 2000",
-		"Center ICQ", "IM+", "Spam Bot", "ICQ for Mac", 
-		"Alicq", "Nicq", "Psi", "Sticq", "StrICQ", "vICQ", 
+		"Center ICQ", "IM+", "Spam Bot", "ICQ for Mac",
+		"Alicq", "Nicq", "Psi", "Sticq", "StrICQ", "vICQ",
 		"WebICQ", "Yamigo", "Ysm", NULL, NULL
 };
 
@@ -144,35 +144,35 @@ static int clientIcons[] = {
 };
 
 static struct CluiTopButton top_buttons[] = {
-	0, 0, 0, IDC_TBTOPMENU, IDI_CLIENTMIRANDA, 0, "CLN_topmenu", NULL, TOPBUTTON_PUSH, 1, "Show menu", 
-		0, 0, 0, IDC_TBHIDEOFFLINE, IDI_HIDEOFFLINE, 0, "CLN_online", NULL, 0, 2, "Show only online contacts", 
-		0, 0, 0, IDC_TBHIDEGROUPS, IDI_HIDEGROUPS, 0, "CLN_groups", NULL, 0, 4, "Use contact groups", 
-		0, 0, 0, IDC_TBFINDANDADD, IDI_FINDANDADD, 0, "CLN_findadd", NULL, TOPBUTTON_PUSH, 8, "Find and add contacts", 
-		0, 0, 0, IDC_TBOPTIONS, IDI_TBOPTIONS, 0, "CLN_options", NULL, TOPBUTTON_PUSH, 16, "Open preferences", 
-		0, 0, 0, IDC_TBSOUND, IDI_SOUNDSON, IDI_SOUNDSOFF, "CLN_sound", "CLN_soundsoff", 0, 32, "Toggle sounds", 
-		0, 0, 0, IDC_TBMINIMIZE, IDI_MINIMIZE, 0, "CLN_minimize", NULL, TOPBUTTON_PUSH, 64, "Minimize contact list", 
-		0, 0, 0, IDC_TBTOPSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH, 128, "Status menu", 
-		0, 0, 0, IDC_TABSRMMSLIST, IDI_TABSRMMSESSIONLIST, 0, "CLN_slist", NULL, TOPBUTTON_PUSH, 256, "tabSRMM session list", 
-		0, 0, 0, IDC_TABSRMMMENU, IDI_TABSRMMMENU, 0, "CLN_menu", NULL, TOPBUTTON_PUSH, 512, "tabSRMM Menu", 
+	0, 0, 0, IDC_TBTOPMENU, IDI_CLIENTMIRANDA, 0, "CLN_topmenu", NULL, TOPBUTTON_PUSH, 1, "Show menu",
+		0, 0, 0, IDC_TBHIDEOFFLINE, IDI_HIDEOFFLINE, 0, "CLN_online", NULL, 0, 2, "Show only online contacts",
+		0, 0, 0, IDC_TBHIDEGROUPS, IDI_HIDEGROUPS, 0, "CLN_groups", NULL, 0, 4, "Use contact groups",
+		0, 0, 0, IDC_TBFINDANDADD, IDI_FINDANDADD, 0, "CLN_findadd", NULL, TOPBUTTON_PUSH, 8, "Find and add contacts",
+		0, 0, 0, IDC_TBOPTIONS, IDI_TBOPTIONS, 0, "CLN_options", NULL, TOPBUTTON_PUSH, 16, "Open preferences",
+		0, 0, 0, IDC_TBSOUND, IDI_SOUNDSON, IDI_SOUNDSOFF, "CLN_sound", "CLN_soundsoff", 0, 32, "Toggle sounds",
+		0, 0, 0, IDC_TBMINIMIZE, IDI_MINIMIZE, 0, "CLN_minimize", NULL, TOPBUTTON_PUSH, 64, "Minimize contact list",
+		0, 0, 0, IDC_TBTOPSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH, 128, "Status menu",
+		0, 0, 0, IDC_TABSRMMSLIST, IDI_TABSRMMSESSIONLIST, 0, "CLN_slist", NULL, TOPBUTTON_PUSH, 256, "tabSRMM session list",
+		0, 0, 0, IDC_TABSRMMMENU, IDI_TABSRMMMENU, 0, "CLN_menu", NULL, TOPBUTTON_PUSH, 512, "tabSRMM Menu",
 
-		0, 0, 0, IDC_TBSELECTVIEWMODE, IDI_CLVM_SELECT, 0, "CLN_CLVM_select", NULL, TOPBUTTON_PUSH, 1024, "Select view mode", 
-		0, 0, 0, IDC_TBCONFIGUREVIEWMODE, IDI_CLVM_OPTIONS, 0, "CLN_CLVM_options", NULL, TOPBUTTON_PUSH, 2048, "Setup view modes", 
-		0, 0, 0, IDC_TBCLEARVIEWMODE, IDI_DELETE, 0, "CLN_CLVM_reset", NULL, TOPBUTTON_PUSH, 4096, "Clear view mode", 
+		0, 0, 0, IDC_TBSELECTVIEWMODE, IDI_CLVM_SELECT, 0, "CLN_CLVM_select", NULL, TOPBUTTON_PUSH, 1024, "Select view mode",
+		0, 0, 0, IDC_TBCONFIGUREVIEWMODE, IDI_CLVM_OPTIONS, 0, "CLN_CLVM_options", NULL, TOPBUTTON_PUSH, 2048, "Setup view modes",
+		0, 0, 0, IDC_TBCLEARVIEWMODE, IDI_DELETE, 0, "CLN_CLVM_reset", NULL, TOPBUTTON_PUSH, 4096, "Clear view mode",
 
-		0, 0, 0, IDC_TBGLOBALSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH, 0, "Set status modes", 
-		0, 0, 0, IDC_TBMENU, IDI_MINIMIZE, 0, "", NULL, TOPBUTTON_PUSH, 0, "Open main menu", 
+		0, 0, 0, IDC_TBGLOBALSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH, 0, "Set status modes",
+		0, 0, 0, IDC_TBMENU, IDI_MINIMIZE, 0, "", NULL, TOPBUTTON_PUSH, 0, "Open main menu",
 		(HWND) - 1, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 static struct IconDesc myIcons[] = {
-	"CLN_online", "Toggle show online/offline", -IDI_HIDEOFFLINE, 
-		"CLN_groups", "Toggle groups", -IDI_HIDEGROUPS, 
-		"CLN_findadd", "Find contacts", -IDI_FINDANDADD, 
-		"CLN_options", "Open preferences", -IDI_TBOPTIONS, 
-		"CLN_sound", "Toggle sounds", -IDI_SOUNDSON, 
-		"CLN_minimize", "Minimize contact list", -IDI_MINIMIZE, 
-		"CLN_slist", "Show tabSRMM session list", -IDI_TABSRMMSESSIONLIST, 
-		"CLN_menu", "Show tabSRMM menu", -IDI_TABSRMMMENU, 
+	"CLN_online", "Toggle show online/offline", -IDI_HIDEOFFLINE,
+		"CLN_groups", "Toggle groups", -IDI_HIDEGROUPS,
+		"CLN_findadd", "Find contacts", -IDI_FINDANDADD,
+		"CLN_options", "Open preferences", -IDI_TBOPTIONS,
+		"CLN_sound", "Toggle sounds", -IDI_SOUNDSON,
+		"CLN_minimize", "Minimize contact list", -IDI_MINIMIZE,
+		"CLN_slist", "Show tabSRMM session list", -IDI_TABSRMMSESSIONLIST,
+		"CLN_menu", "Show tabSRMM menu", -IDI_TABSRMMMENU,
 		"CLN_soundsoff", "Sounds are off", -IDI_SOUNDSOFF,
 		"CLN_email", "Email", -IDI_EMAIL,
 		"CLN_web", "Homepage", -IDI_URL,
@@ -220,14 +220,14 @@ static void LayoutButtons(HWND hwnd, HDWP *batch, RECT *rc)
 			continue;
 		if (top_buttons[i].id == IDC_TBTOPSTATUS || top_buttons[i].id == IDC_TBMINIMIZE || top_buttons[i].id == IDC_TABSRMMMENU || top_buttons[i].id == IDC_TABSRMMSLIST) {
 			if(batch)
-				*batch = DeferWindowPos(*batch, top_buttons[i].hwnd, 0, rect.right - right_offset - 2 - (rightButton * (g_CluiData.dwButtonWidth + 1)), 2 + g_CluiData.bCTop, g_CluiData.dwButtonWidth, g_CluiData.dwButtonHeight - 2, 
+				*batch = DeferWindowPos(*batch, top_buttons[i].hwnd, 0, rect.right - right_offset - 2 - (rightButton * (g_CluiData.dwButtonWidth + 1)), 2 + g_CluiData.bCTop, g_CluiData.dwButtonWidth, g_CluiData.dwButtonHeight - 2,
 				SWP_NOACTIVATE | SWP_NOZORDER);
 			rightButton++;
 			continue;
 		}
 		else {
 			if(batch)
-				*batch = DeferWindowPos(*batch, top_buttons[i].hwnd, 0, left_offset + 3 + (leftButton * (g_CluiData.dwButtonWidth + 1)), 2 + g_CluiData.bCTop, g_CluiData.dwButtonWidth, g_CluiData.dwButtonHeight - 2, 
+				*batch = DeferWindowPos(*batch, top_buttons[i].hwnd, 0, left_offset + 3 + (leftButton * (g_CluiData.dwButtonWidth + 1)), 2 + g_CluiData.bCTop, g_CluiData.dwButtonWidth, g_CluiData.dwButtonHeight - 2,
 				SWP_NOACTIVATE | SWP_NOZORDER);
 			leftButton++;
 		}
@@ -237,7 +237,7 @@ static void LayoutButtons(HWND hwnd, HDWP *batch, RECT *rc)
 static int FS_FontsChanged(WPARAM wParam, LPARAM lParam)
 {
 	pcli->pfnClcOptionsChanged();
-	RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
+	RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);
 	return 0;
 }
 
@@ -294,7 +294,7 @@ int PreCreateCLC(HWND parent)
 int CreateCLC(HWND parent)
 {
 	CallService(MS_CLIST_SETHIDEOFFLINE,(WPARAM)oldhideoffline,0);
-	{	
+	{
 		int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
 		if(state==SETTING_STATE_NORMAL) ShowWindow(pcli->hwndContactList, SW_SHOW);
 		else if(state==SETTING_STATE_MINIMIZED) ShowWindow(pcli->hwndContactList, SW_SHOWMINIMIZED);
@@ -369,7 +369,7 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer_plus/clist_nicer_plus.zip";
 	static char *szFLVersionUrl = "http://www.miranda-im.org/download/details.php?action=viewfile&id=2189";
 	static char *szFLUpdateurl = "http://www.miranda-im.org/download/feed.php?dlfile=2189";
-#endif    
+#endif
 	static char *szPrefix = "clist_nicer_plus ";
 
 	// updater plugin support
@@ -924,7 +924,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			if(!g_CluiData.bFirstRun)
 				ConfigureEventArea(hwnd);
-			CluiProtocolStatusChanged();
+			CluiProtocolStatusChanged(0, 0);
 			ConfigureCLUIGeometry();
 			for(i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
 #if defined(_UNICODE)
@@ -1018,7 +1018,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if(g_CluiData.bSkinnedToolbar)
 				SetTBSKinned(1);
 			ConfigureFrame();
-			SetButtonStates(hwnd); 
+			SetButtonStates(hwnd);
 
 			CreateCLC(hwnd);
 			g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
@@ -1130,7 +1130,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				g_CluiData.ptW.x = g_CluiData.ptW.y = 0;
 				ClientToScreen(hwnd, &g_CluiData.ptW);
 			}
-	skipbg:                
+	skipbg:
 			if(g_CluiData.bSkinnedToolbar && g_CluiData.dwFlags & CLUI_FRAME_SHOWTOPBUTTONS) {
 				StatusItems_t *item = &StatusItems[ID_EXTBKBUTTONBAR - ID_STATUS_OFFLINE];
 				RECT rc = {rcClient.left, 0, rcClient.right, g_CluiData.dwButtonHeight + 2};
@@ -1216,7 +1216,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
                     new_window_rect.right = wp->cx - (g_CLUI_x_off + g_CLUI_x1_off);
                     new_window_rect.top = 0;
                     new_window_rect.bottom = wp->cy - g_CLUI_y_off - g_CLUI_y1_off;
-					
+
 					PosBatch = BeginDeferWindowPos(25);
 					SizeFramesByWindowRect(&new_window_rect, &PosBatch);
 					dock_prevent_moving=0;
@@ -1739,10 +1739,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					if (disableautoupd)
 						break;
 
-					if (!DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) 
+					if (!DBGetContactSettingByte(NULL,"CLUI","AutoSize",0))
 						break;
 
-					if (CallService(MS_CLIST_DOCKINGISDOCKED,0,0)) 
+					if (CallService(MS_CLIST_DOCKINGISDOCKED,0,0))
 						break;
 					if (hFrameContactTree == 0)
 						break;
@@ -1763,7 +1763,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					}
 					lastreqh=nmc->pt.y;*/
 					newHeight=max(nmc->pt.y,3)+1+((winstyle&WS_BORDER)?2:0)+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
-					if (newHeight==(rcWindow.bottom-rcWindow.top)) 
+					if (newHeight==(rcWindow.bottom-rcWindow.top))
 						break;
 
 					if (newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)
@@ -1799,7 +1799,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					break;
 				}
 			}
-		} 
+		}
 		else if (((LPNMHDR) lParam)->hwndFrom == pcli->hwndStatus) {
 			switch (((LPNMHDR) lParam)->code) {
 			case NM_CLICK:
@@ -1876,7 +1876,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			pt.x = (short) LOWORD(lParam);
 			pt.y = (short) HIWORD(lParam);
-			// x/y might be -1 if it was generated by a kb click            
+			// x/y might be -1 if it was generated by a kb click
 			GetWindowRect(pcli->hwndContactTree, &rc);
 			if (pt.x == -1 && pt.y == -1) {
 				// all this is done in screen-coords!
@@ -1974,7 +1974,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			((LPMEASUREITEMSTRUCT) lParam)->itemWidth = g_cxsmIcon * 4 / 3;
 			((LPMEASUREITEMSTRUCT) lParam)->itemHeight = 0;
 			return TRUE;
-		} 
+		}
 		return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
 	case WM_DRAWITEM:
 		{
@@ -2055,7 +2055,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					GetTextExtentPoint32A(dis->hDC, szStatus, lstrlenA(szStatus), &textSize);
 					TextOutA(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - textSize.cy) >> 1, szStatus, lstrlenA(szStatus));
 				}
-			} 
+			}
 			else if (dis->CtlType == ODT_MENU) {
 				if (dis->itemData == MENU_MIRANDAMENU)
 					break;
@@ -2064,17 +2064,17 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			return 0;
 		}
 	case WM_CLOSE:
-        if (DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) != SETTING_WINDOWSTYLE_DEFAULT || 
+        if (DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) != SETTING_WINDOWSTYLE_DEFAULT ||
             DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT))
 			CallService(MS_CLIST_SHOWHIDE, 0, 0);
         else
             SendMessage(hwnd, WM_COMMAND, ID_ICQ_EXIT, 0);
         return FALSE;
 	case CLUIINTM_REDRAW:
-		RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
+		RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);
 		return 0;
 	case CLUIINTM_STATUSBARUPDATE:
-		CluiProtocolStatusChanged();
+		CluiProtocolStatusChanged(0, 0);
 		return 0;
 	case WM_DESTROY:
 		if(g_CluiData.hdcBg) {
@@ -2099,7 +2099,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 }
 
 #ifndef CS_DROPSHADOW
-#define CS_DROPSHADOW 0x00020000    
+#define CS_DROPSHADOW 0x00020000
 #endif
 
 static int MetaChanged(WPARAM wParam, LPARAM lParam)
@@ -2141,7 +2141,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d (Unicode)", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)));
 #else
 		mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)));
-#endif                
+#endif
 		SetDlgItemTextA(hwndDlg,IDC_VERSION,str);
 		mir_snprintf(str,sizeof(str),Translate("Built %s %s"),__DATE__,__TIME__);
 		SetDlgItemTextA(hwndDlg,IDC_BUILDTIME,str);
@@ -2152,9 +2152,9 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
 #if defined(_UNICODE)
 		urlctrl_set(GetDlgItem(hwndDlg, IDC_SUPPORT), _T("http://miranda-im.org/download/details.php?action=viewfile&id=2365"), &url_unvisited, &url_visited, UCF_TXT_HCENTER, RGB(255, 255, 255));
-#else            
+#else
 		urlctrl_set(GetDlgItem(hwndDlg, IDC_SUPPORT), _T("http://miranda-im.org/download/details.php?action=viewfile&id=2189"), &url_unvisited, &url_visited, UCF_TXT_HCENTER, RGB(255, 255, 255));
-#endif            
+#endif
 		DestroyIcon(hIcon);
 		return TRUE;
 	case WM_COMMAND:
@@ -2187,7 +2187,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		{	HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg,IDC_CLNICER,WM_GETFONT,0,0);
 			SendDlgItemMessage(hwndDlg,IDC_CLNICER,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);
-			DeleteObject(hFont);				
+			DeleteObject(hFont);
 			hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_GETFONT,0,0);
 			SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);
 			DeleteObject(hFont);

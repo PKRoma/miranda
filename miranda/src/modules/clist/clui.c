@@ -1,21 +1,21 @@
 /*
 
   Miranda IM: the free IM client for Microsoft* Windows*
-  
-  Copyright 2000-2003 Miranda ICQ/IM project, 
-  all portions of this codebase are copyrighted to the people 
+
+  Copyright 2000-2003 Miranda ICQ/IM project,
+  all portions of this codebase are copyrighted to the people
   listed in contributors.txt.
-  
+
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
   as published by the Free Software Foundation; either version 2
   of the License, or (at your option) any later version.
-  
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -195,7 +195,7 @@ static int MenuItem_DeleteContact(WPARAM wParam, LPARAM lParam)
 	if (DBGetContactSettingByte(NULL, "CList", "ConfirmDelete", SETTING_CONFIRMDELETE_DEFAULT))
 		// Ask user for confirmation, and if the contact should be archived (hidden, not deleted)
 		action = DialogBoxParam(GetModuleHandle(0), MAKEINTRESOURCE(IDD_DELETECONTACT), (HWND) lParam, AskForConfirmationDlgProc, wParam);
-	else 
+	else
 		action = IDYES;
 
 	switch (action) {
@@ -328,12 +328,12 @@ int LoadCLUIModule(void)
 		DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT) ? WS_EX_TOOLWINDOW : 0,
 		_T(MIRANDACLASS),
 		titleText,
-		(DBGetContactSettingByte(NULL, "CLUI", "ShowCaption", SETTING_SHOWCAPTION_DEFAULT) ? 
-			WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX : 0) | WS_POPUPWINDOW | WS_THICKFRAME | WS_CLIPCHILDREN, 
+		(DBGetContactSettingByte(NULL, "CLUI", "ShowCaption", SETTING_SHOWCAPTION_DEFAULT) ?
+			WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX : 0) | WS_POPUPWINDOW | WS_THICKFRAME | WS_CLIPCHILDREN,
 		(int) DBGetContactSettingDword(NULL, "CList", "x", 700),
 		(int) DBGetContactSettingDword(NULL, "CList", "y", 221),
 		(int) DBGetContactSettingDword(NULL, "CList", "Width", 108),
-		(int) DBGetContactSettingDword(NULL, "CList", "Height", 310), 
+		(int) DBGetContactSettingDword(NULL, "CList", "Height", 310),
 		NULL, NULL, cli.hInst, NULL);
 
 	if (DBGetContactSettingByte(NULL, "CList", "OnDesktop", 0)) {
@@ -404,7 +404,7 @@ void fnDrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, HICON eventIcon)
 		if (eventIcon != 0) {
 			DrawState(dis->hDC, NULL, NULL, (LPARAM) eventIcon, 0, 2, (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
 			DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0, 4 + g_IconWidth, (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
-		} 
+		}
 		else DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0, (dis->rcItem.right + dis->rcItem.left - g_IconWidth) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
 	}
 	else {
@@ -432,9 +432,9 @@ void fnDrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, HICON eventIcon)
 			if (eventIcon != 0) {
 				DrawState(dis->hDC, NULL, NULL, (LPARAM) eventIcon, 0, 2, (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
 				DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0, 4 + g_IconWidth, (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
-			} 
+			}
 			else DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0, (dis->rcItem.right + dis->rcItem.left - g_IconWidth) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), (dis->rcItem.bottom + dis->rcItem.top - g_IconHeight) / 2 + (dis->itemState & ODS_SELECTED ? 1 : 0), 0, 0, DST_ICON | (dis->itemState & ODS_INACTIVE ? DSS_DISABLED : DSS_NORMAL));
-		} 
+		}
 		else {
 			/* non-flat menus, flush the DC with a normal menu colour */
 			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
@@ -470,8 +470,8 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			mir_snprintf(p, SIZEOF(p), "%s\\%s", path, file);
 			rc = lstrcmpiA(profile, p) == 0;
 			ReplyMessage(rc);
-			if (rc) { 
-				ShowWindow(hwnd, SW_SHOW);	
+			if (rc) {
+				ShowWindow(hwnd, SW_SHOW);
 				SetForegroundWindow(hwnd);
 				SetFocus(hwnd);
 			}
@@ -505,7 +505,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			flags |= cluiopt.showgrip ? SBARS_SIZEGRIP : 0;
 			cli.hwndStatus = CreateWindow(STATUSCLASSNAME, NULL, flags, 0, 0, 0, 0, hwnd, NULL, cli.hInst, NULL);
 		}
-		cli.pfnCluiProtocolStatusChanged();
+		cli.pfnCluiProtocolStatusChanged(0, 0);
 
 		//delay creation of CLC so that it can get the status icons right the first time (needs protocol modules loaded)
 		PostMessage(hwnd, M_CREATECLC, 0, 0);
@@ -568,7 +568,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			if (cluiopt.showsbar) {
 				SetWindowPos(cli.hwndStatus, NULL, 0, rect.bottom - 20, rect.right - rect.left, 20, SWP_NOZORDER);
 				GetWindowRect(cli.hwndStatus, &rcStatus);
-				cli.pfnCluiProtocolStatusChanged();
+				cli.pfnCluiProtocolStatusChanged(0, 0);
 			}
 			else
 				rcStatus.top = rcStatus.bottom = 0;
@@ -625,7 +625,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				transparentFocus=1;
 				SetTimer(hwnd, TM_AUTOALPHA,250,NULL);
 			}
-		} 
+		}
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 
 	case WM_NCHITTEST:
@@ -907,7 +907,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 			pt.x = (short) LOWORD(lParam);
 			pt.y = (short) HIWORD(lParam);
-			// x/y might be -1 if it was generated by a kb click                    
+			// x/y might be -1 if it was generated by a kb click
 			GetWindowRect(cli.hwndContactTree, &rc);
 			if (pt.x == -1 && pt.y == -1) {
 				// all this is done in screen-coords!
@@ -1000,7 +1000,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 		}	}
 		return 0;
-		
+
 	case WM_CLOSE:
 		if (DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT))
 			CallService(MS_CLIST_SHOWHIDE, 0, 0);

@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -68,7 +68,7 @@ void FreeProtocolData( void )
 			if (PD) mir_free(PD);
 }	}	}
 
-void CluiProtocolStatusChanged()
+void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 {
 	int protoCount,i;
 	PROTOCOLDESCRIPTOR **proto;
@@ -90,11 +90,11 @@ void CluiProtocolStatusChanged()
 	int rdelta = g_CluiData.bCLeft + g_CluiData.bCRight;
 	BYTE windowStyle;
 
-	if (pcli->hwndStatus == 0 || g_shutDown) 
+	if (pcli->hwndStatus == 0 || g_shutDown)
 		return;
 
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&protoCount, (LPARAM)&proto);
-	if (protoCount == 0) 
+	if (protoCount == 0)
 		return;
 
 	storedcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
@@ -103,7 +103,7 @@ void CluiProtocolStatusChanged()
 
 	FreeProtocolData();
 
-	SendMessage(pcli->hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders); 
+	SendMessage(pcli->hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders);
 
 	partWidths=(int*)malloc((storedcount+1)*sizeof(int));
 
@@ -134,7 +134,7 @@ void CluiProtocolStatusChanged()
 				part++;
 			}
 		}
-		partCount=toshow;       
+		partCount=toshow;
 	}
 	else {
 		char *modeDescr;
@@ -164,12 +164,12 @@ void CluiProtocolStatusChanged()
 				continue;
 			mir_free(szStoredName);
 			x=2;
-			if (showOpts & 1) 
+			if (showOpts & 1)
 				x += 16;
 			if (showOpts & 2) {
 				CallProtoService(curprotocol->szName,PS_GETNAME,sizeof(szName),(LPARAM)szName);
 				if (showOpts&4 && lstrlenA(szName)<sizeof(szName)-1) lstrcatA(szName," ");
-				GetTextExtentPoint32A(hdc,szName,lstrlenA(szName),&textSize);             
+				GetTextExtentPoint32A(hdc,szName,lstrlenA(szName),&textSize);
 				x += textSize.cx;
 			}
 			if (showOpts & 4) {
@@ -221,7 +221,7 @@ void CluiProtocolStatusChanged()
 		PD->protopos=DBGetContactSettingDword(NULL,"Protocols",(char *)&buf,-1);
 		{
 			int flags;
-			flags = SBT_OWNERDRAW; 
+			flags = SBT_OWNERDRAW;
 			if ( DBGetContactSettingByte(NULL,"CLUI","SBarBevel", 1)==0 ) flags |= SBT_NOBORDERS;
 			SendMessageA(pcli->hwndStatus,SB_SETTEXTA,partCount|flags,(LPARAM)PD);
 		}

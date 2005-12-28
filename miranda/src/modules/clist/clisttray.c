@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIM_CREATE     (WM_USER+1858)
 
 static VOID CALLBACK TrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime);
+void fnTrayIconUpdateBase(const char *szChangedProto);
 
 extern HIMAGELIST hCListImages;
 extern int currentStatusMenuItem, currentDesiredStatusMode;
@@ -35,6 +36,7 @@ extern BOOL(WINAPI * MySetProcessWorkingSetSize) (HANDLE, SIZE_T, SIZE_T);
 
 static UINT WM_TASKBARCREATED;
 static int cycleTimerId = 0, cycleStep = 0;
+static int RefreshTimerId=0;   /////by FYR
 
 struct trayIconInfo_t
 {
@@ -337,7 +339,7 @@ static int TrayIconUpdate(HICON hNewIcon, const char *szNewTip, const char *szPr
 	return -1;
 }
 
-static int TrayIconSetBaseInfo(HICON hIcon, const char *szPreferredProto)
+static int TrayIconSetBaseInfo(HICON hIcon, char *szPreferredProto)
 {
 	int i;
 

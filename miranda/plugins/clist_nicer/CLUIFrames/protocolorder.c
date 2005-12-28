@@ -131,7 +131,7 @@ int CheckProtocolOrder()
         v=0;
         for (i=0;i<count;i++) {
             if (protos[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
-            _itoa(v,(char *)&buf,10);            
+            _itoa(v,(char *)&buf,10);
             DBWriteContactSettingString(0,"Protocols",(char *)&buf,protos[i]->szName);
 
             _itoa(OFFSET_PROTOPOS+v,(char *)&buf,10);//save pos in protos
@@ -171,7 +171,7 @@ int FillTree(HWND hwnd)
 
     tvis.hParent=NULL;
     tvis.hInsertAfter=TVI_LAST;
-    tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;  
+    tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
 
 //			CheckProtocolOrder();
     TreeView_DeleteAllItems(hwnd);
@@ -249,20 +249,20 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                         DBWriteContactSettingDword(0,"Protocols","ProtoCount",-1);
                         CheckProtocolOrder();
                         FillTree(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
-                        CluiProtocolStatusChanged();
+                        CluiProtocolStatusChanged(0, 0);
                         SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
                             //BuildStatusMenu(0,0);
-                        return(0);          
+                        return(0);
                     };
                 };
                 break;
             };
         case WM_NOTIFY:
             switch (((LPNMHDR)lParam)->idFrom) {
-                case 0: 
+                case 0:
                     switch (((LPNMHDR)lParam)->code) {
                         case PSN_APPLY:
-                            {   
+                            {
                                 TVITEMA tvi;
                                 int count;
                                 char idstr[33];
@@ -293,7 +293,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
                                     count++;
                                 }
-                                CluiProtocolStatusChanged();
+                                CluiProtocolStatusChanged(0,0);
                                 MenuModulesLoaded(0,0);
                                 pcli->pfnTrayIconIconsChanged();
                                 pcli->pfnClcOptionsChanged();
@@ -418,7 +418,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                     SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
                 }
             }
-            break; 
+            break;
     }
     return FALSE;
 }

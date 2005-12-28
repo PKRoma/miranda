@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -68,7 +68,7 @@ int GetProtocolVisibility(char *ProtoName)
 		return 0;
 
 	count = (int)DBGetContactSettingDword(0, "Protocols", "ProtoCount", -1);
-	if (count == -1) 
+	if (count == -1)
 		return 1;
 	for (i = 0; i < count; i++) {
 		_itoa(i, buf2, 10);
@@ -116,7 +116,7 @@ static int __forceinline __strcmp(const char * src, const char * dst)
 static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 {
 	char *szProto = NULL;
-	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;  
+	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 
 	if (wParam) {
 		if(!__strcmp(cws->szModule, "CList")) {
@@ -188,7 +188,7 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 	}
 	else if(szProto == NULL && wParam == 0) {
 		if(!__strcmp(cws->szSetting, "XStatusId"))
-			CluiProtocolStatusChanged();
+			CluiProtocolStatusChanged(0, 0);
 		else if (!__strcmp(cws->szModule, "CListGroups"))
 			pcli->pfnClcBroadcast(INTM_GROUPSCHANGED, wParam, lParam);
 		return 0;
@@ -268,7 +268,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	case WM_CREATE:
 		dat = (struct ClcData *)mir_alloc(sizeof(struct ClcData));
 		memset( dat, 0, sizeof(struct ClcData));
-		SetWindowLong(hwnd, 0, (LONG) dat); 
+		SetWindowLong(hwnd, 0, (LONG) dat);
 
 		RowHeights_Initialize(dat);
 		dat->forcePaint = dat->forceScroll = 0;
@@ -339,7 +339,7 @@ LBL_Def:
 			lstrcpyn(contact->szText, pcli->pfnGetContactDisplayName((HANDLE)wParam,0), safe_sizeof(contact->szText));
 #if defined(_UNICODE)
 			RTL_DetectAndSet(contact, 0);
-#endif                
+#endif
 			dat->bNeedSort = TRUE;
 			PostMessage(hwnd, INTM_SORTCLC, 0, 0);
 			// XXX SortCLC(hwnd, dat, 1);
@@ -434,7 +434,7 @@ LBL_Def:
 			lstrcpyn(contact->szText, pcli->pfnGetContactDisplayName((HANDLE)wParam, 0), safe_sizeof(contact->szText));
 #if defined(_UNICODE)
 			RTL_DetectAndSet(contact, 0);
-#endif                
+#endif
 			dat->bNeedSort = TRUE;
 			PostMessage(hwnd, INTM_SORTCLC, 0, 0);
 			// XXX SortCLC(hwnd, dat, 1);
@@ -463,7 +463,7 @@ LBL_Def:
 
 	case INTM_IDLECHANGED:
 		{
-			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;  
+			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 			char *szProto;
 			struct ClcContact *contact;
 
@@ -482,13 +482,13 @@ LBL_Def:
 		}
 	case INTM_XSTATUSCHANGED:
 		{
-			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;  
+			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 			char *szProto;
 			struct ClcContact *contact;
 			int index;
 
 			if (!wParam)
-				CluiProtocolStatusChanged();
+				CluiProtocolStatusChanged(0, 0);
 
 			szProto = (char *)cws->szModule;
 
@@ -506,7 +506,7 @@ LBL_Def:
 		}
 	case INTM_CLIENTCHANGED:
 		{
-			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;  
+			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 			char *szProto;
 			struct ClcContact *contact;
 			DBVARIANT dbv = {0};
@@ -599,7 +599,7 @@ LBL_Def:
 								homepage = dbv.pszVal;
 							else if(!DBGetContactSetting(contact->hContact, contact->proto, "Homepage", &dbv))
 								homepage = dbv.pszVal;
-							if (homepage) {											
+							if (homepage) {
 								ShellExecuteA(hwnd,"open",homepage,NULL,NULL,SW_SHOW);
 								mir_free(homepage);
 							}

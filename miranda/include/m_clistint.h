@@ -264,7 +264,7 @@ typedef struct
 	/* clui.c */
 	LRESULT ( CALLBACK *pfnContactListWndProc )( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
-	void ( *pfnCluiProtocolStatusChanged )( void );
+	void ( *pfnCluiProtocolStatusChanged )( int status, const char* szProto );
 	void ( *pfnDrawMenuItem )( LPDRAWITEMSTRUCT, HICON, HICON );
 	void ( *pfnLoadCluiGlobalOpts )( void );
 	BOOL ( *pfnInvalidateRect )( HWND hwnd, CONST RECT* lpRect,BOOL bErase );

@@ -280,7 +280,7 @@ void SFL_SetSize()
 	g_SFLhbmOld = SelectObject(g_SFLCachedDC, g_SFLhbm);
 
 	ReleaseDC(g_hwndSFL, hdc);
-	CluiProtocolStatusChanged();
+	CluiProtocolStatusChanged(0, 0);
 }
 
 void SFL_Create()

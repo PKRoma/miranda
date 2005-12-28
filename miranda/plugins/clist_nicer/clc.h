@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -447,7 +447,7 @@ void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const char *szText, BOO
 int ClcOptInit(WPARAM wParam, LPARAM lParam);
 DWORD GetDefaultExStyle(void);
 void GetFontSetting(int i, LOGFONTA *lf, COLORREF *colour);
-void CluiProtocolStatusChanged( void );
+void CluiProtocolStatusChanged( int, const char* );
 
 //clistsettings.c
 char *u2a(wchar_t *src);
@@ -526,4 +526,3 @@ wchar_t *a2u(char *src);
 #define IDC_CONFIGUREMODES 109
 
 #define NR_CLIENTS 40
-

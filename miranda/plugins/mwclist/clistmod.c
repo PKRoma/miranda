@@ -41,7 +41,7 @@ HANDLE hStatusModeChangeEvent,hContactIconChangedEvent;
 extern BYTE nameOrder[];
 extern int currentDesiredStatusMode;
 
-static HANDLE hSettingChanged;
+static HANDLE hSettingChanged, hProtoAckHook;
 
 ////////// By FYR/////////////
 int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
@@ -66,7 +66,6 @@ int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 static int ProtocolAck(WPARAM wParam,LPARAM lParam)
 {
 	ACKDATA *ack=(ACKDATA*)lParam;
-
 	if (ack->type==ACKTYPE_AWAYMSG && ack->lParam) {
 		DBVARIANT dbv;
 		if (!DBGetContactSetting(ack->hContact, "CList", "StatusMsg", &dbv)) {
@@ -78,42 +77,8 @@ static int ProtocolAck(WPARAM wParam,LPARAM lParam)
 		}
 		if ( DBGetContactSettingByte(NULL,"CList","ShowStatusMsg",0) || DBGetContactSettingByte(ack->hContact,"CList","StatusMsgAuto",0))
          DBWriteContactSettingString(ack->hContact, "CList", "StatusMsg", (char *)ack->lParam);
-		return 0;
 	}
 
-	if(ack->type!=ACKTYPE_STATUS) return 0;
-	CallService(MS_CLUI_PROTOCOLSTATUSCHANGED,ack->lParam,(LPARAM)ack->szModule);
-
-	if((int)ack->hProcess<ID_STATUS_ONLINE && ack->lParam>=ID_STATUS_ONLINE) {
-		DWORD caps;
-		caps=(DWORD)CallProtoService(ack->szModule,PS_GETCAPS,PFLAGNUM_1,0);
-		if(caps&PF1_SERVERCLIST) {
-			HANDLE hContact;			
-			char *szProto;
-			int i=GetTickCount();
-			
-			OutputDebugStringA("Deleting toDelete Contacts\r\n");
-
-			hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
-			while(hContact) {
-				pdisplayNameCacheEntry cacheEntry;
-				cacheEntry=GetContactFullCacheEntry(hContact);
-
-				szProto=cacheEntry->szProto;
-				if(szProto!=NULL && !strcmp(szProto,ack->szModule))
-					if(DBGetContactSettingByte(hContact,"CList","Delete",0))
-						CallService(MS_DB_CONTACT_DELETE,(WPARAM)hContact,0);
-				hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
-			}
-			{
-				char buf[256];
-				sprintf(buf,"Deleting toDelete Contacts Done \t %d\r\n",GetTickCount()-i);
-				OutputDebugStringA(buf);
-			}
-		}
-	}
-
-	pcli->pfnTrayIconUpdateBase(ack->szModule);
 	return 0;
 }
 
@@ -131,6 +96,7 @@ static int GetStatusMode(WPARAM wParam, LPARAM lParam)
 
 static int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 {
+	UnhookEvent(hProtoAckHook);
 	UninitCustomMenus();
 	return 0;
 }
@@ -146,6 +112,7 @@ int LoadContactListModule(void)
 	hCListImages = (HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
 	DefaultImageListColorDepth=DBGetContactSettingDword(NULL,"CList","DefaultImageListColorDepth",ILC_COLOR32);
 	
+	hProtoAckHook = (HANDLE) HookEvent(ME_PROTO_ACK, ProtocolAck);
 	HookEvent(ME_OPT_INITIALISE,CListOptInit);
 	HookEvent(ME_SYSTEM_SHUTDOWN,ContactListShutdownProc);
 	hSettingChanged=HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);

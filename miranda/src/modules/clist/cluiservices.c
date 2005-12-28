@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -35,7 +35,7 @@ static int GetHwndTree(WPARAM wParam,LPARAM lParam)
 
 static int CluiProtocolStatusChanged(WPARAM wParam, LPARAM lParam)
 {
-	cli.pfnCluiProtocolStatusChanged();
+	cli.pfnCluiProtocolStatusChanged( wParam, (const char*)lParam );
 	return 0;
 }
 
@@ -152,7 +152,7 @@ int LoadCluiServices(void)
 /////////////////////////////////////////////////////////////////////////////////////////
 // default protocol status notification handler
 
-int fnCluiProtocolStatusChanged(void)
+int fnCluiProtocolStatusChanged(int parStatus, const char* szProto)
 {
 	int protoCount, i;
 	PROTOCOLDESCRIPTOR **proto;

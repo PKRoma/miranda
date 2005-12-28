@@ -127,7 +127,7 @@ int  fnTrayIconProcessMessage ( WPARAM wParam, LPARAM lParam );
 /* clui.c */
 LRESULT CALLBACK fnContactListWndProc ( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 void fnLoadCluiGlobalOpts( void );
-int  fnCluiProtocolStatusChanged(void);
+int  fnCluiProtocolStatusChanged(int,const char*);
 void fnDrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, HICON eventIcon);
 
 /* contact.c */
@@ -180,13 +180,13 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 
 		cli.pfnRegisterFileDropping            = fnRegisterFileDropping;
 		cli.pfnUnregisterFileDropping          = fnUnregisterFileDropping;
-															 								  
+
 		cli.pfnGetRowsPriorTo                  = fnGetRowsPriorTo;
 		cli.pfnFindItem						      = fnFindItem;
 		cli.pfnGetRowByIndex                   = fnGetRowByIndex;
 		cli.pfnContactToHItem				      = fnContactToHItem;
 		cli.pfnContactToItemHandle             = fnContactToItemHandle;
-															 								       
+
 		cli.pfnAddGroup                        = fnAddGroup;
 		cli.pfnAddItemToGroup                  = fnAddItemToGroup;
 		cli.pfnCreateClcContact                = fnCreateClcContact;
@@ -201,7 +201,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnGetGroupContentsCount	         = fnGetGroupContentsCount;
 		cli.pfnSortCLC						         = fnSortCLC;
 		cli.pfnSaveStateAndRebuildList         = fnSaveStateAndRebuildList;
-															 
+
 		cli.pfnProcessExternalMessages	      = fnProcessExternalMessages;
 
 		cli.pfnPaintClc                        = fnPaintClc;
@@ -235,17 +235,17 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnGetRowTopY                      = fnGetRowTopY;
 		cli.pfnGetRowTotalHeight               = fnGetRowTotalHeight;
 		cli.pfnRowHitTest                      = fnRowHitTest;
-															 
+
 		cli.pfnEventsProcessContactDoubleClick = fnEventsProcessContactDoubleClick;
 		cli.pfnEventsProcessTrayDoubleClick	   = fnEventsProcessTrayDoubleClick;
-															 
+
 		cli.pfnGetContactDisplayName			   = fnGetContactDisplayName;
 		cli.pfnInvalidateDisplayNameCacheEntry = fnInvalidateDisplayNameCacheEntry;
 		cli.pfnCreateCacheItem                 = fnCreateCacheItem;
 		cli.pfnCheckCacheItem                  = fnCheckCacheItem;
 		cli.pfnFreeCacheItem                   = fnFreeCacheItem;
 		cli.pfnGetCacheEntry                   = fnGetCacheEntry;
-															 
+
 		cli.pfnTrayIconUpdateWithImageList	   = fnTrayIconUpdateWithImageList;
 		cli.pfnTrayIconUpdateBase				   = fnTrayIconUpdateBase;
 		cli.pfnTrayIconSetToBase					= fnTrayIconSetToBase;
@@ -253,29 +253,29 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnTrayIconPauseAutoHide			   = fnTrayIconPauseAutoHide;
 		cli.pfnTrayIconProcessMessage			   = fnTrayIconProcessMessage;
 		cli.pfnCListTrayNotify                 = fnCListTrayNotify;
-															 
+
 		cli.pfnContactListWndProc				   = fnContactListWndProc;
 		cli.pfnLoadCluiGlobalOpts              = fnLoadCluiGlobalOpts;
 		cli.pfnCluiProtocolStatusChanged       = fnCluiProtocolStatusChanged;
 		cli.pfnDrawMenuItem                    = fnDrawMenuItem;
 		cli.pfnInvalidateRect                  = fnInvalidateRect;
 		cli.pfnOnCreateClc                     = fnOnCreateClc;
-															 
+
 		cli.pfnChangeContactIcon					= fnChangeContactIcon;
 		cli.pfnLoadContactTree					   = fnLoadContactTree;
 		cli.pfnCompareContacts					   = fnCompareContacts;
 		cli.pfnSortContacts						   = fnSortContacts;
 		cli.pfnSetHideOffline					   = fnSetHideOffline;
-															 
+
 		cli.pfnDocking_ProcessWindowMessage	   = fnDocking_ProcessWindowMessage;
-								
+
 		cli.pfnIconFromStatusMode              = fnIconFromStatusMode;
 		cli.pfnShowHide                        = fnShowHide;
 		cli.pfnGetStatusModeDescription        = fnGetStatusModeDescription;
 
 		cli.pfnGetGroupName						   = fnGetGroupName;
 		cli.pfnRenameGroup                     = fnRenameGroup;
-															 
+
 		cli.pfnHotKeysRegister					   = fnHotKeysRegister;
 		cli.pfnHotKeysUnregister					= fnHotKeysUnregister;
 		cli.pfnHotKeysProcess						= fnHotKeysProcess;
@@ -286,11 +286,11 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		rc = LoadContactListModule2();
 		if (rc == 0)
 			rc = LoadCLCModule();
-		interfaceInited = 1;						
-	}													
-														
-	return ( int )( LPARAM )&cli;				
-}														
+		interfaceInited = 1;
+	}
+
+	return ( int )( LPARAM )&cli;
+}
 
 int LoadContactListModule()
 {

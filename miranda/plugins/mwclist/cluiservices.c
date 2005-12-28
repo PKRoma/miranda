@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -43,7 +43,7 @@ void FreeProtocolData( void )
 			if (PD) mir_free(PD);
 }	}	}
 
-void CluiProtocolStatusChanged( void )
+void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 {
 	int protoCount,i;
 	PROTOCOLDESCRIPTOR **proto;
@@ -56,10 +56,10 @@ void CluiProtocolStatusChanged( void )
 	char buf[10];
 	int toshow;
 	int FirstIconOffset;
-	
-	if ( pcli->hwndStatus == 0 ) 
+
+	if ( pcli->hwndStatus == 0 )
 		return;
-	
+
 	FirstIconOffset=DBGetContactSettingDword(NULL,"CLUI","FirstIconOffset",0);
 
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
@@ -70,14 +70,14 @@ void CluiProtocolStatusChanged( void )
 	storedcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 	if ( storedcount == -1 )
 		return;
-	
+
 	OutputDebugStringA("CluiProtocolStatusChanged");
 	OutputDebugStringA("\r\n");
 	FreeProtocolData();
-	
-	SendMessage(pcli->hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders); 
-	
-	SendMessage(pcli->hwndStatus,SB_SETBKCOLOR,0,DBGetContactSettingDword(0,"CLUI","SBarBKColor",CLR_DEFAULT)); 
+
+	SendMessage(pcli->hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders);
+
+	SendMessage(pcli->hwndStatus,SB_SETBKCOLOR,0,DBGetContactSettingDword(0,"CLUI","SBarBKColor",CLR_DEFAULT));
 	partWidths=(int*)malloc((storedcount+1)*sizeof(int));
 	//partWidths[0]=FirstIconOffset;
 	if(DBGetContactSettingByte(NULL,"CLUI","UseOwnerDrawStatusBar",0)||DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
@@ -104,12 +104,12 @@ void CluiProtocolStatusChanged( void )
 				if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;}
 
 				partWidths[part]=((part+1)*(rc.right/toshow))-(borders[2]>>1);
-				//partWidths[part]=40*part+40; 
+				//partWidths[part]=40*part+40;
 				part++;
 			}
 		//partCount=part;
 		}
-		partCount=toshow;		
+		partCount=toshow;
 
 	}
 	else {
@@ -129,20 +129,20 @@ void CluiProtocolStatusChanged( void )
 			itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
 			//show this protocol ?
 			if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;}
-			
+
 			itoa(i,(char *)&buf,10);
 			szStoredName=DBGetString(NULL,"Protocols",buf);
 			if (szStoredName==NULL){continue;}
 			curprotocol=(PROTOCOLDESCRIPTOR*)CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)szStoredName);
 			mir_free(szStoredName);
 			if (curprotocol==0){continue;}
-			
+
 			x=2;
 			if(showOpts&1) x+=GetSystemMetrics(SM_CXSMICON);
 			if(showOpts&2) {
 				CallProtoService(curprotocol->szName,PS_GETNAME,SIZEOF(szName),(LPARAM)szName);
 				if(showOpts&4 && lstrlenA(szName)<SIZEOF(szName)-1) lstrcatA(szName," ");
-				GetTextExtentPoint32A(hdc,szName,lstrlenA(szName),&textSize);				
+				GetTextExtentPoint32A(hdc,szName,lstrlenA(szName),&textSize);
 				x+=textSize.cx;
 			}
 			if(showOpts&4) {
@@ -167,13 +167,13 @@ void CluiProtocolStatusChanged( void )
 	SendMessage(pcli->hwndStatus,SB_SETMINHEIGHT,GetSystemMetrics(SM_CYSMICON)+2,0);
 	SendMessage(pcli->hwndStatus,SB_SETPARTS,partCount,(LPARAM)partWidths);
 	free(partWidths);
-	
+
 	for(partCount=0,i=0;i<storedcount;i++) {      //count down since built in ones tend to go at the end
 		ProtocolData	*PD;
 
 		itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
 		//show this protocol ?
-		if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;}	
+		if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;}
 
 		itoa(i,(char *)&buf,10);
 		szStoredName=DBGetString(NULL,"Protocols",buf);
@@ -190,14 +190,14 @@ void CluiProtocolStatusChanged( void )
 		PD->protopos=DBGetContactSettingDword(NULL,"Protocols",(char *)&buf,-1);
 		{
 			int flags;
-			flags = SBT_OWNERDRAW; 
+			flags = SBT_OWNERDRAW;
 			if ( DBGetContactSettingByte(NULL,"CLUI","SBarBevel", 1)==0 ) flags |= SBT_NOBORDERS;
 			SendMessage(pcli->hwndStatus,SB_SETTEXT,partCount|flags,(LPARAM)PD);
 		}
 		partCount++;
 	}
 
-   CreateTimerForConnectingIcon( 0, 0 );
+   CreateTimerForConnectingIcon( parStatus, (LPARAM)szProto );
 	InvalidateRect(pcli->hwndStatus,NULL,FALSE);
 	return;
 }

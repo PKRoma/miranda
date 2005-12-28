@@ -33,7 +33,7 @@ static HANDLE hCListShutdown = 0;
 extern int LoadMoveToGroup();
 
 HMENU BuildGroupPopupMenu( struct ClcGroup* group );
-void  CluiProtocolStatusChanged( void );
+void  CluiProtocolStatusChanged( int, const char* );
 void  CheckPDNCE(pdisplayNameCacheEntry);
 void  FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);

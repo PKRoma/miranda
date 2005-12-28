@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2004 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2004 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -97,20 +97,20 @@ PLUGININFO pluginInfo = {
 		"Modern Contact List (UNICODE)",
 	#else
 		"Modern Contact List",
-	#endif	
-	
+	#endif
+
 #else
 	#ifdef UNICODE
 			"Debug of Modern Contact List (UNICODE)",
 	#else
 			"Debug of Modern Contact List",
-	#endif	
+	#endif
 #endif
 	0,                              //will initiate later in MirandaPluginInfo
 	"Display contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enchanced metacontact cooperation.",
 	"Artem Shpynov and Ricardo Pescuma Domenecci, based on clist_mw by Bethoven",
 	"shpynov@nm.ru" ,
-	"Copyright 2000-2005 Miranda-IM project ["__DATE__" "__TIME__"]",	
+	"Copyright 2000-2005 Miranda-IM project ["__DATE__" "__TIME__"]",
 	"http://miranda-im.org/download/details.php?action=viewfile&id=2103",
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL
@@ -120,7 +120,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 {
 	g_hInst = hInstDLL;
 	DisableThreadLibraryCalls(g_hInst);
-	
+
 	return TRUE;
 }
 
@@ -131,7 +131,7 @@ int MakeVer(a,b,c,d)
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,4,3,42) ) 
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,4,3,42) )
 	{
 		return NULL;
 	}
@@ -141,8 +141,8 @@ __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 
 int LoadContactListModule(void);
 //int UnLoadContactListModule(void);
-int LoadCLCModule(void); 
-void LoadCLUIModule(void); 
+int LoadCLCModule(void);
+void LoadCLUIModule(void);
 
 int SetDrawer(WPARAM wParam,LPARAM lParam)
 {
@@ -152,7 +152,7 @@ int SetDrawer(WPARAM wParam,LPARAM lParam)
 	if (DSS->PluginName==NULL) return -1;
 	if (!ServiceExists(DSS->GetDrawFuncsServiceName)) return -1;
 
-	
+
 	SED.cbSize=sizeof(SED);
 	SED.PaintClc=(void (__cdecl *)(HWND,struct ClcData *,HDC,RECT *,int ,ClcProtoStatus *,HIMAGELIST))CallService(DSS->GetDrawFuncsServiceName,CLUI_EXT_FUNC_PAINTCLC,0);
 	if (!SED.PaintClc) return -1;
@@ -181,7 +181,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pluginLink=link;
 #ifdef _DEBUG
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif	
+#endif
 	// get the internal malloc/free()
 	TRACE("CListInitialise ClistMW\r\n");
 	memset(&memoryManagerInterface,0,sizeof(memoryManagerInterface));
@@ -219,7 +219,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnScrollTo = ScrollTo;
 	pcli->pfnShowHide = ShowHide;
 
-	pcli->pfnCluiProtocolStatusChanged=fnCluiProtocolStatusChanged;
+	pcli->pfnCluiProtocolStatusChanged=CluiProtocolStatusChanged;
 	pcli->pfnBeginRenameSelection=BeginRenameSelection;
 	pcli->pfnHitTest=HitTest;
 	pcli->pfnCompareContacts=CompareContacts;
@@ -255,7 +255,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	if (rc==0) rc=LoadCLCModule();
 
 	LoadMoveToGroup();
-	//BGModuleLoad();	
+	//BGModuleLoad();
 
 	//CallTest();
 	TRACE("CListInitialise ClistMW...Done\r\n");
@@ -297,7 +297,7 @@ typedef struct _HookRec
 
 HookRec * hooksrec=NULL;
 DWORD hooksRecAlloced=0;
-    
+
 #undef HookEvent
 #undef UnhookEvent
 
@@ -308,7 +308,7 @@ HANDLE MyHookEvent(char *EventID,MIRANDAHOOK HookProc)
 	//1. Find free
 	for (i=0;i<hooksRecAlloced;i++)
 	{
-		if (hooksrec[i].hHook==NULL) 
+		if (hooksrec[i].hHook==NULL)
 		{
 			hr=&(hooksrec[i]);
 			break;
@@ -337,7 +337,7 @@ int MyUnhookEvent(HANDLE hHook)
 	//1. Find free
 	for (i=0;i<hooksRecAlloced;i++)
 	{
-		if (hooksrec[i].hHook==hHook) 
+		if (hooksrec[i].hHook==hHook)
 		{
 			pluginLink->UnhookEvent(hHook);
 			hooksrec[i].hHook=NULL;
@@ -354,18 +354,18 @@ int UnhookAll()
 	TRACE("Unhooked Events:\n");
 	for (i=0;i<hooksRecAlloced;i++)
 	{
-		if (hooksrec[i].hHook!=NULL) 
+		if (hooksrec[i].hHook!=NULL)
 		{
 			pluginLink->UnhookEvent(hooksrec[i].hHook);
 			hooksrec[i].hHook=NULL;
-			if (hooksrec[i].HookStr) 
+			if (hooksrec[i].HookStr)
 			{
 				TRACE(hooksrec[i].HookStr);
 				TRACE("\n");
 				mir_free(hooksrec[i].HookStr);
 			}
 		}
-	}  
+	}
 	mir_free(hooksrec);
 	return 1;
 }

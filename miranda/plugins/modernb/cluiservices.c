@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -26,22 +26,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonprototypes.h"
 
 
-int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
+int CluiProtocolStatusChanged(int, const char*)
 {
    InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);
 	return 0;
-}
-
-void fnCluiProtocolStatusChanged(void)
-{
-	CluiProtocolStatusChanged(0,0);
 }
 
 int SortList(WPARAM wParam,LPARAM lParam)
 {
     pcli->pfnClcBroadcast( WM_TIMER,TIMERID_DELAYEDRESORTCLC,0);
     pcli->pfnClcBroadcast( INTM_SCROLLBARCHANGED,0,0);
-    
+
 	return 0;
 }
 
@@ -53,7 +48,6 @@ static int MetaSupportCheck(WPARAM wParam,LPARAM lParam)
 int LoadCluiServices(void)
 {
 	CreateServiceFunction(MS_CLUI_METASUPPORT,MetaSupportCheck);
-	CreateServiceFunction(MS_CLUI_PROTOCOLSTATUSCHANGED,CluiProtocolStatusChanged);
 	CreateServiceFunction(MS_CLUI_SORTLIST,SortList);
 	return 0;
 }
