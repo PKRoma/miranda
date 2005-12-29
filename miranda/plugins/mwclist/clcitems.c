@@ -32,7 +32,6 @@ extern struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TC
 
 //routines for managing adding/removal of items in the list, including sorting
 
-extern int CompareContacts(WPARAM wParam,LPARAM lParam);
 extern void ClearClcContactCache(struct ClcData *dat,HANDLE hContact);
 
 void AddSubcontacts(struct ClcContact * cont)
@@ -498,133 +497,23 @@ int GetGroupContentsCount(struct ClcGroup *group,int visibleOnly)
 	return count;
 }
 
-static int __cdecl GroupSortProc(const struct ClcContact *contact1,const struct ClcContact *contact2)
-{
-	return lstrcmpi(contact1->szText,contact2->szText);
-}
-
-static int __cdecl ContactSortProc(const struct ClcContact **contact1,const struct ClcContact **contact2)
-{
-	int result = CompareContacts((WPARAM)contact1[0]->hContact,(LPARAM)contact2[0]->hContact);
-	if ( result )
-		return result;
-	
-	//nothing to distinguish them, so make sure they stay in the same order
-	return (int)contact2[0]->hContact - (int)contact1[0]->hContact;
-}
-
-static void InsertionSort(struct ClcContact **pContactArray, int nArray, int (*CompareProc) (const void *, const void *))
-{
-	int i, j;
-	struct ClcContact* testElement;
-
-	for (i = 1; i < nArray; i++) {
-		if (CompareProc(&pContactArray[i - 1], &pContactArray[i]) > 0) {
-			testElement = pContactArray[i];
-			for (j = i - 2; j >= 0; j--)
-				if (CompareProc(&pContactArray[j], &testElement) <= 0)
-					break;
-			j++;
-			memmove(&pContactArray[j + 1], &pContactArray[j], sizeof(void*) * (i - j));
-			pContactArray[j] = testElement;
-}	}	}
-
-static void SortGroup(struct ClcData *dat,struct ClcGroup *group,int useInsertionSort)
-{
-	int i,sortCount;
-
-	for(i=group->cl.count-1;i>=0;i--) {
-		if(group->cl.items[i]->type==CLCIT_DIVIDER) {
-			group->cl.count--;
-			memmove(&group->cl.items[i],&group->cl.items[i+1],sizeof(void*)*(group->cl.count-i));
-		}
-	}
-	for(i=0;i<group->cl.count;i++)
-		if(group->cl.items[i]->type!=CLCIT_INFO) break;
-	if(i>group->cl.count-2) return;
-	if(group->cl.items[i]->type==CLCIT_GROUP) {
-		if(dat->exStyle&CLS_EX_SORTGROUPSALPHA) {
-			for(sortCount=0;i+sortCount<group->cl.count;sortCount++)
-				if(group->cl.items[i+sortCount]->type!=CLCIT_GROUP) break;
-			qsort(group->cl.items+i,sortCount,sizeof(void*),GroupSortProc);
-			i=i+sortCount;
-		}
-		for(;i<group->cl.count;i++)
-			if(group->cl.items[i]->type==CLCIT_CONTACT) break;
-		if(group->cl.count-i<2) return;
-	}
-	for(sortCount=0;i+sortCount<group->cl.count;sortCount++)
-		if(group->cl.items[i+sortCount]->type!=CLCIT_CONTACT) break;
-	if(useInsertionSort) InsertionSort(group->cl.items+i,sortCount,ContactSortProc);
-	else qsort(group->cl.items+i,sortCount,sizeof(void*),ContactSortProc);
-	if(dat->exStyle&CLS_EX_DIVIDERONOFF) {
-		int prevContactOnline=0;
-		for(i=0;i<group->cl.count;i++) {
-			if(group->cl.items[i]->type!=CLCIT_CONTACT) continue;
-			if(group->cl.items[i]->flags&CONTACTF_ONLINE) prevContactOnline=1;
-			else {
-				if(prevContactOnline) {
-					i=AddItemToGroup(group,i);
-					group->cl.items[i]->type=CLCIT_DIVIDER;
-					lstrcpy(group->cl.items[i]->szText,TranslateT("Offline"));
-				}
-				break;
-			}
-		}
-	}
-	ClearRowByIndexCache();
-}
+extern void ( *saveSortCLC )(HWND hwnd,struct ClcData *dat,int useInsertionSort);
 
 void SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort)
 {
-	struct ClcContact *selcontact;
-	struct ClcGroup *group=&dat->list,*selgroup;
-	int dividers=dat->exStyle&CLS_EX_DIVIDERONOFF;
-	HANDLE hSelItem;
-	int tick=GetTickCount();
-	if (dat->NeedResort==1)
-	{
-
-		if(GetRowByIndex(dat,dat->selection,&selcontact,NULL)==-1) hSelItem=NULL;
-		else hSelItem=pcli->pfnContactToHItem(selcontact);
-		group->scanIndex=0;
-		
-		SortGroup(dat,group,useInsertionSort);
-		
-		for(;;) {
-			if(group->scanIndex==group->cl.count) {
-				group=group->parent;
-				if(group==NULL) break;
-			}
-			else if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP) {
-				group=group->cl.items[group->scanIndex]->group;
-				group->scanIndex=0;
-				SortGroup(dat,group,useInsertionSort);
-				continue;
-			}
-			group->scanIndex++;
-		}
-		
-		ClearClcContactCache(dat,INVALID_HANDLE_VALUE);
-
-		if(hSelItem)
-			if(FindItem(hwnd,dat,hSelItem,&selcontact,&selgroup,NULL))
-				dat->selection=GetRowsPriorTo(&dat->list,selgroup,li.List_IndexOf((SortedList*)&selgroup->cl, selcontact));
-		
-		RecalcScrollBar(hwnd,dat);
+#ifdef _DEBUG
+	DWORD tick = GetTickCount();
+#endif	
+	int oldSort = dat->NeedResort;
+	saveSortCLC(hwnd, dat, useInsertionSort);
+	if ( oldSort )
 		ClearRowByIndexCache();
-	}else
-	{
-		//OutputDebugStringA("Not need to sort\r\n");
-	}
-	InvalidateRect(hwnd,NULL,FALSE);
-	dat->NeedResort=0;
 
-	tick=GetTickCount()-tick;
 #ifdef _DEBUG
 	{
 	char buf[255];
 	//sprintf(buf,"%s %s took %i ms",__FILE__,__LINE__,tick);
+	tick = GetTickCount()-tick;
 		if (tick>5) 
 		{
 			sprintf(buf,"SortCLC %d \r\n",tick);

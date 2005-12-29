@@ -33,11 +33,13 @@ static HANDLE hCListShutdown = 0;
 extern int LoadMoveToGroup();
 
 HMENU BuildGroupPopupMenu( struct ClcGroup* group );
-void  CluiProtocolStatusChanged( int, const char* );
+
+void  CalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
 void  CheckPDNCE(pdisplayNameCacheEntry);
+void  CluiProtocolStatusChanged( int, const char* );
+int   CompareContacts( const struct ClcContact *contact1, const struct ClcContact *contact2 );
 void  FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
-void  CalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
 int   HotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
 int   HotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
 int   HotKeysRegister(HWND hwnd);
@@ -61,6 +63,9 @@ int AddItemToGroup(struct ClcGroup *group, int iAboveItem);
 
 int ( *saveAddInfoItemToGroup)(struct ClcGroup *group,int flags,const TCHAR *pszText);
 int AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
+
+void ( *saveSortCLC )(HWND hwnd,struct ClcData *dat,int useInsertionSort);
+void SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort);
 
 int ( *saveTrayIconProcessMessage )(WPARAM wParam,LPARAM lParam);
 int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
@@ -170,6 +175,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		pcli->pfnCalcEipPosition = CalcEipPosition;
 		pcli->pfnCheckCacheItem = CheckPDNCE;
 		pcli->pfnCluiProtocolStatusChanged = CluiProtocolStatusChanged;
+		pcli->pfnCompareContacts = CompareContacts;
 		pcli->pfnCreateClcContact = fnCreateClcContact;
 		pcli->pfnCreateCacheItem = fnCreateCacheItem;
 		pcli->pfnFindItem = FindItem;
@@ -187,29 +193,15 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		pcli->pfnRecalcScrollBar = RecalcScrollBar;
 		pcli->pfnScrollTo = ScrollTo;
 
-		saveAddGroup = pcli->pfnAddGroup;
-		pcli->pfnAddGroup = AddGroup;
-
-		saveAddInfoItemToGroup = pcli->pfnAddInfoItemToGroup;
-		pcli->pfnAddInfoItemToGroup = AddInfoItemToGroup;
-
-		saveAddItemToGroup = pcli->pfnAddItemToGroup;
-		pcli->pfnAddItemToGroup = AddItemToGroup;
-
-		saveRemoveItemFromGroup = pcli->pfnRemoveItemFromGroup;
-		pcli->pfnRemoveItemFromGroup = RemoveItemFromGroup;
-
-		saveContactListControlWndProc = pcli->pfnContactListControlWndProc;
-		pcli->pfnContactListControlWndProc = ContactListControlWndProc;
-
-		saveTrayIconProcessMessage = pcli->pfnTrayIconProcessMessage;
-		pcli->pfnTrayIconProcessMessage = TrayIconProcessMessage;
-
-		saveContactListWndProc = pcli->pfnContactListWndProc;
-		pcli->pfnContactListWndProc = ContactListWndProc;
-
-		saveLoadClcOptions = pcli->pfnLoadClcOptions;
-		pcli->pfnLoadClcOptions = LoadClcOptions;
+		saveAddGroup = pcli->pfnAddGroup; pcli->pfnAddGroup = AddGroup;
+		saveAddInfoItemToGroup = pcli->pfnAddInfoItemToGroup; pcli->pfnAddInfoItemToGroup = AddInfoItemToGroup;
+		saveAddItemToGroup = pcli->pfnAddItemToGroup; pcli->pfnAddItemToGroup = AddItemToGroup;
+		saveRemoveItemFromGroup = pcli->pfnRemoveItemFromGroup; pcli->pfnRemoveItemFromGroup = RemoveItemFromGroup;
+		saveContactListControlWndProc = pcli->pfnContactListControlWndProc; pcli->pfnContactListControlWndProc = ContactListControlWndProc;
+		saveTrayIconProcessMessage = pcli->pfnTrayIconProcessMessage; pcli->pfnTrayIconProcessMessage = TrayIconProcessMessage;
+		saveContactListWndProc = pcli->pfnContactListWndProc; pcli->pfnContactListWndProc = ContactListWndProc;
+		saveLoadClcOptions = pcli->pfnLoadClcOptions; pcli->pfnLoadClcOptions = LoadClcOptions;
+		saveSortCLC = pcli->pfnSortCLC; pcli->pfnSortCLC = SortCLC;
 
 		memset(&SED,0,sizeof(SED));
 		CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);

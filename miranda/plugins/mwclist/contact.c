@@ -122,10 +122,9 @@ void LoadContactTree(void)
 
 #define SAFESTRING(a) a?a:""
 
-int CompareContacts(WPARAM wParam,LPARAM lParam)
+int CompareContacts( const struct ClcContact *contact1, const struct ClcContact *contact2 )
 {
-	HANDLE a=(HANDLE)wParam,b=(HANDLE)lParam;
-//	char namea[128],*nameb;
+	HANDLE a = contact1->hContact, b = contact2->hContact;
 	TCHAR *namea,*nameb;
 	int statusa,statusb;
 	char *szProto1,*szProto2;
@@ -165,7 +164,6 @@ int CompareContacts(WPARAM wParam,LPARAM lParam)
 
 	//otherwise just compare names
 	return _tcsicmp(namea,nameb);
-	
 }
 
 #undef SAFESTRING
