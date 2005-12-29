@@ -184,12 +184,13 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 	CONTACTINFO ci;
 	ClcCacheEntryBase* cacheEntry = NULL;
 	char *buffer;
+	HANDLE hContact = (HANDLE)wParam;
 
 	if ( lParam & GCDNF_UNICODE )
-		return ( int )cli.pfnGetContactDisplayName(( HANDLE )wParam, lParam & ~GCDNF_UNICODE );
+		return ( int )cli.pfnGetContactDisplayName(hContact, lParam & ~GCDNF_UNICODE );
 
 	if ((int) lParam != GCDNF_NOMYHANDLE) {
-		cacheEntry = cli.pfnGetCacheEntry((HANDLE) wParam);
+		cacheEntry = cli.pfnGetCacheEntry(hContact);
 		#if defined( _UNICODE )
 			if ( cacheEntry->szName )
 				return (int)cacheEntry->szName;
@@ -200,7 +201,7 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 	}
 	ZeroMemory(&ci, sizeof(ci));
 	ci.cbSize = sizeof(ci);
-	ci.hContact = (HANDLE) wParam;
+	ci.hContact = hContact;
 	if (ci.hContact == NULL)
 		ci.szProto = "ICQ";
 	ci.dwFlag = (int) lParam == GCDNF_NOMYHANDLE ? CNF_DISPLAYNC : CNF_DISPLAY;
@@ -247,20 +248,20 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 				return (int) buffer;
 	}	}	}
 
-	CallContactService((HANDLE) wParam, PSS_GETINFO, SGIF_MINIMAL, 0);
+	CallContactService(hContact, PSS_GETINFO, SGIF_MINIMAL, 0);
 	buffer = Translate("(Unknown Contact)");
 	return (int) buffer;
 }
 
 int InvalidateDisplayName(WPARAM wParam, LPARAM lParam)
 {
-	cli.pfnInvalidateDisplayNameCacheEntry((HANDLE) wParam);
+	cli.pfnInvalidateDisplayNameCacheEntry((HANDLE)wParam);
 	return 0;
 }
 
 int ContactAdded(WPARAM wParam, LPARAM lParam)
 {
-	cli.pfnChangeContactIcon((HANDLE) wParam, cli.pfnIconFromStatusMode((char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0), ID_STATUS_OFFLINE), 1);
+	cli.pfnChangeContactIcon((HANDLE)wParam, cli.pfnIconFromStatusMode((char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0), ID_STATUS_OFFLINE, NULL), 1);
 	cli.pfnSortContacts();
 	return 0;
 }
@@ -275,32 +276,33 @@ int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 	DBVARIANT dbv;
+	HANDLE hContact = (HANDLE)wParam;
 
 	// Early exit
-	if ((HANDLE) wParam == NULL)
+	if ( hContact == NULL)
 		return 0;
 
 	dbv.pszVal = NULL;
-	if (!DBGetContactSetting((HANDLE) wParam, "Protocol", "p", &dbv)) {
+	if (!DBGetContactSetting(hContact, "Protocol", "p", &dbv)) {
 		if (!strcmp(cws->szModule, dbv.pszVal)) {
-			cli.pfnInvalidateDisplayNameCacheEntry((HANDLE) wParam);
+			cli.pfnInvalidateDisplayNameCacheEntry(hContact);
 			if (!strcmp(cws->szSetting, "UIN") || !strcmp(cws->szSetting, "Nick") || !strcmp(cws->szSetting, "FirstName")
 				|| !strcmp(cws->szSetting, "LastName") || !strcmp(cws->szSetting, "e-mail")) {
 					CallService(MS_CLUI_CONTACTRENAMED, wParam, 0);
 				}
 			else if (!strcmp(cws->szSetting, "Status")) {
-				if (!DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0)) {
+				if (!DBGetContactSettingByte(hContact, "CList", "Hidden", 0)) {
 					if (DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT)) {
 						// User's state is changing, and we are hideOffline-ing
 						if (cws->value.wVal == ID_STATUS_OFFLINE) {
-							cli.pfnChangeContactIcon((HANDLE) wParam, cli.pfnIconFromStatusMode(cws->szModule, cws->value.wVal), 0);
+							cli.pfnChangeContactIcon(hContact, cli.pfnIconFromStatusMode(cws->szModule, cws->value.wVal, hContact), 0);
 							CallService(MS_CLUI_CONTACTDELETED, wParam, 0);
 							free(dbv.pszVal);
 							return 0;
 						}
-						cli.pfnChangeContactIcon((HANDLE) wParam, cli.pfnIconFromStatusMode(cws->szModule, cws->value.wVal), 1);
+						cli.pfnChangeContactIcon(hContact, cli.pfnIconFromStatusMode(cws->szModule, cws->value.wVal, hContact), 1);
 					}
-					cli.pfnChangeContactIcon((HANDLE) wParam, cli.pfnIconFromStatusMode(cws->szModule, cws->value.wVal), 0);
+					cli.pfnChangeContactIcon(hContact, cli.pfnIconFromStatusMode(cws->szModule, cws->value.wVal, hContact), 0);
 				}
 			}
 			else {
@@ -315,16 +317,13 @@ int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 		if (!strcmp(cws->szSetting, "Hidden")) {
 			if (cws->value.type == DBVT_DELETED || cws->value.bVal == 0) {
 				char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
-				cli.pfnChangeContactIcon((HANDLE) wParam,
-					cli.pfnIconFromStatusMode(szProto,
-					szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) wParam, szProto, "Status",
-					ID_STATUS_OFFLINE)), 1);
+				cli.pfnChangeContactIcon(hContact, cli.pfnIconFromStatusMode(szProto, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), hContact), 1);
 			}
 			else
 				CallService(MS_CLUI_CONTACTDELETED, wParam, 0);
 		}
 		if (!strcmp(cws->szSetting, "MyHandle")) {
-			cli.pfnInvalidateDisplayNameCacheEntry((HANDLE) wParam);
+			cli.pfnInvalidateDisplayNameCacheEntry(hContact);
 		}
 	}
 
@@ -335,10 +334,10 @@ int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 				szProto = NULL;
 			else
 				szProto = cws->value.pszVal;
-			cli.pfnChangeContactIcon((HANDLE) wParam,
+			cli.pfnChangeContactIcon(hContact,
 				cli.pfnIconFromStatusMode(szProto,
-					szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) wParam, szProto, "Status",
-					ID_STATUS_OFFLINE)), 0);
+					szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status",
+					ID_STATUS_OFFLINE), hContact), 0);
 		}
 	}
 

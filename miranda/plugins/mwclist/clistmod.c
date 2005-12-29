@@ -47,7 +47,7 @@ static HANDLE hSettingChanged, hProtoAckHook;
 int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 {
 	if ( DBGetContactSettingByte( NULL, "CLC", "Meta", 0 ) == 1 )
-		return pcli->pfnIconFromStatusMode(szProto,status);
+		return pcli->pfnIconFromStatusMode(szProto,status,hContact);
 
 	if ( szProto != NULL )
 		if (strcmp(szProto,"MetaContacts") == 0 ) {
@@ -58,7 +58,7 @@ int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 			}
 		}
 
-	return pcli->pfnIconFromStatusMode(szProto,status);
+	return pcli->pfnIconFromStatusMode(szProto,status,hContact);
 }
 
 /////////// End by FYR ////////

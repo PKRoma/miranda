@@ -186,10 +186,11 @@ int fnIconFromStatusMode(const char *szProto, int status)
 
 static int GetContactIcon(WPARAM wParam, LPARAM lParam)
 {
-	char *szProto;
-	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+	char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+	HANDLE hContact = (HANDLE)wParam;
+
 	return cli.pfnIconFromStatusMode(szProto,
-		szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE));
+		szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), hContact);
 }
 
 static int ContactListShutdownProc(WPARAM wParam, LPARAM lParam)

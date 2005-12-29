@@ -69,6 +69,8 @@ int AddInfoItemToGroup(struct ClcGroup *group, int flags, const TCHAR *pszText);
 struct ClcGroup* ( *saveAddGroup )(HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers);
 struct ClcGroup* AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers);
 
+int ( *saveIconFromStatusMode )( const char *szProto, int status, HANDLE hContact );
+
 LRESULT ( *saveProcessExternalMessages )(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -180,8 +182,8 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 int MenuModulesLoaded(WPARAM wParam, LPARAM lParam);
 
-static int fnIconFromStatusMode( const char* szProto, int status )
-{	return IconFromStatusMode( szProto, status, NULL, NULL );
+static int fnIconFromStatusMode( const char* szProto, int status, HANDLE hContact )
+{	return IconFromStatusMode( szProto, status, hContact, NULL );
 }
 
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
@@ -294,7 +296,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnGetRowTopY = RowHeights_GetItemTopY;
 	pcli->pfnGetRowTotalHeight = RowHeights_GetTotalHeight;
 	pcli->pfnHitTest = HitTest;
-//	pcli->pfnIconFromStatusMode = IconFromStatusMode;
 	pcli->pfnOnCreateClc = LoadCLUIModule;
 	pcli->pfnPaintClc = PaintClc;
 	pcli->pfnRebuildEntireList = RebuildEntireList;
@@ -307,6 +308,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	saveAddInfoItemToGroup = pcli->pfnAddInfoItemToGroup; pcli->pfnAddInfoItemToGroup = AddInfoItemToGroup;
 	saveContactListControlWndProc = pcli->pfnContactListControlWndProc; pcli->pfnContactListControlWndProc = ContactListControlWndProc;
 	saveContactListWndProc = pcli->pfnContactListWndProc; pcli->pfnContactListWndProc = ContactListWndProc;
+	saveIconFromStatusMode = pcli->pfnIconFromStatusMode; pcli->pfnIconFromStatusMode = fnIconFromStatusMode;
 	saveLoadClcOptions = pcli->pfnLoadClcOptions; pcli->pfnLoadClcOptions = LoadClcOptions;
 	saveProcessExternalMessages = pcli->pfnProcessExternalMessages; pcli->pfnProcessExternalMessages = ProcessExternalMessages;
 	saveRecalcScrollBar = pcli->pfnRecalcScrollBar; pcli->pfnRecalcScrollBar = RecalcScrollBar;

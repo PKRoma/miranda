@@ -57,6 +57,8 @@ static int GetStatusMode(WPARAM wParam, LPARAM lParam)
 	return currentDesiredStatusMode;
 }
 
+extern int ( *saveIconFromStatusMode )( const char *szProto, int status, HANDLE hContact );
+
 int IconFromStatusMode(const char *szProto, int status, HANDLE hContact, HICON *phIcon)
 {
 	char *szFinalProto;
@@ -80,7 +82,7 @@ int IconFromStatusMode(const char *szProto, int status, HANDLE hContact, HICON *
 		else if(szProto)
 			*phIcon = g_CluiData.hIconConnecting;;
 	}
-	return pcli->pfnIconFromStatusMode(szFinalProto, finalStatus);
+	return saveIconFromStatusMode(szFinalProto, finalStatus, hContact);
 }
 
 static int MenuItem_LockAvatar(WPARAM wParam, LPARAM lParam)

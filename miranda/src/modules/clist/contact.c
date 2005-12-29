@@ -81,7 +81,7 @@ void fnLoadContactTree(void)
 	while (hContact != NULL) {
 		status = GetContactStatus(hContact);
 		if ((!hideOffline || status != ID_STATUS_OFFLINE) && !DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
-			cli.pfnChangeContactIcon(hContact, cli.pfnIconFromStatusMode((char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0), status), 1);
+			cli.pfnChangeContactIcon(hContact, cli.pfnIconFromStatusMode((char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0), status, hContact), 1);
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 	sortByStatus = DBGetContactSettingByte(NULL, "CList", "SortByStatus", SETTING_SORTBYSTATUS_DEFAULT);
@@ -162,7 +162,7 @@ int ContactChangeGroup(WPARAM wParam, LPARAM lParam)
 	else
 		DBWriteContactSettingTString((HANDLE) wParam, "CList", "Group", cli.pfnGetGroupName(lParam, NULL));
 	CallService(MS_CLUI_CONTACTADDED, wParam,
-		cli.pfnIconFromStatusMode((char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0), GetContactStatus((HANDLE) wParam)));
+		cli.pfnIconFromStatusMode((char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0), GetContactStatus((HANDLE) wParam), (HANDLE) wParam));
 	return 0;
 }
 

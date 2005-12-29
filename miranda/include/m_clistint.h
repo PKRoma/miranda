@@ -239,7 +239,7 @@ typedef struct
 	int   ( *pfnEventsProcessTrayDoubleClick )( void );
 
 	/* clistmod.c */
-	int    ( *pfnIconFromStatusMode )( const char *szProto, int status );
+	int    ( *pfnIconFromStatusMode )( const char *szProto, int status, HANDLE hContact );
 	int    ( *pfnShowHide )( WPARAM, LPARAM );
 	TCHAR* ( *pfnGetStatusModeDescription )( int mode, int flags );
 

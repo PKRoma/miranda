@@ -152,7 +152,7 @@ static int RemoveEvent(WPARAM wParam, LPARAM lParam)
 	cli.pfnChangeContactIcon(event[i].cle.hContact,
 		cli.pfnIconFromStatusMode(szProto,
 		szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(event[i].cle.hContact, szProto, "Status",
-		ID_STATUS_OFFLINE)), 0);
+		ID_STATUS_OFFLINE), event[i].cle.hContact), 0);
 
 	// Free any memory allocated to the event
 	if (event[i].cle.pszService != NULL) {
