@@ -109,8 +109,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_avatars.h"
 #include "m_smileyadd.h"
 
-#define CLS_CONTACTLIST 1
-
 // shared vars
 extern HINSTANCE g_hInst;
 

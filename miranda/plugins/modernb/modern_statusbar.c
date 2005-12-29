@@ -209,7 +209,10 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 	{
 		int vis;
 		i=GetProtoIndexByPos(proto,protoCount,j);
-		vis=GetProtocolVisibility(proto[i]->szName);
+		if (i==-1) 
+			vis=FALSE;
+		else
+			vis=GetProtocolVisibility(proto[i]->szName);
 		if (!vis) continue;
 	    ProtosData[visProtoCount].ProtoName=mir_strdup(proto[i]->szName);
         ProtosData[visProtoCount].ProtoStatus=CallProtoService(proto[i]->szName,PS_GETSTATUS,0,0);

@@ -535,7 +535,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 					prot=GetUniqueProtoName(smep->proto);
 				else
 					prot=GetUniqueProtoName(timi->mi.pszName);
-				if (!prot) return NULL;
+				if (!prot) return TRUE;
 				curProtoStatus=CallProtoService(prot,PS_GETSTATUS,0,0);
 				if (curProtoStatus>=ID_STATUS_OFFLINE && curProtoStatus<ID_STATUS_IDLE)
 				{
@@ -576,8 +576,8 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
       if ((smep->status==0) && (smep->protoindex!=0) && (smep->proto!=NULL))
       {
         PMO_IntMenuItem pimi;
-        int i=(DBGetContactSettingByte(NULL,smep->proto,"LockMainStatus",0)?0:1);
-        DBWriteContactSettingByte(NULL,smep->proto,"LockMainStatus",i);
+        int i=(DBGetContactSettingByte(NULL,GetUniqueProtoName(smep->proto),"LockMainStatus",0)?0:1);
+        DBWriteContactSettingByte(NULL,GetUniqueProtoName(smep->proto),"LockMainStatus",i);
         pimi=MO_GetIntMenuItem(smep->protoindex);
         if (i)
         {
@@ -608,7 +608,7 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
         currentDesiredStatusMode=smep->status;
         //	NotifyEventHooks(hStatusModeChangeEvent,currentDesiredStatusMode,0);
         for(i=0;i<protoCount;i++)
-          if (!(MenusProtoCount>1 && DBGetContactSettingByte(NULL,proto[i]->szName,"LockMainStatus",0)))
+          if (!(MenusProtoCount>1 && DBGetContactSettingByte(NULL,GetUniqueProtoName(proto[i]->szName),"LockMainStatus",0)))
             CallProtoService(proto[i]->szName,PS_SETSTATUS,currentDesiredStatusMode,0);
         NotifyEventHooks(hStatusModeChangeEvent,currentDesiredStatusMode,0);
 
@@ -951,7 +951,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
       };
 
       tmi.hIcon=ic;
-      if (DBGetContactSettingByte(NULL,protoName,"LockMainStatus",0)) tmi.flags|=CMIF_CHECKED;
+      if (DBGetContactSettingByte(NULL,GetUniqueProtoName(protoName),"LockMainStatus",0)) tmi.flags|=CMIF_CHECKED;
       if (tmi.flags&CMIF_CHECKED)
 	  {
           char buf[256];

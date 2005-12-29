@@ -57,7 +57,7 @@ extern int GetContactIcon(WPARAM wParam,LPARAM lParam);
 extern void TrayIconUpdateBase(char *szChangedProto);
 extern void TrayIconSetToBase(char *szPreferredProto);
 extern void TrayIconIconsChanged(void);
-extern void fnCluiProtocolStatusChanged(void);
+extern void fnCluiProtocolStatusChanged(int status,const unsigned char * proto);
 extern HMENU BuildGroupPopupMenu(struct ClcGroup *group);
 struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
 
@@ -219,7 +219,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnScrollTo = ScrollTo;
 	pcli->pfnShowHide = ShowHide;
 
-	pcli->pfnCluiProtocolStatusChanged=CluiProtocolStatusChanged;
+	pcli->pfnCluiProtocolStatusChanged=fnCluiProtocolStatusChanged;
 	pcli->pfnBeginRenameSelection=BeginRenameSelection;
 	pcli->pfnHitTest=HitTest;
 	pcli->pfnCompareContacts=CompareContacts;
@@ -232,6 +232,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnTrayIconUpdateWithImageList=(void (*) ( int iImage, const char *szNewTip, char *szPreferredProto ))TrayIconUpdateWithImageList;
 	pcli->pfnTrayIconSetToBase=TrayIconSetToBase;
 	pcli->pfnTrayIconIconsChanged=TrayIconIconsChanged;
+
+	pcli->pfnGetRowByIndex=GetRowByIndex;
 
 
 	saveAddGroup = pcli->pfnAddGroup; pcli->pfnAddGroup = AddGroup;
@@ -266,7 +268,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
 	TRACE("Load ClistMW\r\n");
-	MessageBoxA(0,"You Running Old Miranda, use >30-10-2004 version!","MultiWindow Clist",0);
+	MessageBoxA(0,"You Running Old Miranda, use >30-10-2004 version!","Modern Clist",0);
 	CListInitialise(link);
 	return 1;
 }

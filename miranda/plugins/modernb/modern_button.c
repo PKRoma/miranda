@@ -460,7 +460,7 @@ int SetToolTip(HWND hwnd, TCHAR * tip)
   if (!hwndToolTips) {
   //  hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, TEXT(""), WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
 
-	hwndToolTips = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL,
+	hwndToolTips = CreateWindowEx(0, TOOLTIPS_CLASS, NULL,
 		WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		CW_USEDEFAULT, CW_USEDEFAULT,
@@ -668,7 +668,7 @@ int ReposButtons(HWND parent, BOOL draw, RECT * r)
       ShowWindowNew(Buttons[i].hwnd,SW_HIDE);
     else 
       ShowWindowNew(Buttons[i].hwnd,SW_SHOW);
-    if (altDraw&&
+    if ((1 || altDraw)&&
         (Buttons[i].bct->Left!=l ||
           Buttons[i].bct->Top!=t  ||
           Buttons[i].bct->Right!=r||

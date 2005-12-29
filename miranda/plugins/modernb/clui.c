@@ -2360,8 +2360,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 				GetWindowRect(hwnd, &rc);
 				CheckFramesPos(&rc);
-				ReposButtons(hwnd,1,&rc);
-				ReposButtons(hwnd,FALSE,NULL);
+				ReposButtons(hwnd,FALSE,&rc);
+				ReposButtons(hwnd,7,NULL);
 				if (LayeredFlag)
 					UpdateFrameImage((WPARAM)hwnd,0);
 				if (!LayeredFlag)

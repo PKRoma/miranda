@@ -16,7 +16,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="../../bin/release/ansi/Plugins"
+			OutputDirectory="../../bin6/release/ansi/Plugins"
 			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -52,6 +52,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
+				OutputFile="../../bin/release/ansi/Plugins/$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				IgnoreAllDefaultLibraries="FALSE"
@@ -191,7 +192,7 @@
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				ShowProgress="0"
-				OutputFile="C:/dev/miranda_src_0401/bin/unicode/plugins/$(ProjectName).dll"
+				OutputFile="C:/dev/miranda_src_0401_тест/bin/unicode/plugins/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -229,7 +230,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release Unicode|Win32"
-			OutputDirectory="../../bin/release/unicode/Plugins"
+			OutputDirectory="../../bin6/release/unicode/Plugins"
 			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -264,6 +265,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
+				OutputFile="../../bin/release/unicode/Plugins/$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				IgnoreAllDefaultLibraries="FALSE"

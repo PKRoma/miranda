@@ -460,14 +460,14 @@ BEGIN
     CONTROL         "Show menu bar",IDC_SHOWMAINMENU,"Button",
                     BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,106,111,8
     CONTROL         "Show title bar",IDC_SHOWCAPTION,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,95,111,8
-    LTEXT           "Title bar text:",IDC_TITLEBAR_STATIC,13,47,111,8,
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,96,111,8
+    LTEXT           "Title bar text:",IDC_TITLEBAR_STATIC,13,49,111,8,
                     WS_DISABLED
-    EDITTEXT        IDC_TITLETEXT,23,57,101,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_TITLETEXT,23,59,101,12,ES_AUTOHSCROLL | WS_DISABLED
     CONTROL         "Tool style main window",IDC_TOOLWND,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,84,111,8
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,86,111,8
     CONTROL         "Minimize to tray",IDC_MIN2TRAY,"Button",BS_AUTOCHECKBOX | 
-                    WS_DISABLED | WS_TABSTOP,13,73,111,8
+                    WS_DISABLED | WS_TABSTOP,13,76,111,8
     CONTROL         "Bring to front if covered",IDC_BRINGTOFRONT,"Button",
                     BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,142,10,166,8,
                     WS_EX_TRANSPARENT
@@ -559,7 +559,7 @@ BEGIN
     CONTROL         "Disable Layer Engine\n(restart required)",
                     IDC_LAYERENGINE,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | 
                     WS_TABSTOP,13,28,111,17
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,12,45,113,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,12,47,113,1
     CONTROL         "Round corners",IDC_ROUNDCORNERS,"Button",
                     BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,138,111,8
 END

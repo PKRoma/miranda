@@ -475,7 +475,7 @@ ExternDrawer SED;
 //wParam=0
 //lParam=(LPARAM)(SKINHOTKEYDESC*)ssd;
 //returns 0 on success, nonzero otherwise
-/*
+
 typedef struct {
 	int cbSize;
 	const char *pszName;		   //name to refer to sound when playing and in db
@@ -486,7 +486,7 @@ typedef struct {
 
 	int DefHotKey; //default hot key for action
 } SKINHOTKEYDESCEX;
-*/
+
 #define MS_SKIN_ADDHOTKEY      "Skin/HotKeys/AddNew"
 #define MS_SKIN_PLAYHOTKEY		"Skin/HotKeys/Run"
 

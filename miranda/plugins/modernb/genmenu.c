@@ -1391,7 +1391,7 @@ TMO_IntMenuItem * GetMenuItemByGlobalID(int globalMenuID)
 	pimoidx=GetMenuObjbyId(ObjId);
 	itempos=GetMenuItembyId(pimoidx,ItemId);
 	if (pimoidx<MenuObjectsCount && itempos<MenuObjects[pimoidx].MenuItemsCount)
-		if(MenuObjects[pimoidx].MenuItems[itempos].globalid==globalMenuID) return (&(MenuObjects[pimoidx].MenuItems[itempos]));
-	else 
-		return NULL;
+		if(MenuObjects[pimoidx].MenuItems[itempos].globalid==globalMenuID) 
+			return (&(MenuObjects[pimoidx].MenuItems[itempos]));
+	return NULL;
 }

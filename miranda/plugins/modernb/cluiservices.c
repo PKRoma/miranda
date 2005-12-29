@@ -26,10 +26,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonprototypes.h"
 
 
-int CluiProtocolStatusChanged(int, const char*)
+int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 {
    InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);
 	return 0;
+}
+
+void fnCluiProtocolStatusChanged(int status,const unsigned char * proto)
+{
+	CluiProtocolStatusChanged(0,0);
 }
 
 int SortList(WPARAM wParam,LPARAM lParam)
@@ -48,6 +53,7 @@ static int MetaSupportCheck(WPARAM wParam,LPARAM lParam)
 int LoadCluiServices(void)
 {
 	CreateServiceFunction(MS_CLUI_METASUPPORT,MetaSupportCheck);
+	CreateServiceFunction(MS_CLUI_PROTOCOLSTATUSCHANGED,CluiProtocolStatusChanged);
 	CreateServiceFunction(MS_CLUI_SORTLIST,SortList);
 	return 0;
 }
