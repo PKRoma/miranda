@@ -303,10 +303,97 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 LBL_Def:
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 
-	case INTM_METACHANGED:
+    case INTM_GROUPCHANGED:
+        {
+            struct ClcContact *contact;
+            BYTE iExtraImage[MAXEXTRACOLUMNS];
+            if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
+                memset(iExtraImage, 0xFF, sizeof(iExtraImage));
+            else
+                CopyMemory(iExtraImage, contact->iExtraImage, sizeof(iExtraImage));
+            pcli->pfnDeleteItemFromTree(hwnd, (HANDLE) wParam);
+            if (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !CLVM_GetContactHiddenStatus((HANDLE)wParam, NULL, dat)) {
+                NMCLISTCONTROL nm;
+				pcli->pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 1, 1);
+                if (FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
+                    CopyMemory(contact->iExtraImage, iExtraImage, sizeof(iExtraImage));
+                nm.hdr.code = CLN_CONTACTMOVED;
+                nm.hdr.hwndFrom = hwnd;
+                nm.hdr.idFrom = GetDlgCtrlID(hwnd);
+                nm.flags = 0;
+                nm.hItem = (HANDLE) wParam;
+                SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) &nm);
+            }
+            dat->bNeedSort = TRUE;
+            PostMessage(hwnd, INTM_SORTCLC, 0, 1);
+            //SortCLC(hwnd, dat, 1);
+            //RecalcScrollBar(hwnd, dat);
+            goto LBL_Def;
+        }
+
+    case INTM_ICONCHANGED:
+        {
+            struct ClcContact *contact = NULL;
+            struct ClcGroup *group = NULL;
+            int recalcScrollBar = 0,shouldShow;
+            WORD status = ID_STATUS_OFFLINE;
+            char *szProto;
+            
+            szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+            if (szProto == NULL)
+                status = ID_STATUS_OFFLINE;
+            else
+                status = DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
+
+            shouldShow = (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !CLVM_GetContactHiddenStatus((HANDLE)wParam, szProto, dat)) && ((g_CluiData.bFilterEffective ? TRUE : !pcli->pfnIsHiddenMode(dat, status)) || CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != lParam);  // XXX CLVM changed - this means an offline msg is flashing, so the contact should be shown
+            if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) {
+                if (shouldShow) {
+                    pcli->pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 0, 0);
+                    recalcScrollBar = 1;                  
+                    FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL);
+                    if (contact) {
+                        contact->iImage = (WORD) lParam;
+                        pcli->pfnNotifyNewContact(hwnd, (HANDLE) wParam);
+                    }
+                }
+            } else {
+    //item in list already
+                DWORD style = GetWindowLong(hwnd, GWL_STYLE);              
+                if (contact->iImage == (WORD) lParam)
+                    break;
+                if (!shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE || group->hideOffline || g_CluiData.bFilterEffective)) {        // CLVM changed
+                    HANDLE hSelItem;
+                    struct ClcContact *selcontact;
+                    struct ClcGroup *selgroup;
+                    if (pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) == -1)
+                        hSelItem = NULL;
+                    else
+                        hSelItem = pcli->pfnContactToHItem(selcontact);
+					pcli->pfnRemoveItemFromGroup(hwnd, group, contact, 0);
+					if (hSelItem)
+						if (pcli->pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
+							dat->selection = pcli->pfnGetRowsPriorTo(&dat->list, selgroup, li.List_IndexOf(( SortedList* )&selgroup->cl, selcontact));
+
+					recalcScrollBar = 1;
+                } else {
+                    contact->iImage = (WORD) lParam;
+                    if (!pcli->pfnIsHiddenMode(dat, status))
+                        contact->flags |= CONTACTF_ONLINE;
+                    else
+                        contact->flags &= ~CONTACTF_ONLINE;
+                }
+            }
+            dat->bNeedSort = TRUE;
+            PostMessage(hwnd, INTM_SORTCLC, 0, recalcScrollBar);
+            PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
+            if (recalcScrollBar)
+                pcli->pfnRecalcScrollBar(hwnd, dat);
+            goto LBL_Def;
+        }
+    case INTM_METACHANGED:
 		{
 			struct ClcContact *contact;
-			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
+			if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 				break;
 			if(contact->bIsMeta && g_CluiData.bMetaAvail && !(g_CluiData.dwFlags & CLUI_USEMETAICONS)) {
 				contact->hSubContact = (HANDLE) CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM) contact->hContact, 0);
