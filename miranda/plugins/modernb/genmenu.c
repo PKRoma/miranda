@@ -734,8 +734,6 @@ static int WhereToPlace(HMENU hMenu,PMO_MenuItem mi,MENUITEMINFOA *mii,ListParam
 {
   int i=0;			
   PMO_IntMenuItem pimi;	
-
-
   mii->fMask=MIIM_SUBMENU|MIIM_DATA;
   for(i=GetMenuItemCount(hMenu)-1;i>=0;i--) {
     GetMenuItemInfoA(hMenu,i,TRUE,mii);
@@ -751,6 +749,46 @@ static int WhereToPlace(HMENU hMenu,PMO_MenuItem mi,MENUITEMINFOA *mii,ListParam
   return i;
 }
 
+typedef struct _MenuItemHandles 
+{
+	HMENU OwnerMenu;
+	int position;
+} MenuItemData;
+
+extern BOOL FindMenuHanleByGlobalID(HMENU hMenu, int globalID, MenuItemData * dat);
+
+BOOL FindMenuHanleByGlobalID(HMENU hMenu, int globalID, MenuItemData * itdat)
+{
+	int i;
+	PMO_IntMenuItem pimi;	
+	MENUITEMINFO mii={0};
+	BOOL inSub=FALSE;
+	char buff[255]={0};
+	if (!itdat) return FALSE;
+	mii.cbSize=sizeof(MENUITEMINFO);
+	mii.fMask=MIIM_SUBMENU|MIIM_DATA;
+	for(i=GetMenuItemCount(hMenu)-1;i>=0;i--) 
+	{
+		GetMenuItemInfoA(hMenu,i,TRUE,&mii);
+		GetMenuStringA(hMenu,i,buff,100,MF_BYPOSITION);
+		TRACE(buff);
+		TRACE("\n");
+		if(mii.fType==MFT_SEPARATOR) continue;
+		if(mii.hSubMenu) 
+			inSub=FindMenuHanleByGlobalID(mii.hSubMenu, globalID,itdat);
+		if (inSub) return inSub;		
+		pimi=MO_GetIntMenuItem(mii.dwItemData);
+		if(pimi!=NULL){	
+			if (pimi->globalid==globalID) 
+			{
+				itdat->OwnerMenu=hMenu;
+				itdat->position=i;
+				return TRUE;
+			}
+		};
+	}
+	return FALSE;
+}
 
 static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,MENUITEMINFOA *lpmii,ListParam *param)
 {
