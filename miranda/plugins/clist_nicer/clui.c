@@ -1429,11 +1429,11 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if(!g_CluiData.fadeinout)
 				SFL_SetState();
 			if (lParam)
-				break;
+				return DefWindowProc(hwnd, msg, wParam, lParam);
 			if (noRecurse)
-				break;
+				return DefWindowProc(hwnd, msg, wParam, lParam);
 			if (!g_CluiData.fadeinout || !IsWinVer2000Plus())
-				break;
+				return DefWindowProc(hwnd, msg, wParam, lParam);
 
             PostMessage(hwnd, CLUIINTM_REMOVEFROMTASKBAR, 0, 0);
 			g_fading_active = 1;
@@ -1453,13 +1453,13 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			for (startTick = GetTickCount(); ;) {
 				thisTick = GetTickCount();
 				if (thisTick >= startTick + 200)
-					break;
+					return DefWindowProc(hwnd, msg, wParam, lParam);
 				MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), (BYTE) (sourceAlpha + (destAlpha - sourceAlpha) * (int) (thisTick - startTick) / 200), LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
 			}
 			MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), (BYTE) (destAlpha), LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
 			g_fading_active = 0;
 			SFL_SetState();
-			break;
+			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
 	case WM_MENUSELECT:
 		{
