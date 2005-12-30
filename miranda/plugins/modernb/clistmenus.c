@@ -496,12 +496,12 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 	smep=(StatusMenuExecParam *)pcpp->MenuItemOwnerData;
 	if (smep && !smep->status && smep->custom)
 	{
-		if (WildCompare(smep->svc,"*\SetXStatus*",255))
+		if (WildCompare(smep->svc,"*\\SetXStatus*",255))
 		{
 			//TODO Set parent icon/text as current
 			//Get parent menu ID
 			TMO_IntMenuItem * timiParent;
-			if (WildCompare(smep->svc,"*\SetXStatus0",255))
+			if (WildCompare(smep->svc,"*\\SetXStatus0",255))
 				reset=TRUE;
 			else 
 				reset=FALSE;
@@ -526,8 +526,8 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 						}
 						timiParent=GetMenuItemByGlobalID(timi->mi.root);					
 						{
-							MENUITEMINFO mi={0};
-							int res=0,a;
+							MENUITEMINFOA mi={0};
+							int res=0;
 							TCHAR d[200];
 							BOOL m;
 							MenuItemData it={0};
@@ -539,7 +539,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 								GetMenuString(it.OwnerMenu,it.position,d,100,MF_BYPOSITION);							
 								mi.fMask=MIIM_STRING|MIIM_BITMAP;
 								mi.fType=MFT_STRING;
-								mi.hbmpChecked=mi.hbmpItem=mi.hbmpUnchecked=mi2.hIcon;
+								mi.hbmpChecked=mi.hbmpItem=mi.hbmpUnchecked=(HBITMAP)mi2.hIcon;
 								mi.dwTypeData=mi2.pszName;
 								mi.hbmpItem=HBMMENU_CALLBACK;
 								res=SetMenuItemInfoA(it.OwnerMenu,it.position,TRUE,&mi);

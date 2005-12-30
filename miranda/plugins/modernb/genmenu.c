@@ -761,11 +761,11 @@ BOOL FindMenuHanleByGlobalID(HMENU hMenu, int globalID, MenuItemData * itdat)
 {
 	int i;
 	PMO_IntMenuItem pimi;	
-	MENUITEMINFO mii={0};
+	MENUITEMINFOA mii={0};
 	BOOL inSub=FALSE;
 	char buff[255]={0};
 	if (!itdat) return FALSE;
-	mii.cbSize=sizeof(MENUITEMINFO);
+	mii.cbSize=sizeof(MENUITEMINFOA);
 	mii.fMask=MIIM_SUBMENU|MIIM_DATA;
 	for(i=GetMenuItemCount(hMenu)-1;i>=0;i--) 
 	{
