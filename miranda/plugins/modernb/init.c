@@ -229,7 +229,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	saveTrayIconProcessMessage=pcli->pfnTrayIconProcessMessage; pcli->pfnTrayIconProcessMessage=TrayIconProcessMessage;
 	pcli->pfnTrayIconUpdateBase=(void (*)( const char *szChangedProto ))TrayIconUpdateBase;
-	pcli->pfnTrayIconUpdateWithImageList=(void (*) ( int iImage, const char *szNewTip, char *szPreferredProto ))TrayIconUpdateWithImageList;
+	pcli->pfnTrayIconUpdateWithImageList=TrayIconUpdateWithImageList;
 	pcli->pfnTrayIconSetToBase=TrayIconSetToBase;
 	pcli->pfnTrayIconIconsChanged=TrayIconIconsChanged;
 

@@ -59,7 +59,7 @@ typedef struct
 	UINT uFlags;
 	UINT uCallbackMessage;
 	HICON hIcon;
-	CHAR szTip[128];
+	TCHAR szTip[128];
 	DWORD dwState;
 	DWORD dwStateMask;
 	CHAR szInfo[256];
@@ -88,13 +88,13 @@ typedef HRESULT(CALLBACK * DLLGETVERSIONPROC) (DLLVERSIONINFO *);
 
 static DLLVERSIONINFO dviShell;
 
-static char *TrayIconMakeTooltip(const char *szPrefix, const char *szProto)
+static TCHAR *TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 {
-	static char szTip[128];
+	static TCHAR szTip[128];
 	char szProtoName[32];
-	char *szStatus, *szSeparator;
+	TCHAR *szStatus, *szSeparator, *sztProto;
 
-	szSeparator = (IsWinVerMEPlus())? szSeparator = "\n" : " | ";
+	szSeparator = (IsWinVerMEPlus())? szSeparator = _T("\n") : _T(" | ");
 
 	if (szProto == NULL) {
 		PROTOCOLDESCRIPTOR **protos;
@@ -108,7 +108,7 @@ static char *TrayIconMakeTooltip(const char *szPrefix, const char *szProto)
 				if (protos[i]->type == PROTOTYPE_PROTOCOL)
 					return TrayIconMakeTooltip(szPrefix, protos[i]->szName);
 		if (szPrefix && szPrefix[0]) {
-			lstrcpynA(szTip, szPrefix, SIZEOF(szTip));
+			lstrcpyn(szTip, szPrefix, SIZEOF(szTip));
 			if (!DBGetContactSettingByte(NULL, "CList", "AlwaysStatus", SETTING_ALWAYSSTATUS_DEFAULT))
 				return szTip;
 		}
@@ -119,32 +119,48 @@ static char *TrayIconMakeTooltip(const char *szPrefix, const char *szProto)
 			if (protos[i]->type != PROTOTYPE_PROTOCOL)
 				continue;
 			CallProtoService(protos[i]->szName, PS_GETNAME, SIZEOF(szProtoName), (LPARAM) szProtoName);
-			szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, CallProtoService(protos[i]->szName, PS_GETSTATUS, 0, 0), 0);
+			szStatus = cli.pfnGetStatusModeDescription( CallProtoService(protos[i]->szName, PS_GETSTATUS, 0, 0), 0);
 			if (szTip[0])
-				strncat(szTip, szSeparator, SIZEOF(szTip) - 1 - strlen(szTip));
-			strncat(szTip, szProtoName, SIZEOF(szTip) - 1 - strlen(szTip));
-			strncat(szTip, " ", SIZEOF(szTip) - 1 - strlen(szTip));
-			strncat(szTip, szStatus, SIZEOF(szTip) - 1 - strlen(szTip));
+				_tcsncat(szTip, szSeparator, SIZEOF(szTip) - 1 - _tcslen(szTip));
+			#if defined( _UNICODE )
+			{	TCHAR* p = a2u( szProtoName );
+				_tcsncat(szTip, p, SIZEOF(szTip) - 1 - _tcslen(szTip));
+				free( p );
+			}
+			#else
+				_tcsncat(szTip, szProtoName, SIZEOF(szTip) - 1 - _tcslen(szTip));
+			#endif
+			_tcsncat(szTip, _T(" "), SIZEOF(szTip) - 1 - _tcslen(szTip));
+			_tcsncat(szTip, szStatus, SIZEOF(szTip) - 1 - _tcslen(szTip));
 		}
 	}
 	else {
 		CallProtoService(szProto, PS_GETNAME, SIZEOF(szProtoName), (LPARAM) szProtoName);
-		szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, CallProtoService(szProto, PS_GETSTATUS, 0, 0), 0);
+		#if defined( _UNICODE )
+			sztProto = a2u( szProtoName );
+		#else
+			sztProto = szProtoName;
+		#endif
+
+		szStatus = cli.pfnGetStatusModeDescription(CallProtoService(szProto, PS_GETSTATUS, 0, 0), 0);
 		if (szPrefix && szPrefix[0]) {
 			if (DBGetContactSettingByte(NULL, "CList", "AlwaysStatus", SETTING_ALWAYSSTATUS_DEFAULT))
-				mir_snprintf(szTip, SIZEOF(szTip), "%s%s%s %s", szPrefix, szSeparator, szProtoName, szStatus);
+				mir_sntprintf(szTip, SIZEOF(szTip), _T("%s%s%s %s"), szPrefix, szSeparator, sztProto, szStatus);
 			else
-				lstrcpynA(szTip, szPrefix, SIZEOF(szTip));
+				lstrcpyn(szTip, szPrefix, SIZEOF(szTip));
 		}
-		else
-			mir_snprintf(szTip, SIZEOF(szTip), "%s %s", szProtoName, szStatus);
+		else mir_sntprintf(szTip, SIZEOF(szTip), _T("%s %s"), sztProto, szStatus);
+
+		#if defined( _UNICODE )
+			free(sztProto);
+		#endif
 	}
 	return szTip;
 }
 
 static int TrayIconAdd(HWND hwnd, const char *szProto, const char *szIconProto, int status)
 {
-	NOTIFYICONDATAA nid = { 0 };
+	NOTIFYICONDATA nid = { 0 };
 	NOTIFYICONDATA_NEW nidn = { 0 };
 	int i;
 
@@ -169,12 +185,12 @@ static int TrayIconAdd(HWND hwnd, const char *szProto, const char *szIconProto, 
 		nidn.uFlags = nid.uFlags | NIF_INFO;
 		nidn.uCallbackMessage = nid.uCallbackMessage;
 		nidn.hIcon = nid.hIcon;
-		lstrcpynA(nidn.szTip, TrayIconMakeTooltip(NULL, trayIcon[i].szProto), sizeof(nidn.szTip));
-		Shell_NotifyIconA(NIM_ADD, (void *) &nidn);
+		lstrcpyn(nidn.szTip, TrayIconMakeTooltip(NULL, trayIcon[i].szProto), SIZEOF(nidn.szTip));
+		Shell_NotifyIcon(NIM_ADD, (void *) &nidn);
 	}
 	else {
-		lstrcpynA(nid.szTip, TrayIconMakeTooltip(NULL, trayIcon[i].szProto), sizeof(nid.szTip));
-		Shell_NotifyIconA(NIM_ADD, &nid);
+		lstrcpyn(nid.szTip, TrayIconMakeTooltip(NULL, trayIcon[i].szProto), SIZEOF(nid.szTip));
+		Shell_NotifyIcon(NIM_ADD, &nid);
 	}
 	trayIcon[i].isBase = 1;
 	return i;
@@ -286,9 +302,9 @@ static void TrayIconTaskbarCreated(HWND hwnd)
 	TrayIconInit(hwnd);
 }
 
-static int TrayIconUpdate(HICON hNewIcon, const char *szNewTip, const char *szPreferredProto, int isBase)
+static int TrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szPreferredProto, int isBase)
 {
-	NOTIFYICONDATAA nid = { 0 };
+	NOTIFYICONDATA nid = { 0 };
 	NOTIFYICONDATA_NEW nidn = { 0 };
 	int i;
 
@@ -310,12 +326,12 @@ static int TrayIconUpdate(HICON hNewIcon, const char *szNewTip, const char *szPr
 		nid.uID = trayIcon[i].id;
 		if (dviShell.dwMajorVersion >= 5) {
 			nidn.uID = nid.uID;
-			lstrcpynA(nidn.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), sizeof(nidn.szTip));
-			Shell_NotifyIconA(NIM_MODIFY, (void *) &nidn);
+			lstrcpyn(nidn.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), SIZEOF(nidn.szTip));
+			Shell_NotifyIcon(NIM_MODIFY, (void *) &nidn);
 		}
 		else {
-			lstrcpynA(nid.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), sizeof(nid.szTip));
-			Shell_NotifyIconA(NIM_MODIFY, &nid);
+			lstrcpyn(nid.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), SIZEOF(nid.szTip));
+			Shell_NotifyIcon(NIM_MODIFY, &nid);
 		}
 		trayIcon[i].isBase = isBase;
 		return i;
@@ -327,12 +343,12 @@ static int TrayIconUpdate(HICON hNewIcon, const char *szNewTip, const char *szPr
 		nid.uID = trayIcon[i].id;
 		if (dviShell.dwMajorVersion >= 5) {
 			nidn.uID = nid.uID;
-			lstrcpynA(nidn.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), sizeof(nidn.szTip));
-			Shell_NotifyIconA(NIM_MODIFY, (void *) &nidn);
+			lstrcpyn(nidn.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), SIZEOF(nidn.szTip));
+			Shell_NotifyIcon(NIM_MODIFY, (void *) &nidn);
 		}
 		else {
-			lstrcpynA(nid.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), sizeof(nid.szTip));
-			Shell_NotifyIconA(NIM_MODIFY, &nid);
+			lstrcpyn(nid.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), SIZEOF(nid.szTip));
+			Shell_NotifyIcon(NIM_MODIFY, &nid);
 		}
 		trayIcon[i].isBase = isBase;
 	}
@@ -364,7 +380,7 @@ static int TrayIconSetBaseInfo(HICON hIcon, char *szPreferredProto)
 	return -1;
 }
 
-void fnTrayIconUpdateWithImageList(int iImage, const char *szNewTip, char *szPreferredProto)
+void fnTrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPreferredProto)
 {
 	HICON hIcon = ImageList_GetIcon(hCListImages, iImage, ILD_NORMAL);
 	TrayIconUpdate(hIcon, szNewTip, szPreferredProto, 0);

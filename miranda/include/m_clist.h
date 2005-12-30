@@ -219,13 +219,23 @@ typedef struct {
 	HANDLE hDbEvent;	 //caller defined but should be unique for hContact
 	LPARAM lParam;		 //caller defined
 	char *pszService;	 //name of the service to call on activation
-	char *pszTooltip;    //short description of the event to display as a
-						 //tooltip on the system tray
+	union {
+		char  *pszTooltip;    //short description of the event to display as a
+		TCHAR *ptszTooltip;    //tooltip on the system tray
+	};
 } CLISTEVENT;
-#define CLEF_URGENT    1    //flashes the icon even if the user is occupied,
+#define CLEF_URGENT    1   //flashes the icon even if the user is occupied,
 							//and puts the event at the top of the queue
 #define CLEF_ONLYAFEW  2	//the icon will not flash for ever, only a few
 							//times. This is for eg online alert
+#define CLEF_UNICODE   4   //set pszTooltip as unicode
+
+#if defined( _UNICODE )
+	#define CLEF_TCHAR       CLEF_UNICODE      //will use TCHAR* instead of char*
+#else
+	#define CLEF_TCHAR       0      //will return char*, as usual
+#endif
+
 #define MS_CLIST_ADDEVENT     "CList/AddEvent"
 
 //removes an event from the contact list's queue

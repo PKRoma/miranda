@@ -253,7 +253,7 @@ typedef struct
 	void   ( *pfnInvalidateDisplayNameCacheEntry )( HANDLE hContact );
 
 	/* clisttray.c */
-	void ( *pfnTrayIconUpdateWithImageList )( int iImage, const char *szNewTip, char *szPreferredProto );
+	void ( *pfnTrayIconUpdateWithImageList )( int iImage, const TCHAR *szNewTip, char *szPreferredProto );
 	void ( *pfnTrayIconUpdateBase )( const char *szChangedProto );
 	void ( *pfnTrayIconSetToBase )( char *szPreferredProto );
 	void ( *pfnTrayIconIconsChanged )( void );

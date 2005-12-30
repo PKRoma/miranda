@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -72,8 +72,7 @@ static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD
 			szProto = NULL;
 		else
 			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) event[0].cle.hContact, 0);
-		cli.pfnTrayIconUpdateWithImageList((iconsOn
-			|| disableTrayFlash) ? event[0].imlIconIndex : 0, event[0].cle.pszTooltip, szProto);
+		cli.pfnTrayIconUpdateWithImageList((iconsOn || disableTrayFlash) ? event[0].imlIconIndex : 0, event[0].cle.ptszTooltip, szProto);
 	}
 	for (i = 0; i < eventCount; i++) {
 		for (j = 0; j < i; j++)
@@ -85,8 +84,8 @@ static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD
 		if (event[i].cle.flags & CLEF_ONLYAFEW) {
 			if (0 == --event[i].flashesDone)
 				RemoveEvent((WPARAM) event[i].cle.hContact, (LPARAM) event[i].cle.hDbEvent);
-		}
-	}
+	}	}
+
 	iconsOn = !iconsOn;
 }
 
@@ -110,7 +109,14 @@ static int AddEvent(WPARAM wParam, LPARAM lParam)
 	event[i].imlIconIndex = GetImlIconIndex(event[i].cle.hIcon);
 	event[i].flashesDone = 12;
 	event[i].cle.pszService = strdup(event[i].cle.pszService);
-	event[i].cle.pszTooltip = strdup(event[i].cle.pszTooltip);
+	#if defined( _UNICODE )
+		if (event[i].cle.flags & CLEF_UNICODE)
+			event[i].cle.ptszTooltip = _tcsdup((TCHAR*)event[i].cle.ptszTooltip);
+		else
+			event[i].cle.ptszTooltip = a2u((char*)event[i].cle.pszTooltip); //if no flag defined it handled as unicode
+	#else
+		event[i].cle.ptszTooltip = _tcsdup(event[i].cle.ptszTooltip);//TODO convert from utf to mb
+	#endif
 	eventCount++;
 	if (eventCount == 1) {
 		char *szProto;
@@ -120,7 +126,7 @@ static int AddEvent(WPARAM wParam, LPARAM lParam)
 			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) event[0].cle.hContact, 0);
 		iconsOn = 1;
 		flashTimerId = SetTimer(NULL, 0, DBGetContactSettingWord(NULL, "CList", "IconFlashTime", 550), IconFlashTimer);
-		cli.pfnTrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : 0, event[0].cle.pszTooltip, szProto);
+		cli.pfnTrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : 0, event[0].cle.ptszTooltip, szProto);
 	}
 	cli.pfnChangeContactIcon(cle->hContact, event[eventCount - 1].imlIconIndex, 1);
 	cli.pfnSortContacts();
@@ -180,7 +186,7 @@ static int RemoveEvent(WPARAM wParam, LPARAM lParam)
 			szProto = NULL;
 		else
 			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) event[0].cle.hContact, 0);
-		cli.pfnTrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : 0, event[0].cle.pszTooltip, szProto);
+		cli.pfnTrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : 0, event[0].cle.ptszTooltip, szProto);
 	}
 
 	return 0;

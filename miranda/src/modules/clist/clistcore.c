@@ -101,7 +101,7 @@ int   fnEventsProcessContactDoubleClick( HANDLE hContact );
 int   fnEventsProcessTrayDoubleClick( void );
 
 /* clistmod.c */
-int    fnIconFromStatusMode(const char *szProto, int status);
+int    fnIconFromStatusMode(const char *szProto, int status, HANDLE hContact);
 int    fnShowHide( WPARAM wParam, LPARAM lParam );
 TCHAR* fnGetStatusModeDescription( int wParam, int lParam);
 
@@ -117,7 +117,7 @@ void fnFreeCacheItem( ClcCacheEntryBase* p );
 
 /* clisttray.c */
 int  fnCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn);
-void fnTrayIconUpdateWithImageList ( int iImage, const char *szNewTip, char *szPreferredProto );
+void fnTrayIconUpdateWithImageList ( int iImage, const TCHAR *szNewTip, char *szPreferredProto );
 void fnTrayIconUpdateBase ( const char *szChangedProto );
 void fnTrayIconSetToBase ( char *szPreferredProto );
 void fnTrayIconIconsChanged ( void );
