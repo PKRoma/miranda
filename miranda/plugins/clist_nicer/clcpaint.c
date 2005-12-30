@@ -283,6 +283,7 @@ static BLENDFUNCTION bf = {0, 0, AC_SRC_OVER, 0};
 static BOOL avatar_done = FALSE;
 static HDC g_HDC;
 static BOOL g_RTL;
+DWORD ( WINAPI *pfnSetLayout )(HDC, DWORD) = NULL;
 
 static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contact, int y, struct ClcData *dat, WORD cstatus, int rowHeight)
 {
@@ -483,7 +484,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 		cEntry = g_ExtraCache;
 
 	if(type == CLCIT_CONTACT && (cEntry->dwCFlags & ECF_RTLNICK || mirror_always)) {
-		if(mirror_rtl || mirror_always) {
+		if(pfnSetLayout != NULL && (mirror_rtl || mirror_always)) {
 			g_RTL = TRUE;
 			bg_indent_r = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 		}
@@ -494,7 +495,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 		else
 			bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
-	else if((type == CLCIT_GROUP && contact->isRtl) || mirror_always) {
+	else if(pfnSetLayout != NULL && ((type == CLCIT_GROUP && contact->isRtl) || mirror_always)) {
 		g_RTL = TRUE;
 		bg_indent_r = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
@@ -812,7 +813,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 
 
 	if(g_RTL)
-		SetLayout(hdcMem, LAYOUT_RTL | LAYOUT_BITMAPORIENTATIONPRESERVED);
+		pfnSetLayout(hdcMem, LAYOUT_RTL | LAYOUT_BITMAPORIENTATIONPRESERVED);
 	//bgskipped:
 
 	rcContent.top = y;
@@ -1298,7 +1299,7 @@ nodisplay:
 		ImageList_DrawEx(dat->himlExtraColumns, contact->iExtraImage[iImage], hdcMem, clRect->right - rightOffset - dat->extraColumnSpacing * (dat->extraColumnsCount - iImage), y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
 	}
 	if(g_RTL)
-		SetLayout(hdcMem, 0);
+		pfnSetLayout(hdcMem, 0);
 }
 
 void SkinDrawBg(HWND hwnd, HDC hdc)

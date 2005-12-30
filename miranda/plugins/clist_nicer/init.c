@@ -43,6 +43,7 @@ extern pfnDrawAlpha pDrawAlpha;
 extern DWORD g_gdiplusToken;
 extern HANDLE hSoundHook, hIcoLibChanged;
 extern HIMAGELIST himlExtraImages;
+extern DWORD ( WINAPI *pfnSetLayout )(HDC, DWORD);
 
 struct LIST_INTERFACE li;
 struct MM_INTERFACE memoryManagerInterface;
@@ -195,6 +196,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 #ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+
+	pfnSetLayout = GetProcAddress( GetModuleHandleA( "GDI32.DLL" ), "SetLayout" );
 
 	LoadExtBkSettingsFromDB();
 	InitGdiPlus();
