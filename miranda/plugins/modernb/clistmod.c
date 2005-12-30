@@ -77,7 +77,7 @@ static HANDLE hSettingChanged;
 int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 {
 	if (DBGetContactSettingByte(NULL,"CLC","Meta",0)==1)
-		return pcli->pfnIconFromStatusMode(szProto,status);
+		return pcli->pfnIconFromStatusMode(szProto,status,hContact);
 	if (szProto!=NULL)
 		if (MyStrCmp(szProto,"MetaContacts")==0)      {
 			hContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
@@ -86,9 +86,10 @@ int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 				status=DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE);
 		}	}
 
-	return pcli->pfnIconFromStatusMode(szProto,status);
+	return pcli->pfnIconFromStatusMode(szProto,status,hContact);
 }
 /////////// End by FYR ////////
+
 
 int GetContactIconC(pdisplayNameCacheEntry cacheEntry)
 {

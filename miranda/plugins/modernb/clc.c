@@ -557,7 +557,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 								int MetaStatus;
 								szMetaProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);
 								MetaStatus=DBGetContactSettingWord(hContact,szMetaProto,"Status",ID_STATUS_OFFLINE);
-								iMetaStatusIcon=pcli->pfnIconFromStatusMode(szMetaProto,MetaStatus);
+								iMetaStatusIcon=pcli->pfnIconFromStatusMode(szMetaProto,MetaStatus,hContact);
 								if (iIcon==iMetaStatusIcon) //going to set meta icon but need to set most online icon
 								{
 									hMostMeta=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
@@ -568,7 +568,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 										szRealProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hMostMeta,0);
 										RealStatus=DBGetContactSettingWord(hMostMeta,szRealProto,"Status",ID_STATUS_OFFLINE);
-										contact->iImage=pcli->pfnIconFromStatusMode(szRealProto,RealStatus);
+										contact->iImage=pcli->pfnIconFromStatusMode(szRealProto,RealStatus,hMostMeta);
 									}
 								}
 							}
