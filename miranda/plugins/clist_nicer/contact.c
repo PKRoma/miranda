@@ -137,7 +137,6 @@ int CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2)
     //statusb = DBGetContactSettingWord((HANDLE) b, SAFESTRING(szProto2), "Status", ID_STATUS_OFFLINE);
     statusa = c1->wStatus;
     statusb = c2->wStatus;
-
     // make sure, sticky contacts are always at the beginning of the group/list
 
     if ((c1->flags & CONTACTF_STICKY) != (c2->flags & CONTACTF_STICKY))

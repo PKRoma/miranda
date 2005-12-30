@@ -1487,7 +1487,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
             return 0;
 		else if(wParam == SC_MINIMIZE) {
 			if(DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) == SETTING_WINDOWSTYLE_DEFAULT) {
-				CallService(MS_CLIST_SHOWHIDE, 0, 0);
+				//CallService(MS_CLIST_SHOWHIDE, 0, 0);
+				ShowHide(0, 0);
 				return 0;
 			}
 		}
@@ -1577,7 +1578,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				break;
 			case IDC_TBMINIMIZE:
 			case ID_TRAY_HIDE:
-				CallService(MS_CLIST_SHOWHIDE, 0, 0);
+				//CallService(MS_CLIST_SHOWHIDE, 0, 0);
+				ShowHide(0, 0);
 				break;
 			case POPUP_NEWGROUP:
 				SendMessage(pcli->hwndContactTree, CLM_SETHIDEEMPTYGROUPS, 0, 0);
@@ -1608,7 +1610,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				}
 			case POPUP_HIDEMIRANDA:
 				{
-					CallService(MS_CLIST_SHOWHIDE, 0, 0);
+					//CallService(MS_CLIST_SHOWHIDE, 0, 0);
+					ShowHide(0, 0);
 					break;
 				}
 			case POPUP_VISIBILITY:
@@ -2066,7 +2069,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_CLOSE:
         if (DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) != SETTING_WINDOWSTYLE_DEFAULT ||
             DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT))
-			CallService(MS_CLIST_SHOWHIDE, 0, 0);
+			//CallService(MS_CLIST_SHOWHIDE, 0, 0);
+			ShowHide(0, 0);
         else
             SendMessage(hwnd, WM_COMMAND, ID_ICQ_EXIT, 0);
         return FALSE;
