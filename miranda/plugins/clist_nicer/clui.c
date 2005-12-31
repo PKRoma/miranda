@@ -321,7 +321,7 @@ int CreateCLC(HWND parent)
 	}
 	SetButtonToSkinned();
 
-	Sleep(0);
+	//Sleep(0);
 	{
 		// create contact list frame
 		DWORD flags;
@@ -397,30 +397,6 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 	if(ServiceExists(MS_FONT_REGISTER)) {
 		FS_RegisterFonts();
 		HookEvent(ME_FONT_RELOAD, FS_FontsChanged);
-	}
-	{
-		int state;
-
-		ApplyCLUIBorderStyle(pcli->hwndContactList);
-
-		SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-		SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOACTIVATE);
-		RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
-
-		state = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
-		hMenuMain = GetMenu(pcli->hwndContactList);
-		if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
-			SetMenu(pcli->hwndContactList, NULL);
-		if (state == SETTING_STATE_NORMAL)
-			ShowWindow(pcli->hwndContactList, SW_SHOW);
-		else if (state == SETTING_STATE_MINIMIZED)
-			ShowWindow(pcli->hwndContactList, SW_SHOWMINIMIZED);
-		else if (state == SETTING_STATE_HIDDEN)
-			ShowWindow(pcli->hwndContactList, SW_HIDE);
-		SetWindowPos(pcli->hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-		SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-		PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
-		g_CluiData.forceResize = TRUE;
 	}
 	return 0;
 }
@@ -976,6 +952,30 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			HMENU hMenuButtonList = GetSubMenu(g_CluiData.hMenuButtons, 0);
 			DeleteMenu(hMenuButtonList, 0, MF_BYPOSITION);
 
+			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
+			{
+				int state;
+
+				ApplyCLUIBorderStyle(pcli->hwndContactList);
+
+				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOACTIVATE);
+				RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
+
+				state = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
+				hMenuMain = GetMenu(pcli->hwndContactList);
+				if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
+					SetMenu(pcli->hwndContactList, NULL);
+				if (state == SETTING_STATE_NORMAL)
+					ShowWindow(pcli->hwndContactList, SW_SHOW);
+				else if (state == SETTING_STATE_MINIMIZED)
+					ShowWindow(pcli->hwndContactList, SW_SHOWMINIMIZED);
+				else if (state == SETTING_STATE_HIDDEN)
+					ShowWindow(pcli->hwndContactList, SW_HIDE);
+				SetWindowPos(pcli->hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+				g_CluiData.forceResize = TRUE;
+			}
+
 			for (i = 0; ; i++) {
 				if (top_buttons[i].szTooltip == NULL)
 					break;
@@ -1013,6 +1013,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			if (g_CluiData.soundsOff)
 				hSoundHook = HookEvent(ME_SKIN_PLAYINGSOUND, ClcSoundHook);
+			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			DrawMenuBar(hwnd);
 			SetButtonStyle();
 			if(g_CluiData.bSkinnedToolbar)
@@ -1023,6 +1024,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			CreateCLC(hwnd);
 			g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
 			PostMessage(hwnd, WM_SIZE, 0, 0);
+			PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
 			return 0;
 		}
 	case WM_ERASEBKGND:
@@ -1285,7 +1287,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		else if(wParam == SIZE_RESTORED) {
 			if(DBGetContactSettingByte(NULL, "CList", "State", 0) == SETTING_STATE_MINIMIZED || DBGetContactSettingByte(NULL, "CList", "State", 0) == SETTING_STATE_HIDDEN) {
 				ShowWindow(hwnd, SW_RESTORE);
-				_DebugPopup(0, "restored");
 				DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
 				PostMessage(hwnd, WM_SIZE, 0, 0);
 				PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
@@ -2246,7 +2247,6 @@ void LoadCLUIModule(void)
 	//laster=GetLastError();
 	PreCreateCLC(pcli->hwndContactList);
 	LoadCLUIFramesModule();
-
 	CreateServiceFunction("CLN/About",CLN_ShowAbout);
 }
 

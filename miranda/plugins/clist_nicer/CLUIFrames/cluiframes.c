@@ -3651,8 +3651,6 @@ static LRESULT CALLBACK FrameHookProc(int code, WPARAM wParam, LPARAM lParam)
                 ps.fErase = FALSE;
                 EndPaint(msg->hwnd, &ps);
                 GetWindowTextA(msg->hwnd, buf, 20);
-                //if(msg->message == WM_ERASEBKGND && !strcmp(buf, "evt"))
-                    _DebugPopup(0, "wm_erase for evt, %d", code);
                 GetClientRect(msg->hwnd, &rc);
                 FillRect((HDC)msg->wParam, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
                 break;

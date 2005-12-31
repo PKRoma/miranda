@@ -402,6 +402,7 @@ void HideShowNotifyFrame();
 int GetProtocolVisibility(char * ProtoName);
 DWORD GetCLUIWindowStyle(BYTE style);
 void ApplyCLUIBorderStyle(HWND hwnd);
+int ShowHide(WPARAM wParam, LPARAM lParam);
 
 void FreeProtocolData( void );
 

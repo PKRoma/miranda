@@ -338,7 +338,6 @@ static BOOL CALLBACK DlgProcClcExtBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
                         char str[MAX_PATH] = "*.cln", final_path[MAX_PATH];
                         HANDLE hFile;
                         
-                        _DebugPopup(0, "select");
                         ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
                         ofn.hwndOwner = hwndDlg;
                         ofn.hInstance = NULL;
