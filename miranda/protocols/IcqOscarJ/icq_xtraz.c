@@ -180,6 +180,7 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char*
 
     ICQBroadcastAck(hContact, ICQACKTYPE_XTRAZNOTIFY_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, (LPARAM)szRes);
 
+NextVal:
     szNode = strstr(szRes, "<val srv_id='");
     if (szNode) szEnd = strstr(szNode, ">"); else szEnd = NULL;
 
@@ -244,7 +245,17 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char*
           NetLog_Server("Error: Missing sender information");
       }
       else
+      {
+        char *szSrvEnd = strstr(szNode, "</srv>");
+
+        if (szSrvEnd && strstr(szSrvEnd, "<val srv_id='"))
+        { // check all values !
+          szRes = szSrvEnd + 6; // after first value
+          goto NextVal;
+        }
+        // no next val, we were unable to handle packet, write error
         NetLog_Server("Error: Unknown serverId \"%s\" in Xtraz response", szNode);
+      }
     }
     else
       NetLog_Server("Error: Missing serverId in Xtraz response");
