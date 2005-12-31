@@ -165,13 +165,13 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
   PROTO_AVATAR_INFORMATION* pai = (PROTO_AVATAR_INFORMATION*)lParam;
   DWORD dwUIN;
   uid_str szUID;
-  DBVARIANT dbv, dbvSaved;
+  DBVARIANT dbv;
   int dwPaFormat;
 
   if (!gbAvatarsEnabled) return GAIR_NOAVATAR;
 
-  if (ICQGetContactSetting(pai->hContact, "AvatarHash", &dbv))
-    return GAIR_NOAVATAR; // we did not found avatar hash - no avatar available
+  if (ICQGetContactSetting(pai->hContact, "AvatarHash", &dbv) || dbv.cpbVal != 0x14)
+    return GAIR_NOAVATAR; // we did not found avatar hash or hash invalid - no avatar available
 
   if (ICQGetContactSettingUID(pai->hContact, &dwUIN, &szUID))
   {
@@ -179,6 +179,7 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
     return GAIR_NOAVATAR; // we do not support avatars for invalid contacts
   }
+
   dwPaFormat = ICQGetContactSettingByte(pai->hContact, "AvatarType", PA_FORMAT_UNKNOWN);
   if (dwPaFormat != PA_FORMAT_UNKNOWN)
   { // we know the format, test file
@@ -186,7 +187,7 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
     pai->format = dwPaFormat; 
 
-    if (!ICQGetContactSetting(pai->hContact, "AvatarSaved", &dbvSaved) && !memcmp(dbv.pbVal, dbvSaved.pbVal, 0x14))
+    if (!IsAvatarSaved(pai->hContact, dbv.pbVal))
     { // hashes are the same
       if (access(pai->filename, 0) == 0)
       {
@@ -194,19 +195,20 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
         return GAIR_SUCCESS; // we have found the avatar file, whoala
       }
-      ICQFreeVariant(&dbvSaved);
     }
   }
 
-  if ((wParam & GAIF_FORCE) != 0 && pai->hContact != 0)
-  { // request avatar data
-    GetAvatarFileName(dwUIN, szUID, pai->filename, MAX_PATH);
-    GetAvatarData(pai->hContact, dwUIN, szUID, dbv.pbVal, dbv.cpbVal, pai->filename);
-    ICQFreeVariant(&dbv);
+  if (IsAvatarSaved(pai->hContact, dbv.pbVal))
+  { // we didn't received the avatar before - this ensures we will not request avatar again and again
+    if ((wParam & GAIF_FORCE) != 0 && pai->hContact != 0)
+    { // request avatar data
+      GetAvatarFileName(dwUIN, szUID, pai->filename, MAX_PATH);
+      GetAvatarData(pai->hContact, dwUIN, szUID, dbv.pbVal, dbv.cpbVal, pai->filename);
+      ICQFreeVariant(&dbv);
 
-    return GAIR_WAITFOR;
+      return GAIR_WAITFOR;
+    }
   }
-
   ICQFreeVariant(&dbv);
 
   return GAIR_NOAVATAR;

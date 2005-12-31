@@ -235,7 +235,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
   case WM_INITDIALOG:
     ICQTranslateDialog(hwndDlg);
     {
-      DBVARIANT dbvHash, dbvSaved;
+      DBVARIANT dbvHash;
       AvtDlgProcData* pData = (AvtDlgProcData*)malloc(sizeof(AvtDlgProcData));
       DWORD dwUIN;
       uid_str szUID;
@@ -281,16 +281,10 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 szAvatar[0] = '\0';
             }
 
-            if (pData->hContact && !ICQGetContactSetting((HANDLE)lParam, "AvatarSaved", &dbvSaved))
-            { // not for us
-              if (!memcmp(dbvHash.pbVal, dbvSaved.pbVal, 0x14))
-              { // if the file exists, we know we have the current avatar
-                if (!access(szAvatar, 0)) bValid = 1;
-              }
-              ICQFreeVariant(&dbvSaved);
-            }
-            else // we do not have saved picture hash, do not rely on it
+            if (!pData->hContact || !IsAvatarSaved((HANDLE)lParam, dbvHash.pbVal))
+            { // if the file exists, we know we have the current avatar
               if (!access(szAvatar, 0)) bValid = 1;
+            }
           }
         }
         else

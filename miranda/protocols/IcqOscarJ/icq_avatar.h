@@ -47,6 +47,8 @@ void AddAvatarExt(int dwFormat, char* pszDest);
 
 int DetectAvatarFormat(char* szFile);
 
+int IsAvatarSaved(HANDLE hContact, char* pHash);
+
 int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigned int hashlen, char* file);
 int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen);
 
