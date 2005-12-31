@@ -175,19 +175,49 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
   }
 
   case ICQ_LISTS_CLI_MODIFYSTART:
-    NetLog_Server("Server sent SNAC(x13,x11) - Server is modifying contact list");
+    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x11, "Server is modifying contact list");
     break;
 
   case ICQ_LISTS_CLI_MODIFYEND:
-    NetLog_Server("Server sent SNAC(x13,x12) - End of server modification");
+    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x12, "End of server modification");
     break;
 
   case ICQ_LISTS_UPDATEGROUP:
-    NetLog_Server("Server sent SNAC(x13,x09) - Server updated our contact on list");
+    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x09, "Server updated our contact on list");
     break;
 
   case ICQ_LISTS_REMOVEFROMLIST:
-    NetLog_Server("Server sent SNAC(x13,x0A) - User removed from our contact list");
+    if (wBufferLength >= 10)
+    {
+      WORD wNameLen;
+      WORD wGroupId, wItemId, wItemType;
+      uid_str szUID;
+
+      unpackWord(&pBuffer, &wNameLen);
+      if (wBufferLength >= 10 + wNameLen)
+      {
+        unpackString(&pBuffer, szUID, wNameLen);
+        szUID[wNameLen] = '\0';
+        wBufferLength -= 10 + wNameLen;
+        unpackWord(&pBuffer, &wGroupId);
+        unpackWord(&pBuffer, &wItemId);
+        unpackWord(&pBuffer, &wItemType);
+        if (IsStringUIN(szUID) && wItemType == SSI_ITEM_BUDDY)
+        { // a contact was removed from our list
+          DWORD dwUIN = atoi(szUID);
+          HANDLE hContact = HContactFromUIN(dwUIN, NULL);
+
+          if (hContact)
+          {
+            ICQDeleteContactSetting(hContact, "ServerId");
+            ICQDeleteContactSetting(hContact, "SrvGroupId");
+            icq_sendNewContact(dwUIN, NULL); // add to CS to see him
+            icq_LogMessage(LOG_WARNING, ICQTranslate("User was removed from server list."));
+          }
+        }
+      }
+    }
+    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x0A, "User removed from our contact list");
     break;
 
   case ICQ_LISTS_ADDTOLIST:
@@ -225,7 +255,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
         }
       }
     }
-    NetLog_Server("Server sent SNAC(x13,x08) - Server added something to our list");
+    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x08, "Server added something to our list");
     break;
 
   case ICQ_LISTS_AUTHREQUEST:
@@ -237,7 +267,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
     break;
 
   case ICQ_LISTS_AUTHGRANTED:
-    NetLog_Server("Server sent SNAC(x13,x15) - User granted us future authorization");
+    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x15, "User granted us future authorization");
     break;
 
   case ICQ_LISTS_YOUWEREADDED:
