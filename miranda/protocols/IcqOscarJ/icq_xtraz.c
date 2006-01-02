@@ -246,7 +246,7 @@ NextVal:
       }
       else
       {
-        char *szSrvEnd = strstr(szNode, "</srv>");
+        char *szSrvEnd = strstr(szEnd, "</srv>");
 
         if (szSrvEnd && strstr(szSrvEnd, "<val srv_id='"))
         { // check all values !
