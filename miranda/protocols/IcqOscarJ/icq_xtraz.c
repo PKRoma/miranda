@@ -159,7 +159,7 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
 
 void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char* szMsg, int nMsgLen)
 {
-  char *szRes, *szEnd;
+  char *szMem, *szRes, *szEnd;
   int nResLen;
 
 #ifdef _DEBUG
@@ -176,7 +176,7 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char*
     szRes += 5;
     nResLen = szEnd - szRes;
 
-    szRes = DemangleXml(szRes, nResLen);
+    szMem = szRes = DemangleXml(szRes, nResLen);
 
     ICQBroadcastAck(hContact, ICQACKTYPE_XTRAZNOTIFY_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, (LPARAM)szRes);
 
@@ -260,7 +260,7 @@ NextVal:
     else
       NetLog_Server("Error: Missing serverId in Xtraz response");
 
-    SAFE_FREE(&szRes);
+    SAFE_FREE(&szMem);
   }
   else
     NetLog_Server("Error: Invalid Xtraz Notify response");
