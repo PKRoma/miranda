@@ -274,41 +274,18 @@ void icq_setidle(int bAllow)
 }
 
 
+
 void icq_setstatus(WORD wStatus)
 {
   icq_packet packet;
-  WORD wFlags = 0;
-
-  // Webaware setting bit flag
-  if (ICQGetContactSettingByte(NULL, "WebAware", 0))
-    wFlags = STATUS_WEBAWARE;
-
-  // DC setting bit flag
-  switch (ICQGetContactSettingByte(NULL, "DCType", 0))
-  {
-  case 0:
-    break;
-
-  case 1:
-    wFlags = wFlags | STATUS_DCCONT;
-    break;
-
-  case 2:
-    wFlags = wFlags | STATUS_DCAUTH;
-    break;
-
-  default:
-    wFlags = wFlags | STATUS_DCDISABLED;
-    break;
-  }
 
   // Pack data in packet
   serverPacketInit(&packet, 18);
   packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
-  packWord(&packet, 0x06);    // TLV 6
-  packWord(&packet, 0x04);    // TLV length
-  packWord(&packet, wFlags);  // Status flags
-  packWord(&packet, wStatus); // Status
+  packWord(&packet, 0x06);                // TLV 6
+  packWord(&packet, 0x04);                // TLV length
+  packWord(&packet, GetMyStatusFlags());  // Status flags
+  packWord(&packet, wStatus);             // Status
 
   // Send packet
   sendServPacket(&packet);
@@ -369,6 +346,7 @@ DWORD icq_SendChannel1Message(DWORD dwUin, char *szUID, HANDLE hContact, char *p
 }
 
 
+
 DWORD icq_SendChannel1MessageW(DWORD dwUin, char *szUID, HANDLE hContact, wchar_t *pszText, message_cookie_data *pCookieData)
 {
   icq_packet packet;
@@ -400,7 +378,7 @@ DWORD icq_SendChannel1MessageW(DWORD dwUin, char *szUID, HANDLE hContact, wchar_
   // Pack client features
   packWord(&packet, 0x0501); // TLV(501)
   packWord(&packet, 0x0002); // TLV len
-  packWord(&packet, 0x0106);    // Features, meaning unknown, duplicated from ICQ 2003b
+  packWord(&packet, 0x0106); // Features, meaning unknown, duplicated from ICQ 2003b
 
   // Pack text TLV
   packWord(&packet, 0x0101); // TLV(2)
@@ -426,6 +404,7 @@ DWORD icq_SendChannel1MessageW(DWORD dwUin, char *szUID, HANDLE hContact, wchar_
 
   return dwCookie;
 }
+
 
 
 DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLen, WORD wPriority, message_cookie_data *pCookieData, char *szCap)
@@ -460,6 +439,7 @@ DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLen, 
 
   return dwCookie;
 }
+
 
 
 DWORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData)

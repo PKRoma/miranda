@@ -840,31 +840,7 @@ void handleServUINSettings(int nPort, int nIP)
 
   // SNAC 1,1E: Set status
   {
-    WORD wFlags = 0;
     WORD wStatus;
-
-    // Webaware setting bit flag
-    if (ICQGetContactSettingByte(NULL, "WebAware", 0))
-      wFlags = STATUS_WEBAWARE;
-
-    // DC setting bit flag
-    switch (ICQGetContactSettingByte(NULL, "DCType", 0))
-    {
-    case 0:
-      break;
-
-    case 1:
-      wFlags = wFlags | STATUS_DCCONT;
-      break;
-
-    case 2:
-      wFlags = wFlags | STATUS_DCAUTH;
-      break;
-
-    default:
-      wFlags = wFlags | STATUS_DCDISABLED;
-      break;
-    }
 
     // Get status
     wStatus = MirandaStatusToIcq(icqGoingOnlineStatus);
@@ -872,7 +848,7 @@ void handleServUINSettings(int nPort, int nIP)
     serverPacketInit(&packet, 71);
     packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
     packDWord(&packet, 0x00060004);             // TLV 6: Status mode and security flags
-    packWord(&packet, wFlags);                  // Status flags
+    packWord(&packet, GetMyStatusFlags());      // Status flags
     packWord(&packet, wStatus);                 // Status
     packTLVWord(&packet, 0x0008, 0x0000);       // TLV 8: Error code
     packDWord(&packet, 0x000c0025);             // TLV C: Direct connection info

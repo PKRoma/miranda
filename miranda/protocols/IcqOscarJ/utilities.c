@@ -1598,6 +1598,36 @@ char* GetUserPassword(BOOL bAlways)
 
 
 
+WORD GetMyStatusFlags()
+{
+  WORD wFlags = 0;
+
+  // Webaware setting bit flag
+  if (ICQGetContactSettingByte(NULL, "WebAware", 0))
+    wFlags = STATUS_WEBAWARE;
+
+  // DC setting bit flag
+  switch (ICQGetContactSettingByte(NULL, "DCType", 0))
+  {
+    case 0:
+      break;
+
+    case 1:
+      wFlags = wFlags | STATUS_DCCONT;
+      break;
+
+    case 2:
+      wFlags = wFlags | STATUS_DCAUTH;
+      break;
+
+    default:
+      wFlags = wFlags | STATUS_DCDISABLED;
+      break;
+  }
+  return wFlags;
+}
+
+
 
 char* GetDlgItemTextUtf(HWND hwndDlg, int iItem)
 {

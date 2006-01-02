@@ -137,6 +137,7 @@ int __fastcall ICQTranslateDialog(HWND hwndDlg);
 char* __fastcall ICQTranslate(const char* src);
 
 char* GetUserPassword(BOOL bAlways);
+WORD GetMyStatusFlags();
 
 char* GetDlgItemTextUtf(HWND hwndDlg, int iItem);
 void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const char* szText);
