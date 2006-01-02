@@ -77,6 +77,7 @@ New Features:
 Improvements:
   Advanced search now uses newer method (thx Bio)
   Better protocol error handling
+  Slightly better avatar handling
   Detects some spam bots & ability to block known spam bots
   Merged with ChangeInfo (thx Bio)
   Added possibility to remember password for session
