@@ -386,24 +386,38 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
           bJob = TRUE;
         }
         else
-        { // the hash does not changed, so check if the file exists
-          dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
-          if (dwPaFormat == PA_FORMAT_UNKNOWN)
-          { // we do not know the format, get avatar again
-            bJob = TRUE;
+        { // the hash does not changed, check if we have correct file
+          int fileState = IsAvatarSaved(hContact, pHash);
+
+          // we should have file, check if the file really exists
+          if (!fileState)
+          {
+            dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
+            if (dwPaFormat == PA_FORMAT_UNKNOWN)
+            { // we do not know the format, get avatar again
+              bJob = TRUE;
+            }
+            else
+            {
+              GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH);
+              if (access(szAvatar, 0) == 0)
+              { // the file exists, so try to update photo setting
+                if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
+                {
+                  LinkContactPhotoToFile(hContact, szAvatar);
+                }
+              }
+              else // the file was lost, get it again
+                bJob = TRUE;
+            }
           }
           else
-          {
-            GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH);
-            if (access(szAvatar, 0) == 0)
-            { // the file exists, so try to update photo setting
-              if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
-              {
-                LinkContactPhotoToFile(hContact, szAvatar);
-              }
+          { // the hash is not the one we want, request avatar
+            if (fileState == 2)
+            { // the hash is different, unlink contactphoto
+              LinkContactPhotoToFile(hContact, NULL);
             }
-            else // the file was lost, get it again
-              bJob = TRUE;
+            bJob = TRUE;
           }
         }
         ICQFreeVariant(&dbv);
