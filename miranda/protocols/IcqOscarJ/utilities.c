@@ -1014,7 +1014,7 @@ char *EliminateHtml(const char *string, int len)
   BOOL tag = FALSE;
   char *res;
 
-  for (i=0,j=0;i<len + 1;i++)
+  for (i=0,j=0;i<len;i++)
   {
     if (!tag && string[i] == '<')
     {
