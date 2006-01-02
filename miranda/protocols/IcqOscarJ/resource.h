@@ -63,6 +63,7 @@
 #define IDC_DCENABLE                    1020
 #define IDC_                            1021
 #define IDC_DCPASSIVE                   1021
+#define IDC_OLDPASS                     1021
 #define IDC_ICQNUM                      1022
 #define IDC_AVATAR                      1023
 #define IDC_SETAVATAR                   1024
@@ -158,7 +159,7 @@
 #define IDC_UPLOADING                   1602
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        111

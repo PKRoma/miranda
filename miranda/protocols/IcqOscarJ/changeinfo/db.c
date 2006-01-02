@@ -142,11 +142,22 @@ static BOOL CALLBACK PwConfirmDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
           {  
             char szTest[64];
 
+            GetDlgItemText(hwndDlg,IDC_OLDPASS,szTest,sizeof(szTest));
+
+            if (strcmpnull(szTest, GetUserPassword(TRUE))) 
+            {
+              MessageBox(hwndDlg,ICQTranslate("The password does not match your current password. Check Caps Lock and try again."),ICQTranslate("Change ICQ Details"),MB_OK);
+              SendDlgItemMessage(hwndDlg,IDC_OLDPASS,EM_SETSEL,0,(LPARAM)-1);
+              SetFocus(GetDlgItem(hwndDlg,IDC_OLDPASS));
+              break;
+            }
+
             GetDlgItemText(hwndDlg,IDC_PASSWORD,szTest,sizeof(szTest));
             if(strcmpnull(szTest, Pass)) 
             {
-              MessageBox(hwndDlg,ICQTranslate("This password does not match the password you originally entered. Check Caps Lock and try again."),ICQTranslate("Change ICQ Details"),MB_OK);
+              MessageBox(hwndDlg,ICQTranslate("The password does not match the password you originally entered. Check Caps Lock and try again."),ICQTranslate("Change ICQ Details"),MB_OK);
               SendDlgItemMessage(hwndDlg,IDC_PASSWORD,EM_SETSEL,0,(LPARAM)-1);
+              SetFocus(GetDlgItem(hwndDlg,IDC_PASSWORD));
               break;
             }
           }
