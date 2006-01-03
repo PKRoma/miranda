@@ -1,10 +1,10 @@
-# Microsoft Developer Studio Project File - Name="clist" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="clist_nicer" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=clist - Win32 Debug Unicode
+CFG=clist_nicer - Win32 Debug Unicode
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,14 +13,14 @@ CFG=clist - Win32 Debug Unicode
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "clist.mak" CFG="clist - Win32 Debug Unicode"
+!MESSAGE NMAKE /f "clist.mak" CFG="clist_nicer - Win32 Debug Unicode"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "clist - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "clist - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "clist - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "clist - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -31,7 +31,7 @@ CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -55,9 +55,10 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib /nologo /base:"0x6590000" /dll /machine:I386 /out:"../../bin/release/plugins/clist_nicer.dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib delayimp.lib /nologo /base:"0x6590000" /dll /machine:I386 /out:"../../bin/release/plugins/clist_nicer.dll" /delayload:gdiplus.dll
+# SUBTRACT LINK32 /pdb:none
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -81,9 +82,9 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug/plugins/clist_nicer.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib delayimp.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug/plugins/clist_nicer.dll" /pdbtype:sept
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -108,9 +109,10 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib /nologo /base:"0x6590000" /dll /machine:I386 /out:"../../bin/release/plugins/clist_nicer.dll"
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib /nologo /base:"0x6590000" /dll /machine:I386 /out:"../../bin/Release Unicode/plugins/clist_nicer.dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib delayimp.lib /nologo /base:"0x6590000" /dll /machine:I386 /out:"../../bin/Release Unicode/plugins/clist_nicer.dll" /delayload:gdiplus.dll
+# SUBTRACT LINK32 /pdb:none
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -135,16 +137,16 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug/plugins/clist_nicer.dll" /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/Debug Unicode/plugins/clist_nicer.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib delayimp.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/Debug Unicode/plugins/clist_nicer.dll" /pdbtype:sept
 
 !ENDIF 
 
 # Begin Target
 
-# Name "clist - Win32 Release"
-# Name "clist - Win32 Debug"
-# Name "clist - Win32 Release Unicode"
-# Name "clist - Win32 Debug Unicode"
+# Name "clist_nicer - Win32 Release"
+# Name "clist_nicer - Win32 Debug"
+# Name "clist_nicer - Win32 Release Unicode"
+# Name "clist_nicer - Win32 Debug Unicode"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -203,18 +205,18 @@ SOURCE=.\alphablend.c
 
 SOURCE=.\clc.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -227,18 +229,18 @@ SOURCE=.\CLCButton.c
 
 SOURCE=.\clcidents.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -247,18 +249,18 @@ SOURCE=.\clcidents.c
 
 SOURCE=.\clcitems.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -267,18 +269,18 @@ SOURCE=.\clcitems.c
 
 SOURCE=.\clcmsgs.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -287,18 +289,18 @@ SOURCE=.\clcmsgs.c
 
 SOURCE=.\clcopts.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -307,18 +309,18 @@ SOURCE=.\clcopts.c
 
 SOURCE=.\clcpaint.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -327,18 +329,18 @@ SOURCE=.\clcpaint.c
 
 SOURCE=.\clcutils.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -347,18 +349,18 @@ SOURCE=.\clcutils.c
 
 SOURCE=.\clistevents.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -367,18 +369,18 @@ SOURCE=.\clistevents.c
 
 SOURCE=.\clistmenus.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -387,18 +389,18 @@ SOURCE=.\clistmenus.c
 
 SOURCE=.\clistmod.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -407,18 +409,18 @@ SOURCE=.\clistmod.c
 
 SOURCE=.\clistopts.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -427,18 +429,18 @@ SOURCE=.\clistopts.c
 
 SOURCE=.\clistsettings.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -447,18 +449,18 @@ SOURCE=.\clistsettings.c
 
 SOURCE=.\clisttray.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -467,18 +469,18 @@ SOURCE=.\clisttray.c
 
 SOURCE=.\clui.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -487,18 +489,18 @@ SOURCE=.\clui.c
 
 SOURCE=.\cluiopts.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -507,18 +509,18 @@ SOURCE=.\cluiopts.c
 
 SOURCE=.\cluiservices.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -527,20 +529,20 @@ SOURCE=.\cluiservices.c
 
 SOURCE=.\commonheaders.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yc"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 # ADD CPP /Yc
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yc"commonheaders.h"
 # ADD CPP /Yc"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 # ADD CPP /Yc
 
@@ -551,18 +553,18 @@ SOURCE=.\commonheaders.c
 
 SOURCE=.\contact.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -575,18 +577,18 @@ SOURCE=.\extBackg.c
 
 SOURCE=.\forkthread.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 
@@ -595,20 +597,21 @@ SOURCE=.\forkthread.c
 
 SOURCE=.\gdiplus.cpp
 
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /GX
 # SUBTRACT CPP /YX /Yc /Yu
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
+
+# ADD CPP /GX
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 # SUBTRACT CPP /YX /Yc /Yu
 
@@ -619,18 +622,18 @@ SOURCE=.\gdiplus.cpp
 
 SOURCE=.\init.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 # ADD BASE CPP /Yu"commonheaders.h"
 # ADD CPP /Yu"commonheaders.h"
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 !ENDIF 
 

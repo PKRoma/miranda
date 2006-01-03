@@ -1,22 +1,22 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on clist.dsp
 !IF "$(CFG)" == ""
-CFG=clist - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to clist - Win32 Debug Unicode.
+CFG=clist_nicer - Win32 Debug Unicode
+!MESSAGE No configuration specified. Defaulting to clist_nicer - Win32 Debug Unicode.
 !ENDIF 
 
-!IF "$(CFG)" != "clist - Win32 Release" && "$(CFG)" != "clist - Win32 Debug" && "$(CFG)" != "clist - Win32 Release Unicode" && "$(CFG)" != "clist - Win32 Debug Unicode"
+!IF "$(CFG)" != "clist_nicer - Win32 Release" && "$(CFG)" != "clist_nicer - Win32 Debug" && "$(CFG)" != "clist_nicer - Win32 Release Unicode" && "$(CFG)" != "clist_nicer - Win32 Debug Unicode"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "clist.mak" CFG="clist - Win32 Debug Unicode"
+!MESSAGE NMAKE /f "clist.mak" CFG="clist_nicer - Win32 Debug Unicode"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "clist - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "clist - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "clist - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "clist - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 !ERROR An invalid configuration is specified.
 !ENDIF 
@@ -31,7 +31,7 @@ CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 OUTDIR=.\Release
 INTDIR=.\Release
@@ -95,7 +95,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib /nologo /base:"0x6590000" /dll /incremental:no /pdb:"$(OUTDIR)\clist_nicer.pdb" /machine:I386 /out:"../../bin/release/plugins/clist_nicer.dll" /implib:"$(OUTDIR)\clist_nicer.lib" 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib delayimp.lib /nologo /base:"0x6590000" /dll /incremental:no /pdb:"$(OUTDIR)\clist_nicer.pdb" /machine:I386 /out:"../../bin/release/plugins/clist_nicer.dll" /implib:"$(OUTDIR)\clist_nicer.lib" /delayload:gdiplus.dll 
 LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\framesmenu.obj" \
@@ -141,7 +141,7 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 OUTDIR=.\Debug
 INTDIR=.\Debug
@@ -208,7 +208,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib /nologo /base:"0x6590000" /dll /incremental:yes /pdb:"$(OUTDIR)\clist_nicer.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/clist_nicer.dll" /implib:"$(OUTDIR)\clist_nicer.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib delayimp.lib /nologo /base:"0x6590000" /dll /incremental:yes /pdb:"$(OUTDIR)\clist_nicer.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/clist_nicer.dll" /implib:"$(OUTDIR)\clist_nicer.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\framesmenu.obj" \
@@ -254,7 +254,7 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 OUTDIR=.\Release_Unicode
 INTDIR=.\Release_Unicode
@@ -318,7 +318,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib /nologo /base:"0x6590000" /dll /incremental:no /pdb:"$(OUTDIR)\clist_nicer.pdb" /machine:I386 /out:"../../bin/Release Unicode/plugins/clist_nicer.dll" /implib:"$(OUTDIR)\clist_nicer.lib" 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib delayimp.lib /nologo /base:"0x6590000" /dll /incremental:no /pdb:"$(OUTDIR)\clist_nicer.pdb" /machine:I386 /out:"../../bin/Release Unicode/plugins/clist_nicer.dll" /implib:"$(OUTDIR)\clist_nicer.lib" /delayload:gdiplus.dll 
 LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\framesmenu.obj" \
@@ -364,7 +364,7 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 OUTDIR=.\Debug_Unicode
 INTDIR=.\Debug_Unicode
@@ -431,7 +431,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib /nologo /base:"0x6590000" /dll /incremental:yes /pdb:"$(OUTDIR)\clist_nicer.pdb" /debug /machine:I386 /out:"../../bin/Debug Unicode/plugins/clist_nicer.dll" /implib:"$(OUTDIR)\clist_nicer.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib delayimp.lib /nologo /base:"0x6590000" /dll /incremental:yes /pdb:"$(OUTDIR)\clist_nicer.pdb" /debug /machine:I386 /out:"../../bin/Debug Unicode/plugins/clist_nicer.dll" /implib:"$(OUTDIR)\clist_nicer.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\framesmenu.obj" \
@@ -519,10 +519,10 @@ LINK32_OBJS= \
 !ENDIF 
 
 
-!IF "$(CFG)" == "clist - Win32 Release" || "$(CFG)" == "clist - Win32 Debug" || "$(CFG)" == "clist - Win32 Release Unicode" || "$(CFG)" == "clist - Win32 Debug Unicode"
+!IF "$(CFG)" == "clist_nicer - Win32 Release" || "$(CFG)" == "clist_nicer - Win32 Debug" || "$(CFG)" == "clist_nicer - Win32 Release Unicode" || "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 SOURCE=.\CLUIFrames\cluiframes.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -532,7 +532,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -542,7 +542,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -552,7 +552,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -566,7 +566,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\CLUIFrames\framesmenu.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -576,7 +576,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -586,7 +586,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -596,7 +596,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -610,7 +610,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\CLUIFrames\genmenu.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -620,7 +620,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -630,7 +630,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -640,7 +640,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -654,7 +654,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\CLUIFrames\genmenuopt.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -664,7 +664,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -674,7 +674,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -684,7 +684,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -698,7 +698,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\CLUIFrames\groupmenu.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -708,7 +708,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -718,7 +718,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -728,7 +728,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -742,7 +742,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\CLUIFrames\movetogroup.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -752,7 +752,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -762,7 +762,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -772,7 +772,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -786,7 +786,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\CLUIFrames\protocolorder.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -796,7 +796,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -806,7 +806,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -816,7 +816,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -835,7 +835,7 @@ SOURCE=.\alphablend.c
 
 SOURCE=.\clc.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -845,7 +845,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -855,7 +855,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -865,7 +865,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -884,7 +884,7 @@ SOURCE=.\CLCButton.c
 
 SOURCE=.\clcidents.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -894,7 +894,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -904,7 +904,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -914,7 +914,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -928,7 +928,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\clcitems.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -938,7 +938,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -948,7 +948,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -958,7 +958,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -972,7 +972,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\clcmsgs.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -982,7 +982,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -992,7 +992,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1002,7 +1002,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1016,7 +1016,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\clcopts.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1026,7 +1026,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1036,7 +1036,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1046,7 +1046,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1060,7 +1060,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\clcpaint.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1070,7 +1070,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1080,7 +1080,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1090,7 +1090,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1104,7 +1104,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\clcutils.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1114,7 +1114,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1124,7 +1124,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1134,7 +1134,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1148,7 +1148,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\clistevents.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1158,7 +1158,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1168,7 +1168,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1178,7 +1178,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1192,7 +1192,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\clistmenus.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1202,7 +1202,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1212,7 +1212,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1222,7 +1222,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1236,7 +1236,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\clistmod.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1246,7 +1246,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1256,7 +1256,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1266,7 +1266,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1280,7 +1280,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\clistopts.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1290,7 +1290,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1300,7 +1300,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1310,7 +1310,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1324,7 +1324,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\clistsettings.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1334,7 +1334,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1344,7 +1344,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1354,7 +1354,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1368,7 +1368,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\clisttray.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1378,7 +1378,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1388,7 +1388,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1398,7 +1398,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1412,7 +1412,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\clui.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1422,7 +1422,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1432,7 +1432,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1442,7 +1442,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1456,7 +1456,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\cluiopts.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1466,7 +1466,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1476,7 +1476,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1486,7 +1486,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1500,7 +1500,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\cluiservices.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1510,7 +1510,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1520,7 +1520,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1530,7 +1530,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1544,7 +1544,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\commonheaders.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1554,7 +1554,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yc /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1564,7 +1564,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1574,7 +1574,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yc /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1588,7 +1588,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\contact.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1598,7 +1598,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1608,7 +1608,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1618,7 +1618,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1637,7 +1637,7 @@ SOURCE=.\extBackg.c
 
 SOURCE=.\forkthread.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1647,7 +1647,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1657,7 +1657,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1667,7 +1667,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1681,9 +1681,9 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\gdiplus.cpp
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\gdiplus.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1691,7 +1691,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1701,7 +1701,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /GX /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1711,7 +1711,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" 
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1725,7 +1725,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 SOURCE=.\init.c
 
-!IF  "$(CFG)" == "clist - Win32 Release"
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1735,7 +1735,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
@@ -1745,7 +1745,7 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
 CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
@@ -1755,7 +1755,7 @@ CPP_SWITCHES=/nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "
 <<
 
 
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
