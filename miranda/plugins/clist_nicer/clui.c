@@ -877,6 +877,53 @@ void ReloadThemedOptions()
 
 static RECT rcWindow = {0};
 
+static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
+{
+	RECT rcTree, rcWorkArea, rcOld;
+	int maxHeight,newHeight;
+	int winstyle;
+
+	if (disableautoupd)
+		return;
+
+	if (!DBGetContactSettingByte(NULL,"CLUI","AutoSize",0))
+		return;
+
+	if (CallService(MS_CLIST_DOCKINGISDOCKED,0,0))
+		return;
+	if (hFrameContactTree == 0)
+		return;
+
+	maxHeight=DBGetContactSettingByte(NULL,"CLUI","MaxSizeHeight",75);
+	rcOld=rcWindow;
+
+	GetWindowRect(hwnd,&rcWindow);
+	GetWindowRect(pcli->hwndContactTree,&rcTree);
+	winstyle=GetWindowLong(pcli->hwndContactTree,GWL_STYLE);
+
+	SystemParametersInfo(SPI_GETWORKAREA,0,&rcWorkArea,FALSE);
+	if (nmc->pt.y>(rcWorkArea.bottom-rcWorkArea.top)) {
+		nmc->pt.y=(rcWorkArea.bottom-rcWorkArea.top);
+	}
+
+	newHeight=max(nmc->pt.y,3)+1+((winstyle&WS_BORDER)?2:0)+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
+	if (newHeight==(rcWindow.bottom-rcWindow.top))
+		return;
+
+	if (newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)
+		newHeight=(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100;
+	if (DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",0)) {
+		rcWindow.top=rcWindow.bottom-newHeight;
+		if (rcWindow.top<rcWorkArea.top) rcWindow.top=rcWorkArea.top;
+	}
+	else {
+		rcWindow.bottom=rcWindow.top+newHeight;
+		if (rcWindow.bottom>rcWorkArea.bottom) rcWindow.bottom=rcWorkArea.bottom;
+	}
+	KillTimer(hwnd, TIMERID_AUTOSIZE);
+	SetTimer(hwnd, TIMERID_AUTOSIZE, 100, 0);
+}
+
 extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 #define M_CREATECLC  (WM_USER+1)
@@ -1734,56 +1781,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		if (((LPNMHDR) lParam)->hwndFrom == pcli->hwndContactTree) {
 			switch (((LPNMHDR) lParam)->code) {
 			case CLN_LISTSIZECHANGE:
-				{
-					NMCLISTCONTROL *nmc=(NMCLISTCONTROL*)lParam;
-					RECT rcTree, rcWorkArea, rcOld;
-					int maxHeight,newHeight;
-					int winstyle;
+				sttProcessResize(hwnd, (NMCLISTCONTROL*)lParam );
+				return FALSE;
 
-					if (disableautoupd)
-						break;
-
-					if (!DBGetContactSettingByte(NULL,"CLUI","AutoSize",0))
-						break;
-
-					if (CallService(MS_CLIST_DOCKINGISDOCKED,0,0))
-						break;
-					if (hFrameContactTree == 0)
-						break;
-
-					maxHeight=DBGetContactSettingByte(NULL,"CLUI","MaxSizeHeight",75);
-					rcOld=rcWindow;
-
-					GetWindowRect(hwnd,&rcWindow);
-					GetWindowRect(pcli->hwndContactTree,&rcTree);
-					winstyle=GetWindowLong(pcli->hwndContactTree,GWL_STYLE);
-
-					SystemParametersInfo(SPI_GETWORKAREA,0,&rcWorkArea,FALSE);
-					if (nmc->pt.y>(rcWorkArea.bottom-rcWorkArea.top)) {
-						nmc->pt.y=(rcWorkArea.bottom-rcWorkArea.top);
-					}
-					/*
-					if ((nmc->pt.y)==lastreqh) {
-					}
-					lastreqh=nmc->pt.y;*/
-					newHeight=max(nmc->pt.y,3)+1+((winstyle&WS_BORDER)?2:0)+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
-					if (newHeight==(rcWindow.bottom-rcWindow.top))
-						break;
-
-					if (newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)
-						newHeight=(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100;
-					if (DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",0)) {
-						rcWindow.top=rcWindow.bottom-newHeight;
-						if (rcWindow.top<rcWorkArea.top) rcWindow.top=rcWorkArea.top;
-					}
-					else {
-						rcWindow.bottom=rcWindow.top+newHeight;
-						if (rcWindow.bottom>rcWorkArea.bottom) rcWindow.bottom=rcWorkArea.bottom;
-					}
-					KillTimer(hwnd, TIMERID_AUTOSIZE);
-					SetTimer(hwnd, TIMERID_AUTOSIZE, 100, 0);
-					break;
-				}
 			case NM_CLICK:
 				{
 					NMCLISTCONTROL *nm = (NMCLISTCONTROL *) lParam;
@@ -1799,9 +1799,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						pt = nm->pt;
 						ClientToScreen(pcli->hwndContactTree, &pt);
 						return SendMessage(hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(pt.x, pt.y));
-					}
-					break;
-				}
+				}	}
+				return FALSE;
 			}
 		}
 		else if (((LPNMHDR) lParam)->hwndFrom == pcli->hwndStatus) {
@@ -1869,10 +1868,11 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					pt.y = rc.top;
 					ClientToScreen(pcli->hwndStatus, &pt);
 					TrackPopupMenu(hMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN, pt.x, pt.y, 0, hwnd, NULL);
+					return FALSE;
 				}
 			}
 		}
-		return FALSE;
+		break;
 	case WM_CONTEXTMENU:
 		{
 			RECT rc;
