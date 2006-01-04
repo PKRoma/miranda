@@ -43,7 +43,6 @@ extern void handleXStatusCaps(HANDLE hContact, char* caps, int capsize);
 extern CRITICAL_SECTION connectionHandleMutex;
 extern WORD wLocalSequence;
 extern CRITICAL_SECTION localSeqMutex;
-extern HANDLE hKeepAliveEvent;
 HANDLE hServerConn;
 DWORD dwLocalInternalIP, dwLocalExternalIP;
 WORD wListenPort;
@@ -234,7 +233,7 @@ void icq_serverDisconnect(BOOL bBlock)
   else
     LeaveCriticalSection(&connectionHandleMutex);
 
-  if (hKeepAliveEvent) SetEvent(hKeepAliveEvent); // signal keep-alive thread to stop
+  StopKeepAlive(); // signal keep-alive thread to stop
 }
 
 

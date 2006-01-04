@@ -39,7 +39,7 @@
 
 
 extern HANDLE hServerConn;
-HANDLE hKeepAliveEvent = NULL;
+static HANDLE hKeepAliveEvent = NULL;
 
 
 void handlePingChannel(unsigned char* buf, WORD datalen)
@@ -48,7 +48,8 @@ void handlePingChannel(unsigned char* buf, WORD datalen)
 }
 
 
-void __cdecl icq_keepAliveThread(void* fa)
+
+static void __cdecl icq_keepAliveThread(void* fa)
 {
   icq_packet packet;
 
@@ -82,4 +83,23 @@ void __cdecl icq_keepAliveThread(void* fa)
   hKeepAliveEvent = NULL;
 
   return;
+}
+
+
+
+void StartKeepAlive()
+{
+  if (hKeepAliveEvent) // start only once
+    return;
+
+  if (ICQGetContactSettingByte(NULL, "KeepAlive", 0))
+    forkthread(icq_keepAliveThread, 0, NULL);
+}
+
+
+
+void StopKeepAlive()
+{ // finish keep alive thread
+  if (hKeepAliveEvent)
+    SetEvent(hKeepAliveEvent);
 }

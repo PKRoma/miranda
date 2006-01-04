@@ -43,8 +43,10 @@ void handleErrorChannel(unsigned char *buf, WORD datalen);
 void handleDataChannel(unsigned char *buf, WORD wLen);
 void handlePingChannel(unsigned char *buf, WORD wLen);
 void handleCloseChannel(unsigned char *buf, WORD datalen);
-void __cdecl icq_keepAliveThread(HANDLE hConnection);
 
 void LogFamilyError(WORD wFamily, WORD wError);
+
+void StartKeepAlive();
+void StopKeepAlive();
 
 #endif /* __CHANNELS_H */

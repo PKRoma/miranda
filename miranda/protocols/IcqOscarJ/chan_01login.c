@@ -88,7 +88,11 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_inf
 #endif
 
     isLoginServer = 0;
-    cookieDataLen = 0;
+    if (cookieDataLen)
+    {
+      SAFE_FREE(&cookieData);
+      cookieDataLen = 0;
+    }
   }
   else 
   {
