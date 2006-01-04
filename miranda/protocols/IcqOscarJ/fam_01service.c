@@ -136,6 +136,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       wRecordCount = ICQGetContactSettingWord(NULL, "SrvRecordCount", 0);
 
       // CLI_REQLISTS - we want to use SSI
+#ifdef _DEBUG
+      NetLog_Server("Requesting roster rights");
+#endif
       serverPacketInit(&packet, 10);
       packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_REQLISTS);
       sendServPacket(&packet);
@@ -192,21 +195,33 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     }
 
     // CLI_REQLOCATION
+#ifdef _DEBUG
+    NetLog_Server("Requesting Location rights");
+#endif
     serverPacketInit(&packet, 10);
     packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_CLI_REQ_RIGHTS);
     sendServPacket(&packet);
 
     // CLI_REQBUDDY
+#ifdef _DEBUG
+    NetLog_Server("Requesting Client-side contactlist rights");
+#endif
     serverPacketInit(&packet, 10);
     packFNACHeader(&packet, ICQ_BUDDY_FAMILY, ICQ_USER_CLI_REQBUDDY);
     sendServPacket(&packet);
 
     // CLI_REQICBM
+#ifdef _DEBUG
+    NetLog_Server("Sending CLI_REQICBM");
+#endif
     serverPacketInit(&packet, 10);
     packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_REQICBM);
     sendServPacket(&packet);
 
     // CLI_REQBOS
+#ifdef _DEBUG
+    NetLog_Server("Sending CLI_REQBOS");
+#endif
     serverPacketInit(&packet, 10);
     packFNACHeader(&packet, ICQ_BOS_FAMILY, ICQ_PRIVACY_REQ_RIGHTS);
     sendServPacket(&packet);
@@ -416,15 +431,60 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     {
       switch (pBuffer[2])
       {
-        case 1: // our avatar is on the server, store hash
+        case 1: // our avatar is on the server
         {
+          DBVARIANT dbv;
+          char* hash;
+
           ICQWriteContactSettingBlob(NULL, "AvatarHash", pBuffer, 0x14);
           
           setUserInfo();
+          // here we need to find a file, check its hash, if invalid get avatar from server
+          if (ICQGetContactSetting(NULL, "AvatarFile", &dbv))
+          { // we have no avatar file, download from server
+            char szFile[MAX_PATH + 4];
+#ifdef _DEBUG
+            NetLog_Server("We have no avatar, requesting from server.");
+#endif
+            GetAvatarFileName(0, NULL, szFile, MAX_PATH);
+            GetAvatarData(NULL, dwLocalUIN, NULL, pBuffer, 0x14, szFile);
+          }
+          hash = calcMD5Hash(dbv.pszVal);
+          if (!hash)
+          { // hash could not be calculated - probably missing file, get avatar from server
+            char szFile[MAX_PATH + 4];
+#ifdef _DEBUG
+            NetLog_Server("We have no avatar, requesting from server.");
+#endif
+            GetAvatarFileName(0, NULL, szFile, MAX_PATH);
+            GetAvatarData(NULL, dwLocalUIN, NULL, pBuffer, 0x14, szFile);
+          } // check if we had set any avatar if yes set our, if not download from server
+          else if (memcmp(hash, pBuffer+4, 0x10))
+          { // we have different avatar, sync that
+            if (ICQGetContactSettingByte(NULL, "ForceOurAvatar", 1))
+            { // we want our avatar, update hash
+              char* pHash = _alloca(0x12);
 
-          // TODO: here we need to find a file, check its hash, if invalid get avatar from server
-          // TODO: check if we had set any avatar if yes set our, if not download from server
+              NetLog_Server("Our avatar is different, set our new hash.");
 
+              pHash[0] = 1; // state of the hash
+              pHash[1] = 0x10; // len of the hash
+              memcpy(pHash+2, hash, 0x10);
+              updateServAvatarHash(pHash, 0x12);
+            }
+            else
+            { // get avatar from server
+              char szFile[MAX_PATH + 4];
+#ifdef _DEBUG
+              NetLog_Server("We have different avatar, requesting new from server.");
+#endif
+              GetAvatarFileName(0, NULL, szFile, MAX_PATH);
+              GetAvatarData(NULL, dwLocalUIN, NULL, pBuffer, 0x14, szFile);
+            }
+          }
+          SAFE_FREE(&hash);
+
+          ICQFreeVariant(&dbv);
           break;
         }
         case 0x41: // request to upload avatar data
@@ -475,22 +535,15 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           }
           else
           {
-            char* pHash = malloc(0x12);
-            if (pHash)
-            {
-              NetLog_Server("Our file is different, set our new hash.");
+            char* pHash = _alloca(0x12);
 
-              pHash[0] = 1; // state of the hash
-              pHash[1] = 0x10; // len of the hash
-              memcpy(pHash+2, hash, 0x10);
-              updateServAvatarHash(pHash, 0x12);
-              SAFE_FREE(&pHash);
-            }
-            else
-            {
-              NetLog_Server("We could not set hash, removing hash.");
-              updateServAvatarHash(NULL, 0);
-            }
+            NetLog_Server("Our file is different, set our new hash.");
+
+            pHash[0] = 1; // state of the hash
+            pHash[1] = 0x10; // len of the hash
+            memcpy(pHash+2, hash, 0x10);
+            updateServAvatarHash(pHash, 0x12);
+
             SAFE_FREE(&hash);
           }
 
@@ -924,8 +977,7 @@ void handleServUINSettings(int nPort, int nIP)
   icq_RescanInfoUpdate();
 
   // Start sending Keep-Alive packets
-  if (ICQGetContactSettingByte(NULL, "KeepAlive", 0))
-    forkthread(icq_keepAliveThread, 0, NULL);
+  StartKeepAlive();
   
   if (gbAvatarsEnabled)
   { // Send SNAC 1,4 - request avatar family 0x10 connection

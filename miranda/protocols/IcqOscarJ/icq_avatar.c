@@ -1042,7 +1042,7 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     NetLog_Server(" *** Yeehah, avatar login sequence complete");
     break;
 
-  case ICQ_SERVER_PAUSE:
+/*  case ICQ_SERVER_PAUSE:
     NetLog_Server("Avatar server is going down in a few seconds... (Flags: %u, Ref: %u)", pSnacHeader->wFlags, pSnacHeader->dwRef);
     // This is the list of groups that we want to have on the next server
     serverPacketInit(&packet, 14);
@@ -1053,7 +1053,7 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 #ifdef _DEBUG
     NetLog_Server("Sent server pause ack");
 #endif 
-    break; // TODO: avatar migration is not working, should be ?
+    break; // TODO: avatar migration is not working, should be ?*/
 
   default:
     NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_SERVICE_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
@@ -1076,7 +1076,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         BYTE len;
         WORD datalen;
         int out;
-        char* szMyFile = (char*)malloc(strlennull(ac->szFile)+10);
+        char* szMyFile = (char*)_alloca(strlennull(ac->szFile)+10);
         PROTO_AVATAR_INFORMATION ai;
         int i;
 
@@ -1110,7 +1110,6 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           ICQBroadcastAck(ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, 0);
 
           SAFE_FREE(&ac->szFile);
-          SAFE_FREE(&szMyFile);
           SAFE_FREE(&ac->hash);
           SAFE_FREE(&ac);
 
@@ -1151,21 +1150,26 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
             if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
               LinkContactPhotoToFile(ac->hContact, szMyFile); // this should not be here, but no other simple solution available
 
-            if (!ICQGetContactSetting(ac->hContact, "AvatarHash", &dbv))
-            {
-              if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", dbv.pbVal, dbv.cpbVal))
-                NetLog_Server("Failed to set file hash.");
-
-              ICQFreeVariant(&dbv);
-            }
+            if (!ac->hContact) // our avatar, set filename
+              ICQWriteContactSettingString(NULL, "AvatarFile", szMyFile);
             else
-            {
-              NetLog_Server("Warning: DB error (no hash in DB).");
-              // the hash was lost, try to fix that
-              if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", ac->hash, ac->hashlen) ||
-                ICQWriteContactSettingBlob(ac->hContact, "AvatarHash", ac->hash, ac->hashlen))
+            { // contact's avatar set hash
+              if (!ICQGetContactSetting(ac->hContact, "AvatarHash", &dbv))
               {
-                NetLog_Server("Failed to save avatar hash to DB");
+                if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", dbv.pbVal, dbv.cpbVal))
+                  NetLog_Server("Failed to set file hash.");
+
+                ICQFreeVariant(&dbv);
+              }
+              else
+              {
+                NetLog_Server("Warning: DB error (no hash in DB).");
+                // the hash was lost, try to fix that
+                if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", ac->hash, ac->hashlen) ||
+                  ICQWriteContactSettingBlob(ac->hContact, "AvatarHash", ac->hash, ac->hashlen))
+                {
+                  NetLog_Server("Failed to save avatar hash to DB");
+                }
               }
             }
 
@@ -1179,7 +1183,6 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           ICQBroadcastAck(ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, 0);
         }
         SAFE_FREE(&ac->szFile);
-        SAFE_FREE(&szMyFile);
         SAFE_FREE(&ac->hash);
         SAFE_FREE(&ac);
       }
