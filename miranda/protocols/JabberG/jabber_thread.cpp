@@ -1325,10 +1325,16 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 						for ( i=0; i<item->resourceCount && strcmp( r->resourceName, p ); i++, r++ );
 						if ( i < item->resourceCount ) {
 							if ( r->software ) free( r->software );
-							if (( n=JabberXmlGetChild( queryNode, "name" ))!=NULL && n->text )
+							if (( n=JabberXmlGetChild( queryNode, "name" ))!=NULL && n->text ) {
+								if (( hContact=JabberHContactFromJID( item->jid )) != NULL ) {
+									if (( p = strstr( n->text, "Miranda IM" )) != NULL )
+										JSetStringUtf( hContact, "MirVer", p );
+									else
+										JSetStringUtf( hContact, "MirVer", n->text );
+								}
 								r->software = JabberTextDecode( n->text );
-							else
-								r->software = NULL;
+							}
+							else r->software = NULL;
 							if ( r->version ) free( r->version );
 							if (( n=JabberXmlGetChild( queryNode, "version" ))!=NULL && n->text )
 								r->version = JabberTextDecode( n->text );
