@@ -1229,9 +1229,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			RECT *szrect = (RECT *)lParam;
 
 			g_SizingRect = *((RECT *)lParam);
-			if(wParam != WMSZ_BOTTOM)
+			if(wParam != WMSZ_BOTTOM && wParam != WMSZ_BOTTOMRIGHT && wParam != WMSZ_BOTTOMLEFT)
 				szrect->bottom = g_PreSizeRect.bottom;
-			if(wParam != WMSZ_RIGHT)
+			if(wParam != WMSZ_RIGHT && wParam != WMSZ_BOTTOMRIGHT && wParam != WMSZ_TOPRIGHT)
 				szrect->right = g_PreSizeRect.right;
 			return TRUE;
 		}
