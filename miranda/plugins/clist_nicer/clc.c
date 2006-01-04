@@ -189,8 +189,6 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 	else if(szProto == NULL && wParam == 0) {
 		if(!__strcmp(cws->szSetting, "XStatusId"))
 			CluiProtocolStatusChanged(0, 0);
-		else if (!__strcmp(cws->szModule, "CListGroups"))
-			pcli->pfnClcBroadcast(INTM_GROUPSCHANGED, wParam, lParam);
 		return 0;
 	}
 	return 0;
