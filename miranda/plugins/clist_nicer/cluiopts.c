@@ -358,14 +358,15 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 					g_CluiData.colorkey = RGB(255, 0, 255);
 				}
-				if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT) || IsDlgButtonChecked(hwndDlg, IDC_FULLTRANSPARENT)) {
+				if (g_CluiData.isTransparent || g_CluiData.bFullTransparent) {
 					if(MySetLayeredWindowAttributes) {
 						SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 						SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
 						MySetLayeredWindowAttributes(pcli->hwndContactList, 0, 255, LWA_ALPHA | LWA_COLORKEY);
-						MySetLayeredWindowAttributes(pcli->hwndContactList, g_CluiData.bFullTransparent ? g_CluiData.colorkey : 0,
-							IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT) ? g_CluiData.autoalpha : 255,
-							(IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT) ? LWA_ALPHA : 0) | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
+						MySetLayeredWindowAttributes(pcli->hwndContactList, 
+							g_CluiData.bFullTransparent ? g_CluiData.colorkey : 0,
+							g_CluiData.isTransparent ? g_CluiData.autoalpha : 255,
+							(g_CluiData.isTransparent ? LWA_ALPHA : 0) | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
 					}
 				} else {
 					if (MySetLayeredWindowAttributes)

@@ -284,14 +284,6 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			}
 			else dat->bisEmbedded = TRUE;
 		}
-		if(GetParent(hwnd) == pcli->hwndContactList && MySetLayeredWindowAttributes != 0 && g_CluiData.bFullTransparent) {
-			if(g_CLUISkinnedBkColorRGB)
-				Tweak_It(g_CLUISkinnedBkColorRGB);
-			else if(g_CluiData.bClipBorder || g_CluiData.dwFlags & CLUI_FRAME_ROUNDEDFRAME)
-				Tweak_It(RGB(255, 0, 255));
-			else
-				Tweak_It(dat->bkColour);
-		}
 		break;
 	case WM_SIZE:
 		pcli->pfnEndRename(hwnd, dat, 1);
@@ -782,5 +774,17 @@ LBL_Def:
 		break;
 	}
 
-	return saveContactListControlWndProc(hwnd, msg, wParam, lParam);
-}
+	{	LRESULT result = saveContactListControlWndProc(hwnd, msg, wParam, lParam);
+
+		if ( msg == WM_CREATE ) {
+			if(GetParent(hwnd) == pcli->hwndContactList && MySetLayeredWindowAttributes != 0 && g_CluiData.bFullTransparent) {
+				if(g_CLUISkinnedBkColorRGB)
+					Tweak_It(g_CLUISkinnedBkColorRGB);
+				else if(g_CluiData.bClipBorder || (g_CluiData.dwFlags & CLUI_FRAME_ROUNDEDFRAME))
+					Tweak_It(RGB(255, 0, 255));
+				else
+					Tweak_It(dat->bkColour);
+		}	}
+
+		return result;
+}	}

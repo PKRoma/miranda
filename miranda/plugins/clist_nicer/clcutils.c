@@ -533,9 +533,9 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 	}
 	if (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
 		char wpbuf[MAX_PATH];
-		if (dat->hBmpBackground) {
+		if (dat->hBmpBackground)
 			DeleteObject(dat->hBmpBackground); dat->hBmpBackground = NULL;
-		}
+
 		SystemParametersInfoA(SPI_GETDESKWALLPAPER, MAX_PATH, wpbuf, 0);
 
 		// we have a wallpaper string

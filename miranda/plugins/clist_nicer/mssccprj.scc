@@ -3,3 +3,7 @@ SCC = This is a Source Code Control file
 [clist_nicer.vcproj]
 SCC_Aux_Path = "D:\VC\Common\VSS"
 SCC_Project_Name = "$/Miranda/miranda/plugins/clist_nicer", EOPAAAAA
+
+[clist_nicer_8.vcproj]
+SCC_Aux_Path = "D:\VC\Common\VSS"
+SCC_Project_Name = "$/Miranda/miranda/plugins/clist_nicer", EOPAAAAA
