@@ -57,15 +57,18 @@ CLEAN :
 	-@erase "$(INTDIR)\upload.obj"
 	-@erase "$(INTDIR)\upload.sbr"
 	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\changeinfo.bsc"
 	-@erase "$(OUTDIR)\changeinfo.exp"
+	-@erase "$(OUTDIR)\changeinfo.lib"
 	-@erase "$(OUTDIR)\changeinfo.map"
+	-@erase "$(OUTDIR)\changeinfo.pdb"
 	-@erase "..\..\bin\release\plugins\changeinfo.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CHANGEINFO_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\changeinfo.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CHANGEINFO_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\changeinfo.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
 BSC32=bscmake.exe
@@ -85,7 +88,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /base:"0x24000000" /dll /incremental:no /pdb:"$(OUTDIR)\changeinfo.pdb" /map:"$(INTDIR)\changeinfo.map" /machine:I386 /out:"../../bin/release/plugins/changeinfo.dll" /implib:"$(OUTDIR)\changeinfo.lib" /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /base:"0x24000000" /dll /incremental:no /pdb:"$(OUTDIR)\changeinfo.pdb" /map:"$(INTDIR)\changeinfo.map" /debug /machine:I386 /out:"../../bin/release/plugins/changeinfo.dll" /implib:"$(OUTDIR)\changeinfo.lib" /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\constants.obj" \
 	"$(INTDIR)\db.obj" \
@@ -125,7 +128,6 @@ CLEAN :
 	-@erase "$(OUTDIR)\changeinfo.map"
 	-@erase "$(OUTDIR)\changeinfo.pdb"
 	-@erase "..\..\bin\debug\plugins\changeinfo.dll"
-	-@erase "..\..\bin\debug\plugins\changeinfo.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -138,7 +140,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\changeinfo.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\changeinfo.pdb" /map:"$(INTDIR)\changeinfo.map" /debug /machine:I386 /out:"../../bin/debug/plugins/changeinfo.dll" /implib:"$(OUTDIR)\changeinfo.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\changeinfo.pdb" /map:"$(INTDIR)\changeinfo.map" /debug /machine:I386 /out:"../../bin/debug/plugins/changeinfo.dll" /implib:"$(OUTDIR)\changeinfo.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\constants.obj" \
 	"$(INTDIR)\db.obj" \

@@ -10,6 +10,10 @@
 	".\m_cluiframes.h"\
 	
 
+.\iconlib.c : \
+	".\m_icolib.h"\
+	
+
 .\icq_xstatus.c : \
 	".\m_cluiframes.h"\
 	
@@ -45,6 +49,7 @@
 	".\globals.h"\
 	".\guids.h"\
 	".\i18n.h"\
+	".\iconlib.h"\
 	".\icq_advsearch.h"\
 	".\icq_avatar.h"\
 	".\icq_constants.h"\

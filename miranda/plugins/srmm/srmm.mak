@@ -51,14 +51,17 @@ CLEAN :
 	-@erase "$(INTDIR)\richutil.obj"
 	-@erase "$(INTDIR)\srmm.obj"
 	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\srmm.exp"
+	-@erase "$(OUTDIR)\srmm.lib"
 	-@erase "$(OUTDIR)\srmm.map"
+	-@erase "$(OUTDIR)\srmm.pdb"
 	-@erase "..\..\bin\release\plugins\srmm.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /Fp"$(INTDIR)\srmm.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /Fp"$(INTDIR)\srmm.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /d "NDEBUG" 
 BSC32=bscmake.exe
@@ -66,7 +69,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\srmm.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib /nologo /dll /pdb:none /map:"$(INTDIR)\srmm.map" /machine:I386 /out:"../../bin/release/plugins/srmm.dll" /implib:"$(OUTDIR)\srmm.lib" 
+LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\srmm.pdb" /map:"$(INTDIR)\srmm.map" /debug /machine:I386 /out:"../../bin/release/plugins/srmm.dll" /implib:"$(OUTDIR)\srmm.lib" 
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
@@ -109,7 +112,6 @@ CLEAN :
 	-@erase "$(OUTDIR)\srmm.lib"
 	-@erase "$(OUTDIR)\srmm.pdb"
 	-@erase "..\..\bin\debug\Plugins\srmm.dll"
-	-@erase "..\..\bin\debug\Plugins\srmm.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -122,7 +124,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\srmm.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\srmm.pdb" /debug /machine:I386 /out:"../../bin/debug/Plugins/srmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept 
+LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\srmm.pdb" /debug /machine:I386 /out:"../../bin/debug/Plugins/srmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
@@ -160,13 +162,16 @@ CLEAN :
 	-@erase "$(INTDIR)\richutil.obj"
 	-@erase "$(INTDIR)\srmm.obj"
 	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\srmm.exp"
+	-@erase "$(OUTDIR)\srmm.map"
+	-@erase "$(OUTDIR)\srmm.pdb"
 	-@erase "..\..\bin\Release Unicode\plugins\srmm.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /O1 /I "../../include" /D "UNICODE" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /Fp"$(INTDIR)\srmm.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "UNICODE" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /Fp"$(INTDIR)\srmm.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /d "NDEBUG" 
 BSC32=bscmake.exe
@@ -174,7 +179,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\srmm.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib /nologo /dll /pdb:none /machine:I386 /out:"../../bin/Release Unicode/plugins/srmm.dll" /implib:"$(OUTDIR)\srmm.lib" 
+LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\srmm.pdb" /map:"$(INTDIR)\srmm.map" /debug /machine:I386 /out:"../../bin/Release Unicode/plugins/srmm.dll" /implib:"$(OUTDIR)\srmm.lib" 
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
@@ -217,7 +222,6 @@ CLEAN :
 	-@erase "$(OUTDIR)\srmm.lib"
 	-@erase "$(OUTDIR)\srmm.pdb"
 	-@erase "..\..\bin\Debug Unicode\Plugins\srmm.dll"
-	-@erase "..\..\bin\Debug Unicode\Plugins\srmm.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -230,7 +234,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\srmm.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\srmm.pdb" /debug /machine:I386 /out:"../../bin/Debug Unicode/Plugins/srmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept 
+LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\srmm.pdb" /debug /machine:I386 /out:"../../bin/Debug Unicode/Plugins/srmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \

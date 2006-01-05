@@ -62,16 +62,18 @@ CLEAN :
 	-@erase "$(INTDIR)\userinfo.obj"
 	-@erase "$(INTDIR)\utils.obj"
 	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\version.obj"
 	-@erase "$(OUTDIR)\AIM.exp"
 	-@erase "$(OUTDIR)\AIM.lib"
 	-@erase "$(OUTDIR)\AIM.map"
+	-@erase "$(OUTDIR)\AIM.pdb"
 	-@erase "..\..\bin\release\plugins\AIM.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /O2 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /Fp"$(INTDIR)\aim.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /Fp"$(INTDIR)\aim.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
 BSC32=bscmake.exe
@@ -79,7 +81,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\aim.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\AIM.pdb" /map:"$(INTDIR)\AIM.map" /machine:I386 /out:"../../bin/release/plugins/AIM.dll" /implib:"$(OUTDIR)\AIM.lib" /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\AIM.pdb" /map:"$(INTDIR)\AIM.map" /debug /machine:I386 /out:"../../bin/release/plugins/AIM.dll" /implib:"$(OUTDIR)\AIM.lib" /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\aim.obj" \
 	"$(INTDIR)\buddies.obj" \
@@ -150,7 +152,6 @@ CLEAN :
 	-@erase "$(OUTDIR)\AIM.lib"
 	-@erase "$(OUTDIR)\AIM.pdb"
 	-@erase "..\..\bin\debug\plugins\AIM.dll"
-	-@erase "..\..\bin\debug\plugins\AIM.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -163,7 +164,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\aim.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\AIM.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/AIM.dll" /implib:"$(OUTDIR)\AIM.lib" /pdbtype:sept 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\AIM.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/AIM.dll" /implib:"$(OUTDIR)\AIM.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\aim.obj" \
 	"$(INTDIR)\buddies.obj" \

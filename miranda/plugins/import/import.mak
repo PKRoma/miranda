@@ -53,17 +53,20 @@ CLEAN :
 	-@erase "$(INTDIR)\progress.sbr"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\wizard.obj"
 	-@erase "$(INTDIR)\wizard.sbr"
 	-@erase "$(OUTDIR)\import.bsc"
 	-@erase "$(OUTDIR)\import.exp"
+	-@erase "$(OUTDIR)\import.lib"
 	-@erase "$(OUTDIR)\import.map"
+	-@erase "$(OUTDIR)\import.pdb"
 	-@erase "..\..\bin\release\plugins\import.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IMPORT_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\import.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IMPORT_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\import.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
 BSC32=bscmake.exe
@@ -82,7 +85,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x22000000" /dll /incremental:no /pdb:"$(OUTDIR)\import.pdb" /map:"$(INTDIR)\import.map" /machine:I386 /out:"../../bin/release/plugins/import.dll" /implib:"$(OUTDIR)\import.lib" /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x22000000" /dll /incremental:no /pdb:"$(OUTDIR)\import.pdb" /map:"$(INTDIR)\import.map" /debug /machine:I386 /out:"../../bin/release/plugins/import.dll" /implib:"$(OUTDIR)\import.lib" /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\ICQserver.obj" \
 	"$(INTDIR)\main.obj" \
@@ -128,7 +131,6 @@ CLEAN :
 	-@erase "$(OUTDIR)\import.exp"
 	-@erase "$(OUTDIR)\import.lib"
 	-@erase "..\..\bin\debug\plugins\import.dll"
-	-@erase "..\..\bin\debug\plugins\import.ilk"
 	-@erase "..\..\Bin\Debug\Plugins\import.map"
 	-@erase "..\..\Bin\Debug\Plugins\import.pdb"
 
@@ -154,7 +156,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x22000000" /dll /incremental:yes /pdb:"../../Bin/Debug/Plugins/import.pdb" /map:"../../Bin/Debug/Plugins/import.map" /debug /machine:I386 /out:"../../bin/debug/plugins/import.dll" /implib:"$(OUTDIR)\import.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x22000000" /dll /incremental:no /pdb:"../../Bin/Debug/Plugins/import.pdb" /map:"../../Bin/Debug/Plugins/import.map" /debug /machine:I386 /out:"../../bin/debug/plugins/import.dll" /implib:"$(OUTDIR)\import.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\ICQserver.obj" \
 	"$(INTDIR)\main.obj" \

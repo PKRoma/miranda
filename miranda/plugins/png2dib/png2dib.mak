@@ -69,7 +69,9 @@ CLEAN :
 	-@erase "$(INTDIR)\version.res"
 	-@erase "$(INTDIR)\zutil.obj"
 	-@erase "$(OUTDIR)\png2dib.exp"
+	-@erase "$(OUTDIR)\png2dib.lib"
 	-@erase "$(OUTDIR)\png2dib.map"
+	-@erase "$(OUTDIR)\png2dib.pdb"
 	-@erase "..\..\bin\Release\Plugins\png2dib.dll"
 
 "$(OUTDIR)" :
@@ -83,7 +85,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\png2dib.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\png2dib.pdb" /map:"$(INTDIR)\png2dib.map" /machine:I386 /def:".\png2dib.def" /out:"../../bin/Release/Plugins/png2dib.dll" /implib:"$(OUTDIR)\png2dib.lib" /filealign:512 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\png2dib.pdb" /map:"$(INTDIR)\png2dib.map" /debug /machine:I386 /def:".\png2dib.def" /out:"../../bin/Release/Plugins/png2dib.dll" /implib:"$(OUTDIR)\png2dib.lib" /filealign:512 
 DEF_FILE= \
 	".\png2dib.def"
 LINK32_OBJS= \
@@ -195,7 +197,6 @@ CLEAN :
 	-@erase "$(OUTDIR)\png2dib.lib"
 	-@erase "$(OUTDIR)\png2dib.pdb"
 	-@erase "..\..\bin\Debug\plugins\png2dib.dll"
-	-@erase "..\..\bin\Debug\plugins\png2dib.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -240,7 +241,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\png2dib.pdb" /debug /machine:I386 /def:".\png2dib.def" /out:"../../bin/Debug/plugins/png2dib.dll" /implib:"$(OUTDIR)\png2dib.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\png2dib.pdb" /debug /machine:I386 /def:".\png2dib.def" /out:"../../bin/Debug/plugins/png2dib.dll" /implib:"$(OUTDIR)\png2dib.lib" /pdbtype:sept 
 DEF_FILE= \
 	".\png2dib.def"
 LINK32_OBJS= \

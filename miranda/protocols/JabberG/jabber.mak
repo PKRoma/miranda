@@ -73,6 +73,7 @@ CLEAN :
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\jabber.exp"
+	-@erase "$(OUTDIR)\jabber.lib"
 	-@erase "$(OUTDIR)\jabber.map"
 	-@erase "$(OUTDIR)\jabber.pdb"
 	-@erase "..\..\bin\release\plugins\jabber.dll"
@@ -92,6 +93,7 @@ LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi3
 LINK32_OBJS= \
 	"$(INTDIR)\jabber.obj" \
 	"$(INTDIR)\jabber_agent.obj" \
+	"$(INTDIR)\jabber_bitmap.obj" \
 	"$(INTDIR)\jabber_byte.obj" \
 	"$(INTDIR)\jabber_chat.obj" \
 	"$(INTDIR)\jabber_file.obj" \
@@ -119,8 +121,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xml.obj" \
 	"$(INTDIR)\jabber_xmlns.obj" \
 	"$(INTDIR)\sha1.obj" \
-	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_bitmap.obj"
+	"$(INTDIR)\msvc6.res"
 
 "..\..\bin\release\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -209,7 +210,6 @@ CLEAN :
 	-@erase "$(OUTDIR)\jabber.map"
 	-@erase "$(OUTDIR)\jabber.pdb"
 	-@erase "..\..\bin\debug\plugins\jabber.dll"
-	-@erase "..\..\bin\debug\plugins\jabber.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -222,6 +222,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\jabber.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\jabber.sbr" \
 	"$(INTDIR)\jabber_agent.sbr" \
+	"$(INTDIR)\jabber_bitmap.sbr" \
 	"$(INTDIR)\jabber_byte.sbr" \
 	"$(INTDIR)\jabber_chat.sbr" \
 	"$(INTDIR)\jabber_file.sbr" \
@@ -248,8 +249,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_ws.sbr" \
 	"$(INTDIR)\jabber_xml.sbr" \
 	"$(INTDIR)\jabber_xmlns.sbr" \
-	"$(INTDIR)\sha1.sbr" \
-	"$(INTDIR)\jabber_bitmap.sbr"
+	"$(INTDIR)\sha1.sbr"
 
 "$(OUTDIR)\jabber.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -257,10 +257,11 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib version.lib /nologo /base:"0x32500000" /dll /incremental:yes /pdb:"$(OUTDIR)\jabber.pdb" /map:"$(INTDIR)\jabber.map" /debug /machine:I386 /out:"../../bin/debug/plugins/jabber.dll" /implib:"$(OUTDIR)\jabber.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib version.lib /nologo /base:"0x32500000" /dll /incremental:no /pdb:"$(OUTDIR)\jabber.pdb" /map:"$(INTDIR)\jabber.map" /debug /machine:I386 /out:"../../bin/debug/plugins/jabber.dll" /implib:"$(OUTDIR)\jabber.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\jabber.obj" \
 	"$(INTDIR)\jabber_agent.obj" \
+	"$(INTDIR)\jabber_bitmap.obj" \
 	"$(INTDIR)\jabber_byte.obj" \
 	"$(INTDIR)\jabber_chat.obj" \
 	"$(INTDIR)\jabber_file.obj" \
@@ -288,8 +289,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xml.obj" \
 	"$(INTDIR)\jabber_xmlns.obj" \
 	"$(INTDIR)\sha1.obj" \
-	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_bitmap.obj"
+	"$(INTDIR)\msvc6.res"
 
 "..\..\bin\debug\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
