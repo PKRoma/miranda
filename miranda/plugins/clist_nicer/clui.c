@@ -1324,20 +1324,12 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			g_CluiData.forceResize = FALSE;
 			PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
 		}
-        if (wParam == SIZE_MINIMIZED) {
-            if (DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT)) {
-                ShowWindow(hwnd, SW_HIDE);
-                DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
-            } else
-                DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_MINIMIZED);
-        }
-		else if(wParam == SIZE_RESTORED) {
-			if(DBGetContactSettingByte(NULL, "CList", "State", 0) == SETTING_STATE_MINIMIZED || DBGetContactSettingByte(NULL, "CList", "State", 0) == SETTING_STATE_HIDDEN) {
-				ShowWindow(hwnd, SW_RESTORE);
-				DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
-				PostMessage(hwnd, WM_SIZE, 0, 0);
-				PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
-			}
+		if (wParam == SIZE_MINIMIZED) {
+			if (DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT)) {
+				ShowWindow(hwnd, SW_HIDE);
+				DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
+			} else
+				DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_MINIMIZED);
 		}
 	case WM_MOVE:
 		if (!IsIconic(hwnd)) {
