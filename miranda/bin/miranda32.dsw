@@ -163,6 +163,22 @@ Package=<4>
 
 ###############################################################################
 
+Project: "clist_nicer"=..\plugins\clist_nicer\clist.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Miranda/miranda/plugins/clist_nicer", JBOAAAAA
+    ..\plugins\clist_nicer
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "contacts"=..\plugins\contacts\contacts.dsp - Package Owner=<4>
 
 Package=<5>
@@ -282,22 +298,6 @@ Package=<5>
     begin source code control
     "$/Miranda/miranda/plugins/help", YKIAAAAA
     ..\plugins\help
-    end source code control
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "historyw"=..\plugins\historyw\historyw.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-    begin source code control
-    "$/Miranda/miranda/plugins/historyw", ZKIAAAAA
-    ..\plugins\historyw
     end source code control
 }}}
 

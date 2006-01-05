@@ -54,6 +54,10 @@ cd ..\clist
 nmake /f clist.mak CFG="clist - Win32 Release Unicode"
 if errorlevel 1 goto :Error
 
+cd ..\clist_nicer
+nmake /f clist.mak CFG="clist_nicer - Win32 Release Unicode"
+if errorlevel 1 goto :Error
+
 cd ..\help
 nmake /f help.mak CFG="help - Win32 Release Unicode"
 if errorlevel 1 goto :Error
@@ -174,6 +178,33 @@ goto :eof
 :Pack
 del %Temp%\miranda-v%1a%2w.zip
 7za.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2w.zip ./*  ..\ChangeLog.txt
+
+rd /Q /S %Temp%\pdbw
+md %Temp%\pdbw
+copy ..\..\src\Release\miranda32.pdb                           %Temp%\pdbw
+copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb          %Temp%\pdbw
+rem  Protocols
+copy ..\..\protocols\AimTOC2\Release\AIM.pdb                   %Temp%\pdbw
+copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb                 %Temp%\pdbw
+copy ..\..\protocols\IRC\Release\IRC.pdb                       %Temp%\pdbw
+copy ..\..\protocols\JabberG\Release\jabber.pdb                %Temp%\pdbw
+copy ..\..\protocols\MSN\Release\MSN.pdb                       %Temp%\pdbw
+copy ..\..\protocols\Yahoo\Release\Yahoo.pdb                   %Temp%\pdbw
+rem  Unicode plugins
+copy ..\..\plugins\chat\Release_Unicode\chat.pdb               %Temp%\pdbw
+copy ..\..\plugins\clist\Release_Unicode\clist_classic.pdb     %Temp%\pdbw
+copy ..\..\plugins\clist_nicer\Release_Unicode\clist_nicer.pdb %Temp%\pdbw
+copy ..\..\plugins\help\Release_Unicode\help.pdb               %Temp%\pdbw
+copy ..\..\plugins\mwclist\Release_Unicode\clist_mw.pdb        %Temp%\pdbw
+copy ..\..\plugins\srmm\Release_Unicode\srmm.pdb               %Temp%\pdbw
+copy ..\..\plugins\tabSRMM\Release_Unicode\tabSRMM.pdb         %Temp%\pdbw
+rem  Non-Unicode plugins
+copy ..\..\plugins\db3x\Release\dbx_3x.pdb                     %Temp%\pdbw
+copy ..\..\plugins\import\Release\import.pdb                   %Temp%\pdbw
+copy ..\..\plugins\png2dib\Release\png2dib.pdb                 %Temp%\pdbw
+rem Zip now
+7za.exe a -tzip -r -mx=9 %Temp%\miranda-pdb-v%1a%2w.zip %Temp%\pdbw/*
+rd /Q /S %Temp%\pdbw
 goto :eof
 
 :Error

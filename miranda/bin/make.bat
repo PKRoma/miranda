@@ -54,6 +54,10 @@ cd ..\clist
 nmake /f clist.mak CFG="clist - Win32 Release"
 if errorlevel 1 goto :Error
 
+cd ..\clist_nicer
+nmake /f clist.mak CFG="clist_nicer - Win32 Release"
+if errorlevel 1 goto :Error
+
 cd ..\db3x
 nmake /f db3x.mak CFG="db3x - Win32 Release"
 if errorlevel 1 goto :Error
@@ -176,6 +180,31 @@ goto :eof
 :Pack
 del %Temp%\miranda-v%1a%2.zip
 7za.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2.zip ./* ..\ChangeLog.txt
+
+rd /Q /S %Temp%\pdba
+md %Temp%\pdba
+copy ..\..\src\Release\miranda32.pdb                   %Temp%\pdba
+copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb  %Temp%\pdba
+rem  Protocols
+copy ..\..\protocols\AimTOC2\Release\AIM.pdb           %Temp%\pdba
+copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb         %Temp%\pdba
+copy ..\..\protocols\IRC\Release\IRC.pdb               %Temp%\pdba
+copy ..\..\protocols\JabberG\Release\jabber.pdb        %Temp%\pdba
+copy ..\..\protocols\MSN\Release\MSN.pdb               %Temp%\pdba
+copy ..\..\protocols\Yahoo\Release\Yahoo.pdb           %Temp%\pdba
+rem  Plugins
+copy ..\..\plugins\chat\Release\chat.pdb               %Temp%\pdba
+copy ..\..\plugins\clist\Release\clist_classic.pdb     %Temp%\pdba
+copy ..\..\plugins\clist_nicer\Release\clist_nicer.pdb %Temp%\pdba
+copy ..\..\plugins\db3x\Release\dbx_3x.pdb             %Temp%\pdba
+copy ..\..\plugins\help\Release\help.pdb               %Temp%\pdba
+copy ..\..\plugins\import\Release\import.pdb           %Temp%\pdba
+copy ..\..\plugins\mwclist\Release\clist_mw.pdb        %Temp%\pdba
+copy ..\..\plugins\png2dib\Release\png2dib.pdb         %Temp%\pdba
+copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba
+copy ..\..\plugins\tabSRMM\Release\tabSRMM.pdb         %Temp%\pdba
+7za.exe a -tzip -r -mx=9 %Temp%\miranda-pdb-v%1a%2.zip %Temp%\pdba/*
+rd /Q /S %Temp%\pdba
 goto :eof
 
 :Error
