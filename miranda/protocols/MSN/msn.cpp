@@ -51,6 +51,7 @@ void		UninitSsl( void );
 int      uniqueEventId = 0;
 int      msnSearchID = -1;
 char*    msnExternalIP = NULL;
+char*    msnPreviousUUX = NULL;
 HANDLE   msnMainThread;
 int      msnOtherContactsBlocked = 0;
 HANDLE   hHookOnUserInfoInit = NULL;
@@ -359,6 +360,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( MSPAuth ) free( MSPAuth );
 	if ( rru ) free( rru );
 
+	if ( msnPreviousUUX ) free( msnPreviousUUX );
 	if ( msnExternalIP ) free( msnExternalIP );
 	return 0;
 }

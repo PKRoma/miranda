@@ -393,6 +393,8 @@ int __stdcall MSN_SendNicknameW( WCHAR* nickname)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendStatusMessage - notify a server about the status message change
 
+extern char* msnPreviousUUX;
+
 void __stdcall MSN_SendStatusMessage( const char* msg )
 {
 	if ( !msnLoggedIn || !MyOptions.UseMSNP11 )
@@ -403,6 +405,10 @@ void __stdcall MSN_SendStatusMessage( const char* msg )
 	mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia></Data>", UTF8(msgEnc));
 	free( msgEnc );
 
+	if ( !lstrcmpA( msnPreviousUUX, szMsg ))
+		return;
+
+	replaceStr( msnPreviousUUX, szMsg );
 	if ( !MSN_GetStaticString( "e-mail", NULL, szEmail, sizeof szEmail ))
 		msnNsThread->sendPacket( "UUX", "%d\r\n%s", strlen( szMsg ), szMsg );
 }
