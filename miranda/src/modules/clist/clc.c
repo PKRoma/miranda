@@ -45,7 +45,7 @@ void fnClcBroadcast( int msg, WPARAM wParam, LPARAM lParam )
 
 void fnClcOptionsChanged(void)
 {
-	WindowList_Broadcast(hClcWindowList, INTM_RELOADOPTIONS, 0, 0);
+	cli.pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0);
 }
 
 HMENU fnBuildGroupPopupMenu( struct ClcGroup* group )
@@ -70,35 +70,35 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 	if ( (HANDLE)wParam != NULL && !strcmp(cws->szModule, "CList")) {
 		if (!strcmp(cws->szSetting, "MyHandle")) {
 			cli.pfnInvalidateDisplayNameCacheEntry((HANDLE) wParam);
-			WindowList_Broadcast(hClcWindowList, INTM_NAMECHANGED, wParam, lParam);
+			cli.pfnClcBroadcast( INTM_NAMECHANGED, wParam, lParam);
 		}
 		else if (!strcmp(cws->szSetting, "Group"))
-			WindowList_Broadcast(hClcWindowList, INTM_GROUPCHANGED, wParam, lParam);
+			cli.pfnClcBroadcast( INTM_GROUPCHANGED, wParam, lParam);
 		else if (!strcmp(cws->szSetting, "Hidden"))
-			WindowList_Broadcast(hClcWindowList, INTM_HIDDENCHANGED, wParam, lParam);
+			cli.pfnClcBroadcast( INTM_HIDDENCHANGED, wParam, lParam);
 		else if (!strcmp(cws->szSetting, "NotOnList"))
-			WindowList_Broadcast(hClcWindowList, INTM_NOTONLISTCHANGED, wParam, lParam);
+			cli.pfnClcBroadcast( INTM_NOTONLISTCHANGED, wParam, lParam);
 		else if (!strcmp(cws->szSetting, "Status"))
-			WindowList_Broadcast(hClcWindowList, INTM_INVALIDATE, 0, 0);
+			cli.pfnClcBroadcast( INTM_INVALIDATE, 0, 0);
 		else if (!strcmp(cws->szSetting, "NameOrder"))
-			WindowList_Broadcast(hClcWindowList, INTM_NAMEORDERCHANGED, 0, 0);
+			cli.pfnClcBroadcast( INTM_NAMEORDERCHANGED, 0, 0);
 	}
 	else if (!strcmp(cws->szModule, "CListGroups")) {
-		WindowList_Broadcast(hClcWindowList, INTM_GROUPSCHANGED, wParam, lParam);
+		cli.pfnClcBroadcast( INTM_GROUPSCHANGED, wParam, lParam);
 	}
 	else {
 		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
 		if (szProto != NULL && (HANDLE) wParam != NULL) {
 			char *id = NULL;
 			if (!strcmp(cws->szModule, "Protocol") && !strcmp(cws->szSetting, "p")) {
-				WindowList_Broadcast(hClcWindowList, INTM_PROTOCHANGED, wParam, lParam);
+				cli.pfnClcBroadcast( INTM_PROTOCHANGED, wParam, lParam);
 			}
 			// something is being written to a protocol module
 			if (!strcmp(szProto, cws->szModule)) {
 				// was a unique setting key written?
 				id = (char *) CallProtoService(szProto, PS_GETCAPS, PFLAG_UNIQUEIDSETTING, 0);
 				if ((int) id != CALLSERVICE_NOTFOUND && id != NULL && !strcmp(id, cws->szSetting)) {
-					WindowList_Broadcast(hClcWindowList, INTM_PROTOCHANGED, wParam, lParam);
+					cli.pfnClcBroadcast( INTM_PROTOCHANGED, wParam, lParam);
 				}
 			}
 		}
@@ -106,11 +106,11 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 			return 0;
 		if (!strcmp(cws->szSetting, "Nick") || !strcmp(cws->szSetting, "FirstName") || !strcmp(cws->szSetting, "e-mail")
 			|| !strcmp(cws->szSetting, "LastName") || !strcmp(cws->szSetting, "UIN"))
-			WindowList_Broadcast(hClcWindowList, INTM_NAMECHANGED, wParam, lParam);
+			cli.pfnClcBroadcast( INTM_NAMECHANGED, wParam, lParam);
 		else if (!strcmp(cws->szSetting, "ApparentMode"))
-			WindowList_Broadcast(hClcWindowList, INTM_APPARENTMODECHANGED, wParam, lParam);
+			cli.pfnClcBroadcast( INTM_APPARENTMODECHANGED, wParam, lParam);
 		else if (!strcmp(cws->szSetting, "IdleTS"))
-			WindowList_Broadcast(hClcWindowList, INTM_IDLECHANGED, wParam, lParam);
+			cli.pfnClcBroadcast( INTM_IDLECHANGED, wParam, lParam);
 	}
 	return 0;
 }
@@ -178,7 +178,7 @@ static int ClcIconsChanged(WPARAM wParam, LPARAM lParam)
 static int SetInfoTipHoverTime(WPARAM wParam, LPARAM lParam)
 {
 	DBWriteContactSettingWord(NULL, "CLC", "InfoTipHoverTime", (WORD) wParam);
-	WindowList_Broadcast(hClcWindowList, INTM_SETINFOTIPHOVERTIME, wParam, 0);
+	cli.pfnClcBroadcast( INTM_SETINFOTIPHOVERTIME, wParam, 0);
 	return 0;
 }
 
