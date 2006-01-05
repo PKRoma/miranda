@@ -292,10 +292,8 @@ static int TrayIconInit(HWND hwnd)
 	int averageMode = 0;
 	PROTOCOLDESCRIPTOR **protos;
 
-	#if !defined( _UNICODE )
-		if(ServiceExists("mToolTip/ShowTip"))
-			mToolTipTrayTips = TRUE;
-	#endif
+	if(ServiceExists("mToolTip/ShowTip"))
+		mToolTipTrayTips = TRUE;
 
 	if (cycleTimerId) {
 		KillTimer(NULL, cycleTimerId); 
@@ -639,7 +637,14 @@ static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWOR
 		if(pt.x == tray_hover_pos.x && pt.y == tray_hover_pos.y) {
 			ti.cbSize = sizeof(ti);
 			ti.isTreeFocused = GetFocus() == pcli->hwndContactList ? 1 : 0;
-        	CallService("mToolTip/ShowTip", (WPARAM)szTip, (LPARAM)&ti);
+			#if defined( _UNICODE )
+			{	char* p = u2a( szTip );
+	        	CallService("mToolTip/ShowTip", (WPARAM)p, (LPARAM)&ti);
+				free( p );
+			}
+			#else
+	        	CallService("mToolTip/ShowTip", (WPARAM)szTip, (LPARAM)&ti);
+			#endif
 			GetCursorPos(&tray_hover_pos);
 			g_trayTooltipActive = TRUE;
 		}
