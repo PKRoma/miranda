@@ -188,7 +188,7 @@ void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
 {
     TCITEM item = {0};
     struct MessageWindowData *dat = 0;
-    DWORD dwTextFlags = DT_SINGLELINE | DT_VCENTER;
+    DWORD dwTextFlags = DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX;
     item.mask = TCIF_PARAM;
     TabCtrl_GetItem(tabdat->hwnd, nItem, &item);
 
