@@ -2086,18 +2086,22 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			SelectObject(g_CluiData.hdcBg, g_CluiData.hbmBgOld);
 			DeleteObject(g_CluiData.hbmBg);
 			DeleteDC(g_CluiData.hdcBg);
+			g_CluiData.hdcBg = NULL;
 		}
 		if(g_CluiData.bmpBackground) {
 			SelectObject(g_CluiData.hdcPic, g_CluiData.hbmPicOld);
 			DeleteDC(g_CluiData.hdcPic);
 			DeleteObject(g_CluiData.bmpBackground);
+			g_CluiData.bmpBackground = NULL;
 		}
 		DestroyMenu(g_CluiData.hMenuButtons);
 		FreeProtocolData();
 
 		CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);
 		UnLoadCLUIFramesModule();
-		free(g_ExtraCache);
+		if (g_ExtraCache) {
+			free(g_ExtraCache); g_ExtraCache = NULL;
+		}
 		break;
 	}
 	return saveContactListWndProc(hwnd, msg, wParam, lParam);
