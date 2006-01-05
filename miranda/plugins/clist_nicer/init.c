@@ -52,6 +52,10 @@ HMENU  BuildGroupPopupMenu( struct ClcGroup* group );
 int    CListTrayNotify( MIRANDASYSTRAYNOTIFY *msn );
 struct ClcContact* CreateClcContact( void );
 void   ReloadThemedOptions();
+void   TrayIconIconsChanged(void);
+void   TrayIconSetToBase(char *szPreferredProto);
+void   TrayIconUpdateBase(const char *szChangedProto);
+void   TrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPreferredProto);
 
 int AddEvent(WPARAM wParam, LPARAM lParam);
 int RemoveEvent(WPARAM wParam, LPARAM lParam);
@@ -278,9 +282,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	g_CluiData.soundsOff = DBGetContactSettingByte(NULL, "CLUI", "NoSounds", 0);
 
 	pDrawAlpha = NULL;
-	if(!pDrawAlpha) {
-		pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS && g_gdiplusToken) ? GDIp_DrawAlpha : DrawAlpha;
-	}
+	if(!pDrawAlpha)
+		pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS && g_gdiplusToken) ? (pfnDrawAlpha)GDIp_DrawAlpha : (pfnDrawAlpha)DrawAlpha;
 
 	if(DBGetContactSettingByte(NULL, "Skin", "UseSound", 0) != g_CluiData.soundsOff)
 		DBWriteContactSettingByte(NULL, "Skin", "UseSound", g_CluiData.soundsOff ? 0 : 1);
@@ -305,6 +308,10 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnRowHitTest = RowHeights_HitTest;
 	pcli->pfnGetRowHeight = RowHeights_GetHeight;
 	pcli->pfnScrollTo = ScrollTo;
+	pcli->pfnTrayIconIconsChanged = TrayIconIconsChanged;
+	pcli->pfnTrayIconSetToBase = TrayIconSetToBase;
+	pcli->pfnTrayIconUpdateBase = TrayIconUpdateBase;
+	pcli->pfnTrayIconUpdateWithImageList = TrayIconUpdateWithImageList;
 
 	saveAddContactToGroup = pcli->pfnAddContactToGroup; pcli->pfnAddContactToGroup = AddContactToGroup;
 	saveAddGroup = pcli->pfnAddGroup; pcli->pfnAddGroup = AddGroup;

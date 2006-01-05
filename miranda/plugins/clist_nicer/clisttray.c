@@ -61,7 +61,7 @@ typedef struct
 	UINT uFlags;
 	UINT uCallbackMessage;
 	HICON hIcon;
-	CHAR szTip[128];
+	TCHAR szTip[128];
 	DWORD dwState;
 	DWORD dwStateMask;
 	CHAR szInfo[256];
@@ -108,11 +108,11 @@ typedef HRESULT (CALLBACK* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
 static DLLVERSIONINFO dviShell;
 static BOOL mToolTipTrayTips = FALSE;
 
-static char szTip[2048];
-static char * TrayIconMakeTooltip(const char *szPrefix, const char *szProto)
+static TCHAR szTip[2048];
+static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 {
 	char szProtoName[32];
-	char *szStatus, *szSeparator;
+	TCHAR *szStatus, *szSeparator, *sztProto;
 	int tipSize;
 
 	if(ServiceExists("mToolTip/ShowTip"))
@@ -121,9 +121,9 @@ static char * TrayIconMakeTooltip(const char *szPrefix, const char *szProto)
 		tipSize = 128;
 
 	if(!mToolTipTrayTips)
-		szSeparator = (IsWinVerMEPlus()) ? szSeparator = "\n" : " | ";
+		szSeparator = (IsWinVerMEPlus()) ? szSeparator = _T("\n") : _T(" | ");
 	else
-		szSeparator = "\n";
+		szSeparator = _T("\n");
 
 	if (szProto == NULL) {
 		PROTOCOLDESCRIPTOR **protos;
@@ -139,7 +139,7 @@ static char * TrayIconMakeTooltip(const char *szPrefix, const char *szProto)
 					return TrayIconMakeTooltip(szPrefix, protos[i]->szName);
 			}
 			if (szPrefix && szPrefix[0]) {
-				lstrcpynA(szTip, szPrefix, tipSize);
+				lstrcpyn(szTip, szPrefix, tipSize);
 				if (!DBGetContactSettingByte(NULL, "CList", "AlwaysStatus", SETTING_ALWAYSSTATUS_DEFAULT))
 					return szTip;
 			} else
@@ -149,49 +149,71 @@ static char * TrayIconMakeTooltip(const char *szPrefix, const char *szProto)
 				if (protos[i]->type != PROTOTYPE_PROTOCOL || !GetProtocolVisibility(protos[i]->szName))
 					continue;
 				CallProtoService(protos[i]->szName, PS_GETNAME, sizeof(szProtoName), (LPARAM) szProtoName);
-				szStatus = (char*) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, CallProtoService(protos[i]->szName, PS_GETSTATUS, 0, 0), 0);
+				szStatus = pcli->pfnGetStatusModeDescription(CallProtoService(protos[i]->szName, PS_GETSTATUS, 0, 0), 0);
 				if(szStatus) {
 					if(mToolTipTrayTips) {
-						char tipline[256];
-						mir_snprintf(tipline, 256, "<b>%-12.12s</b>\t%s", szProtoName, szStatus);
+						TCHAR tipline[256];
+						#if defined( _UNICODE )
+						{	TCHAR* p = a2u( szProtoName );
+							mir_sntprintf(tipline, 256, _T("<b>%-12.12s</b>\t%s"), p, szStatus);
+							free( p );
+						}
+						#else
+							mir_sntprintf(tipline, 256, _T("<b>%-12.12s</b>\t%s"), szProtoName, szStatus);
+						#endif
 						if (szTip[0])
-							strncat(szTip, szSeparator, tipSize - 1 - strlen(szTip));
-						strncat(szTip, tipline, tipSize - 1 - strlen(szTip));
+							_tcsncat(szTip, szSeparator, tipSize - 1 - _tcslen(szTip));
+						_tcsncat(szTip, tipline, tipSize - 1 - _tcslen(szTip));
 					}
 					else {
 						if (szTip[0])
-							strncat(szTip, szSeparator, tipSize - 1 - strlen(szTip));
-						strncat(szTip, szProtoName, tipSize - 1 - strlen(szTip));
-						strncat(szTip, " ", tipSize - 1 - strlen(szTip));
-						strncat(szTip, szStatus, tipSize - 1 - strlen(szTip));
+							_tcsncat(szTip, szSeparator, tipSize - 1 - _tcslen(szTip));
+						#if defined( _UNICODE )
+						{	TCHAR* p = a2u( szProtoName );
+							_tcsncat(szTip, p, SIZEOF(szTip) - 1 - _tcslen(szTip));
+							free( p );
+						}
+						#else
+							_tcsncat(szTip, szProtoName, SIZEOF(szTip) - 1 - _tcslen(szTip));
+						#endif
+						_tcsncat(szTip, _T(" "), tipSize - 1 - _tcslen(szTip));
+						_tcsncat(szTip, szStatus, tipSize - 1 - _tcslen(szTip));
 					}
 				}
 			}
 	} else {
 		CallProtoService(szProto, PS_GETNAME, sizeof(szProtoName), (LPARAM) szProtoName);
-		szStatus = (char*) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, CallProtoService(szProto, PS_GETSTATUS, 0, 0), 0);
+		#if defined( _UNICODE )
+			sztProto = a2u( szProtoName );
+		#else
+			sztProto = szProtoName;
+		#endif
+		szStatus = pcli->pfnGetStatusModeDescription(CallProtoService(szProto, PS_GETSTATUS, 0, 0), 0);
 		if (szPrefix && szPrefix[0]) {
 			if (DBGetContactSettingByte(NULL, "CList", "AlwaysStatus", SETTING_ALWAYSSTATUS_DEFAULT)) {
 				if(mToolTipTrayTips)
-					_snprintf(szTip, tipSize, "%s%s<b>%-12.12s</b>\t%s", szPrefix, szSeparator, szProtoName, szStatus);
+					mir_sntprintf(szTip, tipSize, _T("%s%s<b>%-12.12s</b>\t%s"), szPrefix, szSeparator, sztProto, szStatus);
 				else
-					_snprintf(szTip, tipSize, "%s%s%s %s", szPrefix, szSeparator, szProtoName, szStatus);
+					mir_sntprintf(szTip, tipSize, _T("%s%s%s %s"), szPrefix, szSeparator, sztProto, szStatus);
 			}
 			else
-				lstrcpynA(szTip, szPrefix, tipSize);
+				lstrcpyn(szTip, szPrefix, tipSize);
 		} else {
 			if(mToolTipTrayTips)
-				_snprintf(szTip, tipSize, "<b>%-12-12s</b>\t%s", szProtoName, szStatus);
+				mir_sntprintf(szTip, tipSize, _T("<b>%-12-12s</b>\t%s"), sztProto, szStatus);
 			else
-				_snprintf(szTip, tipSize, "%s %s", szProtoName, szStatus);
+				mir_sntprintf(szTip, tipSize, _T("%s %s"), sztProto, szStatus);
 		}
+		#if defined( _UNICODE )
+			free(sztProto);
+		#endif
 	}
 	return szTip;
 }
 
 static int TrayIconAdd(HWND hwnd, const char *szProto, const char *szIconProto, int status)
 {
-	NOTIFYICONDATAA nid = {0};
+	NOTIFYICONDATA nid = {0};
 	NOTIFYICONDATA_NEW nidn = {0};
 	int i, iIcon = 0;
 	HICON hIcon = 0;
@@ -224,13 +246,13 @@ static int TrayIconAdd(HWND hwnd, const char *szProto, const char *szIconProto, 
 		nidn.hIcon = nid.hIcon;
 		TrayIconMakeTooltip(NULL, trayIcon[i].szProto);
 		if(!mToolTipTrayTips && !g_CluiData.bNoTrayTips)
-			lstrcpynA(nidn.szTip, szTip, sizeof(nidn.szTip));
-		Shell_NotifyIconA(NIM_ADD, (void*) &nidn);
+			lstrcpyn(nidn.szTip, szTip, SIZEOF(nidn.szTip));
+		Shell_NotifyIcon(NIM_ADD, (void*) &nidn);
 	} else {
 		TrayIconMakeTooltip(NULL, trayIcon[i].szProto);
 		if(!mToolTipTrayTips && !g_CluiData.bNoTrayTips)
-			lstrcpynA(nid.szTip, szTip, sizeof(nid.szTip));
-		Shell_NotifyIconA(NIM_ADD, &nid);
+			lstrcpyn(nid.szTip, szTip, SIZEOF(nid.szTip));
+		Shell_NotifyIcon(NIM_ADD, &nid);
 	}
 	trayIcon[i]. isBase = 1;
 	return i;
@@ -270,8 +292,10 @@ static int TrayIconInit(HWND hwnd)
 	int averageMode = 0;
 	PROTOCOLDESCRIPTOR **protos;
 
-	if(ServiceExists("mToolTip/ShowTip"))
-		mToolTipTrayTips = TRUE;
+	#if !defined( _UNICODE )
+		if(ServiceExists("mToolTip/ShowTip"))
+			mToolTipTrayTips = TRUE;
+	#endif
 
 	if (cycleTimerId) {
 		KillTimer(NULL, cycleTimerId); 
@@ -339,16 +363,9 @@ static void TrayIconDestroy(HWND hwnd)
 	trayIconCount = 0;
 }
 
-//called when Explorer crashes and the taskbar is remade
-static void TrayIconTaskbarCreated(HWND hwnd)
+int TrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szPreferredProto, int isBase)
 {
-	TrayIconDestroy(hwnd);
-	TrayIconInit(hwnd);
-}
-
-int TrayIconUpdate(HICON hNewIcon, const char *szNewTip, const char *szPreferredProto, int isBase)
-{
-	NOTIFYICONDATAA nid = {0};
+	NOTIFYICONDATA nid = {0};
 	NOTIFYICONDATA_NEW nidn = {0};
 	int i;
 	char szProto = 0;
@@ -372,13 +389,13 @@ int TrayIconUpdate(HICON hNewIcon, const char *szNewTip, const char *szPreferred
 			nidn.uID = nid.uID;
 			TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
 			if(!mToolTipTrayTips && !g_CluiData.bNoTrayTips)
-				lstrcpynA(nidn.szTip, szTip, sizeof(nidn.szTip));
-			Shell_NotifyIconA(NIM_MODIFY, (void*) &nidn);
+				lstrcpyn(nidn.szTip, szTip, SIZEOF(nidn.szTip));
+			Shell_NotifyIcon(NIM_MODIFY, (void*) &nidn);
 		} else {
 			TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
 			if(!mToolTipTrayTips && !g_CluiData.bNoTrayTips)
-				lstrcpynA(nid.szTip, szTip, sizeof(nid.szTip));
-			Shell_NotifyIconA(NIM_MODIFY, &nid);
+				lstrcpyn(nid.szTip, szTip, SIZEOF(nid.szTip));
+			Shell_NotifyIcon(NIM_MODIFY, &nid);
 		}
 		trayIcon[i].isBase = isBase;
 		return i;
@@ -396,13 +413,13 @@ int TrayIconUpdate(HICON hNewIcon, const char *szNewTip, const char *szPreferred
 			nidn.uID = nid.uID;
 			TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
 			if(!mToolTipTrayTips && !g_CluiData.bNoTrayTips)
-				lstrcpynA(nidn.szTip, szTip, sizeof(nidn.szTip));
-			Shell_NotifyIconA(NIM_MODIFY, (void*) &nidn);
+				lstrcpyn(nidn.szTip, szTip, SIZEOF(nidn.szTip));
+			Shell_NotifyIcon(NIM_MODIFY, (void*) &nidn);
 		} else {
 			TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
 			if(!mToolTipTrayTips && !g_CluiData.bNoTrayTips)
-				lstrcpynA(nid.szTip, szTip, sizeof(nid.szTip));
-			Shell_NotifyIconA(NIM_MODIFY, &nid);
+				lstrcpyn(nid.szTip, szTip, SIZEOF(nid.szTip));
+			Shell_NotifyIcon(NIM_MODIFY, &nid);
 		}
 		trayIcon[i]. isBase = isBase;
 	}
@@ -435,6 +452,13 @@ int TrayIconSetBaseInfo(HICON hIcon, const char *szPreferredProto)
 	}
 	DestroyIcon(hIcon);
 	return -1;
+}
+
+void TrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPreferredProto)
+{
+    HICON hIcon = ImageList_GetIcon(hCListImages, iImage, ILD_NORMAL);
+    TrayIconUpdate(hIcon, szNewTip, szPreferredProto, 0);
+    DestroyIcon(hIcon);
 }
 
 static VOID CALLBACK TrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
@@ -595,6 +619,13 @@ void TrayIconSetToBase(char *szPreferredProto)
 	}
 }
 
+void TrayIconIconsChanged(void)
+{
+	HWND hwnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
+	TrayIconDestroy(hwnd);
+	TrayIconInit(hwnd);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 extern int ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
@@ -608,7 +639,7 @@ static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWOR
 		if(pt.x == tray_hover_pos.x && pt.y == tray_hover_pos.y) {
 			ti.cbSize = sizeof(ti);
 			ti.isTreeFocused = GetFocus() == pcli->hwndContactList ? 1 : 0;
-			CallService("mToolTip/ShowTip", (WPARAM)szTip, (LPARAM)&ti);
+        	CallService("mToolTip/ShowTip", (WPARAM)szTip, (LPARAM)&ti);
 			GetCursorPos(&tray_hover_pos);
 			g_trayTooltipActive = TRUE;
 		}
@@ -620,6 +651,14 @@ int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 {
 	MSG *msg = (MSG *) wParam;
 	switch( msg->message ) {
+	case TIM_CREATE:
+		TrayIconInit(msg->hwnd);
+      return FALSE;
+
+	case WM_DESTROY:
+		TrayIconDestroy(msg->hwnd);
+      return FALSE;
+
 	case TIM_CALLBACK:
 		if (msg->lParam == WM_RBUTTONDOWN || msg->lParam == WM_LBUTTONDOWN) {
 			KillTimer(pcli->hwndContactList, TIMERID_TRAYHOVER);

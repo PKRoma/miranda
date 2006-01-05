@@ -43,3 +43,18 @@ wchar_t* a2u( char* src )
 	result[ cbLen ] = 0;
 	return result;
 }
+
+char* u2a( wchar_t* src )
+{
+	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
+
+	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
+	char* result = ( char* )malloc( cbLen+1 );
+	if ( result == NULL )
+		return NULL;
+
+	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
+	result[ cbLen ] = 0;
+	return result;
+}
+
