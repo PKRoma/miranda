@@ -354,7 +354,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                 break;
             }
             case 's': {
-                if(szStatus) {
+				if(szStatus && szStatus[0]) {
                     MultiByteToWideChar(CP_ACP, 0, szStatus, -1, szTemp, 500);
                     title.insert(tempmark + 2, szTemp);
                 }
@@ -418,7 +418,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                         szFinalStatus = (char *)xStatusDescr[xStatus - 1];
                 }
                 else
-                    szFinalStatus = (char *)szStatus;
+					szFinalStatus = (char *)(szStatus && szStatus[0] ? szStatus : "(undef)");
                 
                 if(szFinalStatus)
                     MultiByteToWideChar(CP_ACP, 0, szFinalStatus, -1, szTemp, 500);
@@ -488,7 +488,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                 break;
             }
             case 's': {
-                if(szStatus)
+				if(szStatus && szStatus{0])
                     title.insert(tempmark + 2, szStatus);
                 title.erase(tempmark, 2);
                 break;
@@ -525,10 +525,10 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                         szFinalStatus = result;
                     }
                     else
-                        szFinalStatus = (char *)szStatus;
+						szFinalStatus = (char *)(szStatus && szStatus[0] ? szStatus : "(undef)");
                 }
                 else
-                    szFinalStatus = (char *)szStatus;
+                    szFinalStatus = (char *)(szStatus && szStatus[0] ? szStatus : "(undef)");
 
                 title.insert(tempmark + 2, szFinalStatus);
                 title.erase(tempmark, 2);

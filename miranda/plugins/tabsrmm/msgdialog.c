@@ -160,7 +160,7 @@ static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, 
     POINT pt;
     IEVIEWWINDOW ieWindow;
 
-    GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcRichEdit);
+	GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcRichEdit);
     pt.x = rcRichEdit.left;
     pt.y = rcRichEdit.top;
     ScreenToClient(hwndDlg, &pt);
@@ -1140,7 +1140,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #else
                     mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
 #endif                    
-                    dat->szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
+                    mir_snprintf(dat->szStatus, safe_sizeof(dat->szStatus), "%s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0));
+					//_DebugPopup(dat->hContact, "retrieve status: %s", dat->szStatus);
                     dat->avatarbg = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "avbg", GetSysColor(COLOR_3DFACE));
                 }
                 else
@@ -1799,7 +1800,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 ZeroMemory((void *)newcontactname,  sizeof(newcontactname));
                 dat->szNickname[0] = 0;
-                dat->szStatus = NULL;
+                dat->szStatus[0] = 0;
                 
                 pszNewTitleEnd = "Message Session";
                 
@@ -1836,7 +1837,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             iHash += (*(temp++) * (int)(temp - dat->szNickname + 1));
 
                         dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
-                        dat->szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0);
+	                    mir_snprintf(dat->szStatus, safe_sizeof(dat->szStatus), "%s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0));
                         wOldApparentMode = dat->wApparentMode;
                         dat->wApparentMode = DBGetContactSettingWord(hActContact, szActProto, "ApparentMode", 0);
                         

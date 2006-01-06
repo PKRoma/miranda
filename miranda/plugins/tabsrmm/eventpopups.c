@@ -1382,12 +1382,12 @@ void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced)
                 mii.dwItemData = 0;
             mii.fMask |= MIIM_STRING;
 #if defined(_UNICODE)
-            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", dat->bIsMeta ? dat->szMetaProto : dat->szProto, "%nick%", dat->szStatus, mii.dwItemData);
+			mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", dat->bIsMeta ? dat->szMetaProto : dat->szProto, "%nick%", dat->szStatus[0] ? dat->szStatus : "(undef)", mii.dwItemData);
             szMenuEntryW = EncodeWithNickname(szMenuEntry, dat->szNickname, dat->codePage);
             mii.dwTypeData = (LPWSTR)szMenuEntryW;
             mii.cch = lstrlenW(szMenuEntryW) + 1;
 #else
-            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szNickname, dat->szStatus, mii.dwItemData);
+			mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szNickname, dat->szStatus[0] ? dat->szStatus : "(undef)", mii.dwItemData);
             mii.dwTypeData = szMenuEntry;
             mii.cch = lstrlenA(szMenuEntry) + 1;
 #endif            

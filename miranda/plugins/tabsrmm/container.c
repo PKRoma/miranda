@@ -1274,7 +1274,6 @@ panel_found:
                             NMTTDISPINFO *nmtt = (NMTTDISPINFO *) lParam;
                             struct MessageWindowData *cdat = 0;
                             TCHAR *contactName = 0;
-                            char *szStatus = 0;
                             char szTtitle[256];
 #if defined ( _UNICODE )
                             const wchar_t *newTitle;
@@ -1292,7 +1291,6 @@ panel_found:
                                     contactName = cdat->szNickname;
                                     if (contactName) {
                                         if (cdat->szProto) {
-                                            szStatus = cdat->szStatus;
                                             nmtt->hinst = NULL;
                                             if(cdat->idle != 0) {
                                                 time_t diff = time(NULL) - cdat->idle;
@@ -1300,18 +1298,18 @@ panel_found:
                                                 int i_mins = (diff - i_hrs * 3600) / 60;
                                                 int i_secs = diff % 60;
 #if defined ( _UNICODE )
-                                                mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s) - Idle: %d:%02d:%02d", "%nick%", szStatus, i_hrs, i_mins, i_secs);
+												mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s) - Idle: %d:%02d:%02d", "%nick%", cdat->szStatus[0] ? cdat->szStatus : "(undef)", i_hrs, i_mins, i_secs);
                                                 newTitle = EncodeWithNickname(szTtitle, contactName, cdat->codePage);
 #else
-                                                mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s) - Idle: %d:%02d:%02d", contactName, szStatus, i_hrs, i_mins, i_secs);
+												mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s) - Idle: %d:%02d:%02d", contactName, cdat->szStatus[0] ? cdat->szStatus : "(undef)", i_hrs, i_mins, i_secs);
 #endif
                                             }
                                             else {
 #if defined ( _UNICODE )
-                                                mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", "%nick%", szStatus);
+												mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", "%nick%", cdat->szStatus[0] ? cdat->szStatus : "(undef)");
                                                 newTitle = EncodeWithNickname(szTtitle, contactName, cdat->codePage);
 #else
-                                                mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, szStatus);
+												mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, cdat->szStatus[0] ? cdat->szStatus : "(undef"));
 #endif
                                             }
 #if defined ( _UNICODE )

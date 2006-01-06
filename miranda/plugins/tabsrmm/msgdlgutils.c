@@ -1979,7 +1979,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         if(config)
             hOldFont = SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_STATUS]);
 
-        if(dat->szStatus)
+        if(dat->szStatus[0])
             GetTextExtentPoint32A(dis->hDC, dat->szStatus, lstrlenA(dat->szStatus), &sStatus);
         if(szProto) {
             if(config)
@@ -2009,7 +2009,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             DrawEdge(dis->hDC, &rc, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         
 		rc.left += 3;
-        if(dat->szStatus) {
+        if(dat->szStatus[0]) {
             if(config) {
                 SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_STATUS]);
                 SetTextColor(dis->hDC, myGlobals.ipConfig.clrs[IPFONTID_STATUS]);
