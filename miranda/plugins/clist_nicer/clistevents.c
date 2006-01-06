@@ -354,17 +354,15 @@ int AddEvent(WPARAM wParam, LPARAM lParam)
 			if (szProto && szName) {
 				nmi = (struct NotifyMenuItemExData *) malloc(sizeof(struct NotifyMenuItemExData));
 				if (nmi) {
-					char *szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) DBGetContactSettingWord(event[i].cle.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
+					TCHAR* szStatus = pcli->pfnGetStatusModeDescription(DBGetContactSettingWord(event[i].cle.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
 #if defined(_UNICODE)
-					TCHAR szwStatus[64], szwProto[64];
-					MultiByteToWideChar(CP_ACP, 0, szStatus, -1, szwStatus, 64);
-					szwStatus[63] = 0;
+					TCHAR szwProto[64];
 					MultiByteToWideChar(CP_ACP, 0, szProto, -1, szwProto, 64);
 					szwProto[63] = 0;
-					_snwprintf(szBuffer, 128, L"%s: %s (%s)", szwProto, szName, szwStatus);
+					_snwprintf(szBuffer, SIZEOF(szBuffer), L"%s: %s (%s)", szwProto, szName, szStatus);
 #else
-					_snprintf(szBuffer, sizeof(szBuffer), "%s: %s (%s)", szProto, szName, szStatus);
-#endif                    
+					_snprintf(szBuffer, SIZEOF(szBuffer), "%s: %s (%s)", szProto, szName, szStatus);
+#endif
 					szBuffer[127] = 0;
 					AppendMenu(g_CluiData.hMenuNotify, MF_BYCOMMAND | MF_STRING, g_CluiData.wNextMenuID, szBuffer);
 					mii.hbmpItem = HBMMENU_CALLBACK;
