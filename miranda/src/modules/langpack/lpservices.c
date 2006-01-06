@@ -105,9 +105,9 @@ static int GetDefaultCodePage(WPARAM wParam,LPARAM lParam)
 	return LangPackGetDefaultCodePage();
 }
 
-static TCHAR* PcharToTchar(WPARAM wParam,LPARAM lParam)
+static int PcharToTchar(WPARAM wParam,LPARAM lParam)
 {
-	return LangPackPcharToTchar((char*)lParam );
+	return ( int )LangPackPcharToTchar((char*)lParam );
 }
 
 int LoadLangPackServices(void)
