@@ -144,7 +144,7 @@ static int clientIcons[] = {
 };
 
 static struct CluiTopButton top_buttons[] = {
-	0, 0, 0, IDC_TBTOPMENU, IDI_CLIENTMIRANDA, 0, "CLN_topmenu", NULL, TOPBUTTON_PUSH, 1, "Show menu",
+	    0, 0, 0, IDC_TBTOPMENU, IDI_TBTOPMENU, 0, "CLN_topmenu", NULL, TOPBUTTON_PUSH, 1, "Show menu", 
 		0, 0, 0, IDC_TBHIDEOFFLINE, IDI_HIDEOFFLINE, 0, "CLN_online", NULL, 0, 2, "Show only online contacts",
 		0, 0, 0, IDC_TBHIDEGROUPS, IDI_HIDEGROUPS, 0, "CLN_groups", NULL, 0, 4, "Use contact groups",
 		0, 0, 0, IDC_TBFINDANDADD, IDI_FINDANDADD, 0, "CLN_findadd", NULL, TOPBUTTON_PUSH, 8, "Find and add contacts",

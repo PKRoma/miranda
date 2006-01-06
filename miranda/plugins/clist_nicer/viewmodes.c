@@ -844,18 +844,16 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         }
         case WM_SIZE:
         {
-            if(IsWindowVisible(hwnd)) {
-                RECT rcCLVMFrame;
-                HDWP PosBatch = BeginDeferWindowPos(3);
-                GetClientRect(hwnd, &rcCLVMFrame);
-                PosBatch = DeferWindowPos(PosBatch, GetDlgItem(hwnd, IDC_RESETMODES), 0,
-                                          rcCLVMFrame.right - 23, 1, 22, 20, SWP_NOZORDER);
-                PosBatch = DeferWindowPos(PosBatch, GetDlgItem(hwnd, IDC_CONFIGUREMODES), 0,
-                                          rcCLVMFrame.right - 45, 1, 22, 20, SWP_NOZORDER);
-                PosBatch = DeferWindowPos(PosBatch, GetDlgItem(hwnd, IDC_SELECTMODE), 0,
-                                          1, 1, rcCLVMFrame.right - 46, 20, SWP_NOZORDER);
-                EndDeferWindowPos(PosBatch);
-            }
+            RECT rcCLVMFrame;
+            HDWP PosBatch = BeginDeferWindowPos(3);
+            GetClientRect(hwnd, &rcCLVMFrame);
+            PosBatch = DeferWindowPos(PosBatch, GetDlgItem(hwnd, IDC_RESETMODES), 0,
+                                      rcCLVMFrame.right - 23, 1, 22, 20, SWP_NOZORDER);
+            PosBatch = DeferWindowPos(PosBatch, GetDlgItem(hwnd, IDC_CONFIGUREMODES), 0,
+                                      rcCLVMFrame.right - 45, 1, 22, 20, SWP_NOZORDER);
+            PosBatch = DeferWindowPos(PosBatch, GetDlgItem(hwnd, IDC_SELECTMODE), 0,
+                                      1, 1, rcCLVMFrame.right - 46, 20, SWP_NOZORDER);
+            EndDeferWindowPos(PosBatch);
             break;
         }
         case WM_USER + 100:

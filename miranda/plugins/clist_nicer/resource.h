@@ -756,6 +756,7 @@
 #define IDI_CLVISIBLE                   2109
 #define IDI_CLINVISIBLE                 2110
 #define IDI_PROTOCONNECTING             2111
+#define IDI_TBTOPMENU					2112
 #define IDI_PUMPKIN                     3000
 #define IDD_OPT_GENMENU                 11267
 #define IDD_OPT_PROTOCOLORDER           11268
