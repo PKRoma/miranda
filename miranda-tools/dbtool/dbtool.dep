@@ -1,0 +1,201 @@
+# Microsoft Developer Studio Generated Dependency File, included by dbtool.mak
+
+.\aggressive.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\contactchain.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\eventchain.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\finaltasks.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\initialchecks.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\modulechain.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\settingschain.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\user.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\cleaning.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\fileaccess.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\finished.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\openerror.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\progress.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\selectdb.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\welcome.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\disk.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\main.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\wizard.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\worker.cpp : \
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_plugins.h"\
+	"..\..\miranda\include\newpluginapi.h"\
+	".\database.h"\
+	".\dbtool.h"\
+	
+
+.\resource.rc : \
+	".\dbtool.exe.manifest"\
+	".\res\dbthdr.emf"\
+	".\res\dbtool.emf"\
+	".\res\dbtool.ico"\
+	".\res\profileg.ico"\
+	".\res\profiler.ico"\
+	".\res\profiley.ico"\
+	
