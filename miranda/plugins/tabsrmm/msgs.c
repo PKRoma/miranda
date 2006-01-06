@@ -441,8 +441,6 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     HWND hwnd;
     CLISTEVENT cle;
     DBEVENTINFO dbei;
-    char *contactName;
-    char toolTip[256];
     BYTE bAutoPopup = FALSE, bAutoCreate = FALSE, bAutoContainer = FALSE, bAllowAutoCreate = 0;
     struct ContainerWindowData *pContainer = 0;
     TCHAR szName[CONTAINER_NAMELEN + 1];
@@ -562,14 +560,16 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 nowindowcreate:    
     UpdateTrayMenu(0, 0, dbei.szModule, NULL, (HANDLE)wParam, TRUE);
     if(!nen_options.bTraySupport || myGlobals.m_WinVerMajor < 5) {
+	     TCHAR toolTip[256], *contactName;
         ZeroMemory(&cle, sizeof(cle));
         cle.cbSize = sizeof(cle);
         cle.hContact = (HANDLE) wParam;
         cle.hDbEvent = (HANDLE) lParam;
+		  cle.flags = CLEF_TCHAR;
         cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
         cle.pszService = "SRMsg/ReadMessage";
-        contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0);
-        _snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
+        contactName = (TCHAR*) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR);
+        mir_sntprintf(toolTip, SIZEOF(toolTip), TranslateT("Message from %s"), contactName);
         cle.pszTooltip = toolTip;
         CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
     }
