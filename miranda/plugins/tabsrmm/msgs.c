@@ -570,7 +570,7 @@ nowindowcreate:
         cle.pszService = "SRMsg/ReadMessage";
         contactName = (TCHAR*) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR);
         mir_sntprintf(toolTip, SIZEOF(toolTip), TranslateT("Message from %s"), contactName);
-        cle.pszTooltip = toolTip;
+        cle.ptszTooltip = toolTip;
         CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
     }
     tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule, 0);
