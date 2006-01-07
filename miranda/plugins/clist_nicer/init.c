@@ -224,6 +224,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	ZeroMemory((void*) &g_CluiData, sizeof(g_CluiData));
 	g_ExtraCache = malloc(sizeof(struct ExtraCache) * EXTRAIMAGECACHESIZE);
 	ZeroMemory(g_ExtraCache, sizeof(struct ExtraCache) * EXTRAIMAGECACHESIZE);
+
 	g_nextExtraCacheEntry = 0;
 	g_maxExtraCacheEntry = EXTRAIMAGECACHESIZE;
 

@@ -945,6 +945,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				OldStatusBarProc = (WNDPROC)SetWindowLong(pcli->hwndStatus, GWL_WNDPROC, (LONG)NewStatusBarWndProc);
 				SetClassLong(pcli->hwndStatus, GCL_STYLE, GetClassLong(pcli->hwndStatus, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 			}
+			SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_VISIBLE);
 			if(!g_CluiData.bFirstRun)
 				ConfigureEventArea(hwnd);
 			CluiProtocolStatusChanged(0, 0);
@@ -960,7 +961,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			//delay creation of CLC so that it can get the status icons right the first time (needs protocol modules loaded)
 			PostMessage(hwnd, M_CREATECLC, 0, 0);
-			SFL_Create();
 			if (MySetLayeredWindowAttributes && g_CluiData.bLayeredHack) {
 				SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | (WS_EX_LAYERED));
 				MySetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 255, LWA_ALPHA);
@@ -1002,12 +1002,13 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			{
 				int state;
-
+				BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
+				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, windowStyle == SETTING_WINDOWSTYLE_TOOLWINDOW ? GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW : GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
 				ApplyCLUIBorderStyle(pcli->hwndContactList);
 
-				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+				//SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOACTIVATE);
-				RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
+				//RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
 
 				state = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
 				hMenuMain = GetMenu(pcli->hwndContactList);
@@ -1070,8 +1071,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			CreateCLC(hwnd);
 			g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
-			PostMessage(hwnd, WM_SIZE, 0, 0);
-			PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
+			//PostMessage(hwnd, WM_SIZE, 0, 0);
+			//PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
+			SFL_Create();
+			SFL_SetState();
 			return 0;
 		}
 	case WM_ERASEBKGND:

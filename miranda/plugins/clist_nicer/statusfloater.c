@@ -230,17 +230,17 @@ void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const char *szText, BOO
 
 void SFL_SetState()
 {
-	//BYTE bClistState;
+	BYTE bClistState;
 
-	if(g_hwndSFL == 0 || !(g_CluiData.bUseFloater & CLUI_USE_FLOATER) || !(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE))
+	if(g_hwndSFL == 0 || !(g_CluiData.bUseFloater & CLUI_USE_FLOATER))
 		return;
 
-	//bClistState = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
-
-	if(!IsWindowVisible(g_hwndSFL))
-		ShowWindow(g_hwndSFL, SW_SHOW);
+	if(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE) {
+		bClistState = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
+		ShowWindow(g_hwndSFL, bClistState == SETTING_STATE_NORMAL ? SW_HIDE : SW_SHOW);
+	}
 	else
-		ShowWindow(g_hwndSFL, SW_HIDE);
+		ShowWindow(g_hwndSFL, SW_SHOW);
 }
 
 // XXX improve size calculations for the floater window.

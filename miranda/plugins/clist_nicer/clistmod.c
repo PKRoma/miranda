@@ -27,6 +27,8 @@ UNICODE done
 
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 
+BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE, SIZE_T, SIZE_T) = 0;
+
 int AddMainMenuItem(WPARAM wParam, LPARAM lParam);
 int AddContactMenuItem(WPARAM wParam, LPARAM lParam);
 int InitCustomMenus(void);
@@ -110,6 +112,7 @@ int LoadContactListModule(void)
 	CreateServiceFunction("CList/GetContactStatusMsg", GetContactStatusMessage);
 	InitCustomMenus();
 	IMG_InitDecoder();
+    MySetProcessWorkingSetSize = (BOOL(WINAPI *)(HANDLE, SIZE_T, SIZE_T))GetProcAddress(GetModuleHandleA("kernel32"), "SetProcessWorkingSetSize");
 	return 0;
 }
 
@@ -257,8 +260,8 @@ int ShowHide(WPARAM wParam, LPARAM lParam)
     //It needs to be hidden
         ShowWindow(pcli->hwndContactList, SW_HIDE);       
         DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
-        //if (MySetProcessWorkingSetSize != NULL && DBGetContactSettingByte(NULL, "CList", "DisableWorkingSet", 1))
-        //    MySetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
+        if (MySetProcessWorkingSetSize != NULL && DBGetContactSettingByte(NULL, "CList", "DisableWorkingSet", 1))
+            MySetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
     }
     return 0;
 }

@@ -317,6 +317,7 @@ struct CluiData {
 	BYTE bUseDCMirroring;
 	BYTE bCLeft, bCRight, bCTop, bCBottom;
 	BYTE bUseFloater;
+	BYTE fullyInited;
 };
 
 struct IconDesc {
