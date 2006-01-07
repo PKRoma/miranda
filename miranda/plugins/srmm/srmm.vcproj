@@ -29,7 +29,8 @@
 				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="commonheaders.h"
 				BrowseInformationFile="$(IntDir)/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
@@ -94,7 +95,8 @@
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="commonheaders.h"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
@@ -163,7 +165,8 @@
 				ExceptionHandling="FALSE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerOutput="3"
 				BrowseInformationFile="$(IntDir)/"
 				WarningLevel="3"
@@ -231,7 +234,8 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SRMM_EXPORTS;UNICODE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="commonheaders.h"
 				PrecompiledHeaderFile="$(IntDir)/$(ProjectName).pch"
 				BrowseInformation="1"
 				BrowseInformationFile="$(IntDir)/"
@@ -307,8 +311,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;SRMM_EXPORTS;UNICODE;$(NoInherit)"/>
+						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
@@ -345,8 +348,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;SRMM_EXPORTS;UNICODE;$(NoInherit)"/>
+						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
@@ -383,8 +385,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;SRMM_EXPORTS;UNICODE;$(NoInherit)"/>
+						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
@@ -421,8 +422,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;SRMM_EXPORTS;UNICODE;$(NoInherit)"/>
+						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
@@ -459,8 +459,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;SRMM_EXPORTS;UNICODE;$(NoInherit)"/>
+						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
@@ -483,6 +482,30 @@
 			</File>
 			<File
 				RelativePath=".\richutil.c">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="srmm.c">
@@ -493,7 +516,8 @@
 						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;SRMM_EXPORTS;$(NoInherit)"
-						BasicRuntimeChecks="3"/>
+						BasicRuntimeChecks="3"
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32">
@@ -501,7 +525,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;SRMM_EXPORTS;UNICODE;$(NoInherit)"/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
@@ -509,7 +533,8 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;SRMM_EXPORTS;$(NoInherit)"/>
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;SRMM_EXPORTS;$(NoInherit)"
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug Unicode|Win32">
@@ -519,6 +544,7 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;SRMM_EXPORTS;UNICODE;$(NoInherit)"
 						BasicRuntimeChecks="3"
+						UsePrecompiledHeader="1"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -552,10 +578,10 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico">
+				RelativePath="..\..\src\res\addcontact.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\addcontact.ico">
+				RelativePath="..\..\Miranda-IM\res\addcontact.ico">
 			</File>
 			<File
 				RelativePath="res\Clock32.ico">
@@ -579,16 +605,16 @@
 				RelativePath="res\Downarrow8.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
-			</File>
-			<File
 				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
+				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
 			</File>
 			<File
 				RelativePath="..\..\src\res\dropuser.cur">
+			</File>
+			<File
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\history.ico">
@@ -600,10 +626,10 @@
 				RelativePath="res\History8.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
+				RelativePath="..\..\src\res\hyperlin.cur">
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur">
+				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\multisend.ico">
