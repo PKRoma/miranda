@@ -1,10 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by IRC.mak
 
 .\clist.cpp : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\..\..\openssl\inc32\openssl\aes.h"\
 	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
 	"..\..\..\..\openssl\inc32\openssl\bio.h"\
@@ -82,10 +78,6 @@
 	
 
 .\commandmonitor.cpp : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\..\..\openssl\inc32\openssl\aes.h"\
 	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
 	"..\..\..\..\openssl\inc32\openssl\bio.h"\
@@ -163,10 +155,6 @@
 	
 
 .\input.cpp : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\..\..\openssl\inc32\openssl\aes.h"\
 	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
 	"..\..\..\..\openssl\inc32\openssl\bio.h"\
@@ -244,10 +232,6 @@
 	
 
 .\irclib.cpp : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\..\..\openssl\inc32\openssl\aes.h"\
 	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
 	"..\..\..\..\openssl\inc32\openssl\bio.h"\
@@ -325,10 +309,6 @@
 	
 
 .\main.cpp : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\..\..\openssl\inc32\openssl\aes.h"\
 	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
 	"..\..\..\..\openssl\inc32\openssl\bio.h"\
@@ -406,10 +386,6 @@
 	
 
 .\options.cpp : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\..\..\openssl\inc32\openssl\aes.h"\
 	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
 	"..\..\..\..\openssl\inc32\openssl\bio.h"\
@@ -487,10 +463,6 @@
 	
 
 .\output.cpp : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\..\..\openssl\inc32\openssl\aes.h"\
 	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
 	"..\..\..\..\openssl\inc32\openssl\bio.h"\
@@ -568,10 +540,6 @@
 	
 
 .\scripting.cpp : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\..\..\openssl\inc32\openssl\aes.h"\
 	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
 	"..\..\..\..\openssl\inc32\openssl\bio.h"\
@@ -649,10 +617,6 @@
 	
 
 .\services.cpp : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\..\..\openssl\inc32\openssl\aes.h"\
 	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
 	"..\..\..\..\openssl\inc32\openssl\bio.h"\
@@ -730,10 +694,6 @@
 	
 
 .\tools.cpp : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\..\..\openssl\inc32\openssl\aes.h"\
 	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
 	"..\..\..\..\openssl\inc32\openssl\bio.h"\
@@ -811,10 +771,6 @@
 	
 
 .\windows.cpp : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\..\..\openssl\inc32\openssl\aes.h"\
 	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
 	"..\..\..\..\openssl\inc32\openssl\bio.h"\

@@ -54,8 +54,11 @@
 	"..\..\include\win2k.h"\
 	".\commonheaders.h"\
 	".\m_avatars.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	".\m_tabsrmm.h"\
 	".\msgs.h"\
+	".\nen.h"\
 	".\templates.h"\
 	
 
@@ -435,7 +438,6 @@ srmm.c : \
 	".\m_tabsrmm.h"\
 	".\msgs.h"\
 	".\templates.h"\
-	{$(INCLUDE)}"uxtheme.h"\
 	
 
 templates.c : \
@@ -591,15 +593,12 @@ userprefs.c : \
 	".\templates.h"\
 	
 
-.\msgwindow.rc : \
-	"..\..\include\statusmodes.h"\
-	
-
-.\resource.rc : \
+.\tabsrmm_private.rc : \
 	"..\..\include\statusmodes.h"\
 	"..\..\src\res\dragcopy.cur"\
 	"..\..\src\res\dropuser.cur"\
 	"..\..\src\res\hyperlin.cur"\
+	".\msgwindow.rc"\
 	".\res\checked.ico"\
 	".\res\expand.ico"\
 	".\res\leftarrow.ico"\
@@ -608,4 +607,5 @@ userprefs.c : \
 	".\res\rightarrow.ico"\
 	".\res\unchecked.ico"\
 	".\res\xstatus.bmp"\
+	".\resource.rc"\
 	

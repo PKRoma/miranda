@@ -1,31 +1,7 @@
 # Microsoft Developer Studio Generated Dependency File, included by help.mak
 
-.\datastore.cpp : \
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_netlib.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	".\help.h"\
-	
-
-.\dlgboxsubclass.cpp : \
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\newpluginapi.h"\
-	".\help.h"\
-	
-
-.\helpdlg.cpp : \
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\win2k.h"\
-	".\help.h"\
-	
-
 .\main.cpp : \
+	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
@@ -36,25 +12,9 @@
 	
 
 .\options.cpp : \
-	"..\..\include\m_database.h"\
-	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\newpluginapi.h"\
-	".\help.h"\
-	
-
-.\streaminout.cpp : \
-	"..\..\include\m_plugins.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\win2k.h"\
-	".\help.h"\
 	
 
 .\utils.cpp : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	".\help.h"\
 	

@@ -1,8 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by import.mak
 
 .\ICQserver.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_plugins.h"\
@@ -13,8 +11,6 @@
 	
 
 .\main.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -28,8 +24,6 @@
 	
 
 .\mirabilis.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -42,14 +36,13 @@
 	
 
 .\miranda.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\import.h"\
@@ -57,8 +50,6 @@
 	
 
 .\progress.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_system.h"\
@@ -67,8 +58,6 @@
 	
 
 .\wizard.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_findadd.h"\
 	"..\..\include\m_langpack.h"\
@@ -79,4 +68,8 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\import.h"\
+	
+
+.\resource.rc : \
+	".\import.ico"\
 	

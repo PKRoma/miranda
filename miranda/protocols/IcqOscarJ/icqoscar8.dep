@@ -6,10 +6,6 @@
 	".\icos\xstatus.bmp"\
 	
 
-.\fam_03buddy.c : \
-	".\m_cluiframes.h"\
-	
-
 .\iconlib.c : \
 	".\m_icolib.h"\
 	
@@ -19,8 +15,6 @@
 	
 
 .\icqoscar.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -61,6 +55,7 @@
 	".\icq_opts.h"\
 	".\icq_packet.h"\
 	".\icq_popups.h"\
+	".\icq_rates.h"\
 	".\icq_server.h"\
 	".\icq_servlist.h"\
 	".\icq_uploadui.h"\

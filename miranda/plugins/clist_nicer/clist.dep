@@ -1,8 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by clist.mak
 
 .\CLUIFrames\cluiframes.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -38,8 +36,6 @@
 	
 
 .\CLUIFrames\framesmenu.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -75,8 +71,6 @@
 	
 
 .\CLUIFrames\genmenu.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -111,8 +105,6 @@
 	
 
 .\CLUIFrames\genmenuopt.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -147,8 +139,6 @@
 	
 
 .\CLUIFrames\groupmenu.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -183,8 +173,6 @@
 	
 
 .\CLUIFrames\movetogroup.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -219,8 +207,6 @@
 	
 
 .\CLUIFrames\protocolorder.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -256,8 +242,6 @@
 	
 
 .\alphablend.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -292,8 +276,6 @@
 	
 
 .\clc.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -329,8 +311,6 @@
 	
 
 .\CLCButton.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -365,8 +345,6 @@
 	
 
 .\clcidents.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -401,8 +379,6 @@
 	
 
 .\clcitems.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -437,8 +413,6 @@
 	
 
 .\clcmsgs.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -473,8 +447,6 @@
 	
 
 .\clcopts.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -509,8 +481,6 @@
 	
 
 .\clcpaint.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -545,8 +515,6 @@
 	
 
 .\clcutils.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -581,8 +549,6 @@
 	
 
 .\clistevents.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -617,8 +583,6 @@
 	
 
 .\clistmenus.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -654,8 +618,6 @@
 	
 
 .\clistmod.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -690,8 +652,6 @@
 	
 
 .\clistopts.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -726,8 +686,6 @@
 	
 
 .\clistsettings.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -762,8 +720,6 @@
 	
 
 .\clisttray.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -798,8 +754,6 @@
 	
 
 .\clui.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -838,8 +792,6 @@
 	
 
 .\cluiopts.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -874,8 +826,6 @@
 	
 
 .\cluiservices.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -911,8 +861,6 @@
 	
 
 .\commonheaders.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -952,8 +900,6 @@
 	
 
 .\contact.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -988,8 +934,6 @@
 	
 
 .\extBackg.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1024,8 +968,6 @@
 	
 
 .\forkthread.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1060,40 +1002,6 @@
 	
 
 .\gdiplus.cpp : \
-	"..\..\..\..\..\vc\sdk\include\gdiplus.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusbase.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusbitmap.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusbrush.h"\
-	"..\..\..\..\..\vc\sdk\include\gdipluscachedbitmap.h"\
-	"..\..\..\..\..\vc\sdk\include\gdipluscolor.h"\
-	"..\..\..\..\..\vc\sdk\include\gdipluscolormatrix.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusenums.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusflat.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusfont.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusfontcollection.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusfontfamily.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusgpstubs.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusgraphics.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusheaders.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusimageattributes.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusimagecodec.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusimaging.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusinit.h"\
-	"..\..\..\..\..\vc\sdk\include\gdipluslinecaps.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusmatrix.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusmem.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusmetafile.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusmetaheader.h"\
-	"..\..\..\..\..\vc\sdk\include\gdipluspath.h"\
-	"..\..\..\..\..\vc\sdk\include\gdipluspen.h"\
-	"..\..\..\..\..\vc\sdk\include\gdipluspixelformats.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusregion.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplusstringformat.h"\
-	"..\..\..\..\..\vc\sdk\include\gdiplustypes.h"\
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1124,8 +1032,6 @@
 	
 
 .\init.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1150,6 +1056,7 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
+	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\genmenu.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
@@ -1160,8 +1067,6 @@
 	
 
 .\rowheight_funcs.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1196,9 +1101,6 @@
 	
 
 .\statusbar.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\uxtheme.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1234,8 +1136,6 @@
 	
 
 .\statusfloater.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1270,8 +1170,6 @@
 	
 
 .\URLCtrl.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1307,8 +1205,6 @@
 	
 
 .\viewmodes.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1344,8 +1240,6 @@
 	
 
 .\wallpaper.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1427,6 +1321,7 @@
 	".\res\groups.ico"\
 	".\res\hyperlin.cur"\
 	".\res\invisible.ico"\
+	".\res\menu.ico"\
 	".\res\minimize.ico"\
 	".\res\notick.ico"\
 	".\res\notick1.ico"\

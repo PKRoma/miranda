@@ -1,8 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by db3x.mak
 
 .\commonheaders.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_plugins.h"\

@@ -2,200 +2,200 @@
 
 .\CLUIFrames\cluiframes.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\CLUIFrames\extraimage.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\CLUIFrames\framesmenu.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\CLUIFrames\protocolorder.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\CLUIFrames\statusbar.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\BkgrCfg.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\clc.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\clcidents.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\clcitems.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\clcopts.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\clcpaint.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\clcutils.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\clistmenus.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\clistmod.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\clistopts.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\clistsettings.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\clisttray.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\clui.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\cluiopts.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\cluiservices.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
@@ -206,7 +206,6 @@
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -231,6 +230,7 @@
 	".\forkthread.h"\
 	".\genmenu.h"\
 	".\IcoLib.h"\
+	".\m_clui.h"\
 	".\m_fontservice.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
@@ -239,80 +239,80 @@
 
 .\contact.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\forkthread.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\genmenu.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\genmenuopt.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\groupmenu.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\init.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\keyboard.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	
 
 .\movetogroup.c : \
 	"..\..\include\m_clc.h"\
-	"..\..\include\m_clui.h"\
 	".\clc.h"\
 	".\clist.h"\
 	".\genmenu.h"\
+	".\m_clui.h"\
 	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	

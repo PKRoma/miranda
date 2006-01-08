@@ -1,11 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by aim.mak
 
 .\aim.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -54,11 +49,6 @@
 	
 
 .\buddies.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -107,11 +97,6 @@
 	
 
 .\evilmode.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -160,11 +145,6 @@
 	
 
 .\filerecv.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -213,11 +193,6 @@
 	
 
 .\firstrun.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -266,11 +241,6 @@
 	
 
 .\groupchat.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -319,11 +289,6 @@
 	
 
 .\groups.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -372,11 +337,6 @@
 	
 
 .\idle.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -425,11 +385,6 @@
 	
 
 .\im.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -478,11 +433,6 @@
 	
 
 .\keepalive.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -531,11 +481,6 @@
 	
 
 .\links.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -588,11 +533,6 @@
 	
 
 .\log.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -641,11 +581,6 @@
 	
 
 .\options.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -694,11 +629,6 @@
 	
 
 .\password.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -747,11 +677,6 @@
 	
 
 .\pthread.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -814,11 +739,6 @@
 	
 
 .\search.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -867,11 +787,6 @@
 	
 
 .\server.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -920,11 +835,6 @@
 	
 
 .\services.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -973,11 +883,6 @@
 	
 
 .\toc.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1026,11 +931,6 @@
 	
 
 .\userinfo.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1079,11 +979,6 @@
 	
 
 .\utils.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1132,11 +1027,6 @@
 	
 
 .\version.c : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shldisp.h"\
-	"..\..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\..\vc\sdk\include\shtypes.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\

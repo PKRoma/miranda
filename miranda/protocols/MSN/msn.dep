@@ -1,8 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by msn.mak
 
 .\msn.cpp : \
-	"..\..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -69,4 +67,6 @@
 	".\Icos\profile.ico"\
 	".\Icos\services.ico"\
 	".\msn.rc"\
+	".\version.h"\
+	".\version.rc"\
 	
