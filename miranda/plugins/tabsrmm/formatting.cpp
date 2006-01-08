@@ -1,8 +1,8 @@
-/*                         
+/*
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -45,7 +45,7 @@ extern "C" TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, 
 
 #if defined(UNICODE)
 
-/* 
+/*
  * old code (textformat plugin dealing directly in the edit control - not the best solution, but the author
  * had no other choice as srmm never had an api for this...
  */
@@ -80,7 +80,7 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
 
     if(HIWORD(flags) == 0)
         goto nobbcode;
-    
+
     beginmark = 0;
     while(TRUE) {
         for(i = 0; i < NR_CODES; i++) {
@@ -96,7 +96,7 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
             int closing = message.find_first_of(L"]", beginmark);
             if(closing == message.npos) {                       // must be an invalid [color=] tag w/o closing bracket
                 message[beginmark] = ' ';
-                continue;                                       
+                continue;
             }
             else {
                 std::wstring colorname = message.substr(beginmark + 7, 10);
@@ -133,7 +133,7 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
 nobbcode:
     if(!(dwFlags & MWF_LOG_TEXTFORMAT))
         goto nosimpletags;
-    
+
     while((beginmark = message.find_first_of(L"*/_", beginmark)) != message.npos) {
         endmarker = message[beginmark];
         if(LOWORD(flags)) {
@@ -154,7 +154,7 @@ nobbcode:
             if((endmark = message.find(endmarker, beginmark + 1)) == message.npos)
                 break;
         }
-ok:        
+ok:
         if((endmark - beginmark) < 2) {
             beginmark++;
             continue;
@@ -208,11 +208,11 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
 #ifdef __MATHMOD_SUPPORT
     if(myGlobals.m_MathModAvail && message.find(myGlobals.m_MathModStartDelimiter) != message.npos)
         return(message.c_str());
-#endif    
+#endif
 
     if(HIWORD(flags) == 0)
         goto nobbcode;
-    
+
     while(TRUE) {
         for(i = 0; i < NR_CODES; i++) {
             if((tempmark = message.find(bbcodes_begin[i], 0)) != message.npos)
@@ -262,11 +262,11 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
         message.insert(beginmark, " ");
         message.replace(beginmark, 4, formatting_strings_begin[i]);
     }
-    
+
 nobbcode:
     if(!(dwFlags & MWF_LOG_TEXTFORMAT))            // skip */_ stuff if not enabled
         goto nosimpletags;
-    
+
     while((beginmark = message.find_first_of("*/_", beginmark)) != message.npos) {
         endmarker = message[beginmark];
         if(LOWORD(flags)) {
@@ -287,7 +287,7 @@ nobbcode:
             if((endmark = message.find(endmarker, beginmark + 1)) == message.npos)
                 break;
         }
-ok:        
+ok:
         if((endmark - beginmark) < 2) {
             beginmark++;
             continue;
@@ -317,7 +317,7 @@ nosimpletags:
 
 // formatting the titlebar
 // free() the return value
-// 
+//
 
 #if defined(_UNICODE)
 
@@ -333,7 +333,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
     int length = 0;
     int i, tempmark = 0;
     TCHAR szTemp[512];
-    
+
     std::wstring title(szFormat);
 
     while(TRUE) {
@@ -384,7 +384,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
             }
             case 'x': {
                 char *szFinalStatus = NULL;
-                
+
                 if(xStatus > 0 && xStatus <= 24) {
                     DBVARIANT dbv = {0};
 
@@ -405,10 +405,10 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
             }
             case 'm': {
                 char *szFinalStatus = NULL;
-                
+
                 if(xStatus > 0 && xStatus <= 24) {
                     DBVARIANT dbv = {0};
-                    
+
                     if(!MY_DBGetContactSettingTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
                         _tcsncpy(szTemp, dbv.ptszVal, 500);
                         szTemp[500] = 0;
@@ -419,7 +419,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                 }
                 else
 					szFinalStatus = (char *)(szStatus && szStatus[0] ? szStatus : "(undef)");
-                
+
                 if(szFinalStatus)
                     MultiByteToWideChar(CP_ACP, 0, szFinalStatus, -1, szTemp, 500);
 
@@ -433,7 +433,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
         }
     }
     length = title.length();
-    
+
     szResult = (TCHAR *)malloc((length + 2) * sizeof(TCHAR));
     if(szResult) {
         _tcsncpy(szResult, title.c_str(), length);
@@ -469,7 +469,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
     TCHAR *szResult = 0;
     int length = 0;
     int i, tempmark = 0;
-    
+
     std::string title(szFormat);
 
     while(TRUE) {
@@ -488,7 +488,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                 break;
             }
             case 's': {
-				if(szStatus && szStatus{0])
+				if(szStatus && szStatus[0])
                     title.insert(tempmark + 2, szStatus);
                 title.erase(tempmark, 2);
                 break;
@@ -543,7 +543,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
         }
     }
     length = title.length();
-    
+
     szResult = (TCHAR *)malloc((title.length() + 2) * sizeof(TCHAR));
     if(szResult) {
         _tcsncpy(szResult, title.c_str(), length);
@@ -552,4 +552,3 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
     return szResult;
 }
 #endif
-
