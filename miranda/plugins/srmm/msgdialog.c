@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #pragma hdrstop
 
+#include <malloc.h>
+
 #define TIMERID_MSGSEND      0
 #define TIMERID_FLASHWND     1
 #define TIMERID_TYPE         2
@@ -580,12 +582,6 @@ static void NotifyTyping(struct MessageWindowData *dat, int mode)
 	CallService(MS_PROTO_SELFISTYPING, (WPARAM) dat->hContact, dat->nTypeMode);
 }
 
-#if defined( _UNICODE )
-	#define TITLE_FORMAT _T("%s (%S): %s")
-#else
-	#define TITLE_FORMAT _T("%s (%s): %s")
-#endif
-
 BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct MessageWindowData *dat;
@@ -1045,8 +1041,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		break;
 	case DM_UPDATETITLE:
 		{
-			TCHAR newtitle[256], oldtitle[256];
-			char *szStatus;
+			TCHAR newtitle[256], oldtitle[256], *szStatus;
 			TCHAR *contactName, *pszNewTitleEnd;
 			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) wParam;
 
@@ -1081,11 +1076,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					else
 						SetDlgItemText(hwndDlg, IDC_NAME, contactName);
 
-					szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE), 0);
+					szStatus = (TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE), GCMDF_TCHAR);
 					if (statusIcon)
-						mir_sntprintf(newtitle, sizeof(newtitle), _T("%s - %s"), contactName, TranslateTS(pszNewTitleEnd));
+						mir_sntprintf(newtitle, SIZEOF(newtitle), _T("%s - %s"), contactName, TranslateTS(pszNewTitleEnd));
 					else
-						mir_sntprintf(newtitle, sizeof(newtitle), TITLE_FORMAT, contactName, szStatus, TranslateTS(pszNewTitleEnd));
+						mir_sntprintf(newtitle, SIZEOF(newtitle), _T("%s (%s): %s"), contactName, szStatus, TranslateTS(pszNewTitleEnd));
 					if (!cws || (!strcmp(cws->szModule, dat->szProto) && !strcmp(cws->szSetting, "Status"))) {
 						InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), NULL, TRUE);
 						if (statusIcon) {
@@ -1097,36 +1092,47 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if ((dat->wStatus != dat->wOldStatus || lParam != 0)
 						&& DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, SRMSGDEFSET_SHOWSTATUSCH)) {
 							DBEVENTINFO dbei;
-							char buffer[450];
+							TCHAR buffer[200];
 							HANDLE hNewEvent;
 							int iLen;
 
-							char *szOldStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) dat->wOldStatus, 0);
-							char *szNewStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) dat->wStatus, 0);
+							TCHAR *szOldStatus = (TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) dat->wOldStatus, GCMDF_TCHAR);
+							TCHAR *szNewStatus = (TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) dat->wStatus, GCMDF_TCHAR);
 
 							if (dat->wStatus == ID_STATUS_OFFLINE) {
-								mir_snprintf(buffer, sizeof(buffer), Translate("signed off (was %s)"), szOldStatus);
+								iLen = mir_sntprintf(buffer, SIZEOF(buffer), TranslateT("signed off (was %s)"), szOldStatus);
 								SendMessage(hwndDlg, DM_TYPING, 0, 0);
 							}
-							else if (dat->wOldStatus == ID_STATUS_OFFLINE) {
-								mir_snprintf(buffer, sizeof(buffer), Translate("signed on (%s)"), szNewStatus);
-							}
-							else {
-								mir_snprintf(buffer, sizeof(buffer), Translate("is now %s (was %s)"), szNewStatus, szOldStatus);
-							}
-							iLen = strlen(buffer) + 1;
-							MultiByteToWideChar(CP_ACP, 0, buffer, iLen, (LPWSTR) & buffer[iLen], iLen);
-							dbei.cbSize = sizeof(dbei);
-							dbei.pBlob = (PBYTE) buffer;
-							dbei.cbBlob = (strlen(buffer) + 1) * (sizeof(TCHAR) + 1);
-							dbei.eventType = EVENTTYPE_STATUSCHANGE;
-							dbei.flags = 0;
-							dbei.timestamp = time(NULL);
-							dbei.szModule = dat->szProto;
-							hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
-							if (dat->hDbEventFirst == NULL) {
-								dat->hDbEventFirst = hNewEvent;
-								SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+							else if (dat->wOldStatus == ID_STATUS_OFFLINE)
+								iLen = mir_sntprintf(buffer, SIZEOF(buffer), TranslateT("signed on (%s)"), szNewStatus);
+							else
+								iLen = mir_sntprintf(buffer, SIZEOF(buffer), TranslateT("is now %s (was %s)"), szNewStatus, szOldStatus);
+
+							{
+                        char* blob = ( char* )alloca( 1000 );
+								#if defined( _UNICODE )
+									int ansiLen = WideCharToMultiByte(CP_ACP, 0, buffer, -1, blob, 1000, 0, 0);
+									blob[ansiLen] = 0;
+									memcpy( blob+ansiLen+1, buffer, sizeof(TCHAR)*(iLen+1));
+									dbei.cbBlob = ansiLen+1 + sizeof(TCHAR)*(iLen+1);
+								#else
+									int wLen = MultiByteToWideChar(CP_ACP, 0, buffer, -1, NULL, 0 );
+									memcpy( blob, buffer, iLen+1 );
+									MultiByteToWideChar(CP_ACP, 0, buffer, -1, (WCHAR*)&blob[iLen+1], wLen+1 );
+									dbei.cbBlob = iLen+1 + sizeof(TCHAR)*(wLen+1);
+								#endif
+
+								dbei.cbSize = sizeof(dbei);
+								dbei.pBlob = (PBYTE) blob;
+								dbei.eventType = EVENTTYPE_STATUSCHANGE;
+								dbei.flags = 0;
+								dbei.timestamp = time(NULL);
+								dbei.szModule = dat->szProto;
+								hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
+								if (dat->hDbEventFirst == NULL) {
+									dat->hDbEventFirst = hNewEvent;
+									SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+								}
 							}
 						}
 						dat->wOldStatus = dat->wStatus;
