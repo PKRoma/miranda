@@ -1488,9 +1488,9 @@ BEGIN
                     IDC_STATIC,93,27,167,11,WS_DISABLED
 END
 
-IDD_OPT_IDLE DIALOG  0, 0, 312, 172
+IDD_OPT_IDLE DIALOGEX 0, 0, 312, 172
 STYLE DS_SETFONT | WS_CHILD | WS_BORDER
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Become idle if the following is left unattended:",
                     IDC_IDLESHORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,
