@@ -118,7 +118,11 @@ static int LoadDatabase( char * profile, void * plink )
 	CallService(MS_SYSTEM_GET_MMI,0,(LPARAM)&memoryManagerInterface);
 	// set the lists manager;
 	li.cbSize = sizeof( li );
-	CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li);
+	if ( CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li) == CALLSERVICE_NOTFOUND ) {
+		MessageBoxA( NULL, "This version of plugin requires Miranda 0.4.3 bld#42 or later", "Fatal error", MB_OK );
+		return 1;
+	}
+
 	// inject all APIs and hooks into the core
 	return LoadDatabaseModule();
 }

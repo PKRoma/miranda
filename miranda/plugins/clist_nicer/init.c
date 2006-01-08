@@ -289,9 +289,13 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	if(DBGetContactSettingByte(NULL, "Skin", "UseSound", 0) != g_CluiData.soundsOff)
 		DBWriteContactSettingByte(NULL, "Skin", "UseSound", g_CluiData.soundsOff ? 0 : 1);
 
-
 	// get the clist interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
+	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
+		MessageBoxA( NULL, "This version of plugin requires Miranda 0.4.3 bld#42 or later", "Fatal error", MB_OK );
+		return 1;
+	}
+
 	pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;
 	pcli->pfnCListTrayNotify = CListTrayNotify;
 	pcli->pfnCluiProtocolStatusChanged = CluiProtocolStatusChanged;
