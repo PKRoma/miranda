@@ -525,6 +525,7 @@ LBL_Exit:
 
 	MSN_SetString( NULL, "MsnPassportHost", msnLoginHost );
 	MSN_DebugLog( "MSN Passport login host is set to '%s'", msnLoginHost );
+	free( msnLoginHost );
 	goto LBL_Exit;
 }
 
