@@ -211,9 +211,10 @@ extern "C" void DrawWithGDIp(HDC hDC, DWORD x, DWORD y, DWORD width, DWORD heigh
         g.DrawImage(im, rect, 0, 0, contact->ace->bmWidth, contact->ace->bmHeight, UnitPixel, &attr, NULL, NULL);
     }
     else {*/
+	 if ( contact->ace != NULL ) {
         Bitmap bm(contact->ace->hbmPic, 0);
         g->DrawImage(&bm, rect, 0, 0, contact->ace->bmWidth, contact->ace->bmHeight, UnitPixel, &attr, NULL, NULL);
-    //}
+	 }
 }
 
 COLORREF __forceinline _revcolref(COLORREF colref)
