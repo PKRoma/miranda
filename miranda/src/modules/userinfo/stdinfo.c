@@ -497,6 +497,7 @@ int DetailsInit(WPARAM wParam,LPARAM lParam)
 	odp.cbSize = sizeof(odp);
 	odp.hIcon = NULL;
 	odp.hInstance = GetModuleHandle(NULL);
+	odp.flags = 0;
 
 	odp.pfnDlgProc = SummaryDlgProc;
 	odp.position = -2100000000;
