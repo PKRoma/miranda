@@ -2,6 +2,10 @@
  * test for gdi+
  */
 
+#if defined(UNICODE) && !defined(_UNICODE)
+#	define _UNICODE
+#endif
+
 #include <malloc.h>
 #include <string>
 #include <tchar.h>
