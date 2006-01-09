@@ -649,6 +649,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                                 SendMessage(hwndClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
                             else
                                 SendMessage(hwndClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) FALSE, 0);
+							SendMessage(hwndClist, CLM_FIRST + 106, 0, 1);
+							SendMessage(hwndClist, CLM_AUTOREBUILD, 0, 0);
                         }
 						else {
 							if(IsWindow(GetDlgItem(GetParent(hwnd), IDC_CLIST)))
@@ -3834,6 +3836,8 @@ quote_from_last:
                                     SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
                                 else
                                     SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) FALSE, 0);
+								SendMessage(hwndClist, CLM_FIRST + 106, 0, 1);
+								SendMessage(hwndClist, CLM_AUTOREBUILD, 0, 0);
                             }
                             break;
                         case ID_SENDMENU_SENDDEFAULT:

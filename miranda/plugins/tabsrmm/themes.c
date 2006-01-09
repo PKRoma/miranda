@@ -558,7 +558,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolo
 		grect.LowerRight = 1;
 
 		MyGradientFill(hdcwnd, tvtx, 2, &grect, 1, (FLG_GRADIENT == GRADIENT_TB || FLG_GRADIENT == GRADIENT_BT) ? GRADIENT_FILL_RECT_V : GRADIENT_FILL_RECT_H);
-		return 0;
+		return;
 	}
 
 	hdc = CreateCompatibleDC(hdcwnd);

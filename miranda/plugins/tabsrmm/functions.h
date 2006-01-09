@@ -84,6 +84,7 @@ int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam);
 
 void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, int mode);
 void ReloadGlobalContainerSettings();
+void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 
 /*
  * font service support
