@@ -182,7 +182,7 @@ struct ClcData {
 	BYTE isMultiSelect;
 	HWND hwndParent;
 	DWORD lastSort;
-	BOOL bNeedPaint, bisEmbedded;
+	BOOL bNeedPaint, bisEmbedded, bHideSubcontacts;
 	DWORD lastRepaint;
 	BOOL forcePaint, forceScroll;
 };
@@ -424,7 +424,7 @@ int GetBasicFontID(struct ClcContact * contact);
 extern int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szStatus, struct ClcData *dat);
 void Utf8Decode( char* str, wchar_t** ucs2 );
 char* Utf8Encode( const char* src );
-int _DebugPopup(HANDLE hContact, const char *fmt, ...);
+//int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 void CreateViewModeFrame();
 int GetExtraCache(HANDLE hContact, char *szProto);
 void ReloadExtraInfo(HANDLE hContact);
@@ -523,6 +523,8 @@ wchar_t *a2u(char *src);
 #define CLM_ISMULTISELECT (CLM_FIRST+102)
 #define CLM_SETEXTRAIMAGEINTMETA   (CLM_FIRST+104)
 #define CLM_GETSTATUSMSG (CLM_FIRST+105)
+#define CLM_SETHIDESUBCONTACTS (CLM_FIRST+106)
+
 #define IDC_RESETMODES 110
 #define IDC_SELECTMODE 108
 #define IDC_CONFIGUREMODES 109

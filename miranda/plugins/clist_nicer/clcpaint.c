@@ -426,6 +426,7 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 	avatar_done = TRUE;
 	rc->left = av_saved_left;
 	return avatar_size + 2;
+
 }
 
 static BOOL pi_avatar = FALSE;

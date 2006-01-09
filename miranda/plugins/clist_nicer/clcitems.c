@@ -547,7 +547,7 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
     
     // always hide subcontacts (but show them on embedded contact lists)
     
-    if(g_CluiData.bMetaAvail && dat != NULL && !dat->bisEmbedded && g_CluiData.bMetaEnabled && DBGetContactSettingByte(hContact, "MetaContacts", "IsSubcontact", 0))
+    if(g_CluiData.bMetaAvail && dat != NULL && dat->bHideSubcontacts && g_CluiData.bMetaEnabled && DBGetContactSettingByte(hContact, "MetaContacts", "IsSubcontact", 0))
         return 1;
 
     if(g_CluiData.bFilterEffective) {

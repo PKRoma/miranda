@@ -1460,7 +1460,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
 		}
 		return TRUE;
-
 	case WM_SHOWWINDOW:
 		{
 			static int noRecurse = 0;

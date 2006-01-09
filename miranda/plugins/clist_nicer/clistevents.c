@@ -24,7 +24,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void TrayIconSetToBase(char *szPreferredProto);
 
-static int RemoveEvent(WPARAM wParam, LPARAM lParam);
+int fnRemoveEvent(WPARAM wParam, LPARAM lParam);
+int fnAddEvent(WPARAM wParam, LPARAM lParam);
+int fnGetEvent(WPARAM wParam, LPARAM lParam);
+
 static HWND hwndEventFrame = 0;
 HFONT __fastcall ChangeToFont(HDC hdc, struct ClcData *dat, int id, int *fontHeight);
 
@@ -82,6 +85,9 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 {
 	switch(msg) {
 	case WM_CREATE:
+		event = NULL;
+		eventCount = 0;
+
 		hwndEventFrame = hwnd;
 		//g_CluiData.hwndNotifyButton = CreateWindowExA(0, "CLCButtonClass", "", BS_PUSHBUTTON | WS_CHILD | WS_TABSTOP, 0, 0, 19, 16, hwnd, (HMENU) IDC_NOTIFYBUTTON, g_hInst, NULL);
 		//SendMessage(g_CluiData.hwndNotifyButton, BUTTONSETASFLATBTN, 0, 0);
@@ -269,7 +275,7 @@ static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD
 	for (i = 0; i < eventCount; i++) {
 		if (event[i].cle.flags & CLEF_ONLYAFEW) {
 			if (0 == --event[i].flashesDone) {
-				RemoveEvent((WPARAM) event[i].cle.hContact, (LPARAM) event[i].cle.hDbEvent);
+				fnRemoveEvent((WPARAM) event[i].cle.hContact, (LPARAM) event[i].cle.hDbEvent);
 				continue;
 			}
 		}
@@ -284,7 +290,7 @@ static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD
 	iconsOn = !iconsOn;
 }
 
-int AddEvent(WPARAM wParam, LPARAM lParam)
+int fnAddEvent(WPARAM wParam, LPARAM lParam)
 {
 	MENUITEMINFO mii = {0};
 	CLISTEVENT *cle = (CLISTEVENT *) lParam;
@@ -409,7 +415,7 @@ duplicate : return 0;
 // wParam=(WPARAM)(HANDLE)hContact
 // lParam=(LPARAM)(HANDLE)hDbEvent
 // Returns 0 if the event was successfully removed, or nonzero if the event was not found
-int RemoveEvent(WPARAM wParam, LPARAM lParam)
+int fnRemoveEvent(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hItem;
 	int i, j;
@@ -519,6 +525,23 @@ int MyGetEvent(WPARAM wParam, LPARAM lParam)
 			return(int) &event[i].cle;
 	}
 	return(int) (CLISTEVENT *) NULL;
+}
+
+int fnGetEvent(WPARAM wParam, LPARAM lParam)
+{
+    int i;
+
+    if ((HANDLE) wParam == INVALID_HANDLE_VALUE) {
+        if (lParam >= eventCount)
+            return(int) (CLISTEVENT *) NULL;
+        return(int) &event[lParam].cle;
+    }
+    for (i = 0; i < eventCount; i++) {
+        if (event[i].cle.hContact == (HANDLE) wParam)
+            if (lParam-- == 0)
+                return(int) &event[i].cle;
+    }
+    return(int) (CLISTEVENT *) NULL;
 }
 
 void UninitCListEvents(void)

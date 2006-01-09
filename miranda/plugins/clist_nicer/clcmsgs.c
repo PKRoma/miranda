@@ -104,6 +104,10 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 		}	}
 		return 0;
 
+	case CLM_SETHIDESUBCONTACTS:
+		dat->bHideSubcontacts = (BOOL)lParam;
+		return 0;
+
 	case CLM_SETEXTRAIMAGELIST:
 		dat->himlExtraColumns = (HIMAGELIST) lParam;
 		InvalidateRect(hwnd, NULL, FALSE);

@@ -279,6 +279,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			CREATESTRUCT *cs = (CREATESTRUCT *)lParam;
 			if(cs->lpCreateParams == (LPVOID)0xff00ff00) {
 				dat->bisEmbedded = FALSE;
+				dat->bHideSubcontacts = TRUE;
 				if(g_CluiData.bShowLocalTime)
 					SetTimer(hwnd, TIMERID_REFRESH, 65000, NULL);
 			}

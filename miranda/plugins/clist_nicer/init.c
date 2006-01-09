@@ -57,8 +57,9 @@ void   TrayIconSetToBase(char *szPreferredProto);
 void   TrayIconUpdateBase(const char *szChangedProto);
 void   TrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPreferredProto);
 
-int AddEvent(WPARAM wParam, LPARAM lParam);
-int RemoveEvent(WPARAM wParam, LPARAM lParam);
+int fnRemoveEvent(WPARAM wParam, LPARAM lParam);
+int fnAddEvent(WPARAM wParam, LPARAM lParam);
+int fnGetEvent(WPARAM wParam, LPARAM lParam);
 
 void GetDefaultFontSetting(int i, LOGFONT *lf, COLORREF *colour);
 
@@ -328,6 +329,16 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	saveProcessExternalMessages = pcli->pfnProcessExternalMessages; pcli->pfnProcessExternalMessages = ProcessExternalMessages;
 	saveRecalcScrollBar = pcli->pfnRecalcScrollBar; pcli->pfnRecalcScrollBar = RecalcScrollBar;
 	saveTrayIconProcessMessage = pcli->pfnTrayIconProcessMessage; pcli->pfnTrayIconProcessMessage = TrayIconProcessMessage;
+
+	if(ServiceExists(MS_CLIST_ADDEVENT)) {
+		DestroyServiceFunction(MS_CLIST_ADDEVENT);
+		DestroyServiceFunction(MS_CLIST_REMOVEEVENT);
+		DestroyServiceFunction(MS_CLIST_GETEVENT);
+	}
+
+	CreateServiceFunction(MS_CLIST_ADDEVENT, fnAddEvent);
+	CreateServiceFunction(MS_CLIST_REMOVEEVENT, fnRemoveEvent);
+	CreateServiceFunction(MS_CLIST_GETEVENT, fnGetEvent);
 
 	rc = LoadContactListModule();
 	if (rc == 0)

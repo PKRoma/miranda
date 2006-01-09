@@ -29,6 +29,9 @@ extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 
 BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE, SIZE_T, SIZE_T) = 0;
 
+extern int AddEvent(WPARAM wParam, LPARAM lParam);
+extern int RemoveEvent(WPARAM wParam, LPARAM lParam);
+
 int AddMainMenuItem(WPARAM wParam, LPARAM lParam);
 int AddContactMenuItem(WPARAM wParam, LPARAM lParam);
 int InitCustomMenus(void);
@@ -109,6 +112,7 @@ int LoadContactListModule(void)
 	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
 	DestroyServiceFunction(MS_CLIST_SHOWHIDE);
 	CreateServiceFunction(MS_CLIST_SHOWHIDE, ShowHide);
+
 	CreateServiceFunction("CList/GetContactStatusMsg", GetContactStatusMessage);
 	InitCustomMenus();
 	IMG_InitDecoder();
