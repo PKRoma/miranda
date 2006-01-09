@@ -273,7 +273,7 @@ void PaintNotifyArea(HDC hDC, RECT *rc)
 		ev_lastIcon = (int)nmi->hIcon;
 	} else {
 		HICON hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_BLANK), IMAGE_ICON, 16, 16, 0);
-		DrawTextA(hDC, g_CluiData.szNoEvents, lstrlenA(g_CluiData.szNoEvents), rc, DT_VCENTER | DT_SINGLELINE);
+		DrawText(hDC, g_CluiData.szNoEvents, lstrlen(g_CluiData.szNoEvents), rc, DT_VCENTER | DT_SINGLELINE);
 		DrawIconEx(hDC, 4, (rc->bottom + rc->top - 16) / 2, hIcon, 16, 16, 0, 0, DI_NORMAL | DI_COMPAT);
 		DestroyIcon(hIcon);
 	}

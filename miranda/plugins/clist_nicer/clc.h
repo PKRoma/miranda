@@ -251,7 +251,7 @@ struct CluiData {
 	int wNextMenuID;
 	HANDLE hUpdateContact;
 	DWORD sortTimer;
-	char *szNoEvents;
+	TCHAR *szNoEvents;
 	BOOL forceResize;
 	BOOL neeedSnap;
 	COLORREF avatarBorder;

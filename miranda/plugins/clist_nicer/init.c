@@ -29,7 +29,7 @@ PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli = NULL;
 
 #define DEFAULT_TB_VISIBILITY (1 | 2 | 4 | 8 | 16 | 32)
-char *szNoevets = "No events...";
+TCHAR *szNoevents = _T("No events...");
 extern HICON im_clienthIcons[NR_CLIENTS];
 extern HICON overlayicons[10];
 
@@ -235,7 +235,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	g_CluiData.hMenuNotify = CreatePopupMenu();
 	g_CluiData.wNextMenuID = 1;
 	g_CluiData.sortTimer = DBGetContactSettingDword(NULL, "CLC", "SortTimer", 150);
-	g_CluiData.szNoEvents = Translate(szNoevets);
+	g_CluiData.szNoEvents = TranslateTS(szNoevents);
 	g_CluiData.avatarBorder = (COLORREF)DBGetContactSettingDword(NULL, "CLC", "avatarborder", 0);
 	g_CluiData.avatarRadius = (COLORREF)DBGetContactSettingDword(NULL, "CLC", "avatarradius", 4);
 	g_CluiData.hBrushAvatarBorder = CreateSolidBrush(g_CluiData.avatarBorder);
