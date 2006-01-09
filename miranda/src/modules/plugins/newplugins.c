@@ -562,7 +562,7 @@ static BOOL dialogListPlugins(WIN32_FIND_DATAA * fd, char * path, WPARAM wParam,
 		ListView_SetItemTextA(hwndList, iRow, 1, pi.pluginInfo->shortName);
 		mir_snprintf(buf,SIZEOF(buf),"%d.%d.%d.%d", HIBYTE(HIWORD(pi.pluginInfo->version)), LOBYTE(HIWORD(pi.pluginInfo->version)), HIBYTE(LOWORD(pi.pluginInfo->version)), LOBYTE(LOWORD(pi.pluginInfo->version)));
 		ListView_SetItemTextA(hwndList, iRow, 2, buf);
-		ListView_SetItemTextA(hwndList, iRow, 3, Translate( gModule != NULL ? "Yes":"No" ));
+		ListView_SetItemText(hwndList, iRow, 3, TranslateTS( gModule != NULL ? _T("Yes"):_T("No") ));
 		ListView_SetItemTextA(hwndList, iRow, 4, pi.pluginInfo->author);
 		ListView_SetItemTextA(hwndList, iRow, 5, pi.pluginInfo->authorEmail);
 		ListView_SetItemTextA(hwndList, iRow, 6, pi.pluginInfo->description);
