@@ -117,7 +117,7 @@ static int AddDetailsPage(WPARAM wParam,LPARAM lParam)
 	else dst->pszTemplate = odp->pszTemplate;
 
 	#if defined(_UNICODE)
-	if ( odp->flags & ODPF_UNICODE )
+	if ( odp->flags == ODPF_UNICODE )
 		dst->ptszTitle = (odp->ptszTitle==0) ? NULL : _wcsdup(odp->ptszTitle);
 	else
 	#endif
