@@ -302,11 +302,11 @@ static BOOL CALLBACK DlgProcClcExtBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
                 SendDlgItemMessage(hwndDlg, IDC_MRGN_BOTTOM_SPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
                 SendDlgItemMessage(hwndDlg, IDC_ALPHASPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
 
-                SendDlgItemMessageA(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)Translate("<None>"));
-                SendDlgItemMessageA(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)Translate("Raised"));
-                SendDlgItemMessageA(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)Translate("Sunken"));
-                SendDlgItemMessageA(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)Translate("Bumped"));
-                SendDlgItemMessageA(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)Translate("Etched"));
+                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("<None>"));
+                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Raised"));
+                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Sunken"));
+                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Bumped"));
+                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Etched"));
 
                 SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
                 SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, g_CluiData.cornerRadius);

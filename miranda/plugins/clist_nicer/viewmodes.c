@@ -244,10 +244,10 @@ static int FillDialog(HWND hwnd)
     ListView_SetColumnWidth(hwndList, 0, LVSCW_AUTOSIZE);
     ListView_Arrange(hwndList, LVA_ALIGNLEFT | LVA_ALIGNTOP);
 
-    SendDlgItemMessageA(hwnd, IDC_PROTOGROUPOP, CB_INSERTSTRING, -1, (LPARAM)Translate("And"));
-    SendDlgItemMessageA(hwnd, IDC_PROTOGROUPOP, CB_INSERTSTRING, -1, (LPARAM)Translate("Or"));
-    SendDlgItemMessageA(hwnd, IDC_GROUPSTATUSOP, CB_INSERTSTRING, -1, (LPARAM)Translate("And"));
-    SendDlgItemMessageA(hwnd, IDC_GROUPSTATUSOP, CB_INSERTSTRING, -1, (LPARAM)Translate("Or"));
+    SendDlgItemMessage(hwnd, IDC_PROTOGROUPOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("And"));
+    SendDlgItemMessage(hwnd, IDC_PROTOGROUPOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Or"));
+    SendDlgItemMessage(hwnd, IDC_GROUPSTATUSOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("And"));
+    SendDlgItemMessage(hwnd, IDC_GROUPSTATUSOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Or"));
     return 0;
 }
 

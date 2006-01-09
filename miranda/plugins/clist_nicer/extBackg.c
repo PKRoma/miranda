@@ -615,19 +615,30 @@ void SaveNonStatusItemsSettings(HWND hwndDlg)
 // fills the combobox of the options dlg for the first time
 void FillItemList(HWND hwndDlg)
 {
-    int n, iOff;
-    UINT item;
-    
-    for (n = 0; n <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; n++) {
-        iOff = 0;
-        if(strstr(StatusItems[n].szName, "{-}")) {
-            item = SendDlgItemMessageA(hwndDlg, IDC_ITEMS, LB_ADDSTRING, 0, (LPARAM)"------------------------");
-            SendDlgItemMessageA(hwndDlg, IDC_ITEMS, LB_SETITEMDATA, item, ID_EXTBKSEPARATOR);
-            iOff = 3;
-        }
-        item = SendDlgItemMessageA(hwndDlg, IDC_ITEMS, LB_ADDSTRING, 0, (LPARAM)Translate(&StatusItems[n].szName[iOff]));
-        SendDlgItemMessageA(hwndDlg, IDC_ITEMS, LB_SETITEMDATA, item, ID_STATUS_OFFLINE + n);
-    }
+	int n, iOff;
+	UINT item;
+
+	for (n = 0; n <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; n++) {
+		iOff = 0;
+		if(strstr(StatusItems[n].szName, "{-}")) {
+			item = SendDlgItemMessageA(hwndDlg, IDC_ITEMS, LB_ADDSTRING, 0, (LPARAM)"------------------------");
+			SendDlgItemMessageA(hwndDlg, IDC_ITEMS, LB_SETITEMDATA, item, ID_EXTBKSEPARATOR);
+			iOff = 3;
+		}
+		#if defined( _UNICODE )
+		{	TCHAR* p = ( TCHAR* )CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)&StatusItems[n].szName[iOff] );
+			if (( int )p != CALLSERVICE_NOTFOUND) {
+				item = SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_ADDSTRING, 0, (LPARAM)p );
+				mir_free(p);
+			}
+			else item = SendDlgItemMessageA(hwndDlg, IDC_ITEMS, LB_ADDSTRING, 0, (LPARAM)Translate(&StatusItems[n].szName[iOff]));
+		}
+		#else
+			item = SendDlgItemMessageA(hwndDlg, IDC_ITEMS, LB_ADDSTRING, 0, (LPARAM)Translate(&StatusItems[n].szName[iOff]));
+		#endif
+
+		SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_SETITEMDATA, item, ID_STATUS_OFFLINE + n);
+	}
 }
 
 void FillOptionDialogByStatusItem(HWND hwndDlg, StatusItems_t *item)

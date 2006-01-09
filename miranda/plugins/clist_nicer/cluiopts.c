@@ -501,10 +501,10 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			CheckDlgButton(hwndDlg, IDC_SHOWVISIBILITY, dwFlags & CLUI_SHOWVISI);
 			CheckDlgButton(hwndDlg, IDC_SHOWMETA, dwFlags & CLUI_USEMETAICONS);
 			CheckDlgButton(hwndDlg, IDC_NOAVATARSOFFLINE, g_CluiData.bNoOfflineAvatars);
-			SendDlgItemMessageA(hwndDlg, IDC_DUALROWMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Never"));
-			SendDlgItemMessageA(hwndDlg, IDC_DUALROWMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("Always"));
-			SendDlgItemMessageA(hwndDlg, IDC_DUALROWMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("When space allows it"));
-			SendDlgItemMessageA(hwndDlg, IDC_DUALROWMODE, CB_INSERTSTRING, -1, (LPARAM)Translate("When needed"));
+			SendDlgItemMessage(hwndDlg, IDC_DUALROWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Never"));
+			SendDlgItemMessage(hwndDlg, IDC_DUALROWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always"));
+			SendDlgItemMessage(hwndDlg, IDC_DUALROWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("When space allows it"));
+			SendDlgItemMessage(hwndDlg, IDC_DUALROWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("When needed"));
 
 			SendDlgItemMessage(hwndDlg, IDC_DUALROWMODE, CB_SETCURSEL, (WPARAM)g_CluiData.dualRowMode, 0);
 
@@ -557,15 +557,15 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_RENDERGDIP), g_gdiplusToken != 0 ? TRUE : FALSE);
 
-			SendDlgItemMessageA(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)Translate("With Nickname - left"));
-			SendDlgItemMessageA(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)Translate("Far left"));
-			SendDlgItemMessageA(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)Translate("Far right"));
-			SendDlgItemMessageA(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)Translate("With Nickname - right"));
+			SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("With Nickname - left"));
+			SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Far left"));
+			SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Far right"));
+			SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("With Nickname - right"));
 
-			SendDlgItemMessageA(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)Translate("Never"));
-			SendDlgItemMessageA(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)Translate("Always"));
-			SendDlgItemMessageA(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)Translate("For RTL only"));
-			SendDlgItemMessageA(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)Translate("RTL TEXT only"));
+			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Never"));
+			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always"));
+			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("For RTL only"));
+			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("RTL TEXT only"));
 
 			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_SETCURSEL, g_CluiData.bUseDCMirroring, 0);
 
