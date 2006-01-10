@@ -97,8 +97,16 @@ void  fnSetGroupChildCheckboxes( struct ClcGroup *group, int checked );
 void  fnInvalidateItem( HWND hwnd, struct ClcData *dat, int iItem );
 
 /* clistevents.c */
+struct CListEvent* fnAddEvent( CLISTEVENT *cle );
+CLISTEVENT* fnGetEvent( HANDLE hContact, int idx );
+
+struct CListEvent* fnCreateEvent( void );
+void fnFreeEvent( struct CListEvent* p );
+
 int   fnEventsProcessContactDoubleClick( HANDLE hContact );
 int   fnEventsProcessTrayDoubleClick( void );
+int   fnGetImlIconIndex(HICON hIcon);
+int   fnRemoveEvent( HANDLE hContact, HANDLE dbEvent );
 
 /* clistmod.c */
 int    fnIconFromStatusMode(const char *szProto, int status, HANDLE hContact);
@@ -171,7 +179,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 	int rc;
 
 	if ( interfaceInited == 0 ) {
-		cli.version = 1;
+		cli.version = 2;
 
 		cli.pfnClcOptionsChanged               = fnClcOptionsChanged;
 		cli.pfnClcBroadcast                    = fnClcBroadcast;
@@ -236,8 +244,14 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnGetRowTotalHeight               = fnGetRowTotalHeight;
 		cli.pfnRowHitTest                      = fnRowHitTest;
 
+		cli.pfnAddEvent                        = fnAddEvent;
+		cli.pfnCreateEvent                     = fnCreateEvent;
 		cli.pfnEventsProcessContactDoubleClick = fnEventsProcessContactDoubleClick;
 		cli.pfnEventsProcessTrayDoubleClick	   = fnEventsProcessTrayDoubleClick;
+		cli.pfnFreeEvent                       = fnFreeEvent;
+		cli.pfnGetEvent                        = fnGetEvent;
+		cli.pfnGetImlIconIndex                 = fnGetImlIconIndex;
+		cli.pfnRemoveEvent                     = fnRemoveEvent;
 
 		cli.pfnGetContactDisplayName			   = fnGetContactDisplayName;
 		cli.pfnInvalidateDisplayNameCacheEntry = fnInvalidateDisplayNameCacheEntry;

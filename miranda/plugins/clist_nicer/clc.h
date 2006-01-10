@@ -414,7 +414,6 @@ void SetButtonStates(HWND hwnd);
 void ConfigureCLUIGeometry();
 void IcoLibReloadIcons();
 int CompareContacts(const struct ClcContact* p1, const struct ClcContact* p2);
-int MyGetEvent(WPARAM wParam, LPARAM lParam);
 void PaintNotifyArea(HDC hDC, RECT *rc);
 int AvatarChanged(WPARAM wParam, LPARAM lParam);
 void ConfigureFrame();

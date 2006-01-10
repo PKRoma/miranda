@@ -40,7 +40,6 @@ extern StatusItems_t *StatusItems;
 extern int g_shutDown;
 extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
 extern struct ExtraCache *g_ExtraCache;
-extern int disableTrayFlash, disableIconFlash;
 extern COLORREF g_CLUISkinnedBkColorRGB;
 
 HIMAGELIST hCListImages;
@@ -179,12 +178,6 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 			g_CluiData.bMetaEnabled = bMetaEnabled;
 			pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 		}
-	}
-	else if (wParam == 0 && !__strcmp(cws->szModule, "CList")) {
-		if (!__strcmp(cws->szSetting, "DisableTrayFlash"))
-			disableTrayFlash = (int) cws->value.bVal;
-		else if (!__strcmp(cws->szSetting, "NoIconBlink"))
-			disableIconFlash = (int) cws->value.bVal;
 	}
 	else if(szProto == NULL && wParam == 0) {
 		if(!__strcmp(cws->szSetting, "XStatusId"))

@@ -57,10 +57,6 @@ void   TrayIconSetToBase(char *szPreferredProto);
 void   TrayIconUpdateBase(const char *szChangedProto);
 void   TrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPreferredProto);
 
-int fnRemoveEvent(WPARAM wParam, LPARAM lParam);
-int fnAddEvent(WPARAM wParam, LPARAM lParam);
-int fnGetEvent(WPARAM wParam, LPARAM lParam);
-
 void GetDefaultFontSetting(int i, LOGFONT *lf, COLORREF *colour);
 
 void ( *saveLoadClcOptions )(HWND hwnd,struct ClcData *dat);
@@ -69,22 +65,28 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat);
 int ( *saveAddContactToGroup )(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact);
 int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact);
 
+struct CListEvent* ( *saveAddEvent )(CLISTEVENT *cle);
+struct CListEvent* AddEvent(CLISTEVENT *cle);
+
 int ( *saveAddInfoItemToGroup )(struct ClcGroup *group, int flags, const TCHAR *pszText);
 int AddInfoItemToGroup(struct ClcGroup *group, int flags, const TCHAR *pszText);
 
 struct ClcGroup* ( *saveAddGroup )(HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers);
 struct ClcGroup* AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers);
 
-int ( *saveIconFromStatusMode )( const char *szProto, int status, HANDLE hContact );
-
-LRESULT ( *saveProcessExternalMessages )(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM wParam, LPARAM lParam);
-
 LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 LRESULT ( CALLBACK *saveContactListControlWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+int ( *saveIconFromStatusMode )( const char *szProto, int status, HANDLE hContact );
+
+LRESULT ( *saveProcessExternalMessages )(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM wParam, LPARAM lParam);
+
+int ( *saveRemoveEvent )(HANDLE hContact, HANDLE hDbEvent);
+int RemoveEvent(HANDLE hContact, HANDLE hDbEvent);
 
 int ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
 int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam);
@@ -295,9 +297,12 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	// get the clist interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
-		MessageBoxA( NULL, "This version of plugin requires Miranda 0.4.3 bld#42 or later", "Fatal error", MB_OK );
+LBL_Error:
+		MessageBoxA( NULL, "This version of plugin requires Miranda 0.4.3 bld#45 or later", "Fatal error", MB_OK );
 		return 1;
 	}
+	if ( pcli->version < 2 ) // don't join it with the previous if()
+		goto LBL_Error;
 
 	pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;
 	pcli->pfnCListTrayNotify = CListTrayNotify;
@@ -320,7 +325,9 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnTrayIconSetToBase = TrayIconSetToBase;
 	pcli->pfnTrayIconUpdateBase = TrayIconUpdateBase;
 	pcli->pfnTrayIconUpdateWithImageList = TrayIconUpdateWithImageList;
+
 	saveAddContactToGroup = pcli->pfnAddContactToGroup; pcli->pfnAddContactToGroup = AddContactToGroup;
+	saveAddEvent = pcli->pfnAddEvent; pcli->pfnAddEvent = AddEvent;
 	saveAddGroup = pcli->pfnAddGroup; pcli->pfnAddGroup = AddGroup;
 	saveAddInfoItemToGroup = pcli->pfnAddInfoItemToGroup; pcli->pfnAddInfoItemToGroup = AddInfoItemToGroup;
 	saveContactListControlWndProc = pcli->pfnContactListControlWndProc; pcli->pfnContactListControlWndProc = ContactListControlWndProc;
@@ -329,17 +336,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	saveLoadClcOptions = pcli->pfnLoadClcOptions; pcli->pfnLoadClcOptions = LoadClcOptions;
 	saveProcessExternalMessages = pcli->pfnProcessExternalMessages; pcli->pfnProcessExternalMessages = ProcessExternalMessages;
 	saveRecalcScrollBar = pcli->pfnRecalcScrollBar; pcli->pfnRecalcScrollBar = RecalcScrollBar;
+	saveRemoveEvent = pcli->pfnRemoveEvent; pcli->pfnRemoveEvent = RemoveEvent;
 	saveTrayIconProcessMessage = pcli->pfnTrayIconProcessMessage; pcli->pfnTrayIconProcessMessage = TrayIconProcessMessage;
-
-	if(ServiceExists(MS_CLIST_ADDEVENT)) {
-		DestroyServiceFunction(MS_CLIST_ADDEVENT);
-		DestroyServiceFunction(MS_CLIST_REMOVEEVENT);
-		DestroyServiceFunction(MS_CLIST_GETEVENT);
-	}
-
-	CreateServiceFunction(MS_CLIST_ADDEVENT, fnAddEvent);
-	CreateServiceFunction(MS_CLIST_REMOVEEVENT, fnRemoveEvent);
-	CreateServiceFunction(MS_CLIST_GETEVENT, fnGetEvent);
 
 	rc = LoadContactListModule();
 	if (rc == 0)

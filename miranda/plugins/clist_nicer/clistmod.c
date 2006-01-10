@@ -36,7 +36,6 @@ int AddMainMenuItem(WPARAM wParam, LPARAM lParam);
 int AddContactMenuItem(WPARAM wParam, LPARAM lParam);
 int InitCustomMenus(void);
 void UninitCustomMenus(void);
-void UninitCListEvents(void);
 int GetContactStatusMessage(WPARAM wParam, LPARAM lParam);
 int CListOptInit(WPARAM wParam, LPARAM lParam);
 void TrayIconUpdateBase(const char *szChangedProto);
@@ -99,7 +98,6 @@ static int MenuItem_LockAvatar(WPARAM wParam, LPARAM lParam)
 static int ContactListShutdownProc(WPARAM wParam, LPARAM lParam)
 {
 	UninitCustomMenus();
-	UninitCListEvents();
 	return 0;
 }
 

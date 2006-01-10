@@ -24,12 +24,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void TrayIconSetToBase(char *szPreferredProto);
 
-int fnRemoveEvent(WPARAM wParam, LPARAM lParam);
-int fnAddEvent(WPARAM wParam, LPARAM lParam);
-int fnGetEvent(WPARAM wParam, LPARAM lParam);
-
 static HWND hwndEventFrame = 0;
 HFONT __fastcall ChangeToFont(HDC hdc, struct ClcData *dat, int id, int *fontHeight);
+
+extern struct CListEvent* ( *saveAddEvent )(CLISTEVENT *cle);
+extern void ( *saveRemoveEvent )(HANDLE hContact, HANDLE hDbEvent);
 
 extern pfnDrawAlpha pDrawAlpha;
 extern struct ClcData *g_clcData;
@@ -48,24 +47,20 @@ struct CListEvent {
 	int imlIconOverlayIndex;
 };
 
-static struct CListEvent *event = NULL;
-static int eventCount = 0;
-
 struct CListImlIcon {
 	int index;
 	HICON hIcon;
 };
 
-static struct CListImlIcon *imlIcon;
-static int imlIconCount;
-static UINT flashTimerId;
 static int iconsOn;
 extern HIMAGELIST hCListImages;
 
-int disableTrayFlash;
-int disableIconFlash;
-
 HANDLE hNotifyFrame = (HANDLE)-1;
+
+struct CListEvent* fnCreateEvent( void )
+{
+	return (struct CListEvent*)calloc( sizeof(struct CListEvent), 1 );
+}
 
 void HideShowNotifyFrame()
 {
@@ -81,13 +76,22 @@ void HideShowNotifyFrame()
 	}
 }
 
+static CLISTEVENT* MyGetEvent(int iSelection)
+{
+	int i;
+
+	for (i = 0; i < pcli->events.count; i++) {
+		struct CListEvent* p = pcli->events.items[i];
+		if (p->menuId == iSelection)
+			return &p->cle;
+	}
+	return NULL;
+}
+
 LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 	case WM_CREATE:
-		event = NULL;
-		eventCount = 0;
-
 		hwndEventFrame = hwnd;
 		//g_CluiData.hwndNotifyButton = CreateWindowExA(0, "CLCButtonClass", "", BS_PUSHBUTTON | WS_CHILD | WS_TABSTOP, 0, 0, 19, 16, hwnd, (HMENU) IDC_NOTIFYBUTTON, g_hInst, NULL);
 		//SendMessage(g_CluiData.hwndNotifyButton, BUTTONSETASFLATBTN, 0, 0);
@@ -160,13 +164,13 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 			if (result != 0) {
 				nmi = (struct NotifyMenuItemExData *) mii.dwItemData;
 				if (nmi) {
-					CLISTEVENT *cle = (CLISTEVENT *) MyGetEvent(0, (WPARAM) iSelection);
+					CLISTEVENT *cle = MyGetEvent(iSelection);
 					if (cle) {
 						CLISTEVENT *cle1 = NULL;
 						CallService(cle->pszService, (WPARAM) NULL, (LPARAM) cle);
 						// re-obtain the pointer, it may already be invalid/point to another event if the
 						// event we're interested in was removed by the service (nasty one...)
-						cle1 = (CLISTEVENT *) MyGetEvent(0, (WPARAM) iSelection);
+						cle1 = MyGetEvent(iSelection);
 						if (cle1 != NULL)
 							CallService(MS_CLIST_REMOVEEVENT, (WPARAM) cle->hContact, (LPARAM) cle->hDbEvent);
 					}
@@ -244,123 +248,37 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 	return TRUE;
 }
 
-static int GetImlIconIndex(HICON hIcon)
+struct CListEvent* AddEvent(CLISTEVENT *cle)
 {
-	int i;
+	struct CListEvent* p = saveAddEvent(cle);
+	if ( p == NULL )
+		return NULL;
 
-	for (i = 0; i < imlIconCount; i++) {
-		if (imlIcon[i].hIcon == hIcon)
-			return imlIcon[i].index;
-	}
-	imlIcon = (struct CListImlIcon *) mir_realloc(imlIcon, sizeof(struct CListImlIcon) * (imlIconCount + 1));
-	imlIconCount++;
-	imlIcon[i]. hIcon = hIcon;
-	imlIcon[i]. index = ImageList_AddIcon(hCListImages, hIcon);
-	return imlIcon[i].index;
-}
-
-static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
-{
-	int i, j;
-
-	if (eventCount) {
-		char *szProto;
-		if (event[0].cle.hContact == NULL)
-			szProto = NULL;
-		else
-			szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) event[0].cle.hContact, 0);
-		pcli->pfnTrayIconUpdateWithImageList((iconsOn || disableTrayFlash) ? event[0].imlIconIndex : event[0].imlIconOverlayIndex, event[0].cle.ptszTooltip, szProto);
-	}
-
-	for (i = 0; i < eventCount; i++) {
-		if (event[i].cle.flags & CLEF_ONLYAFEW) {
-			if (0 == --event[i].flashesDone) {
-				fnRemoveEvent((WPARAM) event[i].cle.hContact, (LPARAM) event[i].cle.hDbEvent);
-				continue;
-			}
-		}
-		for (j = 0; j < i; j++) {
-			if (event[j].cle.hContact == event[i].cle.hContact)
-				break;
-		}
-		if (j < i)
-			continue;
-		pcli->pfnChangeContactIcon(event[i].cle.hContact, iconsOn || disableIconFlash ? event[i].imlIconIndex : event[i].imlIconOverlayIndex, 0);
-	}
-	iconsOn = !iconsOn;
-}
-
-int fnAddEvent(WPARAM wParam, LPARAM lParam)
-{
-	MENUITEMINFO mii = {0};
-	CLISTEVENT *cle = (CLISTEVENT *) lParam;
-	int i;
-	TCHAR szBuffer[128];
-	HANDLE hItem;
-
-	if (cle->cbSize != sizeof(CLISTEVENT))
-		return 1;
-	event = (struct CListEvent *) mir_realloc(event, sizeof(struct CListEvent) * (eventCount + 1));
-	if (cle->flags & CLEF_URGENT) {
-		for (i = 0; i < eventCount; i++) {
-			if (!(cle->flags & CLEF_URGENT))
-				break;
-		}
-	} else
-		i = eventCount;
-	MoveMemory(&event[i + 1], &event[i], sizeof(struct CListEvent) * (eventCount - i));
-	event[i]. cle = *cle;
-	event[i]. imlIconIndex = GetImlIconIndex(event[i].cle.hIcon);
-	event[i]. imlIconOverlayIndex = 0;
-	event[i]. flashesDone = 12;
-	event[i].cle. pszService = mir_strdup(event[i].cle.pszService);
-	#ifdef UNICODE
-		if (event[i].cle.flags & CLEF_UNICODE)
-			event[i].cle.ptszTooltip = _tcsdup((TCHAR*)event[i].cle.pszTooltip);
-		else
-			event[i].cle.ptszTooltip = a2u((char*)event[i].cle.pszTooltip); //if no flag defined it handled as unicode
-	#else
-		event[i].cle.pszTooltip = _strdup(event[i].cle.pszTooltip);//TODO convert from utf to mb
-	#endif
-	event[i]. menuId = 0;
-	eventCount++;
-	if (eventCount == 1) {
-		char *szProto;
-		if (event[0].cle.hContact == NULL)
-			szProto = NULL;
-		else
-			szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) event[0].cle.hContact, 0);
-		iconsOn = 1;
-		flashTimerId = SetTimer(NULL, 0, DBGetContactSettingWord(NULL, "CList", "IconFlashTime", 550), IconFlashTimer);
-		//szFinalProto = DivertProtoToSubcontact(event[0].cle.hContact, szProto);
-		pcli->pfnTrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : event[0].imlIconOverlayIndex, event[0].cle.ptszTooltip, szProto);
-	}
-	pcli->pfnChangeContactIcon(cle->hContact, event[eventCount - 1].imlIconIndex, 1);
-	//SortContacts();
 	if (g_CluiData.dwFlags & CLUI_FRAME_USEEVENTAREA) {
-		if (event[i].cle.hContact != 0 && event[i].cle.hDbEvent != (HANDLE) 1 && !(event[i].cle.flags & CLEF_ONLYAFEW)) {
+		if (p->cle.hContact != 0 && p->cle.hDbEvent != (HANDLE) 1 && !(p->cle.flags & CLEF_ONLYAFEW)) {
 			int j;
 			struct NotifyMenuItemExData *nmi = 0;
 			char *szProto;
 			TCHAR *szName;
+			MENUITEMINFO mii = {0};
 			mii.cbSize = sizeof(mii);
 			mii.fMask = MIIM_DATA | MIIM_BITMAP | MIIM_ID;
-			if (event[i].cle.pszService && !strncmp("SRMsg/ReadMessage", event[i].cle.pszService, 17)) {
+			if (p->cle.pszService && !strncmp("SRMsg/ReadMessage", p->cle.pszService, 17)) {
 				// dup check only for msg events
 				for (j = 0; j < GetMenuItemCount(g_CluiData.hMenuNotify); j++) {
 					if (GetMenuItemInfo(g_CluiData.hMenuNotify, j, TRUE, &mii) != 0) {
 						nmi = (struct NotifyMenuItemExData *) mii.dwItemData;
-						if (nmi != 0 && (HANDLE) nmi->hContact == (HANDLE) event[i].cle.hContact && nmi->iIcon == event[i].imlIconIndex)
-							goto duplicate;
-					}
-				}
-			}
-			szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) event[i].cle.hContact, 0);
-			szName = pcli->pfnGetContactDisplayName(event[i].cle.hContact, 0);
+						if (nmi != 0 && (HANDLE) nmi->hContact == (HANDLE) p->cle.hContact && nmi->iIcon == p->imlIconIndex)
+							return p;
+			}	}	}
+
+			szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) p->cle.hContact, 0);
+			szName = pcli->pfnGetContactDisplayName(p->cle.hContact, 0);
 			if (szProto && szName) {
 				nmi = (struct NotifyMenuItemExData *) malloc(sizeof(struct NotifyMenuItemExData));
 				if (nmi) {
-					TCHAR* szStatus = pcli->pfnGetStatusModeDescription(DBGetContactSettingWord(event[i].cle.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
+					TCHAR szBuffer[128];
+					TCHAR* szStatus = pcli->pfnGetStatusModeDescription(DBGetContactSettingWord(p->cle.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
 #if defined(_UNICODE)
 					TCHAR szwProto[64];
 					MultiByteToWideChar(CP_ACP, 0, szProto, -1, szwProto, 64);
@@ -372,32 +290,32 @@ int fnAddEvent(WPARAM wParam, LPARAM lParam)
 					szBuffer[127] = 0;
 					AppendMenu(g_CluiData.hMenuNotify, MF_BYCOMMAND | MF_STRING, g_CluiData.wNextMenuID, szBuffer);
 					mii.hbmpItem = HBMMENU_CALLBACK;
-					nmi->hContact = event[i].cle.hContact;
-					nmi->iIcon = event[i].imlIconIndex;
-					nmi->hIcon = event[i].cle.hIcon;
-					nmi->hDbEvent = event[i].cle.hDbEvent;
+					nmi->hContact = p->cle.hContact;
+					nmi->iIcon = p->imlIconIndex;
+					nmi->hIcon = p->cle.hIcon;
+					nmi->hDbEvent = p->cle.hDbEvent;
 					mii.dwItemData = (ULONG) nmi;
 					mii.wID = g_CluiData.wNextMenuID;
 					SetMenuItemInfo(g_CluiData.hMenuNotify, g_CluiData.wNextMenuID, FALSE, &mii);
-					event[i]. menuId = g_CluiData.wNextMenuID;
+					p-> menuId = g_CluiData.wNextMenuID;
 					g_CluiData.wNextMenuID++;
 					if (g_CluiData.wNextMenuID > 0x7fff)
 						g_CluiData.wNextMenuID = 1;
-					g_CluiData.hIconNotify = event[i].imlIconIndex;
+					g_CluiData.hIconNotify = p->imlIconIndex;
 				}
 			}
-		} else if (event[i].cle.hContact != 0 && (event[i].cle.flags & CLEF_ONLYAFEW)) {
-			g_CluiData.hIconNotify = event[i].imlIconIndex;
-			g_CluiData.hUpdateContact = event[i].cle.hContact;
+		} else if (p->cle.hContact != 0 && (p->cle.flags & CLEF_ONLYAFEW)) {
+			g_CluiData.hIconNotify = p->imlIconIndex;
+			g_CluiData.hUpdateContact = p->cle.hContact;
 		}
 		if (g_CluiData.dwFlags & CLUI_STICKYEVENTS) {
-			hItem = (HANDLE) SendMessage(pcli->hwndContactTree, CLM_FINDCONTACT, (WPARAM) event[i].cle.hContact, 0);
+			HANDLE hItem = (HANDLE) SendMessage(pcli->hwndContactTree, CLM_FINDCONTACT, (WPARAM) p->cle.hContact, 0);
 			if (hItem) {
 				SendMessage(pcli->hwndContactTree, CLM_SETSTICKY, (WPARAM) hItem, 1);
-				pcli->pfnClcBroadcast(INTM_PROTOCHANGED, (WPARAM) event[i].cle.hContact, 0);
+				pcli->pfnClcBroadcast(INTM_PROTOCHANGED, (WPARAM) p->cle.hContact, 0);
 			}
 		}
-		if (eventCount > 0) {
+		if (pcli->events.count > 0) {
 			g_CluiData.bEventAreaEnabled = TRUE;
 			if (g_CluiData.notifyActive == 0) {
 				g_CluiData.notifyActive = 1;
@@ -406,156 +324,58 @@ int fnAddEvent(WPARAM wParam, LPARAM lParam)
 		}
 		InvalidateRect(hwndEventFrame, NULL, FALSE);
 	}
-duplicate : return 0;
+
+	return p;
 }
-
-
 
 // Removes an event from the contact list's queue
 // wParam=(WPARAM)(HANDLE)hContact
 // lParam=(LPARAM)(HANDLE)hDbEvent
 // Returns 0 if the event was successfully removed, or nonzero if the event was not found
-int fnRemoveEvent(WPARAM wParam, LPARAM lParam)
+void RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 {
 	HANDLE hItem;
-	int i, j;
-	char *szProto;
-	MENUITEMINFO mii = {0};
+	int i;
 	BOOL bUnstick = TRUE;
 
 	// Find the event that should be removed
-	for (i = 0; i < eventCount; i++) {
-		if ((event[i].cle.hContact == (HANDLE) wParam) && (event[i].cle.hDbEvent == (HANDLE) lParam)) {
+	for (i = 0; i < pcli->events.count; i++) {
+		if ((pcli->events.items[i]->cle.hContact == hContact) && (pcli->events.items[i]->cle.hDbEvent == hDbEvent)) {
 			break;
 		}
 	}
 
 	// Event was not found
-	if (i == eventCount)
-		return 1;
-
-	// Update contact's icon
-	szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
-
-	pcli->pfnChangeContactIcon(event[i].cle.hContact, IconFromStatusMode(szProto, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(event[i].cle.hContact, szProto, "Status", ID_STATUS_OFFLINE), event[i].cle.hContact, NULL), 0);
+	if (i == pcli->events.count)
+		return;
 
 	// remove event from the notify menu
-
 	if (g_CluiData.dwFlags & CLUI_FRAME_USEEVENTAREA) {
-		if (event[i].menuId > 0) {
+		if (pcli->events.items[i]->menuId > 0) {
+			MENUITEMINFO mii = {0};
 			mii.cbSize = sizeof(mii);
 			mii.fMask = MIIM_DATA;
-			if (GetMenuItemInfo(g_CluiData.hMenuNotify, event[i].menuId, FALSE, &mii) != 0) {
+			if (GetMenuItemInfo(g_CluiData.hMenuNotify, pcli->events.items[i]->menuId, FALSE, &mii) != 0) {
 				struct NotifyMenuItemExData *nmi = (struct NotifyMenuItemExData *) mii.dwItemData;
-				if (nmi && nmi->hContact == (HANDLE) wParam && nmi->hDbEvent == (HANDLE) lParam) {
+				if (nmi && nmi->hContact == hContact && nmi->hDbEvent == hDbEvent) {
 					free(nmi);
-					DeleteMenu(g_CluiData.hMenuNotify, event[i].menuId, MF_BYCOMMAND);
-					//_snprintf(szBuffer, sizeof(szBuffer), "remove: %d", event[i].menuId);
-					//PUShowMessage(szBuffer, SM_WARNING);
-				}
-			}
-		}
-	}
+					DeleteMenu(g_CluiData.hMenuNotify, pcli->events.items[i]->menuId, MF_BYCOMMAND);
+	}	}	}	}
 
-	// Free any memory allocated to the event
-	if (event[i].cle.pszService != NULL) {
-		mir_free(event[i].cle.pszService);
-		event[i].cle. pszService = NULL;
-	}
-	if (event[i].cle.pszTooltip != NULL) {
-		mir_free(event[i].cle.pszTooltip);
-		event[i].cle. pszTooltip = NULL;
-	}
-
-	// Shift events in array
-	// The array size is not adjusted until a new event is added though.
-	if (eventCount > 1)
-		MoveMemory(&event[i], &event[i + 1], sizeof(struct CListEvent) * (eventCount - i - 1));
-
-	eventCount--;
-
-	if (eventCount == 0) {
-		KillTimer(NULL, flashTimerId);
-		TrayIconSetToBase((HANDLE) wParam == NULL ? NULL : szProto);
-		//EnableWindow(g_CluiData.hwndNotifyButton, FALSE);
-		g_CluiData.bEventAreaEnabled = FALSE;
-		if (g_CluiData.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY) {
-			g_CluiData.notifyActive = 0;
-			HideShowNotifyFrame();
-		}
-	} else {
-		for (j = 0; j < eventCount; j++) {
-			if (event[j].cle.hContact == (HANDLE) wParam) {
-				bUnstick = FALSE;
-				break;
-			}
-		}
-		if (event[0].cle.hContact == NULL)
-			szProto = NULL;
-		else
-			szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) event[0].cle.hContact, 0);
-		pcli->pfnTrayIconUpdateWithImageList(iconsOn ? event[0].imlIconIndex : event[0].imlIconOverlayIndex, event[0].cle.ptszTooltip, szProto);
-	}
+	saveRemoveEvent(hContact, hDbEvent);
 
 	if (bUnstick) {
 		// clear "sticky" (sort) status
 
-		hItem = (HANDLE) SendMessage(pcli->hwndContactTree, CLM_FINDCONTACT, wParam, 0);
+		hItem = (HANDLE) SendMessage(pcli->hwndContactTree, CLM_FINDCONTACT, (WPARAM)hContact, 0);
 		if (hItem) {
 			SendMessage(pcli->hwndContactTree, CLM_SETSTICKY, (WPARAM) hItem, 0);
-			pcli->pfnClcBroadcast(INTM_PROTOCHANGED, wParam, 0);
-		}
-	}
+			pcli->pfnClcBroadcast(INTM_PROTOCHANGED, (WPARAM)hContact, 0);
+	}	}
 
-	if ((HANDLE) wParam == g_CluiData.hUpdateContact || lParam == 1)
+	if (hContact == g_CluiData.hUpdateContact || (int)hDbEvent == 1)
 		g_CluiData.hUpdateContact = 0;
 
 	if (g_CluiData.notifyActive)
 		InvalidateRect(hwndEventFrame, NULL, FALSE);
-	return 0;
-}
-
-
-int MyGetEvent(WPARAM wParam, LPARAM lParam)
-{
-	int i;
-
-	for (i = 0; i < eventCount; i++) {
-		if (event[i].menuId == (int) lParam)
-			return(int) &event[i].cle;
-	}
-	return(int) (CLISTEVENT *) NULL;
-}
-
-int fnGetEvent(WPARAM wParam, LPARAM lParam)
-{
-    int i;
-
-    if ((HANDLE) wParam == INVALID_HANDLE_VALUE) {
-        if (lParam >= eventCount)
-            return(int) (CLISTEVENT *) NULL;
-        return(int) &event[lParam].cle;
-    }
-    for (i = 0; i < eventCount; i++) {
-        if (event[i].cle.hContact == (HANDLE) wParam)
-            if (lParam-- == 0)
-                return(int) &event[i].cle;
-    }
-    return(int) (CLISTEVENT *) NULL;
-}
-
-void UninitCListEvents(void)
-{
-	int i;
-
-	for (i = 0; i < eventCount; i++) {
-		if (event[i].cle.pszService)
-			mir_free(event[i].cle.pszService);
-		if (event[i].cle.pszTooltip)
-			mir_free(event[i].cle.pszTooltip);
-	}
-	if (event != NULL)
-		mir_free(event);
-	if (imlIcon != NULL)
-		mir_free(imlIcon);
 }

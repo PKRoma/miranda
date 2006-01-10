@@ -57,6 +57,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GROUP_ALLOCATE_STEP  8
 
 struct ClcContact;
+struct CListEvent;
 
 /* templates, where are you... */
 
@@ -67,6 +68,14 @@ typedef struct
 	void* sortFunc;
 }
 	ContactList;
+
+typedef struct
+{
+	struct CListEvent** items;
+	int count, limit, increment;
+	void* sortFunc;
+}
+	EventList;
 
 struct ClcGroup {
 	ContactList cl;
@@ -285,10 +294,25 @@ typedef struct
    int    ( *pfnRenameGroup )( int groupID, TCHAR* newName );
 
 	/* keyboard.c */
-	int  ( *pfnHotKeysRegister )( HWND hwnd );
-	void ( *pfnHotKeysUnregister )( HWND hwnd );
-	int  ( *pfnHotKeysProcess )( HWND hwnd, WPARAM wParam, LPARAM lParam );
-	int  ( *pfnHotkeysProcessMessage )( WPARAM wParam, LPARAM lParam );
+	int   ( *pfnHotKeysRegister )( HWND hwnd );
+	void  ( *pfnHotKeysUnregister )( HWND hwnd );
+	int   ( *pfnHotKeysProcess )( HWND hwnd, WPARAM wParam, LPARAM lParam );
+	int   ( *pfnHotkeysProcessMessage )( WPARAM wParam, LPARAM lParam );
+
+	/*************************************************************************************
+	 * version 2 - events processing
+	 *************************************************************************************/
+
+	EventList events;
+
+	struct CListEvent* ( *pfnCreateEvent )( void );
+	void  ( *pfnFreeEvent )( struct CListEvent* );
+
+	struct CListEvent* ( *pfnAddEvent )( CLISTEVENT* );
+	CLISTEVENT* ( *pfnGetEvent )( HANDLE hContact, int idx );
+
+	int   ( *pfnRemoveEvent )( HANDLE hContact, HANDLE hDbEvent );
+	int   ( *pfnGetImlIconIndex )( HICON hIcon );
 }
 	CLIST_INTERFACE;
 
