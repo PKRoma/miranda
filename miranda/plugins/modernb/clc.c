@@ -440,6 +440,7 @@ int LoadCLCModule(void)
 /*
  *	Contact list control window procedure
  */
+extern int sortBy[3], sortNoOfflineBottom;
 LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {     
 	struct ClcData *dat;
@@ -473,6 +474,11 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			dat->IsMetaContactsEnabled=
 				DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
 			dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1);
+			
+			sortBy[0]=DBGetContactSettingByte(NULL,"CList","SortBy1",SETTING_SORTBY1_DEFAULT);
+			sortBy[1]=DBGetContactSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT);
+			sortBy[2]=DBGetContactSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT);
+			sortNoOfflineBottom=DBGetContactSettingByte(NULL,"CList","NoOfflineBottom",SETTING_NOOFFLINEBOTTOM_DEFAULT);
 			//InitDisplayNameCache(&dat->lCLCContactsCache);
 
 			LoadClcOptions(hwnd,dat);

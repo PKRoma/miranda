@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int HotKeysRegister(HWND hwnd);
 void HotKeysUnregister(HWND hwnd);
-void LoadContactTree(void);
+//void LoadContactTree(void);
 
 static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -1258,7 +1258,7 @@ static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 							SendMessage(data->items[i].hwnd, msg, wParam, lParam);
 						}
 
-						LoadContactTree(); /* this won't do job properly since it only really works when changes happen */
+						pcli->pfnLoadContactTree(); /* this won't do job properly since it only really works when changes happen */
 						ClcOptionsChanged(); // Used to force loading avatar an list height related options
 						SendMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0); /* force reshuffle */
 						return TRUE;
@@ -1521,7 +1521,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				DBDeleteContactSetting(NULL, "CList","PrimaryStatus");
 			else DBWriteContactSettingString(NULL,"CList","PrimaryStatus",((PROTOCOLDESCRIPTOR*)SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_GETCURSEL,0,0),0))->szName);
 			pcli->pfnTrayIconIconsChanged();
-			LoadContactTree(); /* this won't do job properly since it only really works when changes happen */
+			pcli->pfnLoadContactTree(); /* this won't do job properly since it only really works when changes happen */
 			SendMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0); /* force reshuffle */
 			ClcOptionsChanged(); // Used to force loading avatar an list height related options
 			return TRUE;
