@@ -127,7 +127,30 @@ typedef struct s_GLYPHOBJECT
   DWORD dwColor;                             // Fill color
   BYTE dwAlpha;                              // Constant alpha-transparency level
   BYTE FitMode;                              // One of FM_* values
+  SortedList * plTextList;                   // List of GLYPHTEXT
 } GLYPHOBJECT,*LPGLYPHOBJECT;
+
+/* SKINTEXTDESCRIPTOR opbject descriptor structure */
+typedef struct s_GLYPHTEXT
+{
+  char        * szGlyphTextID;
+  TCHAR       * stText;
+  TCHAR       * stValueText;
+  DWORD         dwFlags;
+  DWORD         dwColor;                     // Color (InvAA)(RR)(GG)(BB)
+  DWORD         dwShadow;                    //ToDo: Color2/Shaddow
+  int           iLeft,iTop,iRight,iBottom;
+  BYTE          RelativeFlags;
+  char        * szFontID;
+  HFONT         hFont;
+}GLYPHTEXT,*LPGLYPHTEXT;
+
+/* SKINTEXTDESCRIPTOR opbject descriptor structure */
+typedef struct s_SKINFONT
+{
+  char        * szFontID;
+  HFONT         hFont;
+}SKINFONT, *LPSKINFONT;
 
 /* HELPER FUNCTIONS */
 

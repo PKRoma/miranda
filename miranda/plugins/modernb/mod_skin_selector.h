@@ -56,7 +56,9 @@ typedef struct _ModernMaskList
 
 /// PROTOTYPES
 extern int AddModernMaskToList(ModernMask * mm,  ModernMaskList * mmTemplateList);
-extern int AddStrModernMaskToList(char * szStr, char * objectName,  ModernMaskList * mmTemplateList, void * pObjectList);
+extern int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  ModernMaskList * mmTemplateList, void * pObjectList);
+extern int SortMaskList(ModernMaskList * mmList);
+
 extern int DeleteMaskByItID(DWORD mID,ModernMaskList * mmTemplateList);
 extern int ClearMaskList(ModernMaskList * mmTemplateList);
 extern int ExchangeMasksByID(DWORD mID1, DWORD mID2, ModernMaskList * mmTemplateList);

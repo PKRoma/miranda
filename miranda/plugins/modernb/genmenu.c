@@ -763,16 +763,12 @@ BOOL FindMenuHanleByGlobalID(HMENU hMenu, int globalID, MenuItemData * itdat)
 	PMO_IntMenuItem pimi;	
 	MENUITEMINFOA mii={0};
 	BOOL inSub=FALSE;
-	char buff[255]={0};
 	if (!itdat) return FALSE;
 	mii.cbSize=sizeof(MENUITEMINFOA);
 	mii.fMask=MIIM_SUBMENU|MIIM_DATA;
 	for(i=GetMenuItemCount(hMenu)-1;i>=0;i--) 
 	{
 		GetMenuItemInfoA(hMenu,i,TRUE,&mii);
-		GetMenuStringA(hMenu,i,buff,100,MF_BYPOSITION);
-		TRACE(buff);
-		TRACE("\n");
 		if(mii.fType==MFT_SEPARATOR) continue;
 		if(mii.hSubMenu) 
 			inSub=FindMenuHanleByGlobalID(mii.hSubMenu, globalID,itdat);

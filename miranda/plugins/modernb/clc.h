@@ -382,6 +382,8 @@ struct ClcData {
 	BOOL third_line_xstatus_has_priority;
 	BOOL third_line_show_status_if_no_away;
 	BOOL third_line_use_name_and_message_for_xstatus;
+
+	HWND hWnd;
 };
 
 //clc.c

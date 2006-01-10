@@ -256,8 +256,8 @@ int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 	LoadClientIcons();
 	
 	CluiIconsChanged(wParam,lParam);
-	pcli->pfnClcBroadcast( INTM_ICONCHANGED,wParam,lParam);
 	NotifyEventHooks(ME_SKIN_ICONSCHANGED,0,0);
+  pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
 	return 0;
 };
 

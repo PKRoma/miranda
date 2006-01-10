@@ -13,7 +13,7 @@ extern int UpdateTimer(BYTE BringIn);
 extern int TestCursorOnBorders();
 extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 
-extern void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, DWORD height, HBITMAP hbmp, int x1, int y1, DWORD width1, DWORD height1,DWORD flag);
+extern void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, DWORD height, HBITMAP hbmp, int x1, int y1, DWORD width1, DWORD height1,DWORD flag,BYTE alpha);
 extern void TextOutWithGDIp(HDC hDestDC, int x, int y, LPCTSTR lpString, int nCount);
 extern void InitGdiPlus(void);
 extern void ShutdownGdiPlus(void);
@@ -130,7 +130,7 @@ extern BYTE gdiPlusFail;
 extern int CallTest(HDC hdc, int x, int y, char * Text);
 extern BOOL DrawIconExS(HDC hdc,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWidth, UINT istepIfAniCur, HBRUSH hbrFlickerFreeDraw, UINT diFlags);
 
-extern int hClcProtoCount;
+//extern int hClcProtoCount;
 extern int IsInMainWindow(HWND hwnd);
 extern ClcProtoStatus *clcProto;
 extern HIMAGELIST himlCListClc;

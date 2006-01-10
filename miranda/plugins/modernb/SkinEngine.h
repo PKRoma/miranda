@@ -4,7 +4,7 @@
 #include "Wingdi.h"
 #include "m_skin_eng.h"
 #include "mod_skin_selector.h"
-
+#include "commonheaders.h" 
 
 /*defaults*/
 
@@ -87,6 +87,8 @@ pfnImgGetHandle ImgGetHandle;
 int GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin);
 int PutSkinToDB(char * szSection, SKINOBJECTSLIST * Skin);
 extern int UpdateWindowImageProc(BOOL WholeImage);
+extern void AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin);
+extern void AddParseSkinFont(char * szFontID,char * szDefineString,SKINOBJECTSLIST *Skin);
 typedef struct _sCurrentWindowImageData
 {
 	HDC hImageDC;

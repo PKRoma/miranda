@@ -105,7 +105,8 @@ int AddModernMaskToList(ModernMask * mm,  ModernMaskList * mmTemplateList)
     if (!mmTemplateList || !mm) return -1;
     //if (!mmTemplateList->MaskList) mmTemplateList->MaskList=mir_alloc(1);
     mmTemplateList->MaskList=mir_realloc(mmTemplateList->MaskList,sizeof(ModernMask)*(mmTemplateList->AllocatedMask+1));
-    mm->MaskID=mmTemplateList->AllocatedMask;   
+    //if (mm->MaskID==0)
+//mm->MaskID=mmTemplateList->AllocatedMask;   
     memcpy(&(mmTemplateList->MaskList[mmTemplateList->AllocatedMask]),mm,sizeof(ModernMask));
     mmTemplateList->AllocatedMask++;
     return mmTemplateList->AllocatedMask-1;
@@ -159,16 +160,32 @@ int ExchangeMasksByID(DWORD mID1, DWORD mID2, ModernMaskList * mmTemplateList)
     if (!mmTemplateList) return 0;
     if (mID1<0|| mID1>=mmTemplateList->AllocatedMask) return 0;
     if (mID2<0|| mID2>=mmTemplateList->AllocatedMask) return 0;
-    if (mID2<0==mID2) return 0;
+    if (mID1==mID2) return 0;
     {
         ModernMask mm;
         mm=mmTemplateList->MaskList[mID1];
         mmTemplateList->MaskList[mID1]=mmTemplateList->MaskList[mID2];
         mmTemplateList->MaskList[mID2]=mm;
-        mmTemplateList->MaskList[mID1].MaskID=mID2;
-        mmTemplateList->MaskList[mID2].MaskID=mID1;
     }
     return 1;
+}
+int SortMaskList(ModernMaskList * mmList)
+{
+        DWORD pos=1;
+        if (mmList->AllocatedMask<2) return 0;
+        do {
+                if(mmList->MaskList[pos].MaskID<mmList->MaskList[pos-1].MaskID)
+                {
+                        ExchangeMasksByID(pos, pos-1, mmList);
+                        pos--;
+                        if (pos<1)
+                                pos=1;
+                }
+                else
+                        pos++;
+        } while(pos<mmList->AllocatedMask);
+
+        return 1;
 }
 int ParseToModernMask(ModernMask * mm, char * szText)
 {
@@ -313,12 +330,13 @@ BOOL CompareStrWithModernMask(char * szValue,ModernMask * mmTemplate)
   else return 0;
 };
 //AddingMask
-int AddStrModernMaskToList(char * szStr, char * objectName,  ModernMaskList * mmTemplateList, void * pObjectList)
+int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  ModernMaskList * mmTemplateList, void * pObjectList)
 {
     ModernMask mm={0};
     if (!szStr || !mmTemplateList) return -1;
     if (ParseToModernMask(&mm,szStr)) return -1;
     mm.ObjectID=(void*) FindObjectByName(objectName, OT_ANY, (SKINOBJECTSLIST*) pObjectList);
+        mm.MaskID=maskID;
     return AddModernMaskToList(&mm,mmTemplateList);    
 }
 
@@ -388,6 +406,13 @@ char * GetParamN(char * string, char * buf, int buflen, BYTE paramN, char Delim,
     }
     if (CurentCount==paramN)
     {
+        if (SkipSpaces)
+        { //remove spaces
+          while (string[start]==' ' && (int)start<MyStrLen(string))
+            start++;
+          while (i>1 && string[i-1]==' ' && i>(int)start)
+            i--;
+        }
         len=((int)(i-start)<buflen)?i-start:buflen;
         strncpy(buf,string+start,len);
         buf[len]='\0';

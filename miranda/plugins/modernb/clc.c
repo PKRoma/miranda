@@ -47,13 +47,13 @@ static int StartScrollPos=0;
 /*
  *	Global variables
  */
-int hClcProtoCount = 0;
+//int hClcProtoCount = 0;
 ClcProtoStatus *clcProto = NULL;
 HIMAGELIST himlCListClc=NULL;
 struct ClcContact * hitcontact=NULL;
 
 extern void UpdateAllAvatars(struct ClcData *dat);
-
+extern int GetContactIndex(struct ClcGroup *group,struct ClcContact *contact);
 struct AvatarOverlayIconConfig 
 {
 	char *name;
@@ -200,10 +200,10 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
 	for(i=0;i<protoCount;i++) {
 		if(proto[i]->type!=PROTOTYPE_PROTOCOL) continue;
-		clcProto=(ClcProtoStatus*)mir_realloc(clcProto,sizeof(ClcProtoStatus)*(hClcProtoCount+1));
-		clcProto[hClcProtoCount].szProto = proto[i]->szName;
-		clcProto[hClcProtoCount].dwStatus = ID_STATUS_OFFLINE;
-		hClcProtoCount++;
+		//clcProto=(ClcProtoStatus*)mir_realloc(clcProto,sizeof(ClcProtoStatus)*(hClcProtoCount+1));
+		//clcProto[hClcProtoCount].szProto = proto[i]->szName;
+		//clcProto[hClcProtoCount].dwStatus = ID_STATUS_OFFLINE;
+		//hClcProtoCount++;
 	}
 
 	// Get icons
@@ -453,6 +453,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			TRACE("Create New ClistControl BEGIN\r\n");
 			dat=(struct ClcData*)mir_calloc(1,sizeof(struct ClcData));
 			SetWindowLong(hwnd,0,(LONG)dat);
+			dat->hWnd=hwnd;
 
 			dat->use_avatar_service = ServiceExists(MS_AV_GETAVATARBITMAP);
 			if (dat->use_avatar_service)
@@ -666,6 +667,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 	case INTM_STATUSCHANGED:
 		{
+      int ret=saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 			TRACE("INTM_STATUSCHANGED\n");
 			if (wParam != 0)
 			{
@@ -680,12 +682,13 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 					{
 						contact->status = pdnce->status;
 						Cache_GetText(dat,contact);		
+         //   Cache_GetAvatar(dat,contact);		
 					}
 				}
 			}
 			pcli->pfnSortContacts();
 			PostMessage(hwnd,INTM_INVALIDATE,0,0);
-			break;
+			return ret;
 		}
 	case INTM_RELOADOPTIONS:
 		{
@@ -810,7 +813,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 									int k=sizeof(struct ClcContact);
 									if(FindItem(hwnd,dat,contact->hContact,&contact2,&group2,NULL,FALSE))
 									{
-										i=GetRowsPriorTo(&dat->list,group2,((unsigned)contact2-(unsigned)group2->cl.items)/sizeof(struct ClcContact));
+										i=GetRowsPriorTo(&dat->list,group2,GetContactIndex(group2,contact2));
 										pcli->pfnEnsureVisible(hwnd,dat,i+contact->SubAllocated,0);
 									}
 								}
@@ -907,7 +910,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 					int k=sizeof(struct ClcContact);
 					if(FindItem(hwnd,dat,hitcontact->hContact,&contact,&group,NULL,FALSE))
 					{
-						i=GetRowsPriorTo(&dat->list,group,((unsigned)contact-(unsigned)group->cl.items)/sizeof(struct ClcContact));
+						i=GetRowsPriorTo(&dat->list,group,GetContactIndex(group,contact));          
 						pcli->pfnEnsureVisible(hwnd,dat,i+hitcontact->SubAllocated,0);
 					}
 				}
@@ -1003,7 +1006,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 						dat->selection=GetRowByIndex(dat,dat->selection,&selcontact,&selgroup);
 						pcli->pfnSetGroupExpand(hwnd,dat,contact->group,-1);
 						if(dat->selection!=-1) {
-							dat->selection=GetRowsPriorTo(&dat->list,selgroup,((unsigned)selcontact-(unsigned)selgroup->cl.items)/sizeof(struct ClcContact));
+							dat->selection=GetRowsPriorTo(&dat->list,selgroup,GetContactIndex(selgroup,selcontact));
 							if(dat->selection==-1) dat->selection=GetRowsPriorTo(&dat->list,contact->group,-1);
 						}
 						skinInvalidateRect(hwnd,NULL,FALSE);

@@ -148,8 +148,8 @@ static int GetGeneralisedStatus(void)
 	status=ID_STATUS_OFFLINE;
 	statusOnlineness=0;
 
-	for (i=0;i<hClcProtoCount;i++) {
-		thisStatus = clcProto[i].dwStatus;
+	for (i=0;i<pcli->hClcProtoCount;i++) {
+		thisStatus = pcli->clcProto[i].dwStatus;
 		if(thisStatus==ID_STATUS_INVISIBLE) return ID_STATUS_INVISIBLE;
 		thisOnlineness=GetStatusOnlineness(thisStatus);
 		if(thisOnlineness>statusOnlineness) {
@@ -165,9 +165,9 @@ int GetRealStatus(struct ClcContact * contact, int status)
 	int i;
 	char *szProto=contact->proto;
 	if (!szProto) return status;
-	for (i=0;i<hClcProtoCount;i++) {
-		if (!lstrcmpA(clcProto[i].szProto,szProto)) {
-			return clcProto[i].dwStatus;
+	for (i=0;i<pcli->hClcProtoCount;i++) {
+		if (!lstrcmpA(pcli->clcProto[i].szProto,szProto)) {
+			return pcli->clcProto[i].dwStatus;
 		}
 	}
 	return status;
@@ -610,6 +610,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
         int max_width;
         int width;
         int height;
+        BYTE blendmode=255;
 
 				if (!dat->avatars_show || Drawing->type != CLCIT_CONTACT)
 					break;
@@ -689,7 +690,16 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 				}
 
 				// Has to draw!
-
+        {
+          blendmode=255;
+					if(hottrack) 
+							blendmode=255;
+					else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) 
+							blendmode=128;
+					if (Drawing->type==CLCIT_CONTACT && dat->showIdle && (Drawing->flags&CONTACTF_IDLE) && 
+								GetRealStatus(Drawing,ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE)
+								  blendmode=128;
+        }
 				// Get size
         if (dat->use_avatar_service)         
 				{
@@ -788,7 +798,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 								AVDRQ_HIDEBORDERONTRANSPARENCY;
 							adr.clrBorder = dat->avatars_border_color;
 							adr.radius = round_radius;
-							adr.alpha = 255;
+							adr.alpha = blendmode;
 
 							CallService(MS_AV_DRAWAVATAR, 0, (LPARAM) &adr);
 						}
@@ -798,7 +808,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 							int h=height;
 							if (!gdiPlusFail) //Use gdi+ engine
 							{
-								DrawAvatarImageWithGDIp(hdcMem, rc.left, rc.top, w, h,Drawing->avatar_data->hbmPic,0,0,Drawing->avatar_data->bmWidth,Drawing->avatar_data->bmHeight,Drawing->avatar_data->dwFlags);
+								DrawAvatarImageWithGDIp(hdcMem, rc.left, rc.top, w, h,Drawing->avatar_data->hbmPic,0,0,Drawing->avatar_data->bmWidth,Drawing->avatar_data->bmHeight,Drawing->avatar_data->dwFlags,blendmode);
 							}
 							else
 							{
@@ -825,7 +835,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 									DeleteObject(b2);
 								}
 								else {
-									BLENDFUNCTION bf={AC_SRC_OVER, 0,255, AC_SRC_ALPHA };
+									BLENDFUNCTION bf={AC_SRC_OVER, 0,blendmode, AC_SRC_ALPHA };
 									HDC hdcTempAv = CreateCompatibleDC(hdcMem);                 
 									HBITMAP hbmTempAvOld;
 									hbmTempAvOld = SelectObject(hdcTempAv,Drawing->avatar_data->hbmPic);
@@ -869,8 +879,10 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 						{
 						case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
 							{
+                UINT a=blendmode;
+                a=(a<<24);
 								DrawIconExS(hdcMem, real_rc.left, real_rc.top, avatar_overlay_icons[Drawing->status - ID_STATUS_OFFLINE].icon, 
-									ICON_HEIGHT, ICON_HEIGHT, 0, NULL, DI_NORMAL); 
+									ICON_HEIGHT, ICON_HEIGHT, 0, NULL, DI_NORMAL|a); 
 								break;
 							}
 						case SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL:
@@ -882,7 +894,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 								if (item != -1)
 									ImageList_DrawEx_New(himlCListClc, item, hdcMem, 
 									real_rc.left,  real_rc.top,ICON_HEIGHT,ICON_HEIGHT,
-									CLR_NONE,CLR_NONE,ILD_NORMAL);
+                  CLR_NONE,CLR_NONE,(blendmode==255)?ILD_NORMAL:(blendmode==128)?ILD_BLEND50:ILD_BLEND25);
 								break;
 							}
 						case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
@@ -890,7 +902,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 								if (Drawing->iImage != -1)
 									ImageList_DrawEx_New(himlCListClc, Drawing->iImage, hdcMem, 
 									real_rc.left,  real_rc.top,ICON_HEIGHT,ICON_HEIGHT,
-									CLR_NONE,CLR_NONE,ILD_NORMAL);
+									CLR_NONE,CLR_NONE,(blendmode==255)?ILD_NORMAL:(blendmode==128)?ILD_BLEND50:ILD_BLEND25);
 								break;
 							}
 						}
@@ -2035,7 +2047,7 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 
 	if (SED.cbSize==sizeof(SED)&&SED.PaintClc!=NULL)
 	{
-		SED.PaintClc(hwnd,dat,hdc,rcPaint,hClcProtoCount,clcProto,himlCListClc);
+		SED.PaintClc(hwnd,dat,hdc,rcPaint,pcli->hClcProtoCount,clcProto,himlCListClc);
 		return;
 	}
 	InternalPaintClc(hwnd,dat,hdc,rcPaint);

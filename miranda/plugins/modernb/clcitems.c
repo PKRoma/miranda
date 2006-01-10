@@ -26,12 +26,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clist.h"
 #include "m_metacontacts.h"
 #include "commonprototypes.h"
+extern void ( *savedAddContactToTree)(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
 
 void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont)
 {
 	int subcount,i,j;
 	HANDLE hsub;
 	pdisplayNameCacheEntry cacheEntry;
+	DWORD style=GetWindowLong(dat->hWnd,GWL_STYLE);
 	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(cont->hContact);
 	TRACE("Proceed AddSubcontacts\r\n");
 	cont->SubExpanded=(DBGetContactSettingByte(cont->hContact,"CList","Expanded",0) && (DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1)));
@@ -52,8 +54,12 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont)
 	for (j=0; j<subcount; j++) {
 		hsub=(HANDLE)CallService(MS_MC_GETSUBCONTACT,(WPARAM)cont->hContact,j);
 		cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hsub);		
-		if (!(DBGetContactSettingByte(NULL,"CLC","MetaHideOfflineSub",1) && DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT) ) ||
+		if ((!(DBGetContactSettingByte(NULL,"CLC","MetaHideOfflineSub",1) && DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT) ) ||
 			cacheEntry->status!=ID_STATUS_OFFLINE )
+			//&&
+			//(!cacheEntry->Hidden || style&CLS_SHOWHIDDEN)
+			)
+
 		{
 			cont->subcontacts[i].hContact=cacheEntry->hContact;
 
@@ -213,7 +219,8 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 	else if(apparentMode) group->cl.items[i]->flags|=CONTACTF_VISTO|CONTACTF_INVISTO;
 	if(cacheEntry->NotOnList) group->cl.items[i]->flags|=CONTACTF_NOTONLIST;
 	idleMode=szProto!=NULL?cacheEntry->IdleTS:0;
-	if (idleMode) group->cl.items[i]->flags|=CONTACTF_IDLE;
+	if (idleMode) 
+    group->cl.items[i]->flags|=CONTACTF_IDLE;
 	group->cl.items[i]->proto = szProto;
 
 	group->cl.items[i]->timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, szProto,"Timezone",-1));
@@ -280,11 +287,28 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 {
 	struct ClcGroup *group;
 	struct ClcContact * cont;
-	pdisplayNameCacheEntry cacheEntry;
-	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
-	WORD status;
-	char *szProto;
-
+	pdisplayNameCacheEntry cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
+	if(dat->IsMetaContactsEnabled && cacheEntry && cacheEntry->HiddenSubcontact) return;		//contact should not be added
+	if(!dat->IsMetaContactsEnabled && cacheEntry && !MyStrCmp(cacheEntry->szProto,"MetaContacts")) return;
+    savedAddContactToTree(hwnd,dat,hContact,updateTotalCount,checkHideOffline);
+    if (FindItem(hwnd,dat,hContact,&cont,&group,NULL,FALSE))
+    {
+    if (cont)
+    {
+		//Add subcontacts
+		if (cont && cont->proto)
+		{	
+			cont->SubAllocated=0;
+			if (MyStrCmp(cont->proto,"MetaContacts")==0) 
+				AddSubcontacts(dat,cont);
+		}
+		Cache_GetAvatar(dat,cont);
+		Cache_GetText(dat,cont);
+		Cache_GetTimezone(dat,cont);
+    }
+  }
+    return;
+  /*
 	if (FindItem(hwnd,dat,hContact,NULL,NULL,NULL,FALSE)==1){return;};	
 	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
 	if (cacheEntry==NULL) return;
@@ -351,6 +375,7 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 		}
 	if(updateTotalCount && group) group->totalMembers++;
 	ClearRowByIndexCache();
+  */
 }
 
 void DeleteItemFromTree(HWND hwnd,HANDLE hItem)

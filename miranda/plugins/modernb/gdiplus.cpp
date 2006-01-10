@@ -165,7 +165,7 @@ extern "C" void TextOutWithGDIp(HDC hDestDC, int x, int y, LPCTSTR lpString, int
 //
 }
 
-extern "C" void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, DWORD height, HBITMAP hbmp, int x1, int y1, DWORD width1, DWORD height1,DWORD flag)
+extern "C" void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, DWORD height, HBITMAP hbmp, int x1, int y1, DWORD width1, DWORD height1,DWORD flag,BYTE alpha)
 {
    BITMAP bmp;
    Bitmap *bm;
@@ -180,25 +180,16 @@ extern "C" void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, D
      bm=new Bitmap(hbmp,NULL);
    
    ImageAttributes attr;
-   //ClrMatrix.m[3][3] = (REAL)(255) / 255.0f
-   //attr.SetColorMatrix(&ClrMatrix, ColorMatrixFlagsDefault, ColorAdjustTypeBitmap);
-   //
-   
+    ColorMatrix ClrMatrix = 
+    { 
+            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, ((float)alpha)/255, 0.0f,
+            0.0f, 0.0f, 0.0f, 0.0f, 1.0f
+    };
+    attr.SetColorMatrix(&ClrMatrix, ColorMatrixFlagsDefault,ColorAdjustTypeBitmap);
     g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
-    //if (x<0)
-    //{
-    //  x1-=x;
-    //  width1+=x;
-    //  width+=x;
-    //  x=0;
-    //}
-    //if (y<0)
-    //{
-    //  y1-=x;
-    //  height1+=y;
-    //  height+=y;
-    //  y=0;
-    //}
     RectF rect((float)x,(float)y,(float)width,(float)height);
     g.DrawImage(bm, rect, (float)x1, (float)y1, (float)width1, (float)height1 , UnitPixel, &attr, NULL, NULL);
     delete bm;

@@ -792,30 +792,9 @@ static int BuildStatusMenu(WPARAM wParam,LPARAM lParam)
   hMenu=hStatusMenu;
   TRACE("clear statusmenu\n");
   RecurciveDeleteMenu(hStatusMenu);
-  /*{
-
-    int i=GetMenuItemCount(hStatusMenu);	
-	while (i>0)
-	{
-		HMENU submenu=GetSubMenu(hStatusMenu,0);
-		if (submenu)
-		{
-			while (GetMenuItemCount(submenu))
-			{
-				DeleteMenu(submenu,0,MF_BYPOSITION);
-			}
-		}
-		DeleteMenu(hStatusMenu,0,MF_BYPOSITION);
-		i=GetMenuItemCount(hStatusMenu);
-	};
-  }*/
   tick=GetTickCount();
-  //NotifyEventHooks(hPreBuildMainMenuEvent,0,0);
-
   CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
   TRACE("statusmenu builded\n");
-
-  //DrawMenuBar((HWND)CallService("CLUI/GetHwnd",(WPARAM)0,(LPARAM)0));
   tick=GetTickCount()-tick;
   return (int)hMenu;
 }
@@ -823,47 +802,12 @@ static int BuildStatusMenu(WPARAM wParam,LPARAM lParam)
 
 static int MenuGetStatus(WPARAM wParam,LPARAM lParam)
 {
-  //return (int)hStatusMenu;
   return BuildStatusMenu(0,0);
 }
 
 
 int freeownerdataformenus()
 {
-  /* not needed due free service
-  void *data;
-  int i;
-  if (hStatusMainMenuHandles!=NULL)
-  {
-  for (i=0;i<hStatusMainMenuHandlesCnt;i++)
-  {
-
-
-  data=(void *)CallService(MO_MENUITEMGETOWNERDATA,hStatusMainMenuHandles[i],0);
-  if (data!=NULL)
-  {
-  mir_free(data);
-  data=NULL;
-  };
-
-  };
-  };
-
-  if (hStatusMenuHandles!=NULL)
-  {
-
-  for (i=0;i<hStatusMenuHandlesCnt;i++)
-  {
-  data=(void *)CallService(MO_MENUITEMGETOWNERDATA,hStatusMenuHandles[i].menuhandle,0);
-  if (data!=NULL)
-  {
-  mir_free(data);
-  data=NULL;
-  };
-
-  };
-  };
-  */
   return(1);
 };
 

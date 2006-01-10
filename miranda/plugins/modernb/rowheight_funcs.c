@@ -80,6 +80,7 @@ BOOL RowHeights_Alloc(struct ClcData *dat, int size)
 				}
 
 				dat->row_heights = tmp;
+        memset(dat->row_heights,0,sizeof(int) * size_grow);
 			}
 			else
 			{
@@ -91,6 +92,7 @@ BOOL RowHeights_Alloc(struct ClcData *dat, int size)
 					RowHeights_Free(dat);
 					return FALSE;
 				}
+        memset(dat->row_heights,0,sizeof(int) * size_grow);
 			}
 
 			dat->row_heights_allocated = size_grow;

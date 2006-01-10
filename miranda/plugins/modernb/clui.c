@@ -80,7 +80,7 @@ extern int LoadModernButtonModule(void);
 extern int CreateModernStatusBar(HWND parent);
 int SmoothAlphaThreadTransition(HWND hwnd);
 BOOL IsInChangingMode;
-
+extern void (*savedLoadCluiGlobalOpts)(void);
 /*
 *	Function ShowWindowNew overloads API ShowWindow in case of
 *  dropShaddow is enabled: it force to minimize window before hiding
@@ -1269,25 +1269,12 @@ static int CluiModulesLoaded(WPARAM wParam,LPARAM lParam)
 	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
 	SetMenuItemInfo(hMenuMain,1,TRUE,&mii);
 
-	//canloadstatusbar=TRUE;
 	CheckProtocolOrder();
-	//SendMessage(pcli->hwndContactList,WM_SIZE,0,0);
 	CluiProtocolStatusChanged(0,0);
 	SleepEx(0,TRUE);
-
-	{//++//
-		char b[260];
-		sprintf(b,"%s was posted in FILELINE2\n","M_CREATECLC");
-		TRACE (b);
-	}//--//
-
 	OnModulesLoadedCalled=TRUE;	
-	pcli->pfnInvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);   
+	///pcli->pfnInvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);   
 	SendMessage(pcli->hwndContactList,M_CREATECLC,0,0); //$$$
-
-	//    OnSkinLoad(0,0);
-	//    InitGroupMenus();
-
 	return 0;
 }
 
@@ -3223,6 +3210,26 @@ int CList_ShowStatusMenu(WPARAM w,LPARAM l)
 	GetCursorPos(&pt);
 	TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,pcli->hwndContactList,NULL);				
 	return 0;
+}
+
+
+void LoadCluiGlobalOpts()
+{
+  BOOL tLayeredFlag=FALSE;
+  tLayeredFlag=IsWinVer2000Plus();
+  tLayeredFlag&=DBGetContactSettingByte(NULL, "ModernData", "EnableLayering", tLayeredFlag);
+
+  if(tLayeredFlag)
+  {
+    if (DBGetContactSettingByte(NULL,"CList","WindowShadow",0)==1)
+      DBWriteContactSettingByte(NULL,"CList","WindowShadow",2);    
+  }
+  else
+  {
+    if (DBGetContactSettingByte(NULL,"CList","WindowShadow",0)==2)
+      DBWriteContactSettingByte(NULL,"CList","WindowShadow",1); 
+  }
+  savedLoadCluiGlobalOpts();
 }
 
 void LoadCLUIModule(void)

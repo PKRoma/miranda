@@ -118,7 +118,7 @@ static TCHAR *TrayIconMakeTooltip(const TCHAR *szPrefix,const char *szProto) //T
 				return szTip;
 		}
 		else szTip[0]=TEXT('\0');
-		szTip[sizeof(szTip)-1]=TEXT('\0');
+		szTip[SIZEOF(szTip)-1]=TEXT('\0');
 		t=0;
 		cn=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",-1);
 		if (cn==-1) CheckProtocolOrder();

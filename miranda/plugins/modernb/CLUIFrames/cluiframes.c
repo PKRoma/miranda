@@ -248,12 +248,14 @@ int SetParentForContainers(HWND parent)
   }
   return 0;
 }
+extern void __inline lockfrm();
+extern void __inline ulockfrm();
 
 int OnShowHide(HWND hwnd, int mode)
 {
 
   int i;
-
+  lockfrm();
   for(i=0;i<nFramescount;i++){
     if (!Frames[i].floating && Frames[i].OwnerWindow!=(HWND)0 &&Frames[i].OwnerWindow!=(HWND)-2)
     {
@@ -271,6 +273,7 @@ int OnShowHide(HWND hwnd, int mode)
       }
     }
   }
+  ulockfrm();
   if (mode!=SW_HIDE) SetForegroundWindow(pcli->hwndContactList);
   return 0;
 }
@@ -301,12 +304,12 @@ static int btoint(BOOLEAN b)
   return 0;
 }
 
-static void __inline lockfrm()
+void __inline lockfrm()
 {
   EnterCriticalSection(&csFrameHook);
 }
 
-static void __inline ulockfrm()
+void __inline ulockfrm()
 {
   LeaveCriticalSection(&csFrameHook);
 }

@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "shlwapi.h"
 #include "mod_skin_selector.h"
 #include "commonprototypes.h"
+
 //Definition
 #define ScaleBord 2
 
@@ -64,6 +65,10 @@ char **settingname;
 int arrlen;
 BOOL JustDrawNonFramedObjects=0;
 SKINOBJECTSLIST glObjectList={0};
+
+SortedList * gl_plGlyphTexts=NULL;
+
+SortedList * gl_plSkinFonts=NULL;
 
 
 //Declaration
@@ -99,7 +104,7 @@ BOOL MyAlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,i
   if (!gdiPlusFail &&0) //Use gdi+ engine
   {
     HBITMAP hbmp=GetCurrentObject(hdcSrc,OBJ_BITMAP);
-    DrawAvatarImageWithGDIp(hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,hbmp,nXOriginSrc,nYOriginSrc,nWidthSrc,nHeightSrc,blendFunction.AlphaFormat?8:0);
+    DrawAvatarImageWithGDIp(hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,hbmp,nXOriginSrc,nYOriginSrc,nWidthSrc,nHeightSrc,blendFunction.AlphaFormat?8:0,blendFunction.SourceConstantAlpha);
     return 0;
   }
   return AlphaBlend(hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,hdcSrc,nXOriginSrc,nYOriginSrc,nWidthSrc,nHeightSrc,blendFunction);
@@ -990,6 +995,9 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
       }
     }
     //free GDI resources
+    //--++--
+    
+    //free GDI resources
     {
 
       if (oldglyph) SelectObject(glyphdc,oldglyph);
@@ -1003,6 +1011,60 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
     }
 
   }  
+  if (pobj->plTextList && pobj->plTextList->realCount>0)
+    {
+      int i;
+      HFONT hOldFont;
+      for (i=0; i<pobj->plTextList->realCount; i++)
+      {
+        GLYPHTEXT * gt=(GLYPHTEXT *)pobj->plTextList->items[i];
+        if (!gt->hFont)
+        {
+          if (gl_plSkinFonts && gl_plSkinFonts->realCount>0)
+          {
+            int j=0;
+            for (j=0; j<gl_plSkinFonts->realCount; j++)
+            {
+              SKINFONT * sf;
+              sf=(SKINFONT*)gl_plSkinFonts->items[j];
+              if (sf->szFontID && !strcmp(sf->szFontID,gt->szFontID))
+              {
+                gt->hFont=sf->hFont;
+                break;
+              }
+            }
+          }
+          if (!gt->hFont) gt->hFont=(HFONT)-1;
+        }
+        if (gt->hFont!=(HFONT)-1)
+        {
+          RECT rc={0};
+          hOldFont=SelectObject(preq->hDC,gt->hFont);
+          
+          
+
+          if (gt->RelativeFlags&2) rc.left=preq->rcDestRect.right+gt->iLeft;
+          else if (gt->RelativeFlags&1) rc.left=((preq->rcDestRect.right-preq->rcDestRect.left)>>1)+gt->iLeft;
+          else rc.left=preq->rcDestRect.left+gt->iLeft;
+            
+          if (gt->RelativeFlags&8) rc.top=preq->rcDestRect.bottom+gt->iTop;
+          else if (gt->RelativeFlags&4) rc.top=((preq->rcDestRect.bottom-preq->rcDestRect.top)>>1)+gt->iTop;
+          else rc.top=preq->rcDestRect.top+gt->iTop;
+
+          if (gt->RelativeFlags&32) rc.right=preq->rcDestRect.right+gt->iRight;
+          else if (gt->RelativeFlags&16) rc.right=((preq->rcDestRect.right-preq->rcDestRect.left)>>1)+gt->iRight;
+          else rc.right=preq->rcDestRect.left+gt->iRight;
+
+          if (gt->RelativeFlags&128) rc.bottom=preq->rcDestRect.bottom+gt->iBottom;
+          else if (gt->RelativeFlags&64) rc.bottom=((preq->rcDestRect.bottom-preq->rcDestRect.top)>>1)+gt->iBottom;
+          else rc.bottom=preq->rcDestRect.top+gt->iBottom;
+          
+          AlphaTextOut(preq->hDC, gt->stText, -1, &rc,gt->dwFlags, gt->dwColor);
+          SelectObject(preq->hDC,hOldFont);
+        }
+      }
+    }
+
   return 0;
 }
 
@@ -1309,6 +1371,23 @@ int UnloadSkin(SKINOBJECTSLIST * Skin)
   InitializeCriticalSection(&skin);
   EnterCriticalSection(&skin);
   ClearMaskList(Skin->MaskList);
+  {//clear font list
+    int i;
+    if (gl_plSkinFonts && gl_plSkinFonts->realCount>0)
+    {
+      for (i=0; i<gl_plSkinFonts->realCount; i++)
+      {
+        SKINFONT * sf=gl_plSkinFonts->items[i];
+        if (sf)
+        {
+          if (sf->szFontID) mir_free(sf->szFontID);
+          DeleteObject(sf->hFont);
+        }
+      }
+      li.List_Destroy(gl_plSkinFonts);
+      gl_plSkinFonts=NULL;
+    }
+  }
 
   if (Skin->SkinPlace) mir_free(Skin->SkinPlace);
   DeleteButtons();
@@ -1324,6 +1403,25 @@ int UnloadSkin(SKINOBJECTSLIST * Skin)
         if (dt->hGlyph) UnloadGlyphImage(dt->hGlyph);
         dt->hGlyph=NULL;
         if (dt->szFileName) mir_free(dt->szFileName);
+        {// delete texts
+          int i;
+          if (dt->plTextList && dt->plTextList->realCount>0)
+          {
+            for (i=0; i<dt->plTextList->realCount; i++)
+            {
+              GLYPHTEXT * gt=dt->plTextList->items[i];
+              if (gt)
+              {
+                if (gt->stText)       mir_free(gt->stText);
+                if (gt->stValueText)  mir_free(gt->stValueText);
+                if (gt->szFontID)     mir_free(gt->szFontID);
+                if (gt->szGlyphTextID)mir_free(gt->szGlyphTextID);
+              }
+            }
+            li.List_Destroy(dt->plTextList);
+            dt->plTextList=NULL;
+          }
+        }
         mir_free(dt);
       }
       break;
@@ -1357,7 +1455,46 @@ int EnumGetProc (const char *szSetting,LPARAM lParam)
   }
   return 1;
 }
+int EnumGetMasksProc(const char *szSetting,LPARAM lParam)
+{
+        if (WildCompare((char *)szSetting,"@*",0) && CURRENTSKIN)
+        {
+                DWORD ID=atoi(szSetting+1);
+                int i=0;
+                char * value;
+                value=DBGetStringA(NULL,SKIN,szSetting);
+                if (value)
+                {
+                        for (i=0; i<MyStrLen(value); i++)  if (value[i]==':') break;
+                        if (i<MyStrLen(value))
+                        {
+                                char * Obj, *Mask;
+                                int res;
+                                Mask=value+i+1;
+                                Obj=mir_alloc(i+1);
+                                strncpy(Obj,value,i);
+                                Obj[i]='\0';
+                                res=AddStrModernMaskToList(ID,Mask,Obj,CURRENTSKIN->MaskList,CURRENTSKIN);
+                                mir_free(Obj);
+                        }
+                        mir_free(value);
+                }
 
+        }
+        else if (WildCompare((char *)szSetting,"t*",0) && CURRENTSKIN)
+        {
+           char * value;
+           value=DBGetStringA(NULL,SKIN,szSetting);
+           AddParseTextGlyphObject((char*)szSetting,value,CURRENTSKIN);
+        }
+        else if (WildCompare((char *)szSetting,"f*",0) && CURRENTSKIN)
+        {
+           char * value;
+           value=DBGetStringA(NULL,SKIN,szSetting);
+           AddParseSkinFont((char*)szSetting,value,CURRENTSKIN);
+        }
+        return 1;
+}
 // Getting skin objects and masks from DB
 int GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 {
@@ -1381,8 +1518,8 @@ int GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
     _snprintf(buf,sizeof(buf),"Glyph,Solid,%d,%d,%d,%d",GetRValue(col),GetGValue(col),GetBValue(col),255);
     RegisterObjectByParce("$DefSkinSelObj",buf);
 
-    AddStrModernMaskToList("CL,ID=Selection","$DefSkinSelObj",Skin->MaskList,Skin);	
-    AddStrModernMaskToList("*,ID^Ovl,ID^Row,ID^Hot*","$DefaultSkinObj",Skin->MaskList,Skin);	
+    AddStrModernMaskToList(0,"CL,ID=Selection","$DefSkinSelObj",Skin->MaskList,Skin);
+    AddStrModernMaskToList(0,"*,ID^Ovl,ID^Row,ID^Hot*","$DefaultSkinObj",Skin->MaskList,Skin);
     return 1;
   }
   //Load objects
@@ -1393,41 +1530,14 @@ int GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
     dbces.szModule=SKIN;
     dbces.ofsSettings=0;
     CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
+ 
+        dbces.pfnEnumProc=EnumGetMasksProc;
+        dbces.ofsSettings=0;
+        CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
+        SortMaskList(Skin->MaskList);
     CURRENTSKIN=NULL;
   }
   //Load Masks
-  {
-    DWORD n=0;
-    while (TRUE)
-    {
-      char buf[260];
-      DWORD Param=0;
-      char * Mask=NULL;
-      char * value=NULL;
-      _snprintf(buf,sizeof(buf),"@%d",n);
-      if (value=DBGetStringA(NULL,SKIN,buf))
-      {
-        int i=0;
-        for (i=0; i<MyStrLen(value); i++)
-          if (value[i]==':') break;
-        if (i<MyStrLen(value))
-        {
-          char * Obj, *Mask;
-          int res;
-          Mask=value+i+1;
-          Obj=mir_alloc(i+1);
-          strncpy(Obj,value,i);
-          Obj[i]='\0';
-          res=AddStrModernMaskToList(Mask,Obj,Skin->MaskList,Skin);
-          mir_free(Obj);
-        }
-        mir_free(value);
-        value=NULL;
-        n++;
-      }
-      else break;
-    }
-  }
   return 0;
 }
 
@@ -1697,6 +1807,10 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
   int dry=0;
   int dtx=0;
   int dty=0;
+  int dtsy=0;
+  int dtey=0;
+  int dtsx=0;
+  int dtex=0;
   RECT workRect;
   workRect=*lpRect;
   if (!weightfilled)
@@ -1749,15 +1863,35 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
     GetTextExtentPoint32(memdc,lpString,nCount,&sz);
     sz.cx+=2;
     fsize=sz;
+    {
+      if (workRect.right-workRect.left>sz.cx)
+      {
+        if (format&(DT_RIGHT|DT_RTLREADING)) drx=workRect.right-workRect.left-sz.cx;
+        else if (format&DT_CENTER) 
+          drx=(workRect.right-workRect.left-sz.cx)>>1;
+        else drx=0;
+      }
+      else
+      {
+        
+        sz.cx=workRect.right-workRect.left;
+        drx=0;
     // Calc buffer size
-    if (workRect.left<0) workRect.left=0;
-    if (workRect.top<0) workRect.top=0;
-    if (workRect.right>bmpdata.bmWidth) workRect.right=bmpdata.bmWidth;
-    if (workRect.bottom>bmpdata.bmHeight) workRect.bottom=bmpdata.bmHeight;
-    if (workRect.right<workRect.left) workRect.right=workRect.left;
-    if (workRect.bottom<workRect.top) workRect.bottom=workRect.top;
-    sz.cx=min(workRect.right-workRect.left,sz.cx);
-    sz.cy=min(workRect.bottom-workRect.top,sz.cy);	
+      }
+      
+      if (workRect.bottom-workRect.top>sz.cy)
+      {
+        if (format&DT_BOTTOM) dry=workRect.bottom-workRect.top-sz.cy;
+        else if (format&DT_VCENTER) 
+          dry=(workRect.bottom-workRect.top-sz.cy)>>1;
+        else dry=0;
+      }
+      else
+      {
+        sz.cy=workRect.bottom-workRect.top;
+        dry=0;
+        
+      }
   }
   if (sz.cx>0 && sz.cy>0)
   {
@@ -1769,32 +1903,12 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
       bufDC=CreateCompatibleDC(hDC);
       bufbmp=CreateBitmap32Point(sz.cx,sz.cy,(void**)&bufbits);
       bufoldbmp=SelectObject(bufDC,bufbmp);
-      BitBlt(bufDC,0,0,sz.cx,sz.cy,hDC,workRect.left,workRect.top,SRCCOPY);
+        BitBlt(bufDC,0,0,sz.cx,sz.cy,hDC,workRect.left+drx,workRect.top+dry,SRCCOPY);
     }
     //Calc text draw offsets
-    {
-      //horizontal (drx)
-      if (format&ADT_RIGHT)
-        drx=(lpRect->right-lpRect->left-fsize.cx);
-      else if (format&ADT_HCENTER)
-        drx=(lpRect->right-lpRect->left-fsize.cx)/2;
-      else drx=0; 
-      if (lpRect->left<workRect.left) drx+=lpRect->left-workRect.left;
-      //vertical (dry)
-      if (format&ADT_BOTTOM)
-        dry=(lpRect->bottom-lpRect->top-fsize.cy);
-      else if (format&ADT_VCENTER)
-        dry=(lpRect->bottom-lpRect->top-fsize.cy)/2;
-      else dry=0; 
-      if (lpRect->top<workRect.top) dry+=lpRect->top-workRect.top;	
-    }
     //Draw text on temp bitmap
     {
-      UINT al=GetTextAlign(hDC);
-      if (format&DT_RTLREADING)
-        al|=TA_RTLREADING;
-      SetTextAlign(hDC,al);
-      TextOut(memdc,drx,dry,lpString,nCount);
+        TextOut(memdc,0,0,lpString,nCount);
     }
     //UpdateAlphaCannel
     {
@@ -1810,12 +1924,12 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
       r=GetRValue(ARGBcolor);
       g=GetGValue(ARGBcolor);
       b=GetBValue(ARGBcolor);      
-      for (y=0; y<heigh;y++)
+        for (y=0+dtsy; y<heigh-dtey;y++)
       {
         int a=y*(width<<2);
         ScanLine=bits+a;
         BufScanLine=bufbits+a;
-        for(x=0; x<width; x++)
+          for(x=0+dtsx; x<width-dtex; x++)
         {
           BYTE bx,rx,gx,mx;
           pix=ScanLine+x*4;
@@ -1877,7 +1991,7 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
     }
     //Blend to destination
     {
-      BitBlt(hDC,workRect.left,workRect.top,sz.cx,sz.cy,bufDC,0,0,SRCCOPY);
+        BitBlt(hDC,workRect.left+drx,workRect.top+dry,sz.cx,sz.cy,bufDC,0,0,SRCCOPY);
     }
     //free resources
 
@@ -1888,6 +2002,7 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
       DeleteObject(bufbmp);
       DeleteDC(bufDC);
     }	
+  }
   }
   SelectObject(memdc,holdfnt);
   DeleteDC(memdc); 
@@ -2139,6 +2254,41 @@ BOOL DrawTextS(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format
 
 
 BOOL ImageList_DrawEx_New( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,int dy,COLORREF rgbBk,COLORREF rgbFg,UINT fStyle)
+{
+  HICON ic=ImageList_GetIcon(himl,i,0);
+  int ddx;
+  int ddy;
+  BYTE alpha=255;
+  HBITMAP hbmpold, hbmp;
+  if (fStyle&ILD_BLEND25) alpha=64;
+  else if (fStyle&ILD_BLEND50) alpha=128;
+  ImageList_GetIconSize(himl,&ddx,&ddy);  
+  ddx=dx?dx:ddx;
+  ddy=dy?dy:ddy;
+  if (alpha==255) 
+  {
+    DrawIconExS(hdcDst,x,y,ic,dx?dx:ddx,dy?dy:ddy,0,NULL,DI_NORMAL);
+  }
+  else
+  {
+    hbmp=CreateBitmap32(ddx,ddy);
+    if (hbmp)
+    {
+      HDC hdc=CreateCompatibleDC(hdcDst);
+      BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+      bf.SourceConstantAlpha=alpha;    
+      hbmpold=SelectObject(hdc,hbmp);
+      DrawIconExS(hdc,0,0,ic,ddx,ddy,0,NULL,DI_NORMAL);
+      MyAlphaBlend(hdcDst,x,y,ddx,ddy,hdc,0,0,ddx,ddy,bf);
+      SelectObject(hdc,hbmpold);
+      DeleteObject(hbmp);
+      DeleteDC(hdc);
+    }
+  }
+  DestroyIcon(ic);
+  return TRUE;
+}
+BOOL ImageList_DrawEx_New1( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,int dy,COLORREF rgbBk,COLORREF rgbFg,UINT fStyle)
 {
   HDC imDC;
   HBITMAP oldBmp, imBmp, newbmp=NULL;
@@ -2427,6 +2577,7 @@ BOOL DrawIconExS(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWid
 {
 
   ICONINFO ici;
+  BYTE alpha=(BYTE)((diFlags&0xFF000000)>>24);
 
 
   HDC imDC;
@@ -2444,6 +2595,7 @@ BOOL DrawIconExS(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWid
   BYTE noMirrorMask=FALSE;
   BYTE hasalpha=FALSE;
   CRITICAL_SECTION cs;
+  alpha=alpha?alpha:255;
   InitializeCriticalSection(&cs);
   EnterCriticalSection(&cs);
   //return DrawIconEx(hdc,xLeft,yTop,hIcon,cxWidth,cyWidth,istepIfAniCur,hbrFlickerFreeDraw,DI_NORMAL);
@@ -2566,7 +2718,7 @@ BOOL DrawIconExS(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWid
   LeaveCriticalSection(&cs);
   DeleteCriticalSection(&cs);
   {
-    BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+    BLENDFUNCTION bf={AC_SRC_OVER, 0, alpha, AC_SRC_ALPHA };
     MyAlphaBlend(hdcDst,xLeft,yTop,cxWidth, cyWidth, imDC,0,0, cx,icy,bf);
   }
 
@@ -2777,7 +2929,7 @@ int InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       // Post request for
   {
     wndFrame *frm=FindFrameByItsHWND((HWND)wParam);
     sPaintRequest * pr=(sPaintRequest*)lParam;
-	if (!LayeredFlag) return InvalidateRect((HWND)wParam,pr?(RECT*)&(pr->rcUpdate):NULL,FALSE);
+    if (!LayeredFlag || (frm && frm->floating)) return InvalidateRect((HWND)wParam,pr?(RECT*)&(pr->rcUpdate):NULL,FALSE);
     if (frm) 
     {
       if (frm->PaintCallbackProc!=NULL)
@@ -3219,7 +3371,7 @@ int ValidateFrameImageProc(RECT * r)                                // Calling q
   { 
     int i;
     for(i=0;i<nFramescount;i++)
-      if (Frames[i].PaintCallbackProc && Frames[i].visible)
+      if (Frames[i].PaintCallbackProc && Frames[i].visible && !Frames[i].floating )
         if (Frames[i].bQueued || IsForceAllPainting)
           ValidateSingleFrameImage(&Frames[i],IsForceAllPainting);
   }
@@ -3403,3 +3555,271 @@ int SkinDrawImageAt(HDC hdc, RECT *rc)
 }
 
 HBITMAP GetCurrentWindowImage(){ return cachedWindow->hImageDIB;}
+
+/*
+ *  Glyph text routine
+ */
+
+SortedList ** AddTextGlyphObject()
+{
+  return NULL;
+}
+
+void DrawTextGlyphObject()
+{
+  return;
+}
+
+void DeleteTextGlyphObject(char * szGlyphTextID)
+{
+  return;
+}
+
+int SortTextGlyphObjectFunc(void * first, void * second)
+{
+  return strcmp(((GLYPHTEXT*)(((int*)first)[0]))->szGlyphTextID,((GLYPHTEXT*)(((int*)second)[0]))->szGlyphTextID);
+}
+
+DWORD HexToARGB(char * Hex)
+{
+    char buf[10]={0};
+    char buf2[11]={0};
+    char * st;
+    BYTE alpha;
+    DWORD AARRGGBB=0;
+    _snprintf(buf,10,"%s\n",Hex);
+    if (buf[1]=='x' || buf[1]=='X')
+        _snprintf(buf2,11,"0x%s\n",buf+2);
+    else
+        _snprintf(buf2,11,"0x%s\n",buf);
+    buf2[10]='\0';
+    AARRGGBB=strtoul(buf2,&st,16); 
+    alpha=(BYTE)((AARRGGBB&0xFF000000)>>24);
+    alpha=255-((alpha==0)?255:alpha); 
+    AARRGGBB=(alpha<<24)+((AARRGGBB&0x00FF0000)>>16)+((AARRGGBB&0x000000FF)<<16)+(AARRGGBB&0x0000FF00);
+    return AARRGGBB;
+}
+
+TCHAR *reappend(TCHAR *lfirst, TCHAR * lsecond, int len)
+{ 
+  int l1=lfirst?lstrlen(lfirst)*sizeof(TCHAR):0;
+  int l2=(len?len:lstrlen(lsecond))*sizeof(TCHAR);
+  int size=l1+l2+sizeof(TCHAR);
+  TCHAR *buf=mir_alloc(size);
+  if (lfirst) memcpy(buf,lfirst,l1);
+  memcpy(((BYTE*)buf)+l1,lsecond,l2+sizeof(TCHAR));
+  if (lfirst) mir_free(lfirst);
+  if (len) buf[(l1+l2+1)/sizeof(TCHAR)]=(TCHAR)'\0';
+  return buf;
+}
+
+TCHAR* replacevar(TCHAR *var)
+{
+  if (!var) return mir_strdupT(_T(""));
+  if (!lstrcmpi(var,TEXT("Profile")))
+  {
+    char buf[MAX_PATH]={0};
+    CallService(MS_DB_GETPROFILENAME,(WPARAM)MAX_PATH,(LPARAM)buf);
+    {
+      int i=strlen(buf);
+      while (buf[i]!='.' && i>0) i--;
+      buf[i]='\0';
+    }
+    mir_free(var);
+#ifdef UNICODE
+    return a2u(buf);
+#else
+	return mir_strdup(buf);
+#endif
+  } 
+
+  mir_free(var);
+  return mir_strdupT(_T(""));
+}
+TCHAR *parseText(TCHAR *stzText)
+{
+ /* if (lstrcmpi(stzText,TEXT("%Profile%")))
+    return mir_strdupT(stzText);
+  else
+  {
+    char buf[MAX_PATH]={0};
+    CallService(MS_DB_GETPROFILENAME,(WPARAM)MAX_PATH,(LPARAM)buf);
+    {
+      int i=strlen(buf);
+      while (buf[i]!='.' && i>0) i--;
+      buf[i]='\0';
+    }
+    return a2u(buf);
+  }
+  */
+  int len=lstrlen(stzText);
+  TCHAR *result=NULL;
+  int stpos=0;
+  int curpos=0;  
+  
+  while(curpos<len)
+  {
+    //1 find first %
+    while(curpos<len && stzText[curpos]!=(TCHAR)'%') curpos++;
+    if (curpos<len) //% found
+    {
+      if (curpos-stpos>0) 
+        result=reappend(result,stzText+stpos,curpos-stpos);
+      stpos=curpos+1;
+      curpos++;
+      //3 find second % 
+      while(curpos<len && stzText[curpos]!=(TCHAR)'%') curpos++;
+      if (curpos<len)
+      {
+        if (curpos-stpos>0) 
+        {
+          TCHAR *var=mir_alloc((curpos-stpos+1)*sizeof(TCHAR));
+          memcpy(var,stzText+stpos,(curpos-stpos)*sizeof(TCHAR));
+          var[curpos-stpos]=(TCHAR)'\0';
+          var=replacevar(var);
+          result=reappend(result,var,0);
+          mir_free(var);
+        }
+        else
+          result=reappend(result,_T("%"),0);
+        curpos++;
+        stpos=curpos;
+      }
+      else
+      {
+      //  if (curpos-stpos>0) 
+      //    result=reappend(result,stzText+stpos,curpos-stpos);
+        break;
+      }
+    }
+    else
+    {
+      if (curpos-stpos>0) 
+        result=reappend(result,stzText+stpos,curpos-stpos);
+      break;
+    }   
+  }
+  //TRACET(result);
+  return result;
+}
+/*
+*   Parse text object string, find glyph object and add text to it.
+*   szGlyphTextID and Define string is:
+*   t[szGlyphTextID]=s[HostObjectID],[Left],[Top],[Right],[Bottom],[LTRBHV],[FontID],[Color1],[reservedforColor2],[Text]
+*/
+void AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin)
+{
+
+    GLYPHOBJECT *globj=NULL;
+    {     
+      char buf[255]={0};
+      GetParamN(szDefineString,buf,sizeof(buf),0,',',TRUE);
+      if (strlen(buf))
+      {
+        SKINOBJECTDESCRIPTOR * lpobj;
+        lpobj=FindObjectByName(buf,OT_GLYPHOBJECT,Skin);
+        if (lpobj)
+          globj=(GLYPHOBJECT*)lpobj->Data;
+      }
+      if (globj)
+      {
+        GLYPHTEXT * glText;
+        
+        if (!globj->plTextList)
+        {
+          globj->plTextList=li.List_Create(0,1);
+          globj->plTextList->sortFunc=SortTextGlyphObjectFunc;
+        }
+        glText=(GLYPHTEXT*)mir_alloc(sizeof(GLYPHTEXT));
+          memset(glText,0,sizeof(GLYPHTEXT));
+        glText->szGlyphTextID=mir_strdup(szGlyphTextID);
+        
+        glText->iLeft=atoi(GetParamN(szDefineString,buf,sizeof(buf),1,',',TRUE));
+        glText->iTop=atoi(GetParamN(szDefineString,buf,sizeof(buf),2,',',TRUE));
+        glText->iRight=atoi(GetParamN(szDefineString,buf,sizeof(buf),3,',',TRUE));
+        glText->iBottom=atoi(GetParamN(szDefineString,buf,sizeof(buf),4,',',TRUE));
+        {
+          memset(buf,0,6);
+          GetParamN(szDefineString,buf,sizeof(buf),5,',',TRUE);
+          buf[0]&=95; buf[1]&=95; buf[2]&=95; buf[3]&=95; buf[4]&=95; buf[5]&=95;   //to uppercase: &01011111 (0-95)
+          glText->RelativeFlags=
+            (buf[0]=='C'?1:((buf[0]=='R')?2:0))       //[BC][RC][BC][RC] --- Left relative
+           |(buf[1]=='C'?4:((buf[1]=='B')?8:0))       //  |   |   |--------- Top relative   
+           |(buf[2]=='C'?16:((buf[2]=='R')?32:0))     //  |   |--------------Right relative 
+           |(buf[3]=='C'?64:((buf[3]=='B')?128:0));   //  |------------------Bottom relative          
+          glText->dwFlags=(buf[4]=='C'?DT_CENTER:((buf[4]=='R')?DT_RIGHT:DT_LEFT))
+                         |(buf[5]=='C'?DT_VCENTER:((buf[5]=='B')?DT_BOTTOM:DT_TOP));
+        }
+        glText->szFontID=mir_strdup(GetParamN(szDefineString,buf,sizeof(buf),6,',',TRUE));
+       
+        glText->dwColor=HexToARGB(GetParamN(szDefineString,buf,sizeof(buf),7,',',TRUE));
+        glText->dwShadow=HexToARGB(GetParamN(szDefineString,buf,sizeof(buf),8,',',TRUE));
+#ifdef _UNICODE
+        glText->stValueText=a2u(GetParamN(szDefineString,buf,sizeof(buf),9,',',TRUE));
+        glText->stText=parseText(glText->stValueText);
+#else
+        glText->stValueText=mir_strdup(GetParamN(szDefineString,buf,sizeof(buf),9,',',TRUE));
+        glText->stText=parseText(glText->stValueText);
+#endif
+        li.List_Insert(globj->plTextList,(void*)glText,globj->plTextList->realCount);     
+        qsort(globj->plTextList->items,globj->plTextList->realCount,sizeof(void*),(int(*)(const void*, const void*))globj->plTextList->sortFunc);
+      }
+    }
+}
+
+
+/*
+*   Parse font definition string.
+*   szGlyphTextID and Define string is:
+*   f[szFontID]=s[FontTypefaceName],[size],[BIU]
+*/
+void AddParseSkinFont(char * szFontID,char * szDefineString,SKINOBJECTSLIST *Skin)
+{
+  //SortedList * gl_plSkinFonts=NULL;
+  SKINFONT * sf =NULL;
+  sf=(SKINFONT*)mir_alloc(sizeof(SKINFONT));
+  if (sf)
+  {
+    memset(sf,0,sizeof(SKINFONT));
+    {
+      char buf[255];    
+      int fntSize=0;
+      BOOL fntBold=FALSE, fntItalic=FALSE, fntUnderline=FALSE;
+      LOGFONTA logfont={0};    
+      logfont.lfCharSet=DEFAULT_CHARSET;
+      logfont.lfOutPrecision=OUT_DEFAULT_PRECIS;
+      logfont.lfClipPrecision=CLIP_DEFAULT_PRECIS;
+      logfont.lfQuality=DEFAULT_QUALITY;
+      logfont.lfPitchAndFamily=DEFAULT_PITCH|FF_DONTCARE;    
+
+      strncpy(logfont.lfFaceName,GetParamN(szDefineString,buf,sizeof(buf),0,',',TRUE),32);
+      logfont.lfHeight=atoi(GetParamN(szDefineString,buf,sizeof(buf),1,',',TRUE));
+      if (logfont.lfHeight<0)
+      {
+        HDC hdc=CreateCompatibleDC(NULL);        
+        logfont.lfHeight=(LONG)-MulDiv(logfont.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+        DeleteDC(hdc);
+      }
+      logfont.lfHeight=-logfont.lfHeight;
+      GetParamN(szDefineString,buf,sizeof(buf),2,',',TRUE);
+      buf[0]&=95; buf[1]&=95; buf[2]&=95;
+      logfont.lfWeight=(buf[0]=='B')?FW_BOLD:FW_NORMAL;
+      logfont.lfItalic=(buf[1]=='I')?1:0;
+      logfont.lfUnderline=(buf[2]=='U')?1:0;
+      
+      sf->hFont=CreateFontIndirectA(&logfont);
+      if (sf->hFont)
+      {
+        sf->szFontID=mir_strdup(szFontID);
+        if (!gl_plSkinFonts)
+          gl_plSkinFonts=li.List_Create(0,1);
+        if (gl_plSkinFonts)
+        {
+          li.List_Insert(gl_plSkinFonts,(void*)sf,gl_plSkinFonts->realCount);
+        }
+      }
+      
+    }
+  }
+
+}

@@ -61,6 +61,10 @@ extern void fnCluiProtocolStatusChanged(int status,const unsigned char * proto);
 extern HMENU BuildGroupPopupMenu(struct ClcGroup *group);
 struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
 
+
+void (*savedLoadCluiGlobalOpts)(void);
+extern void LoadCluiGlobalOpts(void);
+
 int ( *saveAddItemToGroup )( struct ClcGroup *group, int iAboveItem );
 int AddItemToGroup(struct ClcGroup *group, int iAboveItem);
 
@@ -74,6 +78,9 @@ LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam,
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int (* saveTrayIconProcessMessage) ( WPARAM wParam, LPARAM lParam );
+
+void ( *savedAddContactToTree)(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
+void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
 
 void ( *saveDeleteItemFromTree )(HWND hwnd, HANDLE hItem);
 void DeleteItemFromTree(HWND hwnd, HANDLE hItem);
@@ -175,6 +182,8 @@ static ClcCacheEntryBase* fnCreateCacheItem( HANDLE hContact )
 	return (ClcCacheEntryBase*)p;
 }
 
+extern TCHAR *parseText(TCHAR *stzText);
+
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc=0;
@@ -211,6 +220,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnGetRowTopY = RowHeights_GetItemTopY;
 	pcli->pfnGetRowTotalHeight = RowHeights_GetTotalHeight;
 	pcli->pfnInvalidateRect = skinInvalidateRect;
+  savedLoadCluiGlobalOpts=pcli->pfnLoadCluiGlobalOpts; pcli->pfnLoadCluiGlobalOpts=LoadCluiGlobalOpts;
+  
 
 	pcli->pfnOnCreateClc = LoadCLUIModule;
 	pcli->pfnHotKeysProcess = HotKeysProcess;
@@ -242,6 +253,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 
 	saveAddGroup = pcli->pfnAddGroup; pcli->pfnAddGroup = AddGroup;
+  savedAddContactToTree=pcli->pfnAddContactToTree;  pcli->pfnAddContactToTree=AddContactToTree;
 	saveAddInfoItemToGroup = pcli->pfnAddInfoItemToGroup; pcli->pfnAddInfoItemToGroup = AddInfoItemToGroup;
 	saveAddItemToGroup = pcli->pfnAddItemToGroup; pcli->pfnAddItemToGroup = AddItemToGroup;
 	saveContactListControlWndProc = pcli->pfnContactListControlWndProc; pcli->pfnContactListControlWndProc = ContactListControlWndProc;
