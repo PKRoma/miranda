@@ -37,18 +37,33 @@ extern LRESULT ( *saveProcessExternalMessages )(HWND hwnd, struct ClcData *dat, 
 LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
-	case CLM_SETSTICKY:
-		{
-			struct ClcContact *contact;
+        case CLM_SETSTICKY:
+            {
+                struct ClcContact *contact;
+				struct ClcGroup *group;
 
-			if (wParam == 0 || !FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
-				return 0;
-			if (lParam)
-				contact->flags |= CONTACTF_STICKY;
-			else
-				contact->flags &= ~CONTACTF_STICKY;
-		}
-		return 0;
+                if (wParam == 0 || !FindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL))
+                    return 0;
+				if (lParam) {
+                    contact->flags |= CONTACTF_STICKY;
+					if(group && g_CluiData.bAutoExpandGroups) {
+						WORD old_expanded = group->expanded & 0x0000ffff;
+						int iIndex;
+
+						group->expanded = MAKELONG(LOWORD(group->expanded), old_expanded);
+						SetGroupExpand(hwnd, dat, group, 1);
+						pcli->pfnEnsureVisible(hwnd, dat, 1, 0);
+						iIndex = pcli->pfnGetRowsPriorTo(&dat->list, group, li.List_IndexOf(( SortedList* )&group->cl, contact));
+						pcli->pfnEnsureVisible(hwnd, dat, 1, iIndex);
+					}
+				}
+				else {
+					if(group && g_CluiData.bAutoExpandGroups)
+						SetGroupExpand(hwnd, dat, group, HIWORD(group->expanded));
+                    contact->flags &= ~CONTACTF_STICKY;
+				}
+                break;
+            }
 
 	case CLM_SETEXTRAIMAGEINT:
 		{

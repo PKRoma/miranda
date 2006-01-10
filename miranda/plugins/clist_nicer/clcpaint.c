@@ -766,7 +766,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 				savedCORNER = sempty->CORNER;
 				oldGroupColor = SetTextColor(hdcMem, sempty->TEXTCOLOR);
 			}
-		} else if (contact->group->expanded) {
+		} else if (contact->group->expanded & 0x0000ffff) {
 			if (!sexpanded->IGNORED) {
 				rc.left = sexpanded->MARGIN_LEFT + bg_indent_l;
 				rc.top = y + sexpanded->MARGIN_TOP;
@@ -856,7 +856,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 	}
 
 	if (type == CLCIT_GROUP)
-		iImage = contact->group->expanded ? IMAGE_GROUPOPEN : IMAGE_GROUPSHUT;
+		iImage = (contact->group->expanded & 0x0000ffff) ? IMAGE_GROUPOPEN : IMAGE_GROUPSHUT;
 	else if (type == CLCIT_CONTACT)
 		iImage = contact->iImage;
 
@@ -1504,7 +1504,7 @@ bgdone:
 		}
 		index++;
 		y += dat->row_heights[line_num];
-		if (group->cl.items[group->scanIndex]->type == CLCIT_GROUP && group->cl.items[group->scanIndex]->group->expanded) {
+		if (group->cl.items[group->scanIndex]->type == CLCIT_GROUP && (group->cl.items[group->scanIndex]->group->expanded & 0x0000ffff)) {
 			group = group->cl.items[group->scanIndex]->group;
 			indent++;
 			group->scanIndex = 0;

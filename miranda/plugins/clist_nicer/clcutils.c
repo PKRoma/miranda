@@ -382,14 +382,17 @@ void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int new
 	NMCLISTCONTROL nm;
 
 	if(newState==-1) 
-        group->expanded^=1;
+        //group->expanded^=1;
+        group->expanded = MAKELONG(LOWORD(group->expanded) ^ 1, HIWORD(group->expanded));
 	else {
-		if(group->expanded==(newState!=0)) return;
-		group->expanded=newState!=0;
+		if((group->expanded & 0x0000ffff) == (newState!=0)) 
+			return;
+		//group->expanded=newState!=0;
+		group->expanded = MAKELONG(newState != 0, HIWORD(group->expanded));
 	}
 	InvalidateRect(hwnd,NULL,FALSE);
 
-	if (group->expanded)
+	if (group->expanded & 0x0000ffff)
 		contentCount = pcli->pfnGetGroupContentsCount(group,1);
 	else
 		contentCount = 0;
@@ -411,7 +414,7 @@ void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int new
 	nm.hdr.hwndFrom=hwnd;
 	nm.hdr.idFrom=GetDlgCtrlID(hwnd);
 	nm.hItem=(HANDLE)group->groupId;
-	nm.action=group->expanded;
+	nm.action = (group->expanded & 0x0000ffff);
 	SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 }
 

@@ -318,6 +318,7 @@ struct CluiData {
 	BYTE bCLeft, bCRight, bCTop, bCBottom;
 	BYTE bUseFloater;
 	BYTE fullyInited;
+	BYTE bAutoExpandGroups;
 };
 
 struct IconDesc {

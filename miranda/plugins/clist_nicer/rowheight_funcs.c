@@ -166,7 +166,7 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 		// Calc row height
 		RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num, GetWindowLong(hwnd, GWL_STYLE));
 
-		if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP && /*!IsBadCodePtr((FARPROC)group->cl.items[group->scanIndex]->group) && */ group->cl.items[group->scanIndex]->group->expanded) {
+		if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP && /*!IsBadCodePtr((FARPROC)group->cl.items[group->scanIndex]->group) && */ (group->cl.items[group->scanIndex]->group->expanded & 0x0000ffff)) {
 			group=group->cl.items[group->scanIndex]->group;
 			indent++;
 			group->scanIndex=0;

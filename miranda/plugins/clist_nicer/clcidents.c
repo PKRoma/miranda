@@ -54,7 +54,7 @@ int FindItem(HWND hwnd, struct ClcData *dat, HANDLE hItem, struct ClcContact **c
 				break;
 			nowVisible = 1;
 			for (tgroup = group; tgroup; tgroup = tgroup->parent) {
-				if (!group->expanded) {
+				if (!(group->expanded & 0x0000ffff)) {
 					nowVisible = 0; break;
 				}
 			}
@@ -93,7 +93,7 @@ int FindItem(HWND hwnd, struct ClcData *dat, HANDLE hItem, struct ClcContact **c
 		if (group->cl.items[group->scanIndex]->type == CLCIT_GROUP) {
 			group = group->cl.items[group->scanIndex]->group;
 			group->scanIndex = 0;
-			nowVisible &= group->expanded;
+			nowVisible &= (group->expanded & 0x0000ffff);
 			continue;
 		}
 		group->scanIndex++;

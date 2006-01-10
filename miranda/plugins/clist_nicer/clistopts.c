@@ -96,6 +96,8 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CheckDlgButton(hwndDlg, IDC_AUTOHIDE, DBGetContactSettingByte(NULL, "CList", "AutoHide", SETTING_AUTOHIDE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
             CheckDlgButton(hwndDlg, IDC_EVENTSONTOP, g_CluiData.dwFlags & CLUI_STICKYEVENTS);
             CheckDlgButton(hwndDlg, IDC_DONTSEPARATE, g_CluiData.bDontSeparateOffline);
+			CheckDlgButton(hwndDlg, IDC_GROUPAUTOEXPAND, g_CluiData.bAutoExpandGroups);
+
             EnableWindow(GetDlgItem(hwndDlg, IDC_HIDETIME), IsDlgButtonChecked(hwndDlg, IDC_AUTOHIDE));
             EnableWindow(GetDlgItem(hwndDlg, IDC_HIDETIMESPIN), IsDlgButtonChecked(hwndDlg, IDC_AUTOHIDE)); {
                 DWORD caps = CallService(MS_CLUI_GETCAPS, CLUICAPS_FLAGS1, 0);
@@ -219,6 +221,9 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingByte(NULL, "CList", "NoIconBlink", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ICONBLINK));
                             g_CluiData.bDontSeparateOffline = IsDlgButtonChecked(hwndDlg, IDC_DONTSEPARATE) ? 1 : 0;
                             DBWriteContactSettingByte(NULL, "CList", "DontSeparateOffline", g_CluiData.bDontSeparateOffline);
+							DBWriteContactSettingByte(NULL, "CList", "GroupAutoExpand", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_GROUPAUTOEXPAND));
+							g_CluiData.bAutoExpandGroups = IsDlgButtonChecked(hwndDlg, IDC_GROUPAUTOEXPAND) ? 1 : 0;
+
                             g_CluiData.bNoTrayTips = IsDlgButtonChecked(hwndDlg, IDC_NOTRAYINFOTIPS) ? 1 : 0;
                             DBWriteContactSettingByte(NULL, "CList", "NoTrayTips", g_CluiData.bNoTrayTips);
                             if (!SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETCURSEL, 0, 0), 0))

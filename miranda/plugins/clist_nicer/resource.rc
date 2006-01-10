@@ -212,6 +212,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,206,289,12
     CONTROL         "Do not separate offline contacts",IDC_DONTSEPARATE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,154,58,149,10
+    CONTROL         "Auto expand groups",IDC_GROUPAUTOEXPAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,101,121,9
 END
 
 IDD_OPT_PLUS DIALOGEX 0, 0, 313, 245
@@ -784,7 +785,7 @@ IDI_NOTICK              ICON                    "res\\notick.ico"
 IDI_URL                 ICON                    "res\\globus.ico"
 IDI_CLVM_SELECT         ICON                    "res\\arrow-down.ico"
 IDI_CLVM_OPTIONS        ICON                    "res\\options_clvm.ico"
-IDI_TBTOPMENU			ICON					"res\\menu.ico"
+IDI_TBTOPMENU           ICON                    "res\\menu.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
