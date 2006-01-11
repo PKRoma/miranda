@@ -3797,7 +3797,7 @@ void AddParseSkinFont(char * szFontID,char * szDefineString,SKINOBJECTSLIST *Ski
       if (logfont.lfHeight<0)
       {
         HDC hdc=CreateCompatibleDC(NULL);        
-        logfont.lfHeight=(LONG)-MulDiv(logfont.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+        logfont.lfHeight=(long)-MulDiv(logfont.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
         DeleteDC(hdc);
       }
       logfont.lfHeight=-logfont.lfHeight;

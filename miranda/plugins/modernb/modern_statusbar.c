@@ -93,7 +93,7 @@ LOGFONTA LoadLogFontFromDB(char * section, char * id, DWORD * color)
     {
       HDC hdc=CreateCompatibleDC(NULL);
       int h=(int)(BYTE)DBGetContactSettingByte(NULL,section,ApendSubSetting(buf,sizeof(buf),id,"Size"),10);
-      logfont.lfHeight=(LONG)-MulDiv(h, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+      logfont.lfHeight=(long)-MulDiv(h, GetDeviceCaps(hdc, LOGPIXELSY), 72);
       DeleteDC(hdc);
     }
     *color=DBGetContactSettingDword(NULL,section,ApendSubSetting(buf,sizeof(buf),id,"Col"),0);

@@ -302,7 +302,7 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
           //			//bct->hFont = GetStockObject(DEFAULT_GUI_FONT);
           //		    bct->HandleService=NULL;
           //            bct->ID=NULL;
-          //			SetWindowLong(hwndDlg, 0, (LONG)bct);
+          //			SetWindowLong(hwndDlg, 0, (long)bct);
           if (((CREATESTRUCT *)lParam)->lpszName) SetWindowText(hwndDlg, ((CREATESTRUCT *)lParam)->lpszName);  
           return TRUE;
         }
@@ -336,7 +336,7 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
 
             mir_free(bct);
           }
-          SetWindowLong(hwndDlg,0,(LONG)NULL);
+          SetWindowLong(hwndDlg,0,(long)NULL);
           break;	// DONT! fall thru
         }
       case WM_SETCURSOR:
@@ -593,7 +593,7 @@ HWND CreateButtonWindow(ModernButtonCtrl * bct, HWND parent)
   hwnd=CreateWindowA(MODERNBUTTONCLASS,bct->ID,WS_VISIBLE|WS_CHILD,bct->Left,bct->Top,bct->Right-bct->Left,bct->Bottom-bct->Top,parent,NULL,g_hInst,NULL);       
   bct->hwnd = hwnd;	
   bct->focus = 0;
-  SetWindowLong(hwnd, 0, (LONG)bct);
+  SetWindowLong(hwnd, 0, (long)bct);
   return hwnd;
 }
 

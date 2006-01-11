@@ -341,7 +341,7 @@ void Cache_ReplaceSmileys(struct ClcData *dat, struct ClcContact *contact, TCHAR
 	}
 
 	// Lets add smileys
-	*plText = li.List_Create( 10, 10 );
+	*plText = li.List_Create( 0, 10 );
 
 	do
 	{

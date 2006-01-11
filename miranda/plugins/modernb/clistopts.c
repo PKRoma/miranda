@@ -1188,7 +1188,7 @@ static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 			data = (WndItemsData *) mir_alloc(sizeof(WndItemsData));
 			data->selected_item = -1;
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) data); 
+			SetWindowLong(hwndDlg, GWL_USERDATA, (long) data); 
 
 			hwndTab = GetDlgItem(hwndDlg, IDC_TAB);
 
@@ -1258,7 +1258,8 @@ static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 							SendMessage(data->items[i].hwnd, msg, wParam, lParam);
 						}
 
-						pcli->pfnLoadContactTree(); /* this won't do job properly since it only really works when changes happen */
+						pcli->pfnLoadContactTree();
+						//ReLoadContactTree();/* this won't do job properly since it only really works when changes happen */
 						ClcOptionsChanged(); // Used to force loading avatar an list height related options
 						SendMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0); /* force reshuffle */
 						return TRUE;
@@ -1311,7 +1312,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED,hwndDlg,WM_USER+1));
+		SetWindowLong(hwndDlg, GWL_USERDATA, (long)HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED,hwndDlg,WM_USER+1));
 
 		CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_HIDEOFFLINE, DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);

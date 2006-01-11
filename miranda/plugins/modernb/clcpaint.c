@@ -330,7 +330,7 @@ void GetTextSize(SIZE *text_size, HDC hdcMem, RECT free_row_rc, TCHAR *szText, S
 						factor = 1;
 					}
 
-					text_size->cx = min(text_size->cx + (LONG)(factor * piece->smiley_width), free_width);
+					text_size->cx = min(text_size->cx + (long)(factor * piece->smiley_width), free_width);
 				}
 			}
 		}
@@ -424,21 +424,21 @@ void DrawTextSSmiley(HDC hdcMem, RECT free_rc, SIZE text_size, TCHAR *szText, in
 						}
 
 						if (uTextFormat & DT_RTLREADING)
-							text_rc.left = max(text_rc.right - (LONG) (piece->smiley_width * factor), text_rc.left);
+							text_rc.left = max(text_rc.right - (long) (piece->smiley_width * factor), text_rc.left);
 
-						if ((LONG)(piece->smiley_width * factor) <= text_rc.right - text_rc.left)
+						if ((long)(piece->smiley_width * factor) <= text_rc.right - text_rc.left)
 						{
-							text_rc.top += (row_height - (LONG)(piece->smiley_height * factor)) >> 1;
+							text_rc.top += (row_height - (long)(piece->smiley_height * factor)) >> 1;
 
 							DrawIconExS(hdcMem, text_rc.left, text_rc.top, piece->smiley, 
-								(LONG)(piece->smiley_width * factor), (LONG)(piece->smiley_height * factor), 0, NULL, DI_NORMAL); 
+								(long)(piece->smiley_width * factor), (long)(piece->smiley_height * factor), 0, NULL, DI_NORMAL); 
 						}
 						else
 						{
 							DrawTextS(hdcMem, TEXT("..."), 3, &text_rc, uTextFormat);
 						}
 
-						pos_x += (LONG)(piece->smiley_width * factor);
+						pos_x += (int)(piece->smiley_width * factor);
 					}
 				}
 			}

@@ -227,7 +227,7 @@ static BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			
 			TranslateDialogDefault(hwndDlg);
 			dat=(struct ProtocolOrderData*)malloc(sizeof(struct ProtocolOrderData));
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_USERDATA,(LONG)dat);
+			SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_USERDATA,(long)dat);
 			dat->dragging=0;
 
 			//SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLVISIBILITY),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLVISIBILITY),GWL_STYLE)|TVS_NOHSCROLL);

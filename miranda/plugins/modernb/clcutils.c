@@ -313,12 +313,12 @@ void BeginRenameSelection(HWND hwnd,struct ClcData *dat)
 		dat->hwndRenameEdit=CreateWindow(TEXT("EDIT"),contact->szText,WS_POPUP|WS_BORDER|ES_AUTOHSCROLL|a,x,y,w,h,hwnd,NULL,g_hInst,NULL);
 	}
 	SetWindowLong(dat->hwndRenameEdit,GWL_STYLE,GetWindowLong(dat->hwndRenameEdit,GWL_STYLE)&(~WS_CAPTION)|WS_BORDER);
-	SetWindowLong(dat->hwndRenameEdit,GWL_USERDATA,(LONG)dat);
-	OldRenameEditWndProc=(WNDPROC)SetWindowLong(dat->hwndRenameEdit,GWL_WNDPROC,(LONG)RenameEditSubclassProc);
+	SetWindowLong(dat->hwndRenameEdit,GWL_USERDATA,(long)dat);
+	OldRenameEditWndProc=(WNDPROC)SetWindowLong(dat->hwndRenameEdit,GWL_WNDPROC,(long)RenameEditSubclassProc);
 	SendMessage(dat->hwndRenameEdit,WM_SETFONT,(WPARAM)(contact->type==CLCIT_GROUP?dat->fontInfo[FONTID_GROUPS].hFont:dat->fontInfo[FONTID_CONTACTS].hFont),0);
 	SendMessage(dat->hwndRenameEdit,EM_SETMARGINS,EC_LEFTMARGIN|EC_RIGHTMARGIN|EC_USEFONTINFO,0);
 	SendMessage(dat->hwndRenameEdit,EM_SETSEL,0,(LPARAM)(-1));
-	// SetWindowLong(dat->hwndRenameEdit,GWL_USERDATA,(LONG)hwnd);
+	// SetWindowLong(dat->hwndRenameEdit,GWL_USERDATA,(long)hwnd);
 	r.top=1;
 	r.bottom=h-1;
 	r.left=0;
@@ -406,7 +406,7 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 	if (contact->isSubcontact && (ServiceExists(MS_MC_ADDTOMETA))) return DROPTARGET_ONSUBCONTACT;
 	return DROPTARGET_ONCONTACT;
 }
-
+extern int sortNoOfflineBottom;
 void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 { 
 	int i;
@@ -439,6 +439,12 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 		}
 		ReleaseDC(hwnd,hdc);
 	}
+
+	sortBy[0]=DBGetContactSettingByte(NULL,"CList","SortBy1",SETTING_SORTBY1_DEFAULT);
+	sortBy[1]=DBGetContactSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT);
+	sortBy[2]=DBGetContactSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT);
+	sortNoOfflineBottom=DBGetContactSettingByte(NULL,"CList","NoOfflineBottom",SETTING_NOOFFLINEBOTTOM_DEFAULT);
+
 	// Row
 	dat->row_min_heigh = DBGetContactSettingWord(NULL,"CList","MinRowHeight",CLCDEFAULT_ROWHEIGHT);
 	dat->row_border = DBGetContactSettingWord(NULL,"CList","RowBorder",2);

@@ -1321,8 +1321,8 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 	style|=!LayeredFlag?WS_BORDER:0;
     if(flag&F_NOBORDER) {style&=(~WS_BORDER);};
     {
-      SetWindowLong(Frames[pos].hWnd,GWL_STYLE,(LONG)style);
-      SetWindowLong(Frames[pos].TitleBar.hwnd,GWL_STYLE,(LONG)style);
+      SetWindowLong(Frames[pos].hWnd,GWL_STYLE,(long)style);
+      SetWindowLong(Frames[pos].TitleBar.hwnd,GWL_STYLE,(long)style);
     }
     ulockfrm();
     CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);

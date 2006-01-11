@@ -101,53 +101,17 @@ static int GetStatusModeOrdering(int statusMode)
 	return 1000;
 }
 
-//void LoadContactTree(void)
-//{
-//	HANDLE hContact;
-//	int i,hideOffline,status,tick;
-//	pdisplayNameCacheEntry cacheEntry;
-//		
-//
-//
-//	tick=GetTickCount();
-//	CallService(MS_CLUI_LISTBEGINREBUILD,0,0);
-//	for(i=1;;i++) {
-//		if ( pcli->pfnGetGroupName(i, NULL) == NULL) break;
-//		CallService(MS_CLUI_GROUPADDED,i,0);
-//	}
-//
-//	hideOffline=DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
-//	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
-//
-//	while(hContact!=NULL) {
-//		cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
-//		if (cacheEntry==NULL)
-//		{
-//			MessageBoxA(0,"Fail To Get CacheEntry for hContact","!!!!!",0);
-//			break;
-//		}
-//		status=cacheEntry->status;
-//		if((!hideOffline || status!=ID_STATUS_OFFLINE) && !cacheEntry->Hidden)
-//			ChangeContactIcon(hContact,ExtIconFromStatusMode(hContact,(char*)cacheEntry->szProto,status),1);
-//		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
-//	}
-//	sortBy[0]=DBGetContactSettingByte(NULL,"CList","SortBy1",SETTING_SORTBY1_DEFAULT);
-//	sortBy[1]=DBGetContactSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT);
-//	sortBy[2]=DBGetContactSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT);
-//	sortNoOfflineBottom=DBGetContactSettingByte(NULL,"CList","NoOfflineBottom",SETTING_NOOFFLINEBOTTOM_DEFAULT);
-//
-//	CallService(MS_CLUI_SORTLIST,0,0);
-//	CallService(MS_CLUI_LISTENDREBUILD,0,0);
-//	
-//	tick=GetTickCount()-tick;
-//	{
-//	char buf[255];
-//	//sprintf(buf,"%s %s took %i ms",__FILE__,__LINE__,tick);
-//	sprintf(buf,"LoadContactTree %d \r\n",tick);
-//
-//	TRACE(buf);
-//	}
-//}
+/*void ReLoadContactTree(void)
+{
+	hideOffline=DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
+
+	sortBy[0]=DBGetContactSettingByte(NULL,"CList","SortBy1",SETTING_SORTBY1_DEFAULT);
+	sortBy[1]=DBGetContactSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT);
+	sortBy[2]=DBGetContactSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT);
+	sortNoOfflineBottom=DBGetContactSettingByte(NULL,"CList","NoOfflineBottom",SETTING_NOOFFLINEBOTTOM_DEFAULT);
+
+	CallService(MS_CLUI_SORTLIST,0,0);
+}*/
 DWORD CompareContacts2_getLMTime(HANDLE u)
 {
 	HANDLE hDbEvent;
