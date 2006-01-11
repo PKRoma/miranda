@@ -465,12 +465,12 @@ struct CPTABLE {
 
 struct LISTOPTIONSGROUP {
     LRESULT handle;
-    char *szName;
+    TCHAR *szName;
 };
 
 struct LISTOPTIONSITEM {
     LRESULT handle;
-    char *szName;
+    TCHAR *szName;
     UINT id;
     UINT uType;
     UINT_PTR lParam;

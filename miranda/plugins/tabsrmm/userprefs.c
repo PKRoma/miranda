@@ -98,7 +98,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always Off"));
             SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_SETCURSEL, bInfoPanel == 0 ? 0 : (bInfoPanel == 1 ? 1 : 2), 0);
 
-			SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use global Setting"));
+			   SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use global Setting"));
             SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Force IEView"));
             SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Force Default Message Log"));
             SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, bIEView == 0 ? 0 : (bIEView == 1 ? 1 : 2), 0);
@@ -135,7 +135,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             hCpCombo = GetDlgItem(hwndDlg, IDC_CODEPAGES);
             sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
             EnumSystemCodePagesA(FillCpCombo, CP_INSTALLED);
-            SendDlgItemMessageA(hwndDlg, IDC_CODEPAGES, CB_INSERTSTRING, 0, (LPARAM)Translate("Use default codepage"));
+            SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_INSERTSTRING, 0, (LPARAM)TranslateT("Use default codepage"));
             if(sCodePage == 0)
                 SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_SETCURSEL, (WPARAM)0, 0);
             else {
@@ -166,7 +166,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 SetDlgItemTextA(hwndDlg, IDC_BACKGROUNDIMAGE, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
-            SendDlgItemMessageA(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)Translate("<default, no change>"));
+            SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("<default, no change>"));
             timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone",-1));
             for(i = -12; i <= 12; i++) {
                 _sntprintf(szBuffer, 20, TranslateT("GMT %c %d"), i < 0 ? '-' : '+', abs(i));

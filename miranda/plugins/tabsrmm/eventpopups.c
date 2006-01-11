@@ -54,440 +54,439 @@ extern HIMAGELIST CreateStateImageList();
 
 void CheckForRemoveMask()
 {
-    if(!DBGetContactSettingByte(NULL, MODULE, "firsttime", 0) && (nen_options.maskActL & MASK_REMOVE || nen_options.maskActR & MASK_REMOVE || nen_options.maskActTE & MASK_REMOVE)) {
-        MessageBoxA(0, Translate("One of your popup actions is set to DISMISS EVENT.\nNote that this options may have unwanted side effects as it REMOVES the event from the unread queue.\nThis may lead to events not showing up as \"new\". If you don't want this behaviour, please review the Event Notifications settings page."), "tabSRMM Warning Message", MB_OK | MB_ICONSTOP);
-        DBWriteContactSettingByte(NULL, MODULE, "firsttime", 1);
-    }
+	if(!DBGetContactSettingByte(NULL, MODULE, "firsttime", 0) && (nen_options.maskActL & MASK_REMOVE || nen_options.maskActR & MASK_REMOVE || nen_options.maskActTE & MASK_REMOVE)) {
+		MessageBoxA(0, Translate("One of your popup actions is set to DISMISS EVENT.\nNote that this options may have unwanted side effects as it REMOVES the event from the unread queue.\nThis may lead to events not showing up as \"new\". If you don't want this behaviour, please review the Event Notifications settings page."), "tabSRMM Warning Message", MB_OK | MB_ICONSTOP);
+		DBWriteContactSettingByte(NULL, MODULE, "firsttime", 1);
+	}
 }
 
 int NEN_ReadOptions(NEN_OPTIONS *options)
 {
-    options->bPreview = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_PREVIEW, TRUE);
-    options->bDefaultColorMsg = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_MESSAGE, FALSE);
-    options->bDefaultColorUrl = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_URL, FALSE);
-    options->bDefaultColorFile = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_FILE, FALSE);
-    options->bDefaultColorOthers = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_OTHERS, FALSE);
-    options->colBackMsg = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLBACK_MESSAGE, DEFAULT_COLBACK);
-    options->colTextMsg = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLTEXT_MESSAGE, DEFAULT_COLTEXT);
-    options->colBackUrl = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLBACK_URL, DEFAULT_COLBACK);
-    options->colTextUrl = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLTEXT_URL, DEFAULT_COLTEXT);
-    options->colBackFile = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLBACK_FILE, DEFAULT_COLBACK);
-    options->colTextFile = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLTEXT_FILE, DEFAULT_COLTEXT);
-    options->colBackOthers = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLBACK_OTHERS, DEFAULT_COLBACK);
-    options->colTextOthers = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLTEXT_OTHERS, DEFAULT_COLTEXT);
-    options->maskNotify = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKNOTIFY, DEFAULT_MASKNOTIFY);
-    options->maskActL = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTL, DEFAULT_MASKACTL);
-    options->maskActR = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTR, DEFAULT_MASKACTR);
-    options->maskActTE = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTTE, DEFAULT_MASKACTR) & (MASK_OPEN | MASK_DISMISS);
-    options->bMergePopup = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_MERGEPOPUP, FALSE);
-    options->iDelayMsg = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_MESSAGE, (DWORD)DEFAULT_DELAY);
-    options->iDelayUrl = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_URL, (DWORD)DEFAULT_DELAY);
-    options->iDelayFile = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_FILE, (DWORD)DEFAULT_DELAY);
-    options->iDelayOthers = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_OTHERS, (DWORD)DEFAULT_DELAY);
-    options->iDelayDefault = (int)DBGetContactSettingRangedWord(NULL, "PopUp", "Seconds",
-                                                                SETTING_LIFETIME_DEFAULT, SETTING_LIFETIME_MIN, SETTING_LIFETIME_MAX);
-    options->bShowDate = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_DATE, FALSE);
-    options->bShowTime = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_TIME, FALSE);
-    options->bShowHeaders = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_HEADERS, FALSE);
-    options->iNumberMsg = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_NUMBER_MSG, TRUE);
-    options->bShowON = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_ON, TRUE);
-    options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, FALSE);
-    options->iDisable = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_DISABLE, 0);
-    options->dwStatusMask = (DWORD)DBGetContactSettingDword(NULL, MODULE, "statusmask", (DWORD)-1);
-    options->bTraySupport = (BOOL)DBGetContactSettingByte(NULL, MODULE, "traysupport", 1);
-    options->bMinimizeToTray = (BOOL)DBGetContactSettingByte(NULL, MODULE, "mintotray", 0);
-    options->iAutoRestore = 0;
-    options->bWindowCheck = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, 0);
-    options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, 0);
-    options->iLimitPreview = (int)DBGetContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, 0);
-    options->bAnimated = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_MINIMIZEANIMATED, 1);
-    options->wMaxFavorites = 15;
-    options->wMaxRecent = 15;
-    options->iAnnounceMethod = (int)DBGetContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, 0);
-    options->floaterMode = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATER, 0);
-    options->bFloaterInWin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, 1);
-    options->bFloaterOnlyMin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, 0);
-    options->dwRemoveMask = DBGetContactSettingDword(NULL, MODULE, OPT_REMOVEMASK, 0);
+	options->bPreview = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_PREVIEW, TRUE);
+	options->bDefaultColorMsg = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_MESSAGE, FALSE);
+	options->bDefaultColorUrl = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_URL, FALSE);
+	options->bDefaultColorFile = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_FILE, FALSE);
+	options->bDefaultColorOthers = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_OTHERS, FALSE);
+	options->colBackMsg = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLBACK_MESSAGE, DEFAULT_COLBACK);
+	options->colTextMsg = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLTEXT_MESSAGE, DEFAULT_COLTEXT);
+	options->colBackUrl = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLBACK_URL, DEFAULT_COLBACK);
+	options->colTextUrl = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLTEXT_URL, DEFAULT_COLTEXT);
+	options->colBackFile = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLBACK_FILE, DEFAULT_COLBACK);
+	options->colTextFile = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLTEXT_FILE, DEFAULT_COLTEXT);
+	options->colBackOthers = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLBACK_OTHERS, DEFAULT_COLBACK);
+	options->colTextOthers = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLTEXT_OTHERS, DEFAULT_COLTEXT);
+	options->maskNotify = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKNOTIFY, DEFAULT_MASKNOTIFY);
+	options->maskActL = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTL, DEFAULT_MASKACTL);
+	options->maskActR = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTR, DEFAULT_MASKACTR);
+	options->maskActTE = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTTE, DEFAULT_MASKACTR) & (MASK_OPEN | MASK_DISMISS);
+	options->bMergePopup = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_MERGEPOPUP, FALSE);
+	options->iDelayMsg = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_MESSAGE, (DWORD)DEFAULT_DELAY);
+	options->iDelayUrl = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_URL, (DWORD)DEFAULT_DELAY);
+	options->iDelayFile = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_FILE, (DWORD)DEFAULT_DELAY);
+	options->iDelayOthers = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_OTHERS, (DWORD)DEFAULT_DELAY);
+	options->iDelayDefault = (int)DBGetContactSettingRangedWord(NULL, "PopUp", "Seconds", SETTING_LIFETIME_DEFAULT, SETTING_LIFETIME_MIN, SETTING_LIFETIME_MAX);
+	options->bShowDate = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_DATE, FALSE);
+	options->bShowTime = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_TIME, FALSE);
+	options->bShowHeaders = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_HEADERS, FALSE);
+	options->iNumberMsg = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_NUMBER_MSG, TRUE);
+	options->bShowON = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_ON, TRUE);
+	options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, FALSE);
+	options->iDisable = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_DISABLE, 0);
+	options->dwStatusMask = (DWORD)DBGetContactSettingDword(NULL, MODULE, "statusmask", (DWORD)-1);
+	options->bTraySupport = (BOOL)DBGetContactSettingByte(NULL, MODULE, "traysupport", 1);
+	options->bMinimizeToTray = (BOOL)DBGetContactSettingByte(NULL, MODULE, "mintotray", 0);
+	options->iAutoRestore = 0;
+	options->bWindowCheck = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, 0);
+	options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, 0);
+	options->iLimitPreview = (int)DBGetContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, 0);
+	options->bAnimated = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_MINIMIZEANIMATED, 1);
+	options->wMaxFavorites = 15;
+	options->wMaxRecent = 15;
+	options->iAnnounceMethod = (int)DBGetContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, 0);
+	options->floaterMode = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATER, 0);
+	options->bFloaterInWin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, 1);
+	options->bFloaterOnlyMin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, 0);
+	options->dwRemoveMask = DBGetContactSettingDword(NULL, MODULE, OPT_REMOVEMASK, 0);
 	options->bSimpleMode = DBGetContactSettingByte(NULL, MODULE, OPT_SIMPLEOPT, 0);
-    CheckForRemoveMask();
-    return 0;
+	CheckForRemoveMask();
+	return 0;
 }
 
 int NEN_WriteOptions(NEN_OPTIONS *options)
 {
-    DBWriteContactSettingByte(NULL, MODULE, OPT_PREVIEW, (BYTE)options->bPreview);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_MESSAGE, (BYTE)options->bDefaultColorMsg);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_URL, (BYTE)options->bDefaultColorUrl);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_FILE, (BYTE)options->bDefaultColorFile);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_OTHERS, (BYTE)options->bDefaultColorOthers);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_COLBACK_MESSAGE, (DWORD)options->colBackMsg);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_COLTEXT_MESSAGE, (DWORD)options->colTextMsg);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_COLBACK_URL, (DWORD)options->colBackUrl);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_COLTEXT_URL, (DWORD)options->colTextUrl);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_COLBACK_FILE, (DWORD)options->colBackFile);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_COLTEXT_FILE, (DWORD)options->colTextFile);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_COLBACK_OTHERS, (DWORD)options->colBackOthers);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_COLTEXT_OTHERS, (DWORD)options->colTextOthers);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_MASKNOTIFY, (BYTE)options->maskNotify);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_MASKACTL, (BYTE)options->maskActL);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_MASKACTR, (BYTE)options->maskActR);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_MASKACTTE, (BYTE)options->maskActTE);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_MERGEPOPUP, (BYTE)options->bMergePopup);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_DELAY_MESSAGE, (DWORD)options->iDelayMsg);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_DELAY_URL, (DWORD)options->iDelayUrl);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_DELAY_FILE, (DWORD)options->iDelayFile);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_DELAY_OTHERS, (DWORD)options->iDelayOthers);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_DATE, (BYTE)options->bShowDate);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_TIME, (BYTE)options->bShowTime);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_HEADERS, (BYTE)options->bShowHeaders);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_NUMBER_MSG, (BYTE)options->iNumberMsg);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_ON, (BYTE)options->bShowON);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_DISABLE, (BYTE)options->iDisable);
-    DBWriteContactSettingByte(NULL, MODULE, "traysupport", (BYTE)options->bTraySupport);
-    DBWriteContactSettingByte(NULL, MODULE, "mintotray", (BYTE)options->bMinimizeToTray);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, (BYTE)options->bWindowCheck);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_NORSS, (BYTE)options->bNoRSS);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_MINIMIZEANIMATED, options->bAnimated);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, options->iAnnounceMethod);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATER, options->floaterMode);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, options->bFloaterInWin);
-    DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, options->bFloaterOnlyMin);
-    DBWriteContactSettingDword(NULL, MODULE, OPT_REMOVEMASK, options->dwRemoveMask);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_PREVIEW, (BYTE)options->bPreview);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_MESSAGE, (BYTE)options->bDefaultColorMsg);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_URL, (BYTE)options->bDefaultColorUrl);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_FILE, (BYTE)options->bDefaultColorFile);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_OTHERS, (BYTE)options->bDefaultColorOthers);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_COLBACK_MESSAGE, (DWORD)options->colBackMsg);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_COLTEXT_MESSAGE, (DWORD)options->colTextMsg);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_COLBACK_URL, (DWORD)options->colBackUrl);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_COLTEXT_URL, (DWORD)options->colTextUrl);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_COLBACK_FILE, (DWORD)options->colBackFile);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_COLTEXT_FILE, (DWORD)options->colTextFile);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_COLBACK_OTHERS, (DWORD)options->colBackOthers);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_COLTEXT_OTHERS, (DWORD)options->colTextOthers);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_MASKNOTIFY, (BYTE)options->maskNotify);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_MASKACTL, (BYTE)options->maskActL);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_MASKACTR, (BYTE)options->maskActR);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_MASKACTTE, (BYTE)options->maskActTE);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_MERGEPOPUP, (BYTE)options->bMergePopup);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_DELAY_MESSAGE, (DWORD)options->iDelayMsg);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_DELAY_URL, (DWORD)options->iDelayUrl);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_DELAY_FILE, (DWORD)options->iDelayFile);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_DELAY_OTHERS, (DWORD)options->iDelayOthers);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_DATE, (BYTE)options->bShowDate);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_TIME, (BYTE)options->bShowTime);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_HEADERS, (BYTE)options->bShowHeaders);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_NUMBER_MSG, (BYTE)options->iNumberMsg);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_ON, (BYTE)options->bShowON);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_DISABLE, (BYTE)options->iDisable);
+	DBWriteContactSettingByte(NULL, MODULE, "traysupport", (BYTE)options->bTraySupport);
+	DBWriteContactSettingByte(NULL, MODULE, "mintotray", (BYTE)options->bMinimizeToTray);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, (BYTE)options->bWindowCheck);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_NORSS, (BYTE)options->bNoRSS);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_MINIMIZEANIMATED, options->bAnimated);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, options->iAnnounceMethod);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATER, options->floaterMode);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, options->bFloaterInWin);
+	DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, options->bFloaterOnlyMin);
+	DBWriteContactSettingDword(NULL, MODULE, OPT_REMOVEMASK, options->dwRemoveMask);
 	DBWriteContactSettingByte(NULL, MODULE, OPT_SIMPLEOPT, options->bSimpleMode);
-    return 0;
+	return 0;
 }
 
 static struct LISTOPTIONSGROUP lGroups[] = {
-    0, "Announce events of type...",
-    0, "General options",
-    0, "System tray and floater options",
-    0, "Left click actions (popups only)",
-    0, "Right click actions (popups only)",
-    0, "Timeout actions (popups only)",
-    0, "Popup merging (per user) options",
-    0, "Remove popups under following conditions",
+    0, _T("Announce events of type..."),
+    0, _T("General options"),
+    0, _T("System tray and floater options"),
+    0, _T("Left click actions (popups only)"),
+    0, _T("Right click actions (popups only)"),
+    0, _T("Timeout actions (popups only)"),
+    0, _T("Popup merging (per user) options"),
+    0, _T("Remove popups under following conditions"),
     0, NULL
 };
 
 static struct LISTOPTIONSITEM defaultItems[] = {
-    0, "Show a preview of the event", IDC_CHKPREVIEW, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bPreview, 1,
-    0, "Don't announce event when message dialog is open", IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bWindowCheck, 1,
-    0, "Don't announce events from RSS protocols", IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
-    0, "Enable the system tray icon", IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
-    0, "Show the floater", IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.floaterMode, 2,
-    0, "When floater is enabled, only show it while the contact list is minimized", IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterOnlyMin, 2,
-    0, "Show session list menu on the message windows status bar", IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterInWin, 2,
-    0, "Minimize containers to system tray or floater", IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMinimizeToTray, 2,
-    0, "Minimize and restore animated", IDC_ANIMATED, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bAnimated, 2,
-    0, "Merge popups \"per user\" (experimental, unstable)", IDC_CHKMERGEPOPUP, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
-    0, "Show date for merged popups", IDC_CHKSHOWDATE, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowDate, 6,
-    0, "Show time for merged popups", IDC_CHKSHOWTIME, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowTime, 6,
-    0, "Show headers", IDC_CHKSHOWHEADERS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowHeaders, 6,
-    0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
-    0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
-    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
+    0, _T("Show a preview of the event"), IDC_CHKPREVIEW, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bPreview, 1,
+    0, _T("Don't announce event when message dialog is open"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bWindowCheck, 1,
+    0, _T("Don't announce events from RSS protocols"), IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
+    0, _T("Enable the system tray icon"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
+    0, _T("Show the floater"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.floaterMode, 2,
+    0, _T("When floater is enabled, only show it while the contact list is minimized"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterOnlyMin, 2,
+    0, _T("Show session list menu on the message windows status bar"), IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterInWin, 2,
+    0, _T("Minimize containers to system tray or floater"), IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMinimizeToTray, 2,
+    0, _T("Minimize and restore animated"), IDC_ANIMATED, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bAnimated, 2,
+    0, _T("Merge popups \"per user\" (experimental, unstable)"), IDC_CHKMERGEPOPUP, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
+    0, _T("Show date for merged popups"), IDC_CHKSHOWDATE, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowDate, 6,
+    0, _T("Show time for merged popups"), IDC_CHKSHOWTIME, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowTime, 6,
+    0, _T("Show headers"), IDC_CHKSHOWHEADERS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowHeaders, 6,
+    0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
+    0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
+    0, _T("Dismiss event"), MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
 
-    0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
-    0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
-    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
+    0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
+    0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
+    0, _T("Dismiss event"), MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
 
-    0, "Dismiss popup", MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
-    0, "Open event", MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
+    0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
+    0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
 //    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
 
-    0, "Disable ALL event notifications (check, if you're using an external plugin for event notifications)", IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
-    0, "Message events", MASK_MESSAGE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
-    0, "File events", MASK_FILE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
-    0, "URL events", MASK_URL, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
-    0, "Other events", MASK_OTHER, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+    0, _T("Disable ALL event notifications (check, if you're using an external plugin for event notifications)"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
+    0, _T("Message events"), MASK_MESSAGE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+    0, _T("File events"), MASK_FILE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+    0, _T("URL events"), MASK_URL, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+    0, _T("Other events"), MASK_OTHER, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
 
-    0, "Remove event popups for a contact when its message window becomes focused", PU_REMOVE_ON_FOCUS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
-    0, "Remove event popups for a contact when you start typing a reply", PU_REMOVE_ON_TYPE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
-    0, "Remove event popups for a contact when you send a reply", PU_REMOVE_ON_SEND, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
+    0, _T("Remove event popups for a contact when its message window becomes focused"), PU_REMOVE_ON_FOCUS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
+    0, _T("Remove event popups for a contact when you start typing a reply"), PU_REMOVE_ON_TYPE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
+    0, _T("Remove event popups for a contact when you send a reply"), PU_REMOVE_ON_SEND, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
     
     0, NULL, 0, 0, 0, 0
 };
 
 BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    NEN_OPTIONS *options = &nen_options;
-    LRESULT iIndex;
-    
-    switch (msg) {
-        case WM_INITDIALOG: {
-            TVINSERTSTRUCTA tvi = {0};
-            int i = 0;
-            
-            SetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
-            SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
-            TranslateDialogDefault(hWnd);
+	NEN_OPTIONS *options = &nen_options;
+	LRESULT iIndex;
 
-            /*
-             * fill the tree view
-             */
+	switch (msg) {
+	case WM_INITDIALOG: {
+		TVINSERTSTRUCT tvi = {0};
+		int i = 0;
 
-            while(lGroups[i].szName != NULL) {
-                tvi.hParent = 0;
-                tvi.hInsertAfter = TVI_LAST;
-                tvi.item.mask = TVIF_TEXT | TVIF_STATE;
-                tvi.item.pszText = Translate(lGroups[i].szName);
-                tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
-                tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
-                lGroups[i++].handle = SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
-            }
-            i = 0;
+		SetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+		SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
+		TranslateDialogDefault(hWnd);
 
-            while(defaultItems[i].szName != 0) {
-                tvi.hParent = (HTREEITEM)lGroups[defaultItems[i].uGroup].handle;
-                tvi.hInsertAfter = TVI_LAST;
-                tvi.item.pszText = Translate(defaultItems[i].szName);
-                tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
-                tvi.item.lParam = i;
-                tvi.item.stateMask = TVIS_STATEIMAGEMASK;
-                if(defaultItems[i].uType == LOI_TYPE_SETTING)
-                    tvi.item.state = INDEXTOSTATEIMAGEMASK(*((BOOL *)defaultItems[i].lParam) ? 3 : 2);
-                else if(defaultItems[i].uType == LOI_TYPE_FLAG) {
-                    UINT uVal = *((UINT *)defaultItems[i].lParam);
-                    tvi.item.state = INDEXTOSTATEIMAGEMASK(uVal & defaultItems[i].id ? 3 : 2);
-                }
-                defaultItems[i].handle = SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_INSERTITEMA, 0, (LPARAM)&tvi);
-                i++;
-            }
-            SendDlgItemMessage(hWnd, IDC_COLBACK_MESSAGE, CPM_SETCOLOUR, 0, options->colBackMsg);
-            SendDlgItemMessage(hWnd, IDC_COLTEXT_MESSAGE, CPM_SETCOLOUR, 0, options->colTextMsg);
-            SendDlgItemMessage(hWnd, IDC_COLBACK_URL, CPM_SETCOLOUR, 0, options->colBackUrl);
-            SendDlgItemMessage(hWnd, IDC_COLTEXT_URL, CPM_SETCOLOUR, 0, options->colTextUrl);
-            SendDlgItemMessage(hWnd, IDC_COLBACK_FILE, CPM_SETCOLOUR, 0, options->colBackFile);
-            SendDlgItemMessage(hWnd, IDC_COLTEXT_FILE, CPM_SETCOLOUR, 0, options->colTextFile);
-            SendDlgItemMessage(hWnd, IDC_COLBACK_OTHERS, CPM_SETCOLOUR, 0, options->colBackOthers);
-            SendDlgItemMessage(hWnd, IDC_COLTEXT_OTHERS, CPM_SETCOLOUR, 0, options->colTextOthers);
-            CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_MESSAGE, options->bDefaultColorMsg?BST_CHECKED:BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_URL, options->bDefaultColorUrl?BST_CHECKED:BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_FILE, options->bDefaultColorFile?BST_CHECKED:BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_OTHERS, options->bDefaultColorOthers?BST_CHECKED:BST_UNCHECKED);
-            SetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, options->iDelayMsg != -1?options->iDelayMsg:0, TRUE);
-            SetDlgItemInt(hWnd, IDC_DELAY_URL, options->iDelayUrl != -1?options->iDelayUrl:0, TRUE);
-            SetDlgItemInt(hWnd, IDC_DELAY_FILE, options->iDelayFile != -1?options->iDelayFile:0, TRUE);
-            SetDlgItemInt(hWnd, IDC_DELAY_OTHERS, options->iDelayOthers != -1?options->iDelayOthers:0, TRUE);
-            
-            EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
-            EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
-            EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_URL), !options->bDefaultColorUrl);
-            EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_URL), !options->bDefaultColorUrl);
-            EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_FILE), !options->bDefaultColorFile);
-            EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_FILE), !options->bDefaultColorFile);
-            EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_OTHERS), !options->bDefaultColorOthers);
-            EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_OTHERS), !options->bDefaultColorOthers);
-            //disable merge messages options when is not using
+		/*
+		* fill the tree view
+		*/
 
-            EnableWindow(GetDlgItem(hWnd, IDC_DELAY_MESSAGE), options->iDelayMsg != -1);
-            EnableWindow(GetDlgItem(hWnd, IDC_DELAY_URL), options->iDelayUrl != -1);
-            EnableWindow(GetDlgItem(hWnd, IDC_DELAY_FILE), options->iDelayFile != -1);
-            EnableWindow(GetDlgItem(hWnd, IDC_DELAY_OTHERS), options->iDelayOthers != -1);
+		while(lGroups[i].szName != NULL) {
+			tvi.hParent = 0;
+			tvi.hInsertAfter = TVI_LAST;
+			tvi.item.mask = TVIF_TEXT | TVIF_STATE;
+			tvi.item.pszText = TranslateTS(lGroups[i].szName);
+			tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
+			tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
+			lGroups[i++].handle = (LRESULT)TreeView_InsertItem( GetDlgItem(hWnd, IDC_EVENTOPTIONS), &tvi);
+		}
+		i = 0;
 
-            SetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, options->iLimitPreview, FALSE);
-            CheckDlgButton(hWnd, IDC_LIMITPREVIEW, (options->iLimitPreview > 0) ? 1 : 0);
-            SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETRANGE, 0, MAKELONG(2048, options->iLimitPreview > 0 ? 50 : 0));
-            SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETPOS, 0, (LPARAM)options->iLimitPreview);
-            EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
-            EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
-			
-            SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Don't use simple mode"));
-            SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Notify always"));
-            SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Notify for unfocused sessions"));
-            SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Notify only when no window is open"));
-			EnableWindow(GetDlgItem(hWnd, IDC_EVENTOPTIONS), options->bSimpleMode == 0);
-			SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_SETCURSEL, options->bSimpleMode, 0);
-            
-			iIndex = SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)Translate("<None>"));
-            SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
-            
-            if(ServiceExists(MS_POPUP_ADDPOPUPEX)) {
-                iIndex = SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)Translate("Popups"));
-                SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETITEMDATA, (WPARAM)iIndex, 1);
-                if(options->iAnnounceMethod == 1)
-                    SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
-            }
-            iIndex = SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)Translate("Balloon tooltips"));
-            SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETITEMDATA, (WPARAM)iIndex, 2);
-            if(options->iAnnounceMethod == 2)
-                SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
-            if(ServiceExists("OSD/Announce")) {
-                iIndex = SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)Translate("On screen display"));
-                SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETITEMDATA, (WPARAM)iIndex, 3);
-                if(options->iAnnounceMethod == 3)
-                    SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
-            }
-            bWmNotify = FALSE;
-            return TRUE;
-        }
-        case DM_STATUSMASKSET:
-            DBWriteContactSettingDword(0, MODULE, "statusmask", (DWORD)lParam);
-            options->dwStatusMask = (int)lParam;
-            break;
-        case WM_COMMAND:
-            if (!bWmNotify) {
-                switch (LOWORD(wParam)) {
-                    case IDC_PREVIEW:
-                        PopupPreview(options);
-                        break;
-					case IDC_SIMPLEMODE:
-						options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
-						EnableWindow(GetDlgItem(hWnd, IDC_EVENTOPTIONS), options->bSimpleMode == 0);
-						break;
-                    case IDC_POPUPSTATUSMODES:
-                        {   
-                            HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hWnd, DlgProcSetupStatusModes, DBGetContactSettingDword(0, MODULE, "statusmask", (DWORD)-1));
-                            SendMessage(hwndNew, DM_SETPARENTDIALOG, 0, (LPARAM)hWnd);
-                            break;
-                        }
-                    default:
-                    {
-                        options->bDefaultColorMsg = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_MESSAGE);
-                        options->bDefaultColorUrl = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_URL);
-                        options->bDefaultColorFile = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_FILE);
-                        options->bDefaultColorOthers = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_OTHERS);
-                        options->iDelayMsg = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_MESSAGE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, NULL, FALSE);
-                        options->iDelayUrl = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_URL)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_URL, NULL, FALSE);
-                        options->iDelayFile = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_FILE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_FILE, NULL, FALSE);
-                        options->iDelayOthers = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_OTHERS)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_OTHERS, NULL, FALSE);
-                        options->iAnnounceMethod = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETITEMDATA, (WPARAM)SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETCURSEL, 0, 0), 0);
-						options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
+		while(defaultItems[i].szName != 0) {
+			tvi.hParent = (HTREEITEM)lGroups[defaultItems[i].uGroup].handle;
+			tvi.hInsertAfter = TVI_LAST;
+			tvi.item.pszText = TranslateTS(defaultItems[i].szName);
+			tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
+			tvi.item.lParam = i;
+			tvi.item.stateMask = TVIS_STATEIMAGEMASK;
+			if(defaultItems[i].uType == LOI_TYPE_SETTING)
+				tvi.item.state = INDEXTOSTATEIMAGEMASK(*((BOOL *)defaultItems[i].lParam) ? 3 : 2);
+			else if(defaultItems[i].uType == LOI_TYPE_FLAG) {
+				UINT uVal = *((UINT *)defaultItems[i].lParam);
+				tvi.item.state = INDEXTOSTATEIMAGEMASK(uVal & defaultItems[i].id ? 3 : 2);
+			}
+			defaultItems[i].handle = (LRESULT)TreeView_InsertItem( GetDlgItem(hWnd, IDC_EVENTOPTIONS), &tvi);
+			i++;
+		}
+		SendDlgItemMessage(hWnd, IDC_COLBACK_MESSAGE, CPM_SETCOLOUR, 0, options->colBackMsg);
+		SendDlgItemMessage(hWnd, IDC_COLTEXT_MESSAGE, CPM_SETCOLOUR, 0, options->colTextMsg);
+		SendDlgItemMessage(hWnd, IDC_COLBACK_URL, CPM_SETCOLOUR, 0, options->colBackUrl);
+		SendDlgItemMessage(hWnd, IDC_COLTEXT_URL, CPM_SETCOLOUR, 0, options->colTextUrl);
+		SendDlgItemMessage(hWnd, IDC_COLBACK_FILE, CPM_SETCOLOUR, 0, options->colBackFile);
+		SendDlgItemMessage(hWnd, IDC_COLTEXT_FILE, CPM_SETCOLOUR, 0, options->colTextFile);
+		SendDlgItemMessage(hWnd, IDC_COLBACK_OTHERS, CPM_SETCOLOUR, 0, options->colBackOthers);
+		SendDlgItemMessage(hWnd, IDC_COLTEXT_OTHERS, CPM_SETCOLOUR, 0, options->colTextOthers);
+		CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_MESSAGE, options->bDefaultColorMsg?BST_CHECKED:BST_UNCHECKED);
+		CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_URL, options->bDefaultColorUrl?BST_CHECKED:BST_UNCHECKED);
+		CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_FILE, options->bDefaultColorFile?BST_CHECKED:BST_UNCHECKED);
+		CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_OTHERS, options->bDefaultColorOthers?BST_CHECKED:BST_UNCHECKED);
+		SetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, options->iDelayMsg != -1?options->iDelayMsg:0, TRUE);
+		SetDlgItemInt(hWnd, IDC_DELAY_URL, options->iDelayUrl != -1?options->iDelayUrl:0, TRUE);
+		SetDlgItemInt(hWnd, IDC_DELAY_FILE, options->iDelayFile != -1?options->iDelayFile:0, TRUE);
+		SetDlgItemInt(hWnd, IDC_DELAY_OTHERS, options->iDelayOthers != -1?options->iDelayOthers:0, TRUE);
 
-                        if(IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW))
-                            options->iLimitPreview = GetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, NULL, FALSE);
-                        else
-                            options->iLimitPreview = 0;
-                        EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
-                        EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
-                        EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_URL), !options->bDefaultColorUrl);
-                        EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_URL), !options->bDefaultColorUrl);
-                        EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_FILE), !options->bDefaultColorFile);
-                        EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_FILE), !options->bDefaultColorFile);
-                        EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_OTHERS), !options->bDefaultColorOthers);
-                        EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_OTHERS), !options->bDefaultColorOthers);
-                        
-                        EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
-                        EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
-                            //disable delay textbox when infinite is checked
-                        EnableWindow(GetDlgItem(hWnd, IDC_DELAY_MESSAGE), options->iDelayMsg != -1);
-                        EnableWindow(GetDlgItem(hWnd, IDC_DELAY_URL), options->iDelayUrl != -1);
-                        EnableWindow(GetDlgItem(hWnd, IDC_DELAY_FILE), options->iDelayFile != -1);
-                        EnableWindow(GetDlgItem(hWnd, IDC_DELAY_OTHERS), options->iDelayOthers != -1);
-                        EnableWindow(GetDlgItem(hWnd, IDC_ANIMATED), options->bMinimizeToTray);
-                        if (HIWORD(wParam) == CPN_COLOURCHANGED) {
-                            options->colBackMsg = SendDlgItemMessage(hWnd, IDC_COLBACK_MESSAGE, CPM_GETCOLOUR, 0, 0);
-                            options->colTextMsg = SendDlgItemMessage(hWnd, IDC_COLTEXT_MESSAGE, CPM_GETCOLOUR, 0, 0);
-                            options->colBackUrl = SendDlgItemMessage(hWnd, IDC_COLBACK_URL, CPM_GETCOLOUR, 0, 0);
-                            options->colTextUrl = SendDlgItemMessage(hWnd, IDC_COLTEXT_URL, CPM_GETCOLOUR, 0, 0);
-                            options->colBackFile = SendDlgItemMessage(hWnd, IDC_COLBACK_FILE, CPM_GETCOLOUR, 0, 0);
-                            options->colTextFile = SendDlgItemMessage(hWnd, IDC_COLTEXT_FILE, CPM_GETCOLOUR, 0, 0);
-                            options->colBackOthers = SendDlgItemMessage(hWnd, IDC_COLBACK_OTHERS, CPM_GETCOLOUR, 0, 0);
-                            options->colTextOthers = SendDlgItemMessage(hWnd, IDC_COLTEXT_OTHERS, CPM_GETCOLOUR, 0, 0);
-                        }
-                        EnableWindow(GetDlgItem(hWnd, IDC_USESHELLNOTIFY), options->bTraySupport);
-                        SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
-                        break;
-                    }
-                }
-            }
-            break;
-        case WM_NOTIFY:
-            switch (((LPNMHDR) lParam)->idFrom) {
-                case IDC_EVENTOPTIONS:
-                    if(((LPNMHDR)lParam)->code==NM_CLICK) {
-                        TVHITTESTINFO hti;
-                        TVITEMA item = {0};
+		EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
+		EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
+		EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_URL), !options->bDefaultColorUrl);
+		EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_URL), !options->bDefaultColorUrl);
+		EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_FILE), !options->bDefaultColorFile);
+		EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_FILE), !options->bDefaultColorFile);
+		EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_OTHERS), !options->bDefaultColorOthers);
+		EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_OTHERS), !options->bDefaultColorOthers);
+		//disable merge messages options when is not using
 
-                        item.mask = TVIF_HANDLE | TVIF_STATE;
-                        item.stateMask = TVIS_STATEIMAGEMASK | TVIS_BOLD;
-                        hti.pt.x=(short)LOWORD(GetMessagePos());
-                        hti.pt.y=(short)HIWORD(GetMessagePos());
-                        ScreenToClient(((LPNMHDR)lParam)->hwndFrom, &hti.pt);
-                        if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom, &hti)) {
-                            item.hItem = (HTREEITEM)hti.hItem;
-                            SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
-                            if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
-                                item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
-                                SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-                            }
-                            else if(hti.flags&TVHT_ONITEMSTATEICON) {
-                                if(((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
-                                    item.state = INDEXTOSTATEIMAGEMASK(1);
-                                    SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-                                }
-                                SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
-                            }
-                        }
-                    }
-                    break;
-            }
-            switch (((LPNMHDR)lParam)->code) {
-                case PSN_APPLY: {
-                    int i = 0;
-                    TVITEMA item = {0};
-                    struct ContainerWindowData *pContainer = pFirstContainer;
-                    
-                    while(defaultItems[i].szName != NULL) {
-                        item.mask = TVIF_HANDLE | TVIF_STATE;
-                        item.hItem = (HTREEITEM)defaultItems[i].handle;
-                        item.stateMask = TVIS_STATEIMAGEMASK;
+		EnableWindow(GetDlgItem(hWnd, IDC_DELAY_MESSAGE), options->iDelayMsg != -1);
+		EnableWindow(GetDlgItem(hWnd, IDC_DELAY_URL), options->iDelayUrl != -1);
+		EnableWindow(GetDlgItem(hWnd, IDC_DELAY_FILE), options->iDelayFile != -1);
+		EnableWindow(GetDlgItem(hWnd, IDC_DELAY_OTHERS), options->iDelayOthers != -1);
 
-                        SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
-                        if(defaultItems[i].uType == LOI_TYPE_SETTING) {
-                            BOOL *ptr = (BOOL *)defaultItems[i].lParam;
-                            *ptr = (item.state >> 12) == 3 ? TRUE : FALSE;
-                        }
-                        else if(defaultItems[i].uType == LOI_TYPE_FLAG) {
-                            UINT *uVal = (UINT *)defaultItems[i].lParam;
-                            *uVal = ((item.state >> 12) == 3) ? *uVal | defaultItems[i].id : *uVal & ~defaultItems[i].id;
-                        }
-                        i++;
-                    }
-                    NEN_WriteOptions(&nen_options);
-                    CheckForRemoveMask();
-                    CreateSystrayIcon(nen_options.bTraySupport);
-                    /*
-                     * check if there are containers minimized to the tray, get them back, otherwise the're trapped forever :)
-                     * need to temporarily re-enable tray support, because the container checks for it.
-                     */
-                    if(!nen_options.bTraySupport || !nen_options.bMinimizeToTray) {
-                        BOOL oldTray = nen_options.bTraySupport;
-                        BOOL oldMin = nen_options.bMinimizeToTray;
-                        
-                        nen_options.bTraySupport = TRUE;
-                        nen_options.bMinimizeToTray = TRUE;
-                        while(pContainer) {
-                            if(pContainer->bInTray)
-                                SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-                            pContainer = pContainer->pNextContainer;
-                        }
-                        nen_options.bTraySupport = oldTray;
-                        nen_options.bMinimizeToTray = oldMin;
-                    }
-                    ShowWindow(myGlobals.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
-                    break;
-                }
-                case PSN_RESET:
-                    NEN_ReadOptions(&nen_options);
-                    break;
-            }
-            break;
-        case WM_DESTROY:
-        {
-            HIMAGELIST himl = (HIMAGELIST)SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
-            if(himl) {
-                ImageList_RemoveAll(himl);
-                ImageList_Destroy(himl);
-            }
-            bWmNotify = TRUE;
-            break;
-        }
-        default:
-            break;
-    }
-    return FALSE;
+		SetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, options->iLimitPreview, FALSE);
+		CheckDlgButton(hWnd, IDC_LIMITPREVIEW, (options->iLimitPreview > 0) ? 1 : 0);
+		SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETRANGE, 0, MAKELONG(2048, options->iLimitPreview > 0 ? 50 : 0));
+		SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETPOS, 0, (LPARAM)options->iLimitPreview);
+		EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+		EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+
+		SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Don't use simple mode"));
+		SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Notify always"));
+		SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Notify for unfocused sessions"));
+		SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Notify only when no window is open"));
+		EnableWindow(GetDlgItem(hWnd, IDC_EVENTOPTIONS), options->bSimpleMode == 0);
+		SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_SETCURSEL, options->bSimpleMode, 0);
+
+		iIndex = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)TranslateT("<None>"));
+		SendDlgItemMessageA(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
+
+		if(ServiceExists(MS_POPUP_ADDPOPUPEX)) {
+			iIndex = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)TranslateT("Popups"));
+			SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_SETITEMDATA, (WPARAM)iIndex, 1);
+			if(options->iAnnounceMethod == 1)
+				SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
+		}
+		iIndex = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)TranslateT("Balloon tooltips"));
+		SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_SETITEMDATA, (WPARAM)iIndex, 2);
+		if(options->iAnnounceMethod == 2)
+			SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
+		if(ServiceExists("OSD/Announce")) {
+			iIndex = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)TranslateT("On screen display"));
+			SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_SETITEMDATA, (WPARAM)iIndex, 3);
+			if(options->iAnnounceMethod == 3)
+				SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
+		}
+		bWmNotify = FALSE;
+		return TRUE;
+	}
+	case DM_STATUSMASKSET:
+		DBWriteContactSettingDword(0, MODULE, "statusmask", (DWORD)lParam);
+		options->dwStatusMask = (int)lParam;
+		break;
+	case WM_COMMAND:
+		if (!bWmNotify) {
+			switch (LOWORD(wParam)) {
+	case IDC_PREVIEW:
+		PopupPreview(options);
+		break;
+	case IDC_SIMPLEMODE:
+		options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
+		EnableWindow(GetDlgItem(hWnd, IDC_EVENTOPTIONS), options->bSimpleMode == 0);
+		break;
+	case IDC_POPUPSTATUSMODES:
+		{   
+			HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hWnd, DlgProcSetupStatusModes, DBGetContactSettingDword(0, MODULE, "statusmask", (DWORD)-1));
+			SendMessage(hwndNew, DM_SETPARENTDIALOG, 0, (LPARAM)hWnd);
+			break;
+		}
+	default:
+		{
+			options->bDefaultColorMsg = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_MESSAGE);
+			options->bDefaultColorUrl = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_URL);
+			options->bDefaultColorFile = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_FILE);
+			options->bDefaultColorOthers = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_OTHERS);
+			options->iDelayMsg = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_MESSAGE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, NULL, FALSE);
+			options->iDelayUrl = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_URL)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_URL, NULL, FALSE);
+			options->iDelayFile = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_FILE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_FILE, NULL, FALSE);
+			options->iDelayOthers = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_OTHERS)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_OTHERS, NULL, FALSE);
+			options->iAnnounceMethod = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETITEMDATA, (WPARAM)SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETCURSEL, 0, 0), 0);
+			options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
+
+			if(IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW))
+				options->iLimitPreview = GetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, NULL, FALSE);
+			else
+				options->iLimitPreview = 0;
+			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
+			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
+			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_URL), !options->bDefaultColorUrl);
+			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_URL), !options->bDefaultColorUrl);
+			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_FILE), !options->bDefaultColorFile);
+			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_FILE), !options->bDefaultColorFile);
+			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_OTHERS), !options->bDefaultColorOthers);
+			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_OTHERS), !options->bDefaultColorOthers);
+
+			EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+			EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+			//disable delay textbox when infinite is checked
+			EnableWindow(GetDlgItem(hWnd, IDC_DELAY_MESSAGE), options->iDelayMsg != -1);
+			EnableWindow(GetDlgItem(hWnd, IDC_DELAY_URL), options->iDelayUrl != -1);
+			EnableWindow(GetDlgItem(hWnd, IDC_DELAY_FILE), options->iDelayFile != -1);
+			EnableWindow(GetDlgItem(hWnd, IDC_DELAY_OTHERS), options->iDelayOthers != -1);
+			EnableWindow(GetDlgItem(hWnd, IDC_ANIMATED), options->bMinimizeToTray);
+			if (HIWORD(wParam) == CPN_COLOURCHANGED) {
+				options->colBackMsg = SendDlgItemMessage(hWnd, IDC_COLBACK_MESSAGE, CPM_GETCOLOUR, 0, 0);
+				options->colTextMsg = SendDlgItemMessage(hWnd, IDC_COLTEXT_MESSAGE, CPM_GETCOLOUR, 0, 0);
+				options->colBackUrl = SendDlgItemMessage(hWnd, IDC_COLBACK_URL, CPM_GETCOLOUR, 0, 0);
+				options->colTextUrl = SendDlgItemMessage(hWnd, IDC_COLTEXT_URL, CPM_GETCOLOUR, 0, 0);
+				options->colBackFile = SendDlgItemMessage(hWnd, IDC_COLBACK_FILE, CPM_GETCOLOUR, 0, 0);
+				options->colTextFile = SendDlgItemMessage(hWnd, IDC_COLTEXT_FILE, CPM_GETCOLOUR, 0, 0);
+				options->colBackOthers = SendDlgItemMessage(hWnd, IDC_COLBACK_OTHERS, CPM_GETCOLOUR, 0, 0);
+				options->colTextOthers = SendDlgItemMessage(hWnd, IDC_COLTEXT_OTHERS, CPM_GETCOLOUR, 0, 0);
+			}
+			EnableWindow(GetDlgItem(hWnd, IDC_USESHELLNOTIFY), options->bTraySupport);
+			SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
+			break;
+		}
+			}
+		}
+		break;
+	case WM_NOTIFY:
+		switch (((LPNMHDR) lParam)->idFrom) {
+		case IDC_EVENTOPTIONS:
+			if(((LPNMHDR)lParam)->code==NM_CLICK) {
+				TVHITTESTINFO hti;
+				TVITEM item = {0};
+
+				item.mask = TVIF_HANDLE | TVIF_STATE;
+				item.stateMask = TVIS_STATEIMAGEMASK | TVIS_BOLD;
+				hti.pt.x=(short)LOWORD(GetMessagePos());
+				hti.pt.y=(short)HIWORD(GetMessagePos());
+				ScreenToClient(((LPNMHDR)lParam)->hwndFrom, &hti.pt);
+				if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom, &hti)) {
+					item.hItem = (HTREEITEM)hti.hItem;
+					SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
+					if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
+						item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
+						SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+					}
+					else if(hti.flags&TVHT_ONITEMSTATEICON) {
+						if(((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+							item.state = INDEXTOSTATEIMAGEMASK(1);
+							SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+						}
+						SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
+					}
+				}
+			}
+			break;
+			}
+			switch (((LPNMHDR)lParam)->code) {
+			case PSN_APPLY: {
+				int i = 0;
+				TVITEM item = {0};
+				struct ContainerWindowData *pContainer = pFirstContainer;
+
+				while(defaultItems[i].szName != NULL) {
+					item.mask = TVIF_HANDLE | TVIF_STATE;
+					item.hItem = (HTREEITEM)defaultItems[i].handle;
+					item.stateMask = TVIS_STATEIMAGEMASK;
+
+					SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
+					if(defaultItems[i].uType == LOI_TYPE_SETTING) {
+						BOOL *ptr = (BOOL *)defaultItems[i].lParam;
+						*ptr = (item.state >> 12) == 3 ? TRUE : FALSE;
+					}
+					else if(defaultItems[i].uType == LOI_TYPE_FLAG) {
+						UINT *uVal = (UINT *)defaultItems[i].lParam;
+						*uVal = ((item.state >> 12) == 3) ? *uVal | defaultItems[i].id : *uVal & ~defaultItems[i].id;
+					}
+					i++;
+				}
+				NEN_WriteOptions(&nen_options);
+				CheckForRemoveMask();
+				CreateSystrayIcon(nen_options.bTraySupport);
+				/*
+				* check if there are containers minimized to the tray, get them back, otherwise the're trapped forever :)
+				* need to temporarily re-enable tray support, because the container checks for it.
+				*/
+				if(!nen_options.bTraySupport || !nen_options.bMinimizeToTray) {
+					BOOL oldTray = nen_options.bTraySupport;
+					BOOL oldMin = nen_options.bMinimizeToTray;
+
+					nen_options.bTraySupport = TRUE;
+					nen_options.bMinimizeToTray = TRUE;
+					while(pContainer) {
+						if(pContainer->bInTray)
+							SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+						pContainer = pContainer->pNextContainer;
+					}
+					nen_options.bTraySupport = oldTray;
+					nen_options.bMinimizeToTray = oldMin;
+				}
+				ShowWindow(myGlobals.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
+				break;
+			}
+		case PSN_RESET:
+			NEN_ReadOptions(&nen_options);
+			break;
+		}
+		break;
+	case WM_DESTROY:
+		{
+			HIMAGELIST himl = (HIMAGELIST)SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
+			if(himl) {
+				ImageList_RemoveAll(himl);
+				ImageList_Destroy(himl);
+			}
+			bWmNotify = TRUE;
+			break;
+		}
+	default:
+		break;
+	}
+	return FALSE;
 }
 
 int NumberPopupData(HANDLE hContact)
