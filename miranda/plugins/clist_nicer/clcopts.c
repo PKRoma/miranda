@@ -111,30 +111,31 @@ struct CheckBoxToStyleEx_t {
 
 struct CheckBoxValues_t {
     DWORD style;
-    char *szDescr;
+    TCHAR *szDescr;
 };
+
 static const struct CheckBoxValues_t greyoutValues[] = {
-    {GREYF_UNFOCUS,"Not focused"}, {MODEF_OFFLINE,"Offline"}, {PF2_ONLINE,"Online"}, {PF2_SHORTAWAY,"Away"}, {PF2_LONGAWAY,"NA"}, {PF2_LIGHTDND,"Occupied"}, {PF2_HEAVYDND,"DND"}, {PF2_FREECHAT,"Free for chat"}, {PF2_INVISIBLE,"Invisible"}, {PF2_OUTTOLUNCH,"Out to lunch"}, {PF2_ONTHEPHONE,"On the phone"}
+    {GREYF_UNFOCUS,_T("Not focused")}, {MODEF_OFFLINE,_T("Offline")}, {PF2_ONLINE,_T("Online")}, {PF2_SHORTAWAY,_T("Away")}, {PF2_LONGAWAY,_T("NA")}, {PF2_LIGHTDND,_T("Occupied")}, {PF2_HEAVYDND,_T("DND")}, {PF2_FREECHAT,_T("Free for chat")}, {PF2_INVISIBLE,_T("Invisible")}, {PF2_OUTTOLUNCH,_T("Out to lunch")}, {PF2_ONTHEPHONE,_T("On the phone")}
 };
 static const struct CheckBoxValues_t offlineValues[] = {
-    {MODEF_OFFLINE,"Offline"}, {PF2_ONLINE,"Online"}, {PF2_SHORTAWAY,"Away"}, {PF2_LONGAWAY,"NA"}, {PF2_LIGHTDND,"Occupied"}, {PF2_HEAVYDND,"DND"}, {PF2_FREECHAT,"Free for chat"}, {PF2_INVISIBLE,"Invisible"}, {PF2_OUTTOLUNCH,"Out to lunch"}, {PF2_ONTHEPHONE,"On the phone"}
+    {MODEF_OFFLINE,_T("Offline")}, {PF2_ONLINE,_T("Online")}, {PF2_SHORTAWAY,_T("Away")}, {PF2_LONGAWAY,_T("NA")}, {PF2_LIGHTDND,_T("Occupied")}, {PF2_HEAVYDND,_T("DND")}, {PF2_FREECHAT,_T("Free for chat")}, {PF2_INVISIBLE,_T("Invisible")}, {PF2_OUTTOLUNCH,_T("Out to lunch")}, {PF2_ONTHEPHONE,_T("On the phone")}
 };
 
 static void FillCheckBoxTree(HWND hwndTree, const struct CheckBoxValues_t *values, int nValues, DWORD style)
 {
-    TVINSERTSTRUCTA tvis;
-    int i;
+	TVINSERTSTRUCT tvis;
+	int i;
 
-    tvis.hParent = NULL;
-    tvis.hInsertAfter = TVI_LAST;
-    tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_STATE;
-    for (i = 0; i < nValues; i++) {
-        tvis.item.lParam = values[i].style;
-        tvis.item.pszText = Translate(values[i].szDescr);
-        tvis.item.stateMask = TVIS_STATEIMAGEMASK;
-        tvis.item.state = INDEXTOSTATEIMAGEMASK((style & tvis.item.lParam) != 0 ? 2 : 1);
-        SendMessageA(hwndTree, TVM_INSERTITEMA, 0, (LPARAM) &tvis);
-    }
+	tvis.hParent = NULL;
+	tvis.hInsertAfter = TVI_LAST;
+	tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_STATE;
+	for (i = 0; i < nValues; i++) {
+		tvis.item.lParam = values[i].style;
+		tvis.item.pszText = TranslateTS(values[i].szDescr);
+		tvis.item.stateMask = TVIS_STATEIMAGEMASK;
+		tvis.item.state = INDEXTOSTATEIMAGEMASK((style & tvis.item.lParam) != 0 ? 2 : 1);
+		TreeView_InsertItem(hwndTree, &tvis);
+	}
 }
 
 static DWORD MakeCheckBoxTreeFlags(HWND hwndTree)

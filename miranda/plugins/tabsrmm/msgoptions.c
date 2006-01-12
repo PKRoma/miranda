@@ -1884,9 +1884,9 @@ BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
             SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
             dwStatusMask = lParam;
             
-            SetWindowTextA(hwndDlg, Translate("Choose status modes"));
+            SetWindowText(hwndDlg, TranslateT("Choose status modes"));
             for(i = ID_STATUS_ONLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
-                SetWindowTextA(GetDlgItem(hwndDlg, i), Translate((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0)));
+                SetWindowText(GetDlgItem(hwndDlg, i), (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, GCMDF_TCHAR));
                 if(dwStatusMask != -1 && (dwStatusMask & (1<<(i - ID_STATUS_ONLINE))))
                     CheckDlgButton(hwndDlg, i, TRUE);
                 EnableWindow(GetDlgItem(hwndDlg, i), dwStatusMask != -1);
@@ -1954,32 +1954,32 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
    {
       case WM_INITDIALOG:
       {
-         TCITEMA tci;
+         TCITEM tci;
          RECT rcClient;
          GetClientRect(hwnd, &rcClient);
 
          iInit = TRUE;
          tci.mask = TCIF_PARAM|TCIF_TEXT;
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGDLG), hwnd, DlgProcOptions);
-         tci.pszText = Translate("General");
-         SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)0, (LPARAM)&tci);
+         tci.pszText = TranslateT("General");
+			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
          MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_TABBEDMSG),hwnd,DlgProcTabbedOptions);
-         tci.pszText = Translate("Tabs and layout");
-         SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)2, (LPARAM)&tci);
+         tci.pszText = TranslateT("Tabs and layout");
+         TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 2, &tci);
          MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
          ShowWindow((HWND)tci.lParam, SW_HIDE);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_CONTAINERS),hwnd,DlgProcContainerSettings);
-         tci.pszText = Translate("Containers");
-         SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)3, (LPARAM)&tci);
+         tci.pszText = TranslateT("Containers");
+         TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 3, &tci);
          MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
          ShowWindow((HWND)tci.lParam, SW_HIDE);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGLOG),hwnd,DlgProcLogOptions);
-         tci.pszText = Translate("Message log");
-         SendMessageA(GetDlgItem(hwnd, IDC_OPTIONSTAB), TCM_INSERTITEMA, (WPARAM)4, (LPARAM)&tci);
+         tci.pszText = TranslateT("Message log");
+         TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
          MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
          ShowWindow((HWND)tci.lParam, SW_HIDE);
          // add more tabs here if needed

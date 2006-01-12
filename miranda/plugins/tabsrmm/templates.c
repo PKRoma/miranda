@@ -174,13 +174,18 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
             ShowWindow(hwndDlg, SW_SHOW);
             SendDlgItemMessage(hwndDlg, IDC_EDITTEMPLATE, EM_LIMITTEXT, (WPARAM)TEMPLATE_LENGTH - 1, 0);
-            SetWindowTextA(hwndDlg, Translate("Template Set Editor"));
+            SetWindowText(hwndDlg, TranslateT("Template Set Editor"));
             EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
             for(i = 0; i <= TMPL_ERRMSG; i++) {
-                SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)Translate(TemplateNames[i]));
-                SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_SETITEMDATA, i, (LPARAM)i);
+					 TCHAR* p = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)TemplateNames[i]);
+					 if (( int )p != CALLSERVICE_NOTFOUND )
+						 SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)p );
+					 else
+						 SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)Translate(TemplateNames[i]));
+					 mir_free(p);
+					 SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_SETITEMDATA, i, (LPARAM)i);
             }
             EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), FALSE);
             EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), FALSE);
@@ -327,7 +332,14 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 else
                     SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
             }
-            TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, Translate(TemplateNames[iItem]), lstrlenA(Translate(TemplateNames[iItem])));
+				{
+					TCHAR* p = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)TemplateNames[iItem]);
+					if (( int )p != CALLSERVICE_NOTFOUND )
+		            TextOut(dis->hDC, dis->rcItem.left, dis->rcItem.top, p, lstrlen(p));
+					else
+		            TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, Translate(TemplateNames[iItem]), lstrlenA(Translate(TemplateNames[iItem])));
+					mir_free(p);
+				}
             return TRUE;
         }
         case DM_UPDATETEMPLATEPREVIEW:
