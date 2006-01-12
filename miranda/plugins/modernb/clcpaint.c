@@ -404,7 +404,7 @@ void DrawTextSSmiley(HDC hdcMem, RECT free_rc, SIZE text_size, TCHAR *szText, in
 				}
 				else
 				{
-					double factor;
+					float factor = 0;
 
 					if (len < piece->len)
 					{
@@ -412,33 +412,37 @@ void DrawTextSSmiley(HDC hdcMem, RECT free_rc, SIZE text_size, TCHAR *szText, in
 					}
 					else
 					{
+						LONG fac_width, fac_height;
 						len -= piece->len;
 
 						if (piece->smiley_height > row_height)
 						{
-							factor = row_height / (double) piece->smiley_height;
+							factor = row_height / (float) piece->smiley_height;
 						}
 						else
 						{
 							factor = 1;
 						}
 
-						if (uTextFormat & DT_RTLREADING)
-							text_rc.left = max(text_rc.right - (long) (piece->smiley_width * factor), text_rc.left);
+						fac_width = (LONG)(piece->smiley_width * factor);
+						fac_height = (LONG)(piece->smiley_height * factor);
 
-						if ((long)(piece->smiley_width * factor) <= text_rc.right - text_rc.left)
+						if (uTextFormat & DT_RTLREADING)
+							text_rc.left = max(text_rc.right - fac_width, text_rc.left);
+
+						if (fac_width <= text_rc.right - text_rc.left)
 						{
-							text_rc.top += (row_height - (long)(piece->smiley_height * factor)) >> 1;
+							text_rc.top += (row_height - fac_height) >> 1;
 
 							DrawIconExS(hdcMem, text_rc.left, text_rc.top, piece->smiley, 
-								(long)(piece->smiley_width * factor), (long)(piece->smiley_height * factor), 0, NULL, DI_NORMAL); 
+								fac_width, fac_height, 0, NULL, DI_NORMAL); 
 						}
 						else
 						{
 							DrawTextS(hdcMem, TEXT("..."), 3, &text_rc, uTextFormat);
 						}
 
-						pos_x += (int)(piece->smiley_width * factor);
+						pos_x += fac_width;
 					}
 				}
 			}
