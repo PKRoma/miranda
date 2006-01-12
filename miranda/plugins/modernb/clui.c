@@ -1552,16 +1552,6 @@ int OnSettingChanging(WPARAM wParam,LPARAM lParam)
 			return(0);
 		};
 
-		if (dbcws->value.type==DBVT_ASCIIZ)//&&strstri(dbcws->szModule,"ICQ"))
-		{
-			if (!MyStrCmp(dbcws->szSetting,(HANDLE)"MirVer"))
-			{		
-				SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
-				return(0);
-			};
-
-		};
-
 		if (dbcws->value.type==DBVT_ASCIIZ&&!MyStrCmp(dbcws->szModule,"UserInfo"))
 		{
 			if (!MyStrCmp(dbcws->szSetting,(HANDLE)"MyPhone0"))

@@ -100,42 +100,6 @@ IDI_RENAME              ICON                    "res\\rename.ico"
 IDI_NOTICK              ICON                    "res\\notick.ico"
 IDI_TICK                ICON                    "res\\notick1.ico"
 IDI_NEWGROUP2           ICON                    "res\\addgoupp.ico"
-IDI_CLIENTTRILLIAN      ICON                    "res\\Trillian.ico"
-IDI_CLIENTMIRANDA       ICON                    "res\\Miranda.ico"
-IDI_CLIENTRQ            ICON                    "res\\&RQ.ico"
-IDI_CLIENTGAIM          ICON                    "res\\Gaim.ico"
-IDI_CLIENTIM2           ICON                    "res\\IM2.ico"
-IDI_CLIENTKOPETE        ICON                    "res\\Kopete.ico"
-IDI_CLIENTLICQ          ICON                    "res\\Licq.ico"
-IDI_CLIENTQIP           ICON                    "res\\QIP.ico"
-IDI_CLIENTSIM           ICON                    "res\\Sim.ico"
-IDI_CLIENTAGILE         ICON                    "res\\AgileMobile.ico"
-IDI_CLIENTGNOMEICU      ICON                    "res\\Gnomeicu.ico"
-IDI_CLIENTMOBICQ        ICON                    "res\\MobiCQ2.ico"
-IDI_CLIENTSPAMBOT       ICON                    "res\\Spambot.ico"
-IDI_CLIENTICQMAC        ICON                    "res\\IcqMac.ico"
-IDI_CLIENTIMPLUS        ICON                    "res\\IM+.ico"
-IDI_CLIENTYSM           ICON                    "res\\Ysm.ico"
-IDI_CLIENTYAMIGO        ICON                    "res\\Yamigo.ico"
-IDI_CLIENTWEBICQ        ICON                    "res\\WebIcq.ico"
-IDI_CLIENTVICQ          ICON                    "res\\Vicq.ico"
-IDI_CLIENTSTRICQ        ICON                    "res\\Stricq.ico"
-IDI_CLIENTSTICQ         ICON                    "res\\Sticq.ico"
-IDI_CLIENTNICQ2         ICON                    "res\\NICQ2.ico"
-IDI_CLIENTPSI           ICON                    "res\\PSI.ico"
-IDI_CLIENTMOB2ICQ       ICON                    "res\\Mob2Icq.ico"
-IDI_CLIENTMICQ          ICON                    "res\\Micq.ico"
-IDI_CLIENTLIBICQ2000    ICON                    "res\\LibIcq2000.ico"
-IDI_CLIENTCENTERICQ     ICON                    "res\\Center.ico"
-IDI_CLIENTALICQ         ICON                    "res\\AlIcq.ico"
-IDI_CLIENTICQ2000       ICON                    "res\\ico00001.ico"
-IDI_CLIENTICQ2001       ICON                    "res\\ico00002.ico"
-IDI_CLIENTICQ2003       ICON                    "res\\ico00003.ico"
-IDI_CLIENTICQLITE       ICON                    "res\\IcqLite.ico"
-IDI_CLIENTICQLITE4      ICON                    "res\\IcqL4.ico"
-IDI_CLIENTICQLITE5      ICON                    "res\\IcqL5.ico"
-IDI_CLIENTICQGOF        ICON                    "res\\ico00004.ico"
-IDI_CLIENTICQGOJ        ICON                    "res\\ico00005.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1450,26 +1414,27 @@ BEGIN
     PUSHBUTTON      "Down",IDC_DN,198,121,34,13
 END
 
-IDD_OPT_ITEM_EXTRAICONS DIALOGEX 0, 0, 142, 114
+IDD_OPT_ITEM_EXTRAICONS DIALOGEX 0, 0, 212, 114
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,7,7,126,100
+    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,7,7,197,100
     CONTROL         "Protocol Type",IDC_EXTRA_PROTO,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,34,109,10
+                    WS_TABSTOP,18,34,175,10
     CONTROL         "E-mail",IDC_EXTRA_EMAIL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,45,109,10
+                    WS_TABSTOP,18,45,175,10
     CONTROL         "Cellular",IDC_EXTRA_CELLULAR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,56,109,10
+                    WS_TABSTOP,18,56,175,10
     CONTROL         "Advanced #2",IDC_EXTRA_ADV2,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,67,109,10
+                    WS_TABSTOP,18,67,175,10
     CONTROL         "Advanced #1",IDC_EXTRA_ADV1,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,78,109,10
+                    WS_TABSTOP,18,78,175,10
     CONTROL         "Homepage",IDC_EXTRA_WEB,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,89,109,10
-    CONTROL         "Client",IDC_EXTRA_CLIENT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,23,109,10
+                    WS_TABSTOP,18,89,175,10
+    CONTROL         "Client (fingerprint icon module is required)",
+                    IDC_EXTRA_CLIENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    18,23,175,10
 END
 
 
@@ -1562,8 +1527,9 @@ BEGIN
     IDD_OPT_ITEM_EXTRAICONS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 133
-        VERTGUIDE, 124
+        RIGHTMARGIN, 204
+        VERTGUIDE, 18
+        VERTGUIDE, 193
         TOPMARGIN, 7
         BOTTOMMARGIN, 107
     END
