@@ -1981,7 +1981,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
           {
             char *szMsg;
 
-            szMsg = (char*)malloc(dwDataLen + 1);
+            szMsg = (char*)_alloca(dwDataLen + 1);
             if (dwDataLen > 0)
               memcpy(szMsg, buf, dwDataLen);
             szMsg[dwDataLen] = '\0';
