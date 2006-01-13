@@ -468,7 +468,7 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
                 CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)lParam, (LPARAM)final_path);
                 _splitpath(final_path, NULL, NULL, szBasename, szExt);
                 if((hFile = CreateFileA(final_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE ) {
-                    MessageBoxA(0, Translate("Failed to open help file"), "tabSRMM", MB_OK);
+                    MessageBox(0, TranslateT("Failed to open help file"), _T("tabSRMM"), MB_OK);
                     DestroyWindow(hwndDlg);
                     return FALSE;
                 }
@@ -482,7 +482,7 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
             GetWindowRect(hwndDlg, &rc);
             MoveWindow(hwndDlg, 0, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
             if(lParam == 0)
-                SetWindowTextA(hwndDlg, Translate("Template editor help"));
+                SetWindowText(hwndDlg, TranslateT("Template editor help"));
             else
                 SetWindowTextA(hwndDlg, szBasename);
             ShowWindow(hwndDlg, SW_SHOWNOACTIVATE);

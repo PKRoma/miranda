@@ -79,7 +79,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
     switch (msg) {
         case WM_INITDIALOG:
             {
-                TCHAR szNewTitle[128], szTemplate[51];
+                TCHAR szNewTitle[128];
                 struct ContainerWindowData *pContainer = 0;
 				DWORD dwFlags = 0;
 
@@ -87,12 +87,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 pContainer = (struct ContainerWindowData *) lParam;
                 pContainer->hWndOptions = hwndDlg;
                 TranslateDialogDefault(hwndDlg);
-#if defined(_UNICODE)
-                MultiByteToWideChar(CP_ACP, 0, Translate("Set Options for: %s"), -1, szTemplate, 50);
-#else
-                strncpy(szTemplate, Translate("Set Options for: %s"), 50);
-#endif                
-				_sntprintf(szNewTitle, 127, szTemplate, pContainer->szName);
+				mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), TranslateT("Set Options for: %s"), pContainer->szName);
 				SetWindowText(hwndDlg, szNewTitle);
 				
                 ShowWindow(hwndDlg, SW_SHOWNORMAL);
