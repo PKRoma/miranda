@@ -293,6 +293,7 @@ void fnFreeEvent( struct CListEvent* p )
       free( p->cle.pszService );
    if ( p->cle.pszTooltip )
       free( p->cle.pszTooltip );
+	free( p );
 }
 
 void UninitCListEvents(void)
