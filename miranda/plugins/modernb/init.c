@@ -168,12 +168,12 @@ int SetDrawer(WPARAM wParam,LPARAM lParam)
 
 static struct ClcContact* fnCreateClcContact( void )
 {
-	return (struct ClcContact*)calloc( sizeof( struct ClcContact ), 1 );
+	return (struct ClcContact*)calloc(1, sizeof( struct ClcContact ) );
 }
 
 static ClcCacheEntryBase* fnCreateCacheItem( HANDLE hContact )
 {
-	pdisplayNameCacheEntry p = (pdisplayNameCacheEntry)calloc( sizeof( displayNameCacheEntry ), 1 );
+	pdisplayNameCacheEntry p = (pdisplayNameCacheEntry)calloc( 1, sizeof( displayNameCacheEntry ));
 	if ( p )
 	{
 		p->hContact = hContact;
