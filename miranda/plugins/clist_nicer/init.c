@@ -51,6 +51,7 @@ struct MM_INTERFACE memoryManagerInterface;
 HMENU  BuildGroupPopupMenu( struct ClcGroup* group );
 int    CListTrayNotify( MIRANDASYSTRAYNOTIFY *msn );
 struct ClcContact* CreateClcContact( void );
+struct CListEvent* fnCreateEvent( void );
 void   ReloadThemedOptions();
 void   TrayIconIconsChanged(void);
 void   TrayIconSetToBase(char *szPreferredProto);
@@ -309,6 +310,7 @@ LBL_Error:
 	pcli->pfnCluiProtocolStatusChanged = CluiProtocolStatusChanged;
 	pcli->pfnCompareContacts = CompareContacts;
 	pcli->pfnCreateClcContact = CreateClcContact;
+	pcli->pfnCreateEvent = fnCreateEvent;
 	pcli->pfnGetDefaultFontSetting = GetDefaultFontSetting;
 	pcli->pfnGetRowBottomY = RowHeights_GetItemBottomY;
 	pcli->pfnGetRowHeight = RowHeights_GetHeight;
