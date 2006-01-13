@@ -2725,7 +2725,7 @@ HMENU BuildContainerMenu()
         i++;
     } while ( TRUE );
 
-    InsertMenuA(myGlobals.g_hMenuContext, ID_TABMENU_ATTACHTOCONTAINER, MF_BYCOMMAND | MF_POPUP, (UINT_PTR) hMenu, Translate("Attach to"));
+    InsertMenu(myGlobals.g_hMenuContext, ID_TABMENU_ATTACHTOCONTAINER, MF_BYCOMMAND | MF_POPUP, (UINT_PTR) hMenu, TranslateT("Attach to"));
     myGlobals.g_hMenuContainer = hMenu;
     return hMenu;
 }
