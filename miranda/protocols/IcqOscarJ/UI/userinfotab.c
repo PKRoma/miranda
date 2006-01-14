@@ -37,8 +37,6 @@
 #include "icqoscar.h"
 
 
-extern DWORD dwLocalInternalIP;
-extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
 
 extern char* calcMD5Hash(char* szFile);
@@ -147,11 +145,11 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
               SetValue(hwndDlg, IDC_UIN, hContact, szProto, UNIQUEIDSETTING, SVS_NORMAL);
               SetValue(hwndDlg, IDC_ONLINESINCE, hContact, szProto, "LogonTS", SVS_TIMESTAMP);
               SetValue(hwndDlg, IDC_IDLETIME, hContact, szProto, "IdleTS", SVS_TIMESTAMP);
+              SetValue(hwndDlg, IDC_IP, hContact, szProto, "IP", SVS_IP);
+              SetValue(hwndDlg, IDC_REALIP, hContact, szProto, "RealIP", SVS_IP);
 
               if (hContact)
               {
-                SetValue(hwndDlg, IDC_IP, hContact, szProto, "IP", SVS_IP);
-                SetValue(hwndDlg, IDC_REALIP, hContact, szProto, "RealIP", SVS_IP);
                 SetValue(hwndDlg, IDC_PORT, hContact, szProto, "UserPort", SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, szProto, "Version", SVS_ICQVERSION);
                 SetValue(hwndDlg, IDC_MIRVER, hContact, szProto, "MirVer", SVS_ZEROISUNSPEC);
@@ -162,10 +160,8 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
               }
               else
               {
-                SetValue(hwndDlg, IDC_IP, hContact, (char*)DBVT_DWORD, (char*)dwLocalExternalIP, SVS_IP);
-                SetValue(hwndDlg, IDC_REALIP, hContact, (char*)DBVT_DWORD, (char*)dwLocalInternalIP, SVS_IP);
                 SetValue(hwndDlg, IDC_PORT, hContact, (char*)DBVT_WORD, (char*)wListenPort, SVS_ZEROISUNSPEC);
-                SetValue(hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)8, SVS_ICQVERSION);
+                SetValue(hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)ICQ_VERSION, SVS_ICQVERSION);
                 SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, "Miranda IM", SVS_ZEROISUNSPEC);
                 SetDlgItemText(hwndDlg, IDC_SUPTIME, ICQTranslate("Member since:"));
                 SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "MemberTS", SVS_TIMESTAMP);
