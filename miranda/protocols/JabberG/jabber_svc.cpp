@@ -575,16 +575,17 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		DBVARIANT dbv;
 		if ( !JGetStringUtf( AI->hContact, "jid", &dbv )) {
 			JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal );
-			JabberLog( "Rereading avatar for %s", dbv.pszVal );
+			if (item != NULL && item->resourceCount != NULL) {
+				JabberLog( "Rereading avatar for %s", dbv.pszVal );
 
-			int iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetAvatar );
-			JabberSend( jabberThreadInfo->s,
-				"<iq type='get' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:avatar'/></iq>",
-				dbv.pszVal, item->resource[0].resourceName, iqId );
-			JFreeVariant( &dbv );
-			return GAIR_WAITFOR;
-	}	}
+				int iqId = JabberSerialNext();
+				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetAvatar );
+				JabberSend( jabberThreadInfo->s,
+					"<iq type='get' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:avatar'/></iq>",
+					dbv.pszVal, item->resource[0].resourceName, iqId );
+				JFreeVariant( &dbv );
+				return GAIR_WAITFOR;
+	}	}	}
 
 	JabberLog( "No avatar" );
 	return GAIR_NOAVATAR;
