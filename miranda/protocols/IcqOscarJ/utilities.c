@@ -1265,8 +1265,7 @@ BOOL writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, 
 BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength)
 {
   WORD wVal;
-  char *text;
-
+  TCHAR *text;
 
   if (*pwLength < 2)
     return FALSE;
@@ -1276,7 +1275,7 @@ BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, str
 
   text = LookupFieldName(table, wVal);
   if (text)
-    ICQWriteContactSettingString(hContact, szSetting, text);
+    DBWriteContactSettingTString(hContact, gpszICQProtoName, szSetting, text);
   else
     ICQDeleteContactSetting(hContact, szSetting);
 
@@ -1288,7 +1287,6 @@ BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, str
 BOOL writeDbInfoSettingByte(HANDLE hContact, const char *pszSetting, char **buf, WORD* pwLength)
 {
   BYTE byVal;
-
 
   if (*pwLength < 1)
     return FALSE;
@@ -1309,8 +1307,7 @@ BOOL writeDbInfoSettingByte(HANDLE hContact, const char *pszSetting, char **buf,
 BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength)
 {
   BYTE byVal;
-  char *text;
-
+  TCHAR *text;
 
   if (*pwLength < 1)
     return FALSE;
@@ -1320,7 +1317,7 @@ BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, str
 
   text = LookupFieldName(table, byVal);
   if (text)
-    ICQWriteContactSettingString(hContact, szSetting, text);
+    DBWriteContactSettingTString(hContact, gpszICQProtoName, szSetting, text);
   else
     ICQDeleteContactSetting(hContact, szSetting);
 

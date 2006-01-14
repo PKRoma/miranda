@@ -43,7 +43,6 @@ static void InitComboBox(HWND hwndCombo,struct fieldnames_t *names)
   int iItem;
   int i;
 
-
   iItem = SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)"");
   SendMessage(hwndCombo, CB_SETITEMDATA, iItem, 0);
   SendMessage(hwndCombo, CB_SETCURSEL, iItem, 0);
@@ -52,7 +51,17 @@ static void InitComboBox(HWND hwndCombo,struct fieldnames_t *names)
   {
     if (names[i].text == NULL)
       break;
-    iItem = SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)ICQTranslate(names[i].text));
+
+	 /* Perversion... needs the special Unicode build of the whole plugin */
+	 if ( gbUnicodeAPI ) {
+		WCHAR* p = (WCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)names[i].text);
+		if (( int )p != CALLSERVICE_NOTFOUND ) {
+  			iItem = SendMessageW(hwndCombo, CB_ADDSTRING, 0, (LPARAM)p);
+			free(p);
+		}
+		else iItem = SendMessageA(hwndCombo, CB_ADDSTRING, 0, (LPARAM)TranslateT(names[i].text));
+	 }
+	 else iItem = SendMessageA(hwndCombo, CB_ADDSTRING, 0, (LPARAM)TranslateT(names[i].text));
     SendMessage(hwndCombo, CB_SETITEMDATA, iItem,names[i].code);
   }
 }

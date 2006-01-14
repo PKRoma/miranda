@@ -48,4 +48,4 @@ extern struct fieldnames_t workField[];
 extern struct fieldnames_t affiliationField[];
 extern struct fieldnames_t maritalField[];
 
-char *LookupFieldName(struct fieldnames_t *table, int code);
+TCHAR *LookupFieldName(struct fieldnames_t *table, int code);
