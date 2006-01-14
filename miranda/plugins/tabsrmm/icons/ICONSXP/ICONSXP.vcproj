@@ -65,6 +65,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/ICONSXP.pdb"
 				SubSystem="2"
+				ResourceOnlyDLL="TRUE"
 				ImportLibrary="$(OutDir)/ICONSXP.lib"
 				TargetMachine="1"
 			/>
