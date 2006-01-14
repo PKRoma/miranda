@@ -718,7 +718,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
         {
           char* szMsg;
 
-          szMsg = (char *)malloc(wMsgLen + 1);
+          szMsg = (char *)_alloca(wMsgLen + 1);
           memcpy(szMsg, pDataBuf, wMsgLen);
           szMsg[wMsgLen] = '\0';
           pDataBuf += wMsgLen;
@@ -739,7 +739,6 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
             NetLog_Server("Ignored strange file message");
           }
 
-          SAFE_FREE(&szMsg);
           break;
         }
 
@@ -873,7 +872,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
     dwPluginNameLen = wLen;
     NetLog_Server("Warning: malformed size of plugin name.");
   }
-  szPluginName = (char *)malloc(dwPluginNameLen + 1);
+  szPluginName = (char *)_alloca(dwPluginNameLen + 1);
   memcpy(szPluginName, pDataBuf, dwPluginNameLen);
   szPluginName[dwPluginNameLen] = '\0';
   wLen -= (WORD)dwPluginNameLen;
@@ -902,14 +901,13 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 
 
       NetLog_Server("This is file ack");
-      szMsg = (char *)malloc(dwDataLen + 1);
+      szMsg = (char *)_alloca(dwDataLen + 1);
       memcpy(szMsg, pDataBuf, dwDataLen);
       szMsg[dwDataLen] = '\0';
       pDataBuf += dwDataLen;
       wLen -= (WORD)dwDataLen;
 
       handleFileAck(pDataBuf, wLen, dwUin, wCookie, wStatus, szMsg);
-      SAFE_FREE(&szMsg);
     }
     else if (typeId == MTYPE_FILEREQ && wAckType == 1)
     {
@@ -917,29 +915,26 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 
 
       NetLog_Server("This is a file request");
-      szMsg = (char *)malloc(dwDataLen + 1);
+      szMsg = (char *)_alloca(dwDataLen + 1);
       memcpy(szMsg, pDataBuf, dwDataLen);
       szMsg[dwDataLen] = '\0';
       pDataBuf += dwDataLen;
       wLen -= (WORD)dwDataLen;
 
       handleFileRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8, FALSE);
-      SAFE_FREE(&szMsg);
     }
     else if (typeId == MTYPE_CHAT && wAckType == 1)
     {
       char* szMsg;
 
       NetLog_Server("This is a chat request");
-      szMsg = (char *)malloc(dwDataLen + 1);
+      szMsg = (char *)_alloca(dwDataLen + 1);
       memcpy(szMsg, pDataBuf, dwDataLen);
       szMsg[dwDataLen] = '\0';
       pDataBuf += dwDataLen;
       wLen -= (WORD)dwDataLen;
 
   //    handleChatRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8);
-      SAFE_FREE(&szMsg);
-
     }
     else if (typeId)
     {
@@ -953,8 +948,6 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
       NetLog_Server("Unsupported plugin message type '%s'", szPluginName);
     }
   }
-
-  SAFE_FREE(&szPluginName);
 }
 
 
@@ -1186,13 +1179,11 @@ static void handleSmsReceipt(unsigned char *buf, DWORD dwDataLen)
   }
 
   // Unpack message
-  szInfo = (char *)malloc(dwTextLen + 1);
+  szInfo = (char *)_alloca(dwTextLen + 1);
   memcpy(szInfo, buf, dwTextLen);
   szInfo[dwTextLen] = 0;
 
   ICQBroadcastAck(NULL, ICQACKTYPE_SMS, ACKRESULT_SUCCESS, NULL, (LPARAM)szInfo);
-
-  SAFE_FREE(&szInfo);
 }
 
 
@@ -1435,7 +1426,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
         break;
       }
 
-      szBlob = (char *)malloc(strlennull(pszMsgField[0]) + strlennull(pszMsgField[1]) + 2);
+      szBlob = (char *)_alloca(strlennull(pszMsgField[0]) + strlennull(pszMsgField[1]) + 2);
       strcpy(szBlob, pszMsgField[1]);
       strcpy(szBlob + strlennull(szBlob) + 1, pszMsgField[0]);
 
@@ -1449,8 +1440,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       pre.lParam = 0;
 
       CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-
-      SAFE_FREE(&szBlob);
     }
     break;
 
@@ -1478,7 +1467,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       pre.lParam=sizeof(DWORD)+sizeof(HANDLE)+strlennull(pszMsgField[0])+strlennull(pszMsgField[1])+strlennull(pszMsgField[2])+strlennull(pszMsgField[3])+strlennull(pszMsgField[5])+5;
 
       /*blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)*/
-      pCurBlob=szBlob=(char *)malloc(pre.lParam);
+      pCurBlob=szBlob=(char *)_alloca(pre.lParam);
       memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
       memcpy(pCurBlob,&hContact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
       strcpy((char *)pCurBlob,pszMsgField[0]); pCurBlob+=strlennull((char *)pCurBlob)+1;
@@ -1514,7 +1503,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       dbei.flags=0;
       dbei.eventType=EVENTTYPE_ADDED;
       dbei.cbBlob=sizeof(DWORD)+sizeof(HANDLE)+strlennull(pszMsgField[0])+strlennull(pszMsgField[1])+strlennull(pszMsgField[2])+strlennull(pszMsgField[3])+4;
-      pCurBlob=dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
+      pCurBlob=dbei.pBlob=(PBYTE)_alloca(dbei.cbBlob);
       memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
       memcpy(pCurBlob,&hContact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
       strcpy((char *)pCurBlob,pszMsgField[0]); pCurBlob+=strlennull((char *)pCurBlob)+1;
@@ -1550,7 +1539,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       }
 
       valid = 1;
-      isrList = (ICQSEARCHRESULT**)malloc(nContacts * sizeof(ICQSEARCHRESULT*));
+      isrList = (ICQSEARCHRESULT**)_alloca(nContacts * sizeof(ICQSEARCHRESULT*));
       for (i = 0; i < nContacts; i++)
       {
         isrList[i] = (ICQSEARCHRESULT*)calloc(1, sizeof(ICQSEARCHRESULT));
@@ -1594,8 +1583,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
       for (i = 0; i < nContacts; i++)
         SAFE_FREE(&isrList[i]);
-
-      SAFE_FREE((void**)&isrList);
     }
     break;
 
@@ -1634,7 +1621,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       dbei.flags=0;
       dbei.eventType=ICQEVENTTYPE_WEBPAGER;
       dbei.cbBlob=strlennull(pszMsgField[0])+strlennull(pszMsgField[3])+strlennull(pszMsgField[5])+3;
-      pCurBlob=dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
+      pCurBlob=dbei.pBlob=(PBYTE)_alloca(dbei.cbBlob);
       strcpy((char *)pCurBlob,pszMsgField[5]); pCurBlob+=strlennull((char *)pCurBlob)+1;
       strcpy((char *)pCurBlob,pszMsgField[0]); pCurBlob+=strlennull((char *)pCurBlob)+1;
       strcpy((char *)pCurBlob,pszMsgField[3]);
@@ -1664,7 +1651,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       dbei.flags=0;
       dbei.eventType=ICQEVENTTYPE_EMAILEXPRESS;
       dbei.cbBlob=strlennull(pszMsgField[0])+strlennull(pszMsgField[3])+strlennull(pszMsgField[5])+3;
-      pCurBlob=dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
+      pCurBlob=dbei.pBlob=(PBYTE)_alloca(dbei.cbBlob);
       strcpy((char *)pCurBlob,pszMsgField[5]); pCurBlob+=strlennull((char *)pCurBlob)+1;
       strcpy((char *)pCurBlob,pszMsgField[0]); pCurBlob+=strlennull((char *)pCurBlob)+1;
       strcpy((char *)pCurBlob,pszMsgField[3]);
@@ -1871,7 +1858,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         // Message length
         unpackLEWord(&buf, &wMsgLen);
         wLen -= 2;
-        szMsg = (char *)malloc(wMsgLen + 1);
+        szMsg = (char *)_alloca(wMsgLen + 1);
         szMsg[wMsgLen] = '\0';
         if (wMsgLen > 0) {
           memcpy(szMsg, buf, wMsgLen);
@@ -1923,7 +1910,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
           dwPluginNameLen = wLen;
           NetLog_Server("Warning: malformed size of plugin name.");
         }
-        szPluginName = (char *)malloc(dwPluginNameLen + 1);
+        szPluginName = (char *)_alloca(dwPluginNameLen + 1);
         memcpy(szPluginName, buf, dwPluginNameLen);
         szPluginName[dwPluginNameLen] = '\0';
 
@@ -1933,8 +1920,6 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         typeId = TypeGUIDToTypeId(q1, q2, q3, q4, qt);
         if (!typeId)
           NetLog_Server("Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt);
-
-        SAFE_FREE(&szPluginName);
 
         if (wLen < 4) return;
 
@@ -1964,7 +1949,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
             char* szMsg;
 
             NetLog_Server("This is file ack");
-            szMsg = (char *)malloc(dwDataLen + 1);
+            szMsg = (char *)_alloca(dwDataLen + 1);
             if (dwDataLen > 0)
               memcpy(szMsg, buf, dwDataLen);
             szMsg[dwDataLen] = '\0';
