@@ -463,7 +463,15 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				if(dat->showProtoId) {
 					char *szUniqueId;
 					szUniqueId=(char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0);
-					if(szUniqueId) SetDlgItemTextA(hwndDlg,IDC_BYPROTOID,szUniqueId);
+					if(szUniqueId) {
+						#if defined( _UNICODE )
+							TCHAR* p = a2u(szUniqueId);
+							SetDlgItemText(hwndDlg,IDC_BYPROTOID,p);
+							free(p);
+						#else
+							SetDlgItemTextA(hwndDlg,IDC_BYPROTOID,szUniqueId);
+						#endif
+					}
 					else SetDlgItemText(hwndDlg,IDC_BYPROTOID,TranslateT("Handle"));
 					if(protoCaps&PF1_NUMERICUSERID) SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE)|ES_NUMBER);
 					else SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE)&~ES_NUMBER);

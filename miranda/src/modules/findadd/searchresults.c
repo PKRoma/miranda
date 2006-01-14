@@ -34,6 +34,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static int handleColumnAfter=COLUMNID_EMAIL;
 
+WCHAR* a2u( const char* );
+
 void SaveColumnSizes(HWND hwndResults)
 {
 	int columnOrder[COLUMNID_HANDLE+1];
@@ -72,7 +74,7 @@ void SaveColumnSizes(HWND hwndResults)
 	DBWriteContactSettingByte(NULL,"FindAdd","SortAscending",(BYTE)dat->bSortAscending);
 }
 
-static const char *szColumnNames[]={NULL,"Nick","First Name","Last Name","E-mail",NULL};
+static const TCHAR *szColumnNames[] = { NULL, _T("Nick"), _T("First Name"), _T("Last Name"), _T("E-mail"), NULL };
 static int defaultColumnSizes[]={0,100,100,100,200,90};
 void LoadColumnSizes(HWND hwndResults,const char *szProto)
 {
@@ -83,7 +85,6 @@ void LoadColumnSizes(HWND hwndResults,const char *szProto)
 	int i;
 	struct FindAddDlgData *dat;
 	int colOrdersValid;
-	LVCOLUMNA lvc;
 
 	defaultColumnSizes[COLUMNID_PROTO]=GetSystemMetrics(SM_CXSMICON)+4;
 	dat=(struct FindAddDlgData*)GetWindowLong(GetParent(hwndResults),GWL_USERDATA);
@@ -95,16 +96,28 @@ void LoadColumnSizes(HWND hwndResults,const char *szProto)
 
 	colOrdersValid=1;
 	for(i=0;i<=COLUMNID_HANDLE;i++) {
-		if(i<columnCount) {
-			lvc.mask=LVCF_TEXT|LVCF_WIDTH;
-			if(szColumnNames[i]!=NULL)
-				lvc.pszText=Translate(szColumnNames[i]);
-			else if(i==COLUMNID_HANDLE)
-				lvc.pszText=(char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0);
-			else lvc.mask&=~LVCF_TEXT;
+		LVCOLUMN lvc;
+		if( i < columnCount ) {
+			int bNeedsFree = FALSE;
+			lvc.mask = LVCF_TEXT | LVCF_WIDTH;
+			if( szColumnNames[i] != NULL )
+				lvc.pszText = TranslateTS( szColumnNames[i] );
+			else if( i == COLUMNID_HANDLE ) {
+				#if defined( _UNICODE )
+					bNeedsFree = TRUE;
+					lvc.pszText = a2u((char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0));
+				#else
+					lvc.pszText = (char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0);
+				#endif
+			}
+			else lvc.mask &= ~LVCF_TEXT;
 			wsprintfA(szSetting,"ColWidth%d",i);
-			lvc.cx=DBGetContactSettingWord(NULL,"FindAdd",szSetting,defaultColumnSizes[i]);
-			SendMessageA( hwndResults, LVM_INSERTCOLUMNA, i, (LPARAM)&lvc );
+			lvc.cx = DBGetContactSettingWord(NULL,"FindAdd",szSetting,defaultColumnSizes[i]);
+			ListView_InsertColumn( hwndResults, i, (LPARAM)&lvc );
+			#if defined( _UNICODE )
+				if ( bNeedsFree )
+					free(lvc.pszText);
+			#endif
 		}
 		wsprintfA(szSetting,"ColOrder%d",i);
 		columnOrder[i]=DBGetContactSettingByte(NULL,"FindAdd",szSetting,-1);
@@ -260,9 +273,9 @@ void SetStatusBarSearchInfo(HWND hwndStatus,struct FindAddDlgData *dat)
 			#if !defined( _UNICODE )
 				lstrcatA( str, szProtoName );
 			#else
-				{	TCHAR wszProtoName[50];
-					MultiByteToWideChar( CP_ACP, 0, szProtoName, -1, wszProtoName, SIZEOF(wszProtoName));
-					lstrcat(str, wszProtoName);
+				{	TCHAR* p = a2u(szProtoName);
+					lstrcat(str, p);
+					free(p);
 				}
 			#endif
 	}	}
@@ -284,7 +297,7 @@ void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
 	struct ProtoResultsSummary *subtotal=NULL;
 	int subtotalCount=0;
 	int i,total;
-	char str[256];
+	TCHAR str[256];
 
 	total=ListView_GetItemCount(hwndResults);
 	for(lvi.iItem=total-1;lvi.iItem>=0;lvi.iItem--) {
@@ -304,33 +317,47 @@ void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
 			subtotal[subtotalCount++].count=1;
 		}
 	}
-	if(total==0) {
-		lstrcpyA(str,Translate("No users found"));
-	}
-	else {
+	if ( total != 0 ) {
 		char szProtoName[64];
-		char substr[64];
+		TCHAR substr[64];
+		TCHAR* ptszProto;
 
-		CallProtoService(subtotal[0].szProto,PS_GETNAME,SIZEOF(szProtoName),(LPARAM)szProtoName);
-		if(subtotalCount==1) {
-			if(total==1) wsprintfA(str,Translate("1 %s user found"),szProtoName);
-			else wsprintfA(str,Translate("%d %s users found"),total,szProtoName);
+		CallProtoService( subtotal[0].szProto, PS_GETNAME, SIZEOF(szProtoName), (LPARAM)szProtoName );
+		#if defined( _UNICODE )
+			ptszProto = a2u( szProtoName );
+		#else
+			ptszProto = szProtoName;
+		#endif
+
+		if ( subtotalCount == 1 ) {
+			if(total==1) mir_sntprintf( str, SIZEOF(str), TranslateT("1 %s user found"), ptszProto );
+			else         mir_sntprintf( str, SIZEOF(str), TranslateT("%d %s users found"), total, ptszProto );
 		}
 		else {
-			wsprintfA(str,Translate("%d users found ("),total);
-			for(i=0;i<subtotalCount;i++) {
+			mir_sntprintf( str, SIZEOF(str), TranslateT("%d users found ("),total);
+			for( i=0; i < subtotalCount; i++ ) {
 				if(i) {
 					CallProtoService(subtotal[i].szProto,PS_GETNAME,SIZEOF(szProtoName),(LPARAM)szProtoName);
-					lstrcatA(str,", ");
+					#if defined( _UNICODE )
+						free( ptszProto );
+						ptszProto = a2u( szProtoName );
+					#else
+						ptszProto = szProtoName;
+					#endif
+					lstrcat( str, _T(", "));
 				}
-				wsprintfA(substr,"%d %s",subtotal[i].count,szProtoName);
-				lstrcatA(str,substr);
+				mir_sntprintf( substr, SIZEOF(substr), _T("%d %s"), subtotal[i].count, ptszProto );
+				lstrcat( str, substr );
 			}
-			lstrcatA(str,")");
+			lstrcat( str, _T(")"));
 		}
 		free(subtotal);
+		#if defined( _UNICODE )
+			free( ptszProto );
+		#endif
 	}
-	SendMessageA(hwndStatus,SB_SETTEXTA,2,(LPARAM)str);
+	else lstrcpy(str, TranslateT("No users found"));
+	SendMessage(hwndStatus, SB_SETTEXT, 2, (LPARAM)str );
 }
 
 void CreateResultsColumns(HWND hwndResults,struct FindAddDlgData *dat,char *szProto)
