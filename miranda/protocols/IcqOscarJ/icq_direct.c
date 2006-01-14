@@ -67,7 +67,6 @@ static int expectedFileRecvCount = 0;
 static filetransfer** expectedFileRecv = NULL;
 
 extern WORD wListenPort;
-extern DWORD dwLocalInternalIP, dwLocalExternalIP;
 extern DWORD dwLocalDirectConnCookie;
 
 static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen);
@@ -486,6 +485,9 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
   dc.wantIdleTime = 0;
   dc.packetPending = 0;
 
+  // Load local IP information
+  dc.dwLocalExternalIP = ICQGetContactSettingDword(NULL, "IP", 0);
+  dc.dwLocalInternalIP = ICQGetContactSettingDword(NULL, "RealIP", 0);
 
   // Create outgoing DC
   if (!dc.incoming)
@@ -496,7 +498,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 
     nloc.cbSize = sizeof(nloc);
     nloc.flags = 0;
-    if (dc.dwRemoteExternalIP == dwLocalExternalIP)
+    if (dc.dwRemoteExternalIP == dc.dwLocalExternalIP)
       addr.S_un.S_addr = htonl(dc.dwRemoteInternalIP);
     else
       addr.S_un.S_addr = htonl(dc.dwRemoteExternalIP);
@@ -521,7 +523,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
           pCookie->type = dc.type;
           pCookie->ft = dc.ft;
           dwCookie = AllocateCookie(0, dc.dwRemoteUin, pCookie);
-          icq_sendReverseReq(dc.dwRemoteUin, dwCookie, dc.dwRemotePort);
+          icq_sendReverseReq(&dc, dwCookie);
           RemoveDirectConnFromList(&dc);
 
           return 0;
@@ -530,6 +532,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
           NetLog_Direct("Reverse failed (%s)", "malloc failed");
       }
       NetLog_Direct("connect() failed (%d)", GetLastError());
+      // we failed reverse connection - send reverse failed packet
       RemoveDirectConnFromList(&dc);
       if (dc.type == DIRECTCONN_FILE) 
         ICQBroadcastAck(dc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, dc.ft, 0);
@@ -1223,8 +1226,8 @@ static void sendPeerInit_v78(directconnect* dc)
   packWord(&packet, 0);                      // Unknown
   packLEDWord(&packet, wListenPort);         // Our port
   packLEDWord(&packet, dwLocalUIN);          // Our UIN
-  packDWord(&packet, dwLocalExternalIP);     // Our external IP
-  packDWord(&packet, dwLocalInternalIP);     // Our internal IP
+  packDWord(&packet, dc->dwLocalExternalIP); // Our external IP
+  packDWord(&packet, dc->dwLocalInternalIP); // Our internal IP
   packByte(&packet, DC_TYPE);                // TCP connection flags
   packLEDWord(&packet, wListenPort);         // Our port
   packLEDWord(&packet, dc->dwConnCookie);    // DC cookie

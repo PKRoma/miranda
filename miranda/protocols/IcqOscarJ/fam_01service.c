@@ -42,7 +42,6 @@ extern int icqGoingOnlineStatus;
 extern BYTE gbOverRate;
 extern int pendingAvatarsStart;
 extern DWORD dwLocalInternalIP;
-extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
 extern DWORD dwLocalDirectConnCookie;
 extern BYTE* cookieData;
@@ -311,7 +310,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         // TLV(x14) Unknown
         chain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
 
-        dwLocalExternalIP = getDWordFromChain(chain, 10, 1); 
+        // Save external IP
+        dwValue = getDWordFromChain(chain, 10, 1); 
+        ICQWriteContactSettingDword(NULL, "IP", dwValue);
 
         // Save member since timestamp
         dwValue = getDWordFromChain(chain, 5, 1); 
@@ -324,7 +325,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         // If we are in SSI mode, this is sent after the list is acked instead
         // to make sure that we don't set status before seing the visibility code
         if (!gbSsiEnabled)
-          handleServUINSettings(wListenPort, dwLocalInternalIP);
+          handleServUINSettings(wListenPort);
       }
     }
     break;
@@ -864,7 +865,7 @@ void setUserInfo()
 
 
 
-void handleServUINSettings(int nPort, int nIP)
+void handleServUINSettings(int nPort)
 {
   icq_packet packet;
 
@@ -905,7 +906,7 @@ void handleServUINSettings(int nPort, int nIP)
     packWord(&packet, wStatus);                 // Status
     packTLVWord(&packet, 0x0008, 0x0000);       // TLV 8: Error code
     packDWord(&packet, 0x000c0025);             // TLV C: Direct connection info
-    packDWord(&packet, nIP);
+    packDWord(&packet, ICQGetContactSettingDword(NULL, "RealIP", 0));
     packDWord(&packet, nPort);
     packByte(&packet, DC_TYPE);                 // TCP/FLAG firewall settings
     packWord(&packet, ICQ_VERSION);

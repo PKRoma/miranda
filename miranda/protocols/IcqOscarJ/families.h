@@ -77,7 +77,7 @@ void handleStatusFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
 void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleIcqExtensionsFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 
-void handleServUINSettings(int nPort, int nIP);
+void handleServUINSettings(int nPort);
 int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4, WORD wType);
 int getPluginTypeIdLen(int nTypeID);
 void packPluginTypeId(icq_packet *packet, int nTypeID);

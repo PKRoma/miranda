@@ -37,8 +37,6 @@
 #include "icqoscar.h"
 
 
-extern DWORD dwLocalInternalIP;
-extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
 
 extern void setUserInfo();
@@ -170,7 +168,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 
     // This will activate the server side list
     sendRosterAck(); // this must be here, cause of failures during cookie alloc
-    handleServUINSettings(wListenPort, dwLocalInternalIP);
+    handleServUINSettings(wListenPort);
     break;
   }
 
@@ -294,7 +292,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
         { // the serv-list is unavailable turn it off
           icq_LogMessage(LOG_ERROR, ICQTranslate("Server contact list is unavailable, Miranda will use local contact list."));
           gbSsiEnabled = 0;
-          handleServUINSettings(wListenPort, dwLocalInternalIP);
+          handleServUINSettings(wListenPort);
         }
         SAFE_FREE(&sc);
       }
@@ -1348,7 +1346,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
       NetLog_Server("Last update of server list was (%u) %s", dwLastUpdateTime, asctime(localtime(&dwLastUpdateTime)));
 
       sendRosterAck();
-      handleServUINSettings(wListenPort, dwLocalInternalIP);
+      handleServUINSettings(wListenPort);
     }
     else
     {

@@ -39,8 +39,6 @@
 
 
 extern int gbIdleAllow;
-extern DWORD dwLocalInternalIP;
-extern DWORD dwLocalExternalIP;
 extern WORD wListenPort;
 extern HANDLE hsmsgrequest;
 extern CRITICAL_SECTION modeMsgsMutex;
@@ -124,7 +122,15 @@ static void packServTLV2711Header(icq_packet *packet, WORD wCookie, BYTE bMsgTyp
   packByte(packet, bMsgType);          // Message type
   packByte(packet, bMsgFlags);         // Flags
   packLEWord(packet, X1);              // Accepted
-  packWord(packet, X2);              // Unknown, priority?
+  packWord(packet, X2);                // Unknown, priority?
+}
+
+
+
+static void packServDCInfo(icq_packet *p, BOOL bEmpty)
+{
+  packTLVDWord(p, 0x03, bEmpty ? 0 : ICQGetContactSettingDword(NULL, "RealIP", 0)); // TLV: 0x03 DWORD IP
+  packTLVDWord(p, 0x05, bEmpty ? 0 : wListenPort);                                  // TLV: 0x05 Listen port
 }
 
 
@@ -140,24 +146,21 @@ static void packServChannel2Header(icq_packet *p, DWORD dwUin, WORD wLen, DWORD 
   packServMsgSendHeader(p, dwCookie, dwID1, dwID2, dwUin, NULL, 0x0002,
     (WORD)(wLen + 95 + (bRequestServerAck?4:0) + (includeDcInfo?14:0)));
 
-  packWord(p, 0x05);      /* TLV type */
+  packWord(p, 0x05);         // TLV type
   packWord(p, (WORD)(wLen + 91 + (includeDcInfo?14:0)));  /* TLV len */
   packWord(p, (WORD)(isAck ? 2: 0));     /* not aborting anything */
-  packLEDWord(p, dwID1);   // Msg ID part 1
-  packLEDWord(p, dwID2);   // Msg ID part 2
+  packLEDWord(p, dwID1);     // Msg ID part 1
+  packLEDWord(p, dwID2);     // Msg ID part 2
   packGUID(p, MCAP_TLV2711_FMT); /* capability (4 dwords) */
-  packDWord(p, 0x000A0002);  /* TLV: 0x0A WORD: 1 for normal, 2 for ack */
+  packDWord(p, 0x000A0002);  // TLV: 0x0A WORD: 1 for normal, 2 for ack
   packWord(p, (WORD)(isAck ? 2 : 1));
 
   if (includeDcInfo)
   {
-    packDWord(p, 0x00050002); // TLV: 0x05 Listen port
-    packWord(p, wListenPort);
-    packDWord(p, 0x00030004); // TLV: 0x03 DWORD IP
-    packDWord(p, dwLocalInternalIP);
+    packServDCInfo(p, FALSE);
   }
 
-  packDWord(p, 0x000F0000);    /* TLV: 0x0F empty */
+  packDWord(p, 0x000F0000);  // TLV: 0x0F empty
 
   packServTLV2711Header(p, (WORD)dwCookie, bMsgType, bMsgFlags, (WORD)MirandaStatusToIcq(gnCurrentStatus), wPriority, wLen);
 }
@@ -703,10 +706,8 @@ void icq_sendFileSendServv8(DWORD dwUin, DWORD dwCookie, const char *szFiles, co
   // TLV(5) header
   packServTLV5Header(&packet, (WORD)(138 + wDescrLen + wFilesLen), dwMsgID1, dwMsgID2, 1); 
 
-  packDWord(&packet, 0x00030004); // TLV: 0x03 DWORD IP
-  packDWord(&packet, dwLocalInternalIP);
-  packDWord(&packet, 0x00050002); // TLV: 0x05 Listen port
-  packWord(&packet, wListenPort);
+  // Port & IP information
+  packServDCInfo(&packet, FALSE);
 
   // TLV(0x2711) header
   packServTLV2711Header(&packet, (WORD)dwCookie, MTYPE_PLUGIN, 0, (WORD)MirandaStatusToIcq(gnCurrentStatus), 0x100, 69 + wDescrLen + wFilesLen);
@@ -759,10 +760,8 @@ void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie,
   // TLV(5) header
   packServTLV5Header(&packet, (WORD)(138 + wDescrLen + wFilesLen), TS1, TS2, 2); 
 
-  packDWord(&packet, 0x00030004); // TLV: 0x03 DWORD IP
-  packDWord(&packet, accepted ? dwLocalInternalIP : 0);
-  packDWord(&packet, 0x00050002); // TLV: 0x05 Listen port
-  packWord(&packet, (WORD) (accepted ? wListenPort : 0));
+  // Port & IP information
+  packServDCInfo(&packet, !accepted);
 
   // TLV(0x2711) header
   packServTLV2711Header(&packet, (WORD)dwCookie, MTYPE_PLUGIN, 0, (WORD)(accepted ? 0:1), 0, 69 + wDescrLen + wFilesLen);
@@ -814,10 +813,8 @@ void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie,
   // TLV(5) header
   packServTLV5Header(&packet, (WORD)(88 + wDescrLen + wFilesLen), TS1, TS2, 2); 
 
-  packDWord(&packet, 0x00030004); // TLV: 0x03 DWORD IP
-  packDWord(&packet, (accepted ? dwLocalInternalIP : 0));
-  packDWord(&packet, 0x00050002); // TLV: 0x05 Listen port
-  packWord(&packet, (WORD)(accepted ? wListenPort : 0));
+  // Port & IP information
+  packServDCInfo(&packet, !accepted);
 
   // TLV(0x2711) header
   packServTLV2711Header(&packet, (WORD)dwCookie, MTYPE_FILEREQ, 0, (WORD)(accepted ? 0:1), 0, 19 + wDescrLen + wFilesLen);
@@ -1213,7 +1210,7 @@ DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
   szMyNick = null_strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)(HANDLE)NULL, 0));
   nBufferSize = 1 + strlennull(szMyNick) + strlennull(szPhoneNumber) + strlennull(szMsg) + sizeof("<icq_sms_message><destination></destination><text></text><codepage>1252</codepage><encoding>utf8</encoding><senders_UIN>0000000000</senders_UIN><senders_name></senders_name><delivery_receipt>Yes</delivery_receipt><time>Sun, 00 Jan 0000 00:00:00 GMT</time></icq_sms_message>");
 
-  if (szBuffer = (char *)malloc(nBufferSize))
+  if (szBuffer = (char *)_alloca(nBufferSize))
   {
 
     wBufferLen = null_snprintf(szBuffer, nBufferSize,
@@ -1267,7 +1264,6 @@ DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
   }
 
   SAFE_FREE(&szMyNick);
-  SAFE_FREE(&szBuffer);
 
 
   return dwCookie;
@@ -1613,7 +1609,7 @@ void icq_sendXtrazResponseServ(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCoo
 
 
 
-void icq_sendReverseReq(DWORD dwUin, DWORD dwCookie, DWORD dwRemotePort)
+void icq_sendReverseReq(directconnect *dc, DWORD dwCookie)
 {
   icq_packet packet;
   DWORD dwID1;
@@ -1622,29 +1618,29 @@ void icq_sendReverseReq(DWORD dwUin, DWORD dwCookie, DWORD dwRemotePort)
   dwID1 = time(NULL);
   dwID2 = RandRange(0, 0x00FF);
 
-  packServMsgSendHeader(&packet, dwCookie, dwID1, dwID2, dwUin, NULL, 2, 0x47);
+  packServMsgSendHeader(&packet, dwCookie, dwID1, dwID2, dc->dwRemoteUin, NULL, 2, 0x47);
 
   // TLV(5) header
-  packWord(&packet, 0x05);              // Type
-  packWord(&packet, 0x43);              // Len
+  packWord(&packet, 0x05);                  // Type
+  packWord(&packet, 0x43);                  // Len
   // TLV(5) data
-  packWord(&packet, 0);                 // Command
-  packLEDWord(&packet, dwID1);          // msgid1
-  packLEDWord(&packet, dwID2);          // msgid2
-  packGUID(&packet, MCAP_REVERSE_REQ);  // capabilities (4 dwords)
-  packDWord(&packet, 0x000A0002);       // TLV: 0x0A Acktype: 1 for normal, 2 for ack
+  packWord(&packet, 0);                     // Command
+  packLEDWord(&packet, dwID1);              // msgid1
+  packLEDWord(&packet, dwID2);              // msgid2
+  packGUID(&packet, MCAP_REVERSE_REQ);      // capabilities (4 dwords)
+  packDWord(&packet, 0x000A0002);           // TLV: 0x0A Acktype: 1 for normal, 2 for ack
   packWord(&packet, 1);
-  packDWord(&packet, 0x000F0000);       // TLV: 0x0F empty
-  packDWord(&packet, 0x2711001B);       // TLV: 0x2711 Content
+  packDWord(&packet, 0x000F0000);           // TLV: 0x0F empty
+  packDWord(&packet, 0x2711001B);           // TLV: 0x2711 Content
   // TLV(0x2711) data
-  packLEDWord(&packet, dwLocalUIN);     // Our UIN
-  packDWord(&packet, dwLocalExternalIP);// IP to connect to
-  packLEDWord(&packet, wListenPort);    // Port to connect to
-  packByte(&packet, DC_TYPE);           // generic DC type
-  packDWord(&packet, dwRemotePort);     // unknown
-  packDWord(&packet, wListenPort);      // port again ?
-  packLEWord(&packet, ICQ_VERSION);     // DC Version
-  packLEDWord(&packet, dwCookie);       // Req Cookie
+  packLEDWord(&packet, dwLocalUIN);         // Our UIN
+  packDWord(&packet, dc->dwLocalExternalIP);// IP to connect to
+  packLEDWord(&packet, wListenPort);        // Port to connect to
+  packByte(&packet, DC_NORMAL);             // generic DC type
+  packDWord(&packet, dc->dwRemotePort);     // unknown
+  packDWord(&packet, wListenPort);          // port again ?
+  packLEWord(&packet, ICQ_VERSION);         // DC Version
+  packLEDWord(&packet, dwCookie);           // Req Cookie
 
   // Send the monster
   sendServPacket(&packet);

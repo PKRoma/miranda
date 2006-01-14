@@ -44,7 +44,6 @@ extern CRITICAL_SECTION connectionHandleMutex;
 extern WORD wLocalSequence;
 extern CRITICAL_SECTION localSeqMutex;
 HANDLE hServerConn;
-DWORD dwLocalInternalIP, dwLocalExternalIP;
 WORD wListenPort;
 WORD wLocalSequence;
 DWORD dwLocalDirectConnCookie;
@@ -111,7 +110,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
       wListenPort = 0;
     }
     wListenPort = nlb.wPort;
-    dwLocalInternalIP = nlb.dwInternalIP;
+    ICQWriteContactSettingDword(NULL, "RealIP", nlb.dwInternalIP);
   }
 
 

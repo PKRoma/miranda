@@ -88,6 +88,8 @@ typedef struct {
   DWORD dwRemoteUin;
   DWORD dwRemoteExternalIP;
   DWORD dwRemoteInternalIP;
+  DWORD dwLocalExternalIP;
+  DWORD dwLocalInternalIP;
   DWORD dwConnCookie;
   int initialised;
   DWORD dwThreadId;
