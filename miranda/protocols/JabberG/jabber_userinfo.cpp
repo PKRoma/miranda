@@ -63,8 +63,9 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 
 			HANDLE hContact = ( HANDLE ) GetWindowLong( hwndDlg, GWL_USERDATA );
 			if ( !JGetStringUtf( hContact, "jid", &dbv )) {
-				char* jid = NEWSTR_ALLOCA( dbv.pszVal );
-				SetDlgItemText( hwndDlg, IDC_INFO_JID, JabberTextDecode( jid ));
+				char* jid = JabberTextDecode( dbv.pszVal );
+				SetDlgItemText( hwndDlg, IDC_INFO_JID, jid );
+				free( jid );
 
 				if ( jabberOnline ) {
 					if (( item=JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal )) != NULL ) {
