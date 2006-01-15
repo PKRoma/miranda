@@ -89,7 +89,7 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
   unpackLEWord(&buf, &wFilenameLength);
   if (wFilenameLength > 0)
   {
-    pszFileName = malloc(wFilenameLength+1);
+    pszFileName = _alloca(wFilenameLength+1);
     unpackString(&buf, pszFileName, wFilenameLength);
     pszFileName[wFilenameLength] = '\0';
   }
@@ -102,8 +102,6 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
   NetLog_Direct("File transfer ack from %u, port %u, name %s, size %u", dwUin, ft->dwRemotePort, pszFileName, dwFileSize);
   
   OpenDirectConnection(ft->hContact, DIRECTCONN_FILE, ft);
-
-  SAFE_FREE(&pszFileName);
 }
 
 
@@ -118,7 +116,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
   BOOL bEmptyDesc = FALSE;
 
 
-  if (!pszDescription || (strlennull(pszDescription) == 0))
+  if (strlennull(pszDescription) == 0)
   {
     pszDescription = ICQTranslate("No description given");
     bEmptyDesc = TRUE;
@@ -133,7 +131,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
   unpackLEWord(&buf, &wFilenameLength);
   if (wFilenameLength > 0)
   {
-    pszFileName = malloc(wFilenameLength + 1);
+    pszFileName = _alloca(wFilenameLength + 1);
     unpackString(&buf, pszFileName, wFilenameLength);
     pszFileName[wFilenameLength] = '\0';
   }
@@ -174,7 +172,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
     
     
     // Send chain event
-    szBlob = (char*)malloc(sizeof(DWORD) + strlennull(pszFileName) + strlennull(pszDescription) + 2);
+    szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(pszDescription) + 2);
     *(PDWORD)szBlob = (DWORD)ft;
     strcpy(szBlob + sizeof(DWORD), pszFileName);
     strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, pszDescription);
@@ -188,11 +186,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
     pre.lParam = 0;
 
     CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-
-    SAFE_FREE(&szBlob);
   }
-
-  SAFE_FREE(&pszFileName);
 }
 
 

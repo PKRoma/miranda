@@ -1140,7 +1140,7 @@ static int DecryptDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 
 
     titleLineLen = null_snprintf(szTitleLine, 128, "DECRYPTED\n");
-    szBuf = (char*)malloc(titleLineLen + ((wLen+15)>>4) * 76 + 1);
+    szBuf = (char*)_alloca(titleLineLen + ((wLen+15)>>4) * 76 + 1);
     CopyMemory(szBuf, szTitleLine, titleLineLen);
     pszBuf = szBuf + titleLineLen;
     
@@ -1167,8 +1167,6 @@ static int DecryptDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
     *pszBuf='\0';
 
     CallService(MS_NETLIB_LOG,(WPARAM)ghDirectNetlibUser, (LPARAM)szBuf);
-
-    SAFE_FREE(&szBuf);
   }
 #endif
 

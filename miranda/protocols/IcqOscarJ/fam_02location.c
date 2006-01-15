@@ -185,6 +185,8 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 
       ICQWriteContactSettingString(hContact, "About", szMsg);
       ICQBroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1 ,0);
+
+      SAFE_FREE(&szMsg);
     }
   }
   else

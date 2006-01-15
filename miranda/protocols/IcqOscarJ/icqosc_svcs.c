@@ -279,26 +279,23 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
     hash = calcMD5Hash(szMyFile);
     if (hash)
     {
-      char* ihash = malloc(0x14);
-      if (ihash)
-      { // upload hash to server
-        ihash[0] = 0;    //unknown
-        ihash[1] = 1;    //hash type
-        ihash[2] = 1;    //hash status
-        ihash[3] = 0x10; //hash len
-        memcpy(ihash+4, hash, 0x10);
-        updateServAvatarHash(ihash+2, 0x12);
+      char* ihash = (char*)_alloca(0x14);
+      // upload hash to server
+      ihash[0] = 0;    //unknown
+      ihash[1] = 1;    //hash type
+      ihash[2] = 1;    //hash status
+      ihash[3] = 0x10; //hash len
+      memcpy(ihash+4, hash, 0x10);
+      updateServAvatarHash(ihash+2, 0x12);
 
-        if (ICQWriteContactSettingBlob(NULL, "AvatarHash", ihash, 0x14))
-        {
-          NetLog_Server("Failed to save avatar hash.");
-        }
-
-        ICQWriteContactSettingString(NULL, "AvatarFile", szMyFile);
-        iRet = 0;
-
-        SAFE_FREE(&ihash);
+      if (ICQWriteContactSettingBlob(NULL, "AvatarHash", ihash, 0x14))
+      {
+        NetLog_Server("Failed to save avatar hash.");
       }
+
+      ICQWriteContactSettingString(NULL, "AvatarFile", szMyFile);
+      iRet = 0;
+
       SAFE_FREE(&hash);
     }
   }
@@ -1522,7 +1519,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
         szDesc = (char *)ccs->lParam + nUrlLen + 1;
         nDescLen = strlennull(szDesc);
         nBodyLen = nUrlLen + nDescLen + 2;
-        szBody = (char *)malloc(nBodyLen);
+        szBody = (char *)_alloca(nBodyLen);
         strcpy(szBody, szDesc);
         szBody[nDescLen] = (char)0xFE; // Separator
         strcpy(szBody + nDescLen + 1, szUrl);
@@ -1531,11 +1528,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
         if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
         {
           int iRes = icq_SendDirectMessage(dwUin, ccs->hContact, szBody, nBodyLen, 1, pCookieData, NULL);
-          if (iRes) 
-          {
-            SAFE_FREE(&szBody);
-            return iRes; // we succeded, return
-          }
+          if (iRes) return iRes; // we succeded, return
         }
 
         // Select channel and send
@@ -1556,9 +1549,6 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 
           dwCookie = icq_SendChannel2Message(dwUin, szBody, nBodyLen, wPriority, pCookieData, NULL);
         }
-
-        // Free memory used for body
-        SAFE_FREE(&szBody);
 
         // This will stop the message dialog from waiting for the real message delivery ack
         if (pCookieData->nAckType == ACKTYPE_NONE)
@@ -2098,7 +2088,7 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
   dbei.timestamp = pre->timestamp;
   dbei.flags = (pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
   dbei.eventType = EVENTTYPE_CONTACTS;
-  dbei.pBlob = (PBYTE)malloc(dbei.cbBlob);
+  dbei.pBlob = (PBYTE)_alloca(dbei.cbBlob);
   for (i = 0, pBlob = dbei.pBlob; i < pre->lParam; i++)
   {
     strcpy(pBlob, isrList[i]->hdr.nick);
@@ -2114,8 +2104,6 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
   }
 
   CallService(MS_DB_EVENT_ADD, (WPARAM)ccs->hContact, (LPARAM)&dbei);
-
-  SAFE_FREE(&dbei.pBlob);
 
   return 0;
 }

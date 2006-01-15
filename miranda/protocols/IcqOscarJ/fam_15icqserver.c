@@ -434,13 +434,12 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
         char *pszInfo;
         
         // Terminate buffer
-        pszInfo = (char *)malloc(wPacketLen + 1);
+        pszInfo = (char *)_alloca(wPacketLen + 1);
         if (wPacketLen > 0)
           memcpy(pszInfo, databuf, wPacketLen);
         pszInfo[wPacketLen] = 0;
         
         ICQBroadcastAck(NULL, ICQACKTYPE_SMS, ACKRESULT_FAILED, (HANDLE)wCookie, (LPARAM)pszInfo);
-        SAFE_FREE(&pszInfo);
         FreeCookie(wCookie);
         break;
       }
@@ -466,7 +465,7 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
           wPacketLen -= wNetworkNameLen;
           
           unpackWord(&databuf, &wAckLen);
-          if (pszInfo = (char *)malloc(wAckLen + 1))
+          if (pszInfo = (char *)_alloca(wAckLen + 1))
           {
             // Terminate buffer
             if (wAckLen > 0)
@@ -474,7 +473,6 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
             pszInfo[wAckLen] = 0;
             
             ICQBroadcastAck(NULL, ICQACKTYPE_SMS, ACKRESULT_SENTREQUEST, (HANDLE)wCookie, (LPARAM)pszInfo);
-            SAFE_FREE(&pszInfo);
             FreeCookie(wCookie);
             
             // Parsing success

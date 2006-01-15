@@ -965,40 +965,36 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
                 wNickLength = pTLV->wLen;
 
-                pszNick = (char*)malloc(wNickLength + 1);
-                if (pszNick)
-                {
-                  // Copy buffer to utf-8 buffer
-                  memcpy(pszNick, pTLV->pData, wNickLength);
-                  pszNick[wNickLength] = 0; // Terminate string
+                pszNick = (char*)_alloca(wNickLength + 1);
+                // Copy buffer to utf-8 buffer
+                memcpy(pszNick, pTLV->pData, wNickLength);
+                pszNick[wNickLength] = 0; // Terminate string
 
-                  NetLog_Server("Nickname is '%s'", pszNick);
+                NetLog_Server("Nickname is '%s'", pszNick);
 
-                  bNicked = 1;
+                bNicked = 1;
 
-                  // Write nickname to database
-                  if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
-                  { // if just added contact, save details always - does no harm
-                    char *szOldNick;
+                // Write nickname to database
+                if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
+                { // if just added contact, save details always - does no harm
+                  char *szOldNick;
 
-                    if (szOldNick = UniGetContactSettingUtf(hContact,"CList","MyHandle",""))
+                  if (szOldNick = UniGetContactSettingUtf(hContact,"CList","MyHandle",""))
+                  {
+                    if ((strcmpnull(szOldNick, pszNick)) && (strlennull(pszNick) > 0))
                     {
-                      if ((strcmpnull(szOldNick, pszNick)) && (strlennull(pszNick) > 0))
-                      {
-                        // Yes, we really do need to delete it first. Otherwise the CLUI nick
-                        // cache isn't updated (I'll look into it)
-                        DBDeleteContactSetting(hContact,"CList","MyHandle");
-                        UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
-                      }
-                      SAFE_FREE(&szOldNick);
-                    }
-                    else if (strlennull(pszNick) > 0)
-                    {
+                      // Yes, we really do need to delete it first. Otherwise the CLUI nick
+                      // cache isn't updated (I'll look into it)
                       DBDeleteContactSetting(hContact,"CList","MyHandle");
                       UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
                     }
+                    SAFE_FREE(&szOldNick);
                   }
-                  SAFE_FREE(&pszNick);
+                  else if (strlennull(pszNick) > 0)
+                  {
+                    DBDeleteContactSetting(hContact,"CList","MyHandle");
+                    UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
+                  }
                 }
               }
               else
@@ -1020,35 +1016,30 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags)
 
                 wCommentLength = pTLV->wLen;
 
-                pszComment = (char*)malloc(wCommentLength + 1);
-                if (pszComment)
-                {
-                  // Copy buffer to utf-8 buffer
-                  memcpy(pszComment, pTLV->pData, wCommentLength);
-                  pszComment[wCommentLength] = 0; // Terminate string
+                pszComment = (char*)_alloca(wCommentLength + 1);
+                // Copy buffer to utf-8 buffer
+                memcpy(pszComment, pTLV->pData, wCommentLength);
+                pszComment[wCommentLength] = 0; // Terminate string
 
-                  NetLog_Server("Comment is '%s'", pszComment);
+                NetLog_Server("Comment is '%s'", pszComment);
 
-                  // Write comment to database
-                  if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
-                  { // if just added contact, save details always - does no harm
-                    char *szOldComment;
+                // Write comment to database
+                if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
+                { // if just added contact, save details always - does no harm
+                  char *szOldComment;
 
-                    if (szOldComment = UniGetContactSettingUtf(hContact,"UserInfo","MyNotes",""))
-                    {
-                      if ((strcmpnull(szOldComment, pszComment)) && (strlennull(pszComment) > 0))
-                      {
-                        UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
-                      }
-                      SAFE_FREE(&szOldComment);
-                    }
-                    else if (strlennull(pszComment) > 0)
+                  if (szOldComment = UniGetContactSettingUtf(hContact,"UserInfo","MyNotes",""))
+                  {
+                    if ((strcmpnull(szOldComment, pszComment)) && (strlennull(pszComment) > 0))
                     {
                       UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
                     }
+                    SAFE_FREE(&szOldComment);
                   }
-
-                  SAFE_FREE(&pszComment);
+                  else if (strlennull(pszComment) > 0)
+                  {
+                    UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
+                  }
                 }
               }
               else
@@ -1447,7 +1438,7 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
   ICQWriteContactSettingByte(ccs.hContact, "Grant", 1);
 
   /*blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)*/
-  pCurBlob=szBlob=(char *)malloc(pre.lParam);
+  pCurBlob=szBlob=(char *)_alloca(pre.lParam);
   memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
   memcpy(pCurBlob,&hcontact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
   if (nNickLen && dwUin) 
@@ -1514,7 +1505,7 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
   dbei.flags=0;
   dbei.eventType=EVENTTYPE_ADDED;
   dbei.cbBlob=sizeof(DWORD)+sizeof(HANDLE)+4;
-  pCurBlob=dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
+  pCurBlob=dbei.pBlob=(PBYTE)_alloca(dbei.cbBlob);
   /*blob is: uin(DWORD), hContact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ) */
   memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
   memcpy(pCurBlob,&hContact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
@@ -1564,7 +1555,7 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
     wLen -= 2;
     if (wLen >= nReasonLen)
     {
-      szReason = malloc(nReasonLen+1);
+      szReason = (char*)_alloca(nReasonLen+1);
       unpackString(&buf, szReason, nReasonLen);
       szReason[nReasonLen] = '\0';
     }
@@ -1590,7 +1581,6 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 
   }
   SAFE_FREE(&szNick);
-  SAFE_FREE(&szReason);
 }
 
 
