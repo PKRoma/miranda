@@ -1326,9 +1326,35 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
         wchar_t* usMsg;
         wchar_t* usMsgW;
 
-        dwGuidLen = (DWORD)*(pMsg+8);
-        dwDataLen -= 12;
-        pMsg += 12;
+        if (bThruDC)
+        {
+          DWORD dwExtraLen = *(DWORD*)pMsg;
+
+          if (dwExtraLen < dwDataLen && !strncmp(szMsg, "{\\rtf", 5))
+          { // it is icq5 sending us crap, get real message from it
+            int nStrSize;
+
+            usMsg = (wchar_t*)(pMsg + 4);
+            nStrSize = WideCharToMultiByte(CP_ACP, 0, usMsg, dwExtraLen, szMsg, 0, NULL, NULL);
+            SAFE_FREE(&szMsg);
+            szMsg = calloc(nStrSize+1, sizeof(wchar_t)+1);
+            szMsg[nStrSize - 1] = 0; 
+            WideCharToMultiByte(CP_ACP, 0, usMsg, dwExtraLen, szMsg, nStrSize, NULL, NULL);
+            nStrSize = strlennull(szMsg); // this is necessary, sometimes it was bad
+            memcpy(szMsg+nStrSize+1, usMsg, dwExtraLen*sizeof(wchar_t));
+
+            pre.flags = PREF_UNICODE;
+          
+            dwGuidLen = 0;
+          }
+        }
+
+        if (!pre.flags)
+        {
+          dwGuidLen = *(DWORD*)(pMsg+8);
+          dwDataLen -= 12;
+          pMsg += 12;
+        }
 
         while ((dwGuidLen >= 38) && (dwDataLen >= dwGuidLen))
         {
