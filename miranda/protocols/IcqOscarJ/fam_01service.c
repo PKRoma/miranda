@@ -450,42 +450,45 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             GetAvatarFileName(0, NULL, szFile, MAX_PATH);
             GetAvatarData(NULL, dwLocalUIN, NULL, pBuffer, 0x14, szFile);
           }
-          hash = calcMD5Hash(dbv.pszVal);
-          if (!hash)
-          { // hash could not be calculated - probably missing file, get avatar from server
-            char szFile[MAX_PATH + 4];
-#ifdef _DEBUG
-            NetLog_Server("We have no avatar, requesting from server.");
-#endif
-            GetAvatarFileName(0, NULL, szFile, MAX_PATH);
-            GetAvatarData(NULL, dwLocalUIN, NULL, pBuffer, 0x14, szFile);
-          } // check if we had set any avatar if yes set our, if not download from server
-          else if (memcmp(hash, pBuffer+4, 0x10))
-          { // we have different avatar, sync that
-            if (ICQGetContactSettingByte(NULL, "ForceOurAvatar", 1))
-            { // we want our avatar, update hash
-              char* pHash = _alloca(0x12);
-
-              NetLog_Server("Our avatar is different, set our new hash.");
-
-              pHash[0] = 1; // state of the hash
-              pHash[1] = 0x10; // len of the hash
-              memcpy(pHash+2, hash, 0x10);
-              updateServAvatarHash(pHash, 0x12);
-            }
-            else
-            { // get avatar from server
+          else
+          { // we know avatar filename
+            hash = calcMD5Hash(dbv.pszVal);
+            if (!hash)
+            { // hash could not be calculated - probably missing file, get avatar from server
               char szFile[MAX_PATH + 4];
 #ifdef _DEBUG
-              NetLog_Server("We have different avatar, requesting new from server.");
+              NetLog_Server("We have no avatar, requesting from server.");
 #endif
               GetAvatarFileName(0, NULL, szFile, MAX_PATH);
               GetAvatarData(NULL, dwLocalUIN, NULL, pBuffer, 0x14, szFile);
-            }
-          }
-          SAFE_FREE(&hash);
+            } // check if we had set any avatar if yes set our, if not download from server
+            else if (memcmp(hash, pBuffer+4, 0x10))
+            { // we have different avatar, sync that
+              if (ICQGetContactSettingByte(NULL, "ForceOurAvatar", 1))
+              { // we want our avatar, update hash
+                char* pHash = _alloca(0x12);
 
-          ICQFreeVariant(&dbv);
+                NetLog_Server("Our avatar is different, set our new hash.");
+
+                pHash[0] = 1; // state of the hash
+                pHash[1] = 0x10; // len of the hash
+                memcpy(pHash+2, hash, 0x10);
+                updateServAvatarHash(pHash, 0x12);
+              }
+              else
+              { // get avatar from server
+                char szFile[MAX_PATH + 4];
+#ifdef _DEBUG
+                NetLog_Server("We have different avatar, requesting new from server.");
+#endif
+                GetAvatarFileName(0, NULL, szFile, MAX_PATH);
+                GetAvatarData(NULL, dwLocalUIN, NULL, pBuffer, 0x14, szFile);
+              }
+            }
+            SAFE_FREE(&hash);
+
+            ICQFreeVariant(&dbv);
+          }
           break;
         }
         case 0x41: // request to upload avatar data
