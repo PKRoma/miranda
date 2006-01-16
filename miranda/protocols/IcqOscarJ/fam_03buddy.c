@@ -386,7 +386,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   // Save contacts details in database
   if (hContact != NULL)
   {
-    if (szClient == 0) szClient = ""; // if no detection, set uknown
+    if (szClient == 0) szClient = ICQTranslate("Unknown"); // if no detection, set uknown
     ICQWriteContactSettingDword(hContact,  "ClientID",     dwClientId);
 
     ICQWriteContactSettingDword(hContact,  "LogonTS",      dwOnlineSince);
@@ -422,10 +422,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
   if (szClient == cliSpamBot)
   {
-    if (ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED))
+    if (ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
     { // kill spammer
       icq_DequeueUser(dwUIN);
       AddToSpammerList(dwUIN);
+      icq_sendRemoveContact(dwUIN, NULL);
       if (ICQGetContactSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
         ShowPopUpMsg(hContact, ICQTranslate("Spambot Detected"), ICQTranslate("Contact deleted & further events blocked."), POPTYPE_SPAM);
       CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
