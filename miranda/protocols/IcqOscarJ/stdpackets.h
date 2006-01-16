@@ -107,6 +107,7 @@ void icq_sendFileDenyServ(DWORD dwUin, filetransfer* ft, char *szReason, int nAc
 DWORD icq_sendAdvancedSearchServ(BYTE *fieldsBuffer,int bufferLen);
 DWORD icq_changeUserDetailsServ(WORD, const unsigned char *, WORD);
 void icq_sendNewContact(DWORD dwUin, char* szUid);
+void icq_sendRemoveContact(DWORD dwUin, char* szUid);
 void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list, int add);
 void icq_sendEntireVisInvisList(int);
 void icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, BYTE, const char **);

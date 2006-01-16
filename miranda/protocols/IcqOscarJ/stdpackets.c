@@ -1287,6 +1287,21 @@ void icq_sendNewContact(DWORD dwUin, char* szUid)
 
 
 
+void icq_sendRemoveContact(DWORD dwUin, char* szUid)
+{
+  icq_packet packet;
+  int nUinLen;
+
+  nUinLen = getUIDLen(dwUin, szUid);
+
+  serverPacketInit(&packet, (WORD)(nUinLen + 11));
+  packFNACHeader(&packet, ICQ_BUDDY_FAMILY, ICQ_USER_REMOVEFROMLIST);
+  packUID(&packet, dwUin, szUid);
+
+  sendServPacket(&packet);
+}
+
+
 // list==0: visible list
 // list==1: invisible list
 void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list, int add)
