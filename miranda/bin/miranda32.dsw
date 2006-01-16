@@ -371,6 +371,22 @@ Package=<4>
 
 ###############################################################################
 
+Project: "modernb"=..\plugins\modernb\modernb.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Miranda/miranda/plugins/modernb", FQUAAAAA
+    ..\plugins\modernb
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "msn"=..\protocols\MSN\msn.dsp - Package Owner=<4>
 
 Package=<5>

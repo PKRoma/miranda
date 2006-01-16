@@ -70,6 +70,10 @@ cd ..\import
 nmake /f import.mak CFG="import - Win32 Release"
 if errorlevel 1 goto :Error
 
+cd ..\modernb
+nmake /f modernb.mak CFG="modernb - Win32 Release"
+if errorlevel 1 goto :Error
+
 cd ..\mwclist
 nmake /f mwclist.mak CFG="mwclist - Win32 Release"
 if errorlevel 1 goto :Error
@@ -181,28 +185,32 @@ goto :eof
 del %Temp%\miranda-v%1a%2.zip
 7za.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2.zip ./* ..\ChangeLog.txt
 
-rd /Q /S %Temp%\pdba
+rd /Q /S %Temp%\pdba >nul
 md %Temp%\pdba
+md %Temp%\pdba\plugins
+
 copy ..\..\src\Release\miranda32.pdb                   %Temp%\pdba
 copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb  %Temp%\pdba
 rem  Protocols
-copy ..\..\protocols\AimTOC2\Release\AIM.pdb           %Temp%\pdba
-copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb         %Temp%\pdba
-copy ..\..\protocols\IRC\Release\IRC.pdb               %Temp%\pdba
-copy ..\..\protocols\JabberG\Release\jabber.pdb        %Temp%\pdba
-copy ..\..\protocols\MSN\Release\MSN.pdb               %Temp%\pdba
-copy ..\..\protocols\Yahoo\Release\Yahoo.pdb           %Temp%\pdba
+copy ..\..\protocols\AimTOC2\Release\AIM.pdb           %Temp%\pdba\plugins
+copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb         %Temp%\pdba\plugins
+copy ..\..\protocols\IRC\Release\IRC.pdb               %Temp%\pdba\plugins
+copy ..\..\protocols\JabberG\Release\jabber.pdb        %Temp%\pdba\plugins
+copy ..\..\protocols\MSN\Release\MSN.pdb               %Temp%\pdba\plugins
+copy ..\..\protocols\Yahoo\Release\Yahoo.pdb           %Temp%\pdba\plugins
 rem  Plugins
-copy ..\..\plugins\chat\Release\chat.pdb               %Temp%\pdba
-copy ..\..\plugins\clist\Release\clist_classic.pdb     %Temp%\pdba
-copy ..\..\plugins\clist_nicer\Release\clist_nicer.pdb %Temp%\pdba
-copy ..\..\plugins\db3x\Release\dbx_3x.pdb             %Temp%\pdba
-copy ..\..\plugins\help\Release\help.pdb               %Temp%\pdba
-copy ..\..\plugins\import\Release\import.pdb           %Temp%\pdba
-copy ..\..\plugins\mwclist\Release\clist_mw.pdb        %Temp%\pdba
-copy ..\..\plugins\png2dib\Release\png2dib.pdb         %Temp%\pdba
-copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba
-copy ..\..\plugins\tabSRMM\Release\tabSRMM.pdb         %Temp%\pdba
+copy ..\..\plugins\chat\Release\chat.pdb               %Temp%\pdba\plugins
+copy ..\..\plugins\clist\Release\clist_classic.pdb     %Temp%\pdba\plugins
+copy ..\..\plugins\clist_nicer\Release\clist_nicer.pdb %Temp%\pdba\plugins
+copy ..\..\plugins\db3x\Release\dbx_3x.pdb             %Temp%\pdba\plugins
+copy ..\..\plugins\help\Release\help.pdb               %Temp%\pdba\plugins
+copy ..\..\plugins\import\Release\import.pdb           %Temp%\pdba\plugins
+copy ..\..\plugins\modernb\Release\clist_modern.pdb    %Temp%\pdbw\plugins
+copy ..\..\plugins\mwclist\Release\clist_mw.pdb        %Temp%\pdba\plugins
+copy ..\..\plugins\png2dib\Release\png2dib.pdb         %Temp%\pdba\plugins
+copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba\plugins
+copy ..\..\plugins\tabSRMM\Release\tabSRMM.pdb         %Temp%\pdba\plugins
+
 7za.exe a -tzip -r -mx=9 %Temp%\miranda-pdb-v%1a%2.zip %Temp%\pdba/*
 rd /Q /S %Temp%\pdba
 goto :eof
