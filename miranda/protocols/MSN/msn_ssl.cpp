@@ -85,7 +85,7 @@ struct SSL_WinInet : public SSL_Base
 
 int SSL_WinInet::init()
 {
-	if (( m_dll = LoadLibrary( "WinInet.dll" )) == NULL )
+	if (( m_dll = LoadLibraryA( "WinInet.dll" )) == NULL )
 		return 10;
 
 	f_InternetCloseHandle = (ft_InternetCloseHandle)GetProcAddress( m_dll, "InternetCloseHandle" );
@@ -365,12 +365,12 @@ int SSL_OpenSsl::init()
 		return 0;
 
 	if ( hLibSSL == NULL ) {
-		if (( hLibEAY = LoadLibrary( "LIBEAY32.DLL" )) == NULL ) {
+		if (( hLibEAY = LoadLibraryA( "LIBEAY32.DLL" )) == NULL ) {
 			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "LIBEAY32.DLL" );
 			return 1;
 		}
 
-		if (( hLibSSL = LoadLibrary( "LIBSSL32.DLL" )) == NULL ) {
+		if (( hLibSSL = LoadLibraryA( "LIBSSL32.DLL" )) == NULL ) {
 			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "LIBSSL32.DLL" );
 			return 1;
 	}	}

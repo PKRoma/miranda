@@ -131,7 +131,7 @@ static HANDLE hChatEvent = NULL, hChatMenu = NULL;
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBox( NULL, Translate( "This plugin requires db3x plugin version 0.5.1.0 or later" ), "MSN", MB_OK );
+		MessageBox( NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("MSN"), MB_OK );
 		return 1;
 	}
 
@@ -174,12 +174,12 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		MSN_CallService(MS_NETLIB_GETUSERSETTINGS,WPARAM(hNetlibUser),LPARAM(&nls));
 
 		HKEY hSettings;
-		if ( RegOpenKey( HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", &hSettings ))
+		if ( RegOpenKeyA( HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", &hSettings ))
 			return 0;
 
 		char tValue[ 256 ];
 		DWORD tType = REG_SZ, tValueLen = sizeof( tValue );
-		int tResult = RegQueryValueEx( hSettings, "ProxyServer", NULL, &tType, ( BYTE* )tValue, &tValueLen );
+		int tResult = RegQueryValueExA( hSettings, "ProxyServer", NULL, &tType, ( BYTE* )tValue, &tValueLen );
 		RegCloseKey( hSettings );
 
 		if ( !tResult )
@@ -263,13 +263,13 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	char* protocolname;
 	char* fend;
 
-	GetModuleFileName( hInst, path, sizeof( path ));
+	GetModuleFileNameA( hInst, path, sizeof( path ));
 
 	protocolname = strrchr(path,'\\');
 	protocolname++;
 	fend = strrchr(path,'.');
 	*fend = '\0';
-	CharUpper( protocolname );
+	CharUpperA( protocolname );
 	msnProtocolName = strdup( protocolname );
 
 	mir_snprintf( path, sizeof( path ), "%s:HotmailNotify", protocolname );
@@ -371,7 +371,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
 	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 4, 0, 0 )) {
-		MessageBox( NULL, "The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.4.0 or later.", "MSN Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+		MessageBox( NULL, TranslateT("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.4.0 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 

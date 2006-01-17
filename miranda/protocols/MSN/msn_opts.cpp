@@ -43,7 +43,7 @@ static void __cdecl sttUploadGroups( void* )
 {
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
-		if ( !lstrcmp( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
+		if ( !lstrcmpA( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
 			DBVARIANT dbv;
 			if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
 				MSN_MoveContactToGroup( hContact, dbv.pszVal );
@@ -64,12 +64,12 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 		char tBuffer[ MAX_PATH ];
 		if ( !MSN_GetStaticString( "e-mail", NULL, tBuffer, sizeof( tBuffer )))
-			SetDlgItemText( hwndDlg, IDC_HANDLE, tBuffer );
+			SetDlgItemTextA( hwndDlg, IDC_HANDLE, tBuffer );
 
 		if ( !MSN_GetStaticString( "Password", NULL, tBuffer, sizeof( tBuffer ))) {
 			MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( tBuffer )+1, ( LPARAM )tBuffer );
 			tBuffer[ 16 ] = 0;
-			SetDlgItemText( hwndDlg, IDC_PASSWORD, tBuffer );
+			SetDlgItemTextA( hwndDlg, IDC_PASSWORD, tBuffer );
 		}
 		SendDlgItemMessage( hwndDlg, IDC_PASSWORD, EM_SETLIMITTEXT, 16, 0 );
 
@@ -81,7 +81,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				MSN_FreeVariant( &dbv );
 		}	}
 		else if ( !MSN_GetStaticString( "Nick", NULL, tBuffer, sizeof( tBuffer )))
-			SetWindowText( wnd, tBuffer );
+			SetWindowTextA( wnd, tBuffer );
 		if ( !msnLoggedIn )
 			EnableWindow( wnd, FALSE );
 
@@ -98,7 +98,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		EnableWindow( GetDlgItem( hwndDlg, IDC_ENTER_MAILER_APP ), tValue );
 
 		if ( !MSN_GetStaticString( "MailerPath", NULL, tBuffer, sizeof( tBuffer )))
-			SetDlgItemText( hwndDlg, IDC_MAILER_APP, tBuffer );
+			SetDlgItemTextA( hwndDlg, IDC_MAILER_APP, tBuffer );
 
 		if ( !msnLoggedIn ) {
 			EnableWindow( GetDlgItem( hwndDlg, IDC_MANAGEGROUPS ), FALSE );
@@ -143,7 +143,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			case IDC_MANAGEGROUPS:
 				if ( IsDlgButtonChecked( hwndDlg, IDC_MANAGEGROUPS ))
-					if ( IDYES == MessageBox( hwndDlg,
+					if ( IDYES == MessageBoxA( hwndDlg,
 											MSN_Translate( "Server groups import may change your contact list layout after next login. "
 																"Do you want to upload your groups to the server?" ),
 											MSN_Translate( "MSN Protocol" ), MB_YESNOCANCEL ))
@@ -161,7 +161,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				HWND tEditField = GetDlgItem( hwndDlg, IDC_MAILER_APP );
 
 				char szFile[ MAX_PATH+2 ];
-				GetWindowText( tEditField, szFile, sizeof( szFile ));
+				GetWindowTextA( tEditField, szFile, sizeof( szFile ));
 
 				int tSelectLen = 0;
 
@@ -181,13 +181,13 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 LBL_Continue:
 				tSelectLen += strlen( szFile );
 
-				OPENFILENAME ofn = { 0 };
+				OPENFILENAMEA ofn = { 0 };
 				ofn.lStructSize = sizeof( ofn );
 				ofn.hwndOwner = hwndDlg;
 				ofn.nMaxFile = sizeof( szFile );
 				ofn.lpstrFile = szFile;
 				ofn.Flags = OFN_FILEMUSTEXIST;
-				if ( GetOpenFileName( &ofn ) != TRUE )
+				if ( GetOpenFileNameA( &ofn ) != TRUE )
 					break;
 
 				if ( strchr( szFile, ' ' ) != NULL ) {
@@ -210,14 +210,14 @@ LBL_Continue:
 			char tEmail[ MSN_MAX_EMAIL_LEN ];
 			WCHAR *screenStrW;
 
-			GetDlgItemText( hwndDlg, IDC_HANDLE, tEmail, sizeof( tEmail ));
+			GetDlgItemTextA( hwndDlg, IDC_HANDLE, tEmail, sizeof( tEmail ));
 			if ( MSN_GetStaticString( "e-mail", NULL, dbStr, sizeof( dbStr )))
 				dbStr[0] = 0;
 			if ( strcmp( tEmail, dbStr ))
 				reconnectRequired = true;
 			MSN_SetString( NULL, "e-mail", tEmail );
 
-			GetDlgItemText( hwndDlg, IDC_PASSWORD, screenStr, sizeof( screenStr ));
+			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, screenStr, sizeof( screenStr ));
 			MSN_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( screenStr ),( LPARAM )screenStr );
 			if ( MSN_GetStaticString( "Password", NULL, dbStr, sizeof( dbStr )))
 				dbStr[0] = 0;
@@ -262,11 +262,11 @@ LBL_Continue:
 			MSN_SetByte( "AwayAsBrb", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AWAY_AS_BRB ));
 			MSN_SetByte( "ManageServer", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_MANAGEGROUPS ));
 
-			GetDlgItemText( hwndDlg, IDC_MAILER_APP, screenStr, sizeof( screenStr ));
+			GetDlgItemTextA( hwndDlg, IDC_MAILER_APP, screenStr, sizeof( screenStr ));
 			MSN_SetString( NULL, "MailerPath", screenStr );
 
 			if ( reconnectRequired && msnLoggedIn )
-				MessageBox( hwndDlg, MSN_Translate( "The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), "MSN Options", MB_OK );
+				MessageBoxA( hwndDlg, MSN_Translate( "The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), "MSN Options", MB_OK );
 
 			LoadOptions();
 			return TRUE;
@@ -291,15 +291,15 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			int tUseGateway = MSN_GetByte( "UseGateway", 0 );
 			CheckDlgButton( hwndDlg, IDC_USEGATEWAY, tUseGateway );
 			if ( tUseGateway ) {
-				SetDlgItemText( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_GATEWAY );
+				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_GATEWAY );
 				SetDlgItemInt( hwndDlg, IDC_MSNPORT, 80, FALSE );
 			}
 			else {
 				if ( !DBGetContactSetting( NULL, msnProtocolName, "LoginServer", &dbv )) {
-					SetDlgItemText( hwndDlg, IDC_LOGINSERVER, dbv.pszVal );
+					SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, dbv.pszVal );
 					MSN_FreeVariant( &dbv );
 				}
-				else SetDlgItemText( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
+				else SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
 
 				SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_GetWord( NULL, "MSNMPort", 1863 ), FALSE );
 		}	}
@@ -317,21 +317,21 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 		if ( !DBGetContactSetting( NULL, msnProtocolName, "YourHost", &dbv )) {
 			if ( !MSN_GetByte( "AutoGetHost", 1 ))
-				SetDlgItemText( hwndDlg, IDC_YOURHOST, dbv.pszVal );
+				SetDlgItemTextA( hwndDlg, IDC_YOURHOST, dbv.pszVal );
 			else {
 				if ( msnExternalIP == NULL ) {
 					char ipaddr[ 256 ];
 					gethostname( ipaddr, sizeof( ipaddr ));
-					SetDlgItemText( hwndDlg, IDC_YOURHOST, ipaddr );
+					SetDlgItemTextA( hwndDlg, IDC_YOURHOST, ipaddr );
 				}
-				else SetDlgItemText( hwndDlg, IDC_YOURHOST, msnExternalIP );
+				else SetDlgItemTextA( hwndDlg, IDC_YOURHOST, msnExternalIP );
 			}
 			MSN_FreeVariant( &dbv );
 		}
 		else {
 			char ipaddr[256];
 			gethostname( ipaddr, sizeof( ipaddr ));
-			SetDlgItemText( hwndDlg, IDC_YOURHOST, ipaddr );
+			SetDlgItemTextA( hwndDlg, IDC_YOURHOST, ipaddr );
 		}
 
 		if ( MSN_GetByte( "AutoGetHost", 1 ))
@@ -346,7 +346,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_RESETSERVER:
-			SetDlgItemText( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
+			SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
 			SetDlgItemInt(  hwndDlg, IDC_MSNPORT,  1863, FALSE );
 			goto LBL_Apply;
 		}
@@ -376,15 +376,15 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 				HWND tWindow = GetDlgItem( hwndDlg, IDC_LOGINSERVER );
 				if ( !tValue ) {
-					SetWindowText( tWindow, MSN_DEFAULT_GATEWAY );
+					SetWindowTextA( tWindow, MSN_DEFAULT_GATEWAY );
 					SetDlgItemInt( hwndDlg, IDC_MSNPORT, 80, FALSE );
 				}
 				else {
 					if ( !DBGetContactSetting( NULL, msnProtocolName, "LoginServer", &dbv )) {
-						SetWindowText( tWindow, dbv.pszVal );
+						SetWindowTextA( tWindow, dbv.pszVal );
 						MSN_FreeVariant( &dbv );
 					}
-					else SetWindowText( tWindow, MSN_DEFAULT_LOGIN_SERVER );
+					else SetWindowTextA( tWindow, MSN_DEFAULT_LOGIN_SERVER );
 
 					SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_GetWord( NULL, "MSNMPort", 1863 ), FALSE );
 				}
@@ -406,7 +406,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				restartRequired = true;
 			}
 			if ( !tValue ) {
-				GetDlgItemText( hwndDlg, IDC_LOGINSERVER, str, sizeof( str ));
+				GetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, str, sizeof( str ));
 				MSN_SetString( NULL, "LoginServer", str );
 
 				MSN_SetWord( NULL, "MSNMPort", GetDlgItemInt( hwndDlg, IDC_MSNPORT, NULL, FALSE ));
@@ -431,13 +431,13 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			MSN_SetByte( "AutoGetHost",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOGETHOST   ));
 			MSN_SetByte( "SlowSend",      ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SLOWSEND      ));
 
-			GetDlgItemText( hwndDlg, IDC_YOURHOST, str, sizeof( str ));
+			GetDlgItemTextA( hwndDlg, IDC_YOURHOST, str, sizeof( str ));
 			MSN_SetString( NULL, "YourHost", str );
 
 			if ( restartRequired )
-				MessageBox( hwndDlg, MSN_Translate( "The changes you have made require you to restart Miranda IM before they take effect"), "MSN Options", MB_OK );
+				MessageBoxA( hwndDlg, MSN_Translate( "The changes you have made require you to restart Miranda IM before they take effect"), "MSN Options", MB_OK );
 			if ( reconnectRequired && msnLoggedIn )
-				MessageBox( hwndDlg, MSN_Translate( "The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), "MSN Options", MB_OK );
+				MessageBoxA( hwndDlg, MSN_Translate( "The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), "MSN Options", MB_OK );
 
 			LoadOptions();
 			return TRUE;
@@ -594,7 +594,7 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 	odp.cbSize						= sizeof(odp);
 	odp.position					= -790000000;
 	odp.hInstance					= hInst;
-	odp.pszTemplate				= MAKEINTRESOURCE(IDD_OPT_MSN);
+	odp.pszTemplate				= MAKEINTRESOURCEA(IDD_OPT_MSN);
 	odp.pszTitle					= msnProtocolName;
 	odp.pszGroup					= "Network";
 	odp.flags						= ODPF_BOLDGROUPS;
@@ -606,7 +606,7 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 	mir_snprintf( szTitle, sizeof( szTitle ), "%s %s", msnProtocolName, MSN_Translate( "Network" ));
 
 	odp.position		= -790000001;
-	odp.pszTemplate	= MAKEINTRESOURCE(IDD_OPT_MSN_CONN);
+	odp.pszTemplate	= MAKEINTRESOURCEA(IDD_OPT_MSN_CONN);
 	odp.pszTitle		= szTitle;
 	odp.pszGroup		= "Network";
 	odp.flags         = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
@@ -616,7 +616,7 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 	mir_snprintf( szTitle, sizeof( szTitle ), "%s %s", msnProtocolName, MSN_Translate( "Server Lists" ));
 
 	odp.position		= -790000002;
-	odp.pszTemplate	= MAKEINTRESOURCE(IDD_LISTSMGR);
+	odp.pszTemplate	= MAKEINTRESOURCEA(IDD_LISTSMGR);
 	odp.pszTitle		= szTitle;
 	odp.pszGroup		= "Network";
 	odp.flags         = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
@@ -628,7 +628,7 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 		odp.cbSize			= sizeof( odp );
 		odp.position		= 100000000;
 		odp.hInstance		= hInst;
-		odp.pszTemplate	= MAKEINTRESOURCE( IDD_HOTMAIL_OPT_POPUP );
+		odp.pszTemplate	= MAKEINTRESOURCEA( IDD_HOTMAIL_OPT_POPUP );
 		odp.pszTitle		= msnProtocolName;
 		odp.pszGroup		= "Popups";
 		odp.groupPosition	= 910000000;
@@ -755,7 +755,7 @@ DWORD WINAPI MsnShowMailThread( LPVOID )
 	MSN_DebugLog( "Starting URL: '%s'", url );
 	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )url );
 	Sleep( 15000 );
-	DeleteFile( tPathName );
+	DeleteFileA( tPathName );
 	return 0;
 }
 

@@ -69,7 +69,7 @@ static char* getNewUuid()
 	UUID id;
 
 	UuidCreate( &id );
-	UuidToString( &id, &p );
+	UuidToStringA( &id, &p );
 	int len = strlen(( const char* )p );
 	char* result = ( char* )malloc( len+3 );
 	result[0]='{';
@@ -77,7 +77,7 @@ static char* getNewUuid()
 	result[ len+1 ] = '}';
 	result[ len+2 ] = 0;
 	strupr( result );
-	RpcStringFree( &p );
+	RpcStringFreeA( &p );
 	return result;
 }
 
@@ -423,7 +423,7 @@ bool p2p_connectTo( ThreadData* info )
 
 	strdel( info->mCookie, 1 );
 	info->mCookie[ strlen( info->mCookie )-1 ] = 0;
-	UuidFromString(( BYTE* )info->mCookie, ( UUID* )&reply.mAckSessionID );
+	UuidFromStringA(( BYTE* )info->mCookie, ( UUID* )&reply.mAckSessionID );
 	sttSendPacket( info, reply );
 
 	long cbPacketLen;
@@ -484,7 +484,7 @@ LBL_Error:
 	UUID uuidCookie;
 	strdel( info->mCookie, 1 );
 	info->mCookie[ strlen(info->mCookie)-1 ] = 0;
-	UuidFromString(( BYTE* )info->mCookie, &uuidCookie );
+	UuidFromStringA(( BYTE* )info->mCookie, &uuidCookie );
 
 	P2P_Header* pCookie = ( P2P_Header* )p;
 	if ( memcmp( &pCookie->mAckSessionID, &uuidCookie, sizeof( UUID ))) {
@@ -900,7 +900,7 @@ static void sttInitFileTransfer(
 			ft->wszFileName = _wcsdup( wszFileName );
 
 		char szFileName[ MAX_PATH ];
-      TCHAR cDefaultChar = '_';
+      char cDefaultChar = '_';
 		WideCharToMultiByte( CP_ACP, WC_COMPOSITECHECK | WC_DEFAULTCHAR, 
 			wszFileName, -1, szFileName, MAX_PATH, &cDefaultChar, 0 );
 		MSN_DebugLog( "File name: '%s'", szFileName );

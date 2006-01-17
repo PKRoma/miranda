@@ -40,9 +40,10 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 {
 	char urlEmail[ 255 ], *szProto;
 	UrlEncode( email, urlEmail, sizeof( urlEmail ));
+	HANDLE hContact;
 
 	//check not already on list
-	for ( HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	for ( hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 		   hContact != NULL;
 			hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
 	{
@@ -368,7 +369,7 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 
 	if (( ft->std.workingDir = strdup(( char* )ccs->lParam )) == NULL ) {
 		char szCurrDir[ MAX_PATH ];
-		GetCurrentDirectory( sizeof szCurrDir, szCurrDir );
+		GetCurrentDirectoryA( sizeof szCurrDir, szCurrDir );
 		ft->std.workingDir = strdup( szCurrDir );
 	}
 	else {
@@ -564,7 +565,7 @@ static int MsnGetInfo(WPARAM wParam,LPARAM lParam)
 
 static int MsnGetName( WPARAM wParam, LPARAM lParam )
 {
-	lstrcpyn(( char* )lParam, msnProtocolName, wParam );
+	lstrcpynA(( char* )lParam, msnProtocolName, wParam );
 	return 0;
 }
 
@@ -598,7 +599,7 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 
 	switch( tThreads ) {
 	case 0:
-		MessageBox(NULL, Translate("No active chat session is found."), Translate("MSN Chat"), MB_OK|MB_ICONINFORMATION);
+		MessageBoxA(NULL, Translate("No active chat session is found."), Translate("MSN Chat"), MB_OK|MB_ICONINFORMATION);
 		return 0;
 
 	case 1:
@@ -613,12 +614,12 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 				char sessionName[ 255 ];
 				mir_snprintf( sessionName, sizeof( sessionName ), "%s%s",
 					Translate( "MSN Chat #" ), tActiveThreads[i]->mChatID );
-				::AppendMenu( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), sessionName );
+				::AppendMenuA( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), sessionName );
 			}
-			else ::AppendMenu( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), MSN_GetContactName( *tActiveThreads[i]->mJoinedContacts ));
+			else ::AppendMenu( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), MSN_GetContactNameT( *tActiveThreads[i]->mJoinedContacts ));
 		}
 
-		HWND tWindow = CreateWindow("EDIT","",0,1,1,1,1,NULL,NULL,hInst,NULL);
+		HWND tWindow = CreateWindow(_T("EDIT"),_T(""),0,1,1,1,1,NULL,NULL,hInst,NULL);
 
 		POINT pt;
 		::GetCursorPos ( &pt );
@@ -636,7 +637,7 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 		for ( int j=0; j < tActiveThreads[ tChosenThread ]->mJoinedCount; j++ ) {
 			// if the user is already in the chat session
 			if ( tActiveThreads[ tChosenThread ]->mJoinedContacts[j] == ( HANDLE )wParam ) {
-				MessageBox(NULL, Translate("User is already in the chat session."), Translate("MSN Chat"), MB_OK|MB_ICONINFORMATION);
+				MessageBoxA(NULL, Translate("User is already in the chat session."), Translate("MSN Chat"), MB_OK|MB_ICONINFORMATION);
 				return 0;
 		}	}
 
@@ -911,7 +912,7 @@ static int MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
 	ThreadData* thread = MSN_GetThreadByContact( HANDLE(wParam) );
 
 	if ( thread == NULL ) {
-		MessageBox( NULL, MSN_Translate( "You must be talking to start Netmeeting" ), "MSN Protocol", MB_OK | MB_ICONERROR );
+		MessageBoxA( NULL, MSN_Translate( "You must be talking to start Netmeeting" ), "MSN Protocol", MB_OK | MB_ICONERROR );
 		return 0;
 	}
 
@@ -1032,7 +1033,7 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			else {
 				char tNick[ 130 ];
 				if ( !MSN_GetStaticString( "Nick", NULL, tNick, sizeof tNick ))
-					SetDlgItemText( hwndDlg, IDC_NICKNAME, tNick );
+					SetDlgItemTextA( hwndDlg, IDC_NICKNAME, tNick );
 			}
 			return TRUE;
 		}
@@ -1048,7 +1049,7 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						}
 						else {
 							char str[ 130 ];
-							GetDlgItemText( hwndDlg, IDC_NICKNAME, str, sizeof( str ));
+							GetDlgItemTextA( hwndDlg, IDC_NICKNAME, str, sizeof( str ));
 							MSN_SendNickname( str );
 					}	}
 

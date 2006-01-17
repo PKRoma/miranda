@@ -72,6 +72,11 @@ char* __stdcall MSN_GetContactName( HANDLE hContact )
 	return ( char* )MSN_CallService( MS_CLIST_GETCONTACTDISPLAYNAME, WPARAM( hContact), 0 );
 }
 
+TCHAR* __stdcall MSN_GetContactNameT( HANDLE hContact )
+{
+	return ( TCHAR* )MSN_CallService( MS_CLIST_GETCONTACTDISPLAYNAME, WPARAM( hContact), GCDNF_TCHAR );
+}
+
 DWORD __stdcall MSN_GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue )
 {
 	return DBGetContactSettingDword( hContact, msnProtocolName, valueName, parDefltValue );

@@ -57,7 +57,8 @@ unsigned long sl;
 
 static int sttDivideWords( char* parBuffer, int parMinItems, char** parDest )
 {
-	for ( int i=0; i < parMinItems; i++ ) {
+	int i;
+	for ( i=0; i < parMinItems; i++ ) {
 		parDest[ i ] = parBuffer;
 
 		int tWordLen = strcspn( parBuffer, " \t" );
@@ -228,7 +229,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 			if ( tIsPopup )
 				MSN_ShowPopup( tBuffer, tBuffer2, MSN_ALLOW_ENTER + MSN_ALLOW_MSGBOX + MSN_HOTMAIL_POPUP );
 			else
-				MessageBox( NULL, tBuffer, "MSN Protocol", MB_OK | MB_ICONINFORMATION );
+				MessageBoxA( NULL, tBuffer, "MSN Protocol", MB_OK | MB_ICONINFORMATION );
 	}	}
 
 	if ( !MSN_GetByte( "RunMailerOnHotmail", 0 ))
@@ -258,7 +259,7 @@ LBL_Run:
 				tParams++;
 
 			MSN_DebugLog( "Running mailer \"%s\" with params \"%s\"", tBuffer, tParams );
-			ShellExecute( NULL, "open", tBuffer, tParams, NULL, TRUE );
+			ShellExecuteA( NULL, "open", tBuffer, tParams, NULL, TRUE );
 }	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -347,7 +348,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 			char ipaddr[256];
 			MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
 
-			ShellExecute(NULL, "open", "conf.exe", NULL, NULL, SW_SHOW);
+			ShellExecuteA(NULL, "open", "conf.exe", NULL, NULL, SW_SHOW);
 			Sleep(3000);
 
 			char command[ 1024 ];
@@ -371,7 +372,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 
 		mir_snprintf( command, sizeof( command ), "Accept NetMeeting request from %s?", email );
 
-		if ( MessageBox( NULL, command, "MSN Protocol", MB_YESNO | MB_ICONQUESTION ) == IDYES ) {
+		if ( MessageBoxA( NULL, command, "MSN Protocol", MB_YESNO | MB_ICONQUESTION ) == IDYES ) {
 			char ipaddr[256];
 			MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
 
@@ -403,7 +404,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 	if ( IPAddress != NULL && Port == NULL && SessionID != NULL && SessionProtocol == NULL ) { // netmeeting receive 2
 		char	ipaddr[256];
 		mir_snprintf( ipaddr, sizeof( ipaddr ), "callto://%s", IPAddress);
-		ShellExecute(NULL, "open", ipaddr, NULL, NULL, SW_SHOW);
+		ShellExecuteA(NULL, "open", ipaddr, NULL, NULL, SW_SHOW);
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -882,7 +883,7 @@ LBL_InvalidCommand:
 			// if only 1 person left in conversation
 			int personleft = MSN_ContactLeft( info, MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 ));
 			// see if the session is quit due to idleness
-			if ( personleft == 1 && !lstrcmp( data.isIdle, "1" ) ) {
+			if ( personleft == 1 && !lstrcmpA( data.isIdle, "1" ) ) {
 				GCDEST gcd = {0};
 				gcd.pszModule = msnProtocolName;
 				gcd.pszID = info->mChatID;
@@ -899,8 +900,8 @@ LBL_InvalidCommand:
 				gce.pszText = Translate("To resume the conversation, please quit this session and start a new chat session.");
 				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 			}
-			else if ( personleft == 2 && lstrcmp( data.isIdle, "1" ) ) {
-				if ( MessageBox( NULL, Translate( "There is only 1 person left in the chat, do you want to switch back to standard message window?"), Translate("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
+			else if ( personleft == 2 && lstrcmpA( data.isIdle, "1" ) ) {
+				if ( MessageBoxA( NULL, Translate( "There is only 1 person left in the chat, do you want to switch back to standard message window?"), Translate("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
 					// kill chat dlg and open srmm dialog
 					GCEVENT gce = {0};
 					GCDEST gcd = {0};
@@ -1114,7 +1115,7 @@ LBL_InvalidCommand:
 			}
 
 			// only start the chat session after all the IRO messages has been recieved
-			if ( msnHaveChatDll && info->mJoinedCount > 1 && !lstrcmp(data.strThisContact, data.totalContacts) ) {
+			if ( msnHaveChatDll && info->mJoinedCount > 1 && !lstrcmpA(data.strThisContact, data.totalContacts) ) {
 				if ( info->mChatID[0] == 0 )
 					MSN_ChatStart(info);
 			}

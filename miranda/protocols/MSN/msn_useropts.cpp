@@ -81,9 +81,9 @@ static BOOL CALLBACK LoadPng2dibProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 BOOL __stdcall MSN_LoadPngModule()
 {
 	if ( sttPngLib == NULL ) {
-		if (( sttPngLib = LoadLibrary( "png2dib.dll" )) == NULL ) {
+		if (( sttPngLib = LoadLibraryA( "png2dib.dll" )) == NULL ) {
 			char tDllPath[ MAX_PATH ];
-			GetModuleFileName( hInst, tDllPath, sizeof( tDllPath ));
+			GetModuleFileNameA( hInst, tDllPath, sizeof( tDllPath ));
 			{
 				char* p = strrchr( tDllPath, '\\' );
 				if ( p != NULL )
@@ -92,7 +92,7 @@ BOOL __stdcall MSN_LoadPngModule()
 					strcpy( tDllPath, "png2dib.dll" );
 			}
 
-			if (( sttPngLib = LoadLibrary( tDllPath )) == NULL ) {
+			if (( sttPngLib = LoadLibraryA( tDllPath )) == NULL ) {
 LBL_Error:
 				DialogBox( hInst, MAKEINTRESOURCE( IDD_GET_PNG2DIB ), NULL, LoadPng2dibProc );
 				return FALSE;
@@ -103,7 +103,7 @@ LBL_Error:
 		getver           = ( pfnGetVer )        GetProcAddress( sttPngLib, "getver" );
 		if ( png2dibConvertor == NULL || dib2pngConvertor == NULL || getver == NULL ) {
 			FreeLibrary( sttPngLib ); sttPngLib = NULL;
-			MessageBox( NULL,
+			MessageBoxA( NULL,
 				MSN_Translate( "Your png2dib.dll is either obsolete or damaged. Press Ok to download the latest version" ),
 				MSN_Translate( "Error" ),
 				MB_OK | MB_ICONSTOP );
@@ -139,14 +139,14 @@ BOOL CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			char tBuffer[ MAX_PATH ];
 			if ( MSN_GetStaticString( "OnMobile", pData->hContact, tBuffer, sizeof tBuffer ))
 				strcpy( tBuffer, "N" );
-			SetDlgItemText( hwndDlg, IDC_MOBILE, tBuffer );
+			SetDlgItemTextA( hwndDlg, IDC_MOBILE, tBuffer );
 
 			if ( MSN_GetStaticString( "OnMsnMobile", pData->hContact, tBuffer, sizeof tBuffer ))
 				strcpy( tBuffer, "N" );
-			SetDlgItemText( hwndDlg, IDC_MSN_MOBILE, tBuffer );
+			SetDlgItemTextA( hwndDlg, IDC_MSN_MOBILE, tBuffer );
 
 			DWORD dwFlagBits = MSN_GetDword( pData->hContact, "FlagBits", 0 );
-			SetDlgItemText( hwndDlg, IDC_WEBMESSENGER, ( dwFlagBits & 0x200 ) ? "Y" : "N" );
+			SetDlgItemTextA( hwndDlg, IDC_WEBMESSENGER, ( dwFlagBits & 0x200 ) ? "Y" : "N" );
 
 			if ( MyOptions.EnableAvatars ) {
 				MSN_GetAvatarFileName(( HANDLE )lParam, tBuffer, sizeof tBuffer );
@@ -165,8 +165,8 @@ LBL_Reread:		DBWriteContactSettingString( pData->hContact, "ContactPhoto", "File
 				if ( stricmp( tNewContext, tSavedContext ))
 					goto LBL_Reread;
 
-				SendDlgItemMessage( hwndDlg, IDC_MSN_PICT, STM_SETIMAGE, IMAGE_BITMAP,
-					( LPARAM )LoadImage( ::GetModuleHandle(NULL), tBuffer, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE ));
+				SendDlgItemMessageA( hwndDlg, IDC_MSN_PICT, STM_SETIMAGE, IMAGE_BITMAP,
+					( LPARAM )LoadImageA( ::GetModuleHandle(NULL), tBuffer, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE ));
 		}	}
 		return TRUE;
 
@@ -177,8 +177,8 @@ LBL_Reread:		DBWriteContactSettingString( pData->hContact, "ContactPhoto", "File
 			if ( ack->type == ACKTYPE_AVATAR && ack->hContact == pData->hContact ) {
 				if ( ack->result == ACKRESULT_SUCCESS ) {
 					PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )ack->hProcess;
-					SendDlgItemMessage( hwndDlg, IDC_MSN_PICT, STM_SETIMAGE, IMAGE_BITMAP,
-						( LPARAM )LoadImage( ::GetModuleHandle(NULL), AI->filename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE ));
+					SendDlgItemMessageA( hwndDlg, IDC_MSN_PICT, STM_SETIMAGE, IMAGE_BITMAP,
+						( LPARAM )LoadImageA( ::GetModuleHandle(NULL), AI->filename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE ));
 				}
 				else if ( ack->result == ACKRESULT_STATUS )
 					p2p_invite( ack->hContact, MSN_APPID_AVATAR );
@@ -262,7 +262,7 @@ BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 
 				char tFileName[ MAX_PATH ];
 				MSN_GetAvatarFileName( NULL, tFileName, sizeof tFileName );
-				DeleteFile( tFileName );
+				DeleteFileA( tFileName );
 				DBDeleteContactSetting( NULL, msnProtocolName, "PictObject" );
 				InvalidateRect( hwndDlg, NULL, TRUE );
 				break;
@@ -296,7 +296,7 @@ int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 
 			odp.pfnDlgProc = AvatarDlgProc;
 			odp.position = 1900000000;
-			odp.pszTemplate = MAKEINTRESOURCE(IDD_SETAVATAR);
+			odp.pszTemplate = MAKEINTRESOURCEA(IDD_SETAVATAR);
 			odp.pszTitle = szTitle;
 			MSN_CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 		}
@@ -304,13 +304,13 @@ int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 	}
 
 	char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-	if ( lstrcmp( szProto, msnProtocolName ))
+	if ( lstrcmpA( szProto, msnProtocolName ))
 		return 0;
 
 	if ( MyOptions.EnableAvatars && MSN_GetDword( hContact, "FlagBits", 0 )) {
 		odp.pfnDlgProc = MsnDlgProc;
 		odp.position = -1900000000;
-		odp.pszTemplate = MAKEINTRESOURCE(IDD_USEROPTS);
+		odp.pszTemplate = MAKEINTRESOURCEA(IDD_USEROPTS);
 		odp.pszTitle = Translate(msnProtocolName);
 		MSN_CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	}

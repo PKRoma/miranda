@@ -181,6 +181,7 @@ HANDLE	__stdcall   MSN_CreateProtoServiceFunction( const char*, MIRANDASERVICE )
 void     __stdcall   MSN_EnableMenuItems( BOOL );
 void     __fastcall  MSN_FreeVariant( DBVARIANT* dbv );
 char*		__stdcall   MSN_GetContactName( HANDLE hContact );
+TCHAR*	__stdcall   MSN_GetContactNameT( HANDLE hContact );
 DWORD		__stdcall   MSN_GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
 DWORD		__stdcall   MSN_GetByte( const char* valueName, int parDefltValue );
 int		__stdcall   MSN_GetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len );

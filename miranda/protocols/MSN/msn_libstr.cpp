@@ -46,7 +46,8 @@ char* rtrim( char *string )
 
 void strdel( char* parBuffer, int len )
 {
-	for ( char* p = parBuffer+len; *p != 0; p++ )
+	char *p;
+	for ( p = parBuffer+len; *p != 0; p++ )
 		p[ -len ] = *p;
 
 	p[ -len ] = '\0';

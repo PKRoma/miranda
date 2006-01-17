@@ -133,12 +133,12 @@ void InviteUser(ThreadData* info) {
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 
 	// add the heading
-	::AppendMenu(tMenu, MF_STRING|MF_GRAYED|MF_DISABLED, (UINT_PTR)0, Translate("&Invite user..."));
+	::AppendMenu(tMenu, MF_STRING|MF_GRAYED|MF_DISABLED, (UINT_PTR)0, TranslateT("&Invite user..."));
 	::AppendMenu(tMenu, MF_SEPARATOR, (UINT_PTR)1, NULL);
 
 	// generate a list of contact
 	while ( hContact != NULL ) {
-		if ( !lstrcmp( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
+		if ( !lstrcmpA( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
 			if (DBGetContactSettingByte(hContact, msnProtocolName, "ChatRoom", 0) == 0) {
 				if (MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
 					BOOL alreadyInSession = FALSE;
@@ -149,13 +149,13 @@ void InviteUser(ThreadData* info) {
 						}
 					}
 					if (!alreadyInSession)
-						::AppendMenu(tMenu, MF_STRING, (UINT_PTR)hContact, MSN_GetContactName(hContact));
+						::AppendMenu(tMenu, MF_STRING, (UINT_PTR)hContact, MSN_GetContactNameT(hContact));
 				}
 		}	}
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
 	}
 
-	HWND tWindow = CreateWindow("EDIT","",0,1,1,1,1,NULL,NULL,hInst,NULL);
+	HWND tWindow = CreateWindow(_T("EDIT"),_T(""),0,1,1,1,1,NULL,NULL,hInst,NULL);
 
 	POINT pt;
 	::GetCursorPos ( &pt );
@@ -177,9 +177,9 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 	char S[512] = "";
 
 	if(gch) {
-		if (!lstrcmpi(gch->pDest->pszModule, msnProtocolName)) {
-			char *p = new char[lstrlen(gch->pDest->pszID)+1];
-			lstrcpy(p, gch->pDest->pszID);
+		if (!lstrcmpiA(gch->pDest->pszModule, msnProtocolName)) {
+			char *p = new char[lstrlenA(gch->pDest->pszID)+1];
+			lstrcpyA(p, gch->pDest->pszID);
 			switch (gch->pDest->iType) {
 			case GC_USER_TERMINATE: {
 				int chatID = atoi( p );
@@ -198,13 +198,12 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 				break;
 			}
 			case GC_USER_MESSAGE:
-				if ( gch && gch->pszText && lstrlen( gch->pszText ) > 0 ) {
+				if ( gch && gch->pszText && lstrlenA( gch->pszText ) > 0 ) {
 					CCSDATA ccs = {0};
 
 					// remove the ending linebreak
-					while (gch->pszText[lstrlen(gch->pszText)-1] == '\r' || gch->pszText[lstrlen(gch->pszText)-1] == '\n') {
-						gch->pszText[lstrlen(gch->pszText)-1] = '\0';
-					}
+					while (gch->pszText[lstrlenA(gch->pszText)-1] == '\r' || gch->pszText[lstrlenA(gch->pszText)-1] == '\n')
+						gch->pszText[lstrlenA(gch->pszText)-1] = '\0';
 
 					ccs.hContact = (HANDLE)-atoi(p);
 					ccs.wParam = 0;
@@ -301,7 +300,7 @@ int MSN_GCMenuHook(WPARAM wParam,LPARAM lParam) {
 	GCMENUITEMS *gcmi= (GCMENUITEMS*) lParam;
 
 	if ( gcmi ) {
-		if (!lstrcmpi(gcmi->pszModule, msnProtocolName)) {
+		if (!lstrcmpiA(gcmi->pszModule, msnProtocolName)) {
 			if(gcmi->Type == MENU_ON_LOG) {
 				static struct gc_item Item[] = {
 					{Translate("&Invite user..."), 10, MENU_ITEM, FALSE},
@@ -313,7 +312,7 @@ int MSN_GCMenuHook(WPARAM wParam,LPARAM lParam) {
 			if(gcmi->Type == MENU_ON_NICKLIST) {
 				char tEmail[ MSN_MAX_EMAIL_LEN ];
 				MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof tEmail );
-				if (!lstrcmp(tEmail, (char *)gcmi->pszUID)) {
+				if (!lstrcmpA(tEmail, (char *)gcmi->pszUID)) {
 					static struct gc_item Item[] = {
 						{Translate("User &details"), 10, MENU_ITEM, FALSE},
 						{Translate("User &history"), 20, MENU_ITEM, FALSE},

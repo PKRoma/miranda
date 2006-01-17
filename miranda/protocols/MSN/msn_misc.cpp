@@ -53,8 +53,8 @@ char* __stdcall MirandaStatusToMSN( int status )
 	switch(status)
 	{
 		case ID_STATUS_OFFLINE:		return "FLN";
-		case ID_STATUS_NA:			return ( MyOptions.AwayAsBrb ) ? "AWY" : "BRB";
-		case ID_STATUS_AWAY:			return ( MyOptions.AwayAsBrb ) ? "BRB" : "AWY";
+		case ID_STATUS_NA:			return ( MyOptions.AwayAsBrb ) ? (char *)"AWY" : (char *)"BRB";
+		case ID_STATUS_AWAY:			return ( MyOptions.AwayAsBrb ) ? (char *)"BRB" : (char *)"AWY";
 		case ID_STATUS_DND:
 		case ID_STATUS_OCCUPIED:	return "BSY";
 		case ID_STATUS_ONTHEPHONE: return "PHN";
@@ -229,7 +229,7 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 
 	int tPathLen = strlen( pszDest );
 	tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\MSN\\"  );
-	CreateDirectory( pszDest, NULL );
+	CreateDirectoryA( pszDest, NULL );
 
 	if ( hContact != NULL ) {
 		char szEmail[ MSN_MAX_EMAIL_LEN ];
@@ -271,7 +271,7 @@ void __stdcall	MSN_GoOffline()
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
 	{
-		if ( !lstrcmp( msnProtocolName, (char*)MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 )))
+		if ( !lstrcmpA( msnProtocolName, (char*)MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 )))
 			if ( ID_STATUS_OFFLINE != MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE ))
 				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
 
@@ -498,7 +498,7 @@ void __cdecl MSN_ShowError( const char* msgtext, ... )
 	if ( MyOptions.ShowErrorsAsPopups )
 		MSN_ShowPopup( msnProtocolName, tBuffer, MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR );
 	else
-		MessageBox( NULL, tBuffer, msnProtocolName, MB_OK );
+		MessageBoxA( NULL, tBuffer, msnProtocolName, MB_OK );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -520,7 +520,7 @@ void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 {
 	if ( !ServiceExists( MS_POPUP_ADDPOPUP )) {
 		if ( flags & MSN_ALLOW_MSGBOX )
-			MessageBox( NULL, msg, "MSN Protocol", MB_OK + ( flags & MSN_SHOW_ERROR ) ? MB_ICONERROR : MB_ICONINFORMATION );
+			MessageBoxA( NULL, msg, "MSN Protocol", MB_OK + ( flags & MSN_SHOW_ERROR ) ? MB_ICONERROR : MB_ICONINFORMATION );
 
 		return;
 	}
@@ -535,7 +535,7 @@ void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 	if ( flags & MSN_SHOW_ERROR ) {
 		ppd->lchIcon   = LoadIcon( NULL, IDI_WARNING );
 		if ( ServiceExists( MS_POPUP_ADDCLASS ))
-			ppd->lpzClass  = POPUP_CLASS_WARNING;
+			ppd->lpzClass  = _T(POPUP_CLASS_WARNING);
 		else {
 			ppd->colorBack = RGB(191,0,0); //Red
 			ppd->colorText = RGB(255,245,225); //Yellow
@@ -970,19 +970,19 @@ char* TWinErrorCode::getText()
 		int tBytes = 0;
 
 		if ( mErrorCode >= 12000 && mErrorCode < 12500 )
-			tBytes = FormatMessage(
+			tBytes = FormatMessageA(
 				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_HMODULE,
-				::GetModuleHandle( "WININET.DLL" ),
-				mErrorCode, LANG_NEUTRAL, (LPTSTR)&mErrorText, 0, NULL );
+				::GetModuleHandleA( "WININET.DLL" ),
+				mErrorCode, LANG_NEUTRAL, (LPSTR)&mErrorText, 0, NULL );
 
 		if ( tBytes == 0 )
-			tBytes = FormatMessage(
+			tBytes = FormatMessageA(
 				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL,
-				mErrorCode, LANG_NEUTRAL, (LPTSTR)&mErrorText, 0, NULL );
+				mErrorCode, LANG_NEUTRAL, (LPSTR)&mErrorText, 0, NULL );
 
 		if ( tBytes == 0 )
 		{
-			mErrorText = ( LPTSTR )LocalAlloc( LMEM_FIXED, 100 );
+			mErrorText = ( LPSTR )LocalAlloc( LMEM_FIXED, 100 );
 			tBytes = mir_snprintf( mErrorText, 100, "unknown Windows error code %d", mErrorCode );
 		}
 

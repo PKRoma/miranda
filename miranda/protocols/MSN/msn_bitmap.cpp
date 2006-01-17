@@ -188,7 +188,7 @@ int __stdcall MSN_EnterBitmapFileName( char* szDest )
 	MSN_CallService( MS_UTILS_GETBITMAPFILTERSTRINGS, sizeof szFilter, ( LPARAM )szFilter );
 
 	char str[ MAX_PATH ]; str[0] = 0;
-	OPENFILENAME ofn = {0};
+	OPENFILENAMEA ofn = {0};
 	ofn.lStructSize = sizeof( OPENFILENAME );
 	ofn.lpstrFilter = szFilter;
 	ofn.lpstrFile = szDest;
@@ -196,7 +196,7 @@ int __stdcall MSN_EnterBitmapFileName( char* szDest )
 	ofn.nMaxFile = MAX_PATH;
 	ofn.nMaxFileTitle = MAX_PATH;
 	ofn.lpstrDefExt = "bmp";
-	if ( !GetOpenFileName( &ofn ))
+	if ( !GetOpenFileNameA( &ofn ))
 		return 1;
 
 	return ERROR_SUCCESS;
