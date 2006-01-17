@@ -228,19 +228,29 @@ void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const char *szText, BOO
 		MyUpdateLayeredWindow(g_hwndSFL, 0, &ptDest, &szDest, g_SFLCachedDC, &ptSrc, GetSysColor(COLOR_3DFACE), &bf, ULW_ALPHA | ULW_COLORKEY);
 }
 
-void SFL_SetState()
+/*
+ * set the floater
+ * mode = 0/1 forced hide/show
+ * OR -1 to set it depending on the clist state (visible/hidden)
+ */
+
+void SFL_SetState(int uMode)
 {
 	BYTE bClistState;
 
 	if(g_hwndSFL == 0 || !(g_CluiData.bUseFloater & CLUI_USE_FLOATER))
 		return;
 
-	if(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE) {
-		bClistState = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
-		ShowWindow(g_hwndSFL, bClistState == SETTING_STATE_NORMAL ? SW_HIDE : SW_SHOW);
+	if(uMode == -1) {
+		if(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE) {
+			bClistState = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
+			ShowWindow(g_hwndSFL, bClistState == SETTING_STATE_NORMAL ? SW_SHOW : SW_HIDE);
+		}
+		else
+			ShowWindow(g_hwndSFL, SW_SHOW);
 	}
 	else
-		ShowWindow(g_hwndSFL, SW_SHOW);
+		ShowWindow(g_hwndSFL, uMode ? SW_SHOW : SW_HIDE);
 }
 
 // XXX improve size calculations for the floater window.

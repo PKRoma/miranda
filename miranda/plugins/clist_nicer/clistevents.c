@@ -225,8 +225,6 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 			dwLeft = rc.left;
 
 			PaintNotifyArea(hdcMem, &rc);
-			if(g_CluiData.bUseFloater & CLUI_USE_FLOATER && g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS)
-				SFL_Update(0, 0, 0, NULL, FALSE);
 			if(g_CluiData.dwFlags & CLUI_FRAME_EVENTAREASUNKEN) {
 				rc.left = dwLeft;
 				InflateRect(&rc, -2, -2);
@@ -323,6 +321,8 @@ struct CListEvent* AddEvent(CLISTEVENT *cle)
 			}
 		}
 		InvalidateRect(hwndEventFrame, NULL, FALSE);
+		if(g_CluiData.bUseFloater & CLUI_USE_FLOATER && g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS)
+			SFL_Update(0, 0, 0, NULL, FALSE);
 	}
 
 	return p;
@@ -376,6 +376,9 @@ void RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 	if (hContact == g_CluiData.hUpdateContact || (int)hDbEvent == 1)
 		g_CluiData.hUpdateContact = 0;
 
-	if (g_CluiData.notifyActive)
+	if (g_CluiData.notifyActive) {
 		InvalidateRect(hwndEventFrame, NULL, FALSE);
+		if(g_CluiData.bUseFloater & CLUI_USE_FLOATER && g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS)
+			SFL_Update(0, 0, 0, NULL, FALSE);
+	}
 }

@@ -1074,7 +1074,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			//PostMessage(hwnd, WM_SIZE, 0, 0);
 			//PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
 			SFL_Create();
-			SFL_SetState();
+			SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL) == SETTING_STATE_NORMAL ? 0 : 1) : 1);
 			return 0;
 		}
 	case WM_ERASEBKGND:
@@ -1469,7 +1469,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if(g_CluiData.forceResize)
 				SendMessage(hwnd, WM_SIZE, 0, 0);
 			if(!g_CluiData.fadeinout)
-				SFL_SetState();
+				SFL_SetState(-1);
 			if (lParam)
 				return DefWindowProc(hwnd, msg, wParam, lParam);
 			if (noRecurse)
@@ -1500,7 +1500,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), (BYTE) (destAlpha), LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
 			g_fading_active = 0;
-			SFL_SetState();
+			SFL_SetState(-1);
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
 	case WM_MENUSELECT:
@@ -1712,7 +1712,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					g_CluiData.bUseFloater ^= CLUI_USE_FLOATER;
 					if(g_CluiData.bUseFloater & CLUI_USE_FLOATER) {
 						SFL_Create();
-						SFL_SetState();
+						SFL_SetState(-1);
 					}
 					else
 						SFL_Destroy();
@@ -1722,10 +1722,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			case POPUP_FLOATER_AUTOHIDE:
 				{
 					g_CluiData.bUseFloater ^= CLUI_FLOATER_AUTOHIDE;
-					if(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE)
-						SFL_SetState();
-					else
-						ShowWindow(g_hwndSFL, SW_SHOWNORMAL);
+					SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL) == SETTING_STATE_NORMAL ? 0 : 1) : 1);
 					DBWriteContactSettingByte(NULL, "CLUI", "FloaterMode", g_CluiData.bUseFloater);
 					break;
 				}
