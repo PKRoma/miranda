@@ -56,7 +56,7 @@ PLUGININFO			pluginInfo=
 
 
 
-BOOL APIENTRY DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
+extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
 	g_hInstance=hinstDLL;
 

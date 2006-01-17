@@ -126,3 +126,4 @@ typedef struct MBOT_GUI_WPARAM_IN_STRUCT
 #define MS_MBOT_IRC_GUI_OUT  "MBot/IrcGuiOut"				
 
 #define MS_MBOT_REGISTERIRC "MBot/RegisterIRCModule"
+

@@ -308,3 +308,4 @@ BOOL Scripting_TriggerMSPGuiOut(GCHOOK * gch);
 #pragma comment(lib,"comctl32.lib")
 
 #endif
+
