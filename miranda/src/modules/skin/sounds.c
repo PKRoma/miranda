@@ -315,11 +315,11 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						SendMessage(hwndDlg, DM_HIDEPANE, 0, 0);
 					}
 					else {
-						char buf[256];
+						TCHAR buf[256];
 						DBVARIANT dbv;
 
-						mir_snprintf(buf, SIZEOF(buf), "%s: %s", soundList[tvi.lParam].section, soundList[tvi.lParam].description);
-						SetDlgItemTextA(hwndDlg, IDC_NAMEVAL, buf);
+						mir_sntprintf(buf, SIZEOF(buf), _T("%s: %s"), soundList[tvi.lParam].section, soundList[tvi.lParam].description);
+						SetDlgItemText(hwndDlg, IDC_NAMEVAL, buf);
 						if (soundList[tvi.lParam].tempFile) 
 							SetDlgItemTextA(hwndDlg, IDC_LOCATION, soundList[tvi.lParam].tempFile);
 						else if(!DBGetContactSetting(NULL,"SkinSounds",soundList[tvi.lParam].name,&dbv)) {
