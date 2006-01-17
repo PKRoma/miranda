@@ -281,7 +281,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					gcw.pszID = jid;
 					gcw.pszModule = jabberProtoName;
 					gcw.pszName = strcpy(( char* )alloca( strlen(jid)+1 ), jid );
-					if (( p = strchr( gcw.pszName, '@' )) != NULL )
+					if (( p = (char*)strchr( gcw.pszName, '@' )) != NULL )
 						*p = 0;
 					CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
 				}

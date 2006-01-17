@@ -148,7 +148,7 @@ HANDLE __stdcall JabberHContactFromJID( const char* jid )
 
 char* __stdcall JabberNickFromJID( const char* jid )
 {
-	char* p;
+	const char* p;
 	char* nick;
 
 	if (( p=strchr( jid, '@' )) == NULL )

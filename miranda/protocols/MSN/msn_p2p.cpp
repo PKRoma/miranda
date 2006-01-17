@@ -1230,7 +1230,7 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 		iMsgType = 4;
 
 	if ( iMsgType ) {
-		char* peol = strstr( msgbody, "\r\n" );
+		const char* peol = strstr( msgbody, "\r\n" );
 		if ( peol != NULL )
 			msgbody = peol+2;
 

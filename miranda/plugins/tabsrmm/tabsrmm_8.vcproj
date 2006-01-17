@@ -2,9 +2,13 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8,00"
-	Name="tabsrmm_8"
-	ProjectGUID="{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
+	Name="tabsrmm"
+	ProjectGUID="{883A9047-0B5A-4A89-88C1-4DCE27123BE9}"
 	RootNamespace="srmm"
+	SccProjectName="SAK"
+	SccAuxPath="SAK"
+	SccLocalPath="SAK"
+	SccProvider="SAK"
 	>
 	<Platforms>
 		<Platform
@@ -16,8 +20,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -59,6 +63,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -76,6 +81,7 @@
 				AdditionalDependencies="comctl32.lib msimg32.lib"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
+				GenerateManifest="false"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/srmm.pdb"
@@ -109,14 +115,14 @@
 		</Configuration>
 		<Configuration
 			Name="Release Unicode|Win32"
-			OutputDirectory="../../bin7/Release/Plugins"
-			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Release/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
-			WholeProgramOptimization="0"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -141,14 +147,15 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="1"
+				Optimization="3"
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\..\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_USE_32BIT_TIME_T"
 				StringPooling="true"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				FloatingPointModel="1"
 				UsePrecompiledHeader="2"
@@ -156,6 +163,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="0"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -172,9 +180,9 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="comctl32.lib"
-				OutputFile="$(OutDir)\tabsrmm_unicode.dll"
-				LinkIncremental="1"
+				LinkIncremental="0"
 				SuppressStartupBanner="true"
+				GenerateManifest="false"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="false"
 				GenerateMapFile="false"
@@ -213,8 +221,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="../../bin7/Release/Plugins"
-			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -259,6 +267,7 @@
 				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -275,7 +284,6 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="comctl32.lib"
-				OutputFile="$(OutDir)\tabsrmm.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				DelayLoadDLLs=""
@@ -314,8 +322,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="../../bin7/Debug/Plugins"
-			IntermediateDirectory="../../bin7/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -353,10 +361,10 @@
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
-				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -865,10 +873,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\res\angeli-icons\AddXP.ico"
 				>
 			</File>
@@ -909,31 +913,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\res\dropuser.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
-				>
-			</File>
-			<File
 				RelativePath=".\res\error.ico"
 				>
 			</File>
 			<File
 				RelativePath=".\res\expand.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
@@ -950,18 +934,6 @@
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\HistoryXP.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\res\hyperlin.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -986,10 +958,6 @@
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\Multi.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\multisend.ico"
 				>
 			</File>
 			<File
@@ -1065,10 +1033,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\rename.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\resource.rc"
 				>
 			</File>
@@ -1077,11 +1041,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File
@@ -1114,10 +1078,6 @@
 			</File>
 			<File
 				RelativePath=".\res\unchecked.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\viewdetails.ico"
 				>
 			</File>
 			<File

@@ -151,7 +151,7 @@ void StreamInHtml(HWND hwndEdit,const char *szHtml)
 	AppendToCharBuffer(&header,"{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Tahoma;}}");
 	for(pszHtml=szHtml;*pszHtml;) {
 		if(*pszHtml=='<') {
-			char *pszTagEnd;
+			const char *pszTagEnd;
 			int iNameEnd,i;
 			char szTagName[16];
 			
@@ -217,7 +217,7 @@ void StreamInHtml(HWND hwndEdit,const char *szHtml)
 			pszHtml=pszTagEnd+1;
 		}
 		else if(*pszHtml=='&') {
-			char *pszTagEnd;
+			const char *pszTagEnd;
 			char szTag[16];
 			int i;
 

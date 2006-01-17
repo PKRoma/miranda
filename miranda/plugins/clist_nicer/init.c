@@ -273,9 +273,9 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	_tzset();
 	{
-		DWORD now = time(NULL);
+		time_t now = time(NULL);
 		struct tm gmt = *gmtime(&now);
-		DWORD gmt_time = mktime(&gmt);
+		time_t gmt_time = mktime(&gmt);
 		g_CluiData.local_gmt_diff = (int)difftime(now, gmt_time);
 
 	}

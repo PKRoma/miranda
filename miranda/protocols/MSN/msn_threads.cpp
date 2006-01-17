@@ -467,7 +467,7 @@ void ThreadData::processSessionData( const char* str )
 {
 	char tSessionID[40], tGateIP[ 40 ];
 
-	char* tDelim = strchr( str, ';' );
+	char* tDelim = ( char* )strchr( str, ';' );
 	if ( tDelim == NULL )
 		return;
 

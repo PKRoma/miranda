@@ -183,7 +183,7 @@ void JabberListRemoveByIndex( int index )
 int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const char* statusMessage )
 {
 	int j;
-	char* p, *q;
+	const char* p, *q;
 
 	EnterCriticalSection( &csLists );
 	int i = JabberListExist( list, jid );
@@ -197,7 +197,7 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 
 	if (( p=strchr( jid, '@' )) != NULL ) {
 		if (( q=strchr( p, '/' )) != NULL ) {
-			char* resource = q+1;
+			const char* resource = q+1;
 			if ( resource[0] ) {
 				JABBER_RESOURCE_STATUS* r = LI->resource;
 				for ( j=0; j < LI->resourceCount; j++, r++ ) {
@@ -233,7 +233,7 @@ int JabberListAddResource( JABBER_LIST list, const char* jid, int status, const 
 void JabberListRemoveResource( JABBER_LIST list, const char* jid )
 {
 	int j;
-	char* p, *q;
+	const char* p, *q;
 
 	EnterCriticalSection( &csLists );
 	int i = JabberListExist( list, jid );
@@ -245,7 +245,7 @@ void JabberListRemoveResource( JABBER_LIST list, const char* jid )
 
 	if (( p=strchr( jid, '@' )) != NULL ) {
 		if (( q=strchr( p, '/' )) != NULL ) {
-			char* resource = q+1;
+			const char* resource = q+1;
 			if ( resource[0] ) {
 				JABBER_RESOURCE_STATUS* r = LI->resource;
 				for ( j=0; j < LI->resourceCount; j++, r++ ) {

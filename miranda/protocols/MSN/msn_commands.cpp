@@ -201,7 +201,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	else {
 		const char* MailData = tFileInfo[ "Mail-Data" ];
 		if ( MailData != NULL ) {
-			char* p = strstr( MailData, "<IU>" );
+			const char* p = strstr( MailData, "<IU>" );
 			if ( p != NULL )
 				UnreadMessages = atoi( p+4 );
 			if (( p = strstr( MailData, "<OU>" )) != NULL )
