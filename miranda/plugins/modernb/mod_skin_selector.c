@@ -267,7 +267,7 @@ int ParseToModernMask(ModernMask * mm, char * szText)
                   }
                   memcpy(&(mm->ParamsList[curParam]),&param,sizeof(ModernParam));
                   curParam++;
-                memset(&param,0,sizeof(param));
+                  memset(&param,0,sizeof(ModernParam));
             }
         }
     }

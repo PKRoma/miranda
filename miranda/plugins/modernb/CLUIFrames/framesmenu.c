@@ -59,13 +59,13 @@ static int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 	lpFrameMenuExecParam fmep;
 	fmep=(lpFrameMenuExecParam)CallService(MO_MENUITEMGETOWNERDATA,wParam,lParam);
 	if (fmep!=NULL){
-#ifdef _DEBUG
-		{
-			char buf[250];
-			sprintf(buf, "RemoveContextMenu: fmep=%x frameid=%x, service=%s\n",fmep,fmep->Frameid,fmep->szServiceName);
-			TRACE(buf);
-		}
-#endif		
+//#ifdef _DEBUG
+//		{
+//			char buf[250];
+//			sprintf(buf, "RemoveContextMenu: fmep=%x frameid=%x, service=%s\n",fmep,fmep->Frameid,fmep->szServiceName);
+//			TRACE(buf);
+//		}
+//#endif		
 		
 		if (fmep->szServiceName!=NULL){
 			mir_free(fmep->szServiceName);

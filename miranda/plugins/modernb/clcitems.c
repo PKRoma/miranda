@@ -153,8 +153,11 @@ void FreeContact(struct ClcContact *p)
 	}	}
 
 	Cache_DestroySmileyList(p->plText);
+	p->plText=NULL;
 	Cache_DestroySmileyList(p->plSecondLineText);
+  p->plSecondLineText=NULL;
 	Cache_DestroySmileyList(p->plThirdLineText);
+  p->plThirdLineText=NULL;
 	if (p->szSecondLineText)
 		mir_free(p->szSecondLineText);
 	if (p->szThirdLineText)

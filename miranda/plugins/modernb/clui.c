@@ -292,7 +292,7 @@ void ChangeWindowMode()
 	//4- Set Title
 	{
 		TCHAR titleText[255]={0};
-		DBVARIANT dbv;
+		DBVARIANT dbv={0};
 		if(DBGetContactSettingTString(NULL,"CList","TitleText",&dbv))
 			lstrcpyn(titleText,TEXT(MIRANDANAME),sizeof(titleText));
 		else 
@@ -2330,7 +2330,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			GetWindowRect(hwnd, &rc);
 
 			CheckFramesPos(&rc);
-			ReposButtons(hwnd,1,&rc);
+			//ReposButtons(hwnd,1,&rc);
 			OnMoving(hwnd,&rc);
 
 			if(!IsIconic(hwnd)) {
@@ -2637,7 +2637,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		}
 		else {
 			POINT pt;
-			HWND hwndPt,thwnd;
+			HWND hwndPt;
 			pt.x=(short)LOWORD(GetMessagePos());
 			pt.y=(short)HIWORD(GetMessagePos());
 			hwndPt=WindowFromPoint(pt);
@@ -2691,11 +2691,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			KillTimer(hwnd,TM_BRINGOUTTIMEOUT);
 			GetCursorPos(&pt);
 			hAux = WindowFromPoint(pt);
-			while(hAux != NULL) 
-			{
-				if (hAux == hwnd) {mouse_in_window=1; break;}
-				hAux = GetParent(hAux);
-			}
+			mouse_in_window=CheckOwner(hAux);
 			if (!mouse_in_window && GetForegroundWindow()!=hwnd)
 			{
 				BehindEdge_Hide(); 
@@ -3161,7 +3157,7 @@ static int MenuItem_PreBuild(WPARAM wParam, LPARAM lParam)
 		}
 		else
 		{
-			DBVARIANT dbv;
+			DBVARIANT dbv={0};
 			if (DBGetContactSetting(hItem, "ContactPhoto", "File", &dbv))
 			{
 				has_avatar = 0;

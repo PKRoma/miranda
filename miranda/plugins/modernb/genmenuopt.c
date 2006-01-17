@@ -261,7 +261,7 @@ int BuildTree(HWND hwndDlg,int MenuObjectId)
 				
 				{
 				
-					DBVARIANT dbv;
+					DBVARIANT dbv={0};
 					sprintf(buf, "%s_name", menuItemName);
 					
 					if (!DBGetContactSetting(NULL, MenuNameItems, buf, &dbv))

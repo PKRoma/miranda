@@ -58,6 +58,7 @@ extern void TrayIconUpdateBase(char *szChangedProto);
 extern void TrayIconSetToBase(char *szPreferredProto);
 extern void TrayIconIconsChanged(void);
 extern void fnCluiProtocolStatusChanged(int status,const unsigned char * proto);
+extern int sfnFindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible);
 extern HMENU BuildGroupPopupMenu(struct ClcGroup *group);
 struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
 
@@ -86,7 +87,7 @@ void ( *saveDeleteItemFromTree )(HWND hwnd, HANDLE hItem);
 void DeleteItemFromTree(HWND hwnd, HANDLE hItem);
 
 void ( *saveFreeContact )( struct ClcContact* );
-void FreeContact( struct ClcContact* );
+extern void FreeContact( struct ClcContact* );
 
 void ( *saveFreeGroup )( struct ClcGroup* );
 void FreeGroup( struct ClcGroup* );
@@ -168,12 +169,12 @@ int SetDrawer(WPARAM wParam,LPARAM lParam)
 
 static struct ClcContact* fnCreateClcContact( void )
 {
-	return (struct ClcContact*)calloc(1, sizeof( struct ClcContact ) );
+	return (struct ClcContact*)mir_calloc(1, sizeof( struct ClcContact ) );
 }
 
 static ClcCacheEntryBase* fnCreateCacheItem( HANDLE hContact )
 {
-	pdisplayNameCacheEntry p = (pdisplayNameCacheEntry)calloc( 1, sizeof( displayNameCacheEntry ));
+	pdisplayNameCacheEntry p = (pdisplayNameCacheEntry)mir_calloc( 1, sizeof( displayNameCacheEntry ));
 	if ( p )
 	{
 		p->hContact = hContact;
@@ -248,6 +249,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnTrayIconUpdateWithImageList=TrayIconUpdateWithImageList;
 	pcli->pfnTrayIconSetToBase=TrayIconSetToBase;
 	pcli->pfnTrayIconIconsChanged=TrayIconIconsChanged;
+
+  pcli->pfnFindItem=sfnFindItem;
 
 	pcli->pfnGetRowByIndex=GetRowByIndex;
 

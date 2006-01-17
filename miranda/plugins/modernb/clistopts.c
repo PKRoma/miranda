@@ -728,7 +728,7 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 			CheckDlgButton(hwndDlg, IDC_DRAW_SMILEYS, DBGetContactSettingByte(NULL,"CList","SecondLineDrawSmileys",1) == 1 ? BST_CHECKED : BST_UNCHECKED);
 
 			{
-				DBVARIANT dbv;
+				DBVARIANT dbv={0};
 
 				if (!DBGetContactSettingTString(NULL, "CList","SecondLineText", &dbv))
 				{
@@ -911,7 +911,7 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 			CheckDlgButton(hwndDlg, IDC_DRAW_SMILEYS, DBGetContactSettingByte(NULL,"CList","ThirdLineDrawSmileys",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
 
 			{
-				DBVARIANT dbv;
+				DBVARIANT dbv={0};
 
 				if (!DBGetContactSettingTString(NULL, "CList","ThirdLineText", &dbv))
 				{
@@ -1539,7 +1539,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	switch (msg)
 	{
 	case WM_INITDIALOG:
-		{	DBVARIANT dbv;
+		{	DBVARIANT dbv={0};
 
 		TranslateDialogDefault(hwndDlg);
 

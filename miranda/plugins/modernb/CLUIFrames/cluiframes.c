@@ -2966,7 +2966,7 @@ boolean AlignCOLLIconToLeft; //will hide frame icon
 int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
 {
   {	
-    DBVARIANT dbv;
+    DBVARIANT dbv={0};
 
     AlignCOLLIconToLeft=DBGetContactSettingByte(NULL,"FrameTitleBar","AlignCOLLIconToLeft",0);
 

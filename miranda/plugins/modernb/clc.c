@@ -270,8 +270,22 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 {
 	ACKDATA *ack=(ACKDATA*)lParam;
-
-	if (ack->type==ACKTYPE_AWAYMSG)
+	
+	if (ack->type == ACKTYPE_STATUS) 
+	{ int i;
+		if (ack->result == ACKRESULT_SUCCESS) {
+			for (i = 0; i < pcli->hClcProtoCount; i++) {
+				if (!lstrcmpA(pcli->clcProto[i].szProto, ack->szModule)) {
+					pcli->clcProto[i].dwStatus = (WORD) ack->lParam;
+					if (pcli->clcProto[i].dwStatus>=ID_STATUS_OFFLINE)
+						pcli->pfnTrayIconUpdateBase(pcli->clcProto[i].szProto);
+					//TODO call update icons here
+					return 0;
+				}
+			}
+		}
+	}
+	else if (ack->type==ACKTYPE_AWAYMSG)
 	{
 		if (ack->result==ACKRESULT_SUCCESS && ack->lParam) {
 			{//Do not change DB if it is IRC protocol    
@@ -478,7 +492,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			//InitDisplayNameCache(&dat->lCLCContactsCache);
 
 			LoadClcOptions(hwnd,dat);
-			pcli->pfnRebuildEntireList(hwnd,dat);
+			//pcli->pfnRebuildEntireList(hwnd,dat);
 
 			TRACE("Create New ClistControl END\r\n");
 			SetTimer(hwnd,TIMERID_INVALIDATE,2000,NULL);

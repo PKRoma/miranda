@@ -235,7 +235,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
       EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZESPIN),FALSE);
       EnableWindow(GetDlgItem(hwndDlg,IDC_AUTOSIZEUPWARD),FALSE);
     }
-    {	DBVARIANT dbv;
+    {	DBVARIANT dbv={0};
     TCHAR *s=NULL;
     char szUin[20];
     if(!DBGetContactSettingTString(NULL,"CList","TitleText",&dbv))

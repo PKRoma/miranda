@@ -335,7 +335,7 @@ static int ServiceSkinPlayHotKey(WPARAM wParam, LPARAM lParam)
 	if (phi==NULL) return 1;
 
 	if (DBGetContactSettingByte(NULL, "SkinHotKeysOff", phi->name, 0)==0) {
-		//				DBVARIANT dbv;
+		//				DBVARIANT dbv={0};
 
 		//				if (DBGetContactSetting(NULL, "SkinHotKeys", pszHotKeyName, &dbv)==0) {
 		//                    char szFull[MAX_PATH];

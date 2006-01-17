@@ -180,6 +180,9 @@ static TCHAR *TrayIconMakeTooltip(const TCHAR *szPrefix,const char *szProto) //T
 			_tcsncat(szTip,szProtoName,sizeof(szTip)/sizeof(TCHAR)-1-lstrlen(szTip));
 			_tcsncat(szTip,TEXT(" "),sizeof(szTip)/sizeof(TCHAR)-1-lstrlen(szTip));
 			_tcsncat(szTip,szStatus,sizeof(szTip)/sizeof(TCHAR)-1-lstrlen(szTip));
+#ifdef UNICODE
+			if (szProtoName) mir_free(szProtoName);
+#endif
 		}
 	}
 	else {
@@ -316,7 +319,7 @@ static int TrayIconInit(HWND hwnd)
 					if(protos[j]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[j]->szName)!=0)) TrayIconAdd(hwnd,protos[j]->szName,NULL,CallProtoService(protos[j]->szName,PS_GETSTATUS,0,0));
 			}
 		}
-	else if(averageMode<=0 && DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE) {
+	else if(averageMode>=0 && DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE) {
 		DBVARIANT dbv={DBVT_DELETED};
 		char *szProto;
 		if(DBGetContactSetting(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
@@ -412,8 +415,8 @@ static int TrayIconUpdate(HICON hNewIcon,const TCHAR *szNewTip,const char *szPre
 
 		if(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI ) 
 		{
-			//if(RefreshTimerId) {KillTimer(NULL,RefreshTimerId); RefreshTimerId=0;}
-			//RefreshTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*1001,RefreshTimerProc);	// by FYR (Setting timer)
+			if(RefreshTimerId) {KillTimer(NULL,RefreshTimerId); RefreshTimerId=0;}
+			RefreshTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*1005,RefreshTimerProc);	// by FYR (Setting timer)
 			return -1;	//by FYR (to change only one icon)
 		}		
 
@@ -530,109 +533,107 @@ void TrayIconUpdateBase(char *szChangedProto)
 			else changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(NULL,averageMode,NULL),ILD_NORMAL),NULL);
 		}
 		else {
-			switch(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)) {
-case SETTING_TRAYICON_SINGLE:
-	{	
-		DBVARIANT dbv={DBVT_DELETED};
-	char *szProto;
-	int status;
-	if(DBGetContactSetting(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
-	else szProto=dbv.pszVal;
-	status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
-	if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
-	{
-		//
-		HICON hIcon;
-
-		hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);;										
-		if (hIcon)
-		{
-			changed=TrayIconSetBaseInfo(hIcon,NULL);						
-			TrayIconUpdate(hIcon,NULL,NULL,1);
-
-			DestroyIcon(hIcon);
-			DBFreeVariant(&dbv);
-			break;
-		}
-
-		//return;
-	}
-	else
-	{
-		changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szProto,szProto?CallProtoService(szProto,PS_GETSTATUS,0,0):CallService(MS_CLIST_GETSTATUSMODE,0,0),NULL),ILD_NORMAL),NULL);
-	}
-
-
-
-	DBFreeVariant(&dbv);
-	break;
-	}
-case SETTING_TRAYICON_CYCLE:
-	cycleTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*1000,TrayCycleTimerProc);
-	changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0),NULL),ILD_NORMAL),NULL);
-	break;
-case SETTING_TRAYICON_MULTI:
-	if (!trayIcon) 
-	{
-		TrayIconRemove(NULL,NULL);
-	} else 
-
-		if(DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT))
-		{
-			if (GetProtocolVisibility(szChangedProto))
+			switch(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)) 
 			{
-
-				int status;
-				status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
-				if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
-				{
-					//
-					HICON hIcon;
-					hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);;										
-					if (hIcon)
+			case SETTING_TRAYICON_SINGLE:
+				{	
+					DBVARIANT dbv={DBVT_DELETED};
+					char *szProto;
+					int status;
+					if(DBGetContactSetting(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
+					else szProto=dbv.pszVal;
+					status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
+					
+					if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 					{
-						changed=TrayIconSetBaseInfo(hIcon,szChangedProto);						
-						TrayIconUpdate(hIcon,NULL,szChangedProto,1);					
-						DestroyIcon(hIcon);
+						//
+						HICON hIcon;
+						hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);										
+						if (hIcon)
+						{
+							changed=TrayIconSetBaseInfo(hIcon,NULL);						
+							TrayIconUpdate(hIcon,NULL,NULL,1);
+
+							DestroyIcon(hIcon);
+							DBFreeVariant(&dbv);
+							break;
+						}
+
+						//return;
 					}
-				}
-				else
-					changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0),NULL),ILD_NORMAL),szChangedProto);
-			}
-		}
-		else 
-		{       if (GetProtocolVisibility(szChangedProto))
-		{
-			int i;
-			int avg;
-			avg=GetAverageMode();
-			i=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0),NULL),ILD_NORMAL),szChangedProto);
-			if (i<0 || (avg!=-1))
-			{
-				TrayIconDestroy(hwnd);
-				TrayIconInit(hwnd);
-			}
-			else 
-			{
-				int status;
-				changed=i;
-				status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
-				if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
-				{
-					//
-					HICON hIcon;
-					hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);;										
-					if (hIcon)
+					else
 					{
-						changed=TrayIconSetBaseInfo(hIcon,szChangedProto);						
-						TrayIconUpdate(hIcon,NULL,szChangedProto,1);					
-						DestroyIcon(hIcon);
+						changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szProto,szProto?CallProtoService(szProto,PS_GETSTATUS,0,0):CallService(MS_CLIST_GETSTATUSMODE,0,0),NULL),ILD_NORMAL),NULL);
 					}
+					DBFreeVariant(&dbv);
+					break;
 				}
-			}
-		}
-		}
-		break;
+			case SETTING_TRAYICON_CYCLE:
+				cycleTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*1000,TrayCycleTimerProc);
+				changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0),NULL),ILD_NORMAL),NULL);
+				break;
+			case SETTING_TRAYICON_MULTI:
+				if (!trayIcon) 
+				{
+					TrayIconRemove(NULL,NULL);
+				} else 
+
+					if(DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT))
+					{
+						if (GetProtocolVisibility(szChangedProto))
+						{
+
+							int status;
+							status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
+							if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+							{
+								//
+								HICON hIcon;
+								hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);;										
+								if (hIcon)
+								{
+									changed=TrayIconSetBaseInfo(hIcon,szChangedProto);						
+									TrayIconUpdate(hIcon,NULL,szChangedProto,1);					
+									DestroyIcon(hIcon);
+								}
+							}
+							else
+								changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0),NULL),ILD_NORMAL),szChangedProto);
+						}
+					}
+					else 
+					{       if (GetProtocolVisibility(szChangedProto))
+					{
+						int i;
+						int avg;
+						avg=GetAverageMode();
+						i=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0),NULL),ILD_NORMAL),szChangedProto);
+						if (i<0 || (avg!=-1))
+						{
+							TrayIconDestroy(hwnd);
+							TrayIconInit(hwnd);
+						}
+						else 
+						{
+							int status;
+							changed=i;
+							status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
+							if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+							{
+								//
+								HICON hIcon;
+								hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);;										
+								if (hIcon)
+								{
+									changed=TrayIconSetBaseInfo(hIcon,szChangedProto);						
+									TrayIconUpdate(hIcon,NULL,szChangedProto,1);					
+									DestroyIcon(hIcon);
+								}
+							}
+						}
+					}
+					}
+					break;
 			}
 		}
 	}
@@ -656,7 +657,7 @@ case SETTING_TRAYICON_MULTI:
 				//return;
 			}
 		}
-		//??	
+		if (workAround)	
 		{ 
 			//BYTE b=DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT);
 			//if (b==SETTING_TRAYICON_MULTI)

@@ -94,13 +94,12 @@ void FreeDisplayNameCacheItem( pdisplayNameCacheEntry p )
 void FreeDisplayNameCache(SortedList *list)
 {
 	int i;
-
-	for( i=0; i < list->realCount; i++) {
-		FreeDisplayNameCacheItem(( pdisplayNameCacheEntry )list->items[i] );
-		mir_free(list->items[i]);
-	}
-	
+		for( i=0; i < list->realCount; i++) {
+			FreeDisplayNameCacheItem(( pdisplayNameCacheEntry )list->items[i] );
+			mir_free(list->items[i]);
+		}
 	li.List_Destroy(list);
+
 }
 
 void CheckPDNCE(pdisplayNameCacheEntry pdnce)
@@ -171,7 +170,7 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 		}
 		if (pdnce->szGroup==NULL)
 		{
-			DBVARIANT dbv;
+			DBVARIANT dbv={0};
 
 			if (!DBGetContactSettingTString(pdnce->hContact,"CList","Group",&dbv))
 			{
@@ -344,7 +343,7 @@ extern void ReAskStatusMessage(HANDLE wParam);
 int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING*)lParam;
-	DBVARIANT dbv;
+	DBVARIANT dbv={0};
 	pdisplayNameCacheEntry pdnce;
 
 	// Early exit

@@ -628,6 +628,14 @@ int ReposButtons(HWND parent, BOOL draw, RECT * r)
   RECT clr;
   RECT rd;
   BOOL altDraw=FALSE;
+#ifdef _DEBUG
+  {
+	  char buf[256];
+	  static unsigned long c=0;
+	  _snprintf(buf, sizeof(buf),"Reposition Buttons N%d\n",c++);
+	  TRACE(buf);
+  }
+#endif
   GetWindowRect(parent,&rd);
   GetClientRect(parent,&clr);
   if (!r)

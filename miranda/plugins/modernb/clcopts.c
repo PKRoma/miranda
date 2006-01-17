@@ -131,7 +131,7 @@ SameAsAntiCycle--;
 
 void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
 {
-DBVARIANT dbv;
+DBVARIANT dbv={0};
 char idstr[32];
 BYTE style;
 
@@ -545,7 +545,7 @@ static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wPar
 	//		SendDlgItemMessage(hwndDlg,IDC_BKGCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"StatusBar","BkColour",CLCDEFAULT_BKCOLOUR));
 	SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_SELBKCOLOUR);
 	SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"StatusBar","SelBkColour",CLCDEFAULT_SELBKCOLOUR));
-	{	DBVARIANT dbv;
+	{	DBVARIANT dbv={0};
 	if(!DBGetContactSetting(NULL,"StatusBar","BkBitmap",&dbv)) {
 		SetDlgItemTextA(hwndDlg,IDC_FILENAME,dbv.pszVal);
 		if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
@@ -692,7 +692,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	SendDlgItemMessage(hwndDlg,IDC_BKGCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR));
 	SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_SELBKCOLOUR);
 	SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"CLC","SelBkColour",CLCDEFAULT_SELBKCOLOUR));
-	{	DBVARIANT dbv;
+	{	DBVARIANT dbv={0};
 	if(!DBGetContactSetting(NULL,"CLC","BkBitmap",&dbv)) {
 		SetDlgItemTextA(hwndDlg,IDC_FILENAME,dbv.pszVal);
 		if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {

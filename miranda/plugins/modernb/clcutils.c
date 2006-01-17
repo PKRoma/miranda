@@ -558,7 +558,7 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 		dat->second_line_draw_smileys = DBGetContactSettingByte(NULL,"CList","SecondLineDrawSmileys",1);
 		dat->second_line_type = DBGetContactSettingWord(NULL,"CList","SecondLineType",TEXT_STATUS_MESSAGE);
 		{
-			DBVARIANT dbv;
+			DBVARIANT dbv={0};
 
 			if (!DBGetContactSettingTString(NULL, "CList","SecondLineText", &dbv))
 			{
@@ -595,7 +595,7 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 		dat->third_line_draw_smileys = DBGetContactSettingByte(NULL,"CList","ThirdLineDrawSmileys",0);
 		dat->third_line_type = DBGetContactSettingWord(NULL,"CList","ThirdLineType",TEXT_STATUS);
 		{
-			DBVARIANT dbv;
+			DBVARIANT dbv={0};
 
 			if (!DBGetContactSettingTString(NULL, "CList","ThirdLineText", &dbv))
 			{
@@ -635,7 +635,7 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 	dat->noVScrollbar=DBGetContactSettingByte(NULL,"CLC","NoVScrollBar",0);
 	SendMessage(hwnd,INTM_SCROLLBARCHANGED,0,0);
 	if(!dat->bkChanged) {
-		DBVARIANT dbv;
+		DBVARIANT dbv={0};
 		dat->bkColour=DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR);
 		if(dat->hBmpBackground) {DeleteObject(dat->hBmpBackground); dat->hBmpBackground=NULL;}
 		if(DBGetContactSettingByte(NULL,"CLC","UseBitmap",CLCDEFAULT_USEBITMAP)) {

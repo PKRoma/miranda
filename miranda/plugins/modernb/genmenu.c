@@ -643,18 +643,6 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
   MenuObjects[objidx].MenuItems[miidx].mi.pszName=mir_strdup(pmi->pszName);
   MenuObjects[objidx].MenuItems[miidx].iconId=-1;
   MenuObjects[objidx].MenuItems[miidx].OverrideShow=TRUE;
-#ifdef _DEBUG	
-
-  {
-    char buf[256];
-		mir_snprintf(buf,sizeof(buf),"added menuitem menu: %s, name: %s,id: %d mi: %x mi.position %d\r\n",MenuObjects[objidx].Name,MenuObjects[objidx].MenuItems[miidx].mi.pszName,
-      MenuObjects[objidx].MenuItems[miidx].id,
-      pmi,
-      MenuObjects[objidx].MenuItems[miidx].mi.position);
-      TRACE(buf);
-  }
-#endif
-
   MenuObjects[objidx].MenuItems[miidx].IconRegistred=FALSE;
   if(TRUE/*pmi->hIcon!=NULL*/) 
   {
@@ -909,7 +897,7 @@ int MO_BuildMenu(WPARAM wParam,LPARAM lParam)
 char *menuItemName = mi->pszName;
 
 char DBString[256];
-DBVARIANT dbv;
+DBVARIANT dbv={0};
 
 // check if it visible
 sprintf(DBString, "%s_visible", menuItemName); 
@@ -989,7 +977,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 
       char menuItemName[256];	
       char DBString[256];
-      DBVARIANT dbv;
+      DBVARIANT dbv={0};
 
       memset(&dbv,0,sizeof(dbv));
       if (MenuItems[j].UniqName)
