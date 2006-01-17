@@ -86,7 +86,7 @@ static int TimestampToLocal(WPARAM wParam,LPARAM lParam)
 	else
 	{
 		//this huge number is the difference between 1970 and 1601 in seconds
-		liFiletime.QuadPart=(11644473600i64+(__int64)wParam)*10000000;
+		liFiletime.QuadPart=((__int64)11644473600+(__int64)wParam)*10000000;
 		filetime.dwHighDateTime=liFiletime.HighPart;
 		filetime.dwLowDateTime=liFiletime.LowPart;
 		FileTimeToSystemTime(&filetime,&st);
@@ -133,7 +133,7 @@ static int TimestampToString(WPARAM wParam,LPARAM lParam)
 	int destCharsLeft,dateTimeStrLen;
 
 	//this huge number is the difference between 1970 and 1601 in seconds
-	liFiletime.QuadPart=(11644473600i64+(__int64)(DWORD)TimestampToLocal(wParam,0))*10000000;
+	liFiletime.QuadPart=((__int64)11644473600+(__int64)(DWORD)TimestampToLocal(wParam,0))*10000000;
 	filetime.dwHighDateTime=liFiletime.HighPart;
 	filetime.dwLowDateTime=liFiletime.LowPart;
 	FileTimeToSystemTime(&filetime,&st);
