@@ -57,6 +57,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GROUP_ALLOCATE_STEP  8
 
 struct ClcContact;
+struct ClcData;
 struct CListEvent;
 
 /* templates, where are you... */
