@@ -2330,14 +2330,14 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
         }
         else {
             SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hButtonIcon);
-            dat->hSmileyIcon = 0;
+            dat->hSmileyIcon = hButtonIcon;
         }
     }
     else if(dat->hwndLog != 0) {
         dat->doSmileys = 1;
         nrSmileys = 1;
-        if(dat->hSmileyIcon == 0) {
-            DeleteObject(dat->hSmileyIcon);
+        if(dat->hSmileyIcon != 0) {
+            DestroyIcon(dat->hSmileyIcon);
             dat->hSmileyIcon = 0;
         }
         SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[11]);

@@ -290,7 +290,7 @@ struct MessageWindowData {
     int   iHistoryCurrent, iHistoryTop, iHistorySize;
     int doSmileys;
     UINT codePage;
-    HBITMAP hSmileyIcon;
+    HICON hSmileyIcon;
     char *szProto;
     char *szMetaProto;
     TCHAR szNickname[130];

@@ -3534,6 +3534,8 @@ quote_from_last:
                                 smaddInfo.hwndParent = dat->pContainer->hwnd;
                                 CallService(MS_SMILEYADD_SHOWSELECTION, (WPARAM)dat->pContainer->hwnd, (LPARAM) &smaddInfo);
                             }
+							if(hButtonIcon != 0)
+								DestroyIcon(hButtonIcon);
                         }
                     }
                     break;
@@ -5162,7 +5164,7 @@ verify:
                 DeleteObject(dat->hbmMsgArea);
             
             if (dat->hSmileyIcon)
-                DeleteObject(dat->hSmileyIcon);
+                DestroyIcon(dat->hSmileyIcon);
 
             if (dat->hwndTip)
                 DestroyWindow(dat->hwndTip);
