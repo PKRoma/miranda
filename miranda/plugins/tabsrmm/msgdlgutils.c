@@ -656,7 +656,7 @@ int CheckValidSmileyPack(char *szProto, HICON *hButtonIcon)
     if(myGlobals.g_SmileyAddAvail) {
         smainfo.cbSize = sizeof(smainfo);
         smainfo.Protocolname = szProto;
-        CallService(MS_SMILEYADD_GETINFO, 0, (LPARAM)&smainfo);
+        CallService(MS_SMILEYADD_GETINFO2, 0, (LPARAM)&smainfo);
         *hButtonIcon = smainfo.ButtonIcon;
         return smainfo.NumberOfVisibleSmileys;
     }
