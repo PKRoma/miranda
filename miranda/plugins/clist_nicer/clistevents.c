@@ -364,6 +364,13 @@ void RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 
 	saveRemoveEvent(hContact, hDbEvent);
 
+	if (pcli->events.count == 0) {
+		g_CluiData.bEventAreaEnabled = FALSE;
+		if (g_CluiData.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY) {
+			g_CluiData.notifyActive = 0;
+			HideShowNotifyFrame();
+	}	}
+
 	if (bUnstick) {
 		// clear "sticky" (sort) status
 
