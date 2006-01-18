@@ -3807,7 +3807,7 @@ quote_from_last:
                     EnableMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (ServiceExists("BuddyPounce/AddToPounce") ? MF_ENABLED : MF_GRAYED));
                     CheckMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (dat->sendMode & SMODE_SENDLATER ? MF_CHECKED : MF_UNCHECKED));
                     CheckMenuItem(submenu, ID_SENDMENU_SENDWITHOUTTIMEOUTS, MF_BYCOMMAND | (dat->sendMode & SMODE_NOACK ? MF_CHECKED : MF_UNCHECKED));
-                    EnableMenuItem(submenu, ID_SENDMENU_SENDWITHOUTTIMEOUTS, MF_GRAYED);
+                    //EnableMenuItem(submenu, ID_SENDMENU_SENDWITHOUTTIMEOUTS, MF_GRAYED);
                     
                     if(lParam)
                         iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
@@ -3854,6 +3854,10 @@ quote_from_last:
                             break;
                         case ID_SENDMENU_SENDWITHOUTTIMEOUTS:
                             dat->sendMode ^= SMODE_NOACK;
+							if(dat->sendMode & SMODE_NOACK)
+								DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "no_ack", 1);
+							else
+								DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "no_ack");
                             break;
                     }
                     DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "no_ack", dat->sendMode & SMODE_NOACK ? 1 : 0);

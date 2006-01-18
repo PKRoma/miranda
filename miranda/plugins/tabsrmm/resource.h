@@ -396,7 +396,6 @@
 #define IDC_FLATTABS2                   1292
 #define IDC_USESNAPPING                 1293
 #define IDC_EXTRAMICROLF                1294
-#define IDC_USESNAPPING2                1294
 #define IDC_DROPSHADOW                  1294
 #define IDC_SENDFORMAT                  1295
 #define IDC_FLATMSGLOG                  1296
@@ -465,6 +464,8 @@
 #define IDC_COLOR5                      1370
 #define IDC_FORCEANSI                   1371
 #define IDC_TEMPLOVERRIDE               1372
+#define IDC_FORCEANSI2                  1372
+#define IDC_IGNORETIMEOUTS              1372
 #define IDC_TEMPLOVERRIDE2              1373
 #define IDC_RTLTEMPLOVERRIDE            1373
 #define IDC_USEPRIVATEIMAGE             1374

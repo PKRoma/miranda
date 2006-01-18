@@ -15,6 +15,27 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.99(2 - nightly build #46) - 2006/01/20
+
+		+ enabled the send menu entry to force a "timeout less" sending mode. The option can
+		  also be found on the contact preferences dialog (user menu) and basically does the
+		  following: If enabled, the message window does NOT wait for a sending confirmation 
+		  of the protocol. This means that you'll never get notified if something goes wrong
+		  while sending the message. Only enable it if you have constant timeout problems for
+		  this particular contact.
+		  
+		  This option is a "per contact" setting and there is no global counterpart. It is meant
+		  to help solving troubles with "problematic" contacts (that is, contacts which often
+		  cause timeouts when sending messages, because of networking or other issues).
+		
+
+Version 0.9.9.99(1) - 2005/12/27
+
+		+ added option to enable/disable drop shadows (options->Message Window->containers)
+		
+		! fix: the options to set message log background colors were disabled when using font
+		       service.
+
 Version 0.9.9.99 - 2005/12/23 - happy Xmas :)
 
 		* improvments for own avatar display. Now, this uses the avatar service (minimum
