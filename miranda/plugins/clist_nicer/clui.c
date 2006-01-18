@@ -1071,8 +1071,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			CreateCLC(hwnd);
 			g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
-			//PostMessage(hwnd, WM_SIZE, 0, 0);
-			//PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
 			SFL_Create();
 			SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL) == SETTING_STATE_NORMAL ? 0 : 1) : 1);
 			return 0;

@@ -327,6 +327,7 @@ LBL_Error:
 	pcli->pfnTrayIconSetToBase = TrayIconSetToBase;
 	pcli->pfnTrayIconUpdateBase = TrayIconUpdateBase;
 	pcli->pfnTrayIconUpdateWithImageList = TrayIconUpdateWithImageList;
+	pcli->pfnLoadContactTree = LoadContactTree;
 
 	saveAddContactToGroup = pcli->pfnAddContactToGroup; pcli->pfnAddContactToGroup = AddContactToGroup;
 	saveAddEvent = pcli->pfnAddEvent; pcli->pfnAddEvent = AddEvent;
