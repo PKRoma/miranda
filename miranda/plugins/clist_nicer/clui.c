@@ -180,7 +180,7 @@ static struct IconDesc myIcons[] = {
 		"CLN_CLVM_select", "Select view mode", -IDI_CLVM_SELECT,
 		"CLN_CLVM_reset", "Reset view mode", -IDI_DELETE,
 		"CLN_CLVM_options", "Configure view modes", -IDI_CLVM_OPTIONS,
-		"CLN_topmenu", "Show menu", -IDI_CLIENTMIRANDA,
+		"CLN_topmenu", "Show menu", -IDI_TBTOPMENU,
 		NULL, NULL, 0
 };
 
@@ -833,7 +833,7 @@ void BlitWallpaper(HDC hdc, RECT *rc, RECT *rcPaint, struct ClcData *dat)
 		RECT mrect;
 		POINT pt;
 		pt.x = rc->left;
-		pt.y = rc->top;
+		pt.y = rc->top - g_CluiData.bClipBorder;
 		ClientToScreen(pcli->hwndContactList, &pt);
 		GetWindowRect(pcli->hwndContactList, &mrect);
 		bitx = pt.x;
@@ -1078,6 +1078,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			return 0;
 		}
 	case WM_ERASEBKGND:
+		return TRUE;
 		if(g_CluiData.bSkinnedButtonMode)
 			return TRUE;
 		return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -1141,7 +1142,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				goto skipbg;
 			}
 
-			FillRect(hdc, &rcClient, g_CluiData.hBrushCLCBk);
+			if(g_CluiData.bWallpaperMode)
+				FillRect(hdc, &rcClient, g_CluiData.hBrushCLCBk);
+			else
+				FillRect(hdc, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 
 			rcFrame.left += (g_CluiData.bCLeft - 1);
 			rcFrame.right -= (g_CluiData.bCRight - 1);

@@ -20,6 +20,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+------------------------
+
+implements a simple status floater as a layered (and skinnable) window with
+a minimalistic UI (change status, access main menu). It also may hold a copy
+of the event area.
+
 */
 
 #include "commonheaders.h"
@@ -231,7 +237,8 @@ void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const char *szText, BOO
 /*
  * set the floater
  * mode = 0/1 forced hide/show
- * OR -1 to set it depending on the clist state (visible/hidden)
+ * OR -1 to set it depending on the clist state (visible/hidden) (this is actually reversed, because the function
+ * is called *before* the clist is shown or hidden)
  */
 
 void SFL_SetState(int uMode)
