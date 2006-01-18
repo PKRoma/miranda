@@ -130,7 +130,7 @@ static void packServTLV2711Header(icq_packet *packet, WORD wCookie, BYTE bMsgTyp
 static void packServDCInfo(icq_packet *p, BOOL bEmpty)
 {
   packTLVDWord(p, 0x03, bEmpty ? 0 : ICQGetContactSettingDword(NULL, "RealIP", 0)); // TLV: 0x03 DWORD IP
-  packTLVDWord(p, 0x05, bEmpty ? 0 : wListenPort);                                  // TLV: 0x05 Listen port
+  packTLVWord(p, 0x05, (WORD)(bEmpty ? 0 : wListenPort));                           // TLV: 0x05 Listen port
 }
 
 
@@ -1658,5 +1658,28 @@ void icq_sendReverseReq(directconnect *dc, DWORD dwCookie)
   packLEDWord(&packet, dwCookie);           // Req Cookie
 
   // Send the monster
+  sendServPacket(&packet);
+}
+
+
+
+void icq_sendReverseFailed(directconnect* dc, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwCookie)
+{
+  icq_packet packet;
+  int nUinLen = getUINLen(dc->dwRemoteUin);
+
+  serverPacketInit(&packet, (WORD)(nUinLen + 74));
+  packFNACHeaderFull(&packet, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE, 0, ICQ_MSG_RESPONSE<<0x10 | (dwCookie & 0x7FFF));
+  packLEDWord(&packet, dwMsgID1);   // Msg ID part 1
+  packLEDWord(&packet, dwMsgID2);   // Msg ID part 2
+  packWord(&packet, 0x02);
+  packUIN(&packet, dc->dwRemoteUin);
+  packWord(&packet, 0x03);
+  packLEDWord(&packet, dc->dwRemoteUin);
+  packLEDWord(&packet, dc->dwRemotePort);
+  packLEDWord(&packet, wListenPort);
+  packLEWord(&packet, ICQ_VERSION);
+  packLEDWord(&packet, dwCookie);
+
   sendServPacket(&packet);
 }
