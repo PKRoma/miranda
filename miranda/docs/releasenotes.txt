@@ -31,7 +31,7 @@ http://files.miranda-im.org/builds/ChangeLog
 
 * New in 0.4.0.2
 Bugfixes:
-Enhancements:
+ - AIM protocol uses TOC2 (TOC1 blocked by AOL)
 
 
 * New in 0.4.0.1
