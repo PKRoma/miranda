@@ -167,9 +167,9 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 					pcli->pfnClcBroadcast(INTM_XSTATUSCHANGED, wParam, lParam);
 				else if(!__strcmp(cws->szSetting, "Timezone"))
 					ReloadExtraInfo((HANDLE)wParam);
+				else if (!__strcmp(cws->szSetting, "MirVer"))
+					pcli->pfnClcBroadcast(INTM_CLIENTCHANGED, wParam, lParam);
 			}
-			else if (!__strcmp(cws->szSetting, "MirVer"))
-				pcli->pfnClcBroadcast(INTM_CLIENTCHANGED, wParam, lParam);
 		}
 	}
 	else if (wParam == 0 && !__strcmp(cws->szModule, "MetaContacts")) {
