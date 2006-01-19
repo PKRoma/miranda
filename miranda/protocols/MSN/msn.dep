@@ -20,6 +20,7 @@
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_chat.h"\
 	".\version.h"\

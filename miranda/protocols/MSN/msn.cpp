@@ -56,7 +56,6 @@ HANDLE   msnMainThread;
 int      msnOtherContactsBlocked = 0;
 HANDLE   hHookOnUserInfoInit = NULL;
 HANDLE   hGroupAddEvent = NULL;
-bool     msnRunningUnderNT = false;
 bool		msnHaveChatDll = false;
 
 MYOPTIONS MyOptions;
@@ -80,7 +79,11 @@ char* ModuleName;
 PLUGININFO pluginInfo =
 {
 	sizeof(PLUGININFO),
-	"MSN Protocol",
+	#if defined( _UNICODE )
+		"MSN Protocol (Unicode)",
+	#else
+		"MSN Protocol",
+	#endif
 	__VERSION_DWORD,
 	"Adds support for communicating with users of the MSN Messenger network",
 	"George Hazan",
@@ -282,7 +285,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
 
 	srand(( unsigned int )time( NULL ));
-	msnRunningUnderNT = ( GetVersion() & 0x80000000 ) == 0;
 
 	LoadOptions();
 	HookEvent( ME_OPT_INITIALISE, MsnOptInit );

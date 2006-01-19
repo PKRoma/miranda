@@ -74,14 +74,11 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		SendDlgItemMessage( hwndDlg, IDC_PASSWORD, EM_SETLIMITTEXT, 16, 0 );
 
 		HWND wnd = GetDlgItem( hwndDlg, IDC_HANDLE2 );
-		if ( msnRunningUnderNT ) {
-			DBVARIANT dbv;
-			if ( !DBGetContactSettingWString( NULL, msnProtocolName, "Nick", &dbv )) {
-				SetWindowTextW( wnd, dbv.pwszVal );
-				MSN_FreeVariant( &dbv );
-		}	}
-		else if ( !MSN_GetStaticString( "Nick", NULL, tBuffer, sizeof( tBuffer )))
-			SetWindowTextA( wnd, tBuffer );
+		DBVARIANT dbv;
+		if ( !DBGetContactSettingTString( NULL, msnProtocolName, "Nick", &dbv )) {
+			SetWindowText( wnd, dbv.ptszVal );
+			MSN_FreeVariant( &dbv );
+		}
 		if ( !msnLoggedIn )
 			EnableWindow( wnd, FALSE );
 
@@ -206,47 +203,34 @@ LBL_Continue:
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
 			bool reconnectRequired = false, restartRequired = false;
-			char screenStr[ MAX_PATH ], dbStr[ MAX_PATH ];
-			char tEmail[ MSN_MAX_EMAIL_LEN ];
-			WCHAR *screenStrW;
+			TCHAR screenStr[ MAX_PATH ], dbStr[ MAX_PATH ];
+			char  password[ 100 ];
+			DBVARIANT dbv;
 
-			GetDlgItemTextA( hwndDlg, IDC_HANDLE, tEmail, sizeof( tEmail ));
-			if ( MSN_GetStaticString( "e-mail", NULL, dbStr, sizeof( dbStr )))
-				dbStr[0] = 0;
-			if ( strcmp( tEmail, dbStr ))
+			GetDlgItemText( hwndDlg, IDC_HANDLE, screenStr, sizeof( screenStr ));
+			if ( DBGetContactSettingTString( "e-mail", msnProtocolName, NULL, &dbv ))
+				dbv.ptszVal = NULL;
+			if ( lstrcmp( screenStr, dbStr ))
 				reconnectRequired = true;
-			MSN_SetString( NULL, "e-mail", tEmail );
+			MSN_SetStringT( NULL, "e-mail", screenStr );
+			MSN_FreeVariant( &dbv );
 
-			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, screenStr, sizeof( screenStr ));
-			MSN_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( screenStr ),( LPARAM )screenStr );
-			if ( MSN_GetStaticString( "Password", NULL, dbStr, sizeof( dbStr )))
-				dbStr[0] = 0;
-			if ( strcmp( screenStr, dbStr ))
+			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, password, sizeof( password ));
+			MSN_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( password ),( LPARAM )password );
+			if ( DBGetContactSetting( "Password", msnProtocolName, NULL, &dbv ))
+				dbv.pszVal = NULL;
+			if ( lstrcmp( screenStr, dbStr ))
 				reconnectRequired = true;
-			MSN_SetString( NULL, "Password", screenStr );
+			MSN_SetString( NULL, "Password", password );
+			MSN_FreeVariant( &dbv );
 
-			if ( msnRunningUnderNT ) {
-				screenStrW = ( WCHAR* )alloca( MAX_PATH * sizeof( WCHAR ));
-				GetDlgItemTextW( hwndDlg, IDC_HANDLE2, screenStrW, MAX_PATH );
-
-				if ( msnLoggedIn ) {
-					DBVARIANT dbv;
-					if	( !DBGetContactSettingWString( NULL, msnProtocolName, "Nick", &dbv )) {
-						if ( wcscmp( dbv.pwszVal, screenStrW ))
-							MSN_SendNicknameW( screenStrW );
-						MSN_FreeVariant( &dbv );
-				}	}
-
-				DBWriteContactSettingWString( NULL, msnProtocolName, "Nick", screenStrW );
+			GetDlgItemText( hwndDlg, IDC_HANDLE2, screenStr, sizeof( screenStr ));
+			if	( !DBGetContactSettingTString( NULL, msnProtocolName, "Nick", &dbv )) {
+				if ( lstrcmp( dbv.ptszVal, screenStr ))
+					MSN_SendNicknameT( screenStr );
+				MSN_FreeVariant( &dbv );
 			}
-			else {
-				GetDlgItemTextA( hwndDlg, IDC_HANDLE2, screenStr, sizeof( screenStr ));
-				if ( MSN_GetStaticString( "Nick", NULL, dbStr, sizeof( dbStr )))
-					dbStr[0] = 0;
-				if ( strcmp( screenStr, dbStr ) && msnLoggedIn )
-					MSN_SendNickname( screenStr );
-				MSN_SetString( NULL, "Nick", screenStr );
-			}
+			MSN_SetStringT( NULL, "Nick", screenStr );
 
 			BYTE tValue = IsDlgButtonChecked( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS );
 			if ( tValue != msnOtherContactsBlocked && msnLoggedIn ) {
@@ -262,8 +246,8 @@ LBL_Continue:
 			MSN_SetByte( "AwayAsBrb", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AWAY_AS_BRB ));
 			MSN_SetByte( "ManageServer", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_MANAGEGROUPS ));
 
-			GetDlgItemTextA( hwndDlg, IDC_MAILER_APP, screenStr, sizeof( screenStr ));
-			MSN_SetString( NULL, "MailerPath", screenStr );
+			GetDlgItemText( hwndDlg, IDC_MAILER_APP, screenStr, sizeof( screenStr ));
+			MSN_SetStringT( NULL, "MailerPath", screenStr );
 
 			if ( reconnectRequired && msnLoggedIn )
 				MessageBoxA( hwndDlg, MSN_Translate( "The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), "MSN Options", MB_OK );

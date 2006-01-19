@@ -23,6 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <malloc.h>
 
+#if defined(UNICODE) && !defined(_UNICODE)
+	#define _UNICODE
+#endif
+
 #ifdef _DEBUG
 	#define _CRTDBG_MAP_ALLOC
 	#include <stdlib.h>
@@ -51,6 +55,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_system.h>
 #include <m_userinfo.h>
 #include <m_utils.h>
+#include <win2k.h>
 
 #include <m_database.h>
 #include <m_langpack.h>
@@ -164,12 +169,18 @@ void		__cdecl		MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP );
 void		__stdcall	MSN_GoOffline( void );
 void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
 LPTSTR	__stdcall   MSN_GetErrorText( DWORD parErrorCode );
-int		__stdcall	MSN_SendNickname(char *nickname);
-int		__stdcall	MSN_SendNicknameW( WCHAR* nickname);
 void     __stdcall   MSN_SendStatusMessage( const char* msg );
 void		__stdcall	MSN_SetServerStatus( int newStatus );
 char*		__stdcall	MSN_StoreLen( char* dest, char* last );
 void		__stdcall	LoadOptions( void );
+
+int		__stdcall	MSN_SendNickname(char *nickname);
+#if defined( _UNICODE )
+	int	__stdcall	MSN_SendNicknameW( WCHAR* nickname);
+	#define  MSN_SendNicknameT MSN_SendNicknameW
+#else
+	#define  MSN_SendNicknameT MSN_SendNickname
+#endif
 
 #if defined( _DEBUG )
 #define MSN_CallService CallService
@@ -191,6 +202,7 @@ DWORD		__stdcall   MSN_SetByte( const char* valueName, int parValue );
 DWORD		__stdcall   MSN_SetDword( HANDLE hContact, const char* valueName, DWORD parValue );
 DWORD		__stdcall   MSN_SetWord( HANDLE hContact, const char* valueName, int parValue );
 DWORD		__stdcall   MSN_SetString( HANDLE hContact, const char* valueName, const char* parValue );
+DWORD		__stdcall   MSN_SetStringT( HANDLE hContact, const char* valueName, const TCHAR* parValue );
 DWORD		__stdcall   MSN_SetStringUtf( HANDLE hContact, const char* valueName, char* parValue );
 void     __cdecl     MSN_ShowError( const char* msgtext, ... );
 char*		__stdcall   MSN_Translate( const char* str );
@@ -585,7 +597,6 @@ extern	HANDLE		hNetlibUser;
 extern	HINSTANCE	hInst;
 extern	int			msnOtherContactsBlocked;
 
-extern   bool			msnRunningUnderNT;
 extern	bool			msnHaveChatDll;
 
 extern	HANDLE		hGroupAddEvent;

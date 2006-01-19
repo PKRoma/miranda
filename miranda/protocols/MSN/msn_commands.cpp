@@ -1533,18 +1533,11 @@ LBL_InvalidCommand:
 					UrlDecode( tWords[1] ); UrlDecode( tWords[2] );
 
 					if ( MSN_GetByte( "NeverUpdateNickname", 0 )) {
-						int result;
 						DBVARIANT dbv;
-						if ( msnRunningUnderNT ) {
-							if (( result = DBGetContactSettingWString( NULL, msnProtocolName, "Nick", &dbv )) == 0 ) {
-								MSN_SendNicknameW( dbv.pwszVal );
-								MSN_FreeVariant( &dbv );
-						}	}
-						else {
-							if (( result = DBGetContactSetting( NULL, msnProtocolName, "Nick", &dbv )) == 0 ) {
-								MSN_SendNickname( dbv.pszVal );
-								MSN_FreeVariant( &dbv );
-						}	}
+						if ( !DBGetContactSettingTString( NULL, msnProtocolName, "Nick", &dbv )) {
+							MSN_SendNicknameT( dbv.ptszVal );
+							MSN_FreeVariant( &dbv );
+						}
 					}
 					else MSN_SetStringUtf( NULL, "Nick", tWords[2] );
 

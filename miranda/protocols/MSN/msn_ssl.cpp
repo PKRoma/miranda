@@ -102,8 +102,9 @@ int SSL_WinInet::init()
 
 SSL_WinInet::~SSL_WinInet()
 {
-	if ( msnRunningUnderNT )	// we free WININET.DLL only if we're under NT
-		FreeLibrary( m_dll );
+	#if defined( _UNICODE ) 
+		FreeLibrary( m_dll );   // we free WININET.DLL only if we're under NT
+	#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

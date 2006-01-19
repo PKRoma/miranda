@@ -918,27 +918,31 @@ int filetransfer::create()
 	if ( MSN_SendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, this, ( LPARAM )&std ))
 		WaitForSingleObject( hWaitEvent, INFINITE );
 
-	if ( msnRunningUnderNT && wszFileName != NULL ) {
-		WCHAR wszTemp[ MAX_PATH ];
-		_snwprintf( wszTemp, sizeof wszTemp, L"%S\\%s", std.workingDir, wszFileName );
-		wszTemp[ MAX_PATH-1 ] = 0;
-		fileId = _wopen( wszTemp, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-		if ( fileId != -1 ) {
-			WIN32_FIND_DATAW data;
-			HANDLE hFind = FindFirstFileW( wszFileName, &data );
-			if ( hFind != INVALID_HANDLE_VALUE ) {
-				free( std.currentFile );
+	#if defined( _UNICODE )	
+		if ( wszFileName != NULL ) {
+			WCHAR wszTemp[ MAX_PATH ];
+			_snwprintf( wszTemp, sizeof wszTemp, L"%S\\%s", std.workingDir, wszFileName );
+			wszTemp[ MAX_PATH-1 ] = 0;
+			fileId = _wopen( wszTemp, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+			if ( fileId != -1 ) {
+				WIN32_FIND_DATAW data;
+				HANDLE hFind = FindFirstFileW( wszFileName, &data );
+				if ( hFind != INVALID_HANDLE_VALUE ) {
+					free( std.currentFile );
 
-            char tShortName[ 20 ];
-				WideCharToMultiByte( CP_ACP, 0, 
-					( data.cAlternateFileName[0] != 0 ) ? data.cAlternateFileName : data.cFileName, 
-					-1, tShortName, sizeof tShortName, 0, 0 );
-				mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", std.workingDir, tShortName );
-				std.currentFile = strdup( filefull );
-				FindClose( hFind );
-		}	}
-	}
-	else fileId = _open( std.currentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE );
+					char tShortName[ 20 ];
+					WideCharToMultiByte( CP_ACP, 0, 
+						( data.cAlternateFileName[0] != 0 ) ? data.cAlternateFileName : data.cFileName, 
+						-1, tShortName, sizeof tShortName, 0, 0 );
+					mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", std.workingDir, tShortName );
+					std.currentFile = strdup( filefull );
+					FindClose( hFind );
+			}	}
+		}
+		else fileId = _open( std.currentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE );
+	#else
+		fileId = _open( std.currentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE );
+	#endif
 
 	if ( fileId == -1 )
 		MSN_DebugLog( "Cannot create file '%s' during a file transfer", filefull );

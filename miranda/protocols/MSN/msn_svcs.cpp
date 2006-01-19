@@ -1023,17 +1023,10 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSN )));
 			SendMessage( GetDlgItem( hwndDlg, IDC_NICKNAME ), EM_LIMITTEXT, 129, 0 );
 
-			if ( msnRunningUnderNT ) {
-				DBVARIANT dbv;
-				if ( !DBGetContactSettingWString( NULL, msnProtocolName, "Nick", &dbv )) {
-					SetDlgItemTextW( hwndDlg, IDC_NICKNAME, dbv.pwszVal );
-					MSN_FreeVariant( &dbv );
-				}
-			}
-			else {
-				char tNick[ 130 ];
-				if ( !MSN_GetStaticString( "Nick", NULL, tNick, sizeof tNick ))
-					SetDlgItemTextA( hwndDlg, IDC_NICKNAME, tNick );
+			DBVARIANT dbv;
+			if ( !DBGetContactSettingTString( NULL, msnProtocolName, "Nick", &dbv )) {
+				SetDlgItemText( hwndDlg, IDC_NICKNAME, dbv.ptszVal );
+				MSN_FreeVariant( &dbv );
 			}
 			return TRUE;
 		}
@@ -1042,16 +1035,10 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			{
 				case IDOK:
 					if ( msnLoggedIn ) {
-						if ( msnRunningUnderNT ) {
-							WCHAR str[ 130 ];
-							GetDlgItemTextW( hwndDlg, IDC_NICKNAME, str, sizeof( str ));
-							MSN_SendNicknameW( str );
-						}
-						else {
-							char str[ 130 ];
-							GetDlgItemTextA( hwndDlg, IDC_NICKNAME, str, sizeof( str ));
-							MSN_SendNickname( str );
-					}	}
+						TCHAR str[ 130 ];
+						GetDlgItemText( hwndDlg, IDC_NICKNAME, str, SIZEOF( str ));
+						MSN_SendNicknameT( str );
+					}
 
 				case IDCANCEL:
  					DestroyWindow( hwndDlg );

@@ -896,8 +896,9 @@ static void sttInitFileTransfer(
 					*p = '_';
 		}	}	}
 
-		if ( msnRunningUnderNT )
+		#if defined( _UNICODE ) 
 			ft->wszFileName = _wcsdup( wszFileName );
+		#endif
 
 		char szFileName[ MAX_PATH ];
       char cDefaultChar = '_';
