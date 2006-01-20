@@ -268,6 +268,8 @@ struct ProtocolData {
 
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
+#define DM_SCROLLIEVIEW		 (WM_USER+102)
+
 #define MINSPLITTERY         52
 #define MINLOGHEIGHT         30
 

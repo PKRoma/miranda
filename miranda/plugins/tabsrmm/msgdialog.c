@@ -2368,6 +2368,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, Translate("Message Log is frozen"));
                 return 0;
             }
+		case DM_SCROLLIEVIEW:
+			{
+				if(dat->needIEViewScroll) {
+					IEVIEWWINDOW iew = {0};
+					iew.cbSize = sizeof(IEVIEWWINDOW);
+					iew.iType = IEW_SCROLLBOTTOM;
+					iew.hwnd = dat->hwndLog;
+					CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&iew);
+					dat->needIEViewScroll = FALSE;
+				}
+				return 0;
+			}
         case DM_SCROLLLOGTOBOTTOM:
             {
                 SCROLLINFO si = { 0 };
@@ -2377,11 +2389,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(!IsIconic(dat->pContainer->hwnd)) {
                     dat->dwFlags &= ~MWF_DEFERREDSCROLL;
                     if(dat->hwndLog) {
-                        IEVIEWWINDOW iew = {0};
-                        iew.cbSize = sizeof(IEVIEWWINDOW);
-                        iew.iType = IEW_SCROLLBOTTOM;
-                        iew.hwnd = dat->hwndLog;
-                        CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&iew);
+						dat->needIEViewScroll = TRUE;
+						PostMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
                     }
                     else {
                         HWND hwnd = GetDlgItem(hwndDlg, IDC_LOG);

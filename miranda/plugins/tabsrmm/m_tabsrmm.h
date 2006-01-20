@@ -341,6 +341,7 @@ struct MessageWindowData {
     COLORREF avatarbg;
 	HANDLE *hHistoryEvents;
 	int maxHistory, curHistory;
+	BYTE needIEViewScroll;
 };
 
 typedef struct _recentinfo {
