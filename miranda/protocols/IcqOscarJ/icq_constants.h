@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -388,6 +388,7 @@
 #define META_SEARCH_GENERIC         0x055F // Search user by details (TLV)
 #define META_SEARCH_UIN             0x0569 // Search user by UIN (TLV)
 #define META_SEARCH_EMAIL           0x0573 // Search user by E-mail (TLV)
+#define META_SEARCH_ADVANCED        0x0533 // Search user by details (non-TLV)
 
 #define META_XML_INFO               0x08A2 // Server variable requested via xml
 #define META_SET_FULLINFO_REQ       0x3A0C // Set full user info request
@@ -499,7 +500,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x8003060A
+#define ICQ_PLUG_VERSION            0x8003060B
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

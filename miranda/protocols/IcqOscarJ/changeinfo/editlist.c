@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005 Joe Kucera, Bio
+// Copyright © 2004,2005,2006 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -99,7 +99,7 @@ void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
   itemHeight=SendMessage(hwndListEdit,LB_GETITEMHEIGHT,0,0);
   for(j=0;j<setting[i].listCount;j++) 
   {
-    n=SendMessage(hwndListEdit,LB_ADDSTRING,0,(LPARAM)ICQTranslate(((ListTypeDataItem*)setting[i].pList)[j].szValue));
+    n = ListBoxAddStringUtf(hwndListEdit, ((ListTypeDataItem*)setting[i].pList)[j].szValue);
     SendMessage(hwndListEdit,LB_SETITEMDATA,n,((ListTypeDataItem*)setting[i].pList)[j].id);
     if((setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,((ListTypeDataItem*)setting[i].pList)[j].szValue))
        || ((char*)setting[i].value==NULL && ((ListTypeDataItem*)setting[i].pList)[j].id==0))
@@ -154,18 +154,18 @@ void EndListEdit(int save)
       setting[iEditItem].changed=newValue!=setting[iEditItem].value;
       setting[iEditItem].value=newValue;
     }
-    if(setting[iEditItem].changed) EnableWindow(GetDlgItem(GetParent(hwndList),IDC_SAVE),TRUE);
+    if (setting[iEditItem].changed) EnableDlgItem(GetParent(hwndList), IDC_SAVE, TRUE);
   }
-  ListView_RedrawItems(hwndList,iEditItem,iEditItem);
-  iEditItem=-1;
+  ListView_RedrawItems(hwndList, iEditItem, iEditItem);
+  iEditItem = -1;
   DestroyWindow(hwndListEdit);
-  hwndListEdit=NULL;
+  hwndListEdit = NULL;
 }
 
 
 
 int IsListEditWindow(HWND hwnd)
 {
-  if(hwnd==hwndListEdit) return 1;
+  if (hwnd == hwndListEdit) return 1;
   return 0;
 }

@@ -406,7 +406,9 @@ BEGIN
     EDITTEXT        IDC_HOMEPAGEKEY,228,177,91,12,ES_AUTOHSCROLL
     GROUPBOX        "Other",IDC_OTHERGROUP,171,199,156,41
     CONTROL         "Search online users only",IDC_ONLINEONLY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,178,217,140,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,178,210,140,10
+    CONTROL         "Use new seach method",IDC_TLVSEARCH,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,178,224,140,10
 END
 
 IDD_INFO_AVATAR DIALOGEX 0, 0, 222, 131
@@ -657,7 +659,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,6,10
+ FILEVERSION 0,3,6,11
  PRODUCTVERSION 0,4,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -676,9 +678,9 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced\0"
-            VALUE "FileVersion", "0, 3, 6, 10\0"
+            VALUE "FileVersion", "0, 3, 6, 11\0"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM\0"
-            VALUE "LegalCopyright", "Copyright (C) 2000-2005 Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
+            VALUE "LegalCopyright", "Copyright (C) 2000-2006 Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "ICQ.dll\0"
             VALUE "PrivateBuild", "\0"

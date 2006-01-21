@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -53,7 +53,7 @@ static void __cdecl icq_LogMessageThread(void* arg)
   if (!err) return;
   bErrorVisible = TRUE;
   if (err->szMsg&&err->szTitle)
-    MessageBox(NULL, err->szMsg, err->szTitle, MB_OK);
+    MessageBoxUtf(NULL, err->szMsg, err->szTitle, MB_OK);
   SAFE_FREE(&err->szMsg);
   SAFE_FREE(&err->szTitle);
   SAFE_FREE(&err);
@@ -75,14 +75,14 @@ void icq_LogMessage(int level, const char *szMsg)
 
     if (ICQGetContactSettingByte(NULL, "PopupsLogEnabled", DEFAULT_LOG_POPUPS_ENABLED))
     {
-      if (!ShowPopUpMsg(NULL, ICQTranslate(szLevelDescr[level]), szMsg, (BYTE)level))
+      if (!ShowPopUpMsg(NULL, szLevelDescr[level], szMsg, (BYTE)level))
         return; // Popup showed successfuly
     }
     if (!bErrorVisible || !ICQGetContactSettingByte(NULL, "IgnoreMultiErrorBox", 0))
     { // error not shown or allowed multi - show messagebox
       lmi = (LogMessageInfo*)malloc(sizeof(LogMessageInfo));
-      lmi->szMsg = null_strdup(szMsg);
-      lmi->szTitle = null_strdup(ICQTranslate(szLevelDescr[level]));
+      lmi->szMsg = ICQTranslateUtf(szMsg);
+      lmi->szTitle = ICQTranslateUtf(szLevelDescr[level]);
       forkthread(icq_LogMessageThread, 0, lmi);
     }
   }
@@ -93,6 +93,8 @@ void icq_LogMessage(int level, const char *szMsg)
 void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
 {
   char szBuf[1024];
+  char str[1024];
+  char str2[64];
   char szErrorMsg[256];
   char* pszErrorMsg;
 
@@ -136,6 +138,6 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
       break;
   }
 
-  null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?ICQTranslate(szMsg):"", szMsg?"\r\n\r\n":"", pszErrorMsg, ICQTranslate("error"), dwError);
+  null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?ICQTranslateUtfStatic(szMsg, str):"", szMsg?"\r\n\r\n":"", pszErrorMsg, ICQTranslateUtfStatic("error", str2), dwError);
   icq_LogMessage(level, szBuf);
 }

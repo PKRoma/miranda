@@ -122,6 +122,7 @@
 #define IDC_ONLINEONLY                  1430
 #define IDC_HOMEPAGECAT                 1431
 #define IDC_HOMEPAGEKEY                 1432
+#define IDC_TLVSEARCH                   1433
 #define IDC_SUMMARYGROUP                1434
 #define IDC_WORKGROUP                   1435
 #define IDC_LOCATIONGROUP               1436

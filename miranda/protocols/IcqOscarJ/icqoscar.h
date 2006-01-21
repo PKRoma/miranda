@@ -71,6 +71,7 @@
 #include <m_utils.h>
 #include <m_idle.h>
 #include <m_popup.h>
+#include <m_clistint.h>
 
 // Project resources
 #include "resource.h"

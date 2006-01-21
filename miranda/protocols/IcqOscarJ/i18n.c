@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -164,100 +164,115 @@ char* detect_decode_utf8(const char *from)
  */
 unsigned char *make_utf8_string(const wchar_t *unicode)
 {
+  int size = 0;
+  int index = 0;
+  int out_index = 0;
+  unsigned char* out;
+  unsigned short c;
 
-    int size = 0;
-    int index = 0;
-     int out_index = 0;
-    unsigned char* out;
-    unsigned short c;
 
-
-    /* first calculate the size of the target string */
+  /* first calculate the size of the target string */
+  c = unicode[index++];
+  while (c)
+  {
+    if (c < 0x0080) 
+      size += 1;
+    else if (c < 0x0800) 
+      size += 2;
+    else 
+      size += 3;
     c = unicode[index++];
-    while(c) {
-        if(c < 0x0080) {
-            size += 1;
-        } else if(c < 0x0800) {
-            size += 2;
-        } else {
-            size += 3;
-        }
-        c = unicode[index++];
-    }
+  }
 
-    out = malloc(size + 1);
-    if (out == NULL)
-        return NULL;
-    index = 0;
+  out = malloc(size + 1);
+  if (out == NULL)
+    return NULL;
+  index = 0;
 
-    c = unicode[index++];
-    while(c)
+  c = unicode[index++];
+  while (c)
+  {
+    if (c < 0x080) 
     {
-        if(c < 0x080) {
-            out[out_index++] = (unsigned char)c;
-        } else if(c < 0x800) {
-            out[out_index++] = 0xc0 | (c >> 6);
-            out[out_index++] = 0x80 | (c & 0x3f);
-        } else {
-            out[out_index++] = 0xe0 | (c >> 12);
-            out[out_index++] = 0x80 | ((c >> 6) & 0x3f);
-            out[out_index++] = 0x80 | (c & 0x3f);
-        }
-        c = unicode[index++];
+      out[out_index++] = (unsigned char)c;
     }
-    out[out_index] = 0x00;
+    else if (c < 0x800) 
+    {
+      out[out_index++] = 0xc0 | (c >> 6);
+      out[out_index++] = 0x80 | (c & 0x3f);
+    }
+    else
+    {
+      out[out_index++] = 0xe0 | (c >> 12);
+      out[out_index++] = 0x80 | ((c >> 6) & 0x3f);
+      out[out_index++] = 0x80 | (c & 0x3f);
+    }
+    c = unicode[index++];
+  }
+  out[out_index] = 0x00;
 
-    return out;
+  return out;
 }
+
+
 
 wchar_t *make_unicode_string(const unsigned char *utf8)
 {
+  int size = 0, index = 0, out_index = 0;
+  wchar_t *out;
+  unsigned char c;
 
-    int size = 0, index = 0, out_index = 0;
-    wchar_t *out;
-    unsigned char c;
-
-
-    /* first calculate the size of the target string */
-    c = utf8[index++];
-    while(c) {
-        if((c & 0x80) == 0) {
-            index += 0;
-        } else if((c & 0xe0) == 0xe0) {
-            index += 2;
-        } else {
-            index += 1;
-        }
-        size += 1;
-        c = utf8[index++];
-    }
-
-    out = malloc((size + 1) * sizeof(wchar_t));
-    if (out == NULL)
-        return NULL;
-    index = 0;
-
-    c = utf8[index++];
-    while(c)
+  /* first calculate the size of the target string */
+  c = utf8[index++];
+  while (c) 
+  {
+    if ((c & 0x80) == 0) 
     {
-        if((c & 0x80) == 0) {
-            out[out_index++] = c;
-        } else if((c & 0xe0) == 0xe0) {
-            out[out_index] = (c & 0x1F) << 12;
-          c = utf8[index++];
-            out[out_index] |= (c & 0x3F) << 6;
-          c = utf8[index++];
-            out[out_index++] |= (c & 0x3F);
-        } else {
-            out[out_index] = (c & 0x3F) << 6;
-          c = utf8[index++];
-            out[out_index++] |= (c & 0x3F);
-        }
-        c = utf8[index++];
+      index += 0;
     }
-    out[out_index] = 0;
+    else if ((c & 0xe0) == 0xe0) 
+    {
+      index += 2;
+    }
+    else
+    {
+      index += 1;
+    }
+    size += 1;
+    c = utf8[index++];
+  }
 
-    return out;
+  out = malloc((size + 1) * sizeof(wchar_t));
+  if (out == NULL)
+    return NULL;
+  index = 0;
+
+  c = utf8[index++];
+  while (c)
+  {
+    if((c & 0x80) == 0) 
+    {
+      out[out_index++] = c;
+    } 
+    else if((c & 0xe0) == 0xe0) 
+    {
+      out[out_index] = (c & 0x1F) << 12;
+      c = utf8[index++];
+      out[out_index] |= (c & 0x3F) << 6;
+      c = utf8[index++];
+      out[out_index++] |= (c & 0x3F);
+    }
+    else
+    {
+      out[out_index] = (c & 0x3F) << 6;
+      c = utf8[index++];
+      out[out_index++] |= (c & 0x3F);
+    }
+    c = utf8[index++];
+  }
+  out[out_index] = 0;
+
+  return out;
 }
 
 
@@ -308,34 +323,28 @@ int utf8_encode(const char *from, char **to)
 // Returns 0 on error, 1 on success
 int utf8_decode(const char *from, char **to)
 {
-
   int nResult = 0;
 
   _ASSERTE(!(*to)); // You passed a non-zero pointer, make sure it doesnt point to unfreed memory
 
-
   // Validate the string
-//  if (!UTF8_IsValid(from))
-//    return 0;
+  if (!UTF8_IsValid(from))
+    return 0;
 
   // Use the native conversion routines when available
   if (bHasCP_UTF8)
-   {
+  {
+    WCHAR *wszTemp = NULL;
+    int inlen = strlennull(from);
 
-     WCHAR *wszTemp = NULL;
-     int inlen;
-
-
-     inlen = strlennull(from);
-     wszTemp = (WCHAR *)malloc(sizeof(WCHAR) * (inlen + 1));
+    wszTemp = (WCHAR *)_alloca(sizeof(WCHAR) * (inlen + 1));
 
     // Convert the UTF-8 string to UCS
-     if (MultiByteToWideChar(CP_UTF8, 0, from, -1, wszTemp, inlen + 1))
+    if (MultiByteToWideChar(CP_UTF8, 0, from, -1, wszTemp, inlen + 1))
     {
-
       // Convert the UCS string to local ANSI codepage
       *to = (char*)malloc(inlen+1);
-       if (WideCharToMultiByte(CP_ACP, 0, wszTemp, -1, *to, inlen+1, NULL, NULL))
+      if (WideCharToMultiByte(CP_ACP, 0, wszTemp, -1, *to, inlen+1, NULL, NULL))
       {
         nResult = 1;
       }
@@ -344,17 +353,12 @@ int utf8_decode(const char *from, char **to)
         SAFE_FREE(&(*to));
       }
     }
-
-    SAFE_FREE(&wszTemp);
-
-   }
+  }
   else
   {
-
     wchar_t *unicode;
     int chars;
     int err;
-
 
     unicode = make_unicode_string(from);
     if(unicode == NULL)
@@ -363,8 +367,7 @@ int utf8_decode(const char *from, char **to)
       return 0;
     }
 
-    chars = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, unicode,
-        -1, NULL, 0, NULL, NULL);
+    chars = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, unicode, -1, NULL, 0, NULL, NULL);
 
     if(chars == 0)
     {
@@ -381,14 +384,12 @@ int utf8_decode(const char *from, char **to)
       return 0;
     }
 
-    err = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, unicode,
-        -1, *to, chars, NULL, NULL);
+    err = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, unicode, -1, *to, chars, NULL, NULL);
     if (err != chars)
     {
       fprintf(stderr, "Unicode translation error %d\n", GetLastError());
       SAFE_FREE(&unicode);
-      SAFE_FREE(&(*to));
-      *to = NULL;
+      SAFE_FREE(to);
       return 0;
     }
 
@@ -398,5 +399,55 @@ int utf8_decode(const char *from, char **to)
   }
 
   return nResult;
+}
 
+
+
+// Returns 0 on error, 1 on success
+int utf8_decode_static(const char *from, char *to, int to_size)
+{
+  int nResult = 0;
+
+  _ASSERTE((*to)); // You passed a zero pointer
+
+  // Validate the string
+  if (!UTF8_IsValid(from))
+    return 0;
+
+  // Use the native conversion routines when available
+  if (bHasCP_UTF8)
+  {
+    WCHAR *wszTemp = NULL;
+    int inlen = strlennull(from);
+
+    wszTemp = (WCHAR *)_alloca(sizeof(WCHAR) * (inlen + 1));
+
+    // Convert the UTF-8 string to UCS
+    if (MultiByteToWideChar(CP_UTF8, 0, from, -1, wszTemp, inlen + 1))
+    {
+      // Convert the UCS string to local ANSI codepage
+      if (WideCharToMultiByte(CP_ACP, 0, wszTemp, -1, to, to_size, NULL, NULL))
+      {
+        nResult = 1;
+      }
+    }
+  }
+  else
+  {
+    wchar_t *unicode = make_unicode_string(from);
+
+    if (unicode == NULL)
+    {
+      fprintf(stderr, "Out of memory processing string from UTF8 to UNICODE16\n");
+      return 0;
+    }
+
+    WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, unicode, -1, to, to_size, NULL, NULL);
+
+    SAFE_FREE(&unicode);
+
+    nResult = 1;
+  }
+
+  return nResult;
 }

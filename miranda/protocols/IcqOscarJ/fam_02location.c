@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -124,14 +124,14 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
   if (hContact == INVALID_HANDLE_VALUE)
   {
 #ifdef _DEBUG
-    NetLog_Server("Ignoring away reply (%u)", dwUIN);
+    NetLog_Server("Ignoring away reply (%s)", strUID(dwUIN, szUID));
 #endif
     return;
   }
 
   if (!FindCookie(dwCookie, &dwCookieUin, &pCookieData))
   {
-    NetLog_Server("Error: Received unexpected away reply from %u", dwUIN);
+    NetLog_Server("Error: Received unexpected away reply from %s", strUID(dwUIN, szUID));
     return;
   }
 
@@ -194,7 +194,7 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
     status = AwayMsgTypeToStatus(pCookieData->nAckType);
     if (status == ID_STATUS_OFFLINE)
     {
-      NetLog_Server("SNAC(2.6) Ignoring unknown status message from %u", dwUIN);
+      NetLog_Server("SNAC(2.6) Ignoring unknown status message from %s", strUID(dwUIN, szUID));
       FreeCookie(dwCookie);
       SAFE_FREE(&pCookieData);
       return;

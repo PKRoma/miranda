@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -357,7 +357,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
           {
             SetCurrentStatus(ID_STATUS_OFFLINE);
 
-            icq_LogMessage(LOG_FATAL, ICQTranslate("You have not entered a ICQ number.\nConfigure this in Options->Network->ICQ and try again."));
+            icq_LogMessage(LOG_FATAL, "You have not entered a ICQ number.\nConfigure this in Options->Network->ICQ and try again.");
             return 0;
           }
 
@@ -1890,7 +1890,14 @@ int IcqSendAuthRequest(WPARAM wParam, LPARAM lParam)
 
       if (dwUin && ccs->lParam)
       {
-        icq_sendAuthReqServ(dwUin, (char *)ccs->lParam);
+        char *text = (char *)ccs->lParam;
+        char *utf = NULL;
+
+        utf8_encode(text, &utf); // Miranda is ANSI only here
+
+        icq_sendAuthReqServ(dwUin, utf);
+
+        SAFE_FREE(&utf);
 
         return 0; // Success
       }

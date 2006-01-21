@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005 Joe Kucera, Bio
+// Copyright © 2004,2005,2006 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -87,7 +87,9 @@ int UploadSettings(HWND hwndParent)
 
   if (!icqOnline) 
   {
-    MessageBox(hwndParent, ICQTranslate("You are not currently connected to the ICQ network. You must be online in order to update your information on the server."), ICQTranslate("Change ICQ Details"), MB_OK);
+    char str[1024],cap[MAX_PATH];
+
+    MessageBoxUtf(hwndParent, ICQTranslateUtfStatic("You are not currently connected to the ICQ network. You must be online in order to update your information on the server.", str), ICQTranslateUtfStatic("Change ICQ Details", cap), MB_OK);
     return 0;
   }
 

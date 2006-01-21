@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -558,7 +558,7 @@ WORD GenerateServerIdPair(int bGroupId, int wCount)
 DWORD icq_sendBuddyUtf(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, WORD wGroupId, WORD wContactId, const char *szNick, const char*szNote, int authRequired, WORD wItemType)
 {
   icq_packet packet;
-  char szUin[10];
+  char szUin[UINMAXLEN];
   int nUinLen;
   int nNickLen;
   int nNoteLen;
@@ -952,7 +952,7 @@ int GroupNameExistsUtf(const char *name,int skipGroup)
     szGroup = UniGetContactSettingUtf(NULL, "CListGroups", idstr, "");
     if (!strlennull(szGroup)) break;
     if (!strcmpnull(szGroup+1, name)) 
-    {
+    { // caution, this can be false - with ansi clist
       SAFE_FREE(&szGroup);
       return 1;
     }
@@ -988,13 +988,30 @@ int countGroupLevel(WORD wGroupId)
 
 int CreateCListGroup(const char* szGroupName)
 {
-  char* szTmp;
   int hGroup;
+  CLIST_INTERFACE *clint = NULL;
+
+  if (ServiceExists(MS_CLIST_RETRIEVE_INTERFACE))
+    clint = (CLIST_INTERFACE*)CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, 0);
 
   hGroup = CallService(MS_CLIST_GROUPCREATE, 0, 0);
-  utf8_decode(szGroupName, &szTmp); // TODO: this is horrible, get unicode service ready!!
-  CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szTmp);
-  SAFE_FREE(&szTmp);
+
+  if (gbUnicodeCore && clint && clint->version >= 1)
+  { // we've got unicode interface, use it
+    wchar_t* usTmp = make_unicode_string(szGroupName);
+
+    clint->pfnRenameGroup(hGroup, (TCHAR*)usTmp);
+    SAFE_FREE(&usTmp);
+  }
+  else
+  { // old ansi version - no other way
+    int size = strlennull(szGroupName) + 2;
+    char* szTmp = (char*)_alloca(size);
+
+    utf8_decode_static(szGroupName, szTmp, size);
+    CallService(MS_CLIST_GROUPRENAME, hGroup, (LPARAM)szTmp);
+  }
+
   return hGroup;
 }
 

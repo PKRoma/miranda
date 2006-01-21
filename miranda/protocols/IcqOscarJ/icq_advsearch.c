@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera, Bio
+// Copyright © 2004,2005,2006 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -43,26 +43,15 @@ static void InitComboBox(HWND hwndCombo,struct fieldnames_t *names)
   int iItem;
   int i;
 
-  iItem = SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)"");
-  SendMessage(hwndCombo, CB_SETITEMDATA, iItem, 0);
+  iItem = ComboBoxAddStringUtf(hwndCombo, "", 0);
   SendMessage(hwndCombo, CB_SETCURSEL, iItem, 0);
 
   for (i = 0; ; i++)
   {
     if (names[i].text == NULL)
       break;
-
-	 /* Perversion... needs the special Unicode build of the whole plugin */
-	 if ( gbUnicodeAPI ) {
-		WCHAR* p = (WCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)names[i].text);
-		if (( int )p != CALLSERVICE_NOTFOUND ) {
-  			iItem = SendMessageW(hwndCombo, CB_ADDSTRING, 0, (LPARAM)p);
-			free(p);
-		}
-		else iItem = SendMessageA(hwndCombo, CB_ADDSTRING, 0, (LPARAM)TranslateT(names[i].text));
-	 }
-	 else iItem = SendMessageA(hwndCombo, CB_ADDSTRING, 0, (LPARAM)TranslateT(names[i].text));
-    SendMessage(hwndCombo, CB_SETITEMDATA, iItem,names[i].code);
+    
+    iItem = ComboBoxAddStringUtf(hwndCombo, names[i].text, names[i].code);
   }
 }
 
@@ -86,24 +75,31 @@ BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, L
         int countryCount;
         int i;
         int iItem;
-
+        HWND hCombo;
 
         CallService(MS_UTILS_GETCOUNTRYLIST, (WPARAM)&countryCount, (LPARAM)&countries);
 
-        iItem = SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_ADDSTRING, 0, (LPARAM)"");
-        SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_SETITEMDATA, iItem, 0);
-        SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_SETCURSEL, iItem, 0);
+        hCombo = GetDlgItem(hwndDlg, IDC_COUNTRY);
+        iItem = ComboBoxAddStringUtf(hCombo, "", 0);
+        SendMessage(hCombo, CB_SETCURSEL, iItem, 0);
         for (i = 0; i < countryCount; i++)
         {
           if (countries[i].id == 0 || countries[i].id == 0xFFFF)
             continue;
-          iItem = SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_ADDSTRING, 0, (LPARAM)ICQTranslate(countries[i].szName));
-          SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_SETITEMDATA, iItem, countries[i].id);
+          iItem = ComboBoxAddStringUtf(hCombo, countries[i].szName, countries[i].id);
         }
       }
 
       InitComboBox(GetDlgItem(hwndDlg, IDC_INTERESTSCAT), interestsField);
       InitComboBox(GetDlgItem(hwndDlg, IDC_PASTCAT), pastField);
+
+      {
+        BYTE bTLVSearch = ICQGetContactSettingByte(NULL, "TLVSearch", 1);
+
+        CheckDlgButton(hwndDlg, IDC_TLVSEARCH, bTLVSearch);
+        EnableDlgItem(hwndDlg, IDC_KEYWORDS, bTLVSearch);
+        EnableDlgItem(hwndDlg, IDC_MARITALSTATUS, bTLVSearch);
+      }
 
       return TRUE;
       
@@ -121,6 +117,14 @@ BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, L
           //          SendMessage(GetParent(hwndDlg),WM_COMMAND,MAKEWPARAM(IDC_ADVANCED,BN_CLICKED),(LPARAM)GetDlgItem(GetParent(hwndDlg),IDC_ADVANCED));
           break;
           
+        case IDC_TLVSEARCH:
+          {
+            BYTE On = IsDlgButtonChecked(hwndDlg, IDC_TLVSEARCH);
+            EnableDlgItem(hwndDlg, IDC_KEYWORDS, On);
+            EnableDlgItem(hwndDlg, IDC_MARITALSTATUS, On);
+          }
+          break;
+
         default:
           break;
           
@@ -137,7 +141,7 @@ BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, L
 
 
 
-/*static void searchPackLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idControl)
+static void searchPackLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idControl)
 {
   char str[512];
 
@@ -148,36 +152,41 @@ BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, L
 
 
 
-PBYTE createAdvancedSearchStructure(HWND hwndDlg, int *length)
+static DWORD getCurItemData(HWND hwndDlg, UINT iCtrl)
+{
+  return SendDlgItemMessage(hwndDlg, iCtrl, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, iCtrl, CB_GETCURSEL, 0, 0), 0);
+}
+
+
+
+static PBYTE createAdvancedSearchStructureOld(HWND hwndDlg, int *length)
 {
   PBYTE buf = NULL;
   int buflen = 0;
 
-
-  if (hwndDlg == NULL)
-    return NULL;
+  ppackLEWord(&buf, &buflen, META_SEARCH_ADVANCED);
 
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_FIRSTNAME);
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_LASTNAME);
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_NICK);
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_EMAIL);
-  ppackLEDWord(&buf, &buflen, (DWORD)SendDlgItemMessage(hwndDlg, IDC_AGERANGE, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_AGERANGE, CB_GETCURSEL, 0, 0), 0));
-  ppackByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_GETCURSEL, 0, 0), 0));
-  ppackByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_LANGUAGE, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_LANGUAGE, CB_GETCURSEL, 0, 0), 0));
+  ppackLEDWord(&buf, &buflen, (DWORD)getCurItemData(hwndDlg, IDC_AGERANGE));
+  ppackByte(&buf, &buflen, (BYTE)getCurItemData(hwndDlg, IDC_GENDER));
+  ppackByte(&buf, &buflen, (BYTE)getCurItemData(hwndDlg, IDC_LANGUAGE));
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_CITY);
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_STATE);
-  ppackLEWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_GETCURSEL, 0, 0), 0));
+  ppackLEWord(&buf, &buflen, (WORD)getCurItemData(hwndDlg, IDC_COUNTRY));
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_COMPANY);
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_DEPARTMENT);
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_POSITION);
-  ppackByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_WORKFIELD, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_WORKFIELD, CB_GETCURSEL, 0, 0), 0));
-  ppackLEWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_PASTCAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_PASTCAT, CB_GETCURSEL, 0, 0), 0));
+  ppackByte(&buf, &buflen, (BYTE)getCurItemData(hwndDlg, IDC_WORKFIELD));
+  ppackLEWord(&buf, &buflen, (WORD)getCurItemData(hwndDlg, IDC_PASTCAT));
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_PASTKEY);
-  ppackLEWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_INTERESTSCAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_INTERESTSCAT, CB_GETCURSEL, 0, 0), 0));
+  ppackLEWord(&buf, &buflen, (WORD)getCurItemData(hwndDlg, IDC_INTERESTSCAT));
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_INTERESTSKEY);
-  ppackLEWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_ORGANISATION, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_ORGANISATION, CB_GETCURSEL, 0, 0), 0));
+  ppackLEWord(&buf, &buflen, (WORD)getCurItemData(hwndDlg, IDC_ORGANISATION));
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_ORGKEYWORDS);
-  ppackLEWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_GETCURSEL, 0, 0), 0));
+  ppackLEWord(&buf, &buflen, (WORD)getCurItemData(hwndDlg, IDC_HOMEPAGECAT));
   searchPackLNTS(&buf, &buflen, hwndDlg, IDC_HOMEPAGEKEY);
   ppackByte(&buf, &buflen, (BYTE)IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY));
 
@@ -185,7 +194,8 @@ PBYTE createAdvancedSearchStructure(HWND hwndDlg, int *length)
     *length = buflen;
 
   return buf;
-}*/
+}
+
 
 
 static void searchPackTLVLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idControl, WORD wType)
@@ -198,6 +208,7 @@ static void searchPackTLVLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idCont
 }
 
 
+
 static void searchPackTLVWordLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idControl, WORD w, WORD wType)
 {
   char str[512];
@@ -208,11 +219,14 @@ static void searchPackTLVWordLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT id
 }
 
 
-PBYTE createAdvancedSearchStructure(HWND hwndDlg, int *length)
+
+static PBYTE createAdvancedSearchStructureTLV(HWND hwndDlg, int *length)
 {
   PBYTE buf = NULL;
   int buflen = 0;
   WORD w;
+
+  ppackLEWord(&buf, &buflen, META_SEARCH_GENERIC);       /* subtype: full search */
 
   searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_FIRSTNAME, TLV_FIRSTNAME);
   searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_LASTNAME, TLV_LASTNAME);
@@ -225,23 +239,23 @@ PBYTE createAdvancedSearchStructure(HWND hwndDlg, int *length)
   searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_POSITION, TLV_POSITION);
   searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_KEYWORDS, TLV_KEYWORDS);
 
-  ppackTLVDWord(&buf, &buflen, (DWORD)SendDlgItemMessage(hwndDlg, IDC_AGERANGE, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_AGERANGE, CB_GETCURSEL, 0, 0), 0), TLV_AGERANGE, 0);
-  ppackTLVByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_GETCURSEL, 0, 0), 0), TLV_GENDER, 0);
-  ppackTLVByte(&buf, &buflen, (BYTE)SendDlgItemMessage(hwndDlg, IDC_MARITALSTATUS, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_MARITALSTATUS, CB_GETCURSEL, 0, 0), 0), TLV_MARITAL, 0);
-  ppackTLVWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_LANGUAGE, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_LANGUAGE, CB_GETCURSEL, 0, 0), 0), TLV_LANGUAGE, 0);
-  ppackTLVWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_COUNTRY, CB_GETCURSEL, 0, 0), 0), TLV_COUNTRY, 0);
-  ppackTLVWord(&buf, &buflen, (WORD)SendDlgItemMessage(hwndDlg, IDC_WORKFIELD, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_WORKFIELD, CB_GETCURSEL, 0, 0), 0), TLV_OCUPATION, 0);
+  ppackTLVDWord(&buf, &buflen, (DWORD)getCurItemData(hwndDlg, IDC_AGERANGE),      TLV_AGERANGE,  0);
+  ppackTLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_GENDER),        TLV_GENDER,    0);
+  ppackTLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_MARITALSTATUS), TLV_MARITAL,   0);
+  ppackTLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_LANGUAGE),      TLV_LANGUAGE,  0);
+  ppackTLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_COUNTRY),       TLV_COUNTRY,   0);
+  ppackTLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_WORKFIELD),     TLV_OCUPATION, 0);
 
-  w = (WORD)SendDlgItemMessage(hwndDlg, IDC_PASTCAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_PASTCAT, CB_GETCURSEL, 0, 0), 0);
+  w = (WORD)getCurItemData(hwndDlg, IDC_PASTCAT);
   searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_PASTKEY, w, TLV_PASTINFO);
 
-  w = (WORD)SendDlgItemMessage(hwndDlg, IDC_INTERESTSCAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_INTERESTSCAT, CB_GETCURSEL, 0, 0), 0);
+  w = (WORD)getCurItemData(hwndDlg, IDC_INTERESTSCAT);
   searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_INTERESTSKEY, w, TLV_INTERESTS);
 
-  w = (WORD)SendDlgItemMessage(hwndDlg, IDC_ORGANISATION, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_ORGANISATION, CB_GETCURSEL, 0, 0), 0);
+  w = (WORD)getCurItemData(hwndDlg, IDC_ORGANISATION);
   searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_ORGKEYWORDS, w, TLV_AFFILATIONS);
 
-  w = (WORD)SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_HOMEPAGECAT, CB_GETCURSEL, 0, 0), 0);
+  w = (WORD)getCurItemData(hwndDlg, IDC_HOMEPAGECAT);;
   searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_HOMEPAGEKEY, w, TLV_HOMEPAGE);
 
   ppackTLVByte(&buf, &buflen, (BYTE)IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY), TLV_ONLINEONLY, 1);
@@ -250,4 +264,22 @@ PBYTE createAdvancedSearchStructure(HWND hwndDlg, int *length)
     *length = buflen;
 
   return buf;
+}
+
+
+
+PBYTE createAdvancedSearchStructure(HWND hwndDlg, int *length)
+{
+  BYTE bTLVSearch;
+
+  if (hwndDlg == NULL)
+    return NULL;
+
+  bTLVSearch = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_TLVSEARCH);
+  ICQWriteContactSettingByte(NULL, "TLVSearch", bTLVSearch);
+
+  if (bTLVSearch)
+    return createAdvancedSearchStructureTLV(hwndDlg, length);
+  else
+    return createAdvancedSearchStructureOld(hwndDlg, length);
 }

@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -52,24 +52,26 @@ int icq_RequestAuthorization(WPARAM wParam, LPARAM lParam)
 static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   HANDLE hContact;
-  char szReason[256];
-
 
   switch (msg)
   {
 
   case WM_INITDIALOG:
-    hContact = (HANDLE)lParam;
+    {
+      char str[MAX_PATH];
 
-    if (!hContact || !icqOnline)
-      EndDialog(hwndDlg, 0);
+      hContact = (HANDLE)lParam;
 
-    ICQTranslateDialog(hwndDlg);
-    SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-    SendDlgItemMessage(hwndDlg, IDC_EDITAUTH, EM_LIMITTEXT, (WPARAM)255, 0);
-    SetDlgItemText(hwndDlg, IDC_EDITAUTH, ICQTranslate("Please authorize me to add you to my contact list."));
+      if (!hContact || !icqOnline)
+        EndDialog(hwndDlg, 0);
 
-    return TRUE;
+      ICQTranslateDialog(hwndDlg);
+      SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+      SendDlgItemMessage(hwndDlg, IDC_EDITAUTH, EM_LIMITTEXT, (WPARAM)255, 0);
+      SetDlgItemTextUtf(hwndDlg, IDC_EDITAUTH, ICQTranslateUtfStatic("Please authorize me to add you to my contact list.", str));
+
+      return TRUE;
+    }
 
   case WM_COMMAND:
     {
@@ -78,6 +80,7 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
       case IDOK:
         {
           DWORD dwUin;
+          char* szReason;
 
           hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
 
@@ -87,8 +90,9 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
           if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
             return TRUE; // Invalid contact
 
-          GetDlgItemText(hwndDlg, IDC_EDITAUTH, szReason, 255);
+          szReason = GetDlgItemTextUtf(hwndDlg, IDC_EDITAUTH);
           icq_sendAuthReqServ(dwUin, szReason);
+          SAFE_FREE(&szReason);
           EndDialog(hwndDlg, 0);
 
           return TRUE;

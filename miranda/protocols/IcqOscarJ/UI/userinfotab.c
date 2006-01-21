@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -41,20 +41,16 @@ extern WORD wListenPort;
 
 extern char* calcMD5Hash(char* szFile);
 
-extern char* nameXStatus[24];
+extern char* nameXStatus[29];
 
 static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char *szModule, char *szSetting, int special);
 
 #define SVS_NORMAL        0
-#define SVS_GENDER        1
 #define SVS_ZEROISUNSPEC  2
 #define SVS_IP            3
-#define SVS_COUNTRY       4
-#define SVS_MONTH         5
 #define SVS_SIGNED        6
-#define SVS_TIMEZONE      7
 #define SVS_ICQVERSION    8
 #define SVS_TIMESTAMP     9
 #define SVS_STATUSID      10
@@ -111,7 +107,6 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 
 static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  
   switch (msg)
   {
 
@@ -160,10 +155,12 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
               }
               else
               {
+                char str[MAX_PATH];
+
                 SetValue(hwndDlg, IDC_PORT, hContact, (char*)DBVT_WORD, (char*)wListenPort, SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)ICQ_VERSION, SVS_ICQVERSION);
                 SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, "Miranda IM", SVS_ZEROISUNSPEC);
-                SetDlgItemText(hwndDlg, IDC_SUPTIME, ICQTranslate("Member since:"));
+                SetDlgItemTextUtf(hwndDlg, IDC_SUPTIME, ICQTranslateUtfStatic("Member since:", str));
                 SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "MemberTS", SVS_TIMESTAMP);
                 SetValue(hwndDlg, IDC_STATUS, hContact, (char*)DBVT_WORD, (char*)gnCurrentStatus, SVS_STATUSID);
               }
@@ -250,8 +247,8 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         ShowWindow(GetDlgItem(hwndDlg, -1), SW_SHOW);
         if (!icqOnline)
         {
-          EnableWindow(GetDlgItem(hwndDlg, IDC_SETAVATAR), FALSE);
-          EnableWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), FALSE);
+          EnableDlgItem(hwndDlg, IDC_SETAVATAR, FALSE);
+          EnableDlgItem(hwndDlg, IDC_DELETEAVATAR, FALSE);
         }
       }
       SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)pData);
@@ -396,9 +393,8 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, char* szSetting, int special)
 {
   DBVARIANT dbv = {0};
-  char str[80];
+  char str[MAX_PATH];
   char* pstr;
-  char szStatus[MAX_PATH];
   int unspecified = 0;
   int bUtf = 0;
 
@@ -441,49 +437,12 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
     {
 
     case DBVT_BYTE:
-      if (special == SVS_GENDER)
-      {
-        if (dbv.cVal == 'M')
-          pstr = ICQTranslate("Male");
-        else if (dbv.cVal == 'F')
-          pstr = ICQTranslate("Female");
-        else
-          unspecified = 1;
-      }
-      else if (special == SVS_MONTH)
-      {
-        if (dbv.bVal>0 && dbv.bVal<=12)
-        {
-          pstr = str;
-          GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SABBREVMONTHNAME1-1+dbv.bVal, str,sizeof(str));
-        }
-        else
-          unspecified = 1;
-      }
-      else if (special == SVS_TIMEZONE)
-      {
-        if (dbv.cVal == -100)
-          unspecified = 1;
-        else
-        {
-          pstr = str;
-          _snprintf(str, 80, dbv.cVal ? "GMT%+d:%02d":"GMT", -dbv.cVal/2, (dbv.cVal&1)*30);
-        }
-      }
-      else
-      {
-        unspecified = (special == SVS_ZEROISUNSPEC && dbv.bVal == 0);
-        pstr = itoa(special == SVS_SIGNED ? dbv.cVal:dbv.bVal, str, 10);
-      }
+      unspecified = (special == SVS_ZEROISUNSPEC && dbv.bVal == 0);
+      pstr = itoa(special == SVS_SIGNED ? dbv.cVal:dbv.bVal, str, 10);
       break;
       
     case DBVT_WORD:
-      if (special == SVS_COUNTRY)
-      {
-        pstr = (char*)CallService(MS_UTILS_GETCOUNTRYBYNUMBER, dbv.wVal, 0);
-        unspecified = pstr == NULL;
-      }
-      else if (special == SVS_ICQVERSION)
+      if (special == SVS_ICQVERSION)
       {
         if (dbv.wVal != 0)
         {
@@ -496,27 +455,26 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       else if (special == SVS_STATUSID)
       {
         char* pXName;
+        char* pszStatus;
         BYTE bXStatus = ICQGetContactSettingByte(hContact, "XStatusId", 0);
 
-        null_snprintf(szStatus, sizeof(szStatus), MirandaStatusToString(dbv.wVal));
+        pszStatus = MirandaStatusToStringUtf(dbv.wVal);
         if (bXStatus)
         {
-          char szXStatus[MAX_PATH];
-
-          strcpy(szXStatus, szStatus);
           pXName = ICQGetContactSettingUtf(hContact, "XStatusName", "");
           if (!strlennull(pXName))
-          {
-            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szXStatus, ICQTranslate(nameXStatus[bXStatus-1]));
+          { // give default name
+            pXName = ICQTranslateUtf(nameXStatus[bXStatus-1]);
           }
-          else
-          {
-            null_snprintf(szStatus, sizeof(szStatus), "%s (%s)", szXStatus, pXName);
-            bUtf = 1;
-          }
+          null_snprintf(str, sizeof(str), "%s (%s)", pszStatus, pXName);
           SAFE_FREE(&pXName);
         }
-        pstr = szStatus;
+        else
+          null_snprintf(str, sizeof(str), pszStatus);
+
+        bUtf = 1;
+        SAFE_FREE(&pszStatus);
+        pstr = str;
         unspecified = 0;
       }
       else
@@ -553,7 +511,8 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
     case DBVT_ASCIIZ:
       unspecified = (special == SVS_ZEROISUNSPEC && dbv.pszVal[0] == '\0');
       pstr = dbv.pszVal;
-      if (idCtrl == IDC_UIN) SetDlgItemText(hwndDlg, IDC_UINSTATIC, ICQTranslate("ScreenName:"));
+      if (idCtrl == IDC_UIN)
+        SetDlgItemTextUtf(hwndDlg, IDC_UINSTATIC, ICQTranslateUtfStatic("ScreenName:", str));
       break;
       
     default:
@@ -563,9 +522,9 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
     }
   }
   
-  EnableWindow(GetDlgItem(hwndDlg, idCtrl), !unspecified);
+  EnableDlgItem(hwndDlg, idCtrl, !unspecified);
   if (unspecified)
-    SetDlgItemText(hwndDlg, idCtrl, ICQTranslate("<not specified>"));
+    SetDlgItemTextUtf(hwndDlg, idCtrl, ICQTranslateUtfStatic("<not specified>", str));
   else if (bUtf)
     SetDlgItemTextUtf(hwndDlg, idCtrl, pstr);
   else

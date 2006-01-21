@@ -4,8 +4,8 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -57,11 +57,11 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,10),
+  PLUGIN_MAKE_VERSION(0,3,6,11),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@users.sourceforge.net",
-  "(C) 2000-2005 M.Öberg, R.Hughes, J.Keating, Bio, J.Kucera",
+  "(C) 2000-2006 M.Öberg, R.Hughes, J.Keating, Bio, J.Kucera",
   "http://www.miranda-im.org/download/details.php?action=viewfile&id=1683",
   0,  //not transient
   0   //doesn't replace anything built-in
@@ -111,11 +111,20 @@ static HANDLE ICQCreateServiceFunction(const char* szService,  MIRANDASERVICE se
 
 int __declspec(dllexport) Load(PLUGINLINK *link)
 {
-  PROTOCOLDESCRIPTOR pd;
+  PROTOCOLDESCRIPTOR pd = {0};
 
   pluginLink = link;
 
+  // Are we running under Unicode Windows version ?
   gbUnicodeAPI = (GetVersion() & 0x80000000) == 0;
+  // Do we have new LangPack module ready ?
+  gbUtfLangpack = ServiceExists(MS_LANGPACK_GETCODEPAGE);
+  { // Are we running under unicode Miranda core ?
+    char szVer[MAX_PATH];
+
+    CallService(MS_SYSTEM_GETVERSIONTEXT, MAX_PATH, (LPARAM)szVer);
+    gbUnicodeCore = (strstr(szVer, "Unicode") != NULL);
+  }
 
   srand(time(NULL));
   _tzset();
@@ -154,7 +163,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   InitRates();    // rate management
 
   // Register the module
-  ZeroMemory(&pd, sizeof(pd));
   pd.cbSize = sizeof(pd);
   pd.szName = gpszICQProtoName;
   pd.type   = PROTOTYPE_PROTOCOL;

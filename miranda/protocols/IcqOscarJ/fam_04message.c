@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -230,10 +230,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
     break;
 
   default:
-    if (dwUin)
-      NetLog_Server("Unknown format message thru server - Flags %u, Ref %u, Type: %u, UIN: %u", wFlags, dwRef, wMessageFormat, dwUin);
-    else
-      NetLog_Server("Unknown format message thru server - Flags %u, Ref %u, Type: %u, UID: %s", wFlags, dwRef, wMessageFormat, szUID);
+    NetLog_Server("Unknown format message thru server - Flags %u, Ref %u, Type: %u, UID: %s", wFlags, dwRef, wMessageFormat, strUID(dwUin, szUID));
     break;
 
   }
@@ -269,10 +266,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
 
   // Unpack the first TLV
   unpackTLV(&buf, &wTLVType, &wTLVLen, &pDataBuf);
-  if (dwUin)
-    NetLog_Server("Message (format 1) - UIN: %u, FirstTLV: %u", dwUin, wTLVType);
-  else
-    NetLog_Server("Message (format 1) - UID: %s, FirstTLV: %u", szUID, wTLVType);
+  NetLog_Server("Message (format 1) - UID: %s, FirstTLV: %u", strUID(dwUin, szUID), wTLVType);
 
   // It must be TLV(2)
   if (wTLVType == 2)
@@ -1268,10 +1262,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
   if (dwDataLen < wMsgLen)
   {
-    if (bThruDC)
-      NetLog_Direct("Ignoring overflowed message");
-    else
-      NetLog_Server("Ignoring overflowed message");
+    NetLog_Uni(bThruDC, "Ignoring overflowed message");
     return;
   }
 
@@ -1386,21 +1377,13 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
             }
             else
             {
-              if (bThruDC)
-                NetLog_Direct("Failed to translate UTF-8 message.");
-              else
-                NetLog_Server("Failed to translate UTF-8 message.");
+              NetLog_Uni(bThruDC, "Failed to translate UTF-8 message.");
             }
-
             break;
           }
           else if (!strncmp(pMsg, CAP_RTFMSGS, 38))
           { // Found RichText cap
-            if (bThruDC)
-              NetLog_Direct("Warning: User %u sends us RichText.", dwUin);
-            else
-              NetLog_Server("Warning: User %u sends us RichText.", dwUin);
-
+            NetLog_Uni(bThruDC, "Warning: User %u sends us RichText.", dwUin);
             break;
           }
 
@@ -1445,10 +1428,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
       if (nMsgFields < 2)
       {
-        if (bThruDC)
-          NetLog_Direct("Malformed '%s' message", "URL");
-        else
-          NetLog_Server("Malformed '%s' message", "URL");
+        NetLog_Uni(bThruDC, "Malformed '%s' message", "URL");
         break;
       }
 
@@ -1557,10 +1537,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
         || pszNContactsEnd - pszMsgField[0] != (int)strlennull(pszMsgField[0])
         || nMsgFields < nContacts * 2 + 1)
       {
-        if (bThruDC)
-          NetLog_Direct("Malformed '%s' message", "contacts");
-        else
-          NetLog_Server("Malformed '%s' message", "contacts");
+        NetLog_Uni(bThruDC, "Malformed '%s' message", "contacts");
         break;
       }
 
@@ -1589,10 +1566,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
       if (!valid)
       {
-        if (bThruDC)
-          NetLog_Direct("Malformed '%s' message", "contacts");
-        else
-          NetLog_Server("Malformed '%s' message", "contacts");
+        NetLog_Uni(bThruDC, "Malformed '%s' message", "contacts");
       }
       else
       {
@@ -1688,26 +1662,17 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
   case MTYPE_REQUESTCONTACTS:
     /* it's a contacts-request */
-    if (bThruDC)
-      NetLog_Direct("Received Request for Contacts msg from %u", dwUin);
-    else
-      NetLog_Server("Received Request for Contacts msg from %u", dwUin);
+    NetLog_Uni(bThruDC, "Received Request for Contacts msg from %u", dwUin);
     break;
 
   case MTYPE_GREETINGCARD:
     /* it's a greeting card */
-    if (bThruDC)
-      NetLog_Direct("Received Greeting Card msg from %u", dwUin);
-    else
-      NetLog_Server("Received Greeting Card msg from %u", dwUin);
+    NetLog_Uni(bThruDC, "Received Greeting Card msg from %u", dwUin);
     break;
 
   case MTYPE_SCRIPT_NOTIFY:
     /* it's a xtraz notify request */
-    if (bThruDC)
-      NetLog_Direct("Received Xtraz Notify Request from %u", dwUin);
-    else
-      NetLog_Server("Received Xtraz Notify Request from %u", dwUin);
+    NetLog_Uni(bThruDC, "Received Xtraz Notify Request from %u", dwUin);
     handleXtrazNotify(dwUin, dwMsgID, dwMsgID2, wCookie, szMsg, wMsgLen, bThruDC);
     break;
 
@@ -1739,10 +1704,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
   case MTYPE_FILEREQ: // Never happens
   default:
-    if (bThruDC)
-      NetLog_Direct("Unprocessed message type %d", type);
-    else
-      NetLog_Server("Unprocessed message type %d", type);
+    NetLog_Uni(bThruDC, "Unprocessed message type %d", type);
     break;
 
   }
@@ -2450,25 +2412,16 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
   case MTN_FINISHED:
   case MTN_TYPED:
     CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)hContact, (LPARAM)PROTOTYPE_CONTACTTYPING_OFF);
-    if (dwUin)
-      NetLog_Server("%u has stopped typing (ch %u).", dwUin, wChannel);
-    else
-      NetLog_Server("%s has stopped typing (ch %u).", szUID, wChannel);
+    NetLog_Server("%s has stopped typing (ch %u).", strUID(dwUin, szUID), wChannel);
     break;
 
   case MTN_BEGUN:
     CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)hContact, (LPARAM)60);
-    if (dwUin)
-      NetLog_Server("%u is typing a message (ch %u).", dwUin, wChannel);
-    else
-      NetLog_Server("%s is typing a message (ch %u).", szUID, wChannel);
+    NetLog_Server("%s is typing a message (ch %u).", strUID(dwUin, szUID), wChannel);
     break;
 
   default:
-    if (dwUin)
-      NetLog_Server("Unknown typing notification from %u, type %u (ch %u)", dwUin, wNotification, wChannel);
-    else
-      NetLog_Server("Unknown typing notification from %s, type %u (ch %u)", szUID, wNotification, wChannel);
+    NetLog_Server("Unknown typing notification from %s, type %u (ch %u)", strUID(dwUin, szUID), wNotification, wChannel);
     break;
   }
 

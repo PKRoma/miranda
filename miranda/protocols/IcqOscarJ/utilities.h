@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -56,12 +56,14 @@ typedef struct icq_ack_args_s
 
 /*---------* Functions *---------------*/
 
+void EnableDlgItem(HWND hwndDlg, UINT control, int state);
 void icq_EnableMultipleControls(HWND hwndDlg, const UINT* controls, int cControls, int state);
 void icq_ShowMultipleControls(HWND hwndDlg, const UINT* controls, int cControls, int state);
 int IcqStatusToMiranda(WORD wStatus);
 WORD MirandaStatusToIcq(int nStatus);
 int MirandaStatusToSupported(int nMirandaStatus);
 char *MirandaStatusToString(int);
+char *MirandaStatusToStringUtf(int);
 char**MirandaStatusToAwayMsg(int nStatus);
 
 int AwayMsgTypeToStatus(int nMsgType);
@@ -85,8 +87,9 @@ void InitCache();
 void UninitCache();
 void DeleteFromCache(HANDLE hContact);
 HANDLE HContactFromUIN(DWORD dwUin, int *Added);
-HANDLE HContactFromUID(char* pszUID, int *Added);
+HANDLE HContactFromUID(char *pszUID, int *Added);
 char *NickFromHandle(HANDLE hContact);
+char *strUID(DWORD dwUIN, char *pszUID);
 void SetContactHidden(HANDLE hContact, BYTE bHidden);
 
 size_t __fastcall strlennull(const char *string);
@@ -130,18 +133,31 @@ void ContactPhotoSettingChanged(HANDLE hContact);
 HANDLE NetLib_OpenConnection(HANDLE hUser, NETLIBOPENCONNECTION* nloc);
 int NetLog_Server(const char *fmt,...);
 int NetLog_Direct(const char *fmt,...);
+int NetLog_Uni(BOOL bDC, const char *fmt,...);
 
 int ICQBroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam);
 
 int __fastcall ICQTranslateDialog(HWND hwndDlg);
 char* __fastcall ICQTranslate(const char* src);
+char* __fastcall ICQTranslateUtf(const char* src);
+char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf);
 
 char* GetUserPassword(BOOL bAlways);
 WORD GetMyStatusFlags();
 
+/* Unicode UI utility functions */
+wchar_t* GetWindowTextUcs(HWND hWnd);
+void SetWindowTextUcs(HWND hWnd, wchar_t *text);
+char* GetWindowTextUtf(HWND hWnd);
 char* GetDlgItemTextUtf(HWND hwndDlg, int iItem);
+void SetWindowTextUtf(HWND hWnd, const char* szText);
 void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const char* szText);
 LONG SetWindowLongUtf(HWND hWnd, int nIndex, LONG dwNewLong);
+LRESULT CallWindowProcUtf(WNDPROC OldProc, HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+int ComboBoxAddStringUtf(HWND hCombo, const char* szString, DWORD data);
+int ListBoxAddStringUtf(HWND hList, const char* szString);
+
+int MessageBoxUtf(HWND hWnd, const char* szText, const char* szCaption, UINT uType);
 
 #endif /* __UTILITIES_H */

@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -73,12 +73,19 @@ extern BOOL bIsSyncingCL;
 extern icq_mode_messages modeMsgs;
 
 
+void EnableDlgItem(HWND hwndDlg, UINT control, int state)
+{
+  EnableWindow(GetDlgItem(hwndDlg, control), state);
+}
+
+
+
 void icq_EnableMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
   int i;
 
   for (i = 0; i < cControls; i++)
-    EnableWindow(GetDlgItem(hwndDlg, controls[i]), state);
+    EnableDlgItem(hwndDlg, controls[i], state);
 }
 
 
@@ -228,6 +235,23 @@ int MirandaStatusToSupported(int nMirandaStatus)
 char* MirandaStatusToString(int mirandaStatus)
 {
   return (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, 0);
+}
+
+
+
+char* MirandaStatusToStringUtf(int mirandaStatus)
+{
+  char* szRes = NULL;
+
+  if (gbUnicodeCore)
+  { // we can get unicode version, request, give utf-8
+    szRes = make_utf8_string((wchar_t *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, GCMDF_UNICODE));
+  }
+  else
+  { // we are ansi only, get it, convert to utf-8
+    utf8_encode(MirandaStatusToString(mirandaStatus), &szRes);
+  }
+  return szRes;
 }
 
 
@@ -839,8 +863,6 @@ HANDLE HContactFromUID(char* pszUID, int *Added)
 
       ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
-//      icq_QueueUser(hContact);
-
       if (icqOnline)
       {
         icq_sendNewContact(0, pszUID);
@@ -862,6 +884,16 @@ char *NickFromHandle(HANDLE hContact)
     return null_strdup("<invalid>");
 
   return null_strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+}
+
+
+
+char *strUID(DWORD dwUIN, char *pszUID)
+{
+  if (dwUIN)
+    ltoa(dwUIN, pszUID, 10);
+
+  return pszUID;
 }
 
 
@@ -1265,7 +1297,8 @@ BOOL writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, 
 BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength)
 {
   WORD wVal;
-  TCHAR *text;
+  char sbuf[MAX_PATH];
+  char *text;
 
   if (*pwLength < 2)
     return FALSE;
@@ -1273,9 +1306,9 @@ BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, str
   unpackLEWord(buf, &wVal);
   *pwLength -= 2;
 
-  text = LookupFieldName(table, wVal);
+  text = LookupFieldNameUtf(table, wVal, sbuf);
   if (text)
-    DBWriteContactSettingTString(hContact, gpszICQProtoName, szSetting, text);
+    ICQWriteContactSettingUtf(hContact, szSetting, text);
   else
     ICQDeleteContactSetting(hContact, szSetting);
 
@@ -1307,7 +1340,8 @@ BOOL writeDbInfoSettingByte(HANDLE hContact, const char *pszSetting, char **buf,
 BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength)
 {
   BYTE byVal;
-  TCHAR *text;
+  char sbuf[MAX_PATH];
+  char *text;
 
   if (*pwLength < 1)
     return FALSE;
@@ -1315,9 +1349,9 @@ BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, str
   unpackByte(buf, &byVal);
   *pwLength -= 1;
 
-  text = LookupFieldName(table, byVal);
+  text = LookupFieldNameUtf(table, byVal, sbuf);
   if (text)
-    DBWriteContactSettingTString(hContact, gpszICQProtoName, szSetting, text);
+    ICQWriteContactSettingUtf(hContact, szSetting, text);
   else
     ICQDeleteContactSetting(hContact, szSetting);
 
@@ -1507,20 +1541,11 @@ int NetLog_Server(const char *fmt,...)
 {
   va_list va;
   char szText[1024];
-  char*pszText = NULL;
-  int iRes;
 
   va_start(va,fmt);
   mir_vsnprintf(szText,sizeof(szText),fmt,va);
   va_end(va);
-
-  if (IsUSASCII(szText, strlennull(szText)) || !UTF8_IsValid(szText) || !utf8_decode(szText, &pszText)) pszText = (char*)&szText;
-
-  iRes = CallService(MS_NETLIB_LOG,(WPARAM)ghServerNetlibUser,(LPARAM)pszText);
-
-  if (pszText != (char*)&szText) SAFE_FREE(&pszText);
-
-  return iRes;
+  return CallService(MS_NETLIB_LOG,(WPARAM)ghServerNetlibUser,(LPARAM)szText);
 }
 
 
@@ -1534,6 +1559,23 @@ int NetLog_Direct(const char *fmt,...)
   mir_vsnprintf(szText,sizeof(szText),fmt,va);
   va_end(va);
   return CallService(MS_NETLIB_LOG,(WPARAM)ghDirectNetlibUser,(LPARAM)szText);
+}
+
+
+
+int NetLog_Uni(BOOL bDC, const char *fmt,...)
+{
+  va_list va; 
+  int res;
+
+  va_start(va,fmt);
+  if (bDC)
+    res = NetLog_Direct(fmt,va);
+  else 
+    res = NetLog_Server(fmt,va);
+  va_end(va);
+
+  return res;
 }
 
 
@@ -1570,6 +1612,42 @@ int __fastcall ICQTranslateDialog(HWND hwndDlg)
 char* __fastcall ICQTranslate(const char* src)
 {
   return (char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)src);
+}
+
+
+
+char* __fastcall ICQTranslateUtf(const char* src)
+{ // this takes UTF-8 strings only!!!
+  char* szRes = NULL;
+
+  if (gbUtfLangpack)
+  { // we can use unicode translate
+    wchar_t* usrc = make_unicode_string(src);
+
+    szRes = make_utf8_string(TranslateW(usrc));
+
+    SAFE_FREE(&usrc);
+  }
+  else
+  {
+    int size = strlennull(src)+2;
+    char* asrc = (char*)_alloca(size);
+
+    utf8_decode_static(src, asrc, size);
+    utf8_encode(Translate(asrc), &szRes);
+  }
+  return szRes;
+}
+
+
+
+char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf)
+{ // this takes UTF-8 strings only!!!
+  char* t = ICQTranslateUtf(src);
+
+  strcpy(buf, t);
+  SAFE_FREE(&t);
+  return buf;
 }
 
 
@@ -1626,27 +1704,76 @@ WORD GetMyStatusFlags()
 
 
 
-char* GetDlgItemTextUtf(HWND hwndDlg, int iItem)
+wchar_t *GetWindowTextUcs(HWND hWnd)
 {
-  HWND hItem = GetDlgItem(hwndDlg, iItem);
+  wchar_t *utext;
 
   if (gbUnicodeAPI)
   {
+    int nLen = GetWindowTextLengthW(hWnd);
+
+    utext = (wchar_t*)malloc((nLen+2)*sizeof(wchar_t));
+    GetWindowTextW(hWnd, utext, nLen + 1);
+  }
+  else
+  {
+    char *text;
+    int wchars, nLen = GetWindowTextLengthA(hWnd);
+
+    text = (char*)_alloca(nLen+2);
+    GetWindowTextA(hWnd, text, nLen + 1);
+
+    wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text,
+      strlennull(text), NULL, 0);
+
+    utext = calloc(wchars + 1, sizeof(unsigned short));
+
+    MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text,
+      strlennull(text), utext, wchars);
+  }
+  return utext;
+}
+
+
+
+void SetWindowTextUcs(HWND hWnd, wchar_t *text)
+{
+  if (gbUnicodeAPI)
+  {
+    SetWindowTextW(hWnd, text);
+  }
+  else
+  {
+    char *tmp = (char*)malloc(wcslen(text) + 1);
+
+    tmp[0] = '\0';
+    WideCharToMultiByte(CP_ACP, 0, text, -1, tmp, wcslen(text)+1, NULL, NULL);
+    SetWindowTextA(hWnd, tmp);
+    SAFE_FREE(&tmp);
+  }
+}
+
+
+
+char* GetWindowTextUtf(HWND hWnd)
+{
+  if (gbUnicodeAPI)
+  {
     wchar_t* usText;
-    int nLen = GetWindowTextLengthW(hItem);
+    int nLen = GetWindowTextLengthW(hWnd);
 
     usText = (wchar_t*)_alloca((nLen+2)*sizeof(wchar_t));
-    GetWindowTextW(hItem, usText, nLen + 1);
+    GetWindowTextW(hWnd, usText, nLen + 1);
     return make_utf8_string(usText);
   }
   else
   {
     char* szAnsi;
     char* szUtf;
-    int nLen = GetWindowTextLengthA(hItem);
+    int nLen = GetWindowTextLengthA(hWnd);
 
     szAnsi = (char*)_alloca(nLen+2);
-    GetWindowTextA(hItem, szAnsi, nLen + 1);
+    GetWindowTextA(hWnd, szAnsi, nLen + 1);
     if (strlennull(szAnsi))
     {
       utf8_encode(szAnsi, &szUtf);
@@ -1659,25 +1786,37 @@ char* GetDlgItemTextUtf(HWND hwndDlg, int iItem)
 
 
 
-void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const char* szText)
+char* GetDlgItemTextUtf(HWND hwndDlg, int iItem)
+{
+  return GetWindowTextUtf(GetDlgItem(hwndDlg, iItem));
+}
+
+
+
+void SetWindowTextUtf(HWND hWnd, const char* szText)
 {
   if (gbUnicodeAPI)
   {
     wchar_t* usText = make_unicode_string(szText);
 
-    SetDlgItemTextW(hwndDlg, iItem, usText);
+    SetWindowTextW(hWnd, usText);
     SAFE_FREE(&usText);
   }
   else
   {
-    char* szAnsi;
+    int size = strlennull(szText)+2;
+    char* szAnsi = (char*)_alloca(size);
 
-    if (utf8_decode(szText, &szAnsi))
-    {
-      SetDlgItemTextA(hwndDlg, iItem, szAnsi);
-      SAFE_FREE(&szAnsi);
-    }
+    if (utf8_decode_static(szText, szAnsi, size))
+      SetWindowTextA(hWnd, szAnsi);
   }
+}
+
+
+
+void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const char* szText)
+{
+  SetWindowTextUtf(GetDlgItem(hwndDlg, iItem), szText);
 }
 
 
@@ -1688,4 +1827,86 @@ LONG SetWindowLongUtf(HWND hWnd, int nIndex, LONG dwNewLong)
     return SetWindowLongW(hWnd, nIndex, dwNewLong);
   else
     return SetWindowLongA(hWnd, nIndex, dwNewLong);
+}
+
+
+
+LRESULT CallWindowProcUtf(WNDPROC OldProc, HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+  if (gbUnicodeAPI)
+    return CallWindowProcW(OldProc,hWnd,msg,wParam,lParam);
+  else
+    return CallWindowProcA(OldProc,hWnd,msg,wParam,lParam);
+}
+
+
+
+static int ControlAddStringUtf(HWND ctrl, DWORD msg, const char* szString)
+{
+  char str[MAX_PATH];
+  char *szItem = ICQTranslateUtfStatic(szString, str);
+  int item;
+
+  if (gbUnicodeAPI)
+  {
+    wchar_t *wItem = make_unicode_string(szItem);
+
+    item = SendMessageW(ctrl, msg, 0, (LPARAM)wItem);
+    SAFE_FREE(&wItem);
+  }
+  else
+  {
+    int size = strlennull(szItem) + 2;
+    char *aItem = (char*)_alloca(size);
+
+    utf8_decode_static(szItem, aItem, size);
+    item = SendMessageA(ctrl, msg, 0, (LPARAM)aItem);
+  }
+  return item;
+}
+
+
+
+int ComboBoxAddStringUtf(HWND hCombo, const char* szString, DWORD data)
+{
+  int item = ControlAddStringUtf(hCombo, CB_ADDSTRING, szString);
+  SendMessage(hCombo, CB_SETITEMDATA, item, data);
+
+  return item;
+}
+
+
+
+int ListBoxAddStringUtf(HWND hList, const char* szString)
+{
+  return ControlAddStringUtf(hList, LB_ADDSTRING, szString);
+}
+
+
+
+int MessageBoxUtf(HWND hWnd, const char* szText, const char* szCaption, UINT uType)
+{
+  int res;
+  char str[1024];
+  char cap[MAX_PATH];
+
+  if (gbUnicodeAPI)
+  {
+    wchar_t *text = make_unicode_string(ICQTranslateUtfStatic(szText, str));
+    wchar_t *caption = make_unicode_string(ICQTranslateUtfStatic(szCaption, cap));
+    res = MessageBoxW(hWnd, text, caption, uType);
+    SAFE_FREE(&caption);
+    SAFE_FREE(&text);
+  }
+  else
+  {
+    int size = strlennull(szText) + 2, size2 = strlennull(szCaption) + 2;
+    char *text = (char*)_alloca(size);
+    char *caption = (char*)_alloca(size2);
+
+    utf8_decode_static(ICQTranslateUtfStatic(szText, str), text, size);
+    utf8_decode_static(ICQTranslateUtfStatic(szCaption, cap), caption, size2);
+    res = MessageBoxA(hWnd, text, caption, uType);
+  }
+  return res;
 }

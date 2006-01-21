@@ -75,7 +75,7 @@ New Features:
   AIM cross-compatability (add/remove, search by mail, status, messaging, away messages)
 
 Improvements:
-  Advanced search now uses newer method (thx Bio)
+  Advanced search now can use newer method (thx Bio)
   Better protocol error handling
   Slightly better avatar handling
   Detects some spam bots & ability to block known spam bots
@@ -89,6 +89,7 @@ Improvements:
   Support for Iconlib Plugin
   Support for unicode database module (clist data)
   Level 2 Rate management for Status & Xtraz replies, Xtraz requests (useful with many contaccts in list)
+  Full unicode/ansi support (2in1)
 
 
 0.3.5.2
@@ -122,7 +123,7 @@ Bugfixes:
   Added workaround for select() malfunction - caused high CPU load
 
 Improvements:
-  If Update details from server is on, user group are also updated
+  If Update details from server is on, user groups are also updated
   Changed System Uptime to Member since in my details
   Auth system recognizes & sends UTF-8 messages
   Miranda version signature improved (preparing for old signature removal in the future)

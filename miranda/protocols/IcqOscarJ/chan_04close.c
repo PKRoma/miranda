@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -135,7 +135,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen)
 
   if (!newServer || !cookie)
   {
-    icq_LogMessage(LOG_FATAL, ICQTranslate("You could not sign on because the server returned invalid data. Try again."));
+    icq_LogMessage(LOG_FATAL, "You could not sign on because the server returned invalid data. Try again.");
 
     SAFE_FREE(&newServer);
     SAFE_FREE(&cookie);
@@ -219,7 +219,7 @@ static void handleMigration()
   NetLog_Server("Migrating to %s", migratedServer);
   if (!migratedServer || !cookieData)
   {
-    icq_LogMessage(LOG_FATAL, ICQTranslate("You have been disconnected from the ICQ network because the current server shut down."));
+    icq_LogMessage(LOG_FATAL, "You have been disconnected from the ICQ network because the current server shut down.");
 
     SAFE_FREE(&migratedServer);
     SAFE_FREE(&cookieData);
@@ -290,6 +290,7 @@ static void handleMigration()
 static void handleSignonError(WORD wError)
 {
   char msg[256];
+  char str[MAX_PATH];
 
   switch (wError)
   {
@@ -300,44 +301,44 @@ static void handleSignonError(WORD wError)
   case 0x06:
   case 0x07:
     ICQBroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
-    null_snprintf(msg, 250, ICQTranslate("Connection failed.\nYour ICQ number or password was rejected (%d)."), wError);
+    null_snprintf(msg, 250, ICQTranslateUtfStatic("Connection failed.\nYour ICQ number or password was rejected (%d).", str), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
 
   case 0x14:
   case 0x15:
-    null_snprintf(msg, 250, ICQTranslate("Connection failed.\nThe server is temporally unavailable (%d)."), wError);
+    null_snprintf(msg, 250, ICQTranslateUtfStatic("Connection failed.\nThe server is temporally unavailable (%d).", str), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
 
   case 0x16:
   case 0x17:
-    null_snprintf(msg, 250, ICQTranslate("Connection failed.\nServer has too many connections from your IP (%d)."), wError);
+    null_snprintf(msg, 250, ICQTranslateUtfStatic("Connection failed.\nServer has too many connections from your IP (%d).", str), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
 
   case 0x18:
   case 0x1D:
-    null_snprintf(msg, 250, ICQTranslate("Connection failed.\nYou have connected too quickly,\nplease wait and retry 10 to 20 minutes later (%d)."), wError);
+    null_snprintf(msg, 250, ICQTranslateUtfStatic("Connection failed.\nYou have connected too quickly,\nplease wait and retry 10 to 20 minutes later (%d).", str), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
 
   case 0x1B:
-    icq_LogMessage(LOG_FATAL, ICQTranslate("Connection failed.\nThe server did not accept this client version."));
+    icq_LogMessage(LOG_FATAL, "Connection failed.\nThe server did not accept this client version.");
     break;
 
   case 0x1C:
-    icq_LogMessage(LOG_WARNING, ICQTranslate("The server sent warning, this version is getting old.\nTry to look for a new one."));
+    icq_LogMessage(LOG_WARNING, "The server sent warning, this version is getting old.\nTry to look for a new one.");
 
   case 0x1E:
-    icq_LogMessage(LOG_FATAL, ICQTranslate("Connection failed.\nYou were rejected by the server for an unknown reason.\nThis can happen if the UIN is already connected."));
+    icq_LogMessage(LOG_FATAL, "Connection failed.\nYou were rejected by the server for an unknown reason.\nThis can happen if the UIN is already connected.");
     break;
 
   case 0:
     break;
 
   default:
-    null_snprintf(msg, 50, ICQTranslate("Connection failed.\nUnknown error during sign on: 0x%02x"), wError);
+    null_snprintf(msg, 50, ICQTranslateUtfStatic("Connection failed.\nUnknown error during sign on: 0x%02x", str), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
   }
@@ -348,6 +349,7 @@ static void handleSignonError(WORD wError)
 static void handleRuntimeError(WORD wError)
 {
   char msg[256];
+  char str[MAX_PATH];
 
   switch (wError)
   {
@@ -355,12 +357,12 @@ static void handleRuntimeError(WORD wError)
   case 0x01:
   {
     ICQBroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
-    icq_LogMessage(LOG_FATAL, ICQTranslate("You have been disconnected from the ICQ network because you logged on from another location using the same ICQ number."));
+    icq_LogMessage(LOG_FATAL, "You have been disconnected from the ICQ network because you logged on from another location using the same ICQ number.");
     break;
   }
 
   default:
-    null_snprintf(msg, 50, ICQTranslate("Unknown runtime error: 0x%02x"), wError);
+    null_snprintf(msg, 50, ICQTranslateUtfStatic("Unknown runtime error: 0x%02x", str), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
   }

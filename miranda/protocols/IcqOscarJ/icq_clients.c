@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -133,6 +133,8 @@ const capstr capUim       = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB
 const capstr capRambler   = {0x7E, 0x11, 0xB7, 0x78, 0xA3, 0x53, 0x49, 0x26, 0xA8, 0x02, 0x44, 0x73, 0x52, 0x08, 0xC4, 0x2A};
 const capstr capAbv       = {0x00, 0xE7, 0xE0, 0xDF, 0xA9, 0xD0, 0x4F, 0xe1, 0x91, 0x62, 0xC8, 0x90, 0x9A, 0x13, 0x2A, 0x1B};
 const capstr capNetvigator= {0x4C, 0x6B, 0x90, 0xA3, 0x3D, 0x2D, 0x48, 0x0E, 0x89, 0xD6, 0x2E, 0x4B, 0x2C, 0x10, 0xD9, 0x9F};
+const capstr capSimpLite  = {0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50};
+const capstr capSimpPro   = {0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F, 0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F};
 
 
 static BOOL hasRichText, hasRichChecked;
@@ -158,10 +160,9 @@ char* cliIM2       = "IM2";
 char* cliSpamBot   = "Spam Bot";
 
 
-char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, DWORD* dwClientId)
+char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, DWORD* dwClientId, char* szClientBuf)
 {
   LPSTR szClient = NULL;
-  static char szClientBuf[64];
 
   *dwClientId = 1; // Most clients does not tick as MsgIDs
   hasRichChecked = FALSE; // init fast rich text detection
@@ -511,7 +512,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
     }
   }
 
-  if (szClient == 0)
+  if (!szClient)
   {
     NetLog_Server("No client identification, put default ICQ client for protocol.");
 
@@ -519,15 +520,6 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 
     switch (wVersion)
     {  // client detection failed, provide default clients
-      case 1: 
-        szClient = "ICQ 1.x";
-        break;
-      case 2: 
-        szClient = "ICQ 2.x";
-        break;
-      case 4:
-        szClient = "ICQ98";
-        break;
       case 6:
         szClient = "ICQ99";
         break;
@@ -549,5 +541,24 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
     NetLog_Server("Client identified as %s", szClient);
   }
 
+  if (szClient)
+  {
+    char* szExtra = NULL;
+
+    if (MatchCap(caps, wLen, &capSimpLite, 0x10))
+      szExtra = " + SimpLite";
+    else if (MatchCap(caps, wLen, &capSimpPro, 0x10))
+      szExtra = " + SimpPro";
+
+    if (szExtra)
+    {
+      if (szClient != szClientBuf)
+      {
+        strcpy(szClientBuf, szClient);
+        szClient = szClientBuf;
+      }
+      strcat(szClient, szExtra);
+    }
+  }
   return szClient;
 }

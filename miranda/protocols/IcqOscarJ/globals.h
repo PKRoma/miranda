@@ -68,5 +68,7 @@ char gpszPassword[16];
 BYTE gbRememberPwd;
 
 BYTE gbUnicodeAPI;
+BYTE gbUnicodeCore;
+BYTE gbUtfLangpack;
 
 #endif /* __GLOBALS_H */

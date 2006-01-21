@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -45,7 +45,7 @@ extern DWORD dwLocalDirectConnCookie;
 
 extern const capstr capAimIcon;
 extern const char* cliSpamBot;
-extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, DWORD* dwClientId);
+extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, DWORD* dwClientId, char* szClientBuf);
 
 
 void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
@@ -120,6 +120,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   DWORD dwOnlineSince;
   WORD wIdleTimer = 0;
   time_t tIdleTS = 0;
+  char szStrBuf[MAX_PATH];
 
   // Unpack the sender's user ID
   if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
@@ -146,10 +147,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   if (hContact == INVALID_HANDLE_VALUE)
   {
 #ifdef _DEBUG
-    if (dwUIN)
-      NetLog_Server("Ignoring user online (%u)", dwUIN);
-    else
-      NetLog_Server("Ignoring user online (%s)", szUID);
+    NetLog_Server("Ignoring user online (%s)", strUID(dwUIN, szUID));
 #endif
     return;
   }
@@ -348,7 +346,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           // handle Xtraz status
           handleXStatusCaps(hContact, capBuf, capLen);
 
-          szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, dwDirectConnCookie, dwWebPort, capBuf, capLen, &dwClientId);
+          szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, dwDirectConnCookie, dwWebPort, capBuf, capLen, &dwClientId, szStrBuf);
         }
 
 #ifdef _DEBUG
@@ -386,7 +384,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   // Save contacts details in database
   if (hContact != NULL)
   {
-    if (szClient == 0) szClient = ICQTranslate("Unknown"); // if no detection, set uknown
+    if (szClient == 0) szClient = ICQTranslateUtfStatic("Unknown", szStrBuf); // if no detection, set uknown
     ICQWriteContactSettingDword(hContact,  "ClientID",     dwClientId);
 
     ICQWriteContactSettingDword(hContact,  "LogonTS",      dwOnlineSince);
@@ -399,7 +397,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       ICQWriteContactSettingWord(hContact,  "UserPort",     (WORD)(dwPort & 0xffff));
       ICQWriteContactSettingWord(hContact,  "Version",      wVersion);
     }
-    if (szClient != (char*)-1) ICQWriteContactSettingString(hContact, "MirVer", szClient);
+    if (szClient != (char*)-1) ICQWriteContactSettingUtf(hContact, "MirVer", szClient);
     ICQWriteContactSettingWord(hContact, "Status", (WORD)IcqStatusToMiranda(wStatus));
     ICQWriteContactSettingDword(hContact, "IdleTS", tIdleTS);
 
@@ -413,12 +411,8 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   }
 
   // And a small log notice...
-  if (dwUIN)
-    NetLog_Server("%u changed status to %s (v%d).",
-      dwUIN, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
-  else
-    NetLog_Server("%s changed status to %s (v%d).",
-      szUID, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
+  NetLog_Server("%s changed status to %s (v%d).", strUID(dwUIN, szUID),
+    MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
 
   if (szClient == cliSpamBot)
   {
@@ -428,7 +422,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       AddToSpammerList(dwUIN);
       icq_sendRemoveContact(dwUIN, NULL);
       if (ICQGetContactSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
-        ShowPopUpMsg(hContact, ICQTranslate("Spambot Detected"), ICQTranslate("Contact deleted & further events blocked."), POPTYPE_SPAM);
+        ShowPopUpMsg(hContact, "Spambot Detected", "Contact deleted & further events blocked.", POPTYPE_SPAM);
       CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 
       NetLog_Server("Contact %u deleted", dwUIN);
@@ -455,10 +449,7 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
   // Skip contacts that are not already on our list
   if (hContact != INVALID_HANDLE_VALUE)
   {
-    if (dwUIN)
-      NetLog_Server("%u went offline.", dwUIN);
-    else
-      NetLog_Server("%s went offline.", szUID);
+    NetLog_Server("%s went offline.", strUID(dwUIN, szUID));
 
     ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
     ICQWriteContactSettingDword(hContact, "IdleTS", 0);
@@ -468,6 +459,7 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
     handleXStatusCaps(hContact, NULL, 0);
   }
 }
+
 
 
 static void handleReplyBuddy(BYTE *buf, WORD wPackLen)
@@ -505,8 +497,5 @@ static void handleNotifyRejected(BYTE *buf, WORD wPackLen)
   if (!unpackUID(&buf, &wPackLen, &dwUIN, &szUID))
     return;
 
-  if (dwUIN)
-    NetLog_Server("SNAC(x03,x0a) - SRV_NOTIFICATION_REJECTED for %u", dwUIN);
-  else
-    NetLog_Server("SNAC(x03,x0a) - SRV_NOTIFICATION_REJECTED for %s", szUID);
+  NetLog_Server("SNAC(x03,x0a) - SRV_NOTIFICATION_REJECTED for %s", strUID(dwUIN, szUID));
 }

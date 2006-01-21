@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -35,6 +35,7 @@
 // -----------------------------------------------------------------------------
 
 #include "icqoscar.h"
+#include "m_popupw.h"
 
 
 static BOOL bPopUpService = FALSE;
@@ -117,13 +118,11 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
     {
     case IDC_PREVIEW:
       {
-        char* pszTitle = ICQTranslate("Popup Title");
-
-        ShowPopUpMsg(NULL, pszTitle, ICQTranslate("Sample Note"), LOG_NOTE);
-        ShowPopUpMsg(NULL, pszTitle, ICQTranslate("Sample Warning"), LOG_WARNING);
-        ShowPopUpMsg(NULL, pszTitle, ICQTranslate("Sample Error"), LOG_ERROR);
-        ShowPopUpMsg(NULL, pszTitle, ICQTranslate("Sample Fatal"), LOG_FATAL);
-        ShowPopUpMsg(NULL, pszTitle, ICQTranslate("Sample Spambot"), POPTYPE_SPAM);
+        ShowPopUpMsg(NULL, "Popup Title", "Sample Note",    LOG_NOTE);
+        ShowPopUpMsg(NULL, "Popup Title", "Sample Warning", LOG_WARNING);
+        ShowPopUpMsg(NULL, "Popup Title", "Sample Error",   LOG_ERROR);
+        ShowPopUpMsg(NULL, "Popup Title", "Sample Fatal",   LOG_FATAL);
+        ShowPopUpMsg(NULL, "Popup Title", "Sample Spambot", POPTYPE_SPAM);
       }
       break;
 
@@ -180,6 +179,7 @@ int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE b
   if (bPopUpService && ICQGetContactSettingByte(NULL, "PopupsEnabled", DEFAULT_POPUPS_ENABLED))
   {
     POPUPDATAEX ppd = {0};
+    POPUPDATAW ppdw = {0};
     LPCTSTR rsIcon;
     HINSTANCE hIcons = NULL;
     char szPrefix[32], szSetting[32];
@@ -242,13 +242,39 @@ int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE b
     strcat(szSetting, "Timeout");
     ppd.iSeconds = ICQGetContactSettingDword(NULL, szSetting, ppd.iSeconds);
 
-    lstrcpyn(ppd.lpzContactName, szTitle, MAX_CONTACTNAME);
-    lstrcpyn(ppd.lpzText, szMsg, MAX_SECONDLINE);
-    ppd.lchContact = NULL;
-    ppd.PluginWindowProc = NULL;
-    ppd.PluginData = NULL;
+    if (ServiceExists(MS_POPUP_ADDPOPUPW))
+    { // call unicode popup module
+      wchar_t *tmp;
+      char str[MAX_SECONDLINE];
 
-    return CallService(MS_POPUP_ADDPOPUPEX, (WPARAM)&ppd, 0);
+      tmp = make_unicode_string(ICQTranslateUtfStatic(szTitle, str));
+      memmove(ppdw.lpwzContactName, tmp, wcslen(tmp)*sizeof(wchar_t));
+      SAFE_FREE(&tmp);
+      tmp = make_unicode_string(ICQTranslateUtfStatic(szMsg, str));
+      memmove(ppdw.lpwzText, tmp, wcslen(tmp)*sizeof(wchar_t));
+      SAFE_FREE(&tmp);
+      ppdw.lchContact = hContact;
+      ppdw.lchIcon = ppd.lchIcon;
+      ppdw.colorBack = ppd.colorBack;
+      ppdw.colorText = ppd.colorText;
+      ppdw.PluginWindowProc = NULL;
+      ppdw.PluginData = NULL;
+      ppdw.iSeconds = ppd.iSeconds;
+
+      return CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&ppdw, 0);
+    }
+    else
+    {
+      char str[MAX_SECONDLINE];
+
+      utf8_decode_static(ICQTranslateUtfStatic(szTitle, str), ppd.lpzContactName, MAX_CONTACTNAME);
+      utf8_decode_static(ICQTranslateUtfStatic(szMsg, str), ppd.lpzText, MAX_SECONDLINE);
+      ppd.lchContact = hContact;
+      ppd.PluginWindowProc = NULL;
+      ppd.PluginData = NULL;
+
+      return CallService(MS_POPUP_ADDPOPUPEX, (WPARAM)&ppd, 0);
+    }
   }
   return -1; // Failure
 }

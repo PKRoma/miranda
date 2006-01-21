@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1126,7 +1126,6 @@ DWORD icq_sendAdvancedSearchServ(BYTE* fieldsBuffer,int bufferLen)
     return 0;
 
   packServIcqExtensionHeader(&packet, (WORD)(2 + bufferLen), CLI_META_INFO_REQ, (WORD)dwCookie);
-  packLEWord(&packet, META_SEARCH_GENERIC);       /* subtype: full search */
   packBuffer(&packet, (const char*)fieldsBuffer, (WORD)bufferLen);
 
   sendServPacket(&packet);
@@ -1480,29 +1479,16 @@ void icq_sendAuthReqServ(DWORD dwUin, char *szMsg)
 {
   icq_packet packet;
   unsigned char nUinlen;
-  char* szUtfMsg = NULL;
   WORD nMsglen;
 
   nUinlen = getUINLen(dwUin);
-
-  // Prepare custom utf-8 message
-  if (strlennull(szMsg) > 0)
-  {
-    int nResult;
-
-    nResult = utf8_encode(szMsg, &szUtfMsg);
-    nMsglen = strlennull(szUtfMsg);
-  }
-  else
-  {
-    nMsglen = 0;
-  }
+  nMsglen = strlennull(szMsg);
 
   serverPacketInit(&packet, (WORD)(15 + nUinlen + nMsglen));
   packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REQUESTAUTH);
   packUIN(&packet, dwUin);
   packWord(&packet, (WORD)nMsglen);
-  packBuffer(&packet, szUtfMsg, nMsglen);
+  packBuffer(&packet, szMsg, nMsglen);
   packWord(&packet, 0);
 
   sendServPacket(&packet);
@@ -1539,6 +1525,8 @@ void icq_sendAuthResponseServ(DWORD dwUin, char* szUid, int auth, char *szReason
   packWord(&p, nReasonlen);
   packBuffer(&p, szUtfReason, nReasonlen);
   packWord(&p, 0);
+
+  SAFE_FREE(&szUtfReason);
 
   sendServPacket(&p);
 }

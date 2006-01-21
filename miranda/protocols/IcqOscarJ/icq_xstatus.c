@@ -45,7 +45,7 @@ static HANDLE hHookExtraIconsRebuild = NULL;
 static HANDLE hHookStatusBuild = NULL;
 static HANDLE hHookExtraIconsApply = NULL;
 static HANDLE hXStatusIcons[29];
-static HANDLE hXStatusItems[25];
+static HANDLE hXStatusItems[30];
 static HANDLE hXStatusRoot = 0;
 
 
@@ -259,11 +259,11 @@ const char* nameXStatus[29] = {
   "Internet",
   "Engineering",
   "Typing",
-  "China1",
-  "China2",
-  "China3",
-  "China4",
-  "China5"};
+  "Eating..yummy..",
+  "Having fun",
+  "Chit chatting",
+  "Sleeping",
+  "Going to toilet"};
 
 void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
 {
@@ -279,8 +279,10 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
     {
       if (MatchCap(caps, capsize, (const capstr*)capXStatus[i], 0x10))
       {
+        char str[MAX_PATH];
+
         ICQWriteContactSettingByte(hContact, "XStatusId", (BYTE)(i+1));
-        ICQWriteContactSettingString(hContact, "XStatusName", (char*)nameXStatus[i]);
+        ICQWriteContactSettingUtf(hContact, "XStatusName", ICQTranslateUtfStatic(nameXStatus[i], str));
 
         if (ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
           requestXStatusDetails(hContact, TRUE);
@@ -330,17 +332,14 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam
       if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) 
       { // ctrl-backspace
         DWORD start, end;
-        TCHAR *text;
-        int textLen;
+        wchar_t *text;
 
         SendMessage(hwnd, EM_GETSEL, (WPARAM) & end, (LPARAM) (PDWORD) NULL);
         SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
         SendMessage(hwnd, EM_GETSEL, (WPARAM) & start, (LPARAM) (PDWORD) NULL);
-        textLen = GetWindowTextLength(hwnd);
-        text = (TCHAR *) malloc(sizeof(TCHAR) * (textLen + 1));
-        GetWindowText(hwnd, text, textLen + 1);
-        MoveMemory(text + start, text + end, sizeof(TCHAR) * (textLen + 1 - end));
-        SetWindowText(hwnd, text);
+        text = GetWindowTextUcs(hwnd);
+        MoveMemory(text + start, text + end, sizeof(wchar_t) * (wcslen(text) + 1 - end));
+        SetWindowTextUcs(hwnd, text);
         SAFE_FREE(&text);
         SendMessage(hwnd, EM_SETSEL, start, start);
         SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
@@ -348,10 +347,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam
       }
       break;
   }
-  if (gbUnicodeAPI)
-    return CallWindowProcW(OldMessageEditProc,hwnd,msg,wParam,lParam);
-  else
-    return CallWindowProcA(OldMessageEditProc,hwnd,msg,wParam,lParam);
+  return CallWindowProcUtf(OldMessageEditProc,hwnd,msg,wParam,lParam);
 }
 
 
@@ -362,7 +358,7 @@ typedef struct SetXStatusData_s {
   HANDLE hEvent;
   DWORD iEvent;
   int countdown;
-  char okButtonFormat[64];
+  char *okButtonFormat;
 } SetXStatusData;
 
 typedef struct InitXStatusData_s {
@@ -375,32 +371,33 @@ typedef struct InitXStatusData_s {
 static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
   SetXStatusData *dat = (SetXStatusData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+  char str[MAX_PATH];
 
   switch(message) 
   {
     case HM_PROTOACK:
-      {
-        ACKDATA *ack = (ACKDATA*)lParam;
-        char *szText;
+    {
+      ACKDATA *ack = (ACKDATA*)lParam;
+      char *szText;
 
-        if (ack->type != ICQACKTYPE_XSTATUS_RESPONSE) break;	
-        if ((DWORD)ack->hProcess != dat->iEvent) break;
-        if (ack->hContact != dat->hContact) break;
+      if (ack->type != ICQACKTYPE_XSTATUS_RESPONSE) break;	
+      if ((DWORD)ack->hProcess != dat->iEvent) break;
+      if (ack->hContact != dat->hContact) break;
 
-        ShowWindow(GetDlgItem(hwndDlg, IDC_RETRXSTATUS), SW_HIDE);
-        ShowWindow(GetDlgItem(hwndDlg, IDC_XMSG), SW_SHOW);
-        ShowWindow(GetDlgItem(hwndDlg, IDC_XTITLE), SW_SHOW);
-        SetDlgItemText(hwndDlg,IDOK,ICQTranslate("Close"));
-        UnhookEvent(dat->hEvent); dat->hEvent = NULL;
-        szText = ICQGetContactSettingUtf(dat->hContact, "XStatusName", "");
-        SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
-        SAFE_FREE(&szText);
-        szText = ICQGetContactSettingUtf(dat->hContact, "XStatusMsg", "");
-        SetDlgItemTextUtf(hwndDlg, IDC_XMSG, szText);
-        SAFE_FREE(&szText);
-      }
+      ShowWindow(GetDlgItem(hwndDlg, IDC_RETRXSTATUS), SW_HIDE);
+      ShowWindow(GetDlgItem(hwndDlg, IDC_XMSG), SW_SHOW);
+      ShowWindow(GetDlgItem(hwndDlg, IDC_XTITLE), SW_SHOW);
+      SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("Close", str));
+      UnhookEvent(dat->hEvent); dat->hEvent = NULL;
+      szText = ICQGetContactSettingUtf(dat->hContact, "XStatusName", "");
+      SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
+      SAFE_FREE(&szText);
+      szText = ICQGetContactSettingUtf(dat->hContact, "XStatusMsg", "");
+      SetDlgItemTextUtf(hwndDlg, IDC_XMSG, szText);
+      SAFE_FREE(&szText);
+
       break;
-
+    }
     case WM_INITDIALOG:
     {
       InitXStatusData *init = (InitXStatusData*)lParam;
@@ -419,7 +416,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         SendDlgItemMessage(hwndDlg, IDC_XMSG, EM_LIMITTEXT, 1024, 0);
         OldMessageEditProc = (WNDPROC)SetWindowLongUtf(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
         OldMessageEditProc = (WNDPROC)SetWindowLongUtf(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
-        GetDlgItemText(hwndDlg,IDOK,dat->okButtonFormat,sizeof(dat->okButtonFormat));
+        dat->okButtonFormat = GetDlgItemTextUtf(hwndDlg,IDOK);
 
         dat->countdown=5;
         SendMessage(hwndDlg, WM_TIMER, 0, 0);
@@ -439,11 +436,12 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
       { // retrieve contact's xStatus
         dat->hContact = init->hContact;
         dat->bXStatus = ICQGetContactSettingByte(dat->hContact, "XStatusId", 0);
+        dat->okButtonFormat = NULL;
         SendMessage(GetDlgItem(hwndDlg, IDC_XTITLE), EM_SETREADONLY, 1, 0);
         SendMessage(GetDlgItem(hwndDlg, IDC_XMSG), EM_SETREADONLY, 1, 0);
         if (!ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
         {
-          SetDlgItemText(hwndDlg,IDOK,ICQTranslate("Cancel"));
+          SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("Cancel", str));
           dat->hEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_PROTOACK);
           ShowWindow(GetDlgItem(hwndDlg, IDC_RETRXSTATUS), SW_SHOW);
           ShowWindow(GetDlgItem(hwndDlg, IDC_XMSG), SW_HIDE);
@@ -454,7 +452,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         {
           char *szText;
 
-          SetDlgItemText(hwndDlg,IDOK,ICQTranslate("Close"));
+          SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("Close", str));
           dat->hEvent = NULL;
           szText = ICQGetContactSettingUtf(dat->hContact, "XStatusName", "");
           SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
@@ -465,10 +463,13 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         }
       }
       {  
-        char str[256], format[128];
-        GetWindowText(hwndDlg, format, sizeof(format));
-        null_snprintf(str, sizeof(str), format, dat->bXStatus?ICQTranslate(nameXStatus[dat->bXStatus-1]):"");
-        SetWindowText(hwndDlg, str);
+        char *format;
+        char buf[MAX_PATH];
+
+        format = GetWindowTextUtf(hwndDlg);
+        null_snprintf(str, sizeof(str), format, dat->bXStatus?ICQTranslateUtfStatic(nameXStatus[dat->bXStatus-1], buf):"");
+        SetWindowTextUtf(hwndDlg, str);
+        SAFE_FREE(&format);
       }
       return TRUE;
     }
@@ -479,9 +480,8 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         break;
       }
       {  
-        char str[64];
         null_snprintf(str,sizeof(str),dat->okButtonFormat,dat->countdown);
-        SetDlgItemText(hwndDlg,IDOK,str);
+        SetDlgItemTextUtf(hwndDlg,IDOK,str);
       }
       dat->countdown--;
       break;
@@ -497,7 +497,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
           if (!dat->bAction)
           { // set our xStatus
             KillTimer(hwndDlg,1);
-            SetDlgItemText(hwndDlg,IDOK,ICQTranslate("OK"));
+            SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("OK", str));
           }
           break;
       }
@@ -526,6 +526,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         SetWindowLongUtf(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)OldMessageEditProc);
       }
       if (dat->hEvent) UnhookEvent(dat->hEvent);
+      SAFE_FREE(&dat->okButtonFormat);
       SAFE_FREE(&dat);
       break;
 
@@ -545,7 +546,7 @@ static void setXStatus(BYTE bXStatus)
 
   mi.cbSize = sizeof(mi);
 
-  if (bOldXStatus <= 24)
+  if (bOldXStatus <= 29)
   {
     mi.flags = CMIM_FLAGS;
     CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[bOldXStatus], (LPARAM)&mi);
@@ -558,10 +559,11 @@ static void setXStatus(BYTE bXStatus)
   if (bXStatus)
   {
     char szSetting[64];
+    char str[MAX_PATH];
     char* szUtf;
 
     sprintf(szSetting, "XStatus%dName", bXStatus);
-    szUtf = ICQGetContactSettingUtf(NULL, szSetting, ICQTranslate(nameXStatus[bXStatus-1]));
+    szUtf = ICQGetContactSettingUtf(NULL, szSetting, ICQTranslateUtfStatic(nameXStatus[bXStatus-1], str));
     ICQWriteContactSettingUtf(NULL, "XStatusName", szUtf);
     SAFE_FREE(&szUtf);
 
@@ -718,6 +720,32 @@ static int menuXStatus24(WPARAM wParam,LPARAM lParam)
   setXStatus(24); return 0;
 }
 
+static int menuXStatus25(WPARAM wParam,LPARAM lParam)
+{
+  setXStatus(25); return 0;
+}
+
+static int menuXStatus26(WPARAM wParam,LPARAM lParam)
+{
+  setXStatus(26); return 0;
+}
+
+static int menuXStatus27(WPARAM wParam,LPARAM lParam)
+{
+  setXStatus(27); return 0;
+}
+
+static int menuXStatus28(WPARAM wParam,LPARAM lParam)
+{
+  setXStatus(28); return 0;
+}
+
+static int menuXStatus29(WPARAM wParam,LPARAM lParam)
+{
+  setXStatus(29); return 0;
+}
+
+
 
 
 void InitXStatusItems(BOOL bAllowStatus)
@@ -738,7 +766,7 @@ void InitXStatusItems(BOOL bAllowStatus)
   mi.popupPosition= 500084000;
   mi.position = 2000040000;
 
-  for(i = 0; i < 25; i++) 
+  for(i = 0; i < 29; i++) 
   {
     char szTemp[64];
     HICON hIIcon = (i > 0) ? ImageList_ExtractIcon(NULL, CSImages, i-1) : NULL;
@@ -776,6 +804,11 @@ void InitXStatusItems(BOOL bAllowStatus)
       case 22: CreateServiceFunction(srvFce, menuXStatus22); break;
       case 23: CreateServiceFunction(srvFce, menuXStatus23); break;
       case 24: CreateServiceFunction(srvFce, menuXStatus24); break;
+      case 25: CreateServiceFunction(srvFce, menuXStatus25); break;
+      case 26: CreateServiceFunction(srvFce, menuXStatus26); break;
+      case 27: CreateServiceFunction(srvFce, menuXStatus27); break;
+      case 28: CreateServiceFunction(srvFce, menuXStatus28); break;
+      case 29: CreateServiceFunction(srvFce, menuXStatus29); break;
     }
 
     mi.flags = bXStatus == i?CMIF_CHECKED:0;

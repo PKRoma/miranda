@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -234,21 +234,17 @@ int ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, char* s
 }
 
 
-int UniWriteContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szValue)
+int UniWriteContactSettingUtf(HANDLE hContact, const char *szModule, const char* szSetting, char* szValue)
 {
   if (bUtfReadyDB)
     return DBWriteContactSettingStringUtf(hContact, szModule, szSetting, szValue);
   else
   { // old DB, we need to convert the string to Ansi
-    char* szAnsi = NULL;
+    int size = strlennull(szValue) + 2;
+    char* szAnsi = (char*)_alloca(size);
 
-    if (utf8_decode(szValue, &szAnsi))
-    {
-      int nRes = DBWriteContactSettingString(hContact, szModule, szSetting, szAnsi);
-
-      SAFE_FREE(&szAnsi);
-      return nRes;
-    }
+    if (utf8_decode_static(szValue, szAnsi, size))
+      return DBWriteContactSettingString(hContact, szModule, szSetting, szAnsi);
     // failed to convert - give error
 
     return 1;

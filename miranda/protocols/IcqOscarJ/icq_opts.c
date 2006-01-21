@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -164,7 +164,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       LoadDBCheckState(hwndDlg, IDC_SLOWSEND, "SlowSend", 1);
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 3));
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 3-ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING));
-      SetDlgItemText(hwndDlg, IDC_LEVELDESCR, ICQTranslate(szLogLevelDescr[3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)]));
+      SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)], szServer));
       ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_HIDE);
       LoadDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox", 0);
       
@@ -172,8 +172,12 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
     }
     
   case WM_HSCROLL:
-    SetDlgItemText(hwndDlg, IDC_LEVELDESCR, ICQTranslate(szLogLevelDescr[3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL,TBM_GETPOS, 0, 0)]));
-    SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+    {
+      char str[MAX_PATH];
+
+      SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL,TBM_GETPOS, 0, 0)], str));
+      SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+    }
     break;
     
   case WM_COMMAND:
@@ -294,7 +298,7 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
       LoadDBCheckState(hwndDlg, IDC_STATUSMSG_CLIST, "StatusMsgReplyCList", 0);
       LoadDBCheckState(hwndDlg, IDC_STATUSMSG_VISIBLE, "StatusMsgReplyVisible", 0);
       if (!ICQGetContactSettingByte(NULL, "StatusMsgReplyCList", 0))
-        EnableWindow(GetDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE), FALSE);
+        EnableDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE, FALSE);
 
       return TRUE;
     }
@@ -315,12 +319,12 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
     case IDC_STATUSMSG_CLIST:
       if (IsDlgButtonChecked(hwndDlg, IDC_STATUSMSG_CLIST)) 
       {
-        EnableWindow(GetDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE), TRUE);
+        EnableDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE, TRUE);
         LoadDBCheckState(hwndDlg, IDC_STATUSMSG_VISIBLE, "StatusMsgReplyVisible", 0);
       }
       else 
       {
-        EnableWindow(GetDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE), FALSE);
+        EnableDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE, FALSE);
         CheckDlgButton(hwndDlg, IDC_STATUSMSG_VISIBLE, FALSE);
       }
       break;
@@ -458,8 +462,7 @@ static BOOL CALLBACK FillCpCombo(LPCSTR str)
   for (i=0; cpTable[i].cpName != NULL && cpTable[i].cpId!=cp; i++);
   if (cpTable[i].cpName != NULL) 
   {
-    LRESULT iIndex = SendMessageA(hCpCombo, CB_ADDSTRING, -1, (LPARAM) ICQTranslate(cpTable[i].cpName));
-    SendMessage(hCpCombo, CB_SETITEMDATA, (WPARAM)iIndex, cpTable[i].cpId);
+    ComboBoxAddStringUtf(hCpCombo, cpTable[i].cpName, cpTable[i].cpId);
   }
   return TRUE;
 }
@@ -499,15 +502,15 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 
       hCpCombo = GetDlgItem(hwndDlg, IDC_UTFCODEPAGE);
       sCodePage = ICQGetContactSettingWord(NULL, "AnsiCodePage", CP_ACP);
+      ComboBoxAddStringUtf(GetDlgItem(hwndDlg, IDC_UTFCODEPAGE), "System default codepage", 0);
       EnumSystemCodePagesA(FillCpCombo, CP_INSTALLED);
-      SendDlgItemMessageA(hwndDlg, IDC_UTFCODEPAGE, CB_INSERTSTRING, 0, (LPARAM)ICQTranslate("System default codepage"));
       if(sCodePage == 0)
         SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_SETCURSEL, (WPARAM)0, 0);
       else 
       {
-        for(i = 0; i < SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETCOUNT, 0, 0); i++) 
+        for (i = 0; i < SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETCOUNT, 0, 0); i++) 
         {
-          if(SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETITEMDATA, (WPARAM)i, 0) == sCodePage)
+          if (SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETITEMDATA, (WPARAM)i, 0) == sCodePage)
           {
             SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_SETCURSEL, (WPARAM)i, 0);
             break;
@@ -593,12 +596,12 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
     if (icqOnline)
     {
       ShowWindow(GetDlgItem(hwndDlg, IDC_OFFLINETOENABLE), SW_SHOW);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLE), FALSE);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLEAVATARS), FALSE);
+      EnableDlgItem(hwndDlg, IDC_ENABLE, FALSE);
+      EnableDlgItem(hwndDlg, IDC_ENABLEAVATARS, FALSE);
     }
     else
     {
-      EnableWindow(GetDlgItem(hwndDlg, IDC_UPLOADNOW), FALSE);
+      EnableDlgItem(hwndDlg, IDC_UPLOADNOW, FALSE);
     }
     return TRUE;
 
@@ -613,7 +616,7 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       if (icqOnline) 
         ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_SHOW);
       else 
-        EnableWindow(GetDlgItem(hwndDlg, IDC_UPLOADNOW), FALSE);
+        EnableDlgItem(hwndDlg, IDC_UPLOADNOW, FALSE);
       break;
     case IDC_ENABLEAVATARS:
       icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ENABLEAVATARS));

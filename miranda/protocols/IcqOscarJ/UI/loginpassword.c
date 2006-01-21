@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -52,14 +52,15 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
   {
     case WM_INITDIALOG:
       {
-        char pszUIN[128];
+        char pszUIN[MAX_PATH];
+        char str[MAX_PATH];
         DWORD dwUin;
 
         ICQTranslateDialog(hwndDlg);
-        SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
+        SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
         dwUin = ICQGetContactSettingUIN(NULL);
-        null_snprintf(pszUIN, 128, ICQTranslate("Enter a password for UIN %u:"), dwUin);
-        SetDlgItemText(hwndDlg, IDC_INSTRUCTION, pszUIN);
+        null_snprintf(pszUIN, 128, ICQTranslateUtfStatic("Enter a password for UIN %u:", str), dwUin);
+        SetDlgItemTextUtf(hwndDlg, IDC_INSTRUCTION, pszUIN);
 
         SendDlgItemMessage(hwndDlg, IDC_LOGINPW, EM_LIMITTEXT, 10, 0);
 
@@ -81,7 +82,7 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
               gbRememberPwd = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SAVEPASS);
               ICQWriteContactSettingByte(NULL, "RememberPass", gbRememberPwd);
 
-              GetDlgItemText(hwndDlg, IDC_LOGINPW, gpszPassword, sizeof(gpszPassword));
+              GetDlgItemTextA(hwndDlg, IDC_LOGINPW, gpszPassword, sizeof(gpszPassword));
 
               icq_login(gpszPassword);
 

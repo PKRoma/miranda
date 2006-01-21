@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -144,11 +144,8 @@ static void AppendToUploadLog(HWND hwndDlg, const char *fmt, ...)
   mir_vsnprintf(szText, sizeof(szText), fmt, va);
   va_end(va);
 
-  if (IsUSASCII(szText, strlennull(szText)) || !UTF8_IsValid(szText) || !utf8_decode(szText, &pszText)) pszText = (char*)&szText;
-
-  iItem = SendDlgItemMessage(hwndDlg, IDC_LOG, LB_ADDSTRING, 0, (LPARAM)pszText);
+  iItem = ListBoxAddStringUtf(GetDlgItem(hwndDlg, IDC_LOG), szText);
   SendDlgItemMessage(hwndDlg, IDC_LOG, LB_SETTOPINDEX, iItem, 0);
-  if (pszText != (char*)&szText) SAFE_FREE(&pszText);
 }
 
 
@@ -162,7 +159,26 @@ static void DeleteLastUploadLogLine(HWND hwndDlg)
 
 static void GetLastUploadLogLine(HWND hwndDlg, char *szBuf)
 {
-  SendDlgItemMessage(hwndDlg, IDC_LOG, LB_GETTEXT, SendDlgItemMessage(hwndDlg, IDC_LOG, LB_GETCOUNT, 0, 0)-1, (LPARAM)szBuf);
+  if (gbUnicodeAPI)
+  {
+    wchar_t str[MAX_PATH];
+    char *ustr;
+
+    SendDlgItemMessageW(hwndDlg, IDC_LOG, LB_GETTEXT, SendDlgItemMessage(hwndDlg, IDC_LOG, LB_GETCOUNT, 0, 0)-1, (LPARAM)str);
+    ustr = make_utf8_string(str);
+    strcpy(szBuf, ustr);
+    SAFE_FREE(&ustr);
+  }
+  else
+  {
+    char str[MAX_PATH];
+    char *ustr=NULL;
+
+    SendDlgItemMessageA(hwndDlg, IDC_LOG, LB_GETTEXT, SendDlgItemMessage(hwndDlg, IDC_LOG, LB_GETCOUNT, 0, 0)-1, (LPARAM)str);
+    utf8_encode(str, &ustr);
+    strcpy(szBuf, ustr);
+    SAFE_FREE(&ustr);
+  }
 }
 
 
@@ -301,13 +317,15 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
   case WM_INITDIALOG:
     {
+      char str[MAX_PATH];
+
       ICQTranslateDialog(hwndDlg);
       working = 0;
       hProtoAckHook = NULL;
       currentState = STATE_READY;
 
-      AppendToUploadLog(hwndDlg, ICQTranslate("Select contacts you want to store on server."));
-      AppendToUploadLog(hwndDlg, ICQTranslate("Ready..."));
+      AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Select contacts you want to store on server.", str));
+      AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Ready...", str));
     }
     return TRUE;
 
@@ -317,7 +335,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
     {
       int bMulti = 0;
       ACKDATA *ack = (ACKDATA*)lParam;
-      char szLastLogLine[256];
+      char szLastLogLine[MAX_PATH];
+      char str[MAX_PATH];
 
       // Is this an ack we are waiting for?
       if (strcmpnull(ack->szModule, gpszICQProtoName))
@@ -330,7 +349,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
         {
           GetLastUploadLogLine(hwndDlg, szLastLogLine);
           DeleteLastUploadLogLine(hwndDlg);
-          AppendToUploadLog(hwndDlg, "Server rate warning -> slowing down the process.");
+          AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Server rate warning -> slowing down the process.", str));
           AppendToUploadLog(hwndDlg, szLastLogLine);
 
           dwUploadDelay *= 2;
@@ -522,7 +541,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       GetLastUploadLogLine(hwndDlg, szLastLogLine);
       DeleteLastUploadLogLine(hwndDlg);
       AppendToUploadLog(hwndDlg, "%s%s", szLastLogLine,
-        ICQTranslate(ack->result == ACKRESULT_SUCCESS ? "OK" : "FAILED"));
+        ICQTranslateUtfStatic(ack->result == ACKRESULT_SUCCESS ? "OK" : "FAILED", str));
 
       if (!bMulti) 
       {
@@ -560,6 +579,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       int isChecked;
       int isOnServer;
       BOOL bUidOk;
+      char str[MAX_PATH];
 
       switch (currentState)
       {
@@ -618,7 +638,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 }
                 if (!wNewGroupId && currentAction != ACTION_ADDGROUP)
                 { // if the group still does not exist and there was no try before, try to add group
-                  AppendToUploadLog(hwndDlg, ICQTranslate("Adding group \"%s\"..."), pszGroup);
+                  AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Adding group \"%s\"...", str), pszGroup);
 
                   wNewGroupId = GenerateServerId(SSIT_GROUP);
                   szNewGroupName = pszGroup;
@@ -633,11 +653,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 SAFE_FREE(&pszGroup);
 
                 if (pszNick)
-                  AppendToUploadLog(hwndDlg, ICQTranslate("Uploading %s..."), pszNick);
-                else if (dwUin)
-                  AppendToUploadLog(hwndDlg, ICQTranslate("Uploading %u..."), dwUin);
-                else
-                  AppendToUploadLog(hwndDlg, ICQTranslate("Uploading %s..."), szUid);
+                  AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Uploading %s...", str), pszNick);
+                else 
+                  AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Uploading %s...", str), strUID(dwUin, szUid));
 
                 currentAction = ACTION_ADDBUDDY;
 
@@ -658,8 +676,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                   // Update the log window with the failure and continue with next contact
                   GetLastUploadLogLine(hwndDlg, szLastLogLine);
                   DeleteLastUploadLogLine(hwndDlg);
-                  AppendToUploadLog(hwndDlg, "%s%s", szLastLogLine, ICQTranslate("FAILED"));
-                  AppendToUploadLog(hwndDlg, ICQTranslate("No upload group available"));
+                  AppendToUploadLog(hwndDlg, "%s%s", szLastLogLine, ICQTranslateUtfStatic("FAILED", str));
+                  AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("No upload group available", str));
                   NetLog_Server("Upload failed, no group");
                   currentState = STATE_READY;
                 }
@@ -667,11 +685,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               else
               { // Queue for deletion
                 if (pszNick)
-                  AppendToUploadLog(hwndDlg, ICQTranslate("Deleting %s..."), pszNick);
-                else if (dwUin)
-                  AppendToUploadLog(hwndDlg, ICQTranslate("Deleting %u..."), dwUin);
+                  AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Deleting %s...", str), pszNick);
                 else
-                  AppendToUploadLog(hwndDlg, ICQTranslate("Deleting %s..."), szUid);
+                  AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Deleting %s...", str), strUID(dwUin, szUid));
 
                 wNewGroupId = ICQGetContactSettingWord(hContact, "SrvGroupId", 0);
                 wNewContactId = ICQGetContactSettingWord(hContact, "ServerId", 0);
@@ -698,7 +714,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               }
               if (!wNewGroupId && currentAction != ACTION_ADDGROUP)
               { // if the group still does not exist and there was no try before, try to add group
-                AppendToUploadLog(hwndDlg, ICQTranslate("Adding group \"%s\"..."), pszGroup);
+                AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Adding group \"%s\"...", str), pszGroup);
 
                 wNewGroupId = GenerateServerId(SSIT_GROUP);
                 szNewGroupName = pszGroup;
@@ -716,11 +732,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 pszNote = UniGetContactSettingUtf(hContact, "UserInfo", "MyNotes", NULL);
 
                 if (pszNick)
-                  AppendToUploadLog(hwndDlg, ICQTranslate("Moving %s to group \"%s\"..."), pszNick, pszGroup);
-                else if (dwUin)
-                  AppendToUploadLog(hwndDlg, ICQTranslate("Moving %u to group \"%s\"..."), dwUin, pszGroup);
-                else
-                  AppendToUploadLog(hwndDlg, ICQTranslate("Moving %s to group \"%s\"..."), szUid, pszGroup);
+                  AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Moving %s to group \"%s\"...", str), pszNick, pszGroup);
+                else 
+                  AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Moving %s to group \"%s\"...", str), strUID(dwUin, szUid), pszGroup);
 
                 currentAction = ACTION_MOVECONTACT;
                 wNewContactId = GenerateServerId(SSIT_ITEM);
@@ -773,10 +787,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             {
               currentAction = ACTION_ADDVISIBLE;
               wNewContactId = GenerateServerId(SSIT_ITEM);
-              if (dwUin)
-                AppendToUploadLog(hwndDlg, ICQTranslate("Adding %u to visible list..."), dwUin);
-              else
-                AppendToUploadLog(hwndDlg, ICQTranslate("Adding %s to visible list..."), szUid);
+              AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Adding %s to visible list...", str), strUID(dwUin, szUid));
               currentSequence = sendUploadBuddy(hContact, ICQ_LISTS_ADDTOLIST, dwUin, szUid, wNewContactId, 0, NULL, NULL, 0, SSI_ITEM_PERMIT);
               break;
             }
@@ -787,10 +798,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             {
               currentAction = ACTION_ADDINVISIBLE;
               wNewContactId = GenerateServerId(SSIT_ITEM);
-              if (dwUin)
-                AppendToUploadLog(hwndDlg, ICQTranslate("Adding %u to invisible list..."), dwUin);
-              else
-                AppendToUploadLog(hwndDlg, ICQTranslate("Adding %s to invisible list..."), szUid);
+              AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Adding %s to invisible list...", str), strUID(dwUin, szUid));
               currentSequence = sendUploadBuddy(hContact, ICQ_LISTS_ADDTOLIST, dwUin, szUid, wNewContactId, 0, NULL, NULL, 0, SSI_ITEM_DENY);
               break;
             }
@@ -801,10 +809,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             {
               currentAction = ACTION_REMOVEVISIBLE;
               wNewContactId = wPermitId;
-              if (dwUin)
-                AppendToUploadLog(hwndDlg, ICQTranslate("Deleting %u from visible list..."), dwUin);
-              else
-                AppendToUploadLog(hwndDlg, ICQTranslate("Deleting %s from visible list..."), szUid);
+              AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Deleting %s from visible list...", str), strUID(dwUin, szUid));
               currentSequence = sendUploadBuddy(hContact, ICQ_LISTS_REMOVEFROMLIST, dwUin, szUid, wNewContactId, 0, NULL, NULL, 0, SSI_ITEM_PERMIT);
               break;
             }
@@ -815,10 +820,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             {
               currentAction = ACTION_REMOVEINVISIBLE;
               wNewContactId = wDenyId;
-              if (dwUin)
-                AppendToUploadLog(hwndDlg, ICQTranslate("Deleting %u from invisible list..."), dwUin);
-              else
-                AppendToUploadLog(hwndDlg, ICQTranslate("Deleting %s from invisible list..."), szUid);
+              AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Deleting %s from invisible list...", str), strUID(dwUin, szUid));
               currentSequence = sendUploadBuddy(hContact, ICQ_LISTS_REMOVEFROMLIST, dwUin, szUid, wNewContactId, 0, NULL, NULL, 0, SSI_ITEM_DENY);
               break;
             }
@@ -828,8 +830,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
         if (!hContact) 
         {
           currentState = STATE_CONSOLIDATE;
-          AppendToUploadLog(hwndDlg, ICQTranslate("Cleaning groups"));
-          EnableWindow(GetDlgItem(hwndDlg, IDCANCEL), FALSE);
+          AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Cleaning groups", str));
+          EnableDlgItem(hwndDlg, IDCANCEL, FALSE);
           enumServerGroups();
           PostMessage(hwndDlg, M_UPLOADMORE, 0, 0);
         }
@@ -859,7 +861,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             currentSequence = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
             ack->lParam = currentSequence;
             currentAction = ACTION_UPDATESTATE;
-            AppendToUploadLog(hwndDlg, ICQTranslate("Updating group \"%s\"..."), pszGroup);
+            AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Updating group \"%s\"...", str), pszGroup);
 
             icq_sendGroupUtf(currentSequence, ICQ_LISTS_UPDATEGROUP, wNewGroupId, pszGroup, groupData, groupSize);
 
@@ -871,7 +873,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             { // is next id an sub-group, if yes, we cannot delete this group
               char* pszGroup = getServerGroupNameUtf(wNewGroupId);
               currentAction = ACTION_REMOVEGROUP;
-              AppendToUploadLog(hwndDlg, ICQTranslate("Deleting group \"%s\"..."), pszGroup); 
+              AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Deleting group \"%s\"...", str), pszGroup); 
               currentSequence = sendUploadGroup(ICQ_LISTS_REMOVEFROMLIST, wNewGroupId, pszGroup);
               SAFE_FREE(&pszGroup);
             }
@@ -887,7 +889,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               currentSequence = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
               ack->lParam = currentSequence;
               currentAction = ACTION_UPDATESTATE;
-              AppendToUploadLog(hwndDlg, ICQTranslate("Updating group \"%s\"..."), pszGroup);
+              AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Updating group \"%s\"...", str), pszGroup);
 
               icq_sendGroupUtf(currentSequence, ICQ_LISTS_UPDATEGROUP, wNewGroupId, pszGroup, 0, 0);
 
@@ -907,14 +909,14 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       if (currentState == STATE_READY)
       {
         // All contacts are in sync
-        AppendToUploadLog(hwndDlg, ICQTranslate("All operations complete"));
-        EnableWindow(GetDlgItem(hwndDlg, IDCANCEL), TRUE);
-        SetDlgItemText(hwndDlg, IDCANCEL, ICQTranslate("Close"));
+        AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("All operations complete", str));
+        EnableDlgItem(hwndDlg, IDCANCEL, TRUE);
+        SetDlgItemTextUtf(hwndDlg, IDCANCEL, ICQTranslateUtfStatic("Close", str));
         sendAddEnd();
         working = 0;
         SendDlgItemMessage(hwndDlg,IDC_CLIST,CLM_SETGREYOUTFLAGS,0,0);
         UpdateCheckmarks(hwndDlg, hItemAll);
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CLIST), FALSE);
+        EnableDlgItem(hwndDlg, IDC_CLIST, FALSE);
         if (hProtoAckHook)
           UnhookEvent(hProtoAckHook);
       }
@@ -930,7 +932,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
         SendDlgItemMessage(hwndDlg, IDC_LOG, LB_RESETCONTENT, 0, 0);
         if (gnCurrentStatus == ID_STATUS_OFFLINE || gnCurrentStatus == ID_STATUS_CONNECTING)
         {
-          AppendToUploadLog(hwndDlg, ICQTranslate("You have to be online to sychronize the server-list !"));
+          char str[MAX_PATH];
+
+          AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("You have to be online to sychronize the server-list !", str));
           break;
         }
         working = 1;

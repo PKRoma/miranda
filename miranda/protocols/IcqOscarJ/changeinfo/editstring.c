@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005 Joe Kucera, Bio
+// Copyright © 2004,2005,2006 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -294,8 +294,8 @@ void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
 
 void EndStringEdit(int save)
 {
-  if(hwndEdit==NULL || iEditItem==-1) return;
-  if(save) 
+  if (hwndEdit == NULL || iEditItem == -1) return;
+  if (save) 
   {
     char *text = NULL;
     text=(char*)malloc(GetWindowTextLength(hwndEdit)+1);
@@ -317,11 +317,11 @@ void EndStringEdit(int save)
     }
     else
     {
-      if((setting[iEditItem].displayType&LIF_PASSWORD && strcmpnull(text,"                ")) ||
+      if ((setting[iEditItem].displayType&LIF_PASSWORD && strcmpnull(text,"                ")) ||
         (!(setting[iEditItem].displayType&LIF_PASSWORD) && strcmpnull(text,(char*)setting[iEditItem].value)))
       {
         SAFE_FREE((char**)&setting[iEditItem].value);
-        if(text[0])
+        if (text[0])
           setting[iEditItem].value=(LPARAM)text;
         else
         {
@@ -331,24 +331,24 @@ void EndStringEdit(int save)
         setting[iEditItem].changed=1;
       }
     }
-    if(setting[iEditItem].changed) EnableWindow(GetDlgItem(GetParent(hwndList),IDC_SAVE),TRUE);
+    if (setting[iEditItem].changed) EnableDlgItem(GetParent(hwndList), IDC_SAVE, TRUE);
   }
-  ListView_RedrawItems(hwndList,iEditItem,iEditItem);
-  iEditItem=-1;
+  ListView_RedrawItems(hwndList, iEditItem, iEditItem);
+  iEditItem = -1;
   DestroyWindow(hwndEdit);
-  hwndEdit=NULL;
-  if(hwndExpandButton!=NULL) DestroyWindow(hwndExpandButton);
-  hwndExpandButton=NULL;
-  if(hwndUpDown!=NULL) DestroyWindow(hwndUpDown);
-  hwndUpDown=NULL;
+  hwndEdit = NULL;
+  if (hwndExpandButton) DestroyWindow(hwndExpandButton);
+  hwndExpandButton = NULL;
+  if (hwndUpDown) DestroyWindow(hwndUpDown);
+  hwndUpDown = NULL;
 }
 
 
 
 int IsStringEditWindow(HWND hwnd)
 {
-  if(hwnd==hwndEdit) return 1;
-  if(hwnd==hwndExpandButton) return 1;
-  if(hwnd==hwndUpDown) return 1;
+  if (hwnd == hwndEdit) return 1;
+  if (hwnd == hwndExpandButton) return 1;
+  if (hwnd == hwndUpDown) return 1;
   return 0;
 }

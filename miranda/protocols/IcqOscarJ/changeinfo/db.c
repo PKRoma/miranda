@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005 Joe Kucera, Bio
+// Copyright © 2004,2005,2006 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -59,7 +59,7 @@ void LoadSettingsFromDb(int keepChanged)
     {
 #ifdef _DEBUG
       if(dbv.type!=setting[i].dbType)
-        MessageBox(NULL,"That's not supposed to happen","Huh?",MB_OK);
+        MessageBoxA(NULL,"That's not supposed to happen","Huh?",MB_OK);
 #endif
       switch(dbv.type) 
       {
@@ -80,7 +80,7 @@ void LoadSettingsFromDb(int keepChanged)
           break;
 #ifdef _DEBUG
         default:
-          MessageBox(NULL,"That's not supposed to happen either","Huh?",MB_OK);
+          MessageBoxA(NULL,"That's not supposed to happen either","Huh?",MB_OK);
           break;
 #endif
       }
@@ -132,7 +132,7 @@ static BOOL CALLBACK PwConfirmDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
     case WM_INITDIALOG:
       ICQTranslateDialog(hwndDlg);
       Pass = (char*)lParam;
-      SendDlgItemMessage(hwndDlg,IDC_PASSWORD,EM_LIMITTEXT,63,0);
+      SendDlgItemMessage(hwndDlg,IDC_PASSWORD,EM_LIMITTEXT,15,0);
       return TRUE;
 
     case WM_COMMAND:
@@ -140,13 +140,13 @@ static BOOL CALLBACK PwConfirmDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
       {
         case IDOK:
           {  
-            char szTest[64];
+            char szTest[16], str[1024], cap[MAX_PATH];
 
             GetDlgItemText(hwndDlg,IDC_OLDPASS,szTest,sizeof(szTest));
 
             if (strcmpnull(szTest, GetUserPassword(TRUE))) 
             {
-              MessageBox(hwndDlg,ICQTranslate("The password does not match your current password. Check Caps Lock and try again."),ICQTranslate("Change ICQ Details"),MB_OK);
+              MessageBoxUtf(hwndDlg,ICQTranslateUtfStatic("The password does not match your current password. Check Caps Lock and try again.", str), ICQTranslateUtfStatic("Change ICQ Details", cap), MB_OK);
               SendDlgItemMessage(hwndDlg,IDC_OLDPASS,EM_SETSEL,0,(LPARAM)-1);
               SetFocus(GetDlgItem(hwndDlg,IDC_OLDPASS));
               break;
@@ -155,7 +155,7 @@ static BOOL CALLBACK PwConfirmDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
             GetDlgItemText(hwndDlg,IDC_PASSWORD,szTest,sizeof(szTest));
             if(strcmpnull(szTest, Pass)) 
             {
-              MessageBox(hwndDlg,ICQTranslate("The password does not match the password you originally entered. Check Caps Lock and try again."),ICQTranslate("Change ICQ Details"),MB_OK);
+              MessageBoxUtf(hwndDlg,ICQTranslateUtfStatic("The password does not match the password you originally entered. Check Caps Lock and try again.", str), ICQTranslateUtfStatic("Change ICQ Details", cap), MB_OK);
               SendDlgItemMessage(hwndDlg,IDC_PASSWORD,EM_SETSEL,0,(LPARAM)-1);
               SetFocus(GetDlgItem(hwndDlg,IDC_PASSWORD));
               break;
@@ -193,7 +193,9 @@ int SaveSettingsToDb(HWND hwndDlg)
 
           if (nSettingLen>8 || nSettingLen<1) 
           {
-            MessageBox(hwndDlg,ICQTranslate("The ICQ server does not support passwords longer than 8 characters. Please use a shorter password."),ICQTranslate("Change ICQ Details"),MB_OK);
+            char str[1024], cap[MAX_PATH];
+
+            MessageBoxUtf(hwndDlg, ICQTranslateUtfStatic("The ICQ server does not support passwords longer than 8 characters. Please use a shorter password.", str), ICQTranslateUtfStatic("Change ICQ Details", cap), MB_OK);
             ret=0;
             break;
           }
