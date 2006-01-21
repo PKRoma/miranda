@@ -262,7 +262,7 @@ const char* nameXStatus[29] = {
   "Eating..yummy..",
   "Having fun",
   "Chit chatting",
-  "Sleeping",
+  "Crashing",
   "Going to toilet"};
 
 void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
