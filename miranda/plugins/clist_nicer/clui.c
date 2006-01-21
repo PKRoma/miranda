@@ -353,15 +353,15 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 #if defined(_UNICODE)
 	static char *component = "CList Nicer+ (Unicode)";
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer_plus/versionW.txt";
-	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer_plus/clist_nicer_plusW.zip";
+	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer/versionW.txt";
+	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/clist_nicer_plusW.zip";
 	static char *szFLVersionUrl = "http://www.miranda-im.org/download/details.php?action=viewfile&id=2365";
 	static char *szFLUpdateurl = "http://www.miranda-im.org/download/feed.php?dlfile=2365";
 #else
 	static char *component = "CList Nicer+";
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer_plus/version.txt";
-	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer_plus/clist_nicer_plus.zip";
+	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer/version.txt";
+	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/clist_nicer_plus.zip";
 	static char *szFLVersionUrl = "http://www.miranda-im.org/download/details.php?action=viewfile&id=2189";
 	static char *szFLUpdateurl = "http://www.miranda-im.org/download/feed.php?dlfile=2189";
 #endif
@@ -998,7 +998,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			{
 				BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
 				ShowWindow(pcli->hwndContactList, SW_HIDE);
-				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, windowStyle == SETTING_WINDOWSTYLE_TOOLWINDOW ? GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW : GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
+				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, windowStyle != SETTING_WINDOWSTYLE_DEFAULT ? GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW : GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
 				ApplyCLUIBorderStyle(pcli->hwndContactList);
 
 				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOACTIVATE);

@@ -724,19 +724,22 @@ DWORD GetCLUIWindowStyle(BYTE style)
 void ApplyCLUIBorderStyle(HWND hwnd)
 {
 	BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
+	WINDOWPLACEMENT p;
+
+	p.length = sizeof(p);
+	GetWindowPlacement(pcli->hwndContactList, &p);
+	ShowWindow(pcli->hwndContactList, SW_HIDE);
 
 	if (windowStyle == SETTING_WINDOWSTYLE_DEFAULT || windowStyle == SETTING_WINDOWSTYLE_TOOLWINDOW) {
-		WINDOWPLACEMENT p;
-		p.length = sizeof(p);
-		GetWindowPlacement(pcli->hwndContactList, &p);
-		ShowWindow(pcli->hwndContactList, SW_HIDE);
 		SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN | WS_POPUPWINDOW | WS_THICKFRAME);
-		p.showCmd = SW_HIDE;
-		SetWindowPlacement(pcli->hwndContactList, &p);
 	} else if(windowStyle == SETTING_WINDOWSTYLE_THINBORDER) {
 		SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_THICKFRAME));
 		SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_BORDER);
 	}
 	else
 		SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_THICKFRAME));
+
+	p.showCmd = SW_HIDE;
+	SetWindowPlacement(pcli->hwndContactList, &p);
+
 }
