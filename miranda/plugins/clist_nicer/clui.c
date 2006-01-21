@@ -294,11 +294,6 @@ int PreCreateCLC(HWND parent)
 int CreateCLC(HWND parent)
 {
 	CallService(MS_CLIST_SETHIDEOFFLINE,(WPARAM)oldhideoffline,0);
-	{
-		int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
-		if(state==SETTING_STATE_NORMAL) ShowWindow(pcli->hwndContactList, SW_SHOW);
-		else if(state==SETTING_STATE_MINIMIZED) ShowWindow(pcli->hwndContactList, SW_SHOWMINIMIZED);
-	}
 	//lastreqh=0;
 	disableautoupd=0;
 
@@ -994,34 +989,19 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		break;
 	case M_CREATECLC:
 		{
-			int i;
+			int i, state;
 			HICON hIcon;
 			HMENU hMenuButtonList = GetSubMenu(g_CluiData.hMenuButtons, 0);
 			DeleteMenu(hMenuButtonList, 0, MF_BYPOSITION);
 
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			{
-				int state;
 				BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
+				ShowWindow(pcli->hwndContactList, SW_HIDE);
 				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, windowStyle == SETTING_WINDOWSTYLE_TOOLWINDOW ? GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW : GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
 				ApplyCLUIBorderStyle(pcli->hwndContactList);
 
-				//SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOACTIVATE);
-				//RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
-
-				state = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
-				hMenuMain = GetMenu(pcli->hwndContactList);
-				if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
-					SetMenu(pcli->hwndContactList, NULL);
-				if (state == SETTING_STATE_NORMAL)
-					ShowWindow(pcli->hwndContactList, SW_SHOW);
-				else if (state == SETTING_STATE_MINIMIZED)
-					ShowWindow(pcli->hwndContactList, SW_SHOWMINIMIZED);
-				else if (state == SETTING_STATE_HIDDEN)
-					ShowWindow(pcli->hwndContactList, SW_HIDE);
-				SetWindowPos(pcli->hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-				g_CluiData.forceResize = TRUE;
 			}
 
 			for (i = 0; ; i++) {
@@ -1061,8 +1041,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			if (g_CluiData.soundsOff)
 				hSoundHook = HookEvent(ME_SKIN_PLAYINGSOUND, ClcSoundHook);
-			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
-			DrawMenuBar(hwnd);
 			SetButtonStyle();
 			if(g_CluiData.bSkinnedToolbar)
 				SetTBSKinned(1);
@@ -1071,8 +1049,34 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			CreateCLC(hwnd);
 			g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
+			state = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
+			
+			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
+			hMenuMain = GetMenu(pcli->hwndContactList);
+			if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
+				SetMenu(pcli->hwndContactList, NULL);
+			if (state == SETTING_STATE_NORMAL) {
+				int oldFade = g_CluiData.fadeinout;
+				g_CluiData.fadeinout = 1;
+				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+				ShowWindow(pcli->hwndContactList, SW_SHOW);
+				g_CluiData.fadeinout = oldFade;
+			}
+			else if (state == SETTING_STATE_MINIMIZED) {
+				g_CluiData.forceResize = TRUE;
+				ShowWindow(pcli->hwndContactList, SW_SHOWMINIMIZED);
+			}
+			else if (state == SETTING_STATE_HIDDEN) {
+				g_CluiData.forceResize = TRUE;
+				ShowWindow(pcli->hwndContactList, SW_HIDE);
+			}
+			SetWindowPos(pcli->hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+			DrawMenuBar(hwnd);
+			
+			// finally, the floater
 			SFL_Create();
-			SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL) == SETTING_STATE_NORMAL ? 0 : 1) : 1);
+			SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (state == SETTING_STATE_NORMAL ? 0 : 1) : 1);
+
 			return 0;
 		}
 	case WM_ERASEBKGND:
@@ -1325,10 +1329,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				g_oldSize.cy = rcClient.bottom - rcClient.top;
 			}
 		}
-		if(g_CluiData.forceResize) {
-			g_CluiData.forceResize = FALSE;
-			PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
-		}
 		if (wParam == SIZE_MINIMIZED) {
 			if (DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT)) {
 				ShowWindow(hwnd, SW_HIDE);
@@ -1468,8 +1468,11 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			DWORD thisTick, startTick;
 			int sourceAlpha, destAlpha;
 
-			if(g_CluiData.forceResize)
+			if(g_CluiData.forceResize && wParam != SW_HIDE) {
+				g_CluiData.forceResize = FALSE;
 				SendMessage(hwnd, WM_SIZE, 0, 0);
+				PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
+			}
 			if(!g_CluiData.fadeinout)
 				SFL_SetState(-1);
 			if (lParam)
@@ -1496,13 +1499,15 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			for (startTick = GetTickCount(); ;) {
 				thisTick = GetTickCount();
-				if (thisTick >= startTick + 200)
+				if (thisTick >= startTick + 200) {
+					SFL_SetState(-1);
+					MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), (BYTE) (destAlpha), LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
+					g_fading_active = 0;
 					return DefWindowProc(hwnd, msg, wParam, lParam);
+				}
 				MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), (BYTE) (sourceAlpha + (destAlpha - sourceAlpha) * (int) (thisTick - startTick) / 200), LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
 			}
 			MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), (BYTE) (destAlpha), LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
-			g_fading_active = 0;
-			SFL_SetState(-1);
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
 	case WM_MENUSELECT:

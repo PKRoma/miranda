@@ -244,6 +244,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				oldFading = g_CluiData.fadeinout;
 				g_CluiData.fadeinout = FALSE;
 
+				SendMessage(pcli->hwndContactList, WM_SETREDRAW, FALSE, FALSE);
 				DBWriteContactSettingByte(NULL, "CLUI", "WindowStyle", windowStyle);
 				g_CluiData.gapBetweenFrames = GetDlgItemInt(hwndDlg, IDC_FRAMEGAP, &translated, FALSE);
 
@@ -301,18 +302,11 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				DBWriteContactSettingByte(NULL, "CLUI", "ClientAreaDrag", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CLIENTDRAG));
 
 				ApplyCLUIBorderStyle(pcli->hwndContactList);
-				ShowWindow(pcli->hwndContactList, SW_SHOW);
-				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-				RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
 
 				if (!IsDlgButtonChecked(hwndDlg, IDC_SHOWMAINMENU))
 					SetMenu(pcli->hwndContactList, NULL);
 				else
 					SetMenu(pcli->hwndContactList, hMenuMain);
-
-				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-				RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
 
 				DBWriteContactSettingByte(NULL, "CList", "Min2Tray", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY));
 				if (IsIconic(pcli->hwndContactList) && windowStyle != SETTING_WINDOWSTYLE_TOOLWINDOW)
@@ -375,8 +369,11 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 				}
 
-				SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);    //forces it to send a cln_listsizechanged
-				PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
+				ShowWindow(pcli->hwndContactList, SW_SHOW);
+				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+				RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
+
 				if(oldexIconScale != g_CluiData.exIconScale) {
 					ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
 					if(g_CluiData.IcoLib_Avail)
@@ -389,6 +386,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 				}
 				g_CluiData.fadeinout = oldFading;
+				SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL) == SETTING_STATE_NORMAL ? 0 : 1) : 1);
 				return TRUE;
 			}
 		}

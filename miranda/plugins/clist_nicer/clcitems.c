@@ -534,11 +534,12 @@ int GetExtraCache(HANDLE hContact, char *szProto)
 /*
  * checks the currently active view mode filter and returns true, if the contact should be hidden
  * if no view mode is active, it returns the CList/Hidden setting
+ * also cares about sub contacts (if meta is active)
  */
 
 int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struct ClcData *dat)
 {
-    int dbHidden = DBGetContactSettingByte(hContact, "CList", "Hidden", 0);
+    int dbHidden = DBGetContactSettingByte(hContact, "CList", "Hidden", 0);		// default hidden state, always respect it.
     int filterResult = 1;
     DBVARIANT dbv = {0};
     char szTemp[64];
@@ -553,6 +554,7 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
     if(g_CluiData.bFilterEffective) {
         if(szProto == NULL)
             szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+		// check stickies first (priority), only if we really have stickies defined (CLVM_STICKY_CONTACTS is set).
         if(g_CluiData.bFilterEffective & CLVM_STICKY_CONTACTS) {
             if((dwLocalMask = DBGetContactSettingDword(hContact, "CLVM", g_CluiData.current_viewmode, 0)) != 0) {
                 if(g_CluiData.bFilterEffective & CLVM_FILTER_STICKYSTATUS) {
@@ -562,7 +564,8 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
                 return 0;
             }
         }
-        if(g_CluiData.bFilterEffective & CLVM_FILTER_PROTOS) {
+        // check the proto, use it as a base filter result for all further checks
+		if(g_CluiData.bFilterEffective & CLVM_FILTER_PROTOS) {
             mir_snprintf(szTemp, sizeof(szTemp), "%s|", szProto);
             filterResult = strstr(g_CluiData.protoFilter, szTemp) ? 1 : 0;
         }
