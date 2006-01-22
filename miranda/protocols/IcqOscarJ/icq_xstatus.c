@@ -766,7 +766,7 @@ void InitXStatusItems(BOOL bAllowStatus)
   mi.popupPosition= 500084000;
   mi.position = 2000040000;
 
-  for(i = 0; i < 29; i++) 
+  for(i = 0; i <= 29; i++) 
   {
     char szTemp[64];
     HICON hIIcon = (i > 0) ? ImageList_ExtractIcon(NULL, CSImages, i-1) : NULL;
