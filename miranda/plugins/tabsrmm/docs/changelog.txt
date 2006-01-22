@@ -15,6 +15,7 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+
 Version 0.9.9.99(2 - nightly build #46) - 2006/01/20
 
 		+ enabled the send menu entry to force a "timeout less" sending mode. The option can
@@ -28,7 +29,22 @@ Version 0.9.9.99(2 - nightly build #46) - 2006/01/20
 		  to help solving troubles with "problematic" contacts (that is, contacts which often
 		  cause timeouts when sending messages, because of networking or other issues).
 		
+		+ enhancement: The "vertical maximize" feature can now also be triggered by holding the
+		  CTRL key while clicking the maximize button. The old way of setting vertical maximize
+		  for each container permanently (container options dialog) is still available though.
 
+		* reduced the number of scrolling commands sent to IEView when resizing and/or creating
+		  the message window. This should speed up IEView somewhat when using more complex 
+		  templates.
+
+		* the info panel avatar now follows the avatar visibility setting on the Message Window->
+		  General option page. For example, if this is set to "Globally off", no avatars will
+		  appear on the info panel.
+
+		* message window avatar display(s) (both bottom and info panel) now respect the avatar
+		  service "Set as hidden" property which one can configure for a contacts picture.
+		  So you are no longer forced to view really ugly avatars :)
+		  		  		  		  
 Version 0.9.9.99(1) - 2005/12/27
 
 		+ added option to enable/disable drop shadows (options->Message Window->containers)

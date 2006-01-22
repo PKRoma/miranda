@@ -601,7 +601,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
             break;
         case 3:             // on, if present
         {
-			HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : 0);
+			HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : ((dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0);
             if((hbm && hbm != myGlobals.g_hbmUnknown && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) || (hbm && hbm != myGlobals.g_hbmUnknown))
                 dat->showPic = 1;
             else
@@ -1797,7 +1797,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 
         if(bPanelPic) {
             GetObject(dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown, sizeof(bminfo), &bminfo);
-			if(dat->ace && dat->showInfoPic)
+			if(dat->ace && dat->showInfoPic && !(dat->ace->dwFlags & AVS_HIDEONCLIST))
                 aceFlags = dat->ace->dwFlags;
 			else {
 				if(dat->panelWidth) {
