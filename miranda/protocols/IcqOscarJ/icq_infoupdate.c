@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -48,6 +48,7 @@ static BOOL bPaused = FALSE;
 static BOOL bRunning = FALSE;
 static DWORD tLast;
 static HANDLE hInfoThread = NULL;
+static DWORD dwUpdateThreshold;
 typedef struct s_userinfo {
   DWORD dwUin;
   HANDLE hContact;
@@ -79,7 +80,9 @@ void icq_InitInfoUpdate(void)
       userList[i].dwUin = 0;
       userList[i].hContact = NULL;
     }
-    
+
+	  dwUpdateThreshold = ICQGetContactSettingByte(NULL, "InfoUpdate", UPDATE_THRESHOLD/(3600*24))*3600*24;
+
     hInfoThread = (HANDLE)forkthreadex(NULL, 0, icq_InfoUpdateThread, 0, 0, (DWORD*)&hInfoThread);
   }
 
@@ -193,7 +196,7 @@ void icq_RescanInfoUpdate()
 
   while (hContact != NULL)
   {
-    if ((dwCurrentTime - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD)
+    if ((dwCurrentTime - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > dwUpdateThreshold)
     {
       // Queue user
       if (!icq_QueueUser(hContact))
@@ -296,7 +299,7 @@ unsigned __stdcall icq_InfoUpdateThread(void* arg)
           if (userList[i].hContact)
           {
             // Check TS again, maybe it has been updated while we slept
-            if ((time(NULL) - ICQGetContactSettingDword(userList[i].hContact, "InfoTS", 0)) > UPDATE_THRESHOLD) {
+            if ((time(NULL) - ICQGetContactSettingDword(userList[i].hContact, "InfoTS", 0)) > dwUpdateThreshold) {
 #ifdef _DEBUG
               NetLog_Server("Request info for user %u", userList[i].dwUin);
 #endif
