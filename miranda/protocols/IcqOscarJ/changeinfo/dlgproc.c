@@ -91,9 +91,15 @@ static void PaintItemSetting(HDC hdc,RECT *rc,int i,UINT itemState)
     {
       case LI_STRING:
       case LI_LONGSTRING:
-        text = BinaryToEscapes((char*)setting[i].value);
+      {
+        char *tmp = BinaryToEscapes((char*)setting[i].value);
+
+        text = NULL;
+        utf8_encode(tmp, &text);
+        SAFE_FREE(&tmp);
         alloced = 1;
         break;
+      }
 
       case LI_NUMBER:
         text = str;

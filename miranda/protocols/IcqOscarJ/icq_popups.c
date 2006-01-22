@@ -63,13 +63,11 @@ void InitPopupOpts(WPARAM wParam)
     odp.position = 100000000;
     odp.hInstance = hInst;
     odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_POPUPS);
-    odp.pszTitle = ICQTranslate(gpszICQProtoName);
-    odp.pszGroup = ICQTranslate("Popups");
     odp.groupPosition = 900000000;
     odp.pfnDlgProc = DlgProcIcqPopupOpts;
     odp.flags = ODPF_BOLDGROUPS;
     odp.nIDBottomSimpleControl = 0;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
+    AddOptionsPageUtf(&odp, wParam, "Popups", gpszICQProtoName);
   }
 }
 

@@ -279,7 +279,6 @@ wchar_t *make_unicode_string(const unsigned char *utf8)
 
 int utf8_encode(const char *from, char **to)
 {
-
   wchar_t *unicode;
   int wchars, err;
 
@@ -287,24 +286,19 @@ int utf8_encode(const char *from, char **to)
   wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, from,
       strlennull(from), NULL, 0);
 
-  if(wchars == 0)
+  if (wchars == 0)
   {
     fprintf(stderr, "Unicode translation error %d\n", GetLastError());
     return -1;
   }
 
-  unicode = calloc(wchars + 1, sizeof(unsigned short));
-  if(unicode == NULL)
-  {
-    fprintf(stderr, "Out of memory processing string to UTF8\n");
-    return -1;
-  }
+  unicode = (wchar_t*)_alloca((wchars + 1) * sizeof(unsigned short));
+  unicode[wchars] = 0;
 
   err = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, from,
       strlennull(from), unicode, wchars);
   if(err != wchars)
   {
-    SAFE_FREE(&unicode);
     fprintf(stderr, "Unicode translation error %d\n", GetLastError());
     return -1;
   }
@@ -314,7 +308,6 @@ int utf8_encode(const char *from, char **to)
    */
   *to = make_utf8_string(unicode);
 
-  SAFE_FREE(&unicode);
   return 0;
 }
 
@@ -408,7 +401,7 @@ int utf8_decode_static(const char *from, char *to, int to_size)
 {
   int nResult = 0;
 
-  _ASSERTE((*to)); // You passed a zero pointer
+  _ASSERTE(to); // You passed a zero pointer
 
   // Validate the string
   if (!UTF8_IsValid(from))

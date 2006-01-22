@@ -230,6 +230,7 @@
 #define ICQ_AVATAR_FAMILY           0x0010
 #define ICQ_LISTS_FAMILY            0x0013
 #define ICQ_EXTENSIONS_FAMILY       0x0015
+#define ICQ_AUTHORIZAION_FAMILY     0x0017
 
 /* Subtypes for Service Family 0x0001 */
 #define ICQ_ERROR                   0x0001
@@ -332,10 +333,19 @@
 #define ICQ_LISTS_SRV_AUTHRESPONSE  0x001B
 #define ICQ_LISTS_YOUWEREADDED      0x001C
 
-// SNACS for ICQ Extensions Family 0x0015
-#define SRV_ICQEXT_ERROR            0x0001
-#define CLI_META_REQ                0x0002
-#define SRV_META_REPLY              0x0003
+/* Subtypes for ICQ Extensions Family 0x0015 */
+#define ICQ_META_ERROR              0x0001
+#define ICQ_META_CLI_REQ            0x0002
+#define ICQ_META_SRV_REPLY          0x0003
+
+/* Subtypes for Authorization Family 0x0017 */
+#define ICQ_SIGNON_ERROR            0x0001
+#define ICQ_SIGNON_LOGIN_REQUEST    0x0002
+#define ICQ_SIGNON_LOGIN_REPLY      0x0003
+#define ICQ_SIGNON_REGISTRATION_REQ 0x0004
+#define ICQ_SIGNON_NEW_UIN          0x0005
+#define ICQ_SIGNON_AUTH_REQUEST     0x0006
+#define ICQ_SIGNON_AUTH_KEY         0x0007
 
 // Class constants
 #define CLASS_UNCONFIRMED           0x0001
@@ -515,6 +525,7 @@
 #define URL_REGISTER                "http://lite.icq.com/register"
 #define FLAP_MARKER                 0x2a
 #define CLIENT_ID_STRING            "ICQBasic"
+#define CLIENT_MD5_STRING           "AOL Instant Messenger (SM)"
 #define UNIQUEIDSETTING             "UIN"
 #define UINMAXLEN                   11 // DWORD string max len + 1
 

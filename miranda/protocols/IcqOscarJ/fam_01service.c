@@ -966,7 +966,7 @@ void handleServUINSettings(int nPort)
 
   /* Get Offline Messages Reqeust */
   serverPacketInit(&packet, 24);
-  packFNACHeaderFull(&packet, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, 0x00020001);
+  packFNACHeaderFull(&packet, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ, 0, 0x00020001);
   packDWord(&packet, 0x0001000a);    /* TLV */
   packLEWord(&packet, 8);            /* bytes remaining */
   packLEDWord(&packet, dwLocalUIN);

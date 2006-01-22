@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005 Joe Kucera, Bio
+// Copyright © 2004,2005,2006 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -35,24 +35,20 @@
 #include "icqoscar.h"
 
 
-int InitChangeDetails(WPARAM wParam,LPARAM lParam)
+int InitChangeDetails(WPARAM wParam, LPARAM lParam)
 {
-  OPTIONSDIALOGPAGE odp={0};
-  char title[128];
+  OPTIONSDIALOGPAGE odp = {0};
 
-  if((HANDLE)lParam != NULL) return 0;
+  if (lParam) return 0;
 
-  null_snprintf(title, sizeof(title), ICQTranslate("%s Details"), ICQTranslate(gpszICQProtoName));
-
-  odp.cbSize=sizeof(odp);
+  odp.cbSize = sizeof(odp);
   odp.hIcon = NULL;
   odp.hInstance = hInst;
   odp.position = -1899999999;
-  odp.pszTemplate=MAKEINTRESOURCE(IDD_INFO_CHANGEINFO);
-  odp.pszTitle=title;
-  odp.pfnDlgProc=ChangeInfoDlgProc;
+  odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_CHANGEINFO);
+  odp.pfnDlgProc = ChangeInfoDlgProc;
 
-  CallService(MS_USERINFO_ADDPAGE,wParam,(LPARAM)&odp);
+  AddUserInfoPageUtf(&odp, wParam, "%s Details");
 
   return 0;
 }

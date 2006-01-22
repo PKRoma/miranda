@@ -59,8 +59,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char *szModule, 
 int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 {
   char* szProto;
-  OPTIONSDIALOGPAGE odp;
-  char szAvtCaption[MAX_PATH+8];
+  OPTIONSDIALOGPAGE odp = {0};
 
   szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
   if ((strcmpnull(szProto, gpszICQProtoName)) && lParam)
@@ -72,9 +71,7 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
   odp.pfnDlgProc = IcqDlgProc;
   odp.position = -1900000000;
   odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_ICQ);
-  odp.pszTitle = ICQTranslate(gpszICQProtoName);
-
-  CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+  AddUserInfoPageUtf(&odp, wParam, gpszICQProtoName);
 
   if (((lParam != 0) && gbAvatarsEnabled) || (gbSsiEnabled && gbAvatarsEnabled))
   {
@@ -83,18 +80,17 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 
     if (!ICQGetContactSettingUID((HANDLE)lParam, &dwUin, &dwUid))
     { // Avatar page only for valid contacts
+      char *szAvtTitle;
+
       odp.pfnDlgProc = AvatarDlgProc;
       odp.position = -1899999998;
       odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_AVATAR);
-      if (lParam != 0)
-        odp.pszTitle = ICQTranslate("Avatar");
+      if (lParam)
+        szAvtTitle = "Avatar";
       else
-      {
-        null_snprintf(szAvtCaption, sizeof(szAvtCaption), "%s %s", ICQTranslate(gpszICQProtoName), ICQTranslate("Avatar"));
-        odp.pszTitle = szAvtCaption;
-      }
+        szAvtTitle = "%s Avatar";
 
-      CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+      AddUserInfoPageUtf(&odp, wParam, szAvtTitle);
     }
   }
 

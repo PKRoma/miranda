@@ -1620,6 +1620,11 @@ char* __fastcall ICQTranslateUtf(const char* src)
 { // this takes UTF-8 strings only!!!
   char* szRes = NULL;
 
+  if (!strlennull(src))
+  { // for the case of empty strings
+    return null_strdup(src);
+  }
+
   if (gbUtfLangpack)
   { // we can use unicode translate
     wchar_t* usrc = make_unicode_string(src);
@@ -1643,10 +1648,17 @@ char* __fastcall ICQTranslateUtf(const char* src)
 
 char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf)
 { // this takes UTF-8 strings only!!!
-  char* t = ICQTranslateUtf(src);
+  char* t;
+  
+  if (strlennull(src))
+  {
+    t = ICQTranslateUtf(src);
+    strcpy(buf, t);
+    SAFE_FREE(&t);
+  }
+  else
+    buf[0] = '\0';
 
-  strcpy(buf, t);
-  SAFE_FREE(&t);
   return buf;
 }
 

@@ -75,7 +75,7 @@ static void packServMsgSendHeader(icq_packet *p, DWORD dwSequence, DWORD dwID1, 
 static void packServIcqExtensionHeader(icq_packet *p, WORD wLen, WORD wType, WORD wSeq)
 {
   serverPacketInit(p, (WORD)(24 + wLen));
-  packFNACHeaderFull(p, ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, 0, wSeq | CLI_META_REQ<<0x10);
+  packFNACHeaderFull(p, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ, 0, wSeq | ICQ_META_CLI_REQ<<0x10);
   packWord(p, 0x01);               // TLV type 1
   packWord(p, (WORD)(10 + wLen));  // TLV len
   packLEWord(p, (WORD)(8 + wLen)); // Data chunk size (TLV.Length-2)
@@ -653,7 +653,7 @@ void icq_sendSetAimAwayMsgServ(char *szMsg)
   if (wMsgLen > 0x1000) wMsgLen = 0x1000; // limit length
   serverPacketInit(&packet, (WORD)(51 + wMsgLen));
   packFNACHeaderFull(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, dwCookie);
-  packTLV(&packet, 0x03, 0x21, "text/x-aolrtf; charset=\"us-ascii\"");
+  packTLV(&packet, 0x03, 0x21, "text/x-aolrtf; charset=\"us-ascii\""); // TODO: charset should be "utf-8"
   packTLV(&packet, 0x04, wMsgLen, szMsg);
 
   sendServPacket(&packet);

@@ -46,66 +46,111 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 static const char* szLogLevelDescr[] = {"Display all problems", "Display problems causing possible loss of data", "Display explanations for disconnection", "Display problems requiring user intervention"};
 
 
+static void AddUniPageUtf(const char* szService, OPTIONSDIALOGPAGE *op, WPARAM wParam, const char *szGroup, const char *szTitle)
+{
+  char str[MAX_PATH];
+  char *pszTitle;
+
+  if (strstr(szTitle, "%s"))
+  {
+    char *lTitle = ICQTranslateUtfStatic(szTitle, str);
+    int size = strlennull(lTitle) + strlennull(gpszICQProtoName);
+ 
+    pszTitle = (char*)_alloca(size);
+    null_snprintf(pszTitle, size, lTitle, gpszICQProtoName);
+  }
+  else
+    pszTitle = (char*)ICQTranslateUtfStatic(szTitle, str);
+
+  if (gbUnicodeCore)
+  {
+    wchar_t *utitle, *ugroup;
+
+    utitle = make_unicode_string(pszTitle);
+    if (szGroup)
+      ugroup = make_unicode_string(ICQTranslateUtfStatic(szGroup, str));
+    else
+      ugroup = NULL;
+    op->pszTitle = (char*)utitle; // this is union with ptszTitle
+    op->pszGroup = (char*)ugroup;
+    op->flags |= ODPF_UNICODE;
+    CallService(szService, wParam, (LPARAM)op);
+    SAFE_FREE(&utitle);
+    SAFE_FREE(&ugroup);
+  }
+  else
+  {
+    char *title, *group, *tmp;
+    int size;
+
+    size = strlennull(pszTitle) + 2;
+    title = (char*)_alloca(size);
+    utf8_decode_static(pszTitle, title, size);
+    if (szGroup)
+    {
+      tmp = ICQTranslateUtfStatic(szGroup, str);
+      size = strlennull(tmp) + 2;
+      group = (char*)_alloca(size);
+      utf8_decode_static(tmp, group, size);
+    }
+    else
+      group = NULL;
+    op->pszTitle = title;
+    op->pszGroup = group;
+    CallService(szService, wParam, (LPARAM)op);
+  }
+}
+
+
+
+void AddOptionsPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const char *szGroup, const char *szTitle)
+{
+  AddUniPageUtf(MS_OPT_ADDPAGE, op, wParam, szGroup, szTitle);
+}
+
+
+
+void AddUserInfoPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const char *szTitle)
+{
+  AddUniPageUtf(MS_USERINFO_ADDPAGE, op, wParam, NULL, szTitle);
+}
+
+
+
 int IcqOptInit(WPARAM wParam, LPARAM lParam)
 {
   OPTIONSDIALOGPAGE odp = {0};
-  char* pszTreeItemName;
-  int nNameLen;
-  char* pszLocalProtoName;
-  char* pszLocalOptName;
-  int nLocalProtoNameLen;
-
 
   odp.cbSize = sizeof(odp);
   odp.position = -800000000;
   odp.hInstance = hInst;
 
-  pszLocalProtoName = ICQTranslate(gpszICQProtoName);
-  nLocalProtoNameLen = strlennull(pszLocalProtoName);
-
   // Add "icq" option
   odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQ);
-  odp.pszGroup = ICQTranslate("Network");
-  odp.pszTitle = pszLocalProtoName;
   odp.pfnDlgProc = DlgProcIcqOpts;
   odp.flags = ODPF_BOLDGROUPS;
   odp.nIDBottomSimpleControl = IDC_STICQGROUP;
-  CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
+  AddOptionsPageUtf(&odp, wParam, "Network", gpszICQProtoName);
 
   // Add "contacts" option
-  pszLocalOptName = ICQTranslate("%s Contacts");
-  nNameLen = nLocalProtoNameLen + strlennull(pszLocalOptName);
-  pszTreeItemName = _alloca(nNameLen+1);
-  null_snprintf(pszTreeItemName, nNameLen+1, pszLocalOptName, pszLocalProtoName);
   odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQCONTACTS);
-  odp.pszTitle = pszTreeItemName;
   odp.pfnDlgProc = DlgProcIcqContactsOpts;
   odp.nIDBottomSimpleControl = 0;
-  CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
+  AddOptionsPageUtf(&odp, wParam, "Network", "%s Contacts");
   
   // Add "features" option
-  pszLocalOptName = ICQTranslate("%s Features");
-  nNameLen = nLocalProtoNameLen + strlennull(pszLocalOptName);
-  pszTreeItemName = _alloca(nNameLen+1);
-  null_snprintf(pszTreeItemName, nNameLen+1, pszLocalOptName, pszLocalProtoName);
   odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQFEATURES);
-  odp.pszTitle = pszTreeItemName;
   odp.pfnDlgProc = DlgProcIcqFeaturesOpts;
   odp.flags |= ODPF_EXPERTONLY;
   odp.nIDBottomSimpleControl = 0;
-  CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
+  AddOptionsPageUtf(&odp, wParam, "Network", "%s Features");
 
   // Add "privacy" option
-  pszLocalOptName = ICQTranslate("%s Privacy");
-  nNameLen = nLocalProtoNameLen + strlennull(pszLocalOptName);
-  pszTreeItemName = _alloca(nNameLen+1);
-  null_snprintf(pszTreeItemName, nNameLen+1, pszLocalOptName, pszLocalProtoName);
   odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQPRIVACY);
-  odp.pszTitle = pszTreeItemName;
   odp.pfnDlgProc = DlgProcIcqPrivacyOpts;
   odp.flags = ODPF_BOLDGROUPS;
   odp.nIDBottomSimpleControl = 0;
-  CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
+  AddOptionsPageUtf(&odp, wParam, "Network", "%s Privacy");
 
   InitPopupOpts(wParam);
 

@@ -295,47 +295,62 @@ static void handleSignonError(WORD wError)
   switch (wError)
   {
 
-  case 0x01:
-  case 0x04:
-  case 0x05:
-  case 0x06:
-  case 0x07:
+  case 0x01: // Unregistered uin
+  case 0x04: // Incorrect uin or password
+  case 0x05: // Mismatch uin or password
+  case 0x06: // Internal Client error (bad input to authorizer)
+  case 0x07: // Invalid account
     ICQBroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
     null_snprintf(msg, 250, ICQTranslateUtfStatic("Connection failed.\nYour ICQ number or password was rejected (%d).", str), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
 
-  case 0x14:
-  case 0x15:
+  case 0x02: // Service temporarily unavailable
+  case 0x10: // Service temporarily offline
+  case 0x14: // Reservation map error
+  case 0x15: // Reservation link error
     null_snprintf(msg, 250, ICQTranslateUtfStatic("Connection failed.\nThe server is temporally unavailable (%d).", str), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
 
-  case 0x16:
-  case 0x17:
+  case 0x16: // The users num connected from this IP has reached the maximum
+  case 0x17: // The users num connected from this IP has reached the maximum (reserved)
     null_snprintf(msg, 250, ICQTranslateUtfStatic("Connection failed.\nServer has too many connections from your IP (%d).", str), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
 
-  case 0x18:
-  case 0x1D:
+  case 0x18: // Rate limit exceeded (reserved)
+  case 0x1D: // Rate limit exceeded
     null_snprintf(msg, 250, ICQTranslateUtfStatic("Connection failed.\nYou have connected too quickly,\nplease wait and retry 10 to 20 minutes later (%d).", str), wError);
     icq_LogMessage(LOG_FATAL, msg);
     break;
 
-  case 0x1B:
+  case 0x1B: // You are using an older version of ICQ. Upgrade required
     icq_LogMessage(LOG_FATAL, "Connection failed.\nThe server did not accept this client version.");
     break;
 
-  case 0x1C:
+  case 0x1C: // You are using an older version of ICQ. Upgrade recommended
     icq_LogMessage(LOG_WARNING, "The server sent warning, this version is getting old.\nTry to look for a new one.");
 
-  case 0x1E:
+  case 0x1E: // Can't register on the ICQ network
     icq_LogMessage(LOG_FATAL, "Connection failed.\nYou were rejected by the server for an unknown reason.\nThis can happen if the UIN is already connected.");
     break;
 
   case 0:
     break;
+
+  case 0x08: // Deleted account
+  case 0x09: // Expired account
+  case 0x0A: // No access to database
+  case 0x0B: // No access to resolver
+  case 0x0C: // Invalid database fields, MD5 login not supported
+  case 0x0D: // Bad database status
+  case 0x0E: // Bad resolver status
+  case 0x11: // Suspended account
+  case 0x19: // User too heavily warned
+  case 0x1A: // Reservation timeout
+  case 0x22: // Account suspended due to your age
+  case 0x2A: // Blocked account
 
   default:
     null_snprintf(msg, 50, ICQTranslateUtfStatic("Connection failed.\nUnknown error during sign on: 0x%02x", str), wError);
