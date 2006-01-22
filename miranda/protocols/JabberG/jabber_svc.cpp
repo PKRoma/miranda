@@ -341,7 +341,7 @@ void sttRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 			JabberAddContactToRoster( item->jid, nick, NULL );
 		}
 	}
-	else if ( cws->value.pszVal != NULL && lstrcmp( cws->value.pszVal, item->group )) {
+	else if ( cws->value.pszVal != NULL && lstrcmpA( cws->value.pszVal, item->group )) {
 		JabberLog( "Group set to %s", cws->value.pszVal );
 		switch( cws->value.type ) {
 			case DBVT_ASCIIZ:	JabberAddContactToRoster( item->jid, nick, UTF8( cws->value.pszVal ));  break;
@@ -376,7 +376,7 @@ void sttRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		default: return;
 	}
 
-	if ( cws->value.pszVal != NULL && lstrcmp( item->nick, newNick )) {
+	if ( cws->value.pszVal != NULL && lstrcmpA( item->nick, newNick )) {
 		JabberLog( "Renaming contact %s: %s -> %s", item->jid, item->nick, newNick );
 		JabberAddContactToRoster( item->jid, newNick, item->group );
 	}
@@ -701,7 +701,7 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 
 int JabberGetName( WPARAM wParam, LPARAM lParam )
 {
-	lstrcpyn(( char* )lParam, jabberModuleName, wParam );
+	lstrcpynA(( char* )lParam, jabberModuleName, wParam );
 	return 0;
 }
 

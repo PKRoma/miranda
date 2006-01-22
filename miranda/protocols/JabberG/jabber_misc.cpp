@@ -58,8 +58,8 @@ void JabberAddContactToRoster( const char* jid, const char* nick, const char* gr
 void JabberChatDllError()
 {
 	MessageBox( NULL,
-		JTranslate( "CHAT plugin is required for conferences. Install it before chatting" ),
-		JTranslate( "Jabber Error Message" ), MB_OK|MB_SETFOREGROUND );
+		TranslateT( "CHAT plugin is required for conferences. Install it before chatting" ),
+		TranslateT( "Jabber Error Message" ), MB_OK|MB_SETFOREGROUND );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -223,7 +223,7 @@ void JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 
 	int tPathLen = strlen( pszDest );
 	tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\Jabber\\"  );
-	CreateDirectory( pszDest, NULL );
+	CreateDirectoryA( pszDest, NULL );
 
 	char* szFileType;
 	switch( JGetByte( hContact, "AvatarType", PA_FORMAT_PNG )) {

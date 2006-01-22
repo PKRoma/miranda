@@ -65,13 +65,13 @@ static BOOL CALLBACK JabberPasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
-		wsprintf( text, "%s %s", JTranslate( "Enter password for" ), ( char* )lParam );
-		SetDlgItemText( hwndDlg, IDC_JID, text );
+		wsprintfA( text, "%s %s", JTranslate( "Enter password for" ), ( char* )lParam );
+		SetDlgItemTextA( hwndDlg, IDC_JID, text );
 		return TRUE;
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDOK:
-			GetDlgItemText( hwndDlg, IDC_PASSWORD, onlinePassword, sizeof( onlinePassword ));
+			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, onlinePassword, sizeof( onlinePassword ));
 			JabberLog( "Password is %s", onlinePassword );
 			//EndDialog( hwndDlg, ( int ) onlinePassword );
 			//return TRUE;
@@ -131,7 +131,7 @@ static int xmpp_client_query( char* domain )
 		return NULL;
 	}
 
-	strncpy(domain, results[0].Data.Srv.pNameTarget, 127);
+	strncpy(domain, (char*)results[0].Data.Srv.pNameTarget, 127);
 	int port = results[0].Data.Srv.wPort;
 	pDnsRecordListFree(results, DnsFreeRecordList);
 	FreeLibrary(hDnsapi);
@@ -365,7 +365,7 @@ LBL_Exit:
 			}
 			free( buffer );
 			if ( !hLibSSL )
-				MessageBox( NULL, JTranslate( "The connection requires an OpenSSL library, which is not installed." ), JTranslate( "Jabber Connection Error" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+				MessageBox( NULL, TranslateT( "The connection requires an OpenSSL library, which is not installed." ), TranslateT( "Jabber Connection Error" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 			JabberLog( "Thread ended, SSL connection failed" );
 			goto LBL_Exit;
 	}	}
@@ -478,7 +478,7 @@ LBL_Exit:
 			// Set all contacts to offline
 			HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 			while ( hContact != NULL ) {
-				if ( !lstrcmp(( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 ), jabberProtoName ))
+				if ( !lstrcmpA(( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 ), jabberProtoName ))
 					if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
 						JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
 
@@ -567,7 +567,7 @@ static void JabberProcessStreamClosing( XmlNode *node, void *userdata )
 
 	Netlib_CloseHandle( info->s );
 	if ( node->name && !strcmp( node->name, "stream:error" ) && node->text )
-		MessageBox( NULL, JTranslate( node->text ), JTranslate( "Jabber Connection Error" ), MB_OK|MB_ICONERROR|MB_SETFOREGROUND );
+		MessageBoxA( NULL, JTranslate( node->text ), JTranslate( "Jabber Connection Error" ), MB_OK|MB_ICONERROR|MB_SETFOREGROUND );
 }
 
 static void JabberProcessProtocol( XmlNode *node, void *userdata )
@@ -1406,7 +1406,7 @@ static void JabberProcessRegIq( XmlNode *node, void *userdata )
 		if ( id == iqIdRegGetReg ) {
 			if (( p=JabberTextEncode( info->username )) != NULL ) {
 				if (( q=JabberTextEncode( info->password )) != NULL ) {
-					wsprintf( text, "<password>%s</password><username>%s</username>", q /*info->password*/, p /*info->username*/ );
+					wsprintfA( text, "<password>%s</password><username>%s</username>", q /*info->password*/, p /*info->username*/ );
 					iqIdRegSetReg = JabberSerialNext();
 					JabberSend( info->s, "<iq type='set' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:register'>%s</query></iq>", iqIdRegSetReg, text );
 					free( q );

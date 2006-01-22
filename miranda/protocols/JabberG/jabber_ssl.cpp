@@ -53,10 +53,10 @@ BOOL JabberSslInit()
 	sslHandleCount = 0;
 	InitializeCriticalSection( &sslHandleMutex );
 
-	hLibSSL = LoadLibrary( "SSLEAY32.DLL" );
+	hLibSSL = LoadLibraryA( "SSLEAY32.DLL" );
 
 	if ( !hLibSSL )
-		hLibSSL = LoadLibrary( "LIBSSL32.DLL" );
+		hLibSSL = LoadLibraryA( "LIBSSL32.DLL" );
 
 	if ( hLibSSL ) {
 		if (( pfn_SSL_library_init=( PFN_SSL_int_void )GetProcAddress( hLibSSL, "SSL_library_init" )) == NULL )

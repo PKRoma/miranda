@@ -36,7 +36,11 @@ PLUGINLINK *pluginLink;
 
 PLUGININFO pluginInfo = {
 	sizeof( PLUGININFO ),
-	"Jabber Protocol",
+	#if defined( _UNICODE )
+		"Jabber Protocol (Unicode)",
+	#else
+		"Jabber Protocol",
+	#endif
 	__VERSION_DWORD,
 	"Jabber protocol plugin for Miranda IM ( "__DATE__" )",
 	"George Hazan",
@@ -118,7 +122,7 @@ extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvRes
 extern "C" __declspec( dllexport ) PLUGININFO *MirandaPluginInfo( DWORD mirandaVersion )
 {
 	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,4,0,0 )) {
-		MessageBox( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.4 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+		MessageBoxA( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.4 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 
@@ -184,7 +188,7 @@ HANDLE hChatEvent = NULL,
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBox( NULL, Translate( "This plugin requires db3x plugin version 0.5.1.0 or later" ), "Jabber", MB_OK );
+		MessageBoxA( NULL, Translate( "This plugin requires db3x plugin version 0.5.1.0 or later" ), "Jabber", MB_OK );
 		return 1;
 	}
 
@@ -237,7 +241,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	char text[_MAX_PATH];
 	char* p, *q;
 
-	GetModuleFileName( hInst, text, sizeof( text ));
+	GetModuleFileNameA( hInst, text, sizeof( text ));
 	p = strrchr( text, '\\' );
 	p++;
 	q = strrchr( p, '.' );
@@ -301,12 +305,6 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 
 extern "C" int __declspec( dllexport ) Unload( void )
 {
-	int i;
-
-#ifdef _DEBUG
-	OutputDebugString( "Unloading..." );
-#endif
-
 	if ( hChatEvent  )      UnhookEvent( hChatEvent );
 	if ( hChatMenu   )      UnhookEvent( hChatMenu );
 	if ( hChatMess   )      UnhookEvent( hChatMess );
@@ -335,13 +333,13 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	free( jabberModuleName );
 	free( jabberProtoName );
 	if ( jabberVcardPhotoFileName ) {
-		DeleteFile( jabberVcardPhotoFileName );
+		DeleteFileA( jabberVcardPhotoFileName );
 		free( jabberVcardPhotoFileName );
 	}
 	if ( jabberVcardPhotoType ) free( jabberVcardPhotoType );
 	if ( streamId ) free( streamId );
 
-	for ( i=0; i < JABBER_ICON_TOTAL; i++ )
+	for ( int i=0; i < JABBER_ICON_TOTAL; i++ )
 		DestroyIcon( jabberIcon[i] );
 
 	if ( hMainThread ) CloseHandle( hMainThread );

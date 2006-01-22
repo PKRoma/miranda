@@ -776,11 +776,11 @@ char* __stdcall JabberGetVersionText()
 	UINT  blockSize;
 	PVOID pVerInfo;
 
-	GetModuleFileName( hInst, filename, sizeof( filename ));
-	verInfoSize = GetFileVersionInfoSize( filename, &unused );
+	GetModuleFileNameA( hInst, filename, sizeof( filename ));
+	verInfoSize = GetFileVersionInfoSizeA( filename, &unused );
 	if (( pVerInfo=malloc( verInfoSize )) != NULL ) {
-		GetFileVersionInfo( filename, 0, verInfoSize, pVerInfo );
-		VerQueryValue( pVerInfo, "\\StringFileInfo\\040904b0\\FileVersion", ( LPVOID* )&fileVersion, &blockSize );
+		GetFileVersionInfoA( filename, 0, verInfoSize, pVerInfo );
+		VerQueryValueA( pVerInfo, "\\StringFileInfo\\040904b0\\FileVersion", ( LPVOID* )&fileVersion, &blockSize );
 		if ( strstr( fileVersion, "cvs" )) {
 			res = ( char* )malloc( strlen( fileVersion ) + strlen( __DATE__ ) + 2 );
 			sprintf( res, "%s %s", fileVersion, __DATE__ );

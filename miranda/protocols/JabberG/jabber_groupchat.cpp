@@ -109,21 +109,21 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		// Add columns
 		lv = GetDlgItem( hwndDlg, IDC_ROOM );
 		lvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-		lvCol.pszText = JTranslate( "JID" );
+		lvCol.pszText = TranslateT( "JID" );
 		lvCol.cx = 210;
 		lvCol.iSubItem = 0;
 		ListView_InsertColumn( lv, 0, &lvCol );
-		lvCol.pszText = JTranslate( "Name" );
+		lvCol.pszText = TranslateT( "Name" );
 		lvCol.cx = 150;
 		lvCol.iSubItem = 1;
 		ListView_InsertColumn( lv, 1, &lvCol );
-		lvCol.pszText = JTranslate( "Type" );
+		lvCol.pszText = TranslateT( "Type" );
 		lvCol.cx = 60;
 		lvCol.iSubItem = 2;
 		ListView_InsertColumn( lv, 2, &lvCol );
 		if ( jabberOnline ) {
 			if (( char* )lParam != NULL ) {
-				SetDlgItemText( hwndDlg, IDC_SERVER, ( char* )lParam );
+				SetDlgItemTextA( hwndDlg, IDC_SERVER, ( char* )lParam );
 				int iqId = JabberSerialNext();
 				JabberIqAdd( iqId, IQ_PROC_DISCOROOMSERVER, JabberIqResultDiscoRoomItems );
 				JabberSend( jabberThreadInfo->s, "<iq type='get' id='"JABBER_IQID"%d' to='%s'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>", iqId, ( char* )lParam );
@@ -135,7 +135,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				for ( i=0; i<GC_SERVER_LIST_SIZE; i++ ) {
 					mir_snprintf( text, sizeof( text ), "GcServerLast%d", i );
 					if ( !DBGetContactSetting( NULL, jabberProtoName, text, &dbv )) {
-						SendDlgItemMessage( hwndDlg, IDC_SERVER, CB_ADDSTRING, 0, ( LPARAM )dbv.pszVal );
+						SendDlgItemMessageA( hwndDlg, IDC_SERVER, CB_ADDSTRING, 0, ( LPARAM )dbv.pszVal );
 						JFreeVariant( &dbv );
 			}	}	}
 		}
@@ -144,7 +144,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	case WM_JABBER_ACTIVATE:
 		// lParam = server from which agent information is obtained
 		if ( lParam )
-			SetDlgItemText( hwndDlg, IDC_SERVER, ( char* )lParam );
+			SetDlgItemTextA( hwndDlg, IDC_SERVER, ( char* )lParam );
 		ListView_DeleteAllItems( GetDlgItem( hwndDlg, IDC_ROOM ));
 		EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), FALSE );
 		return TRUE;
@@ -178,15 +178,16 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				for ( i=0; i<GC_SERVER_LIST_SIZE; i++ ) {
 					mir_snprintf( text, sizeof( text ), "GcServerLast%d", i );
 					if ( !DBGetContactSetting( NULL, jabberProtoName, text, &dbv )) {
-						SendDlgItemMessage( hwndDlg, IDC_SERVER, CB_ADDSTRING, 0, ( LPARAM )dbv.pszVal );
+						SendDlgItemMessageA( hwndDlg, IDC_SERVER, CB_ADDSTRING, 0, ( LPARAM )dbv.pszVal );
 						JFreeVariant( &dbv );
 					}
 				}
-				SetDlgItemText( hwndDlg, IDC_SERVER, ( char* )lParam );
+				SetDlgItemTextA( hwndDlg, IDC_SERVER, ( char* )lParam );
 			}
 			i = 0;
 			lv = GetDlgItem( hwndDlg, IDC_ROOM );
 			ListView_DeleteAllItems( lv );
+			LVITEMA lvItem;
 			lvItem.iItem = 0;
 			while (( i=JabberListFindNext( LIST_ROOM, i )) >= 0 ) {
 				if (( item=JabberListGetItemPtrFromIndex( i )) != NULL ) {
@@ -197,15 +198,15 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					JabberUtf8Decode( szBuffer, NULL );
 					lvItem.lParam = ( LPARAM )item->jid;
 					lvItem.pszText = szBuffer;
-					ListView_InsertItem( lv, &lvItem );
+					SendMessageA( lv, LVM_INSERTITEMA, 0, (LPARAM)&lvItem );
 
 					lvItem.mask = LVIF_TEXT;
 					lvItem.iSubItem = 1;
 					lvItem.pszText = item->name;
-					ListView_SetItem( lv, &lvItem );
+					SendMessageA( lv, LVM_SETITEMA, 0, (LPARAM)&lvItem );
 					lvItem.iSubItem = 2;
 					lvItem.pszText = item->type;
-					ListView_SetItem( lv, &lvItem );
+					SendMessageA( lv, LVM_SETITEMA, 0, (LPARAM)&lvItem );
 					lvItem.iItem++;
 				}
 				i++;
@@ -216,13 +217,13 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	case WM_JABBER_CHECK_ONLINE:
 		if ( jabberOnline ) {
 			EnableWindow( GetDlgItem( hwndDlg, IDC_JOIN ), TRUE );
-			GetDlgItemText( hwndDlg, IDC_SERVER, text, sizeof( text ));
+			GetDlgItemTextA( hwndDlg, IDC_SERVER, text, sizeof( text ));
 			EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), ( text[0]!='\0' ));
 		}
 		else {
 			EnableWindow( GetDlgItem( hwndDlg, IDC_JOIN ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), FALSE );
-			SetDlgItemText( hwndDlg, IDC_SERVER, "" );
+			SetDlgItemTextA( hwndDlg, IDC_SERVER, "" );
 			lv = GetDlgItem( hwndDlg, IDC_ROOM );
 			ListView_DeleteAllItems( lv );
 		}
@@ -263,7 +264,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_JOIN ), hwndDlg, JabberGroupchatJoinDlgProc, ( LPARAM )lvItem.lParam );
 				}
 				else {
-					GetDlgItemText( hwndDlg, IDC_SERVER, text, sizeof( text ));
+					GetDlgItemTextA( hwndDlg, IDC_SERVER, text, sizeof( text ));
 					DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_JOIN ), hwndDlg, JabberGroupchatJoinDlgProc, ( LPARAM )text );
 			}	}
 			else JabberChatDllError();
@@ -291,16 +292,16 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			}
 			break;
 		case IDC_SERVER:
-			GetDlgItemText( hwndDlg, IDC_SERVER, text, sizeof( text ));
+			GetDlgItemTextA( hwndDlg, IDC_SERVER, text, sizeof( text ));
 			if ( jabberOnline && ( text[0] || HIWORD( wParam )==CBN_SELCHANGE ))
 				EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), TRUE );
 			break;
 		case IDC_BROWSE:
-			GetDlgItemText( hwndDlg, IDC_SERVER, text, sizeof( text ));
+			GetDlgItemTextA( hwndDlg, IDC_SERVER, text, sizeof( text ));
 			if ( jabberOnline && text[0] ) {
 				EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), FALSE );
 				ListView_DeleteAllItems( GetDlgItem( hwndDlg, IDC_ROOM ));
-				GetDlgItemText( hwndDlg, IDC_SERVER, text, sizeof( text ));
+				GetDlgItemTextA( hwndDlg, IDC_SERVER, text, sizeof( text ));
 				if (( p=JabberTextEncode( text )) != NULL ) {
 					int iqId = JabberSerialNext();
 					JabberIqAdd( iqId, IQ_PROC_DISCOROOMSERVER, JabberIqResultDiscoRoomItems );
@@ -317,8 +318,8 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	case WM_CONTEXTMENU:
 		if (( HWND )wParam == GetDlgItem( hwndDlg, IDC_ROOM )) {
 			HMENU hMenu = CreatePopupMenu();
-			AppendMenu( hMenu, MF_STRING, WM_JABBER_JOIN, JTranslate( "Join" ));
-			AppendMenu( hMenu, MF_STRING, WM_JABBER_ADD_TO_ROSTER, JTranslate( "Add to roster" ));
+			AppendMenu( hMenu, MF_STRING, WM_JABBER_JOIN, TranslateT( "Join" ));
+			AppendMenu( hMenu, MF_STRING, WM_JABBER_ADD_TO_ROSTER, TranslateT( "Add to roster" ));
 			TrackPopupMenu( hMenu, TPM_LEFTALIGN | TPM_NONOTIFY, LOWORD(lParam), HIWORD(lParam), 0, hwndDlg, 0 );
 			::DestroyMenu( hMenu );
 		}
@@ -369,18 +370,18 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 					// from the local code page
 					char* room = strdup( text );
 					SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) room );
-					SetDlgItemText( hwndDlg, IDC_ROOM, room );
-					SetDlgItemText( hwndDlg, IDC_SERVER, p+1 );
+					SetDlgItemTextA( hwndDlg, IDC_ROOM, room );
+					SetDlgItemTextA( hwndDlg, IDC_SERVER, p+1 );
 				}
-				else SetDlgItemText( hwndDlg, IDC_SERVER, text );
+				else SetDlgItemTextA( hwndDlg, IDC_SERVER, text );
 			}
 
 			char szNick[ 256 ];
 			if ( !JGetStaticString( "Nick", NULL, szNick, sizeof szNick ))
-				SetDlgItemText( hwndDlg, IDC_NICK, szNick );
+				SetDlgItemTextA( hwndDlg, IDC_NICK, szNick );
 			else {
 				char* nick = JabberNickFromJID( jabberJID );
-				SetDlgItemText( hwndDlg, IDC_NICK, nick );
+				SetDlgItemTextA( hwndDlg, IDC_NICK, nick );
 				free( nick );
 		}	}
 		return TRUE;
@@ -399,20 +400,20 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			break;
 		case IDOK:
 			{
-				GetDlgItemText( hwndDlg, IDC_SERVER, text, sizeof( text ));
+				GetDlgItemTextA( hwndDlg, IDC_SERVER, text, sizeof( text ));
 				char* server = NEWSTR_ALLOCA( text ), *room;
 
 				if (( room=( char* )GetWindowLong( hwndDlg, GWL_USERDATA )) != NULL )
 					room = NEWSTR_ALLOCA( room );
 				else {
-					GetDlgItemText( hwndDlg, IDC_ROOM, text, sizeof( text ));
+					GetDlgItemTextA( hwndDlg, IDC_ROOM, text, sizeof( text ));
 					room = NEWSTR_ALLOCA( text );
 				}
 
-				GetDlgItemText( hwndDlg, IDC_NICK, text, sizeof( text ));
+				GetDlgItemTextA( hwndDlg, IDC_NICK, text, sizeof( text ));
 				char* nick = NEWSTR_ALLOCA( text );
 
-				GetDlgItemText( hwndDlg, IDC_PASSWORD, text, sizeof( text ));
+				GetDlgItemTextA( hwndDlg, IDC_PASSWORD, text, sizeof( text ));
 				char* password = NEWSTR_ALLOCA( text );
 				JabberGroupchatJoinRoom( server, room, TXT(nick), password );
 			}
@@ -465,7 +466,7 @@ void sttRenameParticipantNick( JABBER_LIST_ITEM* item, char* oldNick, XmlNode *i
 		if ( !strcmp( RS.resourceName, oldNick )) {
 			replaceStr( RS.resourceName, newNick );
 
-			if ( !lstrcmp( item->nick, oldNick )) {
+			if ( !lstrcmpA( item->nick, oldNick )) {
 				replaceStr( item->nick, newNick );
 
 				HANDLE hContact = JabberHContactFromJID( item->jid );
@@ -637,7 +638,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 	else if ( !strcmp( type, "error" )) {
 		errorNode = JabberXmlGetChild( node, "error" );
 		str = JabberErrorMsg( errorNode );
-		MessageBox( NULL, str, JTranslate( "Jabber Error Message" ), MB_OK|MB_SETFOREGROUND );
+		MessageBoxA( NULL, str, JTranslate( "Jabber Error Message" ), MB_OK|MB_SETFOREGROUND );
 		//JabberListRemoveResource( LIST_CHATROOM, from );
 		JabberListRemove( LIST_CHATROOM, from );
 		free( str );
@@ -760,15 +761,15 @@ static BOOL CALLBACK JabberGroupchatInviteAcceptDlgProc( HWND hwndDlg, UINT msg,
 
 			TranslateDialogDefault( hwndDlg );
 			SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) inviteInfo );
-			SetDlgItemText( hwndDlg, IDC_FROM, inviteInfo->from );
-			SetDlgItemText( hwndDlg, IDC_ROOM, inviteInfo->roomJid );
+			SetDlgItemTextA( hwndDlg, IDC_FROM, inviteInfo->from );
+			SetDlgItemTextA( hwndDlg, IDC_ROOM, inviteInfo->roomJid );
 
 			if (( str=JabberTextDecode( inviteInfo->reason )) != NULL ) {
-				SetDlgItemText( hwndDlg, IDC_REASON, str );
+				SetDlgItemTextA( hwndDlg, IDC_REASON, str );
 				free( str );
 			}
 			nick = JabberNickFromJID( jabberJID );
-			SetDlgItemText( hwndDlg, IDC_NICK, nick );
+			SetDlgItemTextA( hwndDlg, IDC_NICK, nick );
 			free( nick );
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIcon( hInst, MAKEINTRESOURCE( IDI_GROUP )) );
 		}
@@ -785,7 +786,7 @@ static BOOL CALLBACK JabberGroupchatInviteAcceptDlgProc( HWND hwndDlg, UINT msg,
 				strncpy( roomJid, inviteInfo->roomJid, sizeof( roomJid ));
 				room = strtok( roomJid, "@" );
 				server = strtok( NULL, "@" );
-				GetDlgItemText( hwndDlg, IDC_NICK, text, sizeof( text ));
+				GetDlgItemTextA( hwndDlg, IDC_NICK, text, sizeof( text ));
 				JabberGroupchatJoinRoom( server, room, TXT(text), inviteInfo->password );
 			}
 			// Fall through

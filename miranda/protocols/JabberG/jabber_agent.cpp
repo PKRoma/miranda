@@ -58,7 +58,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 {
 	HWND lv;
 	LVCOLUMN lvCol;
-	LVITEM lvItem;
+	LVITEMA lvItem;
 	JABBER_LIST_ITEM *item;
 	int i;
 	char text[128];
@@ -73,27 +73,27 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		// Add columns to the top list
 		lv = GetDlgItem( hwndDlg, IDC_AGENT_LIST );
 		lvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-		lvCol.pszText = JTranslate( "JID" );
+		lvCol.pszText = TranslateT( "JID" );
 		lvCol.cx = 120;
 		lvCol.iSubItem = 0;
 		ListView_InsertColumn( lv, 0, &lvCol );
-		lvCol.pszText = JTranslate( "Description" );
+		lvCol.pszText = TranslateT( "Description" );
 		lvCol.cx = 250;
 		lvCol.iSubItem = 1;
 		ListView_InsertColumn( lv, 1, &lvCol );
 		// Add columns to the bottom list
 		lv = GetDlgItem( hwndDlg, IDC_AGENT_TRANSPORT );
 		lvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-		lvCol.pszText = JTranslate( "JID" );
+		lvCol.pszText = TranslateT( "JID" );
 		lvCol.cx = 120;
 		lvCol.iSubItem = 0;
 		ListView_InsertColumn( lv, 0, &lvCol );
-		lvCol.pszText = JTranslate( "Status" );
+		lvCol.pszText = TranslateT( "Status" );
 		lvCol.cx = 80;
 		lvCol.iSubItem = 1;
 		ListView_InsertColumn( lv, 1, &lvCol );
 		if ( jabberOnline ) {
-			SetDlgItemText( hwndDlg, IDC_AGENT_SERVER, jabberThreadInfo->server );
+			SetDlgItemTextA( hwndDlg, IDC_AGENT_SERVER, jabberThreadInfo->server );
 			JabberListRemoveList( LIST_AGENT );
 			iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
@@ -163,7 +163,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 	case WM_JABBER_AGENT_REFRESH:
 		// lParam = server from which agent information is obtained
 		if ( lParam )
-			SetDlgItemText( hwndDlg, IDC_AGENT_SERVER, ( char* )lParam );
+			SetDlgItemTextA( hwndDlg, IDC_AGENT_SERVER, ( char* )lParam );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_REGISTER ), FALSE );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_SEARCH ), FALSE );
 		i = 0;
@@ -175,10 +175,10 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				lvItem.mask = LVIF_TEXT;
 				lvItem.iSubItem = 0;
 				lvItem.pszText = item->jid;
-				ListView_InsertItem( lv, &lvItem );
+				SendMessageA( lv, LVM_INSERTITEMA, 0, (LPARAM)&lvItem );
 				lvItem.iSubItem = 1;
 				lvItem.pszText = item->name;
-				ListView_SetItem( lv, &lvItem );
+				SendMessageA( lv, LVM_SETITEMA, 0, (LPARAM)&lvItem );
 				lvItem.iItem++;
 			}
 			i++;
@@ -202,13 +202,13 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 					lvItem.mask = LVIF_TEXT;
 					lvItem.iSubItem = 0;
 					lvItem.pszText = text;
-					ListView_InsertItem( lv, &lvItem );
+					SendMessageA( lv, LVM_INSERTITEMA, 0, (LPARAM)&lvItem );
 					lvItem.iSubItem = 1;
 					if ( item->status != ID_STATUS_OFFLINE )
 						lvItem.pszText = JTranslate( "Online" );
 					else
 						lvItem.pszText = JTranslate( "Offline" );
-					ListView_SetItem( lv, &lvItem );
+					SendMessageA( lv, LVM_SETITEMA, 0, (LPARAM)&lvItem );
 					lvItem.iItem++;
 			}	}
 			i++;
@@ -254,14 +254,14 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			}
 			return TRUE;
 		case IDC_AGENT_SERVER:
-			GetDlgItemText( hwndDlg, IDC_AGENT_SERVER, text, sizeof( text ));
+			GetDlgItemTextA( hwndDlg, IDC_AGENT_SERVER, text, sizeof( text ));
 			if ( jabberOnline && text[0] )
 				EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_BROWSE ), TRUE );
 			else
 				EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_BROWSE ), FALSE );
 			break;
 		case IDC_AGENT_BROWSE:
-			GetDlgItemText( hwndDlg, IDC_AGENT_SERVER, text, sizeof( text ));
+			GetDlgItemTextA( hwndDlg, IDC_AGENT_SERVER, text, sizeof( text ));
 			EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_BROWSE ), FALSE );
 			ListView_DeleteAllItems( GetDlgItem( hwndDlg, IDC_AGENT_LIST ));
 			JabberListRemoveList( LIST_AGENT );
@@ -344,9 +344,9 @@ BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		EnableWindow( GetParent( hwndDlg ), FALSE );
 		TranslateDialogDefault( hwndDlg );
 		agentRegIqNode = NULL;
-		SetWindowText( hwndDlg, JTranslate( "Jabber Agent Registration" ));
-		SetDlgItemText( hwndDlg, IDC_SUBMIT, JTranslate( "Register" ));
-		SetDlgItemText( hwndDlg, IDC_FRAME_TEXT, JTranslate( "Please wait..." ));
+		SetWindowText( hwndDlg, TranslateT( "Jabber Agent Registration" ));
+		SetDlgItemText( hwndDlg, IDC_SUBMIT, TranslateT( "Register" ));
+		SetDlgItemText( hwndDlg, IDC_FRAME_TEXT, TranslateT( "Please wait..." ));
 
 		// Enable WS_EX_CONTROLPARENT on IDC_FRAME ( so tab stop goes through all its children )
 		frameExStyle = GetWindowLong( GetDlgItem( hwndDlg, IDC_FRAME ), GWL_EXSTYLE );
@@ -379,21 +379,21 @@ BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 							// field that must be passed along with the registration
 							if ( n->text ) {
 								if (( p=JabberTextEncode( n->text )) != NULL ) {
-									wsprintf( str, "<%s>%s</%s>", n->name, p, n->name );
+									wsprintfA( str, "<%s>%s</%s>", n->name, p, n->name );
 									free( p );
 								}
 							}
 							else
-								wsprintf( str, "<%s/>", n->name );
+								wsprintfA( str, "<%s/>", n->name );
 							strcat( regStr, str );
 						}
 						else if ( !strcmp( n->name, "registered" ) || !strcmp( n->name, "instructions" )) {
 							// do nothing, we will skip these
 						}
 						else {
-							GetDlgItemText( hFrame, id, str2, 128 );
+							GetDlgItemTextA( hFrame, id, str2, 128 );
 							if (( p=JabberTextEncode( str2 )) != NULL ) {
-								wsprintf( str, "<%s>%s</%s>", n->name, p, n->name );
+								wsprintfA( str, "<%s>%s</%s>", n->name, p, n->name );
 								strcat( regStr, str );
 								free( p );
 							}
@@ -429,7 +429,7 @@ BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				// use new jabber:x:data form
 				if (( n=JabberXmlGetChild( xNode, "instructions" ))!=NULL && n->text!=NULL ) {
 					char* str = JabberTextDecode( n->text );
-					SetDlgItemText( hwndDlg, IDC_INSTRUCTION, str );
+					SetDlgItemTextA( hwndDlg, IDC_INSTRUCTION, str );
 					free( str );
 				}
 				JabberFormCreateUI( hFrame, xNode, &i /*dummy*/ );
@@ -441,23 +441,23 @@ BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 					if ( n->name ) {
 						str = JabberTextDecode( n->text );
 						if ( !strcmp( n->name, "instructions" )) {
-							if ( str ) SetDlgItemText( hwndDlg, IDC_INSTRUCTION, str );
+							if ( str ) SetDlgItemTextA( hwndDlg, IDC_INSTRUCTION, str );
 						}
 						else if ( !strcmp( n->name, "key" ) || !strcmp( n->name, "registered" )) {
 							// do nothing
 						}
 						else if ( !strcmp( n->name, "password" )) {
-							hCtrl = CreateWindow( "static", n->name, WS_CHILD|WS_VISIBLE|SS_RIGHT, 10, ypos+4, 100, 18, hFrame, ( HMENU ) IDC_STATIC, hInst, NULL );
+							hCtrl = CreateWindowA( "static", n->name, WS_CHILD|WS_VISIBLE|SS_RIGHT, 10, ypos+4, 100, 18, hFrame, ( HMENU ) IDC_STATIC, hInst, NULL );
 							SendMessage( hCtrl, WM_SETFONT, ( WPARAM ) hFont, 0 );
-							hCtrl = CreateWindowEx( WS_EX_CLIENTEDGE, "edit", str, WS_CHILD|WS_VISIBLE|WS_BORDER|WS_TABSTOP|ES_LEFT|ES_AUTOHSCROLL|ES_PASSWORD, 120, ypos, 128, 24, hFrame, ( HMENU ) id, hInst, NULL );
+							hCtrl = CreateWindowExA( WS_EX_CLIENTEDGE, "edit", str, WS_CHILD|WS_VISIBLE|WS_BORDER|WS_TABSTOP|ES_LEFT|ES_AUTOHSCROLL|ES_PASSWORD, 120, ypos, 128, 24, hFrame, ( HMENU ) id, hInst, NULL );
 							SendMessage( hCtrl, WM_SETFONT, ( WPARAM ) hFont, 0 );
 							id++;
 							ypos += 24;
 						}
 						else {	// everything else is a normal text field
-							hCtrl = CreateWindow( "static", n->name, WS_CHILD|WS_VISIBLE|SS_RIGHT, 10, ypos+4, 100, 18, hFrame, ( HMENU ) IDC_STATIC, hInst, NULL );
+							hCtrl = CreateWindowA( "static", n->name, WS_CHILD|WS_VISIBLE|SS_RIGHT, 10, ypos+4, 100, 18, hFrame, ( HMENU ) IDC_STATIC, hInst, NULL );
 							SendMessage( hCtrl, WM_SETFONT, ( WPARAM ) hFont, 0 );
-							hCtrl = CreateWindowEx( WS_EX_CLIENTEDGE, "edit", str, WS_CHILD|WS_VISIBLE|WS_BORDER|WS_TABSTOP|ES_LEFT|ES_AUTOHSCROLL, 120, ypos, 128, 24, hFrame, ( HMENU ) id, hInst, NULL );
+							hCtrl = CreateWindowExA( WS_EX_CLIENTEDGE, "edit", str, WS_CHILD|WS_VISIBLE|WS_BORDER|WS_TABSTOP|ES_LEFT|ES_AUTOHSCROLL, 120, ypos, 128, 24, hFrame, ( HMENU ) id, hInst, NULL );
 							SendMessage( hCtrl, WM_SETFONT, ( WPARAM ) hFont, 0 );
 							id++;
 							ypos += 24;
@@ -469,7 +469,7 @@ BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		}
 		else if ( wParam == 0 ) {
 			// lParam = error message
-			SetDlgItemText( hwndDlg, IDC_FRAME_TEXT, ( LPCTSTR ) lParam );
+			SetDlgItemTextA( hwndDlg, IDC_FRAME_TEXT, ( LPCSTR ) lParam );
 		}
 		return TRUE;
 	case WM_DESTROY:
@@ -499,11 +499,11 @@ static BOOL CALLBACK JabberAgentManualRegDlgProc( HWND hwndDlg, UINT msg, WPARAM
 
 			switch ( LOWORD( wParam )) {
 			case IDC_JID:
-				GetDlgItemText( hwndDlg, IDC_JID, jid, sizeof( jid ));
+				GetDlgItemTextA( hwndDlg, IDC_JID, jid, sizeof( jid ));
 				EnableWindow( GetDlgItem( hwndDlg, IDOK ), ( jid[0]=='\0' )?FALSE:TRUE );
 				break;
 			case IDOK:
-				GetDlgItemText( hwndDlg, IDC_JID, jid, sizeof( jid ));
+				GetDlgItemTextA( hwndDlg, IDC_JID, jid, sizeof( jid ));
 				JabberRegisterAgent( GetParent( hwndDlg ), jid );
 				dontEnableParent = TRUE;
 				// Fall through
@@ -530,7 +530,7 @@ static BOOL CALLBACK JabberAgentRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		hwndRegProgress = hwndDlg;
-		SetWindowText( hwndDlg, "Jabber Agent Registration" );
+		SetWindowTextA( hwndDlg, "Jabber Agent Registration" );
 		TranslateDialogDefault( hwndDlg );
 		ShowWindow( GetDlgItem( hwndDlg, IDOK ), SW_HIDE );
 		ShowWindow( GetDlgItem( hwndDlg, IDCANCEL ), SW_HIDE );
@@ -548,9 +548,9 @@ static BOOL CALLBACK JabberAgentRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		break;
 	case WM_JABBER_REGDLG_UPDATE:	// wParam=progress ( 0-100 ), lparam=status string
 		if (( char* )lParam == NULL )
-			SetDlgItemText( hwndDlg, IDC_REG_STATUS, JTranslate( "No message" ));
+			SetDlgItemText( hwndDlg, IDC_REG_STATUS, TranslateT( "No message" ));
 		else
-			SetDlgItemText( hwndDlg, IDC_REG_STATUS, ( char* )lParam );
+			SetDlgItemTextA( hwndDlg, IDC_REG_STATUS, ( char* )lParam );
 		if ( wParam >= 0 )
 			SendMessage( GetDlgItem( hwndDlg, IDC_PROGRESS_REG ), PBM_SETPOS, wParam, 0 );
 		if ( wParam >= 100 ) {

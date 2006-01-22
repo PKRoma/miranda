@@ -47,7 +47,7 @@ BOOL CALLBACK JabberEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 		TranslateDialogDefault( hwndDlg );
 		JabberEnterStringParams* params = ( JabberEnterStringParams* )lParam;
 		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )params );
-		SetWindowText( hwndDlg, params->result );
+		SetWindowTextA( hwndDlg, params->result );
 		return TRUE;
 	}
 
@@ -55,7 +55,7 @@ BOOL CALLBACK JabberEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 		switch ( LOWORD( wParam )) {
 		case IDOK:
 		{	JabberEnterStringParams* params = ( JabberEnterStringParams* )GetWindowLong( hwndDlg, GWL_USERDATA );
-			GetDlgItemText( hwndDlg, IDC_TOPIC, params->result, params->resultLen );
+			GetDlgItemTextA( hwndDlg, IDC_TOPIC, params->result, params->resultLen );
 			params->result[ params->resultLen-1 ] = 0;
 			EndDialog( hwndDlg, 1 );
 			break;
@@ -225,7 +225,7 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 	if ( gcmi == NULL )
 		return 0;
 
-	if ( lstrcmpi( gcmi->pszModule, jabberProtoName ))
+	if ( lstrcmpiA( gcmi->pszModule, jabberProtoName ))
 		return 0;
 
 	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, gcmi->pszID );
@@ -235,8 +235,8 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 	JABBER_RESOURCE_STATUS *me = NULL, *him = NULL;
 	for ( int i=0; i < item->resourceCount; i++ ) {
 		JABBER_RESOURCE_STATUS& p = item->resource[i];
-		if ( !lstrcmp( p.resourceName, item->nick   ))  me = &p;
-		if ( !lstrcmp( p.resourceName, gcmi->pszUID ))  him = &p;
+		if ( !lstrcmpA( p.resourceName, item->nick   ))  me = &p;
+		if ( !lstrcmpA( p.resourceName, gcmi->pszUID ))  him = &p;
 	}
 
 	if ( gcmi->Type == MENU_ON_LOG ) {
@@ -316,14 +316,14 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 		{
 			TranslateDialogDefault( hwndDlg );
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIcon( hInst, MAKEINTRESOURCE( IDI_GROUP )) );
-			SetDlgItemText( hwndDlg, IDC_ROOM, ( char* )lParam );
+			SetDlgItemTextA( hwndDlg, IDC_ROOM, ( char* )lParam );
 			HWND hwndComboBox = GetDlgItem( hwndDlg, IDC_USER );
 			int index = 0;
 			while (( index=JabberListFindNext( LIST_ROSTER, index )) >= 0 ) {
 				JABBER_LIST_ITEM* item = JabberListGetItemPtrFromIndex( index );
 				if ( item->status != ID_STATUS_OFFLINE ) {
 					// Add every non-offline users to the combobox
-					int n = SendMessage( hwndComboBox, CB_ADDSTRING, 0, ( LPARAM )item->jid );
+					int n = SendMessageA( hwndComboBox, CB_ADDSTRING, 0, ( LPARAM )item->jid );
 					SendMessage( hwndComboBox, CB_SETITEMDATA, n, ( LPARAM )item->jid );
 				}
 				index++;
@@ -344,13 +344,13 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 				if (( room=( char* )GetWindowLong( hwndDlg, GWL_USERDATA )) != NULL ) {
 					n = SendMessage( hwndComboBox, CB_GETCURSEL, 0, 0 );
 					if ( n < 0 ) {
-						GetWindowText( hwndComboBox, user, sizeof( user ));
+						GetWindowTextA( hwndComboBox, user, sizeof( user ));
 						pUser = user;
 					}
 					else pUser = ( char* )SendMessage( hwndComboBox, CB_GETITEMDATA, n, 0 );
 
 					if ( pUser != NULL ) {
-						GetDlgItemText( hwndDlg, IDC_REASON, text, sizeof( text ));
+						GetDlgItemTextA( hwndDlg, IDC_REASON, text, sizeof( text ));
 						iqId = JabberSerialNext();
 						JabberSend( jabberThreadInfo->s, "<message id='"JABBER_IQID"%d' to='%s'><x xmlns='http://jabber.org/protocol/muc#user'><invite to='%s'><reason>%s</reason></invite></x></message>",
 							iqId, TXT(room), TXT(pUser), TXT(text));
@@ -401,8 +401,8 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 	JABBER_RESOURCE_STATUS *me = NULL, *him = NULL;
 	for ( int i=0; i < item->resourceCount; i++ ) {
 		JABBER_RESOURCE_STATUS& p = item->resource[i];
-		if ( !lstrcmp( p.resourceName, item->nick  )) me = &p;
-		if ( !lstrcmp( p.resourceName, gch->pszUID )) him = &p;
+		if ( !lstrcmpA( p.resourceName, item->nick  )) me = &p;
+		if ( !lstrcmpA( p.resourceName, gch->pszUID )) him = &p;
 	}
 
 	if ( him == NULL || me == NULL )
@@ -547,7 +547,7 @@ int JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 	if ( gch == NULL )
 		return 0;
 
-	if ( lstrcmpi( gch->pDest->pszModule, jabberProtoName ))
+	if ( lstrcmpiA( gch->pDest->pszModule, jabberProtoName ))
 		return 0;
 
 	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, gch->pDest->pszID );
@@ -556,7 +556,7 @@ int JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 
 	switch ( gch->pDest->iType ) {
 	case GC_USER_MESSAGE:
-		if ( gch->pszText && lstrlen( gch->pszText) > 0 ) {
+		if ( gch->pszText && lstrlenA( gch->pszText) > 0 ) {
 			rtrim( gch->pszText );
 
 			if ( jabberOnline ) {

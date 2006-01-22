@@ -52,7 +52,7 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 	if ( !strcmp( type, "result" )) {
 		if ( JabberXmlGetChild( queryNode, "digest" )!=NULL && streamId ) {
 			if (( str=JabberUtf8Encode( info->password )) != NULL ) {
-				wsprintf( text, "%s%s", streamId, str );
+				wsprintfA( text, "%s%s", streamId, str );
 				free( str );
 				if (( str=JabberSha1( text )) != NULL ) {
 					mir_snprintf( text, sizeof( text ), "<digest>%s</digest>", str );
@@ -118,7 +118,7 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 
 		JabberSend( info->s, "</stream:stream>" );
 		mir_snprintf( text, sizeof( text ), "%s %s@%s.", JTranslate( "Authentication failed for" ), info->username, info->server );
-		MessageBox( NULL, text, JTranslate( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+		MessageBoxA( NULL, text, JTranslate( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		jabberThreadInfo = NULL;	// To disallow auto reconnect
 }	}
@@ -428,9 +428,9 @@ LBL_NoTypeSpecified:
 	JABBER_LIST_ITEM *item;
 	DBVARIANT dbv;
 
-	if ( GetTempPath( sizeof( szTempPath ), szTempPath ) <= 0 )
-		lstrcpy( szTempPath, ".\\" );
-	if ( !GetTempFileName( szTempPath, "jab", 0, szTempFileName )) {
+	if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
+		lstrcpyA( szTempPath, ".\\" );
+	if ( !GetTempFileNameA( szTempPath, "jab", 0, szTempFileName )) {
 LBL_Ret:	
 		free( buffer );
 		return;
@@ -438,7 +438,7 @@ LBL_Ret:
 
 	JabberLog( "Picture file name set to %s", szTempFileName );
 
-	HANDLE hFile = CreateFile( szTempFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+	HANDLE hFile = CreateFileA( szTempFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
    if ( hFile == INVALID_HANDLE_VALUE )
 		goto LBL_Ret;
 
@@ -450,7 +450,7 @@ LBL_Ret:
 	if ( hContact == NULL ) {
 		hasPhoto = TRUE;
 		if ( jabberVcardPhotoFileName ) {
-			DeleteFile( jabberVcardPhotoFileName );
+			DeleteFileA( jabberVcardPhotoFileName );
 			free( jabberVcardPhotoFileName );
 		}
 		replaceStr( jabberVcardPhotoFileName, szTempFileName );
@@ -460,7 +460,7 @@ LBL_Ret:
 		if (( item = JabberListGetItemPtr( LIST_ROSTER, jid )) != NULL ) {
 			hasPhoto = TRUE;
 			if ( item->photoFileName )
-				DeleteFile( item->photoFileName );
+				DeleteFileA( item->photoFileName );
 			replaceStr( item->photoFileName, szTempFileName );
 			JabberLog( "Contact's picture saved to %s", szTempFileName );
 		}
@@ -470,7 +470,7 @@ LBL_Ret:
 	CloseHandle( hFile );
 
 	if ( !hasPhoto )
-		DeleteFile( szTempFileName );
+		DeleteFileA( szTempFileName );
 
 	goto LBL_Ret;
 }
@@ -908,7 +908,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 		if ( !hasDesc )
 			JDeleteSetting( hContact, "About" );
 		if ( !hasPhoto && jabberVcardPhotoFileName!=NULL ) {
-			DeleteFile( jabberVcardPhotoFileName );
+			DeleteFileA( jabberVcardPhotoFileName );
 			jabberVcardPhotoFileName = NULL;
 		}
 
@@ -1058,10 +1058,10 @@ void JabberIqResultSetPassword( XmlNode *iqNode, void *userdata )
 
 	if ( !strcmp( type, "result" )) {
 		strncpy( jabberThreadInfo->password, jabberThreadInfo->newPassword, sizeof( jabberThreadInfo->password ));
-		MessageBox( NULL, JTranslate( "Password is successfully changed. Don't forget to update your password in the Jabber protocol option." ), JTranslate( "Change Password" ), MB_OK|MB_ICONINFORMATION|MB_SETFOREGROUND );
+		MessageBox( NULL, TranslateT( "Password is successfully changed. Don't forget to update your password in the Jabber protocol option." ), TranslateT( "Change Password" ), MB_OK|MB_ICONINFORMATION|MB_SETFOREGROUND );
 	}
 	else if ( !strcmp( type, "error" ))
-		MessageBox( NULL, JTranslate( "Password cannot be changed." ), JTranslate( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+		MessageBox( NULL, TranslateT( "Password cannot be changed." ), TranslateT( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 }
 
 void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
@@ -1167,7 +1167,7 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 
 	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
 		char* str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-		if ( !lstrcmp( str, "http://jabber.org/protocol/disco#info" )) {
+		if ( !lstrcmpA( str, "http://jabber.org/protocol/disco#info" )) {
 			item->cap = CLIENT_CAP_READY;
 			for ( int i=0; i<queryNode->numChild; i++ ) {
 				if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL ) {
@@ -1250,7 +1250,7 @@ LBL_ErrFormat:
 
 	if ( JGetByte( hContact, "AvatarType", PA_FORMAT_UNKNOWN ) != pictureType ) {
 		JabberGetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
-		DeleteFile( AI.filename );
+		DeleteFileA( AI.filename );
 	}
 
 	JSetByte( hContact, "AvatarType", pictureType );

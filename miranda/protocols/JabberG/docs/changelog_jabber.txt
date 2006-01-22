@@ -4,6 +4,10 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.4.3.0
+===============
+[+] first Unicode version of the Jabber plugin
+
 Version 0.4.1.3
 ===============
 [+] wish #0001541: Conferences: show kick/ban msgs

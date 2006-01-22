@@ -53,7 +53,7 @@ static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM
 			TranslateDialogDefault( hwndDlg );
 			if ( jabberOnline && jabberThreadInfo!=NULL ) {
 				mir_snprintf( text, sizeof( text ), "%s %s@%s", JTranslate( "Set New Password for" ), jabberThreadInfo->username, jabberThreadInfo->server );
-				SetWindowText( hwndDlg, text );
+				SetWindowTextA( hwndDlg, text );
 			}
 		}
 		return TRUE;
@@ -65,15 +65,15 @@ static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM
 				char* username, *password, *server;
 				int iqId;
 
-				GetDlgItemText( hwndDlg, IDC_NEWPASSWD, newPasswd, sizeof( newPasswd ));
-				GetDlgItemText( hwndDlg, IDC_NEWPASSWD2, text, sizeof( text ));
+				GetDlgItemTextA( hwndDlg, IDC_NEWPASSWD, newPasswd, sizeof( newPasswd ));
+				GetDlgItemTextA( hwndDlg, IDC_NEWPASSWD2, text, sizeof( text ));
 				if ( strcmp( newPasswd, text )) {
-					MessageBox( hwndDlg, JTranslate( "New password does not match." ), JTranslate( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+					MessageBox( hwndDlg, TranslateT( "New password does not match." ), TranslateT( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 					break;
 				}
-				GetDlgItemText( hwndDlg, IDC_OLDPASSWD, text, sizeof( text ));
+				GetDlgItemTextA( hwndDlg, IDC_OLDPASSWD, text, sizeof( text ));
 				if ( strcmp( text, jabberThreadInfo->password )) {
-					MessageBox( hwndDlg, JTranslate( "Current password is incorrect." ), JTranslate( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+					MessageBox( hwndDlg, TranslateT( "Current password is incorrect." ), TranslateT( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 					break;
 				}
 				if (( server=JabberTextEncode( jabberThreadInfo->server )) != NULL ) {

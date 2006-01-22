@@ -84,7 +84,7 @@ static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item )
 	if ( item->statusMessage ) free( item->statusMessage );
 	if ( item->group ) free( item->group );
 	if ( item->photoFileName ) {
-		DeleteFile( item->photoFileName );
+		DeleteFileA( item->photoFileName );
 		free( item->photoFileName );
 	}
 	if ( item->messageEventIdStr ) free( item->messageEventIdStr );
