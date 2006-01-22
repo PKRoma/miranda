@@ -66,7 +66,7 @@ END
 
 IDD_OPT_PROTOCOLORDER DIALOGEX 0, 0, 300, 211
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CTEXT           "Note: Miranda IM will have to be restarted for changes to take effect.",IDC_PROTOCOLORDERWARNING,5,190,289,14,NOT WS_VISIBLE
     GROUPBOX        "Protocol Order && Visibility",IDC_STATIC,75,0,147,185
@@ -493,7 +493,7 @@ END
 
 IDD_OPT_VIEWMODES DIALOGEX 0, 0, 309, 295
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_CAPTION | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_TAB,"SysTabControl32",0x0,4,4,301,264
     LTEXT           "",IDC_STATIC7,6,22,297,244

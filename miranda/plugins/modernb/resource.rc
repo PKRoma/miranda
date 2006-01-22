@@ -323,7 +323,7 @@ END
 IDD_OPT_CLIST DIALOGEX 0, 0, 324, 253
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Hide offline users",IDC_HIDEOFFLINE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,19,124,10
@@ -759,7 +759,7 @@ END
 IDD_OPT_ITEM_CONTACT_TIME DIALOGEX 0, 0, 243, 35
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Show time only if it is different from current time",
                     IDC_SHOW_ONLY_IF_DIFFERENT,"Button",BS_AUTOCHECKBOX | 
@@ -1079,7 +1079,7 @@ LANGUAGE LANG_DUTCH, SUBLANG_DUTCH
 
 IDD_OPT_PROTOCOLORDER DIALOGEX 0, 0, 300, 211
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CTEXT           "Note: Miranda IM will have to be restarted for changes to take effect.",
                     IDC_PROTOCOLORDERWARNING,5,190,289,14,NOT WS_VISIBLE
