@@ -2003,7 +2003,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					BOOL bDestroy = FALSE;
 
 					if(g_CluiData.bShowXStatusOnSbar && status > ID_STATUS_OFFLINE && DBGetContactSettingByte(NULL, szProto, "XStatusEnabled", 0) && (xStatusID = DBGetContactSettingByte(NULL, szProto, "XStatusId", 0)) > 0) {
-						if(xStatusID > 0 && xStatusID <= 24) {
+						if(xStatusID > 0 && xStatusID <= 29) {
 							hIcon = ImageList_ExtractIcon(0, himlExtraImages, xStatusID +  3);
 							bDestroy = TRUE;
 						}

@@ -50,7 +50,8 @@ static int GetClistVersion(WPARAM wParam, LPARAM lParam)
 
 static char *xStatusNames_ansi[] = { ("Angry"), ("Duck"), ("Tired"), ("Party"), ("Beer"), ("Thinking"), ("Eating"), ("TV"), ("Friends"), ("Coffee"),
 ("Music"), ("Business"), ("Camera"), ("Funny"), ("Phone"), ("Games"), ("College"), ("Shopping"), ("Sick"), ("Sleeping"),
-("Surfing"), ("@Internet"), ("Engineering"), ("Typing")};
+("Surfing"), ("@Internet"), ("Engineering"), ("Typing"), ("Eating..yummy.."), ("Having fun"), ("Chit chatting"), ("Crashing"), ("Going to toilet")};
+ 
 
 void FreeProtocolData( void )
 {
@@ -248,7 +249,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 					if(protoMenus[i].hIcon)
 						DestroyIcon(protoMenus[i].hIcon);
 
-					if(xStatus > 0 && xStatus <= 24) {
+					if(xStatus > 0 && xStatus <= 29) {
 						mi.hIcon = ImageList_ExtractIcon(0, himlExtraImages, (int)xStatus + 3);
 						protoMenus[i].hIcon = mi.hIcon;
 						mi.pszName = xStatusNames_ansi[xStatus - 1];

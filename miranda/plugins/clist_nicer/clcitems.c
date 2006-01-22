@@ -29,8 +29,8 @@ static TCHAR *xStatusDescr[] =
 {
 	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T("Beer"), _T("Thinking"), _T("Eating"), _T("TV"), _T("Friends"), _T("Coffee"),
 	_T("Music"), _T("Business"), _T("Camera"), _T("Funny"), _T("Phone"), _T("Games"), _T("College"), _T("Shopping"), _T("Sick"), _T("Sleeping"),
-   _T("Surfing"), _T("@Internet"), _T("Engeieering"), _T("Typing")
-};
+    _T("Surfing"), _T("@Internet"), _T("Engeieering"), _T("Typing"), _T("Eating..yummy.."), _T("Having fun"), _T("Chit chatting"), _T("Crashing"), _T("Going to toilet")
+ };
 
 extern struct CluiData g_CluiData;
 extern struct avatarCache *g_avatarCache;
@@ -264,7 +264,7 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 		}
 		else {
 			BYTE bXStatus = DBGetContactSettingByte(hContact, szProto, "XStatusId", 0);
-			if(bXStatus > 0 && bXStatus <= 24) {
+			if(bXStatus > 0 && bXStatus <= 29) {
 				TCHAR *szwXstatusName = TranslateTS(xStatusDescr[bXStatus - 1]);
 				cEntry->statusMsg = (TCHAR *)realloc(cEntry->statusMsg, (lstrlen(szwXstatusName) + 2) * sizeof(TCHAR));
 				_tcsncpy(cEntry->statusMsg, szwXstatusName, lstrlen(szwXstatusName) + 1);
