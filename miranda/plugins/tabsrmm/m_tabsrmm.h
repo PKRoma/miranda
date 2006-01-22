@@ -277,7 +277,7 @@ struct MessageWindowData {
     DWORD dwTickLastEvent;
 	HBITMAP hOwnPic;
 	SIZE pic;
-	int showPic;
+	int showPic, showInfoPic;
     int bottomOffset;
     UINT uMinHeight;
 	BOOL isHistory;
