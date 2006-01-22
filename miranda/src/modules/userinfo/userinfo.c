@@ -226,7 +226,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			TreeView_Select(GetDlgItem(hwndDlg,IDC_PAGETREE), dat->opd[dat->currentPage].hItem, TVGN_CARET);
 			dat->opd[dat->currentPage].hwnd=CreateDialogIndirectParam(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hwndDlg,dat->opd[dat->currentPage].dlgProc,(LPARAM)dat->hContact);
 			ThemeDialogBackground(dat->opd[dat->currentPage].hwnd);
-			SetWindowPos(dat->opd[dat->currentPage].hwnd,HWND_TOP,dat->rcDisplay.left,dat->rcDisplay.top,0,0,SWP_NOSIZE);
+			SetWindowPos(dat->opd[dat->currentPage].hwnd, HWND_TOP, dat->rcDisplay.left, dat->rcDisplay.top, dat->rcDisplay.right - dat->rcDisplay.left, dat->rcDisplay.bottom - dat->rcDisplay.top, 0);
 			{	PSHNOTIFY pshn;
 				pshn.hdr.code=PSN_INFOCHANGED;
 				pshn.hdr.hwndFrom=dat->opd[dat->currentPage].hwnd;
@@ -361,7 +361,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 										PSHNOTIFY pshn;
 										dat->opd[dat->currentPage].hwnd=CreateDialogIndirectParam(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hwndDlg,dat->opd[dat->currentPage].dlgProc,(LPARAM)dat->hContact);
 										ThemeDialogBackground(dat->opd[dat->currentPage].hwnd);
-										SetWindowPos(dat->opd[dat->currentPage].hwnd,HWND_TOP,dat->rcDisplay.left,dat->rcDisplay.top,0,0,SWP_NOSIZE);
+										SetWindowPos(dat->opd[dat->currentPage].hwnd, HWND_TOP, dat->rcDisplay.left, dat->rcDisplay.top, dat->rcDisplay.right - dat->rcDisplay.left, dat->rcDisplay.bottom - dat->rcDisplay.top, 0);
 										pshn.hdr.code=PSN_INFOCHANGED;
 										pshn.hdr.hwndFrom=dat->opd[dat->currentPage].hwnd;
 										pshn.hdr.idFrom=0;
