@@ -106,9 +106,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
 	"$(INTDIR)\protocolorder.obj" \
+	"$(INTDIR)\cache_funcs.obj" \
 	"$(INTDIR)\clc.obj" \
 	"$(INTDIR)\clcidents.obj" \
 	"$(INTDIR)\clcitems.obj" \
+	"$(INTDIR)\clcmsgs.obj" \
 	"$(INTDIR)\clcopts.obj" \
 	"$(INTDIR)\clcpaint.obj" \
 	"$(INTDIR)\clcutils.obj" \
@@ -122,26 +124,24 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiservices.obj" \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\contact.obj" \
+	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\forkthread.obj" \
+	"$(INTDIR)\gdiplus.obj" \
 	"$(INTDIR)\genmenu.obj" \
 	"$(INTDIR)\genmenuopt.obj" \
 	"$(INTDIR)\groupmenu.obj" \
+	"$(INTDIR)\image_array.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\movetogroup.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\rowheight_funcs.obj" \
-	"$(INTDIR)\SkinEngine.obj" \
-	"$(INTDIR)\cache_funcs.obj" \
-	"$(INTDIR)\Docking.obj" \
-	"$(INTDIR)\gdiplus.obj" \
 	"$(INTDIR)\mod_skin_selector.obj" \
 	"$(INTDIR)\modern_button.obj" \
 	"$(INTDIR)\modern_statusbar.obj" \
-	"$(INTDIR)\clcmsgs.obj" \
-	"$(INTDIR)\image_array.obj" \
+	"$(INTDIR)\movetogroup.obj" \
+	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\SkinEngine.obj" \
+	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
-	"$(INTDIR)\SkinOpt.obj"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\release\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -204,6 +204,7 @@ CLEAN :
 	-@erase "$(OUTDIR)\clist_modern.lib"
 	-@erase "$(OUTDIR)\clist_modern.pdb"
 	-@erase "..\..\bin\debug\plugins\clist_modern.dll"
+	-@erase "..\..\bin\debug\plugins\clist_modern.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -216,15 +217,17 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /incremental:no /pdb:"$(OUTDIR)\clist_modern.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/clist_modern.dll" /implib:"$(OUTDIR)\clist_modern.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /incremental:yes /pdb:"$(OUTDIR)\clist_modern.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/clist_modern.dll" /implib:"$(OUTDIR)\clist_modern.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
 	"$(INTDIR)\protocolorder.obj" \
+	"$(INTDIR)\cache_funcs.obj" \
 	"$(INTDIR)\clc.obj" \
 	"$(INTDIR)\clcidents.obj" \
 	"$(INTDIR)\clcitems.obj" \
+	"$(INTDIR)\clcmsgs.obj" \
 	"$(INTDIR)\clcopts.obj" \
 	"$(INTDIR)\clcpaint.obj" \
 	"$(INTDIR)\clcutils.obj" \
@@ -238,26 +241,24 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiservices.obj" \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\contact.obj" \
+	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\forkthread.obj" \
+	"$(INTDIR)\gdiplus.obj" \
 	"$(INTDIR)\genmenu.obj" \
 	"$(INTDIR)\genmenuopt.obj" \
 	"$(INTDIR)\groupmenu.obj" \
+	"$(INTDIR)\image_array.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\movetogroup.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\rowheight_funcs.obj" \
-	"$(INTDIR)\SkinEngine.obj" \
-	"$(INTDIR)\cache_funcs.obj" \
-	"$(INTDIR)\Docking.obj" \
-	"$(INTDIR)\gdiplus.obj" \
 	"$(INTDIR)\mod_skin_selector.obj" \
 	"$(INTDIR)\modern_button.obj" \
 	"$(INTDIR)\modern_statusbar.obj" \
-	"$(INTDIR)\clcmsgs.obj" \
-	"$(INTDIR)\image_array.obj" \
+	"$(INTDIR)\movetogroup.obj" \
+	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\SkinEngine.obj" \
+	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
-	"$(INTDIR)\SkinOpt.obj"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -339,9 +340,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
 	"$(INTDIR)\protocolorder.obj" \
+	"$(INTDIR)\cache_funcs.obj" \
 	"$(INTDIR)\clc.obj" \
 	"$(INTDIR)\clcidents.obj" \
 	"$(INTDIR)\clcitems.obj" \
+	"$(INTDIR)\clcmsgs.obj" \
 	"$(INTDIR)\clcopts.obj" \
 	"$(INTDIR)\clcpaint.obj" \
 	"$(INTDIR)\clcutils.obj" \
@@ -355,26 +358,24 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiservices.obj" \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\contact.obj" \
+	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\forkthread.obj" \
+	"$(INTDIR)\gdiplus.obj" \
 	"$(INTDIR)\genmenu.obj" \
 	"$(INTDIR)\genmenuopt.obj" \
 	"$(INTDIR)\groupmenu.obj" \
+	"$(INTDIR)\image_array.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\movetogroup.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\rowheight_funcs.obj" \
-	"$(INTDIR)\SkinEngine.obj" \
-	"$(INTDIR)\cache_funcs.obj" \
-	"$(INTDIR)\Docking.obj" \
-	"$(INTDIR)\gdiplus.obj" \
 	"$(INTDIR)\mod_skin_selector.obj" \
 	"$(INTDIR)\modern_button.obj" \
 	"$(INTDIR)\modern_statusbar.obj" \
-	"$(INTDIR)\clcmsgs.obj" \
-	"$(INTDIR)\image_array.obj" \
+	"$(INTDIR)\movetogroup.obj" \
+	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\SkinEngine.obj" \
+	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
-	"$(INTDIR)\SkinOpt.obj"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\release Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -437,6 +438,7 @@ CLEAN :
 	-@erase "$(OUTDIR)\clist_modern.lib"
 	-@erase "$(OUTDIR)\clist_modern.pdb"
 	-@erase "..\..\bin\debug Unicode\plugins\clist_modern.dll"
+	-@erase "..\..\bin\debug Unicode\plugins\clist_modern.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -449,15 +451,17 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /incremental:no /pdb:"$(OUTDIR)\clist_modern.pdb" /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/clist_modern.dll" /implib:"$(OUTDIR)\clist_modern.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /incremental:yes /pdb:"$(OUTDIR)\clist_modern.pdb" /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/clist_modern.dll" /implib:"$(OUTDIR)\clist_modern.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
 	"$(INTDIR)\protocolorder.obj" \
+	"$(INTDIR)\cache_funcs.obj" \
 	"$(INTDIR)\clc.obj" \
 	"$(INTDIR)\clcidents.obj" \
 	"$(INTDIR)\clcitems.obj" \
+	"$(INTDIR)\clcmsgs.obj" \
 	"$(INTDIR)\clcopts.obj" \
 	"$(INTDIR)\clcpaint.obj" \
 	"$(INTDIR)\clcutils.obj" \
@@ -471,26 +475,24 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiservices.obj" \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\contact.obj" \
+	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\forkthread.obj" \
+	"$(INTDIR)\gdiplus.obj" \
 	"$(INTDIR)\genmenu.obj" \
 	"$(INTDIR)\genmenuopt.obj" \
 	"$(INTDIR)\groupmenu.obj" \
+	"$(INTDIR)\image_array.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\movetogroup.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\rowheight_funcs.obj" \
-	"$(INTDIR)\SkinEngine.obj" \
-	"$(INTDIR)\cache_funcs.obj" \
-	"$(INTDIR)\Docking.obj" \
-	"$(INTDIR)\gdiplus.obj" \
 	"$(INTDIR)\mod_skin_selector.obj" \
 	"$(INTDIR)\modern_button.obj" \
 	"$(INTDIR)\modern_statusbar.obj" \
-	"$(INTDIR)\clcmsgs.obj" \
-	"$(INTDIR)\image_array.obj" \
+	"$(INTDIR)\movetogroup.obj" \
+	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\SkinEngine.obj" \
+	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
-	"$(INTDIR)\SkinOpt.obj"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<

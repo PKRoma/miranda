@@ -25,6 +25,10 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "db3x - Win32 Release"
 
 OUTDIR=.\Release
@@ -59,42 +63,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DB3X_EXPORTS" /Fp"$(INTDIR)\db3x.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\db3x.bsc" 
@@ -168,12 +138,58 @@ CLEAN :
 	-@erase "$(OUTDIR)\dbx_3x.map"
 	-@erase "$(OUTDIR)\dbx_3x.pdb"
 	-@erase "..\..\bin\debug\plugins\dbx_3x.dll"
+	-@erase "..\..\bin\debug\plugins\dbx_3x.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DB3X_EXPORTS" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\db3x.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\db3x.bsc" 
+BSC32_SBRS= \
+	"$(INTDIR)\commonheaders.sbr" \
+	"$(INTDIR)\database.sbr" \
+	"$(INTDIR)\dbcache.sbr" \
+	"$(INTDIR)\dbcontacts.sbr" \
+	"$(INTDIR)\dbevents.sbr" \
+	"$(INTDIR)\dbheaders.sbr" \
+	"$(INTDIR)\dbini.sbr" \
+	"$(INTDIR)\dbmodulechain.sbr" \
+	"$(INTDIR)\dbsettings.sbr" \
+	"$(INTDIR)\encrypt.sbr" \
+	"$(INTDIR)\init.sbr" \
+	"$(INTDIR)\utf.sbr"
+
+"$(OUTDIR)\db3x.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
+    $(BSC32) @<<
+  $(BSC32_FLAGS) $(BSC32_SBRS)
+<<
+
+LINK32=link.exe
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\dbx_3x.pdb" /map:"$(INTDIR)\dbx_3x.map" /debug /machine:I386 /out:"../../bin/debug/plugins/dbx_3x.dll" /implib:"$(OUTDIR)\dbx_3x.lib" /pdbtype:sept 
+LINK32_OBJS= \
+	"$(INTDIR)\commonheaders.obj" \
+	"$(INTDIR)\database.obj" \
+	"$(INTDIR)\dbcache.obj" \
+	"$(INTDIR)\dbcontacts.obj" \
+	"$(INTDIR)\dbevents.obj" \
+	"$(INTDIR)\dbheaders.obj" \
+	"$(INTDIR)\dbini.obj" \
+	"$(INTDIR)\dbmodulechain.obj" \
+	"$(INTDIR)\dbsettings.obj" \
+	"$(INTDIR)\encrypt.obj" \
+	"$(INTDIR)\init.obj" \
+	"$(INTDIR)\utf.obj" \
+	"$(INTDIR)\resource.res"
+
+"..\..\bin\debug\plugins\dbx_3x.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -204,55 +220,6 @@ CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" 
    $(CPP) @<<
    $(CPP_PROJ) $< 
 <<
-
-MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\db3x.bsc" 
-BSC32_SBRS= \
-	"$(INTDIR)\commonheaders.sbr" \
-	"$(INTDIR)\database.sbr" \
-	"$(INTDIR)\dbcache.sbr" \
-	"$(INTDIR)\dbcontacts.sbr" \
-	"$(INTDIR)\dbevents.sbr" \
-	"$(INTDIR)\dbheaders.sbr" \
-	"$(INTDIR)\dbini.sbr" \
-	"$(INTDIR)\dbmodulechain.sbr" \
-	"$(INTDIR)\dbsettings.sbr" \
-	"$(INTDIR)\encrypt.sbr" \
-	"$(INTDIR)\init.sbr" \
-	"$(INTDIR)\utf.sbr"
-
-"$(OUTDIR)\db3x.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
-    $(BSC32) @<<
-  $(BSC32_FLAGS) $(BSC32_SBRS)
-<<
-
-LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\dbx_3x.pdb" /map:"$(INTDIR)\dbx_3x.map" /debug /machine:I386 /out:"../../bin/debug/plugins/dbx_3x.dll" /implib:"$(OUTDIR)\dbx_3x.lib" /pdbtype:sept 
-LINK32_OBJS= \
-	"$(INTDIR)\commonheaders.obj" \
-	"$(INTDIR)\database.obj" \
-	"$(INTDIR)\dbcache.obj" \
-	"$(INTDIR)\dbcontacts.obj" \
-	"$(INTDIR)\dbevents.obj" \
-	"$(INTDIR)\dbheaders.obj" \
-	"$(INTDIR)\dbini.obj" \
-	"$(INTDIR)\dbmodulechain.obj" \
-	"$(INTDIR)\dbsettings.obj" \
-	"$(INTDIR)\encrypt.obj" \
-	"$(INTDIR)\init.obj" \
-	"$(INTDIR)\utf.obj" \
-	"$(INTDIR)\resource.res"
-
-"..\..\bin\debug\plugins\dbx_3x.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"

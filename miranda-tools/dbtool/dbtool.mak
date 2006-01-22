@@ -56,18 +56,16 @@ CLEAN :
 	-@erase "$(INTDIR)\settingschain.obj"
 	-@erase "$(INTDIR)\user.obj"
 	-@erase "$(INTDIR)\vc60.idb"
-	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\welcome.obj"
 	-@erase "$(INTDIR)\wizard.obj"
 	-@erase "$(INTDIR)\worker.obj"
 	-@erase "$(OUTDIR)\dbtool.map"
-	-@erase "$(OUTDIR)\dbtool.pdb"
 	-@erase "..\..\miranda\bin\release\dbtool.exe"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /O2 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
 BSC32=bscmake.exe
@@ -75,7 +73,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\dbtool.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\dbtool.pdb" /map:"$(INTDIR)\dbtool.map" /debug /machine:I386 /out:"../../miranda/bin/release/dbtool.exe" /ALIGN:4096 /ALIGN:4096 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\dbtool.pdb" /map:"$(INTDIR)\dbtool.map" /machine:I386 /out:"../../miranda/bin/release/dbtool.exe" /ALIGN:4096 /ALIGN:4096 
 LINK32_OBJS= \
 	"$(INTDIR)\aggressive.obj" \
 	"$(INTDIR)\contactchain.obj" \
@@ -136,6 +134,7 @@ CLEAN :
 	-@erase "$(INTDIR)\worker.obj"
 	-@erase "$(OUTDIR)\dbtool.pdb"
 	-@erase "..\..\miranda\bin\debug\dbtool.exe"
+	-@erase "..\..\miranda\bin\debug\dbtool.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -148,7 +147,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\dbtool.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\dbtool.pdb" /debug /machine:I386 /out:"../../miranda/bin/debug/dbtool.exe" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\dbtool.pdb" /debug /machine:I386 /out:"../../miranda/bin/debug/dbtool.exe" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\aggressive.obj" \
 	"$(INTDIR)\contactchain.obj" \

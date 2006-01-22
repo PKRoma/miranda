@@ -1,8 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by dbtool.mak
 
 .\aggressive.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -11,8 +9,6 @@
 	
 
 .\contactchain.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -21,8 +17,6 @@
 	
 
 .\eventchain.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -31,8 +25,6 @@
 	
 
 .\finaltasks.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -41,8 +33,6 @@
 	
 
 .\initialchecks.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -51,8 +41,6 @@
 	
 
 .\modulechain.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -61,8 +49,6 @@
 	
 
 .\settingschain.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -71,8 +57,6 @@
 	
 
 .\user.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -81,8 +65,6 @@
 	
 
 .\cleaning.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -91,8 +73,6 @@
 	
 
 .\fileaccess.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -101,8 +81,6 @@
 	
 
 .\finished.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -111,8 +89,6 @@
 	
 
 .\openerror.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -121,8 +97,6 @@
 	
 
 .\progress.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -131,8 +105,6 @@
 	
 
 .\selectdb.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -141,8 +113,6 @@
 	
 
 .\welcome.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -151,8 +121,6 @@
 	
 
 .\disk.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -161,8 +129,6 @@
 	
 
 .\main.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -171,8 +137,6 @@
 	
 
 .\wizard.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\
@@ -181,8 +145,6 @@
 	
 
 .\worker.cpp : \
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\miranda\include\m_database.h"\
 	"..\..\miranda\include\m_plugins.h"\
 	"..\..\miranda\include\newpluginapi.h"\

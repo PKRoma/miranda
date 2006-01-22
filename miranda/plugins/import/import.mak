@@ -25,6 +25,10 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "import - Win32 Release"
 
 OUTDIR=.\Release
@@ -62,42 +66,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IMPORT_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\import.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\import.bsc" 
@@ -161,14 +131,48 @@ CLEAN :
 	-@erase "$(OUTDIR)\import.exp"
 	-@erase "$(OUTDIR)\import.lib"
 	-@erase "..\..\bin\debug\plugins\import.dll"
+	-@erase "..\..\bin\debug\plugins\import.ilk"
 	-@erase "..\..\Bin\Debug\Plugins\import.map"
 	-@erase "..\..\Bin\Debug\Plugins\import.pdb"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /Zi /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IMPORT_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\import.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IMPORT_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\import.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\import.bsc" 
+BSC32_SBRS= \
+	"$(INTDIR)\ICQserver.sbr" \
+	"$(INTDIR)\main.sbr" \
+	"$(INTDIR)\mirabilis.sbr" \
+	"$(INTDIR)\miranda.sbr" \
+	"$(INTDIR)\progress.sbr" \
+	"$(INTDIR)\wizard.sbr"
+
+"$(OUTDIR)\import.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
+    $(BSC32) @<<
+  $(BSC32_FLAGS) $(BSC32_SBRS)
+<<
+
+LINK32=link.exe
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x22000000" /dll /incremental:yes /pdb:"../../Bin/Debug/Plugins/import.pdb" /map:"../../Bin/Debug/Plugins/import.map" /debug /machine:I386 /out:"../../bin/debug/plugins/import.dll" /implib:"$(OUTDIR)\import.lib" /pdbtype:sept 
+LINK32_OBJS= \
+	"$(INTDIR)\ICQserver.obj" \
+	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\mirabilis.obj" \
+	"$(INTDIR)\miranda.obj" \
+	"$(INTDIR)\progress.obj" \
+	"$(INTDIR)\wizard.obj" \
+	"$(INTDIR)\resource.res"
+
+"..\..\bin\debug\plugins\import.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -199,43 +203,6 @@ CPP_PROJ=/nologo /MDd /W3 /Gm /GX /Zi /Od /I "../../include" /D "WIN32" /D "_DEB
    $(CPP) @<<
    $(CPP_PROJ) $< 
 <<
-
-MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\import.bsc" 
-BSC32_SBRS= \
-	"$(INTDIR)\ICQserver.sbr" \
-	"$(INTDIR)\main.sbr" \
-	"$(INTDIR)\mirabilis.sbr" \
-	"$(INTDIR)\miranda.sbr" \
-	"$(INTDIR)\progress.sbr" \
-	"$(INTDIR)\wizard.sbr"
-
-"$(OUTDIR)\import.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
-    $(BSC32) @<<
-  $(BSC32_FLAGS) $(BSC32_SBRS)
-<<
-
-LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x22000000" /dll /incremental:no /pdb:"../../Bin/Debug/Plugins/import.pdb" /map:"../../Bin/Debug/Plugins/import.map" /debug /machine:I386 /out:"../../bin/debug/plugins/import.dll" /implib:"$(OUTDIR)\import.lib" /pdbtype:sept 
-LINK32_OBJS= \
-	"$(INTDIR)\ICQserver.obj" \
-	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\mirabilis.obj" \
-	"$(INTDIR)\miranda.obj" \
-	"$(INTDIR)\progress.obj" \
-	"$(INTDIR)\wizard.obj" \
-	"$(INTDIR)\resource.res"
-
-"..\..\bin\debug\plugins\import.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"

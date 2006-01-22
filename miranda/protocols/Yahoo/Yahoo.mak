@@ -25,6 +25,10 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "Yahoo - Win32 Release"
 
 OUTDIR=.\Release
@@ -62,42 +66,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x419 /fo"$(INTDIR)\Yahoo.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc" 
@@ -161,12 +131,45 @@ CLEAN :
 	-@erase "$(OUTDIR)\Yahoo.lib"
 	-@erase "$(OUTDIR)\Yahoo.pdb"
 	-@erase "..\..\Bin\Debug\Plugins\Yahoo.dll"
+	-@erase "..\..\Bin\Debug\Plugins\Yahoo.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x419 /fo"$(INTDIR)\Yahoo.res" /d "_DEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc" 
+BSC32_SBRS= \
+	
+LINK32=link.exe
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Yahoo.pdb" /debug /machine:I386 /out:"../../Bin/Debug/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" /pdbtype:sept 
+LINK32_OBJS= \
+	"$(INTDIR)\crypt.obj" \
+	"$(INTDIR)\libyahoo2.obj" \
+	"$(INTDIR)\md5.obj" \
+	"$(INTDIR)\sha.obj" \
+	"$(INTDIR)\yahoo_fn.obj" \
+	"$(INTDIR)\yahoo_httplib.obj" \
+	"$(INTDIR)\yahoo_list.obj" \
+	"$(INTDIR)\yahoo_util.obj" \
+	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\pthread.obj" \
+	"$(INTDIR)\server.obj" \
+	"$(INTDIR)\services.obj" \
+	"$(INTDIR)\utf8.obj" \
+	"$(INTDIR)\util.obj" \
+	"$(INTDIR)\yahoo.obj" \
+	"$(INTDIR)\Yahoo.res"
+
+"..\..\Bin\Debug\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -197,42 +200,6 @@ CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" 
    $(CPP) @<<
    $(CPP_PROJ) $< 
 <<
-
-MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
-RSC_PROJ=/l 0x419 /fo"$(INTDIR)\Yahoo.res" /d "_DEBUG" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc" 
-BSC32_SBRS= \
-	
-LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Yahoo.pdb" /debug /machine:I386 /out:"../../Bin/Debug/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" /pdbtype:sept 
-LINK32_OBJS= \
-	"$(INTDIR)\crypt.obj" \
-	"$(INTDIR)\libyahoo2.obj" \
-	"$(INTDIR)\md5.obj" \
-	"$(INTDIR)\sha.obj" \
-	"$(INTDIR)\yahoo_fn.obj" \
-	"$(INTDIR)\yahoo_httplib.obj" \
-	"$(INTDIR)\yahoo_list.obj" \
-	"$(INTDIR)\yahoo_util.obj" \
-	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\options.obj" \
-	"$(INTDIR)\pthread.obj" \
-	"$(INTDIR)\server.obj" \
-	"$(INTDIR)\services.obj" \
-	"$(INTDIR)\utf8.obj" \
-	"$(INTDIR)\util.obj" \
-	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res"
-
-"..\..\Bin\Debug\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"

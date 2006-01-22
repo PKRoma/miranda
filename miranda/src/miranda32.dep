@@ -429,6 +429,7 @@
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\clistmod.c : \

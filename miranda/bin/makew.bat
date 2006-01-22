@@ -95,7 +95,7 @@ copy ..\release\Plugins\png2dib.dll  Plugins
 copy ..\release\Plugins\Yahoo.dll    Plugins
 
 for /F "tokens=1,2 delims= " %%i in (..\build.no) do call :Pack %%i %%j
-exit
+goto :eof
 
 :WriteVer
 echo #ifndef _MAC >..\src\version.rc
@@ -216,4 +216,4 @@ goto :eof
 
 :Error
 echo Make failed
-exit
+goto :eof

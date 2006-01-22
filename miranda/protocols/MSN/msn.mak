@@ -201,6 +201,7 @@ CLEAN :
 	-@erase "$(OUTDIR)\msn.lib"
 	-@erase "$(OUTDIR)\msn.pdb"
 	-@erase "..\..\bin\debug\plugins\msn.dll"
+	-@erase "..\..\bin\debug\plugins\msn.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -245,7 +246,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\msn.pdb" /debug /machine:I386 /def:".\msn.def" /out:"../../bin/debug/plugins/msn.dll" /implib:"$(OUTDIR)\msn.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\msn.pdb" /debug /machine:I386 /def:".\msn.def" /out:"../../bin/debug/plugins/msn.dll" /implib:"$(OUTDIR)\msn.lib" /pdbtype:sept 
 DEF_FILE= \
 	".\msn.def"
 LINK32_OBJS= \
@@ -380,10 +381,10 @@ LINK32_OBJS= \
 
 !ELSEIF  "$(CFG)" == "msn - Win32 Debug Unicode"
 
-OUTDIR=.\msn___Win32_Debug_Unicode
-INTDIR=.\msn___Win32_Debug_Unicode
+OUTDIR=.\./Debug_Unicode
+INTDIR=.\./Debug_Unicode
 # Begin Custom Macros
-OutDir=.\msn___Win32_Debug_Unicode
+OutDir=.\./Debug_Unicode
 # End Custom Macros
 
 ALL : "..\..\bin\Debug Unicode\plugins\msn.dll" "$(OUTDIR)\msn.bsc"
@@ -453,6 +454,7 @@ CLEAN :
 	-@erase "$(OUTDIR)\msn.lib"
 	-@erase "$(OUTDIR)\msn.pdb"
 	-@erase "..\..\bin\Debug Unicode\plugins\msn.dll"
+	-@erase "..\..\bin\Debug Unicode\plugins\msn.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -497,7 +499,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\msn.pdb" /debug /machine:I386 /def:".\msn.def" /out:"../../bin/Debug Unicode/plugins/msn.dll" /implib:"$(OUTDIR)\msn.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\msn.pdb" /debug /machine:I386 /def:".\msn.def" /out:"../../bin/Debug Unicode/plugins/msn.dll" /implib:"$(OUTDIR)\msn.lib" /pdbtype:sept 
 DEF_FILE= \
 	".\msn.def"
 LINK32_OBJS= \

@@ -97,7 +97,7 @@ rem ---------------------------------------------------------------------------
 cd ..\..\bin\Release
 
 for /F "tokens=1,2 delims= " %%i in (..\build.no) do call :Pack %%i %%j
-exit
+goto :eof
 
 :WriteVer
 echo #ifndef _MAC >..\src\version.rc
@@ -205,7 +205,7 @@ copy ..\..\plugins\clist_nicer\Release\clist_nicer.pdb %Temp%\pdba\plugins
 copy ..\..\plugins\db3x\Release\dbx_3x.pdb             %Temp%\pdba\plugins
 copy ..\..\plugins\help\Release\help.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\import\Release\import.pdb           %Temp%\pdba\plugins
-copy ..\..\plugins\modernb\Release\clist_modern.pdb    %Temp%\pdbw\plugins
+copy ..\..\plugins\modernb\Release\clist_modern.pdb    %Temp%\pdba\plugins
 copy ..\..\plugins\mwclist\Release\clist_mw.pdb        %Temp%\pdba\plugins
 copy ..\..\plugins\png2dib\Release\png2dib.pdb         %Temp%\pdba\plugins
 copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba\plugins
@@ -217,4 +217,4 @@ goto :eof
 
 :Error
 echo Make failed
-exit
+goto :eof
