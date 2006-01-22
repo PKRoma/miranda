@@ -1,53 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by IRC.mak
 
 .\clist.cpp : \
-	"..\..\..\..\openssl\inc32\openssl\aes.h"\
-	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
-	"..\..\..\..\openssl\inc32\openssl\bio.h"\
-	"..\..\..\..\openssl\inc32\openssl\blowfish.h"\
-	"..\..\..\..\openssl\inc32\openssl\bn.h"\
-	"..\..\..\..\openssl\inc32\openssl\cast.h"\
-	"..\..\..\..\openssl\inc32\openssl\comp.h"\
-	"..\..\..\..\openssl\inc32\openssl\crypto.h"\
-	"..\..\..\..\openssl\inc32\openssl\des.h"\
-	"..\..\..\..\openssl\inc32\openssl\des_old.h"\
-	"..\..\..\..\openssl\inc32\openssl\dh.h"\
-	"..\..\..\..\openssl\inc32\openssl\dsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\e_os2.h"\
-	"..\..\..\..\openssl\inc32\openssl\evp.h"\
-	"..\..\..\..\openssl\inc32\openssl\idea.h"\
-	"..\..\..\..\openssl\inc32\openssl\kssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\lhash.h"\
-	"..\..\..\..\openssl\inc32\openssl\md2.h"\
-	"..\..\..\..\openssl\inc32\openssl\md4.h"\
-	"..\..\..\..\openssl\inc32\openssl\md5.h"\
-	"..\..\..\..\openssl\inc32\openssl\mdc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\obj_mac.h"\
-	"..\..\..\..\openssl\inc32\openssl\objects.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslconf.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslv.h"\
-	"..\..\..\..\openssl\inc32\openssl\ossl_typ.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem2.h"\
-	"..\..\..\..\openssl\inc32\openssl\pkcs7.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc4.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc5.h"\
-	"..\..\..\..\openssl\inc32\openssl\ripemd.h"\
-	"..\..\..\..\openssl\inc32\openssl\rsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\safestack.h"\
-	"..\..\..\..\openssl\inc32\openssl\sha.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl2.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl23.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl3.h"\
-	"..\..\..\..\openssl\inc32\openssl\stack.h"\
-	"..\..\..\..\openssl\inc32\openssl\symhacks.h"\
-	"..\..\..\..\openssl\inc32\openssl\tls1.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui_compat.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509_vfy.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -78,53 +31,6 @@
 	
 
 .\commandmonitor.cpp : \
-	"..\..\..\..\openssl\inc32\openssl\aes.h"\
-	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
-	"..\..\..\..\openssl\inc32\openssl\bio.h"\
-	"..\..\..\..\openssl\inc32\openssl\blowfish.h"\
-	"..\..\..\..\openssl\inc32\openssl\bn.h"\
-	"..\..\..\..\openssl\inc32\openssl\cast.h"\
-	"..\..\..\..\openssl\inc32\openssl\comp.h"\
-	"..\..\..\..\openssl\inc32\openssl\crypto.h"\
-	"..\..\..\..\openssl\inc32\openssl\des.h"\
-	"..\..\..\..\openssl\inc32\openssl\des_old.h"\
-	"..\..\..\..\openssl\inc32\openssl\dh.h"\
-	"..\..\..\..\openssl\inc32\openssl\dsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\e_os2.h"\
-	"..\..\..\..\openssl\inc32\openssl\evp.h"\
-	"..\..\..\..\openssl\inc32\openssl\idea.h"\
-	"..\..\..\..\openssl\inc32\openssl\kssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\lhash.h"\
-	"..\..\..\..\openssl\inc32\openssl\md2.h"\
-	"..\..\..\..\openssl\inc32\openssl\md4.h"\
-	"..\..\..\..\openssl\inc32\openssl\md5.h"\
-	"..\..\..\..\openssl\inc32\openssl\mdc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\obj_mac.h"\
-	"..\..\..\..\openssl\inc32\openssl\objects.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslconf.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslv.h"\
-	"..\..\..\..\openssl\inc32\openssl\ossl_typ.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem2.h"\
-	"..\..\..\..\openssl\inc32\openssl\pkcs7.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc4.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc5.h"\
-	"..\..\..\..\openssl\inc32\openssl\ripemd.h"\
-	"..\..\..\..\openssl\inc32\openssl\rsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\safestack.h"\
-	"..\..\..\..\openssl\inc32\openssl\sha.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl2.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl23.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl3.h"\
-	"..\..\..\..\openssl\inc32\openssl\stack.h"\
-	"..\..\..\..\openssl\inc32\openssl\symhacks.h"\
-	"..\..\..\..\openssl\inc32\openssl\tls1.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui_compat.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509_vfy.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -155,53 +61,6 @@
 	
 
 .\input.cpp : \
-	"..\..\..\..\openssl\inc32\openssl\aes.h"\
-	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
-	"..\..\..\..\openssl\inc32\openssl\bio.h"\
-	"..\..\..\..\openssl\inc32\openssl\blowfish.h"\
-	"..\..\..\..\openssl\inc32\openssl\bn.h"\
-	"..\..\..\..\openssl\inc32\openssl\cast.h"\
-	"..\..\..\..\openssl\inc32\openssl\comp.h"\
-	"..\..\..\..\openssl\inc32\openssl\crypto.h"\
-	"..\..\..\..\openssl\inc32\openssl\des.h"\
-	"..\..\..\..\openssl\inc32\openssl\des_old.h"\
-	"..\..\..\..\openssl\inc32\openssl\dh.h"\
-	"..\..\..\..\openssl\inc32\openssl\dsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\e_os2.h"\
-	"..\..\..\..\openssl\inc32\openssl\evp.h"\
-	"..\..\..\..\openssl\inc32\openssl\idea.h"\
-	"..\..\..\..\openssl\inc32\openssl\kssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\lhash.h"\
-	"..\..\..\..\openssl\inc32\openssl\md2.h"\
-	"..\..\..\..\openssl\inc32\openssl\md4.h"\
-	"..\..\..\..\openssl\inc32\openssl\md5.h"\
-	"..\..\..\..\openssl\inc32\openssl\mdc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\obj_mac.h"\
-	"..\..\..\..\openssl\inc32\openssl\objects.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslconf.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslv.h"\
-	"..\..\..\..\openssl\inc32\openssl\ossl_typ.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem2.h"\
-	"..\..\..\..\openssl\inc32\openssl\pkcs7.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc4.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc5.h"\
-	"..\..\..\..\openssl\inc32\openssl\ripemd.h"\
-	"..\..\..\..\openssl\inc32\openssl\rsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\safestack.h"\
-	"..\..\..\..\openssl\inc32\openssl\sha.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl2.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl23.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl3.h"\
-	"..\..\..\..\openssl\inc32\openssl\stack.h"\
-	"..\..\..\..\openssl\inc32\openssl\symhacks.h"\
-	"..\..\..\..\openssl\inc32\openssl\tls1.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui_compat.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509_vfy.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -232,53 +91,6 @@
 	
 
 .\irclib.cpp : \
-	"..\..\..\..\openssl\inc32\openssl\aes.h"\
-	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
-	"..\..\..\..\openssl\inc32\openssl\bio.h"\
-	"..\..\..\..\openssl\inc32\openssl\blowfish.h"\
-	"..\..\..\..\openssl\inc32\openssl\bn.h"\
-	"..\..\..\..\openssl\inc32\openssl\cast.h"\
-	"..\..\..\..\openssl\inc32\openssl\comp.h"\
-	"..\..\..\..\openssl\inc32\openssl\crypto.h"\
-	"..\..\..\..\openssl\inc32\openssl\des.h"\
-	"..\..\..\..\openssl\inc32\openssl\des_old.h"\
-	"..\..\..\..\openssl\inc32\openssl\dh.h"\
-	"..\..\..\..\openssl\inc32\openssl\dsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\e_os2.h"\
-	"..\..\..\..\openssl\inc32\openssl\evp.h"\
-	"..\..\..\..\openssl\inc32\openssl\idea.h"\
-	"..\..\..\..\openssl\inc32\openssl\kssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\lhash.h"\
-	"..\..\..\..\openssl\inc32\openssl\md2.h"\
-	"..\..\..\..\openssl\inc32\openssl\md4.h"\
-	"..\..\..\..\openssl\inc32\openssl\md5.h"\
-	"..\..\..\..\openssl\inc32\openssl\mdc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\obj_mac.h"\
-	"..\..\..\..\openssl\inc32\openssl\objects.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslconf.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslv.h"\
-	"..\..\..\..\openssl\inc32\openssl\ossl_typ.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem2.h"\
-	"..\..\..\..\openssl\inc32\openssl\pkcs7.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc4.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc5.h"\
-	"..\..\..\..\openssl\inc32\openssl\ripemd.h"\
-	"..\..\..\..\openssl\inc32\openssl\rsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\safestack.h"\
-	"..\..\..\..\openssl\inc32\openssl\sha.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl2.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl23.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl3.h"\
-	"..\..\..\..\openssl\inc32\openssl\stack.h"\
-	"..\..\..\..\openssl\inc32\openssl\symhacks.h"\
-	"..\..\..\..\openssl\inc32\openssl\tls1.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui_compat.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509_vfy.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -309,53 +121,6 @@
 	
 
 .\main.cpp : \
-	"..\..\..\..\openssl\inc32\openssl\aes.h"\
-	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
-	"..\..\..\..\openssl\inc32\openssl\bio.h"\
-	"..\..\..\..\openssl\inc32\openssl\blowfish.h"\
-	"..\..\..\..\openssl\inc32\openssl\bn.h"\
-	"..\..\..\..\openssl\inc32\openssl\cast.h"\
-	"..\..\..\..\openssl\inc32\openssl\comp.h"\
-	"..\..\..\..\openssl\inc32\openssl\crypto.h"\
-	"..\..\..\..\openssl\inc32\openssl\des.h"\
-	"..\..\..\..\openssl\inc32\openssl\des_old.h"\
-	"..\..\..\..\openssl\inc32\openssl\dh.h"\
-	"..\..\..\..\openssl\inc32\openssl\dsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\e_os2.h"\
-	"..\..\..\..\openssl\inc32\openssl\evp.h"\
-	"..\..\..\..\openssl\inc32\openssl\idea.h"\
-	"..\..\..\..\openssl\inc32\openssl\kssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\lhash.h"\
-	"..\..\..\..\openssl\inc32\openssl\md2.h"\
-	"..\..\..\..\openssl\inc32\openssl\md4.h"\
-	"..\..\..\..\openssl\inc32\openssl\md5.h"\
-	"..\..\..\..\openssl\inc32\openssl\mdc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\obj_mac.h"\
-	"..\..\..\..\openssl\inc32\openssl\objects.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslconf.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslv.h"\
-	"..\..\..\..\openssl\inc32\openssl\ossl_typ.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem2.h"\
-	"..\..\..\..\openssl\inc32\openssl\pkcs7.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc4.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc5.h"\
-	"..\..\..\..\openssl\inc32\openssl\ripemd.h"\
-	"..\..\..\..\openssl\inc32\openssl\rsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\safestack.h"\
-	"..\..\..\..\openssl\inc32\openssl\sha.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl2.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl23.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl3.h"\
-	"..\..\..\..\openssl\inc32\openssl\stack.h"\
-	"..\..\..\..\openssl\inc32\openssl\symhacks.h"\
-	"..\..\..\..\openssl\inc32\openssl\tls1.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui_compat.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509_vfy.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -386,53 +151,6 @@
 	
 
 .\options.cpp : \
-	"..\..\..\..\openssl\inc32\openssl\aes.h"\
-	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
-	"..\..\..\..\openssl\inc32\openssl\bio.h"\
-	"..\..\..\..\openssl\inc32\openssl\blowfish.h"\
-	"..\..\..\..\openssl\inc32\openssl\bn.h"\
-	"..\..\..\..\openssl\inc32\openssl\cast.h"\
-	"..\..\..\..\openssl\inc32\openssl\comp.h"\
-	"..\..\..\..\openssl\inc32\openssl\crypto.h"\
-	"..\..\..\..\openssl\inc32\openssl\des.h"\
-	"..\..\..\..\openssl\inc32\openssl\des_old.h"\
-	"..\..\..\..\openssl\inc32\openssl\dh.h"\
-	"..\..\..\..\openssl\inc32\openssl\dsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\e_os2.h"\
-	"..\..\..\..\openssl\inc32\openssl\evp.h"\
-	"..\..\..\..\openssl\inc32\openssl\idea.h"\
-	"..\..\..\..\openssl\inc32\openssl\kssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\lhash.h"\
-	"..\..\..\..\openssl\inc32\openssl\md2.h"\
-	"..\..\..\..\openssl\inc32\openssl\md4.h"\
-	"..\..\..\..\openssl\inc32\openssl\md5.h"\
-	"..\..\..\..\openssl\inc32\openssl\mdc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\obj_mac.h"\
-	"..\..\..\..\openssl\inc32\openssl\objects.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslconf.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslv.h"\
-	"..\..\..\..\openssl\inc32\openssl\ossl_typ.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem2.h"\
-	"..\..\..\..\openssl\inc32\openssl\pkcs7.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc4.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc5.h"\
-	"..\..\..\..\openssl\inc32\openssl\ripemd.h"\
-	"..\..\..\..\openssl\inc32\openssl\rsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\safestack.h"\
-	"..\..\..\..\openssl\inc32\openssl\sha.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl2.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl23.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl3.h"\
-	"..\..\..\..\openssl\inc32\openssl\stack.h"\
-	"..\..\..\..\openssl\inc32\openssl\symhacks.h"\
-	"..\..\..\..\openssl\inc32\openssl\tls1.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui_compat.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509_vfy.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -463,53 +181,6 @@
 	
 
 .\output.cpp : \
-	"..\..\..\..\openssl\inc32\openssl\aes.h"\
-	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
-	"..\..\..\..\openssl\inc32\openssl\bio.h"\
-	"..\..\..\..\openssl\inc32\openssl\blowfish.h"\
-	"..\..\..\..\openssl\inc32\openssl\bn.h"\
-	"..\..\..\..\openssl\inc32\openssl\cast.h"\
-	"..\..\..\..\openssl\inc32\openssl\comp.h"\
-	"..\..\..\..\openssl\inc32\openssl\crypto.h"\
-	"..\..\..\..\openssl\inc32\openssl\des.h"\
-	"..\..\..\..\openssl\inc32\openssl\des_old.h"\
-	"..\..\..\..\openssl\inc32\openssl\dh.h"\
-	"..\..\..\..\openssl\inc32\openssl\dsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\e_os2.h"\
-	"..\..\..\..\openssl\inc32\openssl\evp.h"\
-	"..\..\..\..\openssl\inc32\openssl\idea.h"\
-	"..\..\..\..\openssl\inc32\openssl\kssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\lhash.h"\
-	"..\..\..\..\openssl\inc32\openssl\md2.h"\
-	"..\..\..\..\openssl\inc32\openssl\md4.h"\
-	"..\..\..\..\openssl\inc32\openssl\md5.h"\
-	"..\..\..\..\openssl\inc32\openssl\mdc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\obj_mac.h"\
-	"..\..\..\..\openssl\inc32\openssl\objects.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslconf.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslv.h"\
-	"..\..\..\..\openssl\inc32\openssl\ossl_typ.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem2.h"\
-	"..\..\..\..\openssl\inc32\openssl\pkcs7.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc4.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc5.h"\
-	"..\..\..\..\openssl\inc32\openssl\ripemd.h"\
-	"..\..\..\..\openssl\inc32\openssl\rsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\safestack.h"\
-	"..\..\..\..\openssl\inc32\openssl\sha.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl2.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl23.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl3.h"\
-	"..\..\..\..\openssl\inc32\openssl\stack.h"\
-	"..\..\..\..\openssl\inc32\openssl\symhacks.h"\
-	"..\..\..\..\openssl\inc32\openssl\tls1.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui_compat.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509_vfy.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -540,53 +211,6 @@
 	
 
 .\scripting.cpp : \
-	"..\..\..\..\openssl\inc32\openssl\aes.h"\
-	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
-	"..\..\..\..\openssl\inc32\openssl\bio.h"\
-	"..\..\..\..\openssl\inc32\openssl\blowfish.h"\
-	"..\..\..\..\openssl\inc32\openssl\bn.h"\
-	"..\..\..\..\openssl\inc32\openssl\cast.h"\
-	"..\..\..\..\openssl\inc32\openssl\comp.h"\
-	"..\..\..\..\openssl\inc32\openssl\crypto.h"\
-	"..\..\..\..\openssl\inc32\openssl\des.h"\
-	"..\..\..\..\openssl\inc32\openssl\des_old.h"\
-	"..\..\..\..\openssl\inc32\openssl\dh.h"\
-	"..\..\..\..\openssl\inc32\openssl\dsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\e_os2.h"\
-	"..\..\..\..\openssl\inc32\openssl\evp.h"\
-	"..\..\..\..\openssl\inc32\openssl\idea.h"\
-	"..\..\..\..\openssl\inc32\openssl\kssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\lhash.h"\
-	"..\..\..\..\openssl\inc32\openssl\md2.h"\
-	"..\..\..\..\openssl\inc32\openssl\md4.h"\
-	"..\..\..\..\openssl\inc32\openssl\md5.h"\
-	"..\..\..\..\openssl\inc32\openssl\mdc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\obj_mac.h"\
-	"..\..\..\..\openssl\inc32\openssl\objects.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslconf.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslv.h"\
-	"..\..\..\..\openssl\inc32\openssl\ossl_typ.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem2.h"\
-	"..\..\..\..\openssl\inc32\openssl\pkcs7.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc4.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc5.h"\
-	"..\..\..\..\openssl\inc32\openssl\ripemd.h"\
-	"..\..\..\..\openssl\inc32\openssl\rsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\safestack.h"\
-	"..\..\..\..\openssl\inc32\openssl\sha.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl2.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl23.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl3.h"\
-	"..\..\..\..\openssl\inc32\openssl\stack.h"\
-	"..\..\..\..\openssl\inc32\openssl\symhacks.h"\
-	"..\..\..\..\openssl\inc32\openssl\tls1.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui_compat.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509_vfy.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -617,53 +241,6 @@
 	
 
 .\services.cpp : \
-	"..\..\..\..\openssl\inc32\openssl\aes.h"\
-	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
-	"..\..\..\..\openssl\inc32\openssl\bio.h"\
-	"..\..\..\..\openssl\inc32\openssl\blowfish.h"\
-	"..\..\..\..\openssl\inc32\openssl\bn.h"\
-	"..\..\..\..\openssl\inc32\openssl\cast.h"\
-	"..\..\..\..\openssl\inc32\openssl\comp.h"\
-	"..\..\..\..\openssl\inc32\openssl\crypto.h"\
-	"..\..\..\..\openssl\inc32\openssl\des.h"\
-	"..\..\..\..\openssl\inc32\openssl\des_old.h"\
-	"..\..\..\..\openssl\inc32\openssl\dh.h"\
-	"..\..\..\..\openssl\inc32\openssl\dsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\e_os2.h"\
-	"..\..\..\..\openssl\inc32\openssl\evp.h"\
-	"..\..\..\..\openssl\inc32\openssl\idea.h"\
-	"..\..\..\..\openssl\inc32\openssl\kssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\lhash.h"\
-	"..\..\..\..\openssl\inc32\openssl\md2.h"\
-	"..\..\..\..\openssl\inc32\openssl\md4.h"\
-	"..\..\..\..\openssl\inc32\openssl\md5.h"\
-	"..\..\..\..\openssl\inc32\openssl\mdc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\obj_mac.h"\
-	"..\..\..\..\openssl\inc32\openssl\objects.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslconf.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslv.h"\
-	"..\..\..\..\openssl\inc32\openssl\ossl_typ.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem2.h"\
-	"..\..\..\..\openssl\inc32\openssl\pkcs7.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc4.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc5.h"\
-	"..\..\..\..\openssl\inc32\openssl\ripemd.h"\
-	"..\..\..\..\openssl\inc32\openssl\rsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\safestack.h"\
-	"..\..\..\..\openssl\inc32\openssl\sha.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl2.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl23.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl3.h"\
-	"..\..\..\..\openssl\inc32\openssl\stack.h"\
-	"..\..\..\..\openssl\inc32\openssl\symhacks.h"\
-	"..\..\..\..\openssl\inc32\openssl\tls1.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui_compat.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509_vfy.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -694,53 +271,6 @@
 	
 
 .\tools.cpp : \
-	"..\..\..\..\openssl\inc32\openssl\aes.h"\
-	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
-	"..\..\..\..\openssl\inc32\openssl\bio.h"\
-	"..\..\..\..\openssl\inc32\openssl\blowfish.h"\
-	"..\..\..\..\openssl\inc32\openssl\bn.h"\
-	"..\..\..\..\openssl\inc32\openssl\cast.h"\
-	"..\..\..\..\openssl\inc32\openssl\comp.h"\
-	"..\..\..\..\openssl\inc32\openssl\crypto.h"\
-	"..\..\..\..\openssl\inc32\openssl\des.h"\
-	"..\..\..\..\openssl\inc32\openssl\des_old.h"\
-	"..\..\..\..\openssl\inc32\openssl\dh.h"\
-	"..\..\..\..\openssl\inc32\openssl\dsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\e_os2.h"\
-	"..\..\..\..\openssl\inc32\openssl\evp.h"\
-	"..\..\..\..\openssl\inc32\openssl\idea.h"\
-	"..\..\..\..\openssl\inc32\openssl\kssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\lhash.h"\
-	"..\..\..\..\openssl\inc32\openssl\md2.h"\
-	"..\..\..\..\openssl\inc32\openssl\md4.h"\
-	"..\..\..\..\openssl\inc32\openssl\md5.h"\
-	"..\..\..\..\openssl\inc32\openssl\mdc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\obj_mac.h"\
-	"..\..\..\..\openssl\inc32\openssl\objects.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslconf.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslv.h"\
-	"..\..\..\..\openssl\inc32\openssl\ossl_typ.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem2.h"\
-	"..\..\..\..\openssl\inc32\openssl\pkcs7.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc4.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc5.h"\
-	"..\..\..\..\openssl\inc32\openssl\ripemd.h"\
-	"..\..\..\..\openssl\inc32\openssl\rsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\safestack.h"\
-	"..\..\..\..\openssl\inc32\openssl\sha.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl2.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl23.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl3.h"\
-	"..\..\..\..\openssl\inc32\openssl\stack.h"\
-	"..\..\..\..\openssl\inc32\openssl\symhacks.h"\
-	"..\..\..\..\openssl\inc32\openssl\tls1.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui_compat.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509_vfy.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -771,53 +301,6 @@
 	
 
 .\windows.cpp : \
-	"..\..\..\..\openssl\inc32\openssl\aes.h"\
-	"..\..\..\..\openssl\inc32\openssl\asn1.h"\
-	"..\..\..\..\openssl\inc32\openssl\bio.h"\
-	"..\..\..\..\openssl\inc32\openssl\blowfish.h"\
-	"..\..\..\..\openssl\inc32\openssl\bn.h"\
-	"..\..\..\..\openssl\inc32\openssl\cast.h"\
-	"..\..\..\..\openssl\inc32\openssl\comp.h"\
-	"..\..\..\..\openssl\inc32\openssl\crypto.h"\
-	"..\..\..\..\openssl\inc32\openssl\des.h"\
-	"..\..\..\..\openssl\inc32\openssl\des_old.h"\
-	"..\..\..\..\openssl\inc32\openssl\dh.h"\
-	"..\..\..\..\openssl\inc32\openssl\dsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\e_os2.h"\
-	"..\..\..\..\openssl\inc32\openssl\evp.h"\
-	"..\..\..\..\openssl\inc32\openssl\idea.h"\
-	"..\..\..\..\openssl\inc32\openssl\kssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\lhash.h"\
-	"..\..\..\..\openssl\inc32\openssl\md2.h"\
-	"..\..\..\..\openssl\inc32\openssl\md4.h"\
-	"..\..\..\..\openssl\inc32\openssl\md5.h"\
-	"..\..\..\..\openssl\inc32\openssl\mdc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\obj_mac.h"\
-	"..\..\..\..\openssl\inc32\openssl\objects.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslconf.h"\
-	"..\..\..\..\openssl\inc32\openssl\opensslv.h"\
-	"..\..\..\..\openssl\inc32\openssl\ossl_typ.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem.h"\
-	"..\..\..\..\openssl\inc32\openssl\pem2.h"\
-	"..\..\..\..\openssl\inc32\openssl\pkcs7.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc2.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc4.h"\
-	"..\..\..\..\openssl\inc32\openssl\rc5.h"\
-	"..\..\..\..\openssl\inc32\openssl\ripemd.h"\
-	"..\..\..\..\openssl\inc32\openssl\rsa.h"\
-	"..\..\..\..\openssl\inc32\openssl\safestack.h"\
-	"..\..\..\..\openssl\inc32\openssl\sha.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl2.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl23.h"\
-	"..\..\..\..\openssl\inc32\openssl\ssl3.h"\
-	"..\..\..\..\openssl\inc32\openssl\stack.h"\
-	"..\..\..\..\openssl\inc32\openssl\symhacks.h"\
-	"..\..\..\..\openssl\inc32\openssl\tls1.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui.h"\
-	"..\..\..\..\openssl\inc32\openssl\ui_compat.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509.h"\
-	"..\..\..\..\openssl\inc32\openssl\x509_vfy.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
