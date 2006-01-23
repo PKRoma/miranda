@@ -731,10 +731,15 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 						height =0;// dat->avatars_size;  
 					}
 				}
-				else
+				else if (dat->avatar_cache.nodes) 
 				{
 					width = dat->avatar_cache.nodes[Drawing->avatar_pos].width;
 					height = dat->avatar_cache.nodes[Drawing->avatar_pos].height;
+				}
+				else 
+				{
+					width=0;
+					height=0;
 				}
 
 				// Make rectangle

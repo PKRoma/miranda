@@ -305,6 +305,7 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 			if (MyStrCmp(cont->proto,"MetaContacts")==0) 
 				AddSubcontacts(dat,cont);
 		}
+		cont->avatar_pos=AVATAR_POS_DONT_HAVE;
 		Cache_GetAvatar(dat,cont);
 		Cache_GetText(dat,cont);
 		Cache_GetTimezone(dat,cont);
