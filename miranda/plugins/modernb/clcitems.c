@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonprototypes.h"
 extern void ( *savedAddContactToTree)(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
 
-void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont)
+void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOfflineHereGroup)
 {
 	int subcount,i,j;
 	HANDLE hsub;
@@ -54,7 +54,7 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont)
 	for (j=0; j<subcount; j++) {
 		hsub=(HANDLE)CallService(MS_MC_GETSUBCONTACT,(WPARAM)cont->hContact,j);
 		cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hsub);		
-		if ((!(DBGetContactSettingByte(NULL,"CLC","MetaHideOfflineSub",1) && DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT) ) ||
+		if (showOfflineHereGroup||(!(DBGetContactSettingByte(NULL,"CLC","MetaHideOfflineSub",1) && DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT) ) ||
 			cacheEntry->status!=ID_STATUS_OFFLINE )
 			//&&
 			//(!cacheEntry->Hidden || style&CLS_SHOWHIDDEN)
@@ -286,6 +286,7 @@ void * AddTempGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flag
 	}
 	return NULL;
 }
+extern _inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
 void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline)
 {
 	struct ClcGroup *group;
@@ -303,7 +304,7 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 		{	
 			cont->SubAllocated=0;
 			if (MyStrCmp(cont->proto,"MetaContacts")==0) 
-				AddSubcontacts(dat,cont);
+				AddSubcontacts(dat,cont,IsShowOfflineGroup(group));
 		}
 		cont->avatar_pos=AVATAR_POS_DONT_HAVE;
 		Cache_GetAvatar(dat,cont);
@@ -481,7 +482,7 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 		{	
 			cont->SubAllocated=0;
 			if (cont->proto && strcmp(cont->proto,"MetaContacts")==0)
-				AddSubcontacts(dat,cont);
+				AddSubcontacts(dat,cont,IsShowOfflineGroup(group));
 		}
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 	}
