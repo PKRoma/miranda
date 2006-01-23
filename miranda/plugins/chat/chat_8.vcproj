@@ -3,7 +3,12 @@
 	ProjectType="Visual C++"
 	Version="8,00"
 	Name="chat"
-	ProjectGUID="{EA846890-9A15-4B5E-995D-547F3EC60249}"
+	ProjectGUID="{268BD296-8DD3-4715-A386-CF120398EC98}"
+	RootNamespace="chat"
+	SccProjectName="SAK"
+	SccAuxPath="SAK"
+	SccLocalPath="SAK"
+	SccProvider="SAK"
 	>
 	<Platforms>
 		<Platform
@@ -15,8 +20,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -59,6 +64,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 				CompileAs="1"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -78,6 +84,7 @@
 				OutputFile="../../bin/Debug/Plugins/chat.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/chat.pdb"
 				BaseAddress="0x54110000"
@@ -113,8 +120,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory=".\chat___Win32_Debug_Unicode"
-			IntermediateDirectory=".\chat___Win32_Debug_Unicode"
+			OutputDirectory="$(SolutionDir)/Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -157,6 +164,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 				CompileAs="1"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -210,13 +218,14 @@
 		</Configuration>
 		<Configuration
 			Name="Release Unicode|Win32"
-			OutputDirectory=".\Release_Unicode"
-			IntermediateDirectory=".\Release_Unicode"
+			OutputDirectory="$(SolutionDir)/Release/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -241,10 +250,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
 				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="2"
+				OmitFramePointers="true"
+				WholeProgramOptimization="true"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CHAT_EXPORTS;UNICODE"
-				StringPooling="false"
+				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\Release_Unicode/chat.pch"
@@ -254,6 +266,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="1"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -270,11 +283,14 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="odbc32.lib odbccp32.lib Version.lib shlwapi.lib"
-				OutputFile="../../bin/Release/Plugins/chat.dll"
-				LinkIncremental="1"
+				LinkIncremental="0"
 				SuppressStartupBanner="true"
+				GenerateManifest="false"
 				GenerateMapFile="true"
 				MapFileName=".\Release/chat_unicode.map"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
 				ImportLibrary=".\Release_Unicode/chat.lib"
 				TargetMachine="1"
 			/>
@@ -307,8 +323,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -351,6 +367,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="1"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -903,10 +920,6 @@
 				>
 			</File>
 			<File
-				RelativePath="Icons\chanmgr.ico"
-				>
-			</File>
-			<File
 				RelativePath="Chat.rc"
 				>
 				<FileConfiguration
@@ -967,10 +980,6 @@
 				>
 			</File>
 			<File
-				RelativePath="Icons\hop.ico"
-				>
-			</File>
-			<File
 				RelativePath="Icons\info.ico"
 				>
 			</File>
@@ -980,10 +989,6 @@
 			</File>
 			<File
 				RelativePath="Icons\join.ico"
-				>
-			</File>
-			<File
-				RelativePath="Icons\junk.bmp"
 				>
 			</File>
 			<File
@@ -1011,15 +1016,7 @@
 				>
 			</File>
 			<File
-				RelativePath="Icons\normal.ico"
-				>
-			</File>
-			<File
 				RelativePath="Icons\notice.ico"
-				>
-			</File>
-			<File
-				RelativePath="Icons\Op.ico"
 				>
 			</File>
 			<File
@@ -1060,10 +1057,6 @@
 			</File>
 			<File
 				RelativePath="Icons\underline.ico"
-				>
-			</File>
-			<File
-				RelativePath="Icons\Voice.ico"
 				>
 			</File>
 			<File
