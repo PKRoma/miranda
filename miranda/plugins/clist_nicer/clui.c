@@ -1752,7 +1752,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				ConfigureEventArea(pcli->hwndContactList);
 				SetButtonStyle();
 				PostMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-				InvalidateRect(hwnd, FALSE, TRUE);
+				PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
 			}
 			return FALSE;
 		}
