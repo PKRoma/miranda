@@ -41,7 +41,7 @@ static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,
 
 tPaintCallbackProc ClcPaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint,HRGN rgn,  DWORD dFlags, void * CallBackData);
 //#include <gdiplus.h>
-static BYTE divide3[765]={255};
+
 
 extern struct AvatarOverlayIconConfig 
 {
@@ -70,9 +70,9 @@ BOOL IsForegroundWindow(HWND hwnd)
 HFONT ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight)
 {
 	HFONT res;
-	res=SelectObject(hdc,dat->fontInfo[id].hFont);
-	SetTextColor(hdc,dat->fontInfo[id].colour);
-	if(fontHeight) *fontHeight=dat->fontInfo[id].fontHeight;
+	res=SelectObject(hdc,dat->fontModernInfo[id].hFont);
+	SetTextColor(hdc,dat->fontModernInfo[id].colour);
+	if(fontHeight) *fontHeight=dat->fontModernInfo[id].fontHeight;
 	return res;
 }
 
@@ -178,11 +178,14 @@ int GetBasicFontID(struct ClcContact * contact)
 	switch (contact->type)
 	{
 	case CLCIT_GROUP:
-		return FONTID_GROUPS;
+		if (contact->group->expanded)
+			return FONTID_OPENGROUPS;
+		else 
+			return FONTID_CLOSEDGROUPS;
 		break;
 	case CLCIT_INFO:
 		if(contact->flags & CLCIIF_GROUPFONT) 
-			return FONTID_GROUPS;
+			return FONTID_OPENGROUPS;
 		else 
 			return FONTID_CONTACTS;
 		break;
@@ -550,12 +553,12 @@ _inline char * GetCLCContactRowBackObject(struct ClcGroup * group, struct ClcCon
 			AppendChar(buf,BUFSIZE,b3);
 			free(b3);
 		}
-		
+
 #else
 		AppendChar(buf,BUFSIZE,b2);
 #endif
 		mir_free(b2);
-		
+
 	}
 	if (group->parent)
 	{
@@ -568,9 +571,9 @@ _inline char * GetCLCContactRowBackObject(struct ClcGroup * group, struct ClcCon
 		AppendChar(buf,BUFSIZE,",Group=");		
 #ifdef UNICODE
 		{
-		   char * b3=Utf8EncodeUcs2(b2);
-		   AppendChar(buf,BUFSIZE,b3);
-		   free(b3);
+			char * b3=Utf8EncodeUcs2(b2);
+			AppendChar(buf,BUFSIZE,b3);
+			free(b3);
 		}
 #else
 		AppendChar(buf,BUFSIZE,b2);
@@ -605,16 +608,16 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 		else
 			item = NUM_ITEM_TYPE - (item_iterator - item_text);
 
-    switch(dat->row_items[item])
-    {
-    case ITEM_AVATAR: ///////////////////////////////////////////////////////////////////////////////////////////////////
+		switch(dat->row_items[item])
 		{
-        RECT rc, real_rc;
-        int round_radius;
-        int max_width;
-        int width;
-        int height;
-        BYTE blendmode=255;
+		case ITEM_AVATAR: ///////////////////////////////////////////////////////////////////////////////////////////////////
+			{
+				RECT rc, real_rc;
+				int round_radius;
+				int max_width;
+				int width;
+				int height;
+				BYTE blendmode=255;
 
 				if (!dat->avatars_show || Drawing->type != CLCIT_CONTACT)
 					break;
@@ -656,7 +659,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 							}
 							else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) 
 							{
-								colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; 
+								colourFg=dat->fontModernInfo[FONTID_NOTONLIST].colour; 
 								mode=ILD_BLEND50;
 							}
 							else
@@ -694,39 +697,39 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 				}
 
 				// Has to draw!
-        {
-          blendmode=255;
-					if(hottrack) 
-							blendmode=255;
-					else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) 
-							blendmode=128;
-					if (Drawing->type==CLCIT_CONTACT && dat->showIdle && (Drawing->flags&CONTACTF_IDLE) && 
-								GetRealStatus(Drawing,ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE)
-								  blendmode=128;
-        }
-				// Get size
-        if (dat->use_avatar_service)         
 				{
-          if (Drawing->avatar_data && Drawing->avatar_data->bmHeight && Drawing->avatar_data->bmWidth)
-          {
-					  // Make bounds -> keep aspect radio
-					  // Clipping width and height
-					  width = dat->avatars_size;
-					  height = dat->avatars_size;       
-  					if (height * Drawing->avatar_data->bmWidth / Drawing->avatar_data->bmHeight <= width)
+					blendmode=255;
+					if(hottrack) 
+						blendmode=255;
+					else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) 
+						blendmode=128;
+					if (Drawing->type==CLCIT_CONTACT && dat->showIdle && (Drawing->flags&CONTACTF_IDLE) && 
+						GetRealStatus(Drawing,ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE)
+						blendmode=128;
+				}
+				// Get size
+				if (dat->use_avatar_service)         
+				{
+					if (Drawing->avatar_data && Drawing->avatar_data->bmHeight && Drawing->avatar_data->bmWidth)
 					{
-						width = height * Drawing->avatar_data->bmWidth / Drawing->avatar_data->bmHeight;
+						// Make bounds -> keep aspect radio
+						// Clipping width and height
+						width = dat->avatars_size;
+						height = dat->avatars_size;       
+						if (height * Drawing->avatar_data->bmWidth / Drawing->avatar_data->bmHeight <= width)
+						{
+							width = height * Drawing->avatar_data->bmWidth / Drawing->avatar_data->bmHeight;
+						}
+						else
+						{
+							height = width * Drawing->avatar_data->bmHeight / Drawing->avatar_data->bmWidth;					
+						}
 					}
- 					  else
+					else
 					{
-						height = width * Drawing->avatar_data->bmHeight / Drawing->avatar_data->bmWidth;					
+						width = 0;//dat->avatars_size;
+						height =0;// dat->avatars_size;  
 					}
-          }
-          else
-          {
-            width = 0;//dat->avatars_size;
-					  height =0;// dat->avatars_size;  
-          }
 				}
 				else
 				{
@@ -843,7 +846,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 									HDC hdcTempAv = CreateCompatibleDC(hdcMem);                 
 									HBITMAP hbmTempAvOld;
 									hbmTempAvOld = SelectObject(hdcTempAv,Drawing->avatar_data->hbmPic);
-									AlphaBlend(hdcMem, rc.left, rc.top, w, h, hdcTempAv, 0, 0,Drawing->avatar_data->bmWidth,Drawing->avatar_data->bmHeight, bf);
+									MyAlphaBlend(hdcMem, rc.left, rc.top, w, h, hdcTempAv, 0, 0,Drawing->avatar_data->bmWidth,Drawing->avatar_data->bmHeight, bf);
 									SelectObject(hdcTempAv, hbmTempAvOld);
 									DeleteDC(hdcTempAv);
 								}
@@ -883,8 +886,8 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 						{
 						case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
 							{
-                UINT a=blendmode;
-                a=(a<<24);
+								UINT a=blendmode;
+								a=(a<<24);
 								DrawIconExS(hdcMem, real_rc.left, real_rc.top, avatar_overlay_icons[Drawing->status - ID_STATUS_OFFLINE].icon, 
 									ICON_HEIGHT, ICON_HEIGHT, 0, NULL, DI_NORMAL|a); 
 								break;
@@ -893,12 +896,12 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 							{
 								int item;
 
-									item = ExtIconFromStatusMode(Drawing->hContact, Drawing->proto,
-										Drawing->proto==NULL ? ID_STATUS_OFFLINE : Drawing->status);
+								item = ExtIconFromStatusMode(Drawing->hContact, Drawing->proto,
+									Drawing->proto==NULL ? ID_STATUS_OFFLINE : Drawing->status);
 								if (item != -1)
 									ImageList_DrawEx_New(himlCListClc, item, hdcMem, 
 									real_rc.left,  real_rc.top,ICON_HEIGHT,ICON_HEIGHT,
-                  CLR_NONE,CLR_NONE,(blendmode==255)?ILD_NORMAL:(blendmode==128)?ILD_BLEND50:ILD_BLEND25);
+									CLR_NONE,CLR_NONE,(blendmode==255)?ILD_NORMAL:(blendmode==128)?ILD_BLEND50:ILD_BLEND25);
 								break;
 							}
 						case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
@@ -992,7 +995,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 						}
 						else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) 
 						{
-							colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; 
+							colourFg=dat->fontModernInfo[FONTID_NOTONLIST].colour; 
 							mode=ILD_BLEND50;
 						}
 						else
@@ -1122,7 +1125,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 						}
 						else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST) 
 						{
-							colourFg=dat->fontInfo[FONTID_NOTONLIST].colour; 
+							colourFg=dat->fontModernInfo[FONTID_NOTONLIST].colour; 
 							mode=BlendValue;
 						}
 
@@ -1215,7 +1218,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 				space_size.cx = space_rc.right - space_rc.left;
 				space_size.cy = min(space_rc.bottom - space_rc.top, free_height);
 
-				ChangeToFont(hdcMem,dat,FONTID_GROUPCOUNTS,NULL);
+				ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
 				DrawTextSA(hdcMem,szCounts,lstrlenA(szCounts),&counts_rc,DT_CALCRECT | uTextFormat);
 
 				counts_size.cx = counts_rc.right - counts_rc.left;
@@ -1249,36 +1252,36 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 
 				selection_text_rc = text_rc;
 				full_text_width=text_width;
-				ChangeToFont(hdcMem,dat,FONTID_GROUPS,NULL);
+				ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS,NULL);
 			}
-			
+
 			if (dat->row_align_group_mode==1) //center
 			{
-			int x;
-			//x=free_row_rc.left+((free_row_rc.right-free_row_rc.left-full_text_width)>>1);
-			int l=dat->leftMargin;
-			int r=dat->rightMargin;
-			x=l+row_rc.left+((row_rc.right-row_rc.left-full_text_width-l-r)>>1);
-			text_rc.left=x;
-			text_rc.right=x+full_text_width;
+				int x;
+				//x=free_row_rc.left+((free_row_rc.right-free_row_rc.left-full_text_width)>>1);
+				int l=dat->leftMargin;
+				int r=dat->rightMargin;
+				x=l+row_rc.left+((row_rc.right-row_rc.left-full_text_width-l-r)>>1);
+				text_rc.left=x;
+				text_rc.right=x+full_text_width;
 			}
 			else if (dat->row_align_group_mode==2) //right
 			{
-			text_rc.left=free_row_rc.right-full_text_width;
-			text_rc.right=free_row_rc.right;
+				text_rc.left=free_row_rc.right-full_text_width;
+				text_rc.right=free_row_rc.right;
 			}
 			else //left
 			{
-			text_rc.left=free_row_rc.left;
-			text_rc.right=free_row_rc.left+full_text_width;
+				text_rc.left=free_row_rc.left;
+				text_rc.right=free_row_rc.left+full_text_width;
 			}
-			
+
 		}
 		else if (Drawing->type == CLCIT_CONTACT)
 		{
 			int tmp;
 			if (dat->second_line_show && dat->second_line_type == TEXT_CONTACT_TIME && Drawing->timezone != -1 && 
-						(!dat->contact_time_show_only_if_different || Drawing->timediff != 0))
+				(!dat->contact_time_show_only_if_different || Drawing->timediff != 0))
 			{
 				// Get contact time
 				DBTIMETOSTRINGT dbtts;
@@ -1325,7 +1328,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 				max_bottom_selection_border = min(max_bottom_selection_border, dat->second_line_top_space / 2);
 			}
 			if (dat->third_line_show && dat->third_line_type == TEXT_CONTACT_TIME && Drawing->timezone != -1 && 
-						(!dat->contact_time_show_only_if_different || Drawing->timediff != 0))
+				(!dat->contact_time_show_only_if_different || Drawing->timediff != 0))
 			{
 				// Get contact time
 				DBTIMETOSTRINGT dbtts;
@@ -1440,7 +1443,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 				rc.left = rc.right + 6 + text_size.cx;
 				rc.right = free_row_rc.right;
 				if (!LayeredFlag)
-				DrawEdge(hdcMem,&rc,BDR_SUNKENOUTER,BF_RECT);
+					DrawEdge(hdcMem,&rc,BDR_SUNKENOUTER,BF_RECT);
 				break;
 			}
 		case CLCIT_GROUP:
@@ -1485,7 +1488,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 						counts_rc.bottom = counts_rc.top + counts_size.cy;
 					}
 
-					ChangeToFont(hdcMem,dat,FONTID_GROUPCOUNTS,NULL);
+					ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
 					if (selected)
 						SetTextColor(hdcMem,dat->selTextColour);
 					else if(hottrack)
@@ -1518,7 +1521,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 						//else
 
 						if (rc1.right-rc1.left>=6)
- 							DrawEdge(hdcMem,&rc1,BDR_SUNKENOUTER,BF_RECT);
+							DrawEdge(hdcMem,&rc1,BDR_SUNKENOUTER,BF_RECT);
 						if (rc2.right-rc2.left>=6)
 							DrawEdge(hdcMem,&rc2,BDR_SUNKENOUTER,BF_RECT);
 					}
@@ -1722,267 +1725,267 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 	//---
 	if (dat->row_heights ) 
 	{
-	//	if (NotInMain || dat->force_in_dialog|| !LayeredFlag ||grey)
-	//	{
-	//		SelectObject(hdcMem,oldbmp);
-	//		DeleteObject(hBmpOsb);
-	//		DeleteDC(hdcMem);
-	//	}
-	//	if (grey && (!LayeredFlag))
-	//	{
-	//		SelectObject(hdcMem2,oldbmp2);
-	//		DeleteObject(hBmpOsb2);
-	//		DeleteDC(hdcMem2);
-	//	}
-	//	return;
-	//}
-	//EnterCriticalSection(&(dat->lockitemCS));
-	while(y < rcPaint->bottom)
-	{
-		if (subindex==-1)
+		//	if (NotInMain || dat->force_in_dialog|| !LayeredFlag ||grey)
+		//	{
+		//		SelectObject(hdcMem,oldbmp);
+		//		DeleteObject(hBmpOsb);
+		//		DeleteDC(hdcMem);
+		//	}
+		//	if (grey && (!LayeredFlag))
+		//	{
+		//		SelectObject(hdcMem2,oldbmp2);
+		//		DeleteObject(hBmpOsb2);
+		//		DeleteDC(hdcMem2);
+		//	}
+		//	return;
+		//}
+		//EnterCriticalSection(&(dat->lockitemCS));
+		while(y < rcPaint->bottom)
 		{
-			if (group->scanIndex==group->cl.count) 
-			{
-				group=group->parent;
-				indent--;
-				if(group==NULL) break;	// Finished list
-				group->scanIndex++;
-				continue;
-			}
-		}
-
-		line_num++;
-
-		// Draw line, if needed
-		if (y > rcPaint->top - dat->row_heights[line_num]) 
-		{
-			//-        int iImage;
-			int selected;
-			int hottrack;
-			/*-        SIZE textSize, secondLineSize;
-			int space_width = 0;
-			int counts_width = 0;
-			int counts_height = 0;
-			char *szCounts = "";
-			-*/
-			int left_pos;
-			int right_pos;
-			int free_row_height;
-			RECT row_rc;
-			RECT free_row_rc;
-			char * request=NULL;
-			RECT rc;
-
-			// Get item to draw
 			if (subindex==-1)
 			{
-				Drawing = group->cl.items[group->scanIndex];
-				subident = 0;
-			}
-			else
-			{
-				Drawing = &(group->cl.items[group->scanIndex]->subcontacts[subindex]);
-				subident = dat->subIndent;
-			}
-			if (request) mir_free(request);
-
-			// Something to draw?
-			if (!(!Drawing || IsBadCodePtr((FARPROC)Drawing)))
-			{
-
-		/*		SelectObject(hdcMem,oldbmp);
-				DeleteObject(hBmpOsb);
-				DeleteDC(hdcMem);
-				//LeaveCriticalSection(&(dat->lockitemCS));
-				return;
-				*/
-			
-			// Calc row height
-			RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num);
-			/*-        {
-			secondLineSize.cy=0;
-			//Adjust text sizes
-			if (Drawing->type==CLCIT_CONTACT && dat->show_status_msg && Drawing->szStatusMsg[0]!='\0')
-			{
-			int h1=0;
-			int h2=0;    
-			SIZE sz;        
-			int FontID=0;
-			FontID=GetBasicFontID(Drawing);
-			ChangeToFont(hdcMem,dat,FontID,NULL);
-			// Get sizes
-			GetTextExtentPoint32A(hdcMem,"A",1,&sz);
-			h1=sz.cy;
-			ChangeToFont(hdcMem,dat,FONTID_SECONDLINE,NULL);
-			GetTextExtentPoint32A(hdcMem,"A",1,&sz);
-			h2=sz.cy;
-			dat->row_heights[line_num]=max(dat->row_heights[line_num],h1+h2+ROW_SPACE_BEETWEEN_LINES+dat->row_border*2);
-			secondLineSize.cy = h2;
-			}
-
-			}
-			-*/
-			// Init settings
-			selected = ((line_num==dat->selection) && (dat->showSelAlways || dat->exStyle&CLS_EX_SHOWSELALWAYS || IsForegroundWindow(hwnd)) && Drawing->type!=CLCIT_DIVIDER);
-			hottrack = dat->exStyle&CLS_EX_TRACKSELECT && Drawing->type!=CLCIT_DIVIDER && dat->iHotTrack==line_num;
-			left_pos = clRect.left + dat->leftMargin + indent * dat->groupIndent + subident;
-			right_pos = dat->rightMargin;	// Border
-
-			SetRect(&row_rc, clRect.left, y, clRect.right, y + dat->row_heights[line_num]);
-			free_row_rc = row_rc;
-			free_row_rc.left += left_pos;
-			free_row_rc.right -= right_pos;
-			free_row_rc.top += dat->row_border;
-			free_row_rc.bottom -= dat->row_border;
-			free_row_height = free_row_rc.bottom - free_row_rc.top;
-
-			{
-				HRGN rgn = CreateRectRgn(row_rc.left, row_rc.top, row_rc.right, row_rc.bottom);
-				SelectClipRgn(hdcMem, rgn);
-				DeleteObject(rgn);
-			}
-
-			// Store pos
-			Drawing->pos_indent = free_row_rc.left;
-			ZeroMemory(&Drawing->pos_check, sizeof(Drawing->pos_check));
-			ZeroMemory(&Drawing->pos_avatar, sizeof(Drawing->pos_avatar));
-			ZeroMemory(&Drawing->pos_icon, sizeof(Drawing->pos_icon));
-			ZeroMemory(&Drawing->pos_label, sizeof(Drawing->pos_label));
-		    ZeroMemory(&Drawing->pos_rename_rect, sizeof(Drawing->pos_rename_rect));
-			ZeroMemory(&Drawing->pos_extra, sizeof(Drawing->pos_extra));
-
-
-			// **** Draw Background 
-
-			// Alternating grey
-			if (style&CLS_GREYALTERNATE && line_num&1) 
-			{
-				SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=GreyAlternate");
-			}
-			// Row background
-			if (!dat->force_in_dialog)
-			{   //Build request string
-				request=GetCLCContactRowBackObject(group,Drawing,indent,line_num,selected,hottrack,dat);
-				//TRACE(request);
-				//TRACE("\n");
-				SkinDrawGlyph(hdcMem,&row_rc,rcPaint,request);
-				//mir_free(request);
-			}
-			if (selected || hottrack)
-			{ 
-				// Selection background (only if hole line - full/less)
-				if (dat->HiLightMode == 1) // Full  or default
+				if (group->scanIndex==group->cl.count) 
 				{
-					if (selected)
-						SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=Selection");
-					if(hottrack)
-						SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=HotTracking");
-				}
-				else if (dat->HiLightMode == 2) // Less
-				{
-					if (selected)
-						SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=Selection");      //instead of free_row_rc
-					if(hottrack)
-						SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=HotTracking");
+					group=group->parent;
+					indent--;
+					if(group==NULL) break;	// Finished list
+					group->scanIndex++;
+					continue;
 				}
 			}
 
-			// **** Checkboxes
-			if((style&CLS_CHECKBOXES && Drawing->type==CLCIT_CONTACT) ||
-				(style&CLS_GROUPCHECKBOXES && Drawing->type==CLCIT_GROUP) ||
-				(Drawing->type==CLCIT_INFO && Drawing->flags&CLCIIF_CHECKBOX))
-			{
-				//RECT rc;
-				HANDLE hTheme = NULL;
+			line_num++;
 
-				// THEME
-				if (IsWinVerXPPlus()) 
+			// Draw line, if needed
+			if (y > rcPaint->top - dat->row_heights[line_num]) 
+			{
+				//-        int iImage;
+				int selected;
+				int hottrack;
+				/*-        SIZE textSize, secondLineSize;
+				int space_width = 0;
+				int counts_width = 0;
+				int counts_height = 0;
+				char *szCounts = "";
+				-*/
+				int left_pos;
+				int right_pos;
+				int free_row_height;
+				RECT row_rc;
+				RECT free_row_rc;
+				char * request=NULL;
+				RECT rc;
+
+				// Get item to draw
+				if (subindex==-1)
 				{
-					if (!themeAPIHandle) 
-					{
-						themeAPIHandle = GetModuleHandle(TEXT("uxtheme"));
-						if (themeAPIHandle) {
-							MyOpenThemeData = (HANDLE (WINAPI *)(HWND,LPCWSTR))MGPROC("OpenThemeData");
-							MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))MGPROC("CloseThemeData");
-							MyDrawThemeBackground = (HRESULT (WINAPI *)(HANDLE,HDC,int,int,const RECT *,const RECT *))MGPROC("DrawThemeBackground");
-						}
-					}
-					// Make sure all of these methods are valid (i would hope either all or none work)
-					if (MyOpenThemeData
-						&&MyCloseThemeData
-						&&MyDrawThemeBackground) {
-							hTheme = MyOpenThemeData(hwnd,L"BUTTON");
-						}
-				}
-
-				rc = free_row_rc;
-				rc.right = rc.left + dat->checkboxSize;
-				rc.top += (rc.bottom - rc.top - dat->checkboxSize) >> 1;
-				rc.bottom = rc.top + dat->checkboxSize;
-
-				if (hTheme) {
-					MyDrawThemeBackground(hTheme, hdcMem, BP_CHECKBOX, Drawing->flags&CONTACTF_CHECKED?(hottrack?CBS_CHECKEDHOT:CBS_CHECKEDNORMAL):(hottrack?CBS_UNCHECKEDHOT:CBS_UNCHECKEDNORMAL), &rc, &rc);
-				}
-				else DrawFrameControl(hdcMem,&rc,DFC_BUTTON,DFCS_BUTTONCHECK|DFCS_FLAT|(Drawing->flags&CONTACTF_CHECKED?DFCS_CHECKED:0)|(hottrack?DFCS_HOT:0));
-				if (hTheme&&MyCloseThemeData) {
-					MyCloseThemeData(hTheme);
-					//hTheme = NULL;
-				}
-
-				left_pos += dat->checkboxSize + EXTRA_CHECKBOX_SPACE + HORIZONTAL_SPACE;
-				free_row_rc.left = row_rc.left + left_pos;
-
-				// Store pos
-				Drawing->pos_check = rc;
-			}
-			InternalPaintRowItems(hwnd, hdcMem, dat, Drawing, row_rc, free_row_rc, left_pos, right_pos, selected, hottrack, rcPaint);
-			if (request && !dat->force_in_dialog)
-			{
-				request[6]='O';
-				request[7]='v';
-				request[8]='l';
-				SkinDrawGlyph(hdcMem,&row_rc,rcPaint,request);
-				mir_free(request);
-				request=NULL;
-			}
-		}
-		}
-
-
-		// if (y > rcPaint->top - dat->row_heights[line_num] && y < rcPaint->bottom) 
-		y += dat->row_heights[line_num];
-
-		//increment by subcontacts
-		if (group->cl.items && group->cl.items[group->scanIndex]->subcontacts!=NULL && group->cl.items[group->scanIndex]->type!=CLCIT_GROUP)
-		{
-			if (group->cl.items[group->scanIndex]->SubExpanded && dat->expandMeta)
-			{
-				if (subindex<group->cl.items[group->scanIndex]->SubAllocated-1)
-				{
-					subindex++;
+					Drawing = group->cl.items[group->scanIndex];
+					subident = 0;
 				}
 				else
 				{
-					subindex=-1;
+					Drawing = &(group->cl.items[group->scanIndex]->subcontacts[subindex]);
+					subident = dat->subIndent;
+				}
+				if (request) mir_free(request);
+
+				// Something to draw?
+				if (!(!Drawing || IsBadCodePtr((FARPROC)Drawing)))
+				{
+
+					/*		SelectObject(hdcMem,oldbmp);
+					DeleteObject(hBmpOsb);
+					DeleteDC(hdcMem);
+					//LeaveCriticalSection(&(dat->lockitemCS));
+					return;
+					*/
+
+					// Calc row height
+					RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num);
+					/*-        {
+					secondLineSize.cy=0;
+					//Adjust text sizes
+					if (Drawing->type==CLCIT_CONTACT && dat->show_status_msg && Drawing->szStatusMsg[0]!='\0')
+					{
+					int h1=0;
+					int h2=0;    
+					SIZE sz;        
+					int FontID=0;
+					FontID=GetBasicFontID(Drawing);
+					ChangeToFont(hdcMem,dat,FontID,NULL);
+					// Get sizes
+					GetTextExtentPoint32A(hdcMem,"A",1,&sz);
+					h1=sz.cy;
+					ChangeToFont(hdcMem,dat,FONTID_SECONDLINE,NULL);
+					GetTextExtentPoint32A(hdcMem,"A",1,&sz);
+					h2=sz.cy;
+					dat->row_heights[line_num]=max(dat->row_heights[line_num],h1+h2+ROW_SPACE_BEETWEEN_LINES+dat->row_border*2);
+					secondLineSize.cy = h2;
+					}
+
+					}
+					-*/
+					// Init settings
+					selected = ((line_num==dat->selection) && (dat->showSelAlways || dat->exStyle&CLS_EX_SHOWSELALWAYS || IsForegroundWindow(hwnd)) && Drawing->type!=CLCIT_DIVIDER);
+					hottrack = dat->exStyle&CLS_EX_TRACKSELECT && Drawing->type!=CLCIT_DIVIDER && dat->iHotTrack==line_num;
+					left_pos = clRect.left + dat->leftMargin + indent * dat->groupIndent + subident;
+					right_pos = dat->rightMargin;	// Border
+
+					SetRect(&row_rc, clRect.left, y, clRect.right, y + dat->row_heights[line_num]);
+					free_row_rc = row_rc;
+					free_row_rc.left += left_pos;
+					free_row_rc.right -= right_pos;
+					free_row_rc.top += dat->row_border;
+					free_row_rc.bottom -= dat->row_border;
+					free_row_height = free_row_rc.bottom - free_row_rc.top;
+
+					{
+						HRGN rgn = CreateRectRgn(row_rc.left, row_rc.top, row_rc.right, row_rc.bottom);
+						SelectClipRgn(hdcMem, rgn);
+						DeleteObject(rgn);
+					}
+
+					// Store pos
+					Drawing->pos_indent = free_row_rc.left;
+					ZeroMemory(&Drawing->pos_check, sizeof(Drawing->pos_check));
+					ZeroMemory(&Drawing->pos_avatar, sizeof(Drawing->pos_avatar));
+					ZeroMemory(&Drawing->pos_icon, sizeof(Drawing->pos_icon));
+					ZeroMemory(&Drawing->pos_label, sizeof(Drawing->pos_label));
+					ZeroMemory(&Drawing->pos_rename_rect, sizeof(Drawing->pos_rename_rect));
+					ZeroMemory(&Drawing->pos_extra, sizeof(Drawing->pos_extra));
+
+
+					// **** Draw Background 
+
+					// Alternating grey
+					if (style&CLS_GREYALTERNATE && line_num&1) 
+					{
+						SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=GreyAlternate");
+					}
+					// Row background
+					if (!dat->force_in_dialog)
+					{   //Build request string
+						request=GetCLCContactRowBackObject(group,Drawing,indent,line_num,selected,hottrack,dat);
+						//TRACE(request);
+						//TRACE("\n");
+						SkinDrawGlyph(hdcMem,&row_rc,rcPaint,request);
+						//mir_free(request);
+					}
+					if (selected || hottrack)
+					{ 
+						// Selection background (only if hole line - full/less)
+						if (dat->HiLightMode == 1) // Full  or default
+						{
+							if (selected)
+								SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=Selection");
+							if(hottrack)
+								SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=HotTracking");
+						}
+						else if (dat->HiLightMode == 2) // Less
+						{
+							if (selected)
+								SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=Selection");      //instead of free_row_rc
+							if(hottrack)
+								SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=HotTracking");
+						}
+					}
+
+					// **** Checkboxes
+					if((style&CLS_CHECKBOXES && Drawing->type==CLCIT_CONTACT) ||
+						(style&CLS_GROUPCHECKBOXES && Drawing->type==CLCIT_GROUP) ||
+						(Drawing->type==CLCIT_INFO && Drawing->flags&CLCIIF_CHECKBOX))
+					{
+						//RECT rc;
+						HANDLE hTheme = NULL;
+
+						// THEME
+						if (IsWinVerXPPlus()) 
+						{
+							if (!themeAPIHandle) 
+							{
+								themeAPIHandle = GetModuleHandle(TEXT("uxtheme"));
+								if (themeAPIHandle) {
+									MyOpenThemeData = (HANDLE (WINAPI *)(HWND,LPCWSTR))MGPROC("OpenThemeData");
+									MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))MGPROC("CloseThemeData");
+									MyDrawThemeBackground = (HRESULT (WINAPI *)(HANDLE,HDC,int,int,const RECT *,const RECT *))MGPROC("DrawThemeBackground");
+								}
+							}
+							// Make sure all of these methods are valid (i would hope either all or none work)
+							if (MyOpenThemeData
+								&&MyCloseThemeData
+								&&MyDrawThemeBackground) {
+									hTheme = MyOpenThemeData(hwnd,L"BUTTON");
+								}
+						}
+
+						rc = free_row_rc;
+						rc.right = rc.left + dat->checkboxSize;
+						rc.top += (rc.bottom - rc.top - dat->checkboxSize) >> 1;
+						rc.bottom = rc.top + dat->checkboxSize;
+
+						if (hTheme) {
+							MyDrawThemeBackground(hTheme, hdcMem, BP_CHECKBOX, Drawing->flags&CONTACTF_CHECKED?(hottrack?CBS_CHECKEDHOT:CBS_CHECKEDNORMAL):(hottrack?CBS_UNCHECKEDHOT:CBS_UNCHECKEDNORMAL), &rc, &rc);
+						}
+						else DrawFrameControl(hdcMem,&rc,DFC_BUTTON,DFCS_BUTTONCHECK|DFCS_FLAT|(Drawing->flags&CONTACTF_CHECKED?DFCS_CHECKED:0)|(hottrack?DFCS_HOT:0));
+						if (hTheme&&MyCloseThemeData) {
+							MyCloseThemeData(hTheme);
+							//hTheme = NULL;
+						}
+
+						left_pos += dat->checkboxSize + EXTRA_CHECKBOX_SPACE + HORIZONTAL_SPACE;
+						free_row_rc.left = row_rc.left + left_pos;
+
+						// Store pos
+						Drawing->pos_check = rc;
+					}
+					InternalPaintRowItems(hwnd, hdcMem, dat, Drawing, row_rc, free_row_rc, left_pos, right_pos, selected, hottrack, rcPaint);
+					if (request && !dat->force_in_dialog)
+					{
+						request[6]='O';
+						request[7]='v';
+						request[8]='l';
+						SkinDrawGlyph(hdcMem,&row_rc,rcPaint,request);
+						mir_free(request);
+						request=NULL;
+					}
 				}
 			}
-		}
 
-		if(subindex==-1)
-		{
-			if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP && group->cl.items[group->scanIndex]->group->expanded) 
+
+			// if (y > rcPaint->top - dat->row_heights[line_num] && y < rcPaint->bottom) 
+			y += dat->row_heights[line_num];
+
+			//increment by subcontacts
+			if (group->cl.items && group->cl.items[group->scanIndex]->subcontacts!=NULL && group->cl.items[group->scanIndex]->type!=CLCIT_GROUP)
 			{
-				group=group->cl.items[group->scanIndex]->group;
-				indent++;
-				group->scanIndex=0;
-				subindex=-1;
-				continue;
+				if (group->cl.items[group->scanIndex]->SubExpanded && dat->expandMeta)
+				{
+					if (subindex<group->cl.items[group->scanIndex]->SubAllocated-1)
+					{
+						subindex++;
+					}
+					else
+					{
+						subindex=-1;
+					}
+				}
 			}
-			group->scanIndex++;
-		}
-	}
 
-	//---
+			if(subindex==-1)
+			{
+				if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP && group->cl.items[group->scanIndex]->group->expanded) 
+				{
+					group=group->cl.items[group->scanIndex]->group;
+					indent++;
+					group->scanIndex=0;
+					subindex=-1;
+					continue;
+				}
+				group->scanIndex++;
+			}
+		}
+
+		//---
 	}
 	//LeaveCriticalSection(&(dat->lockitemCS));
 	SelectClipRgn(hdcMem, NULL);
@@ -2000,7 +2003,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 		pts[6].x=pts[1].x;        pts[6].y=pts[5].y;
 		pts[7].x=pts[0].x;        pts[7].y=pts[4].y;
 		hRgn=CreatePolygonRgn(pts,sizeof(pts)/sizeof(pts[0]),ALTERNATE);
-		hBrush=CreateSolidBrush(dat->fontInfo[FONTID_CONTACTS].colour);
+		hBrush=CreateSolidBrush(dat->fontModernInfo[FONTID_CONTACTS].colour);
 		hoBrush=(HBRUSH)SelectObject(hdcMem,hBrush);
 		FillRgn(hdcMem,hRgn,hBrush);
 		SelectObject(hdcMem,hoBrush);

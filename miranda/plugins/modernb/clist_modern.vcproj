@@ -1072,9 +1072,6 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath=".\res\&amp;RQ.ico">
-			</File>
-			<File
 				RelativePath=".\res\1.ico">
 			</File>
 			<File
@@ -1111,15 +1108,6 @@
 				RelativePath=".\res\addgoupp.ico">
 			</File>
 			<File
-				RelativePath=".\res\agile.ico">
-			</File>
-			<File
-				RelativePath=".\res\AgileMobile.ico">
-			</File>
-			<File
-				RelativePath=".\res\AlIcq.ico">
-			</File>
-			<File
 				RelativePath=".\res\away.ico">
 			</File>
 			<File
@@ -1127,9 +1115,6 @@
 			</File>
 			<File
 				RelativePath=".\res\Center.ico">
-			</File>
-			<File
-				RelativePath=".\res\Centericq.ico">
 			</File>
 			<File
 				RelativePath=".\res\chat.ico">
@@ -1147,13 +1132,7 @@
 				RelativePath=".\res\folder.ico">
 			</File>
 			<File
-				RelativePath=".\res\Gaim.ico">
-			</File>
-			<File
 				RelativePath=".\res\globus.ico">
-			</File>
-			<File
-				RelativePath=".\res\Gnomeicu.ico">
 			</File>
 			<File
 				RelativePath=".\res\hide_avatar.ico">
@@ -1162,85 +1141,10 @@
 				RelativePath=".\res\hyperlin.cur">
 			</File>
 			<File
-				RelativePath=".\res\ico00001.ico">
-			</File>
-			<File
-				RelativePath=".\res\ico00002.ico">
-			</File>
-			<File
-				RelativePath=".\res\ico00003.ico">
-			</File>
-			<File
-				RelativePath=".\res\ico00004.ico">
-			</File>
-			<File
-				RelativePath=".\res\ico00005.ico">
-			</File>
-			<File
-				RelativePath=".\res\icon4.ico">
-			</File>
-			<File
-				RelativePath=".\res\Icq2000.ico">
-			</File>
-			<File
-				RelativePath=".\res\Icq2001.ico">
-			</File>
-			<File
-				RelativePath=".\res\Icq2003.ico">
-			</File>
-			<File
-				RelativePath=".\res\Icq2gof.ico">
-			</File>
-			<File
-				RelativePath=".\res\Icq2goJ.ico">
-			</File>
-			<File
-				RelativePath=".\res\IcqL4.ico">
-			</File>
-			<File
-				RelativePath=".\res\IcqL5.ico">
-			</File>
-			<File
-				RelativePath=".\res\IcqLite.ico">
-			</File>
-			<File
-				RelativePath=".\res\IcqMac.ico">
-			</File>
-			<File
-				RelativePath=".\res\im+.ico">
-			</File>
-			<File
-				RelativePath=".\res\IM2.ico">
-			</File>
-			<File
 				RelativePath=".\res\invisible.ico">
 			</File>
 			<File
-				RelativePath=".\res\Kopete.ico">
-			</File>
-			<File
-				RelativePath=".\res\LibIcq2000.ico">
-			</File>
-			<File
-				RelativePath=".\res\Licq.ico">
-			</File>
-			<File
 				RelativePath=".\res\lunch.ico">
-			</File>
-			<File
-				RelativePath=".\res\Micq.ico">
-			</File>
-			<File
-				RelativePath=".\res\Miranda.ico">
-			</File>
-			<File
-				RelativePath=".\res\mirandaclassic.ico">
-			</File>
-			<File
-				RelativePath=".\res\Mob2Icq.ico">
-			</File>
-			<File
-				RelativePath=".\res\MobiCQ2.ico">
 			</File>
 			<File
 				RelativePath=".\res\NA.ico">
@@ -1256,12 +1160,6 @@
 			</File>
 			<File
 				RelativePath=".\res\neo_meta_move.cur">
-			</File>
-			<File
-				RelativePath=".\res\nICQ.ico">
-			</File>
-			<File
-				RelativePath=".\res\NICQ2.ico">
 			</File>
 			<File
 				RelativePath=".\res\notick.ico">
@@ -1282,15 +1180,6 @@
 				RelativePath=".\res\phone.ico">
 			</File>
 			<File
-				RelativePath=".\res\psi.ico">
-			</File>
-			<File
-				RelativePath=".\res\QIP.ico">
-			</File>
-			<File
-				RelativePath=".\res\qip_alter.ico">
-			</File>
-			<File
 				RelativePath=".\res\rename.ico">
 			</File>
 			<File
@@ -1303,34 +1192,7 @@
 				RelativePath=".\res\show_avatar.ico">
 			</File>
 			<File
-				RelativePath=".\res\Sim.ico">
-			</File>
-			<File
 				RelativePath=".\res\sms.ico">
-			</File>
-			<File
-				RelativePath=".\res\Spambot.ico">
-			</File>
-			<File
-				RelativePath=".\res\Sticq.ico">
-			</File>
-			<File
-				RelativePath=".\res\Stricq.ico">
-			</File>
-			<File
-				RelativePath=".\res\Trillian.ico">
-			</File>
-			<File
-				RelativePath=".\res\Vicq.ico">
-			</File>
-			<File
-				RelativePath=".\res\WebIcq.ico">
-			</File>
-			<File
-				RelativePath=".\res\Yamigo.ico">
-			</File>
-			<File
-				RelativePath=".\res\Ysm.ico">
 			</File>
 		</Filter>
 	</Files>

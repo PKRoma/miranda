@@ -99,13 +99,15 @@ int DrawNonFramedObjects(BOOL Erase,RECT *r);
 
 //Implementation
 extern BOOL (WINAPI *MySetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);
+extern BOOL AlphaBlengGDIPlus(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc, BLENDFUNCTION * blendFunction);
+
 BOOL MyAlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc,BLENDFUNCTION blendFunction)
 {
-  if (!gdiPlusFail &&0) //Use gdi+ engine
+  if (!gdiPlusFail && 0) //Use gdi+ engine
   {
-    HBITMAP hbmp=GetCurrentObject(hdcSrc,OBJ_BITMAP);
-    DrawAvatarImageWithGDIp(hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,hbmp,nXOriginSrc,nYOriginSrc,nWidthSrc,nHeightSrc,blendFunction.AlphaFormat?8:0,blendFunction.SourceConstantAlpha);
-    return 0;
+	  return AlphaBlengGDIPlus( hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,
+								hdcSrc,nXOriginSrc,nYOriginSrc,nWidthSrc,nHeightSrc,
+								&blendFunction);
   }
   return AlphaBlend(hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,hdcSrc,nXOriginSrc,nYOriginSrc,nWidthSrc,nHeightSrc,blendFunction);
 }
@@ -1787,6 +1789,327 @@ BYTE weight[256];
 BYTE weight2[256];
 BYTE weightfilled=0;
 #include "math.h"
+typedef signed char sbyte;
+
+_inline void SetMatrix( sbyte * matrix,
+					   sbyte a, sbyte b, sbyte c, 
+					   sbyte d, sbyte e, sbyte f, 
+					   sbyte g, sbyte h, sbyte i)
+{
+	matrix[0]=a;	matrix[1]=b;	matrix[2]=c;
+	matrix[3]=d;	matrix[4]=e;	matrix[5]=f;
+	matrix[6]=g;	matrix[7]=h;	matrix[8]=i;
+}
+
+typedef  struct _MODERNEFFECTMATRIX
+{
+	sbyte matrix[25];
+	BYTE  topEffect;
+	BYTE  leftEffect;
+	BYTE  rightEffect;
+	BYTE  bottomEffect;
+	BYTE  cycleCount;	  //low 7 bits
+}MODERNEFFECTMATRIX;
+
+typedef  struct _MODERNEFFECT
+{
+	BYTE EffectID;
+	MODERNEFFECTMATRIX EffectMatrix;
+	DWORD EffectColor1;
+	DWORD EffectColor2;
+}MODERNEFFECT;
+
+#define MAXPREDEFINEDEFFECTS 3
+
+char * ModernEffectNames[]={"Outline","Outline smooth","Smooth bump"};
+
+MODERNEFFECTMATRIX ModernEffectsEnum[]={
+	{   //Outline
+		{	0,	0,	0,	0,	 0,
+			0,	16, 16, 16, 0,
+			0,	16,	32, 16, 0,
+			0,	16,	16,	16,	 0,
+			0,	0,	0,	0,	 0   },	1,1,1,1,1},
+	
+	{  //Outline smooth
+		{	4,	4,	4,	4,	 4,
+			4,	8,  8,  8,   4,
+			4,	8,	32, 8,   4,
+			4,	8,	8,	8,	 4,
+			4,	4,	4,	4,	 4   },	2,2,2,2,1},
+	
+	{  //Smooth bump
+		{	-2,   2,  2,  2,  2,
+			-2,	-16, 16, 16,  2,
+			-2,	-16, 48, 16,  2,
+			-2,	-16,-16, 16,  2,
+			-2,	 -2, -2, -2, -2 },	2,2,2,2,1+0x80}
+};
+
+MODERNEFFECT CurrentEffect={-1,{0},0,0};
+	
+void SetEffect(BYTE EffectID, DWORD FirstColor, DWORD SecondColor)
+{
+	if (EffectID>MAXPREDEFINEDEFFECTS) return; 
+	if (EffectID==-1) CurrentEffect.EffectID=-1;
+	else
+	{
+		CurrentEffect.EffectID=EffectID;
+		CurrentEffect.EffectMatrix=ModernEffectsEnum[EffectID];
+		CurrentEffect.EffectColor1=FirstColor;
+		CurrentEffect.EffectColor2=SecondColor;
+	}
+}
+
+void ResetEffect()
+{
+	CurrentEffect.EffectID=-1;
+}
+
+
+BOOL DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD height)
+{
+	sbyte *buf;
+	sbyte *outbuf;
+	sbyte *bufline, *buflineTop, *buflineMid;
+	int sign=0;
+	BYTE *maskline,*destline;
+	BYTE al,rl,gl,bl,ad,rd,gd,bd;
+	int k=0;
+	DWORD x,y;
+	sbyte *matrix;
+	BYTE mcTopStart;
+	BYTE mcBottomEnd;
+	BYTE mcLeftStart;
+	BYTE mcRightEnd;
+	BYTE effectCount;
+	int minX=width;
+	int maxX=0;
+	int minY=height;
+	int maxY=0;
+	if (CurrentEffect.EffectID==0xFF) return FALSE;
+	buf=(BYTE*)malloc(width*height*sizeof(BYTE));
+	{
+		matrix=CurrentEffect.EffectMatrix.matrix;
+		mcTopStart=2-CurrentEffect.EffectMatrix.topEffect;
+		mcBottomEnd=3+CurrentEffect.EffectMatrix.bottomEffect;
+		mcLeftStart=2-CurrentEffect.EffectMatrix.leftEffect;
+		mcRightEnd=3+CurrentEffect.EffectMatrix.rightEffect;
+		effectCount=CurrentEffect.EffectMatrix.cycleCount;
+	}
+	al=255-((BYTE)(CurrentEffect.EffectColor1>>24));
+	rl=GetRValue(CurrentEffect.EffectColor1);
+	gl=GetGValue(CurrentEffect.EffectColor1);
+	bl=GetBValue(CurrentEffect.EffectColor1);
+	rd=GetRValue(CurrentEffect.EffectColor2);
+	gd=GetGValue(CurrentEffect.EffectColor2);
+	bd=GetBValue(CurrentEffect.EffectColor2);
+	ad=255-((BYTE)(CurrentEffect.EffectColor2>>24));
+
+	
+	//Fill buffer by mid values of image
+	for (y=0; y<height; y++)
+	{
+		bufline=buf+y*width;
+		maskline=maskPt+((y*width)<<2);
+		for (x=0; x<width; x++)
+		{
+			BYTE a=(sbyte)(DWORD)((maskline[0]+maskline[2]+maskline[1]+maskline[1])>>4);
+			*bufline=a;
+			if (a!=0)
+			{
+				minX=min((int)x,minX);
+				minY=min((int)y,minY);
+				maxX=max((int)x,maxX);
+				maxY=max((int)y,maxY);
+			}
+			bufline++;
+			maskline+=4;
+		}
+	}
+	//Here perform effect on buffer and place results to outbuf
+	for (k=0; k<(effectCount&0x7F); k++)
+	{
+		minX=max(0,minX+mcLeftStart-2);
+		minY=max(0,minY+mcTopStart-2);
+		maxX=min((int)width,maxX+mcRightEnd-1);
+		maxY=min((int)height,maxX+mcBottomEnd-1);
+
+		outbuf=(sbyte*)malloc(width*height*sizeof(sbyte));
+		memset(outbuf,0,width*height*sizeof(sbyte));
+		for (y=(DWORD)minY; y<(DWORD)maxY; y++)
+		{
+			int val;
+			bufline=outbuf+y*width+minX;
+			buflineMid=buf+y*width+minX; 
+			for (x=(DWORD)minX; x<(DWORD)maxX; x++)
+			{			
+				int matrixHor,matrixVer;
+				val=0;			
+				for (matrixVer=mcTopStart; matrixVer<mcBottomEnd; matrixVer++)
+					for (matrixHor=mcLeftStart; matrixHor<mcRightEnd;matrixHor++)
+					{						
+						int a=y+matrixVer-2;
+						buflineTop=NULL;
+						if (a>=0 && (DWORD)a<height) buflineTop=buflineMid+width*(matrixVer-2);
+						a=x+matrixHor-2;
+						if (buflineTop && a>=0 && (DWORD)a<width) buflineTop+=matrixHor-2;
+						else buflineTop=NULL;
+						if (buflineTop) 
+							val+=((*buflineTop)*matrix[matrixVer*5+matrixHor]); 					
+					}
+				val=(val+1)>>5;
+				*bufline=(sbyte)((val>127)?127:(val<-125)?-125:val);
+				bufline++;
+				buflineMid++;
+			}
+		}
+		free(buf);
+		buf=outbuf;
+	}
+	{
+		BYTE r1,b1,g1,a1;
+		b1=bl; r1=rl; g1=gl; a1=al; sign=1;
+		//perform out to dest
+		for (y=0; y<height; y++)
+		{		
+			bufline=buf+y*width;
+			destline=destPt+((y*width)<<2);
+			for (x=0; x<width; x++)
+			{
+				sbyte val=*bufline;
+				BYTE absVal=((val<0)?-val:val);
+				
+				//val=val<0?val:0;
+				//val=val>0?val:0;
+				
+				if (val!=0)
+				{	
+					if (val>0 && sign<0)
+					{ b1=bl; r1=rl; g1=gl; a1=al; sign=1;}
+					else if (val<0 && sign>0)
+					{ b1=bd; r1=rd; g1=gd; a1=ad; sign=-1;}
+						
+
+					destline[0]=((destline[0]*(128-absVal))+absVal*b1)/128;
+					destline[1]=((destline[1]*(128-absVal))+absVal*g1)/128;
+					destline[2]=((destline[2]*(128-absVal))+absVal*r1)/128;
+					destline[3]=((destline[3]*(128-absVal))+(a1*absVal))/128;				
+				}
+				bufline++;
+				destline+=4;
+			}
+		}
+		free(buf);
+	}
+	return FALSE;
+}
+/*
+BOOL DrawTextEffect_(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD height, DWORD EffectColor, BYTE Effect)
+{
+	BYTE *buf=(BYTE*)malloc(width*height*sizeof(BYTE));
+	BYTE *outbuf;
+	BYTE *bufline, *buflineTop, *buflineMid, *buflineBot;
+	BYTE *maskline,*destline;
+	BYTE a,r,g,b;
+	int k=0;
+	sbyte matrix[9]={0};
+	
+	DWORD x,y,i;
+	a=255-((BYTE)(EffectColor>>24));
+	r=GetRValue(EffectColor);
+	g=GetGValue(EffectColor);
+	b=GetBValue(EffectColor);
+	if (div3[0]==255) for (i=0; i<766; i++) div3[i]=(BYTE)(i/3);  //fill div3 matrix
+	//Fill buffer by mid values of image
+	for (y=0; y<height; y++)
+	{
+		bufline=buf+y*width;
+		maskline=maskPt+(y<<2)*width;
+		for (x=0; x<width; x++)
+		{
+			*bufline=(BYTE)div3[(DWORD)(maskline[0]+maskline[1]+maskline[2])];
+			bufline++;
+			maskline+=4;
+		}
+	}
+
+	//Here perform effect on buffer and place results to outbuf
+	for (k=0; k<3; k++)
+	{
+		outbuf=(BYTE*)malloc(width*height*sizeof(BYTE));
+		SetMatrix(matrix,
+					4, 8,  4,     //128 - max, -127 min  (16 is base equal to 1) 
+					4, 32, 4,
+					4, 4,  4 );
+		for (y=0; y<height; y++)
+		{
+			bufline=outbuf+y*width;
+			buflineMid=buf+y*width; 
+			buflineTop=(y>0)?buflineMid-width:NULL;
+			buflineBot=(y<height-1)?buflineMid+width:NULL;
+			{//most left pixels
+				int val=((buflineTop)?(*(buflineTop)*matrix[1]+*(buflineTop+1)*matrix[2]):0)+
+					+*(buflineMid)*matrix[4]+*(buflineMid+1)*matrix[5]+
+					+((buflineBot)?(*(buflineBot)*matrix[7]+*(buflineBot+1)*matrix[8]):0);
+				val=val>>5;
+				*bufline=(BYTE)((val>255)?255:(val<0)?0:val);
+				bufline++;
+				if (buflineTop) buflineTop++;
+				buflineMid++;
+				if (buflineBot) buflineBot++;
+			}
+			for (x=1; x<width-1; x++)
+			{
+				int val=((buflineTop)?(*(buflineTop-1)*matrix[0]+*(buflineTop)*matrix[1]+*(buflineTop+1)*matrix[2]):0)+
+					+*(buflineMid-1)*matrix[3]+*(buflineMid)*matrix[4]+*(buflineMid+1)*matrix[5]+
+					+((buflineBot)?(*(buflineBot-1)*matrix[6]+*(buflineBot)*matrix[7]+*(buflineBot+1)*matrix[8]):0);
+				val=(val>>5);
+				*bufline=(BYTE)((val>255)?255:(val<0)?0:val);
+				bufline++;
+				if (buflineTop) buflineTop++;
+				buflineMid++;
+				if (buflineBot) buflineBot++;
+			}
+			{  // most right pixels
+				int val=((buflineTop)?(*(buflineTop-1)*matrix[0]+*(buflineTop)*matrix[1]):0)+
+					+*(buflineMid-1)*matrix[3]+*(buflineMid)*matrix[4]+
+					+((buflineBot)?(*(buflineBot-1)*matrix[6]+*(buflineBot)*matrix[7]):0);
+				val=val>>5;
+				*bufline=(BYTE)((val>255)?255:(val<0)?0:val);
+				bufline++;
+				if (buflineTop) buflineTop++;
+				buflineMid++;
+				if (buflineBot) buflineBot++;
+			}
+		}
+		free(buf);
+		buf=outbuf;
+	}
+	{
+		//perform out to dest
+		for (y=0; y<height; y++)
+		{		
+			bufline=buf+y*width;
+			destline=destPt+(y<<2)*width;
+			for (x=0; x<width; x++)
+			{
+				BYTE val=*bufline;
+				destline[0]=((destline[0]*(255-val))+(b*val))/255;
+				destline[1]=((destline[1]*(255-val))+(g*val))/255;
+				destline[2]=((destline[2]*(255-val))+(r*val))/255;
+				destline[3]=((destline[3]*(255-val))+(a*val))/255;				
+				bufline++;
+				destline+=4;
+			}
+		}
+	}
+	return FALSE;
+}
+*/
+
+
+
 int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor)
 {
   HBITMAP destBitmap;
@@ -1803,6 +2126,7 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
   BYTE * bits;
   BYTE * bufbits;
   HFONT hfnt, holdfnt;
+  
   int drx=0;
   int dry=0;
   int dtx=0;
@@ -1893,6 +2217,8 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
         
       }
   }
+	sz.cx+=4;
+	sz.cy+=4;
   if (sz.cx>0 && sz.cy>0)
   {
     //Create text bitmap
@@ -1903,15 +2229,19 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
       bufDC=CreateCompatibleDC(hDC);
       bufbmp=CreateBitmap32Point(sz.cx,sz.cy,(void**)&bufbits);
       bufoldbmp=SelectObject(bufDC,bufbmp);
-        BitBlt(bufDC,0,0,sz.cx,sz.cy,hDC,workRect.left+drx,workRect.top+dry,SRCCOPY);
+        BitBlt(bufDC,0,0,sz.cx,sz.cy,hDC,workRect.left+drx-2,workRect.top+dry-2,SRCCOPY);
     }
     //Calc text draw offsets
     //Draw text on temp bitmap
     {
-        TextOut(memdc,0,0,lpString,nCount);
+        TextOut(memdc,2,2,lpString,nCount);
     }
-    //UpdateAlphaCannel
-    {
+	{
+		DrawTextEffect(bufbits,bits,sz.cx,sz.cy);	
+	}
+    //RenderText
+   //if (1)
+	{
       DWORD x,y;
       DWORD width=sz.cx;
       DWORD heigh=sz.cy;
@@ -1991,7 +2321,7 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
     }
     //Blend to destination
     {
-        BitBlt(hDC,workRect.left+drx,workRect.top+dry,sz.cx,sz.cy,bufDC,0,0,SRCCOPY);
+        BitBlt(hDC,workRect.left+drx-2,workRect.top+dry-2,sz.cx,sz.cy,bufDC,0,0,SRCCOPY);
     }
     //free resources
 
@@ -2009,179 +2339,6 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
   if (noDIB) free(destBits);
   return 0;
 }
-//int AlphaTextOutOld (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor)
-//{
-//	SIZE sz;
-//	SIZE wsize={0};
-//	HDC memdc;
-//	HBITMAP hbmp,holdbmp;
-//	HBITMAP destBitmap;
-//	BITMAP bmpdata;
-//	BYTE * destBits;
-//	BOOL noDIB=0;
-//	BOOL is16bit=0;
-//	BYTE * bits;
-//
-//
-//	HFONT hfnt, holdfnt;
-//	int dx,dy;
-//
-//
-//	//inializations
-//	if (!lpString) return 0;
-//	if (nCount==-1) nCount=MyStrLen(lpString);
-//
-//	// retrieve destination bitmap bits
-//	{
-//		destBitmap=(HBITMAP)GetCurrentObject(hDC,OBJ_BITMAP);
-//		GetObject(destBitmap, sizeof(BITMAP),&bmpdata);
-//		if (bmpdata.bmBits==NULL)
-//		{
-//			noDIB=1;
-//			destBits=(BYTE*)malloc(bmpdata.bmHeight*bmpdata.bmWidthBytes);
-//			GetBitmapBits(destBitmap,bmpdata.bmHeight*bmpdata.bmWidthBytes,destBits);
-//		}
-//		else 
-//			destBits=bmpdata.bmBits;
-//	}
-//	is16bit=(bmpdata.bmBitsPixel)!=32;
-//
-//	//DC creation
-//	memdc=CreateCompatibleDC(hDC);
-//	hfnt=(HFONT)GetCurrentObject(hDC,OBJ_FONT);
-//	SetBkColor(memdc,0);
-//	SetTextColor(memdc,RGB(255,255,255));
-//	holdfnt=(HFONT)SelectObject(memdc,hfnt);
-//	//calc sizes
-//	GetTextExtentPoint32A(memdc,lpString,nCount,&sz);
-//	sz.cx+=2;
-//	if (sz.cx>lpRect->right-lpRect->left)
-//	{
-//		wsize.cx=lpRect->right-lpRect->left;
-//		//if (format&ADT_RIGHT)
-//		//    dx=-(sz.cx-lpRect->right+lpRect->left);
-//		//else if (format&ADT_HCENTER)
-//		//    dx=((lpRect->right-lpRect->left)-sz.cx)/2; 
-//		//else dx=0;
-//	}
-//	else
-//	{
-//		wsize.cx=sz.cx;
-//	}
-//	if (format&ADT_RIGHT)
-//		dx=lpRect->right-lpRect->left-sz.cx;
-//	else if (format&ADT_HCENTER)
-//		dx=((lpRect->right-lpRect->left)-sz.cx)/2;
-//	else dx=0;  
-//
-//	if (sz.cy>lpRect->bottom-lpRect->top)
-//		wsize.cy=lpRect->bottom-lpRect->top;
-//	else
-//		wsize.cy=sz.cy;  
-//	if (lpRect->top<0) {wsize.cy+=lpRect->top; dy=lpRect->top;}
-//	else dy=0;
-//
-//	if (format&ADT_BOTTOM)
-//		dy=lpRect->bottom-lpRect->top-sz.cy;
-//	else if (format&ADT_VCENTER)
-//		dy=((lpRect->bottom-lpRect->top)-sz.cy)/2;
-//
-//	// drawing
-//	hbmp=CreateBitmap32Point(wsize.cx,wsize.cy,(void**)&bits);
-//	holdbmp=SelectObject(memdc,hbmp);
-//	//BitBlt(memdc,0,0,wsize.cx,wsize.cy,hDC,lpRect->left,lpRect->top,SRCCOPY);
-//	TextOut(memdc,dx<=0?dx:0,dy<=0?dy:0,lpString,nCount);
-//	//TextOut(hDC,lpRect->left,lpRect->top,lpString,nCount);
-//
-//	// ok. now perform per pixel transfering from temp to destination 
-//	{
-//		int x,y;
-//		int sx,sy,mx,my,ddx,ddy;
-//		BYTE cr,cg,cb,ca;
-//		DWORD w,h;
-//		DWORD destH, destWB;  //avoiding use struct in cycles
-//		BYTE * destB, * sourB;
-//		w=wsize.cx; h=wsize.cy;
-//		destH=bmpdata.bmHeight;
-//		destWB=bmpdata.bmWidthBytes;
-//		cb=*(((BYTE*)&ARGBcolor)+0);
-//		cg=*(((BYTE*)&ARGBcolor)+1);
-//		cr=*(((BYTE*)&ARGBcolor)+2);
-//		ca=*(((BYTE*)&ARGBcolor)+3);
-//
-//		ddx=lpRect->left+(dx>0?dx:0);
-//		sx=0;//((lpRect->left)<0)?(-lpRect->left):0;
-//		if (ddx<0) {sx+=0/*-ddx*/; ddx=-ddx;}
-//
-//		ddy=lpRect->top+(dy>0?dy:0);
-//		sy=0;//((lpRect->top)<0)?(-lpRect->top):0;
-//		if (ddy<0) {sy+=0/*-ddy*/; ddy=0;}
-//
-//
-//		if (ddx+wsize.cx>bmpdata.bmWidth) mx=bmpdata.bmWidth-ddx;
-//		else mx=wsize.cx;
-//
-//		if (ddy+wsize.cy>bmpdata.bmHeight) my=bmpdata.bmHeight-ddy;
-//		else my=wsize.cy;    
-//
-//		my=min(my,wsize.cy);
-//		mx=min(mx,wsize.cx);
-//		for (y=sy;y<my;y++)
-//		{
-//			if (noDIB) destB=destBits+(y+ddy)*destWB;
-//			else destB=destBits+(destH-(y+ddy)-1)*destWB;
-//			sourB=bits+(h-y-1)*(w*4);
-//			for (x=sx;x<mx;x++)  
-//			{
-//				if (!is16bit) 
-//				{
-//					BYTE sr,sg,sb,sa;
-//					BYTE tr,tg,tb,ta,taf;
-//					BYTE * psx=(sourB+(x)*4);
-//					tr=*psx;
-//					tg=*(psx+1);
-//					tb=*(psx+2);   
-//					ta=(BYTE)(((DWORD)((DWORD)tr+(DWORD)tg+(DWORD)tb))/3);
-//					taf=255-ta;
-//
-//					if (ta!=0)
-//					{
-//						BYTE * pdx=(destB+(x+ddx)*4);
-//						sr=*pdx;
-//						sg=*(pdx+1);
-//						sb=*(pdx+2);
-//						sa=*(pdx+3);
-//						sr=(cr*tr+(255-tr)*sr)/255;
-//						sg=(cg*tg+(255-tg)*sg)/255;
-//						sb=(cb*tb+(255-tb)*sb)/255;
-//						sa=ta+taf*sa/255;
-//						pdx[0]=sr;
-//						pdx[1]=sg;
-//						pdx[2]=sb;
-//						pdx[3]=sa;
-//					}
-//				}
-//			}
-//		}
-//	}
-//	if (noDIB)
-//	{
-//		SetBitmapBits(destBitmap,bmpdata.bmHeight*bmpdata.bmWidthBytes,destBits);
-//		free(destBits);
-//	}
-//	SelectObject(memdc,holdfnt);
-//	SelectObject(memdc,holdbmp);
-//	DeleteObject(hbmp);
-//	DeleteDC(memdc);
-//	return 0; 
-//}
-//
-//
-//
-//BOOL DrawTextSA(HDC hdc, LPCSTR lpString, int nCount, RECT * lpRect, UINT format);
-
-//BOOL DrawTextSW(HDC hdc, LPCWSTR lpString, int nCount, RECT * lpRect, UINT format);
-
 BOOL DrawTextSA(HDC hdc, char * lpString, int nCount, RECT * lpRect, UINT format)
 {
 #ifdef UNICODE
@@ -2202,11 +2359,6 @@ BOOL DrawTextS(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format
   RECT r=*lpRect;
   OffsetRect(&r,1,1);
   if (format&DT_CALCRECT) return DrawText(hdc,lpString,nCount,lpRect,format);
-
-  //form|=(format&DT_VCENTER)?ADT_VCENTER:0;
-  //form|=(format&DT_BOTTOM)?ADT_BOTTOM:0;
-  //form|=(format&DT_RIGHT)?ADT_RIGHT:0;
-  //form|=(format&DT_CENTER)?ADT_HCENTER:0;
   form=format;
   color=GetTextColor(hdc);
   if (!gdiPlusFail &&0) ///text via gdi+
@@ -2214,42 +2366,7 @@ BOOL DrawTextS(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format
     TextOutWithGDIp(hdc,lpRect->left,lpRect->top,lpString,nCount);
     return 0;
   }
-//  AlphaTextOut(hdc,lpString,nCount,&r,form,0);
   return AlphaTextOut(hdc,lpString,nCount,lpRect,form,color);
-
-  /*    int i;
-  DWORD tick;
-  char buf[255];
-  if (format&DT_CALCRECT&& nCount!=10)
-  return DrawTextSA(hdc,lpString,nCount,lpRect,format);
-  {
-  tick=GetTickCount();
-  for (i=0;i<100;i++)
-  AlphaTextOut(hdc,lpString,nCount,lpRect,0,RGB(255,128,64));
-  //DrawTextSA(hdc,lpString,nCount,lpRect,format);
-  tick=GetTickCount()-tick;
-  MAX=tick>MAX?tick:MAX;
-  MIN=(tick<MIN || MIN==0)?tick:MIN;
-  SUM+=(tick);
-  count++;
-  if (count>50)
-  {
-  sprintf(buf,"%d, %d-%d........\n",SUM/count,MIN,MAX);
-  SUM=0;
-  //    MAX=0; MIN=-1;
-  count=0;
-  {
-  HDC wnd=GetDC(NULL);
-  RECT r;
-  SetRect(&r,0,0,300,20);
-  DrawText(wnd,buf,-1,&r,0);
-  ReleaseDC(NULL,wnd);
-  } 
-  }
-  tick=0;
-  }
-  //return AlphaTextOut(hdc,lpString,nCount,lpRect,0,RGB(255,128,64));
-  */
 }
 
 
@@ -2288,285 +2405,7 @@ BOOL ImageList_DrawEx_New( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,i
   DestroyIcon(ic);
   return TRUE;
 }
-BOOL ImageList_DrawEx_New1( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,int dy,COLORREF rgbBk,COLORREF rgbFg,UINT fStyle)
-{
-  HDC imDC;
-  HBITMAP oldBmp, imBmp, newbmp=NULL;
-  BITMAP imbt,immaskbt;
-  BYTE * imbits;
-  BYTE * imimagbits;
-  BYTE * immaskbits;
-  DWORD cx,cy,icy;
-  BYTE *t1, *t2, *t3;
-  IMAGEINFO imi;
-  //lockimagelist
-  BYTE hasmask=FALSE;
-  BYTE hasalpha=FALSE;
-  //if (1) return ImageList_DrawEx(himl,i,hdcDst,x,y,dx,dy,rgbBk,rgbFg,fStyle);
-  //CRITICAL_SECTION cs;
-  //InitializeCriticalSection(&cs);
-  //EnterCriticalSection(&cs);
 
-  ImageList_GetImageInfo(himl,i,&imi);
-  GetObject(imi.hbmImage,sizeof(BITMAP),&imbt);
-  GetObject(imi.hbmMask,sizeof(BITMAP),&immaskbt);
-  cy=imbt.bmHeight;
-
-  if (imbt.bmBitsPixel!=32)
-  {
-	  BOOL res=ImageList_DrawEx(himl,i,hdcDst,x,y,dx,dy,rgbBk,rgbFg,fStyle);
-	  return res;
-	  /*
-	  HDC tempdc=CreateCompatibleDC(hdcDst);
-	  HBITMAP holdbmp, newbmp=CreateBitmap32Point(imi.rcImage.right-imi.rcImage.left,imi.rcImage.bottom-imi.rcImage.top,&imimagbits); 
-	  holdbmp=SelectOject(tempdc,newbmp);
-	  ImageList_DrawEx(himl,i,hdcDst,x,y,dx,dy,rgbBk,rgbFg,fStyle);		  	
-	  */
-  }
-  else
-  {
-	if (imbt.bmBits==NULL)
-	{
-		imimagbits=(BYTE*)malloc(cy*imbt.bmWidthBytes);
-		GetBitmapBits(imi.hbmImage,cy*imbt.bmWidthBytes,(void*)imimagbits);
-	}
-	else imimagbits=imbt.bmBits;
-  } 
-
-  if (immaskbt.bmBits==NULL)
-  {
-    immaskbits=(BYTE*)malloc(cy*immaskbt.bmWidthBytes);
-    GetBitmapBits(imi.hbmMask,cy*immaskbt.bmWidthBytes,(void*)immaskbits);
-  }
-  else immaskbits=immaskbt.bmBits;
-  icy=imi.rcImage.bottom-imi.rcImage.top;
-  cx=imi.rcImage.right-imi.rcImage.left;
-  imDC=CreateCompatibleDC(hdcDst);
-  imBmp=CreateBitmap32Point(cx,icy,&imbits);
-  oldBmp=SelectObject(imDC,imBmp);
-  {
-    int x; int y;
-    int bottom,right,top,h,left;
-    int hs,he;
-    //	int hs2,he2;
-    int mwb,mwb2,mwb3;
-    mwb=immaskbt.bmWidthBytes;
-    mwb2=imbt.bmWidthBytes;
-	{
-		BITMAP bmt={0};
-		GetObject(imBmp,sizeof(BITMAP),&bmt);
-		mwb3=bmt.bmWidthBytes;
-	}
-    bottom=imi.rcImage.bottom;
-    right=imi.rcImage.right;   
-    top=imi.rcImage.top;
-    h=imbt.bmHeight;
-    left=imi.rcImage.left;
-    hs=imi.rcImage.left*immaskbt.bmBitsPixel/8;
-    he=hs+(imi.rcImage.right-imi.rcImage.left)*immaskbt.bmBitsPixel/8;
-
-
-    for (y=top;(y<bottom)&&!hasmask; y++)
-    { 
-      t1=immaskbits+y*mwb;
-      for (x=hs; (x<he)&&!hasmask; x++)
-        hasmask|=(*(t1+x)!=0);
-    }
-    //hs2=imi.rcImage.left*imbt.bmBitsPixel/8;
-    //he2=hs2+(imi.rcImage.right-imi.rcImage.left)*imbt.bmBitsPixel/8;
-    for (y=top;(y<bottom)&&!hasalpha; y++)
-    {
-      t1=imimagbits+(cy-y-1)*mwb2;
-      for (x=imi.rcImage.left; (x<right)&&!hasalpha; x++)
-		  hasalpha|=(*(t1+(x<<2)+3)!=0);
-    }
-
-    for (y=0; y<(int)icy; y++)
-    {
-      t1=imimagbits+(h-y-1-top)*mwb2;
-      t2=imbits+(icy-y-1)*mwb3;
-      t3=immaskbits+(y+top)*mwb;
-      for (x=0; x<(int)cx; x++)
-      {
-        DWORD * src, *dest;               
-        BYTE mask=((1<<(7-x%8))&(*(t3+((x+left)>>3))))!=0;
-        src=(DWORD*)(t1+((x+left)<<2));
-        dest=(DWORD*)(t2+(x<<2));
-        if (hasalpha && !hasmask)
-          *dest=*src;
-        else
-        {
-          if (mask)
-            *dest=0;
-          else
-          {
-            BYTE a;
-            a=((BYTE*)src)[3]>0?((BYTE*)src)[3]:255;
-            ((BYTE*)dest)[3]=a;
-            ((BYTE*)dest)[0]=((BYTE*)src)[0];//*a/255;
-            ((BYTE*)dest)[1]=((BYTE*)src)[1];//*a/255;
-            ((BYTE*)dest)[2]=((BYTE*)src)[2];//*a/255;
-            dest=dest;
-          }
-        }
-      }
-    }
-  }
- // LeaveCriticalSection(&cs);
- // DeleteCriticalSection(&cs);
-  {
-    BLENDFUNCTION bf={AC_SRC_OVER, 0, (fStyle&ILD_BLEND25)?64:(fStyle&ILD_BLEND50)?128:255, AC_SRC_ALPHA };
-    MyAlphaBlend(hdcDst,x,y,cx,icy,imDC,0,0,cx,icy,bf);
-  }
-  if (immaskbt.bmBits==NULL) free(immaskbits);
-  if (imbt.bmBits==NULL) free(imimagbits);
-  SelectObject(imDC,oldBmp);
-  DeleteObject(imBmp);
-  //DeleteObject(imi.hbmImage);
-  //DeleteObject(imi.hbmMask);
-  DeleteDC(imDC);
-  //unlock it;
-  return 0;
-};
-
-//int ImageList_ReplaceIcon_FixAlphaServ (WPARAM w,LPARAM l)
-//{
-//	ImageListFixParam * pa=(ImageListFixParam*)w;
-//	if (!pa) return -1;
-//	return ImageList_ReplaceIcon_FixAlpha(pa->himl,pa->index,pa->hicon);
-//}
-//int ImageList_ReplaceIcon_FixAlpha(HIMAGELIST himl, int i, HICON hicon)
-//{
-//	int res=ImageList_ReplaceIcon(himl,i,hicon);
-////	if (res>=0) FixAlpha(himl,hicon,res);
-//	return res;
-//}
-//int ImageList_AddIcon_FixAlphaServ(WPARAM w,LPARAM l)
-//{
-//	ImageListFixParam * pa=(ImageListFixParam*)w;
-//	if (!pa) return -1;
-//	return ImageList_AddIcon_FixAlpha(pa->himl,pa->hicon);
-//}
-//int ImageList_AddIcon_FixAlpha(HIMAGELIST himl,HICON hicon)
-//{
-//	int res=ImageList_AddIcon(himl,hicon);
-////	if (res>=0) FixAlpha(himl,hicon,res);
-//	return res;
-//}
-//int FixAlphaServ (WPARAM w,LPARAM l)
-//{
-//	ImageListFixParam * pa=(ImageListFixParam*)w;
-//	if (!pa) return -1;
-//	return FixAlpha(pa->himl,pa->hicon,pa->index);
-//}
-//int FixAlpha(HIMAGELIST himl,HICON hicon, int res)
-//{
-//	{//Fix alpha channel
-//		IMAGEINFO imi;
-//		//return 0;
-//		ImageList_GetImageInfo(himl,res,&imi);
-//		{
-//			BITMAP color,mask;
-//			BYTE *mbi;
-//			GetObject(imi.hbmImage,sizeof(color),&color);
-//			GetObject(imi.hbmMask ,sizeof(mask),&mask);
-//			mbi=mir_alloc(mask.bmWidthBytes*mask.bmHeight);
-//			GetBitmapBits(imi.hbmMask, mask.bmWidthBytes*mask.bmHeight,mbi);
-//			if (color.bmBitsPixel !=32) return 0;
-//			{
-//				int x,y;
-//				BOOL wAlpha=0;
-//				BOOL noMask=1;
-//				{
-//					for (y=imi.rcImage.top;y<imi.rcImage.bottom;y++)
-//					{
-//						for (x=imi.rcImage.left; x<imi.rcImage.right; x++)
-//						{
-//							BYTE* byte=((BYTE*) color.bmBits)+(color.bmHeight-y-1)*color.bmWidthBytes+x*4;
-//							wAlpha|=(byte[3]>0);
-//							if (wAlpha&& noMask) break;
-//						}
-//						if (wAlpha&& noMask) break;
-//					}
-//				}
-//				if (!wAlpha && noMask)
-//				{
-//					for (y=imi.rcImage.top;y<imi.rcImage.bottom;y++)
-//						for (x=imi.rcImage.left; x<imi.rcImage.right; x++)
-//						{
-//							BYTE* byte=((BYTE*) color.bmBits)+(color.bmHeight-y-1)*color.bmWidthBytes+x*4;
-//							BYTE m,f,k;
-//							{
-//								BYTE* byte2=mbi+(y)*mask.bmWidthBytes+x*mask.bmBitsPixel/8;
-//								m=*byte2;
-//								k=1<<(7-x%8);
-//								f=(m&k)==0;
-//								byte[3]=f?255:0;
-//							}
-//						}
-//				}   
-//				mir_free(mbi);
-//			}
-//		}
-//	}
-//
-//	return res;   
-//}
-//
-//int FixAlphaOld(HIMAGELIST himl,HICON hicon, int res)
-//{
-//	{//Fix alpha channel
-//		IMAGEINFO imi;
-//		//return 0;
-//		ImageList_GetImageInfo(himl,res,&imi);
-//		{
-//			BITMAP color,mask;
-//			BYTE *mbi;
-//			GetObject(imi.hbmImage,sizeof(color),&color);
-//			GetObject(imi.hbmMask ,sizeof(mask),&mask);
-//			mbi=mir_alloc(mask.bmWidthBytes*mask.bmHeight);
-//			GetBitmapBits(imi.hbmMask, mask.bmWidthBytes*mask.bmHeight,mbi);
-//			if (color.bmBitsPixel !=32) return 0;
-//			{
-//				int x,y;
-//				BOOL wAlpha=0;
-//				BOOL noMask=1;
-//				{
-//					for (y=imi.rcImage.top;y<imi.rcImage.bottom;y++)
-//					{
-//						for (x=imi.rcImage.left; x<imi.rcImage.right; x++)
-//						{
-//							BYTE* byte=((BYTE*) color.bmBits)+(color.bmHeight-y-1)*color.bmWidthBytes+x*4;
-//							wAlpha|=(byte[3]>0);
-//							if (wAlpha&& noMask) break;
-//						}
-//						if (wAlpha&& noMask) break;
-//					}
-//				}
-//				if (!wAlpha && noMask)
-//				{
-//					for (y=imi.rcImage.top;y<imi.rcImage.bottom;y++)
-//						for (x=imi.rcImage.left; x<imi.rcImage.right; x++)
-//						{
-//							BYTE* byte=((BYTE*) color.bmBits)+(color.bmHeight-y-1)*color.bmWidthBytes+x*4;
-//							BYTE m,f,k;
-//							{
-//								BYTE* byte2=mbi+(y)*mask.bmWidthBytes+x*mask.bmBitsPixel/8;
-//								m=*byte2;
-//								k=1<<(7-x%8);
-//								f=(m&k)==0;
-//								byte[3]=f?255:0;
-//							}
-//						}
-//				}   
-//				mir_free(mbi);
-//			}
-//		}
-//	}
-//
-//	return res;   
-//}
-//
 BOOL DrawIconExServ(WPARAM w,LPARAM l)
 {
   DrawIconFixParam *p=(DrawIconFixParam*)w;

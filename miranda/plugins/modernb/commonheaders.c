@@ -128,7 +128,8 @@ extern __inline wchar_t * mir_strdupW(const wchar_t * src)
 {
 	wchar_t * p;
 	if (src==NULL) return NULL;
-	p= mir_alloc((lstrlenW(src)+1)*sizeof(wchar_t));
+	if (IsBadStringPtrW(src,255)) return NULL;
+	p=(wchar_t *) mir_alloc((lstrlenW(src)+1)*sizeof(wchar_t));
 	if (!p) return 0;
 	lstrcpyW(p, src);
 	return p;

@@ -31,6 +31,9 @@ typedef struct
   HFONT BarFont;
   DWORD fontColor;
   BYTE connectingIcon;
+  BYTE TextEffectID;
+  DWORD TextEffectColor1;
+  DWORD TextEffectColor2;
 }StatusBarData;
 
 typedef struct
@@ -134,6 +137,9 @@ int LoadStatusBarData()
     };
     CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,frameID),frameopt);
   }
+  sbdat.TextEffectID=DBGetContactSettingByte(NULL,"StatusBar","TextEffectID",0xFF);
+  sbdat.TextEffectColor1=DBGetContactSettingDword(NULL,"StatusBar","TextEffectColor1",0);
+  sbdat.TextEffectColor2=DBGetContactSettingDword(NULL,"StatusBar","TextEffectColor2",0);
   SendMessage(pcli->hwndContactList,WM_SIZE,0,0);
   return 1;
 }
@@ -252,12 +258,12 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 		if (sbdat.showProtoName)
 		{
 			GetTextExtentPoint32A(hDC,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName),&textSize);
-			w+=textSize.cx+1+spaceWidth;
+			w+=textSize.cx+spaceWidth;
 		}
 		if (sbdat.showStatusName)
 		{
 			GetTextExtentPoint32A(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&textSize);
-			w+=textSize.cx+3;
+			w+=textSize.cx+spaceWidth+3;
 		}
 		ProtosData[i].fullWidth=w;
 		if (sbdat.sameWidth)
@@ -303,6 +309,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
     else if (sbdat.Align==2) //right
       aligndx=(rectwidth-SumWidth);
     // Draw in rects
+	SetEffect(sbdat.TextEffectID,sbdat.TextEffectColor1,sbdat.TextEffectColor2);
     {
       RECT r=rc;
       r.top+=sbdat.rectBorders.top;
@@ -352,20 +359,20 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
         {
           SIZE textSize;
 		  RECT rt=r;
-		  rt.left=x;
+		  rt.left=x+(spaceWidth>>1);
 		  rt.top=textY;
 		  DrawTextSA(hDC,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName),&rt,0);
           //TextOutS(hDC,x,textY,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName));
           if (sbdat.showStatusName)
           {
             GetTextExtentPoint32A(hDC,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName),&textSize);
-            x+=textSize.cx+spaceWidth;
+            x+=textSize.cx;
           }
         }
         if (sbdat.showStatusName)
         {
 		  RECT rt=r;
-		  rt.left=x;
+		  rt.left=x+(spaceWidth>>1);
 		  rt.top=textY;
 		  DrawTextSA(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&rt,0);
           //TextOutS(hDC,x,textY,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText));
@@ -376,8 +383,10 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 
       }
     }
+	ResetEffect();
     if (ProtoWidth) mir_free(ProtoWidth);
   }
+
   SelectObject(hDC,hOldFont);
 
   return 0;

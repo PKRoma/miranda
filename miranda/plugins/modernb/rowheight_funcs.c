@@ -116,14 +116,14 @@ int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
 		int contact_fonts[] = {FONTID_CONTACTS, FONTID_INVIS, FONTID_OFFLINE, FONTID_NOTONLIST, FONTID_OFFINVIS, 
 								FONTID_AWAY,FONTID_DND, FONTID_NA, FONTID_OCCUPIED, FONTID_CHAT, FONTID_INVISIBLE, 
 								FONTID_PHONE, FONTID_LUNCH};
-		int other_fonts[] = {FONTID_GROUPS, FONTID_GROUPCOUNTS, FONTID_DIVIDERS, FONTID_CONTACT_TIME};
+		int other_fonts[] = {FONTID_OPENGROUPS, FONTID_OPENGROUPCOUNTS,FONTID_CLOSEDGROUPS, FONTID_CLOSEDGROUPCOUNTS, FONTID_DIVIDERS, FONTID_CONTACT_TIME};
 
 		// Get contact font size
 		tmp = 0;
 		for (i = 0 ; i < MAX_REGS(contact_fonts) ; i++)
 		{
-			if (tmp < dat->fontInfo[contact_fonts[i]].fontHeight)
-				tmp = dat->fontInfo[contact_fonts[i]].fontHeight;
+			if (tmp < dat->fontModernInfo[contact_fonts[i]].fontHeight)
+				tmp = dat->fontModernInfo[contact_fonts[i]].fontHeight;
 		}
 		if (dat->text_replace_smileys && dat->first_line_draw_smileys && !dat->text_resize_smileys)
 		{
@@ -133,7 +133,7 @@ int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
 
 		if (dat->second_line_show)
 		{
-			tmp = dat->fontInfo[FONTID_SECONDLINE].fontHeight;
+			tmp = dat->fontModernInfo[FONTID_SECONDLINE].fontHeight;
 			if (dat->text_replace_smileys && dat->second_line_draw_smileys && !dat->text_resize_smileys)
 			{
 				tmp = max(tmp, dat->text_smiley_height);
@@ -143,7 +143,7 @@ int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
 
 		if (dat->third_line_show)
 		{
-			tmp = dat->fontInfo[FONTID_THIRDLINE].fontHeight;
+			tmp = dat->fontModernInfo[FONTID_THIRDLINE].fontHeight;
 			if (dat->text_replace_smileys && dat->third_line_draw_smileys && !dat->text_resize_smileys)
 			{
 				tmp = max(tmp, dat->text_smiley_height);
@@ -154,8 +154,8 @@ int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
 		// Get other font sizes
 		for (i = 0 ; i < MAX_REGS(other_fonts) ; i++)
 		{
-			if (max_height < dat->fontInfo[other_fonts[i]].fontHeight)
-				max_height = dat->fontInfo[other_fonts[i]].fontHeight;
+			if (max_height < dat->fontModernInfo[other_fonts[i]].fontHeight)
+				max_height = dat->fontModernInfo[other_fonts[i]].fontHeight;
 		}
 	}
 
@@ -278,7 +278,7 @@ int RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *c
 	{
 		if (!dat->text_ignore_size_for_row_height)
 		{
-			tmp = dat->fontInfo[GetBasicFontID(contact)].fontHeight;
+			tmp = dat->fontModernInfo[GetBasicFontID(contact)].fontHeight;
 			if (dat->text_replace_smileys && dat->first_line_draw_smileys && !dat->text_resize_smileys)
 			{
 				tmp = max(tmp, contact->iTextMaxSmileyHeight);
@@ -287,7 +287,7 @@ int RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *c
 
 			if (dat->second_line_show && contact->szSecondLineText)
 			{
-				tmp = dat->fontInfo[FONTID_SECONDLINE].fontHeight;
+				tmp = dat->fontModernInfo[FONTID_SECONDLINE].fontHeight;
 				if (dat->text_replace_smileys && dat->second_line_draw_smileys && !dat->text_resize_smileys)
 				{
 					tmp = max(tmp, contact->iSecondLineMaxSmileyHeight);
@@ -297,7 +297,7 @@ int RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *c
 
 			if (dat->third_line_show && contact->szThirdLineText)
 			{
-				tmp = dat->fontInfo[FONTID_THIRDLINE].fontHeight;
+				tmp = dat->fontModernInfo[FONTID_THIRDLINE].fontHeight;
 				if (dat->text_replace_smileys && dat->third_line_draw_smileys && !dat->text_resize_smileys)
 				{
 					tmp = max(tmp, contact->iThirdLineMaxSmileyHeight);

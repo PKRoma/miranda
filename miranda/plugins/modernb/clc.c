@@ -451,6 +451,11 @@ int LoadCLCModule(void)
  *	Contact list control window procedure
  */
 extern int sortBy[3], sortNoOfflineBottom;
+
+//TODO possible redefine
+#define GROUPF_SHOWOFFLINE 0x80   
+extern _inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
+
 LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {     
 	struct ClcData *dat;
@@ -492,7 +497,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			//InitDisplayNameCache(&dat->lCLCContactsCache);
 
 			LoadClcOptions(hwnd,dat);
-			//pcli->pfnRebuildEntireList(hwnd,dat);
+			pcli->pfnRebuildEntireList(hwnd,dat);
 
 			TRACE("Create New ClistControl END\r\n");
 			SetTimer(hwnd,TIMERID_INVALIDATE,2000,NULL);
@@ -528,6 +533,13 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				if (contact->type != CLCIT_GROUP)
 					return 0;
 				CallService(MS_CLIST_GROUPDELETE, contact->groupId, 0);
+				return 0;
+      case POPUP_GROUPSHOWOFFLINE:
+				if (contact->type != CLCIT_GROUP)
+					return 0;
+				CallService(MS_CLIST_GROUPSETFLAGS, contact->groupId,
+					MAKELPARAM(IsShowOfflineGroup(contact->group) ? 0 : GROUPF_SHOWOFFLINE, GROUPF_SHOWOFFLINE));
+				pcli->pfnClcBroadcast(CLM_AUTOREBUILD,0, 0);
 				return 0;
 			case POPUP_GROUPHIDEOFFLINE:
 				if (contact->type != CLCIT_GROUP)

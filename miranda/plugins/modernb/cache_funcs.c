@@ -225,7 +225,8 @@ void ReAskStatusMessage(HANDLE wParam)
  */
 void Cache_GetTimezone(struct ClcData *dat, struct ClcContact *contact)
 {
-	if (contact->proto)
+	if (IsBadWritePtr(contact,sizeof(struct ClcContact))) return;
+	if (!IsBadStringPtrA(contact->proto,100))
 		contact->timezone = (DWORD)DBGetContactSettingByte(contact->hContact,"UserInfo","Timezone", 
 									DBGetContactSettingByte(contact->hContact, contact->proto,"Timezone",-1));
 	else contact->timezone =-1;

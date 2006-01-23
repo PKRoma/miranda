@@ -456,6 +456,7 @@ HANDLE hHideShowMainMenuItem;
 HANDLE hSubGroupStatusMenuItemProxy;
 HANDLE hPreBuildSubGroupMenuEvent;
 HANDLE hHideOfflineUsersHereMenuItem;
+HANDLE hShowOfflineUsersHereMenuItem;
 
 //SubGroupmenu exec param(ownerdata)
 typedef struct{
@@ -473,21 +474,33 @@ static int RemoveSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+extern _inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
 static int OnBuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM mi;
+  BOOL gray1=FALSE;
+  BOOL gray2=FALSE;
+  BOOL showOfflineinGroup=FALSE;
+  
 	struct ClcGroup *group=(struct ClcGroup *)wParam;
 	if (wParam==0) return 0;
 
 
 	//contact->group
-
-	
-	
-	ZeroMemory(&mi,sizeof(mi));
+  ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);
-	mi.flags = CMIM_FLAGS | (group->hideOffline?CMIF_CHECKED:0);
+
+  showOfflineinGroup=IsShowOfflineGroup(group);
+  gray1=(showOfflineinGroup!=FALSE);
+  gray2=(group->hideOffline!=FALSE);
+	
+  if (gray1&&gray2) gray1=FALSE;  //should not be cause IsShowOfflineGroup return false if group->hideOffline
+	
+  mi.flags = CMIM_FLAGS | ((group->hideOffline&&!gray1)?CMIF_CHECKED:0)| (gray1?CMIF_GRAYED:0);
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hHideOfflineUsersHereMenuItem, (LPARAM)&mi);	
+	
+  mi.flags = CMIM_FLAGS | ((showOfflineinGroup&&!gray2) ? CMIF_CHECKED:0)| (gray2?CMIF_GRAYED:0);
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hShowOfflineUsersHereMenuItem, (LPARAM)&mi);	
 	
 	return 0;
 };
@@ -765,6 +778,16 @@ void InitSubGroupMenus(void)
 	gmp.lParam=0;
   gmp.wParam=POPUP_GROUPHIDEOFFLINE;
 	hHideOfflineUsersHereMenuItem=(HANDLE)AddSubGroupMenuItem((WPARAM)&gmp,(LPARAM)&mi);
+
+	memset(&mi,0,sizeof(mi));
+	mi.cbSize=sizeof(mi);
+	mi.position=1002;
+	mi.hIcon=NULL;
+	mi.pszService="CLISTMENUSSubGroup/GroupMenuExecProxy";
+	mi.pszName=Translate("&Show Offline Users in here");	
+	gmp.lParam=0;
+  gmp.wParam=POPUP_GROUPSHOWOFFLINE;
+	hShowOfflineUsersHereMenuItem=(HANDLE)AddSubGroupMenuItem((WPARAM)&gmp,(LPARAM)&mi);
 
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);

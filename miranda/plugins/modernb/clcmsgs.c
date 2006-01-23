@@ -47,9 +47,9 @@ LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wP
 		return 0;
 
 	case CLM_SETFONT:
-		if(HIWORD(lParam)<0 || HIWORD(lParam)>FONTID_MAX) return 0;
-		dat->fontInfo[HIWORD(lParam)].hFont=(HFONT)wParam;
-		dat->fontInfo[HIWORD(lParam)].changed=1;
+		if(HIWORD(lParam)<0 || HIWORD(lParam)>FONTID_MODERN_MAX) return 0;
+		dat->fontModernInfo[HIWORD(lParam)].hFont=(HFONT)wParam;
+		dat->fontModernInfo[HIWORD(lParam)].changed=1;
 
 		RowHeights_GetMaxRowHeight(dat, hwnd);
 
@@ -70,12 +70,12 @@ LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wP
 		return 0;
 
 	case CLM_SETTEXTCOLOR:
-		if(wParam<0 || wParam>FONTID_MAX) break;
-		dat->fontInfo[wParam].colour=lParam;
+		if(wParam<0 || wParam>FONTID_MODERN_MAX) break;
+		dat->fontModernInfo[wParam].colour=lParam;
 		dat->force_in_dialog=TRUE;
 		if (wParam==FONTID_CONTACTS) {
-			dat->fontInfo[FONTID_SECONDLINE].colour=lParam;
-			dat->fontInfo[FONTID_THIRDLINE].colour=lParam;
+			dat->fontModernInfo[FONTID_SECONDLINE].colour=lParam;
+			dat->fontModernInfo[FONTID_THIRDLINE].colour=lParam;
 		}
 
 		return 0;

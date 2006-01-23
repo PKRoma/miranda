@@ -164,6 +164,8 @@ extern int __inline CreateGlyphedObjectDefColor(char * ObjID,DWORD defColor);
 //Register default object
 extern int __inline CreateGlyphedObject(char * ObjID);
 
+extern void SetEffect(BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
+extern void ResetEffect();
 
 
 //// Creating and registering objects

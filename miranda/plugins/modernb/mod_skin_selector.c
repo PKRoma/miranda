@@ -357,7 +357,9 @@ SKINOBJECTDESCRIPTOR *  FindObjectByRequest(char * szValue,ModernMaskList * mmTe
     if (!mmTemplateList)    
         if (glObjectList.MaskList)
             mmTemplateList=glObjectList.MaskList;
+		else return NULL;
     if (!mmTemplateList) return NULL;
+	if (IsBadReadPtr(mmTemplateList,sizeof(ModernMaskList)))return NULL;
     ParseToModernMask(&mm,szValue);
     while (i<mmTemplateList->AllocatedMask)
     {

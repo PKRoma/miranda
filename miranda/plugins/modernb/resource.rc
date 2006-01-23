@@ -1040,6 +1040,7 @@ BEGIN
     BEGIN
         MENUITEM "&New Subgroup",               POPUP_NEWSUBGROUP
         MENUITEM "&Hide Offline Users in here", POPUP_GROUPHIDEOFFLINE
+        MENUITEM "&Show Offline Users in here", POPUP_GROUPSHOWOFFLINE
         MENUITEM SEPARATOR
         MENUITEM "&Rename Group",               POPUP_RENAMEGROUP
         MENUITEM "&Delete Group",               POPUP_DELETEGROUP

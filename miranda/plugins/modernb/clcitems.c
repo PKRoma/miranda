@@ -393,12 +393,24 @@ void DeleteItemFromTree(HWND hwnd,HANDLE hItem)
 	ClearRowByIndexCache();
 }
 
+//TODO move next line to m_clist.h
+#define GROUPF_SHOWOFFLINE 0x80   
+_inline BOOL IsShowOfflineGroup(struct ClcGroup* group)
+{
+    DWORD groupFlags=0;
+    if (!group) return FALSE;
+    if (group->hideOffline) return FALSE;
+    pcli->pfnGetGroupName(group->groupId,&groupFlags);
+    return (groupFlags&GROUPF_SHOWOFFLINE)!=0;
+}
+
 void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 {
 	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
 	HANDLE hContact;
 	struct ClcContact * cont;
 	struct ClcGroup *group;
+  BOOL GroupShowOfflineHere=FALSE;
 	int tick=GetTickCount();
 	KillTimer(hwnd,TIMERID_REBUILDAFTER);
 
@@ -444,18 +456,21 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 			else {
 				group=AddGroup(hwnd,dat,cacheEntry->szGroup,(DWORD)-1,0,0);
 			}
-			if(group!=NULL) {
+			if(group!=NULL) 
+      {
 				if (cacheEntry->status==ID_STATUS_OFFLINE)
 					if (DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0))
 						group=&dat->list;
 				group->totalMembers++;
-				if(!(style&CLS_NOHIDEOFFLINE) && (style&CLS_HIDEOFFLINE || group->hideOffline)) {
+
+				if(!(style&CLS_NOHIDEOFFLINE) && (style&CLS_HIDEOFFLINE || group->hideOffline)) 
+        {
 					if(cacheEntry->szProto==NULL) {
-						if(!pcli->pfnIsHiddenMode(dat,ID_STATUS_OFFLINE)||cacheEntry->noHiddenOffline)
+						if(!pcli->pfnIsHiddenMode(dat,ID_STATUS_OFFLINE)||cacheEntry->noHiddenOffline || IsShowOfflineGroup(group))
 							cont=AddContactToGroup(dat,group,cacheEntry);
 					}
 					else
-						if(!pcli->pfnIsHiddenMode(dat,cacheEntry->status)||cacheEntry->noHiddenOffline)
+						if(!pcli->pfnIsHiddenMode(dat,cacheEntry->status)||cacheEntry->noHiddenOffline || IsShowOfflineGroup(group))
 							cont=AddContactToGroup(dat,group,cacheEntry);
 				}
 				else cont=AddContactToGroup(dat,group,cacheEntry);

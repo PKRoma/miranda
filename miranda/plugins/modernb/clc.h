@@ -130,8 +130,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FONTID_INVIS       1
 #define FONTID_OFFLINE     2
 #define FONTID_NOTONLIST   3
-#define FONTID_GROUPS      4
-#define FONTID_GROUPCOUNTS 5
+#define FONTID_OPENGROUPS      4
+#define FONTID_OPENGROUPCOUNTS 5
 #define FONTID_DIVIDERS    6
 #define FONTID_OFFINVIS    7
 #define FONTID_SECONDLINE  8
@@ -145,6 +145,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FONTID_PHONE		16
 #define FONTID_LUNCH		17
 #define FONTID_CONTACT_TIME	18
+#define FONTID_CLOSEDGROUPS 19
+#define FONTID_CLOSEDGROUPCOUNTS 20
+
+
+#define FONTID_MODERN_MAX 20
 
 struct ClcGroup;
 
@@ -382,7 +387,7 @@ struct ClcData {
 	BOOL third_line_xstatus_has_priority;
 	BOOL third_line_show_status_if_no_away;
 	BOOL third_line_use_name_and_message_for_xstatus;
-
+	struct ClcFontInfo fontModernInfo[FONTID_MODERN_MAX+1];
 	HWND hWnd;
 };
 

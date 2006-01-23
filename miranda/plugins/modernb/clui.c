@@ -82,9 +82,8 @@ int SmoothAlphaThreadTransition(HWND hwnd);
 BOOL IsInChangingMode;
 extern void (*savedLoadCluiGlobalOpts)(void);
 /*
-*	Function ShowWindowNew overloads API ShowWindow in case of
-*  dropShaddow is enabled: it force to minimize window before hiding
-*  to remove shadow.
+*	Function CheckOwner returns true if given window is in 
+* frames.
 */
 BOOL CheckOwner(HWND hwnd)
 {
@@ -100,6 +99,11 @@ BOOL CheckOwner(HWND hwnd)
 	return FALSE;
 }
 extern void __inline ulockfrm();
+/*
+*	Function ShowWindowNew overloads API ShowWindow in case of
+*  dropShaddow is enabled: it force to minimize window before hiding
+*  to remove shadow.
+*/
 int ShowWindowNew(HWND hwnd, int cmd) 
 {
 	if (hwnd==pcli->hwndContactList 
@@ -241,6 +245,7 @@ extern int dock_prevent_moving;
 int show_event_started=0;
 extern int JustUpdateWindowImage();
 BOOL TransparentFlag=FALSE;// TransparentFlag
+
 void ChangeWindowMode()
 {
 	BOOL storedVisMode=FALSE;
@@ -305,10 +310,11 @@ void ChangeWindowMode()
 	//<->
 	//1- If visible store it and hide
 
-	if (IsOnDesktop || (DBGetContactSettingByte(NULL,"CList","OnDesktop", 0) && !firstTimeCallFlag))
+	if (LayeredFlag && (DBGetContactSettingByte(NULL,"CList","OnDesktop", 0)))// && !firstTimeCallFlag))
 	{
 			SetParent(pcli->hwndContactList,NULL);
 			SetParentForContainers(NULL);
+			UpdateWindow(pcli->hwndContactList);
 			IsOnDesktop=0;
 	}
 	//5- TODO Apply Style
@@ -322,6 +328,7 @@ void ChangeWindowMode()
 		if (IsWindowVisible(pcli->hwndContactList)) 
 		{
 			storedVisMode=TRUE;
+      SHOWHIDE_CALLED_FROM_ANIMATION=TRUE;
 			ShowWindow(pcli->hwndContactList,SW_HIDE);
 			OnShowHide(pcli->hwndContactList,0);
 		}
@@ -333,7 +340,9 @@ void ChangeWindowMode()
 		SetMenu(pcli->hwndContactList,NULL);
 	else
 		SetMenu(pcli->hwndContactList,hMenuMain);
-
+	
+	if (LayeredFlag&&(DBGetContactSettingByte(NULL,"CList","OnDesktop", 0)))
+		UpdateWindowImage();
 	//6- Pin to desktop mode
 	if (DBGetContactSettingByte(NULL,"CList","OnDesktop", 0)) 
 	{
@@ -347,7 +356,9 @@ void ChangeWindowMode()
 	} 
 	else 
 	{
-		if (GetParent(pcli->hwndContactList))
+	//	HWND parent=GetParent(pcli->hwndContactList);
+	//	HWND progman=FindWindow(TEXT("Progman"),NULL);
+	//	if (parent==progman)
 		{
 			SetParent(pcli->hwndContactList,NULL);
 			SetParentForContainers(NULL);
@@ -361,6 +372,7 @@ void ChangeWindowMode()
 		ShowWindow(pcli->hwndContactList,SW_SHOW);
 		OnShowHide(pcli->hwndContactList,1);
 	}
+  SHOWHIDE_CALLED_FROM_ANIMATION=FALSE;
 	if (!LayeredFlag)
 	{
 		HRGN hRgn1;
@@ -2750,7 +2762,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_SHOWWINDOW:
 		{	
 			BYTE gAlpha;
-			if (lParam) break;
+			if (lParam) return 0;
 			if (SHOWHIDE_CALLED_FROM_ANIMATION) return 1; 
 			{
 
@@ -2966,7 +2978,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					/*===================*/
 					return 0;
 		}	}	}
-		break;
+		return 0;
 
 	case WM_CONTEXTMENU:
 		{	RECT rc;

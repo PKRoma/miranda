@@ -277,8 +277,8 @@ void BeginRenameSelection(HWND hwnd,struct ClcData *dat)
 	h=dat->row_heights[dat->selection];
 	{
 		int i;
-		for (i=0; i<=FONTID_MAX; i++)
-			if (h<dat->fontInfo[i].fontHeight+4) h=dat->fontInfo[i].fontHeight+4;
+		for (i=0; i<=FONTID_MODERN_MAX; i++)
+			if (h<dat->fontModernInfo[i].fontHeight+4) h=dat->fontModernInfo[i].fontHeight+4;
 	}
 	//TODO contact->pos_label 
 
@@ -315,7 +315,7 @@ void BeginRenameSelection(HWND hwnd,struct ClcData *dat)
 	SetWindowLong(dat->hwndRenameEdit,GWL_STYLE,GetWindowLong(dat->hwndRenameEdit,GWL_STYLE)&(~WS_CAPTION)|WS_BORDER);
 	SetWindowLong(dat->hwndRenameEdit,GWL_USERDATA,(long)dat);
 	OldRenameEditWndProc=(WNDPROC)SetWindowLong(dat->hwndRenameEdit,GWL_WNDPROC,(long)RenameEditSubclassProc);
-	SendMessage(dat->hwndRenameEdit,WM_SETFONT,(WPARAM)(contact->type==CLCIT_GROUP?dat->fontInfo[FONTID_GROUPS].hFont:dat->fontInfo[FONTID_CONTACTS].hFont),0);
+	SendMessage(dat->hwndRenameEdit,WM_SETFONT,(WPARAM)(contact->type==CLCIT_GROUP?dat->fontModernInfo[FONTID_OPENGROUPS].hFont:dat->fontModernInfo[FONTID_CONTACTS].hFont),0);
 	SendMessage(dat->hwndRenameEdit,EM_SETMARGINS,EC_LEFTMARGIN|EC_RIGHTMARGIN|EC_USEFONTINFO,0);
 	SendMessage(dat->hwndRenameEdit,EM_SETSEL,0,(LPARAM)(-1));
 	// SetWindowLong(dat->hwndRenameEdit,GWL_USERDATA,(long)hwnd);
@@ -415,9 +415,9 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 		HFONT holdfont;
 		SIZE fontSize;
 		HDC hdc=GetDC(hwnd);
-		for(i=0;i<=FONTID_MAX;i++) {
-			if(!dat->fontInfo[i].changed) DeleteObject(dat->fontInfo[i].hFont);
-			GetFontSetting(i,&lf,&dat->fontInfo[i].colour);
+		for(i=0;i<=FONTID_MODERN_MAX;i++) {
+			if(!dat->fontModernInfo[i].changed) DeleteObject(dat->fontModernInfo[i].hFont);
+			GetFontSetting(i,&lf,&dat->fontModernInfo[i].colour);
 			{
 				LONG height;
 				HDC hdc=GetDC(NULL);
@@ -425,15 +425,15 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 				lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
 				ReleaseDC(NULL,hdc);				
 
-				dat->fontInfo[i].hFont=CreateFontIndirectA(&lf);
+				dat->fontModernInfo[i].hFont=CreateFontIndirectA(&lf);
 
 				lf.lfHeight=height;
 			}
 
-			dat->fontInfo[i].changed=0;
-			holdfont=SelectObject(hdc,dat->fontInfo[i].hFont);
+			dat->fontModernInfo[i].changed=0;
+			holdfont=SelectObject(hdc,dat->fontModernInfo[i].hFont);
 			GetTextExtentPoint32A(hdc,"x",1,&fontSize);
-			dat->fontInfo[i].fontHeight=fontSize.cy;
+			dat->fontModernInfo[i].fontHeight=fontSize.cy;
 			//			if(fontSize.cy>dat->rowHeight && (!DBGetContactSettingByte(NULL,"CLC","DoNotCheckFontSize",0))) dat->rowHeight=fontSize.cy;
 			if(holdfont) SelectObject(hdc,holdfont);
 		}
