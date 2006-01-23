@@ -1330,8 +1330,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendDlgItemMessage(hwndDlg, tooltips[i].id, BUTTONADDTOOLTIP, (WPARAM)Translate(tooltips[i].szTip), 0);
                 }
                 
-                SetDlgItemTextA(hwndDlg, IDC_LOGFROZENTEXT, Translate("Message Log is frozen"));
-                //SetDlgItemTextW(hwndDlg, IDC_LOGFROZENTEXT, (wchar_t *)CallService(MS_LANGPACK_TRANSLATESTRING, 1, "Message Log is frozen"));
+                SetDlgItemText(hwndDlg, IDC_LOGFROZENTEXT, TranslateT("Message Log is frozen"));
                 
                 SendMessage(GetDlgItem(hwndDlg, IDC_SAVE), BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
                 if(dat->bIsMeta)
@@ -1339,9 +1338,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 else
                     SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details"), 0);
                 
-                SetWindowTextA(GetDlgItem(hwndDlg, IDC_RETRY), Translate("Retry"));
-                SetWindowTextA(GetDlgItem(hwndDlg, IDC_CANCELSEND), Translate("Cancel"));
-                SetWindowTextA(GetDlgItem(hwndDlg, IDC_MSGSENDLATER), Translate("Send later"));
+                SetWindowText(GetDlgItem(hwndDlg, IDC_RETRY), TranslateT("Retry"));
+                SetWindowText(GetDlgItem(hwndDlg, IDC_CANCELSEND), TranslateT("Cancel"));
+                SetWindowText(GetDlgItem(hwndDlg, IDC_MSGSENDLATER), TranslateT("Send later"));
 
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETUNDOLIMIT, 0, 0);
