@@ -343,18 +343,6 @@ int LoadCLUIModule(void)
 	}
 
 	cli.pfnOnCreateClc();
-
-	{
-		int state = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
-		cli.hMenuMain = GetMenu(cli.hwndContactList);
-		if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
-			SetMenu(cli.hwndContactList, NULL);
-		if (state == SETTING_STATE_NORMAL)
-			ShowWindow(cli.hwndContactList, SW_SHOW);
-		else if (state == SETTING_STATE_MINIMIZED)
-			ShowWindow(cli.hwndContactList, SW_SHOWMINIMIZED);
-		SetWindowPos(cli.hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-	}
 	{
 		CLISTMENUITEM mi;
 		ZeroMemory(&mi, sizeof(mi));
@@ -534,6 +522,17 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			| (DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) ? CLS_HIDEOFFLINE : 0)
 			| (DBGetContactSettingByte(NULL, "CList", "HideEmptyGroups", SETTING_HIDEEMPTYGROUPS_DEFAULT) ?
 					CLS_HIDEEMPTYGROUPS : 0), 0, 0, 0, 0, hwnd, NULL, cli.hInst, NULL);
+		{
+			int state = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
+			cli.hMenuMain = GetMenu(cli.hwndContactList);
+			if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
+				SetMenu(cli.hwndContactList, NULL);
+			if (state == SETTING_STATE_NORMAL)
+				ShowWindow(cli.hwndContactList, SW_SHOW);
+			else if (state == SETTING_STATE_MINIMIZED)
+				ShowWindow(cli.hwndContactList, SW_SHOWMINIMIZED);
+			SetWindowPos(cli.hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+		}
 		SendMessage(hwnd, WM_SIZE, 0, 0);
 		break;
 
