@@ -1466,7 +1466,9 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
         sel.cpMin = startAt;
         sel.cpMax = -1;
 
-        smadd.cbSize = sizeof(smadd);
+		ZeroMemory(&smadd, sizeof(smadd));
+
+		smadd.cbSize = sizeof(smadd);
         smadd.hwndRichEditControl = GetDlgItem(hwndDlg, IDC_LOG);
         smadd.Protocolname = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
         if(startAt > 0)

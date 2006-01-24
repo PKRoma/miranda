@@ -25,6 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#define _UNICODE
 #endif
 
+#define _USE_32BIT_TIME_T
+
 #ifdef __GNUWIN32__
 
 #define OLERENDER_FORMAT 2
