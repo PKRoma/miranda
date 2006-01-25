@@ -1,0 +1,121 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_AIM DIALOGEX 0, 0, 200, 198
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "AIM User Details",IDC_STATIC,7,7,186,94
+    GROUPBOX        "AIM Options",IDC_STATIC,7,111,186,80
+    EDITTEXT        IDC_SN,77,17,93,15,ES_LOWERCASE | ES_AUTOHSCROLL
+    EDITTEXT        IDC_NK,77,37,93,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_PW,77,57,93,15,ES_PASSWORD | ES_AUTOHSCROLL
+    EDITTEXT        IDC_HN,77,77,94,15,ES_AUTOHSCROLL
+    LTEXT           "Screenname:",IDC_STATIC,24,20,50,15
+    LTEXT           "Display Name:",IDC_STATIC,21,39,50,15
+    LTEXT           "Password:",IDC_STATIC,32,59,43,15
+    LTEXT           "Hostname:",IDC_STATIC,31,80,43,12
+    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,23,124,130,13
+    CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,23,139,130,13
+    LTEXT           "File Transfer Grace Period:",IDC_STATIC,25,154,90,12
+    EDITTEXT        IDC_GP,113,152,20,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "(seconds)",IDC_STATIC,135,154,36,12
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_AIM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 193
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 191
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_AIM                 ICON                    "icons\\oscar.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

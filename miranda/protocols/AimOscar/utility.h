@@ -1,0 +1,59 @@
+#ifndef UTILITY_H
+#define UTILITY_H
+#ifdef __MINGW32__
+
+#if 0
+#include <crtdbg.h>
+#else
+#define __try
+#define __except(x) if (0) /* don't execute handler */
+#define __finally
+
+#define _try __try
+#define _except __except
+#define _finally __finally
+#endif
+
+#endif
+#include <windows.h>
+#include <ctype.h>
+#include <newpluginapi.h>
+#include <statusmodes.h>
+#include <m_protocols.h>
+#include <m_protomod.h>
+#include <m_protosvc.h>
+#include <m_clist.h>
+#include <m_clui.h>
+#include "defines.h"
+#include "connection.h"
+#include "resource.h"
+void broadcast_status(int status);
+void start_connection(int initial_status);
+HANDLE find_contact(char * sn);
+HANDLE add_contact(char* buddy);
+void add_contacts_to_groups();
+void offline_contacts();
+char *normalize_name(const char *s);
+void strip_html(char *dest, const char *src, size_t destsize);
+void msg_ack_success(HANDLE hContact);
+void execute_cmd(char* type,char* arg);
+void create_group(char *group, unsigned short group_id);
+unsigned short search_for_free_group_id(char *name);
+unsigned short search_for_free_item_id(HANDLE hbuddy);
+unsigned short get_members_of_group(unsigned short group_id,char* list);
+void __cdecl basic_search_ack_success(void *snsearch);
+void delete_module(char* module, HANDLE hContact);
+void delete_empty_group(unsigned short group_id);
+void delete_all_empty_groups();
+void delete_all_ids();
+void write_away_message(HANDLE hContact,char* sn,char* msg);
+void write_profile(HANDLE hContact,char* sn,char* msg);
+void get_error(unsigned short error_code);
+void aim_util_base64decode(char *in, char **out);
+unsigned int aim_oft_checksum_file(char *filename);
+void long_ip_to_char_ip(unsigned long host, char* ip);
+unsigned long char_ip_to_long_ip(char* ip);
+void create_cookie(HANDLE hContact);
+void read_cookie(HANDLE hContact,char* cookie);
+void write_cookie(HANDLE hContact,char* cookie);
+#endif
