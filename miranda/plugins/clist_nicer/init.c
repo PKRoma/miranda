@@ -35,6 +35,8 @@ extern HICON overlayicons[10];
 
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst,SIZE *psize, HDC hdcSrc, POINT *pptSrc, COLORREF crKey, BLENDFUNCTION *pblend, DWORD dwFlags);
+extern PGF MyGradientFill;
+
 extern struct CluiData g_CluiData;
 extern struct ExtraCache *g_ExtraCache;
 extern int g_nextExtraCacheEntry;
@@ -186,6 +188,7 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 	ZeroMemory((void *)overlayicons, sizeof(HICON) * 10);
 
 	CLN_LoadAllIcons(1);
+	LoadExtBkSettingsFromDB();
 	return 0;
 }
 
@@ -207,7 +210,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	pfnSetLayout = GetProcAddress( GetModuleHandleA( "GDI32.DLL" ), "SetLayout" );
 
-	LoadExtBkSettingsFromDB();
 	InitGdiPlus();
 
 	hUserDll = GetModuleHandleA("user32.dll");
@@ -215,6 +217,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		MySetLayeredWindowAttributes = (BOOL(WINAPI *)(HWND, COLORREF, BYTE, DWORD))GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
 		MyUpdateLayeredWindow = (BOOL (WINAPI *)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD))GetProcAddress(hUserDll, "UpdateLayeredWindow");
 	}
+	MyGradientFill = (PGF)GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
 
 	// get the internal malloc/free()
 	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));

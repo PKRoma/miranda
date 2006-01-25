@@ -30,6 +30,7 @@ extern DWORD savedCORNER;
 extern StatusItems_t *StatusItems;
 
 extern struct CluiData g_CluiData;
+PGF MyGradientFill = 0;
 
 BYTE __forceinline percent_to_byte(UINT32 percent)
 {
@@ -47,6 +48,41 @@ DWORD __forceinline argb_from_cola(COLORREF col, UINT32 alpha)
 }
 
 
+static __forceinline DrawBorderStyle(HDC hdcwnd, RECT *rc, DWORD BORDERSTYLE)
+{
+    if(BORDERSTYLE >= 0) {
+        HPEN hPenOld = 0;
+        POINT pt;
+        
+        switch(BORDERSTYLE) {
+            case BDR_RAISEDOUTER:                 // raised
+                MoveToEx(hdcwnd, rc->left, rc->bottom - 1, &pt);
+                hPenOld = SelectObject(hdcwnd, g_CluiData.hPen3DBright);
+                LineTo(hdcwnd, rc->left, rc->top);
+                LineTo(hdcwnd, rc->right, rc->top);
+                SelectObject(hdcwnd, g_CluiData.hPen3DDark);
+                MoveToEx(hdcwnd, rc->right - 1, rc->top + 1, &pt);
+                LineTo(hdcwnd, rc->right - 1, rc->bottom - 1);
+                LineTo(hdcwnd, rc->left - 1, rc->bottom - 1);
+                break;
+            case BDR_SUNKENINNER:
+                MoveToEx(hdcwnd, rc->left, rc->bottom - 1, &pt);
+                hPenOld = SelectObject(hdcwnd, g_CluiData.hPen3DDark);
+                LineTo(hdcwnd, rc->left, rc->top);
+                LineTo(hdcwnd, rc->right, rc->top);
+                MoveToEx(hdcwnd, rc->right - 1, rc->top + 1, &pt);
+                SelectObject(hdcwnd, g_CluiData.hPen3DBright);
+                LineTo(hdcwnd, rc->right - 1, rc->bottom - 1);
+                LineTo(hdcwnd, rc->left, rc->bottom - 1);
+                break;
+            default:
+                DrawEdge(hdcwnd, rc, BORDERSTYLE, BF_RECT | BF_SOFT);
+                break;
+        }
+        if(hPenOld)
+            SelectObject(hdcwnd, hPenOld);
+    }
+}
 void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE, ImageItem *imageItem)
 {
     HBRUSH BrMask;
@@ -101,6 +137,79 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolo
     if (rc->right < rc->left || rc->bottom < rc->top || (realHeight <= 0) || (realWidth <= 0))
         return;
 
+	if(g_CluiData.bUseFastGradients && !(FLG_CORNER & CORNER_ACTIVE)) {
+		GRADIENT_RECT grect;
+		TRIVERTEX tvtx[2];
+		int orig = 1, dest = 0;
+
+		if(!(FLG_GRADIENT & GRADIENT_ACTIVE)) {
+			tvtx[0].Red = tvtx[1].Red = (COLOR16)GetRValue(basecolor) << 8;
+			tvtx[0].Blue = tvtx[1].Blue = (COLOR16)GetBValue(basecolor) << 8;
+			tvtx[0].Green = tvtx[1].Green = (COLOR16)GetGValue(basecolor) << 8;
+			tvtx[0].Alpha = tvtx[1].Alpha = 0;
+		}
+		else {
+			if(FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_TB) {
+				orig = 0;
+				dest = 1;
+			}
+
+			tvtx[orig].Red = (COLOR16)GetRValue(basecolor) << 8;
+			tvtx[orig].Blue = (COLOR16)GetBValue(basecolor) << 8;
+			tvtx[orig].Green = (COLOR16)GetGValue(basecolor) << 8;
+			tvtx[orig].Alpha = (COLOR16)0;
+
+			tvtx[dest].Red = (COLOR16)GetRValue(basecolor2) << 8;
+			tvtx[dest].Blue = (COLOR16)GetBValue(basecolor2) << 8;
+			tvtx[dest].Green = (COLOR16)GetGValue(basecolor2) << 8;
+			tvtx[dest].Alpha = (COLOR16)0;
+		}
+		grect.UpperLeft = 0;
+		grect.LowerRight = 1;
+
+	    saved_alpha = (UCHAR) (basecolor >> 24);
+
+		if(alpha < 100) {
+			BLENDFUNCTION bf;
+			HDC hdc;
+			HBITMAP hbm, hbmOld;
+			LONG width = rc->right - rc->left, height = rc->bottom - rc->top;
+
+			tvtx[0].x = tvtx[0].y = 0;
+			tvtx[1].x = width;
+			tvtx[1].y = height;
+
+			basecolor = argb_from_cola(revcolref(basecolor), alpha);
+			basecolor2 = argb_from_cola(revcolref(basecolor2), alpha);
+			bf.BlendOp = AC_SRC_OVER;
+			bf.BlendFlags = 0;
+			bf.SourceConstantAlpha = percent_to_byte((UINT32)alpha);
+			bf.AlphaFormat = 0; // so it will use our specified alpha value
+			hdc = CreateCompatibleDC(hdcwnd);
+			if (!hdc)
+				return;
+			hbm = CreateCompatibleBitmap(hdcwnd, width, height);
+			hbmOld = SelectObject(hdc, hbm);
+			MyGradientFill(hdc, tvtx, 2, &grect, 1, (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT) ? GRADIENT_FILL_RECT_V : GRADIENT_FILL_RECT_H);
+			//BitBlt(hdcwnd, rc->left, rc->top, width, height, hdc, 0, 0, SRCCOPY);
+		    AlphaBlend(hdcwnd, rc->left, rc->top, width, height, hdc, 0, 0, width, height, bf);
+
+			SelectObject(hdc, hbmOld);
+			DeleteObject(hbm);
+			DeleteDC(hdc);
+		}
+		else {
+			tvtx[0].x = rc->left;
+			tvtx[0].y = rc->top;
+			tvtx[1].x = rc->right;
+			tvtx[1].y = rc->bottom;
+			MyGradientFill(hdcwnd, tvtx, 2, &grect, 1, (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT) ? GRADIENT_FILL_RECT_V : GRADIENT_FILL_RECT_H);
+		}
+		DrawBorderStyle(hdcwnd, rc, BORDERSTYLE);
+		//_DebugPopup(0, "using gradient fill");
+		return;
+	}
+
     hdc = CreateCompatibleDC(hdcwnd);
     if (!hdc)
         return;
@@ -152,6 +261,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolo
     for (y = 0; y < ulBitmapHeight; y++) {
         for (x = 0 ; x < ulBitmapWidth ; x++) {
             if (FLG_GRADIENT & GRADIENT_ACTIVE) {
+				ubAlpha = percent_to_byte(alpha);
                 if (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_RL) {
                     realx = x + realHeightHalf;
                     realx = (ULONG) realx > ulBitmapWidth ? ulBitmapWidth : realx;
@@ -271,38 +381,8 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolo
         }           
         AlphaBlend(hdcwnd, rc->right - realHeightHalf, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
     }   
-    if(BORDERSTYLE >= 0) {
-        HPEN hPenOld = 0;
-        POINT pt;
-        
-        switch(BORDERSTYLE) {
-            case BDR_RAISEDOUTER:                 // raised
-                MoveToEx(hdcwnd, rc->left, rc->bottom - 1, &pt);
-                hPenOld = SelectObject(hdcwnd, g_CluiData.hPen3DBright);
-                LineTo(hdcwnd, rc->left, rc->top);
-                LineTo(hdcwnd, rc->right, rc->top);
-                SelectObject(hdcwnd, g_CluiData.hPen3DDark);
-                MoveToEx(hdcwnd, rc->right - 1, rc->top + 1, &pt);
-                LineTo(hdcwnd, rc->right - 1, rc->bottom - 1);
-                LineTo(hdcwnd, rc->left - 1, rc->bottom - 1);
-                break;
-            case BDR_SUNKENINNER:
-                MoveToEx(hdcwnd, rc->left, rc->bottom - 1, &pt);
-                hPenOld = SelectObject(hdcwnd, g_CluiData.hPen3DDark);
-                LineTo(hdcwnd, rc->left, rc->top);
-                LineTo(hdcwnd, rc->right, rc->top);
-                MoveToEx(hdcwnd, rc->right - 1, rc->top + 1, &pt);
-                SelectObject(hdcwnd, g_CluiData.hPen3DBright);
-                LineTo(hdcwnd, rc->right - 1, rc->bottom - 1);
-                LineTo(hdcwnd, rc->left, rc->bottom - 1);
-                break;
-            default:
-                DrawEdge(hdcwnd, rc, BORDERSTYLE, BF_RECT | BF_SOFT);
-                break;
-        }
-        if(hPenOld)
-            SelectObject(hdcwnd, hPenOld);
-    }
+	DrawBorderStyle(hdcwnd, rc, BORDERSTYLE);
+
     SelectObject(hdc, holdbitmap);
     DeleteObject(hbitmap);
     SelectObject(hdc, holdbrush);

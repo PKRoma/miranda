@@ -319,6 +319,8 @@ struct CluiData {
 	BYTE bUseFloater;
 	BYTE fullyInited;
 	BYTE bAutoExpandGroups;
+	SIZE szOldCTreeSize;
+	BYTE bWantFastGradients, bUseFastGradients;
 };
 
 struct IconDesc {
@@ -530,3 +532,5 @@ wchar_t *a2u(char *src);
 #define IDC_CONFIGUREMODES 109
 
 #define NR_CLIENTS 40
+
+typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);

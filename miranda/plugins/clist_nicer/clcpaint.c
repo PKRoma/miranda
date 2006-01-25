@@ -51,6 +51,8 @@ extern TCHAR *statusNames[];
 extern LONG g_cxsmIcon, g_cysmIcon;
 extern DWORD g_gdiplusToken;
 extern StatusItems_t *StatusItems;
+extern PGF MyGradientFill;
+
 pfnDrawAlpha pDrawAlpha = NULL;
 
 void DrawWithGDIp(HDC hDC, DWORD x, DWORD y, DWORD width, DWORD height, UCHAR alpha, struct ClcContact *contact);
@@ -1335,6 +1337,8 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 	g_focusWnd = GetFocus();
 	my_status = GetGeneralisedStatus();
 	g_HDC = hdc;
+
+	g_CluiData.bUseFastGradients = g_CluiData.bWantFastGradients && (MyGradientFill != 0);
 
 	g_gdiPlus = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS && g_gdiplusToken);
 	g_gdiPlusText = DBGetContactSettingByte(NULL, "CLC", "gdiplustext", 0) && g_gdiPlus;

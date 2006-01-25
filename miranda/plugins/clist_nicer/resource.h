@@ -173,6 +173,8 @@
 #define IDC_USEPERPROTO3                1043
 #define IDC_SETALLBUTTONSKINNED         1043
 #define IDC_EVENTSONTOP                 1044
+#define IDC_OVERRIDEPERSTATUSCOLOR2     1044
+#define IDC_FASTGRADIENT                1044
 #define IDC_EXTRAMAIL                   1045
 #define IDC_DONTSEPARATE                1045
 #define IDC_REASON                      1046

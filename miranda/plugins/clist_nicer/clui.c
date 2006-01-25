@@ -868,6 +868,7 @@ void ReloadThemedOptions()
 		DeleteObject(g_CluiData.hBrushColorKey);
 	g_CluiData.hBrushColorKey = CreateSolidBrush(RGB(255, 0, 255));
 	g_CluiData.bUseFloater = (BYTE)DBGetContactSettingByte(NULL, "CLUI", "FloaterMode", 0);
+	g_CluiData.bWantFastGradients = (BYTE)DBGetContactSettingByte(NULL, "CLCExt", "FastGradients", 0);
 }
 
 static RECT rcWindow = {0};
@@ -914,6 +915,10 @@ static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
 	else {
 		rcWindow.bottom=rcWindow.top+newHeight;
 		if (rcWindow.bottom>rcWorkArea.bottom) rcWindow.bottom=rcWorkArea.bottom;
+	}
+	if(g_CluiData.szOldCTreeSize.cx != rcTree.right - rcTree.left) {
+		g_CluiData.szOldCTreeSize.cx = rcTree.right - rcTree.left;
+		return;
 	}
 	KillTimer(hwnd, TIMERID_AUTOSIZE);
 	SetTimer(hwnd, TIMERID_AUTOSIZE, 100, 0);
