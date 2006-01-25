@@ -1481,20 +1481,27 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 static void handleRecvAdded(unsigned char *buf, WORD wLen)
 {
   DWORD dwUin;
+  uid_str szUid;
   DBEVENTINFO dbei;
   PBYTE pCurBlob;
   HANDLE hContact;
   int bAdded;
+  char* szNick;
+  int nNickLen;
+  DBVARIANT dbv;
 
-  if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
+  if (!unpackUID(&buf, &wLen, &dwUin, &szUid)) return;
 
-  if (IsOnSpammerList(dwUin))
+  if (dwUin && IsOnSpammerList(dwUin))
   {
     NetLog_Server("Ignored Message from known Spammer");
     return;
   }
 
-  hContact=HContactFromUIN(dwUin, &bAdded);
+  if (dwUin)
+    hContact=HContactFromUIN(dwUin, &bAdded);
+  else
+    hContact=HContactFromUID(szUid, &bAdded);
 
   ICQDeleteContactSetting(hContact, "Grant");
 
@@ -1505,10 +1512,36 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
   dbei.flags=0;
   dbei.eventType=EVENTTYPE_ADDED;
   dbei.cbBlob=sizeof(DWORD)+sizeof(HANDLE)+4;
+
+  if (dwUin)
+  {
+    if (ICQGetContactSetting(hContact, "Nick", &dbv))
+      nNickLen = 0;
+    else
+    {
+      szNick = dbv.pszVal;
+      nNickLen = strlennull(szNick);
+    }
+  }
+  else
+    nNickLen = strlennull(szUid);
+  
+  dbei.cbBlob += nNickLen;
+  
   pCurBlob=dbei.pBlob=(PBYTE)_alloca(dbei.cbBlob);
   /*blob is: uin(DWORD), hContact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ) */
   memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
   memcpy(pCurBlob,&hContact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
+  if (nNickLen && dwUin) 
+  { // if we have nick we add it, otherwise keep trailing zero
+    memcpy(pCurBlob, szNick, nNickLen);
+    pCurBlob+=nNickLen;
+  }
+  else
+  {
+    memcpy(pCurBlob, szUid, nNickLen);
+    pCurBlob+=nNickLen;
+  }
   *(char *)pCurBlob = 0; pCurBlob++;
   *(char *)pCurBlob = 0; pCurBlob++;
   *(char *)pCurBlob = 0; pCurBlob++;
