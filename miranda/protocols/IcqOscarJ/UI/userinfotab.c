@@ -452,12 +452,12 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       {
         char* pXName;
         char* pszStatus;
-        BYTE bXStatus = ICQGetContactSettingByte(hContact, "XStatusId", 0);
+        BYTE bXStatus = ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0);
 
         pszStatus = MirandaStatusToStringUtf(dbv.wVal);
         if (bXStatus)
         {
-          pXName = ICQGetContactSettingUtf(hContact, "XStatusName", "");
+          pXName = ICQGetContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, "");
           if (!strlennull(pXName))
           { // give default name
             pXName = ICQTranslateUtf(nameXStatus[bXStatus-1]);

@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -71,6 +71,9 @@ static DWORD requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
 {
   rate_record rr = {0};
 
+  if (!validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
+    return 0; // apply privacy rules
+
   if (!CheckContactCapabilities(hContact, CAPF_XTRAZ))
     return 0; // Contact does not support xtraz, do not request details
 
@@ -82,7 +85,7 @@ static DWORD requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
   if (!handleRateItem(&rr, bAllowDelay))
     return sendXStatusDetailsRequest(hContact);
 
-  return 0;
+  return -1; // delayed
 }
 
 
@@ -93,13 +96,13 @@ HICON GetXStatusIcon(int bStatus)
   char szTemp[64];
   HICON icon;
 
-  CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 29, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
-    
-  icon = ImageList_ExtractIcon(NULL, CSImages, bStatus - 1);
-
   null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", bStatus - 1);
-  icon = IconLibProcess(icon, szTemp);
 
+  if (IconLibInstalled())
+    return IconLibProcess(NULL, szTemp);
+
+  CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 29, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
+  icon = ImageList_ExtractIcon(NULL, CSImages, bStatus - 1);
   ImageList_Destroy(CSImages);
 
   return icon;
@@ -150,7 +153,7 @@ static int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
 {
   if (gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
   {
-    DWORD bXStatus = ICQGetContactSettingByte((HANDLE)wParam, "XStatusId", 0);
+    DWORD bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
 
     if (bXStatus > 0 && bXStatus < 29) 
     {
@@ -281,8 +284,8 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
       {
         char str[MAX_PATH];
 
-        ICQWriteContactSettingByte(hContact, "XStatusId", (BYTE)(i+1));
-        ICQWriteContactSettingUtf(hContact, "XStatusName", ICQTranslateUtfStatic(nameXStatus[i], str));
+        ICQWriteContactSettingByte(hContact, DBSETTING_XSTATUSID, (BYTE)(i+1));
+        ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str));
 
         if (ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
           requestXStatusDetails(hContact, TRUE);
@@ -295,9 +298,9 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
   }
   if (hIcon == (HANDLE)-1)
   {
-    ICQDeleteContactSetting(hContact, "XStatusId");
-    ICQDeleteContactSetting(hContact, "XStatusName");
-    ICQDeleteContactSetting(hContact, "XStatusMsg");
+    ICQDeleteContactSetting(hContact, DBSETTING_XSTATUSID);
+    ICQDeleteContactSetting(hContact, DBSETTING_XSTATUSNAME);
+    ICQDeleteContactSetting(hContact, DBSETTING_XSTATUSMSG);
   }
 
   if (gbXStatusEnabled != 10)
@@ -381,18 +384,18 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
       char *szText;
 
       if (ack->type != ICQACKTYPE_XSTATUS_RESPONSE) break;	
-      if ((DWORD)ack->hProcess != dat->iEvent) break;
       if (ack->hContact != dat->hContact) break;
+      if ((DWORD)ack->hProcess != dat->iEvent) break;
 
       ShowWindow(GetDlgItem(hwndDlg, IDC_RETRXSTATUS), SW_HIDE);
       ShowWindow(GetDlgItem(hwndDlg, IDC_XMSG), SW_SHOW);
       ShowWindow(GetDlgItem(hwndDlg, IDC_XTITLE), SW_SHOW);
       SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("Close", str));
       UnhookEvent(dat->hEvent); dat->hEvent = NULL;
-      szText = ICQGetContactSettingUtf(dat->hContact, "XStatusName", "");
+      szText = ICQGetContactSettingUtf(dat->hContact, DBSETTING_XSTATUSNAME, "");
       SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
       SAFE_FREE(&szText);
-      szText = ICQGetContactSettingUtf(dat->hContact, "XStatusMsg", "");
+      szText = ICQGetContactSettingUtf(dat->hContact, DBSETTING_XSTATUSMSG, "");
       SetDlgItemTextUtf(hwndDlg, IDC_XMSG, szText);
       SAFE_FREE(&szText);
 
@@ -435,7 +438,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
       else
       { // retrieve contact's xStatus
         dat->hContact = init->hContact;
-        dat->bXStatus = ICQGetContactSettingByte(dat->hContact, "XStatusId", 0);
+        dat->bXStatus = ICQGetContactSettingByte(dat->hContact, DBSETTING_XSTATUSID, 0);
         dat->okButtonFormat = NULL;
         SendMessage(GetDlgItem(hwndDlg, IDC_XTITLE), EM_SETREADONLY, 1, 0);
         SendMessage(GetDlgItem(hwndDlg, IDC_XMSG), EM_SETREADONLY, 1, 0);
@@ -454,10 +457,10 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 
           SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("Close", str));
           dat->hEvent = NULL;
-          szText = ICQGetContactSettingUtf(dat->hContact, "XStatusName", "");
+          szText = ICQGetContactSettingUtf(dat->hContact, DBSETTING_XSTATUSNAME, "");
           SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
           SAFE_FREE(&szText);
-          szText = ICQGetContactSettingUtf(dat->hContact, "XStatusMsg", "");
+          szText = ICQGetContactSettingUtf(dat->hContact, DBSETTING_XSTATUSMSG, "");
           SetDlgItemTextUtf(hwndDlg, IDC_XMSG, szText);
           SAFE_FREE(&szText);
         }
@@ -512,12 +515,12 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         szValue = GetDlgItemTextUtf(hwndDlg,IDC_XMSG);
         sprintf(szSetting, "XStatus%dMsg", dat->bXStatus);
         ICQWriteContactSettingUtf(NULL, szSetting, szValue);
-        ICQWriteContactSettingUtf(NULL, "XStatusMsg", szValue);
+        ICQWriteContactSettingUtf(NULL, DBSETTING_XSTATUSMSG, szValue);
         SAFE_FREE(&szValue);
         szValue = GetDlgItemTextUtf(hwndDlg,IDC_XTITLE);
         sprintf(szSetting, "XStatus%dName", dat->bXStatus);
         ICQWriteContactSettingUtf(NULL, szSetting, szValue);
-        ICQWriteContactSettingUtf(NULL, "XStatusName", szValue);
+        ICQWriteContactSettingUtf(NULL, DBSETTING_XSTATUSNAME, szValue);
         SAFE_FREE(&szValue);
 
         setUserInfo();
@@ -539,10 +542,10 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 
 
 
-static void setXStatus(BYTE bXStatus)
+static void setXStatusEx(BYTE bXStatus, BYTE bQuiet)
 {
-  CLISTMENUITEM mi;
-  BYTE bOldXStatus = ICQGetContactSettingByte(NULL, "XStatusId", 0);
+  CLISTMENUITEM mi = {0};
+  BYTE bOldXStatus = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
 
   mi.cbSize = sizeof(mi);
 
@@ -552,7 +555,7 @@ static void setXStatus(BYTE bXStatus)
     CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[bOldXStatus], (LPARAM)&mi);
   }
 
-  ICQWriteContactSettingByte(NULL, "XStatusId", bXStatus);
+  ICQWriteContactSettingByte(NULL, DBSETTING_XSTATUSID, bXStatus);
   mi.flags = CMIM_FLAGS | (bXStatus?CMIF_CHECKED:0);
   CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[bXStatus], (LPARAM)&mi);
 
@@ -564,16 +567,16 @@ static void setXStatus(BYTE bXStatus)
 
     sprintf(szSetting, "XStatus%dName", bXStatus);
     szUtf = ICQGetContactSettingUtf(NULL, szSetting, ICQTranslateUtfStatic(nameXStatus[bXStatus-1], str));
-    ICQWriteContactSettingUtf(NULL, "XStatusName", szUtf);
+    ICQWriteContactSettingUtf(NULL, DBSETTING_XSTATUSNAME, szUtf);
     SAFE_FREE(&szUtf);
 
     sprintf(szSetting, "XStatus%dMsg", bXStatus);
     szUtf = ICQGetContactSettingUtf(NULL, szSetting, "");
-    ICQWriteContactSettingUtf(NULL, "XStatusMsg", szUtf);
+    ICQWriteContactSettingUtf(NULL, DBSETTING_XSTATUSMSG, szUtf);
     SAFE_FREE(&szUtf);
 
     sprintf(szSetting, "XStatus%dStat", bXStatus);
-    if (!ICQGetContactSettingByte(NULL, szSetting, 0))
+    if (!bQuiet && !ICQGetContactSettingByte(NULL, szSetting, 0))
     {
       InitXStatusData init;
 
@@ -586,14 +589,19 @@ static void setXStatus(BYTE bXStatus)
   }
   else
   {
-    ICQDeleteContactSetting(NULL, "XStatusName");
-    ICQDeleteContactSetting(NULL, "XStatusMsg");
+    ICQDeleteContactSetting(NULL, DBSETTING_XSTATUSNAME);
+    ICQDeleteContactSetting(NULL, DBSETTING_XSTATUSMSG);
 
     setUserInfo();
   }
 }
 
 
+
+static void __fastcall setXStatus(BYTE bXStatus)
+{ // for menu commands
+  setXStatusEx(bXStatus, 0);
+}
 
 static int menuXStatus0(WPARAM wParam,LPARAM lParam)
 {
@@ -755,7 +763,7 @@ void InitXStatusItems(BOOL bAllowStatus)
   char srvFce[MAX_PATH + 64];
   char szItem[MAX_PATH + 64];
 
-  BYTE bXStatus = ICQGetContactSettingByte(NULL, "XStatusId", 0);
+  BYTE bXStatus = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
   HIMAGELIST CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 29, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
 
   if (!gbXStatusEnabled) return;
@@ -771,7 +779,7 @@ void InitXStatusItems(BOOL bAllowStatus)
     char szTemp[64];
     HICON hIIcon = (i > 0) ? ImageList_ExtractIcon(NULL, CSImages, i-1) : NULL;
 
-    null_snprintf(srvFce, sizeof(srvFce), "%s\\SetXStatus%d", gpszICQProtoName, i);
+    null_snprintf(srvFce, sizeof(srvFce), "%s/menuXStatus%d", gpszICQProtoName, i);
 
     null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", i-1);
     mi.hIcon = IconLibProcess(hIIcon, szTemp);
@@ -864,6 +872,8 @@ void ChangedIconsXStatus()
   {
     mi.hIcon = GetXStatusIcon(i);
     CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[i], (LPARAM)&mi);
+    if (!IconLibInstalled())
+      DestroyIcon(mi.hIcon); // if not IconLib resource release
   }
 }
 
@@ -877,5 +887,65 @@ int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam)
   init.hContact = (HANDLE)wParam;
   CreateDialogParam(hInst,MAKEINTRESOURCE(IDD_SETXSTATUS),NULL,SetXStatusDlgProc,(LPARAM)&init);
 
+  return 0;
+}
+
+
+
+int IcqSetXStatus(WPARAM wParam, LPARAM lParam)
+{
+  if (wParam >= 1 && wParam <= 29)
+  {
+    setXStatusEx((BYTE)wParam, 1);
+
+    return wParam;
+  }
+  return 0;
+}
+
+
+
+int IcqGetXStatusIcon(WPARAM wParam, LPARAM lParam)
+{
+  if (!wParam)
+    wParam = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
+
+  if (wParam >= 1 && wParam <= 29)
+  {
+    HICON icon = GetXStatusIcon((BYTE)wParam);
+
+    if (IconLibInstalled())
+      icon = CopyIcon(icon);
+
+    return (int)icon;
+  }
+  return 0;
+}
+
+
+
+int IcqGetXStatus(WPARAM wParam, LPARAM lParam)
+{
+  BYTE status = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
+
+  if (status < 1 || status > 29) status = 0;
+
+  if (wParam) *((char**)wParam) = DBSETTING_XSTATUSNAME;
+  if (lParam) *((char**)lParam) = DBSETTING_XSTATUSMSG;
+
+  return status;
+}
+
+
+
+int IcqRequestXStatusDetails(WPARAM wParam, LPARAM lParam)
+{
+  HANDLE hContact = (HANDLE)wParam;
+
+  if (hContact && !ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO) &&
+    ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0))
+  { // user has xstatus, no auto-retrieve details, valid contact, request details
+    return requestXStatusDetails(hContact, TRUE);
+  }
   return 0;
 }

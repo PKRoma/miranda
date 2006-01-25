@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -91,12 +91,14 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
             char *szResponse;
             int nResponseLen;
             char *szXName, *szXMsg;
-            BYTE dwXId = ICQGetContactSettingByte(NULL, "XStatusId", 0);
+            BYTE dwXId = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
 
-            if (dwXId)
-            {
-              szXName = ICQGetContactSettingUtf(NULL, "XStatusName", "");
-              szXMsg = ICQGetContactSettingUtf(NULL, "XStatusMsg", "");
+            if (dwXId && validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
+            { // apply privacy rules
+              NotifyEventHooks(hsmsgrequest, (WPARAM)MTYPE_SCRIPT_NOTIFY, (LPARAM)dwUin);
+
+              szXName = ICQGetContactSettingUtf(NULL, DBSETTING_XSTATUSNAME, "");
+              szXMsg = ICQGetContactSettingUtf(NULL, DBSETTING_XSTATUSMSG, "");
               
               nResponseLen = 212 + strlennull(szXName) + strlennull(szXMsg) + UINMAXLEN + 2;
               szResponse = (char*)_alloca(nResponseLen + 1);
@@ -131,7 +133,7 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
                   SendXtrazNotifyResponse(dwUin, dwMID, dwMID2, wCookie, szResponse, nResponseLen, bThruDC);
               }
               else
-                NetLog_Server("XStatus Disabled");
+                NetLog_Server("Error: XStatus Disabled");
             }
             else
               NetLog_Server("Error: We are not in XStatus, skipping");
@@ -210,7 +212,7 @@ NextVal:
             {
               szNode += 7;
               *szEnd = '\0';
-              if (atoi(szNode) != ICQGetContactSettingByte(hContact, "XStatusId", 0))
+              if (atoi(szNode) != ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0))
               { // this is strange - but go on
                 NetLog_Server("Warning: XStatusIds do not match!");
               }
@@ -224,7 +226,7 @@ NextVal:
               szNode += 7;
               *szEnd = '\0';
               if (strlennull(szNode)) // save only non-empty names
-                ICQWriteContactSettingUtf(hContact, "XStatusName", szNode);
+                ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, szNode);
               *szEnd = ' ';
             }
             szNode = strstr(szWork, "<desc>");
@@ -234,7 +236,7 @@ NextVal:
             { // we got XStatus mode msg, save it
               szNode += 6;
               *szEnd = '\0';
-              ICQWriteContactSettingUtf(hContact, "XStatusMsg", szNode);
+              ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSMSG, szNode);
             }
             ICQBroadcastAck(hContact, ICQACKTYPE_XSTATUS_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
           }
@@ -292,23 +294,19 @@ DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
   SAFE_FREE(&szQueryBody);
   SAFE_FREE(&szNotifyBody);
 
-  if (validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
-  { // apply privacy rules
-    // Set up the ack type
-    pCookieData = malloc(sizeof(message_cookie_data));
-    pCookieData->bMessageType = MTYPE_PLUGIN; // we do not use this
-    pCookieData->nAckType = ACKTYPE_CLIENT;
-    dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
+  // Set up the ack type
+  pCookieData = malloc(sizeof(message_cookie_data));
+  pCookieData->bMessageType = MTYPE_PLUGIN; // we do not use this
+  pCookieData->nAckType = ACKTYPE_CLIENT;
+  dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
 
-    // have we a open DC, send through that
-    if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
-      icq_sendXtrazRequestDirect(dwUin, hContact, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
-    else
-      icq_sendXtrazRequestServ(dwUin, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
+  // have we a open DC, send through that
+  if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
+    icq_sendXtrazRequestDirect(dwUin, hContact, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
+  else
+    icq_sendXtrazRequestServ(dwUin, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
 
-    return dwCookie;
-  }
-  return 0;
+  return dwCookie;
 }
 
 
@@ -326,17 +324,12 @@ void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCooki
     return; // Contact does not support xtraz, do not send anything
   }
 
-  if (validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
-  { // apply privacy rules
-    NotifyEventHooks(hsmsgrequest, (WPARAM)MTYPE_SCRIPT_NOTIFY, (LPARAM)dwUin);
+  nBodyLen = null_snprintf(szBody, nBodyLen, "<NR><RES>%s</RES></NR>", szResBody);
+  SAFE_FREE(&szResBody);
 
-    nBodyLen = null_snprintf(szBody, nBodyLen, "<NR><RES>%s</RES></NR>", szResBody);
-    SAFE_FREE(&szResBody);
-
-    // Was request received thru DC and have we a open DC, send through that
-    if (bThruDC && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
-      icq_sendXtrazResponseDirect(dwUin, hContact, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
-    else
-      icq_sendXtrazResponseServ(dwUin, dwMID, dwMID2, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
-  }
+  // Was request received thru DC and have we a open DC, send through that
+  if (bThruDC && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
+    icq_sendXtrazResponseDirect(dwUin, hContact, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
+  else
+    icq_sendXtrazResponseServ(dwUin, dwMID, dwMID2, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
 }

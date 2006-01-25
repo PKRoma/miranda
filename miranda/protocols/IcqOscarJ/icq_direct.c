@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -456,6 +456,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     if (!dc.dwRemoteExternalIP && !dc.dwRemoteInternalIP)
     { // we do not have any ip, do not try to connect
       RemoveDirectConnFromList(&dc);
+      SAFE_FREE(&dtsi);
       return 0; 
     }
 
@@ -502,6 +503,12 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
       addr.S_un.S_addr = htonl(dc.dwRemoteInternalIP);
     else
       addr.S_un.S_addr = htonl(dc.dwRemoteExternalIP);
+
+    if (!addr.S_un.S_addr)
+    { // IP to connect to is empty, go away
+      RemoveDirectConnFromList(&dc);
+      return 0;
+    }
     nloc.szHost = inet_ntoa(addr);
     nloc.wPort = (WORD)dc.dwRemotePort;
     NetLog_Direct("%sConnecting to %s:%u", dc.type==DIRECTCONN_REVERSE?"Reverse ":"", nloc.szHost, nloc.wPort);

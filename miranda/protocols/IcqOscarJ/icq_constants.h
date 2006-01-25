@@ -90,6 +90,9 @@
 
 // Database setting names
 #define DBSETTING_CAPABILITIES      "caps"
+#define DBSETTING_XSTATUSID         "XStatusId"
+#define DBSETTING_XSTATUSNAME       "XStatusName"
+#define DBSETTING_XSTATUSMSG        "XStatusMsg"
 
 
 // Status FLAGS (used to determine status of other users)

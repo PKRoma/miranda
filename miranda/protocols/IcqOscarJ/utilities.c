@@ -1155,9 +1155,9 @@ void ResetSettingsOnLoad()
     {
       ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
-      ICQDeleteContactSetting(hContact, "XStatusId");
-      ICQDeleteContactSetting(hContact, "XStatusName");
-      ICQDeleteContactSetting(hContact, "XStatusMsg");
+      ICQDeleteContactSetting(hContact, DBSETTING_XSTATUSID);
+      ICQDeleteContactSetting(hContact, DBSETTING_XSTATUSNAME);
+      ICQDeleteContactSetting(hContact, DBSETTING_XSTATUSMSG);
     }
     hContact = ICQFindNextContact(hContact);
   }

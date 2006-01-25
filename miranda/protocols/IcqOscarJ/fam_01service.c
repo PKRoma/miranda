@@ -769,7 +769,7 @@ void setUserInfo()
 { // CLI_SETUSERINFO
   icq_packet packet;
   WORD wAdditionalData = 0;
-  BYTE bXStatus = gbXStatusEnabled?ICQGetContactSettingByte(NULL, "XStatusId", 0):0;
+  BYTE bXStatus = gbXStatusEnabled?ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0):0;
 
   if (gbAimEnabled)
     wAdditionalData += 16;

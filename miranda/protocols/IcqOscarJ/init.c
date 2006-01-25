@@ -215,16 +215,22 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PSS_ADDED, IcqSendYouWereAdded);
   ICQCreateServiceFunction(PSS_USERISTYPING, IcqSendUserIsTyping);
   ICQCreateServiceFunction(PS_GETAVATARINFO, IcqGetAvatarInfo);
+  // My Avatar API
   ICQCreateServiceFunction(PS_ICQ_GETMYAVATARMAXSIZE, IcqGetMaxAvatarSize);
   ICQCreateServiceFunction(PS_ICQ_ISAVATARFORMATSUPPORTED, IcqAvatarFormatSupported);
   ICQCreateServiceFunction(PS_ICQ_GETMYAVATAR, IcqGetMyAvatar);
   ICQCreateServiceFunction(PS_ICQ_SETMYAVATAR, IcqSetMyAvatar);
+  // Custom Status API
+  ICQCreateServiceFunction(PS_ICQ_SETCUSTOMSTATUS, IcqSetXStatus);
+  ICQCreateServiceFunction(PS_ICQ_GETCUSTOMSTATUSICON, IcqGetXStatusIcon);
+  ICQCreateServiceFunction(PS_ICQ_GETCUSTOMSTATUS, IcqGetXStatus);
+  ICQCreateServiceFunction(PS_ICQ_REQUESTCUSTOMSTATUS, IcqRequestXStatusDetails);
 
   {
     char pszServiceName[MAX_PATH + 32];
 
     strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, ME_ICQ_STATUSMSGREQ);
-    hsmsgrequest=CreateHookableEvent(pszServiceName);
+    hsmsgrequest = CreateHookableEvent(pszServiceName);
   }
 
   InitDirectConns();
@@ -414,10 +420,9 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 {
-  CLISTMENUITEM mi;
+  CLISTMENUITEM mi = {0};
   BYTE bXStatus;
   
-  ZeroMemory(&mi, sizeof(mi));
   mi.cbSize = sizeof(mi);
   if (!ICQGetContactSettingByte((HANDLE)wParam, "Auth", 0))
     mi.flags = CMIM_FLAGS | CMIM_NAME | CMIF_HIDDEN;
@@ -435,7 +440,7 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 
   CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuGrant, (LPARAM)&mi);
 
-  bXStatus = ICQGetContactSettingByte((HANDLE)wParam, "XStatusId", 0);
+  bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
   if (!bXStatus)
     mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
   else
@@ -445,6 +450,9 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
   }
 
   CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuXStatus, (LPARAM)&mi);
+
+  if (mi.hIcon && !IconLibInstalled())
+    DestroyIcon(mi.hIcon); // release icon
 
   return 0;
 }

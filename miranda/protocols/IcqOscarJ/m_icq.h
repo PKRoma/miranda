@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -77,7 +77,7 @@ typedef struct {
 // wParam=(WPARAM)hContact;
 #define MS_GRANT_AUTH "/GrantAuth"
 
-// Display XStatus detail
+// Display XStatus detail (internal use only)
 // wParam=(WPARAM)hContact;
 #define MS_XSTATUS_SHOWDETAILS "/ShowXStatusDetails"
 
@@ -300,3 +300,35 @@ typedef struct {
 //lParam = PA_FORMAT_*   // avatar format
 //return = 1 (supported) or 0 (not supported)
 #define PS_ICQ_ISAVATARFORMATSUPPORTED "/IsAvatarFormatSupported"
+
+
+/* Custom Status helper API *
+ - to set custom status message & title use PS_ICQ_GETCUSTOMSTATUS to obtain
+   DB settings and write values to them (UTF-8 strings best).
+ - custom messages for each user supported - ME_ICQ_STATUSMSGREQ with type MTYPE_SCRIPT_NOTIFY
+ */
+// Sets owner current custom status
+//wParam = (int)N   // custom status id (1-29)
+//lParam = 0         
+//return = N (id of status set) or 0 (failed - probably bad params)
+#define PS_ICQ_SETCUSTOMSTATUS "/SetXStatus"
+
+// Retrieves specified custom status icon
+//wParam = (int)N  // custom status id (1-29), 0 = my current custom status
+//lParam = 0
+//return = HICON   // custom status icon (use DestroyIcon to release resources)
+#define PS_ICQ_GETCUSTOMSTATUSICON "/GetXStatusIcon"
+
+// Get Custom status DB field names & current owner custom status
+//wParam = (char**)szDBTitle // will receive title DB setting name (do not free)
+//lParam = (char**)szDBMsg   // will receive message DB setting name
+//return = N  // current custom status id if successful, 0 otherwise
+#define PS_ICQ_GETCUSTOMSTATUS "/GetXStatus"
+
+// Request Custom status details (messages) for specified contact
+//wParam = hContact  // request custom status details for this contact
+//lParam = 0  
+//return = (int)dwSequence   // if successful it is sequence for ICQACKTYPE_XSTATUS_RESPONSE
+                             // 0 failed to request (e.g. auto-request enabled)
+                             // -1 delayed (rate control) - sequence unknown
+#define PS_ICQ_REQUESTCUSTOMSTATUS "/RequestXStatusDetails"
