@@ -235,6 +235,11 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
   {
     szClient = cliTrillian;
   }
+  else if (dwFT1 == 0x3BA8DBAF) // FT2: 0x3BEB5373; FT3: 0x3BEB5262;
+  {
+    if (wVersion == 2)
+      szClient = "stICQ";
+  }
   else if (dwFT1 == 0xFFFFFFFE && dwFT3 == 0xFFFFFFFE)
   {
     szClient = "Jimm";
