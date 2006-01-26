@@ -43,7 +43,7 @@ static int GetContactStatus(HANDLE hContact)
     return DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
 }
 
-static int GetStatusModeOrdering(int statusMode)
+static int __forceinline GetStatusModeOrdering(int statusMode)
 {
     int i;
     for (i = 0; i < sizeof(statusModeOrder) / sizeof(statusModeOrder[0]); i++) {
@@ -150,6 +150,13 @@ static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, co
         return 2 * (c2->flags & CONTACTF_STICKY) - 1;
 
 
+	if(bywhat == SORTBY_PRIOCONTACTS) {
+	    if ((c1->flags & CONTACTF_PRIORITY) != (c2->flags & CONTACTF_PRIORITY))
+		    return 2 * (c2->flags & CONTACTF_PRIORITY) - 1;
+		else
+			return 0;
+	}
+
 	if (bywhat == SORTBY_STATUS) {
         int ordera, orderb;
 
@@ -165,8 +172,6 @@ static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, co
 	    return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
 
 	if(bywhat == SORTBY_NAME) {
-		//namea = pcli->pfnGetContactDisplayName(a, 0);
-		//nameb = pcli->pfnGetContactDisplayName(b, 0);
 		namea = (TCHAR *)c1->szText;
 		nameb = (TCHAR *)c2->szText;
 		return CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE, namea, -1, nameb, -1) - 2;
@@ -185,13 +190,16 @@ static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, co
         if (rc != 0 && (szProto1 != NULL && szProto2 != NULL))
             return rc;
 	}
-
 	return 0;
 }
 
 int CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2)
 {
 	int i, result;
+
+	result = INTSORT_CompareContacts(c1, c2, SORTBY_PRIOCONTACTS);
+	if(result)
+		return result;
 
 	for(i = 0; i <= 2; i++) {
 		if(g_CluiData.sortOrder[i]) {

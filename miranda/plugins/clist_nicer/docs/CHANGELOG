@@ -7,6 +7,24 @@
 + = new feature
 - = removed
 
+0.6.0.1  - 2006/01/28
+
+		* still bugfixing phase. Some troubles with autosizing were fixed.
+		
+		* added "priority contacts" - you can toggle a priority contact in the contact menu
+		  (right click). A priority contact will always be on top of the list or its group
+		  and override the normal sorting order. If there are multiple priority contacts
+		  per group, then they will be sorted according to the normal contact list sorting,
+		  but will still all stay on top of the group.
+		  
+		* added multilevel sorting. Up to 3 criterias can be selected to sort the clist. There
+		  is a total of 4 available sorting criterias, as following:
+		  
+		  * name
+		  * protocol
+		  * status
+		  * last message received
+
 0.6.0.00 - 2006
 
 		* from now on, clist_nicer+ is based on the new clist interface code which was
@@ -15,10 +33,6 @@
 		  We call this "post clist revolution", because the changes in the contact list api
 		  were HUGE and required a lot of changes to all contact list plugins.
 		  
-0.6.0.1  - 2006/01/28
-
-		* still bugfixing phase. Some troubles with autosizing were fixed.		  
-
 0.5.1.17 - 2005/11/20
 
 		! fixed a few minimize/maximize issues with various border styles.

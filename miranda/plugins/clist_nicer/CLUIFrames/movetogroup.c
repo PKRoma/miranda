@@ -1,7 +1,7 @@
 #include "../commonheaders.h"
 
 HANDLE hModulesLoaded,hOnCntMenuBuild;
-HANDLE prevmenu=0;
+HANDLE prevmenu=0, hPriorityItem = 0;
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
 
 HWND hwndTopToolBar=0;
@@ -41,11 +41,24 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
     char intname[20];
 
     if (prevmenu!=0) {
-        CallService(MS_CLIST_REMOVECONTACTMENUITEM,(WPARAM)prevmenu,(LPARAM)0);
+        CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)prevmenu,(LPARAM)0);
+		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hPriorityItem, 0);
     }
 
-    ZeroMemory(&mi,sizeof(mi));
+	memset(&mi,0,sizeof(mi));
+    mi.cbSize=sizeof(mi);
+    mi.position=200000;
+    mi.pszPopupName=(char *)-1;
+    mi.pszService="CList/SetContactPriority";
+    mi.pszName=Translate("&Priority Contact");
+	if(pcli) {
+		if(SendMessage(pcli->hwndContactTree, CLM_QUERYPRIORITYCONTACT, wParam, 0))
+			mi.flags=CMIF_CHECKED;
+	}
+    mi.pszContactOwner=(char *)0;
+    hPriorityItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi);
 
+    ZeroMemory(&mi,sizeof(mi));
     mi.cbSize=sizeof(mi);
     mi.hIcon=NULL;//LoadIcon(hInst,MAKEINTRESOURCE(IDI_MIRANDA));
     mi.pszPopupName=(char *)-1;
@@ -54,8 +67,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
     mi.flags=CMIF_ROOTPOPUP;
     mi.pszContactOwner=(char *)0;
     menuid=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi);
-
-    prevmenu=menuid;
+	prevmenu=menuid;
 
     grpexists=TRUE;
     i=0;

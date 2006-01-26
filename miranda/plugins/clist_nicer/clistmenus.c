@@ -930,6 +930,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
     BuildStatusMenu(0,0);
     return 0;
 }
+
 int statustopos(int status)
 {
     int j;
@@ -1119,6 +1120,12 @@ int CloseAction(WPARAM wParam,LPARAM lParam)
     return(0);
 };
 
+static int SetContactPriority(WPARAM wParam, LPARAM lParam)
+{
+	SendMessage(pcli->hwndContactTree, CLM_TOGGLEPRIORITYCONTACT, wParam, lParam);
+	return 0;
+}
+
 int InitCustomMenus(void)
 {
     TMenuParam tmp;
@@ -1132,6 +1139,7 @@ int InitCustomMenus(void)
     CreateServiceFunction("StatusMenuExecService",StatusMenuExecService);
 
     CreateServiceFunction("CloseAction",CloseAction);
+	CreateServiceFunction("CList/SetContactPriority", SetContactPriority);
 
 //free services
     CreateServiceFunction("CLISTMENUS/FreeOwnerDataMainMenu",FreeOwnerDataMainMenu);

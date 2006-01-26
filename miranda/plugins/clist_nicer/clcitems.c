@@ -137,6 +137,8 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 	RTL_DetectAndSet( p, p->hContact);
 #endif    
 	p->avatarLeft = p->extraIconRightBegin = -1;
+	p->flags |= DBGetContactSettingByte(p->hContact, "CList", "Priority", 0) ? CONTACTF_PRIORITY : 0;
+
 	return i;
 }
 

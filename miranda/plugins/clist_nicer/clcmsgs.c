@@ -124,6 +124,35 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 		dat->bHideSubcontacts = (BOOL)lParam;
 		return 0;
 
+	case CLM_TOGGLEPRIORITYCONTACT:
+		{
+			struct ClcContact *contact = NULL;
+
+			if (wParam == 0)
+				return 0;
+
+			if (!FindItem(hwnd, dat, (HANDLE)wParam, &contact, NULL, NULL))
+				return 0;
+			if(contact->type != CLCIT_CONTACT)
+				return 0;
+			contact->flags ^= CONTACTF_PRIORITY;
+			DBWriteContactSettingByte(contact->hContact, "CList", "Priority", contact->flags & CONTACTF_PRIORITY ? 1 : 0);
+			pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+			return 0;
+		}
+	case CLM_QUERYPRIORITYCONTACT:
+		{
+			struct ClcContact *contact = NULL;
+
+			if (wParam == 0)
+				return 0;
+
+			if (!FindItem(hwnd, dat, (HANDLE)wParam, &contact, NULL, NULL))
+				return 0;
+			if(contact->type != CLCIT_CONTACT)
+				return 0;
+			return(contact->flags & CONTACTF_PRIORITY ? 1 : 0);
+		}
 	case CLM_SETEXTRAIMAGELIST:
 		dat->himlExtraColumns = (HIMAGELIST) lParam;
 		InvalidateRect(hwnd, NULL, FALSE);
