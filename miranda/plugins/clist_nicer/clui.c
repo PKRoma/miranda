@@ -925,6 +925,7 @@ static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
 }
 
 extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+static BYTE old_cliststate;
 
 #define M_CREATECLC  (WM_USER+1)
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -945,6 +946,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				OldStatusBarProc = (WNDPROC)SetWindowLong(pcli->hwndStatus, GWL_WNDPROC, (LONG)NewStatusBarWndProc);
 				SetClassLong(pcli->hwndStatus, GCL_STYLE, GetClassLong(pcli->hwndStatus, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 			}
+			old_cliststate = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
+			DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
 			SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_VISIBLE);
 			if(!g_CluiData.bFirstRun)
 				ConfigureEventArea(hwnd);
@@ -960,7 +963,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 #endif
 			}
 			//delay creation of CLC so that it can get the status icons right the first time (needs protocol modules loaded)
-			PostMessage(hwnd, M_CREATECLC, 0, 0);
 			if (MySetLayeredWindowAttributes && g_CluiData.bLayeredHack) {
 				SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | (WS_EX_LAYERED));
 				MySetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 255, LWA_ALPHA);
@@ -984,6 +986,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 #endif
 			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), 0);
+			PostMessage(hwnd, M_CREATECLC, 0, 0);
 			return FALSE;
 		}
 	case WM_NCCREATE:
@@ -1054,8 +1057,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			CreateCLC(hwnd);
 			g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
-			state = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
-			
+			state = old_cliststate;
+			DBWriteContactSettingByte(NULL, "CList", "State", old_cliststate);
+
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			hMenuMain = GetMenu(pcli->hwndContactList);
 			if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
