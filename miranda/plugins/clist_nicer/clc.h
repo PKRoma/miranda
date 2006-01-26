@@ -321,7 +321,13 @@ struct CluiData {
 	BYTE bAutoExpandGroups;
 	SIZE szOldCTreeSize;
 	BYTE bWantFastGradients, bUseFastGradients;
+	BYTE sortOrder[3];
 };
+
+#define SORTBY_NAME 1
+#define SORTBY_PROTO 2
+#define SORTBY_STATUS 3
+#define SORTBY_LASTMSG 4
 
 struct IconDesc {
 	char *szName;

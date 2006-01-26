@@ -7,6 +7,27 @@
 + = new feature
 - = removed
 
+0.6.0.00 - 2006
+
+		* from now on, clist_nicer+ is based on the new clist interface code which was
+		  introduced in 0.4.3.x (nightly build #42). It is no longer compatible with older
+		  versions of the miranda core and requires a recent core + database plugin.
+		  We call this "post clist revolution", because the changes in the contact list api
+		  were HUGE and required a lot of changes to all contact list plugins.
+		  
+0.6.0.1  - 2006/01/28
+
+		* still bugfixing phase. Some troubles with autosizing were fixed.		  
+
+0.5.1.17 - 2005/11/20
+
+		! fixed a few minimize/maximize issues with various border styles.
+		  Minimize now always follow the "miniemize to tray" setting
+
+0.5.1.16 - 2005/11/20
+
+		+ added UNICODE_AWARE so that a unicode core will not reject the contact list.
+
 0.5.1.15 - 2005/11/05
 
         ! toolbar icon bugs (introduced in .14) fixed.

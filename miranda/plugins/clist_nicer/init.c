@@ -270,6 +270,12 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	g_CluiData.bLayeredHack = DBGetContactSettingByte(NULL, "CLUI", "layeredhack", 1);
 	g_CluiData.bFirstRun = DBGetContactSettingByte(NULL, "CLUI", "firstrun", 1);
 	g_CluiData.bAutoExpandGroups = DBGetContactSettingByte(NULL, "CList", "GroupAutoExpand", 0);
+	{
+		DWORD sortOrder = DBGetContactSettingDword(NULL, "CList", "SortOrder", SORTBY_NAME);
+		g_CluiData.sortOrder[0] = LOBYTE(LOWORD(sortOrder));
+		g_CluiData.sortOrder[1] = HIBYTE(LOWORD(sortOrder));
+		g_CluiData.sortOrder[2] = LOBYTE(HIWORD(sortOrder));
+	}
 
 	if(g_CluiData.bFirstRun)
 		DBWriteContactSettingByte(NULL, "CLUI", "firstrun", 0);

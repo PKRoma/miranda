@@ -261,7 +261,6 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolo
     for (y = 0; y < ulBitmapHeight; y++) {
         for (x = 0 ; x < ulBitmapWidth ; x++) {
             if (FLG_GRADIENT & GRADIENT_ACTIVE) {
-				ubAlpha = percent_to_byte(alpha);
                 if (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_RL) {
                     realx = x + realHeightHalf;
                     realx = (ULONG) realx > ulBitmapWidth ? ulBitmapWidth : realx;

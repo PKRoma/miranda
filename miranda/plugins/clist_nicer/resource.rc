@@ -184,36 +184,39 @@ BEGIN
     CONTROL         "Hide empty groups",IDC_HIDEEMPTYGROUPS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,33,124,10
     CONTROL         "Disable groups",IDC_DISABLEGROUPS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,50,124,10
     CONTROL         "Ask before deleting contacts",IDC_CONFIRMDELETE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,67,124,10
-    CONTROL         "Sort contacts by name",IDC_SORTBYNAME,"Button",BS_AUTORADIOBUTTON | WS_GROUP,153,12,144,10
-    CONTROL         "Sort contacts by status",IDC_SORTBYSTATUS,"Button",BS_AUTORADIOBUTTON,153,24,149,10
-    CONTROL         "Sort contacts by protocol",IDC_SORTBYPROTO,"Button",BS_AUTORADIOBUTTON,153,36,151,10
-    CONTROL         "Single click interface",IDC_ONECLK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,83,150,10
-    CONTROL         "Always show status in tooltip",IDC_ALWAYSSTATUS,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,152,96,151,11
-    CONTROL         "Disable icon blinking",IDC_DISABLEBLINK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,107,86,9
-    EDITTEXT        IDC_BLINKTIME,153,124,35,12,ES_NUMBER
-    LTEXT           "ms delay",IDC_STATIC,192,126,113,8
-    CONTROL         "Show",IDC_DONTCYCLE,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,156,97,10
-    COMBOBOX        IDC_PRIMARYSTATUS,107,155,78,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "icon when statuses differ",IDC_STATIC,189,157,116,8,NOT WS_GROUP
-    CONTROL         "Cycle icons every",IDC_CYCLE,"Button",BS_AUTORADIOBUTTON,10,173,97,10
-    EDITTEXT        IDC_CYCLETIME,107,172,30,12,ES_RIGHT | ES_NUMBER
+    CONTROL         "Single click interface",IDC_ONECLK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,94,150,10
+    CONTROL         "Always show status in tooltip",IDC_ALWAYSSTATUS,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,152,107,151,11
+    CONTROL         "Disable icon blinking",IDC_DISABLEBLINK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,118,86,9
+    EDITTEXT        IDC_BLINKTIME,153,135,35,12,ES_NUMBER
+    LTEXT           "ms delay",IDC_STATIC,192,137,113,8
+    CONTROL         "Show",IDC_DONTCYCLE,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,165,97,10
+    COMBOBOX        IDC_PRIMARYSTATUS,107,164,78,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "icon when statuses differ",IDC_STATIC,189,166,116,8,NOT WS_GROUP
+    CONTROL         "Cycle icons every",IDC_CYCLE,"Button",BS_AUTORADIOBUTTON,10,182,97,10
+    EDITTEXT        IDC_CYCLETIME,107,181,30,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Spin1",IDC_CYCLETIMESPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,127,158,10,14
-    LTEXT           "seconds, when statuses differ",IDC_STATIC,140,174,165,8,NOT WS_GROUP
-    CONTROL         "Show multiple icons",IDC_MULTITRAY,"Button",BS_AUTORADIOBUTTON,10,190,98,10
-    CONTROL         "Only when statuses differ",IDC_ALWAYSMULTI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,190,198,10
+    LTEXT           "seconds, when statuses differ",IDC_STATIC,140,183,165,8,NOT WS_GROUP
+    CONTROL         "Show multiple icons",IDC_MULTITRAY,"Button",BS_AUTORADIOBUTTON,10,199,98,10
+    CONTROL         "Only when statuses differ",IDC_ALWAYSMULTI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,199,198,10
     GROUPBOX        "Contact List",IDC_STCLISTGROUP,2,2,135,128
-    GROUPBOX        "System tray icon",IDC_STATIC,143,72,169,70
-    GROUPBOX        "System tray icon when using multiple protocols",IDC_STATIC,2,144,310,85
+    GROUPBOX        "System tray icon",IDC_STATIC,143,83,169,70
+    GROUPBOX        "System tray icon when using multiple protocols",IDC_STATIC,2,153,310,81
     GROUPBOX        "Contact List Sorting",IDC_STATIC,143,2,169,68,WS_GROUP
     CONTROL         "Spin5",IDC_BLINKSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,173,116,11,21
     CONTROL         "Disable icon blinking",IDC_ICONBLINK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,84,97,10
     CONTROL         "Move events to the top of list or group",IDC_EVENTSONTOP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,154,47,149,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,154,61,149,10
     CONTROL         "Do not show system tray icon tooltips on mouse over",IDC_NOTRAYINFOTIPS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,206,289,12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,215,289,12
     CONTROL         "Do not separate offline contacts",IDC_DONTSEPARATE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,154,58,149,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,154,72,149,10
     CONTROL         "Auto expand groups",IDC_GROUPAUTOEXPAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,101,121,9
+    COMBOBOX        IDC_SORTPRIMARY,230,12,78,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SORTTHEN,230,27,78,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SORTFINALLY,230,42,78,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "First, sort by",IDC_STATIC,152,15,69,9
+    LTEXT           "Then by",IDC_STATIC,152,29,64,9
+    LTEXT           "And finally by",IDC_STATIC,153,43,64,9
 END
 
 IDD_OPT_PLUS DIALOGEX 0, 0, 313, 245

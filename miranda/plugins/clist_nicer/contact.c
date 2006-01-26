@@ -27,8 +27,6 @@ UNICODE done
 
 extern struct CluiData g_CluiData;
 
-static int sortByStatus;
-static int sortByProto;
 struct {
     int status, order;
 } statusModeOrder[] = {
@@ -88,8 +86,6 @@ void LoadContactTree(void)
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
     mc_hgh_removed = TRUE;
-    sortByStatus = DBGetContactSettingByte(NULL, "CList", "SortByStatus", SETTING_SORTBYSTATUS_DEFAULT);
-    sortByProto = DBGetContactSettingByte(NULL, "CList", "SortByProto", SETTING_SORTBYPROTO_DEFAULT);
     CallService(MS_CLUI_SORTLIST, 0, 0);
     CallService(MS_CLUI_LISTENDREBUILD, 0, 0);
 }
@@ -119,10 +115,23 @@ static int __forceinline GetProtoIndex(char * szName)
     return -1;
 }
 
-int CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2)
+static DWORD __forceinline INTSORT_GetLastMsgTime(HANDLE hContact)
 {
-    HANDLE a = c1->hContact, b = c2->hContact;
-    //TCHAR namea[128], *nameb;
+	HANDLE hDbEvent;
+	DBEVENTINFO dbei = {0};
+
+	hDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0);
+
+	dbei.cbSize = sizeof(dbei);
+	dbei.pBlob = 0;
+	dbei.cbBlob = 0;
+	CallService(MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei);
+	
+	return dbei.timestamp;
+}
+
+static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2, UINT bywhat)
+{
     TCHAR *namea, *nameb;
     int statusa, statusb;
     char *szProto1, *szProto2;
@@ -133,8 +142,6 @@ int CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2)
 
     szProto1 = c1->proto;
     szProto2 = c2->proto;
-    //statusa = DBGetContactSettingWord((HANDLE) a, SAFESTRING(szProto1), "Status", ID_STATUS_OFFLINE);
-    //statusb = DBGetContactSettingWord((HANDLE) b, SAFESTRING(szProto2), "Status", ID_STATUS_OFFLINE);
     statusa = c1->wStatus;
     statusb = c2->wStatus;
     // make sure, sticky contacts are always at the beginning of the group/list
@@ -142,44 +149,58 @@ int CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2)
     if ((c1->flags & CONTACTF_STICKY) != (c2->flags & CONTACTF_STICKY))
         return 2 * (c2->flags & CONTACTF_STICKY) - 1;
 
-    if (sortByProto) {
-    /* deal with statuses, online contacts have to go above offline */
-        if (!g_CluiData.bDontSeparateOffline && ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE))) {
-            return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
-        }
-    /* both are online, now check protocols */
+
+	if (bywhat == SORTBY_STATUS) {
+        int ordera, orderb;
+
+        ordera = GetStatusModeOrdering(statusa);
+        orderb = GetStatusModeOrdering(statusb);
+        if (ordera != orderb)
+            return ordera - orderb;
+		else
+			return 0;
+    }
+
+    if(!g_CluiData.bDontSeparateOffline && ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE)))
+	    return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
+
+	if(bywhat == SORTBY_NAME) {
+		//namea = pcli->pfnGetContactDisplayName(a, 0);
+		//nameb = pcli->pfnGetContactDisplayName(b, 0);
+		namea = (TCHAR *)c1->szText;
+		nameb = (TCHAR *)c2->szText;
+		return CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE, namea, -1, nameb, -1) - 2;
+	} else if(bywhat == SORTBY_LASTMSG) {
+		DWORD timestamp1 = INTSORT_GetLastMsgTime(c1->hContact);
+		DWORD timestamp2 = INTSORT_GetLastMsgTime(c2->hContact);
+		return timestamp2 - timestamp1;
+	} else if(bywhat == SORTBY_PROTO) {
         if(c1->bIsMeta)
             szProto1 = c1->metaProto ? c1->metaProto : c1->proto;
         if(c2->bIsMeta)
             szProto2 = c2->metaProto ? c2->metaProto : c2->proto;
 
-        //rc = strcmp(SAFESTRING(szProto1), SAFESTRING(szProto2)); /* strcmp() doesn't like NULL so feed in "" as needed */
         rc = GetProtoIndex(szProto1) - GetProtoIndex(szProto2);
 
         if (rc != 0 && (szProto1 != NULL && szProto2 != NULL))
             return rc;
-    /* protocols are the same, order by display name */
-    }
+	}
 
-    if (sortByStatus) {
-        int ordera, orderb;
-        ordera = GetStatusModeOrdering(statusa);
-        orderb = GetStatusModeOrdering(statusb);
-        if (ordera != orderb)
-            return ordera - orderb;
-    } else if (!g_CluiData.bDontSeparateOffline) {
-    //one is offline: offline goes below online
-        if ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE)) {
-            return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
-        }
-    }
+	return 0;
+}
 
-    namea = pcli->pfnGetContactDisplayName(a, 0);
-    nameb = pcli->pfnGetContactDisplayName(b, 0);
-    
-    //otherwise just compare names
-    return CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE, namea, -1, nameb, -1) - 2;
-    //return _tcsicmp(namea,nameb);
+int CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2)
+{
+	int i, result;
+
+	for(i = 0; i <= 2; i++) {
+		if(g_CluiData.sortOrder[i]) {
+			result = INTSORT_CompareContacts(c1, c2, g_CluiData.sortOrder[i]);
+			if(result != 0)
+				return result;
+		}
+	}
+	return 0;
 }
 
 #undef SAFESTRING

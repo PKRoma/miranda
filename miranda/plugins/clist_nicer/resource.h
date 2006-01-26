@@ -173,7 +173,6 @@
 #define IDC_USEPERPROTO3                1043
 #define IDC_SETALLBUTTONSKINNED         1043
 #define IDC_EVENTSONTOP                 1044
-#define IDC_OVERRIDEPERSTATUSCOLOR2     1044
 #define IDC_FASTGRADIENT                1044
 #define IDC_EXTRAMAIL                   1045
 #define IDC_DONTSEPARATE                1045
@@ -344,10 +343,7 @@
 #define IDC_SHOWTOPBUTTONS              1189
 #define IDC_SHOWLOCALTIME               1189
 #define IDC_SHOWVISIBILITY              1190
-#define IDC_SORTBYPROTO                 1191
-#define IDC_SHOWLOCALTIME2              1191
 #define IDC_SHOWLOCALTIMEONLYWHENDIFFERENT 1191
-#define IDC_SORTBYSTATUS                1192
 #define IDC_RETRIEVING                  1193
 #define IDC_SOUNDLIST                   1194
 #define IDC_SPECIFYPORTS                1195
@@ -440,10 +436,13 @@
 #define IDC_CYCLETIME                   1318
 #define IDC_CYCLETIMESPIN               1319
 #define IDC_HIDETIMESPIN                1320
+#define IDC_SORTPRIMARY                 1420
 #define IDC_MULTITRAY                   1321
 #define IDC_ALWAYSMULTI                 1322
 #define IDC_SHOWICON                    1323
+#define IDC_SORTTHEN                    1323
 #define IDC_SHOWPROTO                   1324
+#define IDC_SORTFINALLY                 1324
 #define IDC_SHOWSTATUS                  1325
 #define IDC_EQUALSECTIONS               1326
 #define IDC_SHOWSBAR                    1329
@@ -461,7 +460,6 @@
 #define IDC_MOVE                        1342
 #define IDC_LEAVE                       1343
 #define IDC_EXPERT                      1346
-#define IDC_SORTBYNAME                  1347
 #define IDC_STAUTOHIDESECS              1349
 #define IDC_STCLISTGROUP                1350
 #define IDC_DISABLEDRAGDROP             1351
