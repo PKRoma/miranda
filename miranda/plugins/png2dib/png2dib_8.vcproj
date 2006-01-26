@@ -85,7 +85,6 @@
 				AdditionalOptions="/filealign:512"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				GenerateManifest="false"
 				ModuleDefinitionFile=".\png2dib.def"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
@@ -180,7 +179,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				SuppressStartupBanner="true"
-				GenerateManifest="false"
 				ModuleDefinitionFile=".\png2dib.def"
 				GenerateDebugInformation="true"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
