@@ -1188,7 +1188,6 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 						OPENFILENAMEA ofn={0};
 
 						szFilename[0] = 0;
-						_DebugPopup(0, "get name");
 						ofn.lpstrFilter = "tabSRMM skins\0*.tsk\0\0";
 						ofn.lStructSize= OPENFILENAME_SIZE_VERSION_400;
 						ofn.hwndOwner=0;
@@ -1833,19 +1832,19 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
     odp.cbSize = sizeof(odp);
     odp.position = 910000000;
     odp.hInstance = g_hInst;
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSDIALOG);
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSDIALOG);
     odp.pszTitle = Translate("Message Window");
-    odp.pszGroup = Translate("Message Sessions");
     odp.pfnDlgProc = OptionsDlgProc;
+    odp.pszGroup = Translate("Message Sessions");
+    odp.nIDBottomSimpleControl = 0;
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
+    
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
     odp.pszTitle = Translate("Typing Notify");
     odp.pfnDlgProc = DlgProcTypeOptions;
-    odp.nIDBottomSimpleControl = 0;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-    
+
     if(!ServiceExists(MS_FONT_REGISTER)) {
         odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGWINDOWFONTS);
         odp.pszTitle = Translate("Fonts and colors");
@@ -1958,7 +1957,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
          RECT rcClient;
          GetClientRect(hwnd, &rcClient);
 
-         iInit = TRUE;
+		 iInit = TRUE;
          tci.mask = TCIF_PARAM|TCIF_TEXT;
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGDLG), hwnd, DlgProcOptions);
          tci.pszText = TranslateT("General");
