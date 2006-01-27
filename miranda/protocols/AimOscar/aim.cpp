@@ -10,7 +10,7 @@ There is no warranty.
 PLUGINLINK *pluginLink;
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
-	"AIM OSCAR Plugin - Alpha 7.0",
+	"AIM OSCAR Plugin - Alpha 7.1",
 	PLUGIN_MAKE_VERSION(0,0,0,1),
 	"Provides very basic support for AOL® OSCAR Instant Messenger protocol.",
 	"Aaron Myles Landwehr",
@@ -98,21 +98,5 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 }
 extern "C" int __declspec(dllexport) Unload(void)
 {
-	Netlib_CloseHandle(conn.hDirectBoundPort);
-	Netlib_CloseHandle(conn.hNetlib);
-	Netlib_CloseHandle(conn.hNetlibPeer);
-	for(unsigned int i=0;i<conn.hookEvent_size;i++)
-		UnhookEvent(conn.hookEvent[i]);
-	free(CWD);
-	free(AIM_PROTOCOL_NAME);
-	free(conn.szModeMsg);
-	free(COOKIE);
-	free(GROUP_ID_KEY);
-	free(ID_GROUP_KEY);
-	free(FILE_TRANSFER_KEY);
-	DeleteCriticalSection(&modeMsgsMutex);
-	DeleteCriticalSection(&statusMutex);
-	DeleteCriticalSection(&connectionMutex);
-	KillTimer(NULL, conn.hTimer);
 	return 0;
 }

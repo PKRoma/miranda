@@ -105,11 +105,13 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 						fclose(fd);
 					}
 					ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
+					free(file);
 					return;
 				}
 				else if(type==0x0204)
 				{
 					ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
+					free(file);
 					return;
 				}
 			}

@@ -11,6 +11,7 @@ HANDLE aim_connect(char* server)
     ncon.szHost = host;
     ncon.wPort =atoi(port);
     HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) conn.hNetlib, (LPARAM) & ncon);
+	free(server_dup);
 	return con;
 }
 HANDLE aim_peer_connect(char* ip,unsigned short port)
@@ -104,6 +105,8 @@ void __cdecl aim_connection_authorization()
 						snac_md5_authkey(snac->subgroup,buf);
 						if(snac_authorization_reply(snac->subgroup,buf,htons(flap->len))==1)
 						{
+							free(conn.username);
+							free(conn.password);
 							LeaveCriticalSection(&connectionMutex);
 							return;
 						}
@@ -111,6 +114,8 @@ void __cdecl aim_connection_authorization()
 				}
 				if(flap->type==4)
 				{
+					free(conn.username);
+					free(conn.password);
 					conn.state=0;
 					broadcast_status(ID_STATUS_OFFLINE);
 					LeaveCriticalSection(&connectionMutex);
@@ -119,6 +124,8 @@ void __cdecl aim_connection_authorization()
 			}
 		}
 	}
+	free(conn.username);
+	free(conn.password);
 	LeaveCriticalSection(&connectionMutex);
 	conn.state=0;
 	broadcast_status(ID_STATUS_OFFLINE);

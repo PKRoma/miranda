@@ -29,7 +29,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 			HANDLE hServerPacketRecver=NULL;
 			hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)Connection, 2048 * 4);
 			packetRecv.cbSize = sizeof(packetRecv);
-			packetRecv.dwTimeout = 100*DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, 60);
+			packetRecv.dwTimeout = INFINITE;
 			while(1)
 			{
 				recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
@@ -114,6 +114,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 								char* pszfile = strrchr(file, '\\');
 								pszfile++;
 								aim_send_file_proxy(sn,cookie,pszfile,size,descr,*ip,*port);
+								free(file);
 							}
 							else if(stage==2&&!sender)
 								aim_file_proxy_request(dbv.pszVal,cookie,0x02,*ip,*port);
@@ -145,6 +146,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 			}
 		}
 	}
+	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT);
 	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH);
 	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP);
 }

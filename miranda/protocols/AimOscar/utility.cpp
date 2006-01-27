@@ -25,6 +25,21 @@ void start_connection(int initial_status)
 		}
 		if(conn.hServerConn)
 		{
+			NETLIBBIND nlb = {0};
+			nlb.cbSize = sizeof(nlb);
+			nlb.pfnNewConnectionV2 = aim_direct_connection_initiated;
+			conn.hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)conn.hNetlibPeer, (LPARAM)&nlb);
+			if (!conn.hDirectBoundPort && (GetLastError() == 87))
+			{ // this ensures old Miranda also can bind a port for a dc
+				nlb.cbSize = NETLIBBIND_SIZEOF_V1;
+				conn.hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)conn.hNetlibPeer, (LPARAM)&nlb);
+			}
+			if (conn.hDirectBoundPort == NULL)
+			{
+				MessageBox( NULL, "AimOSCAR was unable to bind to a port. File transfers may not succeed in some cases.", AIM_PROTOCOL_NAME, MB_OK );	
+			}
+			conn.LocalPort=nlb.wPort;
+			conn.InternalIP=nlb.dwInternalIP;
 			conn.initial_status=initial_status;
 			ForkThread((pThreadFunc)aim_connection_authorization,NULL);
 		}

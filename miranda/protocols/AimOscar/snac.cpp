@@ -386,6 +386,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 		unsigned long file_size;
 		bool auto_response=0;
 		bool force_proxy=0;
+		bool port_tlv=0;
 		bool descr_included=0;
 		int recv_file_type=-1;
 		unsigned short request_num=0;
@@ -476,6 +477,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 					{
 						struct tlv_part* tlv_part=(struct tlv_part*)&buf[offset+i+TLV_HEADER_SIZE];
 						port=htons(tlv_part->data);
+						port_tlv=1;
 					}
 					else if(type==0x0010)
 					{
@@ -538,13 +540,15 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 			}
 			if(force_proxy)
 				DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FP, 1);
-					else
+			else
 				DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0);
 			DBWriteContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FS,file_size);
 			write_cookie(hContact,icbm_cookie);
 			DBWriteContactSettingByte(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT,0);
-			//force proxy = no port?
-			DBWriteContactSettingWord(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,port);
+			if(port_tlv)
+				DBWriteContactSettingWord(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,port);
+			else
+				DBWriteContactSettingWord(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,0);
 			if(!descr_included)
 				msg_buf="";
 			char* szBlob = (char *) malloc(sizeof(DWORD) + strlen(filename) + strlen(msg_buf)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+5);
@@ -563,68 +567,32 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
             ccs.wParam = 0;
             ccs.lParam = (LPARAM) & pre;
             CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
+			free(szBlob);
+			if(descr_included)
+				free(msg_buf);
 		}
 		else if(recv_file_type==0&&request_num==2)//we are sending file, but buddy wants us to connect to them cause they cannot connect to us.
 		{
-			ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING,hContact, 0);
-			if(!force_proxy)
-			{
-				HANDLE hDirect =aim_peer_connect(verified_ip,port);
-				if(hDirect)
-				{
-					aim_accept_file(sn,icbm_cookie);
-					DBWriteContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
-					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
-					ForkThread(aim_dc_helper,hContact);
-				}
-				else
-				{
-					hDirect=aim_peer_connect(local_ip,port);	
-					if(hDirect)
-					{
-						aim_accept_file(sn,icbm_cookie);
-						DBWriteContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,local_ip);
-						ForkThread(aim_dc_helper,hContact);
-					}
-					else//stage 3 proxy
-					{
-						HANDLE hProxy=aim_connect("ars.oscar.aol.com:5190");
-						if(hProxy)
-						{
-							DBWriteContactSettingByte(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,3);
-							DBWriteContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
-							DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
-							ForkThread(aim_proxy_helper,hContact);
-						}
-					}
-				}
-			}
-			else//stage 2 proxy
-			{
-				HANDLE hProxy=aim_peer_connect(proxy_ip,5190);
-				if(hProxy)
-				{
-					DBWriteContactSettingByte(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,2);
-					DBWriteContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
-					DBWriteContactSettingWord(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,port);//needed to verify the proxy connection as legit
-					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,proxy_ip);
-					ForkThread(aim_proxy_helper,hContact);
-				}
-			}
+			if(!port_tlv)
+				port=0;
+			char* blob = (char *) malloc(sizeof(hContact)+sizeof(icbm_cookie)+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+sizeof(port)+sizeof(force_proxy)+9);
+			memcpy(blob,(char*)&hContact,sizeof(HANDLE));
+			memcpy(blob+sizeof(HANDLE),icbm_cookie,8);
+			strcpy(blob+sizeof(HANDLE)+8,sn);
+			strcpy(blob+sizeof(HANDLE)+8+strlen(sn)+1,local_ip);
+			strcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+2,verified_ip);
+			strcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+3,proxy_ip);
+			memcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+4,(char*)&port,sizeof(unsigned short));
+			memcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+4+sizeof(unsigned short),(char*)&force_proxy,sizeof(bool));
+			ForkThread((pThreadFunc)redirected_file_thread,blob);
 		}
 		else if(recv_file_type==0&&request_num==3)//buddy sending file, redirected connection failed, so they asking us to connect to proxy
 		{
-			//stage 3 proxy
-			HANDLE hProxy=aim_peer_connect(proxy_ip,5190);
-			if(hProxy)
-			{
-				DBWriteContactSettingByte(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,3);
-				DBWriteContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
-				DBWriteContactSettingWord(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,port);//needed to verify the proxy connection as legit
-				DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,proxy_ip);
-				ForkThread(aim_proxy_helper,hContact);
-			}
+			char* blob = (char *) malloc(sizeof(hContact)+strlen(proxy_ip)+sizeof(port)+2);
+			memcpy(blob,(char*)&hContact,sizeof(HANDLE));
+			strcpy(blob+sizeof(HANDLE),proxy_ip);
+			memcpy(blob+sizeof(HANDLE)+strlen(proxy_ip)+1,(char*)&port,sizeof(unsigned short));
+			ForkThread((pThreadFunc)proxy_file_thread,blob);
 		}
 		else if(recv_file_type==1)//buddy cancelled or denied file transfer
 		{
@@ -696,27 +664,31 @@ void snac_received_info(unsigned short subgroup, char* buf, int flap_length)//fa
 		}
 		if(hContact)
 			if(DBGetContactSettingWord(hContact,AIM_PROTOCOL_NAME,"Status",ID_STATUS_OFFLINE)==ID_STATUS_AWAY)
-				if(!away_message_received&&!profile_received)
+				if(!away_message_received&&!conn.request_HTML_profile)
 				{
 					write_away_message(hContact,sn,Translate("No information has been provided by the server."));
 				}
+			if(!profile_received&&conn.request_HTML_profile)
+				write_profile(hContact,sn,"No Profile");
 			if(conn.requesting_HTML_ModeMsg)
 			{
-				conn.requesting_HTML_ModeMsg=0;
 				char URL[256];
 				unsigned short CWD_length,protocol_length,sn_length;
 				ZeroMemory(URL,sizeof(URL));
 				CWD_length=strlen(CWD);
 				protocol_length=strlen(AIM_PROTOCOL_NAME);
-				sn_length=strlen(sn);
+				char* norm_sn=normalize_name(sn);
+				sn_length=strlen(norm_sn);
 				memcpy(URL,CWD,CWD_length);
 				memcpy(&URL[CWD_length],"\\",1);
 				memcpy(&URL[1+CWD_length],AIM_PROTOCOL_NAME,protocol_length);
 				memcpy(&URL[1+CWD_length+protocol_length],"\\",1);
-				memcpy(&URL[2+CWD_length+protocol_length],sn,sn_length);
+				memcpy(&URL[2+CWD_length+protocol_length],norm_sn,sn_length);
 				memcpy(&URL[2+CWD_length+protocol_length+sn_length],"\\",1);
 				memcpy(&URL[3+CWD_length+protocol_length+sn_length],"away.html",9);	
 				execute_cmd("http",URL);
 			}
+			conn.requesting_HTML_ModeMsg=0;
+			conn.request_HTML_profile=0;
 	}
 }

@@ -34,6 +34,7 @@ public:
 	int initial_status;//start up status
 	char* szModeMsg;//away message
 	bool requesting_HTML_ModeMsg;
+	bool request_HTML_profile;
 	bool buddy_list_received;
 	HINSTANCE hInstance;
 	HANDLE hServerConn;

@@ -33,49 +33,9 @@ static int GetStatus(WPARAM wParam, LPARAM lParam)
 }
 static int SetStatus(WPARAM wParam, LPARAM lParam)
 { 
-	EnterCriticalSection(&statusMutex);
 	if (wParam==conn.status)
 		return 0;
-	start_connection(wParam);
-	if(conn.state==1)
-		switch(wParam)
-		{
-			case ID_STATUS_OFFLINE:
-				{
-					Netlib_CloseHandle(conn.hDirectBoundPort);
-					Netlib_CloseHandle(conn.hServerConn);
-					conn.hServerConn=0;
-					broadcast_status(ID_STATUS_OFFLINE);
-					offline_contacts();
-					break;
-				}
-			case ID_STATUS_ONLINE:
-			case ID_STATUS_FREECHAT:
-				{
-					broadcast_status(ID_STATUS_ONLINE);
-					aim_set_away(NULL);//unset away message
-					aim_set_invis(AIM_STATUS_ONLINE,AIM_STATUS_NULL);//online not invis	
-					break;
-				}
-			case ID_STATUS_INVISIBLE:
-				{
-					broadcast_status(wParam);
-					aim_set_invis(AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
-					break;
-				}
-			case ID_STATUS_AWAY:
-			case ID_STATUS_OUTTOLUNCH:
-			case ID_STATUS_NA:
-			case ID_STATUS_DND:
-			case ID_STATUS_OCCUPIED:
-			case ID_STATUS_ONTHEPHONE:
-				{
-					start_connection(ID_STATUS_AWAY);// if not started
-					//see SetAwayMsg for status away
-					break;
-				}
-		}
-	LeaveCriticalSection(&statusMutex);
+	ForkThread((pThreadFunc)set_status_thread,(void*)wParam);
 	return 0;
 }
 static int SendMsg(WPARAM wParam, LPARAM lParam)
@@ -117,6 +77,7 @@ static int GetProfile(WPARAM wParam, LPARAM lParam)
 	DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
 	if(dbv.pszVal)
 	{
+		conn.request_HTML_profile=1;
 		aim_query_profile(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
@@ -222,8 +183,6 @@ static int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	DBVARIANT dbv;
 	NETLIBUSER nlu;
-	NETLIBBIND nlb = {0};
-	nlb.cbSize = sizeof(nlb);
 	ZeroMemory(&nlu, sizeof(nlu));
     nlu.cbSize = sizeof(nlu);
     nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS;
@@ -236,20 +195,7 @@ static int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	nlu.szDescriptiveName = "AOL Instant Messenger Client-to-client connection";
 	nlu.szSettingsModule = szP2P;
 	nlu.minIncomingPorts = 1;
-	nlb.pfnNewConnectionV2 = aim_direct_connection_initiated;
 	conn.hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
-	conn.hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)conn.hNetlibPeer, (LPARAM)&nlb);
-	if (!conn.hDirectBoundPort && (GetLastError() == 87))
-    { // this ensures old Miranda also can bind a port for a dc
-		nlb.cbSize = NETLIBBIND_SIZEOF_V1;
-		conn.hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)conn.hNetlibPeer, (LPARAM)&nlb);
-    }
-	if (conn.hDirectBoundPort == NULL)
-    {
-		MessageBox( NULL, "AimOSCAR was unable to bind to a port. File transfers may not succeed in some cases.", AIM_PROTOCOL_NAME, MB_OK );	
-    }
-	conn.LocalPort=nlb.wPort;
-	conn.InternalIP=nlb.dwInternalIP;
 	if (DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
 	{
 		DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, AIM_DEFAULT_SERVER);
@@ -285,10 +231,29 @@ static int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
 }
 static int PreShutdown(WPARAM wParam,LPARAM lParam)
 {
-	Netlib_CloseHandle(conn.hServerConn);
+	if(conn.hServerConn)
+		Netlib_CloseHandle(conn.hServerConn);
 	conn.hServerConn=0;
+	if(conn.hDirectBoundPort)
+		Netlib_CloseHandle(conn.hDirectBoundPort);
+	conn.hDirectBoundPort=0;
 	Netlib_CloseHandle(conn.hNetlib);
 	conn.hNetlib=0;
+	Netlib_CloseHandle(conn.hNetlibPeer);
+	conn.hNetlibPeer=0;
+	for(unsigned int i=0;i<conn.hookEvent_size;i++)
+		UnhookEvent(conn.hookEvent[i]);
+	free(CWD);
+	free(AIM_PROTOCOL_NAME);
+	free(conn.szModeMsg);
+	free(COOKIE);
+	free(GROUP_ID_KEY);
+	free(ID_GROUP_KEY);
+	free(FILE_TRANSFER_KEY);
+	DeleteCriticalSection(&modeMsgsMutex);
+	DeleteCriticalSection(&statusMutex);
+	DeleteCriticalSection(&connectionMutex);
+	KillTimer(NULL, conn.hTimer);
 	return 0;
 }
 static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
@@ -473,6 +438,7 @@ static int SendFile(WPARAM wParam,LPARAM lParam)
 			if(DBGetContactSettingByte(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT,-1)!=-1)
 			{
 				MessageBox( NULL, Translate("Cannot start a file transfer with this contact while another file transfer with the same contact is pending."),AIM_PROTOCOL_NAME,MB_OK);
+				return 0;
 			}
 			char** files = (char**)ccs->lParam;
 			char* pszDesc = (char*)ccs->wParam;
@@ -545,73 +511,11 @@ static int RecvFile(WPARAM wParam,LPARAM lParam)
 }
 static int AllowFile(WPARAM wParam, LPARAM lParam)
 {
-    CCSDATA *ccs = (CCSDATA *) lParam;	
-	DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME, AIM_KEY_FN,(char *)ccs->lParam);
-	char *szDesc, *szFile, *local_ip, *verified_ip, *proxy_ip,* sn;
-	szFile = (char*)ccs->wParam + sizeof(DWORD);
-    szDesc = szFile + strlen(szFile) + 1;
-	local_ip = szDesc + strlen(szDesc) + 1;
-	verified_ip = local_ip + strlen(local_ip) + 1;
-	proxy_ip = verified_ip + strlen(verified_ip) + 1;
-	DBVARIANT dbv;
-	if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
-	{
-		sn= strdup(dbv.pszVal);
-		DBFreeVariant(&dbv);
-	}
-	int peer_force_proxy=DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0);
-	int force_proxy=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0);
-	unsigned short port=DBGetContactSettingWord(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,0);
-	if(peer_force_proxy)//peer is forcing proxy
-	{
-		HANDLE hProxy=aim_peer_connect(proxy_ip,5190);
-		if(hProxy)
-		{
-			DBWriteContactSettingByte(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,1);
-			DBWriteContactSettingDword(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
-			DBWriteContactSettingWord(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,port);//needed to verify the proxy connection as legit
-			DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,proxy_ip);
-			ForkThread(aim_proxy_helper,ccs->hContact);
-		}
-	}
-	else if(force_proxy)//we are forcing a proxy
-	{
-		HANDLE hProxy=aim_connect("ars.oscar.aol.com:5190");
-		if(hProxy)
-		{
-			DBWriteContactSettingByte(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,2);
-			DBWriteContactSettingDword(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
-			DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
-			ForkThread(aim_proxy_helper,ccs->hContact);
-		}
-	}
-	else
-	{
-		char cookie[8];
-		read_cookie(ccs->hContact,cookie);
-		HANDLE hDirect =aim_peer_connect(verified_ip,port);
-		if(hDirect)
-		{
-			aim_accept_file(sn,cookie);
-			DBWriteContactSettingDword(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
-			DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
-			ForkThread(aim_dc_helper,ccs->hContact);
-		}
-		hDirect=aim_peer_connect(local_ip,port);			
-		if(hDirect)
-		{
-			aim_accept_file(sn,cookie);
-			DBWriteContactSettingDword(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
-			DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,local_ip);
-			ForkThread(aim_dc_helper,ccs->hContact);
-		}
-		else
-		{
-			DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
-			aim_file_redirected_request(sn,cookie);
-		}
-	}
-		return (int)ccs->hContact;
+    CCSDATA *ccs = (CCSDATA *) lParam;
+	CCSDATA *data=(CCSDATA*)malloc(sizeof(ccs));
+	memcpy(data,ccs,sizeof(CCSDATA));
+	ForkThread((pThreadFunc)accept_file_thread,data);
+	return (int)ccs->hContact;
 }
 static int DenyFile(WPARAM wParam, LPARAM lParam)
 {
@@ -619,11 +523,10 @@ static int DenyFile(WPARAM wParam, LPARAM lParam)
 	DBVARIANT dbv;
 	if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
-		char* sn =strdup(dbv.pszVal);
-		DBFreeVariant(&dbv);
 		char cookie[8];
 		read_cookie(ccs->hContact,cookie);
-		aim_deny_file(sn,cookie);
+		aim_deny_file(dbv.pszVal,cookie);
+		DBFreeVariant(&dbv);
 	}
 	DBDeleteContactSetting(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT);
 	return 0;
@@ -634,13 +537,12 @@ static int CancelFile(WPARAM wParam, LPARAM lParam)
 	DBVARIANT dbv;
 	if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
-		char* sn =strdup(dbv.pszVal);
-		DBFreeVariant(&dbv);
 		char cookie[8];
 		read_cookie(ccs->hContact,cookie);
-		aim_deny_file(sn,cookie);
+		aim_deny_file(dbv.pszVal,cookie);
+		DBFreeVariant(&dbv);
 	}
-	if(DBGetContactSettingWord(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_FT,-1)!=-1)
+	if(DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_FT,-1)!=-1)
 	{
 		HANDLE Connection=(HANDLE)DBGetContactSettingDword(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,0);
 		if(Connection)
@@ -705,7 +607,10 @@ static BOOL CALLBACK dialog_message(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 {
                     char str[128];
                     GetDlgItemText(hwndDlg, IDC_SN, str, sizeof(str));
-                    DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, str);
+					if(strlen(str)>0)
+						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, str);
+					else
+						DBDeleteContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN);
 					if(GetDlgItemText(hwndDlg, IDC_NK, str, sizeof(str)))
 						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_NK, str);
 					else
@@ -714,8 +619,13 @@ static BOOL CALLBACK dialog_message(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_NK, str);
 					}
                     GetDlgItemText(hwndDlg, IDC_PW, str, sizeof(str));
-                    CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
-                    DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, str);
+					if(strlen(str)>0)
+					{
+						CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
+						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, str);
+					}
+					else
+						DBDeleteContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW);
 					GetDlgItemText(hwndDlg, IDC_HN, str, sizeof(str));
                     DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, str);
 					unsigned long timeout=60;
