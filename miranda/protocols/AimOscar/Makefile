@@ -98,6 +98,6 @@ format :
 	$(RM) *.*~
 
 clean :
-	$(RM) -f $(OBJ) $(RES)
+	$(RM) -fr $(OBJ) $(RES) *.ncb *.suo Release Debug
 
 -include Makefile.dep
