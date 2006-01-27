@@ -36,6 +36,7 @@ extern HICON overlayicons[10];
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst,SIZE *psize, HDC hdcSrc, POINT *pptSrc, COLORREF crKey, BLENDFUNCTION *pblend, DWORD dwFlags);
 extern PGF MyGradientFill;
+extern int Docking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam);
 
 extern struct CluiData g_CluiData;
 extern struct ExtraCache *g_ExtraCache;
@@ -337,6 +338,7 @@ LBL_Error:
 	pcli->pfnTrayIconUpdateBase = TrayIconUpdateBase;
 	pcli->pfnTrayIconUpdateWithImageList = TrayIconUpdateWithImageList;
 	pcli->pfnLoadContactTree = LoadContactTree;
+	pcli->pfnDocking_ProcessWindowMessage = Docking_ProcessWindowMessage;
 
 	saveAddContactToGroup = pcli->pfnAddContactToGroup; pcli->pfnAddContactToGroup = AddContactToGroup;
 	saveAddEvent = pcli->pfnAddEvent; pcli->pfnAddEvent = AddEvent;

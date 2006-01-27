@@ -885,7 +885,7 @@ static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
 	if (!DBGetContactSettingByte(NULL,"CLUI","AutoSize",0))
 		return;
 
-	if (CallService(MS_CLIST_DOCKINGISDOCKED,0,0))
+	if (Docking_IsDocked(0, 0))
 		return;
 	if (hFrameContactTree == 0)
 		return;
@@ -1222,7 +1222,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
             RECT rc;
             POINT pt = {0};
 
-            GetWindowRect(hwnd, &g_PreSizeRect);
+			GetWindowRect(hwnd, &g_PreSizeRect);
             GetClientRect(hwnd, &rc);
             ClientToScreen(hwnd, &pt);
             g_CLUI_x_off = pt.x - g_PreSizeRect.left;
@@ -1246,6 +1246,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		{
 			RECT *szrect = (RECT *)lParam;
 
+			if(Docking_IsDocked(0, 0))
+				break;
 			g_SizingRect = *((RECT *)lParam);
 			if(wParam != WMSZ_BOTTOM && wParam != WMSZ_BOTTOMRIGHT && wParam != WMSZ_BOTTOMLEFT)
 				szrect->bottom = g_PreSizeRect.bottom;
@@ -1260,6 +1262,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			if(wp && wp->flags & SWP_NOSIZE)
 				return FALSE;
+
+			if(Docking_IsDocked(0, 0))
+				break;
 
 			//_DebugPopup(0, "sizing: %d, %d, %d, %d : wp: %d, %d, %d, %d", g_SizingRect.left,
 			//            g_SizingRect.top, g_SizingRect.right, g_SizingRect.bottom,
@@ -1309,7 +1314,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
 	case WM_SIZE:
-		if(wParam == 0 && lParam == 0) {
+		if((wParam == 0 && lParam == 0) || Docking_IsDocked(0, 0)) {
 			RECT rcStatus;
 
 			if (IsZoomed(hwnd))
@@ -1350,7 +1355,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			RECT rc;
 			GetWindowRect(hwnd, &rc);
 
-			if (!CallService(MS_CLIST_DOCKINGISDOCKED, 0, 0)) {
+			if (!Docking_IsDocked(0, 0)) {
 				cluiPos.bottom = (DWORD) (rc.bottom - rc.top);
 				cluiPos.left = rc.left;
 				cluiPos.top = rc.top;

@@ -168,7 +168,8 @@ static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, co
 			return 0;
     }
 
-    if(!g_CluiData.bDontSeparateOffline && ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE)))
+    // separate contacts treated as "offline"
+	if(!g_CluiData.bDontSeparateOffline && ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE)))
 	    return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
 
 	if(bywhat == SORTBY_NAME) {
