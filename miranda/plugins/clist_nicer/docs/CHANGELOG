@@ -7,7 +7,11 @@
 + = new feature
 - = removed
 
-0.6.0.2  - 2006/01/28
+0.6.0.3  - 2006/01/27
+		
+		* fixed possible memory allocation - related crash on startup.
+		
+0.6.0.2  - 2006/01/27
 
 		* still bugfixing phase. Some troubles with autosizing were fixed.
 		

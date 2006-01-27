@@ -1372,17 +1372,19 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
         for (i=0;i<v;i++) {
             if (sd[i].realpos==pos) {
                 if (lParam==-1) {
-                    if (i>=v-1) break;
-                    tmpval=Frames[sd[i+1].realpos].order;
-                    Frames[sd[i+1].realpos].order=Frames[pos].order;
-                    Frames[pos].order=tmpval;
-                    break;
-                };
-                if (lParam==+1) {
                     if (i<1) break;
                     tmpval=Frames[sd[i-1].realpos].order;
                     Frames[sd[i-1].realpos].order=Frames[pos].order;
                     Frames[pos].order=tmpval;
+					//_DebugPopup(0, "moved up from %d to %d", curpos, tmpval);
+                    break;
+                };
+                if (lParam==1) {
+                    if (i>v-1) break;
+                    tmpval=Frames[sd[i+1].realpos].order;
+                    Frames[sd[i+1].realpos].order=Frames[pos].order;
+                    Frames[pos].order=tmpval;
+					//_DebugPopup(0, "moved down from %d to %d", curpos, tmpval);
                     break;
                 };
 
@@ -1395,7 +1397,7 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
         };
         CLUIFramesStoreFrameSettings(pos);
         CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
-
+		PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
     }
     ulockfrm();
     return(0);
@@ -1403,12 +1405,12 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
 
 static int CLUIFramesMoveUp(WPARAM wParam,LPARAM lParam)
 {
-    return(CLUIFramesMoveUpDown(wParam, 1));
+	return(CLUIFramesMoveUpDown(wParam, -1));
 }
 
 static int CLUIFramesMoveDown(WPARAM wParam,LPARAM lParam)
 {
-    return(CLUIFramesMoveUpDown(wParam, -1));
+    return(CLUIFramesMoveUpDown(wParam, 1));
 }
 
 

@@ -320,8 +320,10 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				g_CluiData.dwFlags = IsDlgButtonChecked(hwndDlg, IDC_ROUNDEDBORDER) ? g_CluiData.dwFlags | CLUI_FRAME_ROUNDEDFRAME : g_CluiData.dwFlags & ~CLUI_FRAME_ROUNDEDFRAME;
 				DBWriteContactSettingByte(NULL, "CLUI", "AutoSize", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOSIZE));
 				
-				if((g_CluiData.autosize = IsDlgButtonChecked(hwndDlg, IDC_AUTOSIZE) ? 1 : 0))
+				if((g_CluiData.autosize = IsDlgButtonChecked(hwndDlg, IDC_AUTOSIZE) ? 1 : 0)) {
+					SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 					SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);
+				}
 
 				DBWriteContactSettingByte(NULL, "CLUI", "MaxSizeHeight", (BYTE) GetDlgItemInt(hwndDlg, IDC_MAXSIZEHEIGHT, NULL, FALSE));
 				DBWriteContactSettingByte(NULL, "CLUI", "AutoSizeUpward", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOSIZEUPWARD));

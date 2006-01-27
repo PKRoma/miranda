@@ -351,7 +351,7 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	static Update upd = {0};
 #if defined(_UNICODE)
-	static char *component = "CList Nicer+ (NEW) - Unicode";
+	static char *component = "CList Nicer+ (Unicode)";
 	static char szCurrentVersion[30];
 	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer/versionW.txt";
 	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/clist_nicer_plusW.zip";
@@ -1081,7 +1081,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			SetWindowPos(pcli->hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 			DrawMenuBar(hwnd);
-			
+			if(g_CluiData.autosize) {
+				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+				SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);
+			}				
 			// finally, the floater
 			SFL_Create();
 			SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (state == SETTING_STATE_NORMAL ? 0 : 1) : 1);
