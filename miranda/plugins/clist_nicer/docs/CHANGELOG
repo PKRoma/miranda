@@ -7,7 +7,7 @@
 + = new feature
 - = removed
 
-0.6.0.1  - 2006/01/28
+0.6.0.2  - 2006/01/28
 
 		* still bugfixing phase. Some troubles with autosizing were fixed.
 		
@@ -22,7 +22,7 @@
 		  per group, then they will be sorted according to the normal contact list sorting,
 		  but will still all stay on top of the group.
 		  
-		* added multilevel sorting. Up to levels of sorting can be selected to sort the clist. 
+		* added multilevel sorting. Up to 3 levels of sorting can be selected to sort the clist. 
 		  There are 4 available sorting criterias, as following:
 		  
 		  * name
@@ -43,7 +43,11 @@
 		  With the default border/title bar, docking doesn't work (may or may be not fixed in the
 		  future, but it doesn't matter much - most people prefer to dock the clist without any
 		  title bar at all.
-		  
+
+		* status floater fixed. In some cases, it appeared when it shouldn't (auto-hide was 
+		  "reversed"). Also, the event area on the status floater will now clear events when
+		  the clist is hidden.
+		  		  
 0.6.0.00 - 2006
 
 		* from now on, clist_nicer+ is based on the new clist interface code which was

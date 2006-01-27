@@ -351,19 +351,19 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	static Update upd = {0};
 #if defined(_UNICODE)
-	static char *component = "CList Nicer+ (Unicode)";
+	static char *component = "CList Nicer+ (NEW) - Unicode";
 	static char szCurrentVersion[30];
 	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer/versionW.txt";
 	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/clist_nicer_plusW.zip";
-	static char *szFLVersionUrl = "http://www.miranda-im.org/download/details.php?action=viewfile&id=2365";
-	static char *szFLUpdateurl = "http://www.miranda-im.org/download/feed.php?dlfile=2365";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=2601";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=2601";
 #else
 	static char *component = "CList Nicer+";
 	static char szCurrentVersion[30];
 	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer/version.txt";
 	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/clist_nicer_plus.zip";
-	static char *szFLVersionUrl = "http://www.miranda-im.org/download/details.php?action=viewfile&id=2189";
-	static char *szFLUpdateurl = "http://www.miranda-im.org/download/feed.php?dlfile=2189";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=2602";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=2602";
 #endif
 	static char *szPrefix = "clist_nicer_plus ";
 

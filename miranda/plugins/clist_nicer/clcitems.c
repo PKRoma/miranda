@@ -53,7 +53,7 @@ extern struct ClcGroup* ( *saveAddGroup )(HWND hwnd, struct ClcData *dat, const 
 
 struct ClcContact* CreateClcContact( void )
 {
-	struct ClcContact* p = (struct ClcContact*)calloc( sizeof( struct ClcContact ), 1 );
+	struct ClcContact* p = (struct ClcContact*)mir_alloc( sizeof( struct ClcContact ) );
 	if ( p != NULL ) {
 		p->clientId = -1;
 		p->extraCacheEntry = -1;

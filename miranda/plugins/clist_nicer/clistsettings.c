@@ -35,7 +35,7 @@ wchar_t* a2u( char* src )
 	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
 
 	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
-	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
+	wchar_t* result = ( wchar_t* )malloc( sizeof( wchar_t )*(cbLen+1));
 	if ( result == NULL )
 		return NULL;
 

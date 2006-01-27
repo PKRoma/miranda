@@ -521,6 +521,22 @@ LBL_Def:
 		}
 		goto LBL_Def;
 
+	case INTM_INVALIDATECONTACT:
+		{
+			struct ClcContact *contact = 0;
+			struct ClcGroup *group = 0;
+			int iItem;
+
+			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL))
+				break;
+
+			if(contact == 0 || group == 0)
+				break;
+
+			iItem = pcli->pfnGetRowsPriorTo(&dat->list, group, li.List_IndexOf(( SortedList* )&group->cl, contact));
+			pcli->pfnInvalidateItem(hwnd, dat, iItem);
+			goto LBL_Def;
+		}
 	case INTM_SORTCLC:
 		//KillTimer(hwnd, TIMERID_SORT);
 		//SetTimer(hwnd, TIMERID_SORT, 80, NULL);

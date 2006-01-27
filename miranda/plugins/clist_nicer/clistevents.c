@@ -59,7 +59,7 @@ HANDLE hNotifyFrame = (HANDLE)-1;
 
 struct CListEvent* fnCreateEvent( void )
 {
-	return (struct CListEvent*)calloc( sizeof(struct CListEvent), 1 );
+	return (struct CListEvent*)mir_alloc( sizeof(struct CListEvent) );
 }
 
 void HideShowNotifyFrame()
