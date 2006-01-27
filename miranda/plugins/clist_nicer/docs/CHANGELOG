@@ -11,20 +11,39 @@
 
 		* still bugfixing phase. Some troubles with autosizing were fixed.
 		
+		  fix: sticky taskbar button when there shouldn't be one (e.g. borderless mode)
+		  restored the old way of skinning the clist with the desktop wallpaper (the
+		  option "Use these settings to skin the entire background" now works like it did
+		  in older builds).
+		
 		* added "priority contacts" - you can toggle a priority contact in the contact menu
 		  (right click). A priority contact will always be on top of the list or its group
 		  and override the normal sorting order. If there are multiple priority contacts
 		  per group, then they will be sorted according to the normal contact list sorting,
 		  but will still all stay on top of the group.
 		  
-		* added multilevel sorting. Up to 3 criterias can be selected to sort the clist. There
-		  is a total of 4 available sorting criterias, as following:
+		* added multilevel sorting. Up to levels of sorting can be selected to sort the clist. 
+		  There are 4 available sorting criterias, as following:
 		  
 		  * name
 		  * protocol
 		  * status
 		  * last message received
+		  
+		  The feature works similar to the sorting in clist_modern. It respects the setting "Do
+		  not separate offline contacts" and will also take priority contacts into account.
 
+		* improved docking. Should now work again, but the clist must have one of the following
+		  frame styles:
+		  
+		  * tool window
+		  * thin border
+		  * no border.
+		  
+		  With the default border/title bar, docking doesn't work (may or may be not fixed in the
+		  future, but it doesn't matter much - most people prefer to dock the clist without any
+		  title bar at all.
+		  
 0.6.0.00 - 2006
 
 		* from now on, clist_nicer+ is based on the new clist interface code which was

@@ -997,7 +997,7 @@ struct {char *szModule; char *szSetting; unsigned int size; int defaultval;} _ta
     "WorldTime", "FontCol", 4, 0,
     NULL, NULL, 0, 0
 };
-void export(char *file)
+void extbk_export(char *file)
 {
     int n, i;
     char buffer[255];   
@@ -1521,7 +1521,7 @@ void LoadPerContactSkins(char *file)
     free(items);
 }
 
-void import(char *file, HWND hwndDlg)
+void extbk_import(char *file, HWND hwndDlg)
 {
     int n, i;
     char buffer[255];

@@ -447,7 +447,7 @@ extern "C" void DeleteG()
 extern "C" int MeasureTextHQ(HDC hdc, HFONT hFont, RECT *rc, WCHAR *szwText)
 {
     Font font(hdc, hFont);
-    RectF rectF(rc->left, rc->top, (rc->right - rc->left), rc->bottom - rc->top);
+    RectF rectF((REAL)rc->left, (REAL)rc->top, (REAL)(rc->right - rc->left), (REAL)(rc->bottom - rc->top));
     RectF rectTarget;
     g->MeasureString(szwText, -1, &font, rectF, &rectTarget);
     rc->left = (int)rectTarget.X;
@@ -465,7 +465,7 @@ extern "C" int DrawTextHQ(HDC hdc, HFONT hFont, RECT *rc, WCHAR *szwText, COLORR
     Font font(hdc, hFont);
     Color clr(GetRValue(colorref), GetGValue(colorref), GetBValue(colorref));
     SolidBrush brush(clr);
-    RectF rectF(rc->left - 2, rc->top, (rc->right - rc->left) + 2, rc->bottom - rc->top);
+    RectF rectF((REAL)(rc->left - 2), (REAL)rc->top, (REAL)((rc->right - rc->left) + 2), (REAL)(rc->bottom - rc->top));
     if(fontHeight)
         rectF.Height = (REAL)fontHeight;
     //g->SetTextContrast(2000);

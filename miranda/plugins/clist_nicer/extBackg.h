@@ -155,8 +155,8 @@ BOOL CheckItem(int item, HWND hwndDlg);
 BOOL isValidItem(void);
 void SetChangedStatusItemFlag(WPARAM wParam, HWND hwndDlg);
 void ChangeControlItems(HWND hwndDlg, int status, int except);
-void export(char *file);
-void import(char *file, HWND hwndDlg);
+void extbk_export(char *file);
+void extbk_import(char *file, HWND hwndDlg);
 
 void SaveLatestChanges(HWND hwndDlg);
 void LoadExtBkSettingsFromDB();

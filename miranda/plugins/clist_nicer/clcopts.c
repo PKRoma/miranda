@@ -419,7 +419,7 @@ static BOOL CALLBACK DlgProcClcExtBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
                         ofn.lpstrDefExt = "clist";
                         if (!GetSaveFileNameA(&ofn))
                             break;
-                        export(str);
+                        extbk_export(str);
                         break;
                     }
                 case IDC_IMPORT:
@@ -438,7 +438,7 @@ static BOOL CALLBACK DlgProcClcExtBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
                         ofn.lpstrDefExt = "";
                         if (!GetOpenFileNameA(&ofn))
                             break;
-                        import(str, hwndDlg);
+                        extbk_import(str, hwndDlg);
                         SendMessage(hwndDlg, WM_USER + 101, 0, 0);
                         break;
                     }

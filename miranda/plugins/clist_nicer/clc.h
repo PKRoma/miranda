@@ -465,6 +465,10 @@ void CluiProtocolStatusChanged( int, const char* );
 char *u2a(wchar_t *src);
 wchar_t *a2u(char *src);
 
+// Docking.c
+
+int Docking_IsDocked(WPARAM wParam, LPARAM lParam);
+
 #define NIIF_INTERN_UNICODE 0x00000100
 
 #define SETTING_WINDOWSTYLE_DEFAULT 0
