@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8,00"
 	Name="tabsrmm"
-	ProjectGUID="{883A9047-0B5A-4A89-88C1-4DCE27123BE9}"
+	ProjectGUID="{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
 	RootNamespace="srmm"
 	>
 	<Platforms>
@@ -177,6 +177,7 @@
 				AdditionalDependencies="comctl32.lib"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
+				GenerateManifest="true"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="false"
 				GenerateMapFile="false"
@@ -1035,11 +1036,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File
