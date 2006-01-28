@@ -62,6 +62,7 @@ CLEAN :
 	-@erase "$(INTDIR)\cluiservices.obj"
 	-@erase "$(INTDIR)\commonheaders.obj"
 	-@erase "$(INTDIR)\contact.obj"
+	-@erase "$(INTDIR)\Docking.obj"
 	-@erase "$(INTDIR)\extBackg.obj"
 	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\framesmenu.obj"
@@ -82,7 +83,6 @@ CLEAN :
 	-@erase "$(INTDIR)\viewmodes.obj"
 	-@erase "$(INTDIR)\wallpaper.obj"
 	-@erase "$(OUTDIR)\clist_nicer.exp"
-	-@erase "$(OUTDIR)\clist_nicer.lib"
 	-@erase "$(OUTDIR)\clist_nicer.map"
 	-@erase "$(OUTDIR)\clist_nicer.pdb"
 	-@erase "..\..\bin\release\plugins\clist_nicer.dll"
@@ -137,7 +137,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\URLCtrl.obj" \
 	"$(INTDIR)\viewmodes.obj" \
 	"$(INTDIR)\wallpaper.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\Docking.obj"
 
 "..\..\bin\release\plugins\clist_nicer.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -175,6 +176,7 @@ CLEAN :
 	-@erase "$(INTDIR)\cluiservices.obj"
 	-@erase "$(INTDIR)\commonheaders.obj"
 	-@erase "$(INTDIR)\contact.obj"
+	-@erase "$(INTDIR)\Docking.obj"
 	-@erase "$(INTDIR)\extBackg.obj"
 	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\framesmenu.obj"
@@ -250,7 +252,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\URLCtrl.obj" \
 	"$(INTDIR)\viewmodes.obj" \
 	"$(INTDIR)\wallpaper.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\Docking.obj"
 
 "..\..\bin\debug\plugins\clist_nicer.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -288,6 +291,7 @@ CLEAN :
 	-@erase "$(INTDIR)\cluiservices.obj"
 	-@erase "$(INTDIR)\commonheaders.obj"
 	-@erase "$(INTDIR)\contact.obj"
+	-@erase "$(INTDIR)\Docking.obj"
 	-@erase "$(INTDIR)\extBackg.obj"
 	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\framesmenu.obj"
@@ -362,7 +366,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\URLCtrl.obj" \
 	"$(INTDIR)\viewmodes.obj" \
 	"$(INTDIR)\wallpaper.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\Docking.obj"
 
 "..\..\bin\Release Unicode\plugins\clist_nicer.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -400,6 +405,7 @@ CLEAN :
 	-@erase "$(INTDIR)\cluiservices.obj"
 	-@erase "$(INTDIR)\commonheaders.obj"
 	-@erase "$(INTDIR)\contact.obj"
+	-@erase "$(INTDIR)\Docking.obj"
 	-@erase "$(INTDIR)\extBackg.obj"
 	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\framesmenu.obj"
@@ -420,7 +426,6 @@ CLEAN :
 	-@erase "$(INTDIR)\viewmodes.obj"
 	-@erase "$(INTDIR)\wallpaper.obj"
 	-@erase "$(OUTDIR)\clist_nicer.exp"
-	-@erase "$(OUTDIR)\clist_nicer.lib"
 	-@erase "$(OUTDIR)\clist_nicer.pdb"
 	-@erase "..\..\bin\Debug Unicode\plugins\clist_nicer.dll"
 	-@erase "..\..\bin\Debug Unicode\plugins\clist_nicer.ilk"
@@ -475,7 +480,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\URLCtrl.obj" \
 	"$(INTDIR)\viewmodes.obj" \
 	"$(INTDIR)\wallpaper.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\Docking.obj"
 
 "..\..\bin\Debug Unicode\plugins\clist_nicer.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1634,6 +1640,11 @@ CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 
 !ENDIF 
+
+SOURCE=.\Docking.c
+
+"$(INTDIR)\Docking.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+
 
 SOURCE=.\extBackg.c
 

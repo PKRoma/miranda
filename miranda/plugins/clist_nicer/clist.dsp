@@ -574,6 +574,10 @@ SOURCE=.\contact.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\Docking.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\extBackg.c
 # End Source File
 # Begin Source File

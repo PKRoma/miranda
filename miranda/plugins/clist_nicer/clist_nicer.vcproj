@@ -741,6 +741,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Docking.c">
+			</File>
+			<File
 				RelativePath=".\extBackg.c">
 			</File>
 			<File
