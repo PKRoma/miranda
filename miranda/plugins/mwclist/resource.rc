@@ -978,7 +978,7 @@ LANGUAGE LANG_DUTCH, SUBLANG_DUTCH
 
 IDD_OPT_PROTOCOLORDER DIALOGEX 0, 0, 300, 211
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Shell Dlg"
 BEGIN
     CTEXT           "Note: Miranda IM will have to be restarted for changes to take effect.",
                     IDC_PROTOCOLORDERWARNING,5,190,289,14,NOT WS_VISIBLE
