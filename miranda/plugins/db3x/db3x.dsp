@@ -164,19 +164,6 @@ SOURCE=.\dbheaders.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\dbini.c
-
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\dbmodulechain.c
 
 !IF  "$(CFG)" == "db3x - Win32 Release"

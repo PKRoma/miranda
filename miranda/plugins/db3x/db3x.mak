@@ -45,7 +45,6 @@ CLEAN :
 	-@erase "$(INTDIR)\dbcontacts.obj"
 	-@erase "$(INTDIR)\dbevents.obj"
 	-@erase "$(INTDIR)\dbheaders.obj"
-	-@erase "$(INTDIR)\dbini.obj"
 	-@erase "$(INTDIR)\dbmodulechain.obj"
 	-@erase "$(INTDIR)\dbsettings.obj"
 	-@erase "$(INTDIR)\encrypt.obj"
@@ -79,7 +78,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\dbcontacts.obj" \
 	"$(INTDIR)\dbevents.obj" \
 	"$(INTDIR)\dbheaders.obj" \
-	"$(INTDIR)\dbini.obj" \
 	"$(INTDIR)\dbmodulechain.obj" \
 	"$(INTDIR)\dbsettings.obj" \
 	"$(INTDIR)\encrypt.obj" \
@@ -117,8 +115,6 @@ CLEAN :
 	-@erase "$(INTDIR)\dbevents.sbr"
 	-@erase "$(INTDIR)\dbheaders.obj"
 	-@erase "$(INTDIR)\dbheaders.sbr"
-	-@erase "$(INTDIR)\dbini.obj"
-	-@erase "$(INTDIR)\dbini.sbr"
 	-@erase "$(INTDIR)\dbmodulechain.obj"
 	-@erase "$(INTDIR)\dbmodulechain.sbr"
 	-@erase "$(INTDIR)\dbsettings.obj"
@@ -155,7 +151,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\dbcontacts.sbr" \
 	"$(INTDIR)\dbevents.sbr" \
 	"$(INTDIR)\dbheaders.sbr" \
-	"$(INTDIR)\dbini.sbr" \
 	"$(INTDIR)\dbmodulechain.sbr" \
 	"$(INTDIR)\dbsettings.sbr" \
 	"$(INTDIR)\encrypt.sbr" \
@@ -176,7 +171,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\dbcontacts.obj" \
 	"$(INTDIR)\dbevents.obj" \
 	"$(INTDIR)\dbheaders.obj" \
-	"$(INTDIR)\dbini.obj" \
 	"$(INTDIR)\dbmodulechain.obj" \
 	"$(INTDIR)\dbsettings.obj" \
 	"$(INTDIR)\encrypt.obj" \
@@ -369,30 +363,6 @@ CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /
 CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DB3X_EXPORTS" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\db3x.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\dbheaders.obj"	"$(INTDIR)\dbheaders.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\db3x.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF 
-
-SOURCE=.\dbini.c
-
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DB3X_EXPORTS" /Fp"$(INTDIR)\db3x.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\dbini.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\db3x.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DB3X_EXPORTS" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\db3x.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\dbini.obj"	"$(INTDIR)\dbini.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\db3x.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
