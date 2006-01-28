@@ -175,10 +175,10 @@ int Docking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
                         docked = DOCKED_LEFT;
                     else
                         docked = DOCKED_RIGHT;
-                    PostMessage(msg->hwnd, WM_LBUTTONUP, 0, MAKELPARAM(ptCursor.x, ptCursor.y));
+                    SendMessage(msg->hwnd, WM_LBUTTONUP, 0, MAKELPARAM(ptCursor.x, ptCursor.y));
                     GetWindowRect(msg->hwnd, (LPRECT) msg->lParam);
                     Docking_AdjustPosition(msg->hwnd, (LPRECT) &rcMonitor, (LPRECT) msg->lParam);
-                    PostMessage(msg->hwnd, WM_SIZE, 0, 0);              
+					PostMessage(msg->hwnd, CLUIINTM_REDRAW, 0, 0);
                     return TRUE;
                 }
                 return 0;

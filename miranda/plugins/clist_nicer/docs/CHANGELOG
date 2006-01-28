@@ -7,6 +7,19 @@
 + = new feature
 - = removed
 
+0.6.0.4  - 2006/01/27
+
+		! The option "If window is partially covered..." should no longer affect the
+		  minimize/maximize feature when the visual style in use has a rounded window frame.
+		  
+		! more docking tweaks (still possible minor visual glitches)
+		
+		* tweaked RTL detection for group names and completely disabled RTL for the non-
+		  unicode build.
+		  
+		! fixed long standing CLUIframes bug - Position up/down is now working for all top
+		  or bottom aligned frames, so re-arranging frames shouldn't be longer a problem.
+		  
 0.6.0.3  - 2006/01/27
 		
 		* fixed possible memory allocation - related crash on startup.

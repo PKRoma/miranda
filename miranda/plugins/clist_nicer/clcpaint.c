@@ -61,7 +61,7 @@ int DrawTextHQ(HDC hdc, HFONT hFont, RECT *rc, WCHAR *szwText, COLORREF colorref
 void CreateG(HDC hdc), DeleteG();
 int MeasureTextHQ(HDC hdc, HFONT hFont, RECT *rc, WCHAR *szwText);
 
-int g_hottrack, g_center, g_ignoreselforgroups, g_selectiveIcon, g_exIconSpacing, g_gdiPlus, g_gdiPlusText;
+int g_hottrack, g_center, g_ignoreselforgroups, g_selectiveIcon, g_exIconSpacing, g_gdiPlus, g_gdiPlusText, g_hottrack_done;
 HWND g_focusWnd;
 BYTE selBlend;
 BYTE saved_alpha;
@@ -486,6 +486,7 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 	else
 		cEntry = g_ExtraCache;
 
+#if defined(_UNICODE)
 	if(type == CLCIT_CONTACT && (cEntry->dwCFlags & ECF_RTLNICK || mirror_always)) {
 		if(pfnSetLayout != NULL && (mirror_rtl || mirror_always)) {
 			g_RTL = TRUE;
@@ -498,12 +499,20 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 		else
 			bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
-	else if(pfnSetLayout != NULL && ((type == CLCIT_GROUP && contact->isRtl) || mirror_always)) {
-		g_RTL = TRUE;
-		bg_indent_r = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+	else if(type == CLCIT_GROUP && (contact->isRtl || mirror_always)) {
+		if(pfnSetLayout != NULL && (mirror_rtl || mirror_always || mirror_rtltext)) {
+			g_RTL = TRUE;
+			bg_indent_r = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+		}
+		else
+			bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
 	else
 		bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+#else
+	g_RTL = FALSE;
+	bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+#endif
 
 	g_hottrack = dat->exStyle & CLS_EX_TRACKSELECT && type == CLCIT_CONTACT && dat->iHotTrack == index;
 	if (g_hottrack == selected)
@@ -552,6 +561,8 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 
 	/***** BACKGROUND DRAWING *****/
 	// contacts
+
+	g_hottrack_done = 0;
 
 	if (type == CLCIT_CONTACT || type == CLCIT_DIVIDER) {
 		StatusItems_t *sitem, *sfirstitem, *ssingleitem, *slastitem, *slastitem_NG,
@@ -811,9 +822,15 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 			SetTextColor(hdcMem, dat->selTextColour);
 		}
 	} 
-	else if (g_hottrack)
+	else if (g_hottrack) {
 		SetHotTrackColour(hdcMem,dat);
-
+		if(!g_hottrack_done) {
+	        StatusItems_t *ht = &StatusItems[ID_EXTBKHOTTRACK - ID_STATUS_OFFLINE];
+		    if (ht->IGNORED == 0)
+				DrawAlpha(hdcMem, &rc, ht->COLOR, ht->ALPHA, ht->COLOR2, ht->COLOR2_TRANSPARENT, ht->GRADIENT, 
+						  ht->CORNER, ht->BORDERSTYLE, ht->imageItem);
+		}
+	}
 
 	if(g_RTL)
 		pfnSetLayout(hdcMem, LAYOUT_RTL | LAYOUT_BITMAPORIENTATIONPRESERVED);

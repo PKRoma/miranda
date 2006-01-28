@@ -155,12 +155,17 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 		if (iStepY <= 0)
 			iStepY = 16;
 
-		if(g_CluiData.bClipBorder != 0 || g_CluiData.dwFlags & CLUI_FRAME_ROUNDEDFRAME) {
-			if(g_CluiData.dwFlags & CLUI_FRAME_ROUNDEDFRAME)
-				rgn = CreateRoundRectRgn(rc.left + clip, rc.top + clip, rc.right - clip, rc.bottom - clip, 8 + clip, 8 + clip);
-			else
-				rgn = CreateRectRgn(rc.left + clip, rc.top + clip, rc.right - clip, rc.bottom - clip);
-		}
+		/*
+		 * use a rounded clip region to determine which pixels are covered
+		 * this will avoid problems with certain XP themes which are using transparency for rounded
+		 * window frames.
+		 * the radius of 8 should be sufficient for most themes as they usually don't use bigger
+		 * radii.
+		 * also, clip at least 2 pixels from the border (same reason)
+		 */
+
+		clip = max(clip, 2);
+		rgn = CreateRoundRectRgn(rc.left + clip, rc.top + clip, rc.right - clip, rc.bottom - clip, 10 + clip, 10 + clip);
 		for (i = rc.top + 3 + clip; i < rc.bottom - 3 - clip; i += (height / iStepY)) {
 			pt.y = i;
 			for (j = rc.left + 3 + clip; j < rc.right - 3 - clip; j += (width / iStepX)) {

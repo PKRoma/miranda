@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-extern int g_hottrack;
+extern int g_hottrack, g_hottrack_done;
 extern BOOL g_inCLCpaint;
 extern BYTE saved_alpha;
 extern DWORD savedCORNER;
@@ -124,6 +124,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolo
             BORDERSTYLE = ht->BORDERSTYLE;
             imageItem = ht->imageItem;
         }
+		g_hottrack_done = 1;
     }
 
     if(imageItem) {

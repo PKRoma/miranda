@@ -1345,7 +1345,8 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
 {
     int pos,i,curpos,curalign,v,tmpval;
 
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+		return -1;
 
     lockfrm();
     pos=id2pos(wParam);
@@ -1353,21 +1354,20 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
         SortData *sd;
         curpos=Frames[pos].order;
         curalign=Frames[pos].align;
-        v=0;
+        v = 0;
         sd=(SortData*)malloc(sizeof(SortData)*nFramescount);
         memset(sd,0,sizeof(SortData)*nFramescount);
         for (i=0;i<nFramescount;i++) {
-            if (Frames[i].floating||(!Frames[i].visible)||(Frames[i].align!=curalign)) {
+            if (Frames[i].floating||(!Frames[i].visible)||(Frames[i].align!=curalign))
                 continue;
-            };
-
             sd[v].order=Frames[i].order;
             sd[v].realpos=i;
             v++;
-        };
+        }
         if (v==0) {
-            ulockfrm();return(0);
-        };
+            ulockfrm();
+			return(0);
+        }
         qsort(sd,v,sizeof(SortData),sortfunc);
         for (i=0;i<v;i++) {
             if (sd[i].realpos==pos) {
@@ -1376,32 +1376,28 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
                     tmpval=Frames[sd[i-1].realpos].order;
                     Frames[sd[i-1].realpos].order=Frames[pos].order;
                     Frames[pos].order=tmpval;
-					//_DebugPopup(0, "moved up from %d to %d", curpos, tmpval);
                     break;
-                };
+                }
                 if (lParam==1) {
                     if (i>v-1) break;
                     tmpval=Frames[sd[i+1].realpos].order;
                     Frames[sd[i+1].realpos].order=Frames[pos].order;
                     Frames[pos].order=tmpval;
-					//_DebugPopup(0, "moved down from %d to %d", curpos, tmpval);
                     break;
-                };
+                }
+            }
+        }
 
-
-            };
-        };
-
-        if (sd!=NULL) {
+        if (sd!=NULL)
             free(sd);
-        };
+
         CLUIFramesStoreFrameSettings(pos);
         CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
 		PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
     }
     ulockfrm();
     return(0);
-};
+}
 
 static int CLUIFramesMoveUp(WPARAM wParam,LPARAM lParam)
 {

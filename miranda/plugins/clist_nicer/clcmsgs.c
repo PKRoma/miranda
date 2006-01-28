@@ -52,7 +52,6 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 
 						group->expanded = MAKELONG(LOWORD(group->expanded), old_expanded);
 						SetGroupExpand(hwnd, dat, group, 1);
-						pcli->pfnEnsureVisible(hwnd, dat, 1, 0);
 						iIndex = pcli->pfnGetRowsPriorTo(&dat->list, group, li.List_IndexOf(( SortedList* )&group->cl, contact));
 						pcli->pfnEnsureVisible(hwnd, dat, 1, iIndex);
 						pcli->pfnRecalcScrollBar(hwnd, dat);

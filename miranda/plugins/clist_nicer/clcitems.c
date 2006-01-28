@@ -58,6 +58,8 @@ struct ClcContact* CreateClcContact( void )
 		p->clientId = -1;
 		p->extraCacheEntry = -1;
 		p->avatarLeft = p->extraIconRightBegin = -1;
+		p->isRtl = 0;
+		p->ace = 0;
 	}
 	return p;
 }
@@ -83,6 +85,9 @@ struct ClcGroup *AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, D
 	#if defined(_UNICODE)
 		if ( p && p->parent )
 			RTL_DetectGroupName( p->parent->cl.items[ p->parent->cl.count-1] );
+	#else
+		if ( p && p->parent ) 
+			p->parent->cl.items[ p->parent->cl.count -1]->isRtl = 0;
 	#endif
 	return p;
 }
@@ -428,7 +433,9 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
         dbv.pszVal = NULL;
     }
 
-    if(!DBGetContactSetting(contact->hContact, contact->proto, "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
+    if(!DBGetContactSetting(contact->hContact, "UserInfoEx", "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
+        g_ExtraCache[index].iExtraImage[EIMG_SMS] = 2;
+    else if(!DBGetContactSetting(contact->hContact, contact->proto, "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
         g_ExtraCache[index].iExtraImage[EIMG_SMS] = 2;
     else if(!DBGetContactSetting(contact->hContact, "UserInfo", "MyPhone0", &dbv) && lstrlenA(dbv.pszVal) > 1)
         g_ExtraCache[index].iExtraImage[EIMG_SMS] = 2;
