@@ -1002,6 +1002,42 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\modules\database\dbini.c"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../../core/commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../../core/commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../../core/commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../../core/commonheaders.h"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="modules\database\dblists.c"
 					>
 					<FileConfiguration

@@ -74,6 +74,12 @@
 	".\modules\database\profilemanager.h"\
 	
 
+.\modules\database\dbini.c : \
+	"..\include\m_plugins.h"\
+	"..\include\m_protomod.h"\
+	".\modules\database\database.h"\
+	
+
 .\modules\database\dblists.c : \
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\

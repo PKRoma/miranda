@@ -97,6 +97,8 @@ CLEAN :
 	-@erase "$(INTDIR)\contacts.sbr"
 	-@erase "$(INTDIR)\database.obj"
 	-@erase "$(INTDIR)\database.sbr"
+	-@erase "$(INTDIR)\dbini.obj"
+	-@erase "$(INTDIR)\dbini.sbr"
 	-@erase "$(INTDIR)\dblists.obj"
 	-@erase "$(INTDIR)\dblists.sbr"
 	-@erase "$(INTDIR)\dbtime.obj"
@@ -303,7 +305,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\contact.sbr" \
 	"$(INTDIR)\Docking.sbr" \
 	"$(INTDIR)\groups.sbr" \
-	"$(INTDIR)\keyboard.sbr"
+	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\dbini.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -394,7 +397,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\dbini.obj"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -467,6 +471,8 @@ CLEAN :
 	-@erase "$(INTDIR)\contacts.sbr"
 	-@erase "$(INTDIR)\database.obj"
 	-@erase "$(INTDIR)\database.sbr"
+	-@erase "$(INTDIR)\dbini.obj"
+	-@erase "$(INTDIR)\dbini.sbr"
 	-@erase "$(INTDIR)\dblists.obj"
 	-@erase "$(INTDIR)\dblists.sbr"
 	-@erase "$(INTDIR)\dbtime.obj"
@@ -674,7 +680,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\contact.sbr" \
 	"$(INTDIR)\Docking.sbr" \
 	"$(INTDIR)\groups.sbr" \
-	"$(INTDIR)\keyboard.sbr"
+	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\dbini.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -765,7 +772,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\dbini.obj"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -808,6 +816,7 @@ CLEAN :
 	-@erase "$(INTDIR)\contactinfo.obj"
 	-@erase "$(INTDIR)\contacts.obj"
 	-@erase "$(INTDIR)\database.obj"
+	-@erase "$(INTDIR)\dbini.obj"
 	-@erase "$(INTDIR)\dblists.obj"
 	-@erase "$(INTDIR)\dbtime.obj"
 	-@erase "$(INTDIR)\Docking.obj"
@@ -964,7 +973,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\dbini.obj"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1037,6 +1047,8 @@ CLEAN :
 	-@erase "$(INTDIR)\contacts.sbr"
 	-@erase "$(INTDIR)\database.obj"
 	-@erase "$(INTDIR)\database.sbr"
+	-@erase "$(INTDIR)\dbini.obj"
+	-@erase "$(INTDIR)\dbini.sbr"
 	-@erase "$(INTDIR)\dblists.obj"
 	-@erase "$(INTDIR)\dblists.sbr"
 	-@erase "$(INTDIR)\dbtime.obj"
@@ -1244,7 +1256,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\contact.sbr" \
 	"$(INTDIR)\Docking.sbr" \
 	"$(INTDIR)\groups.sbr" \
-	"$(INTDIR)\keyboard.sbr"
+	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\dbini.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1335,7 +1348,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\dbini.obj"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1685,6 +1699,50 @@ SOURCE=.\modules\database\database.c
 
 "$(INTDIR)\database.obj"	"$(INTDIR)\database.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\modules\database\dbini.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"../../core/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\dbini.obj"	"$(INTDIR)\dbini.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"../../core/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\dbini.obj"	"$(INTDIR)\dbini.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fp"$(INTDIR)\miranda32.pch" /Yu"../../core/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\dbini.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"../../core/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\dbini.obj"	"$(INTDIR)\dbini.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
 
 
 !ENDIF 

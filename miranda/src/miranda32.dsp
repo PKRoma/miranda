@@ -418,6 +418,11 @@ SOURCE=.\modules\database\database.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\database\dbini.c
+# ADD CPP /Yu"../../core/commonheaders.h"
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\database\dblists.c
 # End Source File
 # Begin Source File

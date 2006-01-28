@@ -78,6 +78,8 @@ static HANDLE hPluginListHeap = NULL;
 static pluginEntry * pluginDefModList[DEFMOD_HIGHEST+1]; // do not free this memory
 static int askAboutIgnoredPlugins;
 
+int InitIni(void);
+
 #define PLUGINDISABLELIST "PluginDisable"
 
 int LoadDatabaseModule(void);	
@@ -408,6 +410,7 @@ int LoadNewPluginsModuleInfos(void)
 	enumPlugins(scanPluginsDir, 0, 0);
 	// the database will select which db plugin to use, or fail if no profile is selected
 	if (LoadDatabaseModule()) return 1;
+	InitIni();
 	//  could validate the plugin entries here but internal modules arent loaded so can't call Load() in one pass
 	return 0;
 }
