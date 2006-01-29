@@ -322,7 +322,9 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO * si, GCEVENT * gce, BOOL bHighlig
 	if(!gce || !si ||  gce->bIsMe || si->iType == GCW_SERVER)
 		return FALSE;
 
-	bInactive =  si->hWnd == NULL || GetActiveWindow() != si->hWnd || GetForegroundWindow() != si->hWnd;
+	bInactive = si->hWnd == NULL || GetForegroundWindow() != si->hWnd;
+	// bInactive |=  GetActiveWindow() != si->hWnd; // Removed this, because it seemed to be FALSE, even when window was focused, causing incorrect notifications
+
 	iEvent = gce->pDest->iType;
 
 	if(bHighlight)
