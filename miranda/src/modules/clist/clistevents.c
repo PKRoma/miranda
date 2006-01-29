@@ -117,7 +117,7 @@ struct CListEvent* fnAddEvent( CLISTEVENT *cle )
 		else
 			p->cle.ptszTooltip = a2u((char*)p->cle.pszTooltip); //if no flag defined it handled as unicode
 	#else
-		p->cle.ptszTooltip = mir_tstrdup((p->cle.ptszTooltip); 
+		p->cle.ptszTooltip = mir_tstrdup(p->cle.ptszTooltip); 
 	#endif
 
 	if (cli.events.count == 1) {
