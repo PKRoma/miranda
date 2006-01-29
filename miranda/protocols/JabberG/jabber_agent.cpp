@@ -118,7 +118,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 							lvItem.mask = LVIF_TEXT;
 							lvItem.pszText = text;
 							lvItem.cchTextMax = sizeof( text );
-							ListView_GetItem( lv, &lvItem );
+							SendMessageA( lv, LVM_GETITEMA, 0, (LPARAM)&lvItem );
 							if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL ) {
 								if ( item->cap & AGENT_CAP_REGISTER )
 									EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_REGISTER ), TRUE );
