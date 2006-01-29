@@ -280,7 +280,7 @@ static int JabberByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char
 void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 {
 	XmlNode *iqNode, *queryNode, *n;
-	char* from, *sid, *szHost, *szPort, *szId, *str;
+	char* from, *to, *sid, *szHost, *szPort, *szId, *str;
 	int i;
 	WORD port;
 	HANDLE hConn;
@@ -292,6 +292,7 @@ void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 	if ( jbt == NULL ) return;
 	if (( iqNode=jbt->iqNode )!=NULL &&
 		( from=JabberXmlGetAttrValue( iqNode, "from" ))!=NULL &&
+		( to=JabberXmlGetAttrValue( iqNode, "to" ))!=NULL &&
 		( queryNode=JabberXmlGetChild( iqNode, "query" ))!=NULL &&
 		( sid=JabberXmlGetAttrValue( queryNode, "sid" ))!=NULL &&
 		( n=JabberXmlGetChild( queryNode, "streamhost" ))!=NULL ) {
@@ -299,7 +300,7 @@ void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 		szId = JabberXmlGetAttrValue( iqNode, "id" );
 		jbt->iqId = ( szId )?_strdup( szId ):NULL;
 		jbt->srcJID = _strdup( JabberUrlDecode( from ));
-		jbt->dstJID = _strdup( jabberThreadInfo->fullJID );
+		jbt->dstJID = _strdup( JabberUrlDecode( to ));
 		jbt->sid = _strdup( sid );
 
 		if (( buffer=( char* )malloc( JABBER_NETWORK_BUFFER_SIZE )) == NULL ) {

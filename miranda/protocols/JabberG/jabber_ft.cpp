@@ -137,7 +137,7 @@ void JabberFtInitiate( char* jid, filetransfer* ft )
 
 static void JabberFtSiResult( XmlNode *iqNode, void *userdata )
 {
-	char* type, *from;
+	char* type, *from, *to;
 	char* idStr, *str;
 	XmlNode *siNode, *fileNode, *rangeNode, *featureNode, *xNode, *fieldNode, *valueNode;
 	JABBER_LIST_ITEM *item;
@@ -146,6 +146,7 @@ static void JabberFtSiResult( XmlNode *iqNode, void *userdata )
 
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
+	if (( to=JabberXmlGetAttrValue( iqNode, "to" )) == NULL ) return;
 	idStr = JabberXmlGetAttrValue( iqNode, "id" );
 	if (( item=JabberListGetItemPtr( LIST_FTSEND, idStr )) == NULL ) return;
 
@@ -169,7 +170,7 @@ static void JabberFtSiResult( XmlNode *iqNode, void *userdata )
 								// Start Bytestream session
 								jbt = ( JABBER_BYTE_TRANSFER * ) malloc( sizeof( JABBER_BYTE_TRANSFER ));
 								ZeroMemory( jbt, sizeof( JABBER_BYTE_TRANSFER ));
-								jbt->srcJID = _strdup( JabberUrlDecode( jabberThreadInfo->fullJID ));
+								jbt->srcJID = _strdup( JabberUrlDecode( to ));
 								jbt->dstJID = _strdup( JabberUrlDecode( from ));
 								jbt->sid = _strdup( item->ft->sid );
 								jbt->pfnSend = JabberFtSend;
@@ -269,11 +270,10 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 	JABBER_FT_TYPE ftType;
 
 	if ( iqNode==NULL ||
-		( from=JabberXmlGetAttrValue( iqNode, "from" ))==NULL ||
-		( str=JabberXmlGetAttrValue( iqNode, "type" ))==NULL || strcmp( str, "set" ) ||
-		( siNode=JabberXmlGetChildWithGivenAttrValue( iqNode, "si", "xmlns", "http://jabber.org/protocol/si" )) == NULL ) {
+		  ( from=JabberXmlGetAttrValue( iqNode, "from" ))==NULL ||
+		  ( str=JabberXmlGetAttrValue( iqNode, "type" ))==NULL || strcmp( str, "set" ) ||
+		  ( siNode=JabberXmlGetChildWithGivenAttrValue( iqNode, "si", "xmlns", "http://jabber.org/protocol/si" )) == NULL )
 		return;
-	}
 
 	szId = JabberXmlGetAttrValue( iqNode, "id" );
 	if (( sid=JabberXmlGetAttrValue( siNode, "id" ))!=NULL &&

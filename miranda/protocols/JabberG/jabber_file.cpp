@@ -525,8 +525,8 @@ filetransfer::~filetransfer()
 
 	if ( jid ) free( jid );
 	if ( sid ) free( sid );
-	if ( fileSize ) free( fileSize );
 	if ( iqId ) free( iqId );
+	if ( fileSize ) free( fileSize );
 	if ( httpHostName ) free( httpHostName );
 	if ( httpPath ) free( httpPath );
 	if ( szDescription ) free( szDescription );
