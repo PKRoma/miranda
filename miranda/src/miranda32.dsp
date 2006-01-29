@@ -311,6 +311,10 @@ SOURCE=.\core\forkthread.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\core\memory.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\core\miranda.c
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"

@@ -113,10 +113,10 @@ static int DdeOpenUrl(const char *szBrowser,char *szUrl,int newWindow,HWND hwndD
 		GlobalDeleteAtom(hSzBrowser);
 		return 1;
 	}
-	szItemName=(char*)malloc(lstrlenA(szUrl)+7);
+	szItemName=(char*)mir_alloc(lstrlenA(szUrl)+7);
 	wsprintfA(szItemName,"\"%s\",,%d",szUrl,newWindow?0:-1);
 	if(DoDdeRequest(szItemName,hwndDdeMsg)) {
-		free(szItemName);
+		mir_free(szItemName);
 		GlobalDeleteAtom(hSzTopic);
 		GlobalDeleteAtom(hSzBrowser);
 		return 1;
@@ -124,7 +124,7 @@ static int DdeOpenUrl(const char *szBrowser,char *szUrl,int newWindow,HWND hwndD
 	PostMessage(dat->hwndDde,WM_DDE_TERMINATE,(WPARAM)hwndDdeMsg,0);
 	GlobalDeleteAtom(hSzTopic);
 	GlobalDeleteAtom(hSzBrowser);
-	free(szItemName);
+	mir_free(szItemName);
 	return 0;
 }
 
@@ -176,34 +176,34 @@ static void OpenURLThread(void *arg)
 
 	//wack a protocol on it
 	if((isalpha(hUrlInfo->szUrl[0]) && hUrlInfo->szUrl[1]==':') || hUrlInfo->szUrl[0]=='\\') {
-		szResult=(char*)malloc(lstrlenA(hUrlInfo->szUrl)+9);
+		szResult=(char*)mir_alloc(lstrlenA(hUrlInfo->szUrl)+9);
 		wsprintfA(szResult,"file:///%s",hUrlInfo->szUrl);
 	}
 	else {
 		int i;
 		for(i=0;isalpha(hUrlInfo->szUrl[i]);i++);
-		if(hUrlInfo->szUrl[i]==':') szResult=_strdup(hUrlInfo->szUrl);
+		if(hUrlInfo->szUrl[i]==':') szResult=mir_strdup(hUrlInfo->szUrl);
 		else {
 			if(!_strnicmp(hUrlInfo->szUrl,"ftp.",4)) {
-				szResult=(char*)malloc(lstrlenA(hUrlInfo->szUrl)+7);
+				szResult=(char*)mir_alloc(lstrlenA(hUrlInfo->szUrl)+7);
 				wsprintfA(szResult,"ftp://%s",hUrlInfo->szUrl);
 			}
 			else {
-				szResult=(char*)malloc(lstrlenA(hUrlInfo->szUrl)+8);
+				szResult=(char*)mir_alloc(lstrlenA(hUrlInfo->szUrl)+8);
 				wsprintfA(szResult,"http://%s",hUrlInfo->szUrl);
 			}
 		}
 	}
 	ShellExecuteA(NULL, "open", szResult, NULL, NULL, SW_SHOW);
-	free(szResult);
-	free(hUrlInfo->szUrl);
-	free(hUrlInfo);
+	mir_free(szResult);
+	mir_free(hUrlInfo->szUrl);
+	mir_free(hUrlInfo);
 	return;
 }
 
 static int OpenURL(WPARAM wParam,LPARAM lParam) {
-	TOpenUrlInfo *hUrlInfo = (TOpenUrlInfo*)malloc(sizeof(TOpenUrlInfo));
-	hUrlInfo->szUrl = (char*)lParam?_strdup((char*)lParam):NULL;
+	TOpenUrlInfo *hUrlInfo = (TOpenUrlInfo*)mir_alloc(sizeof(TOpenUrlInfo));
+	hUrlInfo->szUrl = (char*)lParam?mir_strdup((char*)lParam):NULL;
 	hUrlInfo->newWindow = (int)wParam;
 	forkthread(OpenURLThread, 0, (void*)hUrlInfo);
 	return 0;

@@ -403,7 +403,7 @@ static void DoAutoExec(void)
 								char *pszValue,*pszEnd;
 								DBCONTACTWRITESETTING cws;
 
-								buf=(PBYTE)malloc(lstrlenA(szValue+1));
+								buf=(PBYTE)mir_alloc(lstrlenA(szValue+1));
 								for(len=0,pszValue=szValue+1;;len++) {
 									buf[len]=(BYTE)strtol(pszValue,&pszEnd,0x10);
 									if(pszValue==pszEnd) break;
@@ -415,7 +415,7 @@ static void DoAutoExec(void)
 								cws.value.pbVal=buf;
 								cws.value.cpbVal=len;
 								CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)(HANDLE)NULL,(LPARAM)&cws);
-								free(buf);
+								mir_free(buf);
 							}
 							break;
 						default:

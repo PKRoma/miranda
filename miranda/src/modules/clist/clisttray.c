@@ -125,7 +125,7 @@ static TCHAR *TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 			#if defined( _UNICODE )
 			{	TCHAR* p = a2u( szProtoName );
 				_tcsncat(szTip, p, SIZEOF(szTip) - 1 - _tcslen(szTip));
-				free( p );
+				mir_free( p );
 			}
 			#else
 				_tcsncat(szTip, szProtoName, SIZEOF(szTip) - 1 - _tcslen(szTip));
@@ -152,7 +152,7 @@ static TCHAR *TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 		else mir_sntprintf(szTip, SIZEOF(szTip), _T("%s %s"), sztProto, szStatus);
 
 		#if defined( _UNICODE )
-			free(sztProto);
+			mir_free(sztProto);
 		#endif
 	}
 	return szTip;
@@ -249,7 +249,7 @@ static int TrayIconInit(HWND hwnd)
 		}
 	}
 	trayIconCount = count;
-	trayIcon = (struct trayIconInfo_t *) malloc(sizeof(struct trayIconInfo_t) * count);
+	trayIcon = (struct trayIconInfo_t *) mir_alloc(sizeof(struct trayIconInfo_t) * count);
 	ZeroMemory(trayIcon, sizeof(struct trayIconInfo_t) * count);
 	if (DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI &&
 		(averageMode <= 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT))) {
@@ -290,7 +290,7 @@ static void TrayIconDestroy(HWND hwnd)
 		DestroyIcon(trayIcon[i].hBaseIcon);
 	}
 	if (trayIcon)
-		free(trayIcon);
+		mir_free(trayIcon);
 	trayIcon = NULL;
 	trayIconCount = 0;
 }

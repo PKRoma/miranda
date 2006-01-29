@@ -124,7 +124,7 @@ static int ClcModulesLoaded(WPARAM wParam, LPARAM lParam)
 	for (i = 0; i < protoCount; i++) {
 		if (proto[i]->type != PROTOTYPE_PROTOCOL)
 			continue;
-		cli.clcProto = (ClcProtoStatus *) realloc(cli.clcProto, sizeof(ClcProtoStatus) * (cli.hClcProtoCount + 1));
+		cli.clcProto = (ClcProtoStatus *) mir_realloc(cli.clcProto, sizeof(ClcProtoStatus) * (cli.hClcProtoCount + 1));
 		cli.clcProto[cli.hClcProtoCount].szProto = proto[i]->szName;
 		cli.clcProto[cli.hClcProtoCount].dwStatus = ID_STATUS_OFFLINE;
 		cli.hClcProtoCount++;
@@ -191,7 +191,7 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 {
 	UnhookEvent(hAckHook);
 	UnhookEvent(hClcSettingsChanged);
-	if (cli.clcProto) free(cli.clcProto);
+	if (cli.clcProto) mir_free(cli.clcProto);
 	FreeFileDropping();
 	FreeDisplayNameCache();
 	return 0;
@@ -243,7 +243,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		WindowList_Add(hClcWindowList, hwnd, NULL);
 		cli.pfnRegisterFileDropping(hwnd);
 		if ( dat == NULL ) {
-			dat = (struct ClcData *) calloc(sizeof(struct ClcData), 1);
+			dat = (struct ClcData *) mir_calloc(sizeof(struct ClcData));
 			SetWindowLong(hwnd, 0, (LONG) dat);
 		}
 		{
@@ -403,7 +403,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 				#if defined( UNICODE )
 				{	WCHAR* wszGrpName = a2u(dbcws->value.pszVal+1);
 					eq = !lstrcmp( szFullName, wszGrpName );
-					free( wszGrpName );
+					mir_free( wszGrpName );
 				}
 				#else
 					eq = !lstrcmp( szFullName, dbcws->value.pszVal+1 );
@@ -414,7 +414,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 						WCHAR* wszGrpName;
 						Utf8Decode(szGrpName, &wszGrpName );
 						eq = !lstrcmp( szFullName, wszGrpName );
-						free( wszGrpName );
+						mir_free( wszGrpName );
 
 					#else
 						Utf8Decode(szGrpName, NULL);
@@ -1313,7 +1313,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		if (!dat->bkChanged && dat->hBmpBackground)
 			DeleteObject(dat->hBmpBackground);
 		cli.pfnFreeGroup(&dat->list);
-		free(dat);
+		mir_free(dat);
 		cli.pfnUnregisterFileDropping(hwnd);
 		WindowList_Remove(hClcWindowList, hwnd);
 	}

@@ -127,7 +127,7 @@ static int GetStatusModeDescription(WPARAM wParam, LPARAM lParam)
 			TCHAR* buf1 = (TCHAR*)cli.pfnGetStatusModeDescription(wParam,lParam);
 			char *buf2=u2a(buf1);
 			_snprintf(szMode,sizeof(szMode),"%s",buf2);
-			free(buf2);
+			mir_free(buf2);
 			return (int)szMode;
 		}
 	#endif
@@ -208,7 +208,7 @@ static int ContactListShutdownProc(WPARAM wParam, LPARAM lParam)
 	ImageList_Destroy(hCListImages);
 	UnhookEvent(hProtoAckHook);
 	UninitCListEvents();
-	free(protoIconIndex);
+	mir_free(protoIconIndex);
 	DestroyHookableEvent(hContactDoubleClicked);
 	UnhookEvent(hContactSettingChanged);
 	return 0;
@@ -225,7 +225,7 @@ static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 	for (i = 0; i < protoCount; i++) {
 		if (protoList[i]->type != PROTOTYPE_PROTOCOL)
 			continue;
-		protoIconIndex = (struct ProtoIconIndex *) realloc(protoIconIndex, sizeof(struct ProtoIconIndex) * (protoIconIndexCount + 1));
+		protoIconIndex = (struct ProtoIconIndex *) mir_realloc(protoIconIndex, sizeof(struct ProtoIconIndex) * (protoIconIndexCount + 1));
 		protoIconIndex[protoIconIndexCount].szProto = protoList[i]->szName;
 		for (j = 0; j < SIZEOF(statusModeList); j++) {
 			iImg = ImageList_AddIcon(hCListImages, LoadSkinnedProtoIcon(protoList[i]->szName, statusModeList[j]));

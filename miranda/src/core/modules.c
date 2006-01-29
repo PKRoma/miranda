@@ -164,9 +164,9 @@ void DestroyModularEngine(void)
 {
 	int i;
 	for(i=0;i<hookCount;i++)
-		if(hook[i].subscriberCount) free(hook[i].subscriber);
-	if(hookCount) free(hook);
-	if(serviceCount) free(service);
+		if(hook[i].subscriberCount) mir_free(hook[i].subscriber);
+	if(hookCount) mir_free(hook);
+	if(serviceCount) mir_free(service);
 	DeleteCriticalSection(&csHooks);
 	DeleteCriticalSection(&csServices);
 	CloseHandle(hMainThread);
@@ -247,7 +247,7 @@ HANDLE CreateHookableEvent(const char *name)
 		LeaveCriticalSection(&csHooks);
 		return NULL;
 	}
-	hook=(THookList*)realloc(hook,sizeof(THookList)*(hookCount+1));
+	hook=(THookList*)mir_realloc(hook,sizeof(THookList)*(hookCount+1));
 	strcpy(hook[hookCount].name,name);
 	hook[hookCount].hookHash=Hash;
 	hook[hookCount].subscriberCount=0;
@@ -267,7 +267,7 @@ int DestroyHookableEvent(HANDLE hEvent)
 	if(hook[hookId].name[0]==0) {LeaveCriticalSection(&csHooks); return 1;}
 	hook[hookId].name[0]=0;
 	if(hook[hookId].subscriberCount) {
-		free(hook[hookId].subscriber);
+		mir_free(hook[hookId].subscriber);
 		hook[hookId].subscriber=NULL;
 		hook[hookId].subscriberCount=0;
 	}
@@ -358,7 +358,7 @@ HANDLE HookEvent(const char *name,MIRANDAHOOK hookProc)
 		LeaveCriticalSection(&csHooks);
 		return NULL;
 	}
-	hook[hookId].subscriber=(THookSubscriber*)realloc(hook[hookId].subscriber,sizeof(THookSubscriber)*(hook[hookId].subscriberCount+1));
+	hook[hookId].subscriber=(THookSubscriber*)mir_realloc(hook[hookId].subscriber,sizeof(THookSubscriber)*(hook[hookId].subscriberCount+1));
 	hook[hookId].subscriber[hook[hookId].subscriberCount].pfnHook=hookProc;
 	hook[hookId].subscriber[hook[hookId].subscriberCount].hwnd=NULL;
 	hook[hookId].subscriberCount++;
@@ -381,7 +381,7 @@ HANDLE HookEventMessage(const char *name,HWND hwnd,UINT message)
 		LeaveCriticalSection(&csHooks);
 		return NULL;
 	}
-	hook[hookId].subscriber=(THookSubscriber*)realloc(hook[hookId].subscriber,sizeof(THookSubscriber)*(hook[hookId].subscriberCount+1));
+	hook[hookId].subscriber=(THookSubscriber*)mir_realloc(hook[hookId].subscriber,sizeof(THookSubscriber)*(hook[hookId].subscriberCount+1));
 	hook[hookId].subscriber[hook[hookId].subscriberCount].pfnHook=NULL;
 	hook[hookId].subscriber[hook[hookId].subscriberCount].hwnd=hwnd;
 	hook[hookId].subscriber[hook[hookId].subscriberCount].message=message;
@@ -405,7 +405,7 @@ int UnhookEvent(HANDLE hHook)
 	while(hook[hookId].subscriberCount && hook[hookId].subscriber[hook[hookId].subscriberCount-1].pfnHook==NULL && hook[hookId].subscriber[hook[hookId].subscriberCount-1].hwnd==NULL)
 		hook[hookId].subscriberCount--;
 	if (hook[hookId].subscriberCount==0) {
-		if(hook[hookId].subscriber) free(hook[hookId].subscriber);	
+		if(hook[hookId].subscriber) mir_free(hook[hookId].subscriber);	
 		hook[hookId].subscriber=NULL;
 	}
 	LeaveCriticalSection(&csHooks);
@@ -498,7 +498,7 @@ HANDLE CreateServiceFunction(const char *name,MIRANDASERVICE serviceProc)
 		LeaveCriticalSection(&csServices);
 		return NULL;
 	}
-	service=(TServiceList*)realloc(service,sizeof(TServiceList)*(serviceCount+1));
+	service=(TServiceList*)mir_realloc(service,sizeof(TServiceList)*(serviceCount+1));
 	if ( serviceCount > 0 && shift) MoveMemory(service+i+1,service+i,sizeof(TServiceList)*(serviceCount-i));
 	strncpy(service[i].name,name,sizeof(service[i].name));
 	service[i].nameHash=hash;

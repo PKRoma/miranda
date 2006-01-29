@@ -142,7 +142,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		SendMessage(hdlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_OPTIONS)));
 		CheckDlgButton(hdlg,IDC_EXPERT,DBGetContactSettingByte(NULL,"Options","Expert",SETTING_SHOWEXPERT_DEFAULT)?BST_CHECKED:BST_UNCHECKED);
 		EnableWindow(GetDlgItem(hdlg,IDC_APPLY),FALSE);
-		dat=(struct OptionsDlgData*)malloc(sizeof(struct OptionsDlgData));
+		dat=(struct OptionsDlgData*)mir_alloc(sizeof(struct OptionsDlgData));
 		SetWindowLong(hdlg,GWL_USERDATA,(LONG)dat);
 		SetWindowText(hdlg,psh->pszCaption);
 		{	LOGFONT lf;
@@ -152,13 +152,13 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			dat->hBoldFont=CreateFontIndirect(&lf);
 		}
 		dat->pageCount = psh->nPages;
-		dat->opd = ( struct OptionsPageData* )malloc( sizeof(struct OptionsPageData) * dat->pageCount );
+		dat->opd = ( struct OptionsPageData* )mir_alloc( sizeof(struct OptionsPageData) * dat->pageCount );
 		odp = ( OPTIONSDIALOGPAGE* )psh->ppsp;
 
 		dat->currentPage = -1;
 		if ( ood->pszPage == NULL ) {
 			if ( !DBGetContactSettingTString( NULL, "Options", "LastPage", &dbv )) {
-				lastPage = _tcsdup( dbv.ptszVal );
+				lastPage = mir_tstrdup( dbv.ptszVal );
 				DBFreeVariant( &dbv );
 			}
 		}
@@ -166,7 +166,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 
 		if ( ood->pszGroup == NULL ) {
 			if ( !DBGetContactSettingTString( NULL, "Options", "LastGroup", &dbv )) {
-				lastGroup = _tcsdup( dbv.ptszVal );
+				lastGroup = mir_tstrdup( dbv.ptszVal );
 				DBFreeVariant( &dbv );
 			}
 		}
@@ -177,7 +177,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			hrsrc=FindResourceA(odp[i].hInstance,odp[i].pszTemplate,MAKEINTRESOURCEA(5));
 			hglb=LoadResource(odp[i].hInstance,hrsrc);
 			resSize=SizeofResource(odp[i].hInstance,hrsrc);
-			dat->opd[i].pTemplate=malloc(resSize);
+			dat->opd[i].pTemplate=mir_alloc(resSize);
 			memcpy(dat->opd[i].pTemplate,LockResource(hglb),resSize);
 			dte=(struct DlgTemplateExBegin*)dat->opd[i].pTemplate;
 			if ( dte->signature == 0xFFFF ) {
@@ -205,23 +205,23 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			if ( odp[i].pszTitle == NULL )
 				dat->opd[i].pszTitle = NULL;
 			else if ( odp[i].flags & ODPF_UNICODE )
-				dat->opd[i].pszTitle = ( TCHAR* )_wcsdup( odp[i].ptszTitle );
+				dat->opd[i].pszTitle = ( TCHAR* )mir_wstrdup( odp[i].ptszTitle );
 			else
-				dat->opd[i].pszTitle = ( TCHAR* )_strdup( odp[i].pszTitle );
+				dat->opd[i].pszTitle = ( TCHAR* )mir_strdup( odp[i].pszTitle );
 
 			if ( odp[i].pszGroup == NULL )
             dat->opd[i].pszGroup = NULL;
 			else if ( odp[i].flags & ODPF_UNICODE )
-				dat->opd[i].pszGroup = ( TCHAR* )_wcsdup( odp[i].ptszGroup );
+				dat->opd[i].pszGroup = ( TCHAR* )mir_wstrdup( odp[i].ptszGroup );
 			else
-				dat->opd[i].pszGroup = ( TCHAR* )_strdup( odp[i].pszGroup );
+				dat->opd[i].pszGroup = ( TCHAR* )mir_strdup( odp[i].pszGroup );
 
 			if ( !lstrcmp( lastPage, odp[i].ptszTitle ) &&
 				(( lastGroup == NULL && odp[i].ptszGroup == NULL ) || !lstrcmp( lastGroup, odp[i].ptszGroup )))
 				dat->currentPage = i;
 		}
-		free( lastGroup );
-		free( lastPage );
+		mir_free( lastGroup );
+		mir_free( lastPage );
 
 		GetWindowRect(hdlg,&rcDlg);
 		pt.x=pt.y=0;
@@ -512,13 +512,13 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			int i;
 			for(i=0;i<dat->pageCount;i++) {
 				if(dat->opd[i].hwnd!=NULL) DestroyWindow(dat->opd[i].hwnd);
-				if(dat->opd[i].pszGroup) free(dat->opd[i].pszGroup);
-				if(dat->opd[i].pszTitle) free(dat->opd[i].pszTitle);
-				if(dat->opd[i].pTemplate) free(dat->opd[i].pTemplate);
+				if(dat->opd[i].pszGroup) mir_free(dat->opd[i].pszGroup);
+				if(dat->opd[i].pszTitle) mir_free(dat->opd[i].pszTitle);
+				if(dat->opd[i].pTemplate) mir_free(dat->opd[i].pTemplate);
 		}	}
-		free(dat->opd);
+		mir_free(dat->opd);
 		DeleteObject(dat->hBoldFont);
-		free(dat);
+		mir_free(dat);
 		hwndOptions=NULL;
 		break;
 	}
@@ -553,11 +553,11 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage)
 	psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
 	hwndOptions=CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_OPTIONS),NULL,OptionsDlgProc,(LPARAM)&psh);
 	for(i=0;i<opi.pageCount;i++) {
-		free((char*)opi.odp[i].pszTitle);
-		if(opi.odp[i].pszGroup!=NULL) free(opi.odp[i].pszGroup);
-		if((DWORD)opi.odp[i].pszTemplate&0xFFFF0000) free((char*)opi.odp[i].pszTemplate);
+		mir_free((char*)opi.odp[i].pszTitle);
+		if(opi.odp[i].pszGroup!=NULL) mir_free(opi.odp[i].pszGroup);
+		if((DWORD)opi.odp[i].pszTemplate&0xFFFF0000) mir_free((char*)opi.odp[i].pszTemplate);
 	}
-	free(opi.odp);
+	mir_free(opi.odp);
 }
 
 static int OpenOptions(WPARAM wParam,LPARAM lParam)
@@ -580,7 +580,7 @@ static int AddOptionsPage(WPARAM wParam,LPARAM lParam)
 	
 	if(odp==NULL||opi==NULL) return 1;
 	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE) && odp->cbSize != OPTIONPAGE_OLD_SIZE) return 1;
-	opi->odp=(OPTIONSDIALOGPAGE*)realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
+	opi->odp=(OPTIONSDIALOGPAGE*)mir_realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
 	dst = opi->odp + opi->pageCount;
 	memset( dst, 0, sizeof( OPTIONSDIALOGPAGE ));
 	memcpy( dst, odp, odp->cbSize );
@@ -588,31 +588,31 @@ static int AddOptionsPage(WPARAM wParam,LPARAM lParam)
 	if ( odp->ptszTitle != NULL ) {
 		#if defined( _UNICODE )
 			if ( odp->flags & ODPF_UNICODE )
-				dst->ptszTitle = wcsdup( TranslateW( odp->ptszTitle ));
+				dst->ptszTitle = mir_wstrdup( TranslateW( odp->ptszTitle ));
 			else {
 				dst->ptszTitle = LangPackPcharToTchar( odp->pszTitle );
 				dst->flags |= ODPF_UNICODE;
 			}
 		#else
-			dst->pszTitle = _strdup( Translate( odp->pszTitle ));
+			dst->pszTitle = mir_strdup( Translate( odp->pszTitle ));
 		#endif
 	}
 
 	if ( odp->pszGroup != NULL ) {
 		#if defined( _UNICODE )
 			if ( odp->flags & ODPF_UNICODE )
-				dst->ptszGroup = wcsdup( TranslateW( odp->ptszGroup ));
+				dst->ptszGroup = mir_wstrdup( TranslateW( odp->ptszGroup ));
 			else {
 				dst->ptszGroup = LangPackPcharToTchar( odp->pszGroup );
 				dst->flags |= ODPF_UNICODE;
 			}
 		#else
-			dst->pszGroup = _strdup( Translate( odp->pszGroup ));
+			dst->pszGroup = mir_strdup( Translate( odp->pszGroup ));
 		#endif
 	}
 
 	if (( DWORD )odp->pszTemplate & 0xFFFF0000 )
-		dst->pszTemplate = _strdup( odp->pszTemplate );
+		dst->pszTemplate = mir_strdup( odp->pszTemplate );
 
 	opi->pageCount++;
 	return 0;

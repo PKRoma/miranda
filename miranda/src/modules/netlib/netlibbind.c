@@ -67,7 +67,7 @@ int NetlibFreeBoundPort(struct NetlibBoundPort *nlbp)
 	closesocket(nlbp->s);
 	WaitForSingleObject(nlbp->hThread,INFINITE);
 	CloseHandle(nlbp->hThread);
-	free(nlbp);
+	mir_free(nlbp);
 	return 1;
 }
 
@@ -85,7 +85,7 @@ static DWORD __stdcall NetlibBindAcceptThread(struct NetlibBoundPort *nlbp)
 		s=accept(nlbp->s,(struct sockaddr*)&sin,&sinLen);
 		if(s==INVALID_SOCKET) break;
 		Netlib_Logf(nlbp->nlu,"New incoming connection on port %u from %s (%d)",nlbp->wPort, inet_ntoa(sin.sin_addr),s);
-		nlc=(struct NetlibConnection*)malloc(sizeof(struct NetlibConnection));
+		nlc=(struct NetlibConnection*)mir_alloc(sizeof(struct NetlibConnection));
 		memset(nlc,0,sizeof(struct NetlibConnection));
 		nlc->handleType=NLH_CONNECTION;
 		nlc->nlu=nlbp->nlu;
@@ -116,7 +116,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 	if ( !(nlb->cbSize == sizeof(NETLIBBIND) || nlb->cbSize==sizeof(NETLIBBINDOLD)) ) {
 		return (int)(HANDLE)NULL;
 	}
-	nlbp=(struct NetlibBoundPort*)malloc(sizeof(struct NetlibBoundPort));
+	nlbp=(struct NetlibBoundPort*)mir_alloc(sizeof(struct NetlibBoundPort));
 	nlbp->handleType=NLH_BOUNDPORT;
 	nlbp->nlu=nlu;
 	nlbp->pfnNewConnectionV2=nlb->pfnNewConnectionV2;
@@ -124,7 +124,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 	nlbp->pExtra= (nlb->cbSize == sizeof(NETLIBBIND)) ? nlb->pExtra : NULL;
 	if(nlbp->s==INVALID_SOCKET) {
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"socket",WSAGetLastError());
-		free(nlbp);
+		mir_free(nlbp);
 		return (int)(HANDLE)NULL;
 	}
 	sin.sin_family=AF_INET;
@@ -140,7 +140,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		portsCount=StringToPortsMask(nlu->settings.szIncomingPorts,portsMask);
 		if(portsCount==0) {
 			closesocket(nlbp->s);
-			free(nlbp);
+			mir_free(nlbp);
 			SetLastError(WSAEADDRINUSE);
 			return (int)(HANDLE)NULL;
 		}
@@ -181,14 +181,14 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 	if(!foundPort) {
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"bind",WSAGetLastError());
 		closesocket(nlbp->s);
-		free(nlbp);
+		mir_free(nlbp);
 		return (int)(HANDLE)NULL;
 	}
 
 	if(listen(nlbp->s,5)) {
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"listen",WSAGetLastError());
 		closesocket(nlbp->s);
-		free(nlbp);
+		mir_free(nlbp);
 		return (int)(HANDLE)NULL;
 	}
 
@@ -201,7 +201,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		if(getsockname(nlbp->s,(SOCKADDR *)&sin,&len)) {
 			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"getsockname",WSAGetLastError());
 			closesocket(nlbp->s);
-			free(nlbp);
+			mir_free(nlbp);
 			return (int)(HANDLE)NULL;
 		}
 		nlb->wPort=ntohs(sin.sin_port);

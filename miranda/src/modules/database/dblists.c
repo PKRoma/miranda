@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 SortedList* List_Create( int p_limit, int p_increment )
 {
-	SortedList* result = ( SortedList* )calloc( sizeof( SortedList ), 1 );
+	SortedList* result = ( SortedList* )mir_calloc( sizeof( SortedList ));
 	if ( result == NULL )
 		return(NULL);
 
@@ -43,7 +43,7 @@ void List_Destroy( SortedList* p_list )
 		return;
 
 	if ( p_list->items != NULL )
-		free( p_list->items );
+		mir_free( p_list->items );
 }
 
 void* List_Find( SortedList* p_list, void* p_value )
@@ -100,7 +100,7 @@ int List_Insert( SortedList* p_list, void* p_value, int p_index)
 
    if ( p_list->realCount == p_list->limit )
 	{
-		p_list->items = ( void** )realloc( p_list->items, sizeof( void* )*(p_list->realCount + p_list->increment));
+		p_list->items = ( void** )mir_realloc( p_list->items, sizeof( void* )*(p_list->realCount + p_list->increment));
 		p_list->limit += p_list->increment;
 	}
 

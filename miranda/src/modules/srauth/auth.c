@@ -55,7 +55,7 @@ static int AuthEventAdded(WPARAM wParam,LPARAM lParam)
 	if(dbei.flags&(DBEF_SENT|DBEF_READ) || (dbei.eventType!=EVENTTYPE_AUTHREQUEST && dbei.eventType!=EVENTTYPE_ADDED)) return 0;
 
 	dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)lParam,0);
-	dbei.pBlob=malloc(dbei.cbBlob);
+	dbei.pBlob=mir_alloc(dbei.cbBlob);
 	CallService(MS_DB_EVENT_GET,(WPARAM)(HANDLE)lParam,(LPARAM)&dbei);
 
 	hcontact=*((PHANDLE)(dbei.pBlob+sizeof(DWORD)));
@@ -74,7 +74,7 @@ static int AuthEventAdded(WPARAM wParam,LPARAM lParam)
 		cli.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
 		cli.pszService=MS_AUTH_SHOWREQUEST;
 		CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cli);
-		free(dbei.pBlob);
+		mir_free(dbei.pBlob);
 	}
 	else if(dbei.eventType==EVENTTYPE_ADDED)
 	{
@@ -83,7 +83,7 @@ static int AuthEventAdded(WPARAM wParam,LPARAM lParam)
 		cli.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
 		cli.pszService=MS_AUTH_SHOWADDED;
 		CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cli);
-		free(dbei.pBlob);
+		mir_free(dbei.pBlob);
 	}
 	return 0;
 }

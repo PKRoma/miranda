@@ -185,13 +185,13 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 			acs=(ADDCONTACTSTRUCT *)GetWindowLong(hdlg,GWL_USERDATA);
 			if (acs) {
 				if (acs->psr) {
-					if (acs->psr->nick) free(acs->psr->nick);
-					if (acs->psr->firstName) free(acs->psr->firstName);
-					if (acs->psr->lastName) free(acs->psr->lastName);
-					if (acs->psr->email) free(acs->psr->email);
-					free(acs->psr);
+					if (acs->psr->nick) mir_free(acs->psr->nick);
+					if (acs->psr->firstName) mir_free(acs->psr->firstName);
+					if (acs->psr->lastName) mir_free(acs->psr->lastName);
+					if (acs->psr->email) mir_free(acs->psr->email);
+					mir_free(acs->psr);
 				}
-				free(acs);
+				mir_free(acs);
 			}
 			break;
 	}
@@ -203,17 +203,17 @@ int AddContactDialog(WPARAM wParam,LPARAM lParam)
 {
 	ADDCONTACTSTRUCT *acs;
 	if (lParam) {	
-		acs=malloc(sizeof(ADDCONTACTSTRUCT));
+		acs=mir_alloc(sizeof(ADDCONTACTSTRUCT));
 		memmove(acs,(ADDCONTACTSTRUCT*)lParam,sizeof(ADDCONTACTSTRUCT));
 		if (acs->psr) {
 			PROTOSEARCHRESULT *psr;
 			/* bad! structures that are bigger than psr will cause crashes if they define pointers within unreachable structural space */
-			psr=malloc(acs->psr->cbSize);
+			psr=mir_alloc(acs->psr->cbSize);
 			memmove(psr,acs->psr,acs->psr->cbSize);
-			if (psr->nick) psr->nick=_strdup(psr->nick);
-			if (psr->firstName) psr->firstName=_strdup(psr->firstName);
-			if (psr->lastName) psr->lastName=_strdup(psr->lastName);
-			if (psr->email) psr->email=_strdup(psr->email);
+			if (psr->nick) psr->nick=mir_strdup(psr->nick);
+			if (psr->firstName) psr->firstName=mir_strdup(psr->firstName);
+			if (psr->lastName) psr->lastName=mir_strdup(psr->lastName);
+			if (psr->email) psr->email=mir_strdup(psr->email);
 			acs->psr=psr;
 			/* copied the passed acs structure, the psr structure with, the pointers within that  */
 		} //if

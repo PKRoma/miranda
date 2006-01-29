@@ -116,7 +116,7 @@ void LoadColumnSizes(HWND hwndResults,const char *szProto)
 			ListView_InsertColumn( hwndResults, i, (LPARAM)&lvc );
 			#if defined( _UNICODE )
 				if ( bNeedsFree )
-					free(lvc.pszText);
+					mir_free(lvc.pszText);
 			#endif
 		}
 		wsprintfA(szSetting,"ColOrder%d",i);
@@ -189,11 +189,11 @@ void FreeSearchResults(HWND hwndResults)
 		ListView_GetItem(hwndResults,&lvi);
 		lsr=(struct ListSearchResult*)lvi.lParam;
 		if(lsr==NULL) continue;
-		free(lsr->psr.email);
-		free(lsr->psr.nick);
-		free(lsr->psr.firstName);
-		free(lsr->psr.lastName);
-		free(lsr);
+		mir_free(lsr->psr.email);
+		mir_free(lsr->psr.nick);
+		mir_free(lsr->psr.firstName);
+		mir_free(lsr->psr.lastName);
+		mir_free(lsr);
 	}
 	ListView_DeleteAllItems(hwndResults);
 	EnableResultButtons(GetParent(hwndResults),0);
@@ -205,7 +205,7 @@ static void BeginSearchFailed(void * arg)
 	char buf[128];
 	if ( arg != NULL ) { 
 		mir_snprintf(buf,SIZEOF(buf),Translate("Could not start a search on '%s', there was a problem - is %s connected?"),arg,arg);
-		free((char*)arg);
+		mir_free((char*)arg);
 	}
 	else strncpy(buf,Translate("Could not search on any of the protocols, are you online?"),SIZEOF(buf));
 	MessageBoxA(0,buf,Translate("Problem with search"),MB_OK | MB_ICONERROR);
@@ -222,7 +222,7 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 
 		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protos);
 		dat->searchCount=0;
-		dat->search=(struct ProtoSearchInfo*)calloc(sizeof(struct ProtoSearchInfo),protoCount);
+		dat->search=(struct ProtoSearchInfo*)mir_calloc(sizeof(struct ProtoSearchInfo) * protoCount);
 		for(i=0;i<protoCount;i++) {
 			if(protos[i]->type!=PROTOTYPE_PROTOCOL) continue;
 			caps=(DWORD)CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_1,0);
@@ -236,20 +236,20 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 			//infuriatingly vague error message. fixme.
 			if(dat->searchCount==0) {
 				forkthread(BeginSearchFailed,0,NULL);
-				free(dat->search);
+				mir_free(dat->search);
 				dat->search=NULL;
 				return 1;
 		}	}
 	}
 	else {
-		dat->search=(struct ProtoSearchInfo*)malloc(sizeof(struct ProtoSearchInfo));
+		dat->search=(struct ProtoSearchInfo*)mir_alloc(sizeof(struct ProtoSearchInfo));
 		dat->searchCount=1;
 		dat->search[0].hProcess=(HANDLE)CallProtoService(szProto,szSearchService,0,(LPARAM)pvSearchParams);
 		dat->search[0].szProto=szProto;
 		if(dat->search[0].hProcess==NULL) {
 			//infuriatingly vague error message. fixme.
-			forkthread(BeginSearchFailed,0,(void*)_strdup(szProto));
-			free(dat->search);
+			forkthread(BeginSearchFailed,0,(void*)mir_strdup(szProto));
+			mir_free(dat->search);
 			dat->search=NULL;
 			dat->searchCount=0;
 			return 1;
@@ -275,7 +275,7 @@ void SetStatusBarSearchInfo(HWND hwndStatus,struct FindAddDlgData *dat)
 			#else
 				{	TCHAR* p = a2u(szProtoName);
 					lstrcat(str, p);
-					free(p);
+					mir_free(p);
 				}
 			#endif
 	}	}
@@ -312,7 +312,7 @@ void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
 			}
 		}
 		if(i==subtotalCount) {
-			subtotal=(struct ProtoResultsSummary*)realloc(subtotal,sizeof(struct ProtoResultsSummary)*(subtotalCount+1));
+			subtotal=(struct ProtoResultsSummary*)mir_realloc(subtotal,sizeof(struct ProtoResultsSummary)*(subtotalCount+1));
 			subtotal[subtotalCount].szProto=lsr->szProto;
 			subtotal[subtotalCount++].count=1;
 		}
@@ -339,7 +339,7 @@ void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
 				if(i) {
 					CallProtoService(subtotal[i].szProto,PS_GETNAME,SIZEOF(szProtoName),(LPARAM)szProtoName);
 					#if defined( _UNICODE )
-						free( ptszProto );
+						mir_free( ptszProto );
 						ptszProto = a2u( szProtoName );
 					#else
 						ptszProto = szProtoName;
@@ -351,9 +351,9 @@ void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
 			}
 			lstrcat( str, _T(")"));
 		}
-		free(subtotal);
+		mir_free(subtotal);
 		#if defined( _UNICODE )
-			free( ptszProto );
+			mir_free( ptszProto );
 		#endif
 	}
 	else lstrcpy(str, TranslateT("No users found"));

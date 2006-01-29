@@ -106,14 +106,14 @@ static void ReplaceStr(char str[], int len, char *from, char *to) {
 		int pos = tmp - str;
 		int tlen = lstrlenA(from);
 
-		tmp = _strdup(str);
+		tmp = mir_strdup(str);
 		if (lstrlenA(to)>tlen)
-			tmp = (char*)realloc(tmp, lstrlenA(tmp)+1+lstrlenA(to)-tlen);
+			tmp = (char*)mir_realloc(tmp, lstrlenA(tmp)+1+lstrlenA(to)-tlen);
 
 		MoveMemory(tmp+pos+lstrlenA(to), tmp+pos+tlen, lstrlenA(tmp)+1-pos-tlen);
 		CopyMemory(tmp+pos, to, lstrlenA(to));
 		mir_snprintf(str, len, "%s", tmp);
-		free(tmp);
+		mir_free(tmp);
 	}
 }
 
@@ -130,7 +130,7 @@ void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir)
 		lstrcatA(szDbPath,"\\");
 		lstrcatA(szDbPath,Translate("Received Files"));
 		lstrcatA(szDbPath,"\\%userid%");
-		szRecvFilesDir=_strdup(szDbPath);
+		szRecvFilesDir=mir_strdup(szDbPath);
 	}
 	else {
 		char szDrive[_MAX_DRIVE];
@@ -140,9 +140,9 @@ void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir)
 			CallService(MS_DB_GETPROFILEPATH,(WPARAM)MAX_PATH,(LPARAM)szDbPath);
 			lstrcatA(szDbPath,"\\");
 			lstrcatA(szDbPath,dbv.pszVal);
-			szRecvFilesDir=_strdup(szDbPath);
+			szRecvFilesDir=mir_strdup(szDbPath);
 		}
-		else szRecvFilesDir=_strdup(dbv.pszVal);
+		else szRecvFilesDir=mir_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	lstrcpynA(szTemp,szRecvFilesDir,SIZEOF(szTemp));
@@ -185,7 +185,7 @@ void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir)
 		ReplaceStr(szTemp, SIZEOF(szTemp), "%proto%", szProto);
 	}
 	lstrcpynA(szDir,szTemp,cchDir);
-	free(szRecvFilesDir);
+	mir_free(szRecvFilesDir);
 	len=lstrlenA(szDir);
 	if(len+1<cchDir && szDir[len-1]!='\\') lstrcpyA(szDir+len,"\\");
 }
@@ -202,7 +202,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 		TranslateDialogDefault(hwndDlg);
 
-		dat=(struct FileDlgData*)calloc(1,sizeof(struct FileDlgData));
+		dat=(struct FileDlgData*)mir_calloc(sizeof(struct FileDlgData));
 		SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 		dat->hContact=((CLISTEVENT*)lParam)->hContact;
 		dat->hDbEvent=((CLISTEVENT*)lParam)->hDbEvent;
@@ -255,14 +255,14 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 			dbei.cbSize=sizeof(dbei);
 			dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)dat->hDbEvent,0);
-			dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
+			dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
 			CallService(MS_DB_EVENT_GET,(WPARAM)dat->hDbEvent,(LPARAM)&dbei);
 			dat->fs=(HANDLE)*(PDWORD)dbei.pBlob;
 			lstrcpynA(szPath, dbei.pBlob+4, min(dbei.cbBlob+1,SIZEOF(szPath)));
 			SetDlgItemTextA(hwndDlg,IDC_FILENAMES,szPath);
 			lstrcpynA(szPath, dbei.pBlob+4+strlen(dbei.pBlob+4)+1, min(dbei.cbBlob-4-strlen(dbei.pBlob+4),SIZEOF(szPath)));
 			SetDlgItemTextA(hwndDlg,IDC_MSG,szPath);
-			free(dbei.pBlob);
+			mir_free(dbei.pBlob);
 
 			dbtts.szFormat = _T("t d");
 			dbtts.szDest = datetimestr;
@@ -286,7 +286,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 					case CNFT_ASCIIZ:
 						hasName = 1;
 						mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
-						free(ci.pszVal);
+						mir_free(ci.pszVal);
 						break;
 					case CNFT_DWORD:
 						hasName = 1;
@@ -421,7 +421,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		DestroyIcon(dat->hUIIcons[2]);
 		DestroyIcon(dat->hUIIcons[1]);
 		DestroyIcon(dat->hUIIcons[0]);
-		free(dat);
+		mir_free(dat);
 		return TRUE;
 	}
 	return FALSE;

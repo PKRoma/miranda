@@ -94,16 +94,16 @@ static void AddProxyTypeItem(HWND hwndDlg,int type,int selectType)
 static void CopySettingsStruct(NETLIBUSERSETTINGS *dest,NETLIBUSERSETTINGS *source)
 {
 	*dest=*source;
-	if(dest->szIncomingPorts) dest->szIncomingPorts=_strdup(dest->szIncomingPorts);
-	if(dest->szOutgoingPorts) dest->szOutgoingPorts=_strdup(dest->szOutgoingPorts);
-	if(dest->szProxyAuthPassword) dest->szProxyAuthPassword=_strdup(dest->szProxyAuthPassword);
-	if(dest->szProxyAuthUser) dest->szProxyAuthUser=_strdup(dest->szProxyAuthUser);
-	if(dest->szProxyServer) dest->szProxyServer=_strdup(dest->szProxyServer);
+	if(dest->szIncomingPorts) dest->szIncomingPorts=mir_strdup(dest->szIncomingPorts);
+	if(dest->szOutgoingPorts) dest->szOutgoingPorts=mir_strdup(dest->szOutgoingPorts);
+	if(dest->szProxyAuthPassword) dest->szProxyAuthPassword=mir_strdup(dest->szProxyAuthPassword);
+	if(dest->szProxyAuthUser) dest->szProxyAuthUser=mir_strdup(dest->szProxyAuthUser);
+	if(dest->szProxyServer) dest->szProxyServer=mir_strdup(dest->szProxyServer);
 }
 
 static void CombineSettingsStrings(char **dest,char **source)
 {
-	if(*dest!=NULL && (*source==NULL || lstrcmpiA(*dest,*source))) {free(*dest); *dest=NULL;}
+	if(*dest!=NULL && (*source==NULL || lstrcmpiA(*dest,*source))) {mir_free(*dest); *dest=NULL;}
 }
 
 static void CombineSettingsStructs(NETLIBUSERSETTINGS *dest,DWORD *destFlags,NETLIBUSERSETTINGS *source,DWORD sourceFlags)
@@ -126,18 +126,18 @@ static void CombineSettingsStructs(NETLIBUSERSETTINGS *dest,DWORD *destFlags,NET
 			dest->useProxy=source->useProxy;
 			dest->proxyType=source->proxyType;
 			dest->szProxyServer=source->szProxyServer;
-			if(dest->szProxyServer) dest->szProxyServer=_strdup(dest->szProxyServer);
+			if(dest->szProxyServer) dest->szProxyServer=mir_strdup(dest->szProxyServer);
 			dest->wProxyPort=source->wProxyPort;
 			dest->useProxyAuth=source->useProxyAuth;
 			dest->szProxyAuthUser=source->szProxyAuthUser;
-			if(dest->szProxyAuthUser) dest->szProxyAuthUser=_strdup(dest->szProxyAuthUser);
+			if(dest->szProxyAuthUser) dest->szProxyAuthUser=mir_strdup(dest->szProxyAuthUser);
 			dest->szProxyAuthPassword=source->szProxyAuthPassword;
-			if(dest->szProxyAuthPassword) dest->szProxyAuthPassword=_strdup(dest->szProxyAuthPassword);
+			if(dest->szProxyAuthPassword) dest->szProxyAuthPassword=mir_strdup(dest->szProxyAuthPassword);
 			dest->useProxyAuthNtlm=source->useProxyAuthNtlm;
 			dest->dnsThroughProxy=source->dnsThroughProxy;
 			dest->specifyOutgoingPorts=source->specifyOutgoingPorts;
 			dest->szOutgoingPorts=source->szOutgoingPorts;
-			if(dest->szOutgoingPorts) dest->szOutgoingPorts=_strdup(dest->szOutgoingPorts);
+			if(dest->szOutgoingPorts) dest->szOutgoingPorts=mir_strdup(dest->szOutgoingPorts);
 		}
 	}
 	if(sourceFlags&NUF_INCOMING) {
@@ -148,7 +148,7 @@ static void CombineSettingsStructs(NETLIBUSERSETTINGS *dest,DWORD *destFlags,NET
 		else {
 			dest->specifyIncomingPorts=source->specifyIncomingPorts;
 			dest->szIncomingPorts=source->szIncomingPorts;
-			if(dest->szIncomingPorts) dest->szIncomingPorts=_strdup(dest->szIncomingPorts);
+			if(dest->szIncomingPorts) dest->szIncomingPorts=mir_strdup(dest->szIncomingPorts);
 		}
 	}
 	if((*destFlags&NUF_NOHTTPSOPTION)!=(sourceFlags&NUF_NOHTTPSOPTION))
@@ -177,20 +177,20 @@ static void ChangeSettingStringByEdit(HWND hwndDlg,UINT ctrlId,int iUser,int mem
 	char *szNewValue,**ppszNew;
 
 	newValueLen=GetWindowTextLength(GetDlgItem(hwndDlg,ctrlId));
-	szNewValue=(char*)malloc(newValueLen+1);
+	szNewValue=(char*)mir_alloc(newValueLen+1);
 	GetDlgItemTextA(hwndDlg,ctrlId,szNewValue,newValueLen+1);
 	if(iUser==-1) {
 		for(i=0;i<tempSettingsCount;i++)
 			if(!(tempSettings[i].flags&NUF_NOOPTIONS)) {
 				ppszNew=(char**)(((PBYTE)&tempSettings[i].settings)+memberOffset);
-				if(*ppszNew) free(*ppszNew);
-				*ppszNew=_strdup(szNewValue);
+				if(*ppszNew) mir_free(*ppszNew);
+				*ppszNew=mir_strdup(szNewValue);
 			}
-		free(szNewValue);
+		mir_free(szNewValue);
 	}
 	else {
 		ppszNew=(char**)(((PBYTE)&tempSettings[iUser].settings)+memberOffset);
-		if(*ppszNew) free(*ppszNew);
+		if(*ppszNew) mir_free(*ppszNew);
 		*ppszNew=szNewValue;
 	}
 }
@@ -263,10 +263,10 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_SETCURSEL,iItem,0);
 			EnterCriticalSection(&csNetlibUser);
 			tempSettingsCount=netlibUserCount;
-			tempSettings=(struct NetlibTempSettings*)malloc(sizeof(struct NetlibTempSettings)*tempSettingsCount);
+			tempSettings=(struct NetlibTempSettings*)mir_alloc(sizeof(struct NetlibTempSettings)*tempSettingsCount);
 			for(iUser=0;iUser<netlibUserCount;iUser++) {
 				tempSettings[iUser].flags=netlibUser[iUser]->user.flags;
-				tempSettings[iUser].szSettingsModule=_strdup(netlibUser[iUser]->user.szSettingsModule);
+				tempSettings[iUser].szSettingsModule=mir_strdup(netlibUser[iUser]->user.szSettingsModule);
 				CopySettingsStruct(&tempSettings[iUser].settings,&netlibUser[iUser]->settings);
 				if(netlibUser[iUser]->user.flags&NUF_NOOPTIONS) continue;
 				iItem=SendDlgItemMessageA(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)netlibUser[iUser]->user.szDescriptiveName);
@@ -477,10 +477,10 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		case WM_DESTROY:
 		{	int iUser;
 			for(iUser=0;iUser<tempSettingsCount;iUser++) {
-				free(tempSettings[iUser].szSettingsModule);
+				mir_free(tempSettings[iUser].szSettingsModule);
 				NetlibFreeUserSettingsStruct(&tempSettings[iUser].settings);
 			}
-			free(tempSettings);
+			mir_free(tempSettings);
 			break;
 		}
 	}

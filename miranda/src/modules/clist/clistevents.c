@@ -54,7 +54,7 @@ int fnGetImlIconIndex(HICON hIcon)
 		if (imlIcon[i].hIcon == hIcon)
 			return imlIcon[i].index;
 	}
-	imlIcon = (struct CListImlIcon *) realloc(imlIcon, sizeof(struct CListImlIcon) * (imlIconCount + 1));
+	imlIcon = (struct CListImlIcon *) mir_realloc(imlIcon, sizeof(struct CListImlIcon) * (imlIconCount + 1));
 	imlIconCount++;
 	imlIcon[i].hIcon = hIcon;
 	imlIcon[i].index = ImageList_AddIcon(hCListImages, hIcon);
@@ -110,14 +110,14 @@ struct CListEvent* fnAddEvent( CLISTEVENT *cle )
 	p->cle = *cle;
 	p->imlIconIndex = fnGetImlIconIndex(cli.events.items[i]->cle.hIcon);
 	p->flashesDone = 12;
-	p->cle.pszService = strdup(cli.events.items[i]->cle.pszService);
+	p->cle.pszService = mir_strdup(cli.events.items[i]->cle.pszService);
 	#if defined( _UNICODE )
 		if (p->cle.flags & CLEF_UNICODE)
-			p->cle.ptszTooltip = _tcsdup((TCHAR*)p->cle.ptszTooltip);
+			p->cle.ptszTooltip = mir_tstrdup((TCHAR*)p->cle.ptszTooltip);
 		else
 			p->cle.ptszTooltip = a2u((char*)p->cle.pszTooltip); //if no flag defined it handled as unicode
 	#else
-		p->cle.ptszTooltip = _tcsdup(p->cle.ptszTooltip); 
+		p->cle.ptszTooltip = mir_tstrdup((p->cle.ptszTooltip); 
 	#endif
 
 	if (cli.events.count == 1) {
@@ -284,16 +284,16 @@ int InitCListEvents(void)
 
 struct CListEvent* fnCreateEvent( void )
 {
-	return (struct CListEvent*)calloc( sizeof(struct CListEvent), 1 );
+	return (struct CListEvent*)mir_calloc( sizeof(struct CListEvent));
 }
 
 void fnFreeEvent( struct CListEvent* p )
 {
    if ( p->cle.pszService )
-      free( p->cle.pszService );
+      mir_free( p->cle.pszService );
    if ( p->cle.pszTooltip )
-      free( p->cle.pszTooltip );
-	free( p );
+      mir_free( p->cle.pszTooltip );
+	mir_free( p );
 }
 
 void UninitCListEvents(void)
@@ -301,8 +301,8 @@ void UninitCListEvents(void)
 	int i;
 	for (i = 0; i < cli.events.count; i++)
 		cli.pfnFreeEvent(( struct CListEvent* )cli.events.items[i] );
-	free( cli.events.items );
+	mir_free( cli.events.items );
 
 	if ( imlIcon != NULL )
-		free( imlIcon );
+		mir_free( imlIcon );
 }

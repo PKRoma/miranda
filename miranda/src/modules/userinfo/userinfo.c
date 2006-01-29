@@ -92,11 +92,11 @@ static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM lParam)
 	psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
 	CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_DETAILS),NULL,DlgProcDetails,(LPARAM)&psh);
 	for(i=0;i<opi.pageCount;i++) {
-		free((char*)opi.odp[i].pszTitle);
-		if(opi.odp[i].pszGroup!=NULL) free(opi.odp[i].pszGroup);
-		if((DWORD)opi.odp[i].pszTemplate&0xFFFF0000) free((char*)opi.odp[i].pszTemplate);
+		mir_free((char*)opi.odp[i].pszTitle);
+		if(opi.odp[i].pszGroup!=NULL) mir_free(opi.odp[i].pszGroup);
+		if((DWORD)opi.odp[i].pszTemplate&0xFFFF0000) mir_free((char*)opi.odp[i].pszTemplate);
 	}
-	free(opi.odp);
+	mir_free(opi.odp);
 	return 0;
 }
 
@@ -107,18 +107,18 @@ static int AddDetailsPage(WPARAM wParam,LPARAM lParam)
 
 	if(odp==NULL||opi==NULL) return 1;
 	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE)) return 1;
-	opi->odp=(OPTIONSDIALOGPAGE*)realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
+	opi->odp=(OPTIONSDIALOGPAGE*)mir_realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
 	dst = opi->odp + opi->pageCount;
 	dst->cbSize = sizeof(OPTIONSDIALOGPAGE);
 	dst->hInstance = odp->hInstance;
 	dst->pfnDlgProc = odp->pfnDlgProc;
 	dst->position = odp->position;
-	if((DWORD)odp->pszTemplate&0xFFFF0000) dst->pszTemplate = _strdup(odp->pszTemplate);
+	if((DWORD)odp->pszTemplate&0xFFFF0000) dst->pszTemplate = mir_strdup(odp->pszTemplate);
 	else dst->pszTemplate = odp->pszTemplate;
 
 	#if defined(_UNICODE)
 	if ( odp->flags == ODPF_UNICODE )
-		dst->ptszTitle = (odp->ptszTitle==0) ? NULL : _wcsdup(odp->ptszTitle);
+		dst->ptszTitle = (odp->ptszTitle==0) ? NULL : mir_wstrdup(odp->ptszTitle);
 	else
 	#endif
 		dst->ptszTitle = (odp->pszTitle==0) ? NULL : LangPackPcharToTchar(odp->pszTitle);
@@ -162,7 +162,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		{	PROPSHEETHEADER *psh=(PROPSHEETHEADER*)lParam;
 			TranslateDialogDefault(hwndDlg);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_USERDETAILS)));
-			dat=(struct DetailsData*)malloc(sizeof(struct DetailsData));
+			dat=(struct DetailsData*)mir_alloc(sizeof(struct DetailsData));
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
 			dat->hContact=(HANDLE)psh->pszCaption;
 			dat->hProtoAckEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_PROTOACK);
@@ -196,7 +196,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				if(DBGetContactSettingTString(NULL,"UserInfo","LastTab",&dbv))
 					dbv.type=DBVT_DELETED;
 				dat->pageCount=psh->nPages;
-				dat->opd=(struct DetailsPageData*)malloc(sizeof(struct DetailsPageData)*dat->pageCount);
+				dat->opd=(struct DetailsPageData*)mir_alloc(sizeof(struct DetailsPageData)*dat->pageCount);
 				odp=(OPTIONSDIALOGPAGE*)psh->ppsp;
 
 				for(i=0;i<dat->pageCount;i++) {
@@ -320,7 +320,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SendMessage(hwndDlg,M_CHECKONLINE,0,0);
 				break;
 			} //if
-			if(dat->infosUpdated==NULL) dat->infosUpdated=(int*)calloc(sizeof(int),(int)ack->hProcess);
+			if(dat->infosUpdated==NULL) dat->infosUpdated=(int*)mir_calloc(sizeof(int)*(int)ack->hProcess);
 			if(ack->result==ACKRESULT_SUCCESS || ack->result==ACKRESULT_FAILED) dat->infosUpdated[ack->lParam]=1;
 			for(i=0;i<(int)ack->hProcess;i++)
 				if(dat->infosUpdated[i]==0) break;
@@ -421,7 +421,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					break;
 				}
 				case IDC_UPDATE:
-					if(dat->infosUpdated!=NULL) {free(dat->infosUpdated); dat->infosUpdated=NULL;}
+					if(dat->infosUpdated!=NULL) {mir_free(dat->infosUpdated); dat->infosUpdated=NULL;}
 					if(dat->hContact != NULL) {
 						CallContactService(dat->hContact,PSS_GETINFO,0,0);
 						EnableWindow(GetDlgItem(hwndDlg,IDC_UPDATE),FALSE);
@@ -453,9 +453,9 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				for(i=0;i<dat->pageCount;i++)
 					if(dat->opd[i].hwnd!=NULL) DestroyWindow(dat->opd[i].hwnd);
 			}
-			if(dat->infosUpdated!=NULL) free(dat->infosUpdated);
-			free(dat->opd);
-			free(dat);
+			if(dat->infosUpdated!=NULL) mir_free(dat->infosUpdated);
+			mir_free(dat->opd);
+			mir_free(dat);
 			break;
 	}
 	return FALSE;

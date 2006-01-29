@@ -37,6 +37,11 @@
 	".\core\modules.h"\
 	
 
+.\core\memory.c : \
+	"..\include\m_plugins.h"\
+	"..\include\m_protomod.h"\
+	
+
 .\core\miranda.c : \
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\

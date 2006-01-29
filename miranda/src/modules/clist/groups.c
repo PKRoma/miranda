@@ -76,7 +76,7 @@ static int CreateGroup(WPARAM wParam, LPARAM lParam)
 			return 0;
 
 		mir_sntprintf( newBaseName, SIZEOF(newBaseName), _T("%s\\%s"), dbv.ptszVal + 1, TranslateT("New Group"));
-		free(dbv.pszVal);
+		mir_free(dbv.pszVal);
 	}
 	else lstrcpyn( newBaseName, TranslateT( "New Group" ), SIZEOF( newBaseName ));
 
@@ -238,7 +238,7 @@ static int RenameGroupWithMove(int groupId, const TCHAR *szName, int move)
 		ClcCacheEntryBase* cache = cli.pfnGetCacheEntry( hContact );
 		if ( !lstrcmp(cache->group, oldName)) {
             DBWriteContactSettingTString(hContact, "CList", "Group", szName);
-            free(cache->group);
+            mir_free(cache->group);
             cache->group = 0;
             cli.pfnCheckCacheItem(cache);
         }
@@ -301,7 +301,7 @@ static int RenameGroup(WPARAM wParam, LPARAM lParam)
 	#if defined( _UNICODE )
 		WCHAR* temp = a2u(( char* )lParam );
 		int result = ( -1 != RenameGroupWithMove(wParam - 1, temp, 1));
-		free( temp );
+		mir_free( temp );
 		return result;
 	#else
 		return -1 != RenameGroupWithMove(wParam - 1, (TCHAR*) lParam, 1);
@@ -391,7 +391,7 @@ static int MoveGroupBefore(WPARAM wParam, LPARAM lParam)
 		for (i = shuffleFrom; i != shuffleTo; i--) {
 			itoa(i - 1, str, 10);
 			if (DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv)) {
-				free(szMoveName);
+				mir_free(szMoveName);
 				return 1;
 			}                   //never happens
 			itoa(i, str, 10);
@@ -401,7 +401,7 @@ static int MoveGroupBefore(WPARAM wParam, LPARAM lParam)
 	}
 	itoa(shuffleTo, str, 10);
 	DBWriteContactSettingTString(NULL, "CListGroups", str, szMoveName);
-	free(szMoveName);
+	mir_free(szMoveName);
 	return shuffleTo + 1;
 }
 

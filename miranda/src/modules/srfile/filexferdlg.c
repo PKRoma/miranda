@@ -79,8 +79,8 @@ static void __cdecl RunVirusScannerThread(struct virusscanthreadstartinfo *info)
 		}
 		DBFreeVariant(&dbv);
 	}
-	free(info->szFile);
-	free(info);
+	mir_free(info->szFile);
+	mir_free(info);
 }
 
 static void SetFilenameControls(HWND hwndDlg,PROTOFILETRANSFERSTATUS *fts)
@@ -163,7 +163,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				GetDlgItemTextA(GetParent(hwndDlg),IDC_FILEDIR,szSavePath,SIZEOF(szSavePath));
 				CreateDirectoryTree(szSavePath);
 				dat->fs=(HANDLE)CallContactService(dat->hContact,PSS_FILEALLOW,(WPARAM)dat->fs,(LPARAM)szSavePath);
-				dat->transferStatus.workingDir=_strdup(szSavePath);
+				dat->transferStatus.workingDir=mir_strdup(szSavePath);
 				if(DBGetContactSettingByte(dat->hContact,"CList","NotOnList",0)) dat->resumeBehaviour=FILERESUME_ASK;
 				else dat->resumeBehaviour=DBGetContactSettingByte(NULL,"SRFile","IfExists",FILERESUME_ASK);
 				SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Waiting for connection..."));
@@ -287,7 +287,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
                                     int pszlen;
                                     char *p;
                                     
-                                    pszNewFileName = (char*)malloc(strlen(pszFilename)*2);
+                                    pszNewFileName = (char*)mir_alloc(strlen(pszFilename)*2);
                                     p = pszNewFileName;
                                     for (pszlen=0; pszlen<(int)strlen(pszFilename); pszlen++) {
                                         *p++ = pszFilename[pszlen];
@@ -296,7 +296,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
                                     }
                                     *p = '\0';
                                     AppendMenuA(hMenu, MF_STRING, i+1, pszNewFileName);
-                                    free(pszNewFileName);
+                                    mir_free(pszNewFileName);
                                 }
                             }
 						}
@@ -325,9 +325,9 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					if (dat->fs) CallContactService(dat->hContact,PSS_FILECANCEL,(WPARAM)dat->fs,0);
 					dat->fs=NULL;
 					DestroyWindow(GetParent(hwndDlg));
-					free(szOriginalFilename);
-					if(pfr->szFilename) free((char*)pfr->szFilename);
-					free(pfr);
+					mir_free(szOriginalFilename);
+					if(pfr->szFilename) mir_free((char*)pfr->szFilename);
+					mir_free(pfr);
 					return 0;
 				case FILERESUME_RESUMEALL:
 				case FILERESUME_OVERWRITEALL:
@@ -340,8 +340,8 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						int i;
 						if((pszFilename=strrchr(szOriginalFilename,'\\'))==NULL) pszFilename=szOriginalFilename;
 						if((pszExtension=strrchr(pszFilename+1,'.'))==NULL) pszExtension=pszFilename+lstrlenA(pszFilename);
-						if(pfr->szFilename) free((char*)pfr->szFilename);
-						pfr->szFilename=(char*)malloc((pszExtension-szOriginalFilename)+21+lstrlenA(pszExtension));
+						if(pfr->szFilename) mir_free((char*)pfr->szFilename);
+						pfr->szFilename=(char*)mir_alloc((pszExtension-szOriginalFilename)+21+lstrlenA(pszExtension));
 						for(i=1;;i++) {
 							sprintf((char*)pfr->szFilename,"%.*s (%u)%s",pszExtension-szOriginalFilename,szOriginalFilename,i,pszExtension);
 							if(_access(pfr->szFilename,0)!=0) break;
@@ -349,10 +349,10 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					}
 					break;
 			}
-			free(szOriginalFilename);
+			mir_free(szOriginalFilename);
 			CallProtoService(szProto,PS_FILERESUME,(WPARAM)dat->fs,(LPARAM)pfr);
-			if(pfr->szFilename) free((char*)pfr->szFilename);
-			free(pfr);
+			if(pfr->szFilename) mir_free((char*)pfr->szFilename);
+			mir_free(pfr);
 			break;
 		}
 		case HM_RECVEVENT:
@@ -380,9 +380,9 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 							PostMessage(hwndDlg,M_VIRUSSCANDONE,dat->transferStatus.currentFileNumber,0);
 						else {
 							struct virusscanthreadstartinfo *vstsi;
-							vstsi=(struct virusscanthreadstartinfo*)malloc(sizeof(struct virusscanthreadstartinfo));
+							vstsi=(struct virusscanthreadstartinfo*)mir_alloc(sizeof(struct virusscanthreadstartinfo));
 							vstsi->hwndReply=hwndDlg;
-							vstsi->szFile=_strdup(dat->files[dat->transferStatus.currentFileNumber]);
+							vstsi->szFile=mir_strdup(dat->files[dat->transferStatus.currentFileNumber]);
 							vstsi->returnCode=dat->transferStatus.currentFileNumber;
 							forkthread((void (*)(void*))RunVirusScannerThread,0,vstsi);
 						}
@@ -404,10 +404,10 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					}
 					else {
 						PROTOFILERESUME *pfr;
-						pfr=(PROTOFILERESUME*)malloc(sizeof(PROTOFILERESUME));
+						pfr=(PROTOFILERESUME*)mir_alloc(sizeof(PROTOFILERESUME));
 						pfr->action=dat->resumeBehaviour;
 						pfr->szFilename=NULL;
-						PostMessage(hwndDlg,M_FILEEXISTSDLGREPLY,(WPARAM)_strdup(fts->currentFile),(LPARAM)pfr);
+						PostMessage(hwndDlg,M_FILEEXISTSDLGREPLY,(WPARAM)mir_strdup(fts->currentFile),(LPARAM)pfr);
 					}
 					SetWindowLong(hwndDlg,DWL_MSGRESULT,1);
 					return TRUE;
@@ -425,10 +425,10 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 /* FIXME: There is a leak with this, and a major performance issue  with creating and freeing this list EVERY DAMN ACK! */
 					FreeProtoFileTransferStatus(&dat->transferStatus);
 					CopyProtoFileTransferStatus(&dat->transferStatus,fts);
-					if(dat->fileVirusScanned==NULL) dat->fileVirusScanned=(int*)calloc(sizeof(int),fts->totalFiles);
+					if(dat->fileVirusScanned==NULL) dat->fileVirusScanned=(int*)mir_calloc(sizeof(int) * fts->totalFiles);
 					if(!dat->send) {
-						if(dat->files==NULL) dat->files=(char**)calloc(fts->totalFiles+1,sizeof(char*));
-						if(fts->currentFileNumber<fts->totalFiles) dat->files[fts->currentFileNumber]=_strdup(fts->currentFile);
+						if(dat->files==NULL) dat->files=(char**)mir_calloc((fts->totalFiles+1)*sizeof(char*));
+						if(fts->currentFileNumber<fts->totalFiles) dat->files[fts->currentFileNumber]=mir_strdup(fts->currentFile);
 					}
 /* FIXME: There is a performance issue of creating this list here if it does not exist */
 
@@ -461,19 +461,19 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						int useScanner=DBGetContactSettingByte(NULL,"SRFile","UseScanner",VIRUSSCAN_DISABLE);
 						if(useScanner!=VIRUSSCAN_DISABLE) {
 							struct virusscanthreadstartinfo *vstsi;
-							vstsi=(struct virusscanthreadstartinfo*)malloc(sizeof(struct virusscanthreadstartinfo));
+							vstsi=(struct virusscanthreadstartinfo*)mir_alloc(sizeof(struct virusscanthreadstartinfo));
 							vstsi->hwndReply=hwndDlg;
 							if(useScanner==VIRUSSCAN_DURINGDL) {
 								vstsi->returnCode=dat->transferStatus.currentFileNumber;
 								if(GetFileAttributesA(dat->files[dat->transferStatus.currentFileNumber])&FILE_ATTRIBUTE_DIRECTORY) {
 									PostMessage(hwndDlg,M_VIRUSSCANDONE,vstsi->returnCode,0);
-									free(vstsi);
+									mir_free(vstsi);
 									vstsi=NULL;
 								}
-								else vstsi->szFile=_strdup(dat->files[dat->transferStatus.currentFileNumber]);
+								else vstsi->szFile=mir_strdup(dat->files[dat->transferStatus.currentFileNumber]);
 							}
 							else {
-								vstsi->szFile=_strdup(dat->transferStatus.workingDir);
+								vstsi->szFile=mir_strdup(dat->transferStatus.workingDir);
 								vstsi->returnCode=-1;
 							}
 							SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Scanning for viruses..."));
@@ -492,13 +492,13 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						dbei.flags=DBEF_SENT;
 						dbei.timestamp=time(NULL);
 						dbei.cbBlob=sizeof(DWORD)+lstrlenA(szFilenames)+lstrlenA(szMsg)+2;
-						dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
+						dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
 						*(PDWORD)dbei.pBlob=0;
 						lstrcpyA(dbei.pBlob+sizeof(DWORD),szFilenames);
 						lstrcpyA(dbei.pBlob+sizeof(DWORD)+lstrlenA(szFilenames)+1,szMsg);
 						CallService(MS_DB_EVENT_ADD,(WPARAM)dat->hContact,(LPARAM)&dbei);
 						if (dbei.pBlob)
-							free(dbei.pBlob);
+							mir_free(dbei.pBlob);
 						dat->files=NULL;   //protocol library frees this
 					}
 				}
@@ -551,7 +551,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			if(dat->hNotifyEvent) {UnhookEvent(dat->hNotifyEvent); dat->hNotifyEvent=NULL;}
 			FreeProtoFileTransferStatus(&dat->transferStatus);
 			if(!dat->send) FreeFilesMatrix(&dat->files);
-			if(dat->fileVirusScanned) free(dat->fileVirusScanned);
+			if(dat->fileVirusScanned) mir_free(dat->fileVirusScanned);
 			{	HFONT hFont;
 				hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_CURRENTFILEGROUP,WM_GETFONT,0,0);
 				DeleteObject(hFont);

@@ -202,7 +202,7 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		for ( j = 0; j < SIZEOF(aa_Status); j++ ) {
 			TCHAR* szDesc = LangPackPcharToTchar(( LPCSTR )CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)aa_Status[j], 0));
 			SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_ADDSTRING, 0, (LPARAM)szDesc );
-			free( szDesc );
+			mir_free( szDesc );
 		}
 
 		j = IdleGetStatusIndex((WORD)(DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0)));

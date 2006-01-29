@@ -112,7 +112,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 				{	WCHAR* wszStr;
 					Utf8Decode( dbv.pszVal, &wszStr );
 					SetDlgItemTextW( hwndDlg, idCtrl, wszStr);
-					free( wszStr );
+					mir_free( wszStr );
                goto LBL_Exit;
 				}
 				#endif

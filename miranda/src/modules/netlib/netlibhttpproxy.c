@@ -100,7 +100,7 @@ static int HttpGatewaySendGet(struct NetlibConnection *nlc)
 			nlhrSend.dataLength=p->dataBufferLen;
 	        nlhrSend.pData=(char*)p->dataBuffer;
 
-			free(p);
+			mir_free(p);
 	}
 
 	if(NetlibHttpSendRequest((WPARAM)&nlcSend,(LPARAM)&nlhrSend)==SOCKET_ERROR) {
@@ -116,8 +116,8 @@ static int HttpGatewaySendGet(struct NetlibConnection *nlc)
 
 			p = p->next;
 
-			free(t->dataBuffer);
-			free(t);
+			mir_free(t->dataBuffer);
+			mir_free(t);
 		}
 
 		nlc->pHttpProxyPacketQueue = NULL; /* empty Queue */
@@ -235,8 +235,8 @@ int NetlibHttpGatewayPost(struct NetlibConnection *nlc,const char *buf,int len,i
          *         with the new plugins that use this code.
          */
 
-         p = malloc(sizeof(struct NetlibHTTPProxyPacketQueue));
-         p->dataBuffer = malloc(len);
+         p = mir_alloc(sizeof(struct NetlibHTTPProxyPacketQueue));
+         p->dataBuffer = mir_alloc(len);
          memcpy(p->dataBuffer, buf, len);
          p->dataBufferLen = len;
          p->next = NULL;
@@ -316,7 +316,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 			contentLength=nlc->dataBufferLen;
 			CopyMemory(buf,nlc->dataBuffer,nlc->dataBufferLen);
 			if(!(flags&MSG_PEEK)) {
-				free(nlc->dataBuffer);
+				mir_free(nlc->dataBuffer);
 				nlc->dataBuffer=NULL;
 				nlc->dataBufferLen=0;
 			}
@@ -326,7 +326,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 		if(!(flags&MSG_PEEK)) {
 			nlc->dataBufferLen-=len;
 			MoveMemory(nlc->dataBuffer,nlc->dataBuffer+len,nlc->dataBufferLen);
-			nlc->dataBuffer=(PBYTE)realloc(nlc->dataBuffer,nlc->dataBufferLen);
+			nlc->dataBuffer=(PBYTE)mir_realloc(nlc->dataBuffer,nlc->dataBufferLen);
 		}
 		return len;
 	}
@@ -391,7 +391,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 			/* create initial buffer */
 			contentLength = 2048;
 
-			dataBuffer=(PBYTE)malloc(contentLength);
+			dataBuffer=(PBYTE)mir_alloc(contentLength);
 
 			/* error and exit */
 			if(dataBuffer==NULL) {
@@ -406,7 +406,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 			do {
 				recvResult=NLRecv(nlc,dataBuffer+bytesRecved,contentLength-bytesRecved,MSG_RAW|MSG_DUMPPROXY);
 				if(recvResult==SOCKET_ERROR) {
-					free(dataBuffer);
+					mir_free(dataBuffer);
 					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 					if(recvResult==0) SetLastError(ERROR_HANDLE_EOF);
 					return SOCKET_ERROR;
@@ -416,7 +416,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 			 contentLength = bytesRecved;
 		} else {
 			if(contentLength > 0) {
-				dataBuffer=(PBYTE)malloc(contentLength);
+				dataBuffer=(PBYTE)mir_alloc(contentLength);
 				if(dataBuffer==NULL) {
 					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 					SetLastError(ERROR_NOT_ENOUGH_MEMORY);
@@ -425,7 +425,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 				for(bytesRecved=0;bytesRecved<contentLength;) {
 					recvResult=NLRecv(nlc,dataBuffer+bytesRecved,contentLength-bytesRecved,MSG_RAW|MSG_DUMPPROXY);
 					if(recvResult==0 || recvResult==SOCKET_ERROR) {
-						free(dataBuffer);
+						mir_free(dataBuffer);
 						NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 						if(recvResult==0) SetLastError(ERROR_HANDLE_EOF);
 						return SOCKET_ERROR;
@@ -447,7 +447,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 			Netlib_Logf(nlc->nlu,"%s %d: Doing GET, Again????",__FILE__,__LINE__);
 
 		if(!HttpGatewaySendGet(nlc)) {
-			free(dataBuffer);
+			mir_free(dataBuffer);
 			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 			return SOCKET_ERROR;
 		}
@@ -457,7 +457,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 			PBYTE newBuffer;
 			newBuffer=nlc->nlu->user.pfnHttpGatewayUnwrapRecv(nlhrReply,dataBuffer,contentLength,&contentLength,realloc);
 			if(newBuffer==NULL) {
-				free(dataBuffer);
+				mir_free(dataBuffer);
 				NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 				return SOCKET_ERROR;
 			}
@@ -467,7 +467,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 		if(contentLength>0) break;
 		if((contentLength==0)&&(nlc->nlhpi.szHttpGetUrl==NULL))
 			break;
-		free(dataBuffer);
+		mir_free(dataBuffer);
 	}
 	if(contentLength<=len) {
 		if(flags&MSG_PEEK) {
@@ -475,13 +475,13 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 			nlc->dataBufferLen=contentLength;
 		}
 		CopyMemory(buf,dataBuffer,contentLength);
-		if(!(flags&MSG_PEEK)) free(dataBuffer);
+		if(!(flags&MSG_PEEK)) mir_free(dataBuffer);
 		return contentLength;
 	}
 	CopyMemory(buf,dataBuffer,len);
 	if(!(flags&MSG_PEEK)) {
 		MoveMemory(dataBuffer,dataBuffer+len,contentLength-len);
-		dataBuffer=(PBYTE)realloc(dataBuffer,contentLength-len);
+		dataBuffer=(PBYTE)mir_realloc(dataBuffer,contentLength-len);
 		nlc->dataBufferLen=contentLength-len;
 	}
 	else nlc->dataBufferLen=contentLength;
@@ -568,14 +568,14 @@ int NetlibHttpGatewaySetInfo(WPARAM wParam,LPARAM lParam)
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return 0;
 	}
-	if(nlc->nlhpi.szHttpGetUrl) free(nlc->nlhpi.szHttpGetUrl);
-	if(nlc->nlhpi.szHttpPostUrl) free(nlc->nlhpi.szHttpPostUrl);
+	if(nlc->nlhpi.szHttpGetUrl) mir_free(nlc->nlhpi.szHttpGetUrl);
+	if(nlc->nlhpi.szHttpPostUrl) mir_free(nlc->nlhpi.szHttpPostUrl);
 	nlc->nlhpi=*nlhpi;
 
 	if (nlc->nlhpi.szHttpGetUrl)
-	nlc->nlhpi.szHttpGetUrl=_strdup(nlc->nlhpi.szHttpGetUrl);
+	nlc->nlhpi.szHttpGetUrl=mir_strdup(nlc->nlhpi.szHttpGetUrl);
 
-	nlc->nlhpi.szHttpPostUrl=_strdup(nlc->nlhpi.szHttpPostUrl);
+	nlc->nlhpi.szHttpPostUrl=mir_strdup(nlc->nlhpi.szHttpPostUrl);
 	return 1;
 }
 
@@ -583,9 +583,9 @@ int NetlibHttpSetSticky(WPARAM wParam, LPARAM lParam)
 {
 	struct NetlibUser * nu = (struct NetlibUser*)wParam;
 	if (GetNetlibHandleType(nu)!=NLH_USER) return ERROR_INVALID_PARAMETER;
-	if (nu->szStickyHeaders) { free(nu->szStickyHeaders); nu->szStickyHeaders=NULL; }
+	if (nu->szStickyHeaders) { mir_free(nu->szStickyHeaders); nu->szStickyHeaders=NULL; }
 	if (lParam) {
-		nu->szStickyHeaders=_strdup((char*)lParam); // pointer is ours
+		nu->szStickyHeaders=mir_strdup((char*)lParam); // pointer is ours
 	}
 	return 0;
 }

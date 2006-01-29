@@ -172,7 +172,7 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 	{
 		HANDLE hThread=0;		
 		DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hThread,THREAD_SET_CONTEXT,FALSE,0);
-		WaitingThreads=realloc(WaitingThreads,sizeof(struct THREAD_WAIT_ENTRY)*(WaitingThreadsCount+1));
+		WaitingThreads=mir_realloc(WaitingThreads,sizeof(struct THREAD_WAIT_ENTRY)*(WaitingThreadsCount+1));
 		WaitingThreads[WaitingThreadsCount].hThread=hThread;
 		WaitingThreads[WaitingThreadsCount].dwThreadId=GetCurrentThreadId();
 		WaitingThreadsCount++;
@@ -201,14 +201,14 @@ int UnwindThreadPop(WPARAM wParam,LPARAM lParam)
 				if (j<WaitingThreadsCount) memmove(&WaitingThreads[j],&WaitingThreads[j+1],(WaitingThreadsCount-j) * sizeof(struct THREAD_WAIT_ENTRY));
 				if (!WaitingThreadsCount)
 				{
-					free(WaitingThreads);
+					mir_free(WaitingThreads);
 					WaitingThreads=NULL;
 					WaitingThreadsCount=0;
 					ReleaseMutex(hStackMutex);
 					SetEvent(hThreadQueueEmpty); // thread list is empty now
 					return 0;
 				} else {
-					WaitingThreads=realloc(WaitingThreads,sizeof(struct THREAD_WAIT_ENTRY)*WaitingThreadsCount);
+					WaitingThreads=mir_realloc(WaitingThreads,sizeof(struct THREAD_WAIT_ENTRY)*WaitingThreadsCount);
 				} //if
 				ReleaseMutex(hStackMutex);
 				return 0;
@@ -401,14 +401,14 @@ static int GetMirandaVersion(WPARAM wParam,LPARAM lParam)
 
 	GetModuleFileNameA(NULL,filename,SIZEOF(filename));
 	verInfoSize=GetFileVersionInfoSizeA(filename,&unused);
-	pVerInfo=malloc(verInfoSize);
+	pVerInfo=mir_alloc(verInfoSize);
 	GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);
 	VerQueryValueA(pVerInfo,"\\",(PVOID*)&vsffi,&blockSize);
 	ver=(((vsffi->dwProductVersionMS>>16)&0xFF)<<24)|
 	    ((vsffi->dwProductVersionMS&0xFF)<<16)|
 		(((vsffi->dwProductVersionLS>>16)&0xFF)<<8)|
 		(vsffi->dwProductVersionLS&0xFF);
-	free(pVerInfo);
+	mir_free(pVerInfo);
 	return (int)ver;
 }
 
@@ -422,7 +422,7 @@ static int GetMirandaVersionText(WPARAM wParam,LPARAM lParam)
 
 	GetModuleFileNameA(NULL,filename,SIZEOF(filename));
 	verInfoSize=GetFileVersionInfoSizeA(filename,&unused);
-	pVerInfo=malloc(verInfoSize);
+	pVerInfo=mir_alloc(verInfoSize);
 	GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);
 	VerQueryValueA(pVerInfo,"\\StringFileInfo\\000004b0\\ProductVersion",(void*)&productVersion,&blockSize);
 	#if defined( _UNICODE )
@@ -430,7 +430,7 @@ static int GetMirandaVersionText(WPARAM wParam,LPARAM lParam)
 	#else
 		lstrcpynA((char*)lParam,productVersion,wParam);
 	#endif
-	free(pVerInfo);
+	mir_free(pVerInfo);
 	return 0;
 }
 
@@ -461,9 +461,9 @@ int GetMemoryManagerInterface(WPARAM wParam, LPARAM lParam)
 	struct MM_INTERFACE *mmi = (struct MM_INTERFACE*) lParam;
 	if (mmi || mmi->cbSize == sizeof(struct MM_INTERFACE)) 
 	{
-		mmi->mmi_malloc = malloc;
-		mmi->mmi_realloc = realloc;
-		mmi->mmi_free = free;
+		mmi->mmi_malloc = mir_alloc;
+		mmi->mmi_realloc = mir_realloc;
+		mmi->mmi_free = mir_free;
 		return 0;
 	}
 	return 1;

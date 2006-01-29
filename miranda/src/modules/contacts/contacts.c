@@ -99,7 +99,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 				for(i=0;i<countryCount;i++) {
 					if(countries[i].id!=dbv.wVal) continue;
 					ci->type = CNFT_ASCIIZ;
-					ci->pszVal = ( TCHAR* )_strdup(countries[i].szName);
+					ci->pszVal = ( TCHAR* )mir_strdup(countries[i].szName);
 					DBFreeVariant(&dbv);
 					return 0;
 				}
@@ -142,15 +142,15 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 		case CNF_FIRSTLAST:
 		{
 			if(!GetDatabaseString(ci,"FirstName",&dbv)) {
-				char *firstName=_strdup(dbv.pszVal);
+				char *firstName=mir_strdup(dbv.pszVal);
 				if(!GetDatabaseString(ci,"LastName",&dbv)) {
-					char *buffer = (char*)malloc(strlen(firstName)+strlen(dbv.pszVal)+2);
+					char *buffer = (char*)mir_alloc(strlen(firstName)+strlen(dbv.pszVal)+2);
 					ci->type = CNFT_ASCIIZ;
 					mir_snprintf(buffer,strlen(firstName)+strlen(dbv.pszVal)+2,"%s %s",firstName,dbv.pszVal);
-					free(dbv.pszVal);
-					free(firstName);
-					ci->pszVal = ( TCHAR* )_strdup(buffer);
-					free(buffer);
+					mir_free(dbv.pszVal);
+					mir_free(firstName);
+					ci->pszVal = ( TCHAR* )mir_strdup(buffer);
+					mir_free(buffer);
 					return 0;
 				}
 			}
@@ -251,12 +251,12 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 									if ( ci->dwFlag & CNF_UNICODE ) {
 										WCHAR buf[ 40 ];
 										_ltow( value, buf, 10 );
-										ci->pszVal = ( TCHAR* )_wcsdup( buf );
+										ci->pszVal = ( TCHAR* )mir_wstrdup( buf );
 									}
 									else {
 										char buf[ 40 ];
 										_ltoa( value, buf, 10 );
-										ci->pszVal = ( TCHAR* )_strdup(buf);
+										ci->pszVal = ( TCHAR* )mir_strdup(buf);
 									}
 									ci->type = CNFT_ASCIIZ;
 									return 0;
@@ -276,14 +276,14 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 
 								if ( ci->dwFlag & CNF_UNICODE ) {
 									int len = wcslen(dbv.pwszVal) + wcslen(dbv2.pwszVal) + 2;
-									WCHAR* buf = ( WCHAR* )malloc( sizeof( WCHAR )*len );
+									WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*len );
 									if ( buf != NULL )
 										wcscat( wcscat( wcscpy( buf, dbv.pwszVal ), L" " ), dbv2.pwszVal );
 									ci->pszVal = ( TCHAR* )buf;
 								}
 								else {
 									int len = strlen(dbv.pszVal) + strlen(dbv2.pszVal) + 2;
-									char* buf = ( char* )malloc( len );
+									char* buf = ( char* )mir_alloc( len );
 									if ( buf != NULL )
 										strcat( strcat( strcpy( buf, dbv.pszVal ), " " ), dbv2.pszVal );
 									ci->pszVal = ( TCHAR* )buf;
@@ -295,9 +295,9 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 						break;
 					case 7:
 						if ( ci->dwFlag & CNF_UNICODE )
-							ci->pszVal = ( TCHAR* )_wcsdup( TranslateW( L"'(Unknown Contact)'" ));
+							ci->pszVal = ( TCHAR* )mir_wstrdup( TranslateW( L"'(Unknown Contact)'" ));
 						else
-							ci->pszVal = ( TCHAR* )_strdup( Translate("'(Unknown Contact)'"));
+							ci->pszVal = ( TCHAR* )mir_strdup( Translate("'(Unknown Contact)'"));
 						ci->type = CNFT_ASCIIZ;
 						return 0;
 				}
@@ -320,7 +320,7 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	{
 		case WM_INITDIALOG: 
 		{	TranslateDialogDefault(hwndDlg);
-			dat=(struct ContactOptionsData*)malloc(sizeof(struct ContactOptionsData));
+			dat=(struct ContactOptionsData*)mir_alloc(sizeof(struct ContactOptionsData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 			dat->dragging=0;
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_NAMEORDER),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_NAMEORDER),GWL_STYLE)|TVS_NOHSCROLL);
@@ -429,7 +429,7 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			}
 			break;
 		case WM_DESTROY:
-			free(dat);
+			mir_free(dat);
 			break;
 	}
 	return FALSE;

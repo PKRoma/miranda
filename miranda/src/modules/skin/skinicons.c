@@ -104,8 +104,8 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 			return (int)protoIcons[i].hIcons[IdStatusToSkinIconStatus(lParam)];
 	{
 		int j;
-		protoIcons=(struct ProtoIcons*)realloc(protoIcons,sizeof(struct ProtoIcons)*(protoIconsCount+1));
-		protoIcons[protoIconsCount].szProto=_strdup(szProto);
+		protoIcons=(struct ProtoIcons*)mir_realloc(protoIcons,sizeof(struct ProtoIcons)*(protoIconsCount+1));
+		protoIcons[protoIconsCount].szProto=mir_strdup(szProto);
 		for( j=0; j < SIZEOF(skinIconStatusToIdStatus); j++ )
 		{
 			protoIcons[protoIconsCount].hIcons[j]=ImportIcon(szProto,j);
@@ -236,7 +236,7 @@ static void LoadAllIcons(void)
 			if (!strcmp(dbv.pszVal,protoIcons[j].szProto)) z = 1;
 		}		
 		if (!z) {
-			protoIcons=(struct ProtoIcons*)realloc(protoIcons,sizeof(struct ProtoIcons)*(protoIconsCount+1));
+			protoIcons=(struct ProtoIcons*)mir_realloc(protoIcons,sizeof(struct ProtoIcons)*(protoIconsCount+1));
 			protoIcons[protoIconsCount].szProto=dbv.pszVal;
 			for( j=0; j < SIZEOF(skinIconStatusToIdStatus); j++ )
 			{
@@ -258,9 +258,9 @@ void FreeAllIcons(void)
 			if(hStatusIcons[i]==protoIcons[i].hIcons[j]) continue;
 			DestroyIcon(protoIcons[i].hIcons[j]);
 		}
-		free(protoIcons[i].szProto);
+		mir_free(protoIcons[i].szProto);
 	}
-	free(protoIcons);
+	mir_free(protoIcons);
 	for( i=0; i < SIZEOF(hStatusIcons); i++ )
 		DestroyIcon(hStatusIcons[i]);
 }
@@ -311,10 +311,10 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			DBVARIANT dbv;
 			
 			TranslateDialogDefault(hwndDlg);
-			dat=(struct IconsOptsData*)malloc(sizeof(struct IconsOptsData));
+			dat=(struct IconsOptsData*)mir_alloc(sizeof(struct IconsOptsData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
-			dat->mainIconPath=(char**)malloc(sizeof(char*) * SIZEOF(mainIcons));
-			dat->mainStatusPath=(char**)malloc(sizeof(char*) * SIZEOF(skinIconStatusToIdStatus));
+			dat->mainIconPath=(char**)mir_alloc(sizeof(char*) * SIZEOF(mainIcons));
+			dat->mainStatusPath=(char**)mir_alloc(sizeof(char*) * SIZEOF(skinIconStatusToIdStatus));
 			for( i=0; i < SIZEOF(mainIcons); i++ ) {
 				_itoa(mainIcons[i].id,szSetting,10);
 				if ( DBGetContactSetting( NULL, "Icons", szSetting, &dbv ))
@@ -345,17 +345,17 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				CallProtoService(protoList[i]->szName,PS_GETNAME,SIZEOF(protoName),(LPARAM)protoName);
 				{	TCHAR* ptszProtoName = LangPackPcharToTchar( protoName );
 					mir_sntprintf( str, SIZEOF(str), TranslateT("%s Icons"), ptszProtoName );
-					free( ptszProtoName );
+					mir_free( ptszProtoName );
 				}
 				j = SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_ADDSTRING,0,(LPARAM)str );
 				SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_SETITEMDATA,j,(LPARAM)protoList[i]);
 			}
 			dat->protoCount=SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETCOUNT,0,0)-2;
-			dat->protoIcons=(struct ProtoIconsData*)malloc(sizeof(struct ProtoIconsData)*dat->protoCount);
+			dat->protoIcons=(struct ProtoIconsData*)mir_alloc(sizeof(struct ProtoIconsData)*dat->protoCount);
 			for(i=0;i<dat->protoCount;i++) {
 				proto=(PROTOCOLDESCRIPTOR*)SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETITEMDATA,i+2,0);
 				dat->protoIcons[i].proto=proto;
-				dat->protoIcons[i].iconPath=(char**)malloc(sizeof(char*) * SIZEOF(skinIconStatusToIdStatus));
+				dat->protoIcons[i].iconPath=(char**)mir_alloc(sizeof(char*) * SIZEOF(skinIconStatusToIdStatus));
 				for( j=0; j < SIZEOF(skinIconStatusToIdStatus); j++ ) {
 					mir_snprintf(szSetting,SIZEOF(szSetting),"%s%d",proto->szName,skinIconStatusToIdStatus[j]);
 					if(DBGetContactSetting(NULL,"Icons",szSetting,&dbv))
@@ -397,7 +397,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						if(hIcon==NULL) hIcon=LoadIcon(hMiranda,MAKEINTRESOURCE(mainIcons[lvi.iItem].id<SKINICON_OTHER_MIRANDA?eventIconToResourceId[mainIcons[lvi.iItem].id-SKINICON_EVENT_MESSAGE]:otherIconToResourceId[mainIcons[lvi.iItem].id-SKINICON_OTHER_MIRANDA]));
 						lvi.iImage=ImageList_AddIcon(hIml,hIcon);
 						ListView_InsertItem( GetDlgItem(hwndDlg,IDC_PREVIEW), &lvi );
-						free( lvi.pszText );
+						mir_free( lvi.pszText );
 					}
 				}
 				else {
@@ -407,7 +407,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						if(hIcon==NULL) hIcon=LoadIcon(hMiranda,MAKEINTRESOURCE(skinIconStatusToResourceId[lvi.iItem]));
 						lvi.iImage=ImageList_AddIcon(hIml,hIcon);
 						ListView_InsertItem( GetDlgItem(hwndDlg,IDC_PREVIEW), &lvi );
-						free( lvi.pszText );
+						mir_free( lvi.pszText );
 				}	}
 			}
 			else {
@@ -446,12 +446,12 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				proto=(PROTOCOLDESCRIPTOR*)SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETCURSEL,0,0),0);
 				if(proto==NULL) {
 					if (SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETCURSEL,0,0)==0) {
-						if(dat->mainIconPath[wParam]!=NULL) free(dat->mainIconPath[wParam]);
-						dat->mainIconPath[wParam]=_strdup(path);
+						if(dat->mainIconPath[wParam]!=NULL) mir_free(dat->mainIconPath[wParam]);
+						dat->mainIconPath[wParam]=mir_strdup(path);
 					}
 					else {
-						if(dat->mainStatusPath[wParam]!=NULL) free(dat->mainStatusPath[wParam]);
-						dat->mainStatusPath[wParam]=_strdup(path);
+						if(dat->mainStatusPath[wParam]!=NULL) mir_free(dat->mainStatusPath[wParam]);
+						dat->mainStatusPath[wParam]=mir_strdup(path);
 					}
 				}
 				else {
@@ -462,8 +462,8 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					lvi.mask=LVIF_PARAM;
 					lvi.iItem=wParam;
 					ListView_GetItem(GetDlgItem(hwndDlg,IDC_PREVIEW),&lvi);
-					if(dat->protoIcons[i].iconPath[lvi.lParam]!=NULL) free(dat->protoIcons[i].iconPath[lvi.lParam]);
-					dat->protoIcons[i].iconPath[lvi.lParam]=_strdup(path);
+					if(dat->protoIcons[i].iconPath[lvi.lParam]!=NULL) mir_free(dat->protoIcons[i].iconPath[lvi.lParam]);
+					dat->protoIcons[i].iconPath[lvi.lParam]=mir_strdup(path);
 				}
 			}
 			SendMessage(hwndDlg,DM_REBUILDICONSPREVIEW,0,0);
@@ -479,24 +479,24 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						for( i=0; i < SIZEOF(mainIcons); i++ )
 							if(mainIcons[i].id==ico->id) break;
 						if( i < SIZEOF(mainIcons)) {
-							if(dat->mainIconPath[i]!=NULL) free(dat->mainIconPath[i]);
-							dat->mainIconPath[i]=_strdup(ico->description);
+							if(dat->mainIconPath[i]!=NULL) mir_free(dat->mainIconPath[i]);
+							dat->mainIconPath[i]=mir_strdup(ico->description);
 						}
 					}
 					else {
 						for( i=0; i < SIZEOF(skinIconStatusToResourceId); i++ )
 							if(i==ico->id) break;
 						if( i < SIZEOF(skinIconStatusToIdStatus)) {
-							if(dat->mainStatusPath[i]!=NULL) free(dat->mainStatusPath[i]);
-							dat->mainStatusPath[i]=_strdup(ico->description);
+							if(dat->mainStatusPath[i]!=NULL) mir_free(dat->mainStatusPath[i]);
+							dat->mainStatusPath[i]=mir_strdup(ico->description);
 						}
 					}
 				}
 				else {
 					for(i=0;i<dat->protoCount;i++)
 						if(proto==dat->protoIcons[i].proto) break;
-					if(dat->protoIcons[i].iconPath[ico->id]!=NULL) free(dat->protoIcons[i].iconPath[ico->id]);
-					dat->protoIcons[i].iconPath[ico->id]=_strdup(ico->description);
+					if(dat->protoIcons[i].iconPath[ico->id]!=NULL) mir_free(dat->protoIcons[i].iconPath[ico->id]);
+					dat->protoIcons[i].iconPath[ico->id]=mir_strdup(ico->description);
 				}
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -613,13 +613,13 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 							if(proto==NULL) {
 								if(SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETCURSEL,0,0)==0) {
 									if(dat->mainIconPath[lvhti.iItem]!=NULL) {
-										free(dat->mainIconPath[lvhti.iItem]);
+										mir_free(dat->mainIconPath[lvhti.iItem]);
 										dat->mainIconPath[lvhti.iItem]=NULL;
 									}
 								}
 								else {
 									if(dat->mainStatusPath[lvhti.iItem]!=NULL) {
-										free(dat->mainStatusPath[lvhti.iItem]);
+										mir_free(dat->mainStatusPath[lvhti.iItem]);
 										dat->mainStatusPath[lvhti.iItem]=NULL;
 									}
 								}
@@ -633,7 +633,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 								lvi.iItem=lvhti.iItem;
 								ListView_GetItem(GetDlgItem(hwndDlg,IDC_PREVIEW),&lvi);
 								if(dat->protoIcons[i].iconPath[lvi.lParam]!=NULL) {
-									free(dat->protoIcons[i].iconPath[lvi.lParam]);
+									mir_free(dat->protoIcons[i].iconPath[lvi.lParam]);
 									dat->protoIcons[i].iconPath[lvi.lParam]=NULL;
 								}
 							}
@@ -697,19 +697,19 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		{	int i,j;
 			DestroyWindow(dat->hwndIndex);
 			for( i=0; i < SIZEOF(mainIcons); i++ )
-				if(dat->mainIconPath[i]!=NULL) free(dat->mainIconPath[i]);
-			free(dat->mainIconPath);
+				if(dat->mainIconPath[i]!=NULL) mir_free(dat->mainIconPath[i]);
+			mir_free(dat->mainIconPath);
 			for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ )
-				if(dat->mainStatusPath[i]!=NULL) free(dat->mainStatusPath[i]);
-			free(dat->mainStatusPath);
+				if(dat->mainStatusPath[i]!=NULL) mir_free(dat->mainStatusPath[i]);
+			mir_free(dat->mainStatusPath);
 			for(i=0;i<dat->protoCount;i++) {
 				for( j=0; j < SIZEOF(skinIconStatusToIdStatus); j++ ) {
-					if(dat->protoIcons[i].iconPath[j]!=NULL) free(dat->protoIcons[i].iconPath[j]);
+					if(dat->protoIcons[i].iconPath[j]!=NULL) mir_free(dat->protoIcons[i].iconPath[j]);
 				}
-				free(dat->protoIcons[i].iconPath);
+				mir_free(dat->protoIcons[i].iconPath);
 			}
-			free(dat->protoIcons);
-			free(dat);
+			mir_free(dat->protoIcons);
+			mir_free(dat);
 			break;
 		}
 	}

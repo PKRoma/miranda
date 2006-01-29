@@ -219,7 +219,7 @@ static void FillHistoryThread(THistoryThread *hInfo)
 		if (!IsWindow(hInfo->hwnd)) break;
 		newBlobSize=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
 		if(newBlobSize>oldBlobSize) {
-			dbei.pBlob=(PBYTE)realloc(dbei.pBlob,newBlobSize);
+			dbei.pBlob=(PBYTE)mir_realloc(dbei.pBlob,newBlobSize);
 			oldBlobSize=newBlobSize;
 		}
 		dbei.cbBlob = oldBlobSize;
@@ -233,12 +233,12 @@ static void FillHistoryThread(THistoryThread *hInfo)
 		}
 		hDbEvent=(HANDLE)CallService(MS_DB_EVENT_FINDPREV,(WPARAM)hDbEvent,0);
 	}
-	if(dbei.pBlob!=NULL) free(dbei.pBlob);
+	if(dbei.pBlob!=NULL) mir_free(dbei.pBlob);
 
 	SendDlgItemMessage(hInfo->hwnd,IDC_LIST,LB_SETCURSEL,0,0);
 	SendMessage(hInfo->hwnd,WM_COMMAND,MAKEWPARAM(IDC_LIST,LBN_SELCHANGE),0);
 	EnableWindow(GetDlgItem(hInfo->hwnd, IDC_LIST), TRUE);
-	free(hInfo);
+	mir_free(hInfo);
 }
 
 static int HistoryDlgResizer(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc) {
@@ -281,7 +281,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		}
 		case DM_HREBUILD:
 		{
-			THistoryThread *hInfo = (THistoryThread*)malloc(sizeof(THistoryThread));
+			THistoryThread *hInfo = (THistoryThread*)mir_alloc(sizeof(THistoryThread));
          EnableWindow(GetDlgItem(hwndDlg, IDC_LIST), FALSE);
 			hInfo->hContact = hContact;
 			hInfo->hwnd = hwndDlg;
@@ -348,10 +348,10 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						ZeroMemory(&dbei,sizeof(dbei));
 						dbei.cbSize=sizeof(dbei);
 						dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
-						dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
+						dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
 						CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
 						GetObjectDescription(&dbei,str,SIZEOF(str));
-						free(dbei.pBlob);
+						mir_free(dbei.pBlob);
 						if(str[0]) SetDlgItemText(hwndDlg, IDC_EDIT, str);
 					}
 					return TRUE;
@@ -383,7 +383,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				if(hDbEvent==hDbEventStart) break;
 				newBlobSize=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
 				if(newBlobSize>oldBlobSize) {
-					dbei.pBlob=(PBYTE)realloc(dbei.pBlob,newBlobSize);
+					dbei.pBlob=(PBYTE)mir_realloc(dbei.pBlob,newBlobSize);
 					oldBlobSize=newBlobSize;
 				}
 				dbei.cbBlob=oldBlobSize;
@@ -398,7 +398,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 				}
 			}
-			free(dbei.pBlob);
+			mir_free(dbei.pBlob);
 			break;
 		}
 	}

@@ -456,6 +456,9 @@
 				RelativePath="core\forkthread.h">
 			</File>
 			<File
+				RelativePath=".\core\memory.c">
+			</File>
+			<File
 				RelativePath="core\miranda.c">
 				<FileConfiguration
 					Name="Release|Win32">

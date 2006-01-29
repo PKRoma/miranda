@@ -228,7 +228,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 		ConvertBackslashes(line);
 		if(line[0]=='[' && line[lstrlenA(line)-1]==']') {
 			if(langPack.entryCount && langPack.entry[langPack.entryCount-1].local==NULL) {
-				if(langPack.entry[langPack.entryCount-1].english!=NULL) free(langPack.entry[langPack.entryCount-1].english);
+				if(langPack.entry[langPack.entryCount-1].english!=NULL) mir_free(langPack.entry[langPack.entryCount-1].english);
 				langPack.entryCount--;
 			}
 			pszLine = line+1;
@@ -236,7 +236,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 			TrimStringSimple(line);
 			if(++langPack.entryCount>entriesAlloced) {
 				entriesAlloced+=128;
-				langPack.entry=(struct LangPackEntry*)realloc(langPack.entry,sizeof(struct LangPackEntry)*entriesAlloced);
+				langPack.entry=(struct LangPackEntry*)mir_realloc(langPack.entry,sizeof(struct LangPackEntry)*entriesAlloced);
 			}
 			langPack.entry[langPack.entryCount-1].english=NULL;
 			langPack.entry[langPack.entryCount-1].englishHash=LangPackHash(pszLine);
@@ -248,21 +248,21 @@ static int LoadLangPack(const TCHAR *szLangPack)
 			struct LangPackEntry* E = &langPack.entry[langPack.entryCount-1];
 
 			if(E->local==NULL) {
-				E->local=_strdup(line);
+				E->local=mir_strdup(line);
 				{
 					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
-					E->wlocal = (wchar_t *)malloc((iNeeded+1) * sizeof(wchar_t));
+					E->wlocal = (wchar_t *)mir_alloc((iNeeded+1) * sizeof(wchar_t));
 					MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, E->wlocal, iNeeded);
 				}
 			}
 			else {
-				E->local=(char*)realloc(E->local,lstrlenA(E->local)+lstrlenA(line)+2);
+				E->local=(char*)mir_realloc(E->local,lstrlenA(E->local)+lstrlenA(line)+2);
 				lstrcatA(E->local,"\n");
 				lstrcatA(E->local,line);
 				{
 					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
 					int iOldLen = wcslen(E->wlocal);
-					E->wlocal = (wchar_t*)realloc(E->wlocal, ( sizeof(wchar_t) * ( iOldLen + iNeeded + 2)));
+					E->wlocal = (wchar_t*)mir_realloc(E->wlocal, ( sizeof(wchar_t) * ( iOldLen + iNeeded + 2)));
 					wcscat(E->wlocal, L"\n");
 					MultiByteToWideChar( langPack.defaultANSICp, 0, line, -1, E->wlocal + iOldLen+1, iNeeded);
 				}
@@ -309,10 +309,10 @@ TCHAR* LangPackPcharToTchar( const char* pszStr )
 		TCHAR* result = ( TCHAR* )alloca(( len+1 )*sizeof( TCHAR ));
 		MultiByteToWideChar( LangPackGetDefaultCodePage(), 0, pszStr, -1, result, len );
 		result[len] = 0;
-		return wcsdup( TranslateW( result ));
+		return mir_wstrdup( TranslateW( result ));
 	}
 	#else
-		return _strdup( Translate( pszStr ));
+		return mir_strdup( Translate( pszStr ));
 	#endif
 }
 
@@ -320,12 +320,12 @@ static int LangPackShutdown(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	for(i=0;i<langPack.entryCount;i++) {
-		if(langPack.entry[i].english!=NULL) free(langPack.entry[i].english);
-		if(langPack.entry[i].local!=NULL) { free(langPack.entry[i].local); }
-		if(langPack.entry[i].wlocal!=NULL) { free(langPack.entry[i].wlocal); }
+		if(langPack.entry[i].english!=NULL) mir_free(langPack.entry[i].english);
+		if(langPack.entry[i].local!=NULL) { mir_free(langPack.entry[i].local); }
+		if(langPack.entry[i].wlocal!=NULL) { mir_free(langPack.entry[i].wlocal); }
 	}
 	if(langPack.entryCount) {
-		free(langPack.entry);
+		mir_free(langPack.entry);
 		langPack.entry=0;
 		langPack.entryCount=0;
 	}

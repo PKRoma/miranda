@@ -39,7 +39,7 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT message,WPARAM wParam,LP
 	dat=(struct HyperlinkWndData*)GetWindowLong(hwnd,0);
 	switch(message) {
 		case WM_CREATE:
-			dat=(struct HyperlinkWndData*)malloc(sizeof(struct HyperlinkWndData));
+			dat=(struct HyperlinkWndData*)mir_alloc(sizeof(struct HyperlinkWndData));
 			SetWindowLong(hwnd,0,(LONG)dat);
 			dat->hFont=NULL;
 			dat->hSetFont=NULL;
@@ -155,7 +155,7 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT message,WPARAM wParam,LP
 		}
 		case WM_DESTROY:			
 			if(dat->hFont!=NULL) DeleteObject(dat->hFont);
-			free(dat); dat=NULL;			
+			mir_free(dat); dat=NULL;			
 			SetWindowLong(hwnd,0,(LONG)dat);
 			break;
 	}

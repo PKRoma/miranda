@@ -33,7 +33,7 @@ static int AllocWindowList(WPARAM wParam,LPARAM lParam)
 
 static int AddToWindowList(WPARAM wParam,LPARAM lParam)
 {
-	windowList=(WINDOWLISTENTRY*)realloc(windowList,sizeof(WINDOWLISTENTRY)*(windowListCount+1));
+	windowList=(WINDOWLISTENTRY*)mir_realloc(windowList,sizeof(WINDOWLISTENTRY)*(windowListCount+1));
 	windowList[windowListCount++]=*(WINDOWLISTENTRY*)lParam;
 	return 0;
 }
@@ -81,7 +81,7 @@ static int BroadcastToWindowListAsync(WPARAM wParam,LPARAM lParam)
 
 static int FreeWindowList(WPARAM wParam,LPARAM lParam)
 {
-	if (windowList) free(windowList);
+	if (windowList) mir_free(windowList);
 	windowList=NULL;
 	windowListCount=0;
 	nextWindowListId=1;

@@ -165,7 +165,7 @@ int fnCluiProtocolStatusChanged(int parStatus, const char* szProto)
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & proto);
 	if (protoCount == 0)
 		return 0;
-	partWidths = (int *) malloc(protoCount * sizeof(int));
+	partWidths = (int *) mir_alloc(protoCount * sizeof(int));
 	if (DBGetContactSettingByte(NULL, "CLUI", "EqualSections", 0)) {
 		RECT rc;
 		int part;
@@ -217,13 +217,13 @@ int fnCluiProtocolStatusChanged(int parStatus, const char* szProto)
 		ReleaseDC(NULL, hdc);
 	}
 	if (partCount == 0) {
-		free(partWidths);
+		mir_free(partWidths);
 		return 0;
 	}
 	partWidths[partCount - 1] = -1;
 	SendMessage(cli.hwndStatus, SB_SETMINHEIGHT, g_IconHeight, 0);
 	SendMessage(cli.hwndStatus, SB_SETPARTS, partCount, (LPARAM) partWidths);
-	free(partWidths);
+	mir_free(partWidths);
 	flags = SBT_OWNERDRAW;
 	if (DBGetContactSettingByte(NULL, "CLUI", "SBarBevel", 1) == 0)
 		flags |= SBT_NOBORDERS;

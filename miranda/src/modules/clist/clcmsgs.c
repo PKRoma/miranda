@@ -66,7 +66,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 		if ( msg == CLM_ADDINFOITEMA )
 		{	WCHAR* wszText = a2u(( char* )cii->pszText );
 			i = cli.pfnAddInfoItemToGroup(group, cii->flags, wszText);
-			free( wszText );
+			mir_free( wszText );
 		}
 		else i = cli.pfnAddInfoItemToGroup(group, cii->flags, cii->pszText);
 #else					

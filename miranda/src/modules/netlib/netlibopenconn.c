@@ -84,7 +84,7 @@ static int NetlibInitSocks4Connection(struct NetlibConnection *nlc,struct Netlib
 
 	nUserLen=lstrlenA(nlu->settings.szProxyAuthUser);
 	nHostLen=lstrlenA(nloc->szHost);
-	pInit=(PBYTE)malloc(10+nUserLen+nHostLen);
+	pInit=(PBYTE)mir_alloc(10+nUserLen+nHostLen);
 	pInit[0]=4;   //SOCKS4
 	pInit[1]=1;   //connect
 	*(PWORD)(pInit+2)=htons(nloc->wPort);
@@ -101,17 +101,17 @@ static int NetlibInitSocks4Connection(struct NetlibConnection *nlc,struct Netlib
 	else {
 		*(PDWORD)(pInit+4)=DnsLookup(nlu,nloc->szHost);
 		if(*(PDWORD)(pInit+4)==0) {
-			free(pInit);
+			mir_free(pInit);
 			return 0;
 		}
 		len=9+nUserLen;
 	}
 	if(NLSend(nlc,pInit,len,MSG_DUMPPROXY)==SOCKET_ERROR) {
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"NLSend",GetLastError());
-		free(pInit);
+		mir_free(pInit);
 		return 0;
 	}
-	free(pInit);
+	mir_free(pInit);
 
 	if(!WaitUntilReadable(nlc->s,30000)) {
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"WaitUntilReadable",GetLastError());
@@ -170,7 +170,7 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 
 		nUserLen=lstrlenA(nlu->settings.szProxyAuthUser);
 		nPassLen=lstrlenA(nlu->settings.szProxyAuthPassword);
-		pAuthBuf=(PBYTE)malloc(3+nUserLen+nPassLen);
+		pAuthBuf=(PBYTE)mir_alloc(3+nUserLen+nPassLen);
 		pAuthBuf[0]=1;		//auth version
 		pAuthBuf[1]=nUserLen;
 		memcpy(pAuthBuf+2,nlu->settings.szProxyAuthUser,nUserLen);
@@ -178,10 +178,10 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 		memcpy(pAuthBuf+3+nUserLen,nlu->settings.szProxyAuthPassword,nPassLen);
 		if(NLSend(nlc,pAuthBuf,3+nUserLen+nPassLen,MSG_DUMPPROXY)==SOCKET_ERROR) {
 			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"NLSend",GetLastError());
-			free(pAuthBuf);
+			mir_free(pAuthBuf);
 			return 0;
 		}
-		free(pAuthBuf);
+		mir_free(pAuthBuf);
 
 		if(!WaitUntilReadable(nlc->s,10000)) {
 			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"WaitUntilReadable",GetLastError());
@@ -213,7 +213,7 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 				return 0;
 			nHostLen=4;
 		}
-		pInit=(PBYTE)malloc(6+nHostLen);
+		pInit=(PBYTE)mir_alloc(6+nHostLen);
 		pInit[0]=5;   //SOCKS5
 		pInit[1]=1;   //connect
 		pInit[2]=0;   //reserved
@@ -229,10 +229,10 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 		*(PWORD)(pInit+4+nHostLen)=htons(nloc->wPort);
 		if(NLSend(nlc,pInit,6+nHostLen,MSG_DUMPPROXY)==SOCKET_ERROR) {
 			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"NLSend",GetLastError());
-			free(pInit);
+			mir_free(pInit);
 			return 0;
 		}
-		free(pInit);
+		mir_free(pInit);
 	}
 
 	if(!WaitUntilReadable(nlc->s,30000)) {
@@ -312,14 +312,14 @@ static void FreePartiallyInitedConnection(struct NetlibConnection *nlc)
 	DWORD dwOriginalLastError=GetLastError();
 
 	if(nlc->s!=INVALID_SOCKET) closesocket(nlc->s);
-	if(nlc->nlhpi.szHttpPostUrl) free(nlc->nlhpi.szHttpPostUrl);
-	if(nlc->nlhpi.szHttpGetUrl) free(nlc->nlhpi.szHttpGetUrl);
+	if(nlc->nlhpi.szHttpPostUrl) mir_free(nlc->nlhpi.szHttpPostUrl);
+	if(nlc->nlhpi.szHttpGetUrl) mir_free(nlc->nlhpi.szHttpGetUrl);
 	if(nlc->hInstSecurityDll) FreeLibrary(nlc->hInstSecurityDll);
 	NetlibDeleteNestedCS(&nlc->ncsSend);
 	NetlibDeleteNestedCS(&nlc->ncsRecv);
 	CloseHandle(nlc->hOkToCloseEvent);
 	DeleteCriticalSection(&nlc->csHttpSequenceNums);
-	free(nlc);
+	mir_free(nlc);
 	SetLastError(dwOriginalLastError);
 }
 
@@ -429,13 +429,13 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return (int)(HANDLE)NULL;
 	}
-	nlc=(struct NetlibConnection*)calloc(1,sizeof(struct NetlibConnection));
+	nlc=(struct NetlibConnection*)mir_calloc(sizeof(struct NetlibConnection));
 	nlc->handleType=NLH_CONNECTION;
 	nlc->nlu=nlu;
 	nlc->s=socket(AF_INET,SOCK_STREAM,0);
 	if(nlc->s==INVALID_SOCKET) {
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"socket",WSAGetLastError());
-		free(nlc);
+		mir_free(nlc);
 		return (int)(HANDLE)NULL;
 	}
 	if (nlu->settings.specifyOutgoingPorts && nlu->settings.szOutgoingPorts) 

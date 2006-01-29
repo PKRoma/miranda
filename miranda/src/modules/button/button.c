@@ -286,7 +286,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 		case WM_NCCREATE:
 		{
 			SetWindowLong(hwndDlg, GWL_STYLE, GetWindowLong(hwndDlg, GWL_STYLE)|BS_OWNERDRAW);
-			bct = malloc(sizeof(MButtonCtrl));
+			bct = mir_alloc(sizeof(MButtonCtrl));
 			if (bct==NULL) return FALSE;
 			bct->hwnd = hwndDlg;
 			bct->stateId = PBS_NORMAL;
@@ -329,7 +329,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 				}
 				LeaveCriticalSection(&csTips);
 				DestroyTheme(bct);
-				free(bct);
+				mir_free(bct);
 			}
 			SetWindowLong(hwndDlg,0,(LONG)NULL);
 			break;	// DONT! fall thru

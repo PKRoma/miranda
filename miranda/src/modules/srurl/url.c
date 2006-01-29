@@ -132,7 +132,7 @@ static int SRUrlModulesLoaded(WPARAM wParam,LPARAM lParam)
 		if(protocol[i]->type!=PROTOTYPE_PROTOCOL) continue;
 		if(CallProtoService(protocol[i]->szName,PS_GETCAPS,PFLAGNUM_1,0)&PF1_URLSEND) {
 			mi.pszContactOwner=protocol[i]->szName;
-			hUrlContactMenu=realloc(hUrlContactMenu,(hUrlContactMenuCount+1)*sizeof(HANDLE));
+			hUrlContactMenu=mir_realloc(hUrlContactMenu,(hUrlContactMenuCount+1)*sizeof(HANDLE));
 			hUrlContactMenu[hUrlContactMenuCount++]=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 		}
 	}
@@ -169,7 +169,7 @@ static int SRUrlShutdown(WPARAM wParam,LPARAM lParam)
 		WindowList_BroadcastAsync(hUrlWindowList,WM_CLOSE,0,0);
 	}
 	if (hUrlContactMenu) {
-		free(hUrlContactMenu); hUrlContactMenu=NULL;
+		mir_free(hUrlContactMenu); hUrlContactMenu=NULL;
 		hUrlContactMenuCount=0;
 	}
 	return 0;

@@ -404,7 +404,7 @@ void fnEndRename(HWND hwnd, struct ClcData *dat, int save)
 							DBWriteContactSettingTString(contact->hContact, "CList", "MyHandle", text);
 					}
 					if (otherName)
-						free(otherName);
+						mir_free(otherName);
 				}
 			}
 		}
@@ -675,7 +675,7 @@ void fnGetFontSetting(int i, LOGFONT* lf, COLORREF* colour)
 	wsprintfA(idstr, "Font%dName", i);
 	if ( !DBGetContactSettingTString(NULL, "CLC", idstr, &dbv )) {
 		lstrcpy(lf->lfFaceName, dbv.ptszVal);
-		free(dbv.pszVal);
+		mir_free(dbv.pszVal);
 	}
 	wsprintfA(idstr, "Font%dCol", i);
 	*colour = DBGetContactSettingDword(NULL, "CLC", idstr, *colour);
@@ -747,7 +747,7 @@ void fnLoadClcOptions(HWND hwnd, struct ClcData *dat)
 		if (DBGetContactSettingByte(NULL, "CLC", "UseBitmap", CLCDEFAULT_USEBITMAP)) {
 			if (!DBGetContactSetting(NULL, "CLC", "BkBitmap", &dbv)) {
 				dat->hBmpBackground = (HBITMAP) CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM) dbv.pszVal);
-				free(dbv.pszVal);
+				mir_free(dbv.pszVal);
 			}
 		}
 		dat->backgroundBmpUse = DBGetContactSettingWord(NULL, "CLC", "BkBmpUse", CLCDEFAULT_BKBMPUSE);

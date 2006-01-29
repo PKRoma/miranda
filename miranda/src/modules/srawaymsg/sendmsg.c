@@ -65,7 +65,7 @@ static char *StatusModeToDbSetting(int status,const char *suffix)
 	return str;
 }
 
-//remember to free() the return value
+//remember to mir_free() the return value
 static int GetAwayMessage(WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
@@ -76,13 +76,13 @@ static int GetAwayMessage(WPARAM wParam, LPARAM lParam)
 	}
 	if(DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusMode,"UsePrev"),0)) {
 		if(DBGetContactSetting(NULL,"SRAway",StatusModeToDbSetting(statusMode,"Msg"),&dbv))
-			dbv.pszVal=_strdup(GetDefaultMessage(statusMode));
+			dbv.pszVal=mir_strdup(GetDefaultMessage(statusMode));
 	}
 	else {
 		int i;
 		char substituteStr[128];
 		if(DBGetContactSetting(NULL,"SRAway",StatusModeToDbSetting(statusMode,"Default"),&dbv))
-			dbv.pszVal=_strdup(GetDefaultMessage(statusMode));
+			dbv.pszVal=mir_strdup(GetDefaultMessage(statusMode));
 		for(i=0;dbv.pszVal[i];i++) {
 			if(dbv.pszVal[i]!='%') continue;
 			if(!_strnicmp(dbv.pszVal+i,"%time%",6))
@@ -90,7 +90,7 @@ static int GetAwayMessage(WPARAM wParam, LPARAM lParam)
 			else if(!_strnicmp(dbv.pszVal+i,"%date%",6))
 				GetDateFormatA(LOCALE_USER_DEFAULT,DATE_SHORTDATE,NULL,NULL,substituteStr,SIZEOF(substituteStr));
 			else continue;
-			if(lstrlenA(substituteStr)>6) dbv.pszVal=(char*)realloc(dbv.pszVal,lstrlenA(dbv.pszVal)+1+lstrlenA(substituteStr)-6);
+			if(lstrlenA(substituteStr)>6) dbv.pszVal=(char*)mir_realloc(dbv.pszVal,lstrlenA(dbv.pszVal)+1+lstrlenA(substituteStr)-6);
 			MoveMemory(dbv.pszVal+i+lstrlenA(substituteStr),dbv.pszVal+i+6,lstrlenA(dbv.pszVal)-i-5);
 			CopyMemory(dbv.pszVal+i,substituteStr,lstrlenA(substituteStr));
 		}
@@ -124,11 +124,11 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam
                 SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
                 SendMessage(hwnd, EM_GETSEL, (WPARAM) & start, (LPARAM) (PDWORD) NULL);
                 textLen = GetWindowTextLength(hwnd);
-                text = (TCHAR *) malloc(sizeof(TCHAR) * (textLen + 1));
+                text = (TCHAR *) mir_alloc(sizeof(TCHAR) * (textLen + 1));
                 GetWindowText(hwnd, text, textLen + 1);
                 MoveMemory(text + start, text + end, sizeof(TCHAR) * (textLen + 1 - end));
                 SetWindowText(hwnd, text);
-                free(text);
+                mir_free(text);
                 SendMessage(hwnd, EM_SETSEL, start, start);
                 SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
                 return 0;
@@ -177,11 +177,11 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 		{
 			struct SetAwasMsgNewData *newdat = (struct SetAwasMsgNewData*)lParam;
 			TranslateDialogDefault(hwndDlg);
-			dat=(struct SetAwayMsgData*)malloc(sizeof(struct SetAwayMsgData));
+			dat=(struct SetAwayMsgData*)mir_alloc(sizeof(struct SetAwayMsgData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 			dat->statusMode=newdat->statusMode;
 			dat->szProto=newdat->szProto;
-			free(newdat);
+			mir_free(newdat);
 			SendDlgItemMessage(hwndDlg,IDC_MSG,EM_LIMITTEXT,1024,0);
 			OldMessageEditProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
 			{	char str[256],format[128];
@@ -192,7 +192,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			GetDlgItemTextA(hwndDlg,IDOK,dat->okButtonFormat,SIZEOF(dat->okButtonFormat));
 			{	char *msg=(char*)GetAwayMessage((WPARAM)dat->statusMode,0);
 				SetDlgItemTextA(hwndDlg,IDC_MSG,msg);
-				free(msg);
+				mir_free(msg);
 			}
 			dat->countdown=5;
 			SendMessage(hwndDlg,WM_TIMER,0,0);
@@ -231,7 +231,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 				DBWriteContactSettingString(NULL,"SRAway",StatusModeToDbSetting(dat->statusMode,"Msg"),str);
 			}
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)OldMessageEditProc);
-			free(dat);
+			mir_free(dat);
 			break;
 	}
 	return FALSE;
@@ -257,10 +257,10 @@ static int StatusModeChange(WPARAM wParam,LPARAM lParam)
 	else if(bScreenSaverRunning || DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(wParam,"NoDlg"),0)) {
 		char *msg=(char*)GetAwayMessage(wParam, 0);
 		ChangeAllProtoMessages((char*)lParam,wParam,msg);
-		free(msg);
+		mir_free(msg);
 	}
 	else {
-		struct SetAwasMsgNewData *newdat = (struct SetAwasMsgNewData*)malloc(sizeof(struct SetAwasMsgNewData));
+		struct SetAwasMsgNewData *newdat = (struct SetAwasMsgNewData*)mir_alloc(sizeof(struct SetAwasMsgNewData));
 		newdat->szProto = (char*)lParam;
 		newdat->statusMode = (int)wParam;
 		CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_SETAWAYMSG),NULL,SetAwayMsgDlgProc,(LPARAM)newdat);
@@ -291,14 +291,14 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		{	int i,j;
 			DBVARIANT dbv;
 			TranslateDialogDefault(hwndDlg);
-			dat=(struct AwayMsgDlgData*)malloc(sizeof(struct AwayMsgDlgData));
+			dat=(struct AwayMsgDlgData*)mir_alloc(sizeof(struct AwayMsgDlgData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 			dat->oldPage=-1;
 			for( i=0; i < SIZEOF(statusModes); i++ ) {
 				if(!(protoModeMsgFlags&Proto_Status2Flag(statusModes[i]))) continue;
 				{	TCHAR* ptszDescr = LangPackPcharToTchar(( LPCSTR )CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, statusModes[i], 0 ));
 					j = SendDlgItemMessage( hwndDlg, IDC_STATUS, CB_ADDSTRING, 0, (LPARAM)ptszDescr );
-					free( ptszDescr );
+					mir_free( ptszDescr );
 				}
 				SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETITEMDATA,j,statusModes[i]);
 				dat->info[j].ignore=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Ignore"),0);
@@ -306,9 +306,9 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				dat->info[j].usePrevious=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"UsePrev"),0);
 				if(DBGetContactSetting(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Default"),&dbv))
 					if(DBGetContactSetting(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Msg"),&dbv))
-						dbv.pszVal=_strdup(GetDefaultMessage(statusModes[i]));
+						dbv.pszVal=mir_strdup(GetDefaultMessage(statusModes[i]));
 				lstrcpyA(dat->info[j].msg,dbv.pszVal);
-				free(dbv.pszVal);
+				mir_free(dbv.pszVal);
 			}
 			SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETCURSEL,0,0);
 			SendMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_STATUS,CBN_SELCHANGE),0);
@@ -369,7 +369,7 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			}
 			break;
 		case WM_DESTROY:
-			free(dat);
+			mir_free(dat);
 			break;
 	}
 	return FALSE;

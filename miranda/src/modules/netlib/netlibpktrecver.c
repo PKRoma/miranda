@@ -32,7 +32,7 @@ int NetlibPacketRecverCreate(WPARAM wParam,LPARAM lParam)
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return (int)(struct NetlibPacketRecver*)NULL;
 	}
-	nlpr=(struct NetlibPacketRecver*)calloc(1,sizeof(struct NetlibPacketRecver));
+	nlpr=(struct NetlibPacketRecver*)mir_calloc(sizeof(struct NetlibPacketRecver));
 	if(nlpr==NULL) {
 		SetLastError(ERROR_OUTOFMEMORY);
 		return (int)(struct NetlibPacketRecver*)NULL;
@@ -41,7 +41,7 @@ int NetlibPacketRecverCreate(WPARAM wParam,LPARAM lParam)
 	nlpr->nlc=nlc;
 	nlpr->packetRecver.cbSize=sizeof(nlpr->packetRecver);
 	nlpr->packetRecver.bufferSize=lParam;
-	nlpr->packetRecver.buffer=(PBYTE)malloc(nlpr->packetRecver.bufferSize);
+	nlpr->packetRecver.buffer=(PBYTE)mir_alloc(nlpr->packetRecver.bufferSize);
 	nlpr->packetRecver.bytesUsed=0;
 	nlpr->packetRecver.bytesAvailable=0;
 	return (int)nlpr;

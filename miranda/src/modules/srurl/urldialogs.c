@@ -41,7 +41,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			TranslateDialogDefault(hwndDlg);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_URL));
 
-			dat=(struct UrlRcvData*)malloc(sizeof(struct UrlRcvData));
+			dat=(struct UrlRcvData*)mir_alloc(sizeof(struct UrlRcvData));
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
 
 			dat->hContact = ((CLISTEVENT*)lParam)->hContact;
@@ -58,11 +58,11 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				ZeroMemory(&dbei,sizeof(dbei));
 				dbei.cbSize=sizeof(dbei);
 				dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)dat->hDbEvent,0);
-				dbei.pBlob=(PBYTE)malloc(dbei.cbBlob);
+				dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
 				CallService(MS_DB_EVENT_GET,(WPARAM)dat->hDbEvent,(LPARAM)&dbei);
 				SetDlgItemTextA(hwndDlg,IDC_URL,dbei.pBlob);
 				SetDlgItemTextA(hwndDlg,IDC_MSG,dbei.pBlob+lstrlenA(dbei.pBlob)+1);
-				free(dbei.pBlob);
+				mir_free(dbei.pBlob);
 
 				CallService(MS_DB_EVENT_MARKREAD,(WPARAM)dat->hContact,(LPARAM)dat->hDbEvent);
 
@@ -150,7 +150,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							case CNFT_ASCIIZ:
 								hasName = 1;
 								mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
-								free(ci.pszVal);
+								mir_free(ci.pszVal);
 								break;
 							case CNFT_DWORD:
 								hasName = 1;
@@ -257,7 +257,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		case WM_DESTROY:
 			WindowList_Remove(hUrlWindowList, hwndDlg);
 			{int i;for(i=0; i < SIZEOF(dat->hIcons); i++ ) DestroyIcon(dat->hIcons[i]);}
-			free(dat);
+			mir_free(dat);
 			Utils_SaveWindowPosition(hwndDlg,NULL,"SRUrl","recv");
 			break;
 	}
@@ -373,7 +373,7 @@ static void AddBrowserPageToCombo(char *url,HWND hwndCombo)
 			if(!lstrcmpA(szExistingUrl,url)) return;
 		}
 		i=SendMessageA(hwndCombo,CB_ADDSTRING,0,(LPARAM)url);
-		szItemData=_strdup(title);
+		szItemData=mir_strdup(title);
 		SendMessage(hwndCombo,CB_SETITEMDATA,i,(LPARAM)szItemData);
 	}
 }
@@ -408,7 +408,7 @@ static void GetOpenBrowserUrlsForBrowser(const char *szBrowser,HWND hwndDlg,HWND
 	dataLength=GlobalSize(hData)-offsetof(DDEDATA,Value);
 	data=(DDEDATA*)GlobalLock(hData);
 	windowCount=dataLength/sizeof(DWORD);
-	windowId=(PDWORD)malloc(sizeof(DWORD)*windowCount);
+	windowId=(PDWORD)mir_alloc(sizeof(DWORD)*windowCount);
 	memcpy(windowId,data->Value,windowCount*sizeof(DWORD));
 	GlobalUnlock(hData);
 	FreeDdeRequestData(hData);
@@ -421,7 +421,7 @@ static void GetOpenBrowserUrlsForBrowser(const char *szBrowser,HWND hwndDlg,HWND
 	   || !ddeAcked) {
 		GlobalDeleteAtom(hSzTopic);
 		GlobalDeleteAtom(hSzBrowser);
-		free(windowId);
+		mir_free(windowId);
 		return;
 	}
 	for(i=0;i<windowCount;i++) {
@@ -441,7 +441,7 @@ static void GetOpenBrowserUrlsForBrowser(const char *szBrowser,HWND hwndDlg,HWND
 	PostMessage(hwndDde,WM_DDE_TERMINATE,(WPARAM)hwndDlg,0);
 	GlobalDeleteAtom(hSzTopic);
 	GlobalDeleteAtom(hSzBrowser);
-	free(windowId);
+	mir_free(windowId);
 }
 
 static void GetOpenBrowserUrls(HWND hwndDlg,HWND hwndCombo)
@@ -482,7 +482,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			TranslateDialogDefault(hwndDlg);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_LIMITTEXT, 450, 0);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_URL));
-			dat=(struct UrlSendData*)malloc(sizeof(struct UrlSendData));
+			dat=(struct UrlSendData*)mir_alloc(sizeof(struct UrlSendData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 			dat->hContact=(HANDLE)lParam;
 			dat->hAckEvent=NULL;
@@ -586,7 +586,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							case CNFT_ASCIIZ:
 								hasName = 1;
 								mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
-								free(ci.pszVal);
+								mir_free(ci.pszVal);
 								break;
 							case CNFT_DWORD:
 								hasName = 1;
@@ -625,23 +625,23 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					int bodySize,urlSize;
 					
 					urlSize=GetWindowTextLength(GetDlgItem(hwndDlg,IDC_URLS))+1;
-					url=(char*)malloc(urlSize);
+					url=(char*)mir_alloc(urlSize);
 					GetDlgItemTextA(hwndDlg,IDC_URLS,url,urlSize);
 					if (url[0] == 0) {
-						free(url);
+						mir_free(url);
 						break;
 					}
 					bodySize=GetWindowTextLength(GetDlgItem(hwndDlg,IDC_MESSAGE))+1;
-					body=(char*)malloc(bodySize);
+					body=(char*)mir_alloc(bodySize);
 					GetDlgItemTextA(hwndDlg,IDC_MESSAGE,body,bodySize);
 
-					dat->sendBuffer=(char*)realloc(dat->sendBuffer,lstrlenA(url)+lstrlenA(body)+2);
+					dat->sendBuffer=(char*)mir_realloc(dat->sendBuffer,lstrlenA(url)+lstrlenA(body)+2);
 					lstrcpyA(dat->sendBuffer,url);
 					lstrcpyA(dat->sendBuffer+lstrlenA(url)+1,body);
 					dat->hAckEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_EVENTSENT);
 					dat->hSendId=(HANDLE)CallContactService(dat->hContact,PSS_URL,0,(LPARAM)dat->sendBuffer);
-					free(url);
-					free(body);
+					mir_free(url);
+					mir_free(body);
 
 					//create a timeout timer
 					SetTimer(hwndDlg,0,TIMEOUT_URLSEND,NULL);
@@ -724,12 +724,12 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SetWindowLong(GetWindow(GetDlgItem(hwndDlg,IDC_URLS),GW_CHILD),GWL_WNDPROC,(LONG)OldSendEditProc);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_MESSAGE),GWL_WNDPROC,(LONG)OldSendEditProc);
 			if(dat->hAckEvent) UnhookEvent(dat->hAckEvent);
-			if(dat->sendBuffer!=NULL) free(dat->sendBuffer);
-			free(dat);
+			if(dat->sendBuffer!=NULL) mir_free(dat->sendBuffer);
+			mir_free(dat);
 			Utils_SaveWindowPosition(hwndDlg,NULL,"SRUrl","send");
 			{	int i;
 				for(i=SendDlgItemMessage(hwndDlg,IDC_URLS,CB_GETCOUNT,0,0)-1;i>=0;i--)
-					free((char*)SendDlgItemMessage(hwndDlg,IDC_URLS,CB_GETITEMDATA,i,0));
+					mir_free((char*)SendDlgItemMessage(hwndDlg,IDC_URLS,CB_GETITEMDATA,i,0));
 			}
 			break;
 	}

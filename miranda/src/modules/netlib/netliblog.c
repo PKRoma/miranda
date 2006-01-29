@@ -117,10 +117,10 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 				logOptions.toFile=0;
 			}
 			EnterCriticalSection(&logOptions.cs);
-			if(logOptions.szFile) free(logOptions.szFile);
+			if(logOptions.szFile) mir_free(logOptions.szFile);
 			{	int len;
 				len=GetWindowTextLength((HWND)lParam);
-				logOptions.szFile = ( TCHAR* )malloc( sizeof( TCHAR )*( len+1 ));
+				logOptions.szFile = ( TCHAR* )mir_alloc( sizeof( TCHAR )*( len+1 ));
 				GetWindowText((HWND)lParam, logOptions.szFile, len+1 );
 			}
 			LeaveCriticalSection(&logOptions.cs);
@@ -172,10 +172,10 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			{	int len;
 				char *str;
 				len=GetWindowTextLength((HWND)lParam);
-				str=(char*)malloc(len+1);
+				str=(char*)mir_alloc(len+1);
 				GetWindowTextA((HWND)lParam,str,len+1);
 				DBWriteContactSettingString(NULL,"Netlib","RunAtStart",str);
-				free(str);
+				mir_free(str);
 			}
 			break;
 		case IDC_RUNNOW:
@@ -184,7 +184,7 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 				STARTUPINFOA si={0};
 				PROCESS_INFORMATION pi;
 				len=GetWindowTextLength(GetDlgItem(hwndDlg,IDC_RUNATSTART));
-				str=(char*)malloc(len+1);
+				str=(char*)mir_alloc(len+1);
 				GetDlgItemTextA(hwndDlg,IDC_RUNATSTART,str,len+1);
 				si.cb=sizeof(si);
 				if(str[0]) CreateProcessA(NULL,str,NULL,NULL,FALSE,0,NULL,NULL,&si,&pi);
@@ -412,7 +412,7 @@ void NetlibLogInit(void)
 	logOptions.toFile=DBGetContactSettingByte(NULL,"Netlib","ToFile",0);
 
 	if(!DBGetContactSettingTString(NULL, "Netlib", "File", &dbv)) {
-		logOptions.szFile = _tcsdup(dbv.ptszVal);
+		logOptions.szFile = mir_tstrdup(dbv.ptszVal);
 		DBFreeVariant(&dbv);
 	}
 	if(logOptions.toFile && logOptions.szFile[0]) {
@@ -435,6 +435,6 @@ void NetlibLogShutdown(void)
 {
 	if(IsWindow(logOptions.hwndOpts)) DestroyWindow(logOptions.hwndOpts);
 	DeleteCriticalSection(&logOptions.cs);
-	if(logOptions.szFile) free(logOptions.szFile);
+	if(logOptions.szFile) mir_free(logOptions.szFile);
 }
 

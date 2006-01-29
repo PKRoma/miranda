@@ -192,8 +192,8 @@ void __cdecl LoadIconsAndTypesThread(struct loadiconsstartinfo *info)
 		SendDlgItemMessage(info->hwndDlg,IDC_NEWICON,STM_SETICON,(WPARAM)fileInfo.hIcon,0);
 	}
 	OleUninitialize();
-	free(info->szFilename);
-	free(info);
+	mir_free(info->szFilename);
+	mir_free(info);
 }
 
 BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -211,7 +211,7 @@ BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SetPropA(hwndDlg,"Miranda.Preshutdown",HookEventMessage(ME_SYSTEM_PRESHUTDOWN,hwndDlg,M_PRESHUTDOWN));
 
 			TranslateDialogDefault(hwndDlg);
-			fts=(PROTOFILETRANSFERSTATUS*)malloc(sizeof(PROTOFILETRANSFERSTATUS));
+			fts=(PROTOFILETRANSFERSTATUS*)mir_alloc(sizeof(PROTOFILETRANSFERSTATUS));
 			CopyProtoFileTransferStatus(fts,(PROTOFILETRANSFERSTATUS*)lParam);
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)fts);
 			SetDlgItemTextA(hwndDlg,IDC_FILENAME,fts->currentFile);
@@ -231,9 +231,9 @@ BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					hwndFocus=GetDlgItem(hwndDlg,IDC_OVERWRITE);
 				}
 			}
-			lisi=(struct loadiconsstartinfo*)malloc(sizeof(struct loadiconsstartinfo));
+			lisi=(struct loadiconsstartinfo*)mir_alloc(sizeof(struct loadiconsstartinfo));
 			lisi->hwndDlg=hwndDlg;
-			lisi->szFilename=_strdup(fts->currentFile);
+			lisi->szFilename=mir_strdup(fts->currentFile);
 			//can be a little slow, so why not?
 			forkthread(LoadIconsAndTypesThread,0,lisi);			
 			SetFocus(hwndFocus);
@@ -290,7 +290,7 @@ BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					ofn.nMaxFile=SIZEOF(str);
 					ofn.nMaxFileTitle=MAX_PATH;
 					if(!GetSaveFileNameA(&ofn)) break;
-					pfr.szFilename=_strdup(str);
+					pfr.szFilename=mir_strdup(str);
 					pfr.action=FILERESUME_RENAME;
 					break;
 				}
@@ -304,9 +304,9 @@ BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					return FALSE;
 			}
 			{	PROTOFILERESUME *pfrCopy;
-				pfrCopy=(PROTOFILERESUME*)malloc(sizeof(pfr));
+				pfrCopy=(PROTOFILERESUME*)mir_alloc(sizeof(pfr));
 				CopyMemory(pfrCopy,&pfr,sizeof(pfr));
-				PostMessage(GetParent(hwndDlg),M_FILEEXISTSDLGREPLY,(WPARAM)_strdup(fts->currentFile),(LPARAM)pfrCopy);
+				PostMessage(GetParent(hwndDlg),M_FILEEXISTSDLGREPLY,(WPARAM)mir_strdup(fts->currentFile),(LPARAM)pfrCopy);
 				DestroyWindow(hwndDlg);
 			}
 			break;
@@ -324,7 +324,7 @@ BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			DestroyIcon((HICON)SendDlgItemMessage(hwndDlg,IDC_EXISTINGICON,STM_GETICON,0,0));
 			DestroyIcon((HICON)SendDlgItemMessage(hwndDlg,IDC_NEWICON,STM_GETICON,0,0));
 			FreeProtoFileTransferStatus(fts);
-			free(fts);
+			mir_free(fts);
 			break;
 	}
 	return FALSE;

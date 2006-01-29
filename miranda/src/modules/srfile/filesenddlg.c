@@ -94,7 +94,7 @@ static void FilenameToFileList(HWND hwndDlg, struct FileDlgData *dat, const char
 			}
 
 			// Allocate memory for a pointer array
-			dat->files = (char**)malloc((nNumberOfFiles + 1) * sizeof(char*));
+			dat->files = (char**)mir_alloc((nNumberOfFiles + 1) * sizeof(char*));
 
 			// Fill the array
 			pBuf = (char*)buf + fileOffset;
@@ -102,7 +102,7 @@ static void FilenameToFileList(HWND hwndDlg, struct FileDlgData *dat, const char
 			while(*pBuf)
 			{
 				// Allocate space for path+filename
-				dat->files[nTemp] = malloc(fileOffset + lstrlenA(pBuf) + 1);
+				dat->files[nTemp] = mir_alloc(fileOffset + lstrlenA(pBuf) + 1);
 
 				// Add path to filename and copy into array
 				CopyMemory(dat->files[nTemp], buf, fileOffset - 1);
@@ -118,8 +118,8 @@ static void FilenameToFileList(HWND hwndDlg, struct FileDlgData *dat, const char
 		// ...the selection is a single file
 		else
 		{
-			dat->files = (char**)malloc(2 * sizeof(char*)); // Leaks when aborted
-			dat->files[0] = _strdup(buf);
+			dat->files = (char**)mir_alloc(2 * sizeof(char*)); // Leaks when aborted
+			dat->files[0] = mir_strdup(buf);
 			dat->files[1] = NULL;
 		}
 	}
@@ -136,7 +136,7 @@ void __cdecl ChooseFilesThread(HWND hwndDlg)
 	OPENFILENAMEA ofn={0};
 	char filter[128],*pfilter;
 
-	buf=(char*)malloc(32767);
+	buf=(char*)mir_alloc(32767);
 	buf[0]=0;
 	ofn.lStructSize=OPENFILENAME_SIZE_VERSION_400;
 	ofn.hwndOwner=hwndDlg;
@@ -153,7 +153,7 @@ void __cdecl ChooseFilesThread(HWND hwndDlg)
 	if(GetOpenFileNameA(&ofn))
 		PostMessage(hwndDlg,M_FILECHOOSEDONE,0,(LPARAM)buf);
 	else {
-		free(buf);
+		mir_free(buf);
 		PostMessage(hwndDlg,M_FILECHOOSEDONE,0,(LPARAM)(char*)NULL);
 	}
 }
@@ -195,7 +195,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		{	char *contactName;
 			struct FileSendData *fsd=(struct FileSendData*)lParam;
 
-			dat=(struct FileDlgData*)malloc(sizeof(struct FileDlgData));
+			dat=(struct FileDlgData*)mir_alloc(sizeof(struct FileDlgData));
 			memset(dat,0,sizeof(struct FileDlgData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(long)dat);
 			dat->hContact=fsd->hContact;
@@ -225,9 +225,9 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			if(fsd->ppFiles!=NULL && fsd->ppFiles[0]!=NULL) {
 				int totalCount,i;
 				for(totalCount=0;fsd->ppFiles[totalCount];totalCount++);
-				dat->files=(char**)malloc(sizeof(char*)*(totalCount+1)); // Leaks
+				dat->files=(char**)mir_alloc(sizeof(char*)*(totalCount+1)); // Leaks
 				for(i=0;i<totalCount;i++)
-					dat->files[i]=_strdup(fsd->ppFiles[i]);
+					dat->files[i]=mir_strdup(fsd->ppFiles[i]);
 				dat->files[totalCount]=NULL;
 				SetFileListAndSizeControls(hwndDlg,dat);
 			}
@@ -253,7 +253,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 							case CNFT_ASCIIZ:
 								hasName = 1;
 								mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
-								free(ci.pszVal);
+								mir_free(ci.pszVal);
 								break;
 							case CNFT_DWORD:
 								hasName = 1;
@@ -293,7 +293,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		case M_FILECHOOSEDONE:
 			if((char*)lParam) {
 				FilenameToFileList(hwndDlg,dat,(char*)lParam);
-				free((char*)lParam);
+				mir_free((char*)lParam);
 				dat->closeIfFileChooseCancelled=0;
 			}
 			else if(dat->closeIfFileChooseCancelled) DestroyWindow(hwndDlg);
@@ -349,7 +349,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			DestroyIcon(dat->hUIIcons[2]);
 			DestroyIcon(dat->hUIIcons[1]);
 			DestroyIcon(dat->hUIIcons[0]);
-			free(dat);
+			mir_free(dat);
 			return TRUE;
 	}
 	return FALSE;

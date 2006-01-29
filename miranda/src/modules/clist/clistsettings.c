@@ -43,11 +43,11 @@ void FreeDisplayNameCache(void)
 		int i;
 		for ( i = 0; i < clistCache->realCount; i++) {
 			cli.pfnFreeCacheItem(( ClcCacheEntryBase* )clistCache->items[i] );
-			free( clistCache->items[i] );
+			mir_free( clistCache->items[i] );
 		}
 
 		List_Destroy( clistCache ); 
-		free(clistCache);
+		mir_free(clistCache);
 		clistCache = NULL;
 }	}
 
@@ -55,7 +55,7 @@ void FreeDisplayNameCache(void)
 
 ClcCacheEntryBase* fnCreateCacheItem( HANDLE hContact )
 {
-	ClcCacheEntryBase* p = ( ClcCacheEntryBase* )calloc( sizeof( ClcCacheEntryBase ), 1 );
+	ClcCacheEntryBase* p = ( ClcCacheEntryBase* )mir_calloc( sizeof( ClcCacheEntryBase ));
 	if ( p == NULL )
 		return NULL;
 
@@ -68,10 +68,10 @@ void fnCheckCacheItem( ClcCacheEntryBase* p )
 	DBVARIANT dbv;
 	if ( p->group == NULL ) {
 		if ( !DBGetContactSettingTString( p->hContact, "CList", "Group", &dbv )) {
-			p->group = _tcsdup( dbv.ptszVal );
-			free( dbv.ptszVal );
+			p->group = mir_tstrdup( dbv.ptszVal );
+			mir_free( dbv.ptszVal );
 		}
-		else p->group = _tcsdup( _T("") );
+		else p->group = mir_tstrdup( _T("") );
 	}
 
 	if ( p->isHidden == -1 )
@@ -80,11 +80,11 @@ void fnCheckCacheItem( ClcCacheEntryBase* p )
 
 void fnFreeCacheItem( ClcCacheEntryBase* p )
 {
-	if ( p->name ) { free( p->name ); p->name = NULL; }
+	if ( p->name ) { mir_free( p->name ); p->name = NULL; }
 	#if defined( _UNICODE )
-		if ( p->szName ) { free( p->szName); p->szName = NULL; }
+		if ( p->szName ) { mir_free( p->szName); p->szName = NULL; }
 	#endif
-	if ( p->group ) { free( p->group ); p->group = NULL; }
+	if ( p->group ) { mir_free( p->group ); p->group = NULL; }
 	p->isHidden = -1;
 }
 
@@ -143,10 +143,10 @@ TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 		if (ci.type == CNFT_ASCIIZ) {
 			if (cacheEntry == NULL) {
 				size_t len = _tcslen(ci.pszVal);
-				buffer = (TCHAR*) malloc( sizeof( TCHAR )*( len+1 ));
+				buffer = (TCHAR*) mir_alloc( sizeof( TCHAR )*( len+1 ));
 				memcpy( buffer, ci.pszVal, len * sizeof( TCHAR ));
 				buffer[ len ] = 0;
-				free(ci.pszVal);
+				mir_free(ci.pszVal);
 				return buffer;
 			}
 			else {
@@ -159,12 +159,12 @@ TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 
 		if (ci.type == CNFT_DWORD) {
 			if (cacheEntry == NULL) {
-				buffer = (TCHAR*) malloc(15 * sizeof( TCHAR ));
+				buffer = (TCHAR*) mir_alloc(15 * sizeof( TCHAR ));
 				_ltot(ci.dVal, buffer, 10 );
 				return buffer;
 			}
 			else {
-				buffer = (TCHAR*) malloc(15 * sizeof( TCHAR ));
+				buffer = (TCHAR*) mir_alloc(15 * sizeof( TCHAR ));
 				_ltot(ci.dVal, buffer, 10 );
 				cacheEntry->name = buffer;
 				#if defined( _UNICODE )
@@ -214,7 +214,7 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 				size_t len = _tcslen(ci.pszVal);
 				#if defined( _UNICODE )
 					buffer = u2a( ci.pszVal );
-					free(ci.pszVal);
+					mir_free(ci.pszVal);
 				#else
 					buffer = ci.pszVal;
 				#endif
@@ -232,12 +232,12 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 		}
 		if (ci.type == CNFT_DWORD) {
 			if (cacheEntry == NULL) {
-				buffer = ( char* )malloc(15);
+				buffer = ( char* )mir_alloc(15);
 				ltoa(ci.dVal, buffer, 10 );
 				return (int) buffer;
 			}
 			else {
-				buffer = ( char* )malloc(15);
+				buffer = ( char* )mir_alloc(15);
 				ltoa(ci.dVal, buffer, 10 );
 				#if defined( _UNICODE )
 					cacheEntry->szName = buffer;
@@ -297,7 +297,7 @@ int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 						if (cws->value.wVal == ID_STATUS_OFFLINE) {
 							cli.pfnChangeContactIcon(hContact, cli.pfnIconFromStatusMode(cws->szModule, cws->value.wVal, hContact), 0);
 							CallService(MS_CLUI_CONTACTDELETED, wParam, 0);
-							free(dbv.pszVal);
+							mir_free(dbv.pszVal);
 							return 0;
 						}
 						cli.pfnChangeContactIcon(hContact, cli.pfnIconFromStatusMode(cws->szModule, cws->value.wVal, hContact), 1);
@@ -306,7 +306,7 @@ int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 				}
 			}
 			else {
-				free(dbv.pszVal);
+				mir_free(dbv.pszVal);
 				return 0;
 			}
 			cli.pfnSortContacts();
@@ -343,7 +343,7 @@ int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 
 	// Clean up
 	if (dbv.pszVal)
-		free(dbv.pszVal);
+		mir_free(dbv.pszVal);
 
 	return 0;
 
@@ -356,7 +356,7 @@ char* u2a( wchar_t* src )
 	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
 
 	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
-	char* result = ( char* )malloc( cbLen+1 );
+	char* result = ( char* )mir_alloc( cbLen+1 );
 	if ( result == NULL )
 		return NULL;
 
@@ -370,7 +370,7 @@ wchar_t* a2u( char* src )
 	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
 
 	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
-	wchar_t* result = ( wchar_t* )malloc( sizeof( wchar_t )*(cbLen+1));
+	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
 	if ( result == NULL )
 		return NULL;
 

@@ -351,7 +351,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			PROPSHEETHEADER *psh = prof->psh;
 			TranslateDialogDefault(hwndDlg);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_USERDETAILS)));
-			dat=(struct DetailsData*)malloc(sizeof(struct DetailsData));
+			dat=(struct DetailsData*)mir_alloc(sizeof(struct DetailsData));
 			dat->prof = prof;
 			prof->hwndOK=GetDlgItem(hwndDlg,IDOK);
 			EnableWindow(prof->hwndOK, FALSE);
@@ -370,7 +370,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 				dat->currentPage=0;
 				dat->pageCount=psh->nPages;
-				dat->opd=(struct DetailsPageData*)malloc(sizeof(struct DetailsPageData)*dat->pageCount);
+				dat->opd=(struct DetailsPageData*)mir_alloc(sizeof(struct DetailsPageData)*dat->pageCount);
 				odp=(OPTIONSDIALOGPAGE*)psh->ppsp;
 
 				tci.mask=TCIF_TEXT;
@@ -526,8 +526,8 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				for(i=0;i<dat->pageCount;i++)
 					if(dat->opd[i].hwnd!=NULL) DestroyWindow(dat->opd[i].hwnd);
 			}
-			free(dat->opd);
-			free(dat);
+			mir_free(dat->opd);
+			mir_free(dat);
 			break;
 	}
 	return FALSE;
@@ -537,13 +537,13 @@ static int AddProfileManagerPage(struct DetailsPageInit * opi, OPTIONSDIALOGPAGE
 {
 	if(opi==NULL||odp==NULL);
 	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE)) return 1;
-	opi->odp=(OPTIONSDIALOGPAGE*)realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
+	opi->odp=(OPTIONSDIALOGPAGE*)mir_realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
 	opi->odp[opi->pageCount].cbSize=sizeof(OPTIONSDIALOGPAGE);
 	opi->odp[opi->pageCount].hInstance=odp->hInstance;
 	opi->odp[opi->pageCount].pfnDlgProc=odp->pfnDlgProc;
 	opi->odp[opi->pageCount].position=odp->position;
-	opi->odp[opi->pageCount].pszTitle=_strdup(odp->pszTitle);
-	if((DWORD)odp->pszTemplate&0xFFFF0000) opi->odp[opi->pageCount].pszTemplate=_strdup(odp->pszTemplate);
+	opi->odp[opi->pageCount].pszTitle=mir_strdup(odp->pszTitle);
+	if((DWORD)odp->pszTemplate&0xFFFF0000) opi->odp[opi->pageCount].pszTemplate=mir_strdup(odp->pszTemplate);
 	else opi->odp[opi->pageCount].pszTemplate=odp->pszTemplate;
 	opi->odp[opi->pageCount].pszGroup=NULL;
 	opi->odp[opi->pageCount].groupPosition=odp->groupPosition;
@@ -602,13 +602,13 @@ int getProfileManager(PROFILEMANAGERDATA * pd)
 	{
 		for(i=0;i<opi.pageCount;i++)
 		{
-			free((char*)opi.odp[i].pszTitle);
-			if(opi.odp[i].pszGroup!=NULL) free(opi.odp[i].pszGroup);
-			if((DWORD)opi.odp[i].pszTemplate&0xFFFF0000) free((char*)opi.odp[i].pszTemplate);
+			mir_free((char*)opi.odp[i].pszTitle);
+			if(opi.odp[i].pszGroup!=NULL) mir_free(opi.odp[i].pszGroup);
+			if((DWORD)opi.odp[i].pszTemplate&0xFFFF0000) mir_free((char*)opi.odp[i].pszTemplate);
 		}
 	}
 	if ( opi.odp != NULL )
-		free(opi.odp);
+		mir_free(opi.odp);
 
 	return rc;
 }

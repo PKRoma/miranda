@@ -90,7 +90,7 @@ struct ClcGroup* fnAddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName,
 			group->cl.items[i]->type = CLCIT_GROUP;
 			lstrcpyn(group->cl.items[i]->szText, szThisField, SIZEOF( group->cl.items[i]->szText ));
 			group->cl.items[i]->groupId = (WORD) (pNextField ? 0 : groupId);
-			group->cl.items[i]->group = (struct ClcGroup *) malloc(sizeof(struct ClcGroup));
+			group->cl.items[i]->group = (struct ClcGroup *) mir_alloc(sizeof(struct ClcGroup));
 			group->cl.items[i]->group->parent = group;
 			group = group->cl.items[i]->group;
 			memset( &group->cl, 0, sizeof( group->cl ));
@@ -125,7 +125,7 @@ void fnFreeContact(struct ClcContact* p)
 {
 	if (p->type == CLCIT_GROUP) {
 		cli.pfnFreeGroup(p->group);
-		free(p->group);
+		mir_free(p->group);
 }	}
 
 void fnFreeGroup(struct ClcGroup *group)
@@ -133,10 +133,10 @@ void fnFreeGroup(struct ClcGroup *group)
 	int i;
 	for (i = 0; i < group->cl.count; i++) {
 		cli.pfnFreeContact(group->cl.items[i]);
-		free(group->cl.items[i]);
+		mir_free(group->cl.items[i]);
 	}
 	if (group->cl.items)
-		free(group->cl.items);
+		mir_free(group->cl.items);
 	group->cl.limit = group->cl.count = 0;
 	group->cl.items = NULL;
 }
@@ -237,28 +237,28 @@ void fnAddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int upd
 			DWORD groupFlags;
 			TCHAR *szGroupName;
 			if (!(style & CLS_HIDEEMPTYGROUPS)) {
-				free(dbv.pszVal);
+				mir_free(dbv.pszVal);
 				return;
 			}
 			if (checkHideOffline && cli.pfnIsHiddenMode(dat, status)) {
 				for (i = 1;; i++) {
 					szGroupName = cli.pfnGetGroupName(i, &groupFlags);
 					if (szGroupName == NULL) {
-						free(dbv.pszVal);
+						mir_free(dbv.pszVal);
 						return;
 					}           //never happens
 					if (!lstrcmp(szGroupName, dbv.ptszVal))
 						break;
 				}
 				if (groupFlags & GROUPF_HIDEOFFLINE) {
-					free(dbv.pszVal);
+					mir_free(dbv.pszVal);
 					return;
 				}
 			}
 			for (i = 1;; i++) {
 				szGroupName = cli.pfnGetGroupName(i, &groupFlags);
 				if (szGroupName == NULL) {
-					free(dbv.pszVal);
+					mir_free(dbv.pszVal);
 					return;
 				}               //never happens
 				if (!lstrcmp(szGroupName, dbv.ptszVal))
@@ -269,7 +269,7 @@ void fnAddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int upd
 			}
 			group = cli.pfnAddGroup(hwnd, dat, dbv.ptszVal, groupFlags, i, 1);
 		}
-		free(dbv.pszVal);
+		mir_free(dbv.pszVal);
 	}
 	if (checkHideOffline) {
 		if (cli.pfnIsHiddenMode(dat, status) && (style & CLS_HIDEOFFLINE || group->hideOffline)) {
@@ -293,7 +293,7 @@ struct ClcGroup* fnRemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct
 		group->totalMembers--;
 
 	cli.pfnFreeContact( group->cl.items[iContact] );
-	free( group->cl.items[iContact] );
+	mir_free( group->cl.items[iContact] );
 	List_Remove(( SortedList* )&group->cl, iContact );
 
 	if ((GetWindowLong(hwnd, GWL_STYLE) & CLS_HIDEEMPTYGROUPS) && group->cl.count == 0) {
@@ -341,7 +341,7 @@ void fnDeleteItemFromTree(HWND hwnd, HANDLE hItem)
 				}
 			}
 		}
-		free(dbv.ptszVal);
+		mir_free(dbv.ptszVal);
 	}
 	else
 		cli.pfnRemoveItemFromGroup(hwnd, group, contact, 1);
@@ -379,7 +379,7 @@ void fnRebuildEntireList(HWND hwnd, struct ClcData *dat)
 				group = &dat->list;
 			else {
 				group = cli.pfnAddGroup(hwnd, dat, dbv.ptszVal, (DWORD) - 1, 0, 0);
-				free(dbv.ptszVal);
+				mir_free(dbv.ptszVal);
 			}
 
 			if (group != NULL) {
@@ -484,7 +484,7 @@ static void SortGroup(struct ClcData *dat, struct ClcGroup *group, int useInsert
 
 	for (i = group->cl.count - 1; i >= 0; i--) {
 		if (group->cl.items[i]->type == CLCIT_DIVIDER) {
-			free( group->cl.items[i] );
+			mir_free( group->cl.items[i] );
 			List_Remove(( SortedList* )&group->cl, i );
 	}	}
 
@@ -618,7 +618,7 @@ void fnSaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 			group->scanIndex = 0;
 			if (++savedGroupCount > savedGroupAlloced) {
 				savedGroupAlloced += 8;
-				savedGroup = (struct SavedGroupState_t *) realloc(savedGroup, sizeof(struct SavedGroupState_t) * savedGroupAlloced);
+				savedGroup = (struct SavedGroupState_t *) mir_realloc(savedGroup, sizeof(struct SavedGroupState_t) * savedGroupAlloced);
 			}
 			savedGroup[savedGroupCount - 1].groupId = group->groupId;
 			savedGroup[savedGroupCount - 1].expanded = group->expanded;
@@ -627,7 +627,7 @@ void fnSaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 		else if (group->cl.items[group->scanIndex]->type == CLCIT_CONTACT) {
 			if (++savedContactCount > savedContactAlloced) {
 				savedContactAlloced += 16;
-				savedContact = (struct SavedContactState_t *) realloc(savedContact, sizeof(struct SavedContactState_t) * savedContactAlloced);
+				savedContact = (struct SavedContactState_t *) mir_realloc(savedContact, sizeof(struct SavedContactState_t) * savedContactAlloced);
 			}
 			savedContact[savedContactCount - 1].hContact = group->cl.items[group->scanIndex]->hContact;
 			CopyMemory(savedContact[savedContactCount - 1].iExtraImage, group->cl.items[group->scanIndex]->iExtraImage,
@@ -637,7 +637,7 @@ void fnSaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 		else if (group->cl.items[group->scanIndex]->type == CLCIT_INFO) {
 			if (++savedInfoCount > savedInfoAlloced) {
 				savedInfoAlloced += 4;
-				savedInfo = (struct SavedInfoState_t *) realloc(savedInfo, sizeof(struct SavedInfoState_t) * savedInfoAlloced);
+				savedInfo = (struct SavedInfoState_t *) mir_realloc(savedInfo, sizeof(struct SavedInfoState_t) * savedInfoAlloced);
 			}
 			if (group->parent == NULL)
 				savedInfo[savedInfoCount - 1].parentId = -1;
@@ -682,9 +682,9 @@ void fnSaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 		group->scanIndex++;
 	}
 	if (savedGroup)
-		free(savedGroup);
+		mir_free(savedGroup);
 	if (savedContact)
-		free(savedContact);
+		mir_free(savedContact);
 	for (i = 0; i < savedInfoCount; i++) {
 		if (savedInfo[i].parentId == -1)
 			group = &dat->list;
@@ -697,7 +697,7 @@ void fnSaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 		*group->cl.items[j] = savedInfo[i].contact;
 	}
 	if (savedInfo)
-		free(savedInfo);
+		mir_free(savedInfo);
 	cli.pfnRecalculateGroupCheckboxes(hwnd, dat);
 
 	cli.pfnRecalcScrollBar(hwnd, dat);

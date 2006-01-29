@@ -58,10 +58,10 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 	int i;
 
 	if(pd->cbSize!=sizeof(PROTOCOLDESCRIPTOR)) return 1;
-	protocolModule=(PROTOCOLDESCRIPTOR*)realloc(protocolModule,sizeof(PROTOCOLDESCRIPTOR)*(protocolModuleCount+1));
+	protocolModule=(PROTOCOLDESCRIPTOR*)mir_realloc(protocolModule,sizeof(PROTOCOLDESCRIPTOR)*(protocolModuleCount+1));
 	protocolModule[protocolModuleCount]=*pd;
-	protocolModule[protocolModuleCount++].szName=_strdup(pd->szName);
-	pProtocolModules=(PROTOCOLDESCRIPTOR**)realloc(pProtocolModules,sizeof(PROTOCOLDESCRIPTOR*)*(protocolModuleCount+1));
+	protocolModule[protocolModuleCount++].szName=mir_strdup(pd->szName);
+	pProtocolModules=(PROTOCOLDESCRIPTOR**)mir_realloc(pProtocolModules,sizeof(PROTOCOLDESCRIPTOR*)*(protocolModuleCount+1));
 	for(i=0;i<protocolModuleCount;i++)
 		pProtocolModules[i]=&protocolModule[i];
 	return 0;
@@ -108,10 +108,10 @@ static int ProtoShutdown(WPARAM wParam,LPARAM lParam)
 	if(protocolModule!=NULL) {
 		int i;
 		for(i=0;i<protocolModuleCount;i++)
-			free(protocolModule[i].szName);
-		free(protocolModule);
+			mir_free(protocolModule[i].szName);
+		mir_free(protocolModule);
 	}
-	if(pProtocolModules!=NULL) free(pProtocolModules);
+	if(pProtocolModules!=NULL) mir_free(pProtocolModules);
 	protocolModuleCount=0;
 	UninitContactDir();
 	return 0;

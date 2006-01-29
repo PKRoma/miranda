@@ -46,7 +46,7 @@ BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			ZeroMemory(&dbei,sizeof(dbei));
 			dbei.cbSize=sizeof(dbei);
 			dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
-			dbei.pBlob=malloc(dbei.cbBlob);
+			dbei.pBlob=mir_alloc(dbei.cbBlob);
 			CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
 			uin=(PDWORD)dbei.pBlob;
 			hcontact=*((PHANDLE)(dbei.pBlob+sizeof(DWORD)));
@@ -62,7 +62,7 @@ BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				SetDlgItemText(hwndDlg,IDC_NAME,TranslateT("(Unknown)"));
 			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_DETAILS),GWL_USERDATA,(LONG)hcontact);
-			free(dbei.pBlob);
+			mir_free(dbei.pBlob);
 			return TRUE;
 		}
 		case WM_DRAWITEM:
@@ -179,7 +179,7 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			ZeroMemory(&dbei,sizeof(dbei));
 			dbei.cbSize=sizeof(dbei);
 			dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
-			dbei.pBlob=malloc(dbei.cbBlob);
+			dbei.pBlob=mir_alloc(dbei.cbBlob);
 			CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
 			uin=(PDWORD)dbei.pBlob;
 			hcontact=(PHANDLE)(dbei.pBlob+sizeof(DWORD));
@@ -196,7 +196,7 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SetDlgItemTextA(hwndDlg,IDC_REASON,reason);
 			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_DETAILS),GWL_USERDATA,(LONG)*hcontact);
-			free(dbei.pBlob);
+			mir_free(dbei.pBlob);
 			return TRUE;
 		}
 		case WM_DRAWITEM:

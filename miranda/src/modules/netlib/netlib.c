@@ -31,11 +31,11 @@ DWORD g_LastConnectionTick; // protected by csNetlibUser
 
 void NetlibFreeUserSettingsStruct(NETLIBUSERSETTINGS *settings)
 {
-	if(settings->szIncomingPorts) free(settings->szIncomingPorts);
-	if(settings->szOutgoingPorts) free(settings->szOutgoingPorts);
-	if(settings->szProxyAuthPassword) free(settings->szProxyAuthPassword);
-	if(settings->szProxyAuthUser) free(settings->szProxyAuthUser);
-	if(settings->szProxyServer) free(settings->szProxyServer);
+	if(settings->szIncomingPorts) mir_free(settings->szIncomingPorts);
+	if(settings->szOutgoingPorts) mir_free(settings->szOutgoingPorts);
+	if(settings->szProxyAuthPassword) mir_free(settings->szProxyAuthPassword);
+	if(settings->szProxyAuthUser) mir_free(settings->szProxyAuthUser);
+	if(settings->szProxyServer) mir_free(settings->szProxyServer);
 }
 
 void NetlibInitializeNestedCS(struct NetlibNestedCriticalSection *nlncs)
@@ -107,7 +107,7 @@ static char *GetNetlibUserSettingString(const char *szUserModule,const char *szS
 	else {
 		char *szRet;
 		if(decode) CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM)dbv.pszVal);
-		szRet=_strdup(dbv.pszVal);
+		szRet=mir_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 		if(szRet==NULL) SetLastError(ERROR_OUTOFMEMORY);
 		return szRet;
@@ -136,17 +136,17 @@ static int NetlibRegisterUser(WPARAM wParam,LPARAM lParam)
 		}
 	LeaveCriticalSection(&csNetlibUser);
 
-	thisUser=(struct NetlibUser*)calloc(1,sizeof(struct NetlibUser));
+	thisUser=(struct NetlibUser*)mir_calloc(sizeof(struct NetlibUser));
 	thisUser->handleType=NLH_USER;
 	thisUser->user=*nlu;
-	if((thisUser->user.szSettingsModule=_strdup(nlu->szSettingsModule))==NULL
-	   || (nlu->szDescriptiveName && (thisUser->user.szDescriptiveName=_strdup(nlu->szDescriptiveName))==NULL)
-	   || (nlu->szHttpGatewayUserAgent && (thisUser->user.szHttpGatewayUserAgent=_strdup(nlu->szHttpGatewayUserAgent))==NULL)) {
+	if((thisUser->user.szSettingsModule=mir_strdup(nlu->szSettingsModule))==NULL
+	   || (nlu->szDescriptiveName && (thisUser->user.szDescriptiveName=mir_strdup(nlu->szDescriptiveName))==NULL)
+	   || (nlu->szHttpGatewayUserAgent && (thisUser->user.szHttpGatewayUserAgent=mir_strdup(nlu->szHttpGatewayUserAgent))==NULL)) {
 		SetLastError(ERROR_OUTOFMEMORY);
 		return (int)(HANDLE)NULL;
 	}
 	if (nlu->szHttpGatewayHello) 
-		thisUser->user.szHttpGatewayHello=_strdup(nlu->szHttpGatewayHello);
+		thisUser->user.szHttpGatewayHello=mir_strdup(nlu->szHttpGatewayHello);
 	else
 		thisUser->user.szHttpGatewayHello=NULL;
 
@@ -172,7 +172,7 @@ static int NetlibRegisterUser(WPARAM wParam,LPARAM lParam)
 	thisUser->settings.szOutgoingPorts=GetNetlibUserSettingString(thisUser->user.szSettingsModule,"NLOutgoingPorts",0);
 
 	EnterCriticalSection(&csNetlibUser);
-	netlibUser=(struct NetlibUser**)realloc(netlibUser,sizeof(struct NetlibUser*)*++netlibUserCount);
+	netlibUser=(struct NetlibUser**)mir_realloc(netlibUser,sizeof(struct NetlibUser*)*++netlibUserCount);
 	netlibUser[netlibUserCount-1]=thisUser;
 	LeaveCriticalSection(&csNetlibUser);
 	return (int)thisUser;
@@ -220,11 +220,11 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 				}
 			LeaveCriticalSection(&csNetlibUser);
 			NetlibFreeUserSettingsStruct(&nlu->settings);
-			if(nlu->user.szSettingsModule) free(nlu->user.szSettingsModule);
-			if(nlu->user.szDescriptiveName) free(nlu->user.szDescriptiveName);
-			if(nlu->user.szHttpGatewayHello) free(nlu->user.szHttpGatewayHello);
-			if(nlu->user.szHttpGatewayUserAgent) free(nlu->user.szHttpGatewayUserAgent);
-			if(nlu->szStickyHeaders) free(nlu->szStickyHeaders);
+			if(nlu->user.szSettingsModule) mir_free(nlu->user.szSettingsModule);
+			if(nlu->user.szDescriptiveName) mir_free(nlu->user.szDescriptiveName);
+			if(nlu->user.szHttpGatewayHello) mir_free(nlu->user.szHttpGatewayHello);
+			if(nlu->user.szHttpGatewayUserAgent) mir_free(nlu->user.szHttpGatewayUserAgent);
+			if(nlu->szStickyHeaders) mir_free(nlu->szStickyHeaders);
 			break;
 		}
 		case NLH_CONNECTION:
@@ -253,9 +253,9 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 				return 0;
 			}
 			nlc->handleType=0;
-			if(nlc->nlhpi.szHttpPostUrl) free(nlc->nlhpi.szHttpPostUrl);
-			if(nlc->nlhpi.szHttpGetUrl) free(nlc->nlhpi.szHttpGetUrl);
-			if(nlc->dataBuffer) free(nlc->dataBuffer);
+			if(nlc->nlhpi.szHttpPostUrl) mir_free(nlc->nlhpi.szHttpPostUrl);
+			if(nlc->nlhpi.szHttpGetUrl) mir_free(nlc->nlhpi.szHttpGetUrl);
+			if(nlc->dataBuffer) mir_free(nlc->dataBuffer);
 			if(nlc->hInstSecurityDll) FreeLibrary(nlc->hInstSecurityDll);
 			NetlibDeleteNestedCS(&nlc->ncsRecv);
 			NetlibDeleteNestedCS(&nlc->ncsSend);
@@ -269,14 +269,14 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 			return NetlibFreeBoundPort((struct NetlibBoundPort*)wParam);
 		case NLH_PACKETRECVER:
 		{	struct NetlibPacketRecver *nlpr=(struct NetlibPacketRecver*)wParam;
-			free(nlpr->packetRecver.buffer);
+			mir_free(nlpr->packetRecver.buffer);
 			break;
 		}
 		default:
 			SetLastError(ERROR_INVALID_PARAMETER);
 			return 0;
 	}
-	free((void*)wParam);
+	mir_free((void*)wParam);
 	return 1;
 }
 
@@ -436,7 +436,7 @@ static int NetlibShutdown(WPARAM wParam,LPARAM lParam)
 	NetlibLogShutdown();
 	for(i=netlibUserCount;i>0;i--)
 		NetlibCloseHandle((WPARAM)netlibUser[i-1],0);
-	if(netlibUser) free(netlibUser);
+	if(netlibUser) mir_free(netlibUser);
 	CloseHandle(hConnectionHeaderMutex);
 	DeleteCriticalSection(&csNetlibUser);
 	WSACleanup();

@@ -41,9 +41,9 @@ static int ServiceSkinAddNewSound(WPARAM wParam,LPARAM lParam)
 	if (ssd->cbSize!=sizeof(SKINSOUNDDESC) && ssd->cbSize!=sizeof(SKINSOUNDDESCEX))
 		return 0;
 
-	soundList=(struct SoundItem*)realloc(soundList,sizeof(struct SoundItem)*(soundCount+1));
+	soundList=(struct SoundItem*)mir_realloc(soundList,sizeof(struct SoundItem)*(soundCount+1));
 	item = &soundList[soundCount++];
-	item->name = _strdup( ssd->pszName );
+	item->name = mir_strdup( ssd->pszName );
 	item->description = LangPackPcharToTchar( ssd->pszDescription );
 	item->section = LangPackPcharToTchar( ssd->cbSize==sizeof(SKINSOUNDDESCEX) ? ssd->pszSection : "Other" );
 	item->tempFile = NULL;
@@ -258,7 +258,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			ofn.lpstrDefExt = "wav";
 			if(!GetOpenFileNameA(&ofn)) break;
 			CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)str, (LPARAM)strFull);
-			soundList[tvi.lParam].tempFile = _strdup(strFull);
+			soundList[tvi.lParam].tempFile = mir_strdup(strFull);
 			SetDlgItemTextA(hwndDlg, IDC_LOCATION, strFull);
 		}
 		if(LOWORD(wParam)==IDC_GETMORE) {
@@ -394,10 +394,10 @@ void UninitSkinSounds(void)
 {
 	int i;
 	for(i=0;i<soundCount;i++) {
-		free(soundList[i].name);
-		free(soundList[i].section);
-		free(soundList[i].description);
-		if (soundList[i].tempFile) free(soundList[i].tempFile);
+		mir_free(soundList[i].name);
+		mir_free(soundList[i].section);
+		mir_free(soundList[i].description);
+		if (soundList[i].tempFile) mir_free(soundList[i].tempFile);
 	}
-	if(soundCount) free(soundList);
+	if(soundCount) mir_free(soundList);
 }

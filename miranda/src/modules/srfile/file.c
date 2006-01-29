@@ -143,39 +143,39 @@ void FreeFilesMatrix(char ***files)
 	pFile = *files;
 	while (*pFile != NULL)
 	{
-		free(*pFile);
+		mir_free(*pFile);
 		*pFile = NULL;
 		pFile++;
 	}
 
 	// Free the array itself
-	free(*files);
+	mir_free(*files);
 	*files = NULL;
 
 }
 
 void FreeProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *fts)
 {
-	if(fts->currentFile) free(fts->currentFile);
+	if(fts->currentFile) mir_free(fts->currentFile);
 	if(fts->files) {
 		int i;
-		for(i=0;i<fts->totalFiles;i++) free(fts->files[i]);
-		free(fts->files);
+		for(i=0;i<fts->totalFiles;i++) mir_free(fts->files[i]);
+		mir_free(fts->files);
 	}
-	if(fts->workingDir) free(fts->workingDir);
+	if(fts->workingDir) mir_free(fts->workingDir);
 }
 
 void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src)
 {
 	*dest=*src;
-	if(src->currentFile) dest->currentFile=_strdup(src->currentFile);
+	if(src->currentFile) dest->currentFile=mir_strdup(src->currentFile);
 	if(src->files) {
 		int i;
-		dest->files=(char**)malloc(sizeof(char*)*src->totalFiles);
+		dest->files=(char**)mir_alloc(sizeof(char*)*src->totalFiles);
 		for(i=0;i<src->totalFiles;i++)
-			dest->files[i]=_strdup(src->files[i]);
+			dest->files[i]=mir_strdup(src->files[i]);
 	}
-	if(src->workingDir) dest->workingDir=_strdup(src->workingDir);
+	if(src->workingDir) dest->workingDir=mir_strdup(src->workingDir);
 }
 
 static void RemoveUnreadFileEvents(void)
@@ -216,7 +216,7 @@ static int SRFileModulesLoaded(WPARAM wParam,LPARAM lParam)
 		if(protocol[i]->type!=PROTOTYPE_PROTOCOL) continue;
 		if(CallProtoService(protocol[i]->szName,PS_GETCAPS,PFLAGNUM_1,0)&PF1_FILESEND) {
 			mi.pszContactOwner=protocol[i]->szName;
-			hFileMenu = (HANDLE*)realloc(hFileMenu,sizeof(HANDLE)*(hFileMenuCount+1));
+			hFileMenu = (HANDLE*)mir_realloc(hFileMenu,sizeof(HANDLE)*(hFileMenuCount+1));
 			hFileMenu[hFileMenuCount] = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 			hFileMenuCount++;
 		}
@@ -249,7 +249,7 @@ int FileIconsChanged(WPARAM wParam,LPARAM lParam) {
 }
 
 int FileShutdownProc(WPARAM wParam,LPARAM lParam) {
-	free(hFileMenu);
+	mir_free(hFileMenu);
 	return 0;
 }
 

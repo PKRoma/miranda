@@ -162,7 +162,7 @@ static int interfaceInited = 0;
 
 static struct ClcContact* fnCreateClcContact( void )
 {
-	return ( struct ClcContact* )calloc( sizeof( struct ClcContact ), 1 );
+	return ( struct ClcContact* )mir_calloc( sizeof( struct ClcContact ));
 }
 
 static BOOL fnInvalidateRect( HWND hwnd, CONST RECT* lpRect,BOOL bErase )

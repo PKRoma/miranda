@@ -27,7 +27,7 @@ static HANDLE hEMailMenuItem;
 void SendEmailThread(char *szUrl)
 {
 	ShellExecuteA(NULL,"open",szUrl,"","",SW_SHOW);
-	free(szUrl);	
+	mir_free(szUrl);	
 	return;
 }
 
@@ -44,10 +44,10 @@ static int SendEMailCommand(WPARAM wParam,LPARAM lParam)
 			return 1;
 		}
 	}
-	szUrl=(char*)malloc(lstrlenA(dbv.pszVal)+8);
+	szUrl=(char*)mir_alloc(lstrlenA(dbv.pszVal)+8);
 	lstrcpyA(szUrl,"mailto:");
 	lstrcatA(szUrl,dbv.pszVal);
-	free(dbv.pszVal);
+	mir_free(dbv.pszVal);
 	forkthread(SendEmailThread,0,szUrl);
 	return 0;
 }

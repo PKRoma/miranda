@@ -276,7 +276,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			TranslateDialogDefault(hwndDlg);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FINDUSER)));
 			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg,IDC_RESULTS),LVS_EX_FULLROWSELECT|LVS_EX_HEADERDRAGDROP);
-			dat=(struct FindAddDlgData*)malloc(sizeof(struct FindAddDlgData));
+			dat=(struct FindAddDlgData*)mir_alloc(sizeof(struct FindAddDlgData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 			dat->hResultHook=NULL;
 			dat->notSearchedYet=1;
@@ -469,7 +469,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						#if defined( _UNICODE )
 							TCHAR* p = a2u(szUniqueId);
 							SetDlgItemText(hwndDlg,IDC_BYPROTOID,p);
-							free(p);
+							mir_free(p);
 						#else
 							SetDlgItemTextA(hwndDlg,IDC_BYPROTOID,szUniqueId);
 						#endif
@@ -617,14 +617,14 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					if(dat->searchCount) {	 //cancel search
 						SetDlgItemText(hwndDlg,IDOK,TranslateT("&Search"));
 						if(dat->hResultHook) {UnhookEvent(dat->hResultHook); dat->hResultHook=NULL;}
-						if(dat->search) {free(dat->search); dat->search=NULL;}
+						if(dat->search) {mir_free(dat->search); dat->search=NULL;}
 						dat->searchCount=0;
 						StopThrobber(hwndDlg,dat);
 						SetStatusBarSearchInfo(GetDlgItem(hwndDlg,IDC_STATUSBAR),dat);
 						break;
 					}
 					szProto=(char*)SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCURSEL,0,0),0);
-					if(dat->search) {free(dat->search); dat->search=NULL;}
+					if(dat->search) {mir_free(dat->search); dat->search=NULL;}
 					dat->searchCount=0;
 					dat->hResultHook=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_SEARCHACK);
 					if(IsDlgButtonChecked(hwndDlg,IDC_BYPROTOID)) {
@@ -736,7 +736,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				dat->searchCount--;
 				memmove(dat->search+i,dat->search+i+1,sizeof(struct ProtoSearchInfo)*(dat->searchCount-i));
 				if(dat->searchCount==0) {
-					free(dat->search);
+					mir_free(dat->search);
 					dat->search=NULL;
 					UnhookEvent(dat->hResultHook);
 					dat->hResultHook=NULL;
@@ -753,13 +753,13 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				char *szComboProto;
 				COMBOBOXEXITEM cbei={0};
 
-				lsr=(struct ListSearchResult*)malloc(offsetof(struct ListSearchResult,psr)+psr->cbSize);
+				lsr=(struct ListSearchResult*)mir_alloc(offsetof(struct ListSearchResult,psr)+psr->cbSize);
 				lsr->szProto=ack->szModule;
 				CopyMemory(&lsr->psr,psr,psr->cbSize);
-				lsr->psr.email=psr->email==NULL?NULL:_strdup(psr->email);
-				lsr->psr.nick=psr->nick==NULL?NULL:_strdup(psr->nick);
-				lsr->psr.firstName=psr->firstName==NULL?NULL:_strdup(psr->firstName);
-				lsr->psr.lastName=psr->lastName==NULL?NULL:_strdup(psr->lastName);
+				lsr->psr.email=psr->email==NULL?NULL:mir_strdup(psr->email);
+				lsr->psr.nick=psr->nick==NULL?NULL:mir_strdup(psr->nick);
+				lsr->psr.firstName=psr->firstName==NULL?NULL:mir_strdup(psr->firstName);
+				lsr->psr.lastName=psr->lastName==NULL?NULL:mir_strdup(psr->lastName);
 				lvi.mask = LVIF_PARAM|LVIF_IMAGE;
 				lvi.lParam=(LPARAM)lsr;
 				for(i=SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCOUNT,0,0)-1;i>=0;i--) {
@@ -805,14 +805,14 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			if(dat->hResultHook!=NULL) UnhookEvent(dat->hResultHook);
 			FreeSearchResults(GetDlgItem(hwndDlg,IDC_RESULTS));
 			ImageList_Destroy(dat->himlComboIcons);
-			if(dat->search) free(dat->search);
+			if(dat->search) mir_free(dat->search);
 			if(dat->hwndAdvSearch) {
 				DestroyWindow(dat->hwndAdvSearch);
 				dat->hwndAdvSearch=NULL;
 			}
 			DeleteObject(dat->hBmpSortDown);
 			DeleteObject(dat->hBmpSortUp);
-			free(dat);			
+			mir_free(dat);			
 			Utils_SaveWindowPosition(hwndDlg,NULL,"FindAdd","");
 			break;
 	}

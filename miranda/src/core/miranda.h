@@ -21,6 +21,21 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+/**** memory.c *************************************************************************/
+
+void*  mir_alloc( size_t );
+void*  mir_calloc( size_t );
+void*  mir_realloc( void* ptr, size_t );
+void   mir_free( void* ptr );
+char*  mir_strdup( const char* str );
+WCHAR* mir_wstrdup( const WCHAR* str );
+
+#if defined( _UNICODE )
+	#define mir_tstrdup mir_wstrdup
+#else
+	#define mir_tstrdup mir_strdup
+#endif
+
 /**** utf.c ****************************************************************************/
 
 void Utf8Decode( char* str, wchar_t** ucs2 );

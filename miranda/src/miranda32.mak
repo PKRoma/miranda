@@ -139,6 +139,8 @@ CLEAN :
 	-@erase "$(INTDIR)\langpack.sbr"
 	-@erase "$(INTDIR)\lpservices.obj"
 	-@erase "$(INTDIR)\lpservices.sbr"
+	-@erase "$(INTDIR)\memory.obj"
+	-@erase "$(INTDIR)\memory.sbr"
 	-@erase "$(INTDIR)\miranda.obj"
 	-@erase "$(INTDIR)\miranda.sbr"
 	-@erase "$(INTDIR)\miranda32.pch"
@@ -233,6 +235,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\button.sbr" \
 	"$(INTDIR)\contacts.sbr" \
 	"$(INTDIR)\database.sbr" \
+	"$(INTDIR)\dbini.sbr" \
 	"$(INTDIR)\dblists.sbr" \
 	"$(INTDIR)\dbtime.sbr" \
 	"$(INTDIR)\profilemanager.sbr" \
@@ -306,7 +309,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Docking.sbr" \
 	"$(INTDIR)\groups.sbr" \
 	"$(INTDIR)\keyboard.sbr" \
-	"$(INTDIR)\dbini.sbr"
+	"$(INTDIR)\memory.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -324,6 +327,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\button.obj" \
 	"$(INTDIR)\contacts.obj" \
 	"$(INTDIR)\database.obj" \
+	"$(INTDIR)\dbini.obj" \
 	"$(INTDIR)\dblists.obj" \
 	"$(INTDIR)\dbtime.obj" \
 	"$(INTDIR)\profilemanager.obj" \
@@ -398,7 +402,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\dbini.obj"
+	"$(INTDIR)\memory.obj"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -513,6 +517,8 @@ CLEAN :
 	-@erase "$(INTDIR)\langpack.sbr"
 	-@erase "$(INTDIR)\lpservices.obj"
 	-@erase "$(INTDIR)\lpservices.sbr"
+	-@erase "$(INTDIR)\memory.obj"
+	-@erase "$(INTDIR)\memory.sbr"
 	-@erase "$(INTDIR)\miranda.obj"
 	-@erase "$(INTDIR)\miranda.sbr"
 	-@erase "$(INTDIR)\miranda32.pch"
@@ -608,6 +614,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\button.sbr" \
 	"$(INTDIR)\contacts.sbr" \
 	"$(INTDIR)\database.sbr" \
+	"$(INTDIR)\dbini.sbr" \
 	"$(INTDIR)\dblists.sbr" \
 	"$(INTDIR)\dbtime.sbr" \
 	"$(INTDIR)\profilemanager.sbr" \
@@ -681,7 +688,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Docking.sbr" \
 	"$(INTDIR)\groups.sbr" \
 	"$(INTDIR)\keyboard.sbr" \
-	"$(INTDIR)\dbini.sbr"
+	"$(INTDIR)\memory.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -699,6 +706,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\button.obj" \
 	"$(INTDIR)\contacts.obj" \
 	"$(INTDIR)\database.obj" \
+	"$(INTDIR)\dbini.obj" \
 	"$(INTDIR)\dblists.obj" \
 	"$(INTDIR)\dbtime.obj" \
 	"$(INTDIR)\profilemanager.obj" \
@@ -773,7 +781,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\dbini.obj"
+	"$(INTDIR)\memory.obj"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -837,6 +845,7 @@ CLEAN :
 	-@erase "$(INTDIR)\keyboard.obj"
 	-@erase "$(INTDIR)\langpack.obj"
 	-@erase "$(INTDIR)\lpservices.obj"
+	-@erase "$(INTDIR)\memory.obj"
 	-@erase "$(INTDIR)\miranda.obj"
 	-@erase "$(INTDIR)\miranda32.pch"
 	-@erase "$(INTDIR)\modules.obj"
@@ -900,6 +909,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\button.obj" \
 	"$(INTDIR)\contacts.obj" \
 	"$(INTDIR)\database.obj" \
+	"$(INTDIR)\dbini.obj" \
 	"$(INTDIR)\dblists.obj" \
 	"$(INTDIR)\dbtime.obj" \
 	"$(INTDIR)\profilemanager.obj" \
@@ -974,7 +984,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\dbini.obj"
+	"$(INTDIR)\memory.obj"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1089,6 +1099,8 @@ CLEAN :
 	-@erase "$(INTDIR)\langpack.sbr"
 	-@erase "$(INTDIR)\lpservices.obj"
 	-@erase "$(INTDIR)\lpservices.sbr"
+	-@erase "$(INTDIR)\memory.obj"
+	-@erase "$(INTDIR)\memory.sbr"
 	-@erase "$(INTDIR)\miranda.obj"
 	-@erase "$(INTDIR)\miranda.sbr"
 	-@erase "$(INTDIR)\miranda32.pch"
@@ -1184,6 +1196,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\button.sbr" \
 	"$(INTDIR)\contacts.sbr" \
 	"$(INTDIR)\database.sbr" \
+	"$(INTDIR)\dbini.sbr" \
 	"$(INTDIR)\dblists.sbr" \
 	"$(INTDIR)\dbtime.sbr" \
 	"$(INTDIR)\profilemanager.sbr" \
@@ -1257,7 +1270,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Docking.sbr" \
 	"$(INTDIR)\groups.sbr" \
 	"$(INTDIR)\keyboard.sbr" \
-	"$(INTDIR)\dbini.sbr"
+	"$(INTDIR)\memory.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1275,6 +1288,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\button.obj" \
 	"$(INTDIR)\contacts.obj" \
 	"$(INTDIR)\database.obj" \
+	"$(INTDIR)\dbini.obj" \
 	"$(INTDIR)\dblists.obj" \
 	"$(INTDIR)\dbtime.obj" \
 	"$(INTDIR)\profilemanager.obj" \
@@ -1349,7 +1363,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\dbini.obj"
+	"$(INTDIR)\memory.obj"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1439,6 +1453,38 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
+
+
+!ENDIF 
+
+SOURCE=.\core\memory.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\memory.obj"	"$(INTDIR)\memory.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\memory.obj"	"$(INTDIR)\memory.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\memory.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\memory.obj"	"$(INTDIR)\memory.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ENDIF 

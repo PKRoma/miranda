@@ -171,9 +171,9 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragLeave(struct CDropTarget *lpThis)
 
 static void AddToFileList(char ***pppFiles, int *totalCount, const char *szFilename)
 {
-	*pppFiles = (char **) realloc(*pppFiles, (++*totalCount + 1) * sizeof(char *));
+	*pppFiles = (char **) mir_realloc(*pppFiles, (++*totalCount + 1) * sizeof(char *));
 	(*pppFiles)[*totalCount] = NULL;
-	(*pppFiles)[*totalCount - 1] = strdup(szFilename);
+	(*pppFiles)[*totalCount - 1] = mir_strdup(szFilename);
 	if (GetFileAttributesA(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
 		WIN32_FIND_DATAA fd;
 		HANDLE hFind;
@@ -232,8 +232,8 @@ static STDMETHODIMP_(HRESULT) CDropTarget_Drop(struct CDropTarget *lpThis, IData
 			*pdwEffect = DROPEFFECT_COPY;
 
 		for (i = 0; ppFiles[i]; i++)
-			free(ppFiles[i]);
-		free(ppFiles);
+			mir_free(ppFiles[i]);
+		mir_free(ppFiles);
 	}
 
 	if (stg.pUnkForRelease)
