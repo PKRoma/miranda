@@ -1415,7 +1415,7 @@ void IMG_LoadItems()
     szSections[3001] = szSections[3000] = 0;
     p = szSections;
     while(lstrlenA(p) > 1) {
-        if(p[0] == '$')
+		if(p[0] == '$')
             IMG_ReadItem(p, szFileName);
         p += (lstrlenA(p) + 1);
     }
