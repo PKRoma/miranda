@@ -542,7 +542,7 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 
 			dbcws->value.pszVal = ( char* )alloca( strlen( val )+1 );
 			strcpy( dbcws->value.pszVal, val );
-			free(val);
+			mir_free(val);
 			dbcws->value.type = DBVT_UTF8;
 		}
 		else return 1;
