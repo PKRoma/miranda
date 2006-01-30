@@ -436,7 +436,6 @@
 #define IDC_CYCLETIME                   1318
 #define IDC_CYCLETIMESPIN               1319
 #define IDC_HIDETIMESPIN                1320
-#define IDC_SORTPRIMARY                 1420
 #define IDC_MULTITRAY                   1321
 #define IDC_ALWAYSMULTI                 1322
 #define IDC_SHOWICON                    1323
@@ -504,6 +503,7 @@
 #define IDC_ADVANCEDGROUP               1402
 #define IDC_BYADVANCED                  1403
 #define IDC_ADVANCED                    1404
+#define IDC_SORTPRIMARY                 1420
 #define IDC_STSIMPLERIGHT               1440
 #define IDC_NETLIBUSERS                 1443
 #define IDC_STOFTENPORT                 1445
@@ -823,6 +823,7 @@
 #define IDC_CHECK2                      40036
 #define IDC_GROUPAUTOEXPAND             40036
 #define ID_BUTTONBAR_NOVISUALSTYLES     40037
+#define IDC_GROUPALIGN                  -25499
 #define ID_TRAY_HIDE                    40038
 #define ID_TRAY_EXIT                    40039
 #define POPUP_SHOWMETAICONS             40040
@@ -852,7 +853,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        3
 #define _APS_NEXT_COMMAND_VALUE         40061
-#define _APS_NEXT_CONTROL_VALUE         40037
+#define _APS_NEXT_CONTROL_VALUE         40038
 #define _APS_NEXT_SYMED_VALUE           40154
 #endif
 #endif

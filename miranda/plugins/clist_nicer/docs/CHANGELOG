@@ -7,6 +7,17 @@
 + = new feature
 - = removed
 
+0.6.0.5  - 2006/01/30
+
+		* groups now have their own alignment option. 
+		  * Always left
+		  * Always right
+		  * Automatic (in that case, RTL detection will determine whether the group name will
+		    be right or left aligned).
+		    
+		! fixed hit-testing for right-aligned groups (you can now click on the expand/collapse
+		  icon even if it is aligned to the right).
+		  
 0.6.0.4  - 2006/01/27
 
 		! The option "If window is partially covered..." should no longer affect the

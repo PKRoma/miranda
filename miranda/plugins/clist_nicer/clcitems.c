@@ -55,6 +55,7 @@ struct ClcContact* CreateClcContact( void )
 {
 	struct ClcContact* p = (struct ClcContact*)mir_alloc( sizeof( struct ClcContact ) );
 	if ( p != NULL ) {
+		ZeroMemory(p, sizeof(struct ClcContact));
 		p->clientId = -1;
 		p->extraCacheEntry = -1;
 		p->avatarLeft = p->extraIconRightBegin = -1;
@@ -371,7 +372,7 @@ void RTL_DetectGroupName(struct ClcContact *group)
 
     group->isRtl = 0;
     
-    if(group->szText && g_CluiData.bUseDCMirroring != 0) {
+    if(group->szText) {
         iLen = min(lstrlenW(group->szText), 10);
         GetStringTypeW(CT_CTYPE2, group->szText, iLen, infoTypeC2);
         for(i = 0; i < 10; i++) {

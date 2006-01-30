@@ -499,8 +499,8 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 		else
 			bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
-	else if(type == CLCIT_GROUP && (contact->isRtl || mirror_always)) {
-		if(pfnSetLayout != NULL && (mirror_rtl || mirror_always || mirror_rtltext)) {
+	else if(type == CLCIT_GROUP && pfnSetLayout != NULL) {
+		if((contact->isRtl && g_CluiData.bGroupAlign == CLC_GROUPALIGN_AUTO) || g_CluiData.bGroupAlign == CLC_GROUPALIGN_RIGHT) {
 			g_RTL = TRUE;
 			bg_indent_r = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 		}
@@ -510,8 +510,14 @@ static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct C
 	else
 		bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 #else
-	g_RTL = FALSE;
-	bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+	if(type == CLCIT_GROUP && g_CluiData.bGroupAlign == CLC_GROUPALIGN_RIGHT) {
+		g_RTL = TRUE;
+		bg_indent_r = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+	}
+	else {
+		g_RTL = FALSE;
+		bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+	}
 #endif
 
 	g_hottrack = dat->exStyle & CLS_EX_TRACKSELECT && type == CLCIT_CONTACT && dat->iHotTrack == index;

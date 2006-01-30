@@ -864,6 +864,7 @@ void ReloadThemedOptions()
 	g_CluiData.cornerRadius = DBGetContactSettingByte(NULL, "CLCExt", "CornerRad", 6);
 	g_CluiData.gapBetweenFrames = (BYTE)DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1);
 	g_CluiData.bUseDCMirroring = (BYTE)DBGetContactSettingByte(NULL, "CLC", "MirrorDC", 0);
+	g_CluiData.bGroupAlign = (BYTE)DBGetContactSettingByte(NULL, "CLC", "GroupAlign", 0);
 	if(g_CluiData.hBrushColorKey)
 		DeleteObject(g_CluiData.hBrushColorKey);
 	g_CluiData.hBrushColorKey = CreateSolidBrush(RGB(255, 0, 255));

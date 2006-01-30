@@ -197,6 +197,12 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
             SendDlgItemMessage(hwndDlg, IDC_GROUPROWHEIGHTSPIN, UDM_SETRANGE, 0, MAKELONG(255, 8));
             SendDlgItemMessage(hwndDlg, IDC_GROUPROWHEIGHTSPIN, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingByte(NULL, "CLC", "GRowHeight", CLCDEFAULT_ROWHEIGHT), 0));
             CheckDlgButton(hwndDlg, IDC_CENTERGROUPNAMES, DBGetContactSettingByte(NULL, "CLCExt", "EXBK_CenterGroupnames", 0));
+
+            SendDlgItemMessage(hwndDlg, IDC_GROUPALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always Left"));
+            SendDlgItemMessage(hwndDlg, IDC_GROUPALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always Right"));
+            SendDlgItemMessage(hwndDlg, IDC_GROUPALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Automatic (RTL)"));
+			SendDlgItemMessage(hwndDlg, IDC_GROUPALIGN, CB_SETCURSEL, g_CluiData.bGroupAlign, 0);
+
             return TRUE;
         case WM_VSCROLL:
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -250,6 +256,9 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                                 else
                                     DBWriteContactSettingDword(NULL, "CLC", "GreyoutFlags", 0);
                             }
+							g_CluiData.bGroupAlign = (BYTE)SendDlgItemMessage(hwndDlg, IDC_GROUPALIGN, CB_GETCURSEL, 0, 0);
+							DBWriteContactSettingByte(NULL, "CLC", "GroupAlign", g_CluiData.bGroupAlign);
+
                             DBWriteContactSettingByte(NULL, "CLC", "ShowIdle", (BYTE) (IsDlgButtonChecked(hwndDlg, IDC_IDLE) ? 1 : 0));
                             DBWriteContactSettingDword(NULL, "CLC", "OfflineModes", MakeCheckBoxTreeFlags(GetDlgItem(hwndDlg, IDC_HIDEOFFLINEOPTS)));
                             DBWriteContactSettingByte(NULL, "CLC", "LeftMargin", (BYTE) SendDlgItemMessage(hwndDlg, IDC_LEFTMARGINSPIN, UDM_GETPOS, 0, 0));

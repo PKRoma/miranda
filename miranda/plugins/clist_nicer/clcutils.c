@@ -195,14 +195,16 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
         *contact = hitcontact;
     if (group)
         *group = hitgroup;
-    for (indent = 0; hitgroup->parent; indent++,hitgroup = hitgroup->parent) {
-        ;
-    }
 
-    if(mirror_mode == 1 || (mirror_mode == 2 && ((hitcontact->type == CLCIT_CONTACT && g_ExtraCache[hitcontact->extraCacheEntry].dwCFlags & ECF_RTLNICK) ||
-		(hitcontact->type == CLCIT_GROUP && hitcontact->isRtl))) || (mirror_mode == 3 && hitcontact->type == CLCIT_GROUP && hitcontact->isRtl))
-        return RTL_HitTest(hwnd, dat, testx, testy, hitcontact, flags, indent, hit);
-    
+	if(hitcontact->type == CLCIT_CONTACT) {
+		if(mirror_mode == 1 || (mirror_mode == 2 && g_ExtraCache[hitcontact->extraCacheEntry].dwCFlags & ECF_RTLNICK))
+	        return RTL_HitTest(hwnd, dat, testx, testy, hitcontact, flags, indent, hit);
+	}
+	else if(hitcontact->type == CLCIT_GROUP) {
+		if(g_CluiData.bGroupAlign == CLC_GROUPALIGN_RIGHT || (hitcontact->isRtl && g_CluiData.bGroupAlign == CLC_GROUPALIGN_AUTO))
+	        return RTL_HitTest(hwnd, dat, testx, testy, hitcontact, flags, indent, hit);
+	}
+
     // avatar check
     if(hitcontact->type == CLCIT_CONTACT && g_CluiData.dwFlags & CLUI_FRAME_AVATARS && hitcontact->ace != NULL && hitcontact->avatarLeft != -1) {
         if(testx >hitcontact->avatarLeft && testx < hitcontact->avatarLeft + g_CluiData.avatarSize) {

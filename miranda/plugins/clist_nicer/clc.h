@@ -231,6 +231,10 @@ struct ClcData {
 #define CLUI_FLOATER_AUTOHIDE 2
 #define CLUI_FLOATER_EVENTS 4
 
+#define CLC_GROUPALIGN_LEFT 0
+#define CLC_GROUPALIGN_RIGHT 1
+#define CLC_GROUPALIGN_AUTO 2
+
 struct CluiData {
 	DWORD dwFlags;
 	DWORD topOffset, bottomOffset;
@@ -324,6 +328,7 @@ struct CluiData {
 	SIZE szOldCTreeSize;
 	BYTE bWantFastGradients, bUseFastGradients;
 	BYTE sortOrder[3];
+	BYTE bGroupAlign;
 };
 
 #define SORTBY_NAME 1
