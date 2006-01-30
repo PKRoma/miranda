@@ -1,0 +1,350 @@
+# Microsoft Developer Studio Generated Dependency File, included by aimoscar.mak
+
+.\aim.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\file.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\thread.h"\
+	".\utility.h"\
+	
+
+.\commands.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\file.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\thread.h"\
+	".\utility.h"\
+	
+
+.\connection.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\file.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\thread.h"\
+	".\utility.h"\
+	
+
+.\direct_connect.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\file.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\thread.h"\
+	".\utility.h"\
+	
+
+.\file.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\file.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\thread.h"\
+	".\utility.h"\
+	
+
+.\md5.cpp : \
+	".\md5.h"\
+	
+
+.\packets.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\file.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\thread.h"\
+	".\utility.h"\
+	
+
+.\proxy.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\file.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\thread.h"\
+	".\utility.h"\
+	
+
+.\services.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\file.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\thread.h"\
+	".\utility.h"\
+	
+
+.\snac.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\file.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\thread.h"\
+	".\utility.h"\
+	
+
+.\thread.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\file.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\thread.h"\
+	".\utility.h"\
+	
+
+.\utility.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\file.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\thread.h"\
+	".\utility.h"\
+	
+
+.\aim.rc : \
+	".\icons\oscar.ico"\
+	
