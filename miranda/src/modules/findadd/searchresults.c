@@ -202,13 +202,14 @@ void FreeSearchResults(HWND hwndResults)
 // on its own thread
 static void BeginSearchFailed(void * arg)
 {
-	char buf[128];
-	if ( arg != NULL ) { 
-		mir_snprintf(buf,SIZEOF(buf),Translate("Could not start a search on '%s', there was a problem - is %s connected?"),arg,arg);
+	TCHAR buf[128];
+	if ( arg != NULL ) {
+		TCHAR* protoName = LangPackPcharToTchar(( const char* )arg );
+		mir_sntprintf(buf,SIZEOF(buf),TranslateT("Could not start a search on '%s', there was a problem - is %s connected?"),protoName,protoName);
 		mir_free((char*)arg);
 	}
-	else strncpy(buf,Translate("Could not search on any of the protocols, are you online?"),SIZEOF(buf));
-	MessageBoxA(0,buf,Translate("Problem with search"),MB_OK | MB_ICONERROR);
+	else lstrcpyn(buf,TranslateT("Could not search on any of the protocols, are you online?"),SIZEOF(buf));
+	MessageBox(0,buf,TranslateT("Problem with search"),MB_OK | MB_ICONERROR);
 }
 
 int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,const char *szSearchService,DWORD requiredCapability,void *pvSearchParams)
