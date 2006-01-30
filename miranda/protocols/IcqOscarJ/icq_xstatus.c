@@ -928,6 +928,8 @@ int IcqGetXStatus(WPARAM wParam, LPARAM lParam)
 {
   BYTE status = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
 
+  if (!icqOnline) return 0;
+
   if (status < 1 || status > 29) status = 0;
 
   if (wParam) *((char**)wParam) = DBSETTING_XSTATUSNAME;
