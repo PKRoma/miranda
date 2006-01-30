@@ -23,15 +23,15 @@ nmake /f IcqOscar8.mak CFG="icqoscar8 - Win32 Release"
 if errorlevel 1 goto :Error
 
 cd ..\MSN
-nmake /f MSN.mak CFG="msn - Win32 Release"
+nmake /f MSN.mak CFG="msn - Win32 Release Unicode"
 if errorlevel 1 goto :Error
 
 cd ..\JabberG
-nmake /f jabber.mak CFG="jabberg - Win32 Release"
+nmake /f jabber.mak CFG="jabberg - Win32 Release Unicode"
 if errorlevel 1 goto :Error
 
-cd ..\AimTOC2
-nmake /f aim.mak CFG="aim - Win32 Release"
+cd ..\AimOscar
+nmake /f aimoscar.mak CFG="aim - Win32 Release"
 if errorlevel 1 goto :Error
 
 cd ..\YAHOO
@@ -89,8 +89,6 @@ copy ..\release\Plugins\dbx_3x.dll   Plugins
 copy ..\release\Plugins\ICQ.dll      Plugins
 copy ..\release\Plugins\import.dll   Plugins
 copy ..\release\Plugins\IRC.dll      Plugins
-copy ..\release\Plugins\jabber.dll   Plugins
-copy ..\release\Plugins\msn.dll      Plugins
 copy ..\release\Plugins\png2dib.dll  Plugins
 copy ..\release\Plugins\Yahoo.dll    Plugins
 
@@ -190,11 +188,11 @@ md %Temp%\pdbw\plugins
 copy ..\..\src\Release_Unicode\miranda32.pdb                   %Temp%\pdbw
 copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb          %Temp%\pdbw
 rem  Protocols
-copy ..\..\protocols\AimTOC2\Release\AIM.pdb                   %Temp%\pdbw\plugins
+copy ..\..\protocols\AimOscar\Release\AimOSCAR.pdb             %Temp%\pdbw\plugins
 copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb                 %Temp%\pdbw\plugins
 copy ..\..\protocols\IRC\Release\IRC.pdb                       %Temp%\pdbw\plugins
-copy ..\..\protocols\JabberG\Release\jabber.pdb                %Temp%\pdbw\plugins
-copy ..\..\protocols\MSN\Release\MSN.pdb                       %Temp%\pdbw\plugins
+copy ..\..\protocols\JabberG\Release_Unicode\jabber.pdb        %Temp%\pdbw\plugins
+copy ..\..\protocols\MSN\Release_Unicode\MSN.pdb               %Temp%\pdbw\plugins
 copy ..\..\protocols\Yahoo\Release\Yahoo.pdb                   %Temp%\pdbw\plugins
 rem  Unicode plugins
 copy ..\..\plugins\chat\Release_Unicode\chat.pdb               %Temp%\pdbw\plugins

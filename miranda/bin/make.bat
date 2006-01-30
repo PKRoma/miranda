@@ -30,8 +30,8 @@ cd ..\JabberG
 nmake /f jabber.mak CFG="jabberg - Win32 Release"
 if errorlevel 1 goto :Error
 
-cd ..\AimTOC2
-nmake /f aim.mak CFG="aim - Win32 Release"
+cd ..\AimOscar
+nmake /f aimoscar.mak CFG="aim - Win32 Release"
 if errorlevel 1 goto :Error
 
 cd ..\YAHOO
@@ -192,7 +192,7 @@ md %Temp%\pdba\plugins
 copy ..\..\src\Release\miranda32.pdb                   %Temp%\pdba
 copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb  %Temp%\pdba
 rem  Protocols
-copy ..\..\protocols\AimTOC2\Release\AIM.pdb           %Temp%\pdba\plugins
+copy ..\..\protocols\AimOscar\Release\AimOSCAR.pdb     %Temp%\pdba\plugins
 copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb         %Temp%\pdba\plugins
 copy ..\..\protocols\IRC\Release\IRC.pdb               %Temp%\pdba\plugins
 copy ..\..\protocols\JabberG\Release\jabber.pdb        %Temp%\pdba\plugins
