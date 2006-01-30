@@ -218,7 +218,8 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
     if(dat->pContainer->hwndActive == hwndDlg)
         UpdateReadChars(hwndDlg, dat);
 
-    HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconSend);
+    if(!(dat->sendMode & SMODE_NOACK))
+		HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconSend);
     
     if (DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
         SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
@@ -255,7 +256,7 @@ void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat)
         } */
         HandleIconFeedback(hwndDlg, dat, (HICON)-1);
     }
-    else
+    else if(!(dat->sendMode & SMODE_NOACK))
         HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconSend);
     
     if(dat->pContainer->hwndActive == hwndDlg)    
