@@ -283,7 +283,7 @@ void PaintNotifyArea(HDC hDC, RECT *rc)
 
 static BLENDFUNCTION bf = {0, 0, AC_SRC_OVER, 0};
 static BOOL avatar_done = FALSE;
-static HDC g_HDC;
+HDC g_HDC;
 static BOOL g_RTL;
 DWORD ( WINAPI *pfnSetLayout )(HDC, DWORD) = NULL;
 
@@ -440,7 +440,7 @@ static BOOL av_wanted, mirror_rtl, mirror_always, mirror_rtltext;
 
 DWORD savedCORNER = -1;
 
-static void __forceinline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *contact, int indent, int y, struct ClcData *dat, int index, HWND hwnd, DWORD style, RECT *clRect, BOOL *bFirstNGdrawn, int groupCountsFontTopShift, int rowHeight)
+void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *contact, int indent, int y, struct ClcData *dat, int index, HWND hwnd, DWORD style, RECT *clRect, BOOL *bFirstNGdrawn, int groupCountsFontTopShift, int rowHeight)
 {
 	RECT rc;
 	int iImage = -1;

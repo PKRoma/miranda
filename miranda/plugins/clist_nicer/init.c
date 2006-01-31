@@ -69,6 +69,9 @@ void LoadClcOptions(HWND hwnd,struct ClcData *dat);
 int ( *saveAddContactToGroup )(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact);
 int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact);
 
+struct ClcGroup* ( *saveRemoveItemFromGroup )(HWND hwnd, struct ClcGroup *group, struct ClcContact *contact, int updateTotalCount);
+struct ClcGroup* RemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct ClcContact *contact, int updateTotalCount);
+
 struct CListEvent* ( *saveAddEvent )(CLISTEVENT *cle);
 struct CListEvent* AddEvent(CLISTEVENT *cle);
 
@@ -341,6 +344,8 @@ LBL_Error:
 	pcli->pfnDocking_ProcessWindowMessage = Docking_ProcessWindowMessage;
 
 	saveAddContactToGroup = pcli->pfnAddContactToGroup; pcli->pfnAddContactToGroup = AddContactToGroup;
+	saveRemoveItemFromGroup = pcli->pfnRemoveItemFromGroup; pcli->pfnRemoveItemFromGroup = RemoveItemFromGroup;
+
 	saveAddEvent = pcli->pfnAddEvent; pcli->pfnAddEvent = AddEvent;
 	saveAddGroup = pcli->pfnAddGroup; pcli->pfnAddGroup = AddGroup;
 	saveAddInfoItemToGroup = pcli->pfnAddInfoItemToGroup; pcli->pfnAddInfoItemToGroup = AddInfoItemToGroup;

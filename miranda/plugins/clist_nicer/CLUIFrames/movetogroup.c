@@ -1,7 +1,7 @@
 #include "../commonheaders.h"
 
 HANDLE hModulesLoaded,hOnCntMenuBuild;
-HANDLE prevmenu=0, hPriorityItem = 0;
+HANDLE prevmenu=0, hPriorityItem = 0, hFloatingItem = 0;
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
 
 HWND hwndTopToolBar=0;
@@ -43,7 +43,21 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
     if (prevmenu!=0) {
         CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)prevmenu,(LPARAM)0);
 		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hPriorityItem, 0);
+		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hFloatingItem, 0);
     }
+
+	memset(&mi,0,sizeof(mi));
+    mi.cbSize=sizeof(mi);
+    mi.position=300000;
+    mi.pszPopupName=(char *)-1;
+    mi.pszService="CList/SetContactFloating";
+    mi.pszName=Translate("&Floating Contact");
+	if(pcli) {
+		if(SendMessage(pcli->hwndContactTree, CLM_QUERYFLOATINGCONTACT, wParam, 0))
+			mi.flags=CMIF_CHECKED;
+	}
+    mi.pszContactOwner=(char *)0;
+    hFloatingItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi);
 
 	memset(&mi,0,sizeof(mi));
     mi.cbSize=sizeof(mi);
@@ -57,6 +71,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	}
     mi.pszContactOwner=(char *)0;
     hPriorityItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi);
+
 
     ZeroMemory(&mi,sizeof(mi));
     mi.cbSize=sizeof(mi);

@@ -80,7 +80,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry) {
 				g_ExtraCache[contact->extraCacheEntry].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
 				g_ExtraCache[contact->extraCacheEntry].iExtraValid = g_ExtraCache[contact->extraCacheEntry].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[contact->extraCacheEntry].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[contact->extraCacheEntry].iExtraValid & ~(1 << LOWORD(lParam)));
-				PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
+				PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
 		}	}
 		return 0;
 	case CLM_SETEXTRAIMAGEINTMETA:
@@ -151,6 +151,41 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			if(contact->type != CLCIT_CONTACT)
 				return 0;
 			return(contact->flags & CONTACTF_PRIORITY ? 1 : 0);
+		}
+	case CLM_TOGGLEFLOATINGCONTACT:
+		{
+			struct ClcContact *contact = NULL;
+			BYTE state;
+
+			if (wParam == 0)
+				return 0;
+
+			if (!FindItem(hwnd, dat, (HANDLE)wParam, &contact, NULL, NULL))
+				return 0;
+			if(contact->type != CLCIT_CONTACT)
+				return 0;
+
+			state = !DBGetContactSettingByte(contact->hContact, "CList", "floating", 0);
+			if(state) {
+				if(FLT_CheckAvail() != -1) {
+					if(g_ExtraCache[contact->extraCacheEntry].floater.hwnd == 0)
+						FLT_Create(contact->extraCacheEntry);
+					ShowWindow(g_ExtraCache[contact->extraCacheEntry].floater.hwnd, SW_SHOW);
+				}
+				return 0;
+			}
+			else {
+				if(g_ExtraCache[contact->extraCacheEntry].floater.hwnd) {
+					DestroyWindow(g_ExtraCache[contact->extraCacheEntry].floater.hwnd);
+					ZeroMemory(&g_ExtraCache[contact->extraCacheEntry].floater, sizeof(CONTACTFLOATER));
+				}
+			}
+			DBWriteContactSettingByte(contact->hContact, "CList", "floating", state);
+			return 0;
+		}
+	case CLM_QUERYFLOATINGCONTACT:
+		{
+			return(DBGetContactSettingByte((HANDLE)wParam, "CList", "floating", 0));
 		}
 	case CLM_SETEXTRAIMAGELIST:
 		dat->himlExtraColumns = (HIMAGELIST) lParam;

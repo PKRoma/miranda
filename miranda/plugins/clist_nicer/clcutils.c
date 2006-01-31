@@ -196,6 +196,10 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
     if (group)
         *group = hitgroup;
 
+    for (indent = 0; hitgroup->parent; indent++,hitgroup = hitgroup->parent) {
+        ;
+    }
+
 	if(hitcontact->type == CLCIT_CONTACT) {
 		if(mirror_mode == 1 || (mirror_mode == 2 && g_ExtraCache[hitcontact->extraCacheEntry].dwCFlags & ECF_RTLNICK))
 	        return RTL_HitTest(hwnd, dat, testx, testy, hitcontact, flags, indent, hit);

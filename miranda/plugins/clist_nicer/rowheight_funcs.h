@@ -36,4 +36,7 @@ int RowHeights_HitTest(struct ClcData *dat, int pos_y);
 // Returns the height of the chosen row
 int RowHeights_GetHeight(struct ClcData *dat, int item);
 
+// returns the height for a floating contact
+int RowHeights_GetFloatingRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact);
+
 #endif // __ROWHEIGHT_FUNCS_H__

@@ -215,6 +215,7 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	ShutdownGdiPlus();
 	pDrawAlpha = 0;
 	free(StatusItems);
+	SFL_UnregisterWindowClass();
 	return 0;
 }
 
@@ -369,7 +370,7 @@ LBL_Def:
             }
             dat->bNeedSort = TRUE;
             PostMessage(hwnd, INTM_SORTCLC, 0, recalcScrollBar);
-            PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
+            PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
             if (recalcScrollBar)
                 pcli->pfnRecalcScrollBar(hwnd, dat);
             goto LBL_Def;
@@ -419,7 +420,7 @@ LBL_Def:
 
 	case INTM_CODEPAGECHANGED:
 		{
-			struct ClcContact *contact;
+			struct ClcContact *contact = NULL;
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 				break;
 			contact->codePage = DBGetContactSettingDword((HANDLE) wParam, "Tab_SRMsg", "ANSIcodepage", DBGetContactSettingDword((HANDLE)wParam, "UserInfo", "ANSIcodepage", CP_ACP));
@@ -451,7 +452,7 @@ LBL_Def:
 			//contact->gdipObject = NULL;
 			contact->ace = cEntry;
 			// XXX InvalidateRect(hwnd, NULL, FALSE);
-			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
+			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
 			goto LBL_Def;
 		}
 	case INTM_STATUSMSGCHANGED:
@@ -467,7 +468,7 @@ LBL_Def:
 				szProto = contact->proto;
 			}
 			GetCachedStatusMsg(index, szProto);
-			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
+			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
 			goto LBL_Def;
 		}
 	case INTM_STATUSCHANGED:
@@ -519,6 +520,12 @@ LBL_Def:
 			SetTimer(hwnd, TIMERID_PAINT, 100, NULL);
 			dat->bNeedPaint = TRUE;
 		}
+
+		if(lParam && !dat->bisEmbedded) {
+			struct ClcContact *contact = (struct ClcContact *)lParam;
+			if(g_ExtraCache[contact->extraCacheEntry].floater.hwnd)
+				FLT_Update(dat, contact);
+		}
 		goto LBL_Def;
 
 	case INTM_INVALIDATECONTACT:
@@ -552,7 +559,7 @@ LBL_Def:
 		{
 			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 			char *szProto;
-			struct ClcContact *contact;
+			struct ClcContact *contact = NULL;
 
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 				break;
@@ -563,15 +570,14 @@ LBL_Def:
 			if (DBGetContactSettingDword((HANDLE) wParam, szProto, "IdleTS", 0)) {
 				contact->flags |= CONTACTF_IDLE;
 			}
-			// XXX InvalidateRect(hwnd, NULL, FALSE);
-			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
+			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
 			goto LBL_Def;
 		}
 	case INTM_XSTATUSCHANGED:
 		{
 			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 			char *szProto;
-			struct ClcContact *contact;
+			struct ClcContact *contact = NULL;
 			int index;
 
 			if (!wParam)
@@ -588,14 +594,14 @@ LBL_Def:
 			if (szProto == NULL)
 				break;
 			GetCachedStatusMsg(index, szProto);
-			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
+			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
 			goto LBL_Def;
 		}
 	case INTM_CLIENTCHANGED:
 		{
 			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 			char *szProto;
-			struct ClcContact *contact;
+			struct ClcContact *contact = NULL;
 			DBVARIANT dbv = {0};
 
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
@@ -608,8 +614,7 @@ LBL_Def:
 					GetClientID(contact, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
-			// XXX InvalidateRect(hwnd, NULL, FALSE);
-			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
+			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
 			goto LBL_Def;
 		}
 	case WM_PAINT:
@@ -780,11 +785,20 @@ LBL_Def:
 			break;
 		}
 	case WM_DESTROY:
-		RowHeights_Free(dat);
-		break;
+		{
+			int i;
+
+			for(i = 0; i < g_nextExtraCacheEntry; i++) {
+				if(g_ExtraCache[i].floater.hwnd)
+					DestroyWindow(g_ExtraCache[i].floater.hwnd);
+			}
+			RowHeights_Free(dat);
+			break;
+		}
 	}
 
-	{	LRESULT result = saveContactListControlWndProc(hwnd, msg, wParam, lParam);
+	{	
+		LRESULT result = saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 
 		if ( msg == WM_CREATE ) {
 			if(GetParent(hwnd) == pcli->hwndContactList && MySetLayeredWindowAttributes != 0 && g_CluiData.bFullTransparent) {

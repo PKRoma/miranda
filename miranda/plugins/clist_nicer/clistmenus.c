@@ -1126,6 +1126,12 @@ static int SetContactPriority(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static int SetContactFloating(WPARAM wParam, LPARAM lParam)
+{
+	SendMessage(pcli->hwndContactTree, CLM_TOGGLEFLOATINGCONTACT, wParam, lParam);
+	return 0;
+}
+
 int InitCustomMenus(void)
 {
     TMenuParam tmp;
@@ -1140,6 +1146,7 @@ int InitCustomMenus(void)
 
     CreateServiceFunction("CloseAction",CloseAction);
 	CreateServiceFunction("CList/SetContactPriority", SetContactPriority);
+	CreateServiceFunction("CList/SetContactFloating", SetContactFloating);
 
 //free services
     CreateServiceFunction("CLISTMENUS/FreeOwnerDataMainMenu",FreeOwnerDataMainMenu);

@@ -75,6 +75,12 @@ struct ClcGroup;
 #define ECF_RTLNICK 1
 #define ECF_RTLSTATUSMSG 2
 
+typedef struct ContactFLoater {
+	HWND hwnd;
+	HDC hdc;
+	HBITMAP hbm, hbmOld;
+} CONTACTFLOATER;
+
 struct ExtraCache {
 	BYTE iExtraImage[MAXEXTRACOLUMNS];
 	HANDLE hContact;
@@ -86,6 +92,7 @@ struct ExtraCache {
 	DWORD timediff;
 	DWORD dwCFlags;
 	StatusItems_t *status_item, *proto_status_item;
+	CONTACTFLOATER floater;
 };
 
 struct ClcContact {
@@ -446,6 +453,7 @@ int GetExtraCache(HANDLE hContact, char *szProto);
 void ReloadExtraInfo(HANDLE hContact);
 //clcpaint.c
 void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint);
+void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *contact, int indent, int y, struct ClcData *dat, int index, HWND hwnd, DWORD style, RECT *clRect, BOOL *bFirstNGdrawn, int groupCountsFontTopShift, int rowHeight);
 void Reload3dBevelColors();
 void ReloadThemedOptions();
 void SetButtonToSkinned();
@@ -453,13 +461,18 @@ void RTL_DetectAndSet(struct ClcContact *contact, HANDLE hContact);
 void RTL_DetectGroupName(struct ClcContact *group);
 void CLN_LoadAllIcons(BOOL mode);
 void ReloadSkinItemsToCache();
-void SFL_RegisterWindowClass();
+void SFL_RegisterWindowClass(), SFL_UnregisterWindowClass();
 void SFL_Create();
 void SFL_Destroy();
 void SFL_SetState();
 void SFL_SetSize();
 void SFL_PaintNotifyArea();
 void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const char *szText, BOOL refresh);
+
+void FLT_Update(struct ClcData *dat, struct ClcContact *contact);
+int FLT_CheckAvail();
+void FLT_Create(int iEntry);
+void FLT_SetSize(struct ExtraCache *centry, LONG width, LONG height);
 
 //clcopts.c
 int ClcOptInit(WPARAM wParam, LPARAM lParam);
@@ -546,6 +559,8 @@ int Docking_IsDocked(WPARAM wParam, LPARAM lParam);
 #define CLM_SETHIDESUBCONTACTS (CLM_FIRST+106)
 #define CLM_TOGGLEPRIORITYCONTACT (CLM_FIRST+107)
 #define CLM_QUERYPRIORITYCONTACT (CLM_FIRST+108)
+#define CLM_TOGGLEFLOATINGCONTACT (CLM_FIRST+109)
+#define CLM_QUERYFLOATINGCONTACT (CLM_FIRST+110)
 
 #define IDC_RESETMODES 110
 #define IDC_SELECTMODE 108

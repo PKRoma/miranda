@@ -47,6 +47,8 @@ extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
 
 extern int ( *saveAddContactToGroup )(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact);
 extern int ( *saveAddInfoItemToGroup )(struct ClcGroup *group, int flags, const TCHAR *pszText);
+extern struct ClcGroup* ( *saveRemoveItemFromGroup )(HWND hwnd, struct ClcGroup *group, struct ClcContact *contact, int updateTotalCount);
+
 extern struct ClcGroup* ( *saveAddGroup )(HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers);
 
 //routines for managing adding/removal of items in the list, including sorting
@@ -93,6 +95,15 @@ struct ClcGroup *AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, D
 	return p;
 }
 
+struct ClcGroup *RemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct ClcContact *contact, int updateTotalCount)
+{
+	if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry) {
+		if(g_ExtraCache[contact->extraCacheEntry].floater.hwnd)
+			ShowWindow(g_ExtraCache[contact->extraCacheEntry].floater.hwnd, SW_HIDE);
+	}
+	return(saveRemoveItemFromGroup(hwnd, group, contact, updateTotalCount));
+}
+
 int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact)
 {
 	int i = saveAddContactToGroup( dat, group, hContact );
@@ -135,6 +146,8 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 		p->extraCacheEntry = -1;
 	else {
 		p->extraCacheEntry = GetExtraCache(p->hContact, p->proto);
+		if(DBGetContactSettingByte(p->hContact, "CList", "floating", 0) && g_ExtraCache[p->extraCacheEntry].floater.hwnd == 0)
+			FLT_Create(p->extraCacheEntry);
 		GetExtendedInfo( p, dat);
 		if(p->extraCacheEntry >= 0 && p->extraCacheEntry <= g_nextExtraCacheEntry)
 			g_ExtraCache[p->extraCacheEntry].proto_status_item = GetProtocolStatusItem(p->bIsMeta ? p->metaProto : p->proto);
@@ -528,6 +541,7 @@ int GetExtraCache(HANDLE hContact, char *szProto)
         }
         g_ExtraCache[g_nextExtraCacheEntry].hContact = hContact;
         memset(g_ExtraCache[g_nextExtraCacheEntry].iExtraImage, 0xff, MAXEXTRACOLUMNS);
+		memset(&g_ExtraCache[g_nextExtraCacheEntry].floater, 0, sizeof(CONTACTFLOATER));
         g_ExtraCache[g_nextExtraCacheEntry].iExtraValid = 0;
         g_ExtraCache[g_nextExtraCacheEntry].valid = FALSE;
         g_ExtraCache[g_nextExtraCacheEntry].bStatusMsgValid = 0;
