@@ -390,7 +390,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
 {
   DBVARIANT dbv = {0};
   char str[MAX_PATH];
-  char* pstr;
+  char* pstr = NULL;
   int unspecified = 0;
   int bUtf = 0;
 
@@ -412,7 +412,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       dbv.dVal = (DWORD)szSetting;
       break;
     case DBVT_ASCIIZ:
-      dbv.pszVal = szSetting;
+      pstr = szSetting;
       break;
     default:
       unspecified = 1;
@@ -506,7 +506,11 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       
     case DBVT_ASCIIZ:
       unspecified = (special == SVS_ZEROISUNSPEC && dbv.pszVal[0] == '\0');
-      pstr = dbv.pszVal;
+      if (!unspecified && pstr != szSetting)
+      {
+        pstr = UniGetContactSettingUtf(hContact, szModule, szSetting, NULL);
+        bUtf = 1;
+      }
       if (idCtrl == IDC_UIN)
         SetDlgItemTextUtf(hwndDlg, IDC_UINSTATIC, ICQTranslateUtfStatic("ScreenName:", str));
       break;
@@ -526,5 +530,10 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
   else
     SetDlgItemText(hwndDlg, idCtrl, pstr);
   
-  if (dbv.pszVal!=szSetting) ICQFreeVariant(&dbv);
+  if (dbv.pszVal!=szSetting)
+  {
+    ICQFreeVariant(&dbv);
+    if (dbv.type==DBVT_ASCIIZ && !unspecified)
+      SAFE_FREE(&pstr);
+  }
 }
