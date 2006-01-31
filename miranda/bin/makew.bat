@@ -84,7 +84,7 @@ rem ---------------------------------------------------------------------------
 
 cd "..\..\bin\Release Unicode"
 copy ..\release\dbtool.exe
-copy ..\release\Plugins\AIM.dll      Plugins
+copy ..\release\Plugins\AimOSCAR.dll Plugins
 copy ..\release\Plugins\dbx_3x.dll   Plugins
 copy ..\release\Plugins\ICQ.dll      Plugins
 copy ..\release\Plugins\import.dll   Plugins
