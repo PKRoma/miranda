@@ -73,6 +73,7 @@ New Features:
   Custom statuses just like icq5 - needs clist_mw derivative (thx Big Muscle)
   Enhanced Unicode & Ansi charsets support (each contact can have its own codepage)
   AIM cross-compatability (add/remove, search by mail, status, messaging, away messages)
+  Secure MD5 login authentification
 
 Improvements:
   Advanced search now can use newer method (thx Bio)
@@ -284,7 +285,7 @@ Current maintainer is Joe @ Whale, jokusoftware at users.sourceforge.net
 License and Copyright
 _____________________
 
-Copyright (C) 2000-2005 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
+Copyright (C) 2000-2006 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
