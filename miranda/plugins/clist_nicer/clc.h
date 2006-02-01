@@ -397,7 +397,7 @@ HANDLE ContactToItemHandle(struct ClcContact *contact, DWORD *nmFlags);
 //clcitems.c
 void RebuildEntireList(HWND hwnd, struct ClcData *dat);
 void SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat);
-DWORD __forceinline INTSORT_GetLastMsgTime(HANDLE hContact);
+DWORD INTSORT_GetLastMsgTime(HANDLE hContact);
 
 //clcmsgs.c
 LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM wParam, LPARAM lParam);
