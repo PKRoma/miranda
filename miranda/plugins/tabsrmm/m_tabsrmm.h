@@ -426,7 +426,7 @@ typedef struct _globals {
     int m_EscapeCloses;
     int m_WarnOnClose;
     int m_ExtraMicroLF;
-    int m_AvatarMode;
+    int m_AvatarMode, m_OwnAvatarMode;
     int m_FlashOnClist;
     int m_TabAutoClose;
     int m_AlwaysFullToolbarWidth;

@@ -1656,6 +1656,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->dwFlags &= ~(MWF_LOG_ALL);
                     dat->dwFlags |= DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
                 }
+				dat->panelWidth = -1;
             }
 
             if(!(dat->dwFlags & MWF_SHOW_PRIVATETHEME))

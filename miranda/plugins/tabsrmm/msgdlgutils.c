@@ -590,43 +590,76 @@ void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, HICON iIcon
 int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 {
     BYTE bAvatarMode = myGlobals.m_AvatarMode;
+	BYTE bOwnAvatarMode = myGlobals.m_OwnAvatarMode;
 
-    dat->showPic = 0;
-    switch(bAvatarMode) {
-        case 0:             // globally on
-            dat->showPic = dat->showInfoPic = 1;
-            break;
-        case 4:             // globally OFF
-            dat->showPic = dat->showInfoPic = 0;
-            break;
-        case 3:             // on, if present
-        {
-			HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : ((dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0);
-            if((hbm && hbm != myGlobals.g_hbmUnknown && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) || (hbm && hbm != myGlobals.g_hbmUnknown))
-                dat->showPic = 1;
-            else
-                dat->showPic = 0;
-			
-			hbm = dat->ace ? dat->ace->hbmPic : 0;
-			dat->showInfoPic = hbm != 0;
-            break;
-        }
-        case 1:             // on for protocols with avatar support
-            {
-                int pCaps;
+	// infopanel visible, consider own avatar display
 
-                if(dat->szProto) {
-                    pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
-                    if((pCaps & PF4_AVATARS) && (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown)) {
-                        dat->showPic = 1;
-                    }
-                }
-                break;
-            }
-        case 2:             // default (per contact, as it always was
-            dat->showPic = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", 0);
-            break;
-    }
+	dat->showPic = 0;
+
+	if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+		if(bOwnAvatarMode)
+			dat->showPic = FALSE;
+		else
+			dat->showPic = (dat->hOwnPic && dat->hOwnPic != myGlobals.g_hbmUnknown) ? 1 : 0;
+
+		switch(bAvatarMode) {
+			case 0:
+			case 1:
+				dat->showInfoPic = 1;
+				break;
+			case 4:
+				dat->showInfoPic = 0;
+				break;
+			case 3:
+			{
+				HBITMAP hbm = ((dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0);
+				if(hbm && hbm != myGlobals.g_hbmUnknown)
+					dat->showInfoPic = 1;
+				else
+					dat->showInfoPic = 0;
+				break;
+			}
+			case 2:
+	            dat->showInfoPic = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", 0);
+		        break;
+		}
+	}
+	else {
+		dat->showInfoPic = 0;
+		
+		switch(bAvatarMode) {
+			case 0:             // globally on
+				dat->showPic = 1;
+				break;
+			case 4:             // globally OFF
+				dat->showPic = 0;
+				break;
+			case 3:             // on, if present
+			{
+				HBITMAP hbm = (dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0;
+				if(hbm && hbm != myGlobals.g_hbmUnknown)
+					dat->showPic = 1;
+				else
+					dat->showPic = 0;
+				break;
+			}
+			case 1:             // on for protocols with avatar support
+				{
+					int pCaps;
+
+					if(dat->szProto) {
+						pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
+						if((pCaps & PF4_AVATARS) && (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown)) {
+							dat->showPic = 1;
+						}
+					}
+					break;
+				}
+			case 2:             // default (per contact, as it always was
+				dat->showPic = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", 0);
+				break;
+		}
+	}
     return dat->showPic;
 }
 
