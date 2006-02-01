@@ -412,7 +412,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       dbv.dVal = (DWORD)szSetting;
       break;
     case DBVT_ASCIIZ:
-      pstr = szSetting;
+      dbv.pszVal = pstr = szSetting;
       break;
     default:
       unspecified = 1;
