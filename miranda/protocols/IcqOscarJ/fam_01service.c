@@ -44,21 +44,16 @@ extern int pendingAvatarsStart;
 extern DWORD dwLocalInternalIP;
 extern WORD wListenPort;
 extern DWORD dwLocalDirectConnCookie;
-extern BYTE* cookieData;
-extern int cookieDataLen;
-extern char* migratedServer;
 extern CRITICAL_SECTION modeMsgsMutex;
 
 extern const capstr capXStatus[];
-
-int isMigrating;
 
 void setUserInfo();
 
 char* calcMD5Hash(char* szFile);
 
 
-void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
+void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
 {
   icq_packet packet;
 
@@ -258,29 +253,31 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       wBufferLength -= 2;
       chain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
 
-      if (cookieDataLen > 0 && cookieData != 0)
-        SAFE_FREE(&cookieData);
+      if (info->cookieDataLen > 0)
+        SAFE_FREE(&info->cookieData);
 
-      migratedServer = getStrFromChain(chain, 0x05, 1);
-      cookieData = getStrFromChain(chain, 0x06, 1);
-      cookieDataLen = getLenFromChain(chain, 0x06, 1);
+      info->newServer = getStrFromChain(chain, 0x05, 1);
+      info->cookieData = getStrFromChain(chain, 0x06, 1);
+      info->cookieDataLen = getLenFromChain(chain, 0x06, 1);
 
-      if (!migratedServer || !cookieData)
+      if (!info->newServer || !info->cookieData)
       {
         icq_LogMessage(LOG_FATAL, "A server migration has failed because the server returned invalid data. You must reconnect manually.");
-        SAFE_FREE(&migratedServer);
-        SAFE_FREE(&cookieData);
-        cookieDataLen = 0;
+        SAFE_FREE(&info->newServer);
+        SAFE_FREE(&info->cookieData);
+        info->cookieDataLen = 0;
+        info->newServerReady = 0;
         return;
       }
 
       disposeChain(&chain);
-      NetLog_Server("Migration has started. New server will be %s", migratedServer);
+      NetLog_Server("Migration has started. New server will be %s", info->newServer);
 
       icqGoingOnlineStatus = gnCurrentStatus;
       SetCurrentStatus(ID_STATUS_CONNECTING); // revert to connecting state
 
-      isMigrating = 1;
+      info->newServerReady = 1;
+      info->isMigrating = 1;
     }
     break;
 
@@ -383,6 +380,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
     { // new family entry point received
       char* pServer;
+      WORD wPort;
       char* pCookie;
       WORD wCookieLen;
       NETLIBOPENCONNECTION nloc = {0};
@@ -401,10 +399,13 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         break;
       }
 
+      // Get new family server ip and port
+      parseServerAddress(pServer, &wPort);
+
       nloc.cbSize = sizeof(nloc); // establish connection
       nloc.flags = 0;
-      nloc.szHost = pServer; // this is horrible assumption - there should not be port
-      nloc.wPort = ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
+      nloc.szHost = pServer; 
+      nloc.wPort = wPort;
 
       hConnection = NetLib_OpenConnection(ghServerNetlibUser, &nloc);
       
@@ -635,7 +636,6 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
   WORD wCurrentLen = 0;
   DWORD dwUIN;
   uid_str szUID;
-  char szUin[UINMAXLEN];
   char szLen[2];
   int add;
 
@@ -652,13 +652,7 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
   {
     if (!ICQGetContactSettingUID(hContact, &dwUIN, &szUID))
     {
-      if (dwUIN)
-      {
-        _itoa(dwUIN, szUin, 10);
-        szLen[0] = strlennull(szUin);
-      }
-      else
-        szLen[0] = strlennull(szUID);
+      szLen[0] = strlennull(strUID(dwUIN, szUID));
 
       switch (subtype)
       {
@@ -705,10 +699,7 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
         }
 
         strcat(szList, szLen);
-        if (dwUIN)
-          strcat(szList, szUin);
-        else
-          strcat(szList, szUID);
+        strcat(szList, szUID);
       }
     }
 

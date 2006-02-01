@@ -38,17 +38,13 @@
 
 
 
-static WORD wCookieSeq;
-static icq_cookie_info *cookie = NULL;
-static int cookieCount = 0;
-static int cookieSize = 0;
-CRITICAL_SECTION cookieMutex; // we want this in avatar thread, used as queue lock
-
 typedef struct gateway_index_s
 {
   HANDLE hConn;
   DWORD  dwIndex;
 } gateway_index;
+
+extern CRITICAL_SECTION cookieMutex; 
 
 static gateway_index *gateways = NULL;
 static int gatewayCount = 0;
@@ -306,206 +302,6 @@ int AwayMsgTypeToStatus(int nMsgType)
     default:
       return ID_STATUS_OFFLINE;
   }
-}
-
-
-
-static int ResizeCookieList(int nSize)
-{
-  if ((cookieSize < nSize) || ((cookieSize > nSize + 6) && nSize))
-  {
-    icq_cookie_info *pNew;
-    int n = 5;
-    int newSize;
-
-    if (cookieSize < nSize)
-      newSize = cookieSize + 4;
-    else
-      newSize = cookieSize - 4;
-
-rclTryAgain:
-    pNew = (icq_cookie_info *)realloc(cookie, sizeof(icq_cookie_info) * newSize);
-
-    if (!pNew)
-    { // realloc failed, cookies intact... try again
-      NetLog_Server("ResizeCookieList: realloc failed.");
-      Sleep(100);
-      n--; // try five times to realloc then give up..
-      if (n) goto rclTryAgain;
-
-      return 1; // Failure
-    }
-    else
-    {
-      cookie = pNew;
-      cookieSize = newSize;
-    }
-  }
-  return 0; // Success
-}
-
-
-
-void InitCookies(void)
-{
-  InitializeCriticalSection(&cookieMutex);
-
-  cookieCount = 0;
-  cookieSize = 0;
-  cookie = NULL;
-  wCookieSeq = 2;
-
-  ResizeCookieList(4);
-}
-
-
-
-void UninitCookies(void)
-{
-  SAFE_FREE(&cookie);
-
-  DeleteCriticalSection(&cookieMutex);
-}
-
-
-
-// Generate and allocate cookie
-DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra)
-{
-  DWORD dwThisSeq;
-
-  EnterCriticalSection(&cookieMutex);
-
-  if (ResizeCookieList(cookieCount + 1))
-  { // resizing failed...
-    LeaveCriticalSection(&cookieMutex);
-    // this is horrible, but can't do anything better
-    return GenerateCookie(wIdent);
-  }
-
-  dwThisSeq = wCookieSeq++;
-  dwThisSeq &= 0x7FFF;
-  dwThisSeq |= wIdent<<0x10;
-
-  cookie[cookieCount].dwCookie = dwThisSeq;
-  cookie[cookieCount].dwUin = dwUin;
-  cookie[cookieCount].pvExtra = pvExtra;
-  cookie[cookieCount].dwTime = time(NULL);
-  cookieCount++;
-
-  LeaveCriticalSection(&cookieMutex);
-
-  return dwThisSeq;
-}
-
-
-
-DWORD GenerateCookie(WORD wIdent)
-{
-  DWORD dwThisSeq;
-
-  EnterCriticalSection(&cookieMutex);
-  dwThisSeq = wCookieSeq++;
-  dwThisSeq &= 0x7FFF;
-  dwThisSeq |= wIdent<<0x10;
-  LeaveCriticalSection(&cookieMutex);
-
-  return dwThisSeq;
-}
-
-
-
-int FindCookie(DWORD dwCookie, DWORD *pdwUin, void **ppvExtra)
-{
-  int i;
-  int nFound = 0;
-
-
-  EnterCriticalSection(&cookieMutex);
-
-  for (i = 0; i < cookieCount; i++)
-  {
-    if (dwCookie == cookie[i].dwCookie)
-    {
-      if (pdwUin)
-        *pdwUin = cookie[i].dwUin;
-      if (ppvExtra)
-        *ppvExtra = cookie[i].pvExtra;
-
-      // Cookie found, exit loop
-      nFound = 1;
-      break;
-
-    }
-  }
-
-  LeaveCriticalSection(&cookieMutex);
-
-  return nFound;
-}
-
-
-
-int FindCookieByData(void *pvExtra,DWORD *pdwCookie, DWORD *pdwUin)
-{
-  int i;
-  int nFound = 0;
-
-
-  EnterCriticalSection(&cookieMutex);
-
-  for (i = 0; i < cookieCount; i++)
-  {
-    if (pvExtra == cookie[i].pvExtra)
-    {
-      if (pdwUin)
-        *pdwUin = cookie[i].dwUin;
-      if (pdwCookie)
-        *pdwCookie = cookie[i].dwCookie;
-
-      // Cookie found, exit loop
-      nFound = 1;
-      break;
-
-    }
-  }
-
-  LeaveCriticalSection(&cookieMutex);
-
-  return nFound;
-}
-
-
-
-void FreeCookie(DWORD dwCookie)
-{
-  int i;
-  DWORD tNow = time(NULL);
-
-
-  EnterCriticalSection(&cookieMutex);
-
-  for (i = 0; i < cookieCount; i++)
-  {
-    if (dwCookie == cookie[i].dwCookie)
-    {
-      cookieCount--;
-      memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
-      ResizeCookieList(cookieCount);
-
-      // Cookie found, exit loop
-      break;
-    }
-    if ((cookie[i].dwTime + COOKIE_TIMEOUT) < tNow)
-    { // cookie expired, remove too
-      cookieCount--;
-      memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
-      ResizeCookieList(cookieCount);
-      i--; // fix the loop
-    }
-  }
-
-  LeaveCriticalSection(&cookieMutex);
 }
 
 
@@ -949,6 +745,26 @@ char* __fastcall null_strdup(const char *string)
     return strdup(string);
 
   return NULL;
+}
+
+
+
+void parseServerAddress(char* szServer, WORD* wPort)
+{
+  int i = 0;
+
+  while (szServer[i] && szServer[i] != ':') i++;
+  if (szServer[i] == ':')
+  { // port included
+    *wPort = atoi(&szServer[i + 1]);
+  }
+  else // port not found, use pre-configured
+  {
+    *wPort = ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
+    if (!*wPort) *wPort = (WORD)RandRange(1024, 65535);
+  }
+
+  szServer[i] = '\0';
 }
 
 

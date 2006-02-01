@@ -57,7 +57,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,11),
+  PLUGIN_MAKE_VERSION(0,3,6,12),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@users.sourceforge.net",
@@ -484,6 +484,7 @@ static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam)
 
 void UpdateGlobalSettings()
 { 
+  gbSecureLogin = ICQGetContactSettingByte(NULL, "SecureLogin", DEFAULT_SECURE_LOGIN);
   gbAimEnabled = ICQGetContactSettingByte(NULL, "AimEnabled", DEFAULT_AIM_ENABLED);
   gbUtfEnabled = ICQGetContactSettingByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
   gwAnsiCodepage = ICQGetContactSettingWord(NULL, "AnsiCodePage", DEFAULT_ANSI_CODEPAGE);

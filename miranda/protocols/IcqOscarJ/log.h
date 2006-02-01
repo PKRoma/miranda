@@ -5,6 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -45,5 +46,6 @@
 
 void icq_LogMessage(int level, const char *szMsg);
 void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg);  //szMsg is optional
+void icq_LogFatalParam(const char* szMsg, WORD wError);
 
 #endif /* __LOG_H */

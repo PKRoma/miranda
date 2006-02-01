@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -79,8 +79,9 @@
 // ICQ plugin includes
 #include "globals.h"
 #include "icq_db.h"
-#include "capabilities.h"
 #include "i18n.h"
+#include "cookies.h"
+#include "capabilities.h"
 #include "icq_packet.h"
 #include "icq_direct.h"
 #include "icq_server.h"

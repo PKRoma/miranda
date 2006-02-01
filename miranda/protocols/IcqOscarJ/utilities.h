@@ -37,14 +37,6 @@
 #ifndef __UTILITIES_H
 #define __UTILITIES_H
 
-typedef struct icq_cookie_info_s
-{
-  DWORD dwCookie;
-  DWORD dwUin;
-  void *pvExtra;
-  DWORD dwTime;
-} icq_cookie_info;
-
 typedef struct icq_ack_args_s
 {
   HANDLE hContact;
@@ -68,14 +60,6 @@ char**MirandaStatusToAwayMsg(int nStatus);
 
 int AwayMsgTypeToStatus(int nMsgType);
 
-void InitCookies(void);
-void UninitCookies(void);
-DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra);
-int FindCookie(DWORD wCookie, DWORD *pdwUin, void **ppvExtra);
-int FindCookieByData(void *pvExtra,DWORD *pdwCookie, DWORD *pdwUin);
-void FreeCookie(DWORD wCookie);
-DWORD GenerateCookie(WORD wIdent);
-
 void SetGatewayIndex(HANDLE hConn, DWORD dwIndex);
 DWORD GetGatewayIndex(HANDLE hConn);
 void FreeGatewayIndex(HANDLE hConn);
@@ -96,6 +80,8 @@ size_t __fastcall strlennull(const char *string);
 int __fastcall strcmpnull(const char *str1, const char *str2);
 int null_snprintf(char *buffer, size_t count, const char* fmt, ...);
 char* __fastcall null_strdup(const char *string);
+
+void parseServerAddress(char *szServer, WORD* wPort);
 
 char *DemangleXml(const char *string, int len);
 char *MangleXml(const char *string, int len);

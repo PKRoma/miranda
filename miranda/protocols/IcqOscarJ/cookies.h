@@ -34,19 +34,70 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef __CHANNELS_H
-#define __CHANNELS_H
+#ifndef __COOKIES_H
+#define __COOKIES_H
 
-int unpackSnacHeader(snac_header* pSnacHeader, unsigned char **pBuffer, WORD* pwBufferLength);
-void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_info *info);
-void handleErrorChannel(unsigned char *buf, WORD datalen);
-void handleDataChannel(unsigned char *buf, WORD wLen, serverthread_info *info);
-void handlePingChannel(unsigned char *buf, WORD wLen);
-void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *info);
 
-void LogFamilyError(WORD wFamily, WORD wError);
+typedef struct icq_cookie_info_s
+{
+  DWORD dwCookie;
+  DWORD dwUin;
+  void *pvExtra;
+  DWORD dwTime;
+} icq_cookie_info;
 
-void StartKeepAlive();
-void StopKeepAlive();
+typedef struct familyrequest_rec_s
+{
+  WORD wFamily;
+  void (*familyhandler)(HANDLE hConn, char* cookie, WORD cookieLen);
+} familyrequest_rec;
 
-#endif /* __CHANNELS_H */
+
+typedef struct message_cookie_data_s
+{
+  BYTE bMessageType;
+  BYTE nAckType;
+} message_cookie_data;
+
+#define ACKTYPE_NONE   0
+#define ACKTYPE_SERVER 1
+#define ACKTYPE_CLIENT 2
+
+
+typedef struct fam15_cookie_data_s
+{
+  BYTE bRequestType;
+  HANDLE hContact;
+} fam15_cookie_data;
+
+#define REQUESTTYPE_OWNER        0
+#define REQUESTTYPE_USERAUTO     1
+#define REQUESTTYPE_USERMINIMAL  2
+#define REQUESTTYPE_USERDETAILED 3
+#define REQUESTTYPE_PROFILE      4
+
+
+typedef struct search_cookie_s
+{
+  BYTE bSearchType;
+  char* szObject;
+  DWORD dwMainId;
+  DWORD dwStatus;
+} search_cookie;
+
+#define SEARCHTYPE_UID     0
+#define SEARCHTYPE_EMAIL   1
+#define SEARCHTYPE_NAMES   2
+#define SEARCHTYPE_DETAILS 4
+
+
+void InitCookies(void);
+void UninitCookies(void);
+DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra);
+int FindCookie(DWORD wCookie, DWORD *pdwUin, void **ppvExtra);
+int FindCookieByData(void *pvExtra,DWORD *pdwCookie, DWORD *pdwUin);
+void FreeCookie(DWORD wCookie);
+DWORD GenerateCookie(WORD wIdent);
+
+
+#endif /* __COOKIES_H */

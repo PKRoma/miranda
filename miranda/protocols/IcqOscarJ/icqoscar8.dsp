@@ -106,6 +106,10 @@ SOURCE=.\channels.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\cookies.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\directpackets.h
 # End Source File
 # Begin Source File
@@ -328,6 +332,10 @@ SOURCE=.\fam_13servclist.c
 
 SOURCE=.\fam_15icqserver.c
 # End Source File
+# Begin Source File
+
+SOURCE=.\fam_17signon.c
+# End Source File
 # End Group
 # Begin Group "Direct Connection"
 
@@ -464,6 +472,10 @@ SOURCE=.\changeinfo\upload.c
 # Begin Source File
 
 SOURCE=.\capabilities.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\cookies.c
 # End Source File
 # Begin Source File
 

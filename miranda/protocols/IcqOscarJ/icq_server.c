@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -50,19 +50,17 @@ DWORD dwLocalDirectConnCookie;
 HANDLE hServerPacketRecver;
 static pthread_t serverThreadId;
 HANDLE hDirectBoundPort;
-int bReinitRecver = 0;
 
-static int handleServerPackets(unsigned char* buf, int len, serverthread_start_info* info);
-static void icq_encryptPassword(const char* szPassword, unsigned char* encrypted);
-
+static int handleServerPackets(unsigned char* buf, int len, serverthread_info* info);
 
 
 static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 {
-  serverthread_start_info info;
+  serverthread_info info = {0};
 
-  info = *infoParam;
-  SAFE_FREE(&infoParam);
+  info.isLoginServer = 1;
+  info.wAuthKeyLen = infoParam->wPassLen;
+  strncpy(info.szAuthKey, infoParam->szPass, info.wAuthKeyLen);
 
   srand(time(NULL));
 
@@ -72,9 +70,14 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
   // Connect to the login server
   NetLog_Server("Authenticating to server");
-  hServerConn = NetLib_OpenConnection(ghServerNetlibUser, &info.nloc);
+  {
+    NETLIBOPENCONNECTION nloc = infoParam->nloc;
 
-  SAFE_FREE((void**)&info.nloc.szHost);
+    hServerConn = NetLib_OpenConnection(ghServerNetlibUser, &nloc);
+
+    SAFE_FREE((void**)&nloc.szHost);
+  }
+  SAFE_FREE(&infoParam);
 
 
   // Login error
@@ -122,12 +125,11 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
     hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
     packetRecv.cbSize = sizeof(packetRecv);
     packetRecv.dwTimeout = INFINITE;
-    bReinitRecver = 0;
     for(;;)
     {
-      if (bReinitRecver)
+      if (info.bReinitRecver)
       { // we reconnected, reinit struct
-        bReinitRecver = 0;
+        info.bReinitRecver = 0;
         ZeroMemory(&packetRecv, sizeof(packetRecv));
         packetRecv.cbSize = sizeof(packetRecv);
         packetRecv.dwTimeout = INFINITE;
@@ -237,7 +239,7 @@ void icq_serverDisconnect(BOOL bBlock)
 
 
 
-static int handleServerPackets(unsigned char* buf, int len, serverthread_start_info* info)
+static int handleServerPackets(unsigned char* buf, int len, serverthread_info* info)
 {
   BYTE channel;
   WORD sequence;
@@ -246,6 +248,9 @@ static int handleServerPackets(unsigned char* buf, int len, serverthread_start_i
 
   while (len > 0)
   {
+    if (info->bReinitRecver)
+      break;
+
     // All FLAPS begin with 0x2a
     if (*buf++ != FLAP_MARKER)
       break;
@@ -272,7 +277,7 @@ static int handleServerPackets(unsigned char* buf, int len, serverthread_start_i
       break;
 
     case ICQ_DATA_CHAN:
-      handleDataChannel(buf, datalen);
+      handleDataChannel(buf, datalen, info);
       break;
 
     case ICQ_ERROR_CHAN:
@@ -280,7 +285,7 @@ static int handleServerPackets(unsigned char* buf, int len, serverthread_start_i
       break;
 
     case ICQ_CLOSE_CHAN:
-      handleCloseChannel(buf, datalen);
+      handleCloseChannel(buf, datalen, info);
       break; // we need this for walking thru proxy
 
     case ICQ_PING_CHAN:
@@ -386,34 +391,13 @@ void icq_login(const char* szPassword)
   // User password
   stsi->wPassLen = strlennull(szPassword);
   if (stsi->wPassLen > 9) stsi->wPassLen = 9;
-  icq_encryptPassword(szPassword, stsi->szEncPass);
-  stsi->szEncPass[stsi->wPassLen] = '\0';
+  strncpy(stsi->szPass, szPassword, stsi->wPassLen);
+  stsi->szPass[stsi->wPassLen] = '\0';
 
   // Randomize sequence
   wLocalSequence = (WORD)RandRange(0, 0x7fff);
 
   dwLocalUIN = dwUin;
 
-  isLoginServer = 1;
-
   serverThreadId.hThread = (HANDLE)forkthreadex(NULL, 0, icq_serverThread, stsi, 0, &serverThreadId.dwThreadId);
-}
-
-
-
-static void icq_encryptPassword(const char* szPassword, unsigned char* encrypted)
-{
-  unsigned int i;
-  unsigned char table[] =
-  {
-    0xf3, 0x26, 0x81, 0xc4,
-    0x39, 0x86, 0xdb, 0x92,
-    0x71, 0xa3, 0xb9, 0xe6,
-    0x53, 0x7a, 0x95, 0x7c
-  };
-
-  for (i = 0; szPassword[i]; i++)
-  {
-    encrypted[i] = (szPassword[i] ^ table[i % 16]);
-  }
 }

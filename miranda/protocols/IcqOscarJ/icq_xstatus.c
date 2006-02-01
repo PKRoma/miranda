@@ -155,7 +155,7 @@ static int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
   {
     DWORD bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
 
-    if (bXStatus > 0 && bXStatus < 29) 
+    if (bXStatus > 0 && bXStatus < 30) 
     {
       setContactExtraIcon((HANDLE)wParam, hXStatusIcons[bXStatus-1]);
     } 
@@ -868,7 +868,7 @@ void ChangedIconsXStatus()
 
   mi.flags = CMIM_FLAGS | CMIM_ICON;
 
-  for (i = 1; i < 29; i++)
+  for (i = 1; i < 30; i++)
   {
     mi.hIcon = GetXStatusIcon(i);
     CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[i], (LPARAM)&mi);

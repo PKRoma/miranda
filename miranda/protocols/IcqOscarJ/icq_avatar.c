@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -921,14 +921,9 @@ void handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthreadstartinfo *
 
   if (*(DWORD*)buf == 0x1000000)
   {  // here check if we received SRV_HELLO
-    packet.wLen = atsi->wCookieLen + 8;
-
     atsi->wLocalSequence = (WORD)RandRange(0, 0xffff); 
 
-    write_flap(&packet, ICQ_LOGIN_CHAN);
-    packDWord(&packet, 0x00000001);
-    packTLV(&packet, 0x06, (WORD)atsi->wCookieLen, atsi->pCookie);
-
+    serverCookieInit(&packet, atsi->pCookie, atsi->wCookieLen);
     sendAvatarPacket(&packet, atsi);
 
 #ifdef _DEBUG

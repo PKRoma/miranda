@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -38,81 +38,73 @@
 
 
 
-extern int isLoginServer;
 extern WORD wLocalSequence;
 
-BYTE* cookieData;
-int cookieDataLen = 0;
 
-
-
-void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_start_info *info)
+void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_info *info)
 {
   icq_packet packet;
-  WORD wUinLen;
-  char szUin[UINMAXLEN];
-
 
   // isLoginServer is "1" if we just received SRV_HELLO
-  if (isLoginServer)
+  if (info->isLoginServer)
   {
 #ifdef _DEBUG
     NetLog_Server("Received SRV_HELLO from login server");
 #endif
-    null_snprintf(szUin, sizeof(szUin), "%d", dwLocalUIN);
-    wUinLen = strlennull(szUin);
-
-    packet.wLen = 66 + strlennull(CLIENT_ID_STRING) + wUinLen + info->wPassLen;
-
-    write_flap(&packet, ICQ_LOGIN_CHAN);
-    packDWord(&packet, 0x00000001);
-
-    packTLV(&packet, 0x0001, wUinLen, szUin);
-    packTLV(&packet, 0x0002, info->wPassLen, info->szEncPass);
-
-    // Pack client identification details. We identify ourselves as icq5 english
-    packTLV(&packet, 0x0003, (WORD)strlennull(CLIENT_ID_STRING), CLIENT_ID_STRING); // Client ID string
-    packTLVWord(&packet, 0x0016, 0x010a);               // Client ID
-    packTLVWord(&packet, 0x0017, 0x0014);               // Client major version
-    packTLVWord(&packet, 0x0018, 0x0023);               // Client minor version
-    packTLVWord(&packet, 0x0019, 0x0000);               // Client lesser version
-    packTLVWord(&packet, 0x001a, 0x09bf);               // Client build number
-    packTLVDWord(&packet, 0x0014, 0x0000043d);          // Client distribution number
-    packTLV(&packet, 0x000f, 0x0002, "en");             // Client language
-    packTLV(&packet, 0x000e, 0x0002, "us");             // Client country
-
-    sendServPacket(&packet);
+    if (gbSecureLogin)
+    {
+      char szUin[UINMAXLEN];
+      WORD wUinLen;
 
 #ifdef _DEBUG
-    NetLog_Server("Sent CLI_IDENT to %s server", "login");
+      NetLog_Server("Sending %s to login server", "CLI_HELLO");
+#endif
+      packet.wLen = 4;
+      write_flap(&packet, ICQ_LOGIN_CHAN);
+      packDWord(&packet, 0x00000001);
+      sendServPacket(&packet);  // greet login server
+
+      wUinLen = strlennull(strUID(dwLocalUIN, szUin));
+#ifdef _DEBUG
+      NetLog_Server("Sending %s to login server", "ICQ_SIGNON_AUTH_REQUEST");
 #endif
 
-    isLoginServer = 0;
-    if (cookieDataLen)
+      serverPacketInit(&packet, (WORD)(18 + wUinLen));
+      packFNACHeaderFull(&packet, ICQ_AUTHORIZATION_FAMILY, ICQ_SIGNON_AUTH_REQUEST, 0, 0);
+      packTLV(&packet, 0x0001, wUinLen, szUin);
+      packDWord(&packet, 0x004B0000);
+      sendServPacket(&packet);  // request login digest
+    }
+    else
     {
-      SAFE_FREE(&cookieData);
-      cookieDataLen = 0;
+      sendClientAuth(info->szAuthKey, info->wAuthKeyLen, FALSE);
+#ifdef _DEBUG
+      NetLog_Server("Sent CLI_IDENT to %s server", "login");
+#endif
+    }
+
+    info->isLoginServer = 0;
+    if (info->cookieDataLen)
+    {
+      SAFE_FREE(&info->cookieData);
+      info->cookieDataLen = 0;
     }
   }
   else 
   {
-    if (cookieDataLen)
+    if (info->cookieDataLen)
     {
-      packet.wLen = cookieDataLen + 8;
       wLocalSequence = (WORD)RandRange(0, 0xffff);
       
-      write_flap(&packet, ICQ_LOGIN_CHAN);
-      packDWord(&packet, 0x00000001);
-      packTLV(&packet, 0x06, (WORD)cookieDataLen, cookieData);
-      
+      serverCookieInit(&packet, info->cookieData, (WORD)info->cookieDataLen);
       sendServPacket(&packet);
       
 #ifdef _DEBUG
       NetLog_Server("Sent CLI_IDENT to %s server", "communication");
 #endif
       
-      SAFE_FREE(&cookieData);
-      cookieDataLen = 0;
+      SAFE_FREE(&info->cookieData);
+      info->cookieDataLen = 0;
     }
     else
     {

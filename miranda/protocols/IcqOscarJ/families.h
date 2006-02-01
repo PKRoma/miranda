@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -57,17 +57,10 @@ typedef struct snac_header_s
 } snac_header;
 
 
-typedef struct familyrequest_rec_s
-{
-  WORD wFamily;
-  void (*familyhandler)(HANDLE hConn, char* cookie, WORD cookieLen);
-} familyrequest_rec;
-
-
 
 /*---------* Functions *---------------*/
 
-void handleServiceFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
+void handleServiceFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
 void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleBuddyFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
@@ -76,6 +69,10 @@ void handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
 void handleStatusFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleIcqExtensionsFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
+void handleAuthorizationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
+
+void sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure);
+void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info);
 
 void handleServUINSettings(int nPort);
 int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4, WORD wType);

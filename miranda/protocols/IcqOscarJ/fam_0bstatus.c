@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -46,7 +46,7 @@ void handleStatusFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
     {
       WORD wInterval;
       unpackWord(&pBuffer, &wInterval);
-      NetLog_Server("Server sent SNAC(x0B,x03) - SRV_SET_MINREPORTINTERVAL (Value: %u hours)", wInterval);
+      NetLog_Server("Server sent SNAC(x0B,x02) - SRV_SET_MINREPORTINTERVAL (Value: %u hours)", wInterval);
     }
     break;
 

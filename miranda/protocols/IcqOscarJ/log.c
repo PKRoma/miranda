@@ -141,3 +141,14 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
   null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?ICQTranslateUtfStatic(szMsg, str):"", szMsg?"\r\n\r\n":"", pszErrorMsg, ICQTranslateUtfStatic("error", str2), dwError);
   icq_LogMessage(level, szBuf);
 }
+
+
+
+void icq_LogFatalParam(const char* szMsg, WORD wError)
+{
+  char str[MAX_PATH];
+  char buf[MAX_PATH];
+
+  null_snprintf(buf, MAX_PATH, ICQTranslateUtfStatic(szMsg, str), wError);
+  icq_LogMessage(LOG_FATAL, buf);
+}

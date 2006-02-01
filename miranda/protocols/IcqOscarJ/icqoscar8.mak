@@ -57,6 +57,8 @@ CLEAN :
 	-@erase "$(INTDIR)\chan_05ping.sbr"
 	-@erase "$(INTDIR)\constants.obj"
 	-@erase "$(INTDIR)\constants.sbr"
+	-@erase "$(INTDIR)\cookies.obj"
+	-@erase "$(INTDIR)\cookies.sbr"
 	-@erase "$(INTDIR)\db.obj"
 	-@erase "$(INTDIR)\db.sbr"
 	-@erase "$(INTDIR)\directpackets.obj"
@@ -85,6 +87,8 @@ CLEAN :
 	-@erase "$(INTDIR)\fam_13servclist.sbr"
 	-@erase "$(INTDIR)\fam_15icqserver.obj"
 	-@erase "$(INTDIR)\fam_15icqserver.sbr"
+	-@erase "$(INTDIR)\fam_17signon.obj"
+	-@erase "$(INTDIR)\fam_17signon.sbr"
 	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\forkthread.sbr"
 	-@erase "$(INTDIR)\i18n.obj"
@@ -234,7 +238,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\md5.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
-	"$(INTDIR)\utilities.sbr"
+	"$(INTDIR)\utilities.sbr" \
+	"$(INTDIR)\fam_17signon.sbr" \
+	"$(INTDIR)\cookies.sbr"
 
 "$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -302,7 +308,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utilities.obj" \
-	"$(INTDIR)\resources.res"
+	"$(INTDIR)\resources.res" \
+	"$(INTDIR)\fam_17signon.obj" \
+	"$(INTDIR)\cookies.obj"
 
 "..\..\bin\release\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -337,6 +345,8 @@ CLEAN :
 	-@erase "$(INTDIR)\chan_05ping.sbr"
 	-@erase "$(INTDIR)\constants.obj"
 	-@erase "$(INTDIR)\constants.sbr"
+	-@erase "$(INTDIR)\cookies.obj"
+	-@erase "$(INTDIR)\cookies.sbr"
 	-@erase "$(INTDIR)\db.obj"
 	-@erase "$(INTDIR)\db.sbr"
 	-@erase "$(INTDIR)\directpackets.obj"
@@ -365,6 +375,8 @@ CLEAN :
 	-@erase "$(INTDIR)\fam_13servclist.sbr"
 	-@erase "$(INTDIR)\fam_15icqserver.obj"
 	-@erase "$(INTDIR)\fam_15icqserver.sbr"
+	-@erase "$(INTDIR)\fam_17signon.obj"
+	-@erase "$(INTDIR)\fam_17signon.sbr"
 	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\forkthread.sbr"
 	-@erase "$(INTDIR)\i18n.obj"
@@ -515,7 +527,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\md5.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
-	"$(INTDIR)\utilities.sbr"
+	"$(INTDIR)\utilities.sbr" \
+	"$(INTDIR)\fam_17signon.sbr" \
+	"$(INTDIR)\cookies.sbr"
 
 "$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -583,7 +597,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utilities.obj" \
-	"$(INTDIR)\resources.res"
+	"$(INTDIR)\resources.res" \
+	"$(INTDIR)\fam_17signon.obj" \
+	"$(INTDIR)\cookies.obj"
 
 "..\..\bin\debug\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -707,6 +723,11 @@ SOURCE=.\fam_13servclist.c
 SOURCE=.\fam_15icqserver.c
 
 "$(INTDIR)\fam_15icqserver.obj"	"$(INTDIR)\fam_15icqserver.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
+
+
+SOURCE=.\fam_17signon.c
+
+"$(INTDIR)\fam_17signon.obj"	"$(INTDIR)\fam_17signon.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
 SOURCE=.\directpackets.c
@@ -842,6 +863,11 @@ SOURCE=.\changeinfo\upload.c
 SOURCE=.\capabilities.c
 
 "$(INTDIR)\capabilities.obj"	"$(INTDIR)\capabilities.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
+
+
+SOURCE=.\cookies.c
+
+"$(INTDIR)\cookies.obj"	"$(INTDIR)\cookies.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
 SOURCE=.\forkthread.c

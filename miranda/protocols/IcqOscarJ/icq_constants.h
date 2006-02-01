@@ -53,6 +53,7 @@
 #define DEFAULT_SS_STORE            1
 #define DEFAULT_SS_GROUP            "General"
 
+#define DEFAULT_SECURE_LOGIN        0
 #define DEFAULT_AIM_ENABLED         0
 #define DEFAULT_UTF_ENABLED         2 // everything unicode is default
 #define DEFAULT_ANSI_CODEPAGE       CP_ACP
@@ -233,7 +234,7 @@
 #define ICQ_AVATAR_FAMILY           0x0010
 #define ICQ_LISTS_FAMILY            0x0013
 #define ICQ_EXTENSIONS_FAMILY       0x0015
-#define ICQ_AUTHORIZAION_FAMILY     0x0017
+#define ICQ_AUTHORIZATION_FAMILY    0x0017
 
 /* Subtypes for Service Family 0x0001 */
 #define ICQ_ERROR                   0x0001
@@ -513,7 +514,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x8003060B
+#define ICQ_PLUG_VERSION            0x8003060C
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

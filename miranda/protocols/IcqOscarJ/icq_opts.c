@@ -207,6 +207,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       LoadDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive", 0);
       LoadDBCheckState(hwndDlg, IDC_USEGATEWAY, "UseGateway", 0);
       LoadDBCheckState(hwndDlg, IDC_SLOWSEND, "SlowSend", 1);
+      LoadDBCheckState(hwndDlg, IDC_SECURE, "SecureLogin", DEFAULT_SECURE_LOGIN);
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 3));
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 3-ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING));
       SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)], szServer));
@@ -294,6 +295,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
           StoreDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive");
           StoreDBCheckState(hwndDlg, IDC_USEGATEWAY, "UseGateway");
           StoreDBCheckState(hwndDlg, IDC_SLOWSEND, "SlowSend");
+          StoreDBCheckState(hwndDlg, IDC_SECURE, "SecureLogin");
           StoreDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox");
           ICQWriteContactSettingByte(NULL, "ShowLogLevel", (BYTE)(3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)));
 

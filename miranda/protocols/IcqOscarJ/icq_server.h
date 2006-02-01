@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -40,11 +40,20 @@
 typedef struct serverthread_start_info_s {
   NETLIBOPENCONNECTION nloc;
   WORD wPassLen;
-  char szEncPass[20];
+  char szPass[20];
 } serverthread_start_info;
 
-int isLoginServer;
-char *migratedServer;
+typedef struct serverthread_info_s {
+  int isLoginServer;
+  BYTE szAuthKey[20];
+  WORD wAuthKeyLen;
+  char *newServer;
+  BYTE* cookieData;
+  int cookieDataLen;
+  int newServerReady;
+  int isMigrating;
+  int bReinitRecver;
+} serverthread_info;
 
 /*---------* Functions *---------------*/
 
