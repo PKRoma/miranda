@@ -172,7 +172,8 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 						FLT_Create(contact->extraCacheEntry);
 					ShowWindow(g_ExtraCache[contact->extraCacheEntry].floater.hwnd, SW_SHOW);
 				}
-				return 0;
+				else
+					return 0;
 			}
 			else {
 				if(g_ExtraCache[contact->extraCacheEntry].floater.hwnd) {

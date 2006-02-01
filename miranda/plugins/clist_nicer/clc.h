@@ -473,6 +473,8 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact);
 int FLT_CheckAvail();
 void FLT_Create(int iEntry);
 void FLT_SetSize(struct ExtraCache *centry, LONG width, LONG height);
+void FLT_SyncWithClist();
+void FLT_ReadOptions(), FLT_WriteOptions(), FLT_RefreshAll();
 
 //clcopts.c
 int ClcOptInit(WPARAM wParam, LPARAM lParam);
@@ -569,3 +571,21 @@ int Docking_IsDocked(WPARAM wParam, LPARAM lParam);
 #define NR_CLIENTS 40
 
 typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
+
+/*
+ * floating stuff
+ */
+
+#define FLT_SIMPLE 1
+#define FLT_AVATARS 2
+#define FLT_DUALROW 4
+#define FLT_EXTRAICONS 8
+
+typedef struct _floatopts {
+	DWORD dwFlags;
+	BYTE pad_left, pad_right, pad_top, pad_bottom;
+	COLORREF bg;
+	BYTE transparency;
+} FLOATINGOPTIONS;
+
+extern FLOATINGOPTIONS g_floatoptions;

@@ -34,6 +34,7 @@ static BOOL CALLBACK DlgProcClcExtBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
 static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern struct CluiData g_CluiData;
 
@@ -85,13 +86,14 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
     odp.pfnDlgProc = DlgProcClcExtBkgOpts;
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-    /*
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_VIEWMODES);
-    odp.pszTitle = Translate("View Modes");
-    odp.pfnDlgProc = DlgProcViewModesSetup;
+
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_FLOATING);
+    odp.pszTitle = Translate("Floating contacts");
+    odp.pfnDlgProc = DlgProcFloatingContacts;
     odp.flags = ODPF_BOLDGROUPS;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);*/
-    if(!ServiceExists(MS_FONT_REGISTER)) {
+    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+
+	if(!ServiceExists(MS_FONT_REGISTER)) {
         odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCTEXT);
         odp.pszGroup = Translate("Customize");
         odp.pszTitle = Translate("Contact list fonts");

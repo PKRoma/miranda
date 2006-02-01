@@ -103,9 +103,9 @@ void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 
 PLUGININFO pluginInfo = {
 #if defined(_UNICODE)
-	sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 6, 0, 3),
+	sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 6, 0, 4),
 #else
-	sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 6, 0, 3),
+	sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 6, 0, 4),
 #endif
 		"Display contacts, event notifications, protocol status",
 		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2005 Miranda-IM project", "http://www.miranda-im.org",
@@ -293,6 +293,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	}
 	ReloadThemedOptions();
+	FLT_ReadOptions();
 	Reload3dBevelColors();
 	himlExtraImages = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 30, 2);
 	ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);

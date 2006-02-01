@@ -788,9 +788,11 @@ LBL_Def:
 		{
 			int i;
 
-			for(i = 0; i < g_nextExtraCacheEntry; i++) {
-				if(g_ExtraCache[i].floater.hwnd)
-					DestroyWindow(g_ExtraCache[i].floater.hwnd);
+			if(!dat->bisEmbedded) {
+				for(i = 0; i < g_nextExtraCacheEntry; i++) {
+					if(g_ExtraCache[i].floater.hwnd)
+						DestroyWindow(g_ExtraCache[i].floater.hwnd);
+				}
 			}
 			RowHeights_Free(dat);
 			break;

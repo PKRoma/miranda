@@ -4,6 +4,8 @@
 //
 #define IDC_AUTHICON                    1
 #define IDD_OPT_VIEWMODES               1
+#define IDD_DIALOG1                     3
+#define IDD_OPT_FLOATING                3
 #define IDI_MIRANDA                     102
 #define IDD_CLNABOUT                    102
 #define IDD_ABOUT                       103
@@ -142,6 +144,7 @@
 #define IDC_NOTRAYINFOTIPS              1020
 #define IDC_SHOWXSTATUS                 1020
 #define IDC_AUTOCLEAR                   1020
+#define IDC_FLT_SIMPLELAYOUT            1020
 #define IDC_AUTOCLEARVAL                1021
 #define IDC_AUTOCLEARSPIN               1022
 #define IDC_CHOOSE                      1022
@@ -822,9 +825,13 @@
 #define ID_BUTTONBAR_FLATBUTTONS        40036
 #define IDC_CHECK2                      40036
 #define IDC_GROUPAUTOEXPAND             40036
+#define IDC_FLT_AVATARS                 40036
 #define ID_BUTTONBAR_NOVISUALSTYLES     40037
 #define IDC_GROUPALIGN                  -25499
+#define IDC_FLT_DUALROWS                40037
 #define ID_TRAY_HIDE                    40038
+#define IDC_FLT_AVATARS2                40038
+#define IDC_FLT_EXTRAICONS              40038
 #define ID_TRAY_EXIT                    40039
 #define POPUP_SHOWMETAICONS             40040
 #define ID_NOWHERE_APPEARANCE           40041
@@ -851,7 +858,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        3
+#define _APS_NEXT_RESOURCE_VALUE        4
 #define _APS_NEXT_COMMAND_VALUE         40061
 #define _APS_NEXT_CONTROL_VALUE         40038
 #define _APS_NEXT_SYMED_VALUE           40154

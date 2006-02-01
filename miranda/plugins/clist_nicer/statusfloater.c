@@ -54,6 +54,91 @@ extern HDC g_HDC;
 #define MAXFLOATERS 2
 
 static int g_floaters[MAXFLOATERS];
+static int g_floaters_highmark = 0;
+
+FLOATINGOPTIONS g_floatoptions;
+
+BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg) {
+		case WM_INITDIALOG:
+			{
+				DWORD dwFlags = g_floatoptions.dwFlags;
+
+				TranslateDialogDefault(hwndDlg);
+				CheckDlgButton(hwndDlg, IDC_FLT_SIMPLELAYOUT, dwFlags & FLT_SIMPLE);
+				SendMessage(hwndDlg, WM_COMMAND, (WPARAM)IDC_FLT_SIMPLELAYOUT, 0);
+				CheckDlgButton(hwndDlg, IDC_FLT_AVATARS, dwFlags & FLT_AVATARS);
+				CheckDlgButton(hwndDlg, IDC_FLT_DUALROWS, dwFlags & FLT_DUALROW);
+				CheckDlgButton(hwndDlg, IDC_FLT_EXTRAICONS, dwFlags & FLT_EXTRAICONS);
+				return TRUE;
+			}
+		case WM_COMMAND:
+			switch(LOWORD(wParam)) {
+				case IDC_FLT_SIMPLELAYOUT:
+					{
+						int isSimple = IsDlgButtonChecked(hwndDlg, IDC_FLT_SIMPLELAYOUT);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_AVATARS), !isSimple);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_EXTRAICONS), !isSimple);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_DUALROWS), !isSimple);
+					}
+					break;
+			}
+            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
+		case WM_NOTIFY:
+            switch (((LPNMHDR) lParam)->idFrom) {
+                case 0:
+                    switch (((LPNMHDR) lParam)->code) {
+                        case PSN_APPLY:
+                            {
+								if(IsDlgButtonChecked(hwndDlg, IDC_FLT_SIMPLELAYOUT))
+									g_floatoptions.dwFlags = FLT_SIMPLE;
+								else {
+									g_floatoptions.dwFlags = (IsDlgButtonChecked(hwndDlg, IDC_FLT_AVATARS) ? FLT_AVATARS : 0) |
+															 (IsDlgButtonChecked(hwndDlg, IDC_FLT_DUALROWS) ? FLT_DUALROW : 0) |
+															 (IsDlgButtonChecked(hwndDlg, IDC_FLT_EXTRAICONS) ? FLT_EXTRAICONS : 0);
+									FLT_WriteOptions();
+								}
+								FLT_RefreshAll();
+								return TRUE;
+							}
+                    }
+                    break;
+            }
+            break;
+	}
+	return FALSE;
+}
+
+void FLT_ReadOptions()
+{
+	DWORD dwPad;
+
+	ZeroMemory(&g_floatoptions, sizeof(FLOATINGOPTIONS));
+
+	g_floatoptions.dwFlags = DBGetContactSettingDword(NULL, "CList", "flt_flags", 
+		FLT_AVATARS | FLT_DUALROW | FLT_EXTRAICONS);
+	dwPad = DBGetContactSettingDword(NULL, "CList", "flt_padding", 0);
+	
+	g_floatoptions.pad_top = LOBYTE(LOWORD(dwPad));
+	g_floatoptions.pad_right = HIBYTE(LOWORD(dwPad));
+	g_floatoptions.pad_bottom = LOBYTE(HIWORD(dwPad));
+	g_floatoptions.pad_left = HIBYTE(HIWORD(dwPad));
+
+	g_floatoptions.transparency = DBGetContactSettingByte(NULL, "CList", "flt_trans", 255);
+}
+
+void FLT_WriteOptions()
+{
+	DWORD dwPad;
+
+	DBWriteContactSettingDword(NULL, "CList", "flt_flags", g_floatoptions.dwFlags);
+	dwPad = MAKELONG(MAKEWORD(g_floatoptions.pad_top, g_floatoptions.pad_right), 
+					 MAKEWORD(g_floatoptions.pad_bottom, g_floatoptions.pad_left));
+	DBWriteContactSettingDword(NULL, "CList", "flt_padding", dwPad);
+	DBWriteContactSettingByte(NULL, "CList", "flt_trans", g_floatoptions.transparency);
+}
 
 LRESULT CALLBACK StatusFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -145,7 +230,6 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				iEntry = (int)cs->lpCreateParams;
 				if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry)
 					centry = &g_ExtraCache[iEntry];
-				_DebugPopup(centry->hContact, "created flt as %d", iEntry);
 				return TRUE;
 			}
 		case WM_DESTROY:
@@ -155,7 +239,6 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				SelectObject(centry->floater.hdc, centry->floater.hbmOld);
 				DeleteObject(centry->floater.hbm);
 				DeleteDC(centry->floater.hdc);
-				_DebugPopup(centry->hContact, "dc killed", centry->floater.hdc);
 				if(iEntry >= 0 && iEntry < g_nextExtraCacheEntry) {
 					int i;
 
@@ -170,6 +253,8 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				}
 				break;
 			}
+		case WM_ERASEBKGND:
+			return TRUE;
 		case WM_PAINT:
 			{
 				HDC hdc;
@@ -180,6 +265,10 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				EndPaint(hwnd, &ps);
 				return TRUE;
 			}
+		case WM_LBUTTONDBLCLK:
+			if(centry)
+				CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)centry->hContact, 0);
+			return 0;
         case WM_LBUTTONDOWN:
             {
                 POINT ptMouse;
@@ -190,6 +279,25 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				rcWindow.right = rcWindow.left + 25;
 				if(!PtInRect(&rcWindow, ptMouse))
 					return SendMessage(hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(ptMouse.x, ptMouse.y));
+				break;
+			}
+		case WM_MEASUREITEM:
+			return(CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam));
+		case WM_DRAWITEM:
+			return(CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam));
+		case WM_COMMAND:
+			return(CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKELONG(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM)centry->hContact));
+		case WM_CONTEXTMENU:
+			{
+				if(centry) {
+					HMENU hContactMenu = (HMENU)CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM)centry->hContact, 0);
+					RECT rcWindow;
+
+					GetWindowRect(hwnd, &rcWindow);
+			        TrackPopupMenu(hContactMenu, TPM_TOPALIGN|TPM_LEFTALIGN|TPM_RIGHTBUTTON, rcWindow.left, rcWindow.bottom, 0, hwnd, NULL);
+					DestroyMenu(hContactMenu);
+					return 0;
+				}
 				break;
 			}
 	}
@@ -212,7 +320,8 @@ void SFL_RegisterWindowClass()
     wndclass.lpszClassName = _T("StatusFloaterClass");
     RegisterClass(&wndclass);
 
-    wndclass.lpszClassName = _T("ContactFloaterClass");
+    wndclass.style = CS_DBLCLKS;
+	wndclass.lpszClassName = _T("ContactFloaterClass");
     wndclass.lpfnWndProc = ContactFloaterClassProc;
     RegisterClass(&wndclass);
 
@@ -410,7 +519,7 @@ void FLT_SetSize(struct ExtraCache *centry, LONG width, LONG height)
 	hdc = GetDC(centry->floater.hwnd);
 	oldFont = SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
 
-	SetWindowPos(centry->floater.hwnd, HWND_TOPMOST, 0, 0, width, height, SWP_SHOWWINDOW | SWP_NOMOVE);
+	SetWindowPos(centry->floater.hwnd, HWND_TOPMOST, 0, 0, width, height, SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOACTIVATE);
 	GetWindowRect(centry->floater.hwnd, &rcWindow);
 
 	if(centry->floater.hdc) {
@@ -432,8 +541,10 @@ int FLT_CheckAvail()
 	int i;
 
 	for(i = 0; i < MAXFLOATERS; i++) {
-		if(g_floaters[i] == -1)
+		if(g_floaters[i] == -1) {
+			g_floaters_highmark = max(g_floaters_highmark, i);
 			return i;
+		}
 	}
 	if(i >= MAXFLOATERS) {
 		MessageBox(0, _T("You have reached the maximum number of available contact floaters"), _T("Floating contacts"), MB_OK | MB_ICONINFORMATION);
@@ -449,6 +560,7 @@ void FLT_Create(int iEntry)
 		struct ClcContact *contact = NULL;
 		struct ClcGroup *group = NULL;
 
+		_DebugPopup(centry->hContact, "attempt to create");
 		if(centry->floater.hwnd == 0 && MyUpdateLayeredWindow != NULL) {
 			int i = FLT_CheckAvail();
 
@@ -458,8 +570,10 @@ void FLT_Create(int iEntry)
 			centry->floater.hwnd = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_LAYERED, _T("ContactFloaterClass"), _T("sfl"), WS_VISIBLE, 0, 0, 0, 0, 0, 0, g_hInst, (LPVOID)iEntry);
 			g_floaters[i] = iEntry;
 		}
-		else
+		else {
+			ShowWindow(centry->floater.hwnd, SW_SHOWNOACTIVATE);
 			return;
+		}
 
 		SetWindowLong(centry->floater.hwnd, GWL_STYLE, GetWindowLong(centry->floater.hwnd, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_OVERLAPPEDWINDOW | WS_POPUPWINDOW));
 
@@ -468,7 +582,7 @@ void FLT_Create(int iEntry)
 				SetWindowPos(centry->floater.hwnd, 0, 50, 50, 150, 30, SWP_NOZORDER | SWP_NOACTIVATE);
 
 		FLT_SetSize(centry, 100, 20);
-		ShowWindow(centry->floater.hwnd, SW_SHOW);
+		ShowWindow(centry->floater.hwnd, SW_SHOWNOACTIVATE);
 		if(FindItem(pcli->hwndContactTree, g_clcData, centry->hContact, &contact, &group, 0)) {
 			if(contact)
 				FLT_Update(g_clcData, contact);
@@ -492,7 +606,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	if(contact == NULL || dat == NULL)
 		return;
 
-	FLT_SetSize(&g_ExtraCache[contact->extraCacheEntry], 150, RowHeights_GetFloatingRowHeight(dat, pcli->hwndContactTree, contact));
+	FLT_SetSize(&g_ExtraCache[contact->extraCacheEntry], 150, RowHeights_GetFloatingRowHeight(dat, pcli->hwndContactTree, contact, g_floatoptions.dwFlags));
 
 	hwnd = g_ExtraCache[contact->extraCacheEntry].floater.hwnd;
 	hdc = g_ExtraCache[contact->extraCacheEntry].floater.hdc;
@@ -513,16 +627,100 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 
 	bf.BlendOp = AC_SRC_OVER;
 	bf.AlphaFormat = 0;
-	bf.SourceConstantAlpha = 200;
+	bf.SourceConstantAlpha = g_floatoptions.transparency;
 
 	rgn = CreateRoundRectRgn(0, 0, rcClient.right, rcClient.bottom, 10, 10);
 	SelectClipRgn(hdc, rgn);
 
 	if(FindItem(pcli->hwndContactTree, dat, contact->hContact, &newContact, &group, 0)) {
+		DWORD oldFlags = g_CluiData.dwFlags;
+		DWORD oldExtraImageMask = g_CluiData.dwExtraImageMask;
+		struct avatarCacheEntry *ace_old = contact->ace;
+		BYTE oldDualRow = g_CluiData.dualRowMode;
+
+		if(!(g_floatoptions.dwFlags & FLT_AVATARS))
+			contact->ace = 0;
+
+		if(!(g_floatoptions.dwFlags & FLT_DUALROW))
+			g_CluiData.dualRowMode = MULTIROW_NEVER;
+
+		if(!(g_floatoptions.dwFlags & FLT_EXTRAICONS)) {
+			g_CluiData.dwFlags &= ~CLUI_SHOWCLIENTICONS;
+			g_CluiData.dwExtraImageMask = 0;
+		}
+
 		g_HDC = hdc;
 		PaintItem(hdc, group, contact, 0, 0, dat, -4, pcli->hwndContactTree, 0, &rcClient, &firstDrawn, 0, rcClient.bottom - rcClient.top);
+		g_CluiData.dwFlags = oldFlags;
+		contact->ace = ace_old;
+		g_CluiData.dualRowMode = oldDualRow;
+		g_CluiData.dwExtraImageMask = oldExtraImageMask;
 	}
 	DeleteObject(rgn);
 	if(MyUpdateLayeredWindow)
 		MyUpdateLayeredWindow(hwnd, 0, &ptDest, &szDest, hdc, &ptSrc, GetSysColor(COLOR_3DFACE), &bf, ULW_COLORKEY | ULW_ALPHA);
+}
+
+/*
+ * syncs the floating contacts with clist contact visibility.
+ * will hide all floating contacts which are not visible on the list
+ * needed after a list rebuild
+ */
+
+void FLT_SyncWithClist()
+{
+	int i;
+	struct ExtraCache *centry;
+	struct ClcContact *contact;
+	HWND hwnd;
+
+	for(i = 0; i <= g_floaters_highmark; i++) {
+		if(g_floaters[i] != -1 && g_floaters[i] < g_nextExtraCacheEntry && g_floaters[i] >= 0) {
+			centry = &g_ExtraCache[g_floaters[i]];
+			if((hwnd = centry->floater.hwnd)) {
+ 				if(FindItem(pcli->hwndContactTree, g_clcData, centry->hContact, &contact, NULL, 0))
+					ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+				else
+					ShowWindow(hwnd, SW_HIDE);
+			}
+		}
+	}
+}
+
+/*
+ * quickly show or hide all floating contacts
+ * used by autohide/show feature
+ */
+
+void FLT_ShowHideAll(int showCmd)
+{
+	int i;
+
+	for(i = 0; i <= g_floaters_highmark; i++) {
+		if(g_floaters[i] != -1 && g_floaters[i] < g_nextExtraCacheEntry && g_floaters[i] >= 0) {
+			HWND hwnd = g_ExtraCache[g_floaters[i]].floater.hwnd;
+			if(hwnd && IsWindow(hwnd))
+				ShowWindow(hwnd, showCmd);
+		}
+	}
+}
+
+/*
+ * update/repaint all contact floaters
+ */
+
+void FLT_RefreshAll()
+{
+	int i;
+	struct ClcContact *contact = NULL;
+
+	for(i = 0; i <= g_floaters_highmark; i++) {
+		if(g_floaters[i] != -1 && g_floaters[i] < g_nextExtraCacheEntry && g_floaters[i] >= 0) {
+			if(FindItem(pcli->hwndContactTree, g_clcData, g_ExtraCache[g_floaters[i]].hContact, &contact, NULL, 0)) {
+				HWND hwnd = g_ExtraCache[g_floaters[i]].floater.hwnd;
+				if(hwnd && IsWindow(hwnd))
+					FLT_Update(g_clcData, contact);
+			}
+		}
+	}
 }

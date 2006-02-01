@@ -146,11 +146,18 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 		p->extraCacheEntry = -1;
 	else {
 		p->extraCacheEntry = GetExtraCache(p->hContact, p->proto);
-		if(DBGetContactSettingByte(p->hContact, "CList", "floating", 0) && g_ExtraCache[p->extraCacheEntry].floater.hwnd == 0)
-			FLT_Create(p->extraCacheEntry);
 		GetExtendedInfo( p, dat);
-		if(p->extraCacheEntry >= 0 && p->extraCacheEntry <= g_nextExtraCacheEntry)
+		if(p->extraCacheEntry >= 0 && p->extraCacheEntry <= g_nextExtraCacheEntry) {
 			g_ExtraCache[p->extraCacheEntry].proto_status_item = GetProtocolStatusItem(p->bIsMeta ? p->metaProto : p->proto);
+			if(DBGetContactSettingByte(p->hContact, "CList", "floating", 0)) {
+				if(g_ExtraCache[p->extraCacheEntry].floater.hwnd == 0)
+					FLT_Create(p->extraCacheEntry);
+				else {
+					ShowWindow(g_ExtraCache[p->extraCacheEntry].floater.hwnd, SW_SHOWNOACTIVATE);
+					FLT_Update(dat, p);
+				}
+			}
+		}
 	}
 #if defined(_UNICODE)
 	RTL_DetectAndSet( p, p->hContact);
@@ -238,6 +245,8 @@ void RebuildEntireList(HWND hwnd, struct ClcData *dat)
 		}
 	}
 	pcli->pfnSortCLC(hwnd, dat, 0);
+	if(!dat->bisEmbedded)
+		FLT_SyncWithClist();
 }
 
 /*
