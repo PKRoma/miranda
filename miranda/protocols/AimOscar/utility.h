@@ -56,4 +56,12 @@ unsigned long char_ip_to_long_ip(char* ip);
 void create_cookie(HANDLE hContact);
 void read_cookie(HANDLE hContact,char* cookie);
 void write_cookie(HANDLE hContact,char* cookie);
+int cap_cmp(char* cap,char* cap2);
+int is_oscarj_ver_cap(char* cap);
+int is_aimoscar_ver_cap(char* cap);
+int is_kopete_ver_cap(char* cap);
+void add_AT_icons();
+void remove_AT_icons();
+void add_ES_icons();
+void remove_ES_icons();
 #endif

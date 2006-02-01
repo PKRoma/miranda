@@ -49,7 +49,8 @@ HDR =	aim.h \
 	proxy.h	\
 	direct_connect.ch \
 	file.h \
-	resource.h
+	resource.h \
+	m_cluiframes.h
 
 LIB = -lwsock32
 CC = g++
@@ -98,6 +99,6 @@ format :
 	$(RM) *.*~
 
 clean :
-	$(RM) -fr $(OBJ) $(RES) *.ncb *.suo Release Debug
+	$(RM) -fr $(OBJ) $(RES) *.ncb *.suo *.aps Release Debug
 
 -include Makefile.dep

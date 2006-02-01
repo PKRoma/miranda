@@ -181,6 +181,30 @@ static int OptionsInit(WPARAM wParam,LPARAM lParam)
 }
 static int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
+	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+	{
+		HICON hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_BOT));
+		conn.bot_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
+		DestroyIcon(hXIcon);
+		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_ICQ));
+		conn.icq_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
+		DestroyIcon(hXIcon);
+		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_AOL));
+		conn.aol_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
+		DestroyIcon(hXIcon);
+		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_HIPTOP));
+		conn.hiptop_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
+		DestroyIcon(hXIcon);
+		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_ADMIN));
+		conn.admin_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
+		DestroyIcon(hXIcon);
+		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_CONFIRMED));
+		conn.confirmed_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
+		DestroyIcon(hXIcon);
+		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_UNCONFIRMED));
+		conn.unconfirmed_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
+		DestroyIcon(hXIcon);
+	}
 	DBVARIANT dbv;
 	NETLIBUSER nlu;
 	ZeroMemory(&nlu, sizeof(nlu));
@@ -590,6 +614,8 @@ static BOOL CALLBACK dialog_message(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
 			CheckDlgButton(hwndDlg, IDC_DC, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 0));//Message Delivery Confirmation
             CheckDlgButton(hwndDlg, IDC_FP, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0));//force proxy
+			CheckDlgButton(hwndDlg, IDC_AT, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0));//Account Type Icons
+			CheckDlgButton(hwndDlg, IDC_HF, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0));//Fake hiptopness
 			break;
 		}
 		case WM_COMMAND:
@@ -644,8 +670,49 @@ static BOOL CALLBACK dialog_message(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					if (IsDlgButtonChecked(hwndDlg, IDC_FP))
 						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 1);
 					else
-						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0);
-					break;
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0);			
+					if (IsDlgButtonChecked(hwndDlg, IDC_AT))
+					{
+						int acc_disabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0);
+						if(!acc_disabled)
+							remove_AT_icons();
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 1);
+					}
+					else
+					{
+						int acc_disabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0);
+						if(acc_disabled)
+							add_AT_icons();
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0);
+					}
+					if (IsDlgButtonChecked(hwndDlg, IDC_ES))
+					{
+						int es_disabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 0);
+						if(!es_disabled)
+							remove_ES_icons();
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 1);
+					}
+					else
+					{
+						int es_disabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 0);
+						if(es_disabled)
+							add_ES_icons();
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 0);
+					}
+					if (IsDlgButtonChecked(hwndDlg, IDC_HF))
+					{
+						int hf=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0);
+						if(!hf)
+							ShowWindow(GetDlgItem(hwndDlg, IDC_MASQ), SW_SHOW);
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 1);
+					}
+					else
+					{
+						int hf=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0);
+						if(hf)
+							ShowWindow(GetDlgItem(hwndDlg, IDC_MASQ), SW_SHOW);
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0);
+					}
                 }
             }
             break;

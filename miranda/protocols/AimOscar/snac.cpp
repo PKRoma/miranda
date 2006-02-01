@@ -180,6 +180,10 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 {
 	if(subgroup==0x000b)
 	{
+		bool hiptop_user=0;
+		bool adv2_icon=0;
+		bool adv1_icon=0;
+		bool away_user=0;
 		unsigned char buddy_length=buf[SNAC_SIZE];
 		int offset=SNAC_SIZE+TLV_PART_SIZE+buddy_length+1;
 		int i=0;
@@ -192,6 +196,7 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 		tlv_count=htons(tlv_part->data);//flip
 		offset+=TLV_PART_SIZE;
 		HANDLE hContact=find_contact(buddy);
+		int ESIconsDisabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 0);
 		if(!hContact)
 		{
 			hContact=add_contact(buddy);
@@ -206,19 +211,116 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 			{
 				if(hContact)
 				{
+					/*
+					From Gaim's source:
+					#define AIM_FLAG_UNCONFIRMED
+					#define AIM_FLAG_ADMINISTRATOR	0x0002
+					#define AIM_FLAG_AOL			0x0004
+					#define AIM_FLAG_OSCAR_PAY		0x0008
+					#define AIM_FLAG_FREE 			0x0010
+					#define AIM_FLAG_AWAY			0x0020
+					#define AIM_FLAG_ICQ			0x0040
+					#define AIM_FLAG_WIRELESS		0x0080
+					#define AIM_FLAG_UNKNOWN100		0x0100
+					#define AIM_FLAG_UNKNOWN200		0x0200
+					#define AIM_FLAG_ACTIVEBUDDY	0x0400
+					#define AIM_FLAG_UNKNOWN800		0x0800
+					#define AIM_FLAG_ABINTERNAL		0x1000
+					#define AIM_FLAG_ALLUSERS		0x001f
+					*/
 					struct tlv_part* tlv_part=(struct tlv_part*)&buf[offset];
 					unsigned short status=htons(tlv_part->data);
 					int unconfirmed = status&0x0001;
 					int admin_aol = status&0x0002;
-					int staff_aol = status&0x0004;
+					int aol = status&0x0004;
 					int nonfree = status&0x0008;
 					int free = status&0x0010;
 					int away = status&0x0020;
 					int icq = status&0x0040;
 					int wireless = status&0x0080;
 					int bot = status&0x0400;
-					DBWriteContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_NK, buddy);
-					if(wireless!=0)
+ 					DBWriteContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_NK, buddy);
+					int ATIconsDisabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0);
+					if(admin_aol)
+					{
+						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_ADMIN);
+						if(!ATIconsDisabled)
+						{
+							adv2_icon=1;
+							IconExtraColumn iec;
+							iec.cbSize = sizeof(iec);
+							iec.hImage = conn.admin_icon;
+							iec.ColumnType = EXTRA_ICON_ADV2;
+							CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+						}
+					}
+					else if(aol)
+					{
+						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_AOL);
+						if(!ATIconsDisabled)
+						{						
+							adv2_icon=1;
+							IconExtraColumn iec;
+							iec.cbSize = sizeof(iec);
+							iec.hImage = conn.aol_icon;
+							iec.ColumnType = EXTRA_ICON_ADV2;
+							CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+					
+						}
+					}
+					else if(icq)
+					{
+						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_ICQ);
+						if(!ATIconsDisabled)
+						{					
+							adv2_icon=1;
+							IconExtraColumn iec;
+							iec.cbSize = sizeof(iec);
+							iec.hImage = conn.icq_icon;
+							iec.ColumnType = EXTRA_ICON_ADV2;
+							CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+						}
+					}
+					else if(unconfirmed)
+					{
+						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_UNCONFIRMED);
+						if(!ATIconsDisabled)
+						{
+							adv2_icon=1;
+							IconExtraColumn iec;
+							iec.cbSize = sizeof(iec);
+							iec.hImage = conn.unconfirmed_icon;
+							iec.ColumnType = EXTRA_ICON_ADV2;
+							CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+						}
+					}
+					else
+					{
+						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_CONFIRMED);
+						if(!ATIconsDisabled)
+						{
+							adv2_icon=1;
+							IconExtraColumn iec;
+							iec.cbSize = sizeof(iec);
+							iec.hImage = conn.confirmed_icon;
+							iec.ColumnType = EXTRA_ICON_ADV2;
+							CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+						}
+					}
+					if(bot)
+					{
+						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ET, EXTENDED_STATUS_BOT);
+						if(!ESIconsDisabled)
+						{
+							adv1_icon=1;
+							IconExtraColumn iec;
+							iec.cbSize = sizeof(iec);
+							iec.hImage = conn.bot_icon;
+							iec.ColumnType = EXTRA_ICON_ADV1;
+							CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+						}
+					}
+					if(wireless)
 					{
 						DBDeleteContactSetting(hContact, "CList", AIM_KEY_SM);
 						DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_ONTHEPHONE);
@@ -230,10 +332,63 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 					}
 					else 
 					{
+						away_user=1;
 						DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_AWAY);
 					}
 					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT, 0);//erase idle time
 					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT, 0);//erase online time
+				}
+			}
+			else if(tlv_type==0x000d)
+			{
+				for(int i=0;i<tlv_length;i=i+16)
+				{
+					if(is_oscarj_ver_cap(&buf[offset+i]))
+					{
+						char msg[MSG_LEN];
+						strcpy(msg,"Miranda IM ");
+						char a =buf[offset+i+8];
+						char b =buf[offset+i+9];
+						char c =buf[offset+i+10];
+						char d =buf[offset+i+11];
+						//char e =buf[offset+i+12];
+						char f =buf[offset+i+13];
+						char g =buf[offset+i+14];
+						char h =buf[offset+i+15];
+						mir_snprintf(msg,sizeof(msg),"Miranda IM %d.%d.%d.%d(ICQ v0.%d.%d.%d)",a,b,c,d,f,g,h);
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,msg);
+					}
+					else if(is_aimoscar_ver_cap(&buf[offset+i]))
+					{
+						char msg[MSG_LEN];
+						strcpy(msg,"Miranda IM ");
+						char a =buf[offset+i+8];
+						char b =buf[offset+i+9];
+						char c =buf[offset+i+10];
+						char d =buf[offset+i+11];
+						char e =buf[offset+i+12];
+						char f =buf[offset+i+13];
+						char g =buf[offset+i+14];
+						char h =buf[offset+i+15];
+						mir_snprintf(msg,sizeof(msg),"Miranda IM %d.%d.%d.%d(AimOSCAR v%d.%d.%d.%d)",a,b,c,d,e,f,g,h);
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,msg);
+					}
+					else if(is_kopete_ver_cap(&buf[offset+i]))
+					{
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Kopete");
+					}
+				}
+			}
+			else if(tlv_type==0x0019)//new caps
+			{
+				for(int i=0;i<tlv_length;i=i+2)
+				{
+					unsigned short* cap =(unsigned short*)&buf[offset+i];
+					*cap=htons(*cap);
+					if(*cap==0x1323)
+						hiptop_user=1;
+					if(*cap==0xf005)
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian");
 				}
 			}
 			else if(tlv_type==0x0004)//idle tlv
@@ -263,6 +418,35 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 			}
 			offset+=(tlv_length);
 		}
+		if(hiptop_user)
+		{
+				DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
+				if(!ESIconsDisabled)
+				{
+					adv1_icon=1;
+					IconExtraColumn iec;
+					iec.cbSize = sizeof(iec);
+					iec.hImage = conn.hiptop_icon;
+					iec.ColumnType = EXTRA_ICON_ADV1;
+					CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+				}
+		}
+		if(!adv1_icon)
+		{
+			IconExtraColumn iec;
+			iec.cbSize = sizeof(iec);
+			iec.hImage = (HANDLE)-1;
+			iec.ColumnType = EXTRA_ICON_ADV1;
+			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+		}
+		if(!adv2_icon)
+		{
+			IconExtraColumn iec;
+			iec.cbSize = sizeof(iec);
+			iec.hImage = (HANDLE)-1;
+			iec.ColumnType = EXTRA_ICON_ADV2;
+			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+		}
 	}
 }
 void snac_user_offline(unsigned short subgroup, char* buf)//family 0x0003
@@ -283,7 +467,18 @@ void snac_user_offline(unsigned short subgroup, char* buf)//family 0x0003
 		if(hContact)
 		{
 			DBDeleteContactSetting(hContact, "CList", AIM_KEY_SM);
-			DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);	
+			DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
+			DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV);
+			DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AC);
+			IconExtraColumn iec;
+			iec.cbSize = sizeof(iec);
+			iec.hImage = (HANDLE)-1;
+			iec.ColumnType = EXTRA_ICON_ADV1;
+			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+			iec.cbSize = sizeof(iec);
+			iec.hImage = (HANDLE)-1;
+			iec.ColumnType = EXTRA_ICON_ADV2;
+			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
 		}			
 	}
 }
@@ -428,12 +623,13 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 			{
 				auto_response=1;
 			}
-			if(tlv_type==0x0005)//recv file
+			if(tlv_type==0x0005)//recv rendervous packet
 			{
 				struct tlv_part* tlv_part=(struct tlv_part*)&buf[offset];
 				recv_file_type=htons(tlv_part->data);
 				memcpy(icbm_cookie,&buf[offset+2],8);
-				//memcpy(ft->cookie,&buf[offset+2],8);//BUGGGGG!!!!!!!!!!!!!
+				if(cap_cmp(&buf[offset+10],AIM_CAP_SEND_FILES))//is it a file transfer request?
+					return;//not a file transfer
 				hContact=find_contact(sn);
 				if(!hContact)
 				{
@@ -567,7 +763,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
             ccs.wParam = 0;
             ccs.lParam = (LPARAM) & pre;
             CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
-			free(szBlob);
+			//free(szBlob);
 			if(descr_included)
 				free(msg_buf);
 		}

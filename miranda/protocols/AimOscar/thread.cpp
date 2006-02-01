@@ -48,6 +48,7 @@ void set_status_thread(int status)
 				{
 					Netlib_CloseHandle(conn.hServerConn);
 					Netlib_CloseHandle(conn.hDirectBoundPort);
+					conn.hDirectBoundPort=0;
 					conn.hServerConn=0;
 					broadcast_status(ID_STATUS_OFFLINE);
 					offline_contacts();
@@ -120,7 +121,7 @@ void accept_file_thread(CCSDATA *ccs)//buddy sending file
 		{
 			DBWriteContactSettingByte(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,2);
 			DBWriteContactSettingDword(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
-			DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
+			DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,"ars.oscar.aol.com:5190");
 			ForkThread(aim_proxy_helper,ccs->hContact);
 		}
 	}

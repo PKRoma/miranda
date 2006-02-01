@@ -8,14 +8,16 @@ There is no warranty.
 */
 #include "aim.h"
 PLUGINLINK *pluginLink;
+#define AIM_OSCAR_VERSION "\0\0\0\x01"
+char	AIM_CAP_MIRANDA[16]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
-	"AIM OSCAR Plugin - Alpha 7.1",
+	"AIM OSCAR Plugin - Alpha 8.0",
 	PLUGIN_MAKE_VERSION(0,0,0,1),
 	"Provides very basic support for AOL® OSCAR Instant Messenger protocol.",
 	"Aaron Myles Landwehr",
 	"aaron@snaphat.com",
-	"© 2005 Aaron Myles Landwehr",
+	"© 2006 Aaron Myles Landwehr",
 	"http://www.snaphat.com/oscar",
 	0,		//not transient
 	0		//doesn't replace anything built-in
@@ -30,6 +32,9 @@ extern "C" __declspec(dllexport) bool WINAPI DllMain(HINSTANCE hinstDLL,DWORD fd
 
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
+	unsigned long mv=htonl(mirandaVersion);
+	memcpy((char*)&AIM_CAP_MIRANDA[8],&mv,sizeof(DWORD));
+	memcpy((char*)&AIM_CAP_MIRANDA[12],(char*)&AIM_OSCAR_VERSION,sizeof(DWORD));
 	return &pluginInfo;
 }
 char* CWD;//current working directory

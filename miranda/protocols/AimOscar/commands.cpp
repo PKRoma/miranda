@@ -145,29 +145,31 @@ int aim_activate_list()
 }
 int aim_set_caps()
 {
+	int i=1;
 	char buf[MSG_LEN*2];
 	char temp[MSG_LEN*2];
 	memcpy(temp,AIM_CAP_ICQ_SUPPORT,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH],AIM_CAP_CHAT,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*2],AIM_CAP_RECEIVE_FILES,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*3],AIM_CAP_SEND_FILES,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*4],AIM_CAP_ICHAT,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*5],AIM_CAP_UNKNOWN,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*6],AIM_CAP_UNKNOWN3,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*7],AIM_CAP_LIST_TRANSFER,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*8],AIM_CAP_DIRECT_PLAY,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*9],AIM_CAP_UTF8,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*10],AIM_CAP_GAMES,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*11],AIM_CAP_STOCKS,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*12],AIM_CAP_AVATARS,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*13],AIM_CAP_DIRECT_IM,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*14],AIM_CAP_DIRECT_PLAY,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*15],AIM_CAP_VOICE_CHAT,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*16],AIM_CAP_SEND_FILES,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*17],AIM_CAP_RECEIVE_FILES,AIM_CAPS_LENGTH);
-	//AIM_CAP_CHAT
+	//memcpy(&temp[AIM_CAPS_LENGTH],AIM_CAP_CHAT,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_RECEIVE_FILES,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SEND_FILES,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICHAT,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*5],AIM_CAP_UNKNOWN,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*6],AIM_CAP_UNKNOWN3,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*7],AIM_CAP_LIST_TRANSFER,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UTF8,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*10],AIM_CAP_GAMES,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*11],AIM_CAP_STOCKS,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*12],AIM_CAP_AVATARS,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*13],AIM_CAP_DIRECT_IM,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*14],AIM_CAP_DIRECT_PLAY,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*15],AIM_CAP_VOICE_CHAT,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*16],AIM_CAP_SEND_FILES,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*17],AIM_CAP_RECEIVE_FILES,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_MIRANDA,AIM_CAPS_LENGTH);
+	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0))
+		memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HIPTOP,AIM_CAPS_LENGTH);
 	aim_writesnac(0x02,0x04,6,buf);
-	aim_writetlv(0x05,AIM_CAPS_LENGTH*17,temp,buf);
+	aim_writetlv(0x05,AIM_CAPS_LENGTH*i,temp,buf);
 	if(aim_sendflap(0x02,conn.packet_offset,buf)==0)
 		return 0;
 	else
@@ -202,6 +204,21 @@ int aim_set_invis(char* status,char* status_flag)
 }
 int aim_client_ready()
 {
+	NETLIBBIND nlb = {0};
+	nlb.cbSize = sizeof(nlb);
+	nlb.pfnNewConnectionV2 = aim_direct_connection_initiated;
+	conn.hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)conn.hNetlibPeer, (LPARAM)&nlb);
+	if (!conn.hDirectBoundPort && (GetLastError() == 87))
+	{ // this ensures old Miranda also can bind a port for a dc
+		nlb.cbSize = NETLIBBIND_SIZEOF_V1;
+	conn.hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)conn.hNetlibPeer, (LPARAM)&nlb);
+	}
+	if (conn.hDirectBoundPort == NULL)
+	{
+		MessageBox( NULL, "AimOSCAR was unable to bind to a port. File transfers may not succeed in some cases.", AIM_PROTOCOL_NAME, MB_OK );	
+	}
+	conn.LocalPort=nlb.wPort;
+	conn.InternalIP=nlb.dwInternalIP;
 	char buf[MSG_LEN*2];
 	aim_writesnac(0x01,0x02,6,buf);
 	aim_writefamily(AIM_SERVICE_GENERIC,buf);

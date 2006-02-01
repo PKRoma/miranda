@@ -50,6 +50,13 @@ public:
 	unsigned short LocalPort;
 	HANDLE current_rendezvous_accept_user;//hack
 	int dc_thread_amt;
+	HANDLE bot_icon;
+	HANDLE icq_icon;
+	HANDLE aol_icon;
+	HANDLE hiptop_icon;
+	HANDLE admin_icon;
+	HANDLE confirmed_icon;
+	HANDLE unconfirmed_icon;
 }extern conn;
 HANDLE aim_connect(char* server);
 HANDLE aim_peer_connect(char* ip,unsigned short port);

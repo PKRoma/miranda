@@ -6,6 +6,13 @@
 #define SNAC_SIZE						10
 #define TLV_HEADER_SIZE					4
 #define TLV_PART_SIZE					2
+#define ACCOUNT_TYPE_UNCONFIRMED		1
+#define ACCOUNT_TYPE_CONFIRMED			2
+#define ACCOUNT_TYPE_ICQ				3
+#define ACCOUNT_TYPE_AOL				4
+#define ACCOUNT_TYPE_ADMIN				5
+#define EXTENDED_STATUS_BOT				1
+#define EXTENDED_STATUS_HIPTOP			2
 #define AIM_KEY_PW						"password"
 #define AIM_KEY_HN						"hostname"
 #define AIM_KEY_DC						"DelConf"//delivery confirmation
@@ -14,6 +21,7 @@
 #define AIM_KEY_ST						"Status"
 #define AIM_KEY_SN						"SN"
 #define AIM_KEY_NK						"Nick"
+#define AIM_KEY_HF						"HiptopFake"
 #define AIM_KEY_BI						"BuddyId"
 #define AIM_KEY_GI						"GroupId"
 #define AIM_MOD_IG						"ID2Group"
@@ -32,6 +40,11 @@
 #define AIM_KEY_PS						"ProxyStage"
 #define AIM_KEY_PC						"PortCheck"
 #define AIM_KEY_DH						"DCHandle"
+#define AIM_KEY_MV						"MirVer"
+#define AIM_KEY_AC						"AccType"//account type		
+#define AIM_KEY_ET						"ESType"//Extended Status type	
+#define AIM_KEY_AT						"DisableATIcons"
+#define AIM_KEY_ES						"DisableESIcons"
 #define AIM_DEFAULT_GROUP				"Miranda Merged"
 #define AIM_MD5_STRING					"AOL Instant Messenger (SM)"
 #define AIM_DEFAULT_SERVER				"login.oscar.aol.com:5190"
@@ -64,6 +77,9 @@
 #define AIM_CAP_ICHAT					"\x09\x46\x00\x00\x4c\x7f\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
 #define AIM_CAP_UNKNOWN					"\x09\x46\x01\x05\x4c\x7f\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
 #define AIM_CAP_UNKNOWN3				"\x09\x46\x01\x03\x4c\x7f\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
+#define AIM_CAP_HIPTOP					"\x09\x46\x13\x23\x4c\x7f\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
+#define AIM_CAP_TRILLIAN				"\xF2\xE7\xC7\xF4\xFE\xAD\x4D\xFB\xB2\x35\x36\x79\x8B\xDF\0\0"
+extern char AIM_CAP_MIRANDA[16];
 #define AIM_SERVICE_GENERIC				"\0\x01\0\x04"//version 4
 #define AIM_SERVICE_SSI					"\0\x13\0\x03"//version 3
 #define AIM_SERVICE_LOCATION			"\0\x02\0\x01"//version 1
@@ -90,3 +106,4 @@
 #define	AIM_STATUS_FREE4CHAT			"\0\x20"
 #define AIM_STATUS_INVISIBLE			"\x01\0"
 #endif
+

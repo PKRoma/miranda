@@ -9,6 +9,7 @@
 #include <newpluginapi.h>
 #include <m_system.h>
 #include <m_langpack.h>
+#include "m_cluiframes.h"
 #include "defines.h"
 #include "connection.h"
 #include "file.h"
