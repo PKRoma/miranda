@@ -188,7 +188,7 @@ HANDLE hChatEvent = NULL,
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBoxA( NULL, Translate( "This plugin requires db3x plugin version 0.5.1.0 or later" ), "Jabber", MB_OK );
+		MessageBox( NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("Jabber"), MB_OK );
 		return 1;
 	}
 

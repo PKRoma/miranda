@@ -8,6 +8,7 @@ Version 0.4.3.0
 ===============
 [+] first Unicode version of the Jabber plugin
 [!] fix for file transfers when one of the jids contains uppercase letters
+[!] bug #0001754 fixed: Jabber Agents. Don't work Logoff and Unregister buttons
 
 Version 0.4.1.3
 ===============

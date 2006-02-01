@@ -147,7 +147,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 							lvItem.mask = LVIF_TEXT;
 							lvItem.pszText = text;
 							lvItem.cchTextMax = sizeof( text );
-							ListView_GetItem( lv, &lvItem );
+							SendMessageA( lv, LVM_GETITEMA, 0, (LPARAM)&lvItem );
 							if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL ) {
 								if ( item->status == ID_STATUS_OFFLINE )
 									EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_LOGON ), TRUE );
@@ -234,7 +234,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				lvItem.mask = LVIF_TEXT;
 				lvItem.pszText = text;
 				lvItem.cchTextMax = sizeof( text );
-				ListView_GetItem( lv, &lvItem );
+				SendMessageA( lv, LVM_GETITEMA, 0, (LPARAM)&lvItem );
 				ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
 				if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL )
 					JabberRegisterAgent( hwndDlg, item->jid );
@@ -247,7 +247,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				lvItem.mask = LVIF_TEXT;
 				lvItem.pszText = text;
 				lvItem.cchTextMax = sizeof( text );
-				ListView_GetItem( lv, &lvItem );
+				SendMessageA( lv, LVM_GETITEMA, 0, (LPARAM)&lvItem );
 				ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
 				if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL )
 					JabberMenuHandleGroupchat( 0, ( LPARAM )item->jid );
@@ -280,7 +280,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				lvItem.mask = LVIF_TEXT;
 				lvItem.pszText = text;
 				lvItem.cchTextMax = sizeof( text );
-				ListView_GetItem( lv, &lvItem );
+				SendMessageA( lv, LVM_GETITEMA, 0, (LPARAM)&lvItem );
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL ) {
 					if ( LOWORD( wParam )==IDC_AGENT_LOGON )
 						JabberSend( jabberThreadInfo->s, "<presence to='%s'/>", item->jid );
@@ -298,7 +298,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				lvItem.mask = LVIF_TEXT;
 				lvItem.pszText = text;
 				lvItem.cchTextMax = sizeof( text );
-				ListView_GetItem( lv, &lvItem );
+				SendMessageA( lv, LVM_GETITEMA, 0, (LPARAM)&lvItem );
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL ) {
 					// strip off resource name if any
 					strcpy( text, item->jid );
