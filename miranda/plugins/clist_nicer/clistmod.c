@@ -228,8 +228,12 @@ int ShowHide(WPARAM wParam, LPARAM lParam)
         RECT rcScreen, rcWindow;
         int offScreen = 0;
 
-		ShowWindow(pcli->hwndContactList, SW_SHOWNORMAL);
-		SetWindowPos(pcli->hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+		ShowWindow(pcli->hwndContactList, /* SW_SHOWNORMAL */ SW_RESTORE);
+
+		SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+		if (!DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT))
+			SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+
         SetForegroundWindow(pcli->hwndContactList);
         DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
     //this forces the window onto the visible screen

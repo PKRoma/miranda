@@ -559,6 +559,7 @@ int GetExtraCache(HANDLE hContact, char *szProto)
         LoadSkinItemToCache(&g_ExtraCache[g_nextExtraCacheEntry], szProto);
         g_ExtraCache[g_nextExtraCacheEntry].dwCFlags = g_ExtraCache[g_nextExtraCacheEntry].timediff = g_ExtraCache[g_nextExtraCacheEntry].timezone = 0;
         GetCachedStatusMsg(g_nextExtraCacheEntry, szProto);
+		g_ExtraCache[g_nextExtraCacheEntry].dwLastMsgTime = INTSORT_GetLastMsgTime(hContact);
         iFound = g_nextExtraCacheEntry++;
     }
     return iFound;
@@ -617,6 +618,18 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
             WORD wStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
             filterResult = (g_CluiData.filterFlags & CLVM_GROUPSTATUS_OP) ? ((filterResult | ((1 << (wStatus - ID_STATUS_OFFLINE)) & g_CluiData.statusMaskFilter ? 1 : 0))) : (filterResult & ((1 << (wStatus - ID_STATUS_OFFLINE)) & g_CluiData.statusMaskFilter ? 1 : 0));
         }
+		if(g_CluiData.bFilterEffective & CLVM_FILTER_LASTMSG) {
+			DWORD now;
+			int iEntry = GetExtraCache(hContact, szProto);
+			if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry) {
+				now = time(NULL);
+				now -= g_CluiData.lastMsgFilter;
+				if(g_CluiData.bFilterEffective & CLVM_FILTER_LASTMSG_OLDERTHAN)
+					filterResult = filterResult & (g_ExtraCache[iEntry].dwLastMsgTime < now);
+				else if(g_CluiData.bFilterEffective & CLVM_FILTER_LASTMSG_NEWERTHAN)
+					filterResult = filterResult & (g_ExtraCache[iEntry].dwLastMsgTime > now);
+			}
+		}
         return (dbHidden | !filterResult);
     }
     else

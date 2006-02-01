@@ -51,7 +51,8 @@ static int g_ViewModeOptDlg = FALSE;
 static UINT _page1Controls[] = {IDC_STATIC1, IDC_STATIC2, IDC_STATIC3, IDC_STATIC5, IDC_STATIC4,
     IDC_STATIC8, IDC_ADDVIEWMODE, IDC_DELETEVIEWMODE, IDC_NEWVIEMODE, IDC_GROUPS, IDC_PROTOCOLS,
     IDC_VIEWMODES, IDC_STATUSMODES, IDC_STATIC12, IDC_STATIC13, IDC_STATIC14, IDC_PROTOGROUPOP, IDC_GROUPSTATUSOP, 
-    IDC_AUTOCLEAR, IDC_AUTOCLEARVAL, IDC_AUTOCLEARSPIN, IDC_STATIC15, IDC_STATIC16, 0};
+    IDC_AUTOCLEAR, IDC_AUTOCLEARVAL, IDC_AUTOCLEARSPIN, IDC_STATIC15, IDC_STATIC16, 
+	IDC_LASTMESSAGEOP, IDC_LASTMESSAGEUNIT, IDC_LASTMSG, IDC_LASTMSGVALUE, 0};
 
 static UINT _page2Controls[] = {IDC_CLIST, IDC_STATIC9, IDC_STATIC8, IDC_CLEARALL, IDC_CURVIEWMODE2, 0};
 
@@ -248,7 +249,17 @@ static int FillDialog(HWND hwnd)
     SendDlgItemMessage(hwnd, IDC_PROTOGROUPOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Or"));
     SendDlgItemMessage(hwnd, IDC_GROUPSTATUSOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("And"));
     SendDlgItemMessage(hwnd, IDC_GROUPSTATUSOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Or"));
-    return 0;
+
+    SendDlgItemMessage(hwnd, IDC_LASTMESSAGEOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Older than"));
+    SendDlgItemMessage(hwnd, IDC_LASTMESSAGEOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Newer than"));
+
+    SendDlgItemMessage(hwnd, IDC_LASTMESSAGEUNIT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Minutes"));
+    SendDlgItemMessage(hwnd, IDC_LASTMESSAGEUNIT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Hours"));
+    SendDlgItemMessage(hwnd, IDC_LASTMESSAGEUNIT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Days"));
+	SendDlgItemMessage(hwnd, IDC_LASTMESSAGEOP, CB_SETCURSEL, 0, 0);
+	SendDlgItemMessage(hwnd, IDC_LASTMESSAGEUNIT, CB_SETCURSEL, 0, 0);
+	SetDlgItemInt(hwnd, IDC_LASTMSGVALUE, 0, 0);
+	return 0;
 }
 
 static void SetAllChildIcons(HWND hwndList,HANDLE hFirstItem,int iColumn,int iImage)
@@ -306,7 +317,7 @@ static void SetIconsForColumn(HWND hwndList,HANDLE hItem,HANDLE hItemAll,int iCo
 }
 
 void SaveViewMode(const char *name, const TCHAR *szGroupFilter, const char *szProtoFilter, DWORD statusMask, DWORD stickyStatusMask, unsigned int options,
-                  unsigned int stickies, unsigned int operators)
+                  unsigned int stickies, unsigned int operators, unsigned int lmdat)
 {
     char szSetting[512];
 
@@ -320,7 +331,10 @@ void SaveViewMode(const char *name, const TCHAR *szGroupFilter, const char *szPr
     DBWriteContactSettingDword(NULL, CLVM_MODULE, szSetting, stickyStatusMask);
     mir_snprintf(szSetting, 512, "%c%s_OPT", 246, name);
     DBWriteContactSettingDword(NULL, CLVM_MODULE, szSetting, options);
-    DBWriteContactSettingDword(NULL, CLVM_MODULE, name, MAKELONG((unsigned short)operators, (unsigned short)stickies));
+    mir_snprintf(szSetting, 512, "%c%s_LM", 246, name);
+    DBWriteContactSettingDword(NULL, CLVM_MODULE, szSetting, lmdat);
+	
+	DBWriteContactSettingDword(NULL, CLVM_MODULE, name, MAKELONG((unsigned short)operators, (unsigned short)stickies));
 }
 
 /*
@@ -390,10 +404,11 @@ void SaveState()
     if(iLen) {
         unsigned int stickies = 0;
         DWORD dwGlobalMask, dwLocalMask;
-        
+		BOOL translated;
+
         szModeName = ( char* )malloc(iLen + 1);
         if(szModeName) {
-            DWORD options;
+            DWORD options, lmdat;
             //char *vastring = NULL;
             //int len = GetWindowTextLengthA(GetDlgItem(clvmHwnd, IDC_VARIABLES)) + 1;
             
@@ -420,10 +435,17 @@ void SaveState()
             }
             operators |= ((SendDlgItemMessage(clvmHwnd, IDC_PROTOGROUPOP, CB_GETCURSEL, 0, 0) == 1 ? CLVM_PROTOGROUP_OP : 0) |
                         (SendDlgItemMessage(clvmHwnd, IDC_GROUPSTATUSOP, CB_GETCURSEL, 0, 0) == 1 ? CLVM_GROUPSTATUS_OP : 0) |
-                        (IsDlgButtonChecked(clvmHwnd, IDC_AUTOCLEAR) ? CLVM_AUTOCLEAR : 0));
+                        (IsDlgButtonChecked(clvmHwnd, IDC_AUTOCLEAR) ? CLVM_AUTOCLEAR : 0) |
+						(IsDlgButtonChecked(clvmHwnd, IDC_LASTMSG) ? CLVM_USELASTMSG : 0));
+
             options = SendDlgItemMessage(clvmHwnd, IDC_AUTOCLEARSPIN, UDM_GETPOS, 0, 0);
+
+			lmdat = MAKELONG(GetDlgItemInt(clvmHwnd, IDC_LASTMSGVALUE, &translated, FALSE),
+							 MAKEWORD(SendDlgItemMessage(clvmHwnd, IDC_LASTMESSAGEOP, CB_GETCURSEL, 0, 0),
+								      SendDlgItemMessage(clvmHwnd, IDC_LASTMESSAGEUNIT, CB_GETCURSEL, 0, 0)));
+
             SaveViewMode(szModeName, newGroupFilter, newProtoFilter, statusMask, dwGlobalMask, options, 
-                         stickies, operators);
+                         stickies, operators, lmdat);
             //free(vastring);
             free(szModeName);
         }
@@ -536,7 +558,28 @@ void UpdateFilters()
     SendDlgItemMessage(clvmHwnd, IDC_GROUPSTATUSOP, CB_SETCURSEL, dwFlags & CLVM_GROUPSTATUS_OP ? 1 : 0, 0);
     CheckDlgButton(clvmHwnd, IDC_AUTOCLEAR, dwFlags & CLVM_AUTOCLEAR ? 1 : 0);
     UpdateStickies();
-    ShowPage(clvmHwnd, 0);
+
+	{
+		int useLastMsg = dwFlags & CLVM_USELASTMSG;
+		DWORD lmdat;
+		BYTE bTmp;
+
+		CheckDlgButton(clvmHwnd, IDC_LASTMSG, useLastMsg);
+		EnableWindow(GetDlgItem(clvmHwnd, IDC_LASTMESSAGEOP), useLastMsg);
+		EnableWindow(GetDlgItem(clvmHwnd, IDC_LASTMSGVALUE), useLastMsg);
+		EnableWindow(GetDlgItem(clvmHwnd, IDC_LASTMESSAGEUNIT), useLastMsg);
+
+	    mir_snprintf(szSetting, 128, "%c%s_LM", 246, szBuf);
+		lmdat = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, 0);
+
+		SetDlgItemInt(clvmHwnd, IDC_LASTMSGVALUE, LOWORD(lmdat), FALSE);
+		bTmp = LOBYTE(HIWORD(lmdat));
+		SendDlgItemMessage(clvmHwnd, IDC_LASTMESSAGEOP, CB_SETCURSEL, bTmp, 0);
+		bTmp = HIBYTE(HIWORD(lmdat));
+		SendDlgItemMessage(clvmHwnd, IDC_LASTMESSAGEUNIT, CB_SETCURSEL, bTmp, 0);
+	}
+
+	ShowPage(clvmHwnd, 0);
 cleanup:
     DBFreeVariant(&dbv_pf);
     DBFreeVariant(&dbv_gf);    
@@ -608,13 +651,25 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             switch(LOWORD(wParam)) {
                 case IDC_PROTOGROUPOP:
                 case IDC_GROUPSTATUSOP:
+				case IDC_LASTMESSAGEUNIT:
+				case IDC_LASTMESSAGEOP:
                     if (HIWORD(wParam) == CBN_SELCHANGE)
                         EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
                     break;
                 case IDC_AUTOCLEAR:
                     EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
                     break;
+				case IDC_LASTMSG:
+					{
+						int bUseLastMsg = IsDlgButtonChecked(hwndDlg, IDC_LASTMSG);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_LASTMESSAGEOP), bUseLastMsg);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_LASTMESSAGEUNIT), bUseLastMsg);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_LASTMSGVALUE), bUseLastMsg);
+	                    EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
+						break;
+					}
                 case IDC_AUTOCLEARVAL:
+				case IDC_LASTMSGVALUE:
                     if(HIWORD(wParam) == EN_CHANGE && GetFocus() == (HWND)lParam)
                         EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
                     break;
@@ -679,7 +734,7 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             int iNewItem = SendDlgItemMessageA(hwndDlg, IDC_VIEWMODES, LB_INSERTSTRING, -1, (LPARAM)szBuf);
                             if(iNewItem != LB_ERR) {
                                 SendDlgItemMessage(hwndDlg, IDC_VIEWMODES, LB_SETCURSEL, (WPARAM)iNewItem, 0);
-                                SaveViewMode(szBuf, _T(""), "", -1, -1, 0, 0, 0);
+                                SaveViewMode(szBuf, _T(""), "", -1, -1, 0, 0, 0, 0);
                                 clvm_curItem = iNewItem;
                                 UpdateStickies();
                                 SendDlgItemMessage(hwndDlg, IDC_PROTOGROUPOP, CB_SETCURSEL, 0, 0);
@@ -1130,7 +1185,32 @@ void ApplyViewMode(const char *name)
     strncpy(g_CluiData.current_viewmode, name, 256);
     g_CluiData.current_viewmode[255] = 0;
 
-    if(HIWORD(g_CluiData.filterFlags) > 0)
+	if(g_CluiData.filterFlags & CLVM_USELASTMSG) {
+		DWORD unit;
+
+		g_CluiData.bFilterEffective |= CLVM_FILTER_LASTMSG;
+        mir_snprintf(szSetting, 256, "%c%s_LM", 246, name);
+        g_CluiData.lastMsgFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, 0);
+		if(LOBYTE(HIWORD(g_CluiData.lastMsgFilter)))
+			g_CluiData.bFilterEffective |= CLVM_FILTER_LASTMSG_NEWERTHAN;
+		else
+			g_CluiData.bFilterEffective |= CLVM_FILTER_LASTMSG_OLDERTHAN;
+		unit = LOWORD(g_CluiData.lastMsgFilter);
+		switch(HIBYTE(HIWORD(g_CluiData.lastMsgFilter))) {
+			case 0:
+				unit *= 60;
+				break;
+			case 1:
+				unit *= 3600;
+				break;
+			case 2:
+				unit *= 86400;
+				break;
+		}
+		g_CluiData.lastMsgFilter = unit;
+	}
+
+	if(HIWORD(g_CluiData.filterFlags) > 0)
         g_CluiData.bFilterEffective |= CLVM_STICKY_CONTACTS;
     
     if(g_CluiData.boldHideOffline == (BYTE)-1)

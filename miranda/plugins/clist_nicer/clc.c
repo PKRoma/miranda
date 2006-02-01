@@ -47,7 +47,7 @@ extern HIMAGELIST himlExtraImages;
 
 HANDLE hSoundHook = 0, hIcoLibChanged = 0;
 
-static HANDLE hClcSettingsChanged;
+static HANDLE hClcSettingsChanged, hClcDBEvent;
 
 static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 
@@ -110,6 +110,24 @@ static int __forceinline __strcmp(const char * src, const char * dst)
 	ret = 1 ;
 	*/
 	return( ret );
+}
+
+static int ClcEventAdded(WPARAM wParam, LPARAM lParam)
+{
+	DBEVENTINFO dbei = {0};
+	int iEntry;
+
+	dbei.cbSize = sizeof(dbei);
+	dbei.pBlob = 0;
+	dbei.cbBlob = 0;
+	CallService(MS_DB_EVENT_GET, (WPARAM)lParam, (LPARAM)&dbei);
+
+	iEntry = GetExtraCache((HANDLE)wParam, NULL);
+	if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry)
+		g_ExtraCache[iEntry].dwLastMsgTime = dbei.timestamp;
+
+	pcli->pfnClcBroadcast(INTM_FORCESORT, 0, 1);
+	return 0;
 }
 
 static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
@@ -198,6 +216,7 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	SFL_Destroy();
 	g_shutDown = TRUE;
 	UnhookEvent(hClcSettingsChanged);
+	UnhookEvent(hClcDBEvent);
 	if (hIcoLibChanged)
 		UnhookEvent(hIcoLibChanged);
 
@@ -238,6 +257,7 @@ int LoadCLCModule(void)
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, ClcModulesLoaded);
 	hClcSettingsChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ClcSettingChanged);
+	hClcDBEvent = HookEvent(ME_DB_EVENT_ADDED, ClcEventAdded);
 	HookEvent(ME_OPT_INITIALISE, ClcOptInit);
 	HookEvent(ME_SYSTEM_SHUTDOWN, ClcShutdown);
 	return 0;
@@ -544,9 +564,10 @@ LBL_Def:
 			pcli->pfnInvalidateItem(hwnd, dat, iItem);
 			goto LBL_Def;
 		}
+	case INTM_FORCESORT:
+		dat->bNeedSort = TRUE;
+		return SendMessage(hwnd, INTM_SORTCLC, wParam, lParam);
 	case INTM_SORTCLC:
-		//KillTimer(hwnd, TIMERID_SORT);
-		//SetTimer(hwnd, TIMERID_SORT, 80, NULL);
 		if(dat->bNeedSort) {
 			pcli->pfnSortCLC(hwnd, dat, TRUE);
 			dat->bNeedSort = FALSE;

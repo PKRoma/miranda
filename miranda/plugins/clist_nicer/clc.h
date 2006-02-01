@@ -40,6 +40,7 @@ UNICODE - done.
 #define INTM_STATUSCHANGED      (WM_USER+33)
 #define INTM_METACHANGED        (WM_USER+34)
 #define INTM_INVALIDATECONTACT  (WM_USER+35)
+#define INTM_FORCESORT			(WM_USER+36)
 
 #define TIMERID_RENAME         10
 #define TIMERID_DRAGAUTOSCROLL 11
@@ -93,6 +94,7 @@ struct ExtraCache {
 	DWORD dwCFlags;
 	StatusItems_t *status_item, *proto_status_item;
 	CONTACTFLOATER floater;
+	DWORD dwLastMsgTime;
 };
 
 struct ClcContact {
@@ -308,6 +310,7 @@ struct CluiData {
 	TCHAR groupFilter[2048];
 	char protoFilter[2048];
 	char varFilter[2048];
+	DWORD lastMsgFilter;
 	char current_viewmode[256], old_viewmode[256];
 	BYTE boldHideOffline;
 	DWORD statusMaskFilter;
@@ -393,10 +396,8 @@ HANDLE ContactToItemHandle(struct ClcContact *contact, DWORD *nmFlags);
 
 //clcitems.c
 void RebuildEntireList(HWND hwnd, struct ClcData *dat);
-void DeleteItemFromTree(HWND hwnd, HANDLE hItem);
-void __fastcall ReallySortCLC(HWND hwnd, struct ClcData *dat, int useInsertionSort);
-int GetGroupContentsCount(struct ClcGroup *group, int visibleOnly);
 void SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat);
+DWORD __forceinline INTSORT_GetLastMsgTime(HANDLE hContact);
 
 //clcmsgs.c
 LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -405,7 +406,6 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 void SetGroupExpand(HWND hwnd, struct ClcData *dat, struct ClcGroup *group, int newState);
 void DoSelectionDefaultAction(HWND hwnd, struct ClcData *dat);
 int FindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefixOk);
-void DeleteFromContactList(HWND hwnd, struct ClcData *dat);
 void BeginRenameSelection(HWND hwnd, struct ClcData *dat);
 int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcContact **contact, struct ClcGroup **group, DWORD *flags);
 void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth);
@@ -580,6 +580,8 @@ typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
 #define FLT_AVATARS 2
 #define FLT_DUALROW 4
 #define FLT_EXTRAICONS 8
+#define FLT_SYNCWITHCLIST 16
+#define FLT_AUTOHIDE 32
 
 typedef struct _floatopts {
 	DWORD dwFlags;

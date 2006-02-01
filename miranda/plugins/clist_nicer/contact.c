@@ -26,6 +26,8 @@ UNICODE done
 #include "commonheaders.h"
 
 extern struct CluiData g_CluiData;
+extern int g_nextExtraCacheEntry;
+extern struct ExtraCache *g_ExtraCache;
 
 struct {
     int status, order;
@@ -115,7 +117,7 @@ static int __forceinline GetProtoIndex(char * szName)
     return -1;
 }
 
-static DWORD __forceinline INTSORT_GetLastMsgTime(HANDLE hContact)
+DWORD __forceinline INTSORT_GetLastMsgTime(HANDLE hContact)
 {
 	HANDLE hDbEvent;
 	DBEVENTINFO dbei = {0};
@@ -177,9 +179,14 @@ static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, co
 		nameb = (TCHAR *)c2->szText;
 		return CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE, namea, -1, nameb, -1) - 2;
 	} else if(bywhat == SORTBY_LASTMSG) {
-		DWORD timestamp1 = INTSORT_GetLastMsgTime(c1->hContact);
-		DWORD timestamp2 = INTSORT_GetLastMsgTime(c2->hContact);
-		return timestamp2 - timestamp1;
+		if(c1->extraCacheEntry >= 0 && c1->extraCacheEntry <= g_nextExtraCacheEntry && 
+		   c2->extraCacheEntry >= 0 && c2->extraCacheEntry <= g_nextExtraCacheEntry)
+			return(g_ExtraCache[c2->extraCacheEntry].dwLastMsgTime - g_ExtraCache[c1->extraCacheEntry].dwLastMsgTime);
+		else {
+			DWORD timestamp1 = INTSORT_GetLastMsgTime(c1->hContact);
+			DWORD timestamp2 = INTSORT_GetLastMsgTime(c2->hContact);
+			return timestamp2 - timestamp1;
+		}
 	} else if(bywhat == SORTBY_PROTO) {
         if(c1->bIsMeta)
             szProto1 = c1->metaProto ? c1->metaProto : c1->proto;

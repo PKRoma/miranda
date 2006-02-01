@@ -17,7 +17,13 @@
 		    
 		! fixed hit-testing for right-aligned groups (you can now click on the expand/collapse
 		  icon even if it is aligned to the right).
+
+		* sort by last message works "dynamically" now (when new messages or events arrive, 
+		  the contact list will update its sorting).
 		  
+		+ started floating contacts implementation. Quite big changes, will take a while until
+		  it is usable.
+		  		  
 0.6.0.4  - 2006/01/27
 
 		! The option "If window is partially covered..." should no longer affect the

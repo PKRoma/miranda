@@ -149,6 +149,7 @@
 #define IDC_AUTOCLEARSPIN               1022
 #define IDC_CHOOSE                      1022
 #define IDC_COMPANY                     1023
+#define IDC_LASTMSG                     1023
 #define IDC_SHOWNAMES                   1024
 #define IDC_CONFIRMDELETE               1025
 #define IDC_CURRENTTRANSFERRED          1026
@@ -816,10 +817,13 @@
 #define IDC_3DLIGHTCOLOR                -25505
 #define ID_BUTTONBAR_BUTTONS            40032
 #define IDC_3DDARKCOLOR                 -25504
+#define IDC_LASTMESSAGEOP               40032
 #define ID_BUTTONS_ONLINE               40033
 #define IDC_CURVIEWMODE2                -25503
 #define ID_BUTTONBAR_INCREASEBUTTONSIZE 40034
 #define IDC_SKINFILE                    40034
+#define IDC_LASTMESSAGEOP2              40034
+#define IDC_LASTMESSAGEUNIT             40034
 #define ID_BUTTONBAR_DECREASEBUTTONSIZE 40035
 #define IDC_BORDERSTYLE                 -25501
 #define ID_BUTTONBAR_FLATBUTTONS        40036
@@ -830,17 +834,27 @@
 #define IDC_GROUPALIGN                  -25499
 #define IDC_FLT_DUALROWS                40037
 #define ID_TRAY_HIDE                    40038
-#define IDC_FLT_AVATARS2                40038
 #define IDC_FLT_EXTRAICONS              40038
 #define ID_TRAY_EXIT                    40039
+#define IDC_FLT_SYNCED                  40039
 #define POPUP_SHOWMETAICONS             40040
+#define IDC_FLT_AUTOHIDE                40040
 #define ID_NOWHERE_APPEARANCE           40041
+#define IDC_FLT_PADLEFT                 -25495
 #define ID_APPEARANCE_BLA               40042
+#define IDC_FLT_PADLEFTSPIN             -25494
 #define ID_NOWHERE_EVENTAREA            40043
+#define IDC_FLT_PADRIGHT                40043
+#define IDC_LASTMSGVALUE                40043
 #define ID_EVENTAREA_ENABLED            40044
+#define IDC_FLT_PADRIGHTSPIN            40044
 #define ID_EVENTAREA_AUTOHIDE           40045
+#define IDC_FLT_PADTOP                  40045
+#define IDC_FLT_PADTOPSPIN              40046
 #define POPUP_ADJUSTSIZE                40047
+#define IDC_FLT_PADBOTTOM               40047
 #define ID_EVENTAREA_SUNKENFRAME        40048
+#define IDC_FLT_PADBOTTOMSPIN           40048
 #define ID_BUTTONBAR_DRAWSUNKENFRAME    40049
 #define POPUP_NEWGROUP                  40050
 #define POPUP_SHOWSTATUSICONS           40051
@@ -860,7 +874,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        4
 #define _APS_NEXT_COMMAND_VALUE         40061
-#define _APS_NEXT_CONTROL_VALUE         40038
+#define _APS_NEXT_CONTROL_VALUE         40044
 #define _APS_NEXT_SYMED_VALUE           40154
 #endif
 #endif

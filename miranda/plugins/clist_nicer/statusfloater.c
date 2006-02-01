@@ -58,12 +58,16 @@ static int g_floaters_highmark = 0;
 
 FLOATINGOPTIONS g_floatoptions;
 
+static UINT padctrlIDs[] = { IDC_FLT_PADLEFTSPIN, IDC_FLT_PADRIGHTSPIN, IDC_FLT_PADTOPSPIN,
+							 IDC_FLT_PADBOTTOMSPIN, 0 };
+
 BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 		case WM_INITDIALOG:
 			{
 				DWORD dwFlags = g_floatoptions.dwFlags;
+				int i = 0;
 
 				TranslateDialogDefault(hwndDlg);
 				CheckDlgButton(hwndDlg, IDC_FLT_SIMPLELAYOUT, dwFlags & FLT_SIMPLE);
@@ -71,6 +75,17 @@ BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				CheckDlgButton(hwndDlg, IDC_FLT_AVATARS, dwFlags & FLT_AVATARS);
 				CheckDlgButton(hwndDlg, IDC_FLT_DUALROWS, dwFlags & FLT_DUALROW);
 				CheckDlgButton(hwndDlg, IDC_FLT_EXTRAICONS, dwFlags & FLT_EXTRAICONS);
+				CheckDlgButton(hwndDlg, IDC_FLT_SYNCED, dwFlags & FLT_SYNCWITHCLIST);
+				CheckDlgButton(hwndDlg, IDC_FLT_AUTOHIDE, dwFlags & FLT_AUTOHIDE);
+
+				for(i = 0; padctrlIDs[i] != 0; i++)
+					SendDlgItemMessage(hwndDlg, padctrlIDs[i], UDM_SETRANGE, 0, MAKELONG(20, 0));
+
+				SendDlgItemMessage(hwndDlg, IDC_FLT_PADLEFTSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.pad_left);
+				SendDlgItemMessage(hwndDlg, IDC_FLT_PADRIGHTSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.pad_right);
+				SendDlgItemMessage(hwndDlg, IDC_FLT_PADTOPSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.pad_top);
+				SendDlgItemMessage(hwndDlg, IDC_FLT_PADBOTTOMSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.pad_bottom);
+
 				return TRUE;
 			}
 		case WM_COMMAND:
@@ -92,14 +107,23 @@ BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                     switch (((LPNMHDR) lParam)->code) {
                         case PSN_APPLY:
                             {
+								g_floatoptions.dwFlags = 0;
+
 								if(IsDlgButtonChecked(hwndDlg, IDC_FLT_SIMPLELAYOUT))
 									g_floatoptions.dwFlags = FLT_SIMPLE;
-								else {
-									g_floatoptions.dwFlags = (IsDlgButtonChecked(hwndDlg, IDC_FLT_AVATARS) ? FLT_AVATARS : 0) |
-															 (IsDlgButtonChecked(hwndDlg, IDC_FLT_DUALROWS) ? FLT_DUALROW : 0) |
-															 (IsDlgButtonChecked(hwndDlg, IDC_FLT_EXTRAICONS) ? FLT_EXTRAICONS : 0);
-									FLT_WriteOptions();
-								}
+
+								g_floatoptions.dwFlags = (IsDlgButtonChecked(hwndDlg, IDC_FLT_AVATARS) ? FLT_AVATARS : 0) |
+														 (IsDlgButtonChecked(hwndDlg, IDC_FLT_DUALROWS) ? FLT_DUALROW : 0) |
+														 (IsDlgButtonChecked(hwndDlg, IDC_FLT_EXTRAICONS) ? FLT_EXTRAICONS : 0) |
+														 (IsDlgButtonChecked(hwndDlg, IDC_FLT_SYNCED) ? FLT_SYNCWITHCLIST : 0) |
+														 (IsDlgButtonChecked(hwndDlg, IDC_FLT_AUTOHIDE) ? FLT_AUTOHIDE : 0);
+								
+								g_floatoptions.pad_left = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_PADLEFTSPIN, UDM_GETPOS, 0, 0);
+								g_floatoptions.pad_right = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_PADRIGHTSPIN, UDM_GETPOS, 0, 0);
+								g_floatoptions.pad_top = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_PADTOPSPIN, UDM_GETPOS, 0, 0);
+								g_floatoptions.pad_bottom = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_PADBOTTOMSPIN, UDM_GETPOS, 0, 0);
+
+								FLT_WriteOptions();
 								FLT_RefreshAll();
 								return TRUE;
 							}
@@ -153,13 +177,7 @@ LRESULT CALLBACK StatusFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			}
 			break;
 		case WM_ERASEBKGND:
-			{
-				RECT rcClient;
-
-				GetClientRect(hwnd, &rcClient);
-				//FillRect((HDC)wParam, &rcClient, GetSysColorBrush(COLOR_3DFACE));
-				return TRUE;
-			}
+			return TRUE;
 		case WM_PAINT:
 			{
 				HDC hdc;
@@ -245,7 +263,7 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 					for(i = 0; i < MAXFLOATERS; i++) {
 						if(g_floaters[i] == iEntry) {
 							g_floaters[i] = -1;
-							_DebugPopup(centry->hContact, "removed floater #%d", i);
+							//_DebugPopup(centry->hContact, "removed floater #%d", i);
 							break;
 						}
 					}
@@ -560,7 +578,7 @@ void FLT_Create(int iEntry)
 		struct ClcContact *contact = NULL;
 		struct ClcGroup *group = NULL;
 
-		_DebugPopup(centry->hContact, "attempt to create");
+		//_DebugPopup(centry->hContact, "attempt to create");
 		if(centry->floater.hwnd == 0 && MyUpdateLayeredWindow != NULL) {
 			int i = FLT_CheckAvail();
 
