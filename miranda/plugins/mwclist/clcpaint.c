@@ -547,13 +547,11 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				rc.right=clRect.right;
 				if (Drawing->type=CLCIT_CONTACT)
 				{
-
-
-					if (PtInRect(&rc,pt))
+					if (hottrack/*PtInRect(&rc,pt)*/)
 					{
 						ChangeToFont(hdcMem,dat,FONTID_CONTACTSHOVER,&fontHeight);
 					}
-				}
+			}
 
 				DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&rc,DT_END_ELLIPSIS);
 
