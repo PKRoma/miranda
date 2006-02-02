@@ -626,6 +626,9 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 
 	FLT_SetSize(&g_ExtraCache[contact->extraCacheEntry], 150, RowHeights_GetFloatingRowHeight(dat, pcli->hwndContactTree, contact, g_floatoptions.dwFlags));
 
+	if(contact->extraCacheEntry < 0 || contact->extraCacheEntry > g_nextExtraCacheEntry)
+		return;
+
 	hwnd = g_ExtraCache[contact->extraCacheEntry].floater.hwnd;
 	hdc = g_ExtraCache[contact->extraCacheEntry].floater.hdc;
 

@@ -117,16 +117,19 @@ static int ClcEventAdded(WPARAM wParam, LPARAM lParam)
 	DBEVENTINFO dbei = {0};
 	int iEntry;
 
+	if(wParam == 0 || lParam == 0)
+		return;
+
 	dbei.cbSize = sizeof(dbei);
 	dbei.pBlob = 0;
 	dbei.cbBlob = 0;
 	CallService(MS_DB_EVENT_GET, (WPARAM)lParam, (LPARAM)&dbei);
 
 	iEntry = GetExtraCache((HANDLE)wParam, NULL);
-	if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry)
+	if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry) {
 		g_ExtraCache[iEntry].dwLastMsgTime = dbei.timestamp;
-
-	pcli->pfnClcBroadcast(INTM_FORCESORT, 0, 1);
+		pcli->pfnClcBroadcast(INTM_FORCESORT, 0, 1);
+	}
 	return 0;
 }
 
@@ -510,8 +513,6 @@ LBL_Def:
 				}
 			}
 			contact->wStatus = wStatus;
-			//dat->bNeedSort = TRUE;
-			//PostMessage(hwnd, INTM_SORTCLC, 0, 0);
 			goto LBL_Def;
 		}
 	case INTM_PROTOCHANGED:

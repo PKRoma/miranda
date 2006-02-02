@@ -71,6 +71,8 @@ extern HWND g_hwndSFL;
 
 HIMAGELIST himlExtraImages = 0;
 
+static BYTE old_cliststate, show_on_first_autosize = FALSE;
+
 RECT cluiPos;
 DWORD g_gdiplusToken = 0;
 
@@ -145,8 +147,8 @@ static int clientIcons[] = {
 
 static struct CluiTopButton top_buttons[] = {
 	    0, 0, 0, IDC_TBTOPMENU, IDI_TBTOPMENU, 0, "CLN_topmenu", NULL, TOPBUTTON_PUSH, 1, "Show menu", 
-		0, 0, 0, IDC_TBHIDEOFFLINE, IDI_HIDEOFFLINE, 0, "CLN_online", NULL, 0, 2, "Show only online contacts",
-		0, 0, 0, IDC_TBHIDEGROUPS, IDI_HIDEGROUPS, 0, "CLN_groups", NULL, 0, 4, "Use contact groups",
+		0, 0, 0, IDC_TBHIDEOFFLINE, IDI_HIDEOFFLINE, 0, "CLN_online", NULL, 0, 2, "Show / hide offline contacts",
+		0, 0, 0, IDC_TBHIDEGROUPS, IDI_HIDEGROUPS, 0, "CLN_groups", NULL, 0, 4, "Toggle group mode",
 		0, 0, 0, IDC_TBFINDANDADD, IDI_FINDANDADD, 0, "CLN_findadd", NULL, TOPBUTTON_PUSH, 8, "Find and add contacts",
 		0, 0, 0, IDC_TBOPTIONS, IDI_TBOPTIONS, 0, "CLN_options", NULL, TOPBUTTON_PUSH, 16, "Open preferences",
 		0, 0, 0, IDC_TBSOUND, IDI_SOUNDSON, IDI_SOUNDSOFF, "CLN_sound", "CLN_soundsoff", 0, 32, "Toggle sounds",
@@ -904,7 +906,7 @@ static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
 	}
 
 	newHeight=max(nmc->pt.y,3)+1+((winstyle&WS_BORDER)?2:0)+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
-	if (newHeight==(rcWindow.bottom-rcWindow.top))
+	if (newHeight==(rcWindow.bottom-rcWindow.top) && show_on_first_autosize == FALSE)
 		return;
 
 	if (newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)
@@ -926,7 +928,40 @@ static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
 }
 
 extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-static BYTE old_cliststate;
+
+static void ShowCLUI(HWND hwnd)
+{
+	int state = old_cliststate;
+
+	SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
+	hMenuMain = GetMenu(pcli->hwndContactList);
+	if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
+		SetMenu(pcli->hwndContactList, NULL);
+	if (state == SETTING_STATE_NORMAL) {
+		int oldFade = g_CluiData.fadeinout;
+		g_CluiData.fadeinout = 1;
+		SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+		ShowWindow(pcli->hwndContactList, SW_SHOW);
+		g_CluiData.fadeinout = oldFade;
+	}
+	else if (state == SETTING_STATE_MINIMIZED) {
+		g_CluiData.forceResize = TRUE;
+		ShowWindow(pcli->hwndContactList, SW_SHOWMINIMIZED);
+	}
+	else if (state == SETTING_STATE_HIDDEN) {
+		g_CluiData.forceResize = TRUE;
+		ShowWindow(pcli->hwndContactList, SW_HIDE);
+	}
+	SetWindowPos(pcli->hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+	DrawMenuBar(hwnd);
+	if(g_CluiData.autosize) {
+		SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+		SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);
+	}				
+	// finally, the floater
+	SFL_Create();
+	SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (old_cliststate == SETTING_STATE_NORMAL ? 0 : 1) : 1);
+}
 
 #define M_CREATECLC  (WM_USER+1)
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -998,7 +1033,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		break;
 	case M_CREATECLC:
 		{
-			int i, state;
+			int i;
 			HICON hIcon;
 			HMENU hMenuButtonList = GetSubMenu(g_CluiData.hMenuButtons, 0);
 			DeleteMenu(hMenuButtonList, 0, MF_BYPOSITION);
@@ -1058,38 +1093,14 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			CreateCLC(hwnd);
 			g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
-			state = old_cliststate;
 			DBWriteContactSettingByte(NULL, "CList", "State", old_cliststate);
 
-			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
-			hMenuMain = GetMenu(pcli->hwndContactList);
-			if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
-				SetMenu(pcli->hwndContactList, NULL);
-			if (state == SETTING_STATE_NORMAL) {
-				int oldFade = g_CluiData.fadeinout;
-				g_CluiData.fadeinout = 1;
-				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-				ShowWindow(pcli->hwndContactList, SW_SHOW);
-				g_CluiData.fadeinout = oldFade;
+			if(!g_CluiData.autosize)
+				ShowCLUI(hwnd);
+			else {
+				show_on_first_autosize = TRUE;
+				RecalcScrollBar(pcli->hwndContactTree, g_clcData);
 			}
-			else if (state == SETTING_STATE_MINIMIZED) {
-				g_CluiData.forceResize = TRUE;
-				ShowWindow(pcli->hwndContactList, SW_SHOWMINIMIZED);
-			}
-			else if (state == SETTING_STATE_HIDDEN) {
-				g_CluiData.forceResize = TRUE;
-				ShowWindow(pcli->hwndContactList, SW_HIDE);
-			}
-			SetWindowPos(pcli->hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-			DrawMenuBar(hwnd);
-			if(g_CluiData.autosize) {
-				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-				SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);
-			}				
-			// finally, the floater
-			SFL_Create();
-			SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (state == SETTING_STATE_NORMAL ? 0 : 1) : 1);
-
 			return 0;
 		}
 	case WM_ERASEBKGND:
@@ -1488,8 +1499,17 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			if(g_CluiData.forceResize && wParam != SW_HIDE) {
 				g_CluiData.forceResize = FALSE;
-				SendMessage(hwnd, WM_SIZE, 0, 0);
-				PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
+				if(!g_CluiData.fadeinout && MySetLayeredWindowAttributes && g_CluiData.bLayeredHack) {
+					MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), 0, LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
+					SendMessage(hwnd, WM_SIZE, 0, 0);
+					ShowWindow(hwnd, SW_SHOW);
+					RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
+					MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), 255, LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
+				}
+				else {
+					SendMessage(hwnd, WM_SIZE, 0, 0);
+					SendMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
+				}
 			}
 			if(!g_CluiData.fadeinout)
 				SFL_SetState(-1);
@@ -2092,6 +2112,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
             SendMessage(hwnd, WM_COMMAND, ID_ICQ_EXIT, 0);
         return FALSE;
 	case CLUIINTM_REDRAW:
+		if(show_on_first_autosize) {
+			show_on_first_autosize = FALSE;
+			ShowCLUI(hwnd);
+		}
 		RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);
 		return 0;
 	case CLUIINTM_STATUSBARUPDATE:

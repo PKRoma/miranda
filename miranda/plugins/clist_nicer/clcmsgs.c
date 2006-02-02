@@ -54,7 +54,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 						SetGroupExpand(hwnd, dat, group, 1);
 						iIndex = pcli->pfnGetRowsPriorTo(&dat->list, group, li.List_IndexOf(( SortedList* )&group->cl, contact));
 						pcli->pfnEnsureVisible(hwnd, dat, 1, iIndex);
-						pcli->pfnRecalcScrollBar(hwnd, dat);
+						RecalcScrollBar(hwnd, dat);
 					}
 				}
 				else {
