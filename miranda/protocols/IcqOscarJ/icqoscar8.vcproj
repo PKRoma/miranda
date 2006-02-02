@@ -166,6 +166,9 @@
 				RelativePath="channels.h">
 			</File>
 			<File
+				RelativePath=".\cookies.h">
+			</File>
+			<File
 				RelativePath=".\directpackets.h">
 			</File>
 			<File
@@ -665,6 +668,9 @@
 			Name="Miranda Bits"
 			Filter="">
 			<File
+				RelativePath=".\cookies.c">
+			</File>
+			<File
 				RelativePath="icq_advsearch.c">
 				<FileConfiguration
 					Name="Release|Win32">
@@ -963,6 +969,9 @@
 		</File>
 		<File
 			RelativePath=".\directpackets.c">
+		</File>
+		<File
+			RelativePath=".\fam_17signon.c">
 		</File>
 		<File
 			RelativePath="forkthread.c">
