@@ -34,7 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <tchar.h>
 #include <windows.h>
 #include <commctrl.h>
-#include <RichEdit.h>
+#include <richedit.h>
 #include <process.h>
 #include <ole2.h>
 #include <richole.h>
@@ -325,7 +325,7 @@ typedef struct  {
 
 
 
-typedef struct GlobalLogSettings_t {
+struct GlobalLogSettings_t {
 	BOOL		ShowTime;
     BOOL		ShowTimeIfChanged;
 	BOOL		LoggingEnabled;
@@ -374,7 +374,7 @@ typedef struct GlobalLogSettings_t {
 	COLORREF	crPUTextColour;
 	COLORREF	crPUBkgColour;
 };
-struct GlobalLogSettings_t g_Settings;
+extern struct GlobalLogSettings_t g_Settings;
 
 typedef struct{
   MODULEINFO* pModule;

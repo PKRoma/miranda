@@ -37,6 +37,8 @@ HBRUSH			hListBkgBrush = NULL;
 
 HIMAGELIST		hImageList = NULL;
 
+struct GlobalLogSettings_t g_Settings;
+
 HIMAGELIST		hIconsList = NULL;
 
 char *			pszActiveWndID = 0;

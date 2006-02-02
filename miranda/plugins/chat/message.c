@@ -309,16 +309,18 @@ static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG
 
 	if (*ppText == NULL) 
 	{
-		*ppText = malloc(cb);
+		*ppText = malloc(cb + 1);
 		memcpy(*ppText, pbBuff, cb);
+		(*ppText)[cb] = 0;
 		*pcb = cb;
 		dwRead = cb;
 	}
 	else
 	{
-		char  *p = malloc(dwRead + cb);
+		char  *p = malloc(dwRead + cb + 1);
 		memcpy(p, *ppText, dwRead);
 		memcpy(p+dwRead, pbBuff, cb);
+		p[dwRead + cb] = 0;
 		free(*ppText);
 		*ppText = p;
 		*pcb = cb;
