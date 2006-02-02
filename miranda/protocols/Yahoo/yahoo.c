@@ -895,7 +895,7 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 				do {
 					dw = Netlib_Recv((HANDLE)fd, buf, 4096, MSG_NODUMP);
 				
-					LOG(("Got %d bytes!", dw));
+					LOG(("Got %lu bytes!", dw));
 					
 					if (dw > 0) {
 						CopyMemory(&pBuff[rsize], buf, dw);
@@ -2162,7 +2162,7 @@ void ext_yahoo_login(int login_mode)
 	ylad->status = YAHOO_STATUS_OFFLINE;
 	yahoo_login(ylad->id, login_mode);
 
-	if (ylad->id <= 0) {
+	if (ylad == NULL || ylad->id <= 0) {
 		LOG(("Could not connect to Yahoo server.  Please verify that you are connected to the net and the pager host and port are correctly entered."));
 		return;
 	}
