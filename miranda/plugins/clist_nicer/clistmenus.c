@@ -137,6 +137,22 @@ static int RemoveMainMenuItem(WPARAM wParam,LPARAM lParam)
 }
 
 
+#ifdef _DEBUG
+int _DebugTRACE(const char *fmt, ...)
+{
+    char    debug[1024];
+    int     ibsize = 1023;
+	FILE    *file;
+
+    va_list va;
+    va_start(va, fmt);
+    _vsnprintf(debug, ibsize, fmt, va);
+	file = fopen("c:\\mimdebug.log", "a+");
+	fputs(debug, file);
+	fclose(file);
+}
+#endif
+
 static int BuildMainMenu(WPARAM wParam,LPARAM lParam)
 {
     int tick;
@@ -722,34 +738,30 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
     TMenuParam tmp;
     HANDLE mi;
     int pos=0;
+	int vis = 0;
 
-    //
     CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
     networkProtoCount=0;
     CheckProtocolOrder();
-    //
 
     //clear statusmenu
-    while (GetMenuItemCount(hStatusMenu)>0) {
+    while (GetMenuItemCount(hStatusMenu)>0)
         DeleteMenu(hStatusMenu,0,MF_BYPOSITION);
-    };
 
     //status menu
     if (hStatusMenuObject!=0) {
         freeownerdataformenus();
         CallService(MO_REMOVEMENUOBJECT,hStatusMenuObject,0);
-        if (hStatusMainMenuHandles!=NULL) {
+        if (hStatusMainMenuHandles!=NULL)
             mir_free(hStatusMainMenuHandles);
-        };
-        if (hStatusMenuHandles!=NULL) {
+        if (hStatusMenuHandles!=NULL)
             mir_free(hStatusMenuHandles);
-        };
-    };
+    }
+
     memset(&tmp,0,sizeof(tmp));
     tmp.cbSize=sizeof(tmp);
     tmp.CheckService=NULL;
     tmp.ExecService="StatusMenuExecService";
-    //tmp.
     tmp.name="StatusMenu";
 
     hStatusMenuObject=(int)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
@@ -766,12 +778,10 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
         CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
     }
 
-
     hStatusMainMenuHandles=(HANDLE*)mir_alloc(sizeof(statusModeList));
     hStatusMainMenuHandlesCnt=sizeof(statusModeList)/sizeof(HANDLE);
-    for (i=0;i<protoCount;i++) {
+    for (i=0;i<protoCount;i++)
         if (proto[i]->type==PROTOTYPE_PROTOCOL && (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)||GetProtocolVisibility(proto[i]->szName)!=0)) networkProtoCount++;
-    }
 
     memset(hStatusMainMenuHandles,0,sizeof(statusModeList));
     hStatusMenuHandles=(tStatusMenuHandles*)mir_alloc(sizeof(tStatusMenuHandles)*protoCount);
@@ -794,7 +804,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 
         flags=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
         moreflags = CallProtoService(proto[i]->szName,PS_GETCAPS, PFLAGNUM_5, 0);
-        if (networkProtoCount>1) {
+        if (networkProtoCount > 0) {
             char protoName[128];
             int j;
             int rootmenu;
@@ -811,10 +821,10 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
             CallProtoService(proto[i]->szName,PS_GETNAME,sizeof(protoName),(LPARAM)protoName);
             tmi.pszName=protoName;
             rootmenu=CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
-            strncpy(protoMenus[s].protoName, protoName, 50);
-            protoMenus[s].menuID = rootmenu;
-            protoMenus[s].protoName[49] = 0;
-
+            strncpy(protoMenus[vis].protoName, protoName, 50);
+            protoMenus[vis].menuID = rootmenu;
+            protoMenus[vis].protoName[49] = 0;
+			vis++;
             memset(&tmi,0,sizeof(tmi));
             tmi.cbSize=sizeof(tmi);
             tmi.flags=CMIF_CHILDPOPUP;
@@ -824,7 +834,6 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
             tmi.pszName=protoName; 
             tmi.hIcon=(HICON)CallProtoService(proto[i]->szName,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
             {
-                        //owner data
                 lpStatusMenuExecParam smep;
                 smep=(lpStatusMenuExecParam)mir_alloc(sizeof(StatusMenuExecParam));
                 memset(smep, 0, sizeof(StatusMenuExecParam));
@@ -833,7 +842,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
                 smep->proto=mir_strdup(proto[i]->szName);
                 tmi.ownerdata=smep;
                 if (DBGetContactSettingByte(NULL,smep->proto,"LockMainStatus",0)) tmi.flags|=CMIF_CHECKED;
-            };
+            }
             mi=(HANDLE)CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
             ((lpStatusMenuExecParam)tmi.ownerdata)->protoindex=(int)mi;
             CallService(MO_MODIFYMENUITEM,(WPARAM)mi,(LPARAM)&tmi);
@@ -872,9 +881,8 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
             }
         }
         statusFlags |= flags & ~moreflags;
-        //statusFlags|=flags;
     }
-    if (networkProtoCount>1) {
+    if (networkProtoCount > 0) {
         pos+=100000;
     }
     else {
@@ -884,8 +892,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
     }
     NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
     {
-                    //add to root menu
-        for (j=0;j<sizeof(statusModeList)/sizeof(statusModeList[0]);j++) {
+        for (j = 0; j<sizeof(statusModeList)/sizeof(statusModeList[0]);j++) {
             for (i=0;i<protoCount;i++) {
                 if (proto[i]->type!=PROTOTYPE_PROTOCOL || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0&&GetProtocolVisibility(proto[i]->szName)==0)) continue;
                 flags=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
@@ -918,14 +925,10 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
                     };                              
                     hStatusMainMenuHandles[j]=(void **)(CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi));
                     break;
-                };
-            };  
-        };  
-
-
-    };
-
-
+                }
+            }
+        }
+    }
 
     BuildStatusMenu(0,0);
     return 0;
@@ -1043,7 +1046,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
     else
         goto no_custom_status_item;
     
-    for(i = 0; protoMenus[i].protoName[0]; i++) {
+	for(i = 0; protoMenus[i].protoName[0]; i++) {
         if(!strcmp(protoMenus[i].protoName, extractedProtoName)) {
             if(protoMenus[i].added)
                 break;
