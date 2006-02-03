@@ -33,7 +33,7 @@ extern struct CluiData g_CluiData;
 extern pfnDrawAlpha pDrawAlpha;
 extern DWORD g_gdiplusToken;
 extern WNDPROC OldStatusBarProc;
-extern HANDLE hPreBuildStatusMenuEvent;
+extern HANDLE hPreBuildStatusMenuEvent, hExtraImageApplying;
 extern SIZE g_oldSize;
 extern POINT g_oldPos;
 extern HIMAGELIST himlExtraImages;
@@ -380,6 +380,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
 
 				if(oldexIconScale != g_CluiData.exIconScale) {
+					ImageList_RemoveAll(himlExtraImages);
 					ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
 					if(g_CluiData.IcoLib_Avail)
 						IcoLibReloadIcons();

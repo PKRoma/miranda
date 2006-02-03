@@ -900,10 +900,9 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 			leftX += leftOffset;
 		}
 		else {
-			//rc.left = rc.right - g_CluiData.avatarSize - dat->rightMargin;
-			rc.left = rcContent.right - g_CluiData.avatarSize;
+			rc.left = (rcContent.right - g_CluiData.avatarSize) + 1;
 			rightOffset += DrawAvatar(hdcMem, &rc, contact, y, dat, iImage ? cstatus : 0, rowHeight);
-			rcContent.right -= (rightOffset - 2);
+			rcContent.right -= (rightOffset);
 		}
 	}
 	else if(type == CLCIT_CONTACT && !dat->bisEmbedded && !g_selectiveIcon && (dwFlags & CLUI_FRAME_ALWAYSALIGNNICK) && av_wanted && (av_left || av_right)) {
@@ -1099,7 +1098,7 @@ text:
 				if(av_rightwithnick) {
 					RECT rcAvatar = rcContent;
 
-					rcAvatar.left = rcContent.right - (g_CluiData.avatarSize + 2);
+					rcAvatar.left = rcContent.right - (g_CluiData.avatarSize);
 					DrawAvatar(hdcMem, &rcAvatar, contact, y, dat, iImage ? cstatus : 0, rowHeight);
 					rcContent.right -= (g_CluiData.avatarSize + 2);
 				}
@@ -1198,10 +1197,12 @@ text:
 			else {
 nodisplay:                
 				verticalfit = (rowHeight - fontHeight >= g_CluiData.exIconScale + 1);
-				if(verticalfit && av_right)
-					rcContent.right = clRect->right - g_CluiData.avatarSize - 2;
-				else if(verticalfit && !av_rightwithnick)
-					rcContent.right = clRect->right - dat->rightMargin;
+				if(avatar_done) {
+					if(verticalfit && av_right)
+						rcContent.right = clRect->right - g_CluiData.avatarSize - 2;
+					else if(verticalfit && !av_rightwithnick)
+						rcContent.right = clRect->right - dat->rightMargin;
+				}
 			}
 
 #if defined(_GDITEXTRENDERING) && defined(_UNICODE)
