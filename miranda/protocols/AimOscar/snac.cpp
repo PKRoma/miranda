@@ -181,9 +181,11 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 	if(subgroup==0x000b)
 	{
 		bool hiptop_user=0;
+		bool bot_user=0;
 		bool adv2_icon=0;
 		bool adv1_icon=0;
 		bool away_user=0;
+		bool caps_included=0;
 		unsigned char buddy_length=buf[SNAC_SIZE];
 		int offset=SNAC_SIZE+TLV_PART_SIZE+buddy_length+1;
 		int i=0;
@@ -247,24 +249,26 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 						if(!ATIconsDisabled)
 						{
 							adv2_icon=1;
-							IconExtraColumn iec;
-							iec.cbSize = sizeof(iec);
-							iec.hImage = conn.admin_icon;
-							iec.ColumnType = EXTRA_ICON_ADV2;
-							CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+							char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+							memcpy(data,&conn.admin_icon,sizeof(HANDLE));
+							memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+							unsigned short column_type=EXTRA_ICON_ADV2;
+							memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+							ForkThread((pThreadFunc)set_extra_icon,data);
 						}
 					}
 					else if(aol)
 					{
 						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_AOL);
 						if(!ATIconsDisabled)
-						{						
+						{		
 							adv2_icon=1;
-							IconExtraColumn iec;
-							iec.cbSize = sizeof(iec);
-							iec.hImage = conn.aol_icon;
-							iec.ColumnType = EXTRA_ICON_ADV2;
-							CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+							char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+							memcpy(data,&conn.aol_icon,sizeof(HANDLE));
+							memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+							unsigned short column_type=EXTRA_ICON_ADV2;
+							memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+							ForkThread((pThreadFunc)set_extra_icon,data);
 					
 						}
 					}
@@ -272,13 +276,14 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 					{
 						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_ICQ);
 						if(!ATIconsDisabled)
-						{					
+						{		
 							adv2_icon=1;
-							IconExtraColumn iec;
-							iec.cbSize = sizeof(iec);
-							iec.hImage = conn.icq_icon;
-							iec.ColumnType = EXTRA_ICON_ADV2;
-							CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+							char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+							memcpy(data,&conn.icq_icon,sizeof(HANDLE));
+							memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+							unsigned short column_type=EXTRA_ICON_ADV2;
+							memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+							ForkThread((pThreadFunc)set_extra_icon,data);
 						}
 					}
 					else if(unconfirmed)
@@ -287,11 +292,12 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 						if(!ATIconsDisabled)
 						{
 							adv2_icon=1;
-							IconExtraColumn iec;
-							iec.cbSize = sizeof(iec);
-							iec.hImage = conn.unconfirmed_icon;
-							iec.ColumnType = EXTRA_ICON_ADV2;
-							CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+							char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+							memcpy(data,&conn.unconfirmed_icon,sizeof(HANDLE));
+							memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+							unsigned short column_type=EXTRA_ICON_ADV2;
+							memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+							ForkThread((pThreadFunc)set_extra_icon,data);
 						}
 					}
 					else
@@ -300,26 +306,16 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 						if(!ATIconsDisabled)
 						{
 							adv2_icon=1;
-							IconExtraColumn iec;
-							iec.cbSize = sizeof(iec);
-							iec.hImage = conn.confirmed_icon;
-							iec.ColumnType = EXTRA_ICON_ADV2;
-							CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+							char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+							memcpy(data,&conn.confirmed_icon,sizeof(HANDLE));
+							memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+							unsigned short column_type=EXTRA_ICON_ADV2;
+							memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+							ForkThread((pThreadFunc)set_extra_icon,data);
 						}
 					}
 					if(bot)
-					{
-						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ET, EXTENDED_STATUS_BOT);
-						if(!ESIconsDisabled)
-						{
-							adv1_icon=1;
-							IconExtraColumn iec;
-							iec.cbSize = sizeof(iec);
-							iec.hImage = conn.bot_icon;
-							iec.ColumnType = EXTRA_ICON_ADV1;
-							CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
-						}
-					}
+						bot_user=1;
 					if(wireless)
 					{
 						DBDeleteContactSetting(hContact, "CList", AIM_KEY_SM);
@@ -381,6 +377,7 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 			}
 			else if(tlv_type==0x0019)//new caps
 			{
+				caps_included=1;
 				for(int i=0;i<tlv_length;i=i+2)
 				{
 					unsigned short* cap =(unsigned short*)&buf[offset+i];
@@ -418,34 +415,54 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 			}
 			offset+=(tlv_length);
 		}
-		if(hiptop_user)
+		if(bot_user)
 		{
-				DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
-				if(!ESIconsDisabled)
-				{
-					adv1_icon=1;
-					IconExtraColumn iec;
-					iec.cbSize = sizeof(iec);
-					iec.hImage = conn.hiptop_icon;
-					iec.ColumnType = EXTRA_ICON_ADV1;
-					CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
-				}
+			DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ET, EXTENDED_STATUS_BOT);
+			if(!ESIconsDisabled)
+			{
+				adv1_icon=1;
+				char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+				memcpy(data,&conn.bot_icon,sizeof(HANDLE));
+				memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+				unsigned short column_type=EXTRA_ICON_ADV1;
+				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+				ForkThread((pThreadFunc)set_extra_icon,data);
+			}
 		}
-		if(!adv1_icon)
+		else if(hiptop_user)
 		{
-			IconExtraColumn iec;
-			iec.cbSize = sizeof(iec);
-			iec.hImage = (HANDLE)-1;
-			iec.ColumnType = EXTRA_ICON_ADV1;
-			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+			DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
+			if(!ESIconsDisabled)
+			{
+				adv1_icon=1;
+				char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+				memcpy(data,&conn.hiptop_icon,sizeof(HANDLE));
+				memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+				unsigned short column_type=EXTRA_ICON_ADV1;
+				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+				ForkThread((pThreadFunc)set_extra_icon,data);
+			}
 		}
-		if(!adv2_icon)
+		if(caps_included)
 		{
-			IconExtraColumn iec;
-			iec.cbSize = sizeof(iec);
-			iec.hImage = (HANDLE)-1;
-			iec.ColumnType = EXTRA_ICON_ADV2;
-			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+			if(!adv1_icon)
+			{
+				Sleep(100);
+				IconExtraColumn iec;
+				iec.cbSize = sizeof(iec);
+				iec.hImage = (HANDLE)-1;
+				iec.ColumnType = EXTRA_ICON_ADV1;
+				CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+			}
+			if(!adv2_icon)
+			{
+				Sleep(100);
+				IconExtraColumn iec;
+				iec.cbSize = sizeof(iec);
+				iec.hImage = (HANDLE)-1;
+				iec.ColumnType = EXTRA_ICON_ADV2;
+				CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+			}
 		}
 	}
 }

@@ -147,7 +147,7 @@ void offline_contacts()
 				DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT, 0);
 				DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT, 0);
 				DBFreeVariant(&dbv);
-				IconExtraColumn iec;
+				/*IconExtraColumn iec;
 				iec.cbSize = sizeof(iec);
 				iec.hImage = (HANDLE)-1;
 				iec.ColumnType = EXTRA_ICON_ADV1;
@@ -155,7 +155,7 @@ void offline_contacts()
 				iec.cbSize = sizeof(iec);
 				iec.hImage = (HANDLE)-1;
 				iec.ColumnType = EXTRA_ICON_ADV2;
-				CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+				CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);*/
 			}
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
@@ -1013,4 +1013,16 @@ void load_extra_icons()
 		conn.unconfirmed_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
 		DestroyIcon(hXIcon);
 	}
+}
+void set_extra_icon(char* data)
+{
+	HANDLE* image=(HANDLE*)data;
+	HANDLE* hContact=(HANDLE*)&data[sizeof(HANDLE)];
+	unsigned short* column_type=(unsigned short*)&data[sizeof(HANDLE)*2];
+	IconExtraColumn iec;
+	iec.cbSize = sizeof(iec);
+	iec.hImage = *image;
+	iec.ColumnType = *column_type;
+	CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)*hContact, (LPARAM)&iec);
+	free(data);
 }
