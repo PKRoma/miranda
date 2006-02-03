@@ -12,6 +12,7 @@ HANDLE aim_connect(char* server)
     ncon.wPort =atoi(port);
     HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) conn.hNetlib, (LPARAM) & ncon);
 	free(server_dup);
+	load_extra_icons();
 	return con;
 }
 HANDLE aim_peer_connect(char* ip,unsigned short port)
@@ -201,6 +202,7 @@ void __cdecl aim_protocol_negotiation()
 						snac_icbm_limitations(snac->subgroup);
 						snac_message_accepted(snac->subgroup,buf);
 						snac_received_message(snac->subgroup,buf,htons(flap->len));
+						snac_typing_notification(snac->subgroup,buf);
 					}
 					else if(snac->service==0x0013)
 					{

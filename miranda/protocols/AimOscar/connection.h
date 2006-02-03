@@ -36,6 +36,7 @@ public:
 	bool requesting_HTML_ModeMsg;
 	bool request_HTML_profile;
 	bool buddy_list_received;
+	bool extra_icons_loaded;
 	HINSTANCE hInstance;
 	HANDLE hServerConn;
 	HANDLE hServerPacketRecver;

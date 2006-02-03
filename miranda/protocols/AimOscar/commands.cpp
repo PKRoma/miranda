@@ -707,3 +707,18 @@ int aim_deny_file(char* sn,char* icbm_cookie)
 	else
 		return 0;
 }
+int aim_typing_notification(char* sn,unsigned short type)
+{
+	char buf[MSG_LEN*2];
+	unsigned short sn_length=strlen(sn);
+	aim_writesnac(0x04,0x14,0x06,buf);
+	aim_writegeneric(10,"\0\0\0\0\0\0\0\0\0\x01",buf);
+	aim_writegeneric(1,(char*)&sn_length,buf);
+	aim_writegeneric(sn_length,sn,buf);
+	type=htons(type);
+	aim_writegeneric(2,(char*)&type,buf);
+	if(aim_sendflap(0x02,conn.packet_offset,buf)==0)
+		return 1;
+	else
+		return 0;
+}

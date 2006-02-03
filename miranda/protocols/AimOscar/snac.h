@@ -30,4 +30,5 @@ void snac_contact_list(unsigned short subgroup, char* buf, int flap_length);
 void snac_message_accepted(unsigned short subgroup, char* buf);//family 0x004
 void snac_received_message(unsigned short subgroup, char* buf, int flap_length);//family 0x0004
 void snac_received_info(unsigned short subgroup, char* buf, int flap_length);//family 0x0002
+void snac_typing_notification(unsigned short subgroup, char* buf);//family 0x004
 #endif

@@ -46,8 +46,10 @@ void set_status_thread(int status)
 		{
 			case ID_STATUS_OFFLINE:
 				{
+					if(conn.hServerConn)
 					Netlib_CloseHandle(conn.hServerConn);
-					Netlib_CloseHandle(conn.hDirectBoundPort);
+					if(conn.hDirectBoundPort)
+						Netlib_CloseHandle(conn.hDirectBoundPort);
 					conn.hDirectBoundPort=0;
 					conn.hServerConn=0;
 					broadcast_status(ID_STATUS_OFFLINE);
@@ -82,36 +84,36 @@ void set_status_thread(int status)
 		}
 	LeaveCriticalSection(&statusMutex);
 }
-void accept_file_thread(CCSDATA *ccs)//buddy sending file
+void accept_file_thread(char* data)//buddy sending file
 {
-	DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME, AIM_KEY_FN,(char *)ccs->lParam);
 	char *szDesc, *szFile, *local_ip, *verified_ip, *proxy_ip,* sn;
-	szFile = (char*)ccs->wParam + sizeof(DWORD);
+	HANDLE* hContact=(HANDLE*)data;
+	szFile = data + sizeof(HANDLE);
     szDesc = szFile + strlen(szFile) + 1;
 	local_ip = szDesc + strlen(szDesc) + 1;
 	verified_ip = local_ip + strlen(local_ip) + 1;
 	proxy_ip = verified_ip + strlen(verified_ip) + 1;
 	DBVARIANT dbv;
-	if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if (!DBGetContactSetting(*hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		sn= strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
 		return;
-	int peer_force_proxy=DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0);
+	int peer_force_proxy=DBGetContactSettingByte(*hContact, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0);
 	int force_proxy=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0);
-	unsigned short port=DBGetContactSettingWord(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,0);
+	unsigned short port=DBGetContactSettingWord(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,0);
 	if(peer_force_proxy)//peer is forcing proxy
 	{
 		HANDLE hProxy=aim_peer_connect(proxy_ip,5190);
 		if(hProxy)
 		{
-			DBWriteContactSettingByte(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,1);
-			DBWriteContactSettingDword(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
-			DBWriteContactSettingWord(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,port);//needed to verify the proxy connection as legit
-			DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,proxy_ip);
-			ForkThread(aim_proxy_helper,ccs->hContact);
+			DBWriteContactSettingByte(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,1);
+			DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
+			DBWriteContactSettingWord(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,port);//needed to verify the proxy connection as legit
+			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,proxy_ip);
+			ForkThread(aim_proxy_helper,*hContact);
 		}
 	}
 	else if(force_proxy)//we are forcing a proxy
@@ -119,35 +121,35 @@ void accept_file_thread(CCSDATA *ccs)//buddy sending file
 		HANDLE hProxy=aim_connect("ars.oscar.aol.com:5190");
 		if(hProxy)
 		{
-			DBWriteContactSettingByte(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,2);
-			DBWriteContactSettingDword(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
-			DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,"ars.oscar.aol.com:5190");
-			ForkThread(aim_proxy_helper,ccs->hContact);
+			DBWriteContactSettingByte(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,2);
+			DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
+			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,"ars.oscar.aol.com:5190");
+			ForkThread(aim_proxy_helper,*hContact);
 		}
 	}
 	else
 	{
 		char cookie[8];
-		read_cookie(ccs->hContact,cookie);
+		read_cookie(*hContact,cookie);
 		HANDLE hDirect =aim_peer_connect(verified_ip,port);
 		if(hDirect)
 		{
 			aim_accept_file(sn,cookie);
-			DBWriteContactSettingDword(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
-			DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
-			ForkThread(aim_dc_helper,ccs->hContact);
+			DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
+			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
+			ForkThread(aim_dc_helper,*hContact);
 		}
 		hDirect=aim_peer_connect(local_ip,port);			
 		if(hDirect)
 		{
 			aim_accept_file(sn,cookie);
-			DBWriteContactSettingDword(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
-			DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,local_ip);
-			ForkThread(aim_dc_helper,ccs->hContact);
+			DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
+			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,local_ip);
+			ForkThread(aim_dc_helper,*hContact);
 		}
 		else
 		{
-			DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
+			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
 			aim_file_redirected_request(sn,cookie);
 		}
 	}

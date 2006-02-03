@@ -13,6 +13,9 @@ static int GetCaps(WPARAM wParam, LPARAM lParam)
 		case PFLAGNUM_3:
             ret = PF2_SHORTAWAY;
             break;
+		case PFLAGNUM_4:
+            ret = PF4_SUPPORTTYPING;
+            break;
 		case PFLAGNUM_5:                
             ret = PF2_ONTHEPHONE;
             break;
@@ -162,8 +165,7 @@ static int RecvAwayMsg(WPARAM wParam,LPARAM lParam)
 }
 static int LoadIcons(WPARAM wParam, LPARAM lParam)
 {
-	return (int) LoadImage(conn.hInstance, MAKEINTRESOURCE(IDI_AIM), IMAGE_ICON, GetSystemMetrics(wParam & PLIF_SMALL ? SM_CXSMICON : SM_CXICON),
-                           GetSystemMetrics(wParam & PLIF_SMALL ? SM_CYSMICON : SM_CYICON), 0);
+	return (int) LoadImage(conn.hInstance, MAKEINTRESOURCE(IDI_AIM), IMAGE_ICON, GetSystemMetrics(wParam & PLIF_SMALL ? SM_CXSMICON : SM_CXICON),GetSystemMetrics(wParam & PLIF_SMALL ? SM_CYSMICON : SM_CYICON), 0);
 }
 static int OptionsInit(WPARAM wParam,LPARAM lParam)
 {
@@ -181,30 +183,6 @@ static int OptionsInit(WPARAM wParam,LPARAM lParam)
 }
 static int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
-	{
-		HICON hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_BOT));
-		conn.bot_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_ICQ));
-		conn.icq_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_AOL));
-		conn.aol_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_HIPTOP));
-		conn.hiptop_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_ADMIN));
-		conn.admin_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_CONFIRMED));
-		conn.confirmed_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_UNCONFIRMED));
-		conn.unconfirmed_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-	}
 	DBVARIANT dbv;
 	NETLIBUSER nlu;
 	ZeroMemory(&nlu, sizeof(nlu));
@@ -536,10 +514,24 @@ static int RecvFile(WPARAM wParam,LPARAM lParam)
 static int AllowFile(WPARAM wParam, LPARAM lParam)
 {
     CCSDATA *ccs = (CCSDATA *) lParam;
-	CCSDATA *data=(CCSDATA*)malloc(sizeof(ccs));
-	memcpy(data,ccs,sizeof(CCSDATA));
-	ForkThread((pThreadFunc)accept_file_thread,data);
-	return (int)ccs->hContact;
+	int ft=DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_FT,-1);
+	if(ft!=-1)
+	{
+		char *szDesc, *szFile, *local_ip, *verified_ip, *proxy_ip;
+		szFile = (char*)ccs->wParam + sizeof(DWORD);
+		szDesc = szFile + strlen(szFile) + 1;
+		local_ip = szDesc + strlen(szDesc) + 1;
+		verified_ip = local_ip + strlen(local_ip) + 1;
+		proxy_ip = verified_ip + strlen(verified_ip) + 1;
+		int size=strlen(szFile)+strlen(szDesc)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+5+sizeof(HANDLE);
+		char *data=(char*)malloc(size);
+		memcpy(data,(char*)&ccs->hContact,sizeof(HANDLE));
+		memcpy(&data[sizeof(HANDLE)],szFile,size-sizeof(HANDLE));
+		DBWriteContactSettingString(ccs->hContact,AIM_PROTOCOL_NAME, AIM_KEY_FN,(char *)ccs->lParam);
+		ForkThread((pThreadFunc)accept_file_thread,data);
+		return (int)ccs->hContact;
+	}
+	return 0;
 }
 static int DenyFile(WPARAM wParam, LPARAM lParam)
 {
@@ -573,6 +565,20 @@ static int CancelFile(WPARAM wParam, LPARAM lParam)
 			Netlib_CloseHandle(Connection);
 	}
 	DBDeleteContactSetting(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT);
+	return 0;
+}
+static int UserIsTyping(WPARAM wParam, LPARAM lParam)
+{
+	DBVARIANT dbv;
+	DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
+	if(dbv.pszVal)
+	{
+		if(lParam==PROTOTYPE_SELFTYPING_ON)
+			aim_typing_notification(dbv.pszVal,0x0002);
+		else if(lParam==PROTOTYPE_SELFTYPING_OFF)
+			aim_typing_notification(dbv.pszVal,0x0000);
+		DBFreeVariant(&dbv);
+	}
 	return 0;
 }
 static BOOL CALLBACK dialog_message(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -758,6 +764,8 @@ void CreateServices()
 	CreateServiceFunction(service_name,DenyFile);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_FILECANCEL);
 	CreateServiceFunction(service_name,CancelFile);
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_USERISTYPING);
+	CreateServiceFunction(service_name,UserIsTyping);
 	//Do not put any services below HTML get away message!!!
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/GetHTMLAwayMsg");
 	CreateServiceFunction(service_name,GetHTMLAwayMsg);

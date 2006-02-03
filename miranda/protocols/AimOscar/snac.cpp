@@ -747,7 +747,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 				DBWriteContactSettingWord(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,0);
 			if(!descr_included)
 				msg_buf="";
-			char* szBlob = (char *) malloc(sizeof(DWORD) + strlen(filename) + strlen(msg_buf)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+5);
+			char* szBlob = (char *) malloc(sizeof(DWORD) + strlen(filename) + strlen(msg_buf)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+7);
 			*((PDWORD) szBlob) = (DWORD)szBlob;
 			strcpy(szBlob + sizeof(DWORD), filename);
 	        strcpy(szBlob + sizeof(DWORD) + strlen(filename) + 1, msg_buf);
@@ -762,10 +762,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
             ccs.hContact = hContact;
             ccs.wParam = 0;
             ccs.lParam = (LPARAM) & pre;
-            CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
-			//free(szBlob);
-			if(descr_included)
-				free(msg_buf);
+			CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 		}
 		else if(recv_file_type==0&&request_num==2)//we are sending file, but buddy wants us to connect to them cause they cannot connect to us.
 		{
@@ -886,5 +883,28 @@ void snac_received_info(unsigned short subgroup, char* buf, int flap_length)//fa
 			}
 			conn.requesting_HTML_ModeMsg=0;
 			conn.request_HTML_profile=0;
+	}
+}
+void snac_typing_notification(unsigned short subgroup, char* buf)//family 0x004
+{
+	if(subgroup==0x0014)
+	{
+		char sn[33];
+		int sn_length=buf[SNAC_SIZE*2];
+		HANDLE hContact;
+		ZeroMemory(sn,sizeof(sn));
+		memcpy(sn,&buf[SNAC_SIZE*2+1],sn_length);
+		hContact=find_contact(sn);
+		if(hContact)
+		{
+			unsigned short* type=(unsigned short*)&buf[SNAC_SIZE*2+1+sn_length];
+			*type=htons(*type);
+			if(*type==0x0000)//typing finished
+				CallService(MS_PROTO_CONTACTISTYPING,(WPARAM)hContact,(WPARAM)PROTOTYPE_CONTACTTYPING_OFF);
+			else if(*type==0x0001)//typed
+				CallService(MS_PROTO_CONTACTISTYPING,(WPARAM)hContact,PROTOTYPE_CONTACTTYPING_INFINITE);
+			else if(*type==0x0002)//typing
+				CallService(MS_PROTO_CONTACTISTYPING,(WPARAM)hContact,(LPARAM)60);
+		}
 	}
 }

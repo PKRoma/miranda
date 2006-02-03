@@ -64,4 +64,5 @@ void add_AT_icons();
 void remove_AT_icons();
 void add_ES_icons();
 void remove_ES_icons();
+void load_extra_icons();
 #endif

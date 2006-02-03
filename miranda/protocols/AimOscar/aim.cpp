@@ -12,7 +12,7 @@ PLUGINLINK *pluginLink;
 char	AIM_CAP_MIRANDA[16]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
-	"AIM OSCAR Plugin - Alpha 8.0",
+	"AIM OSCAR Plugin - Alpha 8.1(7.2 for Goons)",
 	PLUGIN_MAKE_VERSION(0,0,0,1),
 	"Provides very basic support for AOL® OSCAR Instant Messenger protocol.",
 	"Aaron Myles Landwehr",
