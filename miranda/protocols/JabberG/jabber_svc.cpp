@@ -575,14 +575,20 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		DBVARIANT dbv;
 		if ( !JGetStringUtf( AI->hContact, "jid", &dbv )) {
 			JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal );
-			if (item != NULL && item->resourceCount != NULL) {
+			if ( item != NULL ) {
+				char szJid[ 512 ];
+				if ( item->resourceCount != NULL )
+					mir_snprintf( szJid, sizeof( szJid ), "%s/%s", dbv.pszVal, item->resource[0].resourceName );
+				else
+					lstrcpynA( szJid, dbv.pszVal, sizeof( szJid ));
+
 				JabberLog( "Rereading avatar for %s", dbv.pszVal );
 
 				int iqId = JabberSerialNext();
 				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetAvatar );
 				JabberSend( jabberThreadInfo->s,
-					"<iq type='get' to='%s/%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:avatar'/></iq>",
-					dbv.pszVal, item->resource[0].resourceName, iqId );
+					"<iq type='get' to='%s' id='"JABBER_IQID"%d'><query xmlns='jabber:iq:avatar'/></iq>",
+					szJid, iqId );
 				JFreeVariant( &dbv );
 				return GAIR_WAITFOR;
 	}	}	}

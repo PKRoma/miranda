@@ -903,17 +903,18 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 		JabberLog( "%s ( %s ) online, set contact status to %d", nick, from, status );
 		free( nick );
 
-		XmlNode* xNode = JabberXmlGetChild( node, "x" );
-		if ( xNode != NULL && !lstrcmpA( JabberXmlGetAttrValue( xNode, "xmlns" ), "jabber:x:avatar" )) {
-			if (( xNode = JabberXmlGetChild( xNode, "hash" )) != NULL && xNode->text != NULL && JGetByte( "EnableAvatars", TRUE )) {
-				JSetString( hContact, "AvatarHash", xNode->text );
+		XmlNode* xNode;
+		for ( int i = 1; ( xNode=JabberXmlGetNthChild( node, "x", i )) != NULL; i++ ) {
+         if ( !lstrcmpA( JabberXmlGetAttrValue( xNode, "xmlns" ), "jabber:x:avatar" )) {
+				if (( xNode = JabberXmlGetChild( xNode, "hash" )) != NULL && xNode->text != NULL && JGetByte( "EnableAvatars", TRUE )) {
+					JSetString( hContact, "AvatarHash", xNode->text );
 
-				char szSavedHash[ 100 ];
-				int result = JGetStaticString( "AvatarSaved", hContact, szSavedHash, sizeof szSavedHash );
-				if ( result || strcmp( szSavedHash, xNode->text )) {
-					JabberLog( "Avatar was changed" );
-					JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
-		}	}	}
+					char szSavedHash[ 100 ];
+					int result = JGetStaticString( "AvatarSaved", hContact, szSavedHash, sizeof szSavedHash );
+					if ( result || strcmp( szSavedHash, xNode->text )) {
+						JabberLog( "Avatar was changed" );
+						JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
+		}	}	}	}
 		return;
 	}
 

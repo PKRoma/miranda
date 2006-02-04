@@ -78,7 +78,7 @@ typedef struct {
 	VcardPage *page;
 	BOOL changed;
 	int updateAnimFrame;
-	char szUpdating[33];
+	TCHAR* szUpdating;
 	BOOL animating;
 } VcardTab;
 
@@ -400,7 +400,7 @@ static BOOL CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			char idstr[33];
 			WORD nFlag;
 
-			SetWindowTextA( hwndDlg, JTranslate( "Jabber vCard: Edit Email Address" ));
+			SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Email Address" ));
 			wsprintfA( idstr, "e-mail%d", lParam );
 			if ( !DBGetContactSetting( NULL, jabberProtoName, idstr, &dbv )) {
 				SetDlgItemTextA( hwndDlg, IDC_EMAIL, dbv.pszVal );
@@ -462,7 +462,7 @@ static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			char idstr[33];
 			WORD nFlag;
 
-			SetWindowTextA( hwndDlg, JTranslate( "Jabber vCard: Edit Phone Number" ));
+			SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Phone Number" ));
 			wsprintfA( idstr, "Phone%d", lParam );
 			if ( !DBGetContactSetting( NULL, jabberProtoName, idstr, &dbv )) {
 				SetDlgItemTextA( hwndDlg, IDC_PHONE, dbv.pszVal );
@@ -1162,9 +1162,8 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		case IDC_UPDATE:
 			EnableWindow( GetDlgItem( hwndDlg,IDC_UPDATE ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg,IDC_SAVE ), FALSE );
-			strncpy( dat->szUpdating, JTranslate( "Updating" ), sizeof( dat->szUpdating ));
-			dat->szUpdating[sizeof( dat->szUpdating )-1] = '\0';
-			SetDlgItemTextA( hwndDlg, IDC_UPDATING, dat->szUpdating );
+			dat->szUpdating = TranslateT( "Updating" );
+			SetDlgItemText( hwndDlg, IDC_UPDATING, dat->szUpdating );
 			ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), SW_SHOW );
 			JabberSendGetVcard( jabberJID );
 			dat->animating = TRUE;
@@ -1173,9 +1172,8 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		case IDC_SAVE:
 			EnableWindow( GetDlgItem( hwndDlg,IDC_UPDATE ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg,IDC_SAVE ), FALSE );
-			strncpy( dat->szUpdating, JTranslate( "Saving" ), sizeof( dat->szUpdating ));
-			dat->szUpdating[sizeof( dat->szUpdating )-1] = '\0';
-			SetDlgItemTextA( hwndDlg, IDC_UPDATING, dat->szUpdating );
+			dat->szUpdating = TranslateT( "Saving" );
+			SetDlgItemText( hwndDlg, IDC_UPDATING, dat->szUpdating );
 			ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), SW_SHOW );
 			dat->animating = TRUE;
 			SetTimer( hwndDlg, 1, 200, NULL );
@@ -1188,9 +1186,9 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		}
 		break;
 	case WM_TIMER:
-		{	char str[128];
-			sprintf( str, "%.*s%s%.*s", dat->updateAnimFrame%5, "....", dat->szUpdating, dat->updateAnimFrame%5, "...." );
-			SetDlgItemTextA( hwndDlg, IDC_UPDATING, str );
+		{	TCHAR str[128];
+			mir_sntprintf( str, SIZEOF(str), _T("%.*s%s%.*s"), dat->updateAnimFrame%5, _T("...."), dat->szUpdating, dat->updateAnimFrame%5, _T("...."));
+			SetDlgItemText( hwndDlg, IDC_UPDATING, str );
 			if (( ++dat->updateAnimFrame ) >= 5 ) dat->updateAnimFrame = 0;
 		}
 		break;

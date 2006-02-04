@@ -747,10 +747,19 @@ char* __stdcall JabberBase64Decode( const char* str, int *resultLen )
 				n--; p++;
 				continue;
 			}
-			if ( *p=='\0' || b64rtable[*p]==0x80 ) {
+
+			if ( *p=='\0' ) {
+				if ( n == 0 )
+					goto LBL_Exit;
 				free( res );
 				return NULL;
 			}
+
+			if ( b64rtable[*p]==0x80 ) {
+				free( res );
+				return NULL;
+			}
+
 			a[n] = *p;
 			igroup[n] = b64rtable[*p];
 			p++;
@@ -763,8 +772,8 @@ char* __stdcall JabberBase64Decode( const char* str, int *resultLen )
 		count += num;
 		if ( num < 3 ) break;
 	}
+LBL_Exit:
 	*resultLen = count;
-
 	return res;
 }
 

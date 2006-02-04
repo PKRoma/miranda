@@ -54,9 +54,9 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			SendMessage( hwndList, LB_RESETCONTENT, 0, 0 );
 			SetDlgItemTextA( hwndDlg, IDC_INFO_JID, "" );
 			SetDlgItemTextA( hwndDlg, IDC_SUBSCRIPTION, "" );
-			SetDlgItemTextA( hwndDlg, IDC_SOFTWARE, JTranslate( "<click resource to view>" ));
-			SetDlgItemTextA( hwndDlg, IDC_VERSION, JTranslate( "<click resource to view>" ));
-			SetDlgItemTextA( hwndDlg, IDC_SYSTEM, JTranslate( "<click resource to view>" ));
+			SetDlgItemText( hwndDlg, IDC_SOFTWARE, TranslateT( "<click resource to view>" ));
+			SetDlgItemText( hwndDlg, IDC_VERSION, TranslateT( "<click resource to view>" ));
+			SetDlgItemText( hwndDlg, IDC_SYSTEM, TranslateT( "<click resource to view>" ));
 			EnableWindow( GetDlgItem( hwndDlg, IDC_SOFTWARE ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_VERSION ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_SYSTEM ), FALSE );
@@ -139,7 +139,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 									EnableWindow( GetDlgItem( hwndDlg, IDC_SOFTWARE ), TRUE );
 								}
 								else {
-									SetDlgItemTextA( hwndDlg, IDC_SOFTWARE, JTranslate( "<not specified>" ));
+									SetDlgItemText( hwndDlg, IDC_SOFTWARE, TranslateT( "<not specified>" ));
 									EnableWindow( GetDlgItem( hwndDlg, IDC_SOFTWARE ), FALSE );
 								}
 								if ( r[i].version != NULL ) {
@@ -147,7 +147,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 									EnableWindow( GetDlgItem( hwndDlg, IDC_VERSION ), TRUE );
 								}
 								else {
-									SetDlgItemTextA( hwndDlg, IDC_VERSION, JTranslate( "<not specified>" ));
+									SetDlgItemText( hwndDlg, IDC_VERSION, TranslateT( "<not specified>" ));
 									EnableWindow( GetDlgItem( hwndDlg, IDC_VERSION ), FALSE );
 								}
 								if ( r[i].system != NULL ) {
@@ -155,7 +155,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 									EnableWindow( GetDlgItem( hwndDlg, IDC_SYSTEM ), TRUE );
 								}
 								else {
-									SetDlgItemTextA( hwndDlg, IDC_SYSTEM, JTranslate( "<not specified>" ));
+									SetDlgItemText( hwndDlg, IDC_SYSTEM, TranslateT( "<not specified>" ));
 									EnableWindow( GetDlgItem( hwndDlg, IDC_SYSTEM ), FALSE );
 						}	}	}
 						JFreeVariant( &dbv );
