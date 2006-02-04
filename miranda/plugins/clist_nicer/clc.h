@@ -409,6 +409,8 @@ int FindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefixO
 void BeginRenameSelection(HWND hwnd, struct ClcData *dat);
 int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcContact **contact, struct ClcGroup **group, DWORD *flags);
 void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth);
+void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
+
 #define DROPTARGET_OUTSIDE    0
 #define DROPTARGET_ONSELF     1
 #define DROPTARGET_ONNOTHING  2

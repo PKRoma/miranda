@@ -346,7 +346,8 @@ LBL_Def:
             int recalcScrollBar = 0,shouldShow;
             WORD status = ID_STATUS_OFFLINE;
             char *szProto;
-            
+            int  contactRemoved = 0;
+
             szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
             if (szProto == NULL)
                 status = ID_STATUS_OFFLINE;
@@ -378,6 +379,7 @@ LBL_Def:
                     else
                         hSelItem = pcli->pfnContactToHItem(selcontact);
 					pcli->pfnRemoveItemFromGroup(hwnd, group, contact, 0);
+					contactRemoved = TRUE;
 					if (hSelItem)
 						if (pcli->pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
 							dat->selection = pcli->pfnGetRowsPriorTo(&dat->list, selgroup, li.List_IndexOf(( SortedList* )&selgroup->cl, selcontact));
@@ -393,7 +395,7 @@ LBL_Def:
             }
             dat->bNeedSort = TRUE;
             PostMessage(hwnd, INTM_SORTCLC, 0, recalcScrollBar);
-            PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
+			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)(contactRemoved ? 0 : contact));
             if (recalcScrollBar)
                 pcli->pfnRecalcScrollBar(hwnd, dat);
             goto LBL_Def;
