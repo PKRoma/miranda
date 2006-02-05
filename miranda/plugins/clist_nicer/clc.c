@@ -118,7 +118,7 @@ static int ClcEventAdded(WPARAM wParam, LPARAM lParam)
 	int iEntry;
 
 	if(wParam == 0 || lParam == 0)
-		return;
+		return 1;
 
 	dbei.cbSize = sizeof(dbei);
 	dbei.pBlob = 0;
