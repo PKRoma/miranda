@@ -299,6 +299,13 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	pd.type = PROTOTYPE_PROTOCOL;
 	MSN_CallService( MS_PROTO_REGISTERMODULE, 0, ( LPARAM )&pd );
 
+	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	while ( hContact != NULL ) {
+		if ( !lstrcmpA( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 )))
+			MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
+		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
+	}
+
 	char mailsoundtemp[ 64 ];
 	strcpy( mailsoundtemp, protocolname );
 	strcat( mailsoundtemp, ": " );
