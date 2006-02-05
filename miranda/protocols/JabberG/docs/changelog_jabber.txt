@@ -47,6 +47,7 @@ Version 0.4.1.1
 
 Version 0.4.0.3
 ===============
+[+] wish 0001322: highlighting
 [!] bug #0001272 fixed: crash when sending to a jabber conference that is no longer connected
 [!] bug #0001269 fixed: Users appear in the conference nicklist more than once
 [!] bug #0001268 fixed: 'change nickname' chat popup menu item doesn't work

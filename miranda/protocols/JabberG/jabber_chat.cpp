@@ -147,7 +147,9 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, char* nick, int acti
 		JabberUtf8Decode( szReason, NULL );
 	}
 
-	char* myNick = JabberNickFromJID( jabberJID );
+	char* myNick = (item->nick == NULL) ? NULL : _strdup( item->nick );
+	if ( myNick == NULL )
+		myNick = JabberNickFromJID( jabberJID );
 
 	GCDEST gcd = { jabberProtoName, item->jid, 0 };
 	GCEVENT gce = {0};
