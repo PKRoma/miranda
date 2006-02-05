@@ -395,7 +395,7 @@ LBL_Def:
             }
             dat->bNeedSort = TRUE;
             PostMessage(hwnd, INTM_SORTCLC, 0, recalcScrollBar);
-			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)(contactRemoved ? 0 : contact));
+			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)(contactRemoved ? 0 : wParam));
             if (recalcScrollBar)
                 pcli->pfnRecalcScrollBar(hwnd, dat);
             goto LBL_Def;
@@ -477,7 +477,7 @@ LBL_Def:
 			//contact->gdipObject = NULL;
 			contact->ace = cEntry;
 			// XXX InvalidateRect(hwnd, NULL, FALSE);
-			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
+			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
 			goto LBL_Def;
 		}
 	case INTM_STATUSMSGCHANGED:
@@ -493,7 +493,7 @@ LBL_Def:
 				szProto = contact->proto;
 			}
 			GetCachedStatusMsg(index, szProto);
-			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
+			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)(contact ? contact->hContact : 0));
 			goto LBL_Def;
 		}
 	case INTM_STATUSCHANGED:
@@ -545,9 +545,12 @@ LBL_Def:
 		}
 
 		if(lParam && !dat->bisEmbedded) {
-			struct ClcContact *contact = (struct ClcContact *)lParam;
-			if(g_ExtraCache[contact->extraCacheEntry].floater.hwnd)
-				FLT_Update(dat, contact);
+			struct ClcContact *contact = NULL;
+
+			if(FindItem(hwnd, dat, (HANDLE)lParam, &contact, NULL, 0)) {
+				if(contact && contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry && g_ExtraCache[contact->extraCacheEntry].floater.hwnd)
+					FLT_Update(dat, contact);
+			}
 		}
 		goto LBL_Def;
 
@@ -594,7 +597,7 @@ LBL_Def:
 			if (DBGetContactSettingDword((HANDLE) wParam, szProto, "IdleTS", 0)) {
 				contact->flags |= CONTACTF_IDLE;
 			}
-			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
+			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
 			goto LBL_Def;
 		}
 	case INTM_XSTATUSCHANGED:
@@ -618,7 +621,7 @@ LBL_Def:
 			if (szProto == NULL)
 				break;
 			GetCachedStatusMsg(index, szProto);
-			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
+			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)(contact ? contact->hContact : 0));
 			goto LBL_Def;
 		}
 	case INTM_CLIENTCHANGED:
@@ -638,7 +641,7 @@ LBL_Def:
 					GetClientID(contact, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
-			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
+			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
 			goto LBL_Def;
 		}
 	case WM_PAINT:

@@ -80,7 +80,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry) {
 				g_ExtraCache[contact->extraCacheEntry].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
 				g_ExtraCache[contact->extraCacheEntry].iExtraValid = g_ExtraCache[contact->extraCacheEntry].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[contact->extraCacheEntry].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[contact->extraCacheEntry].iExtraValid & ~(1 << LOWORD(lParam)));
-				PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact);
+				PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
 		}	}
 		return 0;
 	case CLM_SETEXTRAIMAGEINTMETA:
