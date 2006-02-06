@@ -160,7 +160,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	bool tIsPopup = ServiceExists( MS_POPUP_ADDPOPUP ) != 0;
 	int  UnreadMessages = -1, UnreadJunkEmails = -1;
 
-	replaceStr( passport, "https://loginnet.passport.com/ppsecure/md5auth.srf?lc=%L" );
+	replaceStr( passport, "https://loginnet.passport.com/ppsecure/md5auth.srf?lc=1033" );
 	replaceStr( rru, "/cgi-bin/HoTMaiL" );
 
 	MimeHeaders tFileInfo;
@@ -424,7 +424,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 
 	int msgBytes = atol( data.strMsgBytes );
 
-	UrlDecode( data.fromEmail ); UrlDecode( data.fromNick ); Utf8Decode( data.fromNick );
+	UrlDecode( data.fromEmail ); UrlDecode( data.fromNick );
 
 	char* msg = ( char* )alloca( msgBytes+1 );
 
@@ -618,10 +618,10 @@ HANDLE sttProcessAdd( int trid, int listId, char* userEmail, char* userNick )
 	if ( !IsValidListCode( listId ))
 		return NULL;
 
+	HANDLE hContact = MSN_HContactFromEmail( userEmail, userNick, 1, 1 );
 	Utf8Decode( userNick );
 	int mask = Lists_Add( listId, userEmail, userNick );
 
-	HANDLE hContact = MSN_HContactFromEmail( userEmail, userNick, 1, 1 );
 	if ( listId == LIST_RL && ( mask & ( LIST_FL+LIST_AL+LIST_BL )) == 0 )
 		MSN_AddAuthRequest( hContact, userEmail, userNick );
 
@@ -1047,7 +1047,7 @@ LBL_InvalidCommand:
 
 			UrlDecode( data.userEmail ); UrlDecode( data.userNick );
 
-			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 0, 0 );
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
 			if ( hContact != NULL) {
 				// is there an uninitialized switchboard for this contact?
 				ThreadData* T = MSN_GetUnconnectedThread( hContact );
@@ -1098,13 +1098,14 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			UrlDecode( data.userEmail );
-			UrlDecode( data.userNick ); Utf8Decode( data.userNick );
+			UrlDecode( data.userNick );
 
 			MSN_ContactJoined( info, MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 ));
 
 			int thisContact = atol( data.strThisContact );
 			if ( thisContact != 1 ) {
 				char* tContactName = MSN_GetContactName( info->mJoinedContacts[0] );
+				 Utf8Decode( data.userNick );
 
 				char multichatmsg[256];
 				mir_snprintf( multichatmsg, sizeof( multichatmsg ),
@@ -1132,10 +1133,11 @@ LBL_InvalidCommand:
 			if ( sttDivideWords( params, 2, tWords ) != 2 )
 				goto LBL_InvalidCommand;
 
-			UrlDecode( data.userEmail ); UrlDecode( data.userNick ); Utf8Decode( data.userNick );
-
-			MSN_DebugLog( "New contact in channel %s %s", data.userEmail, data.userNick );
+			UrlDecode( data.userEmail ); UrlDecode( data.userNick );
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 );
+
+			Utf8Decode( data.userNick );
+			MSN_DebugLog( "New contact in channel %s %s", data.userEmail, data.userNick );
 
 			info->mInitialContact = NULL;
 			info->mMessageCount = 0;
@@ -1237,16 +1239,16 @@ LBL_InvalidCommand:
 				userNick = userEmail;
 
 			UrlDecode( userEmail ); UrlDecode( userNick );
-			Utf8Decode( userNick );
 
 			if ( !IsValidListCode( listId ) || !strcmp( userEmail, "messenger@microsoft.com" ))
 				break;
 
-			Lists_Add( listId, userEmail, userNick );
-
 			// add user if it wasn't included into a contact list
 			sttProcessListedContactMask();
 			sttListedContact = MSN_HContactFromEmail( userEmail, userNick, 1, 0 );
+
+			Utf8Decode( userNick );
+			Lists_Add( listId, userEmail, userNick );
 
 			if (( listId & ( LIST_AL +  LIST_BL + LIST_FL )) == LIST_BL ) {
 				DBDeleteContactSetting( sttListedContact, "CList", "NotOnList" );

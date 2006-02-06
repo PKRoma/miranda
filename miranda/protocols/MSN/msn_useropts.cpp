@@ -283,7 +283,7 @@ BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 {
-	OPTIONSDIALOGPAGE odp;
+	OPTIONSDIALOGPAGE odp = {0};
 	odp.cbSize = sizeof(odp);
 	odp.hIcon = NULL;
 	odp.hInstance = hInst;

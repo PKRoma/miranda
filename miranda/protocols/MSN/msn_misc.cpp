@@ -108,7 +108,7 @@ int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
 	if (( flags & 0xFF ) == LIST_FL ) {
 		if ( flags & LIST_REMOVE ) {
 			if ( hContact == NULL )
-				if (( hContact = MSN_HContactFromEmail( email, "", 0, 0 )) == NULL )
+				if (( hContact = MSN_HContactFromEmail( email, NULL, 0, 0 )) == NULL )
 					return -1;
 
 			char id[ MSN_GUID_LEN ];
