@@ -262,6 +262,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
   WORD wTLVType;
   WORD wTLVLen;
   BYTE* pDataBuf;
+  BYTE* pBuf;
 
 
   // Unpack the first TLV
@@ -280,6 +281,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
     }
     NetLog_Server("Message (format %u) through server - next TLV %u", 1, wTLVType);
   }
+  pBuf = pDataBuf;
 
   // It must be TLV(2)
   if (wTLVType == 2)
@@ -458,6 +460,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
   {
     NetLog_Server("Unsupported TLV (%u) in message (format 1)", wTLVType);
   }
+  SAFE_FREE(&pBuf);
 }
 
 
@@ -467,6 +470,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
   WORD wTLVType;
   WORD wTLVLen;
   char* pDataBuf = NULL;
+  char* pBuf;
   uid_str szUid;
 
   // Unpack the first TLV
@@ -485,6 +489,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
     }
     NetLog_Server("Message (format %u) through server - next TLV %u", 2, wTLVType);
   }
+  pBuf = pDataBuf;
 
   // It must be TLV(5)
   if (wTLVType == 5)
@@ -507,7 +512,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
     if (wCommand == 1)
     {
       NetLog_Server("Cannot handle abort messages yet... :(");
-      SAFE_FREE(&pDataBuf);
+      SAFE_FREE(&pBuf);
       return;
     }
 
@@ -650,7 +655,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
     NetLog_Server("Unsupported TLV (%u) in message (format 2)", wTLVType);
   }
 
-  SAFE_FREE(&pDataBuf);
+  SAFE_FREE(&pBuf);
 }
 
 
