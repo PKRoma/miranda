@@ -46,18 +46,20 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hFloatingItem, 0);
     }
 
-	memset(&mi,0,sizeof(mi));
-    mi.cbSize=sizeof(mi);
-    mi.position=300000;
-    mi.pszPopupName=(char *)-1;
-    mi.pszService="CList/SetContactFloating";
-    mi.pszName=Translate("&Floating Contact");
-	if(pcli) {
-		if(SendMessage(pcli->hwndContactTree, CLM_QUERYFLOATINGCONTACT, wParam, 0))
-			mi.flags=CMIF_CHECKED;
+	if(DBGetContactSettingByte(0, "CList", "flt_enabled", 0)) {
+		memset(&mi,0,sizeof(mi));
+		mi.cbSize=sizeof(mi);
+		mi.position=300000;
+		mi.pszPopupName=(char *)-1;
+		mi.pszService="CList/SetContactFloating";
+		mi.pszName=Translate("&Floating Contact");
+		if(pcli) {
+			if(SendMessage(pcli->hwndContactTree, CLM_QUERYFLOATINGCONTACT, wParam, 0))
+				mi.flags=CMIF_CHECKED;
+		}
+		mi.pszContactOwner=(char *)0;
+		hFloatingItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi);
 	}
-    mi.pszContactOwner=(char *)0;
-    hFloatingItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi);
 
 	memset(&mi,0,sizeof(mi));
     mi.cbSize=sizeof(mi);
