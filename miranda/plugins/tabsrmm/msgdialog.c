@@ -39,7 +39,6 @@ $Id$
 #include "nen.h"
 #include "m_smileyadd.h"
 #include "m_metacontacts.h"
-
 #include "sendqueue.h"
 #include "msgdlgutils.h"
 #include "functions.h"
@@ -4068,6 +4067,17 @@ quote_from_last:
                                         case 20:
                                             PostMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 1);
                                             break;
+										case 14:				// ctrl - n (send a nudge if protocol supports the /SendNudge service)
+											{
+												char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+												char szServiceName[128];
+												HANDLE hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
+
+												mir_snprintf(szServiceName, 128, "%s/SendNudge", szProto);
+												if(ServiceExists(szServiceName))
+													CallProtoService(szProto, "/SendNudge", (WPARAM)hContact, 0);
+												break;
+											}
                                     }
                                     return 1;
                                 }

@@ -114,6 +114,8 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 int FS_ReloadFonts(WPARAM wParam, LPARAM lParam);
 void FS_RegisterFonts();
 void FirstTimeConfig();
+void IMG_FreeDecoder(), tQHTM_Free(), tQHTM_Init();
+
 /*
  * installed as a WH_GETMESSAGE hook in order to process unicode messages.
  * without this, the rich edit control does NOT accept input for all languages.
@@ -172,7 +174,7 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
 	if(hwnd) {
 		mwod->uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
 		mwod->hwndWindow = hwnd;
-		mwod->local = 0;
+		mwod->local = GetParent(GetParent(hwnd));
 		SendMessage(hwnd, DM_GETWINDOWSTATE, 0, 0);
 		mwod->uState = GetWindowLong(hwnd, DWL_MSGRESULT);
 	}
@@ -993,6 +995,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     CacheLogFonts();
 	IMG_InitDecoder();
 	ReloadContainerSkin();
+	//tQHTM_Init();
 	return 0;
 }
 
@@ -1123,6 +1126,7 @@ int SplitmsgShutdown(void)
     
 	IMG_DeleteItems();
 	IMG_FreeDecoder();
+	//tQHTM_Free();
     return 0;
 }
 
