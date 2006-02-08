@@ -102,13 +102,6 @@ static int __forceinline __strcmp(const char * src, const char * dst)
 
 	while( ! (ret = *(unsigned char *)src - *(unsigned char *)dst) && *dst)
 		++src, ++dst;
-
-	/*
-	if ( ret < 0 )
-	ret = -1 ;
-	else if ( ret > 0 )
-	ret = 1 ;
-	*/
 	return( ret );
 }
 
