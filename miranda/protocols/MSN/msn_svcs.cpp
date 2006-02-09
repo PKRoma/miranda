@@ -903,6 +903,34 @@ LBL_Error:
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MsnSendNudge - Sending a nudge
+
+static int MsnSendNudge( WPARAM wParam, LPARAM lParam )
+{
+	if ( !msnLoggedIn ) return 0;
+	
+	HANDLE hContact = ( HANDLE )wParam;
+	char msg[ 1024 ];
+	
+	mir_snprintf( msg, sizeof( msg ),"N 69\r\nMIME-Version: 1.0\r\n"
+				"Content-Type: text/x-msnmsgr-datacast\r\n\r\n"
+				"ID: 1\r\n\r\n");
+
+	ThreadData* thread = MSN_GetThreadByContact( hContact );
+
+	if ( thread == NULL ) {
+		if ( MsgQueue_CheckContact( hContact ) == NULL ) 
+		{
+			MsgQueue_Add( hContact, 'N', msg, -1 );
+			msnNsThread->sendPacket( "XFR", "SB" );
+		}
+	}
+	else
+		thread->sendPacket( "MSG",msg);
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // MsnSendNetMeeting - Netmeeting callback function
 
 static int MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
@@ -1270,6 +1298,16 @@ int LoadMsnServices( void )
 	mi.position = -500050003;
 	mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_PROFILE ));
 	mi.pszName = MSN_Translate( "&View Profile" );
+	mi.pszService = servicefunction;
+	MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+
+	strcpy( tDest, MSN_SENDNUDGE );
+	CreateServiceFunction( servicefunction, MsnSendNudge );
+
+	mi.flags = CMIF_NOTOFFLINE;
+	mi.position = -500050004;
+	mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_NUDGE ));
+	mi.pszName = MSN_Translate( "Send &Nudge" );
 	mi.pszService = servicefunction;
 	MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 

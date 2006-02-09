@@ -470,7 +470,9 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 		if ( MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof szMsnObject ))
 			szMsnObject[ 0 ] = 0;
 
-		msnNsThread->sendPacket( "CHG", "%s 805306404 %s", szStatusName, szMsnObject );
+		//here we say what functions can be used with this plugins : http://siebe.bot2k3.net/docs/?url=clientid.html
+		//msnNsThread->sendPacket( "CHG", "%s 805306404 %s", szStatusName, szMsnObject );
+		msnNsThread->sendPacket( "CHG", "%s 1073741824 %s", szStatusName, szMsnObject );
 
 		if ( MyOptions.UseMSNP11 ) {
 			for ( int i=0; i < MSN_NUM_MODES; i++ ) { 

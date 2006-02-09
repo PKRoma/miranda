@@ -33,6 +33,8 @@ extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
 
 HANDLE hKeepAliveThreadEvt = NULL;
 
+bool DoingNudge = false;
+
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Keep-alive thread for the main connection
 

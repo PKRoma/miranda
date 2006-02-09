@@ -63,6 +63,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_popup.h>
 
 #include "SDK/m_chat.h"
+#include "SDK/m_shake.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN error codes
@@ -119,6 +120,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MSN_INVITE       "/InviteCommand"
 #define MSN_NETMEETING   "/NetMeeting"
 #define MSN_VIEW_PROFILE "/ViewProfile"
+#define MSN_SENDNUDGE	 "/SendNudge"
 
 #define MENU_ITEMS_COUNT 2
 #define MS_GOTO_INBOX		"/GotoInbox"
@@ -586,6 +588,7 @@ extern	char*       msnProductID;
 
 extern	char*			ModuleName;
 extern	char*	      mailsoundname;
+extern	char*	      nudgesoundname;
 extern	HANDLE      msnGetInfoContact;
 
 extern	char*       sid;

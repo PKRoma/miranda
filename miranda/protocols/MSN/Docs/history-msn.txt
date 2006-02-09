@@ -7,6 +7,7 @@ Legend:
 Version 0.4.3.0
 ===============
 [+] first Unicode version of the MSN plugin
+[!] wish 0001015: nudges (thanks Tweetie for a patch)
 [!] bug 0001532 fixed: Hotmail does not open from miranda
 [!] bug 0001536 fixed: Contacts displayed as online while MSN isn't connected yet
 

@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_md5.h"
 
+void __cdecl MSNNudgeThread( ThreadData* info );
 void __cdecl MSNServerThread( ThreadData* info );
 void __cdecl MSNSendfileThread( ThreadData* info );
 
@@ -582,6 +583,107 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		return;
 	}
 
+	//WIZZ
+	if ( !strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {
+		CCSDATA ccs;
+		HANDLE tContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 1, 1 );
+
+		wchar_t* tRealBody = NULL;
+		int      tRealBodyLen = 0;
+		if ( strstr( tContentType, "charset=UTF-8" ))
+		{	Utf8Decode(( char* )msgBody, &tRealBody );
+			tRealBodyLen = wcslen( tRealBody );
+		}
+		int tMsgBodyLen = strlen( msgBody );
+
+		char* tPrefix = NULL;
+		int   tPrefixLen = 0;
+
+		if ( info->mJoinedCount > 1 && info->mJoinedContacts != NULL ) {
+			if ( msnHaveChatDll )
+				MSN_ChatStart( info );
+			else if ( info->mJoinedContacts[0] != tContact ) {
+				for ( int j=1; j < info->mJoinedCount; j++ ) {
+					if ( info->mJoinedContacts[j] == tContact ) {
+						char* tNickName = MSN_GetContactName( info->mJoinedContacts[j] );
+						tPrefixLen = strlen( tNickName )+2;
+						tPrefix = ( char* )alloca( tPrefixLen+1 );
+						strcpy( tPrefix, "<" );
+						strcat( tPrefix, tNickName );
+						strcat( tPrefix, "> " );
+						ccs.hContact = info->mJoinedContacts[ 0 ];
+						break;
+			}	}	}
+		}
+		else ccs.hContact = tContact;
+
+		int tMsgBufLen = tMsgBodyLen+1 + (tRealBodyLen+1)*sizeof( wchar_t ) + tPrefixLen*(sizeof( wchar_t )+1);
+		char* tMsgBuf = ( char* )alloca( tMsgBufLen );
+		char* p = tMsgBuf;
+
+		if ( tPrefixLen != 0 ) {
+			memcpy( p, tPrefix, tPrefixLen );
+			p += tPrefixLen;
+		}
+		strcpy( p, msgBody );
+		p += tMsgBodyLen+1;
+
+		if ( tPrefixLen != 0 ) {
+			MultiByteToWideChar( CP_ACP, 0, tPrefix, tPrefixLen, ( wchar_t* )p, tPrefixLen );
+			p += tPrefixLen*sizeof( wchar_t );
+		}
+		if ( tRealBodyLen != 0 ) {
+			memcpy( p, tRealBody, sizeof( wchar_t )*( tRealBodyLen+1 ));
+			free( tRealBody );
+		}
+
+		if( !strnicmp(tMsgBuf,"ID: 1",5) && MSN_GetByte( "EnableNudge", 0 ))
+		{
+			if ( MSN_GetByte( "NudgeAsPopup", 0 ))
+			MSN_ShowPopup( MSN_GetContactName(MSN_HContactFromEmail(data.fromEmail, NULL, 1, 1)), MSN_Translate( "you received a nudge"), 0 );
+
+			if ( MSN_GetByte( "NudgeAsMessage", 0 ))
+			{
+				if ( info->mChatID[0] ) {
+					GCDEST gcd = {0};
+					GCEVENT gce = {0};
+
+					gcd.pszModule = msnProtocolName;
+					gcd.pszID = info->mChatID;
+					gcd.iType = GC_EVENT_MESSAGE;
+					gce.cbSize = sizeof(GCEVENT);
+					gce.pDest = &gcd;
+					gce.pszUID = data.fromEmail;
+					gce.pszNick = MSN_GetContactName(MSN_HContactFromEmail(data.fromEmail, NULL, 1, 1));
+					gce.time = time(NULL);
+					gce.bIsMe = FALSE;
+					gce.pszText = (char*)MSN_Translate( "you received a nudge");
+					gce.bAddToLog = TRUE;
+					MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
+				}
+				else {
+					PROTORECVEVENT pre;
+					pre.szMessage = ( char* )MSN_Translate( "you received a nudge");
+					pre.flags = PREF_UNICODE;
+					pre.timestamp = ( DWORD )time(NULL);
+					pre.lParam = 0;
+
+					ccs.szProtoService = PSR_MESSAGE;
+					ccs.wParam = 0;
+					ccs.lParam = ( LPARAM )&pre;
+					MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
+				}
+			}
+			if ( MSN_GetByte( "NudgeAsSound", 0 ))
+				SkinPlaySound( nudgesoundname );
+			if ( MSN_GetByte( "NudgeShakeClist", 0 ) && ServiceExists( MS_SHAKE_CLIST ))
+				MSN_CallService( MS_SHAKE_CLIST, 0, 0);
+			if ( MSN_GetByte( "NudgeShakeChat", 0 ) && ServiceExists( MS_SHAKE_CHAT ))
+				MSN_CallService( MS_SHAKE_CHAT, 0, 0);
+		}
+		return;
+	}
+
 	if ( !strnicmp( tContentType,"text/x-msmsgsemailnotification", 30 ))
 		sttNotificationMessage( msgBody, false );
 	else if ( !strnicmp( tContentType, "text/x-msmsgsinitialemailnotification", 37 ))
@@ -726,6 +828,7 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 		}	}
 		else params = cmdString+4;
 	}
+	MSN_DebugLog("%S", cmdString);
 
 	switch(( *( PDWORD )cmdString & 0x00FFFFFF ) | 0x20000000 )
 	{

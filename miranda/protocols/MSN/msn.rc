@@ -71,26 +71,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_MSN                 ICON                    "Icos\\msn.ico"
-IDI_LIST_FL             ICON                    "Icos\\list_fl.ico"
-IDI_LIST_AL             ICON                    "Icos\\list_al.ico"
-IDI_LIST_BL             ICON                    "Icos\\list_bl.ico"
-IDI_LIST_RL             ICON                    "Icos\\list_rl.ico"
-IDI_MSNBLOCK            ICON                    "Icos\\msnblock.ico"
-IDI_INBOX               ICON                    "Icos\\inbox.ico"
-IDI_INVITE              ICON                    "Icos\\invite.ico"
-IDI_PROFILE             ICON                    "Icos\\profile.ico"
-IDI_NETMEETING          ICON                    "Icos\\netmeeting.ico"
-IDI_SERVICES            ICON                    "Icos\\services.ico"
-IDI_AVATAR              ICON                    "Icos\\avatar.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Dialog
 //
 
@@ -278,6 +258,26 @@ BEGIN
     LTEXT           "Blocked contact",IDC_STATIC,204,220,82,8
 END
 
+IDD_OPT_MSN_EXTRAS DIALOGEX 0, 0, 322, 207
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "MSN Extras",IDC_STMSNEXTRAGROUP,5,4,306,191,WS_GROUP
+    CONTROL         "Enable nudge",IDC_ENABLE_NUDGE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,12,15,292,10
+    CONTROL         "Treat nudge as message",IDC_NUDGE_MESSAGE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,26,277,10
+    CONTROL         "Show popup",IDC_NUDGE_POPUP,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,17,35,277,10
+    CONTROL         "Shake the clist window",IDC_NUDGE_CLIST,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,63,277,10
+    CONTROL         "Shake the chat window",IDC_NUDGE_CHAT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,54,277,10
+    CONTROL         "Play a sound",IDC_NUDGE_SOUND,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,17,44,277,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -321,9 +321,38 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 176
     END
+
+    IDD_OPT_MSN_EXTRAS, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 311
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 202
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MSN                 ICON                    "Icos\\msn.ico"
+IDI_LIST_FL             ICON                    "Icos\\list_fl.ico"
+IDI_LIST_AL             ICON                    "Icos\\list_al.ico"
+IDI_LIST_BL             ICON                    "Icos\\list_bl.ico"
+IDI_LIST_RL             ICON                    "Icos\\list_rl.ico"
+IDI_MSNBLOCK            ICON                    "Icos\\msnblock.ico"
+IDI_INBOX               ICON                    "Icos\\inbox.ico"
+IDI_INVITE              ICON                    "Icos\\invite.ico"
+IDI_PROFILE             ICON                    "Icos\\profile.ico"
+IDI_NETMEETING          ICON                    "Icos\\netmeeting.ico"
+IDI_SERVICES            ICON                    "Icos\\services.ico"
+IDI_AVATAR              ICON                    "Icos\\avatar.ico"
+IDI_NUDGE               ICON                    "Icos\\nudge.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

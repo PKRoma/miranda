@@ -74,6 +74,7 @@ char* msnProtChallenge = NULL;
 char* msnProductID  = NULL;
 
 char* mailsoundname;
+char* nudgesoundname;
 char* ModuleName;
 
 PLUGININFO pluginInfo =
@@ -314,6 +315,14 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 
 	SkinAddNewSound( mailsoundtemp, mailsoundtemp, "hotmail.wav" );
 
+	char nudgesoundtemp[ 64 ];
+	strcpy( nudgesoundtemp, protocolname );
+	strcat( nudgesoundtemp, ": " );
+	strcat( nudgesoundtemp,  MSN_Translate( "Nudge" ));
+	nudgesoundname = strdup( nudgesoundtemp );
+
+	SkinAddNewSound( nudgesoundname, nudgesoundtemp, "nudge.wav" );
+
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
 	msnLoggedIn = false;
 	LoadMsnServices();
@@ -354,6 +363,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	UnloadMsnServices();
 
 	free( mailsoundname );
+	free( nudgesoundname );
 	free( msnProtocolName );
 	free( ModuleName );
 
