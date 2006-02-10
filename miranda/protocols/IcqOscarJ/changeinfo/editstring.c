@@ -166,13 +166,13 @@ static LRESULT CALLBACK StringEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,
       }
       break;
     case WM_GETDLGCODE:
-      return DLGC_WANTALLKEYS|CallWindowProc(OldStringEditProc,hwnd,msg,wParam,lParam);
+      return DLGC_WANTALLKEYS|CallWindowProcUtf(OldStringEditProc,hwnd,msg,wParam,lParam);
     case WM_KILLFOCUS:
       if((HWND)wParam==hwndExpandButton) break;
       EndStringEdit(1);
       return 0;
   }
-  return CallWindowProc(OldStringEditProc,hwnd,msg,wParam,lParam);
+  return CallWindowProcUtf(OldStringEditProc,hwnd,msg,wParam,lParam);
 }
 
 
@@ -200,7 +200,7 @@ static LRESULT CALLBACK ExpandButtonSubclassProc(HWND hwnd,UINT msg,WPARAM wPara
         EscapesToMultiline(text,&selStart,&selEnd);
         hwndEdit=CreateWindowEx(WS_EX_TOOLWINDOW,"EDIT",text,WS_POPUP|WS_BORDER|WS_VISIBLE|ES_WANTRETURN|ES_AUTOVSCROLL|WS_VSCROLL|ES_MULTILINE,rcStart.left,rcStart.top,rcStart.right-rcStart.left,rcStart.bottom-rcStart.top,NULL,NULL,hInst,NULL);
 
-        OldStringEditProc=(WNDPROC)SetWindowLong(hwndEdit,GWL_WNDPROC,(LONG)StringEditSubclassProc);
+        OldStringEditProc=(WNDPROC)SetWindowLongUtf(hwndEdit,GWL_WNDPROC,(LONG)StringEditSubclassProc);
         SendMessage(hwndEdit,WM_SETFONT,(WPARAM)hListFont,0);
         SendMessage(hwndEdit,EM_SETSEL,selStart,selEnd);
         SetFocus(hwndEdit);
@@ -231,7 +231,7 @@ static LRESULT CALLBACK ExpandButtonSubclassProc(HWND hwnd,UINT msg,WPARAM wPara
       }
       break;
   }
-  return CallWindowProc(OldExpandButtonProc,hwnd,msg,wParam,lParam);
+  return CallWindowProcUtf(OldExpandButtonProc,hwnd,msg,wParam,lParam);
 }
 
 
@@ -265,12 +265,12 @@ void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
     rc->right-=rc->bottom-rc->top;
     hwndExpandButton=CreateWindow("BUTTON","",WS_VISIBLE|WS_CHILD|BS_PUSHBUTTON|BS_ICON,rc->right,rc->top,rc->bottom-rc->top,rc->bottom-rc->top,hwndList,NULL,hInst,NULL);
     SendMessage(hwndExpandButton,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadImage(hInst,MAKEINTRESOURCE(IDI_EXPANDSTRINGEDIT),IMAGE_ICON,0,0,LR_SHARED));
-    OldExpandButtonProc=(WNDPROC)SetWindowLong(hwndExpandButton,GWL_WNDPROC,(LONG)ExpandButtonSubclassProc);
+    OldExpandButtonProc=(WNDPROC)SetWindowLongUtf(hwndExpandButton,GWL_WNDPROC,(LONG)ExpandButtonSubclassProc);
   }
 
   hwndEdit=CreateWindow("EDIT",szValue,WS_VISIBLE|WS_CHILD|ES_AUTOHSCROLL|((setting[i].displayType&LIM_TYPE)==LI_NUMBER?ES_NUMBER:0)|(setting[i].displayType&LIF_PASSWORD?ES_PASSWORD:0),rc->left,rc->top,rc->right-rc->left,rc->bottom-rc->top,hwndList,NULL,hInst,NULL);
   if(alloced) SAFE_FREE(&szValue);
-  OldStringEditProc=(WNDPROC)SetWindowLong(hwndEdit,GWL_WNDPROC,(LONG)StringEditSubclassProc);
+  OldStringEditProc=(WNDPROC)SetWindowLongUtf(hwndEdit,GWL_WNDPROC,(LONG)StringEditSubclassProc);
   SendMessage(hwndEdit,WM_SETFONT,(WPARAM)hListFont,0);
   if((setting[i].displayType&LIM_TYPE)==LI_NUMBER) 
   {

@@ -660,6 +660,45 @@ DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *
 }
 
 
+
+DWORD icq_modifyServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wAction, DWORD dwOperation, WORD wItemId, WORD wType)
+{
+  servlistcookie* ack;
+  DWORD dwCookie;
+
+  if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
+  { // cookie failed, use old fake
+    dwCookie = GenerateCookie(wAction);
+  }
+  else
+  {
+    ack->dwAction = dwOperation; // remove privacy item
+    ack->dwUin = dwUin;
+    ack->szUID = null_strdup(szUid);
+    ack->hContact = hContact;
+    ack->wGroupId = 0;
+    ack->wContactId = wItemId;
+
+    dwCookie = AllocateCookie(CKT_SERVERLIST, wAction, dwUin, ack);
+  }
+  return icq_sendBuddyUtf(dwCookie, wAction, dwUin, szUid, 0, wItemId, NULL, NULL, 0, wType);
+}
+
+
+
+DWORD icq_removeServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wItemId, WORD wType)
+{
+  return icq_modifyServerPrivacyItem(hContact, dwUin, szUid, ICQ_LISTS_REMOVEFROMLIST, SSA_PRIVACY_REMOVE, wItemId, wType);
+}
+
+
+
+DWORD icq_addServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wItemId, WORD wType)
+{
+  return icq_modifyServerPrivacyItem(hContact, dwUin, szUid, ICQ_LISTS_ADDTOLIST, SSA_PRIVACY_ADD, wItemId, wType);
+}
+
+
 /*****************************************
  *
  *     --- Contact DB Utilities ---
@@ -1164,7 +1203,7 @@ void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
         ack->dwUin = 0;
         ack->ofCallback = ofCallback;
         ack->lParam = (LPARAM)param;
-        dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, 0, ack);
+        dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, 0, ack);
 
         sendAddStart(0);
         icq_sendGroupUtf(dwCookie, ICQ_LISTS_ADDTOLIST, ack->wGroupId, szSubGroup, NULL, 0);
@@ -1214,7 +1253,7 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
       ack->dwUin = 0;
       ack->ofCallback = ofCallback;
       ack->lParam = (LPARAM)lParam;
-      dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, 0, ack);
+      dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, 0, ack);
 
       sendAddStart(0);
       icq_sendGroupUtf(dwCookie, ICQ_LISTS_ADDTOLIST, ack->wGroupId, szGroup, NULL, 0);
@@ -1322,7 +1361,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
   ack->wGroupId = wGroupID;
   ack->wContactId = wItemID;
 
-  dwCookie = AllocateCookie(ICQ_LISTS_ADDTOLIST, dwUin, ack);
+  dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, dwUin, ack);
 
   sendAddStart(1); // TODO: make some sense here
   icq_sendBuddyUtf(dwCookie, ICQ_LISTS_ADDTOLIST, dwUin, szUid, wGroupID, wItemID, ack->szGroupName, NULL, 0, SSI_ITEM_BUDDY);
@@ -1402,7 +1441,7 @@ DWORD removeServContact(HANDLE hContact)
     ack->wGroupId = wGroupID;
     ack->wContactId = wItemID;
 
-    dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
   }
 
   sendAddStart(0);
@@ -1489,8 +1528,8 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   ack->wNewGroupId = wNewGroupID;
   ack->lParam = 0; // we use this as a sign
 
-  dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
-  dwCookie2 = AllocateCookie(ICQ_LISTS_ADDTOLIST, dwUin, ack);
+  dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
+  dwCookie2 = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, dwUin, ack);
 
   sendAddStart(0);
   /* this is just like Licq does it, icq5 sends that in different order, but sometimes it gives unwanted
@@ -1609,7 +1648,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
     ack->szUID = null_strdup(szUid);
     ack->hContact = hContact;
 
-    dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, dwUin, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, dwUin, ack);
   }
 
   // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
@@ -1683,7 +1722,7 @@ DWORD setServContactComment(HANDLE hContact, const char *pszNote)
     ack->szUID = null_strdup(szUid);
     ack->hContact = hContact;
 
-    dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, dwUin, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, dwUin, ack);
   }
 
   // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
@@ -1744,7 +1783,7 @@ void renameServGroup(WORD wGroupId, char* szGroupName)
     ack->wContactId = 0;
     ack->szGroupName = szGroup; // we need this name
 
-    dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, 0, ack);
 
     AddGroupRename(wGroupId);
 
@@ -1920,74 +1959,17 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 
       if (wVisibleID)
       { // detete permit record
-        servlistcookie* ack;
-        DWORD dwCookie;
-
-        if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
-        { // cookie failed, use old fake
-          dwCookie = GenerateCookie(ICQ_LISTS_REMOVEFROMLIST);
-        }
-        else
-        {
-          ack->dwAction = SSA_PRIVACY_REMOVE;
-          ack->dwUin = dwUIN;
-          ack->szUID = null_strdup(szUID);
-          ack->hContact = (HANDLE)wParam;
-          ack->wGroupId = 0;
-          ack->wContactId = wVisibleID;
-
-          dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUIN, ack);
-        }
-
-        icq_sendBuddyUtf(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUIN, szUID, 0, wVisibleID, NULL, NULL, 0, SSI_ITEM_PERMIT);
+        icq_removeServerPrivacyItem((HANDLE)wParam, dwUIN, szUID, wVisibleID, SSI_ITEM_PERMIT);
       }
 
       if (wInvisibleID)
       { // delete deny record
-        servlistcookie* ack;
-        DWORD dwCookie;
-
-        if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
-        { // cookie failed, use old fake
-          dwCookie = GenerateCookie(ICQ_LISTS_REMOVEFROMLIST);
-        }
-        else
-        {
-          ack->dwAction = SSA_PRIVACY_REMOVE;
-          ack->dwUin = dwUIN;
-          ack->szUID = null_strdup(szUID);
-          ack->hContact = (HANDLE)wParam;
-          ack->wGroupId = 0;
-          ack->wContactId = wInvisibleID;
-
-          dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUIN, ack);
-        }
-
-        icq_sendBuddyUtf(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUIN, szUID, 0, wInvisibleID, NULL, NULL, 0, SSI_ITEM_DENY);
+        icq_removeServerPrivacyItem((HANDLE)wParam, dwUIN, szUID, wInvisibleID, SSI_ITEM_DENY);
       }
 
       if (wIgnoreID)
       { // delete ignore record
-        servlistcookie* ack;
-        DWORD dwCookie;
-
-        if (!(ack = (servlistcookie*)malloc(sizeof(servlistcookie))))
-        { // cookie failed, use old fake
-          dwCookie = GenerateCookie(ICQ_LISTS_REMOVEFROMLIST);
-        }
-        else
-        {
-          ack->dwAction = SSA_PRIVACY_REMOVE; // remove privacy item
-          ack->dwUin = dwUIN;
-          ack->szUID = null_strdup(szUID);
-          ack->hContact = (HANDLE)wParam;
-          ack->wGroupId = 0;
-          ack->wContactId = wIgnoreID;
-
-          dwCookie = AllocateCookie(ICQ_LISTS_REMOVEFROMLIST, dwUIN, ack);
-        }
-
-        icq_sendBuddyUtf(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUIN, szUID, 0, wIgnoreID, NULL, NULL, 0, SSI_ITEM_IGNORE);
+        icq_removeServerPrivacyItem((HANDLE)wParam, dwUIN, szUID, wIgnoreID, SSI_ITEM_IGNORE);
       }
     }
   }

@@ -77,6 +77,10 @@ typedef struct {
 // wParam=(WPARAM)hContact;
 #define MS_GRANT_AUTH "/GrantAuth"
 
+// Revoke authorization
+// wParam=(WPARAM)hContact
+#define MS_REVOKE_AUTH "/RevokeAuth"
+
 // Display XStatus detail (internal use only)
 // wParam=(WPARAM)hContact;
 #define MS_XSTATUS_SHOWDETAILS "/ShowXStatusDetails"

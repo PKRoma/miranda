@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -92,12 +92,13 @@ DWORD icq_sendGetAwayMsgDirect(HANDLE hContact, int type)
 {
   icq_packet packet;
   DWORD dwCookie;
-  message_cookie_data *pCookieData = NULL;
+  message_cookie_data *pCookieData;
 
-  pCookieData = malloc(sizeof(message_cookie_data));
-  dwCookie = AllocateCookie(0, ICQGetContactSettingUIN(hContact), (void*)pCookieData);
-  pCookieData->bMessageType = MTYPE_AUTOAWAY;
-  pCookieData->nAckType = (BYTE)type;
+  if (ICQGetContactSettingWord(hContact, "Version", 0) == 9)
+    return 0; // v9 DC protocol does not support this message
+
+  pCookieData = CreateMessageCookie(MTYPE_AUTOAWAY, (BYTE)type);
+  dwCookie = AllocateCookie(CKT_MESSAGE, 0, ICQGetContactSettingUIN(hContact), (void*)pCookieData);
 
   packDirectMsgHeader(&packet, 3, DIRECT_MESSAGE, dwCookie, (BYTE)type, 3, 1, 0);
   packEmptyMsg(&packet);  // message
@@ -122,12 +123,18 @@ void icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE msgType, c
     
     EnterCriticalSection(&modeMsgsMutex);
 
-    if (*szMsg != NULL)
+    if (szMsg && *szMsg)
     {
-      wMsgLen = strlennull(*szMsg);
+      char* szAnsiMsg;
+
+      // prepare Ansi message - only Ansi supported
+      wMsgLen = strlennull(*szMsg) + 1;
+      szAnsiMsg = (char*)_alloca(wMsgLen);
+      utf8_decode_static(*szMsg, szAnsiMsg, wMsgLen);
+      wMsgLen = strlennull(szAnsiMsg);
       packDirectMsgHeader(&packet, (WORD)(3 + wMsgLen), DIRECT_ACK, wCookie, msgType, 3, 0, 0);
       packLEWord(&packet, (WORD)(wMsgLen + 1));
-      packBuffer(&packet, *szMsg, (WORD)(wMsgLen + 1));
+      packBuffer(&packet, szAnsiMsg, (WORD)(wMsgLen + 1));
       EncryptDirectPacket(dc, &packet);
 
       sendDirectPacket(dc, &packet);
@@ -182,47 +189,49 @@ void icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, char *szReason)
 
 
 
-int icq_sendFileSendDirectv7(DWORD dwUin, HANDLE hContact, WORD wCookie, char* pszFiles, char* pszDescription, DWORD dwTotalSize)
+int icq_sendFileSendDirectv7(filetransfer *ft, const char* pszFiles)
 {
   icq_packet packet;
+  WORD wDescrLen = strlennull(ft->szDescription), wFilesLen = strlennull(pszFiles);
 
-  packDirectMsgHeader(&packet, (WORD)(18 + strlennull(pszDescription) + strlennull(pszFiles)), DIRECT_MESSAGE, wCookie, MTYPE_FILEREQ, 0, 0, 0);
-  packLEWord(&packet, (WORD)(strlennull(pszDescription) + 1));
-  packBuffer(&packet, pszDescription, (WORD)(strlennull(pszDescription) + 1));
+  packDirectMsgHeader(&packet, (WORD)(18 + wDescrLen + wFilesLen), DIRECT_MESSAGE, (WORD)ft->dwCookie, MTYPE_FILEREQ, 0, 0, 0);
+  packLEWord(&packet, (WORD)(wDescrLen + 1));
+  packBuffer(&packet, ft->szDescription, (WORD)(wDescrLen + 1));
   packLEDWord(&packet, 0);   // listen port
-  packLEWord(&packet, (WORD)(strlennull(pszFiles) + 1));
-  packBuffer(&packet, pszFiles, (WORD)(strlennull(pszFiles) + 1));
-  packLEDWord(&packet, dwTotalSize);
+  packLEWord(&packet, (WORD)(wFilesLen + 1));
+  packBuffer(&packet, pszFiles, (WORD)(wFilesLen + 1));
+  packLEDWord(&packet, ft->dwTotalSize);
   packLEDWord(&packet, 0);    // listen port (again)
 
   NetLog_Direct("Sending v%u file transfer request direct", 7);
 
-  return SendDirectMessage(hContact, &packet);
+  return SendDirectMessage(ft->hContact, &packet);
 }
 
 
 
-int icq_sendFileSendDirectv8(DWORD dwUin, HANDLE hContact, WORD wCookie, char *pszFiles, char *szDescription, DWORD dwTotalSize)
+int icq_sendFileSendDirectv8(filetransfer *ft, const char *pszFiles)
 {
   icq_packet packet;
+  WORD wDescrLen = strlennull(ft->szDescription), wFilesLen = strlennull(pszFiles);
 
-  packDirectMsgHeader(&packet, (WORD)(0x2E + 22 + strlennull(szDescription) + strlennull(pszFiles)+1), DIRECT_MESSAGE, wCookie, MTYPE_PLUGIN, 0, 0, 0);
+  packDirectMsgHeader(&packet, (WORD)(0x2E + 22 + wDescrLen + wFilesLen + 1), DIRECT_MESSAGE, (WORD)ft->dwCookie, MTYPE_PLUGIN, 0, 0, 0);
   packEmptyMsg(&packet);  // message
   packPluginTypeId(&packet, MTYPE_FILEREQ);
 
-  packLEDWord(&packet, (WORD)(18 + strlennull(szDescription) + strlennull(pszFiles)+1)); // Remaining length
-  packLEDWord(&packet, (WORD)(strlennull(szDescription)));          // Description
-  packBuffer(&packet, szDescription, (WORD)(strlennull(szDescription)));
+  packLEDWord(&packet, (WORD)(18 + wDescrLen + wFilesLen + 1)); // Remaining length
+  packLEDWord(&packet, wDescrLen);          // Description
+  packBuffer(&packet, ft->szDescription, wDescrLen);
   packWord(&packet, 0x8c82); // Unknown (port?), seen 0x80F6
   packWord(&packet, 0x0222); // Unknown, seen 0x2e01
-  packLEWord(&packet, (WORD)(strlennull(pszFiles)+1));
-  packBuffer(&packet, pszFiles, (WORD)(strlennull(pszFiles)+1));
-  packLEDWord(&packet, dwTotalSize);
+  packLEWord(&packet, (WORD)(wFilesLen + 1));
+  packBuffer(&packet, pszFiles, (WORD)(wFilesLen + 1));
+  packLEDWord(&packet, ft->dwTotalSize);
   packLEDWord(&packet, 0x0008c82); // Unknown, (seen 0xf680 ~33000)
 
   NetLog_Direct("Sending v%u file transfer request direct", 8);
 
-  return SendDirectMessage(hContact, &packet);
+  return SendDirectMessage(ft->hContact, &packet);
 }
 
 
@@ -233,10 +242,10 @@ DWORD icq_SendDirectMessage(DWORD dwUin, HANDLE hContact, const char *szMessage,
   DWORD dwCookie;
 
 
-  dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
+  dwCookie = AllocateCookie(CKT_MESSAGE, 0, dwUin, (void*)pCookieData);
 
   // Pack the standard header
-  packDirectMsgHeader(&packet, (WORD)(nBodyLength + (szCap ? 53:11)), DIRECT_MESSAGE, dwCookie, pCookieData->bMessageType, 0, 0, 0);
+  packDirectMsgHeader(&packet, (WORD)(nBodyLength + (szCap ? 53:11)), DIRECT_MESSAGE, dwCookie, (BYTE)pCookieData->bMessageType, 0, 0, 0);
 
   packLEWord(&packet, (WORD)(nBodyLength+1));            // Length of message
   packBuffer(&packet, szMessage, (WORD)(nBodyLength+1)); // Message

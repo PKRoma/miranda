@@ -102,20 +102,17 @@ BEGIN
     LTEXT           "Port:",IDC_STATIC,173,118,25,8
     EDITTEXT        IDC_ICQPORT,199,116,29,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Default",IDC_RESETSERVER,235,116,34,12
-    CONTROL         "Secure (MD5) login",IDC_SECURE,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Secure (MD5) login",IDC_SECURE,"Button",BS_AUTOCHECKBOX | 
                     BS_TOP | WS_TABSTOP,12,160,257,10
     CONTROL         "Use HTTP Gateway mode for HTTP proxy",IDC_USEGATEWAY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,173,257,10
     CONTROL         "Send 'Keep-alives' (enable this if you use a proxy server and frequently get disconnected)",
                     IDC_KEEPALIVE,"Button",BS_AUTOCHECKBOX | BS_TOP | 
                     BS_MULTILINE | WS_TABSTOP,12,186,257,18
-    CONTROL         "Notify me when a message delivery has failed",
-                    IDC_SLOWSEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    206,257,10
-    LTEXT           "Show connection error messages:",IDC_STATIC,12,220,138,
+    CONTROL         "Ignore concurrent error messages",IDC_NOERRMULTI,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,206,257,10
+    LTEXT           "Show connection error messages:",IDC_STATIC,12,220,238,
                     8
-    CONTROL         "Ignore concurrent errors",IDC_NOERRMULTI,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,150,220,110,10
     CONTROL         "Slider1",IDC_LOGLEVEL,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,18,232,52,10
     CONTROL         "",IDC_LEVELDESCR,"Static",SS_SIMPLE | SS_NOPREFIX | 
@@ -162,40 +159,47 @@ BEGIN
                     IDC_STATIC,12,207,290,16
 END
 
-IDD_OPT_ICQFEATURES DIALOGEX 0, 0, 314, 240
+IDD_OPT_ICQFEATURES DIALOG DISCARDABLE  0, 0, 314, 251
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Messaging",IDC_STATIC,7,7,300,76
+    GROUPBOX        "Messaging",IDC_STATIC,4,4,306,100
     CONTROL         "Enable unicode messaging support",IDC_UTFENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,22,290,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,19,290,10
     CONTROL         "Send all messages in unicode if possible",IDC_UTFALL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,35,290,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,32,290,10
     RTEXT           "Use this codepage for Ansi <-> Unicode translation :",
-                    IDC_UTFSTATIC,12,50,174,10
-    COMBOBOX        IDC_UTFCODEPAGE,190,48,107,51,CBS_DROPDOWNLIST | 
+                    IDC_UTFSTATIC,12,47,174,10
+    COMBOBOX        IDC_UTFCODEPAGE,190,45,107,51,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Make me temporarily visible to contacts I send message to",
                     IDC_TEMPVISIBLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    64,290,10
-    GROUPBOX        "Peer-to-peer Messaging",IDC_STATIC,7,87,300,45
+                    61,290,10
+    CONTROL         "Notify me when a message delivery has failed (recommended)",
+                    IDC_SLOWSEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,74,
+                    290,10
+    CONTROL         "Use only server's acknowledgement (faster)",
+                    IDC_ONLYSERVERACKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    12,87,290,10
+    GROUPBOX        "Peer-to-peer Messaging",IDC_STATIC,4,108,306,45
     CONTROL         "Enable peer-to-peer message connections",IDC_DCENABLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,102,290,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,123,290,10
     CONTROL         "Passive mode, i.e. do not initiate new connections",
                     IDC_DCPASSIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    115,290,10
-    GROUPBOX        "Extra Features",IDC_STATIC,7,136,300,45
-    CONTROL         "Enable Custom Statuses support",IDC_XSTATUSENABLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,151,145,10
+                    136,290,10
+    GROUPBOX        "Extra Features",IDC_STATIC,4,157,306,90
+    CONTROL         "Enable Custom status support",IDC_XSTATUSENABLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,170,145,10
+    CONTROL         "Reset Custom status on status change",IDC_XSTATUSRESET,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,183,145,10
     CONTROL         "Auto-retrieve Custom status details",IDC_XSTATUSAUTO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,157,151,145,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,157,183,145,10
     CONTROL         "Block known Spam Bots",IDC_KILLSPAMBOTS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,164,290,10
-    GROUPBOX        "AIM Support",IDC_AIMSTATIC,7,185,300,45,WS_DISABLED
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,200,290,10
     CONTROL         "Enable AIM support",IDC_AIMENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,199,290,10
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,217,290,10
     LTEXT           "Note: The support is VERY limited, only messaging and status supported.",
-                    IDC_STATIC,12,212,290,10,WS_DISABLED
+                    IDC_STATIC,12,230,290,10,WS_DISABLED
 END
 
 IDD_OPT_ICQPRIVACY DIALOGEX 0, 0, 314, 240
@@ -408,9 +412,7 @@ BEGIN
     EDITTEXT        IDC_HOMEPAGEKEY,228,177,91,12,ES_AUTOHSCROLL
     GROUPBOX        "Other",IDC_OTHERGROUP,171,199,156,41
     CONTROL         "Search online users only",IDC_ONLINEONLY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,178,210,140,10
-    CONTROL         "Use new search method",IDC_TLVSEARCH,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,178,224,140,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,178,217,140,10
 END
 
 IDD_INFO_AVATAR DIALOGEX 0, 0, 222, 131
@@ -544,10 +546,10 @@ BEGIN
 
     IDD_OPT_ICQFEATURES, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 307
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 310
+        VERTGUIDE, 12
         TOPMARGIN, 7
-        BOTTOMMARGIN, 233
     END
 
     IDD_OPT_ICQPRIVACY, DIALOG
@@ -661,7 +663,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,6,12
+ FILEVERSION 0,3,6,13
  PRODUCTVERSION 0,4,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -680,7 +682,7 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced\0"
-            VALUE "FileVersion", "0, 3, 6, 12\0"
+            VALUE "FileVersion", "0, 3, 6, 13\0"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM\0"
             VALUE "LegalCopyright", "Copyright (C) 2000-2006 Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
             VALUE "LegalTrademarks", "\0"

@@ -173,6 +173,13 @@ static void StoreDBCheckState(HWND hwndDlg, int idCtrl, const char* szSetting)
 
 
 
+static void OptDlgChanged(HWND hwndDlg)
+{
+  SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+}
+
+
+
 static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   switch (msg)
@@ -206,7 +213,6 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       SetDlgItemInt(hwndDlg, IDC_ICQPORT, ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT), FALSE);
       LoadDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive", 0);
       LoadDBCheckState(hwndDlg, IDC_USEGATEWAY, "UseGateway", 0);
-      LoadDBCheckState(hwndDlg, IDC_SLOWSEND, "SlowSend", 1);
       LoadDBCheckState(hwndDlg, IDC_SECURE, "SecureLogin", DEFAULT_SECURE_LOGIN);
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 3));
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 3-ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING));
@@ -222,7 +228,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       char str[MAX_PATH];
 
       SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL,TBM_GETPOS, 0, 0)], str));
-      SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+      OptDlgChanged(hwndDlg);
     }
     break;
     
@@ -242,11 +248,11 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       case IDC_RESETSERVER:
         SetDlgItemText(hwndDlg, IDC_ICQSERVER, DEFAULT_SERVER_HOST);
         SetDlgItemInt(hwndDlg, IDC_ICQPORT, DEFAULT_SERVER_PORT, FALSE);
-        SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+        OptDlgChanged(hwndDlg);
         return TRUE;
       }
       
-      if (icqOnline && LOWORD(wParam) != IDC_SLOWSEND)
+      if (icqOnline && LOWORD(wParam) != IDC_NOERRMULTI)
       {
         char szClass[80];
         
@@ -263,7 +269,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
         return 0;
       }
       
-      SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+      OptDlgChanged(hwndDlg);
       break;
     }
     
@@ -294,7 +300,6 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
           ICQWriteContactSettingWord(NULL, "OscarPort", (WORD)GetDlgItemInt(hwndDlg, IDC_ICQPORT, NULL, FALSE));
           StoreDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive");
           StoreDBCheckState(hwndDlg, IDC_USEGATEWAY, "UseGateway");
-          StoreDBCheckState(hwndDlg, IDC_SLOWSEND, "SlowSend");
           StoreDBCheckState(hwndDlg, IDC_SECURE, "SecureLogin");
           StoreDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox");
           ICQWriteContactSettingByte(NULL, "ShowLogLevel", (BYTE)(3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)));
@@ -378,7 +383,7 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
     default:
       return 0;
     }
-    SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+    OptDlgChanged(hwndDlg);
     break;
     
   case WM_NOTIFY:
@@ -518,7 +523,7 @@ static BOOL CALLBACK FillCpCombo(LPCSTR str)
 static const UINT icqUnicodeControls[] = {IDC_UTFALL,IDC_UTFSTATIC,IDC_UTFCODEPAGE};
 static const UINT icqDCMsgControls[] = {IDC_DCPASSIVE};
 static const UINT icqXStatusControls[] = {IDC_XSTATUSAUTO};
-static const UINT icqAimControls[] = {IDC_AIMENABLE,IDC_AIMSTATIC};
+static const UINT icqAimControls[] = {IDC_AIMENABLE};
 static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   switch (msg)
@@ -535,6 +540,8 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       CheckDlgButton(hwndDlg, IDC_UTFALL, bData==2?TRUE:FALSE);
       icq_EnableMultipleControls(hwndDlg, icqUnicodeControls, sizeof(icqUnicodeControls)/sizeof(icqUnicodeControls[0]), bData?TRUE:FALSE);
       LoadDBCheckState(hwndDlg, IDC_TEMPVISIBLE, "TempVisListEnabled",DEFAULT_TEMPVIS_ENABLED);
+      LoadDBCheckState(hwndDlg, IDC_SLOWSEND, "SlowSend", DEFAULT_SLOWSEND);
+      LoadDBCheckState(hwndDlg, IDC_ONLYSERVERACKS, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS);
       bData = ICQGetContactSettingByte(NULL, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
       CheckDlgButton(hwndDlg, IDC_DCENABLE, bData?TRUE:FALSE);
       CheckDlgButton(hwndDlg, IDC_DCPASSIVE, bData==1?TRUE:FALSE);
@@ -543,6 +550,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       CheckDlgButton(hwndDlg, IDC_XSTATUSENABLE, bData);
       icq_EnableMultipleControls(hwndDlg, icqXStatusControls, sizeof(icqXStatusControls)/sizeof(icqXStatusControls[0]), bData);
       LoadDBCheckState(hwndDlg, IDC_XSTATUSAUTO, "XStatusAuto", DEFAULT_XSTATUS_AUTO);
+      LoadDBCheckState(hwndDlg, IDC_XSTATUSRESET, "XStatusReset", DEFAULT_XSTATUS_RESET);
       LoadDBCheckState(hwndDlg, IDC_KILLSPAMBOTS, "KillSpambots", DEFAULT_KILLSPAM_ENABLED);
       LoadDBCheckState(hwndDlg, IDC_AIMENABLE, "AimEnabled", DEFAULT_AIM_ENABLED);
       icq_EnableMultipleControls(hwndDlg, icqAimControls, sizeof(icqAimControls)/sizeof(icqAimControls[0]), icqOnline?FALSE:TRUE);
@@ -581,7 +589,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       icq_EnableMultipleControls(hwndDlg, icqXStatusControls, sizeof(icqXStatusControls)/sizeof(icqXStatusControls[0]), IsDlgButtonChecked(hwndDlg, IDC_XSTATUSENABLE));
       break;
     }
-    SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+    OptDlgChanged(hwndDlg);
     break;
 
   case WM_NOTIFY:
@@ -600,6 +608,8 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       ICQWriteContactSettingByte(NULL, "UtfEnabled", gbUtfEnabled);
       gbTempVisListEnabled = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_TEMPVISIBLE);
       ICQWriteContactSettingByte(NULL, "TempVisListEnabled", gbTempVisListEnabled);
+      StoreDBCheckState(hwndDlg, IDC_SLOWSEND, "SlowSend");
+      StoreDBCheckState(hwndDlg, IDC_ONLYSERVERACKS, "OnlyServerAcks");
       if (IsDlgButtonChecked(hwndDlg, IDC_DCENABLE))
         gbDCMsgEnabled = IsDlgButtonChecked(hwndDlg, IDC_DCPASSIVE)?1:2;
       else
@@ -608,6 +618,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       gbXStatusEnabled = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_XSTATUSENABLE);
       ICQWriteContactSettingByte(NULL, "XStatusEnabled", gbXStatusEnabled);
       StoreDBCheckState(hwndDlg, IDC_XSTATUSAUTO, "XStatusAuto");
+      StoreDBCheckState(hwndDlg, IDC_XSTATUSRESET, "XStatusReset");
       StoreDBCheckState(hwndDlg, IDC_KILLSPAMBOTS , "KillSpambots");
       StoreDBCheckState(hwndDlg, IDC_AIMENABLE, "AimEnabled");
       return TRUE;
@@ -669,7 +680,7 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ENABLEAVATARS));
       break;
     }
-    SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+    OptDlgChanged(hwndDlg);
     break;
 
   case WM_NOTIFY:

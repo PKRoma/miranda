@@ -64,6 +64,7 @@ Bugfixes:
   Fixed bug in changeinfo with translated listbox values (thx Bio)
   Fixed error handling in avatar code for uploading avatar
   Fixed bug in Manage-Server list dialog, caused hang
+  Fixed occasional losing of messages (message parsing was incomplete)
 
 New Features:
   Messaging support enhanced (P2P messaging supported)

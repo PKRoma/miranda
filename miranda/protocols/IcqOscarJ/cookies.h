@@ -38,12 +38,22 @@
 #define __COOKIES_H
 
 
+#define CKT_MESSAGE         0x01
+#define CKT_FILE            0x02
+#define CKT_SEARCH          0x04
+#define CKT_SERVERLIST      0x08
+#define CKT_SERVICEREQUEST  0x0A
+#define CKT_REVERSEDIRECT   0x0C
+#define CKT_FAMILYSPECIAL   0x10
+#define CKT_AVATAR          0x20
+
 typedef struct icq_cookie_info_s
 {
   DWORD dwCookie;
   DWORD dwUin;
   void *pvExtra;
   DWORD dwTime;
+  BYTE bType;
 } icq_cookie_info;
 
 typedef struct familyrequest_rec_s
@@ -55,7 +65,9 @@ typedef struct familyrequest_rec_s
 
 typedef struct message_cookie_data_s
 {
-  BYTE bMessageType;
+  DWORD dwMsgID1;
+  DWORD dwMsgID2;
+  WORD bMessageType;
   BYTE nAckType;
 } message_cookie_data;
 
@@ -90,14 +102,36 @@ typedef struct search_cookie_s
 #define SEARCHTYPE_NAMES   2
 #define SEARCHTYPE_DETAILS 4
 
+typedef struct avatarcookie_t
+{
+  DWORD dwUin;
+  HANDLE hContact;
+  unsigned int hashlen;
+  char *hash;
+  unsigned int cbData;
+  char *szFile;
+} avatarcookie;
+
+typedef struct {
+  message_cookie_data pMessage;
+  HANDLE hContact;
+  DWORD dwUin;
+  int type;
+  void *ft;
+} reverse_cookie;
+
 
 void InitCookies(void);
 void UninitCookies(void);
-DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra);
-int FindCookie(DWORD wCookie, DWORD *pdwUin, void **ppvExtra);
-int FindCookieByData(void *pvExtra,DWORD *pdwCookie, DWORD *pdwUin);
+
+DWORD AllocateCookie(BYTE bType, WORD wIdent, DWORD dwUin, void *pvExtra);
 void FreeCookie(DWORD wCookie);
 DWORD GenerateCookie(WORD wIdent);
 
+int FindCookie(DWORD wCookie, DWORD *pdwUin, void **ppvExtra);
+int FindCookieByData(void *pvExtra, DWORD *pdwCookie, DWORD *pdwUin);
+int FindMessageCookie(DWORD dwMsgID1, DWORD dwMsgID2, DWORD *pdwCookie, DWORD *pdwUin, message_cookie_data **ppvExtra);
+
+message_cookie_data *CreateMessageCookie(WORD bMsgType, BYTE bAckType);
 
 #endif /* __COOKIES_H */

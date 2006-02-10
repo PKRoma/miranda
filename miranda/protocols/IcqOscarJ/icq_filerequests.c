@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -106,6 +106,24 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
 
 
 
+filetransfer *CreateFileTransfer(HANDLE hContact, DWORD dwUin, int nVersion)
+{
+  filetransfer *ft;
+
+  ft = (filetransfer*)malloc(sizeof(filetransfer));
+  if (ft)
+  {
+    ZeroMemory(ft, sizeof(filetransfer));
+    ft->dwUin = dwUin;
+    ft->hContact = hContact;
+    ft->nVersion = nVersion;
+    ft->pMessage.bMessageType = MTYPE_FILEREQ;
+    ft->pMessage.dwMsgID1 = time(NULL);
+    ft->pMessage.dwMsgID2 = RandRange(0, 0x00FF);
+  }
+  return ft;
+}
+
 // pszDescription points to a string with the reason
 // buf points to the first data after the string
 void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD dwID1, DWORD dwID2, char* pszDescription, int nVersion, BOOL bDC)
@@ -153,20 +171,17 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
     char* szBlob;
     filetransfer* ft;
     int bAdded;
+    HANDLE hContact = HContactFromUIN(dwUin, &bAdded);
     
     // Initialize a filetransfer struct
-    ft = (filetransfer*)malloc(sizeof(filetransfer));
-    memset(ft, 0, sizeof(filetransfer));
-    ft->status = 0;
+    ft = CreateFileTransfer(hContact, dwUin, nVersion);
     ft->dwCookie = dwCookie;
     ft->szFilename = null_strdup(pszFileName);
     ft->szDescription = null_strdup(pszDescription);
-    ft->dwUin = dwUin;
     ft->fileId = -1;
     ft->dwTotalSize = dwFileSize;
-    ft->nVersion = nVersion;
-    ft->TS1 = dwID1;
-    ft->TS2 = dwID2;
+    ft->pMessage.dwMsgID1 = dwID1;
+    ft->pMessage.dwMsgID2 = dwID2;
     ft->bDC = bDC;
     ft->bEmptyDesc = bEmptyDesc;
     
@@ -177,7 +192,7 @@ void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD 
     strcpy(szBlob + sizeof(DWORD), pszFileName);
     strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, pszDescription);
     ccs.szProtoService = PSR_FILE;
-    ccs.hContact = HContactFromUIN(dwUin, &bAdded);
+    ccs.hContact = hContact;
     ccs.wParam = 0;
     ccs.lParam = (LPARAM)&pre;
     pre.flags = 0;

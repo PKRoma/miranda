@@ -44,7 +44,7 @@ static LRESULT CALLBACK ListEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LP
   switch(msg) 
   {
     case WM_LBUTTONUP:
-      CallWindowProc(OldListEditProc,hwnd,msg,wParam,lParam);
+      CallWindowProcUtf(OldListEditProc,hwnd,msg,wParam,lParam);
       {  
         POINT pt;
 
@@ -73,7 +73,7 @@ static LRESULT CALLBACK ListEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LP
       EndListEdit(1);
       return 0;
   }
-  return CallWindowProc(OldListEditProc,hwnd,msg,wParam,lParam);
+  return CallWindowProcUtf(OldListEditProc,hwnd,msg,wParam,lParam);
 }
 
 
@@ -83,6 +83,7 @@ void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
   int j,n;
   POINT pt;
   int itemHeight;
+  char str[MAX_PATH];
 
   EndListEdit(0);
   pt.x=pt.y=0;
@@ -101,7 +102,8 @@ void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
   {
     n = ListBoxAddStringUtf(hwndListEdit, ((ListTypeDataItem*)setting[i].pList)[j].szValue);
     SendMessage(hwndListEdit,LB_SETITEMDATA,n,((ListTypeDataItem*)setting[i].pList)[j].id);
-    if((setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,((ListTypeDataItem*)setting[i].pList)[j].szValue))
+    if ((setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,((ListTypeDataItem*)setting[i].pList)[j].szValue))
+       || (setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,ICQTranslateUtfStatic(((ListTypeDataItem*)setting[i].pList)[j].szValue, str))))
        || ((char*)setting[i].value==NULL && ((ListTypeDataItem*)setting[i].pList)[j].id==0))
        || (setting[i].dbType!=DBVT_ASCIIZ && setting[i].value==((ListTypeDataItem*)setting[i].pList)[j].id))
       SendMessage(hwndListEdit,LB_SETCURSEL,n,0);
@@ -109,8 +111,8 @@ void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
   SendMessage(hwndListEdit,LB_SETTOPINDEX,SendMessage(hwndListEdit,LB_GETCURSEL,0,0)-3,0);
   if(itemHeight*setting[i].listCount<150)
     SetWindowPos(hwndListEdit,0,0,0,rc->right-rc->left,itemHeight*setting[i].listCount+GetSystemMetrics(SM_CYBORDER)*2,SWP_NOZORDER|SWP_NOMOVE);
-  OldListEditProc=(WNDPROC)SetWindowLong(hwndListEdit,GWL_WNDPROC,(LONG)ListEditSubclassProc);
-  if(MyAnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(GetModuleHandle("user32"),"AnimateWindow")) 
+  OldListEditProc=(WNDPROC)SetWindowLongUtf(hwndListEdit,GWL_WNDPROC,(LONG)ListEditSubclassProc);
+  if (MyAnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(GetModuleHandle("user32"),"AnimateWindow")) 
   {
     BOOL enabled;
 

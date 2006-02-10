@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -38,8 +38,7 @@
 #define __ICQ_DIRECT_H
 
 typedef struct {
-  BYTE bMessageType;
-  BYTE nAckType;
+  message_cookie_data pMessage;
   int status;
   int sending;
   int iCurrentFile;
@@ -63,8 +62,6 @@ typedef struct {
   int fileId;
   HANDLE hConnection;
   DWORD dwLastNotify;
-  DWORD TS1;
-  DWORD TS2;
   int   nVersion;   // Was this sent with a v7 or a v8 packet?
   BOOL bDC;         // Was this received over a DC or through server?
   BOOL bEmptyDesc;  // Was the description empty ?
@@ -96,14 +93,6 @@ typedef struct {
   filetransfer *ft;
   DWORD dwReqId;  // Reverse Connect request cookie
 } directconnect;
-
-typedef struct {
-  HANDLE hContact;
-  DWORD dwUin;
-  int type;
-  filetransfer *ft;
-
-} reverse_cookie;
 
 void OpenDirectConnection(HANDLE hContact, int type, void *pvExtra);
 int IsDirectConnectionOpen(HANDLE hContact, int type);

@@ -582,7 +582,7 @@ static void setXStatusEx(BYTE bXStatus, BYTE bQuiet)
 
       init.bAction = 0; // set
       init.bXStatus = bXStatus;
-      CreateDialogParam(hInst,MAKEINTRESOURCE(IDD_SETXSTATUS),NULL,SetXStatusDlgProc,(LPARAM)&init);
+      DialogBoxUtf(FALSE, hInst, MAKEINTRESOURCEA(IDD_SETXSTATUS),NULL,SetXStatusDlgProc,(LPARAM)&init);
     }
     else
       setUserInfo();
@@ -885,7 +885,7 @@ int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam)
 
   init.bAction = 1; // retrieve
   init.hContact = (HANDLE)wParam;
-  CreateDialogParam(hInst,MAKEINTRESOURCE(IDD_SETXSTATUS),NULL,SetXStatusDlgProc,(LPARAM)&init);
+  DialogBoxUtf(FALSE, hInst, MAKEINTRESOURCEA(IDD_SETXSTATUS), NULL, SetXStatusDlgProc, (LPARAM)&init);
 
   return 0;
 }
@@ -894,7 +894,7 @@ int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam)
 
 int IcqSetXStatus(WPARAM wParam, LPARAM lParam)
 {
-  if (wParam >= 1 && wParam <= 29)
+  if (wParam >= 0 && wParam <= 29)
   {
     setXStatusEx((BYTE)wParam, 1);
 

@@ -42,7 +42,7 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 int icq_RequestAuthorization(WPARAM wParam, LPARAM lParam)
 {
-  DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_ASKAUTH), NULL, AskAuthProc, (LPARAM)wParam);
+  DialogBoxUtf(TRUE, hInst, MAKEINTRESOURCEA(IDD_ASKAUTH), NULL, AskAuthProc, (LPARAM)wParam);
 
   return 0;
 }
@@ -80,6 +80,7 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
       case IDOK:
         {
           DWORD dwUin;
+          uid_str szUid;
           char* szReason;
 
           hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -87,11 +88,11 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
           if (!icqOnline)
             return TRUE;
 
-          if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
+          if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
             return TRUE; // Invalid contact
 
           szReason = GetDlgItemTextUtf(hwndDlg, IDC_EDITAUTH);
-          icq_sendAuthReqServ(dwUin, szReason);
+          icq_sendAuthReqServ(dwUin, szUid, szReason);
           SAFE_FREE(&szReason);
           EndDialog(hwndDlg, 0);
 

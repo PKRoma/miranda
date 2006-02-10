@@ -42,20 +42,20 @@ void LoadSettingsFromDb(int keepChanged)
 
   for(i=0;i<settingCount;i++) 
   {
-    if(setting[i].displayType==LI_DIVIDER) continue;
-    if(keepChanged && setting[i].changed) continue;
-    if(setting[i].dbType==DBVT_ASCIIZ) 
+    if (setting[i].displayType==LI_DIVIDER) continue;
+    if (keepChanged && setting[i].changed) continue;
+    if (setting[i].dbType==DBVT_ASCIIZ) 
     {
       SAFE_FREE((char**)&setting[i].value);
     }
-    else if(!keepChanged) 
+    else if (!keepChanged) 
       setting[i].value = 0;
 
     setting[i].changed=0;
     
-    if(setting[i].displayType&LIF_PASSWORD) continue;
+    if (setting[i].displayType&LIF_PASSWORD) continue;
 
-    if(!ICQGetContactSetting(NULL,setting[i].szDbSetting,&dbv)) 
+    if (!ICQGetContactSetting(NULL,setting[i].szDbSetting,&dbv)) 
     {
 #ifdef _DEBUG
       if(dbv.type!=setting[i].dbType)
@@ -64,7 +64,7 @@ void LoadSettingsFromDb(int keepChanged)
       switch(dbv.type) 
       {
         case DBVT_ASCIIZ:
-          setting[i].value=(LPARAM)null_strdup(dbv.pszVal);
+          setting[i].value=(LPARAM)ICQGetContactSettingUtf(NULL,setting[i].szDbSetting, NULL);
           break;
         case DBVT_WORD:
           if(setting[i].displayType&LIF_SIGNED) 

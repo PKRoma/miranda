@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -43,8 +43,8 @@ void packDirectMsgHeader(icq_packet *packet, WORD wDataLen, WORD wCommand, DWORD
 void icq_sendDirectMsgAck(directconnect* dc, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, char* szCap);
 
 DWORD icq_sendGetAwayMsgDirect(HANDLE hContact, int type);
-int icq_sendFileSendDirectv7(DWORD dwUin, HANDLE hContact, WORD wCookie, char *pszFiles, char *szDescription, DWORD dwTotalSize);
-int icq_sendFileSendDirectv8(DWORD dwUin, HANDLE hContact, WORD wCookie, char *pszFiles, char *szDescription, DWORD dwTotalSize);
+int icq_sendFileSendDirectv7(filetransfer *ft, const char *pszFiles);
+int icq_sendFileSendDirectv8(filetransfer *ft, const char *pszFiles);
 void icq_sendFileAcceptDirect(HANDLE hContact, filetransfer *ft);
 void icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, char *szReason);
 DWORD icq_SendDirectMessage(DWORD dwUin, HANDLE hContact, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap);

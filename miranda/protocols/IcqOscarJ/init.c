@@ -45,11 +45,10 @@ HANDLE hHookIdleEvent = NULL;
 HANDLE hHookIconsChanged = NULL;
 static HANDLE hUserMenuAuth = NULL;
 static HANDLE hUserMenuGrant = NULL;
+static HANDLE hUserMenuRevoke = NULL;
 static HANDLE hUserMenuXStatus = NULL;
 
 extern HANDLE hServerConn;
-extern icq_mode_messages modeMsgs;
-extern CRITICAL_SECTION modeMsgsMutex;
 CRITICAL_SECTION localSeqMutex;
 CRITICAL_SECTION connectionHandleMutex;
 HANDLE hsmsgrequest;
@@ -57,7 +56,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,12),
+  PLUGIN_MAKE_VERSION(0,3,6,13),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@users.sourceforge.net",
@@ -246,6 +245,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
   ICQCreateServiceFunction(MS_REQ_AUTH, icq_RequestAuthorization);
   ICQCreateServiceFunction(MS_GRANT_AUTH, IcqGrantAuthorization);
+  ICQCreateServiceFunction(MS_REVOKE_AUTH, IcqRevokeAuthorization);
 
   ICQCreateServiceFunction(MS_XSTATUS_SHOWDETAILS, IcqShowXStatusDetails);
 
@@ -372,6 +372,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
   IconLibDefine(ICQTranslate("Request authorisation"), ICQTranslate(gpszICQProtoName), "req_auth", NULL);
   IconLibDefine(ICQTranslate("Grant authorisation"), ICQTranslate(gpszICQProtoName), "grant_auth", NULL);
+  IconLibDefine(ICQTranslate("Revoke authorisation"), ICQTranslate(gpszICQProtoName), "revoke_auth", NULL);
 
   // Initialize IconLib icons
   InitXStatusIcons();
@@ -402,6 +403,14 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     mi.hIcon = IconLibProcess(NULL, "grant_auth");
     mi.pszName = ICQTranslate("Grant authorization");
     hUserMenuGrant = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+
+    strcpy(pszServiceName, gpszICQProtoName);
+    strcat(pszServiceName, MS_REVOKE_AUTH);
+
+    mi.position = 1000029998;
+    mi.hIcon = IconLibProcess(NULL, "revoke_auth");
+    mi.pszName = ICQTranslate("Revoke authorization");
+    hUserMenuRevoke = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_XSTATUS_SHOWDETAILS);
@@ -439,6 +448,14 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
   mi.pszName = ICQTranslate("Grant authorization");
 
   CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuGrant, (LPARAM)&mi);
+
+  if (ICQGetContactSettingByte((HANDLE)wParam, "Grant", 0))
+    mi.flags = CMIM_FLAGS | CMIM_NAME | CMIF_HIDDEN;
+  else
+    mi.flags = CMIM_FLAGS | CMIM_NAME;
+  mi.pszName = ICQTranslate("Revoke authorization");
+
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuRevoke, (LPARAM)&mi);
 
   bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
   if (!bXStatus)

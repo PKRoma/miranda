@@ -148,7 +148,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         { // we try to use standalone cookie if available
           ack->dwAction = SSA_CHECK_ROSTER; // loading list
           ack->dwUin = 0; // init content
-          dwCookie = AllocateCookie(ICQ_LISTS_CLI_REQUEST, 0, ack);
+          dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_CLI_REQUEST, 0, ack);
         }
         else // if not use that old fake
           dwCookie = ICQ_LISTS_CLI_REQUEST<<0x10;
@@ -167,7 +167,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         { // we try to use standalone cookie if available
           ack->dwAction = SSA_CHECK_ROSTER; // loading list
           ack->dwUin = 0; // init content
-          dwCookie = AllocateCookie(ICQ_LISTS_CLI_CHECK, 0, ack);
+          dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_CLI_CHECK, 0, ack);
         }
         else // if not use that old fake
           dwCookie = ICQ_LISTS_CLI_CHECK<<0x10;
@@ -321,8 +321,8 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
         // If we are in SSI mode, this is sent after the list is acked instead
         // to make sure that we don't set status before seing the visibility code
-        if (!gbSsiEnabled)
-          handleServUINSettings(wListenPort);
+        if (!gbSsiEnabled || info->isMigrating)
+          handleServUINSettings(wListenPort, info);
       }
     }
     break;
@@ -859,7 +859,7 @@ void setUserInfo()
 
 
 
-void handleServUINSettings(int nPort)
+void handleServUINSettings(int nPort, serverthread_info *info)
 {
   icq_packet packet;
 
@@ -955,32 +955,35 @@ void handleServUINSettings(int nPort)
 
   NetLog_Server(" *** Yeehah, login sequence complete");
 
-  /* Get Offline Messages Reqeust */
-  serverPacketInit(&packet, 24);
-  packFNACHeaderFull(&packet, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ, 0, 0x00020001);
-  packDWord(&packet, 0x0001000a);    /* TLV */
-  packLEWord(&packet, 8);            /* bytes remaining */
-  packLEDWord(&packet, dwLocalUIN);
-  packDWord(&packet, 0x3c000200);    /* get offline msgs */
+  if (!info->isMigrating)
+  { /* Get Offline Messages Reqeust */
+    serverPacketInit(&packet, 24);
+    packFNACHeaderFull(&packet, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ, 0, 0x00020001);
+    packDWord(&packet, 0x0001000a);    /* TLV */
+    packLEWord(&packet, 8);            /* bytes remaining */
+    packLEDWord(&packet, dwLocalUIN);
+    packDWord(&packet, 0x3c000200);    /* get offline msgs */
 
-  sendServPacket(&packet);
+    sendServPacket(&packet);
 
-  // Update our information from the server
-  sendOwnerInfoRequest();
+    // Update our information from the server
+    sendOwnerInfoRequest();
 
-  // Request info updates on all contacts
-  icq_RescanInfoUpdate();
+    // Request info updates on all contacts
+    icq_RescanInfoUpdate();
 
-  // Start sending Keep-Alive packets
-  StartKeepAlive();
+    // Start sending Keep-Alive packets
+    StartKeepAlive();
   
-  if (gbAvatarsEnabled)
-  { // Send SNAC 1,4 - request avatar family 0x10 connection
-    icq_requestnewfamily(ICQ_AVATAR_FAMILY, StartAvatarThread);
+    if (gbAvatarsEnabled)
+    { // Send SNAC 1,4 - request avatar family 0x10 connection
+      icq_requestnewfamily(ICQ_AVATAR_FAMILY, StartAvatarThread);
 
-    pendingAvatarsStart = 1;
-    NetLog_Server("Requesting Avatar family entry point.");
+      pendingAvatarsStart = 1;
+      NetLog_Server("Requesting Avatar family entry point.");
+    }
   }
+  info->isMigrating = 0;
 
   if (gbAimEnabled)
   {

@@ -88,6 +88,46 @@ void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* 
 
 
 
+static char* AimApplyEncoding(char* pszStr, const char* pszEncoding)
+{ // decode encoding to ANSI only
+  if (pszStr && pszEncoding)
+  {
+    char *szEnc = strstr(pszEncoding, "charset=");
+
+    if (szEnc)
+    {
+      szEnc = szEnc + 9; // get charset string
+
+      if (!strnicmp(szEnc, "utf-8", 5))
+      { // it is utf-8 encoded
+        char *szRes = NULL;
+
+        utf8_decode(pszStr, &szRes);
+        SAFE_FREE(&pszStr);
+
+        return szRes;
+      }
+      if (!strnicmp(szEnc, "unicode-2-0", 11))
+      { // it is UCS-2 encoded
+        int wLen = wcslen((wchar_t*)pszStr) + 1;
+        wchar_t *szStr = (wchar_t*)_alloca(wLen*2);
+        char *szRes = (char*)malloc(wLen);
+        char *tmp = pszStr;
+
+        unpackWideString(&tmp, szStr, (WORD)(wLen*2));
+        szRes[0] = '\0';
+        WideCharToMultiByte(CP_ACP, 0, szStr, -1, szRes, wLen, NULL, NULL);
+        SAFE_FREE(&pszStr);
+
+        return szRes;
+      }
+    }
+  }
+  return pszStr;
+}
+
+
+
 void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 {
   HANDLE hContact;
@@ -115,10 +155,7 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
   wLen -= 2;
 
   // Determine contact
-  if (dwUIN)
-    hContact = HContactFromUIN(dwUIN, NULL);
-  else
-    hContact = HContactFromUID(szUID, NULL);
+  hContact = HContactFromUID(dwUIN, szUID, NULL);
 
   // Ignore away status if the user is not already on our list
   if (hContact == INVALID_HANDLE_VALUE)
@@ -144,7 +181,7 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
   }
 
   if (pCookieData->bMessageType == REQUESTTYPE_PROFILE)
-  { // TODO: this badly needs typed cookies
+  { 
     FreeCookie(dwCookie);
     SAFE_FREE(&pCookieData);
 
@@ -171,13 +208,26 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
       // Get extra chain
       if (pChain = readIntoTLVChain(&buf, wLen, 2))
       {
+        char* szEncoding = NULL;
+
+        // Get Profile encoding TLV
+        pTLV = getTLV(pChain, 0x01, 1);
+        if (pTLV && (pTLV->wLen >= 1))
+        {
+          szEncoding = (char*)_alloca(pTLV->wLen + 1);
+          memcpy(szEncoding, pTLV->pData, pTLV->wLen);
+          szEncoding[pTLV->wLen] = '\0';
+        }
         // Get Profile info TLV
         pTLV = getTLV(pChain, 0x02, 1);
         if (pTLV && (pTLV->wLen >= 1))
         {
-          szMsg = malloc(pTLV->wLen + 1);
+          szMsg = malloc(pTLV->wLen + 2);
           memcpy(szMsg, pTLV->pData, pTLV->wLen);
           szMsg[pTLV->wLen] = '\0';
+          szMsg[pTLV->wLen + 1] = '\0';
+          szMsg = AimApplyEncoding(szMsg, szEncoding);
+          szMsg = EliminateHtml(szMsg, pTLV->wLen);
         }
         // Free TLV chain
         disposeChain(&pChain);
@@ -228,13 +278,25 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
       // Get extra chain
       if (pChain = readIntoTLVChain(&buf, wLen, 2))
       {
+        char* szEncoding = NULL;
+
+        // Get Away encoding TLV
+        pTLV = getTLV(pChain, 0x03, 1);
+        if (pTLV && (pTLV->wLen >= 1))
+        {
+          szEncoding = (char*)_alloca(pTLV->wLen + 1);
+          memcpy(szEncoding, pTLV->pData, pTLV->wLen);
+          szEncoding[pTLV->wLen] = '\0';
+        }
         // Get Away info TLV
         pTLV = getTLV(pChain, 0x04, 1);
         if (pTLV && (pTLV->wLen >= 1))
         {
-          szMsg = malloc(pTLV->wLen + 1);
+          szMsg = malloc(pTLV->wLen + 2);
           memcpy(szMsg, pTLV->pData, pTLV->wLen);
           szMsg[pTLV->wLen] = '\0';
+          szMsg[pTLV->wLen + 1] = '\0';
+          szMsg = AimApplyEncoding(szMsg, szEncoding);
           szMsg = EliminateHtml(szMsg, pTLV->wLen);
         }
         // Free TLV chain

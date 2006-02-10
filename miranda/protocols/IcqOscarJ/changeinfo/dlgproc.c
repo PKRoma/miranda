@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005 Joe Kucera, Bio
+// Copyright © 2004,2005,2006 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -236,7 +236,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
                 if (IDYES!=MessageBoxUtf(hwndDlg, ICQTranslateUtfStatic("You've made some changes to your ICQ details but it has not been saved to the server. Are you sure you want to close this dialog?", str), ICQTranslateUtfStatic("Change ICQ Details", cap), MB_YESNOCANCEL))
                 {
-                  SetWindowLong(hwndDlg,DWL_MSGRESULT,PSNRET_INVALID_NOCHANGEPAGE);
+                  SetWindowLongUtf(hwndDlg,DWL_MSGRESULT,PSNRET_INVALID_NOCHANGEPAGE);
                   return TRUE;
                 }
               }
@@ -266,7 +266,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
               switch(cd->nmcd.dwDrawStage)
               {
                 case CDDS_PREPAINT:
-                  SetWindowLong(hwndDlg,DWL_MSGRESULT,CDRF_NOTIFYSUBITEMDRAW);
+                  SetWindowLongUtf(hwndDlg,DWL_MSGRESULT,CDRF_NOTIFYSUBITEMDRAW);
                   return TRUE;
 
                 case CDDS_ITEMPREPAINT:
@@ -312,11 +312,11 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                     rcLine.left = (rc.left + rc.right + textSize.cx)/2 + 3;
                     rcLine.right = rc.right-3;
                     DrawEdge(cd->nmcd.hdc, &rcLine, BDR_SUNKENOUTER, BF_RECT);
-                    SetWindowLong(hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT);
+                    SetWindowLongUtf(hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT);
                   }
                   else
                   {
-                    SetWindowLong(hwndDlg, DWL_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW|CDRF_NOTIFYPOSTPAINT);
+                    SetWindowLongUtf(hwndDlg, DWL_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW|CDRF_NOTIFYPOSTPAINT);
                   }
 
                   return TRUE;
@@ -342,7 +342,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                   }
                   else 
                     PaintItemSetting(cd->nmcd.hdc, &rc, cd->nmcd.lItemlParam, cd->nmcd.uItemState);
-                  SetWindowLong(hwndDlg,DWL_MSGRESULT,CDRF_SKIPDEFAULT);
+                  SetWindowLongUtf(hwndDlg,DWL_MSGRESULT,CDRF_SKIPDEFAULT);
 
                   return TRUE;
                 }
@@ -424,7 +424,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                   BeginListEdit(lvi.iItem,&rc,lvi.lParam,nm->wVKey);
                   break;
               }
-              SetWindowLong(hwndDlg,DWL_MSGRESULT,TRUE);
+              SetWindowLongUtf(hwndDlg,DWL_MSGRESULT,TRUE);
               return TRUE;
             }
             case NM_KILLFOCUS:

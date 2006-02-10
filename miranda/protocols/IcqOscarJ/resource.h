@@ -62,18 +62,17 @@
 #define IDC_PASSWORD                    1020
 #define IDC_SUPTIME                     1020
 #define IDC_DCENABLE                    1020
-#define IDC_                            1021
 #define IDC_DCPASSIVE                   1021
 #define IDC_OLDPASS                     1021
 #define IDC_ICQNUM                      1022
 #define IDC_AVATAR                      1023
 #define IDC_SETAVATAR                   1024
 #define IDC_DELETEAVATAR                1025
-#define IDC_AIMSTATIC                   1029
 #define IDC_AIMENABLE                   1030
 #define IDC_CLIST                       1035
 #define IDC_XSTATUSENABLE               1040
 #define IDC_XSTATUSAUTO                 1041
+#define IDC_XSTATUSRESET                1042
 #define IDC_KILLSPAMBOTS                1045
 #define IDC_EMAIL                       1048
 #define IDC_NICK                        1053
@@ -104,6 +103,7 @@
 #define IDC_IDLETIME                    1254
 #define IDC_STATUS                      1255
 #define IDC_SLOWSEND                    1301
+#define IDC_ONLYSERVERACKS              1302
 #define IDC_LOGLEVEL                    1331
 #define IDC_LEVELDESCR                  1332
 #define IDC_NOERRMULTI                  1333
@@ -123,7 +123,6 @@
 #define IDC_ONLINEONLY                  1430
 #define IDC_HOMEPAGECAT                 1431
 #define IDC_HOMEPAGEKEY                 1432
-#define IDC_TLVSEARCH                   1433
 #define IDC_SUMMARYGROUP                1434
 #define IDC_WORKGROUP                   1435
 #define IDC_LOCATIONGROUP               1436

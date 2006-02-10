@@ -72,4 +72,18 @@ BYTE gbUnicodeAPI;
 BYTE gbUnicodeCore;
 BYTE gbUtfLangpack;
 
+// from fam_04message.c
+typedef struct icq_mode_messages_s
+{
+  char* szAway;
+  char* szNa;
+  char* szDnd;
+  char* szOccupied;
+  char* szFfc;
+} icq_mode_messages;
+
+icq_mode_messages modeMsgs;
+CRITICAL_SECTION modeMsgsMutex;
+
+
 #endif /* __GLOBALS_H */

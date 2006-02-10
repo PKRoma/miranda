@@ -68,9 +68,10 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
         icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to migrated ICQ communication server");
       else
         icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to ICQ communication server");
+
+      info->isMigrating = 0;
     }
     info->newServerReady = 0;
-    info->isMigrating = 0;
 
     return;
   }
@@ -242,6 +243,7 @@ static void handleMigration(serverthread_info *info)
     SAFE_FREE(&info->newServer);
     SAFE_FREE(&info->cookieData);
     info->newServerReady = 0;
+    info->isMigrating = 0;
   }
 }
 

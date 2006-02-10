@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -121,8 +121,11 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
   }
   wLen = (wLen - 2) - wTextLen;
 
-
+#ifdef _DEBUG
   NetLog_Direct("Handling PEER_MSG '%s', command %u, cookie %u, messagetype %u, messageflags %u, status %u, flags %u", pszText, wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags);
+#else
+  NetLog_Direct("Message through direct - UID: %u", dc->dwRemoteUin);
+#endif
 
   // The remaining actual message is handled either as a status message request,
   // a greeting message, a acknowledge or a normal (text, url, file) message
@@ -155,7 +158,7 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
           buf -= wTextLen;
           wLen += wTextLen;
 
-          handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, (int)bMsgType, (int)bMsgFlags, 0, (DWORD)wLen, wTextLen, buf, TRUE);
+          handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, (int)bMsgType, (int)bMsgFlags, 0, (DWORD)wLen, wTextLen, buf, TRUE);
     
           // Send acknowledgement
           if (bMsgType == MTYPE_PLAIN || bMsgType == MTYPE_URL || bMsgType == MTYPE_CONTACTS)
@@ -172,7 +175,7 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
       buf -= wTextLen;
       wLen += wTextLen;
 
-      handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, (int)bMsgType, (int)bMsgFlags, 2, (DWORD)wLen, wTextLen, buf, TRUE);
+      handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, (int)bMsgType, (int)bMsgFlags, 2, (DWORD)wLen, wTextLen, buf, TRUE);
     }
     else
     {
@@ -226,6 +229,10 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
       }
     }
   }
+  else if (wCommand == DIRECT_CANCEL)
+  {
+    NetLog_Direct("Cannot handle abort messages yet... :(");
+  }
   else
     NetLog_Direct("Unknown wCommand, packet skipped");
 }
@@ -244,16 +251,11 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
   DWORD q1,q2,q3,q4;
   WORD qt;
 
-
+#ifdef _DEBUG
   NetLog_Direct("Handling PEER_MSG_GREETING, command %u, cookie %u, messagetype %u, messageflags %u, status %u, flags %u", wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags);
+#endif
 
-
-  // The command in this packet. Seen values:
-  //          0x0029 =  41 - file request
-  //          0x002d =  45 - chat request
-  //          0x0032 =  50 - file request granted/refused
-  //                    55 - Greeting card
-  //          0x0040 =  64 - URL
+  // The command in this packet.
   unpackLEWord(&buf, &wPacketCommand); // TODO: this is most probably length...
   wLen -= 2;
   
@@ -289,9 +291,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
   buf += dwMsgTypeLen;
   wLen -= (WORD)dwMsgTypeLen;
 
-
-  NetLog_Direct("PEER_MSG_GREETING, command: %u, type: %s, typeID: %u", wPacketCommand, szMsgType, typeId);
-
+  NetLog_Direct("PEER_MSG_GREETING, command: %u, type: %s, typeID: %u", typeId, szMsgType, typeId);
 
   // Unknown
   buf += 15;
@@ -345,7 +345,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
     { 
       icq_sendDirectMsgAck(dc, wCookie, (BYTE)typeId, 0, CAP_RTFMSGS);
     }
-    handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, typeId, 0, 0, dwLengthToEnd, (WORD)dwDataLength, buf, TRUE);
+    handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, typeId, 0, 0, dwLengthToEnd, (WORD)dwDataLength, buf, TRUE);
   }
   else if (typeId == MTYPE_STATUSMSGEXT && wCommand == DIRECT_ACK)
   { // especially for icq2003b
@@ -356,7 +356,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
     unpackString(&buf, szMsg, (WORD)dwDataLength);
     szMsg[dwDataLength] = '\0';
 
-    handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, (int)(qt + 0xE7), 3, 2, (DWORD)wLen, (WORD)dwDataLength, szMsg, TRUE);
+    handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, (int)(qt + 0xE7), 3, 2, (DWORD)wLen, (WORD)dwDataLength, szMsg, TRUE);
   }
   else if (typeId && wCommand == DIRECT_ACK)
   {

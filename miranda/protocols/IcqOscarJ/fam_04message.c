@@ -37,21 +37,18 @@
 #include "icqoscar.h"
 
 
-icq_mode_messages modeMsgs;
-CRITICAL_SECTION modeMsgsMutex;
-
 static void handleReplyICBM(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2);
-static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, DWORD dwTS1, DWORD dwTS2);
-static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, DWORD dwTS1, DWORD dwTS2);
+static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2);
+static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2);
 static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleTypingNotification(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2, WORD wAckType, oscar_tlv* tlv);
-static void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, BYTE bFlags, WORD wStatus, WORD wCookie, WORD wAckType, DWORD dwID1, DWORD dwID2);
+static void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, BYTE bFlags, WORD wStatus, WORD wCookie, WORD wAckType, DWORD dwID1, DWORD dwID2, WORD wVersion);
 
 
 
@@ -222,11 +219,11 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
     break;
 
   case 2:  // Encapsulated messages
-    handleRecvServMsgType2(buf, wLen, dwUin, dwID1, dwID2);
+    handleRecvServMsgType2(buf, wLen, dwUin, szUID, dwID1, dwID2);
     break;
 
   case 4: // Typed messages
-    handleRecvServMsgType4(buf, wLen, dwUin, dwID1, dwID2);
+    handleRecvServMsgType4(buf, wLen, dwUin, szUID, dwID1, dwID2);
     break;
 
   default:
@@ -264,23 +261,9 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
   BYTE* pDataBuf;
   BYTE* pBuf;
 
-
-  // Unpack the first TLV
-  unpackTLV(&buf, &wTLVType, &wTLVLen, &pDataBuf);
-  NetLog_Server("Message (format %u) - UID: %s, FirstTLV: %u", 1, strUID(dwUin, szUID), wTLVType);
-
-  // skip TLV if it not TLV(2)
-  if (wTLVType != 2)
-  {
-    wLen -= (wTLVLen + 4);
-
-    if (wLen >= 4) 
-    {
-      SAFE_FREE(&pDataBuf);
-      unpackTLV(&buf, &wTLVType, &wTLVLen, &pDataBuf);
-    }
-    NetLog_Server("Message (format %u) through server - next TLV %u", 1, wTLVType);
-  }
+  // Unpack the first TLV(2)
+  unpackTypedTLV(&buf, wLen, 2, &wTLVType, &wTLVLen, &pDataBuf);
+  NetLog_Server("Message (format %u) - UID: %s", 1, strUID(dwUin, szUID));
   pBuf = pDataBuf;
 
   // It must be TLV(2)
@@ -349,10 +332,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
 
           pre.flags = 0;
 
-          if (dwUin)
-            hContact = HContactFromUIN(dwUin, &bAdded);
-          else
-            hContact = HContactFromUID(szUID, &bAdded);
+          hContact = HContactFromUID(dwUin, szUID, &bAdded);
 
           switch (wEncoding)
           {
@@ -458,37 +438,23 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
   }
   else
   {
-    NetLog_Server("Unsupported TLV (%u) in message (format 1)", wTLVType);
+    NetLog_Server("Unsupported TLV (%u) in message (format %u)", wTLVType, 1);
   }
   SAFE_FREE(&pBuf);
 }
 
 
 
-static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, DWORD dwID1, DWORD dwID2)
+static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2)
 {
   WORD wTLVType;
   WORD wTLVLen;
   char* pDataBuf = NULL;
   char* pBuf;
-  uid_str szUid;
 
-  // Unpack the first TLV
-  unpackTLV(&buf, &wTLVType, &wTLVLen, &pDataBuf);
-  NetLog_Server("Message (format %u) through server - UID: %s, FirstTLV: %u", 2, strUID(dwUin, szUid), wTLVType);
-
-  // skip TLV if it not TLV(5)
-  if (wTLVType != 5)
-  {
-    wLen -= (wTLVLen + 4);
-
-    if (wLen >= 4) 
-    {
-      SAFE_FREE(&pDataBuf);
-      unpackTLV(&buf, &wTLVType, &wTLVLen, &pDataBuf);
-    }
-    NetLog_Server("Message (format %u) through server - next TLV %u", 2, wTLVType);
-  }
+  // Unpack the first TLV(5)
+  unpackTypedTLV(&buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
+  NetLog_Server("Message (format %u) through server - UID: %s", 2, strUID(dwUin, szUID));
   pBuf = pDataBuf;
 
   // It must be TLV(5)
@@ -652,7 +618,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, D
   }
   else
   {
-    NetLog_Server("Unsupported TLV (%u) in message (format 2)", wTLVType);
+    NetLog_Server("Unsupported TLV (%u) in message (format %u)", wTLVType, 2);
   }
 
   SAFE_FREE(&pBuf);
@@ -770,7 +736,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
         // Plugin messages, need further parsing
       case MTYPE_PLUGIN:
         {
-          parseServerGreeting(pDataBuf, wLen, wMsgLen, dwUin, bFlags, wStatus, wCookie, wAckType, dwID1, dwID2);
+          parseServerGreeting(pDataBuf, wLen, wMsgLen, dwUin, bFlags, wStatus, wCookie, wAckType, dwID1, dwID2, wVersion);
           break;
         }
 
@@ -781,7 +747,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
           // The other will be acked later
           if (bMsgType < 0x80)
             icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, bMsgType, bFlags);
-          handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, bMsgType, bFlags, wAckType, tlv->wLen - 53, wMsgLen, pDataBuf, FALSE);
+          handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, wVersion, bMsgType, bFlags, wAckType, tlv->wLen - 53, wMsgLen, pDataBuf, FALSE);
           break;
         }
       }
@@ -857,7 +823,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
 
 
 
-void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, BYTE bFlags, WORD wStatus, WORD wCookie, WORD wAckType, DWORD dwID1, DWORD dwID2)
+void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, BYTE bFlags, WORD wStatus, WORD wCookie, WORD wAckType, DWORD dwID1, DWORD dwID2, WORD wVersion)
 {
   WORD wInfoLen;
   DWORD dwPluginNameLen;
@@ -960,7 +926,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
       if (typeId == MTYPE_URL || typeId == MTYPE_CONTACTS)
         icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, (BYTE)typeId, bFlags);
 
-      handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, typeId, bFlags, wAckType, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE);
+      handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, wVersion, typeId, bFlags, wAckType, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE);
     }
     else
     {
@@ -971,16 +937,16 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 
 
 
-static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, DWORD dwTS1, DWORD dwTS2)
+static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2)
 {
   WORD wTLVType;
   WORD wTLVLen;
   BYTE* pDataBuf;
   DWORD dwUin2;
 
-  // Unpack the first TLV
-  unpackTLV(&buf, &wTLVType, &wTLVLen, &pDataBuf);
-  NetLog_Server("Message (format 4) - UIN: %u, FirstTLV: %u", dwUin, wTLVType);
+  // Unpack the first TLV(5)
+  unpackTypedTLV(&buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
+  NetLog_Server("Message (format %u) through server - UID: %u", 4, strUID(dwUin, szUID));
 
   // It must be TLV(5)
   if (wTLVType == 5)
@@ -1005,7 +971,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, D
       }
       else
       {
-        handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE);
+        handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE);
 
         NetLog_Server("TYPE4 message thru server from %d, message type %d", dwUin, bMsgType);
       }
@@ -1207,28 +1173,63 @@ static void handleSmsReceipt(unsigned char *buf, DWORD dwDataLen)
 
 
 
-static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, WORD wMsgLen, PBYTE buf, BYTE bFlags)
+static void handleStatusMsgReply(const char* szPrefix, HANDLE hContact, DWORD dwUin, WORD wVersion, int bMsgType, WORD wCookie, const char* szMsg)
+{
+  CCSDATA ccs;
+  PROTORECVEVENT pre;
+  int status;
+  char* pszMsg;
+
+
+  if (hContact == INVALID_HANDLE_VALUE)
+  {
+    NetLog_Server("%sIgnoring status message from unknown contact %u", szPrefix, dwUin);
+    return;
+  }
+
+  status = AwayMsgTypeToStatus(bMsgType);
+  if (status == ID_STATUS_OFFLINE)
+  {
+    NetLog_Server("%sIgnoring unknown status message from %u", szPrefix, dwUin);
+    return;
+  }
+
+  pszMsg = null_strdup((char*)szMsg);
+
+  if (wVersion == 9)
+  { // it is probably UTF-8 status reply
+    pszMsg = detect_decode_utf8(pszMsg);
+  }
+
+  ccs.szProtoService = PSR_AWAYMSG;
+  ccs.hContact = hContact;
+  ccs.wParam = status;
+  ccs.lParam = (LPARAM)&pre;
+  pre.flags = 0;
+  pre.szMessage = pszMsg;
+  pre.timestamp = time(NULL);
+  pre.lParam = wCookie;
+
+  CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
+
+  SAFE_FREE(&pszMsg);
+}
+
+
+
+static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, WORD wVersion, int type, WORD wMsgLen, PBYTE buf, BYTE bFlags)
 {
   if (bFlags == 3)
   {
-    CCSDATA ccs;
-    PROTORECVEVENT pre;
-    int status;
     HANDLE hContact;
     DWORD dwCookieUin;
     message_cookie_data* pCookieData = NULL;
 
     hContact = HContactFromUIN(dwUin, NULL);
 
-    if (hContact == INVALID_HANDLE_VALUE)
-    {
-      NetLog_Server("handleMessageAck: Ignoring status message from unknown contact %u", dwUin);
-      return INVALID_HANDLE_VALUE;
-    }
-
     if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
     {
-      NetLog_Server("handleMessageAck: Ignoring unrequested status message from %u", dwUin);
+      NetLog_Server("Ignoring unrequested status message from %u", "handleMessageAck: ", dwUin);
       FreeCookie(wCookie);
       SAFE_FREE(&pCookieData);
       return INVALID_HANDLE_VALUE;
@@ -1236,7 +1237,7 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, WORD wMsgLen
 
     if (dwUin != dwCookieUin)
     {
-      NetLog_Server("handleMessageAck: Ack UIN does not match Cookie UIN(%u != %u)", dwUin, dwCookieUin);
+      NetLog_Server("%sAck UIN does not match Cookie UIN(%u != %u)", "handleMessageAck: ", dwUin, dwCookieUin);
       FreeCookie(wCookie);
       SAFE_FREE(&pCookieData);
       return INVALID_HANDLE_VALUE;
@@ -1244,28 +1245,12 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, WORD wMsgLen
     FreeCookie(wCookie);
     SAFE_FREE(&pCookieData);
 
-    status = AwayMsgTypeToStatus(type);
-    if (status == ID_STATUS_OFFLINE)
-    {
-      NetLog_Server("handleMessageAck: Ignoring unknown status message from %u", dwUin);
-      return INVALID_HANDLE_VALUE;
-    }
-
-    ccs.szProtoService = PSR_AWAYMSG;
-    ccs.hContact = hContact;
-    ccs.wParam = status;
-    ccs.lParam = (LPARAM)&pre;
-    pre.flags = 0;
-    pre.szMessage = (char*)buf;
-    pre.timestamp = time(NULL);
-    pre.lParam = wCookie;
-
-    CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
+    handleStatusMsgReply("handleMessageAck: ", hContact, dwUin, wVersion, type, wCookie, (char*)buf);
   }
   else
   {
     // Should not happen
-    NetLog_Server("handleMessageAck: Ignored type %u ack message (this should not happen)", type);
+    NetLog_Server("%sIgnored type %u ack message (this should not happen)", "handleMessageAck: ", type);
   }
 
   return INVALID_HANDLE_VALUE;
@@ -1275,7 +1260,7 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, int type, WORD wMsgLen
 
 /* this function also processes direct packets, so it should be bulletproof */
 /* pMsg points to the beginning of the message */
-void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC)
+void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, WORD wVersion, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC)
 {
   char* szMsg;
   char* pszMsgField[2*MAX_CONTACTSSEND+1];
@@ -1293,7 +1278,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
   if (wAckType == 2)
   {
-    handleMessageAck(dwUin, wCookie, type, wMsgLen, pMsg, (BYTE)flags);
+    handleMessageAck(dwUin, wCookie, wVersion, type, wMsgLen, pMsg, (BYTE)flags);
     return;
   }
 
@@ -1718,10 +1703,11 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
         rr.dwMid1 = dwMsgID;
         rr.dwMid2 = dwMsgID2;
         rr.wCookie = wCookie;
+        rr.wVersion = wVersion;
         rr.msgType = type;
         rr.rate_group = 0x102;
         if (!handleRateItem(&rr, TRUE))
-          icq_sendAwayMsgReplyServ(dwUin, dwMsgID, dwMsgID2, wCookie, (BYTE)type, szMsg);
+          icq_sendAwayMsgReplyServ(dwUin, dwMsgID, dwMsgID2, wCookie, wVersion, (BYTE)type, szMsg);
       }
 
       break;
@@ -1742,18 +1728,22 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 {
   DWORD dwUin;
+  DWORD dwCookie;
   WORD wCookie;
   WORD wMessageFormat;
   WORD wStatus;
-  BYTE bMsgType;
+  WORD bMsgType;
   BYTE bFlags;
   WORD wLength;
   HANDLE hContact;
   DWORD dwCookieUin;
+  DWORD dwMsgID1, dwMsgID2;
+  WORD wVersion = 0;
   message_cookie_data* pCookieData = NULL;
 
 
-  buf += 8;  // Message ID
+  unpackLEDWord(&buf, &dwMsgID1);  // Message ID
+  unpackLEDWord(&buf, &dwMsgID2);
   wLen -= 8;
 
   unpackWord(&buf, &wMessageFormat);
@@ -1771,40 +1761,52 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
   buf += 2;   // 3. unknown
   wLen -= 2;
 
-  // Length of sub chunk?
-  unpackLEWord(&buf, &wLength);
-  wLen -= 2;
-  if (wLength != 0x1b)
-    NetLog_Server("SNAC(4.B) Subchunk length mismatch");
-
-  buf += 29;  /* unknowns from the msg we sent */
-  wLen -= 29;
-
-  // Message sequence (SEQ2)
-  unpackLEWord(&buf, &wCookie);
-  wLen -= 2;
-
-  // Unknown (12 bytes)
-  buf += 12;
-  wLen -= 12;
-
-  // Message type
-  unpackByte(&buf, &bMsgType);
-  unpackByte(&buf, &bFlags);
-  wLen -= 2;
-
-  // Status
-  unpackLEWord(&buf, &wStatus);
-  wLen -= 2;
-
-  // Priority?
-  buf += 2;
-  wLen -= 2;
-
-  if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
+  if (!FindMessageCookie(dwMsgID1, dwMsgID2, &dwCookie, &dwCookieUin, &pCookieData))
   {
     NetLog_Server("SNAC(4.B) Received an ack that I did not ask for from (%u)", dwUin);
     return;
+  }
+
+  // Length of sub chunk?
+  if (wLen >= 2)
+  {
+    unpackLEWord(&buf, &wLength);
+    wLen -= 2;
+  }
+  else 
+    wLength = 0;
+
+  if (wLength == 0x1b && pCookieData->bMessageType != MTYPE_REVERSE_REQUEST)
+  { // this can be v8 greeting message reply
+    unpackLEWord(&buf, &wVersion);
+    buf += 27;  /* unknowns from the msg we sent */
+    wLen -= 29;
+
+    // Message sequence (SEQ2)
+    unpackLEWord(&buf, &wCookie);
+    wLen -= 2;
+
+    // Unknown (12 bytes)
+    buf += 12;
+    wLen -= 12;
+
+    // Message type
+    unpackByte(&buf, (BYTE*)&bMsgType);
+    unpackByte(&buf, &bFlags);
+    wLen -= 2;
+
+    // Status
+    unpackLEWord(&buf, &wStatus);
+    wLen -= 2;
+
+    // Priority?
+    buf += 2;
+    wLen -= 2;
+  }
+  else
+  {
+    bMsgType = pCookieData->bMessageType;
+    bFlags = 0;
   }
 
   if (dwCookieUin != dwUin)
@@ -1817,35 +1819,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
   if (bFlags == 3)     // A status message reply
   {
-    CCSDATA ccs;
-    PROTORECVEVENT pre;
-    int status;
-
-
-    if (hContact == INVALID_HANDLE_VALUE)
-    {
-      NetLog_Server("SNAC(4.B) Ignoring status message from unknown contact");
-      return;
-    }
-
-    status = AwayMsgTypeToStatus(bMsgType);
-    if (status == ID_STATUS_OFFLINE)
-    {
-      NetLog_Server("SNAC(4.B) Ignoring unknown status message from %u", dwUin);
-      return;
-    }
-
-    ccs.szProtoService = PSR_AWAYMSG;
-    ccs.hContact = hContact;
-    ccs.wParam = status;
-    ccs.lParam = (LPARAM)&pre;
-    pre.flags = 0;
-    pre.szMessage = (char*)(buf + 2);
-    pre.timestamp = time(NULL);
-    pre.lParam = wCookie;
-
-    CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
-
+    handleStatusMsgReply("SNAC(4.B) ", hContact, dwUin, wVersion, bMsgType, wCookie, (char*)(buf + 2));
   }
   else
   { // An ack of some kind
@@ -1856,7 +1830,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
     {
       NetLog_Server("SNAC(4.B) Message from unknown contact (%u)", dwUin);
       SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
-      FreeCookie(wCookie);
+      FreeCookie(dwCookie);
       return;
     }
 
@@ -1873,7 +1847,8 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         wLen -= 2;
         szMsg = (char *)_alloca(wMsgLen + 1);
         szMsg[wMsgLen] = '\0';
-        if (wMsgLen > 0) {
+        if (wMsgLen > 0) 
+        {
           memcpy(szMsg, buf, wMsgLen);
           buf += wMsgLen;
           wLen -= wMsgLen;
@@ -1895,6 +1870,14 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         DWORD q1,q2,q3,q4;
         WORD qt;
 
+        if (wLength != 0x1B)
+        {
+          NetLog_Server("Invalid Greeting message response");
+          SAFE_FREE(&pCookieData);
+          FreeCookie(dwCookie);
+
+          return;
+        }
 
         NetLog_Server("Parsing Greeting message response");
 
@@ -1987,12 +1970,12 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
             handleXtrazNotifyResponse(dwUin, hContact, wCookie, szMsg, dwDataLen);
 
             SAFE_FREE(&pCookieData);
-            FreeCookie(wCookie);
+            FreeCookie(dwCookie);
           }
           return;
 
         default:
-          NetLog_Server("I'm confused, received unknown ack in extended channel 2 message response");
+          NetLog_Server("Error: Unknown greeting message response, type \"%s\".", szPluginName);
           return;
         }
       }
@@ -2019,14 +2002,28 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
       ackType = ACKTYPE_CONTACTS;
       break;
 
+    case MTYPE_REVERSE_REQUEST:
+      {
+        reverse_cookie *pReverse = (reverse_cookie*)pCookieData;
+
+        if (pReverse->ft)
+        {
+          filetransfer *ft = (filetransfer*)pReverse->ft;
+
+          ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+        }
+        NetLog_Server("Reverse Connect request failed");
+      }
+      break;
+
     case MTYPE_CHAT:
     default:
       NetLog_Server("SNAC(4.B) Unknown message type (%u) in switch", bMsgType);
       return;
     }
 
-    if ((ackType == MTYPE_PLAIN && pCookieData && (pCookieData->nAckType == ACKTYPE_CLIENT)) ||
-      ackType != MTYPE_PLAIN)
+    if (bMsgType != MTYPE_REVERSE_REQUEST && ((ackType == MTYPE_PLAIN && pCookieData && (pCookieData->nAckType == ACKTYPE_CLIENT)) ||
+      ackType != MTYPE_PLAIN))
     {
       ICQBroadcastAck(hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
     }
@@ -2034,7 +2031,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
   SAFE_FREE(&pCookieData);
 
-  FreeCookie(wCookie);
+  FreeCookie(dwCookie);
 }
 
 
@@ -2095,7 +2092,7 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
       break;
 
     case 0x0004:     // Recipient is not logged in (resend in a offline message)
-      if (pCookieData->bMessageType != MTYPE_PLUGIN && pCookieData->bMessageType != MTYPE_AUTOAWAY) // TODO: this needs better solution
+      if (pCookieData->bMessageType == MTYPE_PLAIN) // TODO: this needs better solution
         ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
       pszErrorMessage = ICQTranslate("The user has logged off. Select 'Retry' to send an offline message.\r\nSNAC(4.1) Error x04");
       break;
@@ -2219,10 +2216,7 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
   // Sender
   if (!unpackUID(&buf, &wLen, &dwUin, &szUID)) return;
 
-  if (dwUin)
-    hContact = HContactFromUIN(dwUin, NULL);
-  else
-    hContact = HContactFromUID(szUID, NULL);
+  hContact = HContactFromUID(dwUin, szUID, NULL);
 
   if (FindCookie((WORD)dwSequence, &dwUin, &pCookieData))
   {
@@ -2268,9 +2262,12 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 
         if (pCookieData->bMessageType != MTYPE_FILEREQ)
           SAFE_FREE(&pCookieData); // this could be a bad idea, but I think it is safe
-
-        FreeCookie((WORD)dwSequence);
       }
+      FreeCookie((WORD)dwSequence);
+    }
+    else if (pCookieData && (pCookieData->nAckType == ACKTYPE_CLIENT))
+    {
+      NetLog_Server("Received a server ack, waiting for client ack.");
     }
     else
     {
@@ -2383,8 +2380,6 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 
 static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags, DWORD dwRef)
 {
-  DWORD dwID1;
-  DWORD dwID2;
   DWORD dwUin;
   uid_str szUID;
   WORD wChannel;
@@ -2405,10 +2400,8 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
 #endif
 
   // The message ID, unused?
-  unpackLEDWord(&buf, &dwID1);
-  wLen -= 4;
-  unpackLEDWord(&buf, &dwID2);
-  wLen -= 4;
+  buf += 8;
+  wLen -= 8;
 
   // Message channel, unused?
   unpackWord(&buf, &wChannel);
@@ -2417,10 +2410,7 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
   // Sender
   if (!unpackUID(&buf, &wLen, &dwUin, &szUID)) return;
 
-  if (dwUin)
-    hContact = HContactFromUIN(dwUin, NULL);
-  else
-    hContact = HContactFromUID(szUID, NULL);
+  hContact = HContactFromUID(dwUin, szUID, NULL);
 
   if (hContact == INVALID_HANDLE_VALUE) return;
 

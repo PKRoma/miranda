@@ -525,12 +525,15 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 
         if (pCookie)
         { // ini cookie
+          pCookie->pMessage.bMessageType = MTYPE_REVERSE_REQUEST;
+          pCookie->pMessage.dwMsgID1 = time(NULL);
+          pCookie->pMessage.dwMsgID2 = RandRange(0, 0x00FF);
           pCookie->hContact = dc.hContact;
           pCookie->dwUin = dc.dwRemoteUin;
           pCookie->type = dc.type;
           pCookie->ft = dc.ft;
-          dwCookie = AllocateCookie(0, dc.dwRemoteUin, pCookie);
-          icq_sendReverseReq(&dc, dwCookie);
+          dwCookie = AllocateCookie(CKT_REVERSEDIRECT, 0, dc.dwRemoteUin, pCookie);
+          icq_sendReverseReq(&dc, dwCookie, (message_cookie_data*)pCookie);
           RemoveDirectConnFromList(&dc);
 
           return 0;
@@ -538,8 +541,19 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
         else
           NetLog_Direct("Reverse failed (%s)", "malloc failed");
       }
+      else // we failed reverse connection
+      {
+        reverse_cookie *pCookie;
+        DWORD dwUin;
+
+        if (FindCookie(dc.dwReqId, &dwUin, &pCookie))
+        { // release cookie
+          icq_sendReverseFailed(&dc, pCookie->pMessage.dwMsgID1, pCookie->pMessage.dwMsgID2, dc.dwReqId);
+          FreeCookie(dc.dwReqId);
+          SAFE_FREE(&pCookie);
+        }
+      }
       NetLog_Direct("connect() failed (%d)", GetLastError());
-      // we failed reverse connection - send reverse failed packet
       RemoveDirectConnFromList(&dc);
       if (dc.type == DIRECTCONN_FILE) 
         ICQBroadcastAck(dc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, dc.ft, 0);
@@ -570,7 +584,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 
   // Packet receiving loop
 
-  while(dc.hConnection)
+  while (dc.hConnection)
   {
     int recvResult;
 

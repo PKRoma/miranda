@@ -332,7 +332,7 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
       }
 
       // Handle the actual message
-      handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, bType, bFlags,
+      handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, bType, bFlags,
         0, wPacketLen, wMsgLen, databuf, FALSE);
 
       // Success

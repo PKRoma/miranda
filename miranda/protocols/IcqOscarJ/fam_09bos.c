@@ -106,27 +106,21 @@ static void handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLength)
 
 void makeContactTemporaryVisible(HANDLE hContact)
 {
-  icq_packet packet;
-  int nUinLen;
   DWORD dwUin;
+  uid_str szUid;
 
   if (ICQGetContactSettingByte(hContact, "TemporaryVisible", 0))
     return; // already there
 
-  if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
+  if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
     return; // Invalid contact
 
-  nUinLen = getUINLen(dwUin);
-
-  serverPacketInit(&packet, (WORD)(nUinLen + 11));
-  packFNACHeader(&packet, ICQ_BOS_FAMILY, ICQ_CLI_ADDTEMPVISIBLE);
-  packUIN(&packet, dwUin);
-  sendServPacket(&packet);
+  icq_sendGenericContact(dwUin, szUid, ICQ_BOS_FAMILY, ICQ_CLI_ADDTEMPVISIBLE);
 
   ICQWriteContactSettingByte(hContact, "TemporaryVisible", 1);
 
 #ifdef _DEBUG
-  NetLog_Server("Added contact %u to temporary visible list", dwUin);
+  NetLog_Server("Added contact %s to temporary visible list", strUID(dwUin, szUid));
 #endif
 }
 

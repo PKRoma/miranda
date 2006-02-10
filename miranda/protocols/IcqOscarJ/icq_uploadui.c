@@ -243,7 +243,7 @@ static DWORD sendUploadGroup(WORD wAction, WORD wGroupId, char* szItemName)
     ack->wGroupId = wGroupId;
     ack->dwAction = SSA_SERVLIST_ACK;
     ack->dwUin = 0;
-    dwCookie = AllocateCookie(wAction, 0, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, wAction, 0, ack);
     ack->lParam = dwCookie;
 
     icq_sendGroupUtf(dwCookie, wAction, ack->wGroupId, szItemName, NULL, 0);
@@ -266,7 +266,7 @@ static DWORD sendUploadBuddy(HANDLE hContact, WORD wAction, DWORD dwUin, char *s
     ack->dwAction = SSA_SERVLIST_ACK;
     ack->dwUin = dwUin;
     ack->szUID = szUID;
-    dwCookie = AllocateCookie(wAction, dwUin, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, wAction, dwUin, ack);
     ack->lParam = dwCookie;
 
     icq_sendBuddyUtf(dwCookie, wAction, dwUin, szUID, ack->wGroupId, ack->wContactId, szItemName, szNote, bAuth, wItemType);
@@ -447,7 +447,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             ack->wGroupId = 0;
             ack->dwAction = SSA_SERVLIST_ACK;
             ack->szGroupName = NULL;
-            dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
+            dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, 0, ack);
 
             icq_sendGroupUtf(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, ack->szGroupName, groupData, groupSize);
           }
@@ -480,7 +480,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             ack->wGroupId = 0;
             ack->dwAction = SSA_SERVLIST_ACK;
             ack->szGroupName = NULL;
-            dwCookie = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
+            dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, 0, ack);
 
             icq_sendGroupUtf(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, ack->szGroupName, groupData, groupSize);
           }
@@ -858,7 +858,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             ack->wContactId = 0;
             ack->wGroupId = wNewGroupId;
             ack->hContact = NULL;
-            currentSequence = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
+            currentSequence = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, 0, ack);
             ack->lParam = currentSequence;
             currentAction = ACTION_UPDATESTATE;
             AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Updating group \"%s\"...", str), pszGroup);
@@ -886,7 +886,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               ack->wContactId = 0;
               ack->wGroupId = wNewGroupId;
               ack->hContact = NULL;
-              currentSequence = AllocateCookie(ICQ_LISTS_UPDATEGROUP, 0, ack);
+              currentSequence = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, 0, ack);
               ack->lParam = currentSequence;
               currentAction = ACTION_UPDATESTATE;
               AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic("Updating group \"%s\"...", str), pszGroup);

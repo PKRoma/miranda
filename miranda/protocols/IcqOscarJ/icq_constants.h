@@ -53,7 +53,7 @@
 #define DEFAULT_SS_STORE            1
 #define DEFAULT_SS_GROUP            "General"
 
-#define DEFAULT_SECURE_LOGIN        0
+#define DEFAULT_SECURE_LOGIN        1
 #define DEFAULT_AIM_ENABLED         0
 #define DEFAULT_UTF_ENABLED         2 // everything unicode is default
 #define DEFAULT_ANSI_CODEPAGE       CP_ACP
@@ -66,7 +66,11 @@
 #define DEFAULT_LINK_AVATARS        1
 #define DEFAULT_XSTATUS_ENABLED     1
 #define DEFAULT_XSTATUS_AUTO        1
+#define DEFAULT_XSTATUS_RESET       0
 #define DEFAULT_KILLSPAM_ENABLED    1
+
+#define DEFAULT_SLOWSEND            1
+#define DEFAULT_ONLYSERVERACKS      1
 
 #define DEFAULT_POPUPS_ENABLED      1
 #define DEFAULT_SPAM_POPUPS_ENABLED 1
@@ -195,6 +199,7 @@
 #define MTYPE_SCRIPT_INVITATION     0x201 // Xtraz Invitation
 #define MTYPE_SCRIPT_DATA           0x202 // Xtraz Message
 #define MTYPE_SCRIPT_NOTIFY         0x208 // Xtraz Response
+#define MTYPE_REVERSE_REQUEST       0x401 // Reverse DC request
 
 // Message Plugin Type GUIDs
 #define MGTYPE_MESSAGE_s            0xBE6B7305, 0x0FC2104F, 0xA6DE4DB1, 0xE3564B0E
@@ -514,7 +519,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x8003060C
+#define ICQ_PLUG_VERSION            0x8003060D
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

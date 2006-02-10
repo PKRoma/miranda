@@ -297,7 +297,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           szClient = "Kopete";
         else
         {
-          null_snprintf(szClientBuf, sizeof(szClientBuf), "SIM %u.%u", (unsigned)hiVer, loVer);
+          null_snprintf(szClientBuf, 64, "SIM %u.%u", (unsigned)hiVer, loVer);
           szClient = szClientBuf;
         }
       }
@@ -380,7 +380,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         char v1 = (*capId)[0xE];
         char v2 = (*capId)[0xF];
 
-        null_snprintf(szClientBuf, sizeof(szClientBuf), cliQip, v1, v2);
+        null_snprintf(szClientBuf, 64, cliQip, v1, v2);
         szClient = szClientBuf;
       }
       else if (MatchCap(caps, wLen, &capMacIcq, 0x10))
@@ -498,9 +498,11 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         else if (wVersion == 0)
         {
           if (CheckContactCapabilities(hContact, CAPF_TYPING) && MatchCap(caps, wLen, &capIs2001, 0x10) &&
-            MatchCap(caps, wLen, &capIs2002, 0x10) && MatchCap(caps, wLen, &capComm20012, 0x10) && !dwDirectCookie && !dwWebPort && !dwFT1 && !dwFT2 && !dwFT3)
+            MatchCap(caps, wLen, &capIs2002, 0x10) && MatchCap(caps, wLen, &capComm20012, 0x10) && !dwDirectCookie && 
+            !dwWebPort && !dwFT1 && !dwFT2 && !dwFT3)
             szClient = cliSpamBot;
-          else if (MatchCap(caps, wLen, &capAimChat, 0x10) && !dwFT1 && !dwFT2 && !dwFT3)
+          else if (MatchCap(caps, wLen, &capAimChat, 0x10) && !dwFT1 && !dwFT2 && !dwFT3 && !hasCapRichText(caps, wLen) && 
+            !CheckContactCapabilities(hContact, CAPF_UTF) && CheckContactCapabilities(hContact, CAPF_AIM_FILE))
             szClient = "Easy Message";
         }
 

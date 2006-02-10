@@ -41,11 +41,10 @@
 int gbIdleAllow;
 int icqGoingOnlineStatus;
 
-//extern icq_mode_messages modeMsgs;
-extern CRITICAL_SECTION modeMsgsMutex;
 extern WORD wListenPort;
 
 extern char* calcMD5Hash(char* szFile);
+extern filetransfer *CreateFileTransfer(HANDLE hContact, DWORD dwUin, int nVersion);
 
 
 int IcqGetCaps(WPARAM wParam, LPARAM lParam)
@@ -314,6 +313,18 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
 
 
 
+void updateAimAwayMsg()
+{
+  char** szMsg = MirandaStatusToAwayMsg(gnCurrentStatus);
+
+  EnterCriticalSection(&modeMsgsMutex);
+  if (szMsg)
+    icq_sendSetAimAwayMsgServ(*szMsg);
+  LeaveCriticalSection(&modeMsgsMutex);
+}
+
+
+
 int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 {
   int nNewStatus = MirandaStatusToSupported(wParam);
@@ -323,6 +334,11 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 
   if (nNewStatus != gnCurrentStatus)
   {
+    if (ICQGetContactSettingByte(NULL, "XStatusReset", DEFAULT_XSTATUS_RESET))
+    { // clear custom status on status change
+      IcqSetXStatus(0, 0);
+    }
+
     // New status is OFFLINE
     if (nNewStatus == ID_STATUS_OFFLINE)
     {
@@ -396,14 +412,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
               updateServVisibilityCode(3);
             icq_setstatus(MirandaStatusToIcq(gnCurrentStatus));
             if (gbAimEnabled)
-            {
-              char** szMsg = MirandaStatusToAwayMsg(gnCurrentStatus);
-
-              EnterCriticalSection(&modeMsgsMutex);
-              if (szMsg)
-                icq_sendSetAimAwayMsgServ(*szMsg);
-              LeaveCriticalSection(&modeMsgsMutex);
-            }
+              updateAimAwayMsg();
           }
           else
           {
@@ -413,14 +422,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
             if (gbSsiEnabled)
               updateServVisibilityCode(4);
             if (gbAimEnabled)
-            {
-              char** szMsg = MirandaStatusToAwayMsg(gnCurrentStatus);
-
-              EnterCriticalSection(&modeMsgsMutex);
-              if (szMsg)
-                icq_sendSetAimAwayMsgServ(*szMsg);
-              LeaveCriticalSection(&modeMsgsMutex);
-            }
+              updateAimAwayMsg();
           }
         }
       }
@@ -442,6 +444,7 @@ int IcqGetStatus(WPARAM wParam, LPARAM lParam)
 int IcqSetAwayMsg(WPARAM wParam, LPARAM lParam)
 {
   char** ppszMsg = NULL;
+  char* szNewUtf = NULL;
 
 
   EnterCriticalSection(&modeMsgsMutex);
@@ -453,14 +456,23 @@ int IcqSetAwayMsg(WPARAM wParam, LPARAM lParam)
     return 1; // Failure
   }
 
-  // Free old message
-  SAFE_FREE(ppszMsg);
+  // Prepare UTF-8 status message
+  if (lParam)
+    utf8_encode((char*)lParam, &szNewUtf);
 
-  // Set new message
-  *ppszMsg = null_strdup((char*)lParam);
+  if (strcmpnull(szNewUtf, *ppszMsg))
+  {
+    // Free old message
+    SAFE_FREE(ppszMsg);
 
-  if (gbAimEnabled && (gnCurrentStatus == (int)wParam))
-    icq_sendSetAimAwayMsgServ(*ppszMsg);
+    // Set new message
+    *ppszMsg = szNewUtf;
+    szNewUtf = NULL;
+
+    if (gbAimEnabled && (gnCurrentStatus == (int)wParam))
+      icq_sendSetAimAwayMsgServ(*ppszMsg);
+  }
+  SAFE_FREE(&szNewUtf);
 
   LeaveCriticalSection(&modeMsgsMutex);
 
@@ -750,7 +762,7 @@ static HANDLE AddToListByUID(char *szUID, DWORD dwFlags)
   HANDLE hContact;
   int bAdded;
 
-  hContact = HContactFromUID(szUID, &bAdded);
+  hContact = HContactFromUID(0, szUID, &bAdded);
 
   if (hContact)
   {
@@ -1136,7 +1148,7 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
           int iRes = icq_sendGetAwayMsgDirect(ccs->hContact, wMessageType);
           if (iRes) return iRes; // we succeded, return
         }
-        return icq_sendGetAwayMsgServ(dwUin, wMessageType); // Success
+        return icq_sendGetAwayMsgServ(dwUin, wMessageType, (WORD)(ICQGetContactSettingWord(ccs->hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
       }
     }
     else
@@ -1155,22 +1167,18 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
 
 static message_cookie_data* CreateMsgCookieData(BYTE bMsgType, HANDLE hContact, DWORD dwUin)
 {
-  message_cookie_data* pCookieData = malloc(sizeof(message_cookie_data));
+  BYTE bAckType;
+  WORD wStatus = ICQGetContactStatus(hContact);
 
-  if (pCookieData)
-  {
-    WORD wStatus = ICQGetContactStatus(hContact);
+  if (!ICQGetContactSettingByte(NULL, "SlowSend", DEFAULT_SLOWSEND))
+    bAckType = ACKTYPE_NONE;
+  else if ((!dwUin) || (!CheckContactCapabilities(hContact, CAPF_SRV_RELAY)) || 
+      (wStatus == ID_STATUS_OFFLINE) || ICQGetContactSettingByte(NULL, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS))
+    bAckType = ACKTYPE_SERVER;
+  else
+    bAckType = ACKTYPE_CLIENT;
 
-    pCookieData->bMessageType = bMsgType;
-
-    if (!ICQGetContactSettingByte(NULL, "SlowSend", 1))
-      pCookieData->nAckType = ACKTYPE_NONE;
-    else if ((!dwUin) || (!CheckContactCapabilities(hContact, CAPF_SRV_RELAY)) || (wStatus == ID_STATUS_OFFLINE))
-      pCookieData->nAckType = ACKTYPE_SERVER;
-    else
-      pCookieData->nAckType = ACKTYPE_CLIENT;
-  }
-  return pCookieData;
+  return CreateMessageCookie(bMsgType, bAckType);
 }
 
 
@@ -1788,15 +1796,9 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
             struct _stat statbuf;
 
             // Initialize filetransfer struct
-            ft = calloc(1,sizeof(filetransfer));
-
-            ft->bMessageType = MTYPE_FILEREQ;
-
-            // Select DC protocol
-            ft->nVersion = (wClientVersion == 7) ? 7: 8;
+            ft = CreateFileTransfer(hContact, dwUin, (wClientVersion == 7) ? 7: 8);
 
             for (ft->dwFileCount = 0; files[ft->dwFileCount]; ft->dwFileCount++);
-            ft->status = 0;
             ft->files = (char **)malloc(sizeof(char *) * ft->dwFileCount);
             ft->dwTotalSize = 0;
             for (i = 0; i < (int)ft->dwFileCount; i++)
@@ -1809,13 +1811,11 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
                 ft->dwTotalSize += statbuf.st_size;
             }
             ft->szDescription = null_strdup(pszDesc);
-            ft->dwUin = dwUin;
-            ft->hContact = hContact;
             ft->dwTransferSpeed = 100;
             ft->sending = 1;
             ft->fileId = -1;
             ft->iCurrentFile = 0;
-            ft->dwCookie = AllocateCookie(0, dwUin, ft);
+            ft->dwCookie = AllocateCookie(CKT_FILE, 0, dwUin, ft);
             ft->hConnection = NULL;
 
             // Send file transfer request
@@ -1836,7 +1836,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
               }
               else
               {
-                null_snprintf(szFiles, 64, "%d Files", ft->dwFileCount);
+                null_snprintf(szFiles, 64, ICQTranslate("%d Files"), ft->dwFileCount);
                 pszFiles = szFiles;
               }
 
@@ -1846,21 +1846,21 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
                 {
                   if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
                   {
-                    int iRes = icq_sendFileSendDirectv7(dwUin, hContact, (WORD)ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize); 
+                    int iRes = icq_sendFileSendDirectv7(ft, pszFiles); 
                     if (iRes) return (int)(HANDLE)ft; // Success
                   }
-                  NetLog_Server("Sending v%u file transfer request through server", 8);
-                  icq_sendFileSendServv7(dwUin, ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize);
+                  NetLog_Server("Sending v%u file transfer request through server", 7);
+                  icq_sendFileSendServv7(ft, pszFiles);
                 }
                 else
                 {
                   if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
                   {
-                    int iRes = icq_sendFileSendDirectv8(dwUin, hContact, (WORD)ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize); 
+                    int iRes = icq_sendFileSendDirectv8(ft, pszFiles); 
                     if (iRes) return (int)(HANDLE)ft; // Success
                   }
                   NetLog_Server("Sending v%u file transfer request through server", 8);
-                  icq_sendFileSendServv8(dwUin, ft->dwCookie, pszFiles, ft->szDescription, ft->dwTotalSize, 0);
+                  icq_sendFileSendServv8(ft, pszFiles, ACKTYPE_NONE);
                 }
               }
             }
@@ -1882,10 +1882,11 @@ int IcqSendAuthRequest(WPARAM wParam, LPARAM lParam)
   {
     CCSDATA* ccs = (CCSDATA*)lParam;
     DWORD dwUin;
+    uid_str szUid;
 
     if (ccs->hContact)
     {
-      if (ICQGetContactSettingUID(ccs->hContact, &dwUin, NULL))
+      if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUid))
         return 1; // Invalid contact
 
       if (dwUin && ccs->lParam)
@@ -1895,7 +1896,7 @@ int IcqSendAuthRequest(WPARAM wParam, LPARAM lParam)
 
         utf8_encode(text, &utf); // Miranda is ANSI only here
 
-        icq_sendAuthReqServ(dwUin, utf);
+        icq_sendAuthReqServ(dwUin, szUid, utf);
 
         SAFE_FREE(&utf);
 
@@ -1950,6 +1951,24 @@ int IcqGrantAuthorization(WPARAM wParam, LPARAM lParam)
 
     // send without reason, do we need any ?
     icq_sendGrantAuthServ(dwUin, szUid, NULL);
+  }
+
+  return 0;
+}
+
+
+
+int IcqRevokeAuthorization(WPARAM wParam, LPARAM lParam)
+{
+  if (gnCurrentStatus != ID_STATUS_OFFLINE && gnCurrentStatus != ID_STATUS_CONNECTING && wParam != 0)
+  {
+    DWORD dwUin;
+    uid_str szUid;
+
+    if (ICQGetContactSettingUID((HANDLE)wParam, &dwUin, &szUid))
+      return 0; // Invalid contact
+
+    icq_sendRevokeAuthServ(dwUin, szUid);
   }
 
   return 0;

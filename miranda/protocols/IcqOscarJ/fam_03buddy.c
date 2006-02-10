@@ -138,10 +138,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   wLen -= 2;
 
   // Determine contact
-  if (dwUIN)
-    hContact = HContactFromUIN(dwUIN, NULL);
-  else
-    hContact = HContactFromUID(szUID, NULL);
+  hContact = HContactFromUID(dwUIN, szUID, NULL);
 
   // Ignore status notification if the user is not already on our list
   if (hContact == INVALID_HANDLE_VALUE)
@@ -441,10 +438,7 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
   // Unpack the sender's user ID
   if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
 
-  if (dwUIN)
-    hContact = HContactFromUIN(dwUIN, NULL);
-  else
-    hContact = HContactFromUID(szUID, NULL);
+  hContact = HContactFromUID(dwUIN, szUID, NULL);
 
   // Skip contacts that are not already on our list
   if (hContact != INVALID_HANDLE_VALUE)

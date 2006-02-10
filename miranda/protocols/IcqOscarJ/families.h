@@ -37,14 +37,6 @@
 #ifndef __FAMILIES_H
 #define __FAMILIES_H
 
-typedef struct icq_mode_messages_s
-{
-  char* szAway;
-  char* szNa;
-  char* szDnd;
-  char* szOccupied;
-  char* szFfc;
-} icq_mode_messages;
 
 typedef struct snac_header_s
 {
@@ -57,7 +49,6 @@ typedef struct snac_header_s
 } snac_header;
 
 
-
 /*---------* Functions *---------------*/
 
 void handleServiceFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
@@ -67,19 +58,19 @@ void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
 void handleBosFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleStatusFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
-void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
+void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
 void handleIcqExtensionsFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
 void handleAuthorizationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
 
 void sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure);
 void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info);
 
-void handleServUINSettings(int nPort);
+void handleServUINSettings(int nPort, serverthread_info *info);
 int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4, WORD wType);
 int getPluginTypeIdLen(int nTypeID);
 void packPluginTypeId(icq_packet *packet, int nTypeID);
 
-void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC);
+void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, WORD wVersion, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC);
 
 #define BUL_ALLCONTACTS   0
 #define BUL_VISIBLE       1

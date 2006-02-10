@@ -66,7 +66,6 @@ static CRITICAL_SECTION cacheMutex;
 extern BYTE gbOverRate;
 extern DWORD gtLastRequest;
 extern BOOL bIsSyncingCL;
-extern icq_mode_messages modeMsgs;
 
 
 void EnableDlgItem(HWND hwndDlg, UINT control, int state)
@@ -617,11 +616,14 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
 
 
 
-HANDLE HContactFromUID(char* pszUID, int *Added)
+HANDLE HContactFromUID(DWORD dwUIN, char* pszUID, int *Added)
 {
   HANDLE hContact;
   DWORD dwUin;
   uid_str szUid;
+
+  if (dwUIN)
+    return HContactFromUIN(dwUIN, Added);
 
   if (Added) *Added = 0;
 
@@ -866,7 +868,7 @@ char *EliminateHtml(const char *string, int len)
   {
     if (!tag && string[i] == '<')
     {
-      if ((i + 4 <= len) && !strnicmp(string + i, "<br>", 4))
+      if ((i + 4 <= len) && (!strnicmp(string + i, "<br>", 4) || !strnicmp(string + i, "<br/>", 5)))
       { // insert newline
         tmp[j] = '\r';
         j++;
@@ -1708,6 +1710,26 @@ int ComboBoxAddStringUtf(HWND hCombo, const char* szString, DWORD data)
 int ListBoxAddStringUtf(HWND hList, const char* szString)
 {
   return ControlAddStringUtf(hList, LB_ADDSTRING, szString);
+}
+
+
+
+HWND DialogBoxUtf(BOOL bModal, HINSTANCE hInstance, const char* szTemplate, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam)
+{ // Unicode pump ready dialog box
+  if (gbUnicodeAPI)
+  {
+    if (bModal)
+      return DialogBoxParamW(hInstance, (LPCWSTR)szTemplate, hWndParent, lpDialogFunc, dwInitParam);
+    else
+      return CreateDialogParamW(hInstance, (LPCWSTR)szTemplate, hWndParent, lpDialogFunc, dwInitParam);
+  }
+  else
+  {
+    if (bModal)
+      return DialogBoxParamA(hInstance, szTemplate, hWndParent, lpDialogFunc, dwInitParam);
+    else
+      return CreateDialogParamA(hInstance, szTemplate, hWndParent, lpDialogFunc, dwInitParam);
+  }
 }
 
 

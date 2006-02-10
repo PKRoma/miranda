@@ -99,7 +99,7 @@ void UninitCookies(void)
 
 
 // Generate and allocate cookie
-DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra)
+DWORD AllocateCookie(BYTE bType, WORD wIdent, DWORD dwUin, void *pvExtra)
 {
   DWORD dwThisSeq;
 
@@ -116,6 +116,7 @@ DWORD AllocateCookie(WORD wIdent, DWORD dwUin, void *pvExtra)
   dwThisSeq &= 0x7FFF;
   dwThisSeq |= wIdent<<0x10;
 
+  cookie[cookieCount].bType = bType;
   cookie[cookieCount].dwCookie = dwThisSeq;
   cookie[cookieCount].dwUin = dwUin;
   cookie[cookieCount].pvExtra = pvExtra;
@@ -206,6 +207,43 @@ int FindCookieByData(void *pvExtra,DWORD *pdwCookie, DWORD *pdwUin)
 
 
 
+int FindMessageCookie(DWORD dwMsgID1, DWORD dwMsgID2, DWORD *pdwCookie, DWORD *pdwUin, message_cookie_data **ppvExtra)
+{
+  int i;
+  int nFound = 0;
+
+
+  EnterCriticalSection(&cookieMutex);
+
+  for (i = 0; i < cookieCount; i++)
+  {
+    if (cookie[i].bType == CKT_MESSAGE || cookie[i].bType == CKT_FILE || cookie[i].bType == CKT_REVERSEDIRECT)
+    { // message cookie found
+      message_cookie_data *pCookie = (message_cookie_data*)cookie[i].pvExtra;
+
+      if (pCookie->dwMsgID1 == dwMsgID1 && pCookie->dwMsgID2 == dwMsgID2)
+      {
+        if (pdwUin)
+          *pdwUin = cookie[i].dwUin;
+        if (pdwCookie)
+          *pdwCookie = cookie[i].dwCookie;
+        if (ppvExtra)
+          *ppvExtra = pCookie;
+
+        // Cookie found, exit loop
+        nFound = 1;
+        break;
+      }
+    }
+  }
+
+  LeaveCriticalSection(&cookieMutex);
+
+  return nFound;
+}
+
+
+
 void FreeCookie(DWORD dwCookie)
 {
   int i;
@@ -235,4 +273,21 @@ void FreeCookie(DWORD dwCookie)
   }
 
   LeaveCriticalSection(&cookieMutex);
+}
+
+
+
+message_cookie_data *CreateMessageCookie(WORD bMsgType, BYTE bAckType)
+{
+  message_cookie_data *pCookie;
+
+  pCookie = (message_cookie_data*)malloc(sizeof(message_cookie_data));
+  if (pCookie)
+  {
+    pCookie->bMessageType = bMsgType;
+    pCookie->nAckType = bAckType;
+    pCookie->dwMsgID1 = time(NULL);
+    pCookie->dwMsgID2 = RandRange(0, 0x00FF);
+  }
+  return pCookie;
 }

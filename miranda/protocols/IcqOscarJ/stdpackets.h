@@ -55,11 +55,11 @@ void icq_setidle(int bAllow);
 void icq_setstatus(WORD wStatus);
 DWORD icq_sendGetInfoServ(DWORD, int);
 DWORD icq_sendGetAimProfileServ(HANDLE hContact, char *szUid);
-DWORD icq_sendGetAwayMsgServ(DWORD, int);
+DWORD icq_sendGetAwayMsgServ(DWORD, int, WORD);
 DWORD icq_sendGetAimAwayMsgServ(char *szUID, int type);
 void icq_sendSetAimAwayMsgServ(char *szMsg);
-void icq_sendFileSendServv7(DWORD dwUin, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize);
-void icq_sendFileSendServv8(DWORD dwUin, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize, int nAckType);
+void icq_sendFileSendServv7(filetransfer* ft, const char *szFiles);
+void icq_sendFileSendServv8(filetransfer* ft, const char *szFiles, int nAckType);
 
 void icq_sendFileAcceptServ(DWORD dwUin, filetransfer *ft, int nAckType);
 void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize, WORD wPort, BOOL accepted, int nAckType);
@@ -69,16 +69,18 @@ void icq_sendFileDenyServ(DWORD dwUin, filetransfer* ft, char *szReason, int nAc
 
 DWORD icq_sendAdvancedSearchServ(BYTE *fieldsBuffer,int bufferLen);
 DWORD icq_changeUserDetailsServ(WORD, const unsigned char *, WORD);
+void icq_sendGenericContact(DWORD dwUin, char* szUid, WORD wFamily, WORD wSubType);
 void icq_sendNewContact(DWORD dwUin, char* szUid);
 void icq_sendRemoveContact(DWORD dwUin, char* szUid);
 void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list, int add);
 void icq_sendEntireVisInvisList(int);
-void icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, BYTE, const char **);
+void icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, WORD, BYTE, const char **);
 void icq_sendAdvancedMsgAck(DWORD, DWORD, DWORD, WORD, BYTE, BYTE);
 DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg);
 void icq_sendMessageCapsServ(DWORD dwUin);
+void icq_sendRevokeAuthServ(DWORD dwUin, char *szUid);
 void icq_sendGrantAuthServ(DWORD dwUin, char* szUid, char *szMsg);
-void icq_sendAuthReqServ(DWORD dwUin,char *szMsg);
+void icq_sendAuthReqServ(DWORD dwUin, char* szUid, char *szMsg);
 void icq_sendAuthResponseServ(DWORD dwUin, char* szUid,int auth,char *szReason);
 void icq_sendYouWereAddedServ(DWORD,DWORD);
 
@@ -90,9 +92,10 @@ DWORD icq_SendChannel1MessageW(DWORD dwUin, char *szUID, HANDLE hContact, wchar_
 DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap);
 DWORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData);
 
-void icq_sendReverseReq(directconnect *dc, DWORD dwCookie);
+void icq_sendReverseReq(directconnect *dc, DWORD dwCookie, message_cookie_data *pCookie);
+void icq_sendReverseFailed(directconnect* dc, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwCookie);
 
-void icq_sendXtrazRequestServ(DWORD dwUin, DWORD dwCookie, char* szBody, int nBodyLen, int nType);
+void icq_sendXtrazRequestServ(DWORD dwUin, DWORD dwCookie, char* szBody, int nBodyLen, message_cookie_data *pCookieData);
 void icq_sendXtrazResponseServ(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szBody, int nBodyLen, int nType);
 
 DWORD SearchByUin(DWORD dwUin);

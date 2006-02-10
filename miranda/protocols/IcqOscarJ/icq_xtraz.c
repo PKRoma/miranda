@@ -295,16 +295,14 @@ DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
   SAFE_FREE(&szNotifyBody);
 
   // Set up the ack type
-  pCookieData = malloc(sizeof(message_cookie_data));
-  pCookieData->bMessageType = MTYPE_PLUGIN; // we do not use this
-  pCookieData->nAckType = ACKTYPE_CLIENT;
-  dwCookie = AllocateCookie(0, dwUin, (void*)pCookieData);
+  pCookieData = CreateMessageCookie(MTYPE_SCRIPT_NOTIFY, ACKTYPE_CLIENT);
+  dwCookie = AllocateCookie(CKT_MESSAGE, 0, dwUin, (void*)pCookieData);
 
   // have we a open DC, send through that
   if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
     icq_sendXtrazRequestDirect(dwUin, hContact, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
   else
-    icq_sendXtrazRequestServ(dwUin, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
+    icq_sendXtrazRequestServ(dwUin, dwCookie, szBody, nBodyLen, pCookieData);
 
   return dwCookie;
 }

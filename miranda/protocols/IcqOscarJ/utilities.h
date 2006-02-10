@@ -71,7 +71,7 @@ void InitCache();
 void UninitCache();
 void DeleteFromCache(HANDLE hContact);
 HANDLE HContactFromUIN(DWORD dwUin, int *Added);
-HANDLE HContactFromUID(char *pszUID, int *Added);
+HANDLE HContactFromUID(DWORD dwUIN, char *pszUID, int *Added);
 char *NickFromHandle(HANDLE hContact);
 char *strUID(DWORD dwUIN, char *pszUID);
 void SetContactHidden(HANDLE hContact, BYTE bHidden);
@@ -145,5 +145,6 @@ int ComboBoxAddStringUtf(HWND hCombo, const char* szString, DWORD data);
 int ListBoxAddStringUtf(HWND hList, const char* szString);
 
 int MessageBoxUtf(HWND hWnd, const char* szText, const char* szCaption, UINT uType);
+HWND DialogBoxUtf(BOOL bModal, HINSTANCE hInstance, const char* szTemplate, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
 
 #endif /* __UTILITIES_H */

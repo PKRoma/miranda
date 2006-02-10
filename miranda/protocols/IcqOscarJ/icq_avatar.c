@@ -55,16 +55,6 @@ typedef struct avatarthreadstartinfo_t
   int runCount;
 } avatarthreadstartinfo;
 
-typedef struct avatarcookie_t
-{
-  DWORD dwUin;
-  HANDLE hContact;
-  unsigned int hashlen;
-  char *hash;
-  unsigned int cbData;
-  char *szFile;
-} avatarcookie;
-
 typedef struct avatarrequest_t
 {
   int type;
@@ -333,6 +323,9 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
 
   if (nHashLen >= 0x14)
   {
+    // check if it is really avatar (it can be also AIM's online message)
+    if (pHash[0] != 0 || pHash[1] != 1) return;
+
     if (nHashLen == 0x18 && pHash[3] == 0)
     { // icq probably set two avatars, get something from that
       memcpy(pHash, pHash+4, 0x14);
@@ -523,7 +516,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
       memcpy(ack->hash, hash, hashlen); // copy the data
       ack->hashlen = hashlen;
       ack->szFile = null_strdup(file); // we duplicate the string
-      dwCookie = AllocateCookie(ICQ_AVATAR_GET_REQUEST, dwUin, ack);
+      dwCookie = AllocateCookie(CKT_AVATAR, ICQ_AVATAR_GET_REQUEST, dwUin, ack);
 
       serverPacketInit(&packet, (WORD)(12 + nUinLen + hashlen));
       packFNACHeaderFull(&packet, ICQ_AVATAR_FAMILY, ICQ_AVATAR_GET_REQUEST, 0, dwCookie);
@@ -617,7 +610,7 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
     ack->dwUin = 0;
     ack->cbData = datalen;
 
-    dwCookie = AllocateCookie(ICQ_AVATAR_UPLOAD_REQUEST, 0, ack);
+    dwCookie = AllocateCookie(CKT_AVATAR, ICQ_AVATAR_UPLOAD_REQUEST, 0, ack);
 
     serverPacketInit(&packet, (WORD)(14 + datalen));
     packFNACHeaderFull(&packet, ICQ_AVATAR_FAMILY, ICQ_AVATAR_UPLOAD_REQUEST, 0, dwCookie);
