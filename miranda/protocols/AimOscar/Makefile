@@ -34,7 +34,8 @@ SRC =	aim.cpp \
 	utility.cpp \
 	proxy.cpp	\
 	direct_connect.cpp \
-	file.cpp 
+	file.cpp \
+	windows.cpp 
 OBJ =	$(SRC:.cpp=.o)
 RES = resource.res
 HDR =	aim.h \
@@ -50,6 +51,7 @@ HDR =	aim.h \
 	direct_connect.ch \
 	file.h \
 	resource.h \
+	windows. h \
 	m_cluiframes.h
 
 LIB = -lwsock32

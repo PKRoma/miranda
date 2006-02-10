@@ -170,6 +170,27 @@ int aim_set_caps()
 		memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HIPTOP,AIM_CAPS_LENGTH);
 	aim_writesnac(0x02,0x04,6,buf);
 	aim_writetlv(0x05,AIM_CAPS_LENGTH*i,temp,buf);
+	DBVARIANT dbv;
+	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, &dbv))
+	{
+		aim_writetlv(0x01,strlen(AIM_MSG_TYPE),AIM_MSG_TYPE,buf);
+		aim_writetlv(0x02,strlen(dbv.pszVal),dbv.pszVal,buf);
+		DBFreeVariant(&dbv);
+	}
+	if(aim_sendflap(0x02,conn.packet_offset,buf)==0)
+		return 0;
+	else
+		return -1;
+}
+int aim_set_profile(char *msg)//user info
+{
+	char buf[MSG_LEN*2];
+	aim_writesnac(0x02,0x04,6,buf);
+	aim_writetlv(0x01,strlen(AIM_MSG_TYPE),AIM_MSG_TYPE,buf);
+	if(msg!=NULL)
+		aim_writetlv(0x02,strlen(msg),msg,buf);
+	else
+		aim_writetlv(0x02,0,0,buf);
 	if(aim_sendflap(0x02,conn.packet_offset,buf)==0)
 		return 0;
 	else

@@ -11,6 +11,7 @@ int aim_send_service_request();
 int aim_request_rates();
 int aim_request_icbm();
 int aim_set_icbm();
+int aim_set_profile(char *msg);//user info
 int aim_set_away(char *msg);//user info
 int aim_set_invis(char* status,char* status_flag);
 int aim_request_list();

@@ -79,6 +79,70 @@ HANDLE add_contact(char* buddy)
 		//LOG(LOG_ERROR, "Failed to create AIM contact %s. MS_DB_CONTACT_ADD failed.", nick);
 	}
 }
+void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* group)
+{
+	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
+	DBVARIANT dbv;
+	bool group_exist=1;
+	unsigned short old_group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);		
+	if(old_group_id)
+	{
+		char group_id_string[32];
+		itoa(old_group_id,group_id_string,10);
+		DBVARIANT dbv;
+		if(bUtfReadyDB==1)
+		{
+			if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
+				if(!strcmpi(group,dbv.pszVal))
+				{
+					DBFreeVariant(&dbv);
+					return;
+				}		
+		}
+		else
+		{
+			if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
+				if(!strcmpi(group,dbv.pszVal))
+				{
+					DBFreeVariant(&dbv);
+					return;
+				}		
+		}
+	}
+	unsigned short item_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_BI,0);
+	new_group_id=DBGetContactSettingWord(NULL, GROUP_ID_KEY,group,0);
+	if(!new_group_id)
+	{
+		new_group_id=search_for_free_group_id(group);
+		group_exist=0;
+	}
+	if(!item_id)
+	{
+		item_id=search_for_free_item_id(hContact);
+	}
+	if(new_group_id&&new_group_id!=old_group_id)
+	{
+		if(!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
+		{
+			DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI, new_group_id);
+			char user_id_array[MSG_LEN];
+			unsigned short user_id_array_size=get_members_of_group(new_group_id,user_id_array);
+			if(old_group_id)
+				aim_delete_contact(dbv.pszVal,item_id,old_group_id);
+			Sleep(150);
+			aim_add_contact(dbv.pszVal,item_id,new_group_id);
+			if(!group_exist)
+			{
+				Sleep(150);
+				aim_add_group(group,new_group_id);//add the group server-side even if it exist
+			}
+			Sleep(150);
+			aim_mod_group(group,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
+			DBFreeVariant(&dbv);
+			delete_empty_group(old_group_id);
+		}
+	}
+}
 void add_contacts_to_groups()
 {
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
@@ -94,13 +158,23 @@ void add_contacts_to_groups()
 			{
 				char group_id_string[32];
 				itoa(group_id,group_id_string,10);
+				char* default_group=get_default_group();
 				DBVARIANT dbv;
 				if(bUtfReadyDB==1)
 				{
 					if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
 					{
-						if(strcmp(AIM_DEFAULT_GROUP,dbv.pszVal))
-							DBWriteContactSettingStringUtf(hContact,"CList","Group",dbv.pszVal);
+						if(strcmpi(default_group,dbv.pszVal))
+						{
+							DBVARIANT dbv2;
+							if(!DBGetContactSettingStringUtf(hContact,"CList","Group",&dbv2))
+							{
+								if(strcmpi(dbv2.pszVal,dbv.pszVal))//comp current group to the new group
+									DBWriteContactSettingStringUtf(hContact,"CList","Group",dbv.pszVal);
+							}
+							else
+								DBWriteContactSettingStringUtf(hContact,"CList","Group",dbv.pszVal);
+						}
 						else
 							DBDeleteContactSetting(hContact,"CList","Group");
 						DBFreeVariant(&dbv);
@@ -110,13 +184,23 @@ void add_contacts_to_groups()
 				{
 					if(!DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))//ascii
 					{
-						if(strcmp(AIM_DEFAULT_GROUP,dbv.pszVal))
-							DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+						if(strcmpi(default_group,dbv.pszVal))
+						{
+							DBVARIANT dbv2;
+							if(!DBGetContactSetting(hContact,"CList","Group",&dbv2))
+							{
+								if(strcmpi(dbv2.pszVal,dbv.pszVal))//comp current group to the new group
+									DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+							}
+							else
+								DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+						}
 						else
 							DBDeleteContactSetting(hContact,"CList","Group");
 						DBFreeVariant(&dbv);
 					}
 				}
+				free(default_group);
 			}
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
@@ -142,20 +226,29 @@ void offline_contacts()
 				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH);
 				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP);
 				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AC);
+				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_ES);
+				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV);
 				DBDeleteContactSetting(hContact, "CList", AIM_KEY_SM);
 				DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
 				DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT, 0);
 				DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT, 0);
 				DBFreeVariant(&dbv);
-				/*IconExtraColumn iec;
-				iec.cbSize = sizeof(iec);
-				iec.hImage = (HANDLE)-1;
-				iec.ColumnType = EXTRA_ICON_ADV1;
-				CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
-				iec.cbSize = sizeof(iec);
-				iec.hImage = (HANDLE)-1;
-				iec.ColumnType = EXTRA_ICON_ADV2;
-				CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);*/
+				if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+				{
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					HANDLE handle=(HANDLE)-1;
+					memcpy(data,&handle,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV1;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
+					char* data2=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					memcpy(data2,&handle,sizeof(HANDLE));
+					memcpy(&data2[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type2=EXTRA_ICON_ADV1;
+					memcpy(&data2[sizeof(HANDLE)*2],(char*)&column_type2,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data2);
+				}
 			}
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
@@ -166,44 +259,54 @@ void offline_contacts()
 }
 void remove_AT_icons()
 {
-	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact)
+	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 	{
-		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+		HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		while (hContact)
 		{
-			DBVARIANT dbv;
-			if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+			if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
 			{
-				IconExtraColumn iec;
-				iec.cbSize = sizeof(iec);
-				iec.hImage = (HANDLE)-1;
-				iec.ColumnType = EXTRA_ICON_ADV2;
-				CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+				DBVARIANT dbv;
+				if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+				{
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					HANDLE handle=(HANDLE)-1;
+					memcpy(data,&handle,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV2;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
+				}
 			}
+			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 		}
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 }
 void remove_ES_icons()
 {
-	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact)
+	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 	{
-		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+		HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		while (hContact)
 		{
-			DBVARIANT dbv;
-			if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+			if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
 			{
-				IconExtraColumn iec;
-				iec.cbSize = sizeof(iec);
-				iec.hImage = (HANDLE)-1;
-				iec.ColumnType = EXTRA_ICON_ADV1;
-				CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+				DBVARIANT dbv;
+				if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+				{
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					HANDLE handle=(HANDLE)-1;
+					memcpy(data,&handle,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV1;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
+				}
 			}
+			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 		}
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 }
 void add_AT_icons()
@@ -220,43 +323,48 @@ void add_AT_icons()
 				int account_type=DBGetContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC,0);		
 				if(account_type==ACCOUNT_TYPE_ADMIN)
 				{
-					IconExtraColumn iec;
-					iec.cbSize = sizeof(iec);
-					iec.hImage = conn.admin_icon;
-					iec.ColumnType = EXTRA_ICON_ADV2;
-					CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					memcpy(data,&conn.admin_icon,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV2;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
 				else if(account_type==ACCOUNT_TYPE_AOL)
 				{
-					IconExtraColumn iec;
-					iec.cbSize = sizeof(iec);
-					iec.hImage = conn.aol_icon;
-					iec.ColumnType = EXTRA_ICON_ADV2;
-					CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					memcpy(data,&conn.aol_icon,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV2;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
 				else if(account_type==ACCOUNT_TYPE_ICQ)
 				{
-					IconExtraColumn iec;
-					iec.cbSize = sizeof(iec);
-					iec.hImage = conn.icq_icon;
-					iec.ColumnType = EXTRA_ICON_ADV2;
-					CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					memcpy(data,&conn.icq_icon,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV2;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
 				else if(account_type==ACCOUNT_TYPE_UNCONFIRMED)
 				{
-					IconExtraColumn iec;
-					iec.cbSize = sizeof(iec);
-					iec.hImage = conn.unconfirmed_icon;
-					iec.ColumnType = EXTRA_ICON_ADV2;
-					CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					memcpy(data,&conn.unconfirmed_icon,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV2;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
 				else if(account_type==ACCOUNT_TYPE_CONFIRMED)
 				{
-					IconExtraColumn iec;
-					iec.cbSize = sizeof(iec);
-					iec.hImage = conn.confirmed_icon;
-					iec.ColumnType = EXTRA_ICON_ADV2;
-					CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					memcpy(data,&conn.confirmed_icon,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV2;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
 			}
 		}
@@ -277,19 +385,21 @@ void add_ES_icons()
 				int es_type=DBGetContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ET,0);		
 				if(es_type==EXTENDED_STATUS_BOT)
 				{
-					IconExtraColumn iec;
-					iec.cbSize = sizeof(iec);
-					iec.hImage = conn.bot_icon;
-					iec.ColumnType = EXTRA_ICON_ADV1;
-					CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					memcpy(data,&conn.bot_icon,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV1;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
 				else if(es_type==EXTENDED_STATUS_HIPTOP)
 				{
-					IconExtraColumn iec;
-					iec.cbSize = sizeof(iec);
-					iec.hImage = conn.hiptop_icon;
-					iec.ColumnType = EXTRA_ICON_ADV1;
-					CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					memcpy(data,&conn.hiptop_icon,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV1;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
 			}
 		}
@@ -376,6 +486,37 @@ void strip_html(char *dest, const char *src, size_t destsize)
         ptrl = ptr;
     }
 }
+void strip_special_chars(char *dest, const char *src, size_t destsize)
+{
+	DBVARIANT dbv;
+	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	{
+		char *ptr;
+		mir_snprintf(dest, destsize, "%s", src);
+		while ((ptr = strstr(dest, "%n")) != NULL)
+		{
+			int	sn_length=strlen(dbv.pszVal);
+			memmove(ptr + sn_length, ptr + 2, strlen(ptr + 2) + sn_length);
+			memcpy(ptr,dbv.pszVal,sn_length);
+		}
+		DBFreeVariant(&dbv);
+	}
+}
+void strip_carrots(char *dest, const char *src, size_t destsize)// EAT!!!!!!!!!!!!!
+{
+		char *ptr;
+		mir_snprintf(dest, destsize, "%s", src);
+		while ((ptr = strstr(dest, "<")) != NULL)
+		{
+			memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
+			memcpy(ptr,"&lt;",4);
+		}
+		while ((ptr = strstr(dest, ">")) != NULL)
+		{
+			memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
+			memcpy(ptr,"&gt;",4);
+		}
+}
 void msg_ack_success(HANDLE hContact)
 {
 	ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
@@ -423,10 +564,15 @@ void create_group(char *group, unsigned short group_id)
  		DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, group);
 	else
 		DBWriteContactSettingString(NULL, ID_GROUP_KEY,group_id_string, group);
-	DBWriteContactSettingWord(NULL, GROUP_ID_KEY,group, group_id);	
-	if(!strcmp(AIM_DEFAULT_GROUP,group))
+	DBWriteContactSettingWord(NULL, GROUP_ID_KEY,group, group_id);
+	char* default_group=get_default_group();
+	if(!strcmp(default_group,group))
+	{
+		free(default_group);
 		return;
-    int i;
+	}
+	free(default_group);
+	int i;
     char str[50], name[256];
     DBVARIANT dbv;
     for (i = 0;; i++)
@@ -652,12 +798,14 @@ void delete_empty_group(unsigned short group_id)//deletes the server-side group 
 	}
 	if(!contacts_in_group)
 	{
-		if(strcmp(AIM_DEFAULT_GROUP,group))
+		char* default_group=get_default_group();
+		if(strcmp(default_group,group))
 		{
 			DBDeleteContactSetting(NULL, GROUP_ID_KEY, group);
 			DBDeleteContactSetting(NULL, ID_GROUP_KEY, group_id_string);
 			aim_delete_group(group,group_id);
 		}
+		free(default_group);
 	}
 }
 void delete_all_empty_groups()
@@ -721,20 +869,22 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 			int descr=_open(path,_O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 			if(descr!=-1)
 			{
+				char html[MSG_LEN*2];
+				strip_special_chars(html,msg,sizeof(html));
 				char txt[MSG_LEN*2];
 				CCSDATA ccs;
 				PROTORECVEVENT pre;
 				write(descr,"<h3>",4);
 				write(descr,norm_sn,strlen(norm_sn));
 				write(descr,"'s Away Message:</h3>",21);
-				write(descr,msg,strlen(msg));
+				write(descr,html,strlen(html));
 				close(descr);
 				ccs.szProtoService = PSR_AWAYMSG;
 				ccs.hContact = hContact;
 				ccs.wParam = ID_STATUS_AWAY;
 				ccs.lParam = (LPARAM)&pre;
 				pre.flags = 0;
-				strip_html(txt,msg,sizeof(txt));
+				strip_html(txt,html,sizeof(txt));
 				pre.szMessage = (char*)txt;
 				pre.timestamp = time(NULL);
 				pre.lParam = 1;
@@ -767,6 +917,8 @@ void write_profile(HANDLE hContact,char* sn,char* msg)
 		int CWD_length;
 		int protocol_length=strlen(AIM_PROTOCOL_NAME);
 		char* norm_sn=normalize_name(sn);
+		char html[MSG_LEN*2];
+		strip_special_chars(html,msg,sizeof(html));
 		ZeroMemory(path,sizeof(path));
 		CWD_length=strlen(CWD);
 		memcpy(path,CWD,CWD_length);
@@ -789,13 +941,13 @@ void write_profile(HANDLE hContact,char* sn,char* msg)
 			descr=_open(path,_O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 			if(descr!=-1)
 			{
-				char txt[MSG_LEN*2];
+				//char txt[MSG_LEN*2];
 				write(descr,"<h3>",4);
 				write(descr,norm_sn,strlen(norm_sn));
 				write(descr,"'s Profile:</h3>",16);
-				write(descr,msg,strlen(msg));
+				write(descr,html,strlen(html));
 				close(descr);
-				strip_html(txt,msg,sizeof(txt));
+				//strip_html(txt,html,sizeof(txt));
 				execute_cmd("http",path);
 			}
 			else
@@ -1016,13 +1168,31 @@ void load_extra_icons()
 }
 void set_extra_icon(char* data)
 {
-	HANDLE* image=(HANDLE*)data;
-	HANDLE* hContact=(HANDLE*)&data[sizeof(HANDLE)];
-	unsigned short* column_type=(unsigned short*)&data[sizeof(HANDLE)*2];
-	IconExtraColumn iec;
-	iec.cbSize = sizeof(iec);
-	iec.hImage = *image;
-	iec.ColumnType = *column_type;
-	CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)*hContact, (LPARAM)&iec);
-	free(data);
+	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+	{
+		HANDLE* image=(HANDLE*)data;
+		HANDLE* hContact=(HANDLE*)&data[sizeof(HANDLE)];
+		unsigned short* column_type=(unsigned short*)&data[sizeof(HANDLE)*2];
+		IconExtraColumn iec;
+		iec.cbSize = sizeof(iec);
+		iec.hImage = *image;
+		iec.ColumnType = *column_type;
+		CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)*hContact, (LPARAM)&iec);
+		free(data);
+	}
+}
+char* get_default_group()
+{
+	char* default_group;
+	DBVARIANT dbv;
+	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, &dbv))
+	{
+		default_group=strdup(dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}
+	else
+	{
+		default_group=strdup(AIM_DEFAULT_GROUP);
+	}
+	return default_group;
 }

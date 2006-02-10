@@ -24,11 +24,6 @@ HANDLE aim_peer_connect(char* ip,unsigned short port)
     HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) conn.hNetlibPeer, (LPARAM) & ncon);
 	return con;
 }
-void CALLBACK aim_keepalive_connection(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
-{
-    if (conn.state==1)
-       aim_keepalive();
-}
 void __cdecl aim_connection_authorization()
 {
 	EnterCriticalSection(&connectionMutex);
@@ -219,6 +214,7 @@ void __cdecl aim_protocol_negotiation()
 			}
 		}
 	}
+	offline_contacts();
 	conn.state=0;
 	conn.buddy_list_received=0;
 	broadcast_status(ID_STATUS_OFFLINE);

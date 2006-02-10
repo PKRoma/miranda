@@ -12,6 +12,7 @@
 #include <m_database.h>
 #include <m_options.h>
 #include <m_langpack.h>
+#include <m_userinfo.h>
 #include "defines.h"
 #include "aim.h"
 #include "connection.h"
@@ -20,13 +21,12 @@
 #include "utility.h"
 #include "resource.h"
 #include "direct_connect.h"
+#include "windows.h"
 #include "proxy.h"
-static int ModulesLoaded(WPARAM wParam,LPARAM lParam);
-static int GetCaps(WPARAM wParam, LPARAM lParam);
-static int GetName(WPARAM wParam, LPARAM lParam);
-static int GetStatus(WPARAM wParam, LPARAM lParam);
-static int SetStatus(WPARAM wParam, LPARAM lParam);
-static int SendMsg(WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK dialog_message(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+int ModulesLoaded(WPARAM wParam,LPARAM lParam);
+int PreBuildContactMenu(WPARAM wParam,LPARAM lParam);
+int PreShutdown(WPARAM wParam,LPARAM lParam);
+static int ContactDeleted(WPARAM wParam,LPARAM lParam);
+static int ContactSettingChanged(WPARAM wParam,LPARAM lParam);
 void CreateServices();
 #endif

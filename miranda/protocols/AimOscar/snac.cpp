@@ -378,14 +378,29 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 			else if(tlv_type==0x0019)//new caps
 			{
 				caps_included=1;
+				bool f002=0, f003=0, f004=0, f005=0, f007=0, f008=0;
 				for(int i=0;i<tlv_length;i=i+2)
 				{
 					unsigned short* cap =(unsigned short*)&buf[offset+i];
 					*cap=htons(*cap);
 					if(*cap==0x1323)
 						hiptop_user=1;
+					if(*cap==0xf002)
+						f002=1;
+					if(*cap==0xf003)
+						f003=1;
+					if(*cap==0xf004)
+						f004=1;
 					if(*cap==0xf005)
+						f005=1;
+					if(*cap==0xf007)
+						f007=1;
+					if(*cap==0xf008)
+						f008=1;
+					if(f002&f003&f004&f005)
 						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian");
+					if(f004&f005&f007&f008)
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"iChat");
 				}
 			}
 			else if(tlv_type==0x0004)//idle tlv
@@ -405,9 +420,6 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 				{
 					struct tlv_dword* tlv_part=(struct tlv_dword*)&buf[offset];
 					long online_time=htonl(tlv_part->data);
-					//long online_time;
-					//online_time|=(*(tlv_part->data)<<24);//getting online time length
-					//online_time|=(*(tlv_part->data)<<24);//getting online time length
 					long current_time;
 					time(&current_time);
 					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT, online_time);
@@ -447,21 +459,23 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 		{
 			if(!adv1_icon)
 			{
-				Sleep(100);
-				IconExtraColumn iec;
-				iec.cbSize = sizeof(iec);
-				iec.hImage = (HANDLE)-1;
-				iec.ColumnType = EXTRA_ICON_ADV1;
-				CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+				char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+				HANDLE handle=(HANDLE)-1;
+				memcpy(data,&handle,sizeof(HANDLE));
+				memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+				unsigned short column_type=EXTRA_ICON_ADV1;
+				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+				ForkThread((pThreadFunc)set_extra_icon,data);
 			}
 			if(!adv2_icon)
 			{
-				Sleep(100);
-				IconExtraColumn iec;
-				iec.cbSize = sizeof(iec);
-				iec.hImage = (HANDLE)-1;
-				iec.ColumnType = EXTRA_ICON_ADV2;
-				CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+				char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+				HANDLE handle=(HANDLE)-1;
+				memcpy(data,&handle,sizeof(HANDLE));
+				memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+				unsigned short column_type=EXTRA_ICON_ADV2;
+				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+				ForkThread((pThreadFunc)set_extra_icon,data);
 			}
 		}
 	}
@@ -487,15 +501,20 @@ void snac_user_offline(unsigned short subgroup, char* buf)//family 0x0003
 			DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
 			DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV);
 			DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AC);
-			IconExtraColumn iec;
-			iec.cbSize = sizeof(iec);
-			iec.hImage = (HANDLE)-1;
-			iec.ColumnType = EXTRA_ICON_ADV1;
-			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
-			iec.cbSize = sizeof(iec);
-			iec.hImage = (HANDLE)-1;
-			iec.ColumnType = EXTRA_ICON_ADV2;
-			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+			DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_ES);
+			char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+			HANDLE handle=(HANDLE)-1;
+			memcpy(data,&handle,sizeof(HANDLE));
+			memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+			unsigned short column_type=EXTRA_ICON_ADV1;
+			memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+			ForkThread((pThreadFunc)set_extra_icon,data);
+			char* data2=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+			memcpy(data2,&handle,sizeof(HANDLE));
+			memcpy(&data2[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+			unsigned short column_type2=EXTRA_ICON_ADV1;
+			memcpy(&data2[sizeof(HANDLE)*2],(char*)&column_type2,sizeof(unsigned short));
+			ForkThread((pThreadFunc)set_extra_icon,data2);
 		}			
 	}
 }

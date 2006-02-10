@@ -51,7 +51,9 @@ static int SendMsg(WPARAM wParam, LPARAM lParam)
 		{
 			ForkThread(msg_ack_success,ccs->hContact);
 		}
-		return aim_send_plaintext_message(dbv.pszVal,(char *)ccs->lParam);
+		char msg[MSG_LEN];
+		strip_carrots(msg,(char *)ccs->lParam,sizeof(msg));
+		return aim_send_plaintext_message(dbv.pszVal,msg);
 	}
 	return 0;
 }
@@ -167,97 +169,6 @@ static int LoadIcons(WPARAM wParam, LPARAM lParam)
 {
 	return (int) LoadImage(conn.hInstance, MAKEINTRESOURCE(IDI_AIM), IMAGE_ICON, GetSystemMetrics(wParam & PLIF_SMALL ? SM_CXSMICON : SM_CXICON),GetSystemMetrics(wParam & PLIF_SMALL ? SM_CYSMICON : SM_CYICON), 0);
 }
-static int OptionsInit(WPARAM wParam,LPARAM lParam)
-{
-	OPTIONSDIALOGPAGE odp;
-	odp.cbSize = sizeof(odp);
-    odp.position = 1003000;
-    odp.hInstance = conn.hInstance;
-    odp.pszTemplate = MAKEINTRESOURCE(IDD_AIM);
-    odp.pszGroup = Translate("Network");
-    odp.pszTitle = Translate("AimOSCAR");
-    odp.pfnDlgProc = dialog_message;
-    odp.flags = ODPF_BOLDGROUPS;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-	return 0;
-}
-static int ModulesLoaded(WPARAM wParam,LPARAM lParam)
-{
-	DBVARIANT dbv;
-	NETLIBUSER nlu;
-	ZeroMemory(&nlu, sizeof(nlu));
-    nlu.cbSize = sizeof(nlu);
-    nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS;
-    nlu.szSettingsModule = AIM_PROTOCOL_NAME;
-    nlu.szDescriptiveName = "AOL Instant Messenger server connection";
-    conn.hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
-	char szP2P[128];
-	mir_snprintf(szP2P, sizeof(szP2P), "%sP2P", AIM_PROTOCOL_NAME);
-	nlu.flags = NUF_OUTGOING | NUF_INCOMING;
-	nlu.szDescriptiveName = "AOL Instant Messenger Client-to-client connection";
-	nlu.szSettingsModule = szP2P;
-	nlu.minIncomingPorts = 1;
-	conn.hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
-	if (DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
-	{
-		DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, AIM_DEFAULT_SERVER);
-	}
-	if(DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, -1)==-1)
-		DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, 60);
-	if(dbv.pszVal)
-		DBFreeVariant(&dbv);
-	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_OPT_INITIALISE, OptionsInit);
-	if(conn.hookEvent_size>HOOKEVENT_SIZE)
-	{
-		MessageBox( NULL, "AimOSCAR has detected that a buffer overrun has occured in it's 'conn.hookEvent' array. Please recompile with a larger HOOKEVENT_SIZE declared. AimOSCAR will now shut Miranda-IM down.", AIM_PROTOCOL_NAME, MB_OK );
-		exit(1);
-	}
-	offline_contacts();
-	return 0;
-}
-static int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
-{
-	CLISTMENUITEM mi;
-	ZeroMemory(&mi,sizeof(mi));
-	mi.cbSize=sizeof(mi);
-	if(DBGetContactSettingWord((HANDLE)wParam,AIM_PROTOCOL_NAME,"Status",ID_STATUS_OFFLINE)==ID_STATUS_AWAY)
-	{
-		mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE;
-	}
-	else
-	{
-		mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE|CMIF_HIDDEN;
-	}
-	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)conn.hHTMLAwayContextMenuItem,(LPARAM)&mi);
-	return 0;
-}
-static int PreShutdown(WPARAM wParam,LPARAM lParam)
-{
-	if(conn.hServerConn)
-		Netlib_CloseHandle(conn.hServerConn);
-	conn.hServerConn=0;
-	if(conn.hDirectBoundPort)
-		Netlib_CloseHandle(conn.hDirectBoundPort);
-	conn.hDirectBoundPort=0;
-	Netlib_CloseHandle(conn.hNetlib);
-	conn.hNetlib=0;
-	Netlib_CloseHandle(conn.hNetlibPeer);
-	conn.hNetlibPeer=0;
-	for(unsigned int i=0;i<conn.hookEvent_size;i++)
-		UnhookEvent(conn.hookEvent[i]);
-	free(CWD);
-	free(AIM_PROTOCOL_NAME);
-	free(conn.szModeMsg);
-	free(COOKIE);
-	free(GROUP_ID_KEY);
-	free(ID_GROUP_KEY);
-	free(FILE_TRANSFER_KEY);
-	DeleteCriticalSection(&modeMsgsMutex);
-	DeleteCriticalSection(&statusMutex);
-	DeleteCriticalSection(&connectionMutex);
-	KillTimer(NULL, conn.hTimer);
-	return 0;
-}
 static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	if (conn.state!=1)
@@ -269,125 +180,23 @@ static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 		if(!strcmp(cws->szSetting,"Group")&&!strcmp(cws->szModule,"CList"))
 		{
 			if(cws->value.type != DBVT_DELETED)//user group changed or user just added so we are going to change their group
-			{
-				DBVARIANT dbv;
-				bool group_exist=1;
-				unsigned short old_group_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);		
-				unsigned short new_group_id=DBGetContactSettingWord(NULL, GROUP_ID_KEY, cws->value.pszVal,0);
-				unsigned short item_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_BI,0);
-				if(!new_group_id)//group doesn't exist serverside or some moron fucked with the db and deleted it during this run
-				{
-					new_group_id=search_for_free_group_id(cws->value.pszVal);
-					group_exist=0;
-				}
-				if(!item_id)
-				{
-					item_id=search_for_free_item_id((HANDLE)wParam);
-				}
-				if(new_group_id&&old_group_id!=new_group_id)
-					if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
-					{
-						DBWriteContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_GI, new_group_id);
-						char user_id_array[MSG_LEN];
-						unsigned short user_id_array_size=get_members_of_group(new_group_id,user_id_array);
-						//aim_edit_contacts_start();
-						if(old_group_id)
-							aim_delete_contact(dbv.pszVal,item_id,old_group_id);
-						Sleep(150);
-						aim_add_contact(dbv.pszVal,item_id,new_group_id);
-						if(!group_exist)
-						{
-							Sleep(150);
-							aim_add_group(cws->value.pszVal,new_group_id);//add the group server-side even if it exist
-						}
-						Sleep(150);
-						aim_mod_group(cws->value.pszVal,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session
-						//aim_edit_contacts_end();				
-						DBFreeVariant(&dbv);
-						delete_empty_group(old_group_id);
-					}
+			{	
+				add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY, cws->value.pszVal,0),cws->value.pszVal);
 			}
 			else//user's group deleted so we are adding the user to the 'Miranda Merged' server-side group
 			{
-				bool group_exist=1;
-				DBVARIANT dbv;
-				unsigned short old_group_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);		
-				unsigned short item_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_BI,0);
-				unsigned short new_group_id=0;
-				new_group_id=DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0);
-				if(!new_group_id)
-				{
-					new_group_id=search_for_free_group_id(AIM_DEFAULT_GROUP);
-					group_exist=0;
-				}
-				if(!item_id)
-				{
-					item_id=search_for_free_item_id((HANDLE)wParam);
-				}
-				if(new_group_id&&new_group_id!=old_group_id)
-				{
-					if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
-					{
-						DBWriteContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_GI, new_group_id);
-						char user_id_array[MSG_LEN];
-						unsigned short user_id_array_size=get_members_of_group(new_group_id,user_id_array);
-						if(old_group_id)
-							aim_delete_contact(dbv.pszVal,item_id,old_group_id);
-						Sleep(150);
-						aim_add_contact(dbv.pszVal,item_id,new_group_id);
-						if(!group_exist)
-						{
-							Sleep(150);
-							aim_add_group(AIM_DEFAULT_GROUP,new_group_id);//add the group server-side even if it exist
-						}
-						Sleep(150);
-						aim_mod_group(AIM_DEFAULT_GROUP,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
-						DBFreeVariant(&dbv);
-						delete_empty_group(old_group_id);
-					}
-				}
+				char* default_group=get_default_group();
+				add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY,default_group,0),default_group);
+				free(default_group);
 			}
 		}
 		else if(!strcmp(cws->szSetting,AIM_KEY_SN)&&!strcmp(cws->szModule,AIM_PROTOCOL_NAME))//user added so we are going to add them to a group
 		{
 			if(cws->value.type != DBVT_DELETED)
 			{
-				bool group_exist=1;
-				DBVARIANT dbv;
-				unsigned short group_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);		
-				unsigned short item_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_BI,0);
-				unsigned short new_group_id=0;
-				if(!group_id)//group doesn't exist serverside or some moron fucked with the db and deleted it during this run
-				{
-					new_group_id=DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0);
-					if(!new_group_id)
-					{
-						new_group_id=search_for_free_group_id(AIM_DEFAULT_GROUP);
-						group_exist=0;
-					}
-				}
-				if(!item_id)
-				{
-					item_id=search_for_free_item_id((HANDLE)wParam);
-				}
-				if(new_group_id)
-				{
-					if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
-					{
-						DBWriteContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_GI, new_group_id);
-						char user_id_array[MSG_LEN];
-						unsigned short user_id_array_size=get_members_of_group(group_id,user_id_array);
-						aim_add_contact(dbv.pszVal,item_id,new_group_id);
-						if(!group_exist)
-						{
-							Sleep(150);
-							aim_add_group(AIM_DEFAULT_GROUP,new_group_id);//add the group server-side even if it exist
-						}
-						Sleep(150);
-						aim_mod_group(AIM_DEFAULT_GROUP,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
-						DBFreeVariant(&dbv);
-					}
-				}
+				char* default_group=get_default_group();
+				add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY,default_group,0),default_group);
+				free(default_group);
 			}
 		}
 	}
@@ -581,151 +390,6 @@ static int UserIsTyping(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
-static BOOL CALLBACK dialog_message(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch (msg)
-	{
-        case WM_INITDIALOG:
-        {
-
-            DBVARIANT dbv;
-            TranslateDialogDefault(hwndDlg);
-            if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
-			{
-                SetDlgItemText(hwndDlg, IDC_SN, dbv.pszVal);
-                DBFreeVariant(&dbv);
-            }
-			if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_NK, &dbv))
-			{
-                SetDlgItemText(hwndDlg, IDC_NK, dbv.pszVal);
-                DBFreeVariant(&dbv);
-            }
-			else if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
-			{
-                SetDlgItemText(hwndDlg, IDC_NK, dbv.pszVal);
-                DBFreeVariant(&dbv);
-			}
-            if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
-			{
-                CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-                SetDlgItemText(hwndDlg, IDC_PW, dbv.pszVal);
-                DBFreeVariant(&dbv);
-            }
-			if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
-			{
-                SetDlgItemText(hwndDlg, IDC_HN, dbv.pszVal);
-                DBFreeVariant(&dbv);
-            }
-			unsigned short timeout=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, 60);
-			SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
-			CheckDlgButton(hwndDlg, IDC_DC, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 0));//Message Delivery Confirmation
-            CheckDlgButton(hwndDlg, IDC_FP, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0));//force proxy
-			CheckDlgButton(hwndDlg, IDC_AT, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0));//Account Type Icons
-			CheckDlgButton(hwndDlg, IDC_HF, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0));//Fake hiptopness
-			break;
-		}
-		case WM_COMMAND:
-        {
-            if ((HWND) lParam != GetFocus())
-                return 0;
-            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-            break;
-        }
-        case WM_NOTIFY:
-        {
-            switch (((LPNMHDR) lParam)->code)
-			{
-                case PSN_APPLY:
-                {
-                    char str[128];
-                    GetDlgItemText(hwndDlg, IDC_SN, str, sizeof(str));
-					if(strlen(str)>0)
-						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, str);
-					else
-						DBDeleteContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN);
-					if(GetDlgItemText(hwndDlg, IDC_NK, str, sizeof(str)))
-						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_NK, str);
-					else
-					{
-						GetDlgItemText(hwndDlg, IDC_SN, str, sizeof(str));
-						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_NK, str);
-					}
-                    GetDlgItemText(hwndDlg, IDC_PW, str, sizeof(str));
-					if(strlen(str)>0)
-					{
-						CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
-						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, str);
-					}
-					else
-						DBDeleteContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW);
-					GetDlgItemText(hwndDlg, IDC_HN, str, sizeof(str));
-                    DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, str);
-					unsigned long timeout=60;
-					timeout=GetDlgItemInt(hwndDlg, IDC_GP,0,0);
-					if(timeout>0xffff||timeout<15)
-						 DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, 60);
-					else
-					{
-
-						DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP,(WORD)timeout);
-					}
-					if (IsDlgButtonChecked(hwndDlg, IDC_DC))
-                        DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 1);
-					else
-						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 0);
-					if (IsDlgButtonChecked(hwndDlg, IDC_FP))
-						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 1);
-					else
-						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0);			
-					if (IsDlgButtonChecked(hwndDlg, IDC_AT))
-					{
-						int acc_disabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0);
-						if(!acc_disabled)
-							remove_AT_icons();
-						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 1);
-					}
-					else
-					{
-						int acc_disabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0);
-						if(acc_disabled)
-							add_AT_icons();
-						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0);
-					}
-					if (IsDlgButtonChecked(hwndDlg, IDC_ES))
-					{
-						int es_disabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 0);
-						if(!es_disabled)
-							remove_ES_icons();
-						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 1);
-					}
-					else
-					{
-						int es_disabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 0);
-						if(es_disabled)
-							add_ES_icons();
-						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 0);
-					}
-					if (IsDlgButtonChecked(hwndDlg, IDC_HF))
-					{
-						int hf=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0);
-						if(!hf)
-							ShowWindow(GetDlgItem(hwndDlg, IDC_MASQ), SW_SHOW);
-						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 1);
-					}
-					else
-					{
-						int hf=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0);
-						if(hf)
-							ShowWindow(GetDlgItem(hwndDlg, IDC_MASQ), SW_SHOW);
-						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0);
-					}
-                }
-            }
-            break;
-        }
-    }
-    return FALSE;
-}
 void CreateServices()
 {
 	char service_name[300];
@@ -793,7 +457,6 @@ void CreateServices()
 	mi.pszService=service_name;
 	mi.flags=CMIF_NOTOFFLINE;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-	int current_size=1;//hookevent size
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_SYSTEM_PRESHUTDOWN,PreShutdown);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,PreBuildContactMenu);

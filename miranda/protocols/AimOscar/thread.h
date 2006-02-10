@@ -18,6 +18,7 @@ struct FORK_ARG
 typedef void ( __cdecl* pThreadFunc )( void* );
 static void __cdecl forkthread_r(struct FORK_ARG *fa);
 unsigned long ForkThread(pThreadFunc threadcode,void *arg);
+void aim_keepalive_thread(void* fa);
 void set_status_thread(int status);
 void accept_file_thread(char* szFile);
 void redirected_file_thread(char* blob);

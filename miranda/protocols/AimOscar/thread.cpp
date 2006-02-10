@@ -27,6 +27,25 @@ unsigned long ForkThread(pThreadFunc threadcode,void *arg)
 	CloseHandle(fa.hEvent);
 	return rc;
 }
+void __cdecl aim_keepalive_thread(void* fa)
+{
+	HANDLE hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	while(1)
+	{
+		DWORD dwWait = WaitForSingleObjectEx(hKeepAliveEvent, 1000*DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER), TRUE);
+		if (dwWait == WAIT_OBJECT_0) break; // we should end
+		else if (dwWait == WAIT_TIMEOUT)
+		{
+			if (conn.state==1)
+				aim_keepalive();
+		}
+		else if (dwWait == WAIT_IO_COMPLETION)
+		// Possible shutdown in progress
+		if (Miranda_Terminated()) break;
+	}
+	CloseHandle(hKeepAliveEvent);
+	hKeepAliveEvent = NULL;
+}
 void set_status_thread(int status)
 {
 	DBVARIANT dbv;
@@ -47,13 +66,12 @@ void set_status_thread(int status)
 			case ID_STATUS_OFFLINE:
 				{
 					if(conn.hServerConn)
-					Netlib_CloseHandle(conn.hServerConn);
+						Netlib_CloseHandle(conn.hServerConn);
 					if(conn.hDirectBoundPort)
 						Netlib_CloseHandle(conn.hDirectBoundPort);
 					conn.hDirectBoundPort=0;
 					conn.hServerConn=0;
 					broadcast_status(ID_STATUS_OFFLINE);
-					offline_contacts();
 					break;
 				}
 			case ID_STATUS_ONLINE:

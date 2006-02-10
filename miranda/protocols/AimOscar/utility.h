@@ -32,9 +32,12 @@ void start_connection(int initial_status);
 HANDLE find_contact(char * sn);
 HANDLE add_contact(char* buddy);
 void add_contacts_to_groups();
+void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* group);
 void offline_contacts();
 char *normalize_name(const char *s);
 void strip_html(char *dest, const char *src, size_t destsize);
+void strip_special_chars(char *dest, const char *src, size_t destsize);
+void strip_carrots(char *dest, const char *src, size_t destsize);
 void msg_ack_success(HANDLE hContact);
 void execute_cmd(char* type,char* arg);
 void create_group(char *group, unsigned short group_id);
@@ -66,4 +69,5 @@ void add_ES_icons();
 void remove_ES_icons();
 void load_extra_icons();
 void set_extra_icon(char* data);
+char* get_default_group();
 #endif

@@ -1,6 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
-#define KEEPALIVE_TIMER					1000*60*7// 1000 milliseconds * 60 = 60 secs
+#define DEFAULT_KEEPALIVE_TIMER			60// 1000 milliseconds * 60 = 60 secs
+#define DEFAULT_GRACE_PERIOD			60
 #define MSG_LEN							4089
 #define FLAP_SIZE						6
 #define SNAC_SIZE						10
@@ -18,6 +19,7 @@
 #define AIM_KEY_DC						"DelConf"//delivery confirmation
 #define AIM_KEY_FP						"ForceProxyTransfer"
 #define AIM_KEY_GP						"FileTransferGracePeriod"//in seconds default 60
+#define AIM_KEY_KA						"KeepAlive"//in seconds default 60
 #define AIM_KEY_ST						"Status"
 #define AIM_KEY_SN						"SN"
 #define AIM_KEY_NK						"Nick"
@@ -41,10 +43,12 @@
 #define AIM_KEY_PC						"PortCheck"
 #define AIM_KEY_DH						"DCHandle"
 #define AIM_KEY_MV						"MirVer"
+#define AIM_KEY_DG						"DefaultGroup"
 #define AIM_KEY_AC						"AccType"//account type		
 #define AIM_KEY_ET						"ESType"//Extended Status type	
 #define AIM_KEY_AT						"DisableATIcons"
 #define AIM_KEY_ES						"DisableESIcons"
+#define AIM_KEY_PR						"Profile"
 #define AIM_DEFAULT_GROUP				"Miranda Merged"
 #define AIM_MD5_STRING					"AOL Instant Messenger (SM)"
 #define AIM_DEFAULT_SERVER				"login.oscar.aol.com:5190"
@@ -106,4 +110,3 @@ extern char AIM_CAP_MIRANDA[16];
 #define	AIM_STATUS_FREE4CHAT			"\0\x20"
 #define AIM_STATUS_INVISIBLE			"\x01\0"
 #endif
-

@@ -11,7 +11,7 @@
 #include "thread.h"
 #include "utility.h"
 #include "snac.h"
-#define HOOKEVENT_SIZE 6
+#define HOOKEVENT_SIZE 7
 extern char* COOKIE;
 extern int COOKIE_LENGTH;
 extern char* CWD;//current working directory
@@ -61,7 +61,6 @@ public:
 }extern conn;
 HANDLE aim_connect(char* server);
 HANDLE aim_peer_connect(char* ip,unsigned short port);
-void CALLBACK aim_keepalive_connection(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime);
 void aim_connection_authorization();
 void aim_protocol_negotiation();
 #endif

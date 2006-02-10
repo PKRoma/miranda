@@ -53,7 +53,7 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 	HANDLE hServerPacketRecver=NULL;
 	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hNewConnection, 2048 * 4);
 	packetRecv.cbSize = sizeof(packetRecv);
-	packetRecv.dwTimeout = 100*DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, 60);
+	packetRecv.dwTimeout = 100*DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 	while(1)
 	{
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
@@ -148,7 +148,7 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	HANDLE hServerPacketRecver=NULL;
 	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hNewConnection, 2048 * 4);
 	packetRecv.cbSize = sizeof(packetRecv);
-	packetRecv.dwTimeout = 100*DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, 60);
+	packetRecv.dwTimeout = 100*DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 	while(1)
 	{
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
