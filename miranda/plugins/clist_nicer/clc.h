@@ -373,7 +373,7 @@ struct CluiTopButton {
 	char *szIcoLibIcon, *szIcoLibAltIcon;
 	DWORD flags;
 	DWORD visibilityOrder;
-	char *szTooltip;
+	TCHAR *szTooltip;
 };
 
 struct TrayIconInfo {

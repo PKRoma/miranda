@@ -45,7 +45,7 @@ typedef struct {
     DWORD bSkinned;
     char cHot;
     int flatBtn;
-    char szText[128];
+    TCHAR szText[128];
     SIZE sLabel;
     HIMAGELIST hIml;
     int iIcon;
@@ -74,17 +74,17 @@ int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam)
 
 int LoadCLCButtonModule(void)
 {
-    WNDCLASSEXA wc;
+    WNDCLASSEX wc;
 
     ZeroMemory(&wc, sizeof(wc));
     wc.cbSize = sizeof(wc);
-    wc.lpszClassName = "CLCButtonClass";
+    wc.lpszClassName = _T("CLCButtonClass");
     wc.lpfnWndProc = TSButtonWndProc;
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.cbWndExtra = sizeof(MButtonCtrl *);
     wc.hbrBackground = 0;
     wc.style = CS_GLOBALCLASS;
-    RegisterClassExA(&wc);
+    RegisterClassEx(&wc);
     InitializeCriticalSection(&csTips);
     return 0;
 }
@@ -295,14 +295,14 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
             int ix = (rcClient.right - rcClient.left) / 2 - (g_cxsmIcon / 2);
             int iy = (rcClient.bottom - rcClient.top) / 2 - (g_cxsmIcon / 2);
             HICON hIconNew = ctl->hIconPrivate != 0 ? ctl->hIconPrivate : ctl->hIcon;
-            if (lstrlenA(ctl->szText) == 0) {
+            if (lstrlen(ctl->szText) == 0) {
                 if (ctl->iIcon)
                     ImageList_DrawEx(ctl->hIml, ctl->iIcon, hdcMem, ix, iy, g_cxsmIcon, g_cysmIcon, CLR_NONE, CLR_NONE, ILD_NORMAL);
                 else
                     DrawState(hdcMem, NULL, NULL, (LPARAM) hIconNew, 0, ix, iy, g_cxsmIcon, g_cysmIcon, IsWindowEnabled(ctl->hwnd) ? DST_ICON | DSS_NORMAL : DST_ICON | DSS_DISABLED);
                 ctl->sLabel.cx = ctl->sLabel.cy = 0;
             } else {
-                GetTextExtentPoint32A(hdcMem, ctl->szText, lstrlenA(ctl->szText), &ctl->sLabel);
+                GetTextExtentPoint32(hdcMem, ctl->szText, lstrlen(ctl->szText), &ctl->sLabel);
 
                 if(g_cxsmIcon + ctl->sLabel.cx + 8 > rcClient.right - rcClient.left)
                     ctl->sLabel.cx = (rcClient.right - rcClient.left) - g_cxsmIcon - 8;
@@ -329,7 +329,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
             }
             DrawState(hdcMem, NULL, NULL, (LPARAM) ctl->hBitmap, 0, ix, iy, bminfo.bmWidth, bminfo.bmHeight, IsWindowEnabled(ctl->hwnd) ? DST_BITMAP : DST_BITMAP | DSS_DISABLED);
         }
-        if (GetWindowTextLengthA(ctl->hwnd)) {
+        if (GetWindowTextLength(ctl->hwnd)) {
     // Draw the text and optinally the arrow
             RECT rcText;
 
@@ -340,7 +340,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
                 SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) || !ctl->hThemeButton ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
             if (ctl->arrow)
                 DrawState(hdcMem, NULL, NULL, (LPARAM) ctl->arrow, 0, rcClient.right - rcClient.left - 5 - g_cxsmIcon + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), (rcClient.bottom - rcClient.top) / 2 - g_cysmIcon / 2 + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), g_cxsmIcon, g_cysmIcon, IsWindowEnabled(ctl->hwnd) ? DST_ICON : DST_ICON | DSS_DISABLED);
-            DrawStateA(hdcMem, NULL, NULL, (LPARAM) ctl->szText, 0, xOffset + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), ctl->hThemeButton ? (rcText.bottom - rcText.top - ctl->sLabel.cy) / 2 + 1 : (rcText.bottom - rcText.top - ctl->sLabel.cy) / 2 + (ctl->stateId == PBS_PRESSED ? 1 : 0), ctl->sLabel.cx, ctl->sLabel.cy, IsWindowEnabled(ctl->hwnd) || ctl->hThemeButton ? DST_PREFIXTEXT | DSS_NORMAL : DST_PREFIXTEXT | DSS_DISABLED);
+            DrawState(hdcMem, NULL, NULL, (LPARAM) ctl->szText, 0, xOffset + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), ctl->hThemeButton ? (rcText.bottom - rcText.top - ctl->sLabel.cy) / 2 + 1 : (rcText.bottom - rcText.top - ctl->sLabel.cy) / 2 + (ctl->stateId == PBS_PRESSED ? 1 : 0), ctl->sLabel.cx, ctl->sLabel.cy, IsWindowEnabled(ctl->hwnd) || ctl->hThemeButton ? DST_PREFIXTEXT | DSS_NORMAL : DST_PREFIXTEXT | DSS_DISABLED);
         }
         if (hOldFont)
             SelectObject(hdcMem, hOldFont);
@@ -383,7 +383,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 LoadTheme(bct);
                 SetWindowLong(hwndDlg, 0, (LONG) bct);
                 if (((CREATESTRUCTA *) lParam)->lpszName)
-                    SetWindowTextA(hwndDlg, ((CREATESTRUCTA *) lParam)->lpszName);
+                    SetWindowText(hwndDlg, ((CREATESTRUCT *) lParam)->lpszName);
                 return TRUE;
             }
         case WM_DESTROY:
@@ -428,7 +428,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                         tmp++;
                     }
                     InvalidateRect(bct->hwnd, NULL, TRUE);
-                    strncpy(bct->szText, (char*) lParam, 127);
+                    lstrcpyn(bct->szText, (TCHAR *)lParam, 127);
                     bct->szText[127] = 0;
                 }
                 break;
@@ -590,13 +590,13 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
             break;
         case BUTTONADDTOOLTIP:
             {
-                TOOLINFOA ti;
+                TOOLINFO ti;
 
                 if (!(char*) wParam)
                     break;
                 EnterCriticalSection(&csTips);
                 if (!hwndToolTips) {
-                    hwndToolTips = CreateWindowExA(WS_EX_TOPMOST, TOOLTIPS_CLASSA, "", WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
+                    hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, _T(""), WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
                 }
                 ZeroMemory(&ti, sizeof(ti));
                 ti.cbSize = sizeof(ti);
@@ -608,8 +608,8 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 }
                 ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
                 ti.uId = (UINT) bct->hwnd;
-                ti.lpszText = (char*) wParam;
-                SendMessageA(hwndToolTips, TTM_ADDTOOLA, 0, (LPARAM) &ti);
+                ti.lpszText = (TCHAR *) wParam;
+                SendMessage(hwndToolTips, TTM_ADDTOOL, 0, (LPARAM) &ti);
                 LeaveCriticalSection(&csTips);
                 break;
             }

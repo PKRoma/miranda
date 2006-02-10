@@ -885,15 +885,15 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         {
             HWND hwndButton;
             
-            hwndSelector = CreateWindowExA(0, "CLCButtonClass", "", BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
+            hwndSelector = CreateWindowEx(0, _T("CLCButtonClass"), _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
                             hwnd, (HMENU) IDC_SELECTMODE, g_hInst, NULL);
-            SendMessage(hwndSelector, BUTTONADDTOOLTIP, (WPARAM)Translate("Select a view mode"), 0);
-            hwndButton = CreateWindowExA(0, "CLCButtonClass", "", BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
+            SendMessage(hwndSelector, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Select a view mode"), 0);
+            hwndButton = CreateWindowEx(0, _T("CLCButtonClass"), _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
                             hwnd, (HMENU) IDC_CONFIGUREMODES, g_hInst, NULL);
-            SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)Translate("Setup view modes"), 0);
-            hwndButton = CreateWindowExA(0, "CLCButtonClass", "", BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
+            SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Setup view modes"), 0);
+            hwndButton = CreateWindowEx(0, _T("CLCButtonClass"), _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
                             hwnd, (HMENU) IDC_RESETMODES, g_hInst, NULL);
-            SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)Translate("Clear view mode and return to default display"), 0);
+            SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Clear view mode and return to default display"), 0);
             SendMessage(hwnd, WM_USER + 100, 0, 0);
             return FALSE;
         }
@@ -942,7 +942,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             if(g_CluiData.bFilterEffective)
                 SetWindowTextA(GetDlgItem(hwnd, IDC_SELECTMODE), g_CluiData.current_viewmode);
             else
-                SetWindowTextA(GetDlgItem(hwnd, IDC_SELECTMODE), "No view mode");
+                SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("No view mode"));
             break;
         case WM_ERASEBKGND:
         {
