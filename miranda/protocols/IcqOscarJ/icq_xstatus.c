@@ -44,8 +44,8 @@ static int bStatusMenu = 0;
 static HANDLE hHookExtraIconsRebuild = NULL;
 static HANDLE hHookStatusBuild = NULL;
 static HANDLE hHookExtraIconsApply = NULL;
-static HANDLE hXStatusIcons[29];
-static HANDLE hXStatusItems[30];
+static HANDLE hXStatusIcons[32];
+static HANDLE hXStatusItems[33];
 static HANDLE hXStatusRoot = 0;
 
 
@@ -101,7 +101,7 @@ HICON GetXStatusIcon(int bStatus)
   if (IconLibInstalled())
     return IconLibProcess(NULL, szTemp);
 
-  CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 29, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
+  CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
   icon = ImageList_ExtractIcon(NULL, CSImages, bStatus - 1);
   ImageList_Destroy(CSImages);
 
@@ -129,9 +129,9 @@ static int CListMW_ExtraIconsRebuild(WPARAM wParam, LPARAM lParam)
 
   if (gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
   {
-    CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 29, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
+    CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
     
-    for (i = 0; i < 29; i++) 
+    for (i = 0; i < 32; i++) 
     {
       HICON hXIcon = ImageList_ExtractIcon(NULL, CSImages, i);
       char szTemp[64];
@@ -155,7 +155,7 @@ static int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
   {
     DWORD bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
 
-    if (bXStatus > 0 && bXStatus < 30) 
+    if (bXStatus > 0 && bXStatus < 33) 
     {
       setContactExtraIcon((HANDLE)wParam, hXStatusIcons[bXStatus-1]);
     } 
@@ -206,7 +206,7 @@ void UninitXStatusEvents()
 
 
 
-const capstr capXStatus[29] = {
+const capstr capXStatus[32] = {
   {0x01, 0xD8, 0xD7, 0xEE, 0xAC, 0x3B, 0x49, 0x2A, 0xA5, 0x8D, 0xD3, 0xD8, 0x77, 0xE6, 0x6B, 0x92},
   {0x5A, 0x58, 0x1E, 0xA1, 0xE5, 0x80, 0x43, 0x0C, 0xA0, 0x6F, 0x61, 0x22, 0x98, 0xB7, 0xE4, 0xC7},
   {0x83, 0xC9, 0xB7, 0x8E, 0x77, 0xE7, 0x43, 0x78, 0xB2, 0xC5, 0xFB, 0x6C, 0xFC, 0xC3, 0x5B, 0xEC},
@@ -235,9 +235,12 @@ const capstr capXStatus[29] = {
   {0x10, 0x11, 0x17, 0xC9, 0xA3, 0xB0, 0x40, 0xF9, 0x81, 0xAC, 0x49, 0xE1, 0x59, 0xFB, 0xD5, 0xD4},
   {0x16, 0x0C, 0x60, 0xBB, 0xDD, 0x44, 0x43, 0xF3, 0x91, 0x40, 0x05, 0x0F, 0x00, 0xE6, 0xC0, 0x09},
   {0x64, 0x43, 0xC6, 0xAF, 0x22, 0x60, 0x45, 0x17, 0xB5, 0x8C, 0xD7, 0xDF, 0x8E, 0x29, 0x03, 0x52},
-  {0x16, 0xF5, 0xB7, 0x6F, 0xA9, 0xD2, 0x40, 0x35, 0x8C, 0xC5, 0xC0, 0x84, 0x70, 0x3C, 0x98, 0xFA}};
+  {0x16, 0xF5, 0xB7, 0x6F, 0xA9, 0xD2, 0x40, 0x35, 0x8C, 0xC5, 0xC0, 0x84, 0x70, 0x3C, 0x98, 0xFA},
+  {0x63, 0x14, 0x36, 0xff, 0x3f, 0x8a, 0x40, 0xd0, 0xa5, 0xcb, 0x7b, 0x66, 0xe0, 0x51, 0xb3, 0x64}, 
+  {0xb7, 0x08, 0x67, 0xf5, 0x38, 0x25, 0x43, 0x27, 0xa1, 0xff, 0xcf, 0x4c, 0xc1, 0x93, 0x97, 0x97},
+  {0xdd, 0xcf, 0x0e, 0xa9, 0x71, 0x95, 0x40, 0x48, 0xa9, 0xc6, 0x41, 0x32, 0x06, 0xd6, 0xf2, 0x80}};
 
-const char* nameXStatus[29] = {
+const char* nameXStatus[32] = {
   "Angry",
   "Duck",
   "Tired",
@@ -266,7 +269,11 @@ const char* nameXStatus[29] = {
   "Having fun",
   "Chit chatting",
   "Crashing",
-  "Going to toilet"};
+  "Going to toilet",
+  "Question",
+  "ProSieben",
+  "Loving"};
+
 
 void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
 {
@@ -278,7 +285,7 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
   {
     int i;
 
-    for (i = 0; i<29; i++)
+    for (i = 0; i<32; i++)
     {
       if (MatchCap(caps, capsize, (const capstr*)capXStatus[i], 0x10))
       {
@@ -764,7 +771,7 @@ void InitXStatusItems(BOOL bAllowStatus)
   char szItem[MAX_PATH + 64];
 
   BYTE bXStatus = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
-  HIMAGELIST CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 29, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
+  HIMAGELIST CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
 
   if (!gbXStatusEnabled) return;
 
@@ -837,13 +844,13 @@ void InitXStatusItems(BOOL bAllowStatus)
 
 void InitXStatusIcons()
 {
-  HIMAGELIST CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 29, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
+  HIMAGELIST CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
   char szSection[MAX_PATH + 64];
   int i;
   
   sprintf(szSection, ICQTranslate("%s/Custom Status"), gpszICQProtoName);
 
-  for (i = 0; i < 29; i++) 
+  for (i = 0; i < 32; i++) 
   {
     HICON hXIcon = ImageList_ExtractIcon(NULL, CSImages, i);
     char szTemp[64];
@@ -910,7 +917,7 @@ int IcqGetXStatusIcon(WPARAM wParam, LPARAM lParam)
   if (!wParam)
     wParam = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
 
-  if (wParam >= 1 && wParam <= 29)
+  if (wParam >= 1 && wParam <= 32)
   {
     HICON icon = GetXStatusIcon((BYTE)wParam);
 
@@ -930,7 +937,7 @@ int IcqGetXStatus(WPARAM wParam, LPARAM lParam)
 
   if (!icqOnline) return 0;
 
-  if (status < 1 || status > 29) status = 0;
+  if (status < 1 || status > 32) status = 0;
 
   if (wParam) *((char**)wParam) = DBSETTING_XSTATUSNAME;
   if (lParam) *((char**)lParam) = DBSETTING_XSTATUSMSG;
