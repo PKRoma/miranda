@@ -196,8 +196,6 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int MenuModulesLoaded(WPARAM wParam, LPARAM lParam);
-
 static int fnIconFromStatusMode( const char* szProto, int status, HANDLE hContact )
 {	return IconFromStatusMode( szProto, status, hContact, NULL );
 }
@@ -363,7 +361,6 @@ LBL_Error:
 	if (rc == 0)
 		rc = LoadCLCModule();
 	HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
-	HookEvent(ME_SYSTEM_MODULESLOADED, MenuModulesLoaded);
 	return rc;
 }
 

@@ -246,13 +246,20 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 					mi.cbSize = sizeof(mi);
 					mi.flags = CMIM_FLAGS|CMIM_NAME|CMIM_ICON;
 
-					if(protoMenus[i].hIcon)
+					if(protoMenus[i].hIcon) {
 						DestroyIcon(protoMenus[i].hIcon);
+						protoMenus[i].hIcon = 0;
+					}
 
 					if(xStatus > 0 && xStatus <= 29) {
-						mi.hIcon = ImageList_ExtractIcon(0, himlExtraImages, (int)xStatus + 3);
-						protoMenus[i].hIcon = mi.hIcon;
-						mi.pszName = xStatusNames_ansi[xStatus - 1];
+						char szServiceName[128];
+
+						mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", curprotocol->szName);
+						if(ServiceExists(szServiceName)) {
+							mi.hIcon = (HICON)CallProtoService(curprotocol->szName, "/GetXStatusIcon", 0, 0);	// get OWN xStatus icon (if set)
+							protoMenus[i].hIcon = mi.hIcon;
+							mi.pszName = xStatusNames_ansi[xStatus - 1];
+						}
 					}
 					else {
 						mi.pszName = "None";

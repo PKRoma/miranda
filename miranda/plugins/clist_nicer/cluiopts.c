@@ -386,7 +386,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						IcoLibReloadIcons();
 					else {
 						CLN_LoadAllIcons(0);
-						NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
+						MenuModulesLoaded(0, 0);
 						ReloadExtraIcons();
 					}
 					pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);

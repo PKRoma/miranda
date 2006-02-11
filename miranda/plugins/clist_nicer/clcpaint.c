@@ -469,7 +469,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	int scanIndex;
 
 	rowHeight -= g_CluiData.bRowSpacing;
-	savedCORNER = 0;
+	savedCORNER = -1;
 
 	if(group == NULL || contact == NULL)
 		return;
@@ -1098,7 +1098,7 @@ text:
 				if(av_rightwithnick) {
 					RECT rcAvatar = rcContent;
 
-					rcAvatar.left = rcContent.right - (g_CluiData.avatarSize);
+					rcAvatar.left = rcContent.right - (g_CluiData.avatarSize - 1);
 					DrawAvatar(hdcMem, &rcAvatar, contact, y, dat, iImage ? cstatus : 0, rowHeight);
 					rcContent.right -= (g_CluiData.avatarSize + 2);
 				}

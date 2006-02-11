@@ -634,9 +634,9 @@ void IcoLibReloadIcons()
 	g_CluiData.hIconInvisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_invisible");
 	g_CluiData.hIconChatactive = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_chatactive");
 	CacheClientIcons();
-	NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
 	ReloadExtraIcons();
 	pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+	MenuModulesLoaded(0, 0);
 	SendMessage(g_hwndViewModeFrame, WM_USER + 100, 0, 0);
 }
 
@@ -1038,6 +1038,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			HMENU hMenuButtonList = GetSubMenu(g_CluiData.hMenuButtons, 0);
 			DeleteMenu(hMenuButtonList, 0, MF_BYPOSITION);
 
+			MenuModulesLoaded(0, 0);
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			{
 				BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
@@ -2045,8 +2046,13 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 					if(g_CluiData.bShowXStatusOnSbar && status > ID_STATUS_OFFLINE && DBGetContactSettingByte(NULL, szProto, "XStatusEnabled", 0) && (xStatusID = DBGetContactSettingByte(NULL, szProto, "XStatusId", 0)) > 0) {
 						if(xStatusID > 0 && xStatusID <= 29) {
-							hIcon = ImageList_ExtractIcon(0, himlExtraImages, xStatusID +  3);
-							bDestroy = TRUE;
+							char szServiceName[128];
+
+							mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", pd->RealName);
+							if(ServiceExists(szServiceName)) {
+								hIcon = (HICON)CallProtoService(pd->RealName, "/GetXStatusIcon", 0, 0);	// get OWN xStatus icon (if set)
+								bDestroy = TRUE;
+							}
 						}
 					}
 					else if(status >= ID_STATUS_CONNECTING && status < ID_STATUS_OFFLINE) {
