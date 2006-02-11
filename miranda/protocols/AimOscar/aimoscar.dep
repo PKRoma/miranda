@@ -1,6 +1,7 @@
 # Microsoft Developer Studio Generated Dependency File, included by aimoscar.mak
 
 .\aim.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -13,6 +14,7 @@
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -22,6 +24,7 @@
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\file.h"\
+	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
@@ -29,9 +32,11 @@
 	".\snac.h"\
 	".\thread.h"\
 	".\utility.h"\
+	".\windows.h"\
 	
 
 .\commands.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -44,6 +49,7 @@
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -53,6 +59,7 @@
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\file.h"\
+	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
@@ -60,9 +67,11 @@
 	".\snac.h"\
 	".\thread.h"\
 	".\utility.h"\
+	".\windows.h"\
 	
 
 .\connection.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -75,6 +84,7 @@
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -84,6 +94,7 @@
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\file.h"\
+	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
@@ -91,9 +102,11 @@
 	".\snac.h"\
 	".\thread.h"\
 	".\utility.h"\
+	".\windows.h"\
 	
 
 .\direct_connect.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -106,6 +119,7 @@
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -115,6 +129,7 @@
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\file.h"\
+	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
@@ -122,9 +137,11 @@
 	".\snac.h"\
 	".\thread.h"\
 	".\utility.h"\
+	".\windows.h"\
 	
 
 .\file.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -137,6 +154,7 @@
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -146,6 +164,7 @@
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\file.h"\
+	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
@@ -153,6 +172,7 @@
 	".\snac.h"\
 	".\thread.h"\
 	".\utility.h"\
+	".\windows.h"\
 	
 
 .\md5.cpp : \
@@ -160,6 +180,7 @@
 	
 
 .\packets.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -172,6 +193,7 @@
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -181,6 +203,7 @@
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\file.h"\
+	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
@@ -188,9 +211,11 @@
 	".\snac.h"\
 	".\thread.h"\
 	".\utility.h"\
+	".\windows.h"\
 	
 
 .\proxy.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -203,6 +228,7 @@
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -212,6 +238,7 @@
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\file.h"\
+	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
@@ -219,9 +246,11 @@
 	".\snac.h"\
 	".\thread.h"\
 	".\utility.h"\
+	".\windows.h"\
 	
 
 .\services.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -234,6 +263,7 @@
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -243,6 +273,7 @@
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\file.h"\
+	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
@@ -250,9 +281,11 @@
 	".\snac.h"\
 	".\thread.h"\
 	".\utility.h"\
+	".\windows.h"\
 	
 
 .\snac.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -265,6 +298,7 @@
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -274,6 +308,7 @@
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\file.h"\
+	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
@@ -281,9 +316,11 @@
 	".\snac.h"\
 	".\thread.h"\
 	".\utility.h"\
+	".\windows.h"\
 	
 
 .\thread.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -296,6 +333,7 @@
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -305,6 +343,7 @@
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\file.h"\
+	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
@@ -312,9 +351,11 @@
 	".\snac.h"\
 	".\thread.h"\
 	".\utility.h"\
+	".\windows.h"\
 	
 
 .\utility.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -327,6 +368,7 @@
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -336,6 +378,7 @@
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\file.h"\
+	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
@@ -343,8 +386,51 @@
 	".\snac.h"\
 	".\thread.h"\
 	".\utility.h"\
+	".\windows.h"\
+	
+
+.\windows.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\file.h"\
+	".\m_cluiframes.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\thread.h"\
+	".\utility.h"\
+	".\windows.h"\
 	
 
 .\aim.rc : \
+	".\icons\admin.ico"\
+	".\icons\aol.ico"\
+	".\icons\bot.ico"\
+	".\icons\confirmed.ico"\
+	".\icons\hiptop.ico"\
+	".\icons\icq.ico"\
 	".\icons\oscar.ico"\
+	".\icons\unconfirmed.ico"\
 	

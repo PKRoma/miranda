@@ -53,6 +53,7 @@ CLEAN :
 	-@erase "$(INTDIR)\utility.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\windows.obj"
 	-@erase "$(OUTDIR)\AimOSCAR.exp"
 	-@erase "$(OUTDIR)\AimOSCAR.lib"
 	-@erase "$(OUTDIR)\AimOSCAR.map"
@@ -84,7 +85,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\snac.obj" \
 	"$(INTDIR)\thread.obj" \
 	"$(INTDIR)\utility.obj" \
-	"$(INTDIR)\aim.res"
+	"$(INTDIR)\aim.res" \
+	"$(INTDIR)\windows.obj"
 
 "..\..\bin\release\plugins\AimOSCAR.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -130,6 +132,8 @@ CLEAN :
 	-@erase "$(INTDIR)\utility.sbr"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\windows.obj"
+	-@erase "$(INTDIR)\windows.sbr"
 	-@erase "$(OUTDIR)\aimoscar.bsc"
 	-@erase "$(OUTDIR)\AimOSCAR.exp"
 	-@erase "$(OUTDIR)\AimOSCAR.lib"
@@ -157,7 +161,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\services.sbr" \
 	"$(INTDIR)\snac.sbr" \
 	"$(INTDIR)\thread.sbr" \
-	"$(INTDIR)\utility.sbr"
+	"$(INTDIR)\utility.sbr" \
+	"$(INTDIR)\windows.sbr"
 
 "$(OUTDIR)\aimoscar.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -179,7 +184,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\snac.obj" \
 	"$(INTDIR)\thread.obj" \
 	"$(INTDIR)\utility.obj" \
-	"$(INTDIR)\aim.res"
+	"$(INTDIR)\aim.res" \
+	"$(INTDIR)\windows.obj"
 
 "..\..\bin\debug\plugins\AimOSCAR.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -417,6 +423,22 @@ SOURCE=.\utility.cpp
 
 
 "$(INTDIR)\utility.obj"	"$(INTDIR)\utility.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ENDIF 
+
+SOURCE=.\windows.cpp
+
+!IF  "$(CFG)" == "aim - Win32 Release"
+
+
+"$(INTDIR)\windows.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "aim - Win32 Debug"
+
+
+"$(INTDIR)\windows.obj"	"$(INTDIR)\windows.sbr" : $(SOURCE) "$(INTDIR)"
 
 
 !ENDIF 

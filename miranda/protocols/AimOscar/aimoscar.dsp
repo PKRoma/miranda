@@ -139,6 +139,10 @@ SOURCE=.\thread.cpp
 
 SOURCE=.\utility.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\windows.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -198,6 +202,10 @@ SOURCE=.\thread.h
 # Begin Source File
 
 SOURCE=.\utility.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\windows.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
