@@ -44,6 +44,8 @@ extern int GroupNameExistsUtf(const char *name,int skipGroup);
 
 BOOL bIsSyncingCL = FALSE;
 
+static HANDLE HContactFromRecordName(char* szRecordName, int *bAdded);
+
 static void handleServerCListAck(servlistcookie* sc, WORD wError);
 static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, serverthread_info *info);
 static void handleRecvAuthRequest(unsigned char *buf, WORD wLen);
@@ -194,28 +196,35 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
       unpackWord(&pBuffer, &wNameLen);
       if (wBufferLength >= 10 + wNameLen)
       {
+        HANDLE hContact;
+
         unpackString(&pBuffer, szUID, wNameLen);
         szUID[wNameLen] = '\0';
         wBufferLength -= 10 + wNameLen;
         unpackWord(&pBuffer, &wGroupId);
         unpackWord(&pBuffer, &wItemId);
         unpackWord(&pBuffer, &wItemType);
-        if (IsStringUIN(szUID) && wItemType == SSI_ITEM_BUDDY)
-        { // a contact was removed from our list
-          DWORD dwUIN = atoi(szUID);
-          HANDLE hContact = HContactFromUIN(dwUIN, NULL);
+        hContact = HContactFromRecordName(szUID, NULL);
 
-          if (hContact)
+        if (hContact != INVALID_HANDLE_VALUE && wItemType == SSI_ITEM_BUDDY)
+        { // a contact was removed from our list
+          ICQDeleteContactSetting(hContact, "ServerId");
+          ICQDeleteContactSetting(hContact, "SrvGroupId");
+          ICQDeleteContactSetting(hContact, "Auth");
+          icq_sendNewContact(0, szUID); // add to CS to see him
           {
-            ICQDeleteContactSetting(hContact, "ServerId");
-            ICQDeleteContactSetting(hContact, "SrvGroupId");
-            icq_sendNewContact(dwUIN, NULL); // add to CS to see him
-            icq_LogMessage(LOG_WARNING, "User was removed from server list.");
+            char str[MAX_PATH];
+            char msg[MAX_PATH];
+            char *nick = NickFromHandleUtf(hContact);
+
+            null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("User \"%s\" was removed from server list.", msg), nick);
+            icq_LogMessage(LOG_WARNING, str);
+            SAFE_FREE(&nick);
           }
         }
       }
     }
-    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x0A, "User removed from our contact list");
+    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x0A, "Server removed something from our list");
     break;
 
   case ICQ_LISTS_ADDTOLIST:
