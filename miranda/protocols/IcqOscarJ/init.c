@@ -484,13 +484,15 @@ static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam)
   mi.cbSize = sizeof(mi);
 
   mi.flags = CMIM_FLAGS | CMIM_ICON;
-  mi.hIcon = IconLibProcess(NULL, "req_auth");
 
+  mi.hIcon = IconLibProcess(NULL, "req_auth");
   CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuAuth, (LPARAM)&mi);
 
   mi.hIcon = IconLibProcess(NULL, "grant_auth");
-
   CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuGrant, (LPARAM)&mi);
+
+  mi.hIcon = IconLibProcess(NULL, "revoke_auth");
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuRevoke, (LPARAM)&mi);
 
   ChangedIconsXStatus();
 

@@ -73,6 +73,7 @@ void DeleteFromCache(HANDLE hContact);
 HANDLE HContactFromUIN(DWORD dwUin, int *Added);
 HANDLE HContactFromUID(DWORD dwUIN, char *pszUID, int *Added);
 char *NickFromHandle(HANDLE hContact);
+char *NickFromHandleUtf(HANDLE hContact);
 char *strUID(DWORD dwUIN, char *pszUID);
 void SetContactHidden(HANDLE hContact, BYTE bHidden);
 

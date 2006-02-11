@@ -41,12 +41,12 @@
 extern void setUserInfo();
 
 static int bStatusMenu = 0;
+static int bXStatusMenuBuilt = 0;
 static HANDLE hHookExtraIconsRebuild = NULL;
 static HANDLE hHookStatusBuild = NULL;
 static HANDLE hHookExtraIconsApply = NULL;
 static HANDLE hXStatusIcons[32];
 static HANDLE hXStatusItems[33];
-static HANDLE hXStatusRoot = 0;
 
 
 
@@ -762,18 +762,20 @@ static int menuXStatus29(WPARAM wParam,LPARAM lParam)
 
 
 
-
 void InitXStatusItems(BOOL bAllowStatus)
 {
   CLISTMENUITEM mi;
   int i = 0;
   char srvFce[MAX_PATH + 64];
   char szItem[MAX_PATH + 64];
+  HANDLE hXStatusRoot;
 
   BYTE bXStatus = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
   HIMAGELIST CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
 
   if (!gbXStatusEnabled) return;
+
+  if (bStatusMenu && !bAllowStatus) return;
 
   null_snprintf(szItem, sizeof(szItem), ICQTranslate("%s Custom Status"), gpszICQProtoName);
   mi.cbSize = sizeof(mi);
@@ -792,38 +794,41 @@ void InitXStatusItems(BOOL bAllowStatus)
     mi.hIcon = IconLibProcess(hIIcon, szTemp);
     mi.position++;
 
-    switch(i) 
+    if (!bXStatusMenuBuilt)
     {
-      case 0: CreateServiceFunction(srvFce, menuXStatus0); break;
-      case 1: CreateServiceFunction(srvFce, menuXStatus1); break;
-      case 2: CreateServiceFunction(srvFce, menuXStatus2); break;
-      case 3: CreateServiceFunction(srvFce, menuXStatus3); break;
-      case 4: CreateServiceFunction(srvFce, menuXStatus4); break;
-      case 5: CreateServiceFunction(srvFce, menuXStatus5); break;
-      case 6: CreateServiceFunction(srvFce, menuXStatus6); break;
-      case 7: CreateServiceFunction(srvFce, menuXStatus7); break;
-      case 8: CreateServiceFunction(srvFce, menuXStatus8); break;
-      case 9: CreateServiceFunction(srvFce, menuXStatus9); break;
-      case 10: CreateServiceFunction(srvFce, menuXStatus10); break;
-      case 11: CreateServiceFunction(srvFce, menuXStatus11); break;
-      case 12: CreateServiceFunction(srvFce, menuXStatus12); break;
-      case 13: CreateServiceFunction(srvFce, menuXStatus13); break;
-      case 14: CreateServiceFunction(srvFce, menuXStatus14); break;
-      case 15: CreateServiceFunction(srvFce, menuXStatus15); break;
-      case 16: CreateServiceFunction(srvFce, menuXStatus16); break;
-      case 17: CreateServiceFunction(srvFce, menuXStatus17); break;
-      case 18: CreateServiceFunction(srvFce, menuXStatus18); break;
-      case 19: CreateServiceFunction(srvFce, menuXStatus19); break;
-      case 20: CreateServiceFunction(srvFce, menuXStatus20); break;
-      case 21: CreateServiceFunction(srvFce, menuXStatus21); break;
-      case 22: CreateServiceFunction(srvFce, menuXStatus22); break;
-      case 23: CreateServiceFunction(srvFce, menuXStatus23); break;
-      case 24: CreateServiceFunction(srvFce, menuXStatus24); break;
-      case 25: CreateServiceFunction(srvFce, menuXStatus25); break;
-      case 26: CreateServiceFunction(srvFce, menuXStatus26); break;
-      case 27: CreateServiceFunction(srvFce, menuXStatus27); break;
-      case 28: CreateServiceFunction(srvFce, menuXStatus28); break;
-      case 29: CreateServiceFunction(srvFce, menuXStatus29); break;
+      switch(i) 
+      {
+        case 0: CreateServiceFunction(srvFce, menuXStatus0); break;
+        case 1: CreateServiceFunction(srvFce, menuXStatus1); break;
+        case 2: CreateServiceFunction(srvFce, menuXStatus2); break;
+        case 3: CreateServiceFunction(srvFce, menuXStatus3); break;
+        case 4: CreateServiceFunction(srvFce, menuXStatus4); break;
+        case 5: CreateServiceFunction(srvFce, menuXStatus5); break;
+        case 6: CreateServiceFunction(srvFce, menuXStatus6); break;
+        case 7: CreateServiceFunction(srvFce, menuXStatus7); break;
+        case 8: CreateServiceFunction(srvFce, menuXStatus8); break;
+        case 9: CreateServiceFunction(srvFce, menuXStatus9); break;
+        case 10: CreateServiceFunction(srvFce, menuXStatus10); break;
+        case 11: CreateServiceFunction(srvFce, menuXStatus11); break;
+        case 12: CreateServiceFunction(srvFce, menuXStatus12); break;
+        case 13: CreateServiceFunction(srvFce, menuXStatus13); break;
+        case 14: CreateServiceFunction(srvFce, menuXStatus14); break;
+        case 15: CreateServiceFunction(srvFce, menuXStatus15); break;
+        case 16: CreateServiceFunction(srvFce, menuXStatus16); break;
+        case 17: CreateServiceFunction(srvFce, menuXStatus17); break;
+        case 18: CreateServiceFunction(srvFce, menuXStatus18); break;
+        case 19: CreateServiceFunction(srvFce, menuXStatus19); break;
+        case 20: CreateServiceFunction(srvFce, menuXStatus20); break;
+        case 21: CreateServiceFunction(srvFce, menuXStatus21); break;
+        case 22: CreateServiceFunction(srvFce, menuXStatus22); break;
+        case 23: CreateServiceFunction(srvFce, menuXStatus23); break;
+        case 24: CreateServiceFunction(srvFce, menuXStatus24); break;
+        case 25: CreateServiceFunction(srvFce, menuXStatus25); break;
+        case 26: CreateServiceFunction(srvFce, menuXStatus26); break;
+        case 27: CreateServiceFunction(srvFce, menuXStatus27); break;
+        case 28: CreateServiceFunction(srvFce, menuXStatus28); break;
+        case 29: CreateServiceFunction(srvFce, menuXStatus29); break;
+      }
     }
 
     mi.flags = bXStatus == i?CMIF_CHECKED:0;
@@ -831,13 +836,15 @@ void InitXStatusItems(BOOL bAllowStatus)
     mi.pszService = srvFce;
     mi.pszContactOwner = gpszICQProtoName;
 
-    if (bStatusMenu && bAllowStatus)
+    if (bStatusMenu)
       hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hXStatusRoot, (LPARAM)&mi);
-    else if (!bStatusMenu)
+    else
       hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
     if (i) DestroyIcon(hIIcon);
   }
   ImageList_Destroy(CSImages);
+
+  bXStatusMenuBuilt = 1;
 }
 
 
@@ -861,6 +868,9 @@ void InitXStatusIcons()
   }
 
   ImageList_Destroy(CSImages);
+
+  if (bXStatusMenuBuilt)
+    ChangedIconsXStatus();
 }
 
 

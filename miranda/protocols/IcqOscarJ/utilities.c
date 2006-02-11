@@ -679,9 +679,27 @@ HANDLE HContactFromUID(DWORD dwUIN, char* pszUID, int *Added)
 char *NickFromHandle(HANDLE hContact)
 {
   if (hContact == INVALID_HANDLE_VALUE)
-    return null_strdup("<invalid>");
+    return null_strdup(ICQTranslate("<invalid>"));
 
   return null_strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+}
+
+
+
+char *NickFromHandleUtf(HANDLE hContact)
+{
+  if (hContact == INVALID_HANDLE_VALUE)
+    return ICQTranslateUtf("<invalid>");
+
+  if (gbUnicodeCore)
+    return make_utf8_string((wchar_t*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_UNICODE));
+  else
+  {
+    unsigned char *utf = NULL;
+
+    utf8_encode((char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0), &utf);
+    return utf;
+  }
 }
 
 
@@ -1599,18 +1617,11 @@ char* GetWindowTextUtf(HWND hWnd)
   else
   {
     char* szAnsi;
-    char* szUtf;
     int nLen = GetWindowTextLengthA(hWnd);
 
     szAnsi = (char*)_alloca(nLen+2);
     GetWindowTextA(hWnd, szAnsi, nLen + 1);
-    if (strlennull(szAnsi))
-    {
-      utf8_encode(szAnsi, &szUtf);
-      return szUtf;
-    }
-    else
-      return null_strdup("");
+    return ansi_to_utf8(szAnsi);
   }
 }
 
@@ -1719,14 +1730,14 @@ HWND DialogBoxUtf(BOOL bModal, HINSTANCE hInstance, const char* szTemplate, HWND
   if (gbUnicodeAPI)
   {
     if (bModal)
-      return DialogBoxParamW(hInstance, (LPCWSTR)szTemplate, hWndParent, lpDialogFunc, dwInitParam);
+      return (HANDLE)DialogBoxParamW(hInstance, (LPCWSTR)szTemplate, hWndParent, lpDialogFunc, dwInitParam);
     else
       return CreateDialogParamW(hInstance, (LPCWSTR)szTemplate, hWndParent, lpDialogFunc, dwInitParam);
   }
   else
   {
     if (bModal)
-      return DialogBoxParamA(hInstance, szTemplate, hWndParent, lpDialogFunc, dwInitParam);
+      return (HANDLE)DialogBoxParamA(hInstance, szTemplate, hWndParent, lpDialogFunc, dwInitParam);
     else
       return CreateDialogParamA(hInstance, szTemplate, hWndParent, lpDialogFunc, dwInitParam);
   }

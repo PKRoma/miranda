@@ -70,7 +70,7 @@
 #define DEFAULT_KILLSPAM_ENABLED    1
 
 #define DEFAULT_SLOWSEND            1
-#define DEFAULT_ONLYSERVERACKS      1
+#define DEFAULT_ONLYSERVERACKS      0
 
 #define DEFAULT_POPUPS_ENABLED      1
 #define DEFAULT_SPAM_POPUPS_ENABLED 1
@@ -192,8 +192,8 @@
 // Internal Message types
 #define MTYPE_UNKNOWN               0x00 // Unknown message
 
-#define MTYPE_GREETINGCARD          0x101 // Request for Contacts
-#define MTYPE_REQUESTCONTACTS       0x102 // Greeting Card
+#define MTYPE_GREETINGCARD          0x101 // Greeting Card
+#define MTYPE_REQUESTCONTACTS       0x102 // Request for Contacts
 #define MTYPE_MESSAGE               0x103 // Message+
 #define MTYPE_STATUSMSGEXT          0x104 // StatusMsgExt (2003b)
 #define MTYPE_SCRIPT_INVITATION     0x201 // Xtraz Invitation
@@ -335,7 +335,7 @@
 #define ICQ_LISTS_CLI_MODIFYEND     0x0012
 #define ICQ_LISTS_GRANTAUTH         0x0014
 #define ICQ_LISTS_AUTHGRANTED       0x0015
-#define ICQ_LISTS_REMOVEYOURSELF    0x0016
+#define ICQ_LISTS_REVOKEAUTH        0x0016
 #define ICQ_LISTS_REQUESTAUTH       0x0018
 #define ICQ_LISTS_AUTHREQUEST       0x0019
 #define ICQ_LISTS_CLI_AUTHRESPONSE  0x001A

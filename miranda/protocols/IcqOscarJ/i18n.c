@@ -313,6 +313,22 @@ int utf8_encode(const char *from, char **to)
 
 
 
+char *ansi_to_utf8(const char *szAnsi)
+{
+  char *szUtf;
+
+  if (strlennull(szAnsi))
+  {
+    utf8_encode(szAnsi, &szUtf);
+
+    return szUtf;
+  }
+  else
+    return null_strdup("");
+}
+
+
+
 // Returns 0 on error, 1 on success
 int utf8_decode(const char *from, char **to)
 {

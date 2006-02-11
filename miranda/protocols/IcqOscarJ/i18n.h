@@ -47,6 +47,7 @@ wchar_t *make_unicode_string(const unsigned char *utf8);
 unsigned char *make_utf8_string(const wchar_t *unicode);
 
 int utf8_encode(const char *from, char **to);
+char *ansi_to_utf8(const char *szAnsi);
 int utf8_decode(const char *from, char **to);
 int utf8_decode_static(const char *from, char *to, int to_size);
 

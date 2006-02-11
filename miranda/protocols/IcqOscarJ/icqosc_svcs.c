@@ -457,8 +457,7 @@ int IcqSetAwayMsg(WPARAM wParam, LPARAM lParam)
   }
 
   // Prepare UTF-8 status message
-  if (lParam)
-    utf8_encode((char*)lParam, &szNewUtf);
+  szNewUtf = ansi_to_utf8((char*)lParam);
 
   if (strcmpnull(szNewUtf, *ppszMsg))
   {
@@ -481,32 +480,41 @@ int IcqSetAwayMsg(WPARAM wParam, LPARAM lParam)
 
 
 
+static HANDLE HContactFromAuthEvent(WPARAM hEvent)
+{
+  DBEVENTINFO dbei;
+  DWORD body[2];
+
+  ZeroMemory(&dbei, sizeof(dbei));
+  dbei.cbSize = sizeof(dbei);
+  dbei.cbBlob = sizeof(DWORD)*2;
+  dbei.pBlob = (PBYTE)&body;
+
+  if (CallService(MS_DB_EVENT_GET, hEvent, (LPARAM)&dbei))
+    return INVALID_HANDLE_VALUE;
+
+  if (dbei.eventType != EVENTTYPE_AUTHREQUEST)
+    return INVALID_HANDLE_VALUE;
+
+  if (strcmpnull(dbei.szModule, gpszICQProtoName))
+    return INVALID_HANDLE_VALUE;
+
+  return (HANDLE)body[1]; // this is bad - needs new auth system
+}
+
+
+
 int IcqAuthAllow(WPARAM wParam, LPARAM lParam)
 {
   if (icqOnline && wParam)
   {
-    DBEVENTINFO dbei;
-    DWORD body[2];
     DWORD uin;
     uid_str uid;
     HANDLE hContact;
 
-
-    ZeroMemory(&dbei, sizeof(dbei));
-    dbei.cbSize = sizeof(dbei);
-    dbei.cbBlob = sizeof(DWORD)*2;
-    dbei.pBlob = (PBYTE)&body;
-
-    if (CallService(MS_DB_EVENT_GET, wParam, (LPARAM)&dbei))
+    hContact = HContactFromAuthEvent(wParam);
+    if (hContact == INVALID_HANDLE_VALUE)
       return 1;
-
-    if (dbei.eventType != EVENTTYPE_AUTHREQUEST)
-      return 1;
-
-    if (strcmpnull(dbei.szModule, gpszICQProtoName))
-      return 1;
-
-    hContact = (HANDLE)body[1]; // this is bad - needs new auth system
 
     if (ICQGetContactSettingUID(hContact, &uin, &uid))
       return 1;
@@ -525,28 +533,14 @@ int IcqAuthDeny(WPARAM wParam, LPARAM lParam)
 {
   if (icqOnline && wParam)
   {
-    DBEVENTINFO dbei;
-    DWORD body[2];
     DWORD uin;
     uid_str uid;
     HANDLE hContact;
 
 
-    ZeroMemory(&dbei, sizeof(dbei));
-    dbei.cbSize = sizeof(dbei);
-    dbei.cbBlob = sizeof(DWORD)*2;
-    dbei.pBlob = (PBYTE)&body;
-
-    if (CallService(MS_DB_EVENT_GET, wParam, (LPARAM)&dbei))
+    hContact = HContactFromAuthEvent(wParam);
+    if (hContact == INVALID_HANDLE_VALUE)
       return 1;
-
-    if (dbei.eventType != EVENTTYPE_AUTHREQUEST)
-      return 1;
-
-    if (strcmpnull(dbei.szModule, gpszICQProtoName))
-      return 1;
-
-    hContact = (HANDLE)body[1]; // this is bad - needs new auth system
 
     if (ICQGetContactSettingUID(hContact, &uin, &uid))
       return 1;
@@ -1892,9 +1886,9 @@ int IcqSendAuthRequest(WPARAM wParam, LPARAM lParam)
       if (dwUin && ccs->lParam)
       {
         char *text = (char *)ccs->lParam;
-        char *utf = NULL;
+        char *utf;
 
-        utf8_encode(text, &utf); // Miranda is ANSI only here
+        utf = ansi_to_utf8(text); // Miranda is ANSI only here
 
         icq_sendAuthReqServ(dwUin, szUid, utf);
 

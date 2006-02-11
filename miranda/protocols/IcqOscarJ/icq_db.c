@@ -146,14 +146,7 @@ char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* 
     if (DBGetContactSetting(hContact, szModule, szSetting, &dbv))
       return null_strdup(szDef);
 
-    if (strlennull(dbv.pszVal))
-    {
-      int nResult;
-
-      nResult = utf8_encode(dbv.pszVal, &szRes);
-    }
-    else 
-      szRes = null_strdup("");
+    szRes = ansi_to_utf8(dbv.pszVal);
 
     ICQFreeVariant(&dbv);
   }

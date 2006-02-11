@@ -1229,7 +1229,7 @@ DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 
     dwCookie = GenerateCookie(0);
 
-    packServIcqExtensionHeader(&packet, (WORD)(wBufferLen + 27), 0x07D0, (WORD)dwCookie);
+    packServIcqExtensionHeader(&packet, (WORD)(wBufferLen + 27), CLI_META_INFO_REQ, (WORD)dwCookie);
     packWord(&packet, 0x8214);     /* send sms */
     packWord(&packet, 1);
     packWord(&packet, 0x16);
@@ -1381,7 +1381,7 @@ void icq_sendEntireVisInvisList(int list)
 
 void icq_sendRevokeAuthServ(DWORD dwUin, char *szUid)
 {
-  icq_sendGenericContact(dwUin, szUid, ICQ_LISTS_FAMILY, ICQ_LISTS_REMOVEYOURSELF);
+  icq_sendGenericContact(dwUin, szUid, ICQ_LISTS_FAMILY, ICQ_LISTS_REVOKEAUTH);
 }
 
 
@@ -1396,17 +1396,8 @@ void icq_sendGrantAuthServ(DWORD dwUin, char *szUid, char *szMsg)
   nUinlen = getUIDLen(dwUin, szUid);
 
   // Prepare custom utf-8 message
-  if (strlennull(szMsg) > 0)
-  {
-    int nResult;
-
-    nResult = utf8_encode(szMsg, &szUtfMsg);
-    nMsglen = strlennull(szUtfMsg);
-  }
-  else
-  {
-    nMsglen = 0;
-  }
+  szUtfMsg = ansi_to_utf8(szMsg);
+  nMsglen = strlennull(szUtfMsg);
 
   serverPacketInit(&packet, (WORD)(15 + nUinlen + nMsglen));
   packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_GRANTAUTH);
@@ -1451,17 +1442,8 @@ void icq_sendAuthResponseServ(DWORD dwUin, char* szUid, int auth, char *szReason
   nUinlen = getUIDLen(dwUin, szUid);
 
   // Prepare custom utf-8 reason
-  if (strlennull(szReason) > 0)
-  {
-    int nResult;
-
-    nResult = utf8_encode(szReason, &szUtfReason);
-    nReasonlen = strlennull(szUtfReason);
-  }
-  else
-  {
-    nReasonlen = 0;
-  }
+  szUtfReason = ansi_to_utf8(szReason);
+  nReasonlen = strlennull(szUtfReason);
 
   serverPacketInit(&p, (WORD)(16 + nUinlen + nReasonlen));
   packFNACHeader(&p, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_AUTHRESPONSE);
