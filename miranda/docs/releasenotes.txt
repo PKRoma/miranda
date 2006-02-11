@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             May 2005 (v0.4.0.1)
+                          February 2006 (v0.4.0.3)
 
                           http://www.miranda-im.org
 
@@ -23,11 +23,26 @@ Contents
 1. New in this version
 ----------------------
 
-This section lists some of the changes between different releases. We have tried
-to list all the important ones without getting too technical. 
+Miranda IM v0.4.0.3 is a bugfix release. It only fixes one, but rather
+important, issue with the ICQ plugin. All users of Miranda IM v4.0.2
+or earlier who use the ICQ protocol are recommended to install this update.
 
-If you want to see the full changelogs, go here:
-http://files.miranda-im.org/builds/ChangeLog
+
+This following section lists some of the changes between different
+releases. We have tried to list all the important ones without getting
+too technical. 
+
+
+
+* New in 0.4.0.3
+Bugfixes:
+ - ICQ: Fixed problem with sending and receiving messages.
+
+
+* New in 0.4.0.2
+Bugfixes:
+ - AIM protocol uses TOC2 (TOC1 blocked by AOL)
+
 
 * New in 0.4.0.1
 Bugfixes:
@@ -418,8 +433,8 @@ Run the installer and follow the instructions.
 3. General Notes
 ----------------
 
-Unlock the power of your new Miranda IM with plugins! There are now more
-than 200 plugins available as free downloads:
+Unlock the power of your new Miranda IM with plugins! There are now around
+500 plugins available as free downloads:
 http://www.miranda-im.org/download/index.php
 
 
@@ -474,21 +489,21 @@ c) Plugins
 6. Contact
 ----------
 
-a) Webpage 
+a) Webpage
 
 The official webpage for the Miranda IM project is www.miranda-im.org.
 
+If you wish to contact the project team with a non-support issue, please
+visit the webpage for contact details. Due to spam problems the contact
+e-email may change frequently.
+
 b) Authors
 
-Martin Öberg		 - Project Manager / Developer
-			   strickz at miranda-im.org
+Martin Öberg		 - Project Manager
+			   E-mail: martin.oberg at miranda-im.org
 Robert Rainwater	 - Developer
-			   rainwater at miranda-im.org
 Sam			 - Developer
-			   egodust at miranda-im.org
 Lyon Lymliz		 - Webmaster
-			   lynlimz at miranda-im.org
-Santithorn Bunchua	 - Jabber developer
 George Hazan		 - MSN developer
 Jörgen Persson		 - IRC developer
 
@@ -525,8 +540,9 @@ will increase.
 Miranda IM is released under the terms of the GNU General Public License. See
 "License.txt" for more details.
 
-Miranda IM is copyright 2000-2003 by Richard Hughes, Roland Rabien,
-Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari, and Lyon Lim.
+Miranda IM is copyright 2000-2006 by Richard Hughes, Roland Rabien,
+Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari, Lyon Lim and
+George Hazan.
 
 The plugins included with this release is copyrighted by their authors. See the
 documentation for each plugin for more information.
