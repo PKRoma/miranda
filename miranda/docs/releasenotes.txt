@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             January 2006 (v0.4.0.2)
+                          February 2006 (v0.4.0.3)
 
                           http://www.miranda-im.org
 
@@ -23,11 +23,21 @@ Contents
 1. New in this version
 ----------------------
 
-This section lists some of the changes between different releases. We have tried
-to list all the important ones without getting too technical. 
+Miranda IM v0.4.0.3 is a bugfix release. It only fixes one, but rather
+important, issue with the ICQ plugin. All users of Miranda IM v4.0.2
+or earlier who use the ICQ protocol are recommended to install this update.
 
-If you want to see the full changelogs, go here:
-http://files.miranda-im.org/builds/ChangeLog
+
+This following section lists some of the changes between different
+releases. We have tried to list all the important ones without getting
+too technical. 
+
+
+
+* New in 0.4.0.3
+Bugfixes:
+ - ICQ: Fixed problem with sending and receiving messages.
+
 
 * New in 0.4.0.2
 Bugfixes:
@@ -479,14 +489,18 @@ c) Plugins
 6. Contact
 ----------
 
-a) Webpage 
+a) Webpage
 
 The official webpage for the Miranda IM project is www.miranda-im.org.
 
+If you wish to contact the project team with a non-support issue, please
+visit the webpage for contact details. Due to spam problems the contact
+e-email may change frequently.
+
 b) Authors
 
-Martin Öberg		 - Project Manager / Developer
-			   martin.oberg at miranda-im.org
+Martin Öberg		 - Project Manager
+			   E-mail: martin.oberg at miranda-im.org
 Robert Rainwater	 - Developer
 Sam			 - Developer
 Lyon Lymliz		 - Webmaster
