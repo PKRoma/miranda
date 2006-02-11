@@ -590,7 +590,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			lvi.iItem = 0;
 			for ( i=0;;i++ ) {
 				wsprintfA( idstr, "Phone%d", i );
-				if ( DBGetContactSetting( NULL, jabberProtoName, idstr, &dbv )) break;
+				if ( DBGetContactSettingTString( NULL, jabberProtoName, idstr, &dbv )) break;
 				wsprintf( number, _T("%d"), i+1 );
 				lvi.pszText = number;
 				lvi.lParam = ( LPARAM )i;
