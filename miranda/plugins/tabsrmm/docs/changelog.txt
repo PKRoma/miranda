@@ -15,7 +15,13 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
+Version 0.9.9.99(3 - nightly build #47) - 2006/02/xx
 
+		+ added hotkey (CTRL-n) for sending a MSN nudge. Requires recent version of MSN plugin
+
+		* remmoved own copy of xStatus icons from tabSRMM. It is now using the ICQJ XStatus 
+		  API to get the icon (works only with recent versions of ICQJ).
+		  
 Version 0.9.9.99(2 - nightly build #46) - 2006/01/20
 
 		+ enabled the send menu entry to force a "timeout less" sending mode. The option can

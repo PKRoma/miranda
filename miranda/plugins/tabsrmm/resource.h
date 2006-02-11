@@ -6,9 +6,6 @@
 #define IDD_USERPREFS                   2
 #define IDD_TABCONFIG                   4
 #define IDD_VARIABLEHELP                5
-#define IDB_BITMAP1                     6
-#define IDB_XSTATUS                     6
-#define IDD_DIALOG1                     7
 #define IDD_ABOUT                       7
 #define IDD_FIRSTTIME                   8
 #define IDR_CONTEXT                     180

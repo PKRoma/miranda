@@ -2109,10 +2109,16 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             HFONT hOldFont = 0;
             
             if(dat->xStatus > 0 && dat->xStatus <= 24) {
-                HICON xIcon = ImageList_ExtractIcon(NULL, myGlobals.g_xIcons, dat->xStatus - 1);
-                DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, xIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
-                DestroyIcon(xIcon);
-                dis->rcItem.left += 21;
+				char szServiceName[128];
+				HICON xIcon;
+
+				mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+
+				if(ServiceExists(szServiceName) && ((xIcon = (HICON)CallProtoService(dat->bIsMeta ? dat->szMetaProto : dat->szProto, "/GetXStatusIcon", dat->xStatus, 0)) != 0)) {
+					DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, xIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
+					DestroyIcon(xIcon);
+					dis->rcItem.left += 21;
+				}
             }
             if(myGlobals.ipConfig.isValid) {
                 hOldFont = SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_NICK]);

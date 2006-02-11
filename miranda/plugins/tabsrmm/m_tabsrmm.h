@@ -408,7 +408,6 @@ typedef struct _globals {
     int  g_wantSnapping;
     HICON g_buttonBarIcons[NR_BUTTONBARICONS];
     HICON g_sideBarIcons[NR_SIDEBARICONS];
-    HIMAGELIST g_xIcons;
     int iSendJobCurrent;
     // dynamic options, need reload when options change
     int m_SmileyPluginEnabled;
