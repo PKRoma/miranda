@@ -894,6 +894,7 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 			ft->std.totalBytes += statbuf.st_size;
 	}	}
 
+	ft->std.currentFile = _strdup( files[0] );
 	ft->szDescription = _strdup(( char* )ccs->wParam );
 	ft->jid = _strdup( dbv.pszVal );
 	JFreeVariant( &dbv );
