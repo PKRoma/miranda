@@ -890,7 +890,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
         protoMenus[0].menuID = -1;
         protoMenus[0].protoName[49] = 0;
     }
-    NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
+    //NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
     {
         for (j = 0; j<sizeof(statusModeList)/sizeof(statusModeList[0]);j++) {
             for (i=0;i<protoCount;i++) {

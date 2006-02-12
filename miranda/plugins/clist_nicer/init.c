@@ -361,6 +361,7 @@ LBL_Error:
 	if (rc == 0)
 		rc = LoadCLCModule();
 	HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
+	HookEvent(ME_SYSTEM_MODULESLOADED, MenuModulesLoaded);
 	return rc;
 }
 

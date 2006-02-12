@@ -637,6 +637,7 @@ void IcoLibReloadIcons()
 	ReloadExtraIcons();
 	pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 	MenuModulesLoaded(0, 0);
+    NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
 	SendMessage(g_hwndViewModeFrame, WM_USER + 100, 0, 0);
 }
 
@@ -1038,7 +1039,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			HMENU hMenuButtonList = GetSubMenu(g_CluiData.hMenuButtons, 0);
 			DeleteMenu(hMenuButtonList, 0, MF_BYPOSITION);
 
-			MenuModulesLoaded(0, 0);
+		    NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			{
 				BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
