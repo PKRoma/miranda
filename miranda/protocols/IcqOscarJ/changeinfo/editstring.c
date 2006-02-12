@@ -47,25 +47,26 @@ static const char escapes[]={'a','\a',
                'v','\v',
                '\\','\\'};
 
-static void EscapesToMultiline(char *str,PDWORD selStart,PDWORD selEnd)
+static void EscapesToMultiline(wchar_t *str,PDWORD selStart,PDWORD selEnd)
 {  //converts "\\n" and "\\t" to "\r\n" and "\t" because a multi-line edit box can show them properly
   DWORD i;
 
-  for(i=0;*str;str++,i++) 
+  for(i=0; *str; str++, i++) 
   {
-    if(*str!='\\') continue;
-    if(str[1]=='n') 
+    if (*str != '\\') continue;
+    if (str[1] == 'n') 
     {
-      *str++='\r'; 
+      *str++ = '\r'; 
       i++; 
-      *str='\n';
+      *str = '\n';
     }
-    else if(str[1]=='t') 
+    else if (str[1] == 't') 
     {
-      *str='\t';
-      memmove(str+1,str+2,strlennull(str)-1);
-      if(*selStart>i) --*selStart;
-      if(*selEnd>i) --*selEnd;
+      *str = '\t';
+      memmove(str+1, str+2, sizeof(wchar_t)*(wcslen(str)-1));
+
+      if (*selStart>i) --*selStart;
+      if (*selEnd>i) --*selEnd;
     }
   }
 }
@@ -187,19 +188,18 @@ static LRESULT CALLBACK ExpandButtonSubclassProc(HWND hwnd,UINT msg,WPARAM wPara
         //do expand
         RECT rcStart,rcEnd;
         DWORD selStart,selEnd;
-        char *text;
+        wchar_t *text;
         BOOL animEnabled=TRUE;
 
         GetWindowRect(hwndEdit,&rcStart);
         InflateRect(&rcStart,2,2);
 
-        text=(char*)malloc(GetWindowTextLength(hwndEdit)+1);
-        GetWindowText(hwndEdit,text,GetWindowTextLength(hwndEdit)+1);
+        text = GetWindowTextUcs(hwndEdit);
         SendMessage(hwndEdit,EM_GETSEL,(WPARAM)&selStart,(LPARAM)&selEnd);
         DestroyWindow(hwndEdit);
         EscapesToMultiline(text,&selStart,&selEnd);
-        hwndEdit=CreateWindowEx(WS_EX_TOOLWINDOW,"EDIT",text,WS_POPUP|WS_BORDER|WS_VISIBLE|ES_WANTRETURN|ES_AUTOVSCROLL|WS_VSCROLL|ES_MULTILINE,rcStart.left,rcStart.top,rcStart.right-rcStart.left,rcStart.bottom-rcStart.top,NULL,NULL,hInst,NULL);
-
+        hwndEdit=CreateWindowEx(WS_EX_TOOLWINDOW,"EDIT","",WS_POPUP|WS_BORDER|WS_VISIBLE|ES_WANTRETURN|ES_AUTOVSCROLL|WS_VSCROLL|ES_MULTILINE,rcStart.left,rcStart.top,rcStart.right-rcStart.left,rcStart.bottom-rcStart.top,NULL,NULL,hInst,NULL);
+        SetWindowTextUcs(hwndEdit, text);
         OldStringEditProc=(WNDPROC)SetWindowLongUtf(hwndEdit,GWL_WNDPROC,(LONG)StringEditSubclassProc);
         SendMessage(hwndEdit,WM_SETFONT,(WPARAM)hListFont,0);
         SendMessage(hwndEdit,EM_SETSEL,selStart,selEnd);
@@ -208,7 +208,7 @@ static LRESULT CALLBACK ExpandButtonSubclassProc(HWND hwnd,UINT msg,WPARAM wPara
         rcEnd.left=rcStart.left; rcEnd.top=rcStart.top;
         rcEnd.right=rcEnd.left+350;
         rcEnd.bottom=rcEnd.top+150;
-        if(LOBYTE(LOWORD(GetVersion()))>4 || HIBYTE(LOWORD(GetVersion()))>0)
+        if (LOBYTE(LOWORD(GetVersion()))>4 || HIBYTE(LOWORD(GetVersion()))>0)
           SystemParametersInfo(SPI_GETCOMBOBOXANIMATION,0,&animEnabled,FALSE);
         if(animEnabled) 
         {
@@ -247,7 +247,7 @@ void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
   rc->left-=2;
   if(setting[i].displayType&LIF_PASSWORD && !setting[i].changed)
     szValue="                ";
-  else if((setting[i].displayType&LIM_TYPE)==LI_NUMBER) 
+  else if ((setting[i].displayType&LIM_TYPE)==LI_NUMBER) 
   {
     szValue=str;
     wsprintf(str,"%d",setting[i].value);
@@ -260,7 +260,7 @@ void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
   else szValue="";
   iEditItem=iItem;
 
-  if((setting[i].displayType&LIM_TYPE)==LI_LONGSTRING) 
+  if ((setting[i].displayType&LIM_TYPE)==LI_LONGSTRING) 
   {
     rc->right-=rc->bottom-rc->top;
     hwndExpandButton=CreateWindow("BUTTON","",WS_VISIBLE|WS_CHILD|BS_PUSHBUTTON|BS_ICON,rc->right,rc->top,rc->bottom-rc->top,rc->bottom-rc->top,hwndList,NULL,hInst,NULL);
@@ -268,11 +268,12 @@ void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
     OldExpandButtonProc=(WNDPROC)SetWindowLongUtf(hwndExpandButton,GWL_WNDPROC,(LONG)ExpandButtonSubclassProc);
   }
 
-  hwndEdit=CreateWindow("EDIT",szValue,WS_VISIBLE|WS_CHILD|ES_AUTOHSCROLL|((setting[i].displayType&LIM_TYPE)==LI_NUMBER?ES_NUMBER:0)|(setting[i].displayType&LIF_PASSWORD?ES_PASSWORD:0),rc->left,rc->top,rc->right-rc->left,rc->bottom-rc->top,hwndList,NULL,hInst,NULL);
-  if(alloced) SAFE_FREE(&szValue);
+  hwndEdit=CreateWindow("EDIT","",WS_VISIBLE|WS_CHILD|ES_AUTOHSCROLL|((setting[i].displayType&LIM_TYPE)==LI_NUMBER?ES_NUMBER:0)|(setting[i].displayType&LIF_PASSWORD?ES_PASSWORD:0),rc->left,rc->top,rc->right-rc->left,rc->bottom-rc->top,hwndList,NULL,hInst,NULL);
+  SetWindowTextUtf(hwndEdit, szValue);
+  if (alloced) SAFE_FREE(&szValue);
   OldStringEditProc=(WNDPROC)SetWindowLongUtf(hwndEdit,GWL_WNDPROC,(LONG)StringEditSubclassProc);
   SendMessage(hwndEdit,WM_SETFONT,(WPARAM)hListFont,0);
-  if((setting[i].displayType&LIM_TYPE)==LI_NUMBER) 
+  if ((setting[i].displayType&LIM_TYPE)==LI_NUMBER) 
   {
     int *range=(int*)setting[i].pList;
     RECT rcUpDown;
@@ -280,7 +281,7 @@ void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
     SendMessage(hwndUpDown,UDM_SETRANGE32,range[0],range[1]);
     SendMessage(hwndUpDown,UDM_SETPOS32,0,setting[i].value);
     if(!(setting[i].displayType&LIF_ZEROISVALID) && setting[i].value==0)
-      SetWindowText(hwndEdit,"");
+      SetWindowTextA(hwndEdit,"");
     GetClientRect(hwndUpDown,&rcUpDown);
     rc->right-=rcUpDown.right;
     SetWindowPos(hwndEdit,0,0,0,rc->right-rc->left,rc->bottom-rc->top,SWP_NOZORDER|SWP_NOMOVE);
@@ -298,6 +299,7 @@ void EndStringEdit(int save)
   if (save) 
   {
     char *text = NULL;
+
     text=(char*)malloc(GetWindowTextLength(hwndEdit)+1);
     GetWindowText(hwndEdit,text,GetWindowTextLength(hwndEdit)+1);
     EscapesToBinary(text);
@@ -317,6 +319,12 @@ void EndStringEdit(int save)
     }
     else
     {
+      if (!(setting[iEditItem].displayType&LIF_PASSWORD))
+      {
+        SAFE_FREE(&text);
+        text = GetWindowTextUtf(hwndEdit);
+        EscapesToBinary(text);
+      }
       if ((setting[iEditItem].displayType&LIF_PASSWORD && strcmpnull(text,"                ")) ||
         (!(setting[iEditItem].displayType&LIF_PASSWORD) && strcmpnull(text,(char*)setting[iEditItem].value)))
       {

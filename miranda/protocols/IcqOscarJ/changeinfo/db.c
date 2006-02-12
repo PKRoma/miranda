@@ -142,7 +142,7 @@ static BOOL CALLBACK PwConfirmDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
           {  
             char szTest[16], str[1024], cap[MAX_PATH];
 
-            GetDlgItemText(hwndDlg,IDC_OLDPASS,szTest,sizeof(szTest));
+            GetDlgItemTextA(hwndDlg,IDC_OLDPASS,szTest,sizeof(szTest));
 
             if (strcmpnull(szTest, GetUserPassword(TRUE))) 
             {
@@ -152,7 +152,7 @@ static BOOL CALLBACK PwConfirmDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
               break;
             }
 
-            GetDlgItemText(hwndDlg,IDC_PASSWORD,szTest,sizeof(szTest));
+            GetDlgItemTextA(hwndDlg,IDC_PASSWORD,szTest,sizeof(szTest));
             if(strcmpnull(szTest, Pass)) 
             {
               MessageBoxUtf(hwndDlg,ICQTranslateUtfStatic("The password does not match the password you originally entered. Check Caps Lock and try again.", str), ICQTranslateUtfStatic("Change ICQ Details", cap), MB_OK);
@@ -199,7 +199,7 @@ int SaveSettingsToDb(HWND hwndDlg)
             ret=0;
             break;
           }
-          if(IDOK!=DialogBoxParam(hInst,MAKEINTRESOURCE(IDD_PWCONFIRM),hwndDlg,PwConfirmDlgProc,(LPARAM)setting[i].value)) 
+          if (IDOK!=DialogBoxParam(hInst,MAKEINTRESOURCE(IDD_PWCONFIRM),hwndDlg,PwConfirmDlgProc,(LPARAM)setting[i].value)) 
           {
             ret=0;
             break;
@@ -209,7 +209,7 @@ int SaveSettingsToDb(HWND hwndDlg)
         else 
         {
           if(*(char*)setting[i].value)
-            ICQWriteContactSettingString(NULL,setting[i].szDbSetting,(char*)setting[i].value);
+            ICQWriteContactSettingUtf(NULL,setting[i].szDbSetting,(char*)setting[i].value);
           else
             ICQDeleteContactSetting(NULL,setting[i].szDbSetting);
         }
