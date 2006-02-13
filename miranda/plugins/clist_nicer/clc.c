@@ -541,7 +541,7 @@ LBL_Def:
 			struct ClcContact *contact = NULL;
 
 			if(FindItem(hwnd, dat, (HANDLE)lParam, &contact, NULL, 0)) {
-				if(contact && contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry && g_ExtraCache[contact->extraCacheEntry].floater.hwnd)
+				if(contact && contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry && g_ExtraCache[contact->extraCacheEntry].floater)
 					FLT_Update(dat, contact);
 			}
 		}
@@ -810,8 +810,8 @@ LBL_Def:
 
 			if(!dat->bisEmbedded) {
 				for(i = 0; i < g_nextExtraCacheEntry; i++) {
-					if(g_ExtraCache[i].floater.hwnd)
-						DestroyWindow(g_ExtraCache[i].floater.hwnd);
+					if(g_ExtraCache[i].floater && g_ExtraCache[i].floater->hwnd)
+						DestroyWindow(g_ExtraCache[i].floater->hwnd);
 				}
 			}
 			RowHeights_Free(dat);

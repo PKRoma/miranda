@@ -98,8 +98,8 @@ struct ClcGroup *AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, D
 struct ClcGroup *RemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct ClcContact *contact, int updateTotalCount)
 {
 	if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry) {
-		if(g_ExtraCache[contact->extraCacheEntry].floater.hwnd)
-			ShowWindow(g_ExtraCache[contact->extraCacheEntry].floater.hwnd, SW_HIDE);
+		if(g_ExtraCache[contact->extraCacheEntry].floater && g_ExtraCache[contact->extraCacheEntry].floater->hwnd)
+			ShowWindow(g_ExtraCache[contact->extraCacheEntry].floater->hwnd, SW_HIDE);
 	}
 	return(saveRemoveItemFromGroup(hwnd, group, contact, updateTotalCount));
 }
@@ -150,10 +150,10 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 		if(p->extraCacheEntry >= 0 && p->extraCacheEntry <= g_nextExtraCacheEntry) {
 			g_ExtraCache[p->extraCacheEntry].proto_status_item = GetProtocolStatusItem(p->bIsMeta ? p->metaProto : p->proto);
 			if(DBGetContactSettingByte(p->hContact, "CList", "floating", 0)) {
-				if(g_ExtraCache[p->extraCacheEntry].floater.hwnd == 0)
+				if(g_ExtraCache[p->extraCacheEntry].floater == NULL)
 					FLT_Create(p->extraCacheEntry);
 				else {
-					ShowWindow(g_ExtraCache[p->extraCacheEntry].floater.hwnd, SW_SHOWNOACTIVATE);
+					ShowWindow(g_ExtraCache[p->extraCacheEntry].floater->hwnd, SW_SHOWNOACTIVATE);
 					FLT_Update(dat, p);
 				}
 			}

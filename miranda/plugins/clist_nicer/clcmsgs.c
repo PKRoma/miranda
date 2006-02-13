@@ -156,6 +156,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 		{
 			struct ClcContact *contact = NULL;
 			BYTE state;
+			int iEntry;
 
 			if (wParam == 0)
 				return 0;
@@ -165,23 +166,23 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			if(contact->type != CLCIT_CONTACT)
 				return 0;
 
-			state = !DBGetContactSettingByte(contact->hContact, "CList", "floating", 0);
-			if(state) {
-				if(FLT_CheckAvail() != -1) {
-					if(g_ExtraCache[contact->extraCacheEntry].floater.hwnd == 0)
-						FLT_Create(contact->extraCacheEntry);
-					ShowWindow(g_ExtraCache[contact->extraCacheEntry].floater.hwnd, SW_SHOW);
+			iEntry = contact->extraCacheEntry;
+
+			if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry) {
+				state = !DBGetContactSettingByte(contact->hContact, "CList", "floating", 0);
+				if(state) {
+					if(g_ExtraCache[iEntry].floater == NULL)
+						FLT_Create(iEntry);
+					ShowWindow(g_ExtraCache[contact->extraCacheEntry].floater->hwnd, SW_SHOW);
 				}
-				else
-					return 0;
-			}
-			else {
-				if(g_ExtraCache[contact->extraCacheEntry].floater.hwnd) {
-					DestroyWindow(g_ExtraCache[contact->extraCacheEntry].floater.hwnd);
-					ZeroMemory(&g_ExtraCache[contact->extraCacheEntry].floater, sizeof(CONTACTFLOATER));
+				else {
+					if(g_ExtraCache[iEntry].floater && g_ExtraCache[iEntry].floater->hwnd) {
+						DestroyWindow(g_ExtraCache[iEntry].floater->hwnd);
+						g_ExtraCache[iEntry].floater = 0;
+					}
 				}
+				DBWriteContactSettingByte(contact->hContact, "CList", "floating", state);
 			}
-			DBWriteContactSettingByte(contact->hContact, "CList", "floating", state);
 			return 0;
 		}
 	case CLM_QUERYFLOATINGCONTACT:

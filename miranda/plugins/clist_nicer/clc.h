@@ -76,11 +76,15 @@ struct ClcGroup;
 #define ECF_RTLNICK 1
 #define ECF_RTLSTATUSMSG 2
 
-typedef struct ContactFLoater {
+struct ContactFloater {
+	struct ContactFloater *pNextFloater;
 	HWND hwnd;
 	HDC hdc;
 	HBITMAP hbm, hbmOld;
-} CONTACTFLOATER;
+	HANDLE hContact;
+};
+
+typedef struct ContactFloater CONTACTFLOATER;
 
 struct ExtraCache {
 	BYTE iExtraImage[MAXEXTRACOLUMNS];
@@ -93,7 +97,7 @@ struct ExtraCache {
 	DWORD timediff;
 	DWORD dwCFlags;
 	StatusItems_t *status_item, *proto_status_item;
-	CONTACTFLOATER floater;
+	CONTACTFLOATER *floater;
 	DWORD dwLastMsgTime;
 };
 
