@@ -3814,8 +3814,13 @@ quote_from_last:
                     EnableMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (ServiceExists("BuddyPounce/AddToPounce") ? MF_ENABLED : MF_GRAYED));
                     CheckMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (dat->sendMode & SMODE_SENDLATER ? MF_CHECKED : MF_UNCHECKED));
                     CheckMenuItem(submenu, ID_SENDMENU_SENDWITHOUTTIMEOUTS, MF_BYCOMMAND | (dat->sendMode & SMODE_NOACK ? MF_CHECKED : MF_UNCHECKED));
-                    //EnableMenuItem(submenu, ID_SENDMENU_SENDWITHOUTTIMEOUTS, MF_GRAYED);
-                    
+					{
+						char *szFinalProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+						char szServiceName[128];
+
+						mir_snprintf(szServiceName, 128, "%s/SendNudge", szFinalProto);
+						EnableMenuItem(submenu, ID_SENDMENU_SENDNUDGE, MF_BYCOMMAND | (ServiceExists(szServiceName) ? MF_ENABLED : MF_GRAYED));
+					}                    
                     if(lParam)
                         iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
                     else
@@ -3847,6 +3852,9 @@ quote_from_last:
 								SendMessage(hwndClist, CLM_AUTOREBUILD, 0, 0);
                             }
                             break;
+						case ID_SENDMENU_SENDNUDGE:
+							SendNudge(dat, hwndDlg);
+							break;
                         case ID_SENDMENU_SENDDEFAULT:
                             dat->sendMode = 0;
                             break;
@@ -4068,16 +4076,8 @@ quote_from_last:
                                             PostMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 1);
                                             break;
 										case 14:				// ctrl - n (send a nudge if protocol supports the /SendNudge service)
-											{
-												char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-												char szServiceName[128];
-												HANDLE hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
-
-												mir_snprintf(szServiceName, 128, "%s/SendNudge", szProto);
-												if(ServiceExists(szServiceName))
-													CallProtoService(szProto, "/SendNudge", (WPARAM)hContact, 0);
-												break;
-											}
+											SendNudge(dat, hwndDlg);
+											break;
                                     }
                                     return 1;
                                 }

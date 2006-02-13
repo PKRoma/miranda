@@ -747,6 +747,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Force &ANSI",                 ID_SENDMENU_FORCEANSISEND
         MENUITEM "Send without Timeouts",       ID_SENDMENU_SENDWITHOUTTIMEOUTS
+        MENUITEM SEPARATOR
+        MENUITEM "Send Nudge",                  ID_SENDMENU_SENDNUDGE
     END
     POPUP "Protomenu"
     BEGIN
@@ -1061,19 +1063,6 @@ END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// German (Austria) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
-#ifdef _WIN32
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
-#pragma code_page(1252)
-#endif //_WIN32
-
-#endif    // German (Austria) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

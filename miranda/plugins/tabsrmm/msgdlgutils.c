@@ -2393,6 +2393,17 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
     EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), dat->doSmileys ? TRUE : FALSE);
 }
 
+void SendNudge(struct MessageWindowData *dat, HWND hwndDlg)
+{
+	char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+	char szServiceName[128];
+	HANDLE hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
+
+	mir_snprintf(szServiceName, 128, "%s/SendNudge", szProto);
+	if(ServiceExists(szServiceName))
+		CallProtoService(szProto, "/SendNudge", (WPARAM)hContact, 0);
+}
+
 // size in TCHARs
 // szwBuf must be large enough to hold at least size wchar_t's
 // proto may be NULL

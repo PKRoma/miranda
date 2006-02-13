@@ -70,6 +70,7 @@ void LoadThemeDefaults(HWND hwndDlg, struct MessageWindowData *dat);
 void SaveMessageLogFlags(HWND hwndDlg, struct MessageWindowData *dat);
 void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat);
 int CutContactName(TCHAR *szold, TCHAR *sznew, unsigned int size);
+void SendNudge(struct MessageWindowData *dat, HWND hwndDlg);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
