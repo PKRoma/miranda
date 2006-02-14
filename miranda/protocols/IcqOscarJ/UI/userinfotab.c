@@ -40,6 +40,7 @@
 extern WORD wListenPort;
 
 extern char* calcMD5Hash(char* szFile);
+extern char* MirandaVersionToString(char* szStr, int v, int m);
 
 extern char* nameXStatus[29];
 
@@ -155,7 +156,7 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
                 SetValue(hwndDlg, IDC_PORT, hContact, (char*)DBVT_WORD, (char*)wListenPort, SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)ICQ_VERSION, SVS_ICQVERSION);
-                SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, "Miranda IM", SVS_ZEROISUNSPEC);
+                SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, MirandaVersionToString(str, ICQ_PLUG_VERSION, MIRANDA_VERSION), SVS_ZEROISUNSPEC);
                 SetDlgItemTextUtf(hwndDlg, IDC_SUPTIME, ICQTranslateUtfStatic("Member since:", str));
                 SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "MemberTS", SVS_TIMESTAMP);
                 SetValue(hwndDlg, IDC_STATUS, hContact, (char*)DBVT_WORD, (char*)gnCurrentStatus, SVS_STATUSID);
@@ -442,8 +443,17 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       {
         if (dbv.wVal != 0)
         {
+          char szExtra[80];
+
+          null_snprintf(str, 250, "%d", dbv.wVal);
           pstr = str;
-          _snprintf(str, 80, "%d", dbv.wVal);
+
+          if (hContact && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
+          {
+            ICQTranslateUtfStatic(" (DC Established)", szExtra);
+            strcat(str, szExtra);
+            bUtf = 1;
+          }
         }
         else
           unspecified = 1;
