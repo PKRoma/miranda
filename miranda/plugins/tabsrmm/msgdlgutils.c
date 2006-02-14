@@ -2108,7 +2108,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         if(dat->szNickname[0]) {
             HFONT hOldFont = 0;
             
-            if(dat->xStatus > 0 && dat->xStatus <= 24) {
+            if(dat->xStatus > 0 && dat->xStatus <= 32) {
 				char szServiceName[128];
 				HICON xIcon;
 

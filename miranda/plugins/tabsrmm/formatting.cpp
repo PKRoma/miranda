@@ -511,7 +511,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                 break;
             }
             case 'x': {
-                if(xStatus > 0 && xStatus <= 24)
+                if(xStatus > 0 && xStatus <= 32)
                     title.insert(tempmark + 2, xStatusDescr[xStatus - 1]);
                 title.erase(tempmark, 2);
                 break;
@@ -520,7 +520,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                 char *szFinalStatus = NULL;
                 TCHAR *result = NULL;
 
-                if(xStatus > 0 && xStatus <= 24) {
+                if(xStatus > 0 && xStatus <= 32) {
                     if((result = MY_DBGetContactSettingString(hContact, (char *)szProto, "XStatusName")) != NULL) {
                         szFinalStatus = result;
                     }

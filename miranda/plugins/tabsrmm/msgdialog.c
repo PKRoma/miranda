@@ -65,7 +65,8 @@ extern StatusItems_t StatusItems[];
 wchar_t *testTooltip = L"Ein tooltip text zum testen";
 char *xStatusDescr[] = { "Angry", "Duck", "Tired", "Party", "Beer", "Thinking", "Eating", "TV", "Friends", "Coffee",
                          "Music", "Business", "Camera", "Funny", "Phone", "Games", "College", "Shopping", "Sick", "Sleeping",
-                         "Surfing", "@Internet", "Engineering", "Typing"};
+                         "Surfing", "@Internet", "Engineering", "Typing", "Eating... yummy", "Having fun", "Chit chatting",
+						 "Crashing", "Going to toilet", "<undef>", "<undef>", "<undef>"};
                          
 int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
 int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
@@ -4753,7 +4754,7 @@ verify:
                             }
                             DBFreeVariant(&dbv);
                         }
-                        else if(dat->xStatus > 0 && dat->xStatus <= 24) {
+                        else if(dat->xStatus > 0 && dat->xStatus <= 32) {
                             WCHAR xStatusDescW[100];
                             MultiByteToWideChar(CP_ACP, 0, xStatusDescr[dat->xStatus - 1], -1, xStatusDescW, 90);
                             _sntprintf(szTitle, safe_sizeof(szTitle), _T("Extended status for %s: %s"), dat->szNickname, xStatusDescW);
@@ -4786,7 +4787,7 @@ verify:
                                 mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), dat->szNickname, dbv.pszVal);
                             DBFreeVariant(&dbv);
                         }
-                        else if(dat->xStatus > 0 && dat->xStatus <= 24)
+                        else if(dat->xStatus > 0 && dat->xStatus <= 32)
                             mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), dat->szNickname, xStatusDescr[dat->xStatus - 1]);
                         else
                             return 0;
