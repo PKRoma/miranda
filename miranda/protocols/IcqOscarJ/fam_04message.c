@@ -1802,6 +1802,12 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
     // Priority?
     buf += 2;
     wLen -= 2;
+
+    if (FindCookie(wCookie, &dwCookieUin, &pCookieData))
+    { // use old reliable method
+      NetLog_Server("SNAC(4.B) Received an ack that I did not ask for from (%u)", dwUin);
+      return;
+    }
   }
   else
   {
