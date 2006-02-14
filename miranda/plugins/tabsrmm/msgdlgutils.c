@@ -2032,10 +2032,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         GetClientRect(dis->hwndItem, &rc);
 		if(dat->pContainer->bSkinned) {
 			StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
-			RECT rc = dis->rcItem;
+			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rc, dis->hDC);
 			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
 			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
-			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
 			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 					  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
 		}
