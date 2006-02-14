@@ -78,9 +78,8 @@ static void verToStr(char* szStr, int v)
 }
 
 
-// Dont free the returned string.
-// Function is not multithread safe.
-static char* MirandaVersionToString(char* szStr, int v, int m)
+
+char* MirandaVersionToString(char* szStr, int v, int m)
 {
   if (!v) // this is not Miranda
     return NULL;
