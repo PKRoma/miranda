@@ -1732,7 +1732,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
   WORD wCookie;
   WORD wMessageFormat;
   WORD wStatus;
-  WORD bMsgType;
+  WORD bMsgType = 0;
   BYTE bFlags;
   WORD wLength;
   HANDLE hContact;
