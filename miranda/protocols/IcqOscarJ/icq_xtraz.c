@@ -180,6 +180,10 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char*
 
     szMem = szRes = DemangleXml(szRes, nResLen);
 
+#ifdef _DEBUG
+    NetLog_Server("Response: %s", szRes);
+#endif
+
     ICQBroadcastAck(hContact, ICQACKTYPE_XTRAZNOTIFY_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, (LPARAM)szRes);
 
 NextVal:

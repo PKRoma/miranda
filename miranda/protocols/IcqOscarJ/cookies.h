@@ -125,7 +125,8 @@ void InitCookies(void);
 void UninitCookies(void);
 
 DWORD AllocateCookie(BYTE bType, WORD wIdent, DWORD dwUin, void *pvExtra);
-void FreeCookie(DWORD wCookie);
+void FreeCookie(DWORD dwCookie);
+void ReleaseCookie(DWORD dwCookie);
 DWORD GenerateCookie(WORD wIdent);
 
 int FindCookie(DWORD wCookie, DWORD *pdwUin, void **ppvExtra);

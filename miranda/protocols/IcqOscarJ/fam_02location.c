@@ -71,8 +71,7 @@ void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* 
       {
         ICQBroadcastAck(pCookieData->hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
 
-        FreeCookie(pSnacHeader->dwRef);
-        SAFE_FREE(&pCookieData);
+        ReleaseCookie(pSnacHeader->dwRef);
       }
     }
 
@@ -175,15 +174,14 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
   if (dwUIN != dwCookieUin)
   {
     NetLog_Server("Error: Away reply UIN does not match Cookie UIN(%u != %u)", dwUIN, dwCookieUin);
-    FreeCookie(dwCookie);
-    SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
+
+    ReleaseCookie(dwCookie); // This could be a bad idea, but I think it is safe
     return;
   }
 
   if (pCookieData->bMessageType == REQUESTTYPE_PROFILE)
   { 
-    FreeCookie(dwCookie);
-    SAFE_FREE(&pCookieData);
+    ReleaseCookie(dwCookie);
 
     // Read user info TLVs
     {
@@ -245,13 +243,12 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
     if (status == ID_STATUS_OFFLINE)
     {
       NetLog_Server("SNAC(2.6) Ignoring unknown status message from %s", strUID(dwUIN, szUID));
-      FreeCookie(dwCookie);
-      SAFE_FREE(&pCookieData);
+
+      ReleaseCookie(dwCookie);
       return;
     }
 
-    FreeCookie(dwCookie);
-    SAFE_FREE(&pCookieData);
+    ReleaseCookie(dwCookie);
 
     // Read user info TLVs
     {

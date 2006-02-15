@@ -4,8 +4,8 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -38,6 +38,7 @@
 
 
 static void handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie);
+static void ReleaseLookupCookie(DWORD dwCookie, search_cookie* pCookie);
 
 
 void handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
@@ -64,24 +65,8 @@ void handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
       if (wError == 0x14)
         NetLog_Server("Lookup: No results");
 
-      FreeCookie(pSnacHeader->dwRef);
-      SAFE_FREE(&pCookie->szObject);
+      ReleaseLookupCookie(pSnacHeader->dwRef, pCookie);
 
-      if (pCookie->dwMainId && !pCookie->dwStatus)
-      { // we need to wait for main search
-        pCookie->dwStatus = 1;
-      }
-      else
-      { // finish everything
-        if (pCookie->dwMainId)
-        {
-          ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)pCookie->dwMainId, 0);
-        }
-        else // we are single
-          ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)pSnacHeader->dwRef, 0);
-
-        SAFE_FREE(&pCookie);
-      }
       if (wError == 0x14) return;
     }
 
@@ -92,6 +77,28 @@ void handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
   default:
     NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_LOOKUP_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
+  }
+}
+
+
+
+static void ReleaseLookupCookie(DWORD dwCookie, search_cookie* pCookie)
+{
+  FreeCookie(dwCookie);
+  SAFE_FREE(&pCookie->szObject);
+
+  if (pCookie->dwMainId && !pCookie->dwStatus)
+  { // we need to wait for main search
+    pCookie->dwStatus = 1;
+  }
+  else
+  { // finish everything
+    if (pCookie->dwMainId)
+      ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)pCookie->dwMainId, 0);
+    else // we are single
+      ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)dwCookie, 0);
+
+    SAFE_FREE(&pCookie);
   }
 }
 
@@ -133,22 +140,5 @@ void handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie)
     disposeChain(&pChain);
   }
 
-  FreeCookie(dwCookie);
-  SAFE_FREE(&pCookie->szObject);
-
-  if (pCookie->dwMainId && !pCookie->dwStatus)
-  { // we need to wait for main search
-    pCookie->dwStatus = 1;
-  }
-  else
-  { // finish everything
-    if (pCookie->dwMainId)
-    {
-      ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)pCookie->dwMainId, 0);
-    }
-    else // we are single
-      ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)dwCookie, 0);
-
-    SAFE_FREE(&pCookie);
-  }
+  ReleaseLookupCookie(dwCookie, pCookie);
 }

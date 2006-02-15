@@ -1230,20 +1230,19 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, WORD wVersion, int typ
     if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
     {
       NetLog_Server("Ignoring unrequested status message from %u", "handleMessageAck: ", dwUin);
-      FreeCookie(wCookie);
-      SAFE_FREE(&pCookieData);
+
+      ReleaseCookie(wCookie);
       return INVALID_HANDLE_VALUE;
     }
 
     if (dwUin != dwCookieUin)
     {
       NetLog_Server("%sAck UIN does not match Cookie UIN(%u != %u)", "handleMessageAck: ", dwUin, dwCookieUin);
-      FreeCookie(wCookie);
-      SAFE_FREE(&pCookieData);
+
+      ReleaseCookie(wCookie);
       return INVALID_HANDLE_VALUE;
     }
-    FreeCookie(wCookie);
-    SAFE_FREE(&pCookieData);
+    ReleaseCookie(wCookie);
 
     handleStatusMsgReply("handleMessageAck: ", hContact, dwUin, wVersion, type, wCookie, (char*)buf);
   }
@@ -1729,7 +1728,6 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 {
   DWORD dwUin;
   DWORD dwCookie;
-  WORD wCookie;
   WORD wMessageFormat;
   WORD wStatus;
   WORD bMsgType = 0;
@@ -1778,6 +1776,8 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
   if (wLength == 0x1b && pCookieData->bMessageType != MTYPE_REVERSE_REQUEST)
   { // this can be v8 greeting message reply
+    WORD wCookie;
+
     unpackLEWord(&buf, &wVersion);
     buf += 27;  /* unknowns from the msg we sent */
     wLen -= 29;
@@ -1803,7 +1803,9 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
     buf += 2;
     wLen -= 2;
 
-    if (FindCookie(wCookie, &dwCookieUin, &pCookieData))
+    dwCookie = wCookie;
+
+    if (FindCookie(dwCookie, &dwCookieUin, &pCookieData))
     { // use old reliable method
       NetLog_Server("SNAC(4.B) Received an ack that I did not ask for from (%u)", dwUin);
       return;
@@ -1818,14 +1820,14 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
   if (dwCookieUin != dwUin)
   {
     NetLog_Server("SNAC(4.B) Ack UIN does not match Cookie UIN(%u != %u)", dwUin, dwCookieUin);
-    SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
-    FreeCookie(wCookie);
+
+    ReleaseCookie(dwCookie); // This could be a bad idea, but I think it is safe
     return;
   }
 
   if (bFlags == 3)     // A status message reply
   {
-    handleStatusMsgReply("SNAC(4.B) ", hContact, dwUin, wVersion, bMsgType, wCookie, (char*)(buf + 2));
+    handleStatusMsgReply("SNAC(4.B) ", hContact, dwUin, wVersion, bMsgType, (WORD)dwCookie, (char*)(buf + 2));
   }
   else
   { // An ack of some kind
@@ -1835,8 +1837,8 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
     if (hContact == NULL || hContact == INVALID_HANDLE_VALUE)
     {
       NetLog_Server("SNAC(4.B) Message from unknown contact (%u)", dwUin);
-      SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
-      FreeCookie(dwCookie);
+
+      ReleaseCookie(dwCookie); // This could be a bad idea, but I think it is safe
       return;
     }
 
@@ -1859,7 +1861,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
           buf += wMsgLen;
           wLen -= wMsgLen;
         }
-        handleFileAck(buf, wLen, dwUin, wCookie, wStatus, szMsg);
+        handleFileAck(buf, wLen, dwUin, dwCookie, wStatus, szMsg);
         // No success protoack will be sent here, since all file requests
         // will have been 'sent' when the server returns its ack
         return;
@@ -1879,9 +1881,8 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         if (wLength != 0x1B)
         {
           NetLog_Server("Invalid Greeting message response");
-          SAFE_FREE(&pCookieData);
-          FreeCookie(dwCookie);
 
+          ReleaseCookie(dwCookie);
           return;
         }
 
@@ -1958,7 +1959,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
             buf += dwDataLen;
             wLen -= (WORD)dwDataLen;
 
-            handleFileAck(buf, wLen, dwUin, wCookie, wStatus, szMsg);
+            handleFileAck(buf, wLen, dwUin, dwCookie, wStatus, szMsg);
             // No success protoack will be sent here, since all file requests
             // will have been 'sent' when the server returns its ack
           }
@@ -1973,10 +1974,9 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
               memcpy(szMsg, buf, dwDataLen);
             szMsg[dwDataLen] = '\0';
 
-            handleXtrazNotifyResponse(dwUin, hContact, wCookie, szMsg, dwDataLen);
+            handleXtrazNotifyResponse(dwUin, hContact, (WORD)dwCookie, szMsg, dwDataLen);
 
-            SAFE_FREE(&pCookieData);
-            FreeCookie(dwCookie);
+            ReleaseCookie(dwCookie);
           }
           return;
 
@@ -2031,13 +2031,11 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
     if (bMsgType != MTYPE_REVERSE_REQUEST && ((ackType == MTYPE_PLAIN && pCookieData && (pCookieData->nAckType == ACKTYPE_CLIENT)) ||
       ackType != MTYPE_PLAIN))
     {
-      ICQBroadcastAck(hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+      ICQBroadcastAck(hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)(WORD)dwCookie, 0);
     }
   }
 
-  SAFE_FREE(&pCookieData);
-
-  FreeCookie(dwCookie);
+  ReleaseCookie(dwCookie);
 }
 
 
@@ -2065,9 +2063,8 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
     if ((hContact == NULL) || (hContact == INVALID_HANDLE_VALUE))
     {
       NetLog_Server("SNAC(4.1) Received a SENDMSG Error (%u) from invalid contact %u", wError, dwUin);
-      SAFE_FREE(&pCookieData);
-      FreeCookie((WORD)dwSequence);
 
+      ReleaseCookie((WORD)dwSequence);
       return;
     }
     if (wError == 9 && pCookieData->bMessageType == MTYPE_AUTOAWAY)

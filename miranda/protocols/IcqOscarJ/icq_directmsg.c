@@ -189,8 +189,7 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
       else if (dwCookieUin != dc->dwRemoteUin)
       {
         NetLog_Direct("Direct UIN does not match Cookie UIN(%u != %u)", dc->dwRemoteUin, dwCookieUin);
-        SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
-        FreeCookie(wCookie);
+        ReleaseCookie(wCookie); // This could be a bad idea, but I think it is safe
       }
       else
       { // the ack is correct
@@ -223,8 +222,7 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
         if (ackType != -1)
         { // was a good ack to broadcast ?
            ICQBroadcastAck(dc->hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
-          SAFE_FREE(&pCookieData);
-          FreeCookie(wCookie);
+          ReleaseCookie(wCookie);
         }
       }
     }
@@ -370,8 +368,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
     else if (dwCookieUin != dc->dwRemoteUin)
     {
       NetLog_Direct("Direct UIN does not match Cookie UIN(%u != %u)", dc->dwRemoteUin, dwCookieUin);
-      SAFE_FREE(&pCookieData); // This could be a bad idea, but I think it is safe
-      FreeCookie(wCookie);
+      ReleaseCookie(wCookie); // This could be a bad idea, but I think it is safe
     }
     else
     {
@@ -398,9 +395,6 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
           szMsg[dwDataLength] = '\0';
 
           handleXtrazNotifyResponse(dwCookieUin, dc->hContact, wCookie, szMsg, dwDataLength);
-
-          SAFE_FREE(&pCookieData);
-          FreeCookie(wCookie);
         }
         break;
 
@@ -412,9 +406,9 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
       if (ackType != -1)
       { // was a good ack to broadcast ?
         ICQBroadcastAck(dc->hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
-        SAFE_FREE(&pCookieData);
-        FreeCookie(wCookie);
       }
+      // Release cookie
+      ReleaseCookie(wCookie);
     }
   }
   else

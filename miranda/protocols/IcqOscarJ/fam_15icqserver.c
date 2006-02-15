@@ -132,8 +132,7 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
                 HANDLE hContact = HContactFromUIN(dwCookieUin, NULL);
                 ICQBroadcastAck(hContact,  ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
 
-                SAFE_FREE(&pCookieData); // we do not leak cookie and memory
-                FreeCookie(wCookie); 
+                ReleaseCookie(wCookie);  // we do not leak cookie and memory
               }
 
               NetLog_Server("Full info request error 0x%02x received", wErrorCode);
@@ -501,6 +500,33 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
 
 
 
+static void ReleaseSearchCookie(DWORD dwCookie, search_cookie *pCookie)
+{
+  if (pCookie)
+  {
+    FreeCookie(dwCookie);
+    if (pCookie->dwMainId)
+    {
+      if (pCookie->dwStatus)
+      {
+        SAFE_FREE(&pCookie);
+        ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)dwCookie, 0);
+      }
+      else
+        pCookie->dwStatus = 1;
+    }
+    else
+    {
+      SAFE_FREE(&pCookie);
+      ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)dwCookie, 0);
+    }
+  }
+  else
+    ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)dwCookie, 0);
+}
+
+
+
 static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, BYTE bResultCode)
 {
   BYTE bParsingOK = FALSE; // For debugging purposes only
@@ -639,28 +665,7 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
           if (dwLeft)
             NetLog_Server("Warning: %d search results omitted", dwLeft);
         }
-        if (pCookie)
-        {
-          FreeCookie(wCookie);
-          if (pCookie->dwMainId) // is paralel search present?
-          {
-            if (pCookie->dwStatus)
-            { // paralel search already finished
-              SAFE_FREE(&pCookie);
-              ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
-            } // state we finished, the rest will do paralel search
-            else
-              pCookie->dwStatus = 1;
-          }
-          else
-          {
-            SAFE_FREE(&pCookie);
-            ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
-          }
-
-        }
-        else
-          ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+        ReleaseSearchCookie(wCookie, pCookie);
       }
 
       bParsingOK = TRUE;
@@ -669,27 +674,8 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
     {
       // Failed search
       NetLog_Server("SNAC(0x15,0x3): Search error %u", bResultCode);
-      if (pCookie)
-      {
-        FreeCookie(wCookie);
-        if (pCookie->dwMainId)
-        {
-          if (pCookie->dwStatus)
-          {
-            SAFE_FREE(&pCookie);
-            ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
-          }
-          else
-            pCookie->dwStatus = 1;
-        }
-        else
-        {
-          SAFE_FREE(&pCookie);
-          ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
-        }
-      }
-      else
-        ICQBroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+
+      ReleaseSearchCookie(wCookie, pCookie);
 
       bParsingOK = TRUE;
     }
@@ -699,8 +685,7 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
   default:
     if (pCookie)
     {
-      FreeCookie(wCookie);
-      SAFE_FREE(&pCookie);
+      ReleaseCookie(wCookie);
     }
     break;
 
@@ -1078,14 +1063,10 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
   // Free cookie
   if (!bMoreDataFollows || bResultCode != 0x0A)
   {
-    SAFE_FREE(&pCookieData);
-    FreeCookie(wCookie);
-  }
+    ReleaseCookie(wCookie);
 
-  // Remove user from info update queue. Removing is fast so we always call this
-  // even if it is likely that the user is not queued at all.
-  if (!bMoreDataFollows || bResultCode != 0x0A)
-  {
+    // Remove user from info update queue. Removing is fast so we always call this
+    // even if it is likely that the user is not queued at all.
     ICQWriteContactSettingDword(hContact, "InfoTS", time(NULL));
     icq_DequeueUser(dwCookieUin);
   }

@@ -134,8 +134,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
       handleServerCList(pBuffer, wBufferLength, pSnacHeader->wFlags, info);
       if (!(pSnacHeader->wFlags & 0x0001))
       { // was that last packet ?
-        FreeCookie(pSnacHeader->dwRef); // yes, release cookie
-        SAFE_FREE(&sc);
+        ReleaseCookie(pSnacHeader->dwRef); // yes, release cookie
       }
     }
     else
@@ -160,10 +159,8 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 #ifdef _DEBUG
       NetLog_Server("Server stated roster is ok.");
 #endif
-      FreeCookie(pSnacHeader->dwRef);
+      ReleaseCookie(pSnacHeader->dwRef);
       LoadServerIDs();
-
-      SAFE_FREE(&sc);
     }
     else
       NetLog_Server("Server sent unexpected SNAC(x13,x0F) - SRV_REPLYROSTEROK");

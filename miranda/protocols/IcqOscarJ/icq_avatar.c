@@ -624,8 +624,7 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
 
       return dwCookie;
     }
-    FreeCookie(dwCookie); // failed to send, free resources
-    SAFE_FREE(&ack);
+    ReleaseCookie(dwCookie); // failed to send, free resources
   }
   // we failed to send request, or avatar thread not ready
   EnterCriticalSection(&cookieMutex); // wait for ready queue, reused cs
@@ -1192,8 +1191,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         if (FindCookie(pSnacHeader->dwRef, NULL, &ac))
         {
           // here we store the local hash
-          SAFE_FREE(&ac);
-          FreeCookie(pSnacHeader->dwRef);
+          ReleaseCookie(pSnacHeader->dwRef);
         }
         else
         {
@@ -1227,8 +1225,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         {
           NetLog_Server("Error: Avatar upload failed");
         }
-        SAFE_FREE(&ack);
-        FreeCookie(pSnacHeader->dwRef);
+        ReleaseCookie(pSnacHeader->dwRef);
       }
 
       if (wBufferLength >= 2)

@@ -1032,14 +1032,7 @@ BOOL IsStringUIN(char* pszString)
 
 void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
 {
-  DWORD dwUin;
-  void* pvExtra;
-
-
   ICQBroadcastAck(pArguments->hContact, pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
-
-  if (FindCookie((WORD)pArguments->hSequence, &dwUin, &pvExtra))
-    FreeCookie((WORD)pArguments->hSequence);
 
   if (pArguments->nAckResult == ACKRESULT_SUCCESS)
     NetLog_Server("Sent fake message ack");

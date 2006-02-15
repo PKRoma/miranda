@@ -549,8 +549,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
         if (FindCookie(dc.dwReqId, &dwUin, &pCookie))
         { // release cookie
           icq_sendReverseFailed(&dc, pCookie->pMessage.dwMsgID1, pCookie->pMessage.dwMsgID2, dc.dwReqId);
-          FreeCookie(dc.dwReqId);
-          SAFE_FREE(&pCookie);
+          ReleaseCookie(dc.dwReqId);
         }
       }
       NetLog_Direct("connect() failed (%d)", GetLastError());

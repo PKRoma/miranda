@@ -74,6 +74,49 @@ static int ResizeCookieList(int nSize)
 }
 
 
+#define INVALID_COOKIE_INDEX -1
+
+static int FindCookieIndex(DWORD dwCookie)
+{
+  int i;
+
+  for (i = 0; i < cookieCount; i++)
+  {
+    if (dwCookie == cookie[i].dwCookie)
+    {
+      return i;
+    }
+  }
+  return INVALID_COOKIE_INDEX;
+}
+
+
+
+static void RemoveCookieIndex(int iCookie)
+{
+  cookieCount--;
+  memmove(&cookie[iCookie], &cookie[iCookie + 1], sizeof(icq_cookie_info) * (cookieCount - iCookie));
+  ResizeCookieList(cookieCount);
+}
+
+
+
+static void RemoveExpiredCookies()
+{
+  int i;
+  DWORD tNow = time(NULL);
+
+  for (i = 0; i < cookieCount; i++)
+  {
+    if ((cookie[i].dwTime + COOKIE_TIMEOUT) < tNow)
+    { // cookie expired, remove too
+      RemoveCookieIndex(i);
+      i--; // fix the loop
+    }
+  }
+}
+
+
 
 void InitCookies(void)
 {
@@ -153,20 +196,17 @@ int FindCookie(DWORD dwCookie, DWORD *pdwUin, void **ppvExtra)
 
   EnterCriticalSection(&cookieMutex);
 
-  for (i = 0; i < cookieCount; i++)
+  i = FindCookieIndex(dwCookie);
+
+  if (i != INVALID_COOKIE_INDEX)
   {
-    if (dwCookie == cookie[i].dwCookie)
-    {
-      if (pdwUin)
-        *pdwUin = cookie[i].dwUin;
-      if (ppvExtra)
-        *ppvExtra = cookie[i].pvExtra;
+    if (pdwUin)
+      *pdwUin = cookie[i].dwUin;
+    if (ppvExtra)
+      *ppvExtra = cookie[i].pvExtra;
 
-      // Cookie found, exit loop
-      nFound = 1;
-      break;
-
-    }
+    // Cookie found
+    nFound = 1;
   }
 
   LeaveCriticalSection(&cookieMutex);
@@ -247,30 +287,36 @@ int FindMessageCookie(DWORD dwMsgID1, DWORD dwMsgID2, DWORD *pdwCookie, DWORD *p
 void FreeCookie(DWORD dwCookie)
 {
   int i;
-  DWORD tNow = time(NULL);
-
 
   EnterCriticalSection(&cookieMutex);
 
-  for (i = 0; i < cookieCount; i++)
-  {
-    if (dwCookie == cookie[i].dwCookie)
-    {
-      cookieCount--;
-      memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
-      ResizeCookieList(cookieCount);
+  i = FindCookieIndex(dwCookie);
 
-      // Cookie found, exit loop
-      break;
-    }
-    if ((cookie[i].dwTime + COOKIE_TIMEOUT) < tNow)
-    { // cookie expired, remove too
-      cookieCount--;
-      memmove(&cookie[i], &cookie[i+1], sizeof(icq_cookie_info) * (cookieCount - i));
-      ResizeCookieList(cookieCount);
-      i--; // fix the loop
-    }
+  if (i != INVALID_COOKIE_INDEX)
+  { // Cookie found, remove from list
+    RemoveCookieIndex(i);
   }
+  RemoveExpiredCookies();
+
+  LeaveCriticalSection(&cookieMutex);
+}
+
+
+
+void ReleaseCookie(DWORD dwCookie)
+{
+  int i;
+
+  EnterCriticalSection(&cookieMutex);
+
+  i = FindCookieIndex(dwCookie);
+
+  if (i != INVALID_COOKIE_INDEX)
+  { // Cookie found, remove from list
+    SAFE_FREE(&cookie[i].pvExtra);
+    RemoveCookieIndex(i);
+  }
+  RemoveExpiredCookies();
 
   LeaveCriticalSection(&cookieMutex);
 }

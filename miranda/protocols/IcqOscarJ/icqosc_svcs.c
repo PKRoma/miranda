@@ -1291,8 +1291,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
           icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_MESSAGE, NULL);
           // We need to free this here since we will never see the real ack
           // The actual cookie value will still have to be returned to the message dialog though
-          SAFE_FREE(&pCookieData);
-          FreeCookie(dwCookie);
+          ReleaseCookie(dwCookie);
         }
         if (!dwUin) SAFE_FREE(&pszText);
       }
@@ -1460,8 +1459,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
           icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_MESSAGE, NULL);
           // We need to free this here since we will never see the real ack
           // The actual cookie value will still have to be returned to the message dialog though
-          SAFE_FREE(&pCookieData);
-          FreeCookie(dwCookie);
+          ReleaseCookie(dwCookie);
         }
 
       }
@@ -1558,8 +1556,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
           icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_URL, NULL);
           // We need to free this here since we will never see the real ack
           // The actual cookie value will still have to be returned to the message dialog though
-          SAFE_FREE(&pCookieData);
-          FreeCookie(dwCookie);
+          ReleaseCookie(dwCookie);
         }
       }
 
@@ -1721,8 +1718,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
               icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_CONTACTS, NULL);
               // We need to free this here since we will never see the real ack
               // The actual cookie value will still have to be returned to the message dialog though
-              SAFE_FREE(&pCookieData);
-              FreeCookie(dwCookie);
+              ReleaseCookie(dwCookie);
             }
             SAFE_FREE(&pBody);
           }
