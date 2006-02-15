@@ -1177,8 +1177,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			rcFrame.left += (g_CluiData.bCLeft - 1);
 			rcFrame.right -= (g_CluiData.bCRight - 1);
-			if(!g_CluiData.bSkinnedButtonMode)
-				rcFrame.bottom -= (g_CluiData.bottomOffset);
+			//if(!g_CluiData.bSkinnedButtonMode)
+			//	rcFrame.bottom -= (g_CluiData.bottomOffset);
 			rcFrame.bottom++;
 			rcFrame.bottom -= g_CluiData.statusBarHeight;
 			if (g_CluiData.dwFlags & CLUI_FRAME_SHOWTOPBUTTONS && g_CluiData.dwFlags & CLUI_FRAME_BUTTONBARSUNKEN) {
@@ -2264,6 +2264,31 @@ static int CLN_ShowAbout(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static int CLN_ShowMainMenu (WPARAM wParam, LPARAM lParam)
+{
+	HMENU hMenu;
+	POINT pt;
+
+	hMenu = (HMENU)CallService(MS_CLIST_MENUGETMAIN, 0, 0);
+	GetCursorPos(&pt);
+	TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN | TPM_LEFTBUTTON, pt.x, pt.y, 0, pcli->hwndContactList, NULL);
+	return 0;
+}
+
+static int CLN_ShowStatusMenu(WPARAM wParam, LPARAM lParam)
+{
+	HMENU hMenu;
+	POINT pt;
+
+	hMenu = (HMENU)CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
+	GetCursorPos(&pt);
+	TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN | TPM_LEFTBUTTON, pt.x, pt.y, 0, pcli->hwndContactList, NULL);
+	return 0;
+}
+
+#define MS_CLUI_SHOWMAINMENU    "CList/ShowMainMenu"
+#define MS_CLUI_SHOWSTATUSMENU  "CList/ShowStatusMenu"
+
 void LoadCLUIModule(void)
 {
 	WNDCLASS wndclass;
@@ -2302,6 +2327,8 @@ void LoadCLUIModule(void)
 	PreCreateCLC(pcli->hwndContactList);
 	LoadCLUIFramesModule();
 	CreateServiceFunction("CLN/About",CLN_ShowAbout);
+	CreateServiceFunction(MS_CLUI_SHOWMAINMENU,CLN_ShowMainMenu);
+	CreateServiceFunction(MS_CLUI_SHOWSTATUSMENU,CLN_ShowStatusMenu);
 }
 
 static struct {UINT id; char *name;} _tagFSINFO[] = {

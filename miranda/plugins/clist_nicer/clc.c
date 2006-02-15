@@ -171,10 +171,6 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 					SendMessage(pcli->hwndContactTree, INTM_STATUSCHANGED, wParam, lParam);
 					return 0;
 				}
-				else if (g_CluiData.bMetaAvail  && !(g_CluiData.dwFlags & CLUI_USEMETAICONS) && !__strcmp(szProto, "MetaContacts")) {
-					if ((lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 6)) || strstr("Default,ForceSend,Nick", cws->szSetting))
-						pcli->pfnClcBroadcast(INTM_NAMEORDERCHANGED, wParam, lParam);
-				}
 				else if(strstr("YMsg|StatusDescr|XStatusMsg", cws->szSetting))
 					pcli->pfnClcBroadcast(INTM_STATUSMSGCHANGED, wParam, lParam);
 				else if (strstr(cws->szSetting, "XStatus"))
@@ -183,6 +179,11 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 					ReloadExtraInfo((HANDLE)wParam);
 				else if (!__strcmp(cws->szSetting, "MirVer"))
 					pcli->pfnClcBroadcast(INTM_CLIENTCHANGED, wParam, lParam);
+
+				if (g_CluiData.bMetaAvail && !(g_CluiData.dwFlags & CLUI_USEMETAICONS) && !__strcmp(szProto, "MetaContacts")) {
+					if ((lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 6)) || strstr("Default,ForceSend,Nick", cws->szSetting))
+						pcli->pfnClcBroadcast(INTM_NAMEORDERCHANGED, wParam, lParam);
+				}
 			}
 		}
 	}
@@ -600,13 +601,25 @@ LBL_Def:
 			struct ClcContact *contact = NULL;
 			int index;
 
-			if (!wParam)
+			if (!wParam) {
 				CluiProtocolStatusChanged(0, 0);
+				break;
+			}
 
 			szProto = (char *)cws->szModule;
 
-			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
+			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL)) {
 				index = GetExtraCache((HANDLE)wParam, szProto);
+				if(!dat->bisEmbedded && g_CluiData.bMetaAvail && szProto) {				// may be a subcontact, forward the xstatus
+					if(DBGetContactSettingByte((HANDLE)wParam, "MetaContacts", "IsSubcontact", 0)) {
+						HANDLE hMasterContact = DBGetContactSettingDword((HANDLE)wParam, "MetaContacts", "Handle", 0);
+						if(hMasterContact && hMasterContact != (HANDLE)wParam)				// avoid recursive call of settings handler
+							DBWriteContactSettingByte(hMasterContact, "MetaContacts", "XStatusId", 
+													  DBGetContactSettingByte((HANDLE)wParam, szProto, "XStatusId", 0));
+						break;
+					}
+				}
+			}
 			else {
 				contact->xStatus = DBGetContactSettingByte((HANDLE) wParam, szProto, "XStatusId", 0);
 				index = contact->extraCacheEntry;

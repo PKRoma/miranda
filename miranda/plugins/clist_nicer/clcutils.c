@@ -513,12 +513,15 @@ extern void ( *saveLoadClcOptions )(HWND hwnd,struct ClcData *dat);
 
 void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 {
+	dat->bkChanged = 0;
+
 	saveLoadClcOptions(hwnd, dat);
 
 	dat->min_row_heigh = (int)DBGetContactSettingByte(NULL,"CLC","RowHeight",CLCDEFAULT_ROWHEIGHT);
 	dat->group_row_height = (int)DBGetContactSettingByte(NULL,"CLC","GRowHeight",CLCDEFAULT_ROWHEIGHT);
 	dat->row_border = 0;
 	dat->rightMargin = DBGetContactSettingByte(NULL, "CLC", "RightMargin", CLCDEFAULT_LEFTMARGIN);
+	dat->bkColour = DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR);
 	if (!dat->bkChanged) {
 		if(g_CluiData.hBrushCLCBk)
 			DeleteObject(g_CluiData.hBrushCLCBk);

@@ -559,26 +559,28 @@ void FLT_SetSize(struct ExtraCache *centry, LONG width, LONG height)
 	RECT rcWindow;
 	HFONT oldFont;
 
-	GetWindowRect(centry->floater->hwnd, &rcWindow);
+	if(centry->floater) {
+		GetWindowRect(centry->floater->hwnd, &rcWindow);
 
-	hdc = GetDC(centry->floater->hwnd);
-	oldFont = SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+		hdc = GetDC(centry->floater->hwnd);
+		oldFont = SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
 
-	SetWindowPos(centry->floater->hwnd, HWND_TOPMOST, 0, 0, width, height, SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOACTIVATE);
-	GetWindowRect(centry->floater->hwnd, &rcWindow);
+		SetWindowPos(centry->floater->hwnd, HWND_TOPMOST, 0, 0, width, height, SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOACTIVATE);
+		GetWindowRect(centry->floater->hwnd, &rcWindow);
 
-	if(centry->floater->hdc) {
-		SelectObject(centry->floater->hdc, centry->floater->hbmOld);
-		DeleteObject(centry->floater->hbm);
-		DeleteDC(centry->floater->hdc);
-		centry->floater->hdc = 0;
+		if(centry->floater->hdc) {
+			SelectObject(centry->floater->hdc, centry->floater->hbmOld);
+			DeleteObject(centry->floater->hbm);
+			DeleteDC(centry->floater->hdc);
+			centry->floater->hdc = 0;
+		}
+
+		centry->floater->hdc = CreateCompatibleDC(hdc);
+		centry->floater->hbm = CreateCompatibleBitmap(hdc, width, rcWindow.bottom - rcWindow.top);
+		centry->floater->hbmOld= SelectObject(centry->floater->hdc, centry->floater->hbm);
+
+		ReleaseDC(centry->floater->hwnd, hdc);
 	}
-
-	centry->floater->hdc = CreateCompatibleDC(hdc);
-	centry->floater->hbm = CreateCompatibleBitmap(hdc, width, rcWindow.bottom - rcWindow.top);
-	centry->floater->hbmOld= SelectObject(centry->floater->hdc, centry->floater->hbm);
-
-	ReleaseDC(centry->floater->hwnd, hdc);
 }
 
 void FLT_Create(int iEntry)
@@ -599,7 +601,7 @@ void FLT_Create(int iEntry)
 			centry->floater->hwnd = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_LAYERED, _T("ContactFloaterClass"), _T("sfl"), WS_VISIBLE, 0, 0, 0, 0, 0, 0, g_hInst, (LPVOID)iEntry);
 			centry->floater->hContact = centry->hContact;
 		}
-		else {
+		else if(centry->floater != NULL) {
 			ShowWindow(centry->floater->hwnd, SW_SHOWNOACTIVATE);
 			return;
 		}
@@ -635,10 +637,13 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	if(contact == NULL || dat == NULL)
 		return;
 
-	FLT_SetSize(&g_ExtraCache[contact->extraCacheEntry], 150, RowHeights_GetFloatingRowHeight(dat, pcli->hwndContactTree, contact, g_floatoptions.dwFlags));
-
 	if(contact->extraCacheEntry < 0 || contact->extraCacheEntry > g_nextExtraCacheEntry)
 		return;
+
+	if(g_ExtraCache[contact->extraCacheEntry].floater == NULL)
+		return;
+
+	FLT_SetSize(&g_ExtraCache[contact->extraCacheEntry], 150, RowHeights_GetFloatingRowHeight(dat, pcli->hwndContactTree, contact, g_floatoptions.dwFlags));
 
 	hwnd = g_ExtraCache[contact->extraCacheEntry].floater->hwnd;
 	hdc = g_ExtraCache[contact->extraCacheEntry].floater->hdc;

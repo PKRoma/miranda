@@ -848,7 +848,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	//rcContent.right = rtl ? clRect->right - leftX : clRect->right - dat->rightMargin;
 	rcContent.left = leftX;
 	rcContent.right = clRect->right - dat->rightMargin;
-	twoRows = ((dat->fontInfo[FONTID_STATUS].fontHeight + fontHeight <= rowHeight + 2) && (g_CluiData.dualRowMode != MULTIROW_NEVER)) && !dat->bisEmbedded;
+	twoRows = ((dat->fontInfo[FONTID_STATUS].fontHeight + fontHeight <= rowHeight + 1) && (g_CluiData.dualRowMode != MULTIROW_NEVER)) && !dat->bisEmbedded;
 	pi_avatar = !dat->bisEmbedded && type == CLCIT_CONTACT && (av_wanted) && contact->ace != 0 && !(contact->ace->dwFlags & AVS_HIDEONCLIST);
 
 	//checkboxes
@@ -1354,13 +1354,14 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 	int grey = 0,groupCountsFontTopShift;
 	BOOL bFirstNGdrawn = FALSE;
 	int line_num = -1;
-	COLORREF tmpbkcolour = style &CLS_CONTACTLIST ? (dat->useWindowsColours ? GetSysColor(COLOR_3DFACE) : dat->bkColour) : dat->bkColour;
+	COLORREF tmpbkcolour = style & CLS_CONTACTLIST ? (dat->useWindowsColours ? GetSysColor(COLOR_3DFACE) : dat->bkColour) : dat->bkColour;
 	DWORD done, now = GetTickCount();
 	selBlend = DBGetContactSettingByte(NULL, "CLCExt", "EXBK_SelBlend", 1);
 	g_inCLCpaint = TRUE;
 	g_focusWnd = GetFocus();
 	my_status = GetGeneralisedStatus();
 	g_HDC = hdc;
+
 
 	g_CluiData.bUseFastGradients = g_CluiData.bWantFastGradients && (MyGradientFill != 0);
 
@@ -1416,12 +1417,12 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 		SelectObject(hdcMem, hoBrush);
 		DeleteObject(hBrush);
 
-		if(!g_CluiData.neeedSnap) {
+		if(1) {
 			if(g_CluiData.bWallpaperMode && !dat->bisEmbedded) {
 				SkinDrawBg(hwnd, hdcMem);
 				goto bgdone;
 			}
-			if (dat->hBmpBackground && !dat->bisEmbedded) {
+			if (dat->hBmpBackground) {
 				BITMAP bmp;
 				HDC hdcBmp;
 				int x, y;
@@ -1437,7 +1438,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 				y = dat->backgroundBmpUse & CLBF_SCROLL ? -dat->yScroll : 0;
 				maxx = dat->backgroundBmpUse & CLBF_TILEH ? clRect.right : 1;
 				maxy = dat->backgroundBmpUse & CLBF_TILEV ? maxy = rcPaint->bottom : y + 1;
-				if (!DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
+				if (dat->bisEmbedded || !DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
 					switch (dat->backgroundBmpUse & CLBM_TYPE) {
 					case CLB_STRETCH:
 						if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
@@ -1482,7 +1483,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 					desth = bmp.bmHeight;
 				}
 
-				if (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
+				if (!dat->bisEmbedded && DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
 					RECT mrect;
 					GetWindowRect(hwnd, &mrect);
 					bitx = mrect.left;
