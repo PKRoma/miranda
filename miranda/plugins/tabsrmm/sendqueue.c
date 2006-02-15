@@ -317,6 +317,9 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
 {
     UINT myerrorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
     int i;
+
+	EnableWindow(GetDlgItem(hwndDlg, IDC_MSGSENDLATER), ServiceExists(BUDDYPOUNCE_SERVICENAME) ? TRUE : FALSE);
+
     if(showCmd) {
         TCITEM item = {0};
         dat->hTabIcon = myGlobals.g_iconErr;
@@ -336,7 +339,6 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
             SendMessage(hwndDlg, DM_SETINFOPANEL, 0, 0);
     }
         
-    //ShowMultipleControls(hwndDlg, errorControls, 5, showCmd ? SW_SHOW : SW_HIDE);
     for(i = 0; i < 5; i++) {
         if(IsWindow(GetDlgItem(hwndDlg, myerrorControls[i])))
            ShowWindow(GetDlgItem(hwndDlg, myerrorControls[i]), showCmd ? SW_SHOW : SW_HIDE);
