@@ -29,6 +29,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
 
+struct MM_INTERFACE memoryManagerInterface;
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Initialization routines
 int		MsnOnDetailsInit( WPARAM, LPARAM );
@@ -56,6 +58,7 @@ HANDLE   msnMainThread;
 int      msnOtherContactsBlocked = 0;
 HANDLE   hHookOnUserInfoInit = NULL;
 HANDLE   hGroupAddEvent = NULL;
+HANDLE	 hMSNNudge = NULL;
 bool		msnHaveChatDll = false;
 
 MYOPTIONS MyOptions;
@@ -263,6 +266,11 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	pluginLink = link;
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &msnMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
 
+	// get the internal malloc/free()
+	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
+	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
+	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &memoryManagerInterface);
+
 	char path[MAX_PATH];
 	char* protocolname;
 	char* fend;
@@ -291,6 +299,10 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	HookEvent( ME_OPT_INITIALISE, MsnOptInit );
 	HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown );
 
+	char nudge[250];
+	sprintf(nudge,"%s\\Nudge",protocolname);
+	hMSNNudge = CreateHookableEvent(nudge);
+	
 	MSN_InitThreads();
 
 	PROTOCOLDESCRIPTOR pd;
@@ -314,7 +326,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	mailsoundname = strdup( mailsoundtemp );
 
 	SkinAddNewSound( mailsoundtemp, mailsoundtemp, "hotmail.wav" );
-
+	
 	char nudgesoundtemp[ 64 ];
 	strcpy( nudgesoundtemp, protocolname );
 	strcat( nudgesoundtemp, ": " );

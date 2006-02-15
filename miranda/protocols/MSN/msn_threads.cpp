@@ -418,9 +418,12 @@ void __stdcall MSN_PingParentThread( ThreadData* parentThread, filetransfer* ft 
 /////////////////////////////////////////////////////////////////////////////////////////
 // class ThreadData members
 
+static LONG sttThreadID = 1;
+
 ThreadData::ThreadData()
 {
 	memset( this, 0, sizeof ThreadData );
+	mUniqueID = MyInterlockedIncrement( &sttThreadID );
 }
 
 ThreadData::~ThreadData()
@@ -432,6 +435,9 @@ ThreadData::~ThreadData()
 
 	if ( mMsnFtp != NULL )
 		delete mMsnFtp;
+
+	if ( mUniqueID )
+		p2p_unregisterThreadSession( mUniqueID );
 }
 
 void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )

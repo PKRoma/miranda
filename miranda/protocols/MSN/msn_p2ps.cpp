@@ -70,6 +70,26 @@ void __stdcall p2p_unregisterSession( filetransfer* ft )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// remove file sessions for a thread
+
+void __stdcall p2p_unregisterThreadSession( LONG threadID )
+{
+	EnterCriticalSection( &sessionLock );
+
+	for ( int i=0; i < sessionCount; i++ ) {
+		if ( sessionList[i]->mThreadId == threadID ) {
+         delete sessionList[i];
+			while( i < sessionCount-1 ) {
+				sessionList[ i ] = sessionList[ i+1 ];
+				i++;
+			}
+			sessionCount--;
+	}	}
+
+	LeaveCriticalSection( &sessionLock );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // get session by some parameter
 
 filetransfer* __stdcall p2p_getSessionByID( long ID )

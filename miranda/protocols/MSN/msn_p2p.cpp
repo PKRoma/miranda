@@ -865,6 +865,7 @@ static void sttInitFileTransfer(
 	replaceStr( ft->p2p_callID, szCallID );
 	replaceStr( ft->p2p_branch, szBranch );
 	ft->p2p_dest = strdup( szContactEmail );
+	ft->mThreadId = info->mUniqueID;
 	ft->mOwnsThread = info->mMessageCount == 0;
 
 	if ( dwAppID == 1 && !strcmp( szEufGuid, "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}" )) {
@@ -1260,8 +1261,12 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 			break;
 
 		case 3:
-			if (!strcmp( szContentType, "application/x-msnmsgr-sessionclosebody" ))
-				sttCloseTransfer( hdrdata, info, tFileInfo );
+			if ( !strcmp( szContentType, "application/x-msnmsgr-sessionclosebody" )) {
+				filetransfer* ft = p2p_getSessionByCallID( tFileInfo[ "Call-ID" ] );
+				if ( ft != NULL ) {
+					p2p_sendAck( ft, info, hdrdata );
+					ft->p2p_ackID = 4000;
+			}	}
 			break;
 
 		case 4:
@@ -1334,6 +1339,13 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 		case 3000:
 			p2p_sendBye( info, ft );
 			p2p_unregisterSession( ft );
+			break;
+
+		case 4000:
+			p2p_sendAck( ft, info, hdrdata );
+			p2p_unregisterSession( ft );
+			if ( ft->mOwnsThread )
+				info->sendPacket( "OUT", NULL );
 			return;
 
 		case 99:
@@ -1342,16 +1354,10 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 			sttSavePicture2disk( info, ft );
 
 			HANDLE hContact = info->mJoinedContacts[0];
-
-			if ( ft->mOwnsThread )
-				info->sendPacket( "OUT", NULL );
-
-			p2p_unregisterSession( ft );
-
 			char tContext[ 256 ];
 			if ( !MSN_GetStaticString( "PictContext", hContact, tContext, sizeof( tContext )))
 				MSN_SetString( hContact, "PictSavedContext", tContext );
-			return;
+			break;
 		}
 
 		ft->p2p_ackID++;
@@ -1413,7 +1419,14 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 			else {
 				p2p_sendAck( ft, info, hdrdata );
 				ft->complete();
-}	}	}	}
+	}	}	}
+
+	if (( hdrdata->mFlags & 0x40 ) == 0x40 ) {
+		p2p_sendAck( ft, info, hdrdata );
+		p2p_unregisterSession( ft );
+		if ( ft->mOwnsThread )
+			info->sendPacket( "OUT", NULL );
+}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // p2p_invite - invite another side to transfer an avatar

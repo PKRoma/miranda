@@ -79,7 +79,7 @@ HBITMAP __stdcall MSN_StretchBitmap( HBITMAP hBitmap )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SaveBitmapAsAvatar - updates the avatar database settins and file from a bitmap
 
-int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap ) 
+int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName ) 
 {
 	if ( !MSN_LoadPngModule())
 		return 1;
@@ -128,7 +128,11 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap )
 	{	NETLIBBASE64 nlb = { szSha1d, sizeof szSha1d, ( PBYTE )sha1d, sizeof sha1d };
 		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 	}
-
+	char drive[_MAX_DRIVE];
+	char dir[_MAX_DIR];
+	char fname[_MAX_FNAME];
+	char ext[_MAX_EXT];
+	_splitpath(szFileName, drive, dir, fname, ext );
 	SHA1Reset( &sha1ctx );
 
 	char szEmail[ MSN_MAX_EMAIL_LEN ];
@@ -145,7 +149,7 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap )
 	SHA1Input( &sha1ctx, ( PBYTE )"3", 1 );
 
 	SHA1Input( &sha1ctx, ( PBYTE )"Location", 8 );
-	SHA1Input( &sha1ctx, ( PBYTE )"TFR43.dat", 9 );
+	SHA1Input( &sha1ctx, ( PBYTE )fname, sizeof(fname));
 
 	SHA1Input( &sha1ctx, ( PBYTE )"Friendly", 8 );
 	SHA1Input( &sha1ctx, ( PBYTE )"AAA=", 4 );
@@ -156,10 +160,11 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap )
 	{	NETLIBBASE64 nlb = { szSha1c, sizeof szSha1c, ( PBYTE )sha1c, sizeof sha1c };
 		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 	}
-	{	char* szBuffer = ( char* )alloca( 1000 );
+	{
+		char* szBuffer = ( char* )alloca( 1000 );
 		mir_snprintf( szBuffer, 1000,
-			"<msnobj Creator=\"%s\" Size=\"%ld\" Type=\"3\" Location=\"TFR43.dat\" Friendly=\"AAA=\" SHA1D=\"%s\" SHA1C=\"%s\"/>",
-			szEmail, dwPngSize, szSha1d, szSha1c );
+			"<msnobj Creator=\"%s\" Size=\"%ld\" Type=\"3\" Location=\"%s\" Friendly=\"AAA=\" SHA1D=\"%s\" SHA1C=\"%s\"/>",
+			szEmail, dwPngSize,fname, szSha1d, szSha1c );
 
 		char* szEncodedBuffer = ( char* )alloca( 1000 );
 		UrlEncode( szBuffer, szEncodedBuffer, 1000 );

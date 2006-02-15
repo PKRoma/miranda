@@ -418,8 +418,6 @@ void __stdcall MSN_SendStatusMessage( const char* msg )
 
 LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 {
-	MSN_DebugLog( "sendPacket[%08p]: %s %s", this, cmd, fmt );
-
 	if ( this == NULL )  // :)
 		return 0;
 
@@ -472,7 +470,7 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 
 		//here we say what functions can be used with this plugins : http://siebe.bot2k3.net/docs/?url=clientid.html
 		//msnNsThread->sendPacket( "CHG", "%s 805306404 %s", szStatusName, szMsnObject );
-		msnNsThread->sendPacket( "CHG", "%s 1073741824 %s", szStatusName, szMsnObject );
+		msnNsThread->sendPacket( "CHG", "%s 1342177280 %s", szStatusName, szMsnObject );
 
 		if ( MyOptions.UseMSNP11 ) {
 			for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
@@ -871,8 +869,8 @@ filetransfer::~filetransfer()
 	if ( std.workingDir != NULL ) free( std.workingDir );
 	if ( std.files != NULL ) {
 		for ( int i=0; i < std.totalFiles; i++ )
-			free( std.files[ i ] );
-		free( std.files );
+			mir_free( std.files[ i ] );
+		mir_free( std.files );
 	}
 
 	if ( wszFileName != NULL ) free( wszFileName );

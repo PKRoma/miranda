@@ -778,10 +778,11 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 		p2p_invite( ccs->hContact, MSN_APPID_FILE, sft );
 	else {
 		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
-		if ( thread != NULL )
+		if ( thread != NULL ) {
 			thread->mMsnFtp = sft;
-		else
-			msnNsThread->sendPacket( "XFR", "SB" );
+			sft->mThreadId = thread->mUniqueID;
+		}
+		else msnNsThread->sendPacket( "XFR", "SB" );
 
 		char* pszFiles = strrchr( *files, '\\' ), msg[ 1024 ];
 		if ( pszFiles )
@@ -988,7 +989,7 @@ static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 	if (( hBitmap = MSN_StretchBitmap( hBitmap )) == NULL )
 		return 2;
 
-	MSN_SaveBitmapAsAvatar( hBitmap );
+	MSN_SaveBitmapAsAvatar( hBitmap, (char *) lParam );
 	DeleteObject( hBitmap );
 	if ( msnLoggedIn )
 		MSN_SetServerStatus( msnStatusMode );
@@ -1301,12 +1302,12 @@ int LoadMsnServices( void )
 	mi.pszService = servicefunction;
 	MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
-	strcpy( tDest, MSN_SENDNUDGE );
+	strcpy( tDest, MSN_SEND_NUDGE );
 	CreateServiceFunction( servicefunction, MsnSendNudge );
 
 	mi.flags = CMIF_NOTOFFLINE;
 	mi.position = -500050004;
-	mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_NUDGE ));
+	mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSN ));
 	mi.pszName = MSN_Translate( "Send &Nudge" );
 	mi.pszService = servicefunction;
 	MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
@@ -1353,6 +1354,7 @@ int LoadMsnServices( void )
 
 	MSN_CreateProtoServiceFunction( MSN_SET_AVATAR,			MsnSetAvatar );
 	MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,		MsnSetNickName );
+	MSN_CreateProtoServiceFunction( MSN_SEND_NUDGE,			MsnSendNudge );
 	return 0;
 }
 

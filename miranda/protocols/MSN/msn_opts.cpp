@@ -56,84 +56,6 @@ static void __cdecl sttUploadGroups( void* )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN Options dialog procedure
 
-static BOOL CALLBACK DlgProcMsnExtras(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch ( msg ) 
-	{
-	case WM_INITDIALOG: {
-		TranslateDialogDefault( hwndDlg );
-
-		CheckDlgButton( hwndDlg, IDC_ENABLE_NUDGE,	MSN_GetByte( "EnableNudge", 0 ));
-		CheckDlgButton( hwndDlg, IDC_NUDGE_MESSAGE, MSN_GetByte( "NudgeAsMessage", 0 ));
-		CheckDlgButton( hwndDlg, IDC_NUDGE_POPUP,   MSN_GetByte( "NudgeAsPopup", 0 ));
-		CheckDlgButton( hwndDlg, IDC_NUDGE_CLIST,	MSN_GetByte( "NudgeShakeClist", 0 ));
-		CheckDlgButton( hwndDlg, IDC_NUDGE_CHAT,    MSN_GetByte( "NudgeShakeChat", 0 ));
-		CheckDlgButton( hwndDlg, IDC_NUDGE_SOUND,    MSN_GetByte( "NudgeAsSound", 0 ));
-
-		int tValue = MSN_GetByte( "EnableNudge", 0 );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_NUDGE_MESSAGE ), tValue );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_NUDGE_POPUP ), tValue );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_NUDGE_CLIST ), tValue && ServiceExists( MS_SHAKE_CLIST ));
-		EnableWindow( GetDlgItem( hwndDlg, IDC_NUDGE_CHAT ), tValue && ServiceExists( MS_SHAKE_CLIST ));
-		EnableWindow( GetDlgItem( hwndDlg, IDC_NUDGE_SOUND ), tValue );
-		return TRUE;
-	}
-
-	case WM_COMMAND:
-		if ( HIWORD( wParam ) == BN_CLICKED )
-			switch( LOWORD( wParam )) 
-			{
-
-			case IDC_NUDGE_MESSAGE:			
-			case IDC_NUDGE_POPUP:
-			case IDC_NUDGE_CLIST:	
-			case IDC_NUDGE_CHAT:
-			case IDC_NUDGE_SOUND:
-			LBL_Apply:
-				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-				break;
-
-			case IDC_ENABLE_NUDGE: 
-			{
-				BYTE tIsChosen = IsDlgButtonChecked( hwndDlg, IDC_ENABLE_NUDGE );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_NUDGE_MESSAGE ), tIsChosen );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_NUDGE_POPUP ), tIsChosen );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_NUDGE_CLIST ), tIsChosen && ServiceExists( MS_SHAKE_CLIST ));
-				EnableWindow( GetDlgItem( hwndDlg, IDC_NUDGE_CHAT ), tIsChosen && ServiceExists( MS_SHAKE_CHAT ));
-				EnableWindow( GetDlgItem( hwndDlg, IDC_NUDGE_SOUND ), tIsChosen );
-				goto LBL_Apply;
-			}
-
-			}
-
-		break;
-
-	case WM_NOTIFY:
-		if (((LPNMHDR)lParam)->code == PSN_APPLY ) 
-		{
-			bool reconnectRequired = false, restartRequired = false;
-			
-			MSN_SetByte( "EnableNudge", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_NUDGE ));
-			MSN_SetByte( "NudgeAsMessage", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NUDGE_MESSAGE ));
-			MSN_SetByte( "NudgeAsPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NUDGE_POPUP ));
-			MSN_SetByte( "NudgeShakeClist", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NUDGE_CLIST ));
-			MSN_SetByte( "NudgeShakeChat", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NUDGE_CHAT ));
-			MSN_SetByte( "NudgeAsSound", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NUDGE_SOUND ));
-
-			if ( reconnectRequired && msnLoggedIn )
-				MessageBoxA( hwndDlg, MSN_Translate( "The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), "MSN Options", MB_OK );
-
-			LoadOptions();
-			return TRUE;
-		}
-		break;
-	}
-
-	return FALSE;
-}
-/////////////////////////////////////////////////////////////////////////////////////////
-// MSN Options dialog procedure
-
 static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg ) {
@@ -683,16 +605,6 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pszGroup		= "Network";
 	odp.flags         = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
 	odp.pfnDlgProc		= DlgProcMsnServLists;
-	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
-
-	mir_snprintf( szTitle, sizeof( szTitle ), "%s %s", msnProtocolName, MSN_Translate( "Extras" ));
-
-	odp.position		= -790000003;
-	odp.pszTemplate	= MAKEINTRESOURCEA(IDD_OPT_MSN_EXTRAS);
-	odp.pszTitle		= szTitle;
-	odp.pszGroup		= "Network";
-	odp.flags         = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
-	odp.pfnDlgProc		= DlgProcMsnExtras;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 
 	if ( ServiceExists( MS_POPUP_ADDPOPUP )) {

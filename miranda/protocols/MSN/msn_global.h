@@ -63,7 +63,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_popup.h>
 
 #include "SDK/m_chat.h"
-#include "SDK/m_shake.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN error codes
@@ -120,7 +119,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MSN_INVITE       "/InviteCommand"
 #define MSN_NETMEETING   "/NetMeeting"
 #define MSN_VIEW_PROFILE "/ViewProfile"
-#define MSN_SENDNUDGE	 "/SendNudge"
+#define MSN_SEND_NUDGE	 "/SendNudge"
 
 #define MENU_ITEMS_COUNT 2
 #define MS_GOTO_INBOX		"/GotoInbox"
@@ -210,7 +209,7 @@ void     __cdecl     MSN_ShowError( const char* msgtext, ... );
 char*		__stdcall   MSN_Translate( const char* str );
 
 int		__stdcall   MSN_EnterBitmapFileName( char* szDest );
-int      __stdcall   MSN_SaveBitmapAsAvatar( HBITMAP hBitmap );
+int      __stdcall   MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP  __stdcall   MSN_StretchBitmap( HBITMAP hBitmap );
 
 
@@ -308,34 +307,35 @@ struct filetransfer
 
 	PROTOFILETRANSFERSTATUS std;
 
-	bool		   bCanceled;		// flag to interrupt a transfer
-	bool			bCompleted;		// was a FT ever completed?
-	bool			inmemTransfer;	//	flag: the file being received is to be stored in memory
+	bool        bCanceled;		// flag to interrupt a transfer
+	bool        bCompleted;		// was a FT ever completed?
+	bool        inmemTransfer;	//	flag: the file being received is to be stored in memory
 
 	union {
-		int		fileId;			// handle of file being transferring (r/w)
-		char*		fileBuffer;		// buffer of memory to handle the file
+		int      fileId;			// handle of file being transferring (r/w)
+		char*	   fileBuffer;		// buffer of memory to handle the file
 	};
 
-	bool			mOwnsThread,	// thread was created specifically for that file transfer
+	bool        mOwnsThread,	// thread was created specifically for that file transfer
 					mIsFirst;		//	set for the first transfer for a contact
+	LONG        mThreadId;     // unique id of the parent thread
 
 	WORD			mIncomingPort;
 	HANDLE		mIncomingBoundPort;
 	HANDLE		hWaitEvent;
 
-	long			p2p_sessionid;	// session id
-	long			p2p_msgid;		// message id
-	long			p2p_acksessid;	// acknowledged session id
-	int			p2p_ackID;		// number of ack's state
-	int			p2p_appID;		// application id: 1 = avatar, 2 = file transfer
-	char*			p2p_branch;		// header Branch: field
-	char*			p2p_callID;		// header Call-ID: field
-	char*			p2p_dest;		// destination e-mail address
+	long        p2p_sessionid;	// session id
+	long        p2p_msgid;		// message id
+	long        p2p_acksessid;	// acknowledged session id
+	int         p2p_ackID;		// number of ack's state
+	int         p2p_appID;		// application id: 1 = avatar, 2 = file transfer
+	char*       p2p_branch;		// header Branch: field
+	char*       p2p_callID;		// header Call-ID: field
+	char*       p2p_dest;		// destination e-mail address
 
 	//---- receiving a file
 	wchar_t*    wszFileName;	// file name in Unicode, for receiving
-	char*		   szInvcookie;	// cookie for receiving
+	char*       szInvcookie;	// cookie for receiving
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -371,6 +371,7 @@ struct ThreadData
 
 	TInfoType      mType;            // thread type
 	char           mServer[80];      // server name
+	LONG				mUniqueID;			// unique thread ID
 
 	HANDLE         s;	               // NetLib connection for the thread
 	char				mChatID[10];
@@ -451,6 +452,7 @@ long __stdcall p2p_sendPortionViaServer( filetransfer* ft, ThreadData* T );
 
 void __stdcall p2p_registerSession( filetransfer* ft );
 void __stdcall p2p_unregisterSession( filetransfer* ft );
+void __stdcall p2p_unregisterThreadSession( LONG threadID );
 
 filetransfer* __stdcall p2p_getAnotherContactSession( filetransfer* ft );
 filetransfer* __stdcall p2p_getFirstSession( HANDLE hContact );
@@ -603,6 +605,15 @@ extern	int			msnOtherContactsBlocked;
 extern	bool			msnHaveChatDll;
 
 extern	HANDLE		hGroupAddEvent;
+
+///////////////////////////////////////////////////////////////////////////////
+// memory manager
+
+extern struct MM_INTERFACE memoryManagerInterface;
+
+#define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
+#define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
+#define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
 
 ///////////////////////////////////////////////////////////////////////////////
 // UTF8 encode helper

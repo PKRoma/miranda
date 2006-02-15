@@ -47,6 +47,7 @@ char* kv = NULL;
 char* MSPAuth = NULL;
 char* passport = NULL;
 char* rru = NULL;
+extern HANDLE	 hMSNNudge;
 
 int msnPingTimeout = 50;
 
@@ -293,6 +294,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 	if ( Appname != NULL && Appfile != NULL && Appfilesize != NULL ) { // receive first
 		filetransfer* ft = info->mMsnFtp = new filetransfer();
 
+		ft->mThreadId = info->mUniqueID;
 		ft->std.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
 		replaceStr( ft->std.currentFile, Appfile );
 		Utf8Decode( ft->std.currentFile, &ft->wszFileName );
@@ -637,50 +639,8 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			free( tRealBody );
 		}
 
-		if( !strnicmp(tMsgBuf,"ID: 1",5) && MSN_GetByte( "EnableNudge", 0 ))
-		{
-			if ( MSN_GetByte( "NudgeAsPopup", 0 ))
-			MSN_ShowPopup( MSN_GetContactName(MSN_HContactFromEmail(data.fromEmail, NULL, 1, 1)), MSN_Translate( "you received a nudge"), 0 );
-
-			if ( MSN_GetByte( "NudgeAsMessage", 0 ))
-			{
-				if ( info->mChatID[0] ) {
-					GCDEST gcd = {0};
-					GCEVENT gce = {0};
-
-					gcd.pszModule = msnProtocolName;
-					gcd.pszID = info->mChatID;
-					gcd.iType = GC_EVENT_MESSAGE;
-					gce.cbSize = sizeof(GCEVENT);
-					gce.pDest = &gcd;
-					gce.pszUID = data.fromEmail;
-					gce.pszNick = MSN_GetContactName(MSN_HContactFromEmail(data.fromEmail, NULL, 1, 1));
-					gce.time = time(NULL);
-					gce.bIsMe = FALSE;
-					gce.pszText = (char*)MSN_Translate( "you received a nudge");
-					gce.bAddToLog = TRUE;
-					MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
-				}
-				else {
-					PROTORECVEVENT pre;
-					pre.szMessage = ( char* )MSN_Translate( "you received a nudge");
-					pre.flags = PREF_UNICODE;
-					pre.timestamp = ( DWORD )time(NULL);
-					pre.lParam = 0;
-
-					ccs.szProtoService = PSR_MESSAGE;
-					ccs.wParam = 0;
-					ccs.lParam = ( LPARAM )&pre;
-					MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
-				}
-			}
-			if ( MSN_GetByte( "NudgeAsSound", 0 ))
-				SkinPlaySound( nudgesoundname );
-			if ( MSN_GetByte( "NudgeShakeClist", 0 ) && ServiceExists( MS_SHAKE_CLIST ))
-				MSN_CallService( MS_SHAKE_CLIST, 0, 0);
-			if ( MSN_GetByte( "NudgeShakeChat", 0 ) && ServiceExists( MS_SHAKE_CHAT ))
-				MSN_CallService( MS_SHAKE_CHAT, 0, 0);
-		}
+		if( !strnicmp(tMsgBuf,"ID: 1",5))
+			NotifyEventHooks(hMSNNudge,(WPARAM) tContact,0);
 		return;
 	}
 

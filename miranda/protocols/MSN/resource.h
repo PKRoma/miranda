@@ -25,7 +25,6 @@
 #define IDD_SETAVATAR                   132
 #define IDD_OPT_MSN                     185
 #define IDD_SETNICKNAME                 226
-#define IDD_OPT_MSN_EXTRAS              227
 #define IDC_STMSNGROUP                  1002
 #define IDC_EDIT1                       1003
 #define IDC_USERTYPING                  1004
@@ -99,7 +98,7 @@
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        133
