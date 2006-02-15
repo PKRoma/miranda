@@ -748,5 +748,4 @@ void ApplyCLUIBorderStyle(HWND hwnd)
 
 	p.showCmd = SW_HIDE;
 	SetWindowPlacement(pcli->hwndContactList, &p);
-
 }

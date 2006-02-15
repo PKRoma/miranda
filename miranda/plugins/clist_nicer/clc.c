@@ -126,6 +126,11 @@ static int ClcEventAdded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+int ClcSoundHook(WPARAM wParam, LPARAM lParam)
+{
+	return 0;
+}
+
 static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 {
 	char *szProto = NULL;
@@ -194,6 +199,19 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 			pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 		}
 	}
+	else if (wParam == 0 && !__strcmp(cws->szModule, "Skin")) {
+		if(!__strcmp(cws->szSetting, "UseSound")) {
+			if (hSoundHook) {
+				UnhookEvent(hSoundHook);
+				hSoundHook = 0;
+			}
+			g_CluiData.soundsOff = DBGetContactSettingByte(0, cws->szModule, cws->szSetting, 0) ? 0 : 1;
+			if (g_CluiData.soundsOff && hSoundHook == 0)
+				hSoundHook = HookEvent(ME_SKIN_PLAYINGSOUND, ClcSoundHook);
+			CheckDlgButton(pcli->hwndContactList, IDC_TBSOUND, g_CluiData.soundsOff ? BST_UNCHECKED : BST_CHECKED);
+			SetButtonStates(pcli->hwndContactList);
+		}
+	}
 	else if(szProto == NULL && wParam == 0) {
 		if(!__strcmp(cws->szSetting, "XStatusId"))
 			CluiProtocolStatusChanged(0, 0);
@@ -212,6 +230,7 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 {
 	SFL_Destroy();
 	g_shutDown = TRUE;
+	DestroyServiceFunction("CList/GetContactStatusMsg");
 	UnhookEvent(hClcSettingsChanged);
 	UnhookEvent(hClcDBEvent);
 	if (hIcoLibChanged)
@@ -612,7 +631,7 @@ LBL_Def:
 				index = GetExtraCache((HANDLE)wParam, szProto);
 				if(!dat->bisEmbedded && g_CluiData.bMetaAvail && szProto) {				// may be a subcontact, forward the xstatus
 					if(DBGetContactSettingByte((HANDLE)wParam, "MetaContacts", "IsSubcontact", 0)) {
-						HANDLE hMasterContact = DBGetContactSettingDword((HANDLE)wParam, "MetaContacts", "Handle", 0);
+						HANDLE hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, "MetaContacts", "Handle", 0);
 						if(hMasterContact && hMasterContact != (HANDLE)wParam)				// avoid recursive call of settings handler
 							DBWriteContactSettingByte(hMasterContact, "MetaContacts", "XStatusId", 
 													  DBGetContactSettingByte((HANDLE)wParam, szProto, "XStatusId", 0));

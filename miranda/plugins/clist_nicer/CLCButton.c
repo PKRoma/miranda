@@ -597,6 +597,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 EnterCriticalSection(&csTips);
                 if (!hwndToolTips) {
                     hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, _T(""), WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
+					SetWindowPos(hwndToolTips, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
                 }
                 ZeroMemory(&ti, sizeof(ti));
                 ti.cbSize = sizeof(ti);

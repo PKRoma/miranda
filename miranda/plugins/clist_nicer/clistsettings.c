@@ -25,9 +25,13 @@ UNICODE done
 */
 #include "commonheaders.h"
 
+extern int g_shutDown;
+
 int GetContactStatusMessage(WPARAM wParam, LPARAM lParam)
 {
-	return((int)SendMessage(pcli->hwndContactTree, CLM_GETSTATUSMSG, wParam, lParam));
+	if(!g_shutDown)
+		return((int)SendMessage(pcli->hwndContactTree, CLM_GETSTATUSMSG, wParam, lParam));
+	return 0;
 }
 
 wchar_t* a2u( char* src )

@@ -563,11 +563,6 @@ void CLN_LoadAllIcons(BOOL mode)
 	}
 }
 
-static int ClcSoundHook(WPARAM wParam, LPARAM lParam)
-{
-	return 0;
-}
-
 void ConfigureEventArea(HWND hwnd)
 {
 	int iCount = GetMenuItemCount(g_CluiData.hMenuNotify);
@@ -933,6 +928,7 @@ extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT message, WPA
 static void ShowCLUI(HWND hwnd)
 {
 	int state = old_cliststate;
+	int onTop = DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT);
 
 	SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 	hMenuMain = GetMenu(pcli->hwndContactList);
@@ -953,7 +949,7 @@ static void ShowCLUI(HWND hwnd)
 		g_CluiData.forceResize = TRUE;
 		ShowWindow(pcli->hwndContactList, SW_HIDE);
 	}
-	SetWindowPos(pcli->hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+	SetWindowPos(pcli->hwndContactList, onTop ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
 	DrawMenuBar(hwnd);
 	if(g_CluiData.autosize) {
 		SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
@@ -1083,7 +1079,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				if (top_buttons[i].id != IDC_TBGLOBALSTATUS && top_buttons[i].id != IDC_TBMENU)
 					SendMessage(top_buttons[i].hwnd, BUTTONSETASFLATBTN, 0, 0);
 
-				SendMessage(top_buttons[i].hwnd, BUTTONADDTOOLTIP, (WPARAM) Translate(top_buttons[i].szTooltip), 0);
+				SendMessage(top_buttons[i].hwnd, BUTTONADDTOOLTIP, (WPARAM) TranslateTS(top_buttons[i].szTooltip), 0);
 			}
 			if (g_CluiData.soundsOff)
 				hSoundHook = HookEvent(ME_SKIN_PLAYINGSOUND, ClcSoundHook);
@@ -1621,17 +1617,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					}
 				case IDC_TBSOUND:
 					{
-						if (hSoundHook) {
-							UnhookEvent(hSoundHook);
-							hSoundHook = 0;
-						}
 						g_CluiData.soundsOff = !g_CluiData.soundsOff;
 						DBWriteContactSettingByte(NULL, "CLUI", "NoSounds", g_CluiData.soundsOff);
-						if (g_CluiData.soundsOff && hSoundHook == 0)
-							hSoundHook = HookEvent(ME_SKIN_PLAYINGSOUND, ClcSoundHook);
 						DBWriteContactSettingByte(NULL, "Skin", "UseSound", g_CluiData.soundsOff ? 0 : 1);
-						CheckDlgButton(pcli->hwndContactList, IDC_TBSOUND, g_CluiData.soundsOff ? BST_UNCHECKED : BST_CHECKED);
-						SetButtonStates(hwnd);
 						return 0;
 					}
 				case IDC_TBSELECTVIEWMODE:
