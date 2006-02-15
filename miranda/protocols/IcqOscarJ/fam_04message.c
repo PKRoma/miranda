@@ -1805,7 +1805,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
     dwCookie = wCookie;
 
-    if (FindCookie(dwCookie, &dwCookieUin, &pCookieData))
+    if (!FindCookie(dwCookie, &dwCookieUin, &pCookieData))
     { // use old reliable method
       NetLog_Server("SNAC(4.B) Received an ack that I did not ask for from (%u)", dwUin);
       return;
