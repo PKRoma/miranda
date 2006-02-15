@@ -56,14 +56,11 @@ static int DrawTextUtf(HDC hDC, char* text, LPRECT lpRect, UINT uFormat, LPSIZE 
   }
   else
   {
-    char *tmp = NULL;
-
     // caution, here we change text's contents
     utf8_decode_static(text, text, strlennull(text)+1); 
-    res = DrawTextA(hDC, tmp, -1, lpRect, uFormat);
+    res = DrawTextA(hDC, text, -1, lpRect, uFormat);
     if (lpSize)
-      GetTextExtentPoint32A(hDC, tmp, strlennull(tmp), lpSize);
-    SAFE_FREE(&tmp);
+      GetTextExtentPoint32A(hDC, text, strlennull(text), lpSize);
   }
   return res;
 }
