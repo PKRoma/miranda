@@ -1950,6 +1950,9 @@ static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
     if (ICQGetContactSettingUID((HANDLE)wParam, &dwUIN, &szUID))
       return 0;
 
+    // Close all opened peer connections
+    CloseContactDirectConns((HANDLE)wParam);
+
     if ((wGroupID && wContactID) || wVisibleID || wInvisibleID || wIgnoreID)
     {
       if (wContactID)
