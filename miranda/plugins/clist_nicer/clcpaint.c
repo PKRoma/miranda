@@ -922,7 +922,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	if (iImage != -1) {
 		// this doesnt use CLS_CONTACTLIST since the colour prolly wont match anyway
 		COLORREF colourFg = dat->selBkColour;
-		int clientId = contact->clientId;
+		//int clientId = contact->clientId;
 		int mode = ILD_NORMAL;
 		pi_selectiveIcon = g_selectiveIcon && (type == CLCIT_CONTACT);
 
@@ -953,17 +953,16 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 			iconXSpace = 0;
 		if (type == CLCIT_CONTACT && !dat->bisEmbedded) {
 			BYTE bApparentModeDontCare = !((flags & CONTACTF_VISTO) ^ (flags & CONTACTF_INVISTO));
-			// client icon
-			if (clientId >= 0 && clientId < 35 && dwFlags & CLUI_SHOWCLIENTICONS) {
-				//DrawIconEx(hdcMem, rcContent.right - 18, twoRows ? rcContent.bottom - g_cysmIcon - 2 : y + ((rowHeight - 16) >> 1), im_clienthIcons[clientId], g_cxsmIcon, g_cysmIcon, 0, 0, DI_NORMAL | DI_COMPAT);
+			/*
+			if (clientId >= 0 && clientId < NR_CLIENTS && dwFlags & CLUI_SHOWCLIENTICONS) {
 				DrawIconEx(hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1), im_clienthIcons[clientId], g_CluiData.exIconScale, g_CluiData.exIconScale, 0, 0, DI_NORMAL | DI_COMPAT);
 				rcContent.right -= g_exIconSpacing;
 				rightIcons++;
-			}
+			}*/
 			contact->extraIconRightBegin = 0;
 			if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry && cEntry->iExtraValid) {
 				int i;
-				for(i = 5; i >= 0; i--) {
+				for(i = 6; i >= 0; i--) {
 					if(cEntry->iExtraImage[i] != 0xff && ((1 << i) & g_CluiData.dwExtraImageMask)) {
 						if(contact->extraIconRightBegin == 0)
 							contact->extraIconRightBegin = rcContent.right;

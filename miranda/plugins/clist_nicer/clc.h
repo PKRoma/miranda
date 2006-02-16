@@ -33,7 +33,7 @@ UNICODE - done.
 #define INTM_XSTATUSCHANGED  (WM_USER+26)
 #define INTM_METACHANGEDEVENT (WM_USER+27)
 #define INTM_CODEPAGECHANGED (WM_USER+28)
-#define INTM_CLIENTCHANGED   (WM_USER+29)
+//#define INTM_CLIENTCHANGED   (WM_USER+29)
 #define INTM_AVATARCHANGED   (WM_USER+30)
 #define INTM_STATUSMSGCHANGED   (WM_USER+31)
 #define INTM_SORTCLC            (WM_USER+32)
@@ -123,7 +123,7 @@ struct ClcContact {
 	HANDLE hSubContact;
 	BYTE xStatus;
 	char *metaProto;
-	int clientId;
+	//int clientId;
 	DWORD codePage;
 	struct avatarCacheEntry *ace;
 	WORD wStatus;
@@ -553,6 +553,7 @@ int ClcSoundHook(WPARAM wParam, LPARAM lParam);
 #define EIMG_RESERVED 3
 #define EIMG_EXTRA 4
 #define EIMG_RESERVED2 5
+#define EIMG_CLIENT 6
 
 #define EIMG_SHOW_MAIL 1
 #define EIMG_SHOW_URL 2
@@ -560,6 +561,7 @@ int ClcSoundHook(WPARAM wParam, LPARAM lParam);
 #define EIMG_SHOW_RESERVED 8
 #define EIMG_SHOW_EXTRA 16
 #define EIMG_SHOW_RESERVED2 32
+#define EIMG_SHOW_CLIENT 64
 
 #define CLCHT_ONITEMEXTRAEX  0x1000  //on an extra icon, HIBYTE(HIWORD()) says which
 #define CLCHT_ONAVATAR       0x2000

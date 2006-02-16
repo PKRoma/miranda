@@ -69,6 +69,9 @@ void FreeProtocolData( void )
 			if (PD) mir_free(PD);
 }	}	}
 
+int g_maxStatus = ID_STATUS_OFFLINE;
+char g_maxProto[100] = "";
+
 void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 {
 	int protoCount,i;
@@ -103,6 +106,8 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 		return;
 
 	FreeProtocolData();
+	g_maxStatus = ID_STATUS_OFFLINE;
+	g_maxProto[0] = 0;
 
 	SendMessage(pcli->hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders);
 
@@ -285,6 +290,11 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	} else {
 		wStatus = maxStatus;
 		iIcon = IconFromStatusMode((wStatus >= ID_STATUS_CONNECTING && wStatus < ID_STATUS_OFFLINE) ? szMaxProto : NULL, (int) wStatus, 0, &hIcon);
+		g_maxStatus = (int)wStatus;
+		if(szMaxProto) {
+			lstrcpynA(g_maxProto, szMaxProto, 100);
+			g_maxProto[99] = 0;
+		}
 	}
 	/*
 	* this is used globally (actually, by the clist control only) to determine if

@@ -46,20 +46,19 @@ int ShowHide(WPARAM wParam, LPARAM lParam);
 
 HANDLE hContactDoubleClicked, hStatusModeChangeEvent;
 HIMAGELIST hCListImages;
-extern int currentDesiredStatusMode;
+extern int currentDesiredStatusMode, g_maxStatus;
 
 extern struct CluiData g_CluiData;
 
 static int SetStatusMode(WPARAM wParam, LPARAM lParam)
 {
-	//todo: check wParam is valid so people can't use this to run random menu items
 	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
 	return 0;
 }
 
 static int GetStatusMode(WPARAM wParam, LPARAM lParam)
 {
-	return currentDesiredStatusMode;
+	return(g_maxStatus == ID_STATUS_OFFLINE ? currentDesiredStatusMode : g_maxStatus);
 }
 
 extern int ( *saveIconFromStatusMode )( const char *szProto, int status, HANDLE hContact );

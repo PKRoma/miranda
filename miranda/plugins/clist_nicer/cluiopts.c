@@ -98,8 +98,9 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		{
 			TranslateDialogDefault(hwndDlg);
 
-			CheckDlgButton(hwndDlg, IDC_SHOWCLIENTICONS, g_CluiData.dwFlags & CLUI_SHOWCLIENTICONS);
+			//CheckDlgButton(hwndDlg, IDC_SHOWCLIENTICONS, g_CluiData.dwFlags & CLUI_SHOWCLIENTICONS);
 
+			CheckDlgButton(hwndDlg, IDC_SHOWCLIENTICONS, g_CluiData.dwExtraImageMask & EIMG_SHOW_CLIENT);
 			CheckDlgButton(hwndDlg, IDC_SHOWEXTENDEDSTATUS, g_CluiData.dwExtraImageMask & EIMG_SHOW_EXTRA);
 			CheckDlgButton(hwndDlg, IDC_EXTRAMAIL, g_CluiData.dwExtraImageMask & EIMG_SHOW_MAIL);
 			CheckDlgButton(hwndDlg, IDC_EXTRAWEB, g_CluiData.dwExtraImageMask & EIMG_SHOW_URL);
@@ -290,6 +291,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					(IsDlgButtonChecked(hwndDlg, IDC_SHOWEXTENDEDSTATUS) ? EIMG_SHOW_EXTRA : 0) |
 					(IsDlgButtonChecked(hwndDlg, IDC_EXTRAPHONE) ? EIMG_SHOW_SMS : 0) |
 					(IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED) ? EIMG_SHOW_RESERVED : 0) |
+					(IsDlgButtonChecked(hwndDlg, IDC_SHOWCLIENTICONS) ? EIMG_SHOW_CLIENT : 0) |
 					(IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED2) ? EIMG_SHOW_RESERVED2 : 0);
 
 				g_CluiData.bClipBorder = (BYTE)GetDlgItemInt(hwndDlg, IDC_CLIPBORDER, &translated, FALSE);

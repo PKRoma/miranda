@@ -6,6 +6,7 @@
 #include "cluiframes.h"
 
 extern int DefaultImageListColorDepth;
+extern HANDLE hPreBuildStatusMenuEvent;
 
 extern HINSTANCE g_hInst;
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
@@ -25,20 +26,19 @@ int arrlen;
 int EnumProc (const char *szSetting,LPARAM lParam)
 {
 
-    if (szSetting==NULL) {
+    if (szSetting==NULL)
         return(1);
-    };
+
     arrlen++;
     settingname=(char **)realloc(settingname,arrlen*sizeof(char *));
     settingname[arrlen-1]=_strdup(szSetting);
     return(1);
-};
+}
 
 int  DeleteAllSettingInProtocols()
 {
     DBCONTACTENUMSETTINGS dbces;
     arrlen=0;
-
 
     dbces.pfnEnumProc=EnumProc;
     dbces.szModule="Protocols";
@@ -46,22 +46,20 @@ int  DeleteAllSettingInProtocols()
 
     CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
 
-//delete all settings
-    if (arrlen==0) {
+    if (arrlen==0)
         return(0);
-    };
+
     {
         int i;
         for (i=0;i<arrlen;i++) {
             DBDeleteContactSetting(0,"Protocols",settingname[i]);
             free(settingname[i]);
-        };
+        }
         free(settingname);
         settingname=NULL;
-    };
+    }
     return(0);
-};
-
+}
 
 int CheckProtocolOrder()
 {
@@ -74,22 +72,18 @@ int CheckProtocolOrder()
     char buf[10];
     int ver;
 
-    //curproto=0;
-    //curproto[1]='22';
     protochanged=FALSE;
-//	TRACE("Calling CheckProtocolOrder\r\n");
 
     ver=DBGetContactSettingDword(0,"Protocols","PrVer",-1);
-    if (ver!=PrVer) {
+    if (ver!=PrVer)
         protochanged=TRUE;
-    };
 
     StoredProtoCount=-1;
     if (!protochanged) StoredProtoCount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 
-    if (StoredProtoCount==-1) {
+    if (StoredProtoCount==-1)
         protochanged=TRUE;
-    };
+
     if (!protochanged) {
         CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 
@@ -100,10 +94,9 @@ int CheckProtocolOrder()
             v++;
         }
 
-        if (StoredProtoCount!=v) {
+        if (StoredProtoCount!=v)
             protochanged=TRUE;
-        };
-    };
+    }
     if (!protochanged) {
         for (i=0;i<StoredProtoCount;i++) {
             _itoa(i,buf,10);
@@ -153,11 +146,8 @@ int CheckProtocolOrder()
     }
     else {
         return(0);
-    };
-
-
-
-};
+    }
+}
 
 int FillTree(HWND hwnd)
 {
@@ -168,32 +158,24 @@ int FillTree(HWND hwnd)
     char buf[10];
     int i,count;
 
-
     tvis.hParent=NULL;
     tvis.hInsertAfter=TVI_LAST;
     tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
 
-//			CheckProtocolOrder();
     TreeView_DeleteAllItems(hwnd);
     count=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
-    if (count==-1) {
+    if (count==-1)
         return(FALSE);
-    };
 
     for (i=0;i<count;i++) {
-                //if(protos[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
         _itoa(i, (char *)&buf,10);
         szSTName=DBGetString(0,"Protocols",(char *)&buf);
         if (szSTName==NULL)
             continue;
 
         CallProtoService(szSTName,PS_GETNAME,sizeof(szName),(LPARAM)szName);
-
         PD=(ProtocolData*)malloc(sizeof(ProtocolData));
-
-
         PD->RealName=szSTName;
-
 
         _itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
         PD->show=(boolean)DBGetContactSettingDword(0,"Protocols",(char *)&buf,1);
@@ -205,13 +187,9 @@ int FillTree(HWND hwnd)
         tvis.item.pszText = szName;//Translate(szName);
         tvis.item.iImage=tvis.item.iSelectedImage=PD->show;
         SendMessageA(hwnd, TVM_INSERTITEMA, 0, (LPARAM)&tvis);
-                //tvis.item.iImage=tvis.item.iSelectedImage=PD->show;
-                //TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_PROTOCOLVISIBILITY),&tvis);
-                //TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_PROTOCOLVISIBILITY),&tvis);
-    };
-
+    }
     return(0);
-};
+}
 
 BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {   struct ProtocolOrderData *dat;
@@ -226,7 +204,6 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_USERDATA,(LONG)dat);
                 dat->dragging=0;
 
-            //SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLVISIBILITY),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLVISIBILITY),GWL_STYLE)|TVS_NOHSCROLL);
                 SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_STYLE)|TVS_NOHSCROLL);
 
                 {   HIMAGELIST himlCheckBoxes;
@@ -251,7 +228,6 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                         FillTree(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
                         CluiProtocolStatusChanged(0, 0);
                         SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-                            //BuildStatusMenu(0,0);
                         return(0);
                     };
                 };
@@ -272,8 +248,6 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                                 tvi.cchTextMax=32;
                                 tvi.mask=TVIF_TEXT|TVIF_PARAM|TVIF_HANDLE;
                                 tvi.pszText=(char *)&idstr;
-                            //CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
-                            //count--;
                                 count=0;
 
                                 while (tvi.hItem!=NULL) {
@@ -282,46 +256,22 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                                     DBWriteContactSettingString(NULL,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->RealName);
 
                                     _itoa(OFFSET_PROTOPOS+count,(char *)&buf,10);//save pos in protos
-
                                     DBWriteContactSettingDword(0,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->protopos);
 
                                     _itoa(OFFSET_VISIBLE+count,(char *)&buf,10);//save pos in protos
-
                                     DBWriteContactSettingDword(0,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->show);
 
                                     tvi.hItem=TreeView_GetNextSibling(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),tvi.hItem);
-
                                     count++;
                                 }
                                 CluiProtocolStatusChanged(0,0);
                                 MenuModulesLoaded(0,0);
                                 pcli->pfnTrayIconIconsChanged();
                                 pcli->pfnClcOptionsChanged();
+								NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
                             }
                     }
                     break;
-                    /*
-                    case IDC_PROTOCOLORDER: //IDC_PROTOCOLVISIBILITY:
-                    if(((LPNMHDR)lParam)->code==NM_CLICK) {
-                        TVHITTESTINFO hti;
-                        hti.pt.x=(short)LOWORD(GetMessagePos());
-                        hti.pt.y=(short)HIWORD(GetMessagePos());
-                        ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
-                        if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti))
-                            if(hti.flags&TVHT_ONITEMICON) {
-                                TVITEM tvi;
-                                tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-                                tvi.hItem=hti.hItem;
-                                TreeView_GetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
-                                tvi.iImage=tvi.iSelectedImage=!tvi.iImage;
-                                ((ProtocolData *)tvi.lParam)->show=tvi.iImage;
-                                TreeView_SetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
-                                SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-                                ShowWindow(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
-                            }
-                    }
-                    break;
-                    */
                 case IDC_PROTOCOLORDER:
                     switch (((LPNMHDR)lParam)->code) {
                         case TVN_BEGINDRAGA:
@@ -338,7 +288,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                                 hti.pt.x=(short)LOWORD(GetMessagePos());
                                 hti.pt.y=(short)HIWORD(GetMessagePos());
                                 ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
-                                if (TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti))
+								if (TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti)) {
                                     if (hti.flags&TVHT_ONITEMICON) {
                                         TVITEM tvi;
                                         tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
@@ -348,14 +298,9 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                                         ((ProtocolData *)tvi.lParam)->show=tvi.iImage;
                                         TreeView_SetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
                                         SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-
-                                //all changes take effect in runtime
-                                //ShowWindow(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
                                     }
-
-
-
-                            };
+								}
+                            }
                     }
                     break;
             }

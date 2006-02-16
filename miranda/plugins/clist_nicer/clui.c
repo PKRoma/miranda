@@ -88,9 +88,6 @@ BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst,SIZE *
 extern LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern HANDLE hNotifyFrame;
 
-//int  (WINAPI *MyMultiByteToWideChar)(UINT uCodePage, DWORD dwFlags, LPCSTR lpMultiByteStr, int cchMultiByte, LPWSTR lpWideCharStr, int cchWideChar) = 0;
-//int  (WINAPI *MyDrawTextW)(HDC hDC, LPCWSTR lpString, int nCount, OUT LPRECT lpRect, UINT uFormat) = 0;
-
 int CluiOptInit(WPARAM wParam, LPARAM lParam);
 int SortList(WPARAM wParam, LPARAM lParam);
 int LoadCluiServices(void);
@@ -113,13 +110,15 @@ POINT g_oldPos = {0};
 int during_sizing = 0;
 extern int dock_prevent_moving;
 
+HICON overlayicons[10];
+/*
 char *im_clients[] = {
 	"MIRANDA","&RQ","TRILLIAN","GAIM","IM2","KOPETE","LICQ","QIP","SIM",
 		"ICQ 2000","ICQ 2001B","ICQ 200","ICQ2GO! (FLASH)","ICQ2GO!","ICQ5","ICQ LITE V5","ICQ LITE V4","ICQ LITE",
 		"AGILE","GNOMEICU","MOBICQ", "JIMM", "LIBICQ2000",
 		"CENTERICQ", "IMPLUS", "SPAM BOT", "ICQ FOR MAC",
 		"ALICQ", "NICQ", "PSI", "STICQ", "STRICQ", "VICQ",
-		"WEBICQ", "YAMIGO", "YSM", NULL
+		"WEBICQ", "YAMIGO", "YSM", "TICQCLIENT", "R&Q", "GADU-GADU(TM)", NULL
 };
 
 static char *im_clients_descr[] = {
@@ -129,12 +128,11 @@ static char *im_clients_descr[] = {
 		"Agile Messenger","GnomeICU","mobicq / JIMM", "mobicq / JIMM", "libICQ 2000",
 		"Center ICQ", "IM+", "Spam Bot", "ICQ for Mac",
 		"Alicq", "Nicq", "Psi", "Sticq", "StrICQ", "vICQ",
-		"WebICQ", "Yamigo", "Ysm", NULL, NULL
+		"WebICQ", "Yamigo", "Ysm", "TICQ Client (Delphi)", "R & Q", "Gadu-Gadu(tm)", NULL, NULL
 };
 
 
 HICON im_clienthIcons[NR_CLIENTS];
-HICON overlayicons[10];
 
 static int clientIcons[] = {
 	IDI_CLIENTMIRANDA,IDI_CLIENTRQ,IDI_CLIENTTRILLIAN,IDI_CLIENTGAIM,IDI_CLIENTIM2,IDI_CLIENTKOPETE,IDI_CLIENTLICQ,IDI_CLIENTQIP,IDI_CLIENTSIM,
@@ -142,8 +140,10 @@ static int clientIcons[] = {
 		IDI_CLIENTAGILE,IDI_CLIENTGNOMEICU,IDI_CLIENTMOBICQ,IDI_CLIENTMOBICQ,IDI_CLIENTLIBICQ,
 		IDI_CENTERICQ, IDI_CLIENTIMPLUS, IDI_CLIENTSPAMBOT, IDI_CLIENTICQMAC,
 		IDI_CLIENTALICQ, IDI_CLIENTNICQ, IDI_CLIENTPSI, IDI_CLIENTSTICQ, IDI_CLIENTSTRICQ, IDI_CLIENTVICQ,
-		IDI_CLIENTWEBICQ, IDI_CLIENTYAMIGO, IDI_CLIENTYSM
+		IDI_CLIENTWEBICQ, IDI_CLIENTYAMIGO, IDI_CLIENTYSM, IDI_CLIENTTICQ, IDI_CLIENTRANDQ, IDI_CLIENTGG
 };
+
+*/
 
 static struct CluiTopButton top_buttons[] = {
 	    0, 0, 0, IDC_TBTOPMENU, IDI_TBTOPMENU, 0, "CLN_topmenu", NULL, TOPBUTTON_PUSH, 1, _T("Show menu"), 
@@ -243,6 +243,7 @@ static int FS_FontsChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+/*
 void GetClientID(struct ClcContact *contact, char *client)
 {
 	int i = 0;
@@ -267,7 +268,7 @@ void GetClientID(struct ClcContact *contact, char *client)
 		}
 		i++;
 	}
-}
+}*/
 
 /*
 * create the CLC control, but not yet the frame. The frame containing the CLC should be created as the
@@ -404,13 +405,14 @@ void ClearIcons(int mode)
 {
 	int i;
 
+	/*
 	for(i = IDI_CLIENTFIRST; i <= IDI_CLIENTLAST; i++) {
 		if(im_clienthIcons[i - IDI_CLIENTFIRST] != 0) {
 			if(mode)
 				DestroyIcon(im_clienthIcons[i - IDI_CLIENTFIRST]);
 			im_clienthIcons[i - IDI_CLIENTFIRST] = 0;
 		}
-	}
+	}*/
 
 	for(i = IDI_OVL_OFFLINE; i <= IDI_OVL_OUTTOLUNCH; i++) {
 		if(overlayicons[i - IDI_OVL_OFFLINE] != 0) {
@@ -483,6 +485,7 @@ static void InitIcoLib()
 	sid.iDefaultIndex = -IDI_OVL_FREEFORCHAT;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
 
+	/*
 	sid.pszSection = "CList - Nicer/Client Icons";
 	i = 0;
 	while (im_clients[i] != NULL) {
@@ -492,7 +495,7 @@ static void InitIcoLib()
 		sid.iDefaultIndex = -(clientIcons[i]);
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
 		i++;
-	}
+	}*/
 
 	sid.pszSection = "CList - Nicer/Overlay Icons";
 	for (i = IDI_OVL_OFFLINE; i <= IDI_OVL_OUTTOLUNCH; i++) {

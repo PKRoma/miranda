@@ -30,7 +30,7 @@ CLIST_INTERFACE* pcli = NULL;
 
 #define DEFAULT_TB_VISIBILITY (1 | 2 | 4 | 8 | 16 | 32)
 TCHAR *szNoevents = _T("No events...");
-extern HICON im_clienthIcons[NR_CLIENTS];
+//extern HICON im_clienthIcons[NR_CLIENTS];
 extern HICON overlayicons[10];
 
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
@@ -188,7 +188,7 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 	g_CluiData.tabSRMM_Avail = ServiceExists("SRMsg_MOD/GetWindowFlags") ? TRUE : FALSE;
 	g_CluiData.IcoLib_Avail = ServiceExists(MS_SKIN2_ADDICON) ? TRUE : FALSE;
 
-	ZeroMemory((void *)im_clienthIcons, sizeof(HICON) * NR_CLIENTS);
+	//ZeroMemory((void *)im_clienthIcons, sizeof(HICON) * NR_CLIENTS);
 	ZeroMemory((void *)overlayicons, sizeof(HICON) * 10);
 
 	CLN_LoadAllIcons(1);
@@ -256,7 +256,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	g_CluiData.fadeinout = DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", 0);
 	g_CluiData.autosize = DBGetContactSettingByte(NULL, "CLUI", "AutoSize", 0);
 	g_CluiData.titleBarHeight = DEFAULT_TITLEBAR_HEIGHT;
-	g_CluiData.dwExtraImageMask = DBGetContactSettingDword(NULL, "CLUI", "ximgmask", 0);
+	g_CluiData.dwExtraImageMask = DBGetContactSettingDword(NULL, "CLUI", "ximgmask", 0) | EIMG_SHOW_CLIENT;
 	g_CluiData.bNoOfflineAvatars = DBGetContactSettingByte(NULL, "CList", "NoOfflineAV", 1);
 	g_CluiData.bFullTransparent = DBGetContactSettingByte(NULL, "CLUI", "fulltransparent", 0);
 	g_CluiData.bDblClkAvatars = DBGetContactSettingByte(NULL, "CLC", "dblclkav", 0);

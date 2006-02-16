@@ -182,9 +182,10 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 					pcli->pfnClcBroadcast(INTM_XSTATUSCHANGED, wParam, lParam);
 				else if(!__strcmp(cws->szSetting, "Timezone"))
 					ReloadExtraInfo((HANDLE)wParam);
+				/*
 				else if (!__strcmp(cws->szSetting, "MirVer"))
 					pcli->pfnClcBroadcast(INTM_CLIENTCHANGED, wParam, lParam);
-
+				*/
 				if (g_CluiData.bMetaAvail && !(g_CluiData.dwFlags & CLUI_USEMETAICONS) && !__strcmp(szProto, "MetaContacts")) {
 					if ((lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 6)) || strstr("Default,ForceSend,Nick", cws->szSetting))
 						pcli->pfnClcBroadcast(INTM_NAMEORDERCHANGED, wParam, lParam);
@@ -649,6 +650,7 @@ LBL_Def:
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)(contact ? contact->hContact : 0));
 			goto LBL_Def;
 		}
+		/*
 	case INTM_CLIENTCHANGED:
 		{
 			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
@@ -668,7 +670,7 @@ LBL_Def:
 			}
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
 			goto LBL_Def;
-		}
+		}*/
 	case WM_PAINT:
 		{
 			HDC hdc;

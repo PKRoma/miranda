@@ -68,7 +68,7 @@ boolean FramesSysNotStarted=TRUE;
 typedef struct {
     int order;
     int realpos;
-}SortData;
+} SortData;
 
 static int sortfunc(const void *a,const void *b)
 {
@@ -77,24 +77,20 @@ static int sortfunc(const void *a,const void *b)
     sd2=(SortData *)b;
     if (sd1->order > sd2->order) {
         return(1);
-    };
+    }
     if (sd1->order < sd2->order) {
         return(-1);
-    };
-    //if (sd1->order = sd2->order){return(0);};
+    }
     return(0);
-};
+}
 
-
-//============
-#define CLUIFRAMESSETALIGN				"CLUIFramesSetAlign"
-
+#define CLUIFRAMESSETALIGN					"CLUIFramesSetAlign"
 #define CLUIFRAMESSETALIGNALTOP				"CLUIFramesSetAlignalTop"
-#define CLUIFRAMESSETALIGNALCLIENT				"CLUIFramesSetAlignalClient"
-#define CLUIFRAMESSETALIGNALBOTTOM				"CLUIFramesSetAlignalBottom"
+#define CLUIFRAMESSETALIGNALCLIENT			"CLUIFramesSetAlignalClient"
+#define CLUIFRAMESSETALIGNALBOTTOM			"CLUIFramesSetAlignalBottom"
+#define CLUIFRAMESMOVEUP					"CLUIFramesMoveUp"
+#define CLUIFRAMESMOVEDOWN					"CLUIFramesMoveDown"
 
-#define CLUIFRAMESMOVEUP			"CLUIFramesMoveUp"
-#define CLUIFRAMESMOVEDOWN			"CLUIFramesMoveDown"
 typedef struct tagMenuHandles {
     HANDLE MainMenuItem;
     HANDLE MIVisible,MITitle,MITBVisible,MILock,MIColl,MIFloating,MIAlignRoot;
@@ -221,11 +217,9 @@ static void __forceinline lockfrm()
 
 static void __forceinline ulockfrm()
 {
-    if (FramesSysNotStarted == FALSE)
+    //if (FramesSysNotStarted == FALSE)
         LeaveCriticalSection(&csFrameHook);
 }
-
-//////////screen docking,code  from "floating contacts" plugin.
 
 static wndFrame* FindFrameByWnd( HWND hwnd )
 {
@@ -237,9 +231,8 @@ static wndFrame* FindFrameByWnd( HWND hwnd )
     for (i=0;i<nFramescount;i++) {
         if ((Frames[i].floating)&&(Frames[i].ContainerWnd==hwnd) ) {
             return(&Frames[i]);
-        };
-    };
-
+        }
+    }
     return( NULL);
 }
 
@@ -344,8 +337,6 @@ static void PositionThumb( wndFrame *pThumb, short nX, short nY )
                 OffsetRect( &rcThumb, nX - rcThumb.left, nY - rcThumb.top );
 
                 GetWindowRect( pCurThumb->ContainerWnd, &rc );
-
-            // These are rects we will dock into
 
                 rcLeft.left     = rc.left - nOffs;
                 rcLeft.top      = rc.top - nOffs;
@@ -638,7 +629,6 @@ int CLUIFramesLoadFrameSettings(int Frameid)
 
     if (FramesSysNotStarted) return -1;
 
-    //lockfrm();must locked in caller
     if (Frameid<0||Frameid>=nFramescount) return -1;
 
     maxstored=DBGetContactSettingWord(0,CLUIFrameModule,"StoredFrames",-1);
@@ -648,7 +638,6 @@ int CLUIFramesLoadFrameSettings(int Frameid)
     if (storpos==-1) return 0;
 
     DBLoadFrameSettingsAtPos(storpos,Frameid);
-    //ulockfrm();
     return 0;
 }
 
@@ -656,32 +645,35 @@ int CLUIFramesStoreFrameSettings(int Frameid)
 {
     int maxstored,storpos;
 
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+		return -1;
 
-    //lockfrm();
-    if (Frameid<0||Frameid>=nFramescount) return -1;
+    if (Frameid<0||Frameid>=nFramescount) 
+		return -1;
 
     maxstored=DBGetContactSettingWord(0,CLUIFrameModule,"StoredFrames",-1);
-    if (maxstored==-1) maxstored=0;
+    if (maxstored==-1) 
+		maxstored=0;
 
     storpos=LocateStorePosition(Frameid,maxstored);
-    if (storpos==-1) {
+    if (storpos==-1)
         storpos=maxstored; maxstored++;
-    }
 
     DBStoreFrameSettingsAtPos(storpos,Frameid);
     DBWriteContactSettingWord(0,CLUIFrameModule,"StoredFrames",(WORD)maxstored);
-    //ulockfrm();
     return 0;
 }
 
 int CLUIFramesStoreAllFrames()
 {
     int i;
-    if (FramesSysNotStarted) return -1;
-    if(g_shutDown) {
+    
+	if (FramesSysNotStarted) 
+		return -1;
+    
+	if(g_shutDown)
         return -1;
-    }
+
     lockfrm();
     for (i=0;i<nFramescount;i++)
         CLUIFramesStoreFrameSettings(i);
@@ -908,9 +900,9 @@ static int CLUIFramesModifyContextMenuForFrame(WPARAM wParam,LPARAM lParam)
 {
     int pos;
     CLISTMENUITEM mi;
-    //TMO_MenuItem tmi;
 
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+		return -1;
 
     lockfrm();
     pos=id2pos(wParam);
@@ -970,9 +962,9 @@ int CLUIFramesModifyMainMenuItems(WPARAM wParam,LPARAM lParam)
 {
     int pos;
     CLISTMENUITEM mi;
-    //TMO_MenuItem tmi;
 
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+		return -1;
 
     lockfrm();
     pos=id2pos(wParam);
@@ -1016,23 +1008,6 @@ int CLUIFramesModifyMainMenuItems(WPARAM wParam,LPARAM lParam)
         if (Frames[pos].align&alBottom) mi.flags|=CMIF_CHECKED;
         CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignBottom,(LPARAM)&mi);
 
-/*
-        mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP|((Frames[pos].align&alClient)?CMIF_GRAYED:0);
-        if(Frames[pos].align&alTop) mi.flags|=CMIF_CHECKED;
-        ModifyMItem((WPARAM)contMIAlignTop,(LPARAM)&mi);
-
-        mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP|CMIF_GRAYED;
-        if(Frames[pos].align&alClient) mi.flags|=CMIF_CHECKED;
-        ModifyMItem((WPARAM)contMIAlignClient,(LPARAM)&mi);
-
-        mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP|((Frames[pos].align&alClient)?CMIF_GRAYED:0);
-        if(Frames[pos].align&alBottom) mi.flags|=CMIF_CHECKED;
-        ModifyMItem((WPARAM)contMIAlignBottom,(LPARAM)&mi);
-
-*/
-
-
-
         mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP;
         if (!Frames[pos].collapsed) mi.flags|=CMIF_CHECKED;
         if ((!Frames[pos].visible)||Frames[pos].Locked||(pos==CLUIFramesGetalClientFrame())) mi.flags|=CMIF_GRAYED;
@@ -1042,7 +1017,6 @@ int CLUIFramesModifyMainMenuItems(WPARAM wParam,LPARAM lParam)
     return 0;
 }
 
-//hiword(wParam)=frameid,loword(wParam)=flag
 int CLUIFramesGetFrameOptions(WPARAM wParam,LPARAM lParam)
 {
     int pos;
@@ -1110,13 +1084,13 @@ int CLUIFramesGetFrameOptions(WPARAM wParam,LPARAM lParam)
     return retval;
 }
 
-//hiword(wParam)=frameid,loword(wParam)=flag
 int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 {
     int pos;
     int retval; // value to be returned
 
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+		return -1;
 
     lockfrm();
     pos=id2pos(HIWORD(wParam));
@@ -1153,13 +1127,13 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
                 style=(int)GetWindowLong(Frames[pos].hWnd,GWL_STYLE);
                 style|=WS_BORDER;
-                if (flag&F_NOBORDER) {
+
+				if (flag&F_NOBORDER)
                     style&=(~WS_BORDER);
-                };
-                {
-                    SetWindowLong(Frames[pos].hWnd,GWL_STYLE,(LONG)style);
-                    SetWindowLong(Frames[pos].TitleBar.hwnd,GWL_STYLE,(LONG)style);
-                }
+
+                SetWindowLong(Frames[pos].hWnd,GWL_STYLE,(LONG)style);
+                SetWindowLong(Frames[pos].TitleBar.hwnd,GWL_STYLE,(LONG)style);
+
                 ulockfrm();
                 CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
                 SetWindowPos(Frames[pos].TitleBar.hwnd,0,0,0,0,0,SWP_NOZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED);
@@ -1168,30 +1142,35 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
         case FO_NAME:
             if (lParam==(LPARAM)NULL) {
-                ulockfrm(); return -1;
+                ulockfrm(); 
+				return -1;
             }
-            if (Frames[pos].name!=NULL) free(Frames[pos].name);
+            if (Frames[pos].name!=NULL) 
+				free(Frames[pos].name);
             Frames[pos].name=_strdup((char *)lParam);
             ulockfrm();
             return 0;
 
         case FO_TBNAME:
             if (lParam==(LPARAM)NULL) {
-                ulockfrm(); return(-1);
+                ulockfrm(); 
+				return(-1);
             }
-            if (Frames[pos].TitleBar.tbname!=NULL) free(Frames[pos].TitleBar.tbname);
+            if (Frames[pos].TitleBar.tbname!=NULL) 
+				free(Frames[pos].TitleBar.tbname);
             Frames[pos].TitleBar.tbname=_strdup((char *)lParam);
             ulockfrm();
-            if (Frames[pos].floating&&(Frames[pos].TitleBar.tbname!=NULL)) {
+            if (Frames[pos].floating&&(Frames[pos].TitleBar.tbname!=NULL))
                 SetWindowTextA(Frames[pos].ContainerWnd,Frames[pos].TitleBar.tbname);
-            };
             return 0;
 
         case FO_TBTIPNAME:
             if (lParam==(LPARAM)NULL) {
-                ulockfrm(); return(-1);
+                ulockfrm(); 
+				return(-1);
             }
-            if (Frames[pos].TitleBar.tooltip!=NULL) free(Frames[pos].TitleBar.tooltip);
+            if (Frames[pos].TitleBar.tooltip!=NULL) 
+				free(Frames[pos].TitleBar.tooltip);
             Frames[pos].TitleBar.tooltip=_strdup((char *)lParam);
             UpdateTBToolTip(pos);
             ulockfrm();
@@ -1214,21 +1193,22 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
         case FO_HEIGHT:
             if (lParam<0) {
-                ulockfrm(); return -1;
+                ulockfrm(); 
+				return -1;
             }
             retval=Frames[pos].height;
             Frames[pos].height=lParam;
-            if (!CLUIFramesFitInSize()) Frames[pos].height=retval;
+            if (!CLUIFramesFitInSize()) 
+				Frames[pos].height=retval;
             retval=Frames[pos].height;
             ulockfrm();
-
             return retval;
 
         case FO_FLOATING:
             if (lParam<0) {
-                ulockfrm(); return -1;
+                ulockfrm(); 
+				return -1;
             }
-
             {
                 int id=Frames[pos].id;
                 Frames[pos].floating=!(lParam);
@@ -1237,19 +1217,17 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
                 CLUIFrameSetFloat(id,1);//lparam=1 use stored width and height
                 return(wParam);
             }
-
         case FO_ALIGN:
             if (!(lParam&alTop||lParam&alBottom||lParam&alClient)) {
+				ulockfrm();
                 return(-1);
-            };
-
+            }
             if ((lParam&alClient)&&(CLUIFramesGetalClientFrame()>=0)) {  //only one alClient frame possible
                 alclientFrame=-1;//recalc it
                 ulockfrm();
                 return -1;
             }
             Frames[pos].align=lParam;
-
             ulockfrm();
             return(0);
     }
@@ -1258,7 +1236,6 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
     return -1;
 }
 
-//wparam=lparam=0
 static int CLUIFramesShowAll(WPARAM wParam,LPARAM lParam)
 {
     int i;
@@ -1271,7 +1248,6 @@ static int CLUIFramesShowAll(WPARAM wParam,LPARAM lParam)
     return 0;
 }
 
-//wparam=lparam=0
 int CLUIFramesShowAllTitleBars(WPARAM wParam,LPARAM lParam)
 {
     int i;
@@ -1303,17 +1279,18 @@ int CLUIFramesShowHideFrame(WPARAM wParam,LPARAM lParam)
 {
     int pos;
 
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+		return -1;
 
     lockfrm();
     pos=id2pos(wParam);
     if (pos>=0&&(int)pos<nFramescount)
         Frames[pos].visible=!Frames[pos].visible;
-    if (Frames[pos].floating) {
+    if (Frames[pos].floating)
         CLUIFrameResizeFloatingFrame(pos);
-    };
     ulockfrm();
-    if (!Frames[pos].floating) CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
+    if (!Frames[pos].floating) 
+		CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
     RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);
     return 0;
 }
@@ -1323,16 +1300,15 @@ int CLUIFramesShowHideFrameTitleBar(WPARAM wParam,LPARAM lParam)
 {
     int pos;
 
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+		return -1;
 
     lockfrm();
     pos=id2pos(wParam);
     if (pos>=0&&(int)pos<nFramescount)
         Frames[pos].TitleBar.ShowTitleBar=!Frames[pos].TitleBar.ShowTitleBar;
-        //if (Frames[pos].height>
 
     ulockfrm();
-
     CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
     RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);
     return 0;
@@ -1446,7 +1422,8 @@ int CLUIFramesLockUnlockFrame(WPARAM wParam,LPARAM lParam)
 {
     int pos;
 
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+		return -1;
 
     lockfrm();
     pos=id2pos(wParam);
@@ -1466,36 +1443,27 @@ int CLUIFramesSetUnSetBorder(WPARAM wParam,LPARAM lParam)
     HWND hw;
     boolean flt;
 
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+		return -1;
 
     lockfrm();
     FrameId=id2pos(wParam);
     if (FrameId==-1) {
-        ulockfrm();return(-1);
-    };
-    flt=
-    oldflags=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,wParam),0);
-    if (oldflags&F_NOBORDER) {
-        oldflags&=(~F_NOBORDER);
+        ulockfrm();
+		return(-1);
     }
-    else {
+    flt = oldflags = CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,wParam),0);
+
+	if (oldflags&F_NOBORDER)
+        oldflags&=(~F_NOBORDER);
+    else
         oldflags|=F_NOBORDER;
-    };
+
     hw = Frames[FrameId].hWnd;
     GetWindowRect(hw,&rc);
-
     ulockfrm();
     CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,wParam),oldflags);
-//		CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
-        /*
-        if (Frames[FrameId].floating){
-            CLUIFrameResizeFloatingFrame(FrameId);
-        };
-        */
-
-    {
-        SetWindowPos(hw,0,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_DRAWFRAME|SWP_NOZORDER);
-    };
+    SetWindowPos(hw,0,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_DRAWFRAME|SWP_NOZORDER);
     return(0);
 };
 //wparam=frameid
@@ -1503,7 +1471,8 @@ int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
 {
     int FrameId;
 
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+		return -1;
 
     lockfrm();
     FrameId=id2pos(wParam);
@@ -1514,11 +1483,13 @@ int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
         if (Frames[FrameId].align==alClient&&!(Frames[FrameId].Locked||(!Frames[FrameId].visible)||Frames[FrameId].floating)) {
             RECT rc;
             if (CallService(MS_CLIST_DOCKINGISDOCKED,0,0)) {
-                ulockfrm();return 0;
-            };
+                ulockfrm();
+				return 0;
+            }
             if (DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) {
-                ulockfrm();return 0;
-            };
+                ulockfrm();
+				return 0;
+            }
             GetWindowRect(pcli->hwndContactList,&rc);
 
             if (Frames[FrameId].collapsed==TRUE) {
@@ -1541,7 +1512,10 @@ int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
             return 0;
 
         }
-        if (Frames[FrameId].Locked||(!Frames[FrameId].visible)) return 0;
+		if (Frames[FrameId].Locked||(!Frames[FrameId].visible)) {
+			ulockfrm();
+			return 0;  
+		}
 
         oldHeight=Frames[FrameId].height;
 
@@ -1572,18 +1546,17 @@ int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
                 }
                 else {
                     int i,sumheight=0;
+
                     for (i=0;i<nFramescount;i++) {
                         if ((Frames[i].align!=alClient)&&(!Frames[i].floating)&&(Frames[i].visible)&&(!Frames[i].needhide)) {
                             sumheight+=(Frames[i].height)+(TitleBarH*btoint(Frames[i].TitleBar.ShowTitleBar))+2;
+							ulockfrm();
                             return FALSE;
                         }
-                        if (sumheight>ContactListHeight-0-2) {
+                        if (sumheight>ContactListHeight-0-2)
                             Frames[FrameId].height=(ContactListHeight-0-2)-sumheight;
-                        }
-
                     }
                 }
-
                 Frames[FrameId].height=oldHeight;
                 if (Frames[FrameId].collapsed==FALSE) {
                     if (Frames[FrameId].floating)
@@ -1594,11 +1567,9 @@ int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
             }
         }
         ulockfrm();
-
         if (!Frames[FrameId].floating)
             CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
         else {
-          //SetWindowPos(Frames[FrameId].hWnd,HWND_TOP,0,0,Frames[FrameId].wndSize.right-Frames[FrameId].wndSize.left,Frames[FrameId].height,SWP_SHOWWINDOW|SWP_NOMOVE);
             RECT contwnd;
             GetWindowRect(Frames[FrameId].ContainerWnd,&contwnd);
             contwnd.top=contwnd.bottom-contwnd.top;//height
@@ -1611,21 +1582,21 @@ int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
         CLUIFramesStoreAllFrames();
         return(0);
     }
-    else
+	else {
+		ulockfrm();
         return -1;
-
+	}
     ulockfrm();
-
     return 0;
 }
 
 static int CLUIFramesLoadMainMenu()
 {
     CLISTMENUITEM mi;
-    //TMO_MenuItem tmi;
     int i,separator;
 
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+		return -1;
 
     if (MainMIRoot!=(HANDLE)-1) {
         CallService(MS_CLIST_REMOVEMAINMENUITEM,(WPARAM)MainMIRoot,0);
@@ -1769,7 +1740,8 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 
     lockfrm();
     if (nFramescount>=MAX_FRAMES) {
-        ulockfrm(); return -1;
+        ulockfrm(); 
+		return -1;
     }
     Frames=(wndFrame*)realloc(Frames,sizeof(wndFrame)*(nFramescount+1));
 
@@ -1805,9 +1777,9 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
     //override tbbtip
     //clfrm->Flags|=F_SHOWTBTIP;
     //
-    if (DBGetContactSettingByte(0,CLUIFrameModule,"RemoveAllBorders",0)==1) {
+    if (DBGetContactSettingByte(0,CLUIFrameModule,"RemoveAllBorders",0)==1)
         clfrm->Flags|=F_NOBORDER;
-    };
+
     Frames[nFramescount].dwFlags=clfrm->Flags;
 
     if (clfrm->name==NULL||strlen(clfrm->name)==0) {
@@ -1876,11 +1848,10 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
     SetWindowLong(Frames[nFramescount-1].hWnd,GWL_STYLE,style);
     SetWindowLong(Frames[nFramescount-1].TitleBar.hwnd,GWL_STYLE,style);
 
-    if (Frames[nFramescount-1].order==0) {
+	if (Frames[nFramescount-1].order==0) {
         Frames[nFramescount-1].order=nFramescount;
     }
     ulockfrm();
-
 
     alclientFrame=-1;//recalc it
     CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
@@ -1899,18 +1870,23 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
 {
     int pos;
-    if (FramesSysNotStarted) return -1;
-    lockfrm();
+    if (FramesSysNotStarted) 
+		return -1;
+    
+	lockfrm();
     pos=id2pos(wParam);
 
     if (pos<0||pos>nFramescount) {
-        ulockfrm();return(-1);
-    };
+        ulockfrm();
+		return(-1);
+    }
 
-
-    if (Frames[pos].name!=NULL) free(Frames[pos].name);
-    if (Frames[pos].TitleBar.tbname!=NULL) free(Frames[pos].TitleBar.tbname);
-    if (Frames[pos].TitleBar.tooltip!=NULL) free(Frames[pos].TitleBar.tooltip);
+    if (Frames[pos].name!=NULL) 
+		free(Frames[pos].name);
+    if (Frames[pos].TitleBar.tbname!=NULL) 
+		free(Frames[pos].TitleBar.tbname);
+    if (Frames[pos].TitleBar.tooltip!=NULL) 
+		free(Frames[pos].TitleBar.tooltip);
 
     DestroyWindow(Frames[pos].hWnd);
     Frames[pos].hWnd=(HWND)-1;
@@ -1926,15 +1902,13 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
     InvalidateRect(pcli->hwndContactList,NULL,TRUE);
     CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
     InvalidateRect(pcli->hwndContactList,NULL,TRUE);
-
     return(0);
-};
-
+}
 
 int CLUIFramesForceUpdateTB(const wndFrame *Frame)
 {
-    if (Frame->TitleBar.hwnd!=0) RedrawWindow(Frame->TitleBar.hwnd,NULL,NULL,RDW_ALLCHILDREN|RDW_UPDATENOW|RDW_ERASE|RDW_INVALIDATE|RDW_FRAME);
-    //UpdateWindow(Frame->TitleBar.hwnd);
+    if (Frame->TitleBar.hwnd!=0) 
+		RedrawWindow(Frame->TitleBar.hwnd,NULL,NULL,RDW_ALLCHILDREN|RDW_UPDATENOW|RDW_ERASE|RDW_INVALIDATE|RDW_FRAME);
     return 0;
 }
 
@@ -1998,8 +1972,11 @@ int CLUIFramesGetMinHeight()
     int i,tbh,clientfrm,sumheight=0;
     RECT border;
     int allbord=0;
-    if (pcli->hwndContactList==NULL) return 0;
-    lockfrm();
+    
+	if (pcli->hwndContactList==NULL) 
+		return 0;
+    
+	lockfrm();
 
     // search for alClient frame and get the titlebar's height
     tbh=0;
@@ -2014,15 +1991,9 @@ int CLUIFramesGetMinHeight()
             GetWindowRect(Frames[i].hWnd,&wsize);
             sumheight+=(wsize.bottom-wsize.top)+(TitleBarH*btoint(Frames[i].TitleBar.ShowTitleBar))+3;
         }
-    };
+    }
     ulockfrm();
     GetBorderSize(pcli->hwndContactList,&border);
-
-    //GetWindowRect(pcli->hwndContactList,&winrect);
-    //GetClientRect(pcli->hwndContactList,&clirect);
-//	clirect.bottom-=clirect.top;
-//	clirect.bottom+=border.top+border.bottom;
-    //allbord=(winrect.bottom-winrect.top)-(clirect.bottom-clirect.top);
     return(sumheight+border.top+border.bottom+allbord+tbh+3);
 }
 
@@ -2193,22 +2164,26 @@ int CLUIFramesResize(const RECT newsize)
 
 int CLUIFramesUpdateFrame(WPARAM wParam,LPARAM lParam)
 {
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+		return -1;
     if (wParam==-1) {
-        CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0); return 0;
+        CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0); 
+		return 0;
     }
     if (lParam&FU_FMPOS)
         CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,1);
-    lockfrm();
+    
+	lockfrm();
     wParam=id2pos(wParam);
     if (wParam<0||(int)wParam>=nFramescount) {
-        ulockfrm(); return -1;
+        ulockfrm(); 
+		return -1;
     }
-    if (lParam&FU_TBREDRAW)  CLUIFramesForceUpdateTB(&Frames[wParam]);
-    if (lParam&FU_FMREDRAW)  CLUIFramesForceUpdateFrame(&Frames[wParam]);
-    //if (){};
+    if (lParam&FU_TBREDRAW)  
+		CLUIFramesForceUpdateTB(&Frames[wParam]);
+    if (lParam&FU_FMREDRAW)  
+		CLUIFramesForceUpdateFrame(&Frames[wParam]);
     ulockfrm();
-
     return 0;
 }
 
@@ -2239,7 +2214,8 @@ int SizeFramesByWindowRect(RECT *r, HDWP * PosBatch)
 
     if (FramesSysNotStarted)
         return -1;
-    lockfrm();
+    
+	lockfrm();
     GapBetweenFrames = g_CluiData.gapBetweenFrames;
 
     nRect = *r;
@@ -2307,9 +2283,9 @@ int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 
     if (FramesSysNotStarted)
         return -1;
-    lockfrm();
-    //if (resizing){return(0);};
-    //resizing=TRUE;
+    
+	lockfrm();
+
     GetClientRect(pcli->hwndContactList,&nRect);
     if (lParam && lParam!=1) {
         RECT oldRect;
@@ -2330,12 +2306,7 @@ int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
         nRect.right=newRect->right-dr;
     }
 
-
-    //if(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)) GetWindowRect(pcli->hwndStatus,&rcStatus);
-    //else rcStatus.top=rcStatus.bottom=0;
-   // nRect.top--;
     rcStatus.top=rcStatus.bottom=0;
-
 
     nRect.bottom -= (g_CluiData.statusBarHeight + g_CluiData.bottomOffset);
     nRect.right -= g_CluiData.bCRight;
@@ -2345,34 +2316,23 @@ int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 
     tick=GetTickCount();
 
-
     CLUIFramesResize(nRect);
     CLUIFramesApplyNewSizes(3);
 
-    /*
-    for (i=0;i<nFramescount;i++) {
-        CLUIFramesForceUpdateFrame(&Frames[i]);
-        CLUIFramesForceUpdateTB(&Frames[i]);
-
-    };*/
-
-    //resizing=FALSE;
     ulockfrm();
     tick=GetTickCount()-tick;
 
-    if (pcli->hwndContactList!=0) InvalidateRect(pcli->hwndContactList,NULL,TRUE);
-    if (pcli->hwndContactList!=0) UpdateWindow(pcli->hwndContactList);
-
-    //if(lParam==2) RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_UPDATENOW|RDW_ALLCHILDREN|RDW_ERASE|RDW_INVALIDATE);
-
+    if (pcli->hwndContactList!=0) 
+		InvalidateRect(pcli->hwndContactList,NULL,TRUE);
+    if (pcli->hwndContactList!=0) 
+		UpdateWindow(pcli->hwndContactList);
 
     Sleep(0);
 
-    //dont save to database too many times
     if (GetTickCount()-LastStoreTick>2000) {
-        CLUIFramesStoreAllFrames();LastStoreTick=GetTickCount();
-    };
-
+        CLUIFramesStoreAllFrames();
+		LastStoreTick=GetTickCount();
+    }
     return 0;
 }
 
@@ -2537,9 +2497,7 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
         SelectObject(hdcMem, oFont);
     }
     ulockfrm();
-
     BitBlt(dc,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top,hdcMem,rect.left,rect.top,SRCCOPY);
-
     SelectObject(hdcMem,hoBmp);
     SelectObject(hdcMem,hoBrush);
     SelectObject(hdcMem,hoTTBFont);
@@ -2658,49 +2616,40 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                 if (ServiceExists(MS_CLIST_MENUBUILDFRAMECONTEXT)) {
                     hmenu=(HMENU)CallService(MS_CLIST_MENUBUILDFRAMECONTEXT,Frameid,0);
                 }
-                else {//legacy menu support
+                else {
                     int framepos=id2pos(Frameid);
-                    lockfrm();
+                    
+					lockfrm();
                     if (framepos==-1) {
-                        ulockfrm();break;
-                    };
+                        ulockfrm();
+						break;
+                    }
                     hmenu=CreatePopupMenu();
-//				Frames[Frameid].TitleBar.hmenu=hmenu;
                     AppendMenuA(hmenu,MF_STRING|MF_DISABLED|MF_GRAYED,15,Frames[framepos].name);
                     AppendMenuA(hmenu,MF_SEPARATOR,16,"");
 
-                    if (Frames[framepos].Locked) {
+                    if (Frames[framepos].Locked)
                         AppendMenuA(hmenu,MF_STRING|MF_CHECKED,frame_menu_lock,Translate("Lock Frame"));
-                    }
-                    else {
+                    else
                         AppendMenuA(hmenu,MF_STRING,frame_menu_lock,Translate("Lock Frame"));
-                    };
 
-                    if (Frames[framepos].visible) {
+                    if (Frames[framepos].visible)
                         AppendMenuA(hmenu,MF_STRING|MF_CHECKED,frame_menu_visible,Translate("Visible"));
-                    }
-                    else {
+                    else
                         AppendMenuA(hmenu,MF_STRING,frame_menu_visible,Translate("Visible") );
-                    };
 
-                    if (Frames[framepos].TitleBar.ShowTitleBar) {
+                    if (Frames[framepos].TitleBar.ShowTitleBar)
                         AppendMenuA(hmenu,MF_STRING|MF_CHECKED,frame_menu_showtitlebar,Translate("Show TitleBar") );
-                    }
-                    else {
+                    else
                         AppendMenuA(hmenu,MF_STRING,frame_menu_showtitlebar,Translate("Show TitleBar") );
-                    };
 
-                    if (Frames[framepos].floating) {
+                    if (Frames[framepos].floating)
                         AppendMenuA(hmenu,MF_STRING|MF_CHECKED,frame_menu_floating,Translate("Floating") );
-                    }
-                    else {
+                    else
                         AppendMenuA(hmenu,MF_STRING,frame_menu_floating,Translate("Floating") );
-                    };
 
-                //err=GetMenuItemCount(hmenu)
                     ulockfrm();
-                };
-
+                }
                 TrackPopupMenu(hmenu,TPM_LEFTALIGN,pt.x,pt.y,0,hwnd,0);
                 DestroyMenu(hmenu);
             }
@@ -2731,48 +2680,38 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                 if (framepos==-1) {
                     ulockfrm();
                     break;
-                };
-                {
-                    if (Frames[framepos].floating) {
+                }
+                if (Frames[framepos].floating) {
 
-                        POINT pt;
-                        GetCursorPos(&pt);
-                        Frames[framepos].TitleBar.oldpos=pt;
-                    };
-                };
-
-            //ScreenToClient(Frames[framepos].ContainerWnd,&Frames[framepos].TitleBar.oldpos);
+                    POINT pt;
+                    GetCursorPos(&pt);
+                    Frames[framepos].TitleBar.oldpos=pt;
+                }
 
                 if ((!(wParam&MK_CONTROL))&&Frames[framepos].Locked&&(!(Frames[framepos].floating))) {
                     if (DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",0)) {
                         POINT pt;
-                    //pt=nm->pt;
                         GetCursorPos(&pt);
+						ulockfrm();
                         return SendMessage(GetParent(hwnd), WM_SYSCOMMAND, SC_MOVE|HTCAPTION,MAKELPARAM(pt.x,pt.y));
                     }
-                };
-
+                }
                 if (Frames[framepos].floating) {
                     RECT rc;
                     GetCursorPos(&ptOld);
-                    //ClientToScreen(hwnd,&ptOld);
                     GetWindowRect( hwnd, &rc );
-
                     nLeft   = (short)rc.left;
                     nTop    = (short)rc.top;
-                };
+                }
                 ulockfrm();
                 SetCapture(hwnd);
-
-
                 break;
-            };
+            }
         case WM_MOUSEMOVE:
             {
                 POINT pt,pt2;
                 RECT wndr;
                 int pos;
-//tbinfo
                 {
                     char TBcapt[255];
 
@@ -2789,27 +2728,20 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                                 );
 
                         oldflags=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,Frames[pos].id),(LPARAM)0);
-                        if (!(oldflags&F_SHOWTBTIP)) {
+                        if (!(oldflags&F_SHOWTBTIP))
                             oldflags|=F_SHOWTBTIP;
-                //CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,Frames[pos].id),(LPARAM)oldflags);
-                        };
-                //CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_TBTIPNAME,Frames[pos].id),(LPARAM)TBcapt);
-                    };
-
+                    }
                     ulockfrm();
-
                 }
-//
                 if ((wParam&MK_LBUTTON)/*&&(wParam&MK_CONTROL)*/) {
                     RECT rcMiranda;
                     RECT rcwnd,rcOverlap;
                     POINT newpt,ofspt,curpt,newpos;
-                //if(GetCapture()!=hwnd){break;};
-                //curdragbar=-1;lbypos=-1;oldframeheight=-1;ReleaseCapture();
-                    lockfrm();
-                    pos=id2pos(Frameid);
-                    if (Frames[pos].floating) {
 
+					lockfrm();
+
+					pos=id2pos(Frameid);
+                    if (Frames[pos].floating) {
                         GetCursorPos(&curpt);
                         rcwnd.bottom=curpt.y+5;
                         rcwnd.top=curpt.y;
@@ -2817,14 +2749,10 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                         rcwnd.right=curpt.x+5;
 
                         GetWindowRect(pcli->hwndContactList, &rcMiranda );
-                        //GetWindowRect( Frames[pos].ContainerWnd, &rcwnd );
-                        //IntersectRect( &rcOverlap, &rcwnd, &rcMiranda )
                         if (IsWindowVisible(pcli->hwndContactList) &&IntersectRect( &rcOverlap, &rcwnd, &rcMiranda )) {
                             int id=Frames[pos].id;
 
-
                             ulockfrm();
-
                             ofspt.x=0;ofspt.y=0;
                             ClientToScreen(Frames[pos].TitleBar.hwnd,&ofspt);
                             ofspt.x=curpt.x-ofspt.x;ofspt.y=curpt.y-ofspt.y;
@@ -2838,8 +2766,7 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                             Frames[pos].TitleBar.oldpos=curpt;
                             ulockfrm();
                             return(0);
-                        };
-
+                        }
                     }
                     else {
                         int id=Frames[pos].id;
@@ -2851,13 +2778,8 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                         rcwnd.right=curpt.x+5;
 
                         GetWindowRect(pcli->hwndContactList, &rcMiranda );
-                        //GetWindowRect( Frames[pos].ContainerWnd, &rcwnd );
-                        //IntersectRect( &rcOverlap, &rcwnd, &rcMiranda )
-
 
                         if (!IntersectRect( &rcOverlap, &rcwnd, &rcMiranda ) ) {
-
-
                             ulockfrm();
                             GetCursorPos(&curpt);
                             GetWindowRect( Frames[pos].hWnd, &rcwnd );
@@ -2866,54 +2788,40 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                             newpos.x=curpt.x;newpos.y=curpt.y;
                             if (curpt.x>=(rcMiranda.right-1)) {
                                 newpos.x=curpt.x+5;
-                            };
+                            }
                             if (curpt.x<=(rcMiranda.left+1)) {
                                 newpos.x=curpt.x-(rcwnd.left)-5;
-                            };
-
+                            }
                             if (curpt.y>=(rcMiranda.bottom-1)) {
                                 newpos.y=curpt.y+5;
-                            };
+                            }
                             if (curpt.y<=(rcMiranda.top+1)) {
                                 newpos.y=curpt.y-(rcwnd.top)-5;
                             };
-
-
                             ofspt.x=0;ofspt.y=0;
-                            //ClientToScreen(Frames[pos].TitleBar.hwnd,&ofspt);
                             GetWindowRect(Frames[pos].TitleBar.hwnd,&rcwnd);
                             ofspt.x=curpt.x-ofspt.x;ofspt.y=curpt.y-ofspt.y;
-
                             Frames[pos].FloatingPos.x=newpos.x;
                             Frames[pos].FloatingPos.y=newpos.y;
                             CLUIFrameSetFloat(id,0);
-                            //SetWindowPos(Frames[pos].ContainerWnd,0,newpos.x,newpos.y,0,0,SWP_NOSIZE);
-
                             lockfrm();
                             newpt.x=0;newpt.y=0;
                             ClientToScreen(Frames[pos].TitleBar.hwnd,&newpt);
-
                             GetWindowRect( Frames[pos].hWnd, &rcwnd );
                             SetCursorPos(newpt.x+(rcwnd.right-rcwnd.left)/2,newpt.y+(rcwnd.bottom-rcwnd.top)/2);
                             GetCursorPos(&curpt);
-
                             Frames[pos].TitleBar.oldpos=curpt;
                             ulockfrm();
-
                             return(0);
-                        };
-
-                    };
+                        }
+                    }
                     ulockfrm();
-                    //return(0);
-                };
-
+				}
                 if (wParam&MK_LBUTTON) {
                     int newh=-1,prevold;
 
-                    if (GetCapture()!=hwnd) {
+                    if (GetCapture()!=hwnd)
                         break;
-                    };
 
                     lockfrm();
                     pos=id2pos(Frameid);
@@ -2931,7 +2839,6 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 
                                 ptNew.x = pt.x;
                                 ptNew.y = pt.y;
-                            //ClientToScreen( hwnd, &ptNew );
 
                                 dX = ptNew.x - ptOld.x;
                                 dY = ptNew.y - ptOld.y;
@@ -2951,30 +2858,23 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                                                     0,
                                                     0,
                                                     SWP_NOSIZE | SWP_NOZORDER );
-                                };
-
+                                }
                                 ptOld = ptNew;
-
-
-
                             }
-
                             pt.x=nLeft;
                             pt.y=nTop;
                             Frames[pos].TitleBar.oldpos=pt;
-                        };
+                        }
                         ulockfrm();
-                    //break;
                         return(0);
-                    };
-
-
+                    }
                     if (Frames[pos].prevvisframe!=-1) {
                         GetCursorPos(&pt);
 
                         if ((Frames[pos].TitleBar.oldpos.x==pt.x)&&(Frames[pos].TitleBar.oldpos.y==pt.y)) {
-                            ulockfrm();break;
-                        };
+                            ulockfrm();
+							break;
+                        }
 
                         ypos=rect.top+pt.y;xpos=rect.left+pt.x;
                         Framemod=-1;
@@ -2988,29 +2888,29 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                             Framemod=Frames[pos].prevvisframe;
                         }
                         if (Frames[Framemod].Locked) {
-                            ulockfrm();break;
-                        };
+                            ulockfrm();
+							break;
+                        }
                         if (curdragbar!=-1&&curdragbar!=pos) {
-                            ulockfrm();break;
-                        };
+                            ulockfrm();
+							break;
+                        }
 
                         if (lbypos==-1) {
                             curdragbar=pos;
                             lbypos=ypos;
                             oldframeheight=Frames[Framemod].height;
                             SetCapture(hwnd);
-                            {ulockfrm();break;};
+                            ulockfrm();
+							break;;
                         }
-                        else {
-                        //	if(GetCapture()!=hwnd){ulockfrm();break;};
-                        };
-
                         newh=oldframeheight+direction*(ypos-lbypos);
                         if (newh>0) {
                             prevold=Frames[Framemod].height;
                             Frames[Framemod].height=newh;
                             if (!CLUIFramesFitInSize()) {
-                                Frames[Framemod].height=prevold; ulockfrm();return TRUE;
+                                Frames[Framemod].height=prevold; ulockfrm();
+								return TRUE;
                             }
                             Frames[Framemod].height=newh;
                             if (newh>3) Frames[Framemod].collapsed=TRUE;
@@ -3021,7 +2921,7 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                     ulockfrm();
                     if (newh>0) {
                         CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
-                    };
+                    }
                     break;
                 }
                 curdragbar=-1;lbypos=-1;oldframeheight=-1;ReleaseCapture();
@@ -3030,18 +2930,14 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
         case WM_PRINT:
         case WM_PRINTCLIENT:
             {
-                //if (lParam&PRF_CLIENT)
-                {
-                    GetClientRect(hwnd,&rect);
-                    DrawTitleBar((HDC)wParam,rect,Frameid);
-                }
+                GetClientRect(hwnd,&rect);
+                DrawTitleBar((HDC)wParam,rect,Frameid);
             }
         case WM_PAINT:
             {
                 HDC paintDC;
                 PAINTSTRUCT paintStruct;
 
-                    //GetClientRect(hwnd,&rect);
                 paintDC = BeginPaint(hwnd, &paintStruct);
                 rect=paintStruct.rcPaint;
                 DrawTitleBar(paintDC, rect, Frameid);
@@ -3127,34 +3023,34 @@ if ((msg == WM_MOVE) || (msg == WM_MOVING) || (msg == WM_NCLBUTTONDOWN) || (msg 
 };
 */
     switch (msg) {
-
         case WM_CREATE:
             {
                 int framepos;
                 lockfrm();
                 framepos=id2pos(Frameid);
-            //SetWindowPos(Frames[framepos].TitleBar.hwndTip, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE  );
                 ulockfrm();
                 return(0);
-            };
+            }
         case WM_GETMINMAXINFO:
-    //DefWindowProc(hwnd,msg,wParam,lParam);
             {
                 int framepos;
                 MINMAXINFO minmax;
 
                 lockfrm();
+
                 framepos=id2pos(Frameid);
                 if (framepos<0||framepos>=nFramescount) {
-                    ulockfrm();break;
-                };
+                    ulockfrm();
+					break;
+                }
                 if (!Frames[framepos].minmaxenabled) {
-                    ulockfrm();break;
-                };
+                    ulockfrm();
+					break;
+                }
                 if (Frames[framepos].ContainerWnd==0) {
-                    ulockfrm();break;
-                };
-
+                    ulockfrm();
+					break;
+                }
                 if (Frames[framepos].Locked) {
                     RECT rct;
 
@@ -3163,10 +3059,7 @@ if ((msg == WM_MOVE) || (msg == WM_MOVING) || (msg == WM_NCLBUTTONDOWN) || (msg 
                     ((LPMINMAXINFO)lParam)->ptMinTrackSize.y=rct.bottom-rct.top;
                     ((LPMINMAXINFO)lParam)->ptMaxTrackSize.x=rct.right-rct.left;
                     ((LPMINMAXINFO)lParam)->ptMaxTrackSize.y=rct.bottom-rct.top;
-            //ulockfrm();
-            //return(0);
-                };
-
+                }
 
                 memset(&minmax,0,sizeof(minmax));
                 if (SendMessage(Frames[framepos].hWnd,WM_GETMINMAXINFO,(WPARAM)0,(LPARAM)&minmax)==0) {
@@ -3179,60 +3072,55 @@ if ((msg == WM_MOVE) || (msg == WM_MOVING) || (msg == WM_NCLBUTTONDOWN) || (msg 
                         ((LPMINMAXINFO)lParam)->ptMinTrackSize.y=minmax.ptMinTrackSize.y;
                         ((LPMINMAXINFO)lParam)->ptMaxTrackSize.x=minmax.ptMaxTrackSize.x+border.left+border.right;
                         ((LPMINMAXINFO)lParam)->ptMaxTrackSize.y=minmax.ptMaxTrackSize.y+tbh+border.top+border.bottom;
-                    };
-
+                    }
                 }
                 else {
-
                     ulockfrm();
                     return(DefWindowProc(hwnd, msg, wParam, lParam));
-                };
+                }
                 ulockfrm();
-
-
             }
-    //return 0;
-
         case WM_MOVE:
             {
                 int framepos;
                 RECT rect;
 
-
                 lockfrm();
                 framepos=id2pos(Frameid);
 
                 if (framepos<0||framepos>=nFramescount) {
-                    ulockfrm();break;
-                };
+                    ulockfrm();
+					break;
+                }
                 if (Frames[framepos].ContainerWnd==0) {
-                    ulockfrm();return(0);
-                };
-
+                    ulockfrm();
+					return(0);
+                }
                 GetWindowRect(Frames[framepos].ContainerWnd,&rect);
                 Frames[framepos].FloatingPos.x=rect.left;
                 Frames[framepos].FloatingPos.y=rect.top;
                 Frames[framepos].FloatingSize.x=rect.right-rect.left;
                 Frames[framepos].FloatingSize.y=rect.bottom-rect.top;
-
                 CLUIFramesStoreFrameSettings(framepos);
                 ulockfrm();
-
                 return(0);
-            };
+            }
         case WM_SIZE:
             {
                 int framepos;
                 RECT rect;
                 lockfrm();
-                framepos=id2pos(Frameid);
+             
+				framepos=id2pos(Frameid);
 
                 if (framepos<0||framepos>=nFramescount) {
-                    ulockfrm();break;
-                };
+                    ulockfrm();
+					break;
+                }
                 if (Frames[framepos].ContainerWnd==0) {
-                    ulockfrm();return(0);
-                };
+                    ulockfrm();
+					return(0);
+                }
                 CLUIFrameResizeFloatingFrame(framepos);
 
                 GetWindowRect(Frames[framepos].ContainerWnd,&rect);
@@ -3243,35 +3131,25 @@ if ((msg == WM_MOVE) || (msg == WM_MOVING) || (msg == WM_NCLBUTTONDOWN) || (msg 
 
                 CLUIFramesStoreFrameSettings(framepos);
                 ulockfrm();
-
                 return(0);
-            };
+            }
         case WM_CLOSE:
             {
                 DestroyWindow(hwnd);
                 break;
-            };
+            }
         case WM_DESTROY:
             {
-            //{ CLUIFramesStoreAllFrames();};
                 return(0);
-            };
-    /*
-    case WM_COMMAND:
-    case WM_NOTIFY:
-        return(SendMessage(pcli->hwndContactList,msg,wParam,lParam));
-        */
-
-
-    };
+            }
+    }
     return DefWindowProc(hwnd, msg, wParam, lParam);
-};
+}
+
 static HWND CreateContainerWindow(HWND parent,int x,int y,int width,int height)
 {
-
     return(CreateWindowA("FramesContainer","aaaa",WS_POPUP|WS_THICKFRAME,x,y,width,height,parent,0,g_hInst,0));
-
-};
+}
 
 
 int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
@@ -3281,11 +3159,7 @@ int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
     lockfrm();
     wParam=id2pos(wParam);
     if (wParam>=0&&(int)wParam<nFramescount)
-
-    //parent=GetParent(Frames[wParam].hWnd);
         if (Frames[wParam].floating) {
-        //SetWindowLong(Frames[wParam].hWnd,GWL_STYLE,Frames[wParam].oldstyles);
-        //SetWindowLong(Frames[wParam].TitleBar.hwnd,GWL_STYLE,Frames[wParam].TitleBar.oldstyles);
             SetParent(Frames[wParam].hWnd,pcli->hwndContactList);
             SetParent(Frames[wParam].TitleBar.hwnd,pcli->hwndContactList);
             Frames[wParam].floating=FALSE;
@@ -3308,59 +3182,47 @@ int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
             GetWindowRect(Frames[wParam].TitleBar.hwnd,&recttb);
             if (!Frames[wParam].TitleBar.ShowTitleBar) {
                 recttb.top=recttb.bottom=recttb.left=recttb.right=0;
-            };
-
+            }
             Frames[wParam].ContainerWnd=CreateContainerWindow(pcli->hwndContactList,Frames[wParam].FloatingPos.x,Frames[wParam].FloatingPos.y,10,10);
-
-
-
 
             SetParent(Frames[wParam].hWnd,Frames[wParam].ContainerWnd);
             SetParent(Frames[wParam].TitleBar.hwnd,Frames[wParam].ContainerWnd);
 
-        //SetWindowPos(Frames[wParam].TitleBar.hwnd,HWND_TOP,0,0,0,0,SWP_NOSIZE);
-        //SetWindowPos(Frames[wParam].hWnd,HWND_TOP,0,recttb.bottom-recttb.top,0,0,SWP_NOSIZE);
             GetBorderSize(Frames[wParam].ContainerWnd,&border);
-
 
             SetWindowLong(Frames[wParam].ContainerWnd,GWL_USERDATA,Frames[wParam].id);
             if ((lParam==1)) {
                 if ((Frames[wParam].FloatingPos.x!=0)&&(Frames[wParam].FloatingPos.y!=0)) {
                     if (Frames[wParam].FloatingPos.x<20) {
                         Frames[wParam].FloatingPos.x=40;
-                    };
+                    }
                     if (Frames[wParam].FloatingPos.y<20) {
                         Frames[wParam].FloatingPos.y=40;
-                    };
-
+                    }
                     SetWindowPos(Frames[wParam].ContainerWnd,HWND_TOPMOST,Frames[wParam].FloatingPos.x,Frames[wParam].FloatingPos.y,Frames[wParam].FloatingSize.x,Frames[wParam].FloatingSize.y,SWP_HIDEWINDOW);
                 }
                 else {
                     SetWindowPos(Frames[wParam].ContainerWnd,HWND_TOPMOST,120,120,140,140,SWP_HIDEWINDOW);
-                };
+                }
             }
             else {
                 neww=rectw.right-rectw.left+border.left+border.right;
                 newh=(rectw.bottom-rectw.top)+(recttb.bottom-recttb.top)+border.top+border.bottom;
                 if (neww<20) {
                     neww=40;
-                };
+                }
                 if (newh<20) {
                     newh=40;
-                };
+                }
                 if (Frames[wParam].FloatingPos.x<20) {
                     Frames[wParam].FloatingPos.x=40;
-                };
+                }
                 if (Frames[wParam].FloatingPos.y<20) {
                     Frames[wParam].FloatingPos.y=40;
-                };
-
+                }
                 SetWindowPos(Frames[wParam].ContainerWnd,HWND_TOPMOST,Frames[wParam].FloatingPos.x,Frames[wParam].FloatingPos.y,neww,newh,SWP_HIDEWINDOW);
-            };
-
-
+            }
             SetWindowTextA(Frames[wParam].ContainerWnd,Frames[wParam].TitleBar.tbname);
-
             temp=GetWindowLong(Frames[wParam].ContainerWnd,GWL_EXSTYLE);
             temp|=WS_EX_TOOLWINDOW|WS_EX_TOPMOST ;
             SetWindowLong(Frames[wParam].ContainerWnd,GWL_EXSTYLE,temp);
@@ -3376,10 +3238,7 @@ int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
     ulockfrm();
     CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
     SendMessage((HWND)hwndtmp,WM_SIZE,0,0);
-
-
     SetWindowPos((HWND)hwndtooltiptmp, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE  );
-
     return 0;
 }
 
@@ -3422,7 +3281,10 @@ static int SetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
     if (piec->cbSize != sizeof(IconExtraColumn))
         return -1;
 
-    if(DBGetContactSettingByte((HANDLE)wParam, g_CluiData.szMetaName, "IsSubcontact", 0))
+    if(piec->ColumnType == 7)
+		piec->ColumnType = 6;
+
+	if(DBGetContactSettingByte((HANDLE)wParam, g_CluiData.szMetaName, "IsSubcontact", 0))
         PostMessage(pcli->hwndContactTree, CLM_SETEXTRAIMAGEINTMETA, wParam, MAKELONG((WORD)piec->ColumnType,  (WORD)piec->hImage));
     else
         PostMessage(pcli->hwndContactTree, CLM_SETEXTRAIMAGEINT, wParam, MAKELONG((WORD)piec->ColumnType,  (WORD)piec->hImage));
@@ -3588,7 +3450,8 @@ int UnLoadCLUIFramesModule(void)
         if (Frames[i].name!=NULL) free(Frames[i].name);
         if (Frames[i].TitleBar.tbname!=NULL) free(Frames[i].TitleBar.tbname);
     }
-    if (Frames) free(Frames);
+    if (Frames) 
+		free(Frames);
     Frames=NULL;
     nFramescount=0;
     UnregisterClassA(CLUIFrameTitleBarClassName,g_hInst);
@@ -3645,8 +3508,6 @@ int InstallDialogBoxHook(void)
 int RemoveDialogBoxHook(void)
 {
     UnhookWindowsHookEx(g_hFrameHook);
-
 	g_hFrameHook = NULL;
-
 	return 0;
 }

@@ -58,7 +58,7 @@ struct ClcContact* CreateClcContact( void )
 	struct ClcContact* p = (struct ClcContact*)mir_alloc( sizeof( struct ClcContact ) );
 	if ( p != NULL ) {
 		ZeroMemory(p, sizeof(struct ClcContact));
-		p->clientId = -1;
+		//p->clientId = -1;
 		p->extraCacheEntry = -1;
 		p->avatarLeft = p->extraIconRightBegin = -1;
 		p->isRtl = 0;
@@ -72,7 +72,7 @@ int AddInfoItemToGroup(struct ClcGroup *group, int flags, const TCHAR *pszText)
 	int i = saveAddInfoItemToGroup(group, flags, pszText);
 	struct ClcContact* p = group->cl.items[i];
 	p->codePage = 0;
-	p->clientId = -1;
+	//p->clientId = -1;
 	p->bIsMeta = 0;
 	p->xStatus = 0;
 	p->ace = NULL;
@@ -124,6 +124,7 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 		p->metaProto = NULL;
 	}
 
+	/*
 	if (hContact && p->proto) {
 		DBVARIANT dbv;
 		if (!DBGetContactSetting(hContact, p->proto, "MirVer", &dbv)) {
@@ -131,7 +132,8 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 				GetClientID( p, dbv.pszVal);
 			mir_free(dbv.pszVal);
 		}
-	}
+	}*/
+
 	p->codePage = DBGetContactSettingDword(hContact, "Tab_SRMsg", "ANSIcodepage", DBGetContactSettingDword(hContact, "UserInfo", "ANSIcodepage", CP_ACP));
 	p->ace = NULL;
 	if(g_CluiData.bAvatarServiceAvail && (!g_CluiData.bNoOfflineAvatars || p->wStatus != ID_STATUS_OFFLINE)) {
