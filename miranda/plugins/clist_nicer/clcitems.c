@@ -486,7 +486,7 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
 
     // notify other plugins to re-supply their extra images (icq for xstatus, mBirthday etc...)
     
-    if(!contact->bIsMeta)
+    //if(!contact->bIsMeta)
         NotifyEventHooks(hExtraImageApplying, (WPARAM)contact->hContact, 0);
 }
 

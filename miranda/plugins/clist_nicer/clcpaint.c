@@ -964,7 +964,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 				int i;
 				for(i = 6; i >= 0; i--) {
 					if(cEntry->iExtraImage[i] != 0xff && ((1 << i) & g_CluiData.dwExtraImageMask)) {
-						if(contact->extraIconRightBegin == 0)
+						if(contact->extraIconRightBegin == 0 && i != 6)
 							contact->extraIconRightBegin = rcContent.right;
 						ImageList_DrawEx(dat->himlExtraColumns, cEntry->iExtraImage[i], hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1), 
 							0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);

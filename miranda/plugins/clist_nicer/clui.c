@@ -1945,7 +1945,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				RECT rcHit;
 
 				GetClientRect(hwnd, &rcHit);
-				//GetWindowRect(pcli->hwndContactTree, &rcClc);
 				GetCursorPos(&pt);
 				ScreenToClient(hwnd, &pt);
 				hMenu = g_CluiData.hMenuButtons;

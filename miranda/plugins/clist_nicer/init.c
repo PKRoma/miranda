@@ -256,7 +256,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	g_CluiData.fadeinout = DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", 0);
 	g_CluiData.autosize = DBGetContactSettingByte(NULL, "CLUI", "AutoSize", 0);
 	g_CluiData.titleBarHeight = DEFAULT_TITLEBAR_HEIGHT;
-	g_CluiData.dwExtraImageMask = DBGetContactSettingDword(NULL, "CLUI", "ximgmask", 0) | EIMG_SHOW_CLIENT;
+	g_CluiData.dwExtraImageMask = DBGetContactSettingDword(NULL, "CLUI", "ximgmask", 0);
 	g_CluiData.bNoOfflineAvatars = DBGetContactSettingByte(NULL, "CList", "NoOfflineAV", 1);
 	g_CluiData.bFullTransparent = DBGetContactSettingByte(NULL, "CLUI", "fulltransparent", 0);
 	g_CluiData.bDblClkAvatars = DBGetContactSettingByte(NULL, "CLC", "dblclkav", 0);

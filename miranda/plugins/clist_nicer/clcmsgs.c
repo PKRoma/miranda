@@ -68,20 +68,28 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 	case CLM_SETEXTRAIMAGEINT:
 		{
 			struct ClcContact *contact = NULL;
+			int index = -1;
 
-			if (LOWORD(lParam) >= MAXEXTRACOLUMNS)
+			if (LOWORD(lParam) >= MAXEXTRACOLUMNS || wParam == 0)
 				return 0;
 
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 				return 0;
-			if(contact->type != CLCIT_CONTACT || contact->bIsMeta)
+
+			index = contact->extraCacheEntry;
+
+			if(contact->type != CLCIT_CONTACT) // || contact->bIsMeta)
 				return 0;
 
-			if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry) {
-				g_ExtraCache[contact->extraCacheEntry].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
-				g_ExtraCache[contact->extraCacheEntry].iExtraValid = g_ExtraCache[contact->extraCacheEntry].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[contact->extraCacheEntry].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[contact->extraCacheEntry].iExtraValid & ~(1 << LOWORD(lParam)));
-				PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
-		}	}
+			if(contact->bIsMeta && LOWORD(lParam) != EIMG_EXTRA && LOWORD(lParam) != EIMG_CLIENT)
+				return 0;
+
+			if(index >= 0 && index < g_nextExtraCacheEntry) {
+				g_ExtraCache[index].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
+				g_ExtraCache[index].iExtraValid = g_ExtraCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[index].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[index].iExtraValid & ~(1 << LOWORD(lParam)));
+				PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)(contact ? contact->hContact : 0));
+			}
+		}
 		return 0;
 	case CLM_SETEXTRAIMAGEINTMETA:
 		{
@@ -94,7 +102,6 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, g_CluiData.szMetaName, "Handle", 0);
 
 			index = GetExtraCache(hMasterContact, NULL);
-
 			if(index >= 0 && index < g_nextExtraCacheEntry) {
 				g_ExtraCache[index].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
 				g_ExtraCache[index].iExtraValid = g_ExtraCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[index].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[index].iExtraValid & ~(1 << LOWORD(lParam)));

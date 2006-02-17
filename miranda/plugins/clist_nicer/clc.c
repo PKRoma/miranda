@@ -223,7 +223,6 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 
 static int ClcModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-	// Load the settings for the extended background features from the DB
 	return 0;
 }
 
@@ -271,7 +270,7 @@ int LoadCLCModule(void)
 
 	LoadCLCButtonModule();
 	hCListImages = (HIMAGELIST) CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
-
+	
 	HookEvent(ME_SYSTEM_MODULESLOADED, ClcModulesLoaded);
 	hClcSettingsChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ClcSettingChanged);
 	hClcDBEvent = HookEvent(ME_DB_EVENT_ADDED, ClcEventAdded);
@@ -676,7 +675,7 @@ LBL_Def:
 			HDC hdc;
 			PAINTSTRUCT ps;
 			hdc = BeginPaint(hwnd, &ps);
-			if (IsWindowVisible(hwnd) && !during_sizing) {
+			if (IsWindowVisible(hwnd) && !during_sizing && !g_shutDown) {
 				if((g_isConnecting && GetTickCount() - dat->lastRepaint > 500) || !g_isConnecting || dat->forcePaint) {
 					PaintClc(hwnd, dat, hdc, &ps.rcPaint);
 					dat->bNeedPaint = FALSE;

@@ -3368,7 +3368,6 @@ int LoadCLUIFramesModule(void)
     cntclass.lpszMenuName  = NULL;
     cntclass.lpszClassName = "FramesContainer";
     RegisterClassA(&cntclass);
-    //end container helper
 
     GapBetweenFrames = g_CluiData.gapBetweenFrames;
 
@@ -3420,7 +3419,6 @@ int LoadCLUIFramesModule(void)
 
 void LoadExtraIconModule()
 {
-    // extra images
     CreateServiceFunction(MS_CLIST_EXTRA_SET_ICON,SetIconForExtraColumn);
     CreateServiceFunction(MS_CLIST_EXTRA_ADD_ICON,AddIconToExtraImageList);
 
