@@ -373,6 +373,8 @@ BEGIN
     CONTROL         "",IDC_CRIGHTSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,151,134,10,14
     LTEXT           "Border",IDC_STATIC,13,75,48,9
     COMBOBOX        IDC_BORDERSTYLE,64,72,64,56,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_CLUIFRAMESBDR,"ColourPicker",WS_TABSTOP,266,96,29,12
+    LTEXT           "Embedded frames border",IDC_STATIC,176,98,84,12
 END
 
 IDD_OPT_CLC DIALOGEX 0, 0, 314, 251
@@ -760,7 +762,6 @@ IDI_SMS                 ICON                    "res\\sms.ico"
 IDI_RENAME              ICON                    "res\\rename.ico"
 IDI_BLANK               ICON                    "res\\blank.ico"
 IDI_DELETE              ICON                    "res\\delete.ico"
-
 IDI_HIDEOFFLINE         ICON                    "res\\online.ico"
 IDI_HIDEGROUPS          ICON                    "res\\groups.ico"
 IDI_SOUNDSON            ICON                    "res\\sounds_on.ico"

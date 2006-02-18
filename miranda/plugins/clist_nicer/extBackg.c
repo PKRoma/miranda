@@ -1369,28 +1369,12 @@ static void IMG_DeleteItem(ImageItem *item)
         ImgDeleteDIBSection(item->lpDIBSection);
 }
 
-void IMG_LoadItems()
+void IMG_DeleteItems()
 {
-    char *szSections = NULL;
-    char *p;
-    DBVARIANT dbv;
-    char szFileName[MAX_PATH];
-    HANDLE hFile;
     ImageItem *pItem = g_ImageItems, *pNextItem;
-    int i;
-    
-    if(DBGetContactSetting(NULL, "CLC", "ContactSkins", &dbv))
-        return;
+	int i;
 
-    CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFileName);
-    DBFreeVariant(&dbv);
-    
-    if((hFile = CreateFileA(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
-        return;
-
-    CloseHandle(hFile);
-    
-    while(pItem) {
+	while(pItem) {
         IMG_DeleteItem(pItem);
         pNextItem = pItem->nextItem;
         free(pItem);
@@ -1406,7 +1390,29 @@ void IMG_LoadItems()
     
     for(i = 0; i <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; i++)
         StatusItems[i].imageItem = NULL;
+}
+
+void IMG_LoadItems()
+{
+    char *szSections = NULL;
+    char *p;
+    DBVARIANT dbv;
+    char szFileName[MAX_PATH];
+    HANDLE hFile;
     
+    if(DBGetContactSetting(NULL, "CLC", "ContactSkins", &dbv))
+        return;
+
+    CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFileName);
+    DBFreeVariant(&dbv);
+    
+    if((hFile = CreateFileA(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
+        return;
+
+    CloseHandle(hFile);
+
+	IMG_DeleteItems();
+
     szSections = malloc(3002);
     ZeroMemory(szSections, 3002);
     p = szSections;

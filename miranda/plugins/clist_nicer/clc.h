@@ -499,8 +499,9 @@ int Docking_IsDocked(WPARAM wParam, LPARAM lParam);
 // Menus
 
 int MenuModulesLoaded(WPARAM wParam, LPARAM lParam);
-
 int ClcSoundHook(WPARAM wParam, LPARAM lParam);
+
+void IMG_DeleteItems();
 
 #define NIIF_INTERN_UNICODE 0x00000100
 

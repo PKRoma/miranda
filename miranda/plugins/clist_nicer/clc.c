@@ -31,6 +31,7 @@ int DefaultImageListColorDepth=ILC_COLOR32;
 
 extern struct CluiData g_CluiData;
 extern struct ClcData *g_clcData;
+extern HPEN g_hPenCLUIFrames;
 
 //extern void RemoveFromImgCache(HANDLE hContact, struct avatarCacheEntry *ace), FreeImgCache(), ShutdownGdiPlus();
 extern pfnDrawAlpha pDrawAlpha;
@@ -251,6 +252,28 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	pDrawAlpha = 0;
 	free(StatusItems);
 	SFL_UnregisterWindowClass();
+	if (g_ExtraCache) {
+		int i;
+
+		for(i = 0; i < g_nextExtraCacheEntry; i++) {
+			if(g_ExtraCache[i].statusMsg)
+				free(g_ExtraCache[i].statusMsg);
+			if(g_ExtraCache[i].status_item) {
+				StatusItems_t *item = g_ExtraCache[i].status_item;
+				int j;
+
+				free(g_ExtraCache[i].status_item);
+				g_ExtraCache[i].status_item = 0;
+				for(j = i; j < g_nextExtraCacheEntry; j++) {			// avoid duplicate free()'ing status item pointers (there are references from sub to master contacts, so compare the pointers...
+					if(g_ExtraCache[j].status_item == item)
+						g_ExtraCache[j].status_item = 0;
+				}
+			}
+		}
+		free(g_ExtraCache); 
+		g_ExtraCache = NULL;
+	}
+	IMG_DeleteItems();
 	return 0;
 }
 
@@ -324,7 +347,24 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 LBL_Def:
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 
-    case INTM_GROUPCHANGED:
+	case WM_NCPAINT:
+		if(GetWindowLong(hwnd, GWL_STYLE) & WS_BORDER) {
+			HDC hdc = GetWindowDC(hwnd);
+			HPEN hPenOld = SelectObject(hdc, g_hPenCLUIFrames);
+			RECT rcWindow, rc;
+
+			GetWindowRect(hwnd, &rcWindow);
+			rc.left = rc.top = 0;
+			rc.right = rcWindow.right - rcWindow.left;
+			rc.bottom = rcWindow.bottom - rcWindow.top;
+			//FillRect(hdc, &rc, GetSysColorBrush(COLOR_ACTIVEBORDER));
+			Rectangle(hdc, 0, 0, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top);
+			SelectObject(hdc, hPenOld);
+			ReleaseDC(hwnd, hdc);
+			return 0;
+		}
+		goto LBL_Def;
+	case INTM_GROUPCHANGED:
         {
             struct ClcContact *contact;
             BYTE iExtraImage[MAXEXTRACOLUMNS];

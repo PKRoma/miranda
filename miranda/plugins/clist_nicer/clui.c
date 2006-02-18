@@ -2139,9 +2139,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 		CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);
 		UnLoadCLUIFramesModule();
-		if (g_ExtraCache) {
-			free(g_ExtraCache); g_ExtraCache = NULL;
-		}
 		break;
 	}
 	return saveContactListWndProc(hwnd, msg, wParam, lParam);

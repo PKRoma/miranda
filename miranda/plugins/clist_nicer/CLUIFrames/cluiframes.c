@@ -64,12 +64,30 @@ extern int InitFramesMenus(void);
 extern int UnitFramesMenu();
 
 boolean FramesSysNotStarted=TRUE;
+HPEN g_hPenCLUIFrames = 0;
 
 typedef struct {
     int order;
     int realpos;
 } SortData;
 
+static HHOOK g_hFrameHook = 0;
+
+/*
+static int InstallDialogBoxHook(void)
+{
+    g_hFrameHook = SetWindowsHookEx(WH_CALLWNDPROC, (HOOKPROC)FrameHookProc,
+									NULL, GetCurrentThreadId());
+	return (g_hFrameHook != NULL);
+}
+
+static int RemoveDialogBoxHook(void)
+{
+    UnhookWindowsHookEx(g_hFrameHook);
+	g_hFrameHook = NULL;
+	return 0;
+}
+*/
 static int sortfunc(const void *a,const void *b)
 {
     SortData *sd1,*sd2;
@@ -1699,20 +1717,25 @@ static LRESULT CALLBACK FramesSubClassProc(HWND hwnd, UINT msg, WPARAM wParam, L
     int i;
 
     switch(msg) {
-        case WM_ERASEBKGND:
-        {
-            return TRUE;
-        }
-        case WM_PAINT:
         case WM_NCPAINT:
             {
-                PAINTSTRUCT ps;
-                if(g_CluiData.neeedSnap) {
-                    HDC hdc = BeginPaint(hwnd, &ps);
-                    ps.fErase = FALSE;
-                    EndPaint(hwnd, &ps);
-                }
-            break;
+				if(pcli && pcli->hwndContactList != 0 && GetParent(hwnd) == pcli->hwndContactList) {
+					if(GetWindowLong(hwnd, GWL_STYLE) & WS_BORDER) {
+						HDC hdc = GetWindowDC(hwnd);
+						HPEN hPenOld = SelectObject(hdc, g_hPenCLUIFrames);
+						RECT rcWindow, rc;
+
+						GetWindowRect(hwnd, &rcWindow);
+						rc.left = rc.top = 0;
+						rc.right = rcWindow.right - rcWindow.left;
+						rc.bottom = rcWindow.bottom - rcWindow.top;
+						//FillRect(hdc, &rc, GetSysColorBrush(COLOR_ACTIVEBORDER));
+						Rectangle(hdc, 0, 0, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top);
+						SelectObject(hdc, hPenOld);
+						ReleaseDC(hwnd, hdc);
+						return 0;
+					}
+				}
             }
         default:
             break;
@@ -1722,6 +1745,7 @@ static LRESULT CALLBACK FramesSubClassProc(HWND hwnd, UINT msg, WPARAM wParam, L
             return CallWindowProc(Frames[i].wndProc, hwnd, msg, wParam, lParam);
         }
     }
+	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 //wparam=(CLISTFrame*)clfrm
@@ -1768,11 +1792,10 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
     else Frames[nFramescount].OwnerWindow = pcli->hwndContactList;
     SetClassLong(clfrm->hWnd, GCL_STYLE, GetClassLong(clfrm->hWnd, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
     SetWindowLong(clfrm->hWnd, GWL_STYLE, GetWindowLong(clfrm->hWnd, GWL_STYLE) | WS_CLIPCHILDREN);
-    /*
-    if(clfrm->hWnd != pcli->hwndContactTree && clfrm->hWnd != g_hwndViewModeFrame && clfrm->hWnd != g_hwndEventArea) {
+	if(clfrm->hWnd != pcli->hwndContactTree && clfrm->hWnd != g_hwndViewModeFrame && clfrm->hWnd != g_hwndEventArea) {
         Frames[nFramescount].wndProc = (WNDPROC)GetWindowLong(clfrm->hWnd, GWL_WNDPROC);
         SetWindowLong(clfrm->hWnd, GWL_WNDPROC, (LONG)FramesSubClassProc);
-    } */
+    }
 
     //override tbbtip
     //clfrm->Flags|=F_SHOWTBTIP;
@@ -2927,6 +2950,25 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                 curdragbar=-1;lbypos=-1;oldframeheight=-1;ReleaseCapture();
             }
             break;
+        case WM_NCPAINT:
+            {
+				if(GetWindowLong(hwnd, GWL_STYLE) & WS_BORDER) {
+					HDC hdc = GetWindowDC(hwnd);
+					HPEN hPenOld = SelectObject(hdc, g_hPenCLUIFrames);
+					RECT rcWindow, rc;
+
+					GetWindowRect(hwnd, &rcWindow);
+					rc.left = rc.top = 0;
+					rc.right = rcWindow.right - rcWindow.left;
+					rc.bottom = rcWindow.bottom - rcWindow.top;
+					//FillRect(hdc, &rc, GetSysColorBrush(COLOR_ACTIVEBORDER));
+					Rectangle(hdc, 0, 0, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top);
+					SelectObject(hdc, hPenOld);
+					ReleaseDC(hwnd, hdc);
+					return 0;
+				}
+				break;
+            }
         case WM_PRINT:
         case WM_PRINTCLIENT:
             {
@@ -2944,7 +2986,8 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                 EndPaint(hwnd, &paintStruct);
                 return 0;
             }
-        default:return DefWindowProc(hwnd, msg, wParam, lParam);
+        default:
+			return DefWindowProc(hwnd, msg, wParam, lParam);
     }
     return TRUE;
 }
@@ -3414,6 +3457,7 @@ int LoadCLUIFramesModule(void)
     //CreateServiceFunction("SkinEngine/DrawGlyph", SkinDrawBgService);
 
     FramesSysNotStarted=FALSE;
+	g_hPenCLUIFrames = CreatePen(PS_SOLID, 1, DBGetContactSettingDword(NULL, "CLUI", "clr_frameborder", RGB(40, 40, 40)));
     return 0;
 }
 
@@ -3434,6 +3478,8 @@ int UnLoadCLUIFramesModule(void)
     int i;
     CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
     CLUIFramesStoreAllFrames();
+	DeleteObject(g_hPenCLUIFrames);
+	//RemoveDialogBoxHook();
     lockfrm();
     FramesSysNotStarted=TRUE;
     for (i=0;i<nFramescount;i++) {
@@ -3465,8 +3511,7 @@ void ReloadExtraIcons()
     NotifyEventHooks(hExtraImageListRebuilding, 0, 0);
 }
 
-static HHOOK g_hFrameHook = 0;
-
+/*
 static LRESULT CALLBACK FrameHookProc(int code, WPARAM wParam, LPARAM lParam)
 {
     MSG *msg = (MSG*)lParam;
@@ -3476,18 +3521,22 @@ static LRESULT CALLBACK FrameHookProc(int code, WPARAM wParam, LPARAM lParam)
 
     if(code == HC_ACTION) {
         switch(msg->message) {
-            case WM_ERASEBKGND:
+            case WM_NCPAINT:
             {
-                char buf[200];
-                PAINTSTRUCT ps;
-                RECT rc;
-                HDC dc = BeginPaint(msg->hwnd, &ps);
-                ps.fErase = FALSE;
-                EndPaint(msg->hwnd, &ps);
-                GetWindowTextA(msg->hwnd, buf, 20);
-                GetClientRect(msg->hwnd, &rc);
-                FillRect((HDC)msg->wParam, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
-                break;
+				_DebugPopup(0, "wm_ncpaint");
+				if(pcli && pcli->hwndContactList != 0 && GetParent(msg->hwnd) == pcli->hwndContactList) {
+					HDC hdc = GetDCEx(msg->hwnd, (HRGN)wParam, DCX_WINDOW|DCX_INTERSECTRGN);
+					HPEN hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 255));
+					HPEN hPenOld = SelectObject(hdc, hPen);
+					RECT rcWindow;
+
+					GetWindowRect(msg->hwnd, &rcWindow);
+					Rectangle(hdc, 0, 0, rcWindow.right, rcWindow.bottom);
+					SelectObject(hdc, hPenOld);
+					DeleteObject(hPen);
+					ReleaseDC(msg->hwnd, hdc);
+					return 0;
+				}
             }
             default:
                 break;
@@ -3495,17 +3544,4 @@ static LRESULT CALLBACK FrameHookProc(int code, WPARAM wParam, LPARAM lParam)
     }
 	return CallNextHookEx(g_hFrameHook, code, wParam, lParam);
 }
-
-int InstallDialogBoxHook(void)
-{
-    g_hFrameHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC)FrameHookProc,
-									NULL, GetCurrentThreadId());
-	return (g_hFrameHook != NULL);
-}
-
-int RemoveDialogBoxHook(void)
-{
-    UnhookWindowsHookEx(g_hFrameHook);
-	g_hFrameHook = NULL;
-	return 0;
-}
+*/

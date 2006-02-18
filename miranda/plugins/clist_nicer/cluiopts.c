@@ -38,6 +38,7 @@ extern SIZE g_oldSize;
 extern POINT g_oldPos;
 extern HIMAGELIST himlExtraImages;
 extern COLORREF g_CLUISkinnedBkColorRGB;
+extern HPEN g_hPenCLUIFrames;
 
 static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -134,6 +135,8 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			SendDlgItemMessage(hwndDlg, IDC_CRIGHTSPIN, UDM_SETRANGE, 0, MAKELONG(255, 0));
 			SendDlgItemMessage(hwndDlg, IDC_CTOPSPIN, UDM_SETRANGE, 0, MAKELONG(255, 0));
 			SendDlgItemMessage(hwndDlg, IDC_CBOTTOMSPIN, UDM_SETRANGE, 0, MAKELONG(255, 0));
+
+			SendDlgItemMessage(hwndDlg, IDC_CLUIFRAMESBDR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLUI", "clr_frameborder", RGB(40, 40, 40)));
 
 			SendDlgItemMessage(hwndDlg, IDC_CLEFTSPIN, UDM_SETPOS, 0, g_CluiData.bCLeft - (g_CluiData.dwFlags & CLUI_FRAME_CLISTSUNKEN ? 3 : 0));
 			SendDlgItemMessage(hwndDlg, IDC_CRIGHTSPIN, UDM_SETPOS, 0, g_CluiData.bCRight - (g_CluiData.dwFlags & CLUI_FRAME_CLISTSUNKEN ? 3 : 0));
@@ -239,6 +242,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				int oldexIconScale = g_CluiData.exIconScale;
 				BYTE oldFading;
 				BYTE windowStyle = (BYTE)SendDlgItemMessage(hwndDlg, IDC_BORDERSTYLE, CB_GETCURSEL, 0, 0);
+				COLORREF clr_cluiframes;
 
 				DBWriteContactSettingByte(NULL, "CLUI", "FadeInOut", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FADEINOUT));
 				g_CluiData.fadeinout = IsDlgButtonChecked(hwndDlg, IDC_FADEINOUT) ? 1 : 0;
@@ -302,6 +306,12 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 				DBWriteContactSettingByte(NULL, "CLUI", "ShowMainMenu", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWMAINMENU));
 				DBWriteContactSettingByte(NULL, "CLUI", "ClientAreaDrag", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CLIENTDRAG));
+
+				clr_cluiframes = (COLORREF)SendDlgItemMessage(hwndDlg, IDC_CLUIFRAMESBDR, CPM_GETCOLOUR, 0, 0);
+
+				if(g_hPenCLUIFrames)
+					DeleteObject(g_hPenCLUIFrames);
+				g_hPenCLUIFrames = CreatePen(PS_SOLID, 1, clr_cluiframes);
 
 				ApplyCLUIBorderStyle(pcli->hwndContactList);
 

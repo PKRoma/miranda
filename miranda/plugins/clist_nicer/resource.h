@@ -700,10 +700,8 @@
 #define IDC_TBTOPMENU                   1813
 #define IDC_TBTOPSTATUS                 1814
 #define IDC_NOTIFYBUTTON                1900
-
 #define IDC_CLNICER                     2002
 #define IDC_SUPPORT                     2003
-
 #define IDI_OVL_OFFLINE                 2050
 #define IDI_OVL_ONLINE                  2051
 #define IDI_OVL_AWAY                    2052
@@ -814,6 +812,7 @@
 #define IDC_LASTMSGVALUE                40043
 #define ID_EVENTAREA_ENABLED            40044
 #define IDC_FLT_PADRIGHTSPIN            40044
+#define IDC_CLUIFRAMESBDR               -25492
 #define ID_EVENTAREA_AUTOHIDE           40045
 #define IDC_FLT_PADTOP                  40045
 #define IDC_FLT_PADTOPSPIN              40046
@@ -840,7 +839,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        4
 #define _APS_NEXT_COMMAND_VALUE         40061
-#define _APS_NEXT_CONTROL_VALUE         40044
+#define _APS_NEXT_CONTROL_VALUE         40045
 #define _APS_NEXT_SYMED_VALUE           40154
 #endif
 #endif
