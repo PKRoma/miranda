@@ -352,14 +352,18 @@ LBL_Def:
 			HDC hdc = GetWindowDC(hwnd);
 			HPEN hPenOld = SelectObject(hdc, g_hPenCLUIFrames);
 			RECT rcWindow, rc;
+			PAINTSTRUCT ps;
+			HBRUSH brold;
 
 			GetWindowRect(hwnd, &rcWindow);
 			rc.left = rc.top = 0;
 			rc.right = rcWindow.right - rcWindow.left;
 			rc.bottom = rcWindow.bottom - rcWindow.top;
 			//FillRect(hdc, &rc, GetSysColorBrush(COLOR_ACTIVEBORDER));
+			brold = SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
 			Rectangle(hdc, 0, 0, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top);
 			SelectObject(hdc, hPenOld);
+			SelectObject(hdc, brold);
 			ReleaseDC(hwnd, hdc);
 			return 0;
 		}

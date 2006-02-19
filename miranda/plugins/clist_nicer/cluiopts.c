@@ -312,6 +312,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				if(g_hPenCLUIFrames)
 					DeleteObject(g_hPenCLUIFrames);
 				g_hPenCLUIFrames = CreatePen(PS_SOLID, 1, clr_cluiframes);
+				DBWriteContactSettingDword(NULL, "CLUI", "clr_frameborder", clr_cluiframes);
 
 				ApplyCLUIBorderStyle(pcli->hwndContactList);
 

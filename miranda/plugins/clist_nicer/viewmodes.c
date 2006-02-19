@@ -33,6 +33,7 @@ $Id$
 extern int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 extern struct CluiData g_CluiData;
 extern HIMAGELIST hCListImages;
+extern HPEN g_hPenCLUIFrames;
 
 typedef int (__cdecl *pfnEnumCallback)(char *szName);
 static HWND clvmHwnd = 0;
@@ -897,6 +898,26 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             SendMessage(hwnd, WM_USER + 100, 0, 0);
             return FALSE;
         }
+		case WM_NCPAINT:
+			if(GetWindowLong(hwnd, GWL_STYLE) & WS_BORDER) {
+				HDC hdc = GetWindowDC(hwnd);
+				HPEN hPenOld = SelectObject(hdc, g_hPenCLUIFrames);
+				RECT rcWindow, rc;
+				HBRUSH brold;
+
+				GetWindowRect(hwnd, &rcWindow);
+				rc.left = rc.top = 0;
+				rc.right = rcWindow.right - rcWindow.left;
+				rc.bottom = rcWindow.bottom - rcWindow.top;
+				//FillRect(hdc, &rc, GetSysColorBrush(COLOR_ACTIVEBORDER));
+				brold = SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
+				Rectangle(hdc, 0, 0, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top);
+				SelectObject(hdc, hPenOld);
+				SelectObject(hdc, brold);
+				ReleaseDC(hwnd, hdc);
+				return 0;
+			}
+			break;
         case WM_SIZE:
         {
             RECT rcCLVMFrame;
