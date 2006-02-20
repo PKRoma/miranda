@@ -26,6 +26,8 @@ UNICODE done
 #include "commonheaders.h"
 
 extern struct CluiData g_CluiData;      // even more nasty :)
+extern int g_nextExtraCacheEntry;
+extern struct ExtraCache *g_ExtraCache;
 
 void LoadContactTree(void);
 void SortContacts(void);
@@ -239,6 +241,13 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 								DBWriteContactSettingDword(NULL, "CList", "SortOrder", 
 									MAKELONG(MAKEWORD(g_CluiData.sortOrder[0], g_CluiData.sortOrder[1]),
 									MAKEWORD(g_CluiData.sortOrder[2], 0)));
+
+								if(g_CluiData.sortOrder[0] == SORTBY_LASTMSG || g_CluiData.sortOrder[1] == SORTBY_LASTMSG || g_CluiData.sortOrder[2] == SORTBY_LASTMSG) {
+									int i;
+
+									for(i = 0; i < g_nextExtraCacheEntry; i++)
+										g_ExtraCache[i].dwLastMsgTime = INTSORT_GetLastMsgTime(g_ExtraCache[i].hContact);
+								}
 							}
 
                             DBWriteContactSettingByte(NULL, "CList", "ConfirmDelete", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CONFIRMDELETE));

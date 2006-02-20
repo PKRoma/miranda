@@ -114,15 +114,17 @@ static int ClcEventAdded(WPARAM wParam, LPARAM lParam)
 	if(wParam == 0 || lParam == 0)
 		return 1;
 
-	dbei.cbSize = sizeof(dbei);
-	dbei.pBlob = 0;
-	dbei.cbBlob = 0;
-	CallService(MS_DB_EVENT_GET, (WPARAM)lParam, (LPARAM)&dbei);
+	if(g_CluiData.sortOrder[0] == SORTBY_LASTMSG || g_CluiData.sortOrder[1] == SORTBY_LASTMSG || g_CluiData.sortOrder[2] == SORTBY_LASTMSG) {
+		dbei.cbSize = sizeof(dbei);
+		dbei.pBlob = 0;
+		dbei.cbBlob = 0;
+		CallService(MS_DB_EVENT_GET, (WPARAM)lParam, (LPARAM)&dbei);
 
-	iEntry = GetExtraCache((HANDLE)wParam, NULL);
-	if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry) {
-		g_ExtraCache[iEntry].dwLastMsgTime = dbei.timestamp;
-		pcli->pfnClcBroadcast(INTM_FORCESORT, 0, 1);
+		iEntry = GetExtraCache((HANDLE)wParam, NULL);
+		if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry) {
+			g_ExtraCache[iEntry].dwLastMsgTime = dbei.timestamp;
+			pcli->pfnClcBroadcast(INTM_FORCESORT, 0, 1);
+		}
 	}
 	return 0;
 }

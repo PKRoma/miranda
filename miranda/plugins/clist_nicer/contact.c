@@ -122,14 +122,17 @@ DWORD __forceinline INTSORT_GetLastMsgTime(HANDLE hContact)
 	HANDLE hDbEvent;
 	DBEVENTINFO dbei = {0};
 
-	hDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0);
+	if(g_CluiData.sortOrder[0] == SORTBY_LASTMSG || g_CluiData.sortOrder[1] == SORTBY_LASTMSG || g_CluiData.sortOrder[2] == SORTBY_LASTMSG) {
+		hDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0);
 
-	dbei.cbSize = sizeof(dbei);
-	dbei.pBlob = 0;
-	dbei.cbBlob = 0;
-	CallService(MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei);
-	
-	return dbei.timestamp;
+		dbei.cbSize = sizeof(dbei);
+		dbei.pBlob = 0;
+		dbei.cbBlob = 0;
+		CallService(MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei);
+		
+		return dbei.timestamp;
+	}
+	return 0;
 }
 
 static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2, UINT bywhat)

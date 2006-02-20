@@ -34,6 +34,8 @@ extern int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 extern struct CluiData g_CluiData;
 extern HIMAGELIST hCListImages;
 extern HPEN g_hPenCLUIFrames;
+extern int g_nextExtraCacheEntry;
+extern struct ExtraCache *g_ExtraCache;
 
 typedef int (__cdecl *pfnEnumCallback)(char *szName);
 static HWND clvmHwnd = 0;
@@ -1208,6 +1210,14 @@ void ApplyViewMode(const char *name)
 
 	if(g_CluiData.filterFlags & CLVM_USELASTMSG) {
 		DWORD unit;
+		int i;
+		BYTE bSaved = g_CluiData.sortOrder[0];
+		
+		g_CluiData.sortOrder[0] = SORTBY_LASTMSG;
+		for(i = 0; i < g_nextExtraCacheEntry; i++)
+			g_ExtraCache[i].dwLastMsgTime = INTSORT_GetLastMsgTime(g_ExtraCache[i].hContact);
+
+		g_CluiData.sortOrder[0] = bSaved;
 
 		g_CluiData.bFilterEffective |= CLVM_FILTER_LASTMSG;
         mir_snprintf(szSetting, 256, "%c%s_LM", 246, name);
