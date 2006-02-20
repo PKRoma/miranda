@@ -68,7 +68,7 @@ BEGIN
     LTEXT           "Version",IDC_VERSION,5,19,150,15
     CTEXT           "build time",IDC_BUILDTIME,37,105,150,11
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,117,228,1
-    CTEXT           "Support and latest version information",IDC_SUPPORT,18,91,192,12
+    CONTROL         "Support and latest version information",IDC_SUPPORT,"Hyperlink",SS_CENTER|WS_TABSTOP,18,91,192,12
 END
 
 IDD_OPT_HOTKEY DIALOGEX 0, 0, 238, 136

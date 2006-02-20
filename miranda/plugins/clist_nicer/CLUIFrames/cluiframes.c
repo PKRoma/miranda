@@ -71,6 +71,8 @@ typedef struct {
     int realpos;
 } SortData;
 
+static SortData g_sd[MAX_FRAMES];
+
 static HHOOK g_hFrameHook = 0;
 
 /*
@@ -647,7 +649,8 @@ int CLUIFramesLoadFrameSettings(int Frameid)
 
     if (FramesSysNotStarted) return -1;
 
-    if (Frameid<0||Frameid>=nFramescount) return -1;
+    if (Frameid<0||Frameid>=nFramescount) 
+		return -1;
 
     maxstored=DBGetContactSettingWord(0,CLUIFrameModule,"StoredFrames",-1);
     if (maxstored==-1) return 0;
@@ -674,8 +677,10 @@ int CLUIFramesStoreFrameSettings(int Frameid)
 		maxstored=0;
 
     storpos=LocateStorePosition(Frameid,maxstored);
-    if (storpos==-1)
-        storpos=maxstored; maxstored++;
+	if (storpos==-1) {
+        storpos=maxstored; 
+		maxstored++;
+	}
 
     DBStoreFrameSettingsAtPos(storpos,Frameid);
     DBWriteContactSettingWord(0,CLUIFrameModule,"StoredFrames",(WORD)maxstored);
@@ -1345,46 +1350,40 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
     lockfrm();
     pos=id2pos(wParam);
     if (pos>=0&&(int)pos<nFramescount) {
-        SortData *sd;
         curpos=Frames[pos].order;
         curalign=Frames[pos].align;
         v = 0;
-        sd=(SortData*)malloc(sizeof(SortData)*nFramescount);
-        memset(sd,0,sizeof(SortData)*nFramescount);
+        memset(g_sd, 0, sizeof(SortData) * MAX_FRAMES);
         for (i=0;i<nFramescount;i++) {
             if (Frames[i].floating||(!Frames[i].visible)||(Frames[i].align!=curalign))
                 continue;
-            sd[v].order=Frames[i].order;
-            sd[v].realpos=i;
+            g_sd[v].order=Frames[i].order;
+            g_sd[v].realpos=i;
             v++;
         }
         if (v==0) {
             ulockfrm();
 			return(0);
         }
-        qsort(sd,v,sizeof(SortData),sortfunc);
+        qsort(g_sd,v,sizeof(SortData),sortfunc);
         for (i=0;i<v;i++) {
-            if (sd[i].realpos==pos) {
+            if (g_sd[i].realpos==pos) {
                 if (lParam==-1) {
                     if (i<1) break;
-                    tmpval=Frames[sd[i-1].realpos].order;
-                    Frames[sd[i-1].realpos].order=Frames[pos].order;
+                    tmpval=Frames[g_sd[i-1].realpos].order;
+                    Frames[g_sd[i-1].realpos].order=Frames[pos].order;
                     Frames[pos].order=tmpval;
                     break;
                 }
                 if (lParam==1) {
                     if (i>v-1) break;
-                    tmpval=Frames[sd[i+1].realpos].order;
-                    Frames[sd[i+1].realpos].order=Frames[pos].order;
+                    tmpval=Frames[g_sd[i+1].realpos].order;
+                    Frames[g_sd[i+1].realpos].order=Frames[pos].order;
                     Frames[pos].order=tmpval;
                     break;
                 }
             }
         }
-
-        if (sd!=NULL)
-            free(sd);
-
         CLUIFramesStoreFrameSettings(pos);
         CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
 		PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
@@ -1876,15 +1875,31 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 	if (Frames[nFramescount-1].order==0) {
         Frames[nFramescount-1].order=nFramescount;
     }
-    ulockfrm();
+
+	{
+        int v = 0, i;
+
+        memset(g_sd,0,sizeof(SortData) * MAX_FRAMES);
+        for (i=0;i<nFramescount;i++) {
+            g_sd[v].order=Frames[i].order;
+            g_sd[v].realpos=i;
+            v++;
+        }
+        if (v==0) {
+            ulockfrm();
+			return(0);
+        }
+        qsort(g_sd, v, sizeof(SortData), sortfunc);
+		for(i = 0; i < nFramescount; i++)
+			Frames[g_sd[i].realpos].order = i;
+	}
+	ulockfrm();
 
     alclientFrame=-1;//recalc it
     CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
 
     if (Frames[nFramescount-1].floating) {
-
         Frames[nFramescount-1].floating=FALSE;
-        //SetWindowPos(Frames[nFramescount-1].hw
         CLUIFrameSetFloat(retval,1);//lparam=1 use stored width and height
     }
     RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);
@@ -2057,7 +2072,6 @@ int CLUIFramesResize(const RECT newsize)
     int clientfrm, clientframe = -1;
     int i,j;
     int sepw;
-    SortData *sdarray;
     int topOff = 0, botOff = 0, last_bottomtop;;
 
     GapBetweenFrames=g_CluiData.gapBetweenFrames;
@@ -2081,24 +2095,19 @@ int CLUIFramesResize(const RECT newsize)
             Frames[i].needhide=FALSE;
             Frames[i].wndSize.left=0;
             Frames[i].wndSize.right=newsize.right-newsize.left;
-        };
-    };
+        }
+    }
     {
         //sorting stuff
-        sdarray=(SortData*)malloc(sizeof(SortData)*nFramescount);
-        if (sdarray==NULL) {
-            return(-1);
-        };
+		memset(g_sd, 0, sizeof(SortData) * MAX_FRAMES);
         for (i=0;i<nFramescount;i++) {
-            sdarray[i].order=Frames[i].order;
-            sdarray[i].realpos=i;
-        };
-        qsort(sdarray,nFramescount,sizeof(SortData),sortfunc);
+            g_sd[i].order=Frames[i].order;
+            g_sd[i].realpos=i;
+        }
+        qsort(g_sd, nFramescount, sizeof(SortData), sortfunc);
 
     }
-
     drawitems=nFramescount;
-
     while (sumheight>(newheight-tbh)&&drawitems>0) {
         sumheight=0;
         drawitems=0;
@@ -2121,7 +2130,7 @@ int CLUIFramesResize(const RECT newsize)
     prevframebottomline=0;
     for (j=0;j<nFramescount;j++) {
         //move all alTop frames
-        i=sdarray[j].realpos;
+        i = g_sd[j].realpos;
         if ((!Frames[i].needhide)&&(!Frames[i].floating)&&(Frames[i].visible)&&(Frames[i].align==alTop)) {
             curfrmtbh=(TitleBarH)*btoint(Frames[i].TitleBar.ShowTitleBar);
             Frames[i].wndSize.top=prevframebottomline+(prevframebottomline > 0 ? sepw : 0)+(curfrmtbh);
@@ -2136,7 +2145,7 @@ int CLUIFramesResize(const RECT newsize)
     if (sumheight<newheight) {
         for (j=0;j<nFramescount;j++) {
             //move alClient frame
-            i=sdarray[j].realpos;
+            i = g_sd[j].realpos;
             if ((!Frames[i].needhide)&&(!Frames[i].floating)&&(Frames[i].visible)&&(Frames[i].align==alClient)) {
                 int oldh;
                 Frames[i].wndSize.top=prevframebottomline+(prevframebottomline > 0 ? sepw : 0)+(tbh);
@@ -2161,7 +2170,7 @@ int CLUIFramesResize(const RECT newsize)
     //prevframe=-1;
     for (j=nFramescount-1;j>=0;j--) {
         //move all alBottom frames
-        i=sdarray[j].realpos;
+        i = g_sd[j].realpos;
         if ((Frames[i].visible)&&(!Frames[i].floating)&&(!Frames[i].needhide)&&(Frames[i].align==alBottom)) {
             curfrmtbh=(TitleBarH)*btoint(Frames[i].TitleBar.ShowTitleBar);
             Frames[i].wndSize.bottom=prevframebottomline-((prevframebottomline < newheight) ? sepw : 0);
@@ -2179,10 +2188,6 @@ int CLUIFramesResize(const RECT newsize)
     if (clientframe != -1) {
         Frames[clientframe].wndSize.bottom = last_bottomtop - (last_bottomtop < newheight ? sepw : 0);
         Frames[clientframe].height=Frames[clientframe].wndSize.bottom-Frames[clientframe].wndSize.top;
-    }
-
-    if (sdarray!=NULL) {
-        free(sdarray);sdarray=NULL;
     }
     return 0;
 }

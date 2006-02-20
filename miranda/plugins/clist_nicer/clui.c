@@ -27,7 +27,6 @@ UNICODE done
 #include "../../include/m_findadd.h"
 #include "m_updater.h"
 #include "cluiframes/cluiframes.h"
-#include "urlctrl.h"
 
 #define TM_AUTOALPHA  1
 #define TIMERID_AUTOSIZE 100
@@ -2196,11 +2195,6 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		//hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_PUMPKIN));
 		SendDlgItemMessage(hwndDlg, IDC_LOGO, STM_SETICON, (WPARAM)hIcon, 0);
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
-#if defined(_UNICODE)
-		urlctrl_set(GetDlgItem(hwndDlg, IDC_SUPPORT), _T("http://miranda-im.org/download/details.php?action=viewfile&id=2365"), &url_unvisited, &url_visited, UCF_TXT_HCENTER, RGB(255, 255, 255));
-#else
-		urlctrl_set(GetDlgItem(hwndDlg, IDC_SUPPORT), _T("http://miranda-im.org/download/details.php?action=viewfile&id=2189"), &url_unvisited, &url_visited, UCF_TXT_HCENTER, RGB(255, 255, 255));
-#endif
 		DestroyIcon(hIcon);
 		return TRUE;
 	case WM_COMMAND:
@@ -2209,6 +2203,13 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDCANCEL:
 			DestroyWindow(hwndDlg);
 			return TRUE;
+		case IDC_SUPPORT:
+#if defined(_UNICODE)
+		CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://miranda-im.org/download/details.php?action=viewfile&id=2365");
+#else
+		CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://miranda-im.org/download/details.php?action=viewfile&id=2189");
+#endif
+		break;
 		}
 		break;
 	case WM_CTLCOLOREDIT:
