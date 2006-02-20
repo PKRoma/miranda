@@ -1940,10 +1940,16 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, hbmAvatar);
             if(bPanelPic) {
 				LONG width_off = borderType ? 0 : 2;
+				LONG height_off = 0;
 
                 rcFrame = rcClient;
                 rcFrame.left = rcFrame.right - ((LONG)dNewWidth + 2);
                 rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 2;
+				if(rcFrame.bottom < rcClient.bottom) {
+					height_off = (rcClient.bottom - ((LONG)dNewHeight + 2)) / 2;
+					rcFrame.top += height_off;
+					rcFrame.bottom += height_off;
+				}
                 SetStretchBltMode(hdcDraw, HALFTONE);
                 if(aceFlags & AVS_PREMULTIPLIED) {
 					if(borderType == 2)
@@ -1954,7 +1960,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 						clipRgn = CreateRoundRectRgn(rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom, 4, 4);
 						SelectClipRgn(hdcDraw, clipRgn);
 					}
-					MY_AlphaBlend(hdcDraw, rcFrame.left + (borderType ? 1 : 0), borderType ? 1 : 0, (int)dNewWidth + width_off, (int)dNewHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
+					MY_AlphaBlend(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
                 }
                 else {
 					if(borderType == 2)
@@ -1965,7 +1971,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 						clipRgn = CreateRoundRectRgn(rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom, 4, 4);
 						SelectClipRgn(hdcDraw, clipRgn);
 					}
-                    StretchBlt(hdcDraw, rcFrame.left + (borderType ? 1 : 0), borderType ? 1 : 0, (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                    StretchBlt(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
                 }
             }
             else {
