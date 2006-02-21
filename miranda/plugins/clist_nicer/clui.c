@@ -1094,6 +1094,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			CreateCLC(hwnd);
 			g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
 			DBWriteContactSettingByte(NULL, "CList", "State", old_cliststate);
+			
+			CLUIFramesReSort();
+	        CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList, 0);
 
 			if(!g_CluiData.autosize)
 				ShowCLUI(hwnd);
