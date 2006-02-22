@@ -1773,14 +1773,8 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 {
 	struct yahoo_data *yd = yid->yd;
 	YList *l;
-	
-	if (!yd->logged_in) {
-		yd->logged_in = TRUE;
-		if(yd->current_status < 0)
-			yd->current_status = yd->initial_status;
-		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_OK, NULL);
-	}
 
+	/* we could be getting multiple packets here */
 	for (l = pkt->hash; l; l = l->next) {
 		struct yahoo_pair *pair = l->data;
 
@@ -1851,28 +1845,41 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 			YAHOO_CALLBACK(ext_yahoo_got_stealthlist)(yd->client_id, yd->rawstealthlist);
 			break;
 		case 217: /*??? Seems like last key */
-			if (!yd->rawstealthlist)
-				YAHOO_CALLBACK(ext_yahoo_got_stealthlist)(yd->client_id, yd->rawstealthlist);
-			
-			if(yd->ignorelist) {
-				yd->ignore = bud_str2list(yd->ignorelist);
-				FREE(yd->ignorelist);
-				YAHOO_CALLBACK(ext_yahoo_got_ignore)(yd->client_id, yd->ignore);
-			}
-			
-			if(yd->rawbuddylist) {
-				yd->buddies = bud_str2list(yd->rawbuddylist);
-				FREE(yd->rawbuddylist);
-				
-				YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies);
-			}
-		
-		
-			if(yd->cookie_y && yd->cookie_t && yd->cookie_c)
-						YAHOO_CALLBACK(ext_yahoo_got_cookies)(yd->client_id);
 					
 			break;
 		}
+	}
+
+	/* we could be getting multiple packets here */
+	if (pkt->status != 0) /* Thanks for the fix GAIM */
+		return;
+	
+	if (!yd->rawstealthlist)
+		YAHOO_CALLBACK(ext_yahoo_got_stealthlist)(yd->client_id, yd->rawstealthlist);
+	
+	if(yd->ignorelist) {
+		yd->ignore = bud_str2list(yd->ignorelist);
+		FREE(yd->ignorelist);
+		YAHOO_CALLBACK(ext_yahoo_got_ignore)(yd->client_id, yd->ignore);
+	}
+	
+	if(yd->rawbuddylist) {
+		yd->buddies = bud_str2list(yd->rawbuddylist);
+		FREE(yd->rawbuddylist);
+		
+		YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies);
+	}
+
+
+	if(yd->cookie_y && yd->cookie_t && yd->cookie_c)
+				YAHOO_CALLBACK(ext_yahoo_got_cookies)(yd->client_id);
+	
+	/*** We login at the very end of the packet communication */
+	if (!yd->logged_in) {
+		yd->logged_in = TRUE;
+		if(yd->current_status < 0)
+			yd->current_status = yd->initial_status;
+		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_OK, NULL);
 	}
 }
 
@@ -2848,7 +2855,7 @@ static void yahoo_process_picture_update(struct yahoo_input_data *yid, struct ya
 {
 	char *who = NULL;
 	char *me = NULL;
-	int buddy_icon = -1;
+	int buddy_icon = 0;
 	
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
@@ -2861,7 +2868,7 @@ static void yahoo_process_picture_update(struct yahoo_input_data *yid, struct ya
 			buddy_icon = strtol(pair->value, NULL, 10);
 		
 	}
-	NOTICE(("got picture_checksum packet"));
+	NOTICE(("got picture_update packet"));
 	YAHOO_CALLBACK(ext_yahoo_got_picture_update)(yid->yd->client_id, me, who, buddy_icon);
 }
 
@@ -4451,6 +4458,23 @@ void yahoo_add_buddy(int id, const char *who, const char *group, const char *msg
 	yahoo_packet_hash(pkt, 65, group);
 	if (msg != NULL) // add message/request "it's me add me"
 		yahoo_packet_hash(pkt, 14, msg);
+	
+	/* YIM7 does something weird here:
+		yahoo_packet_hash(pkt, 1, yd->user);	
+		yahoo_packet_hash(pkt, 14, msg != NULL ? msg : "");
+		yahoo_packet_hash(pkt, 65, group);
+		yahoo_packet_hash(pkt, 97, 1); ?????
+		yahoo_packet_hash(pkt, 216, "First Name");???
+		yahoo_packet_hash(pkt, 254, "Last Name");???
+		yahoo_packet_hash(pkt, 7, who);
+	
+		Server Replies with:
+		1: ID
+		66: 0
+		 7: who
+		65: group
+		223: 1     ??
+	*/
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
 }
@@ -5094,7 +5118,7 @@ void yahoo_send_file(int id, const char *who, const char *msg,
 
 	pkt = yahoo_packet_new(YAHOO_SERVICE_FILETRANSFER, YAHOO_STATUS_AVAILABLE, yd->session_id);
 
-	snprintf(size_str, sizeof(size_str), "%ld", size);
+	snprintf(size_str, sizeof(size_str), "%lu", size);
 
 	yahoo_packet_hash(pkt, 0, yd->user);
 	yahoo_packet_hash(pkt, 5, who);
