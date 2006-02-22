@@ -451,6 +451,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 		
     }
 	
+	Netlib_CloseHandle((HANDLE)fd);
     LOG(("File download complete!"));
 
     ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
@@ -907,6 +908,8 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 				} while ( dw > 0 );
 			
     }
+	
+	Netlib_CloseHandle((HANDLE)fd);
 	
 	if (DBGetContactSettingDword(hContact, yahooProtocolName, "PictCK", 0) != avt->cksum) {
 		LOG(("WARNING: Checksum updated during download?!"));
