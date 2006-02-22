@@ -1023,7 +1023,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum || _access( z, 0 ) != 0 ) {
 			struct avatar_info *avt;
 			
-			YAHOO_DebugLog("[ext_yahoo_got_picture] Checksums don't match or avatar file is missing. Current: %d, New: %d",DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum);
+			YAHOO_DebugLog("[ext_yahoo_got_picture] Checksums don't match or avatar file is missing. Current: %d, New: %d",(int)DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum);
 			avt = malloc(sizeof(struct avatar_info));
 			avt->who = _strdup(who);
 			avt->pic_url = _strdup(pic_url);
