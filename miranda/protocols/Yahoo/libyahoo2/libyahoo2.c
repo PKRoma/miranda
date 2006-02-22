@@ -280,10 +280,24 @@ File List Cancel:
 	YAHOO_SERVICE_PICTURE = 0xbe,
 	YAHOO_SERVICE_PICTURE_UPDATE = 0xc1,
 	YAHOO_SERVICE_PICTURE_UPLOAD = 0xc2,
-	YAHOO_SERVICE_YAHOO6_STATUS_INVIS = 0xc5,
+	YAHOO_SERVICE_YAHOO6_VISIBLE_TOGGLE = 0xc5,
 	YAHOO_SERVICE_YAHOO6_STATUS_UPDATE = 0xc6,
 	YAHOO_SERVICE_AVATAR_UPDATE = 0xc7,
 	YAHOO_SERVICE_AUDIBLE = 0xd0,
+/*
+	YAHOO_SERVICE_YAHOO?_??? = 0xd4 (212) ?? 
+	  1: me
+	  5: who
+	 13: 1
+	
+	YAHOO_SERVICE_YAHOO7_??? = 0xd6 (214) ?? Buddy Add? Authorize Buddy add?
+	  removes "Add request pending"????
+	   4: who
+	   5: id
+	  13: 1
+	*/	
+	
+	
 	YAHOO_SERVICE_WEBLOGIN = 0x0226,
 	YAHOO_SERVICE_SMS_MSG = 0x02ea
 };
@@ -357,7 +371,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_PICTURE,"YAHOO_SERVICE_PICTURE"},
 	{YAHOO_SERVICE_PICTURE_UPDATE,"YAHOO_SERVICE_PICTURE_UPDATE"},
 	{YAHOO_SERVICE_PICTURE_UPLOAD,"YAHOO_SERVICE_PICTURE_UPLOAD"},
-	{YAHOO_SERVICE_YAHOO6_STATUS_INVIS, "YAHOO_SERVICE_YAHOO6_STATUS_INVIS"},
+	{YAHOO_SERVICE_YAHOO6_VISIBLE_TOGGLE, "YAHOO_SERVICE_YAHOO6_VISIBLE_TOGGLE"},
 	{YAHOO_SERVICE_YAHOO6_STATUS_UPDATE,"YAHOO_SERVICE_YAHOO6_STATUS_UPDATE"},
 	{YAHOO_SERVICE_AVATAR_UPDATE,"YAHOO_SERVICE_AVATAR_UPDATE"},
 	{YAHOO_SERVICE_AUDIBLE,"YAHOO_SERVICE_AUDIBLE"},
@@ -424,6 +438,7 @@ static const value_string packet_keys[]={
 	{ 58, "conf joinmsg"},
 	{ 59, "cookies"},
 	{ 60, "SMS/Mobile"},
+	{ 63, "imvironment"},
 	{ 65, "group"},
 	{ 66, "login status"},
 	{ 87, "buds/groups"},
@@ -447,9 +462,12 @@ static const value_string packet_keys[]={
 	{192, "Pictures/Buddy Icons"},
 	{197, "Avatars"},
 	{206, "buddy icon"},
+	{213, "avatar avail?"},
 	{230, "the audible, in foo.bar.baz format"},
 	{231, "audible text"},
 	{232, "weird number (md5 hash?) [audible]"},
+	{1002, "YIM6+"},
+	{10097, "Region (SMS?)"},
 	{ -1, "" }
 };
 
@@ -2872,6 +2890,49 @@ static void yahoo_process_picture_update(struct yahoo_input_data *yid, struct ya
 	YAHOO_CALLBACK(ext_yahoo_got_picture_update)(yid->yd->client_id, me, who, buddy_icon);
 }
 
+static void yahoo_process_audible(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
+{
+	char *who = NULL;
+	char *me = NULL;
+	char *aud_hash=NULL;
+	char *msg = NULL;
+	char *aud = NULL;
+	
+	YList *l;
+	for (l = pkt->hash; l; l = l->next) {
+		struct yahoo_pair *pair = l->data;
+		switch (pair->key){
+		case 5: /* our id */
+				me = pair->value;
+				break;
+		case 4: /* who is notifying all */
+				who = pair->value;
+				break;
+		case 230: /* file class name 
+					GAIM: the audible, in foo.bar.baz format
+			
+					Actually this is the filename.
+					Full URL:
+				
+					http://us.dl1.yimg.com/download.yahoo.com/dl/aud/us/aud.swf 
+					
+					where aud in foo.bar.baz format
+					*/
+				aud = pair->value;
+				break;
+		case 231: /*audible text*/
+				msg = pair->value;
+				break;
+		case 232: /*  weird number (md5 hash?) */
+				aud_hash = pair->value;
+				break;
+		}
+	}
+	NOTICE(("got picture_upload packet"));
+	if (who) // sometimes we just get a confirmation without the WHO.(ack on our send/update)
+		YAHOO_CALLBACK(ext_yahoo_got_audible)(yid->yd->client_id, me, who, aud, msg, aud_hash);
+}
+
 static void yahoo_process_ping(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
 	char *errormsg = NULL;
@@ -3078,6 +3139,9 @@ static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_pack
 		break;
 	case YAHOO_SERVICE_PICTURE_UPDATE:
 		yahoo_process_picture_update(yid, pkt);
+		break;
+	case YAHOO_SERVICE_AUDIBLE:
+		yahoo_process_audible(yid, pkt);
 		break;
 	case YAHOO_SERVICE_IDLE:
 	case YAHOO_SERVICE_MAILSTAT:
@@ -4132,7 +4196,7 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 	cs = yd->current_status;
 	
 	if (state == YAHOO_STATUS_INVISIBLE) {
-		pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO6_STATUS_INVIS, YAHOO_STATUS_AVAILABLE, yd->session_id);
+		pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO6_VISIBLE_TOGGLE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 		yahoo_packet_hash(pkt, 13, "2");
 		yd->current_status = state;
 	} else {
@@ -4175,7 +4239,7 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 	yahoo_packet_free(pkt);
 	
 	if (cs == YAHOO_STATUS_INVISIBLE && state != YAHOO_STATUS_INVISIBLE){
-		pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO6_STATUS_INVIS, YAHOO_STATUS_AVAILABLE, yd->session_id);
+		pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO6_VISIBLE_TOGGLE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 		yahoo_packet_hash(pkt, 13, "1");
 		yd->current_status = state;
 

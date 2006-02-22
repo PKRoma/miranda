@@ -245,6 +245,19 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture_update)(int id, const char *me, c
  */
 void YAHOO_CALLBACK_TYPE(ext_yahoo_got_im)(int id, char *me, char *who, char *msg, long tm, int stat, int utf8, int buddy_icon);
 
+/*
+ * Name: ext_yahoo_got_audible 
+ * 	Called when our buddy send an audible to us.
+ * Params:
+ * 	id   - the id that identifies the server connection
+ *  me   - the identity of mine being notified
+ * 	who  - the handle of the remote user
+ *  aud  - audible sent (filename?)
+ *  msg  - audible message 
+ *  aud_hash - md5 hash?
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_audible)(int id, const char *me, const char *who, const char *aud, const char *msg, const char *aud_hash);
+
 
 
 

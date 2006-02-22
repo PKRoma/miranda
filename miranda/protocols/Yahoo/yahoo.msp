@@ -126,8 +126,8 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
-main.c,516
-services.c,32080
-yahoo.c,3296
-libyahoo2\libyahoo2.c,106178
-yahoo.h,1055
+libyahoo2\libyahoo2.c,106176
+yahoo.c,3212
+services.c,32068
+main.c,496
+yahoo.h,1520

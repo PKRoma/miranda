@@ -1023,7 +1023,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum || _access( z, 0 ) != 0 ) {
 			struct avatar_info *avt;
 			
-			YAHOO_DebugLog("[ext_yahoo_got_picture] Checksums don't match or avatar file is missing. Current: %lu, New: %d",DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum);
+			YAHOO_DebugLog("[ext_yahoo_got_picture] Checksums don't match or avatar file is missing. Current: %d, New: %d",DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum);
 			avt = malloc(sizeof(struct avatar_info));
 			avt->who = _strdup(who);
 			avt->pic_url = _strdup(pic_url);
@@ -1093,7 +1093,7 @@ void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int b
 	}
 	
 	/* Last thing check the checksum and request new one if we need to */
-	if (!buddy_icon || buddy_icon == -1) {
+	if (buddy_icon == 0 || buddy_icon == 1) {
 		yahoo_reset_avatar(hContact);
 		
 	} else if (buddy_icon == 2) {
@@ -1102,6 +1102,22 @@ void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int b
 	
 }
 
+void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *aud, const char *msg, const char *aud_hash)
+{
+	HANDLE 	hContact = 0;
+	char z[1024];
+	
+	LOG(("ext_yahoo_got_audible for %s aud: %s msg:'%s' hash: %s", who, aud, msg, aud_hash));
+
+	hContact = getbuddyH(who);
+	if (hContact == NULL) {
+		LOG(("Buddy Not Found. Skipping avatar update"));
+		return;
+	}
+	
+	_snprintf(z, sizeof(z), "[miranda-audible] %s", msg ?msg:"");
+	ext_yahoo_got_im(id, (char*)me, (char*)who, z, 0, 0, 0, 0);
+}
 void ext_yahoo_got_nick(int id, const char *nick)
 {
 	LOG(("[ext_yahoo_got_nick] nick: %s", nick));
@@ -1337,10 +1353,11 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
     CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
 	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 
-	if (buddy_icon == 2) {
+	//?? Don't generate floods!!
+	if (buddy_icon == 2 && DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) == 0) {
 		/* request the buddy image */
 		//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
-		YAHOO_request_avatar(who);
+		YAHOO_request_avatar(who); 
 	} 
 }
 
@@ -2114,6 +2131,7 @@ void register_callbacks()
 	
 	yc.ext_yahoo_buddy_added = ext_yahoo_buddy_added;
 	yc.ext_yahoo_cleanup = ext_yahoo_cleanup;
+	yc.ext_yahoo_got_audible = ext_yahoo_got_audible;
 	
 	yahoo_register_callbacks(&yc);
 	
