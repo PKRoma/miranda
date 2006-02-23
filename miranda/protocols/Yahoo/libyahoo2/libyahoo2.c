@@ -4149,6 +4149,7 @@ void yahoo_send_im(int id, const char *from, const char *who, const char *what, 
 	yahoo_packet_hash(pkt, 64, "0");
 
 
+	yahoo_packet_hash(pkt, 1002, "1"); /* YIM6+ */
 	yahoo_send_packet(yid, pkt, 0);
 
 	yahoo_packet_free(pkt);
@@ -4165,12 +4166,12 @@ void yahoo_send_typing(int id, const char *from, const char *who, int typ)
 	yd = yid->yd;
 	pkt = yahoo_packet_new(YAHOO_SERVICE_NOTIFY, YAHOO_STATUS_NOTIFY, yd->session_id);
 
-	yahoo_packet_hash(pkt, 5, who);
-	yahoo_packet_hash(pkt, 4, from?from:yd->user);
+	yahoo_packet_hash(pkt, 49, "TYPING");
+	yahoo_packet_hash(pkt, 1, from?from:yd->user);
 	yahoo_packet_hash(pkt, 14, " ");
 	yahoo_packet_hash(pkt, 13, typ ? "1" : "0");
-	yahoo_packet_hash(pkt, 49, "TYPING");
-
+	yahoo_packet_hash(pkt, 5, who);
+	yahoo_packet_hash(pkt, 1002, "1"); /* YIM6+ */
 	yahoo_send_packet(yid, pkt, 0);
 
 	yahoo_packet_free(pkt);
