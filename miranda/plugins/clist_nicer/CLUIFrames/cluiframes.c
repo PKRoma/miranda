@@ -1749,24 +1749,44 @@ static LRESULT CALLBACK FramesSubClassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
+/*
+ * re-sort all frames and correct frame ordering
+ */
+
 int CLUIFramesReSort()
 {
     int v = 0, i;
+	int order = 0;
 
     lockfrm();
 	memset(g_sd,0,sizeof(SortData) * MAX_FRAMES);
     for (i=0;i<nFramescount;i++) {
+		if(Frames[i].align != alTop)
+			continue;
         g_sd[v].order=Frames[i].order;
         g_sd[v].realpos=i;
         v++;
     }
-    if (v==0) {
-        ulockfrm();
-		return(0);
+    if (v > 0) {
+	    qsort(g_sd, v, sizeof(SortData), sortfunc);
+		for(i = 0; i < v; i++)
+			Frames[g_sd[i].realpos].order = order++;
     }
-    qsort(g_sd, v, sizeof(SortData), sortfunc);
-	for(i = 0; i < nFramescount; i++)
-		Frames[g_sd[i].realpos].order = i;
+
+	memset(g_sd,0,sizeof(SortData) * MAX_FRAMES);
+	v = 0;
+    for (i=0;i<nFramescount;i++) {
+		if(Frames[i].align != alBottom)
+			continue;
+        g_sd[v].order=Frames[i].order;
+        g_sd[v].realpos=i;
+        v++;
+    }
+    if (v > 0) {
+	    qsort(g_sd, v, sizeof(SortData), sortfunc);
+		for(i = 0; i < v; i++)
+			Frames[g_sd[i].realpos].order = order++;
+    }
 
 	ulockfrm();
 	return(0);
