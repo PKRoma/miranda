@@ -1349,8 +1349,10 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 				MultiByteToWideChar(dat->codePage, 0, (char *)ci.pszVal, lstrlenA((char *)ci.pszVal), szMyName, 110);
 				szMyName[109] = 0;
 			}
-			if(ci.pszVal)
+			if(ci.pszVal) {
 				mir_free(ci.pszVal);
+				ci.pszVal = NULL;
+			}
 		}
 		else if(ci.type == CNFT_DWORD)
 			_ltow(ci.dVal, szMyName, 10);
@@ -1365,6 +1367,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 			_tcsncpy(szMyName, ci.pszVal, 110);
 			szMyName[109] = 0;
 			mir_free(ci.pszVal);
+			ci.pszVal = NULL;
 		}
 		else if(ci.type == CNFT_DWORD)
 			_ltoa(ci.dVal, szMyName, 10);

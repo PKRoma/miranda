@@ -588,12 +588,13 @@ int PopupUpdate(HANDLE hContact, HANDLE hEvent)
         if(pdata->pluginOptions->bShowHeaders) 
             mir_snprintf(pdata->szHeader, sizeof(pdata->szHeader), "[b]%s %d[/b]\n", Translate("New messages: "), pdata->nrMerged + 1);
 
+		ZeroMemory(&dbe, sizeof(dbe));
+		dbe.cbSize = sizeof(dbe);
         if(pdata->pluginOptions->bPreview && hContact) {
-            dbe.cbSize = sizeof(dbe);
             dbe.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hEvent, 0);
             dbe.pBlob = (PBYTE)malloc(dbe.cbBlob);
-            CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
-        }
+		}
+        CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
         if (pdata->pluginOptions->bShowDate || pdata->pluginOptions->bShowTime) {
             strncpy(formatTime,"",sizeof(formatTime));
             if (pdata->pluginOptions->bShowDate)
@@ -950,13 +951,13 @@ int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
             MultiByteToWideChar(CP_ACP, 0, szHeader, -1, pdata->szHeader, 256);
             pdata->szHeader[255] = 0;
         }
-
+		ZeroMemory(&dbe, sizeof(dbe));
+		dbe.cbSize = sizeof(dbe);
         if(pdata->pluginOptions->bPreview && hContact) {
-            dbe.cbSize = sizeof(dbe);
             dbe.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hEvent, 0);
             dbe.pBlob = (PBYTE)malloc(dbe.cbBlob);
-            CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
-        }
+		}
+        CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
         if (pdata->pluginOptions->bShowDate || pdata->pluginOptions->bShowTime) {
             formatTime[0] = 0;
             if (pdata->pluginOptions->bShowDate)
@@ -1523,7 +1524,7 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
     if(nen_options.bNoRSS && szProto != NULL && !strncmp(szProto, "RSS", 3))
         return 0;                                        // filter out RSS popups
                                                        // 
-    if(windowOpen && pContainer != 0) {                // message window is open, need to check the container config if we want to see a popup nonetheless
+	if(windowOpen && pContainer != 0) {                // message window is open, need to check the container config if we want to see a popup nonetheless
         if(nen_options.bWindowCheck)                   // no popups at all for open windows... no exceptions
             return 0;
         if (pContainer->dwFlags & CNT_DONTREPORT && (IsIconic(pContainer->hwnd) || pContainer->bInTray))        // in tray counts as "minimised"
