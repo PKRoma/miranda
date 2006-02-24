@@ -1278,9 +1278,10 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 
 	//---- receiving ack -----------
 	if (( hdrdata->mFlags & 0x02 ) == 0x02 ) {
-		filetransfer* ft = p2p_getSessionByMsgID( hdrdata->mAckSessionID );
+		filetransfer* ft = p2p_getSessionByID( hdrdata->mSessionID );
 		if ( ft == NULL )
-			return;
+			if ((ft = p2p_getSessionByMsgID( hdrdata->mAckSessionID )) == NULL )
+				return;
 
 		char szContactEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( MSN_GetStaticString( "e-mail", info->mJoinedContacts[0], szContactEmail, sizeof szContactEmail ))
