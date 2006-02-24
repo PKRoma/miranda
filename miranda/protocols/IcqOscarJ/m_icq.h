@@ -169,108 +169,12 @@ typedef struct {
 //DWORD: 4 bytes, little-endian
 //LNTS:  a WORD containing the length of the string, followed by the string
 //       itself. No zero terminator.
-#define ICQCHANGEINFO_MAIN     0xEA03
-/* pInfoData points to:
-    WORD    datalen
-    LNTS    nick
-    LNTS    first
-    LNTS    last
-    LNTS    email
-    LNTS    city
-    LNTS    state
-    LNTS    phone
-    LNTS    fax
-    LNTS    street
-    LNTS    cellular (if SMS-able string contains an ending ' SMS')
-    LNTS    zip
-    WORD    country
-    BYTE    gmt
-    BYTE    publish my primary e-mail flag
-*/
-#define ICQCHANGEINFO_MORE     0xFD03
-/* pInfoData points to:
-    WORD    datalen
-    BYTE    age
-    BYTE    0
-    BYTE    sex
-    LNTS    homepage
-    WORD    birth-year
-    BYTE    birth-month
-    BYTE    birth-day
-    BYTE    lang1
-    BYTE    lang2
-    BYTE    lang3
-*/
-#define ICQCHANGEINFO_ABOUT     0x0604
-/* pInfoData points to:
-    WORD    datalen
-    LNTS    about
-*/
-#define ICQCHANGEINFO_WORK     0xF303
-/* pInfoData points to:
-    WORD    datalen
-    LNTS    city
-    LNTS    state
-    DWORD   fax
-    LNTS    street
-    LNTS    zip
-    WORD    country
-    LNTS    company-name
-    LNTS    company-dept
-    LNTS    company-position
-    WORD    company-occupation
-    LNTS    company-web
-*/
 #define ICQCHANGEINFO_PASSWORD 0x2E04
 /* pInfoData points to:
     WORD    datalen
     LNTS    newpassword
 */
 
-#define ICQCHANGEINFO_SECURITY 0x2404
-/* pInfoData points to:
-    BYTE    AUTH     0x01 - don't require authorization
-                     0x00 - require authorization to add to contact list  
-    BYTE    WEBAWARE 0x01 - disallow seeing status on the web
-                     0x00 - be web aware  
-    BYTE    DIRECT   0x00 - allow direct connection with any user.
-                     0x01 - allow direct connection with users on the contact list.
-                     0x02 - allow direct connections only upon authorization.  
-    BYTE    KIND     User kind (unknown, use 0)
-*/
-
-#define ICQCHANGEINFO_INTERESTS 0x1004
-/* pInfoData points to:
-    WORD    datalen
-    BYTE    0x04
-    WORD    interest1 category code
-    LNTS    interest1 keyword string
-    WORD    interest2 category code
-    LNTS    interest2 keyword string
-    WORD    interest3 category code
-    LNTS    interest3 keyword string
-    WORD    interest4 category code
-    LNTS    interest4 keyword string
-*/
-
-#define ICQCHANGEINFO_PASTBACKGROUND 0x1A04
-/* pInfoData points to:
-    WORD    datalen
-    BYTE    0x03
-    WORD    past1 category code
-    LNTS    past1 keyword string
-    WORD    past2 category code
-    LNTS    past2 keyword string
-    WORD    past3 category code
-    LNTS    past3 keyword string
-    BYTE    0x03
-    WORD    aff1 category code
-    LNTS    aff1 keyword string
-    WORD    aff2 category code
-    LNTS    aff2 keyword string
-    WORD    aff3 category code
-    LNTS    aff3 keyword string
-*/
 
 //miranda/icqoscar/statusmsgreq event
 //called when our status message is requested
@@ -312,13 +216,13 @@ typedef struct {
  - custom messages for each user supported - ME_ICQ_STATUSMSGREQ with type MTYPE_SCRIPT_NOTIFY
  */
 // Sets owner current custom status
-//wParam = (int)N   // custom status id (1-29)
+//wParam = (int)N   // custom status id (1-32)
 //lParam = 0         
 //return = N (id of status set) or 0 (failed - probably bad params)
 #define PS_ICQ_SETCUSTOMSTATUS "/SetXStatus"
 
 // Retrieves specified custom status icon
-//wParam = (int)N  // custom status id (1-29), 0 = my current custom status
+//wParam = (int)N  // custom status id (1-32), 0 = my current custom status
 //lParam = 0
 //return = HICON   // custom status icon (use DestroyIcon to release resources)
 #define PS_ICQ_GETCUSTOMSTATUSICON "/GetXStatusIcon"

@@ -376,18 +376,18 @@
 
 // Reply subtypes for SNAC 15/02 & 15/03
 #define META_PROCESSING_ERROR       0x0001 // Meta processing error server reply
-#define META_SET_HOMEINFO_ACK       0x0064 // Set user home info server ack
-#define META_SET_WORKINFO_ACK       0x006E // Set user work info server ack
-#define META_SET_MOREINFO_ACK       0x0078 // Set user more info server ack
-#define META_SET_NOTES_ACK          0x0082 // Set user notes info server ack
-#define META_SET_EMAILINFO_ACK      0x0087 // Set user email(s) info server ack
-#define META_SET_INTINFO_ACK        0x008C // Set user interests info server ack
-#define META_SET_AFFINFO_ACK        0x0096 // Set user affilations info server ack
+//#define META_SET_HOMEINFO_ACK       0x0064 // Set user home info server ack (deprecated)
+//#define META_SET_WORKINFO_ACK       0x006E // Set user work info server ack (deprecated)
+//#define META_SET_MOREINFO_ACK       0x0078 // Set user more info server ack (deprecated)
+//#define META_SET_NOTES_ACK          0x0082 // Set user notes info server ack (deprecated)
+//#define META_SET_EMAILINFO_ACK      0x0087 // Set user email(s) info server ack (deprecated)
+//#define META_SET_INTINFO_ACK        0x008C // Set user interests info server ack (deprecated)
+//#define META_SET_AFFINFO_ACK        0x0096 // Set user affilations info server ack (deprecated)
 #define META_SMS_DELIVERY_RECEIPT   0x0096 // Server SMS response (delivery receipt) NOTE: same as ID above
-#define META_SET_PERMS_ACK          0x00A0 // Set user permissions server ack
+//#define META_SET_PERMS_ACK          0x00A0 // Set user permissions server ack (deprecated)
 #define META_SET_PASSWORD_ACK       0x00AA // Set user password server ack
 #define META_UNREGISTER_ACK         0x00B4 // Unregister account server ack
-#define META_SET_HPAGECAT_ACK       0x00BE // Set user homepage category server ack
+//#define META_SET_HPAGECAT_ACK       0x00BE // Set user homepage category server ack (deprecated)
 #define META_BASIC_USERINFO         0x00C8 // User basic info reply
 #define META_WORK_USERINFO          0x00D2 // User work info reply
 #define META_MORE_USERINFO          0x00DC // User more info reply
@@ -407,7 +407,7 @@
 #define META_SEARCH_GENERIC         0x055F // Search user by details (TLV)
 #define META_SEARCH_UIN             0x0569 // Search user by UIN (TLV)
 #define META_SEARCH_EMAIL           0x0573 // Search user by E-mail (TLV)
-#define META_SEARCH_ADVANCED        0x0533 // Search user by details (non-TLV)
+//#define META_SEARCH_ADVANCED        0x0533 // Search user by details (non-TLV) (deprecated)
 
 #define META_XML_INFO               0x08A2 // Server variable requested via xml
 #define META_SET_FULLINFO_REQ       0x3A0C // Set full user info request
@@ -519,7 +519,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x8003060D
+#define ICQ_PLUG_VERSION            0x8003060E
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

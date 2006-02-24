@@ -90,22 +90,23 @@ static DWORD requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
 
 
 
+HICON LoadDefaultXStatusIcon(int bStatus)
+{
+  return LoadImage(hInst, MAKEINTRESOURCE(IDI_XSTATUS1 + bStatus - 1), IMAGE_ICON, 0, 0, 0);
+}
+
+
+
 HICON GetXStatusIcon(int bStatus)
 {
-  HIMAGELIST CSImages;
   char szTemp[64];
-  HICON icon;
 
   null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", bStatus - 1);
 
   if (IconLibInstalled())
     return IconLibProcess(NULL, szTemp);
 
-  CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
-  icon = ImageList_ExtractIcon(NULL, CSImages, bStatus - 1);
-  ImageList_Destroy(CSImages);
-
-  return icon;
+  return LoadDefaultXStatusIcon(bStatus);
 }
 
 
@@ -125,23 +126,18 @@ static void setContactExtraIcon(HANDLE hContact, HANDLE hIcon)
 static int CListMW_ExtraIconsRebuild(WPARAM wParam, LPARAM lParam) 
 {
   int i;
-  HIMAGELIST CSImages;
 
   if (gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
   {
-    CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
-    
     for (i = 0; i < 32; i++) 
     {
-      HICON hXIcon = ImageList_ExtractIcon(NULL, CSImages, i);
+      HICON hXIcon = LoadDefaultXStatusIcon(i + 1);
       char szTemp[64];
 
       null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", i);
       hXStatusIcons[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)IconLibProcess(hXIcon, szTemp), 0);
       DestroyIcon(hXIcon);
     }
-
-    ImageList_Destroy(CSImages);
   }
 
   return 0;
@@ -242,37 +238,37 @@ const capstr capXStatus[32] = {
 
 const char* nameXStatus[32] = {
   "Angry",
-  "Duck",
+  "Taking bath",
   "Tired",
   "Party",
-  "Beer",
+  "Drinking beer",
   "Thinking",
   "Eating",
-  "TV",
-  "Friends",
+  "Watching TV",
+  "Meeting",
   "Coffee",
-  "Music",
+  "Listening music",
   "Business",
-  "Camera",
-  "Funny",
-  "Phone",
-  "Games",
-  "College",
+  "Shooting",
+  "Having fun",
+  "On the phone",
+  "Gaming",
+  "Studying",
   "Shopping",
-  "Sick",
+  "Feeling sick",
   "Sleeping",
   "Surfing",
-  "Internet",
-  "Engineering",
+  "Browsing",
+  "Working",
   "Typing",
-  "Eating..yummy..",
-  "Having fun",
-  "Chit chatting",
-  "Crashing",
-  "Going to toilet",
-  "Question",
-  "ProSieben",
-  "Loving"};
+  "Picnic",
+  "Cooking",
+  "Smoking",
+  "I'm high",
+  "On WC",
+  "To be or not to be",
+  "Watching pro7 on TV",
+  "Love"};
 
 
 void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
@@ -760,6 +756,18 @@ static int menuXStatus29(WPARAM wParam,LPARAM lParam)
   setXStatus(29); return 0;
 }
 
+static int menuXStatus30(WPARAM wParam,LPARAM lParam)
+{
+  setXStatus(30); return 0;
+}
+static int menuXStatus31(WPARAM wParam,LPARAM lParam)
+{
+  setXStatus(31); return 0;
+}
+static int menuXStatus32(WPARAM wParam,LPARAM lParam)
+{
+  setXStatus(32); return 0;
+}
 
 
 void InitXStatusItems(BOOL bAllowStatus)
@@ -771,7 +779,6 @@ void InitXStatusItems(BOOL bAllowStatus)
   HANDLE hXStatusRoot;
 
   BYTE bXStatus = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
-  HIMAGELIST CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
 
   if (!gbXStatusEnabled) return;
 
@@ -783,10 +790,10 @@ void InitXStatusItems(BOOL bAllowStatus)
   mi.popupPosition= 500084000;
   mi.position = 2000040000;
 
-  for(i = 0; i <= 29; i++) 
+  for(i = 0; i <= 32; i++) 
   {
     char szTemp[64];
-    HICON hIIcon = (i > 0) ? ImageList_ExtractIcon(NULL, CSImages, i-1) : NULL;
+    HICON hIIcon = (i > 0) ? LoadDefaultXStatusIcon(i) : NULL;
 
     null_snprintf(srvFce, sizeof(srvFce), "%s/menuXStatus%d", gpszICQProtoName, i);
 
@@ -828,6 +835,9 @@ void InitXStatusItems(BOOL bAllowStatus)
         case 27: CreateServiceFunction(srvFce, menuXStatus27); break;
         case 28: CreateServiceFunction(srvFce, menuXStatus28); break;
         case 29: CreateServiceFunction(srvFce, menuXStatus29); break;
+        case 30: CreateServiceFunction(srvFce, menuXStatus30); break;
+        case 31: CreateServiceFunction(srvFce, menuXStatus31); break;
+        case 32: CreateServiceFunction(srvFce, menuXStatus32); break;
       }
     }
 
@@ -842,7 +852,6 @@ void InitXStatusItems(BOOL bAllowStatus)
       hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
     if (i) DestroyIcon(hIIcon);
   }
-  ImageList_Destroy(CSImages);
 
   bXStatusMenuBuilt = 1;
 }
@@ -851,7 +860,6 @@ void InitXStatusItems(BOOL bAllowStatus)
 
 void InitXStatusIcons()
 {
-  HIMAGELIST CSImages = ImageList_LoadImage(hInst, MAKEINTRESOURCE(IDB_XSTATUS), 16, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION);
   char szSection[MAX_PATH + 64];
   int i;
   
@@ -859,15 +867,13 @@ void InitXStatusIcons()
 
   for (i = 0; i < 32; i++) 
   {
-    HICON hXIcon = ImageList_ExtractIcon(NULL, CSImages, i);
+    HICON hXIcon = LoadDefaultXStatusIcon(i + 1);
     char szTemp[64];
 
     null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", i);
     IconLibDefine(ICQTranslate(nameXStatus[i]), szSection, szTemp, hXIcon);
     DestroyIcon(hXIcon);
   }
-
-  ImageList_Destroy(CSImages);
 
   if (bXStatusMenuBuilt)
     ChangedIconsXStatus();

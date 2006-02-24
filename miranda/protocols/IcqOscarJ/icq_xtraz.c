@@ -229,8 +229,7 @@ NextVal:
             { // we got XStatus title, save it
               szNode += 7;
               *szEnd = '\0';
-              if (strlennull(szNode)) // save only non-empty names
-                ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, szNode);
+              ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, szNode);
               *szEnd = ' ';
             }
             szNode = strstr(szWork, "<desc>");

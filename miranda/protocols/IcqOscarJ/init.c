@@ -36,6 +36,8 @@
 
 #include "icqoscar.h"
 
+#include "m_updater.h"
+
 
 PLUGINLINK* pluginLink;
 HANDLE hHookUserInfoInit = NULL;
@@ -56,7 +58,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,13),
+  PLUGIN_MAKE_VERSION(0,3,6,15),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@users.sourceforge.net",
@@ -422,54 +424,74 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     hUserMenuXStatus = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
   }
 
+  {
+    Update update = {0};
+    char szVersion[16];
+
+    update.cbSize = sizeof(Update);
+
+    update.szComponentName = pluginInfo.shortName;
+    null_snprintf(szVersion, 16, "%u.%u.%u.%u", pluginInfo.version & 0x7F000000 >> 24, pluginInfo.version & 0xFF0000 >> 16, pluginInfo.version & 0xFF00 >> 8, pluginInfo.version & 0xFF);
+    update.pbVersion = szVersion;
+    update.cpbVersion = strlennull(update.pbVersion);
+    update.szUpdateURL = pluginInfo.homepage; // use standard File Listing
+
+    // TODO: add beta builds support to devel builds :)
+
+    CallService(MS_UPDATE_REGISTER, 0, (WPARAM)&update);
+  }
+
   return 0;
+}
+
+
+
+static void CListShowMenuItem(HANDLE hMenuItem, BYTE bShow)
+{
+  CLISTMENUITEM mi = {0};
+
+  mi.cbSize = sizeof(mi);
+  if (bShow)
+    mi.flags = CMIM_FLAGS;
+  else
+    mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hMenuItem, (LPARAM)&mi);
+}
+
+
+
+static void CListSetMenuItemIcon(HANDLE hMenuItem, HICON hIcon)
+{
+  CLISTMENUITEM mi = {0};
+
+  mi.cbSize = sizeof(mi);
+  mi.flags = CMIM_FLAGS | CMIM_ICON;
+
+  mi.hIcon = hIcon;
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hMenuItem, (LPARAM)&mi);
 }
 
 
 
 static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 {
-  CLISTMENUITEM mi = {0};
   BYTE bXStatus;
-  
-  mi.cbSize = sizeof(mi);
-  if (!ICQGetContactSettingByte((HANDLE)wParam, "Auth", 0))
-    mi.flags = CMIM_FLAGS | CMIM_NAME | CMIF_HIDDEN;
-  else
-    mi.flags = CMIM_FLAGS | CMIM_NAME;
-  mi.pszName = ICQTranslate("Request authorization");
 
-  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuAuth, (LPARAM)&mi);
-
-  if (!ICQGetContactSettingByte((HANDLE)wParam, "Grant", 0))
-    mi.flags = CMIM_FLAGS | CMIM_NAME | CMIF_HIDDEN;
-  else
-    mi.flags = CMIM_FLAGS | CMIM_NAME;
-  mi.pszName = ICQTranslate("Grant authorization");
-
-  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuGrant, (LPARAM)&mi);
-
-  if (ICQGetContactSettingByte((HANDLE)wParam, "Grant", 0))
-    mi.flags = CMIM_FLAGS | CMIM_NAME | CMIF_HIDDEN;
-  else
-    mi.flags = CMIM_FLAGS | CMIM_NAME;
-  mi.pszName = ICQTranslate("Revoke authorization");
-
-  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuRevoke, (LPARAM)&mi);
+  CListShowMenuItem(hUserMenuAuth, ICQGetContactSettingByte((HANDLE)wParam, "Auth", 0));
+  CListShowMenuItem(hUserMenuGrant, ICQGetContactSettingByte((HANDLE)wParam, "Grant", 0));
+  CListShowMenuItem(hUserMenuRevoke, (BYTE)(ICQGetContactSettingByte(NULL, "PrivacyItems", 0) && !ICQGetContactSettingByte((HANDLE)wParam, "Grant", 0)));
 
   bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
-  if (!bXStatus)
-    mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-  else
+  CListShowMenuItem(hUserMenuXStatus, bXStatus);
+  if (bXStatus)
   {
-    mi.flags = CMIM_FLAGS | CMIM_ICON;
-    mi.hIcon = GetXStatusIcon(bXStatus);
+    HICON iXStatus = GetXStatusIcon(bXStatus);
+    CListSetMenuItemIcon(hUserMenuXStatus, iXStatus);
+
+    if (iXStatus && !IconLibInstalled())
+      DestroyIcon(iXStatus); // release icon
   }
-
-  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuXStatus, (LPARAM)&mi);
-
-  if (mi.hIcon && !IconLibInstalled())
-    DestroyIcon(mi.hIcon); // release icon
 
   return 0;
 }
@@ -478,21 +500,9 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 
 static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam)
 {
-  CLISTMENUITEM mi;
-
-  ZeroMemory(&mi, sizeof(mi));
-  mi.cbSize = sizeof(mi);
-
-  mi.flags = CMIM_FLAGS | CMIM_ICON;
-
-  mi.hIcon = IconLibProcess(NULL, "req_auth");
-  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuAuth, (LPARAM)&mi);
-
-  mi.hIcon = IconLibProcess(NULL, "grant_auth");
-  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuGrant, (LPARAM)&mi);
-
-  mi.hIcon = IconLibProcess(NULL, "revoke_auth");
-  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hUserMenuRevoke, (LPARAM)&mi);
+  CListSetMenuItemIcon(hUserMenuAuth, IconLibProcess(NULL, "req_auth"));
+  CListSetMenuItemIcon(hUserMenuGrant, IconLibProcess(NULL, "grant_auth"));
+  CListSetMenuItemIcon(hUserMenuRevoke, IconLibProcess(NULL, "revoke_auth"));
 
   ChangedIconsXStatus();
 

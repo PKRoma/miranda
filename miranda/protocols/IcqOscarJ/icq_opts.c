@@ -385,7 +385,7 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
     }
     OptDlgChanged(hwndDlg);
     break;
-    
+
   case WM_NOTIFY:
     switch (((LPNMHDR)lParam)->code) 
     {
@@ -400,59 +400,34 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
           ICQWriteContactSettingByte(NULL, "DCType", 1);
         else 
           ICQWriteContactSettingByte(NULL, "DCType", 0);
-        if (IsDlgButtonChecked(hwndDlg, IDC_ADD_AUTH))
-          ICQWriteContactSettingByte(NULL, "Auth", 1);
-        else 
-          ICQWriteContactSettingByte(NULL, "Auth", 0);
-        
-        
+        StoreDBCheckState(hwndDlg, IDC_ADD_AUTH, "Auth");
+
         if (icqOnline)
         {
           PBYTE buf=NULL;
           int buflen=0;
-          
+
           ppackLEWord(&buf, &buflen, 0);
-          ppackLELNTSfromDB(&buf, &buflen, "Nick");
-          ppackLELNTSfromDB(&buf, &buflen, "FirstName");
-          ppackLELNTSfromDB(&buf, &buflen, "LastName");
-          ppackLELNTSfromDB(&buf, &buflen, "e-mail");
-          ppackLELNTSfromDB(&buf, &buflen, "City");
-          ppackLELNTSfromDB(&buf, &buflen, "State");
-          ppackLELNTSfromDB(&buf ,&buflen, "Phone");
-          ppackLELNTSfromDB(&buf ,&buflen, "Fax");
-          ppackLELNTSfromDB(&buf ,&buflen, "Street");
-          ppackLELNTSfromDB(&buf ,&buflen, "Cellular");
-          ppackLELNTSfromDB(&buf ,&buflen, "ZIP");
-          ppackLEWord(&buf ,&buflen, (WORD)ICQGetContactSettingWord(NULL, "Country", 0));
-          ppackByte(&buf ,&buflen, (BYTE)ICQGetContactSettingByte(NULL, "Timezone", 0));
-          ppackByte(&buf ,&buflen, (BYTE)!ICQGetContactSettingByte(NULL, "PublishPrimaryEmail", 0));
-          *(PWORD)buf = buflen-2;
-          {
-            IcqChangeInfo(ICQCHANGEINFO_MAIN, (LPARAM)buf);
-          }
-          
-          buflen=2;
-          
-          if (ICQGetContactSettingByte(NULL, "Auth", 1) == 0)
-            ppackByte(&buf, &buflen, (BYTE)1);
-          else
-            ppackByte(&buf, &buflen, (BYTE)0);
-          ppackByte(&buf, &buflen, (BYTE)ICQGetContactSettingByte(NULL, "WebAware", 0));
-          ppackByte(&buf, &buflen, (BYTE)ICQGetContactSettingByte(NULL, "DCType", 0));
-          ppackByte(&buf, &buflen, 0); // User type?
-          *(PWORD)buf = buflen-2;
-          {
-            IcqChangeInfo(ICQCHANGEINFO_SECURITY, (LPARAM)buf);
-          }
+
+          ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail", (BYTE)!ICQGetContactSettingByte(NULL, "PublishPrimaryEmail", 0), TLV_EMAIL);
+          ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail0", 0, TLV_EMAIL);
+          ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail1", 0, TLV_EMAIL);
+
+          ppackTLVByte(&buf, &buflen, (BYTE)!ICQGetContactSettingByte(NULL, "Auth", 1), TLV_AUTH, 1);
+
+          ppackTLVByte(&buf, &buflen, (BYTE)ICQGetContactSettingByte(NULL, "WebAware", 0), TLV_WEBAWARE, 1);
+
+          *(PWORD)buf = buflen - 2;
+          IcqChangeInfo(META_SET_FULLINFO_REQ, (LPARAM)buf);
+
           SAFE_FREE(&buf);
-          
-          
+
           // Send a status packet to notify the server about the webaware setting
           {
             WORD wStatus;
-            
+
             wStatus = MirandaStatusToIcq(gnCurrentStatus);
-            
+
             if (gnCurrentStatus == ID_STATUS_INVISIBLE) 
             {
               // Tell who is on our visible list

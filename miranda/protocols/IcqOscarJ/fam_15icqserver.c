@@ -395,16 +395,7 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
     
     switch (wReplySubtype)
     {
-    case META_SET_HOMEINFO_ACK:
-    case META_SET_WORKINFO_ACK:
-    case META_SET_MOREINFO_ACK:
-    case META_SET_NOTES_ACK:
-    case META_SET_EMAILINFO_ACK:
-    case META_SET_INTINFO_ACK:
-      //  case META_SET_AFFINFO_ACK:
-    case META_SET_PERMS_ACK:
     case META_SET_PASSWORD_ACK:
-    case META_SET_HPAGECAT_ACK:
     case META_SET_FULLINFO_ACK:
       parseUserInfoUpdateAck(databuf, wPacketLen, wCookie, wReplySubtype, bResultCode);
       break;
@@ -1082,17 +1073,7 @@ static void parseUserInfoUpdateAck(unsigned char *databuf, WORD wPacketLen, WORD
 {
   switch (wReplySubtype)
   {
-
-  case META_SET_HOMEINFO_ACK:  // Set user home info server ack
-  case META_SET_WORKINFO_ACK:  // Set user work info server ack
-  case META_SET_MOREINFO_ACK:  // Set user more info server ack
-  case META_SET_NOTES_ACK:     // Set user notes info server ack
-  case META_SET_EMAILINFO_ACK: // Set user email(s) info server ack
-  case META_SET_INTINFO_ACK:   // Set user interests info server ack
-  case META_SET_AFFINFO_ACK:   // Set user affilations info server ack
-  case META_SET_PERMS_ACK:     // Set user permissions server ack
   case META_SET_PASSWORD_ACK:  // Set user password server ack
-  case META_SET_HPAGECAT_ACK:  // Set user homepage category server ack
   case META_SET_FULLINFO_ACK:  // Server ack for set fullinfo command
 
     if (bResultCode == 0xA)
