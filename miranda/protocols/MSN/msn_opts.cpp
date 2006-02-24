@@ -569,58 +569,161 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 	return FALSE;
 }
 
+static HWND hwndAcc = 0, hwndConn = 0, hwndSrvList = 0, hwndExtras = 0; 
+
+static void SetOptionsDlgToType(HWND hwnd, int iExpert)
+{
+	TCITEM tci;
+	RECT rcClient;
+	HWND hwndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB), hwndEnum;
+	int iPages = 0;
+
+	if(!hwndAcc)
+		hwndAcc = CreateDialog(hInst,MAKEINTRESOURCE(IDD_OPT_MSN), hwnd, DlgProcMsnOpts);
+
+	hwndEnum = GetWindow(hwndAcc, GW_CHILD);
+	
+	while(hwndEnum) {
+		ShowWindow(hwndEnum, iExpert ? SW_SHOW : SW_HIDE);
+		hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
+	}
+	if(!iExpert) {
+		hwndEnum = GetDlgItem(hwndAcc, IDC_STMSNGROUP);
+		ShowWindow(hwndEnum, SW_SHOW);
+		hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
+		do {
+			ShowWindow(hwndEnum, SW_SHOW);
+			hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
+		} while(hwndEnum && hwndEnum != GetDlgItem(hwndAcc, IDC_NEWMSNACCOUNTLINK));
+	}
+	ShowWindow(hwndEnum, SW_SHOW);
+	GetClientRect(hwnd, &rcClient);
+	TabCtrl_DeleteAllItems(hwndTab);
+
+	tci.mask = TCIF_PARAM|TCIF_TEXT;
+	tci.lParam = (LPARAM)hwndAcc;
+	tci.pszText = TranslateT("Account");
+	TabCtrl_InsertItem(hwndTab, 0, &tci);
+	MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
+	iPages++;
+
+	if(!hwndConn)
+		hwndConn = CreateDialog(hInst,MAKEINTRESOURCE(IDD_OPT_MSN_CONN),hwnd,DlgProcMsnConnOpts);
+
+	if(!hwndSrvList)
+		hwndSrvList = CreateDialog(hInst,MAKEINTRESOURCE(IDD_LISTSMGR),hwnd,DlgProcMsnServLists);
+
+	ShowWindow(hwndConn, SW_HIDE);
+	ShowWindow(hwndSrvList, SW_HIDE);
+	ShowWindow(hwndExtras, SW_HIDE);
+	ShowWindow(hwndAcc, SW_SHOW);
+
+	if(iExpert) {
+		tci.lParam = (LPARAM)hwndConn;
+		tci.pszText = TranslateT("Connection");
+		TabCtrl_InsertItem(hwndTab, iPages++, &tci);
+		MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
+
+		tci.lParam = (LPARAM)hwndSrvList;
+		tci.pszText = TranslateT("Server list");
+		TabCtrl_InsertItem(hwndTab, iPages++, &tci);
+		MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
+	}
+	TabCtrl_SetCurSel(hwndTab, 0);
+}
+
+// handle tabbed options dialog
+
+static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+   static int iInit = TRUE;
+   
+   switch(msg)
+   {
+      case WM_INITDIALOG:
+      {
+		 iInit = TRUE;
+		 int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
+		 SetOptionsDlgToType(hwnd, iExpert);
+         iInit = FALSE;
+         return FALSE;
+      }
+	  case WM_DESTROY:
+		  hwndAcc = hwndConn = hwndSrvList = hwndExtras = 0;
+		  break;
+      case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
+         if(!iInit)
+             SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
+         break;
+      case WM_NOTIFY:
+         switch(((LPNMHDR)lParam)->idFrom) {
+            case 0:
+               switch (((LPNMHDR)lParam)->code)
+               {
+                  case PSN_APPLY:
+                     {
+                        TCITEM tci;
+                        int i,count;
+                        tci.mask = TCIF_PARAM;
+                        count = TabCtrl_GetItemCount(GetDlgItem(hwnd,IDC_OPTIONSTAB));
+                        for (i=0;i<count;i++)
+                        {
+                           TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),i,&tci);
+                           SendMessage((HWND)tci.lParam,WM_NOTIFY,0,lParam);
+                        }
+                     }
+                  break;
+				  case PSN_EXPERTCHANGED:
+					  {
+						  int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
+						  SetOptionsDlgToType(hwnd, iExpert);
+						  break;
+					  }
+               }
+            break;
+            case IDC_OPTIONSTAB:
+               switch (((LPNMHDR)lParam)->code)
+               {
+                  case TCN_SELCHANGING:
+                     {
+                        TCITEM tci;
+                        tci.mask = TCIF_PARAM;
+                        TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+                        ShowWindow((HWND)tci.lParam,SW_HIDE);                     
+                     }
+                  break;
+                  case TCN_SELCHANGE:
+                     {
+                        TCITEM tci;
+                        tci.mask = TCIF_PARAM;
+                        TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+                        ShowWindow((HWND)tci.lParam,SW_SHOW);                     
+                     }
+                  break;
+               }
+            break;
+
+         }
+      break;
+   }
+   return FALSE;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Initialize options pages
 
 int MsnOptInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
-	odp.cbSize						= sizeof(odp);
-	odp.position					= -790000000;
-	odp.hInstance					= hInst;
-	odp.pszTemplate				= MAKEINTRESOURCEA(IDD_OPT_MSN);
-	odp.pszTitle					= msnProtocolName;
-	odp.pszGroup					= "Network";
-	odp.flags						= ODPF_BOLDGROUPS;
-	odp.nIDBottomSimpleControl = IDC_STMSNGROUP;
-	odp.pfnDlgProc					= DlgProcMsnOpts;
+	odp.cbSize      = sizeof(odp);
+	odp.position    = -790000000;
+	odp.hInstance   = hInst;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSNMAIN);
+	odp.pszTitle    = msnProtocolName;
+	odp.pszGroup    = "Network";
+	odp.flags       = ODPF_BOLDGROUPS;
+	odp.pfnDlgProc  = OptionsDlgProc;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
-
-	char szTitle[200];
-	mir_snprintf( szTitle, sizeof( szTitle ), "%s %s", msnProtocolName, MSN_Translate( "Network" ));
-
-	odp.position		= -790000001;
-	odp.pszTemplate	= MAKEINTRESOURCEA(IDD_OPT_MSN_CONN);
-	odp.pszTitle		= szTitle;
-	odp.pszGroup		= "Network";
-	odp.flags         = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
-	odp.pfnDlgProc		= DlgProcMsnConnOpts;
-	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
-
-	mir_snprintf( szTitle, sizeof( szTitle ), "%s %s", msnProtocolName, MSN_Translate( "Server Lists" ));
-
-	odp.position		= -790000002;
-	odp.pszTemplate	= MAKEINTRESOURCEA(IDD_LISTSMGR);
-	odp.pszTitle		= szTitle;
-	odp.pszGroup		= "Network";
-	odp.flags         = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
-	odp.pfnDlgProc		= DlgProcMsnServLists;
-	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
-
-	if ( ServiceExists( MS_POPUP_ADDPOPUP )) {
-		memset( &odp, 0, sizeof( odp ));
-		odp.cbSize			= sizeof( odp );
-		odp.position		= 100000000;
-		odp.hInstance		= hInst;
-		odp.pszTemplate	= MAKEINTRESOURCEA( IDD_HOTMAIL_OPT_POPUP );
-		odp.pszTitle		= msnProtocolName;
-		odp.pszGroup		= "Popups";
-		odp.groupPosition	= 910000000;
-		odp.flags			= ODPF_BOLDGROUPS;
-		odp.pfnDlgProc		= DlgProcHotmailPopUpOpts;
-		MSN_CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
-	}
-
 	return 0;
 }
 
