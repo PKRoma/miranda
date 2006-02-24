@@ -153,6 +153,24 @@ static void PaintItemSetting(HDC hdc,RECT *rc,int i,UINT itemState)
 }
 
 
+static int InfoDlg_Resize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
+{
+  switch (urc->wId)
+  {
+    case IDC_LIST:
+      return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
+      break;
+    case IDC_SAVE:
+      return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;      
+      break;
+    case IDC_UPLOADING:
+      return RD_ANCHORX_WIDTH | RD_ANCHORY_BOTTOM;      
+      break;
+  }
+  return RD_ANCHORX_LEFT | RD_ANCHORY_TOP; // default
+}
+
+
 
 BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -463,6 +481,21 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
           break;
       }
       break;
+
+    case WM_SIZE:
+    { // make the dlg resizeable
+      UTILRESIZEDIALOG urd = {0};
+
+      if (IsIconic(hwndDlg)) break;
+      urd.cbSize = sizeof(urd);
+      urd.hInstance = hInst;
+      urd.hwndDlg = hwndDlg;
+      urd.lParam = 0; // user-defined
+      urd.lpTemplate = MAKEINTRESOURCEA(IDD_INFO_CHANGEINFO);
+      urd.pfnResizer = InfoDlg_Resize;
+      CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) &urd);
+      break;
+    }
 
     case DM_PROTOACK:
     {
