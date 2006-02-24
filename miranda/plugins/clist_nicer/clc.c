@@ -252,7 +252,6 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	ClearIcons(1);
 	ShutdownGdiPlus();
 	pDrawAlpha = 0;
-	free(StatusItems);
 	SFL_UnregisterWindowClass();
 	if (g_ExtraCache) {
 		int i;
@@ -276,6 +275,7 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 		g_ExtraCache = NULL;
 	}
 	IMG_DeleteItems();
+	free(StatusItems);
 	return 0;
 }
 
@@ -354,14 +354,12 @@ LBL_Def:
 			HDC hdc = GetWindowDC(hwnd);
 			HPEN hPenOld = SelectObject(hdc, g_hPenCLUIFrames);
 			RECT rcWindow, rc;
-			PAINTSTRUCT ps;
 			HBRUSH brold;
 
 			GetWindowRect(hwnd, &rcWindow);
 			rc.left = rc.top = 0;
 			rc.right = rcWindow.right - rcWindow.left;
 			rc.bottom = rcWindow.bottom - rcWindow.top;
-			//FillRect(hdc, &rc, GetSysColorBrush(COLOR_ACTIVEBORDER));
 			brold = SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
 			Rectangle(hdc, 0, 0, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top);
 			SelectObject(hdc, hPenOld);

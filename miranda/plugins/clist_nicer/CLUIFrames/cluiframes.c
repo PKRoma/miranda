@@ -1307,10 +1307,14 @@ int CLUIFramesShowHideFrame(WPARAM wParam,LPARAM lParam)
 
     lockfrm();
     pos=id2pos(wParam);
-    if (pos>=0&&(int)pos<nFramescount)
-        Frames[pos].visible=!Frames[pos].visible;
-    if (Frames[pos].floating)
-        CLUIFrameResizeFloatingFrame(pos);
+	if(!lstrcmpA(Frames[pos].name, "My Contacts"))
+		Frames[pos].visible = 1;
+	else {
+		if (pos>=0&&(int)pos<nFramescount)
+			Frames[pos].visible=!Frames[pos].visible;
+		if (Frames[pos].floating)
+			CLUIFrameResizeFloatingFrame(pos);
+	}
     ulockfrm();
     if (!Frames[pos].floating) 
 		CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
@@ -1836,11 +1840,12 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
     else Frames[nFramescount].OwnerWindow = pcli->hwndContactList;
     SetClassLong(clfrm->hWnd, GCL_STYLE, GetClassLong(clfrm->hWnd, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
     SetWindowLong(clfrm->hWnd, GWL_STYLE, GetWindowLong(clfrm->hWnd, GWL_STYLE) | WS_CLIPCHILDREN);
-	if(clfrm->hWnd != pcli->hwndContactTree && clfrm->hWnd != g_hwndViewModeFrame && clfrm->hWnd != g_hwndEventArea) {
-        Frames[nFramescount].wndProc = (WNDPROC)GetWindowLong(clfrm->hWnd, GWL_WNDPROC);
-        SetWindowLong(clfrm->hWnd, GWL_WNDPROC, (LONG)FramesSubClassProc);
-    }
-
+	if(GetCurrentThreadId() == GetWindowThreadProcessId(clfrm->hWnd, NULL)) {
+		if(clfrm->hWnd != pcli->hwndContactTree && clfrm->hWnd != g_hwndViewModeFrame && clfrm->hWnd != g_hwndEventArea) {
+			Frames[nFramescount].wndProc = (WNDPROC)GetWindowLong(clfrm->hWnd, GWL_WNDPROC);
+			SetWindowLong(clfrm->hWnd, GWL_WNDPROC, (LONG)FramesSubClassProc);
+		}
+	}
     //override tbbtip
     //clfrm->Flags|=F_SHOWTBTIP;
     //

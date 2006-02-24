@@ -344,6 +344,7 @@ int CreateCLC(HWND parent)
 		flags ^= F_NOBORDER;
 		CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS, hFrameContactTree), flags);
 		flags ^= F_NOBORDER;
+		flags |= F_VISIBLE;
 		CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS, hFrameContactTree), flags);
 	}
 	return(0);
