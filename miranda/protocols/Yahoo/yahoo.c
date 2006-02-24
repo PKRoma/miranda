@@ -1260,7 +1260,11 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
     LOG(("YAHOO_GOT_IM id:%s %s: %s tm:%lu stat:%i utf8:%i buddy_icon: %i", me, who, msg, tm, stat, utf8, buddy_icon));
    	
 	if(stat == 2) {
-		LOG(("Error sending message to %s", who));
+		char z[1024];
+		
+		snprintf(z, sizeof z, "Error sending message to %s", who);
+		LOG((z));
+		YAHOO_ShowError(Translate("Yahoo Error"), z);
 		return;
 	}
 
@@ -1269,6 +1273,25 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
 		return;
 	}
 
+	{
+		YList *l;
+		
+		/* show our current ignore list */
+		l = (YList *)YAHOO_GetIgnoreList();
+		while (l != NULL) {
+			struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
+			
+			//MessageBox(NULL, b->id, "ID", MB_OK);
+			//SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_INSERTSTRING, 0, (LPARAM)b->id);
+			if (lstrcmpi(b->id, who) == 0) {
+				LOG(("User '%s' on our Ignore List. Dropping Message.", who));
+				return;
+			}
+			l = l->next;
+		}
+
+	}
+		
 	umsg = (char *) alloca(lstrlen(msg) + 1);
 	while ( *c != '\0') {
 		        // Strip the font and font size tag
