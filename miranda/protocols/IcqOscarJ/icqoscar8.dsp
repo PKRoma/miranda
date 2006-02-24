@@ -268,6 +268,134 @@ SOURCE=.\resources.rc
 
 SOURCE=.\icos\xstatus.bmp
 # End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus01.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus02.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus03.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus04.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus05.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus06.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus07.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus08.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus09.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus10.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus11.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus12.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus13.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus14.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus15.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus16.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus17.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus18.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus19.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus20.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus21.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus22.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus23.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus24.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus25.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus26.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus27.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus28.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus29.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus30.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus31.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\xstatus32.ico
+# End Source File
 # End Group
 # Begin Group "FLAP Channels"
 
