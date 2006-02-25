@@ -659,10 +659,6 @@ SOURCE=.\statusfloater.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\URLCtrl.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\viewmodes.c
 # End Source File
 # Begin Source File
