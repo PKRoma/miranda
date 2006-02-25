@@ -857,9 +857,6 @@
 				RelativePath=".\statusfloater.c">
 			</File>
 			<File
-				RelativePath=".\URLCtrl.c">
-			</File>
-			<File
 				RelativePath=".\utf.c">
 			</File>
 			<File
