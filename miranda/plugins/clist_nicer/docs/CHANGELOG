@@ -7,6 +7,18 @@
 + = new feature
 - = removed
 
+0.6.0.6  - 2006/02/28
+
+		* fixed possible crash on exit bug.
+		
+		* fixed auth requests not appearing on the tray & event area
+		
+		* improved performance for "sort by last message" - event timestamps are only 
+		  retrieved when actually needed.
+		  
+		* Various CLUIframes tweaks and fixes to get rid of some annoying problems with
+		  frame re-ordering after deleting or installing frame-aware plugins.
+
 0.6.0.5  - 2006/01/30
 
 		* groups now have their own alignment option. 
