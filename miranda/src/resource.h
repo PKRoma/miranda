@@ -441,6 +441,7 @@
 #define IDC_HIDE                        1534
 #define IDC_TOPLINE                     1535
 #define IDC_MAIL                        1536
+#define IDC_DESCRIPTION                 1538
 #define IDC_MYHANDLE                    1540
 #define IDC_GROUP                       1541
 #define IDC_ADDED                       1542
@@ -518,7 +519,7 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        274

@@ -180,10 +180,10 @@ BEGIN
     PUSHBUTTON      "&Exit",IDCANCEL,189,194,48,14
     LTEXT           "",IDC_WHITERECT,0,0,240,26
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,25,250,1
-    ICON            IDI_DETAILSLOGO,IDC_STATIC,7,3,20,20
+    ICON            IDI_DETAILSLOGO,IDC_LOGO,7,3,20,20
     LTEXT           "Miranda",IDC_NAME,35,4,200,8,0,WS_EX_TRANSPARENT
     LTEXT           "Select and/or create your Miranda IM user profile",
-                    IDC_STATIC,45,14,189,8,0,WS_EX_TRANSPARENT
+                    IDC_DESCRIPTION,45,14,189,8,0,WS_EX_TRANSPARENT
 END
 
 IDD_NEWPROFILE DIALOGEX 0, 0, 187, 61

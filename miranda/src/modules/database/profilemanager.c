@@ -410,12 +410,15 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			return TRUE;
 		}
 		case WM_CTLCOLORSTATIC:
-			if(GetDlgItem(hwndDlg,IDC_WHITERECT)==(HWND)lParam) {
+			switch (GetDlgCtrlID((HWND)lParam)) {
+			case IDC_WHITERECT:
+			case IDC_LOGO:
+			case IDC_NAME:
+			case IDC_DESCRIPTION:
 				SetBkColor((HDC)wParam,RGB(255,255,255));
 				return (BOOL)GetStockObject(WHITE_BRUSH);
 			}
-			SetBkMode((HDC)wParam,TRANSPARENT);
-			return (BOOL)GetStockObject(NULL_BRUSH);
+			break;
 		case PSM_CHANGED:
 			dat->opd[dat->currentPage].changed=1;
 			return TRUE;
