@@ -387,6 +387,8 @@ HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripR
 ULONG  JabberForkThread( void ( __cdecl *threadcode )( void* ), unsigned long stacksize, void *arg );
 void   JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
 void   JabberSetServerStatus( int iNewStatus );
+char*  EscapeChatTags(char* pszText);
+char* UnEscapeChatTags(char* str_in);
 
 //---- jabber_svc.c -------------------------------------------------
 

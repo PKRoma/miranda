@@ -564,6 +564,7 @@ int JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 			if ( jabberOnline ) {
 				char* str = JabberTextEncode( gch->pszText );
 				if ( str != NULL ) {
+					UnEscapeChatTags( str );
 					JabberSend( jabberThreadInfo->s, "<message to='%s' type='groupchat'><body>%s</body></message>", item->jid, str );
 					free( str );
 		}	}	}

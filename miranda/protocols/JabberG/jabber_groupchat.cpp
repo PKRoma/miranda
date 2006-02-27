@@ -676,6 +676,7 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 			return;
 
 		msgText = JabberTextDecode( n->text );
+
 		gcd.iType = GC_EVENT_TOPIC;
 
 		if ( from != NULL ) {
@@ -698,6 +699,7 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 		nick++;
 
 		msgText = JabberTextDecode( n->text );
+
 		if ( memcmp( msgText, "/me", 3 ) == 0 ) {
 			strdel( msgText, 4 );
 			gcd.iType = GC_EVENT_ACTION;
@@ -729,7 +731,7 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 	gce.pszNick = dispNick;
 	gce.bAddToLog = TRUE;
 	gce.time = msgTime;
-	gce.pszText = msgText;
+	gce.pszText = EscapeChatTags( msgText );
 	gce.bIsMe = lstrcmpA( nick, item->nick ) == 0;
 	JCallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
 
@@ -742,6 +744,7 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 	}
 
 	free( msgText );
+	free( (void*)gce.pszText ); // Since we processed msgText and created a new string
 }
 
 typedef struct {

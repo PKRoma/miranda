@@ -45,6 +45,10 @@ Version 0.4.1.1
 ===============
 [*] massive changes for the Unicode settings
 
+Version 0.4.3.0
+===============
+[!] bug #0000001632 fixed: Conferences: '%' in my outgoing text gets duplicated (thanks MattJ for a patch)
+
 Version 0.4.0.3
 ===============
 [+] wish 0001322: highlighting
