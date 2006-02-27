@@ -552,7 +552,7 @@ static void setXStatusEx(BYTE bXStatus, BYTE bQuiet)
 
   mi.cbSize = sizeof(mi);
 
-  if (bOldXStatus <= 29)
+  if (bOldXStatus <= 32)
   {
     mi.flags = CMIM_FLAGS;
     CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[bOldXStatus], (LPARAM)&mi);
@@ -917,7 +917,7 @@ int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam)
 
 int IcqSetXStatus(WPARAM wParam, LPARAM lParam)
 {
-  if (wParam >= 0 && wParam <= 29)
+  if (wParam >= 0 && wParam <= 32)
   {
     setXStatusEx((BYTE)wParam, 1);
 
