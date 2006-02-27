@@ -168,36 +168,22 @@ BEGIN
                     TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP,19,43,164,86
 END
 
-IDD_PROFILEMANAGER DIALOGEX 0, 0, 240, 211
+IDD_PROFILEMANAGER DIALOGEX 0, 0, 400, 211
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | 
     DS_CENTER | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Miranda IM Profile Manager"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Tab1",IDC_TABS,"SysTabControl32",TCS_HOTTRACK | 
-                    WS_TABSTOP,4,31,233,160
-    PUSHBUTTON      "&Run",IDOK,138,194,48,14
-    PUSHBUTTON      "&Exit",IDCANCEL,189,194,48,14
-    LTEXT           "",IDC_WHITERECT,0,0,240,26
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,25,250,1
+                    WS_TABSTOP,4,31,393,160
+    PUSHBUTTON      "&Run",IDOK,298,194,48,14
+    PUSHBUTTON      "&Exit",IDCANCEL,348,194,48,14
+    LTEXT           "",IDC_WHITERECT,0,0,400,26
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,25,410,1
     ICON            IDI_DETAILSLOGO,IDC_LOGO,7,3,20,20
-    LTEXT           "Miranda",IDC_NAME,35,4,200,8,0,WS_EX_TRANSPARENT
+    LTEXT           "Miranda",IDC_NAME,35,4,360,8,0,WS_EX_TRANSPARENT
     LTEXT           "Select and/or create your Miranda IM user profile",
-                    IDC_DESCRIPTION,45,14,189,8,0,WS_EX_TRANSPARENT
-END
-
-IDD_NEWPROFILE DIALOGEX 0, 0, 187, 61
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
-EXSTYLE WS_EX_CONTROLPARENT
-CAPTION "Create New Profile"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    EDITTEXT        IDC_NEWPROFILENAME,7,17,173,12,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,42,40,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,99,40,50,14
-    LTEXT           "Enter the &name for the new profile:",IDC_STATIC,7,7,
-                    173,8
+                    IDC_DESCRIPTION,45,14,349,8,0,WS_EX_TRANSPARENT
 END
 
 IDD_FINDADD DIALOGEX 0, 0, 427, 232
@@ -1528,34 +1514,34 @@ BEGIN
     GROUPBOX        "Idle Options",IDC_STATIC,3,3,304,165
 END
 
-IDD_PROFILE_SELECTION DIALOGEX 0, 0, 226, 142
+IDD_PROFILE_SELECTION DIALOGEX 0, 0, 386, 142
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "List1",IDC_PROFILELIST,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | 
-                    WS_TABSTOP,3,2,222,137
+                    WS_TABSTOP,3,2,382,137
 END
 
-IDD_PROFILE_NEW DIALOGEX 0, 0, 226, 142
+IDD_PROFILE_NEW DIALOGEX 0, 0, 386, 142
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "Please complete the following form to create a new user profile",
-                    IDC_STATIC,7,7,212,10
+                    IDC_STATIC,7,7,372,10
     EDITTEXT        IDC_PROFILENAME,49,27,75,12,ES_AUTOHSCROLL
     COMBOBOX        IDC_PROFILEDRIVERS,49,72,75,56,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     LTEXT           "Profile",IDC_STATIC,20,28,26,9
     LTEXT           "e.g. Workplace",IDC_STATIC,131,28,77,11
     LTEXT           "You can select a different profile driver from the default, it may offer more features or abilities, if in doubt use the default.",
-                    IDC_STATIC,7,49,212,17
+                    IDC_STATIC,7,49,372,17
     LTEXT           "e.g. Miranda Database",IDC_STATIC,131,73,84,11
     LTEXT           "Driver",IDC_STATIC,20,74,23,9
     LTEXT           "Problem: Unable to find any database drivers, this means you can not create a new profile, you need to get dbx_3x.dll",
-                    IDC_NODBDRIVERS,7,113,212,22,NOT WS_VISIBLE
+                    IDC_NODBDRIVERS,7,113,372,22,NOT WS_VISIBLE
 END
 
 IDD_OPT_PLUGINS DIALOGEX 0, 0, 315, 247

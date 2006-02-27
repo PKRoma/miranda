@@ -213,6 +213,33 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 	return FALSE;
 }
 
+TCHAR* rtrim( TCHAR *string )
+{
+   TCHAR* p = string + _tcslen( string ) - 1;
+
+   while ( p >= string )
+   {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
+         break;
+
+		*p-- = 0;
+   }
+   return string;
+}
+
+static int DetectDbProvider(char * pluginname, DATABASELINK * dblink, LPARAM lParam)
+{
+	char* fullPath = (char*)lParam;
+	int error;
+
+	if ( dblink->grokHeader( fullPath, &error ) == 0 ) {
+		//dblink->getFriendlyName( fullPath, MAX_PATH, 1 );
+		strncpy( fullPath, pluginname, MAX_PATH );
+		return DBPE_HALT;
+	}
+
+	return DBPE_CONT;
+}
+
 BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 {
 	HWND hwndDlg = (HWND) lParam;
@@ -220,6 +247,8 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 	char sizeBuf[64];
 	LVITEMA item;
 	int iItem=0;	
+	struct stat statbuf;
+	int bFileExists = FALSE;
 	char * p = strrchr(profile, '.');	
 	strcpy(sizeBuf, "0 KB");
 	if ( p != NULL ) *p=0;
@@ -229,11 +258,11 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 	item.iItem=0;
 	item.iImage=0;
 	{
-		struct stat statbuf;
 		FILE * fp = fopen(fullpath, "r+");
 		item.iImage = fp != NULL ? 0 : 1;
 		if ( stat(fullpath, &statbuf) == 0) {
-			mir_snprintf(sizeBuf,SIZEOF(sizeBuf),"%u KB", statbuf.st_size / 1024);			
+			mir_snprintf(sizeBuf,SIZEOF(sizeBuf),"%u KB", statbuf.st_size / 1024);
+			bFileExists = TRUE;
 		}
 		if ( fp ) fclose(fp);
 	}
@@ -242,9 +271,37 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 		ListView_SetItemState(hwndList, iItem, LVIS_SELECTED, LVIS_SELECTED);
 
 	item.iItem = iItem;
-	item.iSubItem = 1;
+	item.iSubItem = 2;
 	item.pszText = sizeBuf;
 	SendMessageA( hwndList, LVM_SETITEMTEXTA, iItem, (LPARAM)&item );
+
+	if ( bFileExists ) {
+		PLUGIN_DB_ENUM dbe;
+		DATABASELINK* dblink;
+		char szPath[ MAX_PATH ];
+
+		LVITEM item2;
+		item2.mask = LVIF_TEXT;
+		item2.iItem = iItem;
+
+		dbe.cbSize=sizeof(dbe);
+		dbe.pfnEnumCallback=(int(*)(char*,void*,LPARAM))DetectDbProvider;
+		dbe.lParam=(LPARAM)szPath;
+		strncpy( szPath, fullpath, sizeof(szPath));
+		if (( dblink = (DATABASELINK*)CallService(MS_PLUGINS_ENUMDBPLUGINS,0,(LPARAM)&dbe)) != NULL ) {
+			item.pszText = szPath;
+			item.iSubItem = 1;
+			SendMessageA( hwndList, LVM_SETITEMTEXTA, iItem, (LPARAM)&item );
+		}
+
+		item2.iSubItem = 3;
+		item2.pszText = rtrim( _tctime( &statbuf.st_ctime ));
+		SendMessage( hwndList, LVM_SETITEMTEXT, iItem, (LPARAM)&item2 );
+
+		item2.iSubItem = 4;
+		item2.pszText = rtrim( _tctime( &statbuf.st_atime ));
+		SendMessage( hwndList, LVM_SETITEMTEXT, iItem, (LPARAM)&item2 );
+	}
 	return TRUE;
 }
 
@@ -266,12 +323,24 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			// set columns
 			col.mask = LVCF_TEXT | LVCF_WIDTH;
 			col.pszText = TranslateT("Profile");
-			col.cx=225;
+			col.cx=122;
 			ListView_InsertColumn( hwndList, 0, &col );
 
-			col.pszText = TranslateT("Size");
+			col.pszText = TranslateT("Driver");
 			col.cx=100;
 			ListView_InsertColumn( hwndList, 1, &col );
+
+			col.pszText = TranslateT("Size");
+			col.cx=60;
+			ListView_InsertColumn( hwndList, 2, &col );
+
+			col.pszText = TranslateT("Created");
+			col.cx=145;
+			ListView_InsertColumn( hwndList, 3, &col );
+
+			col.pszText = TranslateT("Accessed");
+			col.cx=145;
+			ListView_InsertColumn( hwndList, 4, &col );
 
 			// icons
 			hImgList=ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 1);
@@ -385,12 +454,11 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					SendMessageA( GetDlgItem(hwndDlg,IDC_TABS), TCM_INSERTITEMA, i, (LPARAM)&tci );
 				}
 			}
-			
-			
+
 			GetWindowRect(GetDlgItem(hwndDlg,IDC_TABS),&dat->rcDisplay);
 			TabCtrl_AdjustRect(GetDlgItem(hwndDlg,IDC_TABS),FALSE,&dat->rcDisplay);
-
-			{	POINT pt={0,0};
+			{	
+				POINT pt={0,0};
 				ClientToScreen(hwndDlg,&pt);
 				OffsetRect(&dat->rcDisplay,-pt.x,-pt.y);
 			}
