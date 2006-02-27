@@ -50,7 +50,7 @@ static BOOL CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,
 				TCHAR* contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR);
 				char*  szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
 				WORD   dwStatus = DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE);
-				TCHAR* status=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,dwStatus,GCMDF_TCHAR);
+				TCHAR* status=(TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,dwStatus,GCMDF_TCHAR);
 				GetWindowText(hwndDlg,format,SIZEOF(format));
 				mir_sntprintf(str,SIZEOF(str),format,status,contactName);
 				SetWindowText(hwndDlg,str);
