@@ -664,7 +664,10 @@ int IcqSearchByEmail(WPARAM wParam, LPARAM lParam)
 
     // Success
     dwSearchId = SearchByEmail((char *)lParam);
-    dwSecId = icq_searchAimByEmail((char *)lParam, dwSearchId);
+    if (gbAimEnabled)
+      dwSecId = icq_searchAimByEmail((char *)lParam, dwSearchId);
+    else
+      dwSecId = 0;
     if (dwSearchId) 
       return dwSearchId;
     else
