@@ -393,7 +393,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
   char str[MAX_PATH];
   char* pstr = NULL;
   int unspecified = 0;
-  int bUtf = 0;
+  int bUtf = 0, bDbv = 0, bAlloc = 0;
 
   dbv.type = DBVT_DELETED;
 
@@ -425,7 +425,10 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
     if (szModule == NULL)
       unspecified = 1;
     else
+    {
       unspecified = DBGetContactSetting(hContact, szModule, szSetting, &dbv);
+      bDbv = 1;
+    }
   }
 
   if (!unspecified)
@@ -520,6 +523,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       {
         pstr = UniGetContactSettingUtf(hContact, szModule, szSetting, NULL);
         bUtf = 1;
+        bAlloc = 1;
       }
       if (idCtrl == IDC_UIN)
         SetDlgItemTextUtf(hwndDlg, IDC_UINSTATIC, ICQTranslateUtfStatic("ScreenName:", str));
@@ -540,10 +544,9 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
   else
     SetDlgItemText(hwndDlg, idCtrl, pstr);
   
-  if (dbv.pszVal!=szSetting)
-  {
+  if (bDbv)
     ICQFreeVariant(&dbv);
-    if (dbv.type==DBVT_ASCIIZ && !unspecified)
-      SAFE_FREE(&pstr);
-  }
+
+  if (bAlloc)
+    SAFE_FREE(&pstr);
 }

@@ -329,6 +329,21 @@ char *ansi_to_utf8(const char *szAnsi)
 
 
 
+char *ansi_to_utf8_codepage(const char *szAnsi, WORD wCp)
+{
+  wchar_t *unicode;
+  int wchars = strlennull(szAnsi);
+
+  unicode = (wchar_t*)_alloca((wchars + 1) * sizeof(wchar_t));
+  unicode[wchars] = 0;
+
+  MultiByteToWideChar(wCp, MB_PRECOMPOSED, szAnsi, wchars, unicode, wchars);
+
+  return make_utf8_string(unicode);
+}
+
+
+
 // Returns 0 on error, 1 on success
 int utf8_decode(const char *from, char **to)
 {

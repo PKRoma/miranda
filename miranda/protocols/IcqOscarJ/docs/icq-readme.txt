@@ -72,9 +72,11 @@ New Features:
   Temporary Visible List support
   New Features page in options to configure extra features
   Custom statuses just like icq5 - needs clist_mw derivative (thx Big Muscle)
+  New custom status icons (thx Angeli-ka)
   Enhanced Unicode & Ansi charsets support (each contact can have its own codepage)
   AIM cross-compatability (add/remove, search by mail, status, messaging, away messages)
   Secure MD5 login authentification
+  Revoke authorization (Advanced Feature - see further) - removes you from contact's server-list
 
 Improvements:
   Advanced search now can use newer method (thx Bio)
@@ -92,6 +94,7 @@ Improvements:
   Support for unicode database module (clist data)
   Level 2 Rate management for Status & Xtraz replies, Xtraz requests (useful with many contaccts in list)
   Full unicode/ansi support (2in1)
+  Support for Updater Plugin
 
 
 0.3.5.2
@@ -280,6 +283,33 @@ _______
 
 Current maintainer is Joe @ Whale, jokusoftware at users.sourceforge.net
                       Martin Öberg, strickz at miranda-im.org
+
+
+
+Advanced Features
+_________________
+
+There are some features that are not widely used so there is no UI for them, if
+you want to use them you need to do manual setup using DBE++.
+
+Database items (usually at Contact\ICQ):
+(BYTE)UnicodeSend = 0 - to Disable unicode support (useful as a workaround for Trillian's bug)
+
+(WORD)CodePage - codepage for plain text encoding/decoding to/from unicode
+
+(WORD)InfoCodePage - codepage for interpreting user details
+
+Database items for Main Contact (usually at Settings\ICQ):
+(BYTE)InfoUpdate - Threshold in DAYS for updating user info (restart is needed) - default is 14 days
+
+(BYTE)PrivacyItems = 1 - adds more privacy tools to contact menu
+
+
+
+Credits and Thanks
+__________________
+
+Thanks to Angeli-Ka for nice custom status icons.
 
 
 

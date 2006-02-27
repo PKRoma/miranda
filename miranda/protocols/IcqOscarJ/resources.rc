@@ -27,8 +27,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_EXPANDSTRINGEDIT    ICON    DISCARDABLE     "changeinfo\\expandst.ico"
 IDI_ICQ                 ICON    DISCARDABLE     "icos\\icq.ico"
+IDI_EXPANDSTRINGEDIT    ICON    DISCARDABLE     "changeinfo\\expandst.ico"
 IDI_XSTATUS1            ICON    DISCARDABLE     "icos\\xstatus01.ico"
 IDI_XSTATUS2            ICON    DISCARDABLE     "icos\\xstatus02.ico"
 IDI_XSTATUS3            ICON    DISCARDABLE     "icos\\xstatus03.ico"
@@ -61,7 +61,6 @@ IDI_XSTATUS29           ICON    DISCARDABLE     "icos\\xstatus29.ico"
 IDI_XSTATUS30           ICON    DISCARDABLE     "icos\\xstatus30.ico"
 IDI_XSTATUS31           ICON    DISCARDABLE     "icos\\xstatus31.ico"
 IDI_XSTATUS32           ICON    DISCARDABLE     "icos\\xstatus32.ico"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -710,13 +709,11 @@ BEGIN
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced\0"
             VALUE "FileVersion", "0, 3, 6, 14\0"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM\0"
-            VALUE "LegalCopyright", "Copyright (C) 2000-2006 Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
+            VALUE "LegalCopyright", "Copyright (C) 2000-2006 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "ICQ.dll\0"
-            VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "ICQ Protocol Support\0"
             VALUE "ProductVersion", "0, 4, 3, 0\0"
-            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"

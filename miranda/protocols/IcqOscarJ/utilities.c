@@ -1090,7 +1090,24 @@ BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf
     return FALSE;
 
   if ((wLen > 0) && (**buf) && ((*buf)[wLen-1]==0)) // Make sure we have a proper string
-    ICQWriteContactSettingString(hContact, szSetting, *buf);
+  {
+    WORD wCp = ICQGetContactSettingWord(hContact, "InfoCodePage", CP_ACP);
+
+    if (wCp != CP_ACP)
+    {
+      char *szUtf = ansi_to_utf8_codepage(*buf, wCp);
+
+      if (szUtf)
+      {
+        ICQWriteContactSettingUtf(hContact, szSetting, szUtf);
+        SAFE_FREE(&szUtf);
+      }
+      else
+        ICQWriteContactSettingString(hContact, szSetting, *buf);
+    }
+    else
+      ICQWriteContactSettingString(hContact, szSetting, *buf);
+  }
   else
     ICQDeleteContactSetting(hContact, szSetting);
 
