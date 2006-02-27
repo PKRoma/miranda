@@ -197,7 +197,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 	dat=(struct FileDlgData*)GetWindowLong(hwndDlg,GWL_USERDATA);
 	switch (msg) {
 	case WM_INITDIALOG: {
-		char *contactName;
+		TCHAR *contactName;
 		char szPath[450];
 
 		TranslateDialogDefault(hwndDlg);
@@ -228,8 +228,8 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		SendMessage(GetDlgItem(hwndDlg,IDC_DETAILS), BUTTONADDTOOLTIP, (WPARAM)Translate("View User's Details"), 0);
 		SendMessage(GetDlgItem(hwndDlg,IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM)Translate("View User's History"), 0);
 
-		contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-		SetDlgItemTextA(hwndDlg,IDC_FROM,contactName);
+		contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR);
+		SetDlgItemText(hwndDlg,IDC_FROM,contactName);
 		GetContactReceivedFilesDir(dat->hContact,szPath,SIZEOF(szPath));
 		SetDlgItemTextA(hwndDlg,IDC_FILEDIR,szPath);
 		{	int i;
@@ -293,7 +293,10 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 						mir_snprintf(buf, SIZEOF(buf),"%u",ci.dVal);
 						break;
 				}	}
-				SetDlgItemTextA(hwndDlg, IDC_NAME, (hasName) ? buf : contactName);
+				if (hasName)
+					SetDlgItemTextA(hwndDlg, IDC_NAME, buf );
+				else
+					SetDlgItemText(hwndDlg, IDC_NAME, contactName);
 		}	}
 
 		if(DBGetContactSettingByte(dat->hContact,"CList","NotOnList",0)) {

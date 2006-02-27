@@ -189,10 +189,9 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 	struct FileDlgData *dat;
 
 	dat=(struct FileDlgData*)GetWindowLong(hwndDlg,GWL_USERDATA);
-	switch (msg)
-	{
+	switch (msg) {
 		case WM_INITDIALOG:
-		{	char *contactName;
+		{
 			struct FileSendData *fsd=(struct FileSendData*)lParam;
 
 			dat=(struct FileDlgData*)mir_alloc(sizeof(struct FileDlgData));
@@ -231,11 +230,10 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				dat->files[totalCount]=NULL;
 				SetFileListAndSizeControls(hwndDlg,dat);
 			}
-
-			contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-			SetDlgItemTextA(hwndDlg,IDC_TO,contactName);
 			{
 				char *szProto;
+				TCHAR* contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR);
+				SetDlgItemText(hwndDlg,IDC_TO,contactName);
 
 				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
 				if (szProto) {
@@ -261,7 +259,10 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 								break;
 						}
 					}
-					SetDlgItemTextA(hwndDlg,IDC_NAME,hasName?buf:contactName);
+					if ( hasName )
+						SetDlgItemTextA(hwndDlg,IDC_NAME,buf);
+					else
+						SetDlgItemText(hwndDlg,IDC_NAME,contactName);
 				}
 			}
 			if(fsd->ppFiles==NULL) {

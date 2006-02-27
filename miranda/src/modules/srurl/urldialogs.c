@@ -491,11 +491,9 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			WindowList_Add(hUrlWindowList, hwndDlg, dat->hContact);
 
-			{	char *str;
-				str=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-				SetDlgItemTextA(hwndDlg,IDC_NAME,str);
+			{	TCHAR *str = (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR);
+				SetDlgItemText(hwndDlg,IDC_NAME,str);
 			}
-
 
 			GetOpenBrowserUrls(hwndDlg,GetDlgItem(hwndDlg,IDC_URLS));
 			SendDlgItemMessage(hwndDlg, IDC_URLS, CB_SETCURSEL, 0, 0);
