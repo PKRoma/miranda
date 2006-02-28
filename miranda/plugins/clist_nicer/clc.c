@@ -29,11 +29,11 @@ UNICODE - done.
 
 int DefaultImageListColorDepth=ILC_COLOR32;
 
+extern CRITICAL_SECTION cs_extcache;
 extern struct CluiData g_CluiData;
 extern struct ClcData *g_clcData;
 extern HPEN g_hPenCLUIFrames;
 
-//extern void RemoveFromImgCache(HANDLE hContact, struct avatarCacheEntry *ace), FreeImgCache(), ShutdownGdiPlus();
 extern pfnDrawAlpha pDrawAlpha;
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern int during_sizing, g_isConnecting;
@@ -275,6 +275,7 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	}
 	IMG_DeleteItems();
 	free(StatusItems);
+	DeleteCriticalSection(&cs_extcache);
 	return 0;
 }
 

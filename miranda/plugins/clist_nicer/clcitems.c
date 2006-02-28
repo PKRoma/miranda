@@ -32,14 +32,9 @@ static TCHAR *xStatusDescr[] =
     _T("Surfing"), _T("@Internet"), _T("Engineering"), _T("Typing"), _T("Eating..yummy.."), _T("Having fun"), _T("Chit chatting"), _T("Crashing"), _T("Going to toilet")
  };
 
+CRITICAL_SECTION cs_extcache;
+
 extern struct CluiData g_CluiData;
-extern struct avatarCache *g_avatarCache;
-extern int g_curAvatar;
-extern BOOL bAvatarThreadRunning;
-extern CRITICAL_SECTION avcs;
-extern HANDLE avatarUpdateQueue[];
-extern DWORD dwPendingAvatarJobs;
-extern HANDLE hAvatarThread;
 extern HANDLE hExtraImageListRebuilding, hExtraImageApplying;
 
 extern struct ExtraCache *g_ExtraCache;
@@ -546,6 +541,7 @@ int GetExtraCache(HANDLE hContact, char *szProto)
         }
     }
     if(iFound == -1) {
+		EnterCriticalSection(&cs_extcache);
         if(g_nextExtraCacheEntry == g_maxExtraCacheEntry) {
             g_maxExtraCacheEntry += 100;
             g_ExtraCache = (struct ExtraCache *)realloc(g_ExtraCache, g_maxExtraCacheEntry * sizeof(struct ExtraCache));
@@ -563,6 +559,7 @@ int GetExtraCache(HANDLE hContact, char *szProto)
         GetCachedStatusMsg(g_nextExtraCacheEntry, szProto);
 		g_ExtraCache[g_nextExtraCacheEntry].dwLastMsgTime = INTSORT_GetLastMsgTime(hContact);
         iFound = g_nextExtraCacheEntry++;
+		LeaveCriticalSection(&cs_extcache);
     }
     return iFound;
 }

@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HINSTANCE g_hInst = 0;
 PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli = NULL;
+extern CRITICAL_SECTION cs_extcache;
 
 #define DEFAULT_TB_VISIBILITY (1 | 2 | 4 | 8 | 16 | 32)
 TCHAR *szNoevents = _T("No events...");
@@ -231,11 +232,17 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
 
 	ZeroMemory((void*) &g_CluiData, sizeof(g_CluiData));
-	g_ExtraCache = malloc(sizeof(struct ExtraCache) * EXTRAIMAGECACHESIZE);
-	ZeroMemory(g_ExtraCache, sizeof(struct ExtraCache) * EXTRAIMAGECACHESIZE);
+	{
+		int iCount = CallService(MS_DB_CONTACT_GETCOUNT, 0, 0);
+		
+		iCount += 10;
+		g_ExtraCache = malloc(sizeof(struct ExtraCache) * iCount);
+		ZeroMemory(g_ExtraCache, sizeof(struct ExtraCache) * iCount);
+		g_nextExtraCacheEntry = 0;
+		g_maxExtraCacheEntry = iCount;
+		InitializeCriticalSection(&cs_extcache);
+	}
 
-	g_nextExtraCacheEntry = 0;
-	g_maxExtraCacheEntry = EXTRAIMAGECACHESIZE;
 
 	g_CluiData.bMetaEnabled = DBGetContactSettingByte(NULL, "MetaContacts", "Enabled", 1);
 	g_CluiData.toolbarVisibility = DBGetContactSettingDword(NULL, "CLUI", "TBVisibility", DEFAULT_TB_VISIBILITY);
