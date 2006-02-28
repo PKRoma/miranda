@@ -341,9 +341,6 @@ int CreateCLC(HWND parent)
 		*/
 
 		flags = (DWORD)CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS, hFrameContactTree), 0);
-		flags ^= F_NOBORDER;
-		CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS, hFrameContactTree), flags);
-		flags ^= F_NOBORDER;
 		flags |= F_VISIBLE;
 		CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS, hFrameContactTree), flags);
 	}
@@ -1298,7 +1295,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if(pcli->hwndContactList != NULL) {
 				RECT rcOld;
 				GetWindowRect(hwnd, &rcOld);
-				if (wp->cx != rcOld.right - rcOld.left || wp->cy != rcOld.bottom - rcOld.top && !(wp->flags & SWP_NOSIZE)) {
+				if ((wp->cx != rcOld.right - rcOld.left || wp->cy != rcOld.bottom - rcOld.top) && !(wp->flags & SWP_NOSIZE)) {
 					HDWP PosBatch;
 					int res;
 

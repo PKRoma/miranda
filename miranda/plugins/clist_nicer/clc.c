@@ -355,6 +355,7 @@ LBL_Def:
 			RECT rcWindow, rc;
 			HBRUSH brold;
 
+			CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
 			GetWindowRect(hwnd, &rcWindow);
 			rc.left = rc.top = 0;
 			rc.right = rcWindow.right - rcWindow.left;

@@ -1155,7 +1155,7 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
                     style&=(~WS_BORDER);
 
                 SetWindowLong(Frames[pos].hWnd,GWL_STYLE,(LONG)style);
-                SetWindowLong(Frames[pos].TitleBar.hwnd,GWL_STYLE,(LONG)style);
+                SetWindowLong(Frames[pos].TitleBar.hwnd,GWL_STYLE,(LONG)style & ~(WS_VSCROLL | WS_HSCROLL));
 
                 ulockfrm();
                 CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
@@ -1915,10 +1915,10 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 
     CLUIFramesLoadFrameSettings(id2pos(retval));
     style=GetWindowLong(Frames[nFramescount-1].hWnd,GWL_STYLE);
-    style&=(~WS_BORDER);
+    style &= ~(WS_BORDER);
     style|=((Frames[nFramescount-1].UseBorder)?WS_BORDER:0);
     SetWindowLong(Frames[nFramescount-1].hWnd,GWL_STYLE,style);
-    SetWindowLong(Frames[nFramescount-1].TitleBar.hwnd,GWL_STYLE,style);
+    SetWindowLong(Frames[nFramescount-1].TitleBar.hwnd,GWL_STYLE,style & ~(WS_VSCROLL | WS_HSCROLL));
 
 	if (Frames[nFramescount-1].order==0) {
         Frames[nFramescount-1].order=nFramescount;
@@ -2584,7 +2584,7 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 
     switch (msg) {
         case WM_CREATE:
-            SendMessage(hwnd,WM_SETFONT,(WPARAM)TitleBarFont,0);
+			SendMessage(hwnd,WM_SETFONT,(WPARAM)TitleBarFont,0);
             return FALSE;
         case WM_MEASUREITEM:
             return CallService(MS_CLIST_MENUMEASUREITEM,wParam,lParam);
@@ -2996,6 +2996,7 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 					RECT rcWindow, rc;
 					HBRUSH brold;
 
+					CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);					
 					GetWindowRect(hwnd, &rcWindow);
 					rc.left = rc.top = 0;
 					rc.right = rcWindow.right - rcWindow.left;
