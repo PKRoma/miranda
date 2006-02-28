@@ -350,7 +350,7 @@ char* EscapeChatTags(char* pszText)
 char* UnEscapeChatTags(char* str_in)
 {
 	for ( char* s = str_in, *d = str_in; *s; s++ ) {
-		if ( *s == '%' && s[1] == '%' )
+		if (( *s == '%' && s[1] == '%' ) || ( *s == '\n' && s[1] == '\n' ))
 			s++;
 		*d++ = *s;
 	}
