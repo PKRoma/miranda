@@ -98,6 +98,7 @@ extraResourceOptions=
 15=libyahoo2\yahoo_util.c
 16=libyahoo2\yahoo_fn.c
 17=utf8.c
+18=avatar.c
 [Header]
 1=http_gateway.h
 2=pthread.h
