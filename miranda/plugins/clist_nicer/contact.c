@@ -182,8 +182,8 @@ static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, co
 		nameb = (TCHAR *)c2->szText;
 		return CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE, namea, -1, nameb, -1) - 2;
 	} else if(bywhat == SORTBY_LASTMSG) {
-		if(c1->extraCacheEntry >= 0 && c1->extraCacheEntry <= g_nextExtraCacheEntry && 
-		   c2->extraCacheEntry >= 0 && c2->extraCacheEntry <= g_nextExtraCacheEntry)
+		if(c1->extraCacheEntry >= 0 && c1->extraCacheEntry < g_nextExtraCacheEntry && 
+		   c2->extraCacheEntry >= 0 && c2->extraCacheEntry < g_nextExtraCacheEntry)
 			return(g_ExtraCache[c2->extraCacheEntry].dwLastMsgTime - g_ExtraCache[c1->extraCacheEntry].dwLastMsgTime);
 		else {
 			DWORD timestamp1 = INTSORT_GetLastMsgTime(c1->hContact);

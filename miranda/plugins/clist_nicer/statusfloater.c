@@ -274,7 +274,7 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	int iEntry = GetWindowLong(hwnd, GWL_USERDATA);
 	struct ExtraCache *centry = NULL;
 
-	if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry)
+	if(iEntry >= 0 && iEntry < g_nextExtraCacheEntry)
 		centry = &g_ExtraCache[iEntry];
 
 	switch(msg) {
@@ -283,7 +283,7 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				CREATESTRUCT *cs = (CREATESTRUCT *)lParam;
 				SetWindowLong(hwnd, GWL_USERDATA, (LONG)cs->lpCreateParams);
 				iEntry = (int)cs->lpCreateParams;
-				if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry)
+				if(iEntry >= 0 && iEntry < g_nextExtraCacheEntry)
 					centry = &g_ExtraCache[iEntry];
 				return TRUE;
 			}
@@ -587,7 +587,7 @@ void FLT_Create(int iEntry)
 {
 	struct ExtraCache *centry = &g_ExtraCache[iEntry];
 
-	if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry) {
+	if(iEntry >= 0 && iEntry < g_nextExtraCacheEntry) {
 		struct ClcContact *contact = NULL;
 		struct ClcGroup *group = NULL;
 
@@ -637,7 +637,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	if(contact == NULL || dat == NULL)
 		return;
 
-	if(contact->extraCacheEntry < 0 || contact->extraCacheEntry > g_nextExtraCacheEntry)
+	if(contact->extraCacheEntry < 0 || contact->extraCacheEntry >= g_nextExtraCacheEntry)
 		return;
 
 	if(g_ExtraCache[contact->extraCacheEntry].floater == NULL)

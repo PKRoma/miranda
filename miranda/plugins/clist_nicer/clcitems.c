@@ -97,7 +97,7 @@ struct ClcGroup *AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, D
 
 struct ClcGroup *RemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct ClcContact *contact, int updateTotalCount)
 {
-	if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry) {
+	if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry) {
 		if(g_ExtraCache[contact->extraCacheEntry].floater && g_ExtraCache[contact->extraCacheEntry].floater->hwnd)
 			ShowWindow(g_ExtraCache[contact->extraCacheEntry].floater->hwnd, SW_HIDE);
 	}
@@ -149,7 +149,7 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 	else {
 		p->extraCacheEntry = GetExtraCache(p->hContact, p->proto);
 		GetExtendedInfo( p, dat);
-		if(p->extraCacheEntry >= 0 && p->extraCacheEntry <= g_nextExtraCacheEntry) {
+		if(p->extraCacheEntry >= 0 && p->extraCacheEntry < g_nextExtraCacheEntry) {
 			g_ExtraCache[p->extraCacheEntry].proto_status_item = GetProtocolStatusItem(p->bIsMeta ? p->metaProto : p->proto);
 			if(DBGetContactSettingByte(p->hContact, "CList", "floating", 0)) {
 				if(g_ExtraCache[p->extraCacheEntry].floater == NULL)
@@ -550,9 +550,9 @@ int GetExtraCache(HANDLE hContact, char *szProto)
             g_maxExtraCacheEntry += 100;
             g_ExtraCache = (struct ExtraCache *)realloc(g_ExtraCache, g_maxExtraCacheEntry * sizeof(struct ExtraCache));
         }
-        g_ExtraCache[g_nextExtraCacheEntry].hContact = hContact;
+        memset(&g_ExtraCache[g_nextExtraCacheEntry], 0, sizeof(struct ExtraCache));
+		g_ExtraCache[g_nextExtraCacheEntry].hContact = hContact;
         memset(g_ExtraCache[g_nextExtraCacheEntry].iExtraImage, 0xff, MAXEXTRACOLUMNS);
-		memset(&g_ExtraCache[g_nextExtraCacheEntry].floater, 0, sizeof(CONTACTFLOATER));
         g_ExtraCache[g_nextExtraCacheEntry].iExtraValid = 0;
         g_ExtraCache[g_nextExtraCacheEntry].valid = FALSE;
         g_ExtraCache[g_nextExtraCacheEntry].bStatusMsgValid = 0;
