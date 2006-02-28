@@ -891,7 +891,7 @@ void ChangedIconsXStatus()
 
   mi.flags = CMIM_FLAGS | CMIM_ICON;
 
-  for (i = 1; i < 30; i++)
+  for (i = 1; i < 33; i++)
   {
     mi.hIcon = GetXStatusIcon(i);
     CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[i], (LPARAM)&mi);
