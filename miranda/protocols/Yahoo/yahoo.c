@@ -64,7 +64,7 @@ extern int gStartStatus;
 extern char *szStartMsg;
 
 void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8, int buddy_icon);
-void yahoo_reset_avatar(HANDLE 	hContact);
+void yahoo_reset_avatar(HANDLE 	hContact, int bFail);
 
 char * yahoo_status_code(enum yahoo_status s)
 {
@@ -275,6 +275,67 @@ void get_fd(int id, int fd, int error, void *data)
 	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
 }
 
+void upload_avt(int id, int fd, int error, void *data) 
+{
+    y_filetransfer *sf = (y_filetransfer*) data;
+    long size = 0;
+	char buf[1024];
+	DWORD dw;
+	struct _stat statbuf;
+	
+	if (fd < 0) {
+		LOG(("[get_fd] Connect Failed!"));
+		error = 1;
+	}
+
+	if (_stat( sf->filename, &statbuf ) != 0 )
+		error = 1;
+	
+    if(!error) {
+		 HANDLE myhFile    = CreateFile(sf->filename,
+                                   GENERIC_READ,
+                                   FILE_SHARE_READ|FILE_SHARE_WRITE,
+			           NULL,
+			           OPEN_EXISTING,
+			           FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
+			           0);
+
+
+		if(myhFile !=INVALID_HANDLE_VALUE) {
+			//LOG(("proto: %s, hContact: %p", yahooProtocolName, sf->hContact));
+			
+			LOG(("Sending file: %s", sf->filename));
+			
+			do {
+				ReadFile(myhFile, buf, 1024, &dw, NULL);
+			
+				if (dw) {
+					//dw = send(fd, buf, dw, 0);
+					dw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
+					
+					if (dw < 1) {
+						LOG(("Upload Failed. Send error?"));
+						error = 1;
+						break;
+					}
+					
+					size += dw;
+				}
+				
+				if (sf->cancel) {
+					LOG(("Upload Cancelled! "));
+					error = 1;
+					break;
+				}
+			} while ( dw == 1024);
+	    CloseHandle(myhFile);
+		}
+    }	
+
+	//sf->state = FR_STATE_DONE;
+    LOG(("File send complete!"));
+}
+
 const YList* YAHOO_GetIgnoreList(void)
 {
 	if (!ylad)
@@ -301,6 +362,17 @@ void YAHOO_SendFile(y_filetransfer *sf)
 	}
 
 	yahoo_send_file(ylad->id, sf->who, sf->msg, sf->filename, tFileSize, &get_fd, sf);
+}
+
+void YAHOO_SendAvatar(y_filetransfer *sf)
+{
+	long tFileSize = 0;
+	{	struct _stat statbuf;
+		if ( _stat( sf->filename, &statbuf ) == 0 )
+			tFileSize += statbuf.st_size;
+	}
+
+	yahoo_send_avatar(ylad->id, sf->filename, tFileSize, &upload_avt, sf);
 }
 
 void YAHOO_FT_cancel(const char *buddy, const char *filename, const char *ft_token, int command)
@@ -545,6 +617,11 @@ void ext_yahoo_cleanup(int id)
 void yahoo_send_msg(const char *id, const char *msg, int utf8)
 {
 	LOG(("yahoo_send_msg: %s: %s, utf: %d", id, msg, utf8));
+	
+	int buddy_icon = 0;
+	
+	buddy_icon = (YAHOO_GetDword("AvatarHash", 0) != 0) ? 2: 0;
+	
     if (YAHOO_GetByte( "DisableUTF8", 0 ) ) { /* Send ANSI */
 		/* need to convert it to ascii argh */
 		char 	*umsg = (char *)msg;
@@ -558,7 +635,7 @@ void yahoo_send_msg(const char *id, const char *msg, int utf8)
 			free( tRealBody );
 		} 
 			
-		yahoo_send_im(ylad->id, NULL, id, umsg, 0);
+		yahoo_send_im(ylad->id, NULL, id, umsg, 0, buddy_icon);
     } else { /* Send Unicode */
 	    
 		if (!utf8) {
@@ -566,10 +643,10 @@ void yahoo_send_msg(const char *id, const char *msg, int utf8)
 			
 			utf8_encode(msg, &tmp);
         	//tmp = y_str_to_utf8(msg);
-			yahoo_send_im(ylad->id, NULL, id, tmp, 1);
+			yahoo_send_im(ylad->id, NULL, id, tmp, 1, buddy_icon);
 			free(tmp);
 		} else 
-			yahoo_send_im(ylad->id, NULL, id, msg, 1);
+			yahoo_send_im(ylad->id, NULL, id, msg, 1, buddy_icon);
     } 
    
 }
@@ -670,7 +747,7 @@ void ext_yahoo_got_conf_invite(int id, char *who, char *room, char *msg, YList *
 	
 	_snprintf(z, sizeof(z), Translate("[miranda] Got conference invite to room: %s with msg: %s"), room ?room:"", msg ?msg:"");
 	LOG(("[ext_yahoo_got_conf_invite] %s", z));
-	ext_yahoo_got_im(id, "me", who, z, 0, 0, 0, 0);
+	ext_yahoo_got_im(id, "me", who, z, 0, 0, 0, -1);
 	
 	yahoo_conference_decline(ylad->id, NULL, members, room, Translate("I am sorry, but i can't join your conference since this feature is not currently implemented in my client."));
 }
@@ -715,6 +792,7 @@ void YAHOO_request_avatar(const char* who)
 {
 	time_t  last_chk, cur_time;
 	HANDLE 	hContact = 0;
+	char    szFile[MAX_PATH];
 	
 	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
 		LOG(("Avatars disabled, but available for: %s", who));
@@ -726,6 +804,10 @@ void YAHOO_request_avatar(const char* who)
 	if (!hContact)
 		return;
 	
+	
+	GetAvatarFileName(hContact, szFile, sizeof szFile, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
+	DeleteFile(szFile);
+	
 	time(&cur_time);
 	last_chk = DBGetContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", 0);
 	
@@ -733,7 +815,7 @@ void YAHOO_request_avatar(const char* who)
 	 * time() - in seconds ( 60*60 = 1 hour)
 	 */
 	if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) == 0 || 
-		last_chk == 0 || (cur_time - last_chk) >= 3600) {
+		last_chk == 0 || (cur_time - last_chk) < 300) {
 			
 		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", cur_time);
 
@@ -745,12 +827,12 @@ void YAHOO_request_avatar(const char* who)
 }
 
 /* Other handlers */
-void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum)
+void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon)
 {
 	HANDLE 	hContact = 0;
 	time_t  idlets = 0;
 	
-	YAHOO_DebugLog("ext_yahoo_status_changed for %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d)", who, msg, stat, away, idle, cksum);
+	YAHOO_DebugLog("ext_yahoo_status_changed for %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d)", who, msg, stat, away, idle, cksum, buddy_icon);
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {
@@ -759,8 +841,6 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	} else {
 		YAHOO_DebugLog("Buddy Found On My List! Buddy %p", hContact);
 	}
-	
-	
 	
 	if (!mobile)
 		YAHOO_SetWord(hContact, "Status", yahoo_to_miranda_status(stat,away));
@@ -793,66 +873,23 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	DBWriteContactSettingDword(hContact, yahooProtocolName, "IdleTS", idlets);
 
 	/* Last thing check the checksum and request new one if we need to */
-	/*if (!cksum || cksum == -1) {
-			//yahoo_reset_avatar(hContact);
-	} else {
-		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
-			//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
-			//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
-			YAHOO_request_avatar(who);	
-		}
-	}*/
+	if (!cksum || cksum == -1) {
+		yahoo_reset_avatar(hContact, 0); 
+	} else  if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
+		// Reset Avatar first
+		yahoo_reset_avatar(hContact, 0);
+		// Save New Checksum
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
+		//yahoo_reset_avatar(hContact);YAHOO_request_avatar(who);
+		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
+	}
+	
+	if (buddy_icon != -1) {// we got some avatartype info
+		DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
+		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
+	}
+	
 	LOG(("[ext_yahoo_status_changed] exiting"));
-}
-
-static HMODULE sttPngLib = NULL;
-
-typedef	BOOL ( *pfnConvertPng2dib )( char*, size_t, BITMAPINFOHEADER** );
-//extern pfnConvertPng2dib png2dibConvertor;
-
-pfnConvertPng2dib png2dibConvertor = NULL;
-
-/*
- * The Following PNG related stuff copied from MSN. Thanks George!
- */
-BOOL YAHOO_LoadPngModule()
-{
-	if ( sttPngLib == NULL ) {
-		if (( sttPngLib = LoadLibrary( "png2dib.dll" )) == NULL ) {
-			char tDllPath[ MAX_PATH ];
-			GetModuleFileName( hinstance, tDllPath, sizeof( tDllPath ));
-			{
-				char* p = strrchr( tDllPath, '\\' );
-				if ( p != NULL )
-					strcpy( p+1, "png2dib.dll" );
-				else
-					strcpy( tDllPath, "png2dib.dll" );
-			}
-
-			if (( sttPngLib = LoadLibrary( tDllPath )) == NULL ) {
-				MessageBox( NULL,
-					Translate( "Please install png2dib.dll for avatar support. " ),
-					Translate( "Error" ),
-					MB_OK | MB_ICONSTOP );
-				YAHOO_SetByte("ShowAvatars", 0);
-				return FALSE;
-		}	}
-
-		png2dibConvertor = ( pfnConvertPng2dib )GetProcAddress( sttPngLib, "mempng2dib" );
-		//dib2pngConvertor = ( pfnConvertDib2png )GetProcAddress( sttPngLib, "dib2mempng" );
-		//getver           = ( pfnGetVer )        GetProcAddress( sttPngLib, "getver" );
-		if ( png2dibConvertor == NULL) { // || dib2pngConvertor == NULL || getver == NULL ) {
-			FreeLibrary( sttPngLib ); sttPngLib = NULL;
-			MessageBox( NULL,
-				Translate( "Your png2dib.dll is either obsolete or damaged. " ),
-				Translate( "Error" ),
-				MB_OK | MB_ICONSTOP );
-
-			//goto LBL_Error;
-			return FALSE;
-	}	}
-
-	return TRUE;
 }
 
 struct avatar_info{
@@ -933,7 +970,7 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 				return;
 			}
 
-			GetAvatarFileName(hContact, buf, 1024);
+			GetAvatarFileName(hContact, buf, 1024, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
 			LOG(("Saving file: %s size: %lu", buf, size));
 			myhFile    = CreateFile(buf,
 									GENERIC_WRITE,
@@ -992,17 +1029,49 @@ static void __cdecl yahoo_recv_avatarthread(void *pavt)
 	free(avt);
 }
 
-void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *pic_url, int cksum)
+
+
+void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *pic_url, int cksum, int type)
 {
 	HANDLE 	hContact = 0;
 		
-	LOG(("ext_yahoo_got_picture for %s with url %s (checksum: %d)", who, pic_url, cksum));
+	LOG(("ext_yahoo_got_picture for %s with url %s (checksum: %d) type: %d", who, pic_url, cksum, type));
 	
 	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
 		LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
 		return;
 	}
+	
+	/*
+	  Type:
+	
+		1 - Send Avatar Info
+		2 - Got Avatar Info
+		3 - YIM6 didn't like my avatar?
+	 */
+	if (type == 1) {
+		int cksum=0;
+		DBVARIANT dbv;
 		
+		/* need to send avatar info */
+		LOG(("[ext_yahoo_got_picture] Getting ready to send info!"));
+		/* need to read CheckSum */
+		cksum = YAHOO_GetDword("AvatarHash", 0);
+		if (cksum) {
+			if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)) {
+				LOG(("[ext_yahoo_got_picture] Sending url:%s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
+				//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
+				yahoo_send_picture_info(id, who, dbv.pszVal, cksum);
+				DBFreeVariant(&dbv);
+			}
+		}
+		return;
+	} if (type != 2) {
+		LOG(("[ext_yahoo_got_picture] Unknown request/packet type exiting!"));
+		return;
+	}
+	
+	/* got avatar info, so set miranda up */
 	hContact = getbuddyH(who);
 	
 	if (!hContact) {
@@ -1012,7 +1081,8 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 	
 	if (!cksum || cksum == -1) {
 		LOG(("[ext_yahoo_got_picture] Resetting avatar."));
-        yahoo_reset_avatar(hContact);
+        yahoo_reset_avatar(hContact, 0);
+		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
 	} else {
 		char z[1024];
 		
@@ -1021,7 +1091,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			return;
 		}
 		
-		GetAvatarFileName(hContact, z, 1024);
+		GetAvatarFileName(hContact, z, 1024, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
 		
 		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum || _access( z, 0 ) != 0 ) {
 			struct avatar_info *avt;
@@ -1038,7 +1108,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 	LOG(("ext_yahoo_got_picture exiting"));
 }
 
-void yahoo_reset_avatar(HANDLE 	hContact)
+void yahoo_reset_avatar(HANDLE 	hContact, int bFail)
 {
     PROTO_AVATAR_INFORMATION AI;
         
@@ -1049,11 +1119,15 @@ void yahoo_reset_avatar(HANDLE 	hContact)
 	AI.cbSize = sizeof AI;
 	AI.format = PA_FORMAT_BMP;
 	AI.hContact = hContact;
-	GetAvatarFileName(AI.hContact, AI.filename, sizeof AI.filename);
-	//DeleteFile(AI.filename);
-	//DBDeleteContactSetting(AI.hContact, "ContactPhoto", "File");	
+
+	GetAvatarFileName(AI.hContact, AI.filename, sizeof AI.filename, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
+	DeleteFile(AI.filename);
+	
+	// STUPID SCRIVER Doesn't listen to ACKTYPE_AVATAR. so remove the file reference!
+	DBDeleteContactSetting(AI.hContact, "ContactPhoto", "File");	
 	//AI.filename[0]='\0';
-	ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED,(HANDLE) &AI, 0);
+	if (bFail)
+		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED,(HANDLE) &AI, 0);
 }
 
 void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int cksum)
@@ -1070,12 +1144,18 @@ void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int
 	
 	/* Last thing check the checksum and request new one if we need to */
 	if (!cksum || cksum == -1) {
-        yahoo_reset_avatar(hContact);
+        yahoo_reset_avatar(hContact,0);
+		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
 	} else {
 		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
-			//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
+			// Reset the avatar and cleanup.
+			yahoo_reset_avatar(hContact,1);
+			
+			// Now save the new checksum. No rush requesting new avatar yet.
+			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
 			//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
 			YAHOO_request_avatar(who);	
+			//ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
 		}
 	}
 	
@@ -1093,14 +1173,47 @@ void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int b
 		return;
 	}
 	
+	DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
+	
 	/* Last thing check the checksum and request new one if we need to */
 	if (buddy_icon == 0 || buddy_icon == 1) {
-		yahoo_reset_avatar(hContact);
-		
-	} else if (buddy_icon == 2) {
-		YAHOO_request_avatar(who);	
+		//yahoo_reset_avatar(hContact, 0);
+		DBDeleteContactSetting(hContact, "ContactPhoto", "File");	
+	} //else if (buddy_icon == 2) {
+	//	YAHOO_request_avatar(who);	
+		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
+	//}
+	
+}
+
+void ext_yahoo_got_avatar_update(int id, const char *me, const char *who, int buddy_icon)
+{
+	HANDLE 	hContact = 0;
+
+	LOG(("ext_yahoo_got_avatar_update for %s buddy_icon: %d", who, buddy_icon));
+
+	hContact = getbuddyH(who);
+	if (hContact == NULL) {
+		LOG(("Buddy Not Found. Skipping avatar update"));
+		return;
 	}
 	
+	DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
+	
+	/* Last thing check the checksum and request new one if we need to */
+	if (buddy_icon == 0 || buddy_icon == 1) {
+		yahoo_reset_avatar(hContact, 0);
+	} //else if (buddy_icon == 2) {
+		/* weird cause we getting 2 notifications?? */
+		//YAHOO_request_avatar(who);	
+		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
+	//}
+
+}
+
+void YAHOO_set_avatar(int buddy_icon)
+{
+	yahoo_send_avatar_update(ylad->id,buddy_icon);
 }
 
 void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *aud, const char *msg, const char *aud_hash)
@@ -1117,8 +1230,90 @@ void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *
 	}
 	
 	_snprintf(z, sizeof(z), "[miranda-audible] %s", msg ?msg:"");
-	ext_yahoo_got_im(id, (char*)me, (char*)who, z, 0, 0, 0, 0);
+	ext_yahoo_got_im(id, (char*)me, (char*)who, z, 0, 0, 0, -1);
 }
+
+void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsigned int ts)
+{
+	long cksum = 0;
+	
+	LOG(("ext_yahoo_got_picture_upload URL:%s timestamp: %d", url, ts));
+
+	/* aud = file class name 
+					GAIM: the audible, in foo.bar.baz format
+			
+					Actually this is the filename.
+					Full URL:
+				
+					http://us.dl1.yimg.com/download.yahoo.com/dl/aud/us/aud.swf 
+					
+					where aud in foo.bar.baz format
+					*/
+	
+	//DBWriteContactSettingDword(NULL, yahooProtocolName, "AvatarHash", hash);
+	if (!url) {
+		LOG(("[ext_yahoo_got_picture_upload] Problem with upload?"));
+		return;
+	}
+	
+	cksum = YAHOO_GetDword("AvatarHash", 0);
+	if (cksum != 0) {
+		LOG(("[ext_yahoo_got_picture_upload] My Checksum: %ld", cksum));
+		
+		YAHOO_SetString(NULL, "AvatarURL", url);
+		YAHOO_SetDword("AvatarTS", ts);
+		
+		//yahoo_send_picture_checksum(id, NULL, cksum);
+		
+		/* need to get online buddies and then send then picture_checksum packets (ARGH YAHOO!)*/
+		//yahoo_send_avatar_update(id,2);// YIM7 does this? YIM6 doesn't like this!
+		char  *szProto;
+		HANDLE hContact;
+		
+		/*for ( hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+			   hContact != NULL;
+				hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
+		{
+			szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
+			if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName ))
+			{
+				if (YAHOO_GetWord(hContact, "Status", ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE) {
+								DBVARIANT dbv;
+
+					if ( DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
+						continue;
+
+					yahoo_send_picture_checksum(id, dbv.pszVal, cksum);
+					DBFreeVariant( &dbv );
+				}
+			}
+		}*/
+		/* need to get online buddies and then send then picture_update packets (ARGH YAHOO!)*/
+		//yahoo_send_avatar_update(id,2);// YIM7 does this? YIM6 doesn't like this!
+		
+		for ( hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+			   hContact != NULL;
+				hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
+		{
+			szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
+			if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName ))
+			{
+				if (YAHOO_GetWord(hContact, "Status", ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE) {
+								DBVARIANT dbv;
+
+					if ( DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
+						continue;
+
+					yahoo_send_picture_update(id, dbv.pszVal, 2);
+					DBFreeVariant( &dbv );
+				}
+			}
+		}
+				
+		yahoo_send_picture_checksum(id, NULL, cksum);
+	}
+}
+
 void ext_yahoo_got_nick(int id, const char *nick)
 {
 	LOG(("[ext_yahoo_got_nick] nick: %s", nick));
@@ -1377,12 +1572,20 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
     CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
 	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 
+	if (buddy_icon < 0) return;
+	
 	//?? Don't generate floods!!
-	if (buddy_icon == 2 && DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) == 0) {
+	DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
+	if (buddy_icon != 2) {
+		yahoo_reset_avatar(hContact, 0);
+	} else if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) == 0) {
 		/* request the buddy image */
 		//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
 		YAHOO_request_avatar(who); 
 	} 
+	
+	ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
+	
 }
 
 void ext_yahoo_rejected(int id, char *who, char *msg)
@@ -1659,7 +1862,7 @@ void ext_yahoo_webcam_invite(int id, char *me, char *from)
 {
     LOG(("ext_yahoo_webcam_invite"));
 	
-	ext_yahoo_got_im(id, me, from, Translate("[miranda] Got webcam invite. (not currently supported)"), 0, 0, 0, 0);
+	ext_yahoo_got_im(id, me, from, Translate("[miranda] Got webcam invite. (not currently supported)"), 0, 0, 0, -1);
 }
 
 void ext_yahoo_webcam_invite_reply(int id, char *me, char *from, int accept)
@@ -2155,6 +2358,8 @@ void register_callbacks()
 	
 	yc.ext_yahoo_buddy_added = ext_yahoo_buddy_added;
 	yc.ext_yahoo_cleanup = ext_yahoo_cleanup;
+	yc.ext_yahoo_got_picture_upload = ext_yahoo_got_picture_upload;
+	yc.ext_yahoo_got_avatar_update = ext_yahoo_got_avatar_update;
 	yc.ext_yahoo_got_audible = ext_yahoo_got_audible;
 	
 	yahoo_register_callbacks(&yc);
@@ -2199,6 +2404,7 @@ void ext_yahoo_login(int login_mode)
 	ylad->id = yahoo_init_with_attributes(ylad->yahoo_id, ylad->password, 
 			"pager_host", host,
 			"pager_port", port,
+			"picture_checksum", YAHOO_GetDword("AvatarHash", -1),
 			NULL);
 
 	ylad->status = YAHOO_STATUS_OFFLINE;

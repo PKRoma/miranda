@@ -14,6 +14,7 @@
 #include "yahoo.h"
 #include "http_gateway.h"
 #include "version.h"
+#include "resource.h"
 
 #include <m_system.h>
 #include <m_langpack.h>
@@ -21,6 +22,7 @@
 #include <m_skin.h>
 #include <m_message.h>
 #include <m_idle.h>
+#include <m_userinfo.h>
 
 //#define HTTP_GATEWAY
 extern char *szStartMsg;
@@ -38,6 +40,7 @@ static HANDLE   hHookOptsInit;
 static HANDLE   hHookModulesLoaded;
 static HANDLE   hHookSettingChanged;
 static HANDLE   hHookUserTyping;
+static HANDLE   hHookUserInfoInit;
 HANDLE   hHookContactDeleted;
 HANDLE   hHookIdle;
 HANDLE   hYahooNudge = NULL;
@@ -143,6 +146,8 @@ int __declspec(dllexport) Unload(void)
 }
 
 int YahooIdleEvent(WPARAM wParam, LPARAM lParam);
+int OnDetailsInit(WPARAM wParam, LPARAM lParam);
+
 
 /*
  *	Load - loads plugin into memory
@@ -184,6 +189,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	hHookOptsInit = HookEvent( ME_OPT_INITIALISE, YahooOptInit );
     hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, YAHOO_util_dbsettingchanged);
 	hHookIdle = HookEvent(ME_IDLE_CHANGED, YahooIdleEvent);
+	hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, OnDetailsInit);
 	
 	// Add support for Plugin Uninstaller
 	//DBWriteContactSettingString(NULL, "Uninstall", "Yahoo", yahooProtocolName);

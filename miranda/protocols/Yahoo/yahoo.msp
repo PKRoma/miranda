@@ -66,7 +66,7 @@ optimizeLevel=4
 // linker
 libraryPath=
 outputFilename=..\..\Bin\Release\Plugins\Yahoo.dll
-libraries=
+libraries=comdlg32,gdi32
 extraLinkerOptions=-Wl,-Map,Release\\yahoo.map
 ignoreStartupFile=0
 ignoreDefaultLibs=0
@@ -126,8 +126,10 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
-libyahoo2\libyahoo2.c,106176
-yahoo.c,3212
+server.c,0
+libyahoo2\libyahoo2.c,134596
 services.c,32068
 main.c,496
-yahoo.h,1520
+yahoo.h,1991
+libyahoo2\yahoo_httplib.c,9569
+yahoo.c,535

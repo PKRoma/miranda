@@ -188,8 +188,9 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_ping)(int id, const char *errormsg);
  * 	idle - this is the number of seconds he is idle [if he is idle]
  *  mobile - this is set for mobile users/buddies
  *  cksum - picture checksum [avatar support]
+ *  buddy_icon - avatar type 
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon);
 
 
 /*
@@ -201,8 +202,9 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int 
  * 	who  - the handle of the remote user
  * pic_url - URL to the buddy icon
  * cksum - checksum
+ * type  - type of packet (recv/send)
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture)(int id, const char *me, const char *who, const char *pic_url, int cksum);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture)(int id, const char *me, const char *who, const char *pic_url, int cksum, int type);
 
 
 /*
@@ -226,6 +228,30 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture_checksum)(int id, const char *me,
  * cksum - checksum
  */
 void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture_update)(int id, const char *me, const char *who, int buddy_icon);
+
+/*
+ * Name: ext_yahoo_got_picture_upload
+ * 	Called when we just uploaded a picture to Yahoo File Servers
+ * Params:
+ * 	id   - the id that identifies the server connection
+ *  me   - the identity of mine being notified
+ * 	who  - the handle of the remote user
+ * cksum - checksum
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture_upload)(int id, const char *me, const char *url, unsigned int ts);
+
+/*
+ * Name: ext_yahoo_got_avatar_update (Apparently this is also a GLOBAL Notification.)
+ *  GF Personal Notes: 2 Notifications?? 1 for Checksum, 1 for Global? To shut it off too?
+ * 	Called when our buddy shares or stops sharing pictures with us.
+ * Params:
+ * 	id   - the id that identifies the server connection
+ *  me   - the identity of mine being notified
+ * 	who  - the handle of the remote user
+ * cksum - checksum
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_avatar_update)(int id, const char *me, const char *who, int buddy_icon);
+
 
 /*
  * Name: ext_yahoo_got_im

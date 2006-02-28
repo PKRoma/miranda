@@ -201,7 +201,18 @@ void YAHOO_SendFile(y_filetransfer *ft);
 void YAHOO_RecvFile(y_filetransfer *ft);
 void YAHOO_FT_cancel(const char *buddy, const char *filename, const char *ft_token, int command);
 void YAHOO_request_avatar(const char* who);
-void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen);
+void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type);
+void YAHOO_SendAvatar(y_filetransfer *sf);
+void YAHOO_set_avatar(int buddy_icon);
+
+typedef	BOOL ( *pfnConvertPng2dib )( char*, size_t, BITMAPINFOHEADER** );
+typedef	BOOL ( *pfnConvertDib2png )( BITMAPINFO*, BYTE* pDiData, BYTE* result, long* resLen );
+
+extern pfnConvertPng2dib png2dibConvertor;
+BOOL YAHOO_LoadPngModule();
+int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
+HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );
+
 #define FILERESUME_CANCEL	11
 
 char * yahoo_status_code(enum yahoo_status s);

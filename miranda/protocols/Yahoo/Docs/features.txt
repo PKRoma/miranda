@@ -68,7 +68,8 @@ plugin'
 
 [P]	Avatar Support
 [D]	    Receive avatars from your buddies.
-[ ]	    Set your own avatar
+[D]	    Set your own avatar
+[ ]	    Flash avatars [Receive/Set]
 
 [P]	Stealth Settings
 [D]	    Hide your own online status from certain buddies.
