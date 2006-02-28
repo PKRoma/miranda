@@ -30,6 +30,8 @@
 
 #include "resource.h"
 
+extern HANDLE   hYahooNudge;
+
 void yahoo_logoff_buddies()
 {
 		//set all contacts to 'offline'
@@ -326,18 +328,26 @@ int YahooRecvMessage(WPARAM wParam, LPARAM lParam)
     PROTORECVEVENT *pre = (PROTORECVEVENT *) ccs->lParam;
 
     DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
+
+	// NUDGES
+    if( !lstrcmp(pre->szMessage, "<ding>")  && ServiceExists("NUDGE/Send")){
+		YAHOO_DebugLog("[YahooRecvMessage] Doing Nudge Service!");
+		NotifyEventHooks(hYahooNudge, (WPARAM) ccs->hContact, 0);
+		return 0;
+    } 
+	
     ZeroMemory(&dbei, sizeof(dbei));
     dbei.cbSize = sizeof(dbei);
     dbei.szModule = yahooProtocolName;
     dbei.timestamp = pre->timestamp;
     dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
     dbei.eventType = EVENTTYPE_MESSAGE;
-    dbei.cbBlob = lstrlen(pre->szMessage) + 1;
+    dbei.cbBlob = (!lstrcmp(pre->szMessage, "<ding>"))? lstrlen("BUZZ!!!")+1:lstrlen(pre->szMessage) + 1;
 	if ( pre->flags & PREF_UNICODE )
 		dbei.cbBlob *= ( sizeof( wchar_t )+1 );
 
 	
-    dbei.pBlob = (PBYTE) pre->szMessage;
+    dbei.pBlob = (PBYTE) (!lstrcmp(pre->szMessage, "<ding>"))? "BUZZ!!!":pre->szMessage;
     CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
     return 0;
 }
@@ -1405,6 +1415,32 @@ int YahooSetAvatarUI( WPARAM wParam, LPARAM lParam )
 	return 1; /* error for now */
 }
 
+//=======================================================
+//Send a nudge
+//=======================================================
+int YahooSendNudge(WPARAM wParam, LPARAM lParam)
+{
+    HANDLE hContact = (HANDLE) wParam;
+    DBVARIANT dbv;
+    
+    if (!yahooLoggedIn) {/* don't send nudge if we not connected! */
+        pthread_create(yahoo_im_sendackfail, hContact);
+        return 1;
+    }
+
+    if (!DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+        yahoo_send_msg(dbv.pszVal, "<ding>", 0);
+        DBFreeVariant(&dbv);
+
+        pthread_create(yahoo_im_sendacksuccess, hContact);
+    
+        return 1;
+    }
+    
+    return 0;
+}
+
+
 extern HANDLE   hHookContactDeleted;
 extern HANDLE   hHookIdle;
 
@@ -1476,6 +1512,9 @@ int LoadYahooServices( void )
 	
 	//----| Service creation |------------------------------------------------------------
 	hHookContactDeleted = HookEvent( ME_DB_CONTACT_DELETED, YahooContactDeleted );
+
+	// Send Nudge
+	YAHOO_CreateProtoServiceFunction( YAHOO_SEND_NUDGE, 	YahooSendNudge );
 		
 	YAHOO_CreateProtoServiceFunction( PS_GETCAPS,	GetCaps );
 	YAHOO_CreateProtoServiceFunction( PS_GETNAME,	GetName );

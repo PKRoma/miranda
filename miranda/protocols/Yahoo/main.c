@@ -40,6 +40,7 @@ static HANDLE   hHookSettingChanged;
 static HANDLE   hHookUserTyping;
 HANDLE   hHookContactDeleted;
 HANDLE   hHookIdle;
+HANDLE   hYahooNudge = NULL;
 
 pthread_mutex_t connectionHandleMutex;
 
@@ -204,7 +205,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 int __declspec(dllexport)Load(PLUGINLINK *link)
 {
 	PROTOCOLDESCRIPTOR pd;
-	char path[MAX_PATH];
+	char path[MAX_PATH], tNudge[250];
 	char* protocolname;
 	
  	pluginLink=link;
@@ -233,6 +234,10 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 
 	// 1.
 	hHookModulesLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
+	// Create nudge event
+	lstrcpyn(tNudge, yahooProtocolName , sizeof( tNudge ) - 7);
+	lstrcat(tNudge, "/Nudge");
+	hYahooNudge = CreateHookableEvent(tNudge);
 	
 	// 2.
 	ZeroMemory(&pd,sizeof(pd));
@@ -252,5 +257,4 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	pthread_mutex_init(&connectionHandleMutex);	
     return 0;
 }
-
 

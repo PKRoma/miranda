@@ -67,6 +67,7 @@
 #define YAHOO_SHOW_MY_PROFILE "/YahooShowMyProfileCommand"
 #define YAHOO_YAHOO_MAIL     "/YahooGotoMailboxCommand"
 #define YAHOO_REFRESH     "/YahooRefreshCommand"
+#define YAHOO_SEND_NUDGE     "/SendNudge"
 
 #define STYLE_DEFAULTBGCOLOUR     RGB(173,206,247)
 
