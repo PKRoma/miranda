@@ -73,6 +73,37 @@
 	".\libyahoo2\yahoo_util.h"\
 	
 
+.\avatar.c : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\http_gateway.h"\
+	".\libyahoo2\config.h"\
+	".\libyahoo2\yahoo2.h"\
+	".\libyahoo2\yahoo2_callbacks.h"\
+	".\libyahoo2\yahoo2_types.h"\
+	".\libyahoo2\yahoo_httplib.h"\
+	".\libyahoo2\yahoo_list.h"\
+	".\libyahoo2\yahoo_util.h"\
+	".\pthread.h"\
+	".\resource.h"\
+	".\version.h"\
+	".\yahoo.h"\
+	
+
 .\main.c : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
@@ -86,6 +117,7 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -98,6 +130,7 @@
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
 	".\pthread.h"\
+	".\resource.h"\
 	".\version.h"\
 	".\yahoo.h"\
 	

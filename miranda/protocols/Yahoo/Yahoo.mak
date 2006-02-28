@@ -38,6 +38,7 @@ ALL : "..\..\Bin\Release\Plugins\Yahoo.dll"
 
 
 CLEAN :
+	-@erase "$(INTDIR)\avatar.obj"
 	-@erase "$(INTDIR)\crypt.obj"
 	-@erase "$(INTDIR)\libyahoo2.obj"
 	-@erase "$(INTDIR)\main.obj"
@@ -92,7 +93,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\utf8.obj" \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res"
+	"$(INTDIR)\Yahoo.res" \
+	"$(INTDIR)\avatar.obj"
 
 "..\..\Bin\Release\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -108,6 +110,7 @@ ALL : "..\..\Bin\Debug\Plugins\Yahoo.dll"
 
 
 CLEAN :
+	-@erase "$(INTDIR)\avatar.obj"
 	-@erase "$(INTDIR)\crypt.obj"
 	-@erase "$(INTDIR)\libyahoo2.obj"
 	-@erase "$(INTDIR)\main.obj"
@@ -162,7 +165,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\utf8.obj" \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res"
+	"$(INTDIR)\Yahoo.res" \
+	"$(INTDIR)\avatar.obj"
 
 "..\..\Bin\Debug\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -258,6 +262,11 @@ SOURCE=.\libyahoo2\yahoo_util.c
 
 "$(INTDIR)\yahoo_util.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\avatar.c
+
+"$(INTDIR)\avatar.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\main.c

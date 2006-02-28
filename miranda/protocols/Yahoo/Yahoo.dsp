@@ -158,6 +158,10 @@ SOURCE=.\libyahoo2\yahoo_util.h
 # End Group
 # Begin Source File
 
+SOURCE=.\avatar.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\main.c
 # End Source File
 # Begin Source File

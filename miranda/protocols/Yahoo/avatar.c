@@ -224,10 +224,12 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		//YAHOO_SetString(NULL, "AvatarFile", szMyFile);
 		
 		if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
+			HBITMAP avt;
+
 			lstrcpy(szAvatar, dbv.pszVal);
 			DBFreeVariant(&dbv);
 			
-			HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szAvatar);
+			avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szAvatar);
 			if (avt) {
 				avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
 				if (avt) DeleteObject(avt); // we release old avatar if any
@@ -329,6 +331,11 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap )
 {
 	BITMAPINFO bmStretch; 
+	BITMAP bmp;
+	UINT* ptPixels;
+	HDC hDC, hBmpDC;
+	HBITMAP hOldBitmap1, hOldBitmap2, hStretchedBitmap;
+	int side, dx, dy;
 	
 	ZeroMemory(&bmStretch, sizeof(bmStretch));
 	bmStretch.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -337,21 +344,18 @@ HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap )
 	bmStretch.bmiHeader.biPlanes = 1;
 	bmStretch.bmiHeader.biBitCount = 32;
 
-	UINT* ptPixels;
-	HBITMAP hStretchedBitmap = CreateDIBSection( NULL, &bmStretch, DIB_RGB_COLORS, ( void* )&ptPixels, NULL, 0);
+	hStretchedBitmap = CreateDIBSection( NULL, &bmStretch, DIB_RGB_COLORS, ( void* )&ptPixels, NULL, 0);
 	if ( hStretchedBitmap == NULL ) {
 		YAHOO_DebugLog( "Bitmap creation failed with error %ld", GetLastError() );
 		return NULL;
 	}
 
-	BITMAP bmp;
-	HDC hDC = CreateCompatibleDC( NULL );
-	HBITMAP hOldBitmap1 = ( HBITMAP )SelectObject( hDC, hBitmap );
+	hDC = CreateCompatibleDC( NULL );
+	hOldBitmap1 = ( HBITMAP )SelectObject( hDC, hBitmap );
 	GetObject( hBitmap, sizeof( BITMAP ), &bmp );
 
-	HDC hBmpDC = CreateCompatibleDC( hDC );
-	HBITMAP hOldBitmap2 = ( HBITMAP )SelectObject( hBmpDC, hStretchedBitmap );
-	int side, dx, dy;
+	hBmpDC = CreateCompatibleDC( hDC );
+	hOldBitmap2 = ( HBITMAP )SelectObject( hBmpDC, hStretchedBitmap );
 
 	if ( bmp.bmWidth > bmp.bmHeight ) {
 		side = bmp.bmHeight;
@@ -382,12 +386,17 @@ HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap )
 int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName ) 
 {
 	BITMAPINFO* bmi;
+	HDC hdc;
+	HBITMAP hOldBitmap;
+	BITMAPINFOHEADER* pDib;
+	BYTE* pDibBits;
+	long dwPngSize = 0;
 	
 	if ( !YAHOO_LoadPngModule())
 		return 1;
 
-	HDC hdc = CreateCompatibleDC( NULL );
-	HBITMAP hOldBitmap = ( HBITMAP )SelectObject( hdc, hBitmap );
+	hdc = CreateCompatibleDC( NULL );
+	hOldBitmap = ( HBITMAP )SelectObject( hdc, hBitmap );
 
 	bmi = ( BITMAPINFO* )_alloca( sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 );
 	memset( bmi, 0, sizeof (BITMAPINFO ));
@@ -398,8 +407,6 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 		return 2;
 	}
 
-	BITMAPINFOHEADER* pDib;
-	BYTE* pDibBits;
 	pDib = ( BITMAPINFOHEADER* )GlobalAlloc( LPTR, sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 + bmi->bmiHeader.biSizeImage );
 	if ( pDib == NULL )
 		return 3;
@@ -411,26 +418,26 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	SelectObject( hdc, hOldBitmap );
 	DeleteDC( hdc );
 
-	long dwPngSize = 0;
 	if ( dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, NULL, &dwPngSize ) == 0 ) {
 		GlobalFree( pDib );
 		return 2;
 	}
 
-	char* pPngMemBuffer = (char*) malloc(dwPngSize);
-	dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, pPngMemBuffer, &dwPngSize );
-	GlobalFree( pDib );
-
-	{	
-		char tFileName[ MAX_PATH ];
-		GetAvatarFileName( NULL, tFileName, sizeof tFileName, 2);
-		FILE* out = fopen( tFileName, "wb" );
-		if ( out != NULL ) {
-			fwrite( pPngMemBuffer, dwPngSize, 1, out );
-			fclose( out );
-		}	
+	{	char* pPngMemBuffer = (char*) malloc(dwPngSize);
+		dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, pPngMemBuffer, &dwPngSize );
+		GlobalFree( pDib );
+		{	
+			FILE* out;
+			char tFileName[ MAX_PATH ];
+			GetAvatarFileName( NULL, tFileName, sizeof tFileName, 2);
+			out = fopen( tFileName, "wb" );
+			if ( out != NULL ) {
+				fwrite( pPngMemBuffer, dwPngSize, 1, out );
+				fclose( out );
+			}	
+		}
+		free(pPngMemBuffer);
 	}
-	free(pPngMemBuffer);
 	return ERROR_SUCCESS;
 }
 

@@ -616,9 +616,8 @@ void ext_yahoo_cleanup(int id)
 
 void yahoo_send_msg(const char *id, const char *msg, int utf8)
 {
-	LOG(("yahoo_send_msg: %s: %s, utf: %d", id, msg, utf8));
-	
 	int buddy_icon = 0;
+	LOG(("yahoo_send_msg: %s: %s, utf: %d", id, msg, utf8));
 	
 	buddy_icon = (YAHOO_GetDword("AvatarHash", 0) != 0) ? 2: 0;
 	
@@ -1258,6 +1257,9 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 	
 	cksum = YAHOO_GetDword("AvatarHash", 0);
 	if (cksum != 0) {
+		char  *szProto;
+		HANDLE hContact;
+
 		LOG(("[ext_yahoo_got_picture_upload] My Checksum: %ld", cksum));
 		
 		YAHOO_SetString(NULL, "AvatarURL", url);
@@ -1267,8 +1269,6 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		
 		/* need to get online buddies and then send then picture_checksum packets (ARGH YAHOO!)*/
 		//yahoo_send_avatar_update(id,2);// YIM7 does this? YIM6 doesn't like this!
-		char  *szProto;
-		HANDLE hContact;
 		
 		/*for ( hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 			   hContact != NULL;
