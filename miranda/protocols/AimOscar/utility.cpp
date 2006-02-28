@@ -21,7 +21,8 @@ void start_connection(int initial_status)
 		}
 		else
 		{
-			MessageBox( NULL, "Error retrieving hostname from the database.", AIM_PROTOCOL_NAME, MB_OK );
+			char* msg=strdup("Error retrieving hostname from the database.");
+			ForkThread((pThreadFunc)message_box_thread,msg);
 		}
 		if(conn.hServerConn)
 		{
@@ -68,6 +69,7 @@ HANDLE add_contact(char* buddy)
 		}
 		else
 		{
+			DBWriteContactSettingByte(hContact,AIM_PROTOCOL_NAME,AIM_KEY_NC,1);
 			DBWriteContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, normalize_name(buddy));
 			DBWriteContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_NK, buddy);
 			return hContact;
@@ -79,7 +81,7 @@ HANDLE add_contact(char* buddy)
 		//LOG(LOG_ERROR, "Failed to create AIM contact %s. MS_DB_CONTACT_ADD failed.", nick);
 	}
 }
-void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* group)
+/*void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* group)
 {
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	DBVARIANT dbv;
@@ -129,20 +131,20 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 			unsigned short user_id_array_size=get_members_of_group(new_group_id,user_id_array);
 			if(old_group_id)
 				aim_delete_contact(dbv.pszVal,item_id,old_group_id);
-			Sleep(150);
+			//Sleep(10);
 			aim_add_contact(dbv.pszVal,item_id,new_group_id);
 			if(!group_exist)
 			{
-				Sleep(150);
+				//Sleep(10);
 				aim_add_group(group,new_group_id);//add the group server-side even if it exist
 			}
-			Sleep(150);
+			//Sleep(10);
 			aim_mod_group(group,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
 			DBFreeVariant(&dbv);
 			delete_empty_group(old_group_id);
 		}
 	}
-}
+}*/
 void add_contacts_to_groups()
 {
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
@@ -152,55 +154,61 @@ void add_contacts_to_groups()
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
 		{
-			unsigned short group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);
-			
+			unsigned short group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);	
 			if(group_id)
 			{
 				char group_id_string[32];
 				itoa(group_id,group_id_string,10);
-				char* default_group=get_default_group();
+				//char* outer_group=get_outer_group();
 				DBVARIANT dbv;
 				if(bUtfReadyDB==1)
 				{
-					if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
+					if(DBGetContactSettingByte(hContact, AIM_PROTOCOL_NAME,AIM_KEY_NC,0))
 					{
-						if(strcmpi(default_group,dbv.pszVal))
-						{
-							DBVARIANT dbv2;
-							if(!DBGetContactSettingStringUtf(hContact,"CList","Group",&dbv2))
-							{
-								if(strcmpi(dbv2.pszVal,dbv.pszVal))//comp current group to the new group
-									DBWriteContactSettingStringUtf(hContact,"CList","Group",dbv.pszVal);
-							}
-							else
-								DBWriteContactSettingStringUtf(hContact,"CList","Group",dbv.pszVal);
-						}
-						else
-							DBDeleteContactSetting(hContact,"CList","Group");
-						DBFreeVariant(&dbv);
+						if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
+							DBWriteContactSettingStringUtf(hContact,"CList","Group",dbv.pszVal);
+						DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_NC);
 					}
 				}
 				else
-				{
+				{	
+					if(DBGetContactSettingByte(hContact, AIM_PROTOCOL_NAME,AIM_KEY_NC,0))
+					{
+						if(!DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
+							DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+						DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_NC);
+					}
+					/*
 					if(!DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))//ascii
 					{
-						if(strcmpi(default_group,dbv.pszVal))
+						if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME,AIM_KEY_SG,0))
 						{
-							DBVARIANT dbv2;
-							if(!DBGetContactSetting(hContact,"CList","Group",&dbv2))
+							if(strcmpi(outer_group,dbv.pszVal))
 							{
-								if(strcmpi(dbv2.pszVal,dbv.pszVal))//comp current group to the new group
+								DBVARIANT dbv2;
+								if(!DBGetContactSetting(hContact,"CList","Group",&dbv2))
+								{
+									if(strcmpi(dbv2.pszVal,dbv.pszVal))//compare current group to the new group
+										DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+								}
+								else
 									DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
 							}
 							else
-								DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+								DBDeleteContactSetting(hContact,"CList","Group");
+							DBFreeVariant(&dbv);
 						}
 						else
-							DBDeleteContactSetting(hContact,"CList","Group");
-						DBFreeVariant(&dbv);
-					}
+						{
+							if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME,AIM_KEY_SG,0))
+							{
+								DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+								DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_SG);
+							}
+						}
+					}*/
 				}
-				free(default_group);
+				//free(outer_group);
 			}
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
@@ -486,6 +494,69 @@ void strip_html(char *dest, const char *src, size_t destsize)
         ptrl = ptr;
     }
 }
+void strip_html(wchar_t *dest, const wchar_t *src)
+{
+    wchar_t *ptr;
+    wchar_t *ptrl;
+    wchar_t *rptr;
+	wcscpy(dest,src);
+    while ((ptr = wcsstr(dest,L"<P>")) != NULL || (ptr = wcsstr(dest, L"<p>")) != NULL) {
+        memmove(ptr + 4, ptr + 3, wcslen(ptr + 3)*2 + 2);
+        *ptr = '\r';
+        *(ptr + 1) = '\n';
+        *(ptr + 2) = '\r';
+        *(ptr + 3) = '\n';
+    }
+    while ((ptr = wcsstr(dest,L"</P>")) != NULL || (ptr = wcsstr(dest, L"</p>")) != NULL) {
+        *ptr = L'\r';
+        *(ptr + 1) = L'\n';
+        *(ptr + 2) = L'\r';
+        *(ptr + 3) = L'\n';
+    }
+    while ((ptr = wcsstr(dest, L"<BR>")) != NULL || (ptr = wcsstr(dest, L"<br>")) != NULL) {
+        *ptr = L'\r';
+        *(ptr + 1) = L'\n';
+        memmove(ptr + 2, ptr + 4, wcslen(ptr + 4)*2 + 2);
+    }
+    while ((ptr = wcsstr(dest, L"<HR>")) != NULL || (ptr = wcsstr(dest, L"<hr>")) != NULL) {
+        *ptr = L'\r';
+        *(ptr + 1) = L'\n';
+        memmove(ptr + 2, ptr + 4, wcslen(ptr + 4)*2 + 2);
+    }
+    rptr = dest;
+    while ((ptr = wcsstr(rptr, L"<"))) {
+        ptrl = ptr + 1;
+        if ((ptrl = wcsstr(ptrl, L">"))) {
+            memmove(ptr, ptrl + 1, wcslen(ptrl + 1)*2 + 2);
+        }
+        else
+            rptr++;
+    }
+    ptrl = NULL;
+    while ((ptr = wcsstr(dest, L"&quot;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
+        *ptr = L'"';
+        memmove(ptr + 1, ptr + 6, wcslen(ptr + 6)*2 + 2);
+        ptrl = ptr;
+    }
+    ptrl = NULL;
+    while ((ptr = wcsstr(dest, L"&lt;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
+        *ptr = L'<';
+        memmove(ptr + 1, ptr + 4, wcslen(ptr + 4)*2 + 2);
+        ptrl = ptr;
+    }
+    ptrl = NULL;
+    while ((ptr = wcsstr(dest, L"&gt;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
+        *ptr = L'>';
+        memmove(ptr + 1, ptr + 4, wcslen(ptr + 4)*2 + 2);
+        ptrl = ptr;
+    }
+    ptrl = NULL;
+    while ((ptr = wcsstr(dest, L"&amp;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
+        *ptr = L'&';
+        memmove(ptr + 1, ptr + 5, wcslen(ptr + 5)*2 + 2);
+        ptrl = ptr;
+    }
+}
 void strip_special_chars(char *dest, const char *src, size_t destsize)
 {
 	DBVARIANT dbv;
@@ -515,6 +586,35 @@ void strip_carrots(char *dest, const char *src, size_t destsize)// EAT!!!!!!!!!!
 		{
 			memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
 			memcpy(ptr,"&gt;",4);
+		}
+}
+void strip_carrots(wchar_t *dest, const wchar_t *src)// EAT!!!!!!!!!!!!!
+{
+		wchar_t *ptr;
+		wcscpy(dest,src);
+		while ((ptr = wcsstr(dest, L"<")) != NULL)
+		{
+			memmove(ptr + 4, ptr + 1, wcslen(ptr + 1)*2 + 8);
+			memcpy(ptr,L"&lt;",8);
+		}
+		while ((ptr = wcsstr(dest, L">")) != NULL)
+		{
+			memmove(ptr + 4, ptr + 1, wcslen(ptr + 1)*2 + 8);
+			memcpy(ptr,L"&gt;",8);
+		}
+}
+void strip_linebreaks(char *dest, const char *src, size_t destsize)
+{
+		char *ptr;
+		mir_snprintf(dest, destsize, "%s", src);
+		while ((ptr = strstr(dest, "\r")) != NULL)
+		{
+			memmove(ptr, ptr + 1, strlen(ptr + 1));
+		}
+		while ((ptr = strstr(dest, "\n")) != NULL)
+		{
+			memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
+			memcpy(ptr,"<br>",4);
 		}
 }
 void msg_ack_success(HANDLE hContact)
@@ -565,13 +665,13 @@ void create_group(char *group, unsigned short group_id)
 	else
 		DBWriteContactSettingString(NULL, ID_GROUP_KEY,group_id_string, group);
 	DBWriteContactSettingWord(NULL, GROUP_ID_KEY,group, group_id);
-	char* default_group=get_default_group();
-	if(!strcmp(default_group,group))
+	/*char* outer_group=get_outer_group();
+	if(!strcmp(outer_group,group))
 	{
-		free(default_group);
+		free(outer_group);
 		return;
 	}
-	free(default_group);
+	free(outer_group);*/
 	int i;
     char str[50], name[256];
     DBVARIANT dbv;
@@ -732,7 +832,7 @@ void delete_module(char* module, HANDLE hContact)
 	module_ptr=NULL;
 	module_size=0;
 }
-void delete_empty_group(unsigned short group_id)//deletes the server-side group if no contacts are in it.
+/*void delete_empty_group(unsigned short group_id)//deletes the server-side group if no contacts are in it.
 {
 	if(!group_id)
 		return;
@@ -798,14 +898,14 @@ void delete_empty_group(unsigned short group_id)//deletes the server-side group 
 	}
 	if(!contacts_in_group)
 	{
-		char* default_group=get_default_group();
-		if(strcmp(default_group,group))
+		char* outer_group=get_outer_group();
+		if(strcmp(outer_group,group))
 		{
 			DBDeleteContactSetting(NULL, GROUP_ID_KEY, group);
 			DBDeleteContactSetting(NULL, ID_GROUP_KEY, group_id_string);
 			aim_delete_group(group,group_id);
 		}
-		free(default_group);
+		free(outer_group);
 	}
 }
 void delete_all_empty_groups()
@@ -829,7 +929,7 @@ void delete_all_empty_groups()
 	free(module_ptr);
 	module_ptr=NULL;
 	module_size=0;
-}
+}*/
 void write_away_message(HANDLE hContact,char* sn,char* msg)
 {
 	char path[MSG_LEN];
@@ -901,10 +1001,18 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 }
 void write_profile(HANDLE hContact,char* sn,char* msg)
 {
+	char path[MSG_LEN];
+	int protocol_length=strlen(AIM_PROTOCOL_NAME);
+	char* norm_sn=normalize_name(sn);
+	ZeroMemory(path,sizeof(path));
+	int CWD_length=strlen(CWD);
+	memcpy(path,CWD,CWD_length);
+	memcpy(&path[CWD_length],"\\",1);
+	memcpy(&path[CWD_length+1],AIM_PROTOCOL_NAME,protocol_length);
 	int dir=0;
-	if(GetFileAttributes(AIM_PROTOCOL_NAME)==INVALID_FILE_ATTRIBUTES)
+	if(GetFileAttributes(path)==INVALID_FILE_ATTRIBUTES)
 	{
-		dir=CreateDirectory(AIM_PROTOCOL_NAME,NULL);
+		dir=CreateDirectory(path,NULL);
 	}
 	else
 	{
@@ -912,18 +1020,7 @@ void write_profile(HANDLE hContact,char* sn,char* msg)
 	}
 	if(dir)
 	{
-		int descr=0;
-		char path[MSG_LEN];
-		int CWD_length;
-		int protocol_length=strlen(AIM_PROTOCOL_NAME);
-		char* norm_sn=normalize_name(sn);
-		char html[MSG_LEN*2];
-		strip_special_chars(html,msg,sizeof(html));
-		ZeroMemory(path,sizeof(path));
-		CWD_length=strlen(CWD);
-		memcpy(path,CWD,CWD_length);
-		memcpy(&path[CWD_length],"\\",1);
-		memcpy(&path[CWD_length+1],AIM_PROTOCOL_NAME,protocol_length);
+
 		memcpy(&path[CWD_length+protocol_length+1],"\\",1);
 		memcpy(&path[CWD_length+protocol_length+2],norm_sn,strlen(norm_sn));
 		dir=0;
@@ -938,10 +1035,12 @@ void write_profile(HANDLE hContact,char* sn,char* msg)
 		if(dir)
 		{
 			memcpy(&path[CWD_length+protocol_length+2+strlen(norm_sn)],"\\profile.html",13);
-			descr=_open(path,_O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+			int descr=_open(path,_O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 			if(descr!=-1)
 			{
-				//char txt[MSG_LEN*2];
+				char* norm_sn=normalize_name(sn);
+				char html[MSG_LEN*2];
+				strip_special_chars(html,msg,sizeof(html));
 				write(descr,"<h3>",4);
 				write(descr,norm_sn,strlen(norm_sn));
 				write(descr,"'s Profile:</h3>",16);
@@ -1138,6 +1237,30 @@ int is_kopete_ver_cap(char* cap)
 		return 1;
 	return 0;
 }
+int is_qip_ver_cap(char* cap)
+{
+	if(!memcmp(&cap[7],"QIP",3))
+		return 1;
+	return 0;
+}
+int is_micq_ver_cap(char* cap)
+{
+	if(!memcmp(cap,"mICQ",4))
+		return 1;
+	return 0;
+}
+int is_im2_ver_cap(char* cap)
+{
+	if(!cap_cmp(cap,AIM_CAP_IM2))
+		return 1;
+	return 0;
+}
+int is_sim_ver_cap(char* cap)
+{
+	if(!memcmp(cap,"SIM client",10))
+		return 1;
+	return 0;
+}
 void load_extra_icons()
 {
 	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON)&&!conn.extra_icons_loaded)
@@ -1181,6 +1304,7 @@ void set_extra_icon(char* data)
 		free(data);
 	}
 }
+/*
 char* get_default_group()
 {
 	char* default_group;
@@ -1195,4 +1319,77 @@ char* get_default_group()
 		default_group=strdup(AIM_DEFAULT_GROUP);
 	}
 	return default_group;
+}
+char* get_outer_group()
+{
+	char* outer_group;
+	DBVARIANT dbv;
+	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, &dbv))
+	{
+		outer_group=strdup(dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}
+	else
+	{
+		outer_group=strdup(AIM_DEFAULT_GROUP);
+	}
+	return outer_group;
+}*/
+void wcs_htons(wchar_t * ch)
+{
+	for(size_t i=0;i<wcslen(ch);i++)
+		ch[i]=htons(ch[i]);
+}
+void __stdcall Utf8Decode( char* str, wchar_t** ucs2 )
+{
+	if ( str == NULL )
+		return;
+
+	int len = strlen( str );
+	if ( len < 2 ) {
+		if ( ucs2 != NULL ) {
+			*ucs2 = ( wchar_t* )malloc(( len+1 )*sizeof( wchar_t ));
+			MultiByteToWideChar( CP_ACP, 0, str, len, *ucs2, len );
+			( *ucs2 )[ len ] = 0;
+		}
+		return;
+	}
+
+	wchar_t* tempBuf = ( wchar_t* )_alloca(( len+1 )*sizeof( wchar_t ));
+	{
+		wchar_t* d = tempBuf;
+		BYTE* s = ( BYTE* )str;
+
+		while( *s )
+		{
+			if (( *s & 0x80 ) == 0 ) {
+				*d++ = *s++;
+				continue;
+			}
+
+			if (( s[0] & 0xE0 ) == 0xE0 && ( s[1] & 0xC0 ) == 0x80 && ( s[2] & 0xC0 ) == 0x80 ) {
+				*d++ = (( WORD )( s[0] & 0x0F) << 12 ) + ( WORD )(( s[1] & 0x3F ) << 6 ) + ( WORD )( s[2] & 0x3F );
+				s += 3;
+				continue;
+			}
+
+			if (( s[0] & 0xE0 ) == 0xC0 && ( s[1] & 0xC0 ) == 0x80 ) {
+				*d++ = ( WORD )(( s[0] & 0x1F ) << 6 ) + ( WORD )( s[1] & 0x3F );
+				s += 2;
+				continue;
+			}
+
+			*d++ = *s++;
+		}
+
+		*d = 0;
+	}
+
+	if ( ucs2 != NULL ) {
+		int fullLen = ( len+1 )*sizeof( wchar_t );
+		*ucs2 = ( wchar_t* )malloc( fullLen );
+		memcpy( *ucs2, tempBuf, fullLen );
+	}
+
+   WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
 }

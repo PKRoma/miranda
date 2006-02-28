@@ -174,7 +174,9 @@ int aim_set_caps()
 	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, &dbv))
 	{
 		aim_writetlv(0x01,strlen(AIM_MSG_TYPE),AIM_MSG_TYPE,buf);
-		aim_writetlv(0x02,strlen(dbv.pszVal),dbv.pszVal,buf);
+		char send_buf[MSG_LEN];
+		strip_linebreaks(send_buf,dbv.pszVal,sizeof(send_buf));
+		aim_writetlv(0x02,strlen(send_buf),send_buf,buf);
 		DBFreeVariant(&dbv);
 	}
 	if(aim_sendflap(0x02,conn.packet_offset,buf)==0)
@@ -198,6 +200,8 @@ int aim_set_profile(char *msg)//user info
 }
 int aim_set_away(char *msg)//user info
 {
+	if(msg!=NULL)
+		DBWriteContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_LA, time(NULL));
 	char buf[MSG_LEN*2];
 	aim_writesnac(0x02,0x04,6,buf);
 	aim_writetlv(0x03,strlen(AIM_MSG_TYPE),AIM_MSG_TYPE,buf);
@@ -236,7 +240,8 @@ int aim_client_ready()
 	}
 	if (conn.hDirectBoundPort == NULL)
 	{
-		MessageBox( NULL, "AimOSCAR was unable to bind to a port. File transfers may not succeed in some cases.", AIM_PROTOCOL_NAME, MB_OK );	
+		char* msg=strdup("AimOSCAR was unable to bind to a port. File transfers may not succeed in some cases.");
+		ForkThread((pThreadFunc)message_box_thread,msg);
 	}
 	conn.LocalPort=nlb.wPort;
 	conn.InternalIP=nlb.dwInternalIP;
@@ -269,7 +274,7 @@ int aim_client_ready()
 	else
 		return -1;
 }
-int aim_send_plaintext_message(char* sn,char* msg)
+int aim_send_plaintext_message(char* sn,char* msg,bool auto_response)
 {	
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch1.html
 	char caps_frag[]={0x05,0x01,0x00,0x01,0x01};
@@ -289,7 +294,40 @@ int aim_send_plaintext_message(char* sn,char* msg)
 	memcpy(tlv_frag,caps_frag,sizeof(caps_frag));
 	memcpy(&tlv_frag[sizeof(caps_frag)],msg_frag,strlen(msg)+8);
 	aim_writetlv(0x02,sizeof(caps_frag)+strlen(msg)+8,tlv_frag,buf);
+	if(auto_response)
+		aim_writetlv(0x04,0,0,buf);
+	else
+		aim_writetlv(0x03,0,0,buf);
+	if(aim_sendflap(0x02,conn.packet_offset,buf)==0)
+		return 1;
+	else
+		return 0;
+}
+int aim_send_unicode_message(char* sn,wchar_t* msg)
+{	
+	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch1.html
+	char caps_frag[]={0x05,0x01,0x00,0x03,0x01,0x01,0x01};
+	char msg_frag[MSG_LEN*2];
+	memcpy(msg_frag,"\x01\x01\0\0\0\0\0\0\0",8);//second before last two bytes are charset if 0xFFFF then triton doesn't accept message
+	char tlv_frag[MSG_LEN];
+	unsigned short sn_length=strlen(sn);
+	unsigned short msg_length=htons(wcslen(msg)*2+4);//+1 for first unicode byte
+	char buf[MSG_LEN*2];
+	aim_writesnac(0x04,0x06,6,buf);
+	aim_writegeneric(8,"\0\0\0\0\0\0\0\0",buf);
+	aim_writegeneric(2,"\0\x01",buf);//channel
+	aim_writegeneric(1,(char*)&sn_length,buf);
+	aim_writegeneric(sn_length,sn,buf);
+	memcpy(&msg_frag[2],(char*)&msg_length,2);
+	memcpy(&msg_frag[4],"\0\x02",2);
+	wcs_htons(msg);
+	memcpy(&msg_frag[8],msg,wcslen(msg)*2);
+	memcpy(tlv_frag,caps_frag,sizeof(caps_frag));
+	memcpy(&tlv_frag[sizeof(caps_frag)],msg_frag,wcslen(msg)*2+8);
+	aim_writetlv(0x02,sizeof(caps_frag)+wcslen(msg)*2+8,tlv_frag,buf);
+	//buf[conn.packet_offset-(sizeof(caps_frag)+wcslen(msg)*2+1+8)-1]=htons(msg_length)+12;
 	aim_writetlv(0x03,0,0,buf);
+	wcs_htons(msg);
 	if(aim_sendflap(0x02,conn.packet_offset,buf)==0)
 		return 1;
 	else

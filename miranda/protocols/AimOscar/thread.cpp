@@ -46,29 +46,40 @@ void __cdecl aim_keepalive_thread(void* fa)
 	CloseHandle(hKeepAliveEvent);
 	hKeepAliveEvent = NULL;
 }
+void message_box_thread(char* data)
+{
+	MessageBox( NULL, Translate(data), AIM_PROTOCOL_NAME, MB_OK );
+}
 void set_status_thread(int status)
 {
 	DBVARIANT dbv;
 	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 		DBFreeVariant(&dbv);
 	else
+	{
+		char* msg=strdup("Please, enter a username in the options dialog.");
+		ForkThread((pThreadFunc)message_box_thread,msg);
 		return;
+	}
 	DBVARIANT dbv2;
 	if(!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv2))
 		DBFreeVariant(&dbv2);
 	else
+	{
+		char* msg=strdup("Please, enter a password in the options dialog.");
+		ForkThread((pThreadFunc)message_box_thread,msg);
 		return;
-	
+	}
 	start_connection(status);
 	if(conn.state==1)
 		switch(status)
 		{
 			case ID_STATUS_OFFLINE:
 				{
-					if(conn.hServerConn)
-						Netlib_CloseHandle(conn.hServerConn);
 					if(conn.hDirectBoundPort)
 						Netlib_CloseHandle(conn.hDirectBoundPort);
+					if(conn.hServerConn)
+						Netlib_CloseHandle(conn.hServerConn);
 					conn.hDirectBoundPort=0;
 					conn.hServerConn=0;
 					broadcast_status(ID_STATUS_OFFLINE);
@@ -102,6 +113,13 @@ void set_status_thread(int status)
 		}
 	LeaveCriticalSection(&statusMutex);
 }
+
+/*void contact_setting_changed_thread(char* data)
+{
+	HANDLE* hContact=(HANDLE*)data;
+	char* group = data + sizeof(HANDLE);
+	add_contact_to_group(*hContact,DBGetContactSettingWord(NULL, GROUP_ID_KEY,group,0),group);
+}*/
 void accept_file_thread(char* data)//buddy sending file
 {
 	char *szDesc, *szFile, *local_ip, *verified_ip, *proxy_ip,* sn;

@@ -23,11 +23,13 @@
 #define IDC_MASQ                        1009
 #define IDC_MAS                         1009
 #define IDI_BOT                         1010
+#define IDC_SG                          1010
 #define IDI_ADMIN                       1012
 #define IDI_CONFIRMED                   1013
 #define IDC_SETPROFILE                  1013
 #define IDI_UNCONFIRMED                 1014
 #define IDC_EDIT4                       1021
+#define IDC_OG                          1021
 #define IDC_PROFILE                     1022
 
 // Next default values for new objects

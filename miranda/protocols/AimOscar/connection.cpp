@@ -38,7 +38,6 @@ void __cdecl aim_connection_authorization()
 	}
 	else
 	{
-		MessageBox( NULL, "Please, enter a password in the options dialog.", AIM_PROTOCOL_NAME, MB_OK );
 		LeaveCriticalSection(&connectionMutex);
 		return;
 	}
@@ -49,7 +48,6 @@ void __cdecl aim_connection_authorization()
     }
 	else
 	{
-		MessageBox( NULL, "Please, enter a username in the options dialog.", AIM_PROTOCOL_NAME, MB_OK );
 		LeaveCriticalSection(&connectionMutex);
 		return;
 	}

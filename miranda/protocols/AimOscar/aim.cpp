@@ -1,18 +1,10 @@
-/*
-Miranda plugin template, originally by Richard Hughes
-http://miranda-icq.sourceforge.net/
-
-This file is placed in the public domain. Anybody is free to use or
-modify it as they wish with no restriction.
-There is no warranty.
-*/
 #include "aim.h"
 PLUGINLINK *pluginLink;
 #define AIM_OSCAR_VERSION "\0\0\0\x01"
 char	AIM_CAP_MIRANDA[16]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
-	"AIM OSCAR Plugin - Alpha 8.2",
+	"AIM OSCAR Plugin - Alpha 8.3",
 	PLUGIN_MAKE_VERSION(0,0,0,1),
 	"Provides very basic support for AOL® OSCAR Instant Messenger protocol.",
 	"Aaron Myles Landwehr",
@@ -103,7 +95,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 }
 int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-	DBVARIANT dbv,dbv2;
+	DBVARIANT dbv;
 	NETLIBUSER nlu;
 	ZeroMemory(&nlu, sizeof(nlu));
     nlu.cbSize = sizeof(nlu);
@@ -119,21 +111,21 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	nlu.minIncomingPorts = 1;
 	conn.hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
 	if (DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
-	{
 		DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, AIM_DEFAULT_SERVER);
-	}
-	if (DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, &dbv2))
-	{
+	else
+		DBFreeVariant(&dbv);
+/*	if (DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, &dbv2))
 		DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, AIM_DEFAULT_GROUP);
-	}
+	else
+		DBFreeVariant(&dbv2);
+	if (DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, &dbv3))
+		DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, AIM_DEFAULT_GROUP);
+	else
+		DBFreeVariant(&dbv3);*/
 	if(DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, -1)==-1)
 		DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 	if(DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, -1)==-1)
 		DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
-	if(dbv.pszVal)
-		DBFreeVariant(&dbv);
-	if(dbv2.pszVal)
-		DBFreeVariant(&dbv2);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_OPT_INITIALISE, OptionsInit);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_USERINFO_INITIALISE, UserInfoInit);
 	if(conn.hookEvent_size>HOOKEVENT_SIZE)

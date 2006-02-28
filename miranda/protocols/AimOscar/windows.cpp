@@ -59,7 +59,9 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, buf);
                     if (conn.state==1)
 					{
-                        aim_set_profile(buf);
+						char send_buf[MSG_LEN];
+						strip_linebreaks(send_buf,buf,sizeof(send_buf));
+                        aim_set_profile(send_buf);//also see set caps for profile setting
                     }
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SETPROFILE), FALSE);
                     break;
@@ -119,11 +121,24 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 SetDlgItemText(hwndDlg, IDC_HN, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
-			if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, &dbv))
+/*			if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, &dbv))
 			{
                 SetDlgItemText(hwndDlg, IDC_DG, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
+			else
+			{
+				SetDlgItemText(hwndDlg, IDC_DG, AIM_DEFAULT_GROUP);
+			}
+			if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, &dbv))
+			{
+                SetDlgItemText(hwndDlg, IDC_OG, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+			else
+			{
+				SetDlgItemText(hwndDlg, IDC_OG, AIM_DEFAULT_GROUP);
+			}*/
 			unsigned short timeout=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 			SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
 			unsigned short timer=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
@@ -131,7 +146,9 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_DC, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 0));//Message Delivery Confirmation
             CheckDlgButton(hwndDlg, IDC_FP, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0));//force proxy
 			CheckDlgButton(hwndDlg, IDC_AT, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0));//Account Type Icons
+			CheckDlgButton(hwndDlg, IDC_ES, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 0));//Extended Status Type Icons
 			CheckDlgButton(hwndDlg, IDC_HF, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0));//Fake hiptopness
+			//CheckDlgButton(hwndDlg, IDC_SG, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SG, 0));//Server-side group
 			break;
 		}
 		case WM_COMMAND:
@@ -259,12 +276,19 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					//End
 
 					//Default Group
-					if(GetDlgItemText(hwndDlg, IDC_DG, str, sizeof(str)))
+					/*if(GetDlgItemText(hwndDlg, IDC_DG, str, sizeof(str)))
 						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, str);
 					else
 						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, AIM_DEFAULT_GROUP);
 					//End
 
+					//Outer Group
+					if(GetDlgItemText(hwndDlg, IDC_OG, str, sizeof(str)))
+						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, str);
+					else
+						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, AIM_DEFAULT_GROUP);*/
+					//End
+					
 					//Keep alive timer
 					unsigned long timer=GetDlgItemInt(hwndDlg, IDC_KA,0,0);
 					if(timer>0xffff||timer<15)
@@ -272,6 +296,13 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					else
 						DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA,(WORD)timer);
 					//End
+					/*
+					//Server-side group
+					if (IsDlgButtonChecked(hwndDlg, IDC_SG))
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SG, 1);
+					else
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SG, 0);
+					//End Server-side group*/
                 }
             }
             break;

@@ -53,24 +53,43 @@ static int SendMsg(WPARAM wParam, LPARAM lParam)
 		}
 		char msg[MSG_LEN];
 		strip_carrots(msg,(char *)ccs->lParam,sizeof(msg));
-		return aim_send_plaintext_message(dbv.pszVal,msg);
+		return aim_send_plaintext_message(dbv.pszVal,msg,0);
+	}
+	return 0;
+}
+static int SendMsgW(WPARAM wParam, LPARAM lParam)
+{
+	CCSDATA *ccs = (CCSDATA *)lParam;
+	DBVARIANT dbv;
+	if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	{
+		if(0==DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 1))
+		{
+			ForkThread(msg_ack_success,ccs->hContact);
+		}
+		wchar_t* umsg=(wchar_t*)((char*)ccs->lParam+strlen((char*)ccs->lParam)+1);
+		wchar_t stripped_umsg[MSG_LEN];
+		strip_carrots(stripped_umsg,(wchar_t *)umsg);
+		return aim_send_unicode_message(dbv.pszVal,stripped_umsg);
 	}
 	return 0;
 }
 static int RecvMsg(WPARAM wParam, LPARAM lParam)
 {
-    DBEVENTINFO dbei;
-    CCSDATA *ccs = (CCSDATA *) lParam;
-    PROTORECVEVENT *pre = (PROTORECVEVENT *) ccs->lParam;
-    DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
-    ZeroMemory(&dbei, sizeof(dbei));
-    dbei.cbSize = sizeof(dbei);
-    dbei.szModule = AIM_PROTOCOL_NAME;
-    dbei.timestamp = pre->timestamp;
-    dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
-    dbei.eventType = EVENTTYPE_MESSAGE;
-    dbei.cbBlob = strlen(pre->szMessage) + 1;
-    dbei.pBlob = (PBYTE) pre->szMessage;
+	CCSDATA *ccs = ( CCSDATA* )lParam;
+	PROTORECVEVENT *pre = ( PROTORECVEVENT* )ccs->lParam;
+
+	DBEVENTINFO dbei = { 0 };
+	dbei.cbSize = sizeof( dbei );
+	dbei.szModule = AIM_PROTOCOL_NAME;
+	dbei.timestamp = pre->timestamp;
+	dbei.flags = pre->flags&PREF_CREATEREAD?DBEF_READ:0;
+	dbei.eventType = EVENTTYPE_MESSAGE;
+	dbei.cbBlob = strlen( pre->szMessage ) + 1;
+	if ( pre->flags & PREF_UNICODE )
+		dbei.cbBlob *= ( sizeof( wchar_t )+1 );
+
+	dbei.pBlob = ( PBYTE ) pre->szMessage;
     CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
     return 0;
 }
@@ -169,39 +188,60 @@ static int LoadIcons(WPARAM wParam, LPARAM lParam)
 {
 	return (int) LoadImage(conn.hInstance, MAKEINTRESOURCE(IDI_AIM), IMAGE_ICON, GetSystemMetrics(wParam & PLIF_SMALL ? SM_CXSMICON : SM_CXICON),GetSystemMetrics(wParam & PLIF_SMALL ? SM_CYSMICON : SM_CYICON), 0);
 }
-static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
+//Bottle Neck-->>
+/*static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 {
-	if (conn.state!=1)
-		return 0;
-	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
-	char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
-	if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+/*	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME,AIM_KEY_SG,0))
 	{
-		if(!strcmp(cws->szSetting,"Group")&&!strcmp(cws->szModule,"CList"))
+		if (conn.state!=1)
+			return 0;
+		char* protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam, 0);
+		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
 		{
-			if(cws->value.type != DBVT_DELETED)//user group changed or user just added so we are going to change their group
-			{	
-				add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY, cws->value.pszVal,0),cws->value.pszVal);
-			}
-			else//user's group deleted so we are adding the user to the 'Miranda Merged' server-side group
+			DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
+			if(!strcmp(cws->szSetting,"Group")&&!strcmp(cws->szModule,"CList"))
 			{
-				char* default_group=get_default_group();
-				add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY,default_group,0),default_group);
-				free(default_group);
+				if(wParam!=0)
+				{
+					HANDLE hContact=(HANDLE)wParam;
+					if(cws->value.type != DBVT_DELETED)//user group changed or user just added so we are going to change their group
+					{
+						char* blob=(char*)malloc(sizeof(HANDLE)+strlen(cws->value.pszVal)+1);
+						memcpy(blob,&hContact,sizeof(HANDLE));
+						memcpy(&blob[sizeof(HANDLE)],cws->value.pszVal,strlen(cws->value.pszVal)+1);
+						ForkThread((pThreadFunc)contact_setting_changed_thread,blob);
+					}
+					else//user's group deleted so we are adding the user to the out here server-side group
+					{
+						char* outer_group=get_outer_group();
+						char* blob=(char*)malloc(sizeof(HANDLE)+strlen(outer_group)+1);
+						memcpy(blob,&hContact,sizeof(HANDLE));
+						memcpy(&blob[sizeof(HANDLE)],outer_group,strlen(outer_group)+1);
+						ForkThread((pThreadFunc)contact_setting_changed_thread,blob);
+						free(outer_group);
+					}
+				}
 			}
-		}
-		else if(!strcmp(cws->szSetting,AIM_KEY_SN)&&!strcmp(cws->szModule,AIM_PROTOCOL_NAME))//user added so we are going to add them to a group
-		{
-			if(cws->value.type != DBVT_DELETED)
+			else if(!strcmp(cws->szSetting,AIM_KEY_SN)&&!strcmp(cws->szModule,AIM_PROTOCOL_NAME))//user added so we are going to add them to a group
 			{
-				char* default_group=get_default_group();
-				add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY,default_group,0),default_group);
-				free(default_group);
+				if(cws->value.type != DBVT_DELETED)
+				{
+					if(wParam!=0)
+					{
+						char* default_group=get_default_group();
+						char* blob=(char*)malloc(sizeof(HANDLE)+strlen(default_group)+1);
+						memcpy(&blob[sizeof(HANDLE)],default_group,strlen(default_group)+1);
+						HANDLE hContact=(HANDLE)wParam;
+						memcpy(blob,&hContact,sizeof(HANDLE));
+						ForkThread((pThreadFunc)contact_setting_changed_thread,blob);
+						free(default_group);
+					}
+				}
 			}
 		}
 	}
 	return 0;
-}
+}*/
 static int BasicSearch(WPARAM wParam,LPARAM lParam)
 {
 	if (conn.state!=1)
@@ -248,7 +288,8 @@ static int SendFile(WPARAM wParam,LPARAM lParam)
 		{
 			if(DBGetContactSettingByte(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT,-1)!=-1)
 			{
-				MessageBox( NULL, Translate("Cannot start a file transfer with this contact while another file transfer with the same contact is pending."),AIM_PROTOCOL_NAME,MB_OK);
+				char* msg=strdup("Cannot start a file transfer with this contact while another file transfer with the same contact is pending.");
+				ForkThread((pThreadFunc)message_box_thread,msg);
 				return 0;
 			}
 			char** files = (char**)ccs->lParam;
@@ -265,7 +306,8 @@ static int SendFile(WPARAM wParam,LPARAM lParam)
 				for(int file_amt=0;files[file_amt];file_amt++)
 					if(file_amt==1)
 					{
-						MessageBox( NULL, Translate("AimOSCAR allows only one file to be sent at a time."), AIM_PROTOCOL_NAME, MB_OK );
+						char* msg=strdup("AimOSCAR allows only one file to be sent at a time.");
+						ForkThread((pThreadFunc)message_box_thread,msg);
 						return 0;
 					}
 				char cookie[8];
@@ -406,6 +448,8 @@ void CreateServices()
 	CreateServiceFunction(service_name,LoadIcons);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_MESSAGE);
 	CreateServiceFunction(service_name,SendMsg);
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_MESSAGE"W");
+	CreateServiceFunction(service_name,SendMsgW);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSR_MESSAGE);
     CreateServiceFunction(service_name, RecvMsg);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_GETAWAYMSG);
@@ -460,6 +504,6 @@ void CreateServices()
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_SYSTEM_PRESHUTDOWN,PreShutdown);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,PreBuildContactMenu);
-	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
+	//conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_DB_CONTACT_DELETED,ContactDeleted);
 }

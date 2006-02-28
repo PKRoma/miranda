@@ -17,6 +17,7 @@
 #endif
 #include <windows.h>
 #include <ctype.h>
+#include <malloc.h>
 #include <newpluginapi.h>
 #include <statusmodes.h>
 #include <m_protocols.h>
@@ -36,8 +37,13 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 void offline_contacts();
 char *normalize_name(const char *s);
 void strip_html(char *dest, const char *src, size_t destsize);
+void strip_html(wchar_t *dest, const wchar_t *src);//wide char version
 void strip_special_chars(char *dest, const char *src, size_t destsize);
 void strip_carrots(char *dest, const char *src, size_t destsize);
+void strip_carrots(wchar_t *dest, const wchar_t *src);//wide char version
+void strip_linebreaks(char *dest, const char *src, size_t destsize);
+void strip_nullvalues(char *dest, const char *src,int src_size);
+int utf8_decode(const WCHAR *from, char *to,int inlen);
 void msg_ack_success(HANDLE hContact);
 void execute_cmd(char* type,char* arg);
 void create_group(char *group, unsigned short group_id);
@@ -46,8 +52,8 @@ unsigned short search_for_free_item_id(HANDLE hbuddy);
 unsigned short get_members_of_group(unsigned short group_id,char* list);
 void __cdecl basic_search_ack_success(void *snsearch);
 void delete_module(char* module, HANDLE hContact);
-void delete_empty_group(unsigned short group_id);
-void delete_all_empty_groups();
+//void delete_empty_group(unsigned short group_id);
+//void delete_all_empty_groups();
 void delete_all_ids();
 void write_away_message(HANDLE hContact,char* sn,char* msg);
 void write_profile(HANDLE hContact,char* sn,char* msg);
@@ -63,11 +69,18 @@ int cap_cmp(char* cap,char* cap2);
 int is_oscarj_ver_cap(char* cap);
 int is_aimoscar_ver_cap(char* cap);
 int is_kopete_ver_cap(char* cap);
+int is_qip_ver_cap(char* cap);
+int is_micq_ver_cap(char* cap);
+int is_im2_ver_cap(char* cap);
+int is_sim_ver_cap(char* cap);
 void add_AT_icons();
 void remove_AT_icons();
 void add_ES_icons();
 void remove_ES_icons();
 void load_extra_icons();
 void set_extra_icon(char* data);
-char* get_default_group();
+//char* get_default_group();
+//char* get_outer_group();
+void wcs_htons(wchar_t * ch);
+void __stdcall Utf8Decode( char* str, wchar_t** ucs2 );
 #endif

@@ -55,30 +55,38 @@ int snac_authorization_reply(unsigned short subgroup,char* buf,unsigned short fl
 				tlv_piece->data=htons(tlv_piece->data);
 				if(tlv_piece->data==0x0004)
 				{
-					MessageBox( NULL, "Invalid screenname or password.", AIM_PROTOCOL_NAME, MB_OK );
+					char* msg=strdup("Invalid screenname or password.");
+					ForkThread((pThreadFunc)message_box_thread,msg);
 					Netlib_CloseHandle(conn.hServerConn);
 					conn.hServerConn=0;
+					conn.state=0;
 					break;
 				}
 				else if(tlv_piece->data==0x0005)
 				{
-					MessageBox( NULL, "Mismatched screenname or password.", AIM_PROTOCOL_NAME, MB_OK );
+					char* msg=strdup("Mismatched screenname or password.");
+					ForkThread((pThreadFunc)message_box_thread,msg);
 					Netlib_CloseHandle(conn.hServerConn);
 					conn.hServerConn=0;
+					conn.state=0;
 					break;
 				}
 				else if(tlv_piece->data==0x0018)
 				{
-					MessageBox( NULL, "You are connecting too frequently. Try waiting 10 minutes to reconnect.", AIM_PROTOCOL_NAME, MB_OK );
+					char* msg=strdup("You are connecting too frequently. Try waiting 10 minutes to reconnect.");
+					ForkThread((pThreadFunc)message_box_thread,msg);
 					Netlib_CloseHandle(conn.hServerConn);
 					conn.hServerConn=0;
+					conn.state=0;
 					break;
 				}
 				else
 				{
-					MessageBox( NULL, "Unknown error occured.", AIM_PROTOCOL_NAME, MB_OK );
+					char* msg=strdup("Unknown error occured.");
+					ForkThread((pThreadFunc)message_box_thread,msg);
 					Netlib_CloseHandle(conn.hServerConn);
 					conn.hServerConn=0;
+					conn.state=0;
 					break;
 				}
 
@@ -113,8 +121,12 @@ void snac_rate_limitations(unsigned short subgroup)// family 0x0013
 }
 void snac_icbm_limitations(unsigned short subgroup)//family 0x0004
 {
-	if(!conn.buddy_list_received)
-		Sleep(5000);
+	for(int t=0;!conn.buddy_list_received;t++)
+	{
+		Sleep(1000);
+		if(t==3)
+			break;
+	}
 	if(subgroup==0x0005)
 	{
 		aim_set_icbm();
@@ -171,7 +183,7 @@ void snac_icbm_limitations(unsigned short subgroup)//family 0x0004
 		}
 		aim_client_ready();
 		add_contacts_to_groups();//woo
-		delete_all_empty_groups();
+		//delete_all_empty_groups();
 		aim_activate_list();
 		conn.state=1;
 	}
@@ -200,9 +212,7 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 		HANDLE hContact=find_contact(buddy);
 		int ESIconsDisabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 0);
 		if(!hContact)
-		{
 			hContact=add_contact(buddy);
-		}
 		for(;i<tlv_count;i++)
 		{
 			struct tlv_header* tlv=(struct tlv_header*)&buf[offset];
@@ -243,79 +253,82 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 					int bot = status&0x0400;
  					DBWriteContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_NK, buddy);
 					int ATIconsDisabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0);
-					if(admin_aol)
+					if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 					{
-						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_ADMIN);
-						if(!ATIconsDisabled)
+						if(admin_aol)
 						{
-							adv2_icon=1;
-							char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-							memcpy(data,&conn.admin_icon,sizeof(HANDLE));
-							memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-							unsigned short column_type=EXTRA_ICON_ADV2;
-							memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-							ForkThread((pThreadFunc)set_extra_icon,data);
+							DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_ADMIN);
+							if(!ATIconsDisabled)
+							{
+								adv2_icon=1;
+								char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+								memcpy(data,&conn.admin_icon,sizeof(HANDLE));
+								memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+								unsigned short column_type=EXTRA_ICON_ADV2;
+								memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+								ForkThread((pThreadFunc)set_extra_icon,data);
+							}
 						}
-					}
-					else if(aol)
-					{
-						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_AOL);
-						if(!ATIconsDisabled)
-						{		
-							adv2_icon=1;
-							char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-							memcpy(data,&conn.aol_icon,sizeof(HANDLE));
-							memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-							unsigned short column_type=EXTRA_ICON_ADV2;
-							memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-							ForkThread((pThreadFunc)set_extra_icon,data);
-					
-						}
-					}
-					else if(icq)
-					{
-						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_ICQ);
-						if(!ATIconsDisabled)
-						{		
-							adv2_icon=1;
-							char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-							memcpy(data,&conn.icq_icon,sizeof(HANDLE));
-							memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-							unsigned short column_type=EXTRA_ICON_ADV2;
-							memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-							ForkThread((pThreadFunc)set_extra_icon,data);
-						}
-					}
-					else if(unconfirmed)
-					{
-						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_UNCONFIRMED);
-						if(!ATIconsDisabled)
+						else if(aol)
 						{
-							adv2_icon=1;
-							char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-							memcpy(data,&conn.unconfirmed_icon,sizeof(HANDLE));
-							memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-							unsigned short column_type=EXTRA_ICON_ADV2;
-							memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-							ForkThread((pThreadFunc)set_extra_icon,data);
+							DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_AOL);
+							if(!ATIconsDisabled)
+							{		
+								adv2_icon=1;
+								char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+								memcpy(data,&conn.aol_icon,sizeof(HANDLE));
+								memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+								unsigned short column_type=EXTRA_ICON_ADV2;
+								memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+								ForkThread((pThreadFunc)set_extra_icon,data);
+						
+							}
 						}
-					}
-					else
-					{
-						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_CONFIRMED);
-						if(!ATIconsDisabled)
+						else if(icq)
 						{
-							adv2_icon=1;
-							char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-							memcpy(data,&conn.confirmed_icon,sizeof(HANDLE));
-							memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-							unsigned short column_type=EXTRA_ICON_ADV2;
-							memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-							ForkThread((pThreadFunc)set_extra_icon,data);
+							DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_ICQ);
+							if(!ATIconsDisabled)
+							{		
+								adv2_icon=1;
+								char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+								memcpy(data,&conn.icq_icon,sizeof(HANDLE));
+								memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+								unsigned short column_type=EXTRA_ICON_ADV2;
+								memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+								ForkThread((pThreadFunc)set_extra_icon,data);
+							}
 						}
+						else if(unconfirmed)
+						{
+							DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_UNCONFIRMED);
+							if(!ATIconsDisabled)
+							{
+								adv2_icon=1;
+								char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+								memcpy(data,&conn.unconfirmed_icon,sizeof(HANDLE));
+								memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+								unsigned short column_type=EXTRA_ICON_ADV2;
+								memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+								ForkThread((pThreadFunc)set_extra_icon,data);
+							}
+						}
+						else
+						{
+							DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_CONFIRMED);
+							if(!ATIconsDisabled)
+							{
+								adv2_icon=1;
+								char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+								memcpy(data,&conn.confirmed_icon,sizeof(HANDLE));
+								memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+								unsigned short column_type=EXTRA_ICON_ADV2;
+								memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+								ForkThread((pThreadFunc)set_extra_icon,data);
+							}
+						}
+						if(bot)
+							bot_user=1;
 					}
-					if(bot)
-						bot_user=1;
 					if(wireless)
 					{
 						DBDeleteContactSetting(hContact, "CList", AIM_KEY_SM);
@@ -370,9 +383,15 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,msg);
 					}
 					else if(is_kopete_ver_cap(&buf[offset+i]))
-					{
 						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Kopete");
-					}
+					else if(is_qip_ver_cap(&buf[offset+i]))
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"qip");
+					else if(is_micq_ver_cap(&buf[offset+i]))
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"mICQ");
+					else if(is_im2_ver_cap(&buf[offset+i]))
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"IM2");
+					else if(is_sim_ver_cap(&buf[offset+i]))
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"SIM");
 				}
 			}
 			else if(tlv_type==0x0019)//new caps
@@ -398,8 +417,10 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 					if(*cap==0xf008)
 						f008=1;
 					if(f002&f003&f004&f005)
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian Pro");
+					else if(f003&f004&f005)
 						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian");
-					if(f004&f005&f007&f008)
+					else if(f004&f005&f007&f008)
 						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"iChat");
 				}
 			}
@@ -427,55 +448,58 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 			}
 			offset+=(tlv_length);
 		}
-		if(bot_user)
+		if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 		{
-			DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ET, EXTENDED_STATUS_BOT);
-			if(!ESIconsDisabled)
+			if(bot_user)
 			{
-				adv1_icon=1;
-				char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-				memcpy(data,&conn.bot_icon,sizeof(HANDLE));
-				memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-				unsigned short column_type=EXTRA_ICON_ADV1;
-				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-				ForkThread((pThreadFunc)set_extra_icon,data);
+				DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ET, EXTENDED_STATUS_BOT);
+				if(!ESIconsDisabled)
+				{
+					adv1_icon=1;
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					memcpy(data,&conn.bot_icon,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV1;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
+				}
 			}
-		}
-		else if(hiptop_user)
-		{
-			DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
-			if(!ESIconsDisabled)
+			else if(hiptop_user)
 			{
-				adv1_icon=1;
-				char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-				memcpy(data,&conn.hiptop_icon,sizeof(HANDLE));
-				memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-				unsigned short column_type=EXTRA_ICON_ADV1;
-				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-				ForkThread((pThreadFunc)set_extra_icon,data);
+				DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
+				if(!ESIconsDisabled)
+				{
+					adv1_icon=1;
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					memcpy(data,&conn.hiptop_icon,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV1;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
+				}
 			}
-		}
-		if(caps_included)
-		{
-			if(!adv1_icon)
+			if(caps_included)
 			{
-				char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-				HANDLE handle=(HANDLE)-1;
-				memcpy(data,&handle,sizeof(HANDLE));
-				memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-				unsigned short column_type=EXTRA_ICON_ADV1;
-				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-				ForkThread((pThreadFunc)set_extra_icon,data);
-			}
-			if(!adv2_icon)
-			{
-				char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-				HANDLE handle=(HANDLE)-1;
-				memcpy(data,&handle,sizeof(HANDLE));
-				memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-				unsigned short column_type=EXTRA_ICON_ADV2;
-				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-				ForkThread((pThreadFunc)set_extra_icon,data);
+				if(!adv1_icon)
+				{
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					HANDLE handle=(HANDLE)-1;
+					memcpy(data,&handle,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV1;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
+				}
+				if(!adv2_icon)
+				{
+					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+					HANDLE handle=(HANDLE)-1;
+					memcpy(data,&handle,sizeof(HANDLE));
+					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+					unsigned short column_type=EXTRA_ICON_ADV2;
+					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+					ForkThread((pThreadFunc)set_extra_icon,data);
+				}
 			}
 		}
 	}
@@ -525,7 +549,7 @@ void snac_buddylist_error(unsigned short subgroup, char* buf)//family 0x0003
 		int offset=0;
 		unsigned short error_code=buf[SNAC_SIZE];
 		error_code=htons(error_code);
-		get_error(error_code);
+		ForkThread((pThreadFunc)get_error,&error_code);
 	}
 }
 void snac_contact_list(unsigned short subgroup, char* buf, int flap_length)//family 0x0013
@@ -633,7 +657,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 			unsigned short tlv_length=htons(tlv->length);
 			unsigned short tlv_type=htons(tlv->type);
 			offset+=TLV_HEADER_SIZE;
-			if(tlv_type==0x0002)//user status
+			if(tlv_type==0x0002)//msg
 			{
 				char msg[MSG_LEN*2];
 				unsigned short msg_length;
@@ -642,7 +666,11 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 				ZeroMemory(msg,sizeof(msg));
 				tlv_part=(struct tlv_part*)&buf[offset+TLV_PART_SIZE*3+caps_length];//skip MORE useless data
 				msg_length=htons(tlv_part->data);
-				memcpy(msg,&buf[offset+TLV_PART_SIZE*6+caps_length],msg_length-TLV_PART_SIZE*2);
+				msg_length-=4;
+				tlv_part=(struct tlv_part*)&buf[offset+TLV_PART_SIZE*4+caps_length];//char encoding
+				unsigned short encoding;
+				encoding=htons(tlv_part->data);
+				memcpy(msg,&buf[offset+TLV_PART_SIZE*6+caps_length],msg_length);
 				hContact=find_contact(sn);
 				if(!hContact)
 				{
@@ -651,9 +679,31 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 				if(hContact)
 				{
 					ccs.hContact = hContact;
-					msg_buf=(char*)malloc(strlen(msg) + 20);
-					strip_html(msg_buf,msg,strlen(msg)+1);
-				}  
+					if(encoding==0x0002)
+					{
+						wchar_t* wch=(wchar_t*)malloc(msg_length+1);
+						memcpy(wch,msg,msg_length);	
+						wch[msg_length/2]=0x00;
+						wcs_htons(wch);
+						wchar_t* stripped_wch=(wchar_t*)malloc(msg_length+1);
+						strip_html(stripped_wch,wch);
+						//free(wch);
+						char* mbch=(char*)malloc(msg_length/2+1);
+						WideCharToMultiByte( CP_ACP, 0, stripped_wch, -1,mbch, msg_length/2+1, NULL, NULL );
+						msg_buf=(char*)malloc((msg_length/2)+(msg_length)+2+1);
+						char* p=msg_buf;
+						memcpy( p, mbch, strlen(mbch)+1);
+						//free(mbch);
+						p+=(strlen(msg_buf)+1);
+						memcpy( p,stripped_wch, sizeof( wchar_t )*wcslen(stripped_wch)+2);
+						//free(stripped_wch);
+					}
+					else
+					{
+						msg_buf=(char*)malloc(strlen(msg) + 1);
+						strip_html(msg_buf,msg,strlen(msg) +1);
+					}
+				}
 			}
 			if(tlv_type==0x0004)//auto response flag
 			{
@@ -746,11 +796,11 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 			{
 				char* temp=(char*)malloc(strlen(msg_buf) + 20);
 				strcpy(temp,msg_buf);
-				mir_snprintf(msg_buf,strlen(msg_buf)+20,"%s %s","[Auto-Response]:",temp);
+				mir_snprintf(msg_buf,strlen(msg_buf)+20,"%s %s",Translate("[Auto-Response]:"),temp);
 				free(temp);
 			}
 			//Okay we are setting up the structure to give the message back to miranda's core
-			pre.flags = 0;
+			pre.flags = PREF_UNICODE;
 			pre.timestamp = time(NULL);
 			pre.szMessage = msg_buf;
 			pre.lParam = 0;
@@ -760,14 +810,37 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 			ccs.wParam = 0;
 			ccs.lParam = (LPARAM) & pre;
 			CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
-			free(msg_buf);
+			if(conn.status==ID_STATUS_AWAY)
+			{
+				unsigned long msg_time=DBGetContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_LM,0);
+				unsigned long away_time=DBGetContactSettingDword(NULL,AIM_PROTOCOL_NAME,AIM_KEY_LA,0);
+				if(away_time>msg_time)
+				{
+					char* temp=(char*)malloc(strlen(conn.szModeMsg)+20);
+					mir_snprintf(temp,strlen(conn.szModeMsg)+20,"%s %s",Translate("[Auto-Response]:"),conn.szModeMsg);
+					DBEVENTINFO dbei;
+					ZeroMemory(&dbei, sizeof(dbei));
+					dbei.cbSize = sizeof(dbei);
+					dbei.szModule = AIM_PROTOCOL_NAME;
+					dbei.timestamp = time(NULL);
+					dbei.flags = DBEF_SENT;
+					dbei.eventType = EVENTTYPE_MESSAGE;
+					dbei.cbBlob = strlen(temp) + 1;
+					dbei.pBlob = (PBYTE) temp;
+					CallService(MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
+					aim_send_plaintext_message(sn,conn.szModeMsg,1);
+					free(temp);
+				}
+				DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_LM, time(NULL));
+			}
 			//okay we are done
 		}
 		else if(recv_file_type==0&&request_num==1)//buddy wants to send us a file
 		{
 			if(DBGetContactSettingByte(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT,-1)!=-1)
 			{
-				MessageBox( NULL, Translate("Cannot start a file transfer with this contact while another file transfer with the same contact is pending."),AIM_PROTOCOL_NAME,MB_OK);
+				char* msg=strdup("Cannot start a file transfer with this contact while another file transfer with the same contact is pending.");
+				ForkThread((pThreadFunc)message_box_thread,msg);
 				return;
 			}
 			if(force_proxy)
@@ -902,12 +975,11 @@ void snac_received_info(unsigned short subgroup, char* buf, int flap_length)//fa
 			if(conn.requesting_HTML_ModeMsg)
 			{
 				char URL[256];
-				unsigned short CWD_length,protocol_length,sn_length;
 				ZeroMemory(URL,sizeof(URL));
-				CWD_length=strlen(CWD);
-				protocol_length=strlen(AIM_PROTOCOL_NAME);
+				unsigned short CWD_length=strlen(CWD);
+				unsigned short protocol_length=strlen(AIM_PROTOCOL_NAME);
 				char* norm_sn=normalize_name(sn);
-				sn_length=strlen(norm_sn);
+				unsigned short sn_length=strlen(norm_sn);
 				memcpy(URL,CWD,CWD_length);
 				memcpy(&URL[CWD_length],"\\",1);
 				memcpy(&URL[1+CWD_length],AIM_PROTOCOL_NAME,protocol_length);
