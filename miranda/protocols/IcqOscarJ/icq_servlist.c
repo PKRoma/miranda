@@ -1848,6 +1848,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
         addServContact((HANDLE)wParam, pszNick, pszGroup);
 
         SAFE_FREE(&pszNick);
+        SAFE_FREE(&pszGroup);
       }
     }
 
