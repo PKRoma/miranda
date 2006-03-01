@@ -724,6 +724,21 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 	odp.flags       = ODPF_BOLDGROUPS;
 	odp.pfnDlgProc  = OptionsDlgProc;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
+
+	if ( ServiceExists( MS_POPUP_ADDPOPUP )) {
+		memset( &odp, 0, sizeof( odp ));
+		odp.cbSize			= sizeof( odp );
+		odp.position		= 100000000;
+		odp.hInstance		= hInst;
+		odp.pszTemplate	= MAKEINTRESOURCEA( IDD_HOTMAIL_OPT_POPUP );
+		odp.pszTitle		= msnProtocolName;
+		odp.pszGroup		= "Popups";
+		odp.groupPosition	= 910000000;
+		odp.flags			= ODPF_BOLDGROUPS;
+		odp.pfnDlgProc		= DlgProcHotmailPopUpOpts;
+		MSN_CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+	}
+
 	return 0;
 }
 

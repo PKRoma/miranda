@@ -77,7 +77,6 @@ char* msnProtChallenge = NULL;
 char* msnProductID  = NULL;
 
 char* mailsoundname;
-char* nudgesoundname;
 char* ModuleName;
 
 PLUGININFO pluginInfo =
@@ -300,7 +299,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown );
 
 	char nudge[250];
-	sprintf(nudge,"%s\\Nudge",protocolname);
+	sprintf(nudge,"%s/Nudge",protocolname);
 	hMSNNudge = CreateHookableEvent(nudge);
 	
 	MSN_InitThreads();
@@ -324,16 +323,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	strcat( mailsoundtemp, ": " );
 	strcat( mailsoundtemp,  MSN_Translate( "Hotmail" ));
 	mailsoundname = strdup( mailsoundtemp );
-
 	SkinAddNewSound( mailsoundtemp, mailsoundtemp, "hotmail.wav" );
-	
-	char nudgesoundtemp[ 64 ];
-	strcpy( nudgesoundtemp, protocolname );
-	strcat( nudgesoundtemp, ": " );
-	strcat( nudgesoundtemp,  MSN_Translate( "Nudge" ));
-	nudgesoundname = strdup( nudgesoundtemp );
-
-	SkinAddNewSound( nudgesoundname, nudgesoundtemp, "nudge.wav" );
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
 	msnLoggedIn = false;
@@ -364,6 +354,9 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( hInitChat )
 		DestroyHookableEvent( hInitChat );
 
+	if ( hMSNNudge )
+		DestroyHookableEvent( hMSNNudge );
+
 	UninitSsl();
 	MSN_FreeGroups();
 	Threads_Uninit();
@@ -375,7 +368,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	UnloadMsnServices();
 
 	free( mailsoundname );
-	free( nudgesoundname );
 	free( msnProtocolName );
 	free( ModuleName );
 

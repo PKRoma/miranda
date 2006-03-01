@@ -590,7 +590,6 @@ extern	char*       msnProductID;
 
 extern	char*			ModuleName;
 extern	char*	      mailsoundname;
-extern	char*	      nudgesoundname;
 extern	HANDLE      msnGetInfoContact;
 
 extern	char*       sid;
