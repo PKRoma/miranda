@@ -50,13 +50,13 @@ extern "C" TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, 
  * had no other choice as srmm never had an api for this...
  */
 
-static WCHAR *w_bbcodes_begin[] = { L"[b]", L"[i]", L"[u]", L"[color=" };
-static WCHAR *w_bbcodes_end[] = { L"[/b]", L"[/i]", L"[/u]", L"[/color]" };
+static WCHAR *w_bbcodes_begin[] = { L"[b]", L"[i]", L"[u]", L"[s]", L"[color=" };
+static WCHAR *w_bbcodes_end[] = { L"[/b]", L"[/i]", L"[/u]", L"[/s]", L"[/color]" };
 
-static WCHAR *formatting_strings_begin[] = { L"b1 ", L"i1 ", L"u1 ", L"c1 " };
-static WCHAR *formatting_strings_end[] = { L"b0 ", L"i0 ", L"u0 ", L"c0 " };
+static WCHAR *formatting_strings_begin[] = { L"b1 ", L"i1 ", L"u1 ", L"s1 ", L"c1 " };
+static WCHAR *formatting_strings_end[] = { L"b0 ", L"i0 ", L"u0 ", L"s0 ", L"c0 " };
 
-#define NR_CODES 4
+#define NR_CODES 5
 /*
  * this translates formatting tags into rtf sequences...
  * flags: loword = words only for simple  * /_ formatting
@@ -92,7 +92,7 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
         beginmark = tempmark;
         endindex = i;
         endmark = message.find(w_bbcodes_end[i], beginmark);
-        if(endindex == 3) {                                  // color
+        if(endindex == 4) {                                  // color
             int closing = message.find_first_of(L"]", beginmark);
             if(closing == message.npos) {                       // must be an invalid [color=] tag w/o closing bracket
                 message[beginmark] = ' ';
@@ -118,8 +118,9 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
                     }
                     ii++;
                 }
-                if(rtf_ctable[ii].szName == NULL && endmark != message.npos) {
-                    message.erase(endmark, 8);
+				if(rtf_ctable[ii].szName == NULL) {
+                    if(endmark != message.npos)
+						message.erase(endmark, 8);
                     message.erase(beginmark, (closing - beginmark) + 1);
                 }
                 continue;
@@ -183,13 +184,13 @@ nosimpletags:
 #else   // unicode
 
 /* this is the ansi version */
-static char *bbcodes_begin[] = { "[b]", "[i]", "[u]", "[color=" };
-static char *bbcodes_end[] = { "[/b]", "[/i]", "[/u]", "[/color]" };
+static char *bbcodes_begin[] = { "[b]", "[i]", "[u]", "[s]", "[color=" };
+static char *bbcodes_end[] = { "[/b]", "[/i]", "[/u]", "[/s]", "[/color]" };
 
-#define NR_CODES 4
+#define NR_CODES 5
 
-static char *formatting_strings_begin[] = { "b1 ", "i1 ", "u1 ", "c1 " };
-static char *formatting_strings_end[] = { "b0 ", "i0 ", "u0 ", "c0 " };
+static char *formatting_strings_begin[] = { "b1 ", "i1 ", "u1 ", "s1 ", "c1 " };
+static char *formatting_strings_end[] = { "b0 ", "i0 ", "u0 ", "s0 ", "c0 " };
 
 /*
  * this translates formatting tags into rtf sequences...
@@ -224,7 +225,7 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
         beginmark = tempmark;
         endindex = i;
         endmark = message.find(bbcodes_end[i], beginmark);
-        if(endindex == 3) {                                  // color
+        if(endindex == 4) {                                  // color
             int closing = message.find_first_of("]", beginmark);
             if(closing == message.npos) {
                 message[beginmark] = ' ';
@@ -250,8 +251,9 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
                     }
                     ii++;
                 }
-                if(rtf_ctable[ii].szName == NULL && endmark != message.npos) {
-                    message.erase(endmark, 8);
+				if(rtf_ctable[ii].szName == NULL) {
+					if(endmark != message.npos)
+						message.erase(endmark, 8);
                     message.erase(beginmark, (closing - beginmark) + 1);
                 }
                 continue;
@@ -319,7 +321,7 @@ nosimpletags:
 // free() the return value
 //
 
-#if defined(_UNICODE)
+#if defined(_UNICODE) || defined(UNICODE)
 
 static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x"), _T("%m")};
 #define NR_VARS 7
@@ -327,13 +329,14 @@ static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("
 extern "C" int MY_DBGetContactSettingTString(HANDLE hContact, char *szModule, char *szSetting, DBVARIANT *dbv);
 extern "C" int MY_DBFreeVariant(DBVARIANT *dbv);
 
-extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus)
+extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus)
 {
     TCHAR *szResult = 0;
     int length = 0;
     int i, tempmark = 0;
     TCHAR szTemp[512];
 
+	//_DebugPopup(hContact, "_________________ xst: %d (%d)", xStatus, wStatus);
     std::wstring title(szFormat);
 
     while(TRUE) {
@@ -346,10 +349,8 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 
         switch(title[tempmark + 1]) {
             case 'n': {
-                if(szNickname) {
-                    //MultiByteToWideChar(codePage, 0, szNickname, -1, szTemp, 500);
+                if(szNickname)
                     title.insert(tempmark + 2, szNickname);
-                }
                 title.erase(tempmark, 2);
                 break;
             }
@@ -385,7 +386,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
             case 'x': {
                 char *szFinalStatus = NULL;
 
-                if(xStatus > 0 && xStatus <= 24) {
+                if(wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
                     DBVARIANT dbv = {0};
 
                     if(!MY_DBGetContactSettingTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
@@ -406,7 +407,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
             case 'm': {
                 char *szFinalStatus = NULL;
 
-                if(xStatus > 0 && xStatus <= 24) {
+                if(wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
                     DBVARIANT dbv = {0};
 
                     if(!MY_DBGetContactSettingTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
@@ -464,7 +465,7 @@ extern "C" const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNi
 static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x"), _T("%m")};
 #define NR_VARS 7
 
-extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus)
+extern "C" char *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus)
 {
     TCHAR *szResult = 0;
     int length = 0;
@@ -511,7 +512,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                 break;
             }
             case 'x': {
-                if(xStatus > 0 && xStatus <= 32)
+                if(wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31)
                     title.insert(tempmark + 2, xStatusDescr[xStatus - 1]);
                 title.erase(tempmark, 2);
                 break;
@@ -520,7 +521,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                 char *szFinalStatus = NULL;
                 TCHAR *result = NULL;
 
-                if(xStatus > 0 && xStatus <= 32) {
+                if(wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 32) {
                     if((result = MY_DBGetContactSettingString(hContact, (char *)szProto, "XStatusName")) != NULL) {
                         szFinalStatus = result;
                     }

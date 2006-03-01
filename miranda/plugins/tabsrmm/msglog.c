@@ -320,6 +320,11 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
                             d += (begin ? 4 : 5);
                             line += 3;
                             continue;
+                        case 's':
+                            CopyMemory(d, begin ? "\\strike " : "\\strike0 ", begin ? 8 : 9);
+                            d += (begin ? 8 : 9);
+                            line += 3;
+                            continue;
                         case 'c':
                             begin = (code == 'x');
                             CopyMemory(d, "\\cf", 3);
@@ -416,6 +421,13 @@ static int AppendToBufferWithRTF(int mode, char **buffer, int *cbBufferEnd, int 
                             MoveMemory(*buffer + i + 2, *buffer + i + 1, *cbBufferEnd - i);
                             CopyMemory(*buffer + i, begin ? "\\ul1 " : "\\ul0 ", 5);
                             *cbBufferEnd += 1;
+                            continue;
+						case 's':
+                            *cbBufferAlloced += 20;
+							*buffer = (char *)realloc(*buffer, *cbBufferAlloced);
+							MoveMemory(*buffer + i + 6, *buffer + i + 1, (*cbBufferEnd - i) + 1);
+							CopyMemory(*buffer + i, begin ? "\\strike1 " : "\\strike0 ", begin ? 9 : 9);
+                            *cbBufferEnd += 5;
                             continue;
                         case 'c':
                             begin = (code == 'x');

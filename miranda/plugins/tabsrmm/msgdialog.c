@@ -1927,8 +1927,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     if (dat->iTabID  >= 0)
                         TabCtrl_SetItem(hwndTab, dat->iTabID, &item);
-                    if (dat->pContainer->hwndActive == hwndDlg && (dat->iOldHash != iHash || dat->wOldStatus != dat->wStatus))
+					if (dat->pContainer->hwndActive == hwndDlg && (dat->iOldHash != iHash || dat->wOldStatus != dat->wStatus || dat->xStatus != oldXStatus))
                         SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+
                     dat->iOldHash = iHash;
                     dat->wOldStatus = dat->wStatus;
                     
