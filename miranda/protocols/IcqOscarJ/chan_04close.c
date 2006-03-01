@@ -291,6 +291,10 @@ static void handleSignonError(WORD wError)
     icq_LogMessage(LOG_FATAL, "Connection failed.\nYou were rejected by the server for an unknown reason.\nThis can happen if the UIN is already connected.");
     break;
 
+  case 0x0C: // Invalid database fields, MD5 login not supported
+    icq_LogMessage(LOG_FATAL, "Connection failed.\nSecure (MD5) login is not supported on this account.");
+    break;
+
   case 0:
     break;
 
@@ -298,7 +302,6 @@ static void handleSignonError(WORD wError)
   case 0x09: // Expired account
   case 0x0A: // No access to database
   case 0x0B: // No access to resolver
-  case 0x0C: // Invalid database fields, MD5 login not supported
   case 0x0D: // Bad database status
   case 0x0E: // Bad resolver status
   case 0x11: // Suspended account
