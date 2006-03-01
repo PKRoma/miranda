@@ -4462,8 +4462,9 @@ void yahoo_set_stealth(int id, const char *buddy, int add)
 	yd = yid->yd;
 
 	pkt = yahoo_packet_new(YAHOO_SERVICE_STEALTH_PERM, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	yahoo_packet_hash(pkt, 1, yd->user); 
 	yahoo_packet_hash(pkt, 31, add ? "1" : "2"); /*visibility? */
-	yahoo_packet_hash(pkt, 13, "2");
+	yahoo_packet_hash(pkt, 13, "2");	// function/service
 	yahoo_packet_hash(pkt, 7, buddy);
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
