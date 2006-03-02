@@ -775,8 +775,19 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
                 return TRUE;
             }
         case WM_LBUTTONDOWN:
-            SetCapture(hwnd);
-            return 0;
+			{
+				if(hwnd == GetDlgItem(GetParent(hwnd), IDC_SPLITTER)) {
+					RECT rc;
+
+					struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
+					if(dat) {
+						GetClientRect(hwnd, &rc);
+						dat->savedSplitter = rc.right > rc.bottom ? (short) HIWORD(GetMessagePos()) + rc.bottom / 2 : (short) LOWORD(GetMessagePos()) + rc.right / 2;
+					}
+				}
+				SetCapture(hwnd);
+				return 0;
+			}
         case WM_MOUSEMOVE:
             if (GetCapture() == hwnd) {
                 RECT rc;
@@ -810,6 +821,43 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 				if(dat)
 					dat->panelWidth = -1;
 				SendMessage(GetParent(hwnd), WM_SIZE, 0, 0);
+			}
+			else if(hwnd == GetDlgItem(GetParent(hwnd), IDC_SPLITTER)) {
+				struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
+				if(dat) {
+					RECT rc;
+					POINT pt;
+					int selection;
+					HMENU hMenu = GetSubMenu(dat->pContainer->hMenuContext, 12);
+					LONG messagePos = GetMessagePos();
+
+					GetClientRect(hwnd, &rc);
+					GetCursorPos(&pt);
+					selection = TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, GetParent(hwnd), NULL);
+					switch(selection) {
+						case ID_SPLITTERCONTEXT_SAVEFORTHISCONTACTONLY:
+						{
+							HWND hwndParent = GetParent(hwnd);
+
+							dat->dwEventIsShown |= MWF_SHOW_SPLITTEROVERRIDE;
+                            DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 1);
+							SaveSplitter(hwnd, dat);
+							break;
+						}
+						case ID_SPLITTERCONTEXT_SETPOSITIONFORTHISSESSION:
+							break;
+						case ID_SPLITTERCONTEXT_SAVEGLOBALFORALLSESSIONS:
+                            dat->dwEventIsShown &= ~(MWF_SHOW_SPLITTEROVERRIDE);
+	                        DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0);
+							WindowList_Broadcast(hMessageWindowList, DM_SPLITTERMOVEDGLOBAL, 
+												 rc.right > rc.bottom ? (short) HIWORD(messagePos) + rc.bottom / 2 : (short) LOWORD(messagePos) + rc.right / 2, (LPARAM) hwnd);
+							break;
+						default:
+			                SendMessage(GetParent(hwnd), DM_SPLITTERMOVED, dat->savedSplitter, (LPARAM) hwnd);
+							SendMessage(GetParent(hwnd), DM_SCROLLLOGTOBOTTOM, 0, 1);
+							break;
+					}
+				}
 			}
             return 0;
     }
@@ -2255,6 +2303,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 break;
             }
+		case DM_SPLITTERMOVEDGLOBAL:
+			if(!(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)) {
+				SendMessage(hwndDlg, DM_SAVESIZE, 0, 0);
+				SendMessage(hwndDlg, DM_SPLITTERMOVED, wParam, (LPARAM)GetDlgItem(hwndDlg, IDC_SPLITTER));
+				SaveSplitter(hwndDlg, dat);
+			}
+			return 0;
         case DM_SPLITTERMOVED:
             {
                 POINT pt;
