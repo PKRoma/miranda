@@ -59,7 +59,7 @@ DWORD WINAPI DoMultiSend(LPVOID param)
     int i;
     
     for(i = 0; i < sendJobs[iIndex].sendCount; i++) {
-        sendJobs[iIndex].hSendId[i] = (HANDLE) CallContactService(sendJobs[iIndex].hContact[i], MsgServiceName(sendJobs[iIndex].hContact[i], dat, sendJobs[iIndex].dwFlags), dat->sendMode & SMODE_FORCEANSI ? 0 : sendJobs[iIndex].dwFlags, (LPARAM) sendJobs[iIndex].sendBuffer);
+		sendJobs[iIndex].hSendId[i] = (HANDLE) CallContactService(sendJobs[iIndex].hContact[i], MsgServiceName(sendJobs[iIndex].hContact[i], dat, sendJobs[iIndex].dwFlags), dat->sendMode & SMODE_FORCEANSI ? 0 : sendJobs[iIndex].dwFlags, (LPARAM) sendJobs[iIndex].sendBuffer);
         SetTimer(sendJobs[iIndex].hwndOwner, TIMERID_MULTISEND_BASE + (iIndex * SENDJOBS_MAX_SENDS) + i, myGlobals.m_MsgTimeout, NULL);
         Sleep((50 * i) + dwDelay + dwDelayAdd);
         if(i > 2)
@@ -192,7 +192,12 @@ int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
         if (dat->hContact == NULL)
             return 0;  //never happens
         
-        sendJobs[iEntry].sendCount = 1;
+		if(dat->sendMode & SMODE_FORCEANSI && DBGetContactSettingByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 1))
+			DBWriteContactSettingByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 0);
+		else if(!(dat->sendMode & SMODE_FORCEANSI) && !DBGetContactSettingByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 0))
+			DBWriteContactSettingByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 1);
+
+		sendJobs[iEntry].sendCount = 1;
         sendJobs[iEntry].hContact[0] = dat->hContact;
         sendJobs[iEntry].hSendId[0] = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact, dat, sendJobs[iEntry].dwFlags), dat->sendMode & SMODE_FORCEANSI ? 0 : sendJobs[iEntry].dwFlags, (LPARAM) sendJobs[iEntry].sendBuffer);
         sendJobs[iEntry].hOwner = dat->hContact;

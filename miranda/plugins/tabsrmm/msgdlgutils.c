@@ -75,6 +75,7 @@ struct RTFColorTable rtf_ctable[] = {
     _T("green"), RGB(0, 255, 0), 0, ID_FONT_GREEN,
     _T("magenta"), RGB(255, 0, 255), 0, ID_FONT_MAGENTA,
     _T("yellow"), RGB(255, 255, 0), 0, ID_FONT_YELLOW,
+	_T("cyan"), RGB(0, 255, 255), 0, ID_FONT_CYAN,
     _T("black"), 0, 0, ID_FONT_BLACK,
     _T("white"), RGB(255, 255, 255), 0, ID_FONT_WHITE,
     NULL, 0, 0, 0
@@ -1801,6 +1802,12 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             case ID_FONT_DEFAULTCOLOR:
                 clr = GetSysColor(COLOR_MENU);
                 break;
+            case ID_FONT_CYAN:
+                clr = RGB(0, 255, 255);
+				break;
+            case ID_FONT_BLACK:
+                clr = RGB(0, 0, 0);
+				break;
             default:
                 clr = 0;
         }

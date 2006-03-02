@@ -2315,7 +2315,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 				GetWindowRect(hwndDlg, &rcWin);
 				GetClientRect(hwndDlg, &rcClient);
-				newMessagePos = rcWin.bottom - (short)wParam;
+				newMessagePos = (short)rcWin.bottom - (short)wParam;
 
 
 				SendMessage(hwndDlg, DM_SAVESIZE, 0, 0);
