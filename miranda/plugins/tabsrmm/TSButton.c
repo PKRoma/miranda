@@ -178,8 +178,11 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 					DrawAlpha(hdcMem, &rc1, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 							  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
 				}
+				else 
+					goto flat_themed;
 			}
 			else {
+flat_themed:
 				if (ctl->hThemeToolbar && ctl->bThemed) {
 					RECT rc = rcClient;
 					int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
@@ -223,31 +226,63 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			}
 		}
 		else {
-			// Draw background/border
-			if (ctl->hThemeButton && ctl->bThemed) {
-                int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
-                if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
-                    MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
-                }
-                MyDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
+			if(ctl->pContainer && ctl->pContainer->bSkinned) {
+				StatusItems_t *item;
+				if(ctl->bTitleButton)
+					item = &StatusItems[ctl->stateId == PBS_NORMAL ? ID_EXTBKTITLEBUTTON : (ctl->stateId == PBS_HOT ? ID_EXTBKTITLEBUTTONMOUSEOVER : ID_EXTBKTITLEBUTTONPRESSED)];
+				else
+					item = &StatusItems[(ctl->stateId == PBS_NORMAL || ctl->stateId == PBS_DISABLED) ? ID_EXTBKBUTTONSNPRESSED : (ctl->stateId == PBS_HOT ? ID_EXTBKBUTTONSMOUSEOVER : ID_EXTBKBUTTONSPRESSED)];
+				SkinDrawBG(ctl->hwnd, ctl->pContainer->hwnd,  ctl->pContainer, &rcClient, hdcMem);
+				if(!item->IGNORED) {
+					RECT rc1 = rcClient;
+					rc1.left += item->MARGIN_LEFT; rc1.right -= item->MARGIN_RIGHT;
+					rc1.top += item->MARGIN_TOP; rc1.bottom -= item->MARGIN_BOTTOM;
+					DrawAlpha(hdcMem, &rc1, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+							  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+				}
+				else goto nonflat_themed;
 			}
 			else {
-                RECT rcFill = rcClient;
-                UINT uType = ctl->stateId == PBS_PRESSED ? EDGE_ETCHED : EDGE_BUMP;
-				//UINT uState = DFCS_BUTTONPUSH|((ctl->stateId==PBS_HOT)?DFCS_HOT:0)|((ctl->stateId == PBS_PRESSED)?DFCS_PUSHED:0);
-				//if (ctl->defbutton&&ctl->stateId==PBS_NORMAL) uState |= DLGC_DEFPUSHBUTTON;
-				//DrawFrameControl(hdcMem, &rcClient, DFC_BUTTON, uState);
-                DrawEdge(hdcMem, &rcClient, uType, BF_RECT | BF_SOFT | (ctl->stateId == PBS_HOT ? BF_MONO : 0));
-                InflateRect(&rcFill, -1, -1);
-                FillRect(hdcMem, &rcFill, GetSysColorBrush(COLOR_3DFACE));
-			}
+nonflat_themed:
+				if (ctl->hThemeButton && ctl->bThemed) {
+					int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
+					if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
+						MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
+					}
+					MyDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
+				}
+				else {
+					RECT rcFill = rcClient;
+					UINT uType = ctl->stateId == PBS_PRESSED ? EDGE_ETCHED : EDGE_BUMP;
+					//UINT uState = DFCS_BUTTONPUSH|((ctl->stateId==PBS_HOT)?DFCS_HOT:0)|((ctl->stateId == PBS_PRESSED)?DFCS_PUSHED:0);
+					//if (ctl->defbutton&&ctl->stateId==PBS_NORMAL) uState |= DLGC_DEFPUSHBUTTON;
+					//DrawFrameControl(hdcMem, &rcClient, DFC_BUTTON, uState);
+					DrawEdge(hdcMem, &rcClient, uType, BF_RECT | BF_SOFT | (ctl->stateId == PBS_HOT ? BF_MONO : 0));
+					InflateRect(&rcFill, -1, -1);
+					FillRect(hdcMem, &rcFill, GetSysColorBrush(COLOR_3DFACE));
+				}
 
-			// Draw focus rectangle if button has focus
-			if (ctl->focus) {
-				RECT focusRect = rcClient;
-				InflateRect(&focusRect, -3, -3);
-				DrawFocusRect(hdcMem, &focusRect);
+				// Draw focus rectangle if button has focus
+				if (ctl->focus) {
+					RECT focusRect = rcClient;
+					InflateRect(&focusRect, -3, -3);
+					DrawFocusRect(hdcMem, &focusRect);
+				}
 			}
+		}
+
+		if(ctl->arrow) {
+			RECT rc;
+
+			rc.left = rcClient.right - 12;
+			rc.right = rc.left;
+			rc.top = rcClient.top + 2;
+			rc.bottom = rcClient.bottom - 2;
+
+			DrawIconEx(hdcMem, rcClient.right - 13, (rcClient.bottom-rcClient.top)/2 - (myGlobals.m_smcyicon / 2),
+					   myGlobals.g_buttonBarIcons[16], 16, 16, 0, 0, DI_NORMAL);
+			if(!ctl->flatBtn || (ctl->pContainer && ctl->pContainer->bSkinned))
+				DrawEdge(hdcMem, &rc, EDGE_BUMP, BF_LEFT);
 		}
 
 		// If we have an icon or a bitmap, ignore text and only draw the image on the button
@@ -255,12 +290,16 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			int ix = (rcClient.right-rcClient.left)/2 - (myGlobals.m_smcxicon / 2);
 			int iy = (rcClient.bottom-rcClient.top)/2 - (myGlobals.m_smcyicon / 2);
             HICON hIconNew = ctl->hIconPrivate != 0 ? ctl->hIconPrivate : ctl->hIcon;
+
+			if(ctl->arrow)
+				ix -= 4;
+
             if(ctl->dimmed && myGlobals.m_IdleDetect) {
 				ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIconNew);
 				ImageList_DrawEx(myGlobals.g_hImageList, 0, hdcMem, ix, iy, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
             }
             else
-                DrawState(hdcMem,NULL,NULL,(LPARAM)hIconNew,0,ix,iy,myGlobals.m_smcxicon,myGlobals.m_smcyicon,IsWindowEnabled(ctl->hwnd) ? DST_ICON | DSS_NORMAL : DST_ICON | DSS_DISABLED);
+                DrawState(hdcMem,NULL,NULL,(LPARAM)hIconNew,0,ix,iy,myGlobals.m_smcxicon,myGlobals.m_smcyicon,ctl->stateId != PBS_DISABLED ? DST_ICON | DSS_NORMAL : DST_ICON | DSS_DISABLED);
 		}
 		else if (ctl->hBitmap) {
 			BITMAP bminfo;
@@ -269,6 +308,10 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			GetObject(ctl->hBitmap, sizeof(bminfo), &bminfo);
 			ix = (rcClient.right-rcClient.left)/2 - (bminfo.bmWidth/2);
 			iy = (rcClient.bottom-rcClient.top)/2 - (bminfo.bmHeight/2);
+
+			if(ctl->arrow)
+				ix -= 9;
+
 			if (ctl->stateId == PBS_PRESSED) {
 				ix++;
 				iy++;
@@ -487,16 +530,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			}
 			return 0;
 		case BUTTONSETARROW: // turn arrow on/off
-			if (wParam) {
-				if (!bct->arrow)
-					bct->arrow = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PULLDOWNARROW),IMAGE_ICON,myGlobals.m_smcxicon,myGlobals.m_smcyicon,0);
-			}
-			else {
-				if (bct->arrow) {
-					DestroyIcon(bct->arrow);
-					bct->arrow = NULL;
-				}
-			}
+			bct->arrow = (HICON)wParam;
 			InvalidateRect(bct->hwnd, NULL, TRUE);
 			break;
 		case BUTTONSETDEFAULT:
@@ -523,6 +557,13 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		case BUTTONSETASFLATBTN + 13:
 			bct->bTitleButton = TRUE;
 			break;
+		case BUTTONSETASFLATBTN + 14:
+			bct->stateId = (wParam) ? PBS_NORMAL : PBS_DISABLED;
+			InvalidateRect(bct->hwnd, NULL, FALSE);
+			break;
+		case BUTTONSETASFLATBTN + 15:
+			return bct->stateId;
+
 		case BUTTONADDTOOLTIP:
 		{
 			TOOLINFOA ti;
@@ -544,6 +585,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			ti.uId = (UINT)bct->hwnd;
 			ti.lpszText=(char*)wParam;
 			SendMessageA(hwndToolTips,TTM_ADDTOOLA,0,(LPARAM)&ti);
+			SendMessage(hwndToolTips, TTM_SETMAXTIPWIDTH, 0, 300);
             LeaveCriticalSection(&csTips);
 			break;
 		}
@@ -582,6 +624,8 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		}
 		case WM_LBUTTONUP:
 		{
+			RECT rc;
+
 			if (bct->pushBtn) {
 				if (bct->pbState) bct->pbState = 0;
 				else bct->pbState = 1;
@@ -591,7 +635,13 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 				else bct->stateId = PBS_NORMAL;
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 			}
-			// Tell your daddy you got clicked.
+			if(bct->arrow) {
+				GetClientRect(bct->hwnd, &rc);
+				if(LOWORD(lParam) > rc.right - 10) {
+					SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(bct->arrow, BN_CLICKED), (LPARAM)hwndDlg);
+					break;
+				}
+			}
 			SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM)hwndDlg);
 			break;
 		}

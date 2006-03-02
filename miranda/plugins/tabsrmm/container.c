@@ -811,7 +811,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     ApplyContainerSetting(pContainer, CNT_STATICICON, pContainer->dwFlags & CNT_STATICICON ? 0 : 1);
                     break;
                 case ID_VIEW_SHOWMULTISENDCONTACTLIST:
-                    SendMessage(pContainer->hwndActive, WM_COMMAND, MAKEWPARAM(IDC_SENDMENU, ID_SENDMENU_SENDTOMULTIPLEUSERS), 0);
+                    //SendMessage(pContainer->hwndActive, WM_COMMAND, MAKEWPARAM(IDC_SENDMENU, ID_SENDMENU_SENDTOMULTIPLEUSERS), 0);
                     break;
                 case ID_VIEW_STAYONTOP:
                     SendMessage(hwndDlg, WM_SYSCOMMAND, IDM_STAYONTOP, 0);

@@ -145,7 +145,7 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int is
     sendJobs[iFound].dwFlags = isUnicode ? PREF_UNICODE : 0;
     SaveInputHistory(hwndDlg, dat, 0, 0);
     SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-    EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
+    EnableSendButton(hwndDlg, FALSE);
     SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
     UpdateSaveAndSendButton(hwndDlg, dat);
@@ -306,7 +306,7 @@ void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
 {
     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, (WPARAM) iMode ? FALSE : TRUE, 0);
     EnableWindow(GetDlgItem(hwndDlg, IDC_CLIST), iMode ? TRUE : FALSE);
-    EnableWindow(GetDlgItem(hwndDlg, IDOK), iMode);
+    EnableSendButton(hwndDlg, iMode);
 }
 
 /*
@@ -348,7 +348,7 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
 
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_INFOPANELMENU), showCmd ? FALSE : TRUE);
+    //EnableWindow(GetDlgItem(hwndDlg, IDC_INFOPANELMENU), showCmd ? FALSE : TRUE);
     if(sendJobs[0].sendCount > 1)
         EnableSending(hwndDlg, dat, TRUE);
 }
@@ -378,10 +378,10 @@ void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat)
 {
     int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
     
-    if(len && !IsWindowEnabled(GetDlgItem(hwndDlg, IDOK)))
-        EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
-    else if(len == 0 && IsWindowEnabled(GetDlgItem(hwndDlg, IDOK)))
-        EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
+    if(len && GetSendButtonState(hwndDlg) == PBS_DISABLED)
+        EnableSendButton(hwndDlg, TRUE);
+    else if(len == 0 && GetSendButtonState(hwndDlg) != PBS_DISABLED)
+        EnableSendButton(hwndDlg, FALSE);
 
     if (len) {          // looks complex but avoids flickering on the button while typing.
         if (!(dat->dwFlags & MWF_SAVEBTN_SAV)) {

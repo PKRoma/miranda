@@ -2398,6 +2398,16 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
     EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), dat->doSmileys ? TRUE : FALSE);
 }
 
+LRESULT GetSendButtonState(HWND hwnd)
+{
+	return(SendMessage(GetDlgItem(hwnd, IDOK), BUTTONSETASFLATBTN + 15, 0, 0));
+}
+
+void EnableSendButton(HWND hwnd, int iMode)
+{
+	SendMessage(GetDlgItem(hwnd, IDOK), BUTTONSETASFLATBTN + 14, iMode, 0);
+}
+
 void SendNudge(struct MessageWindowData *dat, HWND hwndDlg)
 {
 	char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
@@ -2447,3 +2457,4 @@ int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int siz
     return 0;    
 }
 #endif
+
