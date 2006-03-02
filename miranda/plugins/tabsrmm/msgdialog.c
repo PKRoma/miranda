@@ -847,11 +847,16 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 						case ID_SPLITTERCONTEXT_SETPOSITIONFORTHISSESSION:
 							break;
 						case ID_SPLITTERCONTEXT_SAVEGLOBALFORALLSESSIONS:
-                            dat->dwEventIsShown &= ~(MWF_SHOW_SPLITTEROVERRIDE);
+						{
+							RECT rcWin;
+
+							GetWindowRect(GetParent(hwnd), &rcWin);
+							dat->dwEventIsShown &= ~(MWF_SHOW_SPLITTEROVERRIDE);
 	                        DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0);
 							WindowList_Broadcast(hMessageWindowList, DM_SPLITTERMOVEDGLOBAL, 
-												 rc.right > rc.bottom ? (short) HIWORD(messagePos) + rc.bottom / 2 : (short) LOWORD(messagePos) + rc.right / 2, (LPARAM) hwnd);
+												 rcWin.bottom - HIWORD(messagePos), rc.bottom);
 							break;
+						}
 						default:
 			                SendMessage(GetParent(hwnd), DM_SPLITTERMOVED, dat->savedSplitter, (LPARAM) hwnd);
 							SendMessage(GetParent(hwnd), DM_SCROLLLOGTOBOTTOM, 0, 1);
@@ -2305,8 +2310,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
 		case DM_SPLITTERMOVEDGLOBAL:
 			if(!(dat->dwEventIsShown & MWF_SHOW_SPLITTEROVERRIDE)) {
+				short newMessagePos;
+				RECT rcWin, rcClient;
+
+				GetWindowRect(hwndDlg, &rcWin);
+				GetClientRect(hwndDlg, &rcClient);
+				newMessagePos = rcWin.bottom - (short)wParam;
+
+
 				SendMessage(hwndDlg, DM_SAVESIZE, 0, 0);
-				SendMessage(hwndDlg, DM_SPLITTERMOVED, wParam, (LPARAM)GetDlgItem(hwndDlg, IDC_SPLITTER));
+                SendMessage(hwndDlg, DM_SPLITTERMOVED, newMessagePos + lParam / 2, (LPARAM)GetDlgItem(hwndDlg, IDC_SPLITTER));
 				SaveSplitter(hwndDlg, dat);
 			}
 			return 0;
@@ -3699,10 +3712,20 @@ quote_from_last:
                             case ID_MODE_GLOBAL:
                                 dat->dwEventIsShown &= ~(MWF_SHOW_SPLITTEROVERRIDE);
                                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0);
+								LoadSplitter(hwndDlg, dat);
+			                    AdjustBottomAvatarDisplay(hwndDlg, dat);
+					            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+					            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+								SendMessage(hwndDlg, WM_SIZE, 0, 0);
                                 break;
                             case ID_MODE_PRIVATE:
                                 dat->dwEventIsShown |= MWF_SHOW_SPLITTEROVERRIDE;
                                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 1);
+								LoadSplitter(hwndDlg, dat);
+			                    AdjustBottomAvatarDisplay(hwndDlg, dat);
+					            SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+					            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+								SendMessage(hwndDlg, WM_SIZE, 0, 0);
                                 break;
                             case ID_GLOBAL_BBCODE:
                                 myGlobals.m_SendFormat = SENDFORMAT_BBCODE;
