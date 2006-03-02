@@ -3368,7 +3368,7 @@ static int SetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
     if(piec->ColumnType == 7)
 		piec->ColumnType = 6;
 
-	if(DBGetContactSettingByte((HANDLE)wParam, g_CluiData.szMetaName, "IsSubcontact", 0))
+	if(g_CluiData.bMetaAvail && g_CluiData.bMetaEnabled && DBGetContactSettingByte((HANDLE)wParam, g_CluiData.szMetaName, "IsSubcontact", 0))
         PostMessage(pcli->hwndContactTree, CLM_SETEXTRAIMAGEINTMETA, wParam, MAKELONG((WORD)piec->ColumnType,  (WORD)piec->hImage));
     else
         PostMessage(pcli->hwndContactTree, CLM_SETEXTRAIMAGEINT, wParam, MAKELONG((WORD)piec->ColumnType,  (WORD)piec->hImage));
