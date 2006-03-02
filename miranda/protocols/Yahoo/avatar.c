@@ -67,7 +67,7 @@ BOOL YAHOO_LoadPngModule()
 		png2dibConvertor = ( pfnConvertPng2dib )GetProcAddress( sttPngLib, "mempng2dib" );
 		dib2pngConvertor = ( pfnConvertDib2png )GetProcAddress( sttPngLib, "dib2mempng" );
 		//getver           = ( pfnGetVer )        GetProcAddress( sttPngLib, "getver" );
-		if ( png2dibConvertor == NULL) { // || dib2pngConvertor == NULL || getver == NULL ) {
+		if ( png2dibConvertor == NULL || dib2pngConvertor == NULL /*|| getver == NULL*/ ) {
 			FreeLibrary( sttPngLib ); sttPngLib = NULL;
 			MessageBox( NULL,
 				Translate( "Your png2dib.dll is either obsolete or damaged. " ),
@@ -132,7 +132,7 @@ static char* ChooseAvatarFileName()
   ofn.lpstrDefExt = "png";
   if (!GetOpenFileName(&ofn))
   {
-    free(&szDest);
+    free(szDest);
     return NULL;
   }
 
@@ -208,9 +208,6 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 	  //MessageBox(NULL, "HALLO AVATARS!!", "AA", MB_OK);
     TranslateDialogDefault(hwndDlg);
     {
-      /*DBVARIANT dbvHash, dbvSaved;
-      DWORD dwUIN;*/
-      //uid_str szUID;
 	  DBVARIANT dbv;
       char szAvatar[MAX_PATH];
 
@@ -220,9 +217,6 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
           EnableWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), FALSE);
         }
 
-		//GetAvatarFileName(NULL, szAvatar, MAX_PATH);
-		//YAHOO_SetString(NULL, "AvatarFile", szMyFile);
-		
 		if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
 			HBITMAP avt;
 
@@ -246,11 +240,10 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         char* szFile;
         
         if ((szFile = ChooseAvatarFileName()) != NULL){ 
-		  // user selected file for his avatar
-          char szMyFile[MAX_PATH+1];
-          //int dwPaFormat = DetectAvatarFormat(szFile);
+		  char szMyFile[MAX_PATH+1];
+          HBITMAP avt;
 
-          HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
+          avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
 
 		  if (avt == NULL)
 			break;
@@ -258,17 +251,9 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		  if (( avt = YAHOO_StretchBitmap( avt )) == NULL )
 			break;
 
-          //GetFullAvatarFileName(0, NULL, dwPaFormat, szMyFile, MAX_PATH);
 		  GetAvatarFileName(NULL, szMyFile, MAX_PATH, 2);
 		  
-		  //lstrcpy(szMyFile, szFile);
-		  YAHOO_SaveBitmapAsAvatar( avt, szMyFile);
-          /*if (!CopyFile(szFile, szMyFile, FALSE)){
-            YAHOO_DebugLog("Failed to copy our avatar to local storage.");*/
-            
-          //}
-
-          if (avt) {
+          if (avt && YAHOO_SaveBitmapAsAvatar( avt, szMyFile) == 0) {
             unsigned int hash;
 			y_filetransfer *sf;
 			
@@ -290,7 +275,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			  }
             }
           }
-          free(&szFile);
+          free(szFile);
           if (avt) avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
           if (avt) DeleteObject(avt); // we release old avatar if any
         }
