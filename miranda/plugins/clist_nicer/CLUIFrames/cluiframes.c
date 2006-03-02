@@ -1388,7 +1388,7 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
                 }
             }
         }
-        CLUIFramesStoreFrameSettings(pos);
+        CLUIFramesStoreAllFrames();
         CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
 		PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
     }
@@ -1791,7 +1791,7 @@ int CLUIFramesReSort()
 		for(i = 0; i < v; i++)
 			Frames[g_sd[i].realpos].order = order++;
     }
-
+	CLUIFramesStoreAllFrames();
 	ulockfrm();
 	return(0);
 }
