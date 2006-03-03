@@ -52,7 +52,7 @@ struct DetailsData {
 	struct DetailsPageData *opd;
 	RECT rcDisplay;
 	int updateAnimFrame;
-	char szUpdating[64];
+	TCHAR szUpdating[64];
 	int *infosUpdated;
 };
 
@@ -236,7 +236,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			}
 			ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);
 			dat->updateAnimFrame=0;
-			GetDlgItemTextA(hwndDlg,IDC_UPDATING,dat->szUpdating,SIZEOF(dat->szUpdating));
+			GetDlgItemText(hwndDlg,IDC_UPDATING,dat->szUpdating,SIZEOF(dat->szUpdating));
 			SendMessage(hwndDlg,M_CHECKONLINE,0,0);
 			if(!IsWindowEnabled(GetDlgItem(hwndDlg,IDC_UPDATE)))
 				ShowWindow(GetDlgItem(hwndDlg,IDC_UPDATING),SW_HIDE);
@@ -248,18 +248,21 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			return TRUE;
 		}
 		case WM_TIMER:
-		{	char str[128];
-			sprintf(str,"%.*s%s%.*s",dat->updateAnimFrame%10,".........",dat->szUpdating,dat->updateAnimFrame%10,".........");
-			SetDlgItemTextA(hwndDlg,IDC_UPDATING,str);
+		{	TCHAR str[128];
+			mir_sntprintf(str,SIZEOF(str), _T("%.*s%s%.*s"),dat->updateAnimFrame%10,_T("........."),dat->szUpdating,dat->updateAnimFrame%10,_T("........."));
+			SetDlgItemText(hwndDlg,IDC_UPDATING,str);
 			if(++dat->updateAnimFrame==UPDATEANIMFRAMES) dat->updateAnimFrame=0;
 			break;
 		}
 		case WM_CTLCOLORSTATIC:
-			if(GetDlgItem(hwndDlg,IDC_WHITERECT)==(HWND)lParam) {
+			switch (GetDlgCtrlID((HWND)lParam)) {
+			case IDC_WHITERECT:
+			case IDC_LOGO:
 				SetBkColor((HDC)wParam,RGB(255,255,255));
 				return (BOOL)GetStockObject(WHITE_BRUSH);
-			}
-			else if(GetDlgItem(hwndDlg,IDC_UPDATING)==(HWND)lParam) {
+			
+			case IDC_UPDATING:
+			{
 				COLORREF textCol,bgCol,newCol;
 				int ratio;
 				textCol=GetSysColor(COLOR_BTNTEXT);
@@ -272,8 +275,11 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SetBkColor((HDC)wParam,GetSysColor(COLOR_3DFACE));
 				return (BOOL)GetSysColorBrush(COLOR_3DFACE);
 			}
-			SetBkMode((HDC)wParam,TRANSPARENT);
-			return (BOOL)GetStockObject(NULL_BRUSH);
+			default:
+				SetBkMode((HDC)wParam,TRANSPARENT);
+				return (BOOL)GetStockObject(NULL_BRUSH);
+			}
+			break;
 		case PSM_CHANGED:
 			dat->opd[dat->currentPage].changed=1;
 			return TRUE;

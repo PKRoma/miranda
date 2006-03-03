@@ -5,8 +5,8 @@
 //                                                                            
                                                                               
 VS_VERSION_INFO VERSIONINFO                                                   
- FILEVERSION 0,4,3,47                                                         
- PRODUCTVERSION 0,4,3,47                                                      
+ FILEVERSION 0,4,3,48                                                         
+ PRODUCTVERSION 0,4,3,48                                                      
  FILEFLAGSMASK 0x3fL                                                          
 #ifdef _DEBUG                                                                 
  FILEFLAGS 0x1L                                                               
@@ -24,14 +24,14 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0" 
             VALUE "CompanyName", " \0"                                        
             VALUE "FileDescription", "Miranda IM\0"                           
-            VALUE "FileVersion", "0.4.3 alpha build #47\0"                    
+            VALUE "FileVersion", "0.4.3 alpha build #48\0"                    
             VALUE "InternalName", "miranda32\0"                               
             VALUE "LegalCopyright", "Copyright © 2000-2005 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim\0" 
             VALUE "LegalTrademarks", "\0"                                     
             VALUE "OriginalFilename", "miranda32.exe\0"                       
             VALUE "PrivateBuild", "\0"                                        
             VALUE "ProductName", "Miranda IM\0"                               
-            VALUE "ProductVersion", "0.4.3 alpha build #47\0"                 
+            VALUE "ProductVersion", "0.4.3 alpha build #48\0"                 
             VALUE "SpecialBuild", "\0"                                        
         END                                                                   
     END                                                                       

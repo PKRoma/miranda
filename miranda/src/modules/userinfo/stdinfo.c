@@ -40,7 +40,8 @@ void Utf8Decode( char* str, wchar_t** ucs2 );
 static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char *szSetting,int special)
 {
 	DBVARIANT dbv;
-	char str[80],*pstr;
+	char str[80],*pstr = NULL;
+	TCHAR* ptstr = NULL;
 	int unspecified=0;
 
 	dbv.type=DBVT_DELETED;
@@ -50,8 +51,8 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 		switch(dbv.type) {
 			case DBVT_BYTE:
 				if(special==SVS_GENDER) {
-					if(dbv.cVal=='M') pstr=Translate("Male");
-					else if(dbv.cVal=='F') pstr=Translate("Female");
+					if(dbv.cVal=='M') ptstr=TranslateT("Male");
+					else if(dbv.cVal=='F') ptstr=TranslateT("Female");
 					else unspecified=1;
 				}
 				else if(special==SVS_MONTH) {
@@ -124,6 +125,8 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 
 	if (unspecified)
 		SetDlgItemText(hwndDlg, idCtrl, TranslateT("<not specified>"));
+	else if ( ptstr != NULL )
+		SetDlgItemText(hwndDlg, idCtrl, ptstr);
 	else
 		SetDlgItemTextA(hwndDlg, idCtrl, pstr);
 
@@ -206,7 +209,7 @@ static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				timezone=DBGetContactSettingByte(hContact,szProto,"Timezone",256);
 				if(timezone==256 || (char)timezone==-100) {
 					EnableWindow(GetDlgItem(hwndDlg,IDC_LOCALTIME),FALSE);
-					SetDlgItemTextA(hwndDlg,IDC_LOCALTIME,Translate("<not specified>"));
+					SetDlgItemText(hwndDlg,IDC_LOCALTIME,TranslateT("<not specified>"));
 				}
 				else {
                     TIME_ZONE_INFORMATION tzi;
