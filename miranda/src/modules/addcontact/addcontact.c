@@ -145,6 +145,15 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 						
 						if ( hcontact == NULL ) break;
 
+						{	TCHAR szHandle[256];
+							if ( GetDlgItemText( hdlg, IDC_MYHANDLE, szHandle, SIZEOF(szHandle)))
+								DBWriteContactSettingTString( hcontact, "CList", "MyHandle", szHandle );
+
+							GetDlgItemText( hdlg, IDC_GROUP, szHandle, SIZEOF(szHandle));
+							if ( lstrcmp( szHandle, TranslateT( "None" )))
+								DBWriteContactSettingTString( hcontact, "CList", "Group", szHandle );
+						}
+
 						if(IsDlgButtonChecked(hdlg,IDC_ADDED)) CallContactService(hcontact,PSS_ADDED,0,0);
 						if(IsDlgButtonChecked(hdlg,IDC_AUTH)) {
 							DWORD flags;
@@ -157,14 +166,6 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 								CallContactService(hcontact,PSS_AUTHREQUEST,0,(LPARAM)szReason);
 						}	}
 						
-						{	TCHAR szHandle[256];
-							if ( GetDlgItemText( hdlg, IDC_MYHANDLE, szHandle, SIZEOF(szHandle)))
-								DBWriteContactSettingTString( hcontact, "CList", "MyHandle", szHandle );
-
-							GetDlgItemText( hdlg, IDC_GROUP, szHandle, SIZEOF(szHandle));
-							if ( lstrcmp( szHandle, TranslateT( "None" )))
-								DBWriteContactSettingTString( hcontact, "CList", "Group", szHandle );
-						}
 						DBDeleteContactSetting(hcontact,"CList","NotOnList");
 					}
 					// fall through
