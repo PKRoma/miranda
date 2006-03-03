@@ -1302,16 +1302,6 @@ int LoadMsnServices( void )
 	mi.pszService = servicefunction;
 	MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
-	strcpy( tDest, MSN_SEND_NUDGE );
-	CreateServiceFunction( servicefunction, MsnSendNudge );
-/*
-	mi.flags = CMIF_NOTOFFLINE;
-	mi.position = -500050004;
-	mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSN ));
-	mi.pszName = MSN_Translate( "Send &Nudge" );
-	mi.pszService = servicefunction;
-	MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
-*/
 	MSN_EnableMenuItems( FALSE );
 
 	//////////////////////////////////////////////////////////////////////////////////////
