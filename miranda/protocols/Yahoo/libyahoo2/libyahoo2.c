@@ -297,7 +297,7 @@ File List Cancel:
 	  13: 1
 	*/	
 	
-	
+	YAHOO_SERVICE_YAHOO7_CHANGE_GROUP = 0xe7,
 	YAHOO_SERVICE_WEBLOGIN = 0x0226,
 	YAHOO_SERVICE_SMS_MSG = 0x02ea
 };
@@ -375,6 +375,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_YAHOO6_STATUS_UPDATE,"YAHOO_SERVICE_YAHOO6_STATUS_UPDATE"},
 	{YAHOO_SERVICE_AVATAR_UPDATE,"YAHOO_SERVICE_AVATAR_UPDATE"},
 	{YAHOO_SERVICE_AUDIBLE,"YAHOO_SERVICE_AUDIBLE"},
+	{YAHOO_SERVICE_YAHOO7_CHANGE_GROUP, "YAHOO_SERVICE_YAHOO7_CHANGE_GROUP"},
 	{YAHOO_SERVICE_WEBLOGIN,"YAHOO_SERVICE_WEBLOGIN"},
 	{YAHOO_SERVICE_SMS_MSG,"YAHOO_SERVICE_SMS_MSG"},
 	{0, NULL}
@@ -438,7 +439,8 @@ static const value_string packet_keys[]={
 	{ 58, "conf joinmsg"},
 	{ 59, "cookies"},
 	{ 60, "SMS/Mobile"},
-	{ 63, "imvironment"},
+	{ 63, "imvironment name;num"},
+	{ 64, "imvironment enabled/avail"},
 	{ 65, "group"},
 	{ 66, "login status"},
 	{ 87, "buds/groups"},
@@ -462,11 +464,12 @@ static const value_string packet_keys[]={
 	{185, "stealth/hide?"},
 	{192, "Pictures/Buddy Icons"},
 	{197, "Avatars"},
-	{206, "buddy icon"},
-	{213, "avatar avail?"},
+	{206, "display image type"},
+	{213, "share avatar type"},
 	{230, "the audible, in foo.bar.baz format"},
 	{231, "audible text"},
 	{232, "weird number (md5 hash?) [audible]"},
+	{244, "YIM6/YIM7 detection.(278527 - YIM6, 524223 - YIM7)"},
 	{1002, "YIM6+"},
 	{10097, "Region (SMS?)"},
 	{ -1, "" }
@@ -2467,7 +2470,10 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	//yahoo_packet_hash(pack, 192, "-1");// no avatar support yet
 	yahoo_packet_hash(pack, 2, "1");
 	yahoo_packet_hash(pack, 1, sn);
-	yahoo_packet_hash(pack, 135, "6,0,0,1750"); 
+	// A little experiment ;) HEHEHE
+	//yahoo_packet_hash(pack, 244, "524223");  // Features??? I wonder...
+	/////////////
+	yahoo_packet_hash(pack, 135, "6,0,0,1922"); 
 	yahoo_packet_hash(pack, 148, "300"); 
 	/* mmmm GAIM does it differently???
 	yahoo_packet_hash(pack, 0, sn);
@@ -4342,11 +4348,17 @@ void yahoo_send_im(int id, const char *from, const char *who, const char *what, 
 	if(utf8)
 		yahoo_packet_hash(pkt, 97, "1");
 
-	yahoo_packet_hash(pkt, 63, ";0");	/* imvironment name; or ;0 (doodle;11)*/
-	yahoo_packet_hash(pkt, 64, "0"); //YIM6 = 2 ? GAIM = 0
-	//yahoo_packet_hash(pkt, 1002, "1");  /* YIM6 and up? GAIM src */
-	snprintf(buf, sizeof(buf), "%d", buddy_icon);
+	/* GAIM does doodle so they allow/enable imvironments (that get rejected?)
+	 63 - imvironment  string;11
+	 64 - imvironment enabled/allowed
+			0 - enabled imwironment ;0 - no imvironment
+			2 - disabled		    '' - empty cause we don;t do these
+	 */
+	yahoo_packet_hash(pkt, 63, "");	/* imvironment name; or ;0 (doodle;11)*/
+	yahoo_packet_hash(pkt, 64, "2"); 
+	
 	yahoo_packet_hash(pkt, 1002, "1"); /* YIM6+ */
+	snprintf(buf, sizeof(buf), "%d", buddy_icon);
 	yahoo_packet_hash(pkt, 206, buf); /* buddy_icon, 0 = none, 1=avatar?, 2=picture */
 	
 	yahoo_send_packet(yid, pkt, 0);
