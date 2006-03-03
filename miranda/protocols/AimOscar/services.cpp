@@ -51,9 +51,13 @@ static int SendMsg(WPARAM wParam, LPARAM lParam)
 		{
 			ForkThread(msg_ack_success,ccs->hContact);
 		}
-		char msg[MSG_LEN];
-		strip_carrots(msg,(char *)ccs->lParam,sizeof(msg));
-		return aim_send_plaintext_message(dbv.pszVal,msg,0);
+		char *msg=strdup((char *)ccs->lParam);
+		msg=strip_carrots(msg);
+		if(aim_send_plaintext_message(dbv.pszVal,msg,0))
+		{
+			delete msg;
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -67,10 +71,13 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 		{
 			ForkThread(msg_ack_success,ccs->hContact);
 		}
-		wchar_t* umsg=(wchar_t*)((char*)ccs->lParam+strlen((char*)ccs->lParam)+1);
-		wchar_t stripped_umsg[MSG_LEN];
-		strip_carrots(stripped_umsg,(wchar_t *)umsg);
-		return aim_send_unicode_message(dbv.pszVal,stripped_umsg);
+		wchar_t* umsg=wcsdup((wchar_t*)(char*)ccs->lParam+strlen((char*)ccs->lParam)+1);
+		umsg=strip_carrots(umsg);
+		if(aim_send_unicode_message(dbv.pszVal,umsg))
+		{
+			delete umsg;
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -260,6 +267,7 @@ static int AddToList(WPARAM wParam,LPARAM lParam)
 	{
 		hContact=add_contact(psr->nick);
 	}
+	add_contact_to_group(hContact,DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0),AIM_DEFAULT_GROUP);
 	return (int)hContact;
 }
 static int ContactDeleted(WPARAM wParam,LPARAM lParam)

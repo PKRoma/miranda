@@ -397,7 +397,7 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 			else if(tlv_type==0x0019)//new caps
 			{
 				caps_included=1;
-				bool f002=0, f003=0, f004=0, f005=0, f007=0, f008=0;
+				bool f002=0, f003=0, f004=0, f005=0, f007=0, f008=0, O104=0, O105=0;//O actually means 0 in this case
 				for(int i=0;i<tlv_length;i=i+2)
 				{
 					unsigned short* cap =(unsigned short*)&buf[offset+i];
@@ -416,12 +416,16 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 						f007=1;
 					if(*cap==0xf008)
 						f008=1;
+					if(*cap==0x0104)
+						O104=1;
+					if(*cap==0x0105)
+						O105=1;
 					if(f002&f003&f004&f005)
 						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian Pro");
+					else if(f004&f005&f007&f008||f004&f005&O104&O105)
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"iChat");
 					else if(f003&f004&f005)
 						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian");
-					else if(f004&f005&f007&f008)
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"iChat");
 				}
 			}
 			else if(tlv_type==0x0004)//idle tlv
@@ -592,7 +596,14 @@ void snac_contact_list(unsigned short subgroup, char* buf, int flap_length)//fam
 			{
 				if(group_id)
 				{
-					create_group(name,group_id);
+					BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
+					char group_id_string[32];
+					itoa(group_id,group_id_string,10);
+					if(bUtfReadyDB==1)
+ 						DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, name);
+					else
+						DBWriteContactSettingString(NULL, ID_GROUP_KEY,group_id_string, name);
+					DBWriteContactSettingWord(NULL, GROUP_ID_KEY,name, group_id);
 				}
 			}
 			tlv_part=(struct tlv_part*)&items[offset+(TLV_PART_SIZE*4)+name_length];//getting tlv size
@@ -643,6 +654,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 		bool force_proxy=0;
 		bool port_tlv=0;
 		bool descr_included=0;
+		bool unicode_message=0;
 		int recv_file_type=-1;
 		unsigned short request_num=0;
 		char local_ip[20],verified_ip[20],proxy_ip[20];
@@ -681,6 +693,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 					ccs.hContact = hContact;
 					if(encoding==0x0002)
 					{
+						unicode_message=1;
 						wchar_t* wch=(wchar_t*)malloc(msg_length+1);
 						memcpy(wch,msg,msg_length);	
 						wch[msg_length/2]=0x00;
@@ -794,13 +807,15 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 		{
 			if(auto_response)//this message must be an autoresponse
 			{
-				char* temp=(char*)malloc(strlen(msg_buf) + 20);
+				char* temp=new char[strlen(msg_buf) + 20];
 				strcpy(temp,msg_buf);
 				mir_snprintf(msg_buf,strlen(msg_buf)+20,"%s %s",Translate("[Auto-Response]:"),temp);
-				free(temp);
 			}
 			//Okay we are setting up the structure to give the message back to miranda's core
-			pre.flags = PREF_UNICODE;
+			if(unicode_message)
+				pre.flags = PREF_UNICODE;
+			else
+				pre.flags = 0;
 			pre.timestamp = time(NULL);
 			pre.szMessage = msg_buf;
 			pre.lParam = 0;
@@ -816,7 +831,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 				unsigned long away_time=DBGetContactSettingDword(NULL,AIM_PROTOCOL_NAME,AIM_KEY_LA,0);
 				if(away_time>msg_time)
 				{
-					char* temp=(char*)malloc(strlen(conn.szModeMsg)+20);
+					char* temp=new char[strlen(conn.szModeMsg)+20];
 					mir_snprintf(temp,strlen(conn.szModeMsg)+20,"%s %s",Translate("[Auto-Response]:"),conn.szModeMsg);
 					DBEVENTINFO dbei;
 					ZeroMemory(&dbei, sizeof(dbei));
@@ -829,10 +844,11 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 					dbei.pBlob = (PBYTE) temp;
 					CallService(MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
 					aim_send_plaintext_message(sn,conn.szModeMsg,1);
-					free(temp);
+					delete temp;
 				}
 				DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_LM, time(NULL));
 			}
+			//delete msg_buf;
 			//okay we are done
 		}
 		else if(recv_file_type==0&&request_num==1)//buddy wants to send us a file

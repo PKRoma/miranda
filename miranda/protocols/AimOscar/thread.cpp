@@ -52,35 +52,24 @@ void message_box_thread(char* data)
 }
 void set_status_thread(int status)
 {
-	DBVARIANT dbv;
-	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
-		DBFreeVariant(&dbv);
-	else
-	{
-		char* msg=strdup("Please, enter a username in the options dialog.");
-		ForkThread((pThreadFunc)message_box_thread,msg);
+	if(conn.shutting_down)
 		return;
-	}
-	DBVARIANT dbv2;
-	if(!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv2))
-		DBFreeVariant(&dbv2);
-	else
-	{
-		char* msg=strdup("Please, enter a password in the options dialog.");
-		ForkThread((pThreadFunc)message_box_thread,msg);
-		return;
-	}
+	EnterCriticalSection(&statusMutex);
 	start_connection(status);
 	if(conn.state==1)
 		switch(status)
 		{
 			case ID_STATUS_OFFLINE:
 				{
-					if(conn.hDirectBoundPort)
+					if(conn.hDirectBoundPort&&!conn.freeing_DirectBoundPort)
+					{
+						conn.freeing_DirectBoundPort=1;
 						Netlib_CloseHandle(conn.hDirectBoundPort);
+					}
 					if(conn.hServerConn)
 						Netlib_CloseHandle(conn.hServerConn);
 					conn.hDirectBoundPort=0;
+					conn.freeing_DirectBoundPort=0;
 					conn.hServerConn=0;
 					broadcast_status(ID_STATUS_OFFLINE);
 					break;

@@ -39,9 +39,9 @@ char *normalize_name(const char *s);
 void strip_html(char *dest, const char *src, size_t destsize);
 void strip_html(wchar_t *dest, const wchar_t *src);//wide char version
 void strip_special_chars(char *dest, const char *src, size_t destsize);
-void strip_carrots(char *dest, const char *src, size_t destsize);
-void strip_carrots(wchar_t *dest, const wchar_t *src);//wide char version
-void strip_linebreaks(char *dest, const char *src, size_t destsize);
+char* strip_carrots(char *src);
+wchar_t* strip_carrots(wchar_t *src);//wide char version
+char* strip_linebreaks(char *src);
 void strip_nullvalues(char *dest, const char *src,int src_size);
 int utf8_decode(const WCHAR *from, char *to,int inlen);
 void msg_ack_success(HANDLE hContact);

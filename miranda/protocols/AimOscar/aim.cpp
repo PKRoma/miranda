@@ -4,9 +4,9 @@ PLUGINLINK *pluginLink;
 char	AIM_CAP_MIRANDA[16]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
-	"AIM OSCAR Plugin - Alpha 8.3",
+	"AIM OSCAR Plugin - Beta 1",
 	PLUGIN_MAKE_VERSION(0,0,0,1),
-	"Provides very basic support for AOL® OSCAR Instant Messenger protocol.",
+	"Provides basic support for AOL® OSCAR Instant Messenger protocol.",
 	"Aaron Myles Landwehr",
 	"aaron@snaphat.com",
 	"© 2005-2006 Aaron Myles Landwehr",
@@ -154,11 +154,16 @@ int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
 }
 int PreShutdown(WPARAM wParam,LPARAM lParam)
 {
+	conn.shutting_down=1;
 	if(conn.hServerConn)
 		Netlib_CloseHandle(conn.hServerConn);
 	conn.hServerConn=0;
-	if(conn.hDirectBoundPort)
+	if(conn.hDirectBoundPort&&!conn.freeing_DirectBoundPort)
+	{
+		conn.freeing_DirectBoundPort=1;
 		Netlib_CloseHandle(conn.hDirectBoundPort);
+	}
+	conn.freeing_DirectBoundPort=0;
 	conn.hDirectBoundPort=0;
 	Netlib_CloseHandle(conn.hNetlib);
 	conn.hNetlib=0;

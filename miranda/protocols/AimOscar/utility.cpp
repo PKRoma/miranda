@@ -11,6 +11,24 @@ void start_connection(int initial_status)
 	if(conn.status==ID_STATUS_OFFLINE)
 	{
 		DBVARIANT dbv;
+		if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+			DBFreeVariant(&dbv);
+		else
+		{
+			char* msg=strdup("Please, enter a username in the options dialog.");
+			ForkThread((pThreadFunc)message_box_thread,msg);
+			broadcast_status(ID_STATUS_OFFLINE);
+			return;
+		}
+		if(!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
+			DBFreeVariant(&dbv);
+		else
+		{
+			char* msg=strdup("Please, enter a password in the options dialog.");
+			ForkThread((pThreadFunc)message_box_thread,msg);
+			broadcast_status(ID_STATUS_OFFLINE);
+			return;
+		}
 		if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
 		{
 			broadcast_status(ID_STATUS_CONNECTING);
@@ -81,7 +99,7 @@ HANDLE add_contact(char* buddy)
 		//LOG(LOG_ERROR, "Failed to create AIM contact %s. MS_DB_CONTACT_ADD failed.", nick);
 	}
 }
-/*void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* group)
+void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* group)
 {
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	DBVARIANT dbv;
@@ -141,10 +159,10 @@ HANDLE add_contact(char* buddy)
 			//Sleep(10);
 			aim_mod_group(group,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
 			DBFreeVariant(&dbv);
-			delete_empty_group(old_group_id);
+			//delete_empty_group(old_group_id);
 		}
 	}
-}*/
+}
 void add_contacts_to_groups()
 {
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
@@ -166,7 +184,10 @@ void add_contacts_to_groups()
 					if(DBGetContactSettingByte(hContact, AIM_PROTOCOL_NAME,AIM_KEY_NC,0))
 					{
 						if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
+						{
+							create_group(dbv.pszVal,group_id);
 							DBWriteContactSettingStringUtf(hContact,"CList","Group",dbv.pszVal);
+						}
 						DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_NC);
 					}
 				}
@@ -175,9 +196,13 @@ void add_contacts_to_groups()
 					if(DBGetContactSettingByte(hContact, AIM_PROTOCOL_NAME,AIM_KEY_NC,0))
 					{
 						if(!DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
+						{
+							create_group(dbv.pszVal,group_id);
 							DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+						}
 						DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_NC);
 					}
+				}
 					/*
 					if(!DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))//ascii
 					{
@@ -206,8 +231,8 @@ void add_contacts_to_groups()
 								DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_SG);
 							}
 						}
-					}*/
-				}
+					}
+				}*/
 				//free(outer_group);
 			}
 		}
@@ -573,49 +598,55 @@ void strip_special_chars(char *dest, const char *src, size_t destsize)
 		DBFreeVariant(&dbv);
 	}
 }
-void strip_carrots(char *dest, const char *src, size_t destsize)// EAT!!!!!!!!!!!!!
+char* strip_carrots(char *src)// EAT!!!!!!!!!!!!!
 {
+		src=(char*)realloc((void*)src,MSG_LEN);
 		char *ptr;
-		mir_snprintf(dest, destsize, "%s", src);
-		while ((ptr = strstr(dest, "<")) != NULL)
+		while ((ptr = strstr(src, "<")) != NULL)
 		{
 			memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
 			memcpy(ptr,"&lt;",4);
 		}
-		while ((ptr = strstr(dest, ">")) != NULL)
+		while ((ptr = strstr(src, ">")) != NULL)
 		{
 			memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
 			memcpy(ptr,"&gt;",4);
 		}
+		src[strlen(src)]='\0';
+		return src;
 }
-void strip_carrots(wchar_t *dest, const wchar_t *src)// EAT!!!!!!!!!!!!!
+wchar_t* strip_carrots(wchar_t *src)// EAT!!!!!!!!!!!!!
 {
+		src=(wchar_t*)realloc((void*)src,MSG_LEN);
 		wchar_t *ptr;
-		wcscpy(dest,src);
-		while ((ptr = wcsstr(dest, L"<")) != NULL)
+		while ((ptr = wcsstr(src, L"<")) != NULL)
 		{
 			memmove(ptr + 4, ptr + 1, wcslen(ptr + 1)*2 + 8);
 			memcpy(ptr,L"&lt;",8);
 		}
-		while ((ptr = wcsstr(dest, L">")) != NULL)
+		while ((ptr = wcsstr(src, L">")) != NULL)
 		{
 			memmove(ptr + 4, ptr + 1, wcslen(ptr + 1)*2 + 8);
 			memcpy(ptr,L"&gt;",8);
 		}
+		src[wcslen(src)]='\0';
+		return src;
 }
-void strip_linebreaks(char *dest, const char *src, size_t destsize)
+char* strip_linebreaks(char *src)
 {
+		src=(char*)realloc((void*)src,MSG_LEN);
 		char *ptr;
-		mir_snprintf(dest, destsize, "%s", src);
-		while ((ptr = strstr(dest, "\r")) != NULL)
+		while ((ptr = strstr(src, "\r")) != NULL)
 		{
-			memmove(ptr, ptr + 1, strlen(ptr + 1));
+			memmove(ptr, ptr + 1, strlen(ptr + 1)+1);
 		}
-		while ((ptr = strstr(dest, "\n")) != NULL)
+		while ((ptr = strstr(src, "\n")) != NULL)
 		{
 			memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
 			memcpy(ptr,"<br>",4);
 		}
+		src[strlen(src)]='\0';
+		return src;
 }
 void msg_ack_success(HANDLE hContact)
 {
@@ -658,13 +689,6 @@ void create_group(char *group, unsigned short group_id)
 	if (!group)
         return;
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
-	char group_id_string[32];
-	itoa(group_id,group_id_string,10);
-	if(bUtfReadyDB==1)
- 		DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, group);
-	else
-		DBWriteContactSettingString(NULL, ID_GROUP_KEY,group_id_string, group);
-	DBWriteContactSettingWord(NULL, GROUP_ID_KEY,group, group_id);
 	/*char* outer_group=get_outer_group();
 	if(!strcmp(outer_group,group))
 	{

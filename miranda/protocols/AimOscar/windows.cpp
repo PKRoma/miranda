@@ -54,14 +54,15 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				}
 				case IDC_SETPROFILE:
                 {
-                    char buf[2048];//MAX
+                    char buf[MSG_LEN/2];//MAX
                     GetWindowText(GetDlgItem(hwndDlg, IDC_PROFILE), buf, sizeof(buf));
                     DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, buf);
                     if (conn.state==1)
 					{
-						char send_buf[MSG_LEN];
-						strip_linebreaks(send_buf,buf,sizeof(send_buf));
-                        aim_set_profile(send_buf);//also see set caps for profile setting
+						char* msg=strdup(buf);
+						msg=strip_linebreaks(msg);
+                        aim_set_profile(msg);//also see set caps for profile setting
+						delete msg;
                     }
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SETPROFILE), FALSE);
                     break;

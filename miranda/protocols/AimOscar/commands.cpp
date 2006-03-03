@@ -174,10 +174,11 @@ int aim_set_caps()
 	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, &dbv))
 	{
 		aim_writetlv(0x01,strlen(AIM_MSG_TYPE),AIM_MSG_TYPE,buf);
-		char send_buf[MSG_LEN];
-		strip_linebreaks(send_buf,dbv.pszVal,sizeof(send_buf));
+		char* send_buf=strdup(dbv.pszVal);
+		send_buf=strip_linebreaks(send_buf);
 		aim_writetlv(0x02,strlen(send_buf),send_buf,buf);
 		DBFreeVariant(&dbv);
+		delete send_buf;
 	}
 	if(aim_sendflap(0x02,conn.packet_offset,buf)==0)
 		return 0;
@@ -200,13 +201,22 @@ int aim_set_profile(char *msg)//user info
 }
 int aim_set_away(char *msg)//user info
 {
+	char* html_msg;
 	if(msg!=NULL)
+	{
+		html_msg=strdup(msg);
 		DBWriteContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_LA, time(NULL));
+		html_msg=strip_carrots(html_msg);
+		html_msg=strip_linebreaks(html_msg);
+	}
 	char buf[MSG_LEN*2];
 	aim_writesnac(0x02,0x04,6,buf);
 	aim_writetlv(0x03,strlen(AIM_MSG_TYPE),AIM_MSG_TYPE,buf);
 	if(msg!=NULL)
-		aim_writetlv(0x04,strlen(msg),msg,buf);
+	{
+		aim_writetlv(0x04,strlen(html_msg),html_msg,buf);
+		delete html_msg;
+	}
 	else
 		aim_writetlv(0x04,0,0,buf);
 	if(aim_sendflap(0x02,conn.packet_offset,buf)==0)
