@@ -262,9 +262,9 @@ void offline_contacts()
 				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_ES);
 				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV);
 				DBDeleteContactSetting(hContact, "CList", AIM_KEY_SM);
+				DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT);
+				DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT);
 				DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
-				DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT, 0);
-				DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT, 0);
 				DBFreeVariant(&dbv);
 				if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 				{

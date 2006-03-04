@@ -397,11 +397,13 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 			else if(tlv_type==0x0019)//new caps
 			{
 				caps_included=1;
-				bool f002=0, f003=0, f004=0, f005=0, f007=0, f008=0, O104=0, O105=0;//O actually means 0 in this case
+				bool f002=0, f003=0, f004=0, f005=0, f007=0, f008=0, O104=0, O105=0, utf8=0;//O actually means 0 in this case
 				for(int i=0;i<tlv_length;i=i+2)
 				{
 					unsigned short* cap =(unsigned short*)&buf[offset+i];
 					*cap=htons(*cap);
+					if(*cap==0x134E)
+						utf8=1;
 					if(*cap==0x1323)
 						hiptop_user=1;
 					if(*cap==0xf002)
@@ -427,6 +429,10 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 					else if(f003&f004&f005)
 						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian");
 				}
+					if(utf8)
+						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 1);
+					else
+						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0);
 			}
 			else if(tlv_type==0x0004)//idle tlv
 			{
@@ -583,7 +589,8 @@ void snac_contact_list(unsigned short subgroup, char* buf, int flap_length)//fam
 				HANDLE hContact=find_contact(name);
 				if(!hContact)
 				{
-					hContact=add_contact(name);
+					if(!strcmp(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
+						hContact=add_contact(name);
 				}
 				if(hContact)
 				{
@@ -687,6 +694,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 				if(!hContact)
 				{
 					hContact=add_contact(sn);
+					DBWriteContactSettingByte(hContact,"CList",AIM_KEY_NL,1);
 				}
 				if(hContact)
 				{
@@ -825,7 +833,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 			ccs.wParam = 0;
 			ccs.lParam = (LPARAM) & pre;
 			CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
-			if(conn.status==ID_STATUS_AWAY)
+			if(conn.status==ID_STATUS_AWAY||!auto_response)
 			{
 				unsigned long msg_time=DBGetContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_LM,0);
 				unsigned long away_time=DBGetContactSettingDword(NULL,AIM_PROTOCOL_NAME,AIM_KEY_LA,0);

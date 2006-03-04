@@ -14,6 +14,7 @@
 #define ACCOUNT_TYPE_ADMIN				5
 #define EXTENDED_STATUS_BOT				1
 #define EXTENDED_STATUS_HIPTOP			2
+#define SYSTEM_BUDDY					"aolsystemmsg"
 #define AIM_KEY_PW						"password"
 #define AIM_KEY_HN						"hostname"
 #define AIM_KEY_DC						"DelConf"//delivery confirmation
@@ -43,6 +44,8 @@
 #define AIM_KEY_PC						"PortCheck"
 #define AIM_KEY_DH						"DCHandle"
 #define AIM_KEY_MV						"MirVer"
+#define AIM_KEY_US						"Utf8Support"
+#define AIM_KEY_NL						"NotOnList"
 //#define AIM_KEY_DG						"DefaultGroup"
 //#define AIM_KEY_OG						"OuterGroup"
 #define AIM_KEY_AC						"AccType"//account type		

@@ -71,12 +71,19 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 		{
 			ForkThread(msg_ack_success,ccs->hContact);
 		}
-		wchar_t* umsg=wcsdup((wchar_t*)(char*)ccs->lParam+strlen((char*)ccs->lParam)+1);
-		umsg=strip_carrots(umsg);
-		if(aim_send_unicode_message(dbv.pszVal,umsg))
+		if(DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0))
 		{
-			delete umsg;
-			return 1;
+			wchar_t* umsg=wcsdup((wchar_t*)((char*)ccs->lParam+strlen((char*)ccs->lParam)+1));
+			umsg=strip_carrots(umsg);
+			if(aim_send_unicode_message(dbv.pszVal,umsg))
+			{
+				delete umsg;
+				return 1;
+			}
+		}
+		else
+		{
+			return SendMsg(wParam,lParam);
 		}
 	}
 	return 0;
