@@ -877,6 +877,11 @@ void BuildViewModeMenu()
     menuCounter = 100;
     hViewModeMenu = CreatePopupMenu();
     CLVM_EnumModes(FillMenuCallback);
+
+	AppendMenuA(hViewModeMenu, MF_SEPARATOR, 0, NULL);
+	AppendMenuA(hViewModeMenu, MF_STRING, 10001, Translate("Setup View Modes..."));
+	AppendMenuA(hViewModeMenu, MF_STRING, 10002, Translate("Clear current View Mode"));
+
 }
 
 static UINT _buttons[] = {IDC_RESETMODES, IDC_SELECTMODE, IDC_CONFIGUREMODES, 0};
@@ -891,6 +896,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             hwndSelector = CreateWindowEx(0, _T("CLCButtonClass"), _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
                             hwnd, (HMENU) IDC_SELECTMODE, g_hInst, NULL);
             SendMessage(hwndSelector, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Select a view mode"), 0);
+			SendMessage(hwndSelector, BM_SETASMENUACTION, 1, 0);
             hwndButton = CreateWindowEx(0, _T("CLCButtonClass"), _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
                             hwnd, (HMENU) IDC_CONFIGUREMODES, g_hInst, NULL);
             SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Setup view modes"), 0);
@@ -1041,6 +1047,12 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                     pt.y = rc.bottom;
                     selection = TrackPopupMenu(hViewModeMenu,TPM_RETURNCMD|TPM_TOPALIGN|TPM_LEFTALIGN|TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
                     if(selection) {
+						
+						if(selection == 10001)
+							goto clvm_config_command;
+						else if(selection == 10002)
+							goto clvm_reset_command;
+
                         mii.cbSize = sizeof(mii);
                         mii.fMask = MIIM_STRING;
                         mii.dwTypeData = szTemp;
@@ -1051,6 +1063,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                     break;
                 }
                 case IDC_RESETMODES:
+clvm_reset_command:
                     g_CluiData.bFilterEffective = 0;
                     pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
                     SetWindowTextA(GetDlgItem(hwnd, IDC_SELECTMODE), Translate("No view mode"));
@@ -1062,7 +1075,8 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                     break;
                 case IDC_CONFIGUREMODES:
                 {
-                    if(!g_ViewModeOptDlg)
+clvm_config_command:
+					if(!g_ViewModeOptDlg)
                         CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_OPT_VIEWMODES), 0, DlgProcViewModesSetup, 0);
                     break;
                 }

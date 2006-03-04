@@ -145,23 +145,23 @@ static int clientIcons[] = {
 */
 
 static struct CluiTopButton top_buttons[] = {
-	    0, 0, 0, IDC_TBTOPMENU, IDI_TBTOPMENU, 0, "CLN_topmenu", NULL, TOPBUTTON_PUSH, 1, _T("Show menu"), 
+	    0, 0, 0, IDC_TBTOPMENU, IDI_TBTOPMENU, 0, "CLN_topmenu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 1, _T("Show menu"), 
 		0, 0, 0, IDC_TBHIDEOFFLINE, IDI_HIDEOFFLINE, 0, "CLN_online", NULL, 0, 2, _T("Show / hide offline contacts"),
 		0, 0, 0, IDC_TBHIDEGROUPS, IDI_HIDEGROUPS, 0, "CLN_groups", NULL, 0, 4, _T("Toggle group mode"),
 		0, 0, 0, IDC_TBFINDANDADD, IDI_FINDANDADD, 0, "CLN_findadd", NULL, TOPBUTTON_PUSH, 8, _T("Find and add contacts"),
 		0, 0, 0, IDC_TBOPTIONS, IDI_TBOPTIONS, 0, "CLN_options", NULL, TOPBUTTON_PUSH, 16, _T("Open preferences"),
 		0, 0, 0, IDC_TBSOUND, IDI_SOUNDSON, IDI_SOUNDSOFF, "CLN_sound", "CLN_soundsoff", 0, 32, _T("Toggle sounds"),
 		0, 0, 0, IDC_TBMINIMIZE, IDI_MINIMIZE, 0, "CLN_minimize", NULL, TOPBUTTON_PUSH, 64, _T("Minimize contact list"),
-		0, 0, 0, IDC_TBTOPSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH, 128, _T("Status menu"),
-		0, 0, 0, IDC_TABSRMMSLIST, IDI_TABSRMMSESSIONLIST, 0, "CLN_slist", NULL, TOPBUTTON_PUSH, 256, _T("tabSRMM session list"),
-		0, 0, 0, IDC_TABSRMMMENU, IDI_TABSRMMMENU, 0, "CLN_menu", NULL, TOPBUTTON_PUSH, 512, _T("tabSRMM Menu"),
+		0, 0, 0, IDC_TBTOPSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH  | TOPBUTTON_SENDONDOWN, 128, _T("Status menu"),
+		0, 0, 0, IDC_TABSRMMSLIST, IDI_TABSRMMSESSIONLIST, 0, "CLN_slist", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 256, _T("tabSRMM session list"),
+		0, 0, 0, IDC_TABSRMMMENU, IDI_TABSRMMMENU, 0, "CLN_menu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 512, _T("tabSRMM Menu"),
 
-		0, 0, 0, IDC_TBSELECTVIEWMODE, IDI_CLVM_SELECT, 0, "CLN_CLVM_select", NULL, TOPBUTTON_PUSH, 1024, _T("Select view mode"),
+		0, 0, 0, IDC_TBSELECTVIEWMODE, IDI_CLVM_SELECT, 0, "CLN_CLVM_select", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 1024, _T("Select view mode"),
 		0, 0, 0, IDC_TBCONFIGUREVIEWMODE, IDI_CLVM_OPTIONS, 0, "CLN_CLVM_options", NULL, TOPBUTTON_PUSH, 2048, _T("Setup view modes"),
 		0, 0, 0, IDC_TBCLEARVIEWMODE, IDI_DELETE, 0, "CLN_CLVM_reset", NULL, TOPBUTTON_PUSH, 4096, _T("Clear view mode"),
 
-		0, 0, 0, IDC_TBGLOBALSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH, 0, _T("Set status modes"),
-		0, 0, 0, IDC_TBMENU, IDI_MINIMIZE, 0, "", NULL, TOPBUTTON_PUSH, 0, _T("Open main menu"),
+		0, 0, 0, IDC_TBGLOBALSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 0, _T("Set status modes"),
+		0, 0, 0, IDC_TBMENU, IDI_MINIMIZE, 0, "", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 0, _T("Open main menu"),
 		(HWND) - 1, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
@@ -1078,6 +1078,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					SendMessage(top_buttons[i].hwnd, BUTTONSETASPUSHBTN, 0, 0);
 				if (top_buttons[i].id != IDC_TBGLOBALSTATUS && top_buttons[i].id != IDC_TBMENU)
 					SendMessage(top_buttons[i].hwnd, BUTTONSETASFLATBTN, 0, 0);
+
+				if(top_buttons[i].flags & TOPBUTTON_SENDONDOWN)
+					SendMessage(top_buttons[i].hwnd, BM_SETASMENUACTION, 1, 0);
 
 				SendMessage(top_buttons[i].hwnd, BUTTONADDTOOLTIP, (WPARAM) TranslateTS(top_buttons[i].szTooltip), 0);
 			}

@@ -7,6 +7,14 @@
 + = new feature
 - = removed
 
+0.6.0.7  - 2006/03/xx
+
+		* added 2 items to the view mode menu, allowing to:
+		  1) setup view modes
+		  2) clear the current view mode
+		  
+		* fixed another frame ordering bug.
+
 0.6.0.6  - 2006/02/28
 
 		* fixed possible crash on exit bug.

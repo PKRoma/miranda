@@ -49,6 +49,7 @@ typedef struct {
     SIZE sLabel;
     HIMAGELIST hIml;
     int iIcon;
+	BOOL bSendOnDown;
 } MButtonCtrl;
 
 // External theme methods and properties
@@ -379,7 +380,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 bct->cHot = 0;
                 bct->flatBtn = 0;
                 bct->bThemed = FALSE;
-                bct->bSkinned = 0;
+                bct->bSkinned = bct->bSendOnDown = 0;
                 LoadTheme(bct);
                 SetWindowLong(hwndDlg, 0, (LONG) bct);
                 if (((CREATESTRUCTA *) lParam)->lpszName)
@@ -442,7 +443,8 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                         bct->pbState = 1;
                     InvalidateRect(bct->hwnd, NULL, TRUE);
                 }
-                SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM) hwndDlg);
+                if(!bct->bSendOnDown)
+					SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM) hwndDlg);
                 return 0;
             }
             break;
@@ -542,6 +544,9 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
             bct->bThemed = bct->bSkinned ? FALSE : bct->bThemed;
             InvalidateRect(bct->hwnd, NULL, TRUE);
             break;
+		case BM_SETASMENUACTION:
+			bct->bSendOnDown = wParam ? TRUE : FALSE;
+			return 0;
         case BM_SETCHECK:
             if (!bct->pushBtn)
                 break;
@@ -647,9 +652,10 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
         case WM_LBUTTONDOWN:
             {
                 if (bct->stateId != PBS_DISABLED) {
-                // don't change states if disabled
                     bct->stateId = PBS_PRESSED;
                     InvalidateRect(bct->hwnd, NULL, TRUE);
+					if(bct->bSendOnDown)
+						SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM) hwndDlg);
                 }
                 break;
             }
@@ -669,8 +675,8 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                         bct->stateId = PBS_NORMAL;
                     InvalidateRect(bct->hwnd, NULL, TRUE);
                 }
-        // Tell your daddy you got clicked.
-                SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM) hwndDlg);
+				if(!bct->bSendOnDown)
+					SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM) hwndDlg);
                 break;
             }
         case WM_MOUSEMOVE:

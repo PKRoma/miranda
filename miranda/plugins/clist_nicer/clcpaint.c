@@ -467,6 +467,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	struct ExtraCache *cEntry = NULL;
 	DWORD dwFlags = g_CluiData.dwFlags;
 	int scanIndex;
+	BOOL check_selected;
 
 	rowHeight -= g_CluiData.bRowSpacing;
 	savedCORNER = -1;
@@ -569,6 +570,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	// contacts
 
 	g_hottrack_done = 0;
+	check_selected = (!selected || selBlend);
 
 	if (type == CLCIT_CONTACT || type == CLCIT_DIVIDER) {
 		StatusItems_t *sitem, *sfirstitem, *ssingleitem, *slastitem, *slastitem_NG,
@@ -614,19 +616,19 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 
 				// draw odd/even contact underlay
 				if ((scanIndex == 0 || scanIndex % 2 == 0) && !sevencontact_pos->IGNORED) {
-					if (!selected || selBlend)
+					if (check_selected)
 						DrawAlpha(hdcMem, &rc, sevencontact_pos->COLOR, sevencontact_pos->ALPHA, sevencontact_pos->COLOR2, sevencontact_pos->COLOR2_TRANSPARENT, sevencontact_pos->GRADIENT, ssingleitem->CORNER, ssingleitem->BORDERSTYLE, sevencontact_pos->imageItem);
 				} else if (scanIndex % 2 != 0 && !soddcontact_pos->IGNORED) {
-					if (!selected || selBlend)
+					if (check_selected)
 						DrawAlpha(hdcMem, &rc, soddcontact_pos->COLOR, soddcontact_pos->ALPHA, soddcontact_pos->COLOR2, soddcontact_pos->COLOR2_TRANSPARENT, soddcontact_pos->GRADIENT, ssingleitem->CORNER, ssingleitem->BORDERSTYLE, soddcontact_pos->imageItem);
 				}
 
 				if (!sitem->IGNORED) {
-					if (!selected || selBlend)
+					if (check_selected)
 						DrawAlpha(hdcMem, &rc, sitem->COLOR, sitem->ALPHA, sitem->COLOR2, sitem->COLOR2_TRANSPARENT, sitem->GRADIENT, ssingleitem->CORNER, sitem->BORDERSTYLE, sitem->imageItem);
 					savedCORNER = ssingleitem->CORNER;
 				}
-				if (!selected || selBlend)
+				if (check_selected)
 					DrawAlpha(hdcMem, &rc, ssingleitem->COLOR, ssingleitem->ALPHA, ssingleitem->COLOR2, ssingleitem->COLOR2_TRANSPARENT, ssingleitem->GRADIENT, ssingleitem->CORNER, ssingleitem->BORDERSTYLE, ssingleitem->imageItem);
 			} else if (scanIndex == 0 && group->cl.count > 1 && !sfirstitem->IGNORED && group->parent != NULL) {
 				rc.left = sfirstitem->MARGIN_LEFT + bg_indent_l;
@@ -636,19 +638,19 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 
 				// draw odd/even contact underlay
 				if ((scanIndex == 0 || scanIndex % 2 == 0) && !sevencontact_pos->IGNORED) {
-					if (!selected || selBlend)
+					if (check_selected)
 						DrawAlpha(hdcMem, &rc, sevencontact_pos->COLOR, sevencontact_pos->ALPHA, sevencontact_pos->COLOR2, sevencontact_pos->COLOR2_TRANSPARENT, sevencontact_pos->GRADIENT, sfirstitem->CORNER, sevencontact_pos->BORDERSTYLE, sevencontact_pos->imageItem);
 				} else if (scanIndex % 2 != 0 && !soddcontact_pos->IGNORED) {
-					if (!selected || selBlend)
+					if (check_selected)
 						DrawAlpha(hdcMem, &rc, soddcontact_pos->COLOR, soddcontact_pos->ALPHA, soddcontact_pos->COLOR2, soddcontact_pos->COLOR2_TRANSPARENT, soddcontact_pos->GRADIENT, sfirstitem->CORNER, soddcontact_pos->BORDERSTYLE, soddcontact_pos->imageItem);
 				}
 
 				if (!sitem->IGNORED) {
-					if (!selected || selBlend)
+					if (check_selected)
 						DrawAlpha(hdcMem, &rc, sitem->COLOR, sitem->ALPHA, sitem->COLOR2, sitem->COLOR2_TRANSPARENT, sitem->GRADIENT, sfirstitem->CORNER, sitem->BORDERSTYLE, sitem->imageItem);
 					savedCORNER = sfirstitem->CORNER;
 				}
-				if (!selected || selBlend)
+				if (check_selected)
 					DrawAlpha(hdcMem, &rc, sfirstitem->COLOR, sfirstitem->ALPHA, sfirstitem->COLOR2, sfirstitem->COLOR2_TRANSPARENT, sfirstitem->GRADIENT, sfirstitem->CORNER, sfirstitem->BORDERSTYLE, sfirstitem->imageItem);
 			} else if (scanIndex == group->cl.count - 1 && !slastitem->IGNORED && group->parent != NULL) {
 				// last item of group                                                                       
@@ -659,19 +661,19 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 
 				// draw odd/even contact underlay
 				if ((scanIndex == 0 || scanIndex % 2 == 0) && !sevencontact_pos->IGNORED) {
-					if (!selected || selBlend)
+					if (check_selected)
 						DrawAlpha(hdcMem, &rc, sevencontact_pos->COLOR, sevencontact_pos->ALPHA, sevencontact_pos->COLOR2, sevencontact_pos->COLOR2_TRANSPARENT, sevencontact_pos->GRADIENT, slastitem->CORNER, sevencontact_pos->BORDERSTYLE, sevencontact_pos->imageItem);
 				} else if (scanIndex % 2 != 0 && !soddcontact_pos->IGNORED) {
-					if (!selected || selBlend)
+					if (check_selected)
 						DrawAlpha(hdcMem, &rc, soddcontact_pos->COLOR, soddcontact_pos->ALPHA, soddcontact_pos->COLOR2, soddcontact_pos->COLOR2_TRANSPARENT, soddcontact_pos->GRADIENT, slastitem->CORNER, soddcontact_pos->BORDERSTYLE, soddcontact_pos->imageItem);
 				}
 
 				if (!sitem->IGNORED) {
-					if (!selected || selBlend)
+					if (check_selected)
 						DrawAlpha(hdcMem, &rc, sitem->COLOR, sitem->ALPHA, sitem->COLOR2, sitem->COLOR2_TRANSPARENT, sitem->GRADIENT, slastitem->CORNER, sitem->BORDERSTYLE, sitem->imageItem);
 					savedCORNER = slastitem->CORNER;
 				}
-				if (!selected || selBlend)
+				if (check_selected)
 					DrawAlpha(hdcMem, &rc, slastitem->COLOR, slastitem->ALPHA, slastitem->COLOR2, slastitem->COLOR2_TRANSPARENT, slastitem->GRADIENT, slastitem->CORNER, slastitem->BORDERSTYLE, slastitem->imageItem);
 			} else
 				// - - - Non-grouped items - - -                    
@@ -687,19 +689,19 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 
 						// draw odd/even contact underlay
 						if ((scanIndex == 0 || scanIndex % 2 == 0) && !sevencontact_pos->IGNORED) {
-							if (!selected || selBlend)
+							if (check_selected)
 								DrawAlpha(hdcMem, &rc, sevencontact_pos->COLOR, sevencontact_pos->ALPHA, sevencontact_pos->COLOR2, sevencontact_pos->COLOR2_TRANSPARENT, sevencontact_pos->GRADIENT, sfirstitem_NG->CORNER, sevencontact_pos->BORDERSTYLE, sevencontact_pos->imageItem);
 						} else if (scanIndex % 2 != 0 && !soddcontact_pos->IGNORED) {
-							if (!selected || selBlend)
+							if (check_selected)
 								DrawAlpha(hdcMem, &rc, soddcontact_pos->COLOR, soddcontact_pos->ALPHA, soddcontact_pos->COLOR2, soddcontact_pos->COLOR2_TRANSPARENT, soddcontact_pos->GRADIENT, sfirstitem_NG->CORNER, soddcontact_pos->BORDERSTYLE, soddcontact_pos->imageItem);
 						}
 
 						if (!sitem->IGNORED) {
-							if (!selected || selBlend)
+							if (check_selected)
 								DrawAlpha(hdcMem, &rc, sitem->COLOR, sitem->ALPHA, sitem->COLOR2, sitem->COLOR2_TRANSPARENT, sitem->GRADIENT, sfirstitem_NG->CORNER, sitem->BORDERSTYLE, sitem->imageItem);
 							savedCORNER = sfirstitem_NG->CORNER;
 						}
-						if (!selected || selBlend)
+						if (check_selected)
 							DrawAlpha(hdcMem, &rc, sfirstitem_NG->COLOR, sfirstitem_NG->ALPHA, sfirstitem_NG->COLOR2, sfirstitem_NG->COLOR2_TRANSPARENT, sfirstitem_NG->GRADIENT, sfirstitem_NG->CORNER, sfirstitem->BORDERSTYLE, sfirstitem->imageItem);
 					} else if (type != CLCIT_GROUP // not a group
 						&& group->parent == NULL && !slastitem_NG->IGNORED && scanIndex == group->cl.count - 1 && (*bFirstNGdrawn)) {
@@ -712,19 +714,19 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 
 							// draw odd/even contact underlay
 							if ((scanIndex == 0 || scanIndex % 2 == 0) && !sevencontact_pos->IGNORED) {
-								if (!selected || selBlend)
+								if (check_selected)
 									DrawAlpha(hdcMem, &rc, sevencontact_pos->COLOR, sevencontact_pos->ALPHA, sevencontact_pos->COLOR2, sevencontact_pos->COLOR2_TRANSPARENT, sevencontact_pos->GRADIENT, slastitem_NG->CORNER, sevencontact_pos->BORDERSTYLE, sevencontact_pos->imageItem);
 							} else if (scanIndex % 2 != 0 && !soddcontact_pos->IGNORED) {
-								if (!selected || selBlend)
+								if (check_selected)
 									DrawAlpha(hdcMem, &rc, soddcontact_pos->COLOR, soddcontact_pos->ALPHA, soddcontact_pos->COLOR2, soddcontact_pos->COLOR2_TRANSPARENT, soddcontact_pos->GRADIENT, slastitem_NG->CORNER, soddcontact_pos->BORDERSTYLE, soddcontact_pos->imageItem);
 							}
 
 							if (!sitem->IGNORED) {
-								if (!selected || selBlend)
+								if (check_selected)
 									DrawAlpha(hdcMem, &rc, sitem->COLOR, sitem->ALPHA, sitem->COLOR2, sitem->COLOR2_TRANSPARENT, sitem->GRADIENT, slastitem_NG->CORNER, sitem->BORDERSTYLE, sitem->imageItem);
 								savedCORNER = slastitem_NG->CORNER;
 							}
-							if (!selected || selBlend)
+							if (check_selected)
 								DrawAlpha(hdcMem, &rc, slastitem_NG->COLOR, slastitem_NG->ALPHA, slastitem_NG->COLOR2, slastitem_NG->COLOR2_TRANSPARENT, slastitem_NG->GRADIENT, slastitem_NG->CORNER, slastitem->BORDERSTYLE, slastitem->imageItem);
 						} else if (type != CLCIT_GROUP // not a group
 							&& group->parent == NULL && !slastitem_NG->IGNORED && !(*bFirstNGdrawn)) {
@@ -737,32 +739,32 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 
 								// draw odd/even contact underlay
 								if ((scanIndex == 0 || scanIndex % 2 == 0) && !sevencontact_pos->IGNORED) {
-									if (!selected || selBlend)
+									if (check_selected)
 										DrawAlpha(hdcMem, &rc, sevencontact_pos->COLOR, sevencontact_pos->ALPHA, sevencontact_pos->COLOR2, sevencontact_pos->COLOR2_TRANSPARENT, sevencontact_pos->GRADIENT, ssingleitem_NG->CORNER, sevencontact_pos->BORDERSTYLE, sevencontact_pos->imageItem);
 								} else if (scanIndex % 2 != 0 && !soddcontact_pos->IGNORED) {
-									if (!selected || selBlend)
+									if (check_selected)
 										DrawAlpha(hdcMem, &rc, soddcontact_pos->COLOR, soddcontact_pos->ALPHA, soddcontact_pos->COLOR2, soddcontact_pos->COLOR2_TRANSPARENT, soddcontact_pos->GRADIENT, ssingleitem_NG->CORNER, soddcontact_pos->BORDERSTYLE, soddcontact_pos->imageItem);
 								}
 
 								if (!sitem->IGNORED) {
-									if (!selected || selBlend)
+									if (check_selected)
 										DrawAlpha(hdcMem, &rc, sitem->COLOR, sitem->ALPHA, sitem->COLOR2, sitem->COLOR2_TRANSPARENT, sitem->GRADIENT, ssingleitem_NG->CORNER, sitem->BORDERSTYLE, sitem->imageItem);
 									savedCORNER = ssingleitem_NG->CORNER;
 								}
-								if (!selected || selBlend)
+								if (check_selected)
 									DrawAlpha(hdcMem, &rc, ssingleitem_NG->COLOR, ssingleitem_NG->ALPHA, ssingleitem_NG->COLOR2, ssingleitem_NG->COLOR2_TRANSPARENT, ssingleitem_NG->GRADIENT, ssingleitem_NG->CORNER, ssingleitem->BORDERSTYLE, ssingleitem->imageItem);
 							} else if (!sitem->IGNORED) {
 								// draw default grouped
 								// draw odd/even contact underlay
 								if ((scanIndex == 0 || scanIndex % 2 == 0) && !sevencontact_pos->IGNORED) {
-									if (!selected || selBlend)
+									if (check_selected)
 										DrawAlpha(hdcMem, &rc, sevencontact_pos->COLOR, sevencontact_pos->ALPHA, sevencontact_pos->COLOR2, sevencontact_pos->COLOR2_TRANSPARENT, sevencontact_pos->GRADIENT, sitem->CORNER, sevencontact_pos->BORDERSTYLE, sevencontact_pos->imageItem);
 								} else if (scanIndex % 2 != 0 && !soddcontact_pos->IGNORED) {
-									if (!selected || selBlend)
+									if (check_selected)
 										DrawAlpha(hdcMem, &rc, soddcontact_pos->COLOR, soddcontact_pos->ALPHA, soddcontact_pos->COLOR2, soddcontact_pos->COLOR2_TRANSPARENT, soddcontact_pos->GRADIENT, sitem->CORNER, soddcontact_pos->BORDERSTYLE, soddcontact_pos->imageItem);
 								}
 
-								if (!selected || selBlend)
+								if (check_selected)
 									DrawAlpha(hdcMem, &rc, sitem->COLOR, sitem->ALPHA, sitem->COLOR2, sitem->COLOR2_TRANSPARENT, sitem->GRADIENT, sitem->CORNER, sitem->BORDERSTYLE, sitem->imageItem);
 								savedCORNER = sitem->CORNER;
 							}
@@ -780,7 +782,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 				rc.top = y + sempty->MARGIN_TOP;
 				rc.right = clRect->right - sempty->MARGIN_RIGHT - bg_indent_r;
 				rc.bottom = y + rowHeight - sempty->MARGIN_BOTTOM;
-				//if (!selected || selBlend)
+				//if (check_selected)
 				DrawAlpha(hdcMem, &rc, sempty->COLOR, sempty->ALPHA, sempty->COLOR2, sempty->COLOR2_TRANSPARENT, sempty->GRADIENT, sempty->CORNER, sempty->BORDERSTYLE, sempty->imageItem);
 				savedCORNER = sempty->CORNER;
 				oldGroupColor = SetTextColor(hdcMem, sempty->TEXTCOLOR);
@@ -791,7 +793,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 				rc.top = y + sexpanded->MARGIN_TOP;
 				rc.right = clRect->right - sexpanded->MARGIN_RIGHT - bg_indent_r;
 				rc.bottom = y + rowHeight - (char) sexpanded->MARGIN_BOTTOM;
-				//if (!selected || selBlend)
+				//if (check_selected)
 				DrawAlpha(hdcMem, &rc, sexpanded->COLOR, sexpanded->ALPHA, sexpanded->COLOR2, sexpanded->COLOR2_TRANSPARENT, sexpanded->GRADIENT, sexpanded->CORNER, sexpanded->BORDERSTYLE, sexpanded->imageItem);
 				savedCORNER = sexpanded->CORNER;
 				oldGroupColor = SetTextColor(hdcMem, sexpanded->TEXTCOLOR);
@@ -803,7 +805,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 				rc.top = y + scollapsed->MARGIN_TOP;
 				rc.right = clRect->right - scollapsed->MARGIN_RIGHT - bg_indent_r;
 				rc.bottom = y + rowHeight - scollapsed->MARGIN_BOTTOM;
-				//if (!selected || selBlend)
+				//if (check_selected)
 				DrawAlpha(hdcMem, &rc, scollapsed->COLOR, scollapsed->ALPHA, scollapsed->COLOR2, scollapsed->COLOR2_TRANSPARENT, scollapsed->GRADIENT, scollapsed->CORNER, scollapsed->BORDERSTYLE, scollapsed->imageItem);
 				savedCORNER = scollapsed->CORNER;
 				oldGroupColor = SetTextColor(hdcMem, scollapsed->TEXTCOLOR);
@@ -825,6 +827,8 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 					DrawAlpha(hdcMem, &rc, sselected->COLOR, sselected->ALPHA, sselected->COLOR2, sselected->COLOR2_TRANSPARENT, sselected->GRADIENT, sselected->CORNER, sselected->BORDERSTYLE, sselected->imageItem);
 				}
 			}
+			else
+				FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
 			SetTextColor(hdcMem, dat->selTextColour);
 		}
 	} 

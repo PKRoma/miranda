@@ -369,6 +369,7 @@ struct NotifyMenuItemExData {
 // #define NOTIFY_HEIGHT 24
 
 #define TOPBUTTON_PUSH 1
+#define TOPBUTTON_SENDONDOWN 2
 
 struct CluiTopButton {
 	HWND hwnd;
@@ -547,6 +548,7 @@ void IMG_DeleteItems();
 #define BM_SETPRIVATEICON (WM_USER + 6)
 #define BM_SETIMLICON (WM_USER + 7)
 #define BM_SETSKINNED (WM_USER + 8)
+#define BM_SETASMENUACTION (WM_USER + 9)
 
 #define EIMG_MAIL 0
 #define EIMG_URL 1
