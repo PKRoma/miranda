@@ -1001,6 +1001,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
+
     UnhookEvent(hEventDbEventAdded);
     UnhookEvent(hEventDispatch);
     UnhookEvent(hEventDbSettingChange);
@@ -1080,7 +1081,7 @@ int SplitmsgShutdown(void)
 {
     int i;
     
-    DestroyCursor(myGlobals.hCurSplitNS);
+	DestroyCursor(myGlobals.hCurSplitNS);
     DestroyCursor(myGlobals.hCurHyperlinkHand);
     DestroyCursor(myGlobals.hCurSplitWE);
     DeleteObject(myGlobals.m_hFontWebdings);

@@ -239,8 +239,12 @@ void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
             hIcon = myGlobals.g_iconErr;
         else if(dat->mayFlashTab)
             hIcon = dat->iFlashIcon;
-        else
-            hIcon = dat->hTabIcon;
+		else {
+			if(dat->hTabIcon == dat->hTabStatusIcon && dat->hXStatusIcon)
+				hIcon = dat->hXStatusIcon;
+			else
+				hIcon = dat->hTabIcon;
+		}
 
         if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(myGlobals.m_TabAppearance & TCF_FLASHICON)) {
             DWORD ix = rcItem->left + tabdat->m_xpad - 1;
@@ -988,7 +992,7 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
             TranslateDialogDefault(hwndDlg);
             
-            SetWindowText(hwndDlg, TranslateT("Configure tab appearance"));
+            SetWindowTextA(hwndDlg, Translate("Configure tab appearance"));
             CheckDlgButton(hwndDlg, IDC_FLATTABS2, dwFlags & TCF_FLAT);
             CheckDlgButton(hwndDlg, IDC_FLASHICON, dwFlags & TCF_FLASHICON);
             CheckDlgButton(hwndDlg, IDC_FLASHLABEL, dwFlags & TCF_FLASHLABEL);

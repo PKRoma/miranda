@@ -1577,14 +1577,19 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
                 WORD wStatus = dat->bIsMeta ? dat->wMetaStatus : dat->wStatus;
                 t_hwnd = dat->pContainer->hwnd;
-                
+
+				if(dat->hXStatusIcon) {
+					DestroyIcon(dat->hXStatusIcon);
+					dat->hXStatusIcon = 0;
+				}
                 if (szProto) {
                     dat->hTabIcon = dat->hTabStatusIcon = LoadSkinnedProtoIcon(szProto, wStatus);
+					dat->hXStatusIcon = GetXStatusIcon(dat);
                     SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BUTTONSETASFLATBTN + 11, 0, dat->dwEventIsShown & MWF_SHOW_ISIDLE ? 1 : 0);
-                    SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BM_SETIMAGE, IMAGE_ICON, (LPARAM) dat->hTabIcon);
+					SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabIcon));
 
                     if (dat->pContainer->hwndActive == hwndDlg)
-                        SendMessage(t_hwnd, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) dat->hTabIcon);
+                        SendMessage(t_hwnd, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabIcon));
                 }
                 return 0;
             }
@@ -5265,6 +5270,9 @@ verify:
             
             if (dat->hSmileyIcon)
                 DestroyIcon(dat->hSmileyIcon);
+			
+			if (dat->hXStatusIcon)
+				DestroyIcon(dat->hXStatusIcon);
 
             if (dat->hwndTip)
                 DestroyWindow(dat->hwndTip);

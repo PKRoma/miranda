@@ -210,8 +210,8 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
             pContainer->hContactFrom = hContactFrom;
         }
         pContainer->hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGCONTAINER), NULL, DlgProcContainer, (LPARAM) pContainer);
-		if(pContainer->bSkinned)
-			RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
+		//if(pContainer->bSkinned)
+		//	RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
         return pContainer;
     }
     return NULL;
@@ -1064,9 +1064,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         SetWindowText(hwndDlg, szNewTitle);
                         free(szNewTitle);
                     }
-                    SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus));
-					if(pContainer->bSkinned)
-						RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
+                    //SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus));
+					SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabStatusIcon));
+					//if(pContainer->bSkinned)
+					//	RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
                 }
                 break;
             }

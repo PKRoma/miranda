@@ -2119,19 +2119,14 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         dis->rcItem.left +=2;
         if(dat->szNickname[0]) {
             HFONT hOldFont = 0;
-            
-            if(dat->xStatus > 0 && dat->xStatus <= 32) {
-				char szServiceName[128];
-				HICON xIcon;
+			HICON xIcon = GetXStatusIcon(dat);
+			
+			if(xIcon) {
+				DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, xIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
+				DestroyIcon(xIcon);
+				dis->rcItem.left += 21;
+			}
 
-				mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", dat->bIsMeta ? dat->szMetaProto : dat->szProto);
-
-				if(ServiceExists(szServiceName) && ((xIcon = (HICON)CallProtoService(dat->bIsMeta ? dat->szMetaProto : dat->szProto, "/GetXStatusIcon", dat->xStatus, 0)) != 0)) {
-					DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, xIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
-					DestroyIcon(xIcon);
-					dis->rcItem.left += 21;
-				}
-            }
             if(myGlobals.ipConfig.isValid) {
                 hOldFont = SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_NICK]);
                 SetTextColor(dis->hDC, myGlobals.ipConfig.clrs[IPFONTID_NICK]);
@@ -2403,6 +2398,21 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
 
     ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), (dat->doSmileys && showToolbar) ? SW_SHOW : SW_HIDE);
     EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), dat->doSmileys ? TRUE : FALSE);
+}
+
+HICON GetXStatusIcon(struct MessageWindowData *dat)
+{
+	char szServiceName[128];
+	char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+
+	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "use_xicons", 0))
+		return 0;
+
+	mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", szProto);
+
+	if(ServiceExists(szServiceName) && dat->xStatus > 0 && dat->xStatus <= 32)
+		return (HICON)(CallProtoService(szProto, "/GetXStatusIcon", dat->xStatus, 0));
+	return 0;
 }
 
 LRESULT GetSendButtonState(HWND hwnd)

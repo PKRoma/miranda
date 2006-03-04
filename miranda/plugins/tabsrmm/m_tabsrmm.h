@@ -271,7 +271,7 @@ struct MessageWindowData {
 	struct ContainerWindowData *pContainer;		// parent container description structure
 	int iTabID;			// XXX mod (tab support)
 	BOOL bTabFlash;		// XXX tab flashing state...
-    HICON hTabIcon, hTabStatusIcon;
+    HICON hTabIcon, hTabStatusIcon, hXStatusIcon;
 	BOOL mayFlashTab;	// XXX tabs...
     HKL  hkl;           // keyboard layout identifier
     DWORD dwTickLastEvent;
