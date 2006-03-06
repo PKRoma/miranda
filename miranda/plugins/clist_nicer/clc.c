@@ -224,7 +224,7 @@ static int ClcModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int ClcShutdown(WPARAM wParam, LPARAM lParam)
+static int ClcPreshutdown(WPARAM wParam, LPARAM lParam)
 {
 	SFL_Destroy();
 	g_shutDown = TRUE;
@@ -234,6 +234,11 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	if (hIcoLibChanged)
 		UnhookEvent(hIcoLibChanged);
 
+	return 0;
+}
+
+int ClcShutdown(WPARAM wParam, LPARAM lParam)
+{
 	if (g_CluiData.hIconInvisible)
 		DestroyIcon(g_CluiData.hIconInvisible);
 	if (g_CluiData.hIconVisible)
@@ -296,7 +301,7 @@ int LoadCLCModule(void)
 	hClcSettingsChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ClcSettingChanged);
 	hClcDBEvent = HookEvent(ME_DB_EVENT_ADDED, ClcEventAdded);
 	HookEvent(ME_OPT_INITIALISE, ClcOptInit);
-	HookEvent(ME_SYSTEM_SHUTDOWN, ClcShutdown);
+	HookEvent(ME_SYSTEM_SHUTDOWN, ClcPreshutdown);
 	return 0;
 }
 

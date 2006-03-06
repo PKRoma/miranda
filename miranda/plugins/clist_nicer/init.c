@@ -383,5 +383,6 @@ int __declspec(dllexport) Unload(void)
 {
 	if (IsWindow(pcli->hwndContactList))
 		DestroyWindow(pcli->hwndContactList);
+	ClcShutdown(0, 0);
 	return 0;
 }
