@@ -139,7 +139,7 @@ StatusItems_t StatusItems[] = {
         CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
         CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
-    }, {"Inputbox", "TSKIN_INPUTBOX", ID_EXTBKINPUTBOX,
+    }, {"Frame", "TSKIN_FRAME", ID_EXTBKFRAME,
         CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
         CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
@@ -1297,11 +1297,8 @@ void IMG_DeleteItems()
 		DestroyIcon(myGlobals.g_maxGlyph);
 	if(g_ContainerColorKeyBrush)
 		DeleteObject(g_ContainerColorKeyBrush);
-	if(myGlobals.hFontCaption)
-		DeleteObject(myGlobals.hFontCaption);
 
 	myGlobals.g_minGlyph = myGlobals.g_maxGlyph = myGlobals.g_closeGlyph = 0;
-	myGlobals.hFontCaption = 0;
 	g_ContainerColorKeyBrush = 0;
 }
 
@@ -1362,6 +1359,19 @@ static void SkinLoadIcon(char *file, char *name, HICON *hIcon)
 	}
 }
 
+static void SkinCalcFrameWidth()
+{
+	NONCLIENTMETRICS ncm = {0};
+
+	ncm.cbSize = sizeof(ncm);
+	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, 0, &ncm, 0);
+	
+	myGlobals.g_realSkinnedFrame_left = myGlobals.g_SkinnedFrame_left - ncm.iBorderWidth;
+	myGlobals.g_realSkinnedFrame_right = myGlobals.g_SkinnedFrame_right - ncm.iBorderWidth;
+	myGlobals.g_realSkinnedFrame_bottom = myGlobals.g_SkinnedFrame_bottom - ncm.iBorderWidth;
+	myGlobals.g_realSkinnedFrame_caption = myGlobals.g_SkinnedFrame_caption - ncm.iCaptionHeight;
+}
+
 void LoadSkinItems(char *file)
 {
     char *p;
@@ -1408,6 +1418,25 @@ void LoadSkinItems(char *file)
 	g_framelessSkinmode = GetPrivateProfileIntA("Global", "framelessmode", 0, file);
 	g_compositedWindow = GetPrivateProfileIntA("Global", "compositedwindow", 0, file);
 	
+	myGlobals.g_SkinnedFrame_left = GetPrivateProfileIntA("WindowFrame", "left", 4, file);
+	myGlobals.g_SkinnedFrame_right = GetPrivateProfileIntA("WindowFrame", "right", 4, file);
+	myGlobals.g_SkinnedFrame_caption = GetPrivateProfileIntA("WindowFrame", "Caption", 24, file);
+	myGlobals.g_SkinnedFrame_bottom = GetPrivateProfileIntA("WindowFrame", "bottom", 4, file);
+
+	myGlobals.bClipBorder = GetPrivateProfileIntA("WindowFrame", "ClipFrame", 0, file);
+	{
+		BYTE radius_tl, radius_tr, radius_bl, radius_br;
+
+		radius_tl = GetPrivateProfileIntA("WindowFrame", "RadiusTL", 0, file);
+		radius_tr = GetPrivateProfileIntA("WindowFrame", "RadiusTR", 0, file);
+		radius_bl = GetPrivateProfileIntA("WindowFrame", "RadiusBL", 0, file);
+		radius_br = GetPrivateProfileIntA("WindowFrame", "RadiusBR", 0, file);
+
+		myGlobals.bRoundedCorner = radius_tl;
+	}
+
+	SkinCalcFrameWidth();
+
 	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_left", (BYTE)GetPrivateProfileIntA("ClientArea", "Left", 0, file));
 	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_right", (BYTE)GetPrivateProfileIntA("ClientArea", "Right", 0, file));
 	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_top", (BYTE)GetPrivateProfileIntA("ClientArea", "Top", 0, file));

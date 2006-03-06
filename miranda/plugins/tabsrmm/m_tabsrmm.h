@@ -167,6 +167,15 @@ typedef struct _tagTemplateSet {
     char szSetName[20];     // everything in this world needs a name. so does this poor template set.
 } TemplateSet;
 
+struct TitleBtn {
+	BOOL isHot;
+	BOOL isPressed;
+};
+
+#define BTN_MIN 0
+#define BTN_MAX 1
+#define BTN_CLOSE 2
+
 struct ContainerWindowData {
 	struct ContainerWindowData *pNextContainer;
 	TCHAR szName[CONTAINER_NAMELEN + 4];		// container name
@@ -210,6 +219,9 @@ struct ContainerWindowData {
 	HBITMAP cachedHBM, oldHBM;
 	SIZE oldDCSize;
 	BOOL bSkinned;
+	RECT rcClose, rcMin, rcMax;
+	struct TitleBtn buttons[3];
+	struct TitleBtn oldbuttons[3];
 };
 
 #define STICK_ICON_MSG 10
@@ -475,11 +487,13 @@ typedef struct _globals {
     COLORREF crDefault, crIncoming, crOutgoing;
     BOOL bUnicodeBuild;
     BYTE bClipBorder;
-    BOOL bRoundedCorner;
+    DWORD bRoundedCorner;
 	BYTE bAvatarBoderType;
 	HFONT hFontCaption;
 	COLORREF skinDefaultFontColor;
 	BYTE m_dropShadow;
+	char g_SkinnedFrame_left, g_SkinnedFrame_right, g_SkinnedFrame_bottom, g_SkinnedFrame_caption;
+	char g_realSkinnedFrame_left, g_realSkinnedFrame_right, g_realSkinnedFrame_bottom, g_realSkinnedFrame_caption;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

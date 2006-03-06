@@ -1170,9 +1170,6 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
             SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETACCEL, 0, (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", 1000));
             SetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, myGlobals.szDefaultTitleFormat);
             SendDlgItemMessage(hwndDlg, IDC_DEFAULTTITLEFORMAT, EM_LIMITTEXT, TITLE_FORMATLEN - 1, 0);
-            CheckDlgButton(hwndDlg, IDC_ROUNDEDCORNERS, myGlobals.bRoundedCorner);
-            SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
-            SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_SETPOS, 0, (int)myGlobals.bClipBorder);
 			CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0) ? 1 : 0);
 			SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_USESKIN, BN_CLICKED), 0);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_USESKIN), IsWinVer2000Plus() ? TRUE : FALSE);
@@ -1224,9 +1221,6 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 						EnableWindow(GetDlgItem(hwndDlg, IDC_CONTAINERSKIN), useskin ? TRUE : FALSE);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_GETCONTAINERSKINNAME), useskin ? TRUE : FALSE);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), useskin ? TRUE : FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_ROUNDEDCORNERS), useskin ? TRUE : FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_CLIPSPIN), useskin ? TRUE : FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_CLIP), useskin ? TRUE : FALSE);
 						if(lParam) {
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useskin", useskin);
 							ReloadContainerSkin();
@@ -1266,11 +1260,6 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "dropshadow", IsDlgButtonChecked(hwndDlg, IDC_DROPSHADOW) ? 1 : 0);
 							myGlobals.m_dropShadow = IsDlgButtonChecked(hwndDlg, IDC_DROPSHADOW) ? 1 : 0;
 
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "bclip", (BYTE)SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_GETPOS, 0, 0));
-                            myGlobals.bClipBorder = (BYTE)SendDlgItemMessage(hwndDlg, IDC_CLIPSPIN, UDM_GETPOS, 0, 0);
-
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "brounded", IsDlgButtonChecked(hwndDlg, IDC_ROUNDEDCORNERS) ? 1 : 0);
-                            myGlobals.bRoundedCorner = IsDlgButtonChecked(hwndDlg, IDC_ROUNDEDCORNERS) ? 1 : 0;
                             GetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, szDefaultName, TITLE_FORMATLEN);
 #if defined(_UNICODE)
                             DBWriteContactSettingWString(NULL, SRMSGMOD_T, "titleformatW", szDefaultName);
@@ -2096,8 +2085,6 @@ void ReloadGlobals()
      myGlobals.m_smcxicon = GetSystemMetrics(SM_CXSMICON);
      myGlobals.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
      myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
-     myGlobals.bClipBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, "bclip", 0);
-     myGlobals.bRoundedCorner = DBGetContactSettingByte(NULL, SRMSGMOD_T, "brounded", 0);
      myGlobals.m_PasteAndSend = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "pasteandsend", 0);
      myGlobals.m_szNoStatus = TranslateT("No status message available");
      myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN);

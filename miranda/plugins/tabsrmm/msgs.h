@@ -372,6 +372,7 @@ extern const int msgDlgFontCount;
 #define TIMEOUT_FLASHWND     900
 #define TIMERID_HEARTBEAT    2
 #define TIMEOUT_HEARTBEAT    20000
+#define TIMERID_HOVER 10
 
 #define SRMSGMOD "SRMsg"
 #define SRMSGMOD_T "Tab_SRMsg"
@@ -585,7 +586,7 @@ typedef struct {
 #define ID_EXTBKTABITEMACTIVE 11
 #define ID_EXTBKTABITEMBOTTOM 12
 #define ID_EXTBKTABITEMACTIVEBOTTOM 13
-#define ID_EXTBKINPUTBOX 14
+#define ID_EXTBKFRAME 14
 #define ID_EXTBK_LAST 14
 
 #define CLCDEFAULT_GRADIENT 0

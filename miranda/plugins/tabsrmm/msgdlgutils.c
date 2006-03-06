@@ -2119,7 +2119,10 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         dis->rcItem.left +=2;
         if(dat->szNickname[0]) {
             HFONT hOldFont = 0;
-			HICON xIcon = GetXStatusIcon(dat);
+			HICON xIcon = 0;
+			
+			if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "use_xicons", 0))
+				xIcon = GetXStatusIcon(dat);
 			
 			if(xIcon) {
 				DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, xIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
@@ -2404,9 +2407,6 @@ HICON GetXStatusIcon(struct MessageWindowData *dat)
 {
 	char szServiceName[128];
 	char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-
-	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "use_xicons", 0))
-		return 0;
 
 	mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", szProto);
 

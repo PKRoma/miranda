@@ -383,7 +383,6 @@
 #define IDC_FLASHICON                   1289
 #define IDC_USEPRIVATETITLE             1289
 #define IDC_SHOWAVATARS                 1289
-#define IDC_ROUNDEDCORNERS              1289
 #define IDC_ALWAYSTRIM                  1289
 #define IDC_SYNCSOUNDS                  1290
 #define IDC_FLASHLABEL                  1290
@@ -427,10 +426,8 @@
 #define IDC_NRFLASHSPIN                 1326
 #define IDC_FLASHINTERVAL               1327
 #define IDC_USEKBDHOOK                  1328
-#define IDC_CLIP                        1328
 #define IDC_STATIC111                   1329
 #define IDC_NRFLASHSPIN2                1329
-#define IDC_CLIPSPIN                    1329
 #define IDC_TAB1                        1330
 #define IDC_OPTIONSTAB                  1331
 #define IDC_EXTRALFSPIN                 1332

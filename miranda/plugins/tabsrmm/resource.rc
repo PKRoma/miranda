@@ -111,9 +111,6 @@ CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_MSGTABS,"TSTabCtrlClass",0xc048,31,7,5,5
-    CONTROL         "",IDC_CLOSE,"TSButtonClass",WS_TABSTOP,146,33,24,12
-    CONTROL         "",IDC_MINIMIZE,"TSButtonClass",WS_TABSTOP,146,33,24,12
-    CONTROL         "",IDC_MAXIMIZE,"TSButtonClass",WS_TABSTOP,146,33,24,12
 END
 
 IDD_USERPREFS DIALOGEX 0, 0, 278, 306
@@ -372,11 +369,6 @@ BEGIN
     CONTROL         "Use the snapping windows plugin",IDC_USESNAPPING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,142,157,11
     GROUPBOX        "Default window title format",IDC_STATIC,3,196,300,28
     EDITTEXT        IDC_DEFAULTTITLEFORMAT,10,207,274,14,ES_AUTOHSCROLL
-    CONTROL         "Rounded window",IDC_ROUNDEDCORNERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,159,132,12
-    EDITTEXT        IDC_CLIP,217,158,34,12,ES_AUTOHSCROLL
-    CONTROL         "",IDC_CLIPSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,243,159,14,11
-    LTEXT           "pixel",IDC_STATIC,263,160,32,11
-    LTEXT           "Clip border by",IDC_STATIC,159,160,49,10
     EDITTEXT        IDC_CONTAINERSKIN,93,178,113,13,ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "...",IDC_GETCONTAINERSKINNAME,213,178,21,13
     PUSHBUTTON      "Reload",IDC_RELOAD,241,178,53,13
@@ -982,8 +974,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,99
- PRODUCTVERSION 0,9,9,99
+ FILEVERSION 0,9,9,100
+ PRODUCTVERSION 0,9,9,100
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -1000,15 +992,15 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Miranda Open Source Project"
             VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
-            VALUE "FileVersion", "0, 9, 9, 99"
+            VALUE "FileVersion", "0, 9, 9, 100"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright © 2005 The Miranda IM project"
             VALUE "LegalTrademarks", "Gnu General Public License V2"
             VALUE "OriginalFilename", "tabSRMM.dll"
             VALUE "PrivateBuild", "No"
             VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
-            VALUE "ProductVersion", "0, 9, 9, 99"
-            VALUE "SpecialBuild", "FC2"
+            VALUE "ProductVersion", "0, 9, 9, 100"
+            VALUE "SpecialBuild", "PRE1"
         END
     END
     BLOCK "VarFileInfo"

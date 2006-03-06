@@ -704,6 +704,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
         case WM_ERASEBKGND:
         {
 			if(mwdat->pContainer->bSkinned) {
+				/*
 				StatusItems_t *item = &StatusItems[ID_EXTBKINPUTBOX];
 
 				if(!item->IGNORED) {
@@ -724,7 +725,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 					DeleteObject(bm);
 					DeleteDC(hdcMem);
 				}
-				else
+				else*/
 					return 0;
 			}
 			else {
@@ -902,7 +903,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if(dat->controlsHidden & TOOLBAR_PROTO_HIDDEN)
-                OffsetRect(&urc->rcItem, -(rcButton.right + 10), 0);
+                OffsetRect(&urc->rcItem, -(rcButton.right + 2), 0);
              return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_SMILEYBTN:
         case IDC_FONTBOLD:
@@ -915,7 +916,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             if(!dat->doSmileys)
                 OffsetRect(&urc->rcItem, -22, 0);
             if(dat->controlsHidden & TOOLBAR_PROTO_HIDDEN)
-                OffsetRect(&urc->rcItem, -(rcButton.right + 10), 0);
+                OffsetRect(&urc->rcItem, -(rcButton.right + 2), 0);
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_TOGGLENOTES:
             return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
@@ -979,7 +980,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.right -= (dat->multiSplitterX + 3);
             urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
             if (!showToolbar)
-                urc->rcItem.bottom += (splitterEdges ? 25 : 27);
+                urc->rcItem.bottom += 23;
             if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
                 urc->rcItem.top += 24;
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
@@ -1584,7 +1585,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
                 if (szProto) {
                     dat->hTabIcon = dat->hTabStatusIcon = LoadSkinnedProtoIcon(szProto, wStatus);
-					dat->hXStatusIcon = GetXStatusIcon(dat);
+					if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "use_xicons", 0))
+						dat->hXStatusIcon = GetXStatusIcon(dat);
                     SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BUTTONSETASFLATBTN + 11, 0, dat->dwEventIsShown & MWF_SHOW_ISIDLE ? 1 : 0);
 					SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabIcon));
 
@@ -1691,7 +1693,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->hbmMsgArea = myGlobals.m_hbmMsgArea;
                 }
                 
-                if(dat->hbmMsgArea || (dat->pContainer->bSkinned && StatusItems[ID_EXTBKINPUTBOX].IGNORED == 0))
+                if(dat->hbmMsgArea) // || (dat->pContainer->bSkinned && StatusItems[ID_EXTBKINPUTBOX].IGNORED == 0))
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) | WS_EX_TRANSPARENT);
                 else
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) & ~WS_EX_TRANSPARENT);
@@ -4156,10 +4158,10 @@ quote_from_last:
                                             HandlePasteAndSend(hwndDlg, dat);
                                             break;
                                         case 19:
-                                            PostMessage(hwndDlg, WM_COMMAND, IDC_SENDMENU, (LPARAM)GetDlgItem(hwndDlg, IDC_SENDMENU));
+                                            PostMessage(hwndDlg, WM_COMMAND, IDC_SENDMENU, IDC_SENDMENU);
                                             break;
                                         case 16:
-                                            PostMessage(hwndDlg, WM_COMMAND, IDC_PROTOMENU, (LPARAM)GetDlgItem(hwndDlg, IDC_PROTOMENU));
+                                            PostMessage(hwndDlg, WM_COMMAND, IDC_PROTOMENU, IDC_PROTOMENU);
                                             break;
                                         case 20:
                                             PostMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 1);
