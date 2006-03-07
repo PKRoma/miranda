@@ -114,6 +114,36 @@ PLUGININFO pluginInfo = {
 		DEFMOD_CLISTALL
 };
 
+#ifdef _DEBUG
+#if defined(_UNICODE)
+int _DebugTraceW(const wchar_t *fmt, ...)
+{
+    wchar_t debug[2048];
+    int     ibsize = 2047;
+    va_list va;
+    va_start(va, fmt);
+
+	lstrcpyW(debug, L"CLN: ");
+
+    _vsnwprintf(&debug[5], ibsize - 10, fmt, va);
+    OutputDebugStringW(debug);
+	return 0;
+}
+#endif
+int _DebugTraceA(const char *fmt, ...)
+{
+    char    debug[2048];
+    int     ibsize = 2047;
+    va_list va;
+    va_start(va, fmt);
+
+	lstrcpyA(debug, "CLN: ");
+	_vsnprintf(&debug[5], ibsize - 10, fmt, va);
+    OutputDebugStringA(debug);
+	return 0;
+}
+#endif
+
 int _DebugPopup(HANDLE hContact, const char *fmt, ...)
 {
 	POPUPDATA ppd;

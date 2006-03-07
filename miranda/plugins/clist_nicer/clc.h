@@ -493,6 +493,11 @@ void CluiProtocolStatusChanged( int, const char* );
 char *u2a(wchar_t *src);
 wchar_t *a2u(char *src);
 
+// debugging support
+
+int _DebugTraceW(const wchar_t *fmt, ...);
+int _DebugTraceA(const char *fmt, ...);
+
 // Docking.c
 
 int Docking_IsDocked(WPARAM wParam, LPARAM lParam);
@@ -608,3 +613,4 @@ typedef struct _floatopts {
 } FLOATINGOPTIONS;
 
 extern FLOATINGOPTIONS g_floatoptions;
+
