@@ -357,7 +357,7 @@ struct CListEvent* AddEvent(CLISTEVENT *cle)
 // wParam=(WPARAM)(HANDLE)hContact
 // lParam=(LPARAM)(HANDLE)hDbEvent
 // Returns 0 if the event was successfully removed, or nonzero if the event was not found
-void RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
+int RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 {
 	HANDLE hItem;
 	int i;
@@ -372,7 +372,7 @@ void RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 
 	// Event was not found
 	if (i == pcli->events.count)
-		return;
+		return 1;
 
 	// remove event from the notify menu
 	if (g_CluiData.dwFlags & CLUI_FRAME_USEEVENTAREA) {
@@ -413,4 +413,6 @@ void RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 		if(g_CluiData.bUseFloater & CLUI_USE_FLOATER && g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS)
 			SFL_Update(0, 0, 0, NULL, FALSE);
 	}
+
+	return 0;
 }
