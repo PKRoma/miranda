@@ -406,21 +406,21 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 
           if (gnCurrentStatus == ID_STATUS_INVISIBLE)
           {
-            // Tell whos on our visible list
-            icq_sendEntireVisInvisList(0);
             if (gbSsiEnabled)
               updateServVisibilityCode(3);
             icq_setstatus(MirandaStatusToIcq(gnCurrentStatus));
+            // Tell whos on our visible list
+            icq_sendEntireVisInvisList(0);
             if (gbAimEnabled)
               updateAimAwayMsg();
           }
           else
           {
-            // Tell whos on our invisible list
-            icq_sendEntireVisInvisList(1);
             icq_setstatus(MirandaStatusToIcq(gnCurrentStatus));
             if (gbSsiEnabled)
               updateServVisibilityCode(4);
+            // Tell whos on our invisible list
+            icq_sendEntireVisInvisList(1);
             if (gbAimEnabled)
               updateAimAwayMsg();
           }

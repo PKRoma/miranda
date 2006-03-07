@@ -430,19 +430,19 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
             if (gnCurrentStatus == ID_STATUS_INVISIBLE) 
             {
-              // Tell who is on our visible list
-              icq_sendEntireVisInvisList(0);
               if (gbSsiEnabled)
                 updateServVisibilityCode(3);
               icq_setstatus(wStatus);
+              // Tell who is on our visible list
+              icq_sendEntireVisInvisList(0);
             }
             else
             {
-              // Tell who is on our invisible list
-              icq_sendEntireVisInvisList(1);
               icq_setstatus(wStatus);
               if (gbSsiEnabled)
                 updateServVisibilityCode(4);
+              // Tell who is on our invisible list
+              icq_sendEntireVisInvisList(1);
             }
           }
         }
