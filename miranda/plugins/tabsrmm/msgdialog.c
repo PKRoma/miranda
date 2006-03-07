@@ -20,6 +20,35 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+[%MessageLog]
+ALPHA=30
+COLOR1=aadaed
+COLOR2=aadaed
+COLOR2_TRANSPARENT=0
+TEXTCOLOR=202020
+CORNER=None
+GRADIENT=None
+BRDERSTYLE=0
+Left=5
+Right=5
+Top=5
+Bottom=5
+
+[%InputArea]
+ALPHA=30
+COLOR1=aadaed
+COLOR2=aadaed
+COLOR2_TRANSPARENT=0
+TEXTCOLOR=202020
+CORNER=None
+GRADIENT=None
+BRDERSTYLE=0
+Left=5
+Right=5
+Top=5
+Bottom=5
+
+
 $Id$
 */
 
@@ -62,15 +91,20 @@ extern PSLWA pSetLayeredWindowAttributes;
 extern COLORREF g_ContainerColorKey;
 extern StatusItems_t StatusItems[];
 
-wchar_t *testTooltip = L"Ein tooltip text zum testen";
+extern HMODULE  themeAPIHandle;
+extern HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
+extern HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
+extern BOOL     (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE,int,int);
+extern HRESULT  (WINAPI *MyDrawThemeParentBackground)(HWND,HDC,RECT *);
+extern HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
+extern HRESULT  (WINAPI *MyDrawThemeText)(HANDLE,HDC,int,int,LPCWSTR,int,DWORD,DWORD,const RECT *);
+extern HRESULT  (WINAPI *MyGetThemeBackgroundContentRect)(HANDLE, HDC, int, int, const RECT *, const RECT *);
+
 char *xStatusDescr[] = { "Angry", "Duck", "Tired", "Party", "Beer", "Thinking", "Eating", "TV", "Friends", "Coffee",
                          "Music", "Business", "Camera", "Funny", "Phone", "Games", "College", "Shopping", "Sick", "Sleeping",
                          "Surfing", "@Internet", "Engineering", "Typing", "Eating... yummy", "Having fun", "Chit chatting",
 						 "Crashing", "Going to toilet", "<undef>", "<undef>", "<undef>"};
                          
-int GetTabIndexFromHWND(HWND hwndTab, HWND hwndDlg);
-int ActivateTabFromHWND(HWND hwndTab, HWND hwndDlg);
-
 TCHAR *QuoteText(TCHAR *text, int charsPerLine, int removeExistingQuotes);
 void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, const wchar_t *value);
 int MessageWindowOpened(WPARAM wParam, LPARAM LPARAM);
@@ -92,7 +126,7 @@ struct ContainerWindowData *FindContainerByName(const TCHAR *name);
 int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
 struct ContainerWindowData *CreateContainer(const TCHAR *name, int iMode, HANDLE hContactFrom);
 
-static WNDPROC OldMessageEditProc, OldSplitterProc, OldAvatarWndProc;
+static WNDPROC OldMessageEditProc, OldSplitterProc, OldAvatarWndProc, OldMessageLogProc;
 
 static const UINT infoLineControls[] = { IDC_PROTOCOL, /* IDC_PROTOMENU, */ IDC_NAME, /* IDC_INFOPANELMENU */};
 static const UINT buttonLineControlsNew[] = { IDC_PIC, IDC_HISTORY, IDC_TIME, IDC_QUOTE, IDC_SAVE /*, IDC_SENDMENU */};
@@ -335,6 +369,110 @@ void SetDialogToType(HWND hwndDlg)
 		ShowWindow(GetDlgItem(hwndDlg, IDC_PANEL), SW_HIDE);
 }
 
+/*
+ * process WM_NCPAINT for the rich edit control. Draw a visual style border and avoid classic static edge / client edge
+ * may also draw a skin item around the rich edit control.
+ */
+
+static UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
+{
+	StatusItems_t *item = &StatusItems[skinID];
+	LRESULT result = OldWndProc(hwnd, msg, wParam, lParam);			// do default processing (otherwise, NO scrollbar as it is painted in NC_PAINT)
+
+	if((mwdat && mwdat->hTheme) || (mwdat && mwdat->pContainer->bSkinned && !item->IGNORED && !mwdat->bFlatMsgLog)) {
+		HDC hdc = GetWindowDC(hwnd);
+		RECT rcWindow;
+		POINT pt;
+		LONG left_off, top_off, right_off, bottom_off;
+		HDC dcMem;
+		HBITMAP hbm, hbmOld;
+
+		GetWindowRect(hwnd, &rcWindow);
+		pt.x = pt.y = 0;
+		ClientToScreen(hwnd, &pt);
+		left_off = pt.x - rcWindow.left;
+		top_off = pt.y - rcWindow.top;
+		
+		if(mwdat->pContainer->bSkinned && !item->IGNORED) {
+			right_off = item->MARGIN_RIGHT;
+			bottom_off = item->MARGIN_BOTTOM;
+		} else {
+			right_off = left_off;
+			bottom_off = top_off;
+		}
+
+		rcWindow.right -= rcWindow.left;
+		rcWindow.bottom -= rcWindow.top;
+		rcWindow.left = rcWindow.top = 0;
+
+		// clip the client area from the dc
+		ExcludeClipRect(hdc, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
+
+		if(mwdat->pContainer->bSkinned && !item->IGNORED) {
+			dcMem = CreateCompatibleDC(hdc);
+			hbm = CreateCompatibleBitmap(hdc, rcWindow.right, rcWindow.bottom);
+			hbmOld = SelectObject(dcMem, hbm);
+			ExcludeClipRect(dcMem, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
+			SkinDrawBG(hwnd, mwdat->pContainer->hwnd, mwdat->pContainer, &rcWindow, dcMem);
+			DrawAlpha(dcMem, &rcWindow, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+					  item->CORNER, item->RADIUS, item->imageItem);
+			BitBlt(hdc, 0, 0, rcWindow.right, rcWindow.bottom, dcMem, 0, 0, SRCCOPY);
+			SelectObject(dcMem, hbmOld);
+			DeleteObject(hbm);
+			DeleteDC(dcMem);
+		}
+		else if(MyDrawThemeBackground)
+			MyDrawThemeBackground(mwdat->hTheme, hdc, 1, 1, &rcWindow, &rcWindow);
+		ReleaseDC(hwnd, hdc);
+		return TRUE;
+	}
+	return result;
+}
+
+static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
+
+	switch(msg) {
+		case WM_NCCALCSIZE:
+			{
+				LRESULT orig = OldMessageLogProc(hwnd, msg, wParam, lParam);
+				NCCALCSIZE_PARAMS *nccp = (NCCALCSIZE_PARAMS *)lParam;
+				BOOL bReturn = FALSE;
+
+				if(mwdat && mwdat->pContainer->bSkinned && !mwdat->bFlatMsgLog) {
+					StatusItems_t *item = &StatusItems[ID_EXTBKHISTORY];
+					if(!item->IGNORED) {
+						nccp->rgrc[0].left += item->MARGIN_LEFT;
+						nccp->rgrc[0].right -= item->MARGIN_RIGHT;
+						nccp->rgrc[0].bottom -= item->MARGIN_BOTTOM;
+						nccp->rgrc[0].top += item->MARGIN_TOP;
+						return WVR_REDRAW;
+					}
+				}
+				if(mwdat && mwdat->hTheme && wParam && MyGetThemeBackgroundContentRect) {
+					RECT rcClient;
+					HDC hdc = GetDC(GetParent(hwnd));
+
+					if(MyGetThemeBackgroundContentRect(mwdat->hTheme, hdc, 1, 1, &nccp->rgrc[0], &rcClient) == S_OK) {
+						InflateRect(&rcClient, -1, -1);
+						CopyRect(&nccp->rgrc[0], &rcClient);
+						bReturn = TRUE;
+					}
+					ReleaseDC(GetParent(hwnd), hdc);
+					if(bReturn)
+						return WVR_REDRAW;
+					else
+						return orig;
+				}
+				return orig;
+			}
+		case WM_NCPAINT:
+			return(DrawRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldMessageLogProc));
+	}
+	return CallWindowProc(OldMessageLogProc, hwnd, msg, wParam, lParam);
+}
+
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     struct MsgEditSubclassData *dat;
@@ -342,6 +480,40 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 
     dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
     switch (msg) {
+		case WM_NCCALCSIZE:
+			{
+				LRESULT orig = OldMessageEditProc(hwnd, msg, wParam, lParam);
+				NCCALCSIZE_PARAMS *nccp = (NCCALCSIZE_PARAMS *)lParam;
+				BOOL bReturn = FALSE;
+
+				if(mwdat && mwdat->pContainer->bSkinned && !mwdat->bFlatMsgLog) {
+					StatusItems_t *item = &StatusItems[ID_EXTBKINPUTAREA];
+					if(!item->IGNORED) {
+						nccp->rgrc[0].left += item->MARGIN_LEFT;
+						nccp->rgrc[0].right -= item->MARGIN_RIGHT;
+						nccp->rgrc[0].bottom -= item->MARGIN_BOTTOM;
+						nccp->rgrc[0].top += item->MARGIN_TOP;
+						return WVR_REDRAW;
+					}
+				}
+				if(mwdat && mwdat->hTheme && wParam && MyGetThemeBackgroundContentRect) {
+					RECT rcClient;
+					HDC hdc = GetDC(GetParent(hwnd));
+
+					if(MyGetThemeBackgroundContentRect(mwdat->hTheme, hdc, 1, 1, &nccp->rgrc[0], &rcClient) == S_OK) {
+						CopyRect(&nccp->rgrc[0], &rcClient);
+						bReturn = TRUE;
+					}
+					ReleaseDC(GetParent(hwnd), hdc);
+					if(bReturn)
+						return WVR_REDRAW;
+					else
+						return orig;
+				}
+				return orig;
+			}
+		case WM_NCPAINT:
+			return(DrawRichEditFrame(hwnd, mwdat, ID_EXTBKINPUTAREA, msg, wParam, lParam, OldMessageEditProc));
 		case WM_DROPFILES:
 			SendMessage(GetParent(hwnd),WM_DROPFILES,(WPARAM)wParam,(LPARAM)lParam);
 			break;
@@ -1179,7 +1351,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 newData->item.lParam = (LPARAM) hwndDlg;
                 TabCtrl_SetItem(hwndTab, newData->iTabID, &newData->item);
                 dat->iTabID = newData->iTabID;
-                
+
+				dat->bFlatMsgLog = DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0);
+
+				if(!dat->bFlatMsgLog)
+					dat->hTheme = (themeAPIHandle && MyOpenThemeData) ? MyOpenThemeData(hwndDlg, L"EDIT") : 0;
+				else
+					dat->hTheme = 0;
+
                 pszIDCSAVE_close = Translate("Close session");
                 pszIDCSAVE_save = Translate("Save and close session");
 
@@ -1250,12 +1429,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 				}
-				if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0)) {
-                    SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-                    SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-                    if(dat->hwndLog)
-                        SetWindowLong(dat->hwndLog, GWL_EXSTYLE, GetWindowLong(dat->hwndLog, GWL_EXSTYLE) & ~(WS_EX_STATICEDGE | WS_EX_CLIENTEDGE));
-                }
+				{
+					StatusItems_t *item_log = &StatusItems[ID_EXTBKHISTORY];
+					StatusItems_t *item_msg = &StatusItems[ID_EXTBKINPUTAREA];
+
+					if(dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_log->IGNORED))
+						SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+					if(dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_msg->IGNORED))
+						SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+					if(dat->hwndLog)
+						SetWindowLong(dat->hwndLog, GWL_EXSTYLE, GetWindowLong(dat->hwndLog, GWL_EXSTYLE) & ~(WS_EX_STATICEDGE | WS_EX_CLIENTEDGE));
+				}
 
                 if(dat->bIsMeta)
                     SendMessage(hwndDlg, DM_UPDATEMETACONTACTINFO, 0, 0);
@@ -1431,6 +1615,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                 }
                 OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
+
                 OldAvatarWndProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWL_WNDPROC, (LONG) AvatarSubclassProc);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELPIC), GWL_WNDPROC, (LONG) AvatarSubclassProc);
 
@@ -1495,7 +1680,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 }
                 SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
-                if (newData->iActivate) {
+				
+				{
+					WNDCLASSA wndClass;
+
+					ZeroMemory(&wndClass, sizeof(wndClass));
+					GetClassInfoA(g_hInst, "RichEdit20A", &wndClass);
+					OldMessageLogProc = wndClass.lpfnWndProc;
+				}
+				SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC, (LONG) MessageLogSubclassProc);
+                
+				if (newData->iActivate) {
                     SetWindowPos(dat->hwndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                     SetWindowPos(hwndDlg, HWND_TOP, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), 0);
                     LoadSplitter(hwndDlg, dat);
@@ -1904,7 +2099,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         wOldApparentMode = dat->wApparentMode;
                         dat->wApparentMode = DBGetContactSettingWord(hActContact, szActProto, "ApparentMode", 0);
                         
-                        if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || lParam != 0) {
+                        if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || dat->xStatus != oldXStatus || lParam != 0) {
                             if (myGlobals.m_CutContactNameOnTabs)
                                 CutContactName(dat->szNickname, newcontactname, sizeof(newcontactname) / sizeof(TCHAR));
                             else
@@ -1956,10 +2151,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                     mir_snprintf(buffer, sizeof(buffer), Translate("is now %s (was %s)"), szNewStatus, szOldStatus);
                             }
                             iLen = strlen(buffer) + 1;
-                            MultiByteToWideChar(CP_ACP, 0, buffer, iLen, (LPWSTR)&buffer[iLen], iLen);
+#if defined(_UNICODE)
+                            MultiByteToWideChar(CP_ACP, 0, buffer, iLen, (LPWSTR)&buffer[iLen], (450 - iLen) / sizeof(wchar_t));
+                            dbei.cbBlob = iLen * (sizeof(TCHAR) + 1);
+#if defined(_DEBUG)
+							_DebugTraceA("status change ANSI: %s", buffer);
+							_DebugTraceW(L"status change UNICODE: %s", (LPWSTR)&buffer[iLen]);
+#endif
+#else
+							dbei.cbBlob = iLen;
+#endif
                             dbei.cbSize = sizeof(dbei);
                             dbei.pBlob = (PBYTE) buffer;
-                            dbei.cbBlob = (strlen(buffer) + 1) * (sizeof(TCHAR) + 1);
                             dbei.eventType = EVENTTYPE_STATUSCHANGE;
                             dbei.flags = DBEF_READ;
                             dbei.timestamp = time(NULL);
@@ -5234,7 +5437,11 @@ verify:
             }
             if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON)
                 NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
-            
+
+			if (dat->hTheme) {
+				MyCloseThemeData(dat->hTheme);
+				dat->hTheme = 0;
+			}
             if (dat->hBkgBrush)
                 DeleteObject(dat->hBkgBrush);
             if (dat->hInputBkgBrush)
@@ -5296,6 +5503,8 @@ verify:
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWL_WNDPROC, (LONG) OldAvatarWndProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELPIC), GWL_WNDPROC, (LONG) OldAvatarWndProc);
+			SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC, (LONG) OldMessageLogProc);
+
             // remove temporary contacts...
             
             if (dat->hContact && DBGetContactSettingByte(NULL, SRMSGMOD_T, "deletetemp", 0)) {

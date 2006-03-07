@@ -354,6 +354,8 @@ struct MessageWindowData {
 	HANDLE *hHistoryEvents;
 	int maxHistory, curHistory;
 	BYTE needIEViewScroll;
+	HANDLE hTheme;
+	BYTE bFlatMsgLog;
 };
 
 typedef struct _recentinfo {

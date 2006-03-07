@@ -34,7 +34,6 @@ $Id$
 #include "nen.h"
 #include "functions.h"
 #include "msgdlgutils.h"
-#include "urlctrl.h"
 
 /*
  * hardcoded default set of templates for both LTR and RTL.
@@ -196,7 +195,6 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             SendDlgItemMessage(hwndDlg, IDC_COLOR4, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc4", SRMSGDEFSET_BKGCOLOUR));
             SendDlgItemMessage(hwndDlg, IDC_COLOR5, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc5", SRMSGDEFSET_BKGCOLOUR));
             SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
-            urlctrl_set(GetDlgItem(hwndDlg, IDC_VARIABLESHELP), _T("http://www.miranda.or.at/forums/index.php/topic,610.0.html"), &url_unvisited, &url_visited, 0, -1);
             return TRUE;
         }
         case WM_COMMAND:
@@ -237,6 +235,9 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                         }
                     }
                     break;
+				case IDC_VARIABLESHELP:
+					CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://www.miranda.or.at/forums/index.php/topic,610.0.html");
+					break;
                 case IDC_EDITTEMPLATE:
                     if(HIWORD(wParam) == EN_CHANGE) {
                         if(!teInfo->selchanging) {

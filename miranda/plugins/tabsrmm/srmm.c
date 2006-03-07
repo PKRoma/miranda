@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_popup.h"
 #include "msgs.h"
-#include "urlctrl.h"
 #include "m_ieview.h"
 
 int LoadSendRecvMessageModule(void);
@@ -95,15 +94,32 @@ int __declspec(dllexport) Unload(void)
 }
 
 #ifdef _DEBUG
-int _DebugTRACE(const char *fmt, ...)
+#if defined(_UNICODE)
+int _DebugTraceW(const wchar_t *fmt, ...)
 {
-    char    debug[1024];
-    int     ibsize = 1023;
-    
+    wchar_t debug[2048];
+    int     ibsize = 2047;
     va_list va;
     va_start(va, fmt);
-    _vsnprintf(debug, ibsize, fmt, va);
-    OutputDebugString(debug);
+
+	lstrcpyW(debug, L"TABSRMM: ");
+
+    _vsnwprintf(&debug[9], ibsize - 10, fmt, va);
+    OutputDebugStringW(debug);
+	return 0;
+}
+#endif
+int _DebugTraceA(const char *fmt, ...)
+{
+    char    debug[2048];
+    int     ibsize = 2047;
+    va_list va;
+    va_start(va, fmt);
+
+	lstrcpyA(debug, "TABSRMM: ");
+	_vsnprintf(&debug[9], ibsize - 10, fmt, va);
+    OutputDebugStringA(debug);
+	return 0;
 }
 #endif
 
@@ -203,7 +219,6 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             hIcon = LoadIcon(GetModuleHandleA("miranda32.exe"), MAKEINTRESOURCE(102));
             SendDlgItemMessage(hwndDlg, IDC_LOGO, STM_SETICON, (WPARAM)hIcon, 0);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
-            urlctrl_set(GetDlgItem(hwndDlg, IDC_SUPPORT), _T("http://www.miranda.or.at/forums/index.php"), &url_unvisited, &url_visited, UCF_TXT_HCENTER, RGB(255, 255, 255));
             DestroyIcon(hIcon);
 			return TRUE;
 		case WM_COMMAND:
@@ -213,6 +228,9 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				case IDCANCEL:
 					DestroyWindow(hwndDlg);
 					return TRUE;
+				case IDC_SUPPORT:
+					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://miranda.or.at/");
+					break;
 			}
 			break;
 		case WM_CTLCOLOREDIT:

@@ -428,7 +428,8 @@ BEGIN
     EDITTEXT        IDC_EDITTEMPLATE,11,109,344,14,ES_AUTOHSCROLL
     PUSHBUTTON      "Quick help on Variables...",IDC_VARHELP,11,128,125,15
     LTEXT           "Double click a template to edit it. Select a template from the list box and click ""Update Preview"" to show a preview message.",IDC_STATIC,146,126,209,26
-    LTEXT           "Get more help on variables",IDC_VARIABLESHELP,12,147,148,10
+    CONTROL         "Get more help on variables",IDC_VARIABLESHELP,
+                    "Hyperlink",WS_TABSTOP | 0x1,12,147,148,10
     LTEXT           "Define up to 5 colors which you can use with some variables",IDC_STATIC,12,193,174,17
     CONTROL         "",IDC_COLOR1,"ColourPicker",WS_TABSTOP,11,213,24,13
     CONTROL         "",IDC_COLOR2,"ColourPicker",WS_TABSTOP,43,213,24,13
@@ -528,7 +529,8 @@ BEGIN
     LTEXT           "Version",IDC_VERSION,5,19,150,15
     CTEXT           "build time",IDC_BUILDTIME,37,105,150,11
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,117,228,1
-    CTEXT           "Support and latest version information",IDC_SUPPORT,18,91,192,12
+    CONTROL         "Support and latest version information",IDC_SUPPORT,
+                    "Hyperlink",WS_TABSTOP | 0x1,18,91,192,12
 END
 
 IDD_FIRSTTIME DIALOGEX 0, 0, 265, 201

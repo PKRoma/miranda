@@ -42,6 +42,7 @@ void LoadMsgAreaBackground();
 int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int size, const char *szProto, UINT codePage);
+int GetTabIndexFromHWND(HWND, HWND);
 
 // the cached message log icons
 void CacheMsgLogIcons();
@@ -96,3 +97,10 @@ void MoveFonts();
 extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);
 void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 void GetDefaultContainerTitleFormat();
+
+/*
+ * debugging support
+ */
+
+int _DebugTraceW(const wchar_t *fmt, ...);
+int _DebugTraceA(const char *fmt, ...);

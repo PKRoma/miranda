@@ -363,7 +363,6 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
 		case WM_NCMOUSEMOVE:
 			if(pContainer && g_framelessSkinmode) {
 				POINT pt;
-				HDC hdc = GetWindowDC(hwndDlg);
 				RECT rcWindow;
 				BOOL isMin, isMax, isClose;
 				int i;
@@ -376,6 +375,7 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
 				isMin = isMax = isClose = FALSE;
 
 				if(pt.x >= (rcWindow.left + pContainer->rcMin.left) && pt.x <= (rcWindow.left + pContainer->rcClose.right) && pt.y < rcWindow.top + 24 && wParam != HTTOPRIGHT) {
+					HDC hdc = GetWindowDC(hwndDlg);
 					LONG left = rcWindow.left;
 
 					pt.y = 10;

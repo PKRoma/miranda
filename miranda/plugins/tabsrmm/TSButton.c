@@ -26,6 +26,8 @@ extern MYGLOBALS myGlobals;
 extern BOOL g_skinnedContainers;
 extern StatusItems_t StatusItems[];
 
+#define PBS_PUSHDOWNPRESSED 6
+
 static LRESULT CALLBACK TSButtonWndProc(HWND hwnd, UINT  msg, WPARAM wParam, LPARAM lParam);
 
 typedef struct {
@@ -50,14 +52,14 @@ typedef struct {
 } MButtonCtrl;
 
 // External theme methods and properties
-static HMODULE  themeAPIHandle = NULL; // handle to uxtheme.dll
-static HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
-static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
-static BOOL     (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE,int,int);
-static HRESULT  (WINAPI *MyDrawThemeParentBackground)(HWND,HDC,RECT *);
-static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
-static HRESULT  (WINAPI *MyDrawThemeText)(HANDLE,HDC,int,int,LPCWSTR,int,DWORD,DWORD,const RECT *);
-static HRESULT  (WINAPI *MyGetThemeBackgroundContentRect)(HANDLE, HDC, int, int, const RECT *, const RECT *);
+HMODULE  themeAPIHandle = NULL; // handle to uxtheme.dll
+HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR) = 0;
+HRESULT  (WINAPI *MyCloseThemeData)(HANDLE) = 0;
+BOOL     (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE,int,int) = 0;
+HRESULT  (WINAPI *MyDrawThemeParentBackground)(HWND,HDC,RECT *) = 0;
+HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *) = 0;
+HRESULT  (WINAPI *MyDrawThemeText)(HANDLE,HDC,int,int,LPCWSTR,int,DWORD,DWORD,const RECT *) = 0;
+HRESULT  (WINAPI *MyGetThemeBackgroundContentRect)(HANDLE, HDC, int, int, const RECT *, const RECT *) = 0;
 
 static CRITICAL_SECTION csTips;
 static HWND hwndToolTips = NULL;
@@ -167,29 +169,14 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 		if (ctl->pushBtn && ctl->pbState) 
 			ctl->stateId = PBS_PRESSED;
 
-		if(ctl->arrow && (ctl->stateId == PBS_HOT || ctl->stateId == PBS_PRESSED)) {
+		if(ctl->arrow && (ctl->stateId == PBS_HOT || ctl->stateId == PBS_PRESSED || ctl->stateId == PBS_PUSHDOWNPRESSED)) {
 			POINT pt;
 
 			GetCursorPos(&pt);
 			ScreenToClient(ctl->hwnd, &pt);
 
-			if(pt.x >= rcClient.right - 12) {
+			if(pt.x >= rcClient.right - 12)
 				clip = CreateRectRgn(rcClient.right - 12, 0, rcClient.right, rcClient.bottom);
-				/*
-				CopyRect(&rcClip, &rcClient);
-				rcClip.right = rcClient.right - 12;
-				CopyRect(&rcInvClip, &rcClient);
-				rcInvClip.left = rcClient.right - 11;
-				invclip = CreateRectRgn(rcClient.right - 11, 0, rcClient.right, rcClient.bottom); */
-			}/*
-			else {
-				CopyRect(&rcClip, &rcClient);
-				rcClip.left = rcClient.right - 11;
-				CopyRect(&rcInvClip, &rcClient);
-				rcInvClip.right = rcClient.right - 12;
-				invclip = CreateRectRgn(0, 0, rcClient.right - 12, rcClient.bottom);
-				clip = CreateRectRgn(rcClient.right - 12, 0, rcClient.right, rcClient.bottom);
-			}*/
 		}
 		if (ctl->flatBtn) {
 			if(ctl->pContainer && ctl->pContainer->bSkinned) {
@@ -339,8 +326,8 @@ nonflat_themed:
 			DeleteObject(clip);
 		}
 		if(ctl->arrow) {
-			rcContent.top++;
-			rcContent.bottom--;
+			rcContent.top += 2;
+			rcContent.bottom -= 2;
 			rcContent.left = rcClient.right - 12;
 			rcContent.right = rcContent.left;
 
@@ -356,6 +343,10 @@ nonflat_themed:
 			int iy = (rcClient.bottom-rcClient.top)/2 - (myGlobals.m_smcyicon / 2);
             HICON hIconNew = ctl->hIconPrivate != 0 ? ctl->hIconPrivate : ctl->hIcon;
 
+			if(ctl->stateId == PBS_PRESSED) {
+				ix++; iy++;
+			}
+
 			if(ctl->arrow)
 				ix -= 4;
 
@@ -365,23 +356,6 @@ nonflat_themed:
             }
             else
                 DrawState(hdcMem,NULL,NULL,(LPARAM)hIconNew,0,ix,iy,myGlobals.m_smcxicon,myGlobals.m_smcyicon,ctl->stateId != PBS_DISABLED ? DST_ICON | DSS_NORMAL : DST_ICON | DSS_DISABLED);
-		}
-		else if (ctl->hBitmap) {
-			BITMAP bminfo;
-			int ix,iy;
-
-			GetObject(ctl->hBitmap, sizeof(bminfo), &bminfo);
-			ix = (rcClient.right-rcClient.left)/2 - (bminfo.bmWidth/2);
-			iy = (rcClient.bottom-rcClient.top)/2 - (bminfo.bmHeight/2);
-
-			if(ctl->arrow)
-				ix -= 9;
-
-			if (ctl->stateId == PBS_PRESSED) {
-				ix++;
-				iy++;
-			}
-			DrawState(hdcMem,NULL,NULL,(LPARAM)ctl->hBitmap,0,ix,iy,bminfo.bmWidth,bminfo.bmHeight,IsWindowEnabled(ctl->hwnd)?DST_BITMAP:DST_BITMAP|DSS_DISABLED);
 		}
 		else if (GetWindowTextLengthA(ctl->hwnd)) {
 			// Draw the text and optinally the arrow
@@ -681,7 +655,17 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		}
 		case WM_LBUTTONDOWN:
 		{
-			if (bct->stateId!=PBS_DISABLED) { // don't change states if disabled
+			RECT rc;
+
+			if(bct->arrow && bct->stateId != PBS_DISABLED) {
+				GetClientRect(bct->hwnd, &rc);
+				if(LOWORD(lParam) < rc.right - 10)
+					bct->stateId = PBS_PRESSED;
+				else
+					bct->stateId = PBS_PUSHDOWNPRESSED;
+				InvalidateRect(bct->hwnd, NULL, TRUE);
+			}
+			else if(bct->stateId != PBS_DISABLED) {
 				bct->stateId = PBS_PRESSED;
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 			}
