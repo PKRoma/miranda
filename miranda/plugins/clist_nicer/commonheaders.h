@@ -128,13 +128,19 @@ extern struct MM_INTERFACE memoryManagerInterface;
 
 __forceinline char * mir_strdup(const char *src)
 {
-    char *p = 0;
-    if (src == NULL)
-        return NULL;
-    p = (char *)mir_alloc(strlen(src) + 1);
-    strcpy(p, src);
-    return p;
+	return (src == NULL) ? NULL : strcpy(( char* )mir_alloc( strlen(src)+1 ), src );
 }
+
+__forceinline WCHAR* mir_wstrdup(const WCHAR *src)
+{
+	return (src == NULL) ? NULL : wcscpy(( WCHAR* )mir_alloc(( wcslen(src)+1 )*sizeof( WCHAR )), src );
+}
+
+#if defined( _UNICODE )
+	#define mir_tstrdup mir_wstrdup
+#else
+	#define mir_tstrdup mir_strdup
+#endif
 
 typedef  int  (__cdecl *pfnDrawAvatar)(HDC hdcOrig, HDC hdcMem, RECT *rc, struct ClcContact *contact, int y, struct ClcData *dat, int selected, WORD cstatus, int rowHeight);
 typedef  void (__cdecl *pfnDrawAlpha)(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE, ImageItem *item);

@@ -202,26 +202,30 @@ int lParam;
 
 #define SETTING_NOOFFLINEBOTTOM_DEFAULT 0
 
-typedef struct{
-int cbSize;
-char *pszName;
-int position;
-int root;
-int flags;
-HICON hIcon;
-DWORD hotKey;
-void *ownerdata;
-}TMO_MenuItem,*PMO_MenuItem;
+typedef struct
+{
+	int cbSize;
+	TCHAR *pszName;
+	int position;
+	int root;
+	int flags;
+	HICON hIcon;
+	DWORD hotKey;
+	void *ownerdata;
+}
+	TMO_MenuItem,*PMO_MenuItem;
 
 /*
 This structure passed to CheckService. 
 */
-typedef struct{
-void *MenuItemOwnerData;
-int MenuItemHandle;
-WPARAM wParam;//from  ListParam.wParam when building menu
-LPARAM lParam;//from  ListParam.lParam when building menu
-}TCheckProcParam,*PCheckProcParam;
+typedef struct
+{
+	void *MenuItemOwnerData;
+	int MenuItemHandle;
+	WPARAM wParam;//from  ListParam.wParam when building menu
+	LPARAM lParam;//from  ListParam.lParam when building menu
+}
+	TCheckProcParam,*PCheckProcParam;
 
 typedef struct{
 int cbSize;

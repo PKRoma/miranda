@@ -3,7 +3,8 @@
 //general menu object module
 #include "m_genmenu.h"
 
-typedef struct{
+typedef struct
+{
 	int id;
 	int globalid;
 
@@ -11,39 +12,41 @@ typedef struct{
 	TMO_MenuItem mi;
 	boolean OverrideShow;
 	char *UniqName;
-	char *CustomName;
+	TCHAR *CustomName;
 	boolean IconRegistred;
-}TMO_IntMenuItem,*PMO_IntMenuItem;
+}
+	TMO_IntMenuItem,*PMO_IntMenuItem;
 
-typedef struct{
-char *Name;//for debug purposes
-int id;
+typedef struct
+{
+	char *Name;//for debug purposes
+	int id;
 
-//ExecService
-//LPARAM lParam;//owner data 
-//WPARAM wParam;//allways lparam from winproc
-char *ExecService;
+	//ExecService
+	//LPARAM lParam;//owner data 
+	//WPARAM wParam;//allways lparam from winproc
+	char *ExecService;
 
-//CheckService called when building menu
-//return false to skip item.
-//LPARAM lParam;//0 
-//WPARAM wParam;//CheckParam
-char *CheckService;//analog to check_proc
+	//CheckService called when building menu
+	//return false to skip item.
+	//LPARAM lParam;//0 
+	//WPARAM wParam;//CheckParam
+	char *CheckService;//analog to check_proc
 
-//LPARAM lParam;//ownerdata 
-//WPARAM wParam;//menuitemhandle
-char *FreeService;//callback service used to free ownerdata for menuitems
+	//LPARAM lParam;//ownerdata 
+	//WPARAM wParam;//menuitemhandle
+	char *FreeService;//callback service used to free ownerdata for menuitems
 
-//LPARAM lParam;//MENUITEMINFO filled with all needed data 
-//WPARAM wParam;//menuitemhandle
-char *onAddService;//called just before add MENUITEMINFO to hMenu
+	//LPARAM lParam;//MENUITEMINFO filled with all needed data 
+	//WPARAM wParam;//menuitemhandle
+	char *onAddService;//called just before add MENUITEMINFO to hMenu
 
-PMO_IntMenuItem MenuItems;
-int MenuItemsCount;
-HANDLE hMenuIcons;
-BOOL bUseUserDefinedItems;
-
-}TIntMenuObject,*PIntMenuObject;
+	PMO_IntMenuItem MenuItems;
+	int MenuItemsCount;
+	HANDLE hMenuIcons;
+	BOOL bUseUserDefinedItems;
+}
+	TIntMenuObject,*PIntMenuObject;
 
 
 #define SEPARATORPOSITIONINTERVAL	100000
