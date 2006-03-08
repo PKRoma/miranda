@@ -324,7 +324,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
   if (nHashLen >= 0x14)
   {
     // check if it is really avatar (it can be also AIM's online message)
-    if (pHash[0] != 0 || pHash[1] != 1) return;
+    if (pHash[0] != 0 || (pHash[1] != 1 && pHash[1] != 8)) return;
 
     if (nHashLen == 0x18 && pHash[3] == 0)
     { // icq probably set two avatars, get something from that
