@@ -189,6 +189,8 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			email=last+strlen(last)+1;
 			reason=email+strlen(email)+1;
 			SetDlgItemTextA(hwndDlg,IDC_NAME,nick[0]?nick:Translate("(Unknown)"));
+			if (hcontact == INVALID_HANDLE_VALUE || !DBGetContactSettingByte(hcontact, "CList", "NotOnList", 0))
+				ShowWindow(GetDlgItem(hwndDlg,IDC_ADD),FALSE);
 			if (*uin)
 				SetDlgItemInt(hwndDlg,IDC_UIN,*uin,FALSE);
 			else SetDlgItemText(hwndDlg,IDC_UIN,TranslateT("(Unknown)"));
