@@ -1091,7 +1091,7 @@ int SplitmsgShutdown(void)
     if(g_hIconDLL)
         FreeLibrary(g_hIconDLL);
     
-    OleUninitialize();
+    //OleUninitialize();
     if (hMsgMenuItem) {
         free(hMsgMenuItem);
         hMsgMenuItem = NULL;
@@ -1239,8 +1239,8 @@ int LoadSendRecvMessageModule(void)
         return 0;
     }
 
-    OleInitialize(NULL);
-    InitREOleCallback();
+    //OleInitialize(NULL);
+    //InitREOleCallback();
     ZeroMemory((void *)&myGlobals, sizeof(myGlobals));
     ZeroMemory((void *)&nen_options, sizeof(nen_options));
     
@@ -1293,6 +1293,8 @@ int LoadSendRecvMessageModule(void)
     myGlobals.local_gmt_diff = nOffset;
     return 0;
 }
+
+/*
 
 static IRichEditOleCallbackVtbl reOleCallbackVtbl;
 struct CREOleCallback reOleCallback;
@@ -1402,6 +1404,8 @@ static void InitREOleCallback(void)
     reOleCallback.lpVtbl->ShowContainerUI = (HRESULT(__stdcall *) (IRichEditOleCallback *, BOOL)) CREOleCallback_ShowContainerUI;
     reOleCallback.refCount = 0;
 }
+
+*/
 
 /*
  * tabbed mode support functions...

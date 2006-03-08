@@ -434,7 +434,7 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
 								StatusItems_t *item = &StatusItems[pContainer->buttons[i].isPressed ? ID_EXTBKTITLEBUTTONPRESSED : (pContainer->buttons[i].isHot ? ID_EXTBKTITLEBUTTONMOUSEOVER : ID_EXTBKTITLEBUTTON)];
 								DrawAlpha(hdc, rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 										  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
-								DrawIconEx(hdc, rc->left + ((rc->right - rc->left) / 2 - 8), (rc->bottom - rc->top) / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
+								DrawIconEx(hdc, rc->left + ((rc->right - rc->left) / 2 - 8), rc->top + ((rc->bottom - rc->top) / 2 - 8), hIcon, 16, 16, 0, 0, DI_NORMAL);
 							}
 						}
 					}
@@ -480,7 +480,12 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
 				}
 			}
 		case WM_NCACTIVATE:
-			return 1;
+			pContainer->ncActive = wParam;
+			if(pContainer->bSkinned && g_framelessSkinmode) {
+				SendMessage(hwndDlg, WM_NCPAINT, 0, 0);
+				return 1;
+			}
+			break;
 		case WM_NCPAINT:
 			{
 				PAINTSTRUCT ps;
@@ -531,7 +536,7 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
 					ExcludeClipRect(dcFrame, clip_left, clip_top, clip_left + (pt1.x - pt.x), clip_top + (pt1.y - pt.y));
 					ExcludeClipRect(dcMem, clip_left, clip_top, clip_left + (pt1.x - pt.x), clip_top + (pt1.y - pt.y));
 
-					item = &StatusItems[ID_EXTBKFRAME];
+					item = pContainer->ncActive ? &StatusItems[ID_EXTBKFRAME] : &StatusItems[ID_EXTBKFRAMEINACTIVE];
 
 					if(!item->IGNORED)
 						DrawAlpha(dcMem, &rcWindow, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
@@ -543,7 +548,7 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
 					GetTextMetrics(dcMem, &tm);
 					SetTextColor(dcMem, myGlobals.ipConfig.isValid ? myGlobals.ipConfig.clrs[IPFONTCOUNT - 1] : GetSysColor(COLOR_CAPTIONTEXT));
 					SetBkMode(dcMem, TRANSPARENT);
-					rcText.left = 22; rcText.right = rcWindow.right - 3 * g_titleBarButtonSize.cx - 11;
+					rcText.left = 26; rcText.right = rcWindow.right - 3 * g_titleBarButtonSize.cx - 11;
 					rcText.top = 3 + myGlobals.bClipBorder; rcText.bottom = rcText.top + tm.tmHeight;
 					DrawText(dcMem, szWindowText, -1, &rcText, DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
 					SelectObject(dcMem, hOldFont);
@@ -552,21 +557,21 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
 					 */
 
 					hIcon = (HICON)SendMessage(hwndDlg, WM_GETICON, ICON_BIG, 0);
-					DrawIconEx(dcMem, 3, 3 + myGlobals.bClipBorder + (tm.tmHeight - 16) / 2, hIcon, 16, 16, 0, 0, DI_NORMAL);
+					DrawIconEx(dcMem, 4 + myGlobals.g_SkinnedFrame_left + myGlobals.bClipBorder, rcText.top + (rcText.bottom - rcText.top) / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
 
 					// title buttons;
 
-					pContainer->rcClose.top = pContainer->rcMin.top = pContainer->rcMax.top = 2;
-					pContainer->rcClose.bottom = pContainer->rcMin.bottom = pContainer->rcMax.bottom = 20;
+					pContainer->rcClose.top = pContainer->rcMin.top = pContainer->rcMax.top = 7;
+					pContainer->rcClose.bottom = pContainer->rcMin.bottom = pContainer->rcMax.bottom = 7 + g_titleBarButtonSize.cy;
 					
 					pContainer->rcClose.right = rcWindow.right - 10;
-					pContainer->rcClose.left = pContainer->rcClose.right - 18;
+					pContainer->rcClose.left = pContainer->rcClose.right - g_titleBarButtonSize.cx;
 
 					pContainer->rcMax.right = pContainer->rcClose.left - 2;
-					pContainer->rcMax.left = pContainer->rcMax.right - 18;
+					pContainer->rcMax.left = pContainer->rcMax.right - g_titleBarButtonSize.cx;
 
 					pContainer->rcMin.right = pContainer->rcMax.left - 2;
-					pContainer->rcMin.left = pContainer->rcMin.right - 18;
+					pContainer->rcMin.left = pContainer->rcMin.right - g_titleBarButtonSize.cx;
 
 					item_normal = &StatusItems[ID_EXTBKTITLEBUTTON];
 					item_hot = &StatusItems[ID_EXTBKTITLEBUTTONMOUSEOVER];
@@ -594,7 +599,7 @@ static BOOL CALLBACK DlgProcContainerSubClass(HWND hwndDlg, UINT msg, WPARAM wPa
 							item = pContainer->buttons[i].isPressed ? item_pressed : (pContainer->buttons[i].isHot ? item_hot : item_normal);
 							DrawAlpha(dcMem, rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 									  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
-							DrawIconEx(dcMem, rc->left + ((rc->right - rc->left) / 2 - 8), (rc->bottom - rc->top) / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
+							DrawIconEx(dcMem, rc->left + ((rc->right - rc->left) / 2 - 8), rc->top + ((rc->bottom - rc->top) / 2 - 8), hIcon, 16, 16, 0, 0, DI_NORMAL);
 						}
 					}
 					BitBlt(dcFrame, 0, 0, rcWindow.right, rcWindow.bottom, dcMem, 0, 0, SRCCOPY);
@@ -1114,7 +1119,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 return 0;
             }
 #ifdef __MATHMOD_SUPPORT
-            //mathMod begin
     		case WM_MOVE:
     		if(myGlobals.m_MathModAvail) {
                 TMathWindowInfo mathWndInfo;
@@ -1127,7 +1131,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
     		}
             break;
-    		//mathMod end
 #endif
 			case WM_SIZE: {
                 RECT rcClient, rcUnadjusted;
@@ -1200,15 +1203,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if(pContainer->hwndStatus)
                     InvalidateRect(pContainer->hwndStatus, NULL, FALSE);
 
-				/*
-				if(pContainer->bSkinned && g_framelessSkinmode) {
-					MoveWindow(GetDlgItem(hwndDlg, IDC_CLOSE), rcUnadjusted.right - g_titleBarButtonSize.cx - 10, -10, g_titleBarButtonSize.cx,
-							   g_titleBarButtonSize.cy, TRUE);
-					MoveWindow(GetDlgItem(hwndDlg, IDC_MAXIMIZE), rcUnadjusted.right - (2 * g_titleBarButtonSize.cx) - 11, -10, g_titleBarButtonSize.cx,
-							   g_titleBarButtonSize.cy, TRUE);
-					MoveWindow(GetDlgItem(hwndDlg, IDC_MINIMIZE), rcUnadjusted.right - (3 * g_titleBarButtonSize.cx) - 14, -10, g_titleBarButtonSize.cx,
-							   g_titleBarButtonSize.cy, TRUE);
-				}*/
                 //if(pContainer->dwFlags & CNT_SIDEBAR)
                 //    DrawSideBar(hwndDlg, pContainer, &rcUnadjusted, menuSep);
 #ifdef __MATHMOD_SUPPORT
@@ -1261,16 +1255,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
                 }
                 if(dat) {
-	                //_DebugPopup(0, "title %d %d", dat->hContact, wParam);
+					SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabStatusIcon));
 					szNewTitle = NewTitle(dat->hContact, pContainer->szTitleFormat, dat->szNickname, dat->szStatus, pContainer->szName, dat->uin, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->idle, dat->codePage, dat->xStatus, dat->wStatus);
                     if(szNewTitle) {
                         SetWindowText(hwndDlg, szNewTitle);
                         free(szNewTitle);
                     }
-                    //SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus));
-					SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabStatusIcon));
-					//if(pContainer->bSkinned)
-					//	RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
                 }
                 break;
             }
@@ -1359,11 +1349,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         MinimiseToTray(hwndDlg, nen_options.bAnimated);
                         return 0;
                     }
-					/*
-					if(pContainer->bSkinned) {
-						ShowWindow(hwndDlg, SW_HIDE);
-						return 0;
-					}*/
                     break;
             }
             break;

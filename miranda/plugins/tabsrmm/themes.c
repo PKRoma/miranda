@@ -151,6 +151,10 @@ StatusItems_t StatusItems[] = {
         CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
         CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"FrameInactive", "TSKIN_FRAMEINACTIVE", ID_EXTBKFRAMEINACTIVE,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 	}
 };
 
@@ -542,7 +546,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolo
 		TRIVERTEX tvtx[2];
 		int orig = 1, dest = 0;
 
-		if(FLG_GRADIENT == GRADIENT_LR || FLG_GRADIENT == GRADIENT_TB) {
+		if(FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_TB) {
 			orig = 0;
 			dest = 1;
 		}
@@ -565,7 +569,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolo
 		grect.UpperLeft = 0;
 		grect.LowerRight = 1;
 
-		MyGradientFill(hdcwnd, tvtx, 2, &grect, 1, (FLG_GRADIENT == GRADIENT_TB || FLG_GRADIENT == GRADIENT_BT) ? GRADIENT_FILL_RECT_V : GRADIENT_FILL_RECT_H);
+		MyGradientFill(hdcwnd, tvtx, 2, &grect, 1, (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT) ? GRADIENT_FILL_RECT_V : GRADIENT_FILL_RECT_H);
 		return;
 	}
 
@@ -1369,15 +1373,27 @@ static void SkinLoadIcon(char *file, char *name, HICON *hIcon)
 
 static void SkinCalcFrameWidth()
 {
-	NONCLIENTMETRICS ncm = {0};
+	//NONCLIENTMETRICS ncm = {0};
+	int xBorder, yBorder, yCaption;
 
-	ncm.cbSize = sizeof(ncm);
-	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, 0, &ncm, 0);
-	
-	myGlobals.g_realSkinnedFrame_left = myGlobals.g_SkinnedFrame_left - ncm.iBorderWidth;
-	myGlobals.g_realSkinnedFrame_right = myGlobals.g_SkinnedFrame_right - ncm.iBorderWidth;
-	myGlobals.g_realSkinnedFrame_bottom = myGlobals.g_SkinnedFrame_bottom - ncm.iBorderWidth;
-	myGlobals.g_realSkinnedFrame_caption = myGlobals.g_SkinnedFrame_caption - ncm.iCaptionHeight;
+	xBorder = GetSystemMetrics(SM_CXSIZEFRAME);
+	yBorder = GetSystemMetrics(SM_CYSIZEFRAME);
+	yCaption = GetSystemMetrics(SM_CYCAPTION);
+
+	//SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0);
+	//SystemParametersInfo(SPI_GETBORDER, sizeof(nBorder), &nBorder, 0);
+
+#ifdef _DEBUG
+	_DebugTraceA("SPI: %d, %d, %d", xBorder, yBorder, yCaption);
+#endif
+	myGlobals.g_realSkinnedFrame_left = myGlobals.g_SkinnedFrame_left - xBorder;
+	myGlobals.g_realSkinnedFrame_right = myGlobals.g_SkinnedFrame_right - xBorder;
+	myGlobals.g_realSkinnedFrame_bottom = myGlobals.g_SkinnedFrame_bottom - yBorder;
+	myGlobals.g_realSkinnedFrame_caption = myGlobals.g_SkinnedFrame_caption - yCaption;
+#ifdef _DEBUG
+	_DebugTraceA("Real frame metrics: %d, %d, %d, %d", myGlobals.g_realSkinnedFrame_left, myGlobals.g_realSkinnedFrame_right,
+		         myGlobals.g_realSkinnedFrame_caption, myGlobals.g_realSkinnedFrame_bottom);
+#endif
 }
 
 void LoadSkinItems(char *file)

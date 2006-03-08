@@ -155,7 +155,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
              * also, set other parameters needed by the streaming function to display events
              */
             
-            SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
+            //SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
             SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK);
             SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
             SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_EXLIMITTEXT, 0, 0x80000000);
