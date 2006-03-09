@@ -388,6 +388,9 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		//			OptionsOpened=TRUE;			
 
 		//			OptionshWnd=hwndDlg;
+#ifdef _DEBUG
+        _DebugTraceA("wm_initdialog ready");
+#endif
 		return TRUE;
 							}
 	case WM_COMMAND:

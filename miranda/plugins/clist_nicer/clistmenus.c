@@ -136,24 +136,6 @@ static int RemoveMainMenuItem(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-
-#ifdef _DEBUG
-int _DebugTRACE(const char *fmt, ...)
-{
-	char    debug[1024];
-	int     ibsize = 1023;
-	FILE    *file;
-
-	va_list va;
-	va_start(va, fmt);
-	_vsnprintf(debug, ibsize, fmt, va);
-	file = fopen("c:\\mimdebug.log", "a+");
-	fputs(debug, file);
-	fclose(file);
-	return 0;
-}
-#endif
-
 static int BuildMainMenu(WPARAM wParam,LPARAM lParam)
 {
 	int tick;

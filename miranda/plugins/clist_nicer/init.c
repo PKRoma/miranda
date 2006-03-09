@@ -144,33 +144,6 @@ int _DebugTraceA(const char *fmt, ...)
 }
 #endif
 
-int _DebugPopup(HANDLE hContact, const char *fmt, ...)
-{
-	POPUPDATA ppd;
-	va_list va;
-	char    debug[1024];
-	int     ibsize = 1023;
-
-	va_start(va, fmt);
-	_vsnprintf(debug, ibsize, fmt, va);
-
-	if(CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
-		ZeroMemory((void *)&ppd, sizeof(ppd));
-		ppd.lchContact = hContact;
-		ppd.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-		if(hContact != 0)
-			strncpy(ppd.lpzContactName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0), MAX_CONTACTNAME);
-		else
-			strncpy(ppd.lpzContactName, "Message", MAX_CONTACTNAME);
-		strcpy(ppd.lpzText, "Debug (CListN+): ");
-		strncat(ppd.lpzText, debug, MAX_SECONDLINE - 20);
-		ppd.colorText = RGB(0,0,0);
-		ppd.colorBack = RGB(255,0,255);
-		CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
-	}
-	return 0;
-}
-
 BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 {
 	g_hInst = hInstDLL;
@@ -273,7 +246,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		InitializeCriticalSection(&cs_extcache);
 	}
 
-
 	g_CluiData.bMetaEnabled = DBGetContactSettingByte(NULL, "MetaContacts", "Enabled", 1);
 	g_CluiData.toolbarVisibility = DBGetContactSettingDword(NULL, "CLUI", "TBVisibility", DEFAULT_TB_VISIBILITY);
 	g_CluiData.hMenuButtons = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 3);
@@ -315,7 +287,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		g_CluiData.sortOrder[1] = HIBYTE(LOWORD(sortOrder));
 		g_CluiData.sortOrder[2] = LOBYTE(HIWORD(sortOrder));
 	}
-
 	if(g_CluiData.bFirstRun)
 		DBWriteContactSettingByte(NULL, "CLUI", "firstrun", 0);
 
@@ -416,3 +387,4 @@ int __declspec(dllexport) Unload(void)
 	ClcShutdown(0, 0);
 	return 0;
 }
+

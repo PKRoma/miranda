@@ -30,7 +30,6 @@ $Id$
 
 #define TIMERID_VIEWMODEEXPIRE 100
 
-extern int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 extern struct CluiData g_CluiData;
 extern HIMAGELIST hCListImages;
 extern HPEN g_hPenCLUIFrames;

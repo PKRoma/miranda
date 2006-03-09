@@ -835,7 +835,6 @@ LBL_Def:
 					pcli->pfnEnsureVisible(hwnd, dat, dat->selection, 0);
 				pt.x = dat->iconXSpace + 15;
 				pt.y = RowHeights_GetItemTopY(dat, dat->selection) - dat->yScroll + (int)(dat->row_heights[dat->selection]*.7);
-				//pt.y = dat->selection * dat->rowHeight - dat->yScroll + (int) (dat->rowHeight * .7);
 				hitFlags = dat->selection == -1 ? CLCHT_NOWHERE : CLCHT_ONITEMLABEL;
 			} else {
 				ScreenToClient(hwnd, &pt);
@@ -846,14 +845,12 @@ LBL_Def:
 				pcli->pfnEnsureVisible(hwnd, dat, dat->selection, 0);
 			UpdateWindow(hwnd);
 
-			if (dat->selection != -1 && hitFlags & (CLCHT_ONITEMICON | CLCHT_ONITEMCHECK | CLCHT_ONITEMLABEL)) {
+            if (dat->selection != -1 && hitFlags & (CLCHT_ONITEMICON | CLCHT_ONITEMCHECK | CLCHT_ONITEMLABEL)) {
 				if (contact->type == CLCIT_GROUP) {
-					//hMenu = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 2);  XXX old code
 					hMenu = (HMENU)CallService(MS_CLIST_MENUBUILDSUBGROUP, (WPARAM)contact->group, 0);
 					ClientToScreen(hwnd,&pt);
 					TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_RIGHTBUTTON,pt.x,pt.y,0,(HWND)CallService(MS_CLUI_GETHWND,0,0),NULL);
 					return 0;
-					//CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, LPTDF_UNICODE);    XXX old code
 					CheckMenuItem(hMenu, POPUP_GROUPHIDEOFFLINE, contact->group->hideOffline ? MF_CHECKED : MF_UNCHECKED);
 				} else if (contact->type == CLCIT_CONTACT)
 					hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) contact->hContact, 0);
