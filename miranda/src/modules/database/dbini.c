@@ -383,21 +383,31 @@ static void DoAutoExec(void)
 					if(warnInfo.warnNoMore) warnThisSection=0;
 					switch(szValue[0]) {
 						case 'b':
+						case 'B':
 							DBWriteContactSettingByte(NULL,szSection,szName,(BYTE)strtol(szValue+1,NULL,0));
 							break;
 						case 'w':
+						case 'W':
 							DBWriteContactSettingWord(NULL,szSection,szName,(WORD)strtol(szValue+1,NULL,0));
 							break;
 						case 'd':
+						case 'D':
 							DBWriteContactSettingDword(NULL,szSection,szName,(DWORD)strtoul(szValue+1,NULL,0));
 							break;
 						case 'l':
+						case 'L':
 							DBDeleteContactSetting(NULL,szSection,szName);
 							break;
 						case 's':
+						case 'S':
 							DBWriteContactSettingString(NULL,szSection,szName,szValue+1);
 							break;
+						case 'u':
+						case 'U':
+							DBWriteContactSettingStringUtf(NULL,szSection,szName,szValue+1);
+							break;
 						case 'n':
+						case 'N':
 							{	PBYTE buf;
 								int len;
 								char *pszValue,*pszEnd;
