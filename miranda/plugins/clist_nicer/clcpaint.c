@@ -488,7 +488,10 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 		cEntry = g_ExtraCache;
 
 #if defined(_UNICODE)
-	if(type == CLCIT_CONTACT && (cEntry->dwCFlags & ECF_RTLNICK || mirror_always)) {
+    if(dat->bisEmbedded)
+        goto set_bg_l;
+    
+    if(type == CLCIT_CONTACT && (cEntry->dwCFlags & ECF_RTLNICK || mirror_always)) {
 		if(pfnSetLayout != NULL && (mirror_rtl || mirror_always)) {
 			g_RTL = TRUE;
 			bg_indent_r = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
@@ -509,9 +512,10 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 			bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
 	else
+set_bg_l:        
 		bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 #else
-	if(type == CLCIT_GROUP && g_CluiData.bGroupAlign == CLC_GROUPALIGN_RIGHT) {
+	if(type == CLCIT_GROUP && g_CluiData.bGroupAlign == CLC_GROUPALIGN_RIGHT && !dat->bisEmbedded && pfnSetLayout != 0) {
 		g_RTL = TRUE;
 		bg_indent_r = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
@@ -580,16 +584,20 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 			BYTE perstatus_ignored;
 			sitem = &StatusItems[cstatus - ID_STATUS_OFFLINE];
 
-			pp_item = cEntry->status_item ? cEntry->status_item : cEntry->proto_status_item;
+            if(!dat->bisEmbedded) {
+                pp_item = cEntry->status_item ? cEntry->status_item : cEntry->proto_status_item;
 
-			if (!(perstatus_ignored = sitem->IGNORED) && !(flags & CONTACTF_NOTONLIST))
-				SetTextColor(hdcMem, sitem->TEXTCOLOR);
+                if (!(perstatus_ignored = sitem->IGNORED) && !(flags & CONTACTF_NOTONLIST))
+                    SetTextColor(hdcMem, sitem->TEXTCOLOR);
 
-			if(g_CluiData.bUsePerProto && pp_item && !pp_item->IGNORED) {
-				sitem = pp_item;
-				if((perstatus_ignored || g_CluiData.bOverridePerStatusColors) && sitem->TEXTCOLOR != -1)
-					SetTextColor(hdcMem, sitem->TEXTCOLOR);
-			}
+                if(g_CluiData.bUsePerProto && pp_item && !pp_item->IGNORED) {
+                    sitem = pp_item;
+                    if((perstatus_ignored || g_CluiData.bOverridePerStatusColors) && sitem->TEXTCOLOR != -1)
+                        SetTextColor(hdcMem, sitem->TEXTCOLOR);
+                }
+            }
+            else
+                SetTextColor(hdcMem, sitem->TEXTCOLOR);
 
 			sevencontact_pos = &StatusItems[ID_EXTBKEVEN_CNTCTPOS - ID_STATUS_OFFLINE];
 			soddcontact_pos = &StatusItems[ID_EXTBKODD_CNTCTPOS - ID_STATUS_OFFLINE];

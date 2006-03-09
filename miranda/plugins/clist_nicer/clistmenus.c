@@ -54,7 +54,6 @@ int statustopos(int status);
 //
 //HIMAGELIST hImlMenuIcons;
 
-//static HANDLE hPreBuildContactMenuEvent;
 static HANDLE hPreBuildMainMenuEvent;
 
 static HANDLE hPreBuildContactMenuEvent;
@@ -302,7 +301,7 @@ static int BuildContactMenu(WPARAM wParam,LPARAM lParam)
 	BuildContactParam bcp;
 	ListParam param;
 
-	NotifyEventHooks(hPreBuildContactMenuEvent,(WPARAM)hContact,0);
+    NotifyEventHooks(hPreBuildContactMenuEvent,(WPARAM)hContact,0);
 
 	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 	isOnList=0==DBGetContactSettingByte(hContact,"CList","NotOnList",0);
@@ -408,14 +407,26 @@ static int ModifyCustomMenuItem(WPARAM wParam,LPARAM lParam)
 	tmi.flags = mi->flags;
 	tmi.hIcon = mi->hIcon;
 	tmi.hotKey = mi->hotKey;
-	tmi.pszName = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)mi->pszName );
-	//todo new flags for this parametrs
+    tmi.pszName = NULL;
+    
+    if(mi->pszName != 0 && !IsBadReadPtr(mi->pszName, 4)) {
+        tmi.pszName = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)mi->pszName );
+    }
+    else if(mi->pszName != NULL) {
+        _DebugTraceA("modify menu item: invalid pointer (%x), %x", mi->pszName, mi->flags);
+    }
+
+
+    //todo new flags for this parametrs
 	//tmi.ownerdata
 	//tmi.position
-	{	int result = CallService(MO_MODIFYMENUITEM,wParam,(LPARAM)&tmi);
-		mir_free( tmi.pszName );
-		return result;
-	}
+	{	
+        int result = CallService(MO_MODIFYMENUITEM,wParam,(LPARAM)&tmi);
+        if(tmi.pszName)
+            mir_free( tmi.pszName );
+
+        return result;
+    }
 }
 
 int MenuProcessCommand(WPARAM wParam,LPARAM lParam)

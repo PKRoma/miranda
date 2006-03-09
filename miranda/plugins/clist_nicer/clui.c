@@ -1316,7 +1316,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						g_CluiData.statusBarHeight, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOREDRAW);
 					res=EndDeferWindowPos(PosBatch);
 					if(wp->cx != g_oldSize.cx)
-						PostMessage(hwnd, CLUIINTM_STATUSBARUPDATE, 0, 0);
+						SendMessage(hwnd, CLUIINTM_STATUSBARUPDATE, 0, 0);
 					dock_prevent_moving=1;
 					g_oldPos.x = wp->x;
 					g_oldPos.y = wp->y;
@@ -1342,7 +1342,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if (g_CluiData.dwFlags & CLUI_FRAME_SBARSHOW) {
 				GetWindowRect(pcli->hwndStatus, &rcStatus);
 				g_CluiData.statusBarHeight = (rcStatus.bottom - rcStatus.top);
-				SendMessage(pcli->hwndStatus, WM_SIZE, 0, 0);
+				    SendMessage(pcli->hwndStatus, WM_SIZE, 0, 0);
 			} else
 				g_CluiData.statusBarHeight = 0;
 
@@ -1356,8 +1356,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				SizeFramesByWindowRect(&rcClient, &PosBatch);
 				LayoutButtons(hwnd, &PosBatch, &rcClient);
 				res=EndDeferWindowPos(PosBatch);
-				if(rcClient.right - rcClient.left != g_oldSize.cx)
-					PostMessage(hwnd, CLUIINTM_STATUSBARUPDATE, 0, 0);
+				//if(rcClient.right - rcClient.left != g_oldSize.cx)
+				//	PostMessage(hwnd, CLUIINTM_STATUSBARUPDATE, 0, 0);
 				g_oldSize.cx = rcClient.right - rcClient.left;
 				g_oldSize.cy = rcClient.bottom - rcClient.top;
 			}
@@ -2039,7 +2039,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					BOOL bDestroy = FALSE;
 
 					if(g_CluiData.bShowXStatusOnSbar && status > ID_STATUS_OFFLINE && DBGetContactSettingByte(NULL, szProto, "XStatusEnabled", 0) && (xStatusID = DBGetContactSettingByte(NULL, szProto, "XStatusId", 0)) > 0) {
-						if(xStatusID > 0 && xStatusID <= 29) {
+						if(xStatusID > 0 && xStatusID <= 32) {
 							char szServiceName[128];
 
 							mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", pd->RealName);

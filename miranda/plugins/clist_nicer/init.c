@@ -114,10 +114,10 @@ PLUGININFO pluginInfo = {
 		DEFMOD_CLISTALL
 };
 
-#ifdef _DEBUG
 #if defined(_UNICODE)
-int _DebugTraceW(const wchar_t *fmt, ...)
+void __forceinline _DebugTraceW(const wchar_t *fmt, ...)
 {
+#ifdef _DEBUG
     wchar_t debug[2048];
     int     ibsize = 2047;
     va_list va;
@@ -128,10 +128,13 @@ int _DebugTraceW(const wchar_t *fmt, ...)
     _vsnwprintf(&debug[5], ibsize - 10, fmt, va);
     OutputDebugStringW(debug);
 	return 0;
+#endif    
 }
 #endif
-int _DebugTraceA(const char *fmt, ...)
+
+void __forceinline _DebugTraceA(const char *fmt, ...)
 {
+#ifdef _DEBUG
     char    debug[2048];
     int     ibsize = 2047;
     va_list va;
@@ -141,8 +144,8 @@ int _DebugTraceA(const char *fmt, ...)
 	_vsnprintf(&debug[5], ibsize - 10, fmt, va);
     OutputDebugStringA(debug);
 	return 0;
+#endif    
 }
-#endif
 
 BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 {

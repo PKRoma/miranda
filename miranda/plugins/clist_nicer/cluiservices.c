@@ -116,7 +116,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	if (g_CluiData.bEqualSections) {
 		RECT rc;
 		int part;
-		SendMessage(pcli->hwndStatus,WM_SIZE,0,0);
+		//SendMessage(pcli->hwndStatus,WM_SIZE,0,0);        // XXX fix (may break status bar geometry)
 		GetClientRect(pcli->hwndStatus,&rc);
 		rc.right-=borders[0]*2;
 		toshow=0;
@@ -325,5 +325,5 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 			InvalidateRect(GetDlgItem(pcli->hwndContactList, IDC_TBTOPSTATUS), NULL, TRUE);
 			SFL_Update(hIcon, iIcon, hCListImages, szStatus, TRUE);
 	}	}
-	return;
+    return;
 }

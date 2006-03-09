@@ -213,7 +213,7 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 	}
 	else if(szProto == NULL && wParam == 0) {
 		if(!__strcmp(cws->szSetting, "XStatusId"))
-			CluiProtocolStatusChanged(0, 0);
+			CluiProtocolStatusChanged(0, cws->szModule);
 		return 0;
 	}
 	return 0;
@@ -666,10 +666,10 @@ LBL_Def:
 			struct ClcContact *contact = NULL;
 			int index;
 
-			if (!wParam) {
+			/*if (!wParam) {
 				CluiProtocolStatusChanged(0, 0);
 				break;
-			}
+			}*/
 
 			szProto = (char *)cws->szModule;
 

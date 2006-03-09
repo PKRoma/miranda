@@ -487,16 +487,15 @@ void FLT_ReadOptions(), FLT_WriteOptions(), FLT_RefreshAll();
 int ClcOptInit(WPARAM wParam, LPARAM lParam);
 DWORD GetDefaultExStyle(void);
 void GetFontSetting(int i, LOGFONTA *lf, COLORREF *colour);
-void CluiProtocolStatusChanged( int, const char* );
-
+void CluiProtocolStatusChanged( int parStatus, const char* szProto );
 //clistsettings.c
 char *u2a(wchar_t *src);
 wchar_t *a2u(char *src);
 
 // debugging support
 
-int _DebugTraceW(const wchar_t *fmt, ...);
-int _DebugTraceA(const char *fmt, ...);
+extern void __forceinline _DebugTraceW(const wchar_t *fmt, ...);
+extern void __forceinline _DebugTraceA(const char *fmt, ...);
 
 // Docking.c
 
