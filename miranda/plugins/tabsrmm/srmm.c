@@ -134,7 +134,6 @@ int _DebugTraceA(const char *fmt, ...)
 
 int _DebugPopup(HANDLE hContact, const char *fmt, ...)
 {
-    POPUPDATA ppd;
     va_list va;
     char    debug[1024];
     int     ibsize = 1023;
@@ -142,21 +141,7 @@ int _DebugPopup(HANDLE hContact, const char *fmt, ...)
     va_start(va, fmt);
     _vsnprintf(debug, ibsize, fmt, va);
     
-    if(CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
-        ZeroMemory((void *)&ppd, sizeof(ppd));
-        ppd.lchContact = hContact;
-        ppd.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-        if(hContact != 0)
-            strncpy(ppd.lpzContactName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0), MAX_CONTACTNAME);
-        else
-            strncpy(ppd.lpzContactName, Translate("Global"), MAX_CONTACTNAME);
-        strcpy(ppd.lpzText, "tabSRMM: ");
-        strncat(ppd.lpzText, debug, MAX_SECONDLINE - 20);
-        ppd.colorText = RGB(0,0,0);
-        ppd.colorBack = RGB(255,0,0);
-        CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
-    }
-    else if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
+    if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
         MIRANDASYSTRAYNOTIFY tn;
         char szTitle[128];
         

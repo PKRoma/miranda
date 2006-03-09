@@ -343,7 +343,8 @@ void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint
 			}
         }
 		if(tabdat->pContainer->bSkinned) {
-			StatusItems_t *item = &StatusItems[dwStyle & TCS_BOTTOM ? ID_EXTBKTABITEMBOTTOM : ID_EXTBKTABITEM];
+			StatusItems_t *item = &StatusItems[dwStyle & TCS_BOTTOM ? (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACKBOTTOM : ID_EXTBKTABITEMBOTTOM) : 
+                                               (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACK : ID_EXTBKTABITEM)];
 			if(!item->IGNORED) {
 				DrawAlpha(dc, rcItem, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 						  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
@@ -760,6 +761,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 }
                 else
                     rcClient.top = rctPage.top;
+                //ExcludeClipRect(hdc, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
                 DrawThemesXpTabItem(hdc, -1, &rcClient, uiFlags, tabdat);	// TABP_PANE=9,0,'TAB'
             }
             else {

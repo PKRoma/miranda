@@ -74,6 +74,8 @@ int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, 
 int InitVSApi(), FreeVSApi();
 void ReloadTabConfig(), FreeTabConfig();
 int RegisterTabCtrlClass(void);
+void FreeTabConfig();
+void ReloadTabConfig();
 
 void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);

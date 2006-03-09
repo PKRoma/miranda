@@ -155,6 +155,14 @@ StatusItems_t StatusItems[] = {
         CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
         CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Tabitem_hottrack", "TSKIN_TABITEMHOTTRACK", ID_EXTBKTABITEMHOTTRACK,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Tabitem_hottrack_bottom", "TSKIN_TABITEMHOTTRACKBOTTOM", ID_EXTBKTABITEMHOTTRACKBOTTOM,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 	}
 };
 
@@ -1396,6 +1404,21 @@ static void SkinCalcFrameWidth()
 #endif
 }
 
+
+struct {char *szIniKey, *szIniName; char *szSetting; unsigned int size; int defaultval;} _tagSettings[] = {
+    "Global", "SbarHeight", "sbarheight", 1, 22,
+    "ClientArea", "Left", "tborder_outer_left", 1, 0,
+    "ClientArea", "Right", "tborder_outer_right", 1, 0,
+    "ClientArea", "Top", "tborder_outer_top", 1, 0,
+    "ClientArea", "Bottom", "tborder_outer_bottom", 1, 0,
+    "ClientArea", "Inner", "tborder", 1, 0,
+    "Global", "TabTextNormal", "tab_txt_normal", 4, 0,
+    "Global", "TabTextActive", "tab_txt_active", 4, 0,
+    "Global", "TabTextUnread", "tab_txt_unread", 4, 0,
+    "Global", "TabTextHottrack", "tab_txt_hottrack", 4, 0,
+    NULL, NULL, NULL, 0, 0
+};
+
 void LoadSkinItems(char *file)
 {
     char *p;
@@ -1431,17 +1454,40 @@ void LoadSkinItems(char *file)
         p += (lstrlenA(p) + 1);
         i++;
     }
+
+    i = 0;
+    while(_tagSettings[i].szIniKey != NULL) {
+        data = 0;
+        data = GetPrivateProfileIntA(_tagSettings[i].szIniKey, _tagSettings[i].szIniName, _tagSettings[i].defaultval, file);
+        switch(_tagSettings[i].size) {
+            case 1:
+                DBWriteContactSettingByte(NULL, SRMSGMOD_T, _tagSettings[i].szSetting, (BYTE)data);
+                break;
+            case 4:
+                DBWriteContactSettingDword(NULL, SRMSGMOD_T, _tagSettings[i].szSetting, data);
+                break;
+            case 2:
+                DBWriteContactSettingWord(NULL, SRMSGMOD_T, _tagSettings[i].szSetting, (WORD)data);
+                break;
+        }
+        i++;
+    }
+    
 	SkinLoadIcon(file, "CloseGlyph", &myGlobals.g_closeGlyph);
 	SkinLoadIcon(file, "MaximizeGlyph", &myGlobals.g_maxGlyph);
 	SkinLoadIcon(file, "MinimizeGlyph", &myGlobals.g_minGlyph);
-	data = GetPrivateProfileIntA("Global", "SbarHeight", 0, file);
-	DBWriteContactSettingByte(0, SRMSGMOD_T, "sbarheight", (BYTE)data);
-	GetPrivateProfileStringA("Global", "FontColor", "None", buffer, 500, file);
+    
+	//GetPrivateProfileStringA("Global", "FontColor", "None", buffer, 500, file);
+    
 	g_titleBarButtonSize.cx = GetPrivateProfileIntA("Global", "TitleButtonWidth", 24, file);
 	g_titleBarButtonSize.cy = GetPrivateProfileIntA("Global", "TitleButtonHeight", 12, file);
 	g_framelessSkinmode = GetPrivateProfileIntA("Global", "framelessmode", 0, file);
 	g_compositedWindow = GetPrivateProfileIntA("Global", "compositedwindow", 0, file);
-	
+
+    data = GetPrivateProfileIntA("Global", "SkinnedTabs", 1, file);
+    myGlobals.m_TabAppearance = data ? myGlobals.m_TabAppearance | TCF_NOSKINNING : myGlobals.m_TabAppearance & ~TCF_NOSKINNING;
+    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "tabconfig", myGlobals.m_TabAppearance);
+    
 	myGlobals.g_SkinnedFrame_left = GetPrivateProfileIntA("WindowFrame", "left", 4, file);
 	myGlobals.g_SkinnedFrame_right = GetPrivateProfileIntA("WindowFrame", "right", 4, file);
 	myGlobals.g_SkinnedFrame_caption = GetPrivateProfileIntA("WindowFrame", "Caption", 24, file);
@@ -1461,18 +1507,13 @@ void LoadSkinItems(char *file)
 
 	SkinCalcFrameWidth();
 
-	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_left", (BYTE)GetPrivateProfileIntA("ClientArea", "Left", 0, file));
-	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_right", (BYTE)GetPrivateProfileIntA("ClientArea", "Right", 0, file));
-	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_top", (BYTE)GetPrivateProfileIntA("ClientArea", "Top", 0, file));
-	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_bottom", (BYTE)GetPrivateProfileIntA("ClientArea", "Bottom", 0, file));
-
-	DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder", (BYTE)GetPrivateProfileIntA("ClientArea", "Inner", 0, file));
-
 	if(strcmp(buffer, "None"))
 		myGlobals.skinDefaultFontColor = HexStringToLong(buffer);
 	else
 		myGlobals.skinDefaultFontColor = GetSysColor(COLOR_BTNTEXT);
 	buffer[499] = 0;
+    FreeTabConfig();
+    ReloadTabConfig();
     free(szSections);
 }
 
