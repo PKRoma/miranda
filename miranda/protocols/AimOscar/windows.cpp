@@ -149,6 +149,7 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_AT, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0));//Account Type Icons
 			CheckDlgButton(hwndDlg, IDC_ES, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 0));//Extended Status Type Icons
 			CheckDlgButton(hwndDlg, IDC_HF, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0));//Fake hiptopness
+			CheckDlgButton(hwndDlg, IDC_DM, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DM, 0));//Disable Sending Mode Message
 			//CheckDlgButton(hwndDlg, IDC_SG, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SG, 0));//Server-side group
 			break;
 		}
@@ -297,13 +298,13 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					else
 						DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA,(WORD)timer);
 					//End
-					/*
-					//Server-side group
-					if (IsDlgButtonChecked(hwndDlg, IDC_SG))
-						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SG, 1);
+					
+					//Disable Mode Message Sending
+					if (IsDlgButtonChecked(hwndDlg, IDC_DM))
+                        DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DM, 1);
 					else
-						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SG, 0);
-					//End Server-side group*/
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DM, 0);
+					//End Disable Mode Message Sending
                 }
             }
             break;

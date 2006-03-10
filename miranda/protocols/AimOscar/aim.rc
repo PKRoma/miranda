@@ -57,7 +57,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "AIM Options",IDC_STATIC,7,112,157,91
+    GROUPBOX        "AIM Options",IDC_STATIC,7,112,157,86
     EDITTEXT        IDC_SN,64,17,93,15,ES_LOWERCASE | ES_AUTOHSCROLL
     EDITTEXT        IDC_NK,64,37,93,15,ES_AUTOHSCROLL
     EDITTEXT        IDC_PW,64,57,93,15,ES_PASSWORD | ES_AUTOHSCROLL
@@ -73,19 +73,21 @@ BEGIN
     LTEXT           "File Transfer Grace Period:",IDC_STATIC,12,154,90,12
     EDITTEXT        IDC_GP,106,152,20,12,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "(seconds)",IDC_STATIC,127,154,32,12
-    CONTROL         "Disable account type icons",IDC_AT,"Button",
+    CONTROL         "Disable Account Type Icons",IDC_AT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,11,167,145,13
-    CONTROL         "Disable extended status icons",IDC_ES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,182,143,13
+    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,180,143,13
     GROUPBOX        "AIM User Details",IDC_STATIC,8,7,156,91
     GROUPBOX        "Advanced Options",IDC_STATIC,168,7,156,91
     EDITTEXT        IDC_KA,234,19,20,12,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "AimOSCAR must be reconnected  for this option to take effect.",
-                    IDC_MASQ,201,49,115,18,NOT WS_VISIBLE
+                    IDC_MASQ,201,60,115,18,NOT WS_VISIBLE
     LTEXT           "Keep Alive Timer:",IDC_STATIC,173,21,57,15
     LTEXT           "(seconds)",IDC_STATIC,255,21,32,12
-    CONTROL         "masquerade as a Sidekick/Hiptop user",IDC_HF,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,173,35,143,13
+    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,173,34,143,13
+    CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,173,47,143,13
 END
 
 IDD_INFO DIALOGEX 0, 0, 193, 127

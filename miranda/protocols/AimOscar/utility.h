@@ -34,6 +34,7 @@ HANDLE find_contact(char * sn);
 HANDLE add_contact(char* buddy);
 void add_contacts_to_groups();
 void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* group);
+void offline_contact(HANDLE hContact);
 void offline_contacts();
 char *normalize_name(const char *s);
 void strip_html(char *dest, const char *src, size_t destsize);

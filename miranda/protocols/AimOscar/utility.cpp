@@ -239,6 +239,40 @@ void add_contacts_to_groups()
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 }
+void offline_contact(HANDLE hContact)
+{
+	DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI);
+	DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_BI);
+	DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FT);
+	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FN);
+	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FD);
+	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FS);
+	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH);
+	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP);
+	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AC);
+	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_ES);
+	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV);
+	DBDeleteContactSetting(hContact, "CList", AIM_KEY_SM);
+	DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT);
+	DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT);
+	DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
+	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+	{
+		char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+		HANDLE handle=(HANDLE)-1;
+		memcpy(data,&handle,sizeof(HANDLE));
+		memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+		unsigned short column_type=EXTRA_ICON_ADV1;
+		memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+		ForkThread((pThreadFunc)set_extra_icon,data);
+		char* data2=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
+		memcpy(data2,&handle,sizeof(HANDLE));
+		memcpy(&data2[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+		unsigned short column_type2=EXTRA_ICON_ADV1;
+		memcpy(&data2[sizeof(HANDLE)*2],(char*)&column_type2,sizeof(unsigned short));
+		ForkThread((pThreadFunc)set_extra_icon,data2);
+	}
+}
 void offline_contacts()
 {
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -246,44 +280,7 @@ void offline_contacts()
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
-		{
-			DBVARIANT dbv;
-			if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
-			{
-				DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI);
-				DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_BI);
-				DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FT);
-				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FN);
-				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FD);
-				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FS);
-				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH);
-				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP);
-				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AC);
-				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_ES);
-				DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV);
-				DBDeleteContactSetting(hContact, "CList", AIM_KEY_SM);
-				DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT);
-				DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT);
-				DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
-				DBFreeVariant(&dbv);
-				if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
-				{
-					char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-					HANDLE handle=(HANDLE)-1;
-					memcpy(data,&handle,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV1;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					ForkThread((pThreadFunc)set_extra_icon,data);
-					char* data2=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-					memcpy(data2,&handle,sizeof(HANDLE));
-					memcpy(&data2[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type2=EXTRA_ICON_ADV1;
-					memcpy(&data2[sizeof(HANDLE)*2],(char*)&column_type2,sizeof(unsigned short));
-					ForkThread((pThreadFunc)set_extra_icon,data2);
-				}
-			}
-		}
+			offline_contact(hContact);
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 	delete_module(GROUP_ID_KEY,0);

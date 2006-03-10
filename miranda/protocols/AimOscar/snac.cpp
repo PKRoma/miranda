@@ -530,26 +530,7 @@ void snac_user_offline(unsigned short subgroup, char* buf)//family 0x0003
 			hContact=add_contact(buddy);
 		}
 		if(hContact)
-		{
-			DBDeleteContactSetting(hContact, "CList", AIM_KEY_SM);
-			DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
-			DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV);
-			DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AC);
-			DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_ES);
-			char* data=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-			HANDLE handle=(HANDLE)-1;
-			memcpy(data,&handle,sizeof(HANDLE));
-			memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-			unsigned short column_type=EXTRA_ICON_ADV1;
-			memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-			ForkThread((pThreadFunc)set_extra_icon,data);
-			char* data2=(char*)malloc(sizeof(HANDLE)*2+sizeof(unsigned short));
-			memcpy(data2,&handle,sizeof(HANDLE));
-			memcpy(&data2[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-			unsigned short column_type2=EXTRA_ICON_ADV1;
-			memcpy(&data2[sizeof(HANDLE)*2],(char*)&column_type2,sizeof(unsigned short));
-			ForkThread((pThreadFunc)set_extra_icon,data2);
-		}			
+			offline_contact(hContact);
 	}
 }
 void snac_buddylist_error(unsigned short subgroup, char* buf)//family 0x0003
@@ -837,7 +818,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 			{
 				unsigned long msg_time=DBGetContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_LM,0);
 				unsigned long away_time=DBGetContactSettingDword(NULL,AIM_PROTOCOL_NAME,AIM_KEY_LA,0);
-				if(away_time>msg_time)
+				if(away_time>msg_time&&!DBGetContactSettingByte(NULL,AIM_PROTOCOL_NAME,AIM_KEY_DM,0))
 				{
 					char* temp=new char[strlen(conn.szModeMsg)+20];
 					mir_snprintf(temp,strlen(conn.szModeMsg)+20,"%s %s",Translate("[Auto-Response]:"),conn.szModeMsg);

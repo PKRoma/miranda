@@ -1,11 +1,12 @@
 #include "aim.h"
 PLUGINLINK *pluginLink;
-#define AIM_OSCAR_VERSION "\0\0\0\x01"
-char	AIM_CAP_MIRANDA[16]="MirandaA\0\0\0\0\0\0\0";
+#define AIM_OSCAR_VERSION "\0\0\0\x02"
+char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.2";
+char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
-	"AIM OSCAR Plugin - Beta 1",
-	PLUGIN_MAKE_VERSION(0,0,0,1),
+	"AIM OSCAR Plugin - Beta 2",
+	PLUGIN_MAKE_VERSION(0,0,0,2),
 	"Provides basic support for AOL® OSCAR Instant Messenger protocol.",
 	"Aaron Myles Landwehr",
 	"aaron@snaphat.com",
@@ -114,14 +115,6 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, AIM_DEFAULT_SERVER);
 	else
 		DBFreeVariant(&dbv);
-/*	if (DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, &dbv2))
-		DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, AIM_DEFAULT_GROUP);
-	else
-		DBFreeVariant(&dbv2);
-	if (DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, &dbv3))
-		DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, AIM_DEFAULT_GROUP);
-	else
-		DBFreeVariant(&dbv3);*/
 	if(DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, -1)==-1)
 		DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 	if(DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, -1)==-1)
