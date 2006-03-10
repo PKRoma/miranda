@@ -814,11 +814,11 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 			ccs.wParam = 0;
 			ccs.lParam = (LPARAM) & pre;
 			CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
-			if(conn.status==ID_STATUS_AWAY||!auto_response)
+			if(conn.status==ID_STATUS_AWAY&&!auto_response&&!DBGetContactSettingByte(NULL,AIM_PROTOCOL_NAME,AIM_KEY_DM,0))
 			{
 				unsigned long msg_time=DBGetContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_LM,0);
 				unsigned long away_time=DBGetContactSettingDword(NULL,AIM_PROTOCOL_NAME,AIM_KEY_LA,0);
-				if(away_time>msg_time&&!DBGetContactSettingByte(NULL,AIM_PROTOCOL_NAME,AIM_KEY_DM,0))
+				if(away_time>msg_time)
 				{
 					char* temp=new char[strlen(conn.szModeMsg)+20];
 					mir_snprintf(temp,strlen(conn.szModeMsg)+20,"%s %s",Translate("[Auto-Response]:"),conn.szModeMsg);
