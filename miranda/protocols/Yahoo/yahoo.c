@@ -1007,6 +1007,9 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	AI.hContact = hContact;
 	lstrcpy(AI.filename,buf);
 
+	if (error) 
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
+	
 	ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED,(HANDLE) &AI, 0);
 }
 
@@ -1014,6 +1017,11 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 static void __cdecl yahoo_recv_avatarthread(void *pavt) 
 {
 	struct avatar_info *avt = pavt;
+	
+	if (!yahooLoggedIn) {
+		YAHOO_DebugLog("We are not logged in!!!");
+		return;
+	}
 	
 //    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	if (avt == NULL) {
@@ -1037,10 +1045,6 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 		
 	LOG(("ext_yahoo_got_picture for %s with url %s (checksum: %d) type: %d", who, pic_url, cksum, type));
 	
-	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
-		LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
-		return;
-	}
 	
 	/*
 	  Type:
@@ -1054,6 +1058,12 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 		DBVARIANT dbv;
 		
 		/* need to send avatar info */
+		if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+			LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
+			yahoo_send_picture_update(id, who, 0); // no avatar (disabled)
+			return;
+		}
+	
 		LOG(("[ext_yahoo_got_picture] Getting ready to send info!"));
 		/* need to read CheckSum */
 		cksum = YAHOO_GetDword("AvatarHash", 0);
@@ -1071,6 +1081,11 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 		return;
 	}
 	
+	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+		LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
+		return;
+	}
+
 	/* got avatar info, so set miranda up */
 	hContact = getbuddyH(who);
 	
