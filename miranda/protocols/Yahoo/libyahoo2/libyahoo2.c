@@ -2605,30 +2605,47 @@ static void yahoo_process_contact(struct yahoo_input_data *yid, struct yahoo_pac
 
 	for (l = pkt->hash; l; l = l->next) {
 		struct yahoo_pair *pair = l->data;
-		if (pair->key == 1)
+		switch (pair->key) {
+		case 1:
 			id = pair->value;
-		else if (pair->key == 3)
+			break;
+		case 3:
 			who = pair->value;
-		else if (pair->key == 14)
+			break;
+		case 14:
+		case 19:
 			msg = pair->value;
-		else if (pair->key == 7)
+			break;
+		case 7:
 			name = pair->value;
-		else if (pair->key == 10)
+			break;
+		case 10:
 			state = strtol(pair->value, NULL, 10);
-		else if (pair->key == 15)
+			break;
+		case 15:
 			tm = strtol(pair->value, NULL, 10);
-		else if (pair->key == 13)
+			break;
+		case 13:
 			online = strtol(pair->value, NULL, 10);
-		else if (pair->key == 47)
+			break;
+		case 47:
 			away = strtol(pair->value, NULL, 10);
-		else if (pair->key == 137)
+			break;
+		case 137:
 			idle = strtol(pair->value, NULL, 10);
-		else if (pair->key == 60)
+			break;
+		case 60:
 			mobile = strtol(pair->value, NULL, 10);
-		else if (pair->key == 192)
+			break;
+		case 192:
 			cksum = strtol(pair->value, NULL, 10);
-		else if (pair->key == 213)
+			break;
+		case 213:
 			buddy_icon = strtol(pair->value, NULL, 10);
+			break;
+		default:
+			LOG(("key: %d => value: '%s'", pair->key, pair->value));
+		}
 	}
 
 	if (id)
@@ -2908,7 +2925,7 @@ void yahoo_send_picture_info(int id, const char *who, const char *pic_url, int c
 	pkt = yahoo_packet_new(YAHOO_SERVICE_PICTURE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 
 	yahoo_packet_hash(pkt, 1, yd->user);
-	yahoo_packet_hash(pkt, 4, yd->user);
+	//yahoo_packet_hash(pkt, 4, yd->user);
 	yahoo_packet_hash(pkt, 5, who);
 	yahoo_packet_hash(pkt, 13, "2");
 	yahoo_packet_hash(pkt, 20, pic_url);
@@ -4441,7 +4458,7 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 				yahoo_packet_hash(pkt, 47, (away == 2)? "2": (away) ?"1":"0");
 			}
 			
-			
+			yahoo_packet_hash(pkt, 187, "0");
 			
 		}
 		
@@ -4830,9 +4847,9 @@ void yahoo_change_buddy_group(int id, const char *who, const char *old_group, co
 	pkt = yahoo_packet_new(YAHOO_SERVICE_ADDBUDDY, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 7, who);
+	yahoo_packet_hash(pkt, 14, "");
 	yahoo_packet_hash(pkt, 65, new_group);
-	yahoo_packet_hash(pkt, 14, " ");
-
+	yahoo_packet_hash(pkt, 97, "1");
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
 
