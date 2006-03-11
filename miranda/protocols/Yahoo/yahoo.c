@@ -699,6 +699,7 @@ HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, DWORD flags )
     }
 
 	//not already there: add
+	LOG(("[add_buddy] Adding buddy id: %s, flags: %lu", yahoo_id, flags));
 	hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_ADD, 0, 0 );
 	YAHOO_CallService( MS_PROTO_ADDTOCONTACT, ( WPARAM )hContact,( LPARAM )yahooProtocolName );
 	YAHOO_SetString( hContact, YAHOO_LOGINID, yahoo_id );
@@ -1406,7 +1407,7 @@ void ext_yahoo_got_buddies(int id, YList * buds)
 			YAHOO_SetString( hContact, "YGroup", bud->group);
 		
 		if (bud->yab_entry) {
-		  LOG(("YAB_ENTRY"));
+		  //LOG(("YAB_ENTRY"));
 		  
 		  if (bud->yab_entry->fname) 
 		    YAHOO_SetString( hContact, "FirstName", bud->yab_entry->fname);
@@ -1665,12 +1666,12 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *msg)
 
 	// UIN
 	dwUin = 0;
-    memcpy(pCurBlob,&dwUin,sizeof(DWORD)); 
+    *( PDWORD )pCurBlob = 0;
     pCurBlob+=sizeof(DWORD);
 
     // hContact
-	memcpy(pCurBlob,&hContact,sizeof(HANDLE)); 
-    pCurBlob+=sizeof(HANDLE);
+	*( PDWORD )pCurBlob = ( DWORD )hContact; 
+    pCurBlob+=sizeof(DWORD);
     
     // NICK
     strcpy((char *)pCurBlob,who); 
