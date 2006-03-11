@@ -678,6 +678,8 @@ int YahooRecvAuth(WPARAM wParam,LPARAM lParam)
 	dbei.timestamp=pre->timestamp;
 	dbei.flags=pre->flags & (PREF_CREATEREAD?DBEF_READ:0);
 	dbei.eventType=EVENTTYPE_AUTHREQUEST;
+	
+	/* Just copy the Blob from PSR_AUTH event. */
 	dbei.cbBlob=pre->lParam;
 	dbei.pBlob=(PBYTE)pre->szMessage;
 	CallService(MS_DB_EVENT_ADD,(WPARAM)NULL,(LPARAM)&dbei);
