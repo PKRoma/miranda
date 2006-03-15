@@ -908,9 +908,9 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	char *pBuff = NULL;
 	struct avatar_info *avt = (struct avatar_info *) data;
 		
-	LOG(("Getting file: %s size: %lu", filename, size));
+	LOG(("Getting file: %s size: %lu fd: %d error: %d", filename, size, fd, error));
 	
-	if (!size) /* empty file or some file loading error. don't crash! */
+	if (!size || fd <= 0) /* empty file or some file loading error. don't crash! */
         error = 1;
     
 	if (!error) {
@@ -946,7 +946,11 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 			
     }
 	
-	Netlib_CloseHandle((HANDLE)fd);
+	if (fd > 0) {
+		//LOG(("Before Netlib_CloseHandle! Handle: %d", fd));
+		Netlib_CloseHandle((HANDLE)fd);
+		//LOG(("After Netlib_CloseHandle!"));
+	}
 	
 	if (DBGetContactSettingDword(hContact, yahooProtocolName, "PictCK", 0) != avt->cksum) {
 		LOG(("WARNING: Checksum updated during download?!"));
@@ -2252,7 +2256,7 @@ int ext_yahoo_connect_async(int id, char *host, int port,
 	//if(res >= 0 ) {
 		//LOG(("Connected fd: %d, error: %d", hServerConn, error));
 		
-		callback(res, 0, data);
+		callback(res, (res > 0) ? 0 : 1, data);
 		return 0;
 	/*} else {
 		//close(servfd);
