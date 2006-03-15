@@ -659,8 +659,9 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 
 		WCHAR* wszMessage;
 		char*  szMessage;
+		BOOL isRss = !strcmp( type, "headline" );
 
-		if (( subjectNode=JabberXmlGetChild( node, "subject" ))!=NULL && subjectNode->text!=NULL && subjectNode->text[0]!='\0' ) {
+		if (( subjectNode=JabberXmlGetChild( node, "subject" ))!=NULL && subjectNode->text!=NULL && subjectNode->text[0]!='\0' && !isRss ) {
 			p = ( char* )alloca( strlen( subjectNode->text ) + strlen( bodyNode->text ) + 12 );
 			sprintf( p, "Subject: %s\r\n%s", subjectNode->text, bodyNode->text );
 			szMessage = p;
@@ -705,6 +706,13 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 							free( item->messageEventIdStr );
 						idStr = JabberXmlGetAttrValue( node, "id" );
 						item->messageEventIdStr = ( idStr==NULL )?NULL:_strdup( idStr );
+					}
+				}
+				else if ( !strcmp( p, "jabber:x:oob" ) && isRss) {
+					if ( (rssUrlNode = JabberXmlGetNthChild( xNode, "url", 1 ))!=NULL) {
+						p = ( char* )alloca( strlen( subjectNode->text ) + strlen( bodyNode->text ) + strlen( rssUrlNode->text ) + 14 );
+						sprintf( p, "Subject: %s\r\n%s\r\n%s", subjectNode->text, rssUrlNode->text, bodyNode->text );
+						szMessage = p;
 					}
 				}
 				else if ( !strcmp( p, "http://jabber.org/protocol/muc#user" )) {
