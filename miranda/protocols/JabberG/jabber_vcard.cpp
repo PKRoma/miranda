@@ -1122,16 +1122,20 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		return TRUE;
 	}
 	case WM_CTLCOLORSTATIC:
-		if (( HWND ) lParam == GetDlgItem( hwndDlg, IDC_WHITERECT )) {
+		switch (GetDlgCtrlID((HWND)lParam)) {
+		case IDC_WHITERECT:
+		case IDC_LOGO:
+		case IDC_NAME:
+		case IDC_DESCRIPTION:
 			SetBkColor(( HDC ) wParam, RGB( 255, 255, 255 ));
 			return ( BOOL ) GetStockObject( WHITE_BRUSH );
-		}
-		else if (( HWND ) lParam == GetDlgItem( hwndDlg, IDC_UPDATING )) {
+
+		case IDC_UPDATING:
 			SetBkColor(( HDC )wParam, GetSysColor( COLOR_3DFACE ));
 			return ( BOOL ) GetSysColorBrush( COLOR_3DFACE );
 		}
-		SetBkMode(( HDC ) wParam, TRANSPARENT );
-		return ( BOOL ) GetStockObject( NULL_BRUSH );
+		break;
+
 	case WM_NOTIFY:
 		switch ( wParam ) {
 		case IDC_TABS:

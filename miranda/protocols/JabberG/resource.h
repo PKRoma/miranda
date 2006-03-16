@@ -70,8 +70,10 @@
 #define IDC_AGENT_LIST                  1021
 #define IDC_AGENT_SEARCH                1022
 #define IDC_SUBMIT                      1023
+#define IDC_LOGO                        1024
 #define IDC_AGENT_BROWSE                1029
 #define IDC_INSTRUCTION                 1030
+#define IDC_DESCRIPTION                 1031
 #define IDC_FRAME                       1037
 #define IDC_FRAME_TEXT                  1038
 #define IDC_SUBSCRIPTION                1039
@@ -218,7 +220,7 @@
 #define IDM_INVITE                      10016
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        185

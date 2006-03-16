@@ -216,11 +216,11 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Close",IDCLOSE,188,190,45,14
     LTEXT           "",IDC_WHITERECT,0,0,238,26
-    ICON            IDI_WRITE,IDC_STATIC,7,4,20,20
+    ICON            IDI_WRITE,IDC_LOGO,7,4,20,20
     LTEXT           "",IDC_NAME,33,5,200,8,0,WS_EX_TRANSPARENT
     CONTROL         "Tab1",IDC_TABS,"SysTabControl32",TCS_HOTTRACK | 
                     TCS_MULTILINE | WS_TABSTOP,5,29,228,158
-    LTEXT           "View and update Jabber personal vCard",IDC_STATIC,44,13,
+    LTEXT           "View and update Jabber personal vCard",IDC_DESCRIPTION,44,13,
                     189,8,0,WS_EX_TRANSPARENT
     CTEXT           "Updating",IDC_UPDATING,65,194,49,8,SS_NOPREFIX | 
                     SS_CENTERIMAGE | NOT WS_VISIBLE
