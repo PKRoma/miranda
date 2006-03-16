@@ -88,7 +88,7 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	HBITMAP hOldBitmap = ( HBITMAP )SelectObject( hdc, hBitmap );
 
 	BITMAPINFO* bmi = ( BITMAPINFO* )alloca( sizeof( BITMAPINFO ) + sizeof( RGBQUAD )*256 );
-	memset( bmi, 0, sizeof BITMAPINFO );
+	memset( bmi, 0, sizeof( BITMAPINFO ));
 	bmi->bmiHeader.biSize = 0x28;
 	if ( GetDIBits( hdc, hBitmap, 0, 96, NULL, bmi, DIB_RGB_COLORS ) == 0 ) {
 		TWinErrorCode errCode;
