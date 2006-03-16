@@ -252,7 +252,10 @@ BOOL CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
-		{	HIMAGELIST hIml = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR16|ILC_MASK,5,5);
+		{	
+			HIMAGELIST hIml = ImageList_Create(
+				GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
+				ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16 ), 5, 5 );
 			ImageList_AddIcon( hIml,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(211)));
 			ImageList_AddIcon( hIml, LoadIcon( hInst, MAKEINTRESOURCE( IDI_LIST_FL )));
 			ImageList_AddIcon( hIml, LoadIcon( hInst, MAKEINTRESOURCE( IDI_LIST_AL )));
