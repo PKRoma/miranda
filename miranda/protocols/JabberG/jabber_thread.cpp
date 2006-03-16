@@ -709,6 +709,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 					}
 				}
 				else if ( !strcmp( p, "jabber:x:oob" ) && isRss) {
+					XmlNode* rssUrlNode;
 					if ( (rssUrlNode = JabberXmlGetNthChild( xNode, "url", 1 ))!=NULL) {
 						p = ( char* )alloca( strlen( subjectNode->text ) + strlen( bodyNode->text ) + strlen( rssUrlNode->text ) + 14 );
 						sprintf( p, "Subject: %s\r\n%s\r\n%s", subjectNode->text, rssUrlNode->text, bodyNode->text );
