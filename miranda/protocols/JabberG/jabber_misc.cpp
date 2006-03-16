@@ -334,11 +334,11 @@ char* EscapeChatTags(char* pszText)
 	if ( nChars == 0 )
 		return _strdup( pszText );
 
-	char* pszNewText = (char*)malloc( strlen( pszText ) + 1 + nChars );
+	char* pszNewText = (char*)malloc( strlen( pszText ) + 1 + nChars ), *s, *d;
 	if ( pszNewText == NULL )
 		return _strdup( pszText );
 
-	for ( char* s = pszText, *d = pszNewText; *s; s++ ) {
+	for ( s = pszText, d = pszNewText; *s; s++ ) {
 		if ( *s == '%' )
 			*d++ = '%';
 		*d++ = *s;
@@ -349,10 +349,11 @@ char* EscapeChatTags(char* pszText)
 
 char* UnEscapeChatTags(char* str_in)
 {
-	for ( char* s = str_in, *d = str_in; *s; s++ ) {
+	char* s = str_in, *d = str_in;
+	while ( *s ) {
 		if (( *s == '%' && s[1] == '%' ) || ( *s == '\n' && s[1] == '\n' ))
 			s++;
-		*d++ = *s;
+		*d++ = *s++;
 	}
 	*d = 0;
 	return str_in;
