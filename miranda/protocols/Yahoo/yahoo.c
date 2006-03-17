@@ -688,6 +688,7 @@ HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, DWORD flags )
 	
 	hContact = getbuddyH(yahoo_id);
 	if (hContact != NULL) {
+		LOG(("[add_buddy] Found buddy id: %s, handle: %lu", yahoo_id, (DWORD)hContact));
 		if ( !( flags & PALF_TEMPORARY ) && DBGetContactSettingByte( hContact, "CList", "NotOnList", 1 )) 
 		{
 			LOG(("[add_buddy] Making Perm id: %s, flags: %lu", yahoo_id, flags));
@@ -1645,10 +1646,7 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *msg)
 {
 	char *szBlob,*pCurBlob;
 	char m[1024], m1[5];
-   	DWORD dwUin;
 	HANDLE hContact=NULL;
-	//int found = 0;
-
 	CCSDATA ccs;
 	PROTORECVEVENT pre;
 
@@ -1667,9 +1665,9 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *msg)
 	if (msg == NULL)
 	  m[0]='\0';
     else
-        strcpy(m, msg);
+        lstrcpy(m, msg);
 	 
-	pre.lParam=sizeof(DWORD)+sizeof(HANDLE)+lstrlen(who)+lstrlen(m1)+lstrlen(m1)+lstrlen(who)+lstrlen(m)+5;
+	pre.lParam=sizeof(DWORD)*2+lstrlen(who)+lstrlen(m1)+lstrlen(m1)+lstrlen(who)+lstrlen(m)+5;
 	
 	pCurBlob=szBlob=(char *)malloc(pre.lParam);
     /*
@@ -1684,7 +1682,6 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *msg)
     */
 
 	// UIN
-	dwUin = 0;
     *( PDWORD )pCurBlob = 0;
     pCurBlob+=sizeof(DWORD);
 
@@ -1693,23 +1690,23 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *msg)
     pCurBlob+=sizeof(DWORD);
     
     // NICK
-    strcpy((char *)pCurBlob,who); 
+    lstrcpy((char *)pCurBlob,who); 
     pCurBlob+=lstrlen((char *)pCurBlob)+1;
     
     // FIRST
-    strcpy((char *)pCurBlob,m1); 
+    lstrcpy((char *)pCurBlob,m1); 
     pCurBlob+=lstrlen((char *)pCurBlob)+1;
     
     // LAST
-    strcpy((char *)pCurBlob,m1); 
+    lstrcpy((char *)pCurBlob,m1); 
     pCurBlob+=lstrlen((char *)pCurBlob)+1;
     
     // E-mail    
-	strcpy((char *)pCurBlob,who); 
+	lstrcpy((char *)pCurBlob,who); 
 	pCurBlob+=lstrlen((char *)pCurBlob)+1;
 	
 	// Reason
-	strcpy((char *)pCurBlob, m); 
+	lstrcpy((char *)pCurBlob, m); 
 	
 	pre.szMessage=(char *)szBlob;
 	CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
