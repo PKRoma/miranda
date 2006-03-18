@@ -136,7 +136,18 @@ void aim_util_striphtml(char *dest, const char *src, size_t destsize)
         memmove(ptr + 2, ptr + 4, strlen(ptr + 4) + 1);
     }
     rptr = dest;
-    while ((ptr = strstr(rptr, "<"))) {
+	while ((ptr = strstr(rptr, "<A HREF=\"")) || (ptr = strstr(rptr, "<a href=\""))) {
+        ptrl = ptr + 8;
+		memmove(ptr, ptrl + 1, strlen(ptrl + 1) + 1);
+        if ((ptr = strstr(ptrl, "\">"))) {
+			if ((ptrl = strstr(ptrl, "</A")) || (ptrl = strstr(ptrl, "</a"))) {
+				memmove(ptr, ptrl + 4, strlen(ptrl + 4) + 1);
+			}
+        }
+        else
+            rptr++;
+	}
+   while ((ptr = strstr(rptr, "<"))) {
         ptrl = ptr + 1;
         if ((ptrl = strstr(ptrl, ">"))) {
             memmove(ptr, ptrl + 1, strlen(ptrl + 1) + 1);
