@@ -1613,13 +1613,20 @@ void ext_yahoo_rejected(int id, char *who, char *msg)
 {
    	char buff[1024]={0};
    	HANDLE hContact;
-    LOG(("ext_yahoo_rejected"));
+    LOG(("[ext_yahoo_rejected] who: %s  msg: %s", who, msg));
 	snprintf(buff, sizeof(buff), Translate("%s has rejected your request and sent the following message:"), who);
 
-	hContact = add_buddy(who, who, 0);
+	hContact = getbuddyH(who);
 	
-    YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);	
-    YAHOO_remove_buddy(who);
+	if (hContact != NULL) {
+		//
+		// Make sure the contact is temporary so we could delete it w/o extra traffic
+		// 
+		DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
+		YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);	
+	} else {
+		LOG(("[ext_yahoo_rejected] Buddy not on our buddy list"));
+	}
         
     MessageBox( NULL, msg, buff, MB_OK | MB_ICONINFORMATION );
 

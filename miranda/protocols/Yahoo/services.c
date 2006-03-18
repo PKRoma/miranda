@@ -415,12 +415,14 @@ static int YahooContactDeleted( WPARAM wParam, LPARAM lParam )
 		return 0;
 
 	szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
-	if ( szProto == NULL || strcmp( szProto, yahooProtocolName )) 
+	if ( szProto == NULL || lstrcmp( szProto, yahooProtocolName )) 
 		return 0;
 
+	// he is not a permanent contact!
+	if (DBGetContactSettingByte(( HANDLE )wParam, "CList", "NotOnList", 1) != 0)
+		return 0;
 	
-	if ( !DBGetContactSetting(( HANDLE )wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )) 
-	{
+	if ( !DBGetContactSetting(( HANDLE )wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
 		YAHOO_remove_buddy(dbv.pszVal);
 		
 		DBFreeVariant( &dbv );
