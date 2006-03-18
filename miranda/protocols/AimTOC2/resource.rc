@@ -105,11 +105,11 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,59,243,10
 END
 
-IDD_AIMLOGIN DIALOG  0, 0, 189, 97
+IDD_AIMLOGIN DIALOGEX 0, 0, 189, 97
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
     WS_CAPTION | WS_SYSMENU
 CAPTION "AOL® Instant Messenger Login"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "Please enter your AOL® Instant Messenger login details to continue:",
                     IDC_STATIC,7,7,175,21
@@ -124,11 +124,11 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,137,76,50,15
 END
 
-IDD_AIMWARNED DIALOG  0, 0, 189, 97
+IDD_AIMWARNED DIALOGEX 0, 0, 189, 97
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
     WS_CAPTION | WS_SYSMENU
 CAPTION "You Have Been Warned"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "AOL has reported that you have been warned by another user.",
                     IDC_STATIC,7,7,175,21
@@ -204,11 +204,11 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,136,80,50,15
 END
 
-IDD_GROUPCHATJOIN DIALOG  0, 0, 191, 97
+IDD_GROUPCHATJOIN DIALOGEX 0, 0, 191, 97
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
     WS_CAPTION | WS_SYSMENU
 CAPTION "Join/Create AIM Group Chat"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "Please enter the name of the chat you wish to join:",
                     IDC_STATIC,7,7,175,21
