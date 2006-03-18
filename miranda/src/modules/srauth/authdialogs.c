@@ -182,7 +182,7 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dbei.pBlob=mir_alloc(dbei.cbBlob);
 			CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
 			uin=(PDWORD)dbei.pBlob;
-			hcontact=(PHANDLE)(dbei.pBlob+sizeof(DWORD));
+			hcontact=*(PHANDLE)(dbei.pBlob+sizeof(DWORD));
 			nick=(char *)(dbei.pBlob+sizeof(DWORD)+sizeof(HANDLE));
 			first=nick+strlen(nick)+1;
 			last=first+strlen(first)+1;
@@ -197,7 +197,7 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SetDlgItemTextA(hwndDlg,IDC_MAIL,email[0]?email:Translate("(Unknown)"));
 			SetDlgItemTextA(hwndDlg,IDC_REASON,reason);
 			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_DETAILS),GWL_USERDATA,(LONG)*hcontact);
+			SetWindowLong(GetDlgItem(hwndDlg,IDC_DETAILS),GWL_USERDATA,(LONG)hcontact);
 			mir_free(dbei.pBlob);
 			return TRUE;
 		}
