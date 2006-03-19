@@ -289,7 +289,7 @@ Begin of Hrk's code for bug
 #define GWVS_COVERED 3
 #define GWVS_PARTIALLY_COVERED 4
 
-int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
+int fnGetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 {
 	RECT rc = { 0 };
 	POINT pt = { 0 };
@@ -339,10 +339,9 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 
 int fnShowHide(WPARAM wParam, LPARAM lParam)
 {
-	HWND hwndContactList = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
 	BOOL bShow = FALSE;
 
-	int iVisibleState = GetWindowVisibleState(cli.hwndContactList, 0, 0);
+	int iVisibleState = cli.pfnGetWindowVisibleState(cli.hwndContactList, 0, 0);
 
 	//bShow is FALSE when we enter the switch.
 	switch (iVisibleState) {

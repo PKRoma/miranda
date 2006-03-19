@@ -673,12 +673,10 @@ int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 			pcli->pfnShowHide(0, 0);
 		} else if (msg->lParam == (DBGetContactSettingByte(NULL, "CList", "Tray1Click", SETTING_TRAY1CLICK_DEFAULT) ? WM_LBUTTONUP : WM_LBUTTONDBLCLK)) {
 			if ((GetAsyncKeyState(VK_CONTROL) & 0x8000))
-				//pcli->pfnShowHide(0, 0);
-				ShowHide(0, 0);
+				pcli->pfnShowHide(0, 0);
 			else {
 				if (pcli->pfnEventsProcessTrayDoubleClick())
-					//pcli->pfnShowHide(0, 0);
-					ShowHide(0, 0);
+					pcli->pfnShowHide(0, 0);
 			}
 		} 
 		else if (msg->lParam == WM_MOUSEMOVE) {

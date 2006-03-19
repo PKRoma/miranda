@@ -474,8 +474,7 @@ void fnTrayIconUpdateBase(const char *szChangedProto)
 					TrayIconRemove(NULL, NULL);
 				}
 				else if (DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT))
-					changed =
-					TrayIconSetBaseInfo(ImageList_GetIcon(hCListImages, cli.pfnIconFromStatusMode(szChangedProto, CallProtoService(szChangedProto, PS_GETSTATUS, 0, 0), NULL), ILD_NORMAL), szChangedProto);
+					changed = TrayIconSetBaseInfo(ImageList_GetIcon(hCListImages, cli.pfnIconFromStatusMode(szChangedProto, CallProtoService(szChangedProto, PS_GETSTATUS, 0, 0), NULL), ILD_NORMAL), szChangedProto);
 				else {
 					TrayIconDestroy(hwnd);
 					TrayIconInit(hwnd);

@@ -45,6 +45,7 @@ void  CheckPDNCE(pdisplayNameCacheEntry pdnce);
 int   CListTrayNotify(MIRANDASYSTRAYNOTIFY *msn);
 void  FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
+int   GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY);
 int   HotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
 int   HotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
 int   HotKeysRegister(HWND hwnd);
@@ -207,23 +208,26 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	// get the contact list interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
-		MessageBoxA( NULL, "This version of plugin requires Miranda 0.4.3 bld#42 or later", "Fatal error", MB_OK );
+LBL_Error:
+		MessageBoxA( NULL, "This version of plugin requires Miranda 0.4.3 bld#49 or later", "Fatal error", MB_OK );
 		return 1;
 	}
+	if ( pcli->version < 3 )
+		goto LBL_Error;
 
 	pcli->pfnCheckCacheItem = (void ( * )( ClcCacheEntryBase* )) CheckPDNCE;
 //	pcli->pfnCListTrayNotify = CListTrayNotify;
 	pcli->pfnCreateClcContact = fnCreateClcContact;
 	pcli->pfnCreateCacheItem = fnCreateCacheItem;
+	pcli->pfnFindItem = sfnFindItem;
 	pcli->pfnFreeCacheItem = (void( * )( ClcCacheEntryBase* ))FreeDisplayNameCacheItem;
 	pcli->pfnGetRowBottomY = RowHeights_GetItemBottomY;
+	pcli->pfnGetRowByIndex = GetRowByIndex;
 	pcli->pfnGetRowHeight = RowHeights_GetHeight;
 	pcli->pfnGetRowTopY = RowHeights_GetItemTopY;
 	pcli->pfnGetRowTotalHeight = RowHeights_GetTotalHeight;
+	pcli->pfnGetWindowVisibleState = GetWindowVisibleState;
 	pcli->pfnInvalidateRect = skinInvalidateRect;
-  savedLoadCluiGlobalOpts=pcli->pfnLoadCluiGlobalOpts; pcli->pfnLoadCluiGlobalOpts=LoadCluiGlobalOpts;
-  
-
 	pcli->pfnOnCreateClc = LoadCLUIModule;
 	pcli->pfnHotKeysProcess = HotKeysProcess;
 	pcli->pfnHotkeysProcessMessage = HotkeysProcessMessage;
@@ -236,37 +240,30 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnScrollTo = ScrollTo;
 	pcli->pfnShowHide = ShowHide;
 
-	pcli->pfnCluiProtocolStatusChanged=fnCluiProtocolStatusChanged;
-	pcli->pfnBeginRenameSelection=BeginRenameSelection;
-	pcli->pfnHitTest=HitTest;
-	pcli->pfnCompareContacts=CompareContacts;
+	pcli->pfnCluiProtocolStatusChanged = fnCluiProtocolStatusChanged;
+	pcli->pfnBeginRenameSelection = BeginRenameSelection;
+	pcli->pfnHitTest = HitTest;
+	pcli->pfnCompareContacts = CompareContacts;
+	pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;
 
-	pcli->pfnBuildGroupPopupMenu=BuildGroupPopupMenu;
-
-
-	saveTrayIconProcessMessage=pcli->pfnTrayIconProcessMessage; pcli->pfnTrayIconProcessMessage=TrayIconProcessMessage;
 	pcli->pfnTrayIconUpdateBase=(void (*)( const char *szChangedProto ))TrayIconUpdateBase;
 	pcli->pfnTrayIconUpdateWithImageList=TrayIconUpdateWithImageList;
 	pcli->pfnTrayIconSetToBase=TrayIconSetToBase;
 	pcli->pfnTrayIconIconsChanged=TrayIconIconsChanged;
 
-  pcli->pfnFindItem=sfnFindItem;
-
-	pcli->pfnGetRowByIndex=GetRowByIndex;
-
-
 	saveAddGroup = pcli->pfnAddGroup; pcli->pfnAddGroup = AddGroup;
-  savedAddContactToTree=pcli->pfnAddContactToTree;  pcli->pfnAddContactToTree=AddContactToTree;
+	savedAddContactToTree=pcli->pfnAddContactToTree;  pcli->pfnAddContactToTree=AddContactToTree;
 	saveAddInfoItemToGroup = pcli->pfnAddInfoItemToGroup; pcli->pfnAddInfoItemToGroup = AddInfoItemToGroup;
 	saveAddItemToGroup = pcli->pfnAddItemToGroup; pcli->pfnAddItemToGroup = AddItemToGroup;
+	saveChangeContactIcon = pcli->pfnChangeContactIcon; pcli->pfnChangeContactIcon = ChangeContactIcon;
 	saveContactListControlWndProc = pcli->pfnContactListControlWndProc; pcli->pfnContactListControlWndProc = ContactListControlWndProc;
 	saveContactListWndProc = pcli->pfnContactListWndProc; pcli->pfnContactListWndProc = ContactListWndProc;
 	saveDeleteItemFromTree = pcli->pfnDeleteItemFromTree; pcli->pfnDeleteItemFromTree = DeleteItemFromTree;
 	saveFreeContact = pcli->pfnFreeContact; pcli->pfnFreeContact = FreeContact;
 	saveFreeGroup = pcli->pfnFreeGroup; pcli->pfnFreeGroup = FreeGroup;
+	savedLoadCluiGlobalOpts = pcli->pfnLoadCluiGlobalOpts; pcli->pfnLoadCluiGlobalOpts = LoadCluiGlobalOpts;
 	saveProcessExternalMessages = pcli->pfnProcessExternalMessages; pcli->pfnProcessExternalMessages = ProcessExternalMessages;
-
-	saveChangeContactIcon = pcli->pfnChangeContactIcon; pcli->pfnChangeContactIcon = ChangeContactIcon;
+	saveTrayIconProcessMessage = pcli->pfnTrayIconProcessMessage; pcli->pfnTrayIconProcessMessage = TrayIconProcessMessage;
 
 	memset(&SED,0,sizeof(SED));
 	CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);

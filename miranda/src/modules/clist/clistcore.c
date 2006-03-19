@@ -112,6 +112,7 @@ int   fnRemoveEvent( HANDLE hContact, HANDLE dbEvent );
 int    fnIconFromStatusMode(const char *szProto, int status, HANDLE hContact);
 int    fnShowHide( WPARAM wParam, LPARAM lParam );
 TCHAR* fnGetStatusModeDescription( int wParam, int lParam);
+int    fnGetWindowVisibleState(HWND hWnd, int iStepX, int iStepY);
 
 /* clistsettings.c */
 TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode );
@@ -179,7 +180,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 	int rc;
 
 	if ( interfaceInited == 0 ) {
-		cli.version = 2;
+		cli.version = 3;
 
 		cli.pfnClcOptionsChanged               = fnClcOptionsChanged;
 		cli.pfnClcBroadcast                    = fnClcBroadcast;
@@ -283,6 +284,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 
 		cli.pfnDocking_ProcessWindowMessage	   = fnDocking_ProcessWindowMessage;
 
+		cli.pfnGetWindowVisibleState           = fnGetWindowVisibleState;
 		cli.pfnIconFromStatusMode              = fnIconFromStatusMode;
 		cli.pfnShowHide                        = fnShowHide;
 		cli.pfnGetStatusModeDescription        = fnGetStatusModeDescription;

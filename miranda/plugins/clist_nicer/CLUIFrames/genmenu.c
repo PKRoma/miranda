@@ -833,7 +833,7 @@ DBFreeVariant(&dbv);
 HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 {
 	int i,j;
-	MENUITEMINFOA mii;
+	MENUITEMINFO mii;
 	PMO_MenuItem mi;
 	HMENU hSubMenu;
 	ListParam localparam;
@@ -917,14 +917,14 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 
 			// mi.pszName
 			wsprintfA(DBString, "%s_name", menuItemName);
-			if (!DBGetContactSetting(NULL, MenuNameItems, DBString, &dbv))
+			if (!DBGetContactSettingTString(NULL, MenuNameItems, DBString, &dbv))
 			{
-				if (strlen(dbv.pszVal)>0)
+				if (_tcslen(dbv.ptszVal)>0)
 				{
 					if (MenuItems[j].CustomName) mir_free(MenuItems[j].CustomName);
-					MenuItems[j].CustomName=mir_strdup(dbv.pszVal);
+					MenuItems[j].CustomName=mir_tstrdup(dbv.ptszVal);
 				}
-				if (dbv.pszVal)	mir_free(dbv.pszVal);
+				if (dbv.ptszVal)	mir_free(dbv.ptszVal);
 			}
 
 			wsprintfA(DBString, "%s_pos", menuItemName);

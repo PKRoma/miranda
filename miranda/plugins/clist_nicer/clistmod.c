@@ -42,7 +42,6 @@ void TrayIconUpdateBase(const char *szChangedProto);
 int EventsProcessContactDoubleClick(HANDLE hContact);
 int SetHideOffline(WPARAM wParam, LPARAM lParam);
 int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
-int ShowHide(WPARAM wParam, LPARAM lParam);
 
 HANDLE hContactDoubleClicked, hStatusModeChangeEvent;
 HIMAGELIST hCListImages;
@@ -107,13 +106,11 @@ int LoadContactListModule(void)
 	hStatusModeChangeEvent = CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
 	CreateServiceFunction(MS_CLIST_SETSTATUSMODE, SetStatusMode);
 	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
-	DestroyServiceFunction(MS_CLIST_SHOWHIDE);
-	CreateServiceFunction(MS_CLIST_SHOWHIDE, ShowHide);
 
 	CreateServiceFunction("CList/GetContactStatusMsg", GetContactStatusMessage);
 	InitCustomMenus();
 	IMG_InitDecoder();
-    MySetProcessWorkingSetSize = (BOOL(WINAPI *)(HANDLE, SIZE_T, SIZE_T))GetProcAddress(GetModuleHandleA("kernel32"), "SetProcessWorkingSetSize");
+	MySetProcessWorkingSetSize = (BOOL(WINAPI *)(HANDLE, SIZE_T, SIZE_T))GetProcAddress(GetModuleHandleA("kernel32"), "SetProcessWorkingSetSize");
 	return 0;
 }
 
@@ -197,82 +194,4 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 		else //There are dots which are visible, but they are not as many as the ones we counted: it's partially covered.
 			return GWVS_PARTIALLY_COVERED;
 	}
-}
-
-int ShowHide(WPARAM wParam, LPARAM lParam)
-{
-    BOOL bShow = FALSE;
-
-    int iVisibleState = GetWindowVisibleState(pcli->hwndContactList, 0, 0);
-    //bShow is FALSE when we enter the switch.
-    switch (iVisibleState) {
-        case GWVS_PARTIALLY_COVERED:
-    //If we don't want to bring it to top, we can use a simple break. This goes against readability ;-) but the comment explains it.
-            if (!DBGetContactSettingByte(NULL, "CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT))
-                break;
-        case GWVS_COVERED:
-        case GWVS_HIDDEN:
-            bShow = TRUE; 
-            break;
-        case GWVS_VISIBLE:
-            bShow = FALSE; 
-            break;
-        case -1:
-            return 0;
-    }
-    if (bShow == TRUE) {
-        WINDOWPLACEMENT pl = {0};
-        
-        HMONITOR (WINAPI *MyMonitorFromWindow)(HWND, DWORD);
-        RECT rcScreen, rcWindow;
-        int offScreen = 0;
-
-		ShowWindow(pcli->hwndContactList, /* SW_SHOWNORMAL */ SW_RESTORE);
-
-		SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-		if (!DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT))
-			SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-
-        SetForegroundWindow(pcli->hwndContactList);
-        DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
-    //this forces the window onto the visible screen
-        MyMonitorFromWindow = (HMONITOR(WINAPI *)(HWND, DWORD))GetProcAddress(GetModuleHandleA("USER32"), "MonitorFromWindow");
-        GetWindowRect(pcli->hwndContactList, &rcWindow);
-        if (MyMonitorFromWindow) {
-            if (MyMonitorFromWindow(pcli->hwndContactList, 0) == NULL) {
-                BOOL (WINAPI *MyGetMonitorInfoA)(HMONITOR, LPMONITORINFO);
-                MONITORINFO mi = {
-                    0
-                };
-                HMONITOR hMonitor = MyMonitorFromWindow(pcli->hwndContactList, 2);
-                MyGetMonitorInfoA = (BOOL(WINAPI *)(HMONITOR, LPMONITORINFO))GetProcAddress(GetModuleHandleA("USER32"), "GetMonitorInfoA");
-                mi.cbSize = sizeof(mi);
-                MyGetMonitorInfoA(hMonitor, &mi);
-                rcScreen = mi.rcWork;
-                offScreen = 1;
-            }
-        } else {
-            RECT rcDest;
-            if (IntersectRect(&rcDest, &rcScreen, &rcWindow) == 0)
-                offScreen = 1;
-        }
-        if (offScreen) {
-            if (rcWindow.top >= rcScreen.bottom)
-                OffsetRect(&rcWindow, 0, rcScreen.bottom - rcWindow.bottom);
-            else if (rcWindow.bottom <= rcScreen.top)
-                OffsetRect(&rcWindow, 0, rcScreen.top - rcWindow.top);
-            if (rcWindow.left >= rcScreen.right)
-                OffsetRect(&rcWindow, rcScreen.right - rcWindow.right, 0);
-            else if (rcWindow.right <= rcScreen.left)
-                OffsetRect(&rcWindow, rcScreen.left - rcWindow.left, 0);
-            SetWindowPos(pcli->hwndContactList, 0, rcWindow.left, rcWindow.top, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top, SWP_NOZORDER);
-        }
-    } else {
-    //It needs to be hidden
-        ShowWindow(pcli->hwndContactList, SW_HIDE);       
-        DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
-        if (MySetProcessWorkingSetSize != NULL && DBGetContactSettingByte(NULL, "CList", "DisableWorkingSet", 1))
-            MySetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
-    }
-    return 0;
 }

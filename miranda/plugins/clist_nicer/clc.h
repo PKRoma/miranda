@@ -71,7 +71,7 @@ struct ClcGroup;
 
 #define SMSG_MAXLEN 700
 
-#define EXTRAIMAGECACHESIZE 300
+#define EXTRAIMAGECACHESIZE 1000
 
 #define ECF_RTLNICK 1
 #define ECF_RTLSTATUSMSG 2
@@ -434,7 +434,6 @@ void HideShowNotifyFrame();
 int GetProtocolVisibility(char * ProtoName);
 DWORD GetCLUIWindowStyle(BYTE style);
 void ApplyCLUIBorderStyle(HWND hwnd);
-int ShowHide(WPARAM wParam, LPARAM lParam);
 
 void FreeProtocolData( void );
 

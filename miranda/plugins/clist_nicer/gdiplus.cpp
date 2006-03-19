@@ -499,4 +499,3 @@ extern "C" void RemoveFromTaskBar(HWND hWnd)
         pTaskbarList->Release();
     }
 }
-

@@ -24,8 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern int DefaultImageListColorDepth;
 
-int AddMainMenuItem(WPARAM wParam,LPARAM lParam);
-int AddContactMenuItem(WPARAM wParam,LPARAM lParam);
 int InitCustomMenus(void);
 void UninitCustomMenus(void);
 int MenuProcessCommand(WPARAM wParam,LPARAM lParam);

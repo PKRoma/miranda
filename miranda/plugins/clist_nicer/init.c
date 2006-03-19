@@ -63,6 +63,7 @@ void   TrayIconUpdateBase(const char *szChangedProto);
 void   TrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPreferredProto);
 
 void GetDefaultFontSetting(int i, LOGFONT *lf, COLORREF *colour);
+int  GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY);
 
 void ( *saveLoadClcOptions )(HWND hwnd,struct ClcData *dat);
 void LoadClcOptions(HWND hwnd,struct ClcData *dat);
@@ -322,10 +323,10 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
 LBL_Error:
-		MessageBoxA( NULL, "This version of plugin requires Miranda 0.4.3 bld#45 or later", "Fatal error", MB_OK );
+		MessageBoxA( NULL, "This version of plugin requires Miranda 0.4.3 bld#49 or later", "Fatal error", MB_OK );
 		return 1;
 	}
-	if ( pcli->version < 2 ) // don't join it with the previous if()
+	if ( pcli->version < 3 ) // don't join it with the previous if()
 		goto LBL_Error;
 
 	pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;
@@ -334,24 +335,24 @@ LBL_Error:
 	pcli->pfnCompareContacts = CompareContacts;
 	pcli->pfnCreateClcContact = CreateClcContact;
 	pcli->pfnCreateEvent = fnCreateEvent;
+	pcli->pfnDocking_ProcessWindowMessage = Docking_ProcessWindowMessage;
 	pcli->pfnGetDefaultFontSetting = GetDefaultFontSetting;
 	pcli->pfnGetRowBottomY = RowHeights_GetItemBottomY;
 	pcli->pfnGetRowHeight = RowHeights_GetHeight;
 	pcli->pfnGetRowTopY = RowHeights_GetItemTopY;
 	pcli->pfnGetRowTotalHeight = RowHeights_GetTotalHeight;
+	pcli->pfnGetWindowVisibleState = GetWindowVisibleState;
 	pcli->pfnHitTest = HitTest;
+	pcli->pfnLoadContactTree = LoadContactTree;
 	pcli->pfnOnCreateClc = LoadCLUIModule;
 	pcli->pfnPaintClc = PaintClc;
 	pcli->pfnRebuildEntireList = RebuildEntireList;
 	pcli->pfnRowHitTest = RowHeights_HitTest;
-	pcli->pfnGetRowHeight = RowHeights_GetHeight;
 	pcli->pfnScrollTo = ScrollTo;
 	pcli->pfnTrayIconIconsChanged = TrayIconIconsChanged;
 	pcli->pfnTrayIconSetToBase = TrayIconSetToBase;
 	pcli->pfnTrayIconUpdateBase = TrayIconUpdateBase;
 	pcli->pfnTrayIconUpdateWithImageList = TrayIconUpdateWithImageList;
-	pcli->pfnLoadContactTree = LoadContactTree;
-	pcli->pfnDocking_ProcessWindowMessage = Docking_ProcessWindowMessage;
 
 	saveAddContactToGroup = pcli->pfnAddContactToGroup; pcli->pfnAddContactToGroup = AddContactToGroup;
 	saveRemoveItemFromGroup = pcli->pfnRemoveItemFromGroup; pcli->pfnRemoveItemFromGroup = RemoveItemFromGroup;
