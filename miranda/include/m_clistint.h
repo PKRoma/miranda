@@ -314,6 +314,12 @@ typedef struct
 
 	int   ( *pfnRemoveEvent )( HANDLE hContact, HANDLE hDbEvent );
 	int   ( *pfnGetImlIconIndex )( HICON hIcon );
+
+	/*************************************************************************************
+	 * version 3 additions
+	 *************************************************************************************/
+
+	int   ( *pfnGetWindowVisibleState )( HWND hWnd, int iStepX, int iStepY );
 }
 	CLIST_INTERFACE;
 
