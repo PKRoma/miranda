@@ -483,6 +483,17 @@ void strip_html(char *dest, const char *src, size_t destsize)
         memmove(ptr + 2, ptr + 4, strlen(ptr + 4) + 1);
     }
     rptr = dest;
+	while ((ptr = strstr(rptr, "<A HREF=\"")) || (ptr = strstr(rptr, "<a href=\""))) {
+        ptrl = ptr + 8;
+		memmove(ptr, ptrl + 1, strlen(ptrl + 1) + 1);
+        if ((ptr = strstr(ptrl, "\">"))) {
+			if ((ptrl = strstr(ptrl, "</A")) || (ptrl = strstr(ptrl, "</a"))) {
+				memmove(ptr, ptrl + 4, strlen(ptrl + 4) + 1);
+			}
+		}
+        else
+            rptr++;
+	}
     while ((ptr = strstr(rptr, "<"))) {
         ptrl = ptr + 1;
         if ((ptrl = strstr(ptrl, ">"))) {
@@ -546,6 +557,17 @@ void strip_html(wchar_t *dest, const wchar_t *src)
         memmove(ptr + 2, ptr + 4, wcslen(ptr + 4)*2 + 2);
     }
     rptr = dest;
+	while ((ptr = wcsstr(rptr, L"<A HREF=\"")) || (ptr = wcsstr(rptr, L"<a href=\""))) {
+        ptrl = ptr + 8;
+		memmove(ptr, ptrl + 1, wcslen(ptrl + 1) + 1);
+        if ((ptr = wcsstr(ptrl, L"\">"))) {
+			if ((ptrl = wcsstr(ptrl, L"</A")) || (ptrl = wcsstr(ptrl, L"</a"))) {
+				memmove(ptr, ptrl + 4, wcslen(ptrl + 4) + 2);
+			}
+		}
+        else
+            rptr++;
+	}
     while ((ptr = wcsstr(rptr, L"<"))) {
         ptrl = ptr + 1;
         if ((ptrl = wcsstr(ptrl, L">"))) {
