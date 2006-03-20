@@ -355,6 +355,22 @@ Package=<4>
 
 ###############################################################################
 
+Project: "loadavatars"=..\plugins\avatarservice\avatars.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Miranda/miranda/plugins/avatarservice", EORAAAAA
+    ..\plugins\avatarservice
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "miranda32"=..\src\miranda32.dsp - Package Owner=<4>
 
 Package=<5>
