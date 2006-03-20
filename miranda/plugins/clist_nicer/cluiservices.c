@@ -143,7 +143,6 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 		partCount=toshow;
 	}
 	else {
-		char *modeDescr;
 		HDC hdc;
 		SIZE textSize;
 		BYTE showOpts=DBGetContactSettingByte(NULL,"CLUI","SBarShow",1);
@@ -176,12 +175,12 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 				CallProtoService(curprotocol->szName,PS_GETNAME,sizeof(szName),(LPARAM)szName);
 				if (showOpts&4 && lstrlenA(szName)<sizeof(szName)-1) lstrcatA(szName," ");
 				GetTextExtentPoint32A(hdc,szName,lstrlenA(szName),&textSize);
-				x += textSize.cx;
+				x += textSize.cx + GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}
 			if (showOpts & 4) {
-				modeDescr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,CallProtoService(curprotocol->szName,PS_GETSTATUS,0,0),0);
-				GetTextExtentPoint32A(hdc,modeDescr,lstrlenA(modeDescr),&textSize);
-				x+=textSize.cx;
+				TCHAR* modeDescr = pcli->pfnGetStatusModeDescription( CallProtoService(curprotocol->szName,PS_GETSTATUS,0,0 ), 0 );
+				GetTextExtentPoint32(hdc, modeDescr, lstrlen(modeDescr), &textSize );
+				x += textSize.cx + GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}
 			partWidths[partCount]=(partCount?partWidths[partCount-1]:g_CluiData.bCLeft)+ x + 2;
 			partCount++;
