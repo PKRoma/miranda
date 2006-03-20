@@ -273,7 +273,7 @@ LBL_RecvAgain:
 				break;
 		}
 
-		if ( mWaitPeriod < 0 ) {
+		if ( mWaitPeriod < 0 && mJoinedCount <= 1 ) {
 			MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
 			return 0;
 	}	}
