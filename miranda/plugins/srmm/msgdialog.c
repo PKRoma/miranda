@@ -1454,16 +1454,21 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
 					dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
 					GetDlgItemTextA(hwndDlg, IDC_MESSAGE, dat->sendBuffer, bufSize);
-			#if defined( _UNICODE )
-					GetDlgItemTextW(hwndDlg, IDC_MESSAGE, (TCHAR *) & dat->sendBuffer[bufSize], bufSize);
-			#endif
+					#if defined( _UNICODE )
+					// all that crap with temporary buffers is related to the bug #0001466 (empty messages 
+					// on x64 machines). GetDlgItemTextW should use the 2-byte aligned buffer
+					{	WCHAR* temp = ( WCHAR* )alloca( bufSize * sizeof( TCHAR ));
+						GetDlgItemTextW(hwndDlg, IDC_MESSAGE, temp, bufSize);
+						memcpy(( TCHAR*)&dat->sendBuffer[bufSize], temp, bufSize * sizeof( TCHAR ));
+					}
+					#endif
 					if (dat->sendBuffer[0] == 0)
 						break;
-			#if defined( _UNICODE )
-					dat->cmdList = tcmdlist_append(dat->cmdList, (TCHAR *) & dat->sendBuffer[bufSize]);
-			#else
-					dat->cmdList = tcmdlist_append(dat->cmdList, dat->sendBuffer);
-			#endif
+					#if defined( _UNICODE )
+						dat->cmdList = tcmdlist_append(dat->cmdList, (TCHAR *) & dat->sendBuffer[bufSize]);
+					#else
+							dat->cmdList = tcmdlist_append(dat->cmdList, dat->sendBuffer);
+					#endif
 					dat->cmdListCurrent = 0;
 					if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
 						NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
