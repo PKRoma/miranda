@@ -190,7 +190,7 @@ HANDLE JabberDBCreateContact( char* jid, char* nick, BOOL temporary, BOOL stripR
 			DBVARIANT dbv;
 			if ( !JGetStringUtf( hContact, "jid", &dbv )) {
 				p = dbv.pszVal;
-				if ( p && ( int )strlen( p )>=len && ( p[len]=='\0'||p[len]=='/' ) && !strncmp( p, s, len )) {
+				if ( p && ( int )strlen( p )>=len && ( p[len]=='\0'||p[len]=='/' ) && !_strnicmp( p, s, len )) {
 					JFreeVariant( &dbv );
 					break;
 				}
