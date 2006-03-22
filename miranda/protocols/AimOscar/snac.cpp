@@ -1,3 +1,4 @@
+#define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
 #include "snac.h"
 void snac_md5_authkey(unsigned short subgroup,char* buf)//family 0x0017
 {
@@ -55,7 +56,7 @@ int snac_authorization_reply(unsigned short subgroup,char* buf,unsigned short fl
 				tlv_piece->data=htons(tlv_piece->data);
 				if(tlv_piece->data==0x0004)
 				{
-					char* msg=strdup("Invalid screenname or password.");
+					char* msg=_strdup("Invalid screenname or password.");
 					ForkThread((pThreadFunc)message_box_thread,msg);
 					Netlib_CloseHandle(conn.hServerConn);
 					conn.hServerConn=0;
@@ -64,7 +65,7 @@ int snac_authorization_reply(unsigned short subgroup,char* buf,unsigned short fl
 				}
 				else if(tlv_piece->data==0x0005)
 				{
-					char* msg=strdup("Mismatched screenname or password.");
+					char* msg=_strdup("Mismatched screenname or password.");
 					ForkThread((pThreadFunc)message_box_thread,msg);
 					Netlib_CloseHandle(conn.hServerConn);
 					conn.hServerConn=0;
@@ -73,7 +74,7 @@ int snac_authorization_reply(unsigned short subgroup,char* buf,unsigned short fl
 				}
 				else if(tlv_piece->data==0x0018)
 				{
-					char* msg=strdup("You are connecting too frequently. Try waiting 10 minutes to reconnect.");
+					char* msg=_strdup("You are connecting too frequently. Try waiting 10 minutes to reconnect.");
 					ForkThread((pThreadFunc)message_box_thread,msg);
 					Netlib_CloseHandle(conn.hServerConn);
 					conn.hServerConn=0;
@@ -82,7 +83,7 @@ int snac_authorization_reply(unsigned short subgroup,char* buf,unsigned short fl
 				}
 				else
 				{
-					char* msg=strdup("Unknown error occured.");
+					char* msg=_strdup("Unknown error occured.");
 					ForkThread((pThreadFunc)message_box_thread,msg);
 					Netlib_CloseHandle(conn.hServerConn);
 					conn.hServerConn=0;
@@ -124,7 +125,7 @@ void snac_icbm_limitations(unsigned short subgroup)//family 0x0004
 	for(int t=0;!conn.buddy_list_received;t++)
 	{
 		Sleep(1000);
-		if(t==3)
+		if(t==5)
 			break;
 	}
 	if(subgroup==0x0005)
@@ -355,7 +356,7 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 					if(is_oscarj_ver_cap(&buf[offset+i]))
 					{
 						char msg[MSG_LEN];
-						strcpy(msg,"Miranda IM ");
+						strlcpy(msg,"Miranda IM ",sizeof(msg));
 						char a =buf[offset+i+8];
 						char b =buf[offset+i+9];
 						char c =buf[offset+i+10];
@@ -370,7 +371,7 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 					else if(is_aimoscar_ver_cap(&buf[offset+i]))
 					{
 						char msg[MSG_LEN];
-						strcpy(msg,"Miranda IM ");
+						strlcpy(msg,"Miranda IM ",sizeof(msg));
 						char a =buf[offset+i+8];
 						char b =buf[offset+i+9];
 						char c =buf[offset+i+10];
@@ -440,9 +441,9 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 				{
 					struct tlv_part* tlv_part=(struct tlv_part*)&buf[offset];//getting idle length
 					unsigned short idle_time=htons(tlv_part->data);
-					long current_time;
+					time_t current_time;
 					time(&current_time);
-					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT, current_time - idle_time * 60);
+					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT, ((DWORD)current_time) - idle_time * 60);
 				}
 			}
 			else if(tlv_type==0x0003)//online time tlv
@@ -451,8 +452,6 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 				{
 					struct tlv_dword* tlv_part=(struct tlv_dword*)&buf[offset];
 					long online_time=htonl(tlv_part->data);
-					long current_time;
-					time(&current_time);
 					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT, online_time);
 				}
 			}
@@ -570,7 +569,7 @@ void snac_contact_list(unsigned short subgroup, char* buf, int flap_length)//fam
 				HANDLE hContact=find_contact(name);
 				if(!hContact)
 				{
-					if(!strcmp(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
+					if(strcmp(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
 						hContact=add_contact(name);
 				}
 				if(hContact)
@@ -586,7 +585,7 @@ void snac_contact_list(unsigned short subgroup, char* buf, int flap_length)//fam
 				{
 					BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 					char group_id_string[32];
-					itoa(group_id,group_id_string,10);
+					_itoa(group_id,group_id_string,10);
 					if(bUtfReadyDB==1)
  						DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, name);
 					else
@@ -676,6 +675,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 				{
 					hContact=add_contact(sn);
 					DBWriteContactSettingByte(hContact,"CList",AIM_KEY_NL,1);
+					DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_ONLINE);
 				}
 				if(hContact)
 				{
@@ -687,8 +687,20 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 						memcpy(wch,msg,msg_length);	
 						wch[msg_length/2]=0x00;
 						wcs_htons(wch);
-						wchar_t* stripped_wch=(wchar_t*)malloc(msg_length+1);
-						strip_html(stripped_wch,wch);
+						wchar_t* stripped_wch;
+						if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0))
+						{
+							wchar_t* bb_buf=new wchar_t[MSG_LEN];
+							html_to_bbcodes(bb_buf,wch,wcslen(wch)+1);
+							stripped_wch=(wchar_t*)malloc(msg_length+1);
+							strip_html(stripped_wch,bb_buf,msg_length+1);
+							delete bb_buf;
+						}
+						else
+						{
+							stripped_wch=(wchar_t*)malloc(msg_length+1);
+							strip_html(stripped_wch,wch,msg_length+1);
+						}
 						//free(wch);
 						char* mbch=(char*)malloc(msg_length/2+1);
 						WideCharToMultiByte( CP_ACP, 0, stripped_wch, -1,mbch, msg_length/2+1, NULL, NULL );
@@ -702,8 +714,19 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 					}
 					else
 					{
-						msg_buf=(char*)malloc(strlen(msg) + 1);
-						strip_html(msg_buf,msg,strlen(msg) +1);
+						if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0))
+						{
+							char* bb_buf=new char[MSG_LEN];
+							html_to_bbcodes(bb_buf,msg,strlen(msg)+1);
+							msg_buf=(char*)malloc(strlen(bb_buf) + 1);
+							strip_html(msg_buf,bb_buf,strlen(bb_buf) +1);
+							delete bb_buf;
+						}
+						else
+						{
+							msg_buf=(char*)malloc(strlen(msg) + 1);
+							strip_html(msg_buf,msg,strlen(msg) +1);
+						}
 					}
 				}
 			}
@@ -783,7 +806,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 						memcpy(description,&buf[offset+i+TLV_HEADER_SIZE],length);
 						char dest_descr[MSG_LEN*2];
 						strip_html(dest_descr,description,strlen(description)+1);
-						msg_buf=strdup(dest_descr);
+						msg_buf=_strdup(dest_descr);
 						descr_included=1;
 						
 					}
@@ -797,7 +820,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 			if(auto_response)//this message must be an autoresponse
 			{
 				char* temp=new char[strlen(msg_buf) + 20];
-				strcpy(temp,msg_buf);
+				strlcpy(temp,msg_buf,strlen(msg_buf)+1);
 				mir_snprintf(msg_buf,strlen(msg_buf)+20,"%s %s",Translate("[Auto-Response]:"),temp);
 			}
 			//Okay we are setting up the structure to give the message back to miranda's core
@@ -805,7 +828,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 				pre.flags = PREF_UNICODE;
 			else
 				pre.flags = 0;
-			pre.timestamp = time(NULL);
+			pre.timestamp = (DWORD)time(NULL);
 			pre.szMessage = msg_buf;
 			pre.lParam = 0;
 			ccs.szProtoService = PSR_MESSAGE;
@@ -826,7 +849,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 					ZeroMemory(&dbei, sizeof(dbei));
 					dbei.cbSize = sizeof(dbei);
 					dbei.szModule = AIM_PROTOCOL_NAME;
-					dbei.timestamp = time(NULL);
+					dbei.timestamp = (DWORD)time(NULL);
 					dbei.flags = DBEF_SENT;
 					dbei.eventType = EVENTTYPE_MESSAGE;
 					dbei.cbBlob = strlen(temp) + 1;
@@ -835,7 +858,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 					aim_send_plaintext_message(sn,conn.szModeMsg,1);
 					delete temp;
 				}
-				DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_LM, time(NULL));
+				DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_LM, (DWORD)time(NULL));
 			}
 			//delete msg_buf;
 			//okay we are done
@@ -844,7 +867,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 		{
 			if(DBGetContactSettingByte(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT,-1)!=-1)
 			{
-				char* msg=strdup("Cannot start a file transfer with this contact while another file transfer with the same contact is pending.");
+				char* msg=_strdup("Cannot start a file transfer with this contact while another file transfer with the same contact is pending.");
 				ForkThread((pThreadFunc)message_box_thread,msg);
 				return;
 			}
@@ -861,15 +884,16 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 				DBWriteContactSettingWord(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,0);
 			if(!descr_included)
 				msg_buf="";
-			char* szBlob = (char *) malloc(sizeof(DWORD) + strlen(filename) + strlen(msg_buf)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+7);
+			long size=sizeof(DWORD) + strlen(filename) + strlen(msg_buf)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+7;
+			char* szBlob = (char *) malloc(size);
 			*((PDWORD) szBlob) = (DWORD)szBlob;
-			strcpy(szBlob + sizeof(DWORD), filename);
-	        strcpy(szBlob + sizeof(DWORD) + strlen(filename) + 1, msg_buf);
-			strcpy(szBlob + sizeof(DWORD) + strlen(filename) + strlen(msg_buf) +2,local_ip);
-			strcpy(szBlob + sizeof(DWORD) + strlen(filename) + strlen(msg_buf) + strlen(local_ip)+3,verified_ip);
-			strcpy(szBlob + sizeof(DWORD) + strlen(filename) + strlen(msg_buf) + strlen(local_ip) +strlen(verified_ip)+4,proxy_ip);
+			strlcpy(szBlob + sizeof(DWORD), filename,size);
+	        strlcpy(szBlob + sizeof(DWORD) + strlen(filename) + 1, msg_buf,size);
+			strlcpy(szBlob + sizeof(DWORD) + strlen(filename) + strlen(msg_buf) +2,local_ip,size);
+			strlcpy(szBlob + sizeof(DWORD) + strlen(filename) + strlen(msg_buf) + strlen(local_ip)+3,verified_ip,size);
+			strlcpy(szBlob + sizeof(DWORD) + strlen(filename) + strlen(msg_buf) + strlen(local_ip) +strlen(verified_ip)+4,proxy_ip,size);
             pre.flags = 0;
-            pre.timestamp = time(NULL);
+            pre.timestamp =(DWORD)time(NULL);
 	        pre.szMessage = szBlob;
             pre.lParam = 0;
             ccs.szProtoService = PSR_FILE;
@@ -882,22 +906,24 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 		{
 			if(!port_tlv)
 				port=0;
-			char* blob = (char *) malloc(sizeof(hContact)+sizeof(icbm_cookie)+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+sizeof(port)+sizeof(force_proxy)+9);
+			long size=sizeof(hContact)+sizeof(icbm_cookie)+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+sizeof(port)+sizeof(force_proxy)+9;
+			char* blob = (char *) malloc(size);
 			memcpy(blob,(char*)&hContact,sizeof(HANDLE));
 			memcpy(blob+sizeof(HANDLE),icbm_cookie,8);
-			strcpy(blob+sizeof(HANDLE)+8,sn);
-			strcpy(blob+sizeof(HANDLE)+8+strlen(sn)+1,local_ip);
-			strcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+2,verified_ip);
-			strcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+3,proxy_ip);
+			strlcpy(blob+sizeof(HANDLE)+8,sn,size);
+			strlcpy(blob+sizeof(HANDLE)+8+strlen(sn)+1,local_ip,size);
+			strlcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+2,verified_ip,size);
+			strlcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+3,proxy_ip,size);
 			memcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+4,(char*)&port,sizeof(unsigned short));
 			memcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+4+sizeof(unsigned short),(char*)&force_proxy,sizeof(bool));
 			ForkThread((pThreadFunc)redirected_file_thread,blob);
 		}
 		else if(recv_file_type==0&&request_num==3)//buddy sending file, redirected connection failed, so they asking us to connect to proxy
 		{
-			char* blob = (char *) malloc(sizeof(hContact)+strlen(proxy_ip)+sizeof(port)+2);
+			long size = sizeof(hContact)+strlen(proxy_ip)+sizeof(port)+2;
+   			char* blob = (char *) malloc(size);
 			memcpy(blob,(char*)&hContact,sizeof(HANDLE));
-			strcpy(blob+sizeof(HANDLE),proxy_ip);
+			strlcpy(blob+sizeof(HANDLE),proxy_ip,size);
 			memcpy(blob+sizeof(HANDLE)+strlen(proxy_ip)+1,(char*)&port,sizeof(unsigned short));
 			ForkThread((pThreadFunc)proxy_file_thread,blob);
 		}

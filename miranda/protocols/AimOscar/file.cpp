@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_DEPRECATE 1
 #include "file.h"
 void sending_file(HANDLE hContact, HANDLE hNewConnection)
 {
@@ -6,7 +7,7 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 	unsigned long size;
 	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 	{
-		file=strdup(dbv.pszVal);
+		file=_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 		size=DBGetContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FS, 0);
 		if(!size)
@@ -138,7 +139,7 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	unsigned long size;
 	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 	{
-		file=strdup(dbv.pszVal);
+		file=_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	//start listen for packets stuff

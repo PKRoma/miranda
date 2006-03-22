@@ -1,9 +1,12 @@
+#define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
+#define _CRT_SECURE_CPP_OVERLOAD_SECURE_NAMES 1
+#define _CRT_SECURE_NO_DEPRECATE 1
 #include "connection.h"
 CRITICAL_SECTION statusMutex;
 CRITICAL_SECTION connectionMutex;
 HANDLE aim_connect(char* server)
 {
-	char* server_dup=strdup(server);
+	char* server_dup=_strdup(server);
     NETLIBOPENCONNECTION ncon = { 0 };
 	char* host=strtok(server_dup,":");
 	char* port=strtok(NULL,":");

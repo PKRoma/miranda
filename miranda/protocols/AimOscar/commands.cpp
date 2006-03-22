@@ -174,7 +174,7 @@ int aim_set_caps()
 	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, &dbv))
 	{
 		aim_writetlv(0x01,strlen(AIM_MSG_TYPE),AIM_MSG_TYPE,buf);
-		char* send_buf=strdup(dbv.pszVal);
+		char* send_buf=_strdup(dbv.pszVal);
 		send_buf=strip_linebreaks(send_buf);
 		aim_writetlv(0x02,strlen(send_buf),send_buf,buf);
 		DBFreeVariant(&dbv);
@@ -204,8 +204,8 @@ int aim_set_away(char *msg)//user info
 	char* html_msg;
 	if(msg!=NULL)
 	{
-		html_msg=strdup(msg);
-		DBWriteContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_LA, time(NULL));
+		html_msg=_strdup(msg);
+		DBWriteContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_LA, (DWORD)time(NULL));
 		html_msg=strip_carrots(html_msg);
 		html_msg=strip_linebreaks(html_msg);
 	}
@@ -250,7 +250,7 @@ int aim_client_ready()
 	}
 	if (conn.hDirectBoundPort == NULL)
 	{
-		char* msg=strdup("AimOSCAR was unable to bind to a port. File transfers may not succeed in some cases.");
+		char* msg=_strdup("AimOSCAR was unable to bind to a port. File transfers may not succeed in some cases.");
 		ForkThread((pThreadFunc)message_box_thread,msg);
 	}
 	conn.LocalPort=nlb.wPort;

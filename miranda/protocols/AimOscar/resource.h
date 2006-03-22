@@ -17,8 +17,11 @@
 #define IDC_FP                          1005
 #define IDC_AT                          1006
 #define IDI_ICQ                         1007
+#define IDC_FI                          1007
 #define IDC_ES                          1008
 #define IDI_AOL                         1009
+#define IDC_FI2                         1009
+#define IDC_FO                          1009
 #define IDC_HF                          1010
 #define IDI_HIPTOP                      1012
 #define IDC_MASQ                        1013

@@ -121,7 +121,7 @@ void accept_file_thread(char* data)//buddy sending file
 	DBVARIANT dbv;
 	if (!DBGetContactSetting(*hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
-		sn= strdup(dbv.pszVal);
+		sn= _strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else

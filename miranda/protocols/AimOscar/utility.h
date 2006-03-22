@@ -38,7 +38,7 @@ void offline_contact(HANDLE hContact);
 void offline_contacts();
 char *normalize_name(const char *s);
 void strip_html(char *dest, const char *src, size_t destsize);
-void strip_html(wchar_t *dest, const wchar_t *src);//wide char version
+void strip_html(wchar_t *dest, const wchar_t *src, size_t size);//wide char version
 void strip_special_chars(char *dest, const char *src, size_t destsize);
 char* strip_carrots(char *src);
 wchar_t* strip_carrots(wchar_t *src);//wide char version
@@ -84,4 +84,8 @@ void set_extra_icon(char* data);
 //char* get_outer_group();
 void wcs_htons(wchar_t * ch);
 void __stdcall Utf8Decode( char* str, wchar_t** ucs2 );
+void html_to_bbcodes(char *dest, const char *src, size_t destsize);
+void html_to_bbcodes(wchar_t *dest, const wchar_t *src, size_t size);//wchar_t version
+void bbcodes_to_html(char *dest, const char *src, size_t destsize);
+void bbcodes_to_html(wchar_t *dest, const wchar_t *src, size_t size);//wchar_t version
 #endif

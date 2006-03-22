@@ -51,12 +51,26 @@ static int SendMsg(WPARAM wParam, LPARAM lParam)
 		{
 			ForkThread(msg_ack_success,ccs->hContact);
 		}
-		char *msg=strdup((char *)ccs->lParam);
+		char *msg=_strdup((char *)ccs->lParam);
 		msg=strip_carrots(msg);
-		if(aim_send_plaintext_message(dbv.pszVal,msg,0))
+		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0))
 		{
-			delete msg;
-			return 1;
+			char* html_msg=new char[MSG_LEN];
+			bbcodes_to_html(html_msg,msg,strlen(msg)+1);
+			if(aim_send_plaintext_message(dbv.pszVal,html_msg,0))
+			{
+				delete msg;
+				delete html_msg;
+				return 1;
+			}
+		}
+		else
+		{
+			if(aim_send_plaintext_message(dbv.pszVal,msg,0))
+			{
+				delete msg;
+				return 1;
+			}
 		}
 	}
 	return 0;
@@ -73,12 +87,26 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 		}
 		if(DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0))
 		{
-			wchar_t* umsg=wcsdup((wchar_t*)((char*)ccs->lParam+strlen((char*)ccs->lParam)+1));
+			wchar_t* umsg=_wcsdup((wchar_t*)((char*)ccs->lParam+strlen((char*)ccs->lParam)+1));
 			umsg=strip_carrots(umsg);
-			if(aim_send_unicode_message(dbv.pszVal,umsg))
+			if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0))
 			{
-				delete umsg;
-				return 1;
+				wchar_t* html_umsg=new wchar_t[MSG_LEN];
+				bbcodes_to_html(html_umsg,umsg,wcslen(umsg)+1);
+				if(aim_send_unicode_message(dbv.pszVal,html_umsg))
+				{
+					delete umsg;
+					delete html_umsg;
+					return 1;
+				}
+			}
+			else
+			{
+				if(aim_send_unicode_message(dbv.pszVal,umsg))
+				{
+					delete umsg;
+					return 1;
+				}
 			}
 		}
 		else
@@ -260,7 +288,7 @@ static int BasicSearch(WPARAM wParam,LPARAM lParam)
 {
 	if (conn.state!=1)
 		return 0;
-	char *sn=strdup((char*)lParam);//duplicating the parameter so that it isn't deleted before it's needed- e.g. this function ends before it's used
+	char *sn=_strdup((char*)lParam);//duplicating the parameter so that it isn't deleted before it's needed- e.g. this function ends before it's used
 	ForkThread(basic_search_ack_success,sn);
 	return 1;
 }
@@ -303,7 +331,7 @@ static int SendFile(WPARAM wParam,LPARAM lParam)
 		{
 			if(DBGetContactSettingByte(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT,-1)!=-1)
 			{
-				char* msg=strdup("Cannot start a file transfer with this contact while another file transfer with the same contact is pending.");
+				char* msg=_strdup("Cannot start a file transfer with this contact while another file transfer with the same contact is pending.");
 				ForkThread((pThreadFunc)message_box_thread,msg);
 				return 0;
 			}
@@ -321,7 +349,7 @@ static int SendFile(WPARAM wParam,LPARAM lParam)
 				for(int file_amt=0;files[file_amt];file_amt++)
 					if(file_amt==1)
 					{
-						char* msg=strdup("AimOSCAR allows only one file to be sent at a time.");
+						char* msg=_strdup("AimOSCAR allows only one file to be sent at a time.");
 						ForkThread((pThreadFunc)message_box_thread,msg);
 						return 0;
 					}

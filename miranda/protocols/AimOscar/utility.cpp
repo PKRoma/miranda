@@ -1,3 +1,11 @@
+//#define _strtok_s strtok
+#define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
+#define _CRT_SECURE_CPP_OVERLOAD_SECURE_NAMES 1
+#define  _CRT_SECURE_NO_DEPRECATE
+//#if _MSC_VER >= 1400
+	
+//#endif
+#include <string.h>
 #include "utility.h"
 void broadcast_status(int status)
 {
@@ -15,7 +23,7 @@ void start_connection(int initial_status)
 			DBFreeVariant(&dbv);
 		else
 		{
-			char* msg=strdup("Please, enter a username in the options dialog.");
+			char* msg=_strdup("Please, enter a username in the options dialog.");
 			ForkThread((pThreadFunc)message_box_thread,msg);
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
@@ -24,7 +32,7 @@ void start_connection(int initial_status)
 			DBFreeVariant(&dbv);
 		else
 		{
-			char* msg=strdup("Please, enter a password in the options dialog.");
+			char* msg=_strdup("Please, enter a password in the options dialog.");
 			ForkThread((pThreadFunc)message_box_thread,msg);
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
@@ -39,7 +47,7 @@ void start_connection(int initial_status)
 		}
 		else
 		{
-			char* msg=strdup("Error retrieving hostname from the database.");
+			char* msg=_strdup("Error retrieving hostname from the database.");
 			ForkThread((pThreadFunc)message_box_thread,msg);
 		}
 		if(conn.hServerConn)
@@ -108,12 +116,12 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 	if(old_group_id)
 	{
 		char group_id_string[32];
-		itoa(old_group_id,group_id_string,10);
+		_itoa(old_group_id,group_id_string,10);
 		DBVARIANT dbv;
 		if(bUtfReadyDB==1)
 		{
 			if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-				if(!strcmpi(group,dbv.pszVal))
+				if(!_strcmpi(group,dbv.pszVal))
 				{
 					DBFreeVariant(&dbv);
 					return;
@@ -122,7 +130,7 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 		else
 		{
 			if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-				if(!strcmpi(group,dbv.pszVal))
+				if(!_strcmpi(group,dbv.pszVal))
 				{
 					DBFreeVariant(&dbv);
 					return;
@@ -176,7 +184,7 @@ void add_contacts_to_groups()
 			if(group_id)
 			{
 				char group_id_string[32];
-				itoa(group_id,group_id_string,10);
+				_itoa(group_id,group_id_string,10);
 				//char* outer_group=get_outer_group();
 				DBVARIANT dbv;
 				if(bUtfReadyDB==1)
@@ -442,7 +450,7 @@ char *normalize_name(const char *s)
     int i, j;
     if (s == NULL)
         return NULL;
-    strncpy(buf, s, MSG_LEN);
+    strlcpy(buf, s, MSG_LEN);
     for (i = 0, j = 0; buf[j]; i++, j++)
 	{
         while (buf[j] == ' ')
@@ -486,14 +494,15 @@ void strip_html(char *dest, const char *src, size_t destsize)
 	while ((ptr = strstr(rptr, "<A HREF=\"")) || (ptr = strstr(rptr, "<a href=\""))) {
         ptrl = ptr + 8;
 		memmove(ptr, ptrl + 1, strlen(ptrl + 1) + 1);
-        if ((ptr = strstr(ptrl, "\">"))) {
-			if ((ptrl = strstr(ptrl, "</A")) || (ptrl = strstr(ptrl, "</a"))) {
-				memmove(ptr, ptrl + 4, strlen(ptrl + 4) + 1);
+        if ((ptrl = strstr(ptr, "\">"))) {
+			memmove(ptrl,ptrl+2,strlen(ptrl)+1);
+			if ((ptr = strstr(ptrl, "</A")) || (ptr = strstr(ptrl, "</a"))) {
+				memmove(ptrl, ptr + 4, strlen(ptr + 4) + 1);
 			}
 		}
         else
             rptr++;
-	}
+    }
     while ((ptr = strstr(rptr, "<"))) {
         ptrl = ptr + 1;
         if ((ptrl = strstr(ptrl, ">"))) {
@@ -527,12 +536,12 @@ void strip_html(char *dest, const char *src, size_t destsize)
         ptrl = ptr;
     }
 }
-void strip_html(wchar_t *dest, const wchar_t *src)
+void strip_html(wchar_t *dest, const wchar_t *src, size_t size)
 {
     wchar_t *ptr;
     wchar_t *ptrl;
     wchar_t *rptr;
-	wcscpy(dest,src);
+	wcslcpy(dest,src,size);
     while ((ptr = wcsstr(dest,L"<P>")) != NULL || (ptr = wcsstr(dest, L"<p>")) != NULL) {
         memmove(ptr + 4, ptr + 3, wcslen(ptr + 3)*2 + 2);
         *ptr = '\r';
@@ -559,10 +568,11 @@ void strip_html(wchar_t *dest, const wchar_t *src)
     rptr = dest;
 	while ((ptr = wcsstr(rptr, L"<A HREF=\"")) || (ptr = wcsstr(rptr, L"<a href=\""))) {
         ptrl = ptr + 8;
-		memmove(ptr, ptrl + 1, wcslen(ptrl + 1) + 1);
-        if ((ptr = wcsstr(ptrl, L"\">"))) {
-			if ((ptrl = wcsstr(ptrl, L"</A")) || (ptrl = wcsstr(ptrl, L"</a"))) {
-				memmove(ptr, ptrl + 4, wcslen(ptrl + 4) + 2);
+		memmove(ptr, ptrl + 1, wcslen(ptrl + 1)*2 + 2);
+        if ((ptrl = wcsstr(ptr, L"\">"))) {
+			memmove(ptrl,ptrl+2,wcslen(ptrl)*2 + 2);
+			if ((ptr = wcsstr(ptrl, L"</A")) || (ptr = wcsstr(ptrl, L"</a"))) {
+				memmove(ptrl, ptr + 4, wcslen(ptr + 4)*2 + 2);
 			}
 		}
         else
@@ -720,7 +730,7 @@ void create_group(char *group, unsigned short group_id)
     DBVARIANT dbv;
     for (i = 0;; i++)
 	{
-        itoa(i, str, 10);
+        _itoa(i, str, 10);
 		if(bUtfReadyDB==1)
 		{
 			if(DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv))
@@ -739,7 +749,7 @@ void create_group(char *group, unsigned short group_id)
         DBFreeVariant(&dbv);
 	}
 	name[0] = 1 | GROUPF_EXPANDED;
-    strncpy(name + 1, group, sizeof(name) - 1);
+    strlcpy(name + 1, group, sizeof(name));
     name[strlen(group) + 1] = '\0';
    	if(bUtfReadyDB==1)
 		DBWriteContactSettingStringUtf(NULL, "CListGroups", str, name);
@@ -753,7 +763,7 @@ unsigned short search_for_free_group_id(char *name)//searches for a free group i
 	for(unsigned short i=1;i<0xFFFF;i++)
 	{
 		char group_id_string[32];
-		itoa(i,group_id_string,10);
+		_itoa(i,group_id_string,10);
 		DBVARIANT dbv;
 		if(bUtfReadyDB==1)
 		{
@@ -1009,19 +1019,20 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 		if(dir)
 		{
 			memcpy(&path[CWD_length+protocol_length+2+strlen(norm_sn)],"\\away.html",10);
-			int descr=_open(path,_O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-			if(descr!=-1)
+			//int descr=_open(path,_O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+			FILE* descr;
+			if(descr=fopen(path, "wb"))
 			{
 				char html[MSG_LEN*2];
 				strip_special_chars(html,msg,sizeof(html));
 				char txt[MSG_LEN*2];
 				CCSDATA ccs;
 				PROTORECVEVENT pre;
-				write(descr,"<h3>",4);
-				write(descr,norm_sn,strlen(norm_sn));
-				write(descr,"'s Away Message:</h3>",21);
-				write(descr,html,strlen(html));
-				close(descr);
+				fwrite("<h3>",1,4,descr);
+				fwrite(norm_sn,1,strlen(norm_sn),descr);
+				fwrite("'s Away Message:</h3>",1,21,descr);
+				fwrite(html,1,strlen(html),descr);
+				fclose(descr);
 				ccs.szProtoService = PSR_AWAYMSG;
 				ccs.hContact = hContact;
 				ccs.wParam = ID_STATUS_AWAY;
@@ -1029,14 +1040,14 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 				pre.flags = 0;
 				strip_html(txt,html,sizeof(txt));
 				pre.szMessage = (char*)txt;
-				pre.timestamp = time(NULL);
+				pre.timestamp = (DWORD)time(NULL);
 				pre.lParam = 1;
 				CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 				DBWriteContactSettingString(hContact, "CList", AIM_KEY_SM,txt);
 			}
 			else
 			{
-				char* error=strerror(errno);
+				char* error=_strerror("Failed to open file: ");
 				MessageBox( NULL, Translate(error),norm_sn, MB_OK );
 			}
 		}
@@ -1078,23 +1089,23 @@ void write_profile(HANDLE hContact,char* sn,char* msg)
 		if(dir)
 		{
 			memcpy(&path[CWD_length+protocol_length+2+strlen(norm_sn)],"\\profile.html",13);
-			int descr=_open(path,_O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-			if(descr!=-1)
+			//int descr=open(path,_O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+			FILE* descr;
+			if(descr=fopen(path, "wb"))
 			{
 				char* norm_sn=normalize_name(sn);
 				char html[MSG_LEN*2];
 				strip_special_chars(html,msg,sizeof(html));
-				write(descr,"<h3>",4);
-				write(descr,norm_sn,strlen(norm_sn));
-				write(descr,"'s Profile:</h3>",16);
-				write(descr,html,strlen(html));
-				close(descr);
-				//strip_html(txt,html,sizeof(txt));
+				fwrite("<h3>",1,4,descr);
+				fwrite(norm_sn,1,strlen(norm_sn),descr);
+				fwrite("'s Profile:</h3>",1,16,descr);
+				fwrite(html,1,strlen(html),descr);
+				fclose(descr);
 				execute_cmd("http",path);
 			}
 			else
 			{
-				char* error=strerror(errno);
+				char* error=_strerror("Failed to open file: ");
 				MessageBox( NULL, Translate(error),norm_sn, MB_OK );
 			}
 		}
@@ -1215,7 +1226,7 @@ void long_ip_to_char_ip(unsigned long host, char* ip)
 	for(int i=0;i<4;i++)
 	{
 		char store[16];
-		itoa(bytes[i],store,10);
+		_itoa(bytes[i],store,10);
 		memcpy(&ip[buf_loc],store,strlen(store));
 		ip[strlen(store)+buf_loc]='.';
 		buf_loc+=(strlen(store)+1);
@@ -1224,7 +1235,7 @@ void long_ip_to_char_ip(unsigned long host, char* ip)
 }
 unsigned long char_ip_to_long_ip(char* ip)
 {
-	char* ip2=strdup(ip);
+	char* ip2=_strdup(ip);
 	char* c=strtok(ip2,".");
 	char chost[5];
 	for(int i=0;i<4;i++)
@@ -1436,3 +1447,238 @@ void __stdcall Utf8Decode( char* str, wchar_t** ucs2 )
 
    WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
 }
+void html_to_bbcodes(char *dest, const char *src, size_t destsize)
+{
+    char *ptr;
+    char *ptrl;
+    char *rptr;
+    mir_snprintf(dest, destsize, "%s", src);
+    while ((ptr = strstr(dest, "<B>")) != NULL || (ptr = strstr(dest, "<b>")) != NULL) {
+        *ptr = '[';
+		*(ptr+1) = 'b';
+        *(ptr+2) = ']';
+    }
+	while ((ptr = strstr(dest, "</B>")) != NULL || (ptr = strstr(dest, "</b>")) != NULL) {
+        *ptr = '[';
+		*(ptr+2) = 'b';
+        *(ptr+3) = ']';
+    }
+	while ((ptr = strstr(dest, "<I>")) != NULL || (ptr = strstr(dest, "<i>")) != NULL) {
+        *ptr = '[';
+		*(ptr+1) = 'i';
+        *(ptr+2) = ']';
+    }
+	while ((ptr = strstr(dest, "</I>")) != NULL || (ptr = strstr(dest, "</i>")) != NULL) {
+        *ptr = '[';
+		*(ptr+2) = 'i';
+        *(ptr+3) = ']';
+    }
+	while ((ptr = strstr(dest, "<U>")) != NULL || (ptr = strstr(dest, "<u>")) != NULL) {
+        *ptr = '[';
+		*(ptr+1) = 'u';
+        *(ptr+2) = ']';
+    }
+	while ((ptr = strstr(dest, "</U>")) != NULL || (ptr = strstr(dest, "</u>")) != NULL) {
+        *ptr = '[';
+		*(ptr+2) = 'u';
+        *(ptr+3) = ']';
+    }
+    rptr = dest;
+	while ((ptr = strstr(rptr, "<FONT COLOR=\"")) || (ptr = strstr(rptr, "<font color=\""))) {
+        ptrl = ptr + 6;
+		memcpy(ptrl,"[color=",7);
+		memmove(ptr, ptrl, strlen(ptrl) + 1);
+        if ((ptr = strstr(ptrl, ">"))) {
+			memmove(ptrl+7,ptr,strlen(ptr)+1);
+			*(ptrl+7)=']';
+			if ((ptr = strstr(ptrl, "</FONT")) || (ptr = strstr(ptrl, "</font"))) {
+				memmove(ptr+1, ptr, strlen(ptr) + 1);
+				memcpy(ptr,"[/color]",8);
+			}
+		}
+        else
+            rptr++;
+	}
+	while ((ptr = strstr(rptr, "<FONT COLOR=")) || (ptr = strstr(rptr, "<font color="))) {
+        ptrl = ptr + 5;
+		memcpy(ptrl,"[color=",7);
+		memmove(ptr, ptrl, strlen(ptrl) + 1);
+        if ((ptr = strstr(ptrl, ">"))) {
+			*(ptr)=']';
+			if ((ptrl = strstr(ptr, "</FONT")) || (ptrl = strstr(ptr, "</font"))) {
+				memmove(ptrl+1, ptrl, strlen(ptrl) + 1);
+				memcpy(ptrl,"[/color]",8);
+			}
+		}
+        else
+            rptr++;
+    }
+}
+void html_to_bbcodes(wchar_t *dest, const wchar_t *src, size_t size)
+{
+    wchar_t *ptr;
+    wchar_t *ptrl;
+    wchar_t *rptr;
+    wcslcpy(dest,src,size);
+    while ((ptr = wcsstr(dest,L"<B>")) != NULL || (ptr = wcsstr(dest,L"<b>")) != NULL) {
+        *ptr = '[';
+		*(ptr+1) = 'b';
+        *(ptr+2) = ']';
+    }
+	while ((ptr = wcsstr(dest,L"</B>")) != NULL || (ptr = wcsstr(dest,L"</b>")) != NULL) {
+        *ptr = '[';
+		*(ptr+2) = 'b';
+        *(ptr+3) = ']';
+    }
+	while ((ptr = wcsstr(dest,L"<I>")) != NULL || (ptr = wcsstr(dest,L"<i>")) != NULL) {
+        *ptr = '[';
+		*(ptr+1) = 'i';
+        *(ptr+2) = ']';
+    }
+	while ((ptr = wcsstr(dest,L"</I>")) != NULL || (ptr = wcsstr(dest,L"</i>")) != NULL) {
+        *ptr = '[';
+		*(ptr+2) = 'i';
+        *(ptr+3) = ']';
+    }
+	while ((ptr = wcsstr(dest,L"<U>")) != NULL || (ptr = wcsstr(dest,L"<u>")) != NULL) {
+        *ptr = '[';
+		*(ptr+1) = 'u';
+        *(ptr+2) = ']';
+    }
+	while ((ptr = wcsstr(dest,L"</U>")) != NULL || (ptr = wcsstr(dest,L"</u>")) != NULL) {
+        *ptr = '[';
+		*(ptr+2) = 'u';
+        *(ptr+3) = ']';
+    }
+    rptr = dest;
+	while ((ptr = wcsstr(rptr,L"<FONT COLOR=\"")) || (ptr = wcsstr(rptr,L"<font color=\""))) {
+        ptrl = ptr + 6;
+		memcpy(ptrl,L"[color=",7*sizeof(wchar_t));
+		memmove(ptr, ptrl, wcslen(ptrl)*2 + 2);
+        if ((ptr = wcsstr(ptrl,L">"))) {
+			memmove(ptrl+7,ptr,wcslen(ptr)*2 + 2);
+			*(ptrl+7)=']';
+			if ((ptr = wcsstr(ptrl,L"</FONT")) || (ptr = wcsstr(ptrl,L"</font"))) {
+				memmove(ptr+1, ptr, wcslen(ptr)*2 + 2);
+				memcpy(ptr,L"[/color]",8*sizeof(wchar_t));
+			}
+		}
+        else
+            rptr++;
+	}
+	while ((ptr = wcsstr(rptr,L"<FONT COLOR=")) || (ptr = wcsstr(rptr,L"<font color="))) {
+        ptrl = ptr + 5;
+		memcpy(ptrl,L"[color=",7*sizeof(wchar_t));
+		memmove(ptr, ptrl, wcslen(ptrl)*2 + 2);
+        if ((ptr = wcsstr(ptrl,L">"))) {
+			*(ptr)=']';
+			if ((ptr = wcsstr(ptrl,L"</FONT")) || (ptr = wcsstr(ptrl,L"</font"))) {
+				memmove(ptr+1, ptr, wcslen(ptr)*2 + 2);
+				memcpy(ptr,L"[/color]",8*sizeof(wchar_t));
+			}
+		}
+        else
+            rptr++;
+    }
+}
+void bbcodes_to_html(char *dest, const char *src, size_t destsize)
+{
+    char *ptr;
+    char *rptr;
+    mir_snprintf(dest, destsize, "%s", src);
+    while ((ptr = strstr(dest, "[b]")) != NULL) {
+        *ptr = '<';
+		*(ptr+1) = 'b';
+        *(ptr+2) = '>';
+    }
+	while ((ptr = strstr(dest, "[/b]")) != NULL) {
+        *ptr = '<';
+		*(ptr+2) = 'b';
+        *(ptr+3) = '>';
+    }
+	while ((ptr = strstr(dest, "[i]")) != NULL) {
+        *ptr = '<';
+		*(ptr+1) = 'i';
+        *(ptr+2) = '>';
+    }
+	while ((ptr = strstr(dest, "[/i]")) != NULL) {
+        *ptr = '<';
+		*(ptr+2) = 'i';
+        *(ptr+3) = '>';
+    }
+	while ((ptr = strstr(dest, "[u]")) != NULL) {
+        *ptr = '<';
+		*(ptr+1) = 'u';
+        *(ptr+2) = '>';
+    }
+	while ((ptr = strstr(dest, "[/u]")) != NULL) {
+        *ptr = '<';
+		*(ptr+2) = 'u';
+        *(ptr+3) = '>';
+    }
+    rptr = dest;
+	while ((ptr = strstr(rptr, "[color="))) {
+		memmove(ptr+5, ptr, strlen(ptr) + 1);
+		memcpy(ptr,"<font ",6);
+        if ((ptr = strstr(ptr, "]"))) {
+			*(ptr)='>';
+			if ((ptr = strstr(ptr, "[/color]"))) {
+				memcpy(ptr,"</font>",7);
+				memmove(ptr+7,ptr+8,strlen(ptr+8)+1);
+			}
+		}
+        else
+            rptr++;
+    }
+}
+void bbcodes_to_html(wchar_t *dest, const wchar_t *src, size_t size)
+{
+    wchar_t *ptr;
+    wchar_t *rptr;
+    wcslcpy(dest,src,size);
+    while ((ptr = wcsstr(dest, L"[b]")) != NULL) {
+        *ptr = L'<';
+		*(ptr+1) = L'b';
+        *(ptr+2) = L'>';
+    }
+	while ((ptr = wcsstr(dest, L"[/b]")) != NULL) {
+        *ptr = L'<';
+		*(ptr+2) = L'b';
+        *(ptr+3) = L'>';
+    }
+	while ((ptr = wcsstr(dest, L"[i]")) != NULL) {
+        *ptr = L'<';
+		*(ptr+1) = L'i';
+        *(ptr+2) = L'>';
+    }
+	while ((ptr = wcsstr(dest, L"[/i]")) != NULL) {
+        *ptr = L'<';
+		*(ptr+2) = L'i';
+		*(ptr+3) = L'>';
+    }
+	while ((ptr = wcsstr(dest, L"[u]")) != NULL) {
+        *ptr = L'<';
+		*(ptr+1) = L'u';
+        *(ptr+2) = L'>';
+    }
+	while ((ptr = wcsstr(dest, L"[/u]")) != NULL) {
+        *ptr = L'<';
+		*(ptr+2) = L'u';
+        *(ptr+3) = L'>';
+    }
+    rptr = dest;
+	while ((ptr = wcsstr(rptr, L"[color="))) {
+		memmove(ptr+5, ptr, wcslen(ptr)*2 + 2);
+		memcpy(ptr,L"<font ",6*sizeof(wchar_t));
+        if ((ptr = wcsstr(ptr,L"]"))) {
+			*(ptr)=L'>';
+			if ((ptr = wcsstr(ptr,L"[/color]"))) {
+				memcpy(ptr,L"</font>",7*sizeof(wchar_t));
+				memmove(ptr+7,ptr+8,wcslen(ptr+8)*2+2);
+			}
+		}
+        else
+            rptr++;
+    }
+}
+

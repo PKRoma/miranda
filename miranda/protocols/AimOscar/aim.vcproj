@@ -191,6 +191,12 @@
 				RelativePath=".\snac.cpp">
 			</File>
 			<File
+				RelativePath=".\strl.cpp">
+			</File>
+			<File
+				RelativePath=".\strl.h">
+			</File>
+			<File
 				RelativePath=".\thread.cpp">
 			</File>
 			<File

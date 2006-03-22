@@ -35,7 +35,8 @@ SRC =	aim.cpp \
 	proxy.cpp	\
 	direct_connect.cpp \
 	file.cpp \
-	windows.cpp 
+	windows.cpp \
+	strl.cpp 
 OBJ =	$(SRC:.cpp=.o)
 RES = resource.res
 HDR =	aim.h \
@@ -52,7 +53,8 @@ HDR =	aim.h \
 	file.h \
 	resource.h \
 	windows. h \
-	m_cluiframes.h
+	m_cluiframes.h \
+	strl.h
 
 LIB = -lwsock32
 CC = g++
@@ -101,6 +103,6 @@ format :
 	$(RM) *.*~
 
 clean :
-	$(RM) -fr $(OBJ) $(RES) *.ncb *.suo *.aps Release Debug
+	$(RM) -fr $(OBJ) $(RES) *.ncb *.suo *.aps Release Debug *.vcproj.*
 
 -include Makefile.dep

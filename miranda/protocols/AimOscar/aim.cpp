@@ -52,7 +52,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	if (str1 != NULL && (strlen(str1 + 1) > 4))
 	{
 		ZeroMemory(store,sizeof(store));
-		strncpy(store, str1 + 1, strlen(str1 + 1) - 4);
+		strlcpy(store, str1 + 1, strlen(str1 + 1) - 3);
 		AIM_PROTOCOL_NAME=(char*)realloc(AIM_PROTOCOL_NAME,strlen(store)+1);
 		memcpy(AIM_PROTOCOL_NAME,store,strlen(store));
 		memcpy(&AIM_PROTOCOL_NAME[strlen(store)],"\0",1);

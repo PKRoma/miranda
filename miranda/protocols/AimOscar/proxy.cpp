@@ -86,7 +86,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 						{
 							if(stage==1&&sender)
 							{
-								char* sn=strdup(dbv.pszVal);
+								char* sn=_strdup(dbv.pszVal);
 								char vip[20];
 								char *file, *descr;
 								unsigned long size;
@@ -95,12 +95,12 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 								DBVARIANT dbv;
 								if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 								{
-									file=strdup(dbv.pszVal);
+									file=_strdup(dbv.pszVal);
 									DBFreeVariant(&dbv);
 									DBVARIANT dbv;
 									if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FD, &dbv))
 									{
-										descr=strdup(dbv.pszVal);
+										descr=_strdup(dbv.pszVal);
 										DBFreeVariant(&dbv);
 										size=DBGetContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FS, 0);
 										if(!size)

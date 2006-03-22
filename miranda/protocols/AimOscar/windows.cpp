@@ -59,7 +59,7 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, buf);
                     if (conn.state==1)
 					{
-						char* msg=strdup(buf);
+						char* msg=_strdup(buf);
 						msg=strip_linebreaks(msg);
                         aim_set_profile(msg);//also see set caps for profile setting
 						delete msg;
@@ -150,6 +150,8 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_ES, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 0));//Extended Status Type Icons
 			CheckDlgButton(hwndDlg, IDC_HF, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0));//Fake hiptopness
 			CheckDlgButton(hwndDlg, IDC_DM, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DM, 0));//Disable Sending Mode Message
+			CheckDlgButton(hwndDlg, IDC_FI, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0));//Format imcoming messages
+			CheckDlgButton(hwndDlg, IDC_FO, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0));//Format outgoing messages
 			//CheckDlgButton(hwndDlg, IDC_SG, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SG, 0));//Server-side group
 			break;
 		}
@@ -305,7 +307,21 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					else
 						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DM, 0);
 					//End Disable Mode Message Sending
-                }
+
+					//Format Incoming Messages
+					if (IsDlgButtonChecked(hwndDlg, IDC_FI))
+                        DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 1);
+					else
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0);
+					//End Format Incoming Messages
+                
+					//Format Outgoing Messages
+					if (IsDlgButtonChecked(hwndDlg, IDC_FO))
+                        DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 1);
+					else
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0);
+					//End Format Outgoing Messages
+				}
             }
             break;
         }

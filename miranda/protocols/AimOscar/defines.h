@@ -27,6 +27,8 @@
 #define AIM_KEY_AT						"DisableATIcons"
 #define AIM_KEY_ES						"DisableESIcons"
 #define AIM_KEY_DM						"DisableModeMsg"
+#define AIM_KEY_FI						"FormatIncoming"//html->bbcodes
+#define AIM_KEY_FO						"FormatOutgoing"//bbcodes->html
 //Settings Keys
 #define AIM_KEY_PR						"Profile"
 #define AIM_KEY_LA						"LastAwayChange"
