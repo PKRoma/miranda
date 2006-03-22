@@ -1532,18 +1532,9 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   dwCookie2 = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, dwUin, ack);
 
   sendAddStart(0);
-  /* this is just like Licq does it, icq5 sends that in different order, but sometimes it gives unwanted
-  /* side effect, so I changed the order. */
-  if (dwUin)
-  {
-    icq_sendBuddyUtf(dwCookie2, ICQ_LISTS_ADDTOLIST, dwUin, szUid, wNewGroupID, ack->wNewContactId, pszNick, pszNote, bAuth, SSI_ITEM_BUDDY);
-    icq_sendBuddyUtf(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, szUid, wGroupID, wItemID, NULL, NULL, bAuth, SSI_ITEM_BUDDY);
-  }
-  else
-  { // aim contacts cannot be moved this way, imitate icq5
-    icq_sendBuddyUtf(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, szUid, wGroupID, wItemID, NULL, NULL, bAuth, SSI_ITEM_BUDDY);
-    icq_sendBuddyUtf(dwCookie2, ICQ_LISTS_ADDTOLIST, dwUin, szUid, wNewGroupID, ack->wNewContactId, pszNick, pszNote, bAuth, SSI_ITEM_BUDDY);
-  }
+  // imitate icq5, previously here was different order, but AOL changed and it ceased to work
+  icq_sendBuddyUtf(dwCookie, ICQ_LISTS_REMOVEFROMLIST, dwUin, szUid, wGroupID, wItemID, NULL, NULL, bAuth, SSI_ITEM_BUDDY);
+  icq_sendBuddyUtf(dwCookie2, ICQ_LISTS_ADDTOLIST, dwUin, szUid, wNewGroupID, ack->wNewContactId, pszNick, pszNote, bAuth, SSI_ITEM_BUDDY);
 
   SAFE_FREE(&pszNote);
   SAFE_FREE(&pszNick);
@@ -1564,7 +1555,8 @@ DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup)
 
   if (!ICQGetContactSettingWord(hContact, "ServerId", 0))
   { // the contact is not stored on the server, check if we should try to add
-    if (!ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
+    if (!ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER) ||
+      DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
       return 0;
   }
 
@@ -1828,7 +1820,8 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
     // Has a temporary contact just been added permanently?
     if (!strcmpnull(cws->szSetting, "NotOnList") &&
       (cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)) &&
-      ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
+      ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER) &&
+      !DBGetContactSettingByte((HANDLE)wParam, "CList", "Hidden", 0))
     {
       DWORD dwUin;
       uid_str szUid;
