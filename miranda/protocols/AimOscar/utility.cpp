@@ -1495,6 +1495,9 @@ void html_to_bbcodes(char *dest, const char *src, size_t destsize)
 				memmove(ptr+1, ptr, strlen(ptr) + 1);
 				memcpy(ptr,"[/color]",8);
 			}
+			else{
+			memcpy(&dest[strlen(dest)],"[/color]\0",9);
+			}
 		}
         else
             rptr++;
@@ -1508,6 +1511,9 @@ void html_to_bbcodes(char *dest, const char *src, size_t destsize)
 			if ((ptrl = strstr(ptr, "</FONT")) || (ptrl = strstr(ptr, "</font"))) {
 				memmove(ptrl+1, ptrl, strlen(ptrl) + 1);
 				memcpy(ptrl,"[/color]",8);
+			}
+			else{
+			memcpy(&dest[strlen(dest)],"[/color]\0",9);	
 			}
 		}
         else
@@ -1562,6 +1568,9 @@ void html_to_bbcodes(wchar_t *dest, const wchar_t *src, size_t size)
 				memmove(ptr+1, ptr, wcslen(ptr)*2 + 2);
 				memcpy(ptr,L"[/color]",8*sizeof(wchar_t));
 			}
+			else{
+			memcpy(&dest[wcslen(dest)],L"[/color]",8*sizeof(wchar_t));
+			}
 		}
         else
             rptr++;
@@ -1574,7 +1583,10 @@ void html_to_bbcodes(wchar_t *dest, const wchar_t *src, size_t size)
 			*(ptr)=']';
 			if ((ptr = wcsstr(ptrl,L"</FONT")) || (ptr = wcsstr(ptrl,L"</font"))) {
 				memmove(ptr+1, ptr, wcslen(ptr)*2 + 2);
-				memcpy(ptr,L"[/color]",8*sizeof(wchar_t));
+				memcpy(ptr,L"[/color]\0",9*sizeof(wchar_t));
+			}
+			else{
+			memcpy(&dest[wcslen(dest)],L"[/color]\0",9*sizeof(wchar_t));
 			}
 		}
         else
