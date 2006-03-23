@@ -982,6 +982,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			old_cliststate = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
 			DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
 			SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_VISIBLE);
+			SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) | WS_CLIPCHILDREN);
 			if(!g_CluiData.bFirstRun)
 				ConfigureEventArea(hwnd);
 			CluiProtocolStatusChanged(0, 0);
@@ -1356,10 +1357,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				SizeFramesByWindowRect(&rcClient, &PosBatch);
 				LayoutButtons(hwnd, &PosBatch, &rcClient);
 				res=EndDeferWindowPos(PosBatch);
-				//if(rcClient.right - rcClient.left != g_oldSize.cx)
-				//	PostMessage(hwnd, CLUIINTM_STATUSBARUPDATE, 0, 0);
-				g_oldSize.cx = rcClient.right - rcClient.left;
-				g_oldSize.cy = rcClient.bottom - rcClient.top;
+				if(rcClient.right != g_oldSize.cx)
+					PostMessage(hwnd, CLUIINTM_STATUSBARUPDATE, 0, 0);
+				g_oldSize.cx = rcClient.right;
+				g_oldSize.cy = rcClient.bottom;
 			}
 		}
 		if (wParam == SIZE_MINIMIZED) {
@@ -1410,9 +1411,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), g_CluiData.alpha, LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
 				transparentFocus = 1;
 			}
-			SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+			SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOREDRAW | SWP_NOSENDCHANGING);
 			if (!DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT))
-				SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+				SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_NOSENDCHANGING);
 		}
 		PostMessage(hwnd, CLUIINTM_REMOVEFROMTASKBAR, 0, 0);
 		return DefWindowProc(hwnd, msg, wParam, lParam);
