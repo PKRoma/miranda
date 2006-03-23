@@ -39,11 +39,19 @@
 
 
 static int bIcoReady = 0;
+static int bIcoUtf = 0;
 
 
 void InitIconLib()
 { // check plugin presence, init variables
   bIcoReady = ServiceExists(MS_SKIN2_GETICON);
+  if (bIcoReady)
+  {
+    SKINICONDESC sid = {0};
+
+    if (CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid) >= PLUGIN_MAKE_VERSION(0,0,1,0))
+      bIcoUtf = 1;
+  }
 }
 
 
@@ -59,20 +67,33 @@ void IconLibDefine(const char* desc, const char* section, const char* ident, HIC
 {
   if (bIcoReady)
   {
-		SKINICONDESC3 sid = {0};
-		char szTemp[MAX_PATH + 128];
+    SKINICONDESC sid = {0};
+    char szTemp[MAX_PATH + 128];
 
-		sid.cx = sid.cy = 16;
-		sid.cbSize = sizeof(SKINICONDESC2);
-		sid.pszSection = (char*)section;
-		sid.pszDefaultFile = NULL;
-		sid.pszDescription = (char*)desc;
-		null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = 0;
+    if (bIcoUtf)
+    {
+      sid.cbSize = SKINICONDESC_SIZE;
+      sid.pwszSection = make_unicode_string(section);
+      sid.pwszDescription = make_unicode_string(desc);
+      sid.flags = SIDF_UNICODE;
+    }
+    else
+    {
+      sid.cbSize = SKINICONDESC_SIZE_V3;
+      utf8_decode(section, &sid.pszSection);
+      utf8_decode(desc, &sid.pszDescription);
+    }
+    sid.pszDefaultFile = NULL;
+    null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
+    sid.pszName = szTemp;
+    sid.iDefaultIndex = 0;
     sid.hDefaultIcon = icon;
+    sid.cx = sid.cy = 16;
 
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+    SAFE_FREE(&sid.pwszSection);
+    SAFE_FREE(&sid.pwszDescription);
   }
 }
 

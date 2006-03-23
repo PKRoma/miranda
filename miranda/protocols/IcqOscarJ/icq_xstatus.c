@@ -238,7 +238,7 @@ const capstr capXStatus[32] = {
 
 const char* nameXStatus[32] = {
   "Angry",
-  "Taking bath",
+  "Taking a bath",
   "Tired",
   "Party",
   "Drinking beer",
@@ -247,7 +247,7 @@ const char* nameXStatus[32] = {
   "Watching TV",
   "Meeting",
   "Coffee",
-  "Listening music",
+  "Listening to music",
   "Business",
   "Shooting",
   "Having fun",
@@ -861,9 +861,10 @@ void InitXStatusItems(BOOL bAllowStatus)
 void InitXStatusIcons()
 {
   char szSection[MAX_PATH + 64];
+  char str[MAX_PATH], prt[MAX_PATH];
   int i;
   
-  sprintf(szSection, ICQTranslate("%s/Custom Status"), gpszICQProtoName);
+  null_snprintf(szSection, sizeof(szSection), ICQTranslateUtfStatic("%s/Custom Status", str), ICQTranslateUtfStatic(gpszICQProtoName, prt));
 
   for (i = 0; i < 32; i++) 
   {
@@ -871,7 +872,7 @@ void InitXStatusIcons()
     char szTemp[64];
 
     null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", i);
-    IconLibDefine(ICQTranslate(nameXStatus[i]), szSection, szTemp, hXIcon);
+    IconLibDefine(ICQTranslateUtfStatic(nameXStatus[i], str), szSection, szTemp, hXIcon);
     DestroyIcon(hXIcon);
   }
 
