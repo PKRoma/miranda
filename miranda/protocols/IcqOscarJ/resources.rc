@@ -107,45 +107,53 @@ BEGIN
     LTEXT           "Enter a password for UIN %d:",IDC_INSTRUCTION,7,7,142,8
 END
 
-IDD_OPT_ICQ DIALOGEX 0, 0, 281, 251
+IDD_OPT_ICQMAIN DIALOGEX 0, 0, 318, 252
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "ICQ",IDC_STICQGROUP,4,4,273,95
-    RTEXT           "ICQ number:",IDC_STATIC11,12,19,51,8
-    EDITTEXT        IDC_ICQNUM,68,18,106,12,ES_AUTOHSCROLL | ES_NUMBER
-    RTEXT           "Password:",IDC_STATIC12,12,34,51,8
-    EDITTEXT        IDC_PASSWORD,68,32,106,12,ES_PASSWORD | ES_AUTOHSCROLL
+    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",0x0,1,1,316,250
+END
+
+IDD_OPT_ICQ DIALOGEX 0, 0, 314, 236
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg"
+BEGIN
+    GROUPBOX        "ICQ",IDC_STICQGROUP,4,0,306,95
+    RTEXT           "ICQ number:",IDC_STATIC11,12,14,51,8
+    EDITTEXT        IDC_ICQNUM,68,12,106,12,ES_AUTOHSCROLL | ES_NUMBER
+    RTEXT           "Password:",IDC_STATIC12,12,28,51,8
+    EDITTEXT        IDC_PASSWORD,68,26,106,12,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "Hint: If you don't enter your password here, Miranda will ask for the password everytime you try to go online.",
+                    IDC_STATIC,12,43,290,19
     CONTROL         "Retrieve a lost password or ICQ number",IDC_LOOKUPLINK,
-                    "Hyperlink",WS_TABSTOP,12,85,257,8
+                    "Hyperlink",WS_TABSTOP,12,78,290,8
     CONTROL         "Create a new ICQ account using the ICQ website",
-                    IDC_NEWUINLINK,"Hyperlink",WS_TABSTOP,12,72,257,8
-    GROUPBOX        "Connection settings",IDC_STATIC,4,102,273,144
-    LTEXT           "Login Server:",IDC_STATIC,12,118,55,8
-    EDITTEXT        IDC_ICQSERVER,68,116,97,12,ES_AUTOHSCROLL
-    LTEXT           "Port:",IDC_STATIC,173,118,25,8
-    EDITTEXT        IDC_ICQPORT,199,116,29,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "Default",IDC_RESETSERVER,235,116,34,12
+                    IDC_NEWUINLINK,"Hyperlink",WS_TABSTOP,12,66,290,8
+    GROUPBOX        "Connection settings",IDC_STATIC,4,96,306,136
+    LTEXT           "Login Server:",IDC_STATIC,12,110,55,8
+    EDITTEXT        IDC_ICQSERVER,68,108,106,12,ES_AUTOHSCROLL
+    LTEXT           "Port:",IDC_STATIC,182,110,25,8
+    EDITTEXT        IDC_ICQPORT,208,108,29,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Default",IDC_RESETSERVER,244,108,50,12
+    LTEXT           "Hint: Use port 0 to connect on a random port. Try port 80 or port 443 if you are having problems connecting through a http proxy server.",
+                    IDC_STATIC,12,125,290,19
     CONTROL         "Secure (MD5) login",IDC_SECURE,"Button",BS_AUTOCHECKBOX | 
-                    BS_TOP | WS_TABSTOP,12,160,257,10
+                    BS_TOP | WS_TABSTOP,12,148,290,10
     CONTROL         "Use HTTP Gateway mode for HTTP proxy",IDC_USEGATEWAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,173,257,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,160,290,10
     CONTROL         "Send 'Keep-alives' (enable this if you use a proxy server and frequently get disconnected)",
                     IDC_KEEPALIVE,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    BS_MULTILINE | WS_TABSTOP,12,186,257,18
+                    BS_MULTILINE | WS_TABSTOP,12,172,290,18
     CONTROL         "Ignore concurrent error messages",IDC_NOERRMULTI,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,206,257,10
-    LTEXT           "Show connection error messages:",IDC_STATIC,12,220,238,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,192,290,10
+    LTEXT           "Show connection error messages:",IDC_STATIC,12,206,238,
                     8
     CONTROL         "Slider1",IDC_LOGLEVEL,"msctls_trackbar32",TBS_BOTH | 
-                    TBS_NOTICKS | WS_TABSTOP,18,232,52,10
+                    TBS_NOTICKS | WS_TABSTOP,18,216,52,10
     CONTROL         "",IDC_LEVELDESCR,"Static",SS_SIMPLE | SS_NOPREFIX | 
-                    WS_GROUP,72,232,197,8
-    LTEXT           "Hint: Use port 0 to connect on a random port. Try port 80 or port 443 if you are having problems connecting through a http proxy server.",
-                    IDC_STATIC,12,135,256,19
-    LTEXT           "Hint: If you don't enter your password here, Miranda will ask for the password everytime you try to go online.",
-                    IDC_STATIC,12,48,257,19
+                    WS_GROUP,72,216,230,8
 END
 
 IDD_OPT_ICQCONTACTS DIALOGEX 0, 0, 314, 228
@@ -153,78 +161,78 @@ STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "ICQ contacts stored on server",IDC_STICQGROUP,4,4,306,
+    GROUPBOX        "ICQ contacts stored on server",IDC_STICQGROUP,4,0,306,
                     99
-    PUSHBUTTON      "Manage server's list...",IDC_UPLOADNOW,12,81,97,14
+    PUSHBUTTON      "Manage server's list...",IDC_UPLOADNOW,12,77,97,14
     CONTROL         "Enable server-side contact lists *",IDC_ENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,19,290,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,15,290,10
     CONTROL         "Add contacts to the server's list when I add them to mine",
                     IDC_ADDSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    37,290,10
+                    33,290,10
     CONTROL         "Update my contacts' details from the server *",
                     IDC_LOADFROMSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    12,50,290,10
+                    12,46,290,10
     CONTROL         "Update contacts' details on the server's list when I change them in mine",
                     IDC_SAVETOSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    12,63,290,10
-    GROUPBOX        "ICQ avatars",IDC_STATIC,4,107,306,53
+                    12,59,290,10
+    GROUPBOX        "ICQ avatars",IDC_STATIC,4,100,306,53
     CONTROL         "Enable avatar support",IDC_ENABLEAVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,119,290,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,112,290,10
     CONTROL         "Load avatars automatically (like ICQ Lite)",
                     IDC_AUTOLOADAVATARS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,132,290,10
+                    WS_TABSTOP,12,124,290,10
     CONTROL         "Link avatars as contact photos (mToolTip photos)",
                     IDC_LINKAVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    145,290,10
+                    138,290,10
     LTEXT           "You will need to reconnect to the ICQ network for the changes you have made on this page to take effect.",
-                    IDC_RECONNECTREQD,12,165,290,16,NOT WS_VISIBLE
+                    IDC_RECONNECTREQD,12,161,290,16,NOT WS_VISIBLE
     LTEXT           "You cannot enable/disable the server-side contact list while you are connected to the ICQ network.",
-                    IDC_OFFLINETOENABLE,12,186,290,16,NOT WS_VISIBLE
+                    IDC_OFFLINETOENABLE,12,182,290,16,NOT WS_VISIBLE
     CTEXT           "Note: The options marked with an asterisk have important side-effects or caveats that may not be initially apparent documented in the help.",
-                    IDC_STATIC,12,207,290,16
+                    IDC_STATIC,12,203,290,16
 END
 
-IDD_OPT_ICQFEATURES DIALOG DISCARDABLE  0, 0, 314, 251
+IDD_OPT_ICQFEATURES DIALOG DISCARDABLE  0, 0, 314, 236
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Messaging",IDC_STATIC,4,4,306,100
+    GROUPBOX        "Messaging",IDC_STATIC,4,0,306,94
     CONTROL         "Enable unicode messaging support",IDC_UTFENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,19,290,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,14,290,10
     CONTROL         "Send all messages in unicode if possible",IDC_UTFALL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,32,290,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,26,290,10
     RTEXT           "Use this codepage for Ansi <-> Unicode translation :",
-                    IDC_UTFSTATIC,12,47,174,10
-    COMBOBOX        IDC_UTFCODEPAGE,190,45,107,51,CBS_DROPDOWNLIST | 
+                    IDC_UTFSTATIC,12,40,174,10
+    COMBOBOX        IDC_UTFCODEPAGE,190,38,107,51,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Make me temporarily visible to contacts I send message to",
                     IDC_TEMPVISIBLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    61,290,10
+                    53,290,10
     CONTROL         "Notify me when a message delivery has failed (recommended)",
-                    IDC_SLOWSEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,74,
+                    IDC_SLOWSEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,65,
                     290,10
     CONTROL         "Use only server's acknowledgement (faster)",
                     IDC_ONLYSERVERACKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    12,87,290,10
-    GROUPBOX        "Peer-to-peer Messaging",IDC_STATIC,4,108,306,45
+                    12,77,290,10
+    GROUPBOX        "Peer-to-peer Messaging",IDC_STATIC,4,95,306,43
     CONTROL         "Enable peer-to-peer message connections",IDC_DCENABLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,123,290,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,109,290,10
     CONTROL         "Passive mode, i.e. do not initiate new connections",
                     IDC_DCPASSIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    136,290,10
-    GROUPBOX        "Extra Features",IDC_STATIC,4,157,306,90
+                    121,290,10
+    GROUPBOX        "Extra Features",IDC_STATIC,4,139,306,93
     CONTROL         "Enable Custom status support",IDC_XSTATUSENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,170,145,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,153,145,10
     CONTROL         "Reset Custom status on status change",IDC_XSTATUSRESET,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,183,145,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,165,290,10
     CONTROL         "Auto-retrieve Custom status details",IDC_XSTATUSAUTO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,157,183,145,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,177,290,10
     CONTROL         "Block known Spam Bots",IDC_KILLSPAMBOTS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,200,290,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,191,290,10
     CONTROL         "Enable AIM support",IDC_AIMENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,217,290,10
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,205,290,10
     LTEXT           "Note: The support is VERY limited, only messaging and status supported.",
-                    IDC_STATIC,12,230,290,10,WS_DISABLED
+                    IDC_STATIC,12,217,290,10,WS_DISABLED
 END
 
 IDD_OPT_ICQPRIVACY DIALOGEX 0, 0, 314, 240
@@ -550,13 +558,12 @@ BEGIN
     IDD_OPT_ICQ, DIALOG
     BEGIN
         LEFTMARGIN, 4
-        RIGHTMARGIN, 277
+        RIGHTMARGIN, 310
         VERTGUIDE, 12
-        VERTGUIDE, 165
-        VERTGUIDE, 269
+        VERTGUIDE, 174
+        VERTGUIDE, 302
         TOPMARGIN, 4
-        BOTTOMMARGIN, 246
-        HORZGUIDE, 127
+        HORZGUIDE, 120
     END
 
     IDD_OPT_ICQCONTACTS, DIALOG
@@ -688,7 +695,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,6,14
+ FILEVERSION 0,3,6,15
  PRODUCTVERSION 0,4,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -707,7 +714,7 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced\0"
-            VALUE "FileVersion", "0, 3, 6, 14\0"
+            VALUE "FileVersion", "0, 3, 6, 15\0"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM\0"
             VALUE "LegalCopyright", "Copyright (C) 2000-2006 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
             VALUE "LegalTrademarks", "\0"

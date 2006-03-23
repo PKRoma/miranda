@@ -37,6 +37,7 @@
 #include "icqoscar.h"
 
 
+static BOOL CALLBACK DlgProcIcqMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -116,6 +117,92 @@ void AddUserInfoPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const char *szTitl
 }
 
 
+HWND hOptBasic = 0, hOptContacts = 0, hOptFeatures = 0, hOptPrivacy = 0;
+
+static void TabOptions_AddItemUtf(HWND hTabCtrl, const char* szTitle, HWND hPage)
+{
+  TCITEM tci = {0};
+	RECT rcClient;
+  char* szTitleUtf;
+  int iTotal;
+
+	GetClientRect(GetParent(hTabCtrl), &rcClient);
+
+  szTitleUtf = ICQTranslateUtf(szTitle);
+
+  iTotal = TabCtrl_GetItemCount(hTabCtrl);
+
+	tci.mask = TCIF_PARAM|TCIF_TEXT;
+	tci.lParam = (LPARAM)hPage;
+  if (gbUnicodeAPI)
+  {
+	  tci.pszText = (char*)make_unicode_string(szTitleUtf);
+    SendMessageW(hTabCtrl, TCM_INSERTITEMW, iTotal, (WPARAM)&tci);
+  }
+  else
+  {
+    utf8_decode(szTitleUtf, &tci.pszText);
+    SendMessageA(hTabCtrl, TCM_INSERTITEMA, iTotal, (WPARAM)&tci);
+  }
+  SAFE_FREE(&tci.pszText);
+  SAFE_FREE(&szTitleUtf);
+
+	MoveWindow(hPage, 3, 24, rcClient.right - 6, rcClient.bottom - 28, 1);
+}
+
+static void SetOptionsDlgToType(HWND hwnd, int iExpert)
+{
+	HWND hwndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB), hwndEnum;
+
+	if (!hOptBasic)
+		hOptBasic = CreateDialog(hInst, MAKEINTRESOURCE(IDD_OPT_ICQ), hwnd, DlgProcIcqOpts);
+
+	hwndEnum = GetWindow(hOptBasic, GW_CHILD);
+	
+	while (hwndEnum)
+  { // too bad
+		ShowWindow(hwndEnum, iExpert ? SW_SHOW : SW_HIDE);
+		hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
+	}
+
+	if (!iExpert)
+  {
+		hwndEnum = GetDlgItem(hOptBasic, IDC_STICQGROUP);
+		ShowWindow(hwndEnum, SW_SHOW);
+		hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
+		do {
+			ShowWindow(hwndEnum, SW_SHOW);
+			hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
+		} while(hwndEnum && hwndEnum != GetDlgItem(hOptBasic, IDC_NEWUINLINK));
+	}
+	ShowWindow(hwndEnum, SW_SHOW);
+	TabCtrl_DeleteAllItems(hwndTab);
+
+  TabOptions_AddItemUtf(hwndTab, "Account", hOptBasic);
+
+	if (!hOptContacts)
+		hOptContacts = CreateDialog(hInst, MAKEINTRESOURCE(IDD_OPT_ICQCONTACTS), hwnd, DlgProcIcqContactsOpts);
+
+	if (!hOptFeatures)
+		hOptFeatures = CreateDialog(hInst, MAKEINTRESOURCE(IDD_OPT_ICQFEATURES), hwnd, DlgProcIcqFeaturesOpts);
+
+	if (!hOptPrivacy)
+		hOptPrivacy = CreateDialog(hInst, MAKEINTRESOURCE(IDD_OPT_ICQPRIVACY), hwnd, DlgProcIcqPrivacyOpts);
+
+	ShowWindow(hOptContacts, SW_HIDE);
+	ShowWindow(hOptPrivacy, SW_HIDE);
+  if (hOptFeatures)
+	  ShowWindow(hOptFeatures, SW_HIDE);
+	ShowWindow(hOptBasic, SW_SHOW);
+
+  TabOptions_AddItemUtf(hwndTab, "Contacts", hOptContacts);
+  if (iExpert) 
+    TabOptions_AddItemUtf(hwndTab, "Features", hOptFeatures);
+  TabOptions_AddItemUtf(hwndTab, "Privacy", hOptPrivacy);
+
+	TabCtrl_SetCurSel(hwndTab, 0);
+}
+
 
 int IcqOptInit(WPARAM wParam, LPARAM lParam)
 {
@@ -125,7 +212,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
   odp.position = -800000000;
   odp.hInstance = hInst;
 
-  // Add "icq" option
+/*  // Add "icq" option
   odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQ);
   odp.pfnDlgProc = DlgProcIcqOpts;
   odp.flags = ODPF_BOLDGROUPS;
@@ -150,7 +237,13 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
   odp.pfnDlgProc = DlgProcIcqPrivacyOpts;
   odp.flags = ODPF_BOLDGROUPS;
   odp.nIDBottomSimpleControl = 0;
-  AddOptionsPageUtf(&odp, wParam, "Network", "%s Privacy");
+  AddOptionsPageUtf(&odp, wParam, "Network", "%s Privacy");*/
+
+  odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQMAIN);
+  odp.pfnDlgProc = DlgProcIcqMain;
+  odp.flags = ODPF_BOLDGROUPS;
+  odp.nIDBottomSimpleControl = 0;
+  AddOptionsPageUtf(&odp, wParam, "Network", gpszICQProtoName);
 
   InitPopupOpts(wParam);
 
@@ -179,6 +272,100 @@ static void OptDlgChanged(HWND hwndDlg)
 }
 
 
+// tabbed options page wrapper
+
+static BOOL CALLBACK DlgProcIcqMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+  static int iInit = TRUE;
+   
+  switch(msg)
+  {
+    case WM_INITDIALOG:
+    {
+      int iExpert;
+
+      iInit = TRUE;
+      iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
+      SetOptionsDlgToType(hwnd, iExpert);
+      iInit = FALSE;
+      return FALSE;
+    }
+
+    case WM_DESTROY:
+      hOptBasic = hOptContacts = hOptFeatures = hOptPrivacy = 0;
+      break;
+
+    case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
+      if (!iInit) OptDlgChanged(hwnd);
+      break;
+
+    case WM_NOTIFY:
+      switch (((LPNMHDR)lParam)->idFrom) 
+      {
+        case 0:
+          switch (((LPNMHDR)lParam)->code)
+          {
+            case PSN_APPLY:
+            {
+              TCITEM tci;
+              int i,count;
+ 
+              tci.mask = TCIF_PARAM;
+              count = TabCtrl_GetItemCount(GetDlgItem(hwnd,IDC_OPTIONSTAB));
+              for (i=0; i<count; i++)
+              {
+                TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),i,&tci);
+                SendMessage((HWND)tci.lParam,WM_NOTIFY,0,lParam);
+              }
+              break;
+            }
+
+            case PSN_EXPERTCHANGED:
+            {
+              int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
+
+              SetOptionsDlgToType(hwnd, iExpert);
+              break;
+					  }
+          }
+          break;
+
+        case IDC_OPTIONSTAB:
+        {
+          HWND hTabCtrl = GetDlgItem(hwnd, IDC_OPTIONSTAB);
+
+          switch (((LPNMHDR)lParam)->code)
+          {
+            case TCN_SELCHANGING:
+            {
+              TCITEM tci;
+
+              tci.mask = TCIF_PARAM;
+              TabCtrl_GetItem(hTabCtrl, TabCtrl_GetCurSel(hTabCtrl), &tci);
+              ShowWindow((HWND)tci.lParam, SW_HIDE);
+            }
+            break;
+
+            case TCN_SELCHANGE:
+            {
+              TCITEM tci;
+
+              tci.mask = TCIF_PARAM;
+              TabCtrl_GetItem(hTabCtrl, TabCtrl_GetCurSel(hTabCtrl), &tci);
+              ShowWindow((HWND)tci.lParam,SW_SHOW);                     
+            }
+            break;
+          }
+          break;
+        }
+      }
+      break;
+   }
+   return FALSE;
+}
+
+
+// standalone option pages
 
 static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {

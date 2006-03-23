@@ -7,6 +7,7 @@
 #define IDD_ASKAUTH                     104
 #define IDD_LOGINPW                     105
 #define IDD_INFO_AVATAR                 106
+#define IDD_OPT_ICQMAIN                 107
 #define IDD_OPT_ICQFEATURES             108
 #define IDD_OPT_ICQ                     185
 #define IDI_XSTATUS1                    201
@@ -71,6 +72,7 @@
 #define IDC_USEWINCOLORS                450
 #define IDC_USESYSICONS                 451
 #define IDC_PREVIEW                     455
+#define IDC_OPTIONSTAB                  500
 #define IDC_LOG                         1001
 #define IDI_EXPANDSTRINGEDIT            1001
 #define IDC_SAVEPASS                    1004

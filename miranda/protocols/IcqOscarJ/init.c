@@ -58,7 +58,7 @@ HANDLE hsmsgrequest;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,14),
+  PLUGIN_MAKE_VERSION(0,3,6,15),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@users.sourceforge.net",
@@ -372,9 +372,15 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
   hHookIconsChanged = IconLibHookIconsChanged(IconLibIconsChanged);
 
-  IconLibDefine(ICQTranslate("Request authorisation"), ICQTranslate(gpszICQProtoName), "req_auth", NULL);
-  IconLibDefine(ICQTranslate("Grant authorisation"), ICQTranslate(gpszICQProtoName), "grant_auth", NULL);
-  IconLibDefine(ICQTranslate("Revoke authorisation"), ICQTranslate(gpszICQProtoName), "revoke_auth", NULL);
+  {
+    char str[MAX_PATH], proto[MAX_PATH];
+    
+    ICQTranslateUtfStatic(gpszICQProtoName, proto);
+
+    IconLibDefine(ICQTranslateUtfStatic("Request authorisation", str), proto, "req_auth", NULL);
+    IconLibDefine(ICQTranslateUtfStatic("Grant authorisation", str), proto, "grant_auth", NULL);
+    IconLibDefine(ICQTranslateUtfStatic("Revoke authorisation", str), proto, "revoke_auth", NULL);
+  }
 
   // Initialize IconLib icons
   InitXStatusIcons();
