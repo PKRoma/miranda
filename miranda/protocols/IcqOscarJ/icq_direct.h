@@ -89,6 +89,7 @@ typedef struct {
   DWORD dwLocalInternalIP;
   DWORD dwConnCookie;
   int initialised;
+  int handshake;
   DWORD dwThreadId;
   filetransfer *ft;
   DWORD dwReqId;  // Reverse Connect request cookie

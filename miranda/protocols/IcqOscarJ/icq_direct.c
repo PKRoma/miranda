@@ -482,9 +482,9 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
   }
 
   SAFE_FREE(&dtsi);
-  dc.initialised = 0;
-  dc.wantIdleTime = 0;
-  dc.packetPending = 0;
+//  dc.initialised = 0;
+//  dc.wantIdleTime = 0;
+//  dc.packetPending = 0;
 
   // Load local IP information
   dc.dwLocalExternalIP = ICQGetContactSettingDword(NULL, "IP", 0);
@@ -723,7 +723,11 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 #ifdef _DEBUG
       NetLog_Direct("Received PEER_FILE_INIT from %u",dc->dwRemoteUin);
 #endif
-      handleFileTransferPacket(dc, buf, wLen);
+      if (dc->handshake)
+        handleFileTransferPacket(dc, buf, wLen);
+      else
+        NetLog_Direct("Received %s on uninitialised DC, ignoring.", "PEER_FILE_INIT");
+
       break;
 
     case PEER_INIT_ACK: // This is sent as a response to our PEER_INIT packet
@@ -735,6 +739,8 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 #ifdef _DEBUG
       NetLog_Direct("Received PEER_INITACK from %u on %s DC", dc->dwRemoteUin, dc->incoming?"incoming":"outgoing");
 #endif
+      if (dc->incoming) dc->handshake = 1;
+
       if (dc->incoming && dc->type == DIRECTCONN_REVERSE)
       {
         reverse_cookie* pCookie;
@@ -885,7 +891,9 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
           sendPeerInit_v78(dc); // reply with our PEER_INIT
         }
         else // outgoing
-        { 
+        {
+          dc->handshake = 1;
+
           if (dc->type == DIRECTCONN_REVERSE)
           {
             dc->incoming = 1; // this is incoming reverse connection
@@ -913,7 +921,11 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 #ifdef _DEBUG
       NetLog_Direct("Received PEER_MSG from %u", dc->dwRemoteUin);
 #endif
-      handleDirectMessage(dc, buf + 1, (WORD)(wLen - 1));
+      if (dc->initialised)
+        handleDirectMessage(dc, buf + 1, (WORD)(wLen - 1));
+      else
+        NetLog_Direct("Received %s on uninitialised DC, ignoring.", "PEER_MSG");
+
       break;
 
     case PEER_MSG_INIT:   /* init message connection */
@@ -928,11 +940,17 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
         }
 
 #ifdef _DEBUG
-        NetLog_Direct("Received PEER_MSGINIT from %u",dc->dwRemoteUin);
+        NetLog_Direct("Received PEER_MSG_INIT from %u",dc->dwRemoteUin);
 #endif
         buf++;
         if (wLen != 0x21)
           break;
+
+        if (!dc->handshake)
+        {
+          NetLog_Direct("Received %s on unitialised DC, ignoring.", "PEER_MSG_INIT");
+          break;
+        }
 
         buf += 4;   /* always 10 */
         buf += 4;   /* some id */
