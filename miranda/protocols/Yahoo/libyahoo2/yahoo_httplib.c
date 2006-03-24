@@ -333,7 +333,7 @@ void yahoo_http_post(int id, const char *url, const char *cookies, long content_
 
 	snprintf(buff, sizeof(buff), 
 			"POST %s HTTP/1.1\r\n"
-			"User-Agent: Mozilla/4.01 [en] (Win95; I)\r\n"
+			"User-Agent: Mozilla/4.0 (compatible; MSIE 5.5)\r\n"
 			"Host: %s:%d\r\n"
 			"Content-Length: %ld\r\n"
 			"Cache-Control: no-cache\r\n"
@@ -367,8 +367,9 @@ void yahoo_http_get(int id, const char *url, const char *cookies,
 	snprintf(buff, sizeof(buff), 
 			"GET %s HTTP/1.1\r\n"
 			"Host: %s\r\n"
-			"User-Agent: Mozilla/4.01 [en] (Win95; I)\r\n"
+			"User-Agent: Mozilla/4.0 (compatible; MSIE 5.5)\r\n"
 			"Cookie: %s\r\n"
+			"Pragma: no-cache\r\n"
 			"Connection: close\r\n"
 			"\r\n",
 			path, host, cookies);
