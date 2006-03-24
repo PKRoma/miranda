@@ -179,8 +179,8 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
     return;
   }
 
-  if (pCookieData->bMessageType == REQUESTTYPE_PROFILE)
-  { 
+  if (GetCookieType(dwCookie) == CKT_FAMILYSPECIAL)
+  {
     ReleaseCookie(dwCookie);
 
     // Read user info TLVs

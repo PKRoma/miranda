@@ -129,6 +129,8 @@ void FreeCookie(DWORD dwCookie);
 void ReleaseCookie(DWORD dwCookie);
 DWORD GenerateCookie(WORD wIdent);
 
+int GetCookieType(DWORD dwCookie);
+
 int FindCookie(DWORD wCookie, DWORD *pdwUin, void **ppvExtra);
 int FindCookieByData(void *pvExtra, DWORD *pdwCookie, DWORD *pdwUin);
 int FindMessageCookie(DWORD dwMsgID1, DWORD dwMsgID2, DWORD *pdwCookie, DWORD *pdwUin, message_cookie_data **ppvExtra);

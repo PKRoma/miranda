@@ -188,6 +188,24 @@ DWORD GenerateCookie(WORD wIdent)
 
 
 
+int GetCookieType(DWORD dwCookie)
+{
+  int i;
+
+  EnterCriticalSection(&cookieMutex);
+
+  i = FindCookieIndex(dwCookie);
+
+  if (i != INVALID_COOKIE_INDEX)
+    i = cookie[i].bType;
+
+  LeaveCriticalSection(&cookieMutex);
+
+  return i;
+}
+
+
+
 int FindCookie(DWORD dwCookie, DWORD *pdwUin, void **ppvExtra)
 {
   int i;
