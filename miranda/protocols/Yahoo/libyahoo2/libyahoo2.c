@@ -3927,8 +3927,10 @@ static void yahoo_process_search_connection(struct yahoo_input_data *yid, int ov
 	
 	pyid = find_input_by_id_and_type(yid->yd->client_id, YAHOO_CONNECTION_PAGER);
 
-	if(!over || !pyid)
+	if(!over || !pyid) {
+		LOG(("yahoo_process_search_connection] ?? Not Done yet? Waiting for more packets!"));
 		return;
+	}
 
 	if(p && (p=strstr(p, "\r\n\r\n"))) {
 		p += 4;

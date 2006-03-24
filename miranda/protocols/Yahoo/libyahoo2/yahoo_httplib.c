@@ -369,6 +369,7 @@ void yahoo_http_get(int id, const char *url, const char *cookies,
 			"Host: %s\r\n"
 			"User-Agent: Mozilla/4.01 [en] (Win95; I)\r\n"
 			"Cookie: %s\r\n"
+			"Connection: close\r\n"
 			"\r\n",
 			path, host, cookies);
 	
