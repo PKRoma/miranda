@@ -1112,14 +1112,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         char* blob = ( char* )alloca( 1000 );
 								#if defined( _UNICODE )
 									int ansiLen = WideCharToMultiByte(CP_ACP, 0, buffer, -1, blob, 1000, 0, 0);
-									blob[ansiLen] = 0;
-									memcpy( blob+ansiLen+1, buffer, sizeof(TCHAR)*(iLen+1));
-									dbei.cbBlob = ansiLen+1 + sizeof(TCHAR)*(iLen+1);
+									memcpy( blob+ansiLen, buffer, sizeof(TCHAR)*(iLen+1));
+									dbei.cbBlob = ansiLen + sizeof(TCHAR)*(iLen+1);
 								#else
 									int wLen = MultiByteToWideChar(CP_ACP, 0, buffer, -1, NULL, 0 );
 									memcpy( blob, buffer, iLen+1 );
 									MultiByteToWideChar(CP_ACP, 0, buffer, -1, (WCHAR*)&blob[iLen+1], wLen+1 );
-									dbei.cbBlob = iLen+1 + sizeof(TCHAR)*(wLen+1);
+									dbei.cbBlob = iLen+1 + sizeof(WCHAR)*wLen;
 								#endif
 
 								dbei.cbSize = sizeof(dbei);
