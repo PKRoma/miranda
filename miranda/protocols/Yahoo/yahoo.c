@@ -2288,6 +2288,7 @@ void ext_yahoo_got_search_result(int id, int found, int start, int total, YList 
     PROTOSEARCHRESULT psr;
 	struct yahoo_found_contact *yct=NULL;
 	char *c;
+	int i=start;
     YList *en=contacts;
 
 	LOG(("got search result: "));
@@ -2297,7 +2298,7 @@ void ext_yahoo_got_search_result(int id, int found, int start, int total, YList 
 	LOG(("Start: %d", start));
 	LOG(("Total: %d", total));
 		
-	//int i;
+	
 	
 /*    if (aim_util_isme(sn)) {
         ProtoBroadcastAck(AIM_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
@@ -2311,18 +2312,30 @@ void ext_yahoo_got_search_result(int id, int found, int start, int total, YList 
 	while (en) {
 		yct = en->data;
     //psr.nick = (char *)snsearch;
-		psr.nick = (char *)yct->id;
-		c = (char *)malloc(10);
-		itoa(yct->age, c,10);
-		psr.firstName = yct->gender;
-		psr.lastName = (char *)c;
-		psr.email = (char *)yct->location;
-    //psr.email = (char *)snsearch;
-    
-	//void yahoo_search(int id, enum yahoo_search_type t, const char *text, enum yahoo_search_gender g, enum yahoo_search_agerange ar, 
-	//	int photo, int yahoo_only)
-
-		YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+		if (yct == NULL) {
+			LOG(("[%d] Empty record?",i++));
+		} else {
+			LOG(("[%d] id: '%s', online: %d, age: %d, sex: '%s', location: '%s'", i++, yct->id, yct->online, yct->age, yct->gender, yct->location));
+			psr.nick = (char *)yct->id;
+			c = (char *)malloc(10);
+			
+			if (yct->gender[0] != 5)
+			psr.firstName = yct->gender;
+			
+			if (yct->age > 0) {
+				itoa(yct->age, c,10);
+				psr.lastName = (char *)c;
+			}
+			
+			if (yct->location[0] != 5)
+				psr.email = (char *)yct->location;
+		//psr.email = (char *)snsearch;
+		
+		//void yahoo_search(int id, enum yahoo_search_type t, const char *text, enum yahoo_search_gender g, enum yahoo_search_agerange ar, 
+		//	int photo, int yahoo_only)
+	
+			YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+		}
 		en = y_list_next(en);
 	}
     YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
