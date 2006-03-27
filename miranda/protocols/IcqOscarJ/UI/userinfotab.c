@@ -145,7 +145,7 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                 SetValue(hwndDlg, IDC_PORT, hContact, szProto, "UserPort", SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, szProto, "Version", SVS_ICQVERSION);
                 SetValue(hwndDlg, IDC_MIRVER, hContact, szProto, "MirVer", SVS_ZEROISUNSPEC);
-                if (ICQGetContactSettingDword(hContact, "ClientID", 0) == 1)
+                if (ICQGetContactSettingByte(hContact, "ClientID", 0))
                   ICQWriteContactSettingDword(hContact, "TickTS", 0);
                 SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "TickTS", SVS_TIMESTAMP);
                 SetValue(hwndDlg, IDC_STATUS, hContact, szProto, "Status", SVS_STATUSID);

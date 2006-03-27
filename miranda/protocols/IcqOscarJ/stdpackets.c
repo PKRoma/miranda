@@ -870,15 +870,15 @@ void icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwMsgID1, DWORD dwMsgID2, WORD 
     {
       char* szAnsiMsg = NULL;
 
-      if (wVersion != 9)
+      if (wVersion == 9 && ICQ_VERSION == 9)
+        pszMsg = (char*)*szMsg;
+      else
       { // only v9 protocol supports UTF-8 mode messagees
         wMsgLen = strlennull(*szMsg) + 1;
         szAnsiMsg = (char*)_alloca(wMsgLen);
         utf8_decode_static(*szMsg, szAnsiMsg, wMsgLen);
         pszMsg = szAnsiMsg;
       }
-      else
-        pszMsg = (char*)*szMsg;
 
       wMsgLen = strlennull(pszMsg);
 

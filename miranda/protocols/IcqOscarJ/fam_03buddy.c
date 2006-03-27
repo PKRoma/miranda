@@ -45,7 +45,7 @@ extern DWORD dwLocalDirectConnCookie;
 
 extern const capstr capAimIcon;
 extern const char* cliSpamBot;
-extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, DWORD* dwClientId, char* szClientBuf);
+extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
 
 
 void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
@@ -110,7 +110,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   DWORD dwWebPort;
   DWORD dwFT1, dwFT2, dwFT3;
   LPSTR szClient = 0;
-  DWORD dwClientId = 0;
+  BYTE bClientId = 0;
   WORD wVersion = 0;
   WORD wTLVCount;
   WORD wWarningLevel;
@@ -343,7 +343,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           // handle Xtraz status
           handleXStatusCaps(hContact, capBuf, capLen);
 
-          szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, dwDirectConnCookie, dwWebPort, capBuf, capLen, &dwClientId, szStrBuf);
+          szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
         }
 
 #ifdef _DEBUG
@@ -382,7 +382,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   if (hContact != NULL)
   {
     if (szClient == 0) szClient = ICQTranslateUtfStatic("Unknown", szStrBuf); // if no detection, set uknown
-    ICQWriteContactSettingDword(hContact,  "ClientID",     dwClientId);
 
     ICQWriteContactSettingDword(hContact,  "LogonTS",      dwOnlineSince);
     if (dwUIN)
@@ -394,8 +393,12 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
       ICQWriteContactSettingWord(hContact,  "UserPort",     (WORD)(dwPort & 0xffff));
       ICQWriteContactSettingWord(hContact,  "Version",      wVersion);
     }
-    if (szClient != (char*)-1) ICQWriteContactSettingUtf(hContact, "MirVer", szClient);
-    ICQWriteContactSettingWord(hContact, "Status", (WORD)IcqStatusToMiranda(wStatus));
+    if (szClient != (char*)-1)
+    {
+      ICQWriteContactSettingUtf(hContact,   "MirVer",       szClient);
+      ICQWriteContactSettingByte(hContact,  "ClientID",     bClientId);
+    }
+    ICQWriteContactSettingWord(hContact,  "Status", (WORD)IcqStatusToMiranda(wStatus));
     ICQWriteContactSettingDword(hContact, "IdleTS", tIdleTS);
 
     // Update info?

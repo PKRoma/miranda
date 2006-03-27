@@ -159,11 +159,11 @@ char* cliIM2       = "IM2";
 char* cliSpamBot   = "Spam Bot";
 
 
-char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, DWORD* dwClientId, char* szClientBuf)
+char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf)
 {
   LPSTR szClient = NULL;
 
-  *dwClientId = 1; // Most clients does not tick as MsgIDs
+  *bClientId = 1; // Most clients does not tick as MsgIDs
   hasRichChecked = FALSE; // init fast rich text detection
 
   // Is this a Miranda IM client?
@@ -184,6 +184,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
     else 
     { // Yes this is most probably Miranda, get the version info
       szClient = MirandaVersionToString(szClientBuf, dwFT2, 0);
+      *bClientId = 2;
     }
   }
   else if ((dwFT1 & 0xFF7F0000) == 0x7D000000)
@@ -279,6 +280,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         DWORD mver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
 
         szClient = MirandaVersionToString(szClientBuf, iver, mver);
+
+        *bClientId = 2;
       }
       else if (MatchCap(caps, wLen, &capTrillian, 0x10) || MatchCap(caps, wLen, &capTrilCrypt, 0x10))
       { // this is Trillian, check for new version
@@ -415,13 +418,13 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
                 szClient = "ICQ for Pocket PC";
             else
             {
-              *dwClientId = 0;
+              *bClientId = 0;
               szClient = "ICQ 2001";
             }
           }
           else if (MatchCap(caps, wLen, &capIs2002, 0x10))
           {
-            *dwClientId = 0;
+            *bClientId = 0;
             szClient = "ICQ 2002";
           }
           else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY || CAPF_UTF) && hasCapRichText(caps, wLen))
@@ -435,7 +438,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               }
             else
             {
-              *dwClientId = 0;
+              *bClientId = 0;
               szClient = "ICQ 2002/2003a";
             }
           }
@@ -444,7 +447,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         { // try to determine lite versions
           if (CheckContactCapabilities(hContact, CAPF_XTRAZ))
           {
-            *dwClientId = 0;
+            *bClientId = 0;
             if (CheckContactCapabilities(hContact, CAPF_AIM_FILE))
             {
               strcpy(szClientBuf, "icq5");
@@ -476,7 +479,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               szClient = "&RQ";
             else
             {
-              *dwClientId = 0;
+              *bClientId = 0;
               szClient = "ICQ 2000";
             }
           }
@@ -522,7 +525,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
   {
     NetLog_Server("No client identification, put default ICQ client for protocol.");
 
-    *dwClientId = 0;
+    *bClientId = 0;
 
     switch (wVersion)
     {  // client detection failed, provide default clients
