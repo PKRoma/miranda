@@ -48,7 +48,7 @@ static int CheckBlock( void* blk )
 				DebugBreak();
 			#endif
 		}
-		else result = TRUE;
+ 		else result = TRUE;
 	}
 	__except( EXCEPTION_EXECUTE_HANDLER )
 	{

@@ -181,4 +181,23 @@ added during 0.3.4+ (2004/08/14)
 */
 int CallFunctionAsync( void (__stdcall *func)(void *), void *arg);
 
+/* Missing service catcher
+Is being called when one calls the non-existent service.
+All parameters are stored in the special structure
+
+The event handler takes 0 as wParam and TMissingServiceParams* as lParam.
+
+0.4.3+ addition (2006/03/27)
+*/
+
+typedef struct
+{
+	const char* name;
+	WPARAM      wParam;
+	LPARAM      lParam;
+}
+	TMissingServiceParams;
+
+#define ME_SYSTEM_MISSINGSERVICE "System/MissingService"
+
 #endif  // MODULES_H_

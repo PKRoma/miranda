@@ -65,7 +65,7 @@ static int hookCount,serviceCount;
 static CRITICAL_SECTION csHooks,csServices;
 static DWORD mainThreadId;
 static HANDLE hMainThread;
-extern HANDLE hShutdownEvent;
+static HANDLE hMissingService;
 
 int LoadSystemModule(void);		// core: m_system.h services
 int LoadNewPluginsModuleInfos(void); // core: preloading plugins
@@ -151,8 +151,8 @@ int InitialiseModularEngine(void)
 	mainThreadId=GetCurrentThreadId();
 	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hMainThread,THREAD_SET_CONTEXT,FALSE,0);
 
+	hMissingService = CreateHookableEvent(ME_SYSTEM_MISSINGSERVICE);
 	return LoadDefaultModules();
-
 }
 
 void DestroyingModularEngine(void)
@@ -556,6 +556,9 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 		OutputDebugStringA(name);
 		OutputDebugStringA("\n");
 #endif
+		{	TMissingServiceParams params = { name, wParam, lParam };
+			NotifyEventHooks(hMissingService,0,(LPARAM)&params);
+		}
 		return CALLSERVICE_NOTFOUND;
 	}
 	pfnService=pService->pfnService;
@@ -604,4 +607,3 @@ int CallFunctionAsync( void (__stdcall *func)(void *), void *arg)
 	PostMessage(hAPCWindow,WM_NULL,0,0);
 	return r;
 }
-
