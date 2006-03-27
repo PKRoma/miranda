@@ -1036,7 +1036,7 @@ int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
 		FREE(y);
 		FREE(t);
 	} else {
-		_snprintf( tUrl, sizeof( tUrl ), "https://mail.yahoo.com/" );
+		_snprintf( tUrl, sizeof( tUrl ), "http://mail.yahoo.com/" );
 	}
 	
 	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
