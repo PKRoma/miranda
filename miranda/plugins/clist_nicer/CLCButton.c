@@ -64,6 +64,8 @@ static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE, HDC, int, int,
 static HRESULT  (WINAPI *MyDrawThemeText)(HANDLE, HDC, int, int, LPCWSTR, int,
                                           DWORD, DWORD, const RECT *);
 
+BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
+
 static CRITICAL_SECTION csTips;
 static HWND hwndToolTips = NULL;
 
@@ -107,7 +109,8 @@ static int ThemeSupport()
                 MyDrawThemeParentBackground = (HRESULT(WINAPI *)(HWND, HDC, RECT *))MGPROC("DrawThemeParentBackground");
                 MyDrawThemeBackground = (HRESULT(WINAPI *)(HANDLE, HDC, int, int, const RECT *, const RECT *))MGPROC("DrawThemeBackground");
                 MyDrawThemeText = (HRESULT(WINAPI *)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, const RECT *))MGPROC("DrawThemeText");
-            }
+				MyEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))MGPROC("EnableThemeDialogTexture");
+			}
         }
     // Make sure all of these methods are valid (i would hope either all or none work)
         if (MyOpenThemeData && MyCloseThemeData && MyIsThemeBackgroundPartiallyTransparent && MyDrawThemeParentBackground && MyDrawThemeBackground && MyDrawThemeText) {

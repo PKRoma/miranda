@@ -32,11 +32,12 @@ extern HWND g_hwndViewModeFrame;
 extern HIMAGELIST himlExtraImages;
 extern HANDLE hPreBuildStatusMenuEvent;
 
+/*
 typedef  DWORD  (__stdcall *pfnImgNewDecoder)(void ** ppDecoder); 
 typedef DWORD (__stdcall *pfnImgDeleteDecoder)(void * pDecoder);
-typedef  DWORD  (__stdcall *pfnImgNewDIBFromFile)(LPVOID /*in*/pDecoder, LPCSTR /*in*/pFileName, LPVOID /*out*/*pImg);
-typedef DWORD (__stdcall *pfnImgDeleteDIBSection)(LPVOID /*in*/pImg);
-typedef DWORD (__stdcall *pfnImgGetHandle)(LPVOID /*in*/pImg, HBITMAP /*out*/*pBitmap, LPVOID /*out*/*ppDIBBits);
+typedef  DWORD  (__stdcall *pfnImgNewDIBFromFile)(LPVOID pDecoder, LPCSTR pFileName, LPVOID *pImg);
+typedef DWORD (__stdcall *pfnImgDeleteDIBSection)(LPVOID pImg);
+typedef DWORD (__stdcall *pfnImgGetHandle)(LPVOID pImg, HBITMAP *pBitmap, LPVOID *ppDIBBits);
 
 static pfnImgNewDecoder ImgNewDecoder = 0;
 static pfnImgDeleteDecoder ImgDeleteDecoder = 0;
@@ -45,6 +46,7 @@ static pfnImgDeleteDIBSection ImgDeleteDIBSection = 0;
 static pfnImgGetHandle ImgGetHandle = 0;
 
 static BOOL g_imgDecoderAvail = FALSE;
+*/
 
 StatusItems_t *StatusItems = NULL;
 ImageItem *g_ImageItems = NULL;
@@ -1305,6 +1307,53 @@ static void PreMultiply(HBITMAP hBitmap, int mode)
     }
 }
 
+static void CorrectBitmap32Alpha(HBITMAP hBitmap)
+{
+	BITMAP bmp;
+	DWORD dwLen;
+	BYTE *p;
+	int x, y;
+    BOOL fixIt = TRUE;
+
+	GetObject(hBitmap, sizeof(bmp), &bmp);
+
+	if (bmp.bmBitsPixel != 32)
+		return;
+
+	dwLen = bmp.bmWidth * bmp.bmHeight * (bmp.bmBitsPixel / 8);
+	p = (BYTE *)malloc(dwLen);
+	if (p == NULL)
+		return;
+	memset(p, 0, dwLen);
+
+	GetBitmapBits(hBitmap, dwLen, p);
+
+	for (y = 0; y < bmp.bmHeight; ++y) {
+        BYTE *px = p + bmp.bmWidth * 4 * y;
+
+        for (x = 0; x < bmp.bmWidth; ++x) 
+		{
+			if (px[3] != 0) 
+			{
+				fixIt = FALSE;
+			}
+			else
+			{
+				px[3] = 255;
+			}
+
+			px += 4;
+		}
+	}
+
+	if (fixIt)
+	{
+		SetBitmapBits(hBitmap, bmp.bmWidth * bmp.bmHeight * 4, p);
+	}
+
+	free(p);
+}
+
 static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
 {
     LPVOID imgDecoder = NULL;
@@ -1313,9 +1362,19 @@ static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
     LPVOID pBitmapBits = NULL;
     LPVOID m_pImgDecoder = NULL;
 
-    if(!g_imgDecoderAvail)
+	/*
+	if(!g_imgDecoderAvail)
         return 0;
-    
+    */
+
+    hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
+    if(hBitmap != 0)
+        CorrectBitmap32Alpha(hBitmap);
+    item->lpDIBSection = 0;
+
+    return hBitmap;
+
+	/*
     ImgNewDecoder(&m_pImgDecoder);
     if (!ImgNewDIBFromFile(m_pImgDecoder, (char *)szFilename, &pImg))
         ImgGetHandle(pImg, &hBitmap, (LPVOID *)&pBitmapBits);
@@ -1323,7 +1382,7 @@ static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
     if(hBitmap == 0)
         return 0;
     item->lpDIBSection = pImg;
-    return hBitmap;
+    return hBitmap;*/
 }
 
 static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
@@ -1365,8 +1424,9 @@ static void IMG_DeleteItem(ImageItem *item)
     SelectObject(item->hdc, item->hbmOld);
     DeleteObject(item->hbm);
     DeleteDC(item->hdc);
+	/*
     if(item->lpDIBSection && ImgDeleteDIBSection)
-        ImgDeleteDIBSection(item->lpDIBSection);
+        ImgDeleteDIBSection(item->lpDIBSection);*/
 }
 
 void IMG_DeleteItems()
@@ -1667,7 +1727,8 @@ void extbk_import(char *file, HWND hwndDlg)
 
 void IMG_InitDecoder()
 {
-    HMODULE hModule;
+	/*
+	HMODULE hModule;
     
     if((hModule = LoadLibraryA("imgdecoder.dll")) == 0) {
         if((hModule = LoadLibraryA("plugins\\imgdecoder.dll")) != 0)
@@ -1683,4 +1744,5 @@ void IMG_InitDecoder()
         ImgDeleteDIBSection=(pfnImgDeleteDIBSection)GetProcAddress(hModule, "ImgDeleteDIBSection");
         ImgGetHandle=(pfnImgGetHandle)GetProcAddress(hModule, "ImgGetHandle");
     }
+	*/
 }

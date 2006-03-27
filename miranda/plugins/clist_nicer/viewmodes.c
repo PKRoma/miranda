@@ -35,6 +35,7 @@ extern HIMAGELIST hCListImages;
 extern HPEN g_hPenCLUIFrames;
 extern int g_nextExtraCacheEntry;
 extern struct ExtraCache *g_ExtraCache;
+extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 
 typedef int (__cdecl *pfnEnumCallback)(char *szName);
 static HWND clvmHwnd = 0;
