@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -53,7 +53,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //Check if everyone is happy to exit
 //wParam=lParam=0
 //if everyone acknowleges OK to exit then returns true, otherwise false
-#define MS_SYSTEM_OKTOEXIT   "Miranda/System/OkToExit" 
+#define MS_SYSTEM_OKTOEXIT   "Miranda/System/OkToExit"
 
 //gets the version number of Miranda encoded as a DWORD     v0.1.0.1+
 //wParam=lParam=0
@@ -124,7 +124,7 @@ struct MM_INTERFACE {
 	void* (*mmi_malloc) (size_t);
 	void* (*mmi_realloc) (void*, size_t);
 	void (*mmi_free) (void*);
-}; 
+};
 
 #define MS_SYSTEM_GET_MMI  "Miranda/System/GetMMI"
 
@@ -166,7 +166,7 @@ struct LIST_INTERFACE {
 
 	-- Thread Safety --
 
-	Proper thread safe shutdown was implemented in 0.3.0.0 (2003/04/18) 
+	Proper thread safe shutdown was implemented in 0.3.0.0 (2003/04/18)
 	and not	before, therefore it is improper that any MT plugins be used
 	with earlier versions of Miranda (as hav0c will result)
 
@@ -199,7 +199,7 @@ struct LIST_INTERFACE {
 	at this point, no plugins or modules are unloaded.
 
 	Miranda will then enumerate all active threads and queue an APC call
-	to each thread, so any thread in an alertable state will become active, 
+	to each thread, so any thread in an alertable state will become active,
 	this functionailty may not be required by your threads: but if you use
 	the Winsock2 event object system or Sleep() please use the alertable
 	wait functions, so that the thread will 'wake up' when Miranda queues
@@ -216,7 +216,7 @@ struct LIST_INTERFACE {
 		// assume all thread pushing/popping is done by forkthread()
 		int run=1;
 		for (;run;)
-		{	
+		{
 			Beep(4391,500);
 			SleepEx(1500,TRUE);
 			if (Miranda_Terminated()) {
@@ -298,7 +298,7 @@ of shutting down
 /*
 	wParam : 0
 	lParam : (address) void (__cdecl *callback) (void)
-	Affect : Setup a function pointer to be called after main loop iterations, it allows for 
+	Affect : Setup a function pointer to be called after main loop iterations, it allows for
 		     idle processing, See notes
 	Returns: 1 on success, 0 on failure
 
@@ -344,6 +344,23 @@ __inline static void miranda_sys_free(void *ptr)
 	}
 }
 
+/* Missing service catcher
+Is being called when one calls the non-existent service.
+All parameters are stored in the special structure
+
+The event handler takes 0 as wParam and TMissingServiceParams* as lParam.
+
+0.4.3+ addition (2006/03/27)
+*/
+
+typedef struct
+{
+	const char* name;
+	WPARAM      wParam;
+	LPARAM      lParam;
+}
+	TMissingServiceParams;
+
+#define ME_SYSTEM_MISSINGSERVICE "System/MissingService"
+
 #endif // M_SYSTEM_H
-
-

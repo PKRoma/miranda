@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 //Modules Core - Richard
-#ifndef MODULES_H_ 
+#ifndef MODULES_H_
 #define MODULES_H_
 
 /* MAXMODULELABELLENGTH
@@ -79,7 +79,7 @@ int NotifyEventHooks(HANDLE hEvent,WPARAM wParam,LPARAM lParam);
 	Affect:  This core service allows hooks to have a 'default' hook which is called
 		when no one has hooked the given event, this allows hook creators to add default
 		processing which is ONLY CALLED when no one else has HookEvent()'d
-	Notes:	 The return value from pfnHook() is returned to NotifyEventHooks() 
+	Notes:	 The return value from pfnHook() is returned to NotifyEventHooks()
 	Returns: 0 on success, non zero on failure
 	Version: 0.3.4+ (2004/09/15)
 */
@@ -172,7 +172,7 @@ just a wrapper around QueueUserAPC() and other workarounds to make APC
 work even if there are non APC message loops, this allows plugins who
 need this feature to get it without recoding it themselves.
 
-The function 'func' will always be called from the main thread in idle time even 
+The function 'func' will always be called from the main thread in idle time even
 if it is invokved from a worker thread, 'arg' must not be on the stack.
 
 Returns nonzero on success, zero on failure
@@ -180,24 +180,5 @@ Returns nonzero on success, zero on failure
 added during 0.3.4+ (2004/08/14)
 */
 int CallFunctionAsync( void (__stdcall *func)(void *), void *arg);
-
-/* Missing service catcher
-Is being called when one calls the non-existent service.
-All parameters are stored in the special structure
-
-The event handler takes 0 as wParam and TMissingServiceParams* as lParam.
-
-0.4.3+ addition (2006/03/27)
-*/
-
-typedef struct
-{
-	const char* name;
-	WPARAM      wParam;
-	LPARAM      lParam;
-}
-	TMissingServiceParams;
-
-#define ME_SYSTEM_MISSINGSERVICE "System/MissingService"
 
 #endif  // MODULES_H_
