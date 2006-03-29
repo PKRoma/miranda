@@ -29,6 +29,7 @@
 #define AIM_KEY_DM						"DisableModeMsg"
 #define AIM_KEY_FI						"FormatIncoming"//html->bbcodes
 #define AIM_KEY_FO						"FormatOutgoing"//bbcodes->html
+#define AIM_KEY_FR						"FirstRun"
 //Settings Keys
 #define AIM_KEY_PR						"Profile"
 #define AIM_KEY_LA						"LastAwayChange"

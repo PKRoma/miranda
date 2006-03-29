@@ -73,6 +73,7 @@ HANDLE find_contact(char * sn)
 
 				if (!strcmp(dbv.pszVal, normalize_name(sn)))
 				{
+					DBFreeVariant(&dbv);
 					return hContact;
 				}
 				DBFreeVariant(&dbv);
@@ -110,7 +111,6 @@ HANDLE add_contact(char* buddy)
 void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* group)
 {
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
-	DBVARIANT dbv;
 	bool group_exist=1;
 	unsigned short old_group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);		
 	if(old_group_id)
@@ -150,6 +150,7 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 	}
 	if(new_group_id&&new_group_id!=old_group_id)
 	{
+		DBVARIANT dbv;
 		if(!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
 		{
 			DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI, new_group_id);
@@ -185,7 +186,6 @@ void add_contacts_to_groups()
 			{
 				char group_id_string[32];
 				_itoa(group_id,group_id_string,10);
-				//char* outer_group=get_outer_group();
 				DBVARIANT dbv;
 				if(bUtfReadyDB==1)
 				{
@@ -195,6 +195,7 @@ void add_contacts_to_groups()
 						{
 							create_group(dbv.pszVal,group_id);
 							DBWriteContactSettingStringUtf(hContact,"CList","Group",dbv.pszVal);
+							DBFreeVariant(&dbv);
 						}
 						DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_NC);
 					}
@@ -207,6 +208,7 @@ void add_contacts_to_groups()
 						{
 							create_group(dbv.pszVal,group_id);
 							DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+							DBFreeVariant(&dbv);
 						}
 						DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_NC);
 					}
@@ -315,6 +317,7 @@ void remove_AT_icons()
 					unsigned short column_type=EXTRA_ICON_ADV2;
 					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
 					ForkThread((pThreadFunc)set_extra_icon,data);
+					DBFreeVariant(&dbv);
 				}
 			}
 			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
@@ -341,6 +344,7 @@ void remove_ES_icons()
 					unsigned short column_type=EXTRA_ICON_ADV1;
 					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
 					ForkThread((pThreadFunc)set_extra_icon,data);
+					DBFreeVariant(&dbv);
 				}
 			}
 			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
@@ -404,6 +408,7 @@ void add_AT_icons()
 					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
 					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
+				DBFreeVariant(&dbv);
 			}
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
@@ -440,6 +445,7 @@ void add_ES_icons()
 					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
 			}
+			DBFreeVariant(&dbv);
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}

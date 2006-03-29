@@ -13,4 +13,5 @@
 #include "defines.h"
 #include "services.h"
 #include "utility.h"
+#include "windows.h"
 #endif

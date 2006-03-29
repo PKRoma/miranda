@@ -283,10 +283,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\utility.h"
-				>
-			</File>
-			<File
 				RelativePath=".\windows.cpp"
 				>
 			</File>
@@ -390,6 +386,10 @@
 			</File>
 			<File
 				RelativePath=".\thread.h"
+				>
+			</File>
+			<File
+				RelativePath=".\utility.h"
 				>
 			</File>
 			<File

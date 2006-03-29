@@ -61,6 +61,7 @@ static int SendMsg(WPARAM wParam, LPARAM lParam)
 			{
 				delete msg;
 				delete html_msg;
+				DBFreeVariant(&dbv);
 				return 1;
 			}
 		}
@@ -69,9 +70,11 @@ static int SendMsg(WPARAM wParam, LPARAM lParam)
 			if(aim_send_plaintext_message(dbv.pszVal,msg,0))
 			{
 				delete msg;
+				DBFreeVariant(&dbv);
 				return 1;
 			}
 		}
+		DBFreeVariant(&dbv);
 	}
 	return 0;
 }
@@ -97,6 +100,7 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 				{
 					delete umsg;
 					delete html_umsg;
+					DBFreeVariant(&dbv);
 					return 1;
 				}
 			}
@@ -105,14 +109,17 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 				if(aim_send_unicode_message(dbv.pszVal,umsg))
 				{
 					delete umsg;
+					DBFreeVariant(&dbv);
 					return 1;
 				}
 			}
 		}
 		else
 		{
+			DBFreeVariant(&dbv);
 			return SendMsg(wParam,lParam);
 		}
+		DBFreeVariant(&dbv);
 	}
 	return 0;
 }

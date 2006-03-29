@@ -345,10 +345,12 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 						away_user=1;
 						DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_AWAY);
 					}
+					aim_query_away_message(buddy);
 					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT, 0);//erase idle time
 					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT, 0);//erase online time
 				}
 			}
+			
 			else if(tlv_type==0x000d)
 			{
 				for(int i=0;i<tlv_length;i=i+16)

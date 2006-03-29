@@ -141,6 +141,10 @@ SOURCE=.\utility.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\strl.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\windows.cpp
 # End Source File
 # End Group
@@ -202,6 +206,10 @@ SOURCE=.\thread.h
 # Begin Source File
 
 SOURCE=.\utility.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\strl.h
 # End Source File
 # Begin Source File
 

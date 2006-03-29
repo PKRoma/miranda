@@ -122,24 +122,6 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 SetDlgItemText(hwndDlg, IDC_HN, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
-/*			if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, &dbv))
-			{
-                SetDlgItemText(hwndDlg, IDC_DG, dbv.pszVal);
-                DBFreeVariant(&dbv);
-            }
-			else
-			{
-				SetDlgItemText(hwndDlg, IDC_DG, AIM_DEFAULT_GROUP);
-			}
-			if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, &dbv))
-			{
-                SetDlgItemText(hwndDlg, IDC_OG, dbv.pszVal);
-                DBFreeVariant(&dbv);
-            }
-			else
-			{
-				SetDlgItemText(hwndDlg, IDC_OG, AIM_DEFAULT_GROUP);
-			}*/
 			unsigned short timeout=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 			SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
 			unsigned short timer=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
@@ -152,7 +134,6 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_DM, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DM, 0));//Disable Sending Mode Message
 			CheckDlgButton(hwndDlg, IDC_FI, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0));//Format imcoming messages
 			CheckDlgButton(hwndDlg, IDC_FO, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0));//Format outgoing messages
-			//CheckDlgButton(hwndDlg, IDC_SG, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SG, 0));//Server-side group
 			break;
 		}
 		case WM_COMMAND:
@@ -279,20 +260,6 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 					//End
 
-					//Default Group
-					/*if(GetDlgItemText(hwndDlg, IDC_DG, str, sizeof(str)))
-						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, str);
-					else
-						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, AIM_DEFAULT_GROUP);
-					//End
-
-					//Outer Group
-					if(GetDlgItemText(hwndDlg, IDC_OG, str, sizeof(str)))
-						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, str);
-					else
-						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, AIM_DEFAULT_GROUP);*/
-					//End
-					
 					//Keep alive timer
 					unsigned long timer=GetDlgItemInt(hwndDlg, IDC_KA,0,0);
 					if(timer>0xffff||timer<15)
@@ -327,4 +294,71 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
         }
     }
     return FALSE;
+}
+BOOL CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	//The code to implement and run the the first run dialog was contributed by RiPOFF
+    switch (msg)
+	{
+
+	case WM_INITDIALOG:
+        {
+
+            DBVARIANT dbv;
+            TranslateDialogDefault(hwndDlg);
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_AIM)));
+            if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+			{
+                SetDlgItemText(hwndDlg, IDC_SN, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+
+            if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
+			{
+                CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+                SetDlgItemText(hwndDlg, IDC_PW, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+
+        }
+		break;
+
+	case WM_CLOSE:
+		EndDialog(hwndDlg, 0);
+		break;
+
+	case WM_COMMAND:
+		{
+
+			switch (LOWORD(wParam))
+			{
+			case IDOK:
+				{
+
+					char str[128];
+					GetDlgItemText(hwndDlg, IDC_SN, str, sizeof(str));
+					DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, str);
+					GetDlgItemText(hwndDlg, IDC_PW, str, sizeof(str));
+					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
+					DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, str);
+
+				}
+				// fall through
+
+			case IDCANCEL:
+                {
+					// Mark first run as completed
+					DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FR, 1);
+                    EndDialog(hwndDlg, IDCANCEL);
+                }
+				break;
+
+            }
+        }
+		break;
+
+    }
+
+    return FALSE;
+
 }

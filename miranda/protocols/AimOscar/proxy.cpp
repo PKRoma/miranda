@@ -8,7 +8,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 	{
 		char cookie[8];
 		read_cookie(hContact,cookie);
-		DBVARIANT dbv;
+		DBVARIANT dbv;//CHECK FOR FREE VARIANT!
 		if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 		{
 			if(stage==1&&!sender||stage==2&&sender||stage==3&&!sender)
@@ -144,6 +144,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 					}
 				}
 			}
+			//FREE VARIANT HERE???????!??
 		}
 	}
 	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT);

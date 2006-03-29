@@ -58,7 +58,6 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 		memcpy(&AIM_PROTOCOL_NAME[strlen(store)],"\0",1);
 	}
 	CharUpper(AIM_PROTOCOL_NAME);
-
 	char groupid_key[32];//group to id
 	ZeroMemory(groupid_key,sizeof(groupid_key));
 	memcpy(groupid_key,AIM_PROTOCOL_NAME,strlen(AIM_PROTOCOL_NAME));
@@ -119,6 +118,8 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 	if(DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, -1)==-1)
 		DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
+	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FR, 0)==0)
+		DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_AIMACCOUNT), NULL, first_run_dialog);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_OPT_INITIALISE, OptionsInit);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_USERINFO_INITIALISE, UserInfoInit);
 	if(conn.hookEvent_size>HOOKEVENT_SIZE)
@@ -164,13 +165,6 @@ int PreShutdown(WPARAM wParam,LPARAM lParam)
 	conn.hNetlibPeer=0;
 	for(unsigned int i=0;i<conn.hookEvent_size;i++)
 		UnhookEvent(conn.hookEvent[i]);
-	free(CWD);
-	free(AIM_PROTOCOL_NAME);
-	free(conn.szModeMsg);
-	free(COOKIE);
-	free(GROUP_ID_KEY);
-	free(ID_GROUP_KEY);
-	free(FILE_TRANSFER_KEY);
 	DeleteCriticalSection(&modeMsgsMutex);
 	DeleteCriticalSection(&statusMutex);
 	DeleteCriticalSection(&connectionMutex);
@@ -179,5 +173,12 @@ int PreShutdown(WPARAM wParam,LPARAM lParam)
 }
 extern "C" int __declspec(dllexport) Unload(void)
 {
+	free(CWD);
+	free(conn.szModeMsg);
+	free(COOKIE);
+	free(GROUP_ID_KEY);
+	free(ID_GROUP_KEY);
+	free(FILE_TRANSFER_KEY);
+	free(AIM_PROTOCOL_NAME);
 	return 0;
 }
