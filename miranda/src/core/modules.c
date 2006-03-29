@@ -557,7 +557,9 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 		OutputDebugStringA("\n");
 #endif
 		{	TMissingServiceParams params = { name, wParam, lParam };
-			NotifyEventHooks(hMissingService,0,(LPARAM)&params);
+			int result = NotifyEventHooks(hMissingService,0,(LPARAM)&params);
+			if (result != 0)
+				return result;
 		}
 		return CALLSERVICE_NOTFOUND;
 	}
