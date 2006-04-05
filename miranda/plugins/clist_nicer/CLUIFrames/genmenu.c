@@ -195,16 +195,13 @@ int MO_DrawMenuItem(WPARAM wParam,LPARAM lParam)
 void RemoveAndClearOneObject(int arpos)
 {
 	int j;
-	for (j=0;j<MenuObjects[arpos].MenuItemsCount;j++)
-	{
+	for (j=0;j<MenuObjects[arpos].MenuItemsCount;j++) {
 		if (MenuObjects[arpos].FreeService)
-		{
 			CallService(MenuObjects[arpos].FreeService,(WPARAM)MenuObjects[arpos].MenuItems[j].globalid,(LPARAM)MenuObjects[arpos].MenuItems[j].mi.ownerdata);
-		}
+
 		FreeAndNil(&MenuObjects[arpos].MenuItems[j].mi.pszName);
 		FreeAndNil(&MenuObjects[arpos].MenuItems[j].UniqName);
 		FreeAndNil(&MenuObjects[arpos].MenuItems[j].CustomName);
-
 	}
 
 	FreeAndNil(&MenuObjects[arpos].MenuItems);
@@ -447,8 +444,7 @@ int MO_SetOptionsMenuItem(WPARAM wParam,LPARAM lParam)
 
 		switch(lpop->Setting) {
 	 case OPT_MENUITEMSETUNIQNAME:
-		 if (!(pimi->mi.flags&CMIF_ROOTPOPUP))
-		 {
+		 if (!(pimi->mi.flags&CMIF_ROOTPOPUP)) {
 			 FreeAndNil(&pimi->UniqName);
 			 pimi->UniqName=mir_strdup((char*)lpop->Value);
 		 }
@@ -460,13 +456,6 @@ int MO_SetOptionsMenuItem(WPARAM wParam,LPARAM lParam)
 	{
 		setcnt--;
 		unlockmo();
-		{
-			//	char buf[256];
-
-			//sprintf(buf,"MO_SetOptionsMenuItem in unlock %d\r\n",setcnt);
-			//TRACE(buf);
-		}
-
 	}
 	return 1;
 }
@@ -486,19 +475,19 @@ int MO_SetOptionsMenuObject(WPARAM wParam,LPARAM lParam)
 		if (pimoidx==-1){return(0);}
 
 		switch(lpop->Setting) {
-	 case OPT_MENUOBJECT_SET_ONADD_SERVICE:
-		 FreeAndNil(&MenuObjects[pimoidx].onAddService);
-		 MenuObjects[pimoidx].onAddService=mir_strdup((char *)lpop->Value);
-		 break;
+		case OPT_MENUOBJECT_SET_ONADD_SERVICE:
+			FreeAndNil(&MenuObjects[pimoidx].onAddService);
+			MenuObjects[pimoidx].onAddService=mir_strdup((char *)lpop->Value);
+			break;
 
-	 case OPT_MENUOBJECT_SET_FREE_SERVICE:
-		 FreeAndNil(&MenuObjects[pimoidx].FreeService);
-		 MenuObjects[pimoidx].FreeService=mir_strdup((char *)lpop->Value);
-		 break;
+		case OPT_MENUOBJECT_SET_FREE_SERVICE:
+			FreeAndNil(&MenuObjects[pimoidx].FreeService);
+			MenuObjects[pimoidx].FreeService=mir_strdup((char *)lpop->Value);
+			break;
 
-	 case OPT_USERDEFINEDITEMS:
-		 MenuObjects[pimoidx].bUseUserDefinedItems=(BOOL)lpop->Value;
-		 break;
+		case OPT_USERDEFINEDITEMS:
+			MenuObjects[pimoidx].bUseUserDefinedItems=(BOOL)lpop->Value;
+			break;
 		}
 		return(1);
 	}
@@ -557,7 +546,6 @@ int MO_RemoveMenuItem(WPARAM wParam,LPARAM lParam)
 	res=RecursiveRemoveChilds(menuitemidx,&lp);
 	unlockmo();
 	return(res);
-
 }
 
 //wparam=MenuObjectHandle
@@ -663,30 +651,24 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
 	pmi->flags|=CMIF_CHILDPOPUP;
 	//add popup(root allready exists)
 	return(MO_AddNewMenuItem(wParam,(LPARAM)pmi));
-
 }
 
 static int WhereToPlace(HMENU hMenu,PMO_MenuItem mi,MENUITEMINFO *mii,ListParam *param)
 {
 	int i=0;
-	PMO_IntMenuItem pimi;
-
 
 	mii->fMask=MIIM_SUBMENU|MIIM_DATA;
-	for(i=GetMenuItemCount(hMenu)-1;i>=0;i--) {
+	for ( i=GetMenuItemCount(hMenu)-1; i >= 0; i-- ) {
 		GetMenuItemInfo(hMenu,i,TRUE,mii);
-		if (mii->fType==MFT_SEPARATOR) continue;
-		//if (mii->hSubMenu==NULL /*&& (mii->dwItemData&param->cntFlag)==0*/) continue;
+		if ( mii->fType != MFT_SEPARATOR ) {
+			PMO_IntMenuItem pimi = MO_GetIntMenuItem(mii->dwItemData);
+			if ( pimi != NULL )
+				if ( pimi->mi.position <= mi->position ) 
+					break;
+	}	}
 
-		pimi=MO_GetIntMenuItem(mii->dwItemData);
-		if (pimi!=NULL){
-			if (pimi->mi.position<=mi->position) break;
-		}
-	}
-	i++;
-	return i;
+	return i+1;
 }
-
 
 static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,MENUITEMINFO *lpmii,ListParam *param)
 {
@@ -830,6 +812,20 @@ DBFreeVariant(&dbv);
 */
 /**************************************/
 
+void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSize )
+{
+	if ( pMenuItem->UniqName)
+		mir_snprintf( pszDest, cbDestSize, "{%s}", pMenuItem->UniqName );
+	else {
+		#if defined( _UNICODE )
+			char* name = u2a(pMenuItem->mi.pszName);
+			mir_snprintf( pszDest, cbDestSize, "{%s}", name );
+			free(name);
+		#else
+			mir_snprintf( pszDest, cbDestSize, "{%s}", pMenuItem->mi.pszName );
+		#endif
+}	}
+
 HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 {
 	int i,j;
@@ -885,23 +881,13 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 		}
 
 		/**************************************/
-		if (rootlevel==-1&&mi->root==-1&&MenuObjects[pimoidx].bUseUserDefinedItems)
-		{
-
+		if (rootlevel==-1&&mi->root==-1&&MenuObjects[pimoidx].bUseUserDefinedItems) {
 			char menuItemName[256];
 			char DBString[256];
 			DBVARIANT dbv;
-
 			memset(&dbv,0,sizeof(dbv));
-			if (MenuItems[j].UniqName)
-			{
-				wsprintfA(menuItemName,"{%s}",MenuItems[j].UniqName);
-			}else
-			{
-				wsprintfA(menuItemName,"{%s}",mi->pszName);
-			}
 
-
+			GetMenuItemName( &MenuItems[j], menuItemName, sizeof(menuItemName));
 
 			// check if it visible
 			wsprintfA(DBString, "%s_visible", menuItemName);
@@ -909,18 +895,15 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 				DBWriteContactSettingByte(NULL,MenuNameItems, DBString,1);
 
 			MenuItems[j].OverrideShow=TRUE;
-			if (!DBGetContactSettingByte(NULL, MenuNameItems, DBString, 1))
-			{
+			if (!DBGetContactSettingByte(NULL, MenuNameItems, DBString, 1)) {
 				MenuItems[j].OverrideShow=FALSE;
 				continue;  // find out what value to return if not getting added
 			}
 
 			// mi.pszName
 			wsprintfA(DBString, "%s_name", menuItemName);
-			if (!DBGetContactSettingTString(NULL, MenuNameItems, DBString, &dbv))
-			{
-				if (_tcslen(dbv.ptszVal)>0)
-				{
+			if (!DBGetContactSettingTString(NULL, MenuNameItems, DBString, &dbv)) {
+				if (_tcslen(dbv.ptszVal)>0) {
 					if (MenuItems[j].CustomName) mir_free(MenuItems[j].CustomName);
 					MenuItems[j].CustomName=mir_tstrdup(dbv.ptszVal);
 				}
@@ -932,13 +915,9 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 				DBWriteContactSettingDword(NULL,MenuNameItems, DBString,mi->position);
 
 			mi->position = DBGetContactSettingDword(NULL, MenuNameItems, DBString, mi->position);
-
-
-
 		}
 
 		/**************************************/
-
 
 		ZeroMemory(&mii,sizeof(mii));
 		i=0;
@@ -976,14 +955,12 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 					mii.hbmpItem=HBMMENU_CALLBACK;
 					mii.dwTypeData=(MenuItems[j].CustomName)?(MenuItems[j].CustomName):(mi->pszName);
 #ifdef PUTPOSITIONSONMENU
-					if (GetKeyState(VK_CONTROL)&0x8000)
-					{char str[256];
-					wsprintfA(str,"%s (%d,id %x)",mi->pszName,mi->position,mii.dwItemData);
-					mii.dwTypeData=str;
+					if (GetKeyState(VK_CONTROL)&0x8000) {
+						TCHAR str[256];
+						mir_sntprintf(str,SIZEOF(str),_T("%s (%d,id %x)"),mi->pszName,mi->position,mii.dwItemData);
+						mii.dwTypeData=str;
 					}
 #endif
-
-
 					InsertMenuItemWithSeparators(hMenu,i,TRUE,&mii,&localparam);
 					localparam.rootlevel=getGlobalId(param->MenuObjectHandle,MenuItems[j].id);//MenuItems[j].id|cntFlag;
 					BuildRecursiveMenu(hSubMenu,&localparam);
@@ -1012,22 +989,16 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 				mii.hbmpItem=HBMMENU_CALLBACK;
 				mii.dwTypeData=(MenuItems[j].CustomName)?(MenuItems[j].CustomName):(mi->pszName);
 #ifdef PUTPOSITIONSONMENU
-				if (GetKeyState(VK_CONTROL)&0x8000)
-				{char str[256];
-				wsprintfA(str,"%s (%d,id %x)",mi->pszName,mi->position,mii.dwItemData);
-				//TRACE(str);
-				mii.dwTypeData=str;
+				if (GetKeyState(VK_CONTROL)&0x8000) {
+					TCHAR str[256];
+					mir_sntprintf( str, SIZEOF(str), _T("%s (%d,id %x)"),mi->pszName,mi->position,mii.dwItemData);
+					mii.dwTypeData=str;
 				}
 #endif
-
 				if (onAddproc!=NULL)
-				{
 					if (CallService(onAddproc,(WPARAM)&mii,(LPARAM)MenuItems[j].globalid)==FALSE)	continue;
-				}
-
 
 				InsertMenuItemWithSeparators(hMenu,i,TRUE,&mii,&localparam);
-
 				continue;
 			}
 		}
@@ -1051,7 +1022,6 @@ static int RemoveFromList(int pos,void **lpList,int *ListElemCount,int ElemSize)
 	(*lpList)=mir_realloc((*lpList),ElemSize*(*ListElemCount));
 	return 0;
 }
-
 
 int RecursiveRemoveChilds(int pos,ListParam *param)
 {
@@ -1087,35 +1057,25 @@ int RecursiveRemoveChilds(int pos,ListParam *param)
 				continue;
 			}
 			if ((*MenuItems)[i].mi.flags&CMIF_CHILDPOPUP) {
-				{
-					//remove fmep from childs
-
-
-				}
 				FreeAndNil(&((*MenuItems)[i].mi.pszName));
 				FreeAndNil(&((*MenuItems)[i].CustomName));
 				FreeAndNil(&((*MenuItems)[i].UniqName));
 				if (MenuObjects[objidx].FreeService)
-				{
 					CallService(MenuObjects[objidx].FreeService,(WPARAM)(*MenuItems)[i].globalid,(LPARAM)(*MenuItems)[i].mi.ownerdata);
-				}
 
 				RemoveFromList(i,(void **)MenuItems,MenuItemsCount,sizeof(TMO_IntMenuItem));
 				i=0;
 				continue;
-			}
-		}
-	}
-	i=GetMenuItembyId(objidx,menuitemid);
-	if (i>=0&&i<*MenuItemsCount) {
+	}	}	}
+
+	i = GetMenuItembyId( objidx, menuitemid );
+	if ( i >= 0 && i < *MenuItemsCount ) {
 		FreeAndNil(&((*MenuItems)[i].mi.pszName));
 		FreeAndNil(&((*MenuItems)[i].CustomName));
 		FreeAndNil(&((*MenuItems)[i].UniqName));
 
 		if (MenuObjects[objidx].FreeService)
-		{
 			CallService(MenuObjects[objidx].FreeService,(WPARAM)(*MenuItems)[i].globalid,(LPARAM)(*MenuItems)[i].mi.ownerdata);
-		}
 
 		RemoveFromList(i,(void **)MenuItems,MenuItemsCount,sizeof(TMO_IntMenuItem));
 	}

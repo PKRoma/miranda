@@ -57,6 +57,7 @@ int RecursiveRemoveChilds(int pos,ListParam *param);
 PMO_IntMenuItem MO_GetIntMenuItem(int globid);
 int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam);
 void UnpackGlobalId(int id,int *MenuObjectId,int *MenuItemId);
+void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSize );
 
 //for old processcommand
 int getGlobalId(const int MenuObjectId,const int MenuItemId);

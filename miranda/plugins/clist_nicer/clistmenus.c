@@ -641,9 +641,8 @@ static int BuildStatusMenu(WPARAM wParam,LPARAM lParam)
 
 	hMenu=hStatusMenu;
 	//clear statusmenu
-	while (GetMenuItemCount(hStatusMenu)>0) {
-		DeleteMenu(hStatusMenu,0,MF_BYPOSITION);
-	}
+	while ( GetMenuItemCount( hStatusMenu ) > 0 )
+		DeleteMenu( hStatusMenu, 0, MF_BYPOSITION );
 
 	tick=GetTickCount();
 	//NotifyEventHooks(hPreBuildMainMenuEvent,0,0);
@@ -777,7 +776,8 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 	hStatusMainMenuHandles=(HANDLE*)mir_alloc(sizeof(statusModeList));
 	hStatusMainMenuHandlesCnt=sizeof(statusModeList)/sizeof(HANDLE);
 	for (i=0;i<protoCount;i++)
-		if (proto[i]->type==PROTOTYPE_PROTOCOL && (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)||GetProtocolVisibility(proto[i]->szName)!=0)) networkProtoCount++;
+		if (proto[i]->type==PROTOTYPE_PROTOCOL && (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)||GetProtocolVisibility(proto[i]->szName)!=0))
+			networkProtoCount++;
 
 	memset(hStatusMainMenuHandles,0,sizeof(statusModeList));
 	hStatusMenuHandles=(tStatusMenuHandles*)mir_alloc(sizeof(tStatusMenuHandles)*protoCount);
@@ -904,7 +904,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					tmi.root=-1;
 					tmi.hotKey=MAKELPARAM(MOD_CONTROL,'0'+j);
 					tmi.pszName=(TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModeList[j],0);
-					wsprintf(( LPTSTR )buf, _T("%s\tCtrl+%c"), tmi.pszName, '0'+j );
+					wsprintfA(( LPSTR )buf, "%s\tCtrl+%c", tmi.pszName, '0'+j );
 					tmi.pszName=(TCHAR*)buf;
 					{
 						//owner data
@@ -918,10 +918,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					}                              
 					hStatusMainMenuHandles[j]=(void **)(CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi));
 					break;
-				}
-			}
-		}
-	}
+	}	}	}	}
 
 	BuildStatusMenu(0,0);
 	return 0;

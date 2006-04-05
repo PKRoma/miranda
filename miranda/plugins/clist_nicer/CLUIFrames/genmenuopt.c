@@ -77,10 +77,7 @@ int SaveTree(HWND hwndDlg)
 		menuitempos=GetMenuItembyId(menupos,((MenuItemOptData *)tvi.lParam)->id);
 		if (menuitempos!=-1) {
 			//MenuObjects[MenuObjectId].MenuItems[menuitempos].OverrideShow=
-			if (pimo->MenuItems[menuitempos].UniqName)
-				wsprintfA(menuItemName,"{%s}",pimo->MenuItems[menuitempos].UniqName);
-			else
-				wsprintfA(menuItemName,"{%s}",pimo->MenuItems[menuitempos].mi.pszName);
+			GetMenuItemName( &pimo->MenuItems[menuitempos], menuItemName, sizeof(menuItemName));
 
 			wsprintfA(DBString, "%s_visible", menuItemName); 
 			DBWriteContactSettingByte(NULL, MenuNameItems, DBString, ((MenuItemOptData *)tvi.lParam)->show);
@@ -106,7 +103,7 @@ int SaveTree(HWND hwndDlg)
 
 int BuildMenuObjectsTree(HWND hwndDlg)
 {
-	TVINSERTSTRUCT tvis;
+	TVINSERTSTRUCTA tvis;
 	int i;
 
 	tvis.hParent=NULL;
@@ -118,7 +115,7 @@ int BuildMenuObjectsTree(HWND hwndDlg)
 
 	for (i=0;i<MenuObjectsCount;i++) {
 		tvis.item.lParam  = (LPARAM)MenuObjects[i].id;
-		tvis.item.pszText = TranslateTS( MenuObjects[i].Name );
+		tvis.item.pszText = Translate( MenuObjects[i].Name );
 		tvis.item.iImage  = tvis.item.iSelectedImage=TRUE;
 		SendDlgItemMessageA(hwndDlg, IDC_MENUOBJECTS, TVM_INSERTITEMA, 0, (LPARAM)&tvis);
 	}
@@ -175,6 +172,27 @@ int InsertSeparator(HWND hwndDlg)
 	return(1);
 }
 
+void FreeTreeData( HWND hwndDlg )
+{
+	HTREEITEM hItem = TreeView_GetRoot(GetDlgItem(hwndDlg,IDC_MENUITEMS));
+	while ( hItem != NULL ) {
+		TVITEM tvi;
+		tvi.mask = TVIF_HANDLE|TVIF_PARAM;
+		tvi.hItem = hItem;
+		TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS), &tvi);
+		{	MenuItemOptData* O = (MenuItemOptData *)tvi.lParam;
+			if ( O->name ) mir_free( O->name );
+			if ( O->defname ) mir_free( O->defname );
+			if ( O->uniqname ) mir_free( O->uniqname );
+			mir_free( O );
+		}
+
+		tvi.lParam = 0;
+		TreeView_SetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS), &tvi);
+		
+		hItem = TreeView_GetNextSibling(GetDlgItem(hwndDlg,IDC_MENUITEMS), hItem);
+}	}
+
 int BuildTree(HWND hwndDlg,int MenuObjectId)
 {
 	struct OrderData *dat;
@@ -187,6 +205,8 @@ int BuildTree(HWND hwndDlg,int MenuObjectId)
 	char buf[256];
 	int i,count,menupos,lastpos;
 	PIntMenuObject pimo;
+
+	FreeTreeData(hwndDlg);
 
 	dat=(struct OrderData*)GetWindowLong(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_USERDATA);
 	tvis.hParent=NULL;
@@ -223,10 +243,7 @@ int BuildTree(HWND hwndDlg,int MenuObjectId)
 
 		PD=(MenuItemOptData*)mir_alloc(sizeof(MenuItemOptData));
 		ZeroMemory(PD,sizeof(MenuItemOptData));
-		if (pimo->MenuItems[i].UniqName)
-			wsprintfA(menuItemName,"{%s}",pimo->MenuItems[i].UniqName);
-		else
-			wsprintfA(menuItemName,"{%s}",pimo->MenuItems[i].mi.pszName);
+		GetMenuItemName( &pimo->MenuItems[i], menuItemName, sizeof(menuItemName));
 		{
 			DBVARIANT dbv;
 			wsprintfA(buf, "%s_name", menuItemName);
@@ -599,6 +616,9 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					tvi.hItem=hti;
 					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),&tvi);
 
+					if ( tvi.lParam == 0 )
+						break;
+
 					if ( _tcsstr(((MenuItemOptData *)tvi.lParam)->name, STR_SEPARATOR ))
 						break;
 
@@ -642,7 +662,14 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		break;
 
 	case WM_DESTROY:
-		return(0);
+	{	
+		struct OrderData* dat = (struct OrderData*)GetWindowLong( GetDlgItem(hwndDlg,IDC_MENUITEMS), GWL_USERDATA );
+		if ( dat )
+			mir_free( dat );
+		
+		FreeTreeData( hwndDlg );
+		break;
+	}
 
 	case WM_LBUTTONUP:
 		if (!dat->dragging)
