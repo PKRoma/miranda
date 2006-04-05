@@ -135,6 +135,8 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
               else
                 NetLog_Server("Error: XStatus Disabled");
             }
+            else if (dwXId)
+              NetLog_Server("Privacy: Ignoring XStatus request");
             else
               NetLog_Server("Error: We are not in XStatus, skipping");
           }
