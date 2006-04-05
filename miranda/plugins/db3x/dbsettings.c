@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -88,7 +88,7 @@ int InitSettings(void)
 	lSettings.increment=50;
 	lContacts.sortFunc=handleCompare;
 	lContacts.increment=100;
-	lGlobalSettings.sortFunc=stringCompare2; 
+	lGlobalSettings.sortFunc=stringCompare2;
 	lGlobalSettings.increment=100;
 	return 0;
 }
@@ -280,7 +280,7 @@ static __inline int GetContactSettingWorker(HANDLE hContact,DBCONTACTGETSETTING 
 	if ((!dbcgs->szSetting) || (!dbcgs->szModule))
 		return 1;
 	settingNameLen=strlen(dbcgs->szSetting);
-	
+
 	EnterCriticalSection(&csDbAccess);
 
 	log3("get [%08p] %s/%s",hContact,dbcgs->szModule,dbcgs->szSetting);
@@ -529,9 +529,9 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	int settingDataLen=0;
 
 	int bytesRequired,bytesRemaining;
-	DWORD ofsContact,ofsSettingsGroup,ofsBlobPtr;	
+	DWORD ofsContact,ofsSettingsGroup,ofsBlobPtr;
 
-	if (dbcws == NULL) 
+	if (dbcws == NULL)
 		return 1;
 
 	if (dbcws->value.type == DBVT_WCHAR) {
@@ -555,33 +555,19 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	// the db format can't tolerate more than 255 bytes of space (incl. null) for settings+module name
 	settingNameLen=strlen(dbcws->szSetting);
 	moduleNameLen=strlen(dbcws->szModule);
-	if ( settingNameLen > 0xFE ) 
+	if ( settingNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
 			OutputDebugString("WriteContactSetting() got a > 255 setting name length. \n");
-		#endif		
+		#endif
 		return 1;
 	}
-	if ( moduleNameLen > 0xFE ) 
+	if ( moduleNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
 			OutputDebugString("WriteContactSetting() got a > 255 module name length. \n");
 		#endif
 		return 1;
-	}
-	if ( dbcws->value.type == DBVT_WCHAR )
-	{	
-		char* tmpbuf = Utf8EncodeUcs2( dbcws->value.pwszVal );
-		if ( tmpbuf == NULL ) {
-			#ifdef _DEBUG
-				OutputDebugString("WriteContactSetting(): memory allocation failure.\n");
-			#endif
-			return 1;
-		}
-
-		mir_free( dbcws->value.pwszVal );
-		dbcws->value.pszVal = tmpbuf;
-		dbcws->value.type = DBVT_UTF8;
 	}
 
 	// the db can not tolerate strings/blobs longer than 0xFFFF since the format writes 2 lengths
@@ -623,7 +609,7 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 		else GetCachedValuePtr((HANDLE)wParam, szCachedSettingName, -1);
 	}
 
-	ofsModuleName=GetModuleNameOfs(dbcws->szModule);	
+	ofsModuleName=GetModuleNameOfs(dbcws->szModule);
  	if(wParam==0) ofsContact=dbHeader.ofsUser;
 	else ofsContact=wParam;
 
@@ -813,7 +799,7 @@ static int DeleteContactSetting(WPARAM wParam,LPARAM lParam)
 		return 1;
 
 	EnterCriticalSection(&csDbAccess);
-	ofsModuleName=GetModuleNameOfs(dbcgs->szModule);	
+	ofsModuleName=GetModuleNameOfs(dbcgs->szModule);
  	if(wParam==0) wParam=dbHeader.ofsUser;
 
 	dbc=(struct DBContact*)DBRead(wParam,sizeof(struct DBContact),NULL);
