@@ -1412,16 +1412,19 @@ int NetLog_Direct(const char *fmt,...)
 int NetLog_Uni(BOOL bDC, const char *fmt,...)
 {
   va_list va; 
-  int res;
+  char szText[1024];
+  HANDLE hNetlib;
 
   va_start(va,fmt);
-  if (bDC)
-    res = NetLog_Direct(fmt,va);
-  else 
-    res = NetLog_Server(fmt,va);
+  mir_vsnprintf(szText,sizeof(szText),fmt,va);
   va_end(va);
 
-  return res;
+  if (bDC)
+    hNetlib = ghDirectNetlibUser;
+  else
+    hNetlib = ghServerNetlibUser;
+
+  return CallService(MS_NETLIB_LOG,(WPARAM)hNetlib,(LPARAM)szText);
 }
 
 
