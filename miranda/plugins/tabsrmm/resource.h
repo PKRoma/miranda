@@ -13,7 +13,6 @@
 #define IDM_CUT                         182
 #define IDM_PASTE                       183
 #define IDD_MSGSPLITNEW                 184
-#define IDD_OPT_MSGWINDOWFONTS          185
 #define IDM_COPY                        186
 #define IDM_COPYALL                     187
 #define IDM_SELECTALL                   188
@@ -40,10 +39,6 @@
 #define IDR_MENUBAR                     308
 #define IDD_CHOOSESTATUSMODES           310
 #define IDD_OPTIONSDIALOG               311
-#define IDI_PULLDOWNARROW               313
-#define IDI_LEFTARROW                   314
-#define IDI_PULLUPARROW                 315
-#define IDI_RIGHTARROW                  316
 #define IDI_TREEVIEWEXPAND              320
 #define IDI_TREEVIEWCHECKED             321
 #define IDI_TREEVIEWUNCHECKED           322
@@ -169,31 +164,11 @@
 #define IDC_FONTFACE                    1110
 #define IDC_HISTORY                     1111
 #define IDC_CANCELADD                   1112
-#define IDC_FONTID                      1113
-#define IDC_SAMETYPE                    1114
-#define IDC_SAMESTYLE                   1115
-#define IDC_SAMECOLOUR                  1116
-#define IDC_SAMEAS                      1117
-#define IDC_TYPEFACE                    1118
-#define IDC_BOLD                        1119
-#define IDC_ITALIC                      1120
-#define IDC_SAMESIZE                    1121
 #define IDC_BKGCOLOUR                   1122
-#define IDC_INPUTBKG                    1123
 #define IDC_MATH_BKGCOLOUR              1124
-#define IDC_INFOPANELBG                 1124
-#define IDC_BKGOUTGOING                 1125
-#define IDC_BKGINCOMING                 1126
 #define IDC_FONTCOLOR                   1127
-#define IDC_GRIDLINES                   1127
 #define IDC_LOGFROZENTEXT               1128
 #define IDC_FONTCOLOUR                  1128
-#define IDC_SAMPLE                      1129
-#define IDC_FONTSIZE                    1130
-#define IDC_COLOUR                      1131
-#define IDC_SCRIPT                      1132
-#define IDC_STSAMETEXT                  1133
-#define IDC_STASTEXT                    1134
 #define IDC_STSIZETEXT                  1135
 #define IDC_STCOLOURTEXT                1136
 #define IDC_PRESETSPLIT                 1137
@@ -218,7 +193,6 @@
 #define IDC_INDENT                      1157
 #define IDC_INDENTAMOUNT                1158
 #define IDC_MSGTABS                     1159
-#define IDC_UNDERLINE                   1160
 #define IDC_WARNONCLOSE                 1162
 #define IDC_CUT_TABTITLE                1163
 #define IDC_CUT_TITLEMAX                1164
@@ -691,6 +665,7 @@
 #define ID_SPLITTERCONTEXT_FORGETTHECHANGES 40231
 #define ID_SPLITTERCONTEXT_SETPOSITIONFORTHISSESSION 40232
 #define ID_FONT_CYAN40233               40233
+#define ID_TABMENU_LEAVECHATROOM        40234
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -698,7 +673,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        9
-#define _APS_NEXT_COMMAND_VALUE         40234
+#define _APS_NEXT_COMMAND_VALUE         40235
 #define _APS_NEXT_CONTROL_VALUE         1400
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif

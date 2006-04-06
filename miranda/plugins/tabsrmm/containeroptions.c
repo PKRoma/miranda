@@ -27,16 +27,14 @@ $Id$
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "msgs.h"
-#include "nen.h"
 
-int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
-extern struct ContainerWindowData *pFirstContainer;
-extern MYGLOBALS myGlobals;
+extern      struct ContainerWindowData *pFirstContainer;
+extern      MYGLOBALS myGlobals;
+extern      NEN_OPTIONS nen_options;
+
 char *GetThemeFileName(int iMode);
-extern NEN_OPTIONS nen_options;
 
-void ReloadGlobalContainerSettings()
+static void ReloadGlobalContainerSettings()
 {
     struct ContainerWindowData *pC = pFirstContainer;
     while(pC) {

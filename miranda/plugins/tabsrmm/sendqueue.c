@@ -7,27 +7,12 @@
 
 #include "commonheaders.h"
 #pragma hdrstop
-
-#include "../../include/m_clc.h"
-#include "../../include/m_clui.h"
-#include "../../include/m_userinfo.h"
-#include "../../include/m_history.h"
-#include "../../include/m_addcontact.h"
-
-#include "msgs.h"
-#include "m_popup.h"
-#include "m_smileyadd.h"
 #include "sendqueue.h"
-#include "msgdlgutils.h"
-#include "nen.h"
-#include "functions.h"
 
-extern MYGLOBALS myGlobals;
-
-extern char *pszIDCSAVE_save, *pszIDCSAVE_close;
-extern const UINT errorControls[5], infoPanelControls[10];
-
-extern struct SendJob sendJobs[NR_SENDJOBS];
+extern      MYGLOBALS myGlobals;
+extern      char *pszIDCSAVE_save, *pszIDCSAVE_close;
+extern      const UINT errorControls[5], infoPanelControls[10];
+extern      struct SendJob sendJobs[NR_SENDJOBS];
 
 char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat, int isUnicode)
 {
@@ -153,7 +138,7 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int is
     return 0;
 }
 
-int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
+static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
 {
     DWORD dwThreadId;
     
@@ -429,6 +414,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             if (HIWORD(wParam) == STN_CLICKED) {
                 HWND hwnd;
                 struct MessageWindowData *dat;
+
                 
                 hwnd = (HWND)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd,(LPARAM)&hwnd);
                 dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);

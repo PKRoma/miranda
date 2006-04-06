@@ -2,46 +2,113 @@
 // Microsoft Visual C++ generated include file.
 // Used by default.rc
 //
-#define IDI_HISTORY                     1
-#define IDI_TIMESTAMP                   2
-#define IDI_ADDCONTACT                  3
-#define IDI_MULTISEND                   4
-#define IDI_TYPING                      5
-#define IDI_QUOTE                       6
-#define IDI_SAVE                        7
-#define IDI_CHECK                       8
-#define IDI_CONTACTPIC                  9
-#define IDI_CLOSEMSGDLG                 10
-#define IDI_USERMENU                    11
-#define IDI_MSGERROR                    12
-#define IDI_ICONIN                      13
-#define IDI_ICONOUT                     14
-#define IDI_SMILEYICON                  15
-#define IDI_SELFTYPING_ON               16
-#define IDI_SELFTYPING_OFF              17
-#define IDI_CONTAINER                   18
-#define IDI_SECUREIM_DISABLED           19
-#define IDI_SECUREIM_ENABLED            20
-#define IDI_STATUSCHANGE                21
-#define IDI_FONTBOLD                    22
-#define IDI_FONTITALIC                  23
-#define IDI_FONTUNDERLINE               24
-#define IDI_FONTFACE                    25
-#define IDI_FONTCOLOR                   26
-#define IDI_SOUNDSON                    27
-#define IDI_SOUNDSOFF                   28
-#define IDI_EMPTY                       29
-#define IDI_RESERVED10                  30
+
+
+// standard toolbar icons
+
+#define IDI_HISTORY         1           /* history button */
+#define IDI_MSGLOGOPT       2           /* message log options */
+#define IDI_ADDCONTACT      3           /* add contact symbol (not a button anymore) */
+#define IDI_MULTISEND       4           /* multisend (not a button anymore, symbol still needed) */
+#define IDI_TYPING          5           /* typing notify icon in the statusbar */
+#define IDI_QUOTE           6           /* quote button */
+#define IDI_SAVE            7           /* close tab (with non-empty message area) */
+#define IDI_SEND            8           /* send button */
+#define IDI_CONTACTPIC      9           /* avatar button */
+#define IDI_CLOSEMSGDLG     10          /* close tab (when message area is empty) */
+#define IDI_USERMENU        11          /* user menu pulldown */
+
+// extended toolbar icons (formatting, etc..)
+
+#define IDI_SMILEYICON      50          /* smiley button fallback */
+#define IDI_FONTBOLD        51          /* bold */
+#define IDI_FONTITALIC      52          /* italic */
+#define IDI_FONTUNDERLINE   53          /* underline */
+#define IDI_FONTFACE        54          /* font face (currently not in use) */
+#define IDI_FONTCOLOR       55          /* font color (not in use yet) */
+
+
+//Message log events
+
+#define IDI_ICONIN          110         /* incoming message icon */
+#define IDI_ICONOUT         111         /* outgoing message icon */
+#define IDI_STATUSCHANGE    112         /* status changes */
+#define IDI_MSGERROR        113         /* error message */
+
+// misc icons, status bar etc.
+
+#define IDI_SELFTYPING_ON   130         /* sending typing notify is on */
+#define IDI_SELFTYPING_OFF  131         /* sending typing notify is off */
+#define IDI_SECUREIM_ENABLED  132       /* connection is secured via secureim */
+#define IDI_SECUREIM_DISABLED 133       /* connection is not secured */
+#define IDI_SOUNDSON        134         /* msg window sounds are enabled */
+#define IDI_SOUNDSOFF       135         /* msg window sounds are disabled */
+
+#define IDI_CONTAINER       136         /* static container icon */
+
+#define IDI_SESSIONLIST     137         /* session list */
+#define IDI_FAVLIST         138         /* favorites */
+#define IDI_RECENTLIST      139         /* recent contact list */
+#define IDI_CONFIGSIDEBAR   140         /* sidebar config */
+#define IDI_USERPREFS       141         /* user preferences */
+
+/* arrows */
+
+#define IDI_PULLDOWNARROW   160
+#define IDI_LEFTARROW       161
+#define IDI_PULLUPARROW     162
+#define IDI_RIGHTARROW      163
+
+
+// reserved icons
+
+#define IDI_EMPTY           170
+#define IDI_RESERVED10      171
+
+// chat misc
+
+#define IDI_TOPICBUT                    200
+#define IDI_BKGCOLOR                    201
+#define IDI_CHANMGR                     202
+#define IDI_FILTER                      203
+#define IDI_FILTER2                     204
+#define IDI_OVERLAY                     205
+#define IDI_STATUS3                     206
+#define IDI_STATUS2                     207
+#define IDI_STATUS4                     208
+#define IDI_STATUS1                     209
+#define IDI_STATUS0                     210
+#define IDI_STATUS5                     211
+#define IDI_BLANK                       212
+
+// chat log
+
+#define IDI_JOIN                        250
+#define IDI_PART                        251
+#define IDI_QUIT                        252
+#define IDI_KICK                        253
+#define IDI_NICK                        254
+#define IDI_NOTICE                      255
+#define IDI_MESSAGE                     256
+#define IDI_MESSAGEOUT                  257
+#define IDI_TOPIC                       258
+#define IDI_INFO                        259
+#define IDI_ADDSTATUS                   260
+#define IDI_REMSTATUS                   261
+#define IDI_ACTION                      262
+#define IDI_HIGHLIGHT                   263
+#define IDI_TAG1                        264
+#define IDI_TAG2                        265
+
+
+
+// non icon related
+// 
+
 #define IDB_UNKNOWNAVATAR               100
-#define IDS_IDENTIFY                    101
-// v2 stuff
+#define IDS_IDENTIFY                    101         /* id string resource */
 
-#define IDI_SESSIONLIST                 31
-#define IDI_FAVLIST                     32
-#define IDI_RECENTLIST                  33
-#define IDI_CONFIGSIDEBAR               34
-#define IDI_USERPREFS                   35
-
+                                     
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

@@ -33,26 +33,23 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #include "commonheaders.h"
 #pragma hdrstop
 #include <malloc.h>
-#include "msgs.h"
-#include "nen.h"
-#include "functions.h"
 
 #include "../../include/m_icq.h"
 
-extern HINSTANCE g_hInst;
-extern NEN_OPTIONS nen_options;
-BOOL bWmNotify = TRUE;
-extern HANDLE hMessageWindowList;
-extern MYGLOBALS myGlobals;
-extern struct ContainerWindowData *pFirstContainer;
+extern      HINSTANCE g_hInst;
+extern      NEN_OPTIONS nen_options;
+extern      HANDLE hMessageWindowList;
+extern      MYGLOBALS myGlobals;
+extern      struct ContainerWindowData *pFirstContainer;
+extern      BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern      HIMAGELIST CreateStateImageList();
 
 PLUGIN_DATA *PopUpList[20];
 static int PopupCount = 0;
 
-extern BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern HIMAGELIST CreateStateImageList();
+BOOL bWmNotify = TRUE;
 
-void CheckForRemoveMask()
+static void CheckForRemoveMask()
 {
 	if(!DBGetContactSettingByte(NULL, MODULE, "firsttime", 0) && (nen_options.maskActL & MASK_REMOVE || nen_options.maskActR & MASK_REMOVE || nen_options.maskActTE & MASK_REMOVE)) {
 		MessageBoxA(0, Translate("One of your popup actions is set to DISMISS EVENT.\nNote that this options may have unwanted side effects as it REMOVES the event from the unread queue.\nThis may lead to events not showing up as \"new\". If you don't want this behaviour, please review the Event Notifications settings page."), "tabSRMM Warning Message", MB_OK | MB_ICONSTOP);
@@ -475,11 +472,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 		break;
 	case WM_DESTROY:
 		{
-			HIMAGELIST himl = (HIMAGELIST)SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
-			if(himl) {
-				ImageList_RemoveAll(himl);
-				ImageList_Destroy(himl);
-			}
+			SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
 			bWmNotify = TRUE;
 			break;
 		}
@@ -489,7 +482,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 	return FALSE;
 }
 
-int NumberPopupData(HANDLE hContact)
+static int NumberPopupData(HANDLE hContact)
 {
     int n;
 
@@ -503,7 +496,7 @@ int NumberPopupData(HANDLE hContact)
     return -1;
 }
 
-char* GetPreview(UINT eventType, char* pBlob)
+static char* GetPreview(UINT eventType, char* pBlob)
 {
     char* comment1 = NULL;
     char* comment2 = NULL;
@@ -569,7 +562,7 @@ char* GetPreview(UINT eventType, char* pBlob)
     return commentFix;
 }
 
-int PopupUpdate(HANDLE hContact, HANDLE hEvent)
+static int PopupUpdate(HANDLE hContact, HANDLE hEvent)
 {
     PLUGIN_DATA *pdata;
     DBEVENTINFO dbe;
@@ -643,7 +636,7 @@ int PopupUpdate(HANDLE hContact, HANDLE hEvent)
     return 0;
 }
 
-int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATA* pdata)
+static int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATA* pdata)
 {
     if (mask & MASK_OPEN) {
         int i;
@@ -718,7 +711,7 @@ static BOOL CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT eventType)
+static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT eventType)
 {
     POPUPDATAEX pud;
     PLUGIN_DATA* pdata;
@@ -839,7 +832,7 @@ int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT e
 
 #if defined(_UNICODE)
 
-char *GetPreviewW(UINT eventType, char* pBlob, DWORD blobsize, BOOL *isWstring)
+static char *GetPreviewW(UINT eventType, char* pBlob, DWORD blobsize, BOOL *isWstring)
 {
     char* comment1 = NULL;
     char* comment2 = NULL;
@@ -927,7 +920,7 @@ nounicode:
     return commentFix;
 }
 
-int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
+static int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
 {
     PLUGIN_DATAW *pdata;
     DBEVENTINFO dbe;
@@ -1021,7 +1014,7 @@ int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
     return 0;
 }
 
-int PopupActW(HWND hWnd, UINT mask, PLUGIN_DATAW* pdata)
+static int PopupActW(HWND hWnd, UINT mask, PLUGIN_DATAW* pdata)
 {
     if (mask & MASK_OPEN) {
         int i;
@@ -1096,7 +1089,7 @@ static BOOL CALLBACK PopupDlgProcW(HWND hWnd, UINT message, WPARAM wParam, LPARA
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT eventType)
+static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT eventType)
 {
     POPUPDATAW pud;
     PLUGIN_DATAW *pdata;
@@ -1370,6 +1363,9 @@ void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced)
 #if defined(_UNICODE)
     const wchar_t *szMenuEntryW;
 #endif    
+    if(myGlobals.g_hMenuTrayUnread == 0)
+        return;
+    
     mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_DATA | MIIM_BITMAP;
     

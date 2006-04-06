@@ -29,13 +29,8 @@ $Id$
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "msgs.h"
 
-int _log(const char *fmt, ...); // XXX debuglog
-int EnumContainers(HANDLE hContact, DWORD dwAction, const char *szTarget, const char *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
-extern struct ContainerWindowData *pFirstContainer;
-void DeleteContainer(int iIndex), RenameContainer(int IIndex, const TCHAR *szNew);
-HMENU BuildContainerMenu();
+extern      struct ContainerWindowData *pFirstContainer;
 
 BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {

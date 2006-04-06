@@ -27,7 +27,6 @@ for different tab states (active,  unread etc..)
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "msgs.h"
 #include <uxtheme.h>
 
 extern MYGLOBALS myGlobals;
@@ -38,6 +37,7 @@ extern PSLWA pSetLayeredWindowAttributes;
 extern StatusItems_t StatusItems[];
 extern BOOL g_framelessSkinmode;
 
+extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 HMODULE hUxTheme = 0;
@@ -53,8 +53,6 @@ PITA pfnIsThemeActive = 0;
 POTD pfnOpenThemeData = 0;
 PDTB pfnDrawThemeBackground = 0;
 PCTD pfnCloseThemeData = 0;
-
-void FreeTabConfig(), ReloadTabConfig();
 
 #define FIXED_TAB_SIZE 100                  // default value for fixed width tabs
 
@@ -72,6 +70,7 @@ int InitVSApi()
     pfnOpenThemeData = (POTD)GetProcAddress(hUxTheme, "OpenThemeData");
     pfnDrawThemeBackground = (PDTB)GetProcAddress(hUxTheme, "DrawThemeBackground");
     pfnCloseThemeData = (PCTD)GetProcAddress(hUxTheme, "CloseThemeData");
+    MyEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
     if(pfnIsThemeActive != 0 && pfnOpenThemeData != 0 && pfnDrawThemeBackground != 0 && pfnCloseThemeData != 0) {
         return 1;
     }
@@ -109,7 +108,7 @@ int RegisterTabCtrlClass(void)
 	return 0;
 }
 
-void RectScreenToClient(HWND hwnd, RECT *rc)
+static void RectScreenToClient(HWND hwnd, RECT *rc)
 {
     POINT p1, p2;
 
@@ -130,7 +129,7 @@ void RectScreenToClient(HWND hwnd, RECT *rc)
 	 * Finds leftmost down item.
      */
 
-UINT FindLeftDownItem(HWND hwnd)
+static UINT FindLeftDownItem(HWND hwnd)
 {
 	RECT rctLeft = {100000,0,0,0}, rctCur;
 	int nCount = TabCtrl_GetItemCount(hwnd) - 1;
@@ -184,11 +183,13 @@ static struct colOptions {UINT id; UINT defclr; char *szKey; } tabcolors[] = {
  * icon handle in dat->hTabIcon
  */
  
-void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, int nItem)
+static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, int nItem)
 {
     TCITEM item = {0};
     struct MessageWindowData *dat = 0;
+    int iSize = 16;
     DWORD dwTextFlags = DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX;
+    
     item.mask = TCIF_PARAM;
     TabCtrl_GetItem(tabdat->hwnd, nItem, &item);
 
@@ -204,7 +205,7 @@ void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
         HBRUSH bg;
         HFONT oldFont;
         DWORD dwStyle = tabdat->dwStyle;
-        BOOL bFill = (dwStyle & TCS_BUTTONS && (tabdat->m_skinning == FALSE || myGlobals.m_TabAppearance & TCF_NOSKINNING));
+        BOOL bFill = ((dwStyle & TCS_BUTTONS && !tabdat->pContainer->bSkinned) && (tabdat->m_skinning == FALSE || myGlobals.m_TabAppearance & TCF_NOSKINNING));
         int oldMode = 0;
         InflateRect(rcItem, -1, -1);
         
@@ -237,8 +238,11 @@ void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
         
         if(dat->dwFlags & MWF_ERRORSTATE)
             hIcon = myGlobals.g_iconErr;
-        else if(dat->mayFlashTab)
+        else if(dat->mayFlashTab) {
             hIcon = dat->iFlashIcon;
+            if(dat->si && dat->iFlashIcon != myGlobals.g_IconMsgEvent)
+                iSize = 10;
+        }
 		else {
 			if(dat->hTabIcon == dat->hTabStatusIcon && dat->hXStatusIcon)
 				hIcon = dat->hXStatusIcon;
@@ -248,15 +252,15 @@ void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
 
         if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(myGlobals.m_TabAppearance & TCF_FLASHICON)) {
             DWORD ix = rcItem->left + tabdat->m_xpad - 1;
-            DWORD iy = (rcItem->bottom + rcItem->top - tabdat->cy) / 2;
+            DWORD iy = (rcItem->bottom + rcItem->top - iSize) / 2;
             if(dat->dwEventIsShown & MWF_SHOW_ISIDLE && myGlobals.m_IdleDetect) {
                 ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIcon);
 				ImageList_DrawEx(myGlobals.g_hImageList, 0, dc, ix, iy, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
             }
             else
-                DrawIconEx (dc, ix, iy, hIcon, tabdat->cx, tabdat->cy, 0, NULL, DI_NORMAL | DI_COMPAT); 
+                DrawIconEx (dc, ix, iy, hIcon, iSize, iSize, 0, NULL, DI_NORMAL | DI_COMPAT); 
         }
-        rcItem->left += (tabdat->cx + 2 + tabdat->m_xpad);
+        rcItem->left += (iSize + 2 + tabdat->m_xpad);
         
         if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(myGlobals.m_TabAppearance & TCF_FLASHLABEL)) {
             oldFont = SelectObject(dc, (HFONT)SendMessage(tabdat->hwnd, WM_GETFONT, 0, 0));
@@ -276,7 +280,7 @@ void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
  * draws the item rect (the "tab") in *classic* style (no visual themes
  */
 
-void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint)
+static void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint)
 {
     POINT pt;
     DWORD dwStyle = tabdat->dwStyle;
@@ -301,12 +305,26 @@ void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint
             
             rcItem->right += 6;
             if(bClassicDraw) {
-                if(nHint & HINT_ACTIVE_ITEM)
-                    DrawEdge(dc, rcItem, EDGE_ETCHED, BF_RECT|BF_SOFT);
-                else if(nHint & HINT_HOTTRACK)
-                    DrawEdge(dc, rcItem, EDGE_BUMP, BF_RECT | BF_MONO | BF_SOFT);
-                else
-                    DrawEdge(dc, rcItem, EDGE_RAISED, BF_RECT|BF_SOFT);
+                if(tabdat->pContainer->bSkinned) {
+                    StatusItems_t *item = nHint & HINT_ACTIVE_ITEM ? &StatusItems[ID_EXTBKBUTTONSPRESSED] : (nHint & HINT_HOTTRACK ? &StatusItems[ID_EXTBKBUTTONSMOUSEOVER] : &StatusItems[ID_EXTBKBUTTONSNPRESSED]);
+
+                    if(!item->IGNORED) {
+                        SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
+                        DrawAlpha(dc, rcItem, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+                                  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+                    }
+                    else
+                        goto b_nonskinned;
+                }
+                else {
+b_nonskinned:                    
+                    if(nHint & HINT_ACTIVE_ITEM)
+                        DrawEdge(dc, rcItem, EDGE_ETCHED, BF_RECT|BF_SOFT);
+                    else if(nHint & HINT_HOTTRACK)
+                        DrawEdge(dc, rcItem, EDGE_BUMP, BF_RECT | BF_MONO | BF_SOFT);
+                    else
+                        DrawEdge(dc, rcItem, EDGE_RAISED, BF_RECT|BF_SOFT);
+                }
             }
             else {
                 FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
@@ -336,6 +354,7 @@ void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint
 			if(tabdat->pContainer->bSkinned) {
 				StatusItems_t *item = &StatusItems[dwStyle & TCS_BOTTOM ? ID_EXTBKTABITEMACTIVEBOTTOM : ID_EXTBKTABITEMACTIVE];
 				if(!item->IGNORED) {
+                    rcItem->left += item->MARGIN_LEFT; rcItem->right -= item->MARGIN_RIGHT;
 					DrawAlpha(dc, rcItem, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 							  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
 					return;
@@ -346,6 +365,7 @@ void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint
 			StatusItems_t *item = &StatusItems[dwStyle & TCS_BOTTOM ? (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACKBOTTOM : ID_EXTBKTABITEMBOTTOM) : 
                                                (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACK : ID_EXTBKTABITEM)];
 			if(!item->IGNORED) {
+                rcItem->left += item->MARGIN_LEFT; rcItem->right -= item->MARGIN_RIGHT;
 				DrawAlpha(dc, rcItem, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 						  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
 				return;
@@ -382,7 +402,7 @@ void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint
 	}
 }
 
-int DWordAlign(int n)
+static int DWordAlign(int n)
 { 
     int rem = n % 4; 
     if(rem) 
@@ -394,7 +414,7 @@ int DWordAlign(int n)
  * draws a theme part (identifier in uiPartNameID) using the given clipping rectangle
  */
 
-HRESULT DrawThemesPart(struct TabControlData *tabdat, HDC hDC, int iPartId, int iStateId, LPRECT prcBox)
+static HRESULT DrawThemesPart(struct TabControlData *tabdat, HDC hDC, int iPartId, int iStateId, LPRECT prcBox)
 {
     HRESULT hResult = 0;
     
@@ -411,7 +431,7 @@ HRESULT DrawThemesPart(struct TabControlData *tabdat, HDC hDC, int iPartId, int 
  * handles image mirroring for tabs at the bottom
  */
 
-void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct TabControlData *tabdat) 
+static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, struct TabControlData *tabdat) 
 {
 	BOOL bBody  = (uiFlag & 1) ? TRUE : FALSE;
 	BOOL bSel   = (uiFlag & 2) ? TRUE : FALSE;

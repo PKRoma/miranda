@@ -43,12 +43,38 @@ int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundC
 void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int size, const char *szProto, UINT codePage);
 int GetTabIndexFromHWND(HWND, HWND);
+struct ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hContact);
+struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom);
+int CutContactName(TCHAR *oldname, TCHAR *newname, unsigned int size);
+struct ContainerWindowData *FindContainerByName(const TCHAR *name);
+void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
+int GetTabIndexFromHWND(HWND hwndTab, HWND hwnd);
+int GetTabItemFromMouse(HWND hwndTab, POINT *pt);
+int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
+int GetProtoIconFromList(const char *szProto, int iStatus);
+void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
+void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount);
+void ReflashContainer(struct ContainerWindowData *pContainer);
+HMENU BuildMCProtocolMenu(HWND hwndDlg);
+struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer);
+struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer);
+void DeleteContainer(int iIndex), RenameContainer(int iIndex, const TCHAR *newName);
+int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
+void GetLocaleID(struct MessageWindowData *dat, char *szKLName);
+int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
+UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
+UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
+
+void FirstTimeConfig();
+void IMG_FreeDecoder();
+int  RegisterContainer();
+HMENU BuildContainerMenu();
+void BuildCodePageList();
 
 // the cached message log icons
 void CacheMsgLogIcons();
 void UncacheMsgLogIcons();
 void CacheLogFonts();
-void ConvertAllToUTF8();
 void InitAPI();
 void ReloadGlobals();
 void LoadIconTheme();
@@ -66,7 +92,7 @@ void StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend, DBE
 void LoadMsgLogIcons(void);
 void FreeMsgLogIcons(void);
 
-void LoadLogfont(int i,LOGFONTA *lf,COLORREF *colour);
+void LoadLogfont(int i,LOGFONTA *lf,COLORREF *colour, char *szModule);
 
 int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);
@@ -77,8 +103,16 @@ int RegisterTabCtrlClass(void);
 void FreeTabConfig();
 void ReloadTabConfig();
 
+void CacheMsgLogIcons(), CacheLogFonts(), ReloadGlobals(), LoadIconTheme(), UnloadIconTheme();
+void CreateImageList(BOOL bInitial);
+void GetDefaultContainerTitleFormat();
+
+int Chat_OptionsInitialize(WPARAM wParam, LPARAM lParam);
+
 void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);
+int MessageWindowOpened(WPARAM wParam, LPARAM lParam);
+void TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType);
 
 // buttons
 
@@ -88,13 +122,6 @@ int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam);
 void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, int mode);
 void ReloadGlobalContainerSettings();
 void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
-
-/*
- * font service support
- */
-
-void FS_RegisterFonts();
-void MoveFonts();
 
 extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);
 void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
@@ -106,3 +133,15 @@ void GetDefaultContainerTitleFormat();
 
 int _DebugTraceW(const wchar_t *fmt, ...);
 int _DebugTraceA(const char *fmt, ...);
+
+// themes
+
+char *GetThemeFileName(int iMode);
+static void LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF *colour, const char *szIniFilename);
+int CheckThemeVersion(const char *szIniFilename);
+void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat);
+void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced);
+
+
+
+

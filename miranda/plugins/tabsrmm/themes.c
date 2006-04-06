@@ -29,9 +29,6 @@ Themes and skinning for tabSRMM
 #include "commonheaders.h"
 #pragma hdrstop
 
-#include "msgs.h"
-#include "msgdlgutils.h"
-
 /*
  * writes the current "theme" to .ini file
  * a theme contains all the fonts, colors and message log formatting
@@ -50,11 +47,12 @@ extern TemplateSet LTR_Active, RTL_Active;
 extern MYGLOBALS myGlobals;
 extern struct ContainerWindowData *pFirstContainer;
 
+/*
 typedef  DWORD  (__stdcall *pfnImgNewDecoder)(void ** ppDecoder); 
 typedef DWORD (__stdcall *pfnImgDeleteDecoder)(void * pDecoder);
-typedef  DWORD  (__stdcall *pfnImgNewDIBFromFile)(LPVOID /*in*/pDecoder, LPCSTR /*in*/pFileName, LPVOID /*out*/*pImg);
-typedef DWORD (__stdcall *pfnImgDeleteDIBSection)(LPVOID /*in*/pImg);
-typedef DWORD (__stdcall *pfnImgGetHandle)(LPVOID /*in*/pImg, HBITMAP /*out*/*pBitmap, LPVOID /*out*/*ppDIBBits);
+typedef  DWORD  (__stdcall *pfnImgNewDIBFromFile)(LPVOID pDecoder, LPCSTR pFileName, LPVOID *pImg);
+typedef DWORD (__stdcall *pfnImgDeleteDIBSection)(LPVOID pImg);
+typedef DWORD (__stdcall *pfnImgGetHandle)(LPVOID pImg, HBITMAP *pBitmap, LPVOID *ppDIBBits);
 
 static pfnImgNewDecoder ImgNewDecoder = 0;
 static pfnImgDeleteDecoder ImgDeleteDecoder = 0;
@@ -64,6 +62,7 @@ static pfnImgGetHandle ImgGetHandle = 0;
 
 static BOOL g_imgDecoderAvail = FALSE;
 HMODULE g_hModuleImgDecoder = 0;
+*/
 
 static void __inline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal, 
 					  ULONG ulBitmapHeight, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue, UCHAR ubRed2, 
@@ -78,6 +77,7 @@ static ImageItem *g_ImageItems = NULL;
 HBRUSH g_ContainerColorKeyBrush = 0;
 COLORREF g_ContainerColorKey = 0;
 SIZE g_titleBarButtonSize = {0};
+int g_titleButtonTopOff = 0, g_captionOffset = 0;
 
 extern BOOL g_skinnedContainers;
 extern BOOL g_framelessSkinmode, g_compositedWindow;
@@ -213,6 +213,13 @@ static void LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF *colou
     }
 }
 
+static struct _tagFontBlocks { char *szModule; int iFirst; int iCount; char *szIniTemp; char *szBLockname; } fontBlocks[] = {
+    FONTMODULE, 0, MSGDLGFONTCOUNT, "Font%d", "StdFonts",
+    FONTMODULE, 100, IPFONTCOUNT, "IPFont%d", "MiscFonts",
+    "ChatFonts", 0, CHATFONTCOUNT, "ChatFont%d", "ChatFonts",
+    NULL, 0, 0, NULL
+};
+
 int CheckThemeVersion(const char *szIniFilename)
 {
     int cookie = GetPrivateProfileIntA("TabSRMM Theme", "Cookie", 0, szIniFilename);
@@ -225,73 +232,50 @@ int CheckThemeVersion(const char *szIniFilename)
 
 void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
 {
-    int i;
+    int i, n = 0;
     DBVARIANT dbv;
     char szBuf[100], szTemp[100], szAppname[100];
+    COLORREF def;
     
     WritePrivateProfileStringA("TabSRMM Theme", "Version", _itoa(CURRENT_THEME_VERSION, szBuf, 10), szIniFilename);
     WritePrivateProfileStringA("TabSRMM Theme", "Cookie", _itoa(THEME_COOKIE, szBuf, 10), szIniFilename);
     
-    if(dat == 0) {
-        for(i = 0; i < MSGDLGFONTCOUNT; i++) {
-            sprintf(szTemp, "Font%d", i);
-            strcpy(szAppname, szTemp);
-            if(!DBGetContactSetting(NULL, FONTMODULE, szTemp, &dbv)) {
+    while(fontBlocks[n].szModule) {
+        int firstIndex = fontBlocks[n].iFirst;
+        char *szModule = fontBlocks[n].szModule;
+        WritePrivateProfileStringA(fontBlocks[n].szBLockname, "Valid", "1", szIniFilename);
+        for(i = 0; i < fontBlocks[n].iCount; i++) {
+            sprintf(szTemp, "Font%d", firstIndex + i);
+            sprintf(szAppname, fontBlocks[n].szIniTemp, firstIndex + i);
+            if(!DBGetContactSetting(NULL, szModule, szTemp, &dbv)) {
                 WritePrivateProfileStringA(szAppname, "Face", dbv.pszVal, szIniFilename);
                 DBFreeVariant(&dbv);
             }
-            sprintf(szTemp, "Font%dCol", i);
-            WritePrivateProfileStringA(szAppname, "Color", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, szTemp, 0), szBuf, 10), szIniFilename);
-            sprintf(szTemp, "Font%dSty", i);
-            WritePrivateProfileStringA(szAppname, "Style", _itoa(DBGetContactSettingByte(NULL, FONTMODULE, szTemp, 0), szBuf, 10), szIniFilename);
-            sprintf(szTemp, "Font%dSize", i);
-            WritePrivateProfileStringA(szAppname, "Size", _itoa(DBGetContactSettingByte(NULL, FONTMODULE, szTemp, 0), szBuf, 10), szIniFilename);
-            sprintf(szTemp, "Font%dSet", i);
-            WritePrivateProfileStringA(szAppname, "Set", _itoa(DBGetContactSettingByte(NULL, FONTMODULE, szTemp, 0), szBuf, 10), szIniFilename);
-            sprintf(szTemp, "Font%dAs", i);
-            WritePrivateProfileStringA(szAppname, "Inherit", _itoa(DBGetContactSettingWord(NULL, FONTMODULE, szTemp, 0), szBuf, 10), szIniFilename);
+            sprintf(szTemp, "Font%dCol", firstIndex + i);
+            WritePrivateProfileStringA(szAppname, "Color", _itoa(DBGetContactSettingDword(NULL, szModule, szTemp, 0), szBuf, 10), szIniFilename);
+            sprintf(szTemp, "Font%dSty", firstIndex + i);
+            WritePrivateProfileStringA(szAppname, "Style", _itoa(DBGetContactSettingByte(NULL, szModule, szTemp, 0), szBuf, 10), szIniFilename);
+            sprintf(szTemp, "Font%dSize", firstIndex + i);
+            WritePrivateProfileStringA(szAppname, "Size", _itoa(DBGetContactSettingByte(NULL, szModule, szTemp, 0), szBuf, 10), szIniFilename);
+            sprintf(szTemp, "Font%dSet", firstIndex + i);
+            WritePrivateProfileStringA(szAppname, "Set", _itoa(DBGetContactSettingByte(NULL, szModule, szTemp, 0), szBuf, 10), szIniFilename);
         }
-        WritePrivateProfileStringA("Message Log", "BackgroundColor", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR), szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "IncomingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "inbg", RGB(224, 224, 224)), szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "OutgoingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "outbg", RGB(224, 224, 224)), szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "InputBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", RGB(224, 224, 224)), szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "HgridColor", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "hgrid", RGB(224, 224, 224)), szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "DWFlags", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT), szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "VGrid", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0), szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "ExtraMicroLF", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0), szBuf, 10), szIniFilename);
-
-        WritePrivateProfileStringA("Message Log", "LeftIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0), szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "RightIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0), szBuf, 10), szIniFilename);
+        n++;
     }
-    else {
-        DWORD style;
-        char bSize;
-        DWORD dwSize;
-        for(i = 0; i < MSGDLGFONTCOUNT; i++) {
-            sprintf(szTemp, "Font%d", i);
-            strcpy(szAppname, szTemp);
-            WritePrivateProfileStringA(szAppname, "Face", dat->theme.logFonts[i].lfFaceName, szIniFilename);
-            WritePrivateProfileStringA(szAppname, "Color", _itoa(dat->theme.fontColors[i], szBuf, 10), szIniFilename);
-            style = (dat->theme.logFonts[i].lfUnderline ? FONTF_UNDERLINE : 0) | (dat->theme.logFonts[i].lfWeight == FW_BOLD ? FONTF_BOLD : 0) | (dat->theme.logFonts[i].lfItalic ? FONTF_ITALIC : 0);
-            bSize = (char)dat->theme.logFonts[i].lfHeight;
-            WritePrivateProfileStringA(szAppname, "Style", _itoa(style, szBuf, 10), szIniFilename);
-            if(bSize > 0)
-                bSize = -bSize;
-            dwSize = (unsigned char)bSize;
-            WritePrivateProfileStringA(szAppname, "Size", _ultoa(dwSize, szBuf, 10), szIniFilename);
-            WritePrivateProfileStringA(szAppname, "Set", _itoa(dat->theme.logFonts[i].lfCharSet, szBuf, 10), szIniFilename);
-            WritePrivateProfileStringA(szAppname, "Inherit", _itoa(DBGetContactSettingWord(NULL, FONTMODULE, szTemp, 0), szBuf, 10), szIniFilename);
-        }
-        WritePrivateProfileStringA("Message Log", "BackgroundColor", _itoa(dat->theme.bg, szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "IncomingBG", _itoa(dat->theme.inbg, szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "OutgoingBG", _itoa(dat->theme.outbg, szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "InputBG", _itoa(dat->theme.inputbg, szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "HgridColor", _itoa(dat->theme.hgrid, szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "DWFlags", _itoa(dat->dwFlags & MWF_LOG_ALL, szBuf, 10), szIniFilename);
-
-        WritePrivateProfileStringA("Message Log", "LeftIndent", _itoa(dat->theme.left_indent / 15, szBuf, 10), szIniFilename);
-        WritePrivateProfileStringA("Message Log", "RightIndent", _itoa(dat->theme.right_indent / 15, szBuf, 10), szIniFilename);
-    }
+    def = GetSysColor(COLOR_WINDOW);
+    
+    WritePrivateProfileStringA("Message Log", "BackgroundColor", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, def), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "IncomingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "inbg", def), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "OutgoingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "outbg", def), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "InputBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", def), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "HgridColor", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "hgrid", def), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "DWFlags", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "VGrid", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "ExtraMicroLF", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Chat", "UserListBG", _itoa(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", def), szBuf, 10), szIniFilename);
+    
+    WritePrivateProfileStringA("Message Log", "LeftIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0), szBuf, 10), szIniFilename);
+    WritePrivateProfileStringA("Message Log", "RightIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0), szBuf, 10), szIniFilename);
 
     for(i = 0; i <= TMPL_ERRMSG; i++) {
 #if defined(_UNICODE)
@@ -319,7 +303,6 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
         }
 #endif        
     }
-
     for(i = 0; i < CUSTOM_COLORS; i++) {
         sprintf(szTemp, "cc%d", i + 1);
         if(dat == 0)
@@ -332,8 +315,9 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
 void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced)
 {
     char szBuf[512], szTemp[100], szAppname[100];
-    int i;
+    int i, n = 0;
     int version;
+    COLORREF def;
 #if defined(_UNICODE)
     char szTemplateBuffer[TEMPLATE_LENGTH * 3 + 2];
 #endif
@@ -347,48 +331,59 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
     if(dat == 0) {
         hdc = GetDC(NULL);
 
-        for(i = 0; i < MSGDLGFONTCOUNT; i++) {
-            sprintf(szTemp, "Font%d", i);
-            strcpy(szAppname, szTemp);
-            if(GetPrivateProfileStringA(szAppname, "Face", "Arial", szBuf, sizeof(szBuf), szIniFilename) != 0) {
-                if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT)
-                    lstrcpynA(szBuf, "Arial", sizeof(szBuf));
-                DBWriteContactSettingString(NULL, FONTMODULE, szTemp, szBuf);
+        while(fontBlocks[n].szModule) {
+            char *szModule = fontBlocks[n].szModule;
+            int firstIndex = fontBlocks[n].iFirst;
+
+            if(GetPrivateProfileIntA(fontBlocks[n].szBLockname, "Valid", 0, szIniFilename) == 0 && n != 0) {
+                n++;
+                continue;
             }
+            for(i = 0; i < fontBlocks[n].iCount; i++) {
+                sprintf(szTemp, "Font%d", firstIndex + i);
+                sprintf(szAppname, fontBlocks[n].szIniTemp, firstIndex + i);
+                if(GetPrivateProfileStringA(szAppname, "Face", "Verdana", szBuf, sizeof(szBuf), szIniFilename) != 0) {
+                    if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT)
+                        lstrcpynA(szBuf, "Arial", sizeof(szBuf));
+                    DBWriteContactSettingString(NULL, szModule, szTemp, szBuf);
+                }
 
-            sprintf(szTemp, "Font%dCol", i);
-            DBWriteContactSettingDword(NULL, FONTMODULE, szTemp, GetPrivateProfileIntA(szAppname, "Color", RGB(224, 224, 224), szIniFilename));
+                sprintf(szTemp, "Font%dCol", firstIndex + i);
+                DBWriteContactSettingDword(NULL, szModule, szTemp, GetPrivateProfileIntA(szAppname, "Color", GetSysColor(COLOR_WINDOWTEXT), szIniFilename));
 
-            sprintf(szTemp, "Font%dSty", i);
-            DBWriteContactSettingByte(NULL, FONTMODULE, szTemp, GetPrivateProfileIntA(szAppname, "Style", 0, szIniFilename));
+                sprintf(szTemp, "Font%dSty", firstIndex + i);
+                DBWriteContactSettingByte(NULL, szModule, szTemp, GetPrivateProfileIntA(szAppname, "Style", 0, szIniFilename));
 
-            sprintf(szTemp, "Font%dSize", i);
-            bSize = (char)GetPrivateProfileIntA(szAppname, "Size", 0, szIniFilename);
-            if(bSize > 0)
-                bSize = -MulDiv(bSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-            DBWriteContactSettingByte(NULL, FONTMODULE, szTemp, bSize);
+                sprintf(szTemp, "Font%dSize", firstIndex + i);
+                bSize = (char)GetPrivateProfileIntA(szAppname, "Size", -10, szIniFilename);
+                if(bSize > 0)
+                    bSize = -MulDiv(bSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+                DBWriteContactSettingByte(NULL, szModule, szTemp, bSize);
 
-            sprintf(szTemp, "Font%dSet", i);
-            charset = GetPrivateProfileIntA(szAppname, "Set", 0, szIniFilename);
-            if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT)
-                charset = 0;
-            DBWriteContactSettingByte(NULL, FONTMODULE, szTemp, (BYTE)charset);
-
-            sprintf(szTemp, "Font%dAs", i);
-            DBWriteContactSettingWord(NULL, FONTMODULE, szTemp, GetPrivateProfileIntA(szAppname, "Inherit", 0, szIniFilename));
+                sprintf(szTemp, "Font%dSet", firstIndex + i);
+                charset = GetPrivateProfileIntA(szAppname, "Set", 0, szIniFilename);
+                if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT)
+                    charset = 0;
+                DBWriteContactSettingByte(NULL, szModule, szTemp, (BYTE)charset);
+            }
+            n++;
         }
+        def = GetSysColor(COLOR_WINDOW);
         ReleaseDC(NULL, hdc);
-        DBWriteContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, GetPrivateProfileIntA("Message Log", "BackgroundColor", RGB(224, 224, 224), szIniFilename));
-        DBWriteContactSettingDword(NULL, FONTMODULE, "inbg", GetPrivateProfileIntA("Message Log", "IncomingBG", RGB(224, 224, 224), szIniFilename));
-        DBWriteContactSettingDword(NULL, FONTMODULE, "outbg", GetPrivateProfileIntA("Message Log", "OutgoingBG", RGB(224, 224, 224), szIniFilename));
-        DBWriteContactSettingDword(NULL, FONTMODULE, "inputbg", GetPrivateProfileIntA("Message Log", "InputBG", RGB(224, 224, 224), szIniFilename));
-        DBWriteContactSettingDword(NULL, FONTMODULE, "hgrid", GetPrivateProfileIntA("Message Log", "HgridColor", RGB(224, 224, 224), szIniFilename));
+        DBWriteContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
+        DBWriteContactSettingDword(NULL, FONTMODULE, "inbg", GetPrivateProfileIntA("Message Log", "IncomingBG", def, szIniFilename));
+        DBWriteContactSettingDword(NULL, FONTMODULE, "outbg", GetPrivateProfileIntA("Message Log", "OutgoingBG", def, szIniFilename));
+        DBWriteContactSettingDword(NULL, FONTMODULE, "inputbg", GetPrivateProfileIntA("Message Log", "InputBG", def, szIniFilename));
+        DBWriteContactSettingDword(NULL, FONTMODULE, "hgrid", GetPrivateProfileIntA("Message Log", "HgridColor", def, szIniFilename));
         DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", GetPrivateProfileIntA("Message Log", "DWFlags", MWF_LOG_DEFAULT, szIniFilename));
         DBWriteContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", GetPrivateProfileIntA("Message Log", "VGrid", 0, szIniFilename));
         DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetPrivateProfileIntA("Message Log", "ExtraMicroLF", 0, szIniFilename));
 
         DBWriteContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", GetPrivateProfileIntA("Message Log", "LeftIndent", 0, szIniFilename));
         DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename));
+
+        DBWriteContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetPrivateProfileIntA("Chat", "UserListBG", def, szIniFilename));
+
     }
     else {
         HDC hdc = GetDC(NULL);
@@ -815,7 +810,7 @@ static void __forceinline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFina
 
 // XXX add support for more stretching options (stretch/tile divided image parts etc.
 
-void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
+static void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
 {
     BYTE l = item->bLeft, r = item->bRight, t = item->bTop, b = item->bBottom;
     LONG width = rc->right - rc->left;
@@ -1011,6 +1006,7 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
 
 void IMG_InitDecoder()
 {
+    /*
     if((g_hModuleImgDecoder = LoadLibraryA("imgdecoder.dll")) == 0) {
         if((g_hModuleImgDecoder = LoadLibraryA("plugins\\imgdecoder.dll")) != 0)
             g_imgDecoderAvail = TRUE;
@@ -1024,15 +1020,18 @@ void IMG_InitDecoder()
         ImgNewDIBFromFile=(pfnImgNewDIBFromFile)GetProcAddress(g_hModuleImgDecoder, "ImgNewDIBFromFile");
         ImgDeleteDIBSection=(pfnImgDeleteDIBSection)GetProcAddress(g_hModuleImgDecoder, "ImgDeleteDIBSection");
         ImgGetHandle=(pfnImgGetHandle)GetProcAddress(g_hModuleImgDecoder, "ImgGetHandle");
-	} 
+	}
+    */ 
 }
 
 void IMG_FreeDecoder()
 {
-	if(g_imgDecoderAvail && g_hModuleImgDecoder) {
+    /*
+    if(g_imgDecoderAvail && g_hModuleImgDecoder) {
 		FreeLibrary(g_hModuleImgDecoder);
 		g_hModuleImgDecoder = 0;
 	}
+    */
 }
 
 static DWORD __fastcall HexStringToLong(const char *szSource)
@@ -1111,7 +1110,7 @@ static void ReadItem(StatusItems_t *this_item, char *szItem, char *file)
 	this_item->IGNORED = 0;
 }
 
-void IMG_ReadItem(const char *itemname, const char *szFileName)
+static void IMG_ReadItem(const char *itemname, const char *szFileName)
 {
     ImageItem tmpItem = {0}, *newItem = NULL;
     char buffer[512], szItemNr[30];
@@ -1197,6 +1196,53 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
     ReleaseDC(0, hdc);
 }
 
+static void CorrectBitmap32Alpha(HBITMAP hBitmap)
+{
+	BITMAP bmp;
+	DWORD dwLen;
+	BYTE *p;
+	int x, y;
+    BOOL fixIt = TRUE;
+
+	GetObject(hBitmap, sizeof(bmp), &bmp);
+
+	if (bmp.bmBitsPixel != 32)
+		return;
+
+	dwLen = bmp.bmWidth * bmp.bmHeight * (bmp.bmBitsPixel / 8);
+	p = (BYTE *)malloc(dwLen);
+	if (p == NULL)
+		return;
+	memset(p, 0, dwLen);
+
+	GetBitmapBits(hBitmap, dwLen, p);
+
+	for (y = 0; y < bmp.bmHeight; ++y) {
+        BYTE *px = p + bmp.bmWidth * 4 * y;
+
+        for (x = 0; x < bmp.bmWidth; ++x) 
+		{
+			if (px[3] != 0) 
+			{
+				fixIt = FALSE;
+			}
+			else
+			{
+				px[3] = 255;
+			}
+
+			px += 4;
+		}
+	}
+
+	if (fixIt)
+	{
+		SetBitmapBits(hBitmap, bmp.bmWidth * bmp.bmHeight * 4, p);
+	}
+
+	free(p);
+}
+
 static void PreMultiply(HBITMAP hBitmap, int mode)
 {
 	BYTE *p = NULL;
@@ -1240,9 +1286,18 @@ static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
     LPVOID pBitmapBits = NULL;
     LPVOID m_pImgDecoder = NULL;
 
+    /*
     if(!g_imgDecoderAvail)
         return 0;
+    */
+    hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
+    if(hBitmap != 0)
+        CorrectBitmap32Alpha(hBitmap);
+    item->lpDIBSection = 0;
+
+    return hBitmap;
     
+    /*
     ImgNewDecoder(&m_pImgDecoder);
     if (!ImgNewDIBFromFile(m_pImgDecoder, (char *)szFilename, &pImg))
         ImgGetHandle(pImg, &hBitmap, (LPVOID *)&pBitmapBits);
@@ -1250,7 +1305,7 @@ static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
     if(hBitmap == 0)
         return 0;
     item->lpDIBSection = pImg;
-    return hBitmap;
+    return hBitmap;*/
 }
 
 static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
@@ -1291,8 +1346,10 @@ static void IMG_DeleteItem(ImageItem *item)
     SelectObject(item->hdc, item->hbmOld);
     DeleteObject(item->hbm);
     DeleteDC(item->hdc);
+    /*
     if(item->lpDIBSection && ImgDeleteDIBSection)
         ImgDeleteDIBSection(item->lpDIBSection);
+    */
 	if(item->fillBrush)
 		DeleteObject(item->fillBrush);
 }
@@ -1317,12 +1374,14 @@ void IMG_DeleteItems()
 		DestroyIcon(myGlobals.g_maxGlyph);
 	if(g_ContainerColorKeyBrush)
 		DeleteObject(g_ContainerColorKeyBrush);
-
-	myGlobals.g_minGlyph = myGlobals.g_maxGlyph = myGlobals.g_closeGlyph = 0;
+    if(myGlobals.g_pulldownGlyph)
+        DeleteObject(myGlobals.g_pulldownGlyph);
+    
+	myGlobals.g_minGlyph = myGlobals.g_maxGlyph = myGlobals.g_closeGlyph = myGlobals.g_pulldownGlyph = 0;
 	g_ContainerColorKeyBrush = 0;
 }
 
-void IMG_LoadItems(char *szFileName)
+static void IMG_LoadItems(char *szFileName)
 {
     char *szSections = NULL;
     char *p;
@@ -1405,7 +1464,7 @@ static void SkinCalcFrameWidth()
 }
 
 
-struct {char *szIniKey, *szIniName; char *szSetting; unsigned int size; int defaultval;} _tagSettings[] = {
+static struct {char *szIniKey, *szIniName; char *szSetting; unsigned int size; int defaultval;} _tagSettings[] = {
     "Global", "SbarHeight", "sbarheight", 1, 22,
     "ClientArea", "Left", "tborder_outer_left", 1, 0,
     "ClientArea", "Right", "tborder_outer_right", 1, 0,
@@ -1419,7 +1478,7 @@ struct {char *szIniKey, *szIniName; char *szSetting; unsigned int size; int defa
     NULL, NULL, NULL, 0, 0
 };
 
-void LoadSkinItems(char *file)
+static void LoadSkinItems(char *file)
 {
     char *p;
     char *szSections = malloc(3002);
@@ -1430,9 +1489,10 @@ void LoadSkinItems(char *file)
     if(!(GetPrivateProfileIntA("Global", "Version", 0, file) >= 1 && GetPrivateProfileIntA("Global", "Signature", 0, file) == 101))
 		return;
 
-	if(!g_imgDecoderAvail)
+    /*
+    if(!g_imgDecoderAvail)
 		return;
-
+    */
 	g_skinnedContainers = TRUE;
 
 	ZeroMemory(szSections, 3000);
@@ -1473,14 +1533,16 @@ void LoadSkinItems(char *file)
         i++;
     }
     
-	SkinLoadIcon(file, "CloseGlyph", &myGlobals.g_closeGlyph);
+    myGlobals.bAvatarBoderType = GetPrivateProfileIntA("Avatars", "BorderType", 0, file);
+    GetPrivateProfileStringA("Avatars", "BorderColor", "000000", buffer, 20, file);
+    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", HexStringToLong(buffer));
+    
+    SkinLoadIcon(file, "CloseGlyph", &myGlobals.g_closeGlyph);
 	SkinLoadIcon(file, "MaximizeGlyph", &myGlobals.g_maxGlyph);
 	SkinLoadIcon(file, "MinimizeGlyph", &myGlobals.g_minGlyph);
     
 	//GetPrivateProfileStringA("Global", "FontColor", "None", buffer, 500, file);
     
-	g_titleBarButtonSize.cx = GetPrivateProfileIntA("Global", "TitleButtonWidth", 24, file);
-	g_titleBarButtonSize.cy = GetPrivateProfileIntA("Global", "TitleButtonHeight", 12, file);
 	g_framelessSkinmode = GetPrivateProfileIntA("Global", "framelessmode", 0, file);
 	g_compositedWindow = GetPrivateProfileIntA("Global", "compositedwindow", 0, file);
 
@@ -1493,18 +1555,44 @@ void LoadSkinItems(char *file)
 	myGlobals.g_SkinnedFrame_caption = GetPrivateProfileIntA("WindowFrame", "Caption", 24, file);
 	myGlobals.g_SkinnedFrame_bottom = GetPrivateProfileIntA("WindowFrame", "bottom", 4, file);
 
-	myGlobals.bClipBorder = GetPrivateProfileIntA("WindowFrame", "ClipFrame", 0, file);
+    g_titleBarButtonSize.cx = GetPrivateProfileIntA("WindowFrame", "TitleButtonWidth", 24, file);
+    g_titleBarButtonSize.cy = GetPrivateProfileIntA("WindowFrame", "TitleButtonHeight", 12, file);
+    g_titleButtonTopOff = GetPrivateProfileIntA("WindowFrame", "TitleButtonTopOffset", 0, file);
+    g_captionOffset = GetPrivateProfileIntA("WindowFrame", "CaptionOffset", 3, file);
+    
+    myGlobals.bClipBorder = GetPrivateProfileIntA("WindowFrame", "ClipFrame", 0, file);
 	{
 		BYTE radius_tl, radius_tr, radius_bl, radius_br;
-
+        char szFinalName[MAX_PATH];
+        HANDLE hFile;
+        char szDrive[MAX_PATH], szPath[MAX_PATH];
+        
 		radius_tl = GetPrivateProfileIntA("WindowFrame", "RadiusTL", 0, file);
 		radius_tr = GetPrivateProfileIntA("WindowFrame", "RadiusTR", 0, file);
 		radius_bl = GetPrivateProfileIntA("WindowFrame", "RadiusBL", 0, file);
 		radius_br = GetPrivateProfileIntA("WindowFrame", "RadiusBR", 0, file);
 
 		myGlobals.bRoundedCorner = radius_tl;
+
+        GetPrivateProfileStringA("Theme", "File", "None", buffer, MAX_PATH, file);
+        
+        _splitpath(file, szDrive, szPath, NULL, NULL);
+        mir_snprintf(szFinalName, MAX_PATH, "%s\\%s\\%s", szDrive, szPath, buffer);
+        if((hFile = CreateFileA(szFinalName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
+            CloseHandle(hFile);
+            ReadThemeFromINI(szFinalName, 0, FALSE);
+            CacheMsgLogIcons();
+            CacheLogFonts();
+        }
 	}
 
+    GetPrivateProfileStringA("Global", "LightShadow", "000000", buffer, 20, file);
+    data = HexStringToLong(buffer);
+    myGlobals.g_SkinLightShadowPen = CreatePen(PS_SOLID, 1, RGB(GetRValue(data), GetGValue(data), GetBValue(data)));
+    GetPrivateProfileStringA("Global", "DarkShadow", "000000", buffer, 20, file);
+    data = HexStringToLong(buffer);
+    myGlobals.g_SkinDarkShadowPen = CreatePen(PS_SOLID, 1, RGB(GetRValue(data), GetGValue(data), GetBValue(data)));
+    
 	SkinCalcFrameWidth();
 
 	if(strcmp(buffer, "None"))
@@ -1545,7 +1633,9 @@ void ReloadContainerSkin()
 	int i;
 
 	g_skinnedContainers = g_framelessSkinmode = g_compositedWindow = FALSE;
-
+    myGlobals.bClipBorder = 0;
+    myGlobals.bRoundedCorner = 0;
+    
 	if(pFirstContainer) {
 		if(MessageBox(0, TranslateT("All message containers need to close before the skin can be changed\nProceed?"), TranslateT("Change skin"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
 			struct ContainerWindowData *pContainer = pFirstContainer;
@@ -1559,12 +1649,17 @@ void ReloadContainerSkin()
 	for(i = 0; i <= ID_EXTBK_LAST; i++)
 		StatusItems[i].IGNORED = 1;
 
-	IMG_DeleteItems();
+    if(myGlobals.g_SkinLightShadowPen)
+        DeleteObject(myGlobals.g_SkinLightShadowPen);
+    if(myGlobals.g_SkinDarkShadowPen)
+        DeleteObject(myGlobals.g_SkinDarkShadowPen);
+    
+    IMG_DeleteItems();
 
 	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0))
 		return;
 
-	if(pSetLayeredWindowAttributes == 0 || !g_imgDecoderAvail || MyAlphaBlend == 0)
+	if(pSetLayeredWindowAttributes == 0 || /*!g_imgDecoderAvail || */  MyAlphaBlend == 0)
 		return;
 
 	if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {

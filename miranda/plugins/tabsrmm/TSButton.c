@@ -16,11 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "commonheaders.h"
-#include "msgs.h"
 
-// TODO:
-// - Support for bitmap buttons (simple call to DrawIconEx())
+#include "commonheaders.h"
+
 extern HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
 extern BOOL g_skinnedContainers;
@@ -60,6 +58,7 @@ HRESULT  (WINAPI *MyDrawThemeParentBackground)(HWND,HDC,RECT *) = 0;
 HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *) = 0;
 HRESULT  (WINAPI *MyDrawThemeText)(HANDLE,HDC,int,int,LPCWSTR,int,DWORD,DWORD,const RECT *) = 0;
 HRESULT  (WINAPI *MyGetThemeBackgroundContentRect)(HANDLE, HDC, int, int, const RECT *, const RECT *) = 0;
+BOOL     (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 static CRITICAL_SECTION csTips;
 static HWND hwndToolTips = NULL;
@@ -333,8 +332,19 @@ nonflat_themed:
 
 			DrawIconEx(hdcMem, rcClient.right - 13, (rcClient.bottom-rcClient.top)/2 - (myGlobals.m_smcyicon / 2),
 					   myGlobals.g_buttonBarIcons[16], 16, 16, 0, 0, DI_NORMAL);
-			if(!ctl->flatBtn || (ctl->pContainer && ctl->pContainer->bSkinned))
+			if(!ctl->flatBtn)
 				DrawEdge(hdcMem, &rcContent, EDGE_BUMP, BF_LEFT);
+            else if (ctl->pContainer && ctl->pContainer->bSkinned) {
+                HPEN hPenOld = SelectObject(hdcMem, myGlobals.g_SkinLightShadowPen);
+                POINT pt;
+
+                MoveToEx(hdcMem, rcContent.left, rcContent.top, &pt);
+                LineTo(hdcMem, rcContent.left, rcContent.bottom);
+                SelectObject(hdcMem, myGlobals.g_SkinDarkShadowPen);
+                MoveToEx(hdcMem, rcContent.left + 1, rcContent.bottom - 1, &pt);
+                LineTo(hdcMem, rcContent.left + 1, rcContent.top - 1);
+                SelectObject(hdcMem, hPenOld);
+            }
 		}
 
 		// If we have an icon or a bitmap, ignore text and only draw the image on the button

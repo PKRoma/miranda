@@ -376,45 +376,6 @@ BEGIN
     CONTROL         "Container has drop shadow",IDC_DROPSHADOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,167,142,131,11
 END
 
-IDD_OPT_MSGWINDOWFONTS DIALOGEX 0, 0, 303, 226
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "Message Window Fonts",IDC_STATIC,3,4,300,142
-    COMBOBOX        IDC_FONTID,27,17,253,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "same",IDC_STSAMETEXT,34,32,45,10,SS_CENTERIMAGE
-    CONTROL         "Typeface",IDC_SAMETYPE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,32,52,10
-    CONTROL         "Size",IDC_SAMESIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,132,32,45,10
-    CONTROL         "Style",IDC_SAMESTYLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,32,48,10
-    CONTROL         "Color",IDC_SAMECOLOUR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,227,32,53,10
-    LTEXT           "as:",IDC_STASTEXT,34,46,45,10,SS_CENTERIMAGE
-    COMBOBOX        IDC_SAMEAS,79,45,196,88,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_TYPEFACE,27,66,136,182,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_SCRIPT,171,66,60,68,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_FONTSIZE,240,66,40,69,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Bold",IDC_BOLD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,80,45,10
-    CONTROL         "Italic",IDC_ITALIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,80,80,52,10
-    CONTROL         "Underline",IDC_UNDERLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,132,80,66,10
-    CONTROL         "",IDC_COLOUR,"ColourPicker",WS_TABSTOP,221,79,59,12
-    EDITTEXT        IDC_SAMPLE,78,93,151,16,ES_CENTER | ES_READONLY | NOT WS_TABSTOP
-    LTEXT           "Extra microspacing at the end of a paragraph",IDC_STATIC,28,114,157,10
-    EDITTEXT        IDC_EXTRAMICROLF,199,112,36,13,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_EXTRALFSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,235,113,12,11
-    GROUPBOX        "Background Colors",IDC_STATIC,3,150,300,72
-    LTEXT           "Default background",IDC_STATIC,15,165,81,8
-    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,102,164,39,10
-    LTEXT           "Input area background",IDC_STATIC,15,179,80,10
-    CONTROL         "",IDC_INPUTBKG,"ColourPicker",WS_TABSTOP,102,179,39,10
-    LTEXT           "Outgoing background:",IDC_STATIC,172,165,81,8
-    CONTROL         "",IDC_BKGOUTGOING,"ColourPicker",WS_TABSTOP,258,164,39,10
-    LTEXT           "Incoming background:",IDC_STATIC,172,179,81,8
-    CONTROL         "",IDC_BKGINCOMING,"ColourPicker",WS_TABSTOP,258,178,39,10
-    CONTROL         "",IDC_GRIDLINES,"ColourPicker",WS_TABSTOP,258,192,39,10
-    LTEXT           "Horizontal grid lines:",IDC_STATIC,171,192,78,10
-    CONTROL         "",IDC_INFOPANELBG,"ColourPicker",WS_TABSTOP,102,193,39,10
-    LTEXT           "Info panel fields",IDC_STATIC,15,193,80,10
-END
-
 IDD_TEMPLATEEDIT DIALOGEX 0, 0, 368, 231
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
@@ -428,8 +389,7 @@ BEGIN
     EDITTEXT        IDC_EDITTEMPLATE,11,109,344,14,ES_AUTOHSCROLL
     PUSHBUTTON      "Quick help on Variables...",IDC_VARHELP,11,128,125,15
     LTEXT           "Double click a template to edit it. Select a template from the list box and click ""Update Preview"" to show a preview message.",IDC_STATIC,146,126,209,26
-    CONTROL         "Get more help on variables",IDC_VARIABLESHELP,
-                    "Hyperlink",WS_TABSTOP | 0x1,12,147,148,10
+    CONTROL         "Get more help on variables",IDC_VARIABLESHELP,"Hyperlink",WS_TABSTOP | 0x1,12,147,148,10
     LTEXT           "Define up to 5 colors which you can use with some variables",IDC_STATIC,12,193,174,17
     CONTROL         "",IDC_COLOR1,"ColourPicker",WS_TABSTOP,11,213,24,13
     CONTROL         "",IDC_COLOR2,"ColourPicker",WS_TABSTOP,43,213,24,13
@@ -679,6 +639,7 @@ BEGIN
     POPUP "Tabmenu"
     BEGIN
         MENUITEM "Close Tab",                   ID_TABMENU_CLOSETAB
+        MENUITEM "Leave Chat Room",             ID_TABMENU_LEAVECHATROOM
         MENUITEM SEPARATOR
         MENUITEM "Switch to next Tab",          ID_TABMENU_SWITCHTONEXTTAB
         MENUITEM "Switch to previous Tab",      ID_TABMENU_SWITCHTOPREVIOUSTAB
@@ -976,8 +937,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,100
- PRODUCTVERSION 0,9,9,100
+ FILEVERSION 0,9,9,200
+ PRODUCTVERSION 0,9,9,200
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -994,14 +955,14 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Miranda Open Source Project"
             VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
-            VALUE "FileVersion", "0, 9, 9, 100"
+            VALUE "FileVersion", "0, 9, 9, 200"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright © 2005 The Miranda IM project"
             VALUE "LegalTrademarks", "Gnu General Public License V2"
             VALUE "OriginalFilename", "tabSRMM.dll"
             VALUE "PrivateBuild", "No"
             VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
-            VALUE "ProductVersion", "0, 9, 9, 100"
+            VALUE "ProductVersion", "0, 9, 9, 200"
             VALUE "SpecialBuild", "PRE1"
         END
     END
@@ -1019,10 +980,6 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_PULLDOWNARROW       ICON                    "res/pulldown.ico"
-IDI_LEFTARROW           ICON                    "res/leftarrow.ico"
-IDI_PULLUPARROW         ICON                    "res/pullup.ico"
-IDI_RIGHTARROW          ICON                    "res/rightarrow.ico"
 IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
 IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
 IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"

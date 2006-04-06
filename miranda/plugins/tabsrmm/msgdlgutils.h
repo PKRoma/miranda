@@ -23,6 +23,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 $Id$
 */
 
+#ifndef _MSGDLGUTILS_H
+#define _MSGDLGUTILS_H
+
 void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo);
 int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat);
 char *GetCurrentMetaContactProto(HWND hwndDlg, struct MessageWindowData *dat);
@@ -74,6 +77,7 @@ void SendNudge(struct MessageWindowData *dat, HWND hwndDlg);
 void EnableSendButton(HWND hwnd, int iMode);
 LRESULT GetSendButtonState(HWND hwnd);
 HICON GetXStatusIcon(struct MessageWindowData *dat);
+void FlashTab(struct MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, HICON origImage);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -85,3 +89,4 @@ struct RTFColorTable {
     int menuid;
 };
 
+#endif

@@ -28,12 +28,7 @@ $Id$
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "msgs.h"
-#include "m_popup.h"
 #include "../../include/m_database.h"
-#include "nen.h"
-#include "functions.h"
-#include "msgdlgutils.h"
 
 /*
  * hardcoded default set of templates for both LTR and RTL.
@@ -90,7 +85,7 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
  * templates
  */
 
-void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl)
+static void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl)
 {
     DBVARIANT dbv = {0};
     int i;

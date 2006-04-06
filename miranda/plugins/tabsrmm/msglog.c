@@ -30,23 +30,15 @@ $Id$
 #include <mbstring.h>
 #include <time.h>
 #include <locale.h>
-#include "msgs.h"
-#include "m_smileyadd.h"
-#include "m_ieview.h"
-#include "m_popup.h"
-#include "m_fontservice.h"
-#include "nen.h"
-#include "functions.h"
 
 #ifdef __MATHMOD_SUPPORT
 #include "m_MathModule.h"
 #endif
 
-#include "msgdlgutils.h"
-
-extern void ReleaseRichEditOle(IRichEditOle *ole);
-extern MYGLOBALS myGlobals;
-extern struct RTFColorTable rtf_ctable[];
+extern      void ReleaseRichEditOle(IRichEditOle *ole);
+extern      MYGLOBALS myGlobals;
+extern      struct RTFColorTable rtf_ctable[];
+extern      void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
 
 struct CPTABLE cpTable[] = {
     {	874,	"Thai" },
@@ -72,6 +64,7 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
 
 static char *weekDays[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 static char *months[] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+
 static char weekDays_translated[7][30];
 static char months_translated[12][30];
 
@@ -87,8 +80,6 @@ static TCHAR *szYourName = NULL;
 
 static char *szDivider = "\\strike-----------------------------------------------------------------------------------------------------------------------------------\\strike0";
 static char *szGroupedSeparator = "> ";
-
-extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
 
 extern TCHAR *FormatRaw(DWORD dwFlags, const TCHAR *msg, int flags);
 
@@ -169,7 +160,7 @@ void CacheLogFonts()
 
     ZeroMemory((void *)logfonts, sizeof(LOGFONTA) * MSGDLGFONTCOUNT + 2);
     for(i = 0; i < MSGDLGFONTCOUNT; i++) {
-        LoadLogfont(i, &logfonts[i], &fontcolors[i]);
+        LoadLogfont(i, &logfonts[i], &fontcolors[i], FONTMODULE);
         wsprintfA(rtfFontsGlobal[i], "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", i, i, logfonts[i].lfWeight >= FW_BOLD ? 1 : 0, logfonts[i].lfItalic, logfonts[i].lfUnderline, 2 * abs(logfonts[i].lfHeight) * 74 / logPixelSY);
     }
     wsprintfA(rtfFontsGlobal[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0, 0);
@@ -180,7 +171,8 @@ void CacheLogFonts()
     /*
      * cache/create the info panel fonts
      */
-    myGlobals.ipConfig.isValid = ServiceExists(MS_FONT_REGISTER) ? TRUE : FALSE;
+
+    myGlobals.ipConfig.isValid = 1;
     
     if(myGlobals.ipConfig.isValid) {
         COLORREF clr;
@@ -189,21 +181,14 @@ void CacheLogFonts()
         for(i = 0; i < IPFONTCOUNT; i++) {
             if(myGlobals.ipConfig.hFonts[i])
                 DeleteObject(myGlobals.ipConfig.hFonts[i]);
-            LoadLogfont(i + 100, &lf, &clr);
+            LoadLogfont(i + 100, &lf, &clr, FONTMODULE);
+            lf.lfHeight = MulDiv(lf.lfHeight, logPixelSY, 72);
+            //lf.lfHeight = 2 * abs(lf.lfHeight) * 74 / logPixelSY;
             myGlobals.ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
             myGlobals.ipConfig.clrs[i] = clr;
         }
 		myGlobals.hFontCaption = myGlobals.ipConfig.hFonts[IPFONTCOUNT - 1];
     }
-	else {
-		 NONCLIENTMETRICS ncm = {0};
-
-		 ncm.cbSize = sizeof(ncm);
-		 SystemParametersInfo(SPI_GETNONCLIENTMETRICS, 0, &ncm, 0);
-		 if(myGlobals.hFontCaption)
-			 DeleteObject(myGlobals.hFontCaption);
-		 myGlobals.hFontCaption = CreateFontIndirect(&ncm.lfCaptionFont);
-	}
 
     if(myGlobals.ipConfig.bkgBrush)
         DeleteObject(myGlobals.ipConfig.bkgBrush);
@@ -1320,7 +1305,12 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     dwExtraLf = myGlobals.m_ExtraMicroLF;
 
 	strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : "%s\\sl-1");
-	mir_snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", GetRTFFont(H_MSGFONTID_YOURTIME));
+
+    if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG || dat->dwFlags & MWF_LOG_GRID)
+        mir_snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", GetRTFFont(H_MSGFONTID_YOURTIME));
+    else
+        mir_snprintf(szSep1, 151, "\\par\\sl0%s", GetRTFFont(H_MSGFONTID_YOURTIME));
+    
 	strcpy(szSep2, fAppend ? "\\par\\sl0" : "\\sl1000");
 	if(dat->hHistoryEvents)
 		mir_snprintf(szMicroLf, sizeof(szMicroLf), "%s%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), "\\v\\cf%d \\ ~-+%d+-~\\v0 ", GetRTFFont(MSGDLGFONTCOUNT));
@@ -1524,9 +1514,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
             CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_BKGCOLORMODE, (LPARAM)&smadd);
     }
     
-// do formula-replacing    
 #ifdef __MATHMOD_SUPPORT    
-	// mathMod begin
 	if (myGlobals.m_MathModAvail)
 	{
 			 TMathRicheditInfo mathReplaceInfo;
@@ -1538,7 +1526,6 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
 			 mathReplaceInfo.disableredraw = TRUE;
 			 CallService(MATH_RTF_REPLACE_FORMULAE,0, (LPARAM)&mathReplaceInfo);
 	}
-	// mathMod end
 #endif    
 
 	if(dat->hHistoryEvents && dat->curHistory == dat->maxHistory) {
@@ -1546,13 +1533,11 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
 		FINDTEXTEXA fi;
 
 		_snprintf(szPattern, 40, "~-+%d+-~", dat->hHistoryEvents[0]);
-		//_DebugPopup(dat->hContact, "search for: %s", szPattern);
 		fi.lpstrText = szPattern;
 		fi.chrg.cpMin = 0;
 		fi.chrg.cpMax = -1;
 		if(SendMessageA(hwndrtf, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) != 0) {
 			CHARRANGE sel;
-			//_DebugPopup(dat->hContact, "found first event at %d", fi.chrgText.cpMin);
 			sel.cpMin = 0;
 			sel.cpMax = 20;
 	        SendMessage(hwndrtf, EM_SETSEL, 0, fi.chrgText.cpMax + 1);

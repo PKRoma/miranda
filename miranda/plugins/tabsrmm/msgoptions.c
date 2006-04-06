@@ -25,12 +25,7 @@ $Id$
 */
 #include "commonheaders.h"
 #pragma hdrstop
-#include "msgs.h"
-#include "m_ieview.h"
-#include "m_fontservice.h"
-#include "msgdlgutils.h"
-#include "../../include/m_clc.h"
-#include "../../include/m_clui.h"
+#include "uxtheme.h"
 
 #ifdef __MATHMOD_SUPPORT
     #include "m_MathModule.h"
@@ -38,22 +33,18 @@ $Id$
 
 #define DM_GETSTATUSMASK (WM_USER + 10)
 
-extern MYGLOBALS myGlobals;
-extern HANDLE hMessageWindowList;
-extern HINSTANCE g_hInst;
-extern struct ContainerWindowData *pFirstContainer;
+extern		MYGLOBALS myGlobals;
+extern		HANDLE hMessageWindowList;
+extern		HINSTANCE g_hInst;
+extern		struct ContainerWindowData *pFirstContainer;
+extern		int g_chat_integration_enabled;
+extern      BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern      BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern      BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+extern      BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 
-extern BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
-HMENU BuildContainerMenu();
-void CacheMsgLogIcons(), CacheLogFonts(), ReloadGlobals(), LoadIconTheme(), UnloadIconTheme();
-void CreateImageList(BOOL bInitial);
-void _DBWriteContactSettingWString(HANDLE hContact, const char *szKey, const char *szSetting, wchar_t *value);
 BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-void GetDefaultContainerTitleFormat();
 
 struct FontOptionsList
 {
@@ -66,21 +57,26 @@ struct FontOptionsList
     BYTE charset, style;
     char size;
 }
+
 static fontOptionsList[] = {
     {RGB(0, 0, 0), "Tahoma", DEFAULT_CHARSET, 0, -10}};
     
 
+static HIMAGELIST g_himlStates = 0;
+
 HIMAGELIST CreateStateImageList()
 {
-    HIMAGELIST himl = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 4, 0);
-    ImageList_AddIcon(himl, myGlobals.g_IconFolder);
-    ImageList_AddIcon(himl, myGlobals.g_IconFolder);
-    ImageList_AddIcon(himl, myGlobals.g_IconUnchecked);
-    ImageList_AddIcon(himl, myGlobals.g_IconChecked);
-    return himl;
+    if(g_himlStates == 0) {
+        g_himlStates = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 4, 0);
+        ImageList_AddIcon(g_himlStates, myGlobals.g_IconFolder);
+        ImageList_AddIcon(g_himlStates, myGlobals.g_IconFolder);
+        ImageList_AddIcon(g_himlStates, myGlobals.g_IconUnchecked);
+        ImageList_AddIcon(g_himlStates, myGlobals.g_IconChecked);
+    }
+    return g_himlStates;
 }
 
-void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
+void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
 {
     char str[20];
     int style;
@@ -89,14 +85,14 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
 
     if (colour) {
         _snprintf(str, sizeof(str), "Font%dCol", i);
-        *colour = DBGetContactSettingDword(NULL, FONTMODULE, str, GetSysColor(COLOR_BTNTEXT));
+        *colour = DBGetContactSettingDword(NULL, szModule, str, GetSysColor(COLOR_BTNTEXT));
     }
     if (lf) {
         mir_snprintf(str, sizeof(str), "Font%dSize", i);
-        if(i == H_MSGFONTID_DIVIDERS)
+        if(i == H_MSGFONTID_DIVIDERS && !strcmp(szModule, FONTMODULE))
             lf->lfHeight = 5;
         else {
-            bSize = (char)DBGetContactSettingByte(NULL, FONTMODULE, str, -10);
+            bSize = (char)DBGetContactSettingByte(NULL, szModule, str, -10);
             if(bSize < 0)
                 lf->lfHeight = abs(bSize);
             else
@@ -107,27 +103,27 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
         lf->lfEscapement = 0;
         lf->lfOrientation = 0;
         mir_snprintf(str, sizeof(str), "Font%dSty", i);
-        style = DBGetContactSettingByte(NULL, FONTMODULE, str, fontOptionsList[0].defStyle);
+        style = DBGetContactSettingByte(NULL, szModule, str, fontOptionsList[0].defStyle);
         lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
         lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
         lf->lfUnderline = style & FONTF_UNDERLINE ? 1 : 0;
         lf->lfStrikeOut = 0;
         mir_snprintf(str, sizeof(str), "Font%dSet", i);
-        if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT)
+        if((i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT) && !strcmp(szModule, FONTMODULE))
             lf->lfCharSet = SYMBOL_CHARSET;
         else
-            lf->lfCharSet = DBGetContactSettingByte(NULL, FONTMODULE, str, fontOptionsList[0].defCharset);
+            lf->lfCharSet = DBGetContactSettingByte(NULL, szModule, str, fontOptionsList[0].defCharset);
         lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
         lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
         lf->lfQuality = DEFAULT_QUALITY;
         lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
         mir_snprintf(str, sizeof(str), "Font%d", i);
-        if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT) {
+        if((i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT) && !strcmp(szModule, FONTMODULE)) {
             lstrcpynA(lf->lfFaceName, "Webdings", LF_FACESIZE);
             lf->lfCharSet = SYMBOL_CHARSET;
         }
         else {
-			if (DBGetContactSetting(NULL, FONTMODULE, str, &dbv)) {
+			if (DBGetContactSetting(NULL, szModule, str, &dbv)) {
                 lstrcpynA(lf->lfFaceName, fontOptionsList[0].szDefFace, LF_FACESIZE);
 				lf->lfFaceName[LF_FACESIZE - 1] = 0;
 			}
@@ -141,42 +137,11 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour)
 }
 
 
-static const char *szFontIdDescr[MSGDLGFONTCOUNT] = {
-        ">> Outgoing messages", 
-        ">> Outgoing misc events",
-        "<< Incoming messages",
-        "<< Incoming misc events",
-        ">> Outgoing name",
-        ">> Outgoing timestamp",
-        "<< Incoming name",
-        "<< Incoming timestamp",
-        ">> Outgoing messages (old)",
-        ">> Outgoing misc events (old)",
-        "<< Incoming messages (old)",
-        "<< Incoming misc events (old)",
-        ">> Outgoing name (old)",
-        ">> Outgoing time (old)",
-        "<< Incoming name (old)",
-        "<< Incoming time (old)",
-        "* Message Input Area",
-        "* Status changes",
-        "* Dividers",
-        "* Error and warning Messages",
-        "* Symbols (incoming)",
-        "* Symbols (outgoing)"};
+ /*
+  * Font Service support
+  */
 
-static const char *szIPFontDescr[IPFONTCOUNT] = {
-        "Infopanel / Nickname", 
-        "Infopanel / UIN",
-        "Infopanel / Status",
-        "Infopanel / Protocol",
-        "Infopanel / Contacts local time",
-		"Window caption (skinned mode"};
-
-        /*
- * Font Service support
- */
-
+/*
 static struct _colornames { char *szName; char *szModule; char *szSetting; DWORD defclr; } colornames[] = {
     "Background", FONTMODULE, SRMSGSET_BKGCOLOUR, 0,
     "Incoming events", FONTMODULE, "inbg", 0,
@@ -184,8 +149,10 @@ static struct _colornames { char *szName; char *szModule; char *szSetting; DWORD
     "Input area background", FONTMODULE, "inputbg", 0,
     "Horizontal grid lines", FONTMODULE, "hgrid", 0,
     NULL, NULL, NULL
-};
+};*/
 
+
+/*
 void FS_RegisterFonts()
 {
     FontID fid = {0};
@@ -244,7 +211,7 @@ void FS_RegisterFonts()
         }
         else {
             if (DBGetContactSetting(NULL, FONTMODULE, szTemp, &dbv))
-                lstrcpynA(fid.deffontsettings.szFace, fontOptionsList[0].szDefFace, LF_FACESIZE);
+                lstrcpynA(fid.deffontsettings.szFace, "Tahoma", LF_FACESIZE);
             else {
                 lstrcpynA(fid.deffontsettings.szFace, dbv.pszVal, LF_FACESIZE);
                 DBFreeVariant(&dbv);
@@ -287,7 +254,7 @@ void FS_RegisterFonts()
         fid.deffontsettings.charset = DBGetContactSettingByte(NULL, FONTMODULE, szTemp, fontOptionsList[0].defCharset);
         _snprintf(szTemp, sizeof(szTemp), "Font%d", 100 + i);
         if (DBGetContactSetting(NULL, FONTMODULE, szTemp, &dbv))
-            lstrcpynA(fid.deffontsettings.szFace, fontOptionsList[0].szDefFace, LF_FACESIZE);
+            lstrcpynA(fid.deffontsettings.szFace, "Tahoma", LF_FACESIZE);
         else {
             lstrcpynA(fid.deffontsettings.szFace, dbv.pszVal, LF_FACESIZE);
             DBFreeVariant(&dbv);
@@ -303,6 +270,8 @@ int FS_ReloadFonts(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+*/
+
 static struct LISTOPTIONSGROUP defaultGroups[] = {
     0, _T("Message window behaviour"),
     0, _T("Sending messages"),
@@ -313,6 +282,7 @@ static struct LISTOPTIONSGROUP defaultGroups[] = {
 static struct LISTOPTIONSITEM defaultItems[] = {
     0, _T("Send on SHIFT - Enter"), IDC_SENDONSHIFTENTER, LOI_TYPE_SETTING, (UINT_PTR)"sendonshiftenter", 1,
     0, _T("Send message on 'Enter'"), SRMSGDEFSET_SENDONENTER, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SENDONENTER, 1,
+    0, _T("Send message on double 'Enter'"), 0, LOI_TYPE_SETTING, (UINT_PTR)"SendOnDblEnter", 1,
     0, _T("Minimize the message window on send"), SRMSGDEFSET_AUTOMIN, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOMIN, 1,
     0, _T("Allow the toolbar to hide the send button"), 1, LOI_TYPE_SETTING, (UINT_PTR)"hidesend", 1,
     0, _T("Flash contact list and tray icons for new events in unfocused windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
@@ -516,9 +486,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		break;
 	case WM_DESTROY:
 		{
-			HIMAGELIST himl = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
-			if(himl)
-				ImageList_Destroy(himl);
+			SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
 			break;
 		}
 	}
@@ -780,9 +748,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		break;
 	case WM_DESTROY:
 		{
-			HIMAGELIST himl = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_LOGOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
-			if(himl)
-				ImageList_Destroy(himl);
+			SendDlgItemMessage(hwndDlg, IDC_LOGOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
 			break;
 		}
 	}
@@ -1132,9 +1098,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 		break;
 	case WM_DESTROY:
 		{
-			HIMAGELIST himl = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_TABMSGOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
-			if(himl)
-				ImageList_Destroy(himl);
+			SendDlgItemMessage(hwndDlg, IDC_TABMSGOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
 			break;
 		}
 	}
@@ -1295,6 +1259,7 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 #define SAMEASF_STYLE  4
 #define SAMEASF_COLOUR 8
 #include <pshpack1.h>
+
 struct {
 	BYTE sameAsFlags,sameAs;
 	COLORREF colour;
@@ -1303,527 +1268,16 @@ struct {
 	BYTE charset;
 	char szFace[LF_FACESIZE];
 } static fontSettings[MSGDLGFONTCOUNT + 1];
+
 #include <poppack.h>
-static WORD fontSameAsDefault[MSGDLGFONTCOUNT + 2]={0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02,0x00FF,0x0B00,0x0F00,0x0700,0x0B00,0x0104,0x0D00,0x0B02,0x00FF,0x0B00,0x0F00};
-static char *fontSizes[]={"8","9","10","11","12","13","14","15","18"};
-static int fontListOrder[MSGDLGFONTCOUNT + 1] = {
-    MSGFONTID_MYMSG,
-    MSGFONTID_MYMISC,
-    MSGFONTID_YOURMSG,    
-    MSGFONTID_YOURMISC,    
-    MSGFONTID_MYNAME,     
-    MSGFONTID_MYTIME,     
-    MSGFONTID_YOURNAME,   
-    MSGFONTID_YOURTIME,   
-    H_MSGFONTID_MYMSG,
-    H_MSGFONTID_MYMISC,   
-    H_MSGFONTID_YOURMSG,  
-    H_MSGFONTID_YOURMISC,  
-    H_MSGFONTID_MYNAME,
-    H_MSGFONTID_MYTIME,
-    H_MSGFONTID_YOURNAME, 
-    H_MSGFONTID_YOURTIME,
-    MSGFONTID_MESSAGEAREA,
-    H_MSGFONTID_STATUSCHANGES,
-    H_MSGFONTID_DIVIDERS,
-    MSGFONTID_ERROR,
-    MSGFONTID_SYMBOLS_IN,
-    MSGFONTID_SYMBOLS_OUT};
-
-#define M_REBUILDFONTGROUP   (WM_USER+10)
-#define M_REMAKESAMPLE       (WM_USER+11)
-#define M_RECALCONEFONT      (WM_USER+12)
-#define M_RECALCOTHERFONTS   (WM_USER+13)
-#define M_SAVEFONT           (WM_USER+14)
-#define M_REFRESHSAMEASBOXES (WM_USER+15)
-#define M_FILLSCRIPTCOMBO    (WM_USER+16)
-#define M_REDOROWHEIGHT      (WM_USER+17)
-#define M_LOADFONT           (WM_USER+18)
-#define M_GUESSSAMEASBOXES   (WM_USER+19)
-#define M_SETSAMEASBOXES     (WM_USER+20)
-
-static int CALLBACK EnumFontsProc(ENUMLOGFONTEXA *lpelfe,NEWTEXTMETRICEXA *lpntme,int FontType,LPARAM lParam)
-{
-	if(!IsWindow((HWND)lParam)) return FALSE;
-	if(SendMessageA((HWND)lParam,CB_FINDSTRINGEXACT,-1,(LPARAM)lpelfe->elfLogFont.lfFaceName)==CB_ERR)
-		SendMessageA((HWND)lParam,CB_ADDSTRING,0,(LPARAM)lpelfe->elfLogFont.lfFaceName);
-	return TRUE;
-}
-
-void FillFontListThread(HWND hwndDlg)
-{
-	LOGFONTA lf={0};
-	HDC hdc=GetDC(hwndDlg);
-	lf.lfCharSet=DEFAULT_CHARSET;
-	lf.lfFaceName[0]=0;
-	lf.lfPitchAndFamily=0;
-	EnumFontFamiliesExA(hdc,&lf,(FONTENUMPROCA)EnumFontsProc,(LPARAM)GetDlgItem(hwndDlg,IDC_TYPEFACE),0);
-	ReleaseDC(hwndDlg,hdc);
-	return;
-}
-
-static int CALLBACK EnumFontScriptsProc(ENUMLOGFONTEXA *lpelfe,NEWTEXTMETRICEXA *lpntme,int FontType,LPARAM lParam)
-{
-	if(SendMessageA((HWND)lParam,CB_FINDSTRINGEXACT,-1,(LPARAM)lpelfe->elfScript)==CB_ERR) {
-		int i=SendMessageA((HWND)lParam,CB_ADDSTRING,0,(LPARAM)lpelfe->elfScript);
-		SendMessageA((HWND)lParam,CB_SETITEMDATA,i,lpelfe->elfLogFont.lfCharSet);
-	}
-	return TRUE;
-}
-
-static int TextOptsDlgResizer(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
-{
-	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
-}
-
-static void SwitchTextDlgToMode(HWND hwndDlg,int expert)
-{
-	ShowWindow(GetDlgItem(hwndDlg,IDC_STSAMETEXT),expert?SW_SHOW:SW_HIDE);
-	ShowWindow(GetDlgItem(hwndDlg,IDC_SAMETYPE),expert?SW_SHOW:SW_HIDE);
-	ShowWindow(GetDlgItem(hwndDlg,IDC_SAMESIZE),expert?SW_SHOW:SW_HIDE);
-	ShowWindow(GetDlgItem(hwndDlg,IDC_SAMESTYLE),expert?SW_SHOW:SW_HIDE);
-	ShowWindow(GetDlgItem(hwndDlg,IDC_SAMECOLOUR),expert?SW_SHOW:SW_HIDE);
-	ShowWindow(GetDlgItem(hwndDlg,IDC_STSIZETEXT),expert?SW_HIDE:SW_SHOW);
-	ShowWindow(GetDlgItem(hwndDlg,IDC_STCOLOURTEXT),expert?SW_HIDE:SW_SHOW);
-	SetDlgItemTextA(hwndDlg,IDC_STASTEXT,Translate(expert?"as:":"based on:"));
-	{	UTILRESIZEDIALOG urd={0};
-		urd.cbSize=sizeof(urd);
-		urd.hwndDlg=hwndDlg;
-		urd.hInstance=g_hInst;
-		urd.lpTemplate=MAKEINTRESOURCEA(IDD_OPT_MSGWINDOWFONTS);
-		urd.pfnResizer=TextOptsDlgResizer;
-		CallService(MS_UTILS_RESIZEDIALOG,0,(LPARAM)&urd);
-	}
-	//resizer breaks the sizing of the edit box
-	SendMessageA(hwndDlg,M_REFRESHSAMEASBOXES,SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_GETITEMDATA,SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_GETCURSEL,0,0),0),0);
-}
-    
-
-static void GetDefaultFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
-{
-	SystemParametersInfoA(SPI_GETICONTITLELOGFONT,sizeof(LOGFONTA),lf,FALSE);
-	*colour=GetSysColor(COLOR_WINDOWTEXT);
-	switch(i) {
-		case FONTID_GROUPS:
-			lf->lfWeight=FW_BOLD;
-			break;
-		case FONTID_GROUPCOUNTS:
-			lf->lfHeight=(int)(lf->lfHeight*.75);
-			*colour=GetSysColor(COLOR_3DSHADOW);
-			break;
-		case FONTID_OFFINVIS:
-		case FONTID_INVIS:
-			lf->lfItalic=!lf->lfItalic;
-			break;
-		case FONTID_DIVIDERS:
-			lf->lfHeight=(int)(lf->lfHeight*.75);
-			break;
-		case FONTID_NOTONLIST:
-			*colour=GetSysColor(COLOR_3DSHADOW);
-			break;
-	}
-}
 
 #define SRFONTSETTINGMODULE FONTMODULE
 
-void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
-{
-	DBVARIANT dbv;
-	char idstr[12];
-	BYTE style;
-    
-	GetDefaultFontSetting(i,lf,colour);
-	_snprintf(idstr, sizeof(idstr), "Font%d",i);
-	if(!DBGetContactSetting(NULL,SRFONTSETTINGMODULE,idstr,&dbv)) {
-		lstrcpyA(lf->lfFaceName,dbv.pszVal);
-		DBFreeVariant(&dbv);
-	}
-	_snprintf(idstr, sizeof(idstr), "Font%dCol",i);
-	*colour=DBGetContactSettingDword(NULL,SRFONTSETTINGMODULE,idstr,*colour);
-	_snprintf(idstr, sizeof(idstr), "Font%dSize",i);
-    lf->lfHeight = (char)DBGetContactSettingByte(NULL,SRFONTSETTINGMODULE,idstr,lf->lfHeight);
-	_snprintf(idstr, sizeof(idstr), "Font%dSty",i);
-	style=(BYTE)DBGetContactSettingByte(NULL,SRFONTSETTINGMODULE,idstr,(lf->lfWeight==FW_NORMAL?0:DBFONTF_BOLD)|(lf->lfItalic?DBFONTF_ITALIC:0)|(lf->lfUnderline?DBFONTF_UNDERLINE:0));
-	lf->lfWidth=lf->lfEscapement=lf->lfOrientation=0;
-	lf->lfWeight=style&DBFONTF_BOLD?FW_BOLD:FW_NORMAL;
-	lf->lfItalic=(style&DBFONTF_ITALIC)!=0;
-	lf->lfUnderline=(style&DBFONTF_UNDERLINE)!=0;
-	lf->lfStrikeOut=0;
-	_snprintf(idstr, sizeof(idstr), "Font%dSet",i);
-	lf->lfCharSet=DBGetContactSettingByte(NULL,SRFONTSETTINGMODULE,idstr,lf->lfCharSet);
-	lf->lfOutPrecision=OUT_DEFAULT_PRECIS;
-	lf->lfClipPrecision=CLIP_DEFAULT_PRECIS;
-	lf->lfQuality=DEFAULT_QUALITY;
-	lf->lfPitchAndFamily=DEFAULT_PITCH|FF_DONTCARE;
-}
-
-static BOOL CALLBACK DlgProcMsgWindowFonts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	static HFONT hFontSample;
-    
-	switch (msg)
-	{
-		case WM_INITDIALOG:
-            hFontSample=NULL;
-			SetDlgItemTextA(hwndDlg,IDC_SAMPLE,"Sample");
-			TranslateDialogDefault(hwndDlg);
-			if(!SendMessage(GetParent(hwndDlg),PSM_ISEXPERT,0,0))
-				SwitchTextDlgToMode(hwndDlg,0);
-				FillFontListThread(hwndDlg);
-			{	int i,itemId,fontId;
-				LOGFONTA lf;
-				COLORREF colour;
-				WORD sameAs;
-				char str[32];
-                HDC hdc = GetDC(NULL);
-                
-				for(i=0;i<FONTS_TO_CONFIG;i++) {
-					fontId=fontListOrder[i];
-					GetFontSetting(fontId,&lf,&colour);
-					sprintf(str,"Font%dAs",fontId);
-					sameAs=DBGetContactSettingWord(NULL,SRFONTSETTINGMODULE,str,fontSameAsDefault[fontId]);
-					fontSettings[fontId].sameAsFlags=HIBYTE(sameAs);
-					fontSettings[fontId].sameAs=LOBYTE(sameAs);
-					fontSettings[fontId].style=(lf.lfWeight==FW_NORMAL?0:DBFONTF_BOLD)|(lf.lfItalic?DBFONTF_ITALIC:0)|(lf.lfUnderline?DBFONTF_UNDERLINE:0);
-    				fontSettings[fontId].size = (char)MulDiv(abs(lf.lfHeight), 72, GetDeviceCaps(hdc, LOGPIXELSY));
-					fontSettings[fontId].charset=lf.lfCharSet;
-					fontSettings[fontId].colour=colour;
-					lstrcpyA(fontSettings[fontId].szFace,lf.lfFaceName);
-					itemId=SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_ADDSTRING,0,(LPARAM)Translate(szFontIdDescr[fontId]));
-					SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_SETITEMDATA,itemId,fontId);
-				}
-                ReleaseDC(NULL, hdc);
-                SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
-                SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR));
-                SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
-                SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
-				SendDlgItemMessage(hwndDlg, IDC_INFOPANELBG, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", SRMSGDEFSET_BKGCOLOUR));
-                SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, FONTMODULE, "outbg", SRMSGDEFSET_BKGCOLOUR));
-                SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, FONTMODULE, "inbg", SRMSGDEFSET_BKGCOLOUR));
-                SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, FONTMODULE, "hgrid", SRMSGDEFSET_BKGCOLOUR));
-                SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
-                SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
-                
-				SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_SETCURSEL,0,0);
-				for(i=0;i<sizeof(fontSizes)/sizeof(fontSizes[0]);i++)
-					SendDlgItemMessageA(hwndDlg,IDC_FONTSIZE,CB_ADDSTRING,0,(LPARAM)fontSizes[i]);
-			}
-            SendMessage(hwndDlg,M_REBUILDFONTGROUP,0,0);
-			SendMessage(hwndDlg,M_SAVEFONT,0,0);
-			return TRUE;
-		case M_REBUILDFONTGROUP:	//remake all the needed controls when the user changes the font selector at the top
-		{	int i=SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_GETITEMDATA,SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_GETCURSEL,0,0),0);
-			SendMessage(hwndDlg,M_SETSAMEASBOXES,i,0);
-			{	int j,id,itemId;
-				char szText[256];
-				SendDlgItemMessageA(hwndDlg,IDC_SAMEAS,CB_RESETCONTENT,0,0);
-				itemId=SendDlgItemMessage(hwndDlg,IDC_SAMEAS,CB_ADDSTRING,0,(LPARAM)TranslateT("<none>"));
-				SendDlgItemMessageA(hwndDlg,IDC_SAMEAS,CB_SETITEMDATA,itemId,0xFF);
-				if(0xFF==fontSettings[i].sameAs)
-					SendDlgItemMessageA(hwndDlg,IDC_SAMEAS,CB_SETCURSEL,itemId,0);
-				for(j=0;j<FONTS_TO_CONFIG;j++) {
-					SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_GETLBTEXT,j,(LPARAM)szText);
-					id=SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_GETITEMDATA,j,0);
-					if(id==i) continue;
-					itemId=SendDlgItemMessage(hwndDlg,IDC_SAMEAS,CB_ADDSTRING,0,(LPARAM)szText);
-					SendDlgItemMessage(hwndDlg,IDC_SAMEAS,CB_SETITEMDATA,itemId,id);
-					if(id==fontSettings[i].sameAs)
-						SendDlgItemMessage(hwndDlg,IDC_SAMEAS,CB_SETCURSEL,itemId,0);
-				}
-			}
-			SendMessage(hwndDlg,M_LOADFONT,i,0);
-			SendMessage(hwndDlg,M_REFRESHSAMEASBOXES,i,0);
-			SendMessage(hwndDlg,M_REMAKESAMPLE,0,0);
-			break;
-		}
-		case M_SETSAMEASBOXES:	//set the check mark in the 'same as' boxes to the right value for fontid wParam
-			CheckDlgButton(hwndDlg,IDC_SAMETYPE,fontSettings[wParam].sameAsFlags&SAMEASF_FACE?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_SAMESIZE,fontSettings[wParam].sameAsFlags&SAMEASF_SIZE?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_SAMESTYLE,fontSettings[wParam].sameAsFlags&SAMEASF_STYLE?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_SAMECOLOUR,fontSettings[wParam].sameAsFlags&SAMEASF_COLOUR?BST_CHECKED:BST_UNCHECKED);
-			break;
-		case M_FILLSCRIPTCOMBO:		  //fill the script combo box and set the selection to the value for fontid wParam
-		{	LOGFONTA lf={0};
-			int i;
-			HDC hdc=GetDC(hwndDlg);
-			lf.lfCharSet=DEFAULT_CHARSET;
-			GetDlgItemTextA(hwndDlg,IDC_TYPEFACE,lf.lfFaceName,sizeof(lf.lfFaceName));
-			lf.lfPitchAndFamily=0;
-			SendDlgItemMessageA(hwndDlg,IDC_SCRIPT,CB_RESETCONTENT,0,0);
-			EnumFontFamiliesExA(hdc,&lf,(FONTENUMPROCA)EnumFontScriptsProc,(LPARAM)GetDlgItem(hwndDlg,IDC_SCRIPT),0);
-			ReleaseDC(hwndDlg,hdc);
-			for(i=SendDlgItemMessageA(hwndDlg,IDC_SCRIPT,CB_GETCOUNT,0,0)-1;i>=0;i--) {
-				if(SendDlgItemMessageA(hwndDlg,IDC_SCRIPT,CB_GETITEMDATA,i,0)==fontSettings[wParam].charset) {
-					SendDlgItemMessageA(hwndDlg,IDC_SCRIPT,CB_SETCURSEL,i,0);
-					break;
-				}
-			}
-			if(i<0) SendDlgItemMessageA(hwndDlg,IDC_SCRIPT,CB_SETCURSEL,0,0);
-			break;
-		}
-		case WM_CTLCOLORSTATIC:
-			if((HWND)lParam==GetDlgItem(hwndDlg,IDC_SAMPLE)) {
-				SetTextColor((HDC)wParam,SendDlgItemMessageA(hwndDlg,IDC_COLOUR,CPM_GETCOLOUR,0,0));
-                SetBkColor((HDC)wParam,GetSysColor(COLOR_3DFACE));
-				return (BOOL)GetSysColorBrush(COLOR_3DFACE);
-			}
-			break;
-		case M_REFRESHSAMEASBOXES:		  //set the disabled flag on the 'same as' checkboxes to the values for fontid wParam
-			EnableWindow(GetDlgItem(hwndDlg,IDC_SAMETYPE),fontSettings[wParam].sameAs!=0xFF);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_SAMESIZE),fontSettings[wParam].sameAs!=0xFF);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_SAMESTYLE),fontSettings[wParam].sameAs!=0xFF);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_SAMECOLOUR),fontSettings[wParam].sameAs!=0xFF);
-			if(SendMessage(GetParent(hwndDlg),PSM_ISEXPERT,0,0)) {
-				EnableWindow(GetDlgItem(hwndDlg,IDC_TYPEFACE),fontSettings[wParam].sameAs==0xFF || !(fontSettings[wParam].sameAsFlags&SAMEASF_FACE));
-				EnableWindow(GetDlgItem(hwndDlg,IDC_SCRIPT),fontSettings[wParam].sameAs==0xFF || !(fontSettings[wParam].sameAsFlags&SAMEASF_FACE));
-				EnableWindow(GetDlgItem(hwndDlg,IDC_FONTSIZE),fontSettings[wParam].sameAs==0xFF || !(fontSettings[wParam].sameAsFlags&SAMEASF_SIZE));
-				EnableWindow(GetDlgItem(hwndDlg,IDC_BOLD),fontSettings[wParam].sameAs==0xFF || !(fontSettings[wParam].sameAsFlags&SAMEASF_STYLE));
-				EnableWindow(GetDlgItem(hwndDlg,IDC_ITALIC),fontSettings[wParam].sameAs==0xFF || !(fontSettings[wParam].sameAsFlags&SAMEASF_STYLE));
-				EnableWindow(GetDlgItem(hwndDlg,IDC_UNDERLINE),fontSettings[wParam].sameAs==0xFF || !(fontSettings[wParam].sameAsFlags&SAMEASF_STYLE));
-                EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR),fontSettings[wParam].sameAs==0xFF || !(fontSettings[wParam].sameAsFlags&SAMEASF_COLOUR));
-            }
-			else {
-				EnableWindow(GetDlgItem(hwndDlg,IDC_TYPEFACE),TRUE);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_SCRIPT),TRUE);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_FONTSIZE),TRUE);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_BOLD),TRUE);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_ITALIC),TRUE);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_UNDERLINE),TRUE);
-                EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR),TRUE);
-			}
-			break;
-		case M_REMAKESAMPLE:	//remake the sample edit box font based on the settings in the controls
-		{	LOGFONTA lf;
-            HDC hdc = GetDC(NULL);
-			if(hFontSample) {
-				SendDlgItemMessageA(hwndDlg,IDC_SAMPLE,WM_SETFONT,SendDlgItemMessageA(hwndDlg,IDC_FONTID,WM_GETFONT,0,0),0);
-				DeleteObject(hFontSample);
-			}
-			lf.lfHeight=GetDlgItemInt(hwndDlg,IDC_FONTSIZE,NULL,FALSE);
-            
-            lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-            ReleaseDC(NULL,hdc);				
-			lf.lfWidth=lf.lfEscapement=lf.lfOrientation=0;
-			lf.lfWeight=IsDlgButtonChecked(hwndDlg,IDC_BOLD)?FW_BOLD:FW_NORMAL;
-			lf.lfItalic=IsDlgButtonChecked(hwndDlg,IDC_ITALIC);
-			lf.lfUnderline=IsDlgButtonChecked(hwndDlg,IDC_UNDERLINE);
-			lf.lfStrikeOut=0;
-			lf.lfCharSet=(BYTE)SendDlgItemMessageA(hwndDlg,IDC_SCRIPT,CB_GETITEMDATA,SendDlgItemMessageA(hwndDlg,IDC_SCRIPT,CB_GETCURSEL,0,0),0);
-			lf.lfOutPrecision=OUT_DEFAULT_PRECIS;
-			lf.lfClipPrecision=CLIP_DEFAULT_PRECIS;
-			lf.lfQuality=DEFAULT_QUALITY;
-			lf.lfPitchAndFamily=DEFAULT_PITCH|FF_DONTCARE;
-			GetDlgItemTextA(hwndDlg,IDC_TYPEFACE,lf.lfFaceName,sizeof(lf.lfFaceName));
-			hFontSample=CreateFontIndirectA(&lf);
-			SendDlgItemMessage(hwndDlg,IDC_SAMPLE,WM_SETFONT,(WPARAM)hFontSample,TRUE);
-			break;
-		}
-		case M_RECALCONEFONT:	   //copy the 'same as' settings for fontid wParam from their sources
-			if(fontSettings[wParam].sameAs==0xFF) break;
-			if(fontSettings[wParam].sameAsFlags&SAMEASF_FACE) {
-				lstrcpyA(fontSettings[wParam].szFace,fontSettings[fontSettings[wParam].sameAs].szFace);
-				fontSettings[wParam].charset=fontSettings[fontSettings[wParam].sameAs].charset;
-			}
-			if(fontSettings[wParam].sameAsFlags&SAMEASF_SIZE)
-				fontSettings[wParam].size=fontSettings[fontSettings[wParam].sameAs].size;
-			if(fontSettings[wParam].sameAsFlags&SAMEASF_STYLE)
-				fontSettings[wParam].style=fontSettings[fontSettings[wParam].sameAs].style;
-			if(fontSettings[wParam].sameAsFlags&SAMEASF_COLOUR)
-				fontSettings[wParam].colour=fontSettings[fontSettings[wParam].sameAs].colour;
-			break;
-		case M_RECALCOTHERFONTS:	//recalculate the 'same as' settings for all fonts but wParam
-		{	int i;
-			for(i=0;i<FONTS_TO_CONFIG;i++) {
-				if(i==(int)wParam) continue;
-				SendMessage(hwndDlg,M_RECALCONEFONT,i,0);
-			}
-			break;
-		}
-        case M_SAVEFONT:	//save the font settings from the controls to font wParam
-			fontSettings[wParam].sameAsFlags=(IsDlgButtonChecked(hwndDlg,IDC_SAMETYPE)?SAMEASF_FACE:0)|(IsDlgButtonChecked(hwndDlg,IDC_SAMESIZE)?SAMEASF_SIZE:0)|(IsDlgButtonChecked(hwndDlg,IDC_SAMESTYLE)?SAMEASF_STYLE:0)|(IsDlgButtonChecked(hwndDlg,IDC_SAMECOLOUR)?SAMEASF_COLOUR:0);
-			fontSettings[wParam].sameAs=(BYTE)SendDlgItemMessageA(hwndDlg,IDC_SAMEAS,CB_GETITEMDATA,SendDlgItemMessageA(hwndDlg,IDC_SAMEAS,CB_GETCURSEL,0,0),0);
-			GetDlgItemTextA(hwndDlg,IDC_TYPEFACE,fontSettings[wParam].szFace,sizeof(fontSettings[wParam].szFace));
-			fontSettings[wParam].charset=(BYTE)SendDlgItemMessageA(hwndDlg,IDC_SCRIPT,CB_GETITEMDATA,SendDlgItemMessageA(hwndDlg,IDC_SCRIPT,CB_GETCURSEL,0,0),0);
-			fontSettings[wParam].size=(char)GetDlgItemInt(hwndDlg,IDC_FONTSIZE,NULL,FALSE);
-			fontSettings[wParam].style=(IsDlgButtonChecked(hwndDlg,IDC_BOLD)?DBFONTF_BOLD:0)|(IsDlgButtonChecked(hwndDlg,IDC_ITALIC)?DBFONTF_ITALIC:0)|(IsDlgButtonChecked(hwndDlg,IDC_UNDERLINE)?DBFONTF_UNDERLINE:0);
-            fontSettings[wParam].colour=SendDlgItemMessage(hwndDlg,IDC_COLOUR,CPM_GETCOLOUR,0,0);
-			SendMessage(hwndDlg,M_REDOROWHEIGHT,0,0);
-			break;
-		case M_REDOROWHEIGHT:	//recalculate the minimum feasible row height
-		{	int i;
-			int minHeight=1;//GetSystemMetrics(SM_CYSMICON);
-			for(i=0;i<FONTS_TO_CONFIG;i++)
-				if(fontSettings[i].size+2>minHeight) minHeight=fontSettings[i].size+2;
-			break;
-		}
-		case M_LOADFONT:	//load font wParam into the controls
-			SetDlgItemTextA(hwndDlg,IDC_TYPEFACE,fontSettings[wParam].szFace);
-			SendMessage(hwndDlg,M_FILLSCRIPTCOMBO,wParam,0);
-			SetDlgItemInt(hwndDlg,IDC_FONTSIZE,fontSettings[wParam].size,FALSE);
-			CheckDlgButton(hwndDlg,IDC_BOLD,fontSettings[wParam].style&DBFONTF_BOLD?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_ITALIC,fontSettings[wParam].style&DBFONTF_ITALIC?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hwndDlg,IDC_UNDERLINE,fontSettings[wParam].style&DBFONTF_UNDERLINE?BST_CHECKED:BST_UNCHECKED);
-			{	LOGFONTA lf;
-				COLORREF colour;
-				GetDefaultFontSetting(wParam,&lf,&colour);
-                SendDlgItemMessageA(hwndDlg,IDC_COLOUR,CPM_SETDEFAULTCOLOUR,0,colour);
-			}
-			SendDlgItemMessageA(hwndDlg,IDC_COLOUR,CPM_SETCOLOUR,0,fontSettings[wParam].colour);
-			break;
-		case M_GUESSSAMEASBOXES:   //guess suitable values for the 'same as' checkboxes for fontId wParam
-			fontSettings[wParam].sameAsFlags=0;
-			if(fontSettings[wParam].sameAs==0xFF) break;
-			if(!strcmp(fontSettings[wParam].szFace,fontSettings[fontSettings[wParam].sameAs].szFace) &&
-			   fontSettings[wParam].charset==fontSettings[fontSettings[wParam].sameAs].charset)
-    			fontSettings[wParam].sameAsFlags|=SAMEASF_FACE;
-			if(fontSettings[wParam].size==fontSettings[fontSettings[wParam].sameAs].size)
-    			fontSettings[wParam].sameAsFlags|=SAMEASF_SIZE;
-			if(fontSettings[wParam].style==fontSettings[fontSettings[wParam].sameAs].style)
-    			fontSettings[wParam].sameAsFlags|=SAMEASF_STYLE;
-			if(fontSettings[wParam].colour==fontSettings[fontSettings[wParam].sameAs].colour)
-    			fontSettings[wParam].sameAsFlags|=SAMEASF_COLOUR;
-			SendMessage(hwndDlg,M_SETSAMEASBOXES,wParam,0);
-			break;
-		case WM_VSCROLL:
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			break;
-		case WM_COMMAND:
-		{	int fontId=SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_GETITEMDATA,SendDlgItemMessageA(hwndDlg,IDC_FONTID,CB_GETCURSEL,0,0),0);
-			switch(LOWORD(wParam)) {
-				case IDC_FONTID:
-					if(HIWORD(wParam)!=CBN_SELCHANGE) return FALSE;
-					SendMessage(hwndDlg,M_REBUILDFONTGROUP,0,0);
-					return 0;
-				case IDC_SAMETYPE:
-				case IDC_SAMESIZE:
-				case IDC_SAMESTYLE:
-				case IDC_SAMECOLOUR:
-					SendMessage(hwndDlg,M_SAVEFONT,fontId,0);
-					SendMessage(hwndDlg,M_RECALCONEFONT,fontId,0);
-					SendMessage(hwndDlg,M_REMAKESAMPLE,0,0);
-					SendMessage(hwndDlg,M_REFRESHSAMEASBOXES,fontId,0);
-					break;
-				case IDC_SAMEAS:
-					if(HIWORD(wParam)!=CBN_SELCHANGE) return FALSE;
-					if(SendDlgItemMessageA(hwndDlg,IDC_SAMEAS,CB_GETITEMDATA,SendDlgItemMessageA(hwndDlg,IDC_SAMEAS,CB_GETCURSEL,0,0),0)==fontId)
-						SendDlgItemMessageA(hwndDlg,IDC_SAMEAS,CB_SETCURSEL,0,0);
-					if(!SendMessage(GetParent(hwndDlg),PSM_ISEXPERT,0,0)) {
-						int sameAs=SendDlgItemMessageA(hwndDlg,IDC_SAMEAS,CB_GETITEMDATA,SendDlgItemMessageA(hwndDlg,IDC_SAMEAS,CB_GETCURSEL,0,0),0);
-						if(sameAs!=0xFF) SendMessage(hwndDlg,M_LOADFONT,sameAs,0);
-						SendMessage(hwndDlg,M_SAVEFONT,fontId,0);
-						SendMessage(hwndDlg,M_GUESSSAMEASBOXES,fontId,0);
-					}
-					else SendMessage(hwndDlg,M_SAVEFONT,fontId,0);
-					SendMessage(hwndDlg,M_RECALCONEFONT,fontId,0);
-					SendMessage(hwndDlg,M_FILLSCRIPTCOMBO,fontId,0);
-					SendMessage(hwndDlg,M_REMAKESAMPLE,0,0);
-					SendMessage(hwndDlg,M_REFRESHSAMEASBOXES,fontId,0);
-					break;
-				case IDC_TYPEFACE:
-				case IDC_SCRIPT:
-				case IDC_FONTSIZE:
-					if(HIWORD(wParam)!=CBN_EDITCHANGE && HIWORD(wParam)!=CBN_SELCHANGE) return FALSE;
-					if(HIWORD(wParam)==CBN_SELCHANGE) {
-						SendDlgItemMessageA(hwndDlg,LOWORD(wParam),CB_SETCURSEL,SendDlgItemMessageA(hwndDlg,LOWORD(wParam),CB_GETCURSEL,0,0),0);
-					}
-					if(LOWORD(wParam)==IDC_TYPEFACE)
-						SendMessage(hwndDlg,M_FILLSCRIPTCOMBO,fontId,0);
-					//fall through
-				case IDC_BOLD:
-				case IDC_ITALIC:
-                case IDC_UNDERLINE:
-                case IDC_COLOUR:
-					SendMessage(hwndDlg,M_SAVEFONT,fontId,0);
-					if(!SendMessage(GetParent(hwndDlg),PSM_ISEXPERT,0,0)) {
-						SendMessage(hwndDlg,M_GUESSSAMEASBOXES,fontId,0);
-						SendMessage(hwndDlg,M_REFRESHSAMEASBOXES,fontId,0);
-					}
-					SendMessage(hwndDlg,M_RECALCOTHERFONTS,fontId,0);
-					SendMessage(hwndDlg,M_REMAKESAMPLE,0,0);
-					SendMessage(hwndDlg,M_REDOROWHEIGHT,0,0);
-					break;
-                case IDC_USEINDIVIDUALBKG:
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_BKGOUTGOING), IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG));
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_BKGINCOMING), IsDlgButtonChecked(hwndDlg, IDC_USEINDIVIDUALBKG));
-                    break;
-				case IDC_SAMPLE:
-					return 0;
-			}
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			break;
-		}
-		case WM_NOTIFY:
-			switch(((LPNMHDR)lParam)->idFrom) {
-				case 0:
-					switch (((LPNMHDR)lParam)->code)
-					{
-						case PSN_APPLY:
-							{	int i;
-								char str[20];
-                                HDC hdc = GetDC(NULL);
-                                
-								for(i=0;i<FONTS_TO_CONFIG;i++) {
-									sprintf(str,"Font%d",i);
-									DBWriteContactSettingString(NULL,SRFONTSETTINGMODULE,str,fontSettings[i].szFace);
-									sprintf(str,"Font%dSet",i);
-									DBWriteContactSettingByte(NULL,SRFONTSETTINGMODULE,str,fontSettings[i].charset);
-									sprintf(str,"Font%dSize",i);
-									DBWriteContactSettingByte(NULL,SRFONTSETTINGMODULE,str, (char)-MulDiv(fontSettings[i].size, GetDeviceCaps(hdc, LOGPIXELSY), 72));
-									sprintf(str,"Font%dSty",i);
-									DBWriteContactSettingByte(NULL,SRFONTSETTINGMODULE,str,fontSettings[i].style);
-									sprintf(str,"Font%dCol",i);
-									DBWriteContactSettingDword(NULL,SRFONTSETTINGMODULE,str,fontSettings[i].colour);
-									sprintf(str,"Font%dAs",i);
-									DBWriteContactSettingWord(NULL,SRFONTSETTINGMODULE,str,(WORD)((fontSettings[i].sameAsFlags<<8)|fontSettings[i].sameAs));
-                                    if(i == MSGFONTID_MESSAGEAREA) {
-                                        sprintf(str,"Font%d",0);
-                                        DBWriteContactSettingString(NULL,"SRMsg",str,fontSettings[i].szFace);
-                                        sprintf(str,"Font%dSet",0);
-                                        DBWriteContactSettingByte(NULL,"SRMsg",str,fontSettings[i].charset);
-                                        sprintf(str,"Font%dSize",0);
-                                        DBWriteContactSettingByte(NULL,"SRMsg",str, (char)-MulDiv(fontSettings[i].size, GetDeviceCaps(hdc, LOGPIXELSY), 72));
-                                        sprintf(str,"Font%dSty",0);
-                                        DBWriteContactSettingByte(NULL,"SRMsg",str,fontSettings[i].style);
-                                        sprintf(str,"Font%dCol",0);
-                                        DBWriteContactSettingDword(NULL,"SRMsg",str,fontSettings[i].colour);
-                                        sprintf(str,"Font%dAs",0);
-                                        DBWriteContactSettingWord(NULL,"SRMsg",str,(WORD)((fontSettings[i].sameAsFlags<<8)|fontSettings[i].sameAs));
-                                    }
-								}
-                                ReleaseDC(NULL, hdc);
-                                DBWriteContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
-                                DBWriteContactSettingDword(NULL, FONTMODULE, "inputbg", SendDlgItemMessage(hwndDlg, IDC_INPUTBKG, CPM_GETCOLOUR, 0, 0));
-                                DBWriteContactSettingDword(NULL, FONTMODULE, "inbg", SendDlgItemMessage(hwndDlg, IDC_BKGINCOMING, CPM_GETCOLOUR, 0, 0));
-                                DBWriteContactSettingDword(NULL, FONTMODULE, "outbg", SendDlgItemMessage(hwndDlg, IDC_BKGOUTGOING, CPM_GETCOLOUR, 0, 0));
-                                DBWriteContactSettingDword(NULL, FONTMODULE, "hgrid", SendDlgItemMessage(hwndDlg, IDC_GRIDLINES, CPM_GETCOLOUR, 0, 0));
-                                DBWriteContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", SendDlgItemMessage(hwndDlg, IDC_INFOPANELBG, CPM_GETCOLOUR, 0, 0));
-                                
-                                ReloadGlobals();
-                                CacheMsgLogIcons();
-                                CacheLogFonts();
-                                WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
-                         }
-							return TRUE;
-						case PSN_EXPERTCHANGED:
-							SwitchTextDlgToMode(hwndDlg,((PSHNOTIFY*)lParam)->lParam);
-							break;
-					}
-					break;
-			}
-			break;
-		case WM_DESTROY:
-			if(hFontSample) {
-				SendDlgItemMessageA(hwndDlg,IDC_SAMPLE,WM_SETFONT,SendDlgItemMessageA(hwndDlg,IDC_FONTID,WM_GETFONT,0,0),0);
-				DeleteObject(hFontSample);
-			}
-			break;
-	}
-	return FALSE;
-}
-    
 static int OptInitialise(WPARAM wParam, LPARAM lParam)
 {
     OPTIONSDIALOGPAGE odp = { 0 };
+
+	Chat_OptionsInitialize(wParam, lParam);
 
     odp.cbSize = sizeof(odp);
     odp.position = 910000000;
@@ -1840,14 +1294,6 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
     odp.pszTitle = Translate("Typing Notify");
     odp.pfnDlgProc = DlgProcTypeOptions;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-
-    if(!ServiceExists(MS_FONT_REGISTER)) {
-        odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGWINDOWFONTS);
-        odp.pszTitle = Translate("Fonts and colors");
-        odp.pfnDlgProc = DlgProcMsgWindowFonts;
-        odp.nIDBottomSimpleControl = 0;
-        CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-    }
 
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_POPUP_OPT);
     odp.pszTitle = Translate("Event notifications");
@@ -1953,32 +1399,47 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
          RECT rcClient;
          GetClientRect(hwnd, &rcClient);
 
-		 iInit = TRUE;
+         iInit = TRUE;
          tci.mask = TCIF_PARAM|TCIF_TEXT;
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGDLG), hwnd, DlgProcOptions);
          tci.pszText = TranslateT("General");
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
-         MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_TABBEDMSG),hwnd,DlgProcTabbedOptions);
          tci.pszText = TranslateT("Tabs and layout");
          TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 2, &tci);
-         MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
          ShowWindow((HWND)tci.lParam, SW_HIDE);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_CONTAINERS),hwnd,DlgProcContainerSettings);
          tci.pszText = TranslateT("Containers");
          TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 3, &tci);
-         MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
          ShowWindow((HWND)tci.lParam, SW_HIDE);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_MSGLOG),hwnd,DlgProcLogOptions);
          tci.pszText = TranslateT("Message log");
          TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
-         MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
          ShowWindow((HWND)tci.lParam, SW_HIDE);
-         // add more tabs here if needed
-         // activate the final tab
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+         
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPTIONS1),hwnd, DlgProcOptions1);
+         tci.pszText = TranslateT("Group chats");
+         TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
+         ShowWindow((HWND)tci.lParam, SW_HIDE);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
          iInit = FALSE;
          return FALSE;
       }
@@ -2045,6 +1506,7 @@ void ReloadGlobals()
      myGlobals.m_SmileyPluginEnabled = (int)DBGetContactSettingByte(NULL, "SmileyAdd", "PluginSupportEnabled", 0);
      myGlobals.m_SendOnShiftEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", 1);
      myGlobals.m_SendOnEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER);
+     myGlobals.m_SendOnDblEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "SendOnDblEnter", 0);
      myGlobals.m_AutoLocaleSupport = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 0);
      myGlobals.m_AutoSwitchTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0);
      myGlobals.m_CutContactNameTo = (int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);
@@ -2115,76 +1577,8 @@ void ReloadGlobals()
          else
              myGlobals.bUnicodeBuild = FALSE;
      }
-}
-
-/*
- * called at startup. checks for old font path and moves it to 
- * the new settings group to make them usable with font service
- */
-
-void MoveFonts()
-{
-    char szTemp[128];
-    int i = 0;
-    DBVARIANT dbv;
-    HDC hdc;
-    char bSize = 0;
-    int charset;
-    
-    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "fontsmoved", -1) != -1)
-        return;         // already done
-
-    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "fontsmoved", 1);
-    
-    hdc = GetDC(NULL);
-    
-    for(i = 0; i < MSGDLGFONTCOUNT; i++) {
-        _snprintf(szTemp, sizeof(szTemp), "Font%d", i);
-        if(!DBGetContactSetting(NULL, SRMSGMOD_T, szTemp, &dbv)) {
-            if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT)
-                DBWriteContactSettingString(NULL, FONTMODULE, szTemp, "Arial");
-            else
-                DBWriteContactSettingString(NULL, FONTMODULE, szTemp, dbv.pszVal);
-            DBDeleteContactSetting(NULL, SRMSGMOD_T, szTemp);
-            DBFreeVariant(&dbv);
-        }
-        else
-            DBWriteContactSettingString(NULL, FONTMODULE, szTemp, "Arial");
-            
-        _snprintf(szTemp, sizeof(szTemp), "Font%dCol", i);
-        DBWriteContactSettingDword(NULL, FONTMODULE, szTemp, DBGetContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetSysColor(COLOR_BTNTEXT)));
-        DBDeleteContactSetting(NULL, SRMSGMOD_T, szTemp);
-        
-        _snprintf(szTemp, sizeof(szTemp), "Font%dSize", i);
-        bSize = (char)DBGetContactSettingByte(NULL, SRMSGMOD_T, szTemp, 10);
-        if(bSize > 0)
-            bSize = -MulDiv(bSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-        DBWriteContactSettingByte(NULL, FONTMODULE, szTemp, bSize);
-        DBDeleteContactSetting(NULL, SRMSGMOD_T, szTemp);
-
-        _snprintf(szTemp, sizeof(szTemp), "Font%dSty", i);
-        DBWriteContactSettingByte(NULL, FONTMODULE, szTemp, DBGetContactSettingByte(NULL, SRMSGMOD_T, szTemp, 0));
-        DBDeleteContactSetting(NULL, SRMSGMOD_T, szTemp);
-
-        _snprintf(szTemp, sizeof(szTemp), "Font%dSet", i);
-        charset = DBGetContactSettingByte(NULL, SRMSGMOD_T, szTemp, 0);
-        if(i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT)
-            charset = 0;
-        DBWriteContactSettingByte(NULL, FONTMODULE, szTemp, charset);
-        DBDeleteContactSetting(NULL, SRMSGMOD_T, szTemp);
-
-        _snprintf(szTemp, sizeof(szTemp), "Font%dAs", i);
-        DBWriteContactSettingWord(NULL, FONTMODULE, szTemp, DBGetContactSettingWord(NULL, SRMSGMOD_T, szTemp, 0));
-        DBDeleteContactSetting(NULL, SRMSGMOD_T, szTemp);
-    }
-    ReleaseDC(NULL, hdc);
-    i = 0;
-
-    while(colornames[i].szName!= NULL) {
-        DBWriteContactSettingDword(NULL, FONTMODULE, colornames[i].szSetting, DBGetContactSettingDword(NULL, SRMSGMOD_T, colornames[i].szSetting, RGB(224, 224, 224)));
-        DBDeleteContactSetting(NULL, SRMSGMOD_T, colornames[i].szSetting);
-        i++;
-    }
+     myGlobals.ncm.cbSize = sizeof(NONCLIENTMETRICS);
+     SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &myGlobals.ncm, 0);
 }
 
 void GetDefaultContainerTitleFormat()

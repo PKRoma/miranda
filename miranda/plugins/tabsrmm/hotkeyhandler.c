@@ -39,11 +39,6 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "msgs.h"
-#include "m_popup.h"
-#include "nen.h"
-#include "functions.h"
-#include "m_Snapping_windows.h"
 
 extern struct ContainerWindowData *pFirstContainer;
 extern HANDLE hMessageWindowList;
@@ -53,7 +48,6 @@ extern NEN_OPTIONS nen_options;
 extern PSLWA pSetLayeredWindowAttributes;
 extern struct ContainerWindowData *pLastActiveContainer;
 
-int ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int g_hotkeysEnabled = 0;
 HWND g_hotkeyHwnd = 0;
 static UINT WM_TASKBARCREATED;
@@ -62,6 +56,8 @@ HWND floaterOwner;
 void HandleMenuEntryFromhContact(int iSelection)
 {
     HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
+    SESSION_INFO *si = NULL;
+    
     if(hWnd && IsWindow(hWnd)) {
         struct ContainerWindowData *pContainer = 0;
         SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
@@ -70,12 +66,31 @@ void HandleMenuEntryFromhContact(int iSelection)
             if(GetForegroundWindow() != pContainer->hwnd)
                 SetForegroundWindow(pContainer->hwnd);
         }
+        else
+            goto nothing_open;
+    }
+    else if ((si = SM_FindSessionByHCONTACT((HANDLE)iSelection)) != NULL) {
+        if(si->hWnd) {															// session does exist, but no window is open for it
+            struct ContainerWindowData *pContainer = 0;
+            
+            SendMessage(si->hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+            if(pContainer) {
+                ActivateExistingTab(pContainer, si->hWnd);
+                if(GetForegroundWindow() != pContainer->hwnd)
+                    SetForegroundWindow(pContainer->hwnd);
+            }
+            else
+                goto nothing_open;
+        }
+        else
+            goto nothing_open;
     }
     else
+nothing_open:        
         CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
 }
 
-void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
+static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 {
     int cx = myGlobals.m_smcxicon;
     int cy = myGlobals.m_smcyicon;
@@ -485,9 +500,29 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             }
             break;
         }
-            /*
-             * sent from the popup to "dismiss" the event. we should do this in the main thread
-             */
+        case DM_DOCREATETAB_CHAT:
+        {
+            SESSION_INFO *si = SM_FindSessionByHWND((HWND)lParam);
+
+            if(si && IsWindow(si->hWnd)) {
+                struct ContainerWindowData *pContainer = 0;
+
+                SendMessage(si->hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+                if(pContainer) {
+                    int iTabs = TabCtrl_GetItemCount(GetDlgItem(pContainer->hwnd, 1159));
+                    if(iTabs == 1)
+                        SendMessage(pContainer->hwnd, WM_CLOSE, 0, 1);
+                    else
+                        SendMessage(si->hWnd, WM_CLOSE, 0, 1);
+
+                    si->hWnd = CreateNewRoom((struct ContainerWindowData *)wParam, si, TRUE, 0, 0);
+                }
+            }
+            break;
+        }
+         /*
+         * sent from the popup to "dismiss" the event. we should do this in the main thread
+         */
         case DM_REMOVECLISTEVENT:
             CallService(MS_CLIST_REMOVEEVENT, wParam, lParam);
             CallService(MS_DB_EVENT_MARKREAD, wParam, lParam);
@@ -558,6 +593,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         {
             struct ContainerWindowData *pContainer = pFirstContainer;
             
+            myGlobals.ncm.cbSize = sizeof(NONCLIENTMETRICS);
+            SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &myGlobals.ncm, 0);
             FreeTabConfig();
             ReloadTabConfig();
             while(pContainer) {

@@ -20,6 +20,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#ifndef _M_TABSRMM_H
+#define _M_TABSRMM_H
+
 //brings up the send message dialog for a contact
 //wParam=(WPARAM)(HANDLE)hContact
 //lParam=(LPARAM)(char*)szText
@@ -135,6 +138,7 @@ typedef struct {
 
 #define MSGDLGFONTCOUNT 22
 #define IPFONTCOUNT 6
+#define CHATFONTCOUNT 19
 
 /*
  * info panel field edges
@@ -263,8 +267,10 @@ struct MessageWindowTheme {
 };
 
 struct MessageWindowData {
+	BYTE bType;
+    BYTE bWasDeleted;
 	HANDLE hContact, hSubContact;
-	HWND hwndLog;
+	HWND hwndLog, hwndFlash;
     HWND hwnd;
 	HANDLE hDbEventFirst,hDbEventLast;
 	int sendMode;
@@ -357,6 +363,7 @@ struct MessageWindowData {
 	BYTE needIEViewScroll;
 	HANDLE hTheme;
 	BYTE bFlatMsgLog;
+    PVOID si;
 };
 
 typedef struct _recentinfo {
@@ -413,9 +420,10 @@ typedef struct _globals {
     HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
     HBITMAP g_hbmUnknown;
     int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_FontServiceAvail;
+    int g_FlashAvatarAvail;
     HICON g_IconMsgEvent, g_IconTypingEvent, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
     HICON g_IconFolder, g_IconChecked, g_IconUnchecked;
-	HICON g_closeGlyph, g_maxGlyph, g_minGlyph;
+	HICON g_closeGlyph, g_maxGlyph, g_minGlyph, g_pulldownGlyph;
     HIMAGELIST g_hImageList;
     int g_nrProtos;
     HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
@@ -428,6 +436,7 @@ typedef struct _globals {
     int m_SmileyPluginEnabled;
     int m_SendOnShiftEnter;
     int m_SendOnEnter;
+    int m_SendOnDblEnter;
     int m_AutoLocaleSupport;
     int m_AutoSwitchTabs;
     int m_CutContactNameOnTabs;
@@ -497,6 +506,8 @@ typedef struct _globals {
 	BYTE m_dropShadow;
 	char g_SkinnedFrame_left, g_SkinnedFrame_right, g_SkinnedFrame_bottom, g_SkinnedFrame_caption;
 	char g_realSkinnedFrame_left, g_realSkinnedFrame_right, g_realSkinnedFrame_bottom, g_realSkinnedFrame_caption;
+    HPEN g_SkinLightShadowPen, g_SkinDarkShadowPen;
+    NONCLIENTMETRICS ncm;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
@@ -618,3 +629,4 @@ typedef struct {
 // 
 #define MS_TABMSG_TRAYSUPPORT "SRMsg_MOD/Show_TrayMenu"
 
+#endif

@@ -28,15 +28,11 @@ Functions, concerning tabSRMMs system tray support. There is more in eventpopups
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "msgs.h"
-#include "m_popup.h"
-#include "nen.h"
-#include "functions.h"
 #include "m_toptoolbar.h"
 
-extern MYGLOBALS myGlobals;
-extern NEN_OPTIONS nen_options;
-extern struct ContainerWindowData *pFirstContainer;
+extern  MYGLOBALS myGlobals;
+extern  NEN_OPTIONS nen_options;
+extern  struct ContainerWindowData *pFirstContainer;
 
 void CreateTrayMenus(int mode)
 {
@@ -104,7 +100,7 @@ void CreateSystrayIcon(int create)
     ShowWindow(myGlobals.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
 }
 
-BOOL CALLBACK FindTrayWnd(HWND hwnd, LPARAM lParam)
+static BOOL CALLBACK FindTrayWnd(HWND hwnd, LPARAM lParam)
 {
     TCHAR szClassName[256];
     GetClassName(hwnd, szClassName, 255);
@@ -127,7 +123,7 @@ BOOL CALLBACK FindTrayWnd(HWND hwnd, LPARAM lParam)
     return TRUE;
 }
  
-void GetTrayWindowRect(LPRECT lprect)
+static void GetTrayWindowRect(LPRECT lprect)
 {
     HWND hShellTrayWnd = FindWindow(_T("Shell_TrayWnd"), NULL);
     if (hShellTrayWnd) {
@@ -142,7 +138,7 @@ void GetTrayWindowRect(LPRECT lprect)
  * window.
  */
 
-BOOL RemoveTaskbarIcon(HWND hWnd)
+static BOOL RemoveTaskbarIcon(HWND hWnd)
 {
     SetParent(hWnd, GetDlgItem(myGlobals.g_hwndHotkeyHandler, IDC_TRAYCONTAINER));
     return TRUE;

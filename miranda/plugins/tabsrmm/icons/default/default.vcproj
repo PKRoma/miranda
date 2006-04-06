@@ -3,8 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8,00"
 	Name="ICONS"
-	ProjectGUID="{8CA07E0A-0632-4F95-B411-CDFAF048821B}"
-	Keyword="Win32Proj"
+	ProjectGUID="{5E39ECF5-9D6A-41AC-976F-7C2E895AEE58}"
 	>
 	<Platforms>
 		<Platform
@@ -16,10 +15,12 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory=".\Debug"
+			IntermediateDirectory=".\Debug"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			>
 			<Tool
@@ -36,6 +37,10 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Debug/default.tlb"
+				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -45,8 +50,13 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="stdafx.h"
+				PrecompiledHeaderFile=".\Debug/default.pch"
+				AssemblerListingLocation=".\Debug/"
+				ObjectFile=".\Debug/"
+				ProgramDataBaseFileName=".\Debug/"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -54,19 +64,20 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				Culture="1033"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/default.dll"
+				OutputFile="Debug\default.dll"
 				LinkIncremental="2"
+				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/default.pdb"
+				ProgramDatabaseFile="Debug\default.pdb"
 				SubSystem="2"
 				ImportLibrary="$(OutDir)/default.lib"
-				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -79,6 +90,8 @@
 			/>
 			<Tool
 				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\Debug/default.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -95,10 +108,12 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory=".\Release"
+			IntermediateDirectory=".\Release"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			>
 			<Tool
@@ -115,14 +130,24 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Release/default.tlb"
+				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="4"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DEFAULT_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="stdafx.h"
+				PrecompiledHeaderFile=".\Release/default.pch"
+				AssemblerListingLocation=".\Release/"
+				ObjectFile=".\Release/"
+				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -130,21 +155,23 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				Culture="1033"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/tabsrmm_icons.dll"
+				OutputFile="Release\tabsrmm_icons.dll"
 				LinkIncremental="1"
+				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile=".\Release/tabsrmm_icons.pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				ResourceOnlyDLL="true"
 				ImportLibrary="$(OutDir)/default.lib"
-				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -157,6 +184,8 @@
 			/>
 			<Tool
 				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\Release/default.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -173,10 +202,12 @@
 		</Configuration>
 		<Configuration
 			Name="Release Unicode 98|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory=".\$(ConfigurationName)"
+			IntermediateDirectory=".\$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			>
 			<Tool
@@ -193,14 +224,24 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\$(ConfigurationName)/default.tlb"
+				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="4"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DEFAULT_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="stdafx.h"
+				PrecompiledHeaderFile=".\$(ConfigurationName)/default.pch"
+				AssemblerListingLocation=".\$(ConfigurationName)/"
+				ObjectFile=".\$(ConfigurationName)/"
+				ProgramDataBaseFileName=".\$(ConfigurationName)/"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -208,21 +249,23 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				Culture="1033"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/tabsrmm_icons.dll"
+				OutputFile="$(ConfigurationName)\tabsrmm_icons.dll"
 				LinkIncremental="1"
+				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile=".\$(ConfigurationName)/tabsrmm_icons.pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				ResourceOnlyDLL="true"
 				ImportLibrary="$(OutDir)/default.lib"
-				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -235,6 +278,8 @@
 			/>
 			<Tool
 				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\$(ConfigurationName)/default.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -254,25 +299,17 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Quelldateien"
-			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
-			>
-		</Filter>
-		<Filter
 			Name="Headerdateien"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\resource.h"
+				RelativePath="resource.h"
 				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Ressourcendateien"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
 				RelativePath="..\..\res\angeli-icons\Add.ico"
@@ -303,7 +340,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\default.rc"
+				RelativePath="default.rc"
 				>
 			</File>
 			<File
@@ -391,8 +428,13 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Quelldateien"
+			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			>
+		</Filter>
 		<File
-			RelativePath=".\ReadMe.txt"
+			RelativePath="ReadMe.txt"
 			>
 		</File>
 	</Files>

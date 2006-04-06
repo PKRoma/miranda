@@ -37,12 +37,6 @@ Sets things like:
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "msgs.h"
-#include "m_ieview.h"
-#include "msgdlgutils.h"
-#include "m_popup.h"
-#include "nen.h"
-#include "functions.h"
 
 extern MYGLOBALS myGlobals;
 extern HANDLE hMessageWindowList, hUserPrefsWindowList;
