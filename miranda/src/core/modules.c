@@ -559,7 +559,7 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 		{	TMissingServiceParams params = { name, wParam, lParam };
 			int result = NotifyEventHooks(hMissingService,0,(LPARAM)&params);
 			if (result != 0)
-				return result;
+				return params.lParam;
 		}
 		return CALLSERVICE_NOTFOUND;
 	}
