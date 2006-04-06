@@ -119,13 +119,13 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		case WM_COMMAND:
 				YAHOO_DebugLog("[MS_POPUP_ADDPOPUPEX] WM_COMMAND");
 				if ( HIWORD( wParam ) == STN_CLICKED) {
-					void* tData = PUGetPluginData( hWnd );
-					if ( tData != NULL ) {
+					int tData = (int )PUGetPluginData( hWnd );
+					if ( tData == YAHOO_MAIL_POPUP ) {
 						YahooGotoMailboxCommand(0, 0);
 					}
 					
 					PUDeletePopUp( hWnd );
-					return TRUE;
+					return 0;
 				}
 				break;
 				
@@ -151,7 +151,6 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags 
 		return 0;
 	}
 
-
 	ZeroMemory(&ppd, sizeof(ppd) );
 	ppd.lchContact = NULL;
 	ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_MAIN ));
@@ -161,21 +160,18 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags 
 	ppd.colorBack =  YAHOO_GetByte( "UseWinColors", FALSE  ) ? GetSysColor( COLOR_BTNFACE ) : YAHOO_GetDword( "BackgroundColour", STYLE_DEFAULTBGCOLOUR) ;
 	ppd.colorText =  YAHOO_GetByte( "UseWinColors", FALSE  ) ? GetSysColor( COLOR_WINDOWTEXT ) : YAHOO_GetDword( "TextColour", GetSysColor( COLOR_WINDOWTEXT ));
 	ppd.PluginWindowProc = ( WNDPROC )NullWindowProc;
-	//ppd.PluginData = ( flags & YAHOO_ALLOW_ENTER ) ? &ppd : NULL;
-		
+			
 	if ( !ServiceExists( MS_POPUP_ADDPOPUPEX )) {
 		   if (flags & YAHOO_MAIL_POPUP){
-			    ppd.PluginData =  &ppd;
+			    ppd.PluginData =  (void *)YAHOO_MAIL_POPUP;
 		        YAHOO_CallService( MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0 );
-                //ppd.PluginWindowProc = (WNDPROC)YahooMailPopupDlgProc;		        
 			}
     } else {	
 	    int tTimeout = 5;   
 	    ppd.iSeconds = YAHOO_GetDword( "PopupTimeoutOther",tTimeout);
 	    if (flags & YAHOO_MAIL_POPUP) {
-			ppd.PluginData =  &ppd;
+			ppd.PluginData =  (void *)YAHOO_MAIL_POPUP;
             ppd.iSeconds = YAHOO_GetDword( "PopupTimeout", tTimeout );
-            //ppd.PluginWindowProc = (WNDPROC)YahooMailPopupDlgProc;
 		}
 		YAHOO_DebugLog("[MS_POPUP_ADDPOPUPEX] Generating a popup for %s", nickname);
 		YAHOO_CallService( MS_POPUP_ADDPOPUPEX, (WPARAM)&ppd, 0 );
