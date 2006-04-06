@@ -110,6 +110,7 @@ HANDLE add_contact(char* buddy)
 }
 void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* group)
 {
+	//make sure group exist serverside then add buddy to it
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	bool group_exist=1;
 	unsigned short old_group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);		
@@ -194,7 +195,7 @@ void add_contacts_to_groups()
 						if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
 						{
 							create_group(dbv.pszVal,group_id);
-							DBWriteContactSettingStringUtf(hContact,"CList","Group",dbv.pszVal);
+							DBWriteContactSettingStringUtf(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
 							DBFreeVariant(&dbv);
 						}
 						DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_NC);
@@ -207,7 +208,7 @@ void add_contacts_to_groups()
 						if(!DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
 						{
 							create_group(dbv.pszVal,group_id);
-							DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+							DBWriteContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
 							DBFreeVariant(&dbv);
 						}
 						DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_NC);
@@ -221,23 +222,23 @@ void add_contacts_to_groups()
 							if(strcmpi(outer_group,dbv.pszVal))
 							{
 								DBVARIANT dbv2;
-								if(!DBGetContactSetting(hContact,"CList","Group",&dbv2))
+								if(!DBGetContactSetting(hContact,MOD_KEY_CL,OTH_KEY_GP,&dbv2))
 								{
 									if(strcmpi(dbv2.pszVal,dbv.pszVal))//compare current group to the new group
-										DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+										DBWriteContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
 								}
 								else
-									DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+									DBWriteContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
 							}
 							else
-								DBDeleteContactSetting(hContact,"CList","Group");
+								DBDeleteContactSetting(hContact,MOD_KEY_CL,OTH_KEY_GP);
 							DBFreeVariant(&dbv);
 						}
 						else
 						{
 							if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME,AIM_KEY_SG,0))
 							{
-								DBWriteContactSettingString(hContact,"CList","Group",dbv.pszVal);
+								DBWriteContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
 								DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_SG);
 							}
 						}
@@ -262,7 +263,7 @@ void offline_contact(HANDLE hContact)
 	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AC);
 	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_ES);
 	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV);
-	DBDeleteContactSetting(hContact, "CList", AIM_KEY_SM);
+	DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 	DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT);
 	DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT);
 	DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
@@ -932,7 +933,7 @@ void delete_module(char* module, HANDLE hContact)
 			DBVARIANT dbv;
 			if(bUtfReadyDB==1)
 			{
-				if (!DBGetContactSettingStringUtf(hContact, "CList", "Group", &dbv))
+				if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv))
 				{
 					if(!strcmp(dbv.pszVal,group))
 					{
@@ -943,7 +944,7 @@ void delete_module(char* module, HANDLE hContact)
 			}
 			else
 			{
-				if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
+				if (!DBGetContactSetting(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv))
 				{
 					if(!strcmp(dbv.pszVal,group))
 					{
@@ -1049,7 +1050,7 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 				pre.timestamp = (DWORD)time(NULL);
 				pre.lParam = 1;
 				CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-				DBWriteContactSettingString(hContact, "CList", AIM_KEY_SM,txt);
+				DBWriteContactSettingString(hContact, MOD_KEY_CL, OTH_KEY_SM,txt);
 			}
 			else
 			{
@@ -1318,6 +1319,12 @@ int is_im2_ver_cap(char* cap)
 int is_sim_ver_cap(char* cap)
 {
 	if(!memcmp(cap,"SIM client",10))
+		return 1;
+	return 0;
+}
+int is_naim_ver_cap(char* cap)
+{
+	if(!memcmp(cap+4,"naim",4))
 		return 1;
 	return 0;
 }

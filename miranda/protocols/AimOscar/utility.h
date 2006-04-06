@@ -74,6 +74,7 @@ int is_qip_ver_cap(char* cap);
 int is_micq_ver_cap(char* cap);
 int is_im2_ver_cap(char* cap);
 int is_sim_ver_cap(char* cap);
+int is_naim_ver_cap(char* cap);
 void add_AT_icons();
 void remove_AT_icons();
 void add_ES_icons();

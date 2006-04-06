@@ -7,7 +7,7 @@ int OptionsInit(WPARAM wParam,LPARAM lParam)
     odp.hInstance = conn.hInstance;
     odp.pszTemplate = MAKEINTRESOURCE(IDD_AIM);
     odp.pszGroup = Translate("Network");
-    odp.pszTitle = Translate("AimOSCAR");
+    odp.pszTitle = Translate(AIM_PROTOCOL_NAME);
     odp.pfnDlgProc = options_dialog;
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
@@ -22,7 +22,7 @@ int UserInfoInit(WPARAM wParam,LPARAM lParam)
 		odp.position = -1900000000;
 		odp.hInstance = conn.hInstance;
 		odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO);
-		odp.pszTitle = Translate("AimOSCAR");
+		odp.pszTitle = Translate(AIM_PROTOCOL_NAME);
 		odp.pfnDlgProc = userinfo_dialog;
 		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM) & odp);
 	}

@@ -147,7 +147,7 @@ void snac_icbm_limitations(unsigned short subgroup)//family 0x0004
 			if(!conn.szModeMsg)
 			{
 				DBVARIANT dbv;
-				if(!DBGetContactSetting(NULL, "SRAway","AwayDefault", &dbv))
+				if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_AD,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
 				{
 					free(conn.szModeMsg);
 					conn.szModeMsg=NULL;
@@ -157,7 +157,7 @@ void snac_icbm_limitations(unsigned short subgroup)//family 0x0004
 					memcpy(&conn.szModeMsg[msg_length],"\0",1);
 					DBFreeVariant(&dbv);
 				}
-				if(!DBGetContactSetting(NULL, "SRAway","AwayMsg", &dbv))
+				else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_AM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
 				{
 					free(conn.szModeMsg);
 					conn.szModeMsg=NULL;
@@ -169,12 +169,12 @@ void snac_icbm_limitations(unsigned short subgroup)//family 0x0004
 				}
 				else
 				{
-					char* store=Translate("I am currently away from the computer.");
 					free(conn.szModeMsg);
+
 					conn.szModeMsg=NULL;
-					int msg_length=strlen(store);
+					int msg_length=strlen(DEFAULT_AWAY_MSG);
 					conn.szModeMsg=(char*)realloc(conn.szModeMsg,msg_length+1);
-					memcpy(conn.szModeMsg,store,msg_length);
+					memcpy(conn.szModeMsg,DEFAULT_AWAY_MSG,msg_length);
 					memcpy(&conn.szModeMsg[msg_length],"\0",1);
 				}
 			}
@@ -194,6 +194,7 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 	if(subgroup==0x000b)
 	{
 		bool hiptop_user=0;
+		bool wireless_user=0;
 		bool bot_user=0;
 		bool adv2_icon=0;
 		bool adv1_icon=0;
@@ -332,12 +333,14 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 					}
 					if(wireless)
 					{
-						DBDeleteContactSetting(hContact, "CList", AIM_KEY_SM);
+						wireless_user=1;
+						DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 						DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_ONTHEPHONE);
+						
 					}
 					else if(away==0)
 					{
-						DBDeleteContactSetting(hContact, "CList", AIM_KEY_SM);
+						DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 						DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_ONLINE);
 					}
 					else 
@@ -345,7 +348,7 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 						away_user=1;
 						DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_AWAY);
 					}
-					aim_query_away_message(buddy);
+					//aim_query_away_message(buddy);
 					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT, 0);//erase idle time
 					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT, 0);//erase online time
 				}
@@ -395,20 +398,23 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"IM2");
 					else if(is_sim_ver_cap(&buf[offset+i]))
 						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"SIM");
+					else if(is_naim_ver_cap(&buf[offset+i]))
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"naim");
 				}
 			}
 			else if(tlv_type==0x0019)//new caps
 			{
 				caps_included=1;
-				bool f002=0, f003=0, f004=0, f005=0, f007=0, f008=0, O104=0, O105=0, utf8=0;//O actually means 0 in this case
+				bool f002=0, f003=0, f004=0, f005=0, f007=0, f008=0, 
+					O101=0, O102=0, O103=0, O104=0, O105=0, O107=0, O1ff=0, 
+					l341=0, l343=0, l345=0, l346=0, l347=0, l348=0, l34b=0, 
+					utf8=0;//O actually means 0 in this case
 				for(int i=0;i<tlv_length;i=i+2)
 				{
 					unsigned short* cap =(unsigned short*)&buf[offset+i];
 					*cap=htons(*cap);
 					if(*cap==0x134E)
 						utf8=1;
-					if(*cap==0x1323)
-						hiptop_user=1;
 					if(*cap==0xf002)
 						f002=1;
 					if(*cap==0xf003)
@@ -421,21 +427,62 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 						f007=1;
 					if(*cap==0xf008)
 						f008=1;
+					if(*cap==0x0101)
+						O101=1;
+					if(*cap==0x0102)
+						O102=1;
+					if(*cap==0x0103)
+						O103=1;
 					if(*cap==0x0104)
 						O104=1;
 					if(*cap==0x0105)
 						O105=1;
-					if(f002&f003&f004&f005)
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian Pro");
-					else if(f004&f005&f007&f008||f004&f005&O104&O105)
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"iChat");
-					else if(f003&f004&f005)
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian");
+					if(*cap==0x0107)
+						O107=1;
+					if(*cap==0x01ff)
+						O1ff=1;
+					if(*cap==0x1323)
+					{
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"GPRS");
+						hiptop_user=1;
+					}
+					if(*cap==0x1341)
+						l341=1;
+					if(*cap==0x1343)
+						l343=1;
+					if(*cap==0x1345)
+						l345=1;
+					if(*cap==0x1346)
+						l346=1;
+					if(*cap==0x1347)
+						l347=1;
+					if(*cap==0x1348)
+						l348=1;
+					if(*cap==0x134b)
+						l34b=1;
 				}
-					if(utf8)
-						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 1);
-					else
-						DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0);
+				if(f002&f003&f004&f005)
+					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian Pro");
+				else if(f004&f005&f007&f008||f004&f005&O104&O105)
+					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"iChat");
+				else if(f003&f004&f005)
+					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian");
+				else if(l343&&tlv_length==2)
+					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"AIM TOC");
+				else if(l343&&l345&&l346&&tlv_length==6)
+					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Gaim");
+				else if(tlv_length==0&&DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST,0)!=ID_STATUS_ONTHEPHONE)
+					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"AIM Express");
+				else if(l34b&&l341&&l343&&O1ff&&l345&&l346&&l347)
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"AIM 5.x");
+				else if(l34b&&l341&&l343&&l345&l346&&l347&&l348)
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"AIM 4.x");
+				else if(O1ff&&l343&&O107&&l341&&O104&&O105&&O101&&l346)
+						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"AIM Triton");
+				if(utf8)
+					DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 1);
+				else
+					DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0);
 			}
 			else if(tlv_type==0x0004)//idle tlv
 			{
@@ -488,6 +535,10 @@ void snac_user_online(unsigned short subgroup, char* buf)//family 0x0003
 					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
 					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
+			}
+			else if(wireless_user)
+			{
+				DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"SMS");
 			}
 			if(caps_included)
 			{
@@ -676,7 +727,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 				if(!hContact)
 				{
 					hContact=add_contact(sn);
-					DBWriteContactSettingByte(hContact,"CList",AIM_KEY_NL,1);
+					DBWriteContactSettingByte(hContact,MOD_KEY_CL,AIM_KEY_NL,1);
 					DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_ONLINE);
 				}
 				if(hContact)
@@ -843,7 +894,7 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 			{
 				unsigned long msg_time=DBGetContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_LM,0);
 				unsigned long away_time=DBGetContactSettingDword(NULL,AIM_PROTOCOL_NAME,AIM_KEY_LA,0);
-				if(away_time>msg_time)
+				if(away_time>msg_time&&conn.szModeMsg&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
 				{
 					char* temp=new char[strlen(conn.szModeMsg)+20];
 					mir_snprintf(temp,strlen(conn.szModeMsg)+20,"%s %s",Translate("[Auto-Response]:"),conn.szModeMsg);

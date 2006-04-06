@@ -791,3 +791,13 @@ int aim_typing_notification(char* sn,unsigned short type)
 	else
 		return 0;
 }
+int aim_set_idle(unsigned long seconds)
+{
+	char buf[MSG_LEN*2];
+	aim_writesnac(0x01,0x11,0x06,buf);
+	aim_writegeneric(4,(char*)&seconds,buf);
+	if(aim_sendflap(0x02,conn.packet_offset,buf)==0)
+		return 1;
+	else
+		return 0;
+}

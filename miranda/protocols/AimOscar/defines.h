@@ -30,6 +30,15 @@
 #define AIM_KEY_FI						"FormatIncoming"//html->bbcodes
 #define AIM_KEY_FO						"FormatOutgoing"//bbcodes->html
 #define AIM_KEY_FR						"FirstRun"
+//Other plugin Option Keys
+#define OTH_KEY_AI						"AwayIgnore"
+#define OTH_KEY_AD						"AwayDefault"
+#define OTH_KEY_AM						"AwayMsg"
+#define OTH_KEY_SM						"StatusMsg"
+#define OTH_KEY_GP						"Group"
+//Module Name Key
+#define MOD_KEY_SA						"SRAway"
+#define MOD_KEY_CL						"CList"
 //Settings Keys
 #define AIM_KEY_PR						"Profile"
 #define AIM_KEY_LA						"LastAwayChange"
@@ -39,7 +48,6 @@
 #define AIM_KEY_BI						"BuddyId"
 #define AIM_KEY_GI						"GroupId"
 #define AIM_KEY_ST						"Status"
-#define AIM_KEY_SM						"StatusMsg"
 #define AIM_KEY_IT						"IdleTS"
 #define AIM_KEY_OT						"LogonTS"
 #define AIM_KEY_AC						"AccType"//account type		
@@ -66,6 +74,7 @@
 #define AIM_DEFAULT_GROUP				"Miranda Merged"
 #define AIM_DEFAULT_SERVER				"login.oscar.aol.com:5190"
 #define SYSTEM_BUDDY					"aolsystemmsg"
+#define DEFAULT_AWAY_MSG				"I am away from my computer right now."
 //Md5 Roasting stuff
 #define AIM_MD5_STRING					"AOL Instant Messenger (SM)"
 #define MD5_HASH_LENGTH					16

@@ -1,13 +1,13 @@
 #include "aim.h"
 PLUGINLINK *pluginLink;
-#define AIM_OSCAR_VERSION "\0\0\0\x02"
-char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.2";
+#define AIM_OSCAR_VERSION "\0\0\0\x03"
+char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.3";
 char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
-	"AIM OSCAR Plugin - Beta 2",
-	PLUGIN_MAKE_VERSION(0,0,0,2),
-	"Provides basic support for AOL® OSCAR Instant Messenger protocol.",
+	"AIM OSCAR Plugin - Beta 3",
+	PLUGIN_MAKE_VERSION(0,0,0,3),
+	"Provides basic support for AOL® OSCAR Instant Messenger protocol. [Built: "__DATE__" "__TIME__"]",
 	"Aaron Myles Landwehr",
 	"aaron@snaphat.com",
 	"© 2005-2006 Aaron Myles Landwehr",
@@ -122,6 +122,7 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_AIMACCOUNT), NULL, first_run_dialog);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_OPT_INITIALISE, OptionsInit);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_USERINFO_INITIALISE, UserInfoInit);
+	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_IDLE_CHANGED,IdleChanged);
 	if(conn.hookEvent_size>HOOKEVENT_SIZE)
 	{
 		MessageBox( NULL, "AimOSCAR has detected that a buffer overrun has occured in it's 'conn.hookEvent' array. Please recompile with a larger HOOKEVENT_SIZE declared. AimOSCAR will now shut Miranda-IM down.", AIM_PROTOCOL_NAME, MB_OK );

@@ -39,7 +39,7 @@ void __cdecl aim_keepalive_thread(void* fa)
 			if (conn.state==1)
 				aim_keepalive();
 		}
-		else if (dwWait == WAIT_IO_COMPLETION)
+		//else if (dwWait == WAIT_IO_COMPLETION)
 		// Possible shutdown in progress
 		if (Miranda_Terminated()) break;
 	}
@@ -102,7 +102,6 @@ void set_status_thread(int status)
 		}
 	LeaveCriticalSection(&statusMutex);
 }
-
 /*void contact_setting_changed_thread(char* data)
 {
 	HANDLE* hContact=(HANDLE*)data;

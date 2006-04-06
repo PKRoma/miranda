@@ -11,7 +11,7 @@
 #include "thread.h"
 #include "utility.h"
 #include "snac.h"
-#define HOOKEVENT_SIZE 6
+#define HOOKEVENT_SIZE 8
 extern char* COOKIE;
 extern int COOKIE_LENGTH;
 extern char* CWD;//current working directory
@@ -39,6 +39,7 @@ public:
 	bool extra_icons_loaded;
 	bool freeing_DirectBoundPort;
 	bool shutting_down;
+	bool idle;
 	HINSTANCE hInstance;
 	HANDLE hServerConn;
 	HANDLE hServerPacketRecver;

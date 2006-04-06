@@ -13,6 +13,7 @@
 #include <m_options.h>
 #include <m_langpack.h>
 #include <m_userinfo.h>
+#include <m_idle.h>
 #include "defines.h"
 #include "aim.h"
 #include "connection.h"
@@ -27,6 +28,6 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam);
 int PreBuildContactMenu(WPARAM wParam,LPARAM lParam);
 int PreShutdown(WPARAM wParam,LPARAM lParam);
 static int ContactDeleted(WPARAM wParam,LPARAM lParam);
-//static int ContactSettingChanged(WPARAM wParam,LPARAM lParam);
+int IdleChanged(WPARAM wParam, LPARAM lParam);
 void CreateServices();
 #endif

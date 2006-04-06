@@ -8,13 +8,13 @@ static int GetCaps(WPARAM wParam, LPARAM lParam)
             ret = PF1_IM | PF1_MODEMSG | PF1_BASICSEARCH | PF1_FILE;
             break;
         case PFLAGNUM_2:
-            ret = PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_IDLE | PF2_ONTHEPHONE;
+            ret = PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_ONTHEPHONE;
             break;
 		case PFLAGNUM_3:
             ret = PF2_SHORTAWAY;
             break;
 		case PFLAGNUM_4:
-            ret = PF4_SUPPORTTYPING;
+			ret = PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_SUPPORTIDLE;
             break;
 		case PFLAGNUM_5:                
             ret = PF2_ONTHEPHONE;
@@ -40,6 +40,39 @@ static int SetStatus(WPARAM wParam, LPARAM lParam)
 		return 0;
 	ForkThread((pThreadFunc)set_status_thread,(void*)wParam);
 	return 0;
+}
+
+int IdleChanged(WPARAM wParam, LPARAM lParam)
+{ 
+	if (conn.state!=1)
+	{
+		conn.idle=0;
+		return 0;
+	}
+	BOOL bIdle = (lParam & IDF_ISIDLE);
+    BOOL bPrivacy = (lParam & IDF_PRIVACY);
+
+    if (bPrivacy && conn.idle) {
+        aim_set_idle(0);
+        return 0;
+    }
+    else if (bPrivacy) {
+        return 0;
+    }
+    else {
+        if (bIdle) {
+            MIRANDA_IDLE_INFO mii;
+
+            ZeroMemory(&mii, sizeof(mii));
+            mii.cbSize = sizeof(mii);
+            CallService(MS_IDLE_GETIDLEINFO, 0, (LPARAM) & mii);
+			conn.idle=1;
+            aim_set_idle(mii.idleTime * 60);
+        }
+        else
+            aim_set_idle(0);
+    }
+    return 0;
 }
 static int SendMsg(WPARAM wParam, LPARAM lParam)
 {
@@ -173,10 +206,7 @@ static int SetAwayMsg(WPARAM wParam, LPARAM lParam)
 				free(conn.szModeMsg);
 				conn.szModeMsg=NULL;
 				if(!lParam)
-				{
-					char away_msg[]="Away";
-					lParam=(int)&away_msg;
-				}
+					lParam=(int)&DEFAULT_AWAY_MSG;
 				int msg_length=strlen((char*)lParam);
 				conn.szModeMsg=(char*)realloc(conn.szModeMsg,msg_length+1);
 				memcpy(conn.szModeMsg,(char*)lParam,msg_length);
@@ -237,18 +267,30 @@ static int LoadIcons(WPARAM wParam, LPARAM lParam)
 {
 	return (int) LoadImage(conn.hInstance, MAKEINTRESOURCE(IDI_AIM), IMAGE_ICON, GetSystemMetrics(wParam & PLIF_SMALL ? SM_CXSMICON : SM_CXICON),GetSystemMetrics(wParam & PLIF_SMALL ? SM_CYSMICON : SM_CYICON), 0);
 }
-//Bottle Neck-->>
-/*static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
+static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 {
-/*	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME,AIM_KEY_SG,0))
+	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
+	if (conn.state!=1)
+		return 0;
+	char* protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam, 0);
+	if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
 	{
-		if (conn.state!=1)
-			return 0;
-		char* protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam, 0);
-		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+		if(!strcmp(cws->szSetting,AIM_KEY_NL)&&!strcmp(cws->szModule,MOD_KEY_CL))
 		{
-			DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
-			if(!strcmp(cws->szSetting,"Group")&&!strcmp(cws->szModule,"CList"))
+			if(cws->value.type == DBVT_DELETED)
+			{
+				DBVARIANT dbv;
+				if(!DBGetContactSetting((HANDLE)wParam,MOD_KEY_CL,OTH_KEY_GP,&dbv))
+				{
+					add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY,dbv.pszVal,0),dbv.pszVal);
+					DBFreeVariant(&dbv);
+				}
+				else
+					add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0),AIM_DEFAULT_GROUP);
+			}
+		}
+			/*DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
+			if(!strcmp(cws->szSetting,OTH_KEY_GP)&&!strcmp(cws->szModule,MOD_KEY_CL))
 			{
 				if(wParam!=0)
 				{
@@ -286,11 +328,10 @@ static int LoadIcons(WPARAM wParam, LPARAM lParam)
 						free(default_group);
 					}
 				}
-			}
-		}
+			}*/
 	}
 	return 0;
-}*/
+}
 static int BasicSearch(WPARAM wParam,LPARAM lParam)
 {
 	if (conn.state!=1)
@@ -309,8 +350,23 @@ static int AddToList(WPARAM wParam,LPARAM lParam)
 	{
 		hContact=add_contact(psr->nick);
 	}
-	add_contact_to_group(hContact,DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0),AIM_DEFAULT_GROUP);
-	return (int)hContact;
+	return (int)hContact;//See authrequest for serverside addition
+}
+static int AuthRequest(WPARAM wParam,LPARAM lParam)
+{
+	//Not a real authrequest- only used b/c we don't know the group until now.
+	if (conn.state!=1||!lParam)
+		return 1;
+	CCSDATA *ccs = (CCSDATA *)lParam;
+	DBVARIANT dbv;
+	if(!DBGetContactSetting(ccs->hContact,MOD_KEY_CL,OTH_KEY_GP,&dbv))
+	{
+		add_contact_to_group(ccs->hContact,DBGetContactSettingWord(NULL, GROUP_ID_KEY,dbv.pszVal,0),dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}
+	else
+		add_contact_to_group(ccs->hContact,DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0),AIM_DEFAULT_GROUP);
+	return 0;
 }
 static int ContactDeleted(WPARAM wParam,LPARAM lParam)
 {
@@ -395,7 +451,7 @@ static int RecvFile(WPARAM wParam,LPARAM lParam)
     PROTORECVEVENT *pre = (PROTORECVEVENT *) ccs->lParam;
     char *szDesc, *szFile, *szIP, *szIP2, *szIP3;
 
-    DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
+    DBDeleteContactSetting(ccs->hContact, MOD_KEY_CL, "Hidden");
     szFile = pre->szMessage + sizeof(DWORD);
     szDesc = szFile + strlen(szFile) + 1;
 	szIP = szDesc + strlen(szDesc) + 1;
@@ -524,6 +580,8 @@ void CreateServices()
 	CreateServiceFunction(service_name,CancelFile);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_USERISTYPING);
 	CreateServiceFunction(service_name,UserIsTyping);
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_AUTHREQUEST);
+	CreateServiceFunction(service_name,AuthRequest);
 	//Do not put any services below HTML get away message!!!
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/GetHTMLAwayMsg");
 	CreateServiceFunction(service_name,GetHTMLAwayMsg);
@@ -554,6 +612,6 @@ void CreateServices()
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_SYSTEM_PRESHUTDOWN,PreShutdown);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,PreBuildContactMenu);
-	//conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
+	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_DB_CONTACT_DELETED,ContactDeleted);
 }

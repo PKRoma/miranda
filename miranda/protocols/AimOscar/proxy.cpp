@@ -144,7 +144,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 					}
 				}
 			}
-			//FREE VARIANT HERE???????!??
+			DBFreeVariant(&dbv);
 		}
 	}
 	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT);

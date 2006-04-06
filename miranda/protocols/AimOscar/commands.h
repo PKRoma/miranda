@@ -40,4 +40,5 @@ int aim_file_proxy_request(char* sn,char* icbm_cookie,char request_num,unsigned 
 int aim_accept_file(char* sn,char* icbm_cookie);
 int aim_deny_file(char* sn,char* icbm_cookie);
 int aim_typing_notification(char* sn,unsigned short type);
+int aim_set_idle(unsigned long seconds);
 #endif
