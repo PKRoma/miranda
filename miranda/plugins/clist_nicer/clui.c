@@ -935,21 +935,24 @@ static void ShowCLUI(HWND hwnd)
 	if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
 		SetMenu(pcli->hwndContactList, NULL);
 	if (state == SETTING_STATE_NORMAL) {
-		int oldFade = g_CluiData.fadeinout;
+		/*int oldFade = g_CluiData.fadeinout;
 		g_CluiData.fadeinout = 1;
 		SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 		ShowWindow(pcli->hwndContactList, SW_SHOW);
-		g_CluiData.fadeinout = oldFade;
+		g_CluiData.fadeinout = oldFade;*/
+		SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+		ShowWindow(pcli->hwndContactList, SW_SHOWNORMAL);
+		SendMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
 	}
 	else if (state == SETTING_STATE_MINIMIZED) {
 		g_CluiData.forceResize = TRUE;
-		ShowWindow(pcli->hwndContactList, SW_SHOWMINIMIZED);
+		ShowWindow(pcli->hwndContactList, SW_HIDE);
 	}
 	else if (state == SETTING_STATE_HIDDEN) {
 		g_CluiData.forceResize = TRUE;
 		ShowWindow(pcli->hwndContactList, SW_HIDE);
 	}
-	SetWindowPos(pcli->hwndContactList, onTop ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+	SetWindowPos(pcli->hwndContactList, onTop ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOSENDCHANGING);
 	DrawMenuBar(hwnd);
 	if(g_CluiData.autosize) {
 		SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
@@ -1411,9 +1414,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), g_CluiData.alpha, LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
 				transparentFocus = 1;
 			}
-			SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOREDRAW | SWP_NOSENDCHANGING);
-			if (!DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT))
-				SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_NOSENDCHANGING);
+			SetWindowPos(pcli->hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOREDRAW | SWP_NOSENDCHANGING);
 		}
 		PostMessage(hwnd, CLUIINTM_REMOVEFROMTASKBAR, 0, 0);
 		return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -1507,7 +1508,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			if(g_CluiData.forceResize && wParam != SW_HIDE) {
 				g_CluiData.forceResize = FALSE;
-				if(!g_CluiData.fadeinout && MySetLayeredWindowAttributes && g_CluiData.bLayeredHack) {
+				if(0) { //!g_CluiData.fadeinout && MySetLayeredWindowAttributes && g_CluiData.bLayeredHack) {
 					MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), 0, LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
 					SendMessage(hwnd, WM_SIZE, 0, 0);
 					ShowWindow(hwnd, SW_SHOW);
@@ -1519,6 +1520,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					SendMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
 				}
 			}
+			PostMessage(hwnd, CLUIINTM_REMOVEFROMTASKBAR, 0, 0);
 			if(!g_CluiData.fadeinout)
 				SFL_SetState(-1);
 			if (lParam)
@@ -1528,7 +1530,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if (!g_CluiData.fadeinout || !IsWinVer2000Plus())
 				return DefWindowProc(hwnd, msg, wParam, lParam);
 
-            PostMessage(hwnd, CLUIINTM_REMOVEFROMTASKBAR, 0, 0);
 			g_fading_active = 1;
 
 			if (wParam) {

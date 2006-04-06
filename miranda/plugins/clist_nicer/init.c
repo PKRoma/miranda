@@ -64,6 +64,7 @@ void   TrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPr
 
 void GetDefaultFontSetting(int i, LOGFONT *lf, COLORREF *colour);
 int  GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY);
+int  ShowHide(WPARAM wParam, LPARAM lParam);
 
 void ( *saveLoadClcOptions )(HWND hwnd,struct ClcData *dat);
 void LoadClcOptions(HWND hwnd,struct ClcData *dat);
@@ -353,6 +354,8 @@ LBL_Error:
 	pcli->pfnTrayIconSetToBase = TrayIconSetToBase;
 	pcli->pfnTrayIconUpdateBase = TrayIconUpdateBase;
 	pcli->pfnTrayIconUpdateWithImageList = TrayIconUpdateWithImageList;
+
+	pcli->pfnShowHide = ShowHide;
 
 	saveAddContactToGroup = pcli->pfnAddContactToGroup; pcli->pfnAddContactToGroup = AddContactToGroup;
 	saveRemoveItemFromGroup = pcli->pfnRemoveItemFromGroup; pcli->pfnRemoveItemFromGroup = RemoveItemFromGroup;
