@@ -56,6 +56,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SETTING_TRAYICON_CYCLE    1
 #define SETTING_TRAYICON_MULTI    2
 
+#define NIIF_INTERN_UNICODE 0x00000100
+
 #define SETTING_STATE_HIDDEN      0
 #define SETTING_STATE_MINIMIZED   1
 #define SETTING_STATE_NORMAL      2
@@ -123,8 +125,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIMERID_INFOTIP        13
 #define TIMERID_REBUILDAFTER   14
 #define TIMERID_DELAYEDRESORTCLC   15
-#define TIMERID_SUBEXPAND 21
+#define TIMERID_TRAYHOVER      16
+#define TIMERID_TRAYHOVER_2    17
+#define TIMERID_SUBEXPAND		21
 #define TIMERID_INVALIDATE 22
+
+#define TIMERID_INVALIDATE_FULL 25
 
 #define FONTID_CONTACTS    0
 #define FONTID_INVIS       1
@@ -147,9 +153,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FONTID_CONTACT_TIME	18
 #define FONTID_CLOSEDGROUPS 19
 #define FONTID_CLOSEDGROUPCOUNTS 20
+#define FONTID_STATUSBAR_PROTONAME 21
 
 
-#define FONTID_MODERN_MAX 20
+#define FONTID_MODERN_MAX 21
 
 struct ClcGroup;
 
@@ -258,6 +265,14 @@ struct ClcContact {
 
 #define TEXT_TEXT_MAX_LENGTH 1024
 
+struct ClcModernFontInfo {
+	HFONT hFont;
+	int fontHeight,changed;
+	COLORREF colour;
+  BYTE effect;
+  COLORREF effectColour1;
+  COLORREF effectColour2;
+};
 
 struct ClcData {
 	struct ClcGroup list;
@@ -326,6 +341,8 @@ struct ClcData {
 	// Row
 	int row_min_heigh;
 	int row_border;
+	int row_before_group_space;
+
 	BOOL row_variable_height;
 	BOOL row_align_left_items_to_left;
 	BOOL row_align_right_items_to_right;
@@ -343,7 +360,9 @@ struct ClcData {
 	BOOL avatars_ignore_size_for_row_height;
 	BOOL avatars_draw_overlay;
 	int avatars_overlay_type;
-	int avatars_size;
+	
+	int avatars_maxheight_size;
+	int avatars_maxwidth_size;
 
 	// Icon
 	BOOL icon_hide_on_avatar;
@@ -387,7 +406,7 @@ struct ClcData {
 	BOOL third_line_xstatus_has_priority;
 	BOOL third_line_show_status_if_no_away;
 	BOOL third_line_use_name_and_message_for_xstatus;
-	struct ClcFontInfo fontModernInfo[FONTID_MODERN_MAX+1];
+	struct ClcModernFontInfo fontModernInfo[FONTID_MODERN_MAX+1];
 	HWND hWnd;
 };
 
@@ -439,7 +458,7 @@ void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint);
 //clcopts.c
 int ClcOptInit(WPARAM wParam,LPARAM lParam);
 DWORD GetDefaultExStyle(void);
-void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour);
+void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORREF *eColour1,COLORREF *eColour2);
 
 //clistsettings.c
 TCHAR* GetContactDisplayNameW( HANDLE hContact, int mode );
@@ -496,5 +515,7 @@ typedef struct {
 
 #define MS_SKIN_ADDHOTKEY      "Skin/HotKeys/AddNew"
 #define MS_SKIN_PLAYHOTKEY		"Skin/HotKeys/Run"
+
+//extern void (*saveSortCLC) (HWND hwnd, struct ClcData *dat, int useInsertionSort );
 
 #endif _CLC_H_

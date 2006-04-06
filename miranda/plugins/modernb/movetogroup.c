@@ -67,7 +67,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	//AddGroupItem(menuid,"---------------------------------------------",grpid++,0);
 while (TRUE) 
 {
-	itoa(i,intname,10);
+	_itoa(i,intname,10);
 	grpname=DBGetStringA(0,"CListGroups",intname);
 
 	if (grpname==NULL ){break;};
@@ -118,7 +118,7 @@ lParam--;
 		return 0;
 	}
 	intname=(char *)malloc(20);
-	itoa(lParam,intname,10);
+	_itoa(lParam,intname,10);
 	grpname=DBGetStringA(0,"CListGroups",intname);
 	if (grpname!=0)
 	{

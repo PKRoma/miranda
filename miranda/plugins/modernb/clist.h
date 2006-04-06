@@ -52,6 +52,7 @@ typedef struct  {
 	void *ClcContact;
 	BYTE IsExpanded;
 	boolean isUnknown;
+
 } displayNameCacheEntry,*pdisplayNameCacheEntry;
 
 #endif

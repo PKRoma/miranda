@@ -288,7 +288,7 @@ void InitGroupMenus(void)
 	OptParam op;
 	HICON hicon;
 	hicon=LoadIconFromExternalFile("clisticons.dll",2,TRUE,TRUE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP2);
-	NewGroupIconidx=ImageList_AddIcon(hCListImages,hicon );	
+	NewGroupIconidx=hicon?ImageList_AddIcon(hCListImages,hicon ):-1;	
 	
 	CreateServiceFunction("CLISTMENUSGroup/ExecService",GroupMenuExecService);
 	CreateServiceFunction("CLISTMENUSGroup/FreeOwnerDataGroupMenu",FreeOwnerDataGroupMenu);
@@ -398,6 +398,7 @@ void InitGroupMenus(void)
 	mi.pszService=MS_CLIST_GROUPCREATE;
 	mi.pszName=Translate("&New Group");	
 	hNewGroupMenuItem=(HANDLE)AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
+	DestroyIcon(mi.hIcon);
 
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
@@ -768,6 +769,7 @@ void InitSubGroupMenus(void)
 	mi.pszName=Translate("&New SubGroup");	
 	gmp.lParam=0;gmp.wParam=POPUP_NEWSUBGROUP;
 	hNewSubGroupMenuItem=(HANDLE)AddSubGroupMenuItem((WPARAM)&gmp,(LPARAM)&mi);
+	DestroyIcon(mi.hIcon);
 
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);

@@ -207,7 +207,7 @@ int RegistersAllHotkey(HWND hwnd)
 		if(DBGetContactSettingByte(NULL, "SkinHotKeysOff", phi->name, 0)==0) {
 			if(!phi->aAtom) phi->aAtom=GlobalAddAtomA(phi->name);
 			WordToModAndVk((WORD)DBGetContactSettingWord(NULL,"SkinHotKeys",phi->name,0),&mod,&vk);
-			RegisterHotKey(hwnd,phi->aAtom,mod,vk);
+			if (vk!=0) RegisterHotKey(hwnd,phi->aAtom,mod,vk); 
 		}
 	}
 	return 0;
@@ -244,7 +244,7 @@ int HotkeysProcessMessage(WPARAM wParam,LPARAM lParam)
 	switch(msg->message) {
 		case WM_CREATE:
 			HotKeysRegister(msg->hwnd);
-			break;
+			return 0;
 		case WM_HOTKEY:
 			//*((LRESULT*)lParam)=HotKeysProcess(msg->hwnd,msg->wParam,msg->lParam);
 			{
@@ -255,7 +255,7 @@ int HotkeysProcessMessage(WPARAM wParam,LPARAM lParam)
 			return TRUE;
 		case WM_DESTROY:
 			UnRegistersAllHotkey(msg->hwnd);
-			break;
+			return 0;
 	}
 
 	return FALSE;

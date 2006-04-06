@@ -35,10 +35,17 @@ LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wP
 {
 	switch(msg) {
 	case CLM_AUTOREBUILD:
-		KillTimer(hwnd,TIMERID_REBUILDAFTER);
-		// Give some time to gather other events too		
-		SetTimer(hwnd,TIMERID_REBUILDAFTER,50,NULL);
-		CLM_AUTOREBUILD_WAS_POSTED=FALSE;
+			if (dat->force_in_dialog)
+		{
+			pcli->pfnSaveStateAndRebuildList(hwnd, dat);
+		}
+		else
+		{
+			KillTimer(hwnd,TIMERID_REBUILDAFTER);
+			// Give some time to gather other events too		
+			SetTimer(hwnd,TIMERID_REBUILDAFTER,50,NULL);
+			CLM_AUTOREBUILD_WAS_POSTED=FALSE;
+		}
 		return 0;
 
 	case CLM_SETEXTRACOLUMNSSPACE:
@@ -56,6 +63,7 @@ LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wP
 		if(LOWORD(lParam))
 			skinInvalidateRect(hwnd,NULL,FALSE);
 		return 0;
+
 
 	case CLM_SETHIDEEMPTYGROUPS:
 		{

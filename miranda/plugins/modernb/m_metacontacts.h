@@ -23,6 +23,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_METACONTACTS_H__
 #define M_METACONTACTS_H__ 1
 
+//get the handle for a contact's parent metacontact
+//wParam=(HANDLE)hSubContact
+//lParam=0
+//returns a handle to the parent metacontact, or null if this contact is not a subcontact
+#define MS_MC_GETMETACONTACT				"MetaContacts/GetMeta"
+
 //gets the handle for the default contact
 //wParam=(HANDLE)hMetaContact
 //lParam=0
@@ -139,9 +145,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MS_MC_ADDTOMETA						"MetaContacts/AddToMetacontact"
 
 // added 0.9.5.0 (22/3/05)
-// wParam=(HANDLE)hContact
-// lParam=(HANDLE)hMeta
+// wParam=0
+// lParam=(HANDLE)hContact
 // remove a contact from a metacontact
 #define MS_MC_REMOVEFROMMETA				"MetaContacts/RemoveFromMetacontact"
+
+
+// added 0.9.13.2 (6/10/05)
+// wParam=(BOOL)disable
+// lParam=0
+// enable/disable the 'hidden group hack' - for clists that support subcontact hiding using 'IsSubcontact' setting
+// should be called once in the clist 'onmodulesloaded' event handler (which, since it's loaded after the db, will be called
+// before the metacontact onmodulesloaded handler where the subcontact hiding is usually done)
+#define MS_MC_DISABLEHIDDENGROUP			"MetaContacts/DisableHiddenGroup"
 
 #endif

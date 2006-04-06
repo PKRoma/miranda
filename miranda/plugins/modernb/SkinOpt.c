@@ -27,63 +27,29 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "SkinEngine.h"
 #include "io.h"
 #include "commonprototypes.h"
+
+extern BOOL glOtherSkinWasLoaded;
+extern BYTE glSkinWasModified;
+//#include "shlwapi.h"
+/*******************************/
+// Main skin selection routine //
+/*******************************/
 #define MAX_NAME 100
-extern HBITMAP intLoadGlyphImage(char * szFileName);
-extern HWND hCLUIwnd;
-int AddSkinToListFullName(HWND hwndDlg,char * fullName);
-int AddSkinToList(HWND hwndDlg,char * path, char* file);
-int FillAvailableSkinList(HWND hwndDlg);
 typedef struct _SkinListData
 {
 	char Name[MAX_NAME];
 	char File[MAX_PATH];
 } SkinListData;
-
-char *styleType[]={"- Empty -", "Solid color", "Image"};//, "Colorized Image"};
-int styleIndex[]={ST_SKIP,ST_BRUSH,ST_IMAGE};//,ST_SOLARIZE};
-char *fitMode[]={"Stretch both directions", "Stretch Vertical, Tile Horizontal", "Tile Vertical, Stretch Horizontal", "Tile both directions"};
-int fitIndex[]={FM_STRETCH,FM_TILE_HORZ,FM_TILE_VERT,FM_TILE_BOTH};
-//extern int ImageList_AddIcon_FixAlpha(HIMAGELIST himl,HICON hicon);
-extern HWND DialogWnd;
+HBITMAP hPreviewBitmap=NULL;
+extern HWND hCLUIwnd;
+static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data);
 extern int LoadSkinFromIniFile(char*);
 extern int RedrawCompleteWindow();
 extern int LoadSkinFromDB();
-//extern int SaveSkinToIniFile(char*);
-SKINOBJECTSLIST glTempObjectList;
-LPGLYPHOBJECT glCurObj=NULL;
-int OptClearObjectList();
-int OptionsGlyphControlsEnum[]={IDC_FRAME_IMAGE,
-IDC_STATIC_STYLE,
-IDC_COMBO_STYLE};
-int OptionsBrushControlsEnum[]={IDC_STATIC_COLOR,
-IDC_COLOUR,
-IDC_STATIC_ALPHA,
-IDC_EDIT_ALPHA,
-IDC_SPIN_ALPHA};
-int OptionsImageControlsEnum[]={IDC_STATIC_ALPHA,
-IDC_EDIT_ALPHA,
-IDC_SPIN_ALPHA,
-IDC_EDIT_FILENAME,
-IDC_BUTTON_BROWSE,
-IDC_STATIC_MARGINS,
-IDC_STATIC_LEFT,
-IDC_EDIT_LEFT,		
-IDC_SPIN_LEFT,
-IDC_STATIC_RIGHT,
-IDC_EDIT_RIGHT,		
-IDC_SPIN_RIGHT,
-IDC_STATIC_TOP,
-IDC_EDIT_TOP,		
-IDC_SPIN_TOP,
-IDC_STATIC_BOTTOM,
-IDC_EDIT_BOTTOM,		
-IDC_SPIN_BOTTOM,
-IDC_STATIC_FIT,
-IDC_COMBO_FIT};
-
+int AddSkinToListFullName(HWND hwndDlg,char * fullName);
+int AddSkinToList(HWND hwndDlg,char * path, char* file);
+int FillAvailableSkinList(HWND hwndDlg);
 static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-//static UINT expertOnlyControls[]={};
 int SkinOptInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
@@ -93,8 +59,8 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 	odp.position=-1000000000;
 	odp.hInstance=g_hInst;
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SKIN);
-	odp.pszGroup=Translate("Customize");
-	odp.pszTitle=Translate("Skin");
+	odp.pszGroup=Translate("Skin");
+	odp.pszTitle=Translate("Load Skin");
 	odp.pfnDlgProc=DlgSkinOpts;
 	odp.flags=ODPF_BOLDGROUPS;
 	//	odp.nIDBottomSimpleControl=IDC_STCLISTGROUP;
@@ -104,358 +70,21 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-
-#define DELAYED_BROWSE_TIMER 0x1234
-//prototypes
-int LoadSkinObjectList();
-int ClearSkinObjectList();
-int SaveSkinObjectList();
-
-typedef struct 
-{
-	char * szName;
-	char * szDescription;
-	char * szValue;
-	char * szTempValue;
-} OPT_OBJECT_DATA;
-
-OPT_OBJECT_DATA * OptObjectList=NULL;
-DWORD OptObjectsInList=0;
-HWND hDlg=NULL;
-//Adding object in list
-int AddObjectToList(const char * Name, char * Desc, char * Value)
-{
-	if (OptObjectList) OptObjectList=mir_realloc(OptObjectList,sizeof(OPT_OBJECT_DATA)*(OptObjectsInList+1));
-	else OptObjectList=mir_alloc(sizeof(OPT_OBJECT_DATA));
-	memset((void*)&(OptObjectList[OptObjectsInList]),0,sizeof(OPT_OBJECT_DATA));
-	OptObjectList[OptObjectsInList].szName=mir_strdup(Name);
-	OptObjectList[OptObjectsInList].szValue=mir_strdup(Value);
-	OptObjectList[OptObjectsInList].szTempValue=mir_strdup("\0");
-	OptObjectList[OptObjectsInList].szDescription=mir_strdup(Desc);
-	if (hDlg)
-	{
-		char * name;
-		int it;
-		name=(Desc!=NULL)?Desc:(Name+1);	
-		it=SendDlgItemMessage(hDlg,IDC_OBJECTSLIST,LB_ADDSTRING,0,(LPARAM)name);
-		SendDlgItemMessage(hDlg,IDC_OBJECTSLIST,LB_SETITEMDATA,(WPARAM)it,(LPARAM)OptObjectsInList);
-	}
-	OptObjectsInList++;
-	return (OptObjectsInList-1);
-}
-
-//LoadSkinObjectList
-int EnumSkinObjectsInBase(const char *szSetting,LPARAM lParam)
-{
-	if (WildCompare((char *)szSetting,"$*",0))
-	{
-		char * value;
-		char *desc;
-		char *descKey;
-		descKey=mir_strdup(szSetting);
-		descKey[0]='%';
-		value=DBGetStringA(NULL,SKIN,szSetting);
-		desc=DBGetStringA(NULL,SKIN,descKey);
-		AddObjectToList(szSetting,desc,value);
-		if (desc) mir_free(desc);
-		mir_free(descKey);
-		mir_free(value);
-	}
-	return 1;
-}
-int OptLoadObjectList()
-{
-	DBCONTACTENUMSETTINGS dbces;
-	OptClearObjectList();
-	dbces.pfnEnumProc=EnumSkinObjectsInBase;
-	dbces.szModule=SKIN;
-	dbces.ofsSettings=0;
-	CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
-	return 0;
-}
-//SaveSkinObjectList
-int OptSaveObjectList()
-{
-	return 0;
-}
-//ClearSkinObjectList
-int OptClearObjectList()
-{
-	DWORD i;
-	if (OptObjectList!=NULL)
-	{
-		for (i=0; i<OptObjectsInList; i++)
-		{
-			if (OptObjectList[i].szName) mir_free(OptObjectList[i].szName);
-			if (OptObjectList[i].szValue) mir_free(OptObjectList[i].szValue);
-			if (OptObjectList[i].szTempValue) mir_free(OptObjectList[i].szTempValue);
-			if (OptObjectList[i].szDescription) mir_free(OptObjectList[i].szDescription);
-		}
-		mir_free(OptObjectList);
-		OptObjectList=NULL;
-		OptObjectsInList=0;
-	}
-	if (hDlg)
-	{
-		SendDlgItemMessage(hDlg,IDC_OBJECTSLIST,LB_RESETCONTENT,0,0);
-	}
-	return 0;
-}
-
-#define ShowEnableContols(a,b) sub_ShowEnableContols(a,sizeof(a)/sizeof(int),b) 
-int sub_ShowEnableContols(int * Enum, BYTE count,BYTE mode) //mode 0000 00yx y-enabled x -visible
-{
-	int i;
-	for (i=0; i<count; i++)
-	{
-		ShowWindowNew(GetDlgItem(hDlg,Enum[i]),(mode&1));
-		if (mode&1) EnableWindow(GetDlgItem(hDlg,Enum[i]),(mode&2));
-	}
-	return 0;
-}
-OPT_OBJECT_DATA * CurrentActiveObject=NULL;
-int CurrentObjectType=0;   //0-None, 1-Glyph
-
-int SelectItemInCombo(HWND hwndDlg, int ComboID, int itemData)
-{ //select appropriate data in combo
-	int i;
-	int m=SendDlgItemMessage(hwndDlg,ComboID,CB_GETCOUNT,0,0);
-	for (i=0; i<m; i++)
-		if ((int)SendDlgItemMessage(hwndDlg,ComboID,CB_GETITEMDATA,i,0)==itemData)
-		{
-			SendDlgItemMessage(hwndDlg,ComboID,CB_SETCURSEL,i,0);	
-			return i;
-		}
-		return -1;
-}
-
-int SetToGlyphControls()
-{
-	char buf[255];
-	HWND hwndDlg=hDlg;
-	if (CurrentObjectType!=1 || !CurrentActiveObject) return 0;
-	GetParamN(CurrentActiveObject->szValue,buf,sizeof(buf),1,',',1);
-	if (boolstrcmpi("Solid",buf))
-	{
-		// next fill controls with data for solid type
-		SelectItemInCombo(hwndDlg,IDC_COMBO_STYLE,ST_BRUSH);
-		{
-			BYTE r,g,b,a;
-			r=atoi(GetParamN(CurrentActiveObject->szValue,buf,sizeof(buf),2,',',1));
-			g=atoi(GetParamN(CurrentActiveObject->szValue,buf,sizeof(buf),3,',',1));
-			b=atoi(GetParamN(CurrentActiveObject->szValue,buf,sizeof(buf),4,',',1));
-			a=atoi(GetParamN(CurrentActiveObject->szValue,buf,sizeof(buf),5,',',1));
-			SendDlgItemMessage(hwndDlg,IDC_COLOUR,CPM_SETDEFAULTCOLOUR,0,RGB(r,g,b));
-			SendDlgItemMessage(hwndDlg,IDC_COLOUR,CPM_SETCOLOUR,0,RGB(r,g,b));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_ALPHA,UDM_SETRANGE,0,MAKELONG(255,0));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_ALPHA,UDM_SETPOS,0,MAKELONG(a,0));
-		}
-		ShowEnableContols(OptionsImageControlsEnum,0); //TBD: should be updated by combochange..
-		ShowEnableContols(OptionsBrushControlsEnum,3); //	
-		return 1;
-	}
-	else if (boolstrcmpi("Image",buf))
-	{	
-		// next fill controls with data for image type
-		SelectItemInCombo(hwndDlg,IDC_COMBO_STYLE,ST_IMAGE);
-		{
-			BYTE a;
-			a=atoi(GetParamN(CurrentActiveObject->szValue,buf,sizeof(buf),8,',',1));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_ALPHA,UDM_SETRANGE,0,MAKELONG(255,0));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_ALPHA,UDM_SETPOS,0,MAKELONG(a,0));
-		}
-		{
-		TCHAR bufU[255];
-		SetDlgItemText(hwndDlg, IDC_EDIT_FILENAME, GetParamNT(CurrentActiveObject->szValue,bufU,sizeof(bufU),2,',',0));
-		}
-		{
-			BYTE l,r,t,b;
-			l=atoi(GetParamN(CurrentActiveObject->szValue,buf,sizeof(buf),4,',',1));
-			t=atoi(GetParamN(CurrentActiveObject->szValue,buf,sizeof(buf),5,',',1));
-			r=atoi(GetParamN(CurrentActiveObject->szValue,buf,sizeof(buf),6,',',1));
-			b=atoi(GetParamN(CurrentActiveObject->szValue,buf,sizeof(buf),7,',',1));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_LEFT,UDM_SETRANGE,0,MAKELONG(500,0));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_LEFT,UDM_SETPOS,0,MAKELONG(l,0));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_TOP,UDM_SETRANGE,0,MAKELONG(500,0));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_TOP,UDM_SETPOS,0,MAKELONG(t,0));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_RIGHT,UDM_SETRANGE,0,MAKELONG(500,0));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_RIGHT,UDM_SETPOS,0,MAKELONG(r,0));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_BOTTOM,UDM_SETRANGE,0,MAKELONG(500,0));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_BOTTOM,UDM_SETPOS,0,MAKELONG(b,0));
-		}
-		GetParamN(CurrentActiveObject->szValue,buf,sizeof(buf),3,',',0);
-		{
-			int fit;
-			if (boolstrcmpi(buf,"TileBoth")) fit=FM_TILE_BOTH;
-			else if (boolstrcmpi(buf,"TileVert")) fit=FM_TILE_VERT;
-			else if (boolstrcmpi(buf,"TileHorz")) fit=FM_TILE_HORZ;
-			else fit=0;  
-			SelectItemInCombo(hwndDlg,IDC_COMBO_FIT,fit);
-		}
-
-		ShowEnableContols(OptionsBrushControlsEnum,0); //TBD: should be updated by combochange..
-		ShowEnableContols(OptionsImageControlsEnum,3);
-
-		return 1;
-	}
-	else
-	{
-		SelectItemInCombo(hwndDlg,IDC_COMBO_STYLE,ST_SKIP);
-		ShowEnableContols(OptionsBrushControlsEnum,1);
-		ShowEnableContols(OptionsImageControlsEnum,1);
-	}
-	return 0;
-}
-//ActiveControls
-HBITMAP hPreviewBitmap=NULL;
-int SetActiveContols(OPT_OBJECT_DATA * setObject)
-{
-	if (setObject!=NULL)
-	{
-		char *value=setObject->szValue;
-		char buf[255];
-		if (value)
-		{
-			GetParamN(value,buf,sizeof(buf),0,',',1);
-			if (boolstrcmpi("Glyph",buf))
-			{	
-				ShowEnableContols(OptionsGlyphControlsEnum,3);
-				CurrentObjectType=1;
-				CurrentActiveObject=setObject;
-				SetToGlyphControls();
-				return 1;
-			}
-		}
-	}
-	//TurnOffAllControls if not above exit
-	ShowEnableContols(OptionsGlyphControlsEnum,0);
-	ShowEnableContols(OptionsBrushControlsEnum,0);
-	ShowEnableContols(OptionsImageControlsEnum,0);
-	CurrentActiveObject=NULL;
-	CurrentObjectType=0;
-	return 0;
-}
-
-
 static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
 	case WM_DESTROY: 
 		{
-			OptClearObjectList();
 			if (hPreviewBitmap) DeleteObject(hPreviewBitmap);
 			break;
 		}
 
-	case WM_TIMER:
-
-		KillTimer(hwndDlg,DELAYED_BROWSE_TIMER);
-		{   		
-			char str[MAX_PATH]={0};
-			char strshort[MAX_PATH]={0};
-			OPENFILENAMEA ofn={0};
-			char filter[512]={0};
-			char pngfilt[520]={0};
-			GetDlgItemTextA(hwndDlg,IDC_EDIT_FILENAME, strshort, sizeof(strshort));
-			ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-			ofn.hwndOwner = hwndDlg;
-			ofn.hInstance = NULL;
-			CallService(MS_UTILS_GETBITMAPFILTERSTRINGS, sizeof(filter), (LPARAM)filter);
-			if (hImageDecoderModule) //ImageDecoderModule is loaded so alpha png should be supported
-			{
-				char * allimages;
-				char b2[255];
-				int l,i;
-				allimages=filter+MyStrLen(filter)+1;
-				l=sizeof(filter)-MyStrLen(filter)-1;
-				sprintf(pngfilt,"%s (%s;*.PNG)",Translate("All Bitmaps"),allimages);
-				memcpy(pngfilt+MyStrLen(pngfilt)+1,"*.PNG;",6);
-				memcpy(pngfilt+6+MyStrLen(pngfilt)+1,allimages,l-(6+MyStrLen(pngfilt)+1));
-				{
-					int z0=0,z1=0;
-					for (i=0;i<sizeof(pngfilt)-1;i++)
-					{
-						if (pngfilt[i]=='\0' && pngfilt[i+1]!='\0') 
-						{
-							if (z1>0) z0=z1;
-							z1=i;
-						}
-						if (pngfilt[i]=='\0' && pngfilt[i+1]=='\0')
-						{
-							sprintf(b2,"%s (*.png)",Translate("Transparent PNG bitmaps"));
-							memcpy(pngfilt+z0+1,b2,MyStrLen(b2)+1);  
-							z0=z0+MyStrLen(b2)+1;
-							memcpy(pngfilt+z0+1,"*.PNG\0",6);
-							z0+=6;
-							sprintf(b2,"%s(*.*)",Translate("All files"));
-							memcpy(pngfilt+z0+1,b2,MyStrLen(b2)+1);  
-							z0=z0+MyStrLen(b2)+1;
-							memcpy(pngfilt+z0+1,"*\0\0",4);
-							memcpy(filter,pngfilt,sizeof(filter));
-							break;
-						}
-					}
-				}
-			}
-			ofn.lpstrFilter = filter;
-			CallService(MS_UTILS_PATHTOABSOLUTE,(WPARAM)strshort,(LPARAM)str);
-			ofn.lpstrFile = str;
-			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-			ofn.nMaxFile = sizeof(str);
-			ofn.nMaxFileTitle = MAX_PATH;
-			ofn.lpstrDefExt = "bmp";
-			{
-				DWORD tick=GetTickCount();
-
-				if(!GetOpenFileNameA(&ofn)) 
-					if (GetTickCount()-tick<100)
-					{
-						if(!GetOpenFileNameA(&ofn)) break;
-					}
-					else break;
-
-
-			}
-			CallService(MS_UTILS_PATHTORELATIVE,(WPARAM)str,(LPARAM)strshort);
-			SetDlgItemTextA(hwndDlg, IDC_EDIT_FILENAME, strshort);
-			if (!boolstrcmpi(strshort,glCurObj->szFileName))
-			{
-				if (glCurObj->szFileName) 
-				{
-					mir_free(glCurObj->szFileName);
-				}
-				if (glCurObj->hGlyph) {UnloadGlyphImage(glCurObj->hGlyph); glCurObj->hGlyph=NULL;}
-				glCurObj->szFileName=mir_strdup(strshort);
-				//        SetDataForGlyphControls(hwndDlg,glCurObj);
-				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			}
-		}
-		break;
 	case WM_INITDIALOG:
 		{ 
 			int it;
 			TranslateDialogDefault(hwndDlg);
 			it=FillAvailableSkinList(hwndDlg);
-			//{
-			//  HIMAGELIST himlImages;
-			//  himlImages=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
-			//  ImageList_AddIcon(himlImages,LoadIcon(g_hInst,MAKEINTRESOURCEA(IDI_FOLDER)));
-			//  ImageList_AddIcon(himlImages,LoadIcon(g_hInst,MAKEINTRESOURCEA(IDI_GLYPH)));
-			//  TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_OBJECTSTREE),himlImages,TVSIL_NORMAL);      
-			//}
-			{
-				int i;	for (i=0; i<sizeof(styleType)/sizeof(char*); i++) 
-				{
-					int item=SendDlgItemMessage(hwndDlg,IDC_COMBO_STYLE,CB_ADDSTRING,0,(LPARAM)Translate(styleType[i]));
-					SendDlgItemMessage(hwndDlg,IDC_COMBO_STYLE,CB_SETITEMDATA,item,(LPARAM)styleIndex[i]);
-				}
-				for (i=0; i<sizeof(fitMode)/sizeof(char*); i++) 
-				{
-					int item=SendDlgItemMessage(hwndDlg,IDC_COMBO_FIT,CB_ADDSTRING,0,(LPARAM)Translate(fitMode[i]));
-					SendDlgItemMessage(hwndDlg,IDC_COMBO_FIT,CB_SETITEMDATA,item,(LPARAM)fitIndex[i]);
-				}        			
-			}
 			{
 				/* Text Colors */
 				DWORD c1,c2,c3,c4;
@@ -474,108 +103,22 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				SendDlgItemMessage(hwndDlg,IDC_COLOUR_STATUSBAR,CPM_SETDEFAULTCOLOUR,0,c4);                              
 				/* End of Text colors */
 			}
-			hDlg=hwndDlg;
-			OptLoadObjectList();
-			//select current skin
-			SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_SETCURSEL,it,0); 
-			SendMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_SKINS_LIST,LBN_SELCHANGE),0);
-			//ShowAppropriateControls(hwndDlg,0);
-			//FillObjectsTree(GetDlgItem(hwndDlg,IDC_OBJECTSTREE));
-			//CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);   
+
+			TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_TREE1),(HTREEITEM)it);						
 		}
 		return TRUE;
-	case WM_DELETEITEM:
-		if (wParam==IDC_SKINS_LIST)
-		{
-			DELETEITEMSTRUCT *dis=(DELETEITEMSTRUCT*)lParam;
-			if (dis->itemData) 
-				mir_free((void *)dis->itemData);   
-			return TRUE;
-		}
-		return FALSE;
 	case WM_COMMAND:
 		{
 			int isLoad=0;
 			switch (LOWORD(wParam)) 
 			{
-				//case IDC_COMBO_STYLE:
-				//	{
-				//		if (HIWORD(wParam)==CBN_SELCHANGE)
-				//		{
-				//			int st=(SendDlgItemMessage(hwndDlg,IDC_COMBO_STYLE,CB_GETCURSEL,0,0));
-				//			if (st!=-1) 
-				//				if (glCurObj->Style!=styleIndex[st])
-				//				{
-				//					glCurObj->Style=styleIndex[st];
-				//					//  SetDataForGlyphControls(hwndDlg,glCurObj);
-				//					SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
-				//				}                       
-				//		}
-				//	}
-				//	break;
-
-			case IDC_COLOUR:
-				{
-					glCurObj->dwColor=SendDlgItemMessage(hwndDlg,IDC_COLOUR,CPM_GETCOLOUR,0,0);
-					// SetDataForGlyphControls(hwndDlg,glCurObj);
-					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-				}
-				break;
 			case IDC_COLOUR_MENUNORMAL:
 			case IDC_COLOUR_MENUSELECTED:
 			case IDC_COLOUR_FRAMES:
 			case IDC_COLOUR_STATUSBAR:
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 				break;
-				//case IDC_COMBO_FIT:
-				//	{
-				//		if (HIWORD(wParam)==CBN_SELCHANGE)
-				//		{
-				//			int st=(SendDlgItemMessage(hwndDlg,IDC_COMBO_FIT,CB_GETCURSEL,0,0));
-				//			if (st!=-1) 
-				//				if (glCurObj->FitMode!=fitIndex[st])
-				//				{
-				//					glCurObj->FitMode=fitIndex[st];
-				//					//    SetDataForGlyphControls(hwndDlg,glCurObj);
-				//					SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
-				//				}                       
-				//		}
-				//	}
-				//	break;
-				//case IDC_EDIT_LEFT:
-				//case IDC_EDIT_RIGHT:
-				//case IDC_EDIT_TOP:
-				//case IDC_EDIT_BOTTOM:
-			case IDC_EDIT_ALPHA:
-				{   
-					DWORD l,t,b,r;
-					BYTE a;
-					if (HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()) return 0; // dont make apply enabled during buddy set crap:
-					l=(DWORD)SendDlgItemMessage(hwndDlg,IDC_SPIN_LEFT,UDM_GETPOS,0,0);
-					t=(DWORD)SendDlgItemMessage(hwndDlg,IDC_SPIN_TOP,UDM_GETPOS,0,0);
-					b=(DWORD)SendDlgItemMessage(hwndDlg,IDC_SPIN_BOTTOM,UDM_GETPOS,0,0);
-					r=(DWORD)SendDlgItemMessage(hwndDlg,IDC_SPIN_RIGHT,UDM_GETPOS,0,0);
-					a=(BYTE)SendDlgItemMessage(hwndDlg,IDC_SPIN_ALPHA,UDM_GETPOS,0,0);
-					//if (glCurObj->dwLeft!=l || glCurObj->dwTop!=t  ||
-					//	glCurObj->dwRight!=r || glCurObj->dwBottom!=b || glCurObj->dwAlpha!=a)
-					//{
-					//	glCurObj->dwLeft=l; glCurObj->dwTop=t;
-					//	glCurObj->dwRight=r; glCurObj->dwBottom=b;
-					//	glCurObj->dwAlpha=a;
-					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-					//}
 
-				}
-				break;
-			case IDC_BUTTON_BROWSE:
-				if (HIWORD(wParam)==BN_CLICKED)
-				{
-					KillTimer(hwndDlg,DELAYED_BROWSE_TIMER);
-					SetTimer(hwndDlg,DELAYED_BROWSE_TIMER,10,NULL);
-					return 0;
-
-				}         
-				break;
 			case IDC_BUTTON_INFO:
 				{
 					char Author[255];
@@ -583,11 +126,16 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					char Contact[255];
 					char Description[400];
 					char text[2000];
-					int item;
-					SkinListData *sd;           
-					item=SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETCURSEL,0,0); 
-					if (item==-1) return 0;
-					sd=(SkinListData*)SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETITEMDATA,(WPARAM)item,(LPARAM)0);              
+					SkinListData *sd=NULL;  
+					HTREEITEM hti=TreeView_GetSelection(GetDlgItem(hwndDlg,IDC_TREE1));				
+					if (hti==0) return 0;
+					{
+						TVITEMA tvi={0};
+						tvi.hItem=hti;
+						tvi.mask=TVIF_HANDLE|TVIF_PARAM;
+						TreeView_GetItem(GetDlgItem(hwndDlg,IDC_TREE1),&tvi);
+						sd=(SkinListData*)(tvi.lParam);
+					}
 					if (!sd) return 0;
 					GetPrivateProfileStringA("Skin_Description_Section","Author","(unknown)",Author,sizeof(Author),sd->File);
 					GetPrivateProfileStringA("Skin_Description_Section","URL","",URL,sizeof(URL),sd->File);
@@ -600,26 +148,40 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				break;
 			case IDC_BUTTON_APPLY_SKIN:
 				if (HIWORD(wParam)==BN_CLICKED)
-				{
-					int item;
-					SkinListData *sd;           
-					item=SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETCURSEL,0,0); 
-					if (item==-1) return 0;
-					sd=(SkinListData*)SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETITEMDATA,(WPARAM)item,(LPARAM)0);              
+				{ 		
+					SkinListData *sd=NULL;  
+					HTREEITEM hti=TreeView_GetSelection(GetDlgItem(hwndDlg,IDC_TREE1));				
+					if (hti==0) return 0;
+					{
+						TVITEM tvi={0};
+						tvi.hItem=hti;
+						tvi.mask=TVIF_HANDLE|TVIF_PARAM;
+						TreeView_GetItem(GetDlgItem(hwndDlg,IDC_TREE1),&tvi);
+						sd=(SkinListData*)(tvi.lParam);
+					}
 					if (!sd) return 0;
+					if (glSkinWasModified>0)
+					{
+						int res=0;
+						if (glSkinWasModified==1)
+							res=MessageBoxA(hwndDlg,Translate("Skin editor contains not stored changes.\n\nAll changes will be lost.\n\n Continue to load new skin?"),Translate("Warning!"),MB_OKCANCEL|MB_ICONWARNING|MB_DEFBUTTON2|MB_TOPMOST);
+						else
+							res=MessageBoxA(hwndDlg,Translate("Current skin was not saved to file.\n\nAll changes will be lost.\n\n Continue to load new skin?"),Translate("Warning!"),MB_OKCANCEL|MB_ICONWARNING|MB_DEFBUTTON2|MB_TOPMOST);
+						if (res!=IDOK) return 0;
+					}
 					LoadSkinFromIniFile(sd->File);
-					LoadSkinFromDB();				
+					LoadSkinFromDB();	
+					glOtherSkinWasLoaded=TRUE;
+					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
 					CLUIFramesOnClistResize2(0,0,0);
 					RedrawCompleteWindow();        
-          CLUIFramesOnClistResize2(0,0,0);
-          {
-            HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
-            RECT rc={0};
-            GetWindowRect(hwnd, &rc);
-            OnMoving(hwnd,&rc);
-          }
-					hDlg=hwndDlg;
-					OptLoadObjectList();
+					CLUIFramesOnClistResize2(0,0,0);
+					{
+						HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
+						RECT rc={0};
+						GetWindowRect(hwnd, &rc);
+						OnMoving(hwnd,&rc);
+					}
 					if (hCLUIwnd)
 					{
 						SendDlgItemMessage(hCLUIwnd,IDC_LEFTMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0));
@@ -643,7 +205,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 						ofn.hInstance = NULL;
 
 						sprintf(filter,"%s",Translate("Miranda skin file"));
-						memcpy(filter+MyStrLen(filter)," (*.msf)\0*.MSF\0\0",sizeof(" (*.msf)\0*.MSF\0\0"));
+						memmove(filter+MyStrLen(filter)," (*.msf)\0*.MSF\0\0",sizeof(" (*.msf)\0*.MSF\0\0"));
 						ofn.lpstrFilter = filter;
 						ofn.lpstrFile = str;
 						ofn.Flags = isLoad?(OFN_FILEMUSTEXIST | OFN_HIDEREADONLY) : (OFN_OVERWRITEPROMPT|OFN_HIDEREADONLY);
@@ -665,116 +227,91 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 						if (res)
 						{
 							int it=AddSkinToListFullName(hwndDlg,ofn.lpstrFile);
-							SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_SETCURSEL,it,0); 
-							SendMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_SKINS_LIST,LBN_SELCHANGE),0);
-
-							//Only add to skin ist and select it
-							/*DialogWnd=hwndDlg;
-							LoadSkinFromIniFile(ofn.lpstrFile);
-							LoadSkinFromDB();
-							SendMessage(pcli->hwndContactTree,WM_SIZE,0,0);	//forces it to send a cln_listsizechanged
-							RedrawCompleteWindow();
-							SendMessage(pcli->hwndContactTree,WM_SIZE,0,0);	//forces it to send a cln_listsizechanged
-							SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
-							*/
-
+							TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_TREE1),(HTREEITEM)it);
+							//SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_SETCURSEL,it,0); 
+							//SendMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_SKINS_LIST,LBN_SELCHANGE),0);
 						}
 					}
 				}
-			case IDC_SKINS_LIST:
-				{
-					switch (HIWORD(wParam))
-					{
-					case LBN_SELCHANGE:
-						//TODO: Skin list selection was changed
-						{
-							int item;            
-							if (hPreviewBitmap) 
-							{
-								DeleteObject(hPreviewBitmap);
-								hPreviewBitmap=NULL;
-							}
-							item=SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETCURSEL,0,0); 
-							if (item!=-1)
-							{
-								//selected
-								SkinListData * sd;
-								sd=(SkinListData*)SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETITEMDATA,(WPARAM)item,(LPARAM)0); 
-								if (sd)
-								{
-									//enable 'Apply' button
-									//enable 'Info' button
-									//update preview
-									SendDlgItemMessageA(hwndDlg,IDC_EDIT_SKIN_FILENAME,WM_SETTEXT,0,(LPARAM)sd->File); //TODO made filepath unicode
-									{
-										char prfn[MAX_PATH]={0};
-										char imfn[MAX_PATH]={0};
-										char skinfolder[MAX_PATH]={0};
-										GetPrivateProfileStringA("Skin_Description_Section","Preview","",imfn,sizeof(imfn),sd->File);
-										GetSkinFolder(sd->File,skinfolder);
-										_snprintf(prfn,sizeof(prfn),"%s\\%s",skinfolder,imfn);
-										CallService(MS_UTILS_PATHTOABSOLUTE,(WPARAM)prfn,(LPARAM) imfn);
-										hPreviewBitmap=intLoadGlyphImage(imfn);
-									}
-									EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),TRUE);
-									EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),TRUE);
+			//case IDC_SKINS_LIST:
+			//	{
+			//		switch (HIWORD(wParam))
+			//		{
+			//		case LBN_SELCHANGE:
+			//			//TODO: Skin list selection was changed
+			//			{
+			//				/*
+			//				int item;            
+			//				if (hPreviewBitmap) 
+			//				{
+			//					DeleteObject(hPreviewBitmap);
+			//					hPreviewBitmap=NULL;
+			//				}
+			//				item=SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETCURSEL,0,0); 
+			//				if (item!=-1)
+			//				{
+			//					//selected
+			//					SkinListData * sd;
+			//					sd=(SkinListData*)SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETITEMDATA,(WPARAM)item,(LPARAM)0); 
+			//					if (sd)
+			//					{
+			//						//enable 'Apply' button
+			//						//enable 'Info' button
+			//						//update preview
+			//						SendDlgItemMessageA(hwndDlg,IDC_EDIT_SKIN_FILENAME,WM_SETTEXT,0,(LPARAM)sd->File); //TODO made filepath unicode
+			//						{
+			//							char prfn[MAX_PATH]={0};
+			//							char imfn[MAX_PATH]={0};
+			//							char skinfolder[MAX_PATH]={0};
+			//							GetPrivateProfileStringA("Skin_Description_Section","Preview","",imfn,sizeof(imfn),sd->File);
+			//							GetSkinFolder(sd->File,skinfolder);
+			//							_snprintf(prfn,sizeof(prfn),"%s\\%s",skinfolder,imfn);
+			//							CallService(MS_UTILS_PATHTOABSOLUTE,(WPARAM)prfn,(LPARAM) imfn);
+			//							hPreviewBitmap=intLoadGlyphImage(imfn);
+			//						}
+			//						EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),TRUE);
+			//						EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),TRUE);
 
-								}
-							}
-							else
-							{
-								//no selected
-								SendDlgItemMessage(hwndDlg,IDC_EDIT_SKIN_FILENAME,WM_SETTEXT,0,(LPARAM)TranslateT("Select skin from list"));
-								EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),FALSE);
-								EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),FALSE);
-							} 
-							ShowWindowNew(GetDlgItem(hwndDlg,IDC_PREVIEW),hPreviewBitmap?SW_SHOW:SW_HIDE);
-							if (hPreviewBitmap) InvalidateRect(GetDlgItem(hwndDlg,IDC_PREVIEW),NULL,TRUE);
-							else  //prepeare text
-							{
-								char Author[255];
-								char URL[MAX_PATH];
-								char Contact[255];
-								char Description[400];
-								char text[2000];
-								int item;
-								SkinListData *sd;           
-								item=SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETCURSEL,0,0); 
-								if (item==-1) return 0;
-								sd=(SkinListData*)SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETITEMDATA,(WPARAM)item,(LPARAM)0);              
-								if (!sd) return 0;
-								GetPrivateProfileStringA("Skin_Description_Section","Author","(unknown)",Author,sizeof(Author),sd->File);
-								GetPrivateProfileStringA("Skin_Description_Section","URL","",URL,sizeof(URL),sd->File);
-								GetPrivateProfileStringA("Skin_Description_Section","Contact","",Contact,sizeof(Contact),sd->File);
-								GetPrivateProfileStringA("Skin_Description_Section","Description","",Description,sizeof(Description),sd->File);
-								_snprintf(text,sizeof(text),Translate("Preview is not available\n\n%s\n----------------------\n\n%s\n\nAUTHOR(S):\n%s\n\nCONTACT:\n%s\n\nHOMEPAGE:\n%s"),
-									sd->Name,Description,Author,Contact,URL);
-								SendDlgItemMessageA(hwndDlg,IDC_STATIC_INFO,WM_SETTEXT,0,(LPARAM)text);
-							}
-						}
-						break;
+			//					}
+			//				}
+			//				else
+			//				{
+			//					//no selected
+			//					SendDlgItemMessage(hwndDlg,IDC_EDIT_SKIN_FILENAME,WM_SETTEXT,0,(LPARAM)TranslateT("Select skin from list"));
+			//					EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),FALSE);
+			//					EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),FALSE);
+			//				} 
+			//				ShowWindowNew(GetDlgItem(hwndDlg,IDC_PREVIEW),hPreviewBitmap?SW_SHOW:SW_HIDE);
+			//				if (hPreviewBitmap) InvalidateRect(GetDlgItem(hwndDlg,IDC_PREVIEW),NULL,TRUE);
+			//				else  //prepeare text
 
-					}
-					break;
-				}
-			case IDC_OBJECTSLIST:
-				{
-					switch (HIWORD(wParam)) 
-					{
-					case LBN_SELCHANGE:
-						{
-							int dat=-1;
-							int cur=-1;
-							cur=SendDlgItemMessage(hDlg,IDC_OBJECTSLIST,LB_GETCURSEL,0,0);
-							if (cur!=-1)
-								dat=(int)SendDlgItemMessage(hDlg,IDC_OBJECTSLIST,LB_GETITEMDATA,(WPARAM)cur,0);
-							SetActiveContols(&(OptObjectList[dat]));
-							break;
-						}
-					}
-					break;
-				}
-				break;
+			//				{
+			//					char Author[255];
+			//					char URL[MAX_PATH];
+			//					char Contact[255];
+			//					char Description[400];
+			//					char text[2000];
+			//					int item;
+			//					SkinListData *sd;           
+			//					item=SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETCURSEL,0,0); 
+			//					if (item==-1) return 0;
+			//					sd=(SkinListData*)SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETITEMDATA,(WPARAM)item,(LPARAM)0);              
+			//					if (!sd) return 0;
+			//					GetPrivateProfileStringA("Skin_Description_Section","Author","(unknown)",Author,sizeof(Author),sd->File);
+			//					GetPrivateProfileStringA("Skin_Description_Section","URL","",URL,sizeof(URL),sd->File);
+			//					GetPrivateProfileStringA("Skin_Description_Section","Contact","",Contact,sizeof(Contact),sd->File);
+			//					GetPrivateProfileStringA("Skin_Description_Section","Description","",Description,sizeof(Description),sd->File);
+			//					_snprintf(text,sizeof(text),Translate("Preview is not available\n\n%s\n----------------------\n\n%s\n\nAUTHOR(S):\n%s\n\nCONTACT:\n%s\n\nHOMEPAGE:\n%s"),
+			//						sd->Name,Description,Author,Contact,URL);
+			//					SendDlgItemMessageA(hwndDlg,IDC_STATIC_INFO,WM_SETTEXT,0,(LPARAM)text);
+			//				}
+			//				*/
+			//			}
+			//			break;
+
+			//		}
+			//		break;
+			//	}
 			}
 			break;
 		}
@@ -830,61 +367,111 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					imgOldbmp=SelectObject(imgDC,hPreviewBitmap);                 
 					MyAlphaBlend(memDC,imgPos.x,imgPos.y,dWidth,dHeight,imgDC,0,0,bmp.bmWidth,bmp.bmHeight,bf);
 					SelectObject(imgDC,imgOldbmp);
-					DeleteDC(imgDC);
+					ModernDeleteDC(imgDC);
 				}
 			}
 			BitBlt(dis->hDC,dis->rcItem.left,dis->rcItem.top,mWidth,mHeight,memDC,0,0,SRCCOPY);
 			SelectObject(memDC,holdbmp);
 			DeleteObject(hbmp);
-			DeleteDC(memDC);
+			ModernDeleteDC(memDC);
 		}
 		break;
+
 	case WM_NOTIFY:
 		switch (((LPNMHDR)lParam)->idFrom) 
 		{
-			//case IDC_OBJECTSTREE:
-			//  switch (((LPNMHDR)lParam)->code) 
-			//  {
-
-			//  case TVN_SELCHANGED:
-			//    {
-			//      TVITEMA tvi;
-			//      HTREEITEM hti;
-			//      SKINOBJECTDESCRIPTOR * obj;
-
-			//      hti=TreeView_GetSelection(GetDlgItem(hwndDlg,IDC_OBJECTSTREE));
-			//      if (hti==NULL){ShowAppropriateControls(hwndDlg,-1); break;};
-			//      tvi.mask=TVIF_HANDLE|TVIF_PARAM;
-			//      tvi.hItem=hti;
-			//      TreeView_GetItem(GetDlgItem(hwndDlg,IDC_OBJECTSTREE),&tvi);
-			//      if (tvi.lParam)
-			//      {
-			//        obj=(SKINOBJECTDESCRIPTOR *)tvi.lParam;
-			//        if (obj->bType==OT_GLYPHOBJECT)
-			//        {
-			//          ShowAppropriateControls(hwndDlg,OT_GLYPHOBJECT); 
-			//          SetDataForGlyphControls(hwndDlg,(LPGLYPHOBJECT)obj->Data);
-			//        }
-			//      }
-			//      else ShowAppropriateControls(hwndDlg,-1); 
-
-			//      break;
-			//    }
-
-			//    break;
-
-			//  };
-			//  break;
+		case IDC_TREE1:
+		{		
+			NMTREEVIEWA * nmtv = (NMTREEVIEWA *) lParam;
+			if (!nmtv) return 0;
+			if (nmtv->hdr.code==TVN_SELCHANGEDA)
+			{	
+				SkinListData * sd=NULL;
+				if (hPreviewBitmap) 
+				{
+					DeleteObject(hPreviewBitmap);
+					hPreviewBitmap=NULL;
+				}
+				if (nmtv->itemNew.lParam)
+				{
+					//char sdFile[MAX_PATH]={0};
+					sd=(SkinListData*)nmtv->itemNew.lParam;
+				    //PathCompactPathExA(sdFile,sd->File,60,0);
+					{
+						char buf[MAX_PATH];
+						CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)sd->File, (LPARAM)buf);
+						SendDlgItemMessageA(hwndDlg,IDC_EDIT_SKIN_FILENAME,WM_SETTEXT,0,(LPARAM)buf); //TODO made filepath unicode
+					}
+					{
+							char prfn[MAX_PATH]={0};
+							char imfn[MAX_PATH]={0};
+							char skinfolder[MAX_PATH]={0};
+							GetPrivateProfileStringA("Skin_Description_Section","Preview","",imfn,sizeof(imfn),sd->File);
+							GetSkinFolder(sd->File,skinfolder);
+							_snprintf(prfn,sizeof(prfn),"%s\\%s",skinfolder,imfn);
+							CallService(MS_UTILS_PATHTOABSOLUTE,(WPARAM)prfn,(LPARAM) imfn);
+							hPreviewBitmap=intLoadGlyphImage(imfn);
+						}
+					EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),TRUE);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),TRUE);
+					if (hPreviewBitmap) 
+						InvalidateRect(GetDlgItem(hwndDlg,IDC_PREVIEW),NULL,TRUE);
+					else  //prepeare text
+						{
+							char Author[255];
+							char URL[MAX_PATH];
+							char Contact[255];
+							char Description[400];
+							char text[2000];
+							SkinListData* sd=NULL;
+							HTREEITEM hti=TreeView_GetSelection(GetDlgItem(hwndDlg,IDC_TREE1));				
+							if (hti==0) return 0;
+							{
+								TVITEM tvi={0};
+								tvi.hItem=hti;
+								tvi.mask=TVIF_HANDLE|TVIF_PARAM;
+								TreeView_GetItem(GetDlgItem(hwndDlg,IDC_TREE1),&tvi);
+								sd=(SkinListData*)(tvi.lParam);
+							}
+							if (!sd) return 0;
+							GetPrivateProfileStringA("Skin_Description_Section","Author","(unknown)",Author,sizeof(Author),sd->File);
+							GetPrivateProfileStringA("Skin_Description_Section","URL","",URL,sizeof(URL),sd->File);
+							GetPrivateProfileStringA("Skin_Description_Section","Contact","",Contact,sizeof(Contact),sd->File);
+							GetPrivateProfileStringA("Skin_Description_Section","Description","",Description,sizeof(Description),sd->File);
+							_snprintf(text,sizeof(text),Translate("Preview is not available\n\n%s\n----------------------\n\n%s\n\nAUTHOR(S):\n%s\n\nCONTACT:\n%s\n\nHOMEPAGE:\n%s"),
+							sd->Name,Description,Author,Contact,URL);
+							ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),SW_HIDE);
+							ShowWindow(GetDlgItem(hwndDlg,IDC_STATIC_INFO),SW_SHOW);
+							SendDlgItemMessageA(hwndDlg,IDC_STATIC_INFO,WM_SETTEXT,0,(LPARAM)text);
+						}					
+				}
+				else
+				{
+					//no selected
+					SendDlgItemMessage(hwndDlg,IDC_EDIT_SKIN_FILENAME,WM_SETTEXT,0,(LPARAM)TranslateT("Select skin from list"));
+					EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),FALSE);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),FALSE);
+					SendDlgItemMessageA(hwndDlg,IDC_STATIC_INFO,WM_SETTEXT,0,(LPARAM)Translate("Please select skin to apply"));
+					ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),SW_HIDE);
+				}
+				ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),hPreviewBitmap?SW_SHOW:SW_HIDE);
+				return 0;
+			}			
+			else if (nmtv->hdr.code==TVN_SELCHANGEDA)
+			{
+				if (nmtv->itemOld.lParam)
+					mir_free((void*)(nmtv->itemOld.lParam));
+				return 0;
+			}
+			break;
+		}
 		case 0:
 			switch (((LPNMHDR)lParam)->code)
 			{
 			case PSN_APPLY:
 				{
-					//PutSkinToDB(DEFAULTSKINSECTION,&glTempObjectList);
-					// UnloadSkin(&glObjectList);
 					{
 						DWORD tick=GetTickCount();
-						//GetSkinFromDB(DEFAULTSKINSECTION,&glObjectList);
 						{
 							/* Text Colors */
 							DWORD c1,c2,c3,c4;
@@ -900,20 +487,8 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 						}
 						pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
 						NotifyEventHooks(ME_BACKGROUNDCONFIG_CHANGED,0,0);
-						//{
-						//	RECT r;
-						//	GetWindowRect(pcli->hwndContactTree,&r);
-						//	SetWindowPos(pcli->hwndContactTree,NULL,r.left,r.top,r.right-r.left-1,r.bottom-r.top,SWP_NOACTIVATE|SWP_NOZORDER);
-						//	SetWindowPos(pcli->hwndContactTree,NULL,r.left,r.top,r.right-r.left,r.bottom-r.top,SWP_NOACTIVATE|SWP_NOZORDER);
-						//}
-
 						pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);	
 						RedrawWindow(GetParent(pcli->hwndContactTree),NULL,NULL,RDW_INVALIDATE|RDW_FRAME|RDW_ALLCHILDREN);
-						//TreeView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_OBJECTSTREE));
-						//ShowAppropriateControls(hwndDlg,0);
-						//FillObjectsTree(GetDlgItem(hwndDlg,IDC_OBJECTSTREE));
-						// SetDataForGlyphControls(hwndDlg,glCurObj);
-
 					}
 					return TRUE;
 				}
@@ -925,14 +500,45 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
+int SearchSkinFiles(HWND hwndDlg, char * Folder)
+{
+	struct _finddata_t fd={0};
+	char mask[MAX_PATH];
+	long hFile; 
+	_snprintf(mask,sizeof(mask),"%s\\*.msf",Folder); 
+	//fd.attrib=_A_SUBDIR;
+	hFile=_findfirst(mask,&fd);
+	if (hFile!=-1)
+	{
+		do {     
+			AddSkinToList(hwndDlg,Folder,fd.name);
+		}while (!_findnext(hFile,&fd));
+		_findclose(hFile);
+	}
+	_snprintf(mask,sizeof(mask),"%s\\*",Folder);
+	hFile=_findfirst(mask,&fd);
+	{
+		do {
+			if (fd.attrib&_A_SUBDIR && !(boolstrcmpi(fd.name,".")||boolstrcmpi(fd.name,"..")))
+			{//Next level of subfolders
+				char path[MAX_PATH];
+				_snprintf(path,sizeof(path),"%s\\%s",Folder,fd.name);
+				SearchSkinFiles(hwndDlg,path);
+			}
+		}while (!_findnext(hFile,&fd));
+		_findclose(hFile);
+	}
+	return 0;
+}
 int FillAvailableSkinList(HWND hwndDlg)
 {
 	struct _finddata_t fd={0};
-	long hFile; 
+	//long hFile; 
 	int res=-1;
-	char path[MAX_PATH],mask[MAX_PATH];
+	char path[MAX_PATH];//,mask[MAX_PATH];
 	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)"Skins", (LPARAM)path);
-	_snprintf(mask,sizeof(mask),"%s\\*.msf",path); 
+	SearchSkinFiles(hwndDlg,path);
+	/*_snprintf(mask,sizeof(mask),"%s\\*.msf",path); 
 	//fd.attrib=_A_SUBDIR;
 	hFile=_findfirst(mask,&fd);
 	if (hFile!=-1)
@@ -967,6 +573,7 @@ int FillAvailableSkinList(HWND hwndDlg)
 		}while (!_findnext(hFile,&fd));
 		_findclose(hFile);
 	}
+	*/
 	{
 		char * skinfile;
 		char skinfull[MAX_PATH];
@@ -975,6 +582,7 @@ int FillAvailableSkinList(HWND hwndDlg)
 		{
 			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)skinfile, (LPARAM)skinfull);
 			res=AddSkinToListFullName(hwndDlg,skinfull);
+
 			mir_free(skinfile);
 		}
 	}
@@ -1004,25 +612,24 @@ int AddSkinToListFullName(HWND hwndDlg,char * fullName)
 
 int AddSkinToList(HWND hwndDlg,char * path, char* file)
 {
-	TRACE(path);
-	TRACE("\\");
-	TRACE(file);
-	TRACE("\n");
+	{
+		char buf[MAX_PATH];
+		_snprintf(buf,sizeof(buf),"%s\\%s",path,file);
+		
+	}
 	{
 		char fullName[MAX_PATH]={0};     
-		//char skin_name[MAX_NAME]={0};
-		//char skin_author[MAX_NAME]={0};
 		char defskinname[MAX_PATH]={0};
 		SkinListData * sd=NULL;
 		sd=(SkinListData *)mir_alloc(sizeof(SkinListData));
 		if (!sd) return 0;
 		_snprintf(fullName,sizeof(fullName),"%s\\%s",path,file);
-		memcpy(defskinname,file,MyStrLen(file)-4);
+		memmove(defskinname,file,MyStrLen(file)-4);
 		defskinname[MyStrLen(file)+1]='\0';
 		GetPrivateProfileStringA("Skin_Description_Section","Name",defskinname,sd->Name,sizeof(sd->Name),fullName);
 		strcpy(sd->File,fullName);
-		//    GetPrivateProfileStringA("Skin_Description_Section","Author","",skin_author,sizeof(skin_author),fullName);
-		{
+		return AddItemToTree(GetDlgItem(hwndDlg,IDC_TREE1),fullName,sd->Name,sd);
+		/*{
 			int i,c;
 			SkinListData * sd2;
 			c=SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETCOUNT,0,0);
@@ -1041,247 +648,117 @@ int AddSkinToList(HWND hwndDlg,char * path, char* file)
 			}
 			return item;
 		}
+		*/
 	}
 	return -1;
 }
-//HTREEITEM FindChild(HWND hTree, HTREEITEM Parent, char * Caption)
-//{
-//  HTREEITEM res=NULL, tmp=NULL;
-//  if (Parent) 
-//    tmp=TreeView_GetChild(hTree,Parent);
-//  else tmp=TreeView_GetRoot(hTree);
-//  while (tmp)
-//  {
-//    TVITEMA tvi;
-//    char buf[255];
-//    tvi.hItem=tmp;
-//    tvi.mask=TVIF_TEXT|TVIF_HANDLE;
-//    tvi.pszText=(LPSTR)&buf;
-//    tvi.cchTextMax=254;
-//    TreeView_GetItem(hTree,&tvi);
-//    if (boolstrcmpi(Caption,tvi.pszText))
-//      return tmp;
-//    tmp=TreeView_GetNextSibling(hTree,tmp);
-//  }
-//  return tmp;
-//}
-//
-//int FillObjectsTree(HWND hTree)
-//{
-//  DWORD i;
-//  char buf[255];
-//  TVINSERTSTRUCTA tvis;
-//  tvis.hParent=NULL;
-//  tvis.hInsertAfter=TVI_SORT;
-//  tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_PARAM;
-//  for (i=0; i<glTempObjectList.dwObjLPAlocated; i++)
-//  {
-//    HTREEITEM hti,nhti;        
-//    char * st;
-//    char * fin;
-//    BYTE ex=0;
-//    strcpy(buf,glTempObjectList.Objects[i].szObjectID);
-//    st=buf;           
-//    tvis.hParent=NULL;
-//    hti=NULL;
-//    do  
-//    {
-//      char buf2[255]; 
-//      fin=strchr(st,'/');
-//      if (fin!=NULL)
-//      {
-//        memcpy(buf2,st,(BYTE)(fin-st));
-//        buf2[(BYTE)(fin-st)]='\0';
-//      }
-//      else
-//        strcpy(buf2,st);          
-//      tvis.hInsertAfter=TVI_LAST;
-//      tvis.item.pszText=Translate(buf2);
-//      tvis.item.lParam=(LPARAM)NULL;
-//      tvis.item.iImage=tvis.item.iSelectedImage=0;
-//      nhti=FindChild(hTree,tvis.hParent,tvis.item.pszText);
-//      if (nhti )//&& fin)
-//        hti=nhti;
-//      else
-//      {
-//        tvis.hInsertAfter=TVI_SORT;
-//        hti=TreeView_InsertItem(hTree,&tvis);
-//      }
-//      tvis.hParent=hti;
-//      st=fin+1;
-//    } while (fin!=NULL);
-//    {
-//      TVITEMA tv; 
-//      int res;
-//      tv.hItem=hti;
-//      tv.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
-//      tv.lParam=(LPARAM)(&(glTempObjectList.Objects[i]));
-//      tv.iImage=1;
-//      tv.iSelectedImage=1;
-//      res=TreeView_SetItem(hTree,&tv);
-//    }
-//  }
-//  return 0;
 
-//}
-//int ShowAppropriateControls(HWND hwndDlg,int Type)     //Type=1-image
-//{
-//  // Controls for glyph
-//  { 
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_BUTTON_BROWSE),Type==OT_GLYPHOBJECT);
-//    //    ShowWindowNew(GetDlgItem(hwndDlg,IDC_CHECK_ALPHA),Type==OT_GLYPHOBJECT);
-//    //    ShowWindowNew(GetDlgItem(hwndDlg,IDC_CHECK_COLOR),Type==OT_GLYPHOBJECT);
-//    //    ShowWindowNew(GetDlgItem(hwndDlg,IDC_CHECK_IMAGE),Type==OT_GLYPHOBJECT);
-//    //    ShowWindowNew(GetDlgItem(hwndDlg,IDC_CHECK_METHOD),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_COLOUR),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_COMBO_FIT),Type==OT_GLYPHOBJECT);
-//    //    ShowWindowNew(GetDlgItem(hwndDlg,IDC_COMBO_SAME),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_COMBO_STYLE),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_EDIT_ALPHA),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_EDIT_FILENAME),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_EDIT_LEFT),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_EDIT_RIGHT),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_EDIT_TOP),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_EDIT_BOTTOM),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_FRAME_BACKGROUND),Type==OT_GLYPHOBJECT);
-//    //    ShowWindowNew(GetDlgItem(hwndDlg,IDC_FRAME_GLYPH),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_FRAME_IMAGE),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_SPIN_ALPHA),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_SPIN_LEFT),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_SPIN_RIGHT),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_SPIN_TOP),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_SPIN_BOTTOM),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_STATIC_ALPHA),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_STATIC_BOTTOM),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_STATIC_COLOR),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_STATIC_FIT),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_STATIC_LEFT),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_STATIC_RIGHT),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_STATIC_TOP),Type==OT_GLYPHOBJECT);
-//    //    ShowWindowNew(GetDlgItem(hwndDlg,IDC_STATIC_SAME),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_STATIC_STYLE),Type==OT_GLYPHOBJECT);
-//    ShowWindowNew(GetDlgItem(hwndDlg,IDC_STATIC_MARGINS),Type==OT_GLYPHOBJECT);
-//
-//  }
-//
-//  return 0;
-//}
-//
-//int SetDataForGlyphControls(HWND hwndDlg,LPGLYPHOBJECT glObj)
-//{
-//  int i;  int k; int st;
-//  glCurObj=glObj;
-//  if (!glObj) return 0;
-//  if (glObj->szFileName!=NULL) 
-//    SetDlgItemText(hwndDlg,IDC_EDIT_FILENAME,glObj->szFileName);
-//  else 
-//    SetDlgItemText(hwndDlg,IDC_EDIT_FILENAME,NULL);
-//  k=-1;  for (i=0; i<sizeof(styleIndex)/sizeof(int); i++) if (styleIndex[i]==glObj->Style) {k=i;break;}
-//  SendDlgItemMessage(hwndDlg,IDC_COMBO_STYLE,CB_SETCURSEL,k,0);
-//  if (glObj->szFileName!=NULL)
-//  {
-//    if (!glObj->hGlyph) glObj->hGlyph=LoadGlyphImage(glObj->szFileName);
-//  }
-//  st=(SendDlgItemMessage(hwndDlg,IDC_COMBO_STYLE,CB_GETCURSEL,0,0));
-//  if (st!=-1) st=styleIndex[st]; else st=99999;
-//  if (st!=ST_SKIP && st!=ST_PARENT)
-//  { 
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_EDIT_ALPHA),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_SPIN_ALPHA),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_ALPHA),TRUE);
-//
-//    SendDlgItemMessage(hwndDlg,IDC_SPIN_ALPHA,UDM_SETRANGE,0,MAKELONG(255,0));
-//    SendDlgItemMessage(hwndDlg,IDC_SPIN_ALPHA,UDM_SETPOS,0,MAKELONG(glObj->dwAlpha,0));
-//  }
-//  else
-//  {
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_EDIT_ALPHA),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_SPIN_ALPHA),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_ALPHA),FALSE);
-//  }
-//  if (!(st==ST_IMAGE ||st==ST_SOLARIZE))
-//  {
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_EDIT_FILENAME),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_BROWSE),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_FRAME_IMAGE),FALSE);
-//  }
-//  else
-//  {
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_EDIT_FILENAME),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_BROWSE),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_FRAME_IMAGE),TRUE);
-//  }
-//  if (!(st==ST_BRUSH ||st==ST_SOLARIZE))
-//  {
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_COLOR),FALSE);
-//  }
-//  else
-//  {
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_COLOR),TRUE);
-//    SendDlgItemMessage(hwndDlg,IDC_COLOUR,CPM_SETDEFAULTCOLOUR,0,glObj->dwColor);
-//    SendDlgItemMessage(hwndDlg,IDC_COLOUR,CPM_SETCOLOUR,0,glObj->dwColor);
-//  }
-//  if (glObj->hGlyph && glObj->szFileName!=NULL && (st==ST_IMAGE ||st==ST_SOLARIZE))
-//  {
-//    int ml, mr, mb, mt;
-//    BITMAP bm={0};
-//    GetObject(glObj->hGlyph,sizeof(BITMAP),&bm);
-//    ml=mr=bm.bmWidth;
-//    mt=mb=bm.bmHeight;
-//
-//
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_SPIN_LEFT),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_SPIN_TOP),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_SPIN_BOTTOM),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_SPIN_RIGHT),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_COMBO_FIT),TRUE);
-//
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_EDIT_LEFT),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_EDIT_TOP),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_EDIT_BOTTOM),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_EDIT_RIGHT),TRUE);
-//
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_LEFT),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_TOP),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_BOTTOM),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_RIGHT),TRUE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_MARGINS),TRUE);
-//
-//    SendDlgItemMessage(hwndDlg,IDC_SPIN_LEFT,UDM_SETRANGE,0,MAKELONG(ml,0));
-//    SendDlgItemMessage(hwndDlg,IDC_SPIN_LEFT,UDM_SETPOS,0,MAKELONG(glObj->dwLeft,0));
-//
-//    SendDlgItemMessage(hwndDlg,IDC_SPIN_RIGHT,UDM_SETRANGE,0,MAKELONG(mr,0));
-//    SendDlgItemMessage(hwndDlg,IDC_SPIN_RIGHT,UDM_SETPOS,0,MAKELONG(glObj->dwRight,0));
-//
-//    SendDlgItemMessage(hwndDlg,IDC_SPIN_TOP,UDM_SETRANGE,0,MAKELONG(mt,0));
-//    SendDlgItemMessage(hwndDlg,IDC_SPIN_TOP,UDM_SETPOS,0,MAKELONG(glObj->dwTop,0));
-//
-//    SendDlgItemMessage(hwndDlg,IDC_SPIN_BOTTOM,UDM_SETRANGE,0,MAKELONG(mb,0));
-//    SendDlgItemMessage(hwndDlg,IDC_SPIN_BOTTOM,UDM_SETPOS,0,MAKELONG(glObj->dwBottom,0));
-//
-//    k=-1;  for (i=0; i<sizeof(fitIndex)/sizeof(int); i++)   if (fitIndex[i]==glObj->FitMode){k=i;break;}
-//    SendDlgItemMessage(hwndDlg,IDC_COMBO_FIT,CB_SETCURSEL,k,0);	
-//  }
-//  else
-//  {
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_SPIN_LEFT),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_SPIN_TOP),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_SPIN_BOTTOM),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_SPIN_RIGHT),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_COMBO_FIT),FALSE);
-//
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_EDIT_LEFT),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_EDIT_TOP),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_EDIT_BOTTOM),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_EDIT_RIGHT),FALSE);
-//
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_LEFT),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_TOP),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_BOTTOM),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_RIGHT),FALSE);
-//    EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_MARGINS),FALSE);
-//  }
-//  return 0;
-//}
+#define TreeView_InsertItemA(hwnd, lpis) \
+	(HTREEITEM)SendMessageA((hwnd), TVM_INSERTITEMA, 0, (LPARAM)(LPTV_INSERTSTRUCTA)(lpis))
+
+#define TreeView_GetItemA(hwnd, pitem) \
+	(BOOL)SendMessageA((hwnd), TVM_GETITEMA, 0, (LPARAM)(TV_ITEM *)(pitem))
+
+static HTREEITEM FindChild(HWND hTree, HTREEITEM Parent, char * Caption, void * data)
+{
+  HTREEITEM res=NULL, tmp=NULL;
+  if (Parent) 
+    tmp=TreeView_GetChild(hTree,Parent);
+  else 
+	tmp=TreeView_GetRoot(hTree);
+  while (tmp)
+  {
+    TVITEMA tvi;
+    char buf[255];
+    tvi.hItem=tmp;
+    tvi.mask=TVIF_TEXT|TVIF_HANDLE;
+    tvi.pszText=(LPSTR)&buf;
+    tvi.cchTextMax=254;
+    TreeView_GetItemA(hTree,&tvi);
+    if (boolstrcmpi(Caption,tvi.pszText))
+	{
+		if (data)
+		{
+			SkinListData * sd=NULL;
+			TVITEM tvi={0};
+			tvi.hItem=tmp;
+			tvi.mask=TVIF_HANDLE|TVIF_PARAM;
+			TreeView_GetItem(hTree,&tvi);
+			sd=(SkinListData*)(tvi.lParam);
+			if (sd)
+				if (!strcmpi(sd->File,((SkinListData*)data)->File))
+					return tmp;
+		}
+		else
+			return tmp;
+	}
+    tmp=TreeView_GetNextSibling(hTree,tmp);
+  }
+  return tmp;
+}
+
+
+static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data)
+{
+	HTREEITEM rootItem=NULL;
+	HTREEITEM cItem=NULL;
+	char path[MAX_PATH];//,mask[MAX_PATH];
+	char * ptr;
+	char * ptrE;
+	BOOL ext=FALSE;
+	CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)folder, (LPARAM)path);
+	ptrE=path;
+	while (*ptrE!='\\' && *ptrE!='\0' && *ptrE!=':') ptrE++;
+	if (*ptrE=='\\')
+	{
+			*ptrE='\0';
+			ptrE++;
+	}
+	else ptrE=path;
+	ptr=ptrE;
+	do 
+	{
+		
+		while (*ptrE!='\\' && *ptrE!='\0') ptrE++;
+		if (*ptrE=='\\')
+		{
+			*ptrE='\0';
+			ptrE++;
+			// find item if not - create;
+			{
+				cItem=FindChild(hTree,rootItem,ptr,NULL);
+				if (!cItem) // not found - create node
+				{
+					TVINSERTSTRUCTA tvis;
+					tvis.hParent=rootItem;
+					tvis.hInsertAfter=TVI_ROOT;
+					tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_PARAM;
+					tvis.item.pszText=ptr;
+					{
+						tvis.item.lParam=(LPARAM)NULL;
+					}
+					cItem=TreeView_InsertItemA(hTree,&tvis);
+					
+				}	
+				rootItem=cItem;
+			}
+			ptr=ptrE;
+		}
+		else ext=TRUE;
+	}while (!ext);
+	//Insert item node
+	cItem=FindChild(hTree,rootItem,itemName,data);
+	if (!cItem)
+	{
+		TVINSERTSTRUCTA tvis;
+		tvis.hParent=rootItem;
+		tvis.hInsertAfter=TVI_SORT;
+		tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_PARAM;
+		tvis.item.pszText=itemName;
+		tvis.item.lParam=(LPARAM)data;
+		return (int)TreeView_InsertItemA(hTree,&tvis);
+	}
+	else
+		return (int)cItem;
+	return 0;
+}

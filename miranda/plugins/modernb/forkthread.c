@@ -57,7 +57,7 @@ unsigned long forkthread (
 	fa.arg=arg;
 	rc=_beginthread(forkthread_r,stacksize,&fa);
 	if ((unsigned long)-1L != rc) {
-		WaitForSingleObject(fa.hEvent,INFINITE);
+		WaitForSingleObject(fa.hEvent,1000);
 	} //if
 	CloseHandle(fa.hEvent);
 	return rc;

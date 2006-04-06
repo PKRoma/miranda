@@ -28,6 +28,7 @@ This file contains code related to new modern free positioned skinned buttons
 #include "SkinEngine.h"
 
 #define MODERNBUTTONCLASS "MirandaModernButtonClass"
+BOOL ModernButtonModuleIsLoaded=FALSE;
 
 static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam);
 int UnloadModernButtonModule(WPARAM wParam, LPARAM lParam);
@@ -79,18 +80,19 @@ static HWND hwndToolTips = NULL;
 
 int LoadModernButtonModule(void) 
 {
-  WNDCLASSEX wc;	
+  WNDCLASSEXA wc;	
   ZeroMemory(&wc, sizeof(wc));
   wc.cbSize         = sizeof(wc);
-  wc.lpszClassName  = TEXT(MODERNBUTTONCLASS);
+  wc.lpszClassName  = MODERNBUTTONCLASS;
   wc.lpfnWndProc    = ModernButtonWndProc;
   wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
   wc.cbWndExtra     = sizeof(ModernButtonCtrl*);
   wc.hbrBackground  = 0;
   wc.style          = CS_GLOBALCLASS;
-  RegisterClassEx(&wc);
+  RegisterClassExA(&wc);
   InitializeCriticalSection(&csTips);
   HookEvent(ME_SYSTEM_SHUTDOWN, UnloadModernButtonModule);
+  ModernButtonModuleIsLoaded=TRUE;
   return 0;
 }
 
@@ -155,15 +157,15 @@ int PaintWorker(HWND hwnd, HDC whdc)
           }         
         case 'd':
             defval=DBGetContactSettingDword(NULL,section,key,defval);
-            Value=mir_strdup(ltoa(defval,buf,sizeof(buf)));
+            Value=mir_strdup(_ltoa(defval,buf,sizeof(buf)));
             break;
         case 'w':
             defval=DBGetContactSettingWord(NULL,section,key,defval);
-            Value=mir_strdup(ltoa(defval,buf,sizeof(buf)));
+            Value=mir_strdup(_ltoa(defval,buf,sizeof(buf)));
             break;
         case 'b':
             defval=DBGetContactSettingByte(NULL,section,key,defval);
-            Value=mir_strdup(ltoa(defval,buf,sizeof(buf)));
+            Value=mir_strdup(_ltoa(defval,buf,sizeof(buf)));
             break;
         }
         mir_free(section);
@@ -197,7 +199,11 @@ int PaintWorker(HWND hwnd, HDC whdc)
   }
   SelectObject(hdc,oldbmp);
   DeleteObject(bmp);
-  if (!whdc || !LayeredFlag) DeleteDC(hdc);
+  if (!whdc || !LayeredFlag) 
+  {	
+	  SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+	  ModernDeleteDC(hdc);
+  }
 //  if (sdc) 
 //    ReleaseDC(GetParent(hwnd),sdc);
   return 0;
@@ -303,7 +309,7 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
           //		    bct->HandleService=NULL;
           //            bct->ID=NULL;
           //			SetWindowLong(hwndDlg, 0, (long)bct);
-          if (((CREATESTRUCT *)lParam)->lpszName) SetWindowText(hwndDlg, ((CREATESTRUCT *)lParam)->lpszName);  
+          if (((CREATESTRUCTA *)lParam)->lpszName) SetWindowTextA(hwndDlg, ((CREATESTRUCTA *)lParam)->lpszName);  
           return TRUE;
         }
       case WM_DESTROY:
@@ -518,7 +524,8 @@ int AddButton(HWND parent,
               int MinWidth, int MinHeight)
 {
 //  if (!parent) return 0;
-  if (!Buttons)
+   if (!ModernButtonModuleIsLoaded) return 0;
+	if (!Buttons)
     Buttons=mir_alloc(sizeof(MButton));
   Buttons=mir_realloc(Buttons,sizeof(MButton)*(ButtonsCount+1));
   {
@@ -564,6 +571,7 @@ extern sCurrentWindowImageData * cachedWindow;
 int EraseButton(int l,int t,int r, int b)
 {
   DWORD i;
+  if (!ModernButtonModuleIsLoaded) return 0;
   if (!LayeredFlag) return 0;
   if (!cachedWindow) return 0;
   if (!cachedWindow->hImageDC ||!cachedWindow->hBackDC) return 0;
@@ -601,6 +609,7 @@ HWND CreateButtonWindow(ModernButtonCtrl * bct, HWND parent)
 int RedrawButtons(HDC hdc)
 {
   DWORD i;
+  if (!ModernButtonModuleIsLoaded) return 0;
   for(i=0; i<ButtonsCount; i++)
   {
     if (pcli->hwndContactList && Buttons[i].hwnd==NULL)
@@ -612,6 +621,7 @@ int RedrawButtons(HDC hdc)
 int DeleteButtons()
 {
   DWORD i;
+  if (!ModernButtonModuleIsLoaded) return 0;
   for(i=0; i<ButtonsCount; i++)
     if (Buttons[i].hwnd) DestroyWindow(Buttons[i].hwnd);
   if (Buttons) mir_free(Buttons);
@@ -628,14 +638,7 @@ int ReposButtons(HWND parent, BOOL draw, RECT * r)
   RECT clr;
   RECT rd;
   BOOL altDraw=FALSE;
-#ifdef _DEBUG
-  {
-	  char buf[256];
-	  static unsigned long c=0;
-	  _snprintf(buf, sizeof(buf),"Reposition Buttons N%d\n",c++);
-	  TRACE(buf);
-  }
-#endif
+  if (!ModernButtonModuleIsLoaded) return 0;
   GetWindowRect(parent,&rd);
   GetClientRect(parent,&clr);
   if (!r)

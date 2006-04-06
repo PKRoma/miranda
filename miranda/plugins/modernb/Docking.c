@@ -167,17 +167,13 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 
 		case WM_WINDOWPOSCHANGED:
 			{
-			 if (docked) 
-       {
-         TRACE("REPOS\n");
-         ReposButtons(msg->hwnd,0,NULL);
-       }
-      return 0;
+			 if (docked) ReposButtons(msg->hwnd,0,NULL);
+			 return 0;
 			ZeroMemory(&abd,sizeof(abd));
 			abd.cbSize=sizeof(abd);
 			abd.hWnd=msg->hwnd;
 			SHAppBarMessage(ABM_WINDOWPOSCHANGED,&abd);
-      ReposButtons(msg->hwnd,0,NULL);
+			ReposButtons(msg->hwnd,0,NULL);
 			return 0;
 			}
 		case WM_MOVING:
@@ -240,12 +236,10 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 			  Docking_AdjustPosition(msg->hwnd,&rcMonitor,&rcWindow);
 			  *((LRESULT*)lParam)=TRUE;
 			  dock_prevent_moving=0;
-			  TRACE("WM_EXITSIZEMOVE");
 			  SetWindowPos(msg->hwnd,0,rcWindow.left,rcWindow.top,0,0,SWP_NOSIZE|SWP_NOZORDER|SWP_NOREDRAW|SWP_NOSENDCHANGING);
               OnMoving(msg->hwnd,&rcWindow);
               ReposButtons(msg->hwnd,0,NULL);//-=-=-=
 			  dock_prevent_moving=1;		  
-              //PostMessage(msg->hwnd,WM_MOVE,0,(MAKELPARAM(rcWindow.left,rcWindow.top)));
               return 1;
             }
 
@@ -280,9 +274,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
       if (docked) ReposButtons(msg->hwnd,0,NULL);
       return FALSE;
 			rc=*(RECT*)(msg->lParam);
-			
 			dock_prevent_moving=0;
-			TRACE("WM_SIZING:  "); 
             OnMoving(msg->hwnd,&rc);
             //-=-=-=		
 			return TRUE;
@@ -302,7 +294,6 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 				GetWindowRect(msg->hwnd,&rc);
 				Docking_AdjustPosition(msg->hwnd,&rcMonitor,&rc);
 				MoveWindow(msg->hwnd,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,FALSE);
-				TRACE("WM_SHOWWINDOW:  ");
                 OnMoving(msg->hwnd,&rc);
                 ReposButtons(msg->hwnd,0,NULL);//-=-=-=
 			}

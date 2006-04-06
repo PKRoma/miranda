@@ -107,7 +107,7 @@ int AddModernMaskToList(ModernMask * mm,  ModernMaskList * mmTemplateList)
     mmTemplateList->MaskList=mir_realloc(mmTemplateList->MaskList,sizeof(ModernMask)*(mmTemplateList->AllocatedMask+1));
     //if (mm->MaskID==0)
 //mm->MaskID=mmTemplateList->AllocatedMask;   
-    memcpy(&(mmTemplateList->MaskList[mmTemplateList->AllocatedMask]),mm,sizeof(ModernMask));
+    memmove(&(mmTemplateList->MaskList[mmTemplateList->AllocatedMask]),mm,sizeof(ModernMask));
     mmTemplateList->AllocatedMask++;
     return mmTemplateList->AllocatedMask-1;
 }
@@ -141,7 +141,7 @@ int DeleteMaskByItID(DWORD mID,ModernMaskList * mmTemplateList)
       DWORD i;
       DeleteMask(&(mmTemplateList->MaskList[mID]));
       newAlocation=mir_alloc(sizeof(ModernMask)*mmTemplateList->AllocatedMask-1);
-      memcpy(newAlocation,mmTemplateList->MaskList,sizeof(ModernMask)*(mID+1));
+      memmove(newAlocation,mmTemplateList->MaskList,sizeof(ModernMask)*(mID+1));
       for (i=mID; i<mmTemplateList->AllocatedMask-1; i++)
       {
           newAlocation[i]=mmTemplateList->MaskList[i+1];
@@ -265,7 +265,7 @@ int ParseToModernMask(ModernMask * mm, char * szText)
                     mm->ParamsList=mir_realloc(mm->ParamsList,(mm->ParamsCount+1)*sizeof(ModernParam));
                     mm->ParamsCount++;                    
                   }
-                  memcpy(&(mm->ParamsList[curParam]),&param,sizeof(ModernParam));
+                  memmove(&(mm->ParamsList[curParam]),&param,sizeof(ModernParam));
                   curParam++;
                   memset(&param,0,sizeof(ModernParam));
             }
@@ -514,7 +514,7 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
              else if (boolstrcmpi(buf,"Image"))
              {
                  //Image
-				 gl.Style=ST_IMAGE;
+				         gl.Style=ST_IMAGE;
                  gl.szFileName=mir_strdup(GetParamN(Params,buf, sizeof(buf),2,',',0));                
                  gl.dwLeft=atoi(GetParamN(Params,buf, sizeof(buf),4,',',0));
                  gl.dwTop=atoi(GetParamN(Params,buf, sizeof(buf),5,',',0));
@@ -522,6 +522,28 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
                  gl.dwBottom=atoi(GetParamN(Params,buf, sizeof(buf),7,',',0));
                  gl.dwAlpha =atoi(GetParamN(Params,buf, sizeof(buf),8,',',0));
                  GetParamN(Params,buf, sizeof(buf),3,',',0);
+                 if (boolstrcmpi(buf,"TileBoth")) gl.FitMode=FM_TILE_BOTH;
+                 else if (boolstrcmpi(buf,"TileVert")) gl.FitMode=FM_TILE_VERT;
+                 else if (boolstrcmpi(buf,"TileHorz")) gl.FitMode=FM_TILE_HORZ;
+                 else gl.FitMode=0;                
+             }
+             else if (boolstrcmpi(buf,"Fragment"))
+             {
+                 //Image
+				         gl.Style=ST_FRAGMENT;
+                 gl.szFileName=mir_strdup(GetParamN(Params,buf, sizeof(buf),2,',',0));
+                 
+                 gl.clipArea.x=atoi(GetParamN(Params,buf, sizeof(buf),3,',',0));
+                 gl.clipArea.y=atoi(GetParamN(Params,buf, sizeof(buf),4,',',0));
+                 gl.szclipArea.cx=atoi(GetParamN(Params,buf, sizeof(buf),5,',',0));
+                 gl.szclipArea.cy=atoi(GetParamN(Params,buf, sizeof(buf),6,',',0));
+
+                 gl.dwLeft=atoi(GetParamN(Params,buf, sizeof(buf),8,',',0));
+                 gl.dwTop=atoi(GetParamN(Params,buf, sizeof(buf),9,',',0));
+                 gl.dwRight=atoi(GetParamN(Params,buf, sizeof(buf),10,',',0));
+                 gl.dwBottom=atoi(GetParamN(Params,buf, sizeof(buf),11,',',0));
+                 gl.dwAlpha =atoi(GetParamN(Params,buf, sizeof(buf),12,',',0));
+                 GetParamN(Params,buf, sizeof(buf),7,',',0);
                  if (boolstrcmpi(buf,"TileBoth")) gl.FitMode=FM_TILE_BOTH;
                  else if (boolstrcmpi(buf,"TileVert")) gl.FitMode=FM_TILE_VERT;
                  else if (boolstrcmpi(buf,"TileHorz")) gl.FitMode=FM_TILE_HORZ;

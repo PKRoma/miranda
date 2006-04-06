@@ -46,8 +46,9 @@ extern BYTE CALLED_FROM_SHOWHIDE;
 #define TM_STATUSBARUPDATE  200
 #define MENU_MIRANDAMENU         0xFFFF1234
 #define MENU_STATUSMENU         0xFFFF1235
-
+extern int CLUIFramesGetTotalHeight();
 extern BOOL TransparentFlag;
+extern int UnhookAll();
 extern void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
 extern sCurrentWindowImageData * cachedWindow;
 int BehindEdge_State;
@@ -60,7 +61,7 @@ extern BOOL LOCK_IMAGE_UPDATING;
 extern BOOL LOCK_UPDATING;
 #define UM_ALPHASUPPORT WM_USER+100
 
-
+extern char * gl_ConnectingProto;
 static HMODULE hUserDll;
 static HIMAGELIST himlMirandaIcon;
 HMENU hMenuMain;
@@ -88,13 +89,14 @@ extern void (*savedLoadCluiGlobalOpts)(void);
 BOOL CheckOwner(HWND hwnd)
 {
 	HWND midWnd,hwndClui;
+	if (!hwnd) return FALSE;
 	hwndClui=(HWND)CallService(MS_CLUI_GETHWND,0,0);
 	midWnd=GetAncestor(hwnd,GA_ROOTOWNER);
 	if(midWnd==hwndClui) return TRUE;
 	{
 		char buf[255];
 		GetClassNameA(midWnd,buf,254);
-		if (!strcmpi(buf,CLUIFrameSubContainerClassName)) return TRUE;
+		if (!_strcmpi(buf,CLUIFrameSubContainerClassName)) return TRUE;
 	}
 	return FALSE;
 }
@@ -180,13 +182,14 @@ int SkinMinX=0,SkinMinY=20;
 BYTE showOpts;//for statusbar
 BOOL ON_EDGE_SIZING=0;
 RECT ON_EDGE_SIZING_POS={0};
-
+extern BOOL gl_MultiConnectionMode;
 typedef struct{
 	int IconsCount;
 	int CycleStartTick;
 	char *szProto;
 	int n;
 	int TimerCreated;
+	BOOL isGlobal;
 } ProtoTicks,*pProtoTicks;
 //int SkinUpdateWindowProc(HWND hwnd1);
 
@@ -259,7 +262,8 @@ void ChangeWindowMode()
 	IsInChangingMode=TRUE;
 	TransparentFlag=IsWinVer2000Plus()&&DBGetContactSettingByte( NULL,"CList","Transparent",SETTING_TRANSPARENT_DEFAULT);
 	SmoothAnimation=IsWinVer2000Plus()&&DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", 1);
-
+	if (TransparentFlag==0 && CURRENT_ALPHA!=0)
+		CURRENT_ALPHA=255;
 	//2- Calculate STYLES and STYLESEX
 	if (!LayeredFlag)
 	{
@@ -386,7 +390,12 @@ void ChangeWindowMode()
 		hRgn1=CreateRoundRectRgn(0,0,(r.right-r.left+1),(r.bottom-r.top+1),h,h);
 		if ((DBGetContactSettingByte(NULL,"CLC","RoundCorners",0)) && (!CallService(MS_CLIST_DOCKINGISDOCKED,0,0)))
 			SetWindowRgn(pcli->hwndContactList,hRgn1,1); 
-		else SetWindowRgn(pcli->hwndContactList,NULL,1);
+		else 
+		{
+			DeleteObject(hRgn1);
+			SetWindowRgn(pcli->hwndContactList,NULL,1);
+		}
+
 		RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
 	} 			
 	IsInChangingMode=FALSE;
@@ -404,7 +413,6 @@ int UpdateTimer(BYTE BringIn)
 	{
 		KillTimer(pcli->hwndContactList,TM_BRINGINTIMEOUT);
 		SetTimer(pcli->hwndContactList,TM_BRINGINTIMEOUT,BehindEdgeShowDelay*100,NULL);
-		TRACE ("Bring in Timer re-started\n");
 		show_event_started=1;
 	}
 	return 0;
@@ -497,10 +505,11 @@ int BehindEdge_Show()
 	return 0;
 }
 
-
+extern BOOL ON_SETALLEXTRAICON_CYCLE;
 BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase )
 {
-
+  if (ON_SETALLEXTRAICON_CYCLE)
+    return FALSE;
 	if (IsInMainWindow(hWnd) && LayeredFlag)// && IsWindowVisible(hWnd))
 	{
 		if (IsWindowVisible(hWnd))
@@ -601,36 +610,6 @@ int IsInMainWindow(HWND hwnd)
 	return 0;
 }
 
-//int SkinUpdateWindowProc(HWND hwnd1)
-//{
-//   
-//    /*
-//    BYTE alpha=255;
-//    struct sUpdatingWindow Update2={0};
-//    UpdatePendent=333;
-//    if (ANIMATION_IS_IN_PROGRESS)
-//    {
-//        TRACE("UPDATING FOR ANIMATED\n");
-//        UpdateWindowImage(&Update);
-//        return 0;
-//    }
-//    TRACE("PREPEARING FOR NON-ANIMATED\n");
-//    if (!PrepeareWindowImage(&Update2)) return 0; 
-//    UpdateWindowImage(&Update2);
-//    if (DBGetContactSettingByte(NULL,"CList","Transparent",0))
-//        {   
-//            HWND fg;
-//            HWND hwnd=pcli->hwndContactList;
-//            int f=0;
-//            fg=GetForegroundWindow();
-//            if (fg==hwnd || GetParent(fg)==hwnd || GetParent(GetParent(fg))==hwnd) f=1;
-//            alpha=(f==1)?(BYTE)DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT):(BYTE)DBGetContactSettingByte(NULL,"CList","AutoAlpha",SETTING_ALPHA_DEFAULT);
-//        }
-//    UpdateWindowWithImage(&Update2, alpha);
-//    FreeWindowImage(&Update2);
-//    return 0;
-//    */
-//}
 int PrepeareWindowImage(struct sUpdatingWindow * sUpdate)
 {
 	HDC hdc,dcScreen;
@@ -645,8 +624,6 @@ int PrepeareWindowImage(struct sUpdatingWindow * sUpdate)
 	DWORD UpdateTime=GetTickCount();
 	POINT dest={0}, src={0};
 	if (!sUpdate) return 0;
-	TRACE("---------------- PrepeareWindowImage ==============\n");
-
 	hwnd=pcli->hwndContactList;
 
 	GetWindowRect(hwnd,&rect);
@@ -669,613 +646,19 @@ int PrepeareWindowImage(struct sUpdatingWindow * sUpdate)
 	sUpdate->sizeY=cy;
 	return 0;
 }
-//int UpdateWindowImage(struct sUpdatingWindow * sUpdate)
-//    {
-//        HDC hdc=sUpdate->offscreenDC;
-//        HDC dcScreen=sUpdate->screenDC;
-//        HBITMAP bmp=sUpdate->currentBitmap;
-//        HFONT hfo,hf;
-//        LONG cx,cy;
-// //     SIZE sz;
-//        HWND hwnd;
-//        DWORD ws;
-// //     HDC hd2;
-//        RECT rect,r1;
-//        DWORD UpdateTime=GetTickCount();
-//        POINT dest={0}, src={0};
-//        if (!sUpdate) return 0;
-//        TRACE("---------------- Update Window Image ==============\n");
-//
-//        hwnd=pcli->hwndContactList;
-//
-//        GetWindowRect(hwnd,&rect);
-//        dest.x=rect.left;
-//        dest.y=rect.top;
-//        cx=rect.right-rect.left;
-//        cy=rect.bottom-rect.top;
-//        if (cx!=sUpdate->sizeX || cy!=sUpdate->sizeY)
-//        {
-//            FreeWindowImage(sUpdate);
-//            PrepeareWindowImage(sUpdate);
-//            hdc=sUpdate->offscreenDC=hdc;
-//            dcScreen=sUpdate->screenDC;
-//            bmp=sUpdate->currentBitmap;
-//            cx=rect.right-rect.left;
-//            cy=rect.bottom-rect.top;
-//
-//        }      
-//        r1=rect;
-//        OffsetRect(&r1,-r1.left,-r1.top);
-//        r1.right=r1.left+cx;
-//        r1.bottom=r1.top+cy;
-////        sz.cx=cx; sz.cy=cy;
-//        SkinDrawWindowBack(hwnd,hdc,&r1,"Main Window/Backgrnd");
-//        ws=GetWindowLong(hwnd,GWL_STYLE);
-//        //Draw scroll bars
-//        {
-//            SCROLLBARINFO si;
-//            HWND contacts;
-//            contacts=(HWND)CallService(MS_CLUI_GETHWNDTREE,0,0);
-//            si.cbSize=sizeof(SCROLLBARINFO);
-//
-//            if (GetWindowLong(contacts,GWL_STYLE)&WS_VSCROLL)   
-//            {
-//                RECT rc;
-//                RECT wrc;
-//                RECT tb;
-//                GetScrollBarInfo(contacts,OBJID_VSCROLL,&si);
-//                GetWindowRect(hwnd,&wrc);
-//                rc=si.rcScrollBar;
-//                OffsetRect(&rc,-dest.x,-dest.y);
-//                tb=rc;
-//                
-//                SkinDrawGlyph(hdc,&rc,&rc,"Main Window/ScrollBar/Backgrnd");
-//                
-//                rc.bottom=si.xyThumbBottom+tb.top;
-//                rc.top=si.xyThumbTop+tb.top;
-//                SkinDrawGlyph(hdc,&rc,&rc,"Main Window/ScrollBar/Thumb");
-//                rc.top=tb.top;
-//                rc.bottom=tb.top+si.dxyLineButton;
-//                SkinDrawGlyph(hdc,&rc,&rc,"Main Window/ScrollBar/UpButton");
-//
-//                rc.top=tb.bottom-si.dxyLineButton;
-//                rc.bottom=tb.bottom;
-//                SkinDrawGlyph(hdc,&rc,&rc,"Main Window/ScrollBar/DownButton");
-//
-//            }
-//            if (ws&WS_CAPTION)
-//            {
-//                TITLEBARINFO ti;
-//                RECT r;
-//                ti.cbSize=sizeof(TITLEBARINFO);
-//                GetTitleBarInfo(hwnd,&ti);
-//                r=ti.rcTitleBar;
-//                OffsetRect(&r,-dest.x,-dest.y);
-//                if (ws&WS_SYSMENU)
-//                {
-//                    MENUBARINFO mbi;
-//                    RECT rc,rc1;
-//                    mbi.cbSize =sizeof(MENUBARINFO);
-//                    GetMenuBarInfo(hwnd, OBJID_SYSMENU,0,&mbi);
-//                    rc=mbi.rcBar;
-//                    if (rc.bottom-rc.top*rc.right-rc.left!=0)
-//                    {
-//                        OffsetRect(&rc,-dest.x,-dest.y);
-//                        rc1=rc;
-//                        rc1.right=r.right;
-//                        SkinDrawGlyph(hdc,&rc1,&rc1,"Main Window/Caption/Backgrnd");
-//                    }
-//                    else SkinDrawGlyph(hdc,&r,&r,"Main Window/Caption/Backgrnd");
-//                }
-//                else
-//                    SkinDrawGlyph(hdc,&r,&r,"Main Window/Caption/Backgrnd");
-//                {
-//                    RECT r2;
-//                    WORD sd;
-//                    sd=r.bottom-r.top-2;
-//                    r2.top=r.top+1;
-//                    r2.bottom=r2.top+sd;
-//                    r2.right=r.right;
-//                    r2.left=r2.right-sd;
-//                               
-//                    if (ti.rgstate[5]==0 ||ti.rgstate[5]&STATE_SYSTEM_PRESSED)
-//                    {
-//                        if (GetWindowLong(hwnd,GWL_EXSTYLE)&WS_EX_TOOLWINDOW)
-//                            SkinDrawGlyph(hdc,&r2,&r2,"Main Window/Caption/MinimizeButton");
-//                        else
-//                        {
-//                            SkinDrawGlyph(hdc,&r2,&r2,"Main Window/Caption/CloseButton");
-//                            r2.right-=(sd)*2+1;
-//                            r2.left=r2.right-sd;
-//                            SkinDrawGlyph(hdc,&r2,&r2,"Main Window/Caption/MinimizeButton");
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        SkinDrawMenu(hwnd,hdc);
-//        SendMessage(hwnd,WM_PRINT,(WPARAM)hdc,PRF_CHECKVISIBLE|PRF_CLIENT|PRF_CHILDREN);
-//
-//        {
-//            sCheckFilling r;
-//            r.hdc=hdc;
-//            r.rect=rect;
-//    //       EnumChildWindows(hwnd,EnumChildProc,(LPARAM)&r);
-//        }
-//    return 1;
-//    }
-//int UpdateWindowWithImage(struct sUpdatingWindow * sUpdate, BYTE constantAlpha)
-//{
-//    int res;
-//    BLENDFUNCTION bf={AC_SRC_OVER, 0,constantAlpha, AC_SRC_ALPHA };
-//    POINT dest={0}, src={0};
-//    RECT rect;
-//    SIZE sz={0};
-//    if (!pcli->hwndContactList) return 0;
-//    GetWindowRect(pcli->hwndContactList,&rect);
-//    dest.x=rect.left;
-//    dest.y=rect.top;
-//    sz.cx=rect.right-rect.left;
-//    sz.cy=rect.bottom-rect.top;
-//    if (!(GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE)&WS_EX_LAYERED))
-//        SetWindowLong(pcli->hwndContactList,GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) |WS_EX_LAYERED);
-//    {
-//        char b[100];
-//        sprintf(b,"Try to set alpha %d",constantAlpha);
-//        TRACE(b);
-//    }
-//    SetAlpha(constantAlpha);
-//    res=UpdateLayeredWindow(pcli->hwndContactList,sUpdate->screenDC,&dest,&sz,sUpdate->offscreenDC,&src,0,&bf,ULW_ALPHA);
-//    if (!res&&0)
-//    {
-//
-//        char szBuf[80]; 
-//        LPVOID lpMsgBuf;
-//        DWORD dw = GetLastError(); 
-//
-//
-//        FormatMessage(
-//            FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-//            FORMAT_MESSAGE_FROM_SYSTEM,
-//            NULL,
-//            dw,
-//            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-//            (LPTSTR) &lpMsgBuf,
-//            0, NULL );
-//
-//        sprintf(szBuf,  "UPDATE LAYERED WINDOW  failed with error %d: %s\n",  dw, lpMsgBuf); 
-//
-//        TRACE(szBuf);
-//        MessageBoxA(NULL, szBuf, "UPDATE LAYERED WINDOW FAILURE", MB_OK); 
-//        DebugBreak();
-//
-//    }
-//
-//    else 
-//    {
-//        TRACE("---Success\n");
-//        alphaCurr=constantAlpha;
-//    }
-//    return 1;
-//}
-//
 int FreeWindowImage(struct sUpdatingWindow * sUpdate)
 {   
-	TRACE("--- Free update image--------\n"); 
 	SelectObject(sUpdate->offscreenDC,sUpdate->oldBitmap);
-	DeleteDC(sUpdate->offscreenDC);
+	ModernDeleteDC(sUpdate->offscreenDC);
 	ReleaseDC(pcli->hwndContactList,sUpdate->screenDC);
 	DeleteObject(sUpdate->currentBitmap);
-
 	return 0;
 }
 
-/*
-int SkinUpdateWindow (HWND hwnd, HWND Caller)
-{
-if (IsWindowVisible(pcli->hwndContactList) )
-if (UpdatePendent!=2) 
-{
-if (ANIMATION_IS_IN_PROGRESS)
-{
-UpdateWindowImage(&Update);
-return 0;
-}
-if (PostMessage(pcli->hwndContactList,UM_UPDATE,(WPARAM)hwnd,(LPARAM)Caller)) 
-{       
-
-TRACE ("UPDATE WAS POSTED\n");          		
-UpdatePendent=2;
-}
-else 
-{
-char szBuf[80]; 
-LPVOID lpMsgBuf;
-DWORD dw = GetLastError(); 
-
-FormatMessage(
-FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-FORMAT_MESSAGE_FROM_SYSTEM,
-NULL,
-dw,
-MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-(LPTSTR) &lpMsgBuf,
-0, NULL );
-
-sprintf(szBuf,  "failed with error %d: %s",  dw, lpMsgBuf); 
-
-MessageBoxA(NULL, szBuf, "POST MESSAGE FAILURE", MB_OK); 
-DebugBreak();
-}
-
-}
-return 0; 
-}
-
-*/
-
-//void RegisterCLCRowObjects(int mode)
-//{
-//    TRACE("REGISTERING CL OBJECTS\n");
-//    if (mode==1)
-//    {  
-//        //NORMAL
-//        {
-//            CreateGlyphedObject("CL/Group/Opened");
-//            CreateGlyphedObject("CL/Group/Opened/FirstInList");
-//            CreateGlyphedObject("CL/Group/Opened/SingleInList");
-//            CreateGlyphedObject("CL/Group/Opened/LastInParent");
-//
-//            CreateGlyphedObject("CL/Group/Closed");
-//            CreateGlyphedObject("CL/Group/Closed/FirstInList");
-//            CreateGlyphedObject("CL/Group/Closed/SingleInList");
-//            CreateGlyphedObject("CL/Group/Closed/LastInParent");
-//
-//            CreateGlyphedObject("CL/SubGroup/Opened");
-//            CreateGlyphedObject("CL/SubGroup/Opened/LastInParent");
-//
-//            CreateGlyphedObject("CL/SubGroup/Closed");
-//            CreateGlyphedObject("CL/SubGroup/Closed/LastInParent");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/First");
-//            CreateGlyphedObject("CL/Contact/InRoot/Mid");
-//            CreateGlyphedObject("CL/Contact/InRoot/Last");
-//            CreateGlyphedObject("CL/Contact/InRoot/Single");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/First");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Mid");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Last");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Single");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/First");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/Mid");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/Last");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/Single");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/First");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/Mid");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/Last");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/Single");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/LastInGroup/Single");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/LastInGroup/Last");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/First");
-//            CreateGlyphedObject("CL/Contact/InGroup/Mid");
-//            CreateGlyphedObject("CL/Contact/InGroup/Last");
-//            CreateGlyphedObject("CL/Contact/InGroup/Single");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/First");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Mid");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Last");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Single");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/First");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/Mid");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/Last");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/Single");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/First");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/Mid");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/Last");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/Single");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/LastInGroup/Single");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/LastInGroup/Last");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/First");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Mid");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Last");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Single");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/First");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Mid");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Last");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Single");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/First");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/Mid");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/Last");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/Single");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/First");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/Mid");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/Last");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/Single");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/LastInGroup/Single");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/LastInGroup/Last");
-//        }
-//        //Selected
-//        {
-//            CreateGlyphedObject("CL/Group/Opened/Selected");
-//            CreateGlyphedObject("CL/Group/Opened/FirstInList/Selected");
-//            CreateGlyphedObject("CL/Group/Opened/SingleInList/Selected");
-//            CreateGlyphedObject("CL/Group/Opened/LastInParent/Selected");
-//
-//            CreateGlyphedObject("CL/Group/Closed/Selected");
-//            CreateGlyphedObject("CL/Group/Closed/FirstInList/Selected");
-//            CreateGlyphedObject("CL/Group/Closed/SingleInList/Selected");
-//            CreateGlyphedObject("CL/Group/Closed/LastInParent/Selected");
-//
-//            CreateGlyphedObject("CL/SubGroup/Opened/Selected");
-//            CreateGlyphedObject("CL/SubGroup/Opened/LastInParent/Selected");
-//
-//            CreateGlyphedObject("CL/SubGroup/Closed/Selected");
-//            CreateGlyphedObject("CL/SubGroup/Closed/LastInParent/Selected");
-//
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/First/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Mid/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Last/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Single/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/First/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Mid/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Last/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Single/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/First/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/Mid/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/Last/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/Single/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/First/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/Mid/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/Last/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/Single/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/LastInGroup/Single/Selected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/LastInGroup/Last/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/First/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Mid/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Last/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Single/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/First/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Mid/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Last/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Single/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/First/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/Mid/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/Last/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/Single/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/First/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/Mid/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/Last/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/Single/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/LastInGroup/Single/Selected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/LastInGroup/Last/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/First/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Mid/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Last/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Single/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/First/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Mid/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Last/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Single/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/First/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/Mid/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/Last/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/Single/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/First/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/Mid/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/Last/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/Single/Selected");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/LastInGroup/Single/Selected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/LastInGroup/Last/Selected");
-//        }
-//        //Hovered
-//        {
-//            CreateGlyphedObject("CL/Group/Opened/Hovered");
-//            CreateGlyphedObject("CL/Group/Opened/FirstInList/Hovered");
-//            CreateGlyphedObject("CL/Group/Opened/SingleInList/Hovered");
-//            CreateGlyphedObject("CL/Group/Opened/LastInParent/Hovered");
-//
-//            CreateGlyphedObject("CL/Group/Closed/Hovered");
-//            CreateGlyphedObject("CL/Group/Closed/FirstInList/Hovered");
-//            CreateGlyphedObject("CL/Group/Closed/SingleInList/Hovered");
-//            CreateGlyphedObject("CL/Group/Closed/LastInParent/Hovered");
-//
-//            CreateGlyphedObject("CL/SubGroup/Opened/Hovered");
-//            CreateGlyphedObject("CL/SubGroup/Opened/LastInParent/Hovered");
-//
-//            CreateGlyphedObject("CL/SubGroup/Closed/Hovered");
-//            CreateGlyphedObject("CL/SubGroup/Closed/LastInParent/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/First/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Mid/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Last/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Single/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/First/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Mid/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Last/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Single/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/First/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/Mid/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/Last/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/Single/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/First/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/Mid/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/Last/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/Single/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/LastInGroup/Single/Hovered");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/LastInGroup/Last/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/First/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Mid/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Last/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Single/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/First/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Mid/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Last/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Single/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/First/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/Mid/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/Last/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/Single/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/First/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/Mid/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/Last/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/Single/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/LastInGroup/Single/Hovered");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/LastInGroup/Last/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/First/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Mid/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Last/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Single/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/First/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Mid/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Last/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Single/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/First/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/Mid/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/Last/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/Single/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/First/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/Mid/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/Last/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/Single/Hovered");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/LastInGroup/Single/Hovered");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/LastInGroup/Last/Hovered");
-//
-//        }
-//        //HoverOnSelected
-//        {
-//            CreateGlyphedObject("CL/Group/Opened/HoverOnSelected");
-//            CreateGlyphedObject("CL/Group/Opened/FirstInList/HoverOnSelected");
-//            CreateGlyphedObject("CL/Group/Opened/SingleInList/HoverOnSelected");
-//            CreateGlyphedObject("CL/Group/Opened/LastInParent/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Group/Closed/HoverOnSelected");
-//            CreateGlyphedObject("CL/Group/Closed/FirstInList/HoverOnSelected");
-//            CreateGlyphedObject("CL/Group/Closed/SingleInList/HoverOnSelected");
-//            CreateGlyphedObject("CL/Group/Closed/LastInParent/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/SubGroup/Opened/HoverOnSelected");
-//            CreateGlyphedObject("CL/SubGroup/Opened/LastInParent/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/SubGroup/Closed/HoverOnSelected");
-//            CreateGlyphedObject("CL/SubGroup/Closed/LastInParent/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/First/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Mid/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Last/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Single/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/First/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Mid/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Last/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Single/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/First/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/Mid/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/Last/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Meta/Expanded/Single/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/First/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/Mid/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/Last/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/Single/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/LastInGroup/Single/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InRoot/Subcontact/LastInGroup/Last/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/First/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Mid/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Last/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Single/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/First/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Mid/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Last/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Single/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/First/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/Mid/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/Last/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Meta/Expanded/Single/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/First/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/Mid/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/Last/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/Single/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/LastInGroup/Single/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InGroup/Subcontact/LastInGroup/Last/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/First/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Mid/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Last/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Single/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/First/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Mid/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Last/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Single/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/First/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/Mid/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/Last/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Meta/Expanded/Single/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/First/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/Mid/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/Last/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/Single/HoverOnSelected");
-//
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/LastInGroup/Single/HoverOnSelected");
-//            CreateGlyphedObject("CL/Contact/InSubgroup/Subcontact/LastInGroup/Last/HoverOnSelected");
-//        }
-//    }
-//}
-//
-#include "mod_skin_selector.h"
 extern void LoadSkinFromDB(void);
 int OnSkinLoad(WPARAM wParam, LPARAM lParam)
 {
-
-	TRACE("OnSkinLoad\n");
 	LoadSkinFromDB();
-
 	//    CreateGlyphedObject("Main Window/ScrollBar Up Button");
 	//    CreateGlyphedObject("Main Window/ScrollBar Down Button");
 	//    CreateGlyphedObject("Main Window/ScrollBar Thumb");       
@@ -1294,10 +677,24 @@ int OnSkinLoad(WPARAM wParam, LPARAM lParam)
 
 	return 0;
 }
-
+extern PLUGININFO pluginInfo;
 static int CluiModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	MENUITEMINFO mii;
+	/*
+	 *	Updater support
+	*/
+	CallService("Update/RegisterFL", (WPARAM)2103, (LPARAM)&pluginInfo);
+	/*
+	 *  End of updater support
+	 */
+	
+	/*
+	 *  Methacontact groups support
+	 */
+	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP));
+		CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
+	
 	ZeroMemory(&mii,sizeof(mii));
 	mii.cbSize=MENUITEMINFO_V4_SIZE;
 	mii.fMask=MIIM_SUBMENU;
@@ -1331,7 +728,8 @@ pProtoTicks GetProtoTicksByProto(char * szProto)
 		{
 			CycleStartTick[i].szProto=mir_strdup(szProto);
 			CycleStartTick[i].CycleStartTick=0;
-			CycleStartTick[i].n=i;
+			CycleStartTick[i].n=i;			
+			CycleStartTick[i].isGlobal=strcmpi(szProto,GLOBAL_PROTO_NAME)==0;
 			return(&CycleStartTick[i]);
 		}
 	}
@@ -1353,7 +751,7 @@ int GetConnectingIconForProtoCount(char *szProto)
 	lstrcpynA(file,szFullPath,sizeof(file));
 	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)file, (LPARAM)fileFull);
 	ret=ExtractIconExA(fileFull,-1,NULL,NULL,1);
-	if (ret==0) ret=11;
+	if (ret==0) ret=8;
 	return ret;
 
 }
@@ -1364,26 +762,11 @@ static HICON ExtractIconFromPath(const char *path)
 	char file[MAX_PATH],fileFull[MAX_PATH];
 	int n;
 	HICON hIcon;
-	/*	{
-	char buf[512];
-	sprintf(buf,"LoadIcon %s\r\n",path);
-	TRACE(buf);
-	}
-	*/
 	lstrcpynA(file,path,sizeof(file));
 	comma=strrchr(file,',');
 	if(comma==NULL) n=0;
 	else {n=atoi(comma+1); *comma=0;}
 	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)file, (LPARAM)fileFull);
-	/*	
-	#ifdef _DEBUG
-	{
-	char buf[512];
-	sprintf(buf,"LoadIconFull %d %s\r\n",n,fileFull);
-	TRACE(buf);
-	}
-	#endif
-	*/
 	hIcon=NULL;
 	ExtractIconExA(fileFull,n,NULL,&hIcon,1);
 	return hIcon;
@@ -1393,7 +776,7 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 {
 	char szPath[MAX_PATH],szMyPath[MAX_PATH], szFullPath[MAX_PATH],*str;
 	HICON hIcon=NULL;
-	SKINICONDESC sid;
+	SKINICONDESC sid={0};
 
 	GetModuleFileNameA(GetModuleHandle(NULL), szPath, MAX_PATH);
 	GetModuleFileNameA(g_hInst, szMyPath, MAX_PATH);
@@ -1405,12 +788,20 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 	{		
 		hIcon=ExtractIconFromPath(szFullPath);
 		if (hIcon) return hIcon;
+		if (UseLibrary)
+		{
+			_snprintf(szFullPath, sizeof(szFullPath), "%s,%d", szMyPath, internalidx);
+			hIcon=ExtractIconFromPath(szFullPath);
+			if (hIcon) return hIcon;		
+		}
 	}
 	else
 	{
 		if (registerit&&IconName!=NULL&&SectName!=NULL)	
 		{
 			sid.cbSize = sizeof(sid);
+			sid.cx=16;
+			sid.cy=16;
 			sid.pszSection = Translate(SectName);				
 			sid.pszName=IconName;
 			sid.pszDescription=Description;
@@ -1436,24 +827,9 @@ HICON GetConnectingIconForProto(char *szProto,int b)
 	_snprintf(szFullPath, sizeof(szFullPath), "proto_conn_%s.dll",szProto);
 	hIcon=LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0);
 	if (hIcon) return hIcon;
-
-	/*#ifdef _DEBUG
-	{
-	char buf [256];
-	sprintf(buf,"IconNotFound %s %d\r\n",szProto,b);
-	if (!MyStrCmp(szProto,"MSN"))
-	TRACE(buf);
-	}
-	#endif
-	*/
-	//if (!MyStrCmp(szProto,"ICQ"))
-	{
-		hIcon=(LoadIconA(g_hInst,(char *)(IDI_ICQC1+b+1)));
-	}
-
+	hIcon=(LoadIconA(g_hInst,(char *)(IDI_ICQC1+b+1)));
 	return(hIcon);
 }
-
 
 
 //wParam = szProto
@@ -1481,7 +857,10 @@ int GetConnectingIconService(WPARAM wParam,LPARAM lParam)
 		if (pt->CycleStartTick!=0&&pt->IconsCount!=0) 
 		{					
 			b=((GetTickCount()-pt->CycleStartTick)/(DefaultStep))%(pt->IconsCount);
-			hIcon=GetConnectingIconForProto(szProto,b);
+		//	if (lParam)
+		//		hIcon=GetConnectingIconForProto("Global",b);
+		//	else
+				hIcon=GetConnectingIconForProto(szProto,b);
 		};
 	}
 
@@ -1507,13 +886,8 @@ int CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
 		pt=GetProtoTicksByProto(szProto);
 		if (pt!=NULL)
 		{
-
-
 			if (pt->CycleStartTick==0) 
 			{					
-				//	sprintf(buf,"SetTimer %d\r\n",pt->n);
-				//	TRACE(buf);
-
 				KillTimer(pcli->hwndContactList,TM_STATUSBARUPDATE+pt->n);
 				cnt=GetConnectingIconForProtoCount(szProto);
 				if (cnt!=0)
@@ -1609,13 +983,12 @@ int OnSettingChanging(WPARAM wParam,LPARAM lParam)
 
 // Disconnect all protocols.
 // Happens on shutdown and standby.
-static void DisconnectAll()
+void DisconnectAll()
 {
 
 	PROTOCOLDESCRIPTOR** ppProtoDesc;
 	int nProtoCount;
 	int nProto;
-
 
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&nProtoCount, (LPARAM)&ppProtoDesc);
 	for (nProto = 0; nProto < nProtoCount; nProto++)
@@ -1623,11 +996,12 @@ static void DisconnectAll()
 		if (ppProtoDesc[nProto]->type == PROTOTYPE_PROTOCOL)
 			CallProtoService(ppProtoDesc[nProto]->szName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
 	}
-
+	
 }
 
 int PreCreateCLC(HWND parent)
 {
+  
 	pcli->hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,TEXT(""),
 		WS_CHILD|WS_CLIPCHILDREN|CLS_CONTACTLIST
 		|(DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
@@ -1782,7 +1156,7 @@ int DrawMenuBackGround(HWND hwnd, HDC hdc, int item)
 	if (!dat) return 1;
 	GetWindowRect(hwnd,&ra);
 	{
-		MENUBARINFO mbi;
+		MENUBARINFO mbi={0};
 		mbi.cbSize=sizeof(MENUBARINFO);
 		GetMenuBarInfo(hwnd,OBJID_MENU, 0, &mbi);
 		if (!(mbi.rcBar.right-mbi.rcBar.left>0 && mbi.rcBar.bottom-mbi.rcBar.top>0)) return 1;
@@ -1900,7 +1274,7 @@ int DrawMenuBackGround(HWND hwnd, HDC hdc, int item)
 	StretchBlt(hdc,x,y,destw,desth,hdcBmp,0,0,bmp.bmWidth,bmp.bmHeight,SRCCOPY);
 	}
 	SelectObject(hdcBmp,oldbm);
-	DeleteDC(hdcBmp);
+	ModernDeleteDC(hdcBmp);
 
 	}                  
 
@@ -1920,36 +1294,6 @@ extern BOOL dock_prevent_moving;
 RECT new_window_rect={0};
 RECT old_window_rect={0};
 BOOL during_sizing=0;
-//int GetWindowRect(HWND hwnd,RECT *rect)
-//{
-//  if (!IsRectEmpty(&new_window_rect)&&during_sizing)
-//  {
-//    if (hwnd==pcli->hwndContactList) 
-//    {
-//      *rect=new_window_rect;
-//      return 1;
-//    }
-//  }
-//  GetWindowRect(hwnd,rect);
-//  if (hwnd==pcli->hwndContactList) 
-//  {
-//    new_window_rect=*rect;
-//#ifdef _DEBUG
-//    {
-//      char buf [255];
-//      sprintf(buf,"===--- New Window rect is set in NewGetWindowRect to:%d,%d  %d,%d\n",new_window_rect.left,new_window_rect.top,new_window_rect.right,new_window_rect.bottom);
-//      TRACE(buf);    
-//    }
-//#endif
-//  }
-//  return 1;
-//}
-//int GetWindowRect(HWND hwnd,RECT *rect)
-//{
-// // if (hwnd!=pcli->hwndContactList) returnGetWindowRect(hwnd,rect);
-// // if (oldSize.cy*oldSize.cx) return SetRect(rect,oldPos.x,oldPos.y,oldPos.x+oldSize.cx,oldPos.y+oldSize.cy);
-//  return GetWindowRect(hwnd,rect);  
-//}
 BYTE Break_Sizing=0;
 BYTE delayedSizing=0;
 RECT timer_window_rect={0};
@@ -1969,20 +1313,8 @@ BOOL need_to_fix_sizing_rect=0;
 BYTE called_from_cln=0;
 BYTE called_from_me=0;
 
-#ifdef _DEBUG
-int TRACERECT(RECT * rect, char * text)
-{
-	char buf[255];
-	_snprintf(buf,sizeof(buf),"%s : %d,%d %d,%d\n",text,rect->left,rect->top,rect->right,rect->bottom);
-	TRACE(buf);
-	return 0;
-}
-#else
-#define TRACERECT(a,b)
-#endif
-
 extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
+RECT changedWindowRect={0};
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {    
 	/*
@@ -2028,7 +1360,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			need_to_fix_sizing_rect=0;
 			sizing_rect=*wp;
-			TRACERECT(&sizing_rect,"Sizing RECT is:");
 			during_sizing=1;
 			return 1;
 		}
@@ -2042,11 +1373,38 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			RECT temp_rect={0};
 			wp=(WINDOWPOS *)lParam;
 			GetWindowRect(hwnd,&old_window_rect);
+
+			// Прилипание к краям by ZorG
+			if (DBGetContactSettingByte(NULL,"CLUI","SnapToEdges",0))
+			{
+				RECT* dr;
+				MONITORINFO monInfo;
+				HMONITOR curMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+
+				monInfo.cbSize = sizeof(monInfo);
+				GetMonitorInfo(curMonitor, &monInfo);
+
+				dr = &(monInfo.rcWork);
+
+				// Left side
+				if ( wp->x < dr->left + 10 && wp->x > dr->left - 10 && BehindEdgeSettings!=1)
+					wp->x = dr->left;
+
+				// Right side
+				if ( dr->right - wp->x - wp->cx <10 && dr->right - wp->x - wp->cx > -10 && BehindEdgeSettings!=2)
+					wp->x = dr->right - wp->cx;
+
+				// Top side
+				if ( wp->y < dr->top + 10 && wp->y > dr->top - 10)
+					wp->y = dr->top;
+				
+				// Bottom side
+				if ( dr->bottom - wp->y - wp->cy <10 && dr->bottom - wp->y - wp->cy > -10)
+					wp->y = dr->bottom - wp->cy;
+
+			}
 			if ((old_window_rect.bottom-old_window_rect.top!=wp->cy || old_window_rect.right-old_window_rect.left !=wp->cx)&&!(wp->flags&SWP_NOSIZE))
 			{
-				TRACE("SizePosChanging started\n");
-				TRACERECT(&old_window_rect,"Old window is:");
-				//determine new_window_size and = work_rect
 				{         
 					if (!(wp->flags&SWP_NOMOVE)) 
 					{
@@ -2062,7 +1420,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					new_window_rect.bottom=new_window_rect.top+wp->cy;
 					work_rect=new_window_rect;
 				}
-				TRACERECT(&work_rect,"Work RECT_1 is:");       
 				//resize frames (batch)
 				{
 					PosBatch=BeginDeferWindowPos(1);
@@ -2072,7 +1429,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				{
 					GetWindowRect(hwnd,&temp_rect);
 				}
-				TRACERECT(&temp_rect,"After frame size Window RECT is:");
 				//Here work_rect should be changed to fit possible changes in cln_listsizechange
 				if(need_to_fix_sizing_rect)
 				{
@@ -2083,7 +1439,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					wp->cy=work_rect.bottom-work_rect.top;
 					wp->flags&=~(SWP_NOMOVE);
 				}
-				TRACERECT(&work_rect,"Work RECT_2 is:");
 				//reposition buttons and new size applying
 				{
 					ReposButtons(hwnd,FALSE,&work_rect);
@@ -2093,17 +1448,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					EndDeferWindowPos(PosBatch);
 					dock_prevent_moving=1;
 				}       
-
 				Sleep(0);               
-				TRACE("SizePosChanging completed\n");
-				// if (called_from_cln) return DefWindowProc(hwnd,msg,wParam,lParam);
-				//if (need_to_fix_sizing_rect && !called_from_me) 
-				//{
-				//  called_from_me=1;
-				//    SetWindowPos(hwnd,NULL,wp->x,wp->y,wp->cx,wp->cy,SWP_NOZORDER|SWP_NOACTIVATE);
-				//  called_from_me=0;
-				//  DefWindowProc(hwnd,msg,wParam,lParam);
-				//}
 				during_sizing=0; 
 				return SendMessage(hwnd,WM_WINDOWPOSCHANGED,wParam,lParam);
 			}
@@ -2134,7 +1479,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_NCPAINT:
 	{
 			int r = DefWindowProc(hwnd, msg, wParam, lParam);
-			if (DBGetContactSettingByte(NULL,"CLUI","ShowMainMenu",SETTING_SHOWMAINMENU_DEFAULT))
+			if (!LayeredFlag && DBGetContactSettingByte(NULL,"CLUI","ShowMainMenu",SETTING_SHOWMAINMENU_DEFAULT))
 			{
 				HDC hdc;
 				hdc=NULL;
@@ -2166,52 +1511,27 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			HDC paintDC;
 
 			GetClientRect(hwnd,&w);
-			//OffsetRect(&w,-w.left,-w.top);
+			if (!(w.right>0 && w.bottom>0)) return DefWindowProc(hwnd, msg, wParam, lParam); 
 			paintDC = GetDC(hwnd);
-
-
-			//if ((ps.rcPaint.bottom-ps.rcPaint.top)*(ps.rcPaint.right-ps.rcPaint.left)==0)
 			w2=w;
-			//else
-			//	w2=ps.rcPaint;
 			hdc=CreateCompatibleDC(paintDC);
 			hbmp=CreateBitmap32(w.right,w.bottom);
 			oldbmp=SelectObject(hdc,hbmp);
-			//FillRect(hdc,&w2,GetSysColorBrush(COLOR_BTNFACE));
-			//FillRect255Alpha(ps.hdc,&w2);
 			ReCreateBackImage(FALSE,NULL);
 			BitBlt(paintDC,w2.left,w2.top,w2.right-w2.left,w2.bottom-w2.top,cachedWindow->hBackDC,w2.left,w2.top,SRCCOPY);
-			//SkinDrawGlyph(hdc,&w,&w2,"Main,ID=Background,Opt=Non-Layered");
-			//BitBlt(paintDC,w2.left,w2.top,w2.right-w2.left,w2.bottom-w2.top,hdc,w2.left,w2.top,SRCCOPY);
 			SelectObject(hdc,oldbmp);
 			DeleteObject(hbmp);
-			DeleteDC(hdc);
+			ModernDeleteDC(hdc);
 			ReleaseDC(hwnd,paintDC);
 			ValidateRect(hwnd,NULL);
-			//SkinDrawWindowBack(hwnd,ps.hdc,&ps.rcPaint,"Main Window/Backgrnd");
-			TRACE("WM_PAINT in CLUI: ");
-#ifdef _DEBUG
-			{
-				char buf[256];
-				_snprintf(buf,sizeof(buf),"%d,%d %d,%d\n",ps.rcPaint.left,ps.rcPaint.top,ps.rcPaint.right,ps.rcPaint.bottom);
-				TRACE(buf);
-			}
-#endif
 			ps.fErase=FALSE;
 			EndPaint(hwnd,&ps); 
 		}
 		if (0&&(DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1) || DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",1)))
 		{
-			// PAINTSTRUCT ps;
-			TRACE("CLUI WM_PAINT\n");
-
-			//       BeginPaint(hwnd,&ps);
 			if (IsWindowVisible(hwnd))
 				if (LayeredFlag)
-				{
 					SkinInvalidateFrame(hwnd,NULL,0);				
-					TRACE("SkinUpdateWindow on CLUI WM_PAINT\n");
-				}
 				else 
 				{
 					RECT w={0};
@@ -2225,13 +1545,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					else
 						w2=ps.rcPaint;
 					SkinDrawGlyph(ps.hdc,&w,&w2,"Main,ID=Background,Opt=Non-Layered");
-					//SkinDrawWindowBack(hwnd,ps.hdc,&ps.rcPaint,"Main Window/Backgrnd");
 					ps.fErase=FALSE;
 					EndPaint(hwnd,&ps); 
 				}
-				//SkinDrawWindowBack(hwnd,ps.hdc,&ps.rcPaint,"Main Window/Backgrnd");
-				//     ps.fErase=FALSE;
-				//     EndPaint(hwnd,&ps); 
 		}
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 
@@ -2240,8 +1556,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		DrawMenuBar(hwnd);
 		showOpts=DBGetContactSettingByte(NULL,"CLUI","SBarShow",7);		
 
-		//create the status wnd
-		//pcli->hwndStatus = CreateStatusWindow(WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), "", hwnd, 0);	
 		CluiProtocolStatusChanged(0,0);
 
 		{	MENUITEMINFO mii;
@@ -2260,28 +1574,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			mii.dwItemData=MENU_STATUSMENU;
 			SetMenuItemInfo(GetMenu(hwnd),1,TRUE,&mii);
 		}
-
-		//delay creation of CLC so that it can get the status icons right the first time (needs protocol modules loaded)
-		//PostMessage(hwnd,M_CREATECLC,0,0);
-
 		hMsgGetProfile=RegisterWindowMessage(TEXT("Miranda::GetProfile")); // don't localise
-
-		/*	if (DBGetContactSettingByte(NULL,"CList","Transparent",0))
-		{
-		SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-		if (MySetLayeredWindowAttributes) MySetLayeredWindowAttributes(hwnd, RGB(0,0,0), (BYTE)DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), LWA_ALPHA);
-		}
-		*/
 		transparentFocus=1;
-
-		{
-			#ifndef _DEBUG
-				int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
-				if (nStatus != ID_STATUS_OFFLINE)
-					PostMessage(hwnd, WM_COMMAND, nStatus, 0);
-			#endif
-		}
-
 		return FALSE;
 
 	case M_SETALLEXTRAICONS:
@@ -2289,8 +1583,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 	case M_CREATECLC:
 		CreateCLC(hwnd);
-		ShowHide((WPARAM)hwnd,(LPARAM)1); 
-		SendMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0);
+    if (DBGetContactSettingByte(NULL,"CList","ShowOnStart",0)) ShowHide((WPARAM)hwnd,(LPARAM)1); 
+		PostMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0);
 		return 0;
 
 	case  WM_LBUTTONDOWN:
@@ -2336,18 +1630,12 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_MOVE:
 		{
 			RECT rc;
-			TRACE("WM_MOVE in CLUI\n");
-
+			CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
 			during_sizing=0;      
 			GetWindowRect(hwnd, &rc);
-
 			CheckFramesPos(&rc);
-			//ReposButtons(hwnd,1,&rc);
 			OnMoving(hwnd,&rc);
-
 			if(!IsIconic(hwnd)) {
-
-				//case WM_SIZING:
 				if(!CallService(MS_CLIST_DOCKINGISDOCKED,0,0))
 				{ //if docked, dont remember pos (except for width)
 					DBWriteContactSettingDword(NULL,"CList","Height",(DWORD)(rc.bottom - rc.top));
@@ -2362,7 +1650,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		{   
 			RECT rc;
 			if (ON_SIZING_CYCLE) return 0;
-			TRACE("WM_SIZE\n");
 			if(wParam!=SIZE_MINIMIZED /*&& IsWindowVisible(hwnd)*/) 
 			{
 				if ( pcli->hwndContactList == NULL )
@@ -2383,7 +1670,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					CLUIFramesOnClistResize2((WPARAM)hwnd,(LPARAM)0,1);
 					CLUIFramesApplyNewSizes(2);
 					CLUIFramesApplyNewSizes(1);
-					TRACE("CLUIFramesOnClistResize(0,2); is called from WM_SIZE\n");
 					SendMessage(hwnd,CLN_LISTSIZECHANGE,0,0);				  
 					ON_SIZING_CYCLE=0;
 				}
@@ -2411,7 +1697,11 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					hRgn1=CreateRoundRectRgn(0,0,(r.right-r.left+1),(r.bottom-r.top+1),h,h);
 					if ((DBGetContactSettingByte(NULL,"CLC","RoundCorners",0)) && (!CallService(MS_CLIST_DOCKINGISDOCKED,0,0)))
 						SetWindowRgn(hwnd,hRgn1,1); 
-					else SetWindowRgn(hwnd,NULL,1);
+					else
+					{
+						DeleteObject(hRgn1);
+						SetWindowRgn(hwnd,NULL,1);
+					}
 					RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
 				} 			
 			}
@@ -2439,8 +1729,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		{
 			BOOL IsOption=FALSE;
 			SetCursor(LoadCursor(NULL, IDC_ARROW));
-
-			TRACE("CLUI------- WM_ACTIVATE\n");
 			if (DBGetContactSettingByte(NULL, "ModernData", "HideBehind", 0))
 			{
 				if(wParam==WA_INACTIVE && ((HWND)lParam!=hwnd) && GetParent((HWND)lParam)!=hwnd && !IsOption) 
@@ -2481,26 +1769,20 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			else {
 				if (!DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT))
-				{			
-					//---+++SetWindowPos(pcli->hwndContactList, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);				
 					ActivateSubContainers(1);
-				}
 				if(TransparentFlag) {
 					KillTimer(hwnd,TM_AUTOALPHA);
-					//        TRACE("SMOTH ALPHA CALLED FROM ACTIVATION_1\n");
 					SmoothAlphaTransition(hwnd, DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
-					//if (MySetLayeredWindowAttributes) MySetLayeredWindowAttributes(hwnd, RGB(0,0,0), (BYTE)DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), LWA_ALPHA);
 					transparentFocus=1;
 				}
 			}
-			//InvalidateRectZ(hwnd,NULL, TRUE);
 			RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE|RDW_ALLCHILDREN);
 			if(TransparentFlag)
 			{
 				BYTE alpha;
 				if (wParam!=WA_INACTIVE || CheckOwner((HWND)lParam)|| IsOption || ((HWND)lParam==hwnd) || GetParent((HWND)lParam)==hwnd) alpha=DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT);
 				else 
-					alpha=DBGetContactSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT);
+					alpha=TransparentFlag?DBGetContactSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT):255;
 				SmoothAlphaTransition(hwnd, alpha, 1);
 				if(IsOption) DefWindowProc(hwnd,msg,wParam,lParam);
 				else   return 1; 	
@@ -2580,12 +1862,12 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		}
 
 	case WM_TIMER:
+		if (Miranda_Terminated()) return 0;
 		if ((int)wParam>=TM_STATUSBARUPDATE&&(int)wParam<=TM_STATUSBARUPDATE+64)
-		{
-
+		{		
 			int status,i;
-
 			ProtoTicks *pt=NULL;
+			if (!pcli->hwndStatus) return 0;
 			for (i=0;i<64;i++)
 			{
 
@@ -2593,8 +1875,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 				if (pt->szProto!=NULL&&pt->TimerCreated==1)
 				{
-
-					status=CallProtoService(pt->szProto,PS_GETSTATUS,0,0);
+					if (pt->isGlobal)
+						status=gl_MultiConnectionMode?ID_STATUS_CONNECTING:0;
+					else
+						status=CallProtoService(pt->szProto,PS_GETSTATUS,0,0);
 
 					if (!(status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES))
 					{													
@@ -2608,37 +1892,19 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			pt=&CycleStartTick[wParam-TM_STATUSBARUPDATE];
 			{
-				// RECT rc;
-				// GetStatsuBarProtoRect(pcli->hwndStatus,pt->szProto,&rc);
-				// rc.right=rc.left+GetSystemMetrics(SM_CXSMICON)+1;
-				// rc.top=0;
-#ifdef _DEBUG
-				{
-					//char buf[512];
-					//sprintf(buf,"Invalidate left: %d right: %d\r\n",rc.left,rc.right);
-					//TRACE(buf);
-				}
-#endif
-
 				if(IsWindowVisible(pcli->hwndStatus)) SkinInvalidateFrame(pcli->hwndStatus,NULL,0);//InvalidateRectZ(pcli->hwndStatus,NULL,TRUE);
-				if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)!=SETTING_TRAYICON_CYCLE) TrayIconUpdateBase(pt->szProto);
+				if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)!=SETTING_TRAYICON_CYCLE) 
+					if (pt->isGlobal) 
+						TrayIconUpdateBase(gl_ConnectingProto);
+					else
+						TrayIconUpdateBase(pt->szProto);
 
 			}
 			SkinInvalidateFrame(pcli->hwndStatus,NULL,0);
-
-
-			//SendMessage(pcli->hwndStatus,WM_PAINT,0,0);
-			//UpdateWindow(pcli->hwndStatus);
-
-			//SkinUpdateWindow(NULL,pcli->hwndStatus); 
-			//TRACE("SkinUpdateWindow on WM_TIMER\n");
 			break;
 		}
 		else if ((int)wParam==TM_SMOTHALPHATRANSITION)
-		{
-			TRACE ("CallAnimation\n");
 			SmoothAlphaTransition(hwnd, 0, 2);
-		}
 		else if ((int)wParam==TM_AUTOALPHA)
 		{	int inwnd;
 
@@ -2674,7 +1940,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if(transparentFocus) SmoothAlphaTransition(hwnd, (BYTE)DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
 			else  
 			{
-				SmoothAlphaTransition(hwnd, (BYTE)DBGetContactSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT), 1);
+				SmoothAlphaTransition(hwnd, (BYTE)(TransparentFlag?DBGetContactSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT):255), 1);
 			}
 		}
 		if(!transparentFocus) KillTimer(hwnd,TM_AUTOALPHA);
@@ -2685,11 +1951,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			{
 				delayedSizing=0;
 				KillTimer(hwnd,TM_DELAYEDSIZING);
-				{
-					char as[100];
-					sprintf(as,"DELAYED SIZING %d,%d, %d, %d\n",timer_window_rect.left,timer_window_rect.top,timer_window_rect.right,timer_window_rect.bottom );
-					TRACE(as);
-				}
 				pcli->pfnClcBroadcast( INTM_SCROLLBARCHANGED,0,0);
 			}
 		}
@@ -2704,11 +1965,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			GetCursorPos(&pt);
 			hAux = WindowFromPoint(pt);
 			mouse_in_window=CheckOwner(hAux);
-			if (!mouse_in_window && GetForegroundWindow()!=hwnd)
-			{
-				BehindEdge_Hide(); 
-			}
-			TRACE("BRINGOUT TIMER\n");
+			if (!mouse_in_window && GetForegroundWindow()!=hwnd) BehindEdge_Hide(); 
 		}
 		else if ((int)wParam==TM_BRINGINTIMEOUT)
 		{
@@ -2725,35 +1982,12 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				if (hAux == hwnd) {mouse_in_window=1; break;}
 				hAux = GetParent(hAux);
 			}
-			if (mouse_in_window)
-			{       
-				BehindEdge_Show();
-			}
-			TRACE("BRINGIN TIMER\n");
+			if (mouse_in_window)  BehindEdge_Show();
+
 		}
 		else if ((int)wParam==TM_UPDATEBRINGTIMER)
 		{
-			//recheck timer
-			//    POINT pt;
-			//    HWND hAux;
-			//    int mouse_in_window=0;
-			//    if (BehindEdge_State==-1 && BehindEdgeSettings)
-			//      {
-			//        UpdateTimer(0);
-			//        return TRUE;
-			//      }
-			//    GetCursorPos(&pt);
-			//    hAux = WindowFromPoint(pt);
-			//while(hAux != NULL) 
-			//    {
-			//      if (hAux == hwnd) {mouse_in_window=1; break;}
-			//      hAux = GetParent(hAux);
-			//    }
-			//    if (!mouse_in_window)
-			{       
 				UpdateTimer(0);
-			}
-			//      TRACE("UpdatetimerTIMER\n");
 		}
 
 		return TRUE;
@@ -2762,6 +1996,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_SHOWWINDOW:
 		{	
 			BYTE gAlpha;
+			
 			if (lParam) return 0;
 			if (SHOWHIDE_CALLED_FROM_ANIMATION) return 1; 
 			{
@@ -2772,28 +2007,13 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				if (wParam) 
 				{
 					CURRENT_ALPHA=0;
-					//if (BehindEdgeSettings) 
 					OnShowHide(pcli->hwndContactList,1);
 					RedrawCompleteWindow();
 				}
-				TRACE("ANIMATION FROM SHOW WINDOW\n");
 				SmoothAlphaTransition(hwnd, gAlpha, 1);
 			}
 			return 0;
 		}
-
-
-		//case WM_MENURBUTTONUP: /* this API is so badly documented at MSDN!! */
-		//  {
-		//    UINT id=0;
-		//    id=GetMenuItemID((HMENU)lParam,LOWORD(wParam)); /* LOWORD(wParam) contains the menu pos in its parent menu */
-		// DefWindowProc(hwnd, msg, wParam, lParam);
-		// EndMenu();
-		//    if (id != (-1)) PostMessage(hwnd,WM_COMMAND,MAKEWPARAM(id,0),0);
-		//    // if (id != (-1)) PostMessage(hwnd,WM_MENUCOMMAND,wParam,lParam);
-		//    //return 
-		//    break;
-		//  }
 	case WM_SYSCOMMAND:
 		if(wParam==SC_MAXIMIZE) return 0;
 
@@ -2817,7 +2037,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		return 0;
 
 	case WM_MOVING:
-		if (1) //showcontents is turned on
+		CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
+		if (0) //showcontents is turned on
 		{
 			OnMoving(hwnd,(RECT*)lParam);
 			//if (!LayeredFlag) UpdateWindowImage();
@@ -2978,7 +2199,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					/*===================*/
 					return 0;
 		}	}	}
-		return 0;
+		break;
 
 	case WM_CONTEXTMENU:
 		{	RECT rc;
@@ -3099,21 +2320,37 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_DESTROY:
 		{
 			int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
+			DisconnectAll();
 			if (state==SETTING_STATE_NORMAL){ShowWindowNew(hwnd,SW_HIDE);};				
 			if(hSettingChangedHook!=0){UnhookEvent(hSettingChangedHook);};
-			TrayIconDestroy(hwnd);
-			DisconnectAll();
+			TrayIconDestroy(hwnd);	
 			ANIMATION_IS_IN_PROGRESS=0;  		
-			SleepEx(100,TRUE);
-			CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);
-			DestroyWindow(pcli->hwndContactTree);
-			UnLoadCLUIFramesModule();		
+			CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);		
+			pcli->hwndContactTree=NULL;
+			pcli->hwndStatus=NULL;
+			{
+				if(DBGetContactSettingByte(NULL,"CLUI","AutoSize",0))
+					{
+						RECT r;
+						GetWindowRect(pcli->hwndContactList,&r);
+						if(DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",0))
+							r.top=r.bottom-CLUIFramesGetTotalHeight();
+						else 
+							r.bottom=r.top+CLUIFramesGetTotalHeight();
+						DBWriteContactSettingDword(NULL,"CList","y",r.top);
+						DBWriteContactSettingDword(NULL,"CList","Height",r.bottom-r.top);
+					}
+			}
+			UnLoadCLUIFramesModule();	
+			pcli->hwndStatus=NULL;
 			ImageList_Destroy(himlMirandaIcon);
 			DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
 			UnloadSkin(&glObjectList);
 			FreeLibrary(hUserDll);
 			pcli->hwndContactList=NULL;
+			pcli->hwndStatus=NULL;
 			PostQuitMessage(0);
+			UnhookAll();
 			return 0;
 	}	}
 
@@ -3259,10 +2496,10 @@ void LoadCluiGlobalOpts()
   savedLoadCluiGlobalOpts();
 }
 extern int GetGlobalStatus(WPARAM wparam,LPARAM lparam);
+extern void InitModernRow();
 void LoadCLUIModule(void)
 {
 	hFrameContactTree=0;
-	TRACE("Load CLUI Module\n");
 	CreateServiceFunction(MS_CLIST_GETSTATUSMODE,GetGlobalStatus);
 	hUserDll = LoadLibrary(TEXT("user32.dll"));
 	if (hUserDll)
@@ -3287,7 +2524,10 @@ void LoadCLUIModule(void)
 	hContactDroppedEvent=CreateHookableEvent(ME_CLUI_CONTACTDROPPED);
 	hContactDragStopEvent=CreateHookableEvent(ME_CLUI_CONTACTDRAGSTOP);
 	LoadCluiServices();
+  //TODO Add Row template loading here.
 
+	InitModernRow();
+  
 	CreateServiceFunction("CLUI/GetConnectingIconForProtocol",GetConnectingIconService);
 
 	oldhideoffline=DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
@@ -3327,7 +2567,7 @@ void LoadCLUIModule(void)
 	//CreateServiceFunction("TestService",TestService);
 	CreateServiceFunction(MS_CLUI_SHOWMAINMENU,CList_ShowMainMenu);
 	CreateServiceFunction(MS_CLUI_SHOWSTATUSMENU,CList_ShowStatusMenu);
-	LoadModernButtonModule();
+	
 	ReloadCLUIOptions();
 	pcli->hwndStatus=(HWND)CreateModernStatusBar(pcli->hwndContactList);
 }
@@ -3342,18 +2582,38 @@ int TestCursorOnBorders()
 	HWND hAux;
 	BOOL mouse_in_window=0;
 	HWND gf=GetForegroundWindow();
-	if(TransparentFlag) {
-		if (!transparentFocus && gf!=hwnd) {
-			SmoothAlphaTransition(hwnd, DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
-			//MySetLayeredWindowAttributes(hwnd, RGB(0,0,0), (BYTE)DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), LWA_ALPHA);
-			transparentFocus=1;
-			SetTimer(hwnd, TM_AUTOALPHA,250,NULL);
+	GetCursorPos(&pt);
+	hAux = WindowFromPoint(pt);	
+	if (CheckOwner(hAux))
+	{
+		if(TransparentFlag) {
+			if (!transparentFocus && gf!=hwnd) {
+				SmoothAlphaTransition(hwnd, DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
+				//MySetLayeredWindowAttributes(hwnd, RGB(0,0,0), (BYTE)DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), LWA_ALPHA);
+				transparentFocus=1;
+				SetTimer(hwnd, TM_AUTOALPHA,250,NULL);
+			}
 		}
 	}
 
-	GetCursorPos(&pt);
+
 	IgnoreActivation=0;
 	GetWindowRect(hwnd,&r);
+  /*
+  *  Size borders offset (contract)
+  */
+  r.top+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Top",0);
+  r.bottom-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Bottom",0);
+  r.left+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Left",0);
+  r.right-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Right",0);
+  
+  if (r.right<r.left) r.right=r.left;
+  if (r.bottom<r.top) r.bottom=r.top;
+
+  /*
+  *  End of size borders offset (contract)
+  */
+
 	hAux = WindowFromPoint(pt);
 	while(hAux != NULL) 
 	{
@@ -3362,14 +2622,15 @@ int TestCursorOnBorders()
 	}
 	fx=GetSystemMetrics(SM_CXFULLSCREEN);
 	fy=GetSystemMetrics(SM_CYFULLSCREEN);
-	if (docked || ((pt.x<fx-1) && (pt.y<fy-1) && pt.x>1 && pt.y>1)) // workarounds for behind the edge.
+	if (docked || BehindEdge_State==0)
+	//if (docked) || ((pt.x<fx-1) && (pt.y<fy-1) && pt.x>1 && pt.y>1)) // workarounds for behind the edge.
 	{
 		//ScreenToClient(hwnd,&pt);
 		//GetClientRect(hwnd,&r);
 		if (pt.y<=r.bottom && pt.y>=r.bottom-SIZING_MARGIN && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) k=6;
 		else if (pt.y>=r.top && pt.y<=r.top+SIZING_MARGIN && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) k=3;
-		if (pt.x<=r.right && pt.x>=r.right-SIZING_MARGIN) k+=2;
-		else if (pt.x>=r.left && pt.x<=r.left+SIZING_MARGIN)k+=1;
+		if (pt.x<=r.right && pt.x>=r.right-SIZING_MARGIN && BehindEdgeSettings!=2) k+=2;
+		else if (pt.x>=r.left && pt.x<=r.left+SIZING_MARGIN && BehindEdgeSettings!=1) k+=1;
 		if (!(pt.x>=r.left && pt.x<=r.right && pt.y>=r.top && pt.y<=r.bottom)) k=0;
 		k*=mouse_in_window;
 		hCurs1 = LoadCursor(NULL, IDC_ARROW);
@@ -3401,6 +2662,20 @@ int SizingOnBorder(POINT pt, int PerformSize)
 		HWND hwnd=pcli->hwndContactList;
 		int k=0;
 		GetWindowRect(hwnd,&r);
+      /*
+      *  Size borders offset (contract)
+      */
+      r.top+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Top",0);
+      r.bottom-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Bottom",0);
+      r.left+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Left",0);
+      r.right-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Right",0);
+      
+      if (r.right<r.left) r.right=r.left;
+      if (r.bottom<r.top) r.bottom=r.top;
+
+      /*
+      *  End of size borders offset (contract)
+      */
 		//ScreenToClient(hwnd,&pt);
 		if (pt.y<=r.bottom && pt.y>=r.bottom-SIZING_MARGIN && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) k=6;
 		else if (pt.y>=r.top && pt.y<=r.top+SIZING_MARGIN && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) k=3;
@@ -3501,12 +2776,10 @@ int SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
 		}
 		return 0;
 	}
-	//TRACE("Transition---\n");
 	if (CURRENT_ALPHA==GoalAlpha &&0)
 	{
 		if (ANIMATION_IS_IN_PROGRESS)
 		{
-			//TRACE("- -KillTimer\n");
 			KillTimer(hwnd,TM_SMOTHALPHATRANSITION);
 			ANIMATION_IS_IN_PROGRESS=0;
 		}
@@ -3535,14 +2808,9 @@ int SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
 				else
 					PAUSE=FALSE;
 				ANIMATION_IS_IN_PROGRESS=1;
-				//TRACE("- -StartTimer\n");
-				//			 if (!ALREADYACTIVE)
 				if (SmoothAnimation)
-				{   
-					
 					forkthread(SmoothAnimationThread,0,pcli->hwndContactList);	
-				}
-				//SetTimer(hwnd,TM_SMOTHALPHATRANSITION,20,NULL); 
+
 			}
 		}
 	}

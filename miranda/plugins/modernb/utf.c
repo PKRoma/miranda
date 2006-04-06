@@ -77,7 +77,7 @@ void Utf8Decode( char* str, wchar_t** ucs2 )
 	if ( ucs2 != NULL ) {
 		int fullLen = ( len+1 )*sizeof( wchar_t );
 		*ucs2 = ( wchar_t* )malloc( fullLen );
-		memcpy( *ucs2, tempBuf, fullLen );
+		memmove( *ucs2, tempBuf, fullLen );
 	}
 
    WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );

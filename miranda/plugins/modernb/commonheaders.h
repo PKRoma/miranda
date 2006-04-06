@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _COMMON_HEADERS_H_ 1
 
 
+
 #if defined(UNICODE)
 #define _UNICODE 1
 #define UNICODE_AWARE 1
@@ -38,13 +39,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef _DEBUG
 #	define _CRTDBG_MAP_ALLOC
 #	include <stdlib.h>
-#	include <crtdbg.h>
+//#	include <crtdbg.h>
 #endif
 
 #if defined (_DEBUG)
   #define TRACE(str)  OutputDebugStringA(str)
 #else
   #define TRACE(str)
+#endif
+
+#if defined (_DEBUG)
+  #define TRACEVAR(str,n) {char buf[255]; _snprintf(buf,sizeof(buf),str,n); OutputDebugStringA(buf);}
+#else
+  #define TRACEVAR(str,n)
 #endif
 
 #if defined (_DEBUG)
@@ -89,7 +96,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clc.h"
 #include "clc.h"
 #include "clist.h"
-#include "icolib.h"
+#include "m_icolib.h"
 #include <m_userinfo.h>
 #include ".\CLUIFrames\cluiframes.h"
 #include ".\CLUIFrames\m_cluiframes.h"
@@ -121,6 +128,12 @@ extern HINSTANCE g_hInst;
   * easy search and replace
 
 */
+typedef  struct _menuProto 
+{
+  char *szProto;
+  HANDLE menuID;
+  HANDLE hasAdded;
+} MenuProto;
 
 extern struct LIST_INTERFACE li;
 extern struct MM_INTERFACE memoryManagerInterface;
@@ -209,3 +222,23 @@ extern int ShowWindowNew(HWND hwnd, int cmd);
 extern char* Utf8EncodeUcs2( const wchar_t* src );
 extern void Utf8Decode( char* str, wchar_t** ucs2 );
 #endif
+
+#ifndef LWA_COLORKEY
+#define LWA_COLORKEY            0x00000001
+#endif
+
+#ifndef AC_SRC_ALPHA
+#define AC_SRC_ALPHA            0x01
+#endif
+
+#ifdef _DEBUG
+#define DeleteObject(a) DebugDeleteObject(a)
+#endif 
+
+
+extern void TRACE_ERROR();
+extern BOOL DebugDeleteObject(HGDIOBJ a);
+extern BOOL ModernDeleteDC(HDC hdc);
+extern BOOL ResetEffect(HDC hdc);
+extern BOOL SelectEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
+#define GLOBAL_PROTO_NAME "global_connect"

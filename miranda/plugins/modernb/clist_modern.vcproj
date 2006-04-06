@@ -636,6 +636,33 @@
 				RelativePath=".\modern_button.c">
 			</File>
 			<File
+				RelativePath=".\modern_row.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="movetogroup.c">
 			</File>
 			<File
@@ -643,6 +670,9 @@
 			</File>
 			<File
 				RelativePath=".\rowheight_funcs.c">
+			</File>
+			<File
+				RelativePath=".\SkinEditor.c">
 			</File>
 			<File
 				RelativePath="SkinEngine.c">
@@ -924,6 +954,9 @@
 			</File>
 			<File
 				RelativePath=".\mod_skin_selector.h">
+			</File>
+			<File
+				RelativePath=".\modern_row.h">
 			</File>
 			<File
 				RelativePath=".\modern_statusbar.h">

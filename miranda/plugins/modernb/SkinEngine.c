@@ -31,6 +31,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "shlwapi.h"
 #include "mod_skin_selector.h"
 #include "commonprototypes.h"
+#include "math.h"
+
+#define _EFFECTENUM_FULL_H
+  #include "effectenum.h"
+#undef _EFFECTENUM_FULL_H
 
 //Definition
 #define ScaleBord 2
@@ -39,9 +44,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MAXSN_BUFF_SIZE 255*1000
 #define TEST_SECTION DEFAULTSKINSECTION
 
+static BOOL ON_TERMINATION=TRUE;
 int LOCK_UPDATING=0;
 BYTE UseKeyColor=1;
 DWORD KeyColor=RGB(255,0,255);
+
 //type definition
 
 
@@ -103,12 +110,14 @@ extern BOOL AlphaBlengGDIPlus(HDC hdcDest,int nXOriginDest,int nYOriginDest,int 
 
 BOOL MyAlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc,BLENDFUNCTION blendFunction)
 {
-  if (!gdiPlusFail && 0) //Use gdi+ engine
+  if (!gdiPlusFail && blendFunction.BlendFlags&128 ) //Use gdi+ engine
   {
+    //
 	  return AlphaBlengGDIPlus( hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,
 								hdcSrc,nXOriginSrc,nYOriginSrc,nWidthSrc,nHeightSrc,
 								&blendFunction);
   }
+  blendFunction.BlendFlags&=~128;
   return AlphaBlend(hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,hdcSrc,nXOriginSrc,nYOriginSrc,nWidthSrc,nHeightSrc,blendFunction);
 }
 
@@ -128,7 +137,6 @@ int LoadSkinModule()
   InitializeCriticalSection(&skin_cs);
   MainModernMaskList=mir_alloc(sizeof(ModernMaskList));
   memset(MainModernMaskList,0,sizeof(ModernMaskList));   
-  TRACE("LOAD SKIN MODULE\n");
   //init variables
   glObjectList.dwObjLPAlocated=0;
   glObjectList.dwObjLPReserved=0;
@@ -202,11 +210,28 @@ int LoadSkinModule()
 
   return 1;
 }
-
+extern int UnloadModernButtonModule(WPARAM,LPARAM);
 int UnloadSkinModule()
 {
 
   //unload services
+  UnloadModernButtonModule(0,0);
+  UnloadSkin(&glObjectList);
+  if (glObjectList.Objects) 
+	  mir_free(glObjectList.Objects);
+  if (cachedWindow)
+  {
+	  SelectObject(cachedWindow->hBackDC,cachedWindow->hBackOld);
+	  SelectObject(cachedWindow->hImageDC,cachedWindow->hImageOld);
+	  DeleteObject(cachedWindow->hBackDIB);
+	  DeleteObject(cachedWindow->hImageDIB);
+	  ModernDeleteDC(cachedWindow->hBackDC);
+	  ModernDeleteDC(cachedWindow->hImageDC);
+	  ReleaseDC(NULL,cachedWindow->hScreenDC);
+	  mir_free(cachedWindow);
+	  cachedWindow=NULL;
+	  ON_TERMINATION=TRUE;
+  }
   DeleteCriticalSection(&skin_cs);
   GdiFlush();
   DestroyServiceFunction(MS_SKIN_REGISTEROBJECT);
@@ -372,7 +397,7 @@ BOOL SkFillRectangle(HDC hDest, HDC hSource, RECT * rFill, RECT * rGlyph, RECT *
     {
       SelectObject(mem2dc,oldbmp);
       DeleteObject(mem2bmp);
-      DeleteDC(mem2dc);
+      ModernDeleteDC(mem2dc);
     }
     return 1;
   }
@@ -473,7 +498,7 @@ BOOL SkFillRectangle(HDC hDest, HDC hSource, RECT * rFill, RECT * rGlyph, RECT *
     }
     SelectObject(mem2dc,oldbmp);
     DeleteObject(mem2bmp);
-    DeleteDC(mem2dc);
+    ModernDeleteDC(mem2dc);
   }
   else if (mode==FM_TILE_HORZ && (rGlyph->right-rGlyph->left>0)&& (rGlyph->bottom-rGlyph->top>0)&&(rFill->bottom-rFill->top)>0 && (rFill->right-rFill->left)>0)
   {
@@ -562,7 +587,7 @@ BOOL SkFillRectangle(HDC hDest, HDC hSource, RECT * rFill, RECT * rGlyph, RECT *
     }
     SelectObject(mem2dc,oldbmp);
     DeleteObject(mem2bmp);
-    DeleteDC(mem2dc);
+    ModernDeleteDC(mem2dc);
   }
   else if (mode==FM_TILE_BOTH && (rGlyph->right-rGlyph->left>0) && (rGlyph->bottom-rGlyph->top>0))
   {
@@ -663,7 +688,7 @@ BOOL SkFillRectangle(HDC hDest, HDC hSource, RECT * rFill, RECT * rGlyph, RECT *
     }
     SelectObject(mem2dc,oldbmp);
     DeleteObject(mem2bmp);
-    DeleteDC(mem2dc);
+    ModernDeleteDC(mem2dc);
   }
   return 1;
 
@@ -687,7 +712,7 @@ HBITMAP CreateBitmap32(int cx, int cy)
 {
   return CreateBitmap32Point(cx,cy,NULL);
 }
-
+#include <assert.h>
 HBITMAP CreateBitmap32Point(int cx, int cy, void ** bits)
 {
   BITMAPINFO RGB32BitsBITMAPINFO; 
@@ -708,7 +733,15 @@ HBITMAP CreateBitmap32Point(int cx, int cy, void ** bits)
     DIB_RGB_COLORS,
     (void **)&ptPixels, 
     NULL, 0);
-  if (bits!=NULL) *bits=ptPixels;
+  if (ptPixels==NULL && cx!= 0 && cy!=0) 
+  {
+#ifdef _DEBUG
+	  MessageBoxA(NULL,"Object not allocated. Check GDI object count","ERROR",MB_OK|MB_ICONERROR); 
+	  DebugBreak();
+#endif
+	  ;
+  }
+  if (bits!=NULL) *bits=ptPixels;  
   return DirectBitmap;
 }
 int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
@@ -723,7 +756,7 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
   int mode=0; //0-FastDraw, 1-DirectAlphaDraw, 2-BufferedAlphaDraw
 
   if (!(preq && pobj)) return -1;
-  if (!pobj->hGlyph && ((pobj->Style&7) ==ST_IMAGE ||(pobj->Style&7) ==ST_SOLARIZE)) return 0;
+  if (!pobj->hGlyph && ((pobj->Style&7) ==ST_IMAGE ||(pobj->Style&7) ==ST_FRAGMENT|| (pobj->Style&7) ==ST_SOLARIZE)) return 0;
   // Determine painting mode
   depth=GetDeviceCaps(preq->hDC,BITSPIXEL);
   depth=depth<16?16:depth;
@@ -742,6 +775,10 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
   if(preq->rcClipRect.bottom-preq->rcClipRect.top*preq->rcClipRect.right-preq->rcClipRect.left==0)
     preq->rcClipRect=preq->rcDestRect;
   IntersectRect(&PRect,&preq->rcDestRect,&preq->rcClipRect);
+  if (IsRectEmpty(&PRect))
+  {
+	  return 0;
+  }
   if (mode==2)
   {   
     memdc=CreateCompatibleDC(preq->hDC);
@@ -752,7 +789,7 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
       if (mode==2)
       {
         SelectObject(memdc,oldbmp);
-        DeleteDC(memdc);
+        ModernDeleteDC(memdc);
         DeleteObject(membmp);
       }
       return 0;
@@ -764,7 +801,9 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
     if (pobj->hGlyph)
     {
       glyphdc=CreateCompatibleDC(preq->hDC);
-      oldglyph=SelectObject(glyphdc,pobj->hGlyph);
+	  if (!oldglyph) oldglyph=SelectObject(glyphdc,pobj->hGlyph);
+	  else 
+		  SelectObject(glyphdc,pobj->hGlyph);
     }
     // Drawing
     {    
@@ -804,6 +843,18 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
         rClip=(preq->rcClipRect);
 
         {
+          int lft=0;
+          int top=0;
+          int rgh=bmp.bmWidth;
+          int btm=bmp.bmHeight;
+          if ((pobj->Style&7) ==ST_FRAGMENT)
+          {
+            lft=pobj->clipArea.x;
+            top=pobj->clipArea.y;
+            rgh=min(rgh,lft+pobj->szclipArea.cx);
+            btm=min(btm,top+pobj->szclipArea.cy);
+          }
+
           // Draw center...
           if (1)
           {
@@ -815,10 +866,10 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
             if (mode==2)
               OffsetRect(&rFill,-mode2offset.x,-mode2offset.y);
 
-            rGlyph.top=pobj->dwTop;
-            rGlyph.left=pobj->dwLeft;
-            rGlyph.right=bmp.bmWidth-pobj->dwRight;
-            rGlyph.bottom=bmp.bmHeight-pobj->dwBottom;
+            rGlyph.top=top+pobj->dwTop;
+            rGlyph.left=lft+pobj->dwLeft;
+            rGlyph.right=rgh-pobj->dwRight;
+            rGlyph.bottom=btm-pobj->dwBottom;
 
             k+=SkFillRectangle(memdc,glyphdc,&rFill,&rGlyph,&PRect,pobj->FitMode,mode,depth);
           }
@@ -834,10 +885,10 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
             if (mode==2)
               OffsetRect(&rFill,-mode2offset.x,-mode2offset.y);
 
-            rGlyph.top=0;
-            rGlyph.left=pobj->dwLeft;
-            rGlyph.right=bmp.bmWidth-pobj->dwRight;
-            rGlyph.bottom=pobj->dwTop;
+            rGlyph.top=top+0;
+            rGlyph.left=lft+pobj->dwLeft;
+            rGlyph.right=rgh-pobj->dwRight;
+            rGlyph.bottom=top+pobj->dwTop;
 
             k+=SkFillRectangle(memdc,glyphdc,&rFill,&rGlyph,&PRect,pobj->FitMode&FM_TILE_HORZ,mode,depth);
           }
@@ -853,10 +904,10 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
               OffsetRect(&rFill,-mode2offset.x,-mode2offset.y);
 
 
-            rGlyph.top=bmp.bmHeight-pobj->dwBottom;
-            rGlyph.left=pobj->dwLeft;
-            rGlyph.right=bmp.bmWidth-pobj->dwRight;
-            rGlyph.bottom=bmp.bmHeight;
+            rGlyph.top=btm-pobj->dwBottom;
+            rGlyph.left=lft+pobj->dwLeft;
+            rGlyph.right=rgh-pobj->dwRight;
+            rGlyph.bottom=btm;
 
             k+=SkFillRectangle(memdc,glyphdc,&rFill,&rGlyph,&PRect,pobj->FitMode&FM_TILE_HORZ,mode,depth);
           }
@@ -872,10 +923,10 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
               OffsetRect(&rFill,-mode2offset.x,-mode2offset.y);
 
 
-            rGlyph.top=pobj->dwTop;
-            rGlyph.left=0;
-            rGlyph.right=pobj->dwLeft;
-            rGlyph.bottom=bmp.bmHeight-pobj->dwBottom;
+            rGlyph.top=top+pobj->dwTop;
+            rGlyph.left=lft;
+            rGlyph.right=lft+pobj->dwLeft;
+            rGlyph.bottom=btm-pobj->dwBottom;
 
             k+=SkFillRectangle(memdc,glyphdc,&rFill,&rGlyph,&PRect,pobj->FitMode&FM_TILE_VERT,mode,depth);
           }
@@ -892,10 +943,10 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
               OffsetRect(&rFill,-mode2offset.x,-mode2offset.y);
 
 
-            rGlyph.top=pobj->dwTop;
-            rGlyph.left=bmp.bmWidth-pobj->dwRight;
-            rGlyph.right=bmp.bmWidth;
-            rGlyph.bottom=bmp.bmHeight-pobj->dwBottom;
+            rGlyph.top=top+pobj->dwTop;
+            rGlyph.left=rgh-pobj->dwRight;
+            rGlyph.right=rgh;
+            rGlyph.bottom=btm-pobj->dwBottom;
 
             k+=SkFillRectangle(memdc,glyphdc,&rFill,&rGlyph,&PRect,pobj->FitMode&FM_TILE_VERT,mode,depth);
           }
@@ -913,10 +964,10 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
               OffsetRect(&rFill,-mode2offset.x,-mode2offset.y);
 
 
-            rGlyph.top=0;
-            rGlyph.left=0;
-            rGlyph.right=pobj->dwLeft;
-            rGlyph.bottom=pobj->dwTop;
+            rGlyph.top=top;
+            rGlyph.left=lft;
+            rGlyph.right=lft+pobj->dwLeft;
+            rGlyph.bottom=top+pobj->dwTop;
 
             k+=SkFillRectangle(memdc,glyphdc,&rFill,&rGlyph,&PRect,0,mode,depth);
           }
@@ -932,10 +983,10 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
               OffsetRect(&rFill,-mode2offset.x,-mode2offset.y);
 
 
-            rGlyph.top=0;
-            rGlyph.left=bmp.bmWidth-pobj->dwRight;
-            rGlyph.right=bmp.bmWidth;
-            rGlyph.bottom=pobj->dwTop;
+            rGlyph.top=top;
+            rGlyph.left=rgh-pobj->dwRight;
+            rGlyph.right=rgh;
+            rGlyph.bottom=top+pobj->dwTop;
 
             k+=SkFillRectangle(memdc,glyphdc,&rFill,&rGlyph,&PRect,0,mode,depth);
           }
@@ -953,10 +1004,10 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
               OffsetRect(&rFill,-mode2offset.x,-mode2offset.y);
 
 
-            rGlyph.left=0;
-            rGlyph.right=pobj->dwLeft; 
-            rGlyph.top=bmp.bmHeight-pobj->dwBottom;
-            rGlyph.bottom=bmp.bmHeight;
+            rGlyph.left=lft;
+            rGlyph.right=lft+pobj->dwLeft; 
+            rGlyph.top=btm-pobj->dwBottom;
+            rGlyph.bottom=btm;
 
             k+=SkFillRectangle(memdc,glyphdc,&rFill,&rGlyph,&PRect,0,mode,depth);
           }
@@ -972,10 +1023,10 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
             if (mode==2)
               OffsetRect(&rFill,-mode2offset.x,-mode2offset.y);
 
-            rGlyph.left=bmp.bmWidth-pobj->dwRight;
-            rGlyph.right=bmp.bmWidth;
-            rGlyph.top=bmp.bmHeight-pobj->dwBottom;
-            rGlyph.bottom=bmp.bmHeight;
+            rGlyph.left=rgh-pobj->dwRight;
+            rGlyph.right=rgh;
+            rGlyph.top=btm-pobj->dwBottom;
+            rGlyph.bottom=btm;
 
             k+=SkFillRectangle(memdc,glyphdc,&rFill,&rGlyph,&PRect,0,mode,depth);
           }
@@ -1003,12 +1054,12 @@ int DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
     {
 
       if (oldglyph) SelectObject(glyphdc,oldglyph);
-      if (glyphdc) DeleteDC(glyphdc);
+      if (glyphdc) ModernDeleteDC(glyphdc);
     }    
     if (mode==2)
     {
       SelectObject(memdc,oldbmp);
-      DeleteDC(memdc);
+      ModernDeleteDC(memdc);
       DeleteObject(membmp);
     }
 
@@ -1076,6 +1127,7 @@ int AddObjectDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJ
 {
   SKINOBJECTSLIST *sk;
   if (Skin) sk=Skin; else sk=&glObjectList;
+  if (!sk) return 0;
   if (boolstrcmpi(lpDescr->szObjectID,"_HEADER_")) return 0;
   {//check if new object allready presents.
     DWORD i=0;
@@ -1103,7 +1155,7 @@ int AddObjectDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJ
           GLYPHOBJECT * gl=(GLYPHOBJECT*)lpDescr->Data;
           sk->Objects[sk->dwObjLPAlocated].Data=mir_alloc(sizeof(GLYPHOBJECT));
           obdat=(GLYPHOBJECT*)sk->Objects[sk->dwObjLPAlocated].Data;
-          memcpy(obdat,gl,sizeof(GLYPHOBJECT));
+          memmove(obdat,gl,sizeof(GLYPHOBJECT));
           if (gl->szFileName!=NULL)                    
           {
             obdat->szFileName=mir_strdup(gl->szFileName);
@@ -1183,7 +1235,7 @@ int Skin_DrawGlyph(WPARAM wParam,LPARAM lParam)
     }
   }while ((gl->Style&7) ==ST_PARENT);
   {
-    if (gl->hGlyph==NULL && ((gl->Style&7) ==ST_IMAGE || (gl->Style&7) ==ST_SOLARIZE))
+    if (gl->hGlyph==NULL && ((gl->Style&7) ==ST_IMAGE || (gl->Style&7) ==ST_FRAGMENT || (gl->Style&7) ==ST_SOLARIZE))
       if (gl->szFileName) 
         gl->hGlyph=LoadGlyphImage(gl->szFileName);
   }
@@ -1238,6 +1290,27 @@ char * StrConcat(char * dest, char * first, char * delim, char * second, DWORD m
   strncat(dest,second,maxSize);
   return dest;
 }
+
+int GetFullFilename(char * buf, char *file, char * skinfolder,BOOL madeAbsolute)
+{
+	char b2[MAX_PATH]={0};
+	char *SkinPlace=DBGetStringA(NULL,SKIN,"SkinFolder");
+	if (!SkinPlace) SkinPlace=mir_strdup("\\Skin\\default");
+	if (file[0]!='\\' && file[1]!=':') 
+		_snprintf(b2, MAX_PATH,"%s\\%s",((int)skinfolder==0)?SkinPlace:((int)skinfolder!=-1)?skinfolder:"",file);
+	else
+		_snprintf(b2, MAX_PATH,"%s",file);
+	if (madeAbsolute) 
+		if (b2[0]=='\\' && b2[1]!='\\')
+			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)(b2+1), (LPARAM)buf);
+		else
+			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)(b2), (LPARAM)buf);
+	else
+		memcpy(buf,b2,MAX_PATH);
+
+	if(SkinPlace) mir_free(SkinPlace);
+	return 0;
+}
 HBITMAP intLoadGlyphImageByImageDecoder(char * szFileName);
 extern HBITMAP intLoadGlyphImageByGDIPlus(char *szFileName);
 
@@ -1259,7 +1332,7 @@ HBITMAP intLoadGlyphImageByImageDecoder(char * szFileName)
   {
     int l;
     l=MyStrLen(szFileName);
-    memcpy(ext,szFileName +(l-4),5);   
+    memmove(ext,szFileName +(l-4),5);   
   }
   if (!PathFileExistsA(szFileName)) return NULL;
 
@@ -1293,8 +1366,8 @@ HBITMAP intLoadGlyphImageByImageDecoder(char * szFileName)
       BitBlt(dc32,0,0,bmpInfo.bmWidth,bmpInfo.bmHeight,dc24,0,0,SRCCOPY);
       SelectObject(dc24,obmp24);
       SelectObject(dc32,obmp32);
-      DeleteDC(dc24);
-      DeleteDC(dc32);
+      ModernDeleteDC(dc24);
+      ModernDeleteDC(dc32);
       DeleteObject(hBitmap);
       hBitmap=hBitmap32;
       PreMultiplyChanells(hBitmap,0);
@@ -1309,11 +1382,11 @@ HBITMAP LoadGlyphImage(char * szfileName)
   // try to find image in loaded
   DWORD i;HBITMAP hbmp;
   char szFileName [MAX_PATH];
-  char fn[MAX_PATH];
-  {
+  GetFullFilename(szFileName,szfileName,glObjectList.SkinPlace,TRUE);
+  /*{
     _snprintf(fn,sizeof(fn),"%s\\%s",glObjectList.SkinPlace,szfileName);
     CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)fn, (LPARAM)&szFileName);
-  }
+  }*/
   //CallService(MS_UTILS_PATHTOABSOLUTE,(WPARAM)szfileName,(LPARAM) &szFileName);
   for (i=0; i<glLoadedImagesCount; i++)
   {
@@ -1351,11 +1424,16 @@ int UnloadGlyphImage(HBITMAP hbmp)
       glLoadedImages[i].dwLoadedTimes--;
       if (glLoadedImages[i].dwLoadedTimes==0)
       {
-        LPGLYPHIMAGE gl=glLoadedImages;
-        if (gl->szFileName)mir_free(gl->szFileName);
-        memcpy(&(glLoadedImages[i]),&(glLoadedImages[i+1]),sizeof(GLYPHIMAGE)*(glLoadedImagesCount-i-1));
+        LPGLYPHIMAGE gl=&(glLoadedImages[i]);
+        if (gl->szFileName) mir_free(gl->szFileName);
+        memmove(&(glLoadedImages[i]),&(glLoadedImages[i+1]),sizeof(GLYPHIMAGE)*(glLoadedImagesCount-i-1));
         glLoadedImagesCount--;
         DeleteObject(hbmp);
+		if (glLoadedImages && glLoadedImagesCount==0) 
+		{
+			glLoadedImagesAlocated=0;
+			mir_free(glLoadedImages);
+		}
       }
       return 0;
     }
@@ -1365,13 +1443,11 @@ int UnloadGlyphImage(HBITMAP hbmp)
   return 0;
 }
 
-CRITICAL_SECTION skin;
 int UnloadSkin(SKINOBJECTSLIST * Skin)
 {   
 
   DWORD i;
-  InitializeCriticalSection(&skin);
-  EnterCriticalSection(&skin);
+  LockSkin();
   ClearMaskList(Skin->MaskList);
   {//clear font list
     int i;
@@ -1393,7 +1469,7 @@ int UnloadSkin(SKINOBJECTSLIST * Skin)
 
   if (Skin->SkinPlace) mir_free(Skin->SkinPlace);
   DeleteButtons();
-  if (Skin->dwObjLPAlocated==0) return 0;
+  if (Skin->dwObjLPAlocated==0) { UnlockSkin(); return 0;}
   for (i=0; i<Skin->dwObjLPAlocated; i++)
   {
     switch(Skin->Objects[i].bType)
@@ -1434,8 +1510,7 @@ int UnloadSkin(SKINOBJECTSLIST * Skin)
   mir_free(Skin->Objects);
   Skin->dwObjLPAlocated=0;
   Skin->dwObjLPReserved=0;
-  LeaveCriticalSection(&skin);
-  DeleteCriticalSection(&skin);
+  UnlockSkin();
   return 0;
 }
 
@@ -1488,12 +1563,14 @@ int EnumGetMasksProc(const char *szSetting,LPARAM lParam)
            char * value;
            value=DBGetStringA(NULL,SKIN,szSetting);
            AddParseTextGlyphObject((char*)szSetting,value,CURRENTSKIN);
+           mir_free(value);
         }
         else if (WildCompare((char *)szSetting,"f*",0) && CURRENTSKIN)
         {
            char * value;
            value=DBGetStringA(NULL,SKIN,szSetting);
            AddParseSkinFont((char*)szSetting,value,CURRENTSKIN);
+           mir_free(value);
         }
         return 1;
 }
@@ -1580,8 +1657,154 @@ int GetSkinFolder(char * szFileName, char * t2)
   CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)t2, (LPARAM)t2);
   return 0;
 }
+//
+#include "stdio.h"
+char * iniCurrentSection=NULL;
+char *_szFileName=NULL;
+void WriteParamToDatabase(char *cKey, char* cName, char* cVal, BOOL SecCheck)
+{
+        if (SecCheck)
+        {
+                //TODO check security here
+		if (WildCompare(cKey,"Skin_Description_Section",1)) return;
+        }
+        if (strlen(cVal)>0 && cVal[strlen(cVal)-1]==10) cVal[strlen(cVal)-1]='\0';  //kill linefeed at the end  
+	switch(cVal[0]) 
+        {
+        case 'b':
+                {
+                        BYTE P;
+                        P=(BYTE)atoi(cVal+1);
+                        DBWriteContactSettingByte(NULL,cKey,cName,P);
+                }
+                break;
+        case 'w':
+                {
+                        WORD P;
+                        P=(WORD)atoi(cVal+1);
+                        DBWriteContactSettingWord(NULL,cKey,cName,P);
+                }
+                break;
+        case 'd':
+                {
+                        DWORD P;
+                        P=(DWORD)atoi(cVal+1);
+                        DBWriteContactSettingDword(NULL,cKey,cName,P);
+                }
+                break;
+        case 's':
+                DBWriteContactSettingString(NULL,cKey,cName,cVal+1);
+                break;
+        case 'f':
+                if (_szFileName)
+                {
+                        char fn[MAX_PATH]={0};
+                        char bb[MAX_PATH*2]={0};
+                        int pp, i;
+                        pp=-1;
+                        CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)_szFileName, (LPARAM)fn);
+                        {
+                                for (i=strlen(fn); i>=0; i--)  if (fn[i]=='.') break;
+                                if (i>0) fn[i]='\0';
+                        }                      
+                        _snprintf(bb,SIZEOF(bb),"%s\\%s",fn,cVal+1);
+                        DBWriteContactSettingString(NULL,cKey,cName,bb);
+                }
+                break;
+        }
+}
+
+BOOL ParseLineOfIniFile(char * Line)
+{
+        DWORD i=0;
+        DWORD len=strlen(Line);
+        while (i<len && (Line[i]==' ' || Line[i]=='\t')) i++; //skip spaces&tabs
+	if (i>=len) return FALSE; //only spaces (or tabs)
+	if (len>0 && Line[len-1]==10) Line[len-1]='\0';
+        switch(Line[i])
+        {
+        case ';':
+                return FALSE; // start of comment is found
+	case '[':
+                //New section start here
+		if (iniCurrentSection) mir_free(iniCurrentSection);
+                {
+                        char *tbuf=Line+i+1;		
+                        DWORD len2=strlen(tbuf);
+                        DWORD k=len2;
+                        while (k>0 && tbuf[k]!=']') k--; //searching close bracket
+			tbuf[k]='\0';   //closing string
+			if (k==0) return FALSE;
+                        iniCurrentSection=mir_strdup(tbuf);
+                }
+                return TRUE;
+        default:
+                if (!iniCurrentSection) return FALSE;  //param found out of section
+		{
+                        char *keyName=Line+i;
+                        char *keyValue=Line+i;
+                        
+                        DWORD eqPlace=0;
+                        DWORD len2=strlen(keyName);
+                        while (eqPlace<len2 && keyName[eqPlace]!='=') eqPlace++; //find '='
+			if (eqPlace==0 || eqPlace==len2) return FALSE; //= not found or no key name
+			keyName[eqPlace]='\0';
+                        keyValue=keyName+eqPlace+1;
+                        //remove tail spaces in Name
+			{
+                                DWORD len3=strlen(keyName);
+                                int j=len3-1;
+                                while (j>0 && (keyName[j]==' ' || keyName[j]=='\t')) j--;
+                                if (j>=0) keyName[j+1]='\0';
+                        }		
+                        //remove start spaces in Value
+			{
+                                DWORD len3=strlen(keyValue);
+                                DWORD j=0;
+                                while (j<len3 && (keyValue[j]==' ' || keyValue[j]=='\t')) j++;
+                                if (j<len3) keyValue+=j;
+                        }
+                        //remove tail spaces in Value
+			{
+                                DWORD len3=strlen(keyValue);
+                                int j=len3-1;
+                                while (j>0 && (keyValue[j]==' ' || keyValue[j]=='\t')) j--;
+                                if (j>=0) keyValue[j+1]='\0';
+                        }
+                        WriteParamToDatabase(iniCurrentSection,keyName,keyValue,TRUE);
+                }
+        }
+        return FALSE;
+}
 //Load data from ini file
 int LoadSkinFromIniFile(char * szFileName)
+{
+        FILE *stream=NULL;
+        char line[512]={0};
+        char skinFolder[MAX_PATH]={0};
+        char skinFile[MAX_PATH]={0};
+        DeleteAllSettingInSection("ModernSkin");
+        GetSkinFolder(szFileName,skinFolder);
+        DBWriteContactSettingString(NULL,SKIN,"SkinFolder",skinFolder);
+        CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFileName, (LPARAM)skinFile);
+        DBWriteContactSettingString(NULL,SKIN,"SkinFile",skinFile);
+        
+        if( (stream = fopen( szFileName, "r" )) != NULL )
+        {
+                _szFileName=szFileName;
+                while (fgets( line, SIZEOF(line),stream ) != NULL)
+                {
+                        ParseLineOfIniFile(line);
+                }
+                fclose( stream );
+                _szFileName=NULL;
+        }
+        return 0;
+}
+
+//Load data from ini file
+
+int OldLoadSkinFromIniFile(char * szFileName)
 {
   char bsn[MAXSN_BUFF_SIZE];
   char * Buff;
@@ -1710,7 +1933,7 @@ int EnumDeletionProc (const char *szSetting,LPARAM lParam)
   if (szSetting==NULL){return(1);};
   arrlen++;
   settingname=(char **)realloc(settingname,arrlen*sizeof(char *));
-  settingname[arrlen-1]=strdup(szSetting);
+  settingname[arrlen-1]=_strdup(szSetting);
   return(1);
 };
 int DeleteAllSettingInSection(char * SectionName)
@@ -1788,8 +2011,8 @@ int AlphaTextOutServ(WPARAM w,LPARAM l)
 BYTE weight[256];
 BYTE weight2[256];
 BYTE weightfilled=0;
-#include "math.h"
-typedef signed char sbyte;
+
+
 
 _inline void SetMatrix( sbyte * matrix,
 					   sbyte a, sbyte b, sbyte c, 
@@ -1801,52 +2024,9 @@ _inline void SetMatrix( sbyte * matrix,
 	matrix[6]=g;	matrix[7]=h;	matrix[8]=i;
 }
 
-typedef  struct _MODERNEFFECTMATRIX
-{
-	sbyte matrix[25];
-	BYTE  topEffect;
-	BYTE  leftEffect;
-	BYTE  rightEffect;
-	BYTE  bottomEffect;
-	BYTE  cycleCount;	  //low 7 bits
-}MODERNEFFECTMATRIX;
-
-typedef  struct _MODERNEFFECT
-{
-	BYTE EffectID;
-	MODERNEFFECTMATRIX EffectMatrix;
-	DWORD EffectColor1;
-	DWORD EffectColor2;
-}MODERNEFFECT;
-
-#define MAXPREDEFINEDEFFECTS 3
-
-char * ModernEffectNames[]={"Outline","Outline smooth","Smooth bump"};
-
-MODERNEFFECTMATRIX ModernEffectsEnum[]={
-	{   //Outline
-		{	0,	0,	0,	0,	 0,
-			0,	16, 16, 16, 0,
-			0,	16,	32, 16, 0,
-			0,	16,	16,	16,	 0,
-			0,	0,	0,	0,	 0   },	1,1,1,1,1},
-	
-	{  //Outline smooth
-		{	4,	4,	4,	4,	 4,
-			4,	8,  8,  8,   4,
-			4,	8,	32, 8,   4,
-			4,	8,	8,	8,	 4,
-			4,	4,	4,	4,	 4   },	2,2,2,2,1},
-	
-	{  //Smooth bump
-		{	-2,   2,  2,  2,  2,
-			-2,	-16, 16, 16,  2,
-			-2,	-16, 48, 16,  2,
-			-2,	-16,-16, 16,  2,
-			-2,	 -2, -2, -2, -2 },	2,2,2,2,1+0x80}
-};
 
 MODERNEFFECT CurrentEffect={-1,{0},0,0};
+
 	
 void SetEffect(BYTE EffectID, DWORD FirstColor, DWORD SecondColor)
 {
@@ -1860,14 +2040,82 @@ void SetEffect(BYTE EffectID, DWORD FirstColor, DWORD SecondColor)
 		CurrentEffect.EffectColor2=SecondColor;
 	}
 }
+extern struct LIST_INTERFACE li;
+SortedList * EffectStack=NULL;
+typedef  struct _EFFECTSSTACKITEM {
+  HDC hdc;
+  BYTE EffectID;
+  DWORD FirstColor;
+  DWORD SecondColor;
+} EFFECTSSTACKITEM;
 
-void ResetEffect()
+
+BOOL ResetEffect(HDC hdc)
 {
-	CurrentEffect.EffectID=-1;
+  int i;
+  if (!EffectStack || !EffectStack->realCount) return TRUE;
+  for (i=0; i<EffectStack->realCount; i++)
+     if (EffectStack->items[i] && ((EFFECTSSTACKITEM*)(EffectStack->items[i]))->hdc==hdc)
+      {
+        EFFECTSSTACKITEM * effect=(EFFECTSSTACKITEM*)(EffectStack->items[i]);
+        mir_free(effect);
+        li.List_Remove(EffectStack,i);
+        return TRUE;
+      }
+  return FALSE;
+};
+
+BOOL SelectEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor)
+{
+	if (EffectID>MAXPREDEFINEDEFFECTS) return 0; 
+  if (EffectID==-1) return ResetEffect(hdc);
+  if (!EffectStack)
+  {
+    EffectStack=li.List_Create(0,1);
+  }
+  {
+    int i;
+    for (i=0; i<EffectStack->realCount; i++)
+      if (EffectStack->items[i] && ((EFFECTSSTACKITEM*)(EffectStack->items[i]))->hdc==hdc)
+      {
+        EFFECTSSTACKITEM * effect=(EFFECTSSTACKITEM*)(EffectStack->items[i]);
+        effect->EffectID=EffectID;		    
+		    effect->FirstColor=FirstColor;
+		    effect->SecondColor=SecondColor;
+        return TRUE;
+      }
+  }
+  {
+      EFFECTSSTACKITEM * effect=(EFFECTSSTACKITEM *) mir_alloc(sizeof(EFFECTSSTACKITEM));
+      effect->hdc=hdc;
+      effect->EffectID=EffectID;
+		  effect->FirstColor=FirstColor;
+		  effect->SecondColor=SecondColor;
+      li.List_Insert(EffectStack, effect, 0);
+      return TRUE;
+  }	  
+  return FALSE;
 }
 
+BOOL GetEffect(HDC hdc, MODERNEFFECT * modernEffect)
+{
+  int i=0;
+  if (!EffectStack || !EffectStack->realCount) return FALSE;
+  if (!modernEffect) return FALSE;
+  for (i=0; i<EffectStack->realCount; i++)
+      if (EffectStack->items[i] && ((EFFECTSSTACKITEM*)(EffectStack->items[i]))->hdc==hdc)
+      {
+        EFFECTSSTACKITEM * effect=(EFFECTSSTACKITEM*)(EffectStack->items[i]);
+        modernEffect->EffectID=effect->EffectID;		    
+		    modernEffect->EffectColor1=effect->FirstColor;
+		    modernEffect->EffectColor2=effect->SecondColor;
+        modernEffect->EffectMatrix=ModernEffectsEnum[effect->EffectID];
+        return TRUE;
+      }
+  return FALSE;
+}
 
-BOOL DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD height)
+BOOL DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD height, MODERNEFFECT *effect)
 {
 	sbyte *buf;
 	sbyte *outbuf;
@@ -1887,25 +2135,27 @@ BOOL DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD height)
 	int maxX=0;
 	int minY=height;
 	int maxY=0;
-	if (CurrentEffect.EffectID==0xFF) return FALSE;
+	if (effect->EffectID==0xFF) return FALSE;
 	buf=(BYTE*)malloc(width*height*sizeof(BYTE));
 	{
-		matrix=CurrentEffect.EffectMatrix.matrix;
-		mcTopStart=2-CurrentEffect.EffectMatrix.topEffect;
-		mcBottomEnd=3+CurrentEffect.EffectMatrix.bottomEffect;
-		mcLeftStart=2-CurrentEffect.EffectMatrix.leftEffect;
-		mcRightEnd=3+CurrentEffect.EffectMatrix.rightEffect;
-		effectCount=CurrentEffect.EffectMatrix.cycleCount;
+		matrix=effect->EffectMatrix.matrix;
+		mcTopStart=2-effect->EffectMatrix.topEffect;
+		mcBottomEnd=3+effect->EffectMatrix.bottomEffect;
+		mcLeftStart=2-effect->EffectMatrix.leftEffect;
+		mcRightEnd=3+effect->EffectMatrix.rightEffect;
+		effectCount=effect->EffectMatrix.cycleCount;
 	}
-	al=255-((BYTE)(CurrentEffect.EffectColor1>>24));
-	rl=GetRValue(CurrentEffect.EffectColor1);
-	gl=GetGValue(CurrentEffect.EffectColor1);
-	bl=GetBValue(CurrentEffect.EffectColor1);
-	rd=GetRValue(CurrentEffect.EffectColor2);
-	gd=GetGValue(CurrentEffect.EffectColor2);
-	bd=GetBValue(CurrentEffect.EffectColor2);
-	ad=255-((BYTE)(CurrentEffect.EffectColor2>>24));
-
+	al=255-((BYTE)(effect->EffectColor1>>24));
+	rl=GetRValue(effect->EffectColor1);
+	gl=GetGValue(effect->EffectColor1);
+	bl=GetBValue(effect->EffectColor1);
+	rd=GetRValue(effect->EffectColor2);
+	gd=GetGValue(effect->EffectColor2);
+	bd=GetBValue(effect->EffectColor2);
+	ad=255-((BYTE)(effect->EffectColor2>>24));
+	rd=GetRValue(effect->EffectColor2);
+	gd=GetGValue(effect->EffectColor2);
+	bd=GetBValue(effect->EffectColor2);
 	
 	//Fill buffer by mid values of image
 	for (y=0; y<height; y++)
@@ -1989,7 +2239,8 @@ BOOL DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD height)
 					{ b1=bl; r1=rl; g1=gl; a1=al; sign=1;}
 					else if (val<0 && sign>0)
 					{ b1=bd; r1=rd; g1=gd; a1=ad; sign=-1;}
-						
+					
+					absVal=absVal*a1/255;				
 
 					destline[0]=((destline[0]*(128-absVal))+absVal*b1)/128;
 					destline[1]=((destline[1]*(128-absVal))+absVal*g1)/128;
@@ -2217,6 +2468,7 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
         
       }
   }
+	if (sz.cy>2000) DebugBreak();
 	sz.cx+=4;
 	sz.cy+=4;
   if (sz.cx>0 && sz.cy>0)
@@ -2234,10 +2486,13 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
     //Calc text draw offsets
     //Draw text on temp bitmap
     {
+		
         TextOut(memdc,2,2,lpString,nCount);
     }
 	{
-		DrawTextEffect(bufbits,bits,sz.cx,sz.cy);	
+    MODERNEFFECT effect={0};
+    if (GetEffect(hDC,&effect)) 
+		DrawTextEffect(bufbits,bits,sz.cx,sz.cy,&effect);	
 	}
     //RenderText
    //if (1)
@@ -2330,12 +2585,12 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
       DeleteObject(hbmp);
       SelectObject(bufDC,bufoldbmp);
       DeleteObject(bufbmp);
-      DeleteDC(bufDC);
+      ModernDeleteDC(bufDC);
     }	
   }
   }
   SelectObject(memdc,holdfnt);
-  DeleteDC(memdc); 
+  ModernDeleteDC(memdc); 
   if (noDIB) free(destBits);
   return 0;
 }
@@ -2358,6 +2613,7 @@ BOOL DrawTextS(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format
   DWORD form=0, color=0;
   RECT r=*lpRect;
   OffsetRect(&r,1,1);
+  if (format|DT_RTLREADING) SetTextAlign(hdc,TA_RTLREADING);
   if (format&DT_CALCRECT) return DrawText(hdc,lpString,nCount,lpRect,format);
   form=format;
   color=GetTextColor(hdc);
@@ -2377,6 +2633,8 @@ BOOL ImageList_DrawEx_New( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,i
   int ddy;
   BYTE alpha=255;
   HBITMAP hbmpold, hbmp;
+  if (ic==NULL)
+	  return FALSE;
   if (fStyle&ILD_BLEND25) alpha=64;
   else if (fStyle&ILD_BLEND50) alpha=128;
   ImageList_GetIconSize(himl,&ddx,&ddy);  
@@ -2399,10 +2657,15 @@ BOOL ImageList_DrawEx_New( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,i
       MyAlphaBlend(hdcDst,x,y,ddx,ddy,hdc,0,0,ddx,ddy,bf);
       SelectObject(hdc,hbmpold);
       DeleteObject(hbmp);
-      DeleteDC(hdc);
+      ModernDeleteDC(hdc);
     }
   }
-  DestroyIcon(ic);
+  {
+	  BOOL ret=DestroyIcon(ic);
+	  if (!ret)
+		  ret=ret;
+
+  }
   return TRUE;
 }
 
@@ -2472,7 +2735,7 @@ BOOL DrawIconExS(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWid
 		noMirrorMask=TRUE;
 	}
 	SelectObject(tempDC1,otBmp);
-    DeleteDC(tempDC1);
+    ModernDeleteDC(tempDC1);
   }
 
   if (imbt.bmBits==NULL)
@@ -2534,10 +2797,21 @@ BOOL DrawIconExS(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWid
           *dest=*src;
         else
         {
-          if (mask)
-			  // TODO: ADD verification about validity
-            *dest=0;  
-
+          if (mask)// && !hasalpha)
+			  // TODO: ADD verification about validity #0.4.2.8
+			{
+				if (!hasalpha)
+					*dest=0;  
+				else
+				{
+					BYTE a;
+					a=((BYTE*)src)[3]>0?((BYTE*)src)[3]:0;//255;
+					((BYTE*)dest)[3]=a;
+					((BYTE*)dest)[0]=((BYTE*)src)[0]*a/255;
+					((BYTE*)dest)[1]=((BYTE*)src)[1]*a/255;
+					((BYTE*)dest)[2]=((BYTE*)src)[2]*a/255;
+				}
+			}
           else
           {
             //*dest=*src;
@@ -2557,7 +2831,7 @@ BOOL DrawIconExS(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWid
   LeaveCriticalSection(&cs);
   DeleteCriticalSection(&cs);
   {
-    BLENDFUNCTION bf={AC_SRC_OVER, 0, alpha, AC_SRC_ALPHA };
+    BLENDFUNCTION bf={AC_SRC_OVER, diFlags&128, alpha, AC_SRC_ALPHA };   
     MyAlphaBlend(hdcDst,xLeft,yTop,cxWidth, cyWidth, imDC,0,0, cx,icy,bf);
   }
 
@@ -2568,7 +2842,8 @@ BOOL DrawIconExS(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWid
   if(no32bit)DeleteObject(tBmp);
   DeleteObject(ici.hbmColor);
   DeleteObject(ici.hbmMask);
-  DeleteDC(imDC);
+  SelectObject(imDC,GetStockObject(DEFAULT_GUI_FONT));
+  ModernDeleteDC(imDC);
   //unlock it;
 
 
@@ -2631,7 +2906,7 @@ BOOL DrawIconExS(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWid
   int res;
 
   SelectObject(memDC,ob);
-  res=DeleteDC(memDC);
+  res=ModernDeleteDC(memDC);
   res=DeleteObject(hbitmap);
   DeleteObject(ici.hbmColor);
   DeleteObject(ici.hbmMask);
@@ -2704,19 +2979,9 @@ int UpdateFrameImage(WPARAM wParam, LPARAM lParam)           // Immideately reca
     GetWindowRect(pcli->hwndContactList,&wnd);
   else
     wnd=ON_EDGE_SIZING_POS;
-  //   GetWindowRect(pcli->hwndContactList,&wnd);
-  //#ifdef _DEBUG
-  //    {
-  //        char deb[100];
-  //        sprintf(deb,"%d : --- UPDATE FRAME IMAGE ---\n",MSG_COUNTER++);
-  //        TRACE(deb);
-  //    }
-  //#endif
-  //Check validity If not ok ->ValidateFrameImageProc
   if (!LayeredFlag)
   {
 	  RedrawWindow((HWND)wParam,NULL,NULL,RDW_UPDATENOW|RDW_ERASE|RDW_INVALIDATE|RDW_FRAME);
-	  //InvalidateRect((HWND)wParam,NULL,FALSE);
 	  return 0;
   }
   if (cachedWindow==NULL) ValidateFrameImageProc(&wnd);
@@ -2757,13 +3022,6 @@ int UpdateFrameImage(WPARAM wParam, LPARAM lParam)           // Immideately reca
 int InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       // Post request for updating
 {
 
-  //#ifdef _DEBUG
-  //    {
-  //        char deb[100];
-  //        sprintf(deb,"%d : --- INVALIDATE FRAME IMAGE ---",MSG_COUNTER++);
-  //        TRACE(deb);
-  //    }
-  //#endif
   if (wParam)
   {
     wndFrame *frm=FindFrameByItsHWND((HWND)wParam);
@@ -2808,28 +3066,15 @@ int InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       // Post request for
     {            
       UPDATE_ALLREADY_QUEUED=1;
       POST_WAS_CANCELED=0;
-      {
-        //TRACE("  message is POSTED");
-      }
     }
-    //TRACE("\n");
     return 1;
 }
 
 
 int ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting)                              // Calling frame paint proc
 {
-
-  //#ifdef _DEBUG
-  //    {
-  //        char deb[100];
-  //        sprintf(deb,"%d : ValidateSingleFrameImage\n",MSG_COUNTER++);
-  //        TRACE(deb);
-  //    }
-  //#endif
-
   if (!cachedWindow) { TRACE("ValidateSingleFrameImage calling without cached\n"); return 0;}
-  if (!Frame->PaintCallbackProc)  { TRACE("ValidateSingleFrameImage calling without FrameProc\n"); return 0;}
+  if (Frame->hWnd==(HWND)-1 && !Frame->PaintCallbackProc)  { TRACE("ValidateSingleFrameImage calling without FrameProc\n"); return 0;}
   { // if ok update image 
     HDC hdc;
     HBITMAP o,n;
@@ -2840,8 +3085,6 @@ int ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting)            
 
     SizingGetWindowRect(pcli->hwndContactList,&wnd);
     rcPaint=Frame->wndSize;
-    //OffsetRect(&rcPaint,wnd.left,wnd.top);
-    //GetWindowRect(Frame->hWnd,&rcPaint);
     {
       int dx,dy,bx,by;
       if (ON_EDGE_SIZING)
@@ -2967,9 +3210,11 @@ int ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting)            
         si.cbSize=sizeof(SCROLLBARINFO);
         GetScrollBarInfo(Frame->hWnd,OBJID_VSCROLL,&si);
         rLine=(si.rcScrollBar);
-        rUpBtn=rLine;
+		rLine.left=(rLine.left>0)?rLine.left:rLine.right-20;
+		rUpBtn=rLine;
         rDnBtn=rLine;
         rThumb=rLine;
+		
         rUpBtn.bottom=rUpBtn.top+si.dxyLineButton;
         rDnBtn.top=rDnBtn.bottom-si.dxyLineButton;
         rThumb.top=rLine.top+si.xyThumbTop;
@@ -3003,7 +3248,7 @@ int ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting)            
 
     SelectObject(hdc,o);
     DeleteObject(n);
-    DeleteDC(hdc);
+    ModernDeleteDC(hdc);
   }
   return 1;
 }
@@ -3039,50 +3284,54 @@ int ReCreateBackImage(BOOL Erase,RECT *w)
 		//-- Create New Cache
 		{
 			cachedWindow=(sCurrentWindowImageData*)mir_alloc(sizeof(sCurrentWindowImageData));
+			memset(cachedWindow,0,sizeof(sCurrentWindowImageData));
 			cachedWindow->hScreenDC=GetDC(NULL);
 			cachedWindow->hBackDC=CreateCompatibleDC(cachedWindow->hScreenDC);
 			cachedWindow->hImageDC=CreateCompatibleDC(cachedWindow->hScreenDC);
 			cachedWindow->Width=wnd.right-wnd.left;
 			cachedWindow->Height=wnd.bottom-wnd.top;
-			cachedWindow->hImageDIB=CreateBitmap32Point(cachedWindow->Width,cachedWindow->Height,&(cachedWindow->hImageDIBByte));
-			cachedWindow->hBackDIB=CreateBitmap32Point(cachedWindow->Width,cachedWindow->Height,&(cachedWindow->hBackDIBByte));
-			cachedWindow->hImageOld=SelectObject(cachedWindow->hImageDC,cachedWindow->hImageDIB);
-			cachedWindow->hBackOld=SelectObject(cachedWindow->hBackDC,cachedWindow->hBackDIB);
+			if (cachedWindow->Width!=0 && cachedWindow->Height!=0)
+			{
+				cachedWindow->hImageDIB=CreateBitmap32Point(cachedWindow->Width,cachedWindow->Height,&(cachedWindow->hImageDIBByte));
+				cachedWindow->hBackDIB=CreateBitmap32Point(cachedWindow->Width,cachedWindow->Height,&(cachedWindow->hBackDIBByte));
+				cachedWindow->hImageOld=SelectObject(cachedWindow->hImageDC,cachedWindow->hImageDIB);
+				cachedWindow->hBackOld=SelectObject(cachedWindow->hBackDC,cachedWindow->hBackDIB);
+			}
 		}
 		IsNewCache=1;
 	}   
-	if (cachedWindow->Width!=wnd.right-wnd.left || cachedWindow->Height!=wnd.bottom-wnd.top)
+	if (cachedWindow->Width!=wnd.right-wnd.left || cachedWindow->Height!=wnd.bottom-wnd.top)		
 	{
-		HBITMAP hb1,hb2;
+		HBITMAP hb1=NULL,hb2=NULL;
 		cachedWindow->Width=wnd.right-wnd.left;
 		cachedWindow->Height=wnd.bottom-wnd.top;
-		hb1=CreateBitmap32Point(cachedWindow->Width,cachedWindow->Height,&(cachedWindow->hImageDIBByte));
-		hb2=CreateBitmap32Point(cachedWindow->Width,cachedWindow->Height,&(cachedWindow->hImageDIBByte)); 
-		SelectObject(cachedWindow->hImageDC,hb1);
-		SelectObject(cachedWindow->hBackDC,hb2);
-		DeleteObject(cachedWindow->hImageDIB);
-		DeleteObject(cachedWindow->hBackDIB);
+		if (cachedWindow->Width!=0 && cachedWindow->Height!=0)
+		{
+			hb1=CreateBitmap32Point(cachedWindow->Width,cachedWindow->Height,&(cachedWindow->hImageDIBByte));
+			hb2=CreateBitmap32Point(cachedWindow->Width,cachedWindow->Height,&(cachedWindow->hImageDIBByte)); 
+			SelectObject(cachedWindow->hImageDC,hb1);
+			SelectObject(cachedWindow->hBackDC,hb2);
+		}
+		else
+		{
+			SelectObject(cachedWindow->hImageDC,cachedWindow->hImageOld);
+			SelectObject(cachedWindow->hBackDC,cachedWindow->hBackOld);
+		}
+		if (cachedWindow->hImageDIB) DeleteObject(cachedWindow->hImageDIB);
+		if (cachedWindow->hBackDIB) DeleteObject(cachedWindow->hBackDIB);
 		cachedWindow->hImageDIB=hb1;
 		cachedWindow->hBackDIB=hb2;
 		IsNewCache=1;
 	}
-	if (Erase || IsNewCache)
+	if ((Erase || IsNewCache )&& (cachedWindow->Width!=0 && cachedWindow->Height!=0))
 	{
 	
 		hb2=CreateBitmap32(cachedWindow->Width,cachedWindow->Height); 
 		SelectObject(cachedWindow->hBackDC,hb2);
 		DeleteObject(cachedWindow->hBackDIB);
 		cachedWindow->hBackDIB=hb2;
-		//SkinDrawGlyph(cachedWindow->hBackDC,&wnd,&wnd,"Main,ID=Background");.
 		SkinDrawGlyph(cachedWindow->hBackDC,&wnd,&wnd,"Main,ID=Background,Opt=Non-Layered");
 		FillRect255Alpha(cachedWindow->hBackDC,&wnd);
-#ifdef _DEBUG
-		{
-			char buf[255];
-			_snprintf(buf,sizeof(buf),"Recreated Back with size %dx%d\n",cachedWindow->Width,cachedWindow->Height);
-			TRACE(buf);
-		}
-#endif
 	}
 	return 1;
 }
@@ -3127,19 +3376,12 @@ int DrawNonFramedObjects(BOOL Erase,RECT *r)
 }
 int ValidateFrameImageProc(RECT * r)                                // Calling queued frame paint procs and refresh image
 {
-  RECT wnd;
+	RECT wnd={0};
   BOOL IsNewCache=0;
   BOOL IsForceAllPainting=0;
-
-  //#ifdef _DEBUG
-  //    {
-  //        char deb[100];
-  //        sprintf(deb,"%d : VALIDATING _____ FrameImageProc\n",MSG_COUNTER++);
-  //        TRACE(deb);
-  //    }
-  //#endif
   if (r) wnd=*r;
   else GetWindowRect(pcli->hwndContactList,&wnd);
+  if (wnd.right-wnd.left==0 || wnd.bottom-wnd.top==0) return 0;
   LOCK_UPDATING=1;
   //-- Check cached.
   if (cachedWindow==NULL)
@@ -3176,14 +3418,6 @@ int ValidateFrameImageProc(RECT * r)                                // Calling q
   }
   if (IsNewCache)
   {
-    //-- Draw Back, frame captions, non-client area
-    //#ifdef _DEBUG
-    //    {
-    //        char deb[100];
-    //        sprintf(deb,"%d : Draw Back, frame captions, non-client area to ImageFrameImageProc\n",MSG_COUNTER++);
-    //        TRACE(deb);
-    //    }
-    //#endif
     DrawNonFramedObjects(0,&wnd);       
     IsForceAllPainting=1;
   }
@@ -3194,15 +3428,6 @@ int ValidateFrameImageProc(RECT * r)                                // Calling q
   }
   if (IsForceAllPainting) 
   { 
-    //BitBlt whole back to Image
-    //#ifdef _DEBUG
-    //    {
-    //        char deb[100];
-    //        sprintf(deb,"%d : BitBlt whole back to ImageFrameImageProc\n",MSG_COUNTER++);
-    //        TRACE(deb);
-    //    }
-    //#endif
-
     BitBlt(cachedWindow->hImageDC,0,0,cachedWindow->Width,cachedWindow->Height,cachedWindow->hBackDC,0,0,SRCCOPY);
     QueueAllFramesUpdating(1);
   }
@@ -3229,6 +3454,8 @@ int ValidateFrameImageProc(RECT * r)                                // Calling q
 
 int UpdateWindowImage()
 {
+  if (Miranda_Terminated()) 
+	  return 0;
   if (LayeredFlag)
   {
 	  RECT r;
@@ -3266,23 +3493,13 @@ void ApplyTransluency()
 	HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
 	BOOL layered=(GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_LAYERED)?TRUE:FALSE;
 	
-	IsTransparancy=SmoothAnimation ||TransparentFlag;
+	IsTransparancy=SmoothAnimation || TransparentFlag;
+	if (!TransparentFlag && !SmoothAnimation && CURRENT_ALPHA!=0)
+		CURRENT_ALPHA=255;
 	if (!LayeredFlag && (/*(CURRENT_ALPHA==255)||*/(MySetLayeredWindowAttributesNew && IsTransparancy)))
 	{
-		//if (CURRENT_ALPHA==255)
-		//	SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE)&(~WS_EX_LAYERED));
-		//else
-		{
 			if (!layered) SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
 			if (MySetLayeredWindowAttributesNew) MySetLayeredWindowAttributesNew(hwnd, RGB(0,0,0), (BYTE)CURRENT_ALPHA, LWA_ALPHA);
-#ifdef _DEBUG
-			{
-				char buf[255];
-				_snprintf(buf,sizeof(buf),"--- Set alpha %d\n",CURRENT_ALPHA);
-				TRACE(buf);
-			}
-#endif
-		}
 	}
 	return;
 }
@@ -3308,6 +3525,7 @@ int JustUpdateWindowImageRect(RECT * rty)
 
   RECT rect;
   SIZE sz={0};
+
   if (!LayeredFlag)
   {
 	  ApplyTransluency();
@@ -3320,66 +3538,15 @@ int JustUpdateWindowImageRect(RECT * rty)
   dest.y=rect.top;
   sz.cx=rect.right-rect.left;
   sz.cy=rect.bottom-rect.top;
-  //#ifdef _DEBUG
-  //{
-  //        char b[250];
-  //        sprintf(b,"Update in rect=%d,%d  - %d,%d\n",dest.x,dest.y,rect.right,rect.bottom);
-  //        TRACE(b);
-  //    }
-  //#endif
   if (MyUpdateLayeredWindow && LayeredFlag)
   {
     if (!(GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE)&WS_EX_LAYERED))
       SetWindowLong(pcli->hwndContactList,GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) |WS_EX_LAYERED);
     SetAlpha(CURRENT_ALPHA);
 
-    res=MyUpdateLayeredWindow(pcli->hwndContactList,cachedWindow->hScreenDC,&dest,&sz,cachedWindow->hImageDC,&src,0,&bf,ULW_ALPHA);
+    res=MyUpdateLayeredWindow(pcli->hwndContactList,cachedWindow->hScreenDC,&dest,&sz,cachedWindow->hImageDC,&src,RGB(1,1,1),&bf,ULW_ALPHA);
   }
   else InvalidateRect(pcli->hwndContactList,NULL,TRUE);
-  //{
-  //  //		PAINTSTRUCT ps;
-  //  HDC hdcWin;
-  //  //		HBITMAP bmp;
-  //  RECT rc;
-  //  HRGN rgn;	
-  //  //
-  //  {
-  //    if ((GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE)&WS_EX_LAYERED))
-  //      SetWindowLong(pcli->hwndContactList,GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
-  //  }
-  //  TRACE("DRAWING\n");
-
-  //  hdcWin=GetWindowDC(pcli->hwndContactList);//DCEx(pcli->hwndContactList,rgn,DCX_VALIDATE);		
-  //  {
-  //    GetClientRect(pcli->hwndContactList,&rc);
-  //    rgn=CreateRectRgn(rc.left,rc.top,rc.right,rc.bottom);
-  //    {
-  //      int i;
-  //      for(i=0;i<nFramescount;i++)
-  //        if (Frames[i].PaintCallbackProc && Frames[i].visible)
-  //        {
-  //          HRGN rgn2;
-  //          RECT clr;
-  //          GetClientRect(Frames[i].hWnd,&clr);
-  //          OffsetRect(&clr,Frames[i].wndSize.left,Frames[i].wndSize.top);
-  //          rgn2=CreateRectRgn(Frames[i].wndSize.left,Frames[i].wndSize.top,Frames[i].wndSize.right,Frames[i].wndSize.bottom);
-  //          CombineRgn(rgn,rgn,rgn2,RGN_DIFF);
-  //          DeleteObject(rgn2);
-  //          rgn2=CreateRectRgn(clr.left,clr.top,clr.right,clr.bottom);						
-  //          CombineRgn(rgn,rgn,rgn2,RGN_OR);
-  //          DeleteObject(rgn2);
-  //        }			
-  //    }
-  //  }
-  //  {
-
-  //    SelectClipRgn(hdcWin,rgn);
-  //    res=BitBlt(hdcWin,0,0,sz.cx,sz.cy,cachedWindow->hImageDC,0,0,SRCCOPY);
-
-  //  }
-  //  DeleteObject(rgn);
-  //  ReleaseDC(pcli->hwndContactList,hdcWin);
-  //}
   LOCK_IMAGE_UPDATING=0;
   return 0;
 }
@@ -3445,8 +3612,8 @@ TCHAR *reappend(TCHAR *lfirst, TCHAR * lsecond, int len)
   int l2=(len?len:lstrlen(lsecond))*sizeof(TCHAR);
   int size=l1+l2+sizeof(TCHAR);
   TCHAR *buf=mir_alloc(size);
-  if (lfirst) memcpy(buf,lfirst,l1);
-  memcpy(((BYTE*)buf)+l1,lsecond,l2+sizeof(TCHAR));
+  if (lfirst) memmove(buf,lfirst,l1);
+  memmove(((BYTE*)buf)+l1,lsecond,l2+sizeof(TCHAR));
   if (lfirst) mir_free(lfirst);
   if (len) buf[(l1+l2+1)/sizeof(TCHAR)]=(TCHAR)'\0';
   return buf;
@@ -3513,7 +3680,7 @@ TCHAR *parseText(TCHAR *stzText)
         if (curpos-stpos>0) 
         {
           TCHAR *var=mir_alloc((curpos-stpos+1)*sizeof(TCHAR));
-          memcpy(var,stzText+stpos,(curpos-stpos)*sizeof(TCHAR));
+          memmove(var,stzText+stpos,(curpos-stpos)*sizeof(TCHAR));
           var[curpos-stpos]=(TCHAR)'\0';
           var=replacevar(var);
           result=reappend(result,var,0);
@@ -3538,7 +3705,6 @@ TCHAR *parseText(TCHAR *stzText)
       break;
     }   
   }
-  //TRACET(result);
   return result;
 }
 /*
@@ -3637,7 +3803,7 @@ void AddParseSkinFont(char * szFontID,char * szDefineString,SKINOBJECTSLIST *Ski
       {
         HDC hdc=CreateCompatibleDC(NULL);        
         logfont.lfHeight=(long)-MulDiv(logfont.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-        DeleteDC(hdc);
+        ModernDeleteDC(hdc);
       }
       logfont.lfHeight=-logfont.lfHeight;
       GetParamN(szDefineString,buf,sizeof(buf),2,',',TRUE);
@@ -3661,4 +3827,46 @@ void AddParseSkinFont(char * szFontID,char * szDefineString,SKINOBJECTSLIST *Ski
     }
   }
 
+}
+
+HICON CreateJoinedIcon(HICON hBottom, HICON hTop,BYTE alpha)
+{
+	HDC tempDC;
+	HICON res=NULL;
+	HBITMAP oImage,nImage;
+    HBITMAP nMask;
+	ICONINFO iNew={0};
+	ICONINFO iciBottom={0};
+	ICONINFO iciTop={0};
+	BITMAP bmp={0};
+	SIZE sz={0};
+	{
+		if (!GetIconInfo(hBottom,&iciBottom)) return NULL;
+		GetObject(iciBottom.hbmColor,sizeof(BITMAP),&bmp);
+		sz.cx=bmp.bmWidth; sz.cy=bmp.bmHeight;
+		if(iciBottom.hbmColor) DeleteObject(iciBottom.hbmColor);
+		if(iciBottom.hbmMask) DeleteObject(iciBottom.hbmMask);
+	}
+	if (sz.cx==0 || sz.cy==0) return NULL;
+	tempDC=CreateCompatibleDC(NULL);
+	nImage=CreateBitmap32(sz.cx,sz.cy);
+	oImage=SelectObject(tempDC,nImage);
+	DrawIconExS(tempDC,0,0,hBottom,sz.cx,sz.cy,0,NULL,DI_NORMAL);
+	DrawIconExS(tempDC,0,0,hTop,sz.cx,sz.cy,0,NULL,DI_NORMAL|(alpha<<24));
+	SelectObject(tempDC,oImage);
+	DeleteDC(tempDC);
+	{
+		BYTE * p=malloc(sz.cx*sz.cy/8+10);
+		nMask=CreateBitmap(sz.cx,sz.cy,1,1,(void*)p);
+		iNew.fIcon=TRUE;
+		iNew.hbmColor=nImage;
+		iNew.hbmMask=nMask;
+		res=CreateIconIndirect(&iNew);
+		if (!res) 
+			TRACE_ERROR();
+		DeleteObject(nImage);
+		DeleteObject(nMask);
+		free(p);
+	}
+	return res;
 }

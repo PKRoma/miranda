@@ -12,7 +12,9 @@ typedef struct{
 	boolean OverrideShow;
 	char *UniqName;
 	char *CustomName;
+	HMENU hSubMenu;
 	boolean IconRegistred;
+	
 }TMO_IntMenuItem,*PMO_IntMenuItem;
 
 typedef struct{

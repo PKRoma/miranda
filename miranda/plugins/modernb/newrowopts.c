@@ -85,7 +85,7 @@ BOOL RemoveChildNode(NodeList * FromList, DWORD index)
 		work->AllocatedChilds=0;
 	}
 	//mir_free(work);
-	memcpy(FromList->childNodes+index,FromList->childNodes+index+1,sizeof(NodeList)*(FromList->AllocatedChilds-index-1));
+	memmove(FromList->childNodes+index,FromList->childNodes+index+1,sizeof(NodeList)*(FromList->AllocatedChilds-index-1));
 	FromList->AllocatedChilds--;
 	return TRUE;
 }

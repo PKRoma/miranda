@@ -104,7 +104,7 @@ static BOOL CALLBACK DlgProcItemRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 			SendDlgItemMessage(hwndDlg,IDC_ROW_BORDER_SPIN,UDM_SETBUDDY,(WPARAM)GetDlgItem(hwndDlg,IDC_ROW_BORDER),0);		// set buddy			
 			SendDlgItemMessage(hwndDlg,IDC_ROW_BORDER_SPIN,UDM_SETRANGE,0,MAKELONG(255,0));
-			SendDlgItemMessage(hwndDlg,IDC_ROW_BORDER_SPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","RowBorder",2),0));
+			SendDlgItemMessage(hwndDlg,IDC_ROW_BORDER_SPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","RowBorder",1),0));
 
 			CheckDlgButton(hwndDlg, IDC_VARIABLE_ROW_HEIGHT, DBGetContactSettingByte(NULL,"CList","VariableRowHeight",1) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_ALIGN_TO_LEFT, DBGetContactSettingByte(NULL,"CList","AlignLeftItemsToLeft",1) == 1 ? BST_CHECKED : BST_UNCHECKED );
@@ -383,6 +383,10 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			SendDlgItemMessage(hwndDlg,IDC_AVATAR_SIZE_SPIN,UDM_SETRANGE,0,MAKELONG(255,1));
 			SendDlgItemMessage(hwndDlg,IDC_AVATAR_SIZE_SPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","AvatarsSize",30),0));
 
+			SendDlgItemMessage(hwndDlg,IDC_AVATAR_WIDTH_SPIN,UDM_SETBUDDY,(WPARAM)GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH),0);		// set buddy			
+			SendDlgItemMessage(hwndDlg,IDC_AVATAR_WIDTH_SPIN,UDM_SETRANGE,0,MAKELONG(255,0));
+			SendDlgItemMessage(hwndDlg,IDC_AVATAR_WIDTH_SPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","AvatarsWidth",0),0));
+
 			SendDlgItemMessage(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE_SPIN,UDM_SETBUDDY,(WPARAM)GetDlgItem(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE),0);		// set buddy
 			SendDlgItemMessage(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE_SPIN,UDM_SETRANGE,0,MAKELONG(255,1));
 			SendDlgItemMessage(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE_SPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","AvatarsCustomCornerSize",4),0));
@@ -404,6 +408,9 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_SPIN),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH_SPIN),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS2),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS3),FALSE);
 			}
 			if(!IsDlgButtonChecked(hwndDlg,IDC_AVATAR_DRAW_BORDER)) 
 			{
@@ -447,6 +454,17 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_SPIN),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS),enabled);
+				if (DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",0)==1)
+				{
+					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH_SPIN),enabled);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS2),enabled);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS3),enabled);
+				}
+				else
+				{	EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH_SPIN),FALSE);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS2),FALSE);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS3),FALSE);
+				}
 			}
 
 			if (LOWORD(wParam)==IDC_AVATAR_DRAW_BORDER)
@@ -504,6 +522,7 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 							DBWriteContactSettingWord(NULL,"CList","AvatarsCustomCornerSize",(WORD)SendDlgItemMessage(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE_SPIN,UDM_GETPOS,0,0));
 							DBWriteContactSettingByte(NULL,"CList","AvatarsDrawOverlay", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_AVATAR_OVERLAY_ICONS));
 							DBWriteContactSettingWord(NULL,"CList","AvatarsSize",(WORD)SendDlgItemMessage(hwndDlg,IDC_AVATAR_SIZE_SPIN,UDM_GETPOS,0,0));
+							DBWriteContactSettingWord(NULL,"CList","AvatarsWidth",(WORD)SendDlgItemMessage(hwndDlg,IDC_AVATAR_WIDTH_SPIN,UDM_GETPOS,0,0));
 
 							if (IsDlgButtonChecked(hwndDlg,IDC_AVATAR_OVERLAY_ICON_NORMAL))
 								DBWriteContactSettingByte(NULL,"CList","AvatarsOverlayType",SETTING_AVATAR_OVERLAY_TYPE_NORMAL);
@@ -1298,7 +1317,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			HANDLE hContact=(HANDLE)wParam;
 			DBCONTACTWRITESETTING * ws = (DBCONTACTWRITESETTING *)lParam;
 			if ( hContact == NULL && ws != NULL && ws->szModule != NULL && ws->szSetting != NULL
-				&& strcmpi(ws->szModule,"CList")==0 && strcmpi(ws->szSetting,"UseGroups")==0
+				&& _strcmpi(ws->szModule,"CList")==0 && _strcmpi(ws->szSetting,"UseGroups")==0
 				&& IsWindowVisible(hwndDlg) ) {
 					CheckDlgButton(hwndDlg,IDC_DISABLEGROUPS,ws->value.bVal == 0);
 				}
@@ -1357,7 +1376,20 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN,UDM_SETRANGE,0,MAKELONG(900,1));
 		SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),0));
 		CheckDlgButton(hwndDlg, IDC_ONECLK, DBGetContactSettingByte(NULL,"CList","Tray1Click",SETTING_TRAY1CLICK_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
+		{
+			BYTE trayOption=DBGetContactSettingByte(NULL,"CLUI","XStatusTray",15);
+			CheckDlgButton(hwndDlg, IDC_SHOWXSTATUS, (trayOption&3) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SHOWNORMAL,  (trayOption&2) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_TRANSPARENTOVERLAY, (trayOption&4) ? BST_CHECKED : BST_UNCHECKED);
+
+			EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWNORMAL),IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSPARENTOVERLAY),IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS)&&IsDlgButtonChecked(hwndDlg,IDC_SHOWNORMAL));
+
+		}
 		CheckDlgButton(hwndDlg, IDC_ALWAYSSTATUS, DBGetContactSettingByte(NULL,"CList","AlwaysStatus",SETTING_ALWAYSSTATUS_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
+		
+		CheckDlgButton(hwndDlg, IDC_ALWAYSPRIMARY, DBGetContactSettingByte(NULL,"CList","AlwaysPremary",0) ? BST_CHECKED : BST_UNCHECKED);
+		
 		CheckDlgButton(hwndDlg, IDC_ALWAYSMULTI, !DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_DONTCYCLE, DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_CYCLE, DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_CYCLE ? BST_CHECKED : BST_UNCHECKED);
@@ -1406,11 +1438,13 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		if(IsDlgButtonChecked(hwndDlg,IDC_CYCLE)) {
 			EnableWindow(GetDlgItem(hwndDlg,IDC_PRIMARYSTATUS),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_ALWAYSMULTI),FALSE);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_ALWAYSPRIMARY),FALSE);
 		}
 		if(IsDlgButtonChecked(hwndDlg,IDC_MULTITRAY)) {
 			EnableWindow(GetDlgItem(hwndDlg,IDC_CYCLETIMESPIN),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_CYCLETIME),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_PRIMARYSTATUS),FALSE);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_ALWAYSPRIMARY),FALSE);
 		}
 		SendDlgItemMessage(hwndDlg,IDC_CYCLETIMESPIN,UDM_SETRANGE,0,MAKELONG(120,1));
 		SendDlgItemMessage(hwndDlg,IDC_CYCLETIMESPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT),0));
@@ -1439,6 +1473,11 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		SendDlgItemMessage(hwndDlg,IDC_BLINKSPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","IconFlashTime",550),0));
 		return TRUE;
 	case WM_COMMAND:
+		if (LOWORD(wParam)==IDC_SHOWXSTATUS||LOWORD(wParam)==IDC_SHOWNORMAL)
+		{
+			EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWNORMAL),IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSPARENTOVERLAY),IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS)&&IsDlgButtonChecked(hwndDlg,IDC_SHOWNORMAL));
+		}
 		if(LOWORD(wParam)==IDC_AUTOHIDE) {
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIME),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
@@ -1448,6 +1487,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			EnableWindow(GetDlgItem(hwndDlg,IDC_CYCLETIME),IsDlgButtonChecked(hwndDlg,IDC_CYCLE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_CYCLETIMESPIN),IsDlgButtonChecked(hwndDlg,IDC_CYCLE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_ALWAYSMULTI),IsDlgButtonChecked(hwndDlg,IDC_MULTITRAY));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_ALWAYSPRIMARY),IsDlgButtonChecked(hwndDlg,IDC_DONTCYCLE));
 		}
 		/*			if (LOWORD(wParam)==IDC_SHOW_AVATARS){
 		BOOL enabled = IsDlgButtonChecked(hwndDlg,IDC_SHOW_AVATARS);
@@ -1499,10 +1539,19 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			DBWriteContactSettingByte(NULL,"CList","Tray1Click",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONECLK));
 			DBWriteContactSettingByte(NULL,"CList","AlwaysStatus",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ALWAYSSTATUS));
 			DBWriteContactSettingByte(NULL,"CList","AlwaysMulti",(BYTE)!IsDlgButtonChecked(hwndDlg,IDC_ALWAYSMULTI));
+			DBWriteContactSettingByte(NULL,"CList","AlwaysPrimary",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ALWAYSPRIMARY));
 			DBWriteContactSettingByte(NULL,"CList","TrayIcon",(BYTE)(IsDlgButtonChecked(hwndDlg,IDC_DONTCYCLE)?SETTING_TRAYICON_SINGLE:(IsDlgButtonChecked(hwndDlg,IDC_CYCLE)?SETTING_TRAYICON_CYCLE:SETTING_TRAYICON_MULTI)));
 			DBWriteContactSettingWord(NULL,"CList","CycleTime",(WORD)SendDlgItemMessage(hwndDlg,IDC_CYCLETIMESPIN,UDM_GETPOS,0,0));
 			DBWriteContactSettingWord(NULL,"CList","IconFlashTime",(WORD)SendDlgItemMessage(hwndDlg,IDC_BLINKSPIN,UDM_GETPOS,0,0));
 			DBWriteContactSettingByte(NULL,"CList","DisableTrayFlash",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_DISABLEBLINK));
+
+			{
+				BYTE xOptions=0;
+				xOptions=IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS)?1:0;
+				xOptions|=(xOptions && IsDlgButtonChecked(hwndDlg,IDC_SHOWNORMAL))?2:0;
+				xOptions|=(xOptions && IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENTOVERLAY))?4:0;
+				DBWriteContactSettingByte(NULL,"CLUI","XStatusTray",xOptions);				
+			}
 			/*							DBWriteContactSettingByte(NULL,"CList","NoIconBlink", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_ICONBLINK));
 			DBWriteContactSettingByte(NULL,"CList","ShowAvatars", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOW_AVATARS));
 			DBWriteContactSettingByte(NULL,"CList","AvatarsDrawBorders", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_AVATAR_DRAW_BORDER));

@@ -2,15 +2,16 @@
 
 int mir_realloc_proxy(void *ptr,int size)
 {
-	if (IsBadCodePtr((FARPROC)ptr))
-	{
-		char buf[256];
-		mir_snprintf(buf,sizeof(buf),"Bad code ptr in mir_realloc_proxy ptr: %x\r\n",ptr);
-		//ASSERT("Bad code ptr");
-		DebugBreak();
-		TRACE(buf);
-		return 0;
-	}
+	/*	if (IsBadCodePtr((FARPROC)ptr))
+		{
+			char buf[256];
+			mir_snprintf(buf,sizeof(buf),"Bad code ptr in mir_realloc_proxy ptr: %x\r\n",ptr);
+			//ASSERT("Bad code ptr");		
+			TRACE(buf);
+			DebugBreak();
+			return 0;
+		}
+		*/
 	memoryManagerInterface.mmi_realloc(ptr,size);
 	return 0;
 
@@ -19,25 +20,17 @@ int mir_realloc_proxy(void *ptr,int size)
 
 int mir_free_proxy(void *ptr)
 {
-	if (ptr==NULL||IsBadCodePtr((FARPROC)ptr))
-	{
-		char buf[256];
-		mir_snprintf(buf,sizeof(buf),"Bad code ptr in mir_free_proxy ptr: %x\r\n",ptr);
-		//ASSERT("Bad code ptr");
-		DebugBreak();
-		TRACE(buf);
+	if (ptr==NULL) //||IsBadCodePtr((FARPROC)ptr))
 		return 0;
-	}
     memoryManagerInterface.mmi_free(ptr);
 	return 0;
-
 }
 BOOL __cdecl strstri(const char *a, const char *b)
 {
     char * x, *y;
     if (!a || !b) return FALSE;
-    x=strdup(a);
-    y=strdup(b);
+    x=_strdup(a);
+    y=_strdup(b);
     x=_strupr(x);
     y=_strupr(y);
     if (strstr(x,y))
@@ -88,28 +81,16 @@ BOOL __cdecl boolstrcmpiT(const TCHAR *a, const TCHAR *b)
 int __cdecl MyStrCmp (const char *a, const char *b)
 {
 	
-	if (a==NULL&&b==NULL) return 0;
-	if ((int)a<1000||(int)b<1000||IsBadCodePtr((FARPROC)a)||IsBadCodePtr((FARPROC)b)) 
-	{
-		return 1;
-	}
-	//TRACE("MY\r\n");
-	//undef();
+	if (!(a&&b)) return a!=b;
 	return (strcmp(a,b));
 };
 
 _inline int MyStrLen (const char *a)	
- 	 {	
- 	 	
- 	         if (a==NULL) return 0;	
- 	         if ((int)a<1000||IsBadCodePtr((FARPROC)a))	
- 	         {	
- 	                 return 0;	
- 	         }	
- 	         //TRACE("MY\r\n");	
- 	         //undef();	
- 	         return (strlen(a));	
- 	 };	
+{	
+
+	if (a==NULL) return 0;	
+	return (strlen(a));	
+};	
  	 	
 #define strlen(a) MyStrLen(a)
 #define strcmp(a,b) MyStrCmp(a,b)
@@ -204,3 +185,71 @@ DWORD exceptFunction(LPEXCEPTION_POINTERS EP)
     
 	return EXCEPTION_EXECUTE_HANDLER; 
 } 
+
+#ifdef _DEBUG
+#undef DeleteObject
+#endif 
+
+void TRACE_ERROR()
+{
+		DWORD t = GetLastError();
+		LPVOID lpMsgBuf;
+		if (!FormatMessage( 
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+			FORMAT_MESSAGE_FROM_SYSTEM | 
+			FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL,
+			t,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+			(LPTSTR) &lpMsgBuf,
+			0,
+			NULL ))
+		{
+		// Handle the error.
+		return ;
+		}
+#ifdef _DEBUG
+		MessageBox( NULL, (LPCTSTR)lpMsgBuf, _T("Error"), MB_OK | MB_ICONINFORMATION );		
+		DebugBreak();
+#endif
+		LocalFree( lpMsgBuf );
+
+}
+
+BOOL DebugDeleteObject(HGDIOBJ a)
+{
+	BOOL res=DeleteObject(a);
+	if (!res) 
+	{
+		DWORD t = GetLastError();
+		LPVOID lpMsgBuf;
+		if (!FormatMessage( 
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+			FORMAT_MESSAGE_FROM_SYSTEM | 
+			FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL,
+			t,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+			(LPTSTR) &lpMsgBuf,
+			0,
+			NULL ))
+		{
+		// Handle the error.
+		return res;
+		}
+
+		MessageBox( NULL, (LPCTSTR)lpMsgBuf, _T("Error"), MB_OK | MB_ICONINFORMATION );
+		LocalFree( lpMsgBuf );
+
+	}
+	return res;
+}
+
+BOOL ModernDeleteDC(HDC hdc)
+{
+  ResetEffect(hdc);
+  return DeleteDC(hdc);
+}
+#ifdef _DEBUG
+#define DeleteObject(a) DebugDeleteObject(a)
+#endif 

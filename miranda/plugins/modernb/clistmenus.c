@@ -80,6 +80,7 @@ extern int 	CheckProtocolOrder();
 //mainmenu exec param(ownerdata)
 typedef struct{
   char *szServiceName;
+  char *szMenuName;
   int Param1;
 }MainMenuExecParam,*lpMainMenuExecParam;
 //
@@ -157,7 +158,6 @@ static int AddMainMenuItem(WPARAM wParam,LPARAM lParam)
   CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
   TMO_MenuItem tmi;
   OptParam op;
-
   if(mi->cbSize!=sizeof(CLISTMENUITEM)) return 0;
 
   memset(&tmi,0,sizeof(tmi));
@@ -182,6 +182,7 @@ static int AddMainMenuItem(WPARAM wParam,LPARAM lParam)
     //we need just one parametr.
     mmep->szServiceName=mir_strdup(mi->pszService);
     mmep->Param1=mi->popupPosition;
+	mmep->szMenuName=tmi.pszName;
 
     tmi.ownerdata=mmep;
   }
@@ -289,9 +290,6 @@ static int AddContactMenuItem(WPARAM wParam,LPARAM lParam)
     CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
   }
   return(op.Handle);
-
-
-
 }
 static int BuildContactMenu(WPARAM wParam,LPARAM lParam)
 {
@@ -427,7 +425,6 @@ int MenuProcessCommand(WPARAM wParam,LPARAM lParam)
         int pos=statustopos(hst);
         if (pos!=-1&&hStatusMainMenuHandles!=NULL)
         {
-          TRACE("Processing WM_COMAND for status menus\r\n");
           return(CallService(MO_PROCESSCOMMAND,(WPARAM)hStatusMainMenuHandles[pos],lParam));
         };
 
@@ -468,7 +465,7 @@ char * GetUniqueProtoName(char * proto)
 	PROTOCOLDESCRIPTOR **protos;
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
 	for (i=0; i<count; i++)
-		if (!strcmpi(proto,protos[i]->szName))
+		if (!_strcmpi(proto,protos[i]->szName))
 			return protos[i]->szName;
 	return NULL;
 }
@@ -496,17 +493,29 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 	smep=(StatusMenuExecParam *)pcpp->MenuItemOwnerData;
 	if (smep && !smep->status && smep->custom)
 	{
-		if (WildCompare(smep->svc,"*\\SetXStatus*",255))
+		if (WildCompare(smep->svc,"*XStatus*",255))
 		{
 			//TODO Set parent icon/text as current
 			//Get parent menu ID
+			BOOL check=FALSE;
 			TMO_IntMenuItem * timiParent;
-			if (WildCompare(smep->svc,"*\\SetXStatus0",255))
+			int XStatus=CallProtoService(smep->proto,"/GetXStatus",0,0);
+			{
+				char buf[255];
+				_snprintf(buf,sizeof(buf),"*XStatus%d",XStatus);
+				if (WildCompare(smep->svc,buf,255))	check=TRUE;
+			}
+			if (WildCompare(smep->svc,"*XStatus0",255))
 				reset=TRUE;
 			else 
 				reset=FALSE;
+			
 			timi=GetMenuItemByGlobalID(pcpp->MenuItemHandle);
-			if (timi->mi.flags&CMIF_CHECKED || reset)
+			if (check)
+				timi->mi.flags|=CMIF_CHECKED;
+			else
+				timi->mi.flags&=~CMIF_CHECKED;
+			if (timi->mi.flags&CMIF_CHECKED || reset || check)
 			{
 				timiParent=GetMenuItemByGlobalID(timi->mi.root);
 				if (timiParent)
@@ -608,6 +617,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 			if (timi &&  timi->mi.pszName)
 			{
 				int curProtoStatus=0;
+				BOOL IconNeedDestroy=FALSE;
 				char * prot;
 				if (smep)
 					prot=GetUniqueProtoName(smep->proto);
@@ -618,16 +628,19 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 				if (curProtoStatus>=ID_STATUS_OFFLINE && curProtoStatus<ID_STATUS_IDLE)
 				{
 				//	timi->iconId=pcli->pfnIconFromStatusMode(timi->mi.pszName,curProtoStatus);
-					timi->mi.hIcon=LoadSkinnedProtoIcon(prot,curProtoStatus);
+					timi->mi.hIcon=LoadSkinnedProtoIcon(prot,curProtoStatus);				
 				}
 				else
 				{
 					timi->mi.hIcon=(HICON)CallProtoService(prot,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
+					IconNeedDestroy=TRUE;
 				}
 				if (timi->mi.hIcon)
 				{
 					timi->mi.flags|=CMIM_ICON;
 					CallService(MO_MODIFYMENUITEM,(WPARAM)timi->globalid,(LPARAM)(&(timi->mi)));
+					if (IconNeedDestroy) 
+						DestroyIcon(timi->mi.hIcon);
 				}
 			}
 		}
@@ -705,11 +718,9 @@ int FreeOwnerDataStatusMenu (WPARAM wParam,LPARAM lParam)
   smep=(lpStatusMenuExecParam)lParam;
 
   if (smep!=NULL) {
-    if (smep->custom)
       FreeAndNil(&smep->proto);
-    else
       FreeAndNil(&smep->svc);
-    FreeAndNil(&smep);
+	  FreeAndNil(&smep);
   }
 
   return (0);
@@ -758,30 +769,32 @@ static int DrawMenuItem(WPARAM wParam,LPARAM lParam)
   return (CallService(MO_DRAWMENUITEM,(WPARAM)0,lParam));
 }
 
-static int MenuGetMain(WPARAM wParam,LPARAM lParam)
-{
-  if (hMainMenu!=NULL){
-    while(GetMenuItemCount(hMainMenu)>0){DeleteMenu(hMainMenu,0,MF_BYPOSITION);};
-  }
-  BuildMainMenu(0,0);
-  return (int)hMainMenu;
-}
+
 int RecurciveDeleteMenu(HMENU hMenu)
 {
 	int i=GetMenuItemCount(hMenu);	
 	while (i>0)
 	{
+		BOOL res=FALSE;
 		HMENU submenu=GetSubMenu(hMenu,0);
 		if (submenu)
+		{
 			RecurciveDeleteMenu(submenu);
+			DestroyMenu(submenu);
+		}
 		DeleteMenu(hMenu,0,MF_BYPOSITION);
 		i=GetMenuItemCount(hMenu);
 	};
   return 0;
 }
+static int MenuGetMain(WPARAM wParam,LPARAM lParam)
+{
+  RecurciveDeleteMenu(hMainMenu);
+  BuildMainMenu(0,0);
+  return (int)hMainMenu;
+}
 static int BuildStatusMenu(WPARAM wParam,LPARAM lParam)
 {
-  int tick;
   HMENU hMenu;
   ListParam param;
 
@@ -790,12 +803,8 @@ static int BuildStatusMenu(WPARAM wParam,LPARAM lParam)
   param.rootlevel=-1;
 
   hMenu=hStatusMenu;
-  TRACE("clear statusmenu\n");
   RecurciveDeleteMenu(hStatusMenu);
-  tick=GetTickCount();
   CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
-  TRACE("statusmenu builded\n");
-  tick=GetTickCount()-tick;
   return (int)hMenu;
 }
 
@@ -817,14 +826,8 @@ int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
   int p;
   char buf[10];
   char * b2=NULL;
-  /*
-  spcnt=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
-  itoa(Pos+200,buf,10);
-  p=DBGetContactSettingDword(0,"Protocols",buf,-1);
-  */
-  itoa(Pos,buf,10);
+  _itoa(Pos,buf,10);
   b2=DBGetStringA(NULL,"Protocols",buf);
-  //TRACE("GetProtoIndexByPos \r\n");
 
   if (b2)
   {
@@ -838,15 +841,10 @@ int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
   }
   return -1;
 }
-typedef struct _menuProto 
-{
-  char *szProto;
-  HANDLE menuID;
-  HANDLE hasAdded;
-} MenuProto;
-static int AllocedProtos=0;
-static MenuProto * menusProto=NULL;
-static MenuProto menusProtoSingle={0};
+
+int AllocedProtos=0;
+MenuProto * menusProto=NULL;
+MenuProto menusProtoSingle={0};
 int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
   int i,j,protoCount=0,networkProtoCount,s;
@@ -884,7 +882,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
   tmp.ExecService="StatusMenuExecService";
   tmp.CheckService="StatusMenuCheckService";
   //tmp.
-  tmp.name="StatusMenu";
+  tmp.name=Translate("StatusMenu");
 
   hStatusMenuObject=(int)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
   {
@@ -1059,7 +1057,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
     statusFlags|=flags;
   }
   NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
-  pos=300000;
+  pos=200000;
   {
     //add to root menu
     for(j=0;j<sizeof(statusModeList)/sizeof(statusModeList[0]);j++) {
@@ -1115,7 +1113,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
   };
   
   BuildStatusMenu(0,0);
-  pos=200000;
+  pos=300000;
   //mir_free(menusProto);
   return 0;
 }
@@ -1219,28 +1217,24 @@ static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
     return 0;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-static int MenuModulesShutdown(WPARAM wParam,LPARAM lParam) {
+int MenuModulesShutdown(WPARAM wParam,LPARAM lParam)
+{
+  
+  RecurciveDeleteMenu(hStatusMenu);
+  RecurciveDeleteMenu(hMainMenu);
+  DestroyMenu(hMainMenu);
+  DestroyMenu(hStatusMenu);
   UnhookEvent(hAckHook);
   return 0;
 }
-
+extern void DisconnectAll();
 int CloseAction(WPARAM wParam,LPARAM lParam)
 {
   int k;
   k=CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0);
   if(k)
   {
+	DisconnectAll();
     SendMessage((HWND)CallService(MS_CLUI_GETHWND,(WPARAM)0,(LPARAM)0),WM_DESTROY,0,0);
     PostQuitMessage(0);
     SleepEx(0,TRUE);
@@ -1387,6 +1381,12 @@ int InitCustomMenus(void)
 
 void UninitCustomMenus(void)
 {
+  int i;
+  for (i=0; i<AllocedProtos; i++)
+        if (menusProto[i].szProto) 
+			mir_free(menusProto[i].szProto);
+  if (menusProto) mir_free(menusProto);
+
   if (hStatusMainMenuHandles!=NULL) {
     mir_free(hStatusMainMenuHandles);
   };
@@ -1396,7 +1396,6 @@ void UninitCustomMenus(void)
     mir_free(hStatusMenuHandles);
   };
   hStatusMenuHandles=NULL;
-
   UnitGenMenu();
 }
 static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
@@ -1425,8 +1424,21 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
         break;
       }   
     }
-    if (AllocedProtos==0)
+    /* UnregistereD sturtup status fix
+	if (AllocedProtos==0)
       mp=&menusProtoSingle;
+	*/
+
+	if (AllocedProtos==0) {
+		if (!val)
+			_snprintf(buf,sizeof(buf),Translate("%s Custom Status"),menusProtoSingle.szProto);
+		if ( (val && boolstrcmpi(menusProtoSingle.szProto,mi->pszContactOwner))||
+            (wParam==0 && boolstrcmpi(buf,mi->pszPopupName)) )
+		 {
+			mp=&menusProtoSingle;
+		 }
+	}
+	// End 
   }
   if (mp && !mp->hasAdded)
   {
@@ -1442,7 +1454,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
   if (wParam)
   {
     int * res=(int*)wParam;
-    *res=(int)mp->hasAdded;
+	*res=mp?(int)mp->hasAdded:0;
   }
   memset(&tmi,0,sizeof(tmi));
   tmi.cbSize=sizeof(tmi);
@@ -1466,6 +1478,17 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
     memset(smep,0,sizeof(StatusMenuExecParam));
     smep->custom = TRUE;
     smep->svc=mir_strdup(mi->pszService);
+//	if (mp)
+//		smep->proto=mir_strdup(mp.szProto);
+//	else
+	{
+		char *buf=mir_strdup(mi->pszService);
+		int i=0;
+		while(buf[i]!='\0' && buf[i]!='/') i++;
+		buf[i]='\0';
+		smep->proto=mir_strdup(buf);
+		mir_free(buf);
+	}
     tmi.ownerdata=smep;
   }; 
   op.Handle=(int)CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);  

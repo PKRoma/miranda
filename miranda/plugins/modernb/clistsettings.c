@@ -106,16 +106,8 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 {
 	if (pdnce!=NULL)
 	{
-		/*
-		{
-		char buf[256];
-		sprintf(buf,"LoadCacheDispEntry %x \r\n",pdnce);
-		TRACE(buf);
-		}
-		*/
 		if (pdnce->szProto==NULL&&pdnce->protoNotExists==FALSE)
 		{
-			//if (pdnce->szProto) mir_free(pdnce->szProto);
 			pdnce->szProto=GetProtoForContact(pdnce->hContact);
 			if (pdnce->szProto==NULL) 
 			{
@@ -404,7 +396,6 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 						//	if (pdnce->status!=ID_STATUS_OFFLINE)  
 						ReAskStatusMessage((HANDLE)wParam);  
 					}
-					TRACE("From ContactSettingChanged: ");
 					pcli->pfnClcBroadcast( INTM_STATUSCHANGED,wParam,0);
 					ChangeContactIcon((HANDLE)wParam, ExtIconFromStatusMode((HANDLE)wParam,cws->szModule, cws->value.wVal), 0); //by FYR
 					pcli->pfnSortContacts();
@@ -421,7 +412,6 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					DBFreeVariant(&dbv);
 					return 0;
 				}
-				//TRACE("Second SortContact\n");
 			}
 		}
 
@@ -456,16 +446,12 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 			if(!strcmp(cws->szSetting,"p")) 
 			{
 				char *szProto;
-
-				TRACE("CHANGE: proto\r\n");
 				InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);	
 				if(cws->value.type==DBVT_DELETED) szProto=NULL;
 				else szProto=cws->value.pszVal;
 				ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),0); //by FYR
-				//			ChangeContactIcon((HANDLE)wParam,IconFromStatusMode(szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),0);
 			}
 		}
-
 		// Clean up
 		if (dbv.pszVal)
 			mir_free(dbv.pszVal);

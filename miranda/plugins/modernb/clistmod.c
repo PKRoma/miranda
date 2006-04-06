@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clist.h"
 #include "commonprototypes.h"
 extern void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
+extern HICON GetMainStatusOverlay(int STATUS);
 int HideWindow(HWND hwndContactList, int mode);
 extern int SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam);
 extern void InitTray(void);
@@ -73,6 +74,55 @@ extern WORD BehindEdgeBorderSize;
 
 static HANDLE hSettingChanged;
 
+
+extern int SkinEditorOptInit(WPARAM wParam,LPARAM lParam);
+
+//returns normal icon or combined with status overlay. Needs to be destroyed.
+HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
+{
+	HICON hIcon=NULL;
+	HICON hXIcon=NULL;
+	// check if options is turned on
+	BYTE trayOption=DBGetContactSettingByte(NULL,"CLUI","XStatusTray",15);
+	if (trayOption&3 && szProto!=NULL)
+	{
+		// check service exists
+		char str[MAXMODULELABELLENGTH];
+		strcpy(str,szProto);
+		strcat(str,"/GetXStatusIcon");
+		if (ServiceExists(str))	
+		{
+			// check status is online
+			if (status>ID_STATUS_OFFLINE)
+			{
+				// get xicon
+				hXIcon=(HICON)CallService(str,0,0);	
+				if (hXIcon)
+				{
+					// check overlay mode
+					if (trayOption&2)
+					{
+						// get overlay
+						HICON MainOverlay=(HICON)GetMainStatusOverlay(status);
+						hIcon=CreateJoinedIcon(hXIcon,MainOverlay,(trayOption&4)?192:0);
+						DestroyIcon(hXIcon);
+					}
+					else
+					{
+						// paint it
+						hIcon=hXIcon;
+					}								
+				}
+			}
+		}
+	}
+	if (!hIcon)
+	{
+		hIcon=ImageList_GetIcon(himlCListClc,ExtIconFromStatusMode(hContact,szProto,status),ILD_NORMAL);
+	}
+	// if not ready take normal icon
+	return hIcon;
+}
 ////////// By FYR/////////////
 int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 {
@@ -84,9 +134,9 @@ int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 			if (hContact!=0)            {
 				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);
 				status=DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE);
-		}	}
+			}	}
 
-	return pcli->pfnIconFromStatusMode(szProto,status,hContact);
+		return pcli->pfnIconFromStatusMode(szProto,status,hContact);
 }
 /////////// End by FYR ////////
 
@@ -118,6 +168,12 @@ static int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 extern int ToggleHideOffline(WPARAM wParam,LPARAM lParam);
+extern int MenuProcessCommand(WPARAM wParam,LPARAM lParam);
+static int SetStatusMode(WPARAM wParam, LPARAM lParam)
+{
+	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
+	return 0;
+}
 
 int LoadContactListModule(void)
 {
@@ -130,6 +186,8 @@ int LoadContactListModule(void)
 	HookEvent(ME_SYSTEM_SHUTDOWN,ContactListShutdownProc);
 	HookEvent(ME_OPT_INITIALISE,CListOptInit);
 	HookEvent(ME_OPT_INITIALISE,SkinOptInit);
+	HookEvent(ME_OPT_INITIALISE,SkinEditorOptInit);
+	
 	hSettingChanged=HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
 	HookEvent(ME_DB_CONTACT_ADDED,ContactAdded);
 	hStatusModeChangeEvent=CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
@@ -139,6 +197,7 @@ int LoadContactListModule(void)
 	CreateServiceFunction(MS_CLIST_CONTACTCHANGEGROUP,ContactChangeGroup);
 	CreateServiceFunction(MS_CLIST_TOGGLEHIDEOFFLINE,ToggleHideOffline);
 	CreateServiceFunction(MS_CLIST_GETCONTACTICON,GetContactIcon);
+	CreateServiceFunction(MS_CLIST_SETSTATUSMODE, SetStatusMode);
 
 	MySetProcessWorkingSetSize=(BOOL (WINAPI*)(HANDLE,SIZE_T,SIZE_T))GetProcAddress(GetModuleHandle(TEXT("kernel32")),"SetProcessWorkingSetSize");
 	hCListImages = ImageList_Create(16, 16, ILC_MASK|ILC_COLOR32, 32, 0);
@@ -248,7 +307,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 				if (po||(!rgn&&ptr==0))
 				{
 					BOOL hWndFound=FALSE;
-          HWND hAuxOld=NULL;
+					HWND hAuxOld=NULL;
 					hAux = WindowFromPoint(pt);
 					do
 					{
@@ -258,25 +317,25 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 							break;
 						}
 						//hAux = GetParent(hAux);
-            hAuxOld=hAux;
-            hAux = GetAncestor(hAux,GA_ROOTOWNER);
-            if (hAuxOld==hAux)
-            {
-              TCHAR buf[255];
-              GetClassName(hAux,buf,SIZEOF(buf));
-              if (!lstrcmp(buf,_T(CLUIFrameSubContainerClassName)))
-              {
-                hWndFound=TRUE;
-							  break;
-              }
-            }
+						hAuxOld=hAux;
+						hAux = GetAncestor(hAux,GA_ROOTOWNER);
+						if (hAuxOld==hAux)
+						{
+							TCHAR buf[255];
+							GetClassName(hAux,buf,SIZEOF(buf));
+							if (!lstrcmp(buf,_T(CLUIFrameSubContainerClassName)))
+							{
+								hWndFound=TRUE;
+								break;
+							}
+						}
 					}while(hAux!= NULL &&hAuxOld!=hAux);
 
 					if (hWndFound) //There's  window!
-            iNotCoveredDots++; //Let's count the not covered dots.			
+						iNotCoveredDots++; //Let's count the not covered dots.			
 					//{
 					//		  //bPartiallyCovered = TRUE;
-          //           //iCountedDots++;
+					//           //iCountedDots++;
 					//	    //break;
 					//}
 					//else             
@@ -411,8 +470,6 @@ int ShowHide(WPARAM wParam,LPARAM lParam)
 
 int HideWindow(HWND hwndContactList, int mode)
 {
-	TRACE("HIDE WINDOW\n");
-
 	KillTimer(pcli->hwndContactList,1/*TM_AUTOALPHA*/);
 	if (!BehindEdge_Hide())  return SmoothAlphaTransition(pcli->hwndContactList, 0, 1);
 	return 0;

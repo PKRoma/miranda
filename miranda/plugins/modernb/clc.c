@@ -54,6 +54,7 @@ struct ClcContact * hitcontact=NULL;
 
 extern void UpdateAllAvatars(struct ClcData *dat);
 extern int GetContactIndex(struct ClcGroup *group,struct ClcContact *contact);
+ 
 struct AvatarOverlayIconConfig 
 {
 	char *name;
@@ -73,6 +74,38 @@ struct AvatarOverlayIconConfig
 	{ "AVATAR_OVERLAY_PHONE", "On the phone", IDI_AVATAR_OVERLAY_PHONE, NULL},
 	{ "AVATAR_OVERLAY_LUNCH", "Out to lunch", IDI_AVATAR_OVERLAY_LUNCH, NULL}
 };
+struct AvatarOverlayIconConfig status_overlay_icons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1] = 
+{
+	{ "STATUS_OVERLAY_OFFLINE", "Offline", IDI_STATUS_OVERLAY_OFFLINE, NULL},
+	{ "STATUS_OVERLAY_ONLINE", "Online", IDI_STATUS_OVERLAY_ONLINE, NULL},
+	{ "STATUS_OVERLAY_AWAY", "Away", IDI_STATUS_OVERLAY_AWAY, NULL},
+	{ "STATUS_OVERLAY_DND", "DND", IDI_STATUS_OVERLAY_DND, NULL},
+	{ "STATUS_OVERLAY_NA", "NA", IDI_STATUS_OVERLAY_NA, NULL},
+	{ "STATUS_OVERLAY_OCCUPIED", "Occupied", IDI_STATUS_OVERLAY_OCCUPIED, NULL},
+	{ "STATUS_OVERLAY_CHAT", "Free for chat", IDI_STATUS_OVERLAY_CHAT, NULL},
+	{ "STATUS_OVERLAY_INVISIBLE", "Invisible", IDI_STATUS_OVERLAY_INVISIBLE, NULL},
+	{ "STATUS_OVERLAY_PHONE", "On the phone", IDI_STATUS_OVERLAY_PHONE, NULL},
+	{ "STATUS_OVERLAY_LUNCH", "Out to lunch", IDI_STATUS_OVERLAY_LUNCH, NULL}
+};
+
+void UnloadAvatarOverlayIcon()
+{
+	int i;
+	for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
+	{
+		if (avatar_overlay_icons[i].icon) 
+		{
+			DestroyIcon(avatar_overlay_icons[i].icon);
+			avatar_overlay_icons[i].icon=NULL;
+		}
+		if (status_overlay_icons[i].icon)
+		{
+			DestroyIcon(status_overlay_icons[i].icon);
+			status_overlay_icons[i].icon=NULL;
+		}
+	}
+}
+
 /*
 *	Smiley Add option is changed Event hook 
 */
@@ -99,6 +132,10 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 		else if (!MyStrCmp(cws->szModule,"CListGroups")) 
 		{
 			pcli->pfnClcBroadcast( INTM_GROUPSCHANGED,wParam,lParam);
+		}
+		else if (!strcmp(cws->szSetting,"XStatusId") || !strcmp(cws->szSetting,"XStatusName") )
+		{
+			CluiProtocolStatusChanged(0,(LPARAM)cws->szModule);	
 		}
 	}
 	else // (HANDLE)wParam != NULL
@@ -157,10 +194,10 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 //				else if (!strcmp(cws->szSetting,"IdleTS"))
 //					pcli->pfnClcBroadcast( INTM_IDLECHANGED,wParam,lParam);
 				//else 
-					if (!strcmp(cws->szSetting,"XStatusMsg"))
+				if ((!strcmp(cws->szSetting,"XStatusName") || !strcmp(cws->szSetting,"XStatusMsg")))
 					pcli->pfnClcBroadcast( INTM_STATUSMSGCHANGED,wParam,0);
-//				else if (!strcmp(cws->szSetting,"Status") || !strcmp(cws->szSetting,"XStatusId") || !strcmp(cws->szSetting,"XStatusName"))
-//					pcli->pfnClcBroadcast( INTM_STATUSCHANGED,wParam,0);
+				else if (!strcmp(cws->szSetting,"XStatusId"))
+					pcli->pfnClcBroadcast( INTM_STATUSCHANGED,wParam,0);
 				else if (!strcmp(cws->szSetting,"Timezone"))
 					pcli->pfnClcBroadcast( INTM_TIMEZONECHANGED,wParam,0);
 			}
@@ -178,6 +215,7 @@ static int ReloadAvatarOverlayIcons(WPARAM wParam, LPARAM lParam)
 	for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
 	{
 		avatar_overlay_icons[i].icon = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)avatar_overlay_icons[i].name);
+		status_overlay_icons[i].icon = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)status_overlay_icons[i].name);
 	}
 
 	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
@@ -192,20 +230,19 @@ static int ReloadAvatarOverlayIcons(WPARAM wParam, LPARAM lParam)
 static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	PROTOCOLDESCRIPTOR **proto;
 	int protoCount,i;
+	
+	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP));
+		CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
 
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
 	for(i=0;i<protoCount;i++) {
 		if(proto[i]->type!=PROTOTYPE_PROTOCOL) continue;
-		//clcProto=(ClcProtoStatus*)mir_realloc(clcProto,sizeof(ClcProtoStatus)*(hClcProtoCount+1));
-		//clcProto[hClcProtoCount].szProto = proto[i]->szName;
-		//clcProto[hClcProtoCount].dwStatus = ID_STATUS_OFFLINE;
-		//hClcProtoCount++;
 	}
 
 	// Get icons
 	if(ServiceExists(MS_SKIN2_ADDICON)) 
 	{
-		SKINICONDESC2 sid;
+		SKINICONDESC sid={0};
 		char szMyPath[MAX_PATH];
 		int i;
 
@@ -214,13 +251,23 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 		sid.cbSize = sizeof(sid);
 		sid.pszSection = Translate("Contact List/Avatar Overlay");
 		sid.pszDefaultFile = szMyPath;
-
+		sid.cx=16;
+		sid.cy=16;
 
 		for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
 		{
 			sid.pszDescription = Translate(avatar_overlay_icons[i].description);
 			sid.pszName = avatar_overlay_icons[i].name;
 			sid.iDefaultIndex = - avatar_overlay_icons[i].id;
+			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		}
+		sid.pszSection = Translate("Contact List/Status Overlay");
+		
+		for (i = 0 ; i < MAX_REGS(status_overlay_icons) ; i++)
+		{
+			sid.pszDescription = Translate(status_overlay_icons[i].description);
+			sid.pszName = status_overlay_icons[i].name;
+			sid.iDefaultIndex = - status_overlay_icons[i].id;
 			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		}
 
@@ -234,6 +281,7 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 		for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
 		{
 			avatar_overlay_icons[i].icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(avatar_overlay_icons[i].id), IMAGE_ICON, 0, 0, 0);
+			status_overlay_icons[i].icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(status_overlay_icons[i].id), IMAGE_ICON, 0, 0, 0);
 		}
 	}
 
@@ -251,10 +299,6 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 		HookEvent(ME_SMILEYADD_OPTIONSCHANGED,SmileyAddOptionsChanged);
 	}
 
-	//CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"StatusBar Background/StatusBar",0);
-	//CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"List Background/CLC",0);
-	//CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"Frames TitleBar BackGround/FrameTitleBar",0);
-	//CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"Main Menu/Menu",0);
 	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgClcChange);
 	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgMenuChange);
 	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgStatusBarChange);
@@ -264,6 +308,10 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	return 0;
 }
 
+HICON GetMainStatusOverlay(int STATUS)
+{
+	return status_overlay_icons[STATUS-ID_STATUS_OFFLINE].icon;
+}
 /*
  *	Proto ack hook
  */
@@ -304,7 +352,7 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 				if (ack->szModule!= NULL) 
 					if(DBGetContactSettingByte(ack->hContact, ack->szModule, "ChatRoom", 0) != 0) return 0;
 			}
-			DBWriteContactSettingString(ack->hContact,"CList","StatusMsg","");
+			if (ack->hContact) DBWriteContactSettingString(ack->hContact,"CList","StatusMsg","");
 			//pcli->pfnClcBroadcast( INTM_STATUSMSGCHANGED,(WPARAM)ack->hContact,&a);              
 		}
 	}
@@ -392,14 +440,14 @@ int GetProtocolVisibility(char * ProtoName)
 	if (count==-1) return 1;
 	for (i=0; i<count; i++)
 	{
-		itoa(i,buf2,10);
+		_itoa(i,buf2,10);
 		if (!DBGetContactSetting(NULL,"Protocols",buf2,&dbv))
 		{
 			if (MyStrCmp(ProtoName,dbv.pszVal)==0)
 			{
 				mir_free(dbv.pszVal);
 				DBFreeVariant(&dbv);
-				itoa(i+400,buf2,10);
+				_itoa(i+400,buf2,10);
 				res= DBGetContactSettingDword(NULL,"Protocols",buf2,0);
 				return res;
 			}
@@ -442,7 +490,7 @@ int LoadCLCModule(void)
 	hSettingChanged1=HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ClcSettingChanged);
 	HookEvent(ME_OPT_INITIALISE,ClcOptInit);
 	hAckHook=(HANDLE)HookEvent(ME_PROTO_ACK,ClcProtoAck);
-  HookEvent(ME_SYSTEM_MODULESLOADED, ClcModulesLoaded);
+	HookEvent(ME_SYSTEM_MODULESLOADED, ClcModulesLoaded);
 	HookEvent(ME_SYSTEM_SHUTDOWN,ClcShutdown);
 	return 0;
 }
@@ -466,10 +514,11 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	switch (msg) {
 	case WM_CREATE:
 		{
-			TRACE("Create New ClistControl BEGIN\r\n");
 			dat=(struct ClcData*)mir_calloc(1,sizeof(struct ClcData));
 			SetWindowLong(hwnd,0,(long)dat);
 			dat->hWnd=hwnd;
+//			dat->isStarting=TRUE;
+//			InitializeCriticalSectionAndSpinCount(&dat->lockitemCS,100);
 
 			dat->use_avatar_service = ServiceExists(MS_AV_GETAVATARBITMAP);
 			if (dat->use_avatar_service)
@@ -486,22 +535,22 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 			dat->NeedResort=1;
 			dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",1);
-			dat->IsMetaContactsEnabled=
-				DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
-			dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1);
-			
+			dat->IsMetaContactsEnabled=(!(GetWindowLong(hwnd,GWL_STYLE)&CLS_MANUALUPDATE)) 
+				    //&& (GetWindowLong(hwnd,GWL_STYLE)&CLS_USEGROUPS)
+					&& DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
+			dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1);		
 			sortBy[0]=DBGetContactSettingByte(NULL,"CList","SortBy1",SETTING_SORTBY1_DEFAULT);
 			sortBy[1]=DBGetContactSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT);
 			sortBy[2]=DBGetContactSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT);
 			sortNoOfflineBottom=DBGetContactSettingByte(NULL,"CList","NoOfflineBottom",SETTING_NOOFFLINEBOTTOM_DEFAULT);
 			//InitDisplayNameCache(&dat->lCLCContactsCache);
-
-			LoadClcOptions(hwnd,dat);
-			pcli->pfnRebuildEntireList(hwnd,dat);
-
-			TRACE("Create New ClistControl END\r\n");
-			SetTimer(hwnd,TIMERID_INVALIDATE,2000,NULL);
-			break;
+			LoadClcOptions(hwnd,dat);	
+			SetTimer(hwnd,TIMERID_INVALIDATE,5000,NULL);
+			saveContactListControlWndProc(hwnd, msg, wParam, lParam);
+			//if (dat->force_in_dialog)
+			//	pcli->pfnRebuildEntireList(hwnd,dat);		
+			TRACE("Create New ClistControl TO END\r\n");		
+			return 0;
 		}
 	case WM_NCHITTEST:
 		{
@@ -696,7 +745,6 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	case INTM_STATUSCHANGED:
 		{
       int ret=saveContactListControlWndProc(hwnd, msg, wParam, lParam);
-			TRACE("INTM_STATUSCHANGED\n");
 			if (wParam != 0)
 			{
 				pdisplayNameCacheEntry pdnce = (pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
@@ -752,13 +800,16 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			int selMoved=0;
 			int changeGroupExpand=0;
 			int pageSize;
+			if (wParam==VK_CONTROL) 
+				return 0;
 			pcli->pfnHideInfoTip(hwnd,dat);
 			KillTimer(hwnd,TIMERID_INFOTIP);
 			KillTimer(hwnd,TIMERID_RENAME);
 			if(CallService(MS_CLIST_MENUPROCESSHOTKEY,wParam,MPCF_CONTACTMENU)) break;
 			{	RECT clRect;
 				GetClientRect(hwnd,&clRect);
-				pageSize=clRect.bottom/dat->max_row_height;
+				if (dat->max_row_height) pageSize=clRect.bottom/dat->max_row_height;
+				else pageSize=0;
 			}
 			switch(wParam) {
 			case VK_DOWN: dat->selection++; selMoved=1; break;
@@ -772,6 +823,17 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			case VK_RETURN: pcli->pfnDoSelectionDefaultAction(hwnd,dat); SetCapture(hwnd); return 0;
 			case VK_F2: BeginRenameSelection(hwnd,dat); SetCapture(hwnd);return 0;
 			case VK_DELETE: pcli->pfnDeleteFromContactList(hwnd,dat); SetCapture(hwnd);return 0;
+      case VK_ESCAPE: 
+        {
+          if((dat->dragStage&DRAGSTAGEM_STAGE)==DRAGSTAGE_ACTIVE)
+          {
+            dat->iDragItem=-1;
+			      dat->iInsertionMark=-1;
+            dat->dragStage=0;
+            ReleaseCapture();
+          }
+          return 0;
+        }
 			default:
 				{	NMKEY nmkey;
 					nmkey.hdr.hwndFrom=hwnd;
@@ -886,6 +948,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 					}
 				}
 				else {SetCapture(hwnd);return 0; }
+				return 0;
 			}
 			if(selMoved) {
 				dat->szQuickSearch[0]=0;
@@ -905,7 +968,12 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 	case WM_TIMER:
 		{
-			if (wParam==TIMERID_INVALIDATE)
+			if (wParam==TIMERID_INVALIDATE_FULL)
+			{
+				KillTimer(hwnd,TIMERID_INVALIDATE_FULL);
+				SkinInvalidateFrame(hwnd,NULL,0);
+			}
+			else if (wParam==TIMERID_INVALIDATE)
 			{
 				time_t cur_time=(time(NULL)/60);
 				if (cur_time!=dat->last_tick_time)
@@ -1603,12 +1671,35 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		break;
 
 	case WM_DESTROY:
-		FreeDisplayNameCache(&dat->lCLCContactsCache);
-		if (!dat->use_avatar_service)
-			ImageArray_Free(&dat->avatar_cache, FALSE);
+		{
+			int i=0;
 
-		RowHeights_Free(dat);
-		break;
+			for(i=0;i<=FONTID_MODERN_MAX;i++) 
+			{
+				if(dat->fontModernInfo[i].hFont) DeleteObject(dat->fontModernInfo[i].hFont);
+				dat->fontModernInfo[i].hFont=NULL;
+			}
+			if (dat->hMenuBackground)
+			{
+				DeleteObject(dat->hMenuBackground);
+				dat->hMenuBackground=NULL;
+			}
+			{
+				ImageArray_Clear(&dat->avatar_cache);
+				ModernDeleteDC(dat->avatar_cache.hdc);			
+			}
+			FreeDisplayNameCache(&dat->lCLCContactsCache);
+			if (!dat->use_avatar_service)
+				ImageArray_Free(&dat->avatar_cache, FALSE);
+
+			RowHeights_Free(dat);
+			{ 
+//				CRITICAL_SECTION cs=dat->lockitemCS;
+				saveContactListControlWndProc(hwnd, msg, wParam, lParam);			
+//				DeleteCriticalSection(&cs);
+			}
+			return 0;
+		}
 	}
 	return saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 }

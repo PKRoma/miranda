@@ -25,16 +25,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "commonprototypes.h"
 
-
+extern void TrayIconUpdateBase(char *szChangedProto);
 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 {
-   InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);
+
+	InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);
+	if (lParam) TrayIconUpdateBase((char*)lParam);
 	return 0;
 }
 
 void fnCluiProtocolStatusChanged(int status,const unsigned char * proto)
 {
-	CluiProtocolStatusChanged(0,0);
+	CluiProtocolStatusChanged((WPARAM)status,(LPARAM)proto);
 }
 
 int SortList(WPARAM wParam,LPARAM lParam)

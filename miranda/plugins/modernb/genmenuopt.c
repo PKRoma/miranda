@@ -74,16 +74,9 @@ int SaveTree(HWND hwndDlg)
 							runtimepos=0;
 
 							while(tvi.hItem!=NULL) {
-								//itoa(count,buf,10);
+								//_itoa(count,buf,10);
 								TreeView_GetItemA(GetDlgItem(hwndDlg,IDC_MENUITEMS),&tvi);
 								name=((MenuItemOptData *)tvi.lParam)->name;
-#ifdef _DEBUG	
-   {
-		char buf[256];
-		sprintf(buf,"savedtree name: %s,id: %d\r\n",name,((MenuItemOptData *)tvi.lParam)->id);
-		TRACE(buf);
-	}
-#endif
 								menuitempos=GetMenuItembyId(menupos,((MenuItemOptData *)tvi.lParam)->id);
 								if (menuitempos!=-1)
 								{
@@ -277,18 +270,10 @@ int BuildTree(HWND hwndDlg,int MenuObjectId)
 				PD->defname=mir_strdup(pimo->MenuItems[i].mi.pszName);
 
 				sprintf(buf, "%s_visible", menuItemName);
-				PD->show=DBGetContactSettingByte(NULL,MenuNameItems, buf, 1);			
-				
-				sprintf(buf, "%s_pos", menuItemName);
+				PD->show=DBGetContactSettingByte(NULL,MenuNameItems, buf, 1);				
+			sprintf(buf, "%s_pos", menuItemName);
 				PD->pos=DBGetContactSettingDword(NULL,MenuNameItems, buf, 1);
-
 				PD->id=pimo->MenuItems[i].id;
-	{
-		char buf[256];
-		sprintf(buf,"buildtree name: %s,id: %d\r\n",pimo->MenuItems[i].mi.pszName,pimo->MenuItems[i].id);
-		TRACE(buf);
-	}
-
 				if (pimo->MenuItems[i].UniqName) PD->uniqname=mir_strdup(pimo->MenuItems[i].UniqName);
 				
 				PDar[count]=PD;
