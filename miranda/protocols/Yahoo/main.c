@@ -55,13 +55,17 @@ PLUGININFO pluginInfo={
 		"Yahoo Protocol",
 #endif
 		__VERSION_DWORD,
+#ifdef YAHOO_CVSBUILD
+		"Yahoo Protocol support via libyahoo2 library. [Built: "__DATE__" "__TIME__"]",
+#else
 		"Yahoo Protocol support via libyahoo2 library.",
-		"Gennady Feldman",
+#endif		
+		"Gennady Feldman, Laurent Marechal",
 		"gena01@gmail.com",
-		"© 2003-2005 G.Feldman",
+		"© 2003-2006 G.Feldman",
 		"http://www.miranda-im.org/download/details.php?action=viewfile&id=1248",
-		0,
-		0 //DEFMOD_PROTOCOLYAHOO
+		0, //not transient
+		0 //DEFMOD_PROTOCOLYAHOO - no core yahoo protocol
 };
 
 int    yahooStatus = ID_STATUS_OFFLINE;
