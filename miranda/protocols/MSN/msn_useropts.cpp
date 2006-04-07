@@ -36,11 +36,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Loads PNG2DIB library to handle PNG images. If DLL isn't found or can't be loaded,
 // a special error dialog appears.
 
-static HMODULE sttPngLib = NULL;
-pfnConvertPng2dib png2dibConvertor = NULL;
-pfnConvertDib2png dib2pngConvertor = NULL;
-pfnGetVer         getver = NULL;
-
 static BOOL CALLBACK LoadPng2dibProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
 	switch( uMsg ) {
@@ -80,36 +75,10 @@ static BOOL CALLBACK LoadPng2dibProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 
 BOOL __stdcall MSN_LoadPngModule()
 {
-	if ( sttPngLib == NULL ) {
-		if (( sttPngLib = LoadLibraryA( "png2dib.dll" )) == NULL ) {
-			char tDllPath[ MAX_PATH ];
-			GetModuleFileNameA( hInst, tDllPath, sizeof( tDllPath ));
-			{
-				char* p = strrchr( tDllPath, '\\' );
-				if ( p != NULL )
-					strcpy( p+1, "png2dib.dll" );
-				else
-					strcpy( tDllPath, "png2dib.dll" );
-			}
-
-			if (( sttPngLib = LoadLibraryA( tDllPath )) == NULL ) {
-LBL_Error:
-				DialogBox( hInst, MAKEINTRESOURCE( IDD_GET_PNG2DIB ), NULL, LoadPng2dibProc );
-				return FALSE;
-		}	}
-
-		png2dibConvertor = ( pfnConvertPng2dib )GetProcAddress( sttPngLib, "mempng2dib" );
-		dib2pngConvertor = ( pfnConvertDib2png )GetProcAddress( sttPngLib, "dib2mempng" );
-		getver           = ( pfnGetVer )        GetProcAddress( sttPngLib, "getver" );
-		if ( png2dibConvertor == NULL || dib2pngConvertor == NULL || getver == NULL ) {
-			FreeLibrary( sttPngLib ); sttPngLib = NULL;
-			MessageBoxA( NULL,
-				MSN_Translate( "Your png2dib.dll is either obsolete or damaged. Press Ok to download the latest version" ),
-				MSN_Translate( "Error" ),
-				MB_OK | MB_ICONSTOP );
-
-			goto LBL_Error;
-	}	}
+	if ( !ServiceExists(MS_DIB2PNG) || !ServiceExists(MS_PNG2DIB)) {
+		DialogBox( hInst, MAKEINTRESOURCE( IDD_GET_PNG2DIB ), NULL, LoadPng2dibProc );
+		return FALSE;
+	}
 
 	return TRUE;
 }

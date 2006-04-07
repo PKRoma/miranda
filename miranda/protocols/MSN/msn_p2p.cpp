@@ -167,7 +167,11 @@ static void sttSavePicture2disk( ThreadData* info, filetransfer* ft )
 		return;
 
 	BITMAPINFOHEADER* pDib;
-	if ( !png2dibConvertor( ft->fileBuffer, ft->std.totalBytes, &pDib ))
+	PNG2DIB convert;
+	convert.pSource = (BYTE*)ft->fileBuffer;
+	convert.cbSourceSize = ft->std.totalBytes;
+	convert.pResult = &pDib;
+	if ( !CallService( MS_PNG2DIB, 0, (LPARAM)&convert ))
 		return;
 
 	PROTO_AVATAR_INFORMATION AI;

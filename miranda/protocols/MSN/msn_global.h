@@ -48,6 +48,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_clui.h>
 #include <m_message.h>
 #include <m_options.h>
+#include <m_png.h>
 #include <m_protocols.h>
 #include <m_protomod.h>
 #include <m_protosvc.h>
@@ -227,15 +228,6 @@ void  strdel( char* parBuffer, int len );
 // PNG library interface
 
 BOOL __stdcall MSN_LoadPngModule( void );
-
-typedef	BOOL ( *pfnConvertPng2dib )( char*, size_t, BITMAPINFOHEADER** );
-extern pfnConvertPng2dib png2dibConvertor;
-
-typedef	BOOL ( *pfnConvertDib2png )( BITMAPINFO*, BYTE* pDiData, BYTE* result, long* resLen );
-extern pfnConvertDib2png dib2pngConvertor;
-
-typedef	DWORD ( *pfnGetVer )();
-extern pfnGetVer getver;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MIME headers processing

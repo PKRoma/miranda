@@ -110,20 +110,25 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	DeleteDC( hdc );
 
 	long dwPngSize = 0;
-	if ( dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, NULL, &dwPngSize ) == 0 ) {
+	DIB2PNG convertor;
+	convertor.pbmi = ( BITMAPINFO* )pDib;
+	convertor.pDiData = pDibBits;
+	convertor.pResult = NULL;
+	convertor.pResultLen = &dwPngSize;
+	if ( !CallService( MS_DIB2PNG, 0, (LPARAM)&convertor )) {
 		GlobalFree( pDib );
 		return 2;
 	}
 
-	BYTE* pPngMemBuffer = new BYTE[ dwPngSize ];
-	dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, pPngMemBuffer, &dwPngSize );
+	convertor.pResult = new BYTE[ dwPngSize ];
+	CallService( MS_DIB2PNG, 0, (LPARAM)&convertor );
 	GlobalFree( pDib );
 
 	SHA1Context sha1ctx;
 	BYTE sha1c[ SHA1HashSize ], sha1d[ SHA1HashSize ];
 	char szSha1c[ 40 ], szSha1d[ 40 ];
 	SHA1Reset( &sha1ctx );
-	SHA1Input( &sha1ctx, pPngMemBuffer, dwPngSize );
+	SHA1Input( &sha1ctx, convertor.pResult, dwPngSize );
 	SHA1Result( &sha1ctx, sha1d );
 	{	NETLIBBASE64 nlb = { szSha1d, sizeof szSha1d, ( PBYTE )sha1d, sizeof sha1d };
 		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
@@ -175,10 +180,10 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 		MSN_GetAvatarFileName( NULL, tFileName, sizeof tFileName );
 		FILE* out = fopen( tFileName, "wb" );
 		if ( out != NULL ) {
-			fwrite( pPngMemBuffer, dwPngSize, 1, out );
+			fwrite( convertor.pResult, dwPngSize, 1, out );
 			fclose( out );
 	}	}
-	delete pPngMemBuffer;
+	delete convertor.pResult;
 	return ERROR_SUCCESS;
 }
 
