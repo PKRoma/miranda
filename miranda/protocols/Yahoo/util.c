@@ -199,7 +199,8 @@ int YAHOO_shownotification(const char *title, const char *info, DWORD flags)
 void YAHOO_ShowError(const char *title, const char *buff)
 {
 	if (YAHOO_GetByte( "ShowErrors", 1 )) 
-		YAHOO_ShowPopup(title, buff, YAHOO_NOTIFY_POPUP);
+		if (!YAHOO_ShowPopup(title, buff, YAHOO_NOTIFY_POPUP))
+				YAHOO_shownotification(title, buff, NIIF_ERROR);
 }
 
 int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam)
