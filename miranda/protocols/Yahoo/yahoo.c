@@ -1732,11 +1732,6 @@ void ext_yahoo_typing_notify(int id, char *me, char *who, int stat)
 	c = YAHOO_GetContactName(hContact);
 	
 	CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)hContact, (LPARAM)stat?10:0);
-
-    if (!YAHOO_GetByte("DisplayTyping", 0)) return;
-
-	if(ServiceExists( MS_POPUP_ADDPOPUPEX ))
-		YAHOO_ShowPopup( c, Translate( "typing..." ), YAHOO_ALLOW_MSGBOX + YAHOO_NOTIFY_POPUP );
 }
 
 void ext_yahoo_game_notify(int id, char *me, char *who, int stat, char *msg)
@@ -1841,21 +1836,20 @@ void ext_yahoo_mail_notify(int id, char *from, char *subj, int cnt)
     SkinPlaySound( Translate( "mail" ) );
 
     if (!YAHOO_GetByte( "DisableYahoomail", 0)) {    
+		char z[MAX_SECONDLINE], title[MAX_CONTACTNAME];
+		
         LOG(("ext_yahoo_mail_notify"));
         
-        if(ServiceExists( MS_POPUP_ADDPOPUPEX )) {
-	        char z[256], title[31];
-    
-			if (from == NULL) {
-                strcpy(title, Translate("New Mail"));
-                wsprintf(z, Translate("You Have %i unread msgs"), cnt);
-			} else {
-                wsprintf(title, Translate("New Mail (%i msgs)"), cnt);
-                _snprintf(z, 256, Translate("From: %s\nSubject: %s"), from, subj);
-			}
-
-            YAHOO_ShowPopup( title, z, YAHOO_ALLOW_ENTER + YAHOO_ALLOW_MSGBOX + YAHOO_MAIL_POPUP );
+		if (from == NULL) {
+            lstrcpyn(title, Translate("New Mail"), sizeof(title));
+            snprintf(z, sizeof(z), Translate("You Have %i unread msgs"), cnt);
+		} else {
+            snprintf(title, sizeof(title), Translate("New Mail (%i msgs)"), cnt);
+            snprintf(z, sizeof(z), Translate("From: %s\nSubject: %s"), from, subj);
 		}
+        
+		if(!YAHOO_ShowPopup( title, z, YAHOO_ALLOW_ENTER + YAHOO_MAIL_POPUP ))
+			YAHOO_shownotification(title, z, NIIF_INFO);
     }
 }    
     
@@ -2415,7 +2409,7 @@ void YAHOO_ping(void)
 
 void ext_yahoo_login(int login_mode)
 {
-	char host[128];
+	char host[128], fthost[128];
 	int port=0;
     DBVARIANT dbv;
 
@@ -2435,12 +2429,14 @@ void ext_yahoo_login(int login_mode)
         return;
     }
 
+	lstrcpyn(fthost,YAHOO_GetByte("YahooJapan",0)?"filetransfer.msg.yahoo.co.jp":"filetransfer.msg.yahoo.com" , sizeof(fthost));
 	port = DBGetContactSettingWord(NULL, yahooProtocolName, YAHOO_LOGINPORT, 5050);
 	
 	//ylad->id = yahoo_init(ylad->yahoo_id, ylad->password);
 	ylad->id = yahoo_init_with_attributes(ylad->yahoo_id, ylad->password, 
 			"pager_host", host,
 			"pager_port", port,
+			"filetransfer_host", fthost,
 			"picture_checksum", YAHOO_GetDword("AvatarHash", -1),
 			NULL);
 

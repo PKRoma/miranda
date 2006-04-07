@@ -54,6 +54,7 @@
 #define	YAHOO_NOTIFY_POPUP		           8
 #define YAHOO_DEFAULT_PORT              5050
 #define YAHOO_DEFAULT_LOGIN_SERVER      "scs.msg.yahoo.com"	
+#define YAHOO_DEFAULT_JAPAN_LOGIN_SERVER      "cs.yahoo.co.jp"	
 #define YAHOO_CUSTOM_STATUS                99
 
 #define YAHOO_DEBUGLOG YAHOO_DebugLog

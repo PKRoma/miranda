@@ -36,22 +36,26 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 	// Yahoo Login Information [Top Box]
-    GROUPBOX        "Yahoo",IDC_STYAHOOGROUP,8,10,280,76,WS_GROUP
+    GROUPBOX        "Yahoo",IDC_STYAHOOGROUP,8,10,280,56,WS_GROUP
     RTEXT           "ID:",IDC_STATIC,16,20,52,8
     EDITTEXT        IDC_HANDLE,72,18,100,12,ES_AUTOHSCROLL
     RTEXT           "Password:",IDC_STATIC,16,36,52,8
     EDITTEXT        IDC_PASSWORD,72,34,100,12,ES_PASSWORD | ES_AUTOHSCROLL
     CONTROL         "Create a new Yahoo account using the Yahoo website",
-                    IDC_NEWYAHOOACCOUNTLINK,"Hyperlink",WS_TABSTOP,21,72,208,8
+                    IDC_NEWYAHOOACCOUNTLINK,"Hyperlink",WS_TABSTOP,21,50,208,8
 
 	// Expert Section [Server/Port/etc]
-    GROUPBOX        "Expert",IDC_STATIC,8,88,150,118
+    GROUPBOX        "Expert",IDC_STATIC,8,68,150,138
 	
-    LTEXT           "Login server:",IDC_STATIC,16,102,52,10
-    EDITTEXT        IDC_LOGINSERVER,68,100,80,12,ES_AUTOHSCROLL
-    LTEXT           "Port:",IDC_STATIC,16,116,25,10
-    EDITTEXT        IDC_YAHOOPORT,68,114,29,12,ES_AUTOHSCROLL | ES_NUMBER
-	PUSHBUTTON      "Reset",IDC_RESETSERVER,100,114,34,12
+    LTEXT           "Login server:",IDC_STATIC,16,82,52,10
+    EDITTEXT        IDC_LOGINSERVER,68,80,80,12,ES_AUTOHSCROLL
+    LTEXT           "Port:",IDC_STATIC,16,96,25,10
+    EDITTEXT        IDC_YAHOOPORT,68,94,29,12,ES_AUTOHSCROLL | ES_NUMBER
+	PUSHBUTTON      "Reset",IDC_RESETSERVER,100,94,34,12
+
+	CONTROL         "Yahoo Japan",IDC_YAHOO_JAPAN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,112,140,10 					
+	
 	
 	CONTROL         "Disable UTF8 encoding",IDC_DISABLE_UTF8,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,132,140,10 					
@@ -68,12 +72,18 @@ BEGIN
 	CONTROL         "AutoLogin to Yahoo Mail",IDC_MAIL_AUTOLOGIN,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,172,120,10 					
 
-    GROUPBOX        "Yahoo Ignore List",IDC_STYAHOOGROUP,158,88,130,118,WS_GROUP
+	CONTROL         "Display Yahoo Mail notifications", IDC_DISABLEYAHOOMAIL,"Button",
+					BS_AUTOCHECKBOX | WS_TABSTOP,16,182,120,10
+					
+	CONTROL         "Show Errors",IDC_SHOW_ERRORS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,192,120,10 					
+					
+    GROUPBOX        "Yahoo Ignore List",IDC_STYAHOOGROUP,158,68,130,138,WS_GROUP
 	
-	EDITTEXT 		IDC_YIGN_EDIT,164,102,84,13, ES_AUTOHSCROLL
-	PUSHBUTTON 		"Add",IDC_IGN_ADD,250,102,34,15
+	EDITTEXT 		IDC_YIGN_EDIT,164,82,84,13, ES_AUTOHSCROLL
+	PUSHBUTTON 		"Add",IDC_IGN_ADD,250,82,34,15
 	
-	CONTROL 		"",IDC_YIGN_LIST,"ListBox",0x50010141,164,118,84,85,0x00000200
+	CONTROL 		"",IDC_YIGN_LIST,"ListBox",0x50010141,164,98,84,105,0x00000200
 		
 	PUSHBUTTON 		"Remove", IDC_IGN_REMOVE, 250,188,34,15
 
@@ -84,7 +94,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Colors",IDC_STATIC,4,0,232,60
+    GROUPBOX        "Colors",IDC_STATIC,4,0,232,80
     CONTROL         "",IDC_BGCOLOUR,"ColourPicker",WS_TABSTOP,12,12,39,12
     LTEXT           "Background color",IDC_STATIC,56,14,176,8,
                     SS_CENTERIMAGE
@@ -93,28 +103,12 @@ BEGIN
     CONTROL         "Use Windows colors",IDC_USEWINCOLORS,"Button",
                     BS_AUTOCHECKBOX | BS_NOTIFY | BS_FLAT | WS_TABSTOP,12,44,
                     220,8
-    GROUPBOX        "Yahoo Mail",IDC_STATIC,4,64,232,60
-    CONTROL         "Display Yahoo Mail notifications",
-                    IDC_DISABLEYAHOOMAIL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    12,76,220,10
-    LTEXT           "Timeout (*)",IDC_STATIC,12,107,52,8
-    EDITTEXT        IDC_POPUP_TIMEOUT,72,105,24,12,ES_AUTOHSCROLL | 
+    LTEXT           "Timeout (*)",IDC_STATIC,12,60,60,8
+    EDITTEXT        IDC_POPUP_TIMEOUT,72,58,24,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
-    DEFPUSHBUTTON   "Preview",IDC_PREVIEW,176,104,52,12
-    GROUPBOX        "Other",IDC_STATIC,4,128,232,58
-    CONTROL         "Display popups when user is typing",IDC_NOTIFY_USERTYPE,
-	                "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,140,216,10
-
-	CONTROL         "Show Errors",IDC_SHOW_ERRORS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,154,220,10 					
-
-					
-    LTEXT           "Timeout (*)",IDC_STATIC,12,166,60,8
-    EDITTEXT        IDC_POPUP_TIMEOUT2,72,164,24,12,ES_AUTOHSCROLL | 
-                    ES_NUMBER
-    DEFPUSHBUTTON   "Preview",IDC_PREVIEW2,176,166,52,12
+    DEFPUSHBUTTON   "Preview",IDC_PREVIEW,176,60,52,12
     LTEXT           "(*) Timeouts require Popup v. 1.0.1.9 or later",
-                    IDC_STATIC,4,188,232,8
+                    IDC_STATIC,4,88,232,8
 END
 
 IDD_SETCUSTSTAT DIALOGEX 0, 0, 187, 51
