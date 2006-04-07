@@ -30,19 +30,12 @@ static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 	tmi.position=mi->position;
 	tmi.pszName=mi->pszName;
 	
-	if(mi->flags&CMIF_ROOTPOPUP||mi->flags&CMIF_CHILDPOPUP)
-		tmi.root=(int)mi->pszPopupName;
+	if(mi->flags&CMIF_ROOTPOPUP||mi->flags&CMIF_CHILDPOPUP)	tmi.root=(int)mi->pszPopupName;
 	{
 		lpFrameMenuExecParam fmep;
 		fmep=(lpFrameMenuExecParam)malloc(sizeof(FrameMenuExecParam));
 		if (fmep==NULL){return(0);};
-#ifdef _DEBUG
-		{
-			char buf[250];
-			sprintf(buf,"fmep alloced: %x \n",fmep);
-			TRACE(buf);
-		}
-#endif
+		memset(fmep,0,sizeof(FrameMenuExecParam));
 		fmep->szServiceName=mir_strdup(mi->pszService);
 		fmep->Frameid=mi->popupPosition;
 		fmep->param1=(int)mi->pszContactOwner;
@@ -59,14 +52,6 @@ static int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 	lpFrameMenuExecParam fmep;
 	fmep=(lpFrameMenuExecParam)CallService(MO_MENUITEMGETOWNERDATA,wParam,lParam);
 	if (fmep!=NULL){
-//#ifdef _DEBUG
-//		{
-//			char buf[250];
-//			sprintf(buf, "RemoveContextMenu: fmep=%x frameid=%x, service=%s\n",fmep,fmep->Frameid,fmep->szServiceName);
-//			TRACE(buf);
-//		}
-//#endif		
-		
 		if (fmep->szServiceName!=NULL){
 			mir_free(fmep->szServiceName);
 			fmep->szServiceName=NULL;

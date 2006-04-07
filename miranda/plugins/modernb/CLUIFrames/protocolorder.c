@@ -30,7 +30,7 @@ int EnumProc (const char *szSetting,LPARAM lParam)
 	if (szSetting==NULL){return(1);};
 	arrlen++;
 	settingname=(char **)realloc(settingname,arrlen*sizeof(char *));
-	settingname[arrlen-1]=strdup(szSetting);
+	settingname[arrlen-1]=_strdup(szSetting);
 	return(1);
 };
 
@@ -73,11 +73,7 @@ int CheckProtocolOrder()
 	char buf[10];
 	int ver;
 	
-	//curproto=0;
-	//curproto[1]='22';
 	protochanged=FALSE;
-//	TRACE("Calling CheckProtocolOrder\r\n");
-
 	ver=DBGetContactSettingDword(0,"Protocols","PrVer",-1);
 	if (ver!=PrVer){protochanged=TRUE;};
 	
@@ -101,7 +97,7 @@ int CheckProtocolOrder()
 	if (!protochanged)
 	{
 			for(i=0;i<StoredProtoCount;i++) {
-				itoa(i,buf,10);
+				_itoa(i,buf,10);
 				curproto=DBGetStringA(NULL,"Protocols",buf);
 				if (curproto==NULL){protochanged=TRUE;break;};
 				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)curproto)==0)
@@ -124,16 +120,16 @@ int CheckProtocolOrder()
 			v=0;
 			for(i=0;i<count;i++) {
 				if(protos[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
-				itoa(v,(char *)&buf,10);			
+				_itoa(v,(char *)&buf,10);			
 				DBWriteContactSettingString(0,"Protocols",(char *)&buf,protos[i]->szName);
 				
-				itoa(OFFSET_PROTOPOS+v,(char *)&buf,10);//save pos in protos
+				_itoa(OFFSET_PROTOPOS+v,(char *)&buf,10);//save pos in protos
 				
 				DBDeleteContactSetting(0,"Protocols",(char *)&buf);
 				DBWriteContactSettingDword(0,"Protocols",(char *)&buf,v);
 				
 
-				itoa(OFFSET_VISIBLE+v,(char *)&buf,10);//save default visible status
+				_itoa(OFFSET_VISIBLE+v,(char *)&buf,10);//save default visible status
 				DBDeleteContactSetting(0,"Protocols",(char *)&buf);
 				DBWriteContactSettingDword(0,"Protocols",(char *)&buf,1);
 				
@@ -175,7 +171,7 @@ int FillTree(HWND hwnd)
 
 			for(i=0;i<count;i++) {
 				//if(protos[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
-				itoa(i,	(char *)&buf,10);
+				_itoa(i,	(char *)&buf,10);
 				szSTName=DBGetStringA(0,"Protocols",(char *)&buf);
 				if (szSTName==NULL){continue;};
 				
@@ -187,10 +183,10 @@ int FillTree(HWND hwnd)
 				PD->RealName=szSTName;
 				
 				
-				itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
+				_itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
 				PD->show=(boolean)DBGetContactSettingDword(0,"Protocols",(char *)&buf,1);
 
-				itoa(OFFSET_PROTOPOS+i,(char *)&buf,10);
+				_itoa(OFFSET_PROTOPOS+i,(char *)&buf,10);
 				PD->protopos=DBGetContactSettingDword(0,"Protocols",(char *)&buf,-1);
 					
 				tvis.item.lParam=(LPARAM)PD;
@@ -284,15 +280,15 @@ static BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							count=0;
 
 							while(tvi.hItem!=NULL) {
-								itoa(count,buf,10);
+								_itoa(count,buf,10);
 								TreeView_GetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvi);
 								DBWriteContactSettingString(NULL,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->RealName);
 								
-								itoa(OFFSET_PROTOPOS+count,(char *)&buf,10);//save pos in protos
+								_itoa(OFFSET_PROTOPOS+count,(char *)&buf,10);//save pos in protos
 								
 								DBWriteContactSettingDword(0,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->protopos);
 
-								itoa(OFFSET_VISIBLE+count,(char *)&buf,10);//save pos in protos
+								_itoa(OFFSET_VISIBLE+count,(char *)&buf,10);//save pos in protos
 								
 								DBWriteContactSettingDword(0,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->show);
 								

@@ -199,7 +199,6 @@ void ReloadExtraIcons()
 		SetNewExtraColumnCount();
 		NotifyEventHooks(hExtraImageListRebuilding,0,0);
 		ImageCreated=TRUE;
-		TRACE("ReloadExtraIcons Done\r\n");
 	}
 
 };
@@ -296,6 +295,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 			DBVARIANT dbv={0};
 			boolean showweb;	
 			showweb=FALSE;
+      
 			if (ExtraToColumnNum(EXTRA_ICON_WEB)!=-1)
 			{
 
@@ -312,7 +312,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 					}
 				}
 
-				PostMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_WEB),(showweb)?2:0xFF));	
+				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_WEB),(showweb)?2:0xFF));	
 				if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
 			}
 		}		
@@ -334,6 +334,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 						if (dbv.pszVal) mir_free(dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}
+					DBFreeVariant(&dbv);
 				}
 				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_EMAIL),(showemail)?0:0xFF));	
 				if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
@@ -355,6 +356,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 						if (dbv.pszVal) mir_free(dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}
+					DBFreeVariant(&dbv);
 				}
 				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_SMS),(showsms)?1:0xFF));	
 				if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
@@ -379,15 +381,8 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	} while(hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0));
 
 	tick=GetTickCount()-tick;
-	if (tick>0)
-	{
-		char buf[256];
-		mir_snprintf(buf,sizeof(buf),"SetAllExtraIcons %d ms, for %x\r\n",tick,inphcont);
-		TRACE(buf);
-		DBWriteContactSettingDword((HANDLE)0,"CLUI","PF:Last SetAllExtraIcons Time:",tick);
-	}	
 	ON_SETALLEXTRAICON_CYCLE=0;
-	//skinInvalidateRect(hwndList,NULL,FALSE);
+	skinInvalidateRect(hwndList,NULL,FALSE);
 	Sleep(0);
 
 
