@@ -1,6 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by tabsrmm.mak
 
-.\container.c : \
+.\chat\clist.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -8,11 +8,14 @@
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
@@ -21,13 +24,459 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\chat\colorchooser.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\chat\log.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\chat\main.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\chat\manager.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\chat\message.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\chat\options.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\chat\services.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\chat\tools.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\chat\window.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\container.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
-	".\m_popup.h"\
 	".\m_popupw.h"\
+	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
 	".\msgdlgutils.h"\
@@ -37,125 +486,225 @@
 	
 
 .\containeroptions.c : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_popup.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
 	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
 	
 
 eventpopups.c : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_icq.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_popup.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
 	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
 	
 
 .\formatting.cpp : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
 	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
 	
 
 .\hotkeyhandler.c : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_popup.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
 	".\m_popupw.h"\
+	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
 	
 
 ImageDataObject.cpp : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
 	".\ImageDataObject.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
 	
 
 msgdialog.c : \
@@ -171,7 +720,9 @@ msgdialog.c : \
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
@@ -180,15 +731,20 @@ msgdialog.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
-	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -205,11 +761,14 @@ msgdlgutils.c : \
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
@@ -218,14 +777,19 @@ msgdlgutils.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
-	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -234,30 +798,43 @@ msgdlgutils.c : \
 	
 
 msglog.c : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_fontservice.h"\
+	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_MathModule.h"\
-	".\m_popup.h"\
+	".\m_metacontacts.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -266,64 +843,89 @@ msglog.c : \
 	
 
 msgoptions.c : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\commonheaders.h"\
-	".\m_avatars.h"\
-	".\m_fontservice.h"\
-	".\m_ieview.h"\
-	".\m_MathModule.h"\
-	".\m_tabsrmm.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\templates.h"\
-	
-
-msgs.c : \
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_fontservice.h"\
+	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
-	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
+
+msgs.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_MathModule.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
 	".\m_toptoolbar.h"\
 	".\m_updater.h"\
@@ -334,25 +936,46 @@ msgs.c : \
 	
 
 .\selectcontainer.c : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
 	".\msgs.h"\
+	".\nen.h"\
 	".\templates.h"\
 	
 
@@ -364,11 +987,14 @@ sendqueue.c : \
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
@@ -377,12 +1003,19 @@ sendqueue.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_popup.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -392,200 +1025,353 @@ sendqueue.c : \
 	
 
 srmm.c : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\commonheaders.h"\
-	".\m_avatars.h"\
-	".\m_ieview.h"\
-	".\m_popup.h"\
-	".\m_tabsrmm.h"\
-	".\msgs.h"\
-	".\templates.h"\
-	".\URLCtrl.h"\
-	
-
-.\tabctrl.c : \
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\commonheaders.h"\
-	".\m_avatars.h"\
-	".\m_tabsrmm.h"\
-	".\msgs.h"\
-	".\templates.h"\
-	
-
-templates.c : \
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_popup.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
 	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	".\URLCtrl.h"\
 	
 
-.\themes.c : \
+.\tabctrl.c : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
+
+templates.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+
+.\themes.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
 	".\templates.h"\
 	
 
 trayicon.c : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_popup.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
 	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
 	".\m_toptoolbar.h"\
+	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
 	
 
 TSButton.c : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
 	".\msgs.h"\
+	".\nen.h"\
 	".\templates.h"\
 	
 
 .\URLCtrl.c : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
+	".\functions.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
 	".\URLCtrl.h"\
 	
 
 userprefs.c : \
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_flash.h"\
 	".\m_ieview.h"\
-	".\m_popup.h"\
+	".\m_metacontacts.h"\
 	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -601,11 +1387,6 @@ userprefs.c : \
 	".\msgwindow.rc"\
 	".\res\checked.ico"\
 	".\res\expand.ico"\
-	".\res\leftarrow.ico"\
-	".\res\pulldown.ico"\
-	".\res\pullup.ico"\
-	".\res\rightarrow.ico"\
 	".\res\unchecked.ico"\
-	".\res\xstatus.bmp"\
 	".\resource.rc"\
 	
