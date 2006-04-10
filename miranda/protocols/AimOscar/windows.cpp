@@ -126,6 +126,11 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
 			unsigned short timer=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
 			SetDlgItemInt(hwndDlg, IDC_KA, timer,0);
+			unsigned long it=DBGetContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, 0);
+			unsigned long hours=it/60;
+			unsigned long minutes=it%60;
+			SetDlgItemInt(hwndDlg, IDC_IIH, hours,0);
+			SetDlgItemInt(hwndDlg, IDC_IIM, minutes,0);
 			CheckDlgButton(hwndDlg, IDC_DC, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 0));//Message Delivery Confirmation
             CheckDlgButton(hwndDlg, IDC_FP, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0));//force proxy
 			CheckDlgButton(hwndDlg, IDC_AT, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0));//Account Type Icons
@@ -134,6 +139,8 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_DM, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DM, 0));//Disable Sending Mode Message
 			CheckDlgButton(hwndDlg, IDC_FI, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0));//Format imcoming messages
 			CheckDlgButton(hwndDlg, IDC_FO, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0));//Format outgoing messages
+			CheckDlgButton(hwndDlg, IDC_WEBSUPPORT, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AL, 0));
+			CheckDlgButton(hwndDlg, IDC_II, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0));//Instant Idle
 			break;
 		}
 		case WM_COMMAND:
@@ -288,6 +295,40 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					else
 						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0);
 					//End Format Outgoing Messages
+
+					if (!IsDlgButtonChecked(hwndDlg, IDC_WEBSUPPORT) && DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AL, 0)) {
+                        aim_links_unregister();
+                    }
+                    if (IsDlgButtonChecked(hwndDlg, IDC_WEBSUPPORT))
+					{
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AL, 1);
+                        aim_links_init();
+					}
+					else
+                        aim_links_destroy();
+					//Instant Idle
+					unsigned long hours=GetDlgItemInt(hwndDlg, IDC_IIH,0,0);
+					unsigned short minutes=GetDlgItemInt(hwndDlg, IDC_IIM,0,0);
+					if(minutes>59)
+						minutes=59;
+					if (IsDlgButtonChecked(hwndDlg, IDC_II))
+					{
+						unsigned long it = DBGetContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, 0);
+						if(it!=hours*60+minutes)
+							if (conn.state==1)
+								aim_set_idle(hours * 60 * 60 + minutes * 60);
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 1);
+					}
+					else
+					{
+						int ii=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0);
+						if(ii)
+							if (conn.state==1)
+								aim_set_idle(0);
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0);
+					}
+					DBWriteContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, hours*60+minutes);
+					//End
 				}
             }
             break;

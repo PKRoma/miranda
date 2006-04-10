@@ -499,12 +499,15 @@ void strip_html(char *dest, const char *src, size_t destsize)
     }
     rptr = dest;
 	while ((ptr = strstr(rptr, "<A HREF=\"")) || (ptr = strstr(rptr, "<a href=\""))) {
-        ptrl = ptr + 8;
-		memmove(ptr, ptrl + 1, strlen(ptrl + 1) + 1);
+		memcpy(ptr,"[link: ",7);
+		ptrl=ptr+7;
+		memmove(ptrl, ptrl + 1, strlen(ptrl + 1) + 1);
         if ((ptrl = strstr(ptr, "\">"))) {
-			memmove(ptrl,ptrl+2,strlen(ptrl)+1);
+			memmove(ptrl+9,ptrl+2,strlen(ptrl+2)+1);
+			memcpy(ptrl+1," title: ",8);
 			if ((ptr = strstr(ptrl, "</A")) || (ptr = strstr(ptrl, "</a"))) {
-				memmove(ptrl, ptr + 4, strlen(ptr + 4) + 1);
+				*ptr=']';
+				memmove(ptr+1, ptr + 4, strlen(ptr + 4) + 1);
 			}
 		}
         else
@@ -618,10 +621,10 @@ void strip_html(wchar_t *dest, const wchar_t *src, size_t size)
         ptrl = ptr;
     }
 }
-void strip_special_chars(char *dest, const char *src, size_t destsize)
+void strip_special_chars(char *dest, const char *src, size_t destsize, HANDLE hContact)
 {
 	DBVARIANT dbv;
-	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		char *ptr;
 		mir_snprintf(dest, destsize, "%s", src);
@@ -1031,7 +1034,7 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 			if(descr=fopen(path, "wb"))
 			{
 				char html[MSG_LEN*2];
-				strip_special_chars(html,msg,sizeof(html));
+				strip_special_chars(html,msg,sizeof(html),NULL);
 				char txt[MSG_LEN*2];
 				CCSDATA ccs;
 				PROTORECVEVENT pre;
@@ -1102,7 +1105,7 @@ void write_profile(HANDLE hContact,char* sn,char* msg)
 			{
 				char* norm_sn=normalize_name(sn);
 				char html[MSG_LEN*2];
-				strip_special_chars(html,msg,sizeof(html));
+				strip_special_chars(html,msg,sizeof(html),0);
 				fwrite("<h3>",1,4,descr);
 				fwrite(norm_sn,1,strlen(norm_sn),descr);
 				fwrite("'s Profile:</h3>",1,16,descr);
@@ -1118,56 +1121,57 @@ void write_profile(HANDLE hContact,char* sn,char* msg)
 		}
 	}
 }
-void get_error(unsigned short error_code)
+void get_error(unsigned short* error_code)
 {
-	if(error_code==0x01)
-		MessageBox( NULL, "Invalid SNAC header.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x02)
-		MessageBox( NULL, "Server rate limit exceeded.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x03)
-		MessageBox( NULL, "Client rate limit exceeded.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x04)
-		MessageBox( NULL, "Recipient is not logged in.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x05)
-		MessageBox( NULL, "Requested service is unavailable.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x06)
-		MessageBox( NULL, "Requested service is not defined.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x07)
-		MessageBox( NULL, "You sent obsolete SNAC.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x08)
-		MessageBox( NULL, "Not supported by server.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x09)
-		MessageBox( NULL, "Not supported by the client.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x0a)
-		MessageBox( NULL, "Refused by client.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x0b)
-		MessageBox( NULL, "Reply too big.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x0c)
-		MessageBox( NULL, "Response lost.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x0d)
-		MessageBox( NULL, "Request denied.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x0e)
-		MessageBox( NULL, "Incorrect SNAC format.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x0f)
-		MessageBox( NULL, "Insufficient rights.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x10)
-		MessageBox( NULL, "Recipient blocked.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x11)
-		MessageBox( NULL, "Sender too evil.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x12)
-		MessageBox( NULL, "Reciever too evil.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x13)
-		MessageBox( NULL, "User temporarily unavailable.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x14)
-		MessageBox( NULL, "No match.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x15)
-		MessageBox( NULL, "List overflow.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x16)
-		MessageBox( NULL, "Request ambiguous.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x17)
-		MessageBox( NULL, "Server queue full.", Translate("Buddylist Error"), MB_OK );
-	else if(error_code==0x18)
-		MessageBox( NULL, "Not while on AOL.", Translate("Buddylist Error"), MB_OK );
+	*error_code=htons(*error_code);
+	if(*error_code==0x01)
+		MessageBox( NULL, "Invalid SNAC header.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x02)
+		MessageBox( NULL, "Server rate limit exceeded.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x03)
+		MessageBox( NULL, "Client rate limit exceeded.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x04)
+		MessageBox( NULL, "Recipient is not logged in.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x05)
+		MessageBox( NULL, "Requested service is unavailable.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x06)
+		MessageBox( NULL, "Requested service is not defined.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x07)
+		MessageBox( NULL, "You sent obsolete SNAC.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x08)
+		MessageBox( NULL, "Not supported by server.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x09)
+		MessageBox( NULL, "Not supported by the client.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x0a)
+		MessageBox( NULL, "Refused by client.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x0b)
+		MessageBox( NULL, "Reply too big.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x0c)
+		MessageBox( NULL, "Response lost.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x0d)
+		MessageBox( NULL, "Request denied.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x0e)
+		MessageBox( NULL, "Incorrect SNAC format.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x0f)
+		MessageBox( NULL, "Insufficient rights.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x10)
+		MessageBox( NULL, "Recipient blocked.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x11)
+		MessageBox( NULL, "Sender too evil.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x12)
+		MessageBox( NULL, "Reciever too evil.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x13)
+		MessageBox( NULL, "User temporarily unavailable.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x14)
+		MessageBox( NULL, "No match.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x15)
+		MessageBox( NULL, "List overflow.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x16)
+		MessageBox( NULL, "Request ambiguous.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x17)
+		MessageBox( NULL, "Server queue full.", Translate("AimOscar Error"), MB_OK );
+	else if(*error_code==0x18)
+		MessageBox( NULL, "Not while on AOL.", Translate("AimOscar Error"), MB_OK );
 }
 void aim_util_base64decode(char *in, char **out)
 {

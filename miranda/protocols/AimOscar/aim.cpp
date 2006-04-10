@@ -1,12 +1,12 @@
 #include "aim.h"
 PLUGINLINK *pluginLink;
-#define AIM_OSCAR_VERSION "\0\0\0\x03"
-char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.3";
+#define AIM_OSCAR_VERSION "\0\0\0\x04"
+char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.4";
 char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
-	"AIM OSCAR Plugin - Beta 3",
-	PLUGIN_MAKE_VERSION(0,0,0,3),
+	"AIM OSCAR Plugin - Beta 4",
+	PLUGIN_MAKE_VERSION(0,0,0,4),
 	"Provides basic support for AOL® OSCAR Instant Messenger protocol. [Built: "__DATE__" "__TIME__"]",
 	"Aaron Myles Landwehr",
 	"aaron@snaphat.com",
@@ -128,6 +128,7 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		MessageBox( NULL, "AimOSCAR has detected that a buffer overrun has occured in it's 'conn.hookEvent' array. Please recompile with a larger HOOKEVENT_SIZE declared. AimOSCAR will now shut Miranda-IM down.", AIM_PROTOCOL_NAME, MB_OK );
 		exit(1);
 	}
+	aim_links_init();
 	offline_contacts();
 	return 0;
 }
@@ -174,6 +175,7 @@ int PreShutdown(WPARAM wParam,LPARAM lParam)
 }
 extern "C" int __declspec(dllexport) Unload(void)
 {
+	aim_links_destroy();
 	free(CWD);
 	free(conn.szModeMsg);
 	free(COOKIE);

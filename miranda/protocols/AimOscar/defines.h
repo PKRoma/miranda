@@ -30,6 +30,8 @@
 #define AIM_KEY_FI						"FormatIncoming"//html->bbcodes
 #define AIM_KEY_FO						"FormatOutgoing"//bbcodes->html
 #define AIM_KEY_FR						"FirstRun"
+#define AIM_KEY_II						"InstantIdle"
+#define AIM_KEY_IIT						"InstantIdleTS"
 //Other plugin Option Keys
 #define OTH_KEY_AI						"AwayIgnore"
 #define OTH_KEY_AD						"AwayDefault"
@@ -44,6 +46,7 @@
 #define AIM_KEY_LA						"LastAwayChange"
 #define AIM_MOD_IG						"ID2Group"
 #define AIM_MOD_GI						"Group2ID"
+#define AIM_KEY_AL						"AIMLinks"// aim: links support
 //Contact Keys
 #define AIM_KEY_BI						"BuddyId"
 #define AIM_KEY_GI						"GroupId"

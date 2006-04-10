@@ -185,16 +185,18 @@ void __cdecl aim_protocol_negotiation()
 						snac_supported_families(snac->subgroup);
 						snac_supported_family_versions(snac->subgroup);
 						snac_rate_limitations(snac->subgroup);
+						snac_error(snac->subgroup,buf);
 					}
 					else if(snac->service==0x0002)
 					{
 						snac_received_info(snac->subgroup,buf,htons(flap->len));
+						snac_error(snac->subgroup,buf);
 					}
 					else if(snac->service==0x0003)
 					{
 						snac_user_online(snac->subgroup,buf);
 						snac_user_offline(snac->subgroup,buf);
-						snac_buddylist_error(snac->subgroup,buf);
+						snac_error(snac->subgroup,buf);
 					}
 					else if(snac->service==0x0004)
 					{
@@ -202,11 +204,12 @@ void __cdecl aim_protocol_negotiation()
 						snac_message_accepted(snac->subgroup,buf);
 						snac_received_message(snac->subgroup,buf,htons(flap->len));
 						snac_typing_notification(snac->subgroup,buf);
+						snac_error(snac->subgroup,buf);
 					}
 					else if(snac->service==0x0013)
 					{
 						snac_contact_list(snac->subgroup,buf,htons(flap->len));
-						snac_buddylist_error(snac->subgroup,buf);
+						snac_error(snac->subgroup,buf);
 					}
 				}
 				else if(flap->type==4)

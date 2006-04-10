@@ -111,11 +111,12 @@ int aim_request_icbm()
 }
 int aim_set_icbm()
 {
+	//"\x1f\x40"
 	char buf[MSG_LEN*2];
 	aim_writesnac(0x04,0x02,6,buf);
 	aim_writegeneric(2,"\0\0",buf);//channel
 	aim_writegeneric(4,"\0\0\0\x0b",buf);//flags
-	aim_writegeneric(2,"\x1f\x40",buf);//max snac size
+	aim_writegeneric(2,"\x0f\xa0",buf);//max snac size
 	aim_writegeneric(2,"\x03\xe7",buf);//max sender warning level
 	aim_writegeneric(2,"\x03\xe7",buf);//max receiver warning level
 	aim_writegeneric(2,"\0\0",buf);//min msg interval
@@ -319,7 +320,7 @@ int aim_send_unicode_message(char* sn,wchar_t* msg)
 	char caps_frag[]={0x05,0x01,0x00,0x03,0x01,0x01,0x01};
 	char msg_frag[MSG_LEN*2];
 	memcpy(msg_frag,"\x01\x01\0\0\0\0\0\0\0",8);//second before last two bytes are charset if 0xFFFF then triton doesn't accept message
-	char tlv_frag[MSG_LEN];
+	char tlv_frag[MSG_LEN*2];
 	unsigned short sn_length=strlen(sn);
 	unsigned short msg_length=htons(wcslen(msg)*2+4);//+1 for first unicode byte
 	char buf[MSG_LEN*2];
@@ -794,6 +795,7 @@ int aim_typing_notification(char* sn,unsigned short type)
 int aim_set_idle(unsigned long seconds)
 {
 	char buf[MSG_LEN*2];
+	seconds=htonl(seconds);
 	aim_writesnac(0x01,0x11,0x06,buf);
 	aim_writegeneric(4,(char*)&seconds,buf);
 	if(aim_sendflap(0x02,conn.packet_offset,buf)==0)

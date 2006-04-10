@@ -182,6 +182,11 @@ void snac_icbm_limitations(unsigned short subgroup)//family 0x0004
 				aim_set_away(conn.szModeMsg);
 
 		}
+		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II,0))
+		{
+			unsigned long time = DBGetContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, 0);
+			aim_set_idle(time*60);
+		}
 		aim_client_ready();
 		add_contacts_to_groups();//woo
 		//delete_all_empty_groups();
@@ -585,14 +590,14 @@ void snac_user_offline(unsigned short subgroup, char* buf)//family 0x0003
 			offline_contact(hContact);
 	}
 }
-void snac_buddylist_error(unsigned short subgroup, char* buf)//family 0x0003
+void snac_error(unsigned short subgroup, char* buf)//family 0x0003 or 0x0004
 {
 	if(subgroup==0x0001)
 	{
 		int offset=0;
-		unsigned short error_code=buf[SNAC_SIZE];
-		error_code=htons(error_code);
-		ForkThread((pThreadFunc)get_error,&error_code);
+		unsigned char* error_code=new unsigned char[2];
+		memcpy(error_code,&buf[SNAC_SIZE],2);
+		ForkThread((pThreadFunc)get_error,error_code);
 	}
 }
 void snac_contact_list(unsigned short subgroup, char* buf, int flap_length)//family 0x0013
@@ -897,7 +902,9 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 				if(away_time>msg_time&&conn.szModeMsg&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
 				{
 					char* temp=new char[strlen(conn.szModeMsg)+20];
-					mir_snprintf(temp,strlen(conn.szModeMsg)+20,"%s %s",Translate("[Auto-Response]:"),conn.szModeMsg);
+					strip_special_chars(temp,conn.szModeMsg,strlen(conn.szModeMsg+20),hContact);
+					char* temp2=new char[strlen(temp)+20];
+					mir_snprintf(temp2,strlen(temp)+20,"%s %s",Translate("[Auto-Response]:"),temp);
 					DBEVENTINFO dbei;
 					ZeroMemory(&dbei, sizeof(dbei));
 					dbei.cbSize = sizeof(dbei);
@@ -905,11 +912,12 @@ void snac_received_message(unsigned short subgroup, char* buf, int flap_length)/
 					dbei.timestamp = (DWORD)time(NULL);
 					dbei.flags = DBEF_SENT;
 					dbei.eventType = EVENTTYPE_MESSAGE;
-					dbei.cbBlob = strlen(temp) + 1;
-					dbei.pBlob = (PBYTE) temp;
+					dbei.cbBlob = strlen(temp2) + 1;
+					dbei.pBlob = (PBYTE) temp2;
 					CallService(MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
-					aim_send_plaintext_message(sn,conn.szModeMsg,1);
+					aim_send_plaintext_message(sn,temp,1);
 					delete temp;
+					delete temp2;
 				}
 				DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_LM, (DWORD)time(NULL));
 			}

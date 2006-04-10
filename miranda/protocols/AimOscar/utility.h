@@ -39,7 +39,7 @@ void offline_contacts();
 char *normalize_name(const char *s);
 void strip_html(char *dest, const char *src, size_t destsize);
 void strip_html(wchar_t *dest, const wchar_t *src, size_t size);//wide char version
-void strip_special_chars(char *dest, const char *src, size_t destsize);
+void strip_special_chars(char *dest, const char *src, size_t destsize,HANDLE hContact);
 char* strip_carrots(char *src);
 wchar_t* strip_carrots(wchar_t *src);//wide char version
 char* strip_linebreaks(char *src);
@@ -58,7 +58,7 @@ void delete_module(char* module, HANDLE hContact);
 void delete_all_ids();
 void write_away_message(HANDLE hContact,char* sn,char* msg);
 void write_profile(HANDLE hContact,char* sn,char* msg);
-void get_error(unsigned short error_code);
+void get_error(unsigned short* error_code);
 void aim_util_base64decode(char *in, char **out);
 unsigned int aim_oft_checksum_file(char *filename);
 void long_ip_to_char_ip(unsigned long host, char* ip);

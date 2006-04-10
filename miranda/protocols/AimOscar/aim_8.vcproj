@@ -251,6 +251,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\links.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\md5.cpp"
 				>
 			</File>
@@ -350,6 +354,10 @@
 			</File>
 			<File
 				RelativePath=".\file.h"
+				>
+			</File>
+			<File
+				RelativePath=".\links.h"
 				>
 			</File>
 			<File

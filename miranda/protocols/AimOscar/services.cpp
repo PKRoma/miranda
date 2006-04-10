@@ -19,6 +19,9 @@ static int GetCaps(WPARAM wParam, LPARAM lParam)
 		case PFLAGNUM_5:                
             ret = PF2_ONTHEPHONE;
             break;
+		case PFLAG_MAXLENOFMESSAGE:
+            ret = 1024;
+            break;
 		case PFLAG_UNIQUEIDSETTING:
             ret = (int) AIM_KEY_SN;
             break;
@@ -44,6 +47,8 @@ static int SetStatus(WPARAM wParam, LPARAM lParam)
 
 int IdleChanged(WPARAM wParam, LPARAM lParam)
 { 
+	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0))
+		return 0;
 	if (conn.state!=1)
 	{
 		conn.idle=0;
@@ -129,6 +134,7 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 			{
 				wchar_t* html_umsg=new wchar_t[MSG_LEN];
 				bbcodes_to_html(html_umsg,umsg,wcslen(umsg)+1);
+			unsigned long ii=	wcslen(umsg)+1;
 				if(aim_send_unicode_message(dbv.pszVal,html_umsg))
 				{
 					delete umsg;
@@ -228,6 +234,8 @@ static int GetAwayMsg(WPARAM wParam, LPARAM lParam)
 		return 0;
 	DBVARIANT dbv;
 	CCSDATA* ccs = (CCSDATA*)lParam;
+	if(ID_STATUS_OFFLINE==DBGetContactSettingWord(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE))
+		return 0;
 	DBGetContactSetting((HANDLE)ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
 	if(dbv.pszVal)
 	{

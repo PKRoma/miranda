@@ -57,7 +57,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "AIM Options",IDC_STATIC,7,112,157,92
+    GROUPBOX        "AIM Options",IDC_STATIC,7,103,157,104
     EDITTEXT        IDC_SN,64,17,93,15,ES_LOWERCASE | ES_AUTOHSCROLL
     EDITTEXT        IDC_NK,64,37,93,15,ES_AUTOHSCROLL
     EDITTEXT        IDC_PW,64,57,93,15,ES_PASSWORD | ES_AUTOHSCROLL
@@ -66,23 +66,29 @@ BEGIN
     LTEXT           "Display Name:",IDC_STATIC,10,39,48,15
     LTEXT           "Password:",IDC_STATIC,22,59,35,15
     LTEXT           "Hostname:",IDC_STATIC,21,80,38,12
-    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,124,130,13
-    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,138,143,13
-    CONTROL         "Convert Incoming Messages to BBCode",IDC_FI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,151,143,13
-    CONTROL         "Convert Outgoing Messages to HTML",IDC_FO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,164,143,13
-    CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,178,145,13
-    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,191,143,13
+    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,112,130,13
+    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,125,143,13
+    CONTROL         "Convert Incoming Messages to BBCode",IDC_FI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,138,143,13
+    CONTROL         "Convert Outgoing Messages to HTML",IDC_FO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,150,143,13
+    CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,163,145,13
+    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,176,143,13
+    CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,189,143,13
     GROUPBOX        "AIM User Details",IDC_STATIC,8,7,156,91
-    GROUPBOX        "Advanced Options",IDC_STATIC,168,7,156,91
-    EDITTEXT        IDC_KA,234,19,20,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "AimOSCAR must be reconnected  for this option to take effect.",IDC_MASQ,201,77,115,18,NOT WS_VISIBLE
+    GROUPBOX        "Advanced Options",IDC_STATIC,168,7,156,106
+    EDITTEXT        IDC_KA,234,19,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
+    LTEXT           "AimOSCAR must be reconnected  for this option to take effect.",IDC_MASQ,202,91,115,18,NOT WS_VISIBLE
     LTEXT           "Keep Alive Timer:",IDC_STATIC,173,21,56,15
     LTEXT           "(seconds)",IDC_STATIC,255,21,32,12
     LTEXT           "File Transfer Grace Period:",IDC_STATIC,174,36,87,12
-    EDITTEXT        IDC_GP,262,35,20,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_GP,261,35,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
     LTEXT           "(seconds)",IDC_STATIC,285,37,32,12
-    CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,173,49,130,13
-    CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,173,63,143,13
+    CONTROL         "Instant Idle:",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,51,52,13
+    EDITTEXT        IDC_IIH,226,52,28,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
+    LTEXT           "(hours)",IDC_STATIC,255,55,25,12
+    LTEXT           "(minutes)",IDC_STATIC,292,55,30,12
+    EDITTEXT        IDC_IIM,279,52,12,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
+    CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,65,130,11
+    CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,77,143,13
 END
 
 IDD_INFO DIALOGEX 0, 0, 193, 127
