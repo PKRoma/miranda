@@ -36,7 +36,8 @@ SRC =	aim.cpp \
 	direct_connect.cpp \
 	file.cpp \
 	windows.cpp \
-	strl.cpp 
+	strl.cpp \
+	links.cpp
 OBJ =	$(SRC:.cpp=.o)
 RES = resource.res
 HDR =	aim.h \
@@ -54,7 +55,8 @@ HDR =	aim.h \
 	resource.h \
 	windows. h \
 	m_cluiframes.h \
-	strl.h
+	strl.h \
+	links.h
 
 LIB = -lwsock32
 CC = g++
