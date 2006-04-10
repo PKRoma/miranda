@@ -147,6 +147,10 @@ SOURCE=.\strl.cpp
 
 SOURCE=.\windows.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\links.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -214,6 +218,10 @@ SOURCE=.\strl.h
 # Begin Source File
 
 SOURCE=.\windows.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\links.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

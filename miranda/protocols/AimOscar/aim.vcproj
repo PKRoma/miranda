@@ -205,6 +205,9 @@
 			<File
 				RelativePath=".\windows.cpp">
 			</File>
+			<File
+				RelativePath=".\links.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -284,6 +287,9 @@
 			</File>
 			<File
 				RelativePath=".\windows.h">
+			</File>
+			<File
+				RelativePath=".\links.h">
 			</File>
 		</Filter>
 		<File
