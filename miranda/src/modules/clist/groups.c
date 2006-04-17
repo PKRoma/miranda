@@ -258,7 +258,7 @@ static int RenameGroupWithMove(int groupId, const TCHAR *szName, int move)
 			if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
 				break;
 			if ( !_tcsncmp(dbv.ptszVal + 1, oldName, len) && dbv.ptszVal[len + 1] == '\\' && _tcschr(dbv.ptszVal + len + 2, '\\') == NULL) {
-				mir_sntprintf( szNewName, SIZEOF(szNewName), _T("%s\\%s"), szName, dbv.pszVal + len + 2 );
+				mir_sntprintf( szNewName, SIZEOF(szNewName), _T("%s\\%s"), szName, dbv.ptszVal + len + 2 );
 				RenameGroupWithMove(i, szNewName, 0);   //luckily, child groups will never need reordering
 			}
 			DBFreeVariant(&dbv);
