@@ -163,7 +163,14 @@ int aim_activate_list()
 int aim_set_caps()
 {
 	int i=1;
-	char buf[SNAC_SIZE+TLV_HEADER_SIZE+AIM_CAPS_LENGTH*7];
+	char* send_buf=0;
+	DBVARIANT dbv;
+	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, &dbv))
+	{
+		send_buf=strip_linebreaks(dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*7+strlen(AIM_MSG_TYPE)+strlen(send_buf)];
 	char temp[AIM_CAPS_LENGTH*7];
 	memcpy(temp,AIM_CAP_ICQ_SUPPORT,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_RECEIVE_FILES,AIM_CAPS_LENGTH);
@@ -175,20 +182,23 @@ int aim_set_caps()
 		memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HIPTOP,AIM_CAPS_LENGTH);
 	aim_writesnac(0x02,0x04,6,buf);
 	aim_writetlv(0x05,AIM_CAPS_LENGTH*i,temp,buf);
-	DBVARIANT dbv;
-	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, &dbv))
+	if (send_buf)
 	{
 		aim_writetlv(0x01,strlen(AIM_MSG_TYPE),AIM_MSG_TYPE,buf);
-		char* send_buf=strldup(dbv.pszVal,strlen(dbv.pszVal));
-		send_buf=strip_linebreaks(send_buf);
 		aim_writetlv(0x02,strlen(send_buf),send_buf,buf);
 		DBFreeVariant(&dbv);
 		delete[] send_buf;
 	}
 	if(aim_sendflap(0x02,conn.packet_offset,buf)==0)
+	{
+		delete[] buf;
 		return 0;
+	}
 	else
+	{
+		delete[] buf;
 		return -1;
+	}
 }
 int aim_set_profile(char *msg)//user info
 {
