@@ -82,3 +82,15 @@ size_t wcslcpy(wchar_t *dst, const wchar_t *src, size_t siz)
 
 	return(s - src - 1);	/* count does not include NUL */
 }
+char* strldup(const char* src,size_t siz)
+{
+	char* dst=new char[siz+1];
+	memcpy(dst,src,siz+1);
+	return dst;
+}
+wchar_t* wcsldup(const wchar_t* src,size_t siz)
+{
+	wchar_t* dst=new wchar_t[siz+1];
+	memcpy(dst,src,siz*2+2);
+	return dst;
+}

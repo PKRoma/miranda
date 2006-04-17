@@ -49,6 +49,7 @@ void __cdecl aim_keepalive_thread(void* fa)
 void message_box_thread(char* data)
 {
 	MessageBox( NULL, Translate(data), AIM_PROTOCOL_NAME, MB_OK );
+	delete[] data;
 }
 void set_status_thread(int status)
 {
@@ -120,7 +121,7 @@ void accept_file_thread(char* data)//buddy sending file
 	DBVARIANT dbv;
 	if (!DBGetContactSetting(*hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
-		sn= _strdup(dbv.pszVal);
+		sn= strldup(dbv.pszVal,strlen(dbv.pszVal));
 		DBFreeVariant(&dbv);
 	}
 	else
@@ -163,7 +164,7 @@ void accept_file_thread(char* data)//buddy sending file
 			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
 			ForkThread(aim_dc_helper,*hContact);
 		}
-		hDirect=aim_peer_connect(local_ip,port);			
+		hDirect=aim_peer_connect(local_ip,port);
 		if(hDirect)
 		{
 			aim_accept_file(sn,cookie);
@@ -177,7 +178,7 @@ void accept_file_thread(char* data)//buddy sending file
 			aim_file_redirected_request(sn,cookie);
 		}
 	}
-	free(sn);
+	delete[] sn;
 }
 
 void redirected_file_thread(char* blob)//we are sending file
@@ -236,7 +237,7 @@ void redirected_file_thread(char* blob)//we are sending file
 			ForkThread(aim_proxy_helper,*hContact);
 		}
 	}
-	free(blob);
+	delete[] blob;
 }
 void proxy_file_thread(char* blob)//buddy sending file here
 {
@@ -253,5 +254,5 @@ void proxy_file_thread(char* blob)//buddy sending file here
 		DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,proxy_ip);
 		ForkThread(aim_proxy_helper,*hContact);
 	}
-	free(blob);
+	delete[] blob;
 }

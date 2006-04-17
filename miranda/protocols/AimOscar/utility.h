@@ -27,6 +27,7 @@
 #include <m_clui.h>
 #include "defines.h"
 #include "connection.h"
+#include "conv.h"
 #include "resource.h"
 void broadcast_status(int status);
 void start_connection(int initial_status);
@@ -37,14 +38,6 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 void offline_contact(HANDLE hContact);
 void offline_contacts();
 char *normalize_name(const char *s);
-void strip_html(char *dest, const char *src, size_t destsize);
-void strip_html(wchar_t *dest, const wchar_t *src, size_t size);//wide char version
-void strip_special_chars(char *dest, const char *src, size_t destsize,HANDLE hContact);
-char* strip_carrots(char *src);
-wchar_t* strip_carrots(wchar_t *src);//wide char version
-char* strip_linebreaks(char *src);
-void strip_nullvalues(char *dest, const char *src,int src_size);
-int utf8_decode(const WCHAR *from, char *to,int inlen);
 void msg_ack_success(HANDLE hContact);
 void execute_cmd(char* type,char* arg);
 void create_group(char *group, unsigned short group_id);
@@ -58,8 +51,6 @@ void delete_module(char* module, HANDLE hContact);
 void delete_all_ids();
 void write_away_message(HANDLE hContact,char* sn,char* msg);
 void write_profile(HANDLE hContact,char* sn,char* msg);
-void get_error(unsigned short* error_code);
-void aim_util_base64decode(char *in, char **out);
 unsigned int aim_oft_checksum_file(char *filename);
 void long_ip_to_char_ip(unsigned long host, char* ip);
 unsigned long char_ip_to_long_ip(char* ip);
@@ -84,9 +75,7 @@ void set_extra_icon(char* data);
 //char* get_default_group();
 //char* get_outer_group();
 void wcs_htons(wchar_t * ch);
-void __stdcall Utf8Decode( char* str, wchar_t** ucs2 );
-void html_to_bbcodes(char *dest, const char *src, size_t destsize);
-void html_to_bbcodes(wchar_t *dest, const wchar_t *src, size_t size);//wchar_t version
-void bbcodes_to_html(char *dest, const char *src, size_t destsize);
-void bbcodes_to_html(wchar_t *dest, const wchar_t *src, size_t size);//wchar_t version
+void assign_modmsg(char* msg);
+char* renew(char* src,int size, int size_chg);
+wchar_t* renew(wchar_t* src,int size, int size_chg);
 #endif

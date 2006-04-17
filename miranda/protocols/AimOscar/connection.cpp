@@ -6,7 +6,7 @@ CRITICAL_SECTION statusMutex;
 CRITICAL_SECTION connectionMutex;
 HANDLE aim_connect(char* server)
 {
-	char* server_dup=_strdup(server);
+	char* server_dup=strldup(server,strlen(server));
     NETLIBOPENCONNECTION ncon = { 0 };
 	char* host=strtok(server_dup,":");
 	char* port=strtok(NULL,":");
@@ -14,7 +14,7 @@ HANDLE aim_connect(char* server)
     ncon.szHost = host;
     ncon.wPort =atoi(port);
     HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) conn.hNetlib, (LPARAM) & ncon);
-	free(server_dup);
+	delete[] server_dup;
 	load_extra_icons();
 	return con;
 }
@@ -36,7 +36,7 @@ void __cdecl aim_connection_authorization()
 	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
 	{
         CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-        conn.password = _strdup(dbv.pszVal);
+        conn.password = strldup(dbv.pszVal,strlen(dbv.pszVal));
         DBFreeVariant(&dbv);
 	}
 	else
@@ -46,7 +46,7 @@ void __cdecl aim_connection_authorization()
 	}
 	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
-        conn.username = _strdup(dbv.pszVal);
+        conn.username = strldup(dbv.pszVal,strlen(dbv.pszVal));
         DBFreeVariant(&dbv);
     }
 	else
@@ -73,18 +73,17 @@ void __cdecl aim_connection_authorization()
 			unsigned short flap_length=0;
 			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
 			{
-				char buf[MSG_LEN*4];
 				struct flap_header* flap=(struct flap_header*)&packetRecv.buffer[packetRecv.bytesUsed];
 				flap_length+=FLAP_SIZE;
 				if(packetRecv.bytesAvailable<flap_length)//Part of the tcp packet missing go back and get it.
 					break;
-				ZeroMemory(buf,sizeof(buf));
 				if(!packetRecv.buffer)
 					break;
-				memcpy(buf,&packetRecv.buffer[flap_length],htons(flap->len));
 				flap_length+=htons(flap->len);
 				if(packetRecv.bytesAvailable<flap_length)//Part of the tcp packet missing go back and get it.
 					break;
+				char* buf=new char[htons(flap->len)];
+				memcpy(buf,&packetRecv.buffer[flap_length-htons(flap->len)],htons(flap->len));
 				if(flap->type==1)
 				{
 					if(aim_send_connection_packet(buf)==0)//cookie challenge
@@ -102,29 +101,32 @@ void __cdecl aim_connection_authorization()
 						snac_md5_authkey(snac->subgroup,buf);
 						if(snac_authorization_reply(snac->subgroup,buf,htons(flap->len))==1)
 						{
-							free(conn.username);
-							free(conn.password);
+							delete[] conn.username;
+							delete[] conn.password;
 							Netlib_CloseHandle(conn.hServerPacketRecver);
 							LeaveCriticalSection(&connectionMutex);
+							delete[] buf;
 							return;
 						}
 					}
 				}
 				if(flap->type==4)
 				{
-					free(conn.username);
-					free(conn.password);
+					delete[] conn.username;
+					delete[] conn.password;
 					conn.state=0;
 					Netlib_CloseHandle(conn.hServerPacketRecver);
 					broadcast_status(ID_STATUS_OFFLINE);
 					LeaveCriticalSection(&connectionMutex);
+					delete[] buf;
 					return;
 				}
+				delete[] buf;
 			}
 		}
 	}
-	free(conn.username);
-	free(conn.password);
+	delete[] conn.username;
+	delete[] conn.password;
 	conn.state=0;
 	Netlib_CloseHandle(conn.hServerPacketRecver);
 	LeaveCriticalSection(&connectionMutex);
@@ -156,27 +158,26 @@ void __cdecl aim_protocol_negotiation()
 			unsigned short flap_length=0;
 			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
 			{
-				char buf[MSG_LEN*4];
 				struct flap_header* flap=(struct flap_header*)&packetRecv.buffer[packetRecv.bytesUsed];
 				flap_length+=FLAP_SIZE;
 				if(packetRecv.bytesAvailable<flap_length)//Part of the tcp packet missing go back and get it.
 					break;
-				ZeroMemory(buf,sizeof(buf));
 				if(!packetRecv.buffer)
 					break;
-				memcpy(buf,&packetRecv.buffer[flap_length],htons(flap->len));
 				flap_length+=htons(flap->len);
 				if(packetRecv.bytesAvailable<flap_length)//Part of the tcp packet missing go back and get it.
 					break;
   				if(flap->type==1)
 				{
 					aim_send_cookie(COOKIE_LENGTH,COOKIE);//cookie challenge
-					free(COOKIE);
+					delete[] COOKIE;
 					COOKIE=NULL;
 					COOKIE_LENGTH=0;
 				}
 				else if(flap->type=2)
 				{
+					char* buf=new char[htons(flap->len)];
+					memcpy(buf,&packetRecv.buffer[flap_length-htons(flap->len)],htons(flap->len));
 					struct snac_header* snac=(struct snac_header*)buf;
 					snac->service=htons(snac->service);
 					snac->subgroup=htons(snac->subgroup);
@@ -211,6 +212,7 @@ void __cdecl aim_protocol_negotiation()
 						snac_contact_list(snac->subgroup,buf,htons(flap->len));
 						snac_error(snac->subgroup,buf);
 					}
+					delete[] buf;
 				}
 				else if(flap->type==4)
 				{

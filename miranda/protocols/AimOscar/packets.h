@@ -17,18 +17,23 @@ struct snac_header
 	unsigned short flags;
 	unsigned short request_id[2];
 };
-struct tlv_header
+class TLV
 {
+private:
 	unsigned short type;
 	unsigned short length;
-};
-struct tlv_part
-{
-	unsigned short data;
-};
-struct tlv_dword
-{
-	unsigned long data;
+	char* value;
+public:
+	TLV(char* buf);
+	TLV(unsigned short typ, unsigned short len, char* val);
+	~TLV();
+	int cmp(unsigned short id);
+	char* dup();
+	int len();
+	char* part(int pos, int len);
+	char* whole();
+	unsigned short ushort(int pos=0);
+	unsigned long ulong(int pos=0);
 };
 int aim_writesnac(int service, int subgroup,unsigned short request_id,char* out);
 int aim_writetlv(int type,int size ,char* value,char* out);

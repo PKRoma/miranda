@@ -7,7 +7,7 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 	unsigned long size;
 	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 	{
-		file=_strdup(dbv.pszVal);
+		file=strldup(dbv.pszVal,strlen(dbv.pszVal));
 		DBFreeVariant(&dbv);
 		size=DBGetContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FS, 0);
 		if(!size)
@@ -106,13 +106,13 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 						fclose(fd);
 					}
 					ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
-					free(file);
+					delete[] file;
 					return;
 				}
 				else if(type==0x0204)
 				{
 					ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
-					free(file);
+					delete[] file;
 					return;
 				}
 			}
@@ -139,7 +139,7 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	unsigned long size;
 	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 	{
-		file=_strdup(dbv.pszVal);
+		file=strldup(dbv.pszVal,strlen(dbv.pszVal));
 		DBFreeVariant(&dbv);
 	}
 	//start listen for packets stuff
@@ -184,13 +184,18 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 						pfts.totalBytes=size;
 						char* buf = (char*)&ft;
 						Netlib_Send(hNewConnection,buf,sizeof(oft2),0);
-						file=(char*)realloc(file,strlen(file)+strlen((char*)&ft.filename));
+						file=renew(file,strlen(file),strlen((char*)&ft.filename)+1);
 						strcat(file,(char*)&ft.filename);
 						pfts.currentFile=file;
 						if((!(fd = fopen(file, "wb"))))
+						{
+							delete[] file;
 							return;
+						}
 						else
+						{
 							accepted_file=1;
+						}
 					}
 				}
 			}
@@ -214,4 +219,5 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	}
 	if(accepted_file)
 		fclose(fd);
+	delete[] file;
 }

@@ -86,7 +86,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 						{
 							if(stage==1&&sender)
 							{
-								char* sn=_strdup(dbv.pszVal);
+								char* sn=strldup(dbv.pszVal,strlen(dbv.pszVal));
 								char vip[20];
 								char *file, *descr;
 								unsigned long size;
@@ -95,12 +95,12 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 								DBVARIANT dbv;
 								if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 								{
-									file=_strdup(dbv.pszVal);
+									file=strldup(dbv.pszVal,strlen(dbv.pszVal));
 									DBFreeVariant(&dbv);
 									DBVARIANT dbv;
 									if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FD, &dbv))
 									{
-										descr=_strdup(dbv.pszVal);
+										descr=strldup(dbv.pszVal,strlen(dbv.pszVal));
 										DBFreeVariant(&dbv);
 										size=DBGetContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FS, 0);
 										if(!size)
@@ -114,7 +114,9 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 								char* pszfile = strrchr(file, '\\');
 								pszfile++;
 								aim_send_file_proxy(sn,cookie,pszfile,size,descr,*ip,*port);
-								free(file);
+								delete[] file;
+								delete[] sn;
+								delete[] descr;
 							}
 							else if(stage==2&&!sender)
 								aim_file_proxy_request(dbv.pszVal,cookie,0x02,*ip,*port);

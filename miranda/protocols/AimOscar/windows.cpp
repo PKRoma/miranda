@@ -59,10 +59,10 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, buf);
                     if (conn.state==1)
 					{
-						char* msg=_strdup(buf);
+						char* msg=strldup(buf,strlen(buf));
 						msg=strip_linebreaks(msg);
                         aim_set_profile(msg);//also see set caps for profile setting
-						delete msg;
+						delete[] msg;
                     }
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SETPROFILE), FALSE);
                     break;
@@ -314,7 +314,8 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					if (IsDlgButtonChecked(hwndDlg, IDC_II))
 					{
 						unsigned long it = DBGetContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, 0);
-						if(it!=hours*60+minutes)
+						int ii=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0);
+						if(it!=hours*60+minutes||!ii)
 							if (conn.state==1)
 								aim_set_idle(hours * 60 * 60 + minutes * 60);
 						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 1);

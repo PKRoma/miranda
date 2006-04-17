@@ -176,12 +176,12 @@ int PreShutdown(WPARAM wParam,LPARAM lParam)
 extern "C" int __declspec(dllexport) Unload(void)
 {
 	aim_links_destroy();
-	free(CWD);
-	free(conn.szModeMsg);
-	free(COOKIE);
-	free(GROUP_ID_KEY);
-	free(ID_GROUP_KEY);
-	free(FILE_TRANSFER_KEY);
-	free(AIM_PROTOCOL_NAME);
+	delete[] CWD;
+	delete[] conn.szModeMsg;
+	delete[] COOKIE;
+	delete[] GROUP_ID_KEY;
+	delete[] ID_GROUP_KEY;
+	delete[] FILE_TRANSFER_KEY;
+	delete[] AIM_PROTOCOL_NAME;
 	return 0;
 }

@@ -116,7 +116,7 @@ extern char* AIM_CLIENT_ID_STRING;		//Client id EXTERN
 #define AIM_CAP_IM2						"\x74\xed\xc3\x36\x44\xdf\x48\x5b\x8b\x1c\x67\x1a\x1f\x86\x09\x9f"
 extern char	AIM_CAP_MIRANDA[];			//Miranda cap EXTERN
 //Aim Services
-#define AIM_SERVICE_GENERIC				"\0\x01\0\x04"//version 4
+#define AIM_SERVICE_GENERIC				"\0\x01\0\x02"//version 4
 #define AIM_SERVICE_SSI					"\0\x13\0\x03"//version 3
 #define AIM_SERVICE_LOCATION			"\0\x02\0\x01"//version 1
 #define AIM_SERVICE_BUDDYLIST			"\0\x03\0\x01"//version 1

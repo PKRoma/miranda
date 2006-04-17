@@ -3,6 +3,7 @@
 #include "defines.h"
 #include "packets.h"
 #include "md5.h"
+#include "conv.h"
 int aim_send_connection_packet(char *buf);
 int aim_authkey_request();
 int aim_auth_request(char* key,char* language,char* country);
@@ -23,15 +24,10 @@ int aim_send_plaintext_message(char* sn,char* msg,bool auto_response);
 int aim_send_unicode_message(char* sn,wchar_t* msg);
 int aim_query_away_message(char* sn);
 int aim_query_profile(char* sn);
-int aim_edit_contacts_start();
-int aim_edit_contacts_end();
 int aim_delete_contact(char* sn,unsigned short item_id,unsigned short group_id);
 int aim_add_contact(char* sn,unsigned short item_id,unsigned short group_id);
 int aim_add_group(char* name,unsigned short group_id);
-int aim_delete_group(char* name,unsigned short group_id);
 int aim_mod_group(char* name,unsigned short group_id,char* members,unsigned short members_length);
-int aim_add_clientside_contact(char* name);
-int aim_remove_clientside_contact(char* name);
 int aim_keepalive();
 int aim_send_file(char* sn,char* icbm_cookie, char* file_name,unsigned long total_bytes,char* descr);
 int aim_send_file_proxy(char* sn,char* icbm_cookie, char* file_name,unsigned long total_bytes,char* descr,unsigned long proxy_ip, unsigned short port);

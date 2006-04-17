@@ -15,6 +15,8 @@
 #include "file.h"
 #include "proxy.h"
 #include "strl.h"
+#include "error.h"
+#include "conv.h"
 #if !defined (INVALID_FILE_ATTRIBUTES)
 #define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
 #endif /* INVALID_FILE_ATTRIBUTES */

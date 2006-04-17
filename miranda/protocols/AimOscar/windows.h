@@ -15,6 +15,7 @@
 #include <m_userinfo.h>
 #include "defines.h"
 #include "connection.h"
+#include "conv.h"
 int OptionsInit(WPARAM wParam,LPARAM lParam);
 int UserInfoInit(WPARAM wParam,LPARAM lParam);
 static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
