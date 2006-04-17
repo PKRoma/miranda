@@ -171,11 +171,11 @@ int CompareContacts2(const struct ClcContact *contact1,const struct ClcContact *
 	b=contact2->hContact;
 	
 	namea=(TCHAR *)contact1->szText;
-	statusa=contact1->status;
+	statusa=GetContactCachedStatus(contact1->hContact);
 	szProto1=contact1->proto;
 	
 	nameb=(TCHAR *)contact2->szText;
-	statusb=contact2->status;
+	statusb=GetContactCachedStatus(contact2->hContact);
 	szProto2=contact2->proto;
 
 

@@ -208,7 +208,8 @@ extern int UnhookAll();
 
 
 HBITMAP CreateBitmap32(int cx, int cy);
-void FreeDisplayNameCache(SortedList *list);
+extern void InitDisplayNameCache(void);
+extern void FreeDisplayNameCache();
 extern int ShowWindowNew(HWND hwnd, int cmd);
 
 #ifdef UNICODE
@@ -235,6 +236,11 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 #define DeleteObject(a) DebugDeleteObject(a)
 #endif 
 
+#define lockdat EnterCriticalSection(&(dat->lockitemCS))
+#define ulockdat LeaveCriticalSection(&(dat->lockitemCS))
+
+#define strsetA(a,b) {if (a) mir_free(a); a=mir_strdup(b);}
+#define strsetT(a,b) {if (a) mir_free(a); a=mir_strdupT(b);}
 
 extern void TRACE_ERROR();
 extern BOOL DebugDeleteObject(HGDIOBJ a);
@@ -242,3 +248,10 @@ extern BOOL ModernDeleteDC(HDC hdc);
 extern BOOL ResetEffect(HDC hdc);
 extern BOOL SelectEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
 #define GLOBAL_PROTO_NAME "global_connect"
+extern void IvalidateDisplayNameCache(DWORD mode);
+CRITICAL_SECTION cacheSection;
+extern SortedList *clistCache;
+//#define lockcache {if(clistCache) EnterCriticalSection(&cacheSection); if (cacheSection.RecursionCount>20) DebugBreak();}
+//#define ulockcache if(clistCache) LeaveCriticalSection(&cacheSection)
+extern void LockCacheItem(HANDLE hContact);
+extern void UnlockCacheItem(HANDLE hContact);

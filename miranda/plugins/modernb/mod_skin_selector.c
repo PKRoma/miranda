@@ -62,7 +62,28 @@ int DeleteMask(ModernMask * mm)
   mir_free(mm->ParamsList);
   return 1;
 }
-    
+
+BOOL WildComparei(char * name, char * mask)
+{
+  char * last='\0';
+  for(;; mask++, name++)
+  {
+    if(*mask != '?' && (*mask&223) != (*name&223)) break;
+    if(*name == '\0') return ((BOOL)!*mask);
+  }
+  if(*mask != '*') return FALSE;
+  for(;; mask++, name++)
+  {      
+    while(*mask == '*')
+    {    
+      last = mask++;
+      if(*mask == '\0') return ((BOOL)!*mask);   /* true */
+    }
+    if(*name == '\0') return ((BOOL)!*mask);      /* *mask == EOS */
+    if(*mask != '?' && (*mask&223)  != (*name&223) ) name -= (size_t)(mask - last) - 1, mask = last;
+  }
+}
+
 BOOL _inline WildCompare(char * name, char * mask, BYTE option)
     {
          char * last='\0';

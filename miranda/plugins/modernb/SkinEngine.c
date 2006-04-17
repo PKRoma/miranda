@@ -51,7 +51,7 @@ DWORD KeyColor=RGB(255,0,255);
 
 //type definition
 
-
+int LoadSkinFromResource();
 
 
 BOOL LayeredFlag=0;   //TO BE GLOBAL
@@ -1248,7 +1248,7 @@ int Skin_DrawGlyph(WPARAM wParam,LPARAM lParam)
 void PreMultiplyChanells(HBITMAP hbmp,BYTE Mult)
 {
   BITMAP bmp;     
-
+  BOOL flag=FALSE;
   BYTE * pBitmapBits;
   DWORD Len;
   int bh,bw,y,x;
@@ -1257,8 +1257,14 @@ void PreMultiplyChanells(HBITMAP hbmp,BYTE Mult)
   bh=bmp.bmHeight;
   bw=bmp.bmWidth;
   Len=bh*bw*4;
-  pBitmapBits=(LPBYTE)malloc(Len);
-  GetBitmapBits(hbmp,Len,pBitmapBits);
+  flag=(bmp.bmBits==NULL);
+  if (flag)
+  {
+    pBitmapBits=(LPBYTE)malloc(Len);
+    GetBitmapBits(hbmp,Len,pBitmapBits);
+  }
+  else 
+    pBitmapBits=bmp.bmBits;
   for (y=0; y<bh; ++y)
   {
     BYTE *pPixel= pBitmapBits + bw * 4 * y;
@@ -1278,8 +1284,11 @@ void PreMultiplyChanells(HBITMAP hbmp,BYTE Mult)
       pPixel+= 4;
     }
   }
-  Len=SetBitmapBits(hbmp,Len,pBitmapBits);
-  free (pBitmapBits);
+  if (flag)
+  {
+    Len=SetBitmapBits(hbmp,Len,pBitmapBits);
+    free (pBitmapBits);
+  }
   return;
 }
 
@@ -1313,12 +1322,254 @@ int GetFullFilename(char * buf, char *file, char * skinfolder,BOOL madeAbsolute)
 }
 HBITMAP intLoadGlyphImageByImageDecoder(char * szFileName);
 extern HBITMAP intLoadGlyphImageByGDIPlus(char *szFileName);
-
+extern BOOL WildComparei(char * name, char * mask);
 HBITMAP intLoadGlyphImage(char * szFileName)
 {
-  if (!gdiPlusFail) return intLoadGlyphImageByGDIPlus(szFileName);
-  else return intLoadGlyphImageByImageDecoder(szFileName);
+  if (!gdiPlusFail && !WildComparei(szFileName,"*.tga"))
+	  return intLoadGlyphImageByGDIPlus(szFileName);
+  else 
+	  return intLoadGlyphImageByImageDecoder(szFileName);
 }
+
+
+
+
+//this function is required to load TGA to dib buffer myself
+// Major part of routines is from http://tfcduke.developpez.com/tutoriel/format/tga/fichiers/tga.c
+
+#pragma pack(push, 1)
+/* tga header */
+typedef struct
+{
+  BYTE id_lenght;          /* size of image id */
+  BYTE colormap_type;      /* 1 is has a colormap */
+  BYTE image_type;         /* compression type */
+
+  short	cm_first_entry;       /* colormap origin */
+  short	cm_length;            /* colormap length */
+  BYTE cm_size;               /* colormap size */
+
+  short	x_origin;             /* bottom left x coord origin */
+  short	y_origin;             /* bottom left y coord origin */
+
+  short	width;                /* picture width (in pixels) */
+  short	height;               /* picture height (in pixels) */
+
+  BYTE pixel_depth;        /* bits per pixel: 8, 16, 24 or 32 */
+  BYTE image_descriptor;   /* 24 bits = 0x00; 32 bits = 0x80 */
+
+} tga_header_t;
+#pragma pack(pop)
+
+BOOL ReadTGAImageData(void * From, DWORD fromSize, BYTE * destBuf, DWORD bufSize, BOOL RLE)
+{
+	BYTE * pos=destBuf;
+	BYTE * from=fromSize?(BYTE*)From:NULL;
+	FILE * fp=!fromSize?(FILE*)From:NULL;
+	DWORD destCount=0;
+	DWORD fromCount=0;
+	if (!RLE)
+	{
+		while (((from&&fromCount<fromSize) || (fp&& fromCount<bufSize))
+				&&(destCount<bufSize))
+		{
+			BYTE r=from?from[fromCount++]:(BYTE)fgetc(fp);
+			BYTE g=from?from[fromCount++]:(BYTE)fgetc(fp);
+			BYTE b=from?from[fromCount++]:(BYTE)fgetc(fp);
+			BYTE a=from?from[fromCount++]:(BYTE)fgetc(fp);
+			pos[destCount++]=r;
+			pos[destCount++]=g;
+			pos[destCount++]=b;
+			pos[destCount++]=a;
+
+			if (destCount>bufSize) break;
+			if (from) 	if (fromCount<fromSize) break;
+		}
+	}
+	else
+	{
+		BYTE rgba[4];
+		BYTE packet_header;
+		BYTE *ptr=pos;
+		BYTE size;
+		int i;
+		while (ptr < pos + bufSize)
+		{
+			 /* read first byte */
+			packet_header = from?from[fromCount]:(BYTE)fgetc(fp);
+			if (from) from++;
+			size = 1 + (packet_header & 0x7f);
+			if (packet_header & 0x80)
+			{
+				/* run-length packet */
+				if (from) 
+				{
+					*((DWORD*)rgba)=*((DWORD*)(from+fromCount));
+					fromCount+=4;
+				}
+				else fread (rgba, sizeof (BYTE), 4, fp);
+				for (i = 0; i < size; ++i, ptr += 4)
+				{
+					ptr[2] = rgba[2];
+					ptr[1] = rgba[1];
+					ptr[0] = rgba[0];
+					ptr[3] = rgba[3];
+				}
+			}
+			else
+			{	/* not run-length packet */
+				for (i = 0; i < size; ++i, ptr += 4)
+				{
+					ptr[0] = from? from[fromCount++]:(BYTE)fgetc (fp);
+					ptr[1] = from? from[fromCount++]:(BYTE)fgetc (fp);
+					ptr[2] = from? from[fromCount++]:(BYTE)fgetc (fp);
+					ptr[3] = from? from[fromCount++]:(BYTE)fgetc (fp);
+				}
+			}
+		}
+	}
+	return TRUE;
+}
+
+HBITMAP intLoadGlyphTGAImage(char * szFilename)
+{
+	BYTE *colormap = NULL;
+	int cx=0,cy=0;
+	BOOL err=FALSE;
+	tga_header_t header;
+	if (!szFilename) return NULL;
+	if (!WildComparei(szFilename,"*\\*%.tga")) 
+	{
+		//Loading TGA image from file
+		FILE *fp;
+		fp = fopen (szFilename, "rb");
+		if (!fp)
+		{
+			TRACEVAR("error: couldn't open \"%s\"!\n", szFilename);
+			return NULL;
+		}
+		/* read header */
+		fread (&header, sizeof (tga_header_t), 1, fp);
+		if (  (header.pixel_depth!=32)
+			 ||((header.image_type!=10)&&(header.image_type!=2))
+			)
+		{
+			fclose(fp);
+			return NULL;
+		}
+		
+		/*memory allocation */
+		colormap=(BYTE*)malloc(header.width*header.height*4);	
+		cx=header.width;
+		cy=header.height;
+		fseek (fp, header.id_lenght, SEEK_CUR);
+		fseek (fp, header.cm_length, SEEK_CUR);
+		err=!ReadTGAImageData((void*)fp, 0, colormap, header.width*header.height*4,header.image_type==10);
+		fclose(fp);
+	}
+
+
+	else 
+	{
+		/* reading from resources IDR_TGA_DEFAULT_SKIN */
+		DWORD size=0;
+		BYTE * mem;
+		HGLOBAL hRes;
+		HRSRC hRSrc=FindResourceA(g_hInst,MAKEINTRESOURCEA(IDR_TGA_DEFAULT_SKIN),"TGA");
+		if (!hRSrc) return NULL;
+		hRes=LoadResource(g_hInst,hRSrc);
+		if (!hRes) return NULL;
+		size=SizeofResource(g_hInst,hRSrc);
+		mem=(BYTE*) LockResource(hRes);
+		if (size>sizeof(header))
+		{
+			tga_header_t * header=(tga_header_t *)mem;
+			if (header->pixel_depth==32&& (header->image_type==2 ||header->image_type==10))
+			{
+				colormap=(BYTE*)malloc(header->width*header->height*4);	
+				cx=header->width;
+				cy=header->height;
+				ReadTGAImageData((void*)(mem+sizeof(tga_header_t)+header->id_lenght+header->cm_length), size-(sizeof(tga_header_t)+header->id_lenght+header->cm_length), colormap, cx*cy*4,header->image_type==10);
+			}
+		}
+		FreeResource(hRes);
+	}
+	if (colormap)  //create dib section
+	{
+		BYTE * pt;
+		HBITMAP hbmp=CreateBitmap32Point(cx,cy,&pt);
+		if (hbmp) memcpy(pt,colormap,cx*cy*4);
+		free(colormap);
+		return hbmp;
+	}
+	return NULL;
+}
+
+#include <m_png.h>
+//this function is required to load PNG to dib buffer myself
+HBITMAP intLoadGlyphImageByPng2Dib(char * szFilename)
+{
+	
+  {
+			HANDLE hFile, hMap = NULL;
+			BYTE* ppMap = NULL;
+			long  cbFileSize = 0;
+			BITMAPINFOHEADER* pDib;
+			BYTE* pDibBits;
+
+			if ( !ServiceExists( MS_PNG2DIB )) {
+				MessageBox( NULL, TranslateT( "You need the png2dib plugin v. 0.1.3.x or later to process PNG images" ), TranslateT( "Error" ), MB_OK );
+				return (HBITMAP)NULL;
+			}
+
+			if (( hFile = CreateFileA( szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE )
+				if (( hMap = CreateFileMapping( hFile, NULL, PAGE_READONLY, 0, 0, NULL )) != NULL )
+					if (( ppMap = ( BYTE* )MapViewOfFile( hMap, FILE_MAP_READ, 0, 0, 0 )) != NULL )
+						cbFileSize = GetFileSize( hFile, NULL );
+
+			if ( cbFileSize != 0 ) {
+				PNG2DIB param;
+				param.pSource = ppMap;
+				param.cbSourceSize = cbFileSize;
+				param.pResult = &pDib;
+				if ( CallService( MS_PNG2DIB, 0, ( LPARAM )&param ))
+					pDibBits = ( BYTE* )( pDib+1 );
+				else
+					cbFileSize = 0;
+			}
+
+			if ( ppMap != NULL )	UnmapViewOfFile( ppMap );
+			if ( hMap  != NULL )	CloseHandle( hMap );
+			if ( hFile != NULL ) CloseHandle( hFile );
+
+			if ( cbFileSize == 0 )
+				return (HBITMAP)NULL;
+
+      {
+        BITMAPINFO* bi=( BITMAPINFO* )pDib;
+        BYTE *pt=(BYTE*)bi;
+        pt+=bi->bmiHeader.biSize;
+        if (bi->bmiHeader.biBitCount!=32)
+			  {
+          HDC sDC = GetDC( NULL );
+	  		  HBITMAP hBitmap = CreateDIBitmap( sDC, pDib, CBM_INIT, pDibBits, bi, DIB_PAL_COLORS );
+				  SelectObject( sDC, hBitmap );
+				  DeleteDC( sDC );
+				  GlobalFree( pDib );
+				  return hBitmap;
+        }
+        else
+        {
+          BYTE * ptPixels=pt;
+          HBITMAP hBitmap=CreateDIBSection(NULL,bi, DIB_RGB_COLORS, (void **)&ptPixels,  NULL, 0);         
+          memcpy(ptPixels,pt,bi->bmiHeader.biSizeImage);
+				  GlobalFree( pDib );
+				  return hBitmap;
+	      }	
+      }
+    }	
+}
+
 HBITMAP intLoadGlyphImageByImageDecoder(char * szFileName)
 {
   // Loading image from file by imgdecoder...    
@@ -1328,15 +1579,29 @@ HBITMAP intLoadGlyphImageByImageDecoder(char * szFileName)
   LPBYTE pBitmapBits;
   LPVOID pImg= NULL;
   LPVOID m_pImgDecoder;
+  
   BITMAP bmpInfo;
   {
     int l;
     l=MyStrLen(szFileName);
     memmove(ext,szFileName +(l-4),5);   
   }
-  if (!PathFileExistsA(szFileName)) return NULL;
+  if (!strchr(szFileName,'%') && !PathFileExistsA(szFileName)) return NULL;
+  if (boolstrcmpi(ext,".tga"))
+  {
+	  hBitmap=intLoadGlyphTGAImage(szFileName);
+	  f=1;
+  }
+  else if (ServiceExists("Image/Png2Dib") && boolstrcmpi(ext,".png"))
+  {
+    hBitmap=intLoadGlyphImageByPng2Dib(szFileName);
+    GetObject(hBitmap, sizeof(BITMAP), &bmpInfo);
+    f=(bmpInfo.bmBits!=NULL);
+   // hBitmap=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)szFileName);
+   // f=1;
 
-  if (hImageDecoderModule==NULL || !boolstrcmpi(ext,".png"))
+  }
+  else if (hImageDecoderModule==NULL || !boolstrcmpi(ext,".png"))
     hBitmap=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)szFileName);
   else
   {
@@ -1582,11 +1847,17 @@ int GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
   Skin->MaskList=mir_alloc(sizeof(ModernMaskList));
   memset(Skin->MaskList,0,sizeof(ModernMaskList));
   Skin->SkinPlace=DBGetStringA(NULL,SKIN,"SkinFolder");
-  if (!Skin->SkinPlace) 
+  if (!Skin->SkinPlace ) 
+  {
+	  Skin->SkinPlace=mir_strdup("%Default%");
+	  LoadSkinFromResource();
+  }
+  /*
+	if (!Skin->SkinPlace) 
   {
     char buf[255];
     DWORD col;
-    Skin->SkinPlace=mir_strdup("\\Skin\\Default");
+    Skin->SkinPlace=mir_strdup("\\Skin\\%Default%");
     //main window part
     col=GetSysColor(COLOR_3DFACE);
     _snprintf(buf,sizeof(buf),"Glyph,Solid,%d,%d,%d,%d",GetRValue(col),GetGValue(col),GetBValue(col),255);
@@ -1601,7 +1872,7 @@ int GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
     AddStrModernMaskToList(0,"*,ID^Ovl,ID^Row,ID^Hot*","$DefaultSkinObj",Skin->MaskList,Skin);
     return 1;
   }
-  //Load objects
+  *///Load objects
   {
     DBCONTACTENUMSETTINGS dbces;
     CURRENTSKIN=Skin;
@@ -1628,7 +1899,78 @@ void LoadSkinFromDB(void)
   KeyColor=DBGetContactSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)RGB(255,0,255));
 }
 
-
+//int GetPrivateProfileStringMy(char * section, char * value, char * def, char * buf , int size, char * filename)
+//{
+//	if (!strchr(filename,'%')) return GetPrivateProfileStringA(section,value,def,buf,size,filename);
+//	else
+//	{
+//		DWORD size=0;
+//		char * mem;
+//		char * pos;
+//		HGLOBAL hRes;
+//		HRSRC hRSrc=FindResourceA(g_hInst,MAKEINTRESOURCEA(IDR_MSF_DEFAULT_SKIN),"MSF");
+//		if (!hRSrc) return 0;
+//		hRes=LoadResource(g_hInst,hRSrc);
+//		if (!hRes) return 0;
+//		size=SizeofResource(g_hInst,hRSrc);
+//		mem=(char*) LockResource(hRes);
+//		{
+//			char line[513]={0};
+//			pos=(char*) mem;
+//			while (pos<mem+size)
+//			{
+//				int i=0;
+//				while (pos<mem+size && *pos!='\n' && *pos!='\0' && i<512)
+//				{
+//					if ((*pos)!='\r') line[i++]=*pos;
+//					pos++;
+//					line[i]='\0';
+//				}
+//				TRACE(line); TRACE("\n");
+//				{
+//					//find first not ' '
+//					int k=0;
+//					char * startparam=NULL;
+//					char * startvalue=NULL;
+//					while (line[k]==' ' && line[k]!='\0') k++;
+//					if (line[k]!=';') 
+//					{
+//						if (line[k]!='\0') startparam=line+k;
+//						while (line[k]!='=' && line[k]!='\0') k++;
+//						if (line[k]!='\0') startvalue=line+k+1;
+//						line[k-1]='\0';
+//						while (line[k]!=';' && line[k]!='\0') k++;
+//						line[k]='\0';
+//						if (startvalue && startparam)
+//						{
+//							//remove spaces after param
+//							{
+//								char * pos=startvalue-1;
+//								while (pos>startparam && *pos==' ') *(pos++)='\0';
+//							}
+//							if (!strcmp()
+//							//remove spaces after value
+//							{
+//								char * pos=line+k-1;
+//								while (pos>startvalue && *pos==' ') *(pos++)='\0';
+//							}
+//							//remove spaces before value
+//							{
+//								while (startvalue<line+k-1 && *startvalue==' ') startvalue++;
+//							}
+//
+//						}
+//
+//					}
+//
+//				}
+//				pos++;
+//			}
+//		}
+//		FreeResource(hRes);	
+//	}
+//	return 0;
+//}
 int GetSkinFolder(char * szFileName, char * t2)
 {
   char *buf;   
@@ -1776,6 +2118,43 @@ BOOL ParseLineOfIniFile(char * Line)
         }
         return FALSE;
 }
+
+int LoadSkinFromResource()
+{
+	DWORD size=0;
+	char * mem;
+	char * pos;
+	HGLOBAL hRes;
+	HRSRC hRSrc=FindResourceA(g_hInst,MAKEINTRESOURCEA(IDR_MSF_DEFAULT_SKIN),"MSF");
+	if (!hRSrc) return 0;
+	hRes=LoadResource(g_hInst,hRSrc);
+	if (!hRes) return 0;
+	size=SizeofResource(g_hInst,hRSrc);
+	mem=(char*) LockResource(hRes);
+	DeleteAllSettingInSection("ModernSkin");
+	DBWriteContactSettingString(NULL,SKIN,"SkinFolder","%Default%");
+	DBWriteContactSettingString(NULL,SKIN,"SkinFile","%Default%");
+	{
+		char line[513]={0};
+		pos=(char*) mem;
+		while (pos<mem+size)
+		{
+			int i=0;
+			while (pos<mem+size && *pos!='\n' && *pos!='\0' && i<512)
+			{
+				if ((*pos)!='\r') line[i++]=*pos;
+				pos++;
+				line[i]='\0';
+			}
+			TRACE(line); TRACE("\n");
+			ParseLineOfIniFile(line);
+			pos++;
+		}
+	}
+	FreeResource(hRes);	
+	return 0;
+}
+
 //Load data from ini file
 int LoadSkinFromIniFile(char * szFileName)
 {
@@ -1783,6 +2162,9 @@ int LoadSkinFromIniFile(char * szFileName)
         char line[512]={0};
         char skinFolder[MAX_PATH]={0};
         char skinFile[MAX_PATH]={0};
+		if (strchr(szFileName,'%')) 
+			return LoadSkinFromResource();
+
         DeleteAllSettingInSection("ModernSkin");
         GetSkinFolder(szFileName,skinFolder);
         DBWriteContactSettingString(NULL,SKIN,"SkinFolder",skinFolder);

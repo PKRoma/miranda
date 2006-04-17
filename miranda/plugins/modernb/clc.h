@@ -213,7 +213,7 @@ struct ClcContact {
 	BYTE SubAllocated;
 	BYTE SubExpanded;
 	BYTE isSubcontact;
-	int status;
+//	int status;
 	BOOL image_is_special;
 	union
 	{
@@ -221,16 +221,16 @@ struct ClcContact {
 		struct avatarCacheEntry *avatar_data;
 	};
 
-	SortedList *plText;							// List of ClcContactTextPiece
-	TCHAR *szSecondLineText;//[120-MAXEXTRACOLUMNS];
-	SortedList *plSecondLineText;				// List of ClcContactTextPiece
-	TCHAR *szThirdLineText;//[120-MAXEXTRACOLUMNS];
-	SortedList *plThirdLineText;				// List of ClcContactTextPiece
-  int iTextMaxSmileyHeight;
-  int iThirdLineMaxSmileyHeight;
-  int iSecondLineMaxSmileyHeight;
-    DWORD timezone;
-    DWORD timediff;
+	SortedList *plText;						// List of ClcContactTextPiece
+	//TCHAR *szSecondLineText;//[120-MAXEXTRACOLUMNS];
+	//SortedList *plSecondLineText;				// List of ClcContactTextPiece
+	//TCHAR *szThirdLineText;//[120-MAXEXTRACOLUMNS];
+	//SortedList *plThirdLineText;				// List of ClcContactTextPiece
+    int iTextMaxSmileyHeight;
+	//int iThirdLineMaxSmileyHeight;
+    //int iSecondLineMaxSmileyHeight;
+    //DWORD timezone;
+    //DWORD timediff;
 
 	// For hittest
 	int pos_indent;
@@ -516,6 +516,6 @@ typedef struct {
 #define MS_SKIN_ADDHOTKEY      "Skin/HotKeys/AddNew"
 #define MS_SKIN_PLAYHOTKEY		"Skin/HotKeys/Run"
 
-//extern void (*saveSortCLC) (HWND hwnd, struct ClcData *dat, int useInsertionSort );
+extern void (*saveSortCLC) (HWND hwnd, struct ClcData *dat, int useInsertionSort );
 
 #endif _CLC_H_

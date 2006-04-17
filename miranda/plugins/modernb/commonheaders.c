@@ -1,5 +1,11 @@
 #include "commonheaders.h"
 
+
+#define SAFE_PTR(a) a?(IsBadReadPtr(a,1)?a=NULL:a):a
+#define SAFE_STR(a) a?a:""
+
+
+
 int mir_realloc_proxy(void *ptr,int size)
 {
 	/*	if (IsBadCodePtr((FARPROC)ptr))
@@ -28,6 +34,8 @@ int mir_free_proxy(void *ptr)
 BOOL __cdecl strstri(const char *a, const char *b)
 {
     char * x, *y;
+	SAFE_PTR(a);
+	SAFE_PTR(b);
     if (!a || !b) return FALSE;
     x=_strdup(a);
     y=_strdup(b);
@@ -48,6 +56,8 @@ BOOL __cdecl strstri(const char *a, const char *b)
 }
 int __cdecl MyStrCmpi(const char *a, const char *b)
 {
+	SAFE_PTR(a);
+	SAFE_PTR(b);
 	if (a==NULL && b==NULL) return 0;
 	if (a==NULL || b==NULL) return _stricmp(a?a:"",b?b:"");
     return _stricmp(a,b);
@@ -55,12 +65,16 @@ int __cdecl MyStrCmpi(const char *a, const char *b)
 
 int __cdecl MyStrCmpiT(const TCHAR *a, const TCHAR *b)
 {
+	SAFE_PTR(a);
+	SAFE_PTR(b);
 	if (a==NULL && b==NULL) return 0;
 	if (a==NULL || b==NULL) return _tcsicmp(a?a:TEXT(""),b?b:TEXT(""));
 	return _tcsicmp(a,b);
 }
 BOOL __cdecl boolstrcmpi(const char *a, const char *b)
 {
+	SAFE_PTR(a);
+	SAFE_PTR(b);
 	if (a==NULL && b==NULL) return 1;
 	if (a==NULL || b==NULL) return _stricmp(a?a:"",b?b:"")==0;
     return _stricmp(a,b)==0;
@@ -68,6 +82,8 @@ BOOL __cdecl boolstrcmpi(const char *a, const char *b)
 
 BOOL __cdecl boolstrcmpiT(const TCHAR *a, const TCHAR *b)
 {
+	SAFE_PTR(a);
+	SAFE_PTR(b);
 	if (a==NULL && b==NULL) return 1;
 	if (a==NULL || b==NULL) return _tcsicmp(a?a:TEXT(""),b?b:TEXT(""))==0;
 	return _tcsicmp(a,b)==0;
@@ -80,7 +96,8 @@ BOOL __cdecl boolstrcmpiT(const TCHAR *a, const TCHAR *b)
 
 int __cdecl MyStrCmp (const char *a, const char *b)
 {
-	
+	SAFE_PTR(a);
+	SAFE_PTR(b);
 	if (!(a&&b)) return a!=b;
 	return (strcmp(a,b));
 };
@@ -88,6 +105,7 @@ int __cdecl MyStrCmp (const char *a, const char *b)
 _inline int MyStrLen (const char *a)	
 {	
 
+	SAFE_PTR(a);
 	if (a==NULL) return 0;	
 	return (strlen(a));	
 };	
@@ -253,3 +271,4 @@ BOOL ModernDeleteDC(HDC hdc)
 #ifdef _DEBUG
 #define DeleteObject(a) DebugDeleteObject(a)
 #endif 
+

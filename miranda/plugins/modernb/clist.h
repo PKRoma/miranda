@@ -53,6 +53,15 @@ typedef struct  {
 	BYTE IsExpanded;
 	boolean isUnknown;
 
-} displayNameCacheEntry,*pdisplayNameCacheEntry;
+	TCHAR *szSecondLineText;//[120-MAXEXTRACOLUMNS];
+	SortedList *plSecondLineText;				// List of ClcContactTextPiece
+	TCHAR *szThirdLineText;//[120-MAXEXTRACOLUMNS];
+	SortedList *plThirdLineText;				// List of ClcContactTextPiece
+	int iThirdLineMaxSmileyHeight;
+    int iSecondLineMaxSmileyHeight;
+	DWORD timezone;
+    DWORD timediff;
+
+} displayNameCacheEntry,*pdisplayNameCacheEntry, *PDNCE;
 
 #endif

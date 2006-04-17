@@ -719,12 +719,14 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 		  if (!hMenu)
 		  {
 			  if (msg==WM_RBUTTONDOWN)
+			  {
 				if( DBGetContactSettingByte(NULL,"CLUI","SBarRightClk",0))
 					hMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
 				else
 					hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+			  }
 			  else
-			{
+			  {
 				hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);		
 				if(allocedItemData>1 && menusProto && i<AllocedProtos)// && GetSubMenu(hMenu,i)) hMenu=GetSubMenu(hMenu,i);
 				{			

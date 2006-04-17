@@ -179,12 +179,13 @@ void ScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth)
 	SetScrollPos(hwnd,SB_VERT,dat->yScroll,TRUE);
 }
 
-
+extern BOOL LOCK_RECALC_SCROLLBAR;
 void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 {
 	SCROLLINFO si={0};
 	RECT clRect;
 	NMCLISTCONTROL nm;
+	if (LOCK_RECALC_SCROLLBAR) return;
 
 	RowHeights_CalcRowHeights(dat, hwnd);
 
@@ -413,6 +414,7 @@ extern int sortNoOfflineBottom;
 void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 { 
 	int i;
+	lockdat;
 	{	
 		LOGFONTA lf;
 		HFONT holdfont;
@@ -677,15 +679,22 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 	dat->hotTextColour=DBGetContactSettingDword(NULL,"CLC","HotTextColour",CLCDEFAULT_HOTTEXTCOLOUR);
 	dat->quickSearchColour=DBGetContactSettingDword(NULL,"CLC","QuickSearchColour",CLCDEFAULT_QUICKSEARCHCOLOUR);
 	dat->IsMetaContactsEnabled=(!(GetWindowLong(hwnd,GWL_STYLE)&CLS_MANUALUPDATE)) &&
-		DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
-		dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",1);
-		dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1);
+	DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
+	dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",1);
+	dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1);
+	if ((pcli->hwndContactTree == hwnd || pcli->hwndContactTree==NULL))
+	{
+		IvalidateDisplayNameCache(16);
+
+	}
+	ulockdat;
 	{
 		NMHDR hdr;
-	hdr.code=CLN_OPTIONSCHANGED;
-	hdr.hwndFrom=hwnd;
-	hdr.idFrom=0;//GetDlgCtrlID(hwnd);
-	SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&hdr);
+		hdr.code=CLN_OPTIONSCHANGED;
+		hdr.hwndFrom=hwnd;
+		hdr.idFrom=0;//GetDlgCtrlID(hwnd);
+		SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&hdr);
 	}
 	SendMessage(hwnd,WM_SIZE,0,0);
+	
 }

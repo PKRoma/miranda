@@ -162,6 +162,7 @@ int GetContactIcon(WPARAM wParam,LPARAM lParam)
 
 static int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 {
+	FreeDisplayNameCache();
 	UnhookEvent(hSettingChanged);
 	UninitCustomMenus();
 	//UninitCListEvents();
@@ -183,6 +184,7 @@ int LoadContactListModule(void)
 	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 	*/
+	InitDisplayNameCache();
 	HookEvent(ME_SYSTEM_SHUTDOWN,ContactListShutdownProc);
 	HookEvent(ME_OPT_INITIALISE,CListOptInit);
 	HookEvent(ME_OPT_INITIALISE,SkinOptInit);
@@ -225,7 +227,7 @@ _inline DWORD GetDIBPixelColor(int X, int Y, int Width, int Height, int ByteWidt
 		res=*((DWORD*)(ptr+ByteWidth*(Height-Y-1)+X*4));
 	return res;
 }
-
+extern BYTE CURRENT_ALPHA;
 int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 	RECT rc = { 0 };
 	POINT pt = { 0 };
@@ -303,7 +305,11 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 				if (rgn) 
 					po=PtInRegion(rgn,j,i);
 				else
-					po=(GetDIBPixelColor(j+dx,i+dy,maxx,maxy,wx,ptr)&0xFF000000)!=0;
+				{
+					DWORD a=(GetDIBPixelColor(j+dx,i+dy,maxx,maxy,wx,ptr)&0xFF000000)>>24;
+					a=((a*CURRENT_ALPHA)>>8);
+					po=(a>16);
+				}
 				if (po||(!rgn&&ptr==0))
 				{
 					BOOL hWndFound=FALSE;
@@ -344,7 +350,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 			}
 		}    
 		if (rgn) DeleteObject(rgn);
-		if (iNotCoveredDots == iCountedDots) //Every dot was not covered: the window is visible.
+		if ( iCountedDots - iNotCoveredDots<2) //Every dot was not covered: the window is visible.
 			return GWVS_VISIBLE;
 		else if (iNotCoveredDots == 0) //They're all covered!
 			return GWVS_COVERED;

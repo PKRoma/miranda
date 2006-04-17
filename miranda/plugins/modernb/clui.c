@@ -708,7 +708,7 @@ static int CluiModulesLoaded(WPARAM wParam,LPARAM lParam)
 	SleepEx(0,TRUE);
 	OnModulesLoadedCalled=TRUE;	
 	///pcli->pfnInvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);   
-	SendMessage(pcli->hwndContactList,M_CREATECLC,0,0); //$$$
+	PostMessage(pcli->hwndContactList,M_CREATECLC,0,0); //$$$
 	return 0;
 }
 
@@ -906,7 +906,7 @@ int CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
 }
 // Restore protocols to the last global status.
 // Used to reconnect on restore after standby.
-static void RestoreMode()
+static void RestoreMode(HWND hwnd)
 {
 
 	int nStatus;
@@ -915,7 +915,7 @@ static void RestoreMode()
 	nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
 	if (nStatus != ID_STATUS_OFFLINE)
 	{
-		PostMessage(pcli->hwndContactList, WM_COMMAND, nStatus, 0);
+		PostMessage(hwnd, WM_COMMAND, nStatus, 0);
 	}
 
 }
@@ -1315,6 +1315,14 @@ BYTE called_from_me=0;
 
 extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 RECT changedWindowRect={0};
+
+BOOL CALLBACK RepositChildInZORDER(HWND hwnd,LPARAM lParam)
+{
+//	SetWindowPos(hwnd,
+	return TRUE;
+}
+
+
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {    
 	/*
@@ -1366,6 +1374,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 		if (msg==WM_WINDOWPOSCHANGING)
 		{
+
 
 			WINDOWPOS * wp;
 			HDWP PosBatch;
@@ -1450,6 +1459,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				}       
 				Sleep(0);               
 				during_sizing=0; 
+				DefWindowProc(hwnd,msg,wParam,lParam);
 				return SendMessage(hwnd,WM_WINDOWPOSCHANGED,wParam,lParam);
 			}
 			else
@@ -1458,7 +1468,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				// need_to_fix_sizing_rect=0;
 			}
 			return DefWindowProc(hwnd,msg,wParam,lParam); 
-	}	}
+	}	
+}
 
 	switch (msg) {
 	case UM_UPDATE:
@@ -1574,7 +1585,15 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			mii.dwItemData=MENU_STATUSMENU;
 			SetMenuItemInfo(GetMenu(hwnd),1,TRUE,&mii);
 		}
+		//PostMessage(hwnd, M_CREATECLC, 0, 0);
+		//pcli->hwndContactList=hwnd;
 		hMsgGetProfile=RegisterWindowMessage(TEXT("Miranda::GetProfile")); // don't localise
+		//#ifndef _DEBUG
+			// Miranda is starting up! Restore last status mode.
+			// This is not done in debug builds because frequent
+			// reconnections will get you banned from the servers.
+			RestoreMode(hwnd);
+		//#endif
 		transparentFocus=1;
 		return FALSE;
 
@@ -1846,7 +1865,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				pt.x=LOWORD(lParam);
 				pt.y=HIWORD(lParam);
 				t=MenuItemFromPoint(hwnd,hMenuMain,pt);
-				if (t==-1) return HTCAPTION;
+				if (t==-1 && (DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT)))
+					return HTCAPTION;
 			}
 			if (result==HTCLIENT)
 			{
@@ -1855,7 +1875,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				pt.x=LOWORD(lParam);
 				pt.y=HIWORD(lParam);			
 				k=SizingOnBorder(pt,0);
-				if (!k)	return HTCAPTION;
+				if (!k && (DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT)))
+					return HTCAPTION;
 				else return k+9;
 			}
 			return result;
@@ -2305,7 +2326,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		{
 			WINDOWPOS * wp;
 			wp=(WINDOWPOS *)lParam; 
-
 			//       if (ON_EDGE_SIZING)
 			//           wp->flags|=SWP_NOSIZE|SWP_NOMOVE;
 			//       ON_EDGE_SIZING=0;
@@ -2634,7 +2654,7 @@ int TestCursorOnBorders()
 		if (!(pt.x>=r.left && pt.x<=r.right && pt.y>=r.top && pt.y<=r.bottom)) k=0;
 		k*=mouse_in_window;
 		hCurs1 = LoadCursor(NULL, IDC_ARROW);
-		if(BehindEdge_State<=0)
+		if(BehindEdge_State<=0 && (!(DBGetContactSettingByte(NULL,"CLUI","LockSize",0))))
 			switch(k)
 		{
 			case 1: 

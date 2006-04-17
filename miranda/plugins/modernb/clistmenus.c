@@ -849,6 +849,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
   int i,j,protoCount=0,networkProtoCount,s;
   int storedProtoCount;
+  int visnetworkProtoCount=0;
   PROTOCOLDESCRIPTOR **proto;
   DWORD statusFlags=0,flags;
   TMO_MenuItem tmi;
@@ -925,6 +926,14 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
     AllocedProtos=0;
   } 
   
+
+  for (s=0;s<storedProtoCount;s++)
+  {
+    i=GetProtoIndexByPos(proto,protoCount,s);
+    if (i==-1) continue;
+	  if(!((proto[i]->type!=PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0&&GetProtocolVisibility(proto[i]->szName)==0)))  visnetworkProtoCount++;
+  }
+
   for(s=0;s<storedProtoCount;s++) {
     pos=0;
     i=GetProtoIndexByPos(proto,protoCount,s);
@@ -932,7 +941,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
     if((proto[i]->type!=PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0&&GetProtocolVisibility(proto[i]->szName)==0)) continue;
 
     flags=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
-    if(networkProtoCount>1) {
+    if(visnetworkProtoCount>1) {
       char protoName[128];
       int j;
       int rootmenu;
