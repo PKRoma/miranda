@@ -525,9 +525,10 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			gce.pszNick = MSN_GetContactName(MSN_HContactFromEmail(data.fromEmail, NULL, 1, 1));
 			gce.time = time(NULL);
 			gce.bIsMe = FALSE;
-			gce.pszText = (char*)tMsgBuf;
+			gce.pszText = (char*)EscapeChatTags(tMsgBuf);
 			gce.bAddToLog = TRUE;
 			MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
+			free(( void* )gce.pszText);
 		}
 		else {
 			PROTORECVEVENT pre;

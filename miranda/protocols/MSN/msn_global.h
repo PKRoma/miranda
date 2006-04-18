@@ -213,6 +213,8 @@ int		__stdcall   MSN_EnterBitmapFileName( char* szDest );
 int      __stdcall   MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP  __stdcall   MSN_StretchBitmap( HBITMAP hBitmap );
 
+char* EscapeChatTags(char* pszText);
+char* UnEscapeChatTags(char* str_in);
 
 VOID		CALLBACK MSNMainTimerProc( HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime );
 LRESULT	CALLBACK NullWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

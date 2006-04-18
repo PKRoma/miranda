@@ -1031,3 +1031,39 @@ static LONG WINAPI MyInterlockedIncrementInit(PLONG pVal)
 
 	return MyInterlockedIncrement( pVal );
 }
+
+// Process a string, and double all % characters, according to chat.dll's restrictions
+// Returns a pointer to the new string (old one is not freed)
+char* EscapeChatTags(char* pszText)
+{
+	int nChars = 0;
+	for ( char* p = pszText; ( p = strchr( p, '%' )) != NULL; p++ )
+		nChars++;
+
+	if ( nChars == 0 )
+		return _strdup( pszText );
+
+	char* pszNewText = (char*)malloc( strlen( pszText ) + 1 + nChars ), *s, *d;
+	if ( pszNewText == NULL )
+		return _strdup( pszText );
+
+	for ( s = pszText, d = pszNewText; *s; s++ ) {
+		if ( *s == '%' )
+			*d++ = '%';
+		*d++ = *s;
+	}
+	*d = 0;
+	return pszNewText;
+}
+
+char* UnEscapeChatTags(char* str_in)
+{
+	char* s = str_in, *d = str_in;
+	while ( *s ) {
+		if (( *s == '%' && s[1] == '%' ) || ( *s == '\n' && s[1] == '\n' ))
+			s++;
+		*d++ = *s++;
+	}
+	*d = 0;
+	return str_in;
+}
