@@ -30,12 +30,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -73,12 +73,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -118,12 +118,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -161,12 +161,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -204,12 +204,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -247,12 +247,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -290,12 +290,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -333,12 +333,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -376,12 +376,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -417,14 +417,15 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
+	".\effectenum.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -462,17 +463,18 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
 	".\m_variables.h"\
 	".\mod_skin_selector.h"\
+	".\modern_row.h"\
 	".\rowheight_funcs.h"\
 	".\SkinEngine.h"\
 	
@@ -507,12 +509,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -550,12 +552,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -593,12 +595,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -636,12 +638,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -679,12 +681,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -722,12 +724,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -765,12 +767,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -810,12 +812,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -853,12 +855,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -896,12 +898,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -939,12 +941,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -982,12 +984,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1025,12 +1027,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1074,12 +1076,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1117,12 +1119,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1160,12 +1162,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1203,12 +1205,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1246,12 +1248,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1292,12 +1294,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1335,12 +1337,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1380,12 +1382,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1425,12 +1427,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1469,12 +1471,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1512,16 +1514,17 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
 	".\m_variables.h"\
+	".\modern_row.h"\
 	".\rowheight_funcs.h"\
 	
 
@@ -1537,6 +1540,7 @@
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_png.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
@@ -1553,14 +1557,15 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
+	".\effectenum.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1600,12 +1605,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1645,12 +1650,12 @@
 	".\commonprototypes.h"\
 	".\forkthread.h"\
 	".\genmenu.h"\
-	".\IcoLib.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
 	".\m_genmenu.h"\
+	".\m_icolib.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1660,8 +1665,6 @@
 
 .\resource.rc : \
 	".\res\1.ico"\
-	".\res\10.ico"\
-	".\res\11.ico"\
 	".\res\2.ico"\
 	".\res\3.ico"\
 	".\res\4.ico"\
@@ -1669,9 +1672,9 @@
 	".\res\6.ico"\
 	".\res\7.ico"\
 	".\res\8.ico"\
-	".\res\9.ico"\
 	".\res\addgoupp.ico"\
 	".\res\away.ico"\
+	".\res\Back.tga"\
 	".\res\blank.ico"\
 	".\res\chat.ico"\
 	".\res\dnd.ico"\
@@ -1681,6 +1684,16 @@
 	".\res\hyperlin.cur"\
 	".\res\invisible.ico"\
 	".\res\lunch.ico"\
+	".\res\MicroAway.ico"\
+	".\res\Microchat.ico"\
+	".\res\MicroDND.ico"\
+	".\res\Microinvisible.ico"\
+	".\res\Microlunch.ico"\
+	".\res\MicroNA.ico"\
+	".\res\Microoccupied.ico"\
+	".\res\Microoffline.ico"\
+	".\res\Microphone.ico"\
+	".\res\miranda.ico"\
 	".\res\NA.ico"\
 	".\res\neo_meta_add.cur"\
 	".\res\neo_meta_create.cur"\
@@ -1695,6 +1708,7 @@
 	".\res\rename.ico"\
 	".\res\sendmail.ico"\
 	".\res\show_avatar.ico"\
+	".\res\skin.msf"\
 	".\res\sms.ico"\
 	".\statusmodes.h"\
 	
