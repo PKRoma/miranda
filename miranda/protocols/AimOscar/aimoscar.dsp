@@ -105,11 +105,23 @@ SOURCE=.\connection.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\conv.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\direct_connect.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\error.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\file.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\links.cpp
 # End Source File
 # Begin Source File
 
@@ -133,6 +145,10 @@ SOURCE=.\snac.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\strl.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\thread.cpp
 # End Source File
 # Begin Source File
@@ -141,15 +157,7 @@ SOURCE=.\utility.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\strl.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\windows.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\links.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -169,6 +177,10 @@ SOURCE=.\connection.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\conv.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\defines.h
 # End Source File
 # Begin Source File
@@ -177,7 +189,15 @@ SOURCE=.\direct_connect.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\error.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\file.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\links.h
 # End Source File
 # Begin Source File
 
@@ -205,6 +225,10 @@ SOURCE=.\snac.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\strl.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\thread.h
 # End Source File
 # Begin Source File
@@ -213,15 +237,7 @@ SOURCE=.\utility.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\strl.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\windows.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\links.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

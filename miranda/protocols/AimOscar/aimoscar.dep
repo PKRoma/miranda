@@ -2,10 +2,13 @@
 
 .\aim.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
@@ -21,9 +24,12 @@
 	".\aim.h"\
 	".\commands.h"\
 	".\connection.h"\
+	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
+	".\error.h"\
 	".\file.h"\
+	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
@@ -38,10 +44,13 @@
 
 .\commands.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
@@ -57,9 +66,12 @@
 	".\aim.h"\
 	".\commands.h"\
 	".\connection.h"\
+	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
+	".\error.h"\
 	".\file.h"\
+	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
@@ -74,10 +86,13 @@
 
 .\connection.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
@@ -93,9 +108,54 @@
 	".\aim.h"\
 	".\commands.h"\
 	".\connection.h"\
+	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
+	".\error.h"\
 	".\file.h"\
+	".\links.h"\
+	".\m_cluiframes.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\strl.h"\
+	".\thread.h"\
+	".\utility.h"\
+	".\windows.h"\
+	
+
+.\conv.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\conv.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\error.h"\
+	".\file.h"\
+	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
@@ -110,10 +170,13 @@
 
 .\direct_connect.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
@@ -129,9 +192,54 @@
 	".\aim.h"\
 	".\commands.h"\
 	".\connection.h"\
+	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
+	".\error.h"\
 	".\file.h"\
+	".\links.h"\
+	".\m_cluiframes.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\strl.h"\
+	".\thread.h"\
+	".\utility.h"\
+	".\windows.h"\
+	
+
+.\error.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\conv.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\error.h"\
+	".\file.h"\
+	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
@@ -146,10 +254,13 @@
 
 .\file.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
@@ -165,9 +276,54 @@
 	".\aim.h"\
 	".\commands.h"\
 	".\connection.h"\
+	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
+	".\error.h"\
 	".\file.h"\
+	".\links.h"\
+	".\m_cluiframes.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\strl.h"\
+	".\thread.h"\
+	".\utility.h"\
+	".\windows.h"\
+	
+
+.\links.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\commands.h"\
+	".\connection.h"\
+	".\conv.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\error.h"\
+	".\file.h"\
+	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
@@ -186,10 +342,13 @@
 
 .\packets.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
@@ -205,9 +364,12 @@
 	".\aim.h"\
 	".\commands.h"\
 	".\connection.h"\
+	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
+	".\error.h"\
 	".\file.h"\
+	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
@@ -222,10 +384,13 @@
 
 .\proxy.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
@@ -241,9 +406,12 @@
 	".\aim.h"\
 	".\commands.h"\
 	".\connection.h"\
+	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
+	".\error.h"\
 	".\file.h"\
+	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
@@ -258,10 +426,13 @@
 
 .\services.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
@@ -277,9 +448,12 @@
 	".\aim.h"\
 	".\commands.h"\
 	".\connection.h"\
+	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
+	".\error.h"\
 	".\file.h"\
+	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
@@ -294,10 +468,13 @@
 
 .\snac.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
@@ -313,9 +490,12 @@
 	".\aim.h"\
 	".\commands.h"\
 	".\connection.h"\
+	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
+	".\error.h"\
 	".\file.h"\
+	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
@@ -329,15 +509,19 @@
 	
 
 .\strl.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	".\strl.h"\
 	
 
 .\thread.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
@@ -353,9 +537,12 @@
 	".\aim.h"\
 	".\commands.h"\
 	".\connection.h"\
+	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
+	".\error.h"\
 	".\file.h"\
+	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
@@ -370,10 +557,13 @@
 
 .\utility.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
@@ -389,9 +579,12 @@
 	".\aim.h"\
 	".\commands.h"\
 	".\connection.h"\
+	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
+	".\error.h"\
 	".\file.h"\
+	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
@@ -406,10 +599,13 @@
 
 .\windows.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
@@ -425,9 +621,12 @@
 	".\aim.h"\
 	".\commands.h"\
 	".\connection.h"\
+	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
+	".\error.h"\
 	".\file.h"\
+	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
