@@ -791,7 +791,7 @@ void parseServerAddress(char* szServer, WORD* wPort)
 
 char *DemangleXml(const char *string, int len)
 {
-  char *szWork = (char*)malloc(len+1), *szChar = szWork;
+  char *szWork = (char*)SAFE_MALLOC(len+1), *szChar = szWork;
   int i;
 
   for (i=0; i<len; i++)
@@ -842,7 +842,7 @@ char *MangleXml(const char *string, int len)
   {
     if (string[i]=='<' || string[i]=='>') l += 4; else if (string[i]=='&') l += 5; else l++;
   }
-  szChar = szWork = (char*)malloc(l + 1);
+  szChar = szWork = (char*)SAFE_MALLOC(l + 1);
   for (i = 0; i<len; i++)
   {
     if (string[i]=='<')
@@ -877,7 +877,7 @@ char *MangleXml(const char *string, int len)
 
 char *EliminateHtml(const char *string, int len)
 {
-  char *tmp = (char*)malloc(len + 1);
+  char *tmp = (char*)SAFE_MALLOC(len + 1);
   int i,j;
   BOOL tag = FALSE;
   char *res;
@@ -1052,7 +1052,7 @@ void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckT
   icq_ack_args* pArgs;
 
 
-  pArgs = malloc(sizeof(icq_ack_args)); // This will be freed in the new thread
+  pArgs = (icq_ack_args*)SAFE_MALLOC(sizeof(icq_ack_args)); // This will be freed in the new thread
 
   pArgs->hContact = hContact;
   pArgs->hSequence = (HANDLE)dwCookie;
@@ -1305,6 +1305,18 @@ void __fastcall SAFE_FREE(void** p)
 }
 
 
+
+void* __fastcall SAFE_MALLOC(size_t size)
+{
+  void* p = malloc(size);
+
+  if (p)
+    ZeroMemory(p, size);
+
+  return p;
+}
+
+
 static int bPhotoLock = 0;
 
 void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
@@ -1362,7 +1374,7 @@ void ContactPhotoSettingChanged(HANDLE hContact)
   if (bNoChanging) return;
   bNoChanging = 1;
 
-  if (!bPhotoLock && ICQGetContactSettingByte(NULL, "AvatarsAutoLink", 0))
+  if (!bPhotoLock && ICQGetContactSettingByte(NULL, "AvatarsAutoLink", DEFAULT_LINK_AVATARS))
     DBDeleteContactSetting(hContact, "ContactPhoto", "ICQLink");
 
   bNoChanging = 0;
@@ -1573,7 +1585,7 @@ wchar_t *GetWindowTextUcs(HWND hWnd)
   {
     int nLen = GetWindowTextLengthW(hWnd);
 
-    utext = (wchar_t*)malloc((nLen+2)*sizeof(wchar_t));
+    utext = (wchar_t*)SAFE_MALLOC((nLen+2)*sizeof(wchar_t));
     GetWindowTextW(hWnd, utext, nLen + 1);
   }
   else
@@ -1605,9 +1617,8 @@ void SetWindowTextUcs(HWND hWnd, wchar_t *text)
   }
   else
   {
-    char *tmp = (char*)malloc(wcslen(text) + 1);
+    char *tmp = (char*)SAFE_MALLOC(wcslen(text) + 1);
 
-    tmp[0] = '\0';
     WideCharToMultiByte(CP_ACP, 0, text, -1, tmp, wcslen(text)+1, NULL, NULL);
     SetWindowTextA(hWnd, tmp);
     SAFE_FREE(&tmp);

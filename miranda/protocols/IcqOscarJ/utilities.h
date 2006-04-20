@@ -113,6 +113,7 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType);
 #define icqOnline ((gnCurrentStatus != ID_STATUS_OFFLINE) && (gnCurrentStatus != ID_STATUS_CONNECTING))
 
 void __fastcall SAFE_FREE(void** p);
+void* __fastcall SAFE_MALLOC(size_t size);
 
 void LinkContactPhotoToFile(HANDLE hContact, char* szFile);
 void ContactPhotoSettingChanged(HANDLE hContact);
