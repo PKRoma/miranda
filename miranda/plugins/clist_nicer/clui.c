@@ -1147,8 +1147,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				g_CluiData.hbmBgOld = SelectObject(g_CluiData.hdcBg, g_CluiData.hbmBg);
 			}
 
-			if(g_shutDown)
-				return 0;
+			if(g_shutDown) {
+				EndPaint(hwnd, &ps);
+            return 0;
+			}
 
 			hdc = g_CluiData.hdcBg;
 
