@@ -87,7 +87,7 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 			{	HDC sDC = GetDC( NULL );
 				HBITMAP hBitmap = CreateDIBitmap( sDC, pDib, CBM_INIT, pDibBits, ( BITMAPINFO* )pDib, DIB_PAL_COLORS );
 				SelectObject( sDC, hBitmap );
-				DeleteDC( sDC );
+				ReleaseDC( NULL, sDC );
 				GlobalFree( pDib );
 				return (int)hBitmap;
 	}	}	}
