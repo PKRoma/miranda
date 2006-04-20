@@ -54,11 +54,12 @@ extern HANDLE hServerConn;
 CRITICAL_SECTION localSeqMutex;
 CRITICAL_SECTION connectionHandleMutex;
 HANDLE hsmsgrequest;
+HANDLE hxstatusiconchanged;
 
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,15),
+  PLUGIN_MAKE_VERSION(0,3,6,16),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@users.sourceforge.net",
@@ -232,6 +233,9 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
     strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, ME_ICQ_STATUSMSGREQ);
     hsmsgrequest = CreateHookableEvent(pszServiceName);
+
+    strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, ME_ICQ_CUSTOMSTATUS_EXTRAICON_CHANGED);
+    hxstatusiconchanged = CreateHookableEvent(pszServiceName);
   }
 
   InitDirectConns();
@@ -301,6 +305,9 @@ int __declspec(dllexport) Unload(void)
 
   if (hsmsgrequest)
     DestroyHookableEvent(hsmsgrequest);
+
+  if (hxstatusiconchanged)
+    DestroyHookableEvent(hxstatusiconchanged);
 
   if (hHookUserMenu)
     UnhookEvent(hHookUserMenu);

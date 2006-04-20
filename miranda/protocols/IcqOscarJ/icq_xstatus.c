@@ -40,6 +40,8 @@
 
 extern void setUserInfo();
 
+extern HANDLE hxstatusiconchanged;
+
 static int bStatusMenu = 0;
 static int bXStatusMenuBuilt = 0;
 static HANDLE hHookExtraIconsRebuild = NULL;
@@ -119,6 +121,8 @@ static void setContactExtraIcon(HANDLE hContact, HANDLE hIcon)
   iec.hImage = hIcon;
   iec.ColumnType = EXTRA_ICON_ADV1;
   CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+
+  NotifyEventHooks(hxstatusiconchanged, (WPARAM)hContact, (LPARAM)hIcon);
 }
 
 

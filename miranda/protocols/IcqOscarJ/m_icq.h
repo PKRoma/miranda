@@ -240,3 +240,9 @@ typedef struct {
                              // 0 failed to request (e.g. auto-request enabled)
                              // -1 delayed (rate control) - sequence unknown
 #define PS_ICQ_REQUESTCUSTOMSTATUS "/RequestXStatusDetails"
+
+
+// Called when contact changes custom status and extra icon is set to clist_mw
+//wParam = hContact    // contact changing status
+//lParam = hIcon       // HANDLE to clist extra icon set as custom status
+#define ME_ICQ_CUSTOMSTATUS_EXTRAICON_CHANGED "/XStatusExtraIconChanged"
