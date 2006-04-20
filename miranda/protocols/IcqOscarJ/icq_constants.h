@@ -256,6 +256,7 @@
 #define ICQ_SERVER_RESUME           0x000d
 #define ICQ_CLIENT_REQINFO          0x000e
 #define ICQ_SERVER_NAME_INFO        0x000f
+#define ICQ_SERVER_EVIL_NOTICE      0x0010
 #define ICQ_CLIENT_SET_IDLE         0x0011
 #define ICQ_SERVER_MIGRATIONREQ     0x0012
 #define ICQ_SERVER_MOTD             0x0013
@@ -516,10 +517,22 @@
 #define SSI_ITEM_IMPORTTIME         0x0013  // Item that contain roster import time (name: "Import time")
 #define SSI_ITEM_BUDDYICON          0x0014  // Buddy icon info. (names: from "0" and incrementing by one)
 
+#define SSI_TLV_AWAITING_AUTH       0x0066  // Contact not authorised in list
+#define SSI_TLV_UNKNOWN             0x006D  // WTF ?
+#define SSI_TLV_SUBITEMS            0x00C8  // List of sub-items IDs
+#define SSI_TLV_VISIBILITY          0x00CA
+#define SSI_TLV_SHORTCUT            0x00CD
+#define SSI_TLV_TIMESTAMP           0x00D4  // Import Timestamp
+#define SSI_TLV_AVATARHASH          0x00D5
+#define SSI_TLV_NAME                0x0131  // Custom contact nickname
+#define SSI_TLV_EMAIL               0x0137  // Custom contact email
+#define SSI_TLV_PHONE               0x013A  // Custom contact SMS number
+#define SSI_TLV_COMMENT             0x013C  // User comment
+
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x8003060F
+#define ICQ_PLUG_VERSION            0x80030610
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

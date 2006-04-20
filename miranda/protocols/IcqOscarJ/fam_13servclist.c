@@ -46,6 +46,10 @@ BOOL bIsSyncingCL = FALSE;
 
 static HANDLE HContactFromRecordName(char* szRecordName, int *bAdded);
 
+static int getServerDataFromItemTLV(oscar_tlv_chain* pChain, unsigned char *buf);
+
+static int unpackServerListItem(unsigned char** pbuf, WORD* pwLen, char* pszRecordName, WORD* pwGroupId, WORD* pwItemId, WORD* pwItemType, WORD* pwTlvLength);
+
 static void handleServerCListAck(servlistcookie* sc, WORD wError);
 static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, serverthread_info *info);
 static void handleRecvAuthRequest(unsigned char *buf, WORD wLen);
@@ -180,28 +184,68 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
     break;
 
   case ICQ_LISTS_UPDATEGROUP:
+    if (wBufferLength >= 10)
+    {
+      WORD wGroupId, wItemId, wItemType, wTlvLen;
+      uid_str szUID;
+
+      if (unpackServerListItem(&pBuffer, &wBufferLength, szUID, &wGroupId, &wItemId, &wItemType, &wTlvLen))
+      {
+        HANDLE hContact = HContactFromRecordName(szUID, NULL);
+
+        if (wBufferLength >= wTlvLen && hContact != INVALID_HANDLE_VALUE && wItemType == SSI_ITEM_BUDDY)
+        { // a contact was updated on server
+          if (wTlvLen > 0)
+          { // parse details
+            oscar_tlv_chain *pChain = readIntoTLVChain(&pBuffer, (WORD)(wTlvLen), 0);
+
+            if (pChain) 
+            {
+              oscar_tlv* pAuth = getTLV(pChain, SSI_TLV_AWAITING_AUTH, 1);
+              BYTE bAuth = ICQGetContactSettingByte(hContact, "Auth", 0);
+
+              if (bAuth && !pAuth)
+              { // server authorised our contact
+                char str[MAX_PATH];
+                char msg[MAX_PATH];
+                char *nick = NickFromHandleUtf(hContact);
+
+                ICQWriteContactSettingByte(hContact, "Auth", 0);
+                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("User \"%s\" was authorised in the server list.", msg), nick);
+                icq_LogMessage(LOG_WARNING, str);
+                SAFE_FREE(&nick);
+              }
+
+              { // update server's data - otherwise consequent operations can fail with 0x0E
+                unsigned char* data = (unsigned char*)_alloca(wTlvLen);
+                int datalen = getServerDataFromItemTLV(pChain, data);
+
+                if (datalen > 0)
+                  ICQWriteContactSettingBlob(hContact, "ServerData", data, datalen);
+                else
+                  ICQDeleteContactSetting(hContact, "ServerData");
+              }
+
+              disposeChain(&pChain);
+
+              break;
+            }
+          }
+        }
+      }
+    }
     NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x09, "Server updated our contact on list");
     break;
 
   case ICQ_LISTS_REMOVEFROMLIST:
     if (wBufferLength >= 10)
     {
-      WORD wNameLen;
       WORD wGroupId, wItemId, wItemType;
       uid_str szUID;
 
-      unpackWord(&pBuffer, &wNameLen);
-      if (wBufferLength >= 10 + wNameLen)
+      if (unpackServerListItem(&pBuffer, &wBufferLength, szUID, &wGroupId, &wItemId, &wItemType, NULL))
       {
-        HANDLE hContact;
-
-        unpackString(&pBuffer, szUID, wNameLen);
-        szUID[wNameLen] = '\0';
-        wBufferLength -= 10 + wNameLen;
-        unpackWord(&pBuffer, &wGroupId);
-        unpackWord(&pBuffer, &wItemId);
-        unpackWord(&pBuffer, &wItemType);
-        hContact = HContactFromRecordName(szUID, NULL);
+        HANDLE hContact = HContactFromRecordName(szUID, NULL);
 
         if (hContact != INVALID_HANDLE_VALUE && wItemType == SSI_ITEM_BUDDY)
         { // a contact was removed from our list
@@ -227,18 +271,10 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
   case ICQ_LISTS_ADDTOLIST:
     if (wBufferLength >= 10)
     {
-      WORD wNameLen;
       WORD wGroupId, wItemId, wItemType, wTlvLen;
 
-      unpackWord(&pBuffer, &wNameLen);
-      if (wBufferLength >= 10 + wNameLen)
+      if (unpackServerListItem(&pBuffer, &wBufferLength, NULL, &wGroupId, &wItemId, &wItemType, &wTlvLen))
       {
-        pBuffer += wNameLen;
-        wBufferLength -= 10 + wNameLen;
-        unpackWord(&pBuffer, &wGroupId);
-        unpackWord(&pBuffer, &wItemId);
-        unpackWord(&pBuffer, &wItemType);
-        unpackWord(&pBuffer, &wTlvLen);
         if (wBufferLength >= wTlvLen && wItemType == SSI_ITEM_IMPORTTIME)
         {
           if (wTlvLen > 0)
@@ -247,7 +283,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 
             if (pChain) 
             {
-              ICQWriteContactSettingDword(NULL, "ImportTS", getDWordFromChain(pChain, 0xD4, 1));
+              ICQWriteContactSettingDword(NULL, "ImportTS", getDWordFromChain(pChain, SSI_TLV_TIMESTAMP, 1));
               ICQWriteContactSettingWord(NULL, "SrvImportID", wItemId);
               disposeChain(&pChain);
 
@@ -317,20 +353,54 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 
 
 
+static int unpackServerListItem(unsigned char** pbuf, WORD* pwLen, char* pszRecordName, WORD* pwGroupId, WORD* pwItemId, WORD* pwItemType, WORD* pwTlvLength)
+{
+  WORD wRecordNameLen;
+
+  // The name of the entry. If this is a group header, then this
+  // is the name of the group. If it is a plain contact list entry,
+  // then it's the UIN of the contact.
+  unpackWord(pbuf, &wRecordNameLen);
+  if (*pwLen < 10 + wRecordNameLen || wRecordNameLen >= MAX_PATH)
+    return 0; // Failure
+
+  unpackString(pbuf, pszRecordName, wRecordNameLen);
+  pszRecordName[wRecordNameLen] = '\0';
+
+  // The group identifier this entry belongs to. If 0, this is meta information or
+  // a contact without a group
+  unpackWord(pbuf, pwGroupId);
+
+  // The ID of this entry. Group headers have ID 0. Otherwise, this
+  // is a random number generated when the user is added to the
+  // contact list, or when the user is ignored. See CLI_ADDBUDDY.
+  unpackWord(pbuf, pwItemId);
+
+  // This field indicates what type of entry this is
+  unpackWord(pbuf, pwItemType);
+
+  // The length in bytes of the following TLV chain
+  unpackWord(pbuf, pwTlvLength);
+
+  *pwLen -= wRecordNameLen + 10;
+
+  return 1; // Success
+}
+
+
+
 static DWORD updateServerGroupData(WORD wGroupId, void *groupData, int groupSize)
 {
   DWORD dwCookie;
   servlistcookie* ack;
 
-  ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+  ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
   if (!ack)
   {
     NetLog_Server("Updating of group on server list failed (malloc error)");
     return 0;
   }
   ack->dwAction = SSA_GROUP_UPDATE;
-  ack->wContactId = 0;
-  ack->hContact = NULL;
   ack->szGroupName = getServerGroupNameUtf(wGroupId);
   ack->wGroupId = wGroupId;
   dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, 0, ack);
@@ -358,7 +428,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         NetLog_Server("Renaming of server contact failed, error %d", wError);
         icq_LogMessage(LOG_WARNING, "Renaming of server contact failed.");
       }
-      SAFE_FREE(&sc->szUID);
       break;
     }
   case SSA_CONTACT_COMMENT: 
@@ -368,7 +437,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         NetLog_Server("Update of server contact's comment failed, error %d", wError);
         icq_LogMessage(LOG_WARNING, "Update of server contact's comment failed.");
       }
-      SAFE_FREE(&sc->szUID);
       break;
     }
   case SSA_PRIVACY_ADD: 
@@ -378,7 +446,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         NetLog_Server("Adding of privacy item to server list failed, error %d", wError);
         icq_LogMessage(LOG_WARNING, "Adding of privacy item to server list failed.");
       }
-      SAFE_FREE(&sc->szUID);
       break;
     }
   case SSA_PRIVACY_REMOVE: 
@@ -389,7 +456,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         icq_LogMessage(LOG_WARNING, "Removing of privacy item from server list failed.");
       }
       FreeServerID(sc->wContactId, SSIT_ITEM); // release server id
-      SAFE_FREE(&sc->szUID);
       break;
     }
   case SSA_CONTACT_ADD:
@@ -404,19 +470,17 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
           ICQWriteContactSettingByte(sc->hContact, "Auth", 1); // we need auth
           dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, sc->dwUin, sc);
-          icq_sendBuddyUtf(dwCookie, ICQ_LISTS_ADDTOLIST, sc->dwUin, sc->szUID, sc->wGroupId, sc->wContactId, sc->szGroupName, NULL, 1, SSI_ITEM_BUDDY);
+          icq_sendServerContact(sc->hContact, dwCookie, ICQ_LISTS_ADDTOLIST, sc->wGroupId, sc->wContactId);
 
           sc = NULL; // we do not want it to be freed now
           break;
         }
         FreeServerID(sc->wContactId, SSIT_ITEM);
-        SAFE_FREE(&sc->szGroupName); // the the nick
         sendAddEnd(); // end server modifications here
         RemovePendingOperation(sc->hContact, 0);
 
         NetLog_Server("Adding of contact to server list failed, error %d", wError);
         icq_LogMessage(LOG_WARNING, "Adding of contact to server list failed.");
-        SAFE_FREE(&sc->szUID);
       }
       else
       {
@@ -426,7 +490,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
         ICQWriteContactSettingWord(sc->hContact, "ServerId", sc->wContactId);
         ICQWriteContactSettingWord(sc->hContact, "SrvGroupId", sc->wGroupId);
-        SAFE_FREE(&sc->szGroupName); // free the nick
 
         if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize))
         { // the group is not empty, just update it
@@ -438,7 +501,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
           NetLog_Server("Group update failed.");
         }
         sendAddEnd(); // end server modifications here
-        SAFE_FREE(&sc->szUID);
 
         if (hPend) RemovePendingOperation(hPend, 1);
       }
@@ -467,12 +529,10 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         *(((WORD*)groupData)+(groupSize>>1)) = sc->wGroupId; // add this new group id
         groupSize += 2;
 
-        ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+        ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
         if (ack)
         {
-          ack->wGroupId = 0;
           ack->dwAction = SSA_GROUP_UPDATE;
-          ack->szGroupName = NULL;
           dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, 0, ack);
 
           icq_sendGroupUtf(dwCookie, ICQ_LISTS_UPDATEGROUP, 0, ack->szGroupName, groupData, groupSize);
@@ -507,8 +567,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
           updateServerGroupData(sc->wGroupId, groupData, groupSize);
 
           sendAddEnd(); // end server modifications here
-
-          SAFE_FREE(&sc->szUID);
         }
         else // the group is empty, delete it if it does not have sub-groups
         {
@@ -524,7 +582,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
             icq_sendGroupUtf(dwCookie, ICQ_LISTS_REMOVEFROMLIST, sc->wGroupId, sc->szGroupName, NULL, 0);
             // here the modifications go on
-            SAFE_FREE(&sc->szUID);
             sc = NULL; // we do not want it to be freed now
           }
         }
@@ -535,7 +592,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         NetLog_Server("Removing of contact from server list failed, error %d", wError);
         icq_LogMessage(LOG_WARNING, "Removing of contact from server list failed.");
         sendAddEnd(); // end server modifications here
-        SAFE_FREE(&sc->szUID);
       }
       break;
     }
@@ -586,7 +642,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
     { // we moved contact to another group
       if (sc->lParam == -1)
       { // the first was an error
-        SAFE_FREE(&sc->szUID);
         break;
       }
       if (wError)
@@ -621,15 +676,13 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
           DWORD dwCookie;
           servlistcookie* ack;
 
-          ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+          ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
           if (!ack)
           {
             NetLog_Server("Updating of group on server list failed (malloc error)");
             break;
           }
           ack->dwAction = SSA_GROUP_REMOVE;
-          ack->wContactId = 0;
-          ack->hContact = NULL;
           ack->szGroupName = getServerGroupNameUtf(sc->wGroupId);
           ack->wGroupId = sc->wGroupId;
           dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, 0, ack);
@@ -644,10 +697,11 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
         if (bEnd) sendAddEnd();
         if (sc->hContact) RemovePendingOperation(sc->hContact, 1);
-        SAFE_FREE(&sc->szUID);
       }
-      else
+      else // contact was deleted from server-list
       {
+        ICQDeleteContactSetting(sc->hContact, "ServerId");
+        ICQDeleteContactSetting(sc->hContact, "SrvGroupId");
         sc->lParam = 1;
         sc = NULL; // wait for second ack
       }
@@ -667,6 +721,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         setServerGroupIDUtf(makeGroupPathUtf(sc->wGroupId), sc->wGroupId);
       }
       RemoveGroupRename(sc->wGroupId);
+      SAFE_FREE(&sc->szGroupName);
       break;
     }
   case SSA_SETAVATAR:
@@ -745,12 +800,37 @@ static HANDLE HContactFromRecordName(char* szRecordName, int *bAdded)
 
 
 
+static int getServerDataFromItemTLV(oscar_tlv_chain* pChain, unsigned char *buf)
+{ // get server-list item's TLV data
+  oscar_tlv_chain* list = pChain;
+  int datalen = 0;
+  icq_packet pBuf;
+
+  // Initialize our handy data buffer
+  pBuf.wPlace = 0;
+  pBuf.pData = buf;
+
+  while (list)
+  { // collect non-standard TLVs and save them to DB
+    if (list->tlv.wType != SSI_TLV_AWAITING_AUTH &&
+        list->tlv.wType != SSI_TLV_NAME &&
+        list->tlv.wType != SSI_TLV_COMMENT)
+    { // only TLVs which we do not handle on our own
+      packTLV(&pBuf, list->tlv.wType, list->tlv.wLen, list->tlv.pData);
+
+      datalen += list->tlv.wLen + 4;
+    }
+    list = list->next;
+  }
+  return datalen;
+}
+
+
 static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, serverthread_info *info)
 {
   BYTE bySSIVersion;
   WORD wRecordCount;
   WORD wRecord;
-  WORD wRecordNameLen;
   WORD wGroupId;
   WORD wItemId;
   WORD wTlvType;
@@ -768,7 +848,6 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
     bIsLastPacket = FALSE;
   else
     bIsLastPacket = TRUE;
-
 
   if (wLen < 3)
     return;
@@ -793,43 +872,20 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
     NetLog_Server("SSI: parsing record %u", wRecord + 1);
 
     if (wLen < 10)
-    {
-      // minimum: name length (zero), group ID, item ID, empty TLV
+    { // minimum: name length (zero), group ID, item ID, empty TLV
       NetLog_Server("Warning: SSI parsing error (%d)", 0);
       break;
     }
 
-    // The name of the entry. If this is a group header, then this
-    // is the name of the group. If it is a plain contact list entry,
-    // then it's the UIN of the contact.
-    unpackWord(&buf, &wRecordNameLen);
-    if (wLen < 10 + wRecordNameLen || wRecordNameLen >= MAX_PATH)
-    {
+    if (!unpackServerListItem(&buf, &wLen, szRecordName, &wGroupId, &wItemId, &wTlvType, &wTlvLength))
+    { // unpack basic structure
       NetLog_Server("Warning: SSI parsing error (%d)", 1);
       break;
     }
-    unpackString(&buf, szRecordName, wRecordNameLen);
-    szRecordName[wRecordNameLen] = '\0';
-
-    // The group identifier this entry belongs to. If 0, this is meta information or
-    // a contact without a group
-    unpackWord(&buf, &wGroupId);
-
-    // The ID of this entry. Group headers have ID 0. Otherwise, this
-    // is a random number generated when the user is added to the
-    // contact list, or when the user is ignored. See CLI_ADDBUDDY.
-    unpackWord(&buf, &wItemId);
-
-    // This field indicates what type of entry this is
-    unpackWord(&buf, &wTlvType);
-
-    // The length in bytes of the following TLV chain
-    unpackWord(&buf, &wTlvLength);
 
     NetLog_Server("Name: '%s', GroupID: %u, EntryID: %u, EntryType: %u, TLVlength: %u",
       szRecordName, wGroupId, wItemId, wTlvType, wTlvLength);
 
-    wLen -= (10 + wRecordNameLen);
     if (wLen < wTlvLength)
     {
       NetLog_Server("Warning: SSI parsing error (%d)", 2);
@@ -839,7 +895,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
     // Initialize the tlv chain
     if (wTlvLength > 0)
     {
-      pChain = readIntoTLVChain(&buf, (WORD)(wTlvLength), 0);
+      pChain = readIntoTLVChain(&buf, wTlvLength, 0);
       wLen -= wTlvLength;
     }
     else
@@ -880,8 +936,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
             AddJustAddedContact(hContact);
           }
           else
-          {
-            // we should add new contacts and this contact was just added, show it
+          { // we should add new contacts and this contact was just added, show it
             if (IsContactJustAdded(hContact))
             {
               SetContactHidden(hContact, 0);
@@ -945,7 +1000,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
 
           if (pChain)
           { // Look for nickname TLV and copy it to the db if necessary
-            if (pTLV = getTLV(pChain, 0x0131, 1))
+            if (pTLV = getTLV(pChain, SSI_TLV_NAME, 1))
             {
               if (pTLV->pData && (pTLV->wLen > 0))
               {
@@ -954,7 +1009,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
 
                 wNickLength = pTLV->wLen;
 
-                pszNick = (char*)_alloca(wNickLength + 1);
+                pszNick = (char*)SAFE_MALLOC(wNickLength + 1);
                 // Copy buffer to utf-8 buffer
                 memcpy(pszNick, pTLV->pData, wNickLength);
                 pszNick[wNickLength] = 0; // Terminate string
@@ -985,6 +1040,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
                     UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
                   }
                 }
+                SAFE_FREE(&pszNick);
               }
               else
               {
@@ -995,7 +1051,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
               icq_QueueUser(hContact); // queue user without nick for fast auto info update
 
             // Look for comment TLV and copy it to the db if necessary
-            if (pTLV = getTLV(pChain, 0x013C, 1))
+            if (pTLV = getTLV(pChain, SSI_TLV_COMMENT, 1))
             {
               if (pTLV->pData && (pTLV->wLen > 0))
               {
@@ -1005,7 +1061,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
 
                 wCommentLength = pTLV->wLen;
 
-                pszComment = (char*)_alloca(wCommentLength + 1);
+                pszComment = (char*)SAFE_MALLOC(wCommentLength + 1);
                 // Copy buffer to utf-8 buffer
                 memcpy(pszComment, pTLV->pData, wCommentLength);
                 pszComment[wCommentLength] = 0; // Terminate string
@@ -1030,6 +1086,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
                     UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
                   }
                 }
+                SAFE_FREE(&pszComment);
               }
               else
               {
@@ -1038,7 +1095,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
             }
 
             // Look for need-authorization TLV
-            if (pTLV = getTLV(pChain, 0x0066, 1))
+            if (getTLV(pChain, SSI_TLV_AWAITING_AUTH, 1))
             {
               ICQWriteContactSettingByte(hContact, "Auth", 1);
               NetLog_Server("SSI contact need authorization");
@@ -1046,6 +1103,18 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
             else
             {
               ICQWriteContactSettingByte(hContact, "Auth", 0);
+            }
+
+            { // store server-list item's TLV data
+              unsigned char* data = (unsigned char*)SAFE_MALLOC(wTlvLength);
+              int datalen = getServerDataFromItemTLV(pChain, data);
+
+              if (datalen > 0)
+                ICQWriteContactSettingBlob(hContact, "ServerData", data, datalen);
+              else
+                ICQDeleteContactSetting(hContact, "ServerData");
+
+              SAFE_FREE(&data);
             }
           }
         }
@@ -1179,10 +1248,10 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
         ReserveServerID(wItemId, SSIT_ITEM);
 
         // Look for visibility TLV
-        if (bVisibility = getByteFromChain(pChain, 0x00CA, 1))
+        if (bVisibility = getByteFromChain(pChain, SSI_TLV_VISIBILITY, 1))
         { // found it, store the id, we do not need current visibility - we do not rely on it
           ICQWriteContactSettingWord(NULL, "SrvVisibilityID", wItemId);
-          NetLog_Server("Visibility is %u, ID is %u", bVisibility, wItemId);
+          NetLog_Server("Visibility is %u", bVisibility);
         }
       }
       break;
@@ -1238,7 +1307,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
         /* time our list was first imported */
         /* pszRecordName is "Import Time" */
         /* data is TLV(13) {TLV(D4) {time_t importTime}} */
-        ICQWriteContactSettingDword(NULL, "ImportTS", getDWordFromChain(pChain, 0xD4, 1));
+        ICQWriteContactSettingDword(NULL, "ImportTS", getDWordFromChain(pChain, SSI_TLV_TIMESTAMP, 1));
         ICQWriteContactSettingWord(NULL, "SrvImportID", wItemId);
         NetLog_Server("SSI first import recognized");
       }
@@ -1304,15 +1373,12 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
     }
     if (ICQGetContactSettingWord(NULL, "SrvRecordCount", 0) == 0)
     { // we got empty serv-list, create master group
-      servlistcookie* ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+      servlistcookie* ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
       if (ack)
       { 
         DWORD seq;
 
         ack->dwAction = SSA_GROUP_UPDATE;
-        ack->hContact = NULL;
-        ack->wContactId = 0;
-        ack->wGroupId = 0;
         ack->szGroupName = "";
         seq = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, 0, ack);
         icq_sendGroupUtf(seq, ICQ_LISTS_ADDTOLIST, 0, ack->szGroupName, NULL, 0);
@@ -1368,7 +1434,7 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
   pre.flags=0;
   pre.timestamp=time(NULL);
   pre.lParam=sizeof(DWORD)+sizeof(HANDLE)+wReasonLen+5;
-  szReason = (char*)malloc(wReasonLen+1);
+  szReason = (char*)SAFE_MALLOC(wReasonLen+1);
   if (szReason)
   {
     memcpy(szReason, buf, wReasonLen);
@@ -1613,14 +1679,13 @@ void updateServVisibilityCode(BYTE bCode)
       wCommand = ICQ_LISTS_UPDATEGROUP;
     }
 
-    ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+    ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
     if (!ack) 
     {
       NetLog_Server("Cookie alloc failure.");
       return; // out of memory, go away
     }
     ack->dwAction = SSA_VISIBILITY; // update visibility
-    ack->dwUin = 0; // this is ours
     dwCookie = AllocateCookie(CKT_SERVERLIST, wCommand, 0, ack); // take cookie
 
     // Build and send packet
@@ -1669,14 +1734,13 @@ void updateServAvatarHash(char* pHash, int size)
       wCommand = ICQ_LISTS_UPDATEGROUP;
     }
 
-    ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+    ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
     if (!ack) 
     {
       NetLog_Server("Cookie alloc failure.");
       return; // out of memory, go away
     }
     ack->dwAction = SSA_SETAVATAR; // update avatar hash
-    ack->dwUin = 0; // this is ours
     ack->wContactId = wAvatarID;
     dwCookie = AllocateCookie(CKT_SERVERLIST, wCommand, 0, ack); // take cookie
 
@@ -1708,14 +1772,13 @@ void updateServAvatarHash(char* pHash, int size)
     {
       return;
     }
-    ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+    ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
     if (!ack) 
     {
       NetLog_Server("Cookie alloc failure.");
       return; // out of memory, go away
     }
     ack->dwAction = SSA_REMOVEAVATAR; // update avatar hash
-    ack->dwUin = 0; // this is ours
     ack->wContactId = wAvatarID;
     dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, 0, ack); // take cookie
 
@@ -1749,12 +1812,12 @@ void sendAddStart(int bImport)
       DWORD dwCookie;
       servlistcookie* ack;
 
-      if (ack = (servlistcookie*)malloc(sizeof(servlistcookie)))
+      if (ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie)))
       { // we have cookie good, go on
         ack->dwAction = SSA_IMPORT;
         dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, 0, ack);
 
-        icq_sendBuddyUtf(dwCookie, ICQ_LISTS_REMOVEFROMLIST, 0, "ImportTime", 0, wImportID, NULL, NULL, 0, SSI_ITEM_IMPORTTIME);
+        icq_sendSimpleItem(dwCookie, ICQ_LISTS_REMOVEFROMLIST, 0, "ImportTime", 0, wImportID, SSI_ITEM_IMPORTTIME);
       }
     }
   }

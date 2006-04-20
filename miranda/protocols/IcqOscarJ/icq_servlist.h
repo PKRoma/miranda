@@ -64,7 +64,6 @@ typedef void (*GROUPADDCALLBACK)(WORD wGroupId, LPARAM lParam);
 typedef struct servlistcookie_t
 {
   DWORD dwUin;
-  char* szUID;
   HANDLE hContact;
   WORD wContactId;
   WORD wGroupId;
@@ -94,7 +93,8 @@ int countGroupLevel(WORD wGroupId);
 
 void FlushSrvGroupsCache();
 
-DWORD icq_sendBuddyUtf(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, WORD wGroupId, WORD wContactId, const char *szNick, const char*szNote, int authRequired, WORD wItemType);
+DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD wGroupId, WORD wContactId);
+DWORD icq_sendSimpleItem(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, WORD wGroupId, WORD wItemId, WORD wItemType);
 DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent);
 
 DWORD icq_removeServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wItemId, WORD wType);
