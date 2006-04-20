@@ -267,6 +267,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       szClient = cliSpamBot;
     }
   }
+  else if (!dwFT1 && !dwFT2 && !dwFT3 && !wVersion && !wLen && dwWebPort == 0x75BB)
+  {
+    szClient = cliSpamBot;
+  }
 
   { // capabilities based detection
     capstr* capId;
