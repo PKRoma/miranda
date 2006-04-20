@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -84,7 +84,6 @@ static int handleCompare( void* c1, void* c2 )
 typedef struct _section
 {
 	HANDLE hContact;
-	int ownerThreadID;
 	CRITICAL_SECTION cacheSection;
 } LOCKPDNCE;
 
@@ -123,7 +122,7 @@ void FreeDisplayNameCache(void)
 }
 
 
-void LockCacheItem(HANDLE hContact)
+void LockCacheItem(HANDLE hContact, char * debug, int line)
 {
 	//
 	int ind=0;
@@ -131,7 +130,8 @@ void LockCacheItem(HANDLE hContact)
 	if (!clistCache) return;
 	EnterCriticalSection(&protectSection);
 	//find here
-	for (ind=0; ind<MAX_SECTIONS-1; ind++) if (lockedPDNCE[ind].hContact==hContact) break;
+	for (ind=0; ind<MAX_SECTIONS-1; ind++) 
+		if (lockedPDNCE[ind].hContact==hContact) break;
 	if (ind==MAX_SECTIONS-1) // was not found 
 	{
 		for (zero=0; zero<MAX_SECTIONS-1; zero++) if (lockedPDNCE[zero].hContact==NULL) break;
@@ -141,6 +141,9 @@ void LockCacheItem(HANDLE hContact)
 	}
 	LeaveCriticalSection(&protectSection);
 	//enter here
+	//TRACEVAR("In file %s ", debug);
+	//TRACEVAR("at line %d ", line);
+	//TRACEVAR("locking - %d", hContact);
 	EnterCriticalSection(&(lockedPDNCE[ind].cacheSection));
 }
 
@@ -151,15 +154,16 @@ void UnlockCacheItem(HANDLE hContact)
 	EnterCriticalSection(&protectSection);
 	for (ind=0; ind<MAX_SECTIONS-1; ind++) if (lockedPDNCE[ind].hContact==hContact) break;
 	if (ind!=MAX_SECTIONS-1) 
-		if (lockedPDNCE[ind].cacheSection.LockCount==1) 
-			lockedPDNCE[ind].hContact=NULL;
+		if (lockedPDNCE[ind].cacheSection.LockCount<1)  lockedPDNCE[ind].hContact=NULL;
+
 	//find here
 	LeaveCriticalSection(&protectSection);
 	//leave here
+	//TRACEVAR(" ... and unlock - %d\n", hContact);
 	LeaveCriticalSection(&(lockedPDNCE[ind].cacheSection));
 }
 
-ClcCacheEntryBase* fnGetCacheEntry(HANDLE hContact)
+ClcCacheEntryBase* cliGetCacheEntry(HANDLE hContact)
 {
 	ClcCacheEntryBase* p;
 	int idx;
@@ -175,9 +179,10 @@ ClcCacheEntryBase* fnGetCacheEntry(HANDLE hContact)
 	return p;
 }
 
-void FreeDisplayNameCacheItem( pdisplayNameCacheEntry p )
+void cliFreeCacheItem( pdisplayNameCacheEntry p )
 {
-	LockCacheItem(p->hContact);
+	HANDLE hContact=p->hContact;
+	LockCacheItem(hContact, __FILE__, __LINE__);
 	if ( !p->isUnknown && p->name && p->name!=UnknownConctactTranslatedName) mir_free(p->name);
 	p->name = NULL; 
 	#if defined( _UNICODE )
@@ -188,7 +193,7 @@ void FreeDisplayNameCacheItem( pdisplayNameCacheEntry p )
 	if ( p->szThirdLineText) mir_free(p->szThirdLineText);
 	if ( p->plSecondLineText) {Cache_DestroySmileyList(p->plSecondLineText);p->plSecondLineText=NULL;}
 	if ( p->plThirdLineText)  {Cache_DestroySmileyList(p->plThirdLineText);p->plThirdLineText=NULL;}
-	UnlockCacheItem(p->hContact);
+	UnlockCacheItem(hContact);
 }
 
 
@@ -204,7 +209,7 @@ void FreeDisplayNameCache(SortedList *list)
 
 }
 */
-void CheckPDNCE(pdisplayNameCacheEntry pdnce)
+void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 {
 	if (pdnce!=NULL)
 	{
@@ -269,12 +274,12 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 
 			if (!DBGetContactSettingTString(pdnce->hContact,"CList","Group",&dbv))
 			{
-				pdnce->szGroup=mir_strdupT(dbv.ptszVal);
+				pdnce->szGroup=mir_tstrdup(dbv.ptszVal);
 				mir_free(dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}else
 			{
-				pdnce->szGroup=mir_strdupT(TEXT(""));
+				pdnce->szGroup=mir_tstrdup(TEXT(""));
 			}
 
 		}
@@ -338,7 +343,7 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 	{
 		if (SettingType==16)
 		{
-			LockCacheItem(hContact);
+			LockCacheItem(hContact, __FILE__, __LINE__);
 			if (pdnce->szSecondLineText) 
 			{
 				
@@ -477,7 +482,7 @@ int GetContactCachedStatus(HANDLE hContact)
 
 int ContactAdded(WPARAM wParam,LPARAM lParam)
 {
-	ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,(char*)GetContactCachedProtocol((HANDLE)wParam),ID_STATUS_OFFLINE),1); ///by FYR
+	cli_ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,(char*)GetContactCachedProtocol((HANDLE)wParam),ID_STATUS_OFFLINE),1); ///by FYR
 	//	ChangeContactIcon((HANDLE)wParam,pcli->pfnIconFromStatusMode((char*)GetContactCachedProtocol((HANDLE)wParam),ID_STATUS_OFFLINE),1);
 	pcli->pfnSortContacts();
 	return 0;
@@ -550,7 +555,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 						ReAskStatusMessage((HANDLE)wParam);  
 					}
 					pcli->pfnClcBroadcast( INTM_STATUSCHANGED,wParam,0);
-					ChangeContactIcon((HANDLE)wParam, ExtIconFromStatusMode((HANDLE)wParam,cws->szModule, cws->value.wVal), 0); //by FYR
+					cli_ChangeContactIcon((HANDLE)wParam, ExtIconFromStatusMode((HANDLE)wParam,cws->szModule, cws->value.wVal), 0); //by FYR
 					pcli->pfnSortContacts();
 				}
 				else 
@@ -586,7 +591,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 				{
 					char *szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
 					//				ChangeContactIcon((HANDLE)wParam,IconFromStatusMode(szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),1);
-					ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),1);  //by FYR
+					cli_ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),1);  //by FYR
 				}
 				pcli->pfnClcBroadcast(CLM_AUTOREBUILD,0, 0);
 			}
@@ -603,7 +608,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 				InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);	
 				if(cws->value.type==DBVT_DELETED) szProto=NULL;
 				else szProto=cws->value.pszVal;
-				ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),0); //by FYR
+				cli_ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord((HANDLE)wParam,szProto,"Status",ID_STATUS_OFFLINE)),0); //by FYR
 			}
 		}
 		// Clean up

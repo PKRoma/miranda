@@ -5,7 +5,7 @@
 #include "commonprototypes.h"
 
 #pragma hdrstop
-
+extern int RecurciveDeleteMenu(HMENU hMenu);
 //menu object array
 PIntMenuObject MenuObjects=NULL;
 int MenuObjectsCount=0;
@@ -17,14 +17,15 @@ int RegisterOneIcon(int mo,int mi);
 static CRITICAL_SECTION csMenuHook;
 
 
-static void lockmo()
+static void __inline lockmo()
 {
   EnterCriticalSection(&csMenuHook);
-};
-static void unlockmo()
+}
+
+static void __inline unlockmo()
 {
   LeaveCriticalSection(&csMenuHook);
-};
+}
 
 void FreeAndNil(void **p)
 {
@@ -35,11 +36,11 @@ void FreeAndNil(void **p)
       if (!IsBadCodePtr(*p))
       {
         mir_free(*p);
-      };
+	  }
       *p=NULL;
-    };
-  };
-};
+		}
+	}
+}
 
 int GetMenuObjbyId(const int id)
 {
@@ -49,28 +50,28 @@ int GetMenuObjbyId(const int id)
     if (MenuObjects[i].id==id)
     {
       return(i);
-    };
-  };
+		}
+	}
   return(-1);
-};
+}
 
 int GetMenuItembyId(const int objpos,const int id)
 {
   int i;
-  if ( (objpos<0)||(objpos>=MenuObjectsCount)){return(-1);};
+	if ( (objpos<0)||(objpos>=MenuObjectsCount)){return(-1);}
   for (i=0;i<MenuObjects[objpos].MenuItemsCount;i++)
   {
     if (MenuObjects[objpos].MenuItems[i].id==id)
     {
       return(i);
-    };
-  };
+		}
+	}
   return(-1);
-};
+}
 int getGlobalId(const int MenuObjectId,const int MenuItemId)
 {
   return((MenuObjectId <<16)+MenuItemId);
-};
+}
 
 int GetObjIdxByItemId(const int MenuItemId)
 {
@@ -82,42 +83,42 @@ int GetObjIdxByItemId(const int MenuItemId)
       if (MenuObjects[i].MenuItems[j].id==MenuItemId)
       {
         return(i);
-      };
+			}
 
-    };
+		}
 
-  };
+	}
   return(-1);
-};
+}
 //return 0-erorr,1-ok
 int GetAllIdx(const int globid,int *pobjidx,int *pmenuitemidx)
 {
   int objid,menuitemid;//id 
   int objidx,menuitemidx;//pos in array
 
-  if (pobjidx==NULL||pmenuitemidx==NULL){return(0);};
+	if (pobjidx==NULL||pmenuitemidx==NULL){return(0);}
 
   UnpackGlobalId(globid,&objid,&menuitemid);
-  if ((objid==-1)||(menuitemid==-1)){return(0);};
+	if ((objid==-1)||(menuitemid==-1)){return(0);}
   objidx=GetMenuObjbyId(objid);
   menuitemidx=GetMenuItembyId(objidx,menuitemid);
-  if ((objidx==-1)||(menuitemidx==-1)){return(0);};
+	if ((objidx==-1)||(menuitemidx==-1)){return(0);}
   *pobjidx=objidx;
   *pmenuitemidx=menuitemidx;
   return(1);
-};
+}
 
 void UnpackGlobalId(int id,int *MenuObjectId,int *MenuItemId)
 {
-  if (MenuObjectId==NULL){return;};
-  if (MenuItemId==NULL){return;};
+	if (MenuObjectId==NULL){return;}
+	if (MenuItemId==NULL){return;}
   *MenuObjectId=-1;
   *MenuItemId=-1;
   *MenuObjectId=(id);
   *MenuObjectId=(*MenuObjectId>>16);
 
   *MenuItemId=id&0x0000FFFF;
-};
+}
 
 //wparam=0
 //lparam=LPMEASUREITEMSTRUCT
@@ -128,7 +129,7 @@ static int MO_MeasureMenuItem(WPARAM wParam,LPARAM lParam)
 
   if (!isGenMenuInited) return -1;
 
-  if (mis==NULL){return(FALSE);};
+	if (mis==NULL){return(FALSE);}
   pimi=MO_GetIntMenuItem(mis->itemData);
   if(pimi==NULL) return FALSE;
   if(pimi->iconId==-1) return FALSE;
@@ -148,15 +149,14 @@ int MO_DrawMenuItem(WPARAM wParam,LPARAM lParam)
 
   if (!isGenMenuInited) return -1;	
 
-  if (dis==NULL){return(FALSE);};
+	if (dis==NULL){return(FALSE);}
 
   lockmo();
 
-  if(GetAllIdx(dis->itemData,&objidx,&menuitemidx)==0){unlockmo();return(FALSE);};
+	if (GetAllIdx(dis->itemData,&objidx,&menuitemidx)==0){unlockmo();return(FALSE);}
   pimi=&MenuObjects[objidx].MenuItems[menuitemidx];
 
-  if(pimi==NULL||pimi->iconId==-1) {unlockmo();return (FALSE);};
-
+	if (pimi==NULL||pimi->iconId==-1) {unlockmo();return (FALSE);}
 
   y=(dis->rcItem.bottom-dis->rcItem.top-GetSystemMetrics(SM_CYSMICON))/2+1;
   if(dis->itemState&ODS_SELECTED)	{
@@ -198,17 +198,14 @@ int MO_DrawMenuItem(WPARAM wParam,LPARAM lParam)
 void RemoveAndClearOneObject(int arpos)
 {
   int j;
-  for (j=0;j<MenuObjects[arpos].MenuItemsCount;j++)
-  {
+	for (j=0;j<MenuObjects[arpos].MenuItemsCount;j++) {
     if (MenuObjects[arpos].FreeService)
-    {
       CallService(MenuObjects[arpos].FreeService,(WPARAM)MenuObjects[arpos].MenuItems[j].globalid,(LPARAM)MenuObjects[arpos].MenuItems[j].mi.ownerdata);
-    };
+
     FreeAndNil(&MenuObjects[arpos].MenuItems[j].mi.pszName);
     FreeAndNil(&MenuObjects[arpos].MenuItems[j].UniqName);
     FreeAndNil(&MenuObjects[arpos].MenuItems[j].CustomName);
-
-  };
+	}
 
   FreeAndNil(&MenuObjects[arpos].MenuItems);
   MenuObjects[arpos].MenuItemsCount=0;
@@ -220,7 +217,7 @@ void RemoveAndClearOneObject(int arpos)
 
 
   ImageList_Destroy(MenuObjects[arpos].hMenuIcons);
-};
+}
 
 
 int MO_RemoveAllObjects()
@@ -229,12 +226,12 @@ int MO_RemoveAllObjects()
   for (i=0;i<MenuObjectsCount;i++)
   {
     RemoveAndClearOneObject(i);
-  };
+	}
   MenuObjectsCount=0;
   FreeAndNil(&MenuObjects);
 
   return(0);
-};
+}
 //wparam=MenuObjectHandle
 int MO_RemoveMenuObject(WPARAM wParam,LPARAM lParam)
 {
@@ -245,14 +242,14 @@ int MO_RemoveMenuObject(WPARAM wParam,LPARAM lParam)
 
 
   objidx=GetMenuObjbyId((int)wParam);
-  if (objidx==-1){unlockmo();return(-1);};
+	if (objidx==-1){unlockmo();return(-1);}
 
   RemoveAndClearOneObject(objidx);
 
   RemoveFromList(objidx,&MenuObjects,&MenuObjectsCount,sizeof(MenuObjects[objidx]));
   unlockmo();
   return(0);
-};
+}
 
 
 //wparam=MenuObjectHandle
@@ -267,7 +264,7 @@ int MO_ProcessHotKeys(WPARAM wParam,LPARAM lParam)
   if (!isGenMenuInited) return -1;	
   lockmo();
   objidx=GetMenuObjbyId((int)wParam);
-  if (objidx==-1){unlockmo();return(FALSE);};
+	if (objidx==-1){unlockmo();return(FALSE);}
 
 
   for(i=0;i<MenuObjects[objidx].MenuItemsCount;i++) {
@@ -285,7 +282,7 @@ int MO_ProcessHotKeys(WPARAM wParam,LPARAM lParam)
 
   unlockmo();
   return(FALSE);
-};
+}
 //wparam=MenuItemHandle
 //lparam=PMO_MenuItem
 int MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
@@ -294,17 +291,17 @@ int MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
   PMO_MenuItem mi=(PMO_MenuItem)lParam;
 
   if (!isGenMenuInited) return -1;
-  if (mi==NULL){return(-1);};
+	if (mi==NULL){return(-1);}
   lockmo();
   pimi=MO_GetIntMenuItem(wParam);
   if (pimi!=NULL){
     *mi=(pimi->mi);
     unlockmo();
     return(0);	
-  };
+	}
   unlockmo();
   return(-1);
-};
+}
 //wparam MenuItemHandle
 //lparam PMO_MenuItem
 int MO_ModifyMenuItem(WPARAM wParam,LPARAM lParam)
@@ -315,17 +312,22 @@ int MO_ModifyMenuItem(WPARAM wParam,LPARAM lParam)
   int objidx;
 
   if (!isGenMenuInited) return -1;
-  if(pmiparam==NULL){return(-1);};
+	if (pmiparam==NULL){return(-1);}
   lockmo();
   pimi=MO_GetIntMenuItem(wParam);
-  if (pimi==NULL){unlockmo();return(-1);};
-  if (pmiparam->cbSize!=sizeof(TMO_MenuItem)){unlockmo();return(-1);};
+	if (pimi==NULL){unlockmo();return(-1);}
+	if (pmiparam->cbSize!=sizeof(TMO_MenuItem)){unlockmo();return(-1);}
   objidx=GetObjIdxByItemId(pimi->id);
-  if (objidx==-1){unlockmo();return(-1);};
+	if (objidx==-1){unlockmo();return(-1);}
 
   if(pmiparam->flags&CMIM_NAME) {
     FreeAndNil(&pimi->mi.pszName);
-    pimi->mi.pszName=mir_strdup(pmiparam->pszName);	
+	
+	if (pmiparam->flags&CMIF_TCHAR)
+		pimi->mi.ptszName = mir_tstrdup(pmiparam->ptszName);
+	else
+		pimi->mi.ptszName = (TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR,0,(LPARAM)pmiparam->pszName); 
+		
   }
   if(pmiparam->flags&CMIM_FLAGS) {
     oldflags=(pimi->mi.flags&CMIF_ROOTPOPUP)|(pimi->mi.flags&CMIF_CHILDPOPUP);
@@ -349,7 +351,7 @@ int MO_ModifyMenuItem(WPARAM wParam,LPARAM lParam)
   }
   unlockmo();
   return(0);
-};
+}
 
 
 //wparam MenuItemHandle
@@ -364,14 +366,14 @@ int MO_MenuItemGetOwnerData(WPARAM wParam,LPARAM lParam)
   if (!isGenMenuInited) return -1;
   lockmo();
   UnpackGlobalId(wParam,&objid,&menuitemid);
-  if ((objid==-1)||(menuitemid==-1)){return(0);};
+	if ((objid==-1)||(menuitemid==-1)){return(0);}
   objidx=GetMenuObjbyId(objid);
   menuitemidx=GetMenuItembyId(objidx,menuitemid);
-  if ((objidx==-1)||(menuitemidx==-1)){return(0);};
+	if ((objidx==-1)||(menuitemidx==-1)){return(0);}
   res=(int)MenuObjects[objidx].MenuItems[menuitemidx].mi.ownerdata;
   unlockmo();
   return(res);
-};
+}
 
 PMO_IntMenuItem MO_GetIntMenuItem(int globid)
 {
@@ -379,13 +381,13 @@ PMO_IntMenuItem MO_GetIntMenuItem(int globid)
   int objidx,menuitemidx;//pos in array
 
   UnpackGlobalId(globid,&objid,&menuitemid);
-  if ((objid==-1)||(menuitemid==-1)){return(0);};
+	if ((objid==-1)||(menuitemid==-1)){return(0);}
   objidx=GetMenuObjbyId(objid);
   menuitemidx=GetMenuItembyId(objidx,menuitemid);
-  if ((objidx==-1)||(menuitemidx==-1)){return(0);};
+	if ((objidx==-1)||(menuitemidx==-1)){return(0);}
   return(&(MenuObjects[objidx].MenuItems[menuitemidx]));
 
-};
+}
 //LOWORD(wparam) menuident
 int MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam)
 {
@@ -403,12 +405,12 @@ int MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam)
         globid=getGlobalId(MenuObjects[i].id,MenuObjects[i].MenuItems[j].id);
         unlockmo();
         return(MO_ProcessCommand(globid,lParam));			
-      };
-    };
-  };
+			}
+		}
+	}
   unlockmo();
   return(FALSE);
-};
+}
 
 int MO_ProcessCommand(WPARAM wParam,LPARAM lParam)
 {
@@ -420,7 +422,7 @@ int MO_ProcessCommand(WPARAM wParam,LPARAM lParam)
 
   if (!isGenMenuInited) return -1;
   lockmo();
-  if (GetAllIdx(globid,&objidx,&menuitemidx)==0){unlockmo();return(0);};
+	if (GetAllIdx(globid,&objidx,&menuitemidx)==0){unlockmo();return(0);}
   srvname=MenuObjects[objidx].ExecService;
   ownerdata=MenuObjects[objidx].MenuItems[menuitemidx].mi.ownerdata;
   unlockmo();
@@ -436,27 +438,25 @@ int MO_SetOptionsMenuItem(WPARAM wParam,LPARAM lParam)
   int objidx;
 
   if (!isGenMenuInited) return -1;
-  if (lParam==0){return(0);};
-
+	if (lParam==0){return(0);}
   lockmo();
   setcnt++;
   __try
   {
     lpop=(lpOptParam)lParam;
     pimi=MO_GetIntMenuItem(lpop->Handle);
-    if (pimi==NULL){unlockmo();return(-1);};
+		if (pimi==NULL){unlockmo();return(-1);}
     objidx=GetObjIdxByItemId(pimi->id);
-    if (objidx==-1){unlockmo();return(-1);};
+		if (objidx==-1){unlockmo();return(-1);}
 
     switch(lpop->Setting) {
     case OPT_MENUITEMSETUNIQNAME:
-      if (!(pimi->mi.flags&CMIF_ROOTPOPUP))
-      {
+		 if (!(pimi->mi.flags&CMIF_ROOTPOPUP)) {
         FreeAndNil(&pimi->UniqName);
         pimi->UniqName=mir_strdup((char*)lpop->Value);
       }
       break;
-    }; 
+		}
     return(1);
   }
   __finally
@@ -465,7 +465,7 @@ int MO_SetOptionsMenuItem(WPARAM wParam,LPARAM lParam)
     unlockmo();
   }
   return 1;
-};
+}
 
 int MO_SetOptionsMenuObject(WPARAM wParam,LPARAM lParam)
 {
@@ -473,13 +473,13 @@ int MO_SetOptionsMenuObject(WPARAM wParam,LPARAM lParam)
   lpOptParam lpop;
 
   if (!isGenMenuInited) return -1;
-  if (lParam==0){return(0);};
+	if (lParam==0){return(0);}
   lockmo();
   __try
   {
     lpop=(lpOptParam)lParam;
     pimoidx=GetMenuObjbyId(lpop->Handle);
-    if (pimoidx==-1){return(0);};
+		if (pimoidx==-1){return(0);}
 
     switch(lpop->Setting) {
     case OPT_MENUOBJECT_SET_ONADD_SERVICE:
@@ -499,7 +499,7 @@ int MO_SetOptionsMenuObject(WPARAM wParam,LPARAM lParam)
     case OPT_USERDEFINEDITEMS:
       MenuObjects[pimoidx].bUseUserDefinedItems=(BOOL)lpop->Value;
       break;
-    }; 
+		}
     return(1);
   }
   __finally
@@ -507,7 +507,7 @@ int MO_SetOptionsMenuObject(WPARAM wParam,LPARAM lParam)
     unlockmo();
   }
   return 1;	
-};
+}
 
 //wparam=0;
 //lparam=PMenuParam;
@@ -518,7 +518,7 @@ int MO_CreateNewMenuObject(WPARAM wParam,LPARAM lParam)
   int result;
 
   if (!isGenMenuInited) return -1;
-  if (pmp==NULL){return(-1);};
+	if (pmp==NULL){return(-1);}
   lockmo();
   MenuObjects=(PIntMenuObject)mir_realloc(MenuObjects,sizeof(TIntMenuObject)*(MenuObjectsCount+1));
   memset(&(MenuObjects[MenuObjectsCount]),0,sizeof(MenuObjects[MenuObjectsCount]));
@@ -527,12 +527,20 @@ int MO_CreateNewMenuObject(WPARAM wParam,LPARAM lParam)
   MenuObjects[MenuObjectsCount].CheckService=mir_strdup(pmp->CheckService);
   MenuObjects[MenuObjectsCount].ExecService=mir_strdup(pmp->ExecService);
 
+	//if (IsWinVerXPPlus())		//need 32-bit icons on XP for alpha channels
   MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,15,100);
+	//else	  //Win2k won't blend icons with imagelist_drawex when color-depth>16-bit. Don't know about WinME, but it certainly doesn't support alpha channels
+	//  MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR16|ILC_MASK,15,100);
+
   result=MenuObjects[MenuObjectsCount].id;
   MenuObjectsCount++;
   unlockmo();
+	//	TRACE("!!! Created New MenuObject \t");
+	//	if (pmp->name) TRACE(pmp->name);
+	//	TRACE("\r\n");
+
   return(result);
-};
+}
 //wparam=MenuItemHandle
 //lparam=0
 int MO_RemoveMenuItem(WPARAM wParam,LPARAM lParam)
@@ -543,14 +551,13 @@ int MO_RemoveMenuItem(WPARAM wParam,LPARAM lParam)
   int res;
 
   lockmo();
-  if (GetAllIdx(wParam,&objidx,&menuitemidx)==0){unlockmo();return(0);};
+	if (GetAllIdx(wParam,&objidx,&menuitemidx)==0){unlockmo();return(0);}
 
   lp.MenuObjectHandle=MenuObjects[objidx].id;
   res=RecursiveRemoveChilds(menuitemidx,&lp);
   unlockmo();
   return(res);
-
-};
+}
 
 HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIcon,boolean RegisterIt,boolean *RegistredOk)
 {		
@@ -602,20 +609,20 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
   int res;
 
   if (!isGenMenuInited) return -1;	
-  if (pmi==NULL){return(-1);};
+	if (pmi==NULL){return(-1);}
   lockmo();
   menuobjecthandle=wParam;
   objidx=GetMenuObjbyId(menuobjecthandle);
-  if (objidx==-1){unlockmo();return(-1);};
+	if (objidx==-1){unlockmo();return(-1);}
 
-  if(pmi->cbSize!=sizeof(TMO_MenuItem)) {unlockmo();return -1;};
+	if (pmi->cbSize!=sizeof(TMO_MenuItem)) {unlockmo();return -1;}
 
   if(!(pmi->flags&CMIF_ROOTPOPUP||pmi->flags&CMIF_CHILDPOPUP)){
     //old mode
     unlockmo();
     res=(int)MO_AddOldNewMenuItem(wParam,lParam);
     return(res);
-  };
+	}
 
   MenuObjects[objidx].MenuItems=(PMO_IntMenuItem)mir_realloc(MenuObjects[objidx].MenuItems,sizeof(TMO_IntMenuItem)*(MenuObjects[objidx].MenuItemsCount+1));
   miidx=MenuObjects[objidx].MenuItemsCount;
@@ -626,26 +633,22 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
   MenuObjects[objidx].MenuItems[miidx].globalid=getGlobalId(menuobjecthandle,MenuObjects[objidx].MenuItems[miidx].id);
 
   MenuObjects[objidx].MenuItems[miidx].mi=*pmi;
-  MenuObjects[objidx].MenuItems[miidx].mi.pszName=mir_strdup(pmi->pszName);
+  if (pmi->flags&CMIF_TCHAR)
+	MenuObjects[objidx].MenuItems[miidx].mi.ptszName = mir_tstrdup(pmi->ptszName);
+  else
+	MenuObjects[objidx].MenuItems[miidx].mi.ptszName = (TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR,0,(LPARAM)pmi->pszName);
+	
   MenuObjects[objidx].MenuItems[miidx].iconId=-1;
   MenuObjects[objidx].MenuItems[miidx].OverrideShow=TRUE;
   MenuObjects[objidx].MenuItems[miidx].IconRegistred=FALSE;
-  if(TRUE/*pmi->hIcon!=NULL*/) 
-  {
-    if(pmi->hIcon!=NULL) MenuObjects[objidx].MenuItems[miidx].iconId=ImageList_AddIcon(MenuObjects[objidx].hMenuIcons,pmi->hIcon);
-    RegisterOneIcon(objidx,miidx);
-
-  }
-
-
+	if (pmi->hIcon!=NULL) 
+		MenuObjects[objidx].MenuItems[miidx].iconId=ImageList_AddIcon(MenuObjects[objidx].hMenuIcons,pmi->hIcon);
   //if(pmi->hIcon!=NULL) MenuObjects[objidx].MenuItems[miidx].iconId=pmi->hIcon;	
   result=getGlobalId(wParam,MenuObjects[objidx].MenuItems[miidx].id);
   MenuObjects[objidx].MenuItemsCount++;
   unlockmo();
   return(result);
-
-};
-
+}
 
 //wparam=MenuObjectHandle
 //lparam=PMO_MenuItem
@@ -656,13 +659,13 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
   int oldroot,i;
 
   if (!isGenMenuInited) return -1;	
-  if (pmi==NULL){return(-1);};
+	if (pmi==NULL){return(-1);}
   objidx=GetMenuObjbyId(wParam);
-  if (objidx==-1){return(-1);};
+	if (objidx==-1){return(-1);}
 
   if(pmi->cbSize!=sizeof(TMO_MenuItem)) return 0;
 
-  if((pmi->flags&CMIF_ROOTPOPUP||pmi->flags&CMIF_CHILDPOPUP))	{return(0);};
+	if ((pmi->flags&CMIF_ROOTPOPUP||pmi->flags&CMIF_CHILDPOPUP))	{return(0);}
 
   //is item with popup or not
   if (pmi->root==0)
@@ -673,15 +676,22 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
   else
   {
     //no,search for needed root and create it if need
+	TCHAR* tszRoot;
+	  if (pmi->flags&CMIF_TCHAR)
+		tszRoot=mir_tstrdup((TCHAR*)pmi->root);
+	  else
+		tszRoot=( TCHAR* )CallService( MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)pmi->root );
 
     oldroot=-1;		
     for(i=0;i<MenuObjects[objidx].MenuItemsCount;i++) {
-      if(MenuObjects[objidx].MenuItems[i].mi.pszName ==NULL) continue;
-      if((MenuObjects[objidx].MenuItems[i].mi.flags&CMIF_ROOTPOPUP)&&(!MyStrCmp(MenuObjects[objidx].MenuItems[i].mi.pszName,(char *)pmi->root))) {
-        oldroot=getGlobalId(MenuObjects[objidx].id,MenuObjects[objidx].MenuItems[i].id);
+			TMO_IntMenuItem *p = &MenuObjects[objidx].MenuItems[i];
+			if ( p->mi.pszName == NULL )
+				continue;
+			if (( p->mi.flags & CMIF_ROOTPOPUP) && !_tcscmp( p->mi.ptszName, tszRoot)) {
+				oldroot = getGlobalId( MenuObjects[objidx].id, p->id );
         break;
-      }
-    }
+		}	}
+		mir_free( tszRoot );
     if(oldroot==-1)
     {
       //not found,creating root
@@ -692,36 +702,32 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
       tmi.ownerdata=0;
       tmi.root=-1;
       //copy pszPopupName
-	  tmi.pszName=mir_strdup((char *)pmi->root);	  
+	  tmi.ptszName=(TCHAR*)pmi->root;
       oldroot=MO_AddNewMenuItem(wParam,(LPARAM)&tmi);
-	  if (tmi.pszName) mir_free( tmi.pszName);
-    };
+		}
     pmi->root=oldroot;
     //popup will be created in next commands
-  };
+	}
   pmi->flags|=CMIF_CHILDPOPUP;
   //add popup(root allready exists)
   return(MO_AddNewMenuItem(wParam,(LPARAM)pmi));
+}
 
-};
-
-static int WhereToPlace(HMENU hMenu,PMO_MenuItem mi,MENUITEMINFOA *mii,ListParam *param)
+static int WhereToPlace(HMENU hMenu,PMO_MenuItem mi,MENUITEMINFO *mii,ListParam *param)
 {
   int i=0;			
-  PMO_IntMenuItem pimi;	
+
   mii->fMask=MIIM_SUBMENU|MIIM_DATA;
   for(i=GetMenuItemCount(hMenu)-1;i>=0;i--) {
-    GetMenuItemInfoA(hMenu,i,TRUE,mii);
-    if(mii->fType==MFT_SEPARATOR) continue;
+		GetMenuItemInfo(hMenu,i,TRUE,mii);
+		if ( mii->fType != MFT_SEPARATOR ) {
+			PMO_IntMenuItem pimi = MO_GetIntMenuItem(mii->dwItemData);
+			if ( pimi != NULL )
+				if ( pimi->mi.position <= mi->position ) 
+					break;
+	}	}
     //if(mii->hSubMenu==NULL /*&& (mii->dwItemData&param->cntFlag)==0*/) continue;
-
-    pimi=MO_GetIntMenuItem(mii->dwItemData);
-    if(pimi!=NULL){	
-      if(pimi->mi.position<=mi->position) break;
-    };
-  }
-  i++;
-  return i;
+	return i+1;
 }
 
 typedef struct _MenuItemHandles 
@@ -761,10 +767,10 @@ BOOL FindMenuHanleByGlobalID(HMENU hMenu, int globalID, MenuItemData * itdat)
 	return FALSE;
 }
 
-static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,MENUITEMINFOA *lpmii,ListParam *param)
+static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,MENUITEMINFO *lpmii,ListParam *param)
 {
   int thisItemPosition,needSeparator,itemidx;
-  MENUITEMINFOA mii={0};
+	MENUITEMINFO mii;
   PMO_IntMenuItem MenuItems=NULL;
   PMO_IntMenuItem pimi=NULL;	
 
@@ -773,10 +779,10 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
   needSeparator=0;
 
   UnpackGlobalId(lpmii->dwItemData,&objid,&menuitemid);
-  if ((objid==-1)||(menuitemid==-1)){return;};
+	if ((objid==-1)||(menuitemid==-1)){return;}
   objidx=GetMenuObjbyId(objid);
   menuitemidx=GetMenuItembyId(objidx,menuitemid);
-  if ((objidx==-1)||(menuitemidx==-1)){return;};
+	if ((objidx==-1)||(menuitemidx==-1)){return;}
 
   MenuItems=MenuObjects[objidx].MenuItems;
   itemidx=menuitemidx;	
@@ -788,7 +794,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
   //check for separator before
   if(uItem) {
     mii.fMask=MIIM_SUBMENU|MIIM_DATA|MIIM_TYPE;
-    GetMenuItemInfoA(hMenu,uItem-1,TRUE,&mii);
+		GetMenuItemInfo(hMenu,uItem-1,TRUE,&mii);
     pimi=MO_GetIntMenuItem(mii.dwItemData);
     if (pimi!=NULL)
       if(mii.fType==MFT_SEPARATOR) needSeparator=0;
@@ -798,12 +804,12 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
         mii.fType=0;
         if(uItem<GetMenuItemCount(hMenu)) {
           mii.fMask=MIIM_SUBMENU|MIIM_DATA|MIIM_TYPE;
-          GetMenuItemInfoA(hMenu,uItem,TRUE,&mii);
+					GetMenuItemInfo(hMenu,uItem,TRUE,&mii);
         }
         if(mii.fType!=MFT_SEPARATOR) {
           mii.fMask=MIIM_TYPE;
           mii.fType=MFT_SEPARATOR;
-          InsertMenuItemA(hMenu,uItem,TRUE,&mii);
+					InsertMenuItem(hMenu,uItem,TRUE,&mii);
         }
         uItem++;
       }
@@ -812,7 +818,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
   if(uItem<GetMenuItemCount(hMenu)) {
     mii.fMask=MIIM_SUBMENU|MIIM_DATA|MIIM_TYPE;
     mii.cch=0;
-    GetMenuItemInfoA(hMenu,uItem,TRUE,&mii);
+		GetMenuItemInfo(hMenu,uItem,TRUE,&mii);
     pimi=MO_GetIntMenuItem(mii.dwItemData);
     if (pimi!=NULL)
       if(mii.fType==MFT_SEPARATOR) needSeparator=0;
@@ -820,17 +826,17 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
       if(needSeparator) {
         mii.fMask=MIIM_TYPE;
         mii.fType=MFT_SEPARATOR;
-        InsertMenuItemA(hMenu,uItem,TRUE,&mii);
+				InsertMenuItem(hMenu,uItem,TRUE,&mii);
       }
   }
   if(uItem==GetMenuItemCount(hMenu)-1) {
-    char str[32];
+		TCHAR str[32];
     mii.fMask=MIIM_SUBMENU|MIIM_DATA|MIIM_TYPE;
     mii.dwTypeData=str;
-    mii.cch=sizeof(str);
-    GetMenuItemInfoA(hMenu,uItem,TRUE,&mii);
+		mii.cch=SIZEOF(str);
+		GetMenuItemInfo(hMenu,uItem,TRUE,&mii);
     /*if (param->cntFlag==MENU_CUSTOMITEMMAIN) {
-    if(mii.fType==MFT_STRING && !MyStrCmp(mii.dwTypeData,Translate("E&xit"))) {
+		if (mii.fType==MFT_STRING && !strcmp(mii.dwTypeData,Translate("E&xit"))) {
     //make sure we keep the separator before the exit menu item
     mii.fMask=MIIM_TYPE;
     mii.fType=MFT_SEPARATOR;
@@ -840,12 +846,11 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
     }
     */
   }
-  InsertMenuItemA(hMenu,uItem,TRUE,lpmii);
+	InsertMenuItem(hMenu,uItem,TRUE,lpmii);
 }
 //wparam started hMenu
 //lparam ListParam*
 //result hMenu
-extern int RecurciveDeleteMenu(HMENU hMenu);
 int MO_BuildMenu(WPARAM wParam,LPARAM lParam)
 {
   int res;
@@ -859,7 +864,7 @@ int MO_BuildMenu(WPARAM wParam,LPARAM lParam)
   tick=GetTickCount();
   lp=(ListParam *)lParam;
   pimoidx=GetMenuObjbyId(lp->MenuObjectHandle);
-  if (pimoidx==-1){return(0);};
+	if (pimoidx==-1){return(0);}
   //TODO //DeleteOld?
   if (wParam)
 	  RecurciveDeleteMenu((HMENU)wParam);
@@ -869,7 +874,7 @@ int MO_BuildMenu(WPARAM wParam,LPARAM lParam)
   unlockmo();	
 
   return(res);
-};
+}
 
 #ifdef _DEBUG
 #define PUTPOSITIONSONMENU
@@ -885,27 +890,41 @@ char DBString[256];
 DBVARIANT dbv={0};
 
 // check if it visible
-sprintf(DBString, "%s_visible", menuItemName); 
+wsprintf(DBString, "%s_visible", menuItemName);
 DBWriteContactSettingByte(NULL, "MainMenuItems", DBString,DBGetContactSettingByte(NULL, "MainMenuItems", DBString, 1)); 
 if (!DBGetContactSettingByte(NULL, "MainMenuItems", DBString, 1)) 
 return 0;  // find out what value to return if not getting added
 
 
 // mi.pszName
-sprintf(DBString, "%s_name", menuItemName);
+wsprintf(DBString, "%s_name", menuItemName);
 if (!DBGetContactSetting(NULL, "MainMenuItems", DBString, &dbv))
 mi->pszName = strdup(dbv.pszVal);
 
 DBFreeVariant(&dbv);
 
-};
+}
 */
 /**************************************/
-extern int RecurciveDeleteMenu(HMENU hMenu);
+void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSize )
+{
+	if ( pMenuItem->UniqName)
+		mir_snprintf( pszDest, cbDestSize, "{%s}", pMenuItem->UniqName );
+	else {
+		#if defined( _UNICODE )
+			char* name = u2a(pMenuItem->mi.ptszName);
+			mir_snprintf( pszDest, cbDestSize, "{%s}", name );
+			mir_free(name);
+		#else
+			mir_snprintf( pszDest, cbDestSize, "{%s}", pMenuItem->mi.pszName );
+		#endif
+}	}
+
+
 HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 {
   int i,j;
-  MENUITEMINFOA mii;
+	MENUITEMINFO mii;
   PMO_MenuItem mi;
   HMENU hSubMenu;
   ListParam localparam;
@@ -925,7 +944,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
   if(param==NULL) return(NULL);
 
   pimoidx=GetMenuObjbyId(param->MenuObjectHandle);
-  if (pimoidx==-1){return(NULL);};
+	if (pimoidx==-1){return(NULL);}
   //pimo=&MenuObjects[pimoidx];
 
   MenuItems=MenuObjects[pimoidx].MenuItems;
@@ -936,7 +955,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
   onAddproc=MenuObjects[pimoidx].onAddService;
 
   localparam=*param;
-  sprintf(MenuNameItems, "%s_Items", MenuObjects[pimoidx].Name); 
+	wsprintfA(MenuNameItems, "%s_Items", MenuObjects[pimoidx].Name);
   /*
   while((rootlevel==-1)&&(GetMenuItemCount(hMenu)>(param->cntFlag==MENU_CUSTOMITEMMAIN?1:0)) )
   DeleteMenu(hMenu,0,MF_BYPOSITION);
@@ -959,58 +978,40 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
     }
 
     /**************************************/
-    if (rootlevel==-1&&mi->root==-1&&MenuObjects[pimoidx].bUseUserDefinedItems)
-    {
-
+		if (rootlevel==-1&&mi->root==-1&&MenuObjects[pimoidx].bUseUserDefinedItems) {
       char menuItemName[256];	
       char DBString[256];
-      DBVARIANT dbv={0};
-
+			DBVARIANT dbv;
       memset(&dbv,0,sizeof(dbv));
-      if (MenuItems[j].UniqName)
-      {
-        sprintf(menuItemName,"{%s}",MenuItems[j].UniqName);
-      }else
-      {
-        sprintf(menuItemName,"{%s}",mi->pszName);
-      };
-
-
+      GetMenuItemName( &MenuItems[j], menuItemName, sizeof(menuItemName));
 
       // check if it visible
-      sprintf(DBString, "%s_visible", menuItemName); 
+			wsprintfA(DBString, "%s_visible", menuItemName);
       if (DBGetContactSettingByte(NULL, MenuNameItems, DBString, -1)==-1)
         DBWriteContactSettingByte(NULL,MenuNameItems, DBString,1); 
 
       MenuItems[j].OverrideShow=TRUE;
-      if (!DBGetContactSettingByte(NULL, MenuNameItems, DBString, 1)) 
-      {
+			if (!DBGetContactSettingByte(NULL, MenuNameItems, DBString, 1)) {
         MenuItems[j].OverrideShow=FALSE;
         continue;  // find out what value to return if not getting added
-      };
+			}
 
       // mi.pszName
-      sprintf(DBString, "%s_name", menuItemName);
-      if (!DBGetContactSetting(NULL, MenuNameItems, DBString, &dbv))
-      {
-        if (MyStrLen(dbv.pszVal)>0)
-        {
+			wsprintfA(DBString, "%s_name", menuItemName);
+			if (!DBGetContactSettingTString(NULL, MenuNameItems, DBString, &dbv)) {
+				if (_tcslen(dbv.ptszVal)>0) {
           if (MenuItems[j].CustomName) mir_free(MenuItems[j].CustomName);
-          MenuItems[j].CustomName=mir_strdup(dbv.pszVal);
-        };
-        if (dbv.pszVal)	mir_free(dbv.pszVal);
-        DBFreeVariant(&dbv);
-      };
+					MenuItems[j].CustomName=mir_tstrdup(dbv.ptszVal);
+				}
+				if (dbv.ptszVal)	mir_free(dbv.ptszVal);
+			}
 
-      sprintf(DBString, "%s_pos", menuItemName);
+			wsprintfA(DBString, "%s_pos", menuItemName);
       if (DBGetContactSettingDword(NULL, MenuNameItems, DBString, -1)==-1)
         DBWriteContactSettingDword(NULL,MenuNameItems, DBString,mi->position); 
 
       mi->position = DBGetContactSettingDword(NULL, MenuNameItems, DBString, mi->position);
-
-
-
-    };
+		}
 
     /**************************************/
 
@@ -1048,13 +1049,13 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
           hSubMenu=CreatePopupMenu();
           mii.hSubMenu=hSubMenu;
           mii.hbmpItem=HBMMENU_CALLBACK;					
-          mii.dwTypeData=(MenuItems[j].CustomName)?(MenuItems[j].CustomName):(mi->pszName);
+          mii.dwTypeData=(MenuItems[j].CustomName)?(MenuItems[j].CustomName):(mi->ptszName);
 #ifdef PUTPOSITIONSONMENU
-          if (GetKeyState(VK_CONTROL)&0x8000)
-          {char str[256];				
-          sprintf(str,"%s (%d,id %x)",mi->pszName,mi->position,mii.dwItemData);
+					if (GetKeyState(VK_CONTROL)&0x8000) {
+						TCHAR str[256];
+						mir_sntprintf(str,SIZEOF(str),_T("%s (%d,id %x)"),mi->pszName,mi->position,mii.dwItemData);
           mii.dwTypeData=str;
-          };
+					}
 #endif
           InsertMenuItemWithSeparators(hMenu,i,TRUE,&mii,&localparam);
           localparam.rootlevel=getGlobalId(param->MenuObjectHandle,MenuItems[j].id);//MenuItems[j].id|cntFlag;
@@ -1082,20 +1083,17 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
         mii.dwItemData=MenuItems[j].globalid;
 
         mii.hbmpItem=HBMMENU_CALLBACK;
-        mii.dwTypeData=(MenuItems[j].CustomName)?(MenuItems[j].CustomName):(mi->pszName);
+        mii.dwTypeData=(MenuItems[j].CustomName)?(MenuItems[j].CustomName):(mi->ptszName);
 #ifdef PUTPOSITIONSONMENU
-        if (GetKeyState(VK_CONTROL)&0x8000)
-        {char str[256];				
-        sprintf(str,"%s (%d,id %x)",mi->pszName,mi->position,mii.dwItemData);
+				if (GetKeyState(VK_CONTROL)&0x8000) {
+					TCHAR str[256];
+					mir_sntprintf( str, SIZEOF(str), _T("%s (%d,id %x)"),mi->pszName,mi->position,mii.dwItemData);
         mii.dwTypeData=str;
-        };
+				}
 #endif
 
         if (onAddproc!=NULL)
-        {
           if(CallService(onAddproc,(WPARAM)&mii,(LPARAM)MenuItems[j].globalid)==FALSE)	continue;
-        };
-
 
         InsertMenuItemWithSeparators(hMenu,i,TRUE,&mii,&localparam);
 
@@ -1117,12 +1115,11 @@ static int RemoveFromList(int pos,void **lpList,int *ListElemCount,int ElemSize)
   void *p1,*p2;
   p1=(void *)( (int)(*lpList)+pos*ElemSize);
   p2=(void *)( (int)(*lpList)+(pos+1)*ElemSize);
-  memmove(p1,p2,ElemSize*(*ListElemCount-pos-1));
+	memcpy(p1,p2,ElemSize*(*ListElemCount-pos-1));
   (*ListElemCount)--;
   (*lpList)=mir_realloc((*lpList),ElemSize*(*ListElemCount));
   return 0;
-};
-
+}
 
 int RecursiveRemoveChilds(int pos,ListParam *param)
 {
@@ -1135,7 +1132,7 @@ int RecursiveRemoveChilds(int pos,ListParam *param)
   PMO_IntMenuItem *MenuItems=NULL;
 
   objidx=GetMenuObjbyId(param->MenuObjectHandle);
-  if ((objidx==-1)){return(-1);};
+	if ((objidx==-1)){return(-1);}
 
   localparam=*param;
 
@@ -1162,16 +1159,13 @@ int RecursiveRemoveChilds(int pos,ListParam *param)
         FreeAndNil(&((*MenuItems)[i].CustomName));
         FreeAndNil(&((*MenuItems)[i].UniqName));
         if (MenuObjects[objidx].FreeService)
-        {
           CallService(MenuObjects[objidx].FreeService,(WPARAM)(*MenuItems)[i].globalid,(LPARAM)(*MenuItems)[i].mi.ownerdata);
-        };
 
         RemoveFromList(i,(void **)MenuItems,MenuItemsCount,sizeof(TMO_IntMenuItem));
         i=0;
         continue;
-      }
-    }
-  }	
+	}	}	}
+
   i=GetMenuItembyId(objidx,menuitemid);
   if(i>=0&&i<*MenuItemsCount) {	
     FreeAndNil(&((*MenuItems)[i].mi.pszName));
@@ -1179,10 +1173,7 @@ int RecursiveRemoveChilds(int pos,ListParam *param)
     FreeAndNil(&((*MenuItems)[i].UniqName));
 
     if (MenuObjects[objidx].FreeService)
-    {
       CallService(MenuObjects[objidx].FreeService,(WPARAM)(*MenuItems)[i].globalid,(LPARAM)(*MenuItems)[i].mi.ownerdata);
-    };
-
 
     RemoveFromList(i,(void **)MenuItems,MenuItemsCount,sizeof(TMO_IntMenuItem));
   }
@@ -1198,27 +1189,37 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
   {
     for (mi=0;mi<MenuObjects[mo].MenuItemsCount;mi++)
     {
-      char *uname;
-
-
-      uname=MenuObjects[mo].MenuItems[mi].UniqName;
-      if (uname==NULL) uname=MenuObjects[mo].MenuItems[mi].CustomName;
+      char *uname=NULL;
+#ifdef UNICODE
+	  char * descr=u2a(MenuObjects[mo].MenuItems[mi].mi.ptszName);
+#else
+	  char * descr=MenuObjects[mo].MenuItems[mi].mi.pszName;
+#endif
+	  uname=mir_strdup(MenuObjects[mo].MenuItems[mi].UniqName);
+      if (uname==NULL) 
+#ifdef UNICODE
+		  uname=u2a(MenuObjects[mo].MenuItems[mi].CustomName);
+#else
+		  uname=mir_strdup(MenuObjects[mo].MenuItems[mi].CustomName);
+#endif
       //&&MenuObjects[mo].MenuItems[mi].iconId!=-1	
       if (MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL)
       {	
 		  HICON deficon=ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
-        newIcon=LoadIconFromLibrary(
-          MenuObjects[mo].Name,
-          uname,
-          MenuObjects[mo].MenuItems[mi].mi.pszName,
-          deficon,
-          FALSE,NULL);
+        newIcon=LoadIconFromLibrary(	MenuObjects[mo].Name,
+										uname,
+										descr,
+										deficon,FALSE,NULL);
         if (newIcon)
         {
           ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
         }
 		if (deficon) DestroyIcon(deficon);
       }	
+	  #ifdef UNICODE
+	   if (descr) mir_free(descr);
+	  #endif
+	  if (uname) mir_free(uname);
     };
   }
 
@@ -1230,11 +1231,17 @@ int RegisterOneIcon(int mo,int mi)
 {
   HICON newIcon;
   char *uname;
-
+  char *desc;	
   if(!ServiceExists(MS_SKIN2_ADDICON)) return 0;
-
   uname=MenuObjects[mo].MenuItems[mi].UniqName;
-  if (uname==NULL) uname=MenuObjects[mo].MenuItems[mi].CustomName;
+  if (uname==NULL) 
+#ifdef UNICODE
+	  uname=u2a(MenuObjects[mo].MenuItems[mi].CustomName);
+	  desc=u2a(MenuObjects[mo].MenuItems[mi].mi.ptszName);
+#else
+	  uname=MenuObjects[mo].MenuItems[mi].CustomName;
+	  desc=MenuObjects[mo].MenuItems[mi].mi.pszName;
+#endif
   if (!MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL)
   {	
 
@@ -1245,13 +1252,18 @@ int RegisterOneIcon(int mo,int mi)
     newIcon=LoadIconFromLibrary(
       mn,
       uname,
-      MenuObjects[mo].MenuItems[mi].mi.pszName,
+      desc,
       defic,
       TRUE,&MenuObjects[mo].MenuItems[mi].IconRegistred);	
     if (newIcon) ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
 	if (defic) DestroyIcon(defic);
   };
 
+#ifdef UNICODE
+  if (!MenuObjects[mo].MenuItems[mi].UniqName)
+		if (uname) mir_free(uname);
+  if (desc) mir_free(desc);
+#endif
   return 0;
 }
 
@@ -1274,11 +1286,7 @@ int RegisterAllIconsinIconLib()
 };
 
 int posttimerid;
-VOID CALLBACK PostRegisterIcons(          HWND hwnd,
-                                UINT uMsg,
-                                UINT_PTR idEvent,
-                                DWORD dwTime
-                                )
+VOID CALLBACK PostRegisterIcons( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
 {
   KillTimer(0,posttimerid);
   RegisterAllIconsinIconLib();
@@ -1294,7 +1302,7 @@ int OnModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 
   return 0;
-};
+}
 
 int InitGenMenu()
 {
@@ -1324,7 +1332,8 @@ int InitGenMenu()
   unlockmo();
   HookEvent(ME_SYSTEM_MODULESLOADED,OnModulesLoaded);
   return(0);
-};
+}
+
 int UnitGenMenu()
 {
   lockmo();
@@ -1354,7 +1363,7 @@ int UnitGenMenu()
   unlockmo();
   DeleteCriticalSection(&csMenuHook);
   return(0);
-};
+}
 
 TMO_IntMenuItem * GetMenuItemByGlobalID(int globalMenuID)
 {

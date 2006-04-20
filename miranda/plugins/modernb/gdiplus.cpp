@@ -53,23 +53,23 @@
 extern "C" struct CluiData g_CluiData;
 extern "C" BYTE saved_alpha;
 extern "C" DWORD g_gdiplusToken;
-extern "C" BYTE gdiPlusFail;// = false;
+extern "C" BOOL gl_b_GDIPlusFail;// = false;
 
 extern "C" int MyStrLen(char *a);
 
 DWORD g_gdiplusToken;
-BYTE gdiPlusFail=false;
+BOOL gl_b_GDIPlusFail=false;
 
 extern "C" void InitGdiPlus(void)
 {
 	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-  gdiPlusFail = false;
+	gl_b_GDIPlusFail = false;
 	__try {
 		if (g_gdiplusToken == 0)
 			Gdiplus::GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, NULL);
 	}
 	__except ( EXCEPTION_EXECUTE_HANDLER ) {
-		gdiPlusFail = true;
+		gl_b_GDIPlusFail = true;
 	}
 }
 
@@ -81,7 +81,7 @@ extern "C" void ShutdownGdiPlus(void)
 			Gdiplus::GdiplusShutdown(g_gdiplusToken);
 	}
 	__except ( EXCEPTION_EXECUTE_HANDLER ) {
-		gdiPlusFail = true;
+		gl_b_GDIPlusFail = true;
     }
     g_gdiplusToken = 0;
 }

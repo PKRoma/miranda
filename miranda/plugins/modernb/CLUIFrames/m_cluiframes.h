@@ -35,6 +35,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define  EXTRA_ICON_ADV2	5
 #define  EXTRA_ICON_WEB	    6
 #define  EXTRA_ICON_CLIENT  7
+#define  EXTRA_ICON_ADV3	8
+#define  EXTRA_ICON_ADV4	9
+
+#define  EXTRA_ICON_COUNT	9
 
 typedef struct
 {

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clist.h"
 #include "m_metacontacts.h"
 #include "commonprototypes.h"
-extern void ( *savedAddContactToTree)(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
+extern void ( *saveAddContactToTree)(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
 
 
 void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOfflineHereGroup)
@@ -101,7 +101,7 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 	if (!i && cont->subcontacts != NULL) mir_free(cont->subcontacts);
 }
 
-int AddItemToGroup(struct ClcGroup *group,int iAboveItem)
+int cli_AddItemToGroup(struct ClcGroup *group,int iAboveItem)
 {
 	if ( group == NULL ) return 0;
 
@@ -110,7 +110,7 @@ int AddItemToGroup(struct ClcGroup *group,int iAboveItem)
 	return iAboveItem;
 }
 
-struct ClcGroup *AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers)
+struct ClcGroup *cli_AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers)
 {
 	struct ClcGroup* result;
 	ClearRowByIndexCache();	
@@ -126,7 +126,7 @@ struct ClcGroup *AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWOR
 		return result;
 }
 
-void FreeContact(struct ClcContact *p)
+void cli_FreeContact(struct ClcContact *p)
 {
 	if ( p->SubAllocated) {
 		if ( p->subcontacts && !p->isSubcontact) {
@@ -158,13 +158,13 @@ void FreeContact(struct ClcContact *p)
 	saveFreeContact( p );
 }
 
-void FreeGroup( struct ClcGroup* group )
+void cli_FreeGroup( struct ClcGroup* group )
 {
 	saveFreeGroup( group );
 	ClearRowByIndexCache();
 }
 
-int AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText)
+int cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText)
 {
 	int i = saveAddInfoItemToGroup( group, flags, pszText );
 	ClearRowByIndexCache();
@@ -187,7 +187,7 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 	dat->NeedResort=1;
 	for(i=group->cl.count-1;i>=0;i--)
 		if(group->cl.items[i]->type!=CLCIT_INFO || !(group->cl.items[i]->flags&CLCIIF_BELOWCONTACTS)) break;
-	i=AddItemToGroup(group,i+1);
+	i=cli_AddItemToGroup(group,i+1);
 	group->cl.items[i]->type=CLCIT_CONTACT;
 	group->cl.items[i]->SubAllocated=0;
 	group->cl.items[i]->isSubcontact=0;
@@ -272,20 +272,20 @@ void * AddTempGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flag
 		b2[0]=1|GROUPF_EXPANDED;
 		DBWriteContactSettingTString(NULL,"CListGroups",buf,b2);
 		pcli->pfnGetGroupName(i,&groupFlags);      
-		res=AddGroup(hwnd,dat,szName,groupFlags,i,0);
+		res=cli_AddGroup(hwnd,dat,szName,groupFlags,i,0);
 		return res;
 	}
 	return NULL;
 }
 extern _inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
-void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline)
+void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline)
 {
 	struct ClcGroup *group;
 	struct ClcContact * cont;
 	pdisplayNameCacheEntry cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
 	if(dat->IsMetaContactsEnabled && cacheEntry && cacheEntry->HiddenSubcontact) return;		//contact should not be added
 	if(!dat->IsMetaContactsEnabled && cacheEntry && !MyStrCmp(cacheEntry->szProto,"MetaContacts")) return;
-	savedAddContactToTree(hwnd,dat,hContact,updateTotalCount,checkHideOffline);
+	saveAddContactToTree(hwnd,dat,hContact,updateTotalCount,checkHideOffline);
 	if (FindItem(hwnd,dat,hContact,&cont,&group,NULL,FALSE))
 	{
 		if (cont)
@@ -306,7 +306,7 @@ void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTo
 	return;
 }
 
-void DeleteItemFromTree(HWND hwnd,HANDLE hItem)
+void cli_DeleteItemFromTree(HWND hwnd,HANDLE hItem)
 {
 	struct ClcData *dat = (struct ClcData *) GetWindowLong(hwnd, 0);
 	ClearRowByIndexCache();
@@ -330,7 +330,7 @@ _inline BOOL IsShowOfflineGroup(struct ClcGroup* group)
 }
 
 
-void RebuildEntireList(HWND hwnd,struct ClcData *dat)
+void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 {
 	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
 	HANDLE hContact;
@@ -362,7 +362,7 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 		for(i=1;;i++) {
 			szGroupName=pcli->pfnGetGroupName(i,&groupFlags); //UNICODE
 			if(szGroupName==NULL) break;
-			AddGroup(hwnd,dat,szGroupName,groupFlags,i,0);
+			cli_AddGroup(hwnd,dat,szGroupName,groupFlags,i,0);
 		}
 	}
 
@@ -384,7 +384,7 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 			if(lstrlen(cacheEntry->szGroup)==0)
 				group=&dat->list;
 			else {
-				group=AddGroup(hwnd,dat,cacheEntry->szGroup,(DWORD)-1,0,0);
+				group=cli_AddGroup(hwnd,dat,cacheEntry->szGroup,(DWORD)-1,0,0);
 			}
 			if(group!=NULL) 
 			{
@@ -442,7 +442,7 @@ void RebuildEntireList(HWND hwnd,struct ClcData *dat)
 
 }
 
-void SortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort )
+void cli_SortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort )
 {
 	lockdat;
 	saveSortCLC(hwnd,dat,useInsertionSort);
@@ -499,7 +499,7 @@ struct SavedInfoState_t {
 BOOL LOCK_RECALC_SCROLLBAR=FALSE;
 extern int StoreAllContactData(struct ClcData *dat);
 extern int RestoreAllContactData(struct ClcData *dat);
-void SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
+void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 {
 	
 	lockdat;
@@ -629,4 +629,50 @@ void SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 	SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) & nm);
 	}
 	ulockdat;
+}
+
+
+struct ClcContact* cliCreateClcContact( void )
+{
+	return (struct ClcContact*)mir_calloc(1, sizeof( struct ClcContact ) );
+}
+
+ClcCacheEntryBase* cliCreateCacheItem( HANDLE hContact )
+{
+	pdisplayNameCacheEntry p = (pdisplayNameCacheEntry)mir_calloc( 1, sizeof( displayNameCacheEntry ));
+	
+	if ( p )
+	{
+		memset(p,0,sizeof( displayNameCacheEntry ));
+		p->hContact = hContact;
+		InvalidateDisplayNameCacheEntryByPDNE(hContact,p,0); //TODO should be in core
+		p->szSecondLineText=NULL;
+		p->szThirdLineText=NULL;
+		p->plSecondLineText=NULL;
+		p->plThirdLineText=NULL;
+	}
+	return (ClcCacheEntryBase*)p;
+}
+
+
+
+void cliInvalidateDisplayNameCacheEntry(HANDLE hContact)
+{	
+	pdisplayNameCacheEntry p;
+	//if (IsBadWritePtr((void*)hContact,sizeof(displayNameCacheEntry)))
+		p = (pdisplayNameCacheEntry) pcli->pfnGetCacheEntry(hContact);
+	//else 
+	//	p=(pdisplayNameCacheEntry)hContact; //handle give us incorrect hContact on GetCacheEntry;
+	if (p)
+		InvalidateDisplayNameCacheEntryByPDNE(hContact,p,0);
+	return;
+}
+
+char* cli_GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact)
+{
+	char * res;
+	lockdat;
+	res=saveGetGroupCountsText(dat, contact);
+	ulockdat;
+	return res;
 }

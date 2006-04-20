@@ -162,7 +162,7 @@ int ModernDrawStatusBar(HWND hwnd, HDC hDC)
   if (GetParent(hwnd)==pcli->hwndContactList)
     return ModernDrawStatusBarWorker(hwnd,hDC);
   else
-    skinInvalidateRect(hwnd,NULL,FALSE);
+    cliInvalidateRect(hwnd,NULL,FALSE);
   return 0;
 }
 extern HICON GetMainStatusOverlay(int STATUS);
@@ -278,7 +278,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 						DBVARIANT dbv={0};
 						if (!DBGetContactSettingTString(NULL,ProtosData[i].ProtoName,dbTitle,&dbv))
 						{
-							ProtosData[i].ProtoXStatus=mir_strdupT(dbv.ptszVal);
+							ProtosData[i].ProtoXStatus=mir_tstrdup(dbv.ptszVal);
 							mir_free(dbv.ptszVal);
 						}
 					}

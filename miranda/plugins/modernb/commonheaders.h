@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2004 Miranda ICQ/IM project,
+Copyright 2000-2006 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -163,9 +163,9 @@ extern __inline void *mir_calloc( size_t num, size_t size );
 extern __inline char * mir_strdup(const char * src);
 extern __inline wchar_t * mir_strdupW(const wchar_t * src);
 #ifdef UNICODE
-	#define mir_strdupT(a) mir_strdupW(a)
+	#define mir_tstrdup(a) mir_strdupW(a)
 #else
-	#define mir_strdupT(a) mir_strdup(a)
+	#define mir_tstrdup(a) mir_strdup(a)
 #endif
 
 
@@ -236,11 +236,13 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 #define DeleteObject(a) DebugDeleteObject(a)
 #endif 
 
-#define lockdat EnterCriticalSection(&(dat->lockitemCS))
-#define ulockdat LeaveCriticalSection(&(dat->lockitemCS))
+#define lockdat
+//EnterCriticalSection(&(dat->lockitemCS))
+#define ulockdat
+//LeaveCriticalSection(&(dat->lockitemCS))
 
 #define strsetA(a,b) {if (a) mir_free(a); a=mir_strdup(b);}
-#define strsetT(a,b) {if (a) mir_free(a); a=mir_strdupT(b);}
+#define strsetT(a,b) {if (a) mir_free(a); a=mir_tstrdup(b);}
 
 extern void TRACE_ERROR();
 extern BOOL DebugDeleteObject(HGDIOBJ a);
@@ -253,5 +255,11 @@ CRITICAL_SECTION cacheSection;
 extern SortedList *clistCache;
 //#define lockcache {if(clistCache) EnterCriticalSection(&cacheSection); if (cacheSection.RecursionCount>20) DebugBreak();}
 //#define ulockcache if(clistCache) LeaveCriticalSection(&cacheSection)
-extern void LockCacheItem(HANDLE hContact);
+extern void LockCacheItem(HANDLE hContact, char*, int);
 extern void UnlockCacheItem(HANDLE hContact);
+
+#define TreeView_InsertItemA(hwnd, lpis) \
+	(HTREEITEM)SendMessageA((hwnd), TVM_INSERTITEMA, 0, (LPARAM)(LPTV_INSERTSTRUCTA)(lpis))
+
+#define TreeView_GetItemA(hwnd, pitem) \
+	(BOOL)SendMessageA((hwnd), TVM_GETITEMA, 0, (LPARAM)(TV_ITEM *)(pitem))

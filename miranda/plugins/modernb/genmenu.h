@@ -3,7 +3,8 @@
 //general menu object module
 #include "m_genmenu.h"
 
-typedef struct{
+typedef struct
+{
 	int id;
 	int globalid;
 
@@ -11,13 +12,14 @@ typedef struct{
 	TMO_MenuItem mi;
 	boolean OverrideShow;
 	char *UniqName;
-	char *CustomName;
+	TCHAR *CustomName;
 	HMENU hSubMenu;
 	boolean IconRegistred;
+}
+	TMO_IntMenuItem,*PMO_IntMenuItem;
 	
-}TMO_IntMenuItem,*PMO_IntMenuItem;
-
-typedef struct{
+typedef struct
+{
 char *Name;//for debug purposes
 int id;
 
@@ -44,8 +46,8 @@ PMO_IntMenuItem MenuItems;
 int MenuItemsCount;
 HANDLE hMenuIcons;
 BOOL bUseUserDefinedItems;
-
-}TIntMenuObject,*PIntMenuObject;
+}
+	TIntMenuObject,*PIntMenuObject;
 
 
 #define SEPARATORPOSITIONINTERVAL	100000
@@ -56,6 +58,7 @@ int RecursiveRemoveChilds(int pos,ListParam *param);
 PMO_IntMenuItem MO_GetIntMenuItem(int globid);
 int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam);
 void UnpackGlobalId(int id,int *MenuObjectId,int *MenuItemId);
+void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSize );
 
 //for old processcommand
 int getGlobalId(const int MenuObjectId,const int MenuItemId);

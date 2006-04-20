@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -49,18 +49,18 @@ int RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *c
 void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd);
 
 // Calc item top Y (using stored data)
-int RowHeights_GetItemTopY(struct ClcData *dat, int item);
+int cliGetRowTopY(struct ClcData *dat, int item);
 
 // Calc item bottom Y (using stored data)
-int RowHeights_GetItemBottomY(struct ClcData *dat, int item);
+int cliGetRowBottomY(struct ClcData *dat, int item);
 
 // Calc total height of rows (using stored data)
-int RowHeights_GetTotalHeight(struct ClcData *dat);
+int cliGetRowTotalHeight(struct ClcData *dat);
 
 // Return the line that pos_y is at or -1 (using stored data). Y start at 0
-int RowHeights_HitTest(struct ClcData *dat, int pos_y);
+int cliRowHitTest(struct ClcData *dat, int pos_y);
 
 // Returns the height of the chosen row
-int RowHeights_GetHeight(struct ClcData *dat, int item);
+int cliGetRowHeight(struct ClcData *dat, int item);
 
 #endif // __ROWHEIGHT_FUNCS_H__

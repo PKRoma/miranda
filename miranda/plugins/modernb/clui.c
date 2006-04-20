@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 
 listed in contributors.txt.
@@ -32,10 +32,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <Winuser.h>
 #include "skinengine.h"
 
-HANDLE hSkinLoaded;
+HANDLE gl_event_hSkinLoaded;
 BOOL ON_SIZING_CYCLE=0;
 extern BYTE CALLED_FROM_SHOWHIDE;
-
+extern void (*saveLoadCluiGlobalOpts)(void);
 #define TM_AUTOALPHA  1
 #define TM_DELAYEDSIZING 2
 #define TM_BRINGOUTTIMEOUT 3
@@ -51,7 +51,9 @@ extern BOOL TransparentFlag;
 extern int UnhookAll();
 extern void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
 extern sCurrentWindowImageData * cachedWindow;
-int BehindEdge_State;
+
+int gl_i_BehindEdge_CurrentState=0;
+
 int BehindEdgeSettings;
 WORD BehindEdgeShowDelay;
 WORD BehindEdgeHideDelay;
@@ -180,7 +182,7 @@ int UpdatePendent=9999;
 HANDLE hFrameContactTree;
 int SkinMinX=0,SkinMinY=20;
 BYTE showOpts;//for statusbar
-BOOL ON_EDGE_SIZING=0;
+BOOL gl_flag_OnEdgeSizing=0;
 RECT ON_EDGE_SIZING_POS={0};
 extern BOOL gl_MultiConnectionMode;
 typedef struct{
@@ -221,7 +223,7 @@ extern int CreateStatusBarFrame();
 extern int LoadProtocolOrderModule(void);
 extern int CLUIFramesUpdateFrame(WPARAM wParam,LPARAM lParam);
 extern int ExtraToColumnNum(int extra);
-extern void TrayIconUpdateBase(const char *szChangedProto);
+//extern void cliTrayIconUpdateBase(char *szChangedProto);
 extern void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis);
 extern void InitGroupMenus();
 extern EnterDragToScroll(HWND hwnd, int Y);
@@ -404,12 +406,12 @@ void ChangeWindowMode()
 
 int UpdateTimer(BYTE BringIn)
 {  
-	if (BehindEdge_State==0)
+	if (gl_i_BehindEdge_CurrentState==0)
 	{
 		KillTimer(pcli->hwndContactList,TM_BRINGOUTTIMEOUT);
 		SetTimer(pcli->hwndContactList,TM_BRINGOUTTIMEOUT,BehindEdgeHideDelay*100,NULL);
 	}
-	if (show_event_started==0 && BehindEdge_State>0 ) 
+	if (show_event_started==0 && gl_i_BehindEdge_CurrentState>0 ) 
 	{
 		KillTimer(pcli->hwndContactList,TM_BRINGINTIMEOUT);
 		SetTimer(pcli->hwndContactList,TM_BRINGINTIMEOUT,BehindEdgeShowDelay*100,NULL);
@@ -452,7 +454,7 @@ int BehindEdge_Hide()
 
 			//3. store setting
 			DBWriteContactSettingByte(NULL, "ModernData", "BehindEdge",method);
-			BehindEdge_State=method;
+			gl_i_BehindEdge_CurrentState=method;
 			return 1;
 		}
 		return 2;
@@ -500,13 +502,13 @@ int BehindEdge_Show()
 
 		//3. store setting
 		DBWriteContactSettingByte(NULL, "ModernData", "BehindEdge",0);
-		BehindEdge_State=0;
+		gl_i_BehindEdge_CurrentState=0;
 	}
 	return 0;
 }
 
 extern BOOL ON_SETALLEXTRAICON_CYCLE;
-BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase )
+BOOL cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase )
 {
   if (ON_SETALLEXTRAICON_CYCLE)
     return FALSE;
@@ -1323,7 +1325,7 @@ BOOL CALLBACK RepositChildInZORDER(HWND hwnd,LPARAM lParam)
 }
 
 
-LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {    
 	/*
 	This registers a window message with RegisterWindowMessage() and then waits for such a message,
@@ -1475,11 +1477,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case UM_UPDATE:
 		if (POST_WAS_CANCELED) return 0;
 		return ValidateFrameImageProc(NULL);               
-
-		//        case WM_SIZING:
-		//            ON_EDGE_SIZING=wParam;
-		//            ON_EDGE_SIZING_POS=*((LPRECT)lParam);
-		//            return DefWindowProc(hwnd, msg, wParam, lParam); 
 	case WM_INITMENU:
 		{
 			if (ServiceExists(MS_CLIST_MENUBUILDMAIN)){CallService(MS_CLIST_MENUBUILDMAIN,0,0);};
@@ -1602,7 +1599,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 	case M_CREATECLC:
 		CreateCLC(hwnd);
-    if (DBGetContactSettingByte(NULL,"CList","ShowOnStart",0)) ShowHide((WPARAM)hwnd,(LPARAM)1); 
+    if (DBGetContactSettingByte(NULL,"CList","ShowOnStart",0)) cliShowHide((WPARAM)hwnd,(LPARAM)1); 
 		PostMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0);
 		return 0;
 
@@ -1813,7 +1810,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		{
 			int k=0;
 			HWND gf=GetForegroundWindow();
-			if (BehindEdge_State>=0)  UpdateTimer(1);
+			if (gl_i_BehindEdge_CurrentState>=0)  UpdateTimer(1);
 			if(TransparentFlag) {
 				if (!transparentFocus && gf!=hwnd)
 				{
@@ -1916,9 +1913,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				if(IsWindowVisible(pcli->hwndStatus)) SkinInvalidateFrame(pcli->hwndStatus,NULL,0);//InvalidateRectZ(pcli->hwndStatus,NULL,TRUE);
 				if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)!=SETTING_TRAYICON_CYCLE) 
 					if (pt->isGlobal) 
-						TrayIconUpdateBase(gl_ConnectingProto);
+						cliTrayIconUpdateBase(gl_ConnectingProto);
 					else
-						TrayIconUpdateBase(pt->szProto);
+						cliTrayIconUpdateBase(pt->szProto);
 
 			}
 			SkinInvalidateFrame(pcli->hwndStatus,NULL,0);
@@ -2326,13 +2323,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		{
 			WINDOWPOS * wp;
 			wp=(WINDOWPOS *)lParam; 
-			//       if (ON_EDGE_SIZING)
-			//           wp->flags|=SWP_NOSIZE|SWP_NOMOVE;
-			//       ON_EDGE_SIZING=0;
 			if (wp->flags&SWP_HIDEWINDOW && ANIMATION_IS_IN_PROGRESS) 
 				return 0;               
-		
-			//if (ON_EDGE_SIZING) wp->flags|=SWP_NOMOVE;
 			if (IsOnDesktop)
 				wp->flags|=SWP_NOACTIVATE|SWP_NOZORDER;
 			return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -2497,7 +2489,7 @@ int CList_ShowStatusMenu(WPARAM w,LPARAM l)
 }
 
 
-void LoadCluiGlobalOpts()
+void cli_LoadCluiGlobalOpts()
 {
   BOOL tLayeredFlag=FALSE;
   tLayeredFlag=IsWinVer2000Plus();
@@ -2513,11 +2505,11 @@ void LoadCluiGlobalOpts()
     if (DBGetContactSettingByte(NULL,"CList","WindowShadow",0)==2)
       DBWriteContactSettingByte(NULL,"CList","WindowShadow",1); 
   }
-  savedLoadCluiGlobalOpts();
+  saveLoadCluiGlobalOpts();
 }
 extern int GetGlobalStatus(WPARAM wparam,LPARAM lparam);
 extern void InitModernRow();
-void LoadCLUIModule(void)
+void cliOnCreateClc(void)
 {
 	hFrameContactTree=0;
 	CreateServiceFunction(MS_CLIST_GETSTATUSMODE,GetGlobalStatus);
@@ -2642,7 +2634,7 @@ int TestCursorOnBorders()
 	}
 	fx=GetSystemMetrics(SM_CXFULLSCREEN);
 	fy=GetSystemMetrics(SM_CYFULLSCREEN);
-	if (docked || BehindEdge_State==0)
+	if (docked || gl_i_BehindEdge_CurrentState==0)
 	//if (docked) || ((pt.x<fx-1) && (pt.y<fy-1) && pt.x>1 && pt.y>1)) // workarounds for behind the edge.
 	{
 		//ScreenToClient(hwnd,&pt);
@@ -2654,7 +2646,7 @@ int TestCursorOnBorders()
 		if (!(pt.x>=r.left && pt.x<=r.right && pt.y>=r.top && pt.y<=r.bottom)) k=0;
 		k*=mouse_in_window;
 		hCurs1 = LoadCursor(NULL, IDC_ARROW);
-		if(BehindEdge_State<=0 && (!(DBGetContactSettingByte(NULL,"CLUI","LockSize",0))))
+		if(gl_i_BehindEdge_CurrentState<=0 && (!(DBGetContactSettingByte(NULL,"CLUI","LockSize",0))))
 			switch(k)
 		{
 			case 1: 

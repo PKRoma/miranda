@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clist.h"
 #include "m_clc.h"
 
-int HotKeysRegister(HWND hwnd);
+int cliHotKeysRegister(HWND hwnd);
 void HotKeysUnregister(HWND hwnd);
 //void LoadContactTree(void);
 
@@ -1655,7 +1655,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			DBWriteContactSettingByte(NULL,"CList","HKSearchNewWnd",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SEARCHNEWWND));
 			DBWriteContactSettingByte(NULL,"CList","HKEnShowOptions",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWOPTIONS));
 			DBWriteContactSettingWord(NULL,"CList","HKShowOptions",(WORD)SendDlgItemMessage(hwndDlg,IDC_HKSHOWOPTIONS,HKM_GETHOTKEY,0,0));
-			HotKeysRegister((HWND)CallService(MS_CLUI_GETHWND,0,0));
+			cliHotKeysRegister((HWND)CallService(MS_CLUI_GETHWND,0,0));
 			return TRUE;
 			}
 		}

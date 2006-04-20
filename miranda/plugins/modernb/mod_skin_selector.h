@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -30,48 +30,48 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#define MAXPARAMS 20
 #define MAXVALUE 20
 
-typedef struct _ModernParam 
+typedef struct _LO_MaskParam 
 {
-    DWORD ParamID;
-    BYTE  ParamFlag;
-    char  *ParamText;
-    DWORD ValueHash;
-    char  *Value;
-} ModernParam;
+    DWORD	dwId;
+    BYTE	bFlag;
+    char*	szName;
+    DWORD	dwValueHash;
+    char*	szValue;
+} TLO_MaskParam;
 
 
-typedef  struct _ModernMask 
+typedef struct _LO_ModernMask 
 {
-  ModernParam   *  ParamsList;
-  DWORD ParamsCount;
-  void          * ObjectID; 
-  DWORD           MaskID;
-} ModernMask;
+  TLO_MaskParam*	pl_Params;
+  DWORD				dwParamCnt;
+  void*				pObject; 
+  DWORD				dwMaskId;
+} TLO_MMask;
 
-typedef struct _ModernMaskList 
+typedef struct _List_ModernMask 
 {
-  ModernMask   * MaskList;
-  DWORD AllocatedMask;  
-} ModernMaskList;
+  TLO_MMask*	pl_Masks;
+  DWORD			dwMaskCnt;  
+} TList_ModernMask;
 
 /// PROTOTYPES
-extern int AddModernMaskToList(ModernMask * mm,  ModernMaskList * mmTemplateList);
-extern int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  ModernMaskList * mmTemplateList, void * pObjectList);
-extern int SortMaskList(ModernMaskList * mmList);
+int AddModernMaskToList(TLO_MMask * mm,  TList_ModernMask * mmTemplateList);
+int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  TList_ModernMask * mmTemplateList, void * pObjectList);
+int SortMaskList(TList_ModernMask * mmList);
 
-extern int DeleteMaskByItID(DWORD mID,ModernMaskList * mmTemplateList);
-extern int ClearMaskList(ModernMaskList * mmTemplateList);
-extern int ExchangeMasksByID(DWORD mID1, DWORD mID2, ModernMaskList * mmTemplateList);
+int DeleteMaskByItID(DWORD mID,TList_ModernMask * mmTemplateList);
+int ClearMaskList(TList_ModernMask * mmTemplateList);
+int ExchangeMasksByID(DWORD mID1, DWORD mID2, TList_ModernMask * mmTemplateList);
 
-extern int ParseToModernMask(ModernMask * mm, char * szText);
-extern BOOL CompareModernMask(ModernMask * mmValue,ModernMask * mmTemplate);
-extern BOOL CompareStrWithModernMask(char * szValue,ModernMask * mmTemplate);
-extern ModernMask *  FindMaskByStr(char * szValue,ModernMaskList * mmTemplateList);
-extern DWORD ModernCalcHash(char * a);
-extern char * ModernMaskToString(ModernMask * mm, char * buf, UINT bufsize);
+int ParseToModernMask(TLO_MMask * mm, char * szText);
+BOOL CompareModernMask(TLO_MMask * mmValue,TLO_MMask * mmTemplate);
+BOOL CompareStrWithModernMask(char * szValue,TLO_MMask * mmTemplate);
+TLO_MMask *  FindMaskByStr(char * szValue,TList_ModernMask * mmTemplateList);
+DWORD ModernCalcHash(char * a);
+char * ModernMaskToString(TLO_MMask * mm, char * buf, UINT bufsize);
 BOOL _inline WildCompare(char * name, char * mask, BYTE option);
-extern int RegisterObjectByParce(char * ObjectName, char * Params);
-extern SKINOBJECTDESCRIPTOR *  FindObjectByRequest(char * szValue,ModernMaskList * mmTemplateList);
-extern TCHAR * GetParamNT(char * string, TCHAR * buf, int buflen, BYTE paramN, char Delim, BOOL SkipSpaces);
+int RegisterObjectByParce(char * ObjectName, char * Params);
+SKINOBJECTDESCRIPTOR *  FindObjectByRequest(char * szValue,TList_ModernMask * mmTemplateList);
+TCHAR * GetParamNT(char * string, TCHAR * buf, int buflen, BYTE paramN, char Delim, BOOL SkipSpaces);
 
 #endif

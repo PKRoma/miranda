@@ -190,7 +190,6 @@ int lParam;
 
 
 
-
 //remove a item from contact menu
 //wParam=hMenuItem returned by MS_CLIST_ADDCONTACTMENUITEM
 //lParam=0
@@ -201,30 +200,44 @@ int lParam;
 /*GENMENU_MODULE*/
 #define CMIF_ROOTPOPUP  128   //root item for new popup(save return id for childs)
 #define CMIF_CHILDPOPUP 256   //child for rootpopup menu
+
+#define CMIF_UNICODE        512      //will return TCHAR* instead of char*
+#if defined( _UNICODE )
+	#define CMIF_TCHAR       CMIF_UNICODE      //will return TCHAR* instead of char*
+#else
+	#define CMIF_TCHAR       0      //will return char*, as usual
+#endif
 /*GENMENU_MODULE*/
 
 #define SETTING_NOOFFLINEBOTTOM_DEFAULT 0
 
-typedef struct{
-int cbSize;
-char *pszName;
-int position;
-int root;
-int flags;
-HICON hIcon;
-DWORD hotKey;
-void *ownerdata;
+typedef struct
+{
+	int cbSize;
+	union 
+	{	
+		char *pszName;
+		TCHAR *ptszName;
+	};
+	int position;
+	int root;
+	int flags;
+	HICON hIcon;
+	DWORD hotKey;
+	void *ownerdata;
 }TMO_MenuItem,*PMO_MenuItem;
 
 /*
 This structure passed to CheckService.
 */
-typedef struct{
+typedef struct
+{
 void *MenuItemOwnerData;
 int MenuItemHandle;
 WPARAM wParam;//from  ListParam.wParam when building menu
 LPARAM lParam;//from  ListParam.lParam when building menu
-}TCheckProcParam,*PCheckProcParam;
+}
+	TCheckProcParam,*PCheckProcParam;
 
 typedef struct{
 int cbSize;

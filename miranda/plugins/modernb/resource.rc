@@ -1493,27 +1493,14 @@ BEGIN
     PUSHBUTTON      "Down",IDC_DN,198,121,34,13
 END
 
-IDD_OPT_ITEM_EXTRAICONS DIALOGEX 0, 0, 212, 114
+IDD_OPT_ITEM_EXTRAICONS DIALOGEX 0, 0, 222, 148
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,7,7,197,100
-    CONTROL         "Protocol Type",IDC_EXTRA_PROTO,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,18,34,175,10
-    CONTROL         "E-mail",IDC_EXTRA_EMAIL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,18,45,175,10
-    CONTROL         "Cellular",IDC_EXTRA_CELLULAR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,18,56,175,10
-    CONTROL         "Advanced #2",IDC_EXTRA_ADV2,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,18,67,175,10
-    CONTROL         "Advanced #1",IDC_EXTRA_ADV1,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,18,78,175,10
-    CONTROL         "Homepage",IDC_EXTRA_WEB,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,18,89,175,10
-    CONTROL         "Client (fingerprint icon module is required)",
-                    IDC_EXTRA_CLIENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    18,23,175,10
+    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,7,7,205,134
+    CONTROL         "",IDC_EXTRAORDER,"SysTreeView32",TVS_NOTOOLTIPS | 
+                    WS_BORDER | WS_TABSTOP,18,22,182,107
 END
 
 
@@ -1606,11 +1593,11 @@ BEGIN
     IDD_OPT_ITEM_EXTRAICONS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 204
+        RIGHTMARGIN, 212
         VERTGUIDE, 18
-        VERTGUIDE, 193
+        VERTGUIDE, 200
         TOPMARGIN, 7
-        BOTTOMMARGIN, 107
+        BOTTOMMARGIN, 141
     END
 END
 #endif    // APSTUDIO_INVOKED

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -26,8 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void LoadContactTree(void);
 int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status);
 HTREEITEM GetTreeItemByHContact(HANDLE hContact);
-void TrayIconUpdateWithImageList(int iImage,const TCHAR *szNewTip,char *szPreferredProto);
-void ChangeContactIcon(HANDLE hContact,int iIcon,int add);
+void cliTrayIconUpdateWithImageList(int iImage,const TCHAR *szNewTip,char *szPreferredProto);
+void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add);
 int GetContactInfosForSort(HANDLE hContact,char **Proto,TCHAR **Name,int *Status);
 
 typedef struct  {

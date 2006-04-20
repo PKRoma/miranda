@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -683,7 +683,7 @@ BOOL ImageArray_DrawImage(LP_IMAGE_ARRAY_DATA iad, int pos, HDC hdcDest, int nXD
 				w += iad->nodes[i].width;
 			}
 		}
-    if (!gdiPlusFail) //Use gdi+ engine
+    if (!gl_b_GDIPlusFail) //Use gdi+ engine
     {
 		  DrawAvatarImageWithGDIp(hdcDest, nXDest, nYDest, iad->nodes[pos].width, iad->nodes[pos].height, iad->img, w, h, iad->nodes[pos].width, iad->nodes[pos].height,0,255);
     }

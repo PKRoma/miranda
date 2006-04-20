@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -91,7 +91,7 @@ int GetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactI
 	return -1;
 }
 
-int sfnFindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible)
+int cliFindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible)
 {
   return FindItem(hwnd,dat, hItem,contact,subgroup,isVisible,FALSE);
 }
@@ -132,7 +132,7 @@ int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **cont
 			if(isVisible) {
 				if(!nowVisible) *isVisible=0;
 				else {
-					int posy = RowHeights_GetItemTopY(dat,index+1);
+					int posy = cliGetRowTopY(dat,index+1);
 					if(posy<dat->yScroll) 
 						*isVisible=0;
 					else {
@@ -194,7 +194,7 @@ void ClearRowByIndexCache()
 		CacheIndexClear=TRUE;
 	};
 }
-int GetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,struct ClcGroup **subgroup)
+int cliGetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,struct ClcGroup **subgroup)
 {
 	int index=0,i;
 	struct ClcGroup *group=&dat->list;

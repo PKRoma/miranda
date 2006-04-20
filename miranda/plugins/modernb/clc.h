@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2006 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -416,29 +416,29 @@ void ClcOptionsChanged(void);
 //clcidents.c
 int GetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);
 int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible, BOOL isSkipSubcontacts );
-int GetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,struct ClcGroup **subgroup);
+int cliGetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,struct ClcGroup **subgroup);
 HANDLE ContactToHItem(struct ClcContact *contact);
 HANDLE ContactToItemHandle(struct ClcContact *contact,DWORD *nmFlags);
 void ClearRowByIndexCache();
 
 //clcitems.c
-struct ClcGroup *AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
-void FreeGroup(struct ClcGroup *group);
-int AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
-void RebuildEntireList(HWND hwnd,struct ClcData *dat);
-void DeleteItemFromTree(HWND hwnd,HANDLE hItem);
-void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
-void SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort);
+struct ClcGroup *cli_AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
+void cli_FreeGroup(struct ClcGroup *group);
+int cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
+void cliRebuildEntireList(HWND hwnd,struct ClcData *dat);
+void cli_DeleteItemFromTree(HWND hwnd,HANDLE hItem);
+void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
+void cli_SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort);
 int GetNewSelection(struct ClcGroup *group,int selection, int direction);
 
 //clcmsgs.c
-LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
+LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
 
 //clcutils.c
-void RecalcScrollBar(HWND hwnd,struct ClcData *dat);
-void BeginRenameSelection(HWND hwnd,struct ClcData *dat);
-int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact **contact,struct ClcGroup **group,DWORD *flags);
-void ScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth);
+void cliRecalcScrollBar(HWND hwnd,struct ClcData *dat);
+void cliBeginRenameSelection(HWND hwnd,struct ClcData *dat);
+int cliHitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact **contact,struct ClcGroup **group,DWORD *flags);
+void cliScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth);
 #define DROPTARGET_OUTSIDE    0
 #define DROPTARGET_ONSELF     1
 #define DROPTARGET_ONNOTHING  2
@@ -453,7 +453,7 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt);
 void LoadClcOptions(HWND hwnd,struct ClcData *dat);
 
 //clcpaint.c
-void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint);
+void cliPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint);
 
 //clcopts.c
 int ClcOptInit(WPARAM wParam,LPARAM lParam);

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2006 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -25,16 +25,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "commonprototypes.h"
 
-extern void TrayIconUpdateBase(char *szChangedProto);
+extern void cliTrayIconUpdateBase(char *szChangedProto);
 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 {
-
 	InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);
-	if (lParam) TrayIconUpdateBase((char*)lParam);
+	if (lParam) cliTrayIconUpdateBase((char*)lParam);
 	return 0;
 }
 
-void fnCluiProtocolStatusChanged(int status,const unsigned char * proto)
+void cliCluiProtocolStatusChanged(int status,const unsigned char * proto)
 {
 	CluiProtocolStatusChanged((WPARAM)status,(LPARAM)proto);
 }

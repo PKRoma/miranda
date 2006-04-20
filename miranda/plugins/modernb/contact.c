@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -57,7 +57,7 @@ static int GetContactStatus(HANDLE hContact)
 }
 
 extern void ( *saveChangeContactIcon)(HANDLE hContact,int iIcon,int add);
-void ChangeContactIcon(HANDLE hContact,int iIcon,int add)
+void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 {
 	pdisplayNameCacheEntry cacheEntry;
 	HANDLE hMostMeta=NULL;
@@ -207,7 +207,7 @@ int CompareContacts2(const struct ClcContact *contact1,const struct ClcContact *
 	return 0;
 }
 
-int CompareContacts(const struct ClcContact *contact1,const struct ClcContact *contact2)
+int cliCompareContacts(const struct ClcContact *contact1,const struct ClcContact *contact2)
 {
 	int i, r;
 	

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2004 Miranda ICQ/IM project,
+Copyright 2000-2006 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -21,98 +21,87 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+//definitions
+#define MS_CLIST_GETVERSION "CList/GetVersionType"
+
+//include
 #include "commonheaders.h"
 #include "commonprototypes.h"
-
 #include <time.h>
-
 #include "skinEngine.h"
-extern HANDLE hSkinLoaded;
 #include "version.h"
 
+//current module prototypes
+void  UninitSkinHotKeys();
+void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
+int   OnSkinLoad(WPARAM wParam, LPARAM lParam);
+int	  LoadContactListModule(void);
+int   LoadCLCModule(void);
+
+void	cliCheckCacheItem(pdisplayNameCacheEntry pdnce);
+void	cliFreeCacheItem( pdisplayNameCacheEntry p );
+void	cliRebuildEntireList(HWND hwnd,struct ClcData *dat);
+void	cliRecalcScrollBar(HWND hwnd,struct ClcData *dat);
+int		cliHotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
+int		cliHotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
+int		cliHotKeysRegister(HWND hwnd);
+int		cliHotKeysUnregister(HWND hwnd);
+void	cliOnCreateClc(void);
+int		cli_AddItemToGroup(struct ClcGroup *group, int iAboveItem);
+int		cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
+
+//current module global variables
 HINSTANCE g_hInst = 0;
 PLUGINLINK * pluginLink;
 CLIST_INTERFACE *pcli;
 struct MM_INTERFACE memoryManagerInterface;
 struct LIST_INTERFACE li;
+
+//current module private variables
 static HANDLE hCListShutdown = 0;
-extern int LoadMoveToGroup();
-int OnSkinLoad(WPARAM wParam, LPARAM lParam);
-void UninitSkinHotKeys();
 
-void  CalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
-void  CheckPDNCE(pdisplayNameCacheEntry pdnce);
-int   CListTrayNotify(MIRANDASYSTRAYNOTIFY *msn);
-void  FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
-void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
-int   HotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
-int   HotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
-int   HotKeysRegister(HWND hwnd);
-extern int GetContactIcon(WPARAM wParam,LPARAM lParam);
-void  RebuildEntireList(HWND hwnd,struct ClcData *dat);
-void  RecalcScrollBar(HWND hwnd,struct ClcData *dat);
-int   UnRegistersAllHotkey(HWND hwnd);
+//stored core interfaces
 
-extern int GetContactIcon(WPARAM wParam,LPARAM lParam);
-extern void TrayIconUpdateBase(char *szChangedProto);
-extern void TrayIconSetToBase(char *szPreferredProto);
-extern void TrayIconIconsChanged(void);
-extern void fnCluiProtocolStatusChanged(int status,const unsigned char * proto);
-//extern void SortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort );
-
-extern int sfnFindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible);
-extern HMENU BuildGroupPopupMenu(struct ClcGroup *group);
 struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
-
-
-void (*savedLoadCluiGlobalOpts)(void);
-extern void LoadCluiGlobalOpts(void);
+void (*saveLoadCluiGlobalOpts)(void);
 void (*saveSortCLC) (HWND hwnd, struct ClcData *dat, int useInsertionSort );
-int ( *saveAddItemToGroup )( struct ClcGroup *group, int iAboveItem );
-int AddItemToGroup(struct ClcGroup *group, int iAboveItem);
+int  (*saveAddItemToGroup)( struct ClcGroup *group, int iAboveItem );
+int  (*saveAddInfoItemToGroup)(struct ClcGroup *group,int flags,const TCHAR *pszText);
 
-int ( *saveAddInfoItemToGroup)(struct ClcGroup *group,int flags,const TCHAR *pszText);
-int AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
-
-LRESULT ( CALLBACK *saveContactListControlWndProc )( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT (CALLBACK *saveContactListControlWndProc )( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
+LRESULT CALLBACK cli_ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int (* saveTrayIconProcessMessage) ( WPARAM wParam, LPARAM lParam );
 
-void ( *savedAddContactToTree)(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
-void AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
+void ( *saveAddContactToTree)(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
+void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
 
 void ( *saveDeleteItemFromTree )(HWND hwnd, HANDLE hItem);
-void DeleteItemFromTree(HWND hwnd, HANDLE hItem);
+void cli_DeleteItemFromTree(HWND hwnd, HANDLE hItem);
 
 void ( *saveFreeContact )( struct ClcContact* );
-extern void FreeContact( struct ClcContact* );
+extern void cli_FreeContact( struct ClcContact* );
 
 void ( *saveFreeGroup )( struct ClcGroup* );
-void FreeGroup( struct ClcGroup* );
+void cli_FreeGroup( struct ClcGroup* );
 
 void (*saveSaveStateAndRebuildList)(HWND hwnd, struct ClcData *dat);
 
 
+
+char* cli_GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact);
 char* (*saveGetGroupCountsText)(struct ClcData *dat, struct ClcContact *contact);
-char* GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact)
-{
-	char * res;
-	lockdat;
-	res=saveGetGroupCountsText(dat, contact);
-	ulockdat;
-	return res;
-}
 
 
 void ( *saveChangeContactIcon)(HANDLE hContact,int iIcon,int add);
-void ChangeContactIcon(HANDLE hContact,int iIcon,int add);
+void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add);
 
 LRESULT ( *saveProcessExternalMessages )(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
-LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
+LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
+
 
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
@@ -144,7 +133,6 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 {
 	g_hInst = hInstDLL;
 	DisableThreadLibraryCalls(g_hInst);
-
 	return TRUE;
 }
 
@@ -163,10 +151,7 @@ __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 	return &pluginInfo;
 }
 
-int LoadContactListModule(void);
-//int UnLoadContactListModule(void);
-int LoadCLCModule(void);
-void LoadCLUIModule(void);
+
 
 int SetDrawer(WPARAM wParam,LPARAM lParam)
 {
@@ -182,46 +167,7 @@ int SetDrawer(WPARAM wParam,LPARAM lParam)
 	if (!SED.PaintClc) return -1;
 	return 0;
 }
-extern ClcCacheEntryBase* fnGetCacheEntry(HANDLE hContact);
-static struct ClcContact* fnCreateClcContact( void )
-{
-	return (struct ClcContact*)mir_calloc(1, sizeof( struct ClcContact ) );
-}
 
-static ClcCacheEntryBase* fnCreateCacheItem( HANDLE hContact )
-{
-	pdisplayNameCacheEntry p = (pdisplayNameCacheEntry)mir_calloc( 1, sizeof( displayNameCacheEntry ));
-	
-	if ( p )
-	{
-		memset(p,0,sizeof( displayNameCacheEntry ));
-		p->hContact = hContact;
-		InvalidateDisplayNameCacheEntryByPDNE(hContact,p,0); //TODO should be in core
-		p->szSecondLineText=NULL;
-		p->szThirdLineText=NULL;
-		p->plSecondLineText=NULL;
-		p->plThirdLineText=NULL;
-	}
-	return (ClcCacheEntryBase*)p;
-}
-
-
-
-void InvalidateDisplayNameCacheEntry(HANDLE hContact)
-{	
-	pdisplayNameCacheEntry p;
-	//if (IsBadWritePtr((void*)hContact,sizeof(displayNameCacheEntry)))
-		p = (pdisplayNameCacheEntry) pcli->pfnGetCacheEntry(hContact);
-	//else 
-	//	p=(pdisplayNameCacheEntry)hContact; //handle give us incorrect hContact on GetCacheEntry;
-	if (p)
-		InvalidateDisplayNameCacheEntryByPDNE(hContact,p,0);
-	return;
-}
-
-extern TCHAR *parseText(TCHAR *stzText);
-extern int LoadModernButtonModule();
-extern void SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat);
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc=0;
@@ -243,67 +189,97 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		return 1;
 	}
 
-	pcli->pfnCheckCacheItem = (void ( * )( ClcCacheEntryBase* )) CheckPDNCE;
-	pcli->pfnCListTrayNotify = CListTrayNotify;
-	pcli->pfnCreateClcContact = fnCreateClcContact;
-	pcli->pfnCreateCacheItem = fnCreateCacheItem;
-	pcli->pfnFreeCacheItem = (void( * )( ClcCacheEntryBase* ))FreeDisplayNameCacheItem;
-	pcli->pfnGetRowBottomY = RowHeights_GetItemBottomY;
-	pcli->pfnGetRowHeight = RowHeights_GetHeight;
-	pcli->pfnGetRowTopY = RowHeights_GetItemTopY;
-	pcli->pfnGetRowTotalHeight = RowHeights_GetTotalHeight;
-	pcli->pfnInvalidateRect = skinInvalidateRect;
-	savedLoadCluiGlobalOpts=pcli->pfnLoadCluiGlobalOpts; pcli->pfnLoadCluiGlobalOpts=LoadCluiGlobalOpts;
-	pcli->pfnGetCacheEntry=fnGetCacheEntry;
+	// OVERLOAD CLIST INTERFACE FUNCTIONS
+	//
+	//	Naming convention is:
+	//  'cli*'  - new handler without default core service calling 
+	//  'save*' - pointer to stored default parent handle
+	//	'cli_*'	- new handler with default core service calling
 
-	pcli->pfnOnCreateClc = LoadCLUIModule;
-	pcli->pfnHotKeysProcess = HotKeysProcess;
-	pcli->pfnHotkeysProcessMessage = HotkeysProcessMessage;
-	pcli->pfnHotKeysRegister = HotKeysRegister;
-	pcli->pfnHotKeysUnregister = UnRegistersAllHotkey;
-	pcli->pfnPaintClc = PaintClc;
-	pcli->pfnRebuildEntireList = RebuildEntireList;
-	pcli->pfnRecalcScrollBar = RecalcScrollBar;
-	pcli->pfnRowHitTest = RowHeights_HitTest;
-	pcli->pfnScrollTo = ScrollTo;
-	pcli->pfnShowHide = ShowHide;
+	pcli->pfnCheckCacheItem		= (void (*)(ClcCacheEntryBase*)) cliCheckCacheItem;
+	pcli->pfnFreeCacheItem		= (void(*)(ClcCacheEntryBase*)) cliFreeCacheItem;
+	pcli->pfnTrayIconUpdateBase	= (void (*)(const char *szChangedProto)) cliTrayIconUpdateBase;	
+	
+	pcli->pfnInvalidateDisplayNameCacheEntry	= cliInvalidateDisplayNameCacheEntry;
+	pcli->pfnTrayIconUpdateWithImageList		= cliTrayIconUpdateWithImageList;
+	pcli->pfnCluiProtocolStatusChanged	= cliCluiProtocolStatusChanged;
+	pcli->pfnHotkeysProcessMessage		= cliHotkeysProcessMessage;
+	pcli->pfnBeginRenameSelection		= cliBeginRenameSelection;
+	pcli->pfnTrayIconIconsChanged		= cliTrayIconIconsChanged;
+	pcli->pfnCListTrayNotify	= cliCListTrayNotify;
+	pcli->pfnCreateClcContact	= cliCreateClcContact;
+	pcli->pfnCreateCacheItem	= cliCreateCacheItem;
+	pcli->pfnGetRowBottomY		= cliGetRowBottomY;
+	pcli->pfnGetRowHeight		= cliGetRowHeight;
+	pcli->pfnGetRowTopY			= cliGetRowTopY;
+	pcli->pfnGetRowTotalHeight	= cliGetRowTotalHeight;
+	pcli->pfnInvalidateRect		= cliInvalidateRect;
+	pcli->pfnGetCacheEntry		= cliGetCacheEntry;
+	pcli->pfnOnCreateClc		= cliOnCreateClc;
+	pcli->pfnHotKeysProcess		= cliHotKeysProcess;
+	pcli->pfnHotKeysRegister	= cliHotKeysRegister;
+	pcli->pfnHotKeysUnregister	= cliHotKeysUnregister;
+	pcli->pfnPaintClc			= cliPaintClc;
+	pcli->pfnRebuildEntireList	= cliRebuildEntireList;
+	pcli->pfnRecalcScrollBar	= cliRecalcScrollBar;
+	pcli->pfnRowHitTest			= cliRowHitTest;
+	pcli->pfnScrollTo			= cliScrollTo;
+	pcli->pfnShowHide			= cliShowHide;
+	pcli->pfnHitTest			= cliHitTest;
+	pcli->pfnCompareContacts	= cliCompareContacts;
+	pcli->pfnBuildGroupPopupMenu= cliBuildGroupPopupMenu;
+	pcli->pfnTrayIconSetToBase	= cliTrayIconSetToBase;
+	pcli->pfnFindItem			= cliFindItem;
+	pcli->pfnGetRowByIndex		= cliGetRowByIndex;
 
-	pcli->pfnCluiProtocolStatusChanged=fnCluiProtocolStatusChanged;
-	pcli->pfnBeginRenameSelection=BeginRenameSelection;
-	pcli->pfnHitTest=HitTest;
-	pcli->pfnCompareContacts=CompareContacts;
+	//partialy overloaded - call default handlers from inside
+	saveLoadCluiGlobalOpts		= pcli->pfnLoadCluiGlobalOpts;
+	pcli->pfnLoadCluiGlobalOpts = cli_LoadCluiGlobalOpts;
 
-	pcli->pfnBuildGroupPopupMenu=BuildGroupPopupMenu;
-	pcli->pfnInvalidateDisplayNameCacheEntry=InvalidateDisplayNameCacheEntry;
+	saveSortCLC					= pcli->pfnSortCLC;	
+	pcli->pfnSortCLC			= cli_SortCLC;
+	
+	saveAddGroup				= pcli->pfnAddGroup; 
+	pcli->pfnAddGroup			= cli_AddGroup;
+	
+	saveGetGroupCountsText		= pcli->pfnGetGroupCountsText;
+	pcli->pfnGetGroupCountsText	= cli_GetGroupCountsText;
 
-	saveTrayIconProcessMessage=pcli->pfnTrayIconProcessMessage; pcli->pfnTrayIconProcessMessage=TrayIconProcessMessage;
-	pcli->pfnTrayIconUpdateBase=(void (*)( const char *szChangedProto ))TrayIconUpdateBase;
-	pcli->pfnTrayIconUpdateWithImageList=TrayIconUpdateWithImageList;
-	pcli->pfnTrayIconSetToBase=TrayIconSetToBase;
-	pcli->pfnTrayIconIconsChanged=TrayIconIconsChanged;
+    saveAddContactToTree		= pcli->pfnAddContactToTree;  
+	pcli->pfnAddContactToTree	= cli_AddContactToTree;
 
-    pcli->pfnFindItem=sfnFindItem;
+	saveAddInfoItemToGroup		= pcli->pfnAddInfoItemToGroup; 
+	pcli->pfnAddInfoItemToGroup = cli_AddInfoItemToGroup;
 
-	pcli->pfnGetRowByIndex=GetRowByIndex;
+	saveAddItemToGroup			= pcli->pfnAddItemToGroup; 
+	pcli->pfnAddItemToGroup		= cli_AddItemToGroup;
 
-	saveSaveStateAndRebuildList=pcli->pfnSaveStateAndRebuildList;
-	pcli->pfnSaveStateAndRebuildList=SaveStateAndRebuildList;
+	saveContactListWndProc		= pcli->pfnContactListWndProc; 
+	pcli->pfnContactListWndProc = cli_ContactListWndProc;
 
-	saveSortCLC=pcli->pfnSortCLC;	pcli->pfnSortCLC=SortCLC;
-	saveAddGroup = pcli->pfnAddGroup; pcli->pfnAddGroup = AddGroup;
-	saveGetGroupCountsText=pcli->pfnGetGroupCountsText;
-	pcli->pfnGetGroupCountsText=GetGroupCountsText;
-    savedAddContactToTree=pcli->pfnAddContactToTree;  pcli->pfnAddContactToTree=AddContactToTree;
-	saveAddInfoItemToGroup = pcli->pfnAddInfoItemToGroup; pcli->pfnAddInfoItemToGroup = AddInfoItemToGroup;
-	saveAddItemToGroup = pcli->pfnAddItemToGroup; pcli->pfnAddItemToGroup = AddItemToGroup;
-	saveContactListControlWndProc = pcli->pfnContactListControlWndProc; pcli->pfnContactListControlWndProc = ContactListControlWndProc;
-	saveContactListWndProc = pcli->pfnContactListWndProc; pcli->pfnContactListWndProc = ContactListWndProc;
-	saveDeleteItemFromTree = pcli->pfnDeleteItemFromTree; pcli->pfnDeleteItemFromTree = DeleteItemFromTree;
-	saveFreeContact = pcli->pfnFreeContact; pcli->pfnFreeContact = FreeContact;
-	saveFreeGroup = pcli->pfnFreeGroup; pcli->pfnFreeGroup = FreeGroup;
-	saveProcessExternalMessages = pcli->pfnProcessExternalMessages; pcli->pfnProcessExternalMessages = ProcessExternalMessages;
+	saveDeleteItemFromTree		= pcli->pfnDeleteItemFromTree; 
+	pcli->pfnDeleteItemFromTree = cli_DeleteItemFromTree;
 
-	saveChangeContactIcon = pcli->pfnChangeContactIcon; pcli->pfnChangeContactIcon = ChangeContactIcon;
+	saveFreeContact				= pcli->pfnFreeContact; 
+	pcli->pfnFreeContact		= cli_FreeContact;
+
+	saveFreeGroup				= pcli->pfnFreeGroup; 
+	pcli->pfnFreeGroup			= cli_FreeGroup;
+	
+	saveChangeContactIcon		= pcli->pfnChangeContactIcon;
+	pcli->pfnChangeContactIcon	= cli_ChangeContactIcon;
+	
+	saveTrayIconProcessMessage		= pcli->pfnTrayIconProcessMessage; 
+	pcli->pfnTrayIconProcessMessage	= cli_TrayIconProcessMessage;
+	
+	saveSaveStateAndRebuildList		= pcli->pfnSaveStateAndRebuildList;
+	pcli->pfnSaveStateAndRebuildList= cli_SaveStateAndRebuildList;
+
+	saveContactListControlWndProc		= pcli->pfnContactListControlWndProc;
+	pcli->pfnContactListControlWndProc	= cli_ContactListControlWndProc;
+
+	saveProcessExternalMessages			= pcli->pfnProcessExternalMessages; 
+	pcli->pfnProcessExternalMessages	= cli_ProcessExternalMessages;	
 
 	memset(&SED,0,sizeof(SED));
 	CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);
@@ -326,9 +302,6 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	CListInitialise(link);
 	return 1;
 }
-extern void UnloadAvatarOverlayIcon();
-extern void FreeRowCell ();
-extern void UninitCustomMenus(void);
 int __declspec(dllexport) Unload(void)
 {
 	TRACE("Unloading ClistMW\r\n");	
@@ -336,7 +309,7 @@ int __declspec(dllexport) Unload(void)
 	UninitCustomMenus();
 	UnloadAvatarOverlayIcon();
 	UninitSkinHotKeys();
-	UnhookEvent(hSkinLoaded);
+	UnhookEvent(gl_event_hSkinLoaded);
 	UnhookAll();
 	UnloadSkinModule();
 	FreeRowCell();

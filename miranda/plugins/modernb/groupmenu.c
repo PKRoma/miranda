@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -531,7 +531,7 @@ int BuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 	return (int)hMenu;
 }
 
-HMENU BuildGroupPopupMenu(struct ClcGroup *group)
+HMENU cliBuildGroupPopupMenu(struct ClcGroup *group)
 {
 	//HWND wnd=GetForegroundWindow();
 	return (HMENU)CallService(MS_CLIST_MENUBUILDSUBGROUP,(WPARAM)group,0);

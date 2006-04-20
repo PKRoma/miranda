@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_clc.h"
 #include "clc.h"
-extern BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+extern BOOL cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
 extern ON_SETALLEXTRAICON_CYCLE;
 extern BOOL CLM_AUTOREBUILD_WAS_POSTED;
 
@@ -31,7 +31,7 @@ extern BOOL CLM_AUTOREBUILD_WAS_POSTED;
 
 extern LRESULT ( *saveProcessExternalMessages )(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
 
-LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam)
+LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam)
 {
 	switch(msg) {
 	case CLM_AUTOREBUILD:
@@ -50,7 +50,7 @@ LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wP
 
 	case CLM_SETEXTRACOLUMNSSPACE:
 		dat->extraColumnSpacing=(int)wParam;
-		skinInvalidateRect(hwnd,NULL,FALSE);
+		cliInvalidateRect(hwnd,NULL,FALSE);
 		return 0;
 
 	case CLM_SETFONT:
@@ -62,7 +62,7 @@ LRESULT ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wP
 		RowHeights_GetMaxRowHeight(dat, hwnd);
 
 		if(LOWORD(lParam))
-			skinInvalidateRect(hwnd,NULL,FALSE);
+			cliInvalidateRect(hwnd,NULL,FALSE);
 		return 0;
 
 

@@ -1,7 +1,7 @@
 /*
 MirandaPluginInfo IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -37,9 +37,9 @@ extern int docked;
 extern BOOL IsOnDesktop;
 extern int dock_prevent_moving;
 extern HINSTANCE g_hInst;
-extern BOOL ON_EDGE_SIZING;
+extern BOOL gl_flag_OnEdgeSizing;
 extern BOOL (WINAPI *MySetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);
-extern BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+extern BOOL cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
 extern int OnShowHide(HWND hwnd, int mode);
 
 extern BYTE UseKeyColor;
@@ -207,7 +207,7 @@ int RepaintSubContainers()
     if (!Frames[i].floating && Frames[i].OwnerWindow!=(HWND)0 &&Frames[i].OwnerWindow!=(HWND)-2 && Frames[i].visible && !Frames[i].needhide )
     {
       RedrawWindow(Frames[i].hWnd,NULL,NULL,RDW_ALLCHILDREN|RDW_UPDATENOW|RDW_INVALIDATE|RDW_FRAME);
-      //skinInvalidateRect(Frames[i].hWnd,NULL,FALSE);
+      //cliInvalidateRect(Frames[i].hWnd,NULL,FALSE);
     };
   return 0;
 }
@@ -1677,7 +1677,7 @@ int CLUIFramesSetUnSetBorder(WPARAM wParam,LPARAM lParam)
   */
 
   {
-    SetWindowPos(hw,0,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_DRAWFRAME);
+    SetWindowPos(hw,0,0,0,0,0,SWP_NOSIZE|SWP_NOZORDER|SWP_NOMOVE|SWP_NOACTIVATE|SWP_DRAWFRAME);
   };
   return(0);
 };
@@ -2171,9 +2171,9 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
   RemoveItemFromList(pos,&Frames,&nFramescount);
 
   ulockfrm();
-  skinInvalidateRect(pcli->hwndContactList,NULL,TRUE);
+  cliInvalidateRect(pcli->hwndContactList,NULL,TRUE);
   CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
-  skinInvalidateRect(pcli->hwndContactList,NULL,TRUE);
+  cliInvalidateRect(pcli->hwndContactList,NULL,TRUE);
 
   return(0);
 };
@@ -2784,7 +2784,7 @@ int CLUIFramesOnClistResize2(WPARAM wParam,LPARAM lParam, int mode)
   ulockfrm();
   tick=GetTickCount()-tick;
 
-  //	if (pcli->hwndContactList!=0) skinInvalidateRect(pcli->hwndContactList,NULL,TRUE);
+  //	if (pcli->hwndContactList!=0) cliInvalidateRect(pcli->hwndContactList,NULL,TRUE);
   //	if (pcli->hwndContactList!=0) UpdateWindow(pcli->hwndContactList);
   //    for(i=0;i<nFramescount;i++){
 
@@ -3026,7 +3026,7 @@ int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
   ulockfrm();
   tick=GetTickCount()-tick;
 
-  if (pcli->hwndContactList!=0) skinInvalidateRect(pcli->hwndContactList,NULL,TRUE);
+  if (pcli->hwndContactList!=0) cliInvalidateRect(pcli->hwndContactList,NULL,TRUE);
   if (pcli->hwndContactList!=0) UpdateWindow(pcli->hwndContactList);
 
   if(lParam==2) RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_UPDATENOW|RDW_ALLCHILDREN|RDW_ERASE|RDW_INVALIDATE);
@@ -3067,7 +3067,7 @@ int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
   };
 
   //		RecreateStatusBar(CallService(MS_CLUI_GETHWND,0,0));
-  //		if (pcli->hwndStatus) skinInvalidateRect(pcli->hwndStatus,NULL,TRUE);
+  //		if (pcli->hwndStatus) cliInvalidateRect(pcli->hwndStatus,NULL,TRUE);
   CLUIFramesOnClistResize(0,0);
   return 0;
 }
@@ -3088,7 +3088,7 @@ HBRUSH hBrushAlternateGrey=NULL;
 
 HFONT hFont;
 
-//skinInvalidateRect(hwnd,0,FALSE);
+//cliInvalidateRect(hwnd,0,FALSE);
 
 hFont=(HFONT)SendMessage(hwnd,WM_GETFONT,0,0);
 
@@ -3361,12 +3361,12 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
   case WM_USER+100:
     return 1;    
   case WM_ENABLE:
-    if (hwnd!=0) skinInvalidateRect(hwnd,NULL,FALSE);
+    if (hwnd!=0) cliInvalidateRect(hwnd,NULL,FALSE);
     return 0;
     /*
     case WM_PRINT:
     case WM_PRINTCLIENT:
-    skinInvalidateRect(hwnd,NULL,FALSE);
+    cliInvalidateRect(hwnd,NULL,FALSE);
     {
     RECT rect;
     HDC dc;

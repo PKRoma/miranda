@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -551,7 +551,7 @@ int AddButton(HWND parent,
     if (DBkey && &DBkey!='\0') bct->ValueDBSection=mir_strdup(DBkey); else bct->ValueDBSection=NULL;
     if (TypeDef && &TypeDef!='\0') bct->ValueTypeDef=mir_strdup(TypeDef); else bct->ValueTypeDef=mir_strdup("sDefault");
     bct->ID=mir_strdup(ID);
-    bct->Hint=mir_strdupT(Hint);
+    bct->Hint=mir_tstrdup(Hint);
     Buttons[ButtonsCount].bct=bct;
     Buttons[ButtonsCount].hwnd=NULL;
     Buttons[ButtonsCount].OrL=Left;

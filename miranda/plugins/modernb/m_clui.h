@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -118,9 +118,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //needs to be re-sorted many times rapidly.
 #define MS_CLUI_SORTLIST        "CLUI/SortList"
 
+
 //Gets a load of capabilities for the loaded CLUI    v0.1.2.1+
 //wParam=capability, CLUICAPS_*
-//lParam=0
+
+/*
+ * BY FYR
+ * if wParam==0 then lParam one of followed new Flags (not combinate it) 
+ *
+*/
+#define CLUIF2_PLUGININFO			1	//returns pointer to plugininfo
+
+#define CLUIF2_CLISTTYPE			2	// the genaration of list in chronologic 
+										// modern layered return 0x07 (assuming classic, mw, meta, nicer1, modern1, nicer++, modernLayered)
+										// +0x0100 for unicode
+#define CLUIF2_EXTRACOLUMNCOUNT		3   // return max number of extra icon available to be set in main window
+#define CLUIF2_USEREXTRASTART		4   // return index of first 'advanced' image except Adv1 and Adv2
+
+
 //returns the requested value, 0 if wParam is an unknown value
 //If this service is not implemented, it is assumed to return 0 to all input
 #define CLUICAPS_FLAGS1   0
@@ -139,6 +154,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
           //change the list auto hide options. It should read and write the
 		  //byte "CList"/"AutoHide" and the word "CList"/"HideTime". No other
 		  //action is needed.
+
+
 #define MS_CLUI_GETCAPS         "CLUI/GetCaps"
 
 //a contact is being dragged outside the main window     v0.1.2.0+
@@ -163,3 +180,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MS_CLUI_METASUPPORT         "CLUI/MetaContactSupport"
 
 
+
+// return pointer to PLUGININFO structure
+#define MS_CLIST_GETCLISTCAPS "CList/GetCaps"

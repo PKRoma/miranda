@@ -134,7 +134,7 @@ extern __inline wchar_t * mir_strdupW(const wchar_t * src)
 	return p;
 }
 
-//__inline TCHAR * mir_strdupT(const TCHAR * src)
+//__inline TCHAR * mir_tstrdup(const TCHAR * src)
 //{
 //	TCHAR * p;
 //	if (src==NULL) return NULL;

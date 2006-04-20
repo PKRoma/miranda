@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int InitSkinHotKeys(void);
 int RegistersAllHotkey(HWND hwnd); 
-int UnRegistersAllHotkey(HWND hwnd);
+int cliHotKeysUnregister(HWND hwnd);
 static int ServiceSkinPlayHotKey(WPARAM wParam, LPARAM lParam);
 
 static ATOM aHide = 0;
@@ -117,7 +117,7 @@ int hkAllOffline(WPARAM wParam,LPARAM lParam)
 }
 
 
-int HotKeysRegister(HWND hwnd)
+int cliHotKeysRegister(HWND hwnd)
 {
 	//	UINT mod,vk;
 	SKINHOTKEYDESCEX  shk;
@@ -200,7 +200,7 @@ int RegistersAllHotkey(HWND hwnd)
 	int i;
 	pHotKeyItem phi;
 
-	UnRegistersAllHotkey(hwnd);
+	cliHotKeysUnregister(hwnd);
 	for (i=0;i<HotKeyCount;i++)
 	{
 		phi=&HotKeyList[i];
@@ -213,7 +213,7 @@ int RegistersAllHotkey(HWND hwnd)
 	return 0;
 }
 
-int UnRegistersAllHotkey(HWND hwnd)
+int cliHotKeysUnregister(HWND hwnd)
 {
 	//	UINT mod,vk;
 	int i;
@@ -233,17 +233,17 @@ int UnRegistersAllHotkey(HWND hwnd)
 }
 
 
-int HotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam)
+int cliHotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam)
 {
 	return TRUE;
 } 
 
-int HotkeysProcessMessage(WPARAM wParam,LPARAM lParam)
+int cliHotkeysProcessMessage(WPARAM wParam,LPARAM lParam)
 {
 	MSG *msg=(MSG*)wParam;
 	switch(msg->message) {
 		case WM_CREATE:
-			HotKeysRegister(msg->hwnd);
+			cliHotKeysRegister(msg->hwnd);
 			return 0;
 		case WM_HOTKEY:
 			//*((LRESULT*)lParam)=HotKeysProcess(msg->hwnd,msg->wParam,msg->lParam);
@@ -254,7 +254,7 @@ int HotkeysProcessMessage(WPARAM wParam,LPARAM lParam)
 			}
 			return TRUE;
 		case WM_DESTROY:
-			UnRegistersAllHotkey(msg->hwnd);
+			cliHotKeysUnregister(msg->hwnd);
 			return 0;
 	}
 

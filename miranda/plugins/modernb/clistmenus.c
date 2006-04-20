@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -80,7 +80,7 @@ extern int 	CheckProtocolOrder();
 //mainmenu exec param(ownerdata)
 typedef struct{
   char *szServiceName;
-  char *szMenuName;
+  TCHAR *szMenuName;
   int Param1;
 }MainMenuExecParam,*lpMainMenuExecParam;
 //
@@ -165,7 +165,7 @@ static int AddMainMenuItem(WPARAM wParam,LPARAM lParam)
   tmi.flags=mi->flags;
   tmi.hIcon=mi->hIcon;
   tmi.hotKey=mi->hotKey;
-  tmi.pszName=mi->pszName;
+  tmi.pszName=Translate(mi->pszName);
   tmi.position=mi->position;
 
   //pszPopupName for new system mean root level
@@ -182,7 +182,7 @@ static int AddMainMenuItem(WPARAM wParam,LPARAM lParam)
     //we need just one parametr.
     mmep->szServiceName=mir_strdup(mi->pszService);
     mmep->Param1=mi->popupPosition;
-	mmep->szMenuName=tmi.pszName;
+	mmep->szMenuName=tmi.ptszName;
 
     tmi.ownerdata=mmep;
   }
@@ -622,7 +622,15 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 				if (smep)
 					prot=GetUniqueProtoName(smep->proto);
 				else
-					prot=GetUniqueProtoName(timi->mi.pszName);
+				{
+#ifdef UNICODE
+					char *prn=u2a(timi->mi.ptszName);
+					prot=GetUniqueProtoName(prn);
+					if (prn) mir_free(prn);
+#else
+					prot=GetUniqueProtoName(timi->mi.ptszName);
+#endif
+				}
 				if (!prot) return TRUE;
 				curProtoStatus=CallProtoService(prot,PS_GETSTATUS,0,0);
 				if (curProtoStatus>=ID_STATUS_OFFLINE && curProtoStatus<ID_STATUS_IDLE)
@@ -676,13 +684,13 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
           char buf[256];
           pimi->mi.flags|=CMIF_CHECKED;
           if(pimi->mi.pszName) mir_free(pimi->mi.pszName);
-          _snprintf(buf,sizeof(buf),Translate("%s (locked)"),smep->proto);
-          pimi->mi.pszName=mir_strdup(buf);
+		  _snprintf(buf,SIZEOF(buf),Translate("%s (locked)"),smep->proto);
+          pimi->mi.ptszName=(TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR,0,(LPARAM)buf);
         }
         else 
         {
           if(pimi->mi.pszName) mir_free(pimi->mi.pszName);
-          pimi->mi.pszName=mir_strdup(smep->proto);
+          pimi->mi.ptszName=(TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR,0,(LPARAM)smep->proto);
           pimi->mi.flags&=~CMIF_CHECKED;
         }
       }
@@ -957,17 +965,15 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
       tmi.root=-1;
 
       CallProtoService(proto[i]->szName,PS_GETNAME,sizeof(protoName),(LPARAM)protoName);
-      tmi.pszName=protoName;
+	  tmi.pszName=protoName;
       rootmenu=CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
-
-
       memset(&tmi,0,sizeof(tmi));
       tmi.cbSize=sizeof(tmi);
       tmi.flags=CMIF_CHILDPOPUP;
       //if(statusModeList[j]==ID_STATUS_OFFLINE){tmi.flags|=CMIF_CHECKED;};
       tmi.root=rootmenu;
       tmi.position=pos++;
-      tmi.pszName=protoName; 
+	  tmi.pszName=protoName; 
       {
             //owner data
             lpStatusMenuExecParam smep;
@@ -1076,7 +1082,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
         flags=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
         if(flags&statusModePf2List[j]){
           //DeleteMenu(hMenu,statusModeList[j],MF_BYCOMMAND)
-          int buf[256];
+          char buf[256];
           memset(&tmi,0,sizeof(tmi));
           memset(&buf,0,256);
           tmi.cbSize=sizeof(tmi);
@@ -1090,8 +1096,8 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
           tmi.hotKey=MAKELPARAM(MOD_CONTROL,'0'+j);
           tmi.pszName=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModeList[j],0);
           
-		  sprintf((char*)buf,"%s\tCtrl+%c",tmi.pszName,'0'+j);
-          tmi.pszName=(char *)buf;
+		  _snprintf(buf,SIZEOF(buf),"%s\tCtrl+%c",tmi.pszName,'0'+j);
+          tmi.pszName=buf;
           {
             //owner data
             lpStatusMenuExecParam smep;
@@ -1414,7 +1420,6 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
   OptParam op;
   long pos=1000;
   MenuProto * mp=NULL;
-  
   int i; 
   char buf[MAX_PATH+64];
   BOOL val=(wParam!=0 && !IsBadStringPtrA(mi->pszContactOwner,130)); //proto name should be less than 128
@@ -1457,7 +1462,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
     tmi.position=pos++;
     tmi.root=(int)mp->menuID;
     tmi.hIcon=NULL;
-    tmi.pszName=mi->pszPopupName;
+	tmi.pszName=mi->pszPopupName;
     mp->hasAdded=(HANDLE)CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
   }
   if (wParam)
@@ -1473,6 +1478,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
   tmi.hotKey=mi->hotKey;
   tmi.position=mi->position;
   tmi.pszName=mi->pszName;
+  
   /*
   if (!(mi->flags&CMIF_ROOTPOPUP||mi->flags&CMIF_CHILDPOPUP)) {
   //old system

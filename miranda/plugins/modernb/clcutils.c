@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonprototypes.h"
 
 //loads of stuff that didn't really fit anywhere else
-extern BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+extern BOOL cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
 
 extern BOOL ON_SIZING_CYCLE;
 
@@ -35,7 +35,7 @@ BOOL RectHitTest(RECT *rc, int testx, int testy)
 	return testx >= rc->left && testx < rc->right && testy >= rc->top && testy < rc->bottom;
 }
 
-int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact **contact,struct ClcGroup **group,DWORD *flags)
+int cliHitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact **contact,struct ClcGroup **group,DWORD *flags)
 {
 	struct ClcContact *hitcontact;
 	struct ClcGroup *hitgroup;
@@ -63,10 +63,10 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 	}
 
 	// Get hit item 
-	hit = RowHeights_HitTest(dat, dat->yScroll + testy);
+	hit = cliRowHitTest(dat, dat->yScroll + testy);
 
 	if (hit != -1) 
-		hit = GetRowByIndex(dat, hit, &hitcontact, &hitgroup);
+		hit = cliGetRowByIndex(dat, hit, &hitcontact, &hitgroup);
 
 	if(hit==-1) {
 		if(flags) *flags|=CLCHT_NOWHERE|CLCHT_BELOWITEMS;
@@ -131,7 +131,7 @@ int HitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact 
 	return -1;
 }
 
-void ScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth)
+void cliScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth)
 {
 	DWORD startTick,nowTick;
 	int oldy=dat->yScroll;
@@ -146,7 +146,7 @@ void ScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth)
 	GetClientRect(hwnd,&clRect);
 	rcInvalidate=clRect;
 	//maxy=dat->rowHeight*GetGroupContentsCount(&dat->list,2)-clRect.bottom;
-	maxy=RowHeights_GetTotalHeight(dat)-clRect.bottom;
+	maxy=cliGetRowTotalHeight(dat)-clRect.bottom;
 	if(desty>maxy) desty=maxy;
 	if(desty<0) desty=0;
 	if(abs(desty-dat->yScroll)<4) noSmooth=1;
@@ -175,12 +175,12 @@ void ScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth)
 	if((dat->backgroundBmpUse&CLBF_SCROLL || dat->hBmpBackground==NULL) && FALSE)
 		ScrollWindowEx(hwnd,0,previousy-dat->yScroll,NULL,NULL,NULL,NULL,SW_INVALIDATE);
 	else
-		skinInvalidateRect(hwnd,NULL,FALSE);
+		cliInvalidateRect(hwnd,NULL,FALSE);
 	SetScrollPos(hwnd,SB_VERT,dat->yScroll,TRUE);
 }
 
 extern BOOL LOCK_RECALC_SCROLLBAR;
-void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
+void cliRecalcScrollBar(HWND hwnd,struct ClcData *dat)
 {
 	SCROLLINFO si={0};
 	RECT clRect;
@@ -193,7 +193,7 @@ void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	si.cbSize=sizeof(si);
 	si.fMask=SIF_ALL;
 	si.nMin=0;
-	si.nMax=RowHeights_GetTotalHeight(dat)-1;
+	si.nMax=cliGetRowTotalHeight(dat)-1;
 	si.nPage=clRect.bottom;
 	si.nPos=dat->yScroll;
 
@@ -208,7 +208,7 @@ void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	si.cbSize=sizeof(si);
 	si.fMask=SIF_ALL;
 	si.nMin=0;
-	si.nMax=RowHeights_GetTotalHeight(dat)-1;
+	si.nMax=cliGetRowTotalHeight(dat)-1;
 	si.nPage=clRect.bottom;
 	si.nPos=dat->yScroll;
 
@@ -219,7 +219,7 @@ void RecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	else 
 		SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
 	ON_SIZING_CYCLE=1;
-	ScrollTo(hwnd,dat,dat->yScroll,1);
+	cliScrollTo(hwnd,dat,dat->yScroll,1);
 	ON_SIZING_CYCLE=0;
 }
 
@@ -252,7 +252,7 @@ static LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 	return CallWindowProc(OldRenameEditWndProc,hwnd,msg,wParam,lParam);
 }
 
-void BeginRenameSelection(HWND hwnd,struct ClcData *dat)
+void cliBeginRenameSelection(HWND hwnd,struct ClcData *dat)
 {
 	struct ClcContact *contact;
 	struct ClcGroup *group;
@@ -264,7 +264,7 @@ void BeginRenameSelection(HWND hwnd,struct ClcData *dat)
 	KillTimer(hwnd,TIMERID_RENAME);
 	ReleaseCapture();
 	dat->iHotTrack=-1;
-	dat->selection=GetRowByIndex(dat,dat->selection,&contact,&group);
+	dat->selection=cliGetRowByIndex(dat,dat->selection,&contact,&group);
 	if(dat->selection==-1) return;
 	if(contact->type!=CLCIT_CONTACT && contact->type!=CLCIT_GROUP) return;
 
@@ -277,7 +277,7 @@ void BeginRenameSelection(HWND hwnd,struct ClcData *dat)
 	GetClientRect(hwnd,&clRect);
 	x=indent*dat->groupIndent+dat->iconXSpace-2+subident;
 	w=clRect.right-x;
-	y=RowHeights_GetItemTopY(dat, dat->selection)-dat->yScroll;
+	y=cliGetRowTopY(dat, dat->selection)-dat->yScroll;
 	h=dat->row_heights[dat->selection];
 	{
 		int i;
@@ -350,8 +350,8 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 	dat->iInsertionMark=-1;
 	if(!PtInRect(&clRect,pt)) return DROPTARGET_OUTSIDE;
 
-	hit=HitTest(hwnd,dat,pt.x,pt.y,&contact,&group,&hitFlags);
-	GetRowByIndex(dat,dat->iDragItem,&movecontact,&movegroup);
+	hit=cliHitTest(hwnd,dat,pt.x,pt.y,&contact,&group,&hitFlags);
+	cliGetRowByIndex(dat,dat->iDragItem,&movecontact,&movegroup);
 	if(hit==dat->iDragItem) return DROPTARGET_ONSELF;
 	if(hit==-1 || hitFlags&CLCHT_ONITEMEXTRA) return DROPTARGET_ONNOTHING;
 
@@ -360,18 +360,18 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 		struct ClcGroup *topgroup=NULL;
 		int topItem=-1,bottomItem;
 		int ok=0;
-		if(pt.y+dat->yScroll<RowHeights_GetItemTopY(dat,hit)+dat->insertionMarkHitHeight) {
+		if(pt.y+dat->yScroll<cliGetRowTopY(dat,hit)+dat->insertionMarkHitHeight) {
 			//could be insertion mark (above)
 			topItem=hit-1; bottomItem=hit;
 			bottomcontact=contact;
-			topItem=GetRowByIndex(dat,topItem,&topcontact,&topgroup);
+			topItem=cliGetRowByIndex(dat,topItem,&topcontact,&topgroup);
 			ok=1;
 		}
-		if(pt.y+dat->yScroll>=RowHeights_GetItemTopY(dat,hit+1)-dat->insertionMarkHitHeight) {
+		if(pt.y+dat->yScroll>=cliGetRowTopY(dat,hit+1)-dat->insertionMarkHitHeight) {
 			//could be insertion mark (below)
 			topItem=hit; bottomItem=hit+1;
 			topcontact=contact; topgroup=group;
-			bottomItem=GetRowByIndex(dat,bottomItem,&bottomcontact,NULL);
+			bottomItem=cliGetRowByIndex(dat,bottomItem,&bottomcontact,NULL);
 			ok=1;
 		}
 		if(ok) {
@@ -522,22 +522,15 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 		dat->contact_time_show = 0;
 		dat->contact_time_show_only_if_different = 0;
 	}
-
+	//issue #0065 "Client time shows wrong" fix
 	{
-		const time_t now = time(NULL);
-		struct tm gmt = *gmtime(&now);
-		time_t gmt_time;
-		//gmt.tm_isdst = -1;
-		gmt_time = mktime(&gmt);
-		dat->local_gmt_diff = (int)difftime(now, gmt_time);
-
-		gmt = *gmtime(&now);
-		gmt.tm_isdst = -1;
-		gmt_time = mktime(&gmt);
-		dat->local_gmt_diff_dst = (int)difftime(now, gmt_time);
+		TIME_ZONE_INFORMATION tzinfo;
+		int nOffset=0;
+        DWORD dwResult;
+        dwResult = GetTimeZoneInformation(&tzinfo);
+		nOffset = -(tzinfo.Bias + tzinfo.StandardBias) * 60;
+		dat->local_gmt_diff=dat->local_gmt_diff_dst=(DWORD)nOffset;
 	}
-
-
 	// Text
 	dat->text_rtl = DBGetContactSettingByte(NULL,"CList","TextRTL",0);
 	dat->text_align_right = DBGetContactSettingByte(NULL,"CList","TextAlignToRight",0);

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -110,7 +110,7 @@ extern BOOL AlphaBlengGDIPlus(HDC hdcDest,int nXOriginDest,int nYOriginDest,int 
 
 BOOL MyAlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc,BLENDFUNCTION blendFunction)
 {
-  if (!gdiPlusFail && blendFunction.BlendFlags&128 ) //Use gdi+ engine
+  if (!gl_b_GDIPlusFail && blendFunction.BlendFlags&128 ) //Use gdi+ engine
   {
     //
 	  return AlphaBlengGDIPlus( hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,
@@ -135,8 +135,8 @@ int UnlockSkin()
 int LoadSkinModule()
 {
   InitializeCriticalSection(&skin_cs);
-  MainModernMaskList=mir_alloc(sizeof(ModernMaskList));
-  memset(MainModernMaskList,0,sizeof(ModernMaskList));   
+  MainModernMaskList=mir_alloc(sizeof(TList_ModernMask));
+  memset(MainModernMaskList,0,sizeof(TList_ModernMask));   
   //init variables
   glObjectList.dwObjLPAlocated=0;
   glObjectList.dwObjLPReserved=0;
@@ -145,7 +145,7 @@ int LoadSkinModule()
   InitGdiPlus();
   //load decoder
   hImageDecoderModule=NULL;
-  if (gdiPlusFail)
+  if (gl_b_GDIPlusFail)
   {
     hImageDecoderModule = LoadLibrary(TEXT("ImgDecoder.dll"));
     if (hImageDecoderModule==NULL) 
@@ -194,7 +194,7 @@ int LoadSkinModule()
   }
   //create event handle
   hEventServicesCreated=CreateHookableEvent(ME_SKIN_SERVICESCREATED);
-  hSkinLoaded=HookEvent(ME_SKIN_SERVICESCREATED,OnSkinLoad);
+  gl_event_hSkinLoaded=HookEvent(ME_SKIN_SERVICESCREATED,OnSkinLoad);
 
 
 
@@ -1325,7 +1325,7 @@ extern HBITMAP intLoadGlyphImageByGDIPlus(char *szFileName);
 extern BOOL WildComparei(char * name, char * mask);
 HBITMAP intLoadGlyphImage(char * szFileName)
 {
-  if (!gdiPlusFail && !WildComparei(szFileName,"*.tga"))
+  if (!gl_b_GDIPlusFail && !WildComparei(szFileName,"*.tga"))
 	  return intLoadGlyphImageByGDIPlus(szFileName);
   else 
 	  return intLoadGlyphImageByImageDecoder(szFileName);
@@ -1844,8 +1844,8 @@ int GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 {
   if (Skin==NULL) return 0;
   UnloadSkin(Skin);
-  Skin->MaskList=mir_alloc(sizeof(ModernMaskList));
-  memset(Skin->MaskList,0,sizeof(ModernMaskList));
+  Skin->MaskList=mir_alloc(sizeof(TList_ModernMask));
+  memset(Skin->MaskList,0,sizeof(TList_ModernMask));
   Skin->SkinPlace=DBGetStringA(NULL,SKIN,"SkinFolder");
   if (!Skin->SkinPlace ) 
   {
@@ -2365,7 +2365,7 @@ BOOL TextOutS(HDC hdc, int x, int y, LPCTSTR lpString, int nCount)
   int ta;
   SIZE sz;
   RECT rc={0};
-  if (!gdiPlusFail &&0) ///text via gdi+
+  if (!gl_b_GDIPlusFail &&0) ///text via gdi+
   {
     TextOutWithGDIp(hdc,x,y,lpString,nCount);
     return 0;
@@ -2518,6 +2518,7 @@ BOOL DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD height, MODERN
 	int minY=height;
 	int maxY=0;
 	if (effect->EffectID==0xFF) return FALSE;
+	if (!width || ! height) return FALSE;
 	buf=(BYTE*)malloc(width*height*sizeof(BYTE));
 	{
 		matrix=effect->EffectMatrix.matrix;
@@ -2903,7 +2904,7 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
           bufpix=BufScanLine+(x<<2);
           if (al!=255)
           {
-		        bx=weight2[pix[0]]*al/255;
+		    bx=weight2[pix[0]]*al/255;
             gx=weight2[pix[1]]*al/255;
             rx=weight2[pix[2]]*al/255;
           }
@@ -2999,7 +3000,7 @@ BOOL DrawTextS(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format
   if (format&DT_CALCRECT) return DrawText(hdc,lpString,nCount,lpRect,format);
   form=format;
   color=GetTextColor(hdc);
-  if (!gdiPlusFail &&0) ///text via gdi+
+  if (!gl_b_GDIPlusFail &&0) ///text via gdi+
   {
     TextOutWithGDIp(hdc,lpRect->left,lpRect->top,lpString,nCount);
     return 0;
@@ -3357,7 +3358,7 @@ int UpdateFrameImage(WPARAM wParam, LPARAM lParam)           // Immideately reca
   wndFrame *frm;
   BOOL NoCancelPost=0;
   BOOL IsAnyQueued=0;
-  if (!ON_EDGE_SIZING)
+  if (!gl_flag_OnEdgeSizing)
     GetWindowRect(pcli->hwndContactList,&wnd);
   else
     wnd=ON_EDGE_SIZING_POS;
@@ -3469,7 +3470,7 @@ int ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting)            
     rcPaint=Frame->wndSize;
     {
       int dx,dy,bx,by;
-      if (ON_EDGE_SIZING)
+      if (gl_flag_OnEdgeSizing)
       {
         dx=rcPaint.left-wnd.left;
         dy=rcPaint.top-wnd.top;
@@ -4003,7 +4004,7 @@ TCHAR *reappend(TCHAR *lfirst, TCHAR * lsecond, int len)
 
 TCHAR* replacevar(TCHAR *var)
 {
-  if (!var) return mir_strdupT(_T(""));
+  if (!var) return mir_tstrdup(_T(""));
   if (!lstrcmpi(var,TEXT("Profile")))
   {
     char buf[MAX_PATH]={0};
@@ -4022,12 +4023,12 @@ TCHAR* replacevar(TCHAR *var)
   } 
 
   mir_free(var);
-  return mir_strdupT(_T(""));
+  return mir_tstrdup(_T(""));
 }
 TCHAR *parseText(TCHAR *stzText)
 {
  /* if (lstrcmpi(stzText,TEXT("%Profile%")))
-    return mir_strdupT(stzText);
+    return mir_tstrdup(stzText);
   else
   {
     char buf[MAX_PATH]={0};

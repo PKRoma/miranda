@@ -17,7 +17,7 @@ typedef struct s_SKINOBJECTSLIST
     DWORD               dwObjLPReserved;
     DWORD               dwObjLPAlocated;
 	char	*			SkinPlace;
-    ModernMaskList  *   MaskList;
+    TList_ModernMask  *   MaskList;
     SKINOBJECTDESCRIPTOR  * Objects;
     
 } SKINOBJECTSLIST;

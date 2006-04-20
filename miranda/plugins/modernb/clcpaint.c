@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -560,7 +560,7 @@ _inline char * GetCLCContactRowBackObject(struct ClcGroup * group, struct ClcCon
   AppendChar(buf,BUFSIZE,",Index=");
   AppendChar(buf,BUFSIZE,_itoa(index,b2,BUF2SIZE));
   {
-    TCHAR * b2=mir_strdupT(Drawing->szText);
+    TCHAR * b2=mir_tstrdup(Drawing->szText);
     int i,m;
     m=lstrlen(b2);	
     for (i=0; i<m;i++)
@@ -582,7 +582,7 @@ _inline char * GetCLCContactRowBackObject(struct ClcGroup * group, struct ClcCon
   }
   if (group->parent)
   {
-    TCHAR * b2=mir_strdupT(group->parent->cl.items[0]->szText);
+    TCHAR * b2=mir_tstrdup(group->parent->cl.items[0]->szText);
     int i,m;
     m=lstrlen(b2);	
     for (i=0; i<m;i++)
@@ -609,7 +609,7 @@ tPaintCallbackProc ClcPaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN
   struct ClcData* dat;
   dat=(struct ClcData*)GetWindowLong(hWnd,0);
   if (!dat) return 0;
-  PaintClc(hWnd,dat,hDC,rcPaint);
+  cliPaintClc(hWnd,dat,hDC,rcPaint);
   return NULL;
 }
 extern ROWCELL * gl_RowTabAccess[];
@@ -1145,7 +1145,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 
 				dbtts.szFormat = _T("t");
 				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, (WPARAM)contact_time, (LPARAM) & dbtts);
-				pdnce->szSecondLineText=mir_strdupT(buf);
+				pdnce->szSecondLineText=mir_tstrdup(buf);
 				}
 
 		  }
@@ -1183,7 +1183,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 				dbtts.cbDest = sizeof(buf);
 				dbtts.szFormat = _T("t");
 				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, (WPARAM)contact_time, (LPARAM) & dbtts);
-				pdnce->szThirdLineText=mir_strdupT(buf);
+				pdnce->szThirdLineText=mir_tstrdup(buf);
 				}
 		  }
           uTextFormat|=(gl_RowTabAccess[i]->valign==TC_VCENTER)?DT_VCENTER:(gl_RowTabAccess[i]->valign==TC_BOTTOM)?DT_BOTTOM:0; 
@@ -1369,7 +1369,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 						{
 						  int w=width;
 						  int h=height;
-						  if (!gdiPlusFail) //Use gdi+ engine
+						  if (!gl_b_GDIPlusFail) //Use gdi+ engine
 						  {
 							DrawAvatarImageWithGDIp(hdcMem, p_rect.left, p_rect.top, w, h,Drawing->avatar_data->hbmPic,0,0,Drawing->avatar_data->bmWidth,Drawing->avatar_data->bmHeight,Drawing->avatar_data->dwFlags,blendmode);
 						  }
@@ -1603,12 +1603,13 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
   int item, item_iterator, item_text;
   BOOL left = TRUE;
   int text_left_pos = free_row_rc.right + 1;
-  if (dat->hWnd==pcli->hwndContactTree) LockCacheItem(Drawing->hContact);
+  HANDLE hContact=(dat->hWnd==pcli->hwndContactTree)?Drawing->hContact:0;
+  if (hContact) LockCacheItem(hContact, __FILE__,__LINE__);
   if (gl_RowRoot || (dat->hWnd!=pcli->hwndContactTree))
   {
 	
     ModernInternalPaintRowItems(hwnd,hdcMem,dat,Drawing,row_rc,free_row_rc,left_pos,right_pos,selected,hottrack,rcPaint);
-	if (dat->hWnd==pcli->hwndContactTree) UnlockCacheItem(Drawing->hContact);
+	if (hContact) UnlockCacheItem(hContact);
     return;
   }
   else
@@ -1831,7 +1832,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
             {
               int w=width;
               int h=height;
-              if (!gdiPlusFail) //Use gdi+ engine
+              if (!gl_b_GDIPlusFail) //Use gdi+ engine
               {
                 DrawAvatarImageWithGDIp(hdcMem, rc.left, rc.top, w, h,Drawing->avatar_data->hbmPic,0,0,Drawing->avatar_data->bmWidth,Drawing->avatar_data->bmHeight,Drawing->avatar_data->dwFlags,blendmode);
               }
@@ -2185,7 +2186,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
       SIZE third_line_text_size = {0};
       SIZE space_size = {0};
       SIZE counts_size = {0};
-      char *szCounts = NULL;//mir_strdupT(TEXT(""));
+      char *szCounts = NULL;//mir_tstrdup(TEXT(""));
       int free_width;
       int free_height;
       int max_bottom_selection_border = SELECTION_BORDER;
@@ -2316,7 +2317,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 
           dbtts.szFormat = _T("t");
           CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, (WPARAM)contact_time, (LPARAM) & dbtts);
-          pdnce->szSecondLineText=mir_strdupT(buf);
+          pdnce->szSecondLineText=mir_tstrdup(buf);
         }
 
         if (dat->second_line_show && pdnce->szSecondLineText && pdnce->szSecondLineText[0] 
@@ -2362,7 +2363,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
           dbtts.cbDest = sizeof(buf);
           dbtts.szFormat = _T("t");
           CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, (WPARAM)contact_time, (LPARAM) & dbtts);
-          pdnce->szThirdLineText=mir_strdupT(buf);
+          pdnce->szThirdLineText=mir_tstrdup(buf);
         }
         if (dat->third_line_show && pdnce->szThirdLineText!= NULL && pdnce->szThirdLineText[0]
           && free_height > dat->third_line_top_space)
@@ -2644,7 +2645,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
       }
     }
   }
-  if (dat->hWnd==pcli->hwndContactTree) UnlockCacheItem(Drawing->hContact);
+  if (hContact) UnlockCacheItem(hContact);
 }
 
 
@@ -3028,7 +3029,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
     POINT pts[8];
     HRGN hRgn;
 
-    pts[0].x=dat->leftMargin; pts[0].y= RowHeights_GetItemTopY(dat, dat->iInsertionMark) - dat->yScroll - 4;
+    pts[0].x=dat->leftMargin; pts[0].y= cliGetRowTopY(dat, dat->iInsertionMark) - dat->yScroll - 4;
     pts[1].x=pts[0].x+2;      pts[1].y=pts[0].y+3;
     pts[2].x=clRect.right-4;  pts[2].y=pts[1].y;
     pts[3].x=clRect.right-1;  pts[3].y=pts[0].y-1;
@@ -3083,7 +3084,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 }
 
 
-void PaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
+void cliPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 {
 
   if (SED.cbSize==sizeof(SED)&&SED.PaintClc!=NULL)

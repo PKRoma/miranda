@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -364,7 +364,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				imgPos.x=workRect.left+((wWidth-dWidth)>>1);
 				imgPos.y=workRect.top+((wHeight-dHeight)>>1);     
 				//DrawImage
-				if (!gdiPlusFail) //Use gdi+ engine
+				if (!gl_b_GDIPlusFail) //Use gdi+ engine
 				{
 					DrawAvatarImageWithGDIp(memDC,imgPos.x,imgPos.y,dWidth,dHeight,hPreviewBitmap,0,0,bmp.bmWidth,bmp.bmHeight,8,255);
 				}   
@@ -682,11 +682,7 @@ int AddSkinToList(HWND hwndDlg,char * path, char* file)
 	return -1;
 }
 
-#define TreeView_InsertItemA(hwnd, lpis) \
-	(HTREEITEM)SendMessageA((hwnd), TVM_INSERTITEMA, 0, (LPARAM)(LPTV_INSERTSTRUCTA)(lpis))
 
-#define TreeView_GetItemA(hwnd, pitem) \
-	(BOOL)SendMessageA((hwnd), TVM_GETITEMA, 0, (LPARAM)(TV_ITEM *)(pitem))
 
 static HTREEITEM FindChild(HWND hTree, HTREEITEM Parent, char * Caption, void * data)
 {

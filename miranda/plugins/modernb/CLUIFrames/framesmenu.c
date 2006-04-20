@@ -17,7 +17,7 @@ int param1;
 static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
-	TMO_MenuItem tmi;
+	TMO_MenuItem tmi={0};
 	
 	if(mi->cbSize!=sizeof(CLISTMENUITEM)) return 0;
 

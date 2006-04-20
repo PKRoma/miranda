@@ -4,8 +4,8 @@
 BOOL ON_SETALLEXTRAICON_CYCLE=0;
 
 //int ImageList_AddIcon_FixAlpha(HIMAGELIST himl,HICON hicon);
-
-#define EXTRACOLUMNCOUNT 7
+extern int LoadPositionsFromDB(BYTE * OrderPos);
+#define EXTRACOLUMNCOUNT 9
 int EnabledColumnCount=0;
 boolean visar[EXTRACOLUMNCOUNT];
 #define ExtraImageIconsIndexCount 3
@@ -19,40 +19,59 @@ extern HIMAGELIST hCListImages;
 
 extern int CluiIconsChanged(WPARAM,LPARAM);
 extern int ClcIconsChanged(WPARAM,LPARAM);
-extern BOOL skinInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase);
+extern BOOL cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase);
 
 void SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 void LoadExtraImageFunc();
 extern HICON LoadIconFromExternalFile (char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx);
 boolean ImageCreated=FALSE;
 void ReloadExtraIcons();
-
+BYTE ExtraOrder[]=
+{
+	0, // EXTRA_ICON_EMAIL	
+	1, // EXTRA_ICON_PROTO	
+	2, // EXTRA_ICON_SMS	
+	3, // EXTRA_ICON_ADV1	
+	4, // EXTRA_ICON_ADV2	
+	5, // EXTRA_ICON_WEB	
+	6, // EXTRA_ICON_CLIENT 
+	7, // EXTRA_ICON_ADV3	
+	8, // EXTRA_ICON_ADV4	
+};
 boolean isColumnVisible(int extra)
 {
-	switch(extra)
-	{
-	case EXTRA_ICON_ADV1:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV1",1));
-	case EXTRA_ICON_ADV2:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV2",1));	
-	case EXTRA_ICON_SMS:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_SMS",1));
-	case EXTRA_ICON_EMAIL:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_EMAIL",1));
-	case EXTRA_ICON_PROTO:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_PROTO",1));
-	case EXTRA_ICON_WEB:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_WEB",1));
-	case EXTRA_ICON_CLIENT:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_CLIENT",1));
-	}
+	int i=0;
+	for (i=0; i<sizeof(ExtraOrder)/sizeof(ExtraOrder[0]); i++)
+		if (ExtraOrder[i]==extra)
+		{
+			switch(i+1)
+			{
+				case EXTRA_ICON_EMAIL:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_EMAIL",1));
+				case EXTRA_ICON_PROTO:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_PROTO",1));
+				case EXTRA_ICON_SMS:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_SMS",1));
+				case EXTRA_ICON_ADV1:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV1",1));
+				case EXTRA_ICON_ADV2:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV2",1));	
+				case EXTRA_ICON_WEB:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_WEB",1));
+				case EXTRA_ICON_CLIENT:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_CLIENT",1));
+				case EXTRA_ICON_ADV3:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV3",0));
+				case EXTRA_ICON_ADV4:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV4",0));			
+			}
+			break;
+		}
 	return(FALSE);
 }
 
 void GetVisColumns()
 {
-	visar[0]=isColumnVisible(EXTRA_ICON_WEB);
-	visar[1]=isColumnVisible(EXTRA_ICON_ADV1);
-	visar[2]=isColumnVisible(EXTRA_ICON_ADV2);
-	visar[3]=isColumnVisible(EXTRA_ICON_SMS);
-	visar[4]=isColumnVisible(EXTRA_ICON_EMAIL);
-	visar[5]=isColumnVisible(EXTRA_ICON_PROTO);
-	visar[6]=isColumnVisible(EXTRA_ICON_CLIENT);
-
-
+	visar[0]=isColumnVisible(0);
+	visar[1]=isColumnVisible(1);
+	visar[2]=isColumnVisible(2);
+	visar[3]=isColumnVisible(3);
+	visar[4]=isColumnVisible(4);
+	visar[5]=isColumnVisible(5);
+	visar[6]=isColumnVisible(6);
+	visar[7]=isColumnVisible(7);
+	visar[8]=isColumnVisible(8);
 };
 
 __inline int bti(boolean b)
@@ -73,33 +92,17 @@ int colsum(int from,int to)
 	};
 	return(sum);
 };
+
+
+
+
 int ExtraToColumnNum(int extra)
 {
-	int cnt=EnabledColumnCount-1;
+	int cnt=EnabledColumnCount;
 	int extracnt=EXTRACOLUMNCOUNT-1;
-
-	switch(extra)
-	{
-	case EXTRA_ICON_WEB:	if (!visar[0])return(-1);break;
-	case EXTRA_ICON_ADV1:	if (!visar[1])return(-1);break;
-	case EXTRA_ICON_ADV2:	if (!visar[2])return(-1);break;
-	case EXTRA_ICON_SMS:	if (!visar[3])return(-1);break;
-	case EXTRA_ICON_EMAIL:	if (!visar[4])return(-1);break;
-	case EXTRA_ICON_PROTO:	if (!visar[5])return(-1);break;
-	case EXTRA_ICON_CLIENT:	if (!visar[6])return(-1);break;
-	};
-
-	switch(extra)
-	{
-	case EXTRA_ICON_WEB:    if (extracnt-5>=0) return(cnt-colsum(extracnt-5,extracnt));
-	case EXTRA_ICON_ADV1:   if (extracnt-4>=0) return(cnt-colsum(extracnt-4,extracnt));
-	case EXTRA_ICON_ADV2:   if (extracnt-3>=0) return(cnt-colsum(extracnt-3,extracnt));	
-	case EXTRA_ICON_SMS:    if (extracnt-2>=0) return(cnt-colsum(extracnt-2,extracnt));
-	case EXTRA_ICON_EMAIL:  if (extracnt-1>=0) return(cnt-colsum(extracnt-1,extracnt));
-	case EXTRA_ICON_PROTO:  return(cnt-colsum(extracnt,extracnt));  
-	case EXTRA_ICON_CLIENT: return(cnt);      
-	};
-	return(-1);
+	int ord=ExtraOrder[extra-1];
+    if (!visar[ord]) return -1;
+	return (colsum(0,ord)-1);
 };
 
 int SetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
@@ -134,7 +137,7 @@ int AddIconToExtraImageList(WPARAM wParam,LPARAM lParam)
 void SetNewExtraColumnCount()
 {
 	int newcount;
-
+	LoadPositionsFromDB(ExtraOrder);
 	GetVisColumns();
 	newcount=colsum(0,EXTRACOLUMNCOUNT-1);
 	DBWriteContactSettingByte(NULL,CLUIFrameModule,"EnabledColumnCount",(BYTE)newcount);
@@ -208,7 +211,6 @@ void ReAssignExtraIcons()
 {
 	ClearExtraIcons();
 	SetNewExtraColumnCount();
-
 	SetAllExtraIcons(pcli->hwndContactTree,0);
 	SendMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0);
 }
@@ -382,7 +384,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 
 	tick=GetTickCount()-tick;
 	ON_SETALLEXTRAICON_CYCLE=0;
-	skinInvalidateRect(hwndList,NULL,FALSE);
+	cliInvalidateRect(hwndList,NULL,FALSE);
 	Sleep(0);
 
 
