@@ -556,11 +556,16 @@ void unpackString(unsigned char **buf, char *string, WORD len)
 {
   unsigned char *tmp = *buf;
 
-  while (len)  /* Can have 0x00 so go by len */
+  if (string)
   {
-    *string++ = *tmp++;
-    len--;
+    while (len)  /* Can have 0x00 so go by len */
+    {
+      *string++ = *tmp++;
+      len--;
+    }
   }
+  else
+    tmp += len;
 
   *buf = tmp;
 }
@@ -620,7 +625,7 @@ NextTLV:
   if (tlv)
   {
     // Unpack and save value
-    *tlv = (char *)malloc(wLen + 1); // Add 1 for \0
+    *tlv = (char *)SAFE_MALLOC(wLen + 1); // Add 1 for \0
     unpackString(&tmp, *tlv, wLen);
     *(*tlv + wLen) = '\0';
   }
