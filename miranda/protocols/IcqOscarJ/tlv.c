@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -41,7 +41,7 @@
 /* set maxTlvs<=0 to get all TLVs in length, or a positive integer to get at most the first n */
 oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs)
 {
-  oscar_tlv_chain *now, *chain = NULL;
+  oscar_tlv_chain *now, *last, *chain = NULL;
   WORD now_tlv_len;
   int len = wLen;
 
@@ -49,7 +49,7 @@ oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs)
 
   while (len > 0) /* don't use unsigned variable for this check */
   {
-    now = (oscar_tlv_chain *)malloc(sizeof(oscar_tlv_chain));
+    now = (oscar_tlv_chain *)SAFE_MALLOC(sizeof(oscar_tlv_chain));
 
     if (!now)
     {
@@ -68,7 +68,7 @@ oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs)
     }
     else if (now_tlv_len <= len)
     {
-      now->tlv.pData = (BYTE *)malloc(now_tlv_len);
+      now->tlv.pData = (BYTE *)SAFE_MALLOC(now_tlv_len);
       if (now->tlv.pData)
         memcpy(now->tlv.pData, *buf, now_tlv_len);
     }
@@ -78,8 +78,12 @@ oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs)
       return chain; // give at least the rest of chain
     }
 
-    now->next = chain;
-    chain = now;
+    if (chain) // keep the original order
+      last->next = now;
+    else
+      chain = now;
+
+    last = now;
 
     len -= now_tlv_len;
     *buf += now_tlv_len;
@@ -183,7 +187,7 @@ BYTE* getStrFromChain(oscar_tlv_chain *list, WORD wType, WORD wIndex)
   tlv = getTLV(list, wType, wIndex);
   if (tlv)
   {
-    str = malloc(tlv->wLen+1); /* For \0 */
+    str = (BYTE*)SAFE_MALLOC(tlv->wLen+1); /* For \0 */
 
     if (!str) return NULL;
 
