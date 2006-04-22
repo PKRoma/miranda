@@ -184,7 +184,7 @@ unsigned char *make_utf8_string(const wchar_t *unicode)
     c = unicode[index++];
   }
 
-  out = malloc(size + 1);
+  out = (unsigned char*)SAFE_MALLOC(size + 1);
   if (out == NULL)
     return NULL;
   index = 0;
@@ -242,7 +242,7 @@ wchar_t *make_unicode_string(const unsigned char *utf8)
     c = utf8[index++];
   }
 
-  out = malloc((size + 1) * sizeof(wchar_t));
+  out = (wchar_t*)SAFE_MALLOC((size + 1) * sizeof(wchar_t));
   if (out == NULL)
     return NULL;
   index = 0;
@@ -367,7 +367,7 @@ int utf8_decode(const char *from, char **to)
     if (MultiByteToWideChar(CP_UTF8, 0, from, -1, wszTemp, inlen + 1))
     {
       // Convert the UCS string to local ANSI codepage
-      *to = (char*)malloc(inlen+1);
+      *to = (char*)SAFE_MALLOC(inlen+1);
       if (WideCharToMultiByte(CP_ACP, 0, wszTemp, -1, *to, inlen+1, NULL, NULL))
       {
         nResult = 1;
@@ -400,7 +400,7 @@ int utf8_decode(const char *from, char **to)
       return 0;
     }
 
-    *to = calloc(chars + 1, sizeof(unsigned char));
+    *to = (char*)SAFE_MALLOC((chars + 1)*sizeof(unsigned char));
     if(*to == NULL)
     {
       fprintf(stderr, "Out of memory processing string to local charset\n");

@@ -110,11 +110,10 @@ static char* AimApplyEncoding(char* pszStr, const char* pszEncoding)
       { // it is UCS-2 encoded
         int wLen = wcslen((wchar_t*)pszStr) + 1;
         wchar_t *szStr = (wchar_t*)_alloca(wLen*2);
-        char *szRes = (char*)malloc(wLen);
+        char *szRes = (char*)SAFE_MALLOC(wLen);
         char *tmp = pszStr;
 
         unpackWideString(&tmp, szStr, (WORD)(wLen*2));
-        szRes[0] = '\0';
         WideCharToMultiByte(CP_ACP, 0, szStr, -1, szRes, wLen, NULL, NULL);
         SAFE_FREE(&pszStr);
 
@@ -220,7 +219,7 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
         pTLV = getTLV(pChain, 0x02, 1);
         if (pTLV && (pTLV->wLen >= 1))
         {
-          szMsg = malloc(pTLV->wLen + 2);
+          szMsg = (char*)SAFE_MALLOC(pTLV->wLen + 2);
           memcpy(szMsg, pTLV->pData, pTLV->wLen);
           szMsg[pTLV->wLen] = '\0';
           szMsg[pTLV->wLen + 1] = '\0';
@@ -289,7 +288,7 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
         pTLV = getTLV(pChain, 0x04, 1);
         if (pTLV && (pTLV->wLen >= 1))
         {
-          szMsg = malloc(pTLV->wLen + 2);
+          szMsg = (char*)SAFE_MALLOC(pTLV->wLen + 2);
           memcpy(szMsg, pTLV->pData, pTLV->wLen);
           szMsg[pTLV->wLen] = '\0';
           szMsg[pTLV->wLen + 1] = '\0';

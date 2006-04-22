@@ -113,7 +113,8 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
       wListenPort = 0;
     }
     wListenPort = nlb.wPort;
-    ICQWriteContactSettingDword(NULL, "RealIP", nlb.dwInternalIP);
+    if (!ICQGetContactSettingByte(NULL, "ConstRealIP", 0))
+      ICQWriteContactSettingDword(NULL, "RealIP", nlb.dwInternalIP);
   }
 
 
@@ -372,10 +373,8 @@ void icq_login(const char* szPassword)
 
 
   dwUin = ICQGetContactSettingUIN(NULL);
-  stsi = (serverthread_start_info*)calloc(sizeof(serverthread_start_info), 1);
+  stsi = (serverthread_start_info*)SAFE_MALLOC(sizeof(serverthread_start_info));
   stsi->nloc.cbSize = sizeof(NETLIBOPENCONNECTION);
-  stsi->nloc.flags = 0;
-
 
   // Server host name
   if (ICQGetContactStaticString(NULL, "OscarServer", szServer, MAX_PATH))

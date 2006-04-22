@@ -80,7 +80,7 @@ void InitDelay(int nDelay, void (*delaycode)())
   NetLog_Server("Delay %dms", nDelay);
 //#endif
 
-  pArgs = malloc(sizeof(rate_delay_args)); // This will be freed in the new thread
+  pArgs = (rate_delay_args*)SAFE_MALLOC(sizeof(rate_delay_args)); // This will be freed in the new thread
 
   pArgs->nDelay = nDelay;
   pArgs->delaycode = delaycode;
@@ -160,7 +160,7 @@ static void putItemToQueue1(rate_record *item, int nLev)
     }
     pendingListSize1++;
     pendingList1 = (rate_record**)realloc(pendingList1, pendingListSize1*sizeof(rate_record*));
-    tmp = (rate_record*)malloc(sizeof(rate_record));
+    tmp = (rate_record*)SAFE_MALLOC(sizeof(rate_record));
     memcpy(tmp, item, sizeof(rate_record));
     pendingList1[pendingListSize1 - 1] = tmp;
   }
@@ -169,8 +169,8 @@ static void putItemToQueue1(rate_record *item, int nLev)
     rate_record *tmp;
 
     pendingListSize1++;
-    pendingList1 = (rate_record**)malloc(sizeof(rate_record*));
-    tmp = (rate_record*)malloc(sizeof(rate_record));
+    pendingList1 = (rate_record**)SAFE_MALLOC(sizeof(rate_record*));
+    tmp = (rate_record*)SAFE_MALLOC(sizeof(rate_record));
     memcpy(tmp, item, sizeof(rate_record));
     pendingList1[0] = tmp;
 
@@ -250,7 +250,7 @@ static void putItemToQueue2(rate_record *item, int nLev)
 
   pendingListSize2++;
   pendingList2 = (rate_record**)realloc(pendingList2, pendingListSize2*sizeof(rate_record*));
-  tmp = (rate_record*)malloc(sizeof(rate_record));
+  tmp = (rate_record*)SAFE_MALLOC(sizeof(rate_record));
   memcpy(tmp, item, sizeof(rate_record));
   tmp->szData = null_strdup(item->szData);
   pendingList2[pendingListSize2 - 1] = tmp;

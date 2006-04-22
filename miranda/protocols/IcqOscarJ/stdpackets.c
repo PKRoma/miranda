@@ -231,7 +231,7 @@ void icq_requestnewfamily(WORD wFamily, void (*familyhandler)(HANDLE hConn, char
   DWORD dwIdent;
   familyrequest_rec* request;
 
-  request = (familyrequest_rec*)malloc(sizeof(familyrequest_rec));
+  request = (familyrequest_rec*)SAFE_MALLOC(sizeof(familyrequest_rec));
   request->wFamily = wFamily;
   request->familyhandler = familyhandler;
 
@@ -482,7 +482,7 @@ void sendOwnerInfoRequest(void)
   fam15_cookie_data *pCookieData = NULL;
 
 
-  pCookieData = malloc(sizeof(fam15_cookie_data));
+  pCookieData = SAFE_MALLOC(sizeof(fam15_cookie_data));
   pCookieData->bRequestType = REQUESTTYPE_OWNER;
   dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, 0, dwLocalUIN, (void*)pCookieData);
 
@@ -502,7 +502,7 @@ void sendUserInfoAutoRequest(DWORD dwUin)
   fam15_cookie_data *pCookieData = NULL;
 
 
-  pCookieData = malloc(sizeof(fam15_cookie_data));
+  pCookieData = SAFE_MALLOC(sizeof(fam15_cookie_data));
   pCookieData->bRequestType = REQUESTTYPE_USERAUTO;
   dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, 0, dwUin, (void*)pCookieData);
 
@@ -526,7 +526,7 @@ DWORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal)
   gbOverRate = 0;
   gtLastRequest = GetTickCount();
 
-  pCookieData = malloc(sizeof(fam15_cookie_data));
+  pCookieData = SAFE_MALLOC(sizeof(fam15_cookie_data));
   dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, 0, dwUin, (void*)pCookieData);
 
   packServIcqExtensionHeader(&packet, 6, CLI_META_INFO_REQ, (WORD)dwCookie);
@@ -556,7 +556,7 @@ DWORD icq_sendGetAimProfileServ(HANDLE hContact, char* szUid)
   fam15_cookie_data *pCookieData = NULL;
   BYTE bUIDlen = strlennull(szUid);
 
-  pCookieData = malloc(sizeof(fam15_cookie_data));
+  pCookieData = SAFE_MALLOC(sizeof(fam15_cookie_data));
   dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, ICQ_LOCATION_REQ_USER_INFO, 0, (void*)pCookieData);
   pCookieData->bRequestType = REQUESTTYPE_PROFILE;
   pCookieData->hContact = hContact;
@@ -1055,13 +1055,10 @@ DWORD sendTLVSearchPacket(BYTE bType, char* pSearchDataBuf, WORD wSearchType, WO
   _ASSERTE(pSearchDataBuf);
   _ASSERTE(wInfoLen >= 4);
 
-  pCookie = (search_cookie*)malloc(sizeof(search_cookie));
+  pCookie = (search_cookie*)SAFE_MALLOC(sizeof(search_cookie));
   if (pCookie)
   {
     pCookie->bSearchType = bType;
-    pCookie->szObject = NULL;
-    pCookie->dwStatus = 0; // in progress
-    pCookie->dwMainId = 0;
     dwCookie = AllocateCookie(CKT_SEARCH, 0, 0, pCookie);
   }
   else
@@ -1100,12 +1097,10 @@ DWORD icq_sendAdvancedSearchServ(BYTE* fieldsBuffer,int bufferLen)
   DWORD dwCookie;
   search_cookie* pCookie;
 
-  pCookie = (search_cookie*)malloc(sizeof(search_cookie));
+  pCookie = (search_cookie*)SAFE_MALLOC(sizeof(search_cookie));
   if (pCookie)
   {
     pCookie->bSearchType = SEARCHTYPE_DETAILS;
-    pCookie->szObject = NULL;
-    pCookie->dwMainId = 0;
     dwCookie = AllocateCookie(CKT_SEARCH, 0, 0, pCookie);
   }
   else
@@ -1132,7 +1127,7 @@ DWORD icq_searchAimByEmail(char* pszEmail, DWORD dwSearchId)
   if (!FindCookie(dwSearchId, NULL, &pCookie))
   {
     dwSearchId = 0;
-    pCookie = (search_cookie*)malloc(sizeof(search_cookie));
+    pCookie = (search_cookie*)SAFE_MALLOC(sizeof(search_cookie));
     pCookie->bSearchType = SEARCHTYPE_EMAIL;
   }
 

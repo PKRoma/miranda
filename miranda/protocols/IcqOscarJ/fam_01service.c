@@ -143,11 +143,10 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         NetLog_Server("Requesting full roster");
 #endif
         serverPacketInit(&packet, 10);
-        ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+        ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
         if (ack)
         { // we try to use standalone cookie if available
           ack->dwAction = SSA_CHECK_ROSTER; // loading list
-          ack->dwUin = 0; // init content
           dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_CLI_REQUEST, 0, ack);
         }
         else // if not use that old fake
@@ -162,11 +161,10 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         NetLog_Server("Requesting roster check");
 #endif
         serverPacketInit(&packet, 16);
-        ack = (servlistcookie*)malloc(sizeof(servlistcookie));
+        ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
         if (ack)  // TODO: rewrite - use get list service for empty list
         { // we try to use standalone cookie if available
           ack->dwAction = SSA_CHECK_ROSTER; // loading list
-          ack->dwUin = 0; // init content
           dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_CLI_CHECK, 0, ack);
         }
         else // if not use that old fake
@@ -608,7 +606,7 @@ char* calcMD5Hash(char* szFile)
         if ((ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0)) != NULL)
           cbFileSize = GetFileSize( hFile, NULL );
 
-    res = malloc(16*sizeof(char));
+    res = (char*)SAFE_MALLOC(16*sizeof(char));
     if (cbFileSize != 0 && res)
     {
       md5_init(&state);
@@ -640,7 +638,7 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
   int add;
 
 
-  szList = (char*)calloc(CallService(MS_DB_CONTACT_GETCOUNT, 0, 0), UINMAXLEN);
+  szList = (char*)SAFE_MALLOC(CallService(MS_DB_CONTACT_GETCOUNT, 0, 0) * UINMAXLEN);
   szLen[1] = '\0';
 
   if (*hContactResume)

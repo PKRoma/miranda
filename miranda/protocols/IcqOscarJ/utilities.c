@@ -1599,7 +1599,7 @@ wchar_t *GetWindowTextUcs(HWND hWnd)
     wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text,
       strlennull(text), NULL, 0);
 
-    utext = calloc(wchars + 1, sizeof(unsigned short));
+    utext = (wchar_t*)SAFE_MALLOC((wchars + 1)*sizeof(unsigned short));
 
     MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text,
       strlennull(text), utext, wchars);

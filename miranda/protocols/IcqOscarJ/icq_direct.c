@@ -272,20 +272,17 @@ directthreadstartinfo* CreateDTSI(HANDLE hContact, HANDLE hConnection, int type)
 {
   directthreadstartinfo* dtsi;
 
-  dtsi = (directthreadstartinfo*)malloc(sizeof(directthreadstartinfo));
+  dtsi = (directthreadstartinfo*)SAFE_MALLOC(sizeof(directthreadstartinfo));
   dtsi->hContact = hContact;
   dtsi->hConnection = hConnection;
   if (type == -1)
   {
-    dtsi->type = 0;
     dtsi->incoming = 1;
   }
   else
   {
     dtsi->type = type;
-    dtsi->incoming = 0;
   }
-  dtsi->pvExtra = NULL;
 
   return dtsi;
 }
@@ -518,7 +515,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     {
       if (dc.type != DIRECTCONN_REVERSE)
       { // try reverse connect
-        reverse_cookie *pCookie = (reverse_cookie*)malloc(sizeof(reverse_cookie));
+        reverse_cookie *pCookie = (reverse_cookie*)SAFE_MALLOC(sizeof(reverse_cookie));
         DWORD dwCookie;
 
         NetLog_Direct("connect() failed (%d), trying reverse.", GetLastError());

@@ -42,7 +42,7 @@ void write_httphdr(icq_packet* pPacket, WORD wType, DWORD dwSeq)
 {
   pPacket->wPlace = 0;
   pPacket->wLen += 14;
-  pPacket->pData = (BYTE*)calloc(1, pPacket->wLen);
+  pPacket->pData = (BYTE*)SAFE_MALLOC(pPacket->wLen);
 
   packWord(pPacket, (WORD)(pPacket->wLen - 2));
   packWord(pPacket, HTTP_PROXY_VERSION);
@@ -57,7 +57,7 @@ void __fastcall write_flap(icq_packet* pPacket, BYTE byFlapChannel)
 {
   pPacket->wPlace = 0;
   pPacket->wLen += 6;
-  pPacket->pData = (BYTE*)calloc(1, pPacket->wLen);
+  pPacket->pData = (BYTE*)SAFE_MALLOC(pPacket->wLen);
 
   packByte(pPacket, FLAP_MARKER);
   packByte(pPacket, byFlapChannel);
@@ -79,7 +79,7 @@ void __fastcall directPacketInit(icq_packet* pPacket, DWORD dwSize)
 {
   pPacket->wPlace = 0;
   pPacket->wLen   = (WORD)dwSize;
-  pPacket->pData  = (BYTE *)calloc(1, dwSize + 2);
+  pPacket->pData  = (BYTE *)SAFE_MALLOC(dwSize + 2);
 
   packLEWord(pPacket, pPacket->wLen);
 }

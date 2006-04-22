@@ -273,16 +273,13 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
   
   AvatarsReady = FALSE; // the old connection should not be used anymore
 
-  atsi = (avatarthreadstartinfo*)malloc(sizeof(avatarthreadstartinfo));
+  atsi = (avatarthreadstartinfo*)SAFE_MALLOC(sizeof(avatarthreadstartinfo));
   atsi->pendingLogin = 1;
-  atsi->stopThread = 0; // we want thread to run
-  atsi->paused = 0;
   // Randomize sequence
   atsi->wLocalSequence = (WORD)RandRange(0, 0x7fff);
   atsi->hConnection = hConn;
   atsi->pCookie = cookie;
   atsi->wCookieLen = cookieLen;
-  atsi->runCount = 0;
   currentAvatarThread = atsi; // we store only current thread
   tid.hThread = (HANDLE)forkthreadex(NULL, 0, icq_avatarThread, atsi, 0, &tid.dwThreadId);
   CloseHandle(tid.hThread);
@@ -449,12 +446,10 @@ static avatarrequest* CreateAvatarRequest(int type)
 {
   avatarrequest *ar;
 
-  ar = (avatarrequest*)malloc(sizeof(avatarrequest));
+  ar = (avatarrequest*)SAFE_MALLOC(sizeof(avatarrequest));
   if (ar)
-  {
-    ZeroMemory(ar, sizeof(avatarrequest));
     ar->type = type;
-  }
+
   return ar;
 }
 
@@ -508,11 +503,11 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
 
       nUinLen = getUIDLen(dwUin, szUid);
     
-      ack = (avatarcookie*)malloc(sizeof(avatarcookie));
+      ack = (avatarcookie*)SAFE_MALLOC(sizeof(avatarcookie));
       if (!ack) return 0; // out of memory, go away
       ack->dwUin = 1; //dwUin; // I should be damned for this - only to identify get request
       ack->hContact = hContact;
-      ack->hash = (char*)malloc(hashlen);
+      ack->hash = (char*)SAFE_MALLOC(hashlen);
       memcpy(ack->hash, hash, hashlen); // copy the data
       ack->hashlen = hashlen;
       ack->szFile = null_strdup(file); // we duplicate the string
@@ -570,7 +565,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
     ar->dwUin = dwUin;
     ar->szUid = null_strdup(szUid);
     ar->hContact = hContact;
-    ar->hash = (char*)malloc(hashlen);
+    ar->hash = (char*)SAFE_MALLOC(hashlen);
     memcpy(ar->hash, hash, hashlen); // copy the data
     ar->hashlen = hashlen;
     ar->szFile = null_strdup(file); // duplicate the string
@@ -604,10 +599,9 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
     DWORD dwCookie;
     avatarcookie* ack;
 
-    ack = (avatarcookie*)malloc(sizeof(avatarcookie));
+    ack = (avatarcookie*)SAFE_MALLOC(sizeof(avatarcookie));
     if (!ack) return 0; // out of memory, go away
     ack->hContact = hContact;
-    ack->dwUin = 0;
     ack->cbData = datalen;
 
     dwCookie = AllocateCookie(CKT_AVATAR, ICQ_AVATAR_UPLOAD_REQUEST, 0, ack);
@@ -656,7 +650,7 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
       return 0;
     }
     ar->hContact = hContact;
-    ar->pData = (char*)malloc(datalen);
+    ar->pData = (char*)SAFE_MALLOC(datalen);
     if (!ar->pData)
     { // alloc failed
       LeaveCriticalSection(&cookieMutex);

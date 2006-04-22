@@ -1232,8 +1232,8 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
           int nStrSize = MultiByteToWideChar(CP_ACP, 0, pszText, strlennull(pszText), (wchar_t*)pszUtf, 0);
           int nRes;
 
-          pszUtf = calloc(nStrSize + 2, sizeof(wchar_t));
-          pszUtf[0] = '\0'; // we omit ansi string - not used...
+          pszUtf = (char*)SAFE_MALLOC((nStrSize + 2)*sizeof(wchar_t));
+          // we omit ansi string - not used...
           MultiByteToWideChar(CP_ACP, 0, pszText, strlennull(pszText), (wchar_t*)(pszUtf+1), nStrSize);
           *(WORD*)(pszUtf + 1 + nStrSize*sizeof(wchar_t)) = '\0'; // trailing zeros
 
@@ -1251,7 +1251,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
         if (!dwUin)
         { // prepare AIM Html message
           char *mng = MangleXml(pszText, strlennull(pszText));
-          char *tmp = (char*)malloc(strlennull(mng) + 28);
+          char *tmp = (char*)SAFE_MALLOC(strlennull(mng) + 28);
 
           strcpy(tmp, "<HTML><BODY>");
           strcat(tmp, mng);
@@ -1320,7 +1320,7 @@ static char* convertMsgToUserSpecificAnsi(HANDLE hContact, const char* szMsg)
   {
     int nStrSize = WideCharToMultiByte(wCP, 0, usMsg, nMsgLen, szAnsi, 0, NULL, NULL);
 
-    szAnsi = malloc(nStrSize + 1);
+    szAnsi = (char*)SAFE_MALLOC(nStrSize + 1);
     WideCharToMultiByte(wCP, 0, usMsg, nMsgLen, szAnsi, nStrSize, NULL, NULL);
     szAnsi[nStrSize] = '\0';
   }
@@ -1428,7 +1428,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
             utmp = make_utf8_string(pszText);
             mng = MangleXml(utmp, strlennull(utmp));
             SAFE_FREE(&utmp);
-            tmp = (char*)malloc(strlennull(mng) + 28);
+            tmp = (char*)SAFE_MALLOC(strlennull(mng) + 28);
             strcpy(tmp, "<HTML><BODY>");
             strcat(tmp, mng);
             SAFE_FREE(&mng);
@@ -1623,7 +1623,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
         // Format the body
         // This is kinda messy, but there is no simple way to do it. First
         // we need to calculate the length of the packet.
-        if (contacts = (struct icq_contactsend_s*)calloc(sizeof(struct icq_contactsend_s), nContacts))
+        if (contacts = (struct icq_contactsend_s*)SAFE_MALLOC(sizeof(struct icq_contactsend_s)*nContacts))
         {
           nBodyLength = 0;
           for(i = 0; i < nContacts; i++)
@@ -1654,7 +1654,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
             nBodyLength += strlennull(szCount) + 1;
 
             // Finally we need to copy the contact data into the packet body
-            pBuffer = pBody = (char *)calloc(1, nBodyLength);
+            pBuffer = pBody = (char *)SAFE_MALLOC(nBodyLength);
             strncpy(pBuffer, szCount, nBodyLength);
             pBuffer += strlennull(pBuffer);
             *pBuffer++ = (char)0xFE;
@@ -1793,7 +1793,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
             ft = CreateFileTransfer(hContact, dwUin, (wClientVersion == 7) ? 7: 8);
 
             for (ft->dwFileCount = 0; files[ft->dwFileCount]; ft->dwFileCount++);
-            ft->files = (char **)malloc(sizeof(char *) * ft->dwFileCount);
+            ft->files = (char **)SAFE_MALLOC(sizeof(char *) * ft->dwFileCount);
             ft->dwTotalSize = 0;
             for (i = 0; i < (int)ft->dwFileCount; i++)
             {

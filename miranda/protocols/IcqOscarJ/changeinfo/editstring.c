@@ -106,7 +106,7 @@ char *BinaryToEscapes(char *str)
   int extra=10,len=strlennull(str)+11,i;
   char *out,*pout;
 
-  out=pout=(char*)malloc(len);
+  out=pout=(char*)SAFE_MALLOC(len);
   for(;*str;str++) 
   {
     if((unsigned char)*str>=' ') 
@@ -300,7 +300,7 @@ void EndStringEdit(int save)
   {
     char *text = NULL;
 
-    text=(char*)malloc(GetWindowTextLength(hwndEdit)+1);
+    text=(char*)SAFE_MALLOC(GetWindowTextLength(hwndEdit)+1);
     GetWindowText(hwndEdit,text,GetWindowTextLength(hwndEdit)+1);
     EscapesToBinary(text);
     if((setting[iEditItem].displayType&LIM_TYPE)==LI_NUMBER)

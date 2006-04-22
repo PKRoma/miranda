@@ -65,6 +65,7 @@ Bugfixes:
   Fixed error handling in avatar code for uploading avatar
   Fixed bug in Manage-Server list dialog, caused hang
   Fixed occasional losing of messages (message parsing was incomplete)
+  Server-list management now stores all info - solves problems
 
 New Features:
   Messaging support enhanced (P2P messaging supported)

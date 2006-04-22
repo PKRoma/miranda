@@ -332,6 +332,16 @@ void icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
 
 
 
+// small utility function
+static void NormalizeBackslash(char* path)
+{
+  int len = strlennull(path);
+
+  if (len && path[len-1] != '\\') strcat(path, "\\");
+}
+
+
+
 /* a file transfer looks like this:
 S: 0
 R: 5
@@ -416,7 +426,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
         if (wLen < 19 + wThisFilenameLen)
           return;
         SAFE_FREE(&dc->ft->szThisFile);
-        dc->ft->szThisFile = (char *)malloc(wThisFilenameLen + 1);
+        dc->ft->szThisFile = (char *)SAFE_MALLOC(wThisFilenameLen + 1);
         memcpy(dc->ft->szThisFile, buf, wThisFilenameLen);
         dc->ft->szThisFile[wThisFilenameLen] = '\0';
         buf += wThisFilenameLen;
@@ -425,7 +435,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
         if (wLen < 18 + wThisFilenameLen + wSubdirLen)
           return;
         SAFE_FREE(&dc->ft->szThisSubdir);
-        dc->ft->szThisSubdir = (char *)malloc(wSubdirLen + 1);
+        dc->ft->szThisSubdir = (char *)SAFE_MALLOC(wSubdirLen + 1);
         memcpy(dc->ft->szThisSubdir, buf, wSubdirLen);
         dc->ft->szThisSubdir[wSubdirLen] = '\0';
         buf += wSubdirLen;
@@ -450,12 +460,11 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
           break;
         }
 
-        szFullPath = (char*)malloc(strlennull(dc->ft->szSavePath)+strlennull(dc->ft->szThisSubdir)+strlennull(dc->ft->szThisFile)+3);
-        szFullPath[0] = '\0';
+        szFullPath = (char*)SAFE_MALLOC(strlennull(dc->ft->szSavePath)+strlennull(dc->ft->szThisSubdir)+strlennull(dc->ft->szThisFile)+3);
         strcpy(szFullPath, dc->ft->szSavePath);
-        if (strlennull(szFullPath) && szFullPath[strlennull(szFullPath)-1] != '\\') strcat(szFullPath, "\\");
+        NormalizeBackslash(szFullPath);
         strcat(szFullPath, dc->ft->szThisSubdir);
-        if (strlennull(szFullPath) && szFullPath[strlennull(szFullPath)-1] != '\\') strcat(szFullPath, "\\");
+        NormalizeBackslash(szFullPath);
         _chdir(szFullPath); // set current dir - not very useful
         strcat(szFullPath, dc->ft->szThisFile);
         // we joined the full path to dest file

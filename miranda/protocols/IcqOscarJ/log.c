@@ -80,7 +80,7 @@ void icq_LogMessage(int level, const char *szMsg)
     }
     if (!bErrorVisible || !ICQGetContactSettingByte(NULL, "IgnoreMultiErrorBox", 0))
     { // error not shown or allowed multi - show messagebox
-      lmi = (LogMessageInfo*)malloc(sizeof(LogMessageInfo));
+      lmi = (LogMessageInfo*)SAFE_MALLOC(sizeof(LogMessageInfo));
       lmi->szMsg = ICQTranslateUtf(szMsg);
       lmi->szTitle = ICQTranslateUtf(szLevelDescr[level]);
       forkthread(icq_LogMessageThread, 0, lmi);

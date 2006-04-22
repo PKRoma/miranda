@@ -345,7 +345,7 @@ message_cookie_data *CreateMessageCookie(WORD bMsgType, BYTE bAckType)
 {
   message_cookie_data *pCookie;
 
-  pCookie = (message_cookie_data*)malloc(sizeof(message_cookie_data));
+  pCookie = (message_cookie_data*)SAFE_MALLOC(sizeof(message_cookie_data));
   if (pCookie)
   {
     pCookie->bMessageType = bMsgType;

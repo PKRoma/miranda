@@ -244,7 +244,7 @@ static char* convertMsgToUserSpecificUtf(HANDLE hContact, const char* szMsg)
   {
     int nMsgLen = strlennull(szMsg);
 
-    usMsg = malloc((nMsgLen + 2)*(sizeof(wchar_t) + 1));
+    usMsg = (wchar_t*)SAFE_MALLOC((nMsgLen + 2)*(sizeof(wchar_t) + 1));
     memcpy((char*)usMsg, szMsg, nMsgLen + 1);
     MultiByteToWideChar(wCP, 0, szMsg, nMsgLen, (wchar_t*)((char*)usMsg + nMsgLen + 1), nMsgLen);
     *(wchar_t*)((char*)usMsg + 1 + nMsgLen*(1 + sizeof(wchar_t))) = '\0'; // trailing zeros
@@ -342,7 +342,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
               WCHAR* usMsg;
               int nStrSize;
 
-              usMsg = malloc(wMsgLen + 2);
+              usMsg = (WCHAR*)SAFE_MALLOC(wMsgLen + 2);
               unpackWideString(&pMsgBuf, usMsg, wMsgLen);
               usMsg[wMsgLen/2] = 0;
 
@@ -360,8 +360,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
               }
 
               nStrSize = WideCharToMultiByte(CP_ACP, 0, usMsg, wMsgLen / sizeof(WCHAR), szMsg, 0, NULL, NULL);
-              szMsg = calloc(nStrSize+1, sizeof(wchar_t)+1);
-              szMsg[nStrSize - 1] = 0; // ?? redundant as long as calloc is used
+              szMsg = (char*)SAFE_MALLOC((nStrSize+1)*(sizeof(wchar_t)+1));
               WideCharToMultiByte(CP_ACP, 0, usMsg, wMsgLen / sizeof(WCHAR), szMsg, nStrSize, NULL, NULL);
               nStrSize = strlennull(szMsg); // this is necessary, sometimes it was bad
               memcpy(szMsg+nStrSize+1, usMsg, wMsgLen);
@@ -378,7 +377,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
           default:
             {
               // Copy the message text into a new proper string.
-              szMsg = (char *)malloc(wMsgLen + 1);
+              szMsg = (char *)SAFE_MALLOC(wMsgLen + 1);
               memcpy(szMsg, pMsgBuf, wMsgLen);
               szMsg[wMsgLen] = '\0';
               if (!dwUin)
@@ -1281,7 +1280,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
     return;
   }
 
-  szMsg = (char *)malloc(wMsgLen + 1);
+  szMsg = (char *)SAFE_MALLOC(wMsgLen + 1);
   if (wMsgLen > 0) 
   {
     memcpy(szMsg, pMsg, wMsgLen);
@@ -1337,8 +1336,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
             usMsg = (wchar_t*)(pMsg + 4);
             nStrSize = WideCharToMultiByte(CP_ACP, 0, usMsg, dwExtraLen, szMsg, 0, NULL, NULL);
             SAFE_FREE(&szMsg);
-            szMsg = calloc(nStrSize+1, sizeof(wchar_t)+1);
-            szMsg[nStrSize - 1] = 0; 
+            szMsg = (char*)SAFE_MALLOC((nStrSize+1)*(sizeof(wchar_t)+1));
             WideCharToMultiByte(CP_ACP, 0, usMsg, dwExtraLen, szMsg, nStrSize, NULL, NULL);
             nStrSize = strlennull(szMsg); // this is necessary, sometimes it was bad
             memcpy(szMsg+nStrSize+1, usMsg, dwExtraLen*sizeof(wchar_t));
@@ -1373,7 +1371,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
               {
                 int nMsgLen = strlennull(szAnsiMessage) + 1;
 
-                usMsg = malloc((nMsgLen)*(sizeof(wchar_t) + 1));
+                usMsg = SAFE_MALLOC((nMsgLen)*(sizeof(wchar_t) + 1));
                 memcpy((char*)usMsg, szAnsiMessage, nMsgLen);
                 usMsgW = make_unicode_string(szMsg);
                 memcpy((char*)usMsg + nMsgLen, (char*)usMsgW, nMsgLen*sizeof(wchar_t));
@@ -1554,18 +1552,16 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       isrList = (ICQSEARCHRESULT**)_alloca(nContacts * sizeof(ICQSEARCHRESULT*));
       for (i = 0; i < nContacts; i++)
       {
-        isrList[i] = (ICQSEARCHRESULT*)calloc(1, sizeof(ICQSEARCHRESULT));
+        isrList[i] = (ICQSEARCHRESULT*)SAFE_MALLOC(sizeof(ICQSEARCHRESULT));
         isrList[i]->hdr.cbSize = sizeof(ICQSEARCHRESULT);
         if (IsStringUIN(pszMsgField[1 + i * 2]))
         { // icq contact
           isrList[i]->uin = atoi(pszMsgField[1 + i * 2]);
-          isrList[i]->uid = NULL;
           if (isrList[i]->uin == 0)
             valid = 0;
         }
         else
         { // aim contact
-          isrList[i]->uin = 0;
           isrList[i]->uid = pszMsgField[1 + i * 2];
           if (!strlennull(isrList[i]->uid))
             valid = 0;

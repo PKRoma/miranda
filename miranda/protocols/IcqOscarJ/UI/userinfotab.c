@@ -193,13 +193,12 @@ typedef struct AvtDlgProcData_t
 
 static char* ChooseAvatarFileName()
 {
-  char* szDest = (char*)malloc(MAX_PATH+0x10);
+  char* szDest = (char*)SAFE_MALLOC(MAX_PATH+0x10);
   char str[MAX_PATH];
   char szFilter[512];
   OPENFILENAME ofn = {0};
 
   str[0] = 0;
-  szDest[0]='\0';
   CallService(MS_UTILS_GETBITMAPFILTERSTRINGS,sizeof(szFilter),(LPARAM)szFilter);
   ofn.lStructSize = sizeof(OPENFILENAME);
   ofn.lpstrFilter = szFilter;
@@ -226,7 +225,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
     ICQTranslateDialog(hwndDlg);
     {
       DBVARIANT dbvHash;
-      AvtDlgProcData* pData = (AvtDlgProcData*)malloc(sizeof(AvtDlgProcData));
+      AvtDlgProcData* pData = (AvtDlgProcData*)SAFE_MALLOC(sizeof(AvtDlgProcData));
       DWORD dwUIN;
       uid_str szUID;
       char szAvatar[MAX_PATH];

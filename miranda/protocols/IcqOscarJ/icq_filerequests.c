@@ -110,7 +110,7 @@ filetransfer *CreateFileTransfer(HANDLE hContact, DWORD dwUin, int nVersion)
 {
   filetransfer *ft;
 
-  ft = (filetransfer*)malloc(sizeof(filetransfer));
+  ft = (filetransfer*)SAFE_MALLOC(sizeof(filetransfer));
   if (ft)
   {
     ZeroMemory(ft, sizeof(filetransfer));
