@@ -369,6 +369,7 @@ typedef struct SetXStatusData_s {
   DWORD iEvent;
   int countdown;
   char *okButtonFormat;
+  HICON hDlgIcon;
 } SetXStatusData;
 
 typedef struct InitXStatusData_s {
@@ -413,9 +414,10 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
       InitXStatusData *init = (InitXStatusData*)lParam;
 
       ICQTranslateDialog(hwndDlg);
-      dat = (SetXStatusData*)malloc(sizeof(SetXStatusData));
+      dat = (SetXStatusData*)SAFE_MALLOC(sizeof(SetXStatusData));
       SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
       dat->bAction = init->bAction;
+
       if (!init->bAction)
       { // set our xStatus
         char szSetting[64];
@@ -472,6 +474,15 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
           SAFE_FREE(&szText);
         }
       }
+
+      if (dat->bXStatus)
+      {
+        HICON iXStatus = GetXStatusIcon(dat->bXStatus);
+
+        dat->hDlgIcon = iXStatus;
+      }
+      SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)dat->hDlgIcon);
+
       {  
         char *format;
         char buf[MAX_PATH];
@@ -537,6 +548,8 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
       }
       if (dat->hEvent) UnhookEvent(dat->hEvent);
       SAFE_FREE(&dat->okButtonFormat);
+      if (dat->hDlgIcon && !IconLibInstalled())
+        DestroyIcon(dat->hDlgIcon); // release dialog icon
       SAFE_FREE(&dat);
       break;
 
