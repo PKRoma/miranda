@@ -68,6 +68,8 @@ static WORD* pwGroupRenameList = NULL;
 static int nGroupRenameCount = 0;
 static int nGroupRenameSize = 0;
 
+static DWORD updateServContact(HANDLE hContact);
+
 
 // Add running group rename operation
 void AddGroupRename(WORD wGroupID)
@@ -227,7 +229,7 @@ static BOOL AddPendingOperation(HANDLE hContact, const char* szGroup, servlistco
     pdwPendingList = (ssipendingitem**)realloc(pdwPendingList, nPendingSize * sizeof(ssipendingitem*));
   }
 
-  pdwPendingList[nPendingCount] = (ssipendingitem*)calloc(sizeof(ssipendingitem),1);
+  pdwPendingList[nPendingCount] = (ssipendingitem*)SAFE_MALLOC(sizeof(ssipendingitem));
   pdwPendingList[nPendingCount]->hContact = hContact;
 
   nPendingCount++;
@@ -270,9 +272,9 @@ void RemovePendingOperation(HANDLE hContact, int nResult)
           }
           else if ((int)pItem->pCookie == 1)
           {
-            NetLog_Server("Resuming postponed rename.");
+            NetLog_Server("Resuming postponed update.");
 
-            renameServContact(hContact, pItem->szGroupPath);
+            updateServContact(hContact);
           }
 
           SAFE_FREE(&pItem->szGroupPath); // free the string
@@ -1574,9 +1576,9 @@ DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup)
 
 
 
-// Is called when a contact has been renamed locally to update
-// the server side nick name.
-DWORD renameServContact(HANDLE hContact, const char *pszNick)
+// Is called when a contact' details has been changed locally to update
+// the server side details.
+static DWORD updateServContact(HANDLE hContact)
 {
   WORD wGroupID;
   WORD wItemID;
@@ -1589,7 +1591,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
   if (!(wGroupID = ICQGetContactSettingWord(hContact, "SrvGroupId", 0)))
   {
     // Could not find a usable group ID
-    NetLog_Server("Failed to upload new nick name to server side list (%s)", "no group ID");
+    NetLog_Server("Failed to update contact's details on server side list (%s)", "no group ID");
     RemovePendingOperation(hContact, 0);
     return 0;
   }
@@ -1598,7 +1600,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
   if (!(wItemID = ICQGetContactSettingWord(hContact, "ServerId", 0)))
   {
     // Could not find usable item ID
-    NetLog_Server("Failed to upload new nick name to server side list (%s)", "no item ID");
+    NetLog_Server("Failed to update contact's details on server side list (%s)", "no item ID");
     RemovePendingOperation(hContact, 0);
     return 0;
   }
@@ -1607,7 +1609,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
   if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
   {
     // Could not set nickname on server without uid
-    NetLog_Server("Failed to upload new nick name to server side list (%s)", "no UID");
+    NetLog_Server("Failed to update contact's details on server side list (%s)", "no UID");
     RemovePendingOperation(hContact, 0);
     return 0;
   }
@@ -1620,68 +1622,7 @@ DWORD renameServContact(HANDLE hContact, const char *pszNick)
   }
   else
   {
-    ack->dwAction = SSA_CONTACT_RENAME;
-    ack->wContactId = wItemID;
-    ack->wGroupId = wGroupID;
-    ack->dwUin = dwUin;
-    ack->hContact = hContact;
-
-    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, dwUin, ack);
-  }
-
-  // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
-  // ICQ_LISTS_CLI_MODIFYEND when just changing nick name
-  icq_sendServerContact(hContact, dwCookie, ICQ_LISTS_UPDATEGROUP, wGroupID, wItemID);
-
-  return dwCookie;
-}
-
-
-
-// Is called when a contact's note was changed to update
-// the server side comment.
-DWORD setServContactComment(HANDLE hContact, const char *pszNote)
-{
-  WORD wGroupID;
-  WORD wItemID;
-  DWORD dwUin;
-  uid_str szUid;
-  servlistcookie* ack;
-  DWORD dwCookie;
-
-  // Get the contact's group ID
-  if (!(wGroupID = ICQGetContactSettingWord(hContact, "SrvGroupId", 0)))
-  {
-    // Could not find a usable group ID
-    NetLog_Server("Failed to upload new comment to server side list (%s)", "no group ID");
-    return 0;
-  }
-
-  // Get the contact's item ID
-  if (!(wItemID = ICQGetContactSettingWord(hContact, "ServerId", 0)))
-  {
-    // Could not find usable item ID
-    NetLog_Server("Failed to upload new comment to server side list (%s)", "no item ID");
-    return 0;
-  }
-
-  // Get UID
-  if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
-  {
-    // Could not set comment on server without uid
-    NetLog_Server("Failed to upload new comment to server side list (%s)", "no UID");
-    return 0;
-  }
-  
-  if (!(ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie))))
-  {
-    // Could not allocate cookie - use old fake
-    NetLog_Server("Failed to allocate cookie");
-    dwCookie = GenerateCookie(ICQ_LISTS_UPDATEGROUP);
-  }
-  else
-  {
-    ack->dwAction = SSA_CONTACT_COMMENT; 
+    ack->dwAction = SSA_CONTACT_UPDATE;
     ack->wContactId = wItemID;
     ack->wGroupId = wGroupID;
     ack->dwUin = dwUin;
@@ -1821,12 +1762,8 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
     if (!strcmpnull(cws->szSetting, "MyHandle") &&
       ICQGetContactSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))
     {
-      char* szNick = UniGetContactSettingUtf((HANDLE)wParam, "CList", "MyHandle", NULL);
-
-      if (AddPendingOperation((HANDLE)wParam, szNick, (servlistcookie*)1, NULL))
-        renameServContact((HANDLE)wParam, szNick);
-
-      SAFE_FREE(&szNick);
+      if (AddPendingOperation((HANDLE)wParam, NULL, (servlistcookie*)1, NULL))
+        updateServContact((HANDLE)wParam);
     }
 
     // Has contact been moved to another group?
@@ -1874,11 +1811,8 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
     if (!strcmpnull(cws->szSetting, "MyNotes") &&
       ICQGetContactSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))
     {
-      char* szNote = UniGetContactSettingUtf((HANDLE)wParam, "UserInfo", "MyNotes", NULL);
-
-      setServContactComment((HANDLE)wParam, szNote);
-
-      SAFE_FREE(&szNote);
+      if (AddPendingOperation((HANDLE)wParam, NULL, (servlistcookie*)1, NULL))
+        updateServContact((HANDLE)wParam);
     }
   }
 

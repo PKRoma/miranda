@@ -81,7 +81,6 @@ void updateServVisibilityCode(BYTE bCode);
 void updateServAvatarHash(char* pHash, int size);
 void sendAddStart(int bImport);
 void sendAddEnd(void);
-DWORD renameServContact(HANDLE hContact, const char *szNick);
 void sendTypingNotification(HANDLE hContact, WORD wMTNCode);
 
 void makeContactTemporaryVisible(HANDLE hContact);

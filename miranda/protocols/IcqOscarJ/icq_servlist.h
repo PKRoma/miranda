@@ -40,8 +40,7 @@
 // actions:
 #define SSA_CHECK_ROSTER      0     // request serv-list
 #define SSA_VISIBILITY        1     // update visibility
-#define SSA_CONTACT_RENAME    2     // update contact's nick
-#define SSA_CONTACT_COMMENT   3     // update contact's comment
+#define SSA_CONTACT_UPDATE    2     // update contact's details
 #define SSA_GROUP_RENAME      5     // rename group
 #define SSA_PRIVACY_ADD       0xA   // add privacy item
 #define SSA_PRIVACY_REMOVE    0xB   // remove privacy item

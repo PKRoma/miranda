@@ -420,22 +420,13 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         NetLog_Server("Server visibility update failed, error %d", wError);
       break;
     }
-  case SSA_CONTACT_RENAME: 
+  case SSA_CONTACT_UPDATE:
     {
       RemovePendingOperation(sc->hContact, 1);
       if (wError)
       {
-        NetLog_Server("Renaming of server contact failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, "Renaming of server contact failed.");
-      }
-      break;
-    }
-  case SSA_CONTACT_COMMENT: 
-    {
-      if (wError)
-      {
-        NetLog_Server("Update of server contact's comment failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, "Update of server contact's comment failed.");
+        NetLog_Server("Updating of server contact failed, error %d", wError);
+        icq_LogMessage(LOG_WARNING, "Updating of server contact failed.");
       }
       break;
     }
