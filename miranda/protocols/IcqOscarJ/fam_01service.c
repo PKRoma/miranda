@@ -433,14 +433,15 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       {
         case 1: // our avatar is on the server
         {
-          DBVARIANT dbv;
+          char* file;
           char* hash;
 
           ICQWriteContactSettingBlob(NULL, "AvatarHash", pBuffer, 0x14);
           
           setUserInfo();
           // here we need to find a file, check its hash, if invalid get avatar from server
-          if (ICQGetContactSetting(NULL, "AvatarFile", &dbv))
+          file = loadMyAvatarFileName();
+          if (!file)
           { // we have no avatar file, download from server
             char szFile[MAX_PATH + 4];
 #ifdef _DEBUG
@@ -451,7 +452,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           }
           else
           { // we know avatar filename
-            hash = calcMD5Hash(dbv.pszVal);
+            hash = calcMD5Hash(file);
             if (!hash)
             { // hash could not be calculated - probably missing file, get avatar from server
               char szFile[MAX_PATH + 4];
@@ -485,27 +486,27 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
               }
             }
             SAFE_FREE(&hash);
-
-            ICQFreeVariant(&dbv);
+            SAFE_FREE(&file);
           }
           break;
         }
         case 0x41: // request to upload avatar data
         case 0x81:
         { // request to re-upload avatar data
-          DBVARIANT dbv;
+          char* file;
           char* hash;
 
           if (!gbSsiEnabled) break; // we could not change serv-list if it is disabled...
 
-          if (ICQGetContactSetting(NULL, "AvatarFile", &dbv))
+          file = loadMyAvatarFileName();
+          if (!file)
           { // we have no file to upload, remove hash from server
             NetLog_Server("We do not have avatar, removing hash.");
             updateServAvatarHash(NULL, 0);
             LinkContactPhotoToFile(NULL, NULL);
             break;
           }
-          hash = calcMD5Hash(dbv.pszVal);
+          hash = calcMD5Hash(file);
           if (!hash)
           { // the hash could not be calculated, remove from server
             NetLog_Server("We could not obtain hash, removing hash.");
@@ -520,7 +521,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
             NetLog_Server("Uploading our avatar data.");
 
-            if ((hFile = CreateFile(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
+            if ((hFile = CreateFile(file, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
               if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
                 if ((ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0)) != NULL)
                   cbFileSize = GetFileSize( hFile, NULL );
@@ -528,7 +529,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             if (cbFileSize != 0)
             {
               SetAvatarData(NULL, ppMap, cbFileSize);
-              LinkContactPhotoToFile(NULL, dbv.pszVal);
+              LinkContactPhotoToFile(NULL, file);
             }
 
             if (ppMap != NULL) UnmapViewOfFile(ppMap);
@@ -550,7 +551,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             SAFE_FREE(&hash);
           }
 
-          ICQFreeVariant(&dbv);
+          SAFE_FREE(&file);
           break;
         default:
           NetLog_Server("Reiceived UNKNOWN Avatar Status.");

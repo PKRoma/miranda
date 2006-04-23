@@ -719,10 +719,8 @@ BEGIN
             VALUE "LegalCopyright", "Copyright (C) 2000-2006 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "ICQ.dll\0"
-            VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "ICQ Protocol Support\0"
             VALUE "ProductVersion", "0, 4, 3, 0\0"
-            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"

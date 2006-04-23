@@ -237,14 +237,16 @@ int IcqAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
 
 int IcqGetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
+  char* file;
+
   if (!gbAvatarsEnabled) return -2;
 
   if (!wParam) return -3;
 
-  if (!ICQGetContactStaticString(NULL, "AvatarFile", (char*)wParam, (int)lParam))
-  {
-    if (!access((char*)wParam, 0)) return 0;
-  }
+  file = loadMyAvatarFileName();
+  if (file) strncpy((char*)wParam, file, (int)lParam);
+  SAFE_FREE(&file);
+  if (!access((char*)wParam, 0)) return 0;
   return -1;
 }
 
@@ -292,7 +294,7 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
         NetLog_Server("Failed to save avatar hash.");
       }
 
-      ICQWriteContactSettingString(NULL, "AvatarFile", szMyFile);
+      storeMyAvatarFileName(szMyFile);
       iRet = 0;
 
       SAFE_FREE(&hash);

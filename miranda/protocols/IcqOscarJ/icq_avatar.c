@@ -87,6 +87,33 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi);
 
 
+char* loadMyAvatarFileName()
+{
+  DBVARIANT dbvFile = {0};
+ 
+  if (!ICQGetContactSetting(NULL, "AvatarFile", &dbvFile))
+  {
+    char tmp[MAX_PATH];;
+
+    CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbvFile.pszVal, (LPARAM)tmp);
+    ICQFreeVariant(&dbvFile);
+    return null_strdup(tmp);
+  }
+  return NULL;
+}
+
+
+
+void storeMyAvatarFileName(char* szFile)
+{
+  char tmp[MAX_PATH];
+
+  CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFile, (LPARAM)tmp);
+  ICQWriteContactSettingString(NULL, "AvatarFile", tmp);
+}
+
+
+
 void GetFullAvatarFileName(int dwUin, char* szUid, int dwFormat, char* pszDest, int cbLen)
 {
   GetAvatarFileName(dwUin, szUid, pszDest, cbLen);
@@ -144,6 +171,8 @@ void AddAvatarExt(int dwFormat, char* pszDest)
     strcat(pszDest, ".bmp");
   else if (dwFormat == PA_FORMAT_XML)
     strcat(pszDest, ".xml");
+  else if (dwFormat == PA_FORMAT_SWF)
+    strcat(pszDest, ".swf");
   else
     strcat(pszDest, ".dat");
 }
@@ -1132,7 +1161,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
               LinkContactPhotoToFile(ac->hContact, szMyFile); // this should not be here, but no other simple solution available
 
             if (!ac->hContact) // our avatar, set filename
-              ICQWriteContactSettingString(NULL, "AvatarFile", szMyFile);
+              storeMyAvatarFileName(szMyFile);
             else
             { // contact's avatar set hash
               if (!ICQGetContactSetting(ac->hContact, "AvatarHash", &dbv))
