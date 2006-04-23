@@ -33,6 +33,7 @@ extern CRITICAL_SECTION cs_extcache;
 extern struct CluiData g_CluiData;
 extern struct ClcData *g_clcData;
 extern HPEN g_hPenCLUIFrames;
+extern HANDLE hExtraImageApplying;
 
 extern pfnDrawAlpha pDrawAlpha;
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
@@ -184,6 +185,9 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 					pcli->pfnClcBroadcast(INTM_XSTATUSCHANGED, wParam, lParam);
 				else if(!__strcmp(cws->szSetting, "Timezone"))
 					ReloadExtraInfo((HANDLE)wParam);
+                else if(!__strcmp(cws->szSetting, "MirVer"))
+                    NotifyEventHooks(hExtraImageApplying, wParam, 0);
+                    
 				if (g_CluiData.bMetaAvail && !(g_CluiData.dwFlags & CLUI_USEMETAICONS) && !__strcmp(szProto, "MetaContacts")) {
 					if ((lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 6)) || strstr("Default,ForceSend,Nick", cws->szSetting))
 						pcli->pfnClcBroadcast(INTM_NAMEORDERCHANGED, wParam, lParam);

@@ -630,6 +630,17 @@ void IcoLibReloadIcons()
 	g_CluiData.hIconChatactive = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_chatactive");
 	CacheClientIcons();
 	ReloadExtraIcons();
+
+    // force client icons reload
+    {
+        int i;
+
+        for(i = 0; i < g_maxExtraCacheEntry; i++) {
+            if(g_ExtraCache[i].hContact)
+                NotifyEventHooks(hExtraImageApplying, (WPARAM)g_ExtraCache[i].hContact, 0);
+        }
+    }
+    //
 	pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 	MenuModulesLoaded(0, 0);
     NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
@@ -2370,6 +2381,7 @@ void FS_RegisterFonts()
 	}
 }
 
+#ifdef __LXX
 UpdateWindowImage()
 {
 	HDC hdc;
@@ -2411,6 +2423,8 @@ UpdateWindowImage()
 	SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) & ~WS_EX_LAYERED);
 	SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_EX_LAYERED);
 
-	UpdateLayeredWindow(pcli->hwndContactList, screenDC, &ptDest, &szDest, hdc, &ptSrc, RGB(224, 224, 224), &bf, ULW_ALPHA);
+	MyUpdateLayeredWindow(pcli->hwndContactList, screenDC, &ptDest, &szDest, hdc, &ptSrc, RGB(224, 224, 224), &bf, ULW_ALPHA);
 	ReleaseDC(0, screenDC);
 }
+#endif
+

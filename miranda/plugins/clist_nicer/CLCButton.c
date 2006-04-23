@@ -657,8 +657,10 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 if (bct->stateId != PBS_DISABLED) {
                     bct->stateId = PBS_PRESSED;
                     InvalidateRect(bct->hwnd, NULL, TRUE);
-					if(bct->bSendOnDown)
-						SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM) hwndDlg);
+					if(bct->bSendOnDown) {
+                        SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM) hwndDlg);
+                        bct->stateId = PBS_NORMAL;
+                    }
                 }
                 break;
             }

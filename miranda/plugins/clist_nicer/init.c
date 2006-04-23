@@ -65,6 +65,7 @@ void   TrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPr
 void GetDefaultFontSetting(int i, LOGFONT *lf, COLORREF *colour);
 int  GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY);
 int  ShowHide(WPARAM wParam, LPARAM lParam);
+int  ClcShutdown(WPARAM wParam, LPARAM lParam);
 
 void ( *saveLoadClcOptions )(HWND hwnd,struct ClcData *dat);
 void LoadClcOptions(HWND hwnd,struct ClcData *dat);
