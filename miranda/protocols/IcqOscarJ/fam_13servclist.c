@@ -365,7 +365,8 @@ static int unpackServerListItem(unsigned char** pbuf, WORD* pwLen, char* pszReco
     return 0; // Failure
 
   unpackString(pbuf, pszRecordName, wRecordNameLen);
-  pszRecordName[wRecordNameLen] = '\0';
+  if (pszRecordName)
+    pszRecordName[wRecordNameLen] = '\0';
 
   // The group identifier this entry belongs to. If 0, this is meta information or
   // a contact without a group
