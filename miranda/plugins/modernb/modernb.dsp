@@ -593,6 +593,11 @@ SOURCE=.\modern_button.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modern_row.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=.\modern_statusbar.c
 # End Source File
 # Begin Source File
@@ -602,6 +607,10 @@ SOURCE=.\movetogroup.c
 # Begin Source File
 
 SOURCE=.\rowheight_funcs.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\SkinEditor.c
 # End Source File
 # Begin Source File
 

@@ -605,10 +605,6 @@ SOURCE=.\genmenu.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\IcoLib.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\m_genmenu.h
 # End Source File
 # Begin Source File
