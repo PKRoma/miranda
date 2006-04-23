@@ -36,6 +36,7 @@
 
 #include "icqoscar.h"
 
+#include "m_flash.h"
 
 extern WORD wListenPort;
 
@@ -187,6 +188,7 @@ typedef struct AvtDlgProcData_t
 {
   HANDLE hContact;
   HANDLE hEventHook;
+  HWND hFlashAvatar;
 } AvtDlgProcData;
 
 #define HM_REBIND_AVATAR  (WM_USER + 1024)
@@ -260,11 +262,12 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
               GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, 255);
             else
             {
-              DBVARIANT dbvFile;
-              if (!ICQGetContactSetting(NULL, "AvatarFile", &dbvFile))
+              char* file = loadMyAvatarFileName();
+
+              if (file)
               {
-                strcpy(szAvatar, dbvFile.pszVal);
-                ICQFreeVariant(&dbvFile);
+                strcpy(szAvatar, file);
+                SAFE_FREE(&file);
               }
               else
                 szAvatar[0] = '\0';
@@ -281,10 +284,33 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
         if (bValid)
         { //load avatar
-          HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szAvatar);
+          if ((dwPaFormat == PA_FORMAT_XML || dwPaFormat == PA_FORMAT_SWF) && ServiceExists(MS_FAVATAR_GETINFO))
+          { // flash avatar and we have FlashAvatars installed, init flash avatar
+            FLASHAVATAR fa = {0};
+
+            fa.hContact = pData->hContact;
+            fa.id = 0x4943516A; // icqj magic id
+            CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
+            if (fa.hWindow)
+            {
+              pData->hFlashAvatar = fa.hWindow;
+              SetParent(fa.hWindow, GetDlgItem(hwndDlg, IDC_AVATAR));
+            }
+            else
+            {
+              fa.hParentWindow = GetDlgItem(hwndDlg, IDC_AVATAR);
+              CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+              if (fa.hWindow)
+                pData->hFlashAvatar = fa.hWindow;
+            }
+          }
+          else
+          { // static avatar processing
+            HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szAvatar);
         
-          if (avt)
-            SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)avt);
+            if (avt)
+              SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)avt);
+          }
         }
         else if (pData->hContact) // only retrieve users avatars
         {
@@ -309,14 +335,46 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         if (ack->result == ACKRESULT_SUCCESS)
         { // load avatar
           PROTO_AVATAR_INFORMATION* AI = (PROTO_AVATAR_INFORMATION*)ack->hProcess;
+          HBITMAP avt = NULL;
 
-          HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)AI->filename);
-        
+          if ((AI->format == PA_FORMAT_XML || AI->format == PA_FORMAT_SWF) && ServiceExists(MS_FAVATAR_GETINFO))
+          { // flash avatar and we have FlashAvatars installed, init flash avatar
+            FLASHAVATAR fa = {0};
+
+            fa.hContact = pData->hContact;
+            fa.id = 0x4943516A; // icqj magic id
+            CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
+            if (fa.hWindow)
+            {
+              pData->hFlashAvatar = fa.hWindow;
+              SetParent(fa.hWindow, GetDlgItem(hwndDlg, IDC_AVATAR));
+            }
+            else
+            {
+              fa.hParentWindow = GetDlgItem(hwndDlg, IDC_AVATAR);
+              CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+              if (fa.hWindow)
+                pData->hFlashAvatar = fa.hWindow;
+            }
+          }
+          else
+          {
+            if (pData->hFlashAvatar)
+            { // release expired flash avatar object
+              FLASHAVATAR fa;
+
+              fa.hContact = pData->hContact;
+              fa.id = 0x4943516A; // icqj magic id
+              CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
+              pData->hFlashAvatar = NULL;
+            }
+            avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)AI->filename);
+          }
           if (avt) avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
           if (avt) DeleteObject(avt); // we release old avatar if any
         }
         else if (ack->result == ACKRESULT_STATUS)
-        {
+        { // contact has changed avatar
           DWORD dwUIN;
           uid_str szUID;
           DBVARIANT dbvHash;
@@ -375,6 +433,14 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
       AvtDlgProcData* pData = (AvtDlgProcData*)GetWindowLong(hwndDlg, GWL_USERDATA);
       if (pData->hContact)
         UnhookEvent(pData->hEventHook);
+      if (pData->hFlashAvatar)
+      { // release flash avatar object
+        FLASHAVATAR fa;
+
+        fa.hContact = pData->hContact;
+        fa.id = 0x4943516A; // icqj magic id
+        CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
+      }
       SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)0);
       SAFE_FREE(&pData);
     }
