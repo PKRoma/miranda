@@ -374,6 +374,8 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SendDlgItemMessage(hwndDlg, IDC_AVATARSPIN, UDM_SETRANGE, 0, MAKELONG(150, 50));
 			SendDlgItemMessage(hwndDlg, IDC_AVATARSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_MAXAVATARHEIGHT, &translated, FALSE));
 
+            EnableWindow(GetDlgItem(hwndDlg, IDC_MAXAVATARHEIGHT), DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatardisplaymode", 0) != 0);
+
 			SetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabautoclose", 0), FALSE);
 			SendDlgItemMessage(hwndDlg, IDC_AUTOCLOSETABSPIN, UDM_SETRANGE, 0, MAKELONG(1800, 0));
 			SendDlgItemMessage(hwndDlg, IDC_AUTOCLOSETABSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE));
@@ -402,13 +404,14 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				break;
 			}
 		case IDC_AVATARBORDER:
-		case IDC_AVATARDISPLAY:
+        case IDC_AVATARDISPLAY:
+            EnableWindow(GetDlgItem(hwndDlg, IDC_MAXAVATARHEIGHT), SendDlgItemMessage(hwndDlg, IDC_AVATARDISPLAY, CB_GETCURSEL, 0, 0) != 0);
 			if(HIWORD(wParam) != CBN_SELCHANGE || (HWND)lParam != GetFocus())
 				return TRUE;
 			break;
-			}
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			break;
+		}
+        SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+        break;
 		case WM_NOTIFY:
 			switch (((LPNMHDR) lParam)->idFrom) {
 		case IDC_WINDOWOPTIONS:
@@ -922,6 +925,7 @@ static struct LISTOPTIONSGROUP tabGroups[] = {
 
 static struct LISTOPTIONSITEM tabItems[] = {
     0, _T("Show status text on tabs"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabstatus", 0,
+    0, _T("Show xStatus icons when available (ICQJ only)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"use_xicons", 0,
     0, _T("Warn on close message tab"), 0, LOI_TYPE_SETTING, (UINT_PTR)"warnonexit", 0,
     0, _T("Automatically pop up the window/tab when a message is received (has PRIORITY!)"), SRMSGDEFSET_AUTOPOPUP, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOPOPUP, 1,
     0, _T("Create tabs in the background"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
@@ -1503,7 +1507,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 void ReloadGlobals()
 {
-     myGlobals.m_SmileyPluginEnabled = (int)DBGetContactSettingByte(NULL, "SmileyAdd", "PluginSupportEnabled", 0);
+     //myGlobals.m_SmileyPluginEnabled = (int)DBGetContactSettingByte(NULL, "SmileyAdd", "PluginSupportEnabled", 0);
      myGlobals.m_SendOnShiftEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", 1);
      myGlobals.m_SendOnEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER);
      myGlobals.m_SendOnDblEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "SendOnDblEnter", 0);

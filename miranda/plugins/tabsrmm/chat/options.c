@@ -381,6 +381,8 @@ static struct _tagicons { char *szDesc; char *szName; int id; UINT size;} _icons
 	"Event filter disabled", "chat_filter", IDI_FILTER, 16,
 	"Event filter enabled", "chat_filter2", IDI_FILTER2, 16,
 	"Icon overlay", "chat_overlay", IDI_OVERLAY, 16,
+    "Show nicklist", "chat_shownicklist", IDI_SHOWNICKLIST, 16,
+    "Hide nicklist", "chat_hidenicklist", IDI_HIDENICKLIST, 16,
 	"Status 1 (10x10)", "chat_status0", IDI_STATUS0, 10,
 	"Status 2 (10x10)", "chat_status1", IDI_STATUS1, 10,
 	"Status 3 (10x10)", "chat_status2", IDI_STATUS2, 10,
@@ -1258,7 +1260,7 @@ int Chat_OptionsInitialize(WPARAM wParam, LPARAM lParam)
     odp.hInstance = g_hInst;
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS2);
     odp.pszTitle = "Fonts and colors";
-    odp.pszGroup = "Message sessions";
+    odp.pszGroup = "Message Sessions";
     odp.pfnDlgProc = DlgProcOptions2;
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);

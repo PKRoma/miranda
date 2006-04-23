@@ -597,7 +597,9 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
         else {
             if(myGlobals.g_SecureIMAvail)
                 SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)myGlobals.g_buttonBarIcons[14]);
-            SetSelftypingIcon(hwndDlg, dat, 0);
+            SetSelftypingIcon(hwndDlg, dat, -1);
+            if(myGlobals.g_SecureIMAvail)
+                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, 0);
         }
         
 		SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, (myGlobals.g_SecureIMAvail ? 3 : 2) | SBT_NOBORDERS, (LPARAM)"");
@@ -715,11 +717,13 @@ void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode)
         int nParts = SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0);
 
         SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, (nParts - 1) | SBT_NOBORDERS, (LPARAM)"");
-		if(iMode)
+		if(iMode >= 0)
             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (nParts - 1), (LPARAM)myGlobals.g_buttonBarIcons[12]);
-        else
+        else if(iMode == 0)
             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (nParts - 1), (LPARAM)myGlobals.g_buttonBarIcons[13]);
-
+        else
+            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (nParts - 1), 0);
+        
         mir_snprintf(szTipText, sizeof(szTipText), Translate("Sending typing notifications is: %s"), iMode ? "Enabled" : "Disabled");
         SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, myGlobals.g_SecureIMAvail ? 4 : 3, (LPARAM)szTipText);
         InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
@@ -730,9 +734,9 @@ void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode)
  * checks, if there is a valid smileypack installed for the given protocol
  */
 
-int CheckValidSmileyPack(char *szProto, HICON *hButtonIcon)
+int CheckValidSmileyPack(char *szProto, HANDLE hContact, HICON *hButtonIcon)
 {
-    SMADD_INFO smainfo;
+    SMADD_INFO2 smainfo = {0};
 
     if(myGlobals.g_SmileyAddAvail) {
         smainfo.cbSize = sizeof(smainfo);
@@ -2109,7 +2113,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             GetTextExtentPoint32A(dis->hDC, szProto, lstrlenA(szProto), &sProto);
         }
     
-        dat->panelStatusCX = sStatus.cx + sProto.cx + 14;
+        dat->panelStatusCX = sStatus.cx + sProto.cx + 14 + (dat->hClientIcon ? 20 : 0);
         
         if(dat->panelStatusCX != oldPanelStatusCX)
             SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -2138,7 +2142,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             DrawTextA(dis->hDC, dat->szStatus, lstrlenA(dat->szStatus), &rc, DT_SINGLELINE | DT_VCENTER);
         }
         if(szProto) {
-            rc.left = rc.right - sProto.cx - 3;
+            rc.left = rc.right - sProto.cx - 3 - (dat->hClientIcon ? 20 : 0);
             if(config) {
                 SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_PROTO]);
                 SetTextColor(dis->hDC, myGlobals.ipConfig.clrs[IPFONTID_PROTO]);
@@ -2147,6 +2151,10 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                 SetTextColor(dis->hDC, GetSysColor(COLOR_HOTLIGHT));
             DrawTextA(dis->hDC, szProto, lstrlenA(szProto), &rc, DT_SINGLELINE | DT_VCENTER);
         }
+
+        if(dat->hClientIcon)
+            DrawIconEx(dis->hDC, rc.right - 19, (rc.bottom + rc.top - 16) / 2, dat->hClientIcon, 16, 16, 0, 0, DI_NORMAL);
+        
         if(config && hOldFont)
             SelectObject(dis->hDC, hOldFont);
         return TRUE;
@@ -2154,7 +2162,12 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
     else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELNICK) && dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
         RECT rc = dis->rcItem;
 		TCHAR *szStatusMsg = NULL;
-
+        TCHAR *szLabel = TranslateT("Name:");
+        int   iNameLen = lstrlen(szLabel);
+        TCHAR *szLabelUIN = TranslateT("User Id:");
+        int   iNameLenUIN = lstrlen(szLabelUIN);
+        SIZE  szUIN;
+        
 		if(ServiceExists("CList/GetContactStatusMsg")) {
 			szStatusMsg = (TCHAR *)CallService("CList/GetContactStatusMsg", (WPARAM)dat->hContact, 0);
 			if(szStatusMsg == NULL)
@@ -2163,7 +2176,12 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		else
 			szStatusMsg = dat->statusMsg;
 
-		GetTextExtentPoint32A(dis->hDC, "Name:", 5, &dat->szLabel);
+		GetTextExtentPoint32(dis->hDC, szLabel, iNameLen, &dat->szLabel);
+        GetTextExtentPoint32(dis->hDC, szLabelUIN, iNameLenUIN, &szUIN);
+
+        if(szUIN.cx > dat->szLabel.cx)
+            dat->szLabel = szUIN;
+        
         rc.right = rc.left + dat->szLabel.cx + 3;
         SetBkMode(dis->hDC, TRANSPARENT);
 		if(dat->pContainer->bSkinned) {
@@ -2174,7 +2192,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
 			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
 		}
-        DrawTextA(dis->hDC, "Name:", 5, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+        DrawText(dis->hDC, szLabel, iNameLen, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
         dis->rcItem.left += (dat->szLabel.cx + 3);
 		if(dat->pContainer->bSkinned) {
 			StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
@@ -2193,8 +2211,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             HFONT hOldFont = 0;
 			HICON xIcon = 0;
 			
-			if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "use_xicons", 0))
-				xIcon = GetXStatusIcon(dat);
+			xIcon = GetXStatusIcon(dat);
 			
 			if(xIcon) {
 				DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, xIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
@@ -2233,6 +2250,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         BOOL config = myGlobals.ipConfig.isValid;
         HFONT hOldFont = 0;
         RECT rc = dis->rcItem;
+        TCHAR *szLabel = TranslateT("User Id:");
+        int   iNameLen = lstrlen(szLabel);
 
 		if(dat->pContainer->bSkinned) {
 			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
@@ -2244,7 +2263,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		}
 
 		SetBkMode(dis->hDC, TRANSPARENT);
-        DrawTextA(dis->hDC, "UIN:", 4, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+        DrawText(dis->hDC, szLabel, iNameLen, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
 
 		rc.right = rc.left + dat->szLabel.cx + 3;
         dis->rcItem.left += (dat->szLabel.cx + 3);
@@ -2444,8 +2463,8 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
     int nrSmileys = 0;
     int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 
-    if(myGlobals.g_SmileyAddAvail && myGlobals.m_SmileyPluginEnabled && dat->hwndLog == 0) {
-        nrSmileys = CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, &hButtonIcon);
+    if(myGlobals.g_SmileyAddAvail) {
+        nrSmileys = CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->hSubContact : dat->hContact, &hButtonIcon);
 
         dat->doSmileys = 1;
 
@@ -2457,15 +2476,6 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
             SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hButtonIcon);
             dat->hSmileyIcon = hButtonIcon;
         }
-    }
-    else if(dat->hwndLog != 0) {
-        dat->doSmileys = 1;
-        nrSmileys = 1;
-        if(dat->hSmileyIcon != 0) {
-            DestroyIcon(dat->hSmileyIcon);
-            dat->hSmileyIcon = 0;
-        }
-        SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[11]);
     }
 
     if(nrSmileys == 0 || dat->hContact == 0)
@@ -2504,10 +2514,24 @@ void SendNudge(struct MessageWindowData *dat, HWND hwndDlg)
 	HANDLE hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
 
 	mir_snprintf(szServiceName, 128, "%s/SendNudge", szProto);
-	if(ServiceExists(szServiceName))
-		CallProtoService(szProto, "/SendNudge", (WPARAM)hContact, 0);
+	if(ServiceExists(szServiceName) && ServiceExists(MS_NUDGE_SEND))
+        CallService(MS_NUDGE_SEND, (WPARAM)hContact, 0);
+		//CallProtoService(szProto, "/SendNudge", (WPARAM)hContact, 0);
 }
 
+void GetClientIcon(struct MessageWindowData *dat, HWND hwndDlg)
+{
+    DBVARIANT dbv = {0};
+
+    dat->hClientIcon = 0;
+    
+    if(ServiceExists(MS_FP_GETCLIENTICON)) {
+        if(!DBGetContactSetting(dat->hContact, dat->szProto, "MirVer", &dbv)) {
+            dat->hClientIcon = (HICON)CallService(MS_FP_GETCLIENTICON, (WPARAM)dbv.pszVal, 1);
+            DBFreeVariant(&dbv);
+        }
+    }
+}
 // size in TCHARs
 // szwBuf must be large enough to hold at least size wchar_t's
 // proto may be NULL

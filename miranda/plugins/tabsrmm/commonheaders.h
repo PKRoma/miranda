@@ -106,6 +106,8 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #include "m_popup.h"
 #include "m_metacontacts.h"
 #include "m_snapping_windows.h"
+#include "m_fingerprint.h"
+#include "m_nudge.h"
 
 #ifndef __TSR_CXX
 #include "msgs.h"

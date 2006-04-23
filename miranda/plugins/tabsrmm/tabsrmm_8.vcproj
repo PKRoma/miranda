@@ -1007,6 +1007,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\m_fingerprint.h"
+				>
+			</File>
+			<File
 				RelativePath=".\m_flash.h"
 				>
 			</File>
@@ -1028,6 +1032,10 @@
 			</File>
 			<File
 				RelativePath="m_metacontacts.h"
+				>
+			</File>
+			<File
+				RelativePath=".\m_nudge.h"
 				>
 			</File>
 			<File
@@ -1067,11 +1075,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\chat\resource.h"
+				RelativePath="resource.h"
 				>
 			</File>
 			<File
-				RelativePath="resource.h"
+				RelativePath=".\chat\resource.h"
 				>
 			</File>
 			<File
@@ -1200,11 +1208,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur"
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				RelativePath="..\..\src\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -1228,11 +1236,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
@@ -1248,11 +1256,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\res\hyperlin.cur"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur"
+				RelativePath=".\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -1268,11 +1280,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Info.ico"
+				RelativePath=".\chat\Icons\info.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\chat\Icons\info.ico"
+				RelativePath=".\res\angeli-icons\Info.ico"
 				>
 			</File>
 			<File
@@ -1428,11 +1440,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File

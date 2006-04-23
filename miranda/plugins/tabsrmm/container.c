@@ -1639,7 +1639,7 @@ panel_found:
                             }
                             switch (iSelection) {
                                 case ID_TABMENU_CLOSETAB:
-                                    SendMessage(hwndDlg, DM_CLOSETABATMOUSE, 0, (LPARAM)&pt);
+                                    SendMessage(hwndDlg, DM_CLOSETABATMOUSE, 0, (LPARAM)&pt1);
                                     break;
                                 case ID_TABMENU_LEAVECHATROOM:
                                 {
@@ -2024,7 +2024,10 @@ panel_found:
             }*/
 
             ws = wsold = GetWindowLong(hwndDlg, GWL_STYLE);
-			ws = (pContainer->dwFlags & CNT_NOTITLE) ? ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN | (g_framelessSkinmode ? 0 : WS_SYSMENU)) : ws | WS_CAPTION | (g_framelessSkinmode ? 0 : WS_OVERLAPPEDWINDOW);
+			ws = (pContainer->dwFlags & CNT_NOTITLE) ? 
+                ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN | (g_framelessSkinmode ? 0 : WS_SYSMENU | WS_SIZEBOX)) : 
+                ws | WS_CAPTION | (g_framelessSkinmode ? WS_OVERLAPPEDWINDOW : WS_OVERLAPPEDWINDOW);
+            
 			SetWindowLong(hwndDlg, GWL_STYLE, ws);
 
             pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 2);
@@ -2109,19 +2112,23 @@ panel_found:
                 }
             }
             if(pContainer->dwFlags & CNT_NOMENUBAR) {
-                if(pContainer->hMenu) {
+                if(pContainer->hMenu)
                     SetMenu(hwndDlg, NULL);
-                }
             }
             else {
-                if(pContainer->hMenu == 0) {
-                    pContainer->hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
-                    CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) pContainer->hMenu, 0);
+                if(pContainer->bSkinned && g_framelessSkinmode) {
+                    if(pContainer->hMenu)
+                        SetMenu(hwndDlg, NULL);
                 }
-                SetMenu(hwndDlg, pContainer->hMenu);
-                DrawMenuBar(hwndDlg);
+                else {
+                    if(pContainer->hMenu == 0) {
+                        pContainer->hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
+                        CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) pContainer->hMenu, 0);
+                    }
+                    SetMenu(hwndDlg, pContainer->hMenu);
+                    DrawMenuBar(hwndDlg);
+                }
             }
-
             if(pContainer->hwndActive != 0) {
                 hContact = 0;
                 SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
@@ -2954,7 +2961,7 @@ HMENU BuildContainerMenu()
 
     if(myGlobals.g_hMenuContainer != 0) {
         HMENU submenu = GetSubMenu(myGlobals.g_hMenuContext, 0);
-        RemoveMenu(submenu, 5, MF_BYPOSITION);
+        RemoveMenu(submenu, 6, MF_BYPOSITION);
         DestroyMenu(myGlobals.g_hMenuContainer);
         myGlobals.g_hMenuContainer = 0;
     }

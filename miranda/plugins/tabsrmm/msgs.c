@@ -74,11 +74,6 @@ HMODULE g_hIconDLL = 0;
 int Chat_IconsChanged(WPARAM wp, LPARAM lp), Chat_ModulesLoaded(WPARAM wp, LPARAM lp);
 void Chat_AddIcons(void);
 
-/*
- * installed as a WH_GETMESSAGE hook in order to process unicode messages.
- * without this, the rich edit control does NOT accept input for all languages.
- */
-
 static int IEViewOptionsChanged(WPARAM wParam, LPARAM lParam)
 {
 	WindowList_Broadcast(hMessageWindowList, DM_IEVIEWOPTIONSCHANGED, 0, 0);
@@ -121,7 +116,8 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
 	MessageWindowInputData *mwid = (MessageWindowInputData*)wParam;
 	MessageWindowOutputData *mwod = (MessageWindowOutputData*)lParam;
 	HWND hwnd;
-
+    SESSION_INFO *si = NULL;
+    
 	if( mwid == NULL || mwod == NULL) 
         return 1;
 	if(mwid->cbSize != sizeof(MessageWindowInputData) || mwod->cbSize != sizeof(MessageWindowOutputData)) 
@@ -138,6 +134,13 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
 		SendMessage(hwnd, DM_GETWINDOWSTATE, 0, 0);
 		mwod->uState = GetWindowLong(hwnd, DWL_MSGRESULT);
 	}
+    else if((si = SM_FindSessionByHCONTACT(mwid->hContact)) != NULL && si->hWnd != 0) {
+        mwod->uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
+        mwod->hwndWindow = si->hWnd;
+        mwod->local = GetParent(GetParent(si->hWnd));
+        SendMessage(si->hWnd, DM_GETWINDOWSTATE, 0, 0);
+        mwod->uState = GetWindowLong(si->hWnd, DWL_MSGRESULT);
+    }
 	else
 		mwod->uState = 0;
 		
@@ -710,6 +713,8 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
     if(hwnd) {
         if(strstr("MyHandle,Status,Nick,ApparentMode,Default,ForceSend,IdleTS,XStatusId", cws->szSetting))
             SendMessage(hwnd, DM_UPDATETITLE, 0, 0);
+        else if(!strcmp(cws->szSetting, "MirVer"))
+            SendMessage(hwnd, DM_CLIENTCHANGED, 0, 0);
     }
     
     return 0;

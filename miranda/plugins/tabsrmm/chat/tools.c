@@ -313,7 +313,7 @@ static BOOL DoPopup(SESSION_INFO * si, GCEVENT * gce)
 
 BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO * si, GCEVENT * gce, BOOL bHighlight, int bManyFix)
 {
-	BOOL bInactive = TRUE;
+	BOOL bInactive = TRUE, bActiveTab = FALSE;
 	int iEvent;
     BOOL bMustFlash = FALSE, bMustAutoswitch = FALSE;
     struct MessageWindowData *dat = 0;
@@ -328,6 +328,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO * si, GCEVENT * gce, BOOL bHighlig
         if(dat) {
             hwndContainer = dat->pContainer->hwnd;
             bInactive = hwndContainer != GetForegroundWindow();
+            bActiveTab = (dat->pContainer->hwndActive == si->hWnd);
         }
     }
 	iEvent = gce->pDest->iType;
@@ -471,8 +472,10 @@ flash_and_switch:
 
             if(IsIconic(dat->pContainer->hwnd) || dat->pContainer->hwndActive != si->hWnd) {
                 dat->iFlashIcon = hNotifyIcon;
-                SetTimer(si->hWnd, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
-                dat->mayFlashTab = TRUE;
+                if(bMustFlash) {
+                    SetTimer(si->hWnd, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
+                    dat->mayFlashTab = TRUE;
+                }
             }
 
             // autoswitch tab..
@@ -496,7 +499,15 @@ flash_and_switch:
                     FlashContainer(dat->pContainer, 1, 0);
             }
             if(hNotifyIcon && bInactive) {
-                dat->hTabIcon = hNotifyIcon;
+                if(!bActiveTab && bMustFlash)
+                    dat->hTabIcon = hNotifyIcon;
+                else if(!bActiveTab) {
+                    TCITEM item = {0};
+
+                    item.mask = TCIF_IMAGE;
+                    item.iImage = 0;
+                    TabCtrl_SetItem(GetParent(si->hWnd), dat->iTabID, &item);
+                }
                 SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)hNotifyIcon);
                 dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
             }

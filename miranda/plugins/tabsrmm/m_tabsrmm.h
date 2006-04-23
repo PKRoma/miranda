@@ -227,6 +227,7 @@ struct ContainerWindowData {
 	struct TitleBtn buttons[3];
 	struct TitleBtn oldbuttons[3];
 	int ncActive;
+    HICON hTitleIcon;
 };
 
 #define STICK_ICON_MSG 10
@@ -290,7 +291,7 @@ struct MessageWindowData {
 	struct ContainerWindowData *pContainer;		// parent container description structure
 	int iTabID;			// XXX mod (tab support)
 	BOOL bTabFlash;		// XXX tab flashing state...
-    HICON hTabIcon, hTabStatusIcon, hXStatusIcon;
+    HICON hTabIcon, hTabStatusIcon, hXStatusIcon, hClientIcon;
 	BOOL mayFlashTab;	// XXX tabs...
     HKL  hkl;           // keyboard layout identifier
     DWORD dwTickLastEvent;
@@ -433,7 +434,6 @@ typedef struct _globals {
     HICON g_sideBarIcons[NR_SIDEBARICONS];
     int iSendJobCurrent;
     // dynamic options, need reload when options change
-    int m_SmileyPluginEnabled;
     int m_SendOnShiftEnter;
     int m_SendOnEnter;
     int m_SendOnDblEnter;

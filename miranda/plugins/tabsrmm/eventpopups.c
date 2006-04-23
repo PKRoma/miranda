@@ -717,7 +717,7 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
     PLUGIN_DATA* pdata;
     DBEVENTINFO dbe;
     char* sampleEvent;
-    long iSeconds;
+    long iSeconds = 0;
     int iPreviewLimit = nen_options.iLimitPreview, result;
     
     //there has to be a maximum number of popups shown at the same time
