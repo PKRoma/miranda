@@ -31,7 +31,6 @@ int GetStatusForContact(HANDLE hContact,char *szProto);
 TCHAR *UnknownConctactTranslatedName;
 extern boolean OnModulesLoadedCalled;
 void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntry pdnce,int SettingType);
-extern int GetClientIconByMirVer(pdisplayNameCacheEntry pdnce);
 
 static int handleCompare( displayNameCacheEntry* c1, displayNameCacheEntry* c2 )
 {
@@ -68,7 +67,6 @@ void FreeDisplayNameCacheItem( pdisplayNameCacheEntry p )
 	#endif
 	if ( p->szProto) { mir_free(p->szProto); p->szProto = NULL; }
 	if ( p->szGroup) { mir_free(p->szGroup); p->szGroup = NULL; }
-	if ( p->MirVer)  { mir_free(p->MirVer);  p->MirVer  = NULL; }
 }
 
 void FreeDisplayNameCache(SortedList *list)
@@ -104,7 +102,7 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 	if (pdnce->name == NULL)
 	{			
 		if (pdnce->protoNotExists)
-			pdnce->name=_tcsdup(TranslateT("_NoProtocol_"));
+			pdnce->name = mir_tstrdup(TranslateT("_NoProtocol_"));
 		else {
 			if (OnModulesLoadedCalled)
 				pdnce->name=GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown);
@@ -127,10 +125,10 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 
 		if (!DBGetContactSettingTString(pdnce->hContact,"CList","Group",&dbv))
 		{
-			pdnce->szGroup = _tcsdup(dbv.ptszVal);
+			pdnce->szGroup = mir_tstrdup(dbv.ptszVal);
 			mir_free(dbv.pszVal);
 		}
-		else pdnce->szGroup = _tcsdup( _T(""));
+		else pdnce->szGroup = mir_tstrdup( _T(""));
 	}
 
 	if (pdnce->Hidden == -1)
@@ -150,16 +148,6 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 
 	if (pdnce->IsExpanded == -1)
 		pdnce->IsExpanded=DBGetContactSettingByte(pdnce->hContact,"CList","Expanded",0);
-
-	if (pdnce->MirVer == NULL || pdnce->ci.idxClientIcon == -1 || pdnce->ci.idxClientIcon == 0)
-	{
-		if (pdnce->MirVer) mir_free(pdnce->MirVer);
-		pdnce->MirVer=DBGetString(pdnce->hContact,pdnce->szProto,"MirVer");
-		pdnce->ci.ClientID=-1;
-		pdnce->ci.idxClientIcon=-1;
-		if (pdnce->MirVer!=NULL)
-			GetClientIconByMirVer(pdnce);
-	}
 }
 
 void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntry pdnce,int SettingType)
@@ -185,14 +173,9 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 		pdnce->isUnknown=FALSE;
 		pdnce->noHiddenOffline=-1;
 		pdnce->IsExpanded=-1;
-		if (pdnce->MirVer) mir_free(pdnce->MirVer);
-		pdnce->MirVer=NULL;
-
-		pdnce->ci.ClientID=-1;
-		pdnce->ci.idxClientIcon=-1;
-
 		return;
 	}
+
 	if (SettingType == DBVT_ASCIIZ||SettingType == DBVT_BLOB)
 	{
 		if (pdnce->name) mir_free(pdnce->name);
@@ -201,10 +184,6 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 		pdnce->szGroup=NULL;
 		if (pdnce->szProto) mir_free(pdnce->szProto);
 		pdnce->szProto=NULL;
-		pdnce->MirVer=NULL;
-		pdnce->ci.ClientID=-1;
-		pdnce->ci.idxClientIcon=-1;
-
 		return;
 	}
 
@@ -218,10 +197,6 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 	pdnce->isUnknown=FALSE;
 	pdnce->noHiddenOffline=-1;
  	pdnce->IsExpanded=-1;
-	if (pdnce->MirVer) mir_free(pdnce->MirVer);
-	pdnce->MirVer=NULL;
-	pdnce->ci.ClientID=-1;
-	pdnce->ci.idxClientIcon=-1;
 }
 
 char *GetContactCachedProtocol(HANDLE hContact)

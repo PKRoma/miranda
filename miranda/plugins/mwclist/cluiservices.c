@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clc.h"
 #include "m_clui.h"
 
-extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
 extern int CreateTimerForConnectingIcon(WPARAM,LPARAM);
 
 void FreeProtocolData( void )
@@ -131,7 +130,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 			if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;}
 
 			itoa(i,(char *)&buf,10);
-			szStoredName=DBGetString(NULL,"Protocols",buf);
+			szStoredName=DBGetStringA(NULL,"Protocols",buf);
 			if (szStoredName==NULL){continue;}
 			curprotocol=(PROTOCOLDESCRIPTOR*)CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)szStoredName);
 			mir_free(szStoredName);
@@ -176,7 +175,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 		if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;}
 
 		itoa(i,(char *)&buf,10);
-		szStoredName=DBGetString(NULL,"Protocols",buf);
+		szStoredName=DBGetStringA(NULL,"Protocols",buf);
 		if (szStoredName==NULL){continue;}
 		curprotocol=(PROTOCOLDESCRIPTOR*)CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)szStoredName);
 		mir_free(szStoredName);

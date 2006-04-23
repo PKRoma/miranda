@@ -780,7 +780,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 							if(nm->iColumn==e) {
 								//CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)nm->hItem,0);
 								char *email,buf[4096];
-								email=DBGetString(nm->hItem,"UserInfo", "Mye-mail0");
+								email=DBGetStringA(nm->hItem,"UserInfo", "Mye-mail0");
 								if (email) {
 									sprintf(buf,"mailto:%s",email);
 									ShellExecuteA(hwnd,"open",buf,NULL,NULL,SW_SHOW);
@@ -788,7 +788,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 							}	
 							if(nm->iColumn==w) {
 								char *homepage;
-								homepage=DBGetString(pdnce->hContact,pdnce->szProto, "Homepage");
+								homepage=DBGetStringA(pdnce->hContact,pdnce->szProto, "Homepage");
 								if (homepage!=NULL)
 									ShellExecuteA(hwnd,"open",homepage,NULL,NULL,SW_SHOW);
 					}	}	}	

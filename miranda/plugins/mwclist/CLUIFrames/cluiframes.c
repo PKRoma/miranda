@@ -626,7 +626,7 @@ int LocateStorePosition(int Frameid,int maxstored)
 	storpos=-1;
 	for(i=0;i<maxstored;i++) {
 		wsprintfA(settingname,"%s%d","Name",i);
-		frmname=DBGetString(0,CLUIFrameModule,settingname);
+		frmname=DBGetStringA(0,CLUIFrameModule,settingname);
 		if(frmname==NULL) continue;
 		if(strcmpi(frmname,Frames[Frameid].name)==0) {
 			storpos=i;

@@ -636,7 +636,7 @@ int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 	p=DBGetContactSettingDword(0,"Protocols",buf,-1);
 	*/
 	itoa(Pos,buf,10);
-	b2=DBGetString(NULL,"Protocols",buf);
+	b2=DBGetStringA(NULL,"Protocols",buf);
 	OutputDebugStringA("GetProtoIndexByPos \r\n");
 	
 	if (b2) {

@@ -2,7 +2,6 @@
 
 HANDLE hModulesLoaded,hOnCntMenuBuild;
 HANDLE prevmenu=0;
-extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
 
 HWND hwndTopToolBar=0;
 
@@ -67,7 +66,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 while (TRUE) 
 {
 	itoa(i,intname,10);
-	grpname=DBGetString(0,"CListGroups",intname);
+	grpname=DBGetStringA(0,"CListGroups",intname);
 
 	if (grpname==NULL ){break;}
 	if (strlen(grpname)==0)
@@ -117,7 +116,7 @@ lParam--;
 	}
 	intname=(char *)malloc(20);
 	itoa(lParam,intname,10);
-	grpname=DBGetString(0,"CListGroups",intname);
+	grpname=DBGetStringA(0,"CListGroups",intname);
 	if (grpname!=0)
 	{
 		correctgrpname=&(grpname[1]);

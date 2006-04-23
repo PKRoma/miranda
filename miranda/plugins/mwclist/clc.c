@@ -168,7 +168,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 	switch (msg) {
 	case WM_CREATE:
-		dat = (struct ClcData*)calloc( sizeof(struct ClcData), 1);
+		dat = (struct ClcData*)mir_calloc( sizeof(struct ClcData), 1);
 		SetWindowLong(hwnd,0,(LPARAM)dat);
 		InitDisplayNameCache(&dat->lCLCContactsCache);
 		break;

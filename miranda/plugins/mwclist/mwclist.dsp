@@ -621,10 +621,6 @@ SOURCE=.\statusmodes.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=".\res\&RQ.ico"
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\1.ico
 # End Source File
 # Begin Source File
@@ -725,10 +721,6 @@ SOURCE=.\res\freechat.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\Gaim.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\globus.ico
 # End Source File
 # Begin Source File
@@ -753,51 +745,7 @@ SOURCE=.\res\hyperlin.cur
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\Icq2000.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Icq2001.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Icq2003.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Icq2gof.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Icq2goJ.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\IcqL4.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\IcqL5.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\IcqLite.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\IM2.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\invisible.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Kopete.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Licq.ico
 # End Source File
 # Begin Source File
 
@@ -857,10 +805,6 @@ SOURCE=.\res\outtolun.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\QIP.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\rename.ico
 # End Source File
 # Begin Source File
@@ -881,10 +825,6 @@ SOURCE=.\res\sendmail.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\Sim.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\smalldot.ico
 # End Source File
 # Begin Source File
@@ -902,10 +842,6 @@ SOURCE=.\res\sortcolu.bmp
 # Begin Source File
 
 SOURCE=.\res\timestamp.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Trillian.ico
 # End Source File
 # Begin Source File
 

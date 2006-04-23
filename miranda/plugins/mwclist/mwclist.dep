@@ -318,7 +318,6 @@
 	
 
 .\resource.rc : \
-	".\res\&RQ.ico"\
 	".\res\1.ico"\
 	".\res\2.ico"\
 	".\res\3.ico"\
@@ -328,51 +327,16 @@
 	".\res\7.ico"\
 	".\res\8.ico"\
 	".\res\addgoupp.ico"\
-	".\res\AgileMobile.ico"\
-	".\res\AlIcq.ico"\
 	".\res\blank.ico"\
-	".\res\Center.ico"\
 	".\res\delete.ico"\
 	".\res\dragcopy.cur"\
 	".\res\dropuser.cur"\
-	".\res\Gaim.ico"\
 	".\res\globus.ico"\
-	".\res\Gnomeicu.ico"\
 	".\res\hyperlin.cur"\
-	".\res\ico00001.ico"\
-	".\res\ico00002.ico"\
-	".\res\ico00003.ico"\
-	".\res\ico00004.ico"\
-	".\res\ico00005.ico"\
-	".\res\icon2.ico"\
-	".\res\IcqMac.ico"\
-	".\res\IM+.ico"\
-	".\res\IM2.ico"\
-	".\res\Kopete.ico"\
-	".\res\L.ico"\
-	".\res\L4.ico"\
-	".\res\L5.ico"\
-	".\res\LibIcq2000.ico"\
-	".\res\Licq.ico"\
-	".\res\Micq.ico"\
-	".\res\Mob2Icq.ico"\
-	".\res\MobiCQ2.ico"\
-	".\res\NICQ2.ico"\
 	".\res\notick.ico"\
 	".\res\notick1.ico"\
-	".\res\PSI.ico"\
-	".\res\QIP.ico"\
 	".\res\rename.ico"\
 	".\res\sendmail.ico"\
-	".\res\Sim.ico"\
 	".\res\sms.ico"\
-	".\res\Spambot.ico"\
-	".\res\Sticq.ico"\
-	".\res\Stricq.ico"\
-	".\res\Trillian.ico"\
-	".\res\Vicq.ico"\
-	".\res\WebIcq.ico"\
-	".\res\Yamigo.ico"\
-	".\res\Ysm.ico"\
 	".\statusmodes.h"\
 	

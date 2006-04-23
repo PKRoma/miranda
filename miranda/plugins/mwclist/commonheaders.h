@@ -110,119 +110,31 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #define CS_DROPSHADOW 0x00020000
 #endif
 
-#ifndef MYCMP
-#define MYCMP 1
+extern int mir_realloc_proxy(void *ptr,int size);
+extern int mir_free_proxy(void *ptr);
+extern BOOL __cdecl strstri(const char *a, const char *b);
+extern BOOL __cdecl boolstrcmpi(const char *a, const char *b);
+extern int __cdecl MyStrCmp (const char *a, const char *b);
+extern int __cdecl MyStrLen (const char *a);
+extern int __cdecl MyStrCmpi(const char *a, const char *b);
+extern int __cdecl MyStrCmpiT(const TCHAR *a, const TCHAR *b);
+extern __inline void *mir_calloc( size_t num, size_t size );
+extern __inline char * mir_strdup(const char * src);
+extern __inline wchar_t * mir_strdupW(const wchar_t * src);
 
-static int mir_realloc_proxy(void *ptr,int size)
-{
-	if (IsBadCodePtr(ptr))
-	{
-		char buf[256];
-		wsprintfA(buf,"Bad code ptr in mir_realloc_proxy ptr: %x\r\n",ptr);
-		//ASSERT("Bad code ptr");
-		DebugBreak();
-		OutputDebugStringA(buf);
-		return 0;
-	}
-	memoryManagerInterface.mmi_realloc(ptr,size);
-	return 0;
-
-}
-
-
-static int mir_free_proxy(void *ptr)
-{
-	if (ptr==NULL||IsBadCodePtr(ptr))
-	{
-		char buf[256];
-		wsprintfA(buf,"Bad code ptr in mir_free_proxy ptr: %x\r\n",ptr);
-		//ASSERT("Bad code ptr");
-		DebugBreak();
-		OutputDebugStringA(buf);
-		return 0;
-	}
-	memoryManagerInterface.mmi_free(ptr);
-	return 0;
-
-}
-
-static int __cdecl MyStrCmp (const char *a, const char *b)
-{
-
-	if (a==NULL&&b==NULL) return 0;
-	if ((int)a<1000||(int)b<1000||IsBadCodePtr((FARPROC)a)||IsBadCodePtr((FARPROC)b))
-	{
-		return 1;
-	}
-	//OutputDebugStr("MY\r\n");
-	//undef();
-	return (strcmp(a,b));
-}
-
-static int __cdecl MyStrLen (const char *a)
-{
-
-	if (a==NULL) return 0;
-	if ((int)a<1000||IsBadCodePtr((FARPROC)a))
-	{
-		return 0;
-	}
-	//OutputDebugStr("MY\r\n");
-	//undef();
-	return (strlen(a));
-}
-
-#define strcmp(a,b) MyStrCmp(a,b)
-#define strlen(a) MyStrLen(a)
+#ifdef UNICODE
+	#define mir_tstrdup(a) mir_strdupW(a)
+#else
+	#define mir_tstrdup(a) mir_strdup(a)
 #endif
 
+extern void *mir_calloc( size_t num, size_t size );
+extern char * mir_strdup(const char * src);
 
+extern char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
+extern wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting);
+extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
 
-__inline void *mir_calloc( size_t num, size_t size )
-{
- 	void *p=mir_alloc(num*size);
-	if (p==NULL) return NULL;
-	memset(p,0,num*size);
-	return p;
-}
-
-__inline char * mir_strdup(const char * src)
-{
-	char * p;
-	if (src==NULL) return NULL;
-	p= mir_alloc( strlen(src)+1 );
-	strcpy(p, src);
-	return p;
-}
-
-static char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting)
-{
-	char *str=NULL;
-	DBVARIANT dbv;
-	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
-	if(dbv.type==DBVT_ASCIIZ)
-		str=mir_strdup(dbv.pszVal);
-	DBFreeVariant(&dbv);
-	return str;
-}
-
-static DWORD exceptFunction(LPEXCEPTION_POINTERS EP)
-{
-    //printf("1 ");                     // printed first
-	char buf[4096];
-
-
-	sprintf(buf,"\r\nExceptCode: %x\r\nExceptFlags: %x\r\nExceptAddress: %x\r\n",
-		EP->ExceptionRecord->ExceptionCode,
-		EP->ExceptionRecord->ExceptionFlags,
-		EP->ExceptionRecord->ExceptionAddress
-		);
-	OutputDebugStringA(buf);
-	MessageBoxA(0,buf,"clist_mw Exception",0);
-
-
-	return EXCEPTION_EXECUTE_HANDLER;
-}
 //from bkg options
 
 //  Register of plugin's user
