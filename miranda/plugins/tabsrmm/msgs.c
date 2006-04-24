@@ -962,6 +962,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     CacheLogFonts();
 	//tQHTM_Init();
     Chat_ModulesLoaded(wParam, lParam);
+    ReloadContainerSkin();
 	return 0;
 }
 
@@ -1251,8 +1252,6 @@ tzdone:
     MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
     MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
 
-    IMG_InitDecoder();
-    ReloadContainerSkin();
     return 0;
 }
 

@@ -2069,7 +2069,7 @@ LABEL_SHOWWINDOW:
 							cr.cpMin = start;
 							cr.cpMax = end;
 							tr.chrg = cr;
-							tr.lpstrText = (LPWSTR)pszWord;
+							tr.lpstrText = (TCHAR *)pszWord;
 							iRes = SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_GETTEXTRANGE, 0, (LPARAM)&tr);
 							
 							if(iRes > 0)

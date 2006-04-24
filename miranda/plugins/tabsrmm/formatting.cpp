@@ -336,7 +336,6 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
     int i, tempmark = 0;
     TCHAR szTemp[512];
 
-	//_DebugPopup(hContact, "_________________ xst: %d (%d)", xStatus, wStatus);
     std::wstring title(szFormat);
 
     while(TRUE) {

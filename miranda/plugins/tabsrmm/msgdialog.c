@@ -2897,7 +2897,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rc);
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELNICK), &rcNick);
                 if(wParam == TIMERID_AWAYMSG + 2 && PtInRect(&rc, pt) && pt.x >= rc.right - 20) {
-                    TCHAR szBuffer[256];
                     DBVARIANT dbv = {0};
                     
                     if(!DBGetContactSettingTString(dat->hContact, dat->szProto, "MirVer", &dbv)) {
@@ -5323,7 +5322,7 @@ verify:
         {
             GetClientIcon(dat, hwndDlg);
             if(dat->hClientIcon) {
-                SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                //SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, TRUE);
             }
             return 0;

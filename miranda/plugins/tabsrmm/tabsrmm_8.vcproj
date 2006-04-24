@@ -250,7 +250,7 @@
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -274,7 +274,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="comctl32.lib"
+				AdditionalDependencies="comctl32.lib shlwapi.lib"
 				OutputFile="$(OutDir)\tabsrmm.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -783,6 +783,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="..\commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug Unicode|Win32"
 						>
 						<Tool
@@ -801,6 +809,14 @@
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="2"
 							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="..\commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -825,6 +841,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="..\commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug Unicode|Win32"
 						>
 						<Tool
@@ -843,6 +867,14 @@
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="2"
 							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="..\commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -867,6 +899,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="..\commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug Unicode|Win32"
 						>
 						<Tool
@@ -885,6 +925,14 @@
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="2"
 							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="..\commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -909,6 +957,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="..\commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug Unicode|Win32"
 						>
 						<Tool
@@ -927,6 +983,14 @@
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="2"
 							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="..\commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -951,6 +1015,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="..\commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug Unicode|Win32"
 						>
 						<Tool
@@ -969,6 +1041,14 @@
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="2"
 							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="..\commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1075,11 +1155,11 @@
 				>
 			</File>
 			<File
-				RelativePath="resource.h"
+				RelativePath=".\chat\resource.h"
 				>
 			</File>
 			<File
-				RelativePath=".\chat\resource.h"
+				RelativePath="resource.h"
 				>
 			</File>
 			<File
@@ -1208,11 +1288,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				RelativePath="..\..\src\res\dropuser.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur"
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -1236,11 +1316,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
@@ -1264,11 +1344,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\icon1.ico"
+				RelativePath="..\..\src\res\icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\icon1.ico"
+				RelativePath=".\res\icon1.ico"
 				>
 			</File>
 			<File
