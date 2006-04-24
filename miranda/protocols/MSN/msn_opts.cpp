@@ -569,7 +569,7 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 	return FALSE;
 }
 
-static HWND hwndAcc = 0, hwndConn = 0, hwndSrvList = 0, hwndExtras = 0; 
+static HWND hwndAcc = 0, hwndConn = 0, hwndSrvList = 0; 
 
 static void SetOptionsDlgToType(HWND hwnd, int iExpert)
 {
@@ -615,7 +615,6 @@ static void SetOptionsDlgToType(HWND hwnd, int iExpert)
 
 	ShowWindow(hwndConn, SW_HIDE);
 	ShowWindow(hwndSrvList, SW_HIDE);
-	ShowWindow(hwndExtras, SW_HIDE);
 	ShowWindow(hwndAcc, SW_SHOW);
 
 	if(iExpert) {
@@ -638,75 +637,66 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 {
    static int iInit = TRUE;
    
-   switch(msg)
-   {
-      case WM_INITDIALOG:
-      {
-		 iInit = TRUE;
-		 int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
-		 SetOptionsDlgToType(hwnd, iExpert);
-         iInit = FALSE;
-         return FALSE;
-      }
-	  case WM_DESTROY:
-		  hwndAcc = hwndConn = hwndSrvList = hwndExtras = 0;
-		  break;
-      case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
-         if(!iInit)
-             SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
-         break;
-      case WM_NOTIFY:
-         switch(((LPNMHDR)lParam)->idFrom) {
-            case 0:
-               switch (((LPNMHDR)lParam)->code)
-               {
-                  case PSN_APPLY:
-                     {
-                        TCITEM tci;
-                        int i,count;
-                        tci.mask = TCIF_PARAM;
-                        count = TabCtrl_GetItemCount(GetDlgItem(hwnd,IDC_OPTIONSTAB));
-                        for (i=0;i<count;i++)
-                        {
-                           TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),i,&tci);
-                           SendMessage((HWND)tci.lParam,WM_NOTIFY,0,lParam);
-                        }
-                     }
-                  break;
-				  case PSN_EXPERTCHANGED:
-					  {
-						  int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
-						  SetOptionsDlgToType(hwnd, iExpert);
-						  break;
-					  }
-               }
-            break;
-            case IDC_OPTIONSTAB:
-               switch (((LPNMHDR)lParam)->code)
-               {
-                  case TCN_SELCHANGING:
-                     {
-                        TCITEM tci;
-                        tci.mask = TCIF_PARAM;
-                        TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
-                        ShowWindow((HWND)tci.lParam,SW_HIDE);                     
-                     }
-                  break;
-                  case TCN_SELCHANGE:
-                     {
-                        TCITEM tci;
-                        tci.mask = TCIF_PARAM;
-                        TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
-                        ShowWindow((HWND)tci.lParam,SW_SHOW);                     
-                     }
-                  break;
-               }
-            break;
-
-         }
-      break;
-   }
-   return FALSE;
+	switch(msg) {
+	case WM_INITDIALOG:
+		{
+			iInit = TRUE;
+			int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
+			SetOptionsDlgToType(hwnd, iExpert);
+			iInit = FALSE;
+			return FALSE;
+	}
+	case WM_DESTROY:
+		hwndAcc = hwndConn = hwndSrvList = 0;
+		break;
+	case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
+		if(!iInit)
+			SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
+		break;
+	case WM_NOTIFY:
+		switch(((LPNMHDR)lParam)->idFrom) {
+		case 0:
+			switch (((LPNMHDR)lParam)->code) {
+			case PSN_APPLY:
+				{
+					TCITEM tci;
+					int i,count = TabCtrl_GetItemCount(GetDlgItem(hwnd,IDC_OPTIONSTAB));
+					tci.mask = TCIF_PARAM;
+					for (i=0;i<count;i++) {
+					  TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),i,&tci);
+					  SendMessage((HWND)tci.lParam,WM_NOTIFY,0,lParam);
+				}	}
+				break;
+			case PSN_EXPERTCHANGED:
+				{
+					int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
+					SetOptionsDlgToType(hwnd, iExpert);
+					break;
+			}	}
+			break;
+		case IDC_OPTIONSTAB:
+			switch (((LPNMHDR)lParam)->code) {
+			case TCN_SELCHANGING:
+				{
+					TCITEM tci;
+					tci.mask = TCIF_PARAM;
+					TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+					ShowWindow((HWND)tci.lParam,SW_HIDE);                     
+				  break;
+				}
+			case TCN_SELCHANGE:
+				{
+					TCITEM tci;
+					tci.mask = TCIF_PARAM;
+					TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+					ShowWindow((HWND)tci.lParam,SW_SHOW);                     
+					break;
+			}	}
+			break;
+		}
+		break;
+	}
+	return FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -738,7 +728,6 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 		odp.pfnDlgProc		= DlgProcHotmailPopUpOpts;
 		MSN_CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	}
-
 	return 0;
 }
 

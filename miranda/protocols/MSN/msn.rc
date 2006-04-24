@@ -80,12 +80,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // Dialog
 //
 
-IDD_OPT_MSN DIALOGEX 0, 0, 315, 207
+IDD_OPT_MSN DIALOGEX 0, 0, 304, 207
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "MSN",IDC_STMSNGROUP,5,4,299,79,WS_GROUP
+    GROUPBOX        "MSN",IDC_STMSNGROUP,4,0,298,84,WS_GROUP
     RTEXT           "Full e-mail:",IDC_STATIC,16,20,52,8
     EDITTEXT        IDC_HANDLE,72,18,100,12,ES_AUTOHSCROLL
     RTEXT           "Password:",IDC_STATIC,16,36,52,8
@@ -94,50 +94,67 @@ BEGIN
     EDITTEXT        IDC_HANDLE2,72,50,100,12,ES_AUTOHSCROLL
     CONTROL         "Create a new MSN messenger account using the MSN website",IDC_NEWMSNACCOUNTLINK,
                     "Hyperlink",WS_TABSTOP,21,68,208,8
-    GROUPBOX        "Expert",IDC_STATIC,5,83,299,119,WS_GROUP
-    CONTROL         "Disable main menu",IDC_DISABLE_MAIN_MENU,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,96,289,10
+    GROUPBOX        "Expert",IDC_STATIC,4,84,298,119,WS_GROUP
+    CONTROL         "Disable main menu",IDC_DISABLE_MAIN_MENU,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,96,288,10
     CONTROL         "Send message font color/size info inside messages",IDC_SENDFONTINFO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,107,290,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,107,288,10
     CONTROL         "Disable all contacts not included into my contact list",IDC_DISABLE_ANOTHER_CONTACTS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,118,292,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,118,288,10
     CONTROL         "Never update your nickname from server",IDC_USE_OWN_NICKNAME,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,129,292,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,129,288,10
     CONTROL         "Treat Away status as 'Be Right Back'",IDC_AWAY_AS_BRB,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,140,292,10
-    CONTROL         "Manage server groups",IDC_MANAGEGROUPS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,151,291,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,140,288,10
+    CONTROL         "Manage server groups",IDC_MANAGEGROUPS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,151,288,10
     CONTROL         "Run the following application when new Hotmail is arrived",IDC_RUN_APP_ON_HOTMAIL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,173,292,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,173,288,10
     EDITTEXT        IDC_MAILER_APP,23,184,161,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_ENTER_MAILER_APP,189,184,15,12
-    CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,162,292,10
+    CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,162,288,10
 END
 
-IDD_OPT_MSN_CONN DIALOGEX 0, 0, 296, 175
+IDD_OPT_MSN_CONN DIALOGEX 0, 0, 304, 175
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Connection settings",IDC_STATIC,8,4,280,117
-    LTEXT           "Login server:",IDC_STATIC,20,18,44,8
-    EDITTEXT        IDC_LOGINSERVER,72,16,168,12,ES_AUTOHSCROLL
-    LTEXT           "Port:",IDC_STATIC,20,32,48,8
-    EDITTEXT        IDC_MSNPORT,72,30,44,12,ES_AUTOHSCROLL | ES_NUMBER
+    GROUPBOX        "Connection settings",IDC_STATIC,4,0,298,120
+    LTEXT           "Login server:",IDC_STATIC,16,18,44,8
+    EDITTEXT        IDC_LOGINSERVER,68,16,168,12,ES_AUTOHSCROLL
+    LTEXT           "Port:",IDC_STATIC,16,32,48,8
+    EDITTEXT        IDC_MSNPORT,68,30,44,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Use HTTP gateway mode (incompatible with MSN Gateway plugin)",IDC_USEGATEWAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,46,264,8
-    CONTROL         "Use IE proxy settings",IDC_USEIEPROXY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,58,264,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,46,264,8
+    CONTROL         "Use IE proxy settings",IDC_USEIEPROXY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,58,264,8
     CONTROL         "Keep connection alive (send a ping packet every minute)",IDC_KEEPALIVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,70,264,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,70,264,8
     CONTROL         "Notify me when a message delivery has failed",IDC_SLOWSEND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,82,263,8
-    CONTROL         "Use MSN Messenger 7 protocol",IDC_USEMSNP11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,94,262,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,82,263,8
+    CONTROL         "Use MSN Messenger 7 protocol",IDC_USEMSNP11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,94,262,8
     CONTROL         "Use OpenSSL encryption (requires LIBSSL32.DLL)",IDC_USEOPENSSL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,106,263,8
-    GROUPBOX        "Incoming file transfers",IDC_STATIC,7,124,280,45
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,106,263,8
+    GROUPBOX        "Incoming file transfers",IDC_STATIC,4,124,298,48
     CONTROL         "Automatically obtain host/port for incoming file transfers",IDC_AUTOGETHOST,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,137,264,10
-    LTEXT           "Your host (or router):",IDC_STATIC,16,153,72,8
-    EDITTEXT        IDC_YOURHOST,95,151,184,12,ES_AUTOHSCROLL
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,136,264,10
+    LTEXT           "Your host (or router):",IDC_STATIC,12,152,72,8
+    EDITTEXT        IDC_YOURHOST,90,151,184,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Reset",IDC_RESETSERVER,244,16,34,12
+END
+
+IDD_LISTSMGR DIALOGEX 0, 0, 304, 228
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Server List Manager",IDC_STATIC,4,0,298,224
+    CONTROL         "",IDC_LIST,"CListControl",WS_TABSTOP | 0x190,9,12,287,180,WS_EX_CLIENTEDGE
+    ICON            IDI_LIST_FL,IDC_ICON_FL,10,196,21,20,SS_REALSIZEIMAGE
+    LTEXT           "Contact is included into your server list",IDC_STATIC,28,196,144,8
+    ICON            IDI_LIST_AL,IDC_ICON_AL,187,196,21,20,SS_REALSIZEIMAGE
+    LTEXT           "Somebody included you in his/her server list",IDC_STATIC,28,208,144,8
+    ICON            IDI_LIST_BL,IDC_ICON_BL,187,208,21,20,SS_REALSIZEIMAGE
+    LTEXT           "Allowed (active) contact",IDC_STATIC,204,196,82,8
+    ICON            IDI_LIST_RL,IDC_ICON_RL,10,208,21,20,SS_REALSIZEIMAGE
+    LTEXT           "Blocked contact",IDC_STATIC,204,208,82,8
 END
 
 IDD_HOTMAIL_OPT_POPUP DIALOGEX 0, 0, 238, 220
@@ -214,38 +231,6 @@ BEGIN
     PUSHBUTTON      "Download",IDC_BTN_DOWNLOAD,113,80,60,16
     PUSHBUTTON      "Cancel",IDC_BTN_CANCEL,181,80,56,16
 END
-
-IDD_LISTSMGR DIALOGEX 0, 0, 313, 247
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "",IDC_LIST,"CListControl",WS_TABSTOP | 0x190,9,12,287,184,WS_EX_CLIENTEDGE
-    GROUPBOX        "Server List Manager",IDC_STATIC,4,2,298,238
-    ICON            IDI_LIST_FL,IDC_ICON_FL,10,201,21,20,SS_REALSIZEIMAGE
-    LTEXT           "Contact is included into your server list",IDC_STATIC,28,202,144,8
-    ICON            IDI_LIST_AL,IDC_ICON_AL,187,201,21,20,SS_REALSIZEIMAGE
-    LTEXT           "Somebody included you in his/her server list",IDC_STATIC,28,214,144,8
-    ICON            IDI_LIST_BL,IDC_ICON_BL,187,213,21,20,SS_REALSIZEIMAGE
-    LTEXT           "Allowed (active) contact",IDC_STATIC,204,202,82,8
-    ICON            IDI_LIST_RL,IDC_ICON_RL,10,213,21,20,SS_REALSIZEIMAGE
-    LTEXT           "Blocked contact",IDC_STATIC,204,214,82,8
-END
-
-IDD_OPT_MSN_EXTRAS DIALOGEX 0, 0, 314, 207
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "MSN Extras",IDC_STMSNEXTRAGROUP,5,4,300,191,WS_GROUP
-    CONTROL         "Enable nudge",IDC_ENABLE_NUDGE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,15,292,10
-    CONTROL         "Treat nudge as message",IDC_NUDGE_MESSAGE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,26,277,10
-    CONTROL         "Show popup",IDC_NUDGE_POPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,35,277,10
-    CONTROL         "Shake the clist window",IDC_NUDGE_CLIST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,63,277,10
-    CONTROL         "Shake the chat window",IDC_NUDGE_CHAT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,54,277,10
-    CONTROL         "Play a sound",IDC_NUDGE_SOUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,44,277,10
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
