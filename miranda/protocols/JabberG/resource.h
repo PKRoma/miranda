@@ -25,6 +25,7 @@
 #define IDD_VCARD_PHOTO                 132
 #define IDD_VCARD_NOTE                  133
 #define IDD_CHANGEPASSWORD              136
+#define IDD_OPT_JABBERMAIN              139
 #define IDD_OPT_JABBER2                 140
 #define IDI_REQUEST                     141
 #define IDD_GROUPCHAT                   141
@@ -132,6 +133,7 @@
 #define IDC_DELETE                      1092
 #define IDC_LOAD                        1093
 #define IDC_CANVAS                      1094
+#define IDC_OPTIONSTAB                  1095
 #define IDC_GENDER                      1096
 #define IDC_JUD                         1097
 #define IDC_JUD_LABEL                   1098

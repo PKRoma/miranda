@@ -52,12 +52,21 @@ END
 // Dialog
 //
 
-IDD_OPT_JABBER DIALOGEX 0, 0, 258, 214
+IDD_OPT_JABBERMAIN DIALOGEX 0, 0, 312, 247
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",0x0,1,1,310,245,
+                    WS_EX_ACCEPTFILES
+END
+
+IDD_OPT_JABBER DIALOGEX 0, 0, 304, 227
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Jabber",IDC_SIMPLE,7,7,244,99
+    GROUPBOX        "Jabber",IDC_SIMPLE,8,4,290,99
     LTEXT           "Username:",IDC_STATIC,19,21,45,8
     EDITTEXT        IDC_EDIT_USERNAME,70,19,86,12,ES_AUTOHSCROLL
     LTEXT           "Password:",IDC_STATIC,19,35,45,8
@@ -77,13 +86,13 @@ BEGIN
     LTEXT           "Port:",IDC_STATIC,19,89,45,8
     EDITTEXT        IDC_PORT,70,87,26,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Use SSL",IDC_USE_SSL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,104,88,54,10
+                    WS_TABSTOP,104,88,82,10
     CONTROL         "Use TLS",IDC_USE_TLS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,165,88,80,10
+                    WS_TABSTOP,193,88,97,10
     PUSHBUTTON      "Register new user",IDC_BUTTON_REGISTER,165,19,78,13
     CONTROL         "List of public servers",IDC_LINK_PUBLIC_SERVER,
                     "Hyperlink",WS_TABSTOP,165,74,79,11
-    GROUPBOX        "Expert",IDC_STATIC,7,108,244,99
+    GROUPBOX        "Expert",IDC_STATIC,8,108,290,112
     CONTROL         "Manually specify connection host",IDC_MANUAL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,19,121,223,10
     LTEXT           "Host:",IDC_STATIC,31,134,26,8
@@ -101,6 +110,47 @@ BEGIN
     LTEXT           "Messaging language:",IDC_MSGLANG_LABEL,19,189,70,8
     COMBOBOX        IDC_MSGLANG,92,187,103,69,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_OPT_JABBER2 DIALOGEX 0, 0, 304, 182
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "File Transfer",IDC_STATIC,8,4,290,69
+    CONTROL         "Allow file sending through direct peer-to-peer connection",
+                    IDC_DIRECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,18,
+                    202,10
+    CONTROL         "Specify proxy server",IDC_PROXY_MANUAL,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,16,54,102,10
+    CONTROL         "Allow file sending through bytestream proxy server",
+                    IDC_PROXY,"Button",BS_AUTOCHECKBOX | WS_DISABLED | 
+                    WS_TABSTOP,16,42,202,10
+    EDITTEXT        IDC_PROXY_ADDR,124,53,81,12,ES_AUTOHSCROLL | WS_DISABLED | 
+                    WS_GROUP
+    CONTROL         "Specify external address",IDC_DIRECT_MANUAL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,30,101,10
+    EDITTEXT        IDC_DIRECT_ADDR,124,29,81,12,ES_AUTOHSCROLL
+    GROUPBOX        "Miscellaneous",IDC_STATIC,8,78,290,100
+    CONTROL         "Automatically add contact when accept authorization",
+                    IDC_AUTO_ADD,"Button",BS_AUTOCHECKBOX | BS_TOP | 
+                    WS_TABSTOP,16,90,203,12
+    CONTROL         "Automatically join conferences on login",IDC_AUTOJOIN,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,16,
+                    102,202,10
+    CONTROL         "Autoaccept multiuser chat invitations",
+                    IDC_AUTO_ACCEPT_MUC,"Button",BS_AUTOCHECKBOX | 
+                    WS_DISABLED | WS_TABSTOP,16,114,202,9
+    CONTROL         "Send messages slower, but with full acknowledgement",
+                    IDC_MSG_ACK,"Button",BS_AUTOCHECKBOX | BS_TOP | 
+                    WS_TABSTOP,16,126,203,12
+    CONTROL         "Disable main menu",IDC_DISABLE_MAINMENU,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,138,202,9
+    CONTROL         "Show transport agents on contact list",
+                    IDC_SHOW_TRANSPORT,"Button",BS_AUTOCHECKBOX | BS_TOP | 
+                    WS_TABSTOP,16,150,202,11
+    CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,162,201,10
 END
 
 IDD_INFO_JABBER DIALOGEX 0, 0, 221, 132
@@ -220,8 +270,8 @@ BEGIN
     LTEXT           "",IDC_NAME,33,5,200,8,0,WS_EX_TRANSPARENT
     CONTROL         "Tab1",IDC_TABS,"SysTabControl32",TCS_HOTTRACK | 
                     TCS_MULTILINE | WS_TABSTOP,5,29,228,158
-    LTEXT           "View and update Jabber personal vCard",IDC_DESCRIPTION,44,13,
-                    189,8,0,WS_EX_TRANSPARENT
+    LTEXT           "View and update Jabber personal vCard",IDC_DESCRIPTION,
+                    44,13,189,8,0,WS_EX_TRANSPARENT
     CTEXT           "Updating",IDC_UPDATING,65,194,49,8,SS_NOPREFIX | 
                     SS_CENTERIMAGE | NOT WS_VISIBLE
     PUSHBUTTON      "Update Now",IDC_UPDATE,5,190,55,14,WS_DISABLED
@@ -336,7 +386,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,96,68,50,14
 END
 
-IDD_VCARD_ADDPHONE DIALOGEX  0, 0, 186, 110
+IDD_VCARD_ADDPHONE DIALOGEX 0, 0, 186, 110
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "Jabber vCard: Add Phone Number"
@@ -406,47 +456,6 @@ BEGIN
     EDITTEXT        IDC_NEWPASSWD2,95,35,79,12,ES_PASSWORD | ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,38,58,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,92,58,50,14
-END
-
-IDD_OPT_JABBER2 DIALOGEX 0, 0, 222, 173
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "File Transfer",IDC_STATIC,2,3,216,71
-    CONTROL         "Allow file sending through bytestream proxy server",
-                    IDC_PROXY,"Button",BS_AUTOCHECKBOX | WS_DISABLED | 
-                    WS_TABSTOP,9,42,202,10
-    EDITTEXT        IDC_PROXY_ADDR,117,53,81,12,ES_AUTOHSCROLL | WS_DISABLED | 
-                    WS_GROUP
-    CONTROL         "Specify external address",IDC_DIRECT_MANUAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,9,30,101,10
-    EDITTEXT        IDC_DIRECT_ADDR,117,29,81,12,ES_AUTOHSCROLL
-    GROUPBOX        "Miscellaneous",IDC_STATIC,2,75,216,93
-    CONTROL         "Show transport agents on contact list",
-                    IDC_SHOW_TRANSPORT,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,9,142,202,11
-    CONTROL         "Automatically add contact when accept authorization",
-                    IDC_AUTO_ADD,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,9,86,203,12
-    CONTROL         "Send messages slower, but with full acknowledgement",
-                    IDC_MSG_ACK,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,9,120,203,12
-    CONTROL         "Allow file sending through direct peer-to-peer connection",
-                    IDC_DIRECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,18,
-                    202,10
-    CONTROL         "Specify proxy server",IDC_PROXY_MANUAL,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,9,54,102,10
-    CONTROL         "Disable main menu",IDC_DISABLE_MAINMENU,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,9,131,202,9
-    CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,9,153,201,10
-    CONTROL         "Automatically join conferences on login",IDC_AUTOJOIN,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,9,97,
-                    202,10
-    CONTROL         "Autoaccept multiuser chat invitations",
-                    IDC_AUTO_ACCEPT_MUC,"Button",BS_AUTOCHECKBOX | 
-                    WS_DISABLED | WS_TABSTOP,9,109,202,9
 END
 
 IDD_GROUPCHAT DIALOGEX 0, 0, 306, 208
@@ -540,7 +549,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,129,53,50,14
 END
 
-IDD_GROUPCHAT_INVITE_ACCEPT DIALOGEX  0, 0, 232, 112
+IDD_GROUPCHAT_INVITE_ACCEPT DIALOGEX 0, 0, 232, 112
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | 
     DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Multi-User Conference Invitation"
@@ -586,10 +595,9 @@ BEGIN
     IDD_OPT_JABBER, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 251
-        VERTGUIDE, 19
+        RIGHTMARGIN, 297
         TOPMARGIN, 7
-        BOTTOMMARGIN, 207
+        BOTTOMMARGIN, 220
     END
 
     IDD_INFO_JABBER, DIALOG
@@ -714,11 +722,11 @@ BEGIN
 
     IDD_OPT_JABBER2, DIALOG
     BEGIN
-        LEFTMARGIN, 2
-        RIGHTMARGIN, 218
+        LEFTMARGIN, 1
+        RIGHTMARGIN, 296
         VERTGUIDE, 9
         TOPMARGIN, 3
-        BOTTOMMARGIN, 168
+        BOTTOMMARGIN, 174
     END
 
     IDD_GROUPCHAT, DIALOG
