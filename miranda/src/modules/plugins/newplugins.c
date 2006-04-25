@@ -74,6 +74,7 @@ static DWORD mirandaVersion;
 static pluginEntryList pluginListHead;
 static pluginEntry * pluginListDb;
 static pluginEntry * pluginListUI;
+static pluginEntry * pluginList_png2dib = NULL;
 static HANDLE hPluginListHeap = NULL;
 static pluginEntry * pluginDefModList[DEFMOD_HIGHEST+1]; // do not free this memory
 static int askAboutIgnoredPlugins;
@@ -285,7 +286,8 @@ static int PluginsEnum(WPARAM wParam, LPARAM lParam)
 			} // while			
 			x->pclass |= PCLASS_LOADED | PCLASS_OK | PCLASS_LAST;
 			return 0;
-		} else if ( rc == DBPE_HALT ) return 1;
+		} 
+		else if ( rc == DBPE_HALT ) return 1;
 		x = x->nextclass;
 	} // while
 	return pluginListDb != NULL ? 1 : -1;
@@ -359,16 +361,21 @@ static BOOL scanPluginsDir (WIN32_FIND_DATAA * fd, char * path, WPARAM wParam, L
 			// keep a faster list.
 			if ( pluginListDb != NULL ) p->nextclass=pluginListDb;			
 			pluginListDb=p;
-		}  else {							
+		}  
+		else {							
 			// didn't have basic APIs or DB exports - failed.
 			p->pclass |= PCLASS_FAILED;
 		}
-	} else if ( validguess_clist_name(fd->cFileName) ) {
+	}
+	else if ( validguess_clist_name(fd->cFileName) ) {
 		// keep a note of this plugin for later
 		if ( pluginListUI != NULL ) p->nextclass=pluginListUI;
 		pluginListUI=p;
 		p->pclass |= PCLASS_CLIST;
-	}
+	} 
+	else if ( lstrcmpiA(fd->cFileName, "png2dib.dll") == 0)
+		pluginList_png2dib = p;
+
 	// add it to the list
 	LL_Insert(&pluginListHead, p);
 	return TRUE;
@@ -430,8 +437,8 @@ static int isPluginOnWhiteList(char * pluginname)
 		if ( MessageBoxA(NULL,buf,Translate("Re-enable Miranda plugin?"),MB_YESNO|MB_ICONQUESTION) == IDYES ) {
 			SetPluginOnWhiteList(pluginname, 1);
 			return 1;
-		}
-	}
+	}	}
+
 	return rc == 0;
 }
 
@@ -464,7 +471,8 @@ static pluginEntry * getCListModule(char * exe, char * slice, int useWhiteList)
 					p->bpi=bpi;
 					p->pclass |= PCLASS_LOADED;
 					return p;
-				} else { 
+				} 
+				else { 
 					Plugin_Uninit(p); 
 					LL_Remove(&pluginListHead, p);
 				}
@@ -486,9 +494,25 @@ int LoadNewPluginsModule(void)
 	// make full path to the plugin
 	GetModuleFileNameA(NULL, exe, SIZEOF(exe));
 	slice=strrchr(exe, '\\');
-	if ( slice != NULL ) *slice=0;
+	if ( slice != NULL ) 
+		*slice=0;
+
 	// remember some useful options
 	askAboutIgnoredPlugins=(UINT) GetPrivateProfileIntA( "PluginLoader", "AskAboutIgnoredPlugins", 0, mirandabootini);
+
+	// if png2dib is present, load it to provide the basic core functions
+	if ( pluginList_png2dib != NULL ) {
+		BASIC_PLUGIN_INFO bpi;
+		mir_snprintf(slice,&exe[SIZEOF(exe)] - slice, "\\Plugins\\%s", pluginList_png2dib->pluginname);			
+		if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_NONE, NULL) ) {
+			pluginList_png2dib->bpi = bpi;
+			pluginList_png2dib->pclass |= PCLASS_OK | PCLASS_BASICAPI;
+			if ( bpi.Load(&pluginCoreLink) == 0 ) pluginList_png2dib->pclass |= PCLASS_LOADED;
+			else { 
+				LL_Remove(&pluginListHead, pluginList_png2dib);
+				Plugin_Uninit(pluginList_png2dib);
+	}	}	}
+
 	// first load the clist cos alot of plugins need that to be present at Load()
 	for ( useWhiteList = 1; useWhiteList >= 0 && clist == NULL; useWhiteList-- ) 
 		clist=getCListModule(exe, slice, useWhiteList);
@@ -502,8 +526,8 @@ int LoadNewPluginsModule(void)
 		p = p->nextclass;
 	}
 	/* now loop thru and load all the other plugins, do this in one pass */
-	p=pluginListHead.first;
-	while ( p != NULL ) {
+	
+	for ( p=pluginListHead.first; p != NULL; p=q ) {
 		q = p->next;
 		CharLowerA(p->pluginname);
 		if ( !(p->pclass&PCLASS_LOADED) && !(p->pclass&PCLASS_DB) 
@@ -527,10 +551,10 @@ int LoadNewPluginsModule(void)
 					LL_Remove(&pluginListHead, p);
 					Plugin_Uninit(p);
 				}
-			} else p->pclass |= PCLASS_FAILED;
-		}
-		p=q;
-	} // while
+			} 
+			else p->pclass |= PCLASS_FAILED;
+	}	}
+
 	// hook shutdown after everything
 	HookEvent(ME_SYSTEM_SHUTDOWN, UnloadNewPlugins);
 	HookEvent(ME_OPT_INITIALISE, PluginOptionsInit);
@@ -714,8 +738,7 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					iState=ListView_GetItemState(hwndList, iRow, LVIS_STATEIMAGEMASK);
 					SetPluginOnWhiteList(buf, iState&0x2000 ? 1 : 0);
 					iRow=ListView_GetNextItem(hwndList, iRow, LVNI_ALL);					
-				}
-			}
+			}	}
 			break;
 		}
 		case WM_COMMAND:
