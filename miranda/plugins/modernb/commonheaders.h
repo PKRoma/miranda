@@ -128,7 +128,7 @@ extern HINSTANCE g_hInst;
   * easy search and replace
 
 */
-typedef  struct _menuProto 
+typedef  struct _menuProto
 {
   char *szProto;
   HANDLE menuID;
@@ -141,7 +141,6 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #define alloc(n) mir_alloc(n)
 
 #define MAX_REGS(_A_) (sizeof(_A_)/sizeof(_A_[0]))
-
 
 #define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
 #define mir_free(ptr) { mir_free_proxy(ptr); ptr=NULL; }
@@ -234,7 +233,7 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 
 #ifdef _DEBUG
 #define DeleteObject(a) DebugDeleteObject(a)
-#endif 
+#endif
 
 #define lockdat
 //EnterCriticalSection(&(dat->lockitemCS))
