@@ -255,7 +255,8 @@ int BuildTree(HWND hwndDlg,int MenuObjectId)
 
 			if ( !DBGetContactSettingTString(NULL, MenuNameItems, buf, &dbv)) {
 				PD->name = mir_tstrdup(dbv.ptszVal);            
-				mir_free(dbv.pszVal);
+				//mir_free(dbv.pszVal);
+				DBFreeVariant(&dbv);
 			}
 			else PD->name = mir_tstrdup(pimo->MenuItems[i].mi.ptszName);
 		}

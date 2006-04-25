@@ -415,7 +415,7 @@ void ClcOptionsChanged(void);
 
 //clcidents.c
 int GetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);
-int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible, BOOL isSkipSubcontacts );
+int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible, BOOL isIgnoreSubcontacts );
 int cliGetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,struct ClcGroup **subgroup);
 HANDLE ContactToHItem(struct ClcContact *contact);
 HANDLE ContactToItemHandle(struct ClcContact *contact,DWORD *nmFlags);
@@ -450,7 +450,7 @@ void cliScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth);
 
 
 int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt);
-void LoadClcOptions(HWND hwnd,struct ClcData *dat);
+void LoadCLCOptions(HWND hwnd,struct ClcData *dat);
 
 //clcpaint.c
 void cliPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint);

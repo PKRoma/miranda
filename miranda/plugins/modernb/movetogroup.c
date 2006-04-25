@@ -71,7 +71,7 @@ while (TRUE)
 	grpname=DBGetStringA(0,"CListGroups",intname);
 
 	if (grpname==NULL ){break;};
-	if (MyStrLen(grpname)==0)
+	if (mir_strlen(grpname)==0)
 	{
         
 		break;

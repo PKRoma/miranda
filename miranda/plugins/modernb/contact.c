@@ -64,7 +64,7 @@ void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)hContact);
 	if (iIcon)
 		if (cacheEntry)
-			if (!MyStrCmp(cacheEntry->szProto,"MetaContacts"))
+			if (!mir_strcmp(cacheEntry->szProto,"MetaContacts"))
 				if (!DBGetContactSettingByte(NULL,"CLC","Meta",0))
 				{
 					int iMetaStatusIcon;
@@ -145,7 +145,7 @@ int GetProtoIndex(char * szName)
         name=DBGetStringA(NULL,"Protocols",buf);
         if (name)
         {
-            if (!MyStrCmp(name,szName))
+            if (!mir_strcmp(name,szName))
             {
                 mir_free(name);
                 return i;
@@ -193,7 +193,7 @@ int CompareContacts2(const struct ClcContact *contact1,const struct ClcContact *
 	}
 
 	if (by==0) { //name
-		return MyStrCmpiT(namea,nameb);
+		return mir_tstrcmpi(namea,nameb);
 	} else if (by==2) { //last message
 		DWORD ta=CompareContacts2_getLMTime(a);
 		DWORD tb=CompareContacts2_getLMTime(b);

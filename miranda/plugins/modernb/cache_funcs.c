@@ -1158,18 +1158,18 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 							HBITMAP obmp=SelectObject(dcMem, hBmp);						
 							StretchBlt(hdc, 0, 0, width_clip, height_clip,dcMem, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
 							SelectObject(dcMem,obmp);
-							ModernDeleteDC(dcMem);
+							mod_DeleteDC(dcMem);
 						}
             {
               RECT rtr={0};
               rtr.right=width_clip+1;
               rtr.bottom=height_clip+1;
-              FillRect255Alpha(hdc,&rtr);
+              SetRectAlpha_255(hdc,&rtr);
             }
 
             hDrawBmp = GetCurrentObject(hdc, OBJ_BITMAP);
 			      SelectObject(hdc,oldBmp);
-            ModernDeleteDC(hdc);
+            mod_DeleteDC(hdc);
 
 						// Add to list
 						if (old_pos >= 0)

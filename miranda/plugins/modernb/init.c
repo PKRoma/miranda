@@ -332,7 +332,7 @@ DWORD hooksRecAlloced=0;
 #undef HookEvent
 #undef UnhookEvent
 
-HANDLE MyHookEvent(char *EventID,MIRANDAHOOK HookProc)
+HANDLE mod_HookEvent(char *EventID,MIRANDAHOOK HookProc)
 {
 	HookRec * hr=NULL;
 	DWORD i;
@@ -362,7 +362,7 @@ HANDLE MyHookEvent(char *EventID,MIRANDAHOOK HookProc)
 	return hr->hHook;
 }
 
-int MyUnhookEvent(HANDLE hHook)
+int mod_UnhookEvent(HANDLE hHook)
 {
 	DWORD i;
 	//1. Find free
@@ -404,5 +404,5 @@ int UnhookAll()
 	return 1;
 }
 
-#define HookEvent(a,b)  MyHookEvent(a,b)
-#define UnhookEvent(a)  MyUnhookEvent(a)
+#define HookEvent(a,b)  mod_HookEvent(a,b)
+#define UnhookEvent(a)  mod_UnhookEvent(a)

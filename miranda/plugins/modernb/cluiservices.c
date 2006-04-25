@@ -51,7 +51,7 @@ static int MetaSupportCheck(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-int LoadCluiServices(void)
+int LoadCLUIServices(void)
 {
 	CreateServiceFunction(MS_CLUI_METASUPPORT,MetaSupportCheck);
 	CreateServiceFunction(MS_CLUI_PROTOCOLSTATUSCHANGED,CluiProtocolStatusChanged);

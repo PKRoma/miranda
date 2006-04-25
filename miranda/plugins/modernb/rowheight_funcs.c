@@ -63,7 +63,7 @@ SIZE GetAvatarSize(int imageWidth, int imageHeight, int maxWidth, int maxHeight)
   return sz;
 }
 
-int ModernCalcRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item)
+int mod_CalcRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item)
 {
   BYTE i=0;
   int res=0;
@@ -130,18 +130,18 @@ int ModernCalcRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *conta
                 RECT count_rc={0};
                 // calc width and height
                 ChangeToFont(hdc,dat,contact->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
-                DrawTextS(hdc,_T(" "),1,&count_rc,DT_CALCRECT | DT_NOPREFIX);
+                mod_DrawText(hdc,_T(" "),1,&count_rc,DT_CALCRECT | DT_NOPREFIX);
                 size.cx +=count_rc.right-count_rc.left;
                 count_rc.right=0;
                 count_rc.left=0;
-                DrawTextSA(hdc,szCounts,lstrlenA(szCounts),&count_rc,DT_CALCRECT);
+                mod_DrawTextA(hdc,szCounts,lstrlenA(szCounts),&count_rc,DT_CALCRECT);
                 size.cx +=count_rc.right-count_rc.left;
                 tmp = max(tmp,count_rc.bottom-count_rc.top);
               }
             }
             gl_RowTabAccess[i]->w=size.cx;
 			SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
-			ModernDeleteDC(hdc);
+			mod_DeleteDC(hdc);
           }
           gl_RowTabAccess[i]->h=tmp;
 
@@ -168,7 +168,7 @@ int ModernCalcRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *conta
               GetTextSize(&size,hdc,dummyRect,pdnce->szSecondLineText,pdnce->plSecondLineText,0, dat->text_resize_smileys ? 0 : pdnce->iSecondLineMaxSmileyHeight);
               gl_RowTabAccess[i]->w=size.cx;
               SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
-			  ModernDeleteDC(hdc);
+			  mod_DeleteDC(hdc);
             }
           }
           gl_RowTabAccess[i]->h=tmp;
@@ -195,7 +195,7 @@ int ModernCalcRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *conta
               GetTextSize(&size,hdc,dummyRect,pdnce->szThirdLineText,pdnce->plThirdLineText,0, dat->text_resize_smileys ? 0 : pdnce->iThirdLineMaxSmileyHeight);
               gl_RowTabAccess[i]->w=size.cx;
               SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
-			  ModernDeleteDC(hdc);
+			  mod_DeleteDC(hdc);
             }
           }
           gl_RowTabAccess[i]->h=tmp;			    
@@ -325,9 +325,9 @@ int ModernCalcRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *conta
                 ChangeToFont(hdc,dat,FONTID_CONTACT_TIME,NULL);
 
                 // Get text size
-                text_size.cy = DrawTextS(hdc, szResult, lstrlen(szResult), &rc, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
+                text_size.cy = mod_DrawText(hdc, szResult, lstrlen(szResult), &rc, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
                 SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
-				ModernDeleteDC(hdc);
+				mod_DeleteDC(hdc);
                 text_size.cx = rc.right - rc.left;
                 gl_RowTabAccess[i]->w=text_size.cx;
 
@@ -564,7 +564,7 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 
     // Calc row height
     if (!gl_RowRoot) RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num);
-    else ModernCalcRowHeight(dat, hwnd, Drawing, line_num);
+    else mod_CalcRowHeight(dat, hwnd, Drawing, line_num);
 
     //increment by subcontacts
     if (group->cl.items[group->scanIndex]->subcontacts!=NULL && group->cl.items[group->scanIndex]->type!=CLCIT_GROUP)
@@ -605,7 +605,7 @@ int RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *c
   int height = 0;
 
   if (gl_RowRoot)
-    return ModernCalcRowHeight(dat, hwnd, contact, item);
+    return mod_CalcRowHeight(dat, hwnd, contact, item);
   else
   {
 	displayNameCacheEntry *pdnce=(displayNameCacheEntry *)pcli->pfnGetCacheEntry(contact->hContact);

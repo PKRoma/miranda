@@ -36,7 +36,7 @@ static GLYPHIMAGE * glLoadedImages=NULL;
 static DWORD glLoadedImagesCount=0;
 static DWORD glLoadedImagesAlocated=0;
 
-HBITMAP intLoadGlyphImage(char * szFileName);
+HBITMAP skin_LoadGlyphImage(char * szFileName);
 HANDLE hEventServicesCreated;
 
 int LoadSkinModule();
@@ -48,7 +48,7 @@ int RegisterPaintSub(WPARAM wParam, LPARAM lParam);
 int UpdateFrameImage(WPARAM wParam, LPARAM lParam);
 int InvalidateFrameImage(WPARAM wParam, LPARAM lParam);
 
-SKINOBJECTDESCRIPTOR * FindObject(const char * szName, BYTE objType,SKINOBJECTSLIST* Skin);
+SKINOBJECTDESCRIPTOR * skin_FindObject(const char * szName, BYTE objType,SKINOBJECTSLIST* Skin);
 int AddObjectDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJECTSLIST* Skin);
 HBITMAP LoadGlyphImage(char * szFileName);
 GLYPHOBJECT DBGetGlyphSetting(char * szSection, char* szObjectName);

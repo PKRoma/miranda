@@ -208,7 +208,7 @@ int MainMenuExecService(WPARAM wParam,LPARAM lParam) {
   if (wParam!=0)
   {
     lpMainMenuExecParam mmep=(lpMainMenuExecParam)wParam;
-    if (!MyStrCmp(mmep->szServiceName,"Help/AboutCommand"))
+    if (!mir_strcmp(mmep->szServiceName,"Help/AboutCommand"))
     {
       //bug in help.c,it used wparam as parent window handle without reason.
       mmep->Param1=0;
@@ -353,7 +353,7 @@ int ContactMenuCheckService(WPARAM wParam,LPARAM lParam) {
 
   if(cmep->pszContactOwner!=NULL) {
     if(bcp->szProto==NULL) return(FALSE);
-    if(MyStrCmp(cmep->pszContactOwner,bcp->szProto)) return(FALSE);
+    if(mir_strcmp(cmep->pszContactOwner,bcp->szProto)) return(FALSE);
   }
   if (MO_GetMenuItem((WPARAM)pcpp->MenuItemHandle,(LPARAM)&mi)==0)
   {
@@ -822,12 +822,6 @@ static int MenuGetStatus(WPARAM wParam,LPARAM lParam)
   return BuildStatusMenu(0,0);
 }
 
-
-int freeownerdataformenus()
-{
-  return(1);
-};
-
 int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 {
   int res=0;
@@ -840,7 +834,7 @@ int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
   if (b2)
   {
     for (p=0; p<protoCnt; p++)
-      if (MyStrCmp(proto[p]->szName,b2)==0)
+      if (mir_strcmp(proto[p]->szName,b2)==0)
       {   
         mir_free(b2);
         return p;
@@ -877,7 +871,6 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 
   //status menu
   if (hStatusMenuObject!=0) {
-    freeownerdataformenus();
     CallService(MO_REMOVEMENUOBJECT,hStatusMenuObject,0);
     if (hStatusMainMenuHandles!=NULL) {
       mir_free(hStatusMainMenuHandles);
@@ -1204,7 +1197,7 @@ static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
     }
     if(networkProtoCount<=1) return 0;
     for(i=0;i<protoCount;i++)
-      if(!MyStrCmp(proto[i]->szName,ack->szModule)) break;
+      if(!mir_strcmp(proto[i]->szName,ack->szModule)) break;
     //hProcess is previous mode, lParam is new mode
     //hProcess is previous mode, lParam is new mode
     if(((int)ack->hProcess>=ID_STATUS_OFFLINE||(int)ack->hProcess==0) && (int)ack->hProcess<ID_STATUS_OFFLINE+sizeof(statusModeList)/sizeof(statusModeList[0]))
@@ -1431,8 +1424,8 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
       if (!val)
         _snprintf(buf,sizeof(buf),Translate("%s Custom Status"),menusProto[i].szProto);
       if (  menusProto[i].menuID && 
-          ( (val && boolstrcmpi(menusProto[i].szProto,mi->pszContactOwner))||
-            (wParam==0 && boolstrcmpi(buf,mi->pszPopupName)) ) )
+          ( (val && mir_bool_strcmpi(menusProto[i].szProto,mi->pszContactOwner))||
+            (wParam==0 && mir_bool_strcmpi(buf,mi->pszPopupName)) ) )
       {
         mp=&menusProto[i];
         break;
@@ -1446,8 +1439,8 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 	if (AllocedProtos==0) {
 		if (!val)
 			_snprintf(buf,sizeof(buf),Translate("%s Custom Status"),menusProtoSingle.szProto);
-		if ( (val && boolstrcmpi(menusProtoSingle.szProto,mi->pszContactOwner))||
-            (wParam==0 && boolstrcmpi(buf,mi->pszPopupName)) )
+		if ( (val && mir_bool_strcmpi(menusProtoSingle.szProto,mi->pszContactOwner))||
+            (wParam==0 && mir_bool_strcmpi(buf,mi->pszPopupName)) )
 		 {
 			mp=&menusProtoSingle;
 		 }

@@ -124,12 +124,12 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 
 	if ((HANDLE)wParam==NULL)
 	{
-		if (!MyStrCmp(cws->szModule,"MetaContacts"))
+		if (!mir_strcmp(cws->szModule,"MetaContacts"))
 		{
-			if (!MyStrCmp(cws->szSetting,"Enabled"))
+			if (!mir_strcmp(cws->szSetting,"Enabled"))
 				pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,wParam,lParam);
 		}
-		else if (!MyStrCmp(cws->szModule,"CListGroups")) 
+		else if (!mir_strcmp(cws->szModule,"CListGroups")) 
 		{
 			pcli->pfnClcBroadcast( INTM_GROUPSCHANGED,wParam,lParam);
 		}
@@ -347,7 +347,7 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 				char * val=DBGetStringA(ack->hContact,"CList","StatusMsg");
 				if (val) 
 				{
-					if (!boolstrcmpi(val,(const char *)ack->lParam))
+					if (!mir_bool_strcmpi(val,(const char *)ack->lParam))
 						DBWriteContactSettingString(ack->hContact,"CList","StatusMsg",(const char *)ack->lParam);
 					else
 						Cache_RenewText(ack->hContact);
@@ -373,7 +373,7 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 				char * val=DBGetStringA(ack->hContact,"CList","StatusMsg");
 				if (val) 
 				{
-					if (!boolstrcmpi(val,""))
+					if (!mir_bool_strcmpi(val,""))
 						DBWriteContactSettingString(ack->hContact,"CList","StatusMsg","");
 					else
 						Cache_RenewText(ack->hContact);
@@ -470,15 +470,15 @@ int GetProtocolVisibility(char * ProtoName)
 		_itoa(i,buf2,10);
 		if (!DBGetContactSetting(NULL,"Protocols",buf2,&dbv))
 		{
-			if (MyStrCmp(ProtoName,dbv.pszVal)==0)
+			if (mir_strcmp(ProtoName,dbv.pszVal)==0)
 			{
-				mir_free(dbv.pszVal);
+				//mir_free(dbv.pszVal);
 				DBFreeVariant(&dbv);
 				_itoa(i+400,buf2,10);
 				res= DBGetContactSettingDword(NULL,"Protocols",buf2,0);
 				return res;
 			}
-			mir_free(dbv.pszVal);
+			//mir_free(dbv.pszVal);
 			DBFreeVariant(&dbv);
 		}
 	}
@@ -571,7 +571,7 @@ case WM_CREATE:
 		sortBy[2]=DBGetContactSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT);
 		sortNoOfflineBottom=DBGetContactSettingByte(NULL,"CList","NoOfflineBottom",SETTING_NOOFFLINEBOTTOM_DEFAULT);
 		//InitDisplayNameCache(&dat->lCLCContactsCache);
-		LoadClcOptions(hwnd,dat);	
+		LoadCLCOptions(hwnd,dat);	
 		SetTimer(hwnd,TIMERID_INVALIDATE,5000,NULL);
 		saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 		//if (dat->force_in_dialog)
@@ -654,7 +654,7 @@ case INTM_ICONCHANGED:
 			HANDLE hMostMeta=NULL;								
 			if (iIcon&&0)
 				if (cacheEntry)
-					if (!MyStrCmp(cacheEntry->szProto,"MetaContacts"))
+					if (!mir_strcmp(cacheEntry->szProto,"MetaContacts"))
 						if (!DBGetContactSettingByte(NULL,"CLC","Meta",0))
 						{
 							int iMetaStatusIcon;
@@ -794,7 +794,7 @@ case INTM_STATUSCHANGED:
 case INTM_RELOADOPTIONS:
 	{
 		pcli->pfnLoadClcOptions(hwnd,dat);
-		LoadClcOptions(hwnd,dat);
+		LoadCLCOptions(hwnd,dat);
 		pcli->pfnSaveStateAndRebuildList(hwnd,dat);
 		pcli->pfnSortCLC(hwnd,dat,1);
 		if (IsWindowVisible(hwnd))
@@ -1285,7 +1285,7 @@ case DROPTARGET_ONCONTACT:
 	{
 		struct ClcContact *contSour;
 		cliGetRowByIndex(dat,dat->iDragItem,&contSour,NULL);
-		if (contSour->type==CLCIT_CONTACT && MyStrCmp(contSour->proto,"MetaContacts"))
+		if (contSour->type==CLCIT_CONTACT && mir_strcmp(contSour->proto,"MetaContacts"))
 		{
 			if (!contSour->isSubcontact)
 				hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
@@ -1301,7 +1301,7 @@ case DROPTARGET_ONMETACONTACT:
 		struct ClcContact *contSour,*contDest;
 		cliGetRowByIndex(dat,dat->selection,&contDest,NULL);  
 		cliGetRowByIndex(dat,dat->iDragItem,&contSour,NULL);
-		if (contSour->type==CLCIT_CONTACT && MyStrCmp(contSour->proto,"MetaContacts"))
+		if (contSour->type==CLCIT_CONTACT && mir_strcmp(contSour->proto,"MetaContacts"))
 		{
 			if (!contSour->isSubcontact)
 				hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
@@ -1318,7 +1318,7 @@ case DROPTARGET_ONSUBCONTACT:
 		struct ClcContact *contSour,*contDest;
 		cliGetRowByIndex(dat,dat->selection,&contDest,NULL);  
 		cliGetRowByIndex(dat,dat->iDragItem,&contSour,NULL);
-		if (contSour->type==CLCIT_CONTACT && MyStrCmp(contSour->proto,"MetaContacts"))
+		if (contSour->type==CLCIT_CONTACT && mir_strcmp(contSour->proto,"MetaContacts"))
 		{
 			if (!contSour->isSubcontact)
 				hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
@@ -1428,7 +1428,7 @@ case WM_LBUTTONUP:
 					if (contSour->type==CLCIT_CONTACT)
 					{
 
-						if (MyStrCmp(contSour->proto,"MetaContacts"))
+						if (mir_strcmp(contSour->proto,"MetaContacts"))
 						{
 							if (!contSour->isSubcontact)
 							{
@@ -1713,7 +1713,7 @@ case WM_DESTROY:
 		}
 		{
 			ImageArray_Clear(&dat->avatar_cache);
-			ModernDeleteDC(dat->avatar_cache.hdc);			
+			mod_DeleteDC(dat->avatar_cache.hdc);			
 		}
 		//FreeDisplayNameCache(&dat->lCLCContactsCache);
 		if (!dat->use_avatar_service)

@@ -260,7 +260,7 @@ void * AddTempGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flag
 	{
 		szGroupName = pcli->pfnGetGroupName(i,&groupFlags);
 		if(szGroupName==NULL) break;
-		if (!MyStrCmpiT(szGroupName,szName)) f=1;
+		if (!mir_tstrcmpi(szGroupName,szName)) f=1;
 	}
 	if (!f)
 	{
@@ -284,7 +284,7 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 	struct ClcContact * cont;
 	pdisplayNameCacheEntry cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
 	if(dat->IsMetaContactsEnabled && cacheEntry && cacheEntry->HiddenSubcontact) return;		//contact should not be added
-	if(!dat->IsMetaContactsEnabled && cacheEntry && !MyStrCmp(cacheEntry->szProto,"MetaContacts")) return;
+	if(!dat->IsMetaContactsEnabled && cacheEntry && !mir_strcmp(cacheEntry->szProto,"MetaContacts")) return;
 	saveAddContactToTree(hwnd,dat,hContact,updateTotalCount,checkHideOffline);
 	if (FindItem(hwnd,dat,hContact,&cont,&group,NULL,FALSE))
 	{
@@ -294,7 +294,7 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 			if (cont && cont->proto)
 			{	
 				cont->SubAllocated=0;
-				if (MyStrCmp(cont->proto,"MetaContacts")==0) 
+				if (mir_strcmp(cont->proto,"MetaContacts")==0) 
 					AddSubcontacts(dat,cont,IsShowOfflineGroup(group));
 			}
 			cont->avatar_pos=AVATAR_POS_DONT_HAVE;
@@ -374,7 +374,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 
 		if( (cacheEntry->szProto||style&CLS_SHOWHIDDEN) &&
 			(
-			 (dat->IsMetaContactsEnabled||MyStrCmp(cacheEntry->szProto,"MetaContacts"))
+			 (dat->IsMetaContactsEnabled||mir_strcmp(cacheEntry->szProto,"MetaContacts"))
 			 &&(style&CLS_SHOWHIDDEN || (!cacheEntry->Hidden && !cacheEntry->isUnknown)) 
 			 &&(!cacheEntry->HiddenSubcontact || !dat->IsMetaContactsEnabled)
 			)
@@ -645,7 +645,7 @@ ClcCacheEntryBase* cliCreateCacheItem( HANDLE hContact )
 	{
 		memset(p,0,sizeof( displayNameCacheEntry ));
 		p->hContact = hContact;
-		InvalidateDisplayNameCacheEntryByPDNE(hContact,p,0); //TODO should be in core
+		InvalidateDNCEbyPointer(hContact,p,0); //TODO should be in core
 		p->szSecondLineText=NULL;
 		p->szThirdLineText=NULL;
 		p->plSecondLineText=NULL;
@@ -664,7 +664,7 @@ void cliInvalidateDisplayNameCacheEntry(HANDLE hContact)
 	//else 
 	//	p=(pdisplayNameCacheEntry)hContact; //handle give us incorrect hContact on GetCacheEntry;
 	if (p)
-		InvalidateDisplayNameCacheEntryByPDNE(hContact,p,0);
+		InvalidateDNCEbyPointer(hContact,p,0);
 	return;
 }
 

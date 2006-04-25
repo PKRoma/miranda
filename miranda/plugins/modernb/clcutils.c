@@ -406,12 +406,12 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 	}
 	dat->selection=hit;
 
-	if (!MyStrCmp(contact->proto,"MetaContacts")&& (ServiceExists(MS_MC_ADDTOMETA))) return DROPTARGET_ONMETACONTACT;
+	if (!mir_strcmp(contact->proto,"MetaContacts")&& (ServiceExists(MS_MC_ADDTOMETA))) return DROPTARGET_ONMETACONTACT;
 	if (contact->isSubcontact && (ServiceExists(MS_MC_ADDTOMETA))) return DROPTARGET_ONSUBCONTACT;
 	return DROPTARGET_ONCONTACT;
 }
 extern int sortNoOfflineBottom;
-void LoadClcOptions(HWND hwnd, struct ClcData *dat)
+void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 { 
 	int i;
 	lockdat;
@@ -658,7 +658,7 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 		if(DBGetContactSettingByte(NULL,"Menu","UseBitmap",CLCDEFAULT_USEBITMAP)) {
 			if(!DBGetContactSetting(NULL,"Menu","BkBitmap",&dbv)) {
 				dat->hMenuBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-				mir_free(dbv.pszVal);
+				//mir_free(dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 		}

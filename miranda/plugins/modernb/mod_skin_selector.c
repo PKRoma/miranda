@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "mod_skin_selector.h"
 #include "SkinEngine.h"  
 #include "m_skin_eng.h"
-extern LPSKINOBJECTDESCRIPTOR FindObjectByName(const char * szName, BYTE objType, SKINOBJECTSLIST* Skin);
+extern LPSKINOBJECTDESCRIPTOR skin_FindObjectByName(const char * szName, BYTE objType, SKINOBJECTSLIST* Skin);
 extern int AddButton(HWND parent,char * ID,char * CommandService,char * StateDefService,char * HandeService,             int Left, int Top, int Right, int Bottom, DWORD AlignedTo,TCHAR * Hint,char * DBkey,char * TypeDef,int MinWidth, int MinHeight);
 struct TList_ModernMask * MainModernMaskList=NULL;
 
@@ -107,11 +107,11 @@ BOOL _inline WildCompare(char * name, char * mask, BYTE option)
 
 
 
-DWORD ModernCalcHash(char * a)
+DWORD mod_CalcHash(char * a)
 {
     DWORD Val=0;
     BYTE N;
-    DWORD k=MyStrLen(a);
+    DWORD k=mir_strlen(a);
     if (k<23) N=(BYTE)k; else N=23;
     while (N>0)
     {
@@ -211,7 +211,7 @@ int ParseToModernMask(TLO_MMask * mm, char * szText)
     if (!mm || !szText) return -1;
     else
     {
-        UINT textLen=MyStrLen(szText);
+        UINT textLen=mir_strlen(szText);
         BYTE curParam=0;
         TLO_MaskParam param={0};
         UINT currentPos=0;
@@ -245,7 +245,7 @@ int ParseToModernMask(TLO_MMask * mm, char * szText)
                         if (k>MAXVALUE-1) k=MAXVALUE-1;
                         strncpy(v,szText+startPos,k);
                         v[k]='\0';
-                        param.dwId=ModernCalcHash(v);
+                        param.dwId=mod_CalcHash(v);
                         param.szName=mir_strdup(v);
                         startPos=keyPos+1;
                     }
@@ -253,7 +253,7 @@ int ParseToModernMask(TLO_MMask * mm, char * szText)
                 else //ParamName='Module'
                 {
                     param.bFlag=1;
-                    param.dwId=ModernCalcHash("Module");
+                    param.dwId=mod_CalcHash("Module");
                     param.szName=mir_strdup("Module");
                 }
                 //szText[currentPos]='/0';
@@ -263,15 +263,15 @@ int ParseToModernMask(TLO_MMask * mm, char * szText)
                   char v[MAXVALUE]={0};
                   k=currentPos-startPos;
                   if (k>MAXVALUE-1) k=MAXVALUE-1;
-				          m=min((UINT)k,MyStrLen(szText)-startPos+1);
+				          m=min((UINT)k,mir_strlen(szText)-startPos+1);
                   strncpy(v,&(szText[startPos]),k);
                   param.szValue=mir_strdup(v);
                 }
-                param.dwValueHash=ModernCalcHash(param.szValue);
+                param.dwValueHash=mod_CalcHash(param.szValue);
                 {   // if Value don't contain '*' or '?' count add flag
                     UINT i=0;
                     BOOL f=4;
-                    while (param.szValue[i]!='\0' && i<(UINT)MyStrLen(param.szValue)+1)
+                    while (param.szValue[i]!='\0' && i<(UINT)mir_strlen(param.szValue)+1)
                         if (param.szValue[i]=='*' || param.szValue[i]=='?') {f=0; break;} else i++;
                     param.bFlag|=f;
                 }
@@ -353,7 +353,7 @@ int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  TList
     TLO_MMask mm={0};
     if (!szStr || !mmTemplateList) return -1;
     if (ParseToModernMask(&mm,szStr)) return -1;
-    mm.pObject=(void*) FindObjectByName(objectName, OT_ANY, (SKINOBJECTSLIST*) pObjectList);
+    mm.pObject=(void*) skin_FindObjectByName(objectName, OT_ANY, (SKINOBJECTSLIST*) pObjectList);
         mm.dwMaskId=maskID;
     return AddModernMaskToList(&mm,mmTemplateList);    
 }
@@ -366,7 +366,7 @@ TLO_MMask *  FindMaskByStr(char * szValue,TList_ModernMask * mmTemplateList)
     //TODO
     return NULL;
 }
-SKINOBJECTDESCRIPTOR *  FindObjectByRequest(char * szValue,TList_ModernMask * mmTemplateList)
+SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,TList_ModernMask * mmTemplateList)
 {
     //TODO
     TLO_MMask mm={0};
@@ -414,7 +414,7 @@ char * GetParamN(char * string, char * buf, int buflen, BYTE paramN, char Delim,
     DWORD end=0;
     DWORD CurentCount=0;
     DWORD len;
-    while (i<MyStrLen(string))
+    while (i<mir_strlen(string))
     {
         if (string[i]==Delim)
         {
@@ -428,7 +428,7 @@ char * GetParamN(char * string, char * buf, int buflen, BYTE paramN, char Delim,
     {
         if (SkipSpaces)
         { //remove spaces
-          while (string[start]==' ' && (int)start<MyStrLen(string))
+          while (string[start]==' ' && (int)start<mir_strlen(string))
             start++;
           while (i>1 && string[i-1]==' ' && i>(int)start)
             i--;
@@ -460,7 +460,7 @@ int RegisterButtonByParce(char * ObjectName, char * Params)
         char Type[250]={0};
 
 		DWORD alingnto;
-		int a=((int)boolstrcmpi(buf,"Switch"))*2;
+		int a=((int)mir_bool_strcmpi(buf,"Switch"))*2;
 
         GetParamN(Params,pServiceName, sizeof(pServiceName),1,',',0);
        // if (a) GetParamN(Params,pStatusServiceName, sizeof(pStatusServiceName),a+1,',',0);
@@ -507,9 +507,9 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
      char buf[250];
      obj.szObjectID=mir_strdup(ObjectName);
      GetParamN(Params,buf, sizeof(buf),0,',',0);
-     if (boolstrcmpi(buf,"Glyph"))
+     if (mir_bool_strcmpi(buf,"Glyph"))
          obj.bType=OT_GLYPHOBJECT;
-     else if (boolstrcmpi(buf,"Font"))
+     else if (mir_bool_strcmpi(buf,"Font"))
          obj.bType=OT_FONTOBJECT;
 
      switch (obj.bType)
@@ -518,7 +518,7 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
          {
              GLYPHOBJECT gl={0};
              GetParamN(Params,buf, sizeof(buf),1,',',0);
-             if (boolstrcmpi(buf,"Solid"))
+             if (mir_bool_strcmpi(buf,"Solid"))
              {
                  //Solid
                  int r,g,b;
@@ -529,7 +529,7 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
                  gl.dwAlpha=atoi(GetParamN(Params,buf, sizeof(buf),5,',',0));
                  gl.dwColor=RGB(r,g,b);
              }
-             else if (boolstrcmpi(buf,"Image"))
+             else if (mir_bool_strcmpi(buf,"Image"))
              {
                  //Image
 				         gl.Style=ST_IMAGE;
@@ -540,12 +540,12 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
                  gl.dwBottom=atoi(GetParamN(Params,buf, sizeof(buf),7,',',0));
                  gl.dwAlpha =atoi(GetParamN(Params,buf, sizeof(buf),8,',',0));
                  GetParamN(Params,buf, sizeof(buf),3,',',0);
-                 if (boolstrcmpi(buf,"TileBoth")) gl.FitMode=FM_TILE_BOTH;
-                 else if (boolstrcmpi(buf,"TileVert")) gl.FitMode=FM_TILE_VERT;
-                 else if (boolstrcmpi(buf,"TileHorz")) gl.FitMode=FM_TILE_HORZ;
+                 if (mir_bool_strcmpi(buf,"TileBoth")) gl.FitMode=FM_TILE_BOTH;
+                 else if (mir_bool_strcmpi(buf,"TileVert")) gl.FitMode=FM_TILE_VERT;
+                 else if (mir_bool_strcmpi(buf,"TileHorz")) gl.FitMode=FM_TILE_HORZ;
                  else gl.FitMode=0;                
              }
-             else if (boolstrcmpi(buf,"Fragment"))
+             else if (mir_bool_strcmpi(buf,"Fragment"))
              {
                  //Image
 				         gl.Style=ST_FRAGMENT;
@@ -562,9 +562,9 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
                  gl.dwBottom=atoi(GetParamN(Params,buf, sizeof(buf),11,',',0));
                  gl.dwAlpha =atoi(GetParamN(Params,buf, sizeof(buf),12,',',0));
                  GetParamN(Params,buf, sizeof(buf),7,',',0);
-                 if (boolstrcmpi(buf,"TileBoth")) gl.FitMode=FM_TILE_BOTH;
-                 else if (boolstrcmpi(buf,"TileVert")) gl.FitMode=FM_TILE_VERT;
-                 else if (boolstrcmpi(buf,"TileHorz")) gl.FitMode=FM_TILE_HORZ;
+                 if (mir_bool_strcmpi(buf,"TileBoth")) gl.FitMode=FM_TILE_BOTH;
+                 else if (mir_bool_strcmpi(buf,"TileVert")) gl.FitMode=FM_TILE_VERT;
+                 else if (mir_bool_strcmpi(buf,"TileHorz")) gl.FitMode=FM_TILE_HORZ;
                  else gl.FitMode=0;                
              }
              else 

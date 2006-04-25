@@ -115,7 +115,7 @@ typedef struct _DllVersionInfo {
 #define DLLVER_PLATFORM_NT              0x00000002      // Windows NT
 typedef HRESULT (CALLBACK* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
 
-void _strreplace(TCHAR ** dest, TCHAR *source)
+void mir_strset(TCHAR ** dest, TCHAR *source)
 {
 	if (*dest) mir_free(*dest);
 	if (source) *dest=mir_tstrdup(source);
@@ -249,7 +249,8 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 								{
 									if (dbv.ptszVal[0]!=(TCHAR)0)
 										ProtoXStatus=mir_tstrdup(dbv.ptszVal);
-									mir_free(dbv.ptszVal);
+									//mir_free(dbv.ptszVal);
+									DBFreeVariant(&dbv);
 								}
 							}
 						}
@@ -328,7 +329,8 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 								{
 									if (dbv.ptszVal[0]!=(TCHAR)0)
 										ProtoXStatus=mir_tstrdup(dbv.ptszVal);
-									mir_free(dbv.ptszVal);
+									//mir_free(dbv.ptszVal);
+									DBFreeVariant(&dbv);
 								}
 							}
 						}
@@ -507,13 +509,13 @@ static int TrayIconAdd(HWND hwnd,const char *szProto,const char *szIconProto,int
 		TrayIconMakeTooltip(NULL, trayIcon[i].szProto);
 		if(!mToolTipTrayTips)
 			lstrcpyn(nidn.szTip, szTip, SIZEOF(nidn.szTip));
-		_strreplace(&(trayIcon[i].iconTip),szTip);
+		mir_strset(&(trayIcon[i].iconTip),szTip);
 		Shell_NotifyIcon(NIM_ADD, (void*)&nidn);
 	} else {
 		TrayIconMakeTooltip(NULL, trayIcon[i].szProto);
 		if(!mToolTipTrayTips)
 			lstrcpyn(nid.szTip, szTip, SIZEOF(nid.szTip));
-		_strreplace(&(trayIcon[i].iconTip),szTip);
+		mir_strset(&(trayIcon[i].iconTip),szTip);
 		Shell_NotifyIcon(NIM_ADD, &nid);
 	}
 	trayIcon[i].isBase=1;
@@ -669,13 +671,13 @@ static int TrayIconUpdate(HICON hNewIcon,const TCHAR *szNewTip,const char *szPre
 		if (dviShell.dwMajorVersion>=5) {
 			nidn.uID=nid.uID;
 			TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
-			_strreplace(&(trayIcon[i].iconTip),szTip);
+			mir_strset(&(trayIcon[i].iconTip),szTip);
 			if(!mToolTipTrayTips)
 				lstrcpyn(nidn.szTip, szTip, SIZEOF(nidn.szTip));
 			Shell_NotifyIcon(NIM_MODIFY, (void*)&nidn);
 		} else {
 			TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
-			_strreplace(&(trayIcon[i].iconTip),szTip);
+			mir_strset(&(trayIcon[i].iconTip),szTip);
 			if(!mToolTipTrayTips)
 				lstrcpyn(nid.szTip, szTip, SIZEOF(nid.szTip));
 			Shell_NotifyIcon(NIM_MODIFY, &nid);
@@ -696,13 +698,13 @@ static int TrayIconUpdate(HICON hNewIcon,const TCHAR *szNewTip,const char *szPre
 		if (dviShell.dwMajorVersion>=5) {
 			nidn.uID=nid.uID;
 			TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
-			_strreplace(&(trayIcon[i].iconTip),szTip);
+			mir_strset(&(trayIcon[i].iconTip),szTip);
 			if(!mToolTipTrayTips)
 				lstrcpyn(nidn.szTip, szTip, SIZEOF(nidn.szTip));
 			Shell_NotifyIcon(NIM_MODIFY, (void*)&nidn);
 		} else {
 			TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
-			_strreplace(&(trayIcon[i].iconTip),szTip);
+			mir_strset(&(trayIcon[i].iconTip),szTip);
 			if(!mToolTipTrayTips)
 				lstrcpyn(nid.szTip, szTip, SIZEOF(nid.szTip));
 			Shell_NotifyIcon(NIM_MODIFY, &nid);
@@ -1461,7 +1463,7 @@ int TrayMenuExecService(WPARAM wParam,LPARAM lParam) {
 	if (wParam!=0)
 	{
 		lpTrayMenuExecParam mmep=(lpTrayMenuExecParam)wParam;	
-		if (!MyStrCmp(mmep->szServiceName,"Help/AboutCommand"))
+		if (!mir_strcmp(mmep->szServiceName,"Help/AboutCommand"))
 		{
 			//bug in help.c,it used wparam as parent window handle without reason.
 			mmep->Param1=0;

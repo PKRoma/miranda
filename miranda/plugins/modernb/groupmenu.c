@@ -183,7 +183,7 @@ int GroupMenuExecService(WPARAM wParam,LPARAM lParam) {
 	if (wParam!=0)
 	{
 		lpGroupMenuExecParam mmep=(lpGroupMenuExecParam)wParam;	
-		if (!MyStrCmp(mmep->szServiceName,"Help/AboutCommand"))
+		if (!mir_strcmp(mmep->szServiceName,"Help/AboutCommand"))
 		{
 			//bug in help.c,it used wparam as parent window handle without reason.
 			mmep->Param1=0;
@@ -644,7 +644,7 @@ int SubGroupMenuExecService(WPARAM wParam,LPARAM lParam) {
 	if (wParam!=0)
 	{
 		lpSubGroupMenuExecParam mmep=(lpSubGroupMenuExecParam)wParam;	
-		if (!MyStrCmp(mmep->szServiceName,"Help/AboutCommand"))
+		if (!mir_strcmp(mmep->szServiceName,"Help/AboutCommand"))
 		{
 			//bug in help.c,it used wparam as parent window handle without reason.
 			mmep->Param1=0;

@@ -125,7 +125,7 @@ int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 	if (DBGetContactSettingByte(NULL,"CLC","Meta",0)==1)
 		return pcli->pfnIconFromStatusMode(szProto,status,hContact);
 	if (szProto!=NULL)
-		if (MyStrCmp(szProto,"MetaContacts")==0)      {
+		if (mir_strcmp(szProto,"MetaContacts")==0)      {
 			hContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
 			if (hContact!=0)            {
 				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);

@@ -1362,17 +1362,18 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		CheckDlgButton(hwndDlg, IDC_AUTOHIDE, DBGetContactSettingByte(NULL,"CList","AutoHide",SETTING_AUTOHIDE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIME),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
 		EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
-		{	DWORD caps=CallService(MS_CLUI_GETCAPS,CLUICAPS_FLAGS1,0);
-		if(!(caps&CLUIF_HIDEEMPTYGROUPS)) ShowWindowNew(GetDlgItem(hwndDlg,IDC_HIDEEMPTYGROUPS),SW_HIDE);
-		if(!(caps&CLUIF_DISABLEGROUPS)) ShowWindowNew(GetDlgItem(hwndDlg,IDC_DISABLEGROUPS),SW_HIDE);
-		if(caps&CLUIF_HASONTOPOPTION) ShowWindowNew(GetDlgItem(hwndDlg,IDC_ONTOP),SW_HIDE);
-		if(caps&CLUIF_HASAUTOHIDEOPTION) {
-			ShowWindowNew(GetDlgItem(hwndDlg,IDC_AUTOHIDE),SW_HIDE);
-			ShowWindowNew(GetDlgItem(hwndDlg,IDC_HIDETIME),SW_HIDE);
-			ShowWindowNew(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN),SW_HIDE);
-			ShowWindowNew(GetDlgItem(hwndDlg,IDC_STAUTOHIDESECS),SW_HIDE);
-		}
-		}
+	//	{
+		//	DWORD caps=CallService(MS_CLUI_GETCAPS,CLUICAPS_FLAGS1,0);
+		//if(!(caps&CLUIF_HIDEEMPTYGROUPS)) ShowWindowNew(GetDlgItem(hwndDlg,IDC_HIDEEMPTYGROUPS),SW_HIDE);
+		//if(!(caps&CLUIF_DISABLEGROUPS)) ShowWindowNew(GetDlgItem(hwndDlg,IDC_DISABLEGROUPS),SW_HIDE);
+		//if(caps&CLUIF_HASONTOPOPTION) ShowWindowNew(GetDlgItem(hwndDlg,IDC_ONTOP),SW_HIDE);
+		//if(caps&CLUIF_HASAUTOHIDEOPTION) {
+		//	ShowWindowNew(GetDlgItem(hwndDlg,IDC_AUTOHIDE),SW_HIDE);
+		//	ShowWindowNew(GetDlgItem(hwndDlg,IDC_HIDETIME),SW_HIDE);
+		//	ShowWindowNew(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN),SW_HIDE);
+		//	ShowWindowNew(GetDlgItem(hwndDlg,IDC_STAUTOHIDESECS),SW_HIDE);
+		//}
+	//	}
 		SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN,UDM_SETRANGE,0,MAKELONG(900,1));
 		SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),0));
 		CheckDlgButton(hwndDlg, IDC_ONECLK, DBGetContactSettingByte(NULL,"CList","Tray1Click",SETTING_TRAY1CLICK_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);

@@ -315,7 +315,8 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 				}
 
 				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_WEB),(showweb)?2:0xFF));	
-				if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
+				//if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
+				DBFreeVariant(&dbv);
 			}
 		}		
 
@@ -329,17 +330,17 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 
 				if (szProto == NULL || DBGetContactSetting(hContact, szProto, "e-mail",&dbv)) 
 				{
-					if (dbv.pszVal) mir_free(dbv.pszVal);
+					//if (dbv.pszVal) mir_free(dbv.pszVal);
 					if (DBGetContactSetting(hContact, "UserInfo", "Mye-mail0", &dbv))
 					{
 						showemail=FALSE;
-						if (dbv.pszVal) mir_free(dbv.pszVal);
-						DBFreeVariant(&dbv);
+						//if (dbv.pszVal) mir_free(dbv.pszVal);
+						//DBFreeVariant(&dbv);
 					}
 					DBFreeVariant(&dbv);
 				}
 				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_EMAIL),(showemail)?0:0xFF));	
-				if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
+				//if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 		}
@@ -351,17 +352,17 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 			if (ExtraToColumnNum(EXTRA_ICON_SMS)!=-1)
 			{
 				if (szProto == NULL || DBGetContactSetting(hContact, szProto, "Cellular",&dbv)) {
-					if (dbv.pszVal) mir_free(dbv.pszVal);
+					//if (dbv.pszVal) mir_free(dbv.pszVal);
 					if (DBGetContactSetting(hContact, "UserInfo", "MyPhone0", &dbv))
 					{
 						showsms=FALSE;
-						if (dbv.pszVal) mir_free(dbv.pszVal);
+						//if (dbv.pszVal) mir_free(dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}
 					DBFreeVariant(&dbv);
 				}
 				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_SMS),(showsms)?1:0xFF));	
-				if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
+				//if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 		}		
@@ -370,7 +371,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 		{					
 			for (i=0;i<maxpr;i++)
 			{
-				if(!MyStrCmp(ImgIndex[i],szProto))
+				if(!mir_strcmp(ImgIndex[i],szProto))
 				{
 					SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_PROTO),i+3));	
 					break;

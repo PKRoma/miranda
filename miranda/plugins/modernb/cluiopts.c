@@ -516,19 +516,19 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 		if(!DBGetContactSetting(NULL,"ICQ","Nick",&dbv)) {
 			SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
-			mir_free(dbv.pszVal);
+			//mir_free(dbv.pszVal);
 			DBFreeVariant(&dbv);
 			dbv.pszVal=NULL;
 		}
 		if(!DBGetContactSetting(NULL,"ICQ","FirstName",&dbv)) {
 			SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
-			mir_free(dbv.pszVal);
+			//mir_free(dbv.pszVal);
 			DBFreeVariant(&dbv);
 			dbv.pszVal=NULL;
 		}
 		if(!DBGetContactSetting(NULL,"ICQ","e-mail",&dbv)) {
 			SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
-			mir_free(dbv.pszVal);
+			//mir_free(dbv.pszVal);
 			DBFreeVariant(&dbv);
 			dbv.pszVal=NULL;
 		}

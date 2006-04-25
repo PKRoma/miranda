@@ -78,7 +78,7 @@ static HWND hwndToolTips = NULL;
 
 
 
-int LoadModernButtonModule(void) 
+int LoadModernButtonModule() 
 {
   WNDCLASSEXA wc;	
   ZeroMemory(&wc, sizeof(wc));
@@ -202,7 +202,7 @@ int PaintWorker(HWND hwnd, HDC whdc)
   if (!whdc || !LayeredFlag) 
   {	
 	  SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
-	  ModernDeleteDC(hdc);
+	  mod_DeleteDC(hdc);
   }
 //  if (sdc) 
 //    ReleaseDC(GetParent(hwnd),sdc);
@@ -248,7 +248,7 @@ static int ToggleDBValue(char * ValueDBSection,char *ValueTypeDef)
         case 's':
           {
             Value=DBGetStringA(NULL,section,key);
-            if (!Value ||(Value && boolstrcmpi(Value,val2)))
+            if (!Value ||(Value && mir_bool_strcmpi(Value,val2)))
               Value=mir_strdup(val);
             else 
               Value=mir_strdup(val2);

@@ -65,7 +65,7 @@ int hkSearch(WPARAM wParam,LPARAM lParam)
 	DBVARIANT dbv={0};
 	if(!DBGetContactSetting(NULL,"CList","SearchUrl",&dbv)) {
 		CallService(MS_UTILS_OPENURL,DBGetContactSettingByte(NULL,"CList","HKSearchNewWnd",0),(LPARAM)dbv.pszVal);
-		mir_free(dbv.pszVal);
+		DBFreeVariant(&dbv);
 	}
 	return 0;
 }
@@ -279,7 +279,7 @@ pHotKeyItem GetHotKeyItemByName(char *name)
 	if (HotKeyCount==0) return NULL;
 	for (i=0;i<HotKeyCount;i++)
 	{
-		if ((name)&&!MyStrCmp(HotKeyList[i].name,name)) return (&HotKeyList[i]);
+		if ((name)&&!mir_strcmp(HotKeyList[i].name,name)) return (&HotKeyList[i]);
 	}
 	return NULL;
 }

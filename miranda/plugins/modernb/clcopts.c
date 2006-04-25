@@ -159,7 +159,8 @@ void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORREF *
   mir_snprintf(idstr,sizeof(idstr),"Font%dName",i);
   if(!DBGetContactSetting(NULL,"CLC",idstr,&dbv)) {
     strcpy(lf->lfFaceName,dbv.pszVal);
-    mir_free(dbv.pszVal);
+    //mir_free(dbv.pszVal);
+	DBFreeVariant(&dbv);
   }
   mir_snprintf(idstr,sizeof(idstr),"Font%dCol",i);
   *colour=DBGetContactSettingDword(NULL,"CLC",idstr,*colour);
@@ -584,7 +585,7 @@ struct CheckBoxToStyleEx_t {
                 SetDlgItemTextA(hwndDlg,IDC_FILENAME,szPath);
             }
             else 
-              mir_free(dbv.pszVal);
+              //mir_free(dbv.pszVal);
             DBFreeVariant(&dbv);
           }
           }
@@ -731,7 +732,7 @@ struct CheckBoxToStyleEx_t {
                 SetDlgItemTextA(hwndDlg,IDC_FILENAME,szPath);
             }
             else 
-              mir_free(dbv.pszVal);
+              //mir_free(dbv.pszVal);
             DBFreeVariant(&dbv);
           }
           }
@@ -1498,16 +1499,16 @@ struct CheckBoxToStyleEx_t {
             rc.right=dis->rcItem.right-dis->rcItem.left;
             rc.bottom=dis->rcItem.bottom-dis->rcItem.top;
             FillRect(hdc,&rc,hBrush);
-            FillRect255Alpha(hdc,&rc);
+            SetRectAlpha_255(hdc,&rc);
             SetTextColor(hdc,ColorSample);
               SelectEffect(hdc,EffectSample-1,Color1Sample,Color2Sample);
-              DrawTextS(hdc,TranslateT("Sample"),lstrlen(TranslateT("Sample")),&rc,DT_CENTER|DT_VCENTER);
+              mod_DrawText(hdc,TranslateT("Sample"),lstrlen(TranslateT("Sample")),&rc,DT_CENTER|DT_VCENTER);
               BitBlt(dis->hDC,dis->rcItem.left,dis->rcItem.top,rc.right,rc.bottom,hdc,0,0,SRCCOPY);
             SelectObject(hdc,obmp);
             SelectObject(hdc,oldFnt);
             DeleteObject(hbmp);
             DeleteObject(hBrush);
-            ModernDeleteDC(hdc);            
+            mod_DeleteDC(hdc);            
           }
           break;
         case WM_NOTIFY:

@@ -55,7 +55,7 @@ extern "C" BYTE saved_alpha;
 extern "C" DWORD g_gdiplusToken;
 extern "C" BOOL gl_b_GDIPlusFail;// = false;
 
-extern "C" int MyStrLen(char *a);
+extern "C" int mir_strlen(const char *a);
 
 DWORD g_gdiplusToken;
 BOOL gl_b_GDIPlusFail=false;
@@ -108,11 +108,11 @@ DWORD argb_from_cola(COLORREF col, BYTE alpha)
 {
     return((BYTE) (alpha) << 24 | col);
 }
-extern "C" HBITMAP intLoadGlyphImageByGDIPlus(char *szFileName)
+extern "C" HBITMAP skin_LoadGlyphImageByGDIPlus(char *szFileName)
 {
   WCHAR *string;
-  string=(WCHAR*)malloc(sizeof(WCHAR)*(MyStrLen(szFileName)+2));
-  MultiByteToWideChar(CP_ACP, 0, szFileName, -1, string, (MyStrLen(szFileName)+2)*sizeof(WCHAR)); 
+  string=(WCHAR*)malloc(sizeof(WCHAR)*(mir_strlen(szFileName)+2));
+  MultiByteToWideChar(CP_ACP, 0, szFileName, -1, string, (mir_strlen(szFileName)+2)*sizeof(WCHAR)); 
   // Create a Bitmap object from a JPEG file.
   Bitmap bitmap(string,0);
   free(string);
@@ -311,17 +311,17 @@ COLORREF __inline _revcolref(COLORREF colref)
 {
     return RGB(GetBValue(colref), GetGValue(colref), GetRValue(colref));
 }
-
-BYTE __inline _percent_to_byte(UINT32 percent)
+/*
+static BYTE __inline _percent_to_byte(UINT32 percent)
 {
     return(BYTE) ((FLOAT) (((FLOAT) percent) / 100) * 255);
 }
 
-DWORD _argb_from_cola(COLORREF col, UINT32 alpha)
+static DWORD _argb_from_cola(COLORREF col, UINT32 alpha)
 {
     return((BYTE) _percent_to_byte(alpha) << 24 | col);
 }
-
+*/
 //extern "C" void GDIp_DrawAlpha(HWND hwnd, HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE)
 //{
 //    if (g_hottrack) {

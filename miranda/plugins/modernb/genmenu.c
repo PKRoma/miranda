@@ -567,7 +567,7 @@ SKINICONDESC sid={0};
   //if (hIcon==NULL) return hIcon;
   if(RegistredOk) *RegistredOk=FALSE;
 
-  if (Name!=NULL&&MyStrLen(Name)!=0)
+  if (Name!=NULL&&mir_strlen(Name)!=0)
   {				
     char iconame[256];
 
@@ -1003,7 +1003,8 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
           if (MenuItems[j].CustomName) mir_free(MenuItems[j].CustomName);
 					MenuItems[j].CustomName=mir_tstrdup(dbv.ptszVal);
 				}
-				if (dbv.ptszVal)	mir_free(dbv.ptszVal);
+				//if (dbv.ptszVal)	mir_free(dbv.ptszVal);
+				DBFreeVariant(&dbv);
 			}
 
 			wsprintfA(DBString, "%s_pos", menuItemName);

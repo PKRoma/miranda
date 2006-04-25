@@ -65,8 +65,8 @@ static HWND CreateSubContainerWindow(HWND parent,int x,int y,int width,int heigh
 
 extern int DrawNonFramedObjects(BOOL Erase,RECT *r);
 extern int InvalidateFrameImage(WPARAM wParam, LPARAM lParam);
-extern BOOL FillRect255Alpha(HDC memdc,RECT *fr);
-extern BOOL MyAlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc,BLENDFUNCTION blendFunction);
+extern BOOL SetRectAlpha_255(HDC memdc,RECT *fr);
+extern BOOL mod_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc,BLENDFUNCTION blendFunction);
 extern int SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam);
 
 extern int InitFramesMenus(void);
@@ -2000,13 +2000,13 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
   };
   Frames[nFramescount].dwFlags=clfrm->Flags;
 
-  if(clfrm->name==NULL||MyStrLen(clfrm->name)==0) {
+  if(clfrm->name==NULL||mir_strlen(clfrm->name)==0) {
     Frames[nFramescount].name=(char *)malloc(255);
     GetClassNameA(Frames[nFramescount].hWnd,Frames[nFramescount].name,255);
   }
   else
     Frames[nFramescount].name=_strdup(clfrm->name);		
-  if(clfrm->TBname==NULL||MyStrLen(clfrm->TBname)==0)
+  if(clfrm->TBname==NULL||mir_strlen(clfrm->TBname)==0)
     Frames[nFramescount].TitleBar.tbname=_strdup(Frames[nFramescount].name);
   else
     Frames[nFramescount].TitleBar.tbname=_strdup(clfrm->TBname);
@@ -3059,7 +3059,7 @@ int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
     if(DBGetContactSettingByte(NULL,"FrameTitleBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
       if(!DBGetContactSetting(NULL,"FrameTitleBar","BkBitmap",&dbv)) {
         hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-        mir_free(dbv.pszVal);
+        //mir_free(dbv.pszVal);
         DBFreeVariant(&dbv);
       }
     }
@@ -3172,26 +3172,26 @@ int DrawTitleBar(HDC hdcMem2,RECT rect,int Frameid)
       {
 
         if(Frames[pos].TitleBar.hicon!=NULL)	{
-          DrawIconEx_Fix(hdcMem,rc.left +2,rc.top+((TitleBarH>>1)-(GetSystemMetrics(SM_CYSMICON)>>1)),Frames[pos].TitleBar.hicon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
-          TextOutSA(hdcMem,rc.left+GetSystemMetrics(SM_CXSMICON)+4,rc.top+2,Frames[pos].TitleBar.tbname,MyStrLen(Frames[pos].TitleBar.tbname));
+          mod_DrawIconEx_helper(hdcMem,rc.left +2,rc.top+((TitleBarH>>1)-(GetSystemMetrics(SM_CYSMICON)>>1)),Frames[pos].TitleBar.hicon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+          mod_TextOutA(hdcMem,rc.left+GetSystemMetrics(SM_CXSMICON)+4,rc.top+2,Frames[pos].TitleBar.tbname,mir_strlen(Frames[pos].TitleBar.tbname));
         }
         else
-          TextOutSA(hdcMem,rc.left+2,rc.top+2,Frames[pos].TitleBar.tbname,MyStrLen(Frames[pos].TitleBar.tbname));
+          mod_TextOutA(hdcMem,rc.left+2,rc.top+2,Frames[pos].TitleBar.tbname,mir_strlen(Frames[pos].TitleBar.tbname));
 
       }else
       //if (!Frames[pos].floating){
-        TextOutSA(hdcMem,rc.left+GetSystemMetrics(SM_CXSMICON)+2,rc.top+2,Frames[pos].TitleBar.tbname,MyStrLen(Frames[pos].TitleBar.tbname));
+        mod_TextOutA(hdcMem,rc.left+GetSystemMetrics(SM_CXSMICON)+2,rc.top+2,Frames[pos].TitleBar.tbname,mir_strlen(Frames[pos].TitleBar.tbname));
       //}
 	  //else TextOut(hdcMem,rc.left+GetSystemMetrics(SM_CXSMICON)+2,rc.top+2,Frames[pos].TitleBar.tbname,MyStrLen(Frames[pos].TitleBar.tbname));
 
 
       if (!AlignCOLLIconToLeft)
       {						
-        DrawIconEx_Fix(hdcMem,Frames[pos].TitleBar.wndSize.right-GetSystemMetrics(SM_CXSMICON)-2,rc.top+((TitleBarH>>1)-(GetSystemMetrics(SM_CXSMICON)>>1)),Frames[pos].collapsed?LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN):LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT),GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+        mod_DrawIconEx_helper(hdcMem,Frames[pos].TitleBar.wndSize.right-GetSystemMetrics(SM_CXSMICON)-2,rc.top+((TitleBarH>>1)-(GetSystemMetrics(SM_CXSMICON)>>1)),Frames[pos].collapsed?LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN):LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT),GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
       }
       else
       {
-        DrawIconEx_Fix(hdcMem,rc.left,rc.top+((TitleBarH>>1)-(GetSystemMetrics(SM_CXSMICON)>>1)),Frames[pos].collapsed?LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN):LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT),GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+        mod_DrawIconEx_helper(hdcMem,rc.left,rc.top+((TitleBarH>>1)-(GetSystemMetrics(SM_CXSMICON)>>1)),Frames[pos].collapsed?LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN):LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT),GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
       }
 
 
@@ -3214,7 +3214,7 @@ int DrawTitleBar(HDC hdcMem2,RECT rect,int Frameid)
   DeleteObject(b1);
   SelectObject(hdcMem,hoTTBFont);
   SelectObject(hdcMem,hoBrush);
-  ModernDeleteDC(hdcMem);
+  mod_DeleteDC(hdcMem);
   return 0;
 }
 //int OldDrawTitleBar(HDC dc,RECT rect,int Frameid)

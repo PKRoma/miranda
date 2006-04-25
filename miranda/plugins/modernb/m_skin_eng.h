@@ -404,8 +404,8 @@ typedef struct _DrawIconFixParam
 } DrawIconFixParam;
 //wParam - pointer to DrawIconFixParam
 #define MS_SKINENG_DRAWICONEXFIX "SkinEngine/DrawIconEx_Fix"
-extern int __inline DrawIconEx_Fix(HDC hdc,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWidth, UINT istepIfAniCur, HBRUSH hbrFlickerFreeDraw, UINT diFlags);
-int __inline DrawIconEx_Fix(HDC hdc,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWidth, UINT istepIfAniCur, HBRUSH hbrFlickerFreeDraw, UINT diFlags)
+extern int __inline mod_DrawIconEx_helper(HDC hdc,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWidth, UINT istepIfAniCur, HBRUSH hbrFlickerFreeDraw, UINT diFlags);
+int __inline mod_DrawIconEx_helper(HDC hdc,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWidth, UINT istepIfAniCur, HBRUSH hbrFlickerFreeDraw, UINT diFlags)
 {
   DrawIconFixParam p={0};
   p.hdc=hdc;

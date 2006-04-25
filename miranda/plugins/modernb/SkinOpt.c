@@ -45,7 +45,7 @@ extern HWND hCLUIwnd;
 static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data);
 extern int LoadSkinFromIniFile(char*);
 extern int RedrawCompleteWindow();
-extern int LoadSkinFromDB();
+extern int LoadSkinFromDB(void);
 int AddSkinToListFullName(HWND hwndDlg,char * fullName);
 int AddSkinToList(HWND hwndDlg,char * path, char* file);
 int FillAvailableSkinList(HWND hwndDlg);
@@ -213,7 +213,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 						ofn.hInstance = NULL;
 
 						sprintf(filter,"%s",Translate("Miranda skin file"));
-						memmove(filter+MyStrLen(filter)," (*.msf)\0*.MSF\0\0",sizeof(" (*.msf)\0*.MSF\0\0"));
+						memmove(filter+mir_strlen(filter)," (*.msf)\0*.MSF\0\0",sizeof(" (*.msf)\0*.MSF\0\0"));
 						ofn.lpstrFilter = filter;
 						ofn.lpstrFile = str;
 						ofn.Flags = isLoad?(OFN_FILEMUSTEXIST | OFN_HIDEREADONLY) : (OFN_OVERWRITEPROMPT|OFN_HIDEREADONLY);
@@ -373,15 +373,15 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
 					imgDC=CreateCompatibleDC(dis->hDC);
 					imgOldbmp=SelectObject(imgDC,hPreviewBitmap);                 
-					MyAlphaBlend(memDC,imgPos.x,imgPos.y,dWidth,dHeight,imgDC,0,0,bmp.bmWidth,bmp.bmHeight,bf);
+					mod_AlphaBlend(memDC,imgPos.x,imgPos.y,dWidth,dHeight,imgDC,0,0,bmp.bmWidth,bmp.bmHeight,bf);
 					SelectObject(imgDC,imgOldbmp);
-					ModernDeleteDC(imgDC);
+					mod_DeleteDC(imgDC);
 				}
 			}
 			BitBlt(dis->hDC,dis->rcItem.left,dis->rcItem.top,mWidth,mHeight,memDC,0,0,SRCCOPY);
 			SelectObject(memDC,holdbmp);
 			DeleteObject(hbmp);
-			ModernDeleteDC(memDC);
+			mod_DeleteDC(memDC);
 		}
 		break;
 
@@ -418,7 +418,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							GetSkinFolder(sd->File,skinfolder);
 							_snprintf(prfn,sizeof(prfn),"%s\\%s",skinfolder,imfn);
 							CallService(MS_UTILS_PATHTOABSOLUTE,(WPARAM)prfn,(LPARAM) imfn);
-							hPreviewBitmap=intLoadGlyphImage(imfn);
+							hPreviewBitmap=skin_LoadGlyphImage(imfn);
 						}
 						EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),TRUE);
 						EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),TRUE);
@@ -536,7 +536,7 @@ int SearchSkinFiles(HWND hwndDlg, char * Folder)
 	hFile=_findfirst(mask,&fd);
 	{
 		do {
-			if (fd.attrib&_A_SUBDIR && !(boolstrcmpi(fd.name,".")||boolstrcmpi(fd.name,"..")))
+			if (fd.attrib&_A_SUBDIR && !(mir_bool_strcmpi(fd.name,".")||mir_bool_strcmpi(fd.name,"..")))
 			{//Next level of subfolders
 				char path[MAX_PATH];
 				_snprintf(path,sizeof(path),"%s\\%s",Folder,fd.name);
@@ -613,7 +613,7 @@ int AddSkinToListFullName(HWND hwndDlg,char * fullName)
 	char file[MAX_PATH]={0};
 	char *buf;
 	strcpy(path,fullName);
-	buf=path+MyStrLen(path);  
+	buf=path+mir_strlen(path);  
 	while (buf>path)
 	{
 		if (*buf=='\\')
@@ -643,8 +643,8 @@ int AddSkinToList(HWND hwndDlg,char * path, char* file)
 		sd=(SkinListData *)mir_alloc(sizeof(SkinListData));
 		if (!sd) return 0;
 		_snprintf(fullName,sizeof(fullName),"%s\\%s",path,file);
-		memmove(defskinname,file,MyStrLen(file)-4);
-		defskinname[MyStrLen(file)+1]='\0';
+		memmove(defskinname,file,mir_strlen(file)-4);
+		defskinname[mir_strlen(file)+1]='\0';
 		if (!file || strchr(file,'%')) 
 		{
 			//sd->File="%Default Skin%";
@@ -700,7 +700,7 @@ static HTREEITEM FindChild(HWND hTree, HTREEITEM Parent, char * Caption, void * 
 		tvi.pszText=(LPSTR)&buf;
 		tvi.cchTextMax=254;
 		TreeView_GetItemA(hTree,&tvi);
-		if (boolstrcmpi(Caption,tvi.pszText))
+		if (mir_bool_strcmpi(Caption,tvi.pszText))
 		{
 			if (data)
 			{

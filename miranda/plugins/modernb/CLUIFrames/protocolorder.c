@@ -24,7 +24,7 @@ struct ProtocolOrderData {
 char **settingname;
 int arrlen;
 
-int EnumProc (const char *szSetting,LPARAM lParam)
+int enumDB_ProtoProc (const char *szSetting,LPARAM lParam)
 {
 	
 	if (szSetting==NULL){return(1);};
@@ -40,7 +40,7 @@ DBCONTACTENUMSETTINGS dbces;
 arrlen=0;
 
 
-dbces.pfnEnumProc=EnumProc;
+dbces.pfnEnumProc=enumDB_ProtoProc;
 dbces.szModule="Protocols";
 dbces.ofsSettings=0;
 

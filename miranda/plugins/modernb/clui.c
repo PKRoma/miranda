@@ -79,7 +79,7 @@ BOOL SHOWHIDE_CALLED_FROM_ANIMATION=0;
 BOOL firstTimeCallFlag=FALSE;
 int SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam);
 extern tPaintCallbackProc ClcPaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
-extern int LoadModernButtonModule(void);
+int LoadModernButtonModule();
 extern int CreateModernStatusBar(HWND parent);
 int SmoothAlphaThreadTransition(HWND hwnd);
 BOOL IsInChangingMode;
@@ -202,7 +202,7 @@ int CycleIconCount=8;
 int DefaultStep=100;
 //extern struct wndFrame *Frames;
 extern int nFramescount;
-extern BOOL FillRect255Alpha(HDC memdc,RECT *fr);
+extern BOOL SetRectAlpha_255(HDC memdc,RECT *fr);
 extern BOOL (WINAPI *MyUpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD);
 BOOL (WINAPI *MySetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);
@@ -211,7 +211,7 @@ int CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam);
 
 int CluiOptInit(WPARAM wParam,LPARAM lParam);
 int SortList(WPARAM wParam,LPARAM lParam);
-int LoadCluiServices(void);
+int LoadCLUIServices(void);
 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 extern int CheckProtocolOrder();
 
@@ -562,7 +562,7 @@ int FillAlphaChannel(HWND hwnd, HDC hdc, RECT * ParentRect, BYTE alpha)
 	rect=(RECT *)rdata->Buffer;
 	for (d=0; d<rdata->rdh.nCount; d++)
 	{
-		FillRect255Alpha(hdc,&rect[d]);
+		SetRectAlpha_255(hdc,&rect[d]);
 	}
 
 	mir_free(rdata);
@@ -570,13 +570,13 @@ int FillAlphaChannel(HWND hwnd, HDC hdc, RECT * ParentRect, BYTE alpha)
 	return 1;
 }
 
-BOOL CALLBACK EnumSubChildProc(HWND hwnd,LPARAM lParam)
+BOOL CALLBACK enum_SubChildWindowsProc(HWND hwnd,LPARAM lParam)
 {
 	sCheckFilling * r=(sCheckFilling *)lParam;
 	FillAlphaChannel(hwnd,r->hdc,&(r->rect),255);
 	return 1;
 }
-BOOL CALLBACK EnumChildProc(HWND hwnd,LPARAM lParam)
+BOOL CALLBACK enum_ChildWindowsProc(HWND hwnd,LPARAM lParam)
 {
 	int ret;
 	sCheckFilling * r=(sCheckFilling *)lParam;
@@ -591,7 +591,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd,LPARAM lParam)
 			break;
 		}
 	case 1:
-		EnumChildWindows(hwnd,EnumSubChildProc,(LPARAM)r);
+		EnumChildWindows(hwnd,enum_SubChildWindowsProc,(LPARAM)r);
 		break;
 	case 2:
 		break;
@@ -651,7 +651,7 @@ int PrepeareWindowImage(struct sUpdatingWindow * sUpdate)
 int FreeWindowImage(struct sUpdatingWindow * sUpdate)
 {   
 	SelectObject(sUpdate->offscreenDC,sUpdate->oldBitmap);
-	ModernDeleteDC(sUpdate->offscreenDC);
+	mod_DeleteDC(sUpdate->offscreenDC);
 	ReleaseDC(pcli->hwndContactList,sUpdate->screenDC);
 	DeleteObject(sUpdate->currentBitmap);
 	return 0;
@@ -721,7 +721,7 @@ pProtoTicks GetProtoTicksByProto(char * szProto)
 	for (i=0;i<64;i++)
 	{
 		if (CycleStartTick[i].szProto==NULL) break;
-		if (MyStrCmp(CycleStartTick[i].szProto,szProto)) continue;
+		if (mir_strcmp(CycleStartTick[i].szProto,szProto)) continue;
 		return(&CycleStartTick[i]);
 	}
 	for (i=0;i<64;i++)
@@ -941,9 +941,9 @@ int OnSettingChanging(WPARAM wParam,LPARAM lParam)
 
 	if (wParam==0)
 	{
-		if ((dbcws->value.type==DBVT_BYTE)&&!MyStrCmp(dbcws->szModule,"CLUI"))
+		if ((dbcws->value.type==DBVT_BYTE)&&!mir_strcmp(dbcws->szModule,"CLUI"))
 		{
-			if (!MyStrCmp(dbcws->szSetting,"SBarShow"))
+			if (!mir_strcmp(dbcws->szSetting,"SBarShow"))
 			{	
 				showOpts=dbcws->value.bVal;	
 				return(0);
@@ -954,25 +954,25 @@ int OnSettingChanging(WPARAM wParam,LPARAM lParam)
 	{		
 		if (dbcws==NULL){return(0);};
 
-		if (dbcws->value.type==DBVT_ASCIIZ&&(!MyStrCmp(dbcws->szSetting,"e-mail") || !MyStrCmp(dbcws->szSetting,"Mye-mail0")))
+		if (dbcws->value.type==DBVT_ASCIIZ&&(!mir_strcmp(dbcws->szSetting,"e-mail") || !mir_strcmp(dbcws->szSetting,"Mye-mail0")))
 		{
 			SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
 			return(0);
 		};
-		if (dbcws->value.type==DBVT_ASCIIZ&&!MyStrCmp(dbcws->szSetting,"Cellular"))
+		if (dbcws->value.type==DBVT_ASCIIZ&&!mir_strcmp(dbcws->szSetting,"Cellular"))
 		{		
 			SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
 			return(0);
 		};
 
-		if (dbcws->value.type==DBVT_ASCIIZ&&!MyStrCmp(dbcws->szModule,"UserInfo"))
+		if (dbcws->value.type==DBVT_ASCIIZ&&!mir_strcmp(dbcws->szModule,"UserInfo"))
 		{
-			if (!MyStrCmp(dbcws->szSetting,(HANDLE)"MyPhone0"))
+			if (!mir_strcmp(dbcws->szSetting,(HANDLE)"MyPhone0"))
 			{		
 				SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
 				return(0);
 			};
-			if (!MyStrCmp(dbcws->szSetting,(HANDLE)"Mye-mail0"))
+			if (!mir_strcmp(dbcws->szSetting,(HANDLE)"Mye-mail0"))
 			{	
 				SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);	
 				return(0);
@@ -1200,7 +1200,7 @@ int DrawMenuBackGround(HWND hwnd, HDC hdc, int item)
 		GetWindowRect(hwnd,&rc);
 		OffsetRect(&rc,-rc.left, -rc.top);
 		FillRect(hdc,&r1,GetSysColorBrush(COLOR_MENU));
-		FillRect255Alpha(hdc,&r1);
+		SetRectAlpha_255(hdc,&r1);
 		//BltBackImage(hwnd,hdc,&r1);
 	}
 	SkinDrawGlyph(hdc,&r1,&r1,"Main,ID=MenuBar");
@@ -1529,7 +1529,7 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			BitBlt(paintDC,w2.left,w2.top,w2.right-w2.left,w2.bottom-w2.top,cachedWindow->hBackDC,w2.left,w2.top,SRCCOPY);
 			SelectObject(hdc,oldbmp);
 			DeleteObject(hbmp);
-			ModernDeleteDC(hdc);
+			mod_DeleteDC(hdc);
 			ReleaseDC(hwnd,paintDC);
 			ValidateRect(hwnd,NULL);
 			ps.fErase=FALSE;
@@ -2535,7 +2535,7 @@ void cliOnCreateClc(void)
 	hContactDraggingEvent=CreateHookableEvent(ME_CLUI_CONTACTDRAGGING);
 	hContactDroppedEvent=CreateHookableEvent(ME_CLUI_CONTACTDROPPED);
 	hContactDragStopEvent=CreateHookableEvent(ME_CLUI_CONTACTDRAGSTOP);
-	LoadCluiServices();
+	LoadCLUIServices();
   //TODO Add Row template loading here.
 
 	InitModernRow();

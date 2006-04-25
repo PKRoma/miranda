@@ -54,7 +54,7 @@ BOOL __cdecl strstri(const char *a, const char *b)
         free(y);
     return FALSE;
 }
-int __cdecl MyStrCmpi(const char *a, const char *b)
+int __cdecl mir_strcmpi(const char *a, const char *b)
 {
 	SAFE_PTR(a);
 	SAFE_PTR(b);
@@ -63,7 +63,7 @@ int __cdecl MyStrCmpi(const char *a, const char *b)
     return _stricmp(a,b);
 }
 
-int __cdecl MyStrCmpiT(const TCHAR *a, const TCHAR *b)
+int __cdecl mir_tstrcmpi(const TCHAR *a, const TCHAR *b)
 {
 	SAFE_PTR(a);
 	SAFE_PTR(b);
@@ -71,7 +71,7 @@ int __cdecl MyStrCmpiT(const TCHAR *a, const TCHAR *b)
 	if (a==NULL || b==NULL) return _tcsicmp(a?a:TEXT(""),b?b:TEXT(""));
 	return _tcsicmp(a,b);
 }
-BOOL __cdecl boolstrcmpi(const char *a, const char *b)
+BOOL __cdecl mir_bool_strcmpi(const char *a, const char *b)
 {
 	SAFE_PTR(a);
 	SAFE_PTR(b);
@@ -80,7 +80,7 @@ BOOL __cdecl boolstrcmpi(const char *a, const char *b)
     return _stricmp(a,b)==0;
 }
 
-BOOL __cdecl boolstrcmpiT(const TCHAR *a, const TCHAR *b)
+BOOL __cdecl mir_bool_tstrcmpi(const TCHAR *a, const TCHAR *b)
 {
 	SAFE_PTR(a);
 	SAFE_PTR(b);
@@ -94,7 +94,7 @@ BOOL __cdecl boolstrcmpiT(const TCHAR *a, const TCHAR *b)
 #undef strlen
 #endif
 
-int __cdecl MyStrCmp (const char *a, const char *b)
+int __cdecl mir_strcmp (const char *a, const char *b)
 {
 	SAFE_PTR(a);
 	SAFE_PTR(b);
@@ -102,7 +102,7 @@ int __cdecl MyStrCmp (const char *a, const char *b)
 	return (strcmp(a,b));
 };
 
-_inline int MyStrLen (const char *a)	
+_inline int mir_strlen (const char *a)	
 {	
 
 	SAFE_PTR(a);
@@ -110,8 +110,8 @@ _inline int MyStrLen (const char *a)
 	return (strlen(a));	
 };	
  	 	
-#define strlen(a) MyStrLen(a)
-#define strcmp(a,b) MyStrCmp(a,b)
+#define strlen(a) mir_strlen(a)
+#define strcmp(a,b) mir_strcmp(a,b)
 
 
  	 	
@@ -165,7 +165,7 @@ char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting)
 	if(dbv.type==DBVT_ASCIIZ)
     {
         str=mir_strdup(dbv.pszVal);
-        mir_free(dbv.pszVal);
+        //mir_free(dbv.pszVal);
     }
     DBFreeVariant(&dbv);
 	return str;
@@ -178,7 +178,7 @@ wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting
 	if(dbv.type==DBVT_WCHAR)
 	{
 		str=mir_strdupW(dbv.pwszVal);
-		mir_free(dbv.pwszVal);
+		//mir_free(dbv.pwszVal);
 	}
 	//else  TODO if no unicode string (only ansi)
 	//
@@ -263,7 +263,7 @@ BOOL DebugDeleteObject(HGDIOBJ a)
 	return res;
 }
 
-BOOL ModernDeleteDC(HDC hdc)
+BOOL mod_DeleteDC(HDC hdc)
 {
   ResetEffect(hdc);
   return DeleteDC(hdc);

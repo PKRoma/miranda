@@ -67,11 +67,11 @@ int ParseToModernMask(TLO_MMask * mm, char * szText);
 BOOL CompareModernMask(TLO_MMask * mmValue,TLO_MMask * mmTemplate);
 BOOL CompareStrWithModernMask(char * szValue,TLO_MMask * mmTemplate);
 TLO_MMask *  FindMaskByStr(char * szValue,TList_ModernMask * mmTemplateList);
-DWORD ModernCalcHash(char * a);
+DWORD mod_CalcHash(char * a);
 char * ModernMaskToString(TLO_MMask * mm, char * buf, UINT bufsize);
 BOOL _inline WildCompare(char * name, char * mask, BYTE option);
 int RegisterObjectByParce(char * ObjectName, char * Params);
-SKINOBJECTDESCRIPTOR *  FindObjectByRequest(char * szValue,TList_ModernMask * mmTemplateList);
+SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,TList_ModernMask * mmTemplateList);
 TCHAR * GetParamNT(char * string, TCHAR * buf, int buflen, BYTE paramN, char Delim, BOOL SkipSpaces);
 
 #endif

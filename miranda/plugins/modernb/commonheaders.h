@@ -154,11 +154,11 @@ extern struct MM_INTERFACE memoryManagerInterface;
 extern int mir_realloc_proxy(void *ptr,int size);
 extern int mir_free_proxy(void *ptr);
 extern BOOL __cdecl strstri(const char *a, const char *b);
-extern BOOL __cdecl boolstrcmpi(const char *a, const char *b);
-extern int __cdecl MyStrCmp (const char *a, const char *b);
-extern int __cdecl MyStrLen (const char *a);
-extern int __cdecl MyStrCmpi(const char *a, const char *b);
-extern int __cdecl MyStrCmpiT(const TCHAR *a, const TCHAR *b);
+extern BOOL __cdecl mir_bool_strcmpi(const char *a, const char *b);
+extern int __cdecl mir_strcmp (const char *a, const char *b);
+extern int __cdecl mir_strlen (const char *a);
+extern int __cdecl mir_strcmpi(const char *a, const char *b);
+extern int __cdecl mir_tstrcmpi(const TCHAR *a, const TCHAR *b);
 extern __inline void *mir_calloc( size_t num, size_t size );
 extern __inline char * mir_strdup(const char * src);
 extern __inline wchar_t * mir_strdupW(const wchar_t * src);
@@ -176,17 +176,17 @@ extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
 #undef HookEvent
 #undef UnhookEvent
 
-#define HookEvent(a,b)  MyHookEvent(a,b)
-#define UnhookEvent(a)  MyUnhookEvent(a)
+#define HookEvent(a,b)  mod_HookEvent(a,b)
+#define UnhookEvent(a)  mod_UnhookEvent(a)
 
-extern HANDLE MyHookEvent(char *EventID,MIRANDAHOOK HookProc);
-extern int MyUnhookEvent(HANDLE hHook);
+extern HANDLE mod_HookEvent(char *EventID,MIRANDAHOOK HookProc);
+extern int mod_UnhookEvent(HANDLE hHook);
 extern int UnhookAll();
 
 #ifndef MYCMP
 #define MYCMP 1
-#define strcmp(a,b) MyStrCmp(a,b)
-#define strlen(a) MyStrLen(a)
+#define strcmp(a,b) mir_strcmp(a,b)
+#define strlen(a) mir_strlen(a)
 #endif
 
 //  Register of plugin's user
@@ -246,7 +246,7 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 
 extern void TRACE_ERROR();
 extern BOOL DebugDeleteObject(HGDIOBJ a);
-extern BOOL ModernDeleteDC(HDC hdc);
+extern BOOL mod_DeleteDC(HDC hdc);
 extern BOOL ResetEffect(HDC hdc);
 extern BOOL SelectEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
 #define GLOBAL_PROTO_NAME "global_connect"
