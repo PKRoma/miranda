@@ -32,7 +32,7 @@ char* strip_html(char *src)
 	while ((ptr = strstr(rptr, "<A HREF=\"")) || (ptr = strstr(rptr, "<a href=\"")))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,strlen(dest),7);
+		dest=renew(dest,strlen(dest)+1,7);
 		rptr=dest;
 		ptr=rptr+addr;
 		memcpy(ptr,"[link: ",7);
@@ -118,7 +118,7 @@ wchar_t* strip_html(wchar_t *src)
 	while ((ptr = wcsstr(rptr, L"<A HREF=\"")) || (ptr = wcsstr(rptr, L"<a href=\"")))
 	{
        	int addr=ptr-rptr;
-		dest=renew(dest,wcslen(dest),7);
+		dest=renew<wchar_t>(dest,wcslen(dest)+2,7);
 		rptr=dest;
 		ptr=rptr+addr;
 		memcpy(ptr,L"[link: ",14);
@@ -171,20 +171,26 @@ wchar_t* strip_html(wchar_t *src)
     }
 	return dest;
 }
-void strip_special_chars(char *src, HANDLE hContact)
+char* strip_special_chars(char *src, HANDLE hContact)
 {
 	DBVARIANT dbv;
 	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		char *ptr;
-		while ((ptr = strstr(src, "%n")) != NULL)
+		char* dest=strldup(src,strlen(src));
+		while ((ptr = strstr(dest, "%n")) != NULL)
 		{
+			int addr=ptr-dest;
 			int	sn_length=strlen(dbv.pszVal);
+			dest=renew(dest,strlen(dest)+1,sn_length*2);
+			ptr=dest+addr;
 			memmove(ptr + sn_length, ptr + 2, strlen(ptr + 2) + sn_length);
 			memcpy(ptr,dbv.pszVal,sn_length);
 		}
 		DBFreeVariant(&dbv);
+		return dest;
 	}
+	return 0;
 }
 char* strip_carrots(char *src)// EAT!!!!!!!!!!!!!
 {
@@ -193,7 +199,7 @@ char* strip_carrots(char *src)// EAT!!!!!!!!!!!!!
 		while ((ptr = strstr(dest, "<")) != NULL)
 		{
 			int addr=ptr-dest;
-			dest=renew(dest,strlen(dest),7);
+			dest=renew(dest,strlen(dest)+1,7);
 			ptr=dest+addr;
 			memmove(ptr + 4, ptr + 1, strlen(ptr + 1)+1);
 			memcpy(ptr,"&lt;",4);
@@ -201,7 +207,7 @@ char* strip_carrots(char *src)// EAT!!!!!!!!!!!!!
 		while ((ptr = strstr(dest, ">")) != NULL)
 		{
 			int addr=ptr-dest;
-			dest=renew(dest,strlen(dest),7);
+			dest=renew(dest,strlen(dest)+1,7);
 			ptr=dest+addr;
 			memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
 			memcpy(ptr,"&gt;",4);
@@ -216,7 +222,7 @@ wchar_t* strip_carrots(wchar_t *src)// EAT!!!!!!!!!!!!!
 		while ((ptr = wcsstr(dest, L"<")) != NULL)
 		{
 			int addr=ptr-dest;
-			dest=renew(dest,wcslen(dest),7);
+			dest=renew(dest,wcslen(dest)+2,7);
 			ptr=dest+addr;
 			memmove(ptr + 4, ptr + 1, wcslen(ptr + 1)*2 + 8);
 			memcpy(ptr,L"&lt;",8);
@@ -224,7 +230,7 @@ wchar_t* strip_carrots(wchar_t *src)// EAT!!!!!!!!!!!!!
 		while ((ptr = wcsstr(dest, L">")) != NULL)
 		{
 			int addr=ptr-dest;
-			dest=renew(dest,wcslen(dest),7);
+			dest=renew(dest,wcslen(dest)+2,7);
 			ptr=dest+addr;
 			memmove(ptr + 4, ptr + 1, wcslen(ptr + 1)*2 + 8);
 			memcpy(ptr,L"&gt;",8);
@@ -243,7 +249,7 @@ char* strip_linebreaks(char *src)
 		while ((ptr = strstr(dest, "\n")) != NULL)
 		{
 			int addr=ptr-dest;
-			dest=renew(dest,strlen(dest),7);
+			dest=renew(dest,strlen(dest)+1,7);
 			ptr=dest+addr;
 			memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
 			memcpy(ptr,"<br>",4);
@@ -434,7 +440,7 @@ char* bbcodes_to_html(const char *src)
 	while ((ptr = strstr(rptr, "[color=")))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,strlen(dest),7);
+		dest=renew(dest,strlen(dest)+1,7);
 		rptr=dest;
 		ptr=rptr+addr;
 		memmove(ptr+5, ptr, strlen(ptr) + 1);
@@ -492,7 +498,7 @@ wchar_t* bbcodes_to_html(const wchar_t *src)
 	while ((ptr = wcsstr(rptr, L"[color=")))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,wcslen(dest),7);
+		dest=renew(dest,wcslen(dest)+2,7);
 		rptr=dest;
 		ptr=rptr+addr;
 		memmove(ptr+5, ptr, wcslen(ptr)*2 + 2);

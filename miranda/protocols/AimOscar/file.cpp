@@ -184,7 +184,7 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 						pfts.totalBytes=size;
 						char* buf = (char*)&ft;
 						Netlib_Send(hNewConnection,buf,sizeof(oft2),0);
-						file=renew(file,strlen(file),strlen((char*)&ft.filename)+1);
+						file=renew(file,strlen(file)+1,strlen((char*)&ft.filename)+1);
 						strcat(file,(char*)&ft.filename);
 						pfts.currentFile=file;
 						if((!(fd = fopen(file, "wb"))))

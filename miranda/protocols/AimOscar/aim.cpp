@@ -1,15 +1,15 @@
 #include "aim.h"
 PLUGINLINK *pluginLink;
-#define AIM_OSCAR_VERSION "\0\0\0\x04"
-char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.4";
+#define AIM_OSCAR_VERSION "\0\0\0\x05"
+char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.5";
 char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
-	"AIM OSCAR Plugin - Beta 4",
-	PLUGIN_MAKE_VERSION(0,0,0,4),
+	"AIM OSCAR Plugin - Beta 5",
+	PLUGIN_MAKE_VERSION(0,0,0,5),
 	"Provides basic support for AOL® OSCAR Instant Messenger protocol. [Built: "__DATE__" "__TIME__"]",
 	"Aaron Myles Landwehr",
-	"aaron@snaphat.com",
+	"aaron@miranda-im.org",
 	"© 2005-2006 Aaron Myles Landwehr",
 	"http://www.snaphat.com/oscar",
 	0,		//not transient
@@ -44,7 +44,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	char str2[MAX_PATH];
 	char store[MAX_PATH];
 	GetCurrentDirectory(sizeof(store),store);
-	CWD=(char*)realloc(CWD,strlen(store)+1);
+	CWD=(char*)new char[strlen(store)+1];
 	memcpy(CWD,store,strlen(store));
 	memcpy(&CWD[strlen(store)],"\0",1);
 	GetModuleFileName(conn.hInstance, str2, MAX_PATH);
@@ -53,32 +53,32 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	{
 		ZeroMemory(store,sizeof(store));
 		strlcpy(store, str1 + 1, strlen(str1 + 1) - 3);
-		AIM_PROTOCOL_NAME=(char*)realloc(AIM_PROTOCOL_NAME,strlen(store)+1);
-		memcpy(AIM_PROTOCOL_NAME,store,strlen(store));
-		memcpy(&AIM_PROTOCOL_NAME[strlen(store)],"\0",1);
+		AIM_PROTOCOL_NAME=new char[strlen(store)+1];
+		memcpy(AIM_PROTOCOL_NAME,store,strlen(store)+1);
 	}
 	CharUpper(AIM_PROTOCOL_NAME);
-	char groupid_key[32];//group to id
+	char groupid_key[MAX_PATH];//group to id
 	ZeroMemory(groupid_key,sizeof(groupid_key));
 	memcpy(groupid_key,AIM_PROTOCOL_NAME,strlen(AIM_PROTOCOL_NAME));
 	memcpy(&groupid_key[strlen(AIM_PROTOCOL_NAME)],AIM_MOD_GI,strlen(AIM_MOD_GI));
-	GROUP_ID_KEY=(char*)realloc(GROUP_ID_KEY,strlen(groupid_key)+1);
+	GROUP_ID_KEY=new char[strlen(groupid_key)+1];
 	memcpy(GROUP_ID_KEY,groupid_key,strlen(groupid_key));
 	memcpy(&GROUP_ID_KEY[strlen(groupid_key)],"\0",1);
-	char idgroup_key[32];//id to group
+	char idgroup_key[MAX_PATH];//id to group
 	ZeroMemory(idgroup_key,sizeof(idgroup_key));
 	memcpy(idgroup_key,AIM_PROTOCOL_NAME,strlen(AIM_PROTOCOL_NAME));
 	memcpy(&idgroup_key[strlen(AIM_PROTOCOL_NAME)],AIM_MOD_IG,strlen(AIM_MOD_IG));
-	ID_GROUP_KEY=(char*)realloc(ID_GROUP_KEY,strlen(idgroup_key)+1);
+	ID_GROUP_KEY=new char[strlen(idgroup_key)+1];
 	memcpy(ID_GROUP_KEY,idgroup_key,strlen(idgroup_key));
 	memcpy(&ID_GROUP_KEY[strlen(idgroup_key)],"\0",1);
-	char filetransfer_key[32];//
+	char filetransfer_key[MAX_PATH];//
 	ZeroMemory(filetransfer_key,sizeof(filetransfer_key));
 	memcpy(filetransfer_key,AIM_PROTOCOL_NAME,strlen(AIM_PROTOCOL_NAME));
 	memcpy(&filetransfer_key[strlen(AIM_PROTOCOL_NAME)],AIM_KEY_FT,strlen(AIM_KEY_FT));
-	FILE_TRANSFER_KEY=(char*)realloc(FILE_TRANSFER_KEY,strlen(filetransfer_key)+1);
+	FILE_TRANSFER_KEY=new char[strlen(filetransfer_key)+1];
 	memcpy(FILE_TRANSFER_KEY,filetransfer_key,strlen(filetransfer_key));
 	memcpy(&FILE_TRANSFER_KEY[strlen(filetransfer_key)],"\0",1);
+	int i=strlen(FILE_TRANSFER_KEY);
 	//end location of memory
 	pluginLink = link;
 	conn.status=ID_STATUS_OFFLINE;

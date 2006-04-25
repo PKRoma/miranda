@@ -343,7 +343,7 @@ static int BasicSearch(WPARAM wParam,LPARAM lParam)
 	if (conn.state!=1)
 		return 0;
 	char *sn=strldup((char*)lParam,strlen((char*)lParam));//duplicating the parameter so that it isn't deleted before it's needed- e.g. this function ends before it's used
-	ForkThread(basic_search_ack_success,sn);
+	ForkThread((pThreadFunc)basic_search_ack_success,sn);
 	return 1;
 }
 static int AddToList(WPARAM wParam,LPARAM lParam)

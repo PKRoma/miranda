@@ -1,12 +1,6 @@
 #ifndef FILE_H
 #define FILE_H
-#include <stdio.h>
-#include <windows.h>
-#include <newpluginapi.h>
-#include <m_netlib.h>
-#include <m_database.h>
 #include "defines.h"
-#include "connection.h"
 class oft2//oscar file transfer 2 class- See On_Sending_Files_via_OSCAR.pdf
  {
  public:

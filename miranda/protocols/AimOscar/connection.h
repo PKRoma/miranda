@@ -1,16 +1,6 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
-#include <stdio.h>
-#include <windows.h>
-#include <newpluginapi.h>
-#include <m_netlib.h>
-#include <m_database.h>
 #include "defines.h"
-#include "packets.h"
-#include "commands.h"
-#include "thread.h"
-#include "utility.h"
-#include "snac.h"
 #define HOOKEVENT_SIZE 8
 extern char* COOKIE;
 extern int COOKIE_LENGTH;

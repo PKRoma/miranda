@@ -155,10 +155,10 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 }
 int proxy_initialize_send(HANDLE connection,char* sn, char* cookie)
 {
-	char msg_frag[MSG_LEN*2];
 	char sn_length=strlen(sn);
 	unsigned short length = htons(39+sn_length);
 	char* clength =(char*)&length;
+	char* msg_frag= new char[25+sn_length+sizeof(AIM_CAP_SEND_FILES)];
 	memcpy(msg_frag,clength,2);
 	memcpy(&msg_frag[2],"\x04\x4a\0\x02\0\0\0\0\0\0",10);
 	memcpy(&msg_frag[12],(char*)&sn_length,1);
@@ -167,15 +167,22 @@ int proxy_initialize_send(HANDLE connection,char* sn, char* cookie)
 	memcpy(&msg_frag[21+sn_length],"\0\x01\0\x10",4);
 	memcpy(&msg_frag[25+sn_length],AIM_CAP_SEND_FILES,sizeof(AIM_CAP_SEND_FILES));
 	if(Netlib_Send(connection,msg_frag,(24+sn_length+sizeof(AIM_CAP_SEND_FILES)),0)==SOCKET_ERROR)
+	{
+		delete[] msg_frag;
 		return -1;
-	return 0;
+	}
+	else
+	{
+		delete[] msg_frag;
+		return 0;
+	}
 }
 int proxy_initialize_recv(HANDLE connection,char* sn, char* cookie,unsigned short port_check)
 {
-	char msg_frag[MSG_LEN*2];
 	char sn_length=strlen(sn);
 	unsigned short length = htons(41+sn_length);
 	char* clength =(char*)&length;
+	char* msg_frag= new char[27+sn_length+sizeof(AIM_CAP_SEND_FILES)];
 	memcpy(msg_frag,clength,2);
 	memcpy(&msg_frag[2],"\x04\x4a\0\x04\0\0\0\0\0\0",10);
 	memcpy(&msg_frag[12],(char*)&sn_length,1);
@@ -186,6 +193,13 @@ int proxy_initialize_recv(HANDLE connection,char* sn, char* cookie,unsigned shor
 	memcpy(&msg_frag[23+sn_length],"\0\x01\0\x10",4);
 	memcpy(&msg_frag[27+sn_length],AIM_CAP_SEND_FILES,sizeof(AIM_CAP_SEND_FILES));
 	if(Netlib_Send(connection,msg_frag,(26+sn_length+sizeof(AIM_CAP_SEND_FILES)),0)==SOCKET_ERROR)
+	{
+		delete[] msg_frag;
 		return -1;
-	return 0;
+	}
+	else
+	{
+		delete[] msg_frag;
+		return 0;
+	}
 }

@@ -1,21 +1,9 @@
 #ifndef CONV_H
 #define CONV_H
-#include <windows.h>
-#include <ctype.h>
-#include <malloc.h>
-#include <newpluginapi.h>
-#include <statusmodes.h>
-#include <m_protocols.h>
-#include <m_protomod.h>
-#include <m_protosvc.h>
-#include <m_clist.h>
-#include <m_clui.h>
 #include "defines.h"
-#include "connection.h"
-#include "resource.h"
 char* strip_html(char *src);
 wchar_t* strip_html(wchar_t *src);//wide char version
-void strip_special_chars(char *src,HANDLE hContact);
+char* strip_special_chars(char *src,HANDLE hContact);
 char* strip_carrots(char *src);
 wchar_t* strip_carrots(wchar_t *src);//wide char version
 char* strip_linebreaks(char *src);

@@ -1,14 +1,6 @@
 #ifndef THREAD_H
 #define THREAD_H
-#include <stdio.h>
-#include <windows.h>
-#include <process.h>
-#include <newpluginapi.h>
-#include <m_system.h>
-#include <m_netlib.h>
-#include <m_database.h>
 #include "defines.h"
-#include "aim.h"
 struct FORK_ARG
 {
 	HANDLE hEvent;

@@ -1,11 +1,58 @@
 #ifndef DEFINES_H
 #define DEFINES_H
+//System includes
+#include <windows.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <io.h>
+#include <malloc.h>
+#include <process.h>
+#include <prsht.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <time.h>
+//Miranda IM includes
+#include <newpluginapi.h>
+#include <statusmodes.h>
+#include <m_clist.h>
+#include <m_clui.h>
+#include "m_cluiframes.h"
+#include <m_database.h>
+#include <m_idle.h>
+#include <m_langpack.h>
+#include <m_message.h>
+#include <m_netlib.h>
+#include <m_options.h>
+#include <m_protocols.h>
+#include <m_protomod.h>
+#include <m_protosvc.h>
+#include <m_skin.h>
+#include <statusmodes.h>
+#include <m_system.h>
+#include <m_userinfo.h>
+#include <m_addcontact.h>
+//independent includes
+#include "strl.h"
+#include "flap.h"
+#include "snac.h"
+#include "tlv.h"
+//rest o includes
+#include "aim.h"
+#include "utility.h"
+#include "client.h"
+#include "connection.h"
+#include "conv.h"
+#include "direct_connect.h"
+#include "links.h"
+#include "packets.h"
+#include "proxy.h"
+#include "resource.h"
+#include "services.h"
+#include "server.h"
+#include "thread.h"
+#include "windows.h"
 //Packet Stuff
 #define MSG_LEN							4089
-#define FLAP_SIZE						6
-#define SNAC_SIZE						10
-#define TLV_HEADER_SIZE					4
-#define TLV_PART_SIZE					2
 //Extended Status Icon Numbers
 #define ACCOUNT_TYPE_UNCONFIRMED		1
 #define ACCOUNT_TYPE_CONFIRMED			2

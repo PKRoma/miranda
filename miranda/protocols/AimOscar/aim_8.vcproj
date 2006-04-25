@@ -54,6 +54,7 @@
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
+				TreatWChar_tAsBuiltInType="false"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Release/aim.pch"
 				AssemblerListingLocation=".\Release/"
@@ -148,6 +149,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;AIM_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough=""
 				PrecompiledHeaderFile=".\Debug/aim.pch"
@@ -235,10 +237,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\commands.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\connection.cpp"
 				>
 			</File>
@@ -279,10 +277,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\snac.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\strl.cpp"
 				>
 			</File>
@@ -298,6 +292,34 @@
 				RelativePath=".\windows.cpp"
 				>
 			</File>
+			<Filter
+				Name="classes"
+				>
+				<File
+					RelativePath=".\flap.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\snac.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\tlv.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="commands"
+				>
+				<File
+					RelativePath=".\client.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\server.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -342,10 +364,6 @@
 			>
 			<File
 				RelativePath=".\aim.h"
-				>
-			</File>
-			<File
-				RelativePath=".\commands.h"
 				>
 			</File>
 			<File
@@ -401,10 +419,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\snac.h"
-				>
-			</File>
-			<File
 				RelativePath=".\strl.h"
 				>
 			</File>
@@ -420,6 +434,34 @@
 				RelativePath=".\windows.h"
 				>
 			</File>
+			<Filter
+				Name="classes"
+				>
+				<File
+					RelativePath=".\flap.h"
+					>
+				</File>
+				<File
+					RelativePath=".\snac.h"
+					>
+				</File>
+				<File
+					RelativePath=".\tlv.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="commands"
+				>
+				<File
+					RelativePath=".\client.h"
+					>
+				</File>
+				<File
+					RelativePath=".\server.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\Makefile"

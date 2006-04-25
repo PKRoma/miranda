@@ -73,44 +73,36 @@ void __cdecl aim_connection_authorization()
 			unsigned short flap_length=0;
 			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
 			{
-				struct flap_header* flap=(struct flap_header*)&packetRecv.buffer[packetRecv.bytesUsed];
-				flap_length+=FLAP_SIZE;
-				if(packetRecv.bytesAvailable<flap_length)//Part of the tcp packet missing go back and get it.
-					break;
 				if(!packetRecv.buffer)
 					break;
-				flap_length+=htons(flap->len);
-				if(packetRecv.bytesAvailable<flap_length)//Part of the tcp packet missing go back and get it.
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
+				if(!flap.len())
 					break;
-				char* buf=new char[htons(flap->len)];
-				memcpy(buf,&packetRecv.buffer[flap_length-htons(flap->len)],htons(flap->len));
-				if(flap->type==1)
+				flap_length+=FLAP_SIZE+flap.len();
+				if(flap.cmp(0x01))
 				{
-					if(aim_send_connection_packet(buf)==0)//cookie challenge
+					if(aim_send_connection_packet(flap.val())==0)//cookie challenge
 					{
 						aim_authkey_request();//md5 authkey request
 					}
 				}
-				else if(flap->type==2)
+				else if(flap.cmp(0x02))
 				{
-					struct snac_header* snac=(struct snac_header*)buf;
-					snac->service=htons(snac->service);
-					snac->subgroup=htons(snac->subgroup);
-					if(snac->service==0x0017)
+					SNAC snac(flap.val(),flap.snaclen());
+					if(snac.cmp(0x0017))
 					{
-						snac_md5_authkey(snac->subgroup,buf);
-						if(snac_authorization_reply(snac->subgroup,buf,htons(flap->len))==1)
+						snac_md5_authkey(snac);
+						if(snac_authorization_reply(snac)==1)
 						{
 							delete[] conn.username;
 							delete[] conn.password;
 							Netlib_CloseHandle(conn.hServerPacketRecver);
 							LeaveCriticalSection(&connectionMutex);
-							delete[] buf;
 							return;
 						}
 					}
 				}
-				if(flap->type==4)
+				if(flap.cmp(0x04))
 				{
 					delete[] conn.username;
 					delete[] conn.password;
@@ -118,10 +110,8 @@ void __cdecl aim_connection_authorization()
 					Netlib_CloseHandle(conn.hServerPacketRecver);
 					broadcast_status(ID_STATUS_OFFLINE);
 					LeaveCriticalSection(&connectionMutex);
-					delete[] buf;
 					return;
 				}
-				delete[] buf;
 			}
 		}
 	}
@@ -158,63 +148,55 @@ void __cdecl aim_protocol_negotiation()
 			unsigned short flap_length=0;
 			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
 			{
-				struct flap_header* flap=(struct flap_header*)&packetRecv.buffer[packetRecv.bytesUsed];
-				flap_length+=FLAP_SIZE;
-				if(packetRecv.bytesAvailable<flap_length)//Part of the tcp packet missing go back and get it.
-					break;
 				if(!packetRecv.buffer)
 					break;
-				flap_length+=htons(flap->len);
-				if(packetRecv.bytesAvailable<flap_length)//Part of the tcp packet missing go back and get it.
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
+				if(!flap.len())
 					break;
-  				if(flap->type==1)
+				flap_length+=FLAP_SIZE+flap.len();
+  				if(flap.cmp(0x01))
 				{
 					aim_send_cookie(COOKIE_LENGTH,COOKIE);//cookie challenge
 					delete[] COOKIE;
 					COOKIE=NULL;
 					COOKIE_LENGTH=0;
 				}
-				else if(flap->type=2)
+				else if(flap.cmp(0x02))
 				{
-					char* buf=new char[htons(flap->len)];
-					memcpy(buf,&packetRecv.buffer[flap_length-htons(flap->len)],htons(flap->len));
-					struct snac_header* snac=(struct snac_header*)buf;
-					snac->service=htons(snac->service);
-					snac->subgroup=htons(snac->subgroup);
-					if(snac->service==0x0001)
+					SNAC snac(flap.val(),flap.snaclen());
+					if(snac.cmp(0x0001))
 					{
-						snac_supported_families(snac->subgroup);
-						snac_supported_family_versions(snac->subgroup);
-						snac_rate_limitations(snac->subgroup);
-						snac_error(snac->subgroup,buf);
+						snac_supported_families(snac);
+						snac_supported_family_versions(snac);
+						snac_rate_limitations(snac);
+						snac_error(snac);
 					}
-					else if(snac->service==0x0002)
+					else if(snac.cmp(0x0002))
 					{
-						snac_received_info(snac->subgroup,buf,htons(flap->len));
-						snac_error(snac->subgroup,buf);
+						snac_received_info(snac);
+						snac_error(snac);
 					}
-					else if(snac->service==0x0003)
+					else if(snac.cmp(0x0003))
 					{
-						snac_user_online(snac->subgroup,buf);
-						snac_user_offline(snac->subgroup,buf);
-						snac_error(snac->subgroup,buf);
+						snac_user_online(snac);
+						snac_user_offline(snac);
+						snac_error(snac);
 					}
-					else if(snac->service==0x0004)
+					else if(snac.cmp(0x0004))
 					{
-						snac_icbm_limitations(snac->subgroup);
-						snac_message_accepted(snac->subgroup,buf);
-						snac_received_message(snac->subgroup,buf,htons(flap->len));
-						snac_typing_notification(snac->subgroup,buf);
-						snac_error(snac->subgroup,buf);
+						snac_icbm_limitations(snac);
+						snac_message_accepted(snac);
+						snac_received_message(snac);
+						snac_typing_notification(snac);
+						snac_error(snac);
 					}
-					else if(snac->service==0x0013)
+					else if(snac.cmp(0x0013))
 					{
-						snac_contact_list(snac->subgroup,buf,htons(flap->len));
-						snac_error(snac->subgroup,buf);
+						snac_contact_list(snac);
+						snac_error(snac);
 					}
-					delete[] buf;
 				}
-				else if(flap->type==4)
+				else if(flap.cmp(0x04))
 				{
 					offline_contacts();
 					conn.state=0;

@@ -23,13 +23,14 @@
 # http://gnuwin32.sourceforge.net/.  Indent.exe will need to be in
 # the path or in the same directory as the source.
 ####################################################################
-SRC =	aim.cpp \
-      	commands.cpp \
+SRC =	snac.cpp \
+	flap.cpp \
+	conv.cpp \
+	aim.cpp \
  	connection.cpp \
 	md5.cpp \
 	packets.cpp \
 	services.cpp \
-	snac.cpp \
 	thread.cpp \
 	utility.cpp \
 	proxy.cpp	\
@@ -37,16 +38,25 @@ SRC =	aim.cpp \
 	file.cpp \
 	windows.cpp \
 	strl.cpp \
-	links.cpp
+	links.cpp \
+	server.cpp \
+	client.cpp \
+	error.cpp \
+	tlv.cpp 
+		
 OBJ =	$(SRC:.cpp=.o)
 RES = resource.res
-HDR =	aim.h \
-      	commands.h \
+HDR =	tlv.h \
+	snac.h \
+	flap.h  \
+	aim.h \
+	client.h \
  	connection.h \
 	md5.h \
 	packets.h \
 	services.h \
-	snac.h \
+	client.h \
+	server.h \
 	thread.h \
 	utility.h \
 	proxy.h	\
@@ -56,7 +66,9 @@ HDR =	aim.h \
 	windows. h \
 	m_cluiframes.h \
 	strl.h \
-	links.h
+	links.h \
+	error.h \
+	conv.h
 
 LIB = -lwsock32
 CC = g++

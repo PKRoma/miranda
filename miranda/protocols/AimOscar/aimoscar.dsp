@@ -97,7 +97,7 @@ SOURCE=.\aim.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\commands.cpp
+SOURCE=.\client.cpp
 # End Source File
 # Begin Source File
 
@@ -114,6 +114,10 @@ SOURCE=.\direct_connect.cpp
 # Begin Source File
 
 SOURCE=.\error.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\flap.cpp
 # End Source File
 # Begin Source File
 
@@ -145,6 +149,10 @@ SOURCE=.\snac.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\server.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\strl.cpp
 # End Source File
 # Begin Source File
@@ -154,6 +162,10 @@ SOURCE=.\thread.cpp
 # Begin Source File
 
 SOURCE=.\utility.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\tlv.cpp
 # End Source File
 # Begin Source File
 
@@ -169,11 +181,11 @@ SOURCE=.\aim.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\commands.h
+SOURCE=.\connection.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\connection.h
+SOURCE=.\client.h
 # End Source File
 # Begin Source File
 
@@ -190,6 +202,10 @@ SOURCE=.\direct_connect.h
 # Begin Source File
 
 SOURCE=.\error.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\flap.h
 # End Source File
 # Begin Source File
 
@@ -217,6 +233,10 @@ SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\server.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\services.h
 # End Source File
 # Begin Source File
@@ -234,6 +254,10 @@ SOURCE=.\thread.h
 # Begin Source File
 
 SOURCE=.\utility.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\tlv.h
 # End Source File
 # Begin Source File
 

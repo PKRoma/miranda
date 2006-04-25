@@ -164,16 +164,28 @@
 				RelativePath=".\aim.rc">
 			</File>
 			<File
-				RelativePath=".\commands.cpp">
+				RelativePath=".\client.cpp">
 			</File>
 			<File
 				RelativePath=".\connection.cpp">
 			</File>
 			<File
+				RelativePath=".\conv.cpp">
+			</File>
+			<File
 				RelativePath=".\direct_connect.cpp">
 			</File>
 			<File
+				RelativePath=".\error.cpp">
+			</File>
+			<File
 				RelativePath=".\file.cpp">
+			</File>
+			<File
+				RelativePath=".\flap.cpp">
+			</File>
+			<File
+				RelativePath=".\links.cpp">
 			</File>
 			<File
 				RelativePath=".\md5.cpp">
@@ -183,6 +195,9 @@
 			</File>
 			<File
 				RelativePath=".\proxy.cpp">
+			</File>
+			<File
+				RelativePath=".\server.cpp">
 			</File>
 			<File
 				RelativePath=".\services.cpp">
@@ -200,13 +215,13 @@
 				RelativePath=".\thread.cpp">
 			</File>
 			<File
+				RelativePath=".\tlv.cpp">
+			</File>
+			<File
 				RelativePath=".\utility.cpp">
 			</File>
 			<File
 				RelativePath=".\windows.cpp">
-			</File>
-			<File
-				RelativePath=".\links.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -244,10 +259,13 @@
 				RelativePath=".\aim.h">
 			</File>
 			<File
-				RelativePath=".\commands.h">
+				RelativePath=".\client.h">
 			</File>
 			<File
 				RelativePath=".\connection.h">
+			</File>
+			<File
+				RelativePath=".\conv.h">
 			</File>
 			<File
 				RelativePath=".\defines.h">
@@ -256,7 +274,16 @@
 				RelativePath=".\direct_connect.h">
 			</File>
 			<File
+				RelativePath=".\error.h">
+			</File>
+			<File
 				RelativePath=".\file.h">
+			</File>
+			<File
+				RelativePath=".\flap.h">
+			</File>
+			<File
+				RelativePath=".\links.h">
 			</File>
 			<File
 				RelativePath=".\m_cluiframes.h">
@@ -274,6 +301,9 @@
 				RelativePath=".\resource.h">
 			</File>
 			<File
+				RelativePath=".\server.h">
+			</File>
+			<File
 				RelativePath=".\services.h">
 			</File>
 			<File
@@ -283,13 +313,13 @@
 				RelativePath=".\thread.h">
 			</File>
 			<File
+				RelativePath=".\tlv.h">
+			</File>
+			<File
 				RelativePath=".\utility.h">
 			</File>
 			<File
 				RelativePath=".\windows.h">
-			</File>
-			<File
-				RelativePath=".\links.h">
 			</File>
 		</Filter>
 		<File

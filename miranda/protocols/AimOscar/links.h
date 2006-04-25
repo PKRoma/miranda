@@ -19,14 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #ifndef LINKS_H
 #define LINKS_H
-#include <stdio.h>
-#include <windows.h>
-#include <newpluginapi.h>
-#include <m_protosvc.h>
-#include <m_addcontact.h>
-#include <m_message.h>
-#include "aim.h"
-#include "utility.h"
 #include "defines.h"
 void aim_links_unregister();
 void aim_links_init();

@@ -10,6 +10,7 @@ int OptionsInit(WPARAM wParam,LPARAM lParam)
     odp.pszTitle = Translate(AIM_PROTOCOL_NAME);
     odp.pfnDlgProc = options_dialog;
     odp.flags = ODPF_BOLDGROUPS;
+	odp.nIDBottomSimpleControl=IDC_OPTIONS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 	return 0;
 }
@@ -93,7 +94,6 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	{
         case WM_INITDIALOG:
         {
-
             DBVARIANT dbv;
             TranslateDialogDefault(hwndDlg);
             if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))

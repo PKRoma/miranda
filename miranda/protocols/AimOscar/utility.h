@@ -15,20 +15,7 @@
 #endif
 
 #endif
-#include <windows.h>
-#include <ctype.h>
-#include <malloc.h>
-#include <newpluginapi.h>
-#include <statusmodes.h>
-#include <m_protocols.h>
-#include <m_protomod.h>
-#include <m_protosvc.h>
-#include <m_clist.h>
-#include <m_clui.h>
 #include "defines.h"
-#include "connection.h"
-#include "conv.h"
-#include "resource.h"
 void broadcast_status(int status);
 void start_connection(int initial_status);
 HANDLE find_contact(char * sn);
@@ -43,8 +30,8 @@ void execute_cmd(char* type,char* arg);
 void create_group(char *group, unsigned short group_id);
 unsigned short search_for_free_group_id(char *name);
 unsigned short search_for_free_item_id(HANDLE hbuddy);
-unsigned short get_members_of_group(unsigned short group_id,char* list);
-void __cdecl basic_search_ack_success(void *snsearch);
+char* get_members_of_group(unsigned short group_id,unsigned short &size);
+void __cdecl basic_search_ack_success(char *snsearch);
 void delete_module(char* module, HANDLE hContact);
 //void delete_empty_group(unsigned short group_id);
 //void delete_all_empty_groups();
@@ -76,6 +63,19 @@ void set_extra_icon(char* data);
 //char* get_outer_group();
 void wcs_htons(wchar_t * ch);
 void assign_modmsg(char* msg);
-char* renew(char* src,int size, int size_chg);
-wchar_t* renew(wchar_t* src,int size, int size_chg);
+/*
+char* renew(char* src,int size, int size_chg);*/
+//wchar_t* renew(wchar_t* src,int size, int size_chg);
+//template <class T>
+//T* renew(T* src, int size, int size_chg);
+template <class T>
+T* renew(T* src, int size, int size_chg)
+{
+	T* dest=new T[size+size_chg];
+	memcpy(dest,src,size*sizeof(T));
+	int i=sizeof(T);
+	delete[] src;
+	return dest;
+}
+
 #endif
