@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "../../core/commonheaders.h"
-#include "database.h"
+//#include "database.h"
 
 static HANDLE hIniChangeNotification;
 static char szMirandaBootIni[MAX_PATH];

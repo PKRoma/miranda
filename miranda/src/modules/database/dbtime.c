@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
-#include "database.h"
+//#include "database.h"
 
 static int daysInMonth[12]={31,28,31,30,31,30,31,31,30,31,30,31};
 static int IsLeapYear(int year)
