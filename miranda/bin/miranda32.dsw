@@ -7,74 +7,6 @@ Project: "IRC"=..\protocols\IRC\IRC.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/protocols/IRC", IDQAAAAA
-    ..\protocols\irc
-    end source code control
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "NewEventNotify"=..\plugins\NewEventNotify\NewEventNotify.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-    begin source code control
-    "$/Miranda/miranda/plugins/NewEventNotify", XNDAAAAA
-    ..\plugins\neweventnotify
-    end source code control
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "PopUp"=..\plugins\popup\PopUp.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-    begin source code control
-    "$/Miranda/miranda/plugins/PopUp", GLIAAAAA
-    ..\plugins\popup
-    end source code control
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "VersionInfo"=..\plugins\VersionInfo\VersionInfo.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-    begin source code control
-    "$/Miranda/miranda/plugins/VersionInfo", LLIAAAAA
-    ..\plugins\versioninfo
-    end source code control
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "Wassup"=..\plugins\wassup\Wassup.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-    begin source code control
-    "$/Miranda/miranda/plugins/wassup", FODAAAAA
-    ..\plugins\wassup
-    end source code control
 }}}
 
 Package=<4>
@@ -87,10 +19,6 @@ Project: "Yahoo"=..\protocols\Yahoo\Yahoo.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/protocols/Yahoo", TLIAAAAA
-    ..\protocols\yahoo
-    end source code control
 }}}
 
 Package=<4>
@@ -103,10 +31,6 @@ Project: "aim"=..\protocols\AimOscar\aimoscar.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/protocols/AimTOC2", YCPAAAAA
-    ..\protocols\aimtoc2
-    end source code control
 }}}
 
 Package=<4>
@@ -119,10 +43,6 @@ Project: "changeinfo"=..\plugins\changeinfo\changeinfo.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/changeinfo", RKIAAAAA
-    ..\plugins\changeinfo
-    end source code control
 }}}
 
 Package=<4>
@@ -135,10 +55,6 @@ Project: "chat"=..\plugins\chat\chat.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/chat", VONAAAAA
-    ..\plugins\chat
-    end source code control
 }}}
 
 Package=<4>
@@ -151,10 +67,6 @@ Project: "clist"=..\plugins\clist\clist.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/clist", SKIAAAAA
-    ..\plugins\clist
-    end source code control
 }}}
 
 Package=<4>
@@ -167,42 +79,6 @@ Project: "clist_nicer"=..\plugins\clist_nicer\clist.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/clist_nicer", JBOAAAAA
-    ..\plugins\clist_nicer
-    end source code control
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "contacts"=..\plugins\contacts\contacts.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-    begin source code control
-    "$/Miranda/miranda/plugins/contacts", TKIAAAAA
-    ..\plugins\contacts
-    end source code control
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "contactsex"=..\plugins\contactsex\contactsex.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-    begin source code control
-    "$/Miranda/miranda/plugins/contactsex", UKIAAAAA
-    ..\plugins\contactsex
-    end source code control
 }}}
 
 Package=<4>
@@ -215,26 +91,6 @@ Project: "db3x"=..\plugins\db3x\db3x.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/db3x", WKIAAAAA
-    ..\plugins\db3x
-    end source code control
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "dbeditorpp"=..\plugins\dbeditor\dbeditorpp.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-    begin source code control
-    "$/Miranda/miranda/plugins/dbeditor", PNDAAAAA
-    ..\plugins\dbeditor
-    end source code control
 }}}
 
 Package=<4>
@@ -247,10 +103,6 @@ Project: "dbsqlite"=..\plugins\dbsqlite\dbsqlite.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/dbsqlite", XKPAAAAA
-    ..\plugins\dbsqlite
-    end source code control
 }}}
 
 Package=<4>
@@ -275,30 +127,10 @@ Package=<4>
 
 ###############################################################################
 
-Project: "fastlock"=..\plugins\fastlock\fastlock.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-    begin source code control
-    "$/Miranda/miranda/plugins/fastlock", XKIAAAAA
-    ..\plugins\fastlock
-    end source code control
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
 Project: "help"=..\plugins\help\help.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/help", YKIAAAAA
-    ..\plugins\help
-    end source code control
 }}}
 
 Package=<4>
@@ -311,10 +143,6 @@ Project: "icqoscar8"=..\protocols\IcqOscarJ\icqoscar8.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/protocols/icqoscarj", QLIAAAAA
-    ..\protocols\icqoscarj
-    end source code control
 }}}
 
 Package=<4>
@@ -327,10 +155,6 @@ Project: "import"=..\plugins\import\import.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/import", BLIAAAAA
-    ..\plugins\import
-    end source code control
 }}}
 
 Package=<4>
@@ -343,26 +167,6 @@ Project: "jabberg"=..\protocols\JabberG\jabber.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/protocols/JabberG", NEOAAAAA
-    ..\protocols\jabberg
-    end source code control
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "loadavatars"=..\plugins\avatarservice\avatars.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-    begin source code control
-    "$/Miranda/miranda/plugins/avatarservice", EORAAAAA
-    ..\plugins\avatarservice
-    end source code control
 }}}
 
 Package=<4>
@@ -375,10 +179,6 @@ Project: "miranda32"=..\src\miranda32.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda", SHIAAAAA
-    ..
-    end source code control
 }}}
 
 Package=<4>
@@ -391,10 +191,6 @@ Project: "modernb"=..\plugins\modernb\modernb.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/modernb", FQUAAAAA
-    ..\plugins\modernb
-    end source code control
 }}}
 
 Package=<4>
@@ -407,10 +203,6 @@ Project: "msn"=..\protocols\MSN\msn.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/protocols/msn", SLIAAAAA
-    ..\protocols\msn
-    end source code control
 }}}
 
 Package=<4>
@@ -423,10 +215,6 @@ Project: "mwclist"=..\plugins\mwclist\mwclist.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/mwclist", SLIAAAAA
-    ..\plugins\mwclist
-    end source code control
 }}}
 
 Package=<4>
@@ -439,10 +227,6 @@ Project: "png2dib"=..\plugins\png2dib\png2dib.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/png2dib", FLIAAAAA
-    ..\plugins\png2dib
-    end source code control
 }}}
 
 Package=<4>
@@ -455,10 +239,6 @@ Project: "srmm"=..\plugins\srmm\srmm.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/srmm", ILIAAAAA
-    ..\plugins\srmm
-    end source code control
 }}}
 
 Package=<4>
@@ -471,10 +251,6 @@ Project: "tabSRMM"=..\plugins\tabsrmm\tabsrmm.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/plugins/tabsrmm", JLIAAAAA
-    ..\plugins\tabsrmm
-    end source code control
 }}}
 
 Package=<4>
@@ -487,10 +263,6 @@ Global:
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/Bin", LCLAAAAA
-    .
-    end source code control
 }}}
 
 Package=<3>
