@@ -39,7 +39,7 @@ static int AboutCommand(WPARAM wParam,LPARAM lParam)
 
 static int IndexCommand(WPARAM wParam,LPARAM lParam)
 {
-	CallService(MS_UTILS_OPENURL,1,(LPARAM)"http://www.miranda-im.org/help/");
+	CallService(MS_UTILS_OPENURL,1,(LPARAM)"http://www.miranda-im.org/support/");
 	return 0;
 }
 
@@ -90,7 +90,7 @@ int LoadHelpModule(void)
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 	mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDAWEBSITE));
 	mi.position=2000050000;
-	mi.pszName=Translate("&Miranda IM Website");
+	mi.pszName=Translate("&Miranda IM Homepage");
 	mi.hotKey=0;
 	mi.pszService="Help/WebsiteCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
