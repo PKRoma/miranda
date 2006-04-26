@@ -296,7 +296,9 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0);
 					//End Format Outgoing Messages
 
-					if (!IsDlgButtonChecked(hwndDlg, IDC_WEBSUPPORT) && DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AL, 0)) {
+					if (!IsDlgButtonChecked(hwndDlg, IDC_WEBSUPPORT) && DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AL, 0))
+					{
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AL, 0);
                         aim_links_unregister();
                     }
                     if (IsDlgButtonChecked(hwndDlg, IDC_WEBSUPPORT))
