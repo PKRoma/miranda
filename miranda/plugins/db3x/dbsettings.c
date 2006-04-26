@@ -882,7 +882,7 @@ static int EnumContactSettings(WPARAM wParam,LPARAM lParam)
 	struct DBContact dbc;
 	struct DBContactSettings dbcs;
 	DWORD ofsModuleName,ofsContact,ofsBlobPtr;
-	int bytesRemaining;
+	int bytesRemaining, result;
 	PBYTE pBlob;
 	char szSetting[256];
 
@@ -911,16 +911,17 @@ static int EnumContactSettings(WPARAM wParam,LPARAM lParam)
 		LeaveCriticalSection(&csDbAccess);
 		return -1;
 	}
-	while(pBlob[0]) {
+	result = 0;
+	while(pBlob[0]&&result==0) {
 		NeedBytes(1);
 		NeedBytes(1+pBlob[0]);
 		CopyMemory(szSetting,pBlob+1,pBlob[0]); szSetting[pBlob[0]]=0;
-		(dbces->pfnEnumProc)(szSetting,dbces->lParam);
+		result = (dbces->pfnEnumProc)(szSetting,dbces->lParam);
 		MoveAlong(1+pBlob[0]);
 		NeedBytes(3);
 		MoveAlong(1+GetSettingValueLength(pBlob));
 		NeedBytes(1);
 	}
 	LeaveCriticalSection(&csDbAccess);
-	return 0;
+	return result;
 }
