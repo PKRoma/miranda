@@ -158,13 +158,13 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 			char* user_id_array=get_members_of_group(new_group_id,user_id_array_size);
 			if(old_group_id)
 				aim_delete_contact(dbv.pszVal,item_id,old_group_id);
-			Sleep(500);
+			Sleep(1000);
 			aim_add_contact(dbv.pszVal,item_id,new_group_id);
-			Sleep(500);
+			Sleep(1000);
 			if(!group_exist)
 			{
 				aim_add_group(group,new_group_id);//add the group server-side even if it exist
-				Sleep(500);
+				Sleep(1000);
 			}
 			aim_mod_group(group,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
 			DBFreeVariant(&dbv);

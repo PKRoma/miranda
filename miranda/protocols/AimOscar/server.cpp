@@ -465,9 +465,9 @@ void snac_contact_list(SNAC &snac)//family 0x0013
 	if(snac.subcmp(0x0006))
 	{
 		conn.buddy_list_received=1;
-		int item_length=snac.len()-7;// +4 for end of snac
-		char* items=snac.part(3,item_length);
-		for(int offset=0;offset<snac.len();)
+		//int item_length=snac.len()-7;// +4 for end of snac
+		//char* items=snac.part(3,item_length);
+		for(int offset=3;offset<snac.len();)
 		{	
 			unsigned short name_length=snac.ushort(offset);
 			//char name[257];
@@ -518,7 +518,7 @@ void snac_contact_list(SNAC &snac)//family 0x0013
 			offset+=(name_length+10+tlv_size);
 			delete[] name;
 		}
-		delete[] items;
+		//delete[] items;
 	}
 }
 void snac_message_accepted(SNAC &snac)//family 0x004
