@@ -1,7 +1,7 @@
 Miranda Language Pack Version 1
 Locale: 0809
 Authors: Miranda IM Development Team
-Author-email: info@miranda-im.org
+Author-email: project-info@miranda-im.org
 Last-Modified-Using: Miranda IM 0.4
 Plugins-included:
 

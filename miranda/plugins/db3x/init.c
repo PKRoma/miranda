@@ -157,8 +157,8 @@ static PLUGININFO pluginInfo = {
 	PLUGIN_MAKE_VERSION(0,5,1,0),
 	"Provides Miranda database support: global settings, contacts, history, settings per contact.",
 	"Miranda-IM project",
-	"egodust@users.sourceforge.net",
-	"Copyright 2000-2005 Miranda-IM project",
+	"ghazan@miranda-im.org",
+	"Copyright 2000-2006 Miranda IM project",
 	"",
 	0,
 	DEFMOD_DB

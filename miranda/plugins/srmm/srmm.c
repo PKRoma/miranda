@@ -38,8 +38,8 @@ PLUGININFO pluginInfo = {
 	PLUGIN_MAKE_VERSION(2, 4, 0, 0),
 	"Send and receive instant messages",
 	"Miranda IM Development Team",
-	"info@miranda-im.org",
-	"Copyright © 2000-2005 Miranda ICQ/IM Project",
+	"rainwater@miranda-im.org",
+	"Copyright 2000-2006 Miranda IM project",
 	"http://www.miranda-im.org",
 	0,
 	DEFMOD_SRMESSAGE            // replace internal version (if any)

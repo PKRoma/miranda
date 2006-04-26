@@ -71,8 +71,8 @@ PLUGININFO pluginInfo = {
 		
 	"Display contacts, event notifications, protocol status",
 	"Miranda IM project",
-	"egodust@users.sourceforge.net",
-	"Copyright 2000-2005 Miranda-IM project",
+	"ghazan@miranda-im.org",
+	"Copyright 2000-2006 Miranda IM project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL

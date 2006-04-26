@@ -1,30 +1,26 @@
 Miranda IM is brought to you by:
+Martin Öberg
+George Hazan
+Robert Rainwater
+Lyon Lim
+Gennady Feldman
+Joe Kucera
+Adam Strzelecki
+Piotr Piastucki
+Alex Sanda
 
-Martin Öberg (Strickz) [admin && random coder]
-Robert Rainwater (rainwater) [admin && coder]
-Sam K (egoDust) [admin && coder]
-Lyon Lim (lynlimz) [webmaster]
-George Hazan (ghazan) [MSN, Jabber developer]
-Jörgen Persson (i_am_matrix) [IRC developer]
-Gennady Feldman (Gena01) [Yahoo developer]
-Joe Kucera (jokusoftware) [ICQ developer] 
-Adam Strzelecki (OnO) [Gadu Gadu developer]
-Piotr Piastucki (the_leech) [tlen developer]
-Alex Sanda (Nightwish) [tabsrmm developer]
-
--- More people should be added here, need to ask em first --
-
-And where are these people?
-
-Cyreve, who made Miranda what it is today
-Emostar, who wrote a lot of the new ICQ protocol code
-Esnow, who wrote more code
-Figbug, who was in control before 0.1.0.0 and wrote a lot of that code
-Tristan_VdV, who wrote lots of code before 0.1.0.0
-Crypt0gl, who created the basic website design
-Lowspirit, who does some very nice UI design
-Glutnix, who asked to be described as an icon wrangler
-Santithorn Bunchua (keh), who originally wrote Jabber
+Retired Members:
+Richard Hughes
+Emostar
+Esnow
+Figbug
+Tristan_VdV
+Crypt0gl
+Lowspirit
+Glutnix
+Santithorn Bunchua
+Sam K
+Jörgen Persson
 
 All the plugin developers, who are too multitudinous to name individually, but you can find out who they are when you download their work from the website.
 
