@@ -2279,7 +2279,7 @@ IDB_SORTCOLDOWN         BITMAP  MOVEABLE PURE   "res\\sortcold.bmp"
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-
+#include "version.rc"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
