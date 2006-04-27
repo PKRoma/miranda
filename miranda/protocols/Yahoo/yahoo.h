@@ -206,10 +206,6 @@ void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type);
 void YAHOO_SendAvatar(y_filetransfer *sf);
 void YAHOO_set_avatar(int buddy_icon);
 
-typedef	BOOL ( *pfnConvertPng2dib )( char*, size_t, BITMAPINFOHEADER** );
-typedef	BOOL ( *pfnConvertDib2png )( BITMAPINFO*, BYTE* pDiData, BYTE* result, long* resLen );
-
-extern pfnConvertPng2dib png2dibConvertor;
 BOOL YAHOO_LoadPngModule();
 int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );

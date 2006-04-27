@@ -23,6 +23,7 @@
 #include <m_skin.h>
 #include <m_popup.h>
 #include <m_message.h>
+#include <m_png.h>
 #include "utf8.h"
 
 typedef struct {
@@ -970,7 +971,11 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 			if ( !YAHOO_LoadPngModule() ) 
 				return;
 
-			if ( !png2dibConvertor( pBuff, rsize, &pDib )) {
+			PNG2DIB convert;
+		    convert.pSource = (BYTE*)pBuff;
+		    convert.cbSourceSize = rsize;
+		    convert.pResult = &pDib;
+		    if ( !CallService( MS_PNG2DIB, 0, (LPARAM)&convert) ) {
 				FREE(pBuff);
 				return;
 			}

@@ -25,15 +25,9 @@
 #include <m_message.h>
 #include <m_idle.h>
 #include <m_userinfo.h>
+#include <m_png.h>
 
 static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-static HMODULE sttPngLib = NULL;
-
-//extern pfnConvertPng2dib png2dibConvertor;
-
-pfnConvertPng2dib png2dibConvertor = NULL;
-pfnConvertDib2png dib2pngConvertor = NULL;
 
 int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );
@@ -43,42 +37,14 @@ HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );
  */
 BOOL YAHOO_LoadPngModule()
 {
-	if ( sttPngLib == NULL ) {
-		if (( sttPngLib = LoadLibrary( "png2dib.dll" )) == NULL ) {
-			char tDllPath[ MAX_PATH ];
-			GetModuleFileName( hinstance, tDllPath, sizeof( tDllPath ));
-			{
-				char* p = strrchr( tDllPath, '\\' );
-				if ( p != NULL )
-					strcpy( p+1, "png2dib.dll" );
-				else
-					strcpy( tDllPath, "png2dib.dll" );
-			}
+	if ( !ServiceExists(MS_DIB2PNG) || !ServiceExists(MS_PNG2DIB)) {
+		//DialogBox( hInst, MAKEINTRESOURCE( IDD_GET_PNG2DIB ), NULL, LoadPng2dibProc );
+		MessageBox( NULL, Translate( "Your png2dib.dll is either obsolete or damaged. " ),
+				Translate( "Error" ), MB_OK | MB_ICONSTOP );
+		return FALSE;
+	}
 
-			if (( sttPngLib = LoadLibrary( tDllPath )) == NULL ) {
-				MessageBox( NULL,
-					Translate( "Please install png2dib.dll for avatar support. " ),
-					Translate( "Error" ),
-					MB_OK | MB_ICONSTOP );
-				YAHOO_SetByte("ShowAvatars", 0);
-				return FALSE;
-		}	}
-
-		png2dibConvertor = ( pfnConvertPng2dib )GetProcAddress( sttPngLib, "mempng2dib" );
-		dib2pngConvertor = ( pfnConvertDib2png )GetProcAddress( sttPngLib, "dib2mempng" );
-		//getver           = ( pfnGetVer )        GetProcAddress( sttPngLib, "getver" );
-		if ( png2dibConvertor == NULL || dib2pngConvertor == NULL /*|| getver == NULL*/ ) {
-			FreeLibrary( sttPngLib ); sttPngLib = NULL;
-			MessageBox( NULL,
-				Translate( "Your png2dib.dll is either obsolete or damaged. " ),
-				Translate( "Error" ),
-				MB_OK | MB_ICONSTOP );
-
-			//goto LBL_Error;
-			return FALSE;
-	}	}
-
-	return TRUE;
+	return TRUE;		
 }
 
 int OnDetailsInit(WPARAM wParam, LPARAM lParam)
@@ -403,26 +369,33 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	SelectObject( hdc, hOldBitmap );
 	DeleteDC( hdc );
 
-	if ( dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, NULL, &dwPngSize ) == 0 ) {
+	DIB2PNG convertor;
+	convertor.pbmi = ( BITMAPINFO* )pDib;
+	convertor.pDiData = pDibBits;
+	convertor.pResult = NULL;
+	convertor.pResultLen = &dwPngSize;
+	if ( !CallService( MS_DIB2PNG, 0, (LPARAM)&convertor )) {
+
 		GlobalFree( pDib );
 		return 2;
 	}
 
-	{	char* pPngMemBuffer = (char*) malloc(dwPngSize);
-		dib2pngConvertor(( BITMAPINFO* )pDib, pDibBits, pPngMemBuffer, &dwPngSize );
-		GlobalFree( pDib );
-		{	
-			FILE* out;
-			char tFileName[ MAX_PATH ];
-			GetAvatarFileName( NULL, tFileName, sizeof tFileName, 2);
-			out = fopen( tFileName, "wb" );
-			if ( out != NULL ) {
-				fwrite( pPngMemBuffer, dwPngSize, 1, out );
-				fclose( out );
-			}	
-		}
-		free(pPngMemBuffer);
+	convertor.pResult = (char *)malloc(dwPngSize);
+	CallService( MS_DIB2PNG, 0, (LPARAM)&convertor );
+
+	GlobalFree( pDib );
+	{	
+		FILE* out;
+		char tFileName[ MAX_PATH ];
+		GetAvatarFileName( NULL, tFileName, sizeof tFileName, 2);
+		out = fopen( tFileName, "wb" );
+		if ( out != NULL ) {
+			fwrite( convertor.pResult, dwPngSize, 1, out );
+			fclose( out );
+		}	
 	}
+	free(convertor.pResult);
+
 	return ERROR_SUCCESS;
 }
 
