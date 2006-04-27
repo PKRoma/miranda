@@ -44,7 +44,7 @@ void FreeGlobals() {
 	int i;
 
 	if (g_dat) {
-		for (i=0;i<sizeof(g_dat->hIcons)/sizeof(g_dat->hIcons[0]);i++)
+		for (i=0; i < SIZEOF(g_dat->hIcons); i++)
 			DestroyIcon(g_dat->hIcons[i]);
 		free(g_dat);
 	}

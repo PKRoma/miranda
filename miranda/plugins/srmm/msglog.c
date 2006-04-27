@@ -32,7 +32,7 @@ static int logPixelSY;
 #define LOGICON_MSG_OUT     1
 #define LOGICON_MSG_NOTICE  2
 static PBYTE pLogIconBmpBits[3];
-static int logIconBmpSize[sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0])];
+static int logIconBmpSize[ SIZEOF(pLogIconBmpBits) ];
 static HIMAGELIST g_hImageList;
 
 #define STREAMSTAGE_HEADER  0
@@ -448,7 +448,7 @@ void LoadMsgLogIcons(void)
 	int rtfHeaderSize;
 	PBYTE pBmpBits;
 
-	g_hImageList = ImageList_Create(10, 10, IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]), 0);
+	g_hImageList = ImageList_Create(10, 10, IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, SIZEOF(pLogIconBmpBits), 0);
 	hBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
 	bih.biSize = sizeof(bih);
 	bih.biBitCount = 24;
@@ -464,7 +464,7 @@ void LoadMsgLogIcons(void)
 	hBmp = CreateCompatibleBitmap(hdc, bih.biWidth, bih.biHeight);
 	hdcMem = CreateCompatibleDC(hdc);
 	pBmpBits = (PBYTE) malloc(widthBytes * bih.biHeight);
-	for (i = 0; i < sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++) {
+	for (i = 0; i < SIZEOF(pLogIconBmpBits); i++) {
 		switch (i) {
 			case LOGICON_MSG_IN:
 				hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_INCOMING));
@@ -511,7 +511,7 @@ void LoadMsgLogIcons(void)
 void FreeMsgLogIcons(void)
 {
 	int i;
-	for (i = 0; i < sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++)
+	for (i = 0; i < SIZEOF(pLogIconBmpBits); i++)
 		free(pLogIconBmpBits[i]);
 	ImageList_RemoveAll(g_hImageList);
 	ImageList_Destroy(g_hImageList);

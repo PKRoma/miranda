@@ -50,7 +50,7 @@ static fontOptionsList[] = {
 	{_T("Message area"), RGB(0, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -12},
 	{_T("Notices"), RGB(90, 90, 160), _T("Arial"), DEFAULT_CHARSET, 0, -12},
 };
-const int msgDlgFontCount = sizeof(fontOptionsList) / sizeof(fontOptionsList[0]);
+const int msgDlgFontCount = SIZEOF(fontOptionsList);
 
 void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF * colour)
 {
@@ -84,7 +84,7 @@ void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF * colour)
 		if (DBGetContactSettingTString(NULL, SRMMMOD, str, &dbv))
 			lstrcpy(lf->lfFaceName, fontOptionsList[i].szDefFace);
 		else {
-			lstrcpyn(lf->lfFaceName, dbv.ptszVal, sizeof(lf->lfFaceName));
+			lstrcpyn(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
 			DBFreeVariant(&dbv);
 		}
 	}
@@ -149,7 +149,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
-			FillCheckBoxTree(GetDlgItem(hwndDlg, IDC_POPLIST), statusValues, sizeof(statusValues) / sizeof(statusValues[0]),
+			FillCheckBoxTree(GetDlgItem(hwndDlg, IDC_POPLIST), statusValues, SIZEOF(statusValues),
                              DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS));
 			CheckDlgButton(hwndDlg, IDC_SHOWBUTTONLINE, g_dat->flags&SMF_SHOWBTNS);
 			CheckDlgButton(hwndDlg, IDC_SHOWINFOLINE, g_dat->flags&SMF_SHOWINFO);
@@ -436,10 +436,10 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					cf.lpLogFont = &lf;
 					cf.Flags = CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS;
 					if (ChooseFont(&cf)) {
-						int selItems[sizeof(fontOptionsList) / sizeof(fontOptionsList[0])];
+						int selItems[ SIZEOF(fontOptionsList) ];
 						int sel, selCount;
 
-						selCount = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETSELITEMS, sizeof(fontOptionsList) / sizeof(fontOptionsList[0]), (LPARAM) selItems);
+						selCount = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETSELITEMS, SIZEOF(fontOptionsList), (LPARAM) selItems);
 						for (sel = 0; sel < selCount; sel++) {
 							i = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETITEMDATA, selItems[sel], 0) - 1;
 							fontOptionsList[i].size = (char) lf.lfHeight;
@@ -461,10 +461,10 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				}
 				case IDC_FONTCOLOUR:
 				{
-					int selItems[sizeof(fontOptionsList) / sizeof(fontOptionsList[0])];
+					int selItems[ SIZEOF(fontOptionsList) ];
 					int sel, selCount, i;
 
-					selCount = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETSELITEMS, sizeof(fontOptionsList) / sizeof(fontOptionsList[0]), (LPARAM) selItems);
+					selCount = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETSELITEMS, SIZEOF(fontOptionsList), (LPARAM) selItems);
 					for (sel = 0; sel < selCount; sel++) {
 						i = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETITEMDATA, selItems[sel], 0) - 1;
 						fontOptionsList[i].colour = SendDlgItemMessage(hwndDlg, IDC_FONTCOLOUR, CPM_GETCOLOUR, 0, 0);
@@ -504,7 +504,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							{
 								int i;
 								char str[32];
-								for (i = 0; i < sizeof(fontOptionsList) / sizeof(fontOptionsList[0]); i++) {
+								for (i = 0; i < SIZEOF(fontOptionsList); i++) {
 									wsprintfA(str, "SRMFont%d", i);
 									DBWriteContactSettingTString(NULL, SRMMMOD, str, fontOptionsList[i].szFace);
 									wsprintfA(str, "SRMFont%dSize", i);

@@ -71,7 +71,7 @@ static char *MsgServiceName(HANDLE hContact)
     if (szProto == NULL)
         return PSS_MESSAGE;
 
-    mir_snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
+    mir_snprintf(szServiceName, SIZEOF(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
     if (ServiceExists(szServiceName))
         return PSS_MESSAGE "W";
 #endif
@@ -116,19 +116,19 @@ static void SetDialogToType(HWND hwndDlg)
 
 	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
 	if (dat->hContact) {
-		ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), (g_dat->flags&SMF_SHOWINFO) ? SW_SHOW : SW_HIDE);
+		ShowMultipleControls(hwndDlg, infoLineControls, SIZEOF(infoLineControls), (g_dat->flags&SMF_SHOWINFO) ? SW_SHOW : SW_HIDE);
 	}
 	else
-		ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), SW_HIDE);
+		ShowMultipleControls(hwndDlg, infoLineControls, SIZEOF(infoLineControls), SW_HIDE);
 	if (dat->hContact) {
-		ShowMultipleControls(hwndDlg, buttonLineControls, sizeof(buttonLineControls) / sizeof(buttonLineControls[0]), (g_dat->flags&SMF_SHOWBTNS) ? SW_SHOW : SW_HIDE);
+		ShowMultipleControls(hwndDlg, buttonLineControls, SIZEOF(buttonLineControls), (g_dat->flags&SMF_SHOWBTNS) ? SW_SHOW : SW_HIDE);
 		if (!DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0))
 			ShowWindow(GetDlgItem(hwndDlg, IDC_ADD), SW_HIDE);
 	}
 	else {
-		ShowMultipleControls(hwndDlg, buttonLineControls, sizeof(buttonLineControls) / sizeof(buttonLineControls[0]), SW_HIDE);
+		ShowMultipleControls(hwndDlg, buttonLineControls, SIZEOF(buttonLineControls), SW_HIDE);
 	}
-	ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
+	ShowMultipleControls(hwndDlg, sendControls, SIZEOF(sendControls), SW_SHOW);
 	if (!dat->hwndStatus) {
 		dat->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
 		SendMessage(dat->hwndStatus, SB_SETMINHEIGHT, GetSystemMetrics(SM_CYSMICON), 0);
@@ -441,7 +441,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
     if (!(g_dat->flags&SMF_SHOWINFO) && !(g_dat->flags&SMF_SHOWBTNS)) {
         int i;
-        for (i = 0; i < sizeof(buttonLineControls) / sizeof(buttonLineControls[0]); i++)
+        for (i = 0; i < SIZEOF(buttonLineControls); i++)
             if (buttonLineControls[i] == urc->wId)
                 OffsetRect(&urc->rcItem, 0, -dat->lineHeight);
     }
@@ -459,7 +459,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 TCHAR buf[256];
 					 HFONT hFont;
 
-                GetWindowText(h, buf, sizeof(buf));
+                GetWindowText(h, buf, SIZEOF(buf));
 
                 hdc = GetDC(h);
                 hFont = SelectObject(hdc, (HFONT) SendMessage(GetDlgItem(hwndDlg, IDOK), WM_GETFONT, 0, 0));
@@ -517,7 +517,7 @@ static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus)
 		TCHAR buf[128];
 		int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
-		_sntprintf(buf, sizeof(buf), _T("%d"), len);
+		mir_sntprintf(buf, SIZEOF(buf), _T("%d"), len);
 		SendMessage(hwndStatus, SB_SETTEXT, 1, (LPARAM) buf);
 	}
 }
@@ -665,7 +665,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				int i;
 
 				SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONSETASFLATBTN, 0, 0);
-				for (i = 0; i < sizeof(buttonLineControls) / sizeof(buttonLineControls[0]); i++)
+				for (i = 0; i < SIZEOF(buttonLineControls); i++)
 					SendMessage(GetDlgItem(hwndDlg, buttonLineControls[i]), BUTTONSETASFLATBTN, 0, 0);
 			}
 			SendMessage(GetDlgItem(hwndDlg, IDC_ADD), BUTTONADDTOOLTIP, (WPARAM) Translate("Add Contact Permanently to List"), 0);
@@ -815,7 +815,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			fileCount=DragQueryFile(hDrop,-1,NULL,0);
 			ppFiles=NULL;
 			for(i=0;i<fileCount;i++) {
-				DragQueryFileA(hDrop, i, szFilename, sizeof(szFilename));
+				DragQueryFileA(hDrop, i, szFilename, SIZEOF(szFilename));
 				AddToFileList(&ppFiles, &totalCount, szFilename);
 			}
 			CallServiceSync(MS_FILE_SENDSPECIFICFILES, (WPARAM)dat->hContact, (LPARAM)ppFiles);
@@ -964,11 +964,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 					switch (ci.type) {
 						case CNFT_ASCIIZ:
-							mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+							mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
 							miranda_sys_free(ci.pszVal);
 							break;
 						case CNFT_DWORD:
-							mir_snprintf(buf, sizeof(buf), "%u", ci.dVal);
+							mir_snprintf(buf, SIZEOF(buf), "%u", ci.dVal);
 							break;
 					}
 				}
@@ -987,23 +987,23 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (!dat->hwndStatus || dat->nTypeSecs)
 				break;
 			if (dat->lastMessage) {
-				DBTIMETOSTRING dbtts;
-				char date[64], time[64], fmt[128];
+				DBTIMETOSTRINGT dbtts;
+				TCHAR date[64], time[64], fmt[128];
 
-				dbtts.szFormat = "d";
-				dbtts.cbDest = sizeof(date);
+				dbtts.szFormat = _T("d");
+				dbtts.cbDest = SIZEOF(date);
 				dbtts.szDest = date;
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
-				dbtts.szFormat = "t";
-				dbtts.cbDest = sizeof(time);
+				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dat->lastMessage, (LPARAM) & dbtts);
+				dbtts.szFormat = _T("t");
+				dbtts.cbDest = SIZEOF(time);
 				dbtts.szDest = time;
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
-				mir_snprintf(fmt, sizeof(fmt), Translate("Last message received on %s at %s."), date, time);
-				SendMessageA(dat->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
+				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dat->lastMessage, (LPARAM) & dbtts);
+				mir_sntprintf(fmt, SIZEOF(fmt), TranslateT("Last message received on %s at %s."), date, time);
+				SendMessage(dat->hwndStatus, SB_SETTEXT, 0, (LPARAM) fmt);
 				SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
 			}
 			else {
-				SendMessageA(dat->hwndStatus, SB_SETTEXTA, 0, (LPARAM) "");
+				SendMessage(dat->hwndStatus, SB_SETTEXT, 0, (LPARAM) _T(""));
 				SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) NULL);
 			}
 			break;
@@ -1063,11 +1063,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 						switch (ci.type) {
 						case CNFT_ASCIIZ:
-							mir_snprintf(buf, sizeof(buf), "%s", ci.pszVal);
+							mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
 							miranda_sys_free(ci.pszVal);
 							break;
 						case CNFT_DWORD:
-							mir_snprintf(buf, sizeof(buf), "%u", ci.dVal);
+							mir_snprintf(buf, SIZEOF(buf), "%u", ci.dVal);
 							break;
 						}
 					}
@@ -1314,7 +1314,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			KillTimer(hwndDlg, wParam);
 			ShowWindow(hwndDlg, SW_SHOWNORMAL);
 			EnableWindow(hwndDlg, FALSE);
-			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) Translate("The message send timed out."));
+			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) strdup( Translate("The message send timed out.")));
 		}
 		else if (wParam == TIMERID_FLASHWND) {
 			FlashWindow(hwndDlg, TRUE);
@@ -1344,12 +1344,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			else {
 				if (dat->nTypeSecs) {
-					char szBuf[256];
-					char *szContactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0);
+					TCHAR szBuf[256];
+					TCHAR *szContactName = ( TCHAR* ) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, GCDNF_TCHAR);
 
-					mir_snprintf(szBuf, sizeof(szBuf), Translate("%s is typing a message..."), szContactName);
+					mir_sntprintf(szBuf, SIZEOF(szBuf), TranslateT("%s is typing a message..."), szContactName);
 					dat->nTypeSecs--;
-					SendMessageA(dat->hwndStatus, SB_SETTEXTA, 0, (LPARAM) szBuf);
+					SendMessage(dat->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
 					SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) g_dat->hIcons[SMF_ICON_TYPING]);
 					if ((g_dat->flags&SMF_SHOWTYPINGWIN) && GetForegroundWindow() != hwndDlg)
 						SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) g_dat->hIcons[SMF_ICON_TYPING]);
@@ -1694,7 +1694,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					KillTimer(hwndDlg, TIMERID_MSGSEND);
 					ShowWindow(hwndDlg, SW_SHOWNORMAL);
 					EnableWindow(hwndDlg, FALSE);
-					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) strdup((char *) ack->lParam));
+					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (ack->lParam == 0) ? 0 : (LPARAM) strdup((char *) ack->lParam));
 					return 0;
 			}
 			if (dat->sendBuffer==NULL) return 0;

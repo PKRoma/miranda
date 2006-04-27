@@ -180,8 +180,8 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 	}
 	if ((int) lParam && !foundWin && (g_dat->flags&SMF_SHOWTYPINGTRAY)) {
 		char szTip[256];
+		mir_snprintf(szTip, SIZEOF(szTip), Translate("%s is typing a message"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0));
 
-		mir_snprintf(szTip, sizeof(szTip), Translate("%s is typing a message"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0));
 		if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && !(g_dat->flags&SMF_SHOWTYPINGCLIST)) {
 			MIRANDASYSTRAYNOTIFY tn;
 			tn.szProto = NULL;
@@ -271,7 +271,7 @@ static void RestoreUnreadMessageAlerts(void)
 				else {
 					cle.hContact = hContact;
 					cle.hDbEvent = hDbEvent;
-					mir_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
+					mir_snprintf(toolTip, SIZEOF(toolTip), Translate("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
 					cle.pszTooltip = toolTip;
 					CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
 				}
@@ -504,7 +504,7 @@ static STDMETHODIMP_(HRESULT) CREOleCallback_GetNewStorage(struct CREOleCallback
 	WCHAR szwName[64];
 	char szName[64];
 	wsprintfA(szName, "s%u", lpThis->nextStgId);
-	MultiByteToWideChar(CP_ACP, 0, szName, -1, szwName, sizeof(szwName) / sizeof(szwName[0]));
+	MultiByteToWideChar(CP_ACP, 0, szName, -1, szwName, SIZEOF(szwName));
 	if (lpThis->pictStg == NULL)
 		return STG_E_MEDIUMFULL;
 	return lpThis->pictStg->lpVtbl->CreateStorage(lpThis->pictStg, szwName, STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, lplpstg);
