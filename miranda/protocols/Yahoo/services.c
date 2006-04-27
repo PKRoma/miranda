@@ -247,7 +247,8 @@ static void __cdecl yahoo_im_sendacksuccess(HANDLE hContact)
 static void __cdecl yahoo_im_sendackfail(HANDLE hContact)
 {
     SleepEx(1000, TRUE);
-    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, 0);
+    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, 
+						(LPARAM) Translate("The message send timed out."));
 }
 
 static void __cdecl yahoo_im_sendackfail_longmsg(HANDLE hContact)
