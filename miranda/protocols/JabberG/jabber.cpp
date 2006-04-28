@@ -44,7 +44,7 @@ PLUGININFO pluginInfo = {
 	__VERSION_DWORD,
 	"Jabber protocol plugin for Miranda IM ( "__DATE__" )",
 	"George Hazan",
-	"ghazan@postman.ru",
+	"ghazan@miranda-im.org",
 	"( c ) 2002-05 Santithorn Bunchua, George Hazan",
 	"http://miranda-im.org/download/details.php?action=viewfile&id=437",
 	0,

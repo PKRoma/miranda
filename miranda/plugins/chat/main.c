@@ -56,7 +56,7 @@ PLUGININFO pluginInfo = {
 	PLUGIN_MAKE_VERSION(0,3,2,1),
 	"Provides chat rooms for protocols supporting it",
 	"MatriX",
-	"i_am_matrix@users.sourceforge.net",
+	"project-info@miranda-im.org",
 	"© 2003 - 2005 Jörgen Persson",
 	"http://miranda-im.org/",
 	0,
