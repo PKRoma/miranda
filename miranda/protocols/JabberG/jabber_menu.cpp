@@ -29,8 +29,6 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "resource.h"
 
-void JabberGroupchatJoinRoom( const char* server, const char* room, const char* nick, const char* password );
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // module data
 

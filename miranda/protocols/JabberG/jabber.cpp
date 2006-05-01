@@ -52,6 +52,7 @@ PLUGININFO pluginInfo = {
 };
 
 MM_INTERFACE memoryManagerInterface;
+LIST_INTERFACE li;
 
 HANDLE hMainThread = NULL;
 DWORD jabberMainThreadId;
@@ -235,8 +236,16 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 {
 	pluginLink = link;
 
+	// set the memory manager
 	memoryManagerInterface.cbSize = sizeof(MM_INTERFACE);
 	JCallService(MS_SYSTEM_GET_MMI,0,(LPARAM)&memoryManagerInterface);
+
+	// set the lists manager;
+	li.cbSize = sizeof( li );
+	if ( CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li) == CALLSERVICE_NOTFOUND ) {
+		MessageBoxA( NULL, "This version of plugin requires Miranda 0.4.3 bld#42 or later", "Fatal error", MB_OK );
+		return 1;
+	}
 
 	char text[_MAX_PATH];
 	char* p, *q;

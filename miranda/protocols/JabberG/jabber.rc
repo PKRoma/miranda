@@ -136,8 +136,7 @@ BEGIN
                     IDC_AUTO_ADD,"Button",BS_AUTOCHECKBOX | BS_TOP | 
                     WS_TABSTOP,16,90,203,12
     CONTROL         "Automatically join conferences on login",IDC_AUTOJOIN,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,16,
-                    102,202,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,102,202,10
     CONTROL         "Autoaccept multiuser chat invitations",
                     IDC_AUTO_ACCEPT_MUC,"Button",BS_AUTOCHECKBOX | 
                     WS_DISABLED | WS_TABSTOP,16,114,202,9
