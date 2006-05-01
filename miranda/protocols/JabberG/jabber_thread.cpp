@@ -640,13 +640,13 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	if ( !node->name || strcmp( node->name, "message" )) return;
 	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
 
-	if (( type = JabberXmlGetAttrValue( node, "type" )) != NULL && !strcmp( type, "error" ))
+	if (( type = JabberXmlGetAttrValue( node, "type" )) != NULL && !lstrcmpA( type, "error" ))
 		return;
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL )
 		return;
 
 	BOOL isChatRoomJid = JabberListExist( LIST_CHATROOM, JabberUrlDecode( from ));
-	if ( isChatRoomJid && type != NULL && !strcmp( type, "groupchat" )) {
+	if ( isChatRoomJid && !lstrcmpA( type, "groupchat" )) {
 		JabberGroupchatProcessMessage( node, userdata );
 		return;
 	}
@@ -659,7 +659,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 
 		WCHAR* wszMessage;
 		char*  szMessage;
-		BOOL isRss = !strcmp( type, "headline" );
+		BOOL isRss = !lstrcmpA( type, "headline" );
 
 		if (( subjectNode=JabberXmlGetChild( node, "subject" ))!=NULL && subjectNode->text!=NULL && subjectNode->text[0]!='\0' && !isRss ) {
 			p = ( char* )alloca( strlen( subjectNode->text ) + strlen( bodyNode->text ) + 12 );
