@@ -13,9 +13,8 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#include <process.h>
 #include "yahoo.h"
-
+#include <process.h>
 #include <m_system.h>
 
 /* Gena01 - added some defined to fix compilation with mingw gcc */
