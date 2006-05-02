@@ -109,6 +109,7 @@ BOOL __declspec(dllexport) mempng2dib(
 	png_byte**				ppbRowPointers = NULL;
 	int						i;
 	int						wDIRowBytes;
+	BYTE*                pImageData;
 
 	*ppDibData = NULL;
 
@@ -175,7 +176,7 @@ BOOL __declspec(dllexport) mempng2dib(
 	// row_bytes is the width x number of channels
 	ulRowBytes = png_get_rowbytes(png_ptr, info_ptr);
 	ulChannels = png_get_channels(png_ptr, info_ptr);
-    wDIRowBytes = (WORD) (( ulChannels * iWidth + 3L) >> 2) << 2;
+	wDIRowBytes = (WORD) (( ulChannels * iWidth + 3L) >> 2) << 2;
 
 	// now we can allocate memory to store the image
 	{	DWORD cbMemSize = sizeof( BITMAPINFOHEADER );
@@ -200,12 +201,18 @@ BOOL __declspec(dllexport) mempng2dib(
 		pbImageData += sizeof( BITMAPINFOHEADER );
 	}
 
+	pImageData = (BYTE*)malloc( ulRowBytes * iHeight );
+	if ( pImageData == NULL ) {
+		png_destroy_read_struct(&png_ptr, NULL, NULL);
+		return FALSE;
+	}
+
 	// and allocate memory for an array of row-pointers
 	ppbRowPointers = ( png_bytepp )alloca( iHeight * sizeof( png_bytep ));
 
 	// set the individual row-pointers to point at the correct offsets
 	for ( i = 0; i < iHeight; i++ )
-		ppbRowPointers[i] = ( png_bytep )alloca( ulRowBytes );
+		ppbRowPointers[i] = ( png_bytep )&pImageData[ i*ulRowBytes ];
 
 	// now we can go ahead and just read the whole image
 	png_read_image( png_ptr, ppbRowPointers );
@@ -215,7 +222,7 @@ BOOL __declspec(dllexport) mempng2dib(
 	for ( i = iHeight-1; i >= 0; i-- )
 	{
 		int j;
-        png_byte a;
+		png_byte a;
 		png_bytep s = ppbRowPointers[i];
 		BYTE* dest = pbImageData; pbImageData += wDIRowBytes;
 
@@ -229,10 +236,11 @@ BOOL __declspec(dllexport) mempng2dib(
 			*dest++ = b;
 			*dest++ = g;
 			*dest++ = r;
-            if ( ulChannels == 4 )
-                *dest++ = a;
+			if ( ulChannels == 4 )
+				*dest++ = a;
 	}	}
 
+	free( pImageData );
 	png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
 	return TRUE;
 }
