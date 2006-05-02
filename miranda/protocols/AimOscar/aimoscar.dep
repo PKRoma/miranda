@@ -22,27 +22,30 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
 	
 
-.\commands.cpp : \
+.\client.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
@@ -64,22 +67,25 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
 	
@@ -106,22 +112,25 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
 	
@@ -148,22 +157,25 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
 	
@@ -190,22 +202,25 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
 	
@@ -232,22 +247,25 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
 	
@@ -274,24 +292,32 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	
+
+.\flap.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	".\flap.h"\
 	
 
 .\links.cpp : \
@@ -316,22 +342,25 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
 	
@@ -362,22 +391,25 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
 	
@@ -404,22 +436,70 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
+	".\utility.h"\
+	".\windows.h"\
+	
+
+.\server.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\client.h"\
+	".\connection.h"\
+	".\conv.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\error.h"\
+	".\file.h"\
+	".\flap.h"\
+	".\links.h"\
+	".\m_cluiframes.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\proxy.h"\
+	".\server.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\strl.h"\
+	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
 	
@@ -446,66 +526,32 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
 	
 
 .\snac.cpp : \
 	"..\..\..\..\..\vc\sdk\include\windows.h"\
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	".\aim.h"\
-	".\commands.h"\
-	".\connection.h"\
-	".\conv.h"\
-	".\defines.h"\
-	".\direct_connect.h"\
-	".\error.h"\
-	".\file.h"\
-	".\links.h"\
-	".\m_cluiframes.h"\
-	".\md5.h"\
-	".\packets.h"\
-	".\proxy.h"\
-	".\services.h"\
 	".\snac.h"\
-	".\strl.h"\
-	".\thread.h"\
-	".\utility.h"\
-	".\windows.h"\
 	
 
 .\strl.cpp : \
@@ -535,24 +581,32 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	
+
+.\tlv.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	".\tlv.h"\
 	
 
 .\utility.cpp : \
@@ -577,22 +631,25 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
 	
@@ -619,22 +676,25 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\aim.h"\
-	".\commands.h"\
+	".\client.h"\
 	".\connection.h"\
 	".\conv.h"\
 	".\defines.h"\
 	".\direct_connect.h"\
 	".\error.h"\
 	".\file.h"\
+	".\flap.h"\
 	".\links.h"\
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
 	".\proxy.h"\
+	".\server.h"\
 	".\services.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\thread.h"\
+	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
 	
