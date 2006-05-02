@@ -342,6 +342,7 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	BITMAPINFOHEADER* pDib;
 	BYTE* pDibBits;
 	long dwPngSize = 0;
+	DIB2PNG convertor;
 	
 	if ( !YAHOO_LoadPngModule())
 		return 1;
@@ -369,7 +370,6 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	SelectObject( hdc, hOldBitmap );
 	DeleteDC( hdc );
 
-	DIB2PNG convertor;
 	convertor.pbmi = ( BITMAPINFO* )pDib;
 	convertor.pDiData = pDibBits;
 	convertor.pResult = NULL;

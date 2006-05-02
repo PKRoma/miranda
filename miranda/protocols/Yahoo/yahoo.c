@@ -909,6 +909,7 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	HANDLE 	hContact = 0;
 	char *pBuff = NULL;
 	struct avatar_info *avt = (struct avatar_info *) data;
+	PNG2DIB convert;
 		
 	LOG(("Getting file: %s size: %lu fd: %d error: %d", filename, size, fd, error));
 	
@@ -971,7 +972,6 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 			if ( !YAHOO_LoadPngModule() ) 
 				return;
 
-			PNG2DIB convert;
 		    convert.pSource = (BYTE*)pBuff;
 		    convert.cbSourceSize = rsize;
 		    convert.pResult = &pDib;
