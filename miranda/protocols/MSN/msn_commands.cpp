@@ -526,6 +526,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			gce.time = time(NULL);
 			gce.bIsMe = FALSE;
 			gce.pszText = (char*)EscapeChatTags(tMsgBuf);
+			//gce.pszText = tMsgBuf;
 			gce.bAddToLog = TRUE;
 			MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
 			free(( void* )gce.pszText);

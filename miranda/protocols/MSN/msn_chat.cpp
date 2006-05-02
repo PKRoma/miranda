@@ -201,14 +201,13 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 				if ( gch && gch->pszText && lstrlenA( gch->pszText ) > 0 ) {
 					rtrim( gch->pszText ); // remove the ending linebreak
 
-					{	char* pszMsg = UnEscapeChatTags(gch->pszText);
-						
+					{	char* pszMsg = UnEscapeChatTags( NEWSTR_ALLOCA( gch->pszText ));
+
 						CCSDATA ccs = {0};
 						ccs.hContact = (HANDLE)-atoi(p);
 						ccs.wParam = 0;
 						ccs.lParam = (LPARAM)pszMsg;
 						CallProtoService(msnProtocolName, PSS_MESSAGE, (WPARAM)0, (LPARAM)&ccs);
-						free( pszMsg );
 					}
 
 					GCDEST gcd = {0};

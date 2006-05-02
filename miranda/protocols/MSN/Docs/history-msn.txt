@@ -4,6 +4,10 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.4.3.1
+===============
+[!] fix for the invalid chars in the MSN chat
+
 Version 0.4.3.0
 ===============
 [+] first Unicode version of the MSN plugin
