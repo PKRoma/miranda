@@ -79,7 +79,7 @@ static void verToStr(char* szStr, int v)
 
 
 
-char* MirandaVersionToString(char* szStr, int v, int m)
+static char* MirandaVersionToStringEx(char* szStr, char* szPlug, int v, int m)
 {
   if (!v) // this is not Miranda
     return NULL;
@@ -87,9 +87,9 @@ char* MirandaVersionToString(char* szStr, int v, int m)
   {
     strcpy(szStr, "Miranda IM ");
 
-    if (v == 1)
+    if (!m && v == 1)
       verToStr(szStr, 0x80010200);
-    else if ((v&0x7FFFFFFF) <= 0x030301)
+    else if (!m && (v&0x7FFFFFFF) <= 0x030301)
       verToStr(szStr, v);
     else 
     {
@@ -98,7 +98,9 @@ char* MirandaVersionToString(char* szStr, int v, int m)
         verToStr(szStr, m);
         strcat(szStr, " ");
       }
-      strcat(szStr, "(ICQ v");
+      strcat(szStr, "(");
+      strcat(szStr, szPlug);
+      strcat(szStr, " v");
       verToStr(szStr, v);
       strcat(szStr, ")");
     }
@@ -108,7 +110,15 @@ char* MirandaVersionToString(char* szStr, int v, int m)
 }
 
 
+
+char* MirandaVersionToString(char* szStr, int v, int m)
+{
+  return MirandaVersionToStringEx(szStr, "ICQ", v, m);
+}
+
+
 const capstr capMirandaIm = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'M', 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capAimOscar  = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'A', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capTrillian  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09};
 const capstr capTrilCrypt = {0xf2, 0xe7, 0xc7, 0xf4, 0xfe, 0xad, 0x4d, 0xfb, 0xb2, 0x35, 0x36, 0x79, 0x8b, 0xdf, 0x00, 0x00};
 const capstr capSim       = {'S', 'I', 'M', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', ' ', 0, 0, 0, 0};
@@ -520,8 +530,50 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       }
     }
     else if (!dwUin)
-    {
-      szClient = "AIM";
+    { // detect AIM clients
+      if (caps)
+      {
+        if (capId = MatchCap(caps, wLen, &capAimOscar, 8))
+        { // AimOscar Signature
+          DWORD aver = (*capId)[0xC] << 0x18 | (*capId)[0xD] << 0x10 | (*capId)[0xE] << 8 | (*capId)[0xF];
+          DWORD mver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
+
+          szClient = MirandaVersionToStringEx(szClientBuf, "AimOscar", aver, mver);
+        }
+        else if (capId = MatchCap(caps, wLen, &capSim, 0xC))
+        { // Sim is universal
+          unsigned ver1 = (*capId)[0xC];
+          unsigned ver2 = (*capId)[0xD];
+          unsigned ver3 = (*capId)[0xE];
+
+          makeClientVersion(szClientBuf, "SIM ", ver1, ver2, ver3, 0);
+          if ((*capId)[0xF] & 0x80) 
+            strcat(szClientBuf,"/Win32");
+          else if ((*capId)[0xF] & 0x40) 
+            strcat(szClientBuf,"/MacOS X");
+
+          szClient = szClientBuf;
+        }
+        else if (capId = MatchCap(caps, wLen, &capKopete, 0xC))
+        {
+          unsigned ver1 = (*capId)[0xC];
+          unsigned ver2 = (*capId)[0xD];
+          unsigned ver3 = (*capId)[0xE];
+          unsigned ver4 = (*capId)[0xF];
+
+          makeClientVersion(szClientBuf, "Kopete ", ver1, ver2, ver3, ver4);
+
+          szClient = szClientBuf;
+        }
+        else if (MatchCap(caps, wLen, &capIm2, 0x10))
+        { // IM2 extensions
+          szClient = cliIM2;
+        }
+        else
+          szClient = "AIM";
+      }
+      else
+        szClient = "AIM";
     }
   }
 
