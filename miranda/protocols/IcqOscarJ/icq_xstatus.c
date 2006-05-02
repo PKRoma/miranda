@@ -153,15 +153,20 @@ static int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
 {
   if (gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
   {
-    DWORD bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
+    char* szProto =  (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
 
-    if (bXStatus > 0 && bXStatus < 33) 
-    {
-      setContactExtraIcon((HANDLE)wParam, hXStatusIcons[bXStatus-1]);
-    } 
-    else 
-    {
-      setContactExtraIcon((HANDLE)wParam, (HANDLE)-1);
+    if (!strcmpnull(szProto, gpszICQProtoName))
+    { // only apply icons to our contacts, do not mess others
+      DWORD bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
+
+      if (bXStatus > 0 && bXStatus < 33) 
+      {
+        setContactExtraIcon((HANDLE)wParam, hXStatusIcons[bXStatus-1]);
+      } 
+      else 
+      {
+        setContactExtraIcon((HANDLE)wParam, (HANDLE)-1);
+      }
     }
   }
   return 0;
