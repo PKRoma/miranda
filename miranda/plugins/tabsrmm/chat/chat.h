@@ -68,7 +68,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 //defines
-#define OPTIONS_FONTCOUNT 17
+#define OPTIONS_FONTCOUNT 18
 #define GC_UPDATETITLE			(WM_USER+100)
 #define GC_CLOSEWINDOW			(WM_USER+103)
 #define GC_GETITEMDATA			(WM_USER+104)
@@ -232,7 +232,7 @@ typedef struct SESSION_INFO_TYPE
 	int				iWidth;
 	int				iHeight;
 	int				iStatusCount;
-
+    
 	WORD			wStatus;
 	WORD			wState;
 	WORD			wCommandsNum;
@@ -259,6 +259,7 @@ typedef struct {
 	BOOL	bStripFormat;
 	BOOL	bRedraw;
 	SESSION_INFO * si;
+    int     crCount;
 } LOGSTREAMDATA;
 
 
@@ -307,7 +308,7 @@ struct GlobalLogSettings_t {
 	BOOL		LogIndentEnabled;
 	BOOL		StripFormat;
 	BOOL		SoundsFocus;
-	BOOL		PopUpInactiveOnly;
+	BOOL		SkipWhenNoWindow;
 	BOOL		TrayIconInactiveOnly;
 	BOOL		AddColonToAutoComplete;
 	BOOL		LogLimitNames;
@@ -341,6 +342,12 @@ struct GlobalLogSettings_t {
 	COLORREF	crUserListHeadingsColor;
 	COLORREF	crPUTextColour;
 	COLORREF	crPUBkgColour;
+    BYTE        ClassicIndicators;
+    BYTE        LogSymbols;
+    BYTE        ClickableNicks;
+    BYTE        ColorizeNicks;
+    BYTE        ScaleIcons;
+    COLORREF    nickColors[6];
 };
 extern struct GlobalLogSettings_t g_Settings;
 

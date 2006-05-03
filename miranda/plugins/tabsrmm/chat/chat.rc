@@ -137,48 +137,47 @@ BEGIN
     LTEXT           "Add new rooms to group:",IDC_STATIC_ADD,10,196,132,8
     CONTROL         "Enable chat integration (changing this needs restart)",IDC_CHAT_ENABLE,
                     "Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,10,180,280,11
-    LTEXT           "Chat integration is currently disabled. You can enable it using the check box below. Note that you NEED RESTART Miranda to make this change effective.",IDC_STATIC_MESSAGE,21,52,256,74
+    LTEXT           "Chat integration is currently disabled. You can enable it using the check box below. Note that you NEED RESTART Miranda to make this change effective.\n\nNote that you MUST disable the standard chat plugin when you enable the group chat support on this page. Otherwise no group chat at all may work.",IDC_STATIC_MESSAGE,21,52,256,74
 END
 
-IDD_OPTIONS2 DIALOGEX 0, 0, 300, 240
+IDD_OPTIONS2 DIALOGEX 0, 0, 300, 241
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LISTBOX         IDC_CHAT_FONTLIST,10,27,134,89,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_CHAT_FONTLIST,10,24,134,86,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_CHAT_FONTCOLOR,"ColourPicker",WS_TABSTOP,148,32,20,14,0x18000000L
     CONTROL         "Custom1",IDC_LOGBKG,"ColourPicker",WS_TABSTOP,266,12,22,10
     CONTROL         "Custom1",IDC_MESSAGEBKG,"ColourPicker",WS_TABSTOP,266,27,22,10
     CONTROL         "Custom1",IDC_NICKLISTBKG,"ColourPicker",WS_TABSTOP,266,42,22,10
-    EDITTEXT        IDC_OUTSTAMP,10,140,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_INSTAMP,60,140,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_TIMESTAMP,118,140,81,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LOGTIMESTAMP,205,140,81,14,ES_AUTOHSCROLL
-    CONTROL         "Enable highlighting",IDC_HIGHLIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,162,118,10
-    EDITTEXT        IDC_LOGLIMIT,248,160,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_OUTSTAMP,10,134,35,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_INSTAMP,60,134,35,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TIMESTAMP,118,134,81,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LOGTIMESTAMP,205,134,81,14,ES_AUTOHSCROLL
+    CONTROL         "Enable highlighting",IDC_HIGHLIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,153,118,10
+    EDITTEXT        IDC_LOGLIMIT,248,151,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin1",IDC_CHAT_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,281,160,11,14
-    EDITTEXT        IDC_HIGHLIGHTWORDS,10,183,276,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LOGDIRECTORY,10,219,211,14,ES_AUTOHSCROLL | ES_READONLY
-    PUSHBUTTON      "...",IDC_FONTCHOOSE,221,219,19,14
-    EDITTEXT        IDC_LIMIT,248,219,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_HIGHLIGHTWORDS,10,172,276,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LOGDIRECTORY,10,206,211,14,ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "...",IDC_FONTCHOOSE,221,206,19,14
+    EDITTEXT        IDC_LIMIT,248,206,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin1",IDC_CHAT_SPIN3,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,281,219,11,14
-    GROUPBOX        "Fonts 'n Colors",IDC_STATIC,1,0,294,120
-    GROUPBOX        "Log Options",IDC_STATIC,1,121,294,118
+    GROUPBOX        "Fonts 'n Colors",IDC_STATIC,1,0,294,114
+    GROUPBOX        "Group chat log formatting",IDC_STATIC,1,115,294,124
     LTEXT           "Log background",IDC_STATIC,180,14,81,10
     LTEXT           "Message background",IDC_STATIC,180,28,81,10
     LTEXT           "Userlist background",IDC_STATIC,180,43,81,10
-    LTEXT           "Timestamp",IDC_STATIC,118,130,78,8
-    LTEXT           "Other name",IDC_STATIC,60,130,57,8
-    LTEXT           "Your name",IDC_STATIC,10,130,50,8
-    LTEXT           "Limit log text to (events):",IDC_STATIC,144,163,101,8
-    LTEXT           "Trim to (kB)",IDC_STATIC,248,211,38,8
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,10,157,276,1
-    LTEXT           "Log timestamp",IDC_STATIC,205,130,81,8
-    LTEXT           "Words to highlight (wildcards allowed)",IDC_STATIC,10,175,240,8
-    LTEXT           "Log directory",IDC_STATIC,10,211,211,8
+    LTEXT           "Timestamp",IDC_STATIC,118,124,78,8
+    LTEXT           "Other name",IDC_STATIC,60,124,57,8
+    LTEXT           "Your name",IDC_STATIC,10,124,50,8
+    LTEXT           "Limit log text to (events):",IDC_STATIC,144,154,101,8
+    LTEXT           "Trim to (kB)",IDC_STATIC,249,196,38,8
+    LTEXT           "Log timestamp",IDC_STATIC,205,124,81,8
+    LTEXT           "Words to highlight (wildcards allowed)",IDC_STATIC,10,164,240,8
+    LTEXT           "Log directory",IDC_STATIC,10,198,211,8
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,176,12,1,88
     PUSHBUTTON      "...",IDC_CHAT_CHOOSEFONT,148,58,20,14
-    CONTROL         "Enable logging to disk",IDC_LOGGING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,200,211,10
+    CONTROL         "Enable logging to disk",IDC_LOGGING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,188,211,10
     CONTROL         "",IDC_INFOPANELBG,"ColourPicker",WS_TABSTOP,266,57,22,10
     LTEXT           "Info panel fields",IDC_STATIC,180,58,81,10
     CONTROL         "",IDC_GRIDLINES,"ColourPicker",WS_TABSTOP,266,72,22,10
@@ -187,7 +186,10 @@ BEGIN
     CONTROL         "",IDC_BKGINCOMING,"ColourPicker",WS_TABSTOP,266,102,22,10
     LTEXT           "Outgoing background:",IDC_STATIC,180,88,81,10
     LTEXT           "Incoming background:",IDC_STATIC,180,102,81,10
-    COMBOBOX        IDC_FONTCATEGORY,10,11,134,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTCATEGORY,10,10,134,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Nickname colors",IDC_STATIC,12,225,99,8
+    COMBOBOX        IDC_NICKCOLORS,132,223,90,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_NICKCOLOR,"ColourPicker",WS_TABSTOP,264,224,22,10
 END
 
 IDD_OPTIONSPOPUP DIALOGEX 0, 0, 277, 177
@@ -244,11 +246,11 @@ BEGIN
         VERTGUIDE, 221
         VERTGUIDE, 286
         TOPMARGIN, 1
-        BOTTOMMARGIN, 238
-        HORZGUIDE, 108
+        BOTTOMMARGIN, 239
+        HORZGUIDE, 107
         HORZGUIDE, 126
         HORZGUIDE, 146
-        HORZGUIDE, 158
+        HORZGUIDE, 150
         HORZGUIDE, 174
         HORZGUIDE, 212
     END

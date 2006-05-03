@@ -463,15 +463,20 @@ char *GetThemeFileName(int iMode)
 {
     static char szFilename[MAX_PATH];
     OPENFILENAMEA ofn={0};
+    char szInitialDir[MAX_PATH];
 
+    mir_snprintf(szInitialDir, MAX_PATH, "%sthemes\\", myGlobals.szDataPath);
+    
+    szFilename[0] = 0;
+    
     ofn.lpstrFilter = "tabSRMM themes\0*.tabsrmm\0\0";
     ofn.lStructSize= OPENFILENAME_SIZE_VERSION_400;
     ofn.hwndOwner=0;
     ofn.lpstrFile = szFilename;
-    ofn.lpstrInitialDir = ".";
+    ofn.lpstrInitialDir = szInitialDir;
     ofn.nMaxFile = MAX_PATH;
     ofn.nMaxFileTitle = MAX_PATH;
-    ofn.Flags = OFN_HIDEREADONLY;
+    ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
     ofn.lpstrDefExt = "tabsrmm";
     if(!iMode) {
         if (GetOpenFileNameA(&ofn))
@@ -1465,16 +1470,16 @@ static void SkinCalcFrameWidth()
 
 
 static struct {char *szIniKey, *szIniName; char *szSetting; unsigned int size; int defaultval;} _tagSettings[] = {
-    "Global", "SbarHeight", "sbarheight", 1, 22,
-    "ClientArea", "Left", "tborder_outer_left", 1, 0,
-    "ClientArea", "Right", "tborder_outer_right", 1, 0,
-    "ClientArea", "Top", "tborder_outer_top", 1, 0,
-    "ClientArea", "Bottom", "tborder_outer_bottom", 1, 0,
-    "ClientArea", "Inner", "tborder", 1, 0,
-    "Global", "TabTextNormal", "tab_txt_normal", 4, 0,
-    "Global", "TabTextActive", "tab_txt_active", 4, 0,
-    "Global", "TabTextUnread", "tab_txt_unread", 4, 0,
-    "Global", "TabTextHottrack", "tab_txt_hottrack", 4, 0,
+    "Global", "SbarHeight", "S_sbarheight", 1, 22,
+    "ClientArea", "Left", "S_tborder_outer_left", 1, 0,
+    "ClientArea", "Right", "S_tborder_outer_right", 1, 0,
+    "ClientArea", "Top", "S_tborder_outer_top", 1, 0,
+    "ClientArea", "Bottom", "S_tborder_outer_bottom", 1, 0,
+    "ClientArea", "Inner", "S_tborder", 1, 0,
+    "Global", "TabTextNormal", "S_tab_txt_normal", 5, 0,
+    "Global", "TabTextActive", "S_tab_txt_active", 5, 0,
+    "Global", "TabTextUnread", "S_tab_txt_unread", 5, 0,
+    "Global", "TabTextHottrack", "S_tab_txt_hottrack", 5, 0,
     NULL, NULL, NULL, 0, 0
 };
 
@@ -1528,6 +1533,10 @@ static void LoadSkinItems(char *file)
                 break;
             case 2:
                 DBWriteContactSettingWord(NULL, SRMSGMOD_T, _tagSettings[i].szSetting, (WORD)data);
+                break;
+            case 5:
+                GetPrivateProfileStringA(_tagSettings[i].szIniKey, _tagSettings[i].szIniName, "000000", buffer, 10, file);
+                DBWriteContactSettingDword(NULL, SRMSGMOD_T, _tagSettings[i].szSetting, HexStringToLong(buffer));
                 break;
         }
         i++;
@@ -1595,6 +1604,7 @@ static void LoadSkinItems(char *file)
     
 	SkinCalcFrameWidth();
 
+    GetPrivateProfileStringA("Global", "FontColor", "None", buffer, 20, file);
 	if(strcmp(buffer, "None"))
 		myGlobals.skinDefaultFontColor = HexStringToLong(buffer);
 	else

@@ -81,7 +81,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",0x0,1,1,310,245,WS_EX_ACCEPTFILES
+    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",WS_TABSTOP,1,1,310,245,WS_EX_ACCEPTFILES
 END
 
 IDD_CHOOSESTATUSMODES DIALOGEX 0, 0, 226, 154
@@ -937,8 +937,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,200
- PRODUCTVERSION 0,9,9,200
+ FILEVERSION 0,9,9,202
+ PRODUCTVERSION 0,9,9,202
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -955,15 +955,15 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Miranda Open Source Project"
             VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
-            VALUE "FileVersion", "0, 9, 9, 200"
+            VALUE "FileVersion", "0, 9, 9, 202"
             VALUE "InternalName", "tabSRMsg"
-            VALUE "LegalCopyright", "Copyright © 2005 The Miranda IM project"
+            VALUE "LegalCopyright", "Copyright © 2006 The Miranda IM project"
             VALUE "LegalTrademarks", "Gnu General Public License V2"
             VALUE "OriginalFilename", "tabSRMM.dll"
             VALUE "PrivateBuild", "No"
             VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
-            VALUE "ProductVersion", "0, 9, 9, 200"
-            VALUE "SpecialBuild", "PRE1"
+            VALUE "ProductVersion", "0, 9, 9, 202"
+            VALUE "SpecialBuild", "53"
         END
     END
     BLOCK "VarFileInfo"

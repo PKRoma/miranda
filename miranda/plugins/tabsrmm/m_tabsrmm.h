@@ -121,6 +121,7 @@ typedef struct {
 #define MWF_SHOW_ISIDLE 4096
 #define MWF_SHOW_AWAYMSGTIMER 8192
 #define MWF_SHOW_USELOCALTIME 16384
+#define MWF_SHOW_RESIZEIPONLY 0x10000000
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -364,6 +365,7 @@ struct MessageWindowData {
 	BYTE needIEViewScroll;
 	HANDLE hTheme;
 	BYTE bFlatMsgLog;
+    BYTE isIRC;
     PVOID si;
 };
 
@@ -504,6 +506,7 @@ typedef struct _globals {
 	HFONT hFontCaption;
 	COLORREF skinDefaultFontColor;
 	BYTE m_dropShadow;
+    DWORD m_LangPackCP;
 	char g_SkinnedFrame_left, g_SkinnedFrame_right, g_SkinnedFrame_bottom, g_SkinnedFrame_caption;
 	char g_realSkinnedFrame_left, g_realSkinnedFrame_right, g_realSkinnedFrame_bottom, g_realSkinnedFrame_caption;
     HPEN g_SkinLightShadowPen, g_SkinDarkShadowPen;

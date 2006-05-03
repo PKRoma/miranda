@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern HANDLE hMessageWindowList;
 extern BOOL			IEviewInstalled;
 extern int          g_chat_integration_enabled;
+extern int          g_chat_fully_initialized;
 
 HANDLE				hSendEvent;
 HANDLE				hBuildMenuEvent ;
@@ -118,13 +119,13 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		CallService("DBEditorpp/RegisterModule",(WPARAM)mods,(LPARAM)2);
 	}
 
-	LoadIcons();
-
+    LoadIcons();
 	if (ServiceExists(MS_IEVIEW_WINDOW))
 		IEviewInstalled = TRUE;
 	CList_SetAllOffline(TRUE);
 
- 	return 0;
+    g_chat_fully_initialized = TRUE;
+    return 0;
 }
 
 int PreShutdown(WPARAM wParam,LPARAM lParam)
@@ -134,7 +135,6 @@ int PreShutdown(WPARAM wParam,LPARAM lParam)
 
 	SM_RemoveAll();
 	MM_RemoveAll();
-	TabM_RemoveAll();
 	return 0;
 }
 
@@ -277,7 +277,7 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 	if(gcw== NULL)
 		return GC_NEWSESSION_ERROR;
 
-	if(gcw->cbSize != SIZEOF_STRUCT_GCWINDOW_V1)
+    if(gcw->cbSize != SIZEOF_STRUCT_GCWINDOW_V1)
 		return GC_NEWSESSION_WRONGVER;
 
 	EnterCriticalSection(&cs);
@@ -694,9 +694,6 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 	if(!si)
 		return;
 
-#ifdef _DEBUG
-    _DebugTraceA("show room: %s, %x, %x", si->pszName, si->hWnd, si->pContainer);
-#endif    
 	if (si->hWnd == NULL) {
         TCHAR szName[CONTAINER_NAMELEN + 2];
         struct ContainerWindowData *pContainer = si->pContainer;

@@ -42,6 +42,7 @@ extern "C" RTFColorTable rtf_ctable[];
 extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 extern "C" char *xStatusDescr[];
 extern "C" TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
+extern "C" DWORD m_LangPackCP;
 
 #if defined(UNICODE)
 
@@ -73,10 +74,10 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
 
     if(message.find(L"://") != message.npos)
        return(message.c_str());
-#ifdef __MATHMOD_SUPPORT
+ #ifdef __MATHMOD_SUPPORT
     if(myGlobals.m_MathModAvail && message.find(myGlobals.m_MathModStartDelimiter) != message.npos)
         return(message.c_str());
-#endif
+ #endif
 
     if(HIWORD(flags) == 0)
         goto nobbcode;
@@ -355,7 +356,7 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
             }
             case 's': {
 				if(szStatus && szStatus[0]) {
-                    MultiByteToWideChar(CP_ACP, 0, szStatus, -1, szTemp, 500);
+                    MultiByteToWideChar(m_LangPackCP, 0, szStatus, -1, szTemp, 500);
                     title.insert(tempmark + 2, szTemp);
                 }
                 title.erase(tempmark, 2);
@@ -396,7 +397,7 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
                     else
                         szFinalStatus = (char *)xStatusDescr[xStatus - 1];
                     if(szFinalStatus)
-                        MultiByteToWideChar(CP_ACP, 0, szFinalStatus, -1, szTemp, 500);
+                        MultiByteToWideChar(m_LangPackCP, 0, szFinalStatus, -1, szTemp, 500);
 
                     title.insert(tempmark + 2, szTemp);
                 }
@@ -421,7 +422,7 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 					szFinalStatus = (char *)(szStatus && szStatus[0] ? szStatus : "(undef)");
 
                 if(szFinalStatus)
-                    MultiByteToWideChar(CP_ACP, 0, szFinalStatus, -1, szTemp, 500);
+                    MultiByteToWideChar(m_LangPackCP, 0, szFinalStatus, -1, szTemp, 500);
 
                 title.insert(tempmark + 2, szTemp);
                 title.erase(tempmark, 2);

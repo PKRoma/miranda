@@ -25,6 +25,7 @@ extern PSLWA pSetLayeredWindowAttributes;
 extern COLORREF g_ContainerColorKey;
 extern StatusItems_t StatusItems[];
 extern LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern NEN_OPTIONS nen_options;
 
 extern HMODULE  themeAPIHandle;
 extern HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
@@ -36,7 +37,6 @@ extern HANDLE		hSendEvent;
 extern HICON		hIcons[30];
 extern struct		CREOleCallback reOleCallback;
 extern HMENU		g_hMenu;
-extern TABLIST *	g_TabList;
 
 extern WNDPROC OldSplitterProc;
 static WNDPROC OldMessageProc;
@@ -67,6 +67,19 @@ static struct _tagbtns { int id; char *szTip;} _btns[] = {
     IDOK, "Send message",
     -1, NULL
 };
+
+static BOOL IsStringValidLink(char *pszText)
+{
+    if(pszText == NULL)
+        return FALSE;
+    if(lstrlenA(pszText) < 5)
+        return FALSE;
+    
+    if(tolower(pszText[0]) == 'w' && tolower(pszText[1]) == 'w' && tolower(pszText[2]) == 'w' && pszText[3] == '.' && isalnum(pszText[4]))
+        return TRUE;
+    
+    return(strstr(pszText, "://") == NULL ? FALSE : TRUE);
+}
 
 static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 {
@@ -781,9 +794,6 @@ default_process:
 					Parentsi->iBG = index;
 				}		
 				if(u == BST_UNCHECKED && cf.crBackColor != crB) {
-#ifdef _DEBUG
-                    _DebugTraceA("checking back button - %x, %x", crB, cf.crBackColor);
-#endif                    
                     CheckDlgButton(hwndParent, IDC_BKGCOLOR, BST_CHECKED);
                 }
 				else if(u == BST_CHECKED && cf.crBackColor == crB)
@@ -1301,7 +1311,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
             TranslateDialogDefault(hwndDlg);
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 			dat->bType = SESSIONTYPE_CHAT;
-            
+            dat->isIRC = SM_IsIRC(si);
             newData->item.lParam = (LPARAM) hwndDlg;
             TabCtrl_SetItem(hwndTab, newData->iTabID, &newData->item);
             dat->iTabID = newData->iTabID;
@@ -1430,7 +1440,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case GC_SETWNDPROPS:
 		{
 			HICON hIcon;
-			LoadGlobalSettings();
 			InitButtons(hwndDlg, si);
 
 			hIcon = si->wStatus==ID_STATUS_ONLINE?MM_FindModule(si->pszModule)->hOnlineIcon:MM_FindModule(si->pszModule)->hOfflineIcon;
@@ -1563,7 +1572,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                 mir_snprintf(szFinalStatusBarText, 512, "%s", pszDispName);
             
 			SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0 | SBT_NOBORDERS, (LPARAM)szFinalStatusBarText);
-			SendMessageA(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 0 | SBT_NOBORDERS, (LPARAM)szFinalStatusBarText);
+            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_buttonBarIcons[16] : 0));
+            SendMessageA(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 0 | SBT_NOBORDERS, (LPARAM)szFinalStatusBarText);
             UpdateStatusBar(hwndDlg, dat);
 			return TRUE;
 		} break;
@@ -1681,10 +1691,13 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				HFONT hFont, hoFont;
 				HICON hIcon;
 				char *pszText;
-				int offset;
+				int offset, x_offset = 0;
 				int height;
 				int index = dis->itemID;
-				USERINFO * ui = SM_GetUserFromIndex(si->pszID, si->pszModule, index);
+				//USERINFO * ui = SM_GetUserFromIndex(si->pszID, si->pszModule, index);
+                USERINFO * ui = UM_FindUserFromIndex(si->pUsers, index);
+                char szIndicator = 0;
+                
 				if(ui)
 				{
 
@@ -1696,11 +1709,17 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						offset = 0;
 					else
 						offset = height/2 - 4;
-					hIcon = SM_GetStatusIcon(si, ui);
+					hIcon = SM_GetStatusIcon(si, ui, &szIndicator);
 					hFont = ui->iStatusEx == 0?g_Settings.UserListFont:g_Settings.UserListHeadingsFont;
 					hoFont = (HFONT) SelectObject(dis->hDC, hFont);
 					SetBkMode(dis->hDC, TRANSPARENT);
-					/*
+
+					if (dis->itemAction == ODA_FOCUS && dis->itemState & ODS_SELECTED)
+						FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
+					else //if(dis->itemState & ODS_INACTIVE)
+						FillRect(dis->hDC, &dis->rcItem, hListBkgBrush);
+
+                    /*
 					FillRect(dis->hDC, &dis->rcItem, hListBkgBrush);
 					DrawIconEx(dis->hDC,2, dis->rcItem.top + offset,hIcon,10,10,0,NULL, DI_NORMAL);
 					if (dis->itemAction == ODA_FOCUS && dis->itemState & ODS_SELECTED)
@@ -1708,17 +1727,53 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					else if(dis->itemState & ODS_INACTIVE)
 						FrameRect(dis->hDC, &dis->rcItem, hListBkgBrush);
 					*/
-					if (dis->itemAction == ODA_FOCUS && dis->itemState & ODS_SELECTED)
-						FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
-					else //if(dis->itemState & ODS_INACTIVE)
-						FillRect(dis->hDC, &dis->rcItem, hListBkgBrush);
-					DrawIconEx(dis->hDC,2, dis->rcItem.top + offset,hIcon,10,10,0,NULL, DI_NORMAL);
 
+                    if(g_Settings.ColorizeNicks && szIndicator != 0) {
+                        COLORREF clr;
+                        
+                        switch(szIndicator) {
+                            case '@':
+                                clr = g_Settings.nickColors[0];
+                                break;
+                            case '%':
+                                clr = g_Settings.nickColors[1];
+                                break;
+                            case '+':
+                                clr = g_Settings.nickColors[2];
+                                break;
+                            case '!':
+                                clr = g_Settings.nickColors[3];
+                                break;
+                            case '*':
+                                clr = g_Settings.nickColors[4];
+                                break;
+                        }
+                        SetTextColor(dis->hDC, clr);
+                    }
+                    else 
+                        SetTextColor(dis->hDC, ui->iStatusEx == 0?g_Settings.crUserListColor:g_Settings.crUserListHeadingsColor);
+                    
+                    if(g_Settings.ClassicIndicators) {
+                        char szTemp[3];
+                        SIZE szUmode;
+                        
+                        szTemp[1] = 0;
+                        szTemp[0] = szIndicator;
+                        if(szTemp[0]) {
+                            GetTextExtentPoint32A(dis->hDC, szTemp, 1, &szUmode);
+                            x_offset = szUmode.cx + 4;
+                            TextOutA(dis->hDC, 2, dis->rcItem.top, szTemp, 1);
+                        }
+                        else
+                            x_offset = 10;
+                    }
+                    else {
+                        x_offset = 14;
+                        DrawIconEx(dis->hDC,2, dis->rcItem.top + offset,hIcon,10,10,0,NULL, DI_NORMAL);
+                    }
 
-
-					SetTextColor(dis->hDC, ui->iStatusEx == 0?g_Settings.crUserListColor:g_Settings.crUserListHeadingsColor);
 					pszText = ui->pszNick;
-					TextOutA(dis->hDC, dis->rcItem.left+14, dis->rcItem.top, pszText, lstrlenA(pszText));
+					TextOutA(dis->hDC, x_offset, dis->rcItem.top, pszText, lstrlenA(pszText));
 					SelectObject(dis->hDC, hoFont);
 				}
 				return TRUE;
@@ -2124,7 +2179,6 @@ LABEL_SHOWWINDOW:
 								lstrcatA(szURL, pszWord);
 								CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
 							}
-
 							PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
 						}break;
                      case ID_SEARCH_WIKIPEDIA:
@@ -2152,61 +2206,77 @@ LABEL_SHOWWINDOW:
 				switch (((ENLINK *) lParam)->msg) 
 				{
 					case WM_RBUTTONDOWN:
-					case WM_LBUTTONUP:
+                    case WM_LBUTTONUP:
+                    case WM_LBUTTONDBLCLK:
 					{
 						TEXTRANGEA tr;
 						CHARRANGE sel;
-
+                        BOOL isLink = FALSE;
+                        
 						SendMessage(pNmhdr->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
 						if (sel.cpMin != sel.cpMax)
 							break;
 						tr.chrg = ((ENLINK *) lParam)->chrg;
 						tr.lpstrText = malloc(tr.chrg.cpMax - tr.chrg.cpMin + 1);
 						SendMessage(pNmhdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
-						
-						if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) 
-						{
-							HMENU hSubMenu;
-							POINT pt;
 
-							hSubMenu = GetSubMenu(g_hMenu, 2);
-							CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
-							pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
-							pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
-							ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
-							switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) 
-							{
-								case ID_NEW:
-									CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
-									break;
-								case ID_CURR:
-									CallService(MS_UTILS_OPENURL, 0, (LPARAM) tr.lpstrText);
-									break;
-								case ID_COPY:
-								{
-									HGLOBAL hData;
-									if (!OpenClipboard(hwndDlg))
-										break;
-									EmptyClipboard();
-									hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(tr.lpstrText) + 1);
-									lstrcpyA((char *) GlobalLock(hData), tr.lpstrText);
-									GlobalUnlock(hData);
-									SetClipboardData(CF_TEXT, hData);
-									CloseClipboard();
-									SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
-									break;
-								}
-								default:break;
-							}
-							free(tr.lpstrText);
-							return TRUE;
-						} 
-						else  
-						{
-							CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
-							SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
-						}
+                        isLink = g_Settings.ClickableNicks ? IsStringValidLink(tr.lpstrText) : TRUE;
+                        
+                        if(isLink) {
+                            if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) 
+                            {
+                                HMENU hSubMenu;
+                                POINT pt;
 
+                                hSubMenu = GetSubMenu(g_hMenu, 2);
+                                CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
+                                pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
+                                pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
+                                ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
+                                switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) 
+                                {
+                                    case ID_NEW:
+                                        CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+                                        break;
+                                    case ID_CURR:
+                                        CallService(MS_UTILS_OPENURL, 0, (LPARAM) tr.lpstrText);
+                                        break;
+                                    case ID_COPY:
+                                    {
+                                        HGLOBAL hData;
+                                        if (!OpenClipboard(hwndDlg))
+                                            break;
+                                        EmptyClipboard();
+                                        hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(tr.lpstrText) + 1);
+                                        lstrcpyA((char *) GlobalLock(hData), tr.lpstrText);
+                                        GlobalUnlock(hData);
+                                        SetClipboardData(CF_TEXT, hData);
+                                        CloseClipboard();
+                                        SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
+                                        break;
+                                    }
+                                    default:break;
+                                }
+                                free(tr.lpstrText);
+                                return TRUE;
+                            } 
+                            else if(((ENLINK *) lParam)->msg == WM_LBUTTONUP) 
+                            {
+                                CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+                                SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
+                            }
+
+                        }
+                        else {                      // clicked a nick name
+                            USERINFO *ui = si->pUsers;
+
+                            while(ui) {
+                                if(!strcmp(ui->pszNick, tr.lpstrText)) {
+                                    break;
+                                }
+                                ui = ui->next;
+                            }
+                        }
 						free(tr.lpstrText);
 						break;
 					}
@@ -2244,7 +2314,8 @@ LABEL_SHOWWINDOW:
 
 
 					item = LOWORD(SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_ITEMFROMPOINT, 0, MAKELPARAM(hti.pt.x, hti.pt.y)));
-					ui = SM_GetUserFromIndex(si->pszID, si->pszModule, item);
+                    ui = UM_FindUserFromIndex(si->pUsers, item);
+					//ui = SM_GetUserFromIndex(si->pszID, si->pszModule, item);
 					if(ui) {
 						if(GetKeyState(VK_SHIFT) & 0x8000)
 						{
@@ -2354,6 +2425,7 @@ LABEL_SHOWWINDOW:
 					smaddInfo.xPosition = rc.left+3;
 					smaddInfo.yPosition = rc.top-1;
                     smaddInfo.hContact = si->hContact;
+                    smaddInfo.hwndParent = dat->pContainer->hwnd;
 					if(myGlobals.g_SmileyAddAvail)
 						CallService(MS_SMILEYADD_SHOWSELECTION, 0, (LPARAM) &smaddInfo);
 
@@ -2368,9 +2440,8 @@ LABEL_SHOWWINDOW:
 					if(!IsWindowEnabled(GetDlgItem(hwndDlg,IDC_CHAT_HISTORY))) 
 						break;
 
-					if (ServiceExists("MSP/HTMLlog/ViewLog")) {
+					if (ServiceExists("MSP/HTMLlog/ViewLog") && strstr(si->pszModule, "IRC"))
 						CallService ("MSP/HTMLlog/ViewLog",(WPARAM)si->pszModule,(LPARAM)si->pszName);
-					}
 					else if (pInfo) {
 						mir_snprintf(szName, MAX_PATH,"%s",pInfo->pszModDispName?pInfo->pszModDispName:si->pszModule);
 						ValidateFilename(szName);
@@ -2821,6 +2892,12 @@ LABEL_SHOWWINDOW:
         case WM_DESTROY:
 		{
             int i;
+
+            if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
+                CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)"chaticon");
+            si->wState &= ~STATE_TALK;
+            DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
+
             si->hWnd = NULL;
 			//SetWindowLong(hwndDlg,GWL_USERDATA,0);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_SPLITTERX),GWL_WNDPROC,(LONG)OldSplitterProc);

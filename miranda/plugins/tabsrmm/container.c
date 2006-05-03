@@ -63,6 +63,7 @@ extern HANDLE hMessageWindowList;
 extern HINSTANCE g_hInst;
 extern SESSION_INFO *m_WndList;
 
+
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -74,6 +75,7 @@ extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNi
 
 char *szWarnClose = "Do you really want to close this session?";
 BOOL cntHelpActive = FALSE;
+DWORD m_LangPackCP = CP_ACP;
 
 struct ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
 struct ContainerWindowData *pLastActiveContainer = NULL;
@@ -1332,6 +1334,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
                 if(dat) {
 					SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabStatusIcon));
+					m_LangPackCP = myGlobals.m_LangPackCP;
 					szNewTitle = NewTitle(dat->hContact, pContainer->szTitleFormat, dat->szNickname, dat->szStatus, pContainer->szName, dat->uin, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->idle, dat->codePage, dat->xStatus, dat->wStatus);
                     if(szNewTitle) {
                         SetWindowText(hwndDlg, szNewTitle);
@@ -2030,12 +2033,12 @@ panel_found:
             
 			SetWindowLong(hwndDlg, GWL_STYLE, ws);
 
-            pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 2);
-            pContainer->tBorder_outer_left = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_left", 2);
-            pContainer->tBorder_outer_right = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_right", 2);
-            pContainer->tBorder_outer_top = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_top", 2);
-            pContainer->tBorder_outer_bottom = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder_outer_bottom", 2);
-			sBarHeight = (UINT)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sbarheight", 0);
+            pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder" : "tborder"), 2);
+            pContainer->tBorder_outer_left = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2);
+            pContainer->tBorder_outer_right = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2);
+            pContainer->tBorder_outer_top = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2);
+            pContainer->tBorder_outer_bottom = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder_outer_bottom" : "tborder_outer_bottom"), 2);
+			sBarHeight = (UINT)DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_sbarheight" : "sbarheight"), 0);
 
 			if (LOBYTE(LOWORD(GetVersion())) >= 5  && pSetLayeredWindowAttributes != NULL) {
                 DWORD exold;

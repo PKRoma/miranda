@@ -958,11 +958,13 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists(MS_UPDATE_REGISTER))
         CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 
+    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0))
+        ReloadContainerSkin();
+    
 	//FirstTimeConfig();
     CacheLogFonts();
 	//tQHTM_Init();
     Chat_ModulesLoaded(wParam, lParam);
-    ReloadContainerSkin();
 	return 0;
 }
 
@@ -1191,7 +1193,6 @@ tzdone:
             return 1;
         return 0;
     }
-
     OleInitialize(NULL);
     InitREOleCallback();
     ZeroMemory((void *)&myGlobals, sizeof(myGlobals));

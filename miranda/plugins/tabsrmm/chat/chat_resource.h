@@ -76,7 +76,9 @@
 #define IDC_BKGOUTGOING                 1125
 #define IDC_BKGINCOMING                 1126
 #define IDC_GRIDLINES                   1127
+#define IDC_NICKCOLOR                   1128
 #define IDC_FONTCATEGORY                1274
+#define IDC_NICKCOLORS                  1275
 #define ID_MESS                         40001
 #define ID_NEW                          40002
 #define ID_CURR                         40003

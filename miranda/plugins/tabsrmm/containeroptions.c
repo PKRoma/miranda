@@ -32,8 +32,6 @@ extern      struct ContainerWindowData *pFirstContainer;
 extern      MYGLOBALS myGlobals;
 extern      NEN_OPTIONS nen_options;
 
-char *GetThemeFileName(int iMode);
-
 static void ReloadGlobalContainerSettings()
 {
     struct ContainerWindowData *pC = pFirstContainer;

@@ -30,7 +30,6 @@ extern struct MM_INTERFACE		mmi ;
 #define	STATUSICONCOUNT 6
 
 SESSION_INFO * m_WndList = 0;
-TABLIST * g_TabList = 0;
 MODULEINFO *m_ModList = 0;
 
 void SetActiveSession(char * pszID, char * pszModule)
@@ -250,30 +249,45 @@ BOOL SM_SetStatusEx(char *pszID, char * pszModule, char * pszText)
 	}
 	return TRUE;
 }
-HICON SM_GetStatusIcon(SESSION_INFO * si, USERINFO * ui)
+HICON SM_GetStatusIcon(SESSION_INFO * si, USERINFO * ui, char *szIndicator)
 {
 	STATUSINFO * ti;
 	if(!ui || !si)
 		return NULL;
 
-	ti = TM_FindStatus(si->pStatuses, TM_WordToString(si->pStatuses, ui->Status));
+    *szIndicator = 0;
+    
+    ti = TM_FindStatus(si->pStatuses, TM_WordToString(si->pStatuses, ui->Status));
 	if (ti)
 	{
-		if((int)ti->hIcon < STATUSICONCOUNT)
+        if((int)ti->hIcon < STATUSICONCOUNT)
 		{
 			int id = si->iStatusCount - (int)ti->hIcon - 1;
-			if(id == 0)
-				return hIcons[ICON_STATUS0];
-			if(id == 1)
-				return hIcons[ICON_STATUS1];
-			if(id == 2)
-				return hIcons[ICON_STATUS2];
-			if(id == 3)
-				return hIcons[ICON_STATUS3];
-			if(id == 4)
-				return hIcons[ICON_STATUS4];
-			if(id == 5)
-				return hIcons[ICON_STATUS5];
+
+            if(id == 0) {
+                *szIndicator = 0;
+                return hIcons[ICON_STATUS0];
+            }
+            if(id == 1) {
+                *szIndicator = '+';
+                return hIcons[ICON_STATUS1];
+            }
+            if(id == 2) {
+                *szIndicator = '%';
+                return hIcons[ICON_STATUS2];
+            }
+            if(id == 3) {
+                *szIndicator = '@';
+                return hIcons[ICON_STATUS3];
+            }
+            if(id == 4) {
+                *szIndicator = '!';
+                return hIcons[ICON_STATUS4];
+            }
+            if(id == 5) {
+                *szIndicator = '*';
+                return hIcons[ICON_STATUS5];
+            }
 		}
 		else
 			return ti->hIcon;
@@ -334,7 +348,7 @@ BOOL SM_AddEvent(char *pszID, char * pszModule, GCEVENT * gce, BOOL bIsHighlight
 			LOGINFO * li = LM_AddEvent(&pTemp->pLog, &pTemp->pLogEnd);
 			pTemp->iEventCount += 1;
 
-			li->iType = gce->pDest->iType;
+            li->iType = gce->pDest->iType;
 			if(gce->pszNick )
 			{
 				li->pszNick = (char*)malloc(lstrlenA(gce->pszNick) + 1); 
@@ -359,7 +373,6 @@ BOOL SM_AddEvent(char *pszID, char * pszModule, GCEVENT * gce, BOOL bIsHighlight
 			li->bIsMe = gce->bIsMe;
 			li->time = gce->time;
 			li->bIsHighlighted = bIsHighlighted;
-			
 			
 			if (g_Settings.iEventLimit > 0 && pTemp->iEventCount > g_Settings.iEventLimit + 20)
 			{
@@ -957,6 +970,15 @@ int	SM_GetCount(char * pszModule)
 	return count;
 }
 
+int SM_IsIRC(SESSION_INFO *si)
+{
+    char szServiceName[512];
+
+    mir_snprintf(szServiceName, 512, "%s/GetIrcData", si->pszModule);
+
+    return(ServiceExists(szServiceName));
+}
+
 SESSION_INFO *	SM_FindSessionByHWND(HWND hWnd)
 {
     SESSION_INFO *pTemp = m_WndList;
@@ -1176,59 +1198,6 @@ BOOL MM_RemoveAll (void)
 	m_ModList = NULL;
 	return TRUE;
 }
-
-
-
-//---------------------------------------------------
-//		Tab list manager functions
-//
-//		Necessary to keep track of what tabs should 
-//		be restored
-//---------------------------------------------------
-
-BOOL TabM_AddTab(char * pszID, char * pszModule)
-{
-	TABLIST *node = NULL;
-	if(!pszID || !pszModule)
-		return FALSE;
-
-	node = (TABLIST*) malloc(sizeof(TABLIST));
-	ZeroMemory(node, sizeof(TABLIST));
-
-	node->pszID = (char *) malloc(lstrlenA(pszID) + 1);
-	lstrcpyA(node->pszID, pszID);
-
-	node->pszModule = (char *) malloc(lstrlenA(pszModule) + 1);
-	lstrcpyA(node->pszModule, pszModule);
-
-	if (g_TabList == NULL) // list is empty
-	{
-		g_TabList = node;
-		node->next = NULL;
-	}
-	else
-	{
-		node->next = g_TabList;
-		g_TabList = node;
-	}
-	return TRUE;
-		
-}
-
-BOOL TabM_RemoveAll (void)
-{
-	while (g_TabList != NULL) 
-    {
-		TABLIST * pLast = g_TabList->next;
-		free (g_TabList->pszModule);
-		free(g_TabList->pszID);
-		free (g_TabList);
-		g_TabList = pLast;
-    }
-	g_TabList = NULL;
-	return TRUE;
-}
-
 
 //---------------------------------------------------
 //		Status manager functions
