@@ -157,7 +157,7 @@ void sttGroupchatJoinByHContact( HANDLE hContact )
 		free( jidnick );
 	}
 
-	JabberGroupchatJoinRoom( server, room, nick, "" );
+	JabberGroupchatJoinRoom( server, room, TXT(nick), "" );
 	free( roomjid );
 }
 
