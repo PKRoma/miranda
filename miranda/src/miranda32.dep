@@ -82,7 +82,6 @@
 .\modules\database\dbini.c : \
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
-	".\modules\database\database.h"\
 	
 
 .\modules\database\dblists.c : \
@@ -94,7 +93,6 @@
 .\modules\database\dbtime.c : \
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
-	".\modules\database\database.h"\
 	
 
 .\modules\database\profilemanager.c : \
