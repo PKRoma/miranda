@@ -527,15 +527,17 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 						mi2.flags=CMIM_NAME;
 						if (timi->mi.hIcon)
 						{
-							mi2.pszName= timi->mi.pszName;
+							mi2.ptszName= timi->mi.ptszName;
+							mi2.flags|=CMIF_TCHAR;
 						}
 						else
 						{
-							mi2.pszName=Translate("Custom status");
+							mi2.ptszName=TranslateT("Custom status");
+							mi2.flags|=CMIF_TCHAR;
 						}
 						timiParent=GetMenuItemByGlobalID(timi->mi.root);					
 						{
-							MENUITEMINFOA mi={0};
+							MENUITEMINFO mi={0};
 							int res=0;
 							TCHAR d[200];
 							BOOL m;
@@ -549,22 +551,9 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 								mi.fMask=MIIM_STRING|MIIM_BITMAP;
 								mi.fType=MFT_STRING;
 								mi.hbmpChecked=mi.hbmpItem=mi.hbmpUnchecked=(HBITMAP)mi2.hIcon;
-								mi.dwTypeData=mi2.pszName;
+								mi.dwTypeData=mi2.ptszName;
 								mi.hbmpItem=HBMMENU_CALLBACK;
-								res=SetMenuItemInfoA(it.OwnerMenu,it.position,TRUE,&mi);
-								/*
-								GetMenuString(it.OwnerMenu,it.position,d,100,MF_BYPOSITION);							
-								mi.fMask=MIIM_STRING;
-								mi.fType=MFT_STRING;
-								mi.dwTypeData=mi2.pszName;
-								res=SetMenuItemInfoA(it.OwnerMenu,it.position,TRUE,&mi);
-
-								mi.fMask=MIIM_BITMAP|MIIM_TYPE;
-								mi.fType=MFT_OWNERDRAW;
-								mi.hbmpChecked=mi.hbmpItem=mi.hbmpUnchecked=mi2.hIcon;								
-								mi.hbmpItem=HBMMENU_CALLBACK;
-								res=SetMenuItemInfoA(it.OwnerMenu,it.position,TRUE,&mi);
-								*/
+								res=SetMenuItemInfo(it.OwnerMenu,it.position,TRUE,&mi);
 							}
 						}
 						CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)timi->mi.root, (LPARAM)&mi2);

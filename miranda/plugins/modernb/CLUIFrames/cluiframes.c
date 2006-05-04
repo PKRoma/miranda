@@ -2112,8 +2112,8 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 	  }
 	  GetWindowRect(pcli->hwndContactList,&mainRect);
 	  mainHeight=mainRect.bottom-mainRect.top;
-	  if (mainHeight<minHeight)
-		  DebugBreak();
+	  //if (mainHeight<minHeight)
+	  //	  DebugBreak();
   }
   alclientFrame=-1;//recalc it
   CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
@@ -2966,8 +2966,8 @@ int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 	  }
 	  GetWindowRect(pcli->hwndContactList,&mainRect);
 	  mainHeight=mainRect.bottom-mainRect.top;
-	  if (mainHeight<minHeight)
-		  DebugBreak();
+	  //if (mainHeight<minHeight)
+	  //	  DebugBreak();
   }
    GetClientRect(pcli->hwndContactList,&nRect);
   //$$$ Fixed borders 

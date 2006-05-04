@@ -170,6 +170,7 @@
 #define IDI_STATUS_OVERLAY_CHAT         409
 #define IDR_TGA_DEFAULT_SKIN            413
 #define IDR_MSF_DEFAULT_SKIN            413
+#define IDD_SKIN_TAB                    415
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -868,6 +869,7 @@
 #define IDC_ST_ALPHA                    1887
 #define IDC_S_SIZE                      1888
 #define IDC_EXTRAORDER                  1889
+#define IDC_SKIN_TAB                    1890
 #define IDC_CLSORT1                     6666
 #define IDC_CLSORT2                     6667
 #define IDC_CLSORT3                     6668
@@ -935,9 +937,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        415
+#define _APS_NEXT_RESOURCE_VALUE        416
 #define _APS_NEXT_COMMAND_VALUE         40020
-#define _APS_NEXT_CONTROL_VALUE         1890
+#define _APS_NEXT_CONTROL_VALUE         1891
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

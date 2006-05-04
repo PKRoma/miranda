@@ -50,23 +50,38 @@ int AddSkinToListFullName(HWND hwndDlg,char * fullName);
 int AddSkinToList(HWND hwndDlg,char * path, char* file);
 int FillAvailableSkinList(HWND hwndDlg);
 static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int SkinOptInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
 
-	ZeroMemory(&odp,sizeof(odp));
+/*	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize=sizeof(odp);
 	odp.position=-1000000000;
 	odp.hInstance=g_hInst;
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SKIN);
-	odp.pszGroup=Translate("Skin");
-	odp.pszTitle=Translate("Load Skin");
+	odp.pszGroup=Translate("Customize");
+	odp.pszTitle=Translate("Skin - Load");
 	odp.pfnDlgProc=DlgSkinOpts;
 	odp.flags=ODPF_BOLDGROUPS;
 	//	odp.nIDBottomSimpleControl=IDC_STCLISTGROUP;
 	//	odp.expertOnlyControls=expertOnlyControls;
 	//	odp.nExpertOnlyControls=sizeof(expertOnlyControls)/sizeof(expertOnlyControls[0]);
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+*/
+	//Tabbed settings
+	ZeroMemory(&odp,sizeof(odp));
+	odp.cbSize=sizeof(odp);
+	odp.position=-200000000;
+	odp.hInstance=g_hInst;
+	odp.pfnDlgProc=DlgProcSkinTabbedOpts;
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_SKIN_TAB);
+	odp.pszGroup=Translate("Customize");
+	odp.pszTitle=Translate("Skin");
+	odp.flags=ODPF_BOLDGROUPS;
+	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+
 	return 0;
 }
 
@@ -106,7 +121,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 			TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_TREE1),(HTREEITEM)it);						
 		}
-		return TRUE;
+		return 0;
 	case WM_COMMAND:
 		{
 			int isLoad=0;
@@ -148,8 +163,8 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					}
 					else
 					{
-						_snprintf(text,sizeof(text),Translate("%s\n\n%s\n\nAuthor(s):\t %s\nContact:\t %s\nWeb:\t %s\n\nFile:\t %s"),
-							"ToDo:Default Skin Name",Translate("This is default Modern Contact list skin"),"ToDo:Authors","ToDo:Contact","ToDo:URL",Translate("Inside library"));
+						_snprintf(text,sizeof(text),Translate("%s\n\n%s\n\nAuthor(s): %s\nContact:\t %s\nWeb:\t %s\n\nFile:\t %s"),
+							"Luna v0.4",Translate("This is default Modern Contact list skin based on 'Luna' theme"),"Angeli-Ka (graphics), FYR (template)","JID: fyr@jabber.ru","modern.saopp.info",Translate("Inside library"));
 					}
 					MessageBoxA(hwndDlg,text,"Skin Information",MB_OK|MB_ICONINFORMATION);
 				}
@@ -241,85 +256,6 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 						}
 					}
 				}
-				//case IDC_SKINS_LIST:
-				//	{
-				//		switch (HIWORD(wParam))
-				//		{
-				//		case LBN_SELCHANGE:
-				//			//TODO: Skin list selection was changed
-				//			{
-				//				/*
-				//				int item;            
-				//				if (hPreviewBitmap) 
-				//				{
-				//					DeleteObject(hPreviewBitmap);
-				//					hPreviewBitmap=NULL;
-				//				}
-				//				item=SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETCURSEL,0,0); 
-				//				if (item!=-1)
-				//				{
-				//					//selected
-				//					SkinListData * sd;
-				//					sd=(SkinListData*)SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETITEMDATA,(WPARAM)item,(LPARAM)0); 
-				//					if (sd)
-				//					{
-				//						//enable 'Apply' button
-				//						//enable 'Info' button
-				//						//update preview
-				//						SendDlgItemMessageA(hwndDlg,IDC_EDIT_SKIN_FILENAME,WM_SETTEXT,0,(LPARAM)sd->File); //TODO made filepath unicode
-				//						{
-				//							char prfn[MAX_PATH]={0};
-				//							char imfn[MAX_PATH]={0};
-				//							char skinfolder[MAX_PATH]={0};
-				//							GetPrivateProfileStringA("Skin_Description_Section","Preview","",imfn,sizeof(imfn),sd->File);
-				//							GetSkinFolder(sd->File,skinfolder);
-				//							_snprintf(prfn,sizeof(prfn),"%s\\%s",skinfolder,imfn);
-				//							CallService(MS_UTILS_PATHTOABSOLUTE,(WPARAM)prfn,(LPARAM) imfn);
-				//							hPreviewBitmap=intLoadGlyphImage(imfn);
-				//						}
-				//						EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),TRUE);
-				//						EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),TRUE);
-
-				//					}
-				//				}
-				//				else
-				//				{
-				//					//no selected
-				//					SendDlgItemMessage(hwndDlg,IDC_EDIT_SKIN_FILENAME,WM_SETTEXT,0,(LPARAM)TranslateT("Select skin from list"));
-				//					EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),FALSE);
-				//					EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),FALSE);
-				//				} 
-				//				ShowWindowNew(GetDlgItem(hwndDlg,IDC_PREVIEW),hPreviewBitmap?SW_SHOW:SW_HIDE);
-				//				if (hPreviewBitmap) InvalidateRect(GetDlgItem(hwndDlg,IDC_PREVIEW),NULL,TRUE);
-				//				else  //prepeare text
-
-				//				{
-				//					char Author[255];
-				//					char URL[MAX_PATH];
-				//					char Contact[255];
-				//					char Description[400];
-				//					char text[2000];
-				//					int item;
-				//					SkinListData *sd;           
-				//					item=SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETCURSEL,0,0); 
-				//					if (item==-1) return 0;
-				//					sd=(SkinListData*)SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETITEMDATA,(WPARAM)item,(LPARAM)0);              
-				//					if (!sd) return 0;
-				//					GetPrivateProfileStringA("Skin_Description_Section","Author","(unknown)",Author,sizeof(Author),sd->File);
-				//					GetPrivateProfileStringA("Skin_Description_Section","URL","",URL,sizeof(URL),sd->File);
-				//					GetPrivateProfileStringA("Skin_Description_Section","Contact","",Contact,sizeof(Contact),sd->File);
-				//					GetPrivateProfileStringA("Skin_Description_Section","Description","",Description,sizeof(Description),sd->File);
-				//					_snprintf(text,sizeof(text),Translate("Preview is not available\n\n%s\n----------------------\n\n%s\n\nAUTHOR(S):\n%s\n\nCONTACT:\n%s\n\nHOMEPAGE:\n%s"),
-				//						sd->Name,Description,Author,Contact,URL);
-				//					SendDlgItemMessageA(hwndDlg,IDC_STATIC_INFO,WM_SETTEXT,0,(LPARAM)text);
-				//				}
-				//				*/
-				//			}
-				//			break;
-
-				//		}
-				//		break;
-				//	}
 			}
 			break;
 		}
@@ -392,7 +328,8 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			{		
 				NMTREEVIEWA * nmtv = (NMTREEVIEWA *) lParam;
 				if (!nmtv) return 0;
-				if (nmtv->hdr.code==TVN_SELCHANGEDA)
+				if (nmtv->hdr.code==TVN_SELCHANGEDA
+					|| nmtv->hdr.code==TVN_SELCHANGEDW)
 				{	
 					SkinListData * sd=NULL;
 					if (hPreviewBitmap) 
@@ -454,8 +391,13 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							}
 							else
 							{
-								_snprintf(text,sizeof(text),Translate("%s\n\n%s\n\nAuthor(s):\t %s\nContact:\t %s\nWeb:\t %s\n\nFile:\t %s"),
-									"ToDo:Default Skin Name",Translate("This is default Modern Contact list skin"),"ToDo:Authors","ToDo:Contact","ToDo:URL",Translate("Inside library"));
+								_snprintf(text,sizeof(text),Translate("%s\n\n%s\n\nAUTHORS:\n%s\n\nCONTACT:\n%s\n\nWEB:\n%s\n\n\n"),
+									"Luna v0.4",
+									Translate("This is default Modern Contact list skin based on 'Luna' theme"),
+									"graphics by Angeli-Ka\ntemplate by FYR",
+									"JID: fyr@jabber.ru",
+									"modern.saopp.info"
+									);
 							}
 							ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),SW_HIDE);
 							ShowWindow(GetDlgItem(hwndDlg,IDC_STATIC_INFO),SW_SHOW);
@@ -474,7 +416,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),hPreviewBitmap?SW_SHOW:SW_HIDE);
 				return 0;
 			}			
-		else if (nmtv->hdr.code==TVN_SELCHANGEDA)
+		else if (nmtv->hdr.code==TVN_SELCHANGEDA || nmtv->hdr.code==TVN_SELCHANGEDW)
 		{
 			if (nmtv->itemOld.lParam)
 				mir_free((void*)(nmtv->itemOld.lParam));
@@ -507,14 +449,14 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);	
 					RedrawWindow(GetParent(pcli->hwndContactTree),NULL,NULL,RDW_INVALIDATE|RDW_FRAME|RDW_ALLCHILDREN);
 				}
-				return TRUE;
+				return 0;
 			}
 			break;
 		}
 		break;
 	}
 }
-return FALSE;
+return 0;
 }
 
 int SearchSkinFiles(HWND hwndDlg, char * Folder)
@@ -785,5 +727,216 @@ static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data
 	}
 	else
 		return (int)cItem;
+	return 0;
+}
+
+/* TABBED SKIN SETTINGS */
+
+#define NUM_SKIN_TAB_PAGES 2
+
+typedef struct _ItemOptionConf 
+{ 
+	TCHAR *name;			// Tab name
+	int id;					// Dialog id
+	DLGPROC wnd_proc;		// Dialog function
+} ItemOptionConf;
+
+typedef struct _ItemOptionData 
+{ 
+	ItemOptionConf *conf;
+	HWND hwnd;				// dialog handle
+} ItemOptionData; 
+
+typedef struct _WndItemsData 
+{ 
+	ItemOptionData items[NUM_SKIN_TAB_PAGES];
+	HWND hwndDisplay;
+	int selected_item;
+} WndItemsData; 
+
+static ItemOptionConf opt_items[] = { 
+	{ _T("Load/Save"), IDD_OPT_SKIN, DlgSkinOpts },
+	{ _T("Object Editor"), IDD_OPT_SKINEDITOR, DlgSkinEditorOpts }
+};
+
+
+
+
+// DoLockDlgRes - loads and locks a dialog template resource. 
+// Returns the address of the locked resource. 
+// lpszResName - name of the resource 
+
+static DLGTEMPLATE * DoLockDlgRes(LPSTR lpszResName) 
+{ 
+	HRSRC hrsrc = FindResourceA(g_hInst, lpszResName, MAKEINTRESOURCEA(5)); 
+	HGLOBAL hglb = LoadResource(g_hInst, hrsrc); 
+	return (DLGTEMPLATE *) LockResource(hglb); 
+} 
+
+static void SkinChangeTab(HWND hwndDlg, WndItemsData *data, int sel)
+{
+	HWND hwndTab;
+	RECT rc_tab;
+	RECT rc_item;
+	int top;
+
+	hwndTab = GetDlgItem(hwndDlg, IDC_SKIN_TAB);
+
+	// Get avaible space
+	GetWindowRect(hwndTab, &rc_tab);
+	ScreenToClientRect(hwndDlg, &rc_tab);
+	top = rc_tab.top;
+
+	GetWindowRect(hwndTab, &rc_tab);
+	ScreenToClientRect(hwndTab, &rc_tab);
+	TabCtrl_AdjustRect(hwndTab, FALSE, &rc_tab); 
+
+
+	// Get item size
+	GetClientRect(data->items[sel].hwnd, &rc_item);
+
+	// Fix rc_item
+	rc_item.right -= rc_item.left;	// width
+	rc_item.left = 0;
+	rc_item.bottom -= rc_item.top;	// height
+	rc_item.top = 0;
+
+	//OffsetRect(&rc_item,30,0);
+
+	if (rc_item.right < rc_tab.right - rc_tab.left)
+		rc_item.left = rc_tab.left + (rc_tab.right - rc_tab.left - rc_item.right) / 2;
+	else
+		rc_item.left = rc_tab.left;
+
+	if (rc_item.bottom < rc_tab.bottom - rc_tab.top)
+		rc_item.top = top + rc_tab.top + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
+	else
+		rc_item.top = top + rc_tab.top;
+
+	// Set pos
+	//SetParent(data->items[sel].hwnd,hwndTab);
+	SetWindowPos(data->items[sel].hwnd, HWND_TOP/*data->hwndDisplay*/, rc_item.left, rc_item.top, rc_item.right,
+		rc_item.bottom, SWP_SHOWWINDOW);
+
+	data->selected_item = sel;
+}
+
+
+static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+		{
+			HWND hwndTab;
+			WndItemsData *data;
+			int i;
+			TCITEM tie={0}; 
+			RECT rc_tab;
+
+			TranslateDialogDefault(hwndDlg);
+
+			data = (WndItemsData *) mir_alloc(sizeof(WndItemsData));
+			data->selected_item = -1;
+			SetWindowLong(hwndDlg, GWL_USERDATA, (long) data); 
+
+			hwndTab = GetDlgItem(hwndDlg, IDC_SKIN_TAB);
+
+			// Add tabs
+			tie.mask = TCIF_TEXT | TCIF_IMAGE; 
+			tie.iImage = -1; 
+
+			for (i = 0 ; i < NUM_SKIN_TAB_PAGES ; i++)
+			{
+				DLGTEMPLATE *templ;
+
+				data->items[i].conf = &opt_items[i];
+				templ = DoLockDlgRes(MAKEINTRESOURCEA(data->items[i].conf->id));
+				data->items[i].hwnd = CreateDialogIndirectA(g_hInst, templ, hwndDlg, 
+					data->items[i].conf->wnd_proc); 
+				TranslateDialogDefault(data->items[i].hwnd);
+				ShowWindowNew(data->items[i].hwnd, SW_HIDE);
+
+				tie.pszText = TranslateTS(data->items[i].conf->name); 
+				TabCtrl_InsertItem(hwndTab, i, &tie);
+			}
+
+			// Get avaible space
+			GetWindowRect(hwndTab, &rc_tab);
+			ScreenToClientRect(hwndTab, &rc_tab);
+			TabCtrl_AdjustRect(hwndTab, FALSE, &rc_tab); 
+			rc_tab.left+=1;
+			rc_tab.right-=1;
+			// Create big display
+			data->hwndDisplay = CreateWindow(TEXT("STATIC"), TEXT(""), WS_CHILD|WS_VISIBLE, 
+				rc_tab.left, rc_tab.top, 
+				rc_tab.right-rc_tab.left, rc_tab.bottom-rc_tab.top, 
+				hwndTab, NULL, g_hInst, NULL); 
+
+			// Show first item
+			SkinChangeTab(hwndDlg, data, 0);
+
+			return TRUE;
+			break;
+		}
+	case WM_NOTIFY: 
+		{
+			switch (((LPNMHDR)lParam)->code) 
+			{
+			case TCN_SELCHANGING:
+				{
+					WndItemsData *data = (WndItemsData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+					ShowWindowNew(data->items[data->selected_item].hwnd, SW_HIDE);
+					break;
+				}
+			case TCN_SELCHANGE: 
+				{
+					SkinChangeTab(hwndDlg, 
+						(WndItemsData *)GetWindowLong(hwndDlg, GWL_USERDATA), 
+						TabCtrl_GetCurSel(GetDlgItem(hwndDlg, IDC_SKIN_TAB)));
+					break; 
+				}
+
+			case PSN_APPLY:
+				{
+					if (((LPNMHDR)lParam)->idFrom == 0)
+					{
+						WndItemsData *data = (WndItemsData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+						int i;
+						for (i = 0 ; i < NUM_SKIN_TAB_PAGES ; i++)
+						{
+							SendMessage(data->items[i].hwnd, msg, wParam, lParam);
+						}
+
+						pcli->pfnLoadContactTree();
+						//ReLoadContactTree();/* this won't do job properly since it only really works when changes happen */
+						ClcOptionsChanged(); // Used to force loading avatar an list height related options
+						SendMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0); /* force reshuffle */
+						return TRUE;
+					}
+					break;
+				}
+			}
+			break;
+		} 
+	case WM_DESTROY: 
+		{
+			int i;
+			WndItemsData *data = (WndItemsData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+
+			DestroyWindow(data->hwndDisplay); 
+
+			for (i = 0 ; i < NUM_SKIN_TAB_PAGES ; i++)
+			{
+				DestroyWindow(data->items[i].hwnd); 
+			}
+
+			mir_free(data); 
+			break;
+		}
+	case PSM_CHANGED:
+		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+	}
+
 	return 0;
 }

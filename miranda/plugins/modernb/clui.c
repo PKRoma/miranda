@@ -1474,6 +1474,14 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 }
 
 	switch (msg) {
+	case WM_EXITSIZEMOVE:
+		{
+			int res=DefWindowProc(hwnd, msg, wParam, lParam);
+			ReleaseCapture();
+			TRACE("WM_EXITSIZEMOVE\n");
+			SendMessage(hwnd, WM_ACTIVATE, (WPARAM)WA_ACTIVE, (LPARAM)hwnd);
+			return res;
+		}
 	case UM_UPDATE:
 		if (POST_WAS_CANCELED) return 0;
 		return ValidateFrameImageProc(NULL);               
@@ -2212,7 +2220,7 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 						return res;
 					}
 					/*===================*/
-					if (DBGetContactSettingByte(NULL,"CLUI","DragToScroll",0)) 
+					if (DBGetContactSettingByte(NULL,"CLUI","DragToScroll",0) && !DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",1)) 
 						return EnterDragToScroll(pcli->hwndContactTree,nm->pt.y);
 					/*===================*/
 					return 0;

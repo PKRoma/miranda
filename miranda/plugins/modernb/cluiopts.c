@@ -79,7 +79,7 @@ int CluiOptInit(WPARAM wParam,LPARAM lParam)
 typedef struct _OrderTreeData 
 { 
 	BYTE	ID;
-	char *	Name;
+	TCHAR *	Name;
 	BYTE	Position;
 	char *  KeyName;
 	BOOL	Visible;
@@ -87,15 +87,15 @@ typedef struct _OrderTreeData
 
 TOrderTreeData OrderTreeData[]=
 {
-	{EXTRA_ICON_EMAIL, ("E-mail"), EXTRA_ICON_EMAIL, "EXTRA_ICON_EMAIL", TRUE},
-	{EXTRA_ICON_PROTO, ("Protocol"), EXTRA_ICON_PROTO, "EXTRA_ICON_PROTO", TRUE},
-	{EXTRA_ICON_SMS, ("Phone/SMS"), EXTRA_ICON_SMS,	 "EXTRA_ICON_SMS", TRUE},
-	{EXTRA_ICON_WEB, ("Web page"), EXTRA_ICON_WEB,   "EXTRA_ICON_WEB", TRUE},
-	{EXTRA_ICON_CLIENT, ("Client (fingerprint.dll is required)"), EXTRA_ICON_CLIENT,"EXTRA_ICON_CLIENT", TRUE},
-	{EXTRA_ICON_ADV1, ("Advanced #1"), EXTRA_ICON_ADV1,  "EXTRA_ICON_ADV1", TRUE},
-	{EXTRA_ICON_ADV2, ("Advanced #2"), EXTRA_ICON_ADV2,  "EXTRA_ICON_ADV2", TRUE},
-	{EXTRA_ICON_ADV3, ("Advanced #3"), EXTRA_ICON_ADV3,  "EXTRA_ICON_ADV3", TRUE},
-	{EXTRA_ICON_ADV4, ("Advanced #4"), EXTRA_ICON_ADV4,	"EXTRA_ICON_ADV4", TRUE}
+	{EXTRA_ICON_EMAIL, _T("E-mail"), EXTRA_ICON_EMAIL, "EXTRA_ICON_EMAIL", TRUE},
+	{EXTRA_ICON_PROTO, _T("Protocol"), EXTRA_ICON_PROTO, "EXTRA_ICON_PROTO", TRUE},
+	{EXTRA_ICON_SMS, _T("Phone/SMS"), EXTRA_ICON_SMS,	 "EXTRA_ICON_SMS", TRUE},
+	{EXTRA_ICON_WEB, _T("Web page"), EXTRA_ICON_WEB,   "EXTRA_ICON_WEB", TRUE},
+	{EXTRA_ICON_CLIENT, _T("Client (fingerprint.dll is required)"), EXTRA_ICON_CLIENT,"EXTRA_ICON_CLIENT", TRUE},
+	{EXTRA_ICON_ADV1, _T("Advanced #1"), EXTRA_ICON_ADV1,  "EXTRA_ICON_ADV1", TRUE},
+	{EXTRA_ICON_ADV2, _T("Advanced #2"), EXTRA_ICON_ADV2,  "EXTRA_ICON_ADV2", TRUE},
+	{EXTRA_ICON_ADV3, _T("Advanced #3"), EXTRA_ICON_ADV3,  "EXTRA_ICON_ADV3", TRUE},
+	{EXTRA_ICON_ADV4, _T("Advanced #4"), EXTRA_ICON_ADV4,	"EXTRA_ICON_ADV4", TRUE}
 };
 
 #define PrVer 3
@@ -150,7 +150,7 @@ int CALLBACK CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 int FillOrderTree(HWND hwndDlg, HWND Tree)
 {
 	int i=0;
-	TVINSERTSTRUCTA tvis={0};
+	TVINSERTSTRUCT tvis={0};
 	TreeView_DeleteAllItems(Tree);
 	tvis.hParent=NULL;
 	tvis.hInsertAfter=TVI_LAST;
@@ -168,9 +168,9 @@ int FillOrderTree(HWND hwndDlg, HWND Tree)
 		OrderTreeData[i].Visible =(BOOL)DBGetContactSettingByte(NULL,CLUIFrameModule,OrderTreeData[i].KeyName,1);
 		tvis.hInsertAfter=TVI_LAST;
 		tvis.item.lParam=(LPARAM)(&(OrderTreeData[i]));
-		tvis.item.pszText=Translate(OrderTreeData[i].Name);
+		tvis.item.pszText=TranslateTS(OrderTreeData[i].Name);
 		tvis.item.iImage=tvis.item.iSelectedImage=OrderTreeData[i].Visible;
-		TreeView_InsertItemA(Tree,&tvis);
+		TreeView_InsertItem(Tree,&tvis);
 	}
 	{
 		TVSORTCB sort={0};
@@ -359,8 +359,8 @@ BOOL CALLBACK DlgProcExtraIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&tvi);
 				if(hti.flags&(TVHT_ONITEM|TVHT_ONITEMRIGHT)||(hti.hItem==TVI_FIRST)) 
 				{
-					TVINSERTSTRUCTA tvis;
-					char name[128];
+					TVINSERTSTRUCT tvis;
+					TCHAR name[128];
 					tvis.item.mask=TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
 					tvis.item.stateMask=0xFFFFFFFF;
 					tvis.item.pszText=name;
@@ -368,11 +368,11 @@ BOOL CALLBACK DlgProcExtraIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					tvis.item.hItem=hDragItem;
 					//
 					tvis.item.iImage=tvis.item.iSelectedImage=((TOrderTreeData *)tvi.lParam)->Visible;				
-					TreeView_GetItemA(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&tvis.item);				
+					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&tvis.item);				
 					TreeView_DeleteItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),hDragItem);
 					tvis.hParent=NULL;
 					tvis.hInsertAfter=hti.hItem;
-					TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),TreeView_InsertItemA(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&tvis));
+					TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&tvis));
 					SendMessage(GetParent(GetParent(hwndDlg)), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 				}
 			}
@@ -390,9 +390,9 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		hCLUIwnd=hwndDlg;  
 		TranslateDialogDefault(hwndDlg);
 		CheckDlgButton(hwndDlg, IDC_BRINGTOFRONT, DBGetContactSettingByte(NULL,"CList","BringToFront",SETTING_BRINGTOFRONT_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
-		CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
+		CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);		
 		CheckDlgButton(hwndDlg, IDC_CLIENTDRAG, DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
-		CheckDlgButton(hwndDlg, IDC_DRAGTOSCROLL, DBGetContactSettingByte(NULL,"CLUI","DragToScroll",0) ? BST_CHECKED : BST_UNCHECKED);
+		CheckDlgButton(hwndDlg, IDC_DRAGTOSCROLL, (DBGetContactSettingByte(NULL,"CLUI","DragToScroll",0)&&!DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT)) ? BST_CHECKED : BST_UNCHECKED);
 		{	// ====== Activate/Deactivate Non-Layered items =======
 			MODE=!LayeredFlag;
 			EnableWindow(GetDlgItem(hwndDlg,IDC_TOOLWND),MODE);
@@ -417,7 +417,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				EnableWindow(GetDlgItem(hwndDlg,IDC_MIN2TRAY),FALSE);
 			CheckDlgButton(hwndDlg, IDC_SHOWCAPTION, DBGetContactSettingByte(NULL,"CLUI","ShowCaption",SETTING_SHOWCAPTION_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_SHOWMAINMENU, DBGetContactSettingByte(NULL,"CLUI","ShowMainMenu",SETTING_SHOWMAINMENU_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_CLIENTDRAG),!IsDlgButtonChecked(hwndDlg,IDC_DRAGTOSCROLL));
+			//EnableWindow(GetDlgItem(hwndDlg,IDC_CLIENTDRAG),!IsDlgButtonChecked(hwndDlg,IDC_DRAGTOSCROLL));
 			if(!IsDlgButtonChecked(hwndDlg,IDC_SHOWCAPTION)) 
 			{
 				EnableWindow(GetDlgItem(hwndDlg,IDC_MIN2TRAY),FALSE);

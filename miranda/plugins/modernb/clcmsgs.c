@@ -35,7 +35,7 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 {
 	switch(msg) {
 	case CLM_AUTOREBUILD:
-			if (dat->force_in_dialog)
+		if (dat->force_in_dialog)
 		{
 			pcli->pfnSaveStateAndRebuildList(hwnd, dat);
 		}

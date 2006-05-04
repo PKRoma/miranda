@@ -292,9 +292,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 
 		//		szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);		
 		szProto=pdnce->szProto;
-
 		{
-			DBVARIANT dbv={0};
 			boolean showweb;	
 			showweb=FALSE;
       
@@ -313,14 +311,9 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 						mir_free(homepage);
 					}
 				}
-
 				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_WEB),(showweb)?2:0xFF));	
-				//if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
-				DBFreeVariant(&dbv);
 			}
 		}		
-
-
 		{
 			DBVARIANT dbv={0};
 			boolean showemail;	
@@ -330,17 +323,11 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 
 				if (szProto == NULL || DBGetContactSetting(hContact, szProto, "e-mail",&dbv)) 
 				{
-					//if (dbv.pszVal) mir_free(dbv.pszVal);
-					if (DBGetContactSetting(hContact, "UserInfo", "Mye-mail0", &dbv))
-					{
-						showemail=FALSE;
-						//if (dbv.pszVal) mir_free(dbv.pszVal);
-						//DBFreeVariant(&dbv);
-					}
 					DBFreeVariant(&dbv);
+					if (DBGetContactSetting(hContact, "UserInfo", "Mye-mail0", &dbv))
+						showemail=FALSE;					
 				}
 				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_EMAIL),(showemail)?0:0xFF));	
-				//if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 		}
@@ -351,18 +338,13 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 			showsms=TRUE;
 			if (ExtraToColumnNum(EXTRA_ICON_SMS)!=-1)
 			{
-				if (szProto == NULL || DBGetContactSetting(hContact, szProto, "Cellular",&dbv)) {
-					//if (dbv.pszVal) mir_free(dbv.pszVal);
-					if (DBGetContactSetting(hContact, "UserInfo", "MyPhone0", &dbv))
-					{
-						showsms=FALSE;
-						//if (dbv.pszVal) mir_free(dbv.pszVal);
-						DBFreeVariant(&dbv);
-					}
+				if (szProto == NULL || DBGetContactSetting(hContact, szProto, "Cellular",&dbv)) 
+				{
 					DBFreeVariant(&dbv);
+					if (DBGetContactSetting(hContact, "UserInfo", "MyPhone0", &dbv))
+						showsms=FALSE;
 				}
 				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_SMS),(showsms)?1:0xFF));	
-				//if (dbv.pszVal!=NULL) mir_free(dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 		}		
@@ -387,8 +369,6 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	ON_SETALLEXTRAICON_CYCLE=0;
 	cliInvalidateRect(hwndList,NULL,FALSE);
 	Sleep(0);
-
-
 }
 
 

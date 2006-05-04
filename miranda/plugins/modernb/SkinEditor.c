@@ -73,10 +73,20 @@ int TreeAddObject(HWND hwndDlg, int ID, OPT_OBJECT_DATA * data)
 {
 	HTREEITEM rootItem=NULL;
 	HTREEITEM cItem=NULL;
-	char * path=data->szPath?mir_strdup(data->szPath):mir_strdup((data->szName)+2);
-	char * ptr=path;
-	char * ptrE=path;
+	char * path;
+	char * ptr;
+	char * ptrE;
+	char buf[255];
 	BOOL ext=FALSE;
+	path=data->szPath?mir_strdup(data->szPath):(data->szName[1]=='$')?mir_strdup((data->szName)+2):NULL;
+	if (!path)
+	{
+		_snprintf(buf,sizeof(buf),"$(other)/%s",(data->szName)+1);
+		path=mir_strdup(buf);
+	}
+
+	ptr=path;
+	ptrE=path;	
 	do 
 	{
 		
@@ -121,7 +131,7 @@ int TreeAddObject(HWND hwndDlg, int ID, OPT_OBJECT_DATA * data)
 
 int enumDB_SkinObjectsForEditorProc(const char *szSetting,LPARAM lParam)
 {
-	if (WildCompare((char *)szSetting,gl_Mask,0))
+	if (WildCompare((char *)szSetting,gl_Mask,0)||WildCompare((char *)szSetting,"$*",0))
 	{
 		char * value;
 		char *desc;
@@ -145,7 +155,7 @@ int enumDB_SkinObjectsForEditorProc(const char *szSetting,LPARAM lParam)
 			if (desc) mir_free(desc);
 		}
 		mir_free(descKey);		
-	}
+	}	
 	return 1;
 }
 
@@ -522,7 +532,7 @@ int GetFileSizes(HWND hwndDlg)
 	SendDlgItemMessageA(hwndDlg,IDC_S_SIZE,WM_SETTEXT,0,(LPARAM)buf);
 	return 0;
 }
-static BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -745,7 +755,7 @@ static BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					//Change to new object
 					NMTREEVIEWA * nmtv = (NMTREEVIEWA *) lParam;
 					if (!nmtv) return 0;
-					if (nmtv->hdr.code==TVN_SELCHANGEDA)
+					if (nmtv->hdr.code==TVN_SELCHANGEDA || nmtv->hdr.code==TVN_SELCHANGEDW)
 					{
 						if (nmtv->itemOld.lParam)
 						{
@@ -823,6 +833,7 @@ static BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 int SkinEditorOptInit(WPARAM wParam,LPARAM lParam)
 {
+	/*
 	OPTIONSDIALOGPAGE odp;
 
 	ZeroMemory(&odp,sizeof(odp));
@@ -830,15 +841,17 @@ int SkinEditorOptInit(WPARAM wParam,LPARAM lParam)
 	odp.position=-1000001000;
 	odp.hInstance=g_hInst;
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SKINEDITOR);
-	odp.pszGroup=Translate("Skin");
-	odp.pszTitle=Translate("Modify objects");
+	odp.pszGroup=Translate("Customize");
+	odp.pszTitle=Translate("Skin - Modify objects");
 	odp.pfnDlgProc=DlgSkinEditorOpts;
 	odp.flags=ODPF_BOLDGROUPS;
 	//	odp.nIDBottomSimpleControl=IDC_STCLISTGROUP;
 	//	odp.expertOnlyControls=expertOnlyControls;
 	//	odp.nExpertOnlyControls=sizeof(expertOnlyControls)/sizeof(expertOnlyControls[0]);
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	*/
 	return 0;
+	
 }
 
 int EnableGroup(HWND hwndDlg, HWND first, BOOL bEnable)

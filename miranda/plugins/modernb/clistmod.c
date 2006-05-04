@@ -174,22 +174,34 @@ static int SetStatusMode(WPARAM wParam, LPARAM lParam)
 extern PLUGININFO pluginInfo;
 int CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
 {
-	switch (lParam)
+	if (lParam)
 	{
-	case 0:
+		switch (lParam)
+		{
+		case 0:
+			return 0;
+		case CLUIF2_PLUGININFO:
+			return (int)&pluginInfo;
+		case CLUIF2_CLISTTYPE:	
+	#ifdef UNICODE
+				return 0x0107;
+	#else
+				return 0x0007;
+	#endif
+		case CLUIF2_EXTRACOLUMNCOUNT:
+			return EXTRA_ICON_COUNT;
+		case CLUIF2_USEREXTRASTART:
+			return EXTRA_ICON_ADV3;
+		}
 		return 0;
-	case CLUIF2_PLUGININFO:
-		return (int)&pluginInfo;
-	case CLUIF2_CLISTTYPE:	
-#ifdef UNICODE
-			return 0x0107;
-#else
-			return 0x0007;
-#endif
-	case CLUIF2_EXTRACOLUMNCOUNT:
-		return EXTRA_ICON_COUNT;
-	case CLUIF2_USEREXTRASTART:
-		return EXTRA_ICON_ADV3;
+	}
+	else
+	{
+		switch (wParam)
+		{
+		case CLUICAPS_FLAGS1:
+			return CLUIF_HIDEEMPTYGROUPS|CLUIF_DISABLEGROUPS|CLUIF_HASONTOPOPTION|CLUIF_HASAUTOHIDEOPTION;	
+		}
 	}
 	return 0;
 }
