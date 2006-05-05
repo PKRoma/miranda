@@ -68,13 +68,10 @@ void ApplyViewMode(const char *name);
 
 int CLVM_EnumProc(const char *szSetting, LPARAM lParam)
 {
-    pfnEnumCallback EnumCallback = (pfnEnumCallback)lParam;
-    
-    if (szSetting == NULL)
-        return(1);
-
-    EnumCallback((char *)szSetting);
-    return(1);
+	pfnEnumCallback EnumCallback = (pfnEnumCallback)lParam;
+	if (szSetting != NULL)
+		EnumCallback((char *)szSetting);
+	return(0);
 }
 
 void CLVM_EnumModes(pfnEnumCallback EnumCallback)
