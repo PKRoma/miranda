@@ -912,7 +912,7 @@ static int EnumContactSettings(WPARAM wParam,LPARAM lParam)
 		return -1;
 	}
 	result = 0;
-	while(pBlob[0]&&result==0) {
+	while(pBlob[0]) {
 		NeedBytes(1);
 		NeedBytes(1+pBlob[0]);
 		CopyMemory(szSetting,pBlob+1,pBlob[0]); szSetting[pBlob[0]]=0;
