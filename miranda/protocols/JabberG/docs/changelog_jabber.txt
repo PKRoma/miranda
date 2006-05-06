@@ -6,6 +6,7 @@ Legend:
 
 Version 0.4.3.1
 ===============
+[!] bug #0001729 fixed: vCard photo not displayed in User Details.
 [!] bug #0001166 fixed: auto-join jabber chat room (conference) does not work when startup
 [!] bugfix for server messages from the WildFire server
 

@@ -478,6 +478,11 @@ LBL_Ret:
 		return;
 	}
 
+	{	char* p = strrchr( szTempFileName, '.' );
+		if ( p != NULL )
+			lstrcpyA( p+1, jabberVcardPhotoType + 6 );
+	}
+
 	JabberLog( "Picture file name set to %s", szTempFileName );
 
 	HANDLE hFile = CreateFileA( szTempFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
