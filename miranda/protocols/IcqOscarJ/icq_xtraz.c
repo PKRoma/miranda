@@ -275,6 +275,122 @@ NextVal:
 
 
 
+static char* getXmlPidItem(const char* szData, int nLen)
+{
+  char *szPid, *szEnd;
+
+  szPid = strstr(szData, "<PID>");
+  szEnd = strstr(szData, "</PID>");
+
+  if (szPid && szEnd)
+  {
+    szPid += 5;
+
+    return DemangleXml(szPid, szEnd - szPid);
+  }
+  return NULL;
+}
+
+
+
+void handleXtrazInvitation(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC)
+{
+  HANDLE hContact;
+  char* szPluginID;
+
+  hContact = HContactFromUIN(dwUin, NULL);
+  if (hContact) // user sent us xtraz, he supports it
+    SetContactCapabilities(hContact, CAPF_XTRAZ);
+
+  szPluginID = getXmlPidItem(szMsg, nMsgLen);
+  if (!strcmpnull(szPluginID, "ICQChatRecv"))
+  { // it is a invitation to multi-user chat
+  }
+  else
+  {
+    NetLog_Uni(bThruDC, "Error: Unknown plugin \"%s\" in Xtraz message", szPluginID);
+  }
+  SAFE_FREE(&szPluginID);
+}
+
+
+
+void handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC)
+{
+  HANDLE hContact;
+  char* szPluginID;
+
+  hContact = HContactFromUIN(dwUin, NULL);
+  if (hContact) // user sent us xtraz, he supports it
+    SetContactCapabilities(hContact, CAPF_XTRAZ);
+
+  szPluginID = getXmlPidItem(szMsg, nMsgLen);
+  if (!strcmpnull(szPluginID, "viewCard"))
+  { // it is a greeting card
+    char *szWork, *szEnd, *szUrl, *szNum;
+
+    szWork = strstr(szMsg, "<InD>");
+    szEnd = strstr(szMsg, "</InD>");
+    if (szWork && szEnd)
+    {
+      int nDataLen = szEnd - szWork;
+
+      szUrl = (char*)_alloca(nDataLen);
+      memcpy(szUrl, szWork+5, nDataLen);
+      szUrl[nDataLen - 5] = '\0';
+
+      if (!strnicmp(szUrl, "view_", 5))
+      {
+        szNum = szUrl + 5;
+        szWork = strstr(szUrl, ".html");
+        if (szWork)
+        {
+          strcpy(szWork, ".php");
+          strcat(szWork, szWork+5);
+        }
+        while (szWork = strstr(szUrl, "&amp;"))
+        { // unescape &amp; code
+          strcpy(szWork+1, szWork+5);
+        }
+        szWork = (char*)_alloca(nDataLen + MAX_PATH);
+        ICQTranslateUtfStatic("Greeting card:", szWork);
+        strcat(szWork, "\r\nhttp://www.icq.com/friendship/pages/view_page_");
+        strcat(szWork, szNum);
+
+        // Create message to notify user
+        {
+          CCSDATA ccs;
+          PROTORECVEVENT pre;
+          int bAdded;
+
+          ccs.szProtoService = PSR_MESSAGE;
+          ccs.hContact = HContactFromUIN(dwUin, &bAdded);
+          ccs.wParam = 0;
+          ccs.lParam = (LPARAM)&pre;
+          pre.flags = 0;
+          pre.timestamp = time(NULL);
+          pre.szMessage = szWork;
+          pre.lParam = 0;
+
+          CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
+        }
+      }
+      else
+        NetLog_Uni(bThruDC, "Error: Non-standard greeting card message");
+    }
+    else
+      NetLog_Uni(bThruDC, "Error: Malformed greeting card message");
+  }
+  else
+  {
+    NetLog_Uni(bThruDC, "Error: Unknown plugin \"%s\" in Xtraz message", szPluginID);
+  }
+  SAFE_FREE(&szPluginID);
+}
+
+
+
+// Functions really sending Xtraz stuff
 DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
 {
   char *szQueryBody;

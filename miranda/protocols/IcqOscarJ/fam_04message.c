@@ -1681,6 +1681,18 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
     handleXtrazNotify(dwUin, dwMsgID, dwMsgID2, wCookie, szMsg, wMsgLen, bThruDC);
     break;
 
+  case MTYPE_SCRIPT_INVITATION:
+    /* it's a xtraz invitation to session */
+    NetLog_Uni(bThruDC, "Received Xtraz Invitation from %u", dwUin);
+    handleXtrazInvitation(dwUin, dwMsgID, dwMsgID2, wCookie, szMsg, wMsgLen, bThruDC);
+    break;
+
+  case MTYPE_SCRIPT_DATA:
+    /* it's a xtraz data packet */
+    NetLog_Uni(bThruDC, "Received Xtraz data packet from %u", dwUin);
+    handleXtrazData(dwUin, dwMsgID, dwMsgID2, wCookie, szMsg, wMsgLen, bThruDC);
+    break;
+
   case MTYPE_AUTOAWAY:
   case MTYPE_AUTOBUSY:
   case MTYPE_AUTONA:
