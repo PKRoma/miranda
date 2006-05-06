@@ -92,14 +92,24 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 			}
 			break;
 		case CNF_COUNTRY:
-		{   int i,countryCount;
+		{
+			int i,countryCount;
 			struct CountryListEntry *countries;
 			if (!GetDatabaseString(ci,"Country",&dbv)) {
 				CallService(MS_UTILS_GETCOUNTRYLIST,(WPARAM)&countryCount,(LPARAM)&countries);
 				for(i=0;i<countryCount;i++) {
 					if(countries[i].id!=dbv.wVal) continue;
+
+					if ( ci->dwFlag & CNF_UNICODE ) {
+						int cbLen = MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )countries[i].szName, -1, NULL, 0 );
+						WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*(cbLen+1) );
+						if ( buf != NULL )
+							MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )countries[i].szName, -1, buf, cbLen );
+						ci->pszVal = ( TCHAR* )buf;
+					}
+					else ci->pszVal = ( TCHAR* )mir_strdup(countries[i].szName);
+
 					ci->type = CNFT_ASCIIZ;
-					ci->pszVal = ( TCHAR* )mir_strdup(countries[i].szName);
 					DBFreeVariant(&dbv);
 					return 0;
 				}
@@ -140,22 +150,32 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 			break;
 		}
 		case CNF_FIRSTLAST:
-		{
 			if(!GetDatabaseString(ci,"FirstName",&dbv)) {
-				char *firstName=mir_strdup(dbv.pszVal);
-				if(!GetDatabaseString(ci,"LastName",&dbv)) {
-					char *buffer = (char*)mir_alloc(strlen(firstName)+strlen(dbv.pszVal)+2);
+				DBVARIANT dbv2;
+				if(!GetDatabaseString(ci,"LastName",&dbv2)) {
 					ci->type = CNFT_ASCIIZ;
-					mir_snprintf(buffer,strlen(firstName)+strlen(dbv.pszVal)+2,"%s %s",firstName,dbv.pszVal);
-					mir_free(dbv.pszVal);
-					mir_free(firstName);
-					ci->pszVal = ( TCHAR* )mir_strdup(buffer);
-					mir_free(buffer);
+					if ( ci->dwFlag & CNF_UNICODE ) {
+						int len = wcslen(dbv.pwszVal) + wcslen(dbv2.pwszVal) + 2;
+						WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*len );
+						if ( buf != NULL )
+							wcscat( wcscat( wcscpy( buf, dbv.pwszVal ), L" " ), dbv2.pwszVal );
+						ci->pszVal = ( TCHAR* )buf;
+					}
+					else {
+						int len = strlen(dbv.pszVal) + strlen(dbv2.pszVal) + 2;
+						char* buf = ( char* )mir_alloc( len );
+						if ( buf != NULL )
+							strcat( strcat( strcpy( buf, dbv.pszVal ), " " ), dbv2.pszVal );
+						ci->pszVal = ( TCHAR* )buf;
+					}
+					DBFreeVariant( &dbv );
+					DBFreeVariant( &dbv2 );
 					return 0;
 				}
+				DBFreeVariant( &dbv );
 			}
 			break;
-		}
+
 		case CNF_UNIQUEID:
 		{
 			char *uid = (char*)CallProtoService(ci->szProto,PS_GETCAPS,PFLAG_UNIQUEIDSETTING,0);
@@ -180,9 +200,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 						ci->type = CNFT_ASCIIZ;
 						ci->pszVal = dbv.ptszVal;
 						return 0;
-					}
-				}
-			}
+			}	}	}
 			break;
 		}
 		case CNF_DISPLAYNC:
@@ -205,41 +223,37 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 						break;
 					}
 					case 1: // nick
-					{
 						if (!GetDatabaseString(ci,"Nick",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
 							ci->pszVal = dbv.ptszVal;
 							return 0;
 						}
 						break;
-					}
+
 					case 2: // First Name
-					{
 						if (!GetDatabaseString(ci,"FirstName",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
 							ci->pszVal = dbv.ptszVal;
 							return 0;
 						}
 						break;
-					}
+
 					case 3: // E-mail
-					{
 						if (!GetDatabaseString(ci,"e-mail",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
 							ci->pszVal = dbv.ptszVal;
 							return 0;
 						}
 						break;
-					}
+
 					case 4: // Last Name
-					{
 						if (!GetDatabaseString(ci,"LastName",&dbv)) {
 							ci->type = CNFT_ASCIIZ;
 							ci->pszVal = dbv.ptszVal;
 							return 0;
 						}
 						break;
-					}
+
 					case 5: // Unique id
 					{
 						// protocol must define a PFLAG_UNIQUEIDSETTING
@@ -289,10 +303,14 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 									ci->pszVal = ( TCHAR* )buf;
 								}
 
+								DBFreeVariant( &dbv );
 								DBFreeVariant( &dbv2 );
 								return 0;
-						}	}
+							}
+							DBFreeVariant( &dbv );
+						}
 						break;
+
 					case 7:
 						if ( ci->dwFlag & CNF_UNICODE )
 							ci->pszVal = ( TCHAR* )mir_wstrdup( TranslateW( L"'(Unknown Contact)'" ));
@@ -300,10 +318,8 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 							ci->pszVal = ( TCHAR* )mir_strdup( Translate("'(Unknown Contact)'"));
 						ci->type = CNFT_ASCIIZ;
 						return 0;
-				}
-			}
-		}
-	}
+	}	}	}	}
+
 	return 1;
 }
 
