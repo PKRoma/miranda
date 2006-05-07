@@ -1246,6 +1246,17 @@ void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *
 	HANDLE 	hContact = 0;
 	char z[1024];
 	
+	/* aud = file class name 
+					GAIM: the audible, in foo.bar.baz format
+			
+					Actually this is the filename.
+					Full URL:
+				
+					http://us.dl1.yimg.com/download.yahoo.com/dl/aud/us/aud.swf 
+					
+					where aud in foo.bar.baz format
+	*/
+	
 	LOG(("ext_yahoo_got_audible for %s aud: %s msg:'%s' hash: %s", who, aud, msg, aud_hash));
 
 	hContact = getbuddyH(who);
@@ -1264,17 +1275,6 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 	
 	LOG(("ext_yahoo_got_picture_upload URL:%s timestamp: %d", url, ts));
 
-	/* aud = file class name 
-					GAIM: the audible, in foo.bar.baz format
-			
-					Actually this is the filename.
-					Full URL:
-				
-					http://us.dl1.yimg.com/download.yahoo.com/dl/aud/us/aud.swf 
-					
-					where aud in foo.bar.baz format
-					*/
-	
 	//DBWriteContactSettingDword(NULL, yahooProtocolName, "AvatarHash", hash);
 	if (!url) {
 		LOG(("[ext_yahoo_got_picture_upload] Problem with upload?"));
