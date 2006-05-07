@@ -18,8 +18,6 @@
 int poll_loop = 1;
 
 extern YList *connections;
-//extern yahoo_local_account *ylad;
-extern int do_yahoo_debug;
 
 int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
 {

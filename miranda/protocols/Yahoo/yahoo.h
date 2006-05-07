@@ -59,6 +59,8 @@
 
 #define YAHOO_DEBUGLOG YAHOO_DebugLog
 
+extern int do_yahoo_debug;
+
 #define LOG(x) if(do_yahoo_debug) { YAHOO_DEBUGLOG("%s:%d: ", __FILE__, __LINE__); \
 	YAHOO_DEBUGLOG x; \
 	YAHOO_DEBUGLOG(" ");}
