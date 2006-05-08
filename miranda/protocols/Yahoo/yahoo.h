@@ -207,7 +207,8 @@ void YAHOO_request_avatar(const char* who);
 void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type);
 void YAHOO_SendAvatar(y_filetransfer *sf);
 void YAHOO_set_avatar(int buddy_icon);
-
+void YAHOO_bcast_picture_update(int buddy_icon);
+void YAHOO_bcast_picture_checksum(int cksum);
 BOOL YAHOO_LoadPngModule();
 int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );

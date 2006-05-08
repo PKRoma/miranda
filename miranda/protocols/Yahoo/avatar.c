@@ -10,13 +10,16 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#include <windows.h>
+#include <time.h>
+#include <malloc.h>
+#include <sys/stat.h>
+
 #include "yahoo.h"
 #include "http_gateway.h"
 #include "version.h"
 #include "resource.h"
-#include <malloc.h>
-#include <time.h>
+
+
 
 #include <m_system.h>
 #include <m_langpack.h>
@@ -32,6 +35,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );
 
+extern yahoo_local_account *ylad;
 /*
  * The Following PNG related stuff copied from MSN. Thanks George!
  */
@@ -96,8 +100,7 @@ static char* ChooseAvatarFileName()
   ofn.nMaxFile = MAX_PATH;
   ofn.nMaxFileTitle = MAX_PATH;
   ofn.lpstrDefExt = "png";
-  if (!GetOpenFileName(&ofn))
-  {
+  if (!GetOpenFileName(&ofn)){
     free(szDest);
     return NULL;
   }
@@ -397,5 +400,198 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	free(convertor.pResult);
 
 	return ERROR_SUCCESS;
+}
+
+void upload_avt(int id, int fd, int error, void *data) 
+{
+    y_filetransfer *sf = (y_filetransfer*) data;
+    long size = 0;
+	char buf[1024];
+	DWORD dw;
+	struct _stat statbuf;
+	
+	if (fd < 0) {
+		LOG(("[get_fd] Connect Failed!"));
+		error = 1;
+	}
+
+	if (_stat( sf->filename, &statbuf ) != 0 )
+		error = 1;
+	
+    if(!error) {
+		 HANDLE myhFile    = CreateFile(sf->filename,
+                                   GENERIC_READ,
+                                   FILE_SHARE_READ|FILE_SHARE_WRITE,
+			           NULL,
+			           OPEN_EXISTING,
+			           FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
+			           0);
+
+
+		if(myhFile !=INVALID_HANDLE_VALUE) {
+			//LOG(("proto: %s, hContact: %p", yahooProtocolName, sf->hContact));
+			
+			LOG(("Sending file: %s", sf->filename));
+			
+			do {
+				ReadFile(myhFile, buf, 1024, &dw, NULL);
+			
+				if (dw) {
+					//dw = send(fd, buf, dw, 0);
+					dw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
+					
+					if (dw < 1) {
+						LOG(("Upload Failed. Send error?"));
+						error = 1;
+						break;
+					}
+					
+					size += dw;
+				}
+				
+				if (sf->cancel) {
+					LOG(("Upload Cancelled! "));
+					error = 1;
+					break;
+				}
+			} while ( dw == 1024);
+	    CloseHandle(myhFile);
+		}
+    }	
+
+	//sf->state = FR_STATE_DONE;
+    LOG(("File send complete!"));
+}
+
+void YAHOO_SendAvatar(y_filetransfer *sf)
+{
+	long tFileSize = 0;
+	{	struct _stat statbuf;
+		if ( _stat( sf->filename, &statbuf ) == 0 )
+			tFileSize += statbuf.st_size;
+	}
+
+	yahoo_send_avatar(ylad->id, sf->filename, tFileSize, &upload_avt, sf);
+}
+
+void yahoo_reset_avatar(HANDLE 	hContact, int bFail)
+{
+    PROTO_AVATAR_INFORMATION AI;
+        
+	LOG(("[YAHOO_RESET_AVATAR]"));
+	//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
+	DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
+
+	AI.cbSize = sizeof AI;
+	AI.format = PA_FORMAT_BMP;
+	AI.hContact = hContact;
+
+	GetAvatarFileName(AI.hContact, AI.filename, sizeof AI.filename, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
+	DeleteFile(AI.filename);
+	
+	// STUPID SCRIVER Doesn't listen to ACKTYPE_AVATAR. so remove the file reference!
+	DBDeleteContactSetting(AI.hContact, "ContactPhoto", "File");	
+	//AI.filename[0]='\0';
+	if (bFail)
+		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED,(HANDLE) &AI, 0);
+}
+
+void YAHOO_request_avatar(const char* who)
+{
+	time_t  last_chk, cur_time;
+	HANDLE 	hContact = 0;
+	char    szFile[MAX_PATH];
+	
+	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+		LOG(("Avatars disabled, but available for: %s", who));
+		return;
+	}
+	
+	hContact = getbuddyH(who);
+	
+	if (!hContact)
+		return;
+	
+	
+	GetAvatarFileName(hContact, szFile, sizeof szFile, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
+	DeleteFile(szFile);
+	
+	time(&cur_time);
+	last_chk = DBGetContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", 0);
+	
+	/*
+	 * time() - in seconds ( 60*60 = 1 hour)
+	 */
+	if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) == 0 || 
+		last_chk == 0 || (cur_time - last_chk) < 300) {
+			
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", cur_time);
+
+		LOG(("Requesting Avatar for: %s", who));
+		yahoo_request_buddy_avatar(ylad->id, who);
+	} else {
+		LOG(("Avatar Not Available for: %s (Flood Check in Effect)", who));
+	}
+}
+
+void YAHOO_bcast_picture_update(int buddy_icon)
+{
+	HANDLE hContact;
+	char *szProto;
+	
+	/* need to get online buddies and then send then picture_update packets (ARGH YAHOO!)*/
+	for ( hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+		   hContact != NULL;
+			hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
+	{
+		szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
+		if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName ))
+		{
+			if (YAHOO_GetWord(hContact, "Status", ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE) {
+							DBVARIANT dbv;
+
+				if ( DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
+					continue;
+
+				yahoo_send_picture_update(ylad->id, dbv.pszVal, buddy_icon);
+				DBFreeVariant( &dbv );
+			}
+		}
+	}
+}
+
+void YAHOO_set_avatar(int buddy_icon)
+{
+	yahoo_send_avatar_update(ylad->id,buddy_icon);
+	
+	YAHOO_bcast_picture_update(buddy_icon);
+}
+
+void YAHOO_bcast_picture_checksum(int cksum)
+{
+	HANDLE hContact;
+	char *szProto;
+	
+	yahoo_send_picture_checksum(ylad->id, NULL, cksum);
+	
+	/* need to get online buddies and then send then picture_update packets (ARGH YAHOO!)*/
+	for ( hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+		   hContact != NULL;
+			hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
+	{
+		szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
+		if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName ))
+		{
+			if (YAHOO_GetWord(hContact, "Status", ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE) {
+							DBVARIANT dbv;
+
+				if ( DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
+					continue;
+
+				yahoo_send_picture_checksum(ylad->id, dbv.pszVal, cksum);
+				DBFreeVariant( &dbv );
+			}
+		}
+	}
 }
 
