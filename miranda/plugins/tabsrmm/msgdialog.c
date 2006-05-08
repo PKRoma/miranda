@@ -2828,21 +2828,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                      * been minimized or in the background.
                      */
                     if(!(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
-                        int iDividerSet = 0;
                         
-                        if(myGlobals.m_DividersUsePopupConfig) {
-                            if(!MessageWindowOpened((WPARAM)dat->hContact, 0)) {
-                                iDividerSet = 1;
-                                SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
-                            }
-                        }
-                        if((GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd)) {
-                            if(!iDividerSet)
+                        if(myGlobals.m_DividersUsePopupConfig && myGlobals.m_UseDividers) {
+                            if(!MessageWindowOpened((WPARAM)dat->hContact, 0))
                                 SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
                         }
-                        else {
-                            if(dat->pContainer->hwndActive != hwndDlg) {
-                                if(!iDividerSet)
+                        else if(myGlobals.m_UseDividers) {
+                            if((GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd))
+                                SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
+                            else {
+                                if(dat->pContainer->hwndActive != hwndDlg)
                                     SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
                             }
                         }

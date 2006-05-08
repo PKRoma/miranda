@@ -1530,14 +1530,10 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
                 goto passed;
         }
         if (pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE) {
-            if((GetForegroundWindow() == pContainer->hwnd || GetActiveWindow() == pContainer->hwnd) && pContainer->hwndActive == hwndChild)
+            if(pContainer->hwndActive == hwndChild)
                 return 0;
-            else {
-                if(pContainer->hwndActive == hwndChild && pContainer->dwFlags & CNT_STICKY)
-                    return 0;
-                else
-                    goto passed;
-            }
+            else
+                goto passed;
         }
         return 0;
     }

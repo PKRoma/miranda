@@ -36,6 +36,10 @@ static int logIconBmpSize[sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0])];
 
 static int logPixelSY;
 static int logPixelSX;
+static char *szDivider = "\\strike----------------------------------------------------------------------------\\strike0";
+static char CHAT_rtfFontsGlobal[OPTIONS_FONTCOUNT + 2][RTFCACHELINESIZE];
+static char *CHAT_rtffonts = 0;
+static char szMicroLFeed[50];
 
 static int EventToIndex(LOGINFO * lin)
 {
@@ -121,11 +125,18 @@ static int EventToIcon(LOGINFO * lin)
 	return 0;
 }
 
+
 static char *Log_SetStyle(int style, int fontindex)
 {
+    if(style < OPTIONS_FONTCOUNT)
+        return CHAT_rtffonts + (style * RTFCACHELINESIZE);
+    else
+        return "";
+    /*
     static char szStyle[128];
     mir_snprintf(szStyle, sizeof(szStyle), "\\f%u\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", style, style+1, aFonts[fontindex].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[fontindex].lf.lfItalic, 2 * abs(aFonts[fontindex].lf.lfHeight) * 74 / logPixelSY);
     return szStyle;
+    */
 }
 
 static void Log_Append(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
@@ -217,7 +228,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData,char **buffer, int *cbBufferE
 
 //					lstrcpynA(szTemp3, (char *)((*buffer)[i + 2]), 3);
 					col = atoi(szTemp3);
-					col += 18;
+					col += 19;
 					mir_snprintf(szTemp, sizeof(szTemp), ((*buffer)[i + 1]=='c')?"\\cf%u ":"\\highlight%u ", col);
 				}
 				iOldCount = 4;
@@ -438,11 +449,24 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 	// ### RTF BODY (one iteration per event that should be streamed in)
 	while(lin)
 	{
+        BOOL needMicroLF = FALSE;
 		// filter
 		if(streamData->si->iType != GCW_CHATROOM || !streamData->si->bFilterEnabled || (streamData->si->iLogFilterFlags&lin->iType) != 0)
 		{
-			// create new line, and set font and color
-			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl%d%s ", 1000, Log_SetStyle(0, 0));
+            if(streamData->dat->dwFlags & MWF_DIVIDERWANTED || lin->dwFlags & MWF_DIVIDERWANTED) {
+                static char szStyle_div[128] = "\0";
+                if(szStyle_div[0] == 0)
+                    mir_snprintf(szStyle_div, 128, "\\f%u\\cf%u\\ul0\\b%d\\i%d\\fs%u", 17, 18, 0, 0, 5);
+                
+                lin->dwFlags |= MWF_DIVIDERWANTED;
+                //Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par%s\\tab", szStyle_div);
+                Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl-1\\highlight%d %s ", 18, szStyle_div);
+                //Log_Append(&buffer, &bufferEnd, &bufferAlloced, szDivider);
+                streamData->dat->dwFlags &= ~MWF_DIVIDERWANTED;
+                needMicroLF = TRUE;
+            }
+            // create new line, and set font and color
+			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl0%s ", Log_SetStyle(0, 0));
 
 			// Insert icon
             if (g_Settings.LogSymbols)                // use symbols
@@ -578,6 +602,8 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 
 		}
 		lin = lin->prev;
+        //if(needMicroLF)
+        //    Log_Append(&buffer, &bufferEnd, &bufferAlloced, szMicroLFeed);
 	}
 
 
@@ -626,8 +652,9 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 	SCROLLINFO scroll;
 	WPARAM wp;
 	HWND hwndRich;
-
-	if(hwndDlg == 0 || lin == 0 || si == 0)
+    struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+    
+	if(hwndDlg == 0 || lin == 0 || si == 0 || dat == 0)
 		return;
 
 	hwndRich = GetDlgItem(hwndDlg, IDC_CHAT_LOG);
@@ -636,7 +663,8 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 	streamData.si = si;
 	streamData.lin = lin;
 	streamData.bStripFormat = FALSE;
-
+    streamData.dat = dat;
+    
 //	bPhaseTwo = bRedraw && bPhaseTwo;
 	
 	if(bRedraw || si->iType != GCW_CHATROOM || !si->bFilterEnabled || (si->iLogFilterFlags&lin->iType) != 0)
@@ -920,6 +948,13 @@ void LoadMsgLogBitmaps(void)
 	DeleteObject(hBmp);
 	ReleaseDC(NULL, hdc);
 	DeleteObject(hBkgBrush);
+
+    /* cache RTF font headers */
+
+    for(i = 0; i < OPTIONS_FONTCOUNT; i++)
+        mir_snprintf(CHAT_rtfFontsGlobal[i], RTFCACHELINESIZE, "\\f%u\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", i, i + 1, aFonts[i].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[i].lf.lfItalic, 2 * abs(aFonts[i].lf.lfHeight) * 74 / logPixelSY);
+    CHAT_rtffonts = &(CHAT_rtfFontsGlobal[0][0]);
+    mir_snprintf(szMicroLFeed, sizeof(szMicroLFeed), "%s\\par\\sl-1%s", Log_SetStyle(0, 0), Log_SetStyle(0, 0));
 }
 
 void FreeMsgLogBitmaps(void)

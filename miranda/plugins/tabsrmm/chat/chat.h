@@ -177,6 +177,7 @@ typedef struct  LOG_INFO_TYPE{
 	BOOL		bIsHighlighted;
 	time_t		time;
 	int			iType;
+    DWORD       dwFlags;
 	struct LOG_INFO_TYPE *next;
 	struct LOG_INFO_TYPE *prev;
 }LOGINFO;
@@ -260,6 +261,7 @@ typedef struct {
 	BOOL	bRedraw;
 	SESSION_INFO * si;
     int     crCount;
+    struct  MessageWindowData *dat;
 } LOGSTREAMDATA;
 
 
@@ -347,7 +349,10 @@ struct GlobalLogSettings_t {
     BYTE        ClickableNicks;
     BYTE        ColorizeNicks;
     BYTE        ScaleIcons;
-    COLORREF    nickColors[6];
+    BYTE        UseDividers;
+    BYTE        DividersUsePopupConfig;
+    COLORREF    nickColors[7];
+    HBRUSH      SelectionBGBrush;
 };
 extern struct GlobalLogSettings_t g_Settings;
 

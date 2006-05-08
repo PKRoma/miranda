@@ -206,7 +206,7 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 		case IDC_CHAT_MESSAGE:
 			urc->rcItem.right = urc->dlgNewSize.cx ;
 			urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY+3;
-			urc->rcItem.bottom = urc->dlgNewSize.cy - 1 ;
+			urc->rcItem.bottom = urc->dlgNewSize.cy; // - 1 ;
 			return RD_ANCHORX_LEFT|RD_ANCHORY_CUSTOM;
 		case IDC_SMILEY:
 		case IDC_ITALICS:
@@ -611,7 +611,7 @@ default_process:
 			}			
 			if (wParam == 0x57 && isCtrl && !isAlt) // ctrl-w (close window)
 			{
-				PostMessage(hwndParent, WM_CLOSE, 0, 0);
+				PostMessage(hwndParent, WM_CLOSE, 0, 1);
 				return TRUE;
 		
 			}			
@@ -998,7 +998,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	case WM_KEYDOWN:
 			if (wParam == 0x57 && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-w (close window)
 			{
-				PostMessage(hwndParent, WM_CLOSE, 0, 0);
+				PostMessage(hwndParent, WM_CLOSE, 0, 1);
 				return TRUE;
 		
 			}
@@ -1077,7 +1077,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 	case WM_KEYDOWN:
 			if (wParam == 0x57 && GetKeyState(VK_CONTROL) & 0x8000) // ctrl-w (close window)
 			{
-				PostMessage(hwndParent, WM_CLOSE, 0, 0);
+				PostMessage(hwndParent, WM_CLOSE, 0, 1);
 				return TRUE;		
 			}
 /*
@@ -1322,6 +1322,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
             BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
 
+            SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
+            
             OldSplitterProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_SPLITTERX),GWL_WNDPROC,(LONG)SplitterSubclassProc);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_SPLITTERY),GWL_WNDPROC,(LONG)SplitterSubclassProc);
 			OldNicklistProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_LIST),GWL_WNDPROC,(LONG)NicklistSubclassProc);
@@ -1604,7 +1606,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			InvalidateRect(hwndDlg, NULL, TRUE);
 		} break;
 
-
 		case GC_REDRAWLOG:
 		{	
 			si->LastTime = 0;
@@ -1648,6 +1649,18 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 		case GC_ADDLOG:
 		{	
+            if(g_Settings.UseDividers && g_Settings.DividersUsePopupConfig) {
+                if(!MessageWindowOpened(0, (LPARAM)hwndDlg))
+                    SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
+            }
+            else if(g_Settings.UseDividers) {
+                if((GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd))
+                    SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
+                else {
+                    if(dat->pContainer->hwndActive != hwndDlg)
+                        SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
+                }
+            }
 			if(si->pLogEnd)
 				Log_StreamInEvent(hwndDlg, si->pLog, si, FALSE, FALSE); 
 			else
@@ -1661,17 +1674,12 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			return TRUE;
 		} break;
 
-		
-		
-		
 		case WM_CTLCOLORLISTBOX:
 			SetBkColor((HDC) wParam, g_Settings.crUserListBGColor);
 			return (BOOL) hListBkgBrush;
 
-		
 		case WM_MEASUREITEM:
 		{
-
 			MEASUREITEMSTRUCT *mis = (MEASUREITEMSTRUCT *) lParam;
 			int ih = GetTextPixelSize("AQGglö", g_Settings.UserListFont,FALSE);
 			int ih2 = GetTextPixelSize("AQGglö", g_Settings.UserListHeadingsFont,FALSE);
@@ -1680,7 +1688,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			
 			mis->itemHeight = height > font?height:font;
 			return TRUE;
-
 		}
 
 		case WM_DRAWITEM:
@@ -1700,7 +1707,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                 
 				if(ui)
 				{
-
 					height = dis->rcItem.bottom - dis->rcItem.top;
 
 					if(height&1)
@@ -1715,7 +1721,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					SetBkMode(dis->hDC, TRANSPARENT);
 
 					if (dis->itemAction == ODA_FOCUS && dis->itemState & ODS_SELECTED)
-						FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
+						FillRect(dis->hDC, &dis->rcItem, g_Settings.SelectionBGBrush);
 					else //if(dis->itemState & ODS_INACTIVE)
 						FillRect(dis->hDC, &dis->rcItem, hListBkgBrush);
 
@@ -2286,6 +2292,29 @@ LABEL_SHOWWINDOW:
 	
 		}break;
 
+        case WM_LBUTTONDOWN:
+            dat->dwFlags |= MWF_MOUSEDOWN;
+            GetCursorPos(&dat->ptLast);
+            SetCapture(hwndDlg);
+            break;
+            
+        case WM_LBUTTONUP:
+            dat->dwFlags &= ~MWF_MOUSEDOWN;
+            ReleaseCapture();
+            break;
+            
+        case WM_MOUSEMOVE:
+            if (dat->pContainer->dwFlags & CNT_NOTITLE && dat->dwFlags & MWF_MOUSEDOWN) {
+                RECT rc;
+                POINT pt;
+                
+                GetCursorPos(&pt);
+                GetWindowRect(dat->pContainer->hwnd, &rc);
+                MoveWindow(dat->pContainer->hwnd, rc.left - (dat->ptLast.x - pt.x), rc.top - (dat->ptLast.y - pt.y), rc.right - rc.left, rc.bottom - rc.top, TRUE);
+                dat->ptLast = pt;
+            }
+            break;
+            
         case WM_APPCOMMAND:
         {
             DWORD cmd = GET_APPCOMMAND_LPARAM(lParam);
@@ -2347,6 +2376,14 @@ LABEL_SHOWWINDOW:
 				}
 
 			}break;
+
+            case IDCANCEL: 
+            {
+                ShowWindow(dat->pContainer->hwnd, SW_MINIMIZE);
+                return FALSE;
+                break;
+            }
+            
 			case IDOK:
 				{
                 char *pszText = NULL;
@@ -2458,7 +2495,7 @@ LABEL_SHOWWINDOW:
 				}break;
 			case IDC_CHAT_CLOSE:
 				{
-					SendMessage(hwndDlg, WM_CLOSE, 0, 0);
+					SendMessage(hwndDlg, WM_CLOSE, 0, 1);
 				}break;
 			case IDC_CHANMGR:
 				{
@@ -2653,14 +2690,34 @@ LABEL_SHOWWINDOW:
 
         case WM_LBUTTONDBLCLK:
 		{
-			if(LOWORD(lParam) < 30)
-				PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
+            if(LOWORD(lParam) < 30)
+                PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
+            if(GetKeyState(VK_CONTROL) & 0x8000) {
+                SendMessage(dat->pContainer->hwnd, WM_CLOSE, 1, 0);
+                break;
+            }
+            if(GetKeyState(VK_SHIFT) & 0x8000) {
+                SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, IDM_NOTITLE, 0);
+                break;
+            }
+            SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
             break;
 		}
 
 		case WM_CLOSE:
 		{
-			SendMessage(hwndDlg, GC_CLOSEWINDOW, 0, 1);
+            if(wParam == 0 && lParam == 0 && !myGlobals.m_EscapeCloses) {
+                SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+                return TRUE;
+            }
+            if(lParam) {
+                if (myGlobals.m_WarnOnClose) {
+                    if (MessageBoxA(dat->pContainer->hwnd, Translate("Warning"), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO) {
+                        return TRUE;
+                    }
+                }
+            }
+            SendMessage(hwndDlg, GC_CLOSEWINDOW, 0, 1);
             break;
 		} 
         case DM_CONTAINERSELECTED:
@@ -2708,20 +2765,7 @@ LABEL_SHOWWINDOW:
             TCITEM item = {0};
             RECT rc;
             struct ContainerWindowData *pContainer = dat->pContainer;
-            // esc handles error controls if we are in error state (error controls visible)
 
-            if(wParam == 0 && lParam == 0 && !myGlobals.m_EscapeCloses) {
-                SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-                return TRUE;
-            }
-
-            if(!lParam) {
-                if (myGlobals.m_WarnOnClose) {
-                    if (MessageBoxA(dat->pContainer->hwnd, Translate("Warning"), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO) {
-                        return TRUE;
-                    }
-                }
-            }
             iTabs = TabCtrl_GetItemCount(hwndTab);
             if(iTabs == 1) {
                 PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
@@ -2863,7 +2907,15 @@ LABEL_SHOWWINDOW:
             SetWindowLong(hwndDlg, DWL_MSGRESULT, state);
             return TRUE;
         }
-        
+
+        case DM_ADDDIVIDER:
+            if(!(dat->dwFlags & MWF_DIVIDERSET) && g_Settings.UseDividers) {
+                if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_CHAT_LOG)) > 0) {
+                    dat->dwFlags |= MWF_DIVIDERWANTED;
+                    dat->dwFlags |= MWF_DIVIDERSET;
+                }
+            }
+            return 0;
         case DM_CHECKSIZE:
             dat->dwFlags |= MWF_NEEDCHECKSIZE;
             return 0;

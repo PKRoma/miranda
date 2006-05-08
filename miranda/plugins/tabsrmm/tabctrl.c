@@ -49,11 +49,13 @@ typedef BOOL (WINAPI *PITA)();
 typedef HANDLE (WINAPI *POTD)(HWND, LPCWSTR);
 typedef UINT (WINAPI *PDTB)(HANDLE, HDC, int, int, RECT *, RECT *);
 typedef UINT (WINAPI *PCTD)(HANDLE);
+typedef UINT (WINAPI *PDTT)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, RECT *);
 
 PITA pfnIsThemeActive = 0;
 POTD pfnOpenThemeData = 0;
 PDTB pfnDrawThemeBackground = 0;
 PCTD pfnCloseThemeData = 0;
+PDTT pfnDrawThemeText = 0;
 
 #define FIXED_TAB_SIZE 100                  // default value for fixed width tabs
 
@@ -71,8 +73,10 @@ int InitVSApi()
     pfnOpenThemeData = (POTD)GetProcAddress(hUxTheme, "OpenThemeData");
     pfnDrawThemeBackground = (PDTB)GetProcAddress(hUxTheme, "DrawThemeBackground");
     pfnCloseThemeData = (PCTD)GetProcAddress(hUxTheme, "CloseThemeData");
+    pfnDrawThemeText = (PDTT)GetProcAddress(hUxTheme, "DrawThemeText");
+    
     MyEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
-    if(pfnIsThemeActive != 0 && pfnOpenThemeData != 0 && pfnDrawThemeBackground != 0 && pfnCloseThemeData != 0) {
+    if(pfnIsThemeActive != 0 && pfnOpenThemeData != 0 && pfnDrawThemeBackground != 0 && pfnCloseThemeData != 0 && pfnDrawThemeText != 0) {
         return 1;
     }
     return 0;
@@ -275,7 +279,14 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
                 rcItem->right -= tabdat->m_xpad;
                 dwTextFlags |= DT_WORD_ELLIPSIS;
             }
+#if defined(_UNICODE)
+            if(tabdat->m_skinning == FALSE || myGlobals.m_TabAppearance & TCF_NOSKINNING)
+                DrawText(dc, dat->newtitle, _tcslen(dat->newtitle), rcItem, dwTextFlags);
+            else
+                pfnDrawThemeText(dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), dat->newtitle, _tcslen(dat->newtitle), dwTextFlags, 0, rcItem);
+#else
             DrawText(dc, dat->newtitle, _tcslen(dat->newtitle), rcItem, dwTextFlags);
+#endif
             SelectObject(dc, oldFont);
         }
         if(oldMode)

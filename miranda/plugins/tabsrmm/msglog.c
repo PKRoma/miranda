@@ -639,6 +639,14 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     g_groupBreak = TRUE;
     
     if(dat->dwFlags & MWF_DIVIDERWANTED) {
+        static char szStyle_div[128] = "\0";
+        if(szStyle_div[0] == 0)
+            mir_snprintf(szStyle_div, 128, "\\f%u\\cf%u\\ul0\\b%d\\i%d\\fs%u", H_MSGFONTID_DIVIDERS, H_MSGFONTID_DIVIDERS, 0, 0, 5);
+
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl-1\\highlight%d %s ", H_MSGFONTID_DIVIDERS, szStyle_div);
+        dat->dwFlags &= ~MWF_DIVIDERWANTED;
+        
+        /*
         if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\highlight%d", this_par, MSGDLGFONTCOUNT + 1 + ((LOWORD(dat->iLastEventType) & DBEF_SENT) ? 1 : 0));
         else
@@ -646,6 +654,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\tab", GetRTFFont(H_MSGFONTID_DIVIDERS));
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szDivider);
         dat->dwFlags &= ~MWF_DIVIDERWANTED;
+        */
     }
 //    if(dat->dwFlags & MWF_LOG_GROUPMODE && dbei.flags == LOWORD(dat->iLastEventType) && dbei.eventType == EVENTTYPE_MESSAGE && HIWORD(dat->iLastEventType) == EVENTTYPE_MESSAGE && ((dbei.timestamp - dat->lastEventTime) < 86400)) {
     if(dat->dwFlags & MWF_LOG_GROUPMODE && dbei.flags == LOWORD(dat->iLastEventType) && dbei.eventType == EVENTTYPE_MESSAGE && HIWORD(dat->iLastEventType) == EVENTTYPE_MESSAGE && (dbei.timestamp - dat->lastEventTime) < 86400) {
@@ -675,6 +684,8 @@ nogroup:
     if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
     else if(dat->dwFlags & MWF_LOG_GRID)
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 3);
+    else
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 3);
 
     /*

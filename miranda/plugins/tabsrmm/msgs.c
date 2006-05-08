@@ -270,14 +270,10 @@ int MessageWindowOpened(WPARAM wParam, LPARAM lParam)
                     return 0;
             }
             if (pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE) {
-                if((GetForegroundWindow() == pContainer->hwnd || GetActiveWindow() == pContainer->hwnd) && pContainer->hwndActive == hwnd)
+                if(pContainer->hwndActive == hwnd)
                     return 1;
-                else {
-                    if(pContainer->hwndActive == hwnd && pContainer->dwFlags & CNT_STICKY)
-                        return 1;
-                    else
-                        return 0;
-                }
+                else
+                    return 0;
             }
         }
         return 1;
