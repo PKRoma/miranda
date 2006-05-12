@@ -3,10 +3,10 @@ Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
 Copyright ( c ) 2003-5 George Hazan.
 Copyright ( c ) 2002-3 Richard Hughes ( original version ).
 
-Miranda IM: the free icq client for MS Windows
+Miranda IM: the mir_free icq client for MS Windows
 Copyright ( C ) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
-This program is free software; you can redistribute it and/or
+This program is mir_free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or ( at your option ) any later version.
@@ -93,6 +93,11 @@ int __stdcall JGetStringUtf( HANDLE hContact, char* valueName, DBVARIANT* dbv )
 	return DBGetContactSettingStringUtf( hContact, jabberProtoName, valueName, dbv );
 }
 
+int __stdcall JGetStringT( HANDLE hContact, char* valueName, DBVARIANT* dbv )
+{
+	return DBGetContactSettingTString( hContact, jabberProtoName, valueName, dbv );
+}
+
 WORD __stdcall JGetWord( HANDLE hContact, const char* valueName, int parDefltValue )
 {
 	return DBGetContactSettingWord( hContact, jabberProtoName, valueName, parDefltValue );
@@ -134,6 +139,11 @@ DWORD __stdcall JSetDword( HANDLE hContact, const char* valueName, DWORD parValu
 DWORD __stdcall JSetString( HANDLE hContact, const char* valueName, const char* parValue )
 {
 	return DBWriteContactSettingString( hContact, jabberProtoName, valueName, parValue );
+}
+
+DWORD __stdcall JSetStringT( HANDLE hContact, const char* valueName, const TCHAR* parValue )
+{
+	return DBWriteContactSettingTString( hContact, jabberProtoName, valueName, parValue );
 }
 
 DWORD __stdcall JSetStringUtf( HANDLE hContact, const char* valueName, const char* parValue )

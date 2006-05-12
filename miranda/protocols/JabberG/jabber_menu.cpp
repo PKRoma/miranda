@@ -4,7 +4,7 @@ Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005     George Hazan
 
-This program is free software; you can redistribute it and/or
+This program is mir_free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or ( at your option ) any later version.
@@ -67,8 +67,8 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	}
 
 	DBVARIANT dbv;
-	if ( !JGetStringUtf( hContact, "jid", &dbv )) {
-		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.pszVal );
+	if ( !JGetStringT( hContact, "jid", &dbv )) {
+		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 		JFreeVariant( &dbv );
 		if ( item != NULL ) {
 			sttEnableMenuItem( hMenuRequestAuth, item->subscription == SUB_FROM || item->subscription == SUB_NONE );
@@ -85,8 +85,9 @@ int JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam )
 	DBVARIANT dbv;
 
 	if (( hContact=( HANDLE ) wParam )!=NULL && jabberOnline ) {
-		if ( !JGetStringUtf( hContact, "jid", &dbv )) {
-			JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribe'/>", dbv.pszVal );
+		if ( !JGetStringT( hContact, "jid", &dbv )) {
+			XmlNode presence( "presence" ); presence.addAttr( "to", dbv.ptszVal ); presence.addAttr( "type", "subscribe" );
+			JabberSend( jabberThreadInfo->s, presence );
 			JFreeVariant( &dbv );
 	}	}
 
@@ -99,8 +100,9 @@ int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
 	DBVARIANT dbv;
 
 	if (( hContact=( HANDLE ) wParam )!=NULL && jabberOnline ) {
-		if ( !JGetStringUtf( hContact, "jid", &dbv )) {
-			JabberSend( jabberThreadInfo->s, "<presence to='%s' type='subscribed'/>", dbv.pszVal );
+		if ( !JGetStringT( hContact, "jid", &dbv )) {
+			XmlNode presence( "presence" ); presence.addAttr( "to", dbv.ptszVal ); presence.addAttr( "type", "subscribed" );
+			JabberSend( jabberThreadInfo->s, presence );
 			JFreeVariant( &dbv );
 	}	}
 
@@ -109,40 +111,38 @@ int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
 
 int JabberMenuJoinLeave( WPARAM wParam, LPARAM lParam )
 {
-	char szNick[ 256 ], szJid[ JABBER_MAX_JID_LEN ];
-	if ( JGetStaticString( "ChatRoomID", ( HANDLE )wParam, szJid,  sizeof szJid  ))
+	DBVARIANT dbv, jid;
+	if ( JGetStringT(( HANDLE )wParam, "ChatRoomID", &jid ))
 		return 0;
 
-	DBVARIANT dbv;
-	if ( !JGetStringUtf(( HANDLE )wParam, "MyNick", &dbv )) {
-		strncpy( szNick, dbv.pszVal, sizeof( szNick ));
-		JFreeVariant( &dbv );
-	}
-	else if ( !JGetStringUtf( NULL, "Nick", &dbv )) {
-		strncpy( szNick, dbv.pszVal, sizeof( szNick ));
-		JFreeVariant( &dbv );
-	}
-	else return 0;
+	if ( JGetStringT(( HANDLE )wParam, "MyNick", &dbv ))
+		if ( JGetStringT( NULL, "Nick", &dbv )) {
+			JFreeVariant( &jid );
+			return 0;
+		}
 
 	if ( JGetWord(( HANDLE )wParam, "Status", 0 ) != ID_STATUS_ONLINE ) {
 		if ( !jabberChatDllPresent ) {
 			JabberChatDllError();
-			return 0;
+			goto LBL_Return;
 		}
 
-		char* p = strchr( szJid, '@' );
+		TCHAR* p = _tcschr( jid.ptszVal, '@' );
 		if ( p == NULL )
-			return 0;
+			goto LBL_Return;
 
 		*p++ = 0;
-		JabberGroupchatJoinRoom( p, szJid, szNick, "" );
+		JabberGroupchatJoinRoom( p, jid.ptszVal, dbv.ptszVal, _T(""));
 	}
 	else {
-		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, szJid );
+		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, jid.ptszVal );
 		if ( item != NULL )
 			JabberGcQuit( item, 0, NULL );
 	}
 
+LBL_Return:
+	JFreeVariant( &dbv );
+	JFreeVariant( &jid );
 	return 0;
 }
 

@@ -3,7 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-2004  Santithorn Bunchua
 
-This program is free software; you can redistribute it and/or
+This program is mir_free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or ( at your option ) any later version.
@@ -45,7 +45,7 @@ typedef enum {
 typedef void ( *JABBER_IQ_PFUNC )( XmlNode *iqNode, void *usedata );
 
 typedef struct {
-	char* xmlns;
+	TCHAR* xmlns;
 	JABBER_IQ_PFUNC func;
 	BOOL allowSubNs;		// e.g. #info in disco#info
 } JABBER_IQ_XMLNS_FUNC;
@@ -54,7 +54,7 @@ void JabberIqInit();
 void JabberIqUninit();
 JABBER_IQ_PFUNC JabberIqFetchFunc( int iqId );
 void JabberIqAdd( unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC func );
-JABBER_IQ_PFUNC JabberIqFetchXmlnsFunc( char* xmlns );
+JABBER_IQ_PFUNC JabberIqFetchXmlnsFunc( TCHAR* xmlns );
 
 void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata );
 void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata );

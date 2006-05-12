@@ -4,7 +4,7 @@ Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005     George Hazan
 
-This program is free software; you can redistribute it and/or
+This program is mir_free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or ( at your option ) any later version.
@@ -62,17 +62,17 @@ CRITICAL_SECTION mutex;
 HANDLE hNetlibUser;
 // Main jabber server connection thread global variables
 struct ThreadData *jabberThreadInfo = NULL;
-BOOL jabberConnected = FALSE;
-BOOL jabberOnline = FALSE;
-BOOL jabberChatDllPresent = FALSE;
-int jabberStatus = ID_STATUS_OFFLINE;
-int jabberDesiredStatus;
-BOOL modeMsgStatusChangePending = FALSE;
-BOOL jabberChangeStatusMessageOnly = FALSE;
-char* jabberJID = NULL;
-char* streamId = NULL;
-DWORD jabberLocalIP;
-UINT jabberCodePage;
+BOOL   jabberConnected = FALSE;
+BOOL   jabberOnline = FALSE;
+BOOL   jabberChatDllPresent = FALSE;
+int    jabberStatus = ID_STATUS_OFFLINE;
+int    jabberDesiredStatus;
+BOOL   modeMsgStatusChangePending = FALSE;
+BOOL   jabberChangeStatusMessageOnly = FALSE;
+TCHAR* jabberJID = NULL;
+char*  streamId = NULL;
+DWORD  jabberLocalIP;
+UINT   jabberCodePage;
 JABBER_MODEMSGS modeMsgs;
 //char* jabberModeMsg;
 CRITICAL_SECTION modeMsgMutex;
@@ -85,8 +85,8 @@ HICON jabberIcon[JABBER_ICON_TOTAL];
 HMODULE hLibSSL = NULL;
 PVOID jabberSslCtx;
 
-const char xmlnsAdmin[]  = "<query xmlns='http://jabber.org/protocol/muc#admin'>";
-const char xmlnsOwner[]  = "<query xmlns='http://jabber.org/protocol/muc#owner'>";
+const char xmlnsAdmin[] = "http://jabber.org/protocol/muc#admin";
+const char xmlnsOwner[] = "http://jabber.org/protocol/muc#owner";
 
 HWND hwndJabberAgents = NULL;
 HWND hwndJabberGroupchat = NULL;
@@ -255,10 +255,10 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	p++;
 	q = strrchr( p, '.' );
 	*q = '\0';
-	jabberProtoName = _strdup( p );
+	jabberProtoName = mir_strdup( p );
 	_strupr( jabberProtoName );
 
-	jabberModuleName = _strdup( jabberProtoName );
+	jabberModuleName = mir_strdup( jabberProtoName );
 	_strlwr( jabberModuleName );
 	jabberModuleName[0] = toupper( jabberModuleName[0] );
 
@@ -334,19 +334,19 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	JabberWsUninit();
 	DeleteCriticalSection( &modeMsgMutex );
 	DeleteCriticalSection( &mutex );
-	free( modeMsgs.szOnline );
-	free( modeMsgs.szAway );
-	free( modeMsgs.szNa );
-	free( modeMsgs.szDnd );
-	free( modeMsgs.szFreechat );
-	free( jabberModuleName );
-	free( jabberProtoName );
+	mir_free( modeMsgs.szOnline );
+	mir_free( modeMsgs.szAway );
+	mir_free( modeMsgs.szNa );
+	mir_free( modeMsgs.szDnd );
+	mir_free( modeMsgs.szFreechat );
+	mir_free( jabberModuleName );
+	mir_free( jabberProtoName );
 	if ( jabberVcardPhotoFileName ) {
 		DeleteFileA( jabberVcardPhotoFileName );
-		free( jabberVcardPhotoFileName );
+		mir_free( jabberVcardPhotoFileName );
 	}
-	if ( jabberVcardPhotoType ) free( jabberVcardPhotoType );
-	if ( streamId ) free( streamId );
+	if ( jabberVcardPhotoType ) mir_free( jabberVcardPhotoType );
+	if ( streamId ) mir_free( streamId );
 
 	for ( int i=0; i < JABBER_ICON_TOTAL; i++ )
 		DestroyIcon( jabberIcon[i] );

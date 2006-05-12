@@ -4,7 +4,7 @@ Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005     George Hazan
 
-This program is free software; you can redistribute it and/or
+This program is mir_free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or ( at your option ) any later version.
@@ -61,7 +61,7 @@ JABBER_SOCKET JabberWsConnect( char* host, WORD port )
 	nloc.cbSize = sizeof( nloc );
 	nloc.szHost = host;
 	nloc.wPort = port;
-	return ( HANDLE ) JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) hNetlibUser, ( LPARAM )&nloc );
+	return ( HANDLE )JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) hNetlibUser, ( LPARAM )&nloc );
 }
 
 int JabberWsSend( JABBER_SOCKET hConn, char* data, int datalen )

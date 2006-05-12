@@ -4,7 +4,7 @@ Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005     George Hazan
 
-This program is free software; you can redistribute it and/or
+This program is mir_free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or ( at your option ) any later version.
@@ -95,7 +95,7 @@ int JabberHttpGatewayBegin( HANDLE hConn, NETLIBOPENCONNECTION *nloc )
 	packString( &packet, nloc->szHost, ( WORD )serverNameLen );
 	packWord( &packet, nloc->wPort );
 	Netlib_Send( hConn, packet.pData, packet.wLen, MSG_DUMPPROXY|MSG_NOHTTPGATEWAYWRAP );
-	free( packet.pData );
+	mir_free( packet.pData );
 	return 1;
 	*/
 	return 1;
@@ -111,7 +111,7 @@ int icq_httpGatewayWrapSend( HANDLE hConn, PBYTE buf, int len, int flags, MIRAND
 	write_httphdr( &packet, HTTP_PACKETTYPE_FLAP );
 	packString( &packet, buf, ( WORD )len );
 	sendResult = Netlib_Send( hConn, packet.pData, packet.wLen, flags );
-	free( packet.pData );
+	mir_free( packet.pData );
 	if( sendResult <= 0 )
 		return sendResult;
 	if( sendResult < 14 )

@@ -3,7 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-2004  Santithorn Bunchua
 
-This program is free software; you can redistribute it and/or
+This program is mir_free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or ( at your option ) any later version.
@@ -30,11 +30,11 @@ Last change by : $Author$
 typedef enum { JBT_INIT, JBT_AUTH, JBT_CONNECT, JBT_SOCKSERR, JBT_SENDING, JBT_RECVING, JBT_DONE, JBT_ERROR } JABBER_BYTE_STATE;
 
 typedef struct {
-	char* sid;
-	char* srcJID;
-	char* dstJID;
-	char* streamhostJID;
-	char* iqId;
+	TCHAR* sid;
+	TCHAR* srcJID;
+	TCHAR* dstJID;
+	TCHAR* streamhostJID;
+	TCHAR* iqId;
 	JABBER_BYTE_STATE state;
 	HANDLE hConn;
 	HANDLE hEvent;

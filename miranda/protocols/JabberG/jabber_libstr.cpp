@@ -4,7 +4,7 @@ Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005     George Hazan
 
-This program is free software; you can redistribute it and/or
+This program is mir_free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or ( at your option ) any later version.
@@ -31,8 +31,18 @@ void __stdcall replaceStr( char*& dest, const char* src )
 {
 	if ( src != NULL ) {
 		if ( dest != NULL )
-			free( dest );
-		dest = strdup( src );
+			mir_free( dest );
+		dest = mir_strdup( src );
+	}
+	else dest = NULL;
+}
+
+void __stdcall replaceStr( WCHAR*& dest, const WCHAR* src )
+{
+	if ( src != NULL ) {
+		if ( dest != NULL )
+			mir_free( dest );
+		dest = mir_wstrdup( src );
 	}
 	else dest = NULL;
 }
