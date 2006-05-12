@@ -274,16 +274,18 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				lvItem.iSubItem = 0;
 				lvItem.mask = LVIF_PARAM;
 				ListView_GetItem( lv, &lvItem );
-				char* jid = ( char* )lvItem.lParam, *p;
+				TCHAR* jid = ( TCHAR* )lvItem.lParam;
 				{	GCSESSION gcw = {0};
 					gcw.cbSize = sizeof(GCSESSION);
 					gcw.iType = GCW_CHATROOM;
-					gcw.pszID = jid;
+					gcw.pszID = t2a(jid);
 					gcw.pszModule = jabberProtoName;
-					gcw.pszName = strcpy(( char* )alloca( strlen(jid)+1 ), jid );
-					if (( p = (char*)strchr( gcw.pszName, '@' )) != NULL )
+					gcw.pszName = NEWSTR_ALLOCA(gcw.pszID);
+					char* p = strchr( gcw.pszName, '@' );
+					if ( p != NULL )
 						*p = 0;
 					CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
+					mir_free((void*)gcw.pszID);
 				}
 				{	XmlNodeIq iq( "set" );
 					XmlNode* query = iq.addQuery( "jabber:iq:roster" );
@@ -777,6 +779,7 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 	#if defined( _UNICODE )
 		mir_free( dispNick );
 		mir_free( dispMsg );
+		mir_free( jid );
 	#endif
 	mir_free( (void*)gce.pszText ); // Since we processed msgText and created a new string
 }
