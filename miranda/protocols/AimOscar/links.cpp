@@ -197,12 +197,13 @@ static BOOL CALLBACK aim_linsk_enumthreadwindowsproc(HWND hwnd, LPARAM lParam)
     return TRUE;
 }
 
-static BOOL CALLBACK aim_linsk_enumwindowsproc(HWND hwnd, LPARAM lParam)
+static BOOL CALLBACK aim_links_enumwindowsproc(HWND hwnd, LPARAM lParam)
 {
     char szBuf[32];
 
     //LOG(LOG_DEBUG, "Links: enumwindowsproc");
-    if (GetClassName(hwnd, szBuf, sizeof(szBuf))) {
+    if (GetClassName(hwnd, szBuf, sizeof(szBuf)))
+	{
         if (!strcmp(szBuf, MIRANDACLASS)) {
             //LOG(LOG_DEBUG, "Links: enumwindowsproc - found Miranda window");
             EnumThreadWindows(GetWindowThreadProcessId(hwnd, NULL), aim_linsk_enumthreadwindowsproc, lParam);
@@ -288,5 +289,5 @@ void aim_links_destroy()
 extern "C" void __declspec(dllexport)
      CALLBACK aim_links_exec(HWND hwnd, HINSTANCE hInst, char *lpszCmdLine, int nCmdShow)
 {
-    EnumWindows(aim_linsk_enumwindowsproc, (LPARAM) lpszCmdLine);
+    EnumWindows(aim_links_enumwindowsproc, (LPARAM) lpszCmdLine);
 }

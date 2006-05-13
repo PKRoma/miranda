@@ -766,8 +766,8 @@ void snac_received_message(SNAC &snac)//family 0x0004
 				DBWriteContactSettingWord(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,0);
 			if(!descr_included)
 			{
-				msg_buf=new char;
-				msg_buf='\0';
+				msg_buf=new char[1];
+				*msg_buf='\0';
 			}
 			long size=sizeof(DWORD) + strlen(filename) + strlen(msg_buf)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+7;
 			char* szBlob = new char[size];
