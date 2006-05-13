@@ -143,7 +143,7 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 							  int i;
 							  
 							  if (!yahooLoggedIn) {
-								MessageBox(hwndDlg, "You need to be connected to Yahoo to add to Ignore List.", "Yahoo Ignore", MB_OK| MB_ICONINFORMATION);
+								MessageBox(hwndDlg, Translate("You need to be connected to Yahoo to add to Ignore List."), Translate("Yahoo Ignore"), MB_OK| MB_ICONINFORMATION);
 								break;
 							  }
 
@@ -151,13 +151,13 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 							  i = GetDlgItemText( hwndDlg, IDC_YIGN_EDIT, id, sizeof( id ));
 							  
 							  if (i < 3) {
-								MessageBox(hwndDlg, "Please enter a valid buddy name to ignore.", "Yahoo Ignore", MB_OK| MB_ICONINFORMATION);
+								MessageBox(hwndDlg, Translate("Please enter a valid buddy name to ignore."), Translate("Yahoo Ignore"), MB_OK| MB_ICONINFORMATION);
 								break;
 							  }
 							  
 							  i = SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_FINDSTRINGEXACT, -1, (LPARAM)id);
 							  if (i != LB_ERR ) {
-								MessageBox(hwndDlg, "The buddy is already on your ignore list. ", "Yahoo Ignore", MB_OK | MB_ICONINFORMATION);
+								MessageBox(hwndDlg, Translate("The buddy is already on your ignore list. "), Translate("Yahoo Ignore"), MB_OK | MB_ICONINFORMATION);
 								break;
 							  }
 							   YAHOO_IgnoreBuddy(id, 0);
@@ -172,13 +172,13 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 								char id[128];
 								
 								if (!yahooLoggedIn) {
-									MessageBox(hwndDlg, "You need to be connected to Yahoo to add to Ignore List.", "Yahoo Ignore", MB_OK| MB_ICONINFORMATION);
+									MessageBox(hwndDlg, Translate("You need to be connected to Yahoo to remove from the Ignore List."), Translate("Yahoo Ignore"), MB_OK| MB_ICONINFORMATION);
 									break;
 								}
 							  
 								i = SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_GETCURSEL, 0, 0);
 								if (i == LB_ERR) {
-									MessageBox(hwndDlg, "Please select a buddy on the ignore list to remove.", "Yahoo Ignore", MB_OK| MB_ICONINFORMATION);
+									MessageBox(hwndDlg, Translate("Please select a buddy on the ignore list to remove."), Translate("Yahoo Ignore"), MB_OK| MB_ICONINFORMATION);
 									break;
 								}
 								
@@ -265,9 +265,9 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			YAHOO_SetByte("ShowErrors", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SHOW_ERRORS )); 
 
 			if ( restartRequired )
-				MessageBox( hwndDlg, Translate( "The changes you have made require you to restart Miranda IM before they take effect"), "YAHOO Options", MB_OK );
+				MessageBox( hwndDlg, Translate( "The changes you have made require you to restart Miranda IM before they take effect"), Translate("YAHOO Options"), MB_OK );
 			else if ( reconnectRequired && yahooLoggedIn )
-				MessageBox( hwndDlg, Translate( "The changes you have made require you to reconnect to the Yahoo network before they take effect"), "YAHOO Options", MB_OK );
+				MessageBox( hwndDlg, Translate( "The changes you have made require you to reconnect to the Yahoo network before they take effect"), Translate("YAHOO Options"), MB_OK );
 
 			return TRUE;
 		}
