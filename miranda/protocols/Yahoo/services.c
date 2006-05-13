@@ -1419,6 +1419,10 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	return GAIR_NOAVATAR;
 }
 
+#define PS_SETMYAVATAR "/SetMyAvatar"
+#define PS_GETMYAVATAR "/GetMyAvatar"
+#define PS_GETMYAVATARMAXSIZE "/GetMyAvatarMaxSize"
+
 int YahooSetAvatarUI( WPARAM wParam, LPARAM lParam )
 {
 	/*char szFileName[ MAX_PATH ];
@@ -1429,6 +1433,62 @@ int YahooSetAvatarUI( WPARAM wParam, LPARAM lParam )
 	return 1; /* error for now */
 }
 
+/*
+Service: /GetMyAvatarMaxSize
+wParam=(int *)max width of avatar
+lParam=(int *)max height of avatar
+return=0
+*/
+int YahooGetAvatarSize(WPARAM wParam, LPARAM lParam)
+{
+	YAHOO_DebugLog("[YAHOO_GETAVATARSIZE]");
+	
+	if (wParam != 0) *((int*) wParam) = 96;
+	if (lParam != 0) *((int*) lParam) = 96;
+
+	return 0;
+}
+
+/*
+Service: /GetMyAvatar
+wParam=(char *)Buffer to file name
+lParam=(int)Buffer size
+return=0 on success, else on error
+*/
+int YahooGetMyAvatar(WPARAM wParam, LPARAM lParam)
+{
+	char *buffer = (char *)wParam;
+	int size = (int)lParam;
+
+	YAHOO_DebugLog("[YAHOO_GETMYAVATAR]");
+	if (buffer == NULL || size <= 0)
+		return -1;
+	
+
+	if (!YAHOO_GetByte( "ShowAvatars", 0 ))
+		return -2;
+	
+	{
+		DBVARIANT dbv;
+		int ret = -3;
+
+		if (YAHOO_GetDword("AvatarHash", 0)){
+			
+			if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)){
+				if (access(dbv.pszVal, 0) == 0){
+					strncpy(buffer, dbv.pszVal, size-1);
+					buffer[size-1] = '\0';
+
+					ret = 0;
+				}
+				DBFreeVariant(&dbv);
+			}
+		}
+
+		return ret;
+	}
+}
+
 //=======================================================
 //Send a nudge
 //=======================================================
@@ -1437,6 +1497,8 @@ int YahooSendNudge(WPARAM wParam, LPARAM lParam)
     HANDLE hContact = (HANDLE) wParam;
     DBVARIANT dbv;
     
+	YAHOO_DebugLog("[YAHOO_SENDNUDGE]");
+	
     if (!yahooLoggedIn) {/* don't send nudge if we not connected! */
         pthread_create(yahoo_im_sendackfail, hContact);
         return 1;
@@ -1578,6 +1640,8 @@ int LoadYahooServices( void )
 	YAHOO_CreateProtoServiceFunction( PSS_SETAPPARENTMODE,	YahooSetApparentMode);
 	
 	YAHOO_CreateProtoServiceFunction( PS_GETAVATARINFO,	YahooGetAvatarInfo);
+	YAHOO_CreateProtoServiceFunction( PS_GETMYAVATARMAXSIZE, YahooGetAvatarSize);
+	YAHOO_CreateProtoServiceFunction( PS_GETMYAVATAR, YahooGetMyAvatar);
 	return 0;
 }
 

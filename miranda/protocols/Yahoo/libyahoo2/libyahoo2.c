@@ -439,10 +439,12 @@ static const value_string packet_keys[]={
 	{ 58, "conf joinmsg"},
 	{ 59, "cookies"},
 	{ 60, "SMS/Mobile"},
+	{ 61, "Cookie?"},
 	{ 63, "imvironment name;num"},
 	{ 64, "imvironment enabled/avail"},
 	{ 65, "group"},
 	{ 66, "login status"},
+	{ 73, "user name"},
 	{ 87, "buds/groups"},
 	{ 88, "ignore list"},
 	{ 89, "identities"},
@@ -456,7 +458,9 @@ static const value_string packet_keys[]={
 	{113, "chat attrs"},
 	{117, "chat msg"},
 	{124, "chat msg type"},
-	{130, "first join"},
+	{128, "chat room category?"},
+	{129, "chat room serial 2"},
+	{130, "first join/chat room cookie"},
 	{135, "YIM version"},
 	{137, "idle time"},
 	{138, "idle?"},
@@ -1875,6 +1879,13 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 			WARNING(("Got stealth list: %s", yd->rawstealthlist));
 			YAHOO_CALLBACK(ext_yahoo_got_stealthlist)(yd->client_id, yd->rawstealthlist);
 			break;
+		case 213: /* my current avatar setting */
+			{
+				int buddy_icon = strtol(pair->value, NULL, 10);
+				
+				YAHOO_CALLBACK(ext_yahoo_got_avatar_share)(yd->client_id, buddy_icon);
+			}
+			break;
 		case 217: /*??? Seems like last key */
 					
 			break;
@@ -2582,7 +2593,7 @@ static void yahoo_process_mail(struct yahoo_input_data *yid, struct yahoo_packet
 		char from[1024];
 		snprintf(from, sizeof(from), "%s (%s)", who, email);
 		YAHOO_CALLBACK(ext_yahoo_mail_notify)(yd->client_id, from, subj, count);
-	} else if(count > 0)
+	} else 
 		YAHOO_CALLBACK(ext_yahoo_mail_notify)(yd->client_id, NULL, NULL, count);
 }
 
@@ -4460,7 +4471,7 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 				yahoo_packet_hash(pkt, 47, (away == 2)? "2": (away) ?"1":"0");
 			}
 			
-			yahoo_packet_hash(pkt, 187, "0");
+			//yahoo_packet_hash(pkt, 187, "0"); // ???
 			
 		}
 		
@@ -5292,6 +5303,7 @@ static void yahoo_search_internal(int id, int t, const char *text, int g, int ar
 	FREE(ctext);
 
 	snprintf(buff, sizeof(buff), "Y=%s; T=%s", yd->cookie_y, yd->cookie_t);
+	//snprintf(buff, sizeof(buff), "Y=%s; T=%s; C=%s", yd->cookie_y, yd->cookie_t, yd->cookie_c);
 
 	inputs = y_list_prepend(inputs, yid);
 	yahoo_http_get(yid->yd->client_id, url, buff, _yahoo_http_connected, yid);

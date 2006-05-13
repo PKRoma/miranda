@@ -841,7 +841,7 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	
 	if (fd > 0) {
 		//LOG(("Before Netlib_CloseHandle! Handle: %d", fd));
-		Netlib_CloseHandle((HANDLE)fd);
+	Netlib_CloseHandle((HANDLE)fd);
 		//LOG(("After Netlib_CloseHandle!"));
 	}
 	
@@ -1134,7 +1134,7 @@ void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *
 
 void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsigned int ts)
 {
-	long cksum = 0;
+	int cksum = 0;
 	
 	LOG(("ext_yahoo_got_picture_upload URL:%s timestamp: %d", url, ts));
 
@@ -1166,6 +1166,13 @@ void ext_yahoo_got_nick(int id, const char *nick)
 	LOG(("[ext_yahoo_got_nick] nick: %s", nick));
 	
 	YAHOO_SetString( NULL, "Nick", nick);
+}
+
+void ext_yahoo_got_avatar_share(int id, int buddy_icon)
+{
+	LOG(("[ext_yahoo_got_avatar_share] buddy icon: %d", buddy_icon));
+	
+	YAHOO_SetByte( "ShareAvatar", buddy_icon );
 }
 
 void ext_yahoo_got_stealth(int id, char *stealthlist)
@@ -1211,7 +1218,7 @@ void ext_yahoo_got_stealth(int id, char *stealthlist)
 					DBWriteContactSettingWord(hContact, yahooProtocolName, "ApparentMode", (WORD) ID_STATUS_OFFLINE);
 				
 			} else { /* he is not on the Stealth List */
-				LOG(("Resetting STEALTH for id = %s", dbv.pszVal));
+				//LOG(("Resetting STEALTH for id = %s", dbv.pszVal));
 				/* need to delete the ApparentMode thingy */
 				if (DBGetContactSettingWord(hContact, yahooProtocolName, "ApparentMode", 0))
 					DBDeleteContactSetting(hContact, yahooProtocolName, "ApparentMode");
@@ -1449,7 +1456,7 @@ void ext_yahoo_rejected(int id, char *who, char *msg)
 		// Make sure the contact is temporary so we could delete it w/o extra traffic
 		// 
 		DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
-		YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);	
+    YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);	
 	} else {
 		LOG(("[ext_yahoo_rejected] Buddy not on our buddy list"));
 	}
@@ -1659,24 +1666,31 @@ void ext_yahoo_game_notify(int id, char *me, char *who, int stat, char *msg)
 
 void ext_yahoo_mail_notify(int id, char *from, char *subj, int cnt)
 {
+	LOG(("ext_yahoo_mail_notify"));
+	
+	if (cnt > 0) {
     SkinPlaySound( Translate( "mail" ) );
 
     if (!YAHOO_GetByte( "DisableYahoomail", 0)) {    
 		char z[MAX_SECONDLINE], title[MAX_CONTACTNAME];
-		
-        LOG(("ext_yahoo_mail_notify"));
         
-		if (from == NULL) {
+        LOG(("ext_yahoo_mail_notify"));
+    
+			if (from == NULL) {
             lstrcpyn(title, Translate("New Mail"), sizeof(title));
             snprintf(z, sizeof(z), Translate("You Have %i unread msgs"), cnt);
-		} else {
+			} else {
             snprintf(title, sizeof(title), Translate("New Mail (%i msgs)"), cnt);
             snprintf(z, sizeof(z), Translate("From: %s\nSubject: %s"), from, subj);
-		}
-        
+			}
+
 		if(!YAHOO_ShowPopup( title, z, YAHOO_ALLOW_ENTER + YAHOO_MAIL_POPUP ))
 			YAHOO_shownotification(title, z, NIIF_INFO);
     }
+	}
+	
+	LOG(("[ext_yahoo_mail_notify] Status Check current: %d, CONNECTING: %d ", yahooStatus, ID_STATUS_CONNECTING));
+
 }    
     
 /* WEBCAM callbacks */
@@ -1833,13 +1847,9 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 	LOG(("[ext_yahoo_got_ping] Status Check current: %d, CONNECTING: %d ", yahooStatus, ID_STATUS_CONNECTING));
 	
 	if (yahooStatus == ID_STATUS_CONNECTING) {
-		//int status;
-	
 		LOG(("[ext_yahoo_got_ping] We are connecting. Checking for different status. Start: %d, Current: %d", gStartStatus, yahooStatus));
-		//status = DBGetContactSettingWord(NULL, yahooProtocolName, "StartupStatus", ID_STATUS_ONLINE);
 		if (gStartStatus != yahooStatus) {
 			LOG(("[COOKIES] Updating Status to %d ", gStartStatus));    
-			yahoo_util_broadcaststatus(gStartStatus);
 			
 			if (gStartStatus != ID_STATUS_INVISIBLE) {// don't generate a bogus packet for Invisible state
 				if (szStartMsg != NULL) {
@@ -1848,6 +1858,7 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 				    yahoo_set_status(gStartStatus, NULL, (gStartStatus != ID_STATUS_ONLINE) ? 1 : 0);
 			}
 			
+			yahoo_util_broadcaststatus(gStartStatus);
 			yahooLoggedIn=TRUE;
 		}
 	}
@@ -2136,25 +2147,25 @@ void ext_yahoo_got_search_result(int id, int found, int start, int total, YList 
 			LOG(("[%d] Empty record?",i++));
 		} else {
 			LOG(("[%d] id: '%s', online: %d, age: %d, sex: '%s', location: '%s'", i++, yct->id, yct->online, yct->age, yct->gender, yct->location));
-			psr.nick = (char *)yct->id;
-			c = (char *)malloc(10);
+		psr.nick = (char *)yct->id;
+		c = (char *)malloc(10);
 			
 			if (yct->gender[0] != 5)
-			psr.firstName = yct->gender;
+		psr.firstName = yct->gender;
 			
 			if (yct->age > 0) {
 				itoa(yct->age, c,10);
-				psr.lastName = (char *)c;
+		psr.lastName = (char *)c;
 			}
 			
 			if (yct->location[0] != 5)
-				psr.email = (char *)yct->location;
-		//psr.email = (char *)snsearch;
-		
-		//void yahoo_search(int id, enum yahoo_search_type t, const char *text, enum yahoo_search_gender g, enum yahoo_search_agerange ar, 
-		//	int photo, int yahoo_only)
-	
-			YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+		psr.email = (char *)yct->location;
+    //psr.email = (char *)snsearch;
+    
+	//void yahoo_search(int id, enum yahoo_search_type t, const char *text, enum yahoo_search_gender g, enum yahoo_search_agerange ar, 
+	//	int photo, int yahoo_only)
+
+		YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 		}
 		en = y_list_next(en);
 	}
@@ -2212,6 +2223,7 @@ void register_callbacks()
 	yc.ext_yahoo_got_picture_checksum = ext_yahoo_got_picture_checksum;
 	yc.ext_yahoo_got_picture_update = ext_yahoo_got_picture_update;
 	yc.ext_yahoo_got_nick = ext_yahoo_got_nick;
+	yc.ext_yahoo_got_avatar_share = ext_yahoo_got_avatar_share;
 	
 	yc.ext_yahoo_buddy_added = ext_yahoo_buddy_added;
 	yc.ext_yahoo_cleanup = ext_yahoo_cleanup;

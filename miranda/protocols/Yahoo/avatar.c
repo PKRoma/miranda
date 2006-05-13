@@ -19,8 +19,6 @@
 #include "version.h"
 #include "resource.h"
 
-
-
 #include <m_system.h>
 #include <m_langpack.h>
 #include <m_options.h>
@@ -111,10 +109,10 @@ static char* ChooseAvatarFileName()
 /*
  *31 bit hash function  - this is based on g_string_hash function from glib
  */
-unsigned int YAHOO_avt_hash(const char *key, long ksize)
+int YAHOO_avt_hash(const char *key, long ksize)
 {
   const char *p = key;
-  unsigned int h = *p;
+  int h = *p;
   long l = 0;
   
   if (h)
@@ -124,13 +122,13 @@ unsigned int YAHOO_avt_hash(const char *key, long ksize)
   return h;
 }
 	
-long calcMD5Hash(char* szFile)
+int calcMD5Hash(char* szFile)
 {
   if (szFile) {
     HANDLE hFile = NULL, hMap = NULL;
     BYTE* ppMap = NULL;
     long cbFileSize = 0;
-    long ck = 0;	
+    int ck = 0;	
 
     if ((hFile = CreateFile(szFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
       if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
@@ -168,6 +166,46 @@ void __cdecl yahoo_send_avt_thread(void *psf)
 	free(sf);
 }
 
+HBITMAP YAHOO_SetAvatar(const char *szFile)
+{
+	char szMyFile[MAX_PATH+1];
+    HBITMAP avt;
+
+	avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
+	
+	if (avt == NULL)
+		return NULL;
+	  
+	if (( avt = YAHOO_StretchBitmap( avt )) == NULL )
+		return NULL;
+	
+	GetAvatarFileName(NULL, szMyFile, MAX_PATH, 2);
+	  
+	if (avt && YAHOO_SaveBitmapAsAvatar( avt, szMyFile) == 0) {
+		unsigned int hash;
+		y_filetransfer *sf;
+		
+		hash = calcMD5Hash(szMyFile);
+		if (hash) {
+			YAHOO_DebugLog("[Avatar Info] File: '%s' CK: %d", szMyFile, hash);	
+			  
+			/* now check and make sure we don't reupload same thing over again */
+			if (hash != YAHOO_GetDword("AvatarHash", 0) || time(NULL) > YAHOO_GetDword("AvatarTS",0)) {
+				YAHOO_SetString(NULL, "AvatarFile", szMyFile);
+				DBWriteContactSettingDword(NULL, yahooProtocolName, "AvatarHash", hash);
+			
+				sf = (y_filetransfer*) malloc(sizeof(y_filetransfer));
+				sf->filename = strdup(szMyFile);
+				sf->cancel = 0;
+				pthread_create(yahoo_send_avt_thread, sf);
+			} else {
+				YAHOO_DebugLog("[Avatar Info] Same checksum and avatar on YahooFT. Not Reuploading.");	  
+			}
+		}
+	}
+
+	return avt;
+}
 
 static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -186,6 +224,8 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
           EnableWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), FALSE);
         }
 
+		SetButtonCheck( hwndDlg, IDC_SHARE_AVATAR, YAHOO_GetByte( "ShareAvatar", 0 ) == 2 );
+		
 		if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
 			HBITMAP avt;
 
@@ -207,48 +247,18 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
     case IDC_SETAVATAR:
       {
         char* szFile;
-        
-        if ((szFile = ChooseAvatarFileName()) != NULL){ 
-		  char szMyFile[MAX_PATH+1];
-          HBITMAP avt;
+        HBITMAP avt;
+		
+        if ((szFile = ChooseAvatarFileName()) != NULL) {
+		  avt = YAHOO_SetAvatar(szFile);
 
-          avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
+		  free(szFile);
 
-		  if (avt == NULL)
-			break;
-		  
-		  if (( avt = YAHOO_StretchBitmap( avt )) == NULL )
-			break;
-
-		  GetAvatarFileName(NULL, szMyFile, MAX_PATH, 2);
-		  
-          if (avt && YAHOO_SaveBitmapAsAvatar( avt, szMyFile) == 0) {
-            unsigned int hash;
-			y_filetransfer *sf;
-			
-            hash = calcMD5Hash(szMyFile);
-            if (hash) {
-			  YAHOO_DebugLog("[Avatar Info] File: '%s' CK: %d", szMyFile, hash);	
-			  
-			  /* now check and make sure we don't reupload same thing over again */
-			  if (hash != YAHOO_GetDword("AvatarHash", 0) || time(NULL) > YAHOO_GetDword("AvatarTS",0)) {
-			  YAHOO_SetString(NULL, "AvatarFile", szMyFile);
-			  DBWriteContactSettingDword(NULL, yahooProtocolName, "AvatarHash", hash);
-
-			  sf = (y_filetransfer*) malloc(sizeof(y_filetransfer));
-			  sf->filename = strdup(szMyFile);
-			  sf->cancel = 0;
-			  pthread_create(yahoo_send_avt_thread, sf);
-			  } else {
-				YAHOO_DebugLog("[Avatar Info] Same checksum and avatar on YahooFT. Not Reuploading.");	  
-			  }
-            }
-          }
-          free(szFile);
-          if (avt) avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
-          if (avt) DeleteObject(avt); // we release old avatar if any
-        }
-      }
+		  if (avt) avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
+		  if (avt) DeleteObject(avt); // we release old avatar if any
+		}
+		
+	  }
       break;
     case IDC_DELETEAVATAR:
       {
@@ -272,6 +282,10 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		InvalidateRect( hwndDlg, NULL, TRUE );
       }
       break;
+	case IDC_SHARE_AVATAR:
+			YAHOO_SetByte("ShareAvatar",IsDlgButtonChecked(hwndDlg, IDC_SHARE_AVATAR));
+			/* Send a Yahoo packet saying we don't got an avatar anymore */
+			YAHOO_set_avatar(YAHOO_GetByte( "ShareAvatar", 0 )? 2 : 0);
     }
     break;
   }
@@ -405,7 +419,7 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 void upload_avt(int id, int fd, int error, void *data) 
 {
     y_filetransfer *sf = (y_filetransfer*) data;
-    long size = 0;
+    long size = 0, rsize = 0;
 	char buf[1024];
 	DWORD dw;
 	struct _stat statbuf;
@@ -430,32 +444,88 @@ void upload_avt(int id, int fd, int error, void *data)
 
 		if(myhFile !=INVALID_HANDLE_VALUE) {
 			//LOG(("proto: %s, hContact: %p", yahooProtocolName, sf->hContact));
+			NETLIBSELECT nls;
 			
+			nls.cbSize = sizeof(nls);
+			nls.dwTimeout = 10; // 1000 millis = 1 sec 
+
+			nls.hReadConns[0] = (HANDLE)fd;
+			nls.hReadConns[1] = NULL;
+			nls.hWriteConns[0] = NULL;
+			nls.hExceptConns[0] = NULL;
+
 			LOG(("Sending file: %s", sf->filename));
 			
 			do {
-				ReadFile(myhFile, buf, 1024, &dw, NULL);
-			
-				if (dw) {
-					//dw = send(fd, buf, dw, 0);
-					dw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
-					
-					if (dw < 1) {
-						LOG(("Upload Failed. Send error?"));
-						error = 1;
+				//LOG(("Peeking..."));
+				//dw = Netlib_Recv((HANDLE)fd, buf, 1024, MSG_PEEK/*MSG_NODUMP*/);
+				dw = CallService(MS_NETLIB_SELECT, (WPARAM) 0, (LPARAM)&nls);
+				
+				//LOG(("Peeked: %ld bytes", dw));
+				if (dw > 0) {
+					dw = Netlib_Recv((HANDLE)fd, buf, 1024, 0);
+					LOG(("Got: %ld bytes", dw));
+					if (dw > 0 && rsize == 0) {
+						//parse the response code we expecting 200 OK here
+						if (strnicmp(buf,"HTTP/", 5) == 0) {
+							int z=8; // HTTP/1.0
+							
+							while (z < dw && buf[z] == ' ') z++;
+							
+							if (strnicmp(&buf[z],"200", 3) != 0) {
+								// we got a problem!!!!
+								sf->cancel = 1; //cancel things
+								LOG(("NOT A 200 OK response!!!"));
+							} else {
+								LOG(("200 OK response."));
+							}
+						}
+					} else if (dw == 0) {
+						//connection alive but all data received??
+						
+						LOG(("Connection read ready, but no data to read?"));
+						LOG(("Bytes read: %ld", rsize));
 						break;
 					}
+					rsize +=dw;
+				} else if (dw < 0) {
+					// something went wrong
+					LOG(("Negative result? Connection closed?"));
 					
-					size += dw;
+					if (size >= statbuf.st_size) {
+						// done sending, just break the loop
+						break;
+					} else {
+						LOG(("Upload Failed. Receive error?"));
+						error = 1;
+					}
 				}
+
+				if (size < statbuf.st_size) {
+					ReadFile(myhFile, buf, 1024, &dw, NULL);
 				
+					if (dw) {
+						//dw = send(fd, buf, dw, 0);
+						dw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
+						
+						if (dw < 1) {
+							LOG(("Upload Failed. Send error?"));
+							error = 1;
+							break;
+						}
+						
+						size += dw;
+					}
+				}
+					
 				if (sf->cancel) {
 					LOG(("Upload Cancelled! "));
 					error = 1;
 					break;
 				}
-			} while ( dw == 1024);
-	    CloseHandle(myhFile);
+			} while (dw >= 0 && !error);
+			
+			CloseHandle(myhFile);
 		}
     }	
 

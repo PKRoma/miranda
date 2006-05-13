@@ -212,7 +212,8 @@ void YAHOO_bcast_picture_checksum(int cksum);
 BOOL YAHOO_LoadPngModule();
 int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );
-
+HBITMAP YAHOO_SetAvatar(const char *szFile);
+void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck);
 #define FILERESUME_CANCEL	11
 
 char * yahoo_status_code(enum yahoo_status s);

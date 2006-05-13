@@ -133,8 +133,9 @@ BEGIN
                     SS_SUNKEN,9,11,96,96
     PUSHBUTTON      "Set",IDC_SETAVATAR,9,112,45,13,WS_VISIBLE
     PUSHBUTTON      "Delete",IDC_DELETEAVATAR,61,112,45,13,WS_VISIBLE
-//    LTEXT           "Note: Only JPGs and GIFs\nImage size max 64x64\nFile size max 6kB",
-//                    IDC_STATIC,112,54,106,34,NOT WS_VISIBLE
+	
+	CONTROL         "Share Avatar",IDC_SHARE_AVATAR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,130,120,10 					
 END
 
 

@@ -55,6 +55,7 @@
 #define IDC_AVATAR						301
 #define IDC_SETAVATAR					302
 #define IDC_DELETEAVATAR				303
+#define IDC_SHARE_AVATAR				304
 
 /*
  *
