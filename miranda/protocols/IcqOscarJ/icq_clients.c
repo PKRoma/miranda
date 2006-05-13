@@ -128,6 +128,8 @@ const capstr capKopete    = {'K', 'o', 'p', 'e', 't', 'e', ' ', 'I', 'C', 'Q', '
 const capstr capmIcq      = {'m', 'I', 'C', 'Q', ' ', 0xA9, ' ', 'R', '.', 'K', '.', ' ', 0, 0, 0, 0};
 const capstr capAndRQ     = {'&', 'R', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
 const capstr capRAndQ     = {'R', '&', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
+const capstr capmChat     = {'m', 'C', 'h', 'a', 't', ' ', 'i', 'c', 'q', ' ', 0, 0, 0, 0, 0, 0};
+const capstr capJimm      = {'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
 const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F}; // IM2 Ext Msg
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
@@ -142,6 +144,7 @@ const capstr capUim       = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB
 const capstr capRambler   = {0x7E, 0x11, 0xB7, 0x78, 0xA3, 0x53, 0x49, 0x26, 0xA8, 0x02, 0x44, 0x73, 0x52, 0x08, 0xC4, 0x2A};
 const capstr capAbv       = {0x00, 0xE7, 0xE0, 0xDF, 0xA9, 0xD0, 0x4F, 0xe1, 0x91, 0x62, 0xC8, 0x90, 0x9A, 0x13, 0x2A, 0x1B};
 const capstr capNetvigator= {0x4C, 0x6B, 0x90, 0xA3, 0x3D, 0x2D, 0x48, 0x0E, 0x89, 0xD6, 0x2E, 0x4B, 0x2C, 0x10, 0xD9, 0x9F};
+const capstr captZers     = {0xb2, 0xec, 0x8f, 0x16, 0x7c, 0x6f, 0x45, 0x1b, 0xbd, 0x79, 0xdc, 0x58, 0x49, 0x78, 0x88, 0xb9}; // CAP_TZERS
 const capstr capSimpLite  = {0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50};
 const capstr capSimpPro   = {0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F, 0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F};
 
@@ -269,6 +272,11 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
   else if (dwFT1 == 0x3B4C4C0C && !dwFT2 && dwFT3 == 0x3B7248ed)
   {
     szClient = "KXicq2";
+  }
+  else if (dwFT1 == 0xFFFFF666 && !dwFT3)
+  { // this is R&Q (Rapid Edition)
+    null_snprintf(szClientBuf, 64, "R&Q %u", (unsigned)dwFT2);
+    szClient = szClientBuf;   
   }
   else if (dwFT1 == dwFT2 && dwFT2 == dwFT3 && wVersion == 8)
   {
@@ -399,6 +407,16 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         null_snprintf(szClientBuf, 64, cliQip, v1, v2);
         szClient = szClientBuf;
       }
+      else if (capId = MatchCap(caps, wLen, &capmChat, 0xA))
+      {
+        strcpy(szClientBuf, "mChat ");
+        strncpy(szClientBuf, (*capId) + 0xA, 6);
+        szClient = szClientBuf;
+      }
+      else if (capId = MatchCap(caps, wLen, &capJimm, 5))
+      {
+        szClient = "Jimm";
+      }
       else if (MatchCap(caps, wLen, &capMacIcq, 0x10))
       {
         szClient = "ICQ for Mac";
@@ -464,7 +482,14 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             *bClientId = 0;
             if (CheckContactCapabilities(hContact, CAPF_AIM_FILE))
             {
-              strcpy(szClientBuf, "icq5");
+              if (MatchCap(caps, wLen, &captZers, 0x10))
+              { // capable of tZers ?
+                strcpy(szClientBuf, "icq5.1");
+              }
+              else
+              {
+                strcpy(szClientBuf, "icq5");
+              }
               if (MatchCap(caps, wLen, &capRambler, 0x10))
               {
                 strcat(szClientBuf, " (Rambler)");
