@@ -40,13 +40,14 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
 #include "commonheaders.h"
 #pragma hdrstop
 
-extern struct ContainerWindowData *pFirstContainer;
-extern HANDLE hMessageWindowList;
+extern struct       ContainerWindowData *pFirstContainer;
+extern HANDLE       hMessageWindowList;
 extern struct SendJob sendJobs[NR_SENDJOBS];
-extern MYGLOBALS myGlobals;
-extern NEN_OPTIONS nen_options;
-extern PSLWA pSetLayeredWindowAttributes;
-extern struct ContainerWindowData *pLastActiveContainer;
+extern MYGLOBALS    myGlobals;
+extern NEN_OPTIONS  nen_options;
+extern PSLWA        pSetLayeredWindowAttributes;
+extern struct       ContainerWindowData *pLastActiveContainer;
+extern HICON		hIcons[];
 
 int g_hotkeysEnabled = 0;
 HWND g_hotkeyHwnd = 0;
@@ -67,7 +68,7 @@ void HandleMenuEntryFromhContact(int iSelection)
                 SetForegroundWindow(pContainer->hwnd);
         }
         else
-            goto nothing_open;
+            CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
     }
     else if ((si = SM_FindSessionByHCONTACT((HANDLE)iSelection)) != NULL) {
         if(si->hWnd) {															// session does exist, but no window is open for it
@@ -86,15 +87,15 @@ void HandleMenuEntryFromhContact(int iSelection)
             goto nothing_open;
     }
     else
-nothing_open:        
-        CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
+nothing_open:
+        CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)iSelection, 0);
 }
 
 static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 {
     int cx = myGlobals.m_smcxicon;
     int cy = myGlobals.m_smcyicon;
-    
+
     if (!IsWinVerXPPlus()) {
         FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
         if (dis->itemState & ODS_HOTLIGHT)
@@ -262,13 +263,20 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 else if(dis->CtlType == ODT_MENU) {
                     HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)dis->itemID);
                     DWORD idle = 0;
+
+                    if(hWnd == NULL) {
+                        SESSION_INFO *si = SM_FindSessionByHCONTACT((HANDLE)dis->itemID);
+
+                        hWnd = si ? si->hWnd : 0;
+                    }
+
                     if(hWnd)
                         dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
                     
                     if (dis->itemData >= 0) {
                         HICON hIcon;
                         if(dis->itemData > 0)
-                            hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+                            hIcon = dis->itemData & 0x10000000 ? hIcons[ICON_HIGHLIGHT] : myGlobals.g_IconMsgEvent;
                         else if(dat != NULL) {
                             hIcon = LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus);
                             idle = dat->idle;

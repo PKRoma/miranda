@@ -72,11 +72,12 @@ TemplateSet RTL_Default = { TRUE,
 
 TemplateSet LTR_Active, RTL_Active;
 
-extern struct CREOleCallback reOleCallback;
-extern BOOL cntHelpActive;
+extern struct CREOleCallback    reOleCallback;
+extern BOOL                     cntHelpActive;
+extern MYGLOBALS                myGlobals;
 
-extern HINSTANCE g_hInst;
-static int helpActive = 0;
+extern HINSTANCE                g_hInst;
+static int                      helpActive = 0;
 
 BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -440,7 +441,7 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
         {
             int i = 1;
             char szHeader[2048];
-            SETTEXTEX stx = {ST_SELECTION, CP_ACP};
+            SETTEXTEX stx = {ST_SELECTION, myGlobals.m_LangPackCP};
             RECT rc;
             char szBasename[_MAX_FNAME], szExt[_MAX_EXT];
             

@@ -34,8 +34,8 @@ extern MYGLOBALS	myGlobals;
 static PBYTE pLogIconBmpBits[14];
 static int logIconBmpSize[sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0])];
 
-static int logPixelSY;
-static int logPixelSX;
+static int logPixelSY = 0;
+static int logPixelSX = 0;
 static char *szDivider = "\\strike----------------------------------------------------------------------------\\strike0";
 static char CHAT_rtfFontsGlobal[OPTIONS_FONTCOUNT + 2][RTFCACHELINESIZE];
 static char *CHAT_rtffonts = 0;
@@ -449,7 +449,6 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 	// ### RTF BODY (one iteration per event that should be streamed in)
 	while(lin)
 	{
-        BOOL needMicroLF = FALSE;
 		// filter
 		if(streamData->si->iType != GCW_CHATROOM || !streamData->si->bFilterEnabled || (streamData->si->iLogFilterFlags&lin->iType) != 0)
 		{
@@ -459,11 +458,9 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
                     mir_snprintf(szStyle_div, 128, "\\f%u\\cf%u\\ul0\\b%d\\i%d\\fs%u", 17, 18, 0, 0, 5);
                 
                 lin->dwFlags |= MWF_DIVIDERWANTED;
-                //Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par%s\\tab", szStyle_div);
-                Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl-1\\highlight%d %s ", 18, szStyle_div);
-                //Log_Append(&buffer, &bufferEnd, &bufferAlloced, szDivider);
+                if(lin->prev || !streamData->bRedraw)
+                    Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl-1\\highlight%d %s ", 18, szStyle_div);
                 streamData->dat->dwFlags &= ~MWF_DIVIDERWANTED;
-                needMicroLF = TRUE;
             }
             // create new line, and set font and color
 			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl0%s ", Log_SetStyle(0, 0));
@@ -585,7 +582,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
                     if(g_Settings.ClickableNicks)
                         Log_Append(&buffer, &bufferEnd, &bufferAlloced, "~~++#");
                     if(g_Settings.ColorizeNicks && pszIndicator[0])
-                        Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\cf%u", OPTIONS_FONTCOUNT + streamData->crCount + crNickIndex + 1);
+                        Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\cf%u ", OPTIONS_FONTCOUNT + streamData->crCount + crNickIndex + 1);
                 }
                 
                 Log_AppendRTF(streamData, &buffer, &bufferEnd, &bufferAlloced, pszTemp, lin->pszNick);
@@ -602,11 +599,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 
 		}
 		lin = lin->prev;
-        //if(needMicroLF)
-        //    Log_Append(&buffer, &bufferEnd, &bufferAlloced, szMicroLFeed);
 	}
-
-
 	// ### RTF END
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}");
 	return buffer;
@@ -820,7 +813,7 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 
 
 	//get the number of pixels per logical inch
-	{
+	if(logPixelSY == 0) {
 		HDC hdc;
 		hdc = GetDC(NULL);
 		logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
@@ -950,6 +943,15 @@ void LoadMsgLogBitmaps(void)
 	DeleteObject(hBkgBrush);
 
     /* cache RTF font headers */
+
+    //get the number of pixels per logical inch
+    if(logPixelSY == 0) {
+        HDC hdc;
+        hdc = GetDC(NULL);
+        logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
+        logPixelSX = GetDeviceCaps(hdc, LOGPIXELSX);
+        ReleaseDC(NULL, hdc);
+    }
 
     for(i = 0; i < OPTIONS_FONTCOUNT; i++)
         mir_snprintf(CHAT_rtfFontsGlobal[i], RTFCACHELINESIZE, "\\f%u\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", i, i + 1, aFonts[i].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[i].lf.lfItalic, 2 * abs(aFonts[i].lf.lfHeight) * 74 / logPixelSY);

@@ -1180,6 +1180,10 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 						EnableWindow(GetDlgItem(hwndDlg, IDC_CONTAINERSKIN), useskin ? TRUE : FALSE);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_GETCONTAINERSKINNAME), useskin ? TRUE : FALSE);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), useskin ? TRUE : FALSE);
+                        if(!useskin) {
+                            FreeTabConfig();
+                            ReloadTabConfig();
+                        }
 						if(lParam) {
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useskin", useskin);
 							ReloadContainerSkin();
@@ -1539,7 +1543,7 @@ void ReloadGlobals()
      myGlobals.m_DoStatusMsg = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "dostatusmsg", 1);
      myGlobals.m_smcxicon = GetSystemMetrics(SM_CXSMICON);
      myGlobals.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
-     myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
+     myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 1);
      myGlobals.m_PasteAndSend = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "pasteandsend", 0);
      myGlobals.m_szNoStatus = TranslateT("No status message available");
      myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN);

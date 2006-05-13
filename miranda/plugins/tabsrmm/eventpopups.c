@@ -932,7 +932,7 @@ static int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
     int  available = 0, i;
     char szHeader[256], *szPreview = NULL;
     BOOL isUnicode = 0;
-    DWORD codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
+    DWORD codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP);
     
     pdata = (PLUGIN_DATAW *)PopUpList[NumberPopupData(hContact)];
     
@@ -941,7 +941,7 @@ static int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
     if (hEvent) {
         if(pdata->pluginOptions->bShowHeaders) {
             mir_snprintf(szHeader, sizeof(szHeader), "[b]%s %d[/b]\n", Translate("New messages: "), pdata->nrMerged + 1);
-            MultiByteToWideChar(CP_ACP, 0, szHeader, -1, pdata->szHeader, 256);
+            MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szHeader, -1, pdata->szHeader, 256);
             pdata->szHeader[255] = 0;
         }
 		ZeroMemory(&dbe, sizeof(dbe));
@@ -1174,14 +1174,14 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
     pud.PluginWindowProc = (WNDPROC)PopupDlgProcW;
     pud.PluginData = pdata;
 
-    codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
+    codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP);
     
     if (hContact) {
         MY_GetContactDisplayNameW(hContact, pud.lpwzContactName, MAX_CONTACTNAME, dbe.szModule, 0);
         pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
     }
     else {
-        MultiByteToWideChar(CP_ACP, 0, dbe.szModule, -1, pud.lpwzContactName, MAX_CONTACTNAME);
+        MultiByteToWideChar(myGlobals.m_LangPackCP, 0, dbe.szModule, -1, pud.lpwzContactName, MAX_CONTACTNAME);
         pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
     }
 
@@ -1281,7 +1281,7 @@ int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
         mir_snprintf(szTitle, 64, "No Nickname");
 
 #if defined(_UNICODE)
-    MultiByteToWideChar(CP_ACP, 0, szTitle, -1, nim.szInfoTitle, 64);
+    MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szTitle, -1, nim.szInfoTitle, 64);
 #else
     strcpy(nim.szInfoTitle, szTitle);
 #endif
@@ -1307,7 +1307,7 @@ int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
         else {
 nounicode:
             msg = (wchar_t *)alloca(2 * (msglen + 1));
-            MultiByteToWideChar(CP_ACP, 0, (char *)dbei.pBlob, -1, msg, msglen);
+            MultiByteToWideChar(myGlobals.m_LangPackCP, 0, (char *)dbei.pBlob, -1, msg, msglen);
             if(lstrlenW(msg) >= iPreviewLimit) {
                 wcsncpy(&msg[iPreviewLimit - 3], L"...", 3);
                 msg[iPreviewLimit] = 0;
@@ -1326,7 +1326,7 @@ nounicode:
     }
     else {
 #if defined(_UNICODE)
-        MultiByteToWideChar(CP_ACP, 0, (char *)szPreview, -1, nim.szInfo, 250);
+        MultiByteToWideChar(myGlobals.m_LangPackCP, 0, (char *)szPreview, -1, nim.szInfo, 250);
 #else
         strncpy(nim.szInfo, (char *)dbei.pBlob, 250);
 #endif        
@@ -1396,7 +1396,7 @@ void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced)
  * if we want tray support, add the contact to the list of unread sessions in the tray menu
  */
 
-int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, char *szStatus, HANDLE hContact, BOOL fromEvent)
+int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, char *szStatus, HANDLE hContact, DWORD fromEvent)
 {
     if(myGlobals.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
         char szMenuEntry[80];
@@ -1422,20 +1422,22 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
             szNick = dat->szNickname;
             GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
             mii.dwItemData++;
+            if(fromEvent == 2)                          // from chat...
+                mii.dwItemData |= 0x10000000;
             DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND);
 #if defined(_UNICODE)
-            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, "%nick%", szMyStatus, mii.dwItemData);
+            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, "%nick%", szMyStatus, mii.dwItemData & 0x0000ffff);
             szMenuEntryW = (WCHAR *)EncodeWithNickname((const char *)szMenuEntry, (const wchar_t *)szNick, dat->codePage);
             AppendMenuW(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntryW);
 #else
-            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szMyStatus, mii.dwItemData);
+            mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szMyStatus, mii.dwItemData & 0x0000ffff);
             AppendMenuA(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
 #endif            
             myGlobals.m_UnreadInTray++;
             SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
         }
         else {
-            UINT codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
+            UINT codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP);
 #if defined(_UNICODE)
             MY_GetContactDisplayNameW(hContact, szWNick, 100, (const char *)szProto, codePage);
             szNick = szWNick;
@@ -1452,20 +1454,24 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
                 AppendMenuA(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
 #endif            
                 mii.dwItemData = fromEvent ? 1 : 0;
-                myGlobals.m_UnreadInTray += mii.dwItemData;
+                myGlobals.m_UnreadInTray += (mii.dwItemData & 0x0000ffff);
+                if(fromEvent == 2)
+                    mii.dwItemData |= 0x10000000;
             }
             else {
                 GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
                 mii.dwItemData += (fromEvent ? 1 : 0);
                 myGlobals.m_UnreadInTray += (fromEvent ? 1 : 0);
                 mii.fMask |= MIIM_STRING;
+                if(fromEvent == 2)
+                    mii.dwItemData |= 0x10000000;
 #if defined(_UNICODE)
-                mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, "%nick%", szMyStatus, mii.dwItemData);
+                mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, "%nick%", szMyStatus, mii.dwItemData & 0x0000ffff);
                 szMenuEntryW = (WCHAR *)EncodeWithNickname(szMenuEntry, szNick, codePage);
                 mii.cch = lstrlenW(szMenuEntryW) + 1;
                 mii.dwTypeData = (LPWSTR)szMenuEntryW;
 #else
-                mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szMyStatus, mii.dwItemData);
+                mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", szProto, szNick, szMyStatus, mii.dwItemData & 0x0000ffff);
                 mii.cch = lstrlenA(szMenuEntry) + 1;
                 mii.dwTypeData = szMenuEntry;
 #endif                

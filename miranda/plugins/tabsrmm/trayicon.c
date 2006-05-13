@@ -384,7 +384,7 @@ void LoadFavoritesAndRecent()
     if(recentEntries != NULL) {
         while(hContact != 0) {
             if(DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
-                AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites, DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP));
+                AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites, DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP));
             if((dwRecent = DBGetContactSettingDword(hContact, SRMSGMOD_T, "isRecent", 0)) != 0 && iIndex < nen_options.wMaxRecent) {
                 recentEntries[iIndex].dwTimestamp = dwRecent;
                 recentEntries[iIndex++].hContact = hContact;
@@ -404,7 +404,7 @@ void LoadFavoritesAndRecent()
             }
         }
         for(i = 0; i < iIndex; i++)
-            AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuRecent, DBGetContactSettingDword(recentEntries[i].hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP));
+            AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuRecent, DBGetContactSettingDword(recentEntries[i].hContact, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP));
 
         free(recentEntries);
     }

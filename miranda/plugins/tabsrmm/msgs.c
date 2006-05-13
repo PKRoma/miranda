@@ -521,7 +521,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
      * the contact list for flashing
      */
 nowindowcreate:    
-    UpdateTrayMenu(0, 0, dbei.szModule, NULL, (HANDLE)wParam, TRUE);
+    UpdateTrayMenu(0, 0, dbei.szModule, NULL, (HANDLE)wParam, 1);
     if(!nen_options.bTraySupport || myGlobals.m_WinVerMajor < 5) {
 	     TCHAR toolTip[256], *contactName;
         ZeroMemory(&cle, sizeof(cle));
@@ -691,9 +691,9 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
         if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
             return 0;                       // filter out settings we aren't interested in...
         if(DBGetContactSettingWord((HANDLE)wParam, SRMSGMOD_T, "isFavorite", 0))
-            AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, myGlobals.g_hMenuFavorites, DBGetContactSettingDword((HANDLE)wParam, SRMSGMOD_T, "ANSIcodepage", CP_ACP));
+            AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, myGlobals.g_hMenuFavorites, DBGetContactSettingDword((HANDLE)wParam, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP));
         if(DBGetContactSettingDword((HANDLE)wParam, SRMSGMOD_T, "isRecent", 0))
-            AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, myGlobals.g_hMenuRecent, DBGetContactSettingDword((HANDLE)wParam, SRMSGMOD_T, "ANSIcodepage", CP_ACP));
+            AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, myGlobals.g_hMenuRecent, DBGetContactSettingDword((HANDLE)wParam, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP));
         return 0;       // for the hContact.
     }
 
@@ -1472,7 +1472,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 #ifdef _UNICODE
 	{
     wchar_t w_tabtitle[256];
-    if(MultiByteToWideChar(CP_ACP, 0, tabtitle, -1, w_tabtitle, safe_sizeof(w_tabtitle)) != 0)
+    if(MultiByteToWideChar(myGlobals.m_LangPackCP, 0, tabtitle, -1, w_tabtitle, safe_sizeof(w_tabtitle)) != 0)
         newData.item.pszText = w_tabtitle;
 	}
 #else

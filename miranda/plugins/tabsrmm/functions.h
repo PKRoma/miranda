@@ -5,7 +5,7 @@
  
 int NEN_ReadOptions(NEN_OPTIONS *options);
 int NEN_WriteOptions(NEN_OPTIONS *options);
-int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, char *szStatus, HANDLE hContact, BOOL fromEvent);
+int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, char *szStatus, HANDLE hContact, DWORD fromEvent);
 int PopupPreview(NEN_OPTIONS *pluginOptions);
 int safe_wcslen(wchar_t *msg, int chars);
 void DeletePopupsForContact(HANDLE hContact, DWORD dwMask);

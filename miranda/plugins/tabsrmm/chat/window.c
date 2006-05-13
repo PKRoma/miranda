@@ -1308,7 +1308,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
             dat->hContact = psi->hContact;
             dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)psi->hContact, 0);
             
-            TranslateDialogDefault(hwndDlg);
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 			dat->bType = SESSIONTYPE_CHAT;
             dat->isIRC = SM_IsIRC(si);
@@ -1390,6 +1389,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
         case WM_SETFOCUS:
             SetActiveSession(si->pszID, si->pszModule);
+            dat->hTabIcon = dat->hTabStatusIcon;
             if(GetTickCount() - dat->dwLastUpdate < (DWORD)200) {
                 SendMessage(hwndDlg, GC_UPDATETITLE, 0, 1);
                 SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
@@ -1418,8 +1418,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                     FlashContainer(dat->pContainer, 0, 0);
                     dat->pContainer->dwFlashingStarted = 0;
                 }
-                if(dat->pContainer->dwFlags & CNT_NEED_UPDATETITLE)
-                    dat->pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
+                dat->pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
 
                 if(dat->dwFlags & MWF_NEEDCHECKSIZE)
                     PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);		
@@ -1431,11 +1430,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                 }
                 SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
                 //UpdateStatusBar(hwndDlg, dat);
-                dat->dwLastActivity = GetTickCount();
+                dat->dwLastActivity = dat->dwLastUpdate = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 UpdateContainerMenu(hwndDlg, dat);
                 UpdateTrayMenuState(dat, FALSE);
-                dat->dwLastUpdate = GetTickCount();
             }
             return 1;
 
@@ -2019,15 +2017,16 @@ LABEL_SHOWWINDOW:
             if (LOWORD(wParam) != WA_ACTIVE)
                 break;
         case WM_MOUSEACTIVATE:
+            dat->hTabIcon = dat->hTabStatusIcon;
             SetActiveSession(si->pszID, si->pszModule);
             if((GetTickCount() - dat->dwLastUpdate) < (DWORD)200) {
+                SendMessage(hwndDlg, GC_UPDATETITLE, 0, 1);
                 if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL) {
                     DWORD trans = LOWORD(dat->pContainer->dwTransparency);
                     pSetLayeredWindowAttributes(dat->pContainer->hwnd, g_ContainerColorKey, (BYTE)trans, (dat->pContainer->bSkinned ? LWA_COLORKEY : 0) | (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
                 }
                 if(dat->dwFlags & MWF_DEFERREDSCROLL)
                     SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
-                //UpdateStatusBar(hwndDlg, dat);
                 break;
             }
             
@@ -2045,6 +2044,7 @@ LABEL_SHOWWINDOW:
                     pSetLayeredWindowAttributes(dat->pContainer->hwnd, g_ContainerColorKey, (BYTE)trans, (dat->pContainer->bSkinned ? LWA_COLORKEY : 0) | (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
                 }
                 //ConfigureSideBar(hwndDlg, dat);
+                SendMessage(hwndDlg, GC_UPDATETITLE, 0, 1);
                 dat->dwFlags &= ~MWF_DIVIDERSET;
                 dat->dwTickLastEvent = 0;
                 if(KillTimer(hwndDlg, TIMERID_FLASHWND) || dat->iFlashIcon) {
@@ -2056,10 +2056,7 @@ LABEL_SHOWWINDOW:
                     FlashContainer(dat->pContainer, 0, 0);
                     dat->pContainer->dwFlashingStarted = 0;
                 }
-                if(dat->pContainer->dwFlags & CNT_NEED_UPDATETITLE) {
-                    dat->pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
-                    SendMessage(hwndDlg, GC_UPDATETITLE, 0, 1);
-                }
+                dat->pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
                 if(dat->dwFlags & MWF_NEEDCHECKSIZE)
                     PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);			
 
@@ -2072,14 +2069,13 @@ LABEL_SHOWWINDOW:
                     PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                 }
                 //UpdateStatusBar(hwndDlg, dat);
-                dat->dwLastActivity = GetTickCount();
+                dat->dwLastActivity = dat->dwLastUpdate = GetTickCount();
                 dat->pContainer->dwLastActivity = dat->dwLastActivity;
                 UpdateContainerMenu(hwndDlg, dat);
                 /*
                  * delete ourself from the tray menu..
                  */
                 UpdateTrayMenuState(dat, FALSE);
-                dat->dwLastUpdate = GetTickCount();
             }
             return 1;
 

@@ -528,7 +528,7 @@ flash_and_switch:
         if(dat) {
             HWND hwndTab = GetParent(si->hWnd);
 
-            if(IsIconic(dat->pContainer->hwnd) || dat->pContainer->hwndActive != si->hWnd) {
+            if(IsIconic(dat->pContainer->hwnd) || 1) { //dat->pContainer->hwndActive != si->hWnd) {
                 
                 if(hNotifyIcon == hIcons[ICON_HIGHLIGHT])
                     dat->iFlashIcon = hNotifyIcon;
@@ -565,17 +565,17 @@ flash_and_switch:
             if(hNotifyIcon && bInactive) {
                 HICON hIcon;
                 
-                if(!bActiveTab && bMustFlash)
+                if(/* !bActiveTab && */bMustFlash)
                     dat->hTabIcon = hNotifyIcon;
-                else if(!bActiveTab) {
+                else if(dat->iFlashIcon) { //if(!bActiveTab) {
                     TCITEM item = {0};
 
+                    dat->hTabIcon = dat->iFlashIcon;
                     item.mask = TCIF_IMAGE;
                     item.iImage = 0;
                     TabCtrl_SetItem(GetParent(si->hWnd), dat->iTabID, &item);
                 }
                 hIcon = (HICON)SendMessage(dat->pContainer->hwnd, WM_GETICON, ICON_BIG, 0);
-
                 if(hNotifyIcon == hIcons[ICON_HIGHLIGHT] || (hIcon != hIcons[ICON_MESSAGE] && hIcon != hIcons[ICON_HIGHLIGHT])) {
                     SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)hNotifyIcon);
                     dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
@@ -583,7 +583,11 @@ flash_and_switch:
             }
         }
     }
-	return TRUE;
+
+    if(bMustAutoswitch)
+        UpdateTrayMenu(dat, si->wStatus, si->pszModule, dat ? dat->szStatus : NULL, si->hContact, bHighlight ? 2 : 1);
+
+    return TRUE;
 }
 
 int Chat_GetColorIndex(char * pszModule, COLORREF cr)
