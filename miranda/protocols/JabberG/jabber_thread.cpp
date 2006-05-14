@@ -857,8 +857,9 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 						if ( !_tcsncmp( idNode->text, _T(JABBER_IQID), strlen( JABBER_IQID )) )
 							id = _ttoi(( idNode->text )+strlen( JABBER_IQID ));
 
-					if ( id == item->idMsgAckPending )
-						JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
+					if ( item != NULL )
+						if ( id == item->idMsgAckPending )
+							JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
 				}
 
 				HANDLE hContact;
