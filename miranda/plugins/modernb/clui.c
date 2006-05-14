@@ -731,7 +731,7 @@ pProtoTicks GetProtoTicksByProto(char * szProto)
 			CycleStartTick[i].szProto=mir_strdup(szProto);
 			CycleStartTick[i].CycleStartTick=0;
 			CycleStartTick[i].n=i;			
-			CycleStartTick[i].isGlobal=strcmpi(szProto,GLOBAL_PROTO_NAME)==0;
+			CycleStartTick[i].isGlobal=_strcmpi(szProto,GLOBAL_PROTO_NAME)==0;
 			return(&CycleStartTick[i]);
 		}
 	}
@@ -2282,7 +2282,7 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 					{	
 						char buf[255]={0};	
 						short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
-						HICON hIcon=ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
+						HICON hIcon=mod_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
 						DrawMenuBackGround(hwnd, dis->hDC, 1);
 						_snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 						SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);

@@ -156,7 +156,15 @@ __inline char * mir_strdup(const char * src)
 }
 
 
-
+TCHAR *DBGetStringT(HANDLE hContact,const char *szModule,const char *szSetting)
+{
+	TCHAR *str=NULL;
+    DBVARIANT dbv={0};
+	if (!DBGetContactSettingTString(hContact,szModule,szSetting,&dbv))
+		str=mir_tstrdup(dbv.ptszVal);		
+	DBFreeVariant(&dbv);
+	return str;
+}
 char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting)
 {
 	char *str=NULL;

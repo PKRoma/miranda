@@ -14,6 +14,7 @@
 #define IDD_OPT_ITEM_CONTACT_TIME       102
 #define IDD_ABOUT                       103
 #define IDI_SMS                         103
+#define IDD_OPT_ROWTMPL                 103
 #define IDI_ONLINE                      104
 #define IDI_OFFLINE                     105
 #define IDD_GNUPL                       110
@@ -158,6 +159,7 @@
 #define IDI_ICON2                       396
 #define IDI_ICON3                       397
 #define IDD_OPT_SKINEDITOR              398
+
 #define IDI_STATUS_OVERLAY_NA           400
 #define IDI_STATUS_OVERLAY_OCCUPIED     401
 #define IDI_STATUS_OVERLAY_OFFLINE      402
@@ -171,6 +173,10 @@
 #define IDR_TGA_DEFAULT_SKIN            413
 #define IDR_MSF_DEFAULT_SKIN            413
 #define IDD_SKIN_TAB                    415
+#define IDI_ROWCONT1                    416
+#define IDI_ROWCONT2                    417
+#define IDI_ROWCONT3                    418
+
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -657,6 +663,7 @@
 #define IDC_ROW_BORDER_SPIN2            1624
 #define IDC_AVATAR_WIDTH                1624
 #define IDC_ROW_BORDER_SPIN3            1625
+#define IDC_AVATAR_SIZE_SPIN3           1625
 #define IDC_AVATAR_WIDTH_SPIN           1625
 #define IDC_BUTTON1                     1633
 #define IDC_BUTTON_BROWSE               1633
@@ -697,6 +704,7 @@
 #define IDC_CHECK_METHOD                1761
 #define IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK 1761
 #define IDC_XSTATUS_HAS_PRIORITY        1761
+#define IDC_CONTLAYER                   1761
 #define IDC_FRAME_META_CAPT             1762
 #define IDC_OFFSETICON                  1762
 #define IDC_CHECK_COLOR                 1762
@@ -835,6 +843,7 @@
 #define IDC_SHOW_ONLY_IF_DIFFERENT      1842
 #define IDC_COMBO2                      1842
 #define IDC_EDIT1                       1843
+#define IDC_CONTWIDTH                   1843
 #define IDC_HIDE_GROUPSICON             1844
 #define IDC_STATIC_INFO                 1845
 #define IDC_DESIGNTREE                  1848
@@ -870,12 +879,26 @@
 #define IDC_S_SIZE                      1888
 #define IDC_EXTRAORDER                  1889
 #define IDC_SKIN_TAB                    1890
+
+#define IDC_ROWTREE                     1955
+#define IDC_ADDCONTAINER                1956
+#define IDC_BUTTON2                     1957
+#define IDC_DELCONTAINER                1957
+#define IDC_VALIGN                      1958
+#define IDC_HALIGN                      1959
+#define IDC_CONTTYPE                    1960
+#define IDC_SPINCONTWIDTH               1966
+#define IDC_CONTHEIGHT                  1967
+#define IDC_SPINCONTHEIGHT              1968
+#define IDC_CONTUP                      1969
+#define IDC_BUTTON3                     1970
+#define IDC_CONTDOWN                    1970
+
 #define IDC_CLSORT1                     6666
 #define IDC_CLSORT2                     6667
 #define IDC_CLSORT3                     6668
 #define IDD_OPT_GENMENU                 11267
 #define IDD_OPT_CLCBKG3                 11268
-#define IDD_OPT_ITEM_NEWROW             11268
 #define IDD_OPT_ITEM_EXTRAICONS         11269
 #define IDC_MENUITEMS                   11710
 #define IDC_MENUOBJECTS                 11711
@@ -937,9 +960,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        416
+#define _APS_NEXT_RESOURCE_VALUE        450
 #define _APS_NEXT_COMMAND_VALUE         40020
-#define _APS_NEXT_CONTROL_VALUE         1891
+#define _APS_NEXT_CONTROL_VALUE         2000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

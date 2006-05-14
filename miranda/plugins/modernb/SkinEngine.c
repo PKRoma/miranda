@@ -1794,7 +1794,7 @@ int enumDB_SkinObjectsProc (const char *szSetting,LPARAM lParam)
     RegisterButtonByParce((char *)szSetting,value);
     mir_free(value);
   }
-  return 1;
+  return 0;
 }
 int enumDB_SkinMasksProc(const char *szSetting,LPARAM lParam)
 {
@@ -1836,7 +1836,7 @@ int enumDB_SkinMasksProc(const char *szSetting,LPARAM lParam)
            AddParseSkinFont((char*)szSetting,value,CURRENTSKIN);
            mir_free(value);
         }
-        return 1;
+        return 0;
 }
 // Getting skin objects and masks from DB
 int GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
@@ -2311,11 +2311,11 @@ int OldLoadSkinFromIniFile(char * szFileName)
 int enumDB_SkinSectionDeletionProc (const char *szSetting,LPARAM lParam)
 {
 
-  if (szSetting==NULL){return(1);};
+  if (szSetting==NULL){return(0);};
   arrlen++;
   settingname=(char **)realloc(settingname,arrlen*sizeof(char *));
   settingname[arrlen-1]=_strdup(szSetting);
-  return(1);
+  return(0);
 };
 int DeleteAllSettingInSection(char * SectionName)
 {
@@ -3007,16 +3007,60 @@ BOOL mod_DrawText(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
   return AlphaTextOut(hdc,lpString,nCount,lpRect,form,color);
 }
 
-
-BOOL ImageList_DrawEx_New( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,int dy,COLORREF rgbBk,COLORREF rgbFg,UINT fStyle)
+HICON mod_ImageList_GetIcon(HIMAGELIST himl, int i, UINT fStyle)
 {
-  HICON ic=ImageList_GetIcon(himl,i,0);
+  IMAGEINFO imi={0};
+  BITMAP bm={0};
+  ImageList_GetImageInfo(himl,i,&imi);
+  GetObject(imi.hbmImage,sizeof(bm),&bm);
+  if (bm.bmBitsPixel==32 && IsWinVerXPPlus()) //stupid bug of microsoft 0x7f in alpha and 0x80 in any color works incorrectly
+  {
+	  BYTE * bits=NULL;	  
+	  bits=bm.bmBits;
+	  if (!bits)
+	  {
+		  bits=malloc(bm.bmWidthBytes*bm.bmHeight);
+		  GetBitmapBits(imi.hbmImage,bm.bmWidthBytes*bm.bmHeight,bits);
+	  } 
+	  {
+		  int iy;
+		  BYTE *bcbits;
+		  int wb=((imi.rcImage.right-imi.rcImage.left)*bm.bmBitsPixel>>3);
+		  bcbits=bits+(bm.bmHeight-imi.rcImage.bottom)*bm.bmWidthBytes+(imi.rcImage.left*bm.bmBitsPixel>>3);
+          for (iy=0; iy<imi.rcImage.bottom-imi.rcImage.top; iy++)
+		  {
+			  int x;
+			  // Dummy microsoft fix - alpha can be less than r,g or b
+			  // Looks like color channels in icons should be non-premultiplied with alpha
+			  // But AddIcon store it premultiplied (incorrectly cause can be Alpha==7F, but R,G or B==80
+			  // So i check that alpha is 0x7F and set it to 0x80
+			  DWORD *c=((DWORD*)bcbits);
+			  for (x=0;x<imi.rcImage.right-imi.rcImage.left; x++)
+			  {		  
+				  if (((*c)&0xFF000000)==0x7F000000) 
+					  (*c)=((*c)&0x00FFFFFF)|0x80000000;
+				  c++;
+			  }
+			  bcbits+=bm.bmWidthBytes;
+		  }
+	  }  
+	  if (!bm.bmBits) 
+	  { 
+		  SetBitmapBits(imi.hbmImage,bm.bmWidthBytes*bm.bmHeight,bits);
+		  free(bits);
+	  }
+  }
+  return ImageList_GetIcon(himl,i,ILD_TRANSPARENT);
+}
+
+BOOL mod_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,int dy,COLORREF rgbBk,COLORREF rgbFg,UINT fStyle)
+{
+  HICON ic=mod_ImageList_GetIcon(himl,i,fStyle);
   int ddx;
   int ddy;
   BYTE alpha=255;
   HBITMAP hbmpold, hbmp;
-  if (ic==NULL)
-	  return FALSE;
+
   if (fStyle&ILD_BLEND25) alpha=64;
   else if (fStyle&ILD_BLEND50) alpha=128;
   ImageList_GetIconSize(himl,&ddx,&ddy);  
@@ -3025,6 +3069,8 @@ BOOL ImageList_DrawEx_New( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,i
   if (alpha==255) 
   {
     mod_DrawIconEx(hdcDst,x,y,ic,dx?dx:ddx,dy?dy:ddy,0,NULL,DI_NORMAL);
+	//DrawIconEx(hdcDst,x,y,ic,dx?dx:ddx,dy?dy:ddy,0,NULL,DI_NORMAL);
+
   }
   else
   {
@@ -3073,6 +3119,7 @@ BOOL mod_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
   DWORD cx,cy,icy;
   BYTE *t1, *t2, *t3;
 
+  BOOL NoDIBImage=FALSE;
   //lockimagelist
   BYTE hasmask=FALSE;
   BYTE no32bit=FALSE;
@@ -3122,6 +3169,7 @@ BOOL mod_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
 
   if (imbt.bmBits==NULL)
   {
+	NoDIBImage=TRUE;
     imimagbits=(BYTE*)malloc(cy*imbt.bmWidthBytes);
     GetBitmapBits(ici.hbmColor,cy*imbt.bmWidthBytes,(void*)imimagbits);
   }
@@ -3186,24 +3234,24 @@ BOOL mod_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
 					*dest=0;  
 				else
 				{
+					
 					BYTE a;
 					a=((BYTE*)src)[3]>0?((BYTE*)src)[3]:0;//255;
 					((BYTE*)dest)[3]=a;
 					((BYTE*)dest)[0]=((BYTE*)src)[0]*a/255;
 					((BYTE*)dest)[1]=((BYTE*)src)[1]*a/255;
 					((BYTE*)dest)[2]=((BYTE*)src)[2]*a/255;
+					a=a;
 				}
 			}
           else
           {
-            //*dest=*src;
-            BYTE a;
-            a=((BYTE*)src)[3]>0?((BYTE*)src)[3]:255;
+			BYTE a;
+            a=(((BYTE*)src)[3]>0?((BYTE*)src)[3]:255);
             ((BYTE*)dest)[3]=a;
             ((BYTE*)dest)[0]=((BYTE*)src)[0]*a/255;
             ((BYTE*)dest)[1]=((BYTE*)src)[1]*a/255;
             ((BYTE*)dest)[2]=((BYTE*)src)[2]*a/255;
-            dest=dest;
           }
         }
       }

@@ -114,7 +114,7 @@ HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 	}
 	if (!hIcon)
 	{
-		hIcon=ImageList_GetIcon(himlCListClc,ExtIconFromStatusMode(hContact,szProto,status),ILD_NORMAL);
+		hIcon=mod_ImageList_GetIcon(himlCListClc,ExtIconFromStatusMode(hContact,szProto,status),ILD_NORMAL);
 	}
 	// if not ready take normal icon
 	return hIcon;

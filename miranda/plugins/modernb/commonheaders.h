@@ -75,7 +75,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <direct.h>
 #include "resource.h"
 #include "forkthread.h"
-#include <win2k.h>
+#include "win2k.h"
 
 #include <newpluginapi.h>
 #include <m_system.h>
@@ -170,6 +170,7 @@ extern __inline wchar_t * mir_strdupW(const wchar_t * src);
 
 extern char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
 extern wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting);
+extern TCHAR *DBGetStringT(HANDLE hContact,const char *szModule,const char *szSetting);
 extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
 
 #undef HookEvent
@@ -212,10 +213,8 @@ extern void FreeDisplayNameCache();
 extern int ShowWindowNew(HWND hwnd, int cmd);
 
 #ifdef UNICODE
-	#define DBGetStringT(a,b,c) DBGetStringW(a,b,c)
 	#define GCMDF_TCHAR_MY GCMDF_TCHAR|CNF_UNICODE
 #else
-	#define DBGetStringT(a,b,c) DBGetStringA(a,b,c)
 	#define GCMDF_TCHAR_MY 0
 #endif
 

@@ -610,6 +610,10 @@ SOURCE=.\rowheight_funcs.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\rowtemplateopt.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\SkinEditor.c
 # End Source File
 # Begin Source File

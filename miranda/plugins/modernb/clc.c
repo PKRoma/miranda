@@ -1188,18 +1188,32 @@ case WM_CAPTURECHANGED:
 				pcli->pfnHideInfoTip(hwnd,dat);
 			}
 		}
-		break;
+		return 0;
+		//break;
 
 	}
 
 case WM_MOUSEMOVE:
 	{
+		BOOL isOutside=FALSE;
 		if (IsInMainWindow(hwnd))
 		{
 			if (BehindEdgeSettings) UpdateTimer(0);
 			TestCursorOnBorders();
 		}
-		if (ProceedDragToScroll(hwnd, (short)HIWORD(lParam))) return 0;
+		if (ProceedDragToScroll(hwnd, (short)HIWORD(lParam))) return 0;		
+		
+		if (dat->iDragItem==-1)
+		{
+			POINT pt;
+			HWND window;
+			pt.x= (short)LOWORD(lParam);
+			pt.y= (short)HIWORD(lParam);
+			ClientToScreen(hwnd,&pt);
+			window=WindowFromPoint(pt);
+			if (window!=hwnd) isOutside=TRUE;
+		}
+
 		if(hitcontact!=NULL)
 		{
 			int x,y,xm,ym;
@@ -1230,10 +1244,12 @@ case WM_MOUSEMOVE:
 			int iOldHotTrack=dat->iHotTrack;
 			if(dat->hwndRenameEdit!=NULL) return 0;;
 			if(GetKeyState(VK_MENU)&0x8000 || GetKeyState(VK_F10)&0x8000) return 0;
-			dat->iHotTrack=cliHitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),NULL,NULL,NULL);
-			if(iOldHotTrack!=dat->iHotTrack) {
-				if(iOldHotTrack==-1) SetCapture(hwnd);
-				if (dat->iHotTrack==-1) ReleaseCapture();
+			dat->iHotTrack=isOutside?-1:cliHitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),NULL,NULL,NULL);
+			if(iOldHotTrack!=dat->iHotTrack || isOutside) {
+				if(iOldHotTrack==-1 && !isOutside) 
+					SetCapture(hwnd);
+				if (dat->iHotTrack==-1 || isOutside)
+					ReleaseCapture();
 				if(dat->exStyle&CLS_EX_TRACKSELECT) {
 					pcli->pfnInvalidateItem(hwnd,dat,iOldHotTrack);
 					pcli->pfnInvalidateItem(hwnd,dat,dat->iHotTrack);
@@ -1392,16 +1408,18 @@ case WM_LBUTTONUP:
 			BYTE doubleClickExpand=DBGetContactSettingByte(NULL,"CLC","MetaDoubleClick",0);
 			SetTimer(hwnd,TIMERID_SUBEXPAND,GetDoubleClickTime()*doubleClickExpand,NULL);
 		}
-		else 
+		else if (dat->iHotTrack==-1 && dat->iDragItem==-1)
 			ReleaseCapture();
 		if(dat->iDragItem==-1) return 0;       
 		SetCursor((HCURSOR)GetClassLong(hwnd,GCL_HCURSOR));
 		if(dat->exStyle&CLS_EX_TRACKSELECT) 
 		{
 			dat->iHotTrack=cliHitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),NULL,NULL,NULL);
-			if(dat->iHotTrack==-1) ReleaseCapture();
+			if(dat->iHotTrack==-1) 
+				ReleaseCapture();
 		}
-		else if (hitcontact==NULL) ReleaseCapture();
+		else if (hitcontact==NULL) 
+			ReleaseCapture();
 		KillTimer(hwnd,TIMERID_DRAGAUTOSCROLL);
 		if(dat->dragStage==(DRAGSTAGE_NOTMOVED|DRAGSTAGEF_MAYBERENAME))
 			SetTimer(hwnd,TIMERID_RENAME,GetDoubleClickTime(),NULL);

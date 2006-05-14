@@ -496,7 +496,7 @@ static int TrayIconAdd(HWND hwnd,const char *szProto,const char *szIconProto,int
 	nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
 	nid.uCallbackMessage = TIM_CALLBACK;
 	trayIcon[i].hBaseIcon=GetIconFromStatusMode(NULL,szIconProto?szIconProto:trayIcon[i].szProto,status);
-//	trayIcon[i].hBaseIcon=ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szIconProto?szIconProto:trayIcon[i].szProto,status,NULL),ILD_NORMAL);
+//	trayIcon[i].hBaseIcon=mod_ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szIconProto?szIconProto:trayIcon[i].szProto,status,NULL),ILD_NORMAL);
 	nid.hIcon = trayIcon[i].hBaseIcon;	
 
 	if (dviShell.dwMajorVersion>=5) {
@@ -776,7 +776,7 @@ void cliTrayIconUpdateWithImageList(int iImage,const TCHAR *szNewTip,char *szPre
 {
 	HICON hIcon;
 
-	hIcon=ImageList_GetIcon(himlCListClc,iImage,ILD_NORMAL);
+	hIcon=mod_ImageList_GetIcon(himlCListClc,iImage,ILD_NORMAL);
 	TrayIconUpdate(hIcon,szNewTip,szPreferredProto,0);
 	DestroyIcon(hIcon);
 }
@@ -796,7 +796,7 @@ static VOID CALLBACK TrayCycleTimerProc(HWND hwnd,UINT message,UINT idEvent,DWOR
 	}
 	DestroyIcon(trayIcon[0].hBaseIcon);
 	trayIcon[0].hBaseIcon=GetIconFromStatusMode(NULL,protos[cycleStep]->szName,CallProtoService(protos[cycleStep]->szName,PS_GETSTATUS,0,0));
-	//trayIcon[0].hBaseIcon=ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(protos[cycleStep]->szName,CallProtoService(protos[cycleStep]->szName,PS_GETSTATUS,0,0),NULL),ILD_NORMAL);
+	//trayIcon[0].hBaseIcon=mod_ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(protos[cycleStep]->szName,CallProtoService(protos[cycleStep]->szName,PS_GETSTATUS,0,0),NULL),ILD_NORMAL);
 	if(trayIcon[0].isBase)
 		TrayIconUpdate(trayIcon[0].hBaseIcon,NULL,NULL,1);
 }
@@ -824,14 +824,14 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 			if(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI) {
 				if(DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT))				
 					changed=TrayIconSetBaseInfo(GetIconFromStatusMode(NULL,szChangedProto,averageMode),szChangedProto);
-					//changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,averageMode,NULL),ILD_NORMAL),szChangedProto);
+					//changed=TrayIconSetBaseInfo(mod_ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,averageMode,NULL),ILD_NORMAL),szChangedProto);
 				else if(trayIcon && trayIcon[0].szProto!=NULL) {
 					TrayIconDestroy(hwnd);
 					TrayIconInit(hwnd);
 				}
 				else 
 					changed=TrayIconSetBaseInfo(GetIconFromStatusMode(NULL,NULL,averageMode),NULL);
-					//changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(NULL,averageMode,NULL),ILD_NORMAL),NULL);
+					//changed=TrayIconSetBaseInfo(mod_ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(NULL,averageMode,NULL),ILD_NORMAL),NULL);
 			}
 			else 
 			{
@@ -847,7 +847,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 				}
 				else
 					changed=TrayIconSetBaseInfo(GetIconFromStatusMode(NULL,NULL,averageMode),NULL);
-				//changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(NULL,averageMode,NULL),ILD_NORMAL),NULL);
+				//changed=TrayIconSetBaseInfo(mod_ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(NULL,averageMode,NULL),ILD_NORMAL),NULL);
 			}
 		}
 		else {
@@ -890,7 +890,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 					else
 					{
 						changed=TrayIconSetBaseInfo(GetIconFromStatusMode(NULL,szProto,szProto?CallProtoService(szProto,PS_GETSTATUS,0,0):CallService(MS_CLIST_GETSTATUSMODE,0,0)),NULL);
-						//changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szProto,szProto?CallProtoService(szProto,PS_GETSTATUS,0,0):CallService(MS_CLIST_GETSTATUSMODE,0,0),NULL),ILD_NORMAL),NULL);
+						//changed=TrayIconSetBaseInfo(mod_ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szProto,szProto?CallProtoService(szProto,PS_GETSTATUS,0,0):CallService(MS_CLIST_GETSTATUSMODE,0,0),NULL),ILD_NORMAL),NULL);
 					}
 					DBFreeVariant(&dbv);
 					break;
@@ -898,7 +898,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 			case SETTING_TRAYICON_CYCLE:
 				cycleTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*1000,TrayCycleTimerProc);
 				changed=TrayIconSetBaseInfo(GetIconFromStatusMode(NULL,szChangedProto,averageMode),NULL);
-				//changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0),NULL),ILD_NORMAL),NULL);
+				//changed=TrayIconSetBaseInfo(mod_ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0),NULL),ILD_NORMAL),NULL);
 				break;
 			case SETTING_TRAYICON_MULTI:
 				if (!trayIcon) 
@@ -927,7 +927,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 							}
 							else
 								changed=TrayIconSetBaseInfo(GetIconFromStatusMode(NULL,szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0)),szChangedProto);
-								//changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0),NULL),ILD_NORMAL),szChangedProto);
+								//changed=TrayIconSetBaseInfo(mod_ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0),NULL),ILD_NORMAL),szChangedProto);
 						}
 					}
 					else 
@@ -937,7 +937,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 						int avg;
 						avg=GetAverageMode();
 						i=TrayIconSetBaseInfo(GetIconFromStatusMode(NULL,szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0)),szChangedProto);
-						//i=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0),NULL),ILD_NORMAL),szChangedProto);
+						//i=TrayIconSetBaseInfo(mod_ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0),NULL),ILD_NORMAL),szChangedProto);
 						if (i<0 || (avg!=-1))
 						{
 							TrayIconDestroy(hwnd);
@@ -992,7 +992,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 			//BYTE b=DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT);
 			//if (b==SETTING_TRAYICON_MULTI)
 			changed=TrayIconSetBaseInfo(GetIconFromStatusMode(NULL,szChangedProto,averageMode),workAround?szChangedProto:NULL);
-			//changed=TrayIconSetBaseInfo(ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,averageMode,NULL),ILD_NORMAL),workAround?szChangedProto:NULL);
+			//changed=TrayIconSetBaseInfo(mod_ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szChangedProto,averageMode,NULL),ILD_NORMAL),workAround?szChangedProto:NULL);
 		}
 	};
 

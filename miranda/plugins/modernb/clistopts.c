@@ -33,7 +33,7 @@ static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcItemNewRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcExtraIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static UINT expertOnlyControls[]={IDC_ALWAYSSTATUS};
@@ -1095,7 +1095,7 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 }
 
 
-#define NUM_ITEM_OPTION_PAGES 8
+#define NUM_ITEM_OPTION_PAGES 9
 
 typedef struct _ItemOptionConf 
 { 
@@ -1117,8 +1117,9 @@ typedef struct _WndItemsData
 	int selected_item;
 } WndItemsData; 
 
-static ItemOptionConf opt_items[] = { { _T("Row"), IDD_OPT_ITEM_ROW, DlgProcItemRowOpts },
-//{ _T("Row design"), IDD_OPT_ITEM_NEWROW, DlgProcItemNewRowOpts },
+static ItemOptionConf opt_items[] = { 
+{ _T("Row"), IDD_OPT_ITEM_ROW, DlgProcItemRowOpts },
+{ _T("Row design"), IDD_OPT_ROWTMPL, DlgTmplEditorOpts },
 { _T("Avatar"), IDD_OPT_ITEM_AVATAR, DlgProcItemAvatarOpts },
 { _T("Icon"), IDD_OPT_ITEM_ICON, DlgProcItemIconOpts },
 { _T("Contact time"), IDD_OPT_ITEM_CONTACT_TIME, DlgProcItemContactTimeOpts },

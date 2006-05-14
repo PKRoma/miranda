@@ -79,6 +79,7 @@ CLEAN :
 	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\rowheight_funcs.obj"
+	-@erase "$(INTDIR)\rowtemplateopt.obj"
 	-@erase "$(INTDIR)\SkinEditor.obj"
 	-@erase "$(INTDIR)\SkinEngine.obj"
 	-@erase "$(INTDIR)\SkinOpt.obj"
@@ -136,15 +137,16 @@ LINK32_OBJS= \
 	"$(INTDIR)\keyboard.obj" \
 	"$(INTDIR)\mod_skin_selector.obj" \
 	"$(INTDIR)\modern_button.obj" \
+	"$(INTDIR)\modern_row.obj" \
 	"$(INTDIR)\modern_statusbar.obj" \
 	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\SkinEditor.obj" \
 	"$(INTDIR)\SkinEngine.obj" \
 	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\modern_row.obj" \
-	"$(INTDIR)\SkinEditor.obj"
+	"$(INTDIR)\rowtemplateopt.obj"
 
 "..\..\bin\release\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -199,6 +201,7 @@ CLEAN :
 	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\rowheight_funcs.obj"
+	-@erase "$(INTDIR)\rowtemplateopt.obj"
 	-@erase "$(INTDIR)\SkinEditor.obj"
 	-@erase "$(INTDIR)\SkinEngine.obj"
 	-@erase "$(INTDIR)\SkinOpt.obj"
@@ -257,15 +260,16 @@ LINK32_OBJS= \
 	"$(INTDIR)\keyboard.obj" \
 	"$(INTDIR)\mod_skin_selector.obj" \
 	"$(INTDIR)\modern_button.obj" \
+	"$(INTDIR)\modern_row.obj" \
 	"$(INTDIR)\modern_statusbar.obj" \
 	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\SkinEditor.obj" \
 	"$(INTDIR)\SkinEngine.obj" \
 	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\modern_row.obj" \
-	"$(INTDIR)\SkinEditor.obj"
+	"$(INTDIR)\rowtemplateopt.obj"
 
 "..\..\bin\debug\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -320,6 +324,7 @@ CLEAN :
 	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\rowheight_funcs.obj"
+	-@erase "$(INTDIR)\rowtemplateopt.obj"
 	-@erase "$(INTDIR)\SkinEditor.obj"
 	-@erase "$(INTDIR)\SkinEngine.obj"
 	-@erase "$(INTDIR)\SkinOpt.obj"
@@ -377,15 +382,16 @@ LINK32_OBJS= \
 	"$(INTDIR)\keyboard.obj" \
 	"$(INTDIR)\mod_skin_selector.obj" \
 	"$(INTDIR)\modern_button.obj" \
+	"$(INTDIR)\modern_row.obj" \
 	"$(INTDIR)\modern_statusbar.obj" \
 	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\SkinEditor.obj" \
 	"$(INTDIR)\SkinEngine.obj" \
 	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\modern_row.obj" \
-	"$(INTDIR)\SkinEditor.obj"
+	"$(INTDIR)\rowtemplateopt.obj"
 
 "..\..\bin\release Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -440,6 +446,7 @@ CLEAN :
 	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\rowheight_funcs.obj"
+	-@erase "$(INTDIR)\rowtemplateopt.obj"
 	-@erase "$(INTDIR)\SkinEditor.obj"
 	-@erase "$(INTDIR)\SkinEngine.obj"
 	-@erase "$(INTDIR)\SkinOpt.obj"
@@ -497,15 +504,16 @@ LINK32_OBJS= \
 	"$(INTDIR)\keyboard.obj" \
 	"$(INTDIR)\mod_skin_selector.obj" \
 	"$(INTDIR)\modern_button.obj" \
+	"$(INTDIR)\modern_row.obj" \
 	"$(INTDIR)\modern_statusbar.obj" \
 	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\SkinEditor.obj" \
 	"$(INTDIR)\SkinEngine.obj" \
 	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\modern_row.obj" \
-	"$(INTDIR)\SkinEditor.obj"
+	"$(INTDIR)\rowtemplateopt.obj"
 
 "..\..\bin\debug Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1713,6 +1721,11 @@ SOURCE=.\movetogroup.c
 SOURCE=.\rowheight_funcs.c
 
 "$(INTDIR)\rowheight_funcs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
+
+
+SOURCE=.\rowtemplateopt.c
+
+"$(INTDIR)\rowtemplateopt.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
 
 
 SOURCE=.\SkinEditor.c

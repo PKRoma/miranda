@@ -106,12 +106,12 @@ int arrlen;
 static int OrderEnumProc (const char *szSetting,LPARAM lParam)
 {
 
-	if (szSetting==NULL) return 1;
-	if (!WildCompare((char*) szSetting,(char *) lParam,0)) return 1;
+	if (szSetting==NULL) return 0;
+	if (!WildCompare((char*) szSetting,(char *) lParam,0)) return 0;
 	arrlen++;
 	settingname=(char **)realloc(settingname,arrlen*sizeof(char *));
 	settingname[arrlen-1]=_strdup(szSetting);
-	return 1;
+	return 0;
 };
 
 int  DeleteAllSettingInOrder()

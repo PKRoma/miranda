@@ -273,7 +273,7 @@ int static OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 	
 	clmi.cbSize=sizeof(clmi);
 	clmi.flags=CMIM_ICON;
-	clmi.hIcon=ImageList_GetIcon(hCListImages,NewGroupIconidx,0);
+	clmi.hIcon=mod_ImageList_GetIcon(hCListImages,NewGroupIconidx,0);
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hNewSubGroupMenuItem,(LPARAM)&clmi);
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hNewGroupMenuItem,(LPARAM)&clmi);
 	//
@@ -394,7 +394,7 @@ void InitGroupMenus(void)
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=100000;
-	mi.hIcon=ImageList_GetIcon(hCListImages,NewGroupIconidx,0);
+	mi.hIcon=mod_ImageList_GetIcon(hCListImages,NewGroupIconidx,0);
 	mi.pszService=MS_CLIST_GROUPCREATE;
 	mi.pszName=Translate("&New Group");	
 	hNewGroupMenuItem=(HANDLE)AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
@@ -764,7 +764,7 @@ void InitSubGroupMenus(void)
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=1000;
-	mi.hIcon=ImageList_GetIcon(hCListImages,NewGroupIconidx,0);
+	mi.hIcon=mod_ImageList_GetIcon(hCListImages,NewGroupIconidx,0);
 	mi.pszService="CLISTMENUSSubGroup/GroupMenuExecProxy";
 	mi.pszName=Translate("&New SubGroup");	
 	gmp.lParam=0;gmp.wParam=POPUP_NEWSUBGROUP;

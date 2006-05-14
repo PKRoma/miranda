@@ -541,9 +541,10 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (object_clipboard) mir_free(object_clipboard);
 			break;
 		}
-	case WM_SHOWWINDOW:
+	case WM_WINDOWPOSCHANGED:
 		{
-			if (wParam==TRUE && lParam==0)
+			WINDOWPOS * wp=(WINDOWPOS *)lParam;
+			if (lParam && wp->flags&SWP_SHOWWINDOW)
 			{
 				if (glOtherSkinWasLoaded)
 				{

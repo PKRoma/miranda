@@ -239,7 +239,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 		{			
 			if (pdnce->protoNotExists || !pdnce->szProto)
 			{
-				pdnce->name=(TranslateT("(Unknown Contact)"));
+				pdnce->name=UnknownConctactTranslatedName;
 				pdnce->isUnknown=TRUE;
 			}
 			else
