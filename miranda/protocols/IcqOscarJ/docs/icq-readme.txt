@@ -93,9 +93,17 @@ Improvements:
   Display error messages using PopUp Plugin
   Support for Iconlib Plugin
   Support for unicode database module (clist data)
-  Level 2 Rate management for Status & Xtraz replies, Xtraz requests (useful with many contaccts in list)
+  Level 2 Rate management for Status & Xtraz replies, Xtraz requests (useful with many contacts in list)
   Full unicode/ansi support (2in1)
   Support for Updater Plugin
+  Added support for Flash Avatars Service Plugin
+  Added ability to upload own flash avatar - XML file (thx Big Muscle)
+
+
+0.3.5.3
+
+Bugfixes:
+  Fixed losing of almost all messages (protocol change)
 
 
 0.3.5.2
@@ -282,8 +290,7 @@ http://bugs.miranda-im.org/
 Contact
 _______
 
-Current maintainer is Joe @ Whale, jokusoftware at users.sourceforge.net
-                      Martin Öberg, strickz at miranda-im.org
+Current maintainer is Joe @ Whale, jokusoftware at miranda-im.org
 
 
 
@@ -303,7 +310,7 @@ Database items (usually at Contact\ICQ):
 Database items for Main Contact (usually at Settings\ICQ):
 (BYTE)InfoUpdate - Threshold in DAYS for updating user info (restart is needed) - default is 14 days
 
-(BYTE)PrivacyItems = 1 - adds more privacy tools to contact menu
+(BYTE)PrivacyItems = 1 - adds more privacy tools to contact menu (e.g. Revoke Authorization)
 
 
 
