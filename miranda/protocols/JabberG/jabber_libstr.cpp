@@ -51,11 +51,26 @@ char* __stdcall rtrim( char *string )
 {
    char* p = string + strlen( string ) - 1;
 
-   while ( p >= string )
-   {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
+   while ( p >= string ) {
+		if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
          break;
 
 		*p-- = 0;
    }
    return string;
 }
+
+#if defined( _UNICODE )
+TCHAR* __stdcall rtrim( TCHAR *string )
+{
+   TCHAR* p = string + _tcslen( string ) - 1;
+
+   while ( p >= string ) {
+		if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
+         break;
+
+		*p-- = 0;
+   }
+   return string;
+}
+#endif

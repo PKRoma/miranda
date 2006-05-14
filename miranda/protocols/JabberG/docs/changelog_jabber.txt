@@ -6,6 +6,7 @@ Legend:
 
 Version 0.4.3.2
 ===============
+[!] bug #0000581 fixed: People are trying to connect to jabber.org with empty usernames
 [!] bugfix for the unencoded jids
 
 Version 0.4.3.1

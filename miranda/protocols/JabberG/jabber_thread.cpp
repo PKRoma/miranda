@@ -184,6 +184,12 @@ LBL_Exit:
 			return;
 		}
 
+		if ( *rtrim(info->username) == '\0' ) {
+			JabberLog( "Thread ended, login name is not configured" );
+			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
+			goto LBL_FatalError;
+		}
+
 		if ( !DBGetContactSetting( NULL, jabberProtoName, "LoginServer", &dbv )) {
 			strncpy( info->server, dbv.pszVal, SIZEOF( info->server )-1 );
 			JFreeVariant( &dbv );
