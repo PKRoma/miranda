@@ -66,6 +66,7 @@ int UniWriteContactSettingUtf(HANDLE hContact, const char *szModule,const char* 
 
 int ICQFreeVariant(DBVARIANT* dbv);
 
+int IsICQContact(HANDLE hContact);
 HANDLE ICQFindFirstContact();
 HANDLE ICQFindNextContact(HANDLE hContact);
 

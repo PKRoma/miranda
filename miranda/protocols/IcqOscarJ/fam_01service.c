@@ -466,14 +466,17 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             { // we have different avatar, sync that
               if (ICQGetContactSettingByte(NULL, "ForceOurAvatar", 1))
               { // we want our avatar, update hash
-                char* pHash = _alloca(0x12);
+                DWORD dwPaFormat = DetectAvatarFormat(file);
+                char* pHash = _alloca(0x14);
 
                 NetLog_Server("Our avatar is different, set our new hash.");
 
-                pHash[0] = 1; // state of the hash
-                pHash[1] = 0x10; // len of the hash
-                memcpy(pHash+2, hash, 0x10);
-                updateServAvatarHash(pHash, 0x12);
+                pHash[0] = 0;
+                pHash[1] = dwPaFormat == PA_FORMAT_XML ? 8 : 1;
+                pHash[2] = 1; // state of the hash
+                pHash[3] = 0x10; // len of the hash
+                memcpy(pHash + 4, hash, 0x10);
+                updateServAvatarHash(pHash, 0x14);
               }
               else
               { // get avatar from server
@@ -495,6 +498,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         { // request to re-upload avatar data
           char* file;
           char* hash;
+          DWORD dwPaFormat;
 
           if (!gbSsiEnabled) break; // we could not change serv-list if it is disabled...
 
@@ -506,6 +510,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             LinkContactPhotoToFile(NULL, NULL);
             break;
           }
+          dwPaFormat = DetectAvatarFormat(file);
           hash = calcMD5Hash(file);
           if (!hash)
           { // the hash could not be calculated, remove from server
@@ -528,7 +533,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
             if (cbFileSize != 0)
             {
-              SetAvatarData(NULL, ppMap, cbFileSize);
+              SetAvatarData(NULL, (WORD)(dwPaFormat == PA_FORMAT_XML ? 8 : 1), ppMap, cbFileSize);
               LinkContactPhotoToFile(NULL, file);
             }
 
@@ -539,14 +544,16 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           }
           else
           {
-            char* pHash = _alloca(0x12);
+            char* pHash = _alloca(0x14);
 
             NetLog_Server("Our file is different, set our new hash.");
 
-            pHash[0] = 1; // state of the hash
-            pHash[1] = 0x10; // len of the hash
-            memcpy(pHash+2, hash, 0x10);
-            updateServAvatarHash(pHash, 0x12);
+            pHash[0] = 0;
+            pHash[1] = dwPaFormat == PA_FORMAT_XML ? 8 : 1;
+            pHash[2] = 1; // state of the hash
+            pHash[3] = 0x10; // len of the hash
+            memcpy(pHash + 4, hash, 0x10);
+            updateServAvatarHash(pHash, 0x14);
 
             SAFE_FREE(&hash);
           }

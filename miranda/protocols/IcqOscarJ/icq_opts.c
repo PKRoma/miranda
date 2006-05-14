@@ -398,7 +398,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       }
       
       SetDlgItemInt(hwndDlg, IDC_ICQPORT, ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT), FALSE);
-      LoadDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive", 0);
+      LoadDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive", 1);
       LoadDBCheckState(hwndDlg, IDC_USEGATEWAY, "UseGateway", 0);
       LoadDBCheckState(hwndDlg, IDC_SECURE, "SecureLogin", DEFAULT_SECURE_LOGIN);
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 3));

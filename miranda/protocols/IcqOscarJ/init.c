@@ -59,12 +59,12 @@ HANDLE hxstatusiconchanged;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,16),
+  PLUGIN_MAKE_VERSION(0,3,6,17),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
-  "jokusoftware@users.sourceforge.net",
+  "jokusoftware@miranda-im.org",
   "(C) 2000-2006 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
-  "http://www.miranda-im.org/download/details.php?action=viewfile&id=1683",
+  "http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
   0,  //not transient
   0   //doesn't replace anything built-in
 };

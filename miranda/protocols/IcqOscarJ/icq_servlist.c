@@ -1719,10 +1719,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
     return 0;
 
   { // only our contacts will be handled
-    char* szProto;
-
-    szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)wParam, 0);
-    if (!strcmpnull(szProto, gpszICQProtoName))
+    if (IsICQContact((HANDLE)wParam))
       ;// our contact, fine; otherwise return
     else 
       return 0;

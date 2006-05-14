@@ -535,6 +535,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             NetLog_Server("Forcing simple messages (QNext client).");
             szClient = "QNext";
           }
+          else if (!hasCapRichText(caps, wLen) && CheckContactCapabilities(hContact, CAPF_UTF) && !dwFT1 && !dwFT2 && !dwFT3)
+          { // not really good, but no other option
+            szClient = "NanoICQ";
+          }
         }
         else if (wVersion == 0)
         {

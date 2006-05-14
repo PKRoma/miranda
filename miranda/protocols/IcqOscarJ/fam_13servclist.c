@@ -741,8 +741,6 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       {
         ICQDeleteContactSetting(NULL, "SrvAvatarID");
         FreeServerID(sc->wContactId, SSIT_ITEM);
-
-        setUserInfo();
       }
       break;
     }
@@ -1688,9 +1686,7 @@ void updateServVisibilityCode(BYTE bCode)
     packWord(&packet, wVisibilityID);       // EntryID
     packWord(&packet, SSI_ITEM_VISIBILITY); // EntryType
     packWord(&packet, 5);                   // Length in bytes of following TLV
-    packWord(&packet, 0xCA);                // TLV Type
-    packWord(&packet, 0x1);                 // TLV Length
-    packByte(&packet, bCode);               // TLV Value (visibility code)
+    packTLV(&packet, SSI_TLV_VISIBILITY, 1, &bCode);  // TLV (Visibility)
     sendServPacket(&packet);
     // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
     // ICQ_LISTS_CLI_MODIFYEND when modifying the visibility code
@@ -1706,14 +1702,69 @@ void updateServAvatarHash(char* pHash, int size)
   icq_packet packet;
   WORD wAvatarID;
   WORD wCommand;
+  DBVARIANT dbvHash;
+  int bResetHash = 0;
+  BYTE bName = 0;
+
+  if (!ICQGetContactSetting(NULL, "AvatarHash", &dbvHash))
+  {
+    bName = 0x30 + dbvHash.pbVal[1];
+
+    if (memcmp(pHash, dbvHash.pbVal, 2) != 0)
+    {
+      /** add code to remove old hash from server */
+      bResetHash = 1;
+    }
+    ICQFreeVariant(&dbvHash);
+  }
+
+  if (bResetHash) // start update session
+    sendAddStart(FALSE);
+
+  if (bResetHash || !pHash)
+  {
+    servlistcookie* ack;
+    DWORD dwCookie;
+
+    // Do we have a known server avatar ID?
+    if (wAvatarID = ICQGetContactSettingWord(NULL, "SrvAvatarID", 0))
+    {
+      ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
+      if (!ack) 
+      {
+        NetLog_Server("Cookie alloc failure.");
+        return; // out of memory, go away
+      }
+      ack->dwAction = SSA_REMOVEAVATAR; // update avatar hash
+      ack->wContactId = wAvatarID;
+      dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, 0, ack); // take cookie
+
+      // Build and send packet
+      serverPacketInit(&packet, (WORD)(20 + (bName ? 1 : 0)));
+      packFNACHeaderFull(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REMOVEFROMLIST, 0, dwCookie);
+      if (bName)
+      { // name
+        packWord(&packet, 1);
+        packByte(&packet, bName);             // Name
+      }
+      else
+        packWord(&packet, 0);                 // Name (null)
+      packWord(&packet, 0);                   // GroupID (0 if not relevant)
+      packWord(&packet, wAvatarID);           // EntryID
+      packWord(&packet, SSI_ITEM_BUDDYICON);  // EntryType
+      packWord(&packet, 0);                   // Length in bytes of following TLV
+      sendServPacket(&packet);
+    }
+  }
 
   if (pHash)
   {
     servlistcookie* ack;
     DWORD dwCookie;
+    WORD hashsize = size - 2;
 
     // Do we have a known server avatar ID? We should, unless we just subscribed to the serv-list for the first time
-    if ((wAvatarID = ICQGetContactSettingWord(NULL, "SrvAvatarID", 0)) == 0)
+    if (bResetHash || (wAvatarID = ICQGetContactSettingWord(NULL, "SrvAvatarID", 0)) == 0)
     {
       // No, create a new random ID
       wAvatarID = GenerateServerId(SSIT_ITEM);
@@ -1737,55 +1788,23 @@ void updateServAvatarHash(char* pHash, int size)
     dwCookie = AllocateCookie(CKT_SERVERLIST, wCommand, 0, ack); // take cookie
 
     // Build and send packet
-    serverPacketInit(&packet, (WORD)(29 + size));
+    serverPacketInit(&packet, (WORD)(29 + hashsize));
     packFNACHeaderFull(&packet, ICQ_LISTS_FAMILY, wCommand, 0, dwCookie);
-    packWord(&packet, 1);                   // Name length
-    packByte(&packet, '1');                 // Name
-    packWord(&packet, 0);                   // GroupID (0 if not relevant)
-    packWord(&packet, wAvatarID);           // EntryID
-    packWord(&packet, SSI_ITEM_BUDDYICON);  // EntryType
-    packWord(&packet, (WORD)(0x8 + size));  // Length in bytes of following TLV
-    packWord(&packet, 0x131);               // TLV Type (Name)
-    packWord(&packet, 0);                   // TLV Length (empty)
-    packWord(&packet, 0xD5);                // TLV Type
-    packWord(&packet, (WORD)size);          // TLV Length
-    packBuffer(&packet, pHash, (WORD)size); // TLV Value (avatar hash)
+    packWord(&packet, 1);                       // Name length
+    packByte(&packet, (BYTE)(0x30 + pHash[1])); // Name
+    packWord(&packet, 0);                       // GroupID (0 if not relevant)
+    packWord(&packet, wAvatarID);               // EntryID
+    packWord(&packet, SSI_ITEM_BUDDYICON);      // EntryType
+    packWord(&packet, (WORD)(0x8 + hashsize));  // Length in bytes of following TLV
+    packTLV(&packet, SSI_TLV_NAME, 0, NULL);                    // TLV (Name)
+    packTLV(&packet, SSI_TLV_AVATARHASH, hashsize, pHash + 2);  // TLV (Hash)
     sendServPacket(&packet);
     // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
     // ICQ_LISTS_CLI_MODIFYEND when modifying the avatar hash
   }
-  else
-  {
-    servlistcookie* ack;
-    DWORD dwCookie;
 
-    // Do we have a known server avatar ID?
-    if ((wAvatarID = ICQGetContactSettingWord(NULL, "SrvAvatarID", 0)) == 0)
-    {
-      return;
-    }
-    ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
-    if (!ack) 
-    {
-      NetLog_Server("Cookie alloc failure.");
-      return; // out of memory, go away
-    }
-    ack->dwAction = SSA_REMOVEAVATAR; // update avatar hash
-    ack->wContactId = wAvatarID;
-    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, 0, ack); // take cookie
-
-    // Build and send packet
-    serverPacketInit(&packet, 20);
-    packFNACHeaderFull(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REMOVEFROMLIST, 0, dwCookie);
-    packWord(&packet, 0);                   // Name (null)
-    packWord(&packet, 0);                   // GroupID (0 if not relevant)
-    packWord(&packet, wAvatarID);           // EntryID
-    packWord(&packet, SSI_ITEM_BUDDYICON);  // EntryType
-    packWord(&packet, 0);                   // Length in bytes of following TLV
-    sendServPacket(&packet);
-    // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
-    // ICQ_LISTS_CLI_MODIFYEND when modifying the avatar hash
-  }
+  if (bResetHash) // finish update session
+    sendAddEnd();
 }
 
 

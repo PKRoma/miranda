@@ -66,6 +66,7 @@ typedef struct avatarrequest_t
   char *szFile;
   char *pData;
   unsigned int cbData;
+  WORD wRef;
   void *pNext; // invalid, but reused - spare realloc
 } avatarrequest;
 
@@ -617,7 +618,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
 
 
 // upload avatar data to server
-int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
+int SetAvatarData(HANDLE hContact, WORD wRef, char* data, unsigned int datalen)
 { 
   avatarthreadstartinfo* atsi;
 
@@ -637,7 +638,7 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
 
     serverPacketInit(&packet, (WORD)(14 + datalen));
     packFNACHeaderFull(&packet, ICQ_AVATAR_FAMILY, ICQ_AVATAR_UPLOAD_REQUEST, 0, dwCookie);
-    packWord(&packet, 1); // unknown, probably reference
+    packWord(&packet, wRef); // unknown, probably reference
     packWord(&packet, (WORD)datalen);
     packBuffer(&packet, data, (unsigned short)datalen);
 
@@ -688,6 +689,7 @@ int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen)
     }
     memcpy(ar->pData, data, datalen); // copy the data
     ar->cbData = datalen;
+    ar->wRef = wRef;
     ar->pNext = pendingRequests;
     pendingRequests = ar;
   }
@@ -789,7 +791,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
             SAFE_FREE(&reqdata->hash); // as soon as it will be copied
             break;
           case 2: // set avatar
-            SetAvatarData(reqdata->hContact, reqdata->pData, reqdata->cbData);
+            SetAvatarData(reqdata->hContact, reqdata->wRef, reqdata->pData, reqdata->cbData);
 
             SAFE_FREE(&reqdata->pData);
             break;

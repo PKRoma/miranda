@@ -53,7 +53,7 @@ int DetectAvatarFormat(char* szFile);
 int IsAvatarSaved(HANDLE hContact, char* pHash);
 
 int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigned int hashlen, char* file);
-int SetAvatarData(HANDLE hContact, char* data, unsigned int datalen);
+int SetAvatarData(HANDLE hContact, WORD wRef, char* data, unsigned int datalen);
 
 void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen);
 void StopAvatarThread();

@@ -115,7 +115,6 @@ static void DeleteOtherContactsFromControl(HWND hCtrl)
 {
   HANDLE hContact;
   HANDLE hItem;
-  char *szProto;
 
   hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
   while (hContact)
@@ -123,8 +122,7 @@ static void DeleteOtherContactsFromControl(HWND hCtrl)
     hItem = (HANDLE)SendMessage(hCtrl, CLM_FINDCONTACT, (WPARAM)hContact, 0);
     if (hItem)
     {
-      szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-      if (strcmpnull(szProto, gpszICQProtoName))
+      if (!IsICQContact(hContact))
         SendMessage(hCtrl, CLM_DELETEITEM, (WPARAM)hItem, 0);
     }
     hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
@@ -975,24 +973,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
           case CLN_NEWCONTACT:
           case CLN_CONTACTMOVED:
             {
-//            HANDLE hContact;
-//            HANDLE hItem = ((NMCLISTCONTROL*)lParam)->hItem;
-//            char* szProto;
-
               // Delete non-icq contacts
               DeleteOtherContactsFromControl(GetDlgItem(hwndDlg, IDC_CLIST));
-/*              hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-              while (hContact)
-              {
-                if (hItem == (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0))
-                {
-                  szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-                  if (strcmpnull(szProto, gpszICQProtoName))
-                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_DELETEITEM, (WPARAM)hItem, 0);
-                  break; // exit loop
-                }
-                hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-              }*/
               if (hItemAll)
                 UpdateAllContactsCheckmark(GetDlgItem(hwndDlg, IDC_CLIST), hItemAll);
             }
@@ -1000,25 +982,10 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
           case CLN_LISTREBUILT:
             {
-//            HANDLE hContact;
-//            HANDLE hItem;
-//            char* szProto;
               int bCheck;
 
               // Delete non-icq contacts
               DeleteOtherContactsFromControl(GetDlgItem(hwndDlg, IDC_CLIST));
-/*              hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-              while (hContact)
-              {
-                hItem = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0);
-                if (hItem)
-                {
-                  szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-                  if (strcmpnull(szProto, gpszICQProtoName))
-                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_DELETEITEM, (WPARAM)hItem, 0);
-                }
-                hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-              }*/
 
               if (!bListInit) // do not enter twice
                 bCheck = UpdateCheckmarks(hwndDlg, NULL);

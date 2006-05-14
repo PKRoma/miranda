@@ -266,10 +266,12 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
     char* hash;
     HBITMAP avt;
 
-    avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
-    if (!avt) return iRet;
-    DeleteObject(avt);
-
+    if (dwPaFormat != PA_FORMAT_XML)
+    { // if it should be image, check if it is valid
+      avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
+      if (!avt) return iRet;
+      DeleteObject(avt);
+    }
     GetFullAvatarFileName(0, NULL, dwPaFormat, szMyFile, MAX_PATH);
     if (!CopyFile(szFile, szMyFile, FALSE))
     {
@@ -283,11 +285,11 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
       char* ihash = (char*)_alloca(0x14);
       // upload hash to server
       ihash[0] = 0;    //unknown
-      ihash[1] = 1;    //hash type
+      ihash[1] = dwPaFormat == PA_FORMAT_XML ? 8 : 1; //hash type
       ihash[2] = 1;    //hash status
       ihash[3] = 0x10; //hash len
       memcpy(ihash+4, hash, 0x10);
-      updateServAvatarHash(ihash+2, 0x12);
+      updateServAvatarHash(ihash, 0x14);
 
       if (ICQWriteContactSettingBlob(NULL, "AvatarHash", ihash, 0x14))
       {
@@ -302,11 +304,11 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
   }
   else
   { // delete user avatar
-    BYTE bEmptyAvatar[7] = {0x00,0x05,0x02,0x01,0xD2,0x04,0x72};
+    BYTE bEmptyAvatar[9] = {0x00, 0x01, 0x00,0x05,0x02,0x01,0xD2,0x04,0x72};
 
     ICQDeleteContactSetting(NULL, "AvatarFile");
     ICQDeleteContactSetting(NULL, "AvatarHash");
-    updateServAvatarHash(bEmptyAvatar, 7); // clear hash on server
+    updateServAvatarHash(bEmptyAvatar, 9); // clear hash on server
     iRet = 0;
   }
 
@@ -1587,7 +1589,6 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
       int i;
       HANDLE* hContactsList = (HANDLE*)ccs->lParam;
       DWORD dwUin;
-      char* szProto;
       WORD wRecipientStatus;
       DWORD dwCookie;
 
@@ -1628,10 +1629,9 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
         if (contacts = (struct icq_contactsend_s*)SAFE_MALLOC(sizeof(struct icq_contactsend_s)*nContacts))
         {
           nBodyLength = 0;
-          for(i = 0; i < nContacts; i++)
+          for (i = 0; i < nContacts; i++)
           {
-            szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContactsList[i], 0);
-            if (strcmpnull(szProto, gpszICQProtoName))
+            if (!IsICQContact(hContactsList[i]))
               break; // Abort if a non icq contact is found
             if (ICQGetContactSettingUID(hContactsList[i], &contacts[i].uin, &szUid))
               break; // Abort if invalid contact

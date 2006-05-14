@@ -153,9 +153,7 @@ static int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
 {
   if (gbXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
   {
-    char* szProto =  (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
-
-    if (!strcmpnull(szProto, gpszICQProtoName))
+    if (IsICQContact((HANDLE)wParam))
     { // only apply icons to our contacts, do not mess others
       DWORD bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
 

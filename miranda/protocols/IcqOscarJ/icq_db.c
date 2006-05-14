@@ -304,12 +304,20 @@ int ICQFreeVariant(DBVARIANT* dbv)
 
 
 
+int IsICQContact(HANDLE hContact)
+{
+  char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+
+  return !strcmpnull(szProto, gpszICQProtoName);
+}
+
+
+
 HANDLE ICQFindFirstContact()
 {
   HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-  char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
-  if (!strcmpnull(szProto, gpszICQProtoName))
+  if (IsICQContact(hContact))
   {
     return hContact;
   }
@@ -324,8 +332,7 @@ HANDLE ICQFindNextContact(HANDLE hContact)
 
   while (hContact != NULL)
   {
-    char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-    if (!strcmpnull(szProto, gpszICQProtoName))
+    if (IsICQContact(hContact))
     {
       return hContact;
     }

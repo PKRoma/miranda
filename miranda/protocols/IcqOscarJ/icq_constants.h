@@ -356,6 +356,8 @@
 #define ICQ_SIGNON_NEW_UIN          0x0005
 #define ICQ_SIGNON_AUTH_REQUEST     0x0006
 #define ICQ_SIGNON_AUTH_KEY         0x0007
+#define ICQ_SIGNON_REQUEST_IMAGE    0x000C
+#define ICQ_SIGNON_REG_AUTH_IMAGE   0x000D
 
 // Class constants
 #define CLASS_UNCONFIRMED           0x0001
@@ -532,7 +534,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030610
+#define ICQ_PLUG_VERSION            0x80030611
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32
