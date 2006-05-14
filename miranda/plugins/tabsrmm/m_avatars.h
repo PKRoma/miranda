@@ -64,6 +64,7 @@ like MSN don't allow any outbound client communication when in invisible status 
 #define AVS_CUSTOMTRANSPBKG 32      // Bitmap was changed to set the background color transparent
 #define AVS_HASTRANSPARENCY 64      // Bitmap has at least one pixel transparent
 #define AVS_OWNAVATAR 128			// is own avatar entry
+#define AVS_NOTREADY  4096
 
 struct avatarCacheEntry {
     DWORD cbSize;                   // set to sizeof(struct)
@@ -74,11 +75,16 @@ struct avatarCacheEntry {
     DWORD t_lastAccess;            // last access time (currently unused, but plugins should still
                                     // use it whenever they access the avatar. may be used in the future
                                     // to implement cache expiration
-    LPVOID lpDIBSection;
+    LPVOID lpDIBSection;			// unused field
     char szFilename[MAX_PATH];      // filename of the avatar (absolute path)
 };
 
 typedef struct avatarCacheEntry AVATARCACHEENTRY;
+
+struct CacheNode {
+	struct CacheNode *pNextNode;
+	struct avatarCacheEntry ace;
+};
 
 #define AVDRQ_FALLBACKPROTO 1              // use the protocol picture as fallback (currently not used)
 #define AVDRQ_FAILIFNOTCACHED 2            // don't create a cache entry if it doesn't already exist. (currently not working)
@@ -86,6 +92,7 @@ typedef struct avatarCacheEntry AVATARCACHEENTRY;
 #define AVDRQ_DRAWBORDER 8                 // draw a border around the picture
 #define AVDRQ_PROTOPICT  16                // draw a protocol picture (if available).
 #define AVDRQ_HIDEBORDERONTRANSPARENCY 32  // hide border if bitmap has transparency
+#define AVDRQ_OWNPIC	64				   // draw own avatar (szProto is valid)
 
 // request to draw a contacts picture. See MS_AV_DRAWAVATAR service description
 
@@ -102,11 +109,10 @@ typedef struct _avatarDrawRequest {
     UCHAR  radius;                  // radius (used with AVDRQ_ROUNDEDCORNER)
     UCHAR  alpha;                   // alpha value for semi-transparent avatars (valid values form 1 to 255, if it is set to 0
                                     // the avatar won't be transparent.
-    char   *szProto;                // only used when AVDRQ_PROTOPICT is set
+    char   *szProto;                // only used when AVDRQ_PROTOPICT or AVDRQ_OWNPIC is set
 } AVATARDRAWREQUEST;
 
-#define INITIAL_AVATARCACHESIZE 300
-#define CACHE_GROWSTEP 50
+#define CACHE_BLOCKSIZE 20
 
 #define AVS_MODULE "AVS_Settings"          // db settings module path
 #define PPICT_MODULE "AVS_ProtoPics"   // protocol pictures are saved here
@@ -148,6 +154,22 @@ typedef struct _avatarDrawRequest {
 
 #define MS_AV_SETAVATAR "SV_Avatars/SetAvatar"
 
+// set a local picture for the given protocol
+// 
+// wParam = (char *) protocol name
+// lParam = either a full picture filename or NULL. If lParam == NULL, the service
+// will open a file selection dialog.
+
+#define MS_AV_SETMYAVATAR "SV_Avatars/SetMyAvatar"
+
+// see if is possible to set the avatar for the expecified protocol
+// 
+// wParam = (char *) protocol name
+// lParam = 0
+// return = 1 if can set, 0 if can't
+
+#define MS_AV_CANSETMYAVATAR "SV_Avatars/CanSetMyAvatar"
+
 // Call avatar option dialog for contact
 // 
 // wParam = (HANDLE)hContact
@@ -164,6 +186,7 @@ typedef struct _avatarDrawRequest {
 // return value: 0 -> failure, avatar probably not available, or not ready. The drawing
 // service DOES schedule an avatar update so your plugin will be notified by the ME_AV_AVATARCHANGED
 // event when the requested avatar is ready for use.
+//				 1 -> success. avatar was found and drawing should be ok.
 
 #define MS_AV_DRAWAVATAR "SV_Avatars/Draw"
 
@@ -184,5 +207,60 @@ typedef struct _avatarDrawRequest {
 // lParam = AVATARCACHEENTRY *ace (new cache entry, NULL if the new avatar is not valid)
  
 #define ME_AV_MYAVATARCHANGED "SV_Avatars/MyAvatarChanged"
+
+// Service to be called by protocols to report an avatar has changed. Some avatar changes
+// can be detected automatically, but some not (by now only Skype ones)
+// wParam = (char *)szProto (protocol for which a new avatar was set)
+// lParam = 0
+
+#define MS_AV_REPORTMYAVATARCHANGED "SV_Avatars/ReportMyAvatarChanged"
+
+
+
+// Bitmap services //////////////////////////////////////////////////////////////////////
+
+// Load an image
+// wParam = NULL
+// lParam = filename
+#define MS_AV_LOADBITMAP32 "SV_Avatars/LoadBitmap32"
+
+// Save an HBITMAP to an image
+// wParam = HBITMAP
+// lParam = full path of filename
+#define MS_AV_SAVEBITMAP "SV_Avatars/SaveBitmap"
+
+// Returns != 0 if can save that type of image, = 0 if cant
+// wParam = 0
+// lParam = PA_FORMAT_*   // image format
+#define MS_AV_CANSAVEBITMAP "SV_Avatars/CanSaveBitmap"
+
+
+#define RESIZEBITMAP_STRETCH 0				// Distort bitmap to size in (max_width, max_height)
+#define RESIZEBITMAP_KEEP_PROPORTIONS 1		// Keep bitmap proportions (probabily only one of the 
+											// max_width/max_height will be respected, and the other will be
+											// smaller)
+#define RESIZEBITMAP_CROP 2					// Keep bitmap proportions but crop it to fix exactly in (max_width, max_height)
+											// Some image info outside will be lost
+#define RESIZEBITMAP_MAKE_SQUARE 3			// Image will be allways square. Image will be croped and the size
+											// returned will be min(max_width, max_height)
+
+#define RESIZEBITMAP_FLAG_DONT_GROW	0x1000	// If set, the image will not grow. Else, it will grow to fit the max width/height
+
+typedef struct {
+	size_t size; // sizeof(ResizeBitmap);
+
+	HBITMAP hBmp;
+
+	int max_width;
+	int max_height;
+
+	int fit; // One of: RESIZEBITMAP_*
+} ResizeBitmap;
+
+// Returns a copy of the bitmap with the size especified or the original bitmap if nothing has to be changed
+// wParam = ResizeBitmap *
+// lParam = NULL
+#define MS_AV_RESIZEBITMAP "SV_Avatars/ResizeBitmap"
+
 
 #endif
