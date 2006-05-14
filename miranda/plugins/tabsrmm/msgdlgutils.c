@@ -56,6 +56,49 @@ struct RTFColorTable rtf_ctable[] = {
     NULL, 0, 0, 0
 };
 
+static void SaveAvatarToFile(struct MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
+{
+    char szFinalPath[MAX_PATH];
+    char szFinalFilename[MAX_PATH];
+    char szBaseName[MAX_PATH];
+    char szTimestamp[100];
+    OPENFILENAMEA ofn = {0};
+    time_t t = time(NULL);
+    struct tm *lt = localtime(&t);
+
+    mir_snprintf(szTimestamp, 100, "%04u %02u %02u_%02u%02u", lt->tm_year + 1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min);
+
+    mir_snprintf(szFinalPath, MAX_PATH, "%sSaved Contact Pictures\\%s", myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+    if(CreateDirectoryA(szFinalPath, 0) == 0) {
+        if(GetLastError() != ERROR_ALREADY_EXISTS) {
+            MessageBox(0, TranslateT("Error creating destination directory"), TranslateT("Save contact picture"), MB_OK | MB_ICONSTOP);
+            return;
+        }
+    }
+    if(isOwnPic)
+        mir_snprintf(szBaseName, MAX_PATH, "My Avatar_%s", szTimestamp);
+    else
+        mir_snprintf(szBaseName, MAX_PATH, "%s_%s", dat->uin, szTimestamp);
+
+    mir_snprintf(szFinalFilename, MAX_PATH, "%s.png", szBaseName);
+    ofn.lpstrDefExt = "png";
+    if(CallService(MS_AV_CANSAVEBITMAP, 0, PA_FORMAT_PNG) == 0) {
+        ofn.lpstrDefExt = "bmp";
+        mir_snprintf(szFinalFilename, MAX_PATH, "%s.bmp", szBaseName);
+    }
+
+    ofn.lpstrFilter = "Image files\0*.bmp;*.png;*.jpg;*.gif\0\0";
+    ofn.lStructSize= OPENFILENAME_SIZE_VERSION_400;
+    ofn.hwndOwner=0;
+    ofn.lpstrFile = szFinalFilename;
+    ofn.lpstrInitialDir = szFinalPath;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.nMaxFileTitle = MAX_PATH;
+    ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
+    if(GetSaveFileNameA(&ofn))
+        CallService(MS_AV_SAVEBITMAP, (WPARAM)hbm, szFinalFilename);
+}
+
 /*
  * flash a tab icon if mode = true, otherwise restore default icon
  * store flashing state into bState
@@ -288,6 +331,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         mii.cbSize = sizeof(mii);
         mii.fMask = MIIM_STRING;
         
+        EnableMenuItem(submenu, ID_PICMENU_SAVETHISPICTUREAS, MF_BYCOMMAND | (ServiceExists(MS_AV_SAVEBITMAP) ? MF_ENABLED : MF_GRAYED));
         EnableMenuItem(submenu, ID_PICMENU_TOGGLEAVATARDISPLAY, MF_BYCOMMAND | (myGlobals.m_AvatarMode == 2 ? MF_ENABLED : MF_GRAYED));
         CheckMenuItem(submenu, ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH, MF_BYCOMMAND | (myGlobals.m_AlwaysFullToolbarWidth ? MF_CHECKED : MF_UNCHECKED));
         if(!(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) {
@@ -306,8 +350,8 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         SetMenuItemInfoA(submenu, ID_PICMENU_SETTINGS, FALSE, &mii);
     }
     else if(menuID == MENU_PANELPICMENU) {
-        CheckMenuItem(submenu, ID_PANELPICMENU_DISABLEAUTOMATICAVATARUPDATES, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "noremoteavatar", 0) == 1) ? MF_CHECKED : MF_UNCHECKED);
         EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(MS_AV_GETAVATARBITMAP) ? MF_ENABLED : MF_GRAYED));
+        EnableMenuItem(submenu, ID_PANELPICMENU_SAVETHISPICTUREAS, MF_BYCOMMAND | (ServiceExists(MS_AV_SAVEBITMAP) ? MF_ENABLED : MF_GRAYED));
     }
     return 0;
 }
@@ -365,6 +409,20 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 myGlobals.m_AlwaysFullToolbarWidth = !myGlobals.m_AlwaysFullToolbarWidth;
                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", myGlobals.m_AlwaysFullToolbarWidth);
                 WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
+                break;
+            case ID_PICMENU_SAVETHISPICTUREAS:
+                if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+                    if(dat)
+                        SaveAvatarToFile(dat, dat->hOwnPic, 1);
+                }
+                else {
+                    if(dat && dat->ace)
+                        SaveAvatarToFile(dat, dat->ace->hbmPic, 0);
+                }
+                break;
+            case ID_PANELPICMENU_SAVETHISPICTUREAS:
+                if(dat && dat->ace)
+                    SaveAvatarToFile(dat, dat->ace->hbmPic, 0);
                 break;
             case ID_PICMENU_CHOOSEBACKGROUNDCOLOR:
             case ID_PANELPICMENU_CHOOSEBACKGROUNDCOLOR:
@@ -1697,6 +1755,8 @@ void GetDataDir()
     mir_snprintf(pszDataPath, MAX_PATH, "%sskins\\", myGlobals.szDataPath);
     CreateDirectoryA(pszDataPath, NULL);
     mir_snprintf(pszDataPath, MAX_PATH, "%sthemes\\", myGlobals.szDataPath);
+    CreateDirectoryA(pszDataPath, NULL);
+    mir_snprintf(pszDataPath, MAX_PATH, "%sSaved Contact Pictures\\", myGlobals.szDataPath);
     CreateDirectoryA(pszDataPath, NULL);
 }
 
