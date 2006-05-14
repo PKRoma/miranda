@@ -447,20 +447,19 @@ static void JabberXmlRemoveChild( XmlNode *node, XmlNode *child )
 
 XmlNode *JabberXmlCopyNode( XmlNode *node )
 {
-	XmlNode *n;
-	int i;
+	if ( node == NULL )
+		return NULL;
 
-	if ( node == NULL ) return NULL;
-	n = ( XmlNode * ) mir_alloc( sizeof( XmlNode ));
+	XmlNode *n = new XmlNode( node->name );
 	// Copy attributes
 	if ( node->numAttr > 0 ) {
 		n->attr = ( XmlAttr ** ) mir_alloc( node->numAttr*sizeof( XmlAttr * ));
-		for ( i=0; i<node->numAttr; i++ ) {
-			n->attr[i] = ( XmlAttr * ) mir_alloc( sizeof( XmlAttr ));
-			if ( node->attr[i]->name ) n->attr[i]->name = mir_strdup( node->attr[i]->name );
-			else n->attr[i]->name = NULL;
-			if ( node->attr[i]->value ) n->attr[i]->value = mir_tstrdup( node->attr[i]->value );
-			else n->attr[i]->value = NULL;
+		for ( int i=0; i < node->numAttr; i++ ) {
+			n->attr[i] = new XmlAttr;
+			if ( node->attr[i]->name )
+				n->attr[i]->name = mir_strdup( node->attr[i]->name );
+			if ( node->attr[i]->value )
+				n->attr[i]->value = mir_tstrdup( node->attr[i]->value );
 		}
 	}
 	else
@@ -468,7 +467,7 @@ XmlNode *JabberXmlCopyNode( XmlNode *node )
 	// Recursively copy children
 	if ( node->numChild > 0 ) {
 		n->child = ( XmlNode ** ) mir_alloc( node->numChild*sizeof( XmlNode * ));
-		for ( i=0; i<node->numChild; i++ )
+		for ( int i=0; i<node->numChild; i++ )
 			n->child[i] = JabberXmlCopyNode( node->child[i] );
 	}
 	else
@@ -480,9 +479,7 @@ XmlNode *JabberXmlCopyNode( XmlNode *node )
 	n->maxNumChild = node->numChild;
 	n->depth = node->depth;
 	n->state = node->state;
-	n->name = ( node->name )?mir_strdup( node->name ):NULL;
 	n->text = ( node->text )?mir_tstrdup( node->text ):NULL;
-
 	return n;
 }
 

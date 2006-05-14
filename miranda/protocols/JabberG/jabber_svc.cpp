@@ -325,8 +325,6 @@ int JabberContactDeleted( WPARAM wParam, LPARAM lParam )
 
 static TCHAR* sttSettingToTchar( DBCONTACTWRITESETTING* cws )
 {
-	TCHAR* result;
-
 	switch( cws->value.type ) {
 	case DBVT_ASCIIZ:	
 		#if defined( _UNICODE )
@@ -337,8 +335,10 @@ static TCHAR* sttSettingToTchar( DBCONTACTWRITESETTING* cws )
 
 	case DBVT_UTF8:
 		#if defined( _UNICODE )
+		{	TCHAR* result;
 			JabberUtf8Decode( NEWSTR_ALLOCA(cws->value.pszVal), &result );
 			return result;
+		}
 		#else
 			return mir_strdup( JabberUtf8Decode( NEWSTR_ALLOCA(cws->value.pszVal), NULL ));
 		#endif

@@ -393,7 +393,7 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 				JABBER_LIST_ITEM* item = JabberListGetItemPtrFromIndex( index );
 				if ( item->status != ID_STATUS_OFFLINE ) {
 					// Add every non-offline users to the combobox
-					int n = SendMessageA( hwndComboBox, CB_ADDSTRING, 0, ( LPARAM )item->jid );
+					int n = SendMessage( hwndComboBox, CB_ADDSTRING, 0, ( LPARAM )item->jid );
 					SendMessage( hwndComboBox, CB_SETITEMDATA, n, ( LPARAM )item->jid );
 				}
 				index++;
@@ -405,28 +405,25 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 		switch ( LOWORD( wParam )) {
 		case IDC_INVITE:
 			{
-				char text[256], user[256], *pUser;
-				char* room;
-				HWND hwndComboBox;
-				int iqId, n;
-
-				hwndComboBox = GetDlgItem( hwndDlg, IDC_USER );
-				if (( room=( char* )GetWindowLong( hwndDlg, GWL_USERDATA )) != NULL ) {
-					n = SendMessage( hwndComboBox, CB_GETCURSEL, 0, 0 );
+				char* room = ( char* )GetWindowLong( hwndDlg, GWL_USERDATA );
+				if ( room != NULL ) {
+					TCHAR text[256], user[256], *pUser;
+					HWND hwndComboBox = GetDlgItem( hwndDlg, IDC_USER );
+					int n = SendMessage( hwndComboBox, CB_GETCURSEL, 0, 0 );
 					if ( n < 0 ) {
-						GetWindowTextA( hwndComboBox, user, sizeof( user ));
+						GetWindowText( hwndComboBox, user, SIZEOF( user ));
 						pUser = user;
 					}
-					else pUser = ( char* )SendMessage( hwndComboBox, CB_GETITEMDATA, n, 0 );
+					else pUser = ( TCHAR* )SendMessage( hwndComboBox, CB_GETITEMDATA, n, 0 );
 
 					if ( pUser != NULL ) {
-						GetDlgItemTextA( hwndDlg, IDC_REASON, text, sizeof( text ));
-						iqId = JabberSerialNext();
+						GetDlgItemText( hwndDlg, IDC_REASON, text, SIZEOF( text ));
+						int iqId = JabberSerialNext();
 
-						XmlNode m( "message" ); m.addAttrID( iqId ); m.addAttr( "to", room );
-						XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "http://jabber.org/protocol/muc#user" );
-						XmlNode* i = m.addChild( "invite" ); i->addAttr( "to", pUser );
-						m.addChild( "reason", text );
+						XmlNode m( "message" ); m.addAttr( "from", room ); m.addAttr( "to", pUser ); m.addAttrID( iqId ); m.addAttr( "type", "normal" );
+						XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", _T("http://jabber.org/protocol/muc#user"));
+						XmlNode* i = x->addChild( "invite" ); i->addAttr( "to", pUser ); i->addChild( "reason", text );
+						x = m.addChild( "x", text ); x->addAttr( "xmlns", _T("jabber:x:conference")); x->addAttr( "jid", room );
 						JabberSend( jabberThreadInfo->s, m );
 			}	}	}
 			// Fall through

@@ -189,7 +189,7 @@ HANDLE JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stri
 		szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
 		if ( szProto!=NULL && !strcmp( jabberProtoName, szProto )) {
 			DBVARIANT dbv;
-			if ( !JGetStringUtf( hContact, "jid", &dbv )) {
+			if ( !JGetStringT( hContact, "jid", &dbv )) {
 				p = dbv.ptszVal;
 				if ( p && ( int )_tcslen( p )>=len && ( p[len]=='\0'||p[len]=='/' ) && !_tcsnicmp( p, s, len )) {
 					JFreeVariant( &dbv );
