@@ -3,6 +3,8 @@
 // Used by IRC.rc
 //
 #define ID_INFO_QUERY                   3
+#define IDD_PREFS_MAIN                  101
+#define IDC_OPTIONSTAB                  102
 #define IDD_PREFS_CONNECT               103
 #define IDD_INFO                        106
 #define IDD_NICK                        107

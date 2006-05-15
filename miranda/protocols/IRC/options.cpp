@@ -2149,6 +2149,127 @@ BOOL CALLBACK IgnorePrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 return (false);
 }
 
+static HWND hwndConn = 0, hwndCtcp = 0, hwndOther = 0, hwndIgnore = 0;
+
+static void SetOptionsDlgToType(HWND hwnd, int iExpert)
+{
+	TCITEM tci;
+	RECT rcClient;
+	HWND hwndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB);
+	int iPages = 0;
+
+	if(!hwndConn)
+		hwndConn = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_PREFS_CONNECT), hwnd, ConnectPrefsProc);
+
+	GetClientRect(hwnd, &rcClient);
+	TabCtrl_DeleteAllItems(hwndTab);
+
+	tci.mask = TCIF_PARAM|TCIF_TEXT;
+	tci.lParam = (LPARAM)hwndConn;
+	tci.pszText = Translate("Account");
+	TabCtrl_InsertItem(hwndTab, 0, &tci);
+	MoveWindow((HWND)tci.lParam, 5, 26, rcClient.right-8, rcClient.bottom-29, 1);
+	iPages++;
+
+	if(!hwndCtcp)
+		hwndCtcp = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_PREFS_CTCP), hwnd, CtcpPrefsProc);
+
+	if(!hwndOther)
+		hwndOther = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_PREFS_OTHER), hwnd, OtherPrefsProc);
+
+	if(!hwndIgnore)
+		hwndIgnore = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_PREFS_IGNORE), hwnd, IgnorePrefsProc);
+
+	ShowWindow(hwndCtcp, SW_HIDE);
+	ShowWindow(hwndOther, SW_HIDE);
+	ShowWindow(hwndIgnore, SW_HIDE);
+	ShowWindow(hwndConn, SW_SHOW);
+
+	if(iExpert) {
+		tci.lParam = (LPARAM)hwndCtcp;
+		tci.pszText = Translate("DCC 'n CTCP");
+		TabCtrl_InsertItem(hwndTab, iPages++, &tci);
+		MoveWindow((HWND)tci.lParam, 5, 26, rcClient.right-8, rcClient.bottom-29, 1);
+
+		tci.lParam = (LPARAM)hwndOther;
+		tci.pszText = Translate("Advanced");
+		TabCtrl_InsertItem(hwndTab, iPages++, &tci);
+		MoveWindow((HWND)tci.lParam, 5, 26, rcClient.right-8, rcClient.bottom-29, 1);
+
+		tci.lParam = (LPARAM)hwndIgnore;
+		tci.pszText = Translate("Ignore");
+		TabCtrl_InsertItem(hwndTab, iPages++, &tci);
+		MoveWindow((HWND)tci.lParam, 5, 26, rcClient.right-8, rcClient.bottom-29, 1);
+	}
+	TabCtrl_SetCurSel(hwndTab, 0);
+}
+
+// handle tabbed options dialog
+static BOOL CALLBACK TabsPrefsProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+   static int iInit = TRUE;
+
+	switch(msg) {
+	case WM_INITDIALOG:
+		{
+			iInit = TRUE;
+			int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
+			SetOptionsDlgToType(hwnd, iExpert);
+			iInit = FALSE;
+			return FALSE;
+	}
+	case WM_DESTROY:
+		hwndConn = hwndCtcp = hwndOther = hwndIgnore = 0;
+		break;
+	case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
+		if(!iInit)
+			SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
+		break;
+	case WM_NOTIFY:
+		switch(((LPNMHDR)lParam)->idFrom) {
+		case 0:
+			switch (((LPNMHDR)lParam)->code) {
+			case PSN_APPLY:
+				{
+					TCITEM tci;
+					int i, count = TabCtrl_GetItemCount(GetDlgItem(hwnd, IDC_OPTIONSTAB));
+					tci.mask = TCIF_PARAM;
+					for (i=0;i<count;i++) {
+					  TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB), i, &tci);
+					  SendMessage((HWND)tci.lParam, WM_NOTIFY, 0, lParam);
+				}	}
+				break;
+			case PSN_EXPERTCHANGED:
+				{
+					int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
+					SetOptionsDlgToType(hwnd, iExpert);
+					break;
+			}	}
+			break;
+		case IDC_OPTIONSTAB:
+			switch (((LPNMHDR)lParam)->code) {
+			case TCN_SELCHANGING:
+				{
+					TCITEM tci;
+					tci.mask = TCIF_PARAM;
+					TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)), &tci);
+					ShowWindow((HWND)tci.lParam, SW_HIDE);
+				  break;
+				}
+			case TCN_SELCHANGE:
+				{
+					TCITEM tci;
+					tci.mask = TCIF_PARAM;
+					TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)), &tci);
+					ShowWindow((HWND)tci.lParam, SW_SHOW);
+					break;
+			}	}
+			break;
+		}
+		break;
+	}
+	return FALSE;
+}
 
 
 
@@ -2171,45 +2292,11 @@ int InitOptionsPages(WPARAM wParam,LPARAM lParam)
 
 	odp.cbSize = sizeof(odp);
 	odp.hInstance = g_hInstance;
-	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_CONNECT);
+	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_MAIN);
 	odp.pszTitle = ALTIRCPROTONAME;
 	odp.pszGroup = Translate("Network");
 	odp.flags=ODPF_BOLDGROUPS;
-	odp.pfnDlgProc = ConnectPrefsProc;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-
-	char Temp[256];
-	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize = sizeof(odp);
-	odp.hInstance = g_hInstance;
-	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_CTCP);
-	wsprintf(Temp, Translate("%s DCC 'n CTCP"), ALTIRCPROTONAME);
-	odp.pszTitle = Temp;
-	odp.pszGroup = Translate("Network");
-	odp.flags=ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
-	odp.pfnDlgProc = CtcpPrefsProc;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-
-	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize = sizeof(odp);
-	odp.hInstance = g_hInstance;
-	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_OTHER);
-	wsprintf(Temp, Translate("%s Advanced"), ALTIRCPROTONAME);
-	odp.pszTitle = Temp;
-	odp.pszGroup = Translate("Network");
-	odp.flags=ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
-	odp.pfnDlgProc = OtherPrefsProc;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-
-	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize = sizeof(odp);
-	odp.hInstance = g_hInstance;
-	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_IGNORE);
-	wsprintf(Temp, Translate("%s Ignore"), ALTIRCPROTONAME);
-	odp.pszTitle = Temp;
-	odp.pszGroup = Translate("Network");
-	odp.flags=ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
-	odp.pfnDlgProc = IgnorePrefsProc;
+	odp.pfnDlgProc = TabsPrefsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	return 0;
 }
