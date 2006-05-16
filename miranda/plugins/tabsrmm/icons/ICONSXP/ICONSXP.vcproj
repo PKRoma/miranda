@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="ICONSXP"
-	ProjectGUID="{11A82C38-840C-4F2B-99C4-97660D87781E}"
+	ProjectGUID="{987C5A57-A46B-4779-BB85-077E21F7BF7F}"
 	>
 	<Platforms>
 		<Platform
