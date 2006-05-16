@@ -3,6 +3,7 @@ SNAC::SNAC(char* buf,unsigned short length)
 {
 	service_=htons((*(unsigned short*)&buf[0]));
 	subgroup_=htons((*(unsigned short*)&buf[2]));
+	id_=htons((*(unsigned short*)&buf[8]));
 	value_=&buf[SNAC_SIZE];
 	length_=length;
 }
@@ -46,4 +47,8 @@ char* SNAC::val(int pos)
 unsigned short SNAC::len()
 {
 	return length_;
+}
+unsigned short SNAC::id()
+{
+	return id_;
 }

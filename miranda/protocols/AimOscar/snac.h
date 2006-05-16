@@ -8,6 +8,7 @@ private:
 	unsigned short service_;
 	unsigned short subgroup_;
 	unsigned short length_;
+	unsigned short id_;
 	char* value_;
 public:
 	SNAC(char* buf, unsigned short length);
@@ -19,5 +20,6 @@ public:
 	char* part(int pos, int length);
 	char* val(int pos=0);
 	unsigned short len();
+	unsigned short id();
 };
 #endif
