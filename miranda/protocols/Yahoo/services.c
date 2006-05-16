@@ -1021,10 +1021,7 @@ int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
 {
 	char tUrl[ 4096 ];
 	
-	if ( !yahooLoggedIn )
-		return 0;
-
-	if (YAHOO_GetByte( "MailAutoLogin", 0 ) ) {
+	if (YAHOO_GetByte( "MailAutoLogin", 0 ) && yahooLoggedIn) {
 		int   id = 1;
 		char  *y, *t;
 		
@@ -1054,8 +1051,34 @@ static int YahooRefreshCommand( WPARAM wParam, LPARAM lParam )
 		YAHOO_shownotification("ERROR", Translate("You need to be connected to refresh your buddy list"), NIIF_ERROR);
 		return 0;
 	}
-//	yahoo_refresh(ylad->id);
+
 	YAHOO_refresh();
+	return 0;
+}
+
+
+static int YahooABCommand( WPARAM wParam, LPARAM lParam )
+{
+	char tUrl[ 4096 ];
+	
+	if (YAHOO_GetByte( "MailAutoLogin", 0 ) && yahooLoggedIn) {
+		int   id = 1;
+		char  *y, *t;
+		
+		y = yahoo_urlencode(yahoo_get_cookie(id, "y"));
+		t = yahoo_urlencode(yahoo_get_cookie(id, "t"));
+		_snprintf( tUrl, sizeof( tUrl ), 
+				"http://msg.edit.yahoo.com/config/reset_cookies?&.y=Y=%s&.t=T=%s&.ver=2&.done=http%%3a//us.rd.yahoo.com/messenger/client/%%3fhttp%%3a//address.yahoo.com/yab/",
+				y, t);
+				
+		FREE(y);
+		FREE(t);
+	} else {
+		_snprintf( tUrl, sizeof( tUrl ), "http://address.yahoo.com/yab/" );
+	}
+	
+	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
+		
 	return 0;
 }
 
@@ -1551,8 +1574,8 @@ int LoadYahooServices( void )
     	lstrcpy( tDest, YAHOO_SHOW_MY_PROFILE );
     	CreateServiceFunction( servicefunction, YahooShowMyProfileCommand );
     	mi.position = 500090005;
-    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_YAHOO ));
-    	mi.pszName = Translate( "S&how My profile" );
+    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_PROFILE ));
+    	mi.pszName = Translate( "&My Profile" );
     	mi.pszService = servicefunction;
     	YahooMenuItems [ 1 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
     
@@ -1566,23 +1589,32 @@ int LoadYahooServices( void )
     	YahooMenuItems [ 2 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
         // Show refresh menu    
-    	strcpy( tDest, YAHOO_REFRESH );
-    	CreateServiceFunction( servicefunction, YahooRefreshCommand );
+    	strcpy( tDest, YAHOO_AB );
+    	CreateServiceFunction( servicefunction, YahooABCommand );
     	mi.position = 500090015;
     	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_YAHOO ));
-    	mi.pszName = Translate( "&Refresh" );
+    	mi.pszName = Translate( "&Address Book" );
     	mi.pszService = servicefunction;
     	YahooMenuItems [ 3 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
+		// Show refresh menu    
+    	strcpy( tDest, YAHOO_REFRESH );
+    	CreateServiceFunction( servicefunction, YahooRefreshCommand );
+    	mi.position = 500090015;
+    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_REFRESH ));
+    	mi.pszName = Translate( "&Refresh" );
+    	mi.pszService = servicefunction;
+    	YahooMenuItems [ 4 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+		
         // Show show profile menu    
     	strcpy( tDest, YAHOO_SHOW_PROFILE );
     	CreateServiceFunction( servicefunction, YahooShowProfileCommand );
     	mi.position = -2000006000;
-    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_YAHOO ));
-    	mi.pszName = Translate( "&Show profile" );
+    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_PROFILE ));
+    	mi.pszName = Translate( "&Show Profile" );
     	mi.pszService = servicefunction;
 		mi.pszContactOwner = yahooProtocolName;
-    	YahooMenuItems [ 4 ] = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+    	YahooMenuItems [ 5 ] = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
     
     	}
 	
@@ -1644,6 +1676,4 @@ int LoadYahooServices( void )
 	YAHOO_CreateProtoServiceFunction( PS_GETMYAVATAR, YahooGetMyAvatar);
 	return 0;
 }
-
-
 

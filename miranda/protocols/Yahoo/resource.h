@@ -11,10 +11,13 @@
  * and for answering some of my questions during development of this plugin.
  */
 
-#define IDI_ICON1                       101
+//#define IDI_ICON1                       101
 #define IDI_MAIN                        101
 #define IDI_YAHOO                       102
 #define IDI_INBOX                       103
+#define IDI_PROFILE                     104
+#define IDI_REFRESH                     105
+
 #define IDD_OPT_YAHOO_POPUP             107
 #define IDD_OPT_YAHOO                   185
 #define IDD_SETCUSTSTAT                 186
@@ -61,4 +64,3 @@
  *
  */
 #define IDC_STATIC                      -1
-
