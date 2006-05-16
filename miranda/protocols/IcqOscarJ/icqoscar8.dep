@@ -3,7 +3,46 @@
 .\resources.rc : \
 	".\changeinfo\expandst.ico"\
 	".\icos\icq.ico"\
-	".\icos\xstatus.bmp"\
+	".\icos\xstatus01.ico"\
+	".\icos\xstatus02.ico"\
+	".\icos\xstatus03.ico"\
+	".\icos\xstatus04.ico"\
+	".\icos\xstatus05.ico"\
+	".\icos\xstatus06.ico"\
+	".\icos\xstatus07.ico"\
+	".\icos\xstatus08.ico"\
+	".\icos\xstatus09.ico"\
+	".\icos\xstatus10.ico"\
+	".\icos\xstatus11.ico"\
+	".\icos\xstatus12.ico"\
+	".\icos\xstatus13.ico"\
+	".\icos\xstatus14.ico"\
+	".\icos\xstatus15.ico"\
+	".\icos\xstatus16.ico"\
+	".\icos\xstatus17.ico"\
+	".\icos\xstatus18.ico"\
+	".\icos\xstatus19.ico"\
+	".\icos\xstatus20.ico"\
+	".\icos\xstatus21.ico"\
+	".\icos\xstatus22.ico"\
+	".\icos\xstatus23.ico"\
+	".\icos\xstatus24.ico"\
+	".\icos\xstatus25.ico"\
+	".\icos\xstatus26.ico"\
+	".\icos\xstatus27.ico"\
+	".\icos\xstatus28.ico"\
+	".\icos\xstatus29.ico"\
+	".\icos\xstatus30.ico"\
+	".\icos\xstatus31.ico"\
+	".\icos\xstatus32.ico"\
+	
+
+.\init.c : \
+	".\m_updater.h"\
+	
+
+.\icq_popups.c : \
+	".\m_popupw.h"\
 	
 
 .\iconlib.c : \
@@ -17,6 +56,7 @@
 .\icqoscar.c : \
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_idle.h"\
@@ -37,6 +77,7 @@
 	".\capabilities.h"\
 	".\changeinfo\changeinfo.h"\
 	".\channels.h"\
+	".\cookies.h"\
 	".\directpackets.h"\
 	".\families.h"\
 	".\forkthread.h"\

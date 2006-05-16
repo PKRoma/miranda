@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source$
+// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/chan_01login.c,v $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$

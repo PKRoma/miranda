@@ -227,7 +227,7 @@
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
-				OmitFramePointers="TRUE"
+				OmitFramePointers="FALSE"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;MSN_EXPORTS"
 				StringPooling="TRUE"

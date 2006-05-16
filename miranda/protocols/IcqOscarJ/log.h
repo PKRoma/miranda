@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source$
+// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/log.h,v $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$

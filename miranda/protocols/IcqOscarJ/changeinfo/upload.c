@@ -21,7 +21,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source$
+// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/changeinfo/upload.c,v $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$

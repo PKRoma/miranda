@@ -25,10 +25,6 @@ NULL=
 NULL=nul
 !ENDIF 
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "icqoscar8 - Win32 Release"
 
 OUTDIR=.\Release
@@ -175,8 +171,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yu"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x417 /fo"$(INTDIR)\resources.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc" 
@@ -195,6 +225,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\fam_0bstatus.sbr" \
 	"$(INTDIR)\fam_13servclist.sbr" \
 	"$(INTDIR)\fam_15icqserver.sbr" \
+	"$(INTDIR)\fam_17signon.sbr" \
 	"$(INTDIR)\directpackets.sbr" \
 	"$(INTDIR)\icq_direct.sbr" \
 	"$(INTDIR)\icq_directmsg.sbr" \
@@ -220,6 +251,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\main.sbr" \
 	"$(INTDIR)\upload.sbr" \
 	"$(INTDIR)\capabilities.sbr" \
+	"$(INTDIR)\cookies.sbr" \
 	"$(INTDIR)\forkthread.sbr" \
 	"$(INTDIR)\i18n.sbr" \
 	"$(INTDIR)\iconlib.sbr" \
@@ -238,9 +270,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\md5.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
-	"$(INTDIR)\utilities.sbr" \
-	"$(INTDIR)\fam_17signon.sbr" \
-	"$(INTDIR)\cookies.sbr"
+	"$(INTDIR)\utilities.sbr"
 
 "$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -264,6 +294,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\fam_0bstatus.obj" \
 	"$(INTDIR)\fam_13servclist.obj" \
 	"$(INTDIR)\fam_15icqserver.obj" \
+	"$(INTDIR)\fam_17signon.obj" \
 	"$(INTDIR)\directpackets.obj" \
 	"$(INTDIR)\icq_direct.obj" \
 	"$(INTDIR)\icq_directmsg.obj" \
@@ -289,6 +320,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\upload.obj" \
 	"$(INTDIR)\capabilities.obj" \
+	"$(INTDIR)\cookies.obj" \
 	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\i18n.obj" \
 	"$(INTDIR)\iconlib.obj" \
@@ -308,9 +340,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utilities.obj" \
-	"$(INTDIR)\resources.res" \
-	"$(INTDIR)\fam_17signon.obj" \
-	"$(INTDIR)\cookies.obj"
+	"$(INTDIR)\resources.res"
 
 "..\..\bin\release\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -464,149 +494,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yu"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resources.res" /d "_DEBUG" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc" 
-BSC32_SBRS= \
-	"$(INTDIR)\chan_01login.sbr" \
-	"$(INTDIR)\chan_02data.sbr" \
-	"$(INTDIR)\chan_03error.sbr" \
-	"$(INTDIR)\chan_04close.sbr" \
-	"$(INTDIR)\chan_05ping.sbr" \
-	"$(INTDIR)\fam_01service.sbr" \
-	"$(INTDIR)\fam_02location.sbr" \
-	"$(INTDIR)\fam_03buddy.sbr" \
-	"$(INTDIR)\fam_04message.sbr" \
-	"$(INTDIR)\fam_09bos.sbr" \
-	"$(INTDIR)\fam_0alookup.sbr" \
-	"$(INTDIR)\fam_0bstatus.sbr" \
-	"$(INTDIR)\fam_13servclist.sbr" \
-	"$(INTDIR)\fam_15icqserver.sbr" \
-	"$(INTDIR)\directpackets.sbr" \
-	"$(INTDIR)\icq_direct.sbr" \
-	"$(INTDIR)\icq_directmsg.sbr" \
-	"$(INTDIR)\icq_filerequests.sbr" \
-	"$(INTDIR)\icq_filetransfer.sbr" \
-	"$(INTDIR)\icq_advsearch.sbr" \
-	"$(INTDIR)\icq_db.sbr" \
-	"$(INTDIR)\icqosc_svcs.sbr" \
-	"$(INTDIR)\init.sbr" \
-	"$(INTDIR)\log.sbr" \
-	"$(INTDIR)\askauthentication.sbr" \
-	"$(INTDIR)\icq_firstrun.sbr" \
-	"$(INTDIR)\icq_opts.sbr" \
-	"$(INTDIR)\icq_popups.sbr" \
-	"$(INTDIR)\icq_uploadui.sbr" \
-	"$(INTDIR)\loginpassword.sbr" \
-	"$(INTDIR)\userinfotab.sbr" \
-	"$(INTDIR)\constants.sbr" \
-	"$(INTDIR)\db.sbr" \
-	"$(INTDIR)\dlgproc.sbr" \
-	"$(INTDIR)\editlist.sbr" \
-	"$(INTDIR)\editstring.sbr" \
-	"$(INTDIR)\main.sbr" \
-	"$(INTDIR)\upload.sbr" \
-	"$(INTDIR)\capabilities.sbr" \
-	"$(INTDIR)\forkthread.sbr" \
-	"$(INTDIR)\i18n.sbr" \
-	"$(INTDIR)\iconlib.sbr" \
-	"$(INTDIR)\icq_avatar.sbr" \
-	"$(INTDIR)\icq_clients.sbr" \
-	"$(INTDIR)\icq_fieldnames.sbr" \
-	"$(INTDIR)\icq_http.sbr" \
-	"$(INTDIR)\icq_infoupdate.sbr" \
-	"$(INTDIR)\icq_packet.sbr" \
-	"$(INTDIR)\icq_rates.sbr" \
-	"$(INTDIR)\icq_server.sbr" \
-	"$(INTDIR)\icq_servlist.sbr" \
-	"$(INTDIR)\icq_xstatus.sbr" \
-	"$(INTDIR)\icq_xtraz.sbr" \
-	"$(INTDIR)\icqoscar.sbr" \
-	"$(INTDIR)\md5.sbr" \
-	"$(INTDIR)\stdpackets.sbr" \
-	"$(INTDIR)\tlv.sbr" \
-	"$(INTDIR)\utilities.sbr" \
-	"$(INTDIR)\fam_17signon.sbr" \
-	"$(INTDIR)\cookies.sbr"
-
-"$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
-    $(BSC32) @<<
-  $(BSC32_FLAGS) $(BSC32_SBRS)
-<<
-
-LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x25000000" /dll /incremental:yes /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /debugtype:both /machine:I386 /out:"../../bin/debug/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /pdbtype:sept 
-LINK32_OBJS= \
-	"$(INTDIR)\chan_01login.obj" \
-	"$(INTDIR)\chan_02data.obj" \
-	"$(INTDIR)\chan_03error.obj" \
-	"$(INTDIR)\chan_04close.obj" \
-	"$(INTDIR)\chan_05ping.obj" \
-	"$(INTDIR)\fam_01service.obj" \
-	"$(INTDIR)\fam_02location.obj" \
-	"$(INTDIR)\fam_03buddy.obj" \
-	"$(INTDIR)\fam_04message.obj" \
-	"$(INTDIR)\fam_09bos.obj" \
-	"$(INTDIR)\fam_0alookup.obj" \
-	"$(INTDIR)\fam_0bstatus.obj" \
-	"$(INTDIR)\fam_13servclist.obj" \
-	"$(INTDIR)\fam_15icqserver.obj" \
-	"$(INTDIR)\directpackets.obj" \
-	"$(INTDIR)\icq_direct.obj" \
-	"$(INTDIR)\icq_directmsg.obj" \
-	"$(INTDIR)\icq_filerequests.obj" \
-	"$(INTDIR)\icq_filetransfer.obj" \
-	"$(INTDIR)\icq_advsearch.obj" \
-	"$(INTDIR)\icq_db.obj" \
-	"$(INTDIR)\icqosc_svcs.obj" \
-	"$(INTDIR)\init.obj" \
-	"$(INTDIR)\log.obj" \
-	"$(INTDIR)\askauthentication.obj" \
-	"$(INTDIR)\icq_firstrun.obj" \
-	"$(INTDIR)\icq_opts.obj" \
-	"$(INTDIR)\icq_popups.obj" \
-	"$(INTDIR)\icq_uploadui.obj" \
-	"$(INTDIR)\loginpassword.obj" \
-	"$(INTDIR)\userinfotab.obj" \
-	"$(INTDIR)\constants.obj" \
-	"$(INTDIR)\db.obj" \
-	"$(INTDIR)\dlgproc.obj" \
-	"$(INTDIR)\editlist.obj" \
-	"$(INTDIR)\editstring.obj" \
-	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\upload.obj" \
-	"$(INTDIR)\capabilities.obj" \
-	"$(INTDIR)\forkthread.obj" \
-	"$(INTDIR)\i18n.obj" \
-	"$(INTDIR)\iconlib.obj" \
-	"$(INTDIR)\icq_avatar.obj" \
-	"$(INTDIR)\icq_clients.obj" \
-	"$(INTDIR)\icq_fieldnames.obj" \
-	"$(INTDIR)\icq_http.obj" \
-	"$(INTDIR)\icq_infoupdate.obj" \
-	"$(INTDIR)\icq_packet.obj" \
-	"$(INTDIR)\icq_rates.obj" \
-	"$(INTDIR)\icq_server.obj" \
-	"$(INTDIR)\icq_servlist.obj" \
-	"$(INTDIR)\icq_xstatus.obj" \
-	"$(INTDIR)\icq_xtraz.obj" \
-	"$(INTDIR)\icqoscar.obj" \
-	"$(INTDIR)\md5.obj" \
-	"$(INTDIR)\stdpackets.obj" \
-	"$(INTDIR)\tlv.obj" \
-	"$(INTDIR)\utilities.obj" \
-	"$(INTDIR)\resources.res" \
-	"$(INTDIR)\fam_17signon.obj" \
-	"$(INTDIR)\cookies.obj"
-
-"..\..\bin\debug\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -637,6 +526,151 @@ LINK32_OBJS= \
    $(CPP) @<<
    $(CPP_PROJ) $< 
 <<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resources.res" /d "_DEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc" 
+BSC32_SBRS= \
+	"$(INTDIR)\chan_01login.sbr" \
+	"$(INTDIR)\chan_02data.sbr" \
+	"$(INTDIR)\chan_03error.sbr" \
+	"$(INTDIR)\chan_04close.sbr" \
+	"$(INTDIR)\chan_05ping.sbr" \
+	"$(INTDIR)\fam_01service.sbr" \
+	"$(INTDIR)\fam_02location.sbr" \
+	"$(INTDIR)\fam_03buddy.sbr" \
+	"$(INTDIR)\fam_04message.sbr" \
+	"$(INTDIR)\fam_09bos.sbr" \
+	"$(INTDIR)\fam_0alookup.sbr" \
+	"$(INTDIR)\fam_0bstatus.sbr" \
+	"$(INTDIR)\fam_13servclist.sbr" \
+	"$(INTDIR)\fam_15icqserver.sbr" \
+	"$(INTDIR)\fam_17signon.sbr" \
+	"$(INTDIR)\directpackets.sbr" \
+	"$(INTDIR)\icq_direct.sbr" \
+	"$(INTDIR)\icq_directmsg.sbr" \
+	"$(INTDIR)\icq_filerequests.sbr" \
+	"$(INTDIR)\icq_filetransfer.sbr" \
+	"$(INTDIR)\icq_advsearch.sbr" \
+	"$(INTDIR)\icq_db.sbr" \
+	"$(INTDIR)\icqosc_svcs.sbr" \
+	"$(INTDIR)\init.sbr" \
+	"$(INTDIR)\log.sbr" \
+	"$(INTDIR)\askauthentication.sbr" \
+	"$(INTDIR)\icq_firstrun.sbr" \
+	"$(INTDIR)\icq_opts.sbr" \
+	"$(INTDIR)\icq_popups.sbr" \
+	"$(INTDIR)\icq_uploadui.sbr" \
+	"$(INTDIR)\loginpassword.sbr" \
+	"$(INTDIR)\userinfotab.sbr" \
+	"$(INTDIR)\constants.sbr" \
+	"$(INTDIR)\db.sbr" \
+	"$(INTDIR)\dlgproc.sbr" \
+	"$(INTDIR)\editlist.sbr" \
+	"$(INTDIR)\editstring.sbr" \
+	"$(INTDIR)\main.sbr" \
+	"$(INTDIR)\upload.sbr" \
+	"$(INTDIR)\capabilities.sbr" \
+	"$(INTDIR)\cookies.sbr" \
+	"$(INTDIR)\forkthread.sbr" \
+	"$(INTDIR)\i18n.sbr" \
+	"$(INTDIR)\iconlib.sbr" \
+	"$(INTDIR)\icq_avatar.sbr" \
+	"$(INTDIR)\icq_clients.sbr" \
+	"$(INTDIR)\icq_fieldnames.sbr" \
+	"$(INTDIR)\icq_http.sbr" \
+	"$(INTDIR)\icq_infoupdate.sbr" \
+	"$(INTDIR)\icq_packet.sbr" \
+	"$(INTDIR)\icq_rates.sbr" \
+	"$(INTDIR)\icq_server.sbr" \
+	"$(INTDIR)\icq_servlist.sbr" \
+	"$(INTDIR)\icq_xstatus.sbr" \
+	"$(INTDIR)\icq_xtraz.sbr" \
+	"$(INTDIR)\icqoscar.sbr" \
+	"$(INTDIR)\md5.sbr" \
+	"$(INTDIR)\stdpackets.sbr" \
+	"$(INTDIR)\tlv.sbr" \
+	"$(INTDIR)\utilities.sbr"
+
+"$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
+    $(BSC32) @<<
+  $(BSC32_FLAGS) $(BSC32_SBRS)
+<<
+
+LINK32=link.exe
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x25000000" /dll /incremental:yes /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /debugtype:both /machine:I386 /out:"../../bin/debug/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /pdbtype:sept 
+LINK32_OBJS= \
+	"$(INTDIR)\chan_01login.obj" \
+	"$(INTDIR)\chan_02data.obj" \
+	"$(INTDIR)\chan_03error.obj" \
+	"$(INTDIR)\chan_04close.obj" \
+	"$(INTDIR)\chan_05ping.obj" \
+	"$(INTDIR)\fam_01service.obj" \
+	"$(INTDIR)\fam_02location.obj" \
+	"$(INTDIR)\fam_03buddy.obj" \
+	"$(INTDIR)\fam_04message.obj" \
+	"$(INTDIR)\fam_09bos.obj" \
+	"$(INTDIR)\fam_0alookup.obj" \
+	"$(INTDIR)\fam_0bstatus.obj" \
+	"$(INTDIR)\fam_13servclist.obj" \
+	"$(INTDIR)\fam_15icqserver.obj" \
+	"$(INTDIR)\fam_17signon.obj" \
+	"$(INTDIR)\directpackets.obj" \
+	"$(INTDIR)\icq_direct.obj" \
+	"$(INTDIR)\icq_directmsg.obj" \
+	"$(INTDIR)\icq_filerequests.obj" \
+	"$(INTDIR)\icq_filetransfer.obj" \
+	"$(INTDIR)\icq_advsearch.obj" \
+	"$(INTDIR)\icq_db.obj" \
+	"$(INTDIR)\icqosc_svcs.obj" \
+	"$(INTDIR)\init.obj" \
+	"$(INTDIR)\log.obj" \
+	"$(INTDIR)\askauthentication.obj" \
+	"$(INTDIR)\icq_firstrun.obj" \
+	"$(INTDIR)\icq_opts.obj" \
+	"$(INTDIR)\icq_popups.obj" \
+	"$(INTDIR)\icq_uploadui.obj" \
+	"$(INTDIR)\loginpassword.obj" \
+	"$(INTDIR)\userinfotab.obj" \
+	"$(INTDIR)\constants.obj" \
+	"$(INTDIR)\db.obj" \
+	"$(INTDIR)\dlgproc.obj" \
+	"$(INTDIR)\editlist.obj" \
+	"$(INTDIR)\editstring.obj" \
+	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\upload.obj" \
+	"$(INTDIR)\capabilities.obj" \
+	"$(INTDIR)\cookies.obj" \
+	"$(INTDIR)\forkthread.obj" \
+	"$(INTDIR)\i18n.obj" \
+	"$(INTDIR)\iconlib.obj" \
+	"$(INTDIR)\icq_avatar.obj" \
+	"$(INTDIR)\icq_clients.obj" \
+	"$(INTDIR)\icq_fieldnames.obj" \
+	"$(INTDIR)\icq_http.obj" \
+	"$(INTDIR)\icq_infoupdate.obj" \
+	"$(INTDIR)\icq_packet.obj" \
+	"$(INTDIR)\icq_rates.obj" \
+	"$(INTDIR)\icq_server.obj" \
+	"$(INTDIR)\icq_servlist.obj" \
+	"$(INTDIR)\icq_xstatus.obj" \
+	"$(INTDIR)\icq_xtraz.obj" \
+	"$(INTDIR)\icqoscar.obj" \
+	"$(INTDIR)\md5.obj" \
+	"$(INTDIR)\stdpackets.obj" \
+	"$(INTDIR)\tlv.obj" \
+	"$(INTDIR)\utilities.obj" \
+	"$(INTDIR)\resources.res"
+
+"..\..\bin\debug\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
