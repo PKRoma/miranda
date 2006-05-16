@@ -1,0 +1,53 @@
+CC = gcc
+RC = windres
+
+all:
+	$(RC) --input-format rc --output-format coff -DICO_AIMHI -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\hicolor\proto_AIM.dll icons.o resource.res
+	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_AIMLO -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\locolor\proto_AIM.dll icons.o resource.res
+	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_ICQHI -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\hicolor\proto_ICQ.dll icons.o resource.res
+	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_ICQLO -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\locolor\proto_ICQ.dll icons.o resource.res
+	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_IRCHI -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\hicolor\proto_IRC.dll icons.o resource.res
+	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_IRCLO -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\locolor\proto_IRC.dll icons.o resource.res
+	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_JABBERHI -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\hicolor\proto_JABBER.dll icons.o resource.res
+	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_JABBERLO -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\locolor\proto_JABBER.dll icons.o resource.res
+	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_MSNHI -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\hicolor\proto_MSN.dll icons.o resource.res
+	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_MSNLO -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\locolor\proto_MSN.dll icons.o resource.res
+	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_YAHOOHI -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\hicolor\proto_YAHOO.dll icons.o resource.res
+	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_YAHOOLO -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\locolor\proto_YAHOO.dll icons.o resource.res
+	del resource.res
+	del icons.o
