@@ -556,11 +556,11 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 		OutputDebugStringA(name);
 		OutputDebugStringA("\n");
 #endif
-		{	TMissingServiceParams params = { name, wParam, lParam };
+/*		{	TMissingServiceParams params = { name, wParam, lParam };
 			int result = NotifyEventHooks(hMissingService,0,(LPARAM)&params);
 			if (result != 0)
 				return params.lParam;
-		}
+		} */
 		return CALLSERVICE_NOTFOUND;
 	}
 	pfnService=pService->pfnService;

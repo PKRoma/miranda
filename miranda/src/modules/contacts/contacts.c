@@ -40,6 +40,36 @@ static int GetDatabaseString( CONTACTINFO *ci, const char* setting, DBVARIANT* d
 	return DBGetContactSetting(ci->hContact,ci->szProto,setting,dbv);
 }
 
+static int ProcessDatabaseValueDefault(CONTACTINFO *ci, const char* setting)
+{
+	DBVARIANT dbv;
+	if ( GetDatabaseString( ci, setting, &dbv ))
+		return 1;
+		
+	switch (dbv.type) {
+	case DBVT_ASCIIZ:
+	case DBVT_WCHAR:
+		ci->type = CNFT_ASCIIZ;
+		ci->pszVal = dbv.ptszVal;
+		return 0;
+	case DBVT_BYTE:
+		ci->type = CNFT_BYTE;
+		ci->bVal = dbv.bVal;
+		return 0;
+	case DBVT_WORD:
+		ci->type = CNFT_WORD;
+		ci->wVal = dbv.wVal;
+		return 0;
+	case DBVT_DWORD:
+		ci->type = CNFT_DWORD;
+		ci->dVal = dbv.dVal;
+		return 0;
+	}
+
+	DBFreeVariant( &dbv );
+	return 1;
+}
+
 static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 	DBVARIANT dbv;
 	CONTACTINFO *ci = (CONTACTINFO*)lParam;
@@ -49,53 +79,51 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 	if (ci->szProto==NULL) return 1;
 	ci->type = 0;
 	switch(ci->dwFlag & 0x7F) {
-		case CNF_FIRSTNAME:
-			if (!GetDatabaseString(ci,"FirstName",&dbv)) {
-				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.ptszVal;
+		case CNF_FIRSTNAME:  return ProcessDatabaseValueDefault( ci, "FirstName" );
+		case CNF_LASTNAME:   return ProcessDatabaseValueDefault( ci, "LastName" );
+		case CNF_NICK:       return ProcessDatabaseValueDefault( ci, "Nick" );
+		case CNF_EMAIL:      return ProcessDatabaseValueDefault( ci, "e-mail" );
+		case CNF_CITY:       return ProcessDatabaseValueDefault( ci, "City" );
+		case CNF_STATE:      return ProcessDatabaseValueDefault( ci, "State" );
+		case CNF_PHONE:      return ProcessDatabaseValueDefault( ci, "Phone" );
+		case CNF_HOMEPAGE:   return ProcessDatabaseValueDefault( ci, "Homepage" );
+		case CNF_ABOUT:      return ProcessDatabaseValueDefault( ci, "About" );
+		case CNF_AGE:        return ProcessDatabaseValueDefault( ci, "Age" );
+		case CNF_GENDER:     return ProcessDatabaseValueDefault( ci, "Gender" );
+		case CNF_FAX:        return ProcessDatabaseValueDefault( ci, "Fax" );
+		case CNF_CELLULAR:	return ProcessDatabaseValueDefault( ci, "Cellular" );
+		case CNF_BIRTHDAY:	return ProcessDatabaseValueDefault( ci, "BirthDay" );
+		case CNF_BIRTHMONTH:	return ProcessDatabaseValueDefault( ci, "BirthMonth" );
+		case CNF_BIRTHYEAR:	return ProcessDatabaseValueDefault( ci, "BirthYear" );
+		case CNF_STREET:		return ProcessDatabaseValueDefault( ci, "Street" );
+		case CNF_ZIP:			return ProcessDatabaseValueDefault( ci, "ZIP" );
+		case CNF_LANGUAGE1:	return ProcessDatabaseValueDefault( ci, "Language1" );
+		case CNF_LANGUAGE2:	return ProcessDatabaseValueDefault( ci, "Language2" );
+		case CNF_LANGUAGE3:	return ProcessDatabaseValueDefault( ci, "Language3" );									
+		case CNF_CONAME:		return ProcessDatabaseValueDefault( ci, "Company" );
+		case CNF_CODEPT:     return ProcessDatabaseValueDefault( ci, "CompanyDepartment" );
+		case CNF_COPOSITION: return ProcessDatabaseValueDefault( ci, "CompanyPosition" );
+		case CNF_COSTREET:   return ProcessDatabaseValueDefault( ci, "CompanyStreet" );
+		case CNF_COCITY:     return ProcessDatabaseValueDefault( ci, "CompanyCity" );
+		case CNF_COSTATE:    return ProcessDatabaseValueDefault( ci, "CompanyState" );
+		case CNF_COZIP:      return ProcessDatabaseValueDefault( ci, "CompanyZIP" );
+		case CNF_COHOMEPAGE: return ProcessDatabaseValueDefault( ci, "CompanyHomepage" );
+
+		case CNF_CUSTOMNICK: 
+		{
+			char* saveProto = ci->szProto; ci->szProto = "CList";
+			if ( ci->hContact != NULL && !ProcessDatabaseValueDefault( ci, "MyHandle" )) {
+				ci->szProto = saveProto;
 				return 0;
 			}
+			ci->szProto = saveProto;
 			break;
-		case CNF_LASTNAME:
-			if (!GetDatabaseString(ci,"LastName",&dbv)) {
-				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.ptszVal;
-				return 0;
-			}
-			break;
-		case CNF_NICK:
-			if (!GetDatabaseString(ci,"Nick",&dbv)) {
-				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.ptszVal;
-				return 0;
-			}
-			break;
-		case CNF_EMAIL:
-			if (!GetDatabaseString(ci,"e-mail",&dbv)) {
-				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.ptszVal;
-				return 0;
-			}
-			break;
-		case CNF_CITY:
-			if (!GetDatabaseString(ci,"City",&dbv)) {
-				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.ptszVal;
-				return 0;
-			}
-			break;
-		case CNF_STATE:
-			if (!GetDatabaseString(ci,"State",&dbv)) {
-				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.ptszVal;
-				return 0;
-			}
-			break;
+		}
 		case CNF_COUNTRY:
 		{
 			int i,countryCount;
 			struct CountryListEntry *countries;
-			if (!GetDatabaseString(ci,"Country",&dbv)) {
+			if (!DBGetContactSetting(ci->hContact,ci->szProto,"Country",&dbv)) {
 				CallService(MS_UTILS_GETCOUNTRYLIST,(WPARAM)&countryCount,(LPARAM)&countries);
 				for(i=0;i<countryCount;i++) {
 					if(countries[i].id!=dbv.wVal) continue;
@@ -117,40 +145,8 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 			}
 			break;
 		}
-		case CNF_PHONE:
-			if (!GetDatabaseString(ci,"Phone",&dbv)) {
-				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.ptszVal;
-				return 0;
-			}
-			break;
-		case CNF_HOMEPAGE:
-			if (!GetDatabaseString(ci,"Homepage",&dbv)) {
-				ci->type = CNFT_ASCIIZ;
-				ci->pszVal = dbv.ptszVal;
-				return 0;
-			}
-			break;
-		case CNF_AGE:
-			if (!GetDatabaseString(ci,"Age",&dbv)) {
-				ci->type = CNFT_WORD;
-				ci->wVal = dbv.wVal;
-				DBFreeVariant(&dbv);
-				return 0;
-			}
-			break;
-		case CNF_GENDER:
-		{
-			BYTE i;
-			if (i=(BYTE)DBGetContactSettingByte(ci->hContact,ci->szProto,"Gender",0)) {
-				ci->type = CNFT_BYTE;
-				ci->bVal = i;
-				return 0;
-			}
-			break;
-		}
 		case CNF_FIRSTLAST:
-			if(!GetDatabaseString(ci,"FirstName",&dbv)) {
+			if( !GetDatabaseString( ci, "FirstName", &dbv )) {
 				DBVARIANT dbv2;
 				if(!GetDatabaseString(ci,"LastName",&dbv2)) {
 					ci->type = CNFT_ASCIIZ;
@@ -179,80 +175,34 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 		case CNF_UNIQUEID:
 		{
 			char *uid = (char*)CallProtoService(ci->szProto,PS_GETCAPS,PFLAG_UNIQUEIDSETTING,0);
-			if ((int)uid!=CALLSERVICE_NOTFOUND&&uid) {
-				if (!GetDatabaseString(ci,uid,&dbv)) {
-					if (dbv.type==DBVT_BYTE) {
-						ci->type = CNFT_BYTE;
-						ci->bVal = dbv.bVal;
-						return 0;
-					}
-					if (dbv.type==DBVT_WORD) {
-						ci->type = CNFT_WORD;
-						ci->wVal = dbv.wVal;
-						return 0;
-					}
-					if (dbv.type==DBVT_DWORD) {
-						ci->type = CNFT_DWORD;
-						ci->dVal = dbv.dVal;
-						return 0;
-					}
-					if (dbv.type==DBVT_ASCIIZ) {
-						ci->type = CNFT_ASCIIZ;
-						ci->pszVal = dbv.ptszVal;
-						return 0;
-			}	}	}
+			if ((int)uid!=CALLSERVICE_NOTFOUND&&uid)
+				if (!ProcessDatabaseValueDefault(ci,uid))
+					return 0;
+
 			break;
 		}
 		case CNF_DISPLAYNC:
 		case CNF_DISPLAY:
 		{
 			int i;
-			for(i=0;i<NAMEORDERCOUNT;i++) {
+			for( i=0; i < NAMEORDERCOUNT; i++ ) {
 				switch(nameOrder[i])  {
 					case 0: // custom name
 					{
 						// make sure we aren't in CNF_DISPLAYNC mode
 						// don't get custom name for NULL contact
 						char* saveProto = ci->szProto; ci->szProto = "CList";
-						if (ci->hContact!=NULL && (ci->dwFlag&0x7F)==CNF_DISPLAY && !GetDatabaseString(ci,"MyHandle",&dbv)) {
-							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = dbv.ptszVal;
+						if (ci->hContact!=NULL && (ci->dwFlag&0x7F)==CNF_DISPLAY && !ProcessDatabaseValueDefault(ci,"MyHandle")) {
+							ci->szProto = saveProto;
 							return 0;
 						}
 						ci->szProto = saveProto;
 						break;
 					}
-					case 1: // nick
-						if (!GetDatabaseString(ci,"Nick",&dbv)) {
-							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = dbv.ptszVal;
-							return 0;
-						}
-						break;
-
-					case 2: // First Name
-						if (!GetDatabaseString(ci,"FirstName",&dbv)) {
-							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = dbv.ptszVal;
-							return 0;
-						}
-						break;
-
-					case 3: // E-mail
-						if (!GetDatabaseString(ci,"e-mail",&dbv)) {
-							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = dbv.ptszVal;
-							return 0;
-						}
-						break;
-
-					case 4: // Last Name
-						if (!GetDatabaseString(ci,"LastName",&dbv)) {
-							ci->type = CNFT_ASCIIZ;
-							ci->pszVal = dbv.ptszVal;
-							return 0;
-						}
-						break;
+					case 1: return ProcessDatabaseValueDefault( ci, "Nick" ); // nick
+					case 2: return ProcessDatabaseValueDefault( ci, "FirstName" ); // First Name
+					case 3: return ProcessDatabaseValueDefault( ci, "e-mail" ); // E-mail
+					case 4: return ProcessDatabaseValueDefault( ci, "LastName" ); // Last Name
 
 					case 5: // Unique id
 					{
@@ -318,7 +268,37 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 							ci->pszVal = ( TCHAR* )mir_strdup( Translate("'(Unknown Contact)'"));
 						ci->type = CNFT_ASCIIZ;
 						return 0;
-	}	}	}	}
+			}	}	}
+			break;
+
+		case CNF_TIMEZONE: {
+			char str[80];
+			DBVARIANT dbv;
+			
+			if (!DBGetContactSetting(ci->hContact,ci->szProto,"Timezone",&dbv)) {
+				sprintf(str,dbv.cVal?"GMT%+d:%02d":"GMT",-dbv.cVal/2,(dbv.cVal&1)*30);
+				if ( ci->dwFlag & CNF_UNICODE ) {
+					int cbLen = MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )str, -1, NULL, 0 );
+					WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*(cbLen+1) );
+					if ( buf != NULL )
+						MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )str, -1, buf, cbLen );
+					ci->pszVal = ( TCHAR* )buf;
+				}
+				else ci->pszVal = ( TCHAR* )mir_strdup(str);
+				ci->type = CNFT_ASCIIZ;
+				return 0;
+			}
+			break;
+		}
+		case CNF_MYNOTES: {
+			char* saveProto = ci->szProto; ci->szProto = "UserInfo";
+			if (!ProcessDatabaseValueDefault(ci,"MyNotes")) {
+				ci->szProto = saveProto;
+				return 0;
+			}
+			ci->szProto = saveProto;
+			break;
+	}	}
 
 	return 1;
 }
