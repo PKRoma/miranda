@@ -143,12 +143,9 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 case IDC_SELECTTHEME:
                     {
                         char *szFileName = GetThemeFileName(0);
-                        HANDLE hFile;
 
-                        if((hFile = CreateFileA(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
-                            CloseHandle(hFile);
+                        if(PathFileExistsA(szFileName))
                             SetDlgItemTextA(hwndDlg, IDC_THEME, szFileName);
-                        }
                         break;
                     }
 				case IDOK:
@@ -187,14 +184,11 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                         
                         if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_THEME)) > 0) {
                             char szFilename[MAX_PATH];
-                            HANDLE hFile;
 
                             GetDlgItemTextA(hwndDlg, IDC_THEME, szFilename, MAX_PATH);
                             szFilename[MAX_PATH - 1] = 0;
-                            if((hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
-                                CloseHandle(hFile);
+                            if(PathFileExistsA(szFilename))
                                 mir_snprintf(pContainer->szThemeFile, MAX_PATH, "%s", szFilename);
-                            }
                         }
                             
                         if(!IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE))

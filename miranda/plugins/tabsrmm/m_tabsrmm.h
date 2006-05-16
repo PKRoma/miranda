@@ -507,6 +507,7 @@ typedef struct _globals {
 	COLORREF skinDefaultFontColor;
 	BYTE m_dropShadow;
     DWORD m_LangPackCP;
+    BYTE  m_SmileyButtonOverride;
 	char g_SkinnedFrame_left, g_SkinnedFrame_right, g_SkinnedFrame_bottom, g_SkinnedFrame_caption;
 	char g_realSkinnedFrame_left, g_realSkinnedFrame_right, g_realSkinnedFrame_bottom, g_realSkinnedFrame_caption;
     HPEN g_SkinLightShadowPen, g_SkinDarkShadowPen;

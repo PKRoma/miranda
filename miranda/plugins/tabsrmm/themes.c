@@ -1391,15 +1391,12 @@ static void IMG_LoadItems(char *szFileName)
 {
     char *szSections = NULL;
     char *p;
-    HANDLE hFile;
     ImageItem *pItem = g_ImageItems, *pNextItem;
     int i;
     
-    if((hFile = CreateFileA(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
+    if(!PathFileExistsA(szFileName))
         return;
 
-    CloseHandle(hFile);
-    
     while(pItem) {
         IMG_DeleteItem(pItem);
         pNextItem = pItem->nextItem;
@@ -1574,7 +1571,6 @@ static void LoadSkinItems(char *file)
 	{
 		BYTE radius_tl, radius_tr, radius_bl, radius_br;
         char szFinalName[MAX_PATH];
-        HANDLE hFile;
         char szDrive[MAX_PATH], szPath[MAX_PATH];
         
 		radius_tl = GetPrivateProfileIntA("WindowFrame", "RadiusTL", 0, file);
@@ -1588,8 +1584,7 @@ static void LoadSkinItems(char *file)
         
         _splitpath(file, szDrive, szPath, NULL, NULL);
         mir_snprintf(szFinalName, MAX_PATH, "%s\\%s\\%s", szDrive, szPath, buffer);
-        if((hFile = CreateFileA(szFinalName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
-            CloseHandle(hFile);
+        if(PathFileExistsA(szFinalName)) {
             ReadThemeFromINI(szFinalName, 0, FALSE);
             CacheMsgLogIcons();
             CacheLogFonts();

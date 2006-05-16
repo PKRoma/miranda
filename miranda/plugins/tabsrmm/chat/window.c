@@ -1442,6 +1442,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			HICON hIcon;
 			InitButtons(hwndDlg, si);
 
+            ConfigureSmileyButton(hwndDlg, dat);
 			hIcon = si->wStatus==ID_STATUS_ONLINE?MM_FindModule(si->pszModule)->hOnlineIcon:MM_FindModule(si->pszModule)->hOfflineIcon;
 			// stupid hack to make icons show. I dunno why this is needed currently
 			if(!hIcon)
@@ -2930,6 +2931,11 @@ LABEL_SHOWWINDOW:
             SendMessage(hwndDlg, WM_SIZE, 0, 0);
             break;
             
+        case DM_SMILEYOPTIONSCHANGED:
+            ConfigureSmileyButton(hwndDlg, dat);
+            SendMessage(hwndDlg, GC_REDRAWLOG, 0, 1);
+            break;
+
         case WM_NCDESTROY:
             if(dat) {
                 free(dat);
@@ -2964,6 +2970,9 @@ LABEL_SHOWWINDOW:
             UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
             if(myGlobals.g_hMenuTrayUnread)
                 DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
+
+            if(dat->hSmileyIcon)
+                DestroyIcon(dat->hSmileyIcon);
 
             i = GetTabIndexFromHWND(hwndTab, hwndDlg);
             if (i >= 0) {

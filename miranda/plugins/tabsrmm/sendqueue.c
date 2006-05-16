@@ -11,7 +11,7 @@
 
 extern      MYGLOBALS myGlobals;
 extern      char *pszIDCSAVE_save, *pszIDCSAVE_close;
-extern      const UINT errorControls[5], infoPanelControls[10];
+extern      const UINT errorControls[5], infoPanelControls[8];
 extern      struct SendJob sendJobs[NR_SENDJOBS];
 
 char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat, int isUnicode)
@@ -324,7 +324,7 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
     }
     if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
         if(showCmd)
-            ShowMultipleControls(hwndDlg, infoPanelControls, sizeof(infoPanelControls) / sizeof(infoPanelControls[0]), SW_HIDE);
+            ShowMultipleControls(hwndDlg, infoPanelControls, 8, SW_HIDE);
         else
             SendMessage(hwndDlg, DM_SETINFOPANEL, 0, 0);
     }

@@ -80,7 +80,7 @@ static const UINT controlsToHide1[] = { IDOK, IDC_FONTFACE, IDC_FONTUNDERLINE, I
 static const UINT controlsToHide2[] = { IDOK, IDC_PIC, IDC_PROTOCOL, -1};
 static const UINT addControls[] = { IDC_ADD, IDC_CANCELADD };
 
-const UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANEL, IDC_PANELNICK, IDC_PANELUIN, 
+const UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANELNICK, IDC_PANELUIN, 
                                   IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER};
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
 
@@ -176,11 +176,8 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
     AdjustBottomAvatarDisplay(hwndDlg, dat);
     GetObject(hbm, sizeof(bm), &bm);
     CalcDynamicAvatarSize(hwndDlg, dat, &bm);
-    ShowMultipleControls(hwndDlg, infoPanelControls, 9, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+    ShowMultipleControls(hwndDlg, infoPanelControls, 8, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
 	
-	if(dat->pContainer->bSkinned)
-		ShowWindow(GetDlgItem(hwndDlg, IDC_PANEL), SW_HIDE);
-
     if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
         ConfigurePanel(hwndDlg, dat);
         UpdateApparentModeDisplay(hwndDlg, dat);
@@ -302,11 +299,9 @@ void SetDialogToType(HWND hwndDlg)
     //ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), myGlobals.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
 
     // info panel stuff
-    ShowMultipleControls(hwndDlg, infoPanelControls, 9, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+    ShowMultipleControls(hwndDlg, infoPanelControls, 8, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
     if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
         ConfigurePanel(hwndDlg, dat);
-	if(dat->pContainer->bSkinned)
-		ShowWindow(GetDlgItem(hwndDlg, IDC_PANEL), SW_HIDE);
 }
 
 UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
@@ -1220,7 +1215,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.bottom += (splitterEdges || !showToolbar ? 3 : 6);
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
         case IDC_PANELPIC:
-			urc->rcItem.left = urc->rcItem.right - (panelWidth > 0 ? panelWidth - 2: panelHeight + 2);
+			urc->rcItem.left = urc->rcItem.right - (panelWidth > 0 ? panelWidth - 2 : panelHeight + 2);
             urc->rcItem.bottom = urc->rcItem.top + (panelHeight - 3);
             if (myGlobals.g_FlashAvatarAvail) {
 		    	RECT rc = { urc->rcItem.left,  urc->rcItem.top, urc->rcItem.right, urc->rcItem.bottom };
@@ -1233,8 +1228,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				}
 			}
             return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
-        case IDC_PANEL:
-            return RD_ANCHORX_WIDTH | RD_ANCHORY_TOP;
         case IDC_PANELSTATUS:
 			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth;
             urc->rcItem.left = urc->dlgNewSize.cx - panelWidth - dat->panelStatusCX;

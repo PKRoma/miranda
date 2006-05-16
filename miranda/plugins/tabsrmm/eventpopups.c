@@ -1372,18 +1372,18 @@ void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced)
     if(dat->hContact != 0) {
         GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
         if(!bForced)
-            myGlobals.m_UnreadInTray -= mii.dwItemData;
+            myGlobals.m_UnreadInTray -= (mii.dwItemData & 0x0000ffff);
         if(mii.dwItemData > 0 || bForced) {
             if(!bForced)
                 mii.dwItemData = 0;
             mii.fMask |= MIIM_STRING;
 #if defined(_UNICODE)
-			mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", dat->bIsMeta ? dat->szMetaProto : dat->szProto, "%nick%", dat->szStatus[0] ? dat->szStatus : "(undef)", mii.dwItemData);
+			mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", dat->bIsMeta ? dat->szMetaProto : dat->szProto, "%nick%", dat->szStatus[0] ? dat->szStatus : "(undef)", mii.dwItemData & 0x0000ffff);
             szMenuEntryW = EncodeWithNickname(szMenuEntry, dat->szNickname, dat->codePage);
             mii.dwTypeData = (LPWSTR)szMenuEntryW;
             mii.cch = lstrlenW(szMenuEntryW) + 1;
 #else
-			mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szNickname, dat->szStatus[0] ? dat->szStatus : "(undef)", mii.dwItemData);
+			mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s) [%d]", dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szNickname, dat->szStatus[0] ? dat->szStatus : "(undef)", mii.dwItemData & 0x0000ffff);
             mii.dwTypeData = szMenuEntry;
             mii.cch = lstrlenA(szMenuEntry) + 1;
 #endif            

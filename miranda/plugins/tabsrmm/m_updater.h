@@ -1,9 +1,9 @@
 #ifndef _M_UPDATER_H
 #define _M_UPDATER_H
 
-#include "newpluginapi.h"
+#include "../../include/newpluginapi.h"
 #include <stdio.h>
-#include "m_utils.h"
+#include "../../include/m_utils.h"
 
 typedef struct Update_tag {
   int cbSize;     

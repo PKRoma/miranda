@@ -931,6 +931,7 @@ static struct LISTOPTIONSITEM tabItems[] = {
     0, _T("Flat toolbar buttons"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tbflat", 2,
     0, _T("Splitters have static edges"), 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
     0, _T("Flat message log (no static edge)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
+    0, _T("Always use icon pack image on the smiley button"), 0, LOI_TYPE_SETTING, (UINT_PTR)"smbutton_override", 2,
     0, _T("Activate autolocale support"), 0, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
     0, _T("ESC closes sessions (minimizes window, if disabled)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode", 3,
     0, _T("Use global hotkeys (configure modifiers below)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"globalhotkeys", 3,
@@ -1554,7 +1555,8 @@ void ReloadGlobals()
 	 myGlobals.bAvatarBoderType = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", 1);
      myGlobals.m_dropShadow = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "dropshadow", 0);
 	 myGlobals.m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
-     
+     myGlobals.m_SmileyButtonOverride = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "smbutton_override", 0);
+
      switch(myGlobals.ipConfig.borderStyle) {
          case IPFIELD_SUNKEN:
              myGlobals.ipConfig.edgeType = BDR_SUNKENINNER;

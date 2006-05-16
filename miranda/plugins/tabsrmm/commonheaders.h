@@ -51,6 +51,7 @@ typedef unsigned short wchar_t;
 #include <time.h>
 #include <stddef.h>
 #include <process.h>
+#include <shlwapi.h>
 #include "resource.h"
 
 #ifdef WM_THEMECHANGED

@@ -56,6 +56,45 @@ struct RTFColorTable rtf_ctable[] = {
     NULL, 0, 0, 0
 };
 
+#ifndef SHVIEW_THUMBNAIL
+    #define SHVIEW_THUMBNAIL 0x702D
+#endif
+
+/*                                                              
+ * subclassing for the save as file dialog (needed to set it to thumbnail view on Windows 2000
+ * or later                                                                
+ */
+
+static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch(msg) {
+        case WM_INITDIALOG: 
+		{
+            SetWindowLong(hwnd, GWL_USERDATA, (LONG)lParam);
+            break;
+        }
+		case WM_NOTIFY:
+		{
+			OPENFILENAMEA *ofn = (OPENFILENAMEA *)GetWindowLong(hwnd, GWL_USERDATA);
+            HWND hwndParent = GetParent(hwnd);
+			HWND hwndLv = FindWindowEx(hwndParent, NULL, _T("SHELLDLL_DefView"), NULL) ;
+
+			if (hwndLv != NULL && *((DWORD *)(ofn->lCustData))) {
+                SendMessage(hwndLv, WM_COMMAND, SHVIEW_THUMBNAIL, 0);
+                *((DWORD *)(ofn->lCustData)) = 0;
+            }
+			break;
+		}
+	}
+    return FALSE;
+}
+
+/*                                                              
+ * saves a contact picture to disk
+ * takes hbm (bitmap handle) and bool isOwnPic (1 == save the picture as your own avatar)
+ * needs loadavatars plugin 0.0.1.20+
+ */
+
 static void SaveAvatarToFile(struct MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
 {
     char szFinalPath[MAX_PATH];
@@ -65,6 +104,9 @@ static void SaveAvatarToFile(struct MessageWindowData *dat, HBITMAP hbm, int isO
     OPENFILENAMEA ofn = {0};
     time_t t = time(NULL);
     struct tm *lt = localtime(&t);
+    static char *forbiddenCharacters = "%/\\'";
+    int i;
+    DWORD setView = 1;
 
     mir_snprintf(szTimestamp, 100, "%04u %02u %02u_%02u%02u", lt->tm_year + 1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min);
 
@@ -87,16 +129,35 @@ static void SaveAvatarToFile(struct MessageWindowData *dat, HBITMAP hbm, int isO
         mir_snprintf(szFinalFilename, MAX_PATH, "%s.bmp", szBaseName);
     }
 
+    for(i = 0; i < lstrlenA(forbiddenCharacters); i++) {
+        char *szFound = 0;
+
+        while((szFound = strchr(szFinalFilename, (int)forbiddenCharacters[i])) != NULL)
+            *szFound = '_';
+    }
     ofn.lpstrFilter = "Image files\0*.bmp;*.png;*.jpg;*.gif\0\0";
-    ofn.lStructSize= OPENFILENAME_SIZE_VERSION_400;
+    if(IsWinVer2000Plus()) {
+        ofn.Flags = OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ENABLESIZING | OFN_ENABLEHOOK;
+        ofn.lpfnHook = (LPOFNHOOKPROC)OpenFileSubclass;
+        ofn.lStructSize = sizeof(ofn);
+    }
+    else {
+        ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+        ofn.Flags = OFN_HIDEREADONLY;
+    }
     ofn.hwndOwner=0;
     ofn.lpstrFile = szFinalFilename;
     ofn.lpstrInitialDir = szFinalPath;
     ofn.nMaxFile = MAX_PATH;
     ofn.nMaxFileTitle = MAX_PATH;
-    ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
-    if(GetSaveFileNameA(&ofn))
-        CallService(MS_AV_SAVEBITMAP, (WPARAM)hbm, szFinalFilename);
+    ofn.lCustData = (LPARAM)&setView;
+    if(GetSaveFileNameA(&ofn)) {
+        if(PathFileExistsA(szFinalFilename)) {
+            if(MessageBox(0, TranslateT("The file exists. Do you want to overwrite it?"), TranslateT("Save contact picture"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+                return;
+        }
+        CallService(MS_AV_SAVEBITMAP, (WPARAM)hbm, (LPARAM)szFinalFilename);
+    }
 }
 
 /*
@@ -2458,9 +2519,7 @@ void LoadOverrideTheme(HWND hwndDlg, struct MessageWindowData *dat)
                            (dat->pContainer->logFonts == NULL) || (dat->pContainer->fontColors == NULL));
     
     if(lstrlenA(dat->pContainer->szThemeFile) > 1) {
-        HANDLE hFile;
-        if((hFile = CreateFileA(dat->pContainer->szThemeFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
-            CloseHandle(hFile);
+        if(PathFileExistsA(dat->pContainer->szThemeFile)) {
             if(CheckThemeVersion(dat->pContainer->szThemeFile) == 0) {
                 _DebugPopup(0, "%s is an incompatible theme.", dat->pContainer->szThemeFile);
                 LoadThemeDefaults(hwndDlg, dat);
@@ -2505,12 +2564,8 @@ void SaveMessageLogFlags(HWND hwndDlg, struct MessageWindowData *dat)
     if(!(dat->dwFlags & MWF_SHOW_PRIVATETHEME))
         DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
     else {
-        HANDLE hFile;
-
-        if((hFile = CreateFileA(dat->pContainer->szThemeFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
-            CloseHandle(hFile);
+        if(PathFileExistsA(dat->pContainer->szThemeFile))
             WritePrivateProfileStringA("Message Log", "DWFlags", _itoa(dat->dwFlags & MWF_LOG_ALL, szBuf, 10), dat->pContainer->szThemeFile);
-        }
     }
 }
 
@@ -2519,18 +2574,24 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
     HICON hButtonIcon = 0;
     int nrSmileys = 0;
     int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
+    int iItemID = IDC_SMILEYBTN;
+
+    if(dat && dat->bType == SESSIONTYPE_CHAT)
+        iItemID = IDC_SMILEY;
 
     if(myGlobals.g_SmileyAddAvail) {
         nrSmileys = CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->hSubContact : dat->hContact, &hButtonIcon);
 
         dat->doSmileys = 1;
 
-        if(hButtonIcon == 0) {
+        if(hButtonIcon == 0 || myGlobals.m_SmileyButtonOverride) {
             dat->hSmileyIcon = 0;
-            SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[11]);
+            SendDlgItemMessage(hwndDlg, iItemID, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[11]);
+            if(hButtonIcon)
+                DestroyIcon(hButtonIcon);
         }
         else {
-            SendDlgItemMessage(hwndDlg, IDC_SMILEYBTN, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hButtonIcon);
+            SendDlgItemMessage(hwndDlg, iItemID, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hButtonIcon);
             dat->hSmileyIcon = hButtonIcon;
         }
     }
@@ -2538,8 +2599,8 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
     if(nrSmileys == 0 || dat->hContact == 0)
         dat->doSmileys = 0;
 
-    ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), (dat->doSmileys && showToolbar) ? SW_SHOW : SW_HIDE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), dat->doSmileys ? TRUE : FALSE);
+    ShowWindow(GetDlgItem(hwndDlg, iItemID), (dat->doSmileys && showToolbar) ? SW_SHOW : SW_HIDE);
+    EnableWindow(GetDlgItem(hwndDlg, iItemID), dat->doSmileys ? TRUE : FALSE);
 }
 
 HICON GetXStatusIcon(struct MessageWindowData *dat)
