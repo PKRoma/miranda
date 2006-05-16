@@ -3,7 +3,7 @@
                                 PopUp plugin
 Plugin Name: PopUp
 Plugin authors: Luca Santarelli aka hrk (hrk@users.sourceforge.net)
-                Victor Pavlychko aka zazoo (zazoo@ua.fm)
+                Victor Pavlychko aka zazoo (nullbie@gmail.com)
 ===============================================================================
 The purpose of this plugin is to give developers a common "platform/interface"
 to show PopUps. It is born from the source code of NewStatusNotify, another
@@ -112,7 +112,7 @@ When we need to show the popup, we do:
 	//The text for the second line. You could even make something like: char lpzText[128]; lstrcpy(lpzText, "Hello world!"); It's your choice.
 	COLORREF colorBack = GetSysColor(COLOR_BTNFACE); //The colour of Miranda's option Pages (and many other windows...)
 	COLORREF colorText = RGB(255,255,255); //White.
-	MY_PLUGIN_DATA * mpd = (MY_PLUGIN_DATA*)malloc(sizeof(MY_PLUGIN_DATA));
+	MY_PLUGIN_DATA * mpd = (MY_PLUGIN_DATA*)mir_alloc(sizeof(MY_PLUGIN_DATA));
 
 	ZeroMemory(ppd, sizeof(ppd)); //This is always a good thing to do.
 	ppd.lchContact = (HANDLE)hContact; //Be sure to use a GOOD handle, since this will not be checked.
@@ -147,7 +147,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		case UM_FREEPLUGINDATA: {
 			MY_PLUGIN_DATA * mpd = NULL;
 			mpd = (MY_PLUGIN_DATA*)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd,(LPARAM)mpd);
-			if (mdp > 0) free(mpd);
+			if (mdp > 0) mir_free(mpd);
 			return TRUE; //TRUE or FALSE is the same, it gets ignored.
 		}
 		default:
@@ -260,6 +260,16 @@ Changes the text displayed in the second line of the popup.
 #define MS_POPUP_CHANGETEXT "PopUp/Changetext"
 static int __inline PUChangeText(HWND hWndPopUp, LPCTSTR lpzNewText) {
 	return (int)CallService(MS_POPUP_CHANGETEXT, (WPARAM)hWndPopUp, (LPARAM)lpzNewText);
+}
+
+/*
+wParam = (WPARAM)(HWND)hPopUpWindow
+lParam = (LPARAM)(POPUPDATAEX*)newData
+Changes the entire popup
+*/
+#define MS_POPUP_CHANGE "PopUp/Change"
+static int __inline PUChange(HWND hWndPopUp, POPUPDATAEX *newData) {
+	return (int)CallService(MS_POPUP_CHANGE, (WPARAM)hWndPopUp, (LPARAM)newData);
 }
 
 /*
