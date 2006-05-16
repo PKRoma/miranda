@@ -1165,7 +1165,8 @@ void ext_yahoo_got_nick(int id, const char *nick)
 {
 	LOG(("[ext_yahoo_got_nick] nick: %s", nick));
 	
-	YAHOO_SetString( NULL, "Nick", nick);
+	// This is not a Nick... Hmmm...
+	//YAHOO_SetString( NULL, "Nick", nick);
 }
 
 void ext_yahoo_got_avatar_share(int id, int buddy_icon)
