@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source$
+File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_xml.cpp,v $
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -115,6 +115,8 @@ int JabberXmlParse( XmlState *xmlState, char* buffer, int datalen )
 	char attr[ATTR_MAX_LEN];
 	XmlElemType elemType;
 
+	NotifyEventHooks(heventRawXMLIn, (WPARAM)buffer, datalen);
+	
 	eob = buffer + datalen;
 	num = 0;
 	// Skip leading whitespaces

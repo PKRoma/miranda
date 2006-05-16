@@ -149,6 +149,12 @@ enum {
 	JABBER_ICON_TOTAL
 };
 
+// Services and Events
+#define JE_RAWXMLIN "/RawXMLIn"
+#define JE_RAWXMLOUT "/RawXMLOut"
+
+#define JS_SENDXML "/SendXML"
+
 /*******************************************************************
  * Global data structures and data type definitions
  *******************************************************************/
@@ -331,6 +337,9 @@ extern HWND hwndMucAdminList;
 extern HWND hwndMucOwnerList;
 
 extern const char xmlnsOwner[], xmlnsAdmin[];
+// Service and event handles
+extern HANDLE heventRawXMLIn;
+extern HANDLE heventRawXMLOut;
 
 /*******************************************************************
  * Function declarations
@@ -355,8 +364,9 @@ void __cdecl JabberFileServerThread( filetransfer* ft );
 //---- jabber_form.c ------------------------------------------------
 
 void JabberFormCreateUI( HWND hwndStatic, XmlNode *xNode, int *formHeight );
-void JabberFormGetData( HWND hwndStatic, XmlNode *xNode, XmlNode* result );
-void JabberFormCreateDialog( XmlNode *xNode, char* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
+void JabberFormCreateDialog( XmlNode *xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
+
+XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode *xNode );
 
 //---- jabber_ft.c --------------------------------------------------
 
@@ -410,6 +420,7 @@ void JabberEnableMenuItems( BOOL bEnable );
 #endif
 
 HANDLE __stdcall  JCreateServiceFunction( const char* szService, MIRANDASERVICE serviceProc );
+HANDLE __stdcall  JCreateHookableEvent( const char* szService );
 void   __stdcall  JDeleteSetting( HANDLE hContact, const char* valueName );
 DWORD  __stdcall  JGetByte( const char* valueName, int parDefltValue );
 DWORD  __stdcall  JGetByte( HANDLE hContact, const char* valueName, int parDefltValue );

@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source$
+File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_svc.cpp,v $
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -375,16 +375,17 @@ static void sttRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 			JabberLog( "Group set to nothing" );
 			JabberAddContactToRoster( item->jid, nick, NULL );
 		}
-		return;
 	}
-
-	TCHAR* p = sttSettingToTchar( cws );
-	if ( cws->value.pszVal != NULL && lstrcmp( p, item->group )) {
-		JabberLog( "Group set to %s", cws->value.pszVal );
-		if ( p )
-			JabberAddContactToRoster( item->jid, nick, p );
+	else {
+		TCHAR* p = sttSettingToTchar( cws );
+		if ( cws->value.pszVal != NULL && lstrcmp( p, item->group )) {
+			JabberLog( "Group set to %s", cws->value.pszVal );
+			if ( p )
+				JabberAddContactToRoster( item->jid, nick, p );
+		}
+		mir_free( p );
 	}
-	mir_free( p );
+	mir_free( nick );
 }
 
 static void sttRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact )
@@ -1252,6 +1253,14 @@ int JabberUserIsTyping( WPARAM wParam, LPARAM lParam )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// "/SendXML" - Allows external plugins to send XML to the server
+
+int ServiceSendXML(WPARAM wParam, LPARAM lParam)
+{
+	return JabberSend( jabberThreadInfo->s, (char*)lParam);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // Service initialization code
 
 static HANDLE hEventSettingChanged = NULL;
@@ -1316,6 +1325,12 @@ int JabberSvcInit( void )
 	JCreateServiceFunction( PSR_FILE, JabberRecvFile );
 	JCreateServiceFunction( PSS_USERISTYPING, JabberUserIsTyping );
 
+	// Protocol services and events...
+	heventRawXMLIn = JCreateHookableEvent( JE_RAWXMLIN );
+	heventRawXMLOut = JCreateHookableEvent( JE_RAWXMLOUT );
+	JCreateServiceFunction( JS_SENDXML, ServiceSendXML );
+
+	// Menu items
 	CLISTMENUITEM mi, clmi;
 	memset( &mi, 0, sizeof( CLISTMENUITEM ));
 	mi.cbSize = sizeof( CLISTMENUITEM );

@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source$
+File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_iqid_muc.cpp,v $
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -89,7 +89,7 @@ void JabberSetMucConfig( XmlNode* node, void *from )
 {
 	if ( jabberThreadInfo && from ) {
 		XmlNodeIq iq( "set", NOID, ( TCHAR* )from );
-		XmlNode* query = iq.addChild( "query" );
+		XmlNode* query = iq.addQuery( xmlnsOwner );
 		query->addChild( node );
 		JabberSend( jabberThreadInfo->s, iq );
 }	}
@@ -112,7 +112,7 @@ void JabberIqResultGetMuc( XmlNode *iqNode, void *userdata )
 				if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
 					str = JabberXmlGetAttrValue( xNode, "xmlns" );
 					if ( !lstrcmp( str, _T("jabber:x:data" )))
-						JabberFormCreateDialog( xNode, "Jabber Conference Room Configuration", JabberSetMucConfig, mir_tstrdup( from ));
+						JabberFormCreateDialog( xNode, _T("Jabber Conference Room Configuration"), JabberSetMucConfig, mir_tstrdup( from ));
 }	}	}	}	}
 
 void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )

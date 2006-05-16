@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source$
+File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber.cpp,v $
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -103,6 +103,10 @@ HWND hwndMucBanList = NULL;
 HWND hwndMucAdminList = NULL;
 HWND hwndMucOwnerList = NULL;
 HWND hwndJabberChangePassword = NULL;
+
+// Service and event handles
+HANDLE heventRawXMLIn;
+HANDLE heventRawXMLOut;
 
 int JabberOptInit( WPARAM wParam, LPARAM lParam );
 int JabberUserInfoInit( WPARAM wParam, LPARAM lParam );

@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source$
+File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_thread.cpp,v $
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -260,7 +260,7 @@ LBL_Exit:
 		// Multiple thread allowed, although not possible : )
 		// thinking again.. multiple thread should not be allowed
 		info->reg_done = FALSE;
-		SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 25, ( LPARAM )JTranslate( "Connecting..." ));
+		SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 25, ( LPARAM )TranslateT( "Connecting..." ));
 		iqIdRegGetReg = -1;
 		iqIdRegSetReg = -1;
 	}
@@ -295,7 +295,7 @@ LBL_Exit:
 			jabberThreadInfo = NULL;
 		}
 		else if ( info->type == JABBER_SESSION_REGISTER ) {
-			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )JTranslate( "Error: Not enough memory" ));
+			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Error: Not enough memory" ));
 		}
 		JabberLog( "Thread ended, network buffer cannot be allocated" );
 		goto LBL_Exit;
@@ -313,7 +313,7 @@ LBL_Exit:
 				jabberThreadInfo = NULL;
 		}	}
 		else if ( info->type == JABBER_SESSION_REGISTER )
-			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )JTranslate( "Error: Cannot connect to the server" ));
+			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Error: Cannot connect to the server" ));
 
 		JabberLog( "Thread ended, connection failed" );
 		mir_free( buffer );
@@ -366,7 +366,7 @@ LBL_Exit:
 					jabberThreadInfo = NULL;
 			}
 			else if ( info->type == JABBER_SESSION_REGISTER ) {
-				SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )JTranslate( "Error: Cannot connect to the server" ));
+				SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Error: Cannot connect to the server" ));
 			}
 			mir_free( buffer );
 			if ( !hLibSSL )
@@ -515,7 +515,7 @@ LBL_Exit:
 				SendMessage( hwndJabberVcard, WM_JABBER_CHECK_ONLINE, 0, 0 );
 		}
 		else if ( info->type==JABBER_SESSION_REGISTER && !info->reg_done ) {
-			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )JTranslate( "Error: Connection lost" ));
+			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Error: Connection lost" ));
 	}	}
 	else {
 		if ( info->type == JABBER_SESSION_NORMAL ) {
@@ -583,7 +583,7 @@ static void JabberProcessStreamOpening( XmlNode *node, void *userdata )
 		XmlNode* query = iq.addQuery( "jabber:iq:register" );
 		JabberSend( info->s, iq );
 
-		SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 50, ( LPARAM )JTranslate( "Requesting registration instruction..." ));
+		SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 50, ( LPARAM )TranslateT( "Requesting registration instruction..." ));
 	}
 	else JabberSend( info->s, "</stream:stream>" );
 }
@@ -1434,7 +1434,7 @@ static void JabberProcessRegIq( XmlNode *node, void *userdata )
 {
 	struct ThreadData *info;
 	XmlNode *errorNode;
-	TCHAR* type, *str;
+	TCHAR *type, *str;
 
 	if ( !node->name || strcmp( node->name, "iq" )) return;
 	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
@@ -1454,8 +1454,8 @@ static void JabberProcessRegIq( XmlNode *node, void *userdata )
 
 			XmlNodeIq iq( "set", iqIdRegSetReg );
 			XmlNode* query = iq.addQuery( "jabber:iq:register" );
-			iq.addChild( "password", info->password );
-			iq.addChild( "username", info->username );
+			query->addChild( "password", info->password );
+			query->addChild( "username", info->username );
 			JabberSend( info->s, iq );
 
 			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 75, ( LPARAM )TranslateT( "Sending registration information..." ));

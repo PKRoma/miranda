@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source$
+File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_agent.cpp,v $
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -382,7 +382,7 @@ BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 
 			if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
 				// use new jabber:x:data form
-				JabberFormGetData( hFrame, xNode, query );
+				query->addChild( JabberFormGetData( hFrame, xNode ));
 			}
 			else {
 				// use old registration information form
@@ -545,10 +545,10 @@ static BOOL CALLBACK JabberAgentRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		}
 		break;
 	case WM_JABBER_REGDLG_UPDATE:	// wParam=progress ( 0-100 ), lparam=status string
-		if (( char* )lParam == NULL )
+		if (( TCHAR* )lParam == NULL )
 			SetDlgItemText( hwndDlg, IDC_REG_STATUS, TranslateT( "No message" ));
 		else
-			SetDlgItemTextA( hwndDlg, IDC_REG_STATUS, ( char* )lParam );
+			SetDlgItemText( hwndDlg, IDC_REG_STATUS, ( TCHAR* )lParam );
 		if ( wParam >= 0 )
 			SendMessage( GetDlgItem( hwndDlg, IDC_PROGRESS_REG ), PBM_SETPOS, wParam, 0 );
 		if ( wParam >= 100 ) {

@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source$
+File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_util.cpp,v $
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -77,6 +77,8 @@ int __stdcall JabberSend( HANDLE hConn, XmlNode& node )
 
 	EnterCriticalSection( &mutex );
 
+	NotifyEventHooks(heventRawXMLOut, (WPARAM)str, 0);
+
 	PVOID ssl;
 	if (( ssl=JabberSslHandleToSsl( hConn )) != NULL ) {
 		if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE ) {
@@ -110,7 +112,9 @@ int __stdcall JabberSend( HANDLE hConn, const char* fmt, ... )
 		str = ( char* )mir_realloc( str, size );
 	}
 	va_end( vararg );
-
+	
+	NotifyEventHooks(heventRawXMLOut, (WPARAM)str, 0);
+	
 	size = strlen( str );
 	PVOID ssl;
 	if (( ssl=JabberSslHandleToSsl( hConn )) != NULL ) {
