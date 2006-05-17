@@ -27,6 +27,7 @@
 #define IDC_CUSTSTAT                    1001
 #define IDC_STYAHOOGROUP                1002
 #define IDC_EDIT1                       1003
+#define IDC_STIGNGROUP                	1004
 #define IDC_USEWINCOLORS                1008
 #define IDC_YCHECKMAIL                  1011
 #define IDC_YTNOTIF                     1012

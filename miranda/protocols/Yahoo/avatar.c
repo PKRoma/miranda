@@ -505,6 +505,10 @@ void upload_avt(int id, int fd, int error, void *data)
 						LOG(("Connection read ready, but no data to read?"));
 						LOG(("Bytes read: %ld", rsize));
 						break;
+					} else if (dw < 0) {
+						LOG(("Connection closed?"));
+						LOG(("Bytes read: %ld", rsize));
+						break;
 					}
 					rsize +=dw;
 				} else if (dw < 0) {
