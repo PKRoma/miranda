@@ -1523,8 +1523,12 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			char* dataBuf = ( char* )alloca( len+1 ), *p = dataBuf;
-			memcpy( dataBuf, HReadBuffer( info, 0 ).surelyRead( len ), len );
-			dataBuf[ len ] = 0;
+			BYTE* buff = HReadBuffer( info, 0 ).surelyRead( len );
+			if ( buff != NULL ) {
+				memcpy( dataBuf, buff, len );
+				dataBuf[ len ] = 0;
+			}
+			else dataBuf[0] = 0;
 
          p = strstr( dataBuf, "<PSM>" );
 			if ( p ) {
