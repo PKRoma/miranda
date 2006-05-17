@@ -410,7 +410,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       else if (capId = MatchCap(caps, wLen, &capmChat, 0xA))
       {
         strcpy(szClientBuf, "mChat ");
-        strncpy(szClientBuf, (*capId) + 0xA, 6);
+        strncat(szClientBuf, (*capId) + 0xA, 6);
         szClient = szClientBuf;
       }
       else if (capId = MatchCap(caps, wLen, &capJimm, 5))
