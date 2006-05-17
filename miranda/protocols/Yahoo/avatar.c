@@ -227,6 +227,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         if (!yahooLoggedIn){
           EnableWindow(GetDlgItem(hwndDlg, IDC_SETAVATAR), FALSE);
           EnableWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), FALSE);
+		  EnableWindow(GetDlgItem(hwndDlg, IDC_SHARE_AVATAR), FALSE);
         }
 
 		SetButtonCheck( hwndDlg, IDC_SHARE_AVATAR, YAHOO_GetByte( "ShareAvatar", 0 ) == 2 );
@@ -240,8 +241,12 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szAvatar);
 			if (avt) {
 				avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_SHARE_AVATAR), TRUE);
 				if (avt) DeleteObject(avt); // we release old avatar if any
 			}
+		} else {
+			EnableWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_SHARE_AVATAR), FALSE);
 		}
     }
     return TRUE;
@@ -259,7 +264,11 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 		  free(szFile);
 
-		  if (avt) avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
+		  if (avt){
+			avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), TRUE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_SHARE_AVATAR), TRUE);
+		  }
 		  if (avt) DeleteObject(avt); // we release old avatar if any
 		}
 		
@@ -288,12 +297,14 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		
 		YAHOO_SetByte("ShareAvatar",0);
 		SetButtonCheck(hwndDlg, IDC_SHARE_AVATAR, 0);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_DELETEAVATAR), FALSE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_SHARE_AVATAR), FALSE);
       }
       break;
 	case IDC_SHARE_AVATAR:
-			YAHOO_SetByte("ShareAvatar",IsDlgButtonChecked(hwndDlg, IDC_SHARE_AVATAR) ? 2 : 0);
-			/* Send a Yahoo packet saying we don't got an avatar anymore */
-			YAHOO_set_avatar(YAHOO_GetByte( "ShareAvatar", 0 )? 2 : 0);
+		YAHOO_SetByte("ShareAvatar",IsDlgButtonChecked(hwndDlg, IDC_SHARE_AVATAR) ? 2 : 0);
+		/* Send a Yahoo packet saying we don't got an avatar anymore */
+		YAHOO_set_avatar(YAHOO_GetByte( "ShareAvatar", 0 )? 2 : 0);
     }
     break;
   }
