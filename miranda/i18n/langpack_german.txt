@@ -9826,7 +9826,7 @@ Spam Schwelle:
 ;###
 
 ; Spam Filter 1.0.2.1 (German) 
-; H. Herkenrath (heikoherkenrath@web.de)
+; H. Herkenrath
 [Spam Filter]
 Spam-Filter
 [Filters spam messages from contacts that are not on your contact list.]
