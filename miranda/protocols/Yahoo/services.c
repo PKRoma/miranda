@@ -1565,7 +1565,7 @@ int LoadYahooServices( void )
     	mi.cbSize = sizeof( mi );
     	mi.popupPosition = 500090000;
     	mi.position = 500090000;
-    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_YAHOO ));
+    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_SET_STATUS ));
     	mi.pszName = Translate( "Set &Custom Status" );
     	mi.pszService = servicefunction;
         YahooMenuItems [ 0 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
@@ -1592,7 +1592,7 @@ int LoadYahooServices( void )
     	strcpy( tDest, YAHOO_AB );
     	CreateServiceFunction( servicefunction, YahooABCommand );
     	mi.position = 500090015;
-    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_YAHOO ));
+    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_YAB ));
     	mi.pszName = Translate( "&Address Book" );
     	mi.pszService = servicefunction;
     	YahooMenuItems [ 3 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );

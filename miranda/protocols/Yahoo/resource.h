@@ -17,10 +17,12 @@
 #define IDI_INBOX                       103
 #define IDI_PROFILE                     104
 #define IDI_REFRESH                     105
+#define IDI_YAB		                    106
+#define IDI_SET_STATUS                  107
 
-#define IDD_OPT_YAHOO_POPUP             107
 #define IDD_OPT_YAHOO                   185
 #define IDD_SETCUSTSTAT                 186
+#define IDD_OPT_YAHOO_POPUP             187
 #define IDC_CUSTSTATBUSY                1000
 #define IDC_CUSTSTAT                    1001
 #define IDC_STYAHOOGROUP                1002
