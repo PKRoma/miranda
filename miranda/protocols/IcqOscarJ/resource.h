@@ -8,8 +8,13 @@
 #define IDD_LOGINPW                     105
 #define IDD_INFO_AVATAR                 106
 #define IDD_OPT_ICQMAIN                 107
-#define IDD_OPT_ICQFEATURES             108
-#define IDD_OPT_ICQ                     185
+#define IDD_OPT_ICQ                     108
+#define IDD_OPT_ICQCONTACTS             109
+#define IDD_OPT_ICQFEATURES             110
+#define IDD_OPT_ICQPRIVACY              111
+#define IDI_AUTH_ASK                    150
+#define IDI_AUTH_GRANT                  151
+#define IDI_AUTH_REVOKE                 152
 #define IDI_XSTATUS1                    201
 #define IDI_XSTATUS2                    202
 #define IDI_XSTATUS3                    203
@@ -44,10 +49,8 @@
 #define IDI_XSTATUS32                   232
 #define IDD_INFO_ICQ                    240
 #define IDD_ICQADVANCEDSEARCH           242
-#define IDD_OPT_ICQCONTACTS             252
 #define IDD_ICQUPLOADLIST               253
 #define IDD_SETXSTATUS                  256
-#define IDD_OPT_ICQPRIVACY              260
 #define IDD_PWCONFIRM                   300
 #define IDD_INFO_CHANGEINFO             301
 #define IDD_OPT_POPUPS                  400

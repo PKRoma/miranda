@@ -384,9 +384,9 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     
     ICQTranslateUtfStatic(gpszICQProtoName, proto);
 
-    IconLibDefine(ICQTranslateUtfStatic("Request authorisation", str), proto, "req_auth", NULL);
-    IconLibDefine(ICQTranslateUtfStatic("Grant authorisation", str), proto, "grant_auth", NULL);
-    IconLibDefine(ICQTranslateUtfStatic("Revoke authorisation", str), proto, "revoke_auth", NULL);
+    IconLibDefine(ICQTranslateUtfStatic("Request authorisation", str), proto, "req_auth", LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_ASK),IMAGE_ICON,0,0,LR_SHARED));
+    IconLibDefine(ICQTranslateUtfStatic("Grant authorisation", str), proto, "grant_auth", LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_GRANT),IMAGE_ICON,0,0,LR_SHARED));
+    IconLibDefine(ICQTranslateUtfStatic("Revoke authorisation", str), proto, "revoke_auth", LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_REVOKE),IMAGE_ICON,0,0,LR_SHARED));
   }
 
   // Initialize IconLib icons
@@ -405,7 +405,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     mi.cbSize = sizeof(mi);
     mi.position = 1000030000;
     mi.flags = 0;
-    mi.hIcon = IconLibProcess(NULL, "req_auth");
+    mi.hIcon = IconLibProcess(LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_ASK),IMAGE_ICON,0,0,LR_SHARED), "req_auth");
     mi.pszContactOwner = gpszICQProtoName;
     mi.pszName = ICQTranslate("Request authorization");
     mi.pszService = pszServiceName;
@@ -415,7 +415,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     strcat(pszServiceName, MS_GRANT_AUTH);
 
     mi.position = 1000029999;
-    mi.hIcon = IconLibProcess(NULL, "grant_auth");
+    mi.hIcon = IconLibProcess(LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_GRANT),IMAGE_ICON,0,0,LR_SHARED), "grant_auth");
     mi.pszName = ICQTranslate("Grant authorization");
     hUserMenuGrant = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
@@ -423,7 +423,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     strcat(pszServiceName, MS_REVOKE_AUTH);
 
     mi.position = 1000029998;
-    mi.hIcon = IconLibProcess(NULL, "revoke_auth");
+    mi.hIcon = IconLibProcess(LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_REVOKE),IMAGE_ICON,0,0,LR_SHARED), "revoke_auth");
     mi.pszName = ICQTranslate("Revoke authorization");
     hUserMenuRevoke = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
@@ -513,9 +513,9 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 
 static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam)
 {
-  CListSetMenuItemIcon(hUserMenuAuth, IconLibProcess(NULL, "req_auth"));
-  CListSetMenuItemIcon(hUserMenuGrant, IconLibProcess(NULL, "grant_auth"));
-  CListSetMenuItemIcon(hUserMenuRevoke, IconLibProcess(NULL, "revoke_auth"));
+  CListSetMenuItemIcon(hUserMenuAuth, IconLibProcess(LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_ASK),IMAGE_ICON,0,0,LR_SHARED), "req_auth"));
+  CListSetMenuItemIcon(hUserMenuGrant, IconLibProcess(LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_GRANT),IMAGE_ICON,0,0,LR_SHARED), "grant_auth"));
+  CListSetMenuItemIcon(hUserMenuRevoke, IconLibProcess(LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_REVOKE),IMAGE_ICON,0,0,LR_SHARED), "revoke_auth"));
 
   ChangedIconsXStatus();
 
