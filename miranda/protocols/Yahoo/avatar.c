@@ -285,10 +285,13 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		
 		/* clear the avatar window */
 		InvalidateRect( hwndDlg, NULL, TRUE );
+		
+		YAHOO_SetByte("ShareAvatar",0);
+		SetButtonCheck(hwndDlg, IDC_SHARE_AVATAR, 0);
       }
       break;
 	case IDC_SHARE_AVATAR:
-			YAHOO_SetByte("ShareAvatar",IsDlgButtonChecked(hwndDlg, IDC_SHARE_AVATAR));
+			YAHOO_SetByte("ShareAvatar",IsDlgButtonChecked(hwndDlg, IDC_SHARE_AVATAR) ? 2 : 0);
 			/* Send a Yahoo packet saying we don't got an avatar anymore */
 			YAHOO_set_avatar(YAHOO_GetByte( "ShareAvatar", 0 )? 2 : 0);
     }

@@ -66,8 +66,7 @@ void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck)
 {
 	HWND hwndCtrl = GetDlgItem(hwndDlg, CtrlID);
 	
-	if (bCheck)
-		Button_SetCheck(hwndCtrl, BST_CHECKED);
+	Button_SetCheck(hwndCtrl, (bCheck)?BST_CHECKED:BST_UNCHECKED);
 }
 
 /*
