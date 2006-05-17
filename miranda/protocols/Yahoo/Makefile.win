@@ -3,7 +3,7 @@ SRC = http_gateway.c main.c options.c pthread.c server.c services.c util.c yahoo
 OBJ = $(SRC:.c=.o)
 RES = Yahoo.res
 
-LIB = 
+LIB = -lcomdlg32 -lgdi32
 
 CC = gcc
 RC = windres
