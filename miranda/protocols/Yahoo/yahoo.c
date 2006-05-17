@@ -765,22 +765,24 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	DBWriteContactSettingDword(hContact, yahooProtocolName, "IdleTS", idlets);
 
 	/* Last thing check the checksum and request new one if we need to */
-	if (!cksum || cksum == -1) {
-		yahoo_reset_avatar(hContact, 0); 
-	} else  if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
-		// Reset Avatar first
-		yahoo_reset_avatar(hContact, 0);
-		// Save New Checksum
-		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
-		//yahoo_reset_avatar(hContact);YAHOO_request_avatar(who);
-		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
-	}
+	if (buddy_icon == -1) {
+		LOG(("[ext_yahoo_status_changed] No avatar information in this packet? Not touching stuff!"));
+	} else {
+		if (!cksum || cksum == -1) {
+			yahoo_reset_avatar(hContact, 0); 
+		} else  if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
+			// Reset Avatar first
+			yahoo_reset_avatar(hContact, 0);
+			// Save New Checksum
+			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
+			//yahoo_reset_avatar(hContact);YAHOO_request_avatar(who);
+			ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
+		}
 	
-	if (buddy_icon != -1) {// we got some avatartype info
+		// we got some avatartype info
 		DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
 		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
 	}
-	
 	LOG(("[ext_yahoo_status_changed] exiting"));
 }
 
@@ -968,6 +970,13 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 		/* need to read CheckSum */
 		cksum = YAHOO_GetDword("AvatarHash", 0);
 		if (cksum) {
+			LOG(("[ext_yahoo_got_picture] URL Expiration Check. Now: %ld Expires: %ld", time(NULL), YAHOO_GetDword("AvatarTS",0)));
+			if (time(NULL) > YAHOO_GetDword("AvatarTS",0) && !DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
+				LOG(("[ext_yahoo_got_picture] Expired. Re-uploading"));
+				YAHOO_SendAvatar(dbv.pszVal);
+				DBFreeVariant(&dbv);
+			}
+			
 			if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)) {
 				LOG(("[ext_yahoo_got_picture] Sending url:%s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
 				//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
@@ -1149,7 +1158,7 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		//char  *szProto;
 		//HANDLE hContact;
 
-		LOG(("[ext_yahoo_got_picture_upload] My Checksum: %ld", cksum));
+		LOG(("[ext_yahoo_got_picture_upload] My Checksum: %d", cksum));
 		
 		YAHOO_SetString(NULL, "AvatarURL", url);
 		YAHOO_SetDword("AvatarTS", ts);
@@ -1159,14 +1168,6 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		yahoo_send_avatar_update(id,2);// YIM7 does this? YIM6 doesn't like this!*/
 		YAHOO_bcast_picture_checksum(cksum);
 	}
-}
-
-void ext_yahoo_got_nick(int id, const char *nick)
-{
-	LOG(("[ext_yahoo_got_nick] nick: %s", nick));
-	
-	// This is not a Nick... Hmmm...
-	//YAHOO_SetString( NULL, "Nick", nick);
 }
 
 void ext_yahoo_got_avatar_share(int id, int buddy_icon)
@@ -2223,7 +2224,6 @@ void register_callbacks()
 	yc.ext_yahoo_got_picture  = ext_yahoo_got_picture;
 	yc.ext_yahoo_got_picture_checksum = ext_yahoo_got_picture_checksum;
 	yc.ext_yahoo_got_picture_update = ext_yahoo_got_picture_update;
-	yc.ext_yahoo_got_nick = ext_yahoo_got_nick;
 	yc.ext_yahoo_got_avatar_share = ext_yahoo_got_avatar_share;
 	
 	yc.ext_yahoo_buddy_added = ext_yahoo_buddy_added;

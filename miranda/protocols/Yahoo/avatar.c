@@ -149,19 +149,28 @@ int calcMD5Hash(char* szFile)
   return 0;
 }
 
+void upload_avt(int id, int fd, int error, void *data);
+
 /**************** Send Avatar ********************/
 void __cdecl yahoo_send_avt_thread(void *psf) 
 {
 	y_filetransfer *sf = psf;
+	long tFileSize = 0;
+	struct _stat statbuf;
 	
-//    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	if (sf == NULL) {
 		YAHOO_DebugLog("SF IS NULL!!!");
 		return;
 	}
+	
 	YAHOO_DebugLog("[Uploading avatar] filename: %s ", sf->filename);
 	
-	YAHOO_SendAvatar(sf);
+	if ( _stat( sf->filename, &statbuf ) == 0 ) {
+		tFileSize = statbuf.st_size;
+
+		yahoo_send_avatar(ylad->id, sf->filename, tFileSize, &upload_avt, sf);
+	}
+
 	free(sf->filename);
 	free(sf);
 }
@@ -183,8 +192,7 @@ HBITMAP YAHOO_SetAvatar(const char *szFile)
 	  
 	if (avt && YAHOO_SaveBitmapAsAvatar( avt, szMyFile) == 0) {
 		unsigned int hash;
-		y_filetransfer *sf;
-		
+				
 		hash = calcMD5Hash(szMyFile);
 		if (hash) {
 			YAHOO_DebugLog("[Avatar Info] File: '%s' CK: %d", szMyFile, hash);	
@@ -194,10 +202,7 @@ HBITMAP YAHOO_SetAvatar(const char *szFile)
 				YAHOO_SetString(NULL, "AvatarFile", szMyFile);
 				DBWriteContactSettingDword(NULL, yahooProtocolName, "AvatarHash", hash);
 			
-				sf = (y_filetransfer*) malloc(sizeof(y_filetransfer));
-				sf->filename = strdup(szMyFile);
-				sf->cancel = 0;
-				pthread_create(yahoo_send_avt_thread, sf);
+				YAHOO_SendAvatar(szMyFile);
 			} else {
 				YAHOO_DebugLog("[Avatar Info] Same checksum and avatar on YahooFT. Not Reuploading.");	  
 			}
@@ -416,7 +421,7 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	return ERROR_SUCCESS;
 }
 
-void upload_avt(int id, int fd, int error, void *data) 
+void upload_avt(int id, int fd, int error, void *data)
 {
     y_filetransfer *sf = (y_filetransfer*) data;
     long size = 0, rsize = 0;
@@ -533,15 +538,14 @@ void upload_avt(int id, int fd, int error, void *data)
     LOG(("File send complete!"));
 }
 
-void YAHOO_SendAvatar(y_filetransfer *sf)
+void YAHOO_SendAvatar(const char *szFile)
 {
-	long tFileSize = 0;
-	{	struct _stat statbuf;
-		if ( _stat( sf->filename, &statbuf ) == 0 )
-			tFileSize += statbuf.st_size;
-	}
+	y_filetransfer *sf;
 
-	yahoo_send_avatar(ylad->id, sf->filename, tFileSize, &upload_avt, sf);
+	sf = (y_filetransfer*) malloc(sizeof(y_filetransfer));
+	sf->filename = strdup(szFile);
+	sf->cancel = 0;
+	pthread_create(yahoo_send_avt_thread, sf);
 }
 
 void yahoo_reset_avatar(HANDLE 	hContact, int bFail)

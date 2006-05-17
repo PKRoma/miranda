@@ -1857,12 +1857,6 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 			} 
 
 			break;
-		case 3: /* my id/nick */
-			
-			if (pair->value)
-				YAHOO_CALLBACK(ext_yahoo_got_nick)(yd->client_id, pair->value);
-			
-			break;
 		case 90: /* 1 */
 		case 100: /* 0 */
 		case 101: /* NULL */
@@ -2597,21 +2591,13 @@ static void yahoo_process_mail(struct yahoo_input_data *yid, struct yahoo_packet
 		YAHOO_CALLBACK(ext_yahoo_mail_notify)(yd->client_id, NULL, NULL, count);
 }
 
-static void yahoo_process_contact(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
+static void yahoo_buddy_added_us(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
 	struct yahoo_data *yd = yid->yd;
 	char *id = NULL;
 	char *who = NULL;
 	char *msg = NULL;
-	char *name = NULL;
 	long tm = 0L;
-	int state = YAHOO_STATUS_AVAILABLE;
-	int online = FALSE;
-	int away = 0;
-	int idle = 0;
-	int mobile = 0;
-	int cksum = 0;
-	int buddy_icon = -1;
 	YList *l;
 
 	for (l = pkt->hash; l; l = l->next) {
@@ -2624,47 +2610,59 @@ static void yahoo_process_contact(struct yahoo_input_data *yid, struct yahoo_pac
 			who = pair->value;
 			break;
 		case 14:
-		case 19:
 			msg = pair->value;
-			break;
-		case 7:
-			name = pair->value;
-			break;
-		case 10:
-			state = strtol(pair->value, NULL, 10);
 			break;
 		case 15:
 			tm = strtol(pair->value, NULL, 10);
-			break;
-		case 13:
-			online = strtol(pair->value, NULL, 10);
-			break;
-		case 47:
-			away = strtol(pair->value, NULL, 10);
-			break;
-		case 137:
-			idle = strtol(pair->value, NULL, 10);
-			break;
-		case 60:
-			mobile = strtol(pair->value, NULL, 10);
-			break;
-		case 192:
-			cksum = strtol(pair->value, NULL, 10);
-			break;
-		case 213:
-			buddy_icon = strtol(pair->value, NULL, 10);
 			break;
 		default:
 			LOG(("key: %d => value: '%s'", pair->key, pair->value));
 		}
 	}
 
-	if (id)
-		YAHOO_CALLBACK(ext_yahoo_contact_added)(yd->client_id, id, who, msg);
-	else if (name)
-		YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, state, msg, away, idle, mobile, cksum, buddy_icon);
-	else if(pkt->status == 0x07)
-		YAHOO_CALLBACK(ext_yahoo_rejected)(yd->client_id, who, msg);
+	YAHOO_CALLBACK(ext_yahoo_contact_added)(yd->client_id, id, who, msg);
+}
+
+static void yahoo_buddy_denied_our_add(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
+{
+	struct yahoo_data *yd = yid->yd;
+	char *who = NULL;
+	char *msg = NULL;
+	YList *l;
+	
+	for (l = pkt->hash; l; l = l->next) {
+		struct yahoo_pair *pair = l->data;
+		switch (pair->key) {
+		case 3:
+			who = pair->value;
+			break;
+		case 14:
+			msg = pair->value;
+			break;
+		default:
+			LOG(("key: %d => value: '%s'", pair->key, pair->value));
+		}
+	}
+
+	YAHOO_CALLBACK(ext_yahoo_rejected)(yd->client_id, who, msg);
+}
+
+static void yahoo_process_contact(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
+{
+	switch (pkt->status) {
+	case 1:
+		yahoo_process_status(yid, pkt);
+		return;
+	case 3:
+		yahoo_buddy_added_us(yid, pkt);
+		break;
+	case 7:
+		yahoo_buddy_denied_our_add(yid, pkt);
+		break;
+	default:
+		LOG(("Unknown status value: '%s'", pkt->status));
+	}
+
 }
 
 static void yahoo_process_buddyadd(struct yahoo_input_data *yid, struct yahoo_packet *pkt)

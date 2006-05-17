@@ -121,16 +121,6 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_stealthlist)(int id, char *stealthlist);
 
 
 /*
- * Name: ext_yahoo_got_nick
- * 	Called when the contact list is got from the server
- * Params:
- * 	id   - the id that identifies the server connection
- * 	stealthlist - a string representing buddy ids to hide from
- */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_nick)(int id, const char *nick);
-
-
-/*
  * Name: ext_yahoo_got_avatar_share
  * 	Called when the contact list is got from the server
  * Params:

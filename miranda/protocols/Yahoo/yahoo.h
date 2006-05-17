@@ -206,7 +206,7 @@ void YAHOO_RecvFile(y_filetransfer *ft);
 void YAHOO_FT_cancel(const char *buddy, const char *filename, const char *ft_token, int command);
 void YAHOO_request_avatar(const char* who);
 void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type);
-void YAHOO_SendAvatar(y_filetransfer *sf);
+void YAHOO_SendAvatar(const char *szFile);
 void YAHOO_set_avatar(int buddy_icon);
 void YAHOO_bcast_picture_update(int buddy_icon);
 void YAHOO_bcast_picture_checksum(int cksum);
