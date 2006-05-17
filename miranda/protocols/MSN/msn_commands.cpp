@@ -1050,7 +1050,7 @@ LBL_InvalidCommand:
 				sttSwapInt64( &hash1 );
 				sttSwapInt64( &hash2 );
 
-				info->sendPacket( "QRY", "%s 32\r\n%11I64x%11I64x", msnProductID, hash1 ^ key, hash2 ^ key );
+				info->sendPacket( "QRY", "%s 32\r\n%016I64x%016I64x", msnProductID, hash1 ^ key, hash2 ^ key );
 			}
 			else info->sendPacket( "QRY", "%s 32\r\n%08x%08x%08x%08x", msnProductID,
 				htonl( md5hash[0] ), htonl( md5hash[1] ), htonl( md5hash[2] ), htonl( md5hash[3] ));

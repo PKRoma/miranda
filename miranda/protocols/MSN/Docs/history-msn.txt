@@ -6,6 +6,7 @@ Legend:
 
 Version 0.4.3.1
 ===============
+[!] bug 0001887 fixed: Sometimes getting Error 540 from server then disconnect.
 [!] fix for the invalid chars in the MSN chat
 
 Version 0.4.3.0
