@@ -4,11 +4,7 @@
 	Version="7.10"
 	Name="clist_modern"
 	ProjectGUID="{D9057E63-AAAA-4FE7-800A-20C02F4761F3}"
-	RootNamespace="clist_modern"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	RootNamespace="clist_modern">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -16,7 +12,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="../../bin7/Release/Plugins"
+			OutputDirectory="C:\Dev_CVS\miranda\bin\release\ansi\plugins"
 			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -52,6 +48,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
+				OutputFile="C:\Dev_CVS\miranda\bin\release\ansi\plugins/$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				IgnoreAllDefaultLibraries="FALSE"
@@ -161,7 +158,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="../../bin7/Debug/Plugins"
+			OutputDirectory="c:\debug\plugins"
 			IntermediateDirectory="../../bin7/Debug/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -175,7 +172,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				GeneratePreprocessedFile="0"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="0"
 				DefaultCharIsUnsigned="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -191,6 +188,7 @@
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				ShowProgress="0"
+				OutputFile="c:\debug\plugins/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -228,7 +226,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release Unicode|Win32"
-			OutputDirectory="../../bin7/Release/Plugins"
+			OutputDirectory="C:\Dev_CVS\miranda\bin\release\unicode\plugins"
 			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -241,7 +239,7 @@
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
-				OmitFramePointers="FALSE"
+				OmitFramePointers="TRUE"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				StringPooling="TRUE"
@@ -263,6 +261,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
+				OutputFile="C:\Dev_CVS\miranda\bin\release\unicode\plugins/$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				IgnoreAllDefaultLibraries="FALSE"
@@ -303,6 +302,152 @@
 			<Tool
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
+		<Configuration
+			Name="ReleaseInDebug|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="TRUE"
+			CharacterSet="1"
+			WholeProgramOptimization="TRUE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="2"
+				OmitFramePointers="TRUE"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="FALSE"
+				EnableEnhancedInstructionSet="0"
+				DefaultCharIsUnsigned="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="commonheaders.h"
+				AssemblerOutput="2"
+				BrowseInformation="0"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="1"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
+				OutputFile="C:\debug\plugins/$(ProjectName).dll"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				IgnoreAllDefaultLibraries="FALSE"
+				DelayLoadDLLs="gdiplus.dll"
+				GenerateDebugInformation="TRUE"
+				GenerateMapFile="TRUE"
+				MapExports="FALSE"
+				MapLines="TRUE"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
+				BaseAddress=""/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Release/mwclist.tlb"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="2057"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="debug in release|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			UseOfATL="0"
+			ATLMinimizesCRunTimeLibraryUsage="TRUE"
+			CharacterSet="1">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
+				GeneratePreprocessedFile="0"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				DefaultCharIsUnsigned="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="commonheaders.h"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="4"
+				ShowIncludes="FALSE"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
+				ShowProgress="0"
+				OutputFile="c:\program files\miranda im\plugins/$(ProjectName).dll"
+				LinkIncremental="2"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories=""
+				DelayLoadDLLs="gdiplus.dll"
+				GenerateDebugInformation="TRUE"
+				GenerateMapFile="FALSE"
+				BaseAddress=""/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Debug/mwclist.tlb"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -332,6 +477,13 @@
 						UsePrecompiledHeader="3"
 						PrecompiledHeaderThrough="commonheaders.h"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\clcitems.c">
@@ -344,6 +496,13 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"
@@ -366,6 +525,13 @@
 						UsePrecompiledHeader="3"
 						PrecompiledHeaderThrough="commonheaders.h"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\clcpaint.c">
@@ -378,6 +544,13 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"
@@ -400,6 +573,13 @@
 						UsePrecompiledHeader="3"
 						PrecompiledHeaderThrough="commonheaders.h"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\clistmenus.c">
@@ -412,6 +592,13 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"
@@ -434,6 +621,13 @@
 						UsePrecompiledHeader="3"
 						PrecompiledHeaderThrough="commonheaders.h"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\clistsettings.c">
@@ -446,6 +640,13 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"
@@ -468,6 +669,13 @@
 						UsePrecompiledHeader="3"
 						PrecompiledHeaderThrough="commonheaders.h"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\clui.c">
@@ -485,6 +693,13 @@
 						UsePrecompiledHeader="3"
 						PrecompiledHeaderThrough="commonheaders.h"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\cluiservices.c">
@@ -497,6 +712,13 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"
@@ -531,6 +753,19 @@
 						UsePrecompiledHeader="1"
 						PrecompiledHeaderThrough="commonheaders.h"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="debug in release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\contact.c">
@@ -543,6 +778,13 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"
@@ -565,6 +807,13 @@
 						UsePrecompiledHeader="3"
 						PrecompiledHeaderThrough="commonheaders.h"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\forkthread.c">
@@ -577,6 +826,13 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"
@@ -608,6 +864,13 @@
 						UsePrecompiledHeader="3"
 						PrecompiledHeaderThrough="commonheaders.h"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\keyboard.c">
@@ -625,6 +888,13 @@
 						UsePrecompiledHeader="3"
 						PrecompiledHeaderThrough="commonheaders.h"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\log.c">
@@ -636,33 +906,6 @@
 				RelativePath=".\modern_button.c">
 			</File>
 			<File
-				RelativePath=".\modern_row.cpp">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="movetogroup.c">
 			</File>
 			<File
@@ -670,9 +913,6 @@
 			</File>
 			<File
 				RelativePath=".\rowheight_funcs.c">
-			</File>
-			<File
-				RelativePath=".\SkinEditor.c">
 			</File>
 			<File
 				RelativePath="SkinEngine.c">
@@ -709,6 +949,18 @@
 							Name="VCCLCompilerTool"
 							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="ReleaseInDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="debug in release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\CLUIFrames\cluiframes.h">
@@ -735,6 +987,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="ReleaseInDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="debug in release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							PrecompiledHeaderThrough="../commonheaders.h"/>
@@ -766,6 +1030,18 @@
 							Name="VCCLCompilerTool"
 							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="ReleaseInDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="debug in release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\CLUIFrames\m_cluiframes.h">
@@ -793,6 +1069,13 @@
 							UsePrecompiledHeader="3"
 							PrecompiledHeaderThrough="commonheaders.h"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="ReleaseInDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="commonheaders.h"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\clistopts.c">
@@ -805,6 +1088,13 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="commonheaders.h"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="ReleaseInDebug|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="3"
@@ -827,12 +1117,16 @@
 							UsePrecompiledHeader="3"
 							PrecompiledHeaderThrough="commonheaders.h"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="ReleaseInDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="commonheaders.h"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\genmenuopt.c">
-				</File>
-				<File
-					RelativePath=".\newrowopts.c">
 				</File>
 				<File
 					RelativePath=".\CLUIFrames\protocolorder.c">
@@ -860,48 +1154,118 @@
 							Name="VCCLCompilerTool"
 							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="ReleaseInDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="debug in release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\rowtemplateopt.c">
 				</File>
 				<File
+					RelativePath=".\SkinEditor.c">
+				</File>
+				<File
 					RelativePath=".\SkinOpt.c">
 				</File>
-			</Filter>
-			<Filter
-				Name="CPP files"
-				Filter="">
-				<File
-					RelativePath=".\gdiplus.cpp">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							CompileAs="2"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							CompileAs="2"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							CompileAs="2"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							CompileAs="2"/>
-					</FileConfiguration>
-				</File>
+				<Filter
+					Name="CPP files"
+					Filter="">
+					<File
+						RelativePath=".\gdiplus.cpp">
+						<FileConfiguration
+							Name="Release|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								CompileAs="2"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								CompileAs="2"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug Unicode|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								CompileAs="2"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release Unicode|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								CompileAs="2"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="ReleaseInDebug|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								CompileAs="2"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="debug in release|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								CompileAs="2"/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath=".\modern_row.cpp">
+						<FileConfiguration
+							Name="Release|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug Unicode|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release Unicode|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="ReleaseInDebug|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="debug in release|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""/>
+						</FileConfiguration>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -921,6 +1285,43 @@
 			</File>
 			<File
 				RelativePath=".\commonprototypes.h">
+			</File>
+			<File
+				RelativePath=".\effectenum.h">
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="debug in release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\forkthread.h">
@@ -948,6 +1349,9 @@
 			</File>
 			<File
 				RelativePath=".\m_genmenu.h">
+			</File>
+			<File
+				RelativePath=".\m_icolib.h">
 			</File>
 			<File
 				RelativePath="m_metacontacts.h">
@@ -994,6 +1398,11 @@
 					<Tool
 						Name="VCCustomBuildTool"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseInDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -1001,12 +1410,6 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
 				RelativePath=".\res\1.ico">
-			</File>
-			<File
-				RelativePath=".\res\10.ico">
-			</File>
-			<File
-				RelativePath=".\res\11.ico">
 			</File>
 			<File
 				RelativePath=".\res\2.ico">
@@ -1028,9 +1431,6 @@
 			</File>
 			<File
 				RelativePath=".\res\8.ico">
-			</File>
-			<File
-				RelativePath=".\res\9.ico">
 			</File>
 			<File
 				RelativePath=".\res\addgoupp.ico">
@@ -1073,6 +1473,36 @@
 			</File>
 			<File
 				RelativePath=".\res\lunch.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroAway.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroChat.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroDnd.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroInvisible.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroLunch.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroNa.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroOccupied.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroOffline.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroPhone.ico">
+			</File>
+			<File
+				RelativePath=".\res\Miranda.ico">
 			</File>
 			<File
 				RelativePath=".\res\NA.ico">
@@ -1123,6 +1553,12 @@
 				RelativePath=".\res\sms.ico">
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\res\Back.tga">
+		</File>
+		<File
+			RelativePath=".\res\skin.msf">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

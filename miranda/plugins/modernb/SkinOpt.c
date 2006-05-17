@@ -653,7 +653,7 @@ static HTREEITEM FindChild(HWND hTree, HTREEITEM Parent, char * Caption, void * 
 				TreeView_GetItem(hTree,&tvi);
 				sd=(SkinListData*)(tvi.lParam);
 				if (sd)
-					if (!_strcmpi(sd->File,((SkinListData*)data)->File))
+					if (!strcmpi(sd->File,((SkinListData*)data)->File))
 						return tmp;
 			}
 			else

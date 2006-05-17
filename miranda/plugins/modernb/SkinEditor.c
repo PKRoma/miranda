@@ -156,7 +156,7 @@ int enumDB_SkinObjectsForEditorProc(const char *szSetting,LPARAM lParam)
 		}
 		mir_free(descKey);		
 	}	
-	return 1;
+	return 0;
 }
 
 int FillObjectTree(HWND hwndDlg, int ObjectTreeID, char * wildmask)

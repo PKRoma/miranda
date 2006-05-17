@@ -75,7 +75,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <direct.h>
 #include "resource.h"
 #include "forkthread.h"
-#include "win2k.h"
+#include <win2k.h>
 
 #include <newpluginapi.h>
 #include <m_system.h>
@@ -128,7 +128,7 @@ extern HINSTANCE g_hInst;
   * easy search and replace
 
 */
-typedef  struct _menuProto
+typedef  struct _menuProto 
 {
   char *szProto;
   HANDLE menuID;
@@ -141,6 +141,7 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #define alloc(n) mir_alloc(n)
 
 #define MAX_REGS(_A_) (sizeof(_A_)/sizeof(_A_[0]))
+
 
 #define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
 #define mir_free(ptr) { mir_free_proxy(ptr); ptr=NULL; }
@@ -168,7 +169,7 @@ extern __inline wchar_t * mir_strdupW(const wchar_t * src);
 #endif
 
 
-extern char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
+char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
 extern wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting);
 extern TCHAR *DBGetStringT(HANDLE hContact,const char *szModule,const char *szSetting);
 extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
@@ -232,7 +233,7 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 
 #ifdef _DEBUG
 #define DeleteObject(a) DebugDeleteObject(a)
-#endif
+#endif 
 
 #define lockdat
 //EnterCriticalSection(&(dat->lockitemCS))

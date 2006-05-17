@@ -740,6 +740,7 @@ HBITMAP CreateBitmap32Point(int cx, int cy, void ** bits)
 #endif
 	  ;
   }
+  else	memset(ptPixels,0,cx*cy*4);
   if (bits!=NULL) *bits=ptPixels;  
   return DirectBitmap;
 }
@@ -2850,7 +2851,7 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
         
       }
   }
-	if (sz.cy>2000) DebugBreak();
+	//if (sz.cy>2000) DebugBreak();
 	sz.cx+=4;
 	sz.cy+=4;
   if (sz.cx>0 && sz.cy>0)

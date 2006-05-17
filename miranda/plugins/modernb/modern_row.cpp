@@ -69,12 +69,12 @@ extern "C"
 #include "modern_row.h"
 
 //Futher declaration
-BOOL rowParse(ROWCELL* &cell, ROWCELL* parent, char *tbuf, int &hbuf, int &sequence, ROWCELL* *RowTabAccess );
-void rowSizeWithReposition(ROWCELL* &root, int width);
+extern "C" BOOL rowParse(ROWCELL* &cell, ROWCELL* parent, char *tbuf, int &hbuf, int &sequence, ROWCELL* *RowTabAccess );
+extern "C" void rowSizeWithReposition(ROWCELL* &root, int width);
 void rowCalculateMinSize(ROWCELL* cell);
 void rowEqualize(ROWCELL* cell);
 void rowResetEmptyRects(ROWCELL* cell);
-int rowDeleteTree(ROWCELL* &cell);
+extern "C" void rowDeleteTree(ROWCELL* cell);
 ////////
 
 
@@ -144,7 +144,7 @@ ROWCELL *cppInitModernRow(ROWCELL	** tabAccess)
 
 extern "C" void cppDeleteTree(ROWCELL	* RowRoot)
 {
-	ROWCELL *&rc=RowRoot;
+	ROWCELL *rc=RowRoot;
 	rowDeleteTree(rc);
 }
 
@@ -170,7 +170,7 @@ extern "C" void cppCalculateRowItemsPos(ROWCELL	*RowRoot, int width)
 // cont - тип контейнера: строка, столбец или корневой узел
 //
 //
-const ROWCELL * rowAddCell(ROWCELL* &link, int cont)
+extern "C" const ROWCELL * rowAddCell(ROWCELL* &link, int cont)
 {
 	link = (ROWCELL*)malloc(sizeof(ROWCELL));
 	ZeroMemory(link, sizeof(ROWCELL));
@@ -183,13 +183,16 @@ const ROWCELL * rowAddCell(ROWCELL* &link, int cont)
 // cell - адрес корневого узла дерева описания контакта
 //
 //
-int rowDeleteTree(ROWCELL* &cell)
+extern "C" void rowDeleteTree(ROWCELL* cell)
 {
-	if (cell->child) rowDeleteTree(cell->child);
-	if (cell->next)  rowDeleteTree(cell->next);
+	if (!cell) return;
+	if (cell->child)
+		rowDeleteTree((ROWCELL*)(cell->child));
+	if (cell->next) 
+		rowDeleteTree((ROWCELL*)(cell->next));
 	free(cell);	
 	cell = NULL;
-	return 0;
+	return;
 }
 
 // rowParserGetNextWord
@@ -364,7 +367,7 @@ void rowParserGetParam(ROWCELL* &cell, char *tbuf, int &hbuf)
 // hbuf - указатель буфера
 // sequence - нужно задавать 0, это очередность нахождения
 //
-BOOL rowParse(ROWCELL* &cell, ROWCELL* parent, char *tbuf, int &hbuf, int &sequence, ROWCELL* *RowTabAccess )
+extern "C" BOOL rowParse(ROWCELL* &cell, ROWCELL* parent, char *tbuf, int &hbuf, int &sequence, ROWCELL* *RowTabAccess )
 {
 	char * word;
 	word = rowParserGetNextWord(tbuf, hbuf);
@@ -821,7 +824,7 @@ void rowPositioning(pROWCELL cell, int &dist)
 // Производит просчет и позиционирование элементов котакта
 // Перед вызовом необходимо заполнить структуру RowTA
 //
-void rowSizeWithReposition(ROWCELL* &root, int width)
+extern "C" void rowSizeWithReposition(ROWCELL* &root, int width)
 {
 	root->h = 0;
 	root->w = 0;

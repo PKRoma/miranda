@@ -731,7 +731,7 @@ pProtoTicks GetProtoTicksByProto(char * szProto)
 			CycleStartTick[i].szProto=mir_strdup(szProto);
 			CycleStartTick[i].CycleStartTick=0;
 			CycleStartTick[i].n=i;			
-			CycleStartTick[i].isGlobal=_strcmpi(szProto,GLOBAL_PROTO_NAME)==0;
+			CycleStartTick[i].isGlobal=strcmpi(szProto,GLOBAL_PROTO_NAME)==0;
 			return(&CycleStartTick[i]);
 		}
 	}
