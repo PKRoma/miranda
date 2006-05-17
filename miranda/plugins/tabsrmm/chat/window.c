@@ -1247,7 +1247,6 @@ static void __cdecl forkthread_r(void *param)
 	} __finally {
 		CallService(MS_SYSTEM_THREAD_POP,0,0);
 	} 
-
 	return;
 }
 
@@ -1321,7 +1320,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
             BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
 
-            SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
+            //SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
             
             OldSplitterProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_SPLITTERX),GWL_WNDPROC,(LONG)SplitterSubclassProc);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_SPLITTERY),GWL_WNDPROC,(LONG)SplitterSubclassProc);

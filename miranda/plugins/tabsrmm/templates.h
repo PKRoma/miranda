@@ -43,7 +43,7 @@ typedef struct _tagTemplateEditorNew {
 } TemplateEditorNew;
 
 BOOL CALLBACK DlgProcTemplateEdit(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl);
+static void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl);
 void LoadDefaultTemplates();
 
 #define DM_UPDATETEMPLATEPREVIEW (WM_USER + 50)

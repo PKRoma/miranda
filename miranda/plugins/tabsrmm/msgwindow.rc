@@ -82,7 +82,7 @@ BEGIN
     CONTROL         "",IDC_MSGSENDLATER,"TSButtonClass",WS_TABSTOP,146,10,55,
                     12
     LTEXT           "",IDC_STATICTEXT,27,0,160,9,SS_OWNERDRAW
-    ICON            "",IDC_STATICERRORICON,4,3,20,20,SS_CENTERIMAGE
+    CONTROL         "",IDC_STATICERRORICON,"Static",SS_OWNERDRAW,4,3,20,20
     CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_NOHIDESEL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,
                     188,30,WS_EX_STATICEDGE
@@ -90,11 +90,9 @@ BEGIN
                     0x18000000L
     CONTROL         "Dont",IDC_CANCELADD,"TSButtonClass",WS_TABSTOP,171,64,
                     16,14,0x18000000L
-    ICON            "",IDC_MULTIPLEICON,0,64,21,20,SS_CENTERIMAGE
     CONTROL         "",IDC_LOGFROZEN,"TSButtonClass",WS_TABSTOP,171,0,16,14,
                     0x18000000L
     LTEXT           "",IDC_LOGFROZENTEXT,10,3,200,10,SS_OWNERDRAW
-    CONTROL         "",IDC_PANELPIC,"Button",BS_OWNERDRAW,154,0,34,25
     CONTROL         "",IDC_PANELSTATUS,"Static",SS_OWNERDRAW | 
                     SS_CENTERIMAGE | WS_GROUP,10,16,100,14
     CONTROL         "",IDC_PANELNICK,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
@@ -110,8 +108,7 @@ BEGIN
                     WS_EX_RTLREADING
     CONTROL         "",IDC_PANELSPLITTER,"Static",SS_ENHMETAFILE,0,32,188,2,
                     WS_EX_STATICEDGE
-    CONTROL         "",IDC_PANEL,"Static",SS_ENHMETAFILE | WS_CLIPSIBLINGS,0,
-                    0,188,31
+    CONTROL         "",IDC_PANELPIC,"Button",BS_OWNERDRAW,154,0,34,25
 END
 
 #endif    // Neutral resources

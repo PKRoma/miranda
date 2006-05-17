@@ -38,6 +38,8 @@ MYGLOBALS myGlobals;
 NEN_OPTIONS nen_options;
 extern PLUGININFO pluginInfo;
 
+CRITICAL_SECTION cs_sessions;
+
 static void InitREOleCallback(void);
 static void UnloadIcons();
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam);
@@ -379,6 +381,7 @@ static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
     HANDLE hContact = ((CLISTEVENT *) lParam)->hContact;
     struct ContainerWindowData *pContainer = 0;
     
+    EnterCriticalSection(&cs_sessions);
     hwndExisting = WindowList_Find(hMessageWindowList, hContact);
     
     if (hwndExisting != NULL) {
@@ -394,6 +397,7 @@ static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
             pContainer = CreateContainer(szName, FALSE, hContact);
 		CreateNewTabForContact (pContainer, hContact, 0, NULL, TRUE, TRUE, FALSE, 0);
     }
+    LeaveCriticalSection(&cs_sessions);
     return 0;
 }
 
@@ -560,6 +564,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
         return 0;
     }
 
+    EnterCriticalSection(&cs_sessions);
     if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
         if (lParam) {
             HWND hEdit;
@@ -577,8 +582,10 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
          * strange problem, maybe related to the window list service in miranda?
          */
         if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "trayfix", 0)) {
-            if(myGlobals.hLastOpenedContact == (HANDLE)wParam)
+            if(myGlobals.hLastOpenedContact == (HANDLE)wParam) {
+                LeaveCriticalSection(&cs_sessions);
                 return 0;
+            }
         }
         myGlobals.hLastOpenedContact = (HANDLE)wParam;
         GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
@@ -587,6 +594,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
             pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
 		CreateNewTabForContact(pContainer, (HANDLE) wParam, !isSplit, (const char *) lParam, TRUE, TRUE, FALSE, 0);
     }
+    LeaveCriticalSection(&cs_sessions);
     return 0;
 }
 
@@ -1003,6 +1011,8 @@ int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
     while(pFirstContainer)
         SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
 
+    DeleteCriticalSection(&cs_sessions);
+
     //UnregisterClass(_T("TabSRMSG_Win"), g_hInst);
     return 0;
 }
@@ -1196,7 +1206,8 @@ tzdone:
     
     hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
     hUserPrefsWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
-    
+
+    InitializeCriticalSection(&cs_sessions);
     InitOptions();
     hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
     hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);

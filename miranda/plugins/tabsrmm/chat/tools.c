@@ -543,7 +543,7 @@ flash_and_switch:
 
             // autoswitch tab..
             if(bMustAutoswitch) {
-                if(IsIconic(dat->pContainer->hwnd) && !IsZoomed(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs && dat->pContainer->hwndActive != si->hWnd) {
+                if((dat->pContainer->bInTray || IsIconic(dat->pContainer->hwnd)) && !IsZoomed(dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs && dat->pContainer->hwndActive != si->hWnd) {
                     int iItem = GetTabIndexFromHWND(hwndTab, si->hWnd);
                     if (iItem >= 0) {
                         TabCtrl_SetCurSel(hwndTab, iItem);

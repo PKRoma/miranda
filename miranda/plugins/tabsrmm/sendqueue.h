@@ -49,7 +49,7 @@ void ClearSendJob(int iIndex);
 int FindNextFailedMsg(HWND hwndDlg, struct MessageWindowData *dat);
 void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);
 int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int isUnicode);
-int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);
+static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);
 void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat);
 void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, char *szErrMsg);
 void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);

@@ -2422,7 +2422,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                 time_t final_time;
                 time_t now = time(NULL);
                 HFONT oldFont = 0;
-                COLORREF oldColor;
                 int base_hour;
                 char symbolic_time[3];
                 
@@ -2439,22 +2438,19 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                 if(sUIN.cx + sTime.cx + 23 < dis->rcItem.right - dis->rcItem.left) {
                     dis->rcItem.left = dis->rcItem.right - sTime.cx - 3 - 16;
                     oldFont = SelectObject(dis->hDC, myGlobals.m_hFontWebdings);
-                    oldColor = GetTextColor(dis->hDC);
-                    SetTextColor(dis->hDC, myGlobals.ipConfig.clrClockSymbol);
-                    base_hour = atoi(szResult);
+                    base_hour = atoi(szResult);               
                     base_hour = base_hour > 11 ? base_hour - 12 : base_hour;
                     symbolic_time[0] = (char)(0xB7 + base_hour);
                     symbolic_time[1] = 0;
                     //DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, myGlobals.g_IconClock, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
                     DrawTextA(dis->hDC, symbolic_time, 1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
                     SelectObject(dis->hDC, oldFont);
-                    SetTextColor(dis->hDC, oldColor);
                     dis->rcItem.left += 16;
                     DrawTextA(dis->hDC, szResult, lstrlenA(szResult), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
                 }
             }
         }
-        if(config && hOldFont)
+        if(hOldFont)
             SelectObject(dis->hDC, hOldFont);
         return TRUE;
 	}
@@ -2474,14 +2470,14 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		DrawText(dis->hDC, szWindowText, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_NOCLIP | DT_END_ELLIPSIS);
 		return TRUE;
 	}
-	else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICERRORICON) || dis->hwndItem == GetDlgItem(hwndDlg, IDC_MULTIPLEICON)) {
+	else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICERRORICON)) {
 		_DebugPopup(0, "draw icon");
 		if(dat->pContainer->bSkinned)
 			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
 		else
 			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
 		DrawIconEx(dis->hDC, (dis->rcItem.right - dis->rcItem.left) / 2 - 8, (dis->rcItem.bottom - dis->rcItem.top) / 2 - 8,
-				   (HICON)SendMessage(dis->hwndItem, STM_GETICON, 0, 0), 16, 16, 0, 0, DI_NORMAL);
+				   myGlobals.g_iconErr, 16, 16, 0, 0, DI_NORMAL);
 		return TRUE;
 	}
     return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);

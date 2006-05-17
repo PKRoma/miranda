@@ -74,7 +74,6 @@
 #define IDC_CLOSE                       1024
 #define IDC_SAVE                        1025
 #define IDC_CHKACTR_DISMISS             1026
-#define IDC_MULTIPLEICON                1027
 #define IDC_CHKACTR_OPEN                1028
 #define IDC_CONTACTPIC                  1029
 #define IDC_CHKACTR_REMOVE              1030

@@ -99,6 +99,8 @@
 #define ID_SEARCH_WIKIPEDIA             40028
 #define ID_WIKIPEDIA_                   40029
 
+#define IDC_STATIC                      -1
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

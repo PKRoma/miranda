@@ -96,11 +96,27 @@ typedef struct tagNMMOUSE {
 } NMMOUSE, *LPNMMOUSE;
 #endif
 
+#define __forceinline __inline
+
+#define GRADIENT_FILL_RECT_V 1
+#define GRADIENT_FILL_RECT_H 0
+#define CS_DROPSHADOW       0x00020000
+#define CFE_LINK		0x0020
+
+#define __try
+#define __except(x) if (0) /* don't execute handler */
+#define __finally
+
+#define _try __try
+#define _except __except
+#define _finally __finally
+
+/*
 typedef struct _settextex {
     DWORD	flags;
     UINT	codepage;
 } SETTEXTEX;
-
+*/
 #endif
 
 #define NR_LOGICONS 8
@@ -605,11 +621,11 @@ typedef struct {
 #define SESSIONTYPE_IM 1
 #define SESSIONTYPE_CHAT 2
 
-void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
+static void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
 void IMG_InitDecoder();
-void LoadSkinItems(char *file);
-void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc);
-void IMG_LoadItems(char *szFileName);
+static void LoadSkinItems(char *file);
+static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc);
+static void IMG_LoadItems(char *szFileName);
 void IMG_DeleteItems();
 void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, BYTE RADIUS, ImageItem *imageItem);
 void SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget);
