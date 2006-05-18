@@ -140,10 +140,9 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			case IDC_MANAGEGROUPS:
 				if ( IsDlgButtonChecked( hwndDlg, IDC_MANAGEGROUPS ))
-					if ( IDYES == MessageBoxA( hwndDlg,
-											MSN_Translate( "Server groups import may change your contact list layout after next login. "
-																"Do you want to upload your groups to the server?" ),
-											MSN_Translate( "MSN Protocol" ), MB_YESNOCANCEL ))
+					if ( IDYES == MessageBox( hwndDlg,
+											TranslateT( "Server groups import may change your contact list layout after next login. Do you want to upload your groups to the server?" ),
+											TranslateT( "MSN Protocol" ), MB_YESNOCANCEL ))
 						(new ThreadData())->startThread( sttUploadGroups );
 				goto LBL_Apply;
 
@@ -250,7 +249,7 @@ LBL_Continue:
 			MSN_SetStringT( NULL, "MailerPath", screenStr );
 
 			if ( reconnectRequired && msnLoggedIn )
-				MessageBoxA( hwndDlg, MSN_Translate( "The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), "MSN Options", MB_OK );
+				MessageBox( hwndDlg, TranslateT( "The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), _T("MSN Options"), MB_OK );
 
 			LoadOptions();
 			return TRUE;
@@ -419,9 +418,9 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			MSN_SetString( NULL, "YourHost", str );
 
 			if ( restartRequired )
-				MessageBoxA( hwndDlg, MSN_Translate( "The changes you have made require you to restart Miranda IM before they take effect"), "MSN Options", MB_OK );
-			if ( reconnectRequired && msnLoggedIn )
-				MessageBoxA( hwndDlg, MSN_Translate( "The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), "MSN Options", MB_OK );
+				MessageBox( hwndDlg, TranslateT( "The changes you have made require you to restart Miranda IM before they take effect"), TranslateT( "MSN Options" ), MB_OK );
+			else if ( reconnectRequired && msnLoggedIn )
+				MessageBox( hwndDlg, TranslateT( "The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), TranslateT( "MSN Options" ), MB_OK );
 
 			LoadOptions();
 			return TRUE;
