@@ -1571,9 +1571,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
             else
                 mir_snprintf(szFinalStatusBarText, 512, "%s", pszDispName);
             
-			SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0 | SBT_NOBORDERS, (LPARAM)szFinalStatusBarText);
+			SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM)szFinalStatusBarText);
             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_buttonBarIcons[16] : 0));
-            SendMessageA(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 0 | SBT_NOBORDERS, (LPARAM)szFinalStatusBarText);
+            SendMessageA(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 0, (LPARAM)szFinalStatusBarText);
             UpdateStatusBar(hwndDlg, dat);
 			return TRUE;
 		} break;
@@ -1668,7 +1668,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case GC_ACKMESSAGE:
 		{	
 			SendDlgItemMessage(hwndDlg,IDC_CHAT_MESSAGE,EM_SETREADONLY,FALSE,0);
-			SendDlgItemMessage(hwndDlg,IDC_CHAT_MESSAGE,WM_SETTEXT,0, (LPARAM)"");
+			SendDlgItemMessage(hwndDlg,IDC_CHAT_MESSAGE,WM_SETTEXT,0, (LPARAM)_T(""));
 			return TRUE;
 		} break;
 
@@ -2405,7 +2405,7 @@ LABEL_SHOWWINDOW:
 					SendDlgItemMessage(hwndDlg,IDC_CHAT_MESSAGE,EM_SETREADONLY,TRUE,0);
 				}
 				else
-					SendDlgItemMessage(hwndDlg,IDC_CHAT_MESSAGE,WM_SETTEXT,0,(LPARAM)"");
+					SendDlgItemMessage(hwndDlg,IDC_CHAT_MESSAGE,WM_SETTEXT,0,(LPARAM)_T(""));
 
 				EnableWindow(GetDlgItem(hwndDlg,IDOK),FALSE);
 

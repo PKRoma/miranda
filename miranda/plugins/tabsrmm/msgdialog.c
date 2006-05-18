@@ -311,10 +311,6 @@ UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID
     NCCALCSIZE_PARAMS *nccp = (NCCALCSIZE_PARAMS *)lParam;
     BOOL bReturn = FALSE;
 
-    if((mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER) && skinID == ID_EXTBKINPUTAREA) {
-        InflateRect(&nccp->rgrc[0], -1, -1);
-        return WVR_REDRAW;
-    }
     if(mwdat && mwdat->pContainer->bSkinned && !mwdat->bFlatMsgLog) {
         StatusItems_t *item = &StatusItems[skinID];
         if(!item->IGNORED) {
@@ -330,7 +326,8 @@ UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID
         HDC hdc = GetDC(GetParent(hwnd));
 
         if(MyGetThemeBackgroundContentRect(mwdat->hTheme, hdc, 1, 1, &nccp->rgrc[0], &rcClient) == S_OK) {
-            //InflateRect(&rcClient, -1, -1);
+            if(EqualRect(&rcClient, &nccp->rgrc[0]))
+                InflateRect(&rcClient, -1, -1);
             CopyRect(&nccp->rgrc[0], &rcClient);
             bReturn = TRUE;
         }
@@ -339,6 +336,10 @@ UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID
             return WVR_REDRAW;
         else
             return orig;
+    }
+    if((mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER) && skinID == ID_EXTBKINPUTAREA) {
+        InflateRect(&nccp->rgrc[0], -1, -1);
+        return WVR_REDRAW;
     }
     return orig;
 }
@@ -386,27 +387,35 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 
         //right_off += myGlobals.ncm.iScrollWidth;
 		// clip the client area from the dc
+
 		ExcludeClipRect(hdc, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
-        if(isMultipleReason) {
-            HBRUSH br = CreateSolidBrush(RGB(255, 0, 0));
-            FillRect(hdc, &rcWindow, br);
-            DeleteObject(br);
-        }
-        else if(mwdat->pContainer->bSkinned && !item->IGNORED) {
+        if(mwdat->pContainer->bSkinned && !item->IGNORED) {
 			dcMem = CreateCompatibleDC(hdc);
 			hbm = CreateCompatibleBitmap(hdc, rcWindow.right, rcWindow.bottom);
 			hbmOld = SelectObject(dcMem, hbm);
 			ExcludeClipRect(dcMem, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
 			SkinDrawBG(hwnd, mwdat->pContainer->hwnd, mwdat->pContainer, &rcWindow, dcMem);
-			DrawAlpha(dcMem, &rcWindow, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+            if(isMultipleReason) {
+                HBRUSH br = CreateSolidBrush(RGB(255, 130, 130));
+                FillRect(dcMem, &rcWindow, br);
+                DeleteObject(br);
+            }
+			DrawAlpha(dcMem, &rcWindow, item->COLOR, isMultipleReason ? (item->ALPHA * 3) / 4 : item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
 					  item->CORNER, item->RADIUS, item->imageItem);
 			BitBlt(hdc, 0, 0, rcWindow.right, rcWindow.bottom, dcMem, 0, 0, SRCCOPY);
 			SelectObject(dcMem, hbmOld);
 			DeleteObject(hbm);
 			DeleteDC(dcMem);
 		}
-		else if(MyDrawThemeBackground)
-			MyDrawThemeBackground(mwdat->hTheme, hdc, 1, 1, &rcWindow, &rcWindow);
+		else if(MyDrawThemeBackground) {
+            if(isMultipleReason) {
+                HBRUSH br = CreateSolidBrush(RGB(255, 130, 130));
+                FillRect(hdc, &rcWindow, br);
+                DeleteObject(br);
+            }
+            else
+                MyDrawThemeBackground(mwdat->hTheme, hdc, 1, 1, &rcWindow, &rcWindow);
+        }
 		ReleaseDC(hwnd, hdc);
 		return TRUE;
 	}
@@ -1874,7 +1883,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                     _sntprintf(szBuf, safe_sizeof(szBuf), TranslateT("%s is typing..."), dat->szNickname);
                     szBuf[79] = 0;
-                    SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0 | SBT_NOBORDERS, (LPARAM) szBuf);
+                    SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) myGlobals.g_buttonBarIcons[5]);
                     if(dat->pContainer->hwndSlist)
                         SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[5]);
@@ -1900,12 +1909,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         mir_snprintf(fmt, sizeof(fmt), Translate("UIN: %s"), dat->uin);
                     else
                         mir_snprintf(fmt, sizeof(fmt), Translate("Last received: %s at %s"), date, time);
-                    SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0 | SBT_NOBORDERS, (LPARAM) fmt);
+                    SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_buttonBarIcons[16] : 0));
                     if(dat->pContainer->hwndSlist)
                         SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[16]);
                 } else {
-                    SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0 | SBT_NOBORDERS, (LPARAM) "");
+                    SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) "");
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_buttonBarIcons[16] : 0));
                     if(dat->pContainer->hwndSlist)
                         SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[16]);
@@ -2986,6 +2995,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     KillTimer(hwndDlg, wParam);
                     mir_snprintf(sendJobs[iIndex].szErrorMsg, sizeof(sendJobs[iIndex].szErrorMsg), Translate("Delivery failure: %s"), Translate("The message send timed out"));
                     sendJobs[iIndex].iStatus = SQ_ERROR;
+                    if(!nen_options.iNoSounds && !(dat->pContainer->dwFlags & CNT_NOSOUND))
+                        SkinPlaySound("SendError");
                     if(!(dat->dwFlags & MWF_ERRORSTATE))
                         HandleQueueError(hwndDlg, dat, iIndex);
                     break;
@@ -3030,7 +3041,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         szBuf[255] = 0;
                         dat->nTypeSecs--;
                         if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
-                            SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0 | SBT_NOBORDERS, (LPARAM) szBuf);
+                            SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
                             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) myGlobals.g_buttonBarIcons[5]);
                             if(dat->pContainer->hwndSlist)
                                 SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[5]);
@@ -3610,7 +3621,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             CallService("BuddyPounce/AddToPounce", (WPARAM)dat->hContact, (LPARAM)dat->sendBuffer);
 #endif
                         if(dat->hwndLog != 0 && dat->pContainer->hwndStatus) {
-                            SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, 0 | SBT_NOBORDERS, (LPARAM)Translate("Message saved for later delivery"));
+                            SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM)Translate("Message saved for later delivery"));
                         }
                         else
                             LogErrorMessage(hwndDlg, dat, -1, Translate("Message saved for later delivery"));
@@ -4942,6 +4953,8 @@ quote_from_last:
                      * "hard" errors are handled differently in multisend. There is no option to retry - once failed, they
                      * are discarded and the user is notified with a small log message.
                      */
+                    if(!nen_options.iNoSounds && !(dat->pContainer->dwFlags & CNT_NOSOUND))
+                        SkinPlaySound("SendError");
                     if(sendJobs[iFound].sendCount > 1) {         // multisend is different...
                         char szErrMsg[256];
                         mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: failed sending to: %s", dat->szProto);

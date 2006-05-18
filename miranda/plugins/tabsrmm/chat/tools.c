@@ -583,7 +583,7 @@ flash_and_switch:
         }
     }
 
-    if(bMustAutoswitch)
+    if(bMustFlash)
         UpdateTrayMenu(dat, si->wStatus, si->pszModule, dat ? dat->szStatus : NULL, si->hContact, bHighlight ? 2 : 1);
 
     return TRUE;

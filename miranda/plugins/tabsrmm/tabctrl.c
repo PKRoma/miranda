@@ -40,6 +40,7 @@ extern BOOL g_skinnedContainers;
 
 extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern LRESULT CALLBACK StatusBarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 HMODULE hUxTheme = 0;
 
@@ -100,7 +101,8 @@ int FreeVSApi()
 int RegisterTabCtrlClass(void) 
 {
 	WNDCLASSEXA wc;
-	
+	WNDCLASSEX wce;
+
 	ZeroMemory(&wc, sizeof(wc));
 	wc.cbSize         = sizeof(wc);
 	wc.lpszClassName  = "TSTabCtrlClass";
@@ -110,6 +112,16 @@ int RegisterTabCtrlClass(void)
 	wc.hbrBackground  = 0;
 	wc.style          = CS_GLOBALCLASS | CS_DBLCLKS | CS_PARENTDC;
 	RegisterClassExA(&wc);
+
+    ZeroMemory(&wce, sizeof(wce));
+    wce.cbSize         = sizeof(wce);
+    wce.lpszClassName  = _T("TSStatusBarClass");
+    wce.lpfnWndProc    = StatusBarSubclassProc;
+    wce.hCursor        = LoadCursor(NULL, IDC_ARROW);
+    wce.cbWndExtra     = 4;
+    wce.hbrBackground  = 0;
+    wce.style          = CS_GLOBALCLASS | CS_DBLCLKS | CS_PARENTDC;
+    RegisterClassEx(&wce);
 	return 0;
 }
 

@@ -1014,6 +1014,8 @@ int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
     DeleteCriticalSection(&cs_sessions);
 
     //UnregisterClass(_T("TabSRMSG_Win"), g_hInst);
+    UnregisterClass(_T("TSStatusBarClass"), g_hInst);
+    UnregisterClassA("TSTabCtrlClass", g_hInst);
     return 0;
 }
 
@@ -1225,6 +1227,8 @@ tzdone:
     SkinAddNewSoundEx("RecvMsgInactive", Translate("Messages"), Translate("Incoming (Unfocused Window)"));
     SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming (New Session)"));
     SkinAddNewSoundEx("SendMsg", Translate("Messages"), Translate("Outgoing"));
+    SkinAddNewSoundEx("SendError", Translate("Messages"), Translate("Error sending message"));
+
     myGlobals.hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
     myGlobals.hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
     myGlobals.hCurHyperlinkHand = LoadCursor(NULL, IDC_HAND);

@@ -682,7 +682,7 @@ void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
             len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
         _snprintf(buf, sizeof(buf), "%s %d/%d", dat->lcID, dat->iOpenJobs, len);
-        SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 1 | SBT_NOBORDERS, (LPARAM) buf);
+        SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 1, (LPARAM) buf);
     }
 }
 
@@ -695,7 +695,7 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
             SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
             SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
             if(myGlobals.g_SecureIMAvail) {
-                SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, 2 | SBT_NOBORDERS, (LPARAM)"");
+                SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, 2, (LPARAM)"");
                 if((iSecIMStatus = CallService("SecureIM/IsContactSecured", (WPARAM)dat->hContact, 0)) != 0)
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)myGlobals.g_buttonBarIcons[14]);
                 else
@@ -710,7 +710,7 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
                 SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, 0);
         }
         
-		SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, (myGlobals.g_SecureIMAvail ? 3 : 2) | SBT_NOBORDERS, (LPARAM)"");
+		SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, (myGlobals.g_SecureIMAvail ? 3 : 2), (LPARAM)"");
         SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (myGlobals.g_SecureIMAvail ? 3 : 2), (LPARAM)(dat->pContainer->dwFlags & CNT_NOSOUND ? myGlobals.g_buttonBarIcons[23] : myGlobals.g_buttonBarIcons[22]));
         UpdateReadChars(hwndDlg, dat);
         UpdateStatusBarTooltips(hwndDlg, dat, iSecIMStatus);
@@ -824,7 +824,7 @@ void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode)
         char szTipText[64];
         int nParts = SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0);
 
-        SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, (nParts - 1) | SBT_NOBORDERS, (LPARAM)"");
+        SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, (nParts - 1), (LPARAM)"");
 		if(iMode > 0)
             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (nParts - 1), (LPARAM)myGlobals.g_buttonBarIcons[12]);
         else if(iMode == 0)

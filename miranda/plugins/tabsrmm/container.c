@@ -82,7 +82,7 @@ struct ContainerWindowData *pLastActiveContainer = NULL;
 
 TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 
-static WNDPROC OldStatusBarproc, OldContainerWndProc;
+static WNDPROC OldStatusBarproc = 0, OldContainerWndProc = 0;
 
 static struct SIDEBARITEM sbarItems[] = {
     IDC_SBAR_SLIST, SBI_TOP, &myGlobals.g_sideBarIcons[0], "Session List",
@@ -199,7 +199,7 @@ int RegisterContainer(void)
 	ZeroMemory(&wc, sizeof(wc));
 	wc.cbSize         = sizeof(wc);
 	wc.lpszClassName  = _T("TabSRMSG_Win");
-	wc.lpfnWndProc    = ContainerWndProc;
+	wc.lpfnWndProc    = (WNDPROC)ContainerWndProc;
 	wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground  = 0;
 	wc.style          = CS_GLOBALCLASS;
@@ -209,16 +209,50 @@ int RegisterContainer(void)
 	return 0;
 }
 
-static LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    if(!OldStatusBarproc) {
+        WNDCLASSEX wc = {0};
+        wc.cbSize = sizeof(wc);
+        GetClassInfoEx(g_hInst, STATUSCLASSNAME, &wc);
+        OldStatusBarproc = wc.lpfnWndProc;
+    }
     switch(msg) {
+        case WM_CREATE:
+            {
+                CREATESTRUCT *cs = (CREATESTRUCT *)lParam;
+                LRESULT ret;
+                HWND hwndParent = GetParent(hWnd);
+
+                SetWindowLong(hwndParent, GWL_STYLE, GetWindowLong(hwndParent, GWL_STYLE) & ~WS_THICKFRAME);
+                SetWindowLong(hwndParent, GWL_EXSTYLE, GetWindowLong(hwndParent, GWL_EXSTYLE) & ~WS_EX_APPWINDOW);
+                cs->style &= ~SBARS_SIZEGRIP;
+                ret = CallWindowProc(OldStatusBarproc, hWnd, msg, wParam, lParam);
+                SetWindowLong(hwndParent, GWL_STYLE, GetWindowLong(hwndParent, GWL_STYLE) | WS_THICKFRAME);
+                SetWindowLong(hwndParent, GWL_EXSTYLE, GetWindowLong(hwndParent, GWL_EXSTYLE) | WS_EX_APPWINDOW);
+                return ret;
+            }
         case WM_COMMAND:
             if(LOWORD(wParam) == 1001)
                 SendMessage(GetParent(hWnd), DM_SESSIONLIST, 0, 0);
             break;
         case WM_NCHITTEST:
             {
+                RECT r;
+                POINT pt;
                 LRESULT lr = SendMessage(GetParent(hWnd), WM_NCHITTEST, wParam, lParam);
+                int clip = myGlobals.bClipBorder;
+
+                GetWindowRect(hWnd, &r);
+                GetCursorPos(&pt);
+                if(pt.y <= r.bottom && pt.y >= r.bottom - clip - 3) {
+                    if(pt.x > r.left + clip + 4 && pt.x < r.right - clip - 4)
+                        return HTBOTTOM;
+                    if(pt.x < r.left + clip + 4)
+                        return HTBOTTOMLEFT;
+                    if(pt.x > r.right - clip - 4)
+                        return HTBOTTOMRIGHT;
+                }
                 if(lr == HTLEFT || lr == HTRIGHT || lr == HTBOTTOM || lr == HTTOP || lr == HTTOPLEFT || lr == HTTOPRIGHT
                    || lr == HTBOTTOMLEFT || lr == HTBOTTOMRIGHT)
                     return HTTRANSPARENT;
@@ -228,15 +262,11 @@ static LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam
 			{
 				RECT rcClient;
 				struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLong(GetParent(hWnd), GWL_USERDATA);
-                if(pContainer && pContainer->bSkinned) {
+                if(pContainer && pContainer->bSkinned)
                     return 1;
-					GetClientRect(hWnd, &rcClient);
-					SkinDrawBG(hWnd, GetParent(hWnd), pContainer, &rcClient, (HDC)wParam);
-					return 1;
-				}
 				break;
 			}
-		case WM_PAINT:
+        case WM_PAINT:
 			if(!g_skinnedContainers)
 				break;
 			else {
@@ -254,7 +284,8 @@ static LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam
                 struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLong(GetParent(hWnd), GWL_USERDATA);
                 HDC hdcMem = CreateCompatibleDC(hdc);
                 HBITMAP hbm, hbmOld;
-                
+                StatusItems_t *item = &StatusItems[ID_EXTBKSTATUSBARPANEL];
+
                 GetClientRect(hWnd, &rcClient);
                 
                 hbm = CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);
@@ -268,6 +299,9 @@ static LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam
 
 				for(i = 0; i < (int)nParts; i++) {
 					SendMessage(hWnd, SB_GETRECT, (WPARAM)i, (LPARAM)&itemRect);
+                    if(!item->IGNORED)
+                        DrawAlpha(hdcMem, &itemRect, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+                                  item->CORNER, item->RADIUS, item->imageItem);
 					height = itemRect.bottom - itemRect.top;
 					width = itemRect.right - itemRect.left;
 					hIcon = (HICON)SendMessage(hWnd, SB_GETICON, i, 0);
@@ -275,15 +309,18 @@ static LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam
 					result = SendMessageA(hWnd, SB_GETTEXTA, i, (LPARAM)szText);
 					if(hIcon) {
 						if(LOWORD(result) > 1) {				// we have a text
-							DrawIconEx(hdcMem, itemRect.left + 3, (height - 16) / 2, hIcon, 16, 16, 0, 0, DI_NORMAL);
+							DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
 							itemRect.left += 20;
 							DrawTextA(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE);
 						}
 						else
-							DrawIconEx(hdcMem, itemRect.left + ((width - 16) / 2), (height - 16) / 2, hIcon, 16, 16, 0, 0, DI_NORMAL);
+							DrawIconEx(hdcMem, itemRect.left + ((width - 16) / 2), (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
 					}
-					else
-						DrawTextA(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+					else {
+                        itemRect.left +=2;
+                        itemRect.right -= 2;
+                        DrawTextA(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+                    }
 				}
 
                 BitBlt(hdc, 0, 0, rcClient.right, rcClient.bottom, hdcMem, 0, 0, SRCCOPY);
@@ -293,7 +330,7 @@ static LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam
                 DeleteDC(hdcMem);
                 
 				EndPaint(hWnd, &ps);
-				return 0;
+                break;
 			}
         case WM_CONTEXTMENU:
         {
@@ -1210,15 +1247,15 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                     SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
                     GetWindowRect(pContainer->hwndStatus, &rcs);
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 30 - (myGlobals.g_SecureIMAvail ? 24 : 0);
-                    statwidths[1] = (rcs.right - rcs.left) - (SB_CHAR_WIDTH - 8) - 24 - (myGlobals.g_SecureIMAvail ? 24 : 0);
-                    statwidths[2] = (rcs.right - rcs.left) - (myGlobals.g_SecureIMAvail ? (38 + 24) : 38);
-                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 38 : -1;
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 24 - (myGlobals.g_SecureIMAvail ? 24 : 0);
+                    statwidths[1] = (rcs.right - rcs.left) - (SB_CHAR_WIDTH) - 8 - (myGlobals.g_SecureIMAvail ? 24 : 0);
+                    statwidths[2] = (rcs.right - rcs.left) - (myGlobals.g_SecureIMAvail ? (30 + 24) : 30);
+                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 30 : -1;
                     statwidths[4] = -1;
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                     if(pContainer->hwndSlist)
-                        MoveWindow(pContainer->hwndSlist, 2, 3, 16, 16, FALSE);
+                        MoveWindow(pContainer->hwndSlist, 2, (rcs.bottom - rcs.top) / 2 - 7, 16, 16, FALSE);
                 }
                 else
                     pContainer->statusBarHeight = 0;
@@ -2084,7 +2121,7 @@ panel_found:
 
             if(pContainer->dwFlags & CNT_NOSTATUSBAR) {
                 if(pContainer->hwndStatus) {
-                    SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)OldStatusBarproc);
+                    //SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)OldStatusBarproc);
                     if(pContainer->hwndSlist)
                         DestroyWindow(pContainer->hwndSlist);
                     DestroyWindow(pContainer->hwndStatus);
@@ -2094,7 +2131,7 @@ panel_found:
                 }
             }
             else if(pContainer->hwndStatus == 0) {
-                pContainer->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, SBT_TOOLTIPS | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
+                pContainer->hwndStatus = CreateWindowEx(0, _T("TSStatusBarClass"), NULL, SBT_TOOLTIPS | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
                 if(nen_options.bFloaterInWin)
                     pContainer->hwndSlist = CreateWindowExA(0, "TSButtonClass", "", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 1, 2, 18, 18, pContainer->hwndStatus, (HMENU)1001, g_hInst, NULL);
                 else
@@ -2103,17 +2140,18 @@ panel_found:
 				if(sBarHeight && pContainer->bSkinned)
 					SendMessage(pContainer->hwndStatus, SB_SETMINHEIGHT, sBarHeight, 0);
 
-                OldStatusBarproc = (WNDPROC) SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)StatusBarSubclassProc);
+                //OldStatusBarproc = (WNDPROC) SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)StatusBarSubclassProc);
                 SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN, 0, 0);
                 SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 10, 0, 0);
                 SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
                 SendMessage(pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[16]);
                 SendMessage(pContainer->hwndSlist, BUTTONADDTOOLTIP, (WPARAM)Translate("Show session list (right click to show quick menu)"), 0);
+                /*
                 if(pContainer->hwndStatus) {
                     ws = GetWindowLong(pContainer->hwndStatus, GWL_STYLE);
-                    SetWindowLong(pContainer->hwndStatus, GWL_STYLE, ws & ~SBARS_SIZEGRIP);
+                    SetWindowLong(pContainer->hwndStatus, GWL_STYLE, ws | SBARS_SIZEGRIP);
                     SendMessage(hwndDlg, DM_STATUSBARCHANGED, 0, 0);
-                }
+                }*/
             }
             if(pContainer->dwFlags & CNT_NOMENUBAR) {
                 if(pContainer->hMenu)
@@ -2316,7 +2354,7 @@ panel_found:
                 SetMenu(hwndDlg, NULL);
                 if(pContainer->hwndStatus) {
                     DestroyWindow(pContainer->hwndSlist);
-                    SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)OldStatusBarproc);
+                    //SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)OldStatusBarproc);
                     DestroyWindow(pContainer->hwndStatus);
                 }
 
