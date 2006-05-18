@@ -479,9 +479,6 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
   }
 
   SAFE_FREE(&dtsi);
-//  dc.initialised = 0;
-//  dc.wantIdleTime = 0;
-//  dc.packetPending = 0;
 
   // Load local IP information
   dc.dwLocalExternalIP = ICQGetContactSettingDword(NULL, "IP", 0);
@@ -882,7 +879,9 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
         sendPeerInitAck(dc); // ack good PEER_INIT packet
 
         if (dc->incoming)
-        {
+        { // store good IP info
+          ICQWriteContactSettingDword(dc->hContact, "IP", dc->dwRemoteExternalIP); 
+          ICQWriteContactSettingDword(dc->hContact, "RealIP", dc->dwRemoteInternalIP);
           dc->hContact = hContact;
           dc->dwConnCookie = dwCookie;
           sendPeerInit_v78(dc); // reply with our PEER_INIT
