@@ -971,7 +971,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 		cksum = YAHOO_GetDword("AvatarHash", 0);
 		if (cksum) {
 			LOG(("[ext_yahoo_got_picture] URL Expiration Check. Now: %ld Expires: %ld", time(NULL), YAHOO_GetDword("AvatarTS",0)));
-			if (time(NULL) > YAHOO_GetDword("AvatarTS",0) && !DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
+			if (time(NULL) >= YAHOO_GetDword("AvatarTS",0) && !DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
 				LOG(("[ext_yahoo_got_picture] Expired. Re-uploading"));
 				YAHOO_SendAvatar(dbv.pszVal);
 				DBFreeVariant(&dbv);
@@ -1147,7 +1147,6 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 	
 	LOG(("ext_yahoo_got_picture_upload URL:%s timestamp: %d", url, ts));
 
-	//DBWriteContactSettingDword(NULL, yahooProtocolName, "AvatarHash", hash);
 	if (!url) {
 		LOG(("[ext_yahoo_got_picture_upload] Problem with upload?"));
 		return;
@@ -1155,13 +1154,11 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 	
 	cksum = YAHOO_GetDword("AvatarHash", 0);
 	if (cksum != 0) {
-		//char  *szProto;
-		//HANDLE hContact;
-
 		LOG(("[ext_yahoo_got_picture_upload] My Checksum: %d", cksum));
 		
 		YAHOO_SetString(NULL, "AvatarURL", url);
-		YAHOO_SetDword("AvatarTS", ts);
+		//YAHOO_SetDword("AvatarTS", ts);
+		YAHOO_SetDword("AvatarTS", time(NULL) + 60*60*24);
 		
 /*		yahoo_send_picture_checksum(id, NULL, cksum);
 		YAHOO_bcast_picture_update(2);
