@@ -817,8 +817,7 @@ static int MenuModulesLoaded(WPARAM wParam, LPARAM lParam)
 					InsertMenuItem(hStatusMenu, 0, TRUE, &mii);
 					free(ptszProtoName);
 			}	}
-			statusFlags |= flags;
-			statusFlags ^= moreflags;
+			statusFlags |= ( flags & ~moreflags );
 		}
 		for (i = 0; i < SIZEOF(statusModeList); i++)
 			if (!(statusFlags & statusModePf2List[i]))
