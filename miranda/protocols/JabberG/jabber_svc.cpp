@@ -373,7 +373,7 @@ static void sttRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 	if ( cws->value.type == DBVT_DELETED ) {
 		if ( item->group != NULL ) {
 			JabberLog( "Group set to nothing" );
-			JabberAddContactToRoster( item->jid, nick, NULL );
+			JabberAddContactToRoster( item->jid, nick, NULL, item->subscription );
 		}
 	}
 	else {
@@ -381,7 +381,7 @@ static void sttRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		if ( cws->value.pszVal != NULL && lstrcmp( p, item->group )) {
 			JabberLog( "Group set to %s", cws->value.pszVal );
 			if ( p )
-				JabberAddContactToRoster( item->jid, nick, p );
+				JabberAddContactToRoster( item->jid, nick, p, item->subscription );
 		}
 		mir_free( p );
 	}
@@ -401,7 +401,7 @@ static void sttRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 
 	if ( cws->value.type == DBVT_DELETED ) {
 		TCHAR* nick = ( TCHAR* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, ( WPARAM )hContact, GCDNF_NOMYHANDLE | GCDNF_TCHAR );
-		JabberAddContactToRoster( item->jid, nick, item->group );
+		JabberAddContactToRoster( item->jid, nick, item->group, item->subscription );
 		mir_free(nick);
 		return;
 	}
@@ -410,7 +410,7 @@ static void sttRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 	if ( newNick ) {
 		if ( lstrcmp( item->nick, newNick )) {
 			JabberLog( "Renaming contact %s: %s -> %s", item->jid, item->nick, newNick );
-			JabberAddContactToRoster( item->jid, newNick, item->group );
+			JabberAddContactToRoster( item->jid, newNick, item->group, item->subscription );
 		}
 		mir_free( newNick );
 }	}
@@ -440,11 +440,14 @@ void sttAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		return;
 	}
 
+	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, jid.ptszVal );
+	JABBER_SUBSCRIPTION subscription = ( item == NULL ) ? SUB_NONE : item->subscription;
+
 	if ( !DBGetContactSettingTString( hContact, "CList", "Group", &dbv )) {
-		JabberAddContactToRoster( jid.ptszVal, nick, dbv.ptszVal );
+		JabberAddContactToRoster( jid.ptszVal, nick, dbv.ptszVal, subscription );
 		JFreeVariant( &dbv );
 	}
-	else JabberAddContactToRoster( jid.ptszVal, nick, NULL );
+	else JabberAddContactToRoster( jid.ptszVal, nick, NULL, subscription );
 	
 	XmlNode presence( "presence" ); presence.addAttr( "to", jid.ptszVal ); presence.addAttr( "type", "subscribe" );
 	JabberSend( jabberThreadInfo->s, presence );

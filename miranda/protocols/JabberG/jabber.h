@@ -395,7 +395,7 @@ char* __stdcall rtrim( char *string );
 
 //---- jabber_misc.c ------------------------------------------------
 
-void   JabberAddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName );
+void   JabberAddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName, JABBER_SUBSCRIPTION subscription );
 void   JabberChatDllError( void );
 int    JabberCompareJids( const TCHAR* jid1, const TCHAR* jid2 );
 void   JabberContactListCreateGroup( TCHAR* groupName );
