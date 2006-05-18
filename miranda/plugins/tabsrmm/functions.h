@@ -18,7 +18,7 @@ void CreateSystrayIcon(int create);
 void MinimiseToTray(HWND hWnd, BOOL bForceAnimation);
 void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rc);
 void RemoveBalloonTip();
-void FlashTrayIcon(int mode);
+void FlashTrayIcon(HICON hIcon);
 void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced);
 void LoadFavoritesAndRecent();
 void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage);

@@ -120,7 +120,7 @@ int RegisterTabCtrlClass(void)
     wce.hCursor        = LoadCursor(NULL, IDC_ARROW);
     wce.cbWndExtra     = 4;
     wce.hbrBackground  = 0;
-    wce.style          = CS_GLOBALCLASS | CS_DBLCLKS | CS_PARENTDC;
+    wce.style          = CS_GLOBALCLASS | CS_DBLCLKS;
     RegisterClassEx(&wce);
 	return 0;
 }

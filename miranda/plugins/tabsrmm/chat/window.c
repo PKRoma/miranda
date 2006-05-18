@@ -324,7 +324,7 @@ default_process:
             if(isMenu && !isShift && !isCtrl) {
                 switch (LOBYTE(VkKeyScan((TCHAR)wParam))) {
                     case 'S':
-                        if (!(GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_STYLE) & ES_READONLY)) {
+                        if (!(GetWindowLong(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWL_STYLE) & ES_READONLY)) {
                             PostMessage(hwndDlg, WM_COMMAND, IDOK, 0);
                             return 0;
                         }

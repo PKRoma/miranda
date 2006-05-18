@@ -34,6 +34,48 @@ extern  MYGLOBALS myGlobals;
 extern  NEN_OPTIONS nen_options;
 extern  struct ContainerWindowData *pFirstContainer;
 
+BOOL    isAnimThreadRunning = TRUE;
+DWORD   dwTrayAnimThreadID = 0;
+HANDLE  hTrayAnimThread = 0;
+
+static DWORD WINAPI TrayAnimThread(LPVOID vParam)
+{
+    int     iAnimMode = (myGlobals.m_AnimTrayIcons[0] && myGlobals.m_AnimTrayIcons[1] && myGlobals.m_AnimTrayIcons[2] &&
+                            myGlobals.m_AnimTrayIcons[3]);
+    DWORD   dwElapsed = 0, dwAnimStep = 0;
+    HICON   hIconDefault = iAnimMode ? myGlobals.m_AnimTrayIcons[0] : myGlobals.g_iconContainer;
+
+    do {
+        if(isAnimThreadRunning && myGlobals.m_UnreadInTray == 0) {
+            FlashTrayIcon(hIconDefault);                        // restore default icon
+            myGlobals.m_TrayFlashState = 0;
+            dwElapsed = 0;
+            dwAnimStep = 0;
+            SuspendThread(hTrayAnimThread);                       // nothing to do...
+        }
+        if(!isAnimThreadRunning) {
+            FlashTrayIcon(hIconDefault);                        // restore default icon
+            myGlobals.m_TrayFlashState = 0;
+            break;
+        }
+        if(iAnimMode) {
+            dwAnimStep++;
+            if(dwAnimStep > 3)
+                dwAnimStep = 0;
+            FlashTrayIcon(myGlobals.m_AnimTrayIcons[dwAnimStep]);                        // restore default icon
+        }
+        else {                                  // simple flashing
+            dwElapsed += 200;
+            if(dwElapsed >= 600) {
+                myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
+                dwElapsed = 0;
+                FlashTrayIcon(myGlobals.m_TrayFlashState ? 0 : hIconDefault);                        // restore default icon
+            }
+        }
+        Sleep(200);
+    } while (isAnimThreadRunning);
+}
+
 void CreateTrayMenus(int mode)
 {
     if(mode) {
@@ -52,7 +94,7 @@ void CreateTrayMenus(int mode)
             DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
             DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
         }
-        SetTimer(myGlobals.g_hwndHotkeyHandler, 1000, 1000, 0);
+        //SetTimer(myGlobals.g_hwndHotkeyHandler, 1000, 1000, 0);
     }
     else {
         if(myGlobals.g_hMenuTrayUnread != 0) {
@@ -67,7 +109,7 @@ void CreateTrayMenus(int mode)
             DestroyMenu(myGlobals.g_hMenuRecent);
             myGlobals.g_hMenuRecent = 0;
         }
-        KillTimer(myGlobals.g_hwndHotkeyHandler, 1000);
+        //KillTimer(myGlobals.g_hwndHotkeyHandler, 1000);
     }
 }
 /*
@@ -92,10 +134,16 @@ void CreateSystrayIcon(int create)
     if(create && !nen_options.bTrayExist) {
         Shell_NotifyIcon(NIM_ADD, &nim);
         nen_options.bTrayExist = TRUE;
+        isAnimThreadRunning = TRUE;
+        hTrayAnimThread = CreateThread(NULL, 16000, TrayAnimThread, NULL, 0, &dwTrayAnimThreadID);
     }
     else if(create == FALSE && nen_options.bTrayExist) {
         Shell_NotifyIcon(NIM_DELETE, &nim);
         nen_options.bTrayExist = FALSE;
+        isAnimThreadRunning = FALSE;
+        ResumeThread(hTrayAnimThread);
+        WaitForSingleObject(hTrayAnimThread, 5000);
+        hTrayAnimThread = 0;
     }
     ShowWindow(myGlobals.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
 }
@@ -194,7 +242,7 @@ void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rectTo)
  * mode = 1 - restore the original icon
  */
 
-void FlashTrayIcon(int mode)
+void FlashTrayIcon(HICON hIcon)
 {
     NOTIFYICONDATA nim;
 
@@ -206,19 +254,17 @@ void FlashTrayIcon(int mode)
         nim.hWnd = myGlobals.g_hwndHotkeyHandler;
         nim.uID = 100;
         nim.uFlags = NIF_ICON;
-        nim.hIcon = mode ? myGlobals.g_iconContainer : (myGlobals.m_TrayFlashState ? 0 : myGlobals.g_iconContainer);
+        nim.hIcon = hIcon;
         Shell_NotifyIcon(NIM_MODIFY, &nim);
-        myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
-        if(mode)
-            myGlobals.m_TrayFlashState = 0;
+        //myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
+        //if(mode)
+        //    myGlobals.m_TrayFlashState = 0;
     }
     else if(IsWindowVisible(myGlobals.g_hwndHotkeyHandler) && !nen_options.bTraySupport) {
-        HICON hIcon = mode ? myGlobals.g_iconContainer : (myGlobals.m_TrayFlashState ? 0 : myGlobals.g_iconContainer);
-        
         SendDlgItemMessage(myGlobals.g_hwndHotkeyHandler, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
-        myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
-        if(mode)
-            myGlobals.m_TrayFlashState = 0;
+        //myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
+        //if(mode)
+        //    myGlobals.m_TrayFlashState = 0;
     }
 }
 

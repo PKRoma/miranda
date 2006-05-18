@@ -65,6 +65,11 @@
 #define IDI_EMPTY           170
 #define IDI_RESERVED10      171
 
+#define IDI_TRAYANIM1       190
+#define IDI_TRAYANIM2       191
+#define IDI_TRAYANIM3       192
+#define IDI_TRAYANIM4       193
+
 // chat misc
 
 #define IDI_TOPICBUT                    200

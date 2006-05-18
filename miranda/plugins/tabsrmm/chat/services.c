@@ -26,7 +26,6 @@ extern int          g_chat_fully_initialized;
 
 HANDLE				hSendEvent;
 HANDLE				hBuildMenuEvent ;
-HANDLE				g_hSystemPreShutdown;
 HANDLE				g_hHookContactDblClick;
 SESSION_INFO		g_TabSession;
 CRITICAL_SECTION	cs;
@@ -48,13 +47,11 @@ void HookEvents(void)
 {
 	InitializeCriticalSection(&cs);
 	g_hHookContactDblClick=		HookEvent(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
-	g_hSystemPreShutdown =		HookEvent(ME_SYSTEM_PRESHUTDOWN, PreShutdown);
 	return;
 }
 
 void UnhookEvents(void)
 {
-	UnhookEvent(g_hSystemPreShutdown);
 	UnhookEvent(g_hHookContactDblClick);
 	DeleteCriticalSection(&cs);
 	return;
@@ -128,9 +125,8 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
     return 0;
 }
 
-int PreShutdown(WPARAM wParam,LPARAM lParam)
+int Chat_PreShutdown(WPARAM wParam,LPARAM lParam)
 {
-//	if(g_Settings.TabsEnable && g_TabSession.hWnd)
 	SM_BroadcastMessage(NULL, GC_CLOSEWINDOW, 0, 1, FALSE);
 
 	SM_RemoveAll();

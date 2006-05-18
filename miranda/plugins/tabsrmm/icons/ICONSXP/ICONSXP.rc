@@ -65,6 +65,11 @@ IDI_FAVLIST             ICON                    "..\\..\\res\\proxal\\favlist.ic
 IDI_RECENTLIST          ICON                    "..\\..\\res\\proxal\\recentlist.ico"
 IDI_USERPREFS           ICON                    "..\\..\\res\\proxal\\userprefs.ico"
 
+IDI_TRAYANIM1           ICON                    "..\\..\\res\\MessAnim\\m1.ico"
+IDI_TRAYANIM2           ICON                    "..\\..\\res\\MessAnim\\m2.ico"
+IDI_TRAYANIM3           ICON                    "..\\..\\res\\MessAnim\\m3.ico"
+IDI_TRAYANIM4           ICON                    "..\\..\\res\\MessAnim\\m4.ico"
+
 IDI_TAG1                ICON                    "..\\..\\chat\\Icons\\tag1.ico"
 IDI_TAG2                ICON                    "..\\..\\chat\\Icons\\tag2.ico"
 IDI_TOPICBUT            ICON                    "..\\..\\chat\\Icons\\topicbut.ico"

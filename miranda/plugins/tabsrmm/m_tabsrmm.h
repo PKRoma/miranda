@@ -512,6 +512,7 @@ typedef struct _globals {
 	char g_realSkinnedFrame_left, g_realSkinnedFrame_right, g_realSkinnedFrame_bottom, g_realSkinnedFrame_caption;
     HPEN g_SkinLightShadowPen, g_SkinDarkShadowPen;
     NONCLIENTMETRICS ncm;
+    HICON m_AnimTrayIcons[4];
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

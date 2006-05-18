@@ -209,8 +209,13 @@ int RegisterContainer(void)
 	return 0;
 }
 
+static int tooltip_active = FALSE;
+static POINT ptMouse = {0};
+
 LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLong(GetParent(hWnd), GWL_USERDATA);
+
     if(!OldStatusBarproc) {
         WNDCLASSEX wc = {0};
         wc.cbSize = sizeof(wc);
@@ -223,7 +228,6 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                 CREATESTRUCT *cs = (CREATESTRUCT *)lParam;
                 LRESULT ret;
                 HWND hwndParent = GetParent(hWnd);
-
                 SetWindowLong(hwndParent, GWL_STYLE, GetWindowLong(hwndParent, GWL_STYLE) & ~WS_THICKFRAME);
                 SetWindowLong(hwndParent, GWL_EXSTYLE, GetWindowLong(hwndParent, GWL_EXSTYLE) & ~WS_EX_APPWINDOW);
                 cs->style &= ~SBARS_SIZEGRIP;
@@ -246,10 +250,10 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                 GetWindowRect(hWnd, &r);
                 GetCursorPos(&pt);
                 if(pt.y <= r.bottom && pt.y >= r.bottom - clip - 3) {
-                    if(pt.x > r.left + clip + 4 && pt.x < r.right - clip - 4)
-                        return HTBOTTOM;
-                    if(pt.x < r.left + clip + 4)
-                        return HTBOTTOMLEFT;
+                    //if(pt.x > r.left + clip + 4 && pt.x < r.right - clip - 4)
+                    //    return HTBOTTOM;
+                    //if(pt.x < r.left + clip + 4)
+                    //    return HTBOTTOMLEFT;
                     if(pt.x > r.right - clip - 4)
                         return HTBOTTOMRIGHT;
                 }
@@ -261,10 +265,11 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 		case WM_ERASEBKGND:
 			{
 				RECT rcClient;
-				struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLong(GetParent(hWnd), GWL_USERDATA);
                 if(pContainer && pContainer->bSkinned)
                     return 1;
-				break;
+                GetClientRect(hWnd, &rcClient);
+                FillRect((HDC)wParam, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+                return 1;
 			}
         case WM_PAINT:
 			if(!g_skinnedContainers)
@@ -281,7 +286,6 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				UINT nParts = SendMessage(hWnd, SB_GETPARTS, 0, 0);
 				LRESULT result;
                 RECT rcClient;
-                struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLong(GetParent(hWnd), GWL_USERDATA);
                 HDC hdcMem = CreateCompatibleDC(hdc);
                 HBITMAP hbm, hbmOld;
                 StatusItems_t *item = &StatusItems[ID_EXTBKSTATUSBARPANEL];
@@ -330,7 +334,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                 DeleteDC(hdcMem);
                 
 				EndPaint(hWnd, &ps);
-                break;
+                return 0;
 			}
         case WM_CONTEXTMENU:
         {
@@ -344,6 +348,68 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
             }
             break;
         }
+
+        case WM_SETCURSOR:
+        {
+            POINT pt;
+    
+            if(pContainer && pContainer->bSkinned) {
+                GetCursorPos(&pt);  
+                SendMessage(GetParent(hWnd), msg, wParam, lParam);
+                if (pt.x == ptMouse.x && pt.y == ptMouse.y) {
+                    return 1;
+                }
+                ptMouse = pt;
+                if(tooltip_active){
+                    KillTimer(hWnd, TIMERID_HOVER);				
+                    CallService("mToolTip/HideTip", 0, 0);
+                    tooltip_active = FALSE;		
+                }
+                KillTimer(hWnd, TIMERID_HOVER);
+                SetTimer(hWnd, TIMERID_HOVER, 450, 0);
+            }
+            break;
+        }
+
+        case WM_LBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+            KillTimer(hWnd, TIMERID_HOVER);				
+            CallService("mToolTip/HideTip", 0, 0);
+            tooltip_active = FALSE;		
+            break;
+
+        case WM_TIMER:
+            if(wParam == TIMERID_HOVER) {
+                POINT pt;
+                KillTimer(hWnd, TIMERID_HOVER);
+    
+                GetCursorPos(&pt);
+                if (pt.x == ptMouse.x && pt.y == ptMouse.y) {
+                    int i,nParts;
+                    RECT rc;
+                    char szTip[501];
+
+                    ScreenToClient(hWnd, &pt);
+                    nParts = SendMessage(hWnd, SB_GETPARTS, 0, 0);
+                    for(i = 0; i < nParts; i++) {
+                        SendMessage(hWnd, SB_GETRECT, i, (LPARAM)&rc);
+                        if(PtInRect(&rc,pt)) {
+                            CLCINFOTIP ti = {0};
+
+                            szTip[0] = 0;
+                            SendMessageA(hWnd, SB_GETTIPTEXTA, MAKEWPARAM(i, 500), (LPARAM)szTip);
+                            szTip[500] = 0;
+                            if(szTip[0])
+                                CallService("mToolTip/ShowTip", (WPARAM)szTip, (LPARAM)&ti);
+                            tooltip_active = TRUE;
+                            break;
+                        }
+                    }
+                }
+            }
+            break;
+        case WM_DESTROY:
+            KillTimer(hWnd, TIMERID_HOVER);
     }
     return CallWindowProc(OldStatusBarproc, hWnd, msg, wParam, lParam);
 }

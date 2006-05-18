@@ -79,6 +79,7 @@ void HandleMenuEntryFromhContact(int iSelection)
                 ActivateExistingTab(pContainer, si->hWnd);
                 if(GetForegroundWindow() != pContainer->hwnd)
                     SetForegroundWindow(pContainer->hwnd);
+                SetFocus(GetDlgItem(pContainer->hwndActive, IDC_CHAT_MESSAGE));
             }
             else
                 goto nothing_open;
@@ -564,6 +565,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 }
                 break;
             }
+        /*
         case WM_TIMER:
             if(wParam == 1000) {
                 if((myGlobals.m_TrayFlashes = myGlobals.m_UnreadInTray > 0 ? 1 : 0) != 0)
@@ -577,7 +579,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 else
                     ShowWindow(hwndDlg, SW_SHOW);
             }
-            break;
+            break;*/
         case DM_FORCEUNREGISTERHOTKEYS:
             UnregisterHotKey(hwndDlg, 0xc001);
             UnregisterHotKey(hwndDlg, 0xc002);

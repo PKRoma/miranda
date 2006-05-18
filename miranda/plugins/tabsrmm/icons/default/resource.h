@@ -67,6 +67,11 @@
 
 // chat misc
 
+#define IDI_TRAYANIM1       190
+#define IDI_TRAYANIM2       191
+#define IDI_TRAYANIM3       192
+#define IDI_TRAYANIM4       193
+
 #define IDI_TOPICBUT                    200
 #define IDI_BKGCOLOR                    201
 #define IDI_CHANMGR                     202
