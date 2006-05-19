@@ -390,6 +390,7 @@ BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	case WM_INITDIALOG:
         {
             TranslateDialogDefault(hwndDlg);
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_AIM)));
 			unsigned long it=DBGetContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, 0);
 			unsigned long hours=it/60;
 			unsigned long minutes=it%60;
