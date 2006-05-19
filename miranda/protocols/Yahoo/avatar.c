@@ -615,14 +615,14 @@ void YAHOO_request_avatar(const char* who)
 	 * time() - in seconds ( 60*60 = 1 hour)
 	 */
 	if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) == 0 || 
-		last_chk == 0 || (cur_time - last_chk) < 300) {
+		last_chk == 0 || (cur_time - last_chk) > 60) {
 			
 		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", cur_time);
 
 		LOG(("Requesting Avatar for: %s", who));
 		yahoo_request_buddy_avatar(ylad->id, who);
 	} else {
-		LOG(("Avatar Not Available for: %s (Flood Check in Effect)", who));
+		LOG(("Avatar Not Available for: %s Last Check: %ld Current: %ld (Flood Check in Effect)", who, last_chk, cur_time));
 	}
 }
 
