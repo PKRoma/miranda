@@ -456,7 +456,7 @@ void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )
 	MSN_CallService( MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 }
 
-static char sttFormatString[] = "http://gateway.messenger.hotmail.com/gateway/gateway.dll?Action=open&Server=%s&IP=%s";
+static char sttFormatString[] = "/gateway/gateway.dll?Action=open&Server=%s&IP=%s";
 
 void ThreadData::getGatewayUrl( char* dest, int destlen, bool isPoll )
 {
@@ -467,8 +467,8 @@ void ThreadData::getGatewayUrl( char* dest, int destlen, bool isPoll )
 			mir_snprintf( dest, destlen, sttFormatString, "SB", mServer );
 		strcpy( mGatewayIP, MSN_DEFAULT_GATEWAY );
 	}
-	else mir_snprintf( dest, destlen, "http://%s/gateway/gateway.dll?%sSessionID=%s",
-		mGatewayIP, ( isPoll ) ? "Action=poll&" : "", mSessionID );
+	else mir_snprintf( dest, destlen, "/gateway/gateway.dll?%sSessionID=%s",
+		( isPoll ) ? "Action=poll&" : "", mSessionID );
 }
 
 void ThreadData::processSessionData( const char* str )

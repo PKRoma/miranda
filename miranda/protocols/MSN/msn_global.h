@@ -114,7 +114,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MSN_DEFAULT_PORT         1863
 #define MSN_DEFAULT_LOGIN_SERVER "messenger.hotmail.com"
 #define MSN_DEFAULT_GATEWAY      "gateway.messenger.hotmail.com"
-#define MSN_USER_AGENT           "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)"
+#define MSN_USER_AGENT           "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1 MSN Messenger 7.5.0324)"
 
 #define MSN_BLOCK        "/BlockCommand"
 #define MSN_INVITE       "/InviteCommand"
