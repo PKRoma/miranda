@@ -190,7 +190,7 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, int act
 	default:
 		for ( int i=0; i < item->resourceCount; i++ ) {
 			JABBER_RESOURCE_STATUS& JS = item->resource[i];
-			if ( !lstrcmp( myNick, JS.resourceName )) {
+			if ( !lstrcmp( nick, JS.resourceName )) {
 				if ( action != GC_EVENT_JOIN ) {
 					switch( action ) {
 					case 0:
