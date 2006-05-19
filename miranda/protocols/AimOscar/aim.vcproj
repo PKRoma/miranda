@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="aim"
+	ProjectGUID="{8FBFE966-FBD2-4E01-9DB1-88399D0FA3CA}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -39,6 +40,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="wsock32.lib"
 				OutputFile="../../bin/release/plugins/AimOSCAR.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
