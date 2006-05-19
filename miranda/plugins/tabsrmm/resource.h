@@ -191,6 +191,8 @@
 #define IDC_INDENT                      1157
 #define IDC_INDENTAMOUNT                1158
 #define IDC_MSGTABS                     1159
+#define IDC_SIDEBARUP                   1160
+#define IDC_SIDEBARDOWN                 1161
 #define IDC_WARNONCLOSE                 1162
 #define IDC_CUT_TABTITLE                1163
 #define IDC_CUT_TITLEMAX                1164
@@ -253,6 +255,7 @@
 #define IDC_APPARENTMODE                1212
 #define IDC_FULLUSERNAME                1212
 #define IDC_TOGGLENOTES                 1214
+#define IDC_TOGGLESIDEBAR               1299
 #define IDC_NOTES                       1215
 #define IDC_TRANSPARENCY                1215
 #define IDC_PANELSPLITTER               1216

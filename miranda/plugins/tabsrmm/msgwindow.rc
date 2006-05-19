@@ -101,6 +101,8 @@ BEGIN
                     WS_GROUP,5,16,100,14
     CONTROL         "",IDC_TOGGLENOTES,"TSButtonClass",WS_TABSTOP,0,3,4,28,
                     0x18000000L
+    CONTROL         "",IDC_TOGGLESIDEBAR,"TSButtonClass",WS_TABSTOP,0,3,4,28,
+                    0x18000000L
     CONTROL         "",IDC_APPARENTMODE,"TSButtonClass",WS_TABSTOP,174,1,16,
                     14,0x18000000L
     EDITTEXT        IDC_NOTES,5,2,141,13,ES_MULTILINE | ES_AUTOVSCROLL | 

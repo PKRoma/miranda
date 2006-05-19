@@ -1735,7 +1735,6 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 
 void ConfigureSideBar(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    return;
 	if(!dat->pContainer->dwFlags & CNT_SIDEBAR)
         return;
     CheckDlgButton(dat->pContainer->hwnd, IDC_SBAR_TOGGLEFORMAT, dat->SendFormat != 0 ? BST_CHECKED : BST_UNCHECKED);
@@ -2100,7 +2099,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 					else if(borderType == 3)
 	                    Rectangle(hdcDraw, 0, 0, dat->pic.cx, dat->pic.cy);
 					else if(borderType == 4) {
-						clipRgn = CreateRoundRectRgn(0, 0, dat->pic.cx, dat->pic.cy, 4, 4);
+						clipRgn = CreateRoundRectRgn(0, 0, dat->pic.cx + 1, dat->pic.cy + 1, 4, 4);
 						SelectClipRgn(hdcDraw, clipRgn);
 					}
 				}
@@ -2114,7 +2113,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 					else if(borderType == 3)
 						Rectangle(hdcDraw, rcEdge.left, rcEdge.top, rcEdge.right, rcEdge.bottom);
 					else if(borderType == 4) {
-						clipRgn = CreateRoundRectRgn(rcEdge.left, rcEdge.top, rcEdge.right, rcEdge.bottom, 4, 4);
+						clipRgn = CreateRoundRectRgn(rcEdge.left, rcEdge.top, rcEdge.right + 1, rcEdge.bottom + 1, 4, 4);
 						SelectClipRgn(hdcDraw, clipRgn);
 					}
                 }
@@ -2137,28 +2136,18 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 					rcFrame.bottom += height_off;
 				}
                 SetStretchBltMode(hdcDraw, HALFTONE);
-                if(aceFlags & AVS_PREMULTIPLIED) {
-					if(borderType == 2)
-						DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
-					else if(borderType == 3)
-						Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
-					else if(borderType == 4) {
-						clipRgn = CreateRoundRectRgn(rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom, 4, 4);
-						SelectClipRgn(hdcDraw, clipRgn);
-					}
+                if(borderType == 2)
+                    DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
+                else if(borderType == 3)
+                    Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
+                else if(borderType == 4) {
+                    clipRgn = CreateRoundRectRgn(rcFrame.left, rcFrame.top, rcFrame.right + 1, rcFrame.bottom + 1, 4, 4);
+                    SelectClipRgn(hdcDraw, clipRgn);
+                }
+                if(aceFlags & AVS_PREMULTIPLIED)
 					MY_AlphaBlend(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
-                }
-                else {
-					if(borderType == 2)
-						DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
-					else if(borderType == 3)
-						Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
-					else if(borderType == 4) {
-						clipRgn = CreateRoundRectRgn(rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom, 4, 4);
-						SelectClipRgn(hdcDraw, clipRgn);
-					}
+                else
                     StretchBlt(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                }
             }
             else {
 				LONG width_off = borderType ? 0 : 2;

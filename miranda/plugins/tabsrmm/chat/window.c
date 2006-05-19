@@ -100,6 +100,7 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 	SendDlgItemMessage(hwndDlg,IDC_SHOWNICKLIST,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bNicklistEnabled ? IDI_HIDENICKLIST : IDI_SHOWNICKLIST, si->bNicklistEnabled ? "hidenicklist" : "shownicklist", 0, 0));
 	SendDlgItemMessage(hwndDlg,IDC_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bFilterEnabled?IDI_FILTER:IDI_FILTER2, si->bFilterEnabled?"filter":"filter2", 0, 0 ));
     SendDlgItemMessage(hwndDlg,IDOK,BM_SETIMAGE,IMAGE_ICON,(LPARAM)myGlobals.g_buttonBarIcons[9]);
+    SendDlgItemMessage(hwndDlg,IDC_CHAT_TOGGLESIDEBAR,BM_SETIMAGE,IMAGE_ICON,(LPARAM)myGlobals.g_buttonBarIcons[26]);
 
     while(_btns[i].id > 0) {
         SendMessage(GetDlgItem(hwndDlg, _btns[i].id), BUTTONADDTOOLTIP, (WPARAM)TranslateTS(_btns[i].szTip), 0);
@@ -144,6 +145,7 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 	BOOL		bTabs = 0;
 	BOOL		bTabBottom = 0;
     int         i = 0;
+    static      int msgBottom = 0, msgTop = 0;
     
     rc.bottom = rc.top = rc.left = rc.right = 0;
     
@@ -175,6 +177,7 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 		EnableWindow(GetDlgItem(hwndDlg, IDC_FILTER), FALSE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), FALSE);
 	}
+    ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_TOGGLESIDEBAR), myGlobals.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
 
 	switch(urc->wId) {
 		case IDC_CHAT_LOG:
@@ -207,7 +210,20 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 			urc->rcItem.right = urc->dlgNewSize.cx ;
 			urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY+3;
 			urc->rcItem.bottom = urc->dlgNewSize.cy; // - 1 ;
-			return RD_ANCHORX_LEFT|RD_ANCHORY_CUSTOM;
+            msgBottom = urc->rcItem.bottom;
+            msgTop = urc->rcItem.top;
+            if(myGlobals.m_SideBarEnabled)
+                urc->rcItem.left += 9;
+			return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
+        case IDC_CHAT_TOGGLESIDEBAR:
+#ifdef _DEBUG
+            _DebugTraceA("toggle: %d, %d", msgTop, msgBottom);
+#endif
+            urc->rcItem.right = 8;
+            urc->rcItem.left = 0;
+            urc->rcItem.bottom = msgBottom;
+            urc->rcItem.top = msgTop;
+            return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
 		case IDC_SMILEY:
 		case IDC_ITALICS:
 		case IDC_CHAT_BOLD:
@@ -1375,6 +1391,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_EXSTYLE) | WS_EX_STATICEDGE);
             }
 
+            SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 10, 0, 0);
+            SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 12, 0, (LPARAM)dat->pContainer);
+            SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN, 0, 0);
+
             dat->wOldStatus = -1;
             SendMessage(hwndDlg, GC_SETWNDPROPS, 0, 0);
 			SendMessage(hwndDlg, GC_UPDATESTATUSBAR, 0, 0);
@@ -2372,6 +2392,12 @@ LABEL_SHOWWINDOW:
 				}
 
 			}break;
+
+            case IDC_CHAT_TOGGLESIDEBAR:
+            {
+                ApplyContainerSetting(dat->pContainer, CNT_SIDEBAR, dat->pContainer->dwFlags & CNT_SIDEBAR ? 0 : 1);
+                break;
+            }
 
             case IDCANCEL: 
             {

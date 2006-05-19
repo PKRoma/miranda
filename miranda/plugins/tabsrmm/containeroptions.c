@@ -55,15 +55,28 @@ void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, 
         DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containerflags", myGlobals.m_GlobalContainerFlags);
         if(flags & CNT_INFOPANEL)
             BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);
-        ReloadGlobalContainerSettings();
+        if(flags & CNT_SIDEBAR) {
+            struct ContainerWindowData *pC = pFirstContainer;
+            while(pC) {
+                if(pC->dwPrivateFlags & CNT_GLOBALSETTINGS) {
+                    pC->dwFlags = myGlobals.m_GlobalContainerFlags;
+                    SendMessage(pC->hwnd, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
+                }
+                pC = pC->pNextContainer;
+            }
+        }
+        else
+            ReloadGlobalContainerSettings();
     } else {
         pContainer->dwPrivateFlags = (mode ? pContainer->dwPrivateFlags | flags : pContainer->dwPrivateFlags & ~flags);
         pContainer->dwFlags = pContainer->dwPrivateFlags;
-        SendMessage(pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
+        if(flags & CNT_SIDEBAR)
+            SendMessage(pContainer->hwnd, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
+        else
+            SendMessage(pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
         if(flags & CNT_INFOPANEL)
             BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);
     }
-        
 }
 
 BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)

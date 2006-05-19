@@ -288,6 +288,7 @@ struct ProtocolData {
 #define DM_SPLITTERMOVEDGLOBAL (WM_USER+89)
 #define DM_DOCREATETAB_CHAT    (WM_USER+90)
 #define DM_CLIENTCHANGED       (WM_USER+91)
+#define DM_PLAYINCOMINGSOUND   (WM_USER+92)
 
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
@@ -621,6 +622,8 @@ typedef struct {
 
 #define SESSIONTYPE_IM 1
 #define SESSIONTYPE_CHAT 2
+
+#define SIDEBARWIDTH         30
 
 static void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
 void IMG_InitDecoder();

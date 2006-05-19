@@ -79,6 +79,7 @@
 #define IDC_NICKCOLOR                   1128
 #define IDC_FONTCATEGORY                1274
 #define IDC_NICKCOLORS                  1275
+#define IDC_CHAT_TOGGLESIDEBAR          1277
 #define ID_MESS                         40001
 #define ID_NEW                          40002
 #define ID_CURR                         40003

@@ -77,7 +77,7 @@ static ImageItem *g_ImageItems = NULL;
 HBRUSH g_ContainerColorKeyBrush = 0;
 COLORREF g_ContainerColorKey = 0;
 SIZE g_titleBarButtonSize = {0};
-int g_titleButtonTopOff = 0, g_captionOffset = 0;
+int g_titleButtonTopOff = 0, g_captionOffset = 0, g_captionPadding = 0;
 
 extern BOOL g_skinnedContainers;
 extern BOOL g_framelessSkinmode, g_compositedWindow;
@@ -1570,7 +1570,8 @@ static void LoadSkinItems(char *file)
     g_titleBarButtonSize.cy = GetPrivateProfileIntA("WindowFrame", "TitleButtonHeight", 12, file);
     g_titleButtonTopOff = GetPrivateProfileIntA("WindowFrame", "TitleButtonTopOffset", 0, file);
     g_captionOffset = GetPrivateProfileIntA("WindowFrame", "CaptionOffset", 3, file);
-    
+    g_captionPadding = GetPrivateProfileIntA("WindowFrame", "CaptionPadding", 0, file);
+
     myGlobals.bClipBorder = GetPrivateProfileIntA("WindowFrame", "ClipFrame", 0, file);
 	{
 		BYTE radius_tl, radius_tr, radius_bl, radius_br;

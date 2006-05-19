@@ -29,10 +29,10 @@ CFLAGS = $(INCS) -DBUILDING_DLL=1 -D__GNUWIN32__ -DUNICODE -DNDEBUG -fno-excepti
 
 .PHONY: all all-before all-after clean clean-custom
 
-all: all-before ../../bin/release/plugins/tabsrmm_unicode.dll all-after
+all: ../../bin/release/plugins/tabsrmm_unicode.dll
 
 
-clean: clean-custom
+clean:
 	rm -f $(OBJ) $(BIN)
 
 DLLWRAP=dllwrap.exe

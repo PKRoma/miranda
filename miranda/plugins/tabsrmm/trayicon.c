@@ -74,6 +74,7 @@ static DWORD WINAPI TrayAnimThread(LPVOID vParam)
         }
         Sleep(200);
     } while (isAnimThreadRunning);
+    return 0;
 }
 
 void CreateTrayMenus(int mode)
@@ -94,7 +95,6 @@ void CreateTrayMenus(int mode)
             DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
             DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
         }
-        //SetTimer(myGlobals.g_hwndHotkeyHandler, 1000, 1000, 0);
     }
     else {
         if(myGlobals.g_hMenuTrayUnread != 0) {
@@ -109,7 +109,6 @@ void CreateTrayMenus(int mode)
             DestroyMenu(myGlobals.g_hMenuRecent);
             myGlobals.g_hMenuRecent = 0;
         }
-        //KillTimer(myGlobals.g_hwndHotkeyHandler, 1000);
     }
 }
 /*

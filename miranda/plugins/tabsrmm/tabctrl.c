@@ -366,18 +366,26 @@ b_nonskinned:
 		
 		if(nHint & HINT_ACTIVE_ITEM) {
             if(dwStyle & TCS_BOTTOM) {
+                /*
 				if(tabdat->pContainer->bSkinned)
 					SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
 				else
 					FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
+                */
+                if(!tabdat->pContainer->bSkinned)
+                    FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
                 rcItem->bottom +=2;
             }
             else {
                 rcItem->bottom += 2;
+                /*
 				if(tabdat->pContainer->bSkinned)
 					SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
 				else
 					FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
+                */
+                if(!tabdat->pContainer->bSkinned)
+                    FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
                 rcItem->bottom--;
                 rcItem->top -=2;
             }
