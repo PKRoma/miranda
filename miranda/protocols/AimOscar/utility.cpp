@@ -158,13 +158,10 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 			char* user_id_array=get_members_of_group(new_group_id,user_id_array_size);
 			if(old_group_id)
 				aim_delete_contact(dbv.pszVal,item_id,old_group_id);
-			Sleep(1000);
 			aim_add_contact(dbv.pszVal,item_id,new_group_id);
-			Sleep(1000);
 			if(!group_exist)
 			{
 				aim_add_group(group,new_group_id);//add the group server-side even if it exist
-				Sleep(1000);
 			}
 			aim_mod_group(group,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
 			DBFreeVariant(&dbv);
@@ -251,20 +248,24 @@ void add_contacts_to_groups()
 }
 void offline_contact(HANDLE hContact)
 {
-	DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI);
-	DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_BI);
-	DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FT);
-	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FN);
-	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FD);
-	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FS);
-	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH);
-	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP);
-	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AC);
-	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_ES);
-	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV);
-	DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
-	DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT);
-	DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT);
+	if(conn.status==ID_STATUS_OFFLINE)
+	{
+		//We need some of this stuff if we are still online.
+		DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI);
+		DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_BI);
+		DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FT);
+		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FN);
+		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FD);
+		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FS);
+		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH);
+		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP);
+		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AC);
+		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_ES);
+		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV);
+		DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
+		DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT);
+		DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT);
+	}
 	DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
 	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 	{

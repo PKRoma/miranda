@@ -326,11 +326,19 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
+				RelativePath=".\icons\add.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\icons\admin.ico"
 				>
 			</File>
 			<File
 				RelativePath=".\icons\aol.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\away.ico"
 				>
 			</File>
 			<File
@@ -350,7 +358,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icons\idle.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\icons\oscar.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\profile.ico"
 				>
 			</File>
 			<File

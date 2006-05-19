@@ -5,6 +5,12 @@
 #define IDD_INFO                        6
 #define IDD_AIMACCOUNT                  7
 #define IDD_AIM                         8
+#define IDD_IDLE                        9
+#define IDI_ADD                         10
+#define IDI_AWAY                        12
+#define IDI_IDLE                        13
+#define IDI_ICON1                       14
+#define IDI_PROFILE                     14
 #define IDC_DETAILS                     125
 #define IDC_OPTIONS                     126
 #define IDC_EXPERT                      127
@@ -43,7 +49,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        9
+#define _APS_NEXT_RESOURCE_VALUE        15
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         128
 #define _APS_NEXT_SYMED_VALUE           101

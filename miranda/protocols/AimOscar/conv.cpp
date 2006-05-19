@@ -37,11 +37,11 @@ char* strip_html(char *src)
 		ptr=rptr+addr;
 		memcpy(ptr,"[link: ",7);
 		ptrl=ptr+7;
-		memmove(ptrl, ptrl + 1, strlen(ptrl + 1) + 1);
+		memmove(ptrl, ptrl + 2, strlen(ptrl + 2) + 1);
         if ((ptrl = strstr(ptr, "\">")))
 		{
-			memmove(ptrl+9,ptrl+2,strlen(ptrl+2)+1);
-			memcpy(ptrl+1," title: ",8);
+			memmove(ptrl+7,ptrl+1,strlen(ptrl+1)+1);
+			memcpy(ptrl," title: ",8);
 			if ((ptr = strstr(ptrl, "</A")) || (ptr = strstr(ptrl, "</a")))
 			{
 				*ptr=']';
@@ -126,8 +126,8 @@ wchar_t* strip_html(wchar_t *src)
 		memmove(ptrl, ptrl + 1, wcslen(ptrl + 1)*2 + 2);
         if ((ptrl = wcsstr(ptr, L"\">")))
 		{
-			memmove(ptrl+9,ptrl+2,wcslen(ptrl+2)*2 + 2);
-			memcpy(ptrl+1,L" title: ",16);
+			memmove(ptrl+7,ptrl+1,wcslen(ptrl+1)*2 + 2);
+			memcpy(ptrl,L" title: ",16);
 			if ((ptr = wcsstr(ptrl, L"</A")) || (ptr = wcsstr(ptrl, L"</a")))
 			{
 				*ptr=L']';
@@ -327,6 +327,29 @@ void html_to_bbcodes(char *src)
 		}
         else
             rptr++;
+	}
+	while ((ptr = strstr(rptr,"<A HREF")) || (ptr = strstr(rptr,"<a href")))
+	{
+        ptrl = ptr + 4;
+		memcpy(ptrl,"[url=",5);
+		memmove(ptr, ptrl, strlen(ptrl) + 1);
+        if ((ptr = strstr(ptrl,">")))
+		{	
+			ptr-=1;
+			memmove(ptr, ptr+1, strlen(ptr+1) + 1);
+			*(ptr)=']';
+			ptrl-=1;
+			if ((ptr = strstr(ptrl,"</A")) || (ptr = strstr(ptrl,"</a")))
+			{
+				memmove(ptr+1, ptr, strlen(ptr) + 1);
+				memcpy(ptr,"[/url]",9);
+			}
+			/*else{
+			memcpy(&src[wcslen(src)],L"[/color]\0",9*sizeof(wchar_t));
+			}*/
+		}
+        else
+            rptr++;
     }
 }
 void html_to_bbcodes(wchar_t *src)
@@ -399,7 +422,30 @@ void html_to_bbcodes(wchar_t *src)
 		}
         else
             rptr++;
-    }
+	}
+	while ((ptr = wcsstr(rptr,L"<A HREF")) || (ptr = wcsstr(rptr,L"<a href")))
+	{
+        ptrl = ptr + 4;
+		memcpy(ptrl,L"[url=",5*sizeof(wchar_t));
+		memmove(ptr, ptrl, wcslen(ptrl)*2 + 2);
+        if ((ptr = wcsstr(ptrl,L">")))
+		{
+			ptr-=1;
+			memmove(ptr, ptr+1, wcslen(ptr+1) + 2);
+			*(ptr)=']';
+			ptrl-=1;
+			if ((ptr = wcsstr(ptrl,L"</A")) || (ptr = wcsstr(ptrl,L"</a")))
+			{
+				memmove(ptr+1, ptr, wcslen(ptr)*2 + 2);
+				memcpy(ptr,L"[/url]",9*sizeof(wchar_t));
+			}
+			/*else{
+			memcpy(&src[wcslen(src)],L"[/color]\0",9*sizeof(wchar_t));
+			}*/
+		}
+        else
+            rptr++;
+	}
 }
 char* bbcodes_to_html(const char *src)
 {

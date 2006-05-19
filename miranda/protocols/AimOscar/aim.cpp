@@ -42,16 +42,11 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	char *str1;
 	//start locating memory for dynamically created structures
 	char str2[MAX_PATH];
-	char store[MAX_PATH];
-	GetCurrentDirectory(sizeof(store),store);
-	CWD=(char*)new char[strlen(store)+1];
-	memcpy(CWD,store,strlen(store));
-	memcpy(&CWD[strlen(store)],"\0",1);
 	GetModuleFileName(conn.hInstance, str2, MAX_PATH);
     str1 = strrchr(str2, '\\');
 	if (str1 != NULL && (strlen(str1 + 1) > 4))
 	{
-		ZeroMemory(store,sizeof(store));
+		char store[MAX_PATH];
 		strlcpy(store, str1 + 1, strlen(str1 + 1) - 3);
 		AIM_PROTOCOL_NAME=new char[strlen(store)+1];
 		memcpy(AIM_PROTOCOL_NAME,store,strlen(store)+1);
@@ -97,6 +92,13 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 }
 int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
+	char store[MAX_PATH];
+	CallService(MS_DB_GETPROFILEPATH, MAX_PATH-1,(LPARAM)&store);
+	if(store[strlen(store)-1]=='\\')
+		store[strlen(store)-1]='\0';
+	CWD=(char*)new char[strlen(store)+1];
+	memcpy(CWD,store,strlen(store));
+	memcpy(&CWD[strlen(store)],"\0",1);
 	DBVARIANT dbv;
 	NETLIBUSER nlu;
 	ZeroMemory(&nlu, sizeof(nlu));
@@ -137,6 +139,7 @@ int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
 	CLISTMENUITEM mi;
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize=sizeof(mi);
+	//see if we should add the html away message context menu items
 	if(DBGetContactSettingWord((HANDLE)wParam,AIM_PROTOCOL_NAME,"Status",ID_STATUS_OFFLINE)==ID_STATUS_AWAY)
 	{
 		mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE;
@@ -146,6 +149,15 @@ int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
 		mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE|CMIF_HIDDEN;
 	}
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)conn.hHTMLAwayContextMenuItem,(LPARAM)&mi);
+	if(!DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_BI,0)&&conn.state==1)
+	{
+		mi.flags=CMIM_FLAGS|CMIF_NOTONLINE;
+	}
+	else
+	{
+		mi.flags=CMIM_FLAGS|CMIF_NOTONLINE|CMIF_HIDDEN;
+	}
+	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)conn.hAddToServerListContextMenuItem,(LPARAM)&mi);
 	return 0;
 }
 int PreShutdown(WPARAM wParam,LPARAM lParam)

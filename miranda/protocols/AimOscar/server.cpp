@@ -206,12 +206,10 @@ void snac_user_online(SNAC &snac)//family 0x0003
 					if(wireless)
 					{
 						wireless_user=1;
-						DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 						DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_ONTHEPHONE);	
 					}
 					else if(away==0)
 					{
-						DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 						DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_ONLINE);
 					}
 					else 
@@ -220,6 +218,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 						DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_AWAY);
 					}
 					//aim_query_away_message(buddy);
+					DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT, 0);//erase idle time
 					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT, 0);//erase online time
 				}
@@ -926,6 +925,105 @@ void snac_typing_notification(SNAC &snac)//family 0x004
 				CallService(MS_PROTO_CONTACTISTYPING,(WPARAM)hContact,(LPARAM)60);
 		}
 		delete[] sn;
+	}
+}
+void snac_list_modification_ack(SNAC &snac)//family 0x0013
+{
+	if(snac.subcmp(0x000e))
+	{
+		unsigned short id=snac.id();
+		TLV tlv(snac.val(2));
+		unsigned short code=snac.ushort(6+tlv.len());
+		if(id==0x000d)
+		{
+			if(code==0x0000)
+			{
+				char* msg="Successfully removed buddy from list.";
+				char* tmsg=strldup(msg,strlen(msg));
+				ForkThread((pThreadFunc)message_box_thread,tmsg);
+			}
+			else
+			{
+				char* msg="Error removing buddy from list. Error code 'x'";
+				char ccode[3];
+				_itoa(code,ccode,16);
+				char* tmsg=strldup(msg,strlen(msg)+2);
+				strlcpy(&tmsg[strlen(tmsg)],ccode,3);
+				ForkThread((pThreadFunc)message_box_thread,tmsg);
+			}
+		}
+		else if(id==0x000a)
+		{
+			if(code==0x0000)
+			{
+				char* msg="Successfully added buddy to list.";
+				char* tmsg=strldup(msg,strlen(msg));
+				ForkThread((pThreadFunc)message_box_thread,tmsg);
+			}
+			else if(0x0003)
+			{
+				char* msg="Failed to add buddy to list: Item already exist.";
+				char* tmsg=strldup(msg,strlen(msg));
+				ForkThread((pThreadFunc)message_box_thread,tmsg);
+			}
+			else if(0x000a)
+			{
+				char* msg="Error adding buddy(invalid id?, already in list?, invalid date?)";
+				char* tmsg=strldup(msg,strlen(msg));
+				ForkThread((pThreadFunc)message_box_thread,tmsg);
+			}
+			else if(0x000c)
+			{
+				char* msg="Cannot add buddy. Limit for this type of item exceeded.";
+				char* tmsg=strldup(msg,strlen(msg));
+				ForkThread((pThreadFunc)message_box_thread,tmsg);
+			}
+			else if(0x000d)
+			{
+				char* msg="Error? Attempting to add ICQ contact to an AIM list.";
+				char* tmsg=strldup(msg,strlen(msg));
+				ForkThread((pThreadFunc)message_box_thread,tmsg);
+			}
+			else if(0x000e)
+			{
+				char* msg="Cannot add this buddy because it requires authorization.";
+				char* tmsg=strldup(msg,strlen(msg));
+				ForkThread((pThreadFunc)message_box_thread,tmsg);
+			}
+			else
+			{
+				char* msg="Unknown error when adding buddy to list: Error code 'x'";
+				char ccode[3];
+				_itoa(code,ccode,16);
+				char* tmsg=strldup(msg,strlen(msg)+2);
+				strlcpy(&tmsg[strlen(tmsg)],ccode,3);
+				ForkThread((pThreadFunc)message_box_thread,tmsg);
+			}
+		}
+		else if(id==0x000e)
+		{
+			if(code==0x0000)
+			{
+				char* msg="Successfully modified group.";
+				char* tmsg=strldup(msg,strlen(msg));
+				ForkThread((pThreadFunc)message_box_thread,tmsg);
+			}
+			else if(code==0x0002)
+			{
+				char* msg="Item you want to modify not found in list.";
+				char* tmsg=strldup(msg,strlen(msg));
+				ForkThread((pThreadFunc)message_box_thread,tmsg);
+			}
+			else
+			{
+				char* msg="Unknown error when attempting to modify a group: Error code 0x";
+				char ccode[3];
+				_itoa(code,ccode,16);
+				char* tmsg=strldup(msg,strlen(msg)+2);
+				strlcpy(&tmsg[strlen(tmsg)],ccode,3);
+				ForkThread((pThreadFunc)message_box_thread,tmsg);
+			}
+		}
 	}
 }
 /*void snac_delete_contact(SNAC &snac, char* buf)//family 0x0013

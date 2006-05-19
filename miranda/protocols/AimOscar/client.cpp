@@ -469,7 +469,7 @@ int aim_delete_contact(char* sn,unsigned short item_id,unsigned short group_id)
 	char* buf=new char[SNAC_SIZE+sn_length+10];
 	item_id=htons(item_id);
 	group_id=htons(group_id);
-	aim_writesnac(0x13,0x0a,0x06,buf);
+	aim_writesnac(0x13,0x0a,0x0d,buf);
 	aim_writegeneric(2,(char*)&sn_length_flipped,buf);
 	aim_writegeneric(sn_length,sn,buf);
 	aim_writegeneric(2,(char*)&group_id,buf);
@@ -493,7 +493,7 @@ int aim_add_contact(char* sn,unsigned short item_id,unsigned short group_id)
 	char* buf=new char[SNAC_SIZE+sn_length+10];
 	item_id=htons(item_id);
 	group_id=htons(group_id);
-	aim_writesnac(0x13,0x08,0x06,buf);
+	aim_writesnac(0x13,0x08,0x0a,buf);
 	aim_writegeneric(2,(char*)&sn_length_flipped,buf);
 	aim_writegeneric(sn_length,sn,buf);
 	aim_writegeneric(2,(char*)&group_id,buf);
@@ -561,7 +561,7 @@ int aim_mod_group(char* name,unsigned short group_id,char* members,unsigned shor
 	unsigned short name_length=strlen(name);
 	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+name_length+members_length+10];
 	group_id=htons(group_id);
-	aim_writesnac(0x13,0x09,0x06,buf);
+	aim_writesnac(0x13,0x09,0x0e,buf);//0x0e for mod group
 	aim_writegeneric(2,(char*)&name_length_flipped,buf);
 	aim_writegeneric(name_length,name,buf);
 	aim_writegeneric(2,(char*)&group_id,buf);

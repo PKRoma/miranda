@@ -126,11 +126,6 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
 			unsigned short timer=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
 			SetDlgItemInt(hwndDlg, IDC_KA, timer,0);
-			unsigned long it=DBGetContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, 0);
-			unsigned long hours=it/60;
-			unsigned long minutes=it%60;
-			SetDlgItemInt(hwndDlg, IDC_IIH, hours,0);
-			SetDlgItemInt(hwndDlg, IDC_IIM, minutes,0);
 			CheckDlgButton(hwndDlg, IDC_DC, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 0));//Message Delivery Confirmation
             CheckDlgButton(hwndDlg, IDC_FP, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0));//force proxy
 			CheckDlgButton(hwndDlg, IDC_AT, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0));//Account Type Icons
@@ -308,29 +303,11 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 					else
                         aim_links_destroy();
-					//Instant Idle
-					unsigned long hours=GetDlgItemInt(hwndDlg, IDC_IIH,0,0);
-					unsigned short minutes=GetDlgItemInt(hwndDlg, IDC_IIM,0,0);
-					if(minutes>59)
-						minutes=59;
+					//Instant Idle on Login
 					if (IsDlgButtonChecked(hwndDlg, IDC_II))
-					{
-						unsigned long it = DBGetContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, 0);
-						int ii=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0);
-						if(it!=hours*60+minutes||!ii)
-							if (conn.state==1)
-								aim_set_idle(hours * 60 * 60 + minutes * 60);
 						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 1);
-					}
 					else
-					{
-						int ii=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0);
-						if(ii)
-							if (conn.state==1)
-								aim_set_idle(0);
 						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0);
-					}
-					DBWriteContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, hours*60+minutes);
 					//End
 				}
             }
@@ -405,4 +382,50 @@ BOOL CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
     return FALSE;
 
+}
+BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg)
+	{
+	case WM_INITDIALOG:
+        {
+            TranslateDialogDefault(hwndDlg);
+			unsigned long it=DBGetContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, 0);
+			unsigned long hours=it/60;
+			unsigned long minutes=it%60;
+			SetDlgItemInt(hwndDlg, IDC_IIH, hours,0);
+			SetDlgItemInt(hwndDlg, IDC_IIM, minutes,0);
+        }
+		break;
+	case WM_CLOSE:
+		EndDialog(hwndDlg, 0);
+		break;
+	case WM_COMMAND:
+		{
+			unsigned long hours=GetDlgItemInt(hwndDlg, IDC_IIH,0,0);
+			unsigned short minutes=GetDlgItemInt(hwndDlg, IDC_IIM,0,0);
+			if(minutes>59)
+				minutes=59;
+			DBWriteContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, hours*60+minutes);
+			switch (LOWORD(wParam))
+			{
+			case IDOK:
+				{
+					//Instant Idle
+					if (conn.state==1)
+						aim_set_idle(hours * 60 * 60 + minutes * 60);
+					EndDialog(hwndDlg, IDOK);
+					break;
+				}
+			case IDCANCEL:
+                {
+					aim_set_idle(0);
+                    EndDialog(hwndDlg, IDCANCEL);
+					break;
+                }
+            }
+        }
+		break;
+    }
+    return FALSE;
 }

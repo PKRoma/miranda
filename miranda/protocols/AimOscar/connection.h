@@ -37,6 +37,7 @@ public:
 	HANDLE hNetlibPeer;
 	HANDLE hDirectBoundPort;
 	HANDLE hHTMLAwayContextMenuItem;
+	HANDLE hAddToServerListContextMenuItem;
 	HANDLE hookEvent[HOOKEVENT_SIZE];
 	int hTimer;
 	unsigned int hookEvent_size;

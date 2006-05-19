@@ -26,4 +26,5 @@ void snac_message_accepted(SNAC &snac);//family 0x004
 void snac_received_message(SNAC &snac);//family 0x0004
 void snac_received_info(SNAC &snac);//family 0x0002
 void snac_typing_notification(SNAC &snac);//family 0x004
+void snac_list_modification_ack(SNAC &snac);//family 0x0013
 #endif

@@ -47,8 +47,6 @@ static int SetStatus(WPARAM wParam, LPARAM lParam)
 
 int IdleChanged(WPARAM wParam, LPARAM lParam)
 { 
-	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0))
-		return 0;
 	if (conn.state!=1)
 	{
 		conn.idle=0;
@@ -546,6 +544,25 @@ static int UserIsTyping(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
+static int AddToServerList(WPARAM wParam, LPARAM lParam)
+{
+	if (conn.state!=1)
+		return 0;
+	DBVARIANT dbv;
+	if(!DBGetContactSetting((HANDLE)wParam,MOD_KEY_CL,OTH_KEY_GP,&dbv))
+	{
+		add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY,dbv.pszVal,0),dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}
+	else
+		add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0),AIM_DEFAULT_GROUP);
+	return 0;
+}
+static int InstantIdle(WPARAM wParam, LPARAM lParam)
+{
+	DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_IDLE), NULL, instant_idle_dialog);
+	return 0;
+}
 void CreateServices()
 {
 	char service_name[300];
@@ -591,6 +608,20 @@ void CreateServices()
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_AUTHREQUEST);
 	CreateServiceFunction(service_name,AuthRequest);
 	//Do not put any services below HTML get away message!!!
+
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/InstantIdle");
+	CreateServiceFunction(service_name,InstantIdle);
+	memset( &mi, 0, sizeof( mi ));
+	mi.pszPopupName = AIM_PROTOCOL_NAME;
+    mi.cbSize = sizeof( mi );
+    mi.popupPosition = 500090000;
+	mi.position = 500090000;
+    mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_IDLE ));
+	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+    mi.pszName = Translate( "Instant Idle" );
+    mi.pszService = service_name;
+	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/GetHTMLAwayMsg");
 	CreateServiceFunction(service_name,GetHTMLAwayMsg);
 	ZeroMemory(&mi,sizeof(mi));
@@ -598,12 +629,13 @@ void CreateServices()
 	mi.cbSize=sizeof(mi);
 	mi.popupPosition=-2000006000;
 	mi.position=-2000006000;
-	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AIM ));
+	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AWAY ));
 	mi.pszName=Translate("Read &HTML Away Message");
 	mi.pszContactOwner = AIM_PROTOCOL_NAME;
 	mi.pszService=service_name;
 	mi.flags=CMIF_NOTOFFLINE|CMIF_HIDDEN;
 	conn.hHTMLAwayContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+	
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/GetProfile");
 	CreateServiceFunction(service_name,GetProfile);
 	ZeroMemory(&mi,sizeof(mi));
@@ -611,12 +643,27 @@ void CreateServices()
 	mi.cbSize=sizeof(mi);
 	mi.popupPosition=-2000006500;
 	mi.position=-2000006500;
-	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AIM ));
+	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_PROFILE ));
 	mi.pszName=Translate("Read Profile");
 	mi.pszContactOwner = AIM_PROTOCOL_NAME;
 	mi.pszService=service_name;
 	mi.flags=CMIF_NOTOFFLINE;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/AddToServerList");
+	CreateServiceFunction(service_name,AddToServerList);
+	ZeroMemory(&mi,sizeof(mi));
+	mi.pszPopupName=Translate("Add To Server List");
+	mi.cbSize=sizeof(mi);
+	mi.popupPosition=-2000006500;
+	mi.position=-2000006500;
+	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_ADD ));
+	mi.pszName=Translate("Add To Server List");
+	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+	mi.pszService=service_name;
+	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN;
+	conn.hAddToServerListContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_SYSTEM_PRESHUTDOWN,PreShutdown);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,PreBuildContactMenu);
