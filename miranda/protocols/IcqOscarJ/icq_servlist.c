@@ -1030,23 +1030,32 @@ int GroupNameExistsUtf(const char *name,int skipGroup)
 
 
 // utility function which counts > on start of a server group name
-int countGroupLevel(WORD wGroupId)
+int countGroupNameLevel(const char *szGroupName)
 {
-  char* szGroupName = getServerGroupNameUtf(wGroupId);
   int nNameLen = strlennull(szGroupName);
   int i = 0;
 
   while (i<nNameLen)
   {
     if (szGroupName[i] != '>')
-    {
-      SAFE_FREE(&szGroupName);
       return i;
-    }
+
     i++;
   }
-  SAFE_FREE(&szGroupName);
-  return -1; // something went wrong
+  return -1;
+}
+
+
+
+int countGroupLevel(WORD wGroupId)
+{
+  char* szGroupName = getServerGroupNameUtf(wGroupId);
+  int cnt = -1;
+
+  if (szGroupName)
+    cnt = countGroupNameLevel(szGroupName);
+
+  return cnt;
 }
 
 
@@ -1782,13 +1791,16 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
         { // the target group is not known - it is probably rename
           if (getServerGroupIDUtf(szGroup))
           { // source group not known -> already renamed
-            if (!IsGroupRenamed(wGroupId))
-            { // is rename in progress ?
-              bRenamed = 1; // TODO: we should really check if group was not moved to sub-group
-              NetLog_Server("Group %x renamed to ""%s"".", wGroupId, szNewGroup);
+            if (countGroupNameLevel(szNewGroup) == countGroupLevel(wGroupId))
+            { // renamed groups can be only in the same level, if not it is move
+              if (!IsGroupRenamed(wGroupId))
+              { // is rename in progress ?
+                bRenamed = 1; // TODO: we should really check if group was not moved to sub-group
+                NetLog_Server("Group %x renamed to ""%s"".", wGroupId, szNewGroup);
+              }
+              else // if rename in progress do not move contacts
+                bMoved = 0;
             }
-            else // if rename in progress do not move contacts
-              bMoved = 0;
           }
         }
       }
@@ -1796,7 +1808,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
       if (bRenamed)
         renameServGroup(wGroupId, szNewGroup);
-      else if (bMoved)
+      else if (bMoved) // TODO: this is bad, we badly need rate management
         moveServContactGroup((HANDLE)wParam, szNewGroup);
 
       SAFE_FREE(&szNewGroup);
