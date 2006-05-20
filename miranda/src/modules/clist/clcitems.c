@@ -207,6 +207,13 @@ int fnAddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hCon
 	if (idleMode)
 		group->cl.items[i]->flags |= CONTACTF_IDLE;
 	lstrcpyn(group->cl.items[i]->szText, cli.pfnGetContactDisplayName(hContact,0), SIZEOF(group->cl.items[i]->szText));
+
+	{	ClcCacheEntryBase* p = cli.pfnGetCacheEntry(hContact);
+		if ( p != NULL ) {
+			if ( p->group ) mir_free( p->group );
+			p->group = NULL;
+	}	}
+
 	return i;
 }
 
@@ -291,6 +298,12 @@ struct ClcGroup* fnRemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct
 
 	if (updateTotalCount && contact->type == CLCIT_CONTACT)
 		group->totalMembers--;
+
+	{	ClcCacheEntryBase* p = cli.pfnGetCacheEntry(contact->hContact);
+		if ( p != NULL ) {
+			if ( p->group ) mir_free( p->group );
+			p->group = NULL;
+	}	}
 
 	cli.pfnFreeContact( group->cl.items[iContact] );
 	mir_free( group->cl.items[iContact] );
