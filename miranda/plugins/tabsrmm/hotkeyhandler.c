@@ -58,7 +58,10 @@ void HandleMenuEntryFromhContact(int iSelection)
 {
     HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
     SESSION_INFO *si = NULL;
-    
+
+#ifdef _DEBUG
+    _DebugTraceA("selection: %d", iSelection);
+#endif
     if(hWnd && IsWindow(hWnd)) {
         struct ContainerWindowData *pContainer = 0;
         SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
@@ -87,9 +90,13 @@ void HandleMenuEntryFromhContact(int iSelection)
         else
             goto nothing_open;
     }
-    else
+    else {
 nothing_open:
         CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)iSelection, 0);
+#ifdef _DEBUG
+        _DebugTraceA("performing double click service");
+#endif
+    }
 }
 
 static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
@@ -565,21 +572,6 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 }
                 break;
             }
-        /*
-        case WM_TIMER:
-            if(wParam == 1000) {
-                if((myGlobals.m_TrayFlashes = myGlobals.m_UnreadInTray > 0 ? 1 : 0) != 0)
-                    FlashTrayIcon(0);
-                else
-                    FlashTrayIcon(1);
-            }
-            if(nen_options.bFloaterOnlyMin && nen_options.floaterMode) {
-                if(IsWindowVisible(myGlobals.m_hwndClist))
-                    ShowWindow(hwndDlg, SW_HIDE);
-                else
-                    ShowWindow(hwndDlg, SW_SHOW);
-            }
-            break;*/
         case DM_FORCEUNREGISTERHOTKEYS:
             UnregisterHotKey(hwndDlg, 0xc001);
             UnregisterHotKey(hwndDlg, 0xc002);

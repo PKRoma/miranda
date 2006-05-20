@@ -1155,11 +1155,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\chat\resource.h"
+				RelativePath="resource.h"
 				>
 			</File>
 			<File
-				RelativePath="resource.h"
+				RelativePath=".\chat\resource.h"
 				>
 			</File>
 			<File
@@ -1288,11 +1288,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur"
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				RelativePath="..\..\src\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -1316,11 +1316,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
@@ -1344,11 +1344,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\icon1.ico"
+				RelativePath=".\res\icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\icon1.ico"
+				RelativePath="..\..\src\res\icon1.ico"
 				>
 			</File>
 			<File

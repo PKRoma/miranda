@@ -120,7 +120,7 @@ static struct _buttonicons { int id; HICON *pIcon; } buttonicons[] = {
     IDC_NAME, &myGlobals.g_buttonBarIcons[4],
     IDC_LOGFROZEN, &myGlobals.g_buttonBarIcons[24],
     IDC_TOGGLENOTES, &myGlobals.g_buttonBarIcons[28],
-    IDC_TOGGLESIDEBAR, &myGlobals.g_buttonBarIcons[28],
+    IDC_TOGGLESIDEBAR, &myGlobals.g_buttonBarIcons[25],
     -1, NULL
 };
 
@@ -1297,12 +1297,16 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.right = urc->dlgNewSize.cx - (panelWidth + 2) - dat->panelStatusCX;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
         case IDC_SPLITTER:
-            urc->rcItem.right +=1;
+            urc->rcItem.right = urc->dlgNewSize.cx;
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom = urc->rcItem.top + 2;
             if (urc->wId == IDC_SPLITTER && dat->splitterY <= (dat->bottomOffset + (dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC ? 32 : 25)) && dat->showPic && showToolbar)
                 urc->rcItem.right -= (dat->pic.cx + 2);
-            return RD_ANCHORX_WIDTH | RD_ANCHORY_BOTTOM;
+            if(myGlobals.m_SideBarEnabled)
+                urc->rcItem.left = 9;
+            else
+                urc->rcItem.left = 0;
+            return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
         case IDC_CONTACTPIC:
             urc->rcItem.top=urc->rcItem.bottom-(dat->pic.cy +2);
             urc->rcItem.left=urc->rcItem.right-(dat->pic.cx +2);
@@ -1319,7 +1323,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                     urc->rcItem.right -= 52;
             }
             if(myGlobals.m_SideBarEnabled)
-                urc->rcItem.left += 8;
+                urc->rcItem.left += 9;
             msgTop = urc->rcItem.top;
             msgBottom = urc->rcItem.bottom;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;

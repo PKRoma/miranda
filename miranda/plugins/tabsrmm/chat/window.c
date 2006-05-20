@@ -100,7 +100,7 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 	SendDlgItemMessage(hwndDlg,IDC_SHOWNICKLIST,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bNicklistEnabled ? IDI_HIDENICKLIST : IDI_SHOWNICKLIST, si->bNicklistEnabled ? "hidenicklist" : "shownicklist", 0, 0));
 	SendDlgItemMessage(hwndDlg,IDC_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bFilterEnabled?IDI_FILTER:IDI_FILTER2, si->bFilterEnabled?"filter":"filter2", 0, 0 ));
     SendDlgItemMessage(hwndDlg,IDOK,BM_SETIMAGE,IMAGE_ICON,(LPARAM)myGlobals.g_buttonBarIcons[9]);
-    SendDlgItemMessage(hwndDlg,IDC_CHAT_TOGGLESIDEBAR,BM_SETIMAGE,IMAGE_ICON,(LPARAM)myGlobals.g_buttonBarIcons[26]);
+    SendDlgItemMessage(hwndDlg,IDC_CHAT_TOGGLESIDEBAR,BM_SETIMAGE,IMAGE_ICON,(LPARAM)myGlobals.g_buttonBarIcons[25]);
 
     while(_btns[i].id > 0) {
         SendMessage(GetDlgItem(hwndDlg, _btns[i].id), BUTTONADDTOOLTIP, (WPARAM)TranslateTS(_btns[i].szTip), 0);
@@ -203,9 +203,14 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 			urc->rcItem.top = bTabs ?rcTabs.top:1;
 			return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
 		case IDC_SPLITTERY:
+            urc->rcItem.right = urc->dlgNewSize.cx;
 			urc->rcItem.top = bToolbar ? urc->dlgNewSize.cy - si->iSplitterY : urc->dlgNewSize.cy - si->iSplitterY;
 			urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY+2):(urc->dlgNewSize.cy - si->iSplitterY+2);
-			return RD_ANCHORX_WIDTH|RD_ANCHORY_CUSTOM;
+            if(myGlobals.m_SideBarEnabled)
+                urc->rcItem.left = 9;
+            else
+                urc->rcItem.left = 0;
+			return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
 		case IDC_CHAT_MESSAGE:
 			urc->rcItem.right = urc->dlgNewSize.cx ;
 			urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY+3;
@@ -216,9 +221,6 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
                 urc->rcItem.left += 9;
 			return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
         case IDC_CHAT_TOGGLESIDEBAR:
-#ifdef _DEBUG
-            _DebugTraceA("toggle: %d, %d", msgTop, msgBottom);
-#endif
             urc->rcItem.right = 8;
             urc->rcItem.left = 0;
             urc->rcItem.bottom = msgBottom;

@@ -1084,11 +1084,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         ShowWindow(GetDlgItem(hwndDlg, sbarItems[i].uId), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
                     SetWindowPos(hwndDlg, 0, rc.left + dwNewLeft, rc.top, (rc.right - rc.left) - dwNewLeft, rc.bottom - rc.top,
                                  SWP_NOCOPYBITS | SWP_NOZORDER | SWP_DEFERERASE | SWP_ASYNCWINDOWPOS | (dwNewLeft < 0 && skinnedMode ? SWP_NOREDRAW : 0));
-                    /*if(!pContainer->bSkinned && !myGlobals.m_VSApiEnabled) {
-                        SendMessage(hwndDlg, WM_SIZE, 0, 1);
-                        RedrawWindow(hwndDlg, NULL, NULL, RDW_FRAME | RDW_UPDATENOW | RDW_ERASE | RDW_INVALIDATE);
-                    }*/
-                    //InvalidateRect(GetParent(hwndDlg), &rc, FALSE);
                     break;
 
                 }
