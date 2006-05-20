@@ -264,10 +264,11 @@ static void handleSignonError(WORD wError)
     break;
 
   case 0x02: // Service temporarily unavailable
+  case 0x0D: // Bad database status
   case 0x10: // Service temporarily offline
   case 0x14: // Reservation map error
   case 0x15: // Reservation link error
-    icq_LogFatalParam("Connection failed.\nThe server is temporally unavailable (%d).", wError);
+    icq_LogFatalParam("Connection failed.\nThe server is temporarily unavailable (%d).", wError);
     break;
 
   case 0x16: // The users num connected from this IP has reached the maximum
@@ -286,6 +287,7 @@ static void handleSignonError(WORD wError)
 
   case 0x1C: // You are using an older version of ICQ. Upgrade recommended
     icq_LogMessage(LOG_WARNING, "The server sent warning, this version is getting old.\nTry to look for a new one.");
+    break;
 
   case 0x1E: // Can't register on the ICQ network
     icq_LogMessage(LOG_FATAL, "Connection failed.\nYou were rejected by the server for an unknown reason.\nThis can happen if the UIN is already connected.");
@@ -302,7 +304,6 @@ static void handleSignonError(WORD wError)
   case 0x09: // Expired account
   case 0x0A: // No access to database
   case 0x0B: // No access to resolver
-  case 0x0D: // Bad database status
   case 0x0E: // Bad resolver status
   case 0x11: // Suspended account
   case 0x19: // User too heavily warned
