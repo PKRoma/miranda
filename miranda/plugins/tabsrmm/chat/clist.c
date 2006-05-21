@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../commonheaders.h"
 
+char *szChatIconString = "chaticon";
+
 HANDLE CList_AddRoom(char * pszModule, char * pszRoom, char * pszDisplayName, int iType)
 {
 
@@ -259,7 +261,7 @@ BOOL CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, char * 
 	else
 	{
 		if(CallService(MS_CLIST_GETEVENT, (WPARAM)hContact, (LPARAM)0))
-			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)"chaticon");
+			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)szChatIconString);
 		CallService(MS_CLIST_ADDEVENT,(WPARAM) hContact,(LPARAM) &cle);
 	}
 	return TRUE;

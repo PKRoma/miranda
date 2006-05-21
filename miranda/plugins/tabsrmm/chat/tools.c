@@ -120,7 +120,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				if(si->hContact)
 				{
 					if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
-						CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)"chaticon");
+						CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
 				}
 				if (si->hWnd && KillTimer(si->hWnd, TIMERID_FLASHWND))
 					FlashWindow(si->hWnd, FALSE);
@@ -195,43 +195,43 @@ static BOOL DoTrayIcon(SESSION_INFO * si, GCEVENT * gce)
 		{
 		case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT :
 		case GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT :
-			CList_AddEvent(si->hContact, myGlobals.g_IconMsgEvent, "chaticon", 0, Translate("%s wants your attention in %s"), gce->pszNick, si->pszName); 
+			CList_AddEvent(si->hContact, myGlobals.g_IconMsgEvent, szChatIconString, 0, Translate("%s wants your attention in %s"), gce->pszNick, si->pszName); 
 			break;
 		case GC_EVENT_MESSAGE :
-			CList_AddEvent(si->hContact, hIcons[ICON_MESSAGE], "chaticon", CLEF_ONLYAFEW, Translate("%s speaks in %s"), gce->pszNick, si->pszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_MESSAGE], szChatIconString, CLEF_ONLYAFEW, Translate("%s speaks in %s"), gce->pszNick, si->pszName); 
 			break;
 		case GC_EVENT_ACTION:
-			CList_AddEvent(si->hContact, hIcons[ICON_ACTION], "chaticon", CLEF_ONLYAFEW, Translate("%s speaks in %s"), gce->pszNick, si->pszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_ACTION], szChatIconString, CLEF_ONLYAFEW, Translate("%s speaks in %s"), gce->pszNick, si->pszName); 
 			break;
 		case GC_EVENT_JOIN:
-			CList_AddEvent(si->hContact, hIcons[ICON_JOIN], "chaticon", CLEF_ONLYAFEW, Translate("%s has joined %s"), gce->pszNick, si->pszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_JOIN], szChatIconString, CLEF_ONLYAFEW, Translate("%s has joined %s"), gce->pszNick, si->pszName); 
 			break;
 		case GC_EVENT_PART:
-			CList_AddEvent(si->hContact, hIcons[ICON_PART], "chaticon", CLEF_ONLYAFEW, Translate("%s has left %s"), gce->pszNick, si->pszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_PART], szChatIconString, CLEF_ONLYAFEW, Translate("%s has left %s"), gce->pszNick, si->pszName); 
 			break;
 		case GC_EVENT_QUIT:
-			CList_AddEvent(si->hContact, hIcons[ICON_QUIT], "chaticon", CLEF_ONLYAFEW, Translate("%s has disconnected"), gce->pszNick); 
+			CList_AddEvent(si->hContact, hIcons[ICON_QUIT], szChatIconString, CLEF_ONLYAFEW, Translate("%s has disconnected"), gce->pszNick); 
 			break;
 		case GC_EVENT_NICK:
-			CList_AddEvent(si->hContact, hIcons[ICON_NICK], "chaticon", CLEF_ONLYAFEW, Translate("%s is now known as %s"), gce->pszNick, gce->pszText); 
+			CList_AddEvent(si->hContact, hIcons[ICON_NICK], szChatIconString, CLEF_ONLYAFEW, Translate("%s is now known as %s"), gce->pszNick, gce->pszText); 
 			break;
 		case GC_EVENT_KICK:
-			CList_AddEvent(si->hContact, hIcons[ICON_KICK], "chaticon", CLEF_ONLYAFEW, Translate("%s kicked %s from %s"), gce->pszStatus, gce->pszNick, si->pszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_KICK], szChatIconString, CLEF_ONLYAFEW, Translate("%s kicked %s from %s"), gce->pszStatus, gce->pszNick, si->pszName); 
 			break;
 		case GC_EVENT_NOTICE:
-			CList_AddEvent(si->hContact, hIcons[ICON_NOTICE], "chaticon", CLEF_ONLYAFEW, Translate("Notice from %s"), gce->pszNick); 
+			CList_AddEvent(si->hContact, hIcons[ICON_NOTICE], szChatIconString, CLEF_ONLYAFEW, Translate("Notice from %s"), gce->pszNick); 
 			break;
 		case GC_EVENT_TOPIC:
-			CList_AddEvent(si->hContact, hIcons[ICON_TOPIC], "chaticon", CLEF_ONLYAFEW, Translate("Topic change in %s"), si->pszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_TOPIC], szChatIconString, CLEF_ONLYAFEW, Translate("Topic change in %s"), si->pszName); 
 			break;
 		case GC_EVENT_INFORMATION:
-			CList_AddEvent(si->hContact, hIcons[ICON_INFO], "chaticon", CLEF_ONLYAFEW, Translate("Information in %s"), si->pszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_INFO], szChatIconString, CLEF_ONLYAFEW, Translate("Information in %s"), si->pszName); 
 			break;
 		case GC_EVENT_ADDSTATUS:
-			CList_AddEvent(si->hContact, hIcons[ICON_ADDSTATUS], "chaticon", CLEF_ONLYAFEW, Translate("%s enables \'%s\' status for %s in %s"), gce->pszText, gce->pszStatus, gce->pszNick, si->pszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_ADDSTATUS], szChatIconString, CLEF_ONLYAFEW, Translate("%s enables \'%s\' status for %s in %s"), gce->pszText, gce->pszStatus, gce->pszNick, si->pszName); 
 			break;
 		case GC_EVENT_REMOVESTATUS:
-			CList_AddEvent(si->hContact, hIcons[ICON_REMSTATUS], "chaticon", CLEF_ONLYAFEW, Translate("%s disables \'%s\' status for %s in %s"), gce->pszText, gce->pszStatus, gce->pszNick, si->pszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_REMSTATUS], szChatIconString, CLEF_ONLYAFEW, Translate("%s disables \'%s\' status for %s in %s"), gce->pszText, gce->pszStatus, gce->pszNick, si->pszName); 
 			break;
 
 		default:break;

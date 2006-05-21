@@ -1425,7 +1425,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                 if(DBGetContactSettingWord(si->hContact, si->pszModule ,"ApparentMode", 0) != 0)
                     DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
                 if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
-                    CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)"chaticon");
+                    CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
                 
                 SendMessage(hwndDlg, GC_UPDATETITLE, 0, 1);
                 dat->dwTickLastEvent = 0;
@@ -1837,7 +1837,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				return TRUE;
 			case SESSION_TERMINATE:
 				if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
-					CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)"chaticon");
+					CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
 				si->wState &= ~STATE_TALK;
 				DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
 				SendMessage(hwndDlg, GC_CLOSEWINDOW, 0, 1);
@@ -2055,7 +2055,7 @@ LABEL_SHOWWINDOW:
             if(DBGetContactSettingWord(si->hContact, si->pszModule ,"ApparentMode", 0) != 0)
                 DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
             if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
-                CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)"chaticon");
+                CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
 
             if (dat->iTabID == -1) {
                 _DebugPopup(dat->hContact, "ACTIVATE Critical: iTabID == -1");
@@ -2975,7 +2975,7 @@ LABEL_SHOWWINDOW:
             int i;
 
             if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
-                CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)"chaticon");
+                CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
             si->wState &= ~STATE_TALK;
             DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
 

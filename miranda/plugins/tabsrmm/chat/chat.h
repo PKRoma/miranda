@@ -365,6 +365,8 @@ typedef struct{
   SESSION_INFO * si;
 }COLORCHOOSER;
 
+extern char *szChatIconString;
+
 #pragma comment(lib,"comctl32.lib")
 
 #define safe_sizeof(a) (sizeof((a)) / sizeof((a)[0]))

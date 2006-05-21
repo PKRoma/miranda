@@ -35,7 +35,7 @@ extern "C" void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm)
     CImageDataObject::InsertBitmap(ole, hBm);
 }
 
-void GetIconSize(HICON hIcon, int* sizeX, int* sizeY)
+extern "C" void GetIconSize(HICON hIcon, int* sizeX, int* sizeY)
 {
     ICONINFO ii;
     BITMAP bm;

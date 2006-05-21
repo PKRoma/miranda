@@ -373,7 +373,7 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
  * the needed actions.
  *
  * this handler POSTs the event to the message window procedure - so it is fast and can exit quickly which will
- * imprrove the overall responsiveness when receiving messages.
+ * improve the overall responsiveness when receiving messages.
  */
 
 static int DispatchNewEvent(WPARAM wParam, LPARAM lParam) {
@@ -442,12 +442,13 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
 
     if (hwnd) {
+        /*
         struct ContainerWindowData *pTargetContainer = 0;
         if(dbei.eventType == EVENTTYPE_MESSAGE) {
             SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pTargetContainer);
             if (pTargetContainer)
                 PostMessage(hwnd, DM_PLAYINCOMINGSOUND, 0, 0);
-        }
+        }*/
         return 0;
     }
 

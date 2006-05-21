@@ -2892,7 +2892,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if (DbEventIsShown(dat, &dbei)) {
                     if (dbei.eventType == EVENTTYPE_MESSAGE && dat->pContainer->hwndStatus && !(dbei.flags & (DBEF_SENT))) {
                         dat->lastMessage = dbei.timestamp;
-                        SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
+                        PostMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
                     }
                     /*
                      * set the message log divider to mark new (maybe unseen) messages, if the container has
@@ -2942,9 +2942,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     else
                         SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
                     
+                    /*
                     if (dat->iTabID == -1)
                         MessageBoxA(0, "DBEVENTADDED Critical: iTabID == -1", "Error", MB_OK);
-                    
+                    */
                     //dat->dwLastActivity = GetTickCount();
                     //dat->pContainer->dwLastActivity = dat->dwLastActivity;
                     // tab flashing
@@ -3001,7 +3002,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                      * play a sound
                      */
                     if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT)))
-                        PlayIncomingSound(dat->pContainer, hwndDlg);
+                        PostMessage(hwndDlg, DM_PLAYINCOMINGSOUND, 0, 0);
                 }
                 return 0;
             }

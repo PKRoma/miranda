@@ -24,8 +24,8 @@ LIBS =  -L"C:/mingw/lib" --no-export-all-symbols --add-stdcall-alias $(LIBDIR)/l
 INCS =  -I"C:/mingw/include"
 CXXINCS =  -I"C:/mingw/include"
 BIN  = ../../bin/release/plugins/tabsrmm_unicode.dll
-CXXFLAGS = $(INCS) -DBUILDING_DLL=1  -D__GNUWIN32__ -DUNICODE -DNDEBUG -O2 -mwindows -fno-exceptions -fno-rtti
-CFLAGS = $(INCS) -DBUILDING_DLL=1 -D__GNUWIN32__ -DUNICODE -DNDEBUG -fno-exceptions -O2 -mwindows
+CXXFLAGS = $(INCS) -DBUILDING_DLL=1  -D__GNUWIN32__ -DUNICODE -DNDEBUG -O2 -mwindows -fno-exceptions -fomit-frame-pointer -fmerge-all-constants -fno-rtti
+CFLAGS = $(INCS) -DBUILDING_DLL=1 -D__GNUWIN32__ -DUNICODE -DNDEBUG -fno-exceptions -fmerge-all-constants -fomit-frame-pointer -O2 -mwindows
 
 .PHONY: all all-before all-after clean clean-custom
 

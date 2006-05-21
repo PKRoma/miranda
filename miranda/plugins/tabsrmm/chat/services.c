@@ -127,7 +127,7 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 int Chat_PreShutdown(WPARAM wParam,LPARAM lParam)
 {
-	SM_BroadcastMessage(NULL, GC_CLOSEWINDOW, 0, 1, FALSE);
+	//SM_BroadcastMessage(NULL, GC_CLOSEWINDOW, 0, 1, FALSE);
 
 	SM_RemoveAll();
 	MM_RemoveAll();
