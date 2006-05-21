@@ -499,7 +499,7 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		JabberGcQuit( item, 0, 0 );
 		break;
 
-	case IDM_KICK: 
+	case IDM_KICK:
 	{
 		mir_sntprintf( szBuffer, SIZEOF(szBuffer), _T("%s %s"), TranslateT( "Reason to kick" ), him->resourceName );
 		if ( JabberEnterString( szBuffer, SIZEOF(szBuffer))) {
@@ -640,9 +640,10 @@ static void sttSendPrivateMessage( JABBER_LIST_ITEM* item, const TCHAR* nick )
 {
 	TCHAR szFullJid[ 256 ];
 	mir_sntprintf( szFullJid, SIZEOF(szFullJid), _T("%s/%s"), item->jid, nick );
-	HANDLE hContact = JabberDBCreateContact( szFullJid, NULL, FALSE, FALSE );
+	HANDLE hContact = JabberDBCreateContact( szFullJid, NULL, TRUE, FALSE );
 	if ( hContact != NULL ) {
 		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
+		JSetWord( hContact, "Status", ID_STATUS_ONLINE );
 		JSetStringT( hContact, "Nick", nick );
 		DBWriteContactSettingDword( hContact, "Ignore", "Mask1", 0 );
 		JCallService( MS_MSG_SENDMESSAGE, ( WPARAM )hContact, 0 );

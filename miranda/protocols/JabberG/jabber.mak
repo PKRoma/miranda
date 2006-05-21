@@ -1,6 +1,6 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on jabber.dsp
 !IF "$(CFG)" == ""
-CFG=jabberg - Win32 Release Unicode
+CFG=jabberg - Win32 Release
 !MESSAGE No configuration specified. Defaulting to jabberg - Win32 Release Unicode.
 !ENDIF
 
