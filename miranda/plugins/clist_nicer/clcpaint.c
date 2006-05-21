@@ -52,6 +52,7 @@ extern LONG g_cxsmIcon, g_cysmIcon;
 extern DWORD g_gdiplusToken;
 extern StatusItems_t *StatusItems;
 extern PGF MyGradientFill;
+extern struct ClcData *g_clcData;
 
 pfnDrawAlpha pDrawAlpha = NULL;
 
@@ -70,13 +71,18 @@ int my_status;
 HFONT __fastcall ChangeToFont(HDC hdc, struct ClcData *dat, int id, int *fontHeight)
 {
 	HFONT hOldFont = 0;
-
+    /*
 	hOldFont = SelectObject(hdc, dat->fontInfo[id].hFont);
 	SetTextColor(hdc, dat->fontInfo[id].colour);
 	if (fontHeight)
 		*fontHeight = dat->fontInfo[id].fontHeight;
+    */
+    hOldFont = SelectObject(hdc, g_clcData->fontInfo[id].hFont);
+    SetTextColor(hdc, g_clcData->fontInfo[id].colour);
+    if (fontHeight)
+        *fontHeight = g_clcData->fontInfo[id].fontHeight;
 
-	dat->currentFontID = id;
+    dat->currentFontID = id;
 	return hOldFont;
 }
 
@@ -576,6 +582,23 @@ set_bg_l:
 	g_hottrack_done = 0;
 	check_selected = (!selected || selBlend);
 
+    if(dat->bisEmbedded) {
+        rc.left = bg_indent_l;
+        rc.top = y;
+        rc.right = clRect->right - bg_indent_r;
+        rc.bottom = y + rowHeight;
+        if (selected) {
+            FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
+            SetTextColor(hdcMem, dat->selTextColour);
+        } 
+        else {
+            FillRect(hdcMem, &rc, g_CluiData.hBrushCLCBk);
+            if(g_hottrack)
+                SetHotTrackColour(hdcMem,dat);
+        }
+        goto bgskipped;
+    }
+
 	if (type == CLCIT_CONTACT || type == CLCIT_DIVIDER) {
 		StatusItems_t *sitem, *sfirstitem, *ssingleitem, *slastitem, *slastitem_NG,
 			*sfirstitem_NG, *ssingleitem_NG, *sevencontact_pos, *soddcontact_pos, *pp_item;
@@ -596,7 +619,7 @@ set_bg_l:
                         SetTextColor(hdcMem, sitem->TEXTCOLOR);
                 }
             }
-            else
+            else if(!sitem->IGNORED)
                 SetTextColor(hdcMem, sitem->TEXTCOLOR);
 
 			sevencontact_pos = &StatusItems[ID_EXTBKEVEN_CNTCTPOS - ID_STATUS_OFFLINE];
@@ -852,7 +875,7 @@ set_bg_l:
 
 	if(g_RTL)
 		pfnSetLayout(hdcMem, LAYOUT_RTL | LAYOUT_BITMAPORIENTATIONPRESERVED);
-	//bgskipped:
+bgskipped:
 
 	rcContent.top = y;
 	rcContent.bottom = y + rowHeight;

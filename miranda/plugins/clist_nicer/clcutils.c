@@ -523,7 +523,8 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 	dat->group_row_height = (int)DBGetContactSettingByte(NULL,"CLC","GRowHeight",CLCDEFAULT_ROWHEIGHT);
 	dat->row_border = 0;
 	dat->rightMargin = DBGetContactSettingByte(NULL, "CLC", "RightMargin", CLCDEFAULT_LEFTMARGIN);
-	dat->bkColour = DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR);
+	dat->bkColour =  DBGetContactSettingByte(NULL, "CLC", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS) ? 
+                     GetSysColor(COLOR_3DFACE) : DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR);
 	if (!dat->bkChanged) {
 		if(g_CluiData.hBrushCLCBk)
 			DeleteObject(g_CluiData.hBrushCLCBk);
