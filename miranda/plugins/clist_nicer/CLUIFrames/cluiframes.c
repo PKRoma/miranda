@@ -2299,12 +2299,12 @@ int SizeFramesByWindowRect(RECT *r, HDWP * PosBatch)
                 if (Frames[i].OwnerWindow && Frames[i].OwnerWindow != (HWND)-2) {
                     *PosBatch = DeferWindowPos(*PosBatch, Frames[i].hWnd, NULL, Frames[i].wndSize.left + g_CluiData.bCLeft, Frames[i].wndSize.top + g_CluiData.topOffset,
                                                (Frames[i].wndSize.right - Frames[i].wndSize.left),
-                                               (Frames[i].wndSize.bottom - Frames[i].wndSize.top), SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOREDRAW);
+                                               (Frames[i].wndSize.bottom - Frames[i].wndSize.top), SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOREDRAW | SWP_NOCOPYBITS);
 
                     if (Frames[i].TitleBar.ShowTitleBar) {
                         *PosBatch = DeferWindowPos(*PosBatch, Frames[i].TitleBar.hwnd, NULL, Frames[i].wndSize.left + g_CluiData.bCLeft, Frames[i].wndSize.top + g_CluiData.topOffset - TitleBarH,
                                                    (Frames[i].wndSize.right - Frames[i].wndSize.left),
-                                                   TitleBarH + (Frames[i].UseBorder ? (!Frames[i].collapsed ? (Frames[i].align == alClient ? 0 : 2) : 1) : 0), SWP_NOZORDER | SWP_NOACTIVATE);
+                                                   TitleBarH + (Frames[i].UseBorder ? (!Frames[i].collapsed ? (Frames[i].align == alClient ? 0 : 2) : 1) : 0), SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
                     }
                 }
                 else {
@@ -2312,13 +2312,13 @@ int SizeFramesByWindowRect(RECT *r, HDWP * PosBatch)
            // set frame position
                     SetWindowPos(Frames[i].hWnd,NULL,Frames[i].wndSize.left + g_CluiData.bCLeft, Frames[i].wndSize.top + g_CluiData.topOffset,
                                  (Frames[i].wndSize.right - Frames[i].wndSize.left),
-                                 (Frames[i].wndSize.bottom-Frames[i].wndSize.top), SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOSENDCHANGING);
+                                 (Frames[i].wndSize.bottom-Frames[i].wndSize.top), SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOSENDCHANGING | SWP_NOCOPYBITS);
 
            // set titlebar position
                     if (Frames[i].TitleBar.ShowTitleBar) {
                         SetWindowPos(Frames[i].TitleBar.hwnd, NULL, Frames[i].wndSize.left + g_CluiData.bCLeft, Frames[i].wndSize.top + g_CluiData.topOffset - TitleBarH,
                                      (Frames[i].wndSize.right - Frames[i].wndSize.left),
-                                     TitleBarH + (Frames[i].UseBorder ? (!Frames[i].collapsed ? (Frames[i].align == alClient ? 0 : 2) : 1) : 0), SWP_NOZORDER | SWP_NOACTIVATE);
+                                     TitleBarH + (Frames[i].UseBorder ? (!Frames[i].collapsed ? (Frames[i].align == alClient ? 0 : 2) : 1) : 0), SWP_NOZORDER | SWP_NOACTIVATE|SWP_NOCOPYBITS);
                     }
                     //UpdateWindow(Frames[i].hWnd);
                     if (Frames[i].TitleBar.ShowTitleBar)

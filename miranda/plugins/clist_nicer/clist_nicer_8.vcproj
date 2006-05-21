@@ -348,7 +348,7 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -382,7 +382,7 @@
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				OptimizeForWindows98="1"
-				BaseAddress="0x6590000"
+				BaseAddress="0x6c540000"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -1581,11 +1581,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\overlay\invisible.ico"
+				RelativePath="res\invisible.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\invisible.ico"
+				RelativePath=".\res\overlay\invisible.ico"
 				>
 			</File>
 			<File
@@ -1653,11 +1653,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\online.ico"
+				RelativePath=".\res\overlay\online.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\overlay\online.ico"
+				RelativePath=".\res\online.ico"
 				>
 			</File>
 			<File

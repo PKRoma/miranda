@@ -209,27 +209,27 @@ static void LayoutButtons(HWND hwnd, HDWP *batch, RECT *rc)
 		if (top_buttons[i].id == IDC_TBMENU) {
 			if(batch)
 				*batch = DeferWindowPos(*batch, top_buttons[i].hwnd, 0, 2 + left_offset, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
-				BUTTON_WIDTH_D * 3, BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER);
+				BUTTON_WIDTH_D * 3, BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
 
 		}
 		else if (top_buttons[i].id == IDC_TBGLOBALSTATUS) {
 			if(batch)
 				*batch = DeferWindowPos(*batch, top_buttons[i].hwnd, 0, left_offset + (3 * BUTTON_WIDTH_D) + 3, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
-				rect.right - delta - (3 * BUTTON_WIDTH_D + 5), BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER);
+				rect.right - delta - (3 * BUTTON_WIDTH_D + 5), BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
 		}
 		if(!(top_buttons[i].visibilityOrder & g_CluiData.toolbarVisibility))
 			continue;
 		if (top_buttons[i].id == IDC_TBTOPSTATUS || top_buttons[i].id == IDC_TBMINIMIZE || top_buttons[i].id == IDC_TABSRMMMENU || top_buttons[i].id == IDC_TABSRMMSLIST) {
 			if(batch)
 				*batch = DeferWindowPos(*batch, top_buttons[i].hwnd, 0, rect.right - right_offset - 2 - (rightButton * (g_CluiData.dwButtonWidth + 1)), 2 + g_CluiData.bCTop, g_CluiData.dwButtonWidth, g_CluiData.dwButtonHeight - 2,
-				SWP_NOACTIVATE | SWP_NOZORDER);
+				SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
 			rightButton++;
 			continue;
 		}
 		else {
 			if(batch)
 				*batch = DeferWindowPos(*batch, top_buttons[i].hwnd, 0, left_offset + 3 + (leftButton * (g_CluiData.dwButtonWidth + 1)), 2 + g_CluiData.bCTop, g_CluiData.dwButtonWidth, g_CluiData.dwButtonHeight - 2,
-				SWP_NOACTIVATE | SWP_NOZORDER);
+				SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
 			leftButton++;
 		}
 	}
@@ -1330,7 +1330,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					dock_prevent_moving=0;
 					LayoutButtons(hwnd, &PosBatch, &new_window_rect);
 					DeferWindowPos(PosBatch, pcli->hwndStatus, 0, 0, new_window_rect.bottom - g_CluiData.statusBarHeight, new_window_rect.right,
-						g_CluiData.statusBarHeight, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOREDRAW);
+						g_CluiData.statusBarHeight, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOREDRAW | SWP_NOCOPYBITS);
 					res=EndDeferWindowPos(PosBatch);
 					if(wp->cx != g_oldSize.cx)
 						SendMessage(hwnd, CLUIINTM_STATUSBARUPDATE, 0, 0);

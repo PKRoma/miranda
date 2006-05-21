@@ -200,14 +200,16 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
         ;
     }
 
-	if(hitcontact->type == CLCIT_CONTACT) {
-		if(mirror_mode == 1 || (mirror_mode == 2 && g_ExtraCache[hitcontact->extraCacheEntry].dwCFlags & ECF_RTLNICK))
-	        return RTL_HitTest(hwnd, dat, testx, testy, hitcontact, flags, indent, hit);
-	}
-	else if(hitcontact->type == CLCIT_GROUP) {
-		if(g_CluiData.bGroupAlign == CLC_GROUPALIGN_RIGHT || (hitcontact->isRtl && g_CluiData.bGroupAlign == CLC_GROUPALIGN_AUTO))
-	        return RTL_HitTest(hwnd, dat, testx, testy, hitcontact, flags, indent, hit);
-	}
+    if(!dat->bisEmbedded) {
+        if(hitcontact->type == CLCIT_CONTACT) {
+            if(mirror_mode == 1 || (mirror_mode == 2 && g_ExtraCache[hitcontact->extraCacheEntry].dwCFlags & ECF_RTLNICK))
+                return RTL_HitTest(hwnd, dat, testx, testy, hitcontact, flags, indent, hit);
+        }
+        else if(hitcontact->type == CLCIT_GROUP) {
+            if(g_CluiData.bGroupAlign == CLC_GROUPALIGN_RIGHT || (hitcontact->isRtl && g_CluiData.bGroupAlign == CLC_GROUPALIGN_AUTO))
+                return RTL_HitTest(hwnd, dat, testx, testy, hitcontact, flags, indent, hit);
+        }
+    }
 
     // avatar check
     if(hitcontact->type == CLCIT_CONTACT && g_CluiData.dwFlags & CLUI_FRAME_AVATARS && hitcontact->ace != NULL && hitcontact->avatarLeft != -1) {
