@@ -62,6 +62,10 @@ cd ..\help
 nmake /f help.mak CFG="help - Win32 Release Unicode"
 if errorlevel 1 goto :Error
 
+cd ..\loadavatars
+nmake /f avatars.mak CFG="loadavatars - Win32 Release Unicode"
+if errorlevel 1 goto :Error
+
 cd ..\modernb
 nmake /f modernb.mak CFG="modernb - Win32 Release Unicode"
 if errorlevel 1 goto :Error
@@ -91,6 +95,8 @@ copy ..\release\Plugins\import.dll   Plugins
 copy ..\release\Plugins\IRC.dll      Plugins
 copy ..\release\Plugins\png2dib.dll  Plugins
 copy ..\release\Plugins\Yahoo.dll    Plugins
+
+dir /B /S *.dll | rebase
 
 for /F "tokens=1,2 delims= " %%i in (..\build.no) do call :Pack %%i %%j
 goto :eof

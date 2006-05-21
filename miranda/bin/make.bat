@@ -70,6 +70,10 @@ cd ..\import
 nmake /f import.mak CFG="import - Win32 Release"
 if errorlevel 1 goto :Error
 
+cd ..\loadavatars
+nmake /f avatars.mak CFG="loadavatars - Win32 Release"
+if errorlevel 1 goto :Error
+
 cd ..\modernb
 nmake /f modernb.mak CFG="modernb - Win32 Release"
 if errorlevel 1 goto :Error
@@ -95,6 +99,8 @@ rem Zip it
 rem ---------------------------------------------------------------------------
 
 cd ..\..\bin\Release
+
+dir /B /S *.dll | rebase
 
 for /F "tokens=1,2 delims= " %%i in (..\build.no) do call :Pack %%i %%j
 goto :eof
