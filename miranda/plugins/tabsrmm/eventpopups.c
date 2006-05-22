@@ -43,7 +43,7 @@ extern      MYGLOBALS myGlobals;
 extern      struct ContainerWindowData *pFirstContainer;
 extern      BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      HIMAGELIST CreateStateImageList();
-extern      HANDLE hTrayAnimThread;
+extern      HANDLE hTrayAnimThread, g_hEvent;
 
 PLUGIN_DATA *PopUpList[20];
 static int PopupCount = 0;
@@ -1436,7 +1436,8 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
 #endif            
             myGlobals.m_UnreadInTray++;
             if(myGlobals.m_UnreadInTray)
-                ResumeThread(hTrayAnimThread);
+                SetEvent(g_hEvent);
+                //ResumeThread(hTrayAnimThread);
             SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
         }
         else {
@@ -1459,7 +1460,8 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
                 mii.dwItemData = fromEvent ? 1 : 0;
                 myGlobals.m_UnreadInTray += (mii.dwItemData & 0x0000ffff);
                 if(myGlobals.m_UnreadInTray)
-                    ResumeThread(hTrayAnimThread);
+                    SetEvent(g_hEvent);
+                    //ResumeThread(hTrayAnimThread);
                 if(fromEvent == 2)
                     mii.dwItemData |= 0x10000000;
             }
@@ -1468,7 +1470,8 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
                 mii.dwItemData += (fromEvent ? 1 : 0);
                 myGlobals.m_UnreadInTray += (fromEvent ? 1 : 0);
                 if(myGlobals.m_UnreadInTray)
-                    ResumeThread(hTrayAnimThread);
+                    SetEvent(g_hEvent);
+                    //ResumeThread(hTrayAnimThread);
                 mii.fMask |= MIIM_STRING;
                 if(fromEvent == 2)
                     mii.dwItemData |= 0x10000000;

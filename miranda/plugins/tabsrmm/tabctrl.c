@@ -41,6 +41,7 @@ extern BOOL g_skinnedContainers;
 extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern LRESULT CALLBACK StatusBarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
 
 HMODULE hUxTheme = 0;
 
@@ -258,8 +259,13 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
         else if(dat->mayFlashTab)
             hIcon = dat->iFlashIcon;
 		else {
-            if(dat->si && dat->iFlashIcon)
+            if(dat->si && dat->iFlashIcon) {
+                int sizeX, sizeY;
+
                 hIcon = dat->iFlashIcon;
+                GetIconSize(hIcon, &sizeX, &sizeY);
+                iSize = sizeX;
+            }
 			else if(dat->hTabIcon == dat->hTabStatusIcon && dat->hXStatusIcon)
 				hIcon = dat->hXStatusIcon;
 			else
@@ -277,12 +283,6 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
                 DrawIconEx (dc, ix, iy, hIcon, iSize, iSize, 0, NULL, DI_NORMAL | DI_COMPAT); 
         }
 
-        // draw the overlay for chat tabs
-        
-        /*if(dat->bType == SESSIONTYPE_CHAT && dat->iFlashIcon && dat->mayFlashTab == FALSE)
-            DrawIconEx (dc, rcItem->left + tabdat->m_xpad - 1, rcItem->top + 1, dat->iFlashIcon, 10, 10, 0, NULL, DI_NORMAL | DI_COMPAT); 
-        */
-        
         rcItem->left += (iSize + 2 + tabdat->m_xpad);
         
         if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(myGlobals.m_TabAppearance & TCF_FLASHLABEL)) {

@@ -932,10 +932,10 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     myGlobals.g_hwndHotkeyHandler = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_HOTKEYSLAVE), 0, HotkeyHandlerDlgProc);
 
     ZeroMemory((void *)sendJobs, sizeof(struct SendJob) * NR_SENDJOBS);
-    if(nen_options.bTraySupport)
-        CreateSystrayIcon(TRUE);
 
     CreateTrayMenus(TRUE);
+    if(nen_options.bTraySupport)
+        CreateSystrayIcon(TRUE);
 
     ZeroMemory((void *)&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
