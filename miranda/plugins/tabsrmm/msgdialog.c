@@ -4172,14 +4172,10 @@ quote_from_last:
                     break;
                 }
                 case IDC_TOGGLETOOLBAR:
-                    if(lParam == 1) {
-                        dat->pContainer->dwFlags ^= CNT_NOMENUBAR;
-                        SendMessage(dat->pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 1);
-                    }
-                    else {
-                        dat->pContainer->dwFlags ^= CNT_HIDETOOLBAR;
-                        BroadCastContainer(dat->pContainer, DM_CONFIGURETOOLBAR, 0, 1);
-                    }
+                    if(lParam == 1)
+                        ApplyContainerSetting(dat->pContainer, CNT_NOMENUBAR, dat->pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 1);
+                    else
+                        ApplyContainerSetting(dat->pContainer, CNT_HIDETOOLBAR, dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1);
                     SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                     break;
                 case IDC_TOGGLENOTES:
@@ -5686,7 +5682,7 @@ verify:
                  */
                 for(i = 0; i < NR_SENDJOBS; i++) {
                     if(sendJobs[i].hOwner == dat->hContact && sendJobs[i].iStatus != 0) {
-                        _DebugPopup(dat->hContact, "SendQueue: Clearing orphaned send job (%d)", i);
+                        //_DebugPopup(dat->hContact, "SendQueue: Clearing orphaned send job (%d)", i);
                         ClearSendJob(i);
                     }
                 }

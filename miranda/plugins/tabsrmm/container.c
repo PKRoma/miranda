@@ -1168,11 +1168,11 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     ApplyContainerSetting(pContainer, CNT_ALWAYSREPORTINACTIVE, pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE ? 0 : 1);
                     return 0;
                 case ID_WINDOWFLASHING_DISABLEFLASHING:
-                    ApplyContainerSetting(pContainer, CNT_MOUSEDOWN, 1);
+                    ApplyContainerSetting(pContainer, CNT_NOFLASH, 1);
                     ApplyContainerSetting(pContainer, CNT_FLASHALWAYS, 0);
                     return 0;
                 case ID_WINDOWFLASHING_FLASHUNTILFOCUSED:
-                    ApplyContainerSetting(pContainer, CNT_MOUSEDOWN, 0);
+                    ApplyContainerSetting(pContainer, CNT_NOFLASH, 0);
                     ApplyContainerSetting(pContainer, CNT_FLASHALWAYS, 1);
                     return 0;
                 case ID_WINDOWFLASHING_USEDEFAULTVALUES:
@@ -2398,7 +2398,7 @@ panel_found:
                 TCITEM item;
                 SESSION_INFO *node = m_WndList;
 
-                DestroyWindow(hwndTab);
+                //DestroyWindow(hwndTab);
                 ZeroMemory((void *)&item, sizeof(item));
                 for(i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
                     item.mask = TCIF_PARAM;

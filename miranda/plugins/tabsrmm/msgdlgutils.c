@@ -2460,7 +2460,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		return TRUE;
 	}
 	else if(dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICERRORICON)) {
-		_DebugPopup(0, "draw icon");
 		if(dat->pContainer->bSkinned)
 			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
 		else

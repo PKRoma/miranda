@@ -986,8 +986,7 @@ int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
     while(pFirstContainer)
         SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
-    if(g_chat_integration_enabled)
-        Chat_PreShutdown(wParam, lParam);
+
     UnhookEvent(hEventDbEventAdded);
     UnhookEvent(hEventDispatch);
     UnhookEvent(hEventDbSettingChange);
@@ -1078,6 +1077,8 @@ int SplitmsgShutdown(void)
 		FreeLibrary(g_hIconDLL);
 		g_hIconDLL = 0;
 	}
+    if(g_chat_integration_enabled)
+        Chat_PreShutdown(0, 0);
     DeleteCriticalSection(&cs_sessions);
     return 0;
 }

@@ -422,6 +422,7 @@ char *MakeTimeStamp(char * pszStamp, time_t time)
 {
 
 	static char szTime[30];
+    _tzset();
 	strftime(szTime, 29, pszStamp, localtime(&time));
 	return szTime;
 }
@@ -902,7 +903,10 @@ void LoadMsgLogBitmaps(void)
     int iIconSize;
     int sizeX = 0, sizeY = 0;
 
-    GetIconSize(hIcons[0], &sizeX, &sizeY);
+    if(hIcons[0])
+		GetIconSize(hIcons[0], &sizeX, &sizeY);
+	else
+		sizeX = 16;
 
     if(sizeX >= 12)
         iIconSize = g_Settings.ScaleIcons ? 12 : 16;
