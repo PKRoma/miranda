@@ -199,11 +199,22 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 						ci->szProto = saveProto;
 						break;
 					}
-					case 1: return ProcessDatabaseValueDefault( ci, "Nick" ); // nick
-					case 2: return ProcessDatabaseValueDefault( ci, "FirstName" ); // First Name
-					case 3: return ProcessDatabaseValueDefault( ci, "e-mail" ); // E-mail
-					case 4: return ProcessDatabaseValueDefault( ci, "LastName" ); // Last Name
-
+					case 1: 
+						if ( !ProcessDatabaseValueDefault( ci, "Nick" )) // nick
+							return 0;
+						break;
+					case 2: 
+						if ( !ProcessDatabaseValueDefault( ci, "FirstName" )) // First Name
+							return 0;
+						break;
+					case 3: 
+						if ( !ProcessDatabaseValueDefault( ci, "e-mail" )) // E-mail
+							return 0;
+						break;
+					case 4:
+						if ( !ProcessDatabaseValueDefault( ci, "LastName" )) // Last Name
+							return 0;
+						break;
 					case 5: // Unique id
 					{
 						// protocol must define a PFLAG_UNIQUEIDSETTING
