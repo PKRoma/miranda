@@ -171,7 +171,7 @@ BEGIN
     LTEXT           "Border style",IDC_STATIC,136,133,57,10
     CONTROL         "Apply group indent values to background drawing",IDC_APPLYINDENTBG,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,4,224,222,10
-    CONTROL         "Use per protocol/contact skinning ",IDC_USEPERPROTO,
+    CONTROL         "Use per protocol/contact skinning",IDC_USEPERPROTO,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,170,149,10
     CONTROL         "Protocol skins override status text colors",IDC_OVERRIDEPERSTATUSCOLOR,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,180,146,10
