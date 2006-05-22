@@ -67,7 +67,7 @@ char *xStatusDescr[] = { "Angry", "Duck", "Tired", "Party", "Beer", "Thinking", 
                          
 static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
 
-char *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
+TCHAR *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
 static WNDPROC OldMessageEditProc, OldAvatarWndProc, OldMessageLogProc;
 WNDPROC OldSplitterProc = 0;
@@ -86,21 +86,21 @@ const UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANELNICK, IDC_PANELUIN,
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
 const UINT errorButtons[] = { IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
 
-static struct _tooltips { int id; char *szTip;} tooltips[] = {
-    IDC_HISTORY, "View User's History",
-    IDC_TIME, "Message Log Options",
-    IDC_QUOTE, "Quote last message OR selected text",
-    IDC_PIC, "Avatar Options",
-    IDC_SMILEYBTN, "Insert Emoticon",
-    IDC_ADD, "Add this contact permanently to your contact list",
-    IDC_CANCELADD, "Do not add this contact permanently",
-    IDOK, "Send message\nClick dropdown arrow for sending options",
-    IDC_FONTBOLD, "Bold text",
-    IDC_FONTITALIC, "Italic text",
-    IDC_FONTUNDERLINE, "Underlined text",
-    IDC_FONTFACE, "Select font color",
-    IDC_TOGGLENOTES, "Toggle notes display",
-    IDC_APPARENTMODE, "Set your visibility for this contact",
+static struct _tooltips { int id; TCHAR *szTip;} tooltips[] = {
+    IDC_HISTORY, _T("View User's History"),
+    IDC_TIME, _T("Message Log Options"),
+    IDC_QUOTE, _T("Quote last message OR selected text"),
+    IDC_PIC, _T("Avatar Options"),
+    IDC_SMILEYBTN, _T("Insert Emoticon"),
+    IDC_ADD, _T("Add this contact permanently to your contact list"),
+    IDC_CANCELADD, _T("Do not add this contact permanently"),
+    IDOK, _T("Send message\nClick dropdown arrow for sending options"),
+    IDC_FONTBOLD, _T("Bold text"),
+    IDC_FONTITALIC, _T("Italic text"),
+    IDC_FONTUNDERLINE, _T("Underlined text"),
+    IDC_FONTFACE, _T("Select font color"),
+    IDC_TOGGLENOTES, _T("Toggle notes display"),
+    IDC_APPARENTMODE, _T("Set your visibility for this contact"),
     -1, NULL
 };
 
@@ -1490,8 +1490,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				else
 					dat->hTheme = 0;
 
-                pszIDCSAVE_close = Translate("Close session");
-                pszIDCSAVE_save = Translate("Save and close session");
+                pszIDCSAVE_close = TranslateT("Close session");
+                pszIDCSAVE_save = TranslateT("Save and close session");
 
 				dat->hContact = newData->hContact;
                 WindowList_Add(hMessageWindowList, hwndDlg, dat->hContact);
@@ -1713,16 +1713,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 for(i = 0;;i++) {
                     if(tooltips[i].id == -1)
                         break;
-                    SendDlgItemMessage(hwndDlg, tooltips[i].id, BUTTONADDTOOLTIP, (WPARAM)Translate(tooltips[i].szTip), 0);
+                    SendDlgItemMessage(hwndDlg, tooltips[i].id, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(tooltips[i].szTip), 0);
                 }
                 
                 SetDlgItemText(hwndDlg, IDC_LOGFROZENTEXT, TranslateT("Message Log is frozen"));
                 
-                SendMessage(GetDlgItem(hwndDlg, IDC_SAVE), BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
+                SendMessage(GetDlgItem(hwndDlg, IDC_SAVE), BUTTONADDTOOLTIP, (WPARAM)pszIDCSAVE_close, 0);
                 if(dat->bIsMeta)
-                    SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details\nRight click for MetaContact control\nClick dropdown for window settings"), 0);
+                    SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) TranslateT("View User's Details\nRight click for MetaContact control\nClick dropdown for window settings"), 0);
                 else
-                    SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details\nClick dropdown for window settings"), 0);
+                    SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) TranslateT("View User's Details\nClick dropdown for window settings"), 0);
                 
                 SetWindowText(GetDlgItem(hwndDlg, IDC_RETRY), TranslateT("Retry"));
                 SetWindowText(GetDlgItem(hwndDlg, IDC_CANCELSEND), TranslateT("Cancel"));
@@ -2214,7 +2214,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 ZeroMemory((void *)&item, sizeof(item));
                 if (dat->hContact) {
                     int iHasName;
-                    char fulluin[128];
+                    TCHAR fulluin[128];
                     if (dat->szProto) {
 
                         if(dat->bIsMeta) {
@@ -2271,7 +2271,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             item.mask |= TCIF_TEXT;
                         }
                         SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
-                        mir_snprintf(fulluin, sizeof(fulluin), Translate("UIN: %s (SHIFT click -> copy to clipboard)\nClick for contact menu\nClick dropdown for infopanel settings."), iHasName ? dat->uin : Translate("No UIN"));
+#if defined _UNICODE
+                        {
+                            WCHAR wUIN[80];
+                            MultiByteToWideChar(dat->codePage, 0, dat->uin, -1, wUIN, 80);
+                            wUIN[79] = 0;
+                            mir_sntprintf(fulluin, safe_sizeof(fulluin), TranslateT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for contact menu\nClick dropdown for infopanel settings."), iHasName ? wUIN : TranslateT("No UIN"));
+                        }
+#else
+                        mir_sntprintf(fulluin, save_sizeof(fulluin), TranslateT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for contact menu\nClick dropdown for infopanel settings."), iHasName ? dat->uin : TranslateT("No UIN"));
+#endif
                         SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, iHasName ? (WPARAM)fulluin : (WPARAM)"", 0);
                         
                     }
@@ -3180,7 +3189,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 if(dat->pContainer->hwndActive == hwndDlg)
                                     UpdateReadChars(hwndDlg, dat);
                                 SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[6]);
-                                SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
+                                SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM)pszIDCSAVE_close, 0);
                                 dat->dwFlags &= ~MWF_SAVEBTN_SAV;
                                 free(szMessage);
                             }

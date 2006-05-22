@@ -487,7 +487,7 @@ struct SIDEBARITEM {
     UINT uId;
     DWORD dwFlags;
     HICON *hIcon;
-    char szTip[128];
+    TCHAR  szTip[128];
 };
 
 #if defined(_UNICODE)

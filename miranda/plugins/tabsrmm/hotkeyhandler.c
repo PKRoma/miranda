@@ -178,8 +178,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
             SendMessage(GetDlgItem(hwndDlg, IDC_SLIST), BUTTONSETASFLATBTN, 0, 0);
             SendMessage(GetDlgItem(hwndDlg, IDC_TRAYICON), BUTTONSETASFLATBTN, 0, 0);
-            SendDlgItemMessage(hwndDlg, IDC_SLIST, BUTTONADDTOOLTIP, (WPARAM) Translate("tabSRMM Quick Menu"), 0);
-            SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BUTTONADDTOOLTIP, (WPARAM) Translate("Session List"), 0);
+            SendDlgItemMessage(hwndDlg, IDC_SLIST, BUTTONADDTOOLTIP, (WPARAM) TranslateT("tabSRMM Quick Menu"), 0);
+            SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BUTTONADDTOOLTIP, (WPARAM) TranslateT("Session List"), 0);
             SendDlgItemMessage(hwndDlg, IDC_SLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[16]);
             SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.m_AnimTrayIcons[0]);
             ShowWindow(GetDlgItem(hwndDlg, IDC_TRAYCONTAINER), SW_HIDE);

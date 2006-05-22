@@ -52,19 +52,19 @@ typedef struct
 } MESSAGESUBDATA;
 
 
-static struct _tagbtns { int id; char *szTip;} _btns[] = {
-    IDC_SMILEY, "Insert emoticon",
-    IDC_CHAT_BOLD, "Bold text",
-    IDC_ITALICS, "Italic text",
-    IDC_CHAT_UNDERLINE, "Underlined text",
-    IDC_BKGCOLOR, "Change background color",
-    IDC_COLOR, "Change text color",
-    IDC_CHAT_HISTORY, "Show history",
-    IDC_SHOWNICKLIST, "Toggle nick list",
-    IDC_CHANMGR, "Channel manager",
-    IDC_FILTER, "Event filter",
-    IDC_CHAT_CLOSE, "Close session",
-    IDOK, "Send message",
+static struct _tagbtns { int id; TCHAR *szTip;} _btns[] = {
+    IDC_SMILEY, _T("Insert emoticon"),
+    IDC_CHAT_BOLD, _T("Bold text"),
+    IDC_ITALICS, _T("Italic text"),
+    IDC_CHAT_UNDERLINE, _T("Underlined text"),
+    IDC_BKGCOLOR, _T("Change background color"),
+    IDC_COLOR, _T("Change text color"),
+    IDC_CHAT_HISTORY, _T("Show history"),
+    IDC_SHOWNICKLIST, _T("Toggle nick list"),
+    IDC_CHANMGR, _T("Channel manager"),
+    IDC_FILTER, _T("Event filter"),
+    IDC_CHAT_CLOSE, _T("Close session"),
+    IDOK, _T("Send message"),
     -1, NULL
 };
 

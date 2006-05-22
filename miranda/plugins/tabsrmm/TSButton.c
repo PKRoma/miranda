@@ -618,12 +618,13 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 
 		case BUTTONADDTOOLTIP:
 		{
-			TOOLINFOA ti;
+			TOOLINFO ti;
 
-			if (!(char*)wParam) break;
+			if (!(char*)wParam) 
+                break;
             EnterCriticalSection(&csTips);
 			if (!hwndToolTips) {
-				hwndToolTips = CreateWindowExA(WS_EX_TOPMOST, TOOLTIPS_CLASSA, "", WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
+				hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, _T(""), WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
 			}
 			ZeroMemory(&ti, sizeof(ti));
 			ti.cbSize = sizeof(ti);
@@ -635,8 +636,8 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			}
 			ti.uFlags = TTF_IDISHWND|TTF_SUBCLASS;
 			ti.uId = (UINT)bct->hwnd;
-			ti.lpszText=(char*)wParam;
-			SendMessageA(hwndToolTips,TTM_ADDTOOLA,0,(LPARAM)&ti);
+			ti.lpszText=(TCHAR *)wParam;
+			SendMessage(hwndToolTips,TTM_ADDTOOL,0,(LPARAM)&ti);
 			SendMessage(hwndToolTips, TTM_SETMAXTIPWIDTH, 0, 300);
             LeaveCriticalSection(&csTips);
 			break;

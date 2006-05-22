@@ -10,7 +10,7 @@
 #include "sendqueue.h"
 
 extern      MYGLOBALS myGlobals;
-extern      char *pszIDCSAVE_save, *pszIDCSAVE_close;
+extern      TCHAR *pszIDCSAVE_save, *pszIDCSAVE_close;
 extern      const UINT errorControls[5], infoPanelControls[8];
 extern      struct SendJob sendJobs[NR_SENDJOBS];
 

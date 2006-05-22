@@ -85,16 +85,16 @@ TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSet
 static WNDPROC OldStatusBarproc = 0, OldContainerWndProc = 0;
 
 static struct SIDEBARITEM sbarItems[] = {
-    IDC_SBAR_SLIST, SBI_TOP, &myGlobals.g_sideBarIcons[0], "Session List",
-    IDC_SBAR_FAVORITES, SBI_TOP, &myGlobals.g_sideBarIcons[1], "Favorite Contacts",
-    IDC_SBAR_RECENT, SBI_TOP, &myGlobals.g_sideBarIcons[2], "Recent Sessions",
-    IDC_SBAR_USERPREFS, SBI_TOP, &myGlobals.g_sideBarIcons[4], "Contact Preferences",
-    IDC_SBAR_TOGGLEFORMAT, SBI_TOP | SBI_TOGGLE, &myGlobals.g_buttonBarIcons[20], "Quick toggle text formatting",
-    1118, SBI_TOP, &myGlobals.g_buttonBarIcons[27], "Test",
-    1119, SBI_TOP, &myGlobals.g_buttonBarIcons[27], "Test",
-    1120, SBI_TOP, &myGlobals.g_buttonBarIcons[27], "Test",
-    IDC_SBAR_SETUP, SBI_BOTTOM, &myGlobals.g_sideBarIcons[3], "Setup Sidebar",
-    0, 0, 0, ""
+    IDC_SBAR_SLIST, SBI_TOP, &myGlobals.g_sideBarIcons[0], _T("Session List"),
+    IDC_SBAR_FAVORITES, SBI_TOP, &myGlobals.g_sideBarIcons[1], _T("Favorite Contacts"),
+    IDC_SBAR_RECENT, SBI_TOP, &myGlobals.g_sideBarIcons[2], _T("Recent Sessions"),
+    IDC_SBAR_USERPREFS, SBI_TOP, &myGlobals.g_sideBarIcons[4], _T("Contact Preferences"),
+    IDC_SBAR_TOGGLEFORMAT, SBI_TOP | SBI_TOGGLE, &myGlobals.g_buttonBarIcons[20], _T("Quick toggle text formatting"),
+    1118, SBI_TOP, &myGlobals.g_buttonBarIcons[27], _T("Test"),
+    1119, SBI_TOP, &myGlobals.g_buttonBarIcons[27], _T("Test"),
+    1120, SBI_TOP, &myGlobals.g_buttonBarIcons[27], _T("Test"),
+    IDC_SBAR_SETUP, SBI_BOTTOM, &myGlobals.g_sideBarIcons[3], _T("Setup Sidebar"),
+    0, 0, 0, _T("")
 };
 
 extern StatusItems_t StatusItems[];
@@ -1078,12 +1078,14 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                     GetWindowRect(hwndDlg, &rc);
                     dwNewLeft = pContainer->dwFlags & CNT_SIDEBAR ? -SIDEBARWIDTH : SIDEBARWIDTH;
-                    SetWindowLong(hwndDlg, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+                    SetWindowLong(hwndDlg, GWL_EXSTYLE, exStyle | WS_EX_TRANSPARENT);
                     SetWindowLong(hwndDlg, GWL_EXSTYLE, exStyle);
                     for(i = 0; sbarItems[i].uId != 0; i++)
-                        ShowWindow(GetDlgItem(hwndDlg, sbarItems[i].uId), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
+                        ShowWindow(GetDlgItem(hwndDlg, sbarItems[i].uId), SW_HIDE);
                     SetWindowPos(hwndDlg, 0, rc.left + dwNewLeft, rc.top, (rc.right - rc.left) - dwNewLeft, rc.bottom - rc.top,
                                  SWP_NOCOPYBITS | SWP_NOZORDER | SWP_DEFERERASE | SWP_ASYNCWINDOWPOS | (dwNewLeft < 0 && skinnedMode ? SWP_NOREDRAW : 0));
+                    for(i = 0; sbarItems[i].uId != 0; i++)
+                        ShowWindow(GetDlgItem(hwndDlg, sbarItems[i].uId), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
                     break;
 
                 }
@@ -2203,7 +2205,7 @@ panel_found:
                 SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 10, 0, 0);
                 SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
                 SendMessage(pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[16]);
-                SendMessage(pContainer->hwndSlist, BUTTONADDTOOLTIP, (WPARAM)Translate("Show session list (right click to show quick menu)"), 0);
+                SendMessage(pContainer->hwndSlist, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Show session list (right click to show quick menu)"), 0);
                 /*
                 if(pContainer->hwndStatus) {
                     ws = GetWindowLong(pContainer->hwndStatus, GWL_STYLE);
@@ -2244,7 +2246,7 @@ panel_found:
             int i = 0;
             for(i = 0; sbarItems[i].uId != 0; i++) {
                 SendDlgItemMessage(hwndDlg, sbarItems[i].uId, BM_SETIMAGE, IMAGE_ICON, (LPARAM)*(sbarItems[i].hIcon));
-                SendDlgItemMessage(hwndDlg, sbarItems[i].uId, BUTTONADDTOOLTIP, (WPARAM)sbarItems[i].szTip, 0);
+                SendDlgItemMessage(hwndDlg, sbarItems[i].uId, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(sbarItems[i].szTip), 0);
                 if(sbarItems[i].dwFlags & SBI_TOGGLE)
                     SendDlgItemMessage(hwndDlg, sbarItems[i].uId, BUTTONSETASPUSHBTN, 0, 0);
             }
