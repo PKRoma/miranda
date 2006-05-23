@@ -45,4 +45,65 @@ typedef struct tagProtocolData {
 
 #define DEFAULT_TITLEBAR_HEIGHT		18
 
+typedef struct _DockOpt {
+    HWND    hwndLeft;
+    HWND    hwndRight;
+}
+DockOpt;
+
+typedef struct tagMenuHandles {
+    HANDLE MainMenuItem;
+    HANDLE MIVisible,MITitle,MITBVisible,MILock,MIColl,MIFloating,MIAlignRoot;
+    HANDLE MIAlignTop,MIAlignClient,MIAlignBottom;
+    HANDLE MIBorder, MISkinned;
+} FrameMenuHandles;
+
+typedef struct tagFrameTitleBar {
+    HWND hwnd;
+    HWND TitleBarbutt;
+    HWND hwndTip;
+
+    char *tbname;
+    char *tooltip;
+    HMENU hmenu;
+    HICON hicon;
+
+    BOOLEAN ShowTitleBar;
+    BOOLEAN ShowTitleBarTip;
+    COLORREF BackColour;
+    COLORREF TextColour;
+    int oldstyles;
+    POINT oldpos;
+    RECT wndSize;
+} FrameTitleBar;
+
+typedef struct {
+    int id;
+    HWND hWnd ;
+    RECT wndSize;
+    char *name;
+    int align;
+    int height;
+    int dwFlags;
+    BOOLEAN Locked;
+    BOOLEAN Skinned;
+    BOOLEAN visible;
+    BOOLEAN needhide;
+    BOOLEAN collapsed;
+    int prevvisframe;
+    int HeightWhenCollapsed;
+    FrameTitleBar TitleBar;
+    FrameMenuHandles MenuHandles;
+    int oldstyles;
+    BOOLEAN floating;
+    HWND ContainerWnd;
+    POINT FloatingPos;
+    POINT FloatingSize;
+    BOOLEAN minmaxenabled;
+    BOOLEAN UseBorder;
+    int order;
+    DockOpt dockOpt;
+    HWND OwnerWindow;
+    WNDPROC wndProc;
+} wndFrame;
 

@@ -66,7 +66,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ID_EXTBKTBBUTTONSNPRESSED 40102
 #define ID_EXTBKTBBUTTONMOUSEOVER 40103
 #define ID_EXTBKSTATUSFLOATER	40104
-#define ID_EXTBK_LAST_D         40104
+#define ID_EXTBKOWNEDFRAMEBORDER 40105
+#define ID_EXTBKOWNEDFRAMEBORDERTB 40106
+#define ID_EXTBK_LAST_D         40106
 
 #define ID_EXTBKSEPARATOR       40200
 
@@ -87,6 +89,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define IMAGE_PERPIXEL_ALPHA 1
 #define IMAGE_FLAG_DIVIDED 2
+#define IMAGE_FILLSOLID 4
 
 #define IMAGE_STRETCH_V 1
 #define IMAGE_STRETCH_H 2
@@ -105,6 +108,7 @@ typedef struct _tagImageItem {
     BLENDFUNCTION bf;
     LPVOID lpDIBSection;
     BYTE bStretch;
+    HBRUSH fillBrush;
     struct _tagImageItem *nextItem;
 } ImageItem;
 

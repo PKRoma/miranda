@@ -33,6 +33,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define  EXTRA_ICON_ADV1	4
 #define  EXTRA_ICON_ADV2	5
 
+#define CLS_SKINNEDFRAME	0x0800   //this control will be the main contact list (v. 0.3.4.3+ 2004/11/02)
+
 typedef struct
 {
 int cbSize;			//must be sizeof(IconExtraColumn)
@@ -108,7 +110,7 @@ typedef struct tagCLISTFrame {
 #define F_NOBORDER			16 //Dont apply WS_BORDER style for window
 #define F_SHOWTBTIP			32 //Show titlebar tooltip
 #define F_NO_SUBCONTAINER   1024    //Support skining no subcontainer needed
-
+#define F_SKINNED           2048    // skinned frame (for owned subframe only)
 
 // frame alignment
 #define alTop		0x00000001
@@ -165,6 +167,11 @@ typedef struct tagCLISTFrame {
 //wparam=frameid
 //lparam=0
 #define MS_CLIST_FRAMES_SETUNBORDER			"CListFrame/SetUnBorder"
+
+//trigger skinned flags
+//wparam=frameid
+//lparam=0
+#define MS_CLIST_FRAMES_SETSKINNED			"CListFrame/SetSkinnedFrame"
 
 //redraws the frame
 //wParam=FrameId, -1 for all frames

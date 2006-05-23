@@ -465,7 +465,16 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
         // middle 3 items
 
         AlphaBlend(hdc, rc->left, rc->top + t, l, height - t - b, item->hdc, 0, t, l, item->inner_height, item->bf);
-        AlphaBlend(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, item->hdc, l, t, item->inner_width, item->inner_height, item->bf);
+
+        if(item->dwFlags & IMAGE_FILLSOLID && item->fillBrush) {
+            RECT rcFill;
+            rcFill.left = rc->left + l; rcFill.top = rc->top +t;
+            rcFill.right = rc->right - r; rcFill.bottom = rc->bottom - b;
+            FillRect(hdc, &rcFill, item->fillBrush);
+        }
+        else
+            AlphaBlend(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, item->hdc, l, t, item->inner_width, item->inner_height, item->bf);
+
         AlphaBlend(hdc, rc->right - r, rc->top + t, r, height - t - b, item->hdc, item->width - r, t, r, item->inner_height, item->bf);
 
         // bottom 3 items

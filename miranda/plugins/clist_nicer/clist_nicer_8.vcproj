@@ -75,7 +75,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib"
+				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib shlwapi.lib"
 				SuppressStartupBanner="true"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
@@ -175,7 +175,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib"
+				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib shlwapi.lib"
 				SuppressStartupBanner="true"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
@@ -273,7 +273,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib"
+				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib shlwapi.lib"
 				SuppressStartupBanner="true"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
@@ -373,7 +373,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib"
+				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib shlwapi.lib"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
 				DelayLoadDLLs="gdiplus.dll"
@@ -1456,6 +1456,10 @@
 				>
 			</File>
 			<File
+				RelativePath="m_cluiframes.h"
+				>
+			</File>
+			<File
 				RelativePath="resource.h"
 				>
 			</File>
@@ -1581,11 +1585,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\invisible.ico"
+				RelativePath=".\res\overlay\invisible.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\overlay\invisible.ico"
+				RelativePath="res\invisible.ico"
 				>
 			</File>
 			<File
@@ -1653,11 +1657,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\overlay\online.ico"
+				RelativePath=".\res\online.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\online.ico"
+				RelativePath=".\res\overlay\online.ico"
 				>
 			</File>
 			<File

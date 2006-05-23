@@ -368,7 +368,7 @@ static BOOL CALLBACK DlgProcClcExtBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
                             ReloadSkinItemsToCache();
                             pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
                             CloseHandle(hFile);
-                            DBWriteContactSettingString(NULL, "CLC", "ContactSkins", str);
+                            DBWriteContactSettingString(NULL, "CLC", "ContactSkins", final_path);
                         }
                         SetDlgItemTextA(hwndDlg, IDC_SKINFILE, final_path);
                         break;

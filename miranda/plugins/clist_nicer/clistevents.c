@@ -21,6 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
+#include "cluiframes/cluiframes.h"
 
 void TrayIconSetToBase(char *szPreferredProto);
 
@@ -29,6 +30,7 @@ HFONT __fastcall ChangeToFont(HDC hdc, struct ClcData *dat, int id, int *fontHei
 
 extern struct CListEvent* ( *saveAddEvent )(CLISTEVENT *cle);
 extern void ( *saveRemoveEvent )(HANDLE hContact, HANDLE hDbEvent);
+extern wndFrame *wndFrameEventArea;
 
 extern pfnDrawAlpha pDrawAlpha;
 extern struct ClcData *g_clcData;
@@ -95,13 +97,11 @@ static CLISTEVENT* MyGetEvent(int iSelection)
 
 LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch(msg) {
+    BOOL hasTitleBar = wndFrameEventArea ? wndFrameEventArea->TitleBar.ShowTitleBar : 0;
+
+    switch(msg) {
 	case WM_CREATE:
 		hwndEventFrame = hwnd;
-		//g_CluiData.hwndNotifyButton = CreateWindowExA(0, "CLCButtonClass", "", BS_PUSHBUTTON | WS_CHILD | WS_TABSTOP, 0, 0, 19, 16, hwnd, (HMENU) IDC_NOTIFYBUTTON, g_hInst, NULL);
-		//SendMessage(g_CluiData.hwndNotifyButton, BUTTONSETASFLATBTN, 0, 0);
-		//SendMessage(g_CluiData.hwndNotifyButton, BUTTONSETASFLATBTN + 10, 0, 0);
-		//ShowWindow(g_CluiData.hwndNotifyButton, SW_SHOW);
 		return FALSE;
 
 	case WM_MEASUREITEM:
@@ -120,26 +120,10 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 			}
 			break;
 		}
-	case WM_NCPAINT:
-		if(GetWindowLong(hwnd, GWL_STYLE) & WS_BORDER) {
-			HDC hdc = GetWindowDC(hwnd);
-			HPEN hPenOld = SelectObject(hdc, g_hPenCLUIFrames);
-			RECT rcWindow, rc;
-			HBRUSH brold;
-
-			GetWindowRect(hwnd, &rcWindow);
-			rc.left = rc.top = 0;
-			rc.right = rcWindow.right - rcWindow.left;
-			rc.bottom = rcWindow.bottom - rcWindow.top;
-			//FillRect(hdc, &rc, GetSysColorBrush(COLOR_ACTIVEBORDER));
-			brold = SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
-			Rectangle(hdc, 0, 0, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top);
-			SelectObject(hdc, hPenOld);
-			SelectObject(hdc, brold);
-			ReleaseDC(hwnd, hdc);
-			return 0;
-		}
-		break;
+    case WM_NCCALCSIZE:
+        return FrameNCCalcSize(hwnd, DefWindowProc, wParam, lParam, hasTitleBar);
+    case WM_NCPAINT:
+        return FrameNCPaint(hwnd, DefWindowProc, wParam, lParam, hasTitleBar);
 	case WM_DRAWITEM:
 		{
 			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;

@@ -109,7 +109,6 @@ int LoadContactListModule(void)
 
 	CreateServiceFunction("CList/GetContactStatusMsg", GetContactStatusMessage);
 	InitCustomMenus();
-	IMG_InitDecoder();
 	MySetProcessWorkingSetSize = (BOOL(WINAPI *)(HANDLE, SIZE_T, SIZE_T))GetProcAddress(GetModuleHandleA("kernel32"), "SetProcessWorkingSetSize");
 	return 0;
 }

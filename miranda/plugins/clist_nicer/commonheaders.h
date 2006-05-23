@@ -48,6 +48,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <direct.h>
 #include <math.h>
+#include <shlwapi.h>
 #include "resource.h"
 #include "forkthread.h"
 #include <win2k.h>

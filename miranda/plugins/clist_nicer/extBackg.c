@@ -197,6 +197,14 @@ static StatusItems_t _StatusItems[] = {
         CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
         CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+	}, {"{-}Frame border - no titlebar", "EXBK_OWNEDFRAMEBORDER", ID_EXTBKOWNEDFRAMEBORDER,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+	}, {"Frame border - with titlebar", "EXBK_OWNEDFRAMEBORDERTB", ID_EXTBKOWNEDFRAMEBORDERTB,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
     }
 };
 
@@ -233,6 +241,7 @@ void LoadExtBkSettingsFromDB()
     char buffer[255];
     int protoCount = 0, i;
     PROTOCOLDESCRIPTOR **protos = 0;
+    DBVARIANT dbv = {0};
 
     CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&protoCount, (LPARAM)&protos);
 
@@ -308,6 +317,15 @@ void LoadExtBkSettingsFromDB()
             ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].BORDERSTYLE);
             StatusItems[n]. BORDERSTYLE = ret;
         }
+    }
+    if(!DBGetContactSetting(NULL, "CLC", "ContactSkins", &dbv)) {
+        char szFinalPath[MAX_PATH];
+
+        CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFinalPath);
+        if(PathFileExistsA(szFinalPath))
+            LoadPerContactSkins(szFinalPath);
+        DBFreeVariant(&dbv);
+        IMG_LoadItems();
     }
 }
 
@@ -1208,6 +1226,15 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
         tmpItem.bTop = GetPrivateProfileIntA(itemname, "Top", 0, szFileName);
         tmpItem.bBottom = GetPrivateProfileIntA(itemname, "Bottom", 0, szFileName);
 
+        GetPrivateProfileStringA(itemname, "Fillcolor", "None", buffer, 500, szFileName);
+        if(strcmp(buffer, "None")) {
+            COLORREF fillColor = HexStringToLong(buffer);
+            tmpItem.fillBrush = CreateSolidBrush(fillColor);
+            tmpItem.dwFlags |= IMAGE_FILLSOLID;
+        }
+        else
+            tmpItem.fillBrush = 0;
+
         GetPrivateProfileStringA(itemname, "Stretch", "None", buffer, 500, szFileName);
         if(buffer[0] == 'B' || buffer[0] == 'b')
             tmpItem.bStretch = IMAGE_STRETCH_B;
@@ -1427,6 +1454,8 @@ static void IMG_DeleteItem(ImageItem *item)
 	/*
     if(item->lpDIBSection && ImgDeleteDIBSection)
         ImgDeleteDIBSection(item->lpDIBSection);*/
+    if(item->fillBrush)
+        DeleteObject(item->fillBrush);
 }
 
 void IMG_DeleteItems()
@@ -1458,7 +1487,6 @@ void IMG_LoadItems()
     char *p;
     DBVARIANT dbv;
     char szFileName[MAX_PATH];
-    HANDLE hFile;
     
     if(DBGetContactSetting(NULL, "CLC", "ContactSkins", &dbv))
         return;
@@ -1466,10 +1494,8 @@ void IMG_LoadItems()
     CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFileName);
     DBFreeVariant(&dbv);
     
-    if((hFile = CreateFileA(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
+    if(!PathFileExistsA(szFileName))
         return;
-
-    CloseHandle(hFile);
 
 	IMG_DeleteItems();
 
@@ -1725,24 +1751,3 @@ void extbk_import(char *file, HWND hwndDlg)
     }
 }
 
-void IMG_InitDecoder()
-{
-	/*
-	HMODULE hModule;
-    
-    if((hModule = LoadLibraryA("imgdecoder.dll")) == 0) {
-        if((hModule = LoadLibraryA("plugins\\imgdecoder.dll")) != 0)
-            g_imgDecoderAvail = TRUE;
-    }
-    else
-        g_imgDecoderAvail = TRUE;
-
-    if(hModule) {
-        ImgNewDecoder = (pfnImgNewDecoder )GetProcAddress(hModule, "ImgNewDecoder");
-        ImgDeleteDecoder=(pfnImgDeleteDecoder )GetProcAddress(hModule, "ImgDeleteDecoder");
-        ImgNewDIBFromFile=(pfnImgNewDIBFromFile)GetProcAddress(hModule, "ImgNewDIBFromFile");
-        ImgDeleteDIBSection=(pfnImgDeleteDIBSection)GetProcAddress(hModule, "ImgDeleteDIBSection");
-        ImgGetHandle=(pfnImgGetHandle)GetProcAddress(hModule, "ImgGetHandle");
-    }
-	*/
-}

@@ -309,7 +309,8 @@ int CreateCLC(HWND parent)
 		frame.TBname = "Event Area";
 		frame.Flags=F_VISIBLE|F_SHOWTBTIP;
 		frame.align = alBottom;
-		frame.hWnd = g_hwndEventArea = CreateWindowExA(0, "EventAreaClass", "evt", WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, pcli->hwndContactList, (HMENU) 0, g_hInst, NULL);
+		frame.hWnd = CreateWindowExA(0, "EventAreaClass", "evt", WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, pcli->hwndContactList, (HMENU) 0, g_hInst, NULL);
+        g_hwndEventArea = frame.hWnd;
 		hNotifyFrame = (HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&frame,(LPARAM)0);
 		CallService(MS_CLIST_FRAMES_UPDATEFRAME, (WPARAM)hNotifyFrame, FU_FMPOS);
 		if(!g_CluiData.bFirstRun)

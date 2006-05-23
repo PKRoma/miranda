@@ -26,6 +26,7 @@ UNICODE - done.
 #include "commonheaders.h"
 #include "resource.h"
 #include "m_userinfo.h"
+#include "cluiframes/cluiframes.h"
 
 int DefaultImageListColorDepth=ILC_COLOR32;
 
@@ -34,6 +35,7 @@ extern struct CluiData g_CluiData;
 extern struct ClcData *g_clcData;
 extern HPEN g_hPenCLUIFrames;
 extern HANDLE hExtraImageApplying;
+extern wndFrame *wndFrameCLC;
 
 extern pfnDrawAlpha pDrawAlpha;
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
@@ -317,6 +319,10 @@ extern LRESULT ( CALLBACK *saveContactListControlWndProc )(HWND hwnd, UINT msg, 
 LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct ClcData *dat;
+    BOOL   frameHasTitlebar = FALSE;
+
+    if(wndFrameCLC)
+        frameHasTitlebar = wndFrameCLC->TitleBar.ShowTitleBar;
 
 	dat = (struct ClcData *) GetWindowLong(hwnd, 0);
 	if (msg >= CLM_FIRST && msg < CLM_LAST)
@@ -354,26 +360,13 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 LBL_Def:
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 
-	case WM_NCPAINT:
-		if(GetWindowLong(hwnd, GWL_STYLE) & WS_BORDER) {
-			HDC hdc = GetWindowDC(hwnd);
-			HPEN hPenOld = SelectObject(hdc, g_hPenCLUIFrames);
-			RECT rcWindow, rc;
-			HBRUSH brold;
+    case WM_NCCALCSIZE:
+        {
+            return FrameNCCalcSize(hwnd, DefWindowProc, wParam, lParam, frameHasTitlebar);
+        }
 
-			CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
-			GetWindowRect(hwnd, &rcWindow);
-			rc.left = rc.top = 0;
-			rc.right = rcWindow.right - rcWindow.left;
-			rc.bottom = rcWindow.bottom - rcWindow.top;
-			brold = SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
-			Rectangle(hdc, 0, 0, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top);
-			SelectObject(hdc, hPenOld);
-			SelectObject(hdc, brold);
-			ReleaseDC(hwnd, hdc);
-			return 0;
-		}
-		goto LBL_Def;
+    case WM_NCPAINT:
+        return FrameNCPaint(hwnd, DefWindowProc, wParam, lParam, frameHasTitlebar);
 	case INTM_GROUPCHANGED:
         {
             struct ClcContact *contact;

@@ -435,6 +435,9 @@ int GetProtocolVisibility(char * ProtoName);
 DWORD GetCLUIWindowStyle(BYTE style);
 void ApplyCLUIBorderStyle(HWND hwnd);
 
+int FrameNCCalcSize(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam, BOOL hasTitleBar);
+int FrameNCPaint(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam, BOOL hasTitleBar);
+
 void FreeProtocolData( void );
 
 void GetClientID(struct ClcContact *contact, char *client);
