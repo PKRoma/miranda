@@ -43,5 +43,6 @@ void Utf8Decode( char* str, wchar_t** ucs2 );
 /**** langpack.c ***********************************************************************/
 
 int    LangPackGetDefaultCodePage();
+int    LangPackGetDefaultLocale();
 TCHAR* LangPackPcharToTchar( const char* pszStr );
 char*  LangPackTranslateString(const char *szEnglish, const int W);

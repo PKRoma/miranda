@@ -299,6 +299,11 @@ int LangPackGetDefaultCodePage()
 	return (langPack.defaultANSICp == 0) ? CP_ACP : langPack.defaultANSICp;
 }
 
+int LangPackGetDefaultLocale()
+{
+	return (langPack.localeID == 0) ? LOCALE_USER_DEFAULT : langPack.localeID;
+}
+
 TCHAR* LangPackPcharToTchar( const char* pszStr )
 {
 	if ( pszStr == NULL )

@@ -105,6 +105,11 @@ static int GetDefaultCodePage(WPARAM wParam,LPARAM lParam)
 	return LangPackGetDefaultCodePage();
 }
 
+static int GetDefaultLocale(WPARAM wParam,LPARAM lParam)
+{
+	return LangPackGetDefaultLocale();
+}
+
 static int PcharToTchar(WPARAM wParam,LPARAM lParam)
 {
 	return ( int )LangPackPcharToTchar((char*)lParam );
@@ -116,6 +121,7 @@ int LoadLangPackServices(void)
 	CreateServiceFunction(MS_LANGPACK_TRANSLATEMENU,TranslateMenu);
 	CreateServiceFunction(MS_LANGPACK_TRANSLATEDIALOG,TranslateDialog);
 	CreateServiceFunction(MS_LANGPACK_GETCODEPAGE,GetDefaultCodePage);
+	CreateServiceFunction(MS_LANGPACK_GETLOCALE,GetDefaultLocale);
 	CreateServiceFunction(MS_LANGPACK_PCHARTOTCHAR,PcharToTchar);
 	return 0;
 }

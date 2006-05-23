@@ -83,12 +83,19 @@ __inline static int TranslateDialogDefault(HWND hwndDlg)
 //returns the codepage used in the language pack 	  v0.4.3.0+
 //wParam=0
 //lParam=0
-//returns the codepage stated in the langpack, or CP_ACP if no langpack installed
+//returns the codepage stated in the langpack, or CP_ACP if no langpack is present
 #define MS_LANGPACK_GETCODEPAGE      "LangPack/GetCodePage"
+
+//returns the locale id associated with the language pack    v0.4.3.0+
+//wParam=0
+//lParam=0
+//returns the Windows locale id stated in the langpack, or LOCALE_USER_DEFAULT if no langpack is present
+#define MS_LANGPACK_GETLOCALE        "LangPack/GetLocale"
 
 //returns the strdup/wcsdup of lparam according to the langpack  v0.4.3.0+
 //wParam=0
 //lParam=(LPARAM)(char*)source string
-//returns the codepage stated in the langpack, or CP_ACP if no langpack installed
+//returns a string converted from char* to TCHAR* using the langpack codepage. 
+//This string should be freed using mir_free() then
 #define MS_LANGPACK_PCHARTOTCHAR     "LangPack/PcharToTchar"
 #endif // M_LANGPACK_H__
