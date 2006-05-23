@@ -726,7 +726,8 @@ LBL_Def:
 			PAINTSTRUCT ps;
 			hdc = BeginPaint(hwnd, &ps);
 			if (IsWindowVisible(hwnd) && !during_sizing && !g_shutDown) {
-				if((g_isConnecting && GetTickCount() - dat->lastRepaint > 500) || !g_isConnecting || dat->forcePaint) {
+                if(1) {
+				//if((g_isConnecting && GetTickCount() - dat->lastRepaint > 500) || !g_isConnecting || dat->forcePaint) {
 					PaintClc(hwnd, dat, hdc, &ps.rcPaint);
 					dat->bNeedPaint = FALSE;
 					dat->lastRepaint = GetTickCount();

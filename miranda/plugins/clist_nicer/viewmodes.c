@@ -27,6 +27,7 @@ $Id$
 
 #include "commonheaders.h"
 #include "m_variables.h"
+#include <uxtheme.h>
 
 #define TIMERID_VIEWMODEEXPIRE 100
 
@@ -96,7 +97,17 @@ int FillModes(char *szsetting)
 static void ShowPage(HWND hwnd, int page)
 {
     int i = 0;
-    
+    int pageChange = 0;
+
+    if(page == 0 && IsWindowVisible(GetDlgItem(hwnd, _page2Controls[0])))
+        pageChange = 1;
+
+    if(page == 1 && IsWindowVisible(GetDlgItem(hwnd, _page1Controls[0])))
+        pageChange = 1;
+
+    if(pageChange)
+        SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+
     switch(page) {
         case 0:
             while(_page1Controls[i] != 0)
@@ -112,6 +123,10 @@ static void ShowPage(HWND hwnd, int page)
             while(_page2Controls[i] != 0)
                 ShowWindow(GetDlgItem(hwnd, _page2Controls[i++]), SW_SHOW);
             break;
+    }
+    if(pageChange) {
+        SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+        RedrawWindow(hwnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE);
     }
 }
 
@@ -599,6 +614,9 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CLCINFOITEM cii = {0};
             HICON hIcon;
             
+            if(MyEnableThemeDialogTexture)
+                MyEnableThemeDialogTexture(hwndDlg, ETDT_ENABLETAB);
+
             himlViewModes = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 12, 0);
             for(i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++)
                 ImageList_AddIcon(himlViewModes, LoadSkinnedProtoIcon(NULL, i));
