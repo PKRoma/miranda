@@ -1344,13 +1344,13 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 		case 3000:
 			p2p_sendBye( info, ft );
 			p2p_unregisterSession( ft );
-			break;
+			return;
 
 		case 4000:
 			p2p_sendAck( ft, info, hdrdata );
-			p2p_unregisterSession( ft );
 			if ( ft->mOwnsThread )
 				info->sendPacket( "OUT", NULL );
+			p2p_unregisterSession( ft );
 			return;
 
 		case 99:
@@ -1428,9 +1428,9 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 
 	if (( hdrdata->mFlags & 0x40 ) == 0x40 ) {
 		p2p_sendAck( ft, info, hdrdata );
-		p2p_unregisterSession( ft );
 		if ( ft->mOwnsThread )
 			info->sendPacket( "OUT", NULL );
+		p2p_unregisterSession( ft );
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
