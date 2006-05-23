@@ -37,6 +37,7 @@ extern HANDLE		hSendEvent;
 extern HICON		hIcons[30];
 extern struct		CREOleCallback reOleCallback;
 extern HMENU		g_hMenu;
+extern int          g_sessionshutdown;
 
 extern WNDPROC OldSplitterProc;
 static WNDPROC OldMessageProc;
@@ -989,9 +990,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
     HWND hwndParent = GetParent(hwnd);
 	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
 
-	switch (msg) 
-	{
-
+	switch (msg) 	{
     case WM_NCCALCSIZE:
         return(NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldLogProc));
     case WM_NCPAINT:
@@ -1043,9 +1042,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 		default:break;
 	} 
-
 	return CallWindowProc(OldLogProc, hwnd, msg, wParam, lParam); 
-
 } 
 
 static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
@@ -1409,6 +1406,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		} break;
 
         case WM_SETFOCUS:
+            if(g_sessionshutdown)
+                break;
             SetActiveSession(si->pszID, si->pszModule);
             dat->hTabIcon = dat->hTabStatusIcon;
             if(GetTickCount() - dat->dwLastUpdate < (DWORD)200) {
@@ -1580,10 +1579,13 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			int x = 12;
             char szFinalStatusBarText[512];
             
-            if(dat->pContainer->hwndActive != hwndDlg || dat->pContainer->hwndStatus == 0)
+            if(dat->pContainer->hwndActive != hwndDlg || dat->pContainer->hwndStatus == 0 || g_sessionshutdown)
                 break;
 
-            pszDispName = MM_FindModule(si->pszModule)->pszModDispName;
+            if(si->pszModule == NULL)
+				break;
+
+			pszDispName = MM_FindModule(si->pszModule)->pszModDispName;
 
             x += GetTextPixelSize(pszDispName, (HFONT)SendMessage(dat->pContainer->hwndStatus, WM_GETFONT, 0, 0), TRUE);
 			x += GetSystemMetrics(SM_CXSMICON);
@@ -1607,7 +1609,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			if(wParam == SIZE_MAXIMIZED)
 				PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
 
-			if(IsIconic(hwndDlg)) break;
+			if(IsIconic(hwndDlg)) 
+                break;
 			ZeroMemory(&urd,sizeof(urd));
 			urd.cbSize=sizeof(urd);
 			urd.hInstance=g_hInst;
@@ -2039,6 +2042,8 @@ LABEL_SHOWWINDOW:
             if (LOWORD(wParam) != WA_ACTIVE)
                 break;
         case WM_MOUSEACTIVATE:
+            if(g_sessionshutdown)
+                break;
             dat->hTabIcon = dat->hTabStatusIcon;
             SetActiveSession(si->pszID, si->pszModule);
             if((GetTickCount() - dat->dwLastUpdate) < (DWORD)200) {
@@ -2789,11 +2794,16 @@ LABEL_SHOWWINDOW:
             TCITEM item = {0};
             RECT rc;
             struct ContainerWindowData *pContainer = dat->pContainer;
+            BOOL   bForced = (lParam == 2);
 
+#ifdef _DEBUG
+            _DebugTraceA("gc_closewindow: %d (%d, %d)", hwndDlg, wParam, lParam);
+#endif
             iTabs = TabCtrl_GetItemCount(hwndTab);
             if(iTabs == 1) {
                 PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
-                return 1;
+                if(!bForced)
+                    return 1;
             }
             dat->pContainer->iChilds--;
             i = GetTabIndexFromHWND(hwndTab, hwndDlg);
@@ -2804,7 +2814,7 @@ LABEL_SHOWWINDOW:
              * normally, this tab has the same index after the deletion of the formerly active tab
              * unless, of course, we closed the last (rightmost) tab.
              */
-            if (!dat->pContainer->bDontSmartClose && iTabs > 1) {
+            if (!dat->pContainer->bDontSmartClose && iTabs > 1 && !bForced) {
                 if (i == iTabs - 1)
                     i--;
                 else
@@ -2977,8 +2987,6 @@ LABEL_SHOWWINDOW:
             if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
                 CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
             si->wState &= ~STATE_TALK;
-            DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
-
             si->hWnd = NULL;
 			//SetWindowLong(hwndDlg,GWL_USERDATA,0);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_SPLITTERX),GWL_WNDPROC,(LONG)OldSplitterProc);

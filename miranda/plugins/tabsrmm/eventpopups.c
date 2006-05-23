@@ -445,6 +445,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 				NEN_WriteOptions(&nen_options);
 				CheckForRemoveMask();
 				CreateSystrayIcon(nen_options.bTraySupport);
+                SetEvent(g_hEvent);                                 // wake up the thread which cares about the floater and tray
 				/*
 				* check if there are containers minimized to the tray, get them back, otherwise the're trapped forever :)
 				* need to temporarily re-enable tray support, because the container checks for it.

@@ -29,6 +29,7 @@ HANDLE				hBuildMenuEvent ;
 HANDLE				g_hHookContactDblClick;
 SESSION_INFO		g_TabSession;
 CRITICAL_SECTION	cs;
+int                 g_sessionshutdown = 0;
 
 static HANDLE     hServiceRegister = NULL, 
                   hServiceNewChat = NULL,
@@ -128,7 +129,6 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 int Chat_PreShutdown(WPARAM wParam,LPARAM lParam)
 {
 	//SM_BroadcastMessage(NULL, GC_CLOSEWINDOW, 0, 1, FALSE);
-
 	SM_RemoveAll();
 	MM_RemoveAll();
 	return 0;
