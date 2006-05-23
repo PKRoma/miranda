@@ -356,5 +356,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 		DestroyIcon( jabberIcon[i] );
 
 	if ( hMainThread ) CloseHandle( hMainThread );
+	mir_free(jabberProtoName);
+	mir_free(jabberModuleName);
 	return 0;
 }
