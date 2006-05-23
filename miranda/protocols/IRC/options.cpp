@@ -19,6 +19,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "irc.h"
+#include <uxtheme.h>
+#include <win2k.h>
 
 HANDLE					OptionsInitHook = NULL;	
 extern UINT_PTR			KeepAliveTimer;	
@@ -47,6 +49,7 @@ extern HANDLE			hMenuServer;
 static WNDPROC			OldProc;
 static WNDPROC			OldListViewProc;
 
+static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 static int GetPrefsString(const char *szSetting, char * prefstoset, int n, char * defaulttext)
 {
@@ -2180,7 +2183,18 @@ static void SetOptionsDlgToType(HWND hwnd, int iExpert)
 	if(!hwndIgnore)
 		hwndIgnore = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_PREFS_IGNORE), hwnd, IgnorePrefsProc);
 
-	ShowWindow(hwndCtcp, SW_HIDE);
+	if(pfnEnableThemeDialogTexture) {
+		if(hwndConn)
+			pfnEnableThemeDialogTexture(hwndConn, ETDT_ENABLETAB);
+		if(hwndCtcp)
+			pfnEnableThemeDialogTexture(hwndCtcp, ETDT_ENABLETAB);
+		if(hwndIgnore)
+			pfnEnableThemeDialogTexture(hwndIgnore, ETDT_ENABLETAB);
+        if(hwndOther)
+            pfnEnableThemeDialogTexture(hwndOther, ETDT_ENABLETAB);
+    }
+
+    ShowWindow(hwndCtcp, SW_HIDE);
 	ShowWindow(hwndOther, SW_HIDE);
 	ShowWindow(hwndIgnore, SW_HIDE);
 	ShowWindow(hwndConn, SW_SHOW);
@@ -2271,24 +2285,17 @@ static BOOL CALLBACK TabsPrefsProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 	return FALSE;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int InitOptionsPages(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
+	HMODULE			  hUxTheme = 0;
+
+    if(IsWinVerXPPlus()) {
+        hUxTheme = GetModuleHandle(_T("uxtheme.dll"));
+
+        if(hUxTheme)	
+            pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
+    }
 
 	odp.cbSize = sizeof(odp);
 	odp.hInstance = g_hInstance;
