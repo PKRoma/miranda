@@ -700,12 +700,16 @@
 	
 
 .\aim.rc : \
+	".\icons\add.ico"\
 	".\icons\admin.ico"\
 	".\icons\aol.ico"\
+	".\icons\away.ico"\
 	".\icons\bot.ico"\
 	".\icons\confirmed.ico"\
 	".\icons\hiptop.ico"\
 	".\icons\icq.ico"\
+	".\icons\idle.ico"\
 	".\icons\oscar.ico"\
+	".\icons\profile.ico"\
 	".\icons\unconfirmed.ico"\
 	

@@ -39,7 +39,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib"
+				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib shlwapi.lib"
 				SuppressStartupBanner="TRUE"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="TRUE"
@@ -109,7 +109,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib"
+				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib shlwapi.lib"
 				SuppressStartupBanner="TRUE"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="TRUE"
@@ -175,7 +175,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib"
+				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib shlwapi.lib"
 				SuppressStartupBanner="TRUE"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="TRUE"
@@ -245,7 +245,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib"
+				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib shlwapi.lib"
 				SuppressStartupBanner="TRUE"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="TRUE"

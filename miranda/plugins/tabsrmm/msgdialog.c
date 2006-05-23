@@ -2279,7 +2279,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             mir_sntprintf(fulluin, safe_sizeof(fulluin), TranslateT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for contact menu\nClick dropdown for infopanel settings."), iHasName ? wUIN : TranslateT("No UIN"));
                         }
 #else
-                        mir_sntprintf(fulluin, save_sizeof(fulluin), TranslateT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for contact menu\nClick dropdown for infopanel settings."), iHasName ? dat->uin : TranslateT("No UIN"));
+                        mir_sntprintf(fulluin, safe_sizeof(fulluin), TranslateT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for contact menu\nClick dropdown for infopanel settings."), iHasName ? dat->uin : TranslateT("No UIN"));
 #endif
                         SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, iHasName ? (WPARAM)fulluin : (WPARAM)"", 0);
                         

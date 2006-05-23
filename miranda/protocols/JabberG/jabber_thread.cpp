@@ -457,7 +457,7 @@ LBL_Exit:
 				datalen -= bytesParsed;
 			}
 			else if ( datalen == jabberNetworkBufferSize ) {
-				jabberNetworkBufferSize += 2048;
+				jabberNetworkBufferSize += 65536;
 				JabberLog( "Increasing network buffer size to %d", jabberNetworkBufferSize );
 				if (( buffer=( char* )mir_realloc( buffer, jabberNetworkBufferSize+1 )) == NULL ) {
 					JabberLog( "Cannot reallocate more network buffer, go offline now" );
