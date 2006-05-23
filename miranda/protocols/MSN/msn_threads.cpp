@@ -38,10 +38,12 @@ bool DoingNudge = false;
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Keep-alive thread for the main connection
 
-extern int msnPingTimeout;
+int msnPingTimeout, msnPingTimeoutCurrent;
 
 void __cdecl msn_keepAliveThread( void* )
 {
+	msnPingTimeoutCurrent = msnPingTimeout = 45;
+
 	while( TRUE )
 	{
 		while ( msnPingTimeout-- > 0 ) {
@@ -51,7 +53,7 @@ void __cdecl msn_keepAliveThread( void* )
 				return;
 		}	}
 
-		msnPingTimeout = 50;
+		msnPingTimeoutCurrent = msnPingTimeout = 45;
 
 		/*
 		 * if proxy is not used, every connection uses select() to send PNG
@@ -122,12 +124,10 @@ void __cdecl MSNServerThread( ThreadData* info )
 		return;
 	}
 
-	MSN_DebugLog( "Connected with handle=%08X", info->s );
-
-	if ( MyOptions.UseGateway ) {
-		info->mGatewayTimeout = 2;
+	if ( MyOptions.UseGateway )
 		MSN_CallService( MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM( info->s ), 2 );
-	}
+
+	MSN_DebugLog( "Connected with handle=%08X", info->s );
 
 	if ( info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION ) {
 		if ( MyOptions.UseMSNP11 )
@@ -424,6 +424,8 @@ ThreadData::ThreadData()
 {
 	memset( this, 0, sizeof ThreadData );
 	mUniqueID = MyInterlockedIncrement( &sttThreadID );
+	mGatewayTimeout = 2;
+	mWaitPeriod = 60;
 }
 
 ThreadData::~ThreadData()
@@ -438,7 +440,13 @@ ThreadData::~ThreadData()
 
 	if ( mUniqueID )
 		p2p_unregisterThreadSession( mUniqueID );
-}
+	
+	while (mFirstQueueItem != NULL)
+	{
+		TQueueItem* QI = mFirstQueueItem;
+		mFirstQueueItem = mFirstQueueItem->next;
+		free(QI);
+}	}
 
 void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )
 {

@@ -29,11 +29,9 @@ static char sttGatewayHeader[] =
 	"Content-Type: text/xml; charset=utf-8\r\n"
 	"Content-Length: %d\r\n"
 	"User-Agent: %s\r\n"
-	"Host: gateway.messenger.hotmail.com\r\n"
+	"Host: %s\r\n"
 	"Connection: Keep-Alive\r\n"
 	"Cache-Control: no-cache\r\n\r\n";
-
-extern int msnPingTimeout, msnPingTimeoutCurrent;
 
 //=======================================================================================
 
@@ -44,11 +42,10 @@ int ThreadData::send( char* data, int datalen )
 
 	NETLIBBUFFER nlb = { data, datalen, 0 };
 
-	if ( mType == SERVER_NOTIFICATION )
-		msnPingTimeout = 50;
+	mWaitPeriod = 60;
 
 	if ( MyOptions.UseGateway && !( mType == SERVER_FILETRANS && mP2pSession != NULL )) {
-		mGatewayTimeout = 1;
+		mGatewayTimeout = 2;
 
 		if ( !MyOptions.UseProxy ) {
 			TQueueItem* tNewItem = ( TQueueItem* )malloc( datalen + sizeof( void* ) + sizeof( int ) + 1 );
@@ -79,7 +76,6 @@ int ThreadData::send( char* data, int datalen )
 		return FALSE;
 	}
 
-	mWaitPeriod = 60;
 	return TRUE;
 }
 
@@ -105,7 +101,7 @@ int ThreadData::recv_dg( char* data, long datalen )
 	bool bCanPeekMsg = true;
 
 LBL_RecvAgain:
-	int ret;
+	int ret = 0;
 	{
 		NETLIBSELECT tSelect = {0};
 		tSelect.cbSize = sizeof( tSelect );
@@ -122,7 +118,7 @@ LBL_RecvAgain:
 
 					char* tBuffer = ( char* )alloca( QI->datalen+400 );
 					int cbBytes = mir_snprintf( tBuffer, QI->datalen+400, sttGatewayHeader,
-						szHttpPostUrl, QI->datalen, MSN_USER_AGENT);
+						szHttpPostUrl, QI->datalen, MSN_USER_AGENT, mGatewayIP);
 					memcpy( tBuffer+cbBytes, QI->data, QI->datalen );
 					cbBytes += QI->datalen;
 					tBuffer[ cbBytes ] = 0;
@@ -144,13 +140,20 @@ LBL_RecvAgain:
 			ret = MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&tSelect );
 			if ( ret != 0 )
 				break;
-	}	}
+			// Timeout switchboard session if inactive
+			if ( !mIsMainThread && mJoinedCount <= 1 && --mWaitPeriod <= 0 ) 
+			{
+				MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
+				return 0;
+			}
+		}	
+	}
 
 	bCanPeekMsg = false;
 
 	if ( ret == 0 ) {
-		mGatewayTimeout *= 2;
-		if ( mGatewayTimeout > 16 )
+		mGatewayTimeout += 2;
+		if ( mGatewayTimeout > 16 ) 
 			mGatewayTimeout = 16;
 
 		char szHttpPostUrl[300];
@@ -158,7 +161,7 @@ LBL_RecvAgain:
 
 		char szCommand[ 400 ];
 		int cbBytes = mir_snprintf( szCommand, sizeof( szCommand ),
-			sttGatewayHeader, szHttpPostUrl, 0, MSN_USER_AGENT);
+			sttGatewayHeader, szHttpPostUrl, 0, MSN_USER_AGENT, mGatewayIP);
 
 		NETLIBBUFFER nlb = { szCommand, cbBytes, 0 };
 		MSN_CallService( MS_NETLIB_SEND, ( WPARAM )s, ( LPARAM )&nlb );
@@ -188,7 +191,6 @@ LBL_RecvAgain:
 	if ( status == 100 )
 		goto LBL_RecvAgain;
 	
-	bool  tIsSessionClosed = false;
 	int   tContentLength = 0, hdrLen;
 	{
 		MimeHeaders tHeaders;
@@ -202,8 +204,7 @@ LBL_RecvAgain:
 
 			if ( stricmp( H.name, "X-MSN-Messenger" ) == 0 ) {
 				if ( strstr( H.value, "Session=close" ) != 0 ) {
-					tIsSessionClosed = true;
-					break;
+					return 0;
 				}
 
 				processSessionData( H.value );
@@ -220,6 +221,11 @@ LBL_RecvAgain:
 
 	if ( tContentLength == 0 )
 		goto LBL_RecvAgain;
+	else
+	{
+		mGatewayTimeout = 1;
+		mWaitPeriod = 60;
+	}
 
 	ret -= hdrLen;
 	if ( ret <= 0 ) {

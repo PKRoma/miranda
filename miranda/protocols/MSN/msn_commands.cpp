@@ -49,7 +49,7 @@ char* passport = NULL;
 char* rru = NULL;
 extern HANDLE	 hMSNNudge;
 
-int msnPingTimeout = 50;
+extern int msnPingTimeout, msnPingTimeoutCurrent;
 
 unsigned long sl;
 
@@ -792,6 +792,9 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 	}
 	MSN_DebugLog("%S", cmdString);
 
+	if ( info->mType == SERVER_NOTIFICATION )
+		msnPingTimeout = msnPingTimeoutCurrent;
+
 	switch(( *( PDWORD )cmdString & 0x00FFFFFF ) | 0x20000000 )
 	{
 		case ' KCA':    //********* ACK: section 8.7 Instant Messages
@@ -1405,7 +1408,7 @@ LBL_InvalidCommand:
 			break;
 
 		case ' GNQ':	//********* QNG: reply to PNG
-			msnPingTimeout = trid;
+			msnPingTimeoutCurrent = msnPingTimeout = trid;
 			if ( msnGetInfoContact != NULL ) {
 				MSN_SendBroadcast( msnGetInfoContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE )1, 0 );
 				msnGetInfoContact = NULL;

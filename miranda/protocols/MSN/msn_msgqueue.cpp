@@ -135,3 +135,14 @@ int __stdcall MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 	LeaveCriticalSection( &csMsgQueue );
 	return i+1;
 }
+
+void __stdcall MsgQueue_Clear( void )
+{
+	EnterCriticalSection( &csMsgQueue );
+	if ( msgQueueCount )
+		free( msgQueue );
+	msgQueueCount = 0;
+	msgQueue = NULL;
+	msgQueueSeq = 1;
+	LeaveCriticalSection( &csMsgQueue );
+}

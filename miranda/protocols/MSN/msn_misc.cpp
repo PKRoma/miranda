@@ -267,6 +267,7 @@ void __stdcall	MSN_GoOffline()
 		MSN_EnableMenuItems( FALSE );
 	MSN_CloseConnections();
 	MSN_FreeGroups();
+	MsgQueue_Clear();
 
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
