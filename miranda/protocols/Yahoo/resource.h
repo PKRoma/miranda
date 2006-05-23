@@ -32,6 +32,7 @@
 #define IDC_YCHECKMAIL                  1011
 #define IDC_YTNOTIF                     1012
 #define IDC_PASSWORD                    1020
+#define IDC_NICK	                    1021
 #define IDC_HANDLE                      1022
 #define IDC_BGCOLOUR                    1026
 #define IDC_TEXTCOLOUR                  1028

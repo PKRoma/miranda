@@ -86,6 +86,11 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			DBFreeVariant(&dbv);
 		}
 
+		if ( !DBGetContactSetting( NULL, yahooProtocolName, "Nick", &dbv )) {
+			SetDlgItemText(hwndDlg,IDC_NICK,dbv.pszVal);
+			DBFreeVariant(&dbv);
+		}
+
 		if ( !DBGetContactSetting( NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv )) {
 			//bit of a security hole here, since it's easy to extract a password from an edit box
 			YAHOO_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
@@ -212,7 +217,7 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			case IDC_PASSWORD:			
 			case IDC_LOGINSERVER:
   			case IDC_YAHOOPORT:			
-			
+			case IDC_NICK:
   				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
   			}
 
@@ -248,6 +253,8 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			if ( dbv.pszVal != NULL ) DBFreeVariant( &dbv );
 			
 			YAHOO_SetString( NULL, YAHOO_PASSWORD, str );
+			GetDlgItemText( hwndDlg, IDC_NICK, str, sizeof( str ));
+			YAHOO_SetString( NULL, "Nick", str );
 
 			GetDlgItemText( hwndDlg, IDC_LOGINSERVER, str, sizeof( str ));
 			YAHOO_SetString( NULL, YAHOO_LOGINSERVER, str );

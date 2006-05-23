@@ -25,56 +25,58 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 	// Yahoo Login Information [Top Box]
-    GROUPBOX        "Yahoo",IDC_STYAHOOGROUP,8,10,280,56,WS_GROUP
+    GROUPBOX        "Yahoo",IDC_STYAHOOGROUP,8,10,280,72,WS_GROUP
     RTEXT           "ID:",IDC_STATIC,16,20,52,8
     EDITTEXT        IDC_HANDLE,72,18,100,12,ES_AUTOHSCROLL
     RTEXT           "Password:",IDC_STATIC,16,36,52,8
     EDITTEXT        IDC_PASSWORD,72,34,100,12,ES_PASSWORD | ES_AUTOHSCROLL
+	RTEXT           "Nick:",IDC_STATIC,16,52,52,8
+    EDITTEXT        IDC_NICK,72,50,100,12,ES_AUTOHSCROLL
     CONTROL         "Create a new Yahoo account using the Yahoo website",
-                    IDC_NEWYAHOOACCOUNTLINK,"Hyperlink",WS_TABSTOP,21,50,208,8
+                    IDC_NEWYAHOOACCOUNTLINK,"Hyperlink",WS_TABSTOP,21,66,208,8
 
 	// Expert Section [Server/Port/etc]
-    GROUPBOX        "Expert",IDC_STATIC,8,68,150,138
+    GROUPBOX        "Expert",IDC_STATIC,8,84,150,136, WS_GROUP
 	
-    LTEXT           "Login server:",IDC_STATIC,16,82,52,10
-    EDITTEXT        IDC_LOGINSERVER,68,80,80,12,ES_AUTOHSCROLL
-    LTEXT           "Port:",IDC_STATIC,16,96,25,10
-    EDITTEXT        IDC_YAHOOPORT,68,94,29,12,ES_AUTOHSCROLL | ES_NUMBER
-	PUSHBUTTON      "Reset",IDC_RESETSERVER,100,94,34,12
+    LTEXT           "Login server:",IDC_STATIC,16,98,52,10
+    EDITTEXT        IDC_LOGINSERVER,68,90,80,12,ES_AUTOHSCROLL
+    LTEXT           "Port:",IDC_STATIC,16,112,25,10
+    EDITTEXT        IDC_YAHOOPORT,68,110,29,12,ES_AUTOHSCROLL | ES_NUMBER
+	PUSHBUTTON      "Reset",IDC_RESETSERVER,100,110,34,12
 
 	CONTROL         "Yahoo Japan",IDC_YAHOO_JAPAN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,112,140,10 					
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,128,140,10 					
 	
 	
 	CONTROL         "Disable UTF8 encoding",IDC_DISABLE_UTF8,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,132,140,10 					
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,148,140,10 					
 
     CONTROL         "Disable main menu (needs restart)",IDC_DISMAINMENU,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,142,140,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,158,140,10
 	
 	CONTROL         "Use Yahoo Address Book (YAB)",IDC_USE_YAB,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,152,140,10 					
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,168,140,10 					
 
 	CONTROL         "Show Avatars",IDC_SHOW_AVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,162,120,10 					
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,178,120,10 					
 
 	CONTROL         "AutoLogin to Yahoo Mail",IDC_MAIL_AUTOLOGIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,172,120,10 					
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,188,120,10 					
 
 	CONTROL         "Display Yahoo Mail notifications", IDC_DISABLEYAHOOMAIL,"Button",
-					BS_AUTOCHECKBOX | WS_TABSTOP,16,182,120,10
+					BS_AUTOCHECKBOX | WS_TABSTOP,16,198,120,10
 					
 	CONTROL         "Show Errors",IDC_SHOW_ERRORS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,192,120,10 					
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,208,120,10 					
 					
-    GROUPBOX        "Yahoo Ignore List",IDC_STIGNGROUP,158,68,130,138,WS_GROUP
+    GROUPBOX        "Yahoo Ignore List",IDC_STIGNGROUP,158,84,130,136,WS_GROUP
 	
-	EDITTEXT 		IDC_YIGN_EDIT,164,82,84,13, ES_AUTOHSCROLL
-	PUSHBUTTON 		"Add",IDC_IGN_ADD,250,82,34,15
+	EDITTEXT 		IDC_YIGN_EDIT,164,98,84,13,ES_AUTOHSCROLL
+	PUSHBUTTON 		"Add",IDC_IGN_ADD,250,98,34,12
 	
-	CONTROL 		"",IDC_YIGN_LIST,"ListBox",0x50010141,164,98,84,105,0x00000200
+	CONTROL 		"",IDC_YIGN_LIST,"ListBox",0x50010141,164,114,84,103,0x00000200
 		
-	PUSHBUTTON 		"Remove", IDC_IGN_REMOVE, 250,188,34,15
+	PUSHBUTTON 		"Remove", IDC_IGN_REMOVE, 250,204,34,12
 
 END
 
