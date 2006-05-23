@@ -262,7 +262,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			SetDlgItemTextA(hwndDlg, IDC_LOCATION, strFull);
 		}
 		if(LOWORD(wParam)==IDC_GETMORE) {
-			CallService(MS_UTILS_OPENURL,1,(LPARAM)"http://www.miranda-im.org/download/index.php?action=display&id=5");
+			CallService(MS_UTILS_OPENURL,1,(LPARAM)"http://addons.miranda-im.org/index.php?action=display&id=5");
 			break;
 		}
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);

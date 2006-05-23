@@ -580,7 +580,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				char szVer[64],szUrl[256];
 				CallService(MS_SYSTEM_GETVERSIONTEXT,SIZEOF(szVer),(LPARAM)szVer);
 				while(strchr(szVer,' ')) *strchr(szVer,' ')='_';
-				wsprintfA(szUrl,"http://www.miranda-im.org/download/index.php",szVer);
+				wsprintfA(szUrl,"http://addons.miranda-im.org/",szVer);
 				CallService(MS_UTILS_OPENURL,1,(LPARAM)szUrl);
 				break;
 			}
