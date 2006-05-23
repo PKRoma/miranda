@@ -306,6 +306,20 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					DBFreeVariant(&dbv);
 					lvi.iItem++;
 				}
+				if(!DBGetContactSetting(hContact,szProto,"CompanyPhone",&dbv)) {
+					lvi.pszText=TranslateT("Work Phone");
+					ListView_InsertItem(GetDlgItem(hwndDlg,IDC_PHONES),&lvi);
+					ListView_SetItemText(GetDlgItem(hwndDlg,IDC_PHONES),lvi.iItem,1,dbv.ptszVal);
+					DBFreeVariant(&dbv);
+					lvi.iItem++;
+				}
+				if(!DBGetContactSetting(hContact,szProto,"CompanyFax",&dbv)) {
+					lvi.pszText=TranslateT("Work Fax");
+					ListView_InsertItem(GetDlgItem(hwndDlg,IDC_PHONES),&lvi);
+					ListView_SetItemText(GetDlgItem(hwndDlg,IDC_PHONES),lvi.iItem,1,dbv.ptszVal);
+					DBFreeVariant(&dbv);
+					lvi.iItem++;
+				}
 				lvi.iSubItem=0;
 				for(i=0;;i++) {
 					lvi.lParam=i;
