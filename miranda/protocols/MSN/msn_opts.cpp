@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "resource.h"
 #include "msn_md5.h"
+#include "uxtheme.h"
 
 #define STYLE_DEFAULTBGCOLOUR     RGB(173,206,247)
 
@@ -36,6 +37,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern unsigned long sl;
 extern char *rru;
+
+static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 BOOL CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -612,6 +615,15 @@ static void SetOptionsDlgToType(HWND hwnd, int iExpert)
 	if(!hwndSrvList)
 		hwndSrvList = CreateDialog(hInst,MAKEINTRESOURCE(IDD_LISTSMGR),hwnd,DlgProcMsnServLists);
 
+	if(pfnEnableThemeDialogTexture) {
+		if(hwndAcc)
+			pfnEnableThemeDialogTexture(hwndAcc, ETDT_ENABLETAB);
+		if(hwndConn)
+			pfnEnableThemeDialogTexture(hwndConn, ETDT_ENABLETAB);
+		if(hwndSrvList)
+			pfnEnableThemeDialogTexture(hwndSrvList, ETDT_ENABLETAB);
+    }
+	
 	ShowWindow(hwndConn, SW_HIDE);
 	ShowWindow(hwndSrvList, SW_HIDE);
 	ShowWindow(hwndAcc, SW_SHOW);
@@ -704,6 +716,15 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 int MsnOptInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
+	HMODULE			  hUxTheme = 0;
+
+	if(IsWinVerXPPlus()) {
+		hUxTheme = GetModuleHandle(_T("uxtheme.dll"));
+	
+		if(hUxTheme)	
+			pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
+	}
+	
 	odp.cbSize      = sizeof(odp);
 	odp.position    = -790000000;
 	odp.hInstance   = hInst;

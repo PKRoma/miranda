@@ -29,9 +29,12 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include <commctrl.h>
 #include "resource.h"
+#include <uxtheme.h>
 
 extern BOOL jabberSendKeepAlive;
 extern UINT jabberCodePage;
+
+static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberRegisterDlgProc - the dialog proc for registering new account
@@ -594,7 +597,14 @@ static void SetOptionsDlgToType(HWND hwnd, int iExpert)
 	if(!hwndAdv)
 		hwndAdv = CreateDialog(hInst,MAKEINTRESOURCE(IDD_OPT_JABBER2),hwnd,JabberAdvOptDlgProc);
 
-	ShowWindow(hwndAdv, SW_HIDE);
+    if(pfnEnableThemeDialogTexture) {
+        if(hwndAcc)
+            pfnEnableThemeDialogTexture(hwndAcc, ETDT_ENABLETAB);
+        if(hwndAdv)
+            pfnEnableThemeDialogTexture(hwndAdv, ETDT_ENABLETAB);
+    }
+
+    ShowWindow(hwndAdv, SW_HIDE);
 	ShowWindow(hwndAcc, SW_SHOW);
 
 	if(iExpert) {
@@ -676,6 +686,15 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 int JabberOptInit( WPARAM wParam, LPARAM lParam )
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
+    HMODULE			  hUxTheme = 0;
+
+    if(IsWinVerXPPlus()) {
+        hUxTheme = GetModuleHandle(_T("uxtheme.dll"));
+
+        if(hUxTheme)	
+            pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
+    }
+
 	odp.cbSize      = sizeof( odp );
 	odp.hInstance   = hInst;
 	odp.pszGroup    = "Network";
