@@ -212,10 +212,16 @@ int DetectAvatarFormat(char* szFile)
   char pBuf[32];
 
   int src = _open(szFile, _O_BINARY | _O_RDONLY);
-  _read(src, pBuf, 32);
-  _close(src);
 
-  return DetectAvatarFormatBuffer(pBuf);
+  if (src != -1)
+  {
+    _read(src, pBuf, 32);
+    _close(src);
+
+    return DetectAvatarFormatBuffer(pBuf);
+  }
+  else
+    return PA_FORMAT_UNKNOWN;
 }
 
 
