@@ -719,12 +719,12 @@ void ext_yahoo_chat_message(int id, char *who, char *room, char *msg, int msgtyp
 }
 
 /* Other handlers */
-void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon)
+void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile)
 {
 	HANDLE 	hContact = 0;
 	time_t  idlets = 0;
 	
-	YAHOO_DebugLog("ext_yahoo_status_changed for %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d)", who, msg, stat, away, idle, cksum, buddy_icon);
+	YAHOO_DebugLog("ext_yahoo_status_changed for %s with msg %s (stat: %d, away: %d, idle: %d seconds)", who, msg, stat, away, idle);
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {
@@ -764,9 +764,25 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 		
 	DBWriteContactSettingDword(hContact, yahooProtocolName, "IdleTS", idlets);
 
+	LOG(("[ext_yahoo_status_changed] exiting"));
+}
+
+void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon)
+{
+	HANDLE 	hContact = 0;
+	
+	YAHOO_DebugLog("[ext_yahoo_status_logon] %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d)", who, msg, stat, away, idle, cksum, buddy_icon);
+	
+	ext_yahoo_status_changed(id, who, stat, msg, away, idle, mobile);
+	hContact = getbuddyH(who);
+	if (hContact == NULL) {
+		YAHOO_DebugLog("[ext_yahoo_status_logon] Can't find handle for %s??? PANIC!!!", who);
+		return;
+	} 
+	
 	/* Last thing check the checksum and request new one if we need to */
 	if (buddy_icon == -1) {
-		LOG(("[ext_yahoo_status_changed] No avatar information in this packet? Not touching stuff!"));
+		LOG(("[ext_yahoo_status_logon] No avatar information in this packet? Not touching stuff!"));
 	} else {
 		if (!cksum || cksum == -1) {
 			yahoo_reset_avatar(hContact, 0); 
@@ -783,8 +799,9 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 		DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
 		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
 	}
-	LOG(("[ext_yahoo_status_changed] exiting"));
+	LOG(("[ext_yahoo_status_logon] exiting"));
 }
+
 
 struct avatar_info{
 	char *who;
@@ -1665,31 +1682,28 @@ void ext_yahoo_game_notify(int id, char *me, char *who, int stat, char *msg)
 
 void ext_yahoo_mail_notify(int id, char *from, char *subj, int cnt)
 {
-	LOG(("ext_yahoo_mail_notify"));
+	LOG(("[ext_yahoo_mail_notify] from: %s subject: %s count: %d", from, subj, cnt));
 	
 	if (cnt > 0) {
-    SkinPlaySound( Translate( "mail" ) );
-
-    if (!YAHOO_GetByte( "DisableYahoomail", 0)) {    
-		char z[MAX_SECONDLINE], title[MAX_CONTACTNAME];
-        
-        LOG(("ext_yahoo_mail_notify"));
-    
-			if (from == NULL) {
-            lstrcpyn(title, Translate("New Mail"), sizeof(title));
-            snprintf(z, sizeof(z), Translate("You Have %i unread msgs"), cnt);
-			} else {
-            snprintf(title, sizeof(title), Translate("New Mail (%i msgs)"), cnt);
-            snprintf(z, sizeof(z), Translate("From: %s\nSubject: %s"), from, subj);
-			}
-
-		if(!YAHOO_ShowPopup( title, z, YAHOO_ALLOW_ENTER + YAHOO_MAIL_POPUP ))
-			YAHOO_shownotification(title, z, NIIF_INFO);
-    }
-	}
+		SkinPlaySound( Translate( "mail" ) );
 	
-	LOG(("[ext_yahoo_mail_notify] Status Check current: %d, CONNECTING: %d ", yahooStatus, ID_STATUS_CONNECTING));
-
+		if (!YAHOO_GetByte( "DisableYahoomail", 0)) {    
+			char z[MAX_SECONDLINE], title[MAX_CONTACTNAME];
+			
+			LOG(("ext_yahoo_mail_notify"));
+		
+			if (from == NULL) {
+				lstrcpyn(title, Translate("New Mail"), sizeof(title));
+				snprintf(z, sizeof(z), Translate("You Have %i unread msgs"), cnt);
+			} else {
+				snprintf(title, sizeof(title), Translate("New Mail (%i msgs)"), cnt);
+				snprintf(z, sizeof(z), Translate("From: %s\nSubject: %s"), from, subj);
+			}
+	
+			if(!YAHOO_ShowPopup( title, z, YAHOO_ALLOW_ENTER + YAHOO_MAIL_POPUP ))
+				YAHOO_shownotification(title, z, NIIF_INFO);
+		}
+	}
 }    
     
 /* WEBCAM callbacks */
@@ -2182,6 +2196,7 @@ void register_callbacks()
 	yc.ext_yahoo_got_identities = ext_yahoo_got_identities;
 	yc.ext_yahoo_got_cookies = ext_yahoo_got_cookies;
 	yc.ext_yahoo_status_changed = ext_yahoo_status_changed;
+	yc.ext_yahoo_status_logon = ext_yahoo_status_logon;
 	yc.ext_yahoo_got_im = ext_yahoo_got_im;
 	yc.ext_yahoo_got_conf_invite = ext_yahoo_got_conf_invite;
 	yc.ext_yahoo_conf_userdecline = ext_yahoo_conf_userdecline;

@@ -176,8 +176,8 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_ping)(int id, const char *errormsg);
 
 
 /*
- * Name: ext_yahoo_status_changed
- * 	Called when remote user's status changes.
+ * Name: ext_yahoo_status_logon
+ * 	Called when remote user's status changes to online.
  * Params:
  * 	id   - the id that identifies the server connection
  * 	who  - the handle of the remote user
@@ -189,7 +189,21 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_ping)(int id, const char *errormsg);
  *  cksum - picture checksum [avatar support]
  *  buddy_icon - avatar type 
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_status_logon)(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon);
+
+/*
+ * Name: ext_yahoo_status_changed
+ * 	Called when remote user's status changes.
+ * Params:
+ * 	id   - the id that identifies the server connection
+ * 	who  - the handle of the remote user
+ * 	stat - status code (enum yahoo_status)
+ * 	msg  - the message if stat == YAHOO_STATUS_CUSTOM
+ * 	away - whether the contact is away or not (YAHOO_STATUS_CUSTOM)
+ * 	idle - this is the number of seconds he is idle [if he is idle]
+ *  mobile - this is set for mobile users/buddies
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile);
 
 
 /*
