@@ -85,8 +85,8 @@
 #define IDI_STATUS0                     210
 #define IDI_STATUS5                     211
 #define IDI_BLANK                       212
-#define IDI_SHOWNICKLIST		213
-#define IDI_HIDENICKLIST		214
+#define IDI_SHOWNICKLIST                213
+#define IDI_HIDENICKLIST                214
 
 // chat log
 

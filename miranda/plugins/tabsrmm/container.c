@@ -1082,10 +1082,14 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SetWindowLong(hwndDlg, GWL_EXSTYLE, exStyle);
                     for(i = 0; sbarItems[i].uId != 0; i++)
                         ShowWindow(GetDlgItem(hwndDlg, sbarItems[i].uId), SW_HIDE);
+                    ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), SW_HIDE);
+                    ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), SW_HIDE);
                     SetWindowPos(hwndDlg, 0, rc.left + dwNewLeft, rc.top, (rc.right - rc.left) - dwNewLeft, rc.bottom - rc.top,
                                  SWP_NOCOPYBITS | SWP_NOZORDER | SWP_DEFERERASE | SWP_ASYNCWINDOWPOS | (dwNewLeft < 0 && skinnedMode ? SWP_NOREDRAW : 0));
                     for(i = 0; sbarItems[i].uId != 0; i++)
                         ShowWindow(GetDlgItem(hwndDlg, sbarItems[i].uId), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
+                    ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
+                    ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
                     break;
 
                 }

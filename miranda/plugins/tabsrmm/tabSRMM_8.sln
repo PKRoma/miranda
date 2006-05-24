@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tabsrmm_8", "tabsrmm_8.vcproj", "{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ICONS", "icons\default\default_8.vcproj", "{8CA07E0A-0632-4F95-B411-CDFAF048821B}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ICONSXP", "icons\ICONSXP\iconsxp_8.vcproj", "{987C5A57-A46B-4779-BB85-077E21F7BF7F}"
 EndProject
 Global
@@ -23,14 +21,6 @@ Global
 		{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
 		{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}.Release|Win32.ActiveCfg = Release|Win32
 		{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}.Release|Win32.Build.0 = Release|Win32
-		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
-		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Debug Unicode|Win32.Build.0 = Debug|Win32
-		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Debug|Win32.ActiveCfg = Debug|Win32
-		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Debug|Win32.Build.0 = Debug|Win32
-		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Release Unicode|Win32.ActiveCfg = Release|Win32
-		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Release Unicode|Win32.Build.0 = Release|Win32
-		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Release|Win32.ActiveCfg = Release|Win32
-		{8CA07E0A-0632-4F95-B411-CDFAF048821B}.Release|Win32.Build.0 = Release|Win32
 		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
 		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Debug Unicode|Win32.Build.0 = Debug|Win32
 		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Debug|Win32.ActiveCfg = Debug|Win32
