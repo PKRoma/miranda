@@ -880,10 +880,10 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 
         if (dc->incoming)
         { // store good IP info
-          ICQWriteContactSettingDword(dc->hContact, "IP", dc->dwRemoteExternalIP); 
-          ICQWriteContactSettingDword(dc->hContact, "RealIP", dc->dwRemoteInternalIP);
           dc->hContact = hContact;
           dc->dwConnCookie = dwCookie;
+          ICQWriteContactSettingDword(dc->hContact, "IP", dc->dwRemoteExternalIP); 
+          ICQWriteContactSettingDword(dc->hContact, "RealIP", dc->dwRemoteInternalIP);
           sendPeerInit_v78(dc); // reply with our PEER_INIT
         }
         else // outgoing
