@@ -155,8 +155,7 @@ BEGIN
                     8
     CONTROL         "Slider1",IDC_LOGLEVEL,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,18,216,52,10
-    CONTROL         "",IDC_LEVELDESCR,"Static",SS_SIMPLE | SS_NOPREFIX | 
-                    WS_GROUP,72,216,230,8
+    CONTROL         "",IDC_LEVELDESCR,"Static",SS_NOPREFIX | WS_GROUP,72,216,230,8
 END
 
 IDD_OPT_ICQCONTACTS DIALOGEX 0, 0, 314, 228
@@ -275,7 +274,7 @@ BEGIN
                     WS_TABSTOP,36,199,269,10
     GROUPBOX        "Misc Settings",IDC_STATIC,7,138,300,78
     CTEXT           "Some options are greyed out because they can only be changed when you are online.",
-                    IDC_STATIC_NOTONLINE,7,225,300,8
+                    IDC_STATIC_NOTONLINE,7,222,300,8
 END
 
 IDD_OPT_POPUPS DIALOGEX 0, 0, 314, 251

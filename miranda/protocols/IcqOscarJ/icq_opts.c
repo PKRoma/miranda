@@ -36,6 +36,9 @@
 
 #include "icqoscar.h"
 
+#include <win2k.h>
+#include <uxtheme.h>
+
 
 static BOOL CALLBACK DlgProcIcqMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -45,6 +48,8 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
 
 static const char* szLogLevelDescr[] = {"Display all problems", "Display problems causing possible loss of data", "Display explanations for disconnection", "Display problems requiring user intervention"};
+
+static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 
 static void AddUniPageUtf(const char* szService, OPTIONSDIALOGPAGE *op, WPARAM wParam, const char *szGroup, const char *szTitle)
@@ -155,7 +160,11 @@ static void SetOptionsDlgToType(HWND hwnd, int iExpert)
 	HWND hwndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB), hwndEnum;
 
 	if (!hOptBasic)
+  {
 		hOptBasic = CreateDialog(hInst, MAKEINTRESOURCE(IDD_OPT_ICQ), hwnd, DlgProcIcqOpts);
+    if (pfnEnableThemeDialogTexture) 
+      pfnEnableThemeDialogTexture(hOptBasic, ETDT_ENABLETAB);
+  }
 
 	hwndEnum = GetWindow(hOptBasic, GW_CHILD);
 	
@@ -181,13 +190,25 @@ static void SetOptionsDlgToType(HWND hwnd, int iExpert)
   TabOptions_AddItemUtf(hwndTab, "Account", hOptBasic);
 
 	if (!hOptContacts)
+  {
 		hOptContacts = CreateDialog(hInst, MAKEINTRESOURCE(IDD_OPT_ICQCONTACTS), hwnd, DlgProcIcqContactsOpts);
+    if (pfnEnableThemeDialogTexture) 
+      pfnEnableThemeDialogTexture(hOptContacts, ETDT_ENABLETAB);
+  }
 
 	if (!hOptFeatures)
+  {
 		hOptFeatures = CreateDialog(hInst, MAKEINTRESOURCE(IDD_OPT_ICQFEATURES), hwnd, DlgProcIcqFeaturesOpts);
+    if (pfnEnableThemeDialogTexture) 
+      pfnEnableThemeDialogTexture(hOptFeatures, ETDT_ENABLETAB);
+  }
 
 	if (!hOptPrivacy)
+  {
 		hOptPrivacy = CreateDialog(hInst, MAKEINTRESOURCE(IDD_OPT_ICQPRIVACY), hwnd, DlgProcIcqPrivacyOpts);
+    if (pfnEnableThemeDialogTexture) 
+      pfnEnableThemeDialogTexture(hOptPrivacy, ETDT_ENABLETAB);
+  }
 
 	ShowWindow(hOptContacts, SW_HIDE);
 	ShowWindow(hOptPrivacy, SW_HIDE);
@@ -207,38 +228,19 @@ static void SetOptionsDlgToType(HWND hwnd, int iExpert)
 int IcqOptInit(WPARAM wParam, LPARAM lParam)
 {
   OPTIONSDIALOGPAGE odp = {0};
+  HMODULE hUxTheme = 0;
+
+  if (IsWinVerXPPlus())
+  {
+    hUxTheme = GetModuleHandle("uxtheme.dll");
+ 
+    if (hUxTheme) 
+      pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
+  }
 
   odp.cbSize = sizeof(odp);
   odp.position = -800000000;
   odp.hInstance = hInst;
-
-/*  // Add "icq" option
-  odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQ);
-  odp.pfnDlgProc = DlgProcIcqOpts;
-  odp.flags = ODPF_BOLDGROUPS;
-  odp.nIDBottomSimpleControl = IDC_STICQGROUP;
-  AddOptionsPageUtf(&odp, wParam, "Network", gpszICQProtoName);
-
-  // Add "contacts" option
-  odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQCONTACTS);
-  odp.pfnDlgProc = DlgProcIcqContactsOpts;
-  odp.nIDBottomSimpleControl = 0;
-  AddOptionsPageUtf(&odp, wParam, "Network", "%s Contacts");
-  
-  // Add "features" option
-  odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQFEATURES);
-  odp.pfnDlgProc = DlgProcIcqFeaturesOpts;
-  odp.flags |= ODPF_EXPERTONLY;
-  odp.nIDBottomSimpleControl = 0;
-  AddOptionsPageUtf(&odp, wParam, "Network", "%s Features");
-
-  // Add "privacy" option
-  odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQPRIVACY);
-  odp.pfnDlgProc = DlgProcIcqPrivacyOpts;
-  odp.flags = ODPF_BOLDGROUPS;
-  odp.nIDBottomSimpleControl = 0;
-  AddOptionsPageUtf(&odp, wParam, "Network", "%s Privacy");*/
-
   odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQMAIN);
   odp.pfnDlgProc = DlgProcIcqMain;
   odp.flags = ODPF_BOLDGROUPS;
