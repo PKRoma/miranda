@@ -245,7 +245,7 @@ int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam)
 			yahoo_stealth(dbv.pszVal, iAdd);
 			DBFreeVariant(&dbv);
 		}
-        //aim_buddy_updatemode((HANDLE) wParam);
+        
     }
     return 0;
 }
