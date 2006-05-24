@@ -318,15 +318,7 @@ void LoadExtBkSettingsFromDB()
             StatusItems[n]. BORDERSTYLE = ret;
         }
     }
-    if(!DBGetContactSetting(NULL, "CLC", "ContactSkins", &dbv)) {
-        char szFinalPath[MAX_PATH];
-
-        CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFinalPath);
-        if(PathFileExistsA(szFinalPath))
-            LoadPerContactSkins(szFinalPath);
-        DBFreeVariant(&dbv);
-        IMG_LoadItems();
-    }
+    IMG_LoadItems();
 }
 
 // writes whole struct to the database
@@ -752,6 +744,7 @@ void FillOptionDialogByStatusItem(HWND hwndDlg, StatusItems_t *item)
     if(item->BORDERSTYLE == -1)
         SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_SETCURSEL, 0, 0);
     else {
+        index = 0;
         switch(item->BORDERSTYLE) {
             case 0:
             case -1:
@@ -1084,8 +1077,8 @@ void extbk_export(char *file)
         WritePrivateProfileStructA(szSection, "Color", &data, 4, file);
 
         mir_snprintf(szKey, 255, "Font%dFlags", n);
-        data = (DWORD)DBGetContactSettingWord(NULL, "CLC", szKey, 8);
-        WritePrivateProfileStructA(szSection, "Flags", &data, 2, file);
+        data = (DWORD)DBGetContactSettingDword(NULL, "CLC", szKey, 8);
+        WritePrivateProfileStructA(szSection, "Flags", &data, 4, file);
 
         mir_snprintf(szKey, 255, "Font%dAs", n);
         data = (DWORD)DBGetContactSettingWord(NULL, "CLC", szKey, 8);
@@ -1488,7 +1481,7 @@ void IMG_LoadItems()
     DBVARIANT dbv;
     char szFileName[MAX_PATH];
     
-    if(DBGetContactSetting(NULL, "CLC", "ContactSkins", &dbv))
+    if(DBGetContactSetting(NULL, "CLC", "AdvancedSkin", &dbv))
         return;
 
     CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFileName);
@@ -1620,6 +1613,7 @@ void extbk_import(char *file, HWND hwndDlg)
     char szKey[255], szSection[255];
     DWORD data, version = 0;
     int oldexIconScale = g_CluiData.exIconScale;
+    char szFinalName[MAX_PATH];
 
     for (n = 0; n <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; n++) {
         if (StatusItems[n].statusID != ID_EXTBKSEPARATOR) {
@@ -1684,8 +1678,8 @@ void extbk_import(char *file, HWND hwndDlg)
 
             mir_snprintf(szKey, 255, "Font%dFlags", n);
             data = 0;
-            GetPrivateProfileStructA(szSection, "Flags", &data, 2, file);
-            DBWriteContactSettingWord(NULL, "CLC", szKey, (WORD)data);
+            GetPrivateProfileStructA(szSection, "Flags", &data, 4, file);
+            DBWriteContactSettingDword(NULL, "CLC", szKey, (WORD)data);
 
             mir_snprintf(szKey, 255, "Font%dAs", n);
             data = 0;
@@ -1717,18 +1711,12 @@ void extbk_import(char *file, HWND hwndDlg)
         GetPrivateProfileStringA("Global", "BkBitmap", "", szString, MAX_PATH, file);
         if(lstrlenA(szString) > 0)
             DBWriteContactSettingString(NULL, "CLC", "BkBitmap", szString);
-        GetPrivateProfileStringA("Advanced Skin", "File", "", szString, MAX_PATH, file);
-        if(lstrlenA(szString) > 0) {
-            char szDrive[MAX_PATH], szDir[MAX_PATH], szAdvancedSkinFile[MAX_PATH];
-            HANDLE hFile;
-            
-            _splitpath(file, szDrive, szDir, NULL, NULL);
-            mir_snprintf(szAdvancedSkinFile, MAX_PATH, "%s\\%s\\%s", szDrive, szDir, szString);
-            if((hFile = CreateFileA(szAdvancedSkinFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
-                CloseHandle(hFile);
-            }
-        }
     }
+
+    CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)file, (LPARAM)szFinalName);
+    DBWriteContactSettingString(NULL, "CLC", "AdvancedSkin", szFinalName);
+    IMG_LoadItems();
+
     Reload3dBevelColors();
     ReloadThemedOptions();
     SetTBSKinned(g_CluiData.bSkinnedToolbar);

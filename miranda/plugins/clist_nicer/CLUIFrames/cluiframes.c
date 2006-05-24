@@ -30,9 +30,16 @@ extern HIMAGELIST himlExtraImages;
 extern int g_shutDown;
 extern HWND g_hwndViewModeFrame, g_hwndEventArea;
 extern StatusItems_t *StatusItems;
+extern struct ClcData *g_clcData;
+extern int mf_updatethread_running;
+
+extern DWORD WINAPI MF_UpdateThread(LPVOID p);
+extern HANDLE hThreadMFUpdate;;
 
 HANDLE hExtraImageListRebuilding, hExtraImageApplying;
 HANDLE hStatusBarShowToolTipEvent, hStatusBarHideToolTipEvent;
+HANDLE g_hEventThread = 0;
+
 //#include "m_skin_eng.h"
 
 //not needed,now use MS_CLIST_FRAMEMENUNOTIFY service
@@ -122,7 +129,6 @@ static int nFramescount=0;
 static int alclientFrame=-1;//for fast access to frame with alclient properties
 static int NextFrameId=100;
 
-HFONT TitleBarFont;
 static TitleBarH=DEFAULT_TITLEBAR_HEIGHT;
 static boolean resizing=FALSE;
 
@@ -1732,45 +1738,49 @@ int FrameNCPaint(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam, BO
     HDC hdc;
     RECT rcWindow, rc;
 
-    if(GetWindowLong(hwnd, GWL_STYLE) & CLS_SKINNEDFRAME) {
-        StatusItems_t *item = StatusItems ? (hasTitleBar ?  &StatusItems[ID_EXTBKOWNEDFRAMEBORDERTB - ID_STATUS_OFFLINE] : &StatusItems[ID_EXTBKOWNEDFRAMEBORDER - ID_STATUS_OFFLINE]) : 0;
+    LRESULT result = CallWindowProc(oldWndProc, hwnd, WM_NCPAINT, wParam, lParam);
 
-        if(item == 0)
+    if(pcli && pcli->hwndContactList && GetParent(hwnd) == pcli->hwndContactList) {
+        if(GetWindowLong(hwnd, GWL_STYLE) & CLS_SKINNEDFRAME) {
+            StatusItems_t *item = StatusItems ? (hasTitleBar ?  &StatusItems[ID_EXTBKOWNEDFRAMEBORDERTB - ID_STATUS_OFFLINE] : &StatusItems[ID_EXTBKOWNEDFRAMEBORDER - ID_STATUS_OFFLINE]) : 0;
+
+            if(item == 0)
+                return 0;
+
+            hdc = GetWindowDC(hwnd);
+
+            GetWindowRect(hwnd, &rcWindow);
+            rc.left = rc.top = 0;
+            rc.right = rcWindow.right - rcWindow.left;
+            rc.bottom = rcWindow.bottom - rcWindow.top;
+            ExcludeClipRect(hdc, item->MARGIN_LEFT, item->MARGIN_TOP, rc.right - item->MARGIN_RIGHT, rc.bottom - item->MARGIN_BOTTOM);
+
+            BitBlt(hdc, 0, 0, rc.right - rc.left, rc.bottom - rc.top, g_CluiData.hdcBg, rcWindow.left - g_CluiData.ptW.x, rcWindow.top - g_CluiData.ptW.y, SRCCOPY);
+
+            DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+                      item->CORNER, item->BORDERSTYLE, item->imageItem);
+            ReleaseDC(hwnd, hdc);
             return 0;
+        }
+        else if(GetWindowLong(hwnd, GWL_STYLE) & WS_BORDER) {
+            HPEN hPenOld;
+            HBRUSH brold;
 
-        hdc = GetWindowDC(hwnd);
-
-        GetWindowRect(hwnd, &rcWindow);
-        rc.left = rc.top = 0;
-        rc.right = rcWindow.right - rcWindow.left;
-        rc.bottom = rcWindow.bottom - rcWindow.top;
-        ExcludeClipRect(hdc, item->MARGIN_LEFT, item->MARGIN_TOP, rc.right - item->MARGIN_RIGHT, rc.bottom - item->MARGIN_BOTTOM);
-
-        BitBlt(hdc, 0, 0, rc.right - rc.left, rc.bottom - rc.top, g_CluiData.hdcBg, rcWindow.left - g_CluiData.ptW.x, rcWindow.top - g_CluiData.ptW.y, SRCCOPY);
-
-        DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-                  item->CORNER, item->BORDERSTYLE, item->imageItem);
-        ReleaseDC(hwnd, hdc);
-        return 0;
+            hdc = GetWindowDC(hwnd);
+            hPenOld = SelectObject(hdc, g_hPenCLUIFrames);
+            GetWindowRect(hwnd, &rcWindow);
+            rc.left = rc.top = 0;
+            rc.right = rcWindow.right - rcWindow.left;
+            rc.bottom = rcWindow.bottom - rcWindow.top;
+            brold = SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
+            Rectangle(hdc, 0, 0, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top);
+            SelectObject(hdc, hPenOld);
+            SelectObject(hdc, brold);
+            ReleaseDC(hwnd, hdc);
+            return 0;
+        }
     }
-    else if(GetWindowLong(hwnd, GWL_STYLE) & WS_BORDER) {
-        HPEN hPenOld;
-        HBRUSH brold;
-
-        hdc = GetWindowDC(hwnd);
-        hPenOld = SelectObject(hdc, g_hPenCLUIFrames);
-        GetWindowRect(hwnd, &rcWindow);
-        rc.left = rc.top = 0;
-        rc.right = rcWindow.right - rcWindow.left;
-        rc.bottom = rcWindow.bottom - rcWindow.top;
-        brold = SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
-        Rectangle(hdc, 0, 0, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top);
-        SelectObject(hdc, hPenOld);
-        SelectObject(hdc, brold);
-        ReleaseDC(hwnd, hdc);
-        return 0;
-    }
-    return CallWindowProc(oldWndProc, hwnd, WM_NCPAINT, wParam, lParam);
+    return result;
 }
 
 int FrameNCCalcSize(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam, BOOL hasTitleBar)
@@ -1780,10 +1790,10 @@ int FrameNCCalcSize(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam,
     NCCALCSIZE_PARAMS *nccp = (NCCALCSIZE_PARAMS *)lParam;
     DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
 
-    if(item == 0)
+    if(item == 0 || pcli == 0)
         return orig;
 
-    if(item->IGNORED || !(dwStyle & CLS_SKINNEDFRAME))
+    if(item->IGNORED || !(dwStyle & CLS_SKINNEDFRAME) || GetParent(hwnd) != pcli->hwndContactList)
         return orig;
 
     nccp->rgrc[0].left += item->MARGIN_LEFT;
@@ -1809,9 +1819,7 @@ static LRESULT CALLBACK FramesSubClassProc(HWND hwnd, UINT msg, WPARAM wParam, L
     switch(msg) {
         case WM_NCPAINT:
             {
-				if(pcli && pcli->hwndContactList != 0 && GetParent(hwnd) == pcli->hwndContactList) {
-                    return FrameNCPaint(hwnd, oldWndProc ? oldWndProc : DefWindowProc, wParam, lParam, hasTitleBar);
-				}
+                return FrameNCPaint(hwnd, oldWndProc ? oldWndProc : DefWindowProc, wParam, lParam, hasTitleBar);
                 break;
             }
         case WM_NCCALCSIZE:
@@ -1880,8 +1888,6 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
     if (pcli->hwndContactList==0) return -1;
     if (FramesSysNotStarted) return -1;
     if (clfrm->cbSize!=sizeof(CLISTFrame)) return -1;
-    if (!(TitleBarFont)) TitleBarFont=(HFONT)CLUILoadTitleBarFont();
-
 
     lockfrm();
     if (nFramescount>=MAX_FRAMES) {
@@ -2570,14 +2576,12 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
     HBITMAP hBmpOsb,hoBmp;
     HBRUSH hBack,hoBrush;
     int pos;
-    HFONT hoTTBFont;
     StatusItems_t *item = &StatusItems[ID_EXTBKFRAMETITLE - ID_STATUS_OFFLINE];
 
     hdcMem=CreateCompatibleDC(dc);
     hBmpOsb = CreateCompatibleBitmap(dc, rect.right, rect.bottom);
     hoBmp=SelectObject(hdcMem,hBmpOsb);
 
-    hoTTBFont=SelectObject(hdcMem,TitleBarFont);
     SetBkMode(hdcMem,TRANSPARENT);
 
     hBack=GetSysColorBrush(COLOR_3DFACE);
@@ -2588,15 +2592,12 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
 
     if (pos>=0&&pos<nFramescount) {
         HFONT oFont;
-        struct ClcData *dat = 0;
         int fHeight, fontTop;
         GetClientRect(Frames[pos].TitleBar.hwnd,&Frames[pos].TitleBar.wndSize);
 
-        if (pcli->hwndContactTree)
-            dat = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
-
-        if (dat)
-            oFont = ChangeToFont(hdcMem, dat, FONTID_FRAMETITLE, &fHeight);
+        if (g_clcData) {
+            oFont = ChangeToFont(hdcMem, g_clcData, FONTID_FRAMETITLE, &fHeight);
+        }
         else {
             oFont = SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
             fHeight = 10;
@@ -2614,9 +2615,9 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
                       item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
             SetTextColor(hdcMem, item->TEXTCOLOR);
         }
-        else if (dat) {
+        else if (g_clcData) {
             FillRect(hdcMem,&rect,hBack);
-            SetTextColor(hdcMem, dat->fontInfo[FONTID_FRAMETITLE].colour);
+            SetTextColor(hdcMem, g_clcData->fontInfo[FONTID_FRAMETITLE].colour);
         }
         else {
             FillRect(hdcMem,&rect,hBack);
@@ -2626,11 +2627,11 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
 
         if (!AlignCOLLIconToLeft) {
             if (Frames[pos].TitleBar.hicon != NULL) {
-                DrawIconEx(hdcMem, 2 + g_CluiData.bClipBorder, ((TitleBarH>>1) - 8), Frames[pos].TitleBar.hicon, 16, 16, 0, NULL, DI_NORMAL);
-                TextOutA(hdcMem, 20 + g_CluiData.bClipBorder, fontTop, Frames[pos].TitleBar.tbname, strlen(Frames[pos].TitleBar.tbname));
+                DrawIconEx(hdcMem, 4 + g_CluiData.bClipBorder, ((TitleBarH>>1) - 8), Frames[pos].TitleBar.hicon, 16, 16, 0, NULL, DI_NORMAL);
+                TextOutA(hdcMem, 22 + g_CluiData.bClipBorder, fontTop, Frames[pos].TitleBar.tbname, strlen(Frames[pos].TitleBar.tbname));
             }
             else
-                TextOutA(hdcMem, 2 + g_CluiData.bClipBorder, fontTop, Frames[pos].TitleBar.tbname,strlen(Frames[pos].TitleBar.tbname));
+                TextOutA(hdcMem, 4 + g_CluiData.bClipBorder, fontTop, Frames[pos].TitleBar.tbname,strlen(Frames[pos].TitleBar.tbname));
         }
         else
             TextOutA(hdcMem, 18 + g_CluiData.bClipBorder, fontTop, Frames[pos].TitleBar.tbname,strlen(Frames[pos].TitleBar.tbname));
@@ -2646,7 +2647,6 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
     BitBlt(dc,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top,hdcMem,rect.left,rect.top,SRCCOPY);
     SelectObject(hdcMem,hoBmp);
     SelectObject(hdcMem,hoBrush);
-    SelectObject(hdcMem,hoTTBFont);
     DeleteDC(hdcMem);
     DeleteObject(hBack);
     DeleteObject(hBmpOsb);
@@ -2669,7 +2669,6 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 
     switch (msg) {
         case WM_CREATE:
-			SendMessage(hwnd,WM_SETFONT,(WPARAM)TitleBarFont,0);
             return FALSE;
         case WM_MEASUREITEM:
             return CallService(MS_CLIST_MENUMEASUREITEM,wParam,lParam);
@@ -3419,6 +3418,11 @@ int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
 
 static int CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
 {
+    DWORD dwThreadID;
+
+    g_hEventThread = CreateEvent(NULL, TRUE, FALSE, _T("mf_update_evt"));
+    SetThreadPriority(g_hEventThread, THREAD_PRIORITY_IDLE);
+    hThreadMFUpdate = CreateThread(NULL, 16000, MF_UpdateThread, 0, 0, &dwThreadID);
     CLUIFramesLoadMainMenu(0,0);
     CLUIFramesCreateMenuForFrame(-1,-1,000010000,MS_CLIST_ADDCONTEXTFRAMEMENUITEM);
     return 0;
@@ -3426,6 +3430,13 @@ static int CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
 
 static int CLUIFrameOnModulesUnload(WPARAM wParam,LPARAM lParam)
 {
+    mf_updatethread_running = FALSE;
+
+    SetEvent(g_hEventThread);
+    WaitForSingleObject(hThreadMFUpdate, 10000);
+    CloseHandle(hThreadMFUpdate);
+    CloseHandle(g_hEventThread);
+
     CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIVisible, 0 );
     CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITitle, 0 );
     CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITBVisible, 0 );
@@ -3631,7 +3642,6 @@ int UnLoadCLUIFramesModule(void)
     Frames=NULL;
     nFramescount=0;
     UnregisterClassA(CLUIFrameTitleBarClassName,g_hInst);
-    DeleteObject(TitleBarFont);
     ulockfrm();
     DeleteCriticalSection(&csFrameHook);
     UnitFramesMenu();

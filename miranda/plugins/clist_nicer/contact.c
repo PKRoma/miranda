@@ -55,6 +55,79 @@ static int __forceinline GetStatusModeOrdering(int statusMode)
     return 1000;
 }
 
+int mf_updatethread_running = TRUE;
+HANDLE hThreadMFUpdate = 0;
+
+static void MF_CalcFrequency(HANDLE hContact, DWORD dwCutoffDays, int doSleep)
+{
+    DWORD     curTime = time(NULL);
+    DWORD     frequency, eventCount;
+    DBEVENTINFO dbei = {0};
+    HANDLE hEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0);
+    DWORD firstEventTime = 0, lastEventTime = 0;
+
+    eventCount = 0;
+    dbei.cbSize = sizeof(dbei);
+    dbei.timestamp = 0;
+
+    DBDeleteContactSetting(hContact, "CList", "mf_lastEvent");
+
+    while(hEvent) {
+        dbei.cbBlob = 0;
+        dbei.pBlob = NULL;
+        CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbei);
+
+        if(dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) { // record time of last event
+            eventCount++;
+        }
+        if(eventCount >= 100 || dbei.timestamp < curTime - (dwCutoffDays * 86400))
+            break;
+        hEvent = (HANDLE)CallService(MS_DB_EVENT_FINDPREV, (WPARAM)hEvent, 0);
+        if(doSleep && mf_updatethread_running == FALSE)
+            return;
+        if(doSleep)
+            Sleep(100);
+    }
+
+    if(eventCount == 0)
+        frequency = 0x7fffffff;
+    else
+        frequency = (curTime - dbei.timestamp) / eventCount;
+
+    DBWriteContactSettingDword(hContact, "CList", "mf_firstEvent", dbei.timestamp);
+    DBWriteContactSettingDword(hContact, "CList", "mf_freq", frequency);
+    DBWriteContactSettingDword(hContact, "CList", "mf_count", eventCount);
+}
+
+DWORD WINAPI MF_UpdateThread(LPVOID p)
+{
+    HANDLE hContact;
+    HANDLE  hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, _T("mf_update_evt"));
+
+#ifdef _DEBUG
+    _DebugTraceA("started update thread...");
+#endif
+    do {
+        hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+        while (hContact != NULL && mf_updatethread_running) {
+            #ifdef _DEBUG
+                _DebugTraceA("updating: %d", hContact);
+            #endif
+            MF_CalcFrequency(hContact, 50, 1);
+            if(mf_updatethread_running)
+                WaitForSingleObject(hEvent, 5000);
+            hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+        }
+        if(mf_updatethread_running)
+            WaitForSingleObject(hEvent, 1000000);
+    } while (mf_updatethread_running);
+
+#ifdef _DEBUG
+    _DebugTraceA("update thread ending...");
+#endif
+    return 0;
+}
+
 static BOOL mc_hgh_removed = FALSE;
 
 void LoadContactTree(void)
@@ -63,7 +136,8 @@ void LoadContactTree(void)
     int i, status, hideOffline;
     BOOL mc_disablehgh = ServiceExists(MS_MC_DISABLEHIDDENGROUP);
     DBVARIANT dbv = {0};
-    
+    BYTE      bMsgFrequency = DBGetContactSettingByte(NULL, "CList", "fhistdata", 0);
+
     CallService(MS_CLUI_LISTBEGINREBUILD, 0, 0);
     for (i = 1; ; i++) {
         if (pcli->pfnGetGroupName(i, NULL) == NULL)
@@ -85,8 +159,14 @@ void LoadContactTree(void)
                 mir_free(dbv.pszVal);
             }
         }
+
+        // build initial data for message frequency
+        if(!bMsgFrequency)
+            MF_CalcFrequency(hContact, 100, 0);
+
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
+    DBWriteContactSettingByte(NULL, "CList", "fhistdata", 1);
     mc_hgh_removed = TRUE;
     CallService(MS_CLUI_SORTLIST, 0, 0);
     CallService(MS_CLUI_LISTENDREBUILD, 0, 0);
@@ -155,7 +235,7 @@ static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, co
         return 2 * (c2->flags & CONTACTF_STICKY) - 1;
 
 
-	if(bywhat == SORTBY_PRIOCONTACTS) {
+    if(bywhat == SORTBY_PRIOCONTACTS) {
 	    if ((c1->flags & CONTACTF_PRIORITY) != (c2->flags & CONTACTF_PRIORITY))
 		    return 2 * (c2->flags & CONTACTF_PRIORITY) - 1;
 		else
@@ -190,7 +270,11 @@ static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, co
 			DWORD timestamp2 = INTSORT_GetLastMsgTime(c2->hContact);
 			return timestamp2 - timestamp1;
 		}
-	} else if(bywhat == SORTBY_PROTO) {
+    } else if(bywhat == SORTBY_FREQUENCY) {
+        if(c1->extraCacheEntry >= 0 && c1->extraCacheEntry < g_nextExtraCacheEntry && 
+           c2->extraCacheEntry >= 0 && c2->extraCacheEntry < g_nextExtraCacheEntry)
+            return(g_ExtraCache[c1->extraCacheEntry].msgFrequency - g_ExtraCache[c2->extraCacheEntry].msgFrequency);
+    }  else if(bywhat == SORTBY_PROTO) {
         if(c1->bIsMeta)
             szProto1 = c1->metaProto ? c1->metaProto : c1->proto;
         if(c2->bIsMeta)

@@ -99,6 +99,7 @@ struct ExtraCache {
 	StatusItems_t *status_item, *proto_status_item;
 	CONTACTFLOATER *floater;
 	DWORD dwLastMsgTime;
+    DWORD msgFrequency;
 };
 
 struct ClcContact {
@@ -256,6 +257,7 @@ struct CluiData {
 	BYTE tabSRMM_Avail;
 	BYTE IcoLib_Avail;
 	BYTE bMetaAvail;
+    BYTE bFontServiceAvail;
 	BYTE bAvatarServiceAvail;
 	HICON hIconVisible, hIconInvisible, hIconChatactive, hIconConnecting;
 	DWORD dwButtonHeight, dwButtonWidth;
@@ -349,7 +351,8 @@ struct CluiData {
 #define SORTBY_PROTO 2
 #define SORTBY_STATUS 3
 #define SORTBY_LASTMSG 4
-#define SORTBY_PRIOCONTACTS 5
+#define SORTBY_FREQUENCY 5
+#define SORTBY_PRIOCONTACTS 6
 
 struct IconDesc {
 	char *szName;

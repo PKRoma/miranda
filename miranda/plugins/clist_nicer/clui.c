@@ -110,39 +110,6 @@ int during_sizing = 0;
 extern int dock_prevent_moving;
 
 HICON overlayicons[10];
-/*
-char *im_clients[] = {
-	"MIRANDA","&RQ","TRILLIAN","GAIM","IM2","KOPETE","LICQ","QIP","SIM",
-		"ICQ 2000","ICQ 2001B","ICQ 200","ICQ2GO! (FLASH)","ICQ2GO!","ICQ5","ICQ LITE V5","ICQ LITE V4","ICQ LITE",
-		"AGILE","GNOMEICU","MOBICQ", "JIMM", "LIBICQ2000",
-		"CENTERICQ", "IMPLUS", "SPAM BOT", "ICQ FOR MAC",
-		"ALICQ", "NICQ", "PSI", "STICQ", "STRICQ", "VICQ",
-		"WEBICQ", "YAMIGO", "YSM", "TICQCLIENT", "R&Q", "GADU-GADU(TM)", NULL
-};
-
-static char *im_clients_descr[] = {
-	"Miranda","&RQ","Trillian","GAIM","IM2","Kopete",
-		"LICQ","QIP","SIM",
-		"ICQ2000","ICQ2001","ICQ2003","ICQ2Go! (Flash)","ICQ2Go! (Java)","icq5","ICQ Lite v5","ICQ Lite v4","ICQ Lite",
-		"Agile Messenger","GnomeICU","mobicq / JIMM", "mobicq / JIMM", "libICQ 2000",
-		"Center ICQ", "IM+", "Spam Bot", "ICQ for Mac",
-		"Alicq", "Nicq", "Psi", "Sticq", "StrICQ", "vICQ",
-		"WebICQ", "Yamigo", "Ysm", "TICQ Client (Delphi)", "R & Q", "Gadu-Gadu(tm)", NULL, NULL
-};
-
-
-HICON im_clienthIcons[NR_CLIENTS];
-
-static int clientIcons[] = {
-	IDI_CLIENTMIRANDA,IDI_CLIENTRQ,IDI_CLIENTTRILLIAN,IDI_CLIENTGAIM,IDI_CLIENTIM2,IDI_CLIENTKOPETE,IDI_CLIENTLICQ,IDI_CLIENTQIP,IDI_CLIENTSIM,
-		IDI_CLIENTICQ2000,IDI_CLIENTICQ2001,IDI_CLIENTICQ2003,IDI_CLIENTICQGOF,IDI_CLIENTICQGOJ,IDI_CLIENTICQLITE5,IDI_CLIENTICQLITE5,IDI_CLIENTICQLITE4,IDI_CLIENTICQLITE,
-		IDI_CLIENTAGILE,IDI_CLIENTGNOMEICU,IDI_CLIENTMOBICQ,IDI_CLIENTMOBICQ,IDI_CLIENTLIBICQ,
-		IDI_CENTERICQ, IDI_CLIENTIMPLUS, IDI_CLIENTSPAMBOT, IDI_CLIENTICQMAC,
-		IDI_CLIENTALICQ, IDI_CLIENTNICQ, IDI_CLIENTPSI, IDI_CLIENTSTICQ, IDI_CLIENTSTRICQ, IDI_CLIENTVICQ,
-		IDI_CLIENTWEBICQ, IDI_CLIENTYAMIGO, IDI_CLIENTYSM, IDI_CLIENTTICQ, IDI_CLIENTRANDQ, IDI_CLIENTGG
-};
-
-*/
 
 static struct CluiTopButton top_buttons[] = {
 	    0, 0, 0, IDC_TBTOPMENU, IDI_TBTOPMENU, 0, "CLN_topmenu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 1, _T("Show menu"), 
@@ -391,6 +358,7 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 		CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 	MTG_OnmodulesLoad(wParam, lParam);
 	if(ServiceExists(MS_FONT_REGISTER)) {
+        g_CluiData.bFontServiceAvail = TRUE;
 		FS_RegisterFonts();
 		HookEvent(ME_FONT_RELOAD, FS_FontsChanged);
 	}
@@ -2336,7 +2304,7 @@ void LoadCLUIModule(void)
 }
 
 static struct {UINT id; char *name;} _tagFSINFO[] = {
-	FONTID_STATUS, "Status mode",
+        FONTID_STATUS, "Status mode",
 		FONTID_FRAMETITLE, "Frame titles",
 		FONTID_EVENTAREA, "Event area",
 		FONTID_TIMESTAMP, "Contact list local time",

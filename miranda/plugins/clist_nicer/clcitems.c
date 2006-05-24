@@ -265,22 +265,20 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 	cEntry->bStatusMsgValid = STATUSMSG_NOTFOUND;
 	hContact = cEntry->hContact;
 
-	if(g_CluiData.dwFlags & CLUI_FRAME_SHOWSTATUSMSG) {
-		if(!DBGetContactSettingTString(hContact, "CList", "StatusMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
-			cEntry->bStatusMsgValid = STATUSMSG_CLIST;
-		else {
-			if(!szProto)
-				szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-			if(szProto) {
-				if(!DBGetContactSettingTString(hContact, szProto, "YMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
-					cEntry->bStatusMsgValid = STATUSMSG_YIM;
-				else if(!DBGetContactSettingTString(hContact, szProto, "StatusDescr", &dbv) && lstrlen(dbv.ptszVal) > 1)
-					cEntry->bStatusMsgValid = STATUSMSG_GG;
-				else if(!DBGetContactSettingTString(hContact, szProto, "XStatusMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
-					cEntry->bStatusMsgValid = STATUSMSG_XSTATUS;
-			}
-		}
-	}
+    if(!DBGetContactSettingTString(hContact, "CList", "StatusMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
+        cEntry->bStatusMsgValid = STATUSMSG_CLIST;
+    else {
+        if(!szProto)
+            szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+        if(szProto) {
+            if(!DBGetContactSettingTString(hContact, szProto, "YMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
+                cEntry->bStatusMsgValid = STATUSMSG_YIM;
+            else if(!DBGetContactSettingTString(hContact, szProto, "StatusDescr", &dbv) && lstrlen(dbv.ptszVal) > 1)
+                cEntry->bStatusMsgValid = STATUSMSG_GG;
+            else if(!DBGetContactSettingTString(hContact, szProto, "XStatusMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
+                cEntry->bStatusMsgValid = STATUSMSG_XSTATUS;
+        }
+    }
 	if(cEntry->bStatusMsgValid == STATUSMSG_NOTFOUND) {      // no status msg, consider xstatus name (if available)
 		if(!DBGetContactSettingTString(hContact, szProto, "XStatusName", &dbv) && lstrlen(dbv.ptszVal) > 1) {
 			int iLen = lstrlen(dbv.ptszVal);
@@ -413,7 +411,8 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     DBVARIANT dbv = {0};
     BOOL iCacheNew = FALSE;
     int index;
-    
+    DWORD firstTime, count, new_freq;
+
     if(dat->bisEmbedded || contact == NULL)
         return;
     
@@ -421,6 +420,12 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
         return;
     
     index = contact->extraCacheEntry;
+
+    firstTime = DBGetContactSettingDword(contact->hContact, "CList", "mf_firstEvent", 0);
+    count = DBGetContactSettingDword(contact->hContact, "CList", "mf_count", 0);
+    new_freq = count ? (time(NULL) - firstTime) / count : 0x7fffffff;
+    g_ExtraCache[index].msgFrequency = new_freq;
+    DBWriteContactSettingDword(contact->hContact, "CList", "mf_freq", new_freq);
 
     if(index >= 0 && index < g_nextExtraCacheEntry) {
         if(g_ExtraCache[index].valid)
@@ -533,7 +538,7 @@ void ReloadSkinItemsToCache()
 int GetExtraCache(HANDLE hContact, char *szProto)
 {
     int i, iFound = -1;
-    
+
     for(i = 0; i < g_nextExtraCacheEntry; i++) {
         if(g_ExtraCache[i].hContact == hContact) {
             iFound = i;
