@@ -412,21 +412,32 @@ static int YahooContactDeleted( WPARAM wParam, LPARAM lParam )
 	char* szProto;
 	DBVARIANT dbv;
 	
-	if ( !yahooLoggedIn )  //should never happen for Yahoo contacts
+	YAHOO_DebugLog("[YahooContactDeleted]");
+	
+	if ( !yahooLoggedIn )  {//should never happen for Yahoo contacts
+		YAHOO_DebugLog("[YahooContactDeleted] We are not Logged On!!!");
 		return 0;
+	}
 
 	szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
-	if ( szProto == NULL || lstrcmp( szProto, yahooProtocolName )) 
+	if ( szProto == NULL || lstrcmp( szProto, yahooProtocolName ))  {
+		YAHOO_DebugLog("[YahooContactDeleted] Not a Yahoo Contact!!!");
 		return 0;
+	}
 
 	// he is not a permanent contact!
-	if (DBGetContactSettingByte(( HANDLE )wParam, "CList", "NotOnList", 1) != 0)
+	if (DBGetContactSettingByte(( HANDLE )wParam, "CList", "NotOnList", 0) != 0) {
+		YAHOO_DebugLog("[YahooContactDeleted] Not a permanent buddy!!!");
 		return 0;
+	}
 	
 	if ( !DBGetContactSetting(( HANDLE )wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+		YAHOO_DebugLog("[YahooContactDeleted] Removing %s", dbv.pszVal);
 		YAHOO_remove_buddy(dbv.pszVal);
 		
 		DBFreeVariant( &dbv );
+	} else {
+		YAHOO_DebugLog("[YahooContactDeleted] Can't retrieve contact Yahoo ID");
 	}
 	return 0;
 }
