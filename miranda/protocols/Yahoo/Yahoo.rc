@@ -143,6 +143,7 @@ IDI_PROFILE             ICON         "icos\\profile.ico"
 IDI_REFRESH             ICON         "icos\\refresh.ico"
 IDI_YAB             	ICON         "icos\\address_book.ico"
 IDI_SET_STATUS          ICON         "icos\\set_status.ico"
+IDI_CALENDAR	        ICON         "icos\\calendar.ico"
 
 #include "version.rc"
 

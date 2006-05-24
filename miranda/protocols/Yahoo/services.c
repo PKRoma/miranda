@@ -1093,6 +1093,31 @@ static int YahooABCommand( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
+static int YahooCalendarCommand( WPARAM wParam, LPARAM lParam )
+{
+	char tUrl[ 4096 ];
+	
+	if (YAHOO_GetByte( "MailAutoLogin", 0 ) && yahooLoggedIn) {
+		int   id = 1;
+		char  *y, *t;
+		
+		y = yahoo_urlencode(yahoo_get_cookie(id, "y"));
+		t = yahoo_urlencode(yahoo_get_cookie(id, "t"));
+		_snprintf( tUrl, sizeof( tUrl ), 
+				"http://msg.edit.yahoo.com/config/reset_cookies?&.y=Y=%s&.t=T=%s&.ver=2&.done=http%%3a//us.rd.yahoo.com/messenger/client/%%3fhttp%%3a//calendar.yahoo.com/",
+				y, t);
+				
+		FREE(y);
+		FREE(t);
+	} else {
+		_snprintf( tUrl, sizeof( tUrl ), "http://calendar.yahoo.com/" );
+	}
+	
+	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
+		
+	return 0;
+}
+
 int YAHOOSendTyping(WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
@@ -1608,6 +1633,15 @@ int LoadYahooServices( void )
     	mi.pszService = servicefunction;
     	YahooMenuItems [ 3 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
+        // Show refresh menu    
+    	strcpy( tDest, YAHOO_CALENDAR );
+    	CreateServiceFunction( servicefunction, YahooCalendarCommand );
+    	mi.position = 500090015;
+    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_CALENDAR ));
+    	mi.pszName = Translate( "&Calendar" );
+    	mi.pszService = servicefunction;
+    	YahooMenuItems [ 4 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+
 		// Show refresh menu    
     	strcpy( tDest, YAHOO_REFRESH );
     	CreateServiceFunction( servicefunction, YahooRefreshCommand );
@@ -1615,7 +1649,7 @@ int LoadYahooServices( void )
     	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_REFRESH ));
     	mi.pszName = Translate( "&Refresh" );
     	mi.pszService = servicefunction;
-    	YahooMenuItems [ 4 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+    	YahooMenuItems [ 5 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 		
         // Show show profile menu    
     	strcpy( tDest, YAHOO_SHOW_PROFILE );
@@ -1625,7 +1659,7 @@ int LoadYahooServices( void )
     	mi.pszName = Translate( "&Show Profile" );
     	mi.pszService = servicefunction;
 		mi.pszContactOwner = yahooProtocolName;
-    	YahooMenuItems [ 5 ] = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+    	YahooMenuItems [ 6 ] = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
     
     	}
 	

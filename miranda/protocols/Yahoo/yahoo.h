@@ -71,11 +71,12 @@ extern int do_yahoo_debug;
 #define YAHOO_YAHOO_MAIL     "/YahooGotoMailboxCommand"
 #define YAHOO_REFRESH     "/YahooRefreshCommand"
 #define YAHOO_AB     "/YahooAddressBook"
+#define YAHOO_CALENDAR     "/YahooCalendar"
 #define YAHOO_SEND_NUDGE     "/SendNudge"
 
 #define STYLE_DEFAULTBGCOLOUR     RGB(173,206,247)
 
-#define MENU_ITEMS_COUNT 6
+#define MENU_ITEMS_COUNT 7
 extern	HANDLE         YahooMenuItems[ MENU_ITEMS_COUNT ];
 
 #define LocalEventUnhook(hook)	if(hook) UnhookEvent(hook)

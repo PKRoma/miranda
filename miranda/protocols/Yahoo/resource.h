@@ -19,6 +19,7 @@
 #define IDI_REFRESH                     105
 #define IDI_YAB		                    106
 #define IDI_SET_STATUS                  107
+#define IDI_CALENDAR                    108
 
 #define IDD_OPT_YAHOO                   185
 #define IDD_SETCUSTSTAT                 186
