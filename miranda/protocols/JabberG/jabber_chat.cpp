@@ -679,11 +679,10 @@ int JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 			rtrim( gch->pszText );
 
 			if ( jabberOnline ) {
-				char* str = NEWSTR_ALLOCA( gch->pszText );
-				UnEscapeChatTags( str );
-
 				XmlNode m( "message" ); m.addAttr( "to", item->jid ); m.addAttr( "type", "groupchat" );
-				m.addChild( "body", str );
+				XmlNode* b = m.addChild( "body", gch->pszText );
+				if ( b->sendText != NULL )
+					UnEscapeChatTags( b->sendText );
 				JabberSend( jabberThreadInfo->s, m );
 		}	}
 		break;
