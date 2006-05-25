@@ -963,6 +963,7 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	}
 	return FALSE;
 }
+
 //=======================================================
 //Show custom status windows
 //=======================================================
@@ -984,6 +985,34 @@ static int SetCustomStatCommand( WPARAM wParam, LPARAM lParam )
 }
 
 //=======================================================
+//Open URL
+//=======================================================
+void YahooOpenURL(const char *url, int autoLogin)
+{
+	char tUrl[ 4096 ];
+
+	if (autoLogin && YAHOO_GetByte( "MailAutoLogin", 0 ) && yahooLoggedIn) {
+		int   id = 1;
+		char  *y, *t, *u;
+		
+		y = yahoo_urlencode(yahoo_get_cookie(id, "y"));
+		t = yahoo_urlencode(yahoo_get_cookie(id, "t"));
+		u = yahoo_urlencode(url);
+		_snprintf( tUrl, sizeof( tUrl ), 
+				"http://msg.edit.yahoo.com/config/reset_cookies?&.y=Y=%s&.t=T=%s&.ver=2&.done=http%%3a//us.rd.yahoo.com/messenger/client/%%3f%s",
+				y, t, u);
+				
+		FREE(y);
+		FREE(t);
+		FREE(u);
+	} else {
+		_snprintf( tUrl, sizeof( tUrl ), url );
+	}
+
+	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
+}
+
+//=======================================================
 //Show buddy profile
 //=======================================================
 static int YahooShowProfileCommand( WPARAM wParam, LPARAM lParam )
@@ -991,16 +1020,13 @@ static int YahooShowProfileCommand( WPARAM wParam, LPARAM lParam )
 	char tUrl[ 4096 ];
 	DBVARIANT dbv;
 
-	if ( !yahooLoggedIn ) 
-		return 0;
-	
 	if ( DBGetContactSetting(( HANDLE )wParam, yahooProtocolName, "yahoo_id", &dbv ))
 		return 0;
 		
 	_snprintf( tUrl, sizeof( tUrl ), "http://profiles.yahoo.com/%s", dbv.pszVal  );
 	DBFreeVariant( &dbv );
-	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
-		
+	
+	YahooOpenURL(tUrl, 0);
 	return 0;
 }
 
@@ -1012,15 +1038,12 @@ static int YahooShowMyProfileCommand( WPARAM wParam, LPARAM lParam )
 	char tUrl[ 4096 ];
 	DBVARIANT dbv;
 
-	if ( !yahooLoggedIn )
-		return 0;
-
 	DBGetContactSetting( NULL, yahooProtocolName, YAHOO_LOGINID, &dbv );
 		
 	_snprintf( tUrl, sizeof( tUrl ), "http://profiles.yahoo.com/%s", dbv.pszVal  );
 	DBFreeVariant( &dbv );
 
-	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
+	YahooOpenURL(tUrl, 0);
 	
 	return 0;
 }
@@ -1030,26 +1053,22 @@ static int YahooShowMyProfileCommand( WPARAM wParam, LPARAM lParam )
 //=======================================================
 int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
 {
-	char tUrl[ 4096 ];
+	YahooOpenURL("http://mail.yahoo.com/", 1);
 	
-	if (YAHOO_GetByte( "MailAutoLogin", 0 ) && yahooLoggedIn) {
-		int   id = 1;
-		char  *y, *t;
-		
-		y = yahoo_urlencode(yahoo_get_cookie(id, "y"));
-		t = yahoo_urlencode(yahoo_get_cookie(id, "t"));
-		_snprintf( tUrl, sizeof( tUrl ), 
-				"http://msg.edit.yahoo.com/config/reset_cookies?&.y=Y=%s&.t=T=%s&.ver=2&.done=http%%3a//us.rd.yahoo.com/messenger/client/%%3fhttp%%3a//mail.yahoo.com/",
-				y, t);
-				
-		FREE(y);
-		FREE(t);
-	} else {
-		_snprintf( tUrl, sizeof( tUrl ), "http://mail.yahoo.com/" );
-	}
+	return 0;
+}
+
+static int YahooABCommand( WPARAM wParam, LPARAM lParam )
+{
+	YahooOpenURL("http://address.yahoo.com/yab/", 1);
+
+	return 0;
+}
+
+static int YahooCalendarCommand( WPARAM wParam, LPARAM lParam )
+{
+	YahooOpenURL("http://calendar.yahoo.com/", 1);		
 	
-	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
-		
 	return 0;
 }
 
@@ -1064,57 +1083,6 @@ static int YahooRefreshCommand( WPARAM wParam, LPARAM lParam )
 	}
 
 	YAHOO_refresh();
-	return 0;
-}
-
-
-static int YahooABCommand( WPARAM wParam, LPARAM lParam )
-{
-	char tUrl[ 4096 ];
-	
-	if (YAHOO_GetByte( "MailAutoLogin", 0 ) && yahooLoggedIn) {
-		int   id = 1;
-		char  *y, *t;
-		
-		y = yahoo_urlencode(yahoo_get_cookie(id, "y"));
-		t = yahoo_urlencode(yahoo_get_cookie(id, "t"));
-		_snprintf( tUrl, sizeof( tUrl ), 
-				"http://msg.edit.yahoo.com/config/reset_cookies?&.y=Y=%s&.t=T=%s&.ver=2&.done=http%%3a//us.rd.yahoo.com/messenger/client/%%3fhttp%%3a//address.yahoo.com/yab/",
-				y, t);
-				
-		FREE(y);
-		FREE(t);
-	} else {
-		_snprintf( tUrl, sizeof( tUrl ), "http://address.yahoo.com/yab/" );
-	}
-	
-	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
-		
-	return 0;
-}
-
-static int YahooCalendarCommand( WPARAM wParam, LPARAM lParam )
-{
-	char tUrl[ 4096 ];
-	
-	if (YAHOO_GetByte( "MailAutoLogin", 0 ) && yahooLoggedIn) {
-		int   id = 1;
-		char  *y, *t;
-		
-		y = yahoo_urlencode(yahoo_get_cookie(id, "y"));
-		t = yahoo_urlencode(yahoo_get_cookie(id, "t"));
-		_snprintf( tUrl, sizeof( tUrl ), 
-				"http://msg.edit.yahoo.com/config/reset_cookies?&.y=Y=%s&.t=T=%s&.ver=2&.done=http%%3a//us.rd.yahoo.com/messenger/client/%%3fhttp%%3a//calendar.yahoo.com/",
-				y, t);
-				
-		FREE(y);
-		FREE(t);
-	} else {
-		_snprintf( tUrl, sizeof( tUrl ), "http://calendar.yahoo.com/" );
-	}
-	
-	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
-		
 	return 0;
 }
 

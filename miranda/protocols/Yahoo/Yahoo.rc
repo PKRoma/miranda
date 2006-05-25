@@ -60,10 +60,10 @@ BEGIN
 	CONTROL         "Show Avatars",IDC_SHOW_AVATARS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,178,120,10 					
 
-	CONTROL         "AutoLogin to Yahoo Mail",IDC_MAIL_AUTOLOGIN,"Button",
+	CONTROL         "AutoLogin to Yahoo ",IDC_MAIL_AUTOLOGIN,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,188,120,10 					
 
-	CONTROL         "Display Yahoo Mail notifications", IDC_DISABLEYAHOOMAIL,"Button",
+	CONTROL         "Display Yahoo notifications", IDC_DISABLEYAHOOMAIL,"Button",
 					BS_AUTOCHECKBOX | WS_TABSTOP,16,198,120,10
 					
 	CONTROL         "Show Errors",IDC_SHOW_ERRORS,"Button",
