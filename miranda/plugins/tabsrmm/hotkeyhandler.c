@@ -59,9 +59,6 @@ void HandleMenuEntryFromhContact(int iSelection)
     HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
     SESSION_INFO *si = NULL;
 
-#ifdef _DEBUG
-    _DebugTraceA("selection: %d", iSelection);
-#endif
     if(hWnd && IsWindow(hWnd)) {
         struct ContainerWindowData *pContainer = 0;
         SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
@@ -93,9 +90,6 @@ void HandleMenuEntryFromhContact(int iSelection)
     else {
 nothing_open:
         CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)iSelection, 0);
-#ifdef _DEBUG
-        _DebugTraceA("performing double click service");
-#endif
     }
 }
 

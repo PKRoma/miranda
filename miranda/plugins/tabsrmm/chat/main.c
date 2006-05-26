@@ -91,8 +91,6 @@ int Chat_Unload(void)
 	DestroyServiceFunctions();
 	FreeIcons();
 	OptionsUnInit();
-	FreeLibrary(GetModuleHandleA("riched20.dll"));
-	//OleUninitialize();
 	UnhookEvents();
 	return 0;
 }

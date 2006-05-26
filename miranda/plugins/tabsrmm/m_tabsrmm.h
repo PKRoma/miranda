@@ -274,7 +274,7 @@ struct MessageWindowData {
 	HANDLE hContact, hSubContact;
 	HWND hwndLog, hwndFlash;
     HWND hwnd;
-	HANDLE hDbEventFirst,hDbEventLast;
+	HANDLE hDbEventFirst,hDbEventLast, hDbEventLastFeed;
 	int sendMode;
 	HBRUSH hBkgBrush, hInputBkgBrush;
 	int splitterY, originalSplitterY, dynaSplitter, savedSplitter;

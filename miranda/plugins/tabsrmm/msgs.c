@@ -980,6 +980,15 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+int OkToExit(WPARAM wParam, LPARAM lParam)
+{
+    CreateSystrayIcon(0);
+    CreateTrayMenus(0);
+    g_sessionshutdown = 1;
+    return 0;
+
+}
+
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
     UnhookEvent(hEventDbEventAdded);
@@ -987,8 +996,10 @@ int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
     UnhookEvent(hEventDbSettingChange);
     UnhookEvent(hEventContactDeleted);
 
-    g_sessionshutdown = 1;
-    SM_BroadcastMessage(NULL, GC_CLOSEWINDOW, 0, 2, FALSE);         // lParam == 2 -> close at end
+    if(g_chat_integration_enabled)
+        Chat_PreShutdown(0, 0);
+
+    //SM_BroadcastMessage(NULL, GC_CLOSEWINDOW, 0, 2, FALSE);         // lParam == 2 -> close at end
 
     while(pFirstContainer)
         SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
@@ -1061,8 +1072,6 @@ int SplitmsgShutdown(void)
     UnloadTSButtonModule(0, 0);
     if(myGlobals.m_hbmMsgArea)
         DeleteObject(myGlobals.m_hbmMsgArea);
-    CreateSystrayIcon(FALSE);
-    CreateTrayMenus(FALSE);
     for(i = 0; i < NR_SENDJOBS; i++) {
         if(sendJobs[i].sendBuffer != NULL)
             free(sendJobs[i].sendBuffer);
@@ -1078,8 +1087,6 @@ int SplitmsgShutdown(void)
 		FreeLibrary(g_hIconDLL);
 		g_hIconDLL = 0;
 	}
-    if(g_chat_integration_enabled)
-        Chat_PreShutdown(0, 0);
     DeleteCriticalSection(&cs_sessions);
     return 0;
 }
@@ -1229,6 +1236,7 @@ tzdone:
     HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
     HookEvent(ME_PROTO_ACK, ProtoAck);
     HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
+    HookEvent(ME_SYSTEM_OKTOEXIT, OkToExit);
 
 	HookEvent("SecureIM/Established",ContactSecureChanged);
 	HookEvent("SecureIM/Disabled",ContactSecureChanged);
@@ -1819,6 +1827,11 @@ static int SetupIconLibConfig()
         Chat_AddIcons();
     version = GetIconPackVersion(g_hIconDLL);
     myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
+    if(myGlobals.g_hbmUnknown == 0) {
+        HDC dc = GetDC(0);
+        myGlobals.g_hbmUnknown = CreateCompatibleBitmap(dc, 20, 20);
+        ReleaseDC(0, dc);
+    }
     LoadMsgAreaBackground();
     FreeLibrary(g_hIconDLL);
     g_hIconDLL = 0;
@@ -1897,6 +1910,11 @@ static void LoadIconTheme()
     else {
         version = GetIconPackVersion(g_hIconDLL);
         myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
+        if(myGlobals.g_hbmUnknown == 0) {
+            HDC dc = GetDC(0);
+            myGlobals.g_hbmUnknown = CreateCompatibleBitmap(dc, 20, 20);
+            ReleaseDC(0, dc);
+        }
         LoadMsgAreaBackground();
         
         while(ICONBLOCKS[n].szSection) {

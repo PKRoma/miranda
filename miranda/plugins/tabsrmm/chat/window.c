@@ -1838,12 +1838,12 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			case WINDOW_CLEARLOG:
 				SetDlgItemText(hwndDlg, IDC_CHAT_LOG, _T(""));
 				return TRUE;
-			case SESSION_TERMINATE:
+            case SESSION_TERMINATE:
 				if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
 					CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
 				si->wState &= ~STATE_TALK;
 				DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
-				SendMessage(hwndDlg, GC_CLOSEWINDOW, 0, 1);
+				SendMessage(hwndDlg, GC_CLOSEWINDOW, 0, lParam == 2 ? lParam : 1);
 				return TRUE;
 			case WINDOW_MINIMIZE:
 				ShowWindow(hwndDlg, SW_MINIMIZE); 
@@ -2796,14 +2796,20 @@ LABEL_SHOWWINDOW:
             struct ContainerWindowData *pContainer = dat->pContainer;
             BOOL   bForced = (lParam == 2);
 
-#ifdef _DEBUG
-            _DebugTraceA("gc_closewindow: %d (%d, %d)", hwndDlg, wParam, lParam);
-#endif
             iTabs = TabCtrl_GetItemCount(hwndTab);
             if(iTabs == 1) {
-                PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
-                if(!bForced)
+                if(!bForced && g_sessionshutdown == 0) {
+#ifdef _DEBUG
+                    _DebugTraceA("UNforced close of last tab posting close to container %d", g_sessionshutdown);
+#endif
+                    PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
                     return 1;
+                }
+                else {
+#ifdef _DEBUG
+                    _DebugTraceA("forced close of last tab (gc_closewindow param = 2)");
+#endif
+                }
             }
             dat->pContainer->iChilds--;
             i = GetTabIndexFromHWND(hwndTab, hwndDlg);
@@ -2838,7 +2844,7 @@ LABEL_SHOWWINDOW:
             else
                 SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
             
-            break;
+            return 0;
 		}
 
         case DM_SAVELOCALE: 

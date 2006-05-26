@@ -813,8 +813,9 @@ BOOL SM_RemoveAll (void)
     {
 		SESSION_INFO *pLast = m_WndList->next;
 
-		if(m_WndList->hWnd)
-			SendMessage(m_WndList->hWnd, GC_EVENT_CONTROL+WM_USER+500, SESSION_TERMINATE, 0);
+		if(m_WndList->hWnd) {
+            SendMessage(m_WndList->hWnd, GC_EVENT_CONTROL+WM_USER+500, SESSION_TERMINATE, 2);
+        }
 		DoEventHook(m_WndList->pszID, m_WndList->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)m_WndList->dwItemData);
 		if(m_WndList->hContact)
 			CList_SetOffline(m_WndList->hContact, m_WndList->iType == GCW_CHATROOM?TRUE:FALSE);

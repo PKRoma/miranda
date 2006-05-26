@@ -121,7 +121,6 @@ void CreateTrayMenus(int mode)
     }
     else {
         isAnimThreadRunning = FALSE;
-        //ResumeThread(hTrayAnimThread);
         SetEvent(g_hEvent);
         WaitForSingleObject(hTrayAnimThread, 5000);
         CloseHandle(hTrayAnimThread);
@@ -290,9 +289,6 @@ void FlashTrayIcon(HICON hIcon)
     }
     else if(IsWindowVisible(myGlobals.g_hwndHotkeyHandler) && !nen_options.bTraySupport) {
         SendDlgItemMessage(myGlobals.g_hwndHotkeyHandler, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
-#ifdef _DEBUG
-        _DebugTraceA("set floater icon... %d", hIcon);
-#endif
     }
 }
 
