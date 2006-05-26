@@ -38,6 +38,7 @@ extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst,SIZE *psize, HDC hdcSrc, POINT *pptSrc, COLORREF crKey, BLENDFUNCTION *pblend, DWORD dwFlags);
 extern PGF MyGradientFill;
 extern int Docking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam);
+extern int SetHideOffline(WPARAM wParam, LPARAM lParam);
 
 extern struct CluiData g_CluiData;
 extern struct ExtraCache *g_ExtraCache;
@@ -137,7 +138,6 @@ void __forceinline _DebugTraceW(const wchar_t *fmt, ...)
 
 void __forceinline _DebugTraceA(const char *fmt, ...)
 {
-#ifdef _DEBUG
     char    debug[2048];
     int     ibsize = 2047;
     va_list va;
@@ -145,9 +145,21 @@ void __forceinline _DebugTraceA(const char *fmt, ...)
 
 	lstrcpyA(debug, "CLN: ");
 	_vsnprintf(&debug[5], ibsize - 10, fmt, va);
+#ifdef _DEBUG
     OutputDebugStringA(debug);
+#else
+    {
+        char szLogFileName[MAX_PATH], szDataPath;
+        FILE *f;
+
+        CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szDataPath);
+        mir_snprintf(szLogFileName, "%s\\%s", szDataPath, "clist_nicer.log");
+        f = fopen(szLogFileName, "a+");
+        fputs(debug, f);
+        fclose(f);
+    }
+#endif
 	return 0;
-#endif    
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
@@ -354,7 +366,7 @@ LBL_Error:
 	pcli->pfnTrayIconSetToBase = TrayIconSetToBase;
 	pcli->pfnTrayIconUpdateBase = TrayIconUpdateBase;
 	pcli->pfnTrayIconUpdateWithImageList = TrayIconUpdateWithImageList;
-
+    pcli->pfnSetHideOffline = SetHideOffline;
 	pcli->pfnShowHide = ShowHide;
 
 	saveAddContactToGroup = pcli->pfnAddContactToGroup; pcli->pfnAddContactToGroup = AddContactToGroup;

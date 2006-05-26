@@ -25,6 +25,7 @@ extern LONG g_cxsmIcon, g_cysmIcon;
 extern struct CluiData g_CluiData;
 extern pfnDrawAlpha pDrawAlpha;
 extern StatusItems_t *StatusItems;
+extern ImageItem *g_glyphItem;
 
 static LRESULT CALLBACK TSButtonWndProc(HWND hwnd, UINT  msg, WPARAM wParam, LPARAM lParam);
 
@@ -50,6 +51,7 @@ typedef struct {
     HIMAGELIST hIml;
     int iIcon;
 	BOOL bSendOnDown;
+    ButtonItem *buttonItem;
 } MButtonCtrl;
 
 // External theme methods and properties
@@ -195,7 +197,30 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
                 HBRUSH hbr;
                 RECT rc = rcClient;
 
-                if(ctl->bSkinned) {      // skinned
+                if(ctl->buttonItem) {
+                    RECT rcParent;
+                    POINT pt;
+                    HWND hwndParent = pcli->hwndContactList;
+                    ImageItem *imgItem = ctl->stateId == PBS_HOT ? ctl->buttonItem->imgHover : (ctl->stateId == PBS_PRESSED ? ctl->buttonItem->imgPressed : ctl->buttonItem->imgNormal);
+                    LONG *glyphMetrics = ctl->stateId == PBS_HOT ? ctl->buttonItem->hoverGlyphMetrics : (ctl->stateId == PBS_PRESSED ? ctl->buttonItem->pressedGlyphMetrics : ctl->buttonItem->normalGlyphMetrics);
+
+                    GetWindowRect(ctl->hwnd, &rcParent);
+                    pt.x = rcParent.left;
+                    pt.y = rcParent.top;
+
+                    ScreenToClient(pcli->hwndContactList, &pt);
+
+                    BitBlt(hdcMem, 0, 0, rc.right, rc.bottom, g_CluiData.hdcBg, pt.x, pt.y, SRCCOPY);
+                    if(imgItem)
+                        DrawAlpha(hdcMem, &rc, 0, 0, 0, 0, 0, 0, 0, imgItem);
+                    if(g_glyphItem) {
+                        AlphaBlend(hdcMem, (rc.right - glyphMetrics[2]) / 2, (rc.bottom - glyphMetrics[3]) / 2,
+                                   glyphMetrics[2], glyphMetrics[3], g_glyphItem->hdc,
+                                   glyphMetrics[0], glyphMetrics[1], glyphMetrics[2],
+                                   glyphMetrics[3], g_glyphItem->bf);
+                    }
+                }
+                else if(ctl->bSkinned) {      // skinned
                     RECT rcParent;
                     POINT pt;
                     HWND hwndParent = pcli->hwndContactList;
@@ -252,7 +277,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
                         DeleteObject(hbr);
                     }
                 }
-                if(!ctl->bSkinned) {
+                if(!ctl->bSkinned && ctl->buttonItem == 0) {
                     if (ctl->stateId == PBS_HOT || ctl->focus) {
                         if (ctl->pbState)
                             DrawEdge(hdcMem, &rc, EDGE_ETCHED, BF_RECT | BF_SOFT);
@@ -384,6 +409,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 bct->flatBtn = 0;
                 bct->bThemed = FALSE;
                 bct->bSkinned = bct->bSendOnDown = 0;
+                bct->buttonItem = NULL;
                 LoadTheme(bct);
                 SetWindowLong(hwndDlg, 0, (LONG) bct);
                 if (((CREATESTRUCTA *) lParam)->lpszName)
@@ -546,6 +572,9 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
             bct->bSkinned = (DWORD)lParam;
             bct->bThemed = bct->bSkinned ? FALSE : bct->bThemed;
             InvalidateRect(bct->hwnd, NULL, TRUE);
+            break;
+        case BM_SETBTNITEM:
+            bct->buttonItem = (ButtonItem *)lParam;
             break;
 		case BM_SETASMENUACTION:
 			bct->bSendOnDown = wParam ? TRUE : FALSE;

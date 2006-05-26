@@ -70,8 +70,6 @@ static void MF_CalcFrequency(HANDLE hContact, DWORD dwCutoffDays, int doSleep)
     dbei.cbSize = sizeof(dbei);
     dbei.timestamp = 0;
 
-    DBDeleteContactSetting(hContact, "CList", "mf_lastEvent");
-
     while(hEvent) {
         dbei.cbBlob = 0;
         dbei.pBlob = NULL;
@@ -89,12 +87,15 @@ static void MF_CalcFrequency(HANDLE hContact, DWORD dwCutoffDays, int doSleep)
             Sleep(100);
     }
 
-    if(eventCount == 0)
+    if(eventCount == 0) {
         frequency = 0x7fffffff;
-    else
+        DBWriteContactSettingDword(hContact, "CList", "mf_firstEvent", curTime - (dwCutoffDays * 86400));
+    }
+    else {
         frequency = (curTime - dbei.timestamp) / eventCount;
+        DBWriteContactSettingDword(hContact, "CList", "mf_firstEvent", dbei.timestamp);
+    }
 
-    DBWriteContactSettingDword(hContact, "CList", "mf_firstEvent", dbei.timestamp);
     DBWriteContactSettingDword(hContact, "CList", "mf_freq", frequency);
     DBWriteContactSettingDword(hContact, "CList", "mf_count", eventCount);
 }
@@ -110,9 +111,6 @@ DWORD WINAPI MF_UpdateThread(LPVOID p)
     do {
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
         while (hContact != NULL && mf_updatethread_running) {
-            #ifdef _DEBUG
-                _DebugTraceA("updating: %d", hContact);
-            #endif
             MF_CalcFrequency(hContact, 50, 1);
             if(mf_updatethread_running)
                 WaitForSingleObject(hEvent, 5000);

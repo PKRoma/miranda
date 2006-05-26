@@ -123,11 +123,11 @@ static int sortfunc(const void *a,const void *b)
 //static wndFrame Frames[MAX_FRAMES];
 static wndFrame *Frames=NULL;
 
-wndFrame *wndFrameCLC = NULL, *wndFrameEventArea = NULL;
+wndFrame *wndFrameCLC = NULL, *wndFrameEventArea = NULL, *wndFrameViewMode = NULL;
 
-static int nFramescount=0;
+static int nFramescount = 0;
 static int alclientFrame=-1;//for fast access to frame with alclient properties
-static int NextFrameId=100;
+static int NextFrameId = 100;
 
 static TitleBarH=DEFAULT_TITLEBAR_HEIGHT;
 static boolean resizing=FALSE;
@@ -603,11 +603,13 @@ int CLUIFramesLoadFrameSettings(int Frameid)
     if (Frameid<0||Frameid>=nFramescount) 
 		return -1;
 
-    maxstored=DBGetContactSettingWord(0,CLUIFrameModule,"StoredFrames",-1);
-    if (maxstored==-1) return 0;
+    maxstored = DBGetContactSettingWord(0,CLUIFrameModule,"StoredFrames", -1);
+    if (maxstored == -1) 
+        return 0;
 
     storpos=LocateStorePosition(Frameid,maxstored);
-    if (storpos==-1) return 0;
+    if (storpos==-1) 
+        return 0;
 
     DBLoadFrameSettingsAtPos(storpos,Frameid);
     return 0;
@@ -1899,28 +1901,23 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
         ZeroMemory(Frames, sizeof(wndFrame) * (MAX_FRAMES + 2));
     }
     memset(&Frames[nFramescount],0,sizeof(wndFrame));
-    if (clfrm->name) {
-        CustomName=DBGetString(NULL,"CUSTOM_CLUI_FRAMES",AS(buff,"CustomName_",clfrm->name));
-        Frames[nFramescount].TitleBar.BackColour=(COLORREF)DBGetContactSettingDword(NULL,"CUSTOM_CLUI_FRAMES",AS(buff,"CustomBackColor_",clfrm->name),GetSysColor(COLOR_3DFACE));
-        Frames[nFramescount].TitleBar.TextColour=(COLORREF)DBGetContactSettingDword(NULL,"CUSTOM_CLUI_FRAMES",AS(buff,"CustomTextColor_",clfrm->name),GetSysColor(COLOR_WINDOWTEXT));
-        if (CustomName) {
-            if (clfrm->name) mir_free(clfrm->name);
-            clfrm->name=_strdup(CustomName);
-            mir_free(CustomName);
-        }
-    }
-    Frames[nFramescount].id=NextFrameId++;
+
+    Frames[nFramescount].id = NextFrameId++;
     Frames[nFramescount].align=clfrm->align;
     Frames[nFramescount].hWnd=clfrm->hWnd;
     Frames[nFramescount].height=clfrm->height;
     Frames[nFramescount].TitleBar.hicon=clfrm->hIcon;
     //Frames[nFramescount].TitleBar.BackColour;
     Frames[nFramescount].floating=FALSE;
-    if (clfrm->Flags&F_NO_SUBCONTAINER)
-      Frames[nFramescount].OwnerWindow=(HWND)-2;
-    else Frames[nFramescount].OwnerWindow = pcli->hwndContactList;
+
+    if (clfrm->Flags & F_NO_SUBCONTAINER)
+        Frames[nFramescount].OwnerWindow = (HWND)-2;
+    else 
+        Frames[nFramescount].OwnerWindow = pcli->hwndContactList;
+
     SetClassLong(clfrm->hWnd, GCL_STYLE, GetClassLong(clfrm->hWnd, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
     SetWindowLong(clfrm->hWnd, GWL_STYLE, GetWindowLong(clfrm->hWnd, GWL_STYLE) | WS_CLIPCHILDREN);
+
 	if(GetCurrentThreadId() == GetWindowThreadProcessId(clfrm->hWnd, NULL)) {
 		if(clfrm->hWnd != pcli->hwndContactTree && clfrm->hWnd != g_hwndViewModeFrame && clfrm->hWnd != g_hwndEventArea) {
 			Frames[nFramescount].wndProc = (WNDPROC)GetWindowLong(clfrm->hWnd, GWL_WNDPROC);
@@ -1932,12 +1929,14 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
         wndFrameEventArea = &Frames[nFramescount];
     else if(clfrm->hWnd == pcli->hwndContactTree)
         wndFrameCLC = &Frames[nFramescount];
+    else if(clfrm->hWnd == g_hwndViewModeFrame)
+        wndFrameViewMode = &Frames[nFramescount];
 
     //override tbbtip
     //clfrm->Flags|=F_SHOWTBTIP;
     //
-    if (DBGetContactSettingByte(0,CLUIFrameModule,"RemoveAllBorders",0)==1)
-        clfrm->Flags|=F_NOBORDER;
+    if(DBGetContactSettingByte(0,CLUIFrameModule,"RemoveAllBorders",0))
+        clfrm->Flags |= F_NOBORDER;
 
     Frames[nFramescount].dwFlags=clfrm->Flags;
 
@@ -1963,14 +1962,12 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
     Frames[nFramescount].Skinned=(clfrm->Flags&F_SKINNED)?TRUE:FALSE;
 
     // create frame
-    Frames[nFramescount].TitleBar.hwnd
-    =CreateWindowA(CLUIFrameTitleBarClassName,Frames[nFramescount].name,
-                  (DBGetContactSettingByte(0,CLUIFrameModule,"RemoveAllTitleBarBorders",1)?0:WS_BORDER)
+    Frames[nFramescount].TitleBar.hwnd = 
+        CreateWindowA(CLUIFrameTitleBarClassName,Frames[nFramescount].name,
+                      (DBGetContactSettingByte(0, CLUIFrameModule, "RemoveAllTitleBarBorders", 1) ? 0 : WS_BORDER)
+                      | WS_CHILD|WS_CLIPCHILDREN | (Frames[nFramescount].TitleBar.ShowTitleBar?WS_VISIBLE:0) |
+                      WS_CLIPCHILDREN, 0, 0, 0, 0, pcli->hwndContactList, NULL, g_hInst, NULL);
 
-                  |WS_CHILD|WS_CLIPCHILDREN|
-                  (Frames[nFramescount].TitleBar.ShowTitleBar?WS_VISIBLE:0)|
-                  WS_CLIPCHILDREN,
-                  0,0,0,0,pcli->hwndContactList,NULL,g_hInst,NULL);
     SetWindowLong(Frames[nFramescount].TitleBar.hwnd,GWL_USERDATA,Frames[nFramescount].id);
 
     Frames[nFramescount].TitleBar.hwndTip = CreateWindowExA(0, TOOLTIPS_CLASSA, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,

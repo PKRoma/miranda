@@ -67,6 +67,7 @@ extern ImageItem *g_CLUIImageItem;
 extern HBRUSH g_CLUISkinnedBkColor;
 extern StatusItems_t *StatusItems;
 extern HWND g_hwndSFL;
+extern ButtonItem *g_ButtonItems;
 
 HIMAGELIST himlExtraImages = 0;
 
@@ -111,7 +112,7 @@ extern int dock_prevent_moving;
 
 HICON overlayicons[10];
 
-static struct CluiTopButton top_buttons[] = {
+struct CluiTopButton top_buttons[] = {
 	    0, 0, 0, IDC_TBTOPMENU, IDI_TBTOPMENU, 0, "CLN_topmenu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 1, _T("Show menu"), 
 		0, 0, 0, IDC_TBHIDEOFFLINE, IDI_HIDEOFFLINE, 0, "CLN_online", NULL, 0, 2, _T("Show / hide offline contacts"),
 		0, 0, 0, IDC_TBHIDEGROUPS, IDI_HIDEGROUPS, 0, "CLN_groups", NULL, 0, 4, _T("Toggle group mode"),
@@ -160,6 +161,7 @@ static void LayoutButtons(HWND hwnd, HDWP *batch, RECT *rc)
 	BYTE left_offset = g_CluiData.bCLeft - (g_CluiData.dwFlags & CLUI_FRAME_CLISTSUNKEN ? 3 : 0);
 	BYTE right_offset = g_CluiData.bCRight - (g_CluiData.dwFlags & CLUI_FRAME_CLISTSUNKEN ? 3 : 0);
 	BYTE delta = left_offset + right_offset;
+    ButtonItem *btnItems = g_ButtonItems;
 
 	if(rc == NULL)
 		GetClientRect(hwnd, &rect);
@@ -168,7 +170,25 @@ static void LayoutButtons(HWND hwnd, HDWP *batch, RECT *rc)
 
 	rect.bottom -= g_CluiData.bCBottom;
 
-	for (i = 0; ; i++) {
+    if(g_ButtonItems) {
+        while(btnItems) {
+            LONG x = (btnItems->xOff >= 0) ? rect.left + btnItems->xOff : rect.right - abs(btnItems->xOff);
+            LONG y = (btnItems->yOff >= 0) ? rect.top + btnItems->yOff : rect.bottom - abs(btnItems->yOff);
+            if(batch)
+                *batch = DeferWindowPos(*batch, btnItems->hWnd, 0, x, y, btnItems->width, btnItems->height,
+                                        SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+            btnItems = btnItems->nextItem;
+        }
+        if(batch)
+            *batch = DeferWindowPos(*batch, top_buttons[14].hwnd, 0, 2 + left_offset, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
+            BUTTON_WIDTH_D * 3, BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+        if(batch)
+            *batch = DeferWindowPos(*batch, top_buttons[13].hwnd, 0, left_offset + (3 * BUTTON_WIDTH_D) + 3, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
+            rect.right - delta - (3 * BUTTON_WIDTH_D + 5), BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+        return;
+    }
+
+    for (i = 0; ; i++) {
 		if (top_buttons[i].szTooltip == NULL)
 			break;
 		if (top_buttons[i].hwnd == 0)
@@ -692,12 +712,30 @@ void RefreshButtons()
 void SetButtonStates(HWND hwnd)
 {
 	BYTE iMode;
+    ButtonItem *buttonItem = g_ButtonItems;
 
 	CheckDlgButton(hwnd, IDC_TBHIDEGROUPS, DBGetContactSettingByte(NULL, "CList", "UseGroups", 0) ? BST_CHECKED : BST_UNCHECKED);
 	iMode = DBGetContactSettingByte(NULL, "CList", "HideOffline", 0);
 	CheckDlgButton(hwnd, IDC_TBHIDEOFFLINE, iMode ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(hwnd, IDC_TBSOUND, g_CluiData.soundsOff ? BST_UNCHECKED : BST_CHECKED);
-	SendDlgItemMessage(hwnd, IDC_TBSOUND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(g_CluiData.soundsOff ? top_buttons[5].hAltIcon : top_buttons[5].hIcon));
+    if(!g_ButtonItems)
+        SendDlgItemMessage(hwnd, IDC_TBSOUND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(g_CluiData.soundsOff ? top_buttons[5].hAltIcon : top_buttons[5].hIcon));
+    while(buttonItem) {
+        if(buttonItem->dwFlags & BUTTON_ISINTERNAL) {
+            switch(buttonItem->uId) {
+                case IDC_TBSOUND:
+                    SendMessage(buttonItem->hWnd, BM_SETCHECK, g_CluiData.soundsOff ? BST_UNCHECKED : BST_CHECKED, 0);
+                    break;
+                case IDC_TBHIDEOFFLINE:
+                    SendMessage(buttonItem->hWnd, BM_SETCHECK, iMode ? BST_CHECKED : BST_UNCHECKED, 0);
+                    break;
+                case IDC_TBHIDEGROUPS:
+                    SendMessage(buttonItem->hWnd, BM_SETCHECK, DBGetContactSettingByte(NULL, "CList", "UseGroups", 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+                    break;
+            }
+        }
+        buttonItem = buttonItem->nextItem;
+    }
 }
 // Restore protocols to the last global status.
 // Used to reconnect on restore after standby.
@@ -1429,7 +1467,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					return HTBOTTOMRIGHT;
 
 			}
-			else if(pt.y >= r.top && pt.y <= r.top + 6 && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) {
+			else if(pt.y >= r.top && pt.y <= r.top + 3 && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) {
 				if(pt.x > r.left + clip + 10 && pt.x < r.right - clip - 10)
 					return HTTOP;
 				if(pt.x < r.left + clip + 10)
@@ -1776,12 +1814,14 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		}
 	case WM_LBUTTONDOWN:
 		{
-			if(g_CluiData.dwFlags & CLUI_FRAME_SHOWTOPBUTTONS) {
+			if(g_CluiData.dwFlags & CLUI_FRAME_SHOWTOPBUTTONS || g_ButtonItems) {
 				POINT ptMouse, pt;
 				RECT rcClient;
 
 				GetCursorPos(&ptMouse);
 				pt = ptMouse;
+                if(g_ButtonItems)
+                    return SendMessage(hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(pt.x, pt.y));
 				ScreenToClient(hwnd, &ptMouse);
 				GetClientRect(hwnd, &rcClient);
 				rcClient.bottom = g_CluiData.topOffset;

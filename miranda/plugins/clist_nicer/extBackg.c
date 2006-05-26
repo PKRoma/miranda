@@ -31,25 +31,11 @@ extern struct CluiData g_CluiData;
 extern HWND g_hwndViewModeFrame;
 extern HIMAGELIST himlExtraImages;
 extern HANDLE hPreBuildStatusMenuEvent;
-
-/*
-typedef  DWORD  (__stdcall *pfnImgNewDecoder)(void ** ppDecoder); 
-typedef DWORD (__stdcall *pfnImgDeleteDecoder)(void * pDecoder);
-typedef  DWORD  (__stdcall *pfnImgNewDIBFromFile)(LPVOID pDecoder, LPCSTR pFileName, LPVOID *pImg);
-typedef DWORD (__stdcall *pfnImgDeleteDIBSection)(LPVOID pImg);
-typedef DWORD (__stdcall *pfnImgGetHandle)(LPVOID pImg, HBITMAP *pBitmap, LPVOID *ppDIBBits);
-
-static pfnImgNewDecoder ImgNewDecoder = 0;
-static pfnImgDeleteDecoder ImgDeleteDecoder = 0;
-static pfnImgNewDIBFromFile ImgNewDIBFromFile = 0;
-static pfnImgDeleteDIBSection ImgDeleteDIBSection = 0;
-static pfnImgGetHandle ImgGetHandle = 0;
-
-static BOOL g_imgDecoderAvail = FALSE;
-*/
+extern struct CluiTopButton top_buttons[];
 
 StatusItems_t *StatusItems = NULL;
-ImageItem *g_ImageItems = NULL;
+ImageItem *g_ImageItems = NULL, *g_glyphItem = NULL;
+ButtonItem *g_ButtonItems = NULL;
 ImageItem *g_CLUIImageItem = NULL;
 HBRUSH g_CLUISkinnedBkColor = 0;
 COLORREF g_CLUISkinnedBkColorRGB = 0;
@@ -1196,7 +1182,7 @@ static void ReadItem(StatusItems_t *this_item, char *szItem, char *file)
 
 void IMG_ReadItem(const char *itemname, const char *szFileName)
 {
-    ImageItem tmpItem = {0}, *newItem = NULL;
+    ImageItem tmpItem, *newItem = NULL;
     char buffer[512], szItemNr[30];
     char szFinalName[MAX_PATH];
     HDC hdc = GetDC(pcli->hwndContactList);
@@ -1204,6 +1190,7 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
     BOOL alloced = FALSE;
     char szDrive[MAX_PATH], szPath[MAX_PATH];
     
+    ZeroMemory(&tmpItem, sizeof(ImageItem));
     GetPrivateProfileStringA(itemname, "Image", "None", buffer, 500, szFileName);
     if(strcmp(buffer, "None")) {
         strncpy(tmpItem.szName, &itemname[1], sizeof(tmpItem.szName));
@@ -1236,6 +1223,39 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
         else if(buffer[0] == 'w' || buffer[0] == 'W')
             tmpItem.bStretch = IMAGE_STRETCH_H;
         tmpItem.hbm = 0;
+
+        if(!_stricmp(itemname, "$glyphs")) {
+            IMG_CreateItem(&tmpItem, szFinalName, hdc);
+            if(tmpItem.hbm) {
+                newItem = malloc(sizeof(ImageItem));
+                ZeroMemory(newItem, sizeof(ImageItem));
+                *newItem = tmpItem;
+                g_glyphItem = newItem;
+            }
+            goto imgread_done;
+        }
+        if(itemname[0] == '@') {
+            IMG_CreateItem(&tmpItem, szFinalName, hdc);
+            if(tmpItem.hbm) {
+                ImageItem *pItem = g_ImageItems;
+
+                newItem = malloc(sizeof(ImageItem));
+                ZeroMemory(newItem, sizeof(ImageItem));
+                *newItem = tmpItem;
+
+                if(g_ImageItems == NULL)
+                    g_ImageItems = newItem;
+                else {
+                    ImageItem *pItem = g_ImageItems;
+
+                    while(pItem->nextItem != 0)
+                        pItem = pItem->nextItem;
+                    pItem->nextItem = newItem;
+                }
+                _DebugTraceA("created dummy item %s", newItem->szName);
+            }
+            goto imgread_done;
+        }
         for(n = 0;;n++) {
             mir_snprintf(szItemNr, 30, "Item%d", n);
             GetPrivateProfileStringA(itemname, szItemNr, "None", buffer, 500, szFileName);
@@ -1289,6 +1309,7 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
             }
         }
     }
+imgread_done:
     ReleaseDC(pcli->hwndContactList, hdc);
 }
 
@@ -1382,27 +1403,11 @@ static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
     LPVOID pBitmapBits = NULL;
     LPVOID m_pImgDecoder = NULL;
 
-	/*
-	if(!g_imgDecoderAvail)
-        return 0;
-    */
-
     hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
     if(hBitmap != 0)
         CorrectBitmap32Alpha(hBitmap);
-    item->lpDIBSection = 0;
 
     return hBitmap;
-
-	/*
-    ImgNewDecoder(&m_pImgDecoder);
-    if (!ImgNewDIBFromFile(m_pImgDecoder, (char *)szFilename, &pImg))
-        ImgGetHandle(pImg, &hBitmap, (LPVOID *)&pBitmapBits);
-    ImgDeleteDecoder(m_pImgDecoder);
-    if(hBitmap == 0)
-        return 0;
-    item->lpDIBSection = pImg;
-    return hBitmap;*/
 }
 
 static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
@@ -1444,9 +1449,7 @@ static void IMG_DeleteItem(ImageItem *item)
     SelectObject(item->hdc, item->hbmOld);
     DeleteObject(item->hbm);
     DeleteDC(item->hdc);
-	/*
-    if(item->lpDIBSection && ImgDeleteDIBSection)
-        ImgDeleteDIBSection(item->lpDIBSection);*/
+
     if(item->fillBrush)
         DeleteObject(item->fillBrush);
 }
@@ -1454,6 +1457,8 @@ static void IMG_DeleteItem(ImageItem *item)
 void IMG_DeleteItems()
 {
     ImageItem *pItem = g_ImageItems, *pNextItem;
+    ButtonItem *pbItem = g_ButtonItems, *pbNextItem;
+
 	int i;
 
 	while(pItem) {
@@ -1463,15 +1468,126 @@ void IMG_DeleteItems()
         pItem = pNextItem;
     }
     g_ImageItems = NULL;
+    while(pbItem) {
+        DestroyWindow(pbItem->hWnd);
+        pbNextItem = pbItem->nextItem;
+        free(pbItem);
+        pbItem = pbNextItem;
+    }
+    g_ButtonItems = NULL;
 
     if(g_CLUIImageItem) {
         IMG_DeleteItem(g_CLUIImageItem);
         free(g_CLUIImageItem);
     }
     g_CLUIImageItem = NULL;
-    
+
+    if(g_glyphItem) {
+        IMG_DeleteItem(g_glyphItem);
+        free(g_glyphItem);
+    }
+    g_glyphItem = NULL;
+
     for(i = 0; i <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; i++)
         StatusItems[i].imageItem = NULL;
+}
+
+static void BTN_ReadItem(char *itemName, char *file)
+{
+    ButtonItem tmpItem, *newItem;
+    char szBuffer[1024];
+    ImageItem *imgItem = g_ImageItems;
+
+    ZeroMemory(&tmpItem, sizeof(tmpItem));
+    mir_snprintf(tmpItem.szName, sizeof(tmpItem.szName), "%s", &itemName[1]);
+    tmpItem.width = GetPrivateProfileIntA(itemName, "Width", 16, file);
+    tmpItem.height = GetPrivateProfileIntA(itemName, "Height", 16, file);
+    tmpItem.xOff = GetPrivateProfileIntA(itemName, "xoff", 0, file);
+    tmpItem.yOff = GetPrivateProfileIntA(itemName, "yoff", 0, file);
+
+    tmpItem.dwFlags |= GetPrivateProfileIntA(itemName, "toggle", 0, file) ? BUTTON_ISTOGGLE : 0;
+
+    GetPrivateProfileStringA(itemName, "Pressed", "None", szBuffer, 1000, file);
+    while(imgItem) {
+        if(!stricmp(imgItem->szName, szBuffer)) {
+            tmpItem.imgPressed = imgItem;
+            break;
+        }
+        imgItem = imgItem->nextItem;
+    }
+
+    imgItem = g_ImageItems;
+    GetPrivateProfileStringA(itemName, "Normal", "None", szBuffer, 1000, file);
+    while(imgItem) {
+        if(!stricmp(imgItem->szName, szBuffer)) {
+            tmpItem.imgNormal = imgItem;
+            break;
+        }
+        imgItem = imgItem->nextItem;
+    }
+
+    imgItem = g_ImageItems;
+    GetPrivateProfileStringA(itemName, "Hover", "None", szBuffer, 1000, file);
+    while(imgItem) {
+        if(!stricmp(imgItem->szName, szBuffer)) {
+            tmpItem.imgHover = imgItem;
+            break;
+        }
+        imgItem = imgItem->nextItem;
+    }
+
+    GetPrivateProfileStringA(itemName, "NormalGlyph", "0, 0, 20, 20", szBuffer, 1000, file);
+    sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.normalGlyphMetrics[0], &tmpItem.normalGlyphMetrics[1],
+           &tmpItem.normalGlyphMetrics[2], &tmpItem.normalGlyphMetrics[3]);
+
+    GetPrivateProfileStringA(itemName, "PressedGlyph", "0, 0, 20, 20", szBuffer, 1000, file);
+    sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.pressedGlyphMetrics[0], &tmpItem.pressedGlyphMetrics[1],
+           &tmpItem.pressedGlyphMetrics[2], &tmpItem.pressedGlyphMetrics[3]);
+
+    GetPrivateProfileStringA(itemName, "HoverGlyph", "0, 0, 20, 20", szBuffer, 1000, file);
+    sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.hoverGlyphMetrics[0], &tmpItem.hoverGlyphMetrics[1],
+           &tmpItem.hoverGlyphMetrics[2], &tmpItem.hoverGlyphMetrics[3]);
+
+    GetPrivateProfileStringA(itemName, "Action", "Custom", szBuffer, 1000, file);
+    if(stricmp(szBuffer, "Custom")) {
+        int i = 0;
+
+        while(top_buttons[i].id) {
+            if(!stricmp(top_buttons[i].szIcoLibIcon, szBuffer)) {
+                tmpItem.uId = top_buttons[i].id;
+                tmpItem.dwFlags |= BUTTON_ISINTERNAL;
+                break;
+            }
+            i++;
+        }
+    }
+    // sanity checks
+
+    // create it
+
+    newItem = (ButtonItem *)malloc(sizeof(ButtonItem));
+    ZeroMemory(newItem, sizeof(ButtonItem));
+    if(g_ButtonItems == NULL) {
+        g_ButtonItems = newItem;
+        *newItem = tmpItem;
+        newItem->nextItem = 0;
+    }
+    else {
+        ButtonItem *curItem = g_ButtonItems;
+        while(curItem->nextItem)
+            curItem = curItem->nextItem;
+        *newItem = tmpItem;
+        newItem->nextItem = 0;
+        curItem->nextItem = newItem;
+    }
+    newItem->hWnd = CreateWindowEx(0, _T("CLCButtonClass"), _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 5, 5, pcli->hwndContactList, (HMENU)newItem->uId, g_hInst, NULL);
+    SendMessage(newItem->hWnd, BM_SETBTNITEM, 0, (LPARAM)newItem);
+    SendMessage(newItem->hWnd, BUTTONSETASFLATBTN, 0, 0);
+    SendMessage(newItem->hWnd, BUTTONSETASFLATBTN + 10, 0, 0);
+    if(newItem->dwFlags & BUTTON_ISTOGGLE)
+        SendMessage(newItem->hWnd, BUTTONSETASPUSHBTN, 0, 0);
+
+    return;
 }
 
 void IMG_LoadItems()
@@ -1500,8 +1616,14 @@ void IMG_LoadItems()
     szSections[3001] = szSections[3000] = 0;
     p = szSections;
     while(lstrlenA(p) > 1) {
-		if(p[0] == '$')
+		if(p[0] == '$' || p[0] == '@')
             IMG_ReadItem(p, szFileName);
+        p += (lstrlenA(p) + 1);
+    }
+    p = szSections;
+    while(lstrlenA(p) > 1) {
+        if(p[0] == '!')
+            BTN_ReadItem(p, szFileName);
         p += (lstrlenA(p) + 1);
     }
     free(szSections);

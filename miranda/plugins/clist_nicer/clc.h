@@ -558,6 +558,7 @@ void IMG_DeleteItems();
 #define BM_SETIMLICON (WM_USER + 7)
 #define BM_SETSKINNED (WM_USER + 8)
 #define BM_SETASMENUACTION (WM_USER + 9)
+#define BM_SETBTNITEM (WM_USER+10)
 
 #define EIMG_MAIL 0
 #define EIMG_URL 1

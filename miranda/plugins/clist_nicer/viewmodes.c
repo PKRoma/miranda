@@ -27,6 +27,7 @@ $Id$
 
 #include "commonheaders.h"
 #include "m_variables.h"
+#include "cluiframes/cluiframes.h"
 #include <uxtheme.h>
 
 #define TIMERID_VIEWMODEEXPIRE 100
@@ -37,6 +38,7 @@ extern HPEN g_hPenCLUIFrames;
 extern int g_nextExtraCacheEntry;
 extern struct ExtraCache *g_ExtraCache;
 extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
+extern wndFrame *wndFrameViewMode;
 
 typedef int (__cdecl *pfnEnumCallback)(char *szName);
 static HWND clvmHwnd = 0;
@@ -903,6 +905,8 @@ static UINT _buttons[] = {IDC_RESETMODES, IDC_SELECTMODE, IDC_CONFIGUREMODES, 0}
 
 LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    BOOL hasTitleBar = wndFrameViewMode ? wndFrameViewMode->TitleBar.ShowTitleBar : 0;
+
     switch(msg) {
         case WM_CREATE:
         {
@@ -921,26 +925,10 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             SendMessage(hwnd, WM_USER + 100, 0, 0);
             return FALSE;
         }
-		case WM_NCPAINT:
-			if(GetWindowLong(hwnd, GWL_STYLE) & WS_BORDER) {
-				HDC hdc = GetWindowDC(hwnd);
-				HPEN hPenOld = SelectObject(hdc, g_hPenCLUIFrames);
-				RECT rcWindow, rc;
-				HBRUSH brold;
-
-				GetWindowRect(hwnd, &rcWindow);
-				rc.left = rc.top = 0;
-				rc.right = rcWindow.right - rcWindow.left;
-				rc.bottom = rcWindow.bottom - rcWindow.top;
-				//FillRect(hdc, &rc, GetSysColorBrush(COLOR_ACTIVEBORDER));
-				brold = SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
-				Rectangle(hdc, 0, 0, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top);
-				SelectObject(hdc, hPenOld);
-				SelectObject(hdc, brold);
-				ReleaseDC(hwnd, hdc);
-				return 0;
-			}
-			break;
+        case WM_NCCALCSIZE:
+            return FrameNCCalcSize(hwnd, DefWindowProc, wParam, lParam, hasTitleBar);
+        case WM_NCPAINT:
+            return FrameNCPaint(hwnd, DefWindowProc, wParam, lParam, hasTitleBar);
         case WM_SIZE:
         {
             RECT rcCLVMFrame;
@@ -1125,12 +1113,13 @@ void CreateViewModeFrame()
 
     RegisterClass(&wndclass);
 
+    ZeroMemory(&frame, sizeof(frame));
     frame.cbSize = sizeof(frame);
     frame.name = "View modes";
     frame.hIcon = 0;
     frame.height = 20;
     frame.TBname = "View modes";
-    frame.Flags=F_VISIBLE|F_NOBORDER|F_SHOWTBTIP;
+    frame.Flags=F_VISIBLE|F_SHOWTBTIP|F_SHOWTB|F_SHOWTBTIP;
     frame.align = alTop;
     frame.hWnd = CreateWindowEx(0, _T("CLVMFrameWindow"), _T("CLVM"), WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_CLIPCHILDREN, 0, 0, 20, 20, pcli->hwndContactList, (HMENU) 0, g_hInst, NULL);
     g_hwndViewModeFrame = frame.hWnd;

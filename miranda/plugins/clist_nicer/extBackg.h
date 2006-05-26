@@ -95,6 +95,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IMAGE_STRETCH_H 2
 #define IMAGE_STRETCH_B 4
 
+#define BUTTON_ISINTERNAL 1
+#define BUTTON_ISTOGGLE 2
+
 typedef struct _tagImageItem {
     char szName[40];
     HBITMAP hbm;
@@ -106,11 +109,24 @@ typedef struct _tagImageItem {
     LONG inner_height, inner_width;
     LONG width, height;
     BLENDFUNCTION bf;
-    LPVOID lpDIBSection;
     BYTE bStretch;
     HBRUSH fillBrush;
     struct _tagImageItem *nextItem;
 } ImageItem;
+
+typedef struct _tagButtonItem {
+    char szName[40];
+    HWND hWnd;
+    LONG xOff, yOff;
+    LONG width, height;
+    ImageItem *imgNormal, *imgPressed, *imgHover;
+    LONG normalGlyphMetrics[4];
+    LONG hoverGlyphMetrics[4];
+    LONG pressedGlyphMetrics[4];
+    DWORD dwFlags;
+    DWORD uId;
+    struct _tagButtonItem *nextItem;
+} ButtonItem;
 
 typedef struct {
     char szName[40];
