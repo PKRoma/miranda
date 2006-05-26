@@ -122,7 +122,7 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
         ShowPopUpMsg(NULL, "Popup Title", "Sample Fatal",   LOG_FATAL);
         ShowPopUpMsg(NULL, "Popup Title", "Sample Spambot", POPTYPE_SPAM);
       }
-      break;
+      return FALSE;
 
     case IDC_POPUPS_ENABLED:
       bEnabled = IsDlgButtonChecked(hwndDlg,IDC_POPUPS_ENABLED);
