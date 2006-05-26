@@ -637,7 +637,7 @@ static void JabberProcessProceed( XmlNode *node, void *userdata )
 		return;
 
 	if ( !lstrcmp( type, _T("urn:ietf:params:xml:ns:xmpp-tls" ))){
-		JabberLog("Staring TLS...");
+		JabberLog("Starting TLS...");
 		int socket = JCallService( MS_NETLIB_GETSOCKET, ( WPARAM ) info->s, 0 );
 		PVOID ssl;
 		if (( ssl=pfn_SSL_new( jabberSslCtx )) != NULL ) {
@@ -950,7 +950,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 
 		if ( _tcschr( from, '@' )==NULL && hwndJabberAgents )
 			SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-		JabberLog( "%s ( %s ) online, set contact status to %d", nick, from, status );
+		JabberLog( TCHAR_STR_PARAM " ( " TCHAR_STR_PARAM " ) online, set contact status to %d", nick, from, status );
 		mir_free( nick );
 
 		XmlNode* xNode;
@@ -973,7 +973,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 
 	if ( !_tcscmp( type, _T("unavailable"))) {
 		if ( !JabberListExist( LIST_ROSTER, from )) {
-			JabberLog( "Receive presence offline from %s ( who is not in my roster )", from );
+			JabberLog( "Receive presence offline from " TCHAR_STR_PARAM " ( who is not in my roster )", from );
 			JabberListAdd( LIST_ROSTER, from );
 		}
 		else JabberListRemoveResource( LIST_ROSTER, from );
@@ -1002,7 +1002,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 				if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
 					JSetWord( hContact, "Status", ( WORD )status );
 
-			JabberLog( "%s offline, set contact status to %d", from, status );
+			JabberLog( TCHAR_STR_PARAM " offline, set contact status to %d", from, status );
 		}
 		if ( _tcschr( from, '@' )==NULL && hwndJabberAgents )
 			SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
@@ -1016,7 +1016,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			JabberSend( info->s, p );
 		}
 		else if (( nick=JabberNickFromJID( from )) != NULL ) {
-			JabberLog( "%s ( %s ) requests authorization", nick, from );
+			JabberLog( TCHAR_STR_PARAM " ( " TCHAR_STR_PARAM " ) requests authorization", nick, from );
 			JabberDBAddAuthRequest( from, nick );
 			mir_free( nick );
 		}
@@ -1168,7 +1168,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	/////////////////////////////////////////////////////////////////////////
 
 	else if (( pfunc=JabberIqFetchXmlnsFunc( xmlns )) != NULL ) {
-		JabberLog( "Handling iq request for xmlns=%s", xmlns );
+		JabberLog( "Handling iq request for xmlns = " TCHAR_STR_PARAM, xmlns );
 		pfunc( node, userdata );
 	}
 
@@ -1245,7 +1245,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 					else if ( !_tcscmp( str, _T("to"))) item->subscription = SUB_TO;
 					else if ( !_tcscmp( str, _T("from"))) item->subscription = SUB_FROM;
 					else item->subscription = SUB_NONE;
-					JabberLog( "Roster push for jid=%s, set subscription to %s", jid, str );
+					JabberLog( "Roster push for jid=" TCHAR_STR_PARAM ", set subscription to %s", jid, str );
 					// subscription = remove is to remove from roster list
 					// but we will just set the contact to offline and not actually
 					// remove, so that history will be retained.

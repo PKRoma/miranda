@@ -145,7 +145,7 @@ void sttGroupchatJoinByHContact( HANDLE hContact )
 	
 	TCHAR* room = roomjid;
 	TCHAR* server = _tcschr( roomjid, '@' );
-	if( !server ) 
+	if( !server )
 		return;
 	server[0] = '\0'; server++;
 
@@ -171,7 +171,7 @@ void sttGroupchatJoinByHContact( HANDLE hContact )
 
 void CALLBACK sttCreateRoom( ULONG dwParam )
 {
-	char* jid = ( char* )dwParam, *p;
+	char* jid = t2a(( TCHAR* )dwParam), *p;
 
 	GCSESSION gcw = {0};
 	gcw.cbSize = sizeof(GCSESSION);
@@ -182,6 +182,7 @@ void CALLBACK sttCreateRoom( ULONG dwParam )
 	if (( p = (char*)strchr( gcw.pszName, '@' )) != NULL )
 		*p = 0;
 	CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
+	mir_free(jid);
 }
 
 void JabberIqResultGetRoster( XmlNode* iqNode, void* )
@@ -249,7 +250,7 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 			hContact = JabberDBCreateContact( jid, nick, FALSE, TRUE );
 		}
 
-      DBVARIANT dbNick;
+		DBVARIANT dbNick;
 		if ( !JGetStringT( hContact, "Nick", &dbNick )) {
 			if ( lstrcmp( nick, dbNick.ptszVal ) != 0 )
 				DBWriteContactSettingTString( hContact, "CList", "MyHandle", nick );
@@ -260,8 +261,9 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 		else DBWriteContactSettingTString( hContact, "CList", "MyHandle", nick );
 
 		if ( JGetByte( hContact, "ChatRoom", 0 )) {
+			//DBDeleteContactSetting( hContact, "CList", "Hidden" );
+			QueueUserAPC( sttCreateRoom, hMainThread, ( unsigned long )jid );
 			DBDeleteContactSetting( hContact, "CList", "Hidden" );
-			QueueUserAPC( sttCreateRoom, hMainThread, ( ULONG_PTR )jid );
 			li.List_Insert( &chatRooms, hContact, chatRooms.realCount );
 		}
 
@@ -291,7 +293,7 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 				DBVARIANT dbv;
 				if ( !JGetStringT( hContact, "jid", &dbv )) {
 					if ( !JabberListExist( LIST_ROSTER, dbv.ptszVal )) {
-						JabberLog( "Syncing roster: preparing to delete %s ( hContact=0x%x )", dbv.ptszVal, hContact );
+						JabberLog( "Syncing roster: preparing to delete " TCHAR_STR_PARAM " ( hContact=0x%x )", dbv.ptszVal, hContact );
 						if ( listSize >= listAllocSize ) {
 							listAllocSize = listSize + 100;
 							if (( list=( HANDLE * ) mir_realloc( list, listAllocSize * sizeof( HANDLE ))) == NULL ) {
@@ -476,8 +478,8 @@ LBL_NoTypeSpecified:
 
 	if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
 		lstrcpyA( szTempPath, ".\\" );
-	if ( !GetTempFileNameA( szTempPath, "jab", 0, szTempFileName )) {
-LBL_Ret:	
+	if ( !GetTempFileNameA( szTempPath, jabberProtoName, GetTickCount(), szTempFileName )) {
+LBL_Ret:
 		mir_free( buffer );
 		return;
 	}
@@ -488,9 +490,8 @@ LBL_Ret:
 	}
 
 	JabberLog( "Picture file name set to %s", szTempFileName );
-
 	HANDLE hFile = CreateFileA( szTempFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
-   if ( hFile == INVALID_HANDLE_VALUE )
+	if ( hFile == INVALID_HANDLE_VALUE )
 		goto LBL_Ret;
 
 	JabberLog( "Writing %d bytes", bufferLen );
@@ -502,7 +503,8 @@ LBL_Ret:
 		hasPhoto = TRUE;
 		if ( jabberVcardPhotoFileName ) {
 			DeleteFileA( jabberVcardPhotoFileName );
-			mir_free( jabberVcardPhotoFileName );
+			mir_free( jabberVcardPhotoFileName ); 
+			jabberVcardPhotoFileName = NULL;
 		}
 		replaceStr( jabberVcardPhotoFileName, szTempFileName );
 		JabberLog( "My picture saved to %s", szTempFileName );
@@ -1003,7 +1005,7 @@ void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata )
 				if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
 					_tcsncpy( jsr.jid, jid, SIZEOF( jsr.jid ));
 					jsr.jid[ SIZEOF( jsr.jid )-1] = '\0';
-					JabberLog( "Result jid=%s", jid );
+					JabberLog( "Result jid = " TCHAR_STR_PARAM, jid );
 					if (( n=JabberXmlGetChild( itemNode, "nick" ))!=NULL && n->text!=NULL )
 						jsr.hdr.nick = t2a( n->text );
 					else
@@ -1071,18 +1073,18 @@ void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
 				if ( !lstrcmp( fieldName, _T("jid"))) {
 					_tcsncpy( jsr.jid, n->text, sizeof( jsr.jid ));
 					jsr.jid[sizeof( jsr.jid )-1] = '\0';
-					JabberLog( "Result jid=%s", jsr.jid );
+					JabberLog( "Result jid = " TCHAR_STR_PARAM, jsr.jid );
 				}
 				else if ( !lstrcmp( fieldName, _T("nickname")))
 					jsr.hdr.nick = ( n->text != NULL ) ? t2a( n->text ) : mir_strdup( "" );
 				else if ( !lstrcmp( fieldName, _T("fn")))
-               jsr.hdr.firstName = ( n->text != NULL ) ? t2a(n->text) : mir_strdup( "" );
+					jsr.hdr.firstName = ( n->text != NULL ) ? t2a(n->text) : mir_strdup( "" );
 				else if ( !lstrcmp( fieldName, _T("given")))
-               jsr.hdr.firstName = ( n->text != NULL ) ? t2a(n->text) : mir_strdup( "" );
+					jsr.hdr.firstName = ( n->text != NULL ) ? t2a(n->text) : mir_strdup( "" );
 				else if ( !lstrcmp( fieldName, _T("family")))
-               jsr.hdr.lastName = ( n->text != NULL ) ? t2a(n->text) : mir_strdup( "" );
+					jsr.hdr.lastName = ( n->text != NULL ) ? t2a(n->text) : mir_strdup( "" );
 				else if ( !lstrcmp( fieldName, _T("email")))
-               jsr.hdr.email = ( n->text != NULL ) ? t2a(n->text) : mir_strdup( "" );
+					jsr.hdr.email = ( n->text != NULL ) ? t2a(n->text) : mir_strdup( "" );
 
 				JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) id, ( LPARAM )&jsr );
 				mir_free( jsr.hdr.nick );
@@ -1291,7 +1293,7 @@ void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 		else if ( !lstrcmp( mimeType, _T("image/bmp"))) pictureType = PA_FORMAT_BMP;
 		else {
 LBL_ErrFormat:
-			JabberLog( "Invalid mime type specified for picture: %s", mimeType );
+			JabberLog( "Invalid mime type specified for picture: " TCHAR_STR_PARAM, mimeType );
 			mir_free( body );
 			return;
 	}	}
@@ -1303,7 +1305,7 @@ LBL_ErrFormat:
 	AI.format = pictureType;
 	AI.hContact = hContact;
 
-	if ( JGetByte( hContact, "AvatarType", PA_FORMAT_UNKNOWN ) != pictureType ) {
+	if ( JGetByte( hContact, "AvatarType", PA_FORMAT_UNKNOWN ) != (unsigned char)pictureType ) {
 		JabberGetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
 		DeleteFileA( AI.filename );
 	}
