@@ -675,7 +675,8 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL )
 		return;
 
-	BOOL isChatRoomJid = JabberListExist( LIST_CHATROOM, from );
+	JABBER_LIST_ITEM* chatItem = JabberListGetItemPtr( LIST_CHATROOM, from );
+	BOOL isChatRoomJid = ( chatItem != NULL );
 	if ( isChatRoomJid && !lstrcmp( type, _T("groupchat"))) {
 		JabberGroupchatProcessMessage( node, userdata );
 		return;
@@ -849,6 +850,12 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 				else
 					p = from;
 				hContact = JabberDBCreateContact( from, p, TRUE, FALSE );
+
+				for ( int i=0; i < chatItem->resourceCount; i++ ) {
+					if ( !lstrcmp( chatItem->resource[i].resourceName, p )) {
+						JSetWord( hContact, "Status", chatItem->resource[i].status );
+						break;
+				}	}
 			}
 			else {
 				nick = JabberNickFromJID( from );
@@ -1255,10 +1262,6 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 								DBWriteContactSettingTString( hContact, "CList", "Group", item->group );
 							}
 							else DBDeleteContactSetting( hContact, "CList", "Group" );
-
-							if ( !_tcscmp( str, _T("none")) || ( !_tcscmp( str, _T("from")) && _tcschr( jid, '@' )!=NULL ))
-								if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
-									JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
 						}
 						else mir_free( nick );
 				}	}
