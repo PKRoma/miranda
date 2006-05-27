@@ -99,6 +99,7 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 			JFreeVariant( &dbv );
 
 		jabberOnline = TRUE;
+		jabberLoggedInTime = time(0);
 
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetRoster );

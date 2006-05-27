@@ -13,6 +13,7 @@ Version 0.4.3.2
 [!] bug #0000581 fixed: People are trying to connect to jabber.org with empty usernames
 [!] bugfix for the unencoded jids
 [+] added contact menu items to simplify the groupchat processing
+[+] added JEP0090 compatibility code
 
 Version 0.4.3.1
 ===============

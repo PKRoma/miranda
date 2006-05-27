@@ -507,6 +507,7 @@ LBL_Exit:
 
 			mir_free( jabberJID );
 			jabberJID = NULL;
+			jabberLoggedInTime = 0;
 			JabberListWipe();
 			if ( hwndJabberAgents ) {
 				SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )"" );
@@ -698,7 +699,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 			szMessage = mir_tstrdup( _T(""));
 	}
 
-	time_t msgTime = 0, now;
+	time_t msgTime = 0;
 	BOOL  isChatRoomInvitation = FALSE;
 	TCHAR* inviteRoomJid = NULL;
 	TCHAR* inviteFromJid = NULL;
@@ -855,8 +856,8 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 				mir_free( nick );
 		}	}
 
-		now = time( NULL );
-		if ( msgTime==0 || msgTime > now )
+		time_t now = time( NULL );
+		if ( msgTime == 0 || now - jabberLoggedInTime > 60 )
 			msgTime = now;
 
 		PROTORECVEVENT recv;
