@@ -176,8 +176,8 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if ( !dbv.pszVal[0] ) enableRegister = FALSE;
 				JFreeVariant( &dbv );
 			}
-			if ( !DBGetContactSetting( NULL, jabberProtoName, "Resource", &dbv )) {
-				SetDlgItemTextA( hwndDlg, IDC_EDIT_RESOURCE, dbv.pszVal );
+			if ( !DBGetContactSettingTString( NULL, jabberProtoName, "Resource", &dbv )) {
+				SetDlgItemText( hwndDlg, IDC_EDIT_RESOURCE, dbv.ptszVal );
 				JFreeVariant( &dbv );
 			}
 			else SetDlgItemTextA( hwndDlg, IDC_EDIT_RESOURCE, "Miranda" );
@@ -323,6 +323,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					SetDlgItemInt( hwndDlg, IDC_PORT, 5222, FALSE );
 			}	}
 			// Fall through
+		case IDC_USE_TLS:
 		case IDC_SAVEPASSWORD:
 		case IDC_KEEPALIVE:
 		case IDC_ROSTER_SYNC:
@@ -339,6 +340,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			DBVARIANT dbv;
 
 			char text[256];
+			TCHAR textT [256];
 			GetDlgItemTextA( hwndDlg, IDC_EDIT_USERNAME, text, sizeof( text ));
 			if ( DBGetContactSetting( NULL, jabberProtoName, "LoginName", &dbv ) || strcmp( text, dbv.pszVal ))
 				reconnectRequired = TRUE;
@@ -355,11 +357,14 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			else JDeleteSetting( NULL, "Password" );
 
-			GetDlgItemTextA( hwndDlg, IDC_EDIT_RESOURCE, text, sizeof( text ));
-			if ( DBGetContactSetting( NULL, jabberProtoName, "Resource", &dbv ) || strcmp( text, dbv.pszVal ))
-				reconnectRequired = TRUE;
-			if ( dbv.pszVal != NULL )	JFreeVariant( &dbv );
-			JSetString( NULL, "Resource", text );
+			GetDlgItemText( hwndDlg, IDC_EDIT_RESOURCE, textT, SIZEOF( textT ));
+			if ( !JGetStringT( NULL, "Resource", &dbv )) {
+				if ( _tcscmp( textT, dbv.ptszVal ))
+					reconnectRequired = TRUE;
+				JFreeVariant( &dbv );
+			}
+			else reconnectRequired = TRUE;
+			JSetStringT( NULL, "Resource", textT );
 
 			GetDlgItemTextA( hwndDlg, IDC_PRIORITY, text, sizeof( text ));
 			WORD port = ( WORD )atoi( text );
