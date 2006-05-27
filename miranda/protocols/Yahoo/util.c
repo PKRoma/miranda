@@ -152,14 +152,11 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags 
 	}
 
 	ZeroMemory(&ppd, sizeof(ppd) );
-	ppd.lchContact = NULL;
-	
 	lstrcpy( ppd.lpzContactName, nickname );
 	lstrcpy( ppd.lpzText, msg );
 
 	ppd.PluginWindowProc = ( WNDPROC )PopupWindowProc;
 
-	//ppd.iSeconds = YAHOO_GetDword( "PopupTimeoutOther",5);
 	if (flags & YAHOO_MAIL_POPUP) {
 		ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_INBOX ));
 		ppd.PluginData =  (void *)"http://mail.yahoo.com";
