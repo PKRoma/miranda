@@ -80,28 +80,6 @@ BEGIN
 
 END
 
-IDD_OPT_YAHOO_POPUP DIALOGEX 0, 0, 240, 200
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "Colors",IDC_STATIC,4,0,232,80
-    CONTROL         "",IDC_BGCOLOUR,"ColourPicker",WS_TABSTOP,12,12,39,12
-    LTEXT           "Background color",IDC_STATIC,56,14,176,8,
-                    SS_CENTERIMAGE
-    CONTROL         "",IDC_TEXTCOLOUR,"ColourPicker",WS_TABSTOP,12,28,39,12
-    LTEXT           "Text color",IDC_STATIC,56,30,176,8,SS_CENTERIMAGE
-    CONTROL         "Use Windows colors",IDC_USEWINCOLORS,"Button",
-                    BS_AUTOCHECKBOX | BS_NOTIFY | BS_FLAT | WS_TABSTOP,12,44,
-                    220,8
-    LTEXT           "Timeout (*)",IDC_STATIC,12,60,60,8
-    EDITTEXT        IDC_POPUP_TIMEOUT,72,58,24,12,ES_AUTOHSCROLL | 
-                    ES_NUMBER
-    DEFPUSHBUTTON   "Preview",IDC_PREVIEW,176,60,52,12
-    LTEXT           "(*) Timeouts require Popup v. 1.0.1.9 or later",
-                    IDC_STATIC,4,88,232,8
-END
-
 IDD_SETCUSTSTAT DIALOGEX 0, 0, 187, 51
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Set Custom Status"

@@ -216,6 +216,7 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );
 HBITMAP YAHOO_SetAvatar(const char *szFile);
 void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck);
+void YahooOpenURL(const char *url, int autoLogin);
 #define FILERESUME_CANCEL	11
 
 char * yahoo_status_code(enum yahoo_status s);

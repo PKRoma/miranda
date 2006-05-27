@@ -41,24 +41,6 @@ int YahooOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc					= DlgProcYahooOpts;
 	YAHOO_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 
-	if ( ServiceExists( MS_POPUP_ADDPOPUP ))
-	{
-	    OPTIONSDIALOGPAGE 	odp2;
-		
-		ZeroMemory(&odp2, sizeof( odp2 ));
-		
-		odp2.cbSize			= sizeof( odp2 );
-		odp2.position		= 100000000;
-		odp2.hInstance		= hinstance;
-		odp2.pszTemplate	= MAKEINTRESOURCE( IDD_OPT_YAHOO_POPUP );
-		odp2.pszTitle		= Translate( yahooProtocolName );
-		odp2.pszGroup		= Translate("PopUps");
-		odp2.groupPosition	= 910000000;
-		odp2.flags			= ODPF_BOLDGROUPS;
-		odp2.pfnDlgProc		= DlgProcYahooPopUpOpts;
-		YAHOO_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp2 );
-	}
-
 	return 0;
 }
 
@@ -280,79 +262,4 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		break;
 	}
 	return FALSE;
-}
-
-
-/*
- * DlgProcYahooPopUpOpts - Connection Yahoo Popup Options Dialog
- */
-
-BOOL CALLBACK DlgProcYahooPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
-{
-    BOOL usewincolorflag;
-    
-	switch( msg ) {
-	case WM_INITDIALOG:
-	{
-		BOOL toSet;
-		int tTimeout;
-		
-        TranslateDialogDefault(hwndDlg);
-		
-		//Colors. First step is configuring the colours.
-		SendDlgItemMessage( hwndDlg, IDC_BGCOLOUR, CPM_SETCOLOUR, 0, 
-              YAHOO_GetDword( "BackgroundColour", STYLE_DEFAULTBGCOLOUR ));
-		SendDlgItemMessage( hwndDlg, IDC_TEXTCOLOUR, CPM_SETCOLOUR, 0, 
-              YAHOO_GetDword( "TextColour", GetSysColor( COLOR_WINDOWTEXT )));
-
-		//Second step is disabling them if we want to use default Windows ones.
-		toSet = YAHOO_GetByte( "UseWinColors", 0 );
-		SetButtonCheck( hwndDlg, IDC_USEWINCOLORS, toSet );
-		
-		EnableWindow( GetDlgItem( hwndDlg, IDC_BGCOLOUR), !toSet );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_TEXTCOLOUR), !toSet );
-
-		tTimeout = YAHOO_GetDword( "PopupTimeout", 3 );
-		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, tTimeout, FALSE );
-		return TRUE;
-	}
-	case WM_COMMAND:
-		if ( (LOWORD(wParam) == IDC_BGCOLOUR || LOWORD(wParam) == IDC_TEXTCOLOUR) && 
-			( HIWORD( wParam ) == CPN_COLOURCHANGED ) ) {
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			break;
-		}
-
-		if ((HWND) lParam != GetFocus())
-                return 0;
-		switch( LOWORD( wParam )) {
-    		case IDC_USEWINCOLORS:
-                usewincolorflag=IsDlgButtonChecked(hwndDlg, IDC_USEWINCOLORS);
-    			EnableWindow( GetDlgItem( hwndDlg, IDC_BGCOLOUR ), !usewincolorflag);
-    			EnableWindow( GetDlgItem( hwndDlg, IDC_TEXTCOLOUR ), !usewincolorflag);
-    			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-                break;
-    
-    		case IDC_PREVIEW:
-    			YAHOO_ShowPopup( Translate( "New Mail (99 msgs)" ), Translate( "From: Sample User\nSubject: Testing123." ), YAHOO_MAIL_POPUP );
-    			break;
-    
-		}
-		if (HIWORD(wParam) == EN_CHANGE) // Valid the Apply button if any change are done.
-    		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-
-		break;
-    
-	case WM_NOTIFY: //Here we have pressed either the OK or the APPLY button.
-			switch (((LPNMHDR)lParam)->code) {
-			   case PSN_APPLY:
-					YAHOO_SetDword("PopupTimeout", GetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, NULL, FALSE ) );
-				    YAHOO_SetDword("TextColour",SendDlgItemMessage(hwndDlg,IDC_TEXTCOLOUR,CPM_GETCOLOUR,0,0));
-				    YAHOO_SetDword("BackgroundColour",SendDlgItemMessage(hwndDlg,IDC_BGCOLOUR,CPM_GETCOLOUR,0,0));
-    			    YAHOO_SetByte("UseWinColors",IsDlgButtonChecked(hwndDlg, IDC_USEWINCOLORS));
- 			        break;
-			}
-			break;
-	}
-    return FALSE;
 }
