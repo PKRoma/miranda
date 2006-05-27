@@ -1081,6 +1081,28 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 	if ( version ) mir_free( version );
 }
 
+static void JabberProcessIqTime( TCHAR* idStr, XmlNode* node ) //added by Rion (jep-0090)
+{
+	TCHAR* from;
+	struct tm *gmt;
+	__int64 ltime;
+	char stime[20],*dtime;
+	if (( from=JabberXmlGetAttrValue( node, "from" )) == NULL )
+		return;
+
+	_tzset();
+	_time64( &ltime );
+	gmt=_gmtime64( &ltime );
+	sprintf (stime,"%.4i%.2i%.2iT%.2i:%.2i:%.2i",gmt->tm_year+1900,gmt->tm_mon,gmt->tm_mday,gmt->tm_hour,gmt->tm_min,gmt->tm_sec);
+	dtime=_ctime64(&ltime);
+	dtime[24]=0;
+
+	XmlNodeIq iq( "result", idStr, from );
+	XmlNode* query = iq.addQuery( "jabber:iq:time" );
+	query->addChild( "utc", stime ); query->addChild( "tz", _tzname[1] ); query->addChild( "display", dtime );
+	JabberSend( jabberThreadInfo->s, iq );
+}
+
 static void JabberProcessIqAvatar( TCHAR* idStr, XmlNode* node )
 {
 	if ( !JGetByte( "EnableAvatars", TRUE ))
@@ -1354,6 +1376,8 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 			JabberProcessIqVersion( idStr, node );
 		else if ( !_tcscmp( xmlns, _T("jabber:iq:avatar")))
 			JabberProcessIqAvatar( idStr, node );
+		else if ( !_tcscmp( xmlns, _T("jabber:iq:time")))
+			JabberProcessIqTime( idStr, node );
 	}
 	// RECVED: <iq type='result'><query ...
 	else if ( !_tcscmp( type, _T("result")) && queryNode!=NULL && ( xmlns=JabberXmlGetAttrValue( queryNode, "xmlns" ))!=NULL ) {
