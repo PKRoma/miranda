@@ -986,7 +986,6 @@ int OkToExit(WPARAM wParam, LPARAM lParam)
     CreateTrayMenus(0);
     g_sessionshutdown = 1;
     return 0;
-
 }
 
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)

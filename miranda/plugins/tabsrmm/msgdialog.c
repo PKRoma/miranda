@@ -1951,8 +1951,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->showTyping) {
                     TCHAR szBuf[80];
 
-                    _sntprintf(szBuf, safe_sizeof(szBuf), TranslateT("%s is typing..."), dat->szNickname);
-                    szBuf[79] = 0;
+                    mir_sntprintf(szBuf, safe_sizeof(szBuf), TranslateT("%s is typing..."), dat->szNickname);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) myGlobals.g_buttonBarIcons[5]);
                     if(dat->pContainer->hwndSlist)
@@ -1960,26 +1959,31 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     break;
                 }
                 if (dat->lastMessage || dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
-                    DBTIMETOSTRING dbtts;
-                    char date[64], time[64], fmt[128];
+                    DBTIMETOSTRINGT dbtts;
+                    TCHAR date[64], time[64];
 
                     if(!(dat->pContainer->dwFlags & CNT_UINSTATUSBAR)) {
-                        dbtts.szFormat = "d";
-                        dbtts.cbDest = sizeof(date);
+                        dbtts.szFormat = _T("d");
+                        dbtts.cbDest = safe_sizeof(date);
                         dbtts.szDest = date;
-                        CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
+                        CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dat->lastMessage, (LPARAM) & dbtts);
                         if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR && lstrlenA(date) > 6)
                             date[lstrlenA(date) - 5] = 0;
-                        dbtts.szFormat = "t";
-                        dbtts.cbDest = sizeof(time);
+                        dbtts.szFormat = _T("t");
+                        dbtts.cbDest = safe_sizeof(time);
                         dbtts.szDest = time;
-                        CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
+                        CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dat->lastMessage, (LPARAM) & dbtts);
                     }
-                    if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR)
+                    if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
+                        char fmt[100];
                         mir_snprintf(fmt, sizeof(fmt), Translate("UIN: %s"), dat->uin);
-                    else
-                        mir_snprintf(fmt, sizeof(fmt), Translate("Last received: %s at %s"), date, time);
-                    SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
+                        SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
+                    }
+                    else {
+                        TCHAR fmt[100];
+                        mir_sntprintf(fmt, safe_sizeof(fmt), TranslateT("Last received: %s at %s"), date, time);
+                        SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) fmt);
+                    }
                     SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_buttonBarIcons[16] : 0));
                     if(dat->pContainer->hwndSlist)
                         SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[16]);

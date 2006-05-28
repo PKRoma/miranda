@@ -1480,14 +1480,14 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                 COLORREF crB = DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", GetSysColor(COLOR_WINDOW));
                 
 				LoadLogfont(MSGFONTID_MESSAGEAREA, &lf, &crFore, FONTMODULE);
-                cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_BOLD | CFM_ITALIC | CFM_BACKCOLOR;
+                cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_ITALIC | CFM_BACKCOLOR;
                 cf2.cbSize = sizeof(cf2);
                 cf2.crTextColor = crFore;
                 cf2.bCharSet = lf.lfCharSet;
                 cf2.crBackColor = crB;
                 strncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
-                cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
-                cf2.wWeight = (WORD)lf.lfWeight;
+                cf2.dwEffects = 0; //((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
+                cf2.wWeight = 0; //(WORD)lf.lfWeight;
                 cf2.bPitchAndFamily = lf.lfPitchAndFamily;
                 cf2.yHeight = abs(lf.lfHeight) * 15;
                 SetDlgItemText(hwndDlg, IDC_CHAT_MESSAGE, _T(""));
