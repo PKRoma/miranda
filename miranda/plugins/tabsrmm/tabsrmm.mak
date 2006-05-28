@@ -1,31 +1,31 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on tabsrmm.dsp
 !IF "$(CFG)" == ""
-CFG=tabSRMM - Win32 Release Unicode
+CFG=tabSRMM - Win32 Debug
 !MESSAGE No configuration specified. Defaulting to tabSRMM - Win32 Debug.
-!ENDIF
+!ENDIF 
 
 !IF "$(CFG)" != "tabSRMM - Win32 Debug" && "$(CFG)" != "tabSRMM - Win32 Release Unicode" && "$(CFG)" != "tabSRMM - Win32 Release" && "$(CFG)" != "tabSRMM - Win32 Debug Unicode"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak" CFG="tabSRMM - Win32 Debug"
-!MESSAGE
+!MESSAGE 
 !MESSAGE Possible choices for configuration are:
-!MESSAGE
+!MESSAGE 
 !MESSAGE "tabSRMM - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "tabSRMM - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "tabSRMM - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "tabSRMM - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE
+!MESSAGE 
 !ERROR An invalid configuration is specified.
-!ENDIF
+!ENDIF 
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE
+!ELSE 
 NULL=nul
-!ENDIF
+!ENDIF 
 
 CPP=cl.exe
 MTL=midl.exe
@@ -70,12 +70,10 @@ CLEAN :
 	-@erase "$(INTDIR)\tools.obj"
 	-@erase "$(INTDIR)\trayicon.obj"
 	-@erase "$(INTDIR)\TSButton.obj"
-	-@erase "$(INTDIR)\URLCtrl.obj"
 	-@erase "$(INTDIR)\userprefs.obj"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\window.obj"
 	-@erase "$(OUTDIR)\srmm.exp"
-	-@erase "$(OUTDIR)\srmm.lib"
 	-@erase "$(OUTDIR)\srmm.pdb"
 	-@erase "..\..\Bin\Debug\Plugins\tabsrmm.dll"
 	-@erase "..\..\Bin\Debug\Plugins\tabsrmm.ilk"
@@ -83,16 +81,26 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\tabsrmm_private.res" /d "_DEBUG"
+CPP_PROJ=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\tabsrmm_private.res" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc" 
 BSC32_SBRS= \
-
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\srmm.pdb" /debug /machine:IX86 /out:"..\..\Bin\Debug\Plugins\tabsrmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\srmm.pdb" /debug /machine:IX86 /out:"..\..\Bin\Debug\Plugins\tabsrmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept 
 LINK32_OBJS= \
+	"$(INTDIR)\clist.obj" \
+	"$(INTDIR)\colorchooser.obj" \
+	"$(INTDIR)\log.obj" \
+	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\manager.obj" \
+	"$(INTDIR)\message.obj" \
+	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\services.obj" \
+	"$(INTDIR)\tools.obj" \
+	"$(INTDIR)\window.obj" \
 	"$(INTDIR)\container.obj" \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\eventpopups.obj" \
@@ -112,19 +120,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\themes.obj" \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
-	"$(INTDIR)\URLCtrl.obj" \
 	"$(INTDIR)\userprefs.obj" \
-	"$(INTDIR)\tabsrmm_private.res" \
-	"$(INTDIR)\window.obj" \
-	"$(INTDIR)\clist.obj" \
-	"$(INTDIR)\colorchooser.obj" \
-	"$(INTDIR)\log.obj" \
-	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\manager.obj" \
-	"$(INTDIR)\message.obj" \
-	"$(INTDIR)\options.obj" \
-	"$(INTDIR)\services.obj" \
-	"$(INTDIR)\tools.obj"
+	"$(INTDIR)\tabsrmm_private.res"
 
 "..\..\Bin\Debug\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -169,7 +166,6 @@ CLEAN :
 	-@erase "$(INTDIR)\tools.obj"
 	-@erase "$(INTDIR)\trayicon.obj"
 	-@erase "$(INTDIR)\TSButton.obj"
-	-@erase "$(INTDIR)\URLCtrl.obj"
 	-@erase "$(INTDIR)\userprefs.obj"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\window.obj"
@@ -182,16 +178,26 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo".\tabsrmm_private.res" /d "NDEBUG" /d "UNICODE"
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x809 /fo".\tabsrmm_private.res" /d "NDEBUG" /d "UNICODE" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc" 
 BSC32_SBRS= \
-
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\tabsrmm.pdb" /map:"$(INTDIR)\tabsrmm.map" /debug /machine:IX86 /out:"..\..\Bin\Release Unicode\Plugins\tabsrmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\tabsrmm.pdb" /map:"$(INTDIR)\tabsrmm.map" /debug /machine:IX86 /out:"..\..\Bin\Release Unicode\Plugins\tabsrmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept 
 LINK32_OBJS= \
+	"$(INTDIR)\clist.obj" \
+	"$(INTDIR)\colorchooser.obj" \
+	"$(INTDIR)\log.obj" \
+	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\manager.obj" \
+	"$(INTDIR)\message.obj" \
+	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\services.obj" \
+	"$(INTDIR)\tools.obj" \
+	"$(INTDIR)\window.obj" \
 	"$(INTDIR)\container.obj" \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\eventpopups.obj" \
@@ -211,19 +217,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\themes.obj" \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
-	"$(INTDIR)\URLCtrl.obj" \
 	"$(INTDIR)\userprefs.obj" \
-	".\tabsrmm_private.res" \
-	"$(INTDIR)\window.obj" \
-	"$(INTDIR)\clist.obj" \
-	"$(INTDIR)\colorchooser.obj" \
-	"$(INTDIR)\log.obj" \
-	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\manager.obj" \
-	"$(INTDIR)\message.obj" \
-	"$(INTDIR)\options.obj" \
-	"$(INTDIR)\services.obj" \
-	"$(INTDIR)\tools.obj"
+	".\tabsrmm_private.res"
 
 "..\..\Bin\Release Unicode\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -269,7 +264,6 @@ CLEAN :
 	-@erase "$(INTDIR)\tools.obj"
 	-@erase "$(INTDIR)\trayicon.obj"
 	-@erase "$(INTDIR)\TSButton.obj"
-	-@erase "$(INTDIR)\URLCtrl.obj"
 	-@erase "$(INTDIR)\userprefs.obj"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\window.obj"
@@ -281,16 +275,26 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\tabsrmm_private.res" /d "NDEBUG"
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\tabsrmm_private.res" /d "NDEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc" 
 BSC32_SBRS= \
-
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\tabsrmm.pdb" /map:"$(INTDIR)\tabsrmm.map" /debug /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\tabsrmm.pdb" /map:"$(INTDIR)\tabsrmm.map" /debug /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept 
 LINK32_OBJS= \
+	"$(INTDIR)\clist.obj" \
+	"$(INTDIR)\colorchooser.obj" \
+	"$(INTDIR)\log.obj" \
+	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\manager.obj" \
+	"$(INTDIR)\message.obj" \
+	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\services.obj" \
+	"$(INTDIR)\tools.obj" \
+	"$(INTDIR)\window.obj" \
 	"$(INTDIR)\container.obj" \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\eventpopups.obj" \
@@ -310,19 +314,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\themes.obj" \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
-	"$(INTDIR)\URLCtrl.obj" \
 	"$(INTDIR)\userprefs.obj" \
-	"$(INTDIR)\tabsrmm_private.res" \
-	"$(INTDIR)\window.obj" \
-	"$(INTDIR)\clist.obj" \
-	"$(INTDIR)\colorchooser.obj" \
-	"$(INTDIR)\log.obj" \
-	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\manager.obj" \
-	"$(INTDIR)\message.obj" \
-	"$(INTDIR)\options.obj" \
-	"$(INTDIR)\services.obj" \
-	"$(INTDIR)\tools.obj"
+	"$(INTDIR)\tabsrmm_private.res"
 
 "..\..\Bin\Release\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -399,8 +392,6 @@ CLEAN :
 	-@erase "$(INTDIR)\trayicon.sbr"
 	-@erase "$(INTDIR)\TSButton.obj"
 	-@erase "$(INTDIR)\TSButton.sbr"
-	-@erase "$(INTDIR)\URLCtrl.obj"
-	-@erase "$(INTDIR)\URLCtrl.sbr"
 	-@erase "$(INTDIR)\userprefs.obj"
 	-@erase "$(INTDIR)\userprefs.sbr"
 	-@erase "$(INTDIR)\vc60.pdb"
@@ -415,12 +406,22 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\tabsrmm_private.res" /d "_DEBUG"
+CPP_PROJ=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\tabsrmm_private.res" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc" 
 BSC32_SBRS= \
+	"$(INTDIR)\clist.sbr" \
+	"$(INTDIR)\colorchooser.sbr" \
+	"$(INTDIR)\log.sbr" \
+	"$(INTDIR)\main.sbr" \
+	"$(INTDIR)\manager.sbr" \
+	"$(INTDIR)\message.sbr" \
+	"$(INTDIR)\options.sbr" \
+	"$(INTDIR)\services.sbr" \
+	"$(INTDIR)\tools.sbr" \
+	"$(INTDIR)\window.sbr" \
 	"$(INTDIR)\container.sbr" \
 	"$(INTDIR)\containeroptions.sbr" \
 	"$(INTDIR)\eventpopups.sbr" \
@@ -440,18 +441,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\themes.sbr" \
 	"$(INTDIR)\trayicon.sbr" \
 	"$(INTDIR)\TSButton.sbr" \
-	"$(INTDIR)\URLCtrl.sbr" \
-	"$(INTDIR)\userprefs.sbr" \
-	"$(INTDIR)\window.sbr" \
-	"$(INTDIR)\clist.sbr" \
-	"$(INTDIR)\colorchooser.sbr" \
-	"$(INTDIR)\log.sbr" \
-	"$(INTDIR)\main.sbr" \
-	"$(INTDIR)\manager.sbr" \
-	"$(INTDIR)\message.sbr" \
-	"$(INTDIR)\options.sbr" \
-	"$(INTDIR)\services.sbr" \
-	"$(INTDIR)\tools.sbr"
+	"$(INTDIR)\userprefs.sbr"
 
 "$(OUTDIR)\tabsrmm.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -459,8 +449,18 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\srmm.pdb" /debug /machine:IX86 /out:"..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\srmm.pdb" /debug /machine:IX86 /out:"..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept 
 LINK32_OBJS= \
+	"$(INTDIR)\clist.obj" \
+	"$(INTDIR)\colorchooser.obj" \
+	"$(INTDIR)\log.obj" \
+	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\manager.obj" \
+	"$(INTDIR)\message.obj" \
+	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\services.obj" \
+	"$(INTDIR)\tools.obj" \
+	"$(INTDIR)\window.obj" \
 	"$(INTDIR)\container.obj" \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\eventpopups.obj" \
@@ -480,65 +480,54 @@ LINK32_OBJS= \
 	"$(INTDIR)\themes.obj" \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
-	"$(INTDIR)\URLCtrl.obj" \
 	"$(INTDIR)\userprefs.obj" \
-	"$(INTDIR)\tabsrmm_private.res" \
-	"$(INTDIR)\window.obj" \
-	"$(INTDIR)\clist.obj" \
-	"$(INTDIR)\colorchooser.obj" \
-	"$(INTDIR)\log.obj" \
-	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\manager.obj" \
-	"$(INTDIR)\message.obj" \
-	"$(INTDIR)\options.obj" \
-	"$(INTDIR)\services.obj" \
-	"$(INTDIR)\tools.obj"
+	"$(INTDIR)\tabsrmm_private.res"
 
 "..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF
+!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("tabsrmm.dep")
 !INCLUDE "tabsrmm.dep"
-!ELSE
+!ELSE 
 !MESSAGE Warning: cannot find "tabsrmm.dep"
-!ENDIF
-!ENDIF
+!ENDIF 
+!ENDIF 
 
 
 !IF "$(CFG)" == "tabSRMM - Win32 Debug" || "$(CFG)" == "tabSRMM - Win32 Release Unicode" || "$(CFG)" == "tabSRMM - Win32 Release" || "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
@@ -546,7 +535,7 @@ SOURCE=.\chat\clist.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\clist.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -556,7 +545,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\clist.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -566,7 +555,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\clist.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -576,7 +565,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\clist.obj"	"$(INTDIR)\clist.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -584,13 +573,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\chat\colorchooser.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\colorchooser.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -600,7 +589,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\colorchooser.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -610,7 +599,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\colorchooser.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -620,7 +609,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\colorchooser.obj"	"$(INTDIR)\colorchooser.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -628,13 +617,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\chat\log.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\log.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -644,7 +633,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\log.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -654,7 +643,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\log.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -664,7 +653,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\log.obj"	"$(INTDIR)\log.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -672,13 +661,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\chat\main.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\main.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -688,7 +677,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\main.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -698,7 +687,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\main.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -708,7 +697,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\main.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -716,13 +705,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\chat\manager.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\manager.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -732,7 +721,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\manager.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -742,7 +731,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\manager.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -752,7 +741,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\manager.obj"	"$(INTDIR)\manager.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -760,13 +749,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\chat\message.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\message.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -776,7 +765,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\message.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -786,7 +775,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\message.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -796,7 +785,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\message.obj"	"$(INTDIR)\message.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -804,13 +793,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\chat\options.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\options.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -820,7 +809,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\options.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -830,7 +819,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\options.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -840,7 +829,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\options.obj"	"$(INTDIR)\options.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -848,13 +837,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\chat\services.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\services.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -864,7 +853,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\services.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -874,7 +863,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\services.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -884,7 +873,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\services.obj"	"$(INTDIR)\services.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -892,13 +881,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\chat\tools.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\tools.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -908,7 +897,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\tools.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -918,7 +907,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\tools.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -928,7 +917,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\tools.obj"	"$(INTDIR)\tools.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -936,13 +925,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\chat\window.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\window.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -952,7 +941,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\window.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -962,7 +951,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\window.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -972,7 +961,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\window.obj"	"$(INTDIR)\window.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -980,7 +969,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\container.c
 
@@ -1008,7 +997,7 @@ SOURCE=.\container.c
 "$(INTDIR)\container.obj"	"$(INTDIR)\container.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\containeroptions.c
 
@@ -1036,7 +1025,7 @@ SOURCE=.\containeroptions.c
 "$(INTDIR)\containeroptions.obj"	"$(INTDIR)\containeroptions.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=eventpopups.c
 
@@ -1064,13 +1053,13 @@ SOURCE=eventpopups.c
 "$(INTDIR)\eventpopups.obj"	"$(INTDIR)\eventpopups.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\formatting.cpp
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\formatting.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1080,7 +1069,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF  /EHsc /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF  /EHsc /c 
 
 "$(INTDIR)\formatting.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1090,7 +1079,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF  /EHsc /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF  /EHsc /c 
 
 "$(INTDIR)\formatting.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1100,7 +1089,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\formatting.obj"	"$(INTDIR)\formatting.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1108,7 +1097,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\hotkeyhandler.c
 
@@ -1136,13 +1125,13 @@ SOURCE=.\hotkeyhandler.c
 "$(INTDIR)\hotkeyhandler.obj"	"$(INTDIR)\hotkeyhandler.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=ImageDataObject.cpp
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\ImageDataObject.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1152,7 +1141,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\ImageDataObject.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1162,7 +1151,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\ImageDataObject.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1172,7 +1161,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\ImageDataObject.obj"	"$(INTDIR)\ImageDataObject.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1180,13 +1169,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=msgdialog.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c 
 
 "$(INTDIR)\msgdialog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1196,7 +1185,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\msgdialog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1206,7 +1195,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\msgdialog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1216,7 +1205,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c 
 
 "$(INTDIR)\msgdialog.obj"	"$(INTDIR)\msgdialog.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1224,7 +1213,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=msgdlgutils.c
 
@@ -1252,13 +1241,13 @@ SOURCE=msgdlgutils.c
 "$(INTDIR)\msgdlgutils.obj"	"$(INTDIR)\msgdlgutils.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=msglog.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c 
 
 "$(INTDIR)\msglog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1268,7 +1257,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\msglog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1278,7 +1267,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\msglog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1288,7 +1277,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c 
 
 "$(INTDIR)\msglog.obj"	"$(INTDIR)\msglog.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1296,13 +1285,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=msgoptions.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c 
 
 "$(INTDIR)\msgoptions.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1312,7 +1301,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\msgoptions.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1322,7 +1311,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\msgoptions.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1332,7 +1321,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c 
 
 "$(INTDIR)\msgoptions.obj"	"$(INTDIR)\msgoptions.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1340,13 +1329,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=msgs.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c 
 
 "$(INTDIR)\msgs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1356,7 +1345,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\msgs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1366,7 +1355,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\msgs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1376,7 +1365,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c 
 
 "$(INTDIR)\msgs.obj"	"$(INTDIR)\msgs.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
@@ -1384,7 +1373,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\selectcontainer.c
 
@@ -1412,7 +1401,7 @@ SOURCE=.\selectcontainer.c
 "$(INTDIR)\selectcontainer.obj"	"$(INTDIR)\selectcontainer.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=sendqueue.c
 
@@ -1440,13 +1429,13 @@ SOURCE=sendqueue.c
 "$(INTDIR)\sendqueue.obj"	"$(INTDIR)\sendqueue.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=srmm.c
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c 
 
 "$(INTDIR)\srmm.obj"	"$(INTDIR)\srmm.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1456,7 +1445,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\srmm.obj"	"$(INTDIR)\srmm.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1466,7 +1455,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
 
 "$(INTDIR)\srmm.obj"	"$(INTDIR)\srmm.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1476,7 +1465,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ  /GZ /c 
 
 "$(INTDIR)\srmm.obj"	"$(INTDIR)\srmm.sbr"	"$(INTDIR)\srmm.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1484,7 +1473,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\tabctrl.c
 
@@ -1512,7 +1501,7 @@ SOURCE=.\tabctrl.c
 "$(INTDIR)\tabctrl.obj"	"$(INTDIR)\tabctrl.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=templates.c
 
@@ -1540,7 +1529,7 @@ SOURCE=templates.c
 "$(INTDIR)\templates.obj"	"$(INTDIR)\templates.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\themes.c
 
@@ -1568,7 +1557,7 @@ SOURCE=.\themes.c
 "$(INTDIR)\themes.obj"	"$(INTDIR)\themes.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=trayicon.c
 
@@ -1596,7 +1585,7 @@ SOURCE=trayicon.c
 "$(INTDIR)\trayicon.obj"	"$(INTDIR)\trayicon.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=TSButton.c
 
@@ -1624,35 +1613,7 @@ SOURCE=TSButton.c
 "$(INTDIR)\TSButton.obj"	"$(INTDIR)\TSButton.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
-
-SOURCE=.\URLCtrl.c
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
-"$(INTDIR)\URLCtrl.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\URLCtrl.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\URLCtrl.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\URLCtrl.obj"	"$(INTDIR)\URLCtrl.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-
-
-!ENDIF
+!ENDIF 
 
 SOURCE=userprefs.c
 
@@ -1680,7 +1641,7 @@ SOURCE=userprefs.c
 "$(INTDIR)\userprefs.obj"	"$(INTDIR)\userprefs.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\tabsrmm_private.rc
 
@@ -1712,7 +1673,8 @@ SOURCE=.\tabsrmm_private.rc
 	$(RSC) $(RSC_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 
-!ENDIF
+!ENDIF 
+

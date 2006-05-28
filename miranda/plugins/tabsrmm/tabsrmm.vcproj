@@ -530,9 +530,6 @@
 				RelativePath="TSButton.c">
 			</File>
 			<File
-				RelativePath=".\URLCtrl.c">
-			</File>
-			<File
 				RelativePath="userprefs.c">
 			</File>
 			<Filter
@@ -941,16 +938,16 @@
 				RelativePath="res\Details8.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur">
-			</File>
-			<File
 				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur">
+				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
+			</File>
+			<File
+				RelativePath="..\..\src\res\dropuser.cur">
 			</File>
 			<File
 				RelativePath=".\res\error.ico">
@@ -959,10 +956,10 @@
 				RelativePath=".\res\expand.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico">
+				RelativePath=".\res\angeli-icons\History.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico">
+				RelativePath="..\..\Miranda-IM\res\history.ico">
 			</File>
 			<File
 				RelativePath="res\History32.ico">
@@ -974,10 +971,10 @@
 				RelativePath=".\res\angeli-icons\HistoryXP.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur">
+				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
+				RelativePath="..\..\src\res\hyperlin.cur">
 			</File>
 			<File
 				RelativePath="..\..\src\res\icon1.ico">
@@ -1067,10 +1064,10 @@
 				RelativePath=".\res\rightarrow.ico">
 			</File>
 			<File
-				RelativePath=".\res\save.ico">
+				RelativePath=".\res\angeli-icons\Save.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico">
+				RelativePath=".\res\save.ico">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\SaveXP.ico">

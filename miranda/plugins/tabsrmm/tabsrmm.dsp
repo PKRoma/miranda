@@ -200,9 +200,12 @@ DEP_CPP_CLIST=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -214,6 +217,7 @@ DEP_CPP_CLIST=\
 	
 NODEP_CPP_CLIST=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -251,9 +255,12 @@ DEP_CPP_COLOR=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -265,6 +272,7 @@ DEP_CPP_COLOR=\
 	
 NODEP_CPP_COLOR=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -302,9 +310,12 @@ DEP_CPP_LOG_C=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -316,6 +327,7 @@ DEP_CPP_LOG_C=\
 	
 NODEP_CPP_LOG_C=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -357,9 +369,12 @@ DEP_CPP_MAIN_=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -371,6 +386,7 @@ DEP_CPP_MAIN_=\
 	
 NODEP_CPP_MAIN_=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -408,9 +424,12 @@ DEP_CPP_MANAG=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -422,6 +441,7 @@ DEP_CPP_MANAG=\
 	
 NODEP_CPP_MANAG=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -459,9 +479,12 @@ DEP_CPP_MESSA=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -473,6 +496,7 @@ DEP_CPP_MESSA=\
 	
 NODEP_CPP_MESSA=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -510,9 +534,12 @@ DEP_CPP_OPTIO=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -524,6 +551,7 @@ DEP_CPP_OPTIO=\
 	
 NODEP_CPP_OPTIO=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -561,9 +589,12 @@ DEP_CPP_SERVI=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -575,6 +606,7 @@ DEP_CPP_SERVI=\
 	
 NODEP_CPP_SERVI=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -612,9 +644,12 @@ DEP_CPP_TOOLS=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -626,6 +661,7 @@ DEP_CPP_TOOLS=\
 	
 NODEP_CPP_TOOLS=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -663,9 +699,12 @@ DEP_CPP_WINDO=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -677,6 +716,7 @@ DEP_CPP_WINDO=\
 	
 NODEP_CPP_WINDO=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -715,10 +755,13 @@ DEP_CPP_CONTA=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -730,6 +773,7 @@ DEP_CPP_CONTA=\
 	
 NODEP_CPP_CONTA=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # Begin Source File
@@ -766,9 +810,12 @@ DEP_CPP_CONTAI=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -780,6 +827,7 @@ DEP_CPP_CONTAI=\
 	
 NODEP_CPP_CONTAI=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # Begin Source File
@@ -817,9 +865,12 @@ DEP_CPP_EVENT=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -831,6 +882,7 @@ DEP_CPP_EVENT=\
 	
 NODEP_CPP_EVENT=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # Begin Source File
@@ -867,9 +919,12 @@ DEP_CPP_FORMA=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -881,6 +936,7 @@ DEP_CPP_FORMA=\
 	
 NODEP_CPP_FORMA=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -938,9 +994,12 @@ DEP_CPP_HOTKE=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -952,6 +1011,7 @@ DEP_CPP_HOTKE=\
 	
 NODEP_CPP_HOTKE=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # Begin Source File
@@ -989,9 +1049,12 @@ DEP_CPP_IMAGE=\
 	".\IcoLib.h"\
 	".\ImageDataObject.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1003,6 +1066,7 @@ DEP_CPP_IMAGE=\
 	
 NODEP_CPP_IMAGE=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -1040,10 +1104,13 @@ DEP_CPP_MSGDI=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1056,6 +1123,7 @@ DEP_CPP_MSGDI=\
 	
 NODEP_CPP_MSGDI=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1111,9 +1179,12 @@ DEP_CPP_MSGDL=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1125,6 +1196,7 @@ DEP_CPP_MSGDL=\
 	
 NODEP_CPP_MSGDL=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # Begin Source File
@@ -1161,10 +1233,13 @@ DEP_CPP_MSGLO=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1176,6 +1251,7 @@ DEP_CPP_MSGLO=\
 	
 NODEP_CPP_MSGLO=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1231,10 +1307,13 @@ DEP_CPP_MSGOP=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1243,10 +1322,10 @@ DEP_CPP_MSGOP=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	{$(INCLUDE)}"uxtheme.h"\
 	
 NODEP_CPP_MSGOP=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1302,10 +1381,13 @@ DEP_CPP_MSGS_=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1319,6 +1401,7 @@ DEP_CPP_MSGS_=\
 	
 NODEP_CPP_MSGS_=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1374,9 +1457,12 @@ DEP_CPP_SELEC=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1388,6 +1474,7 @@ DEP_CPP_SELEC=\
 	
 NODEP_CPP_SELEC=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # Begin Source File
@@ -1424,9 +1511,12 @@ DEP_CPP_SENDQ=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1439,6 +1529,7 @@ DEP_CPP_SENDQ=\
 	
 NODEP_CPP_SENDQ=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # Begin Source File
@@ -1475,9 +1566,12 @@ DEP_CPP_SRMM_=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1489,6 +1583,7 @@ DEP_CPP_SRMM_=\
 	
 NODEP_CPP_SRMM_=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1544,9 +1639,12 @@ DEP_CPP_TABCT=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1555,10 +1653,10 @@ DEP_CPP_TABCT=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	{$(INCLUDE)}"uxtheme.h"\
 	
 NODEP_CPP_TABCT=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # Begin Source File
@@ -1595,9 +1693,12 @@ DEP_CPP_TEMPL=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1609,6 +1710,7 @@ DEP_CPP_TEMPL=\
 	
 NODEP_CPP_TEMPL=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # Begin Source File
@@ -1645,9 +1747,12 @@ DEP_CPP_THEME=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1659,6 +1764,7 @@ DEP_CPP_THEME=\
 	
 NODEP_CPP_THEME=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # Begin Source File
@@ -1695,9 +1801,12 @@ DEP_CPP_TRAYI=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1710,6 +1819,7 @@ DEP_CPP_TRAYI=\
 	
 NODEP_CPP_TRAYI=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # Begin Source File
@@ -1746,9 +1856,12 @@ DEP_CPP_TSBUT=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1760,57 +1873,7 @@ DEP_CPP_TSBUT=\
 	
 NODEP_CPP_TSBUT=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
-	
-# End Source File
-# Begin Source File
-
-SOURCE=.\URLCtrl.c
-DEP_CPP_URLCT=\
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_history.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\chat\chat.h"\
-	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
-	".\commonheaders.h"\
-	".\functions.h"\
-	".\IcoLib.h"\
-	".\m_avatars.h"\
-	".\m_flash.h"\
-	".\m_ieview.h"\
-	".\m_metacontacts.h"\
-	".\m_popupw.h"\
-	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
-	".\templates.h"\
-	".\URLCtrl.h"\
-	
-NODEP_CPP_URLCT=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # Begin Source File
@@ -1847,9 +1910,12 @@ DEP_CPP_USERP=\
 	".\functions.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
 	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
@@ -1861,6 +1927,7 @@ DEP_CPP_USERP=\
 	
 NODEP_CPP_USERP=\
 	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
 	
 # End Source File
 # End Group
@@ -1942,10 +2009,6 @@ SOURCE=sendqueue.h
 # Begin Source File
 
 SOURCE=templates.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\URLCtrl.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
