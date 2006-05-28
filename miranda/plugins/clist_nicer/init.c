@@ -298,6 +298,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	g_CluiData.bShowXStatusOnSbar = DBGetContactSettingByte(NULL, "CLUI", "xstatus_sbar", 0);
 	g_CluiData.bLayeredHack = DBGetContactSettingByte(NULL, "CLUI", "layeredhack", 1);
 	g_CluiData.bFirstRun = DBGetContactSettingByte(NULL, "CLUI", "firstrun", 1);
+    g_CluiData.langPackCP = CallService(MS_LANGPACK_GETCODEPAGE, 0, 0);
 	{
 		DWORD sortOrder = DBGetContactSettingDword(NULL, "CList", "SortOrder", SORTBY_NAME);
 		g_CluiData.sortOrder[0] = LOBYTE(LOWORD(sortOrder));

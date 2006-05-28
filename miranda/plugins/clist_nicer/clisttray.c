@@ -131,12 +131,12 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 		int count, netProtoCount, i;
 		CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) &count, (LPARAM) &protos);
 		for (i = 0,netProtoCount = 0; i < count; i++) {
-			if (protos[i]->type == PROTOTYPE_PROTOCOL)
+			if (protos[i]->type == PROTOTYPE_PROTOCOL && GetProtocolVisibility(protos[i]->szName))
 				netProtoCount++;
 		}
 		if (netProtoCount == 1)
 			for (i = 0; i < count; i++) {
-				if (protos[i]->type == PROTOTYPE_PROTOCOL)
+				if (protos[i]->type == PROTOTYPE_PROTOCOL && GetProtocolVisibility(protos[i]->szName))
 					return TrayIconMakeTooltip(szPrefix, protos[i]->szName);
 			}
 			if (szPrefix && szPrefix[0]) {
@@ -302,7 +302,7 @@ static int TrayIconInit(HWND hwnd)
 	}
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) &count, (LPARAM) &protos);
 	for (i = 0,netProtoCount = 0; i < count; i++) {
-		if (protos[i]->type != PROTOTYPE_PROTOCOL)
+		if (protos[i]->type != PROTOTYPE_PROTOCOL || !GetProtocolVisibility(protos[i]->szName))
 			continue;
 
 		cycleStep = i;
@@ -469,7 +469,7 @@ static VOID CALLBACK TrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, D
 	for (cycleStep++; ; cycleStep++) {
 		if (cycleStep >= count)
 			cycleStep = 0;
-		if (protos[cycleStep]->type == PROTOTYPE_PROTOCOL)
+		if (protos[cycleStep]->type == PROTOTYPE_PROTOCOL && GetProtocolVisibility(protos[cycleStep]->szName))
 			break;
 	}
 	DestroyIcon(trayIcon[0].hBaseIcon);
@@ -490,7 +490,7 @@ void TrayIconUpdateBase(const char *szChangedProto)
 	}
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) &count, (LPARAM) &protos);
 	for (i = 0,netProtoCount = 0; i < count; i++) {
-		if (protos[i]->type != PROTOTYPE_PROTOCOL)
+		if (protos[i]->type != PROTOTYPE_PROTOCOL || !GetProtocolVisibility(protos[i]->szName))
 			continue;
 		netProtoCount++;
 		if (!lstrcmpA(szChangedProto, protos[i]->szName))

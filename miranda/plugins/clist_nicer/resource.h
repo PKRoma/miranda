@@ -6,6 +6,8 @@
 #define IDD_OPT_VIEWMODES               1
 #define IDD_DIALOG1                     3
 #define IDD_OPT_FLOATING                3
+#define IDD_DIALOG2                     4
+#define IDD_OPT_SKIN                    4
 #define IDI_MIRANDA                     102
 #define IDD_CLNABOUT                    102
 #define IDD_ABOUT                       103
@@ -735,6 +737,14 @@
 #define IDC_GENMENU_SERVICE             11716
 #define IDC_GENMENU_CUSTOMNAME          11717
 #define IDC_GENMENU_SET                 11718
+#define IDC_CLUIFRAMESBDR               25492
+#define IDC_FLT_PADLEFTSPIN             25494
+#define IDC_FLT_PADLEFT                 25495
+#define IDC_GROUPALIGN                  25499
+#define IDC_BORDERSTYLE                 25501
+#define IDC_CURVIEWMODE2                25503
+#define IDC_3DDARKCOLOR                 25504
+#define IDC_3DLIGHTCOLOR                25505
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define ID_RESET                        40002
@@ -778,24 +788,19 @@
 #define IDC_PROTOGROUPOP                40030
 #define POPUP_MOVEMARKEDHERE            40031
 #define IDC_GROUPSTATUSOP               40031
-#define IDC_3DLIGHTCOLOR                25505
 #define ID_BUTTONBAR_BUTTONS            40032
-#define IDC_3DDARKCOLOR                 25504
 #define IDC_LASTMESSAGEOP               40032
 #define ID_BUTTONS_ONLINE               40033
-#define IDC_CURVIEWMODE2                25503
 #define ID_BUTTONBAR_INCREASEBUTTONSIZE 40034
 #define IDC_SKINFILE                    40034
 #define IDC_LASTMESSAGEOP2              40034
 #define IDC_LASTMESSAGEUNIT             40034
 #define ID_BUTTONBAR_DECREASEBUTTONSIZE 40035
-#define IDC_BORDERSTYLE                 25501
 #define ID_BUTTONBAR_FLATBUTTONS        40036
 #define IDC_CHECK2                      40036
 #define IDC_GROUPAUTOEXPAND             40036
 #define IDC_FLT_AVATARS                 40036
 #define ID_BUTTONBAR_NOVISUALSTYLES     40037
-#define IDC_GROUPALIGN                  25499
 #define IDC_FLT_DUALROWS                40037
 #define ID_TRAY_HIDE                    40038
 #define IDC_FLT_EXTRAICONS              40038
@@ -804,15 +809,12 @@
 #define POPUP_SHOWMETAICONS             40040
 #define IDC_FLT_AUTOHIDE                40040
 #define ID_NOWHERE_APPEARANCE           40041
-#define IDC_FLT_PADLEFT                 25495
 #define ID_APPEARANCE_BLA               40042
-#define IDC_FLT_PADLEFTSPIN             25494
 #define ID_NOWHERE_EVENTAREA            40043
 #define IDC_FLT_PADRIGHT                40043
 #define IDC_LASTMSGVALUE                40043
 #define ID_EVENTAREA_ENABLED            40044
 #define IDC_FLT_PADRIGHTSPIN            40044
-#define IDC_CLUIFRAMESBDR               25492
 #define ID_EVENTAREA_AUTOHIDE           40045
 #define IDC_FLT_PADTOP                  40045
 #define IDC_FLT_PADTOPSPIN              40046
@@ -837,7 +839,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        4
+#define _APS_NEXT_RESOURCE_VALUE        5
 #define _APS_NEXT_COMMAND_VALUE         40061
 #define _APS_NEXT_CONTROL_VALUE         40045
 #define _APS_NEXT_SYMED_VALUE           40154

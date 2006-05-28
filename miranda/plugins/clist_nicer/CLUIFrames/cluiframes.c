@@ -1884,7 +1884,6 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 {
     int style,retval;
     char * CustomName=NULL;
-    char buff[255];
     CLISTFrame *clfrm=(CLISTFrame *)wParam;
 
     if (pcli->hwndContactList==0) return -1;
@@ -2357,7 +2356,7 @@ int CLUIFramesApplyNewSizes(int mode)
 
 RECT old_window_rect = {0}, new_window_rect = {0};
 
-int SizeFramesByWindowRect(RECT *r, HDWP * PosBatch)
+int SizeFramesByWindowRect(RECT *r)
 {
     RECT nRect;
 
@@ -2385,14 +2384,14 @@ int SizeFramesByWindowRect(RECT *r, HDWP * PosBatch)
             dy=new_window_rect.top-old_window_rect.top;
             if (!Frames[i].floating) {
                 if (Frames[i].OwnerWindow && Frames[i].OwnerWindow != (HWND)-2) {
-                    *PosBatch = DeferWindowPos(*PosBatch, Frames[i].hWnd, NULL, Frames[i].wndSize.left + g_CluiData.bCLeft, Frames[i].wndSize.top + g_CluiData.topOffset,
-                                               (Frames[i].wndSize.right - Frames[i].wndSize.left),
-                                               (Frames[i].wndSize.bottom - Frames[i].wndSize.top), SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOREDRAW | SWP_NOCOPYBITS);
+                    SetWindowPos(Frames[i].hWnd, NULL, Frames[i].wndSize.left + g_CluiData.bCLeft, Frames[i].wndSize.top + g_CluiData.topOffset,
+                                 (Frames[i].wndSize.right - Frames[i].wndSize.left),
+                                 (Frames[i].wndSize.bottom - Frames[i].wndSize.top), SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOREDRAW | SWP_NOCOPYBITS);
 
                     if (Frames[i].TitleBar.ShowTitleBar) {
-                        *PosBatch = DeferWindowPos(*PosBatch, Frames[i].TitleBar.hwnd, NULL, Frames[i].wndSize.left + g_CluiData.bCLeft, Frames[i].wndSize.top + g_CluiData.topOffset - TitleBarH,
-                                                   (Frames[i].wndSize.right - Frames[i].wndSize.left),
-                                                   TitleBarH + (Frames[i].UseBorder ? (!Frames[i].collapsed ? (Frames[i].align == alClient ? 0 : 2) : 1) : 0), SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
+                        SetWindowPos(Frames[i].TitleBar.hwnd, NULL, Frames[i].wndSize.left + g_CluiData.bCLeft, Frames[i].wndSize.top + g_CluiData.topOffset - TitleBarH,
+                                     (Frames[i].wndSize.right - Frames[i].wndSize.left),
+                                     TitleBarH + (Frames[i].UseBorder ? (!Frames[i].collapsed ? (Frames[i].align == alClient ? 0 : 2) : 1) : 0), SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOCOPYBITS);
                     }
                 }
                 else {

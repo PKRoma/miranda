@@ -68,12 +68,10 @@ static HRESULT  (WINAPI *MyDrawThemeText)(HANDLE, HDC, int, int, LPCWSTR, int,
 
 BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
-static CRITICAL_SECTION csTips;
 static HWND hwndToolTips = NULL;
 
 int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam)
 {
-    DeleteCriticalSection(&csTips);
     return 0;
 }
 
@@ -90,7 +88,6 @@ int LoadCLCButtonModule(void)
     wc.hbrBackground = 0;
     wc.style = CS_GLOBALCLASS;
     RegisterClassEx(&wc);
-    InitializeCriticalSection(&csTips);
     return 0;
 }
 
@@ -419,7 +416,6 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
         case WM_DESTROY:
             {
                 if (bct) {
-                    EnterCriticalSection(&csTips);
                     if (hwndToolTips) {
                         TOOLINFO ti;
 
@@ -438,7 +434,6 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                     }
                     if (bct->hIconPrivate)
                         DestroyIcon(bct->hIconPrivate);
-                    LeaveCriticalSection(&csTips);
                     DestroyTheme(bct);
                     free(bct);
                 }
@@ -631,7 +626,6 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
                 if (!(char*) wParam)
                     break;
-                EnterCriticalSection(&csTips);
                 if (!hwndToolTips) {
                     hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, _T(""), WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
 					SetWindowPos(hwndToolTips, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
@@ -648,7 +642,6 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 ti.uId = (UINT) bct->hwnd;
                 ti.lpszText = (TCHAR *) wParam;
                 SendMessage(hwndToolTips, TTM_ADDTOOL, 0, (LPARAM) &ti);
-                LeaveCriticalSection(&csTips);
                 break;
             }
         case WM_SETFOCUS:

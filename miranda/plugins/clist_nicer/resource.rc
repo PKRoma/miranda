@@ -156,8 +156,8 @@ BEGIN
     LTEXT           "Color 1",IDC_COLORLABLE,157,75,24,8,WS_DISABLED
     LTEXT           "% Alpha",IDC_ALPHALABLE,167,111,28,8,WS_DISABLED
     LTEXT           "Margins (px)",IDC_MARGINLABLE,239,86,41,8,WS_DISABLED
-    PUSHBUTTON      "Import",IDC_IMPORT,265,219,45,15
-    PUSHBUTTON      "Export",IDC_EXPORT,265,203,45,15
+    PUSHBUTTON      "Load from skin file",IDC_IMPORT,167,236,125,15
+    PUSHBUTTON      "Export to skin file",IDC_EXPORT,20,236,125,15
     CONTROL         "",IDC_BASECOLOUR2,"ColourPicker",WS_DISABLED | WS_TABSTOP,189,75,22,10
     LTEXT           "Color 2",IDC_COLOR2LABLE,219,75,24,8,WS_DISABLED
     CONTROL         "Transparent",IDC_COLOR2_TRANSPARENT,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,247,76,55,10
@@ -167,7 +167,7 @@ BEGIN
     COMBOBOX        IDC_BORDERTYPE,200,131,102,56,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_CORNERRAD,272,190,29,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_CORNERSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,287,190,8,13
-    LTEXT           "Corner radius",IDC_STATIC,204,192,59,10
+    LTEXT           "Corner radius",IDC_STATIC,176,192,59,10
     LTEXT           "Border style",IDC_STATIC,136,133,57,10
     CONTROL         "Apply group indent values to background drawing",IDC_APPLYINDENTBG,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,4,224,222,10
@@ -180,10 +180,6 @@ BEGIN
     LTEXT           "3D border (bright / dark)",IDC_STATIC,136,148,89,11
     CONTROL         "Set all buttons to skinned mode",IDC_SETALLBUTTONSKINNED,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,165,169,137,10
-    LTEXT           "Per contact skins:",IDC_STATIC,16,237,71,12
-    EDITTEXT        IDC_SKINFILE,77,235,135,13,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_SKINFILESELECT,216,235,33,12
-    PUSHBUTTON      "< Reload",IDC_RELOAD,257,235,54,12
     CONTROL         "Use fast gradient drawing",IDC_FASTGRADIENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,165,180,99,10
 END
 
@@ -598,7 +594,6 @@ BEGIN
         VERTGUIDE, 97
         VERTGUIDE, 161
         VERTGUIDE, 249
-        BOTTOMMARGIN, 240
         HORZGUIDE, 20
         HORZGUIDE, 42
         HORZGUIDE, 49
@@ -936,6 +931,53 @@ BEGIN
 END
 
 #endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral (Sys. Default) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUSD)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_SYS_DEFAULT
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_OPT_SKIN DIALOGEX 0, 0, 313, 251
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "Per contact skins:",IDC_STATIC,9,224,71,12,WS_DISABLED
+    EDITTEXT        IDC_SKINFILE,70,222,135,13,ES_AUTOHSCROLL | WS_DISABLED
+    PUSHBUTTON      "...",IDC_SKINFILESELECT,209,222,33,12,WS_DISABLED
+    PUSHBUTTON      "< Reload",IDC_RELOAD,250,222,54,12,WS_DISABLED
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_OPT_SKIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 87
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Neutral (Sys. Default) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

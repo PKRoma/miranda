@@ -68,6 +68,7 @@ extern HBRUSH g_CLUISkinnedBkColor;
 extern StatusItems_t *StatusItems;
 extern HWND g_hwndSFL;
 extern ButtonItem *g_ButtonItems;
+extern COLORREF g_CLUISkinnedBkColorRGB;
 
 HIMAGELIST himlExtraImages = 0;
 
@@ -120,7 +121,7 @@ struct CluiTopButton top_buttons[] = {
 		0, 0, 0, IDC_TBOPTIONS, IDI_TBOPTIONS, 0, "CLN_options", NULL, TOPBUTTON_PUSH, 16, _T("Open preferences"),
 		0, 0, 0, IDC_TBSOUND, IDI_SOUNDSON, IDI_SOUNDSOFF, "CLN_sound", "CLN_soundsoff", 0, 32, _T("Toggle sounds"),
 		0, 0, 0, IDC_TBMINIMIZE, IDI_MINIMIZE, 0, "CLN_minimize", NULL, TOPBUTTON_PUSH, 64, _T("Minimize contact list"),
-		0, 0, 0, IDC_TBTOPSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH  | TOPBUTTON_SENDONDOWN, 128, _T("Status menu"),
+		0, 0, 0, IDC_TBTOPSTATUS, 0, 0, "CLN_topstatus", NULL, TOPBUTTON_PUSH  | TOPBUTTON_SENDONDOWN, 128, _T("Status menu"),
 		0, 0, 0, IDC_TABSRMMSLIST, IDI_TABSRMMSESSIONLIST, 0, "CLN_slist", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 256, _T("tabSRMM session list"),
 		0, 0, 0, IDC_TABSRMMMENU, IDI_TABSRMMMENU, 0, "CLN_menu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 512, _T("tabSRMM Menu"),
 
@@ -153,7 +154,14 @@ static struct IconDesc myIcons[] = {
 		NULL, NULL, 0
 };
 
-static void LayoutButtons(HWND hwnd, HDWP *batch, RECT *rc)
+static void Tweak_It(COLORREF clr)
+{
+	SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
+	MySetLayeredWindowAttributes(pcli->hwndContactList, clr, 0, LWA_COLORKEY);
+	g_CluiData.colorkey = clr;
+}
+
+static void LayoutButtons(HWND hwnd, RECT *rc)
 {
 	int i;
 	RECT rect;
@@ -174,17 +182,15 @@ static void LayoutButtons(HWND hwnd, HDWP *batch, RECT *rc)
         while(btnItems) {
             LONG x = (btnItems->xOff >= 0) ? rect.left + btnItems->xOff : rect.right - abs(btnItems->xOff);
             LONG y = (btnItems->yOff >= 0) ? rect.top + btnItems->yOff : rect.bottom - abs(btnItems->yOff);
-            if(batch)
-                *batch = DeferWindowPos(*batch, btnItems->hWnd, 0, x, y, btnItems->width, btnItems->height,
-                                        SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+
+            SetWindowPos(btnItems->hWnd, 0, x, y, btnItems->width, btnItems->height,
+                                  SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
             btnItems = btnItems->nextItem;
         }
-        if(batch)
-            *batch = DeferWindowPos(*batch, top_buttons[14].hwnd, 0, 2 + left_offset, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
-            BUTTON_WIDTH_D * 3, BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
-        if(batch)
-            *batch = DeferWindowPos(*batch, top_buttons[13].hwnd, 0, left_offset + (3 * BUTTON_WIDTH_D) + 3, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
-            rect.right - delta - (3 * BUTTON_WIDTH_D + 5), BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+        SetWindowPos(top_buttons[14].hwnd, 0, 2 + left_offset, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
+                              BUTTON_WIDTH_D * 3, BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+        SetWindowPos(top_buttons[13].hwnd, 0, left_offset + (3 * BUTTON_WIDTH_D) + 3, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
+                              rect.right - delta - (3 * BUTTON_WIDTH_D + 5), BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
         return;
     }
 
@@ -194,29 +200,25 @@ static void LayoutButtons(HWND hwnd, HDWP *batch, RECT *rc)
 		if (top_buttons[i].hwnd == 0)
 			continue;
 		if (top_buttons[i].id == IDC_TBMENU) {
-			if(batch)
-				*batch = DeferWindowPos(*batch, top_buttons[i].hwnd, 0, 2 + left_offset, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
-				BUTTON_WIDTH_D * 3, BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+			SetWindowPos(top_buttons[i].hwnd, 0, 2 + left_offset, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
+                                  BUTTON_WIDTH_D * 3, BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
 
 		}
 		else if (top_buttons[i].id == IDC_TBGLOBALSTATUS) {
-			if(batch)
-				*batch = DeferWindowPos(*batch, top_buttons[i].hwnd, 0, left_offset + (3 * BUTTON_WIDTH_D) + 3, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
-				rect.right - delta - (3 * BUTTON_WIDTH_D + 5), BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+			SetWindowPos(top_buttons[i].hwnd, 0, left_offset + (3 * BUTTON_WIDTH_D) + 3, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
+                                  rect.right - delta - (3 * BUTTON_WIDTH_D + 5), BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
 		}
 		if(!(top_buttons[i].visibilityOrder & g_CluiData.toolbarVisibility))
 			continue;
 		if (top_buttons[i].id == IDC_TBTOPSTATUS || top_buttons[i].id == IDC_TBMINIMIZE || top_buttons[i].id == IDC_TABSRMMMENU || top_buttons[i].id == IDC_TABSRMMSLIST) {
-			if(batch)
-				*batch = DeferWindowPos(*batch, top_buttons[i].hwnd, 0, rect.right - right_offset - 2 - (rightButton * (g_CluiData.dwButtonWidth + 1)), 2 + g_CluiData.bCTop, g_CluiData.dwButtonWidth, g_CluiData.dwButtonHeight - 2,
-				SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+			SetWindowPos(top_buttons[i].hwnd, 0, rect.right - right_offset - 2 - (rightButton * (g_CluiData.dwButtonWidth + 1)), 2 + g_CluiData.bCTop, g_CluiData.dwButtonWidth, g_CluiData.dwButtonHeight - 2,
+                                  SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
 			rightButton++;
 			continue;
 		}
 		else {
-			if(batch)
-				*batch = DeferWindowPos(*batch, top_buttons[i].hwnd, 0, left_offset + 3 + (leftButton * (g_CluiData.dwButtonWidth + 1)), 2 + g_CluiData.bCTop, g_CluiData.dwButtonWidth, g_CluiData.dwButtonHeight - 2,
-				SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+			SetWindowPos(top_buttons[i].hwnd, 0, left_offset + 3 + (leftButton * (g_CluiData.dwButtonWidth + 1)), 2 + g_CluiData.bCTop, g_CluiData.dwButtonWidth, g_CluiData.dwButtonHeight - 2,
+                         SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
 			leftButton++;
 		}
 	}
@@ -228,33 +230,6 @@ static int FS_FontsChanged(WPARAM wParam, LPARAM lParam)
 	RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);
 	return 0;
 }
-
-/*
-void GetClientID(struct ClcContact *contact, char *client)
-{
-	int i = 0;
-	char szBuffer[128];
-	char *_client = _strupr(client);
-
-	contact->clientId = -1;
-
-	while (im_clients[i] != NULL) {
-		if (strstr(_client, im_clients[i])) {
-			contact->clientId = i;
-			if(im_clienthIcons[i] == 0) {
-				if(g_CluiData.IcoLib_Avail) {
-					mir_snprintf(szBuffer, sizeof(szBuffer), "cln_%s", im_clients[i]);
-					im_clienthIcons[i] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) szBuffer);
-				}
-				else {
-					im_clienthIcons[i] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(clientIcons[i]), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, 0);
-				}
-			}
-			break;
-		}
-		i++;
-	}
-}*/
 
 /*
 * create the CLC control, but not yet the frame. The frame containing the CLC should be created as the
@@ -495,7 +470,7 @@ static void InitIcoLib()
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&p_count, (LPARAM)&protos);
 	for(i = 0; i < p_count; i++) {
 		char szDescr[128];
-		if(protos[i]->type != PROTOTYPE_PROTOCOL)
+		if(protos[i]->type != PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
 			continue;
 		mir_snprintf(szBuffer, 128, "%s_conn", protos[i]->szName);
 		sid.pszName = szBuffer;
@@ -636,6 +611,7 @@ void IcoLibReloadIcons()
 	SendMessage(g_hwndViewModeFrame, WM_USER + 100, 0, 0);
 }
 
+
 static void SetButtonStyle()
 {
 	int i;
@@ -648,6 +624,58 @@ static void SetButtonStyle()
 		SendMessage(top_buttons[i].hwnd, BUTTONSETASFLATBTN, 0, g_CluiData.dwFlags & CLUI_FRAME_BUTTONSFLAT ? 0 : 1);
 		SendMessage(top_buttons[i].hwnd, BUTTONSETASFLATBTN + 10, 0, g_CluiData.dwFlags & CLUI_FRAME_BUTTONSCLASSIC ? 0 : 1);
 	}
+}
+
+void CreateButtonBar(HWND hWnd)
+{
+    int i;
+    HICON hIcon;
+    HMENU hMenuButtonList = GetSubMenu(g_CluiData.hMenuButtons, 0);
+
+    DeleteMenu(hMenuButtonList, 0, MF_BYPOSITION);
+
+    for (i = 0; ; i++) {
+        if (top_buttons[i].szTooltip == NULL)
+            break;
+        if (top_buttons[i].hwnd)
+            continue;
+
+        if ((top_buttons[i].id == IDC_TABSRMMMENU || top_buttons[i].id == IDC_TABSRMMSLIST) && !g_CluiData.tabSRMM_Avail)
+            continue;
+
+        top_buttons[i].hwnd = CreateWindowEx(0, _T("CLCButtonClass"), _T(""), BS_PUSHBUTTON | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, hWnd, (HMENU) top_buttons[i].id, g_hInst, NULL);
+        if (top_buttons[i].id != IDC_TBMENU && top_buttons[i].id != IDC_TBGLOBALSTATUS)
+            AppendMenu(hMenuButtonList, MF_STRING, 50000 + i, TranslateTS(top_buttons[i].szTooltip));
+        if (!g_CluiData.IcoLib_Avail) {
+            hIcon = top_buttons[i].hIcon = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(top_buttons[i].idIcon), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, 0);
+            if(top_buttons[i].idAltIcon)
+                top_buttons[i].hAltIcon = LoadImage(g_hInst, MAKEINTRESOURCE(top_buttons[i].idAltIcon), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, 0);
+        }
+        else {
+            hIcon = top_buttons[i].hIcon = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) top_buttons[i].szIcoLibIcon);
+            if(top_buttons[i].szIcoLibAltIcon)
+                top_buttons[i].hAltIcon = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) top_buttons[i].szIcoLibAltIcon);
+        }
+        if (top_buttons[i].id == IDC_TBMENU) {
+            SetWindowText(top_buttons[i].hwnd, TranslateT("Menu"));
+            SendMessage(top_buttons[i].hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM) LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
+        } else
+            SendMessage(top_buttons[i].hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
+        if (top_buttons[i].id == IDC_TBGLOBALSTATUS) {
+            SetWindowText(top_buttons[i].hwnd, TranslateT("Offline"));
+            SendMessage(top_buttons[i].hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM) LoadSkinnedIcon(SKINICON_STATUS_OFFLINE));
+        }
+        if (!(top_buttons[i].flags & TOPBUTTON_PUSH))
+            SendMessage(top_buttons[i].hwnd, BUTTONSETASPUSHBTN, 0, 0);
+        if (top_buttons[i].id != IDC_TBGLOBALSTATUS && top_buttons[i].id != IDC_TBMENU)
+            SendMessage(top_buttons[i].hwnd, BUTTONSETASFLATBTN, 0, 0);
+
+        if(top_buttons[i].flags & TOPBUTTON_SENDONDOWN)
+            SendMessage(top_buttons[i].hwnd, BM_SETASMENUACTION, 1, 0);
+
+        SendMessage(top_buttons[i].hwnd, BUTTONADDTOOLTIP, (WPARAM) TranslateTS(top_buttons[i].szTooltip), 0);
+    }
+    SetButtonStyle();
 }
 
 void SetTBSKinned(int mode)
@@ -714,27 +742,30 @@ void SetButtonStates(HWND hwnd)
 	BYTE iMode;
     ButtonItem *buttonItem = g_ButtonItems;
 
-	CheckDlgButton(hwnd, IDC_TBHIDEGROUPS, DBGetContactSettingByte(NULL, "CList", "UseGroups", 0) ? BST_CHECKED : BST_UNCHECKED);
 	iMode = DBGetContactSettingByte(NULL, "CList", "HideOffline", 0);
-	CheckDlgButton(hwnd, IDC_TBHIDEOFFLINE, iMode ? BST_CHECKED : BST_UNCHECKED);
-	CheckDlgButton(hwnd, IDC_TBSOUND, g_CluiData.soundsOff ? BST_UNCHECKED : BST_CHECKED);
-    if(!g_ButtonItems)
+    if(!g_ButtonItems) {
         SendDlgItemMessage(hwnd, IDC_TBSOUND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(g_CluiData.soundsOff ? top_buttons[5].hAltIcon : top_buttons[5].hIcon));
-    while(buttonItem) {
-        if(buttonItem->dwFlags & BUTTON_ISINTERNAL) {
-            switch(buttonItem->uId) {
-                case IDC_TBSOUND:
-                    SendMessage(buttonItem->hWnd, BM_SETCHECK, g_CluiData.soundsOff ? BST_UNCHECKED : BST_CHECKED, 0);
-                    break;
-                case IDC_TBHIDEOFFLINE:
-                    SendMessage(buttonItem->hWnd, BM_SETCHECK, iMode ? BST_CHECKED : BST_UNCHECKED, 0);
-                    break;
-                case IDC_TBHIDEGROUPS:
-                    SendMessage(buttonItem->hWnd, BM_SETCHECK, DBGetContactSettingByte(NULL, "CList", "UseGroups", 0) ? BST_CHECKED : BST_UNCHECKED, 0);
-                    break;
+        CheckDlgButton(hwnd, IDC_TBHIDEGROUPS, DBGetContactSettingByte(NULL, "CList", "UseGroups", 0) ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(hwnd, IDC_TBHIDEOFFLINE, iMode ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(hwnd, IDC_TBSOUND, g_CluiData.soundsOff ? BST_UNCHECKED : BST_CHECKED);
+    }
+    else {
+        while(buttonItem) {
+            if(buttonItem->dwFlags & BUTTON_ISINTERNAL) {
+                switch(buttonItem->uId) {
+                    case IDC_TBSOUND:
+                        SendMessage(buttonItem->hWnd, BM_SETCHECK, g_CluiData.soundsOff ? BST_UNCHECKED : BST_CHECKED, 0);
+                        break;
+                    case IDC_TBHIDEOFFLINE:
+                        SendMessage(buttonItem->hWnd, BM_SETCHECK, iMode ? BST_CHECKED : BST_UNCHECKED, 0);
+                        break;
+                    case IDC_TBHIDEGROUPS:
+                        SendMessage(buttonItem->hWnd, BM_SETCHECK, DBGetContactSettingByte(NULL, "CList", "UseGroups", 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+                        break;
+                }
             }
+            buttonItem = buttonItem->nextItem;
         }
-        buttonItem = buttonItem->nextItem;
     }
 }
 // Restore protocols to the last global status.
@@ -1000,6 +1031,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				OldStatusBarProc = (WNDPROC)SetWindowLong(pcli->hwndStatus, GWL_WNDPROC, (LONG)NewStatusBarWndProc);
 				SetClassLong(pcli->hwndStatus, GCL_STYLE, GetClassLong(pcli->hwndStatus, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 			}
+            g_oldSize.cx = g_oldSize.cy = 0;
 			old_cliststate = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
 			DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
 			SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_VISIBLE);
@@ -1008,6 +1040,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				ConfigureEventArea(hwnd);
 			CluiProtocolStatusChanged(0, 0);
 			ConfigureCLUIGeometry();
+            LoadCLCButtonModule();
+            CreateButtonBar(hwnd);
 			for(i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
 #if defined(_UNICODE)
 				char *szTemp = Translate((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0));
@@ -1052,11 +1086,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		break;
 	case M_CREATECLC:
 		{
-			int i;
-			HICON hIcon;
-			HMENU hMenuButtonList = GetSubMenu(g_CluiData.hMenuButtons, 0);
-			DeleteMenu(hMenuButtonList, 0, MF_BYPOSITION);
-
 		    NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			{
@@ -1068,47 +1097,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOACTIVATE);
 			}
 
-			for (i = 0; ; i++) {
-				if (top_buttons[i].szTooltip == NULL)
-					break;
-				if ((top_buttons[i].id == IDC_TABSRMMMENU || top_buttons[i].id == IDC_TABSRMMSLIST) && !g_CluiData.tabSRMM_Avail)
-					continue;
-
-				top_buttons[i].hwnd = CreateWindowEx(0, _T("CLCButtonClass"), _T(""), BS_PUSHBUTTON | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, hwnd, (HMENU) top_buttons[i].id, g_hInst, NULL);
-				if (top_buttons[i].id != IDC_TBMENU && top_buttons[i].id != IDC_TBGLOBALSTATUS)
-					AppendMenu(hMenuButtonList, MF_STRING, 50000 + i, TranslateTS(top_buttons[i].szTooltip));
-				if (!g_CluiData.IcoLib_Avail) {
-					hIcon = top_buttons[i].hIcon = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(top_buttons[i].idIcon), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, 0);
-					if(top_buttons[i].idAltIcon)
-						top_buttons[i].hAltIcon = LoadImage(g_hInst, MAKEINTRESOURCE(top_buttons[i].idAltIcon), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, 0);
-				}
-				else {
-					hIcon = top_buttons[i].hIcon = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) top_buttons[i].szIcoLibIcon);
-					if(top_buttons[i].szIcoLibAltIcon)
-						top_buttons[i].hAltIcon = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) top_buttons[i].szIcoLibAltIcon);
-				}
-				if (top_buttons[i].id == IDC_TBMENU) {
-					SetWindowText(top_buttons[i].hwnd, TranslateT("Menu"));
-					SendMessage(top_buttons[i].hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM) LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
-				} else
-					SendMessage(top_buttons[i].hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
-				if (top_buttons[i].id == IDC_TBGLOBALSTATUS) {
-					SetWindowText(top_buttons[i].hwnd, TranslateT("Offline"));
-					SendMessage(top_buttons[i].hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM) LoadSkinnedIcon(SKINICON_STATUS_OFFLINE));
-				}
-				if (!(top_buttons[i].flags & TOPBUTTON_PUSH))
-					SendMessage(top_buttons[i].hwnd, BUTTONSETASPUSHBTN, 0, 0);
-				if (top_buttons[i].id != IDC_TBGLOBALSTATUS && top_buttons[i].id != IDC_TBMENU)
-					SendMessage(top_buttons[i].hwnd, BUTTONSETASFLATBTN, 0, 0);
-
-				if(top_buttons[i].flags & TOPBUTTON_SENDONDOWN)
-					SendMessage(top_buttons[i].hwnd, BM_SETASMENUACTION, 1, 0);
-
-				SendMessage(top_buttons[i].hwnd, BUTTONADDTOOLTIP, (WPARAM) TranslateTS(top_buttons[i].szTooltip), 0);
-			}
 			if (g_CluiData.soundsOff)
 				hSoundHook = HookEvent(ME_SKIN_PLAYINGSOUND, ClcSoundHook);
-			SetButtonStyle();
 			if(g_CluiData.bSkinnedToolbar)
 				SetTBSKinned(1);
 			ConfigureFrame();
@@ -1116,6 +1106,16 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			CreateCLC(hwnd);
 			g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
+
+            if(MySetLayeredWindowAttributes != 0 && g_CluiData.bFullTransparent) {
+                if(g_CLUISkinnedBkColorRGB)
+                    Tweak_It(g_CLUISkinnedBkColorRGB);
+                else if(g_CluiData.bClipBorder || (g_CluiData.dwFlags & CLUI_FRAME_ROUNDEDFRAME))
+                    Tweak_It(RGB(255, 0, 255));
+                else
+                    Tweak_It(g_clcData->bkColour);
+            }
+
 			DBWriteContactSettingByte(NULL, "CList", "State", old_cliststate);
 			
 			//CLUIFramesReSort();
@@ -1323,22 +1323,18 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				RECT rcOld;
 				GetWindowRect(hwnd, &rcOld);
 				if ((wp->cx != rcOld.right - rcOld.left || wp->cy != rcOld.bottom - rcOld.top) && !(wp->flags & SWP_NOSIZE)) {
-					HDWP PosBatch;
-					int res;
-
                     during_sizing = 1;
                     new_window_rect.left = 0;
                     new_window_rect.right = wp->cx - (g_CLUI_x_off + g_CLUI_x1_off);
                     new_window_rect.top = 0;
                     new_window_rect.bottom = wp->cy - g_CLUI_y_off - g_CLUI_y1_off;
-
-					PosBatch = BeginDeferWindowPos(25);
-					SizeFramesByWindowRect(&new_window_rect, &PosBatch);
+					//PosBatch = BeginDeferWindowPos(40);
+					SizeFramesByWindowRect(&new_window_rect);
 					dock_prevent_moving=0;
-					LayoutButtons(hwnd, &PosBatch, &new_window_rect);
-					DeferWindowPos(PosBatch, pcli->hwndStatus, 0, 0, new_window_rect.bottom - g_CluiData.statusBarHeight, new_window_rect.right,
+					LayoutButtons(hwnd, &new_window_rect);
+					SetWindowPos(pcli->hwndStatus, 0, 0, new_window_rect.bottom - g_CluiData.statusBarHeight, new_window_rect.right,
 						g_CluiData.statusBarHeight, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOREDRAW | SWP_NOCOPYBITS);
-					res=EndDeferWindowPos(PosBatch);
+					//res=EndDeferWindowPos(PosBatch);
 					if(wp->cx != g_oldSize.cx)
 						SendMessage(hwnd, CLUIINTM_STATUSBARUPDATE, 0, 0);
 					dock_prevent_moving=1;
@@ -1371,15 +1367,11 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				g_CluiData.statusBarHeight = 0;
 
 			if(pcli->hwndContactList != NULL) {
-				HDWP PosBatch;
-				int res;
 				RECT rcClient;
 
 				GetClientRect(hwnd, &rcClient);
-				PosBatch = BeginDeferWindowPos(25);
-				SizeFramesByWindowRect(&rcClient, &PosBatch);
-				LayoutButtons(hwnd, &PosBatch, &rcClient);
-				res=EndDeferWindowPos(PosBatch);
+				SizeFramesByWindowRect(&rcClient);
+				LayoutButtons(hwnd, &rcClient);
 				if(rcClient.right != g_oldSize.cx)
 					PostMessage(hwnd, CLUIINTM_STATUSBARUPDATE, 0, 0);
 				g_oldSize.cx = rcClient.right;
@@ -1537,7 +1529,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				}
 				else {
 					SendMessage(hwnd, WM_SIZE, 0, 0);
-					SendMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
+					PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
 				}
 			}
 			PostMessage(hwnd, CLUIINTM_REMOVEFROMTASKBAR, 0, 0);
@@ -1972,7 +1964,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				GetCursorPos(&pt);
 				ScreenToClient(hwnd, &pt);
 				hMenu = g_CluiData.hMenuButtons;
-				rcHit.bottom = g_CluiData.dwButtonHeight;
+				rcHit.bottom = g_CluiData.dwButtonHeight + g_CluiData.bCTop;
 				if (!PtInRect(&rcHit, pt))
 					break;
 				ClientToScreen(hwnd, &pt);

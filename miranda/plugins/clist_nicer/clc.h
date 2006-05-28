@@ -345,6 +345,7 @@ struct CluiData {
 	BYTE bWantFastGradients, bUseFastGradients;
 	BYTE sortOrder[3];
 	BYTE bGroupAlign;
+    DWORD langPackCP;
 };
 
 #define SORTBY_NAME 1

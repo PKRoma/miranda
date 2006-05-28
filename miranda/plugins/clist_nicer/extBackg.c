@@ -1252,7 +1252,6 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
                         pItem = pItem->nextItem;
                     pItem->nextItem = newItem;
                 }
-                _DebugTraceA("created dummy item %s", newItem->szName);
             }
             goto imgread_done;
         }
@@ -1300,7 +1299,6 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
                                 pItem->nextItem = newItem;
                             }
                             alloced = TRUE;
-                            //_DebugPopup(0, "successfully assigned %s to %s with %s (handle: %d), p = %d", itemname, buffer, szFinalName, newItem->hbm, newItem);
                         }
                     }
                     else if(newItem != NULL)
@@ -1490,6 +1488,9 @@ void IMG_DeleteItems()
 
     for(i = 0; i <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; i++)
         StatusItems[i].imageItem = NULL;
+
+    // delete the standard toolbar buttons when loading a skin
+
 }
 
 static void BTN_ReadItem(char *itemName, char *file)
@@ -1561,7 +1562,18 @@ static void BTN_ReadItem(char *itemName, char *file)
             i++;
         }
     }
-    // sanity checks
+
+    GetPrivateProfileStringA(itemName, "Tip", "None", szBuffer, 1000, file);
+    if(strcmp(szBuffer, "None")) {
+#if defined(_UNICODE)
+        MultiByteToWideChar(g_CluiData.langPackCP, 0, szBuffer, -1, tmpItem.szTip, 256);
+        tmpItem.szTip[255] = 0;
+#else
+        mir_snprintf(tmpItem.szTip, 256, "%s", szBuffer);
+#endif
+    }
+    else
+        tmpItem.szTip[0] = 0;
 
     // create it
 
@@ -1587,6 +1599,8 @@ static void BTN_ReadItem(char *itemName, char *file)
     if(newItem->dwFlags & BUTTON_ISTOGGLE)
         SendMessage(newItem->hWnd, BUTTONSETASPUSHBTN, 0, 0);
 
+    if(newItem->szTip[0])
+        SendMessage(newItem->hWnd, BUTTONADDTOOLTIP, (WPARAM)newItem->szTip, 0);
     return;
 }
 
@@ -1596,7 +1610,8 @@ void IMG_LoadItems()
     char *p;
     DBVARIANT dbv;
     char szFileName[MAX_PATH];
-    
+    int  i = 0;
+
     if(DBGetContactSetting(NULL, "CLC", "AdvancedSkin", &dbv))
         return;
 
@@ -1626,7 +1641,19 @@ void IMG_LoadItems()
             BTN_ReadItem(p, szFileName);
         p += (lstrlenA(p) + 1);
     }
+    if(pcli && pcli->hwndContactList)
+        SetButtonStates(pcli->hwndContactList);
     free(szSections);
+
+    if(g_ButtonItems) {
+        while(top_buttons[i].id) {
+            if(top_buttons[i].hwnd != 0 && top_buttons[i].id != IDC_TBGLOBALSTATUS && top_buttons[i].id != IDC_TBMENU) {
+                DestroyWindow(top_buttons[i].hwnd);
+                top_buttons[i].hwnd = 0;
+            }
+            i++;
+        }
+    }
 }
 
 void LoadPerContactSkins(char *file)
@@ -1735,7 +1762,6 @@ void extbk_import(char *file, HWND hwndDlg)
     char szKey[255], szSection[255];
     DWORD data, version = 0;
     int oldexIconScale = g_CluiData.exIconScale;
-    char szFinalName[MAX_PATH];
 
     for (n = 0; n <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; n++) {
         if (StatusItems[n].statusID != ID_EXTBKSEPARATOR) {
@@ -1835,15 +1861,16 @@ void extbk_import(char *file, HWND hwndDlg)
             DBWriteContactSettingString(NULL, "CLC", "BkBitmap", szString);
     }
 
-    CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)file, (LPARAM)szFinalName);
-    DBWriteContactSettingString(NULL, "CLC", "AdvancedSkin", szFinalName);
-    IMG_LoadItems();
+    //CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)file, (LPARAM)szFinalName);
+    //DBWriteContactSettingString(NULL, "CLC", "AdvancedSkin", szFinalName);
+    //IMG_LoadItems();
 
     Reload3dBevelColors();
     ReloadThemedOptions();
     SetTBSKinned(g_CluiData.bSkinnedToolbar);
     // refresh
-    FillOptionDialogByCurrentSel(hwndDlg);
+    if(hwndDlg)
+        FillOptionDialogByCurrentSel(hwndDlg);
     pcli->pfnClcOptionsChanged();
     ConfigureCLUIGeometry();
     SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
@@ -1859,5 +1886,267 @@ void extbk_import(char *file, HWND hwndDlg)
         }
         pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
     }
+}
+
+/*
+BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg) {
+        case WM_INITDIALOG:
+            TranslateDialogDefault(hwndDlg);
+            FillItemList(hwndDlg);
+            SendMessage(hwndDlg, WM_USER + 101, 0, 0);
+            return TRUE;
+        case WM_USER + 101:
+            {
+                DBVARIANT dbv = {0};
+
+                CheckDlgButton(hwndDlg, IDC_EQUALSELECTION, (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_EqualSelection", 1) == 1) ? BST_CHECKED : BST_UNCHECKED);    
+                CheckDlgButton(hwndDlg, IDC_SELBLEND, DBGetContactSettingByte(NULL, "CLCExt", "EXBK_SelBlend", 1));
+                CheckDlgButton(hwndDlg, IDC_FILLWALLPAPER, DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0));
+
+                SendDlgItemMessage(hwndDlg, IDC_MRGN_LEFT_SPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
+                SendDlgItemMessage(hwndDlg, IDC_MRGN_TOP_SPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
+                SendDlgItemMessage(hwndDlg, IDC_MRGN_RIGHT_SPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
+                SendDlgItemMessage(hwndDlg, IDC_MRGN_BOTTOM_SPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
+                SendDlgItemMessage(hwndDlg, IDC_ALPHASPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
+
+                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("<None>"));
+                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Raised"));
+                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Sunken"));
+                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Bumped"));
+                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Etched"));
+
+                SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
+                SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, g_CluiData.cornerRadius);
+                CheckDlgButton(hwndDlg, IDC_APPLYINDENTBG, g_CluiData.bApplyIndentToBg);
+                CheckDlgButton(hwndDlg, IDC_USEPERPROTO, g_CluiData.bUsePerProto);
+                CheckDlgButton(hwndDlg, IDC_OVERRIDEPERSTATUSCOLOR, g_CluiData.bOverridePerStatusColors);
+                CheckDlgButton(hwndDlg, IDC_FASTGRADIENT, g_CluiData.bWantFastGradients);
+
+                SendDlgItemMessage(hwndDlg, IDC_3DDARKCOLOR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLCExt", "3ddark", RGB(224,224,224)));
+                SendDlgItemMessage(hwndDlg, IDC_3DLIGHTCOLOR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLCExt", "3dbright", RGB(224,224,224)));
+                CheckDlgButton(hwndDlg, IDC_SETALLBUTTONSKINNED, DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0));
+                return 0;
+            }
+        case WM_COMMAND:
+    // this will check if the user changed some actual statusitems values
+    // if yes the flag bChanged will be set to TRUE
+            SetChangedStatusItemFlag(wParam, hwndDlg);
+
+            switch (LOWORD(wParam)) {
+                case IDC_SKINFILESELECT:
+                    {
+                        OPENFILENAMEA ofn = {0};
+                        char str[MAX_PATH] = "*.cln", final_path[MAX_PATH];
+                        HANDLE hFile;
+
+                        ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                        ofn.hwndOwner = hwndDlg;
+                        ofn.hInstance = NULL;
+                        ofn.lpstrFilter = "*.cln";
+                        ofn.lpstrFile = str;
+                        ofn.Flags = OFN_FILEMUSTEXIST;
+                        ofn.nMaxFile = sizeof(str);
+                        ofn.nMaxFileTitle = MAX_PATH;
+                        ofn.lpstrDefExt = "";
+                        if (!GetOpenFileNameA(&ofn))
+                            break;
+                        CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)str, (LPARAM)final_path);
+                        if((hFile = CreateFileA(str, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
+                            LoadPerContactSkins(str);
+                            ReloadSkinItemsToCache();
+                            pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+                            CloseHandle(hFile);
+                            DBWriteContactSettingString(NULL, "CLC", "ContactSkins", final_path);
+                        }
+                        SetDlgItemTextA(hwndDlg, IDC_SKINFILE, final_path);
+                        break;
+                    }
+                case IDC_RELOAD:
+                    {
+                        char szFilename[MAX_PATH], szFinalPath[MAX_PATH];
+                        HANDLE hFile;
+
+                        GetDlgItemTextA(hwndDlg, IDC_SKINFILE, szFilename, MAX_PATH);
+                        szFilename[MAX_PATH - 1] = 0;
+                        CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szFilename, (LPARAM)szFinalPath);
+                        if((hFile = CreateFileA(szFinalPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
+                            LoadPerContactSkins(szFinalPath);
+                            ReloadSkinItemsToCache();
+                            pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+                            CloseHandle(hFile);
+                            IMG_LoadItems();
+                        }
+                        break;
+                    }
+                case IDC_ITEMS:
+                    if (HIWORD(wParam) != LBN_SELCHANGE)
+                        return FALSE;
+                    {
+                        int iItem = SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_GETCURSEL, 0, 0), 0);
+                        if(iItem == ID_EXTBKSEPARATOR)
+                            return FALSE;
+                    }
+                    OnListItemsChange(hwndDlg);         
+                    pcli->pfnClcOptionsChanged();            
+                    break;          
+                case IDC_GRADIENT:
+                    ReActiveCombo(hwndDlg);
+                    break;
+                case IDC_CORNER:
+                    ReActiveCombo(hwndDlg);
+                    break;
+                case IDC_IGNORE:
+                    ReActiveCombo(hwndDlg);
+                    break;
+                case IDC_COLOR2_TRANSPARENT:
+                    ReActiveCombo(hwndDlg);
+                    break;
+                case IDC_BORDERTYPE:
+                    break;
+                case IDC_EXPORT:
+                    {
+                        char str[MAX_PATH] = "*.clist";
+                        OPENFILENAMEA ofn = {0};
+                        ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                        ofn.hwndOwner = hwndDlg;
+                        ofn.hInstance = NULL;
+                        ofn.lpstrFilter = "*.clist";
+                        ofn.lpstrFile = str;
+                        ofn.Flags = OFN_HIDEREADONLY;
+                        ofn.nMaxFile = sizeof(str);
+                        ofn.nMaxFileTitle = MAX_PATH;
+                        ofn.lpstrDefExt = "clist";
+                        if (!GetSaveFileNameA(&ofn))
+                            break;
+                        extbk_export(str);
+                        break;
+                    }
+                case IDC_IMPORT:
+                    {
+                        char str[MAX_PATH] = "*.clist";
+                        OPENFILENAMEA ofn = {0};
+
+                        ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                        ofn.hwndOwner = hwndDlg;
+                        ofn.hInstance = NULL;
+                        ofn.lpstrFilter = "*.clist";
+                        ofn.lpstrFile = str;
+                        ofn.Flags = OFN_FILEMUSTEXIST;
+                        ofn.nMaxFile = sizeof(str);
+                        ofn.nMaxFileTitle = MAX_PATH;
+                        ofn.lpstrDefExt = "";
+                        if (!GetOpenFileNameA(&ofn))
+                            break;
+                        extbk_import(str, hwndDlg);
+                        SendMessage(hwndDlg, WM_USER + 101, 0, 0);
+                        break;
+                    }
+            }
+            if ((LOWORD(wParam) == IDC_ALPHA || LOWORD(wParam) == IDC_SKINFILE || LOWORD(wParam) == IDC_CORNERRAD || LOWORD(wParam) == IDC_MRGN_LEFT || LOWORD(wParam) == IDC_MRGN_BOTTOM || LOWORD(wParam) == IDC_MRGN_TOP || LOWORD(wParam) == IDC_MRGN_RIGHT) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+                return 0;
+            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+            break;
+
+        case WM_NOTIFY:
+            switch (((LPNMHDR) lParam)->idFrom) {
+                case 0:
+                    switch (((LPNMHDR) lParam)->code) {
+                        case PSN_APPLY:
+                // save user made changes
+                            SaveLatestChanges(hwndDlg);
+                // save struct to DB
+                            SaveCompleteStructToDB();           
+                            SaveNonStatusItemsSettings(hwndDlg);
+
+                            pcli->pfnClcOptionsChanged();
+                            SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+                            PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
+                            break;
+                    }
+            }
+            break;
+    }
+    return FALSE;
+}
+*/
+BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg) {
+        case WM_INITDIALOG:
+        {
+            DBVARIANT dbv;
+
+            if(!DBGetContactSetting(NULL, "CLC", "ContactSkins", &dbv)) {
+                SetDlgItemTextA(hwndDlg, IDC_SKINFILE, dbv.pszVal);
+                DBFreeVariant(&dbv);
+                EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), TRUE);
+            }
+            else
+                EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), FALSE);
+            return TRUE;
+        }
+        case WM_COMMAND:
+            switch (LOWORD(wParam)) {
+                case IDC_SKINFILESELECT:
+                    {
+                        OPENFILENAMEA ofn = {0};
+                        char str[MAX_PATH] = "*.cln", final_path[MAX_PATH];
+
+                        ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                        ofn.hwndOwner = hwndDlg;
+                        ofn.hInstance = NULL;
+                        ofn.lpstrFilter = "*.cln";
+                        ofn.lpstrFile = str;
+                        ofn.Flags = OFN_FILEMUSTEXIST;
+                        ofn.nMaxFile = sizeof(str);
+                        ofn.nMaxFileTitle = MAX_PATH;
+                        ofn.lpstrDefExt = "";
+                        if (!GetOpenFileNameA(&ofn))
+                            break;
+                        CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)str, (LPARAM)final_path);
+                        if(PathFileExistsA(str)) {
+                            LoadPerContactSkins(str);
+                            ReloadSkinItemsToCache();
+                            pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+                            DBWriteContactSettingString(NULL, "CLC", "ContactSkins", final_path);
+                        }
+                        SetDlgItemTextA(hwndDlg, IDC_SKINFILE, final_path);
+                        break;
+                    }
+                case IDC_RELOAD:
+                    {
+                        char szFilename[MAX_PATH], szFinalPath[MAX_PATH];
+
+                        GetDlgItemTextA(hwndDlg, IDC_SKINFILE, szFilename, MAX_PATH);
+                        szFilename[MAX_PATH - 1] = 0;
+                        CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szFilename, (LPARAM)szFinalPath);
+                        if(PathFileExistsA(szFinalPath)) {
+                            LoadPerContactSkins(szFinalPath);
+                            ReloadSkinItemsToCache();
+                            pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+                        }
+                        break;
+                    }
+            }
+            if (LOWORD(wParam) == IDC_SKINFILE && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+                return 0;
+            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+            break;
+        case WM_NOTIFY:
+            switch (((LPNMHDR) lParam)->idFrom) {
+                case 0:
+                    switch (((LPNMHDR) lParam)->code) {
+                        case PSN_APPLY:
+                            pcli->pfnClcOptionsChanged();
+                            PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
+                            return TRUE;
+                    }
+                    break;
+            }
+            break;
+    }
+    return FALSE;
 }
 

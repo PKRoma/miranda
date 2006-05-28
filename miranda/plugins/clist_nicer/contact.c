@@ -103,12 +103,11 @@ static void MF_CalcFrequency(HANDLE hContact, DWORD dwCutoffDays, int doSleep)
 DWORD WINAPI MF_UpdateThread(LPVOID p)
 {
     HANDLE hContact;
-    HANDLE  hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, _T("mf_update_evt"));
+    HANDLE hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, _T("mf_update_evt"));
 
-#ifdef _DEBUG
-    _DebugTraceA("started update thread...");
-#endif
-    do {
+    WaitForSingleObject(hEvent, 20000);
+
+    while(mf_updatethread_running) {
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
         while (hContact != NULL && mf_updatethread_running) {
             MF_CalcFrequency(hContact, 50, 1);
@@ -118,7 +117,7 @@ DWORD WINAPI MF_UpdateThread(LPVOID p)
         }
         if(mf_updatethread_running)
             WaitForSingleObject(hEvent, 1000000);
-    } while (mf_updatethread_running);
+    }
 
 #ifdef _DEBUG
     _DebugTraceA("update thread ending...");

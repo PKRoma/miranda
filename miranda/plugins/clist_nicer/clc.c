@@ -44,7 +44,6 @@ extern StatusItems_t *StatusItems;
 extern int g_shutDown;
 extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
 extern struct ExtraCache *g_ExtraCache;
-extern COLORREF g_CLUISkinnedBkColorRGB;
 
 HIMAGELIST hCListImages;
 extern HIMAGELIST himlExtraImages;
@@ -294,21 +293,11 @@ int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-// simulate tweakUI
-
-void Tweak_It(COLORREF clr)
-{
-	SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
-	MySetLayeredWindowAttributes(pcli->hwndContactList, clr, 0, LWA_COLORKEY);
-	g_CluiData.colorkey = clr;
-}
-
 int LoadCLCModule(void)
 {
 	g_cxsmIcon = GetSystemMetrics(SM_CXSMICON);
 	g_cysmIcon = GetSystemMetrics(SM_CYSMICON);
 
-	LoadCLCButtonModule();
 	hCListImages = (HIMAGELIST) CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
 	
 	HookEvent(ME_SYSTEM_MODULESLOADED, ClcModulesLoaded);
@@ -904,15 +893,6 @@ LBL_Def:
 	{	
 		LRESULT result = saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 
-		if ( msg == WM_CREATE ) {
-			if(GetParent(hwnd) == pcli->hwndContactList && MySetLayeredWindowAttributes != 0 && g_CluiData.bFullTransparent) {
-				if(g_CLUISkinnedBkColorRGB)
-					Tweak_It(g_CLUISkinnedBkColorRGB);
-				else if(g_CluiData.bClipBorder || (g_CluiData.dwFlags & CLUI_FRAME_ROUNDEDFRAME))
-					Tweak_It(RGB(255, 0, 255));
-				else
-					Tweak_It(dat->bkColour);
-		}	}
-
 		return result;
-}	}
+    }	
+}

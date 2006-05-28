@@ -21,7 +21,7 @@ int LoadCLUIFramesModule(void);
 int UnLoadCLUIFramesModule(void);
 int CLUIFramesGetMinHeight();
 int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam);
-int SizeFramesByWindowRect(RECT *r, HDWP * PosBatch);
+int SizeFramesByWindowRect(RECT *r);
 int CLUIFramesResizeFrames(RECT *rc);
 
 typedef struct tagProtocolData {

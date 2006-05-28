@@ -125,6 +125,7 @@ typedef struct _tagButtonItem {
     LONG pressedGlyphMetrics[4];
     DWORD dwFlags;
     DWORD uId;
+    TCHAR szTip[256];
     struct _tagButtonItem *nextItem;
 } ButtonItem;
 

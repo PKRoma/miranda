@@ -35,6 +35,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern struct CluiData g_CluiData;
 
@@ -100,6 +101,11 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
         odp.pfnDlgProc = DlgProcClcTextOpts;    
         CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
     }
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_SKIN);
+    odp.pszGroup = Translate("Customize");
+    odp.pszTitle = Translate("Contact list skin");
+    odp.pfnDlgProc = DlgProcSkinOpts;
+    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
     return 0;
 }
 
@@ -330,66 +336,13 @@ static BOOL CALLBACK DlgProcClcExtBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
                 SendDlgItemMessage(hwndDlg, IDC_3DDARKCOLOR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLCExt", "3ddark", RGB(224,224,224)));
                 SendDlgItemMessage(hwndDlg, IDC_3DLIGHTCOLOR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLCExt", "3dbright", RGB(224,224,224)));
                 CheckDlgButton(hwndDlg, IDC_SETALLBUTTONSKINNED, DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0));
-                if(!DBGetContactSetting(NULL, "CLC", "ContactSkins", &dbv)) {
-                    SetDlgItemTextA(hwndDlg, IDC_SKINFILE, dbv.pszVal);
-                    DBFreeVariant(&dbv);
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), TRUE);
-                }
-                else
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), FALSE);
                 return 0;
             }
         case WM_COMMAND:
     // this will check if the user changed some actual statusitems values
     // if yes the flag bChanged will be set to TRUE
             SetChangedStatusItemFlag(wParam, hwndDlg);
-
-            switch (LOWORD(wParam)) {
-                case IDC_SKINFILESELECT:
-                    {
-                        OPENFILENAMEA ofn = {0};
-                        char str[MAX_PATH] = "*.cln", final_path[MAX_PATH];
-                        HANDLE hFile;
-                        
-                        ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-                        ofn.hwndOwner = hwndDlg;
-                        ofn.hInstance = NULL;
-                        ofn.lpstrFilter = "*.cln";
-                        ofn.lpstrFile = str;
-                        ofn.Flags = OFN_FILEMUSTEXIST;
-                        ofn.nMaxFile = sizeof(str);
-                        ofn.nMaxFileTitle = MAX_PATH;
-                        ofn.lpstrDefExt = "";
-                        if (!GetOpenFileNameA(&ofn))
-                            break;
-                        CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)str, (LPARAM)final_path);
-                        if((hFile = CreateFileA(str, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
-                            LoadPerContactSkins(str);
-                            ReloadSkinItemsToCache();
-                            pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
-                            CloseHandle(hFile);
-                            DBWriteContactSettingString(NULL, "CLC", "ContactSkins", final_path);
-                        }
-                        SetDlgItemTextA(hwndDlg, IDC_SKINFILE, final_path);
-                        break;
-                    }
-                case IDC_RELOAD:
-                    {
-                        char szFilename[MAX_PATH], szFinalPath[MAX_PATH];
-                        HANDLE hFile;
-                        
-                        GetDlgItemTextA(hwndDlg, IDC_SKINFILE, szFilename, MAX_PATH);
-                        szFilename[MAX_PATH - 1] = 0;
-                        CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szFilename, (LPARAM)szFinalPath);
-                        if((hFile = CreateFileA(szFinalPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
-                            LoadPerContactSkins(szFinalPath);
-                            ReloadSkinItemsToCache();
-                            pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
-                            CloseHandle(hFile);
-                            IMG_LoadItems();
-                        }
-                        break;
-                    }
+            switch(LOWORD(wParam)) {
                 case IDC_ITEMS:
                     if (HIWORD(wParam) != LBN_SELCHANGE)
                         return FALSE;
@@ -454,7 +407,7 @@ static BOOL CALLBACK DlgProcClcExtBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
                         break;
                     }
             }
-            if ((LOWORD(wParam) == IDC_ALPHA || LOWORD(wParam) == IDC_SKINFILE || LOWORD(wParam) == IDC_CORNERRAD || LOWORD(wParam) == IDC_MRGN_LEFT || LOWORD(wParam) == IDC_MRGN_BOTTOM || LOWORD(wParam) == IDC_MRGN_TOP || LOWORD(wParam) == IDC_MRGN_RIGHT) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+            if ((LOWORD(wParam) == IDC_ALPHA || LOWORD(wParam) == IDC_CORNERRAD || LOWORD(wParam) == IDC_MRGN_LEFT || LOWORD(wParam) == IDC_MRGN_BOTTOM || LOWORD(wParam) == IDC_MRGN_TOP || LOWORD(wParam) == IDC_MRGN_RIGHT) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
                 return 0;
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
             break;
