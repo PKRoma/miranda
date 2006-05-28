@@ -402,7 +402,7 @@ LBL_Exit:
 		JabberXmlSetCallback( &xmlState, 1, ELEM_CLOSE, JabberProcessStreamClosing, info );
 		JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
 
-		{	XmlNode stream( "stream:stream" ); stream.addAttr( "to", info->server ); stream.addAttr( "xmlns", "jabber:client" ); 
+		{	XmlNode stream( "stream:stream" ); stream.addAttr( "to", info->server ); stream.addAttr( "xmlns", "jabber:client" );
 			stream.props = "<?xml version='1.0' encoding='UTF-8'?>";
 		   stream.addAttr( "xmlns:stream", "http://etherx.jabber.org/streams" );
 			stream.dirtyHack = true;
@@ -424,7 +424,7 @@ LBL_Exit:
 				JabberXmlSetCallback( &xmlState, 1, ELEM_CLOSE, JabberProcessStreamClosing, info );
 				JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
 
-				XmlNode stream( "stream:stream" ); stream.addAttr( "to", info->server ); stream.addAttr( "xmlns", "jabber:client" ); 
+				XmlNode stream( "stream:stream" ); stream.addAttr( "to", info->server ); stream.addAttr( "xmlns", "jabber:client" );
 				stream.addAttr( "xmlns:stream", "http://etherx.jabber.org/streams" );
 				JabberSend( info->s, stream );
 			}
@@ -936,7 +936,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 
 		if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL && statusNode->text != NULL )
 			p = mir_tstrdup( statusNode->text );
-		else 
+		else
 			p = NULL;
 		JabberListAddResource( LIST_ROSTER, from, status, p );
 		if ( p ) {
@@ -994,7 +994,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			if (( hContact = JabberHContactFromJID( from )) != NULL) {
 				if ( statusNode->text )
 					DBWriteContactSettingTString(hContact, "CList", "StatusMsg", statusNode->text );
-				else 
+				else
 					DBDeleteContactSetting(hContact, "CList", "StatusMsg");
 		}	}
 
@@ -1080,7 +1080,7 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 	char mversion[100];
 	strcpy( mversion, "Miranda IM " );
 	JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion )-12, ( LPARAM )&mversion[11] );
-	
+
 	XmlNodeIq iq( "result", idStr, from );
 	XmlNode* query = iq.addQuery( "jabber:iq:version" );
 	query->addChild( "name", mversion ); query->addChild( "version", version ); query->addChild( "os", os );
@@ -1093,16 +1093,16 @@ static void JabberProcessIqTime( TCHAR* idStr, XmlNode* node ) //added by Rion (
 {
 	TCHAR* from;
 	struct tm *gmt;
-	__int64 ltime;
+	time_t ltime;
 	char stime[20],*dtime;
 	if (( from=JabberXmlGetAttrValue( node, "from" )) == NULL )
 		return;
 
 	_tzset();
-	_time64( &ltime );
-	gmt=_gmtime64( &ltime );
+	time( &ltime );
+	gmt = gmtime( &ltime );
 	sprintf (stime,"%.4i%.2i%.2iT%.2i:%.2i:%.2i",gmt->tm_year+1900,gmt->tm_mon,gmt->tm_mday,gmt->tm_hour,gmt->tm_min,gmt->tm_sec);
-	dtime=_ctime64(&ltime);
+	dtime = ctime(&ltime);
 	dtime[24]=0;
 
 	XmlNodeIq iq( "result", idStr, from );
@@ -1328,7 +1328,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 					JabberLog( "Host=%s Port=%d Path=%s", ft->httpHostName, ft->httpPort, ft->httpPath );
 					if (( n=JabberXmlGetChild( queryNode, "desc" ))!=NULL && n->text!=NULL )
 						desc = t2a( n->text );
-					else 
+					else
 						desc = mir_strdup( "" );
 
 					if ( desc != NULL ) {

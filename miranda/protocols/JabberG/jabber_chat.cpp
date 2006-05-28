@@ -348,7 +348,7 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 				sttLogListItems[2].bDisabled = FALSE;
 
 			if ( me->affiliation == AFFILIATION_ADMIN )
-				sttLogListItems[3].bDisabled = sttLogListItems[5].bDisabled = FALSE;
+				sttLogListItems[3].bDisabled = sttLogListItems[5].bDisabled = sttLogListItems[6].bDisabled = FALSE;
 			else if ( me->affiliation == AFFILIATION_OWNER )
 				sttLogListItems[3].bDisabled = sttLogListItems[5].bDisabled =
 				sttLogListItems[6].bDisabled = sttLogListItems[7].bDisabled =
@@ -358,15 +358,15 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 	}
 	else if ( gcmi->Type == MENU_ON_NICKLIST ) {
 		static struct gc_item sttListItems[] = {
-			{ JTranslate( "&Leave chat session" ), IDM_LEAVE, MENU_ITEM, FALSE },
+			{ JTranslate( "&Leave chat session" ),    IDM_LEAVE,     MENU_ITEM, FALSE },
 			{ NULL, 0, MENU_SEPARATOR, FALSE },
-			{ JTranslate( "Kick" ), IDM_KICK, MENU_ITEM, TRUE },
-			{ JTranslate( "Ban" ),  IDM_BAN,  MENU_ITEM, TRUE },
+			{ JTranslate( "Kick" ),                   IDM_KICK,      MENU_ITEM, TRUE },
+			{ JTranslate( "Ban" ),                    IDM_BAN,       MENU_ITEM, TRUE },
 			{ NULL, 0, MENU_SEPARATOR, FALSE },
-			{ JTranslate( "Toggle &Voice" ),     IDM_VOICE,      MENU_ITEM, TRUE },
-			{ JTranslate( "Toggle Moderator" ),  IDM_MODERATOR,  MENU_ITEM, TRUE },
-			{ JTranslate( "Toggle Admin" ),      IDM_ADMIN,      MENU_ITEM, TRUE },
-			{ JTranslate( "Toggle Owner" ),      IDM_OWNER,      MENU_ITEM, TRUE }};
+			{ JTranslate( "Toggle &Voice" ),          IDM_VOICE,     MENU_ITEM, TRUE },
+			{ JTranslate( "Toggle Moderator" ),       IDM_MODERATOR, MENU_ITEM, TRUE },
+			{ JTranslate( "Toggle Admin" ),           IDM_ADMIN,     MENU_ITEM, TRUE },
+			{ JTranslate( "Toggle Owner" ),           IDM_OWNER,     MENU_ITEM, TRUE }};
 
 		gcmi->nItems = sizeof( sttListItems )/sizeof( sttListItems[0] );
 		gcmi->Item = sttListItems;
