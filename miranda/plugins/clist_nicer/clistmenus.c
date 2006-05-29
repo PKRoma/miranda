@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "CLUIFrames/genmenu.h"
 #include "m_genmenu.h"
+#include "m_ignore.h"
 #include "CLUIFrames/cluiframes.h"
 
 #pragma hdrstop
@@ -80,6 +81,7 @@ int hStatusMenuHandlesCnt;
 extern HANDLE hStatusModeChangeEvent;
 extern int  CheckProtocolOrder();
 extern int g_shutDown;
+extern struct ClcData *g_clcData;
 
 //mainmenu exec param(ownerdata)
 typedef struct {
@@ -413,7 +415,7 @@ static int ModifyCustomMenuItem(WPARAM wParam,LPARAM lParam)
         tmi.pszName = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)mi->pszName );
     }
     else if(mi->pszName != NULL) {
-        _DebugTraceA("modify menu item: invalid pointer (%x), %x", mi->pszName, mi->flags);
+        //_DebugTraceA("modify menu item: invalid pointer (%x), %x", mi->pszName, mi->flags);
     }
 
 
@@ -525,39 +527,6 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 	}
 	return(0);
 }
-/*
-int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
-{
-lpStatusMenuExecParam smep=(lpStatusMenuExecParam)wParam;
-if (smep != NULL && !IsBadReadPtr(smep, sizeof(StatusMenuExecParam))) {
-if (smep->custom)
-{
-if (smep->svc && *smep->svc)
-CallService(smep->svc, 0, 0);
-} else
-{
-PROTOCOLDESCRIPTOR **proto;
-int protoCount;
-int i;
-CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
-
-if ((smep->proto!=NULL)) {
-NotifyEventHooks(hStatusModeChangeEvent, smep->status, (LPARAM)smep->proto);
-CallProtoService(smep->proto,PS_SETSTATUS,smep->status,0);  
-}
-else {
-currentDesiredStatusMode=smep->status;
-NotifyEventHooks(hStatusModeChangeEvent,currentDesiredStatusMode,0);
-for (i=0;i<protoCount;i++)
-CallProtoService(proto[i]->szName,PS_SETSTATUS,currentDesiredStatusMode,0);
-
-DBWriteContactSettingWord(NULL,"CList","Status",(WORD)currentDesiredStatusMode);
-return 1;   
-}
-}
-}
-return(0);
-}*/
 
 int FreeOwnerDataStatusMenu (WPARAM wParam,LPARAM lParam)
 {
@@ -1115,11 +1084,220 @@ int CloseAction(WPARAM wParam,LPARAM lParam)
 	return(0);
 }
 
+/*                                                              
+ * dialog procedure for handling the contact ignore dialog (available from the contact
+ * menu
+*/
+
+static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+ {
+    HANDLE hContact = (HANDLE)GetWindowLong(hWnd, GWL_USERDATA);
+
+    switch(msg) {
+        case WM_INITDIALOG:
+        {
+            DWORD dwMask;
+            struct ClcContact *contact = NULL;
+            int pCaps;
+            HWND hwndAdd;
+
+            hContact = (HANDLE)lParam;
+            SetWindowLong(hWnd, GWL_USERDATA, (LONG)hContact);
+            dwMask = DBGetContactSettingDword(hContact, "Ignore", "Mask1", 0);
+            SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, dwMask);
+            SendMessage(hWnd, WM_USER + 120, 0, 0);
+            TranslateDialogDefault(hWnd);
+            hwndAdd = GetDlgItem(hWnd, IDC_IGN_ADDPERMANENTLY); // CreateWindowEx(0, _T("CLCButtonClass"), _T("FOO"), WS_VISIBLE | BS_PUSHBUTTON | WS_CHILD | WS_TABSTOP, 200, 276, 106, 24, hWnd, (HMENU)IDC_IGN_ADDPERMANENTLY, g_hInst, NULL);
+            SendMessage(hwndAdd, BUTTONSETASFLATBTN, 0, 1);
+            SendMessage(hwndAdd, BUTTONSETASFLATBTN + 10, 0, 1);
+
+            SendMessage(hwndAdd, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(210), IMAGE_ICON, 16, 16, LR_SHARED));
+            SetWindowText(hwndAdd, TranslateT("Add permanently"));
+            EnableWindow(hwndAdd, DBGetContactSettingByte(hContact, "CList", "NotOnList", 0));
+
+            if(g_clcData) {
+                if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
+                    if(contact && contact->type != CLCIT_CONTACT) {
+                        DestroyWindow(hWnd);
+                        return FALSE;
+                    } else if(contact) {
+                        TCHAR szTitle[512];
+
+                        mir_sntprintf(szTitle, 512, TranslateT("Ignore options for %s"), contact->szText);
+                        SetWindowText(hWnd, szTitle);
+                        SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
+                        pCaps = CallProtoService(contact->bIsMeta ? contact->metaProto : contact->proto, PS_GETCAPS, PFLAGNUM_1, 0);
+                        EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSONLINE), pCaps & PF1_INVISLIST ? TRUE : FALSE);
+                        EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSOFFLINE), pCaps & PF1_VISLIST ? TRUE : FALSE);
+                    }
+                } else {
+                    DestroyWindow(hWnd);
+                    return FALSE;
+                }
+            }
+            DBWriteContactSettingDword(hContact, "CList", "ign_open", (DWORD)hWnd);
+            ShowWindow(hWnd, SW_SHOWNORMAL);
+            return TRUE;
+        }
+        case WM_COMMAND:
+            switch(LOWORD(wParam)) {
+                case IDC_IGN_ALL:
+                    SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, (LPARAM)0xffffffff);
+                    return 0;
+                case IDC_IGN_NONE:
+                    SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, (LPARAM)0);
+                    return 0;
+                case IDC_IGN_ALWAYSONLINE:
+                case IDC_IGN_ALWAYSOFFLINE:
+                    SendMessage(hWnd, WM_USER + 130, 0, 0);
+                    break;
+                case IDC_HIDECONTACT:
+                    DBWriteContactSettingByte(hContact, "CList", "Hidden", IsDlgButtonChecked(hWnd, IDC_HIDECONTACT) ? 1 : 0);
+                    break;
+                case IDC_IGN_ADDPERMANENTLY:
+                {
+                    ADDCONTACTSTRUCT acs = {0};
+
+                    acs.handle = hContact;
+                    acs.handleType = HANDLE_CONTACT;
+                    acs.szProto = 0;
+                    CallService(MS_ADDCONTACT_SHOW, (WPARAM)hWnd, (LPARAM)&acs);
+                    EnableWindow(GetDlgItem(hWnd, IDC_IGN_ADDPERMANENTLY), DBGetContactSettingByte(hContact, "CList", "NotOnList", 0));
+                    break;
+                }
+                case IDOK:
+                {
+                    DWORD newMask = 0;
+                    SendMessage(hWnd, WM_USER + 110, 0, (LPARAM)&newMask);
+                    DBWriteContactSettingDword(hContact, "Ignore", "Mask1", newMask);
+                }
+                case IDCANCEL:
+                    DestroyWindow(hWnd);
+                    break;
+            }
+            break;
+        case WM_USER + 100:                                         // fill dialog (wParam = hContact, lParam = mask)
+        {
+            CheckDlgButton(hWnd, IDC_IGN_MSGEVENTS, lParam & (1 << (IGNOREEVENT_MESSAGE - 1)) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hWnd, IDC_IGN_FILEEVENTS, lParam & (1 << (IGNOREEVENT_FILE - 1)) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hWnd, IDC_IGN_URLEVENTS, lParam & (1 << (IGNOREEVENT_URL - 1)) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hWnd, IDC_IGN_AUTH, lParam & (1 << (IGNOREEVENT_AUTHORIZATION - 1)) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hWnd, IDC_IGN_ADD, lParam & (1 << (IGNOREEVENT_YOUWEREADDED - 1)) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hWnd, IDC_IGN_ONLINE, lParam & (1 << (IGNOREEVENT_USERONLINE - 1)) ? BST_CHECKED : BST_UNCHECKED);
+            return 0;
+        }
+        case WM_USER + 110:                                         // retrieve value
+        {
+            DWORD *dwNewMask = (DWORD *)lParam, dwMask = 0;
+
+            dwMask = (IsDlgButtonChecked(hWnd, IDC_IGN_MSGEVENTS) ? (1 << (IGNOREEVENT_MESSAGE - 1)) : 0) |
+                     (IsDlgButtonChecked(hWnd, IDC_IGN_FILEEVENTS) ? (1 << (IGNOREEVENT_FILE - 1)) : 0) |
+                     (IsDlgButtonChecked(hWnd, IDC_IGN_URLEVENTS) ? (1 << (IGNOREEVENT_URL - 1)) : 0) |
+                     (IsDlgButtonChecked(hWnd, IDC_IGN_AUTH) ? (1 << (IGNOREEVENT_AUTHORIZATION - 1)) : 0) |
+                     (IsDlgButtonChecked(hWnd, IDC_IGN_ADD) ? (1 << (IGNOREEVENT_YOUWEREADDED - 1)) : 0) |
+                     (IsDlgButtonChecked(hWnd, IDC_IGN_ONLINE) ? (1 << (IGNOREEVENT_USERONLINE - 1)) : 0);
+
+            if(dwNewMask)
+                *dwNewMask = dwMask;
+            return 0;
+        }
+        case WM_USER + 120:                                         // set visibility status
+        {
+            struct ClcContact *contact = NULL;
+
+            if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
+                if(contact) {
+                    WORD wApparentMode = DBGetContactSettingWord(contact->hContact, contact->proto, "ApparentMode", 0);
+
+                    CheckDlgButton(hWnd, IDC_IGN_ALWAYSOFFLINE, wApparentMode == ID_STATUS_OFFLINE ? TRUE : FALSE);
+                    CheckDlgButton(hWnd, IDC_IGN_ALWAYSOFFLINE, wApparentMode == ID_STATUS_OFFLINE ? TRUE : FALSE);
+                }
+            }
+            return 0;
+        }
+        case WM_USER + 130:                                         // update apparent mode
+        {
+            struct ClcContact *contact = NULL;
+
+            if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
+                if(contact) {
+                    WORD wApparentMode = 0, oldApparentMode = DBGetContactSettingWord(hContact, contact->proto, "ApparentMode", 0);
+
+                    if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSONLINE))
+                        wApparentMode = ID_STATUS_ONLINE;
+                    else if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSOFFLINE))
+                        wApparentMode = ID_STATUS_OFFLINE;
+
+                    DBWriteContactSettingWord(hContact, contact->proto, "ApparentMode", wApparentMode);
+                    if(oldApparentMode != wApparentMode)
+                        CallContactService(hContact, PSS_SETAPPARENTMODE, (WPARAM)wApparentMode, 0);
+                    SendMessage(hWnd, WM_USER + 120, 0, 0);
+                }
+            }
+            return 0;
+        }
+        case WM_DESTROY:
+            SetWindowLong(hWnd, GWL_USERDATA, 0);
+            DBWriteContactSettingDword(hContact, "CList", "ign_open", 0);
+            break;
+    }
+    return FALSE;
+}
+
+/*                                                              
+ * service function: Open ignore settings dialog for the contact handle in wParam
+ * (clist_nicer+ specific service)
+ * 
+ * Servicename = CList/SetContactIgnore
+ *
+ * ensure that dialog is only opened once (the dialog proc saves the window handle of an open dialog 
+ * of this type to the contacts database record).
+ *
+ * if dialog is already open, focus it.
+*/
+
+static int SetContactIgnore(WPARAM wParam, LPARAM lParam)
+{
+    if(wParam) {
+        if(!DBGetContactSettingDword((HANDLE)wParam, "CList", "ign_open", 0))
+            CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_QUICKIGNORE), 0, IgnoreDialogProc, (LPARAM)wParam);
+        else {
+            HWND hWnd = (HWND) DBGetContactSettingDword((HANDLE)wParam, "CList", "ign_open", 0);
+
+            if(IsWindow(hWnd))
+                SetFocus(hWnd);
+        }
+    }
+    return 0;
+}
+
+/*                                                              
+ * service function: Set or clear a contacts priority flag (this is a toggle service)
+ * (clist_nicer+ specific service)
+ * 
+ * Servicename = CList/SetContactPriority (wParam = contacts handle)
+ *
+ * priority contacts appear on top of the current sorting order (the priority flag
+ * overrides any other sorting, thus putting priority contacts at the top of the list
+ * or group). If more than one contact per group have this flag set, they will be
+ * sorted using the current contact list sorting rule(s).
+*/
+
 static int SetContactPriority(WPARAM wParam, LPARAM lParam)
 {
 	SendMessage(pcli->hwndContactTree, CLM_TOGGLEPRIORITYCONTACT, wParam, lParam);
 	return 0;
 }
+
+/*                                                              
+ * service function: Set a contacts floating status.
+ * (clist_nicer+ specific service)
+ * 
+ * Servicename = CList/SetContactFloating
+ *
+ * a floating contact appears as a small independent top level window anywhere on
+ * the desktop.
+*/
 
 static int SetContactFloating(WPARAM wParam, LPARAM lParam)
 {
@@ -1142,6 +1320,7 @@ int InitCustomMenus(void)
 	CreateServiceFunction("CloseAction",CloseAction);
 	CreateServiceFunction("CList/SetContactPriority", SetContactPriority);
 	CreateServiceFunction("CList/SetContactFloating", SetContactFloating);
+    CreateServiceFunction("CList/SetContactIgnore", SetContactIgnore);
 
 	//free services
 	CreateServiceFunction("CLISTMENUS/FreeOwnerDataMainMenu",FreeOwnerDataMainMenu);

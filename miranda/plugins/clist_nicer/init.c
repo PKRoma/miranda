@@ -235,6 +235,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pfnSetLayout = (DWORD ( WINAPI *)(HDC, DWORD))GetProcAddress( GetModuleHandleA( "GDI32.DLL" ), "SetLayout" );
 
 	InitGdiPlus();
+    LoadCLCButtonModule();
 
 	hUserDll = GetModuleHandleA("user32.dll");
 	if (hUserDll) {

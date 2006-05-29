@@ -950,9 +950,9 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                 SendMessage(GetDlgItem(hwnd, IDC_SELECTMODE), BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"CLN_CLVM_select"));
             }
             else {
-                SendMessage(GetDlgItem(hwnd, IDC_RESETMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_DELETE), IMAGE_ICON, 16, 16, 0));
-                SendMessage(GetDlgItem(hwnd, IDC_CONFIGUREMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLVM_OPTIONS), IMAGE_ICON, 16, 16, 0));
-                SendMessage(GetDlgItem(hwnd, IDC_SELECTMODE), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLVM_SELECT), IMAGE_ICON, 16, 16, 0));
+                SendMessage(GetDlgItem(hwnd, IDC_RESETMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_DELETE), IMAGE_ICON, 16, 16, LR_SHARED));
+                SendMessage(GetDlgItem(hwnd, IDC_CONFIGUREMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLVM_OPTIONS), IMAGE_ICON, 16, 16, LR_SHARED));
+                SendMessage(GetDlgItem(hwnd, IDC_SELECTMODE), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLVM_SELECT), IMAGE_ICON, 16, 16, LR_SHARED));
             }
             {
                 int bSkinned = DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0);

@@ -1,7 +1,7 @@
 #include "../commonheaders.h"
 
 HANDLE hModulesLoaded,hOnCntMenuBuild;
-HANDLE prevmenu=0, hPriorityItem = 0, hFloatingItem = 0;
+HANDLE prevmenu=0, hPriorityItem = 0, hFloatingItem = 0, hIgnoreItem = 0;
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
 
 HWND hwndTopToolBar=0;
@@ -44,6 +44,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
         CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)prevmenu,(LPARAM)0);
 		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hPriorityItem, 0);
 		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hFloatingItem, 0);
+        CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hIgnoreItem, 0);
     }
 
 	if(DBGetContactSettingByte(0, "CList", "flt_enabled", 0)) {
@@ -73,6 +74,15 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	}
     mi.pszContactOwner=(char *)0;
     hPriorityItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi);
+
+    memset(&mi,0,sizeof(mi));
+    mi.cbSize=sizeof(mi);
+    mi.position=250000;
+    mi.pszPopupName=(char *)-1;
+    mi.pszService="CList/SetContactIgnore";
+    mi.pszName=Translate("&Ignore settings...");
+    mi.pszContactOwner=(char *)0;
+    hIgnoreItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi);
 
 
     ZeroMemory(&mi,sizeof(mi));

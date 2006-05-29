@@ -433,6 +433,8 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		CheckDlgButton(hwndDlg, IDC_SHOWGRIP, DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_SKINBACKGROUND, g_CluiData.bSkinnedStatusBar);
 		CheckDlgButton(hwndDlg, IDC_SHOWXSTATUS, g_CluiData.bShowXStatusOnSbar);
+        CheckDlgButton(hwndDlg, IDC_MARKLOCKED, DBGetContactSettingByte(NULL, "CLUI", "sbar_showlocked", 1));
+
 		if (!IsDlgButtonChecked(hwndDlg, IDC_SHOWSBAR)) {
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWICON), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWPROTO), FALSE);
@@ -467,6 +469,8 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			DBWriteContactSettingByte(NULL, "CLUI", "SBarRightClk", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_RIGHTMIRANDA));
 			DBWriteContactSettingByte(NULL, "CLUI", "EqualSections", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_EQUALSECTIONS));
 			DBWriteContactSettingByte(NULL, "CLUI", "sb_skinned", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SKINBACKGROUND));
+            DBWriteContactSettingByte(NULL, "CLUI", "sbar_showlocked", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MARKLOCKED));
+
 			g_CluiData.bEqualSections = IsDlgButtonChecked(hwndDlg, IDC_EQUALSECTIONS) ? 1 : 0;
 			g_CluiData.bSkinnedStatusBar = IsDlgButtonChecked(hwndDlg, IDC_SKINBACKGROUND) ? 1 : 0;
 			g_CluiData.bShowXStatusOnSbar = IsDlgButtonChecked(hwndDlg, IDC_SHOWXSTATUS) ? 1 : 0;

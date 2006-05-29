@@ -8,6 +8,7 @@
 #define IDD_OPT_FLOATING                3
 #define IDD_DIALOG2                     4
 #define IDD_OPT_SKIN                    4
+#define IDD_QUICKIGNORE                 5
 #define IDI_MIRANDA                     102
 #define IDD_CLNABOUT                    102
 #define IDD_ABOUT                       103
@@ -148,15 +149,24 @@
 #define IDC_AUTOCLEAR                   1020
 #define IDC_FLT_SIMPLELAYOUT            1020
 #define IDC_USESKIN                     1020
+#define IDC_IGN_MSGEVENTS               1020
 #define IDC_AUTOCLEARVAL                1021
+#define IDC_MARKLOCKED                  1021
+#define IDC_IGN_FILEEVENTS              1021
 #define IDC_AUTOCLEARSPIN               1022
 #define IDC_CHOOSE                      1022
+#define IDC_IGN_URLEVENTS               1022
 #define IDC_COMPANY                     1023
 #define IDC_LASTMSG                     1023
+#define IDC_IGN_AUTH                    1023
 #define IDC_SHOWNAMES                   1024
+#define IDC_IGN_ADD                     1024
 #define IDC_CONFIRMDELETE               1025
+#define IDC_IGN_ONLINE                  1025
 #define IDC_CURRENTTRANSFERRED          1026
+#define IDC_IGN_ALWAYSONLINE            1026
 #define IDC_DATE                        1027
+#define IDC_IGN_ALWAYSOFFLINE           1027
 #define IDC_DEPARTMENT                  1028
 #define IDC_DETAILS                     1029
 #define IDC_DISABLEGROUPS               1030
@@ -604,9 +614,13 @@
 #define IDC_BUTTON1                     1633
 #define IDC_ADDVIEWMODE                 1633
 #define IDC_SKINFILESELECT              1633
+#define IDC_IGN_ALL                     1633
 #define IDC_EXPORT                      1634
 #define IDC_DELETEVIEWMODE              1634
+#define IDC_IGN_NONE                    1634
 #define IDC_RELOAD                      1635
+#define IDC_IGN_NONE2                   1635
+#define IDC_IGN_ADDPERMANENTLY          1635
 #define IDC_IDLECHECK                   1636
 #define IDC_IDLEONWINDOWS               1637
 #define IDC_IDLEONMIRANDA               1638
@@ -802,6 +816,7 @@
 #define IDC_CHECK2                      40036
 #define IDC_GROUPAUTOEXPAND             40036
 #define IDC_FLT_AVATARS                 40036
+#define IDC_HIDECONTACT                 40036
 #define ID_BUTTONBAR_NOVISUALSTYLES     40037
 #define IDC_FLT_DUALROWS                40037
 #define ID_TRAY_HIDE                    40038
@@ -827,6 +842,7 @@
 #define IDC_RELOADSKIN                  40047
 #define ID_EVENTAREA_SUNKENFRAME        40048
 #define IDC_FLT_PADBOTTOMSPIN           40048
+#define IDC_UNLOAD                      40048
 #define ID_BUTTONBAR_DRAWSUNKENFRAME    40049
 #define POPUP_NEWGROUP                  40050
 #define POPUP_SHOWSTATUSICONS           40051
@@ -844,9 +860,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        5
+#define _APS_NEXT_RESOURCE_VALUE        6
 #define _APS_NEXT_COMMAND_VALUE         40061
-#define _APS_NEXT_CONTROL_VALUE         40048
+#define _APS_NEXT_CONTROL_VALUE         40049
 #define _APS_NEXT_SYMED_VALUE           40154
 #endif
 #endif

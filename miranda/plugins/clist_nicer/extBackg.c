@@ -305,7 +305,8 @@ void LoadExtBkSettingsFromDB()
             StatusItems[n]. BORDERSTYLE = ret;
         }
     }
-    IMG_LoadItems();
+    if(DBGetContactSettingByte(NULL, "CLUI", "useskin", 0))
+        IMG_LoadItems();
 }
 
 // writes whole struct to the database
@@ -1396,11 +1397,7 @@ static void CorrectBitmap32Alpha(HBITMAP hBitmap)
 
 static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
 {
-    LPVOID imgDecoder = NULL;
-    LPVOID pImg = NULL;
     HBITMAP hBitmap = 0;
-    LPVOID pBitmapBits = NULL;
-    LPVOID m_pImgDecoder = NULL;
 
     hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
     if(hBitmap != 0)
@@ -1489,9 +1486,6 @@ void IMG_DeleteItems()
 
     for(i = 0; i <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; i++)
         StatusItems[i].imageItem = NULL;
-
-    // delete the standard toolbar buttons when loading a skin
-
 }
 
 static UINT nextButtonID = IDC_TBFIRSTUID;
@@ -1642,7 +1636,7 @@ void IMG_LoadItems()
     char szFileName[MAX_PATH];
     int  i = 0;
 
-    if(DBGetContactSetting(NULL, "CLC", "AdvancedSkin", &dbv) || !DBGetContactSettingByte(NULL, "CLUI", "useskin", 0))
+    if(DBGetContactSetting(NULL, "CLC", "AdvancedSkin", &dbv))
         return;
 
     CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFileName);

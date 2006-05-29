@@ -501,24 +501,26 @@ BEGIN
     LTEXT           "If you enable this, the background settings will affect the entire contact list frame.",IDC_STATIC,23,145,244,28
 END
 
-IDD_OPT_SBAR DIALOGEX 0, 0, 178, 212
+IDD_OPT_SBAR DIALOGEX 0, 0, 203, 222
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Status Bar",IDC_STATIC,4,4,170,204
-    CONTROL         "Show status bar",IDC_SHOWSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,17,152,10
-    CONTROL         "Show icons",IDC_SHOWICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,33,142,10
-    CONTROL         "Show protocol names",IDC_SHOWPROTO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,48,142,10
-    CONTROL         "Show status text",IDC_SHOWSTATUS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,63,142,10
-    CONTROL         "Right click opens status menu",IDC_RIGHTSTATUS,"Button",BS_AUTORADIOBUTTON,22,160,142,10
+    GROUPBOX        "Status Bar",IDC_STATIC,4,4,195,214
+    CONTROL         "Show status bar",IDC_SHOWSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,17,187,10
+    CONTROL         "Show icons",IDC_SHOWICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,33,177,10
+    CONTROL         "Show protocol names",IDC_SHOWPROTO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,48,177,10
+    CONTROL         "Show status text",IDC_SHOWSTATUS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,63,177,10
+    CONTROL         "Right click opens status menu",IDC_RIGHTSTATUS,"Button",BS_AUTORADIOBUTTON,22,160,177,10
     CONTROL         "Right click opens Miranda IM menu",IDC_RIGHTMIRANDA,
-                    "Button",BS_AUTORADIOBUTTON,22,147,142,10
-    CONTROL         "Make sections equal width",IDC_EQUALSECTIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,78,142,10
+                    "Button",BS_AUTORADIOBUTTON,22,147,177,10
+    CONTROL         "Make sections equal width",IDC_EQUALSECTIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,78,177,10
     CONTROL         "Show bevels on panels",IDC_SBPANELBEVEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,94,107,10
     CONTROL         "Show resize grip indicator",IDC_SHOWGRIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,110,96,10
     CONTROL         "Draw background skin",IDC_SKINBACKGROUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,125,96,10
-    CONTROL         "Show ICQ extended status icons",IDC_SHOWXSTATUS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,186,152,9
+    CONTROL         "Show ICQ extended status icons",IDC_SHOWXSTATUS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,186,187,9
+    CONTROL         "Mark protocols locked from global status changes",IDC_MARKLOCKED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,200,187,9
 END
 
 IDD_OPT_VIEWMODES DIALOGEX 0, 0, 309, 295
@@ -699,12 +701,12 @@ BEGIN
     IDD_OPT_SBAR, DIALOG
     BEGIN
         LEFTMARGIN, 4
-        RIGHTMARGIN, 174
+        RIGHTMARGIN, 199
         VERTGUIDE, 12
         VERTGUIDE, 22
-        VERTGUIDE, 164
+        VERTGUIDE, 199
         TOPMARGIN, 4
-        BOTTOMMARGIN, 208
+        BOTTOMMARGIN, 218
     END
 
     IDD_OPT_VIEWMODES, DIALOG
@@ -956,15 +958,59 @@ BEGIN
     EDITTEXT        IDC_SKINFILE,70,222,135,13,ES_AUTOHSCROLL | WS_DISABLED
     PUSHBUTTON      "...",IDC_SKINFILESELECT,209,222,33,12,WS_DISABLED
     PUSHBUTTON      "< Reload",IDC_RELOAD,251,222,54,12,WS_DISABLED
-    GROUPBOX        "Contact list skin",IDC_STATIC,3,6,305,50
+    GROUPBOX        "Contact list skin",IDC_STATIC,3,6,305,68
     EDITTEXT        IDC_SKINFILENAME,11,19,256,14,ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "...",IDC_SELECTSKINFILE,277,19,25,13
-    CONTROL         "Use the contact list skin (uncheck this to unload)",IDC_USESKIN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,40,188,10
-    PUSHBUTTON      "Reload skin",IDC_RELOADSKIN,213,37,90,14
+    CONTROL         "Load this skin on startup",IDC_USESKIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,40,188,10
+    PUSHBUTTON      "Apply skin now",IDC_RELOADSKIN,10,54,90,14
+    PUSHBUTTON      "Unload skin",IDC_UNLOAD,209,54,90,14
 END
 
 #endif    // Neutral (Sys. Default) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Austria) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_QUICKIGNORE DIALOGEX 0, 0, 234, 220
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Ignore these events",IDC_STATIC,7,3,219,85
+    CONTROL         "Messages",IDC_IGN_MSGEVENTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,14,89,11
+    CONTROL         "Incoming file transfers",IDC_IGN_FILEEVENTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,26,89,11
+    CONTROL         "URL events",IDC_IGN_URLEVENTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,38,89,11
+    PUSHBUTTON      "Ignore all",IDC_IGN_ALL,150,11,71,15
+    PUSHBUTTON      "Ignore none",IDC_IGN_NONE,150,33,71,15
+    CONTROL         "Suppress auth requests",IDC_IGN_AUTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,50,89,11
+    CONTROL         "Suppress added notifications",IDC_IGN_ADD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,62,116,11
+    CONTROL         "Suppress online notifications",IDC_IGN_ONLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,74,116,11
+    GROUPBOX        "Visibility",IDC_STATIC,7,89,219,35
+    CONTROL         "Appear always online",IDC_IGN_ALWAYSONLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,98,194,11
+    CONTROL         "Appear always offline (block contact)",IDC_IGN_ALWAYSOFFLINE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,111,192,11
+    CONTROL         "Hide this contact from the list",IDC_HIDECONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,132,207,14
+    LTEXT           "To show a previously hidden contact, navigate to Options->Events->Ignore, search the contact in the list and tick the checkbox next to its name.",IDC_STATIC,15,146,209,25
+    PUSHBUTTON      "Cancel",IDCANCEL,163,202,65,14
+    PUSHBUTTON      "Ok",IDOK,90,202,65,14
+    GROUPBOX        "Other",IDC_STATIC,7,125,219,71
+    CONTROL         "",IDC_IGN_ADDPERMANENTLY,"CLCButtonClass",WS_TABSTOP,116,176,106,15,0x18000000L
+END
+
+#endif    // German (Austria) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
