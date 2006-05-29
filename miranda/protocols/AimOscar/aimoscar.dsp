@@ -117,11 +117,11 @@ SOURCE=.\error.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\flap.cpp
+SOURCE=.\file.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\file.cpp
+SOURCE=.\flap.cpp
 # End Source File
 # Begin Source File
 
@@ -137,7 +137,15 @@ SOURCE=.\packets.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\popup.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\proxy.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\server.cpp
 # End Source File
 # Begin Source File
 
@@ -149,10 +157,6 @@ SOURCE=.\snac.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\server.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\strl.cpp
 # End Source File
 # Begin Source File
@@ -161,11 +165,11 @@ SOURCE=.\thread.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\utility.cpp
+SOURCE=.\tlv.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\tlv.cpp
+SOURCE=.\utility.cpp
 # End Source File
 # Begin Source File
 
@@ -181,11 +185,11 @@ SOURCE=.\aim.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\connection.h
+SOURCE=.\client.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\client.h
+SOURCE=.\connection.h
 # End Source File
 # Begin Source File
 
@@ -205,11 +209,11 @@ SOURCE=.\error.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\flap.h
+SOURCE=.\file.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\file.h
+SOURCE=.\flap.h
 # End Source File
 # Begin Source File
 
@@ -222,6 +226,10 @@ SOURCE=.\md5.h
 # Begin Source File
 
 SOURCE=.\packets.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\popup.h
 # End Source File
 # Begin Source File
 
@@ -253,11 +261,11 @@ SOURCE=.\thread.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\utility.h
+SOURCE=.\tlv.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\tlv.h
+SOURCE=.\utility.h
 # End Source File
 # Begin Source File
 
@@ -278,4 +286,3 @@ SOURCE=.\icons\oscar.ico
 # End Group
 # End Target
 # End Project
-

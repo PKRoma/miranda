@@ -12,6 +12,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -34,6 +35,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -57,6 +59,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -79,6 +82,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -102,6 +106,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -124,6 +129,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -147,6 +153,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -169,6 +176,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -192,6 +200,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -214,6 +223,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -237,6 +247,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -259,6 +270,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -282,6 +294,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -304,6 +317,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -332,6 +346,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -354,6 +369,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -381,6 +397,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -403,6 +420,54 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
+	".\proxy.h"\
+	".\server.h"\
+	".\services.h"\
+	".\snac.h"\
+	".\strl.h"\
+	".\thread.h"\
+	".\tlv.h"\
+	".\utility.h"\
+	".\windows.h"\
+	
+
+.\popup.cpp : \
+	"..\..\..\..\..\vc\sdk\include\windows.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\aim.h"\
+	".\client.h"\
+	".\connection.h"\
+	".\conv.h"\
+	".\defines.h"\
+	".\direct_connect.h"\
+	".\error.h"\
+	".\file.h"\
+	".\flap.h"\
+	".\links.h"\
+	".\m_cluiframes.h"\
+	".\md5.h"\
+	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -426,6 +491,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -448,6 +514,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -471,6 +538,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -493,6 +561,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -516,6 +585,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -538,6 +608,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -571,6 +642,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -593,6 +665,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -621,6 +694,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -643,6 +717,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
@@ -666,6 +741,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
@@ -688,6 +764,7 @@
 	".\m_cluiframes.h"\
 	".\md5.h"\
 	".\packets.h"\
+	".\popup.h"\
 	".\proxy.h"\
 	".\server.h"\
 	".\services.h"\
