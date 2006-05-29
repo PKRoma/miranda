@@ -16,6 +16,8 @@
 #	include <crtdbg.h>
 #endif
 
+#define _CLN_GDIP
+
 #define _WIN32_WINNT 0x0501
 #include <windows.h>
 #include <commctrl.h>
@@ -456,7 +458,6 @@ extern "C" int MeasureTextHQ(HDC hdc, HFONT hFont, RECT *rc, WCHAR *szwText)
     rc->bottom = rc->top + (int)rectTarget.Height;
     return 0;
 }
-
 
 extern "C" int DrawTextHQ(HDC hdc, HFONT hFont, RECT *rc, WCHAR *szwText, COLORREF colorref, int fontHeight, int g_RTL)
 {

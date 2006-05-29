@@ -501,8 +501,11 @@ wchar_t *a2u(char *src);
 // debugging support
 
 extern void __forceinline _DebugTraceW(const wchar_t *fmt, ...);
+#ifdef _CLN_GDIP
+extern "C" void __forceinline _DebugTraceA(const char *fmt, ...);
+#else
 extern void __forceinline _DebugTraceA(const char *fmt, ...);
-
+#endif
 // Docking.c
 
 int Docking_IsDocked(WPARAM wParam, LPARAM lParam);

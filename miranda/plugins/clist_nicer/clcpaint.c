@@ -24,8 +24,6 @@ UNICODE done
 
 */
 
-#define _GDITEXTRENDERING
-
 #include "commonheaders.h"
 
 extern struct avatarCache *g_avatarCache;
@@ -67,6 +65,8 @@ HWND g_focusWnd;
 BYTE selBlend;
 BYTE saved_alpha;
 int my_status;
+
+#undef _GDITEXTRENDERING
 
 HFONT __fastcall ChangeToFont(HDC hdc, struct ClcData *dat, int id, int *fontHeight)
 {

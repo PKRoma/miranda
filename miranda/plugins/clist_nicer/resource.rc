@@ -125,7 +125,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Contactlist Items",IDC_STATIC,4,0,305,163
+    GROUPBOX        "Contactlist Items",IDC_STATIC,4,0,305,165
     CONTROL         "ignore this item completely",IDC_IGNORE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,129,7,101,10
     CONTROL         "Gradient",IDC_GRADIENT,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_GROUP | WS_TABSTOP,129,22,43,10
     CONTROL         "Left to right",IDC_GRADIENT_LR,"Button",BS_AUTORADIOBUTTON | WS_DISABLED,139,32,54,10
@@ -955,27 +955,14 @@ BEGIN
     LTEXT           "Per contact skins:",IDC_STATIC,9,224,71,12,WS_DISABLED
     EDITTEXT        IDC_SKINFILE,70,222,135,13,ES_AUTOHSCROLL | WS_DISABLED
     PUSHBUTTON      "...",IDC_SKINFILESELECT,209,222,33,12,WS_DISABLED
-    PUSHBUTTON      "< Reload",IDC_RELOAD,250,222,54,12,WS_DISABLED
+    PUSHBUTTON      "< Reload",IDC_RELOAD,251,222,54,12,WS_DISABLED
+    GROUPBOX        "Contact list skin",IDC_STATIC,3,6,305,50
+    EDITTEXT        IDC_SKINFILENAME,11,19,256,14,ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "...",IDC_SELECTSKINFILE,277,19,25,13
+    CONTROL         "Use the contact list skin (uncheck this to unload)",IDC_USESKIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,40,188,10
+    PUSHBUTTON      "Reload skin",IDC_RELOADSKIN,213,37,90,14
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_OPT_SKIN, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 179
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 87
-    END
-END
-#endif    // APSTUDIO_INVOKED
 
 #endif    // Neutral (Sys. Default) resources
 /////////////////////////////////////////////////////////////////////////////

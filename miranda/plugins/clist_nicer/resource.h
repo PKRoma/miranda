@@ -147,6 +147,7 @@
 #define IDC_SHOWXSTATUS                 1020
 #define IDC_AUTOCLEAR                   1020
 #define IDC_FLT_SIMPLELAYOUT            1020
+#define IDC_USESKIN                     1020
 #define IDC_AUTOCLEARVAL                1021
 #define IDC_AUTOCLEARSPIN               1022
 #define IDC_CHOOSE                      1022
@@ -701,6 +702,7 @@
 #define IDC_TBCONFIGUREVIEWMODE         1812
 #define IDC_TBTOPMENU                   1813
 #define IDC_TBTOPSTATUS                 1814
+#define IDC_TBFIRSTUID                  1820
 #define IDC_NOTIFYBUTTON                1900
 #define IDC_CLNICER                     2002
 #define IDC_SUPPORT                     2003
@@ -817,9 +819,12 @@
 #define IDC_FLT_PADRIGHTSPIN            40044
 #define ID_EVENTAREA_AUTOHIDE           40045
 #define IDC_FLT_PADTOP                  40045
+#define IDC_SKINFILENAME                40045
 #define IDC_FLT_PADTOPSPIN              40046
+#define IDC_SELECTSKINFILE              40046
 #define POPUP_ADJUSTSIZE                40047
 #define IDC_FLT_PADBOTTOM               40047
+#define IDC_RELOADSKIN                  40047
 #define ID_EVENTAREA_SUNKENFRAME        40048
 #define IDC_FLT_PADBOTTOMSPIN           40048
 #define ID_BUTTONBAR_DRAWSUNKENFRAME    40049
@@ -841,7 +846,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        5
 #define _APS_NEXT_COMMAND_VALUE         40061
-#define _APS_NEXT_CONTROL_VALUE         40045
+#define _APS_NEXT_CONTROL_VALUE         40048
 #define _APS_NEXT_SYMED_VALUE           40154
 #endif
 #endif

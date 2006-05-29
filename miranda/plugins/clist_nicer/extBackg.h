@@ -97,6 +97,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define BUTTON_ISINTERNAL 1
 #define BUTTON_ISTOGGLE 2
+#define BUTTON_ISSERVICE 4
+#define BUTTON_ISPROTOSERVICE 8
+#define BUTTON_PASSHCONTACTW 16
+#define BUTTON_PASSHCONTACTL 32
 
 typedef struct _tagImageItem {
     char szName[40];
@@ -126,6 +130,7 @@ typedef struct _tagButtonItem {
     DWORD dwFlags;
     DWORD uId;
     TCHAR szTip[256];
+    char  szService[256];
     struct _tagButtonItem *nextItem;
 } ButtonItem;
 

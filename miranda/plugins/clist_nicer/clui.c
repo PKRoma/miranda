@@ -111,6 +111,9 @@ POINT g_oldPos = {0};
 int during_sizing = 0;
 extern int dock_prevent_moving;
 
+static HDC hdcLockedPoint = 0;
+static HBITMAP hbmLockedPoint = 0, hbmOldLockedPoint = 0;
+
 HICON overlayicons[10];
 
 struct CluiTopButton top_buttons[] = {
@@ -640,6 +643,9 @@ void CreateButtonBar(HWND hWnd)
         if (top_buttons[i].hwnd)
             continue;
 
+        if (g_ButtonItems && top_buttons[i].id != IDC_TBGLOBALSTATUS && top_buttons[i].id != IDC_TBMENU)
+            continue;
+
         if ((top_buttons[i].id == IDC_TABSRMMMENU || top_buttons[i].id == IDC_TABSRMMSLIST) && !g_CluiData.tabSRMM_Avail)
             continue;
 
@@ -974,6 +980,19 @@ static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
 
 extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HANDLE hContact)
+{
+    if(item->dwFlags & BUTTON_PASSHCONTACTW || item->dwFlags & BUTTON_PASSHCONTACTL) {
+        if(hContact == 0)
+            return 0;
+        if(item->dwFlags & BUTTON_PASSHCONTACTW)
+            *wParam = (WPARAM)hContact;
+        else if(item->dwFlags & BUTTON_PASSHCONTACTL)
+            *lParam = (LPARAM)hContact;
+        return 1;
+    }
+    return 1;                                       // doesn't need a paramter
+}
 static void ShowCLUI(HWND hwnd)
 {
 	int state = old_cliststate;
@@ -1041,7 +1060,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			CluiProtocolStatusChanged(0, 0);
 			ConfigureCLUIGeometry();
             LoadCLCButtonModule();
-            CreateButtonBar(hwnd);
 			for(i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
 #if defined(_UNICODE)
 				char *szTemp = Translate((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0));
@@ -1086,6 +1104,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		break;
 	case M_CREATECLC:
 		{
+            CreateButtonBar(hwnd);
 		    NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			{
@@ -1604,6 +1623,58 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		{
 			DWORD dwOldFlags = g_CluiData.dwFlags;
 			if(HIWORD(wParam) == BN_CLICKED && lParam != 0) {
+                if(LOWORD(wParam) == IDC_TBFIRSTUID - 1)
+                    break;
+                else if(LOWORD(wParam) >= IDC_TBFIRSTUID) {
+                    ButtonItem *item = g_ButtonItems;
+                    WPARAM wwParam = 0;
+                    LPARAM llParam = 0;
+                    HANDLE hContact = 0;
+                    struct ClcContact *contact = 0;
+                    int sel = g_clcData ? g_clcData->selection : -1;
+                    int serviceFailure = FALSE;
+
+                    if(sel != -1) {
+                        sel = pcli->pfnGetRowByIndex(g_clcData, g_clcData->selection, &contact, NULL);
+                        if(contact && contact->type == CLCIT_CONTACT) {
+                            hContact = contact->hContact;
+                        }
+                    }
+                    while(item) {
+                        if(item->uId == (DWORD)LOWORD(wParam)) {
+                            int contactOK = ServiceParamsOK(item, &wwParam, &llParam, hContact);
+
+                            if(item->dwFlags & BUTTON_ISSERVICE) {
+                                if(ServiceExists(item->szService) && contactOK)
+                                    CallService(item->szService, wwParam, llParam);
+                                else if(contactOK)
+                                    serviceFailure = TRUE;
+                            }
+                            else if(item->dwFlags & BUTTON_ISPROTOSERVICE && g_clcData) {
+                                if(contactOK) {
+                                    char szFinalService[512];
+
+                                    mir_snprintf(szFinalService, 512, "%s/%s", (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), item->szService);
+                                    if(ServiceExists(szFinalService))
+                                        CallService(szFinalService, wwParam, llParam);
+                                    else
+                                        serviceFailure = TRUE;
+                                }
+                            }
+                            if(!contactOK)
+                                MessageBox(0, _T("The requested action requires a valid contact selection. Please select a contact from the contact list and repeat"), _T("Parameter mismatch"), MB_OK);
+                            if(serviceFailure) {
+                                char szError[512];
+
+                                mir_snprintf(szError, 512, "The service %s specified by the %s button definition was not found. You may need to install additional plugins", item->szService, item->szName);
+                                MessageBoxA(0, szError, "Service failure", MB_OK);
+                            }
+                            break;
+                        }
+                        item = item->nextItem;
+                    }
+                    goto buttons_done;
+                }
 				switch(LOWORD(wParam)) {
 				case IDC_TBMENU:
 				case IDC_TBTOPMENU:
@@ -1668,6 +1739,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			else if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), (LPARAM) (HANDLE) NULL))
 					return 0;
 
+buttons_done:
 			switch (LOWORD(wParam)) {
 			case ID_TRAY_EXIT:
 			case ID_ICQ_EXIT:
@@ -2030,6 +2102,14 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_DRAWITEM:
 		{
 			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
+
+            if(hbmLockedPoint == 0) {
+                RECT rc = {0,0,5,5};
+
+                hdcLockedPoint = CreateCompatibleDC(dis->hDC);
+                hbmLockedPoint = CreateCompatibleBitmap(dis->hDC, 5, 5);
+                hbmOldLockedPoint = SelectObject(hdcLockedPoint, hbmLockedPoint);
+            }
 			if (dis->hwndItem == pcli->hwndStatus) {
 				ProtocolData *pd = (ProtocolData *)dis->itemData;
 				int nParts = SendMessage(pcli->hwndStatus, SB_GETPARTS, 0, 0);
@@ -2081,6 +2161,26 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					else if(pd->statusbarpos == nParts - 1)
 						x -= (g_CluiData.bCRight/2);
 					DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - 16) >> 1, hIcon, 16, 16, 0, NULL, DI_NORMAL);
+                    if(DBGetContactSettingByte(NULL, "CLUI", "sbar_showlocked", 1)) {
+                        if(DBGetContactSettingByte(NULL, szProto, "LockMainStatus", 0)) {
+                            HBRUSH hbr, hbrOld;
+                            /*BLENDFUNCTION bf;
+
+                            bf.SourceConstantAlpha = 20;
+                            bf.AlphaFormat = 0;
+                            bf.BlendFlags = 0;
+                            bf.BlendOp = AC_SRC_OVER;
+                            AlphaBlend(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - 16) >> 1, 16, 16, hdcLockedPoint,
+                                       0, 0, 3, 3, bf);*/
+                            BitBlt(hdcLockedPoint, 0, 0, 5, 5, dis->hDC, x + 12, ((dis->rcItem.top + dis->rcItem.bottom - 16) >> 1) + 11, SRCCOPY);
+                            hbr = CreateSolidBrush(RGB(255, 0, 0));
+                            hbrOld = SelectObject(hdcLockedPoint, hbr);
+                            Ellipse(hdcLockedPoint, 0, 0, 5, 5);
+                            BitBlt(dis->hDC, x + 12, ((dis->rcItem.top + dis->rcItem.bottom - 16) >> 1) + 11, 5, 5, hdcLockedPoint, 0, 0, SRCCOPY);
+                            SelectObject(hdcLockedPoint, hbrOld);
+                            DeleteObject(hbr);
+                        }
+                    }
 					if(bDestroy)
 						DestroyIcon(hIcon);
 					x += 18;
@@ -2151,7 +2251,11 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		}
 		DestroyMenu(g_CluiData.hMenuButtons);
 		FreeProtocolData();
-
+        if(hdcLockedPoint) {
+            SelectObject(hdcLockedPoint, hbmOldLockedPoint);
+            DeleteObject(hbmLockedPoint);
+            DeleteDC(hdcLockedPoint);
+        }
 		CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);
 		UnLoadCLUIFramesModule();
 		break;

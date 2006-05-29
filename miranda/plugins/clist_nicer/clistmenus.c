@@ -497,6 +497,8 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 				if (i)
 					pimi->mi.flags|=CMIF_CHECKED;
 				else pimi->mi.flags&=~CMIF_CHECKED;
+                if(pcli->hwndStatus)
+                    InvalidateRect(pcli->hwndStatus, NULL, FALSE);
 			}
 			else if ((smep->proto!=NULL)) {
 				CallProtoService(smep->proto,PS_SETSTATUS,smep->status,0);  
