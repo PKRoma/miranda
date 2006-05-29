@@ -1477,7 +1477,7 @@ int OptionsInit(void)
 	g_Settings.UserListFont = NULL;
 	g_Settings.UserListHeadingsFont = NULL;
 	g_Settings.iSplitterX = DBGetContactSettingWord(NULL, "Chat", "SplitterX", 105);
-	g_Settings.iSplitterY = DBGetContactSettingWord(NULL, "Chat", "SplitterY", 90);
+	g_Settings.iSplitterY = DBGetContactSettingWord(NULL, "Chat", "splitY", 50);
 	g_Settings.iX = DBGetContactSettingDword(NULL, "Chat", "roomx", -1);
 	g_Settings.iY = DBGetContactSettingDword(NULL, "Chat", "roomy", -1);
 	g_Settings.iWidth = DBGetContactSettingDword(NULL, "Chat", "roomwidth", -1);

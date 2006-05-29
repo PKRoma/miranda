@@ -3006,7 +3006,7 @@ LABEL_SHOWWINDOW:
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_BKGCOLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
 
             DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
-            DBWriteContactSettingWord(NULL, "Chat", "SplitterY", (WORD)g_Settings.iSplitterY);
+            DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
             
             UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
             if(myGlobals.g_hMenuTrayUnread)

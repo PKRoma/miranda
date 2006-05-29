@@ -73,7 +73,7 @@ int Chat_Unload(void)
         return 0;
     
     DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
-	DBWriteContactSettingWord(NULL, "Chat", "SplitterY", (WORD)g_Settings.iSplitterY);
+	DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 	DBWriteContactSettingDword(NULL, "Chat", "roomx", g_Settings.iX);
 	DBWriteContactSettingDword(NULL, "Chat", "roomy", g_Settings.iY);
 	DBWriteContactSettingDword(NULL, "Chat", "roomwidth" , g_Settings.iWidth);

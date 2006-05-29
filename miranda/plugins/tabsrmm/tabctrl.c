@@ -395,6 +395,7 @@ b_nonskinned:
 				StatusItems_t *item = &StatusItems[dwStyle & TCS_BOTTOM ? ID_EXTBKTABITEMACTIVEBOTTOM : ID_EXTBKTABITEMACTIVE];
 				if(!item->IGNORED) {
                     rcItem->left += item->MARGIN_LEFT; rcItem->right -= item->MARGIN_RIGHT;
+                    rcItem->top += item->MARGIN_TOP; rcItem->bottom -= item->MARGIN_BOTTOM;
 					DrawAlpha(dc, rcItem, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 							  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
 					return;

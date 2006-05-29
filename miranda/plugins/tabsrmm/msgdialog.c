@@ -1079,7 +1079,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                                 SM_BroadcastMessage(NULL, DM_SAVESIZE, 0, 0, 0);
                                 SM_BroadcastMessage(NULL, DM_SPLITTERMOVED, (short) HIWORD(messagePos) + rc.bottom / 2, (LPARAM) -1, 0);
                                 SM_BroadcastMessage(NULL, WM_SIZE, 0, 0, 1);
-                                DBWriteContactSettingWord(NULL, "Chat", "SplitterY", (WORD)g_Settings.iSplitterY);
+                                DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
                             }
 
                             break;
