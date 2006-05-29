@@ -23,9 +23,10 @@ void start_connection(int initial_status)
 			DBFreeVariant(&dbv);
 		else
 		{
-			char* msg="Please, enter a username in the options dialog.";
+		/*	char* msg="Please, enter a username in the options dialog.";
 			char* tmsg=strldup(msg,strlen(msg));
-			ForkThread((pThreadFunc)message_box_thread,tmsg);
+			ForkThread((pThreadFunc)message_box_thread,tmsg);*/
+			ShowPopup("Aim Protocol","Please, enter a username in the options dialog.", 0);
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
 		}
@@ -33,9 +34,7 @@ void start_connection(int initial_status)
 			DBFreeVariant(&dbv);
 		else
 		{
-			char* msg="Please, enter a password in the options dialog.";
-			char* tmsg=strldup(msg,strlen(msg));
-			ForkThread((pThreadFunc)message_box_thread,tmsg);
+			ShowPopup("Aim Protocol","Please, enter a password in the options dialog.", 0);
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
 		}
@@ -49,9 +48,7 @@ void start_connection(int initial_status)
 		}
 		else
 		{
-			char* msg="Error retrieving hostname from the database.";
-			char* tmsg=strldup(msg,strlen(msg));
-			ForkThread((pThreadFunc)message_box_thread,tmsg);
+			ShowPopup("Aim Protocol","Error retrieving hostname from the database.", 0);
 		}
 		if(conn.hServerConn)
 		{
@@ -157,13 +154,13 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 			unsigned short user_id_array_size;
 			char* user_id_array=get_members_of_group(new_group_id,user_id_array_size);
 			if(old_group_id)
-				aim_delete_contact(dbv.pszVal,item_id,old_group_id);
-			aim_add_contact(dbv.pszVal,item_id,new_group_id);
+				aim_delete_contact(conn.hServerConn,conn.seqno,dbv.pszVal,item_id,old_group_id);
+			aim_add_contact(conn.hServerConn,conn.seqno,dbv.pszVal,item_id,new_group_id);
 			if(!group_exist)
 			{
-				aim_add_group(group,new_group_id);//add the group server-side even if it exist
+				aim_add_group(conn.hServerConn,conn.seqno,group,new_group_id);//add the group server-side even if it exist
 			}
-			aim_mod_group(group,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
+			aim_mod_group(conn.hServerConn,conn.seqno,group,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
 			DBFreeVariant(&dbv);
 			delete[] user_id_array;
 		}
@@ -833,7 +830,7 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 			else
 			{
 				char* error=_strerror("Failed to open file: ");
-				MessageBox( NULL, Translate(error),norm_sn, MB_OK );
+				ShowPopup("Aim Protocol",error, 0);
 			}
 		}
 	}
@@ -884,7 +881,7 @@ void write_profile(HANDLE hContact,char* sn,char* msg)
 			else
 			{
 				char* error=_strerror("Failed to open file: ");
-				MessageBox( NULL, Translate(error),norm_sn, MB_OK );
+				ShowPopup("Aim Protocol",error, 0);
 			}
 		}
 	}

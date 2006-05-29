@@ -63,11 +63,6 @@ void set_extra_icon(char* data);
 //char* get_outer_group();
 void wcs_htons(wchar_t * ch);
 void assign_modmsg(char* msg);
-/*
-char* renew(char* src,int size, int size_chg);*/
-//wchar_t* renew(wchar_t* src,int size, int size_chg);
-//template <class T>
-//T* renew(T* src, int size, int size_chg);
 template <class T>
 T* renew(T* src, int size, int size_chg)
 {

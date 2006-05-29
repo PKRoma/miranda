@@ -56,7 +56,7 @@ int IdleChanged(WPARAM wParam, LPARAM lParam)
     BOOL bPrivacy = (lParam & IDF_PRIVACY);
 
     if (bPrivacy && conn.idle) {
-        aim_set_idle(0);
+        aim_set_idle(conn.hServerConn,conn.seqno,0);
         return 0;
     }
     else if (bPrivacy) {
@@ -70,10 +70,10 @@ int IdleChanged(WPARAM wParam, LPARAM lParam)
             mii.cbSize = sizeof(mii);
             CallService(MS_IDLE_GETIDLEINFO, 0, (LPARAM) & mii);
 			conn.idle=1;
-            aim_set_idle(mii.idleTime * 60);
+            aim_set_idle(conn.hServerConn,conn.seqno,mii.idleTime * 60);
         }
         else
-            aim_set_idle(0);
+            aim_set_idle(conn.hServerConn,conn.seqno,0);
     }
     return 0;
 }
@@ -94,7 +94,7 @@ static int SendMsg(WPARAM wParam, LPARAM lParam)
 		{
 			char* html_msg=bbcodes_to_html(smsg);
 			delete[] smsg;
-			if(aim_send_plaintext_message(dbv.pszVal,html_msg,0))
+			if(aim_send_plaintext_message(conn.hServerConn,conn.seqno,dbv.pszVal,html_msg,0))
 			{
 				delete[] html_msg;
 				DBFreeVariant(&dbv);
@@ -104,7 +104,7 @@ static int SendMsg(WPARAM wParam, LPARAM lParam)
 		}
 		else
 		{
-			if(aim_send_plaintext_message(dbv.pszVal,smsg,0))
+			if(aim_send_plaintext_message(conn.hServerConn,conn.seqno,dbv.pszVal,smsg,0))
 			{
 				delete[] smsg;
 				DBFreeVariant(&dbv);
@@ -135,7 +135,7 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 			{
 				wchar_t* html_msg=bbcodes_to_html(smsg);
 				delete[] smsg;
-				if(aim_send_unicode_message(dbv.pszVal,html_msg))
+				if(aim_send_unicode_message(conn.hServerConn,conn.seqno,dbv.pszVal,html_msg))
 				{
 					delete[] html_msg;
 					DBFreeVariant(&dbv);
@@ -145,7 +145,7 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				if(aim_send_unicode_message(dbv.pszVal,smsg))
+				if(aim_send_unicode_message(conn.hServerConn,conn.seqno,dbv.pszVal,smsg))
 				{
 					delete[] smsg;
 					DBFreeVariant(&dbv);
@@ -191,7 +191,7 @@ static int GetProfile(WPARAM wParam, LPARAM lParam)
 	if(dbv.pszVal)
 	{
 		conn.request_HTML_profile=1;
-		aim_query_profile(dbv.pszVal);
+		aim_query_profile(conn.hServerConn,conn.seqno,dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	return 0;
@@ -216,8 +216,8 @@ static int SetAwayMsg(WPARAM wParam, LPARAM lParam)
 				if(conn.state==1)
 				{
 					broadcast_status(ID_STATUS_AWAY);
-					aim_set_away(conn.szModeMsg);//set actual away message
-					aim_set_invis(AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
+					aim_set_away(conn.hServerConn,conn.seqno,conn.szModeMsg);//set actual away message
+					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
 				}
 			}
 	}
@@ -235,7 +235,7 @@ static int GetAwayMsg(WPARAM wParam, LPARAM lParam)
 	DBGetContactSetting((HANDLE)ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
 	if(dbv.pszVal)
 	{
-		if(aim_query_away_message(dbv.pszVal))
+		if(aim_query_away_message(conn.hServerConn,conn.seqno,dbv.pszVal))
 		{
 			DBFreeVariant(&dbv);
 			return 1;
@@ -252,7 +252,7 @@ static int GetHTMLAwayMsg(WPARAM wParam, LPARAM lParam)
 	DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
 	if(dbv.pszVal)
 	{
-		if(aim_query_away_message(dbv.pszVal))
+		if(aim_query_away_message(conn.hServerConn,conn.seqno,dbv.pszVal))
 		{
 			conn.requesting_HTML_ModeMsg=1;				
 		}
@@ -382,7 +382,7 @@ static int ContactDeleted(WPARAM wParam,LPARAM lParam)
 		unsigned short group_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);		
 		unsigned short item_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_BI,0);
 		if(group_id&&item_id)
-			aim_delete_contact(dbv.pszVal,item_id,group_id);
+			aim_delete_contact(conn.hServerConn,conn.seqno,dbv.pszVal,item_id,group_id);
 		DBFreeVariant(&dbv);
 	}
 	return 0;
@@ -398,9 +398,7 @@ static int SendFile(WPARAM wParam,LPARAM lParam)
 		{
 			if(DBGetContactSettingByte(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT,-1)!=-1)
 			{
-				char* msg="Cannot start a file transfer with this contact while another file transfer with the same contact is pending.";
-				char* tmsg=strldup(msg,strlen(msg));
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				ShowPopup("Aim Protocol","Cannot start a file transfer with this contact while another file transfer with the same contact is pending.", 0);
 				return 0;
 			}
 			char** files = (char**)ccs->lParam;
@@ -417,9 +415,7 @@ static int SendFile(WPARAM wParam,LPARAM lParam)
 				for(int file_amt=0;files[file_amt];file_amt++)
 					if(file_amt==1)
 					{
-						char* msg="AimOSCAR allows only one file to be sent at a time.";
-						char* tmsg=strldup(msg,strlen(msg));
-						ForkThread((pThreadFunc)message_box_thread,tmsg);
+						ShowPopup("Aim Protocol","AimOSCAR allows only one file to be sent at a time.", 0);
 						return 0;
 					}
 				char cookie[8];
@@ -441,7 +437,7 @@ static int SendFile(WPARAM wParam,LPARAM lParam)
 					}
 				}
 				else
-					aim_send_file(dbv.pszVal,cookie,pszFile,pszSize,pszDesc);
+					aim_send_file(conn.hServerConn,conn.seqno,dbv.pszVal,cookie,pszFile,pszSize,pszDesc);
 				DBFreeVariant(&dbv);
 				return (int)ccs->hContact;
 			}
@@ -504,7 +500,7 @@ static int DenyFile(WPARAM wParam, LPARAM lParam)
 	{
 		char cookie[8];
 		read_cookie(ccs->hContact,cookie);
-		aim_deny_file(dbv.pszVal,cookie);
+		aim_deny_file(conn.hServerConn,conn.seqno,dbv.pszVal,cookie);
 		DBFreeVariant(&dbv);
 	}
 	DBDeleteContactSetting(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT);
@@ -518,7 +514,7 @@ static int CancelFile(WPARAM wParam, LPARAM lParam)
 	{
 		char cookie[8];
 		read_cookie(ccs->hContact,cookie);
-		aim_deny_file(dbv.pszVal,cookie);
+		aim_deny_file(conn.hServerConn,conn.seqno,dbv.pszVal,cookie);
 		DBFreeVariant(&dbv);
 	}
 	if(DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_FT,-1)!=-1)
@@ -537,9 +533,9 @@ static int UserIsTyping(WPARAM wParam, LPARAM lParam)
 	if(dbv.pszVal)
 	{
 		if(lParam==PROTOTYPE_SELFTYPING_ON)
-			aim_typing_notification(dbv.pszVal,0x0002);
+			aim_typing_notification(conn.hServerConn,conn.seqno,dbv.pszVal,0x0002);
 		else if(lParam==PROTOTYPE_SELFTYPING_OFF)
-			aim_typing_notification(dbv.pszVal,0x0000);
+			aim_typing_notification(conn.hServerConn,conn.seqno,dbv.pszVal,0x0000);
 		DBFreeVariant(&dbv);
 	}
 	return 0;

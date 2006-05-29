@@ -13,7 +13,7 @@ unsigned long ForkThread(pThreadFunc threadcode,void *arg);
 void aim_keepalive_thread(void* fa);
 void set_status_thread(int status);
 //void contact_setting_changed_thread(char* data);
-void message_box_thread(char* data);
+//void message_box_thread(char* data);
 void accept_file_thread(char* szFile);
 void redirected_file_thread(char* blob);
 void proxy_file_thread(char* blob);

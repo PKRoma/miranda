@@ -23,6 +23,7 @@
 #include <m_message.h>
 #include <m_netlib.h>
 #include <m_options.h>
+#include <m_popup.h>
 #include <m_protocols.h>
 #include <m_protomod.h>
 #include <m_protosvc.h>
@@ -43,8 +44,12 @@
 #include "connection.h"
 #include "conv.h"
 #include "direct_connect.h"
+#include "error.h"
+#include "file.h"
 #include "links.h"
+#include "md5.h"
 #include "packets.h"
+#include "popup.h"
 #include "proxy.h"
 #include "resource.h"
 #include "services.h"
@@ -61,6 +66,8 @@
 #define ACCOUNT_TYPE_ADMIN				5
 #define EXTENDED_STATUS_BOT				1
 #define EXTENDED_STATUS_HIPTOP			2
+//Popup flags
+#define	MAIL_POPUP						4
 //Main Option Window Keys
 #define AIM_KEY_SN						"SN"
 #define AIM_KEY_NK						"Nick"
@@ -163,7 +170,7 @@ extern char* AIM_CLIENT_ID_STRING;		//Client id EXTERN
 #define AIM_CAP_IM2						"\x74\xed\xc3\x36\x44\xdf\x48\x5b\x8b\x1c\x67\x1a\x1f\x86\x09\x9f"
 extern char	AIM_CAP_MIRANDA[];			//Miranda cap EXTERN
 //Aim Services
-#define AIM_SERVICE_GENERIC				"\0\x01\0\x02"//version 4
+#define AIM_SERVICE_GENERIC				"\0\x01\0\x04"//version 4
 #define AIM_SERVICE_SSI					"\0\x13\0\x03"//version 3
 #define AIM_SERVICE_LOCATION			"\0\x02\0\x01"//version 1
 #define AIM_SERVICE_BUDDYLIST			"\0\x03\0\x01"//version 1
@@ -173,6 +180,7 @@ extern char	AIM_CAP_MIRANDA[];			//Miranda cap EXTERN
 #define AIM_SERVICE_BOS					"\0\x09\0\x01"//version 1
 #define AIM_SERVICE_USERLOOKUP			"\0\x0A\0\x01"//version 1
 #define AIM_SERVICE_STATS				"\0\x0B\0\x01"//version 1
+#define AIM_SERVICE_MAIL				"\0\x18\0\x01"//version 1
 #define AIM_SERVICE_RATES				"\0\x01\0\x02\0\x03\0\x04\0\x05"
 //Aim Statuses
 #define AIM_STATUS_WEBAWARE				"\0\x01"	
@@ -189,4 +197,63 @@ extern char	AIM_CAP_MIRANDA[];			//Miranda cap EXTERN
 #define	AIM_STATUS_OCCUPIED				"\0\x10"
 #define	AIM_STATUS_FREE4CHAT			"\0\x20"
 #define AIM_STATUS_INVISIBLE			"\x01\0"
+
+#define HOOKEVENT_SIZE 8
+class oscar_data
+{
+public:
+    char *username;
+    char *password;
+    int seqno;//main connection sequence number
+	int state;//status of the connection; e.g. whether connected or not
+	int packet_offset;//current offset of main connection client to server packet
+	unsigned int status;//current status
+	int initial_status;//start up status
+	char* szModeMsg;//away message
+
+	//Some bools to keep track of different things
+	bool requesting_HTML_ModeMsg;
+	bool request_HTML_profile;
+	bool buddy_list_received;
+	bool extra_icons_loaded;
+	bool freeing_DirectBoundPort;
+	bool shutting_down;
+	bool idle;
+	
+	HINSTANCE hInstance;//plugin handle instance
+	
+	//Some main connection stuff
+	HANDLE hServerConn;//handle to the main connection
+	HANDLE hServerPacketRecver;//handle to the listening device
+	HANDLE hNetlib;//handle to netlib
+	unsigned long InternalIP;// our ip
+	unsigned short LocalPort;// our port
+	
+	//Peer connection stuff
+	HANDLE hNetlibPeer;//handle to the peer netlib
+	HANDLE hDirectBoundPort;//direct connection listening port
+	HANDLE current_rendezvous_accept_user;//hack
+
+	//Handles for the context menu items
+	HANDLE hHTMLAwayContextMenuItem;
+	HANDLE hAddToServerListContextMenuItem;
+
+	//hook event size stuff
+	HANDLE hookEvent[HOOKEVENT_SIZE];
+	unsigned int hookEvent_size;//current hookevent size
+	
+	//Some mail connection stuff
+	HANDLE hMailConn;
+	int mail_seqno;
+	int mail_packet_offset;
+	
+	//Some Icon handles
+	HANDLE bot_icon;
+	HANDLE icq_icon;
+	HANDLE aol_icon;
+	HANDLE hiptop_icon;
+	HANDLE admin_icon;
+	HANDLE confirmed_icon;
+	HANDLE unconfirmed_icon;
+} extern conn;
 #endif

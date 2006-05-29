@@ -62,7 +62,7 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					{
 						char* msg=strldup(buf,strlen(buf));
 						msg=strip_linebreaks(msg);
-                        aim_set_profile(msg);//also see set caps for profile setting
+                        aim_set_profile(conn.hServerConn,conn.seqno,msg);//also see set caps for profile setting
 						delete[] msg;
                     }
                     EnableWindow(GetDlgItem(hwndDlg, IDC_SETPROFILE), FALSE);
@@ -414,13 +414,13 @@ BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				{
 					//Instant Idle
 					if (conn.state==1)
-						aim_set_idle(hours * 60 * 60 + minutes * 60);
+						aim_set_idle(conn.hServerConn,conn.seqno,hours * 60 * 60 + minutes * 60);
 					EndDialog(hwndDlg, IDOK);
 					break;
 				}
 			case IDCANCEL:
                 {
-					aim_set_idle(0);
+					aim_set_idle(conn.hServerConn,conn.seqno,0);
                     EndDialog(hwndDlg, IDCANCEL);
 					break;
                 }

@@ -15,9 +15,9 @@ struct snac_header
 	unsigned short flags;
 	unsigned short request_id[2];
 };
-int aim_writesnac(int service, int subgroup,unsigned short request_id,char* out);
-int aim_writetlv(int type,int size ,char* value,char* out);
-int aim_sendflap(int type, int length,char *buf);
-int aim_writefamily(char *buf,char* out);
-int aim_writegeneric(int size,char *buf,char* out);
+int aim_writesnac(int service, int subgroup,unsigned short request_id,int &offset,char* out);
+int aim_writetlv(int type,int size ,char* value,int &offset,char* out);
+int aim_sendflap(HANDLE conn, int type,int length,char *buf, int &seqno);
+int aim_writefamily(char *buf,int &offset,char* out);
+int aim_writegeneric(int size,char *buf,int &offset,char* out);
 #endif

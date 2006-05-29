@@ -48,6 +48,10 @@ unsigned long TLV::ulong(int pos)
 {
 	return htonl(*(unsigned long*)&value_[pos]);
 }
+unsigned char TLV::ubyte(int pos)
+{
+	return value_[pos];
+}
 char* TLV::part(int pos, int length)//returns part of the tlv value
 {
 	if(pos+length>length_)

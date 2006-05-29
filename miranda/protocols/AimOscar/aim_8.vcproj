@@ -269,6 +269,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\popup.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\proxy.cpp"
 				>
 			</File>
@@ -420,6 +424,10 @@
 			</File>
 			<File
 				RelativePath=".\packets.h"
+				>
+			</File>
+			<File
+				RelativePath=".\popup.h"
 				>
 			</File>
 			<File

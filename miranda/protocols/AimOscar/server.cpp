@@ -1,12 +1,12 @@
 #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
 #include "server.h"
-void snac_md5_authkey(SNAC &snac)//family 0x0017
+void snac_md5_authkey(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0017
 {
 	if(snac.subcmp(0x0007))//md5 authkey string
 	{
 		unsigned short length=snac.ushort();
 		char* authkey=snac.part(2,length);
-		aim_auth_request(authkey,AIM_LANGUAGE,AIM_COUNTRY);
+		aim_auth_request(hServerConn,seqno,authkey,AIM_LANGUAGE,AIM_COUNTRY);
 		delete[] authkey;
 	}
 }
@@ -49,50 +49,66 @@ int snac_authorization_reply(SNAC &snac)//family 0x0017
 	}
 	return 0;
 }
-void snac_supported_families(SNAC &snac)//family 0x0001
+void snac_supported_families(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0001
 {
 	if(snac.subcmp(0x0003))//server supported service list
 	{
-		aim_send_service_request();
+		aim_send_service_request(hServerConn,seqno);
 	}
 }
-void snac_supported_family_versions(SNAC &snac)//family 0x0001
+void snac_supported_family_versions(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0001
 {
 	if(snac.subcmp(0x0018))//service list okayed
 	{
-		aim_request_rates();//request some rate crap
-		aim_request_list();
+		aim_request_rates(hServerConn,seqno);//request some rate crap
+		aim_request_list(hServerConn,seqno);
 	}
 }
-void snac_rate_limitations(SNAC &snac)// family 0x0013
+void snac_mail_supported_family_versions(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0001
+{
+	if(snac.subcmp(0x0018))//service list okayed
+	{
+		aim_request_rates(hServerConn,seqno);//request some rate crap
+	}
+}
+void snac_rate_limitations(SNAC &snac,HANDLE hServerConn,int &seqno)// family 0x0001
 {
 	if(snac.subcmp(0x0007))
 	{
-		aim_accept_rates();
-		aim_request_icbm();
+		aim_accept_rates(hServerConn,seqno);
+		aim_request_icbm(hServerConn,seqno);
 	}
 }
-void snac_icbm_limitations(SNAC &snac)//family 0x0004
+void snac_mail_rate_limitations(SNAC &snac,HANDLE hServerConn,int &seqno)// family 0x0001
 {
-	for(int t=0;!conn.buddy_list_received;t++)
+	if(snac.subcmp(0x0007))
 	{
-		Sleep(1000);
-		if(t==5)
-			break;
+		aim_accept_rates(hServerConn,seqno);
+		aim_mail_ready(hServerConn,seqno);
+		aim_request_mail(hServerConn,seqno);
 	}
+}
+void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0004
+{
 	if(snac.subcmp(0x0005))
 	{
-		aim_set_icbm();
-		aim_set_caps();
+		for(int t=0;!conn.buddy_list_received;t++)
+		{
+			Sleep(1000);
+			if(t==5)
+				break;
+		}
+		aim_set_icbm(hServerConn,seqno);
+		aim_set_caps(hServerConn,seqno);
 		broadcast_status(conn.initial_status);
 		if(conn.initial_status==ID_STATUS_ONLINE)
 		{
-			aim_set_invis(AIM_STATUS_ONLINE,AIM_STATUS_NULL);
-			aim_set_away(NULL);
+			aim_set_invis(hServerConn,seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);
+			aim_set_away(hServerConn,seqno,NULL);
 		}
 		else if(conn.initial_status==ID_STATUS_INVISIBLE)
 		{
-			aim_set_invis(AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
+			aim_set_invis(hServerConn,seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
 		}
 		else if(conn.initial_status==ID_STATUS_AWAY)
 		{
@@ -112,18 +128,19 @@ void snac_icbm_limitations(SNAC &snac)//family 0x0004
 				else
 					assign_modmsg(DEFAULT_AWAY_MSG);
 			}
-				aim_set_invis(AIM_STATUS_AWAY,AIM_STATUS_NULL);
-				aim_set_away(conn.szModeMsg);
+				aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);
+				aim_set_away(hServerConn,seqno,conn.szModeMsg);
 
 		}
 		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II,0))
 		{
 			unsigned long time = DBGetContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, 0);
-			aim_set_idle(time*60);
+			aim_set_idle(hServerConn,seqno,time*60);
 		}
-		aim_client_ready();
+		aim_client_ready(hServerConn,seqno);
+		aim_new_service_request(hServerConn,seqno,0x0018);
 		add_contacts_to_groups();//woo
-		aim_activate_list();
+		aim_activate_list(hServerConn,seqno);
 		conn.state=1;
 	}
 }
@@ -534,7 +551,7 @@ void snac_message_accepted(SNAC &snac)//family 0x004
 		delete[] sn;
 	}
 }
-void snac_received_message(SNAC &snac)//family 0x0004
+void snac_received_message(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0004
 {
 	if(snac.subcmp(0x0007))
 	{   
@@ -735,7 +752,7 @@ void snac_received_message(SNAC &snac)//family 0x0004
 					dbei.cbBlob = strlen(temp2) + 1;
 					dbei.pBlob = (PBYTE) temp2;
 					CallService(MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
-					aim_send_plaintext_message(sn,s_msg,1);
+					aim_send_plaintext_message(hServerConn,seqno,sn,s_msg,1);
 					delete[] temp;
 					delete[] temp2;
 					delete[] s_msg;
@@ -747,9 +764,7 @@ void snac_received_message(SNAC &snac)//family 0x0004
 		{
 			if(DBGetContactSettingByte(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT,-1)!=-1)
 			{
-				char* msg="Cannot start a file transfer with this contact while another file transfer with the same contact is pending.";
-				char* tmsg=strldup(msg,strlen(msg));
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				ShowPopup("Aim Protocol","Cannot start a file transfer with this contact while another file transfer with the same contact is pending.", 0);
 				return;
 			}
 			if(force_proxy)
@@ -938,92 +953,166 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 		{
 			if(code==0x0000)
 			{
-				char* msg="Successfully removed buddy from list.";
-				char* tmsg=strldup(msg,strlen(msg));
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				ShowPopup("Aim Protocol","Successfully removed buddy from list.", 0);
+			}
+			else if(code==0x0002)
+			{
+				ShowPopup("Aim Protocol","Item you want to delete not found in list.", 0);
 			}
 			else
 			{
-				char* msg="Error removing buddy from list. Error code 'x'";
+				char* msg="Error removing buddy from list. Error code 0xxx";
 				char ccode[3];
 				_itoa(code,ccode,16);
-				char* tmsg=strldup(msg,strlen(msg)+2);
-				strlcpy(&tmsg[strlen(tmsg)],ccode,3);
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				msg[strlen(msg)-2]=ccode[0];
+				msg[strlen(msg)-1]=ccode[1];
+				ShowPopup("Aim Protocol",msg, 0);
 			}
 		}
 		else if(id==0x000a)
 		{
 			if(code==0x0000)
 			{
-				char* msg="Successfully added buddy to list.";
-				char* tmsg=strldup(msg,strlen(msg));
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				ShowPopup("Aim Protocol","Successfully added buddy to list.", 0);
 			}
 			else if(0x0003)
 			{
-				char* msg="Failed to add buddy to list: Item already exist.";
-				char* tmsg=strldup(msg,strlen(msg));
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				ShowPopup("Aim Protocol","Failed to add buddy to list: Item already exist.", 0);
 			}
 			else if(0x000a)
 			{
-				char* msg="Error adding buddy(invalid id?, already in list?, invalid date?)";
-				char* tmsg=strldup(msg,strlen(msg));
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				ShowPopup("Aim Protocol","Error adding buddy(invalid id?, already in list?)", 0);
 			}
 			else if(0x000c)
 			{
-				char* msg="Cannot add buddy. Limit for this type of item exceeded.";
-				char* tmsg=strldup(msg,strlen(msg));
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				ShowPopup("Aim Protocol","Cannot add buddy. Limit for this type of item exceeded.", 0);
 			}
 			else if(0x000d)
 			{
-				char* msg="Error? Attempting to add ICQ contact to an AIM list.";
-				char* tmsg=strldup(msg,strlen(msg));
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				ShowPopup("Aim Protocol","Error? Attempting to add ICQ contact to an AIM list.", 0);
 			}
 			else if(0x000e)
 			{
-				char* msg="Cannot add this buddy because it requires authorization.";
-				char* tmsg=strldup(msg,strlen(msg));
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				ShowPopup("Aim Protocol","Cannot add this buddy because it requires authorization.", 0);
 			}
 			else
 			{
-				char* msg="Unknown error when adding buddy to list: Error code 'x'";
+				char* msg="Unknown error when adding buddy to list: Error code 0x";
 				char ccode[3];
 				_itoa(code,ccode,16);
-				char* tmsg=strldup(msg,strlen(msg)+2);
-				strlcpy(&tmsg[strlen(tmsg)],ccode,3);
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				msg[strlen(msg)-2]=ccode[0];
+				msg[strlen(msg)-1]=ccode[1];
+				ShowPopup("Aim Protocol",msg, 0);
 			}
 		}
 		else if(id==0x000e)
 		{
 			if(code==0x0000)
 			{
-				char* msg="Successfully modified group.";
-				char* tmsg=strldup(msg,strlen(msg));
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				ShowPopup("Aim Protocol","Successfully modified group.", 0);
 			}
 			else if(code==0x0002)
 			{
-				char* msg="Item you want to modify not found in list.";
-				char* tmsg=strldup(msg,strlen(msg));
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				ShowPopup("Aim Protocol","Item you want to modify not found in list.", 0);
 			}
 			else
 			{
 				char* msg="Unknown error when attempting to modify a group: Error code 0x";
 				char ccode[3];
 				_itoa(code,ccode,16);
-				char* tmsg=strldup(msg,strlen(msg)+2);
-				strlcpy(&tmsg[strlen(tmsg)],ccode,3);
-				ForkThread((pThreadFunc)message_box_thread,tmsg);
+				msg[strlen(msg)-2]=ccode[0];
+				msg[strlen(msg)-1]=ccode[1];
+				ShowPopup("Aim Protocol",msg, 0);
 			}
 		}
+	}
+}
+void snac_service_redirect(SNAC &snac)//family 0x0001
+{
+	if(snac.subcmp(0x0005))
+	{
+		int position=2;
+		char* server;
+		for(int i=0;i<4;i++)
+		{
+			TLV tlv(snac.val(position));
+			/*if(tlv.cmp(0x000d))
+			{
+				//sn=tlv.dup();
+			}*/
+			if(tlv.cmp(0x0005))
+			{
+				server=tlv.dup();
+			}
+			else if(tlv.cmp(0x0006))
+			{
+				delete[] COOKIE;
+				COOKIE=tlv.dup();
+				COOKIE_LENGTH=tlv.len();
+			}
+			position+=(TLV_HEADER_SIZE+tlv.len());
+		}
+		conn.hMailConn=aim_peer_connect(server,5190);
+		delete[] server;
+		if(conn.hMailConn)
+		{
+			ForkThread((pThreadFunc)aim_mail_negotiation,NULL);
+		}
+	}
+}
+void snac_mail_response(SNAC &snac)//family 0x0018
+{
+	if(snac.subcmp(0x0007))
+	{
+		unsigned short num_tlvs=snac.ushort(24);
+		char* sn=0;
+		unsigned long time;
+		unsigned short num_msgs;
+		char new_mail=0;
+		int position=26;
+		char* url=0;
+		char* address=0;
+		for(int i=0;i<num_tlvs;i++)
+		{
+			TLV tlv(snac.val(position));
+			if(tlv.cmp(0x0009))
+			{
+				sn=tlv.dup();
+			}
+			else if(tlv.cmp(0x001d))
+			{
+				time=tlv.ulong();
+			}
+			else if(tlv.cmp(0x0080))
+			{
+				num_msgs=tlv.ushort();
+			}
+			else if(tlv.cmp(0x0081))
+			{
+				new_mail=tlv.ubyte();
+			}
+			else if(tlv.cmp(0x0007))
+			{
+				url=tlv.dup();
+			}
+			else if(tlv.cmp(0x0082))
+			{
+				address=tlv.dup();
+			}
+			position+=(TLV_HEADER_SIZE+tlv.len());
+		}
+		if(new_mail)
+		{
+			int size=strlen(sn)+strlen(address)+2;
+			char* email= new char[size];
+			strlcpy(email,sn,size);
+			strlcpy(&email[strlen(sn)],"@",size);
+			strlcpy(&email[strlen(sn)+1],address,size);
+			ShowPopup("You've got mail!",email,MAIL_POPUP,url);
+			delete[] email;
+		}
+		delete[] sn;
+		delete[] address;
 	}
 }
 /*void snac_delete_contact(SNAC &snac, char* buf)//family 0x0013

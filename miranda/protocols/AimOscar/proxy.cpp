@@ -56,23 +56,23 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 						*error=htons(*error);
 						if(*error==0x000D)
 						{
-							MessageBox( NULL, "Bad Request", Translate("Proxy Server File Transfer Error"), MB_OK );
+							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Bad Request.", 0);
 						}
 						else if(*error==0x0010)
 						{
-							MessageBox( NULL, "Initial Request Timed Out.", Translate("Proxy Server File Transfer Error"), MB_OK );
+							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Initial Request Timed Out.", 0);
 						}
 						else if(*error==0x001A)
 						{
-							MessageBox( NULL, "Accept Period Timed Out.", Translate("Proxy Server File Transfer Error"), MB_OK );
+							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Accept Period Timed Out.", 0);
 						}
 						else if(*error==0x000e)
 						{
-							MessageBox( NULL, "Incorrect command syntax.", Translate("Proxy Server File Transfer Error"), MB_OK );
+							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Incorrect command syntax.", 0);
 						}
 						else if(*error==0x0016)
 						{
-							MessageBox( NULL, "Unknown command issued.", Translate("Proxy Server File Transfer Error"), MB_OK );
+							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Unknown command issued.", 0);
 						}
 					}
 					else if(*type==0x0003)
@@ -113,15 +113,15 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 									return;
 								char* pszfile = strrchr(file, '\\');
 								pszfile++;
-								aim_send_file_proxy(sn,cookie,pszfile,size,descr,*ip,*port);
+								aim_send_file_proxy(conn.hServerConn,conn.seqno,sn,cookie,pszfile,size,descr,*ip,*port);
 								delete[] file;
 								delete[] sn;
 								delete[] descr;
 							}
 							else if(stage==2&&!sender)
-								aim_file_proxy_request(dbv.pszVal,cookie,0x02,*ip,*port);
+								aim_file_proxy_request(conn.hServerConn,conn.seqno,dbv.pszVal,cookie,0x02,*ip,*port);
 							else if(stage==3&&sender)
-								aim_file_proxy_request(dbv.pszVal,cookie,0x03,*ip,*port);
+								aim_file_proxy_request(conn.hServerConn,conn.seqno,dbv.pszVal,cookie,0x03,*ip,*port);
 							DBFreeVariant(&dbv);
 						}
 					}
@@ -137,7 +137,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 							{
 								if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 								{
-									aim_accept_file(dbv.pszVal,cookie);
+									aim_accept_file(conn.hServerConn,conn.seqno,dbv.pszVal,cookie);
 									DBFreeVariant(&dbv);
 								}
 							}

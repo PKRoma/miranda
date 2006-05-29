@@ -20,5 +20,6 @@ public:
 	char* whole();
 	unsigned short ushort(int pos=0);
 	unsigned long ulong(int pos=0);
+	unsigned char ubyte(int pos=0);
 };
 #endif

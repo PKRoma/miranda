@@ -182,7 +182,6 @@ int PreShutdown(WPARAM wParam,LPARAM lParam)
 	DeleteCriticalSection(&modeMsgsMutex);
 	DeleteCriticalSection(&statusMutex);
 	DeleteCriticalSection(&connectionMutex);
-	conn.hTimer=0;
 	return 0;
 }
 extern "C" int __declspec(dllexport) Unload(void)

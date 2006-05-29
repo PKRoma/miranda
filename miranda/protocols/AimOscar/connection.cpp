@@ -81,9 +81,9 @@ void __cdecl aim_connection_authorization()
 				flap_length+=FLAP_SIZE+flap.len();
 				if(flap.cmp(0x01))
 				{
-					if(aim_send_connection_packet(flap.val())==0)//cookie challenge
+					if(aim_send_connection_packet(conn.hServerConn,conn.seqno,flap.val())==0)//cookie challenge
 					{
-						aim_authkey_request();//md5 authkey request
+						aim_authkey_request(conn.hServerConn,conn.seqno);//md5 authkey request
 					}
 				}
 				else if(flap.cmp(0x02))
@@ -91,7 +91,7 @@ void __cdecl aim_connection_authorization()
 					SNAC snac(flap.val(),flap.snaclen());
 					if(snac.cmp(0x0017))
 					{
-						snac_md5_authkey(snac);
+						snac_md5_authkey(snac,conn.hServerConn,conn.seqno);
 						if(snac_authorization_reply(snac)==1)
 						{
 							delete[] conn.username;
@@ -156,7 +156,7 @@ void __cdecl aim_protocol_negotiation()
 				flap_length+=FLAP_SIZE+flap.len();
   				if(flap.cmp(0x01))
 				{
-					aim_send_cookie(COOKIE_LENGTH,COOKIE);//cookie challenge
+					aim_send_cookie(conn.hServerConn,conn.seqno,COOKIE_LENGTH,COOKIE);//cookie challenge
 					delete[] COOKIE;
 					COOKIE=NULL;
 					COOKIE_LENGTH=0;
@@ -166,9 +166,10 @@ void __cdecl aim_protocol_negotiation()
 					SNAC snac(flap.val(),flap.snaclen());
 					if(snac.cmp(0x0001))
 					{
-						snac_supported_families(snac);
-						snac_supported_family_versions(snac);
-						snac_rate_limitations(snac);
+						snac_supported_families(snac,conn.hServerConn,conn.seqno);
+						snac_supported_family_versions(snac,conn.hServerConn,conn.seqno);
+						snac_rate_limitations(snac,conn.hServerConn,conn.seqno);
+						snac_service_redirect(snac);
 						snac_error(snac);
 					}
 					else if(snac.cmp(0x0002))
@@ -184,9 +185,9 @@ void __cdecl aim_protocol_negotiation()
 					}
 					else if(snac.cmp(0x0004))
 					{
-						snac_icbm_limitations(snac);
+						snac_icbm_limitations(snac,conn.hServerConn,conn.seqno);
 						snac_message_accepted(snac);
-						snac_received_message(snac);
+						snac_received_message(snac,conn.hServerConn,conn.seqno);
 						snac_typing_notification(snac);
 						snac_error(snac);
 					}
@@ -195,6 +196,10 @@ void __cdecl aim_protocol_negotiation()
 						snac_contact_list(snac);
 						snac_list_modification_ack(snac);
 						snac_error(snac);
+					}
+					else if(snac.cmp(0x0018))
+					{
+						snac_mail_response(snac);
 					}
 				}
 				else if(flap.cmp(0x04))
@@ -216,4 +221,67 @@ void __cdecl aim_protocol_negotiation()
 	conn.buddy_list_received=0;
 	broadcast_status(ID_STATUS_OFFLINE);
 	LeaveCriticalSection(&connectionMutex);
+}
+void __cdecl aim_mail_negotiation()
+{
+	NETLIBPACKETRECVER packetRecv;
+	int recvResult=0;
+	ZeroMemory(&packetRecv, sizeof(packetRecv));
+	HANDLE hServerPacketRecver=NULL;
+	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)conn.hMailConn, 2048 * 8);
+	packetRecv.cbSize = sizeof(packetRecv);
+	packetRecv.dwTimeout = INFINITE;
+	while(1)
+	{
+		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
+		if (recvResult == 0)
+		{
+                break;
+		}
+        if (recvResult == SOCKET_ERROR)
+		{
+                break;
+		}
+		if(recvResult>0)
+		{
+			unsigned short flap_length=0;
+			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
+			{
+				if(!packetRecv.buffer)
+					break;
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
+				if(!flap.len())
+					break;
+				flap_length+=FLAP_SIZE+flap.len();
+  				if(flap.cmp(0x01))
+				{
+					aim_send_cookie(conn.hMailConn,conn.mail_seqno,COOKIE_LENGTH,COOKIE);//cookie challenge
+					delete[] COOKIE;
+					COOKIE=NULL;
+					COOKIE_LENGTH=0;
+				}
+				else if(flap.cmp(0x02))
+				{
+					SNAC snac(flap.val(),flap.snaclen());
+					if(snac.cmp(0x0001))
+					{
+						snac_supported_families(snac,conn.hMailConn,conn.mail_seqno);
+						snac_mail_supported_family_versions(snac,conn.hMailConn,conn.mail_seqno);
+						snac_mail_rate_limitations(snac,conn.hMailConn,conn.mail_seqno);
+						snac_error(snac);
+					}
+					else if(snac.cmp(0x0018))
+					{
+						snac_mail_response(snac);
+					}
+				}
+				else if(flap.cmp(0x04))
+				{
+					Netlib_CloseHandle(hServerPacketRecver);
+					return;
+				}
+			}
+		}
+	}
+	Netlib_CloseHandle(hServerPacketRecver);
 }

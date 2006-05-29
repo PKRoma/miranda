@@ -37,7 +37,7 @@ void __cdecl aim_keepalive_thread(void* fa)
 		else if (dwWait == WAIT_TIMEOUT)
 		{
 			if (conn.state==1)
-				aim_keepalive();
+				aim_keepalive(conn.hServerConn,conn.seqno);
 		}
 		//else if (dwWait == WAIT_IO_COMPLETION)
 		// Possible shutdown in progress
@@ -46,11 +46,11 @@ void __cdecl aim_keepalive_thread(void* fa)
 	CloseHandle(hKeepAliveEvent);
 	hKeepAliveEvent = NULL;
 }
-void message_box_thread(char* data)
+/*void message_box_thread(char* data)
 {
 	MessageBox( NULL, Translate(data), AIM_PROTOCOL_NAME, MB_OK );
 	delete[] data;
-}
+}*/
 void set_status_thread(int status)
 {
 	if(conn.shutting_down)
@@ -79,14 +79,14 @@ void set_status_thread(int status)
 			case ID_STATUS_FREECHAT:
 				{
 					broadcast_status(ID_STATUS_ONLINE);
-					aim_set_away(NULL);//unset away message
-					aim_set_invis(AIM_STATUS_ONLINE,AIM_STATUS_NULL);//online not invis	
+					aim_set_away(conn.hServerConn,conn.seqno,NULL);//unset away message
+					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);//online not invis	
 					break;
 				}
 			case ID_STATUS_INVISIBLE:
 				{
 					broadcast_status(status);
-					aim_set_invis(AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
+					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
 					break;
 				}
 			case ID_STATUS_AWAY:
@@ -159,7 +159,7 @@ void accept_file_thread(char* data)//buddy sending file
 		HANDLE hDirect =aim_peer_connect(verified_ip,port);
 		if(hDirect)
 		{
-			aim_accept_file(sn,cookie);
+			aim_accept_file(conn.hServerConn,conn.seqno,sn,cookie);
 			DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
 			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
 			ForkThread(aim_dc_helper,*hContact);
@@ -167,7 +167,7 @@ void accept_file_thread(char* data)//buddy sending file
 		hDirect=aim_peer_connect(local_ip,port);
 		if(hDirect)
 		{
-			aim_accept_file(sn,cookie);
+			aim_accept_file(conn.hServerConn,conn.seqno,sn,cookie);
 			DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
 			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,local_ip);
 			ForkThread(aim_dc_helper,*hContact);
@@ -175,7 +175,7 @@ void accept_file_thread(char* data)//buddy sending file
 		else
 		{
 			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
-			aim_file_redirected_request(sn,cookie);
+			aim_file_redirected_request(conn.hServerConn,conn.seqno,sn,cookie);
 		}
 	}
 	delete[] sn;
@@ -197,7 +197,7 @@ void redirected_file_thread(char* blob)//we are sending file
 		HANDLE hDirect =aim_peer_connect(verified_ip,*port);
 		if(hDirect)
 		{
-			aim_accept_file(sn,icbm_cookie);
+			aim_accept_file(conn.hServerConn,conn.seqno,sn,icbm_cookie);
 			DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
 			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
 			ForkThread(aim_dc_helper,*hContact);
@@ -207,7 +207,7 @@ void redirected_file_thread(char* blob)//we are sending file
 			hDirect=aim_peer_connect(local_ip,*port);	
 			if(hDirect)
 			{
-				aim_accept_file(sn,icbm_cookie);
+				aim_accept_file(conn.hServerConn,conn.seqno,sn,icbm_cookie);
 				DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
 				DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,local_ip);
 				ForkThread(aim_dc_helper,*hContact);
