@@ -10,6 +10,7 @@ Version 0.4.3.2
 [!] bug #0001904 fixed: Resource names not UTF8 decoded
 [!] bug #0001866 fixed: Does not receive invite to Jabber multiuser conference
 [!] bug #0001853 fixed: Miranda crashes when sending Messages over Jabber to a deleted contact when full acknowlede enabled.
+[!] bug #0001320 fixed: Grey out 'away' nicknames in the conference nicklist
 [!] bug #0000581 fixed: People are trying to connect to jabber.org with empty usernames
 [!] bugfix for the unencoded jids
 [+] added contact menu items to simplify the groupchat processing
