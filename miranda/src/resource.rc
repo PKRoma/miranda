@@ -120,7 +120,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,152,112,55,14
     LTEXT           "Miranda IM",IDC_MIRANDA,5,7,150,15
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,106,213,1
-    LTEXT           "Copyright © 2000-2005 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari, George Hazan and Lyon Lim.  This software is released under the terms of the GNU General Public Licence.",
+    LTEXT           "Copyright © 2000-2006 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari, George Hazan and Lyon Lim.  This software is released under the terms of the GNU General Public Licence.",
                     IDC_DEVS,5,44,202,42
     ICON            IDI_MIRANDA,IDC_LOGO,187,2,20,20
     EDITTEXT        IDC_BUILDTIME,4,91,146,12,ES_AUTOHSCROLL | ES_READONLY | 
