@@ -239,7 +239,7 @@ BOOL SM_SetOffline(char *pszID, char * pszModule)
 	}
 	return TRUE;
 }
-BOOL SM_SetStatusEx(char *pszID, char * pszModule, char * pszText)
+BOOL SM_SetStatusEx(char *pszID, char * pszModule, char * pszText, int onlyMe )
 {
 	SESSION_INFO *pTemp = m_WndList, *pLast = NULL;
 
@@ -250,7 +250,7 @@ BOOL SM_SetStatusEx(char *pszID, char * pszModule, char * pszText)
 	{
 		if ((!pszID || !lstrcmpiA(pTemp->pszID,pszID)) && !lstrcmpiA(pTemp->pszModule,pszModule))
 		{
-			UM_SetStatusEx(pTemp->pUsers, pszText);	
+			UM_SetStatusEx(pTemp->pUsers, pszText, onlyMe);
 			if(pTemp->hWnd)
 				RedrawWindow(GetDlgItem(pTemp->hWnd, IDC_LIST), NULL, NULL, RDW_INVALIDATE);
 			if(pszID)
@@ -1544,33 +1544,28 @@ USERINFO* UM_GiveStatus(USERINFO* pUserList, char* pszUID, WORD status)
 	}
 	return 0;
 }
-BOOL UM_SetStatusEx(USERINFO* pUserList, char* pszText)
+BOOL UM_SetStatusEx(USERINFO* pUserList, char* pszText, int onlyMe )
 {
 	USERINFO *pTemp = pUserList, *pLast = NULL;
 
 	while (pTemp != NULL)
 	{
-		char * s;
-		pTemp->iStatusEx = 0;
+		if ( !onlyMe )
+			pTemp->iStatusEx = 0;
 
-		if(!pszText)
-		{
+		if (!pszText) {
 			pLast = pTemp;
 			pTemp = pTemp->next;
-			continue;
 		}
-		s = strstr(pszText, pTemp->pszUID);
-		if (s)
-		{
-			if(s == pszText || s[-1] == ' ')
-			{
-				if(s[lstrlenA(pTemp->pszUID)] == ' ' || s[lstrlenA(pTemp->pszUID)] == '\0')
-				{
-					pTemp->iStatusEx = 1;
+		else {
+			char* s = strstr(pszText, pTemp->pszUID);
+			if ( s ) {
+				pTemp->iStatusEx = 0;
+				if ( s == pszText || s[-1] == ' ' )
+					if ( s[lstrlenA(pTemp->pszUID)] == ' ' || s[lstrlenA(pTemp->pszUID)] == '\0' )
+						pTemp->iStatusEx = 1;
+		}	}
 
-				}
-			}	
-		}
 		pLast = pTemp;
 		pTemp = pTemp->next;
 	}

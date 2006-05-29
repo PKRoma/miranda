@@ -580,7 +580,7 @@ static int DoControl(GCEVENT * gce, WPARAM wp)
 	}
 	else if(gce->pDest->iType == GC_EVENT_SETSTATUSEX)
 	{
-		SM_SetStatusEx((char *)gce->pDest->pszID, (char *)gce->pDest->pszModule, (char *)gce->pszText);
+		SM_SetStatusEx((char *)gce->pDest->pszID, (char *)gce->pDest->pszModule, (char *)gce->pszText, gce->dwItemData);
 	}
 	else 
 		return 1;
