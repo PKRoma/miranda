@@ -1553,11 +1553,7 @@ BOOL UM_SetStatusEx(USERINFO* pUserList, char* pszText, int onlyMe )
 		if ( !onlyMe )
 			pTemp->iStatusEx = 0;
 
-		if (!pszText) {
-			pLast = pTemp;
-			pTemp = pTemp->next;
-		}
-		else {
+		if ( pszText != NULL ) {
 			char* s = strstr(pszText, pTemp->pszUID);
 			if ( s ) {
 				pTemp->iStatusEx = 0;
