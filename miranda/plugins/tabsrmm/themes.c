@@ -46,6 +46,7 @@ extern char *TemplateNames[];
 extern TemplateSet LTR_Active, RTL_Active;
 extern MYGLOBALS myGlobals;
 extern struct ContainerWindowData *pFirstContainer;
+extern ImageItem *g_glyphItem;
 
 /*
 typedef  DWORD  (__stdcall *pfnImgNewDecoder)(void ** ppDecoder); 
@@ -74,6 +75,8 @@ static void __inline gradientHorizontal( UCHAR *ubRedFinal, UCHAR *ubGreenFinal,
 
 
 static ImageItem *g_ImageItems = NULL;
+ImageItem *g_glyphItem = NULL;
+
 HBRUSH g_ContainerColorKeyBrush = 0;
 COLORREF g_ContainerColorKey = 0;
 SIZE g_titleBarButtonSize = {0};
@@ -820,228 +823,105 @@ static void __forceinline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFina
 
 // XXX add support for more stretching options (stretch/tile divided image parts etc.
 
-static void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
+void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
 {
     BYTE l = item->bLeft, r = item->bRight, t = item->bTop, b = item->bBottom;
     LONG width = rc->right - rc->left;
     LONG height = rc->bottom - rc->top;
+    BOOL isGlyph = (item->dwFlags & IMAGE_GLYPH) && g_glyphItem;
+    HDC hdcSrc = isGlyph ? g_glyphItem->hdc : item->hdc;
+    LONG srcOrigX = isGlyph ? item->glyphMetrics[0] : 0;
+    LONG srcOrigY = isGlyph ? item->glyphMetrics[1] : 0;
 
 	if(MyAlphaBlend == 0)
 		return;
 
-	if(item->dwFlags & IMAGE_PERPIXEL_ALPHA) {
-		if(item->dwFlags & IMAGE_FLAG_DIVIDED) {
-			// top 3 items
+	if(item->dwFlags & IMAGE_FLAG_DIVIDED) {
+        // top 3 items
 
-			MyAlphaBlend(hdc, rc->left, rc->top, l, t, item->hdc, 0, 0, l, t, item->bf);
-			MyAlphaBlend(hdc, rc->left + l, rc->top, width - l - r, t, item->hdc, l, 0, item->inner_width, t, item->bf);
-			MyAlphaBlend(hdc, rc->right - r, rc->top, r, t, item->hdc, item->width - r, 0, r, t, item->bf);
+        MyAlphaBlend(hdc, rc->left, rc->top, l, t, hdcSrc, srcOrigX, srcOrigY, l, t, item->bf);
+        MyAlphaBlend(hdc, rc->left + l, rc->top, width - l - r, t, hdcSrc, srcOrigX + l, srcOrigY, item->inner_width, t, item->bf);
+        MyAlphaBlend(hdc, rc->right - r, rc->top, r, t, hdcSrc, srcOrigX + (item->width - r), srcOrigY, r, t, item->bf);
 
-			// middle 3 items
+        // middle 3 items
 
-			MyAlphaBlend(hdc, rc->left, rc->top + t, l, height - t - b, item->hdc, 0, t, l, item->inner_height, item->bf);
-			/*
-			 * use solid fill for the "center" area -> better performance when only the margins of an item
-			 * are usually visible (like the background of the tab pane)
-			 */
-			if(item->dwFlags & IMAGE_FILLSOLID && item->fillBrush) {
-				RECT rcFill;
-				rcFill.left = rc->left + l; rcFill.top = rc->top +t;
-				rcFill.right = rc->right - r; rcFill.bottom = rc->bottom - b;
-				FillRect(hdc, &rcFill, item->fillBrush);
-			}
-			else
-				MyAlphaBlend(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, item->hdc, l, t, item->inner_width, item->inner_height, item->bf);
+        MyAlphaBlend(hdc, rc->left, rc->top + t, l, height - t - b, hdcSrc, srcOrigX, srcOrigY + t, l, item->inner_height, item->bf);
 
-			MyAlphaBlend(hdc, rc->right - r, rc->top + t, r, height - t - b, item->hdc, item->width - r, t, r, item->inner_height, item->bf);
+        if(item->dwFlags & IMAGE_FILLSOLID && item->fillBrush) {
+            RECT rcFill;
+            rcFill.left = rc->left + l; rcFill.top = rc->top +t;
+            rcFill.right = rc->right - r; rcFill.bottom = rc->bottom - b;
+            FillRect(hdc, &rcFill, item->fillBrush);
+        }
+        else
+            MyAlphaBlend(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, hdcSrc, srcOrigX + l, srcOrigY + t, item->inner_width, item->inner_height, item->bf);
 
-			// bottom 3 items
+        MyAlphaBlend(hdc, rc->right - r, rc->top + t, r, height - t - b, hdcSrc, srcOrigX + (item->width - r), srcOrigY + t, r, item->inner_height, item->bf);
 
-			MyAlphaBlend(hdc, rc->left, rc->bottom - b, l, b, item->hdc, 0, item->height - b, l, b, item->bf);
-			MyAlphaBlend(hdc, rc->left + l, rc->bottom - b, width - l - r, b, item->hdc, l, item->height - b, item->inner_width, b, item->bf);
-			MyAlphaBlend(hdc, rc->right - r, rc->bottom - b, r, b, item->hdc, item->width - r, item->height - b, r, b, item->bf);
-		}
-		else {
-			switch(item->bStretch) {
-				case IMAGE_STRETCH_H:
-					// tile image vertically, stretch to width
-				{
-					LONG top = rc->top;
+        // bottom 3 items
 
-					do {
-						if(top + item->height <= rc->bottom) {
-							MyAlphaBlend(hdc, rc->left, top, width, item->height, item->hdc, 0, 0, item->width, item->height, item->bf);
-							top += item->height;
-						}
-						else {
-							MyAlphaBlend(hdc, rc->left, top, width, rc->bottom - top, item->hdc, 0, 0, item->width, rc->bottom - top, item->bf);
-							break;
-						}
-					} while (TRUE);
-					break;
-				}
-				case IMAGE_STRETCH_V:
-					// tile horizontally, stretch to height
-				{
-					LONG left = rc->left;
-
-					do {
-						if(left + item->width <= rc->right) {
-							MyAlphaBlend(hdc, left, rc->top, item->width, height, item->hdc, 0, 0, item->width, item->height, item->bf);
-							left += item->width;
-						}
-						else {
-							MyAlphaBlend(hdc, left, rc->top, rc->right - left, height, item->hdc, 0, 0, rc->right - left, item->height, item->bf);
-							break;
-						}
-					} while (TRUE);
-					break;
-				}
-				case IMAGE_STRETCH_B:
-					// stretch the image in both directions...
-					MyAlphaBlend(hdc, rc->left, rc->top, width, height, item->hdc, 0, 0, item->width, item->height, item->bf);
-					break;
-				/*
-				case IMAGE_STRETCH_V:
-					// stretch vertically, draw 3 horizontal tiles...
-					AlphaBlend(hdc, rc->left, rc->top, l, height, item->hdc, 0, 0, l, item->height, item->bf);
-					AlphaBlend(hdc, rc->left + l, rc->top, width - l - r, height, item->hdc, l, 0, item->inner_width, item->height, item->bf);
-					AlphaBlend(hdc, rc->right - r, rc->top, r, height, item->hdc, item->width - r, 0, r, item->height, item->bf);
-					break;
-				case IMAGE_STRETCH_H:
-					// stretch horizontally, draw 3 vertical tiles...
-					AlphaBlend(hdc, rc->left, rc->top, width, t, item->hdc, 0, 0, item->width, t, item->bf);
-					AlphaBlend(hdc, rc->left, rc->top + t, width, height - t - b, item->hdc, 0, t, item->width, item->inner_height, item->bf);
-					AlphaBlend(hdc, rc->left, rc->bottom - b, width, b, item->hdc, 0, item->height - b, item->width, b, item->bf);
-					break;
-				*/
-				default:
-					break;
-			}
-		}
-	}
-	else {
-		if(item->dwFlags & IMAGE_FLAG_DIVIDED) {
-			// top 3 items
-
-			SetStretchBltMode(hdc, HALFTONE);
-			StretchBlt(hdc, rc->left, rc->top, l, t, item->hdc, 0, 0, l, t, SRCCOPY);
-			StretchBlt(hdc, rc->left + l, rc->top, width - l - r, t, item->hdc, l, 0, item->inner_width, t, SRCCOPY);
-			StretchBlt(hdc, rc->right - r, rc->top, r, t, item->hdc, item->width - r, 0, r, t, SRCCOPY);
-
-			// middle 3 items
-
-			StretchBlt(hdc, rc->left, rc->top + t, l, height - t - b, item->hdc, 0, t, l, item->inner_height, SRCCOPY);
-			/*
-			 * use solid fill for the "center" area -> better performance when only the margins of an item
-			 * are usually visible (like the background of the tab pane)
-			 */
-			if(item->dwFlags & IMAGE_FILLSOLID && item->fillBrush) {
-				RECT rcFill;
-				rcFill.left = rc->left + l; rcFill.top = rc->top +t;
-				rcFill.right = rc->right - r; rcFill.bottom = rc->bottom - b;
-				FillRect(hdc, &rcFill, item->fillBrush);
-			}
-			else
-				StretchBlt(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, item->hdc, l, t, item->inner_width, item->inner_height, SRCCOPY);
-
-			StretchBlt(hdc, rc->right - r, rc->top + t, r, height - t - b, item->hdc, item->width - r, t, r, item->inner_height, SRCCOPY);
-
-			// bottom 3 items
-
-			StretchBlt(hdc, rc->left, rc->bottom - b, l, b, item->hdc, 0, item->height - b, l, b, SRCCOPY);
-			StretchBlt(hdc, rc->left + l, rc->bottom - b, width - l - r, b, item->hdc, l, item->height - b, item->inner_width, b, SRCCOPY);
-			StretchBlt(hdc, rc->right - r, rc->bottom - b, r, b, item->hdc, item->width - r, item->height - b, r, b, SRCCOPY);
-		}
-		else {
-			switch(item->bStretch) {
-				case IMAGE_STRETCH_H:
-					// tile image vertically, stretch to width
-				{
-					LONG top = rc->top;
-
-					do {
-						if(top + item->height <= rc->bottom) {
-							StretchBlt(hdc, rc->left, top, width, item->height, item->hdc, 0, 0, item->width, item->height, SRCCOPY);
-							top += item->height;
-						}
-						else {
-							StretchBlt(hdc, rc->left, top, width, rc->bottom - top, item->hdc, 0, 0, item->width, rc->bottom - top, SRCCOPY);
-							break;
-						}
-					} while (TRUE);
-					break;
-				}
-				case IMAGE_STRETCH_V:
-					// tile horizontally, stretch to height
-				{
-					LONG left = rc->left;
-
-					do {
-						if(left + item->width <= rc->right) {
-							StretchBlt(hdc, left, rc->top, item->width, height, item->hdc, 0, 0, item->width, item->height, SRCCOPY);
-							left += item->width;
-						}
-						else {
-							StretchBlt(hdc, left, rc->top, rc->right - left, height, item->hdc, 0, 0, rc->right - left, item->height, SRCCOPY);
-							break;
-						}
-					} while (TRUE);
-					break;
-				}
-				case IMAGE_STRETCH_B:
-					// stretch the image in both directions...
-					StretchBlt(hdc, rc->left, rc->top, width, height, item->hdc, 0, 0, item->width, item->height, SRCCOPY);
-					break;
-				/*
-				case IMAGE_STRETCH_V:
-					// stretch vertically, draw 3 horizontal tiles...
-					AlphaBlend(hdc, rc->left, rc->top, l, height, item->hdc, 0, 0, l, item->height, item->bf);
-					AlphaBlend(hdc, rc->left + l, rc->top, width - l - r, height, item->hdc, l, 0, item->inner_width, item->height, item->bf);
-					AlphaBlend(hdc, rc->right - r, rc->top, r, height, item->hdc, item->width - r, 0, r, item->height, item->bf);
-					break;
-				case IMAGE_STRETCH_H:
-					// stretch horizontally, draw 3 vertical tiles...
-					AlphaBlend(hdc, rc->left, rc->top, width, t, item->hdc, 0, 0, item->width, t, item->bf);
-					AlphaBlend(hdc, rc->left, rc->top + t, width, height - t - b, item->hdc, 0, t, item->width, item->inner_height, item->bf);
-					AlphaBlend(hdc, rc->left, rc->bottom - b, width, b, item->hdc, 0, item->height - b, item->width, b, item->bf);
-					break;
-				*/
-				default:
-					break;
-			}
-		}
-	}
-}
-
-void IMG_InitDecoder()
-{
-    /*
-    if((g_hModuleImgDecoder = LoadLibraryA("imgdecoder.dll")) == 0) {
-        if((g_hModuleImgDecoder = LoadLibraryA("plugins\\imgdecoder.dll")) != 0)
-            g_imgDecoderAvail = TRUE;
+        MyAlphaBlend(hdc, rc->left, rc->bottom - b, l, b, hdcSrc, srcOrigX, srcOrigY + (item->height - b), l, b, item->bf);
+        MyAlphaBlend(hdc, rc->left + l, rc->bottom - b, width - l - r, b, hdcSrc, srcOrigX + l, srcOrigY + (item->height - b), item->inner_width, b, item->bf);
+        MyAlphaBlend(hdc, rc->right - r, rc->bottom - b, r, b, hdcSrc, srcOrigX + (item->width - r), srcOrigY + (item->height - b), r, b, item->bf);
     }
-    else
-        g_imgDecoderAvail = TRUE;
+    else {
+        switch(item->bStretch) {
+            case IMAGE_STRETCH_H:
+                // tile image vertically, stretch to width
+            {
+                LONG top = rc->top;
 
-    if(g_hModuleImgDecoder) {
-        ImgNewDecoder = (pfnImgNewDecoder )GetProcAddress(g_hModuleImgDecoder, "ImgNewDecoder");
-        ImgDeleteDecoder=(pfnImgDeleteDecoder )GetProcAddress(g_hModuleImgDecoder, "ImgDeleteDecoder");
-        ImgNewDIBFromFile=(pfnImgNewDIBFromFile)GetProcAddress(g_hModuleImgDecoder, "ImgNewDIBFromFile");
-        ImgDeleteDIBSection=(pfnImgDeleteDIBSection)GetProcAddress(g_hModuleImgDecoder, "ImgDeleteDIBSection");
-        ImgGetHandle=(pfnImgGetHandle)GetProcAddress(g_hModuleImgDecoder, "ImgGetHandle");
-	}
-    */ 
-}
+                do {
+                    if(top + item->height <= rc->bottom) {
+                        MyAlphaBlend(hdc, rc->left, top, width, item->height, hdcSrc, srcOrigX, srcOrigY, item->width, item->height, item->bf);
+                        top += item->height;
+                    }
+                    else {
+                        MyAlphaBlend(hdc, rc->left, top, width, rc->bottom - top, hdcSrc, srcOrigX, srcOrigY, item->width, rc->bottom - top, item->bf);
+                        break;
+                    }
+                } while (TRUE);
+                break;
+            }
+            case IMAGE_STRETCH_V:
+                // tile horizontally, stretch to height
+            {
+                LONG left = rc->left;
 
-void IMG_FreeDecoder()
-{
-    /*
-    if(g_imgDecoderAvail && g_hModuleImgDecoder) {
-		FreeLibrary(g_hModuleImgDecoder);
-		g_hModuleImgDecoder = 0;
-	}
-    */
+                do {
+                    if(left + item->width <= rc->right) {
+                        MyAlphaBlend(hdc, left, rc->top, item->width, height, hdcSrc, srcOrigX, srcOrigY, item->width, item->height, item->bf);
+                        left += item->width;
+                    }
+                    else {
+                        MyAlphaBlend(hdc, left, rc->top, rc->right - left, height, hdcSrc, srcOrigX, srcOrigY, rc->right - left, item->height, item->bf);
+                        break;
+                    }
+                } while (TRUE);
+                break;
+            }
+            case IMAGE_STRETCH_B:
+                // stretch the image in both directions...
+                MyAlphaBlend(hdc, rc->left, rc->top, width, height, hdcSrc, srcOrigX, srcOrigY, item->width, item->height, item->bf);
+                break;
+            /*
+            case IMAGE_STRETCH_V:
+                // stretch vertically, draw 3 horizontal tiles...
+                AlphaBlend(hdc, rc->left, rc->top, l, height, item->hdc, 0, 0, l, item->height, item->bf);
+                AlphaBlend(hdc, rc->left + l, rc->top, width - l - r, height, item->hdc, l, 0, item->inner_width, item->height, item->bf);
+                AlphaBlend(hdc, rc->right - r, rc->top, r, height, item->hdc, item->width - r, 0, r, item->height, item->bf);
+                break;
+            case IMAGE_STRETCH_H:
+                // stretch horizontally, draw 3 vertical tiles...
+                AlphaBlend(hdc, rc->left, rc->top, width, t, item->hdc, 0, 0, item->width, t, item->bf);
+                AlphaBlend(hdc, rc->left, rc->top + t, width, height - t - b, item->hdc, 0, t, item->width, item->inner_height, item->bf);
+                AlphaBlend(hdc, rc->left, rc->bottom - b, width, b, item->hdc, 0, item->height - b, item->width, b, item->bf);
+                break;
+            */
+            default:
+                break;
+        }
+    }
 }
 
 static DWORD __fastcall HexStringToLong(const char *szSource)
@@ -1130,8 +1010,23 @@ static void IMG_ReadItem(const char *itemname, const char *szFileName)
     BOOL alloced = FALSE;
     char szDrive[MAX_PATH], szPath[MAX_PATH];
     
+	ZeroMemory(&tmpItem, sizeof(tmpItem));
+	GetPrivateProfileStringA(itemname, "Glyph", "None", buffer, 500, szFileName);
+    if(strcmp(buffer, "None")) {
+        sscanf(buffer, "%d,%d,%d,%d", &tmpItem.glyphMetrics[0], &tmpItem.glyphMetrics[1],
+               &tmpItem.glyphMetrics[2], &tmpItem.glyphMetrics[3]);
+        if(tmpItem.glyphMetrics[2] > tmpItem.glyphMetrics[0] && tmpItem.glyphMetrics[3] > tmpItem.glyphMetrics[1]) {
+            tmpItem.dwFlags |= IMAGE_GLYPH;
+            tmpItem.glyphMetrics[2] = (tmpItem.glyphMetrics[2] - tmpItem.glyphMetrics[0]) + 1;
+            tmpItem.glyphMetrics[3] = (tmpItem.glyphMetrics[3] - tmpItem.glyphMetrics[1]) + 1;
+            goto done_with_glyph;
+        }
+    }
     GetPrivateProfileStringA(itemname, "Image", "None", buffer, 500, szFileName);
     if(strcmp(buffer, "None")) {
+
+done_with_glyph:
+
         strncpy(tmpItem.szName, &itemname[1], sizeof(tmpItem.szName));
         tmpItem.szName[sizeof(tmpItem.szName) - 1] = 0;
         _splitpath(szFileName, szDrive, szPath, NULL, NULL);
@@ -1144,6 +1039,22 @@ static void IMG_ReadItem(const char *itemname, const char *szFileName)
         tmpItem.bRight = GetPrivateProfileIntA(itemname, "Right", 0, szFileName);
         tmpItem.bTop = GetPrivateProfileIntA(itemname, "Top", 0, szFileName);
         tmpItem.bBottom = GetPrivateProfileIntA(itemname, "Bottom", 0, szFileName);
+        if(tmpItem.dwFlags & IMAGE_GLYPH) {
+            tmpItem.width = tmpItem.glyphMetrics[2];
+            tmpItem.height = tmpItem.glyphMetrics[3];
+            tmpItem.inner_height = tmpItem.glyphMetrics[3] - tmpItem.bTop - tmpItem.bBottom;
+            tmpItem.inner_width = tmpItem.glyphMetrics[2] - tmpItem.bRight - tmpItem.bLeft;
+
+            if(tmpItem.bTop && tmpItem.bBottom && tmpItem.bLeft && tmpItem.bRight)
+                tmpItem.dwFlags |= IMAGE_FLAG_DIVIDED;
+            tmpItem.bf.BlendFlags = 0;
+            tmpItem.bf.BlendOp = AC_SRC_OVER;
+            tmpItem.bf.AlphaFormat = 0;
+            tmpItem.dwFlags |= IMAGE_PERPIXEL_ALPHA;
+            tmpItem.bf.AlphaFormat = AC_SRC_ALPHA;
+            if(tmpItem.inner_height <= 0 || tmpItem.inner_width <= 0)
+                return;
+        }
 		GetPrivateProfileStringA(itemname, "Fillcolor", "None", buffer, 500, szFileName);
 		if(strcmp(buffer, "None")) {
 			COLORREF fillColor = HexStringToLong(buffer);
@@ -1170,6 +1081,17 @@ static void IMG_ReadItem(const char *itemname, const char *szFileName)
 		if(GetPrivateProfileIntA(itemname, "Perpixel", 0, szFileName))
 			tmpItem.dwFlags |= IMAGE_PERPIXEL_ALPHA;
 
+        if(!_stricmp(itemname, "$glyphs")) {
+            IMG_CreateItem(&tmpItem, szFinalName, hdc);
+            if(tmpItem.hbm) {
+                newItem = malloc(sizeof(ImageItem));
+                ZeroMemory(newItem, sizeof(ImageItem));
+                *newItem = tmpItem;
+                g_glyphItem = newItem;
+            }
+            goto imgread_done;
+        }
+
         for(n = 0;;n++) {
             mir_snprintf(szItemNr, 30, "Item%d", n);
             GetPrivateProfileStringA(itemname, szItemNr, "None", buffer, 500, szFileName);
@@ -1178,8 +1100,9 @@ static void IMG_ReadItem(const char *itemname, const char *szFileName)
             for(i = 0; i <= ID_EXTBK_LAST; i++) {
                 if(!_stricmp(StatusItems[i].szName[0] == '{' ? &StatusItems[i].szName[3] : StatusItems[i].szName, buffer)) {
                     if(!alloced) {
-                        IMG_CreateItem(&tmpItem, szFinalName, hdc);
-                        if(tmpItem.hbm) {
+                        if(!(tmpItem.dwFlags & IMAGE_GLYPH))
+	                        IMG_CreateItem(&tmpItem, szFinalName, hdc);
+                        if(tmpItem.hbm || tmpItem.dwFlags & IMAGE_GLYPH) {
                             newItem = malloc(sizeof(ImageItem));
                             ZeroMemory(newItem, sizeof(ImageItem));
                             *newItem = tmpItem;
@@ -1203,6 +1126,7 @@ static void IMG_ReadItem(const char *itemname, const char *szFileName)
             }
         }
     }
+imgread_done:
     ReleaseDC(0, hdc);
 }
 
@@ -1296,26 +1220,11 @@ static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
     LPVOID pBitmapBits = NULL;
     LPVOID m_pImgDecoder = NULL;
 
-    /*
-    if(!g_imgDecoderAvail)
-        return 0;
-    */
     hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
     if(hBitmap != 0)
         CorrectBitmap32Alpha(hBitmap);
-    item->lpDIBSection = 0;
 
     return hBitmap;
-    
-    /*
-    ImgNewDecoder(&m_pImgDecoder);
-    if (!ImgNewDIBFromFile(m_pImgDecoder, (char *)szFilename, &pImg))
-        ImgGetHandle(pImg, &hBitmap, (LPVOID *)&pBitmapBits);
-    ImgDeleteDecoder(m_pImgDecoder);
-    if(hBitmap == 0)
-        return 0;
-    item->lpDIBSection = pImg;
-    return hBitmap;*/
 }
 
 static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
@@ -1353,13 +1262,11 @@ static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
 
 static void IMG_DeleteItem(ImageItem *item)
 {
-    SelectObject(item->hdc, item->hbmOld);
-    DeleteObject(item->hbm);
-    DeleteDC(item->hdc);
-    /*
-    if(item->lpDIBSection && ImgDeleteDIBSection)
-        ImgDeleteDIBSection(item->lpDIBSection);
-    */
+	if(!(item->dwFlags & IMAGE_GLYPH)) {
+		SelectObject(item->hdc, item->hbmOld);
+		DeleteObject(item->hbm);
+		DeleteDC(item->hdc);
+	}
 	if(item->fillBrush)
 		DeleteObject(item->fillBrush);
 }
@@ -1375,7 +1282,13 @@ void IMG_DeleteItems()
         pItem = pNextItem;
     }
     g_ImageItems = NULL;
-	
+
+    if(g_glyphItem) {
+        IMG_DeleteItem(g_glyphItem);
+        free(g_glyphItem);
+    }
+    g_glyphItem = NULL;
+
 	if(myGlobals.g_closeGlyph)
 		DestroyIcon(myGlobals.g_closeGlyph);
 	if(myGlobals.g_minGlyph)

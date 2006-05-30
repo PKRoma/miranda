@@ -1081,7 +1081,6 @@ int SplitmsgShutdown(void)
         DeleteCachedIcon(&ttb_Traymenu);
 
 	IMG_DeleteItems();
-	IMG_FreeDecoder();
 	if(g_hIconDLL) {
 		FreeLibrary(g_hIconDLL);
 		g_hIconDLL = 0;

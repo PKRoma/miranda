@@ -1973,8 +1973,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         dbtts.cbDest = safe_sizeof(date);
                         dbtts.szDest = date;
                         CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dat->lastMessage, (LPARAM) & dbtts);
-                        if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR && lstrlenA(date) > 6)
-                            date[lstrlenA(date) - 5] = 0;
+                        if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR && lstrlen(date) > 6)
+                            date[lstrlen(date) - 5] = 0;
                         dbtts.szFormat = _T("t");
                         dbtts.cbDest = safe_sizeof(time);
                         dbtts.szDest = time;
