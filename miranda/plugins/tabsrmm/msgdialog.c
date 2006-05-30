@@ -1159,7 +1159,7 @@ static int MessageDialogResizeIP(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL 
 */
 
 /*
- * resizer proc for the "new" layout.
+ *  resizer proc for the "new" layout.
  */
 
 
@@ -1194,6 +1194,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_NAME:
             urc->rcItem.top -= (dat->splitterY - dat->originalSplitterY + s_offset);
             urc->rcItem.bottom -= (dat->splitterY - dat->originalSplitterY + s_offset);
+            urc->rcItem.bottom++; urc->rcItem.right++;
             if(dat->controlsHidden & TOOLBAR_PROTO_HIDDEN)
                 OffsetRect(&urc->rcItem, -(rcButton.right + 2), 0);
              return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
@@ -1205,6 +1206,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
         case IDC_FONTCOLOR:
             urc->rcItem.top -= (dat->splitterY - dat->originalSplitterY + s_offset);
             urc->rcItem.bottom -= (dat->splitterY - dat->originalSplitterY + s_offset);
+            urc->rcItem.bottom++; urc->rcItem.right++;
             if(!dat->doSmileys)
                 OffsetRect(&urc->rcItem, -22, 0);
             if(dat->controlsHidden & TOOLBAR_PROTO_HIDDEN)
@@ -1237,6 +1239,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 OffsetRect(&urc->rcItem, 12, 0);
             urc->rcItem.top -= (dat->splitterY - dat->originalSplitterY + s_offset);
             urc->rcItem.bottom -= (dat->splitterY - dat->originalSplitterY + s_offset);
+            urc->rcItem.bottom++; urc->rcItem.right++;
             if (urc->wId == IDC_PROTOCOL) // || urc->wId == IDC_PROTOMENU || urc->wId == IDC_INFOPANELMENU)
                 return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
             if (showToolbar && !(dat->controlsHidden & TOOLBAR_SEND_HIDDEN)) {
@@ -1259,6 +1262,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             }
             if(dat->showPic)
                 OffsetRect(&urc->rcItem, -(dat->pic.cx+2), 0);
+            urc->rcItem.bottom++; urc->rcItem.right++;
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_LOG:
             if(dat->dwFlags & MWF_ERRORSTATE && !(dat->dwEventIsShown & MWF_SHOW_INFOPANEL))
@@ -1306,6 +1310,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.right = urc->dlgNewSize.cx;
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             urc->rcItem.bottom = urc->rcItem.top + 2;
+            OffsetRect(&urc->rcItem, 0, 1);
             if (urc->wId == IDC_SPLITTER && dat->splitterY <= (dat->bottomOffset + (dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC ? 32 : 25)) && dat->showPic && showToolbar)
                 urc->rcItem.right -= (dat->pic.cx + 2);
             if(myGlobals.m_SideBarEnabled)
@@ -1337,6 +1342,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             OffsetRect(&urc->rcItem, 12, 0);
             urc->rcItem.top -= (dat->splitterY - dat->originalSplitterY + s_offset);
             urc->rcItem.bottom -= (dat->splitterY - dat->originalSplitterY + s_offset);
+            urc->rcItem.bottom++;
 
             if (dat->showPic && (dat->splitterY <= (dat->bottomOffset + (dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC ? 32 : 25))))
                 OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);

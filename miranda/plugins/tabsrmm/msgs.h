@@ -119,10 +119,6 @@ typedef struct _settextex {
 */
 #endif
 
-#define NR_LOGICONS 8
-#define NR_BUTTONBARICONS 29
-#define NR_SIDEBARICONS 10
-
 #include <richedit.h>
 #include <richole.h>
 #include "m_avatars.h"

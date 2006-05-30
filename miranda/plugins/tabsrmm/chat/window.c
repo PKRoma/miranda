@@ -211,6 +211,7 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
                 urc->rcItem.left = 9;
             else
                 urc->rcItem.left = 0;
+            urc->rcItem.bottom++; urc->rcItem.top++;
 			return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
 		case IDC_CHAT_MESSAGE:
 			urc->rcItem.right = urc->dlgNewSize.cx ;
@@ -235,6 +236,7 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 		case IDC_BKGCOLOR:
 			urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY - 22;
 			urc->rcItem.bottom = urc->dlgNewSize.cy - si->iSplitterY - 1;
+            urc->rcItem.bottom++; urc->rcItem.right++;
             if(!splitterEdges)
                 OffsetRect(&urc->rcItem, 0, 2);
 			return RD_ANCHORX_LEFT|RD_ANCHORY_CUSTOM;
@@ -246,6 +248,9 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
         case IDOK:
             urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY - 22;
             urc->rcItem.bottom = urc->dlgNewSize.cy - si->iSplitterY - 1;
+            urc->rcItem.bottom++; 
+            if(urc->wId != IDOK)
+                urc->rcItem.right++;
             if(!splitterEdges)
                 OffsetRect(&urc->rcItem, 0, 2);
 			return RD_ANCHORX_RIGHT|RD_ANCHORY_CUSTOM;
