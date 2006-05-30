@@ -136,6 +136,7 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_FO, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0));//Format outgoing messages
 			CheckDlgButton(hwndDlg, IDC_WEBSUPPORT, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AL, 0));
 			CheckDlgButton(hwndDlg, IDC_II, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0));//Instant Idle
+			CheckDlgButton(hwndDlg, IDC_CM, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0));//Instant Idle
 			break;
 		}
 		case WM_COMMAND:
@@ -309,6 +310,12 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					else
 						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0);
 					//End
+					//Check Mail on Login
+					if (IsDlgButtonChecked(hwndDlg, IDC_CM))
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 1);
+					else
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0);
+					//End
 				}
             }
             break;
@@ -390,7 +397,7 @@ BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	case WM_INITDIALOG:
         {
             TranslateDialogDefault(hwndDlg);
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_AIM)));
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_IDLE)));
 			unsigned long it=DBGetContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, 0);
 			unsigned long hours=it/60;
 			unsigned long minutes=it%60;
@@ -414,13 +421,17 @@ BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				{
 					//Instant Idle
 					if (conn.state==1)
+					{
 						aim_set_idle(conn.hServerConn,conn.seqno,hours * 60 * 60 + minutes * 60);
+						conn.instantidle=1;
+					}
 					EndDialog(hwndDlg, IDOK);
 					break;
 				}
 			case IDCANCEL:
                 {
 					aim_set_idle(conn.hServerConn,conn.seqno,0);
+					conn.instantidle=0;
                     EndDialog(hwndDlg, IDCANCEL);
 					break;
                 }

@@ -197,10 +197,6 @@ void __cdecl aim_protocol_negotiation()
 						snac_list_modification_ack(snac);
 						snac_error(snac);
 					}
-					else if(snac.cmp(0x0018))
-					{
-						snac_mail_response(snac);
-					}
 				}
 				else if(flap.cmp(0x04))
 				{
@@ -217,6 +213,8 @@ void __cdecl aim_protocol_negotiation()
 	}
 	offline_contacts();
 	conn.state=0;
+	conn.idle=0;
+	conn.instantidle=0;
 	Netlib_CloseHandle(conn.hServerPacketRecver);
 	conn.buddy_list_received=0;
 	broadcast_status(ID_STATUS_OFFLINE);

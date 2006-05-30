@@ -366,6 +366,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icons\inbox.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\icons\oscar.ico"
 				>
 			</File>

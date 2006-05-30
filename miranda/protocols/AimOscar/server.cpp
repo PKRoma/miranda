@@ -136,9 +136,11 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0
 		{
 			unsigned long time = DBGetContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, 0);
 			aim_set_idle(hServerConn,seqno,time*60);
+			conn.instantidle=1;
 		}
 		aim_client_ready(hServerConn,seqno);
-		aim_new_service_request(hServerConn,seqno,0x0018);
+		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0))
+			aim_new_service_request(hServerConn,seqno,0x0018);
 		add_contacts_to_groups();//woo
 		aim_activate_list(hServerConn,seqno);
 		conn.state=1;
@@ -1066,7 +1068,7 @@ void snac_mail_response(SNAC &snac)//family 0x0018
 	{
 		unsigned short num_tlvs=snac.ushort(24);
 		char* sn=0;
-		unsigned long time;
+		time_t time;
 		unsigned short num_msgs;
 		char new_mail=0;
 		int position=26;
@@ -1103,16 +1105,47 @@ void snac_mail_response(SNAC &snac)//family 0x0018
 		}
 		if(new_mail)
 		{
-			int size=strlen(sn)+strlen(address)+2;
+			char cNum_msgs[10];
+			_itoa(num_msgs,cNum_msgs,10);
+			int size=strlen(sn)+strlen(address)+strlen(cNum_msgs)+4;
 			char* email= new char[size];
 			strlcpy(email,sn,size);
 			strlcpy(&email[strlen(sn)],"@",size);
 			strlcpy(&email[strlen(sn)+1],address,size);
-			ShowPopup("You've got mail!",email,MAIL_POPUP,url);
+			strlcpy(&email[strlen(sn)+strlen(address)+1],"(",size);
+			strlcpy(&email[strlen(sn)+strlen(address)+2],cNum_msgs,size);
+			strlcpy(&email[strlen(sn)+strlen(address)+strlen(cNum_msgs)+2],")",size);
+			char minute[3];
+			char hour[3];
+			tm* local_time=localtime(&time);
+			_itoa(local_time->tm_hour,hour,10);
+			_itoa(local_time->tm_min,minute,10);
+			if(local_time->tm_min<10)
+			{
+				minute[1]=minute[0];
+				minute[0]='0';
+				minute[2]='\0';
+			}
+			if(local_time->tm_hour<10)
+			{
+				hour[1]=hour[0];
+				hour[0]='0';
+				hour[2]='\0';
+			}
+			int size2=28+strlen(minute)+3+strlen(hour);
+			char* msg=new char[size2];
+			strlcpy(msg,"You've got mail! Checked at ",size2);
+			strlcpy(&msg[28],hour,size2);
+			strlcpy(&msg[28+strlen(hour)],":",size2);
+			strlcpy(&msg[28+strlen(hour)+1],minute,size2);
+			strlcpy(&msg[28+strlen(hour)+strlen(minute)+1],".",size2);
+			ShowPopup(email,msg,MAIL_POPUP,url);
 			delete[] email;
+			delete[] msg;
 		}
 		delete[] sn;
 		delete[] address;
+		Netlib_CloseHandle(conn.hMailConn);
 	}
 }
 /*void snac_delete_contact(SNAC &snac, char* buf)//family 0x0013

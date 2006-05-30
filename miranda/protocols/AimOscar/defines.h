@@ -86,6 +86,8 @@
 #define AIM_KEY_FR						"FirstRun"
 #define AIM_KEY_II						"InstantIdle"
 #define AIM_KEY_IIT						"InstantIdleTS"
+#define AIM_KEY_CM						"CheckMail"
+
 //Other plugin Option Keys
 #define OTH_KEY_AI						"AwayIgnore"
 #define OTH_KEY_AD						"AwayDefault"
@@ -219,7 +221,8 @@ public:
 	bool freeing_DirectBoundPort;
 	bool shutting_down;
 	bool idle;
-	
+	bool instantidle;
+
 	HINSTANCE hInstance;//plugin handle instance
 	
 	//Some main connection stuff

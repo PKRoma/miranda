@@ -52,18 +52,23 @@ int IdleChanged(WPARAM wParam, LPARAM lParam)
 		conn.idle=0;
 		return 0;
 	}
+	if(conn.instantidle)//ignore- we are instant idling at the moment
+		return 0;
 	BOOL bIdle = (lParam & IDF_ISIDLE);
     BOOL bPrivacy = (lParam & IDF_PRIVACY);
 
-    if (bPrivacy && conn.idle) {
+    if (bPrivacy && conn.idle)
+	{
         aim_set_idle(conn.hServerConn,conn.seqno,0);
         return 0;
     }
     else if (bPrivacy) {
         return 0;
     }
-    else {
-        if (bIdle) {
+    else
+	{
+        if (bIdle)//don't want to change idle time if we are already idle
+		{
             MIRANDA_IDLE_INFO mii;
 
             ZeroMemory(&mii, sizeof(mii));
@@ -559,6 +564,17 @@ static int InstantIdle(WPARAM wParam, LPARAM lParam)
 	DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_IDLE), NULL, instant_idle_dialog);
 	return 0;
 }
+static int CheckMail(WPARAM wParam, LPARAM lParam)
+{ 
+	if(conn.state==1)
+		aim_new_service_request(conn.hServerConn,conn.seqno,0x0018);
+	return 0;
+}
+static int ManageAccount(WPARAM wParam, LPARAM lParam)
+{ 
+	execute_cmd("http","https://my.screenname.aol.com");
+	return 0;
+}
 void CreateServices()
 {
 	char service_name[300];
@@ -604,6 +620,32 @@ void CreateServices()
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_AUTHREQUEST);
 	CreateServiceFunction(service_name,AuthRequest);
 	//Do not put any services below HTML get away message!!!
+
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/ManageAccount");
+	CreateServiceFunction(service_name,ManageAccount);
+	memset( &mi, 0, sizeof( mi ));
+	mi.pszPopupName = AIM_PROTOCOL_NAME;
+    mi.cbSize = sizeof( mi );
+    mi.popupPosition = 500090000;
+	mi.position = 500090000;
+    mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AIM ));
+	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+    mi.pszName = Translate( "Manage Account" );
+    mi.pszService = service_name;
+	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/CheckMail");
+	CreateServiceFunction(service_name,CheckMail);
+	memset( &mi, 0, sizeof( mi ));
+	mi.pszPopupName = AIM_PROTOCOL_NAME;
+    mi.cbSize = sizeof( mi );
+    mi.popupPosition = 500090000;
+	mi.position = 500090000;
+    mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_MAIL ));
+	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+    mi.pszName = Translate( "Check Mail" );
+    mi.pszService = service_name;
+	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/InstantIdle");
 	CreateServiceFunction(service_name,InstantIdle);

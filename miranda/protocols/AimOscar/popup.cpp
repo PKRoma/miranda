@@ -28,8 +28,24 @@ void __stdcall ShowPopup( const char* title, const char* msg, int flags, char* u
 
 	if ( !ServiceExists( MS_POPUP_ADDPOPUPEX ))
 	{	
-		MessageBox( NULL, msg, Translate("Aim Protocol"), MB_OK | MB_ICONINFORMATION );
-		return;
+		if(flags & MAIL_POPUP)
+		{
+			int size=strlen(msg)+20;
+			char* buf= new char[size];
+			strlcpy(buf,msg,size);
+			strlcpy(&buf[strlen(msg)]," Open mail account?",size);
+			if(MessageBox( NULL, buf, title, MB_YESNO | MB_ICONINFORMATION )==IDYES)
+			{
+				execute_cmd("http",url);
+			}
+			delete[] buf;
+			return;
+		}
+		else
+		{
+			MessageBox( NULL, msg, Translate("Aim Protocol"), MB_OK | MB_ICONINFORMATION );
+			return;
+		}
 	}
 	ZeroMemory(&ppd, sizeof(ppd) );
 	lstrcpy( ppd.lpzContactName, title );

@@ -52,39 +52,40 @@ END
 // Dialog
 //
 
-IDD_AIM DIALOGEX 0, 0, 331, 227
+IDD_AIM DIALOGEX 0, 0, 324, 232
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "AIM Options",IDC_OPTIONS,7,103,157,104,WS_GROUP
-    EDITTEXT        IDC_SN,64,17,93,15,ES_LOWERCASE | ES_AUTOHSCROLL
-    EDITTEXT        IDC_NK,64,37,93,15,ES_AUTOHSCROLL
-    EDITTEXT        IDC_PW,64,57,93,15,ES_PASSWORD | ES_AUTOHSCROLL
-    EDITTEXT        IDC_HN,64,77,94,15,ES_AUTOHSCROLL
-    LTEXT           "Screenname:",IDC_STATIC,13,20,45,15
-    LTEXT           "Display Name:",IDC_STATIC,10,39,48,15
-    LTEXT           "Password:",IDC_STATIC,22,59,35,15
-    LTEXT           "Hostname:",IDC_STATIC,21,80,38,12
-    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,112,130,13
-    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,125,143,13
-    CONTROL         "Convert Incoming Messages to BBCode",IDC_FI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,138,143,13
-    CONTROL         "Convert Outgoing Messages to HTML",IDC_FO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,150,143,13
-    CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,163,145,13
-    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,176,143,13
-    CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,189,143,13
-    GROUPBOX        "AIM User Details",IDC_DETAILS,8,7,156,91,WS_GROUP
-    GROUPBOX        "Advanced Options",IDC_EXPERT,168,7,156,91,WS_GROUP
-    EDITTEXT        IDC_KA,234,19,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
-    LTEXT           "*AimOSCAR must be reconnected  for some option to take effect.",IDC_MASQ,183,102,115,18,NOT WS_VISIBLE
-    LTEXT           "Keep Alive Timer:",IDC_STATIC,173,21,56,15
-    LTEXT           "(seconds)",IDC_STATIC,255,21,32,12
-    LTEXT           "File Transfer Grace Period:",IDC_STATIC,174,36,87,12
-    EDITTEXT        IDC_GP,261,35,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
-    LTEXT           "(seconds)",IDC_STATIC,285,37,32,12
-    CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,51,93,13
+    GROUPBOX        "AIM Options",IDC_OPTIONS,3,106,161,124,WS_GROUP
+    EDITTEXT        IDC_SN,63,17,93,15,ES_LOWERCASE | ES_AUTOHSCROLL
+    EDITTEXT        IDC_NK,63,37,93,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_PW,63,57,93,15,ES_PASSWORD | ES_AUTOHSCROLL
+    EDITTEXT        IDC_HN,63,77,94,15,ES_AUTOHSCROLL
+    LTEXT           "Screenname:",IDC_STATIC,12,20,45,15
+    LTEXT           "Display Name:",IDC_STATIC,9,39,48,15
+    LTEXT           "Password:",IDC_STATIC,21,59,35,15
+    LTEXT           "Login Server:",IDC_STATIC,11,80,44,12
+    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,119,130,13
+    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,132,143,13
+    CONTROL         "Convert Incoming Messages to BBCode",IDC_FI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,145,143,13
+    CONTROL         "Convert Outgoing Messages to HTML",IDC_FO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,157,143,13
+    CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,170,133,13
+    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,183,143,13
+    CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,196,143,13
+    GROUPBOX        "AIM User Details",IDC_DETAILS,3,7,161,95,WS_GROUP
+    GROUPBOX        "Advanced Options",IDC_EXPERT,166,7,156,95,WS_GROUP
+    EDITTEXT        IDC_KA,234,23,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
+    LTEXT           "*AimOSCAR must be reconnected  for some option to take effect.",IDC_MASQ,186,109,115,18,NOT WS_VISIBLE
+    LTEXT           "Keep Alive Timer:",IDC_STATIC,173,25,56,15
+    LTEXT           "(seconds)",IDC_STATIC,255,25,32,12
+    LTEXT           "File Transfer Grace Period:",IDC_STATIC,174,40,87,12
+    EDITTEXT        IDC_GP,261,39,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
+    LTEXT           "(seconds)",IDC_STATIC,285,41,32,12
+    CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,52,93,13
     CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,65,130,11
-    CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,77,143,13
+    CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,76,143,13
+    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,209,143,13
 END
 
 IDD_INFO DIALOGEX 0, 0, 222, 153
@@ -96,19 +97,19 @@ BEGIN
     LTEXT           "AIM Profile Editing Dialog",IDC_STATIC,38,142,105,8
 END
 
-IDD_AIMACCOUNT DIALOGEX 0, 0, 195, 127
+IDD_AIMACCOUNT DIALOGEX 0, 0, 195, 97
 STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOPMOST
 CAPTION "AIM Account Setup"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    PUSHBUTTON      "Ok",IDOK,90,106,46,14
-    PUSHBUTTON      "Cancel",IDCANCEL,140,106,33,14
-    LTEXT           "Please enter your AIM account details to continue:",IDC_STATIC,7,17,163,15
-    LTEXT           "AIM username:",IDC_STATIC,14,39,53,10
-    LTEXT           "Password:",IDC_STATIC,13,62,46,10
-    EDITTEXT        IDC_SN,79,38,87,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_PW,80,61,87,12,ES_PASSWORD | ES_AUTOHSCROLL
+    PUSHBUTTON      "Ok",IDOK,90,74,46,14
+    PUSHBUTTON      "Cancel",IDCANCEL,140,74,33,14
+    LTEXT           "Please enter your AIM account details to continue:",IDC_STATIC,7,9,163,15
+    LTEXT           "Screenname:",IDC_STATIC,18,32,53,10
+    LTEXT           "Password:",IDC_STATIC,28,52,46,10
+    EDITTEXT        IDC_SN,80,31,87,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_PW,80,51,87,12,ES_PASSWORD | ES_AUTOHSCROLL
 END
 
 IDD_IDLE DIALOGEX 0, 0, 173, 74
@@ -121,7 +122,7 @@ BEGIN
     LTEXT           "Number of Hours:",IDC_STATIC,18,13,62,12
     LTEXT           "Number of Minutes:",IDC_STATIC,12,29,64,12
     EDITTEXT        IDC_IIM,86,28,28,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
-	PUSHBUTTON      "Set Idle",IDOK,78,50,46,14
+    PUSHBUTTON      "Set Idle",IDOK,78,50,46,14
     PUSHBUTTON      "Unset Idle",IDCANCEL,129,50,39,14
 END
 
@@ -134,14 +135,6 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
-    IDD_AIM, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 324
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 220
-    END
-
     IDD_INFO, DIALOG
     BEGIN
         BOTTOMMARGIN, 132
@@ -180,6 +173,7 @@ IDI_UNCONFIRMED         ICON                    "icons\\unconfirmed.ico"
 IDI_AWAY                ICON                    "icons\\away.ico"
 IDI_IDLE                ICON                    "icons\\idle.ico"
 IDI_PROFILE             ICON                    "icons\\profile.ico"
+IDI_MAIL                ICON                    "icons\\inbox.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

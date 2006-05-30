@@ -11,6 +11,8 @@
 #define IDI_IDLE                        13
 #define IDI_ICON1                       14
 #define IDI_PROFILE                     14
+#define IDI_ICON2                       15
+#define IDI_MAIL                        15
 #define IDC_DETAILS                     125
 #define IDC_OPTIONS                     126
 #define IDC_EXPERT                      127
@@ -39,6 +41,7 @@
 #define IDC_HF                          1170
 #define IDC_MASQ                        1180
 #define IDC_WEBSUPPORT                  1190
+#define IDC_CM                          1191
 #define IDC_SETPROFILE                  1200
 #define IDC_II                          1210
 #define IDC_PROFILE                     1220
@@ -49,7 +52,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        15
+#define _APS_NEXT_RESOURCE_VALUE        16
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         128
 #define _APS_NEXT_SYMED_VALUE           101
