@@ -50,7 +50,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	if(DBGetContactSettingByte(0, "CList", "flt_enabled", 0)) {
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
-		mi.position=300000;
+		mi.position=200000;
 		mi.pszPopupName=(char *)-1;
 		mi.pszService="CList/SetContactFloating";
 		mi.pszName=Translate("&Floating Contact");
@@ -77,7 +77,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 
     memset(&mi,0,sizeof(mi));
     mi.cbSize=sizeof(mi);
-    mi.position=250000;
+    mi.position=200000;
     mi.pszPopupName=(char *)-1;
     mi.pszService="CList/SetContactIgnore";
     mi.pszName=Translate("&Ignore settings...");

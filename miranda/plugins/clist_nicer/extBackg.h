@@ -90,6 +90,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IMAGE_PERPIXEL_ALPHA 1
 #define IMAGE_FLAG_DIVIDED 2
 #define IMAGE_FILLSOLID 4
+#define IMAGE_GLYPH 8
 
 #define IMAGE_STRETCH_V 1
 #define IMAGE_STRETCH_H 2
@@ -115,6 +116,7 @@ typedef struct _tagImageItem {
     BLENDFUNCTION bf;
     BYTE bStretch;
     HBRUSH fillBrush;
+    LONG   glyphMetrics[4];
     struct _tagImageItem *nextItem;
 } ImageItem;
 

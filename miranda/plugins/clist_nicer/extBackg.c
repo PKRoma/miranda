@@ -1193,8 +1193,22 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
     char szDrive[MAX_PATH], szPath[MAX_PATH];
     
     ZeroMemory(&tmpItem, sizeof(ImageItem));
+    GetPrivateProfileStringA(itemname, "Glyph", "None", buffer, 500, szFileName);
+    if(strcmp(buffer, "None")) {
+        sscanf(buffer, "%d,%d,%d,%d", &tmpItem.glyphMetrics[0], &tmpItem.glyphMetrics[1],
+               &tmpItem.glyphMetrics[2], &tmpItem.glyphMetrics[3]);
+        if(tmpItem.glyphMetrics[2] > tmpItem.glyphMetrics[0] && tmpItem.glyphMetrics[3] > tmpItem.glyphMetrics[1]) {
+            tmpItem.dwFlags |= IMAGE_GLYPH;
+            tmpItem.glyphMetrics[2] = (tmpItem.glyphMetrics[2] - tmpItem.glyphMetrics[0]) + 1;
+            tmpItem.glyphMetrics[3] = (tmpItem.glyphMetrics[3] - tmpItem.glyphMetrics[1]) + 1;
+            goto done_with_glyph;
+        }
+    }
     GetPrivateProfileStringA(itemname, "Image", "None", buffer, 500, szFileName);
     if(strcmp(buffer, "None")) {
+
+done_with_glyph:
+
         strncpy(tmpItem.szName, &itemname[1], sizeof(tmpItem.szName));
         tmpItem.szName[sizeof(tmpItem.szName) - 1] = 0;
         _splitpath(szFileName, szDrive, szPath, NULL, NULL);
@@ -1207,7 +1221,24 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
         tmpItem.bRight = GetPrivateProfileIntA(itemname, "Right", 0, szFileName);
         tmpItem.bTop = GetPrivateProfileIntA(itemname, "Top", 0, szFileName);
         tmpItem.bBottom = GetPrivateProfileIntA(itemname, "Bottom", 0, szFileName);
+        if(tmpItem.dwFlags & IMAGE_GLYPH) {
+            tmpItem.width = tmpItem.glyphMetrics[2];
+            tmpItem.height = tmpItem.glyphMetrics[3];
+            tmpItem.inner_height = tmpItem.glyphMetrics[3] - tmpItem.bTop - tmpItem.bBottom;
+            tmpItem.inner_width = tmpItem.glyphMetrics[2] - tmpItem.bRight - tmpItem.bLeft;
 
+            if(tmpItem.bTop && tmpItem.bBottom && tmpItem.bLeft && tmpItem.bRight)
+                tmpItem.dwFlags |= IMAGE_FLAG_DIVIDED;
+            tmpItem.bf.BlendFlags = 0;
+            tmpItem.bf.BlendOp = AC_SRC_OVER;
+            tmpItem.bf.AlphaFormat = 0;
+            tmpItem.dwFlags |= IMAGE_PERPIXEL_ALPHA;
+            tmpItem.bf.AlphaFormat = AC_SRC_ALPHA;
+            if(tmpItem.inner_height <= 0 || tmpItem.inner_width <= 0) {
+                ReleaseDC(pcli->hwndContactList, hdc);
+                return;
+            }
+        }
         GetPrivateProfileStringA(itemname, "Fillcolor", "None", buffer, 500, szFileName);
         if(strcmp(buffer, "None")) {
             COLORREF fillColor = HexStringToLong(buffer);
@@ -1237,8 +1268,9 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
             goto imgread_done;
         }
         if(itemname[0] == '@') {
-            IMG_CreateItem(&tmpItem, szFinalName, hdc);
-            if(tmpItem.hbm) {
+            if(!(tmpItem.dwFlags & IMAGE_GLYPH))
+                IMG_CreateItem(&tmpItem, szFinalName, hdc);
+            if(tmpItem.hbm || tmpItem.dwFlags & IMAGE_GLYPH) {
                 ImageItem *pItem = g_ImageItems;
 
                 newItem = malloc(sizeof(ImageItem));
@@ -1263,8 +1295,9 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
             if(!strcmp(buffer, "None"))
                 break;
             if(!strcmp(buffer, "CLUI")) {
-                IMG_CreateItem(&tmpItem, szFinalName, hdc);
-                if(tmpItem.hbm) {
+                if(!(tmpItem.dwFlags & IMAGE_GLYPH))
+                    IMG_CreateItem(&tmpItem, szFinalName, hdc);
+                if(tmpItem.hbm || tmpItem.dwFlags & IMAGE_GLYPH) {
                     COLORREF clr;
                     
                     newItem = malloc(sizeof(ImageItem));
@@ -1285,8 +1318,9 @@ void IMG_ReadItem(const char *itemname, const char *szFileName)
             for(i = 0; i <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; i++) {
                 if(!_stricmp(StatusItems[i].szName[0] == '{' ? &StatusItems[i].szName[3] : StatusItems[i].szName, buffer)) {
                     if(!alloced) {
-                        IMG_CreateItem(&tmpItem, szFinalName, hdc);
-                        if(tmpItem.hbm) {
+                        if(!(tmpItem.dwFlags & IMAGE_GLYPH))
+                            IMG_CreateItem(&tmpItem, szFinalName, hdc);
+                        if(tmpItem.hbm || tmpItem.dwFlags & IMAGE_GLYPH) {
                             newItem = malloc(sizeof(ImageItem));
                             ZeroMemory(newItem, sizeof(ImageItem));
                             *newItem = tmpItem;
@@ -1442,10 +1476,11 @@ static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
 
 static void IMG_DeleteItem(ImageItem *item)
 {
-    SelectObject(item->hdc, item->hbmOld);
-    DeleteObject(item->hbm);
-    DeleteDC(item->hdc);
-
+    if(!(item->dwFlags & IMAGE_GLYPH)) {
+        SelectObject(item->hdc, item->hbmOld);
+        DeleteObject(item->hbm);
+        DeleteDC(item->hdc);
+    }
     if(item->fillBrush)
         DeleteObject(item->fillBrush);
 }
@@ -1537,14 +1572,21 @@ static void BTN_ReadItem(char *itemName, char *file)
     GetPrivateProfileStringA(itemName, "NormalGlyph", "0, 0, 20, 20", szBuffer, 1000, file);
     sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.normalGlyphMetrics[0], &tmpItem.normalGlyphMetrics[1],
            &tmpItem.normalGlyphMetrics[2], &tmpItem.normalGlyphMetrics[3]);
+    tmpItem.normalGlyphMetrics[2] = (tmpItem.normalGlyphMetrics[2] - tmpItem.normalGlyphMetrics[0]) + 1;
+    tmpItem.normalGlyphMetrics[3] = (tmpItem.normalGlyphMetrics[3] - tmpItem.normalGlyphMetrics[1]) + 1;
 
     GetPrivateProfileStringA(itemName, "PressedGlyph", "0, 0, 20, 20", szBuffer, 1000, file);
     sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.pressedGlyphMetrics[0], &tmpItem.pressedGlyphMetrics[1],
            &tmpItem.pressedGlyphMetrics[2], &tmpItem.pressedGlyphMetrics[3]);
+    tmpItem.pressedGlyphMetrics[2] = (tmpItem.pressedGlyphMetrics[2] - tmpItem.pressedGlyphMetrics[0]) + 1;
+    tmpItem.pressedGlyphMetrics[3] = (tmpItem.pressedGlyphMetrics[3] - tmpItem.pressedGlyphMetrics[1]) + 1;
+
 
     GetPrivateProfileStringA(itemName, "HoverGlyph", "0, 0, 20, 20", szBuffer, 1000, file);
     sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.hoverGlyphMetrics[0], &tmpItem.hoverGlyphMetrics[1],
            &tmpItem.hoverGlyphMetrics[2], &tmpItem.hoverGlyphMetrics[3]);
+    tmpItem.hoverGlyphMetrics[2] = (tmpItem.hoverGlyphMetrics[2] - tmpItem.hoverGlyphMetrics[0]) + 1;
+    tmpItem.hoverGlyphMetrics[3] = (tmpItem.hoverGlyphMetrics[3] - tmpItem.hoverGlyphMetrics[1]) + 1;
 
     tmpItem.uId = IDC_TBFIRSTUID - 1;
 
@@ -1965,8 +2007,6 @@ BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
             }
             else
                 SetDlgItemText(hwndDlg, IDC_SKINFILENAME, _T(""));
-
-            EnableWindow(GetDlgItem(hwndDlg, IDC_RELOADSKIN), IsDlgButtonChecked(hwndDlg, IDC_USESKIN));
             return TRUE;
         }
         case WM_COMMAND:
@@ -1976,22 +2016,18 @@ BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     int useskin = IsDlgButtonChecked(hwndDlg, IDC_USESKIN);
 
                     DBWriteContactSettingByte(NULL, "CLUI", "useskin", useskin ? 1 : 0);
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_RELOADSKIN), useskin);
-                    if(useskin) {
-                        ApplyCLUISkin();
-                    }
-                    else {
-                        IMG_DeleteItems();
-                        CreateButtonBar(pcli->hwndContactList);
-                        if(g_CluiData.bSkinnedToolbar)
-                            SetTBSKinned(1);
-                        ConfigureFrame();
-                        SetButtonStates(pcli->hwndContactList);
-                        SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-                        PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
-                    }
                     break;
                 }
+                case IDC_UNLOAD:
+                    IMG_DeleteItems();
+                    CreateButtonBar(pcli->hwndContactList);
+                    if(g_CluiData.bSkinnedToolbar)
+                        SetTBSKinned(1);
+                    ConfigureFrame();
+                    SetButtonStates(pcli->hwndContactList);
+                    SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+                    PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
+                    break;
                 case IDC_SELECTSKINFILE:
                     {
                         OPENFILENAMEA ofn = {0};

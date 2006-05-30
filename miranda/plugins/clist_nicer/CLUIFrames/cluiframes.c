@@ -1375,11 +1375,12 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
                 }
             }
         }
-        CLUIFramesStoreAllFrames();
+        ulockfrm();
+        CLUIFramesReSort();
+        //CLUIFramesStoreAllFrames();
         CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
 		PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
     }
-    ulockfrm();
     return(0);
 }
 
@@ -1843,7 +1844,7 @@ static LRESULT CALLBACK FramesSubClassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 int CLUIFramesReSort()
 {
     int v = 0, i;
-	int order = 0;
+	int order = 1;
 
     lockfrm();
 	memset(g_sd,0,sizeof(SortData) * MAX_FRAMES);

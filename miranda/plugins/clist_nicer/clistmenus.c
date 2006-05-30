@@ -416,6 +416,7 @@ static int ModifyCustomMenuItem(WPARAM wParam,LPARAM lParam)
     }
     else if(mi->pszName != NULL) {
         //_DebugTraceA("modify menu item: invalid pointer (%x), %x", mi->pszName, mi->flags);
+		return 1;
     }
 
 
