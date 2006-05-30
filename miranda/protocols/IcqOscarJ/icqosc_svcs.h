@@ -57,7 +57,7 @@ int IcqSearchByAdvanced(WPARAM wParam, LPARAM lParam);
 int IcqAddToList(WPARAM wParam, LPARAM lParam);
 int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam);
 int IcqSetNickName(WPARAM wParam, LPARAM lParam);
-int IcqChangeInfo(WPARAM wParam, LPARAM lParam);
+int IcqChangeInfoEx(WPARAM wParam, LPARAM lParam);
 int IcqGetInfo(WPARAM wParam, LPARAM lParam);
 int IcqSendSms(WPARAM wParam, LPARAM lParam);
 int IcqSetApparentMode(WPARAM wParam, LPARAM lParam);

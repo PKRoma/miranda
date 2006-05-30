@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005 Joe Kucera, Bio
+// Copyright © 2004,2005,2006 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -520,7 +520,7 @@ static ListTypeDataItem interests[]={
 };
 
 static ListTypeDataItem pastbackground[]={
-  {0, "Unspecified"},
+  {0,   "Unspecified"},
   {300, "Elementary School"},
   {301, "High School"},
   {302, "College"},
@@ -532,7 +532,7 @@ static ListTypeDataItem pastbackground[]={
 };
 
 static ListTypeDataItem affiliation[]={
-  {0, "Unspecified"},
+  {0,   "Unspecified"},
   {200, "Alumni Org."},
   {201, "Charity Org."},
   {202, "Club/Social Org."},
@@ -556,7 +556,7 @@ static ListTypeDataItem affiliation[]={
 };
 
 static ListTypeDataItem maritalstatuses[]={
-  {0, "Unspecified"},
+  {0,  "Unspecified"},
   {10, "Single"},
   {11, "Close relationships"},
   {12, "Engaged"},
@@ -593,7 +593,7 @@ SettingItem setting[]={
   {"Street",         LI_STRING,     DBVT_ASCIIZ, "Street"},
   {"City",           LI_STRING,     DBVT_ASCIIZ, "City"},
   {"State",          LI_STRING,     DBVT_ASCIIZ, "State"},
-  {"ZIP/postcode",   LI_STRING|LIF_CHANGEONLY, DBVT_ASCIIZ, "ZIP"},
+  {"ZIP/postcode",   LI_STRING,     DBVT_ASCIIZ, "ZIP"},
   {"Country",        LI_LIST,       DBVT_WORD,   "Country",    countries, sizeof(countries)/sizeof(countries[0])},
   {"Phone number",   LI_STRING,     DBVT_ASCIIZ, "Phone"},
   {"Fax number",     LI_STRING,     DBVT_ASCIIZ, "Fax"},
@@ -622,7 +622,7 @@ SettingItem setting[]={
   {"Company state",  LI_STRING,     DBVT_ASCIIZ, "CompanyState"},
   {"Company phone",  LI_STRING,     DBVT_ASCIIZ, "CompanyPhone"},
   {"Company fax",    LI_STRING,     DBVT_ASCIIZ, "CompanyFax"},
-  {"Company ZIP/postcode",LI_STRING|LIF_CHANGEONLY,DBVT_ASCIIZ, "CompanyZIP"},
+  {"Company ZIP/postcode",LI_STRING,DBVT_ASCIIZ, "CompanyZIP"},
   {"Company country",LI_LIST,       DBVT_WORD,   "CompanyCountry",countries, sizeof(countries)/sizeof(countries[0])},
   {"Company department",LI_STRING,  DBVT_ASCIIZ, "CompanyDepartment"},
   {"Company position",LI_STRING,    DBVT_ASCIIZ, "CompanyPosition"},
@@ -639,11 +639,11 @@ SettingItem setting[]={
   {"Interest areas 4",LI_STRING,    DBVT_ASCIIZ, "Interest3Text"},
   //pastbackground
   {"Past Background",               LI_DIVIDER},
-  {"Category 1",LI_LIST,           DBVT_ASCIIZ, "Past0", pastbackground, sizeof(pastbackground)/sizeof(pastbackground[0])},
+  {"Category 1",LI_LIST,            DBVT_ASCIIZ, "Past0", pastbackground, sizeof(pastbackground)/sizeof(pastbackground[0])},
   {"Past Background 1",LI_STRING,   DBVT_ASCIIZ, "Past0Text"},
-  {"Category 2",LI_LIST,           DBVT_ASCIIZ, "Past1", pastbackground, sizeof(pastbackground)/sizeof(pastbackground[0])},
+  {"Category 2",LI_LIST,            DBVT_ASCIIZ, "Past1", pastbackground, sizeof(pastbackground)/sizeof(pastbackground[0])},
   {"Past Background 2",LI_STRING,   DBVT_ASCIIZ, "Past1Text"},
-  {"Category 3",LI_LIST,           DBVT_ASCIIZ, "Past2", pastbackground, sizeof(pastbackground)/sizeof(pastbackground[0])},
+  {"Category 3",LI_LIST,            DBVT_ASCIIZ, "Past2", pastbackground, sizeof(pastbackground)/sizeof(pastbackground[0])},
   {"Past Background 3",LI_STRING,   DBVT_ASCIIZ, "Past2Text"},
   //affiliation
   {"Affiliations",                  LI_DIVIDER},

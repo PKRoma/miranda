@@ -873,26 +873,130 @@ int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
 
 int IcqSetNickName(WPARAM wParam, LPARAM lParam)
 {
-  PBYTE buf = NULL;
-  int buflen = 0;
+  if (icqOnline)
+  {
+    ICQWriteContactSettingString(NULL, "Nick", (char*)lParam);
 
-  ICQWriteContactSettingString(NULL, "Nick", (char*)lParam);
+    return IcqChangeInfoEx(CIXT_BASIC, 0);
+  }
 
-  ppackLEWord(&buf, &buflen, 0);  // data length
-  ppackTLVLNTS(&buf, &buflen, (char*)lParam, TLV_NICKNAME, 1);
-  *(PWORD)buf = buflen - 2;
-  IcqChangeInfo(META_SET_FULLINFO_REQ, (LPARAM)buf);
-
-  return 0; // Not defined // TODO: change when definition is ready
+  return 0; // Failure
 }
 
 
 
-int IcqChangeInfo(WPARAM wParam, LPARAM lParam)
+int IcqChangeInfoEx(WPARAM wParam, LPARAM lParam)
 {
-  if (lParam && icqOnline)
+  if (icqOnline && wParam)
   {
-    return icq_changeUserDetailsServ((WORD)wParam, (PBYTE)(lParam+2), *(PWORD)lParam); // Success
+    PBYTE buf = NULL;
+    int buflen = 0;
+    BYTE b;
+
+    // userinfo
+    ppackTLVWord(&buf, &buflen, (WORD)GetACP(), TLV_CODEPAGE, 0);
+
+    if (wParam & CIXT_CONTACT)
+    { // contact information
+      b = !ICQGetContactSettingByte(NULL, "PublishPrimaryEmail", 0);
+      ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail", b, TLV_EMAIL);
+      ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail0", 0, TLV_EMAIL);
+      ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail1", 0, TLV_EMAIL);
+
+      ppackTLVByte(&buf, &buflen, ICQGetContactSettingByte(NULL, "AllowSpam", 0), TLV_ALLOWSPAM, 1);
+
+      ppackTLVLNTSfromDB(&buf, &buflen, "Phone", TLV_PHONE);
+      ppackTLVLNTSfromDB(&buf, &buflen, "Fax", TLV_FAX);
+      ppackTLVLNTSfromDB(&buf, &buflen, "Cellular", TLV_MOBILE);
+      ppackTLVLNTSfromDB(&buf, &buflen, "CompanyPhone", TLV_WORKPHONE);
+      ppackTLVLNTSfromDB(&buf, &buflen, "CompanyFax", TLV_WORKFAX);
+    }
+
+    if (wParam & CIXT_BASIC)
+    { // upload basic user info
+      ppackTLVLNTSfromDB(&buf, &buflen, "Nick", TLV_NICKNAME);
+      ppackTLVLNTSfromDB(&buf, &buflen, "FirstName", TLV_FIRSTNAME);
+      ppackTLVLNTSfromDB(&buf, &buflen, "LastName", TLV_LASTNAME);
+      ppackTLVLNTSfromDB(&buf, &buflen, "About", TLV_ABOUT);
+    }
+
+    if (wParam & CIXT_MORE)
+    {
+      ppackTLVWord(&buf, &buflen, ICQGetContactSettingWord(NULL, "Age", 0), TLV_AGE, 1);
+      b = ICQGetContactSettingByte(NULL, "Gender", 0);
+      ppackTLVByte(&buf, &buflen, (BYTE)(b ? (b == 'M' ? 2 : 1) : 0), TLV_GENDER, 1);
+      ppackLEWord(&buf, &buflen, TLV_BIRTH);
+      ppackLEWord(&buf, &buflen, 0x06);
+      ppackLEWord(&buf, &buflen, ICQGetContactSettingWord(NULL, "BirthYear", 0));
+      ppackLEWord(&buf, &buflen, (WORD)ICQGetContactSettingByte(NULL, "BirthMonth", 0));
+      ppackLEWord(&buf, &buflen, (WORD)ICQGetContactSettingByte(NULL, "BirthDay", 0));
+
+      ppackTLVWord(&buf, &buflen, (WORD)StringToListItemId("Language1", 0), TLV_LANGUAGE, 1);
+      ppackTLVWord(&buf, &buflen, (WORD)StringToListItemId("Language2", 0), TLV_LANGUAGE, 1);
+      ppackTLVWord(&buf, &buflen, (WORD)StringToListItemId("Language3", 0), TLV_LANGUAGE, 1);
+
+      ppackTLVByte(&buf, &buflen, ICQGetContactSettingByte(NULL, "MaritalStatus", 0), TLV_MARITAL, 1);
+    }
+
+    if (wParam & CIXT_WORK)
+    {
+      ppackTLVLNTSfromDB(&buf, &buflen, "CompanyDepartment", TLV_DEPARTMENT);
+      ppackTLVLNTSfromDB(&buf, &buflen, "CompanyPosition", TLV_POSITION);
+      ppackTLVLNTSfromDB(&buf, &buflen, "Company", TLV_COMPANY);
+      ppackTLVLNTSfromDB(&buf, &buflen, "CompanyStreet", TLV_WORKSTREET);
+      ppackTLVLNTSfromDB(&buf, &buflen, "CompanyState", TLV_WORKSTATE);
+      ppackTLVLNTSfromDB(&buf, &buflen, "CompanyCity", TLV_WORKCITY);
+      ppackTLVLNTSfromDB(&buf, &buflen, "CompanyHomepage", TLV_WORKURL);
+      ppackTLVLNTSfromDB(&buf, &buflen, "CompanyZIP", TLV_WORKZIPCODE);
+      ppackTLVWord(&buf, &buflen, ICQGetContactSettingWord(NULL, "CompanyCountry", 0), TLV_WORKCOUNTRY, 1);
+      ppackTLVWord(&buf, &buflen, ICQGetContactSettingWord(NULL, "CompanyOccupation", 0), TLV_OCUPATION, 1);
+    }
+
+    if (wParam & CIXT_LOCATION)
+    {
+      ppackTLVLNTSfromDB(&buf, &buflen, "City", TLV_CITY);
+      ppackTLVLNTSfromDB(&buf, &buflen, "State", TLV_STATE);
+      ppackTLVWord(&buf, &buflen, ICQGetContactSettingWord(NULL, "Country", 0), TLV_COUNTRY, 1);
+      ppackTLVLNTSfromDB(&buf, &buflen, "OriginCity", TLV_ORGCITY);
+      ppackTLVLNTSfromDB(&buf, &buflen, "OriginState", TLV_ORGSTATE);
+      ppackTLVWord(&buf, &buflen, ICQGetContactSettingWord(NULL, "OriginCountry", 0), TLV_ORGCOUNTRY, 1);
+      ppackTLVLNTSfromDB(&buf, &buflen, "Street", TLV_STREET);
+      ppackTLVLNTSfromDB(&buf, &buflen, "ZIP", TLV_ZIPCODE);
+
+      ppackTLVLNTSfromDB(&buf, &buflen, "Homepage", TLV_URL);
+
+      ppackTLVByte(&buf, &buflen, ICQGetContactSettingByte(NULL, "Timezone", 0), TLV_TIMEZONE, 1);
+    }
+
+    if (wParam & CIXT_BACKGROUND)
+    {
+      WORD w;
+
+      w = StringToListItemId("Interest0Cat", 0);
+      ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Interest0Text", TLV_INTERESTS);
+      w = StringToListItemId("Interest1Cat", 0);
+      ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Interest1Text", TLV_INTERESTS);
+      w = StringToListItemId("Interest2Cat", 0);
+      ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Interest2Text", TLV_INTERESTS);
+      w = StringToListItemId("Interest3Cat", 0);
+      ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Interest3Text", TLV_INTERESTS);
+
+      w = StringToListItemId("Past0", 0);
+      ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Past0Text", TLV_PASTINFO);
+      w = StringToListItemId("Past1", 0);
+      ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Past1Text", TLV_PASTINFO);
+      w = StringToListItemId("Past2", 0);
+      ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Past2Text", TLV_PASTINFO);
+
+      w = StringToListItemId("Affiliation0", 0);
+      ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Affiliation0Text", TLV_AFFILATIONS);
+      w = StringToListItemId("Affiliation1", 0);
+      ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Affiliation1Text", TLV_AFFILATIONS);
+      w = StringToListItemId("Affiliation2", 0);
+      ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Affiliation2Text", TLV_AFFILATIONS);
+    }
+
+    return icq_changeUserDetailsServ(META_SET_FULLINFO_REQ, buf, (WORD)buflen);
   }
 
   return 0; // Failure

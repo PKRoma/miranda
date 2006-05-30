@@ -194,9 +194,10 @@ BEGIN
                     IDC_STATIC,12,203,290,16
 END
 
-IDD_OPT_ICQFEATURES DIALOG DISCARDABLE  0, 0, 314, 236
+IDD_OPT_ICQFEATURES DIALOGEX DISCARDABLE  0, 0, 314, 236
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Shell Dlg"
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Messaging",IDC_STATIC,4,0,306,94
     CONTROL         "Enable unicode messaging support",IDC_UTFENABLE,"Button",
@@ -697,7 +698,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,6,17
+ FILEVERSION 0,3,6,18
  PRODUCTVERSION 0,4,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -716,7 +717,7 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced\0"
-            VALUE "FileVersion", "0, 3, 6, 17\0"
+            VALUE "FileVersion", "0, 3, 6, 18\0"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM\0"
             VALUE "LegalCopyright", "Copyright (C) 2000-2006 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
             VALUE "OriginalFilename", "ICQ.dll\0"

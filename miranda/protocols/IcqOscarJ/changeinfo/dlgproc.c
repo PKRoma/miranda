@@ -494,6 +494,15 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
       urd.lpTemplate = MAKEINTRESOURCEA(IDD_INFO_CHANGEINFO);
       urd.pfnResizer = InfoDlg_Resize;
       CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) &urd);
+
+      { // update listview column widths
+        RECT rc;
+
+        GetClientRect(hwndList,&rc);
+        rc.right-=GetSystemMetrics(SM_CXVSCROLL);
+        ListView_SetColumnWidth(hwndList, 0, rc.right/3);
+        ListView_SetColumnWidth(hwndList, 1, rc.right - rc.right/3);
+      }
       break;
     }
 

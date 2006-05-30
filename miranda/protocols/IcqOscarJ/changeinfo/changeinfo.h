@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005 Joe Kucera, Bio
+// Copyright © 2004,2005,2006 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -109,6 +109,7 @@ void EndListEdit(int save);
 int IsListEditWindow(HWND hwnd);
 
 //upload.c
+int StringToListItemId(const char *szSetting,int def);
 int UploadSettings(HWND hwndParent);
 
 

@@ -59,7 +59,7 @@ HANDLE hxstatusiconchanged;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,17),
+  PLUGIN_MAKE_VERSION(0,3,6,18),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -217,6 +217,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PSS_ADDED, IcqSendYouWereAdded);
   ICQCreateServiceFunction(PSS_USERISTYPING, IcqSendUserIsTyping);
   ICQCreateServiceFunction(PS_GETAVATARINFO, IcqGetAvatarInfo);
+  // ChangeInfo API
+  ICQCreateServiceFunction(PS_CHANGEINFOEX, IcqChangeInfoEx);
   // My Avatar API
   ICQCreateServiceFunction(PS_ICQ_GETMYAVATARMAXSIZE, IcqGetMaxAvatarSize);
   ICQCreateServiceFunction(PS_ICQ_ISAVATARFORMATSUPPORTED, IcqAvatarFormatSupported);

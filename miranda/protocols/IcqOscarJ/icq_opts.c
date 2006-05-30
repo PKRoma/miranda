@@ -596,8 +596,6 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
           PBYTE buf=NULL;
           int buflen=0;
 
-          ppackLEWord(&buf, &buflen, 0);
-
           ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail", (BYTE)!ICQGetContactSettingByte(NULL, "PublishPrimaryEmail", 0), TLV_EMAIL);
           ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail0", 0, TLV_EMAIL);
           ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail1", 0, TLV_EMAIL);
@@ -606,8 +604,7 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
           ppackTLVByte(&buf, &buflen, (BYTE)ICQGetContactSettingByte(NULL, "WebAware", 0), TLV_WEBAWARE, 1);
 
-          *(PWORD)buf = buflen - 2;
-          IcqChangeInfo(META_SET_FULLINFO_REQ, (LPARAM)buf);
+          icq_changeUserDetailsServ(META_SET_FULLINFO_REQ, buf, (WORD)buflen);
 
           SAFE_FREE(&buf);
 

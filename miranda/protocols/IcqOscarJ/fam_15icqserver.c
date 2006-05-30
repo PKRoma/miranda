@@ -747,19 +747,30 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
       if (bOK) bOK = writeDbInfoSettingWord(hContact, "Country", &databuf, &wPacketLen);
       if (bOK) bOK = writeDbInfoSettingByte(hContact, "Timezone", &databuf, &wPacketLen);
       
-      if (hContact == NULL && bOK && (wPacketLen >= 3))
+      if (bOK && (wPacketLen >= 3))
       {
-        ICQWriteContactSettingByte(hContact, "Auth", (BYTE)!(*databuf));
-        databuf += 1;
+        if (hContact == NULL)
+        {
+          ICQWriteContactSettingByte(hContact, "Auth", (BYTE)!(*databuf));
+          databuf += 1;
 
-        ICQWriteContactSettingByte(hContact, "WebAware", (*databuf));
-        databuf += 1;
+          ICQWriteContactSettingByte(hContact, "WebAware", (*databuf));
+          databuf += 1;
 
-        ICQWriteContactSettingByte(hContact, "PublishPrimaryEmail", (BYTE)!(*databuf));
-        databuf += 1;
+          ICQWriteContactSettingByte(hContact, "PublishPrimaryEmail", (BYTE)!(*databuf));
+          databuf += 1;
+        }
+        else 
+          databuf += 3;
 
         wPacketLen -= 3;
       }
+      if (bOK && (wPacketLen >= 1))
+      {
+        databuf++;
+        wPacketLen--;
+      }
+      if (bOK) bOK = writeDbInfoSettingString(hContact, "ZIP", &databuf, &wPacketLen);
     }
     break;
     
@@ -779,6 +790,7 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
       if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyPosition", &databuf, &wPacketLen);
       if (bOK) bOK = writeDbInfoSettingWord(hContact, "CompanyOccupation",&databuf, &wPacketLen);
       if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyHomepage", &databuf, &wPacketLen);
+      if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyZIP", &databuf, &wPacketLen);
     }
     break;
 
@@ -816,13 +828,19 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
       if (bOK) bOK = writeDbInfoSettingString(hContact, "OriginState", &databuf, &wPacketLen);
       if (bOK) bOK = writeDbInfoSettingWord(hContact, "OriginCountry", &databuf, &wPacketLen);
 
-      if (bOK && (wPacketLen >= 1))
+      if (bOK) bOK = writeDbInfoSettingByte(hContact, "MaritalStatus", &databuf, &wPacketLen);
+      
+      if (bOK)
       {
-        BYTE bStatus = *databuf;
-        ICQWriteContactSettingByte(hContact, "MaritalStatus", bStatus);
-        databuf++;
-        wPacketLen--;
+        if (hContact == NULL)
+          bOK = writeDbInfoSettingByte(hContact, "AllowSpam", &databuf, &wPacketLen);
+        else
+        {
+          databuf++;
+          wPacketLen--;
+        }
       }
+      if (bOK) bOK = writeDbInfoSettingWord(hContact, "InfoCP", &databuf, &wPacketLen);
     }
     break;
 

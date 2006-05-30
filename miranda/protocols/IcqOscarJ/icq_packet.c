@@ -375,6 +375,19 @@ void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always)
 
 
 
+void packTLVLNTS(PBYTE *buf, int *bufpos, const char *str, WORD wType)
+{
+  int len = strlennull(str) + 1;
+
+  *(PWORD)(*buf + *bufpos) = wType;
+  *(PWORD)(*buf + *bufpos + 2) = len + 2;
+  *(PWORD)(*buf + *bufpos + 4) = len;
+  memcpy(*buf + *bufpos + 6, str, len);
+  *bufpos += len + 6;
+}
+
+
+
 void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always)
 {
   int len = strlennull(str) + 1;
@@ -382,11 +395,7 @@ void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE alw
   if (!always && len < 2) return;
 
   *buf = (PBYTE)realloc(*buf, 6 + *buflen + len);
-  *(PWORD)(*buf + *buflen) = wType;
-  *(PWORD)(*buf + *buflen + 2) = len + 2;
-  *(PWORD)(*buf + *buflen + 4) = len;
-  memcpy(*buf + *buflen + 6, str, len);
-  *buflen += len + 6;
+  packTLVLNTS(buf, buflen, str, wType);
 }
 
 

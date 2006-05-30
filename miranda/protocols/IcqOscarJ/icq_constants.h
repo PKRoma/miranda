@@ -379,18 +379,9 @@
 
 // Reply subtypes for SNAC 15/02 & 15/03
 #define META_PROCESSING_ERROR       0x0001 // Meta processing error server reply
-//#define META_SET_HOMEINFO_ACK       0x0064 // Set user home info server ack (deprecated)
-//#define META_SET_WORKINFO_ACK       0x006E // Set user work info server ack (deprecated)
-//#define META_SET_MOREINFO_ACK       0x0078 // Set user more info server ack (deprecated)
-//#define META_SET_NOTES_ACK          0x0082 // Set user notes info server ack (deprecated)
-//#define META_SET_EMAILINFO_ACK      0x0087 // Set user email(s) info server ack (deprecated)
-//#define META_SET_INTINFO_ACK        0x008C // Set user interests info server ack (deprecated)
-//#define META_SET_AFFINFO_ACK        0x0096 // Set user affilations info server ack (deprecated)
-#define META_SMS_DELIVERY_RECEIPT   0x0096 // Server SMS response (delivery receipt) NOTE: same as ID above
-//#define META_SET_PERMS_ACK          0x00A0 // Set user permissions server ack (deprecated)
+#define META_SMS_DELIVERY_RECEIPT   0x0096 // Server SMS response (delivery receipt)
 #define META_SET_PASSWORD_ACK       0x00AA // Set user password server ack
 #define META_UNREGISTER_ACK         0x00B4 // Unregister account server ack
-//#define META_SET_HPAGECAT_ACK       0x00BE // Set user homepage category server ack (deprecated)
 #define META_BASIC_USERINFO         0x00C8 // User basic info reply
 #define META_WORK_USERINFO          0x00D2 // User work info reply
 #define META_MORE_USERINFO          0x00DC // User more info reply
@@ -404,16 +395,16 @@
 #define SRV_LAST_USER_FOUND         0x01AE // Search: last user found reply
 #define META_REGISTRATION_STATS_ACK 0x0302 // Registration stats ack
 #define SRV_RANDOM_FOUND            0x0366 // Random search server reply
+#define META_SET_PASSWORD_REQ       0x042E // Set user password request
 #define META_REQUEST_FULL_INFO      0x04B2 // Request full user info
 #define META_REQUEST_SHORT_INFO     0x04BA // Request short user info
 #define META_REQUEST_SELF_INFO      0x04D0 // Request full self user info
 #define META_SEARCH_GENERIC         0x055F // Search user by details (TLV)
 #define META_SEARCH_UIN             0x0569 // Search user by UIN (TLV)
 #define META_SEARCH_EMAIL           0x0573 // Search user by E-mail (TLV)
-//#define META_SEARCH_ADVANCED        0x0533 // Search user by details (non-TLV) (deprecated)
 
 #define META_XML_INFO               0x08A2 // Server variable requested via xml
-#define META_SET_FULLINFO_REQ       0x3A0C // Set full user info request
+#define META_SET_FULLINFO_REQ       0x0C3A // Set full user info request
 #define META_SET_FULLINFO_ACK       0x0C3F // Server ack for set fullinfo command
 #define META_SPAM_REPORT_ACK        0x2012 // Server ack for user spam report
 
@@ -445,8 +436,8 @@
 #define TLV_DEPARTMENT  0x01B8  //   sstring    User work department name
 #define TLV_POSITION    0x01C2  //   sstring    User work position (title)
 #define TLV_OCUPATION   0x01CC  //   uint16     User work ocupation code
-#define TLV_PASTINFO    0x01D6  //   icombo     !! User affilations node
-#define TLV_AFFILATIONS 0x01FE  //   icombo     !! User past info node
+#define TLV_PASTINFO    0x01D6  //   icombo     User affilations node
+#define TLV_AFFILATIONS 0x01FE  //   icombo     User past info node
 #define TLV_INTERESTS   0x01EA  //   icombo     User interests node
 #define TLV_HOMEPAGE    0x0212  //   sstring    User homepage category/keywords
 
@@ -456,7 +447,7 @@
 #define TLV_BIRTH       0x023A  //   bcombo     User birthday info (year, month, day)
 #define TLV_ABOUT       0x0258  //   sstring    User notes (about) text
 #define TLV_STREET      0x0262  //   sstring    User home street address
-#define TLV_ZIPCODE     0x026C  //   uint32     User home zip code
+#define TLV_ZIPCODE     0x026D  //   sstring    User home zip code
 #define TLV_PHONE       0x0276  //   sstring    User home phone number
 #define TLV_FAX         0x0280  //   sstring    User home fax number
 #define TLV_MOBILE      0x028A  //   sstring    User home cellular phone number
@@ -464,7 +455,7 @@
 #define TLV_WORKCITY    0x029E  //   sstring    User work city name
 #define TLV_WORKSTATE   0x02A8  //   sstring    User work state name
 #define TLV_WORKCOUNTRY 0x02B2  //   uint16     User work country code
-#define TLV_WORKZIPCODE 0x02BC  //   uint32     User work zip code
+#define TLV_WORKZIPCODE 0x02BD  //   sstring    User work zip code
 #define TLV_WORKPHONE   0x02C6  //   sstring    User work phone number
 #define TLV_WORKFAX     0x02D0  //   sstring    User work fax number
 #define TLV_WORKURL     0x02DA  //   sstring    User work webpage url
@@ -472,6 +463,8 @@
 #define TLV_ORGCITY     0x0320  //   sstring    User originally from city
 #define TLV_ORGSTATE    0x032A  //   sstring    User originally from state
 #define TLV_ORGCOUNTRY  0x0334  //   uint16     User originally from country (code)
+#define TLV_ALLOWSPAM   0x0348  //   uint8
+#define TLV_CODEPAGE    0x0352  //   uint16     Codepage used for details
 
 
 /* Direct packet types */
@@ -534,7 +527,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030611
+#define ICQ_PLUG_VERSION            0x80030612
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

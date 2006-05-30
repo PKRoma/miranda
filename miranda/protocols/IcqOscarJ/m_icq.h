@@ -155,25 +155,21 @@ typedef struct {
 #define ICQACKTYPE_XSTATUS_RESPONSE 1006
 
 
-// Change nickname in White pages
-// lParam=(LPARAM)(const char*)szNewNickName
-#define PS_SET_NICKNAME  "/SetNickname"
+//Update user details on server
+//Permited operation types:
+#define CIXT_BASIC      0x0001
+#define CIXT_MORE       0x0002
+#define CIXT_WORK       0x0004
+#define CIXT_CONTACT    0x0008
+#define CIXT_LOCATION   0x0010
+#define CIXT_BACKGROUND 0x0020
+#define CIXT_FULL       0x003F
+//wParam=operationType
+#define PS_CHANGEINFOEX "/ChangeInfoEx"
 
-//Changing user info:
-//See documentation of PS_CHANGEINFO
-//The changing user info stuff built into the protocol is purposely extremely
-//thin, to the extent that your data is passed as-is to the server without
-//verification. Don't mess up.
-//Everything is byte-aligned
-//WORD:  2 bytes, little-endian (that's x86 order)
-//DWORD: 4 bytes, little-endian
-//LNTS:  a WORD containing the length of the string, followed by the string
-//       itself. No zero terminator.
-#define ICQCHANGEINFO_PASSWORD 0x2E04
-/* pInfoData points to:
-    WORD    datalen
-    LNTS    newpassword
-*/
+//Change nickname in White pages
+//lParam=(LPARAM)(const char*)szNewNickName
+#define PS_SET_NICKNAME  "/SetNickname"
 
 
 //miranda/icqoscar/statusmsgreq event

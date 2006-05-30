@@ -80,6 +80,8 @@ void packFNACHeaderFull(icq_packet *d, WORD wFamily, WORD wSubtype, WORD wFlags,
 void __fastcall packLEWord(icq_packet *, WORD);
 void __fastcall packLEDWord(icq_packet *, DWORD);
 
+void packTLVLNTS(PBYTE *buf, int *bufpos, const char *str, WORD wType);
+
 void ppackByte(PBYTE *buf,int *buflen,BYTE b);
 void ppackLEWord(PBYTE *buf,int *buflen,WORD w);
 void ppackLEDWord(PBYTE *buf,int *buflen,DWORD d);
