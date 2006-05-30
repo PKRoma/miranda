@@ -118,10 +118,6 @@ DWORD WINAPI MF_UpdateThread(LPVOID p)
         if(mf_updatethread_running)
             WaitForSingleObject(hEvent, 1000000);
     }
-
-#ifdef _DEBUG
-    _DebugTraceA("update thread ending...");
-#endif
     return 0;
 }
 

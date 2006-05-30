@@ -416,7 +416,6 @@ static int ModifyCustomMenuItem(WPARAM wParam,LPARAM lParam)
     }
     else if(mi->pszName != NULL) {
         //_DebugTraceA("modify menu item: invalid pointer (%x), %x", mi->pszName, mi->flags);
-		return 1;
     }
 
 
@@ -1149,8 +1148,12 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
                     SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, (LPARAM)0);
                     return 0;
                 case IDC_IGN_ALWAYSONLINE:
+                    if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSONLINE))
+                        CheckDlgButton(hWnd, IDC_IGN_ALWAYSOFFLINE, FALSE);
+                    break;
                 case IDC_IGN_ALWAYSOFFLINE:
-                    SendMessage(hWnd, WM_USER + 130, 0, 0);
+                    if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSOFFLINE))
+                        CheckDlgButton(hWnd, IDC_IGN_ALWAYSONLINE, FALSE);
                     break;
                 case IDC_HIDECONTACT:
                     DBWriteContactSettingByte(hContact, "CList", "Hidden", IsDlgButtonChecked(hWnd, IDC_HIDECONTACT) ? 1 : 0);
@@ -1171,6 +1174,7 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
                     DWORD newMask = 0;
                     SendMessage(hWnd, WM_USER + 110, 0, (LPARAM)&newMask);
                     DBWriteContactSettingDword(hContact, "Ignore", "Mask1", newMask);
+                    SendMessage(hWnd, WM_USER + 130, 0, 0);
                 }
                 case IDCANCEL:
                     DestroyWindow(hWnd);
@@ -1211,7 +1215,7 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
                     WORD wApparentMode = DBGetContactSettingWord(contact->hContact, contact->proto, "ApparentMode", 0);
 
                     CheckDlgButton(hWnd, IDC_IGN_ALWAYSOFFLINE, wApparentMode == ID_STATUS_OFFLINE ? TRUE : FALSE);
-                    CheckDlgButton(hWnd, IDC_IGN_ALWAYSOFFLINE, wApparentMode == ID_STATUS_OFFLINE ? TRUE : FALSE);
+                    CheckDlgButton(hWnd, IDC_IGN_ALWAYSONLINE, wApparentMode == ID_STATUS_ONLINE ? TRUE : FALSE);
                 }
             }
             return 0;

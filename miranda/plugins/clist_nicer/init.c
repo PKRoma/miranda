@@ -149,17 +149,20 @@ void __forceinline _DebugTraceA(const char *fmt, ...)
     OutputDebugStringA(debug);
 #else
     {
-        char szLogFileName[MAX_PATH], szDataPath;
+        char szLogFileName[MAX_PATH], szDataPath[MAX_PATH];
         FILE *f;
 
         CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szDataPath);
-        mir_snprintf(szLogFileName, "%s\\%s", szDataPath, "clist_nicer.log");
+        mir_snprintf(szLogFileName, MAX_PATH, "%s\\%s", szDataPath, "clist_nicer.log");
         f = fopen(szLogFileName, "a+");
-        fputs(debug, f);
-        fclose(f);
+        if(f) {
+            fputs(debug, f);
+            fputs("\n", f);
+            fclose(f);
+        }
     }
-#endif
 	return 0;
+#endif
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
