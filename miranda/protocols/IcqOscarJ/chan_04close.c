@@ -129,12 +129,12 @@ void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info)
   wError = getWordFromChain(chain, 0x08, 1);
   if (wError)
   {
-    disposeChain(&chain);
     handleSignonError(wError);
 
     // we return only if the server did not gave us cookie (possible to connect with soft error)
     if (!getLenFromChain(chain, 0x06, 1)) 
     {
+      disposeChain(&chain);
       NetLib_SafeCloseHandle(&hServerConn);
       return; // Failure
     }
