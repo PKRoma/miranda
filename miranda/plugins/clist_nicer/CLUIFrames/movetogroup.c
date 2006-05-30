@@ -80,7 +80,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
     mi.position=200000;
     mi.pszPopupName=(char *)-1;
     mi.pszService="CList/SetContactIgnore";
-    mi.pszName=Translate("&Ignore settings...");
+    mi.pszName=Translate("&Visibility and ignore...");
     mi.pszContactOwner=(char *)0;
     hIgnoreItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi);
 

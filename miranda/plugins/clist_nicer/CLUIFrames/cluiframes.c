@@ -1803,6 +1803,16 @@ int FrameNCCalcSize(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam,
     nccp->rgrc[0].right -= item->MARGIN_RIGHT;
     nccp->rgrc[0].bottom -= item->MARGIN_BOTTOM;
     nccp->rgrc[0].top += item->MARGIN_TOP;
+    /*
+	if(hwnd == pcli->hwndContactTree) {
+        SCROLLBARINFO si = {0};
+
+        si.cbSize = sizeof(si);
+        //nccp->rgrc[0].right -= 20;
+        ShowScrollBar(hwnd, SB_VERT, FALSE);
+        GetScrollBarInfo(hwnd, OBJID_VSCROLL, &si);
+        _DebugTraceA("si: %d", si.
+    }*/
     return WVR_REDRAW;
 }
 

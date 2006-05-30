@@ -348,6 +348,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			}
 			else dat->bisEmbedded = TRUE;
 		}
+		//InitializeCoolSB(hwnd);
 		break;
 	case WM_SIZE:
 		pcli->pfnEndRename(hwnd, dat, 1);

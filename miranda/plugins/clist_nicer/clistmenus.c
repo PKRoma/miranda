@@ -1084,6 +1084,8 @@ int CloseAction(WPARAM wParam,LPARAM lParam)
 	return(0);
 }
 
+static HANDLE hWindowListIGN = 0;
+
 /*                                                              
  * dialog procedure for handling the contact ignore dialog (available from the contact
  * menu
@@ -1126,7 +1128,7 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
                         mir_sntprintf(szTitle, 512, TranslateT("Ignore options for %s"), contact->szText);
                         SetWindowText(hWnd, szTitle);
                         SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
-                        pCaps = CallProtoService(contact->bIsMeta ? contact->metaProto : contact->proto, PS_GETCAPS, PFLAGNUM_1, 0);
+                        pCaps = CallProtoService(contact->proto, PS_GETCAPS, PFLAGNUM_1, 0);
                         EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSONLINE), pCaps & PF1_INVISLIST ? TRUE : FALSE);
                         EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSOFFLINE), pCaps & PF1_VISLIST ? TRUE : FALSE);
                     }
@@ -1135,7 +1137,7 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
                     return FALSE;
                 }
             }
-            DBWriteContactSettingDword(hContact, "CList", "ign_open", (DWORD)hWnd);
+            WindowList_Add(hWindowListIGN, hWnd, hContact);
             ShowWindow(hWnd, SW_SHOWNORMAL);
             return TRUE;
         }
@@ -1243,7 +1245,7 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
         }
         case WM_DESTROY:
             SetWindowLong(hWnd, GWL_USERDATA, 0);
-            DBWriteContactSettingDword(hContact, "CList", "ign_open", 0);
+            WindowList_Remove(hWindowListIGN, hWnd);
             break;
     }
     return FALSE;
@@ -1263,12 +1265,17 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 static int SetContactIgnore(WPARAM wParam, LPARAM lParam)
 {
+    HANDLE hWnd = 0;
+
+    if(hWindowListIGN == 0)
+        hWindowListIGN = (HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
+
+    hWnd = WindowList_Find(hWindowListIGN, (HANDLE)wParam);
+
     if(wParam) {
-        if(!DBGetContactSettingDword((HANDLE)wParam, "CList", "ign_open", 0))
+        if(hWnd == 0)
             CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_QUICKIGNORE), 0, IgnoreDialogProc, (LPARAM)wParam);
         else {
-            HWND hWnd = (HWND) DBGetContactSettingDword((HANDLE)wParam, "CList", "ign_open", 0);
-
             if(IsWindow(hWnd))
                 SetFocus(hWnd);
         }
