@@ -898,8 +898,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,6,0,7
- PRODUCTVERSION 0,6,0,7
+ FILEVERSION 0,6,0,8
+ PRODUCTVERSION 0,6,0,8
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -917,13 +917,13 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
             VALUE "FileDescription", "Miranda IM Contact List"
-            VALUE "FileVersion", "0.6.0.7"
+            VALUE "FileVersion", "0.6.0.8"
             VALUE "InternalName", "clist_nicer+"
             VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
             VALUE "OriginalFilename", "clist_nicer.dll"
             VALUE "ProductName", "Miranda IM Contact List"
-            VALUE "ProductVersion", "0.6.0.7"
-            VALUE "SpecialBuild", "56"
+            VALUE "ProductVersion", "0.6.0.8"
+            VALUE "SpecialBuild", "57"
         END
     END
     BLOCK "VarFileInfo"

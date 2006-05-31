@@ -28,6 +28,7 @@ UNICODE done
 extern struct CluiData g_CluiData;
 extern int g_nextExtraCacheEntry;
 extern struct ExtraCache *g_ExtraCache;
+extern struct ClcData *g_clcData;
 
 struct {
     int status, order;
@@ -229,6 +230,8 @@ static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, co
 
 
     if(bywhat == SORTBY_PRIOCONTACTS) {
+        if((g_clcData->exStyle & CLS_EX_DIVIDERONOFF) && ((c1->flags & CONTACTF_ONLINE) != (c2->flags & CONTACTF_ONLINE)))
+            return 0;
 	    if ((c1->flags & CONTACTF_PRIORITY) != (c2->flags & CONTACTF_PRIORITY))
 		    return 2 * (c2->flags & CONTACTF_PRIORITY) - 1;
 		else

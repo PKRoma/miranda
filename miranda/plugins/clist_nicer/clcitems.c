@@ -119,16 +119,6 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 		p->metaProto = NULL;
 	}
 
-	/*
-	if (hContact && p->proto) {
-		DBVARIANT dbv;
-		if (!DBGetContactSetting(hContact, p->proto, "MirVer", &dbv)) {
-			if (dbv.type == DBVT_ASCIIZ && lstrlenA(dbv.pszVal) > 1)
-				GetClientID( p, dbv.pszVal);
-			mir_free(dbv.pszVal);
-		}
-	}*/
-
 	p->codePage = DBGetContactSettingDword(hContact, "Tab_SRMsg", "ANSIcodepage", DBGetContactSettingDword(hContact, "UserInfo", "ANSIcodepage", CP_ACP));
 	p->ace = NULL;
 	if(g_CluiData.bAvatarServiceAvail && (!g_CluiData.bNoOfflineAvatars || p->wStatus != ID_STATUS_OFFLINE)) {

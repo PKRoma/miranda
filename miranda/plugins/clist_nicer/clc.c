@@ -343,10 +343,12 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			if(cs->lpCreateParams == (LPVOID)0xff00ff00) {
 				dat->bisEmbedded = FALSE;
 				dat->bHideSubcontacts = TRUE;
+                g_clcData = dat;
 				if(g_CluiData.bShowLocalTime)
 					SetTimer(hwnd, TIMERID_REFRESH, 65000, NULL);
 			}
-			else dat->bisEmbedded = TRUE;
+			else 
+                dat->bisEmbedded = TRUE;
 		}
 		//InitializeCoolSB(hwnd);
 		break;
