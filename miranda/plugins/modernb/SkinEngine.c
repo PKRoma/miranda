@@ -718,6 +718,13 @@ HBITMAP CreateBitmap32Point(int cx, int cy, void ** bits)
   UINT * ptPixels;
   HBITMAP DirectBitmap;
 
+  if ( cx < 0 || cy < 0 ) {
+#ifdef _DEBUG
+	  DebugBreak();
+#endif
+	  return NULL;
+  }
+
   ZeroMemory(&RGB32BitsBITMAPINFO,sizeof(BITMAPINFO));
   RGB32BitsBITMAPINFO.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
   RGB32BitsBITMAPINFO.bmiHeader.biWidth=cx;//bm.bmWidth;
@@ -732,7 +739,7 @@ HBITMAP CreateBitmap32Point(int cx, int cy, void ** bits)
     DIB_RGB_COLORS,
     (void **)&ptPixels, 
     NULL, 0);
-  if (ptPixels==NULL && cx!= 0 && cy!=0) 
+  if ((DirectBitmap == NULL || ptPixels == NULL) && cx!= 0 && cy!=0) 
   {
 #ifdef _DEBUG
 	  MessageBoxA(NULL,"Object not allocated. Check GDI object count","ERROR",MB_OK|MB_ICONERROR); 
