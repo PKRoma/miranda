@@ -24,6 +24,7 @@ UNICODE done
 
 */
 #include "commonheaders.h"
+#include "coolsb/coolscroll.h"
 
 #define DBFONTF_BOLD       1
 #define DBFONTF_ITALIC     2
@@ -286,6 +287,7 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                             DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
                             DBWriteContactSettingByte(NULL, "CLCExt", "EXBK_CenterGroupnames", IsDlgButtonChecked(hwndDlg, IDC_CENTERGROUPNAMES));
                             pcli->pfnClcOptionsChanged();
+                            CoolSB_SetupScrollBar();
                             PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
                             return TRUE;
                     }

@@ -345,6 +345,7 @@ struct CluiData {
 	BYTE bWantFastGradients, bUseFastGradients;
 	BYTE sortOrder[3];
 	BYTE bGroupAlign;
+    BYTE bSkinnedScrollbar;
     DWORD langPackCP;
 };
 
@@ -516,6 +517,7 @@ int MenuModulesLoaded(WPARAM wParam, LPARAM lParam);
 int ClcSoundHook(WPARAM wParam, LPARAM lParam);
 
 void IMG_DeleteItems();
+int CoolSB_SetupScrollBar();
 
 #define NIIF_INTERN_UNICODE 0x00000100
 

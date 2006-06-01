@@ -25,6 +25,7 @@ UNICODE done
 */
 #include "commonheaders.h"
 #include "richedit.h"
+#include "coolsb/coolscroll.h"
 
 #ifndef SPI_GETDESKWALLPAPER
 #define SPI_GETDESKWALLPAPER 115
@@ -349,7 +350,10 @@ void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 			else
 				InvalidateRect(hwnd, NULL, FALSE);
 			previousy = dat->yScroll;
-			SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
+            if(g_CluiData.bSkinnedScrollbar && !dat->bisEmbedded)
+                CoolSB_SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
+            else
+                SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
 			dat->forcePaint = TRUE;
 			UpdateWindow(hwnd);
 		}
@@ -370,14 +374,50 @@ void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 		UpdateIfLocked(hwnd, dat);
 	}
 
-	SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
+    if(g_CluiData.bSkinnedScrollbar && !dat->bisEmbedded)
+        CoolSB_SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
+    else
+        SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
 	dat->forceScroll = 0;
 }
 
 void RecalcScrollBar(HWND hwnd, struct ClcData *dat)
 {
-	RowHeights_CalcRowHeights(dat, hwnd);
-	saveRecalcScrollBar(hwnd, dat);
+    SCROLLINFO si = { 0 };
+    RECT clRect;
+    NMCLISTCONTROL nm;
+
+    RowHeights_CalcRowHeights(dat, hwnd);
+
+    GetClientRect(hwnd, &clRect);
+    si.cbSize = sizeof(si);
+    si.fMask = SIF_ALL;
+    si.nMin = 0;
+    si.nMax = pcli->pfnGetRowTotalHeight(dat)-1;
+    si.nPage = clRect.bottom;
+    si.nPos = dat->yScroll;
+
+    if (GetWindowLong(hwnd, GWL_STYLE) & CLS_CONTACTLIST) {
+        if (dat->noVScrollbar == 0) {
+            if(g_CluiData.bSkinnedScrollbar && !dat->bisEmbedded)
+                CoolSB_SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+            else
+                SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+        }
+    }
+    else {
+        if(g_CluiData.bSkinnedScrollbar && !dat->bisEmbedded)
+            CoolSB_SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+        else
+            SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+    }
+    ScrollTo(hwnd, dat, dat->yScroll, 1);
+    nm.hdr.code = CLN_LISTSIZECHANGE;
+    nm.hdr.hwndFrom = hwnd;
+    nm.hdr.idFrom = GetDlgCtrlID(hwnd);
+    nm.pt.y = si.nMax;
+    SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) & nm);
+	//saveRecalcScrollBar(hwnd, dat);
 }
 
 void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int newState)

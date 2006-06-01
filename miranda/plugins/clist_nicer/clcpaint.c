@@ -66,6 +66,8 @@ BYTE selBlend;
 BYTE saved_alpha;
 int my_status;
 
+BOOL g_inCLCpaint = FALSE;
+
 #undef _GDITEXTRENDERING
 
 HFONT __fastcall ChangeToFont(HDC hdc, struct ClcData *dat, int id, int *fontHeight)
@@ -299,7 +301,7 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 	float newHeight, newWidth;
 	HDC hdcAvatar;
 	HBITMAP hbmMem;
-	DWORD topoffset = 0;
+	DWORD topoffset = 0, leftoffset = 0;
 	LONG bmWidth, bmHeight;
 	float dAspect;
 	HBITMAP hbm;
@@ -307,7 +309,9 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 	int avatar_size = g_CluiData.avatarSize;
 	DWORD av_saved_left;
 	BOOL gdiPlus;
-	contact->avatarLeft = -1;
+    StatusItems_t *item = &StatusItems[ID_EXTBKAVATARFRAME - ID_STATUS_OFFLINE];
+    int skinMarginX, skinMarginY;
+    contact->avatarLeft = -1;
 
 	if(!g_CluiData.bAvatarServiceAvail || dat->bisEmbedded)
 		return 0;
@@ -349,29 +353,38 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 	}
 
 	if(dAspect >= 1.0) {            // height > width
-		dScale = (float)(avatar_size - 2) / (float)bmHeight;
-		newHeight = (float)(avatar_size - 2);
-		newWidth = (float)bmWidth * dScale;
+        skinMarginY = item->IGNORED ? 0 : (item->MARGIN_TOP + item->MARGIN_BOTTOM);
+        skinMarginX = item->IGNORED ? 0 : (item->MARGIN_LEFT + item->MARGIN_RIGHT);
+
+        dScale = (float)(avatar_size - 2) / (float)bmHeight;
+		newHeight = (float)(avatar_size - skinMarginY - 2);
+		newWidth = (float)(bmWidth * dScale) - skinMarginX;
 	}
 	else {
-		newWidth = (float)(avatar_size - 2);
+        skinMarginY = item->IGNORED ? 0 : (item->MARGIN_LEFT + item->MARGIN_RIGHT);
+        skinMarginX = item->IGNORED ? 0 : (item->MARGIN_LEFT + item->MARGIN_RIGHT);
+
+        newWidth = (float)(avatar_size - 2) - skinMarginX;
 		dScale = (float)(avatar_size - 2) / (float)bmWidth;
-		newHeight = (float)bmHeight * dScale;
+		newHeight = (float)(bmHeight * dScale) - skinMarginY;
 	}
 	topoffset = rowHeight > (int)newHeight ? (rowHeight - (int)newHeight) / 2 : 0;
-
+    if(!item->IGNORED) {
+        //topoffset += item->MARGIN_TOP;
+        leftoffset = item->MARGIN_LEFT;
+    }
 	// create the region for the avatar border - use the same region for clipping, if needed.
 
 	av_saved_left = rc->left;
 	if(g_CluiData.bCenterStatusIcons && newWidth < newHeight)
-		rc->left += ((avatar_size - (int)newWidth) / 2);
+		rc->left += (((avatar_size - 2) - ((int)newWidth + skinMarginX)) / 2);
 
 	if(g_CluiData.dwFlags & CLUI_FRAME_ROUNDAVATAR) {
-		rgn = CreateRoundRectRgn(rc->left, y + topoffset, rc->left + (int)newWidth + 1, y + topoffset + (int)newHeight + 1, 2 * g_CluiData.avatarRadius, 2 * g_CluiData.avatarRadius);
+		rgn = CreateRoundRectRgn(leftoffset + rc->left, y + topoffset, leftoffset + rc->left + (int)newWidth + 1, y + topoffset + (int)newHeight + 1, 2 * g_CluiData.avatarRadius, 2 * g_CluiData.avatarRadius);
 		SelectClipRgn(hdcMem, rgn);
 	}
 	else
-		rgn = CreateRectRgn(rc->left, y + topoffset, rc->left + (int)newWidth, y + topoffset + (int)newHeight);
+		rgn = CreateRectRgn(leftoffset + rc->left, y + topoffset, leftoffset + rc->left + (int)newWidth, y + topoffset + (int)newHeight);
 
 	if(!gdiPlus) {     // was gdiPlus
 		bf.SourceConstantAlpha = (g_CluiData.dwFlags & CLUI_FRAME_TRANSPARENTAVATAR && (UCHAR)saved_alpha > 20) ? (UCHAR)saved_alpha : 255;
@@ -382,7 +395,7 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 
 		SetStretchBltMode(hdcMem, HALFTONE);
 		if(bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0) {
-			StretchBlt(hdcMem, rc->left - (g_RTL ? 1 : 0), y + topoffset, (int)newWidth, (int)newHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, SRCCOPY);
+			StretchBlt(hdcMem, leftoffset + rc->left - (g_RTL ? 1 : 0), y + topoffset, (int)newWidth, (int)newHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, SRCCOPY);
 		}
 		else {
 			/*
@@ -396,10 +409,10 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 			hbmTempOld = SelectObject(hdcTemp, hbmTemp);
 
 			//SetBkMode(hdcTemp, TRANSPARENT);
-			StretchBlt(hdcTemp, 0, 0, bmWidth, bmHeight, hdcMem, rc->left, y + topoffset, (int)newWidth, (int)newHeight, SRCCOPY);
+            SetStretchBltMode(hdcTemp, HALFTONE);
+			StretchBlt(hdcTemp, 0, 0, bmWidth, bmHeight, hdcMem, leftoffset + rc->left, y + topoffset, (int)newWidth, (int)newHeight, SRCCOPY);
 			AlphaBlend(hdcTemp, 0, 0, bmWidth, bmHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
-			SetStretchBltMode(hdcTemp, HALFTONE);
-			StretchBlt(hdcMem, rc->left - (g_RTL ? 1 : 0), y + topoffset, (int)newWidth, (int)newHeight, hdcTemp, 0, 0, bmWidth, bmHeight, SRCCOPY);
+			StretchBlt(hdcMem, leftoffset + rc->left - (g_RTL ? 1 : 0), y + topoffset, (int)newWidth, (int)newHeight, hdcTemp, 0, 0, bmWidth, bmHeight, SRCCOPY);
 			SelectObject(hdcTemp, hbmTempOld);
 			DeleteObject(hbmTemp);
 			DeleteDC(hdcTemp);
@@ -410,7 +423,7 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 		UCHAR alpha = g_CluiData.dwFlags & CLUI_FRAME_TRANSPARENTAVATAR ? (UCHAR)saved_alpha : 255;
 		if(dat->showIdle && contact->flags & CONTACTF_IDLE)
 			alpha -= (int)((float)alpha / 100.0f * 20.0f);
-		DrawWithGDIp(hdcMem, rc->left, y + topoffset, (int)newWidth, (int)newHeight, alpha, contact);
+		DrawWithGDIp(hdcMem, leftoffset + rc->left, y + topoffset, (int)newWidth, (int)newHeight, alpha, contact);
 	}
 
 	if(g_CluiData.dwFlags & CLUI_FRAME_AVATARBORDER) {
@@ -425,7 +438,20 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 	SelectClipRgn(hdcMem, NULL);
 	DeleteObject(rgn);
 
-	if(!gdiPlus) {
+    if(!item->IGNORED) {
+        RECT rcFrame;
+        BOOL inClCPaint_save = g_inCLCpaint;
+
+        g_inCLCpaint = FALSE;
+        rcFrame.left = rc->left - (g_RTL ? 1 : 0);
+        rcFrame.top = y + topoffset - item->MARGIN_TOP;
+        rcFrame.right = rcFrame.left + (int)newWidth + item->MARGIN_RIGHT + item->MARGIN_LEFT;
+        rcFrame.bottom = rcFrame.top + (int)newHeight + item->MARGIN_BOTTOM + item->MARGIN_TOP;
+        DrawAlpha(hdcMem, &rcFrame, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+                  item->CORNER, item->BORDERSTYLE, item->imageItem);
+        g_inCLCpaint = inClCPaint_save;
+    }
+    if(!gdiPlus) {
 		SelectObject(hdcAvatar, hbmMem);        // xxx changed...
 		//DeleteObject(hbmMem);
 		DeleteDC(hdcAvatar);
@@ -1373,8 +1399,6 @@ void SkinDrawBg(HWND hwnd, HDC hdc)
 
 	BitBlt(hdc, 0, 0, rcCl.right - rcCl.left, rcCl.bottom - rcCl.top, g_CluiData.hdcBg, ptTest.x - g_CluiData.ptW.x, ptTest.y - g_CluiData.ptW.y, SRCCOPY);
 }
-
-BOOL g_inCLCpaint = FALSE;
 
 void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 {

@@ -27,6 +27,7 @@ UNICODE - done.
 #include "resource.h"
 #include "m_userinfo.h"
 #include "cluiframes/cluiframes.h"
+#include "coolsb/coolscroll.h"
 
 int DefaultImageListColorDepth=ILC_COLOR32;
 
@@ -350,7 +351,6 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			else 
                 dat->bisEmbedded = TRUE;
 		}
-		//InitializeCoolSB(hwnd);
 		break;
 	case WM_SIZE:
 		pcli->pfnEndRename(hwnd, dat, 1);
@@ -365,7 +365,10 @@ LBL_Def:
             return FrameNCCalcSize(hwnd, DefWindowProc, wParam, lParam, frameHasTitlebar);
         }
 
-    case WM_NCPAINT:
+        /*                                                              
+         * scroll bar handling                                                                
+        */
+        case WM_NCPAINT:
         return FrameNCPaint(hwnd, DefWindowProc, wParam, lParam, frameHasTitlebar);
 	case INTM_GROUPCHANGED:
         {
@@ -864,7 +867,6 @@ LBL_Def:
 			}
 			return 0;
 		}
-
 	case WM_COMMAND:
 		if(LOWORD(wParam) == POPUP_NEWGROUP)
 			SendMessage(GetParent(hwnd), msg, wParam, lParam);

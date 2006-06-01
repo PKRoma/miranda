@@ -29,7 +29,7 @@ PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli = NULL;
 extern CRITICAL_SECTION cs_extcache;
 
-#define DEFAULT_TB_VISIBILITY (1 | 2 | 4 | 8 | 16 | 32)
+#define DEFAULT_TB_VISIBILITY (1 | 2 | 4 | 8 | 16 | 32 | 64)
 TCHAR *szNoevents = _T("No events...");
 //extern HICON im_clienthIcons[NR_CLIENTS];
 extern HICON overlayicons[10];
@@ -239,7 +239,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	InitGdiPlus();
     LoadCLCButtonModule();
-
+    RegisterCLUIFrameClasses();
 	hUserDll = GetModuleHandleA("user32.dll");
 	if (hUserDll) {
 		MySetLayeredWindowAttributes = (BOOL(WINAPI *)(HWND, COLORREF, BYTE, DWORD))GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
@@ -326,7 +326,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	himlExtraImages = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 30, 2);
 	ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
 
-	g_CluiData.dwFlags = DBGetContactSettingDword(NULL, "CLUI", "Frameflags", CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_USEEVENTAREA | CLUI_FRAME_STATUSICONS | CLUI_FRAME_SHOWBOTTOMBUTTONS);
+	g_CluiData.dwFlags = DBGetContactSettingDword(NULL, "CLUI", "Frameflags", CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_USEEVENTAREA | CLUI_FRAME_STATUSICONS | 
+                                                  CLUI_FRAME_SHOWBOTTOMBUTTONS | CLUI_FRAME_BUTTONSFLAT | CLUI_FRAME_CLISTSUNKEN);
 	g_CluiData.dwFlags |= (DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? CLUI_FRAME_SBARSHOW : 0);
 	g_CluiData.soundsOff = DBGetContactSettingByte(NULL, "CLUI", "NoSounds", 0);
 

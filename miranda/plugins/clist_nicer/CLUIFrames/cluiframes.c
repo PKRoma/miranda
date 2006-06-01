@@ -1740,28 +1740,48 @@ int FrameNCPaint(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam, BO
 {
     HDC hdc;
     RECT rcWindow, rc;
+    HWND hwndParent = GetParent(hwnd);
+    LRESULT result;
 
-    LRESULT result = CallWindowProc(oldWndProc, hwnd, WM_NCPAINT, wParam, lParam);
+    if(hwndParent != pcli->hwndContactList || !g_CluiData.bSkinnedScrollbar)
+        result = CallWindowProc(oldWndProc, hwnd, WM_NCPAINT, wParam, lParam);
+    else
+        result = 0;
 
     if(pcli && pcli->hwndContactList && GetParent(hwnd) == pcli->hwndContactList) {
         if(GetWindowLong(hwnd, GWL_STYLE) & CLS_SKINNEDFRAME) {
             StatusItems_t *item = StatusItems ? (hasTitleBar ?  &StatusItems[ID_EXTBKOWNEDFRAMEBORDERTB - ID_STATUS_OFFLINE] : &StatusItems[ID_EXTBKOWNEDFRAMEBORDER - ID_STATUS_OFFLINE]) : 0;
+            HDC realDC;
+            HBITMAP hbmDraw, hbmOld;
 
             if(item == 0)
                 return 0;
-
-            hdc = GetWindowDC(hwnd);
 
             GetWindowRect(hwnd, &rcWindow);
             rc.left = rc.top = 0;
             rc.right = rcWindow.right - rcWindow.left;
             rc.bottom = rcWindow.bottom - rcWindow.top;
-            ExcludeClipRect(hdc, item->MARGIN_LEFT, item->MARGIN_TOP, rc.right - item->MARGIN_RIGHT, rc.bottom - item->MARGIN_BOTTOM);
 
-            BitBlt(hdc, 0, 0, rc.right - rc.left, rc.bottom - rc.top, g_CluiData.hdcBg, rcWindow.left - g_CluiData.ptW.x, rcWindow.top - g_CluiData.ptW.y, SRCCOPY);
+            hdc = realDC = GetWindowDC(hwnd);
+            if(hwnd == pcli->hwndContactTree) {
+                realDC = CreateCompatibleDC(hdc);
+                hbmDraw = CreateCompatibleBitmap(hdc, rc.right, rc.bottom);
+                hbmOld = SelectObject(realDC, hbmDraw);
+            }
 
-            DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+            ExcludeClipRect(realDC, item->MARGIN_LEFT, item->MARGIN_TOP, rc.right - item->MARGIN_RIGHT, rc.bottom - item->MARGIN_BOTTOM);
+
+            BitBlt(realDC, 0, 0, rc.right - rc.left, rc.bottom - rc.top, g_CluiData.hdcBg, rcWindow.left - g_CluiData.ptW.x, rcWindow.top - g_CluiData.ptW.y, SRCCOPY);
+
+            DrawAlpha(realDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
                       item->CORNER, item->BORDERSTYLE, item->imageItem);
+            if(hwnd == pcli->hwndContactTree) {
+                ExcludeClipRect(hdc, item->MARGIN_LEFT, item->MARGIN_TOP, rc.right - item->MARGIN_RIGHT, rc.bottom - item->MARGIN_BOTTOM);
+                BitBlt(hdc, 0, 0, rc.right, rc.bottom, realDC, 0, 0, SRCCOPY);
+                SelectObject(realDC, hbmOld);
+                DeleteObject(hbmDraw);
+                DeleteDC(realDC);
+            }
             ReleaseDC(hwnd, hdc);
             return 0;
         }
@@ -1803,16 +1823,6 @@ int FrameNCCalcSize(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam,
     nccp->rgrc[0].right -= item->MARGIN_RIGHT;
     nccp->rgrc[0].bottom -= item->MARGIN_BOTTOM;
     nccp->rgrc[0].top += item->MARGIN_TOP;
-    /*
-	if(hwnd == pcli->hwndContactTree) {
-        SCROLLBARINFO si = {0};
-
-        si.cbSize = sizeof(si);
-        //nccp->rgrc[0].right -= 20;
-        ShowScrollBar(hwnd, SB_VERT, FALSE);
-        GetScrollBarInfo(hwnd, OBJID_VSCROLL, &si);
-        _DebugTraceA("si: %d", si.
-    }*/
     return WVR_REDRAW;
 }
 
@@ -1941,12 +1951,6 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
         wndFrameCLC = &Frames[nFramescount];
     else if(clfrm->hWnd == g_hwndViewModeFrame)
         wndFrameViewMode = &Frames[nFramescount];
-
-    //override tbbtip
-    //clfrm->Flags|=F_SHOWTBTIP;
-    //
-    if(DBGetContactSettingByte(0,CLUIFrameModule,"RemoveAllBorders",0))
-        clfrm->Flags |= F_NOBORDER;
 
     Frames[nFramescount].dwFlags=clfrm->Flags;
 
@@ -2410,13 +2414,13 @@ int SizeFramesByWindowRect(RECT *r)
            // set frame position
                     SetWindowPos(Frames[i].hWnd,NULL,Frames[i].wndSize.left + g_CluiData.bCLeft, Frames[i].wndSize.top + g_CluiData.topOffset,
                                  (Frames[i].wndSize.right - Frames[i].wndSize.left),
-                                 (Frames[i].wndSize.bottom-Frames[i].wndSize.top), SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOSENDCHANGING | SWP_NOCOPYBITS);
+                                 (Frames[i].wndSize.bottom-Frames[i].wndSize.top), SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOREDRAW);
 
            // set titlebar position
                     if (Frames[i].TitleBar.ShowTitleBar) {
                         SetWindowPos(Frames[i].TitleBar.hwnd, NULL, Frames[i].wndSize.left + g_CluiData.bCLeft, Frames[i].wndSize.top + g_CluiData.topOffset - TitleBarH,
                                      (Frames[i].wndSize.right - Frames[i].wndSize.left),
-                                     TitleBarH + (Frames[i].UseBorder ? (!Frames[i].collapsed ? (Frames[i].align == alClient ? 0 : 2) : 1) : 0), SWP_NOZORDER | SWP_NOACTIVATE|SWP_NOCOPYBITS);
+                                     TitleBarH + (Frames[i].UseBorder ? (!Frames[i].collapsed ? (Frames[i].align == alClient ? 0 : 2) : 1) : 0), SWP_NOZORDER | SWP_NOACTIVATE|SWP_NOCOPYBITS | SWP_NOREDRAW);
                     }
                     //UpdateWindow(Frames[i].hWnd);
                     if (Frames[i].TitleBar.ShowTitleBar)
@@ -3529,7 +3533,7 @@ static int SkinDrawBgService(WPARAM wParam, LPARAM lParam)
 }
 */
 
-int LoadCLUIFramesModule(void)
+void RegisterCLUIFrameClasses()
 {
     WNDCLASSA wndclass;
     WNDCLASSA cntclass;
@@ -3545,9 +3549,6 @@ int LoadCLUIFramesModule(void)
     wndclass.lpszMenuName  = NULL;
     wndclass.lpszClassName = CLUIFrameTitleBarClassName;
     RegisterClassA(&wndclass);
-    pcli->hwndContactList=(HWND)CallService(MS_CLUI_GETHWND,0,0);
-    //pcli->hwndStatus=FindWindowEx(pcli->hwndContactList,NULL,"msctls_statusbar32",NULL);
-    //container helper
 
     cntclass.style         = CS_DBLCLKS/*|CS_HREDRAW|CS_VREDRAW*/|( IsWinVerXPPlus()  ? CS_DROPSHADOW : 0);
     cntclass.lpfnWndProc   = CLUIFrameContainerWndProc;
@@ -3560,7 +3561,11 @@ int LoadCLUIFramesModule(void)
     cntclass.lpszMenuName  = NULL;
     cntclass.lpszClassName = "FramesContainer";
     RegisterClassA(&cntclass);
+}
 
+int LoadCLUIFramesModule(void)
+{
+    pcli->hwndContactList=(HWND)CallService(MS_CLUI_GETHWND,0,0);
     GapBetweenFrames = g_CluiData.gapBetweenFrames;
 
     nFramescount=0;
@@ -3607,7 +3612,7 @@ int LoadCLUIFramesModule(void)
     //CreateServiceFunction("SkinEngine/DrawGlyph", SkinDrawBgService);
 
     FramesSysNotStarted=FALSE;
-	g_hPenCLUIFrames = CreatePen(PS_SOLID, 1, DBGetContactSettingDword(NULL, "CLUI", "clr_frameborder", RGB(40, 40, 40)));
+	g_hPenCLUIFrames = CreatePen(PS_SOLID, 1, DBGetContactSettingDword(NULL, "CLUI", "clr_frameborder", GetSysColor(COLOR_3DDKSHADOW)));
     return 0;
 }
 

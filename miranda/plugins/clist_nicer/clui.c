@@ -27,6 +27,7 @@ UNICODE done
 #include "../../include/m_findadd.h"
 #include "m_updater.h"
 #include "cluiframes/cluiframes.h"
+#include "coolsb/coolscroll.h"
 
 #define TM_AUTOALPHA  1
 #define TIMERID_AUTOSIZE 100
@@ -69,6 +70,7 @@ extern StatusItems_t *StatusItems;
 extern HWND g_hwndSFL;
 extern ButtonItem *g_ButtonItems;
 extern COLORREF g_CLUISkinnedBkColorRGB;
+extern wndFrame *wndFrameCLC;
 
 HIMAGELIST himlExtraImages = 0;
 
@@ -187,13 +189,13 @@ static void LayoutButtons(HWND hwnd, RECT *rc)
             LONG y = (btnItems->yOff >= 0) ? rect.top + btnItems->yOff : rect.bottom - abs(btnItems->yOff);
 
             SetWindowPos(btnItems->hWnd, 0, x, y, btnItems->width, btnItems->height,
-                                  SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+                                  SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOREDRAW);
             btnItems = btnItems->nextItem;
         }
         SetWindowPos(top_buttons[14].hwnd, 0, 2 + left_offset, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
-                              BUTTON_WIDTH_D * 3, BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+                              BUTTON_WIDTH_D * 3, BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOREDRAW);
         SetWindowPos(top_buttons[13].hwnd, 0, left_offset + (3 * BUTTON_WIDTH_D) + 3, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
-                              rect.right - delta - (3 * BUTTON_WIDTH_D + 5), BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+                              rect.right - delta - (3 * BUTTON_WIDTH_D + 5), BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOREDRAW);
         return;
     }
 
@@ -204,24 +206,24 @@ static void LayoutButtons(HWND hwnd, RECT *rc)
 			continue;
 		if (top_buttons[i].id == IDC_TBMENU) {
 			SetWindowPos(top_buttons[i].hwnd, 0, 2 + left_offset, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
-                                  BUTTON_WIDTH_D * 3, BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+                                  BUTTON_WIDTH_D * 3, BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOREDRAW);
 
 		}
 		else if (top_buttons[i].id == IDC_TBGLOBALSTATUS) {
 			SetWindowPos(top_buttons[i].hwnd, 0, left_offset + (3 * BUTTON_WIDTH_D) + 3, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
-                                  rect.right - delta - (3 * BUTTON_WIDTH_D + 5), BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+                                  rect.right - delta - (3 * BUTTON_WIDTH_D + 5), BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOREDRAW);
 		}
 		if(!(top_buttons[i].visibilityOrder & g_CluiData.toolbarVisibility))
 			continue;
 		if (top_buttons[i].id == IDC_TBTOPSTATUS || top_buttons[i].id == IDC_TBMINIMIZE || top_buttons[i].id == IDC_TABSRMMMENU || top_buttons[i].id == IDC_TABSRMMSLIST) {
 			SetWindowPos(top_buttons[i].hwnd, 0, rect.right - right_offset - 2 - (rightButton * (g_CluiData.dwButtonWidth + 1)), 2 + g_CluiData.bCTop, g_CluiData.dwButtonWidth, g_CluiData.dwButtonHeight - 2,
-                                  SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+                                  SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOREDRAW);
 			rightButton++;
 			continue;
 		}
 		else {
 			SetWindowPos(top_buttons[i].hwnd, 0, left_offset + 3 + (leftButton * (g_CluiData.dwButtonWidth + 1)), 2 + g_CluiData.bCTop, g_CluiData.dwButtonWidth, g_CluiData.dwButtonHeight - 2,
-                         SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+                         SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOREDRAW);
 			leftButton++;
 		}
 	}
@@ -270,9 +272,9 @@ int CreateCLC(HWND parent)
 		frame.cbSize = sizeof(frame);
 		frame.name = "EventArea";
 		frame.hIcon = 0;
-		frame.height = 18;
+		frame.height = 20;
 		frame.TBname = "Event Area";
-		frame.Flags=F_VISIBLE|F_SHOWTBTIP;
+		frame.Flags=F_VISIBLE|F_SHOWTBTIP|F_NOBORDER;
 		frame.align = alBottom;
 		frame.hWnd = CreateWindowExA(0, "EventAreaClass", "evt", WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, pcli->hwndContactList, (HMENU) 0, g_hInst, NULL);
         g_hwndEventArea = frame.hWnd;
@@ -653,9 +655,9 @@ void CreateButtonBar(HWND hWnd)
         if (top_buttons[i].id != IDC_TBMENU && top_buttons[i].id != IDC_TBGLOBALSTATUS)
             AppendMenu(hMenuButtonList, MF_STRING, 50000 + i, TranslateTS(top_buttons[i].szTooltip));
         if (!g_CluiData.IcoLib_Avail) {
-            hIcon = top_buttons[i].hIcon = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(top_buttons[i].idIcon), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, 0);
+            hIcon = top_buttons[i].hIcon = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(top_buttons[i].idIcon), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
             if(top_buttons[i].idAltIcon)
-                top_buttons[i].hAltIcon = LoadImage(g_hInst, MAKEINTRESOURCE(top_buttons[i].idAltIcon), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, 0);
+                top_buttons[i].hAltIcon = LoadImage(g_hInst, MAKEINTRESOURCE(top_buttons[i].idAltIcon), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
         }
         else {
             hIcon = top_buttons[i].hIcon = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) top_buttons[i].szIcoLibIcon);
@@ -905,14 +907,14 @@ void BlitWallpaper(HDC hdc, RECT *rc, RECT *rcPaint, struct ClcData *dat)
 
 void ReloadThemedOptions()
 {
-	g_CluiData.bSkinnedToolbar = DBGetContactSettingByte(NULL, "CLUI", "tb_skinned", 0);
+	g_CluiData.bSkinnedToolbar = DBGetContactSettingByte(NULL, "CLUI", "tb_skinned", 1);
 	g_CluiData.bSkinnedStatusBar = DBGetContactSettingByte(NULL, "CLUI", "sb_skinned", 0);
 	g_CluiData.bUsePerProto = DBGetContactSettingByte(NULL, "CLCExt", "useperproto", 0);
 	g_CluiData.bOverridePerStatusColors = DBGetContactSettingByte(NULL, "CLCExt", "override_status", 0);
 	g_CluiData.bRowSpacing = DBGetContactSettingByte(NULL, "CLC", "RowGap", 0);
 	g_CluiData.exIconScale = DBGetContactSettingByte(NULL, "CLC", "ExIconScale", 16);
 	g_CluiData.bApplyIndentToBg = DBGetContactSettingByte(NULL, "CLCExt", "applyindentbg", 0);
-	g_CluiData.bWallpaperMode = DBGetContactSettingByte(NULL, "CLUI", "UseBkSkin", 0);
+	g_CluiData.bWallpaperMode = DBGetContactSettingByte(NULL, "CLUI", "UseBkSkin", 1);
 	g_CluiData.bClipBorder = DBGetContactSettingByte(NULL, "CLUI", "clipborder", 0);
 	g_CluiData.cornerRadius = DBGetContactSettingByte(NULL, "CLCExt", "CornerRad", 6);
 	g_CluiData.gapBetweenFrames = (BYTE)DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1);
@@ -931,7 +933,7 @@ static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
 {
 	RECT rcTree, rcWorkArea, rcOld;
 	int maxHeight,newHeight;
-	int winstyle;
+	int winstyle, skinHeight = 0;
 
 	if (disableautoupd)
 		return;
@@ -956,7 +958,13 @@ static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
 		nmc->pt.y=(rcWorkArea.bottom-rcWorkArea.top);
 	}
 
-	newHeight=max(nmc->pt.y,3)+1+((winstyle&WS_BORDER)?2:0)+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
+    if(winstyle & CLS_SKINNEDFRAME) {
+        BOOL hasTitleBar = wndFrameCLC ? wndFrameCLC->TitleBar.ShowTitleBar : 0;
+        StatusItems_t *item = &StatusItems[(hasTitleBar ? ID_EXTBKOWNEDFRAMEBORDERTB : ID_EXTBKOWNEDFRAMEBORDER) - ID_STATUS_OFFLINE];
+        skinHeight = item->IGNORED ? 0 : item->MARGIN_BOTTOM + item->MARGIN_TOP;
+    }
+
+	newHeight=max(nmc->pt.y,3)+1+((winstyle&WS_BORDER)?2:0) + skinHeight + (rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top);
 	if (newHeight==(rcWindow.bottom-rcWindow.top) && show_on_first_autosize == FALSE)
 		return;
 
@@ -1003,11 +1011,6 @@ static void ShowCLUI(HWND hwnd)
 	if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
 		SetMenu(pcli->hwndContactList, NULL);
 	if (state == SETTING_STATE_NORMAL) {
-		/*int oldFade = g_CluiData.fadeinout;
-		g_CluiData.fadeinout = 1;
-		SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-		ShowWindow(pcli->hwndContactList, SW_SHOW);
-		g_CluiData.fadeinout = oldFade;*/
 		SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 		ShowWindow(pcli->hwndContactList, SW_SHOWNORMAL);
 		SendMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
@@ -1026,7 +1029,6 @@ static void ShowCLUI(HWND hwnd)
 		SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 		SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);
 	}				
-	// finally, the floater
 	SFL_Create();
 	SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (old_cliststate == SETTING_STATE_NORMAL ? 0 : 1) : 1);
 }
@@ -1103,6 +1105,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		break;
 	case M_CREATECLC:
 		{
+            if(DBGetContactSettingByte(NULL, "CLUI", "useskin", 0))
+                IMG_LoadItems();
             CreateButtonBar(hwnd);
 		    NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
@@ -1899,6 +1903,78 @@ buttons_done:
 	case WM_NOTIFY:
 		if (((LPNMHDR) lParam)->hwndFrom == pcli->hwndContactTree) {
 			switch (((LPNMHDR) lParam)->code) {
+            case NM_COOLSB_CUSTOMDRAW:
+                {
+                    NMCSBCUSTOMDRAW *nmcsbcd = (NMCSBCUSTOMDRAW *)lParam;
+
+                    switch(nmcsbcd->dwDrawStage) {
+                        case CDDS_PREPAINT:
+                            if(g_CluiData.bSkinnedScrollbar)                                              // XXX fix (verify skin items to be complete, otherwise don't draw
+                                return CDRF_SKIPDEFAULT;
+                            else
+                                return CDRF_DODEFAULT;
+                        case CDDS_ITEMPREPAINT:
+                        {
+                            HDC hdc = nmcsbcd->hdc;
+                            StatusItems_t *item = 0;
+                            UINT uItemID = ID_EXTBKSCROLLBACK;
+                            RECT rcWindow;
+                            POINT pt;
+                            DWORD dfcFlags;
+                            HRGN rgn = 0;
+                            GetWindowRect(pcli->hwndContactTree, &rcWindow);
+                            pt.x = rcWindow.left; pt.y = rcWindow.top;
+
+                            ScreenToClient(hwnd, &pt);
+
+                            BitBlt(hdc, nmcsbcd->rect.left, nmcsbcd->rect.top, nmcsbcd->rect.right - nmcsbcd->rect.left,
+                                   nmcsbcd->rect.bottom - nmcsbcd->rect.top, g_CluiData.hdcBg, pt.x + nmcsbcd->rect.left, pt.y + nmcsbcd->rect.top, SRCCOPY);
+
+                            switch(nmcsbcd->uItem) {
+                                case HTSCROLL_UP:
+                                case HTSCROLL_DOWN:
+                                    uItemID = (nmcsbcd->uState == CDIS_DEFAULT || nmcsbcd->uState == CDIS_DISABLED) ? ID_EXTBKSCROLLBUTTON :
+                                        (nmcsbcd->uState == CDIS_HOT ? ID_EXTBKSCROLLBUTTONHOVER : ID_EXTBKSCROLLBUTTONPRESSED);
+                                    break;
+                                case HTSCROLL_PAGEGDOWN:
+                                case HTSCROLL_PAGEGUP:
+                                    uItemID = ID_EXTBKSCROLLBACK;
+                                    rgn = CreateRectRgn(nmcsbcd->rect.left, nmcsbcd->rect.top, nmcsbcd->rect.right, nmcsbcd->rect.bottom);
+                                    SelectClipRgn(hdc, rgn);
+                                    break;
+                                case HTSCROLL_THUMB:
+                                    uItemID = (nmcsbcd->uState == CDIS_DEFAULT || nmcsbcd->uState == CDIS_DISABLED) ? ID_EXTBKSCROLLTHUMB :
+                                        (nmcsbcd->uState == CDIS_HOT ? ID_EXTBKSCROLLTHUMBHOVER : ID_EXTBKSCROLLTHUMBPRESSED);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            
+                            uItemID -= ID_STATUS_OFFLINE;
+                            item = &StatusItems[uItemID];
+                            if(!item->IGNORED) {
+                                int alpha = nmcsbcd->uState == CDIS_DISABLED ? item->ALPHA - 50 : item->ALPHA;
+                                DrawAlpha(hdc, &nmcsbcd->rect, item->COLOR, alpha, item->COLOR2, item->COLOR2_TRANSPARENT,
+                                          item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+                            }
+                            dfcFlags = DFCS_FLAT | (nmcsbcd->uState == CDIS_DISABLED ? DFCS_INACTIVE : 
+                                                   (nmcsbcd->uState == CDIS_HOT ? DFCS_HOT : 
+                                                   (nmcsbcd->uState == CDIS_SELECTED ? DFCS_PUSHED : 0)));
+
+                            if(nmcsbcd->uItem == HTSCROLL_UP)
+                                DrawFrameControl(hdc, &nmcsbcd->rect, DFC_SCROLL, DFCS_SCROLLUP | dfcFlags);
+                            if(nmcsbcd->uItem == HTSCROLL_DOWN)
+                                DrawFrameControl(hdc, &nmcsbcd->rect, DFC_SCROLL, DFCS_SCROLLDOWN | dfcFlags);
+                            if(rgn) {
+                                SelectClipRgn(hdc, NULL);
+                                DeleteObject(rgn);
+                            }
+                        }
+                        default:
+                            break;
+                    }
+                }
+                return 0;
 			case CLN_LISTSIZECHANGE:
 				sttProcessResize(hwnd, (NMCLISTCONTROL*)lParam );
 				return FALSE;

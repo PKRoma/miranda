@@ -935,11 +935,11 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             HDWP PosBatch = BeginDeferWindowPos(3);
             GetClientRect(hwnd, &rcCLVMFrame);
             PosBatch = DeferWindowPos(PosBatch, GetDlgItem(hwnd, IDC_RESETMODES), 0,
-                                      rcCLVMFrame.right - 23, 1, 22, 20, SWP_NOZORDER);
+                                      rcCLVMFrame.right - 23, 1, 22, 20, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOCOPYBITS);
             PosBatch = DeferWindowPos(PosBatch, GetDlgItem(hwnd, IDC_CONFIGUREMODES), 0,
-                                      rcCLVMFrame.right - 45, 1, 22, 20, SWP_NOZORDER);
+                                      rcCLVMFrame.right - 45, 1, 22, 20, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOCOPYBITS);
             PosBatch = DeferWindowPos(PosBatch, GetDlgItem(hwnd, IDC_SELECTMODE), 0,
-                                      1, 1, rcCLVMFrame.right - 46, 20, SWP_NOZORDER);
+                                      1, 1, rcCLVMFrame.right - 46, 20, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOCOPYBITS);
             EndDeferWindowPos(PosBatch);
             break;
         }
@@ -1117,10 +1117,10 @@ void CreateViewModeFrame()
     frame.cbSize = sizeof(frame);
     frame.name = "View modes";
     frame.hIcon = 0;
-    frame.height = 20;
+    frame.height = 22;
     frame.TBname = "View modes";
-    frame.Flags=F_VISIBLE|F_SHOWTBTIP|F_SHOWTB|F_SHOWTBTIP;
-    frame.align = alTop;
+    frame.Flags=F_VISIBLE|F_SHOWTBTIP|F_NOBORDER;
+    frame.align = alBottom;
     frame.hWnd = CreateWindowEx(0, _T("CLVMFrameWindow"), _T("CLVM"), WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_CLIPCHILDREN, 0, 0, 20, 20, pcli->hwndContactList, (HMENU) 0, g_hInst, NULL);
     g_hwndViewModeFrame = frame.hWnd;
     hCLVMFrame = (HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&frame,(LPARAM)0);
