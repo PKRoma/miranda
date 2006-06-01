@@ -114,13 +114,44 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	nlu.szSettingsModule = szP2P;
 	nlu.minIncomingPorts = 1;
 	conn.hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
+	
 	if (DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
 		DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, AIM_DEFAULT_SERVER);
 	else
 		DBFreeVariant(&dbv);
+	
 	if(DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, -1)==-1)
 		DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
-	if(DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, -1)==-1)
+
+	if(DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
+	{
+		if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, OLD_KEY_PW, &dbv))
+		{
+			DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, dbv.pszVal);
+			DBDeleteContactSetting(NULL, AIM_PROTOCOL_NAME, OLD_KEY_PW);
+			DBFreeVariant(&dbv);
+		}
+	}
+	else
+	{
+		DBFreeVariant(&dbv);
+	}
+
+	if(DBGetContactSettingByte(NULL,AIM_PROTOCOL_NAME,AIM_KEY_DM,-1)==-1)
+	{
+		int i=DBGetContactSettingByte(NULL,AIM_PROTOCOL_NAME,OLD_KEY_DM,-1);
+		if(i!=-1)
+		{
+			if(i==1)
+				DBWriteContactSettingByte(NULL,AIM_PROTOCOL_NAME,AIM_KEY_DM,0);
+			else
+				DBWriteContactSettingByte(NULL,AIM_PROTOCOL_NAME,AIM_KEY_DM,1);
+			DBDeleteContactSetting(NULL, AIM_PROTOCOL_NAME, OLD_KEY_DM);
+		}
+	}
+
+	unsigned short timer=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, -1);
+	if(timer==-1||timer>0xffff||timer<15)
 		DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_OPT_INITIALISE, OptionsInit);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_USERINFO_INITIALISE, UserInfoInit);

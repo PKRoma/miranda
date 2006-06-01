@@ -33,7 +33,8 @@ SRC =	snac.cpp \
 	services.cpp \
 	thread.cpp \
 	utility.cpp \
-	proxy.cpp	\
+	popup.cpp \
+	proxy.cpp \
 	direct_connect.cpp \
 	file.cpp \
 	windows.cpp \
@@ -59,6 +60,7 @@ HDR =	tlv.h \
 	server.h \
 	thread.h \
 	utility.h \
+	popup.h \
 	proxy.h	\
 	direct_connect.ch \
 	file.h \

@@ -71,7 +71,7 @@
 //Main Option Window Keys
 #define AIM_KEY_SN						"SN"
 #define AIM_KEY_NK						"Nick"
-#define AIM_KEY_PW						"password"
+#define AIM_KEY_PW						"Password"
 #define AIM_KEY_HN						"hostname"
 #define AIM_KEY_DC						"DelConf"//delivery confirmation
 #define AIM_KEY_FP						"ForceProxyTransfer"
@@ -127,6 +127,10 @@
 #define AIM_KEY_PS						"ProxyStage"
 #define AIM_KEY_PC						"PortCheck"
 #define AIM_KEY_DH						"DCHandle"
+//Old Keys
+#define OLD_KEY_PW						"password"
+#define OLD_KEY_DM						"AutoResponse"
+
 //Some Defaults for various things
 #define DEFAULT_KEEPALIVE_TIMER			60// 1000 milliseconds * 60 = 60 secs
 #define DEFAULT_GRACE_PERIOD			60
