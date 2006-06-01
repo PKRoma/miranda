@@ -986,6 +986,114 @@ static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
 	SetTimer(hwnd, TIMERID_AUTOSIZE, 100, 0);
 }
 
+int CustomDrawScrollBars(NMCSBCUSTOMDRAW *nmcsbcd)
+{
+    switch(nmcsbcd->hdr.code) {
+        case NM_COOLSB_CUSTOMDRAW:
+        {
+            static HDC hdcScroll = 0;
+            static HBITMAP hbmScroll, hbmScrollOld;
+            static LONG scrollLeft, scrollRight, scrollHeight, scrollYmin, scrollYmax;
+
+            switch(nmcsbcd->dwDrawStage) {
+                case CDDS_PREPAINT:
+                    if(g_CluiData.bSkinnedScrollbar)                                              // XXX fix (verify skin items to be complete, otherwise don't draw
+                        return CDRF_SKIPDEFAULT;
+                    else
+                        return CDRF_DODEFAULT;
+                case CDDS_POSTPAINT:
+                    //BitBlt(nmcsbcd->hdc, scrollLeft, scrollYmin, scrollRight - scrollLeft, scrollYmax - scrollYmin, 
+                    //       hdcScroll, scrollLeft, scrollYmin, SRCCOPY);
+                    /*SelectObject(hdcScroll, hbmScrollOld);
+                    DeleteObject(hbmScroll);
+                    DeleteDC(hdcScroll);
+                    hdcScroll = 0;*/
+                    return 0;
+                case CDDS_ITEMPREPAINT:
+                {
+                    HDC hdc = nmcsbcd->hdc;
+                    StatusItems_t *item = 0, *arrowItem = 0;
+                    UINT uItemID = ID_EXTBKSCROLLBACK;
+                    RECT rcWindow;
+                    POINT pt;
+                    DWORD dfcFlags;
+                    HRGN rgn = 0;
+                    GetWindowRect(pcli->hwndContactTree, &rcWindow);
+                    pt.x = rcWindow.left; pt.y = rcWindow.top;
+                    ScreenToClient(pcli->hwndContactList, &pt);
+
+                    /*
+                    if(hdcScroll == 0) {
+                        hdcScroll = CreateCompatibleDC(hdc);
+                        scrollHeight = rcWindow.bottom - rcWindow.top;
+                        scrollYmax = 0;
+                        scrollYmin = scrollHeight;
+                        hbmScroll = CreateCompatibleBitmap(hdc, rcWindow.right - rcWindow.left, scrollHeight);
+                        hbmScrollOld = SelectObject(hdcScroll, hbmScroll);
+                        scrollLeft = nmcsbcd->rect.left;
+                        scrollRight = nmcsbcd->rect.right;
+                    }
+                    scrollYmax = max(nmcsbcd->rect.bottom, scrollYmax);
+                    scrollYmin = min(nmcsbcd->rect.top, scrollYmin);*/
+                    hdcScroll = hdc;
+                    BitBlt(hdcScroll, nmcsbcd->rect.left, nmcsbcd->rect.top, nmcsbcd->rect.right - nmcsbcd->rect.left,
+                           nmcsbcd->rect.bottom - nmcsbcd->rect.top, g_CluiData.hdcBg, pt.x + nmcsbcd->rect.left, pt.y + nmcsbcd->rect.top, SRCCOPY);
+
+                    switch(nmcsbcd->uItem) {
+                        case HTSCROLL_UP:
+                        case HTSCROLL_DOWN:
+                            uItemID = (nmcsbcd->uState == CDIS_DEFAULT || nmcsbcd->uState == CDIS_DISABLED) ? ID_EXTBKSCROLLBUTTON :
+                                (nmcsbcd->uState == CDIS_HOT ? ID_EXTBKSCROLLBUTTONHOVER : ID_EXTBKSCROLLBUTTONPRESSED);
+                            break;
+                        case HTSCROLL_PAGEGDOWN:
+                        case HTSCROLL_PAGEGUP:
+                            uItemID = nmcsbcd->uItem == HTSCROLL_PAGEGUP ? ID_EXTBKSCROLLBACK : ID_EXTBKSCROLLBACKLOWER;;
+                            rgn = CreateRectRgn(nmcsbcd->rect.left, nmcsbcd->rect.top, nmcsbcd->rect.right, nmcsbcd->rect.bottom);
+                            SelectClipRgn(hdcScroll, rgn);
+                            break;
+                        case HTSCROLL_THUMB:
+                            uItemID = nmcsbcd->uState == CDIS_HOT ? ID_EXTBKSCROLLTHUMBHOVER : ID_EXTBKSCROLLTHUMB;
+                            uItemID = nmcsbcd->uState == CDIS_SELECTED ? ID_EXTBKSCROLLTHUMBPRESSED : ID_EXTBKSCROLLTHUMB;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    uItemID -= ID_STATUS_OFFLINE;
+                    item = &StatusItems[uItemID];
+                    if(!item->IGNORED) {
+                        int alpha = nmcsbcd->uState == CDIS_DISABLED ? item->ALPHA - 50 : item->ALPHA;
+                        DrawAlpha(hdcScroll, &nmcsbcd->rect, item->COLOR, alpha, item->COLOR2, item->COLOR2_TRANSPARENT,
+                                  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+                    }
+                    dfcFlags = DFCS_FLAT | (nmcsbcd->uState == CDIS_DISABLED ? DFCS_INACTIVE : 
+                                           (nmcsbcd->uState == CDIS_HOT ? DFCS_HOT : 
+                                           (nmcsbcd->uState == CDIS_SELECTED ? DFCS_PUSHED : 0)));
+
+                    if(nmcsbcd->uItem == HTSCROLL_UP)
+                        arrowItem = &StatusItems[ID_EXTBKSCROLLARROWUP - ID_STATUS_OFFLINE];
+                    if(nmcsbcd->uItem == HTSCROLL_DOWN)
+                        arrowItem = &StatusItems[ID_EXTBKSCROLLARROWDOWN - ID_STATUS_OFFLINE];
+                    if(arrowItem && !arrowItem->IGNORED)
+                        DrawAlpha(hdcScroll, &nmcsbcd->rect, arrowItem->COLOR, arrowItem->ALPHA, arrowItem->COLOR2, arrowItem->COLOR2_TRANSPARENT,
+                                  arrowItem->GRADIENT, arrowItem->CORNER, arrowItem->BORDERSTYLE, arrowItem->imageItem);
+                    else if(arrowItem)
+                        DrawFrameControl(hdcScroll, &nmcsbcd->rect, DFC_SCROLL, (nmcsbcd->uItem == HTSCROLL_UP ? DFCS_SCROLLUP : DFCS_SCROLLDOWN) | dfcFlags);
+
+                    if(rgn) {
+                        SelectClipRgn(hdcScroll, NULL);
+                        DeleteObject(rgn);
+                    }
+                }
+                default:
+                    break;
+            }
+        }
+        return 0;
+    }
+    return 0;
+}
+
 extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HANDLE hContact)
@@ -1903,78 +2011,6 @@ buttons_done:
 	case WM_NOTIFY:
 		if (((LPNMHDR) lParam)->hwndFrom == pcli->hwndContactTree) {
 			switch (((LPNMHDR) lParam)->code) {
-            case NM_COOLSB_CUSTOMDRAW:
-                {
-                    NMCSBCUSTOMDRAW *nmcsbcd = (NMCSBCUSTOMDRAW *)lParam;
-
-                    switch(nmcsbcd->dwDrawStage) {
-                        case CDDS_PREPAINT:
-                            if(g_CluiData.bSkinnedScrollbar)                                              // XXX fix (verify skin items to be complete, otherwise don't draw
-                                return CDRF_SKIPDEFAULT;
-                            else
-                                return CDRF_DODEFAULT;
-                        case CDDS_ITEMPREPAINT:
-                        {
-                            HDC hdc = nmcsbcd->hdc;
-                            StatusItems_t *item = 0;
-                            UINT uItemID = ID_EXTBKSCROLLBACK;
-                            RECT rcWindow;
-                            POINT pt;
-                            DWORD dfcFlags;
-                            HRGN rgn = 0;
-                            GetWindowRect(pcli->hwndContactTree, &rcWindow);
-                            pt.x = rcWindow.left; pt.y = rcWindow.top;
-
-                            ScreenToClient(hwnd, &pt);
-
-                            BitBlt(hdc, nmcsbcd->rect.left, nmcsbcd->rect.top, nmcsbcd->rect.right - nmcsbcd->rect.left,
-                                   nmcsbcd->rect.bottom - nmcsbcd->rect.top, g_CluiData.hdcBg, pt.x + nmcsbcd->rect.left, pt.y + nmcsbcd->rect.top, SRCCOPY);
-
-                            switch(nmcsbcd->uItem) {
-                                case HTSCROLL_UP:
-                                case HTSCROLL_DOWN:
-                                    uItemID = (nmcsbcd->uState == CDIS_DEFAULT || nmcsbcd->uState == CDIS_DISABLED) ? ID_EXTBKSCROLLBUTTON :
-                                        (nmcsbcd->uState == CDIS_HOT ? ID_EXTBKSCROLLBUTTONHOVER : ID_EXTBKSCROLLBUTTONPRESSED);
-                                    break;
-                                case HTSCROLL_PAGEGDOWN:
-                                case HTSCROLL_PAGEGUP:
-                                    uItemID = ID_EXTBKSCROLLBACK;
-                                    rgn = CreateRectRgn(nmcsbcd->rect.left, nmcsbcd->rect.top, nmcsbcd->rect.right, nmcsbcd->rect.bottom);
-                                    SelectClipRgn(hdc, rgn);
-                                    break;
-                                case HTSCROLL_THUMB:
-                                    uItemID = (nmcsbcd->uState == CDIS_DEFAULT || nmcsbcd->uState == CDIS_DISABLED) ? ID_EXTBKSCROLLTHUMB :
-                                        (nmcsbcd->uState == CDIS_HOT ? ID_EXTBKSCROLLTHUMBHOVER : ID_EXTBKSCROLLTHUMBPRESSED);
-                                    break;
-                                default:
-                                    break;
-                            }
-                            
-                            uItemID -= ID_STATUS_OFFLINE;
-                            item = &StatusItems[uItemID];
-                            if(!item->IGNORED) {
-                                int alpha = nmcsbcd->uState == CDIS_DISABLED ? item->ALPHA - 50 : item->ALPHA;
-                                DrawAlpha(hdc, &nmcsbcd->rect, item->COLOR, alpha, item->COLOR2, item->COLOR2_TRANSPARENT,
-                                          item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
-                            }
-                            dfcFlags = DFCS_FLAT | (nmcsbcd->uState == CDIS_DISABLED ? DFCS_INACTIVE : 
-                                                   (nmcsbcd->uState == CDIS_HOT ? DFCS_HOT : 
-                                                   (nmcsbcd->uState == CDIS_SELECTED ? DFCS_PUSHED : 0)));
-
-                            if(nmcsbcd->uItem == HTSCROLL_UP)
-                                DrawFrameControl(hdc, &nmcsbcd->rect, DFC_SCROLL, DFCS_SCROLLUP | dfcFlags);
-                            if(nmcsbcd->uItem == HTSCROLL_DOWN)
-                                DrawFrameControl(hdc, &nmcsbcd->rect, DFC_SCROLL, DFCS_SCROLLDOWN | dfcFlags);
-                            if(rgn) {
-                                SelectClipRgn(hdc, NULL);
-                                DeleteObject(rgn);
-                            }
-                        }
-                        default:
-                            break;
-                    }
-                }
-                return 0;
 			case CLN_LISTSIZECHANGE:
 				sttProcessResize(hwnd, (NMCLISTCONTROL*)lParam );
 				return FALSE;

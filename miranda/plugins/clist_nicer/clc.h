@@ -470,6 +470,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint);
 void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *contact, int indent, int y, struct ClcData *dat, int index, HWND hwnd, DWORD style, RECT *clRect, BOOL *bFirstNGdrawn, int groupCountsFontTopShift, int rowHeight);
 void Reload3dBevelColors();
 void ReloadThemedOptions();
+void CreateButtonBar(HWND hWnd);
 void SetButtonToSkinned();
 void RTL_DetectAndSet(struct ClcContact *contact, HANDLE hContact);
 void RTL_DetectGroupName(struct ClcContact *group);

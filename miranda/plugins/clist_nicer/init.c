@@ -62,6 +62,7 @@ void   TrayIconIconsChanged(void);
 void   TrayIconSetToBase(char *szPreferredProto);
 void   TrayIconUpdateBase(const char *szChangedProto);
 void   TrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPreferredProto);
+void    RegisterCLUIFrameClasses();
 
 void GetDefaultFontSetting(int i, LOGFONT *lf, COLORREF *colour);
 int  GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY);
@@ -131,7 +132,6 @@ void __forceinline _DebugTraceW(const wchar_t *fmt, ...)
 
     _vsnwprintf(&debug[5], ibsize - 10, fmt, va);
     OutputDebugStringW(debug);
-	return 0;
 #endif    
 }
 #endif
@@ -161,7 +161,6 @@ void __forceinline _DebugTraceA(const char *fmt, ...)
             fclose(f);
         }
     }
-	return 0;
 #endif
 }
 

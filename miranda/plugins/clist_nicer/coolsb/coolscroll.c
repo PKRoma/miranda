@@ -694,7 +694,7 @@ static LRESULT PostCustomPrePostPaint(HWND hwnd, HDC hdc, SCROLLBAR *sb, UINT dw
 	nmcd.hdc		  = hdc;
 
 	hwnd = GetParent(hwnd);
-	return SendMessage(hwnd, WM_NOTIFY, 0, (LPARAM)&nmcd);
+	return CustomDrawScrollBars((LPARAM)&nmcd);
 #else
 	return 0;
 #endif
@@ -726,7 +726,7 @@ static LRESULT PostCustomDrawNotify(HWND hwnd, HDC hdc, UINT nBar, RECT *prect, 
 		nmcd.uState		  = CDIS_DEFAULT;
 
 	hwnd = GetParent(hwnd);
-	return SendMessage(hwnd, WM_NOTIFY, nmcd.hdr.idFrom, (LPARAM)&nmcd);
+	return CustomDrawScrollBars((LPARAM)&nmcd);
 #else
 	return 0;
 #endif
