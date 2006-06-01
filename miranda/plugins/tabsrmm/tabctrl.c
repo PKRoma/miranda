@@ -409,7 +409,8 @@ b_nonskinned:
                 if(dwStyle & TCS_BOTTOM)
                     rcItem->top = (rcItem->top > rcTabPage.bottom + 5) ? --rcItem->top : rcItem->top;
                 else
-                    rcItem->bottom = (rcItem->bottom < rcTabPage.top - 5) ? ++rcItem->bottom : rcItem->bottom;
+                    rcItem->bottom++;
+                    //rcItem->bottom = (rcItem->bottom < rcTabPage.top - 5) ? ++rcItem->bottom : rcItem->bottom;
 
                 rcItem->left += item->MARGIN_LEFT; rcItem->right -= item->MARGIN_RIGHT;
 				DrawAlpha(dc, rcItem, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
