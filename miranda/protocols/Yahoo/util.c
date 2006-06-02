@@ -140,16 +140,13 @@ LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM
 }
 
 
-int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags )
+int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, const char *szURL )
 {
 	POPUPDATAEX ppd;
 
-	if ( !ServiceExists( MS_POPUP_ADDPOPUPEX )){	
-		if ( flags & YAHOO_ALLOW_MSGBOX )
-			MessageBox( NULL, msg, Translate("Yahoo Protocol"), MB_OK | MB_ICONINFORMATION );
-
+	if ( !ServiceExists( MS_POPUP_ADDPOPUPEX ))
 		return 0;
-	}
+	
 
 	ZeroMemory(&ppd, sizeof(ppd) );
 	lstrcpy( ppd.lpzContactName, nickname );
@@ -157,9 +154,9 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, int flags 
 
 	ppd.PluginWindowProc = ( WNDPROC )PopupWindowProc;
 
-	if (flags & YAHOO_MAIL_POPUP) {
+	if (szURL != NULL) {
 		ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_INBOX ));
-		ppd.PluginData =  (void *)"http://mail.yahoo.com";
+		ppd.PluginData =  (void *)szURL;
 	} else {
 		ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_MAIN ));
 	}
@@ -188,7 +185,7 @@ int YAHOO_shownotification(const char *title, const char *info, DWORD flags)
 void YAHOO_ShowError(const char *title, const char *buff)
 {
 	if (YAHOO_GetByte( "ShowErrors", 1 )) 
-		if (!YAHOO_ShowPopup(title, buff, YAHOO_NOTIFY_POPUP))
+		if (!YAHOO_ShowPopup(title, buff, NULL))
 				YAHOO_shownotification(title, buff, NIIF_ERROR);
 }
 

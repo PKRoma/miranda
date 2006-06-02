@@ -1700,7 +1700,7 @@ void ext_yahoo_mail_notify(int id, char *from, char *subj, int cnt)
 				snprintf(z, sizeof(z), Translate("From: %s\nSubject: %s"), from, subj);
 			}
 	
-			if(!YAHOO_ShowPopup( title, z, YAHOO_ALLOW_ENTER + YAHOO_MAIL_POPUP ))
+			if(!YAHOO_ShowPopup( title, z, "http://mail.yahoo.com" ))
 				YAHOO_shownotification(title, z, NIIF_INFO);
 		}
 	}
