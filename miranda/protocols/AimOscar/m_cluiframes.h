@@ -27,11 +27,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 //  [statusicon] ContactName  [ADV1][ADV2][SMS][EMAIL][PROTO]
 //
-#define  EXTRA_ICON_EMAIL  1
-#define  EXTRA_ICON_PROTO  2
-#define  EXTRA_ICON_SMS    3
-#define  EXTRA_ICON_ADV1  4
-#define  EXTRA_ICON_ADV2  5
+#define  EXTRA_ICON_EMAIL	1
+#define  EXTRA_ICON_PROTO	2
+#define  EXTRA_ICON_SMS		3
+#define  EXTRA_ICON_ADV1	4
+#define  EXTRA_ICON_ADV2	5
+#define  EXTRA_ICON_WEB	    6
+#define  EXTRA_ICON_CLIENT  7
+#define  EXTRA_ICON_ADV3	8
+#define  EXTRA_ICON_ADV4	9
 
 typedef struct
 {

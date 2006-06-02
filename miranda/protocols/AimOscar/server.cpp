@@ -164,6 +164,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 		unsigned short tlv_count=snac.ushort(offset);
 		HANDLE hContact=find_contact(buddy);
 		int ESIconsDisabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES, 0);
+		int ATIconsDisabled=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0);
 		if(!hContact)
 			hContact=add_contact(buddy);
 		offset+=2;
@@ -215,10 +216,15 @@ void snac_user_online(SNAC &snac)//family 0x0003
 							DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC, ACCOUNT_TYPE_CONFIRMED);
 							memcpy(data,&conn.confirmed_icon,sizeof(HANDLE));
 						}
-						memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-						unsigned short column_type=EXTRA_ICON_ADV2;
-						memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-						ForkThread((pThreadFunc)set_extra_icon,data);
+						if(!ATIconsDisabled)
+						{
+							memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
+							unsigned short column_type=EXTRA_ICON_ADV2;
+							memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+							ForkThread((pThreadFunc)set_extra_icon,data);
+						}
+						else
+							delete[] data;
 					}
 					if(bot)
 						bot_user=1;
@@ -401,7 +407,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
 					memcpy(data,&conn.bot_icon,sizeof(HANDLE));
 					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV1;
+					unsigned short column_type=EXTRA_ICON_ADV3;
 					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
 					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
@@ -415,7 +421,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
 					memcpy(data,&conn.hiptop_icon,sizeof(HANDLE));
 					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV1;
+					unsigned short column_type=EXTRA_ICON_ADV3;
 					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
 					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
@@ -432,7 +438,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 					HANDLE handle=(HANDLE)-1;
 					memcpy(data,&handle,sizeof(HANDLE));
 					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV1;
+					unsigned short column_type=EXTRA_ICON_ADV3;
 					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
 					ForkThread((pThreadFunc)set_extra_icon,data);
 				}

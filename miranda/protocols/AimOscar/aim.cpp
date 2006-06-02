@@ -90,6 +90,8 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	CreateServices();
 	return 0;
 }
+int ExtraIconsRebuild(WPARAM wParam, LPARAM lParam);
+int ExtraIconsApply(WPARAM wParam, LPARAM lParam);
 int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	char store[MAX_PATH];
@@ -156,6 +158,8 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_OPT_INITIALISE, OptionsInit);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_USERINFO_INITIALISE, UserInfoInit);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_IDLE_CHANGED,IdleChanged);
+	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, ExtraIconsRebuild);
+	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY, ExtraIconsApply);
 	if(conn.hookEvent_size>HOOKEVENT_SIZE)
 	{
 		MessageBox( NULL, "AimOSCAR has detected that a buffer overrun has occured in it's 'conn.hookEvent' array. Please recompile with a larger HOOKEVENT_SIZE declared. AimOSCAR will now shut Miranda-IM down.", AIM_PROTOCOL_NAME, MB_OK );

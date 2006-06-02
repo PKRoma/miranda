@@ -15,7 +15,6 @@ HANDLE aim_connect(char* server)
     ncon.wPort =atoi(port);
     HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) conn.hNetlib, (LPARAM) & ncon);
 	delete[] server_dup;
-	load_extra_icons();
 	return con;
 }
 HANDLE aim_peer_connect(char* ip,unsigned short port)

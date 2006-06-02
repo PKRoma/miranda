@@ -257,7 +257,7 @@ void offline_contact(HANDLE hContact)
 		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH);
 		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP);
 		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AC);
-		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_ES);
+		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_ET);
 		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV);
 		DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 		DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT);
@@ -270,13 +270,13 @@ void offline_contact(HANDLE hContact)
 		HANDLE handle=(HANDLE)-1;
 		memcpy(data,&handle,sizeof(HANDLE));
 		memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-		unsigned short column_type=EXTRA_ICON_ADV1;
+		unsigned short column_type=EXTRA_ICON_ADV3;
 		memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
 		ForkThread((pThreadFunc)set_extra_icon,data);
 		char* data2=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
 		memcpy(data2,&handle,sizeof(HANDLE));
 		memcpy(&data2[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-		unsigned short column_type2=EXTRA_ICON_ADV1;
+		unsigned short column_type2=EXTRA_ICON_ADV2;
 		memcpy(&data2[sizeof(HANDLE)*2],(char*)&column_type2,sizeof(unsigned short));
 		ForkThread((pThreadFunc)set_extra_icon,data2);
 	}
@@ -339,7 +339,7 @@ void remove_ES_icons()
 					HANDLE handle=(HANDLE)-1;
 					memcpy(data,&handle,sizeof(HANDLE));
 					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV1;
+					unsigned short column_type=EXTRA_ICON_ADV3;
 					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
 					ForkThread((pThreadFunc)set_extra_icon,data);
 					DBFreeVariant(&dbv);
@@ -429,7 +429,7 @@ void add_ES_icons()
 					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
 					memcpy(data,&conn.bot_icon,sizeof(HANDLE));
 					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV1;
+					unsigned short column_type=EXTRA_ICON_ADV3;
 					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
 					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
@@ -438,7 +438,7 @@ void add_ES_icons()
 					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
 					memcpy(data,&conn.hiptop_icon,sizeof(HANDLE));
 					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV1;
+					unsigned short column_type=EXTRA_ICON_ADV3;
 					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
 					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
@@ -1058,7 +1058,7 @@ void load_extra_icons()
 }
 void set_extra_icon(char* data)
 {
-	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON)&&!DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0))
+	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 	{
 		HANDLE* image=(HANDLE*)data;
 		HANDLE* hContact=(HANDLE*)&data[sizeof(HANDLE)];
