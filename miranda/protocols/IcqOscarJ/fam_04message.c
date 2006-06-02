@@ -1370,11 +1370,13 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
               else
               {
                 int nMsgLen = strlennull(szAnsiMessage) + 1;
+                int nMsgWLen;
 
                 usMsg = SAFE_MALLOC((nMsgLen)*(sizeof(wchar_t) + 1));
                 memcpy((char*)usMsg, szAnsiMessage, nMsgLen);
                 usMsgW = make_unicode_string(szMsg);
-                memcpy((char*)usMsg + nMsgLen, (char*)usMsgW, nMsgLen*sizeof(wchar_t));
+                nMsgWLen = wcslen(usMsgW);
+                memcpy((char*)usMsg + nMsgLen, (char*)usMsgW, ((nMsgWLen>nMsgLen)?nMsgLen:nMsgWLen)*sizeof(wchar_t));
                 SAFE_FREE(&usMsgW);
                 SAFE_FREE(&szAnsiMessage);
                 SAFE_FREE(&szMsg);
@@ -1926,13 +1928,22 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         szPluginName[dwPluginNameLen] = '\0';
 
         buf += dwPluginNameLen + 15;
-        wLen -= ((WORD)dwPluginNameLen + 15);
+        if (dwPluginNameLen == wLen)
+          wLen = 0;
+        else
+          wLen -= ((WORD)dwPluginNameLen + 15);
 
         typeId = TypeGUIDToTypeId(q1, q2, q3, q4, qt);
         if (!typeId)
-          NetLog_Server("Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt);
+          NetLog_Server("Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt,szPluginName);
 
-        if (wLen < 4) return;
+        if (wLen < 4)
+        {
+          NetLog_Server("Error: Invalid greeting message response");
+
+          ReleaseCookie(dwCookie);
+          return;
+        }
 
         // Length of remaining data
         unpackLEDWord(&buf, &dwLengthToEnd);
