@@ -3246,6 +3246,39 @@ static void yahoo_process_audible(struct yahoo_input_data *yid, struct yahoo_pac
 		YAHOO_CALLBACK(ext_yahoo_got_audible)(yid->yd->client_id, me, who, aud, msg, aud_hash);
 }
 
+static void yahoo_process_calendar(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
+{
+	char *msg = NULL;
+	char *url = NULL;
+	int  svc = -1, type = -1;
+	
+	YList *l;
+	
+	for (l = pkt->hash; l; l = l->next) {
+		struct yahoo_pair *pair = l->data;
+		switch (pair->key){
+		case 20: /* url to calendar reminder/event */
+				if (pair->value[0] != '\0')
+					url = pair->value;
+				break;
+		case 21: /* type? number seems to be 0? */
+				type = atol(pair->value);
+				break;
+		case 14: /* index msg/title ? */
+				if (pair->value[0] != '\0')
+					msg = pair->value;
+				break;
+		case 13: /* service # ? */
+				svc = atol(pair->value);
+				break;
+		}
+	}
+
+	if (url) // sometimes we just get a reminder w/o the URL
+		YAHOO_CALLBACK(ext_yahoo_got_calendar)(yid->yd->client_id, url, type, msg, svc);
+}
+
+
 static void yahoo_process_ping(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
 	char *errormsg = NULL;
@@ -3507,10 +3540,12 @@ static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_pack
 	case YAHOO_SERVICE_AUDIBLE:
 		yahoo_process_audible(yid, pkt);
 		break;
+	case YAHOO_SERVICE_CALENDAR:
+		yahoo_process_calendar(yid, pkt);
+		break;
 	case YAHOO_SERVICE_IDLE:
 	case YAHOO_SERVICE_MAILSTAT:
 	case YAHOO_SERVICE_CHATINVITE:
-	case YAHOO_SERVICE_CALENDAR:
 	case YAHOO_SERVICE_NEWPERSONALMAIL:
 	case YAHOO_SERVICE_ADDIDENT:
 	case YAHOO_SERVICE_ADDIGNORE:

@@ -297,6 +297,18 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_im)(int id, char *me, char *who, char *ms
  */
 void YAHOO_CALLBACK_TYPE(ext_yahoo_got_audible)(int id, const char *me, const char *who, const char *aud, const char *msg, const char *aud_hash);
 
+/*
+ * Name: ext_yahoo_got_calendar
+ * 	Called when our buddy send an audible to us.
+ * Params:
+ * 	id   - the id that identifies the server connection
+ *  url  - the URL to the calendar reminder
+ * 	type - type of request?
+ *  msg  - string/description 
+ *  svc  - service?
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_calendar)(int id, const char *url, int type, const char *msg, int svc);
+
 
 
 

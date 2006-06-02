@@ -1158,6 +1158,14 @@ void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *
 	ext_yahoo_got_im(id, (char*)me, (char*)who, z, 0, 0, 0, -1);
 }
 
+void ext_yahoo_got_calendar(int id, const char *url, int type, const char *msg, int svc)
+{
+	LOG(("[ext_yahoo_got_calendar] URL:%s type: %d msg: %s svc: %d", url, type, msg, svc));
+	
+	if (!YAHOO_ShowPopup( Translate("Calendar Reminder"), msg, url))
+		YAHOO_shownotification(Translate("Calendar Reminder"), msg, NIIF_INFO);
+}
+
 void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsigned int ts)
 {
 	int cksum = 0;
@@ -2243,6 +2251,7 @@ void register_callbacks()
 	yc.ext_yahoo_got_picture_upload = ext_yahoo_got_picture_upload;
 	yc.ext_yahoo_got_avatar_update = ext_yahoo_got_avatar_update;
 	yc.ext_yahoo_got_audible = ext_yahoo_got_audible;
+	yc.ext_yahoo_got_calendar = ext_yahoo_got_calendar;
 	
 	yahoo_register_callbacks(&yc);
 	

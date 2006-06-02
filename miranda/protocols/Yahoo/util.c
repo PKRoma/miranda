@@ -122,6 +122,7 @@ LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM
 					char *szURL = (char *)PUGetPluginData( hWnd );
 					if ( szURL != NULL ) {
 						YahooOpenURL(szURL, 1);
+						FREE(szURL);
 					}
 					
 					PUDeletePopUp( hWnd );
@@ -155,8 +156,13 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, const char
 	ppd.PluginWindowProc = ( WNDPROC )PopupWindowProc;
 
 	if (szURL != NULL) {
-		ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_INBOX ));
-		ppd.PluginData =  (void *)szURL;
+		if (lstrcmpi(szURL, "http://mail.yahoo.com") == 0) {
+			ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_INBOX ));
+		} else {
+			ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_CALENDAR ));
+		}
+		
+		ppd.PluginData =  (void *)strdup( szURL );
 	} else {
 		ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_MAIN ));
 	}

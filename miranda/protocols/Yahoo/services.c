@@ -1009,6 +1009,8 @@ void YahooOpenURL(const char *url, int autoLogin)
 		_snprintf( tUrl, sizeof( tUrl ), url );
 	}
 
+	YAHOO_DebugLog("[YahooOpenURL] url: %s Final URL: %s", url, tUrl);
+	
 	CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );    
 }
 
