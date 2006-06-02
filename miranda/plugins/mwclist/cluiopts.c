@@ -163,6 +163,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 			{//===EXTRA Icons
 			CheckDlgButton(hwndDlg, IDC_EXTRA_PROTO, DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_PROTO",1) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_EXTRA_WEB, DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_WEB",1) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_EXTRA_EMAIL, DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_EMAIL",1) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_EXTRA_CELLULAR, DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_SMS",1) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_EXTRA_ADV1, DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV1",1) ? BST_CHECKED : BST_UNCHECKED);
@@ -295,6 +296,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					SendMessage(pcli->hwndContactTree,WM_SIZE,0,0);	//forces it to send a cln_listsizechanged
 					{
 						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_PROTO",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_PROTO));
+						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_WEB",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_WEB));
 						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_EMAIL",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_EMAIL));
 						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_SMS",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_CELLULAR));
 						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV1",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_ADV1));

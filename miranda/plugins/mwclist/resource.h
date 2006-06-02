@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
 #define IDC_AUTHICON                    1
@@ -123,7 +123,6 @@
 #define IDI_ICQC8                       276
 #define IDI_EMAIL                       277
 #define IDD_OPT_META_CLC                279
-#define IDD_DIALOG1                     280
 #define IDI_NEWGROUP                    282
 #define IDI_NEWGROUP2                   282
 #define IDI_CLIENTTRILLIAN              298
@@ -252,6 +251,7 @@
 #define IDC_EXTRA_ADV2                  1107
 #define IDC_BUILDTIME                   1108
 #define IDC_EXTRA_ADV1                  1108
+#define IDC_EXTRA_WEB                   1109
 #define IDC_NUMBER                      1113
 #define IDC_UIN                         1123
 #define IDC_TRANSPARENT                 1124
@@ -643,7 +643,7 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        347
