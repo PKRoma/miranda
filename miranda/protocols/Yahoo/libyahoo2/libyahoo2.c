@@ -1713,6 +1713,7 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 	int mobile = 0;
 	int cksum = 0;
 	int buddy_icon = -1;
+	long client_version = 0;
 	char *msg = NULL;
 	
 	for (l = pkt->hash; l; l = l->next) {
@@ -1730,26 +1731,47 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 				YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_OK, NULL);
 			}
 			break;
-		case 8: /* how many online buddies we have */
-			NOTICE(("key %d:%s", pair->key, pair->value));
-			break;
 		case 7: /* the current buddy */
 			if (name != NULL) {
-				YAHOO_CALLBACK(ext_yahoo_status_logon)(yd->client_id, name, state, msg, away, idle, mobile, cksum, buddy_icon);
+				YAHOO_CALLBACK(ext_yahoo_status_logon)(yd->client_id, name, state, msg, away, idle, mobile, cksum, buddy_icon, client_version);
 				msg = NULL;
-				cksum = state = away = idle = mobile = 0;
+				client_version = cksum = state = away = idle = mobile = 0;
 				buddy_icon = -1;
 			}
 			name = pair->value;
 			break;
+		case 8: /* how many online buddies we have */
+			NOTICE(("key %d:%s", pair->key, pair->value));
+			break;
 		case 10: /* state */
 			state = strtol(pair->value, NULL, 10);
+			break;
+		case 11: /* this is the buddy's session id */
+			NOTICE(("key %d:%s", pair->key, pair->value));
+			break;
+		case 13: /* bitmask, bit 0 = pager, bit 1 = chat, bit 2 = game */
+			if (strtol(pair->value, NULL, 10) == 0) {
+				YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, YAHOO_STATUS_OFFLINE, NULL, 1, 0, 0);
+				name = NULL;
+				break;
+			}
+			break;
+		case 16: /* Custom error message */
+			YAHOO_CALLBACK(ext_yahoo_error)(yd->client_id, pair->value, 0, E_CUSTOM);
+			break;
+		case 17: /* in chat? */
 			break;
 		case 19: /* custom status message */
 			msg = pair->value;
 			break;
 		case 47: /* is it an away message or not */
 			away = atoi(pair->value);
+			break;
+		case 60: /* SMS -> 1 MOBILE USER */
+			/* sometimes going offline makes this 2, but invisible never sends it */
+			NOTICE(("key %d:%s", pair->key, pair->value));
+			if (atoi(pair->value) > 0 )
+				mobile = 1;
 			break;
 		case 137: /* seconds idle */
 			idle = atoi(pair->value);
@@ -1759,39 +1781,23 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 				since we don't have idle w/o time :( */
 			idle = 0;
 			break;
-		case 11: /* this is the buddy's session id */
-			NOTICE(("key %d:%s", pair->key, pair->value));
-			break;
-		case 17: /* in chat? */
-			break;
-		case 13: /* bitmask, bit 0 = pager, bit 1 = chat, bit 2 = game */
-			if (strtol(pair->value, NULL, 10) == 0) {
-				YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, YAHOO_STATUS_OFFLINE, NULL, 1, 0, 0);
-				name = NULL;
-				break;
-			}
-			break;
-		case 60: /* SMS -> 1 MOBILE USER */
-			/* sometimes going offline makes this 2, but invisible never sends it */
-			NOTICE(("key %d:%s", pair->key, pair->value));
-			if (atoi(pair->value) > 0 )
-				mobile = 1;
-			break;
-		case 16: /* Custom error message */
-			YAHOO_CALLBACK(ext_yahoo_error)(yd->client_id, pair->value, 0, E_CUSTOM);
-			break;
-			
+
 		case 192: /* Pictures aka BuddyIcon  checksum*/
 			cksum = strtol(pair->value, NULL, 10);
+			break;
+
+		case 197: /* avatar base64 encodded [Ignored by Gaim?] */
+			/*avatar = pair->value;*/
 			break;
 
 		case 213: /* Pictures aka BuddyIcon  type 0-none, 1-avatar, 2-picture*/
 			buddy_icon = strtol(pair->value, NULL, 10);
 			break;
-			
-		case 197: /* avatar base64 encodded [Ignored by Gaim?] */
-			/*avatar = pair->value;*/
+	
+		case 244: /* client version number. Yahoo Client Detection */
+			client_version = strtol(pair->value, NULL, 10);
 			break;
+			
 		default:
 			WARNING(("unknown status key %d:%s", pair->key, pair->value));
 			break;
@@ -1799,7 +1805,7 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 	}
 	
 	if (name != NULL) 
-		YAHOO_CALLBACK(ext_yahoo_status_logon)(yd->client_id, name, state, msg, away, idle, mobile, cksum, buddy_icon);
+		YAHOO_CALLBACK(ext_yahoo_status_logon)(yd->client_id, name, state, msg, away, idle, mobile, cksum, buddy_icon, client_version);
 	
 }
 

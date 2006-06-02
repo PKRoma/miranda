@@ -188,8 +188,9 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_ping)(int id, const char *errormsg);
  *  mobile - this is set for mobile users/buddies
  *  cksum - picture checksum [avatar support]
  *  buddy_icon - avatar type 
+ *  client_version - client version # (Yahoo sends some long numbers for different clients)
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_status_logon)(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_status_logon)(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon, long client_version);
 
 /*
  * Name: ext_yahoo_status_changed

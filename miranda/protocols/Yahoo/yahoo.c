@@ -752,6 +752,8 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 		DBDeleteContactSetting(hContact, "CList", "StatusMsg" );
 	}
 
+	if (stat == YAHOO_STATUS_OFFLINE)
+		DBDeleteContactSetting(hContact, yahooProtocolName, "MirVer" );
 	
 	if ( (away == 2) || (stat == YAHOO_STATUS_IDLE) || (idle > 0)) {
 		if (stat > 0) {
@@ -767,11 +769,12 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	LOG(("[ext_yahoo_status_changed] exiting"));
 }
 
-void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon)
+void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon, long client_version)
 {
 	HANDLE 	hContact = 0;
+	char 	*s = NULL;
 	
-	YAHOO_DebugLog("[ext_yahoo_status_logon] %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d)", who, msg, stat, away, idle, cksum, buddy_icon);
+	YAHOO_DebugLog("[ext_yahoo_status_logon] %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d client_version: %ld)", who, msg, stat, away, idle, cksum, buddy_icon, client_version);
 	
 	ext_yahoo_status_changed(id, who, stat, msg, away, idle, mobile);
 	hContact = getbuddyH(who);
@@ -780,6 +783,15 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 		return;
 	} 
 	
+	switch (client_version) {
+		case 262655: s = "< Yahoo 6.x (Yahoo 5.x?)"; break;
+		case 278527: s = "Yahoo 6.x"; break;
+		case 524223: s = "Yahoo 7.x"; break;
+	}
+	
+	if (s != NULL) 
+		DBWriteContactSettingString( hContact, yahooProtocolName, "MirVer", s);
+		
 	/* Last thing check the checksum and request new one if we need to */
 	if (buddy_icon == -1) {
 		LOG(("[ext_yahoo_status_logon] No avatar information in this packet? Not touching stuff!"));
