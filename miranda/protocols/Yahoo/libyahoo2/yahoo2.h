@@ -197,7 +197,7 @@ const char  * yahoo_get_profile_url( void );
 
 void yahoo_request_buddy_avatar(int id, const char *buddy);
 void yahoo_send_picture_checksum(int id, const char* who, int cksum);
-void yahoo_send_picture_info(int id, const char *who, const char *pic_url, int cksum);
+void yahoo_send_picture_info(int id, const char *who, int type, const char *pic_url, int cksum);
 void yahoo_send_avatar_update(int id, int buddy_icon);
 void yahoo_send_picture_update(int id, const char *who, int type);
 

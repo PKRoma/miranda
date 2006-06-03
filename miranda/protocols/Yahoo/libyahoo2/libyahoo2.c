@@ -3017,7 +3017,7 @@ static void yahoo_process_picture(struct yahoo_input_data *yid, struct yahoo_pac
 	YAHOO_CALLBACK(ext_yahoo_got_picture)(yid->yd->client_id, me, who, pic_url, cksum, type);
 }
 
-void yahoo_send_picture_info(int id, const char *who, const char *pic_url, int cksum)
+void yahoo_send_picture_info(int id, const char *who, int type, const char *pic_url, int cksum)
 {
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
@@ -3033,7 +3033,10 @@ void yahoo_send_picture_info(int id, const char *who, const char *pic_url, int c
 	yahoo_packet_hash(pkt, 1, yd->user);
 	//yahoo_packet_hash(pkt, 4, yd->user);
 	yahoo_packet_hash(pkt, 5, who);
-	yahoo_packet_hash(pkt, 13, "2");
+	
+	snprintf(buf, sizeof(buf), "%d", type); // 2 info, 3 invalidate
+	yahoo_packet_hash(pkt, 13, buf);
+	
 	yahoo_packet_hash(pkt, 20, pic_url);
 	
 	snprintf(buf, sizeof(buf), "%d", cksum);
