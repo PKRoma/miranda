@@ -834,8 +834,14 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 		
 	LOG(("Getting file: %s size: %lu fd: %d error: %d", filename, size, fd, error));
 	
-	if (!size || fd <= 0) /* empty file or some file loading error. don't crash! */
+	if (!size || fd <= 0) {/* empty file or some file loading error. don't crash! */
         error = 1;
+		// we need to notify that there's something wrong?
+		if (!size) {
+			// make sure it's a real problem and not a problem w/ our connection
+			yahoo_send_picture_info(id, avt->who, 3, avt->pic_url, avt->cksum);
+		}
+	}
     
 	if (!error) {
 		pBuff = malloc(size);
@@ -872,7 +878,7 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	
 	if (fd > 0) {
 		//LOG(("Before Netlib_CloseHandle! Handle: %d", fd));
-	Netlib_CloseHandle((HANDLE)fd);
+		Netlib_CloseHandle((HANDLE)fd);
 		//LOG(("After Netlib_CloseHandle!"));
 	}
 	
@@ -982,82 +988,123 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 	
 		1 - Send Avatar Info
 		2 - Got Avatar Info
-		3 - YIM6 didn't like my avatar?
+		3 - YIM6 didn't like my avatar? Expired? We need to invalidate and re-load
 	 */
-	if (type == 1) {
-		int cksum=0;
-		DBVARIANT dbv;
+	switch (type) {
+	case 1: 
+		{
+			int cksum=0;
+			DBVARIANT dbv;
+			
+			/* need to send avatar info */
+			if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+				LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
+				yahoo_send_picture_update(id, who, 0); // no avatar (disabled)
+				return;
+			}
 		
-		/* need to send avatar info */
-		if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
-			LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
-			yahoo_send_picture_update(id, who, 0); // no avatar (disabled)
-			return;
+			LOG(("[ext_yahoo_got_picture] Getting ready to send info!"));
+			/* need to read CheckSum */
+			cksum = YAHOO_GetDword("AvatarHash", 0);
+			if (cksum) {
+				LOG(("[ext_yahoo_got_picture] URL Expiration Check. Now: %ld Expires: %ld", time(NULL), YAHOO_GetDword("AvatarTS",0)));
+				if (time(NULL) >= YAHOO_GetDword("AvatarTS",0) && !DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
+					LOG(("[ext_yahoo_got_picture] Expired. Re-uploading"));
+					YAHOO_SendAvatar(dbv.pszVal);
+					DBFreeVariant(&dbv);
+				}
+				
+				if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)) {
+					LOG(("[ext_yahoo_got_picture] Sending url:%s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
+					//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
+					yahoo_send_picture_info(id, who, 2, dbv.pszVal, cksum);
+					DBFreeVariant(&dbv);
+				}
+			}
 		}
-	
-		LOG(("[ext_yahoo_got_picture] Getting ready to send info!"));
-		/* need to read CheckSum */
-		cksum = YAHOO_GetDword("AvatarHash", 0);
-		if (cksum) {
-			LOG(("[ext_yahoo_got_picture] URL Expiration Check. Now: %ld Expires: %ld", time(NULL), YAHOO_GetDword("AvatarTS",0)));
-			if (time(NULL) >= YAHOO_GetDword("AvatarTS",0) && !DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
-				LOG(("[ext_yahoo_got_picture] Expired. Re-uploading"));
-				YAHOO_SendAvatar(dbv.pszVal);
-				DBFreeVariant(&dbv);
+		break;
+	case 2: /*
+		     * We got Avatar Info for our buddy. 
+		     */
+			if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+				LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
+				return;
+			}
+		
+			/* got avatar info, so set miranda up */
+			hContact = getbuddyH(who);
+			
+			if (!hContact) {
+				LOG(("[ext_yahoo_got_picture] Buddy not on my buddy list?."));
+				return;
 			}
 			
-			if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)) {
-				LOG(("[ext_yahoo_got_picture] Sending url:%s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
-				//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
-				yahoo_send_picture_info(id, who, dbv.pszVal, cksum);
-				DBFreeVariant(&dbv);
+			if (!cksum || cksum == -1) {
+				LOG(("[ext_yahoo_got_picture] Resetting avatar."));
+				yahoo_reset_avatar(hContact, 0);
+				ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
+			} else {
+				char z[1024];
+				
+				if (pic_url == NULL) {
+					LOG(("[ext_yahoo_got_picture] WARNING: Empty URL for avatar?"));
+					return;
+				}
+				
+				GetAvatarFileName(hContact, z, 1024, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
+				
+				if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum || _access( z, 0 ) != 0 ) {
+					struct avatar_info *avt;
+					
+					YAHOO_DebugLog("[ext_yahoo_got_picture] Checksums don't match or avatar file is missing. Current: %d, New: %d",(int)DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum);
+					avt = malloc(sizeof(struct avatar_info));
+					avt->who = _strdup(who);
+					avt->pic_url = _strdup(pic_url);
+					avt->cksum = cksum;
+					
+					pthread_create(yahoo_recv_avatarthread, (void *) avt);
+				}
 			}
-		}
-		return;
-	} if (type != 2) {
-		LOG(("[ext_yahoo_got_picture] Unknown request/packet type exiting!"));
-		return;
-	}
-	
-	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
-		LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
-		return;
-	}
 
-	/* got avatar info, so set miranda up */
-	hContact = getbuddyH(who);
-	
-	if (!hContact) {
-		LOG(("[ext_yahoo_got_picture] Buddy not on my buddy list?."));
-		return;
+		break;
+	case 3: 
+		/*
+		 * Our Avatar is not good anymore? Need to re-upload??
+		 */
+		 /* who, pic_url, cksum */
+		{
+			int mcksum=0;
+			DBVARIANT dbv;
+			
+			/* need to send avatar info */
+			if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+				LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
+				yahoo_send_picture_update(id, who, 0); // no avatar (disabled)
+				return;
+			}
+		
+			//LOG(("[ext_yahoo_got_picture] Getting ready to send info!"));
+			/* need to read CheckSum */
+			mcksum = YAHOO_GetDword("AvatarHash", 0);
+			if (mcksum == cksum && !DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)
+				&& lstrcmpi(pic_url, dbv.pszVal)) {
+					LOG(("[ext_yahoo_got_picture] Buddy: %s told us this is bad??Expired??. Re-uploading", who));
+					DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarURL");
+					DBFreeVariant(&dbv);
+					
+					if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
+						YAHOO_SendAvatar(dbv.pszVal);
+					} else {
+						LOG(("[ext_yahoo_got_picture] No Local Avatar File??? "));
+					}
+					
+			}
+		}
+		break;
+	default:
+		LOG(("[ext_yahoo_got_picture] Unknown request/packet type exiting!"));
 	}
 	
-	if (!cksum || cksum == -1) {
-		LOG(("[ext_yahoo_got_picture] Resetting avatar."));
-        yahoo_reset_avatar(hContact, 0);
-		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
-	} else {
-		char z[1024];
-		
-		if (pic_url == NULL) {
-			LOG(("[ext_yahoo_got_picture] WARNING: Empty URL for avatar?"));
-			return;
-		}
-		
-		GetAvatarFileName(hContact, z, 1024, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
-		
-		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum || _access( z, 0 ) != 0 ) {
-			struct avatar_info *avt;
-			
-			YAHOO_DebugLog("[ext_yahoo_got_picture] Checksums don't match or avatar file is missing. Current: %d, New: %d",(int)DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0), cksum);
-			avt = malloc(sizeof(struct avatar_info));
-			avt->who = _strdup(who);
-			avt->pic_url = _strdup(pic_url);
-			avt->cksum = cksum;
-			
-			pthread_create(yahoo_recv_avatarthread, (void *) avt);
-		}
-	}
 	LOG(("ext_yahoo_got_picture exiting"));
 }
 
