@@ -442,117 +442,109 @@ void upload_avt(int id, int fd, int error, void *data)
 	char buf[1024];
 	DWORD dw;
 	struct _stat statbuf;
+	HANDLE myhFile;
+	NETLIBSELECT nls;
 	
-	if (fd < 0) {
+	if (fd < 0 || error) {
 		LOG(("[get_fd] Connect Failed!"));
-		error = 1;
+		return;
 	}
 
-	if (_stat( sf->filename, &statbuf ) != 0 )
-		error = 1;
+	if (_stat( sf->filename, &statbuf ) != 0 ) {
+		LOG(("[get_fd] Error reading File information?!"));
+		return;
+	}
 	
-    if(!error) {
-		 HANDLE myhFile    = CreateFile(sf->filename,
-                                   GENERIC_READ,
-                                   FILE_SHARE_READ|FILE_SHARE_WRITE,
+    myhFile  = CreateFile(sf->filename,
+                          GENERIC_READ,
+                          FILE_SHARE_READ|FILE_SHARE_WRITE,
 			           NULL,
 			           OPEN_EXISTING,
 			           FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
 			           0);
 
+	if (myhFile ==INVALID_HANDLE_VALUE) {
+		LOG(("[get_fd] Can't open file for reading?!"));
+		return;
+	}
+	
+	//LOG(("proto: %s, hContact: %p", yahooProtocolName, sf->hContact));
+	nls.cbSize = sizeof(nls);
+	nls.dwTimeout = 10; // 1000 millis = 1 sec 
 
-		if(myhFile !=INVALID_HANDLE_VALUE) {
-			//LOG(("proto: %s, hContact: %p", yahooProtocolName, sf->hContact));
-			NETLIBSELECT nls;
-			
-			nls.cbSize = sizeof(nls);
-			nls.dwTimeout = 10; // 1000 millis = 1 sec 
+	nls.hReadConns[0] = (HANDLE)fd;
+	nls.hReadConns[1] = NULL;
+	nls.hWriteConns[0] = NULL;
+	nls.hExceptConns[0] = NULL;
 
-			nls.hReadConns[0] = (HANDLE)fd;
-			nls.hReadConns[1] = NULL;
-			nls.hWriteConns[0] = NULL;
-			nls.hExceptConns[0] = NULL;
-
-			LOG(("Sending file: %s", sf->filename));
-			
-			do {
-				//LOG(("Peeking..."));
-				//dw = Netlib_Recv((HANDLE)fd, buf, 1024, MSG_PEEK/*MSG_NODUMP*/);
-				dw = CallService(MS_NETLIB_SELECT, (WPARAM) 0, (LPARAM)&nls);
-				
-				//LOG(("Peeked: %ld bytes", dw));
-				if (dw > 0) {
-					dw = Netlib_Recv((HANDLE)fd, buf, 1024, 0);
-					LOG(("Got: %ld bytes", dw));
-					if (dw > 0 && rsize == 0) {
-						//parse the response code we expecting 200 OK here
-						if (strnicmp(buf,"HTTP/", 5) == 0) {
-							int z=8; // HTTP/1.0
-							
-							while (z < dw && buf[z] == ' ') z++;
-							
-							if (strnicmp(&buf[z],"200", 3) != 0) {
-								// we got a problem!!!!
-								sf->cancel = 1; //cancel things
-								LOG(("NOT A 200 OK response!!!"));
-							} else {
-								LOG(("200 OK response."));
-							}
-						}
-					} else if (dw == 0) {
-						//connection alive but all data received??
-						
-						LOG(("Connection read ready, but no data to read?"));
-						LOG(("Bytes read: %ld", rsize));
-						break;
-					} else if (dw < 0) {
-						LOG(("Connection closed?"));
-						LOG(("Bytes read: %ld", rsize));
-						break;
-					}
-					rsize +=dw;
-				} else if (dw < 0) {
-					// something went wrong
-					LOG(("Negative result? Connection closed?"));
+	LOG(("Sending file: %s", sf->filename));
+	
+	do {
+		dw = CallService(MS_NETLIB_SELECT, (WPARAM) 0, (LPARAM)&nls);
+		
+		if (dw > 0) {
+			dw = Netlib_Recv((HANDLE)fd, buf, 1024, 0);
+			LOG(("Got: %ld bytes", dw));
+			if (dw > 0 && rsize == 0) {
+				//parse the response code we expecting 200 OK here
+				if (strnicmp(buf,"HTTP/", 5) == 0) {
+					int z=8; // HTTP/1.0
 					
-					if (size >= statbuf.st_size) {
-						// done sending, just break the loop
-						break;
+					while (z < dw && buf[z] == ' ') z++;
+					
+					if (strnicmp(&buf[z],"200", 3) != 0) {
+						// we got a problem!!!!
+						sf->cancel = 1; //cancel things
+						LOG(("NOT A 200 OK response!!!"));
 					} else {
-						LOG(("Upload Failed. Receive error?"));
-						error = 1;
+						LOG(("200 OK response."));
 					}
 				}
-
-				if (size < statbuf.st_size) {
-					ReadFile(myhFile, buf, 1024, &dw, NULL);
 				
-					if (dw) {
-						//dw = send(fd, buf, dw, 0);
-						dw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
-						
-						if (dw < 1) {
-							LOG(("Upload Failed. Send error?"));
-							error = 1;
-							break;
-						}
-						
-						size += dw;
-					}
-				}
-					
-				if (sf->cancel) {
-					LOG(("Upload Cancelled! "));
+				rsize +=dw;
+			} else if (dw <= 0) {
+				LOG(("Connection closed? Bytes read: %ld", rsize));
+				error = 1; // make sure we exit!!!
+				break;
+			}
+			
+		} else if (dw < 0) {
+			// something went wrong
+			LOG(("Negative result? Connection closed?"));
+			
+			if (size < statbuf.st_size) {
+				LOG(("Upload Failed. Receive error?"));
+				error = 1;
+			}
+			break;
+		}
+
+		if (size < statbuf.st_size) {
+			ReadFile(myhFile, buf, 1024, &dw, NULL);
+		
+			if (dw) {
+				//dw = send(fd, buf, dw, 0);
+				dw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
+				
+				if (dw < 1) {
+					LOG(("Upload Failed. Send error?"));
 					error = 1;
 					break;
 				}
-			} while (dw >= 0 && !error);
-			
-			CloseHandle(myhFile);
+				
+				size += dw;
+			}
 		}
-    }	
-
-	//sf->state = FR_STATE_DONE;
+			
+		if (sf->cancel) {
+			LOG(("Upload Cancelled! "));
+			error = 1;
+			break;
+		}
+	} while (dw >= 0 && !error);
+	
+	CloseHandle(myhFile);
+	
     LOG(("File send complete!"));
 }
 
