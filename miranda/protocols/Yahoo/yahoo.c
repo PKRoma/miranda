@@ -2121,19 +2121,16 @@ int ext_yahoo_connect_async(int id, char *host, int port,
     
     res = ext_yahoo_connect(host, port);
 
-	//if(res >= 0 ) {
-		//LOG(("Connected fd: %d, error: %d", hServerConn, error));
-		
-		callback(res, (res > 0) ? 0 : 1, data);
-		return 0;
-	/*} else {
-		//close(servfd);
-		
-		return -1;
-	}*/
-
-    
-    
+	/*
+	 * need to call the callback so we could handle the failure condition!!!
+	 * fd = -1 in case of an error
+	 */
+	callback(res, 0, data);
+	
+	/*
+	 * Return proper thing: 0 - ok, -1 - failed, >0 - pending connect
+	 */
+	return (res <= 0) ? -1 : 0;
 }
 /*
  * Callback handling code ends here
