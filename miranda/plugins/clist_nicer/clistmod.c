@@ -224,15 +224,15 @@ int ShowHide(WPARAM wParam, LPARAM lParam)
 		int offScreen = 0;
 
 		SystemParametersInfo(SPI_GETWORKAREA, 0, &rcScreen, FALSE);
-		//ShowWindow(pcli->hwndContactList, SW_SHOW);
-		SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOREDRAW | SWP_NOSENDCHANGING);
+		SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOREDRAW | SWP_NOSENDCHANGING | SWP_NOCOPYBITS);
 		if (!DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT))
-			SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_NOSENDCHANGING);
+			SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_NOSENDCHANGING | SWP_NOCOPYBITS);
 		SetForegroundWindow(pcli->hwndContactList);
 		//SetActiveWindow(pcli->hwndContactList);
 		ShowWindow(pcli->hwndContactList, SW_SHOW);
 		DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
-		//this forces the window onto the visible screen
+
+        //this forces the window onto the visible screen
 		MyMonitorFromWindow = (HMONITOR(WINAPI *) (HWND, DWORD)) GetProcAddress(GetModuleHandleA("USER32"), "MonitorFromWindow");
 		GetWindowRect(pcli->hwndContactList, &rcWindow);
 		if (MyMonitorFromWindow) {

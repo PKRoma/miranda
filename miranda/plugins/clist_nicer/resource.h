@@ -207,8 +207,11 @@
 #define IDC_FILENAMES                   1057
 #define IDC_EXTRARESERVED2              1057
 #define IDC_FONTID                      1058
+#define IDC_EXTRARESERVED3              1058
 #define IDC_FONTSIZE                    1059
+#define IDC_EXTRARESERVED4              1059
 #define IDC_GENDER                      1060
+#define IDC_EXTRARESERVED5              1060
 #define IDC_CITY                        1061
 #define IDC_STATE                       1062
 #define IDC_COUNTRY                     1063

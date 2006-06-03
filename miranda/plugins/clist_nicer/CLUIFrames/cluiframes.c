@@ -2374,6 +2374,7 @@ RECT old_window_rect = {0}, new_window_rect = {0};
 int SizeFramesByWindowRect(RECT *r)
 {
     RECT nRect;
+    DWORD noSize = 0;
 
     if (FramesSysNotStarted)
         return -1;
@@ -2399,9 +2400,17 @@ int SizeFramesByWindowRect(RECT *r)
             dy=new_window_rect.top-old_window_rect.top;
             if (!Frames[i].floating) {
                 if (Frames[i].OwnerWindow && Frames[i].OwnerWindow != (HWND)-2) {
+                    /*
+                    if(Frames[i].wndSize.right - Frames[i].wndSize.left == Frames[i].oldWndSize.right - Frames[i].oldWndSize.left && 
+                       Frames[i].wndSize.bottom - Frames[i].wndSize.top == Frames[i].oldWndSize.bottom - Frames[i].oldWndSize.top)
+                        noSize = SWP_NOSIZE;
+                    else {
+                        noSize = 0;
+                        CopyRect(&Frames[i].oldWndSize, &Frames[i].wndSize);
+                    }*/
                     SetWindowPos(Frames[i].hWnd, NULL, Frames[i].wndSize.left + g_CluiData.bCLeft, Frames[i].wndSize.top + g_CluiData.topOffset,
                                  (Frames[i].wndSize.right - Frames[i].wndSize.left),
-                                 (Frames[i].wndSize.bottom - Frames[i].wndSize.top), SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOREDRAW | SWP_NOCOPYBITS);
+                                 (Frames[i].wndSize.bottom - Frames[i].wndSize.top), SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOREDRAW | SWP_NOCOPYBITS | noSize);
 
                     if (Frames[i].TitleBar.ShowTitleBar) {
                         SetWindowPos(Frames[i].TitleBar.hwnd, NULL, Frames[i].wndSize.left + g_CluiData.bCLeft, Frames[i].wndSize.top + g_CluiData.topOffset - TitleBarH,

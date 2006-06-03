@@ -89,7 +89,7 @@ typedef struct ContactFloater CONTACTFLOATER;
 struct ExtraCache {
 	BYTE iExtraImage[MAXEXTRACOLUMNS];
 	HANDLE hContact;
-	BYTE iExtraValid;
+	DWORD iExtraValid;
 	BYTE valid;
 	TCHAR *statusMsg;
 	BYTE bStatusMsgValid;
@@ -200,7 +200,7 @@ struct ClcData {
 	DWORD lastSort;
 	BOOL bNeedPaint, bisEmbedded, bHideSubcontacts;
 	DWORD lastRepaint;
-	BOOL forcePaint, forceScroll;
+	BOOL forceScroll;
 };
 
 #define CLUI_FRAME_SHOWTOPBUTTONS 1
@@ -582,6 +582,10 @@ int CoolSB_SetupScrollBar();
 #define EIMG_SHOW_EXTRA 16
 #define EIMG_SHOW_RESERVED2 32
 #define EIMG_SHOW_CLIENT 64
+#define EIMG_SHOW_RESERVED3 128
+#define EIMG_SHOW_RESERVED4 256
+#define EIMG_SHOW_RESERVED5 512
+#define EIMG_SHOW_RESERVED6 1024
 
 #define CLCHT_ONITEMEXTRAEX  0x1000  //on an extra icon, HIBYTE(HIWORD()) says which
 #define CLCHT_ONAVATAR       0x2000

@@ -304,14 +304,6 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
     return -1;
 }
 
-void UpdateIfLocked(HWND hwnd, struct ClcData *dat)
-{
-	if(g_isConnecting && dat->forceScroll) {
-		dat->forcePaint = TRUE;
-		UpdateWindow(hwnd);
-	}
-}
-
 void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 {
 	DWORD startTick, nowTick;
@@ -321,7 +313,6 @@ void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 
 	if (dat->iHotTrack != -1 && dat->yScroll != desty) {
 		pcli->pfnInvalidateItem(hwnd, dat, dat->iHotTrack);
-		UpdateIfLocked(hwnd, dat);
 		dat->iHotTrack = -1;
 		ReleaseCapture();
 	}
@@ -354,25 +345,18 @@ void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
                 CoolSB_SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
             else
                 SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
-			dat->forcePaint = TRUE;
 			UpdateWindow(hwnd);
 		}
 	}
 	dat->yScroll = desty;
 	if (dat->backgroundBmpUse & CLBF_SCROLL || dat->hBmpBackground == NULL) {
-		if(!noSmooth) {
+		if(!noSmooth)
 			ScrollWindowEx(hwnd, 0, previousy - dat->yScroll, NULL, NULL, NULL, NULL, SW_INVALIDATE);
-			UpdateIfLocked(hwnd, dat);
-		}
-		else {
+		else
 			InvalidateRect(hwnd, NULL, FALSE);
-			UpdateIfLocked(hwnd, dat);
-		}
 	}
-	else {
+	else
 		InvalidateRect(hwnd, NULL, FALSE);
-		UpdateIfLocked(hwnd, dat);
-	}
 
     if(g_CluiData.bSkinnedScrollbar && !dat->bisEmbedded)
         CoolSB_SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);

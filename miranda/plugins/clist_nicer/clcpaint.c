@@ -31,6 +31,7 @@ extern int g_curAvatar;
 
 extern struct ExtraCache *g_ExtraCache;
 extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
+extern ImageItem *g_glyphItem;
 
 extern int hClcProtoCount;
 extern ClcProtoStatus *clcProto;
@@ -40,6 +41,7 @@ static BYTE divide3[765] = {255};
 extern char *im_clients[];
 extern HICON im_clienthIcons[];
 extern HICON overlayicons[];
+
 #if defined(_UNICODE)
 extern TCHAR statusNames[12][124];
 #else
@@ -441,14 +443,38 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
     if(!item->IGNORED) {
         RECT rcFrame;
         BOOL inClCPaint_save = g_inCLCpaint;
+        HDC  hdcTemp = 0, hdcSaved = 0;
+        HBITMAP hbmOld, hbmTemp;
 
         g_inCLCpaint = FALSE;
-        rcFrame.left = rc->left - (g_RTL ? 1 : 0);
+        rcFrame.left = rc->left;
         rcFrame.top = y + topoffset - item->MARGIN_TOP;
         rcFrame.right = rcFrame.left + (int)newWidth + item->MARGIN_RIGHT + item->MARGIN_LEFT;
         rcFrame.bottom = rcFrame.top + (int)newHeight + item->MARGIN_BOTTOM + item->MARGIN_TOP;
-        DrawAlpha(hdcMem, &rcFrame, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-                  item->CORNER, item->BORDERSTYLE, item->imageItem);
+        if(g_RTL) {
+            RECT rcTemp;
+
+            OffsetRect(&rcFrame, 1, 0);
+            rcTemp.left = rcTemp.top = 0;
+            rcTemp.right = rcFrame.right - rcFrame.left;
+            rcTemp.bottom = rcFrame.bottom - rcFrame.top;
+            hdcTemp = CreateCompatibleDC(g_HDC);
+            hbmTemp = CreateCompatibleBitmap(g_HDC, rcTemp.right, rcTemp.bottom);
+            hbmOld = SelectObject(hdcTemp, hbmTemp);
+            pfnSetLayout(hdcTemp, LAYOUT_RTL);
+            BitBlt(hdcTemp, 0, 0, rcTemp.right, rcTemp.bottom,
+                   hdcMem, rcFrame.left, rcFrame.top, SRCCOPY);
+            pfnSetLayout(hdcTemp, 0);
+            DrawAlpha(hdcTemp, &rcTemp, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+                      item->CORNER, item->BORDERSTYLE, item->imageItem);
+            BitBlt(hdcMem, rcFrame.left, rcFrame.top, rcFrame.right - rcFrame.left, rcFrame.bottom - rcFrame.top,
+                   hdcTemp, 0, 0, SRCCOPY);
+            SelectObject(hdcTemp, hbmOld);
+            DeleteObject(hbmTemp);
+            DeleteDC(hdcTemp);
+        } else
+            DrawAlpha(hdcMem, &rcFrame, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+                      item->CORNER, item->BORDERSTYLE, item->imageItem);
         g_inCLCpaint = inClCPaint_save;
     }
     if(!gdiPlus) {
@@ -1023,9 +1049,9 @@ bgskipped:
 			contact->extraIconRightBegin = 0;
 			if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry && cEntry->iExtraValid) {
 				int i;
-				for(i = 6; i >= 0; i--) {
+				for(i = 9; i >= 0; i--) {
 					if(cEntry->iExtraImage[i] != 0xff && ((1 << i) & g_CluiData.dwExtraImageMask)) {
-						if(contact->extraIconRightBegin == 0 && i != 6)
+						if(contact->extraIconRightBegin == 0 && i != 9)
 							contact->extraIconRightBegin = rcContent.right;
 						ImageList_DrawEx(dat->himlExtraColumns, cEntry->iExtraImage[i], hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1), 
 							0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);

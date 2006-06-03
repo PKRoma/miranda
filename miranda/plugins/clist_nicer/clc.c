@@ -333,7 +333,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		SetWindowLong(hwnd, 0, (LONG) dat);
 
 		RowHeights_Initialize(dat);
-		dat->forcePaint = dat->forceScroll = 0;
+		dat->forceScroll = 0;
 		dat->lastRepaint = 0;
 		dat->himlExtraColumns = himlExtraImages;
 		dat->hwndParent = GetParent(hwnd);
@@ -722,13 +722,9 @@ LBL_Def:
 			PAINTSTRUCT ps;
 			hdc = BeginPaint(hwnd, &ps);
 			if (IsWindowVisible(hwnd) && !during_sizing && !g_shutDown) {
-                if(1) {
-				//if((g_isConnecting && GetTickCount() - dat->lastRepaint > 500) || !g_isConnecting || dat->forcePaint) {
-					PaintClc(hwnd, dat, hdc, &ps.rcPaint);
-					dat->bNeedPaint = FALSE;
-					dat->lastRepaint = GetTickCount();
-					dat->forcePaint = FALSE;
-				}
+                PaintClc(hwnd, dat, hdc, &ps.rcPaint);
+                dat->bNeedPaint = FALSE;
+                dat->lastRepaint = GetTickCount();
 			}
 			EndPaint(hwnd, &ps);
 			goto LBL_Def;
@@ -760,7 +756,6 @@ LBL_Def:
 			pcli->pfnHideInfoTip(hwnd, dat);
 			KillTimer(hwnd, TIMERID_RENAME);
 			KillTimer(hwnd, TIMERID_INFOTIP);
-			dat->forcePaint = TRUE;
 			dat->szQuickSearch[0] = 0;
 			dat->selection = HitTest(hwnd, dat, (short) LOWORD(lParam), (short) HIWORD(lParam), &contact, NULL, &hitFlags);
 			if(hitFlags & CLCHT_ONITEMEXTRAEX && hwnd == pcli->hwndContactTree && contact != 0) {

@@ -241,7 +241,7 @@ static int FS_FontsChanged(WPARAM wParam, LPARAM lParam)
 * last frame of all.
 */
 
-int PreCreateCLC(HWND parent)
+static int PreCreateCLC(HWND parent)
 {
 	pcli->hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,_T(""),
 		WS_CHILD|CLS_CONTACTLIST
@@ -260,7 +260,7 @@ int PreCreateCLC(HWND parent)
 * create internal frames, including the last frame (actual CLC control)
 */
 
-int CreateCLC(HWND parent)
+static int CreateCLC(HWND parent)
 {
 	CallService(MS_CLIST_SETHIDEOFFLINE,(WPARAM)oldhideoffline,0);
 	//lastreqh=0;

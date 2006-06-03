@@ -108,6 +108,9 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			CheckDlgButton(hwndDlg, IDC_EXTRAPHONE, g_CluiData.dwExtraImageMask & EIMG_SHOW_SMS);
 			CheckDlgButton(hwndDlg, IDC_EXTRARESERVED, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED);
 			CheckDlgButton(hwndDlg, IDC_EXTRARESERVED2, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED2);
+            CheckDlgButton(hwndDlg, IDC_EXTRARESERVED3, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED3);
+            CheckDlgButton(hwndDlg, IDC_EXTRARESERVED4, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED4);
+            CheckDlgButton(hwndDlg, IDC_EXTRARESERVED5, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED5);
 
 			CheckDlgButton(hwndDlg, IDC_BRINGTOFRONT, DBGetContactSettingByte(NULL, "CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
@@ -296,7 +299,10 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					(IsDlgButtonChecked(hwndDlg, IDC_EXTRAPHONE) ? EIMG_SHOW_SMS : 0) |
 					(IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED) ? EIMG_SHOW_RESERVED : 0) |
 					(IsDlgButtonChecked(hwndDlg, IDC_SHOWCLIENTICONS) ? EIMG_SHOW_CLIENT : 0) |
-					(IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED2) ? EIMG_SHOW_RESERVED2 : 0);
+					(IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED2) ? EIMG_SHOW_RESERVED2 : 0) |
+                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED3) ? EIMG_SHOW_RESERVED3 : 0) |
+                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED4) ? EIMG_SHOW_RESERVED4 : 0) |
+                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED5) ? EIMG_SHOW_RESERVED5 : 0);
 
 				g_CluiData.bClipBorder = (BYTE)GetDlgItemInt(hwndDlg, IDC_CLIPBORDER, &translated, FALSE);
 
@@ -747,7 +753,7 @@ DWORD GetCLUIWindowStyle(BYTE style)
 
 void ApplyCLUIBorderStyle(HWND hwnd)
 {
-	BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
+    BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
 	WINDOWPLACEMENT p;
 
 	p.length = sizeof(p);

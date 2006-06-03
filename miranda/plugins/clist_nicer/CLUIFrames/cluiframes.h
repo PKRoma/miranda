@@ -79,6 +79,7 @@ typedef struct {
     int id;
     HWND hWnd ;
     RECT wndSize;
+    RECT oldWndSize;
     char *name;
     int align;
     int height;
