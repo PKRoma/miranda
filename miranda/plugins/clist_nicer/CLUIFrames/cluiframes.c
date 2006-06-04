@@ -1843,12 +1843,13 @@ static LRESULT CALLBACK FramesSubClassProc(HWND hwnd, UINT msg, WPARAM wParam, L
         case WM_NCPAINT:
             {
                 return FrameNCPaint(hwnd, oldWndProc ? oldWndProc : DefWindowProc, wParam, lParam, hasTitleBar);
-                break;
             }
         case WM_NCCALCSIZE:
             {
                 return FrameNCCalcSize(hwnd, oldWndProc, wParam, lParam, hasTitleBar);
             }
+        case WM_PRINTCLIENT:
+            return 0;
         default:
             break;
     }
