@@ -74,6 +74,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "jabber_xml.h"
 #include "jabber_byte.h"
 
+#if !defined(OPENFILENAME_SIZE_VERSION_400)
+	#define OPENFILENAME_SIZE_VERSION_400 sizeof(OPENFILENAME)
+#endif
+
 /*******************************************************************
  * Global constants
  *******************************************************************/

@@ -39,7 +39,7 @@ int __stdcall JabberEnterBitmapName( char* szDest )
 
 	char str[ MAX_PATH ]; str[0] = 0;
 	OPENFILENAMEA ofn = {0};
-	ofn.lStructSize = sizeof( OPENFILENAME );
+	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 	ofn.lpstrFilter = szFilter;
 	ofn.lpstrFile = szDest;
 	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
