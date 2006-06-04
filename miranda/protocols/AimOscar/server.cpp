@@ -623,8 +623,8 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0
 						wchar_t* stripped_wch;
 						if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0))
 						{
-							html_to_bbcodes(wch);
-							stripped_wch=strip_html(wch);
+							wchar_t* bbmsg=html_to_bbcodes(wch);
+							stripped_wch=strip_html(bbmsg);
 						}
 						else
 							stripped_wch=strip_html(wch);
@@ -643,8 +643,9 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0
 					{
 						if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0))
 						{
-							html_to_bbcodes(msg);
-							msg_buf=strip_html(msg);
+							char* bbmsg=html_to_bbcodes(msg);
+							msg_buf=strip_html(bbmsg);
+							delete[] bbmsg;
 						}
 						else
 							msg_buf=strip_html(msg);

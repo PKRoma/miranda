@@ -152,8 +152,8 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		}
 	}
 
-	unsigned short timer=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, -1);
-	if(timer==-1||timer>0xffff||timer<15)
+	unsigned long timer=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, 0);
+	if(timer>0xffff||timer<15)
 		DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_OPT_INITIALISE, OptionsInit);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_USERINFO_INITIALISE, UserInfoInit);
