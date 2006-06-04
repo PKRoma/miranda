@@ -1268,6 +1268,9 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
+				RelativePath=".\icos\add2roster.ico">
+			</File>
+			<File
 				RelativePath="icos\addcontact.ico">
 			</File>
 			<File
@@ -1320,6 +1323,9 @@
 			</File>
 			<File
 				RelativePath="icos\save.ico">
+			</File>
+			<File
+				RelativePath=".\icos\user2room.ico">
 			</File>
 			<File
 				RelativePath=".\version.rc">

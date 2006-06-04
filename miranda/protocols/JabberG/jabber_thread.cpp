@@ -207,11 +207,11 @@ LBL_Exit:
 		else _tcscpy( info->resource, _T("Miranda"));
 
 		TCHAR jidStr[128];
-		mir_sntprintf( jidStr, SIZEOF( jidStr ), _T("%s@%s/%s"), info->username, info->server, info->resource );
+		mir_sntprintf( jidStr, SIZEOF( jidStr ), _T("%s@") _T(TCHAR_STR_PARAM) _T("/%s"), info->username, info->server, info->resource );
 		_tcsncpy( info->fullJID, jidStr, SIZEOF( info->fullJID )-1 );
 
 		if ( JGetByte( "SavePassword", TRUE ) == FALSE ) {
-			mir_sntprintf( jidStr, SIZEOF( jidStr ), _T("%s@%s"), info->username, info->server );
+			mir_sntprintf( jidStr, SIZEOF( jidStr ), _T("%s@") _T(TCHAR_STR_PARAM), info->username, info->server );
 
 			// Ugly hack: continue logging on only the return value is &( onlinePassword[0] )
 			// because if WM_QUIT while dialog box is still visible, p is returned with some
