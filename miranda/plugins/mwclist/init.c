@@ -172,7 +172,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 		pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 		if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
-			MessageBoxA( NULL, "This version of plugin requires Miranda 0.4.3 bld#42 or later", "Fatal error", MB_OK );
+			MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.5 or later", "Fatal error", MB_OK );
 			return 1;
 		}
 		pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;

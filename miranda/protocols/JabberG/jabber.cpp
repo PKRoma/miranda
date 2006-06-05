@@ -248,7 +248,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	// set the lists manager;
 	li.cbSize = sizeof( li );
 	if ( CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li) == CALLSERVICE_NOTFOUND ) {
-		MessageBoxA( NULL, "This version of plugin requires Miranda 0.4.3 bld#42 or later", "Fatal error", MB_OK );
+		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.5 or later", "Fatal error", MB_OK );
 		return 1;
 	}
 
