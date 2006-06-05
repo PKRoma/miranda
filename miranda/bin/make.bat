@@ -113,8 +113,8 @@ echo // Version                                                                 
 echo //                                                                            >>..\src\version.rc
 echo.                                                                              >>..\src\version.rc
 echo VS_VERSION_INFO VERSIONINFO                                                   >>..\src\version.rc
-echo  FILEVERSION 0,4,3,%2                                                         >>..\src\version.rc
-echo  PRODUCTVERSION 0,4,3,%2                                                      >>..\src\version.rc
+echo  FILEVERSION 0,6,0,%2                                                         >>..\src\version.rc
+echo  PRODUCTVERSION 0,6,0,%2                                                      >>..\src\version.rc
 echo  FILEFLAGSMASK 0x3fL                                                          >>..\src\version.rc
 echo #ifdef _DEBUG                                                                 >>..\src\version.rc
 echo  FILEFLAGS 0x1L                                                               >>..\src\version.rc
@@ -132,14 +132,14 @@ echo         BEGIN                                                              
 echo             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0" >>..\src\version.rc
 echo             VALUE "CompanyName", " \0"                                        >>..\src\version.rc
 echo             VALUE "FileDescription", "Miranda IM\0"                           >>..\src\version.rc
-echo             VALUE "FileVersion", "0.4.3 alpha build #%2\0"                    >>..\src\version.rc
+echo             VALUE "FileVersion", "0.6 alpha build #%2\0"                    >>..\src\version.rc
 echo             VALUE "InternalName", "miranda32\0"                               >>..\src\version.rc
 echo             VALUE "LegalCopyright", "Copyright © 2000-2005 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim\0" >>..\src\version.rc
 echo             VALUE "LegalTrademarks", "\0"                                     >>..\src\version.rc
 echo             VALUE "OriginalFilename", "miranda32.exe\0"                       >>..\src\version.rc
 echo             VALUE "PrivateBuild", "\0"                                        >>..\src\version.rc
 echo             VALUE "ProductName", "Miranda IM\0"                               >>..\src\version.rc
-echo             VALUE "ProductVersion", "0.4.3 alpha build #%2\0"                 >>..\src\version.rc
+echo             VALUE "ProductVersion", "0.6 alpha build #%2\0"                 >>..\src\version.rc
 echo             VALUE "SpecialBuild", "\0"                                        >>..\src\version.rc
 echo         END                                                                   >>..\src\version.rc
 echo     END                                                                       >>..\src\version.rc
@@ -163,10 +163,10 @@ echo           ^<link^>http://files.miranda-im.org/builds/^</link^>             
 echo           ^<language^>en-us^</language^>                                      >>%temp%\index.xml
 echo           ^<lastBuildDate^>%yy%-%mm%-%dd% %hh%:%mn%^</lastBuildDate^>         >>%temp%\index.xml
 echo           ^<item^>                                                            >>%temp%\index.xml
-echo                ^<title^>Miranda 0.4.3.0 alpha %2^</title^>                    >>%temp%\index.xml
+echo                ^<title^>Miranda 0.6.0.0 alpha %2^</title^>                    >>%temp%\index.xml
 echo 			   ^<link^>http://files.miranda-im.org/builds/?%yy%%mm%%dd%%hh%%mn%^</link^> >>%temp%\index.xml
 echo                ^<description^>                                                >>%temp%\index.xml
-echo                     Miranda 0.4.3.0 alpha %2 is now available at http://files.miranda-im.org/builds/miranda-v%1a%2.zip >>%temp%\index.xml
+echo                     Miranda 0.6.0.0 alpha %2 is now available at http://files.miranda-im.org/builds/miranda-v%1a%2.zip >>%temp%\index.xml
 echo                ^</description^>                                               >>%temp%\index.xml
 echo                ^<pubDate^>%yy%-%mm%-%dd% %hh%:%mn%^</pubDate^>                 >>%temp%\index.xml
 echo                ^<category^>Nightly Builds</category^>                         >>%temp%\index.xml

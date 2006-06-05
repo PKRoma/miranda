@@ -341,7 +341,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
 LBL_Error:
-		MessageBoxA( NULL, "This version of plugin requires Miranda 0.4.3 bld#49 or later", "Fatal error", MB_OK );
+		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.5 or later", "Fatal error", MB_OK );
 		return 1;
 	}
 	if ( pcli->version < 3 ) // don't join it with the previous if()
