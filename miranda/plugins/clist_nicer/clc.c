@@ -37,6 +37,7 @@ extern struct ClcData *g_clcData;
 extern HPEN g_hPenCLUIFrames;
 extern HANDLE hExtraImageApplying;
 extern wndFrame *wndFrameCLC;
+extern ButtonItem *g_ButtonItems;
 
 extern pfnDrawAlpha pDrawAlpha;
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
@@ -695,27 +696,6 @@ LBL_Def:
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)(contact ? contact->hContact : 0));
 			goto LBL_Def;
 		}
-		/*
-	case INTM_CLIENTCHANGED:
-		{
-			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
-			char *szProto;
-			struct ClcContact *contact = NULL;
-			DBVARIANT dbv = {0};
-
-			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
-				break;
-			szProto = (char*)cws->szModule;
-			if (szProto == NULL)
-				break;
-			if (!DBGetContactSetting((HANDLE) wParam, szProto, "MirVer", &dbv)) {
-				if (dbv.type == DBVT_ASCIIZ && dbv.pszVal != NULL && lstrlenA(dbv.pszVal) > 1)
-					GetClientID(contact, dbv.pszVal);
-				DBFreeVariant(&dbv);
-			}
-			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
-			goto LBL_Def;
-		}*/
 	case WM_PAINT:
 		{
 			HDC hdc;
@@ -727,6 +707,10 @@ LBL_Def:
                 dat->lastRepaint = GetTickCount();
 			}
 			EndPaint(hwnd, &ps);
+            if(dat->selection != dat->oldSelection && !dat->bisEmbedded && g_ButtonItems != NULL) {
+                SetDBButtonStates(0);
+                dat->oldSelection = dat->selection;
+            }
 			goto LBL_Def;
 		}
 

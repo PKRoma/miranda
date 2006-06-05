@@ -1663,6 +1663,63 @@ static void BTN_ReadItem(char *itemName, char *file)
             tmpItem.uId = nextButtonID++;
         }
     }
+    else if(!stricmp(szBuffer, "database")) {
+        int n;
+
+        GetPrivateProfileStringA(itemName, "Module", "None", szBuffer, 1000, file);
+        if(stricmp(szBuffer, "None"))
+            mir_snprintf(tmpItem.szModule, 256, "%s", szBuffer);
+        GetPrivateProfileStringA(itemName, "Setting", "None", szBuffer, 1000, file);
+        if(stricmp(szBuffer, "None"))
+            mir_snprintf(tmpItem.szSetting, 256, "%s", szBuffer);
+        if(GetPrivateProfileIntA(itemName, "contact", 0, file) != 0)
+           tmpItem.dwFlags |= BUTTON_DBACTIONONCONTACT;
+
+        for(n = 0; n <= 1; n++) {
+            char szKey[20];
+            BYTE *pValue;
+
+            strcpy(szKey, n == 0 ? "dbonpush" : "dbonrelease");
+            pValue = (n == 0 ? tmpItem.bValuePush : tmpItem.bValueRelease);
+
+            GetPrivateProfileStringA(itemName, szKey, "None", szBuffer, 1000, file);
+            switch(szBuffer[0]) {
+                case 'b':
+                {
+                    BYTE value = (BYTE)atol(&szBuffer[1]);
+                    pValue[0] = value;
+                    tmpItem.type = DBVT_BYTE;
+                    break;
+                }
+                case 'w':
+                {
+                    WORD value = (WORD)atol(&szBuffer[1]);
+                    *((WORD *)&pValue[0]) = value;
+                    tmpItem.type = DBVT_WORD;
+                    break;
+                }
+                case 'd':
+                {
+                    DWORD value = (DWORD)atol(&szBuffer[1]);
+                    *((DWORD *)&pValue[0]) = value;
+                    tmpItem.type = DBVT_DWORD;
+                    break;
+                }
+                case 's':
+                {
+                    mir_snprintf((char *)pValue, 256, &szBuffer[1]);
+                    tmpItem.type = DBVT_ASCIIZ;
+                    break;
+                }
+            }
+        }
+        if(tmpItem.szModule[0] && tmpItem.szSetting[0]) {
+            tmpItem.dwFlags |= BUTTON_ISDBACTION;
+            if(tmpItem.szModule[0] == '$' && (tmpItem.szModule[1] == 'c' || tmpItem.szModule[1] == 'C'))
+                tmpItem.dwFlags |= BUTTON_ISCONTACTDBACTION;
+            tmpItem.uId = nextButtonID++;
+        }
+    }
     else if(stricmp(szBuffer, "Custom")) {
         int i = 0;
 

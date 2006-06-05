@@ -71,6 +71,7 @@ int CLUIFrameResizeFloatingFrame(int framepos);
 extern int ProcessCommandProxy(WPARAM wParam,LPARAM lParam);
 extern int InitFramesMenus(void);
 extern int UnitFramesMenu();
+static int CLUIFramesReSort();
 
 boolean FramesSysNotStarted=TRUE;
 HPEN g_hPenCLUIFrames = 0;
@@ -1862,7 +1863,7 @@ static LRESULT CALLBACK FramesSubClassProc(HWND hwnd, UINT msg, WPARAM wParam, L
  * re-sort all frames and correct frame ordering
  */
 
-int CLUIFramesReSort()
+static int CLUIFramesReSort()
 {
     int v = 0, i;
 	int order = 1;

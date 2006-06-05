@@ -201,6 +201,7 @@ struct ClcData {
 	BOOL bNeedPaint, bisEmbedded, bHideSubcontacts;
 	DWORD lastRepaint;
 	BOOL forceScroll;
+    int  oldSelection;
 };
 
 #define CLUI_FRAME_SHOWTOPBUTTONS 1
