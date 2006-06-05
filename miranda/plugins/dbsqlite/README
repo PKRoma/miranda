@@ -1,9 +1,0 @@
-You need sqlite3 (3.0.8 as of writing) get the ZIP and extract
-it to a dir called 'sqlite3' then compile, you'll get a ton of
-warnings, like 93 of them - but don't worry about that.
-
-http://sqlite.org/sqlite-source-3_0_8.zip
-
-The only thing that works in this db plugin is global settings,
-reading and writing, caching and delaying actual writes which means
-it kicks the crap outta db3x.
