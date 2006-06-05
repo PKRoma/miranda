@@ -1,0 +1,15 @@
+build.bat
+.depend
+Debug
+Release
+*.a
+*.dll
+*.res
+*.o
+*.ncb
+*.suo
+*.vcproj.*.user
+*.exp
+*.pdb
+*.lib
+*.ilk

@@ -1,0 +1,4 @@
+*.dll
+*.res
+*.o
+.depend
