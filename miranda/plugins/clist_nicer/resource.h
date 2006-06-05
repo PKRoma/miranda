@@ -9,6 +9,7 @@
 #define IDD_DIALOG2                     4
 #define IDD_OPT_SKIN                    4
 #define IDD_QUICKIGNORE                 5
+#define IDD_OPT                         6
 #define IDI_MIRANDA                     102
 #define IDD_CLNABOUT                    102
 #define IDD_ABOUT                       103
@@ -858,12 +859,13 @@
 #define POPUP_FLOATER_AUTOHIDE          40058
 #define ID_APPEARANCE_SHOWEVENTAREAINFLOATER 40059
 #define POPUP_FLOATER_EVENTS            40060
+#define IDC_OPTIONSTAB                  1000
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        6
+#define _APS_NEXT_RESOURCE_VALUE        7
 #define _APS_NEXT_COMMAND_VALUE         40061
 #define _APS_NEXT_CONTROL_VALUE         40049
 #define _APS_NEXT_SYMED_VALUE           40154

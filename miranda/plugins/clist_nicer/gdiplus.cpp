@@ -50,6 +50,7 @@
 #include <m_contacts.h>
 #include <m_file.h>
 #include <m_addcontact.h>
+#include "m_cln_skinedit.h"
 #include "extbackg.h"
 #include "clc.h"
 #include "clist.h"

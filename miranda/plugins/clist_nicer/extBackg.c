@@ -23,10 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "coolsb/coolscroll.h"
+#include "uxtheme.h"
 
-static int LastModifiedItem = -1;
-static int last_selcount = 0;
-static int last_indizes[64];
 extern int g_hottrack;
 extern struct CluiData g_CluiData;
 extern HWND g_hwndViewModeFrame;
@@ -34,6 +32,7 @@ extern HIMAGELIST himlExtraImages;
 extern HANDLE hPreBuildStatusMenuEvent;
 extern struct CluiTopButton top_buttons[];
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
+extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 
 StatusItems_t *StatusItems = NULL;
 ImageItem *g_ImageItems = NULL, *g_glyphItem = NULL;
@@ -240,8 +239,6 @@ static StatusItems_t _StatusItems[] = {
     }
 };
 
-ChangedSItems_t ChangedSItems = {0};
-
 BOOL __forceinline GetItemByStatus(int status, StatusItems_t *retitem)
 {
     status = (status >= ID_STATUS_OFFLINE && status <= ID_EXTBK_LAST) ? status : ID_STATUS_OFFLINE;     // better check the index...
@@ -364,7 +361,7 @@ void LoadExtBkSettingsFromDB()
 }
 
 // writes whole struct to the database
-void SaveCompleteStructToDB()
+static void SaveCompleteStructToDB(void)
 {
     int n;
     char buffer[255];
@@ -410,202 +407,6 @@ void SaveCompleteStructToDB()
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_BDRSTYLE");
             DBWriteContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].BORDERSTYLE);
         }
-    }
-}
-
-// updates the struct with the changed dlg item
-void UpdateStatusStructSettingsFromOptDlg(HWND hwndDlg, int index)
-{
-    char buf[15];
-    ULONG bdrtype;
-    
-    if (ChangedSItems.bIGNORED)
-        StatusItems[index]. IGNORED = IsDlgButtonChecked(hwndDlg, IDC_IGNORE);
-
-    if (ChangedSItems.bGRADIENT) {
-        StatusItems[index]. GRADIENT = GRADIENT_NONE;
-        if (IsDlgButtonChecked(hwndDlg, IDC_GRADIENT))
-            StatusItems[index].GRADIENT |= GRADIENT_ACTIVE;
-        if (IsDlgButtonChecked(hwndDlg, IDC_GRADIENT_LR))
-            StatusItems[index].GRADIENT |= GRADIENT_LR;
-        if (IsDlgButtonChecked(hwndDlg, IDC_GRADIENT_RL))
-            StatusItems[index].GRADIENT |= GRADIENT_RL;
-        if (IsDlgButtonChecked(hwndDlg, IDC_GRADIENT_TB))
-            StatusItems[index].GRADIENT |= GRADIENT_TB;
-        if (IsDlgButtonChecked(hwndDlg, IDC_GRADIENT_BT))
-            StatusItems[index].GRADIENT |= GRADIENT_BT;
-    }
-    if (ChangedSItems.bCORNER) {
-        StatusItems[index]. CORNER = CORNER_NONE;
-        if (IsDlgButtonChecked(hwndDlg, IDC_CORNER))
-            StatusItems[index].CORNER |= CORNER_ACTIVE ;
-        if (IsDlgButtonChecked(hwndDlg, IDC_CORNER_TL))
-            StatusItems[index].CORNER |= CORNER_TL ;
-        if (IsDlgButtonChecked(hwndDlg, IDC_CORNER_TR))
-            StatusItems[index].CORNER |= CORNER_TR;
-        if (IsDlgButtonChecked(hwndDlg, IDC_CORNER_BR))
-            StatusItems[index].CORNER |= CORNER_BR;
-        if (IsDlgButtonChecked(hwndDlg, IDC_CORNER_BL))
-            StatusItems[index].CORNER |= CORNER_BL;
-    }
-
-    if (ChangedSItems.bCOLOR)
-        StatusItems[index]. COLOR = SendDlgItemMessage(hwndDlg, IDC_BASECOLOUR, CPM_GETCOLOUR, 0, 0);
-
-    if (ChangedSItems.bCOLOR2)
-        StatusItems[index]. COLOR2 = SendDlgItemMessage(hwndDlg, IDC_BASECOLOUR2, CPM_GETCOLOUR, 0, 0);
-
-    if (ChangedSItems.bCOLOR2_TRANSPARENT)
-        StatusItems[index]. COLOR2_TRANSPARENT = IsDlgButtonChecked(hwndDlg, IDC_COLOR2_TRANSPARENT);
-
-    if (ChangedSItems.bTEXTCOLOR)
-        StatusItems[index]. TEXTCOLOR = SendDlgItemMessage(hwndDlg, IDC_TEXTCOLOUR, CPM_GETCOLOUR, 0, 0);
-
-    if (ChangedSItems.bALPHA) {
-        GetWindowTextA(GetDlgItem(hwndDlg, IDC_ALPHA), buf, 10);        // can be removed now
-        if (lstrlenA(buf) > 0)
-            StatusItems[index]. ALPHA = (BYTE) SendDlgItemMessage(hwndDlg, IDC_ALPHASPIN, UDM_GETPOS, 0, 0);
-    }
-
-    if (ChangedSItems.bMARGIN_LEFT) {
-        GetWindowTextA(GetDlgItem(hwndDlg, IDC_MRGN_LEFT), buf, 10);        
-        if (lstrlenA(buf) > 0)
-            StatusItems[index]. MARGIN_LEFT = (BYTE) SendDlgItemMessage(hwndDlg, IDC_MRGN_LEFT_SPIN, UDM_GETPOS, 0, 0);
-    }
-
-    if (ChangedSItems.bMARGIN_TOP) {
-        GetWindowTextA(GetDlgItem(hwndDlg, IDC_MRGN_TOP), buf, 10);     
-        if (lstrlenA(buf) > 0)
-            StatusItems[index]. MARGIN_TOP = (BYTE) SendDlgItemMessage(hwndDlg, IDC_MRGN_TOP_SPIN, UDM_GETPOS, 0, 0);
-    }
-
-    if (ChangedSItems.bMARGIN_RIGHT) {
-        GetWindowTextA(GetDlgItem(hwndDlg, IDC_MRGN_RIGHT), buf, 10);       
-        if (lstrlenA(buf) > 0)
-            StatusItems[index]. MARGIN_RIGHT = (BYTE) SendDlgItemMessage(hwndDlg, IDC_MRGN_RIGHT_SPIN, UDM_GETPOS, 0, 0);
-    }
-
-    if (ChangedSItems.bMARGIN_BOTTOM) {
-        GetWindowTextA(GetDlgItem(hwndDlg, IDC_MRGN_BOTTOM), buf, 10);      
-        if (lstrlenA(buf) > 0)
-            StatusItems[index]. MARGIN_BOTTOM = (BYTE) SendDlgItemMessage(hwndDlg, IDC_MRGN_BOTTOM_SPIN, UDM_GETPOS, 0, 0);
-    }
-    if (ChangedSItems.bBORDERSTYLE) {
-        bdrtype = SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_GETCURSEL, 0, 0);
-        if(bdrtype == CB_ERR)
-            StatusItems[index].BORDERSTYLE = 0;
-        else {
-            switch(bdrtype) {
-                case 0:
-                    StatusItems[index].BORDERSTYLE = 0;
-                    break;
-                case 1:
-                    StatusItems[index].BORDERSTYLE = BDR_RAISEDOUTER;
-                    break;
-                case 2:
-                    StatusItems[index].BORDERSTYLE = BDR_SUNKENINNER;
-                    break;
-                case 3:
-                    StatusItems[index].BORDERSTYLE = EDGE_BUMP;
-                    break;
-                case 4:
-                    StatusItems[index].BORDERSTYLE = EDGE_ETCHED;
-                    break;
-                default:
-                    StatusItems[index].BORDERSTYLE = 0;
-                    break;
-            }
-        }
-    }
-}
-
-void SaveLatestChanges(HWND hwndDlg)
-{
-    int n, itemData;
-    // process old selection
-    if (last_selcount > 0) {
-        for (n = 0; n < last_selcount; n++) {
-            itemData = SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_GETITEMDATA, last_indizes[n], 0);
-            if (itemData != ID_EXTBKSEPARATOR) {
-                UpdateStatusStructSettingsFromOptDlg(hwndDlg, itemData - ID_STATUS_OFFLINE);
-            }
-        }
-    }
-
-    // reset bChange
-    ChangedSItems.bALPHA = FALSE;
-    ChangedSItems.bGRADIENT = FALSE;
-    ChangedSItems.bCORNER = FALSE;
-    ChangedSItems.bCOLOR = FALSE;
-    ChangedSItems.bCOLOR2 = FALSE;
-    ChangedSItems.bCOLOR2_TRANSPARENT = FALSE;
-    ChangedSItems.bTEXTCOLOR = FALSE;
-    ChangedSItems.bALPHA = FALSE;
-    ChangedSItems.bMARGIN_LEFT = FALSE;
-    ChangedSItems.bMARGIN_TOP = FALSE;
-    ChangedSItems.bMARGIN_RIGHT = FALSE;
-    ChangedSItems.bMARGIN_BOTTOM = FALSE;
-    ChangedSItems.bIGNORED = FALSE;
-    ChangedSItems.bBORDERSTYLE = FALSE;
-}
-
-// wenn die listbox geändert wurde
-void OnListItemsChange(HWND hwndDlg)
-{
-    SaveLatestChanges(hwndDlg);
-
-    // set new selection
-    last_selcount = SendMessage(GetDlgItem(hwndDlg, IDC_ITEMS), LB_GETSELCOUNT, 0, 0);  
-    if (last_selcount > 0) {
-        int n, real_index, itemData, first_item;
-        StatusItems_t DialogSettingForMultiSel;
-
-    // get selected indizes
-        SendMessage(GetDlgItem(hwndDlg, IDC_ITEMS), LB_GETSELITEMS, 64, (LPARAM) last_indizes);
-
-    // initialize with first items value
-
-        first_item = SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_GETITEMDATA, last_indizes[0], 0) - ID_STATUS_OFFLINE;
-        DialogSettingForMultiSel = StatusItems[first_item];
-        for (n = 0; n < last_selcount; n++) {
-            itemData = SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_GETITEMDATA, last_indizes[n], 0);
-            if (itemData != ID_EXTBKSEPARATOR) {
-                real_index = itemData - ID_STATUS_OFFLINE;
-                if (StatusItems[real_index].ALPHA != StatusItems[first_item].ALPHA)
-                    DialogSettingForMultiSel.ALPHA = -1;
-                if (StatusItems[real_index].COLOR != StatusItems[first_item].COLOR)
-                    DialogSettingForMultiSel.COLOR = CLCDEFAULT_COLOR;
-                if (StatusItems[real_index].COLOR2 != StatusItems[first_item].COLOR2)
-                    DialogSettingForMultiSel.COLOR2 = CLCDEFAULT_COLOR2;
-                if (StatusItems[real_index].COLOR2_TRANSPARENT != StatusItems[first_item].COLOR2_TRANSPARENT)
-                    DialogSettingForMultiSel.COLOR2_TRANSPARENT = CLCDEFAULT_COLOR2_TRANSPARENT;
-                if (StatusItems[real_index].TEXTCOLOR != StatusItems[first_item].TEXTCOLOR)
-                    DialogSettingForMultiSel.TEXTCOLOR = CLCDEFAULT_TEXTCOLOR;
-                if (StatusItems[real_index].CORNER != StatusItems[first_item].CORNER)
-                    DialogSettingForMultiSel.CORNER = CLCDEFAULT_CORNER;
-                if (StatusItems[real_index].GRADIENT != StatusItems[first_item].GRADIENT)
-                    DialogSettingForMultiSel.GRADIENT = CLCDEFAULT_GRADIENT;
-                if (StatusItems[real_index].IGNORED != StatusItems[first_item].IGNORED)
-                    DialogSettingForMultiSel.IGNORED = CLCDEFAULT_IGNORE;
-                if (StatusItems[real_index].MARGIN_BOTTOM != StatusItems[first_item].MARGIN_BOTTOM)
-                    DialogSettingForMultiSel.MARGIN_BOTTOM = -1;
-                if (StatusItems[real_index].MARGIN_LEFT != StatusItems[first_item].MARGIN_LEFT)
-                    DialogSettingForMultiSel.MARGIN_LEFT = -1;
-                if (StatusItems[real_index].MARGIN_RIGHT != StatusItems[first_item].MARGIN_RIGHT)
-                    DialogSettingForMultiSel.MARGIN_RIGHT = -1;
-                if (StatusItems[real_index].MARGIN_TOP != StatusItems[first_item].MARGIN_TOP)
-                    DialogSettingForMultiSel.MARGIN_TOP = -1;
-                if (StatusItems[real_index].BORDERSTYLE != StatusItems[first_item].BORDERSTYLE)
-                    DialogSettingForMultiSel.BORDERSTYLE = -1;
-            }
-        }
-
-        if (last_selcount == 1 && StatusItems[first_item].statusID == ID_EXTBKSEPARATOR) {
-            ChangeControlItems(hwndDlg, 0, 0);
-            last_selcount = 0;
-        } else
-            ChangeControlItems(hwndDlg, 1, 0);
-        FillOptionDialogByStatusItem(hwndDlg, &DialogSettingForMultiSel);
     }
 }
 
@@ -660,366 +461,10 @@ void SaveNonStatusItemsSettings(HWND hwndDlg)
     DBWriteContactSettingByte(NULL, "CLCExt", "applyindentbg", g_CluiData.bApplyIndentToBg);
     DBWriteContactSettingByte(NULL, "CLCExt", "useperproto", g_CluiData.bUsePerProto);
     DBWriteContactSettingByte(NULL, "CLCExt", "override_status", g_CluiData.bOverridePerStatusColors);
-    DBWriteContactSettingDword(NULL, "CLCExt", "3dbright", SendDlgItemMessage(hwndDlg, IDC_3DLIGHTCOLOR, CPM_GETCOLOUR, 0, 0));
-    DBWriteContactSettingDword(NULL, "CLCExt", "3ddark", SendDlgItemMessage(hwndDlg, IDC_3DDARKCOLOR, CPM_GETCOLOUR, 0, 0));
     DBWriteContactSettingByte(NULL, "CLCExt", "bskinned", IsDlgButtonChecked(hwndDlg, IDC_SETALLBUTTONSKINNED) ? 1 : 0);
 	DBWriteContactSettingByte(NULL, "CLCExt", "FastGradients", g_CluiData.bWantFastGradients);
     Reload3dBevelColors();
     SetButtonToSkinned();
-}
-
-// fills the combobox of the options dlg for the first time
-void FillItemList(HWND hwndDlg)
-{
-	int n, iOff;
-	UINT item;
-
-	for (n = 0; n <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; n++) {
-		iOff = 0;
-		if(strstr(StatusItems[n].szName, "{-}")) {
-			item = SendDlgItemMessageA(hwndDlg, IDC_ITEMS, LB_ADDSTRING, 0, (LPARAM)"------------------------");
-			SendDlgItemMessageA(hwndDlg, IDC_ITEMS, LB_SETITEMDATA, item, ID_EXTBKSEPARATOR);
-			iOff = 3;
-		}
-		#if defined( _UNICODE )
-		{	TCHAR* p = ( TCHAR* )CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)&StatusItems[n].szName[iOff] );
-			if (( int )p != CALLSERVICE_NOTFOUND) {
-				item = SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_ADDSTRING, 0, (LPARAM)p );
-				mir_free(p);
-			}
-			else item = SendDlgItemMessageA(hwndDlg, IDC_ITEMS, LB_ADDSTRING, 0, (LPARAM)Translate(&StatusItems[n].szName[iOff]));
-		}
-		#else
-			item = SendDlgItemMessageA(hwndDlg, IDC_ITEMS, LB_ADDSTRING, 0, (LPARAM)Translate(&StatusItems[n].szName[iOff]));
-		#endif
-
-		SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_SETITEMDATA, item, ID_STATUS_OFFLINE + n);
-	}
-}
-
-void FillOptionDialogByStatusItem(HWND hwndDlg, StatusItems_t *item)
-{
-    char itoabuf[15];
-    DWORD ret;
-    int index;
-    
-    CheckDlgButton(hwndDlg, IDC_IGNORE, (item->IGNORED) ? BST_CHECKED : BST_UNCHECKED);
-
-    CheckDlgButton(hwndDlg, IDC_GRADIENT, (item->GRADIENT & GRADIENT_ACTIVE) ? BST_CHECKED : BST_UNCHECKED);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_LR), item->GRADIENT & GRADIENT_ACTIVE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_RL), item->GRADIENT & GRADIENT_ACTIVE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_TB), item->GRADIENT & GRADIENT_ACTIVE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_BT), item->GRADIENT & GRADIENT_ACTIVE);
-    CheckDlgButton(hwndDlg, IDC_GRADIENT_LR, (item->GRADIENT & GRADIENT_LR) ? BST_CHECKED : BST_UNCHECKED);
-    CheckDlgButton(hwndDlg, IDC_GRADIENT_RL, (item->GRADIENT & GRADIENT_RL) ? BST_CHECKED : BST_UNCHECKED);
-    CheckDlgButton(hwndDlg, IDC_GRADIENT_TB, (item->GRADIENT & GRADIENT_TB) ? BST_CHECKED : BST_UNCHECKED);
-    CheckDlgButton(hwndDlg, IDC_GRADIENT_BT, (item->GRADIENT & GRADIENT_BT) ? BST_CHECKED : BST_UNCHECKED);
-
-    CheckDlgButton(hwndDlg, IDC_CORNER, (item->CORNER & CORNER_ACTIVE) ? BST_CHECKED : BST_UNCHECKED);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_TL), item->CORNER & CORNER_ACTIVE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_TR), item->CORNER & CORNER_ACTIVE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_BR), item->CORNER & CORNER_ACTIVE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_BL), item->CORNER & CORNER_ACTIVE);
-
-    CheckDlgButton(hwndDlg, IDC_CORNER_TL, (item->CORNER & CORNER_TL) ? BST_CHECKED : BST_UNCHECKED);
-    CheckDlgButton(hwndDlg, IDC_CORNER_TR, (item->CORNER & CORNER_TR) ? BST_CHECKED : BST_UNCHECKED);
-    CheckDlgButton(hwndDlg, IDC_CORNER_BR, (item->CORNER & CORNER_BR) ? BST_CHECKED : BST_UNCHECKED);
-    CheckDlgButton(hwndDlg, IDC_CORNER_BL, (item->CORNER & CORNER_BL) ? BST_CHECKED : BST_UNCHECKED);
-
-    ret = item->COLOR;
-    SendDlgItemMessage(hwndDlg, IDC_BASECOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_COLOR);
-    SendDlgItemMessage(hwndDlg, IDC_BASECOLOUR, CPM_SETCOLOUR, 0, ret);
-
-    ret = item->COLOR2;
-    SendDlgItemMessage(hwndDlg, IDC_BASECOLOUR2, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_COLOR2);
-    SendDlgItemMessage(hwndDlg, IDC_BASECOLOUR2, CPM_SETCOLOUR, 0, ret);
-
-    CheckDlgButton(hwndDlg, IDC_COLOR2_TRANSPARENT, (item->COLOR2_TRANSPARENT) ? BST_CHECKED : BST_UNCHECKED);
-
-    ret = item->TEXTCOLOR;
-    SendDlgItemMessage(hwndDlg, IDC_TEXTCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_TEXTCOLOR);
-    SendDlgItemMessage(hwndDlg, IDC_TEXTCOLOUR, CPM_SETCOLOUR, 0, ret);
-
-
-    //  TODO: I suppose we don't need to use _itoa here. 
-    //  we could probably just set the integer value of the buddy spinner control:
-
-    if (item->ALPHA == -1) {
-        SetDlgItemTextA(hwndDlg, IDC_ALPHA, "");
-    } else {
-        ret = item->ALPHA;
-        _itoa(ret, itoabuf, 10);    
-        SetDlgItemTextA(hwndDlg, IDC_ALPHA, itoabuf);
-    }
-
-    if (item->MARGIN_LEFT == -1)
-        SetDlgItemTextA(hwndDlg, IDC_MRGN_LEFT, "");
-    else {
-        ret = item->MARGIN_LEFT;
-        _itoa(ret, itoabuf, 10);
-        SetDlgItemTextA(hwndDlg, IDC_MRGN_LEFT, itoabuf);
-    }
-
-    if (item->MARGIN_TOP == -1)
-        SetDlgItemTextA(hwndDlg, IDC_MRGN_TOP, "");
-    else {
-        ret = item->MARGIN_TOP;
-        _itoa(ret, itoabuf, 10);
-        SetDlgItemTextA(hwndDlg, IDC_MRGN_TOP, itoabuf);
-    }
-
-    if (item->MARGIN_RIGHT == -1)
-        SetDlgItemTextA(hwndDlg, IDC_MRGN_RIGHT, "");
-    else {
-        ret = item->MARGIN_RIGHT;
-        _itoa(ret, itoabuf, 10);
-        SetDlgItemTextA(hwndDlg, IDC_MRGN_RIGHT, itoabuf);
-    }
-
-    if (item->MARGIN_BOTTOM == -1)
-        SetDlgItemTextA(hwndDlg, IDC_MRGN_BOTTOM, "");
-    else {
-        ret = item->MARGIN_BOTTOM;
-        _itoa(ret, itoabuf, 10);
-        SetDlgItemTextA(hwndDlg, IDC_MRGN_BOTTOM, itoabuf);
-    }
-    if(item->BORDERSTYLE == -1)
-        SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_SETCURSEL, 0, 0);
-    else {
-        index = 0;
-        switch(item->BORDERSTYLE) {
-            case 0:
-            case -1:
-                index = 0;
-                break;
-            case BDR_RAISEDOUTER:
-                index = 1;
-                break;
-            case BDR_SUNKENINNER:
-                index = 2;
-                break;
-            case EDGE_BUMP:
-                index = 3;
-                break;
-            case EDGE_ETCHED:
-                index = 4;
-                break;
-        }
-        SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_SETCURSEL, (WPARAM)index, 0);
-    }
-    ReActiveCombo(hwndDlg);
-}
-// update dlg with selected item
-void FillOptionDialogByCurrentSel(HWND hwndDlg)
-{
-    int index = SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_GETCURSEL, 0, 0);
-    int itemData = SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_GETITEMDATA, index, 0);
-    if(itemData != ID_EXTBKSEPARATOR) {
-        LastModifiedItem = itemData - ID_STATUS_OFFLINE;
-
-        if (CheckItem(itemData - ID_STATUS_OFFLINE, hwndDlg)) {
-            FillOptionDialogByStatusItem(hwndDlg, &StatusItems[itemData - ID_STATUS_OFFLINE]);
-        }
-    }
-}
-
-void ReActiveCombo(HWND hwndDlg)
-{
-    if (IsDlgButtonChecked(hwndDlg, IDC_IGNORE)) {
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_LR), IsDlgButtonChecked(hwndDlg, IDC_GRADIENT));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_RL), IsDlgButtonChecked(hwndDlg, IDC_GRADIENT));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_TB), IsDlgButtonChecked(hwndDlg, IDC_GRADIENT));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_BT), IsDlgButtonChecked(hwndDlg, IDC_GRADIENT));
-
-        EnableWindow(GetDlgItem(hwndDlg, IDC_BASECOLOUR2), !IsDlgButtonChecked(hwndDlg, IDC_COLOR2_TRANSPARENT));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_COLOR2LABLE), !IsDlgButtonChecked(hwndDlg, IDC_COLOR2_TRANSPARENT));
-
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_TL), IsDlgButtonChecked(hwndDlg, IDC_CORNER));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_TR), IsDlgButtonChecked(hwndDlg, IDC_CORNER));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_BR), IsDlgButtonChecked(hwndDlg, IDC_CORNER));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_BL), IsDlgButtonChecked(hwndDlg, IDC_CORNER));      
-        ChangeControlItems(hwndDlg, !IsDlgButtonChecked(hwndDlg, IDC_IGNORE), IDC_IGNORE);
-    } else {
-        ChangeControlItems(hwndDlg, !IsDlgButtonChecked(hwndDlg, IDC_IGNORE), IDC_IGNORE);
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_LR), IsDlgButtonChecked(hwndDlg, IDC_GRADIENT));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_RL), IsDlgButtonChecked(hwndDlg, IDC_GRADIENT));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_TB), IsDlgButtonChecked(hwndDlg, IDC_GRADIENT));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_BT), IsDlgButtonChecked(hwndDlg, IDC_GRADIENT));
-
-        EnableWindow(GetDlgItem(hwndDlg, IDC_BASECOLOUR2), !IsDlgButtonChecked(hwndDlg, IDC_COLOR2_TRANSPARENT));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_COLOR2LABLE), !IsDlgButtonChecked(hwndDlg, IDC_COLOR2_TRANSPARENT));
-
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_TL), IsDlgButtonChecked(hwndDlg, IDC_CORNER));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_TR), IsDlgButtonChecked(hwndDlg, IDC_CORNER));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_BR), IsDlgButtonChecked(hwndDlg, IDC_CORNER));
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_BL), IsDlgButtonChecked(hwndDlg, IDC_CORNER));
-    }
-}
-
-// enabled or disabled the whole status controlitems group (with exceptional control)
-void ChangeControlItems(HWND hwndDlg, int status, int except)
-{
-    if (except != IDC_GRADIENT)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT), status);
-    if (except != IDC_GRADIENT_LR)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_LR), status);
-    if (except != IDC_GRADIENT_RL)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_RL), status);
-    if (except != IDC_GRADIENT_TB)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_TB), status);
-    if (except != IDC_GRADIENT_BT)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_GRADIENT_BT), status);
-    if (except != IDC_CORNER)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER), status);
-    if (except != IDC_CORNER_TL)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_TL), status);
-    if (except != IDC_CORNER_TR)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_TR), status);
-    if (except != IDC_CORNER_BR)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_BR), status);
-    if (except != IDC_CORNER_BL)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_BL), status);
-    if (except != IDC_CORNER_TL)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_CORNER_TL), status);
-    if (except != IDC_MARGINLABLE)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_MARGINLABLE), status);
-    if (except != IDC_MRGN_TOP)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_MRGN_TOP), status);
-    if (except != IDC_MRGN_RIGHT)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_MRGN_RIGHT), status);
-    if (except != IDC_MRGN_BOTTOM)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_MRGN_BOTTOM), status);
-    if (except != IDC_MRGN_LEFT)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_MRGN_LEFT), status);
-    if (except != IDC_MRGN_TOP_SPIN)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_MRGN_TOP_SPIN), status);
-    if (except != IDC_MRGN_RIGHT_SPIN)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_MRGN_RIGHT_SPIN), status);
-    if (except != IDC_MRGN_BOTTOM_SPIN)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_MRGN_BOTTOM_SPIN), status);
-    if (except != IDC_MRGN_LEFT_SPIN)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_MRGN_LEFT_SPIN), status);
-    if (except != IDC_BASECOLOUR)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_BASECOLOUR), status);
-    if (except != IDC_COLORLABLE)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_COLORLABLE), status);
-    if (except != IDC_BASECOLOUR2)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_BASECOLOUR2), status);
-    if (except != IDC_COLOR2LABLE)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_COLOR2LABLE), status);
-    if (except != IDC_COLOR2_TRANSPARENT)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_COLOR2_TRANSPARENT), status);
-    if (except != IDC_TEXTCOLOUR)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_TEXTCOLOUR), status);
-    if (except != IDC_TEXTCOLOURLABLE)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_TEXTCOLOURLABLE), status);
-
-    if (except != IDC_ALPHA)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_ALPHA), status);
-    if (except != IDC_ALPHASPIN)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_ALPHASPIN), status);
-    if (except != IDC_ALPHALABLE)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_ALPHALABLE), status);
-    if (except != IDC_IGNORE)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_IGNORE), status);
-
-    if (except != IDC_BORDERTYPE)
-        EnableWindow(GetDlgItem(hwndDlg, IDC_BORDERTYPE), status);
-    
-}
-
-// enabled all status controls if the selected item is a separator
-BOOL CheckItem(int item, HWND hwndDlg)
-{
-    if (StatusItems[item].statusID == ID_EXTBKSEPARATOR) {
-        ChangeControlItems(hwndDlg, 0, 0);
-        return FALSE;
-    } else {
-        ChangeControlItems(hwndDlg, 1, 0);
-        return TRUE;
-    }
-}
-
-void SetChangedStatusItemFlag(WPARAM wParam, HWND hwndDlg)
-{
-    if (
-        // not non status item controls
-       LOWORD(wParam) != IDC_EXPORT && LOWORD(wParam) != IDC_IMPORT && LOWORD(wParam) != IDC_EQUALSELECTION && LOWORD(wParam) != IDC_SELBLEND && LOWORD(wParam) != IDC_FILLWALLPAPER && LOWORD(wParam) != IDC_CENTERGROUPNAMES && LOWORD(wParam) != IDC_ITEMS
-        // focussed
-       && (GetDlgItem(hwndDlg, LOWORD(wParam)) == GetFocus() || HIWORD(wParam) == CPN_COLOURCHANGED)
-        // change message
-       && (HIWORD(wParam) == BN_CLICKED || HIWORD(wParam) == EN_CHANGE || HIWORD(wParam) == CPN_COLOURCHANGED)) {
-        switch (LOWORD(wParam)) {
-            case IDC_IGNORE:
-                ChangedSItems.bIGNORED = TRUE; break;
-            case IDC_GRADIENT:
-                ChangedSItems.bGRADIENT = TRUE; break;
-            case IDC_GRADIENT_LR:
-                ChangedSItems.bGRADIENT = TRUE;break;
-            case IDC_GRADIENT_RL:
-                ChangedSItems.bGRADIENT = TRUE; break;
-            case IDC_GRADIENT_BT:
-                ChangedSItems.bGRADIENT = TRUE; break;
-            case IDC_GRADIENT_TB:
-                ChangedSItems.bGRADIENT = TRUE; break;
-
-            case IDC_CORNER:
-                ChangedSItems.bCORNER = TRUE; break;
-            case IDC_CORNER_TL:
-                ChangedSItems.bCORNER = TRUE; break;
-            case IDC_CORNER_TR:
-                ChangedSItems.bCORNER = TRUE; break;
-            case IDC_CORNER_BR:
-                ChangedSItems.bCORNER = TRUE; break;
-            case IDC_CORNER_BL:
-                ChangedSItems.bCORNER = TRUE; break;
-
-            case IDC_BASECOLOUR:
-                ChangedSItems.bCOLOR = TRUE; break;     
-            case IDC_BASECOLOUR2:
-                ChangedSItems.bCOLOR2 = TRUE; break;
-            case IDC_COLOR2_TRANSPARENT:
-                ChangedSItems.bCOLOR2_TRANSPARENT = TRUE; break;
-            case IDC_TEXTCOLOUR:
-                ChangedSItems.bTEXTCOLOR = TRUE; break;
-
-            case IDC_ALPHA:
-                ChangedSItems.bALPHA = TRUE; break;
-            case IDC_ALPHASPIN:
-                ChangedSItems.bALPHA = TRUE; break;
-
-            case IDC_MRGN_LEFT:
-                ChangedSItems.bMARGIN_LEFT = TRUE; break;
-            case IDC_MRGN_LEFT_SPIN:
-                ChangedSItems.bMARGIN_LEFT = TRUE; break;
-
-            case IDC_MRGN_TOP:
-                ChangedSItems.bMARGIN_TOP = TRUE; break;
-            case IDC_MRGN_TOP_SPIN:
-                ChangedSItems.bMARGIN_TOP = TRUE; break;
-
-            case IDC_MRGN_RIGHT:
-                ChangedSItems.bMARGIN_RIGHT = TRUE; break;
-            case IDC_MRGN_RIGHT_SPIN:
-                ChangedSItems.bMARGIN_RIGHT = TRUE; break;
-
-            case IDC_MRGN_BOTTOM:
-                ChangedSItems.bMARGIN_BOTTOM = TRUE; break;
-            case IDC_MRGN_BOTTOM_SPIN:
-                ChangedSItems.bMARGIN_BOTTOM = TRUE; break;
-
-            case IDC_BORDERTYPE:
-                ChangedSItems.bBORDERSTYLE = TRUE; break;
-        }
-    }
-}
-
-BOOL isValidItem(void)
-{
-    if (StatusItems[LastModifiedItem].statusID == ID_EXTBKSEPARATOR)
-        return FALSE;
-
-    return TRUE;
 }
 
 /*
@@ -2060,8 +1505,8 @@ void extbk_import(char *file, HWND hwndDlg)
     ReloadThemedOptions();
     SetTBSKinned(g_CluiData.bSkinnedToolbar);
     // refresh
-    if(hwndDlg)
-        FillOptionDialogByCurrentSel(hwndDlg);
+    //if(hwndDlg)
+    //    FillOptionDialogByCurrentSel(hwndDlg);
     pcli->pfnClcOptionsChanged();
     ConfigureCLUIGeometry();
     SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
@@ -2100,12 +1545,25 @@ static void ApplyCLUISkin()
     }
 }
 
-BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_INITDIALOG:
         {
             DBVARIANT dbv;
+
+            CheckDlgButton(hwndDlg, IDC_EQUALSELECTION, (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_EqualSelection", 1) == 1) ? BST_CHECKED : BST_UNCHECKED);    
+            CheckDlgButton(hwndDlg, IDC_SELBLEND, DBGetContactSettingByte(NULL, "CLCExt", "EXBK_SelBlend", 1));
+            CheckDlgButton(hwndDlg, IDC_FILLWALLPAPER, DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0));
+            CheckDlgButton(hwndDlg, IDC_SETALLBUTTONSKINNED, DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0));
+
+            SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
+            SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, g_CluiData.cornerRadius);
+            CheckDlgButton(hwndDlg, IDC_APPLYINDENTBG, g_CluiData.bApplyIndentToBg);
+            CheckDlgButton(hwndDlg, IDC_USEPERPROTO, g_CluiData.bUsePerProto);
+            CheckDlgButton(hwndDlg, IDC_OVERRIDEPERSTATUSCOLOR, g_CluiData.bOverridePerStatusColors);
+            CheckDlgButton(hwndDlg, IDC_FASTGRADIENT, g_CluiData.bWantFastGradients);
+
 
             if(!DBGetContactSetting(NULL, "CLC", "ContactSkins", &dbv)) {
                 SetDlgItemTextA(hwndDlg, IDC_SKINFILE, dbv.pszVal);
@@ -2205,6 +1663,7 @@ BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 case 0:
                     switch (((LPNMHDR) lParam)->code) {
                         case PSN_APPLY:
+                            SaveNonStatusItemsSettings(hwndDlg);
                             pcli->pfnClcOptionsChanged();
                             PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
                             return TRUE;
@@ -2214,6 +1673,172 @@ BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
             break;
     }
     return FALSE;
+}
+
+BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+   static int iInit = TRUE;
+   static HWND hwndSkinEdit = 0;
+
+   switch(msg)
+   {
+      case WM_INITDIALOG:
+      {
+         TCITEM tci;
+         RECT rcClient;
+         int oPage = DBGetContactSettingByte(NULL, "CLUI", "opage", 0);
+         SKINDESCRIPTION sd;
+
+         GetClientRect(hwnd, &rcClient);
+         iInit = TRUE;
+         tci.mask = TCIF_PARAM|TCIF_TEXT;
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_SKIN), hwnd, DlgProcSkinOpts);
+         tci.pszText = TranslateT("Load and apply");
+			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-60,1);
+         ShowWindow((HWND)tci.lParam, oPage == 0 ? SW_SHOW : SW_HIDE);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
+         if(ServiceExists(MS_CLNSE_INVOKE)) {
+
+             ZeroMemory(&sd, sizeof(sd));
+             sd.cbSize = sizeof(sd);
+             sd.StatusItems = StatusItems;
+             sd.hWndParent = hwnd;
+             sd.hWndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB);
+             sd.pfnSaveCompleteStruct = SaveCompleteStructToDB;
+             sd.lastItem = ID_EXTBK_LAST;
+             sd.pfnClcOptionsChanged = pcli->pfnClcOptionsChanged;
+             sd.hwndCLUI = pcli->hwndContactList;
+             hwndSkinEdit = (HWND)CallService(MS_CLNSE_INVOKE, 0, (LPARAM)&sd);
+             _DebugTraceA("skinedit: %d", hwndSkinEdit);
+         }
+
+         /*
+         tci.mask = TCIF_PARAM|TCIF_TEXT;
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_EXTBKG), hwnd, DlgProcClcExtBkgOpts);
+         hwndSkinEdit = (HWND)tci.lParam;
+         tci.pszText = TranslateT("Skin items");
+            TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-60,1);
+         ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
+         */
+         if(hwndSkinEdit) {
+             ShowWindow(hwndSkinEdit, oPage == 1 ? SW_SHOW : SW_HIDE);
+             ShowWindow(sd.hwndImageEdit, oPage == 2 ? SW_SHOW : SW_HIDE);
+             TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
+             if(MyEnableThemeDialogTexture) {
+                 MyEnableThemeDialogTexture(hwndSkinEdit, ETDT_ENABLETAB);
+                 MyEnableThemeDialogTexture(sd.hwndImageEdit, ETDT_ENABLETAB);
+             }
+         }
+
+         TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
+         EnableWindow(GetDlgItem(hwnd, IDC_EXPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
+         EnableWindow(GetDlgItem(hwnd, IDC_IMPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
+         iInit = FALSE;
+         return FALSE;
+      }
+      
+      case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
+         if(!iInit)
+             SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
+         break;
+      case WM_COMMAND:
+          switch(LOWORD(wParam)) {
+              case IDC_EXPORT:
+                  {
+                      char str[MAX_PATH] = "*.clist";
+                      OPENFILENAMEA ofn = {0};
+                      ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                      ofn.hwndOwner = hwnd;
+                      ofn.hInstance = NULL;
+                      ofn.lpstrFilter = "*.clist";
+                      ofn.lpstrFile = str;
+                      ofn.Flags = OFN_HIDEREADONLY;
+                      ofn.nMaxFile = sizeof(str);
+                      ofn.nMaxFileTitle = MAX_PATH;
+                      ofn.lpstrDefExt = "clist";
+                      if (!GetSaveFileNameA(&ofn))
+                          break;
+                      extbk_export(str);
+                      break;
+                  }
+              case IDC_IMPORT:
+                  {
+                      char str[MAX_PATH] = "*.clist";
+                      OPENFILENAMEA ofn = {0};
+
+                      ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                      ofn.hwndOwner = hwnd;
+                      ofn.hInstance = NULL;
+                      ofn.lpstrFilter = "*.clist";
+                      ofn.lpstrFile = str;
+                      ofn.Flags = OFN_FILEMUSTEXIST;
+                      ofn.nMaxFile = sizeof(str);
+                      ofn.nMaxFileTitle = MAX_PATH;
+                      ofn.lpstrDefExt = "";
+                      if (!GetOpenFileNameA(&ofn))
+                          break;
+                      extbk_import(str, hwndSkinEdit);
+                      SendMessage(hwndSkinEdit, WM_USER + 101, 0, 0);
+                      break;
+                  }
+          }
+          break;
+      case WM_NOTIFY:
+         switch(((LPNMHDR)lParam)->idFrom) {
+            case 0:
+               switch (((LPNMHDR)lParam)->code)
+               {
+                  case PSN_APPLY:
+                     {
+                        TCITEM tci;
+                        int i,count;
+                        tci.mask = TCIF_PARAM;
+                        count = TabCtrl_GetItemCount(GetDlgItem(hwnd,IDC_OPTIONSTAB));
+                        for (i=0;i<count;i++)
+                        {
+                           TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),i,&tci);
+                           SendMessage((HWND)tci.lParam,WM_NOTIFY,0,lParam);
+                        }
+                     }
+                  break;
+               }
+            break;
+            case IDC_OPTIONSTAB:
+               switch (((LPNMHDR)lParam)->code)
+               {
+                  case TCN_SELCHANGING:
+                     {
+                        TCITEM tci;
+                        tci.mask = TCIF_PARAM;
+                        TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+                        ShowWindow((HWND)tci.lParam,SW_HIDE);                     
+                     }
+                  break;
+                  case TCN_SELCHANGE:
+                     {
+                        TCITEM tci;
+                        tci.mask = TCIF_PARAM;
+                        TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+                        ShowWindow((HWND)tci.lParam,SW_SHOW);
+                        DBWriteContactSettingByte(NULL, "CLUI", "opage", TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)));
+                        EnableWindow(GetDlgItem(hwnd, IDC_EXPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
+                        EnableWindow(GetDlgItem(hwnd, IDC_IMPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
+                     }
+                  break;
+               }
+            break;
+
+         }
+      break;
+      case WM_DESTROY:
+          hwndSkinEdit = 0;
+          break;
+   }
+   return FALSE;
 }
 
 int CoolSB_SetupScrollBar()

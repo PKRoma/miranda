@@ -21,23 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#define CLCDEFAULT_GRADIENT 0
-#define CLCDEFAULT_CORNER 0
-
-#define CLCDEFAULT_COLOR 0xd0d0d0
-#define CLCDEFAULT_COLOR2 0xd0d0d0
-
-#define CLCDEFAULT_TEXTCOLOR 0x000000
-
-#define CLCDEFAULT_COLOR2_TRANSPARENT 1
-
-#define CLCDEFAULT_ALPHA 100
-#define CLCDEFAULT_MRGN_LEFT 0
-#define CLCDEFAULT_MRGN_TOP 0
-#define CLCDEFAULT_MRGN_RIGHT 0
-#define CLCDEFAULT_MRGN_BOTTOM 0
-#define CLCDEFAULT_IGNORE 1
-
 #define ID_EXTBKEXPANDEDGROUP   40081
 #define ID_EXTBKCOLLAPSEDDGROUP 40082
 #define ID_EXTBKEMPTYGROUPS     40083
@@ -83,127 +66,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define ID_EXTBKSEPARATOR           40200
 
-// FLAGS
-#define CORNER_NONE 0
-#define CORNER_ACTIVE 1
-#define CORNER_TL 2
-#define CORNER_TR 4
-#define CORNER_BR 8
-#define CORNER_BL 16
-
-#define GRADIENT_NONE 0
-#define GRADIENT_ACTIVE 1
-#define GRADIENT_LR 2
-#define GRADIENT_RL 4
-#define GRADIENT_TB 8
-#define GRADIENT_BT 16
-
-#define IMAGE_PERPIXEL_ALPHA 1
-#define IMAGE_FLAG_DIVIDED 2
-#define IMAGE_FILLSOLID 4
-#define IMAGE_GLYPH 8
-
-#define IMAGE_STRETCH_V 1
-#define IMAGE_STRETCH_H 2
-#define IMAGE_STRETCH_B 4
-
-#define BUTTON_ISINTERNAL 1
-#define BUTTON_ISTOGGLE 2
-#define BUTTON_ISSERVICE 4
-#define BUTTON_ISPROTOSERVICE 8
-#define BUTTON_PASSHCONTACTW 16
-#define BUTTON_PASSHCONTACTL 32
-#define BUTTON_ISDBACTION    64
-#define BUTTON_ISCONTACTDBACTION 128
-#define BUTTON_DBACTIONONCONTACT 256
-
-typedef struct _tagImageItem {
-    char szName[40];
-    HBITMAP hbm;
-    BYTE bLeft, bRight, bTop, bBottom;      // sizing margins
-    BYTE alpha;
-    DWORD dwFlags;
-    HDC hdc;
-    HBITMAP hbmOld;
-    LONG inner_height, inner_width;
-    LONG width, height;
-    BLENDFUNCTION bf;
-    BYTE bStretch;
-    HBRUSH fillBrush;
-    LONG   glyphMetrics[4];
-    struct _tagImageItem *nextItem;
-} ImageItem;
-
-typedef struct _tagButtonItem {
-    char szName[40];
-    HWND hWnd;
-    LONG xOff, yOff;
-    LONG width, height;
-    ImageItem *imgNormal, *imgPressed, *imgHover;
-    LONG normalGlyphMetrics[4];
-    LONG hoverGlyphMetrics[4];
-    LONG pressedGlyphMetrics[4];
-    DWORD dwFlags;
-    DWORD uId;
-    TCHAR szTip[256];
-    char  szService[256];
-    char  szModule[256], szSetting[256];
-    BYTE  bValuePush[256], bValueRelease[256];
-    DWORD type;
-    struct _tagButtonItem *nextItem;
-} ButtonItem;
-
-typedef struct {
-    char szName[40];
-    char szDBname[40];
-    int statusID;
-
-    BYTE GRADIENT;
-    BYTE CORNER;
-
-    DWORD COLOR;
-    DWORD COLOR2;
-
-    BYTE COLOR2_TRANSPARENT;
-
-    DWORD TEXTCOLOR;
-
-    int ALPHA;
-
-    int MARGIN_LEFT;
-    int MARGIN_TOP;
-    int MARGIN_RIGHT;
-    int MARGIN_BOTTOM;
-
-    BYTE IGNORED;
-    DWORD BORDERSTYLE;
-    ImageItem *imageItem;
-} StatusItems_t;
-
-typedef struct {
-    BOOL bGRADIENT;
-    BOOL bCORNER;
-    BOOL bCOLOR;
-    BOOL bCOLOR2;
-    BOOL bCOLOR2_TRANSPARENT;
-    BOOL bTEXTCOLOR;
-    BOOL bALPHA;
-    BOOL bMARGIN_LEFT;
-    BOOL bMARGIN_TOP;
-    BOOL bMARGIN_RIGHT;
-    BOOL bMARGIN_BOTTOM;
-    BOOL bIGNORED;
-    BOOL bBORDERSTYLE;
-} ChangedSItems_t;
-
 BOOL CheckItem(int item, HWND hwndDlg);
 BOOL isValidItem(void);
-void SetChangedStatusItemFlag(WPARAM wParam, HWND hwndDlg);
-void ChangeControlItems(HWND hwndDlg, int status, int except);
 void extbk_export(char *file);
 void extbk_import(char *file, HWND hwndDlg);
 
-void SaveLatestChanges(HWND hwndDlg);
 void LoadExtBkSettingsFromDB();
 void IMG_LoadItems();
 void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc);
@@ -212,7 +79,7 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
 void IMG_InitDecoder();
 void LoadPerContactSkins(char *file);
 
-void SaveCompleteStructToDB();
+static void SaveCompleteStructToDB();
 StatusItems_t *GetProtocolStatusItem(const char *szProto);
 
 void OnListItemsChange(HWND hwndDlg);
@@ -227,18 +94,4 @@ void ReActiveCombo(HWND hwndDlg);
 //BOOL __fastcall GetItemByStatus(int status, StatusItems_t *retitem);
 
 void FillOptionDialogByStatusItem(HWND hwndDlg, StatusItems_t *item);
-
-#define MS_SKIN_DRAWGLYPH "ModernList/DrawGlyph"
-
-/* EVENTS */
-#define ME_SKIN_SERVICESCREATED "ModernList/ServicesCreated"
-
-/* DRAWGLYPH Request structure */
-typedef struct s_SKINDRAWREQUEST
-{
-  char szObjectID[255];      // Unic Object ID (path) to paint
-  RECT rcDestRect;           // Rectangle to fit
-  RECT rcClipRect;           // Rectangle to paint in.
-  HDC hDC;                   // Handler to device context to paint in. 
-} SKINDRAWREQUEST,*LPSKINDRAWREQUEST;
 

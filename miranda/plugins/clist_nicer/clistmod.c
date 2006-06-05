@@ -45,7 +45,9 @@ int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
 
 HANDLE hContactDoubleClicked, hStatusModeChangeEvent;
 HIMAGELIST hCListImages;
-extern int currentDesiredStatusMode, g_maxStatus;
+
+extern int      currentDesiredStatusMode, g_maxStatus;
+extern HANDLE   hSvc_GetContactStatusMsg;
 
 extern struct CluiData g_CluiData;
 
@@ -107,7 +109,7 @@ int LoadContactListModule(void)
 	CreateServiceFunction(MS_CLIST_SETSTATUSMODE, SetStatusMode);
 	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
 
-	CreateServiceFunction("CList/GetContactStatusMsg", GetContactStatusMessage);
+	hSvc_GetContactStatusMsg = CreateServiceFunction("CList/GetContactStatusMsg", GetContactStatusMessage);
 	InitCustomMenus();
 	MySetProcessWorkingSetSize = (BOOL(WINAPI *)(HANDLE, SIZE_T, SIZE_T))GetProcAddress(GetModuleHandleA("kernel32"), "SetProcessWorkingSetSize");
 	return 0;

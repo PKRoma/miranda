@@ -31,12 +31,11 @@ UNICODE done
 #define DBFONTF_UNDERLINE  4
 
 static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcClcExtBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK OptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern struct CluiData g_CluiData;
 
@@ -83,11 +82,6 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
     odp.pfnDlgProc = DlgProcClcBkgOpts;
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_EXTBKG);
-    odp.pszTitle = Translate("List Background+");
-    odp.pfnDlgProc = DlgProcClcExtBkgOpts;
-    odp.flags = ODPF_BOLDGROUPS;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_FLOATING);
     odp.pszTitle = Translate("Floating contacts");
@@ -102,10 +96,10 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
         odp.pfnDlgProc = DlgProcClcTextOpts;    
         CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
     }
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_SKIN);
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT);
     odp.pszGroup = Translate("Customize");
     odp.pszTitle = Translate("Contact list skin");
-    odp.pfnDlgProc = DlgProcSkinOpts;
+    odp.pfnDlgProc = OptionsDlgProc;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
     return 0;
 }
@@ -296,149 +290,6 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
             break;
         case WM_DESTROY:
             ImageList_Destroy(TreeView_GetImageList(GetDlgItem(hwndDlg, IDC_GREYOUTOPTS), TVSIL_NORMAL));
-            break;
-    }
-    return FALSE;
-}
-
-static BOOL CALLBACK DlgProcClcExtBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch (msg) {
-        case WM_INITDIALOG:
-            TranslateDialogDefault(hwndDlg);
-            FillItemList(hwndDlg);
-            SendMessage(hwndDlg, WM_USER + 101, 0, 0);
-            return TRUE;
-        case WM_USER + 101:
-            {
-                DBVARIANT dbv = {0};
-                
-                CheckDlgButton(hwndDlg, IDC_EQUALSELECTION, (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_EqualSelection", 1) == 1) ? BST_CHECKED : BST_UNCHECKED);    
-                CheckDlgButton(hwndDlg, IDC_SELBLEND, DBGetContactSettingByte(NULL, "CLCExt", "EXBK_SelBlend", 1));
-                CheckDlgButton(hwndDlg, IDC_FILLWALLPAPER, DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0));
-
-                SendDlgItemMessage(hwndDlg, IDC_MRGN_LEFT_SPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
-                SendDlgItemMessage(hwndDlg, IDC_MRGN_TOP_SPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
-                SendDlgItemMessage(hwndDlg, IDC_MRGN_RIGHT_SPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
-                SendDlgItemMessage(hwndDlg, IDC_MRGN_BOTTOM_SPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
-                SendDlgItemMessage(hwndDlg, IDC_ALPHASPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
-
-                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("<None>"));
-                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Raised"));
-                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Sunken"));
-                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Bumped"));
-                SendDlgItemMessage(hwndDlg, IDC_BORDERTYPE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Etched"));
-
-                SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
-                SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, g_CluiData.cornerRadius);
-                CheckDlgButton(hwndDlg, IDC_APPLYINDENTBG, g_CluiData.bApplyIndentToBg);
-                CheckDlgButton(hwndDlg, IDC_USEPERPROTO, g_CluiData.bUsePerProto);
-                CheckDlgButton(hwndDlg, IDC_OVERRIDEPERSTATUSCOLOR, g_CluiData.bOverridePerStatusColors);
-				CheckDlgButton(hwndDlg, IDC_FASTGRADIENT, g_CluiData.bWantFastGradients);
-
-                SendDlgItemMessage(hwndDlg, IDC_3DDARKCOLOR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLCExt", "3ddark", RGB(224,224,224)));
-                SendDlgItemMessage(hwndDlg, IDC_3DLIGHTCOLOR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLCExt", "3dbright", RGB(224,224,224)));
-                CheckDlgButton(hwndDlg, IDC_SETALLBUTTONSKINNED, DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0));
-                return 0;
-            }
-        case WM_COMMAND:
-    // this will check if the user changed some actual statusitems values
-    // if yes the flag bChanged will be set to TRUE
-            SetChangedStatusItemFlag(wParam, hwndDlg);
-            switch(LOWORD(wParam)) {
-                case IDC_ITEMS:
-                    if (HIWORD(wParam) != LBN_SELCHANGE)
-                        return FALSE;
-                    {
-                        int iItem = SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_ITEMS, LB_GETCURSEL, 0, 0), 0);
-                        if(iItem == ID_EXTBKSEPARATOR)
-                            return FALSE;
-                    }
-                    OnListItemsChange(hwndDlg);         
-                    pcli->pfnClcOptionsChanged();            
-                    break;          
-                case IDC_GRADIENT:
-                    ReActiveCombo(hwndDlg);
-                    break;
-                case IDC_CORNER:
-                    ReActiveCombo(hwndDlg);
-                    break;
-                case IDC_IGNORE:
-                    ReActiveCombo(hwndDlg);
-                    break;
-                case IDC_COLOR2_TRANSPARENT:
-                    ReActiveCombo(hwndDlg);
-                    break;
-                case IDC_BORDERTYPE:
-                    break;
-                case IDC_EXPORT:
-                    {
-                        char str[MAX_PATH] = "*.clist";
-                        OPENFILENAMEA ofn = {0};
-                        ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-                        ofn.hwndOwner = hwndDlg;
-                        ofn.hInstance = NULL;
-                        ofn.lpstrFilter = "*.clist";
-                        ofn.lpstrFile = str;
-                        ofn.Flags = OFN_HIDEREADONLY;
-                        ofn.nMaxFile = sizeof(str);
-                        ofn.nMaxFileTitle = MAX_PATH;
-                        ofn.lpstrDefExt = "clist";
-                        if (!GetSaveFileNameA(&ofn))
-                            break;
-                        extbk_export(str);
-                        break;
-                    }
-                case IDC_IMPORT:
-                    {
-                        char str[MAX_PATH] = "*.clist";
-                        OPENFILENAMEA ofn = {0};
-
-                        ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-                        ofn.hwndOwner = hwndDlg;
-                        ofn.hInstance = NULL;
-                        ofn.lpstrFilter = "*.clist";
-                        ofn.lpstrFile = str;
-                        ofn.Flags = OFN_FILEMUSTEXIST;
-                        ofn.nMaxFile = sizeof(str);
-                        ofn.nMaxFileTitle = MAX_PATH;
-                        ofn.lpstrDefExt = "";
-                        if (!GetOpenFileNameA(&ofn))
-                            break;
-                        extbk_import(str, hwndDlg);
-                        SendMessage(hwndDlg, WM_USER + 101, 0, 0);
-                        break;
-                    }
-            }
-            if ((LOWORD(wParam) == IDC_ALPHA || LOWORD(wParam) == IDC_CORNERRAD || LOWORD(wParam) == IDC_MRGN_LEFT || LOWORD(wParam) == IDC_MRGN_BOTTOM || LOWORD(wParam) == IDC_MRGN_TOP || LOWORD(wParam) == IDC_MRGN_RIGHT) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
-                return 0;
-            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-            break;
-
-        case WM_NOTIFY:
-            switch (((LPNMHDR) lParam)->idFrom) {
-                case 0:
-                    switch (((LPNMHDR) lParam)->code) {
-                        case PSN_APPLY:
-                // save user made changes
-                            SaveLatestChanges(hwndDlg);
-                // save struct to DB
-                            SaveCompleteStructToDB();           
-                            SaveNonStatusItemsSettings(hwndDlg);
-
-                            pcli->pfnClcOptionsChanged();
-                            SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-                            PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
-                            break;
-                    }
-            /*
-                    case PSN_RESET:
-                        // fill Status struct from DB
-                        Beep(100,100);
-                        LoadExtBkSettingsFromDB();
-                        break;
-                        */
-            }
             break;
     }
     return FALSE;

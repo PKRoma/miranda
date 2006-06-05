@@ -1133,25 +1133,6 @@ int UnitGenMenu()
 	MO_RemoveAllObjects();
 	isGenMenuInited=FALSE;
 
-	DestroyServiceFunction(MO_BUILDMENU);
-
-	DestroyServiceFunction(MO_PROCESSCOMMAND);
-	DestroyServiceFunction(MO_CREATENEWMENUOBJECT);
-	DestroyServiceFunction(MO_REMOVEMENUITEM);
-	DestroyServiceFunction(MO_ADDNEWMENUITEM);
-	DestroyServiceFunction(MO_MENUITEMGETOWNERDATA);
-	DestroyServiceFunction(MO_MODIFYMENUITEM);
-	DestroyServiceFunction(MO_GETMENUITEM);
-	DestroyServiceFunction(MO_PROCESSCOMMANDBYMENUIDENT);
-	DestroyServiceFunction(MO_PROCESSHOTKEYS);
-	DestroyServiceFunction(MO_REMOVEMENUOBJECT);
-
-	DestroyServiceFunction(MO_DRAWMENUITEM);
-	DestroyServiceFunction(MO_MEASUREMENUITEM);
-
-	DestroyServiceFunction(MO_SETOPTIONSMENUOBJECT);
-	DestroyServiceFunction(MO_SETOPTIONSMENUITEM);
-	DestroyHookableEvent(ME_OPT_INITIALISE);
 	unlockmo();
 
 	DeleteCriticalSection(&csMenuHook);

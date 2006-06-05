@@ -50,7 +50,7 @@ extern struct ExtraCache *g_ExtraCache;
 HIMAGELIST hCListImages;
 extern HIMAGELIST himlExtraImages;
 
-HANDLE hSoundHook = 0, hIcoLibChanged = 0;
+HANDLE hSoundHook = 0, hIcoLibChanged = 0, hSvc_GetContactStatusMsg = 0;
 
 static HANDLE hClcSettingsChanged, hClcDBEvent = 0;
 
@@ -59,6 +59,7 @@ static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 LONG g_cxsmIcon, g_cysmIcon;
 
 void  ShutdownGdiPlus();
+void  SetDBButtonStates(HANDLE hContact);
 
 int GetProtocolVisibility(char *ProtoName)
 {
@@ -243,7 +244,8 @@ static int ClcPreshutdown(WPARAM wParam, LPARAM lParam)
 {
 	SFL_Destroy();
 	g_shutDown = TRUE;
-	DestroyServiceFunction("CList/GetContactStatusMsg");
+    if(hSvc_GetContactStatusMsg)
+        DestroyServiceFunction(hSvc_GetContactStatusMsg);
 	UnhookEvent(hClcSettingsChanged);
 	UnhookEvent(hClcDBEvent);
 	if (hIcoLibChanged)

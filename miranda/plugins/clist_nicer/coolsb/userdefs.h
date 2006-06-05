@@ -13,7 +13,7 @@
 /* allow inserted buttons. Without this, all button code will
    be excluded, resulting in a smaller build (about 4kb less). This
    may not seem much, but it is a 25% reduction! */
-#define INCLUDE_BUTTONS		
+//#define INCLUDE_BUTTONS		
 
 /* Allow user-resizable buttons. Makes no difference if INCLUDE_BUTTONS
    is not defined for the project */
@@ -21,7 +21,7 @@
 
 /* Include tooltip support for inserted buttons. Without this, no
    tooltip requests (TTN_GETDISPINFO's) will be sent to the window */
-#define COOLSB_TOOLTIPS
+//#define COOLSB_TOOLTIPS
 
 /* Define this to include the custom-draw support */
 #define CUSTOM_DRAW
@@ -74,6 +74,6 @@
    
 /* maximum number of coolsb windows per application. 
    Set to lower if you don't need many.  */
-#define MAX_COOLSB 64
+#define MAX_COOLSB 4
 
 #endif /* _USERDEFINES_INCLUDED */
