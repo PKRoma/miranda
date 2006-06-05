@@ -369,7 +369,7 @@ PLUGININFO pluginInfo = {
 __declspec( dllexport ) PLUGININFO* MirandaPluginInfo( DWORD mirandaVersion )
 {
 	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,4,3,0 )) {
-		MessageBox( NULL, "The png2dib plugin cannot be loaded. It requires Miranda IM 0.4.3 or later.", "png2dib Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+		MessageBox( NULL, "The png2dib plugin cannot be loaded. It requires Miranda IM 0.5 or later.", "png2dib Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 
