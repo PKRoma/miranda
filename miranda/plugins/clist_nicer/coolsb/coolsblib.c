@@ -26,6 +26,10 @@
 
 */
 
+#if defined( UNICODE ) && !defined( _UNICODE )
+	#define _UNICODE 
+#endif
+
 #define STRICT
 
 #include <windows.h>

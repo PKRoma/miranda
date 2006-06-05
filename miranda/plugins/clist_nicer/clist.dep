@@ -303,6 +303,7 @@
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\genmenu.h"\
+	".\coolsb\coolscroll.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
 	".\m_avatars.h"\
@@ -473,6 +474,7 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\genmenu.h"\
+	".\coolsb\coolscroll.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
 	".\m_avatars.h"\
@@ -541,6 +543,7 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\genmenu.h"\
+	".\coolsb\coolscroll.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
 	".\m_avatars.h"\
@@ -784,6 +787,7 @@
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
 	".\CLUIFrames\genmenu.h"\
+	".\coolsb\coolscroll.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
 	".\m_avatars.h"\
@@ -936,6 +940,18 @@
 	".\rowheight_funcs.h"\
 	
 
+.\coolsb\coolsblib.c : \
+	".\coolsb\coolsb_internal.h"\
+	".\coolsb\coolscroll.h"\
+	".\coolsb\userdefs.h"\
+	
+
+.\coolsb\coolscroll.c : \
+	".\coolsb\coolsb_internal.h"\
+	".\coolsb\coolscroll.h"\
+	".\coolsb\userdefs.h"\
+	
+
 .\Docking.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
@@ -996,6 +1012,7 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\genmenu.h"\
+	".\coolsb\coolscroll.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
 	".\m_avatars.h"\
