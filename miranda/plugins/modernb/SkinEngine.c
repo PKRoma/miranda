@@ -2526,6 +2526,7 @@ BOOL DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD height, MODERN
 	int maxY=0;
 	if (effect->EffectID==0xFF) return FALSE;
 	if (!width || ! height) return FALSE;
+	if (!destPt) return FALSE;
 	buf=(BYTE*)malloc(width*height*sizeof(BYTE));
 	{
 		matrix=effect->EffectMatrix.matrix;

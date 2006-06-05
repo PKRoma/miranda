@@ -796,7 +796,31 @@ void Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR 
 void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact)
 {
 	PDNCE pdnce=(PDNCE)pcli->pfnGetCacheEntry(contact->hContact);
-	lstrcpyn(contact->szText, pcli->pfnGetContactDisplayName(contact->hContact,0),SIZEOF(contact->szText));
+	TCHAR *name = pcli->pfnGetContactDisplayName(contact->hContact,0);
+	if (dat->first_line_append_nick) {
+		DBVARIANT dbv = {0};
+		if (!DBGetContactSettingTString(pdnce->hContact, pdnce->szProto, "Nick", &dbv)) 
+		{
+			TCHAR nick[SIZEOF(contact->szText)];
+			lstrcpyn(nick, dbv.ptszVal, SIZEOF(contact->szText));
+			DBFreeVariant(&dbv);
+			
+			if (_tcsnicmp(name, nick, lstrlen(name)) == 0) {
+				// They are the same -> use the nick to keep the case
+				lstrcpyn(contact->szText, nick, SIZEOF(contact->szText));
+			} else if (_tcsnicmp(name, nick, lstrlen(nick)) == 0) {
+				// They are the same -> use the nick to keep the case
+				lstrcpyn(contact->szText, name, SIZEOF(contact->szText));
+			} else {
+				// Append then
+				mir_sntprintf(contact->szText, SIZEOF(contact->szText), _T("%s - %s"), name, nick);
+			}
+		} else {
+			lstrcpyn(contact->szText, name, SIZEOF(contact->szText));
+		}
+	} else {
+		lstrcpyn(contact->szText, name, SIZEOF(contact->szText));
+	}
 	Cache_ReplaceSmileys(dat, pdnce, contact->szText, lstrlen(contact->szText)+1, &(contact->plText),
 		&contact->iTextMaxSmileyHeight,dat->first_line_draw_smileys);
 }

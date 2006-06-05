@@ -719,6 +719,8 @@ case INTM_TIMEZONECHANGED:
 case INTM_NAMECHANGED:
 	{
 		struct ClcContact *contact;
+		int ret=saveContactListControlWndProc(hwnd, msg, wParam, lParam);
+
 		pcli->pfnInvalidateDisplayNameCacheEntry((HANDLE)wParam);
 		if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) break;
 		lstrcpyn(contact->szText, pcli->pfnGetContactDisplayName((HANDLE)wParam,0),sizeof(contact->szText));
@@ -729,7 +731,8 @@ case INTM_NAMECHANGED:
 		}
 		dat->NeedResort=1;
 		pcli->pfnSortContacts();
-		break;
+		
+		return ret;
 	}
 
 case INTM_STATUSMSGCHANGED:

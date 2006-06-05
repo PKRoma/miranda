@@ -159,7 +159,6 @@
 #define IDI_ICON2                       396
 #define IDI_ICON3                       397
 #define IDD_OPT_SKINEDITOR              398
-
 #define IDI_STATUS_OVERLAY_NA           400
 #define IDI_STATUS_OVERLAY_OCCUPIED     401
 #define IDI_STATUS_OVERLAY_OFFLINE      402
@@ -176,7 +175,6 @@
 #define IDI_ROWCONT1                    416
 #define IDI_ROWCONT2                    417
 #define IDI_ROWCONT3                    418
-
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -826,6 +824,8 @@
 #define IDC_TOP_SPACE                   1827
 #define IDC_RESIZE_SMILEYS              1827
 #define IDC_TOP_SPACE_SPIN              1828
+#define IDC_DRAW_SMILEYS_ON_FIRST_LINE2 1828
+#define IDC_APPEND_NICK                 1828
 #define IDC_DRAW_SMILEYS                1829
 #define IDC_EMPTY                       1830
 #define IDC_NICKNAME                    1831
