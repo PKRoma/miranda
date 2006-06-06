@@ -153,23 +153,23 @@ int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 	HICON hicon;
 	hicon=LoadIconFromExternalFile("clisticons.dll",0,TRUE,FALSE,"Email","Contact List",Translate("Email Icon"),-IDI_EMAIL);
 	ExtraImageIconsIndex[0]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[0],hicon );		
-    DestroyIcon(hicon);
+    //DestroyIcon(hicon);
 
 	hicon=LoadIconFromExternalFile("clisticons.dll",1,TRUE,FALSE,"Sms","Contact List",Translate("Sms Icon"),-IDI_SMS);
 	ExtraImageIconsIndex[1]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[1],hicon );		
-	DestroyIcon(hicon);
+	//DestroyIcon(hicon);
 
 	hicon=LoadIconFromExternalFile("clisticons.dll",4,TRUE,FALSE,"Web","Contact List",Translate("Web Icon"),-IDI_GLOBUS);
 	ExtraImageIconsIndex[2]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[2],hicon );		
-	DestroyIcon(hicon);
+	//DestroyIcon(hicon);
 
 	hicon=LoadIconFromExternalFile("clisticons.dll",5,TRUE,FALSE,"AlwaysVis","Contact List",Translate("Always Visible"),-IDI_ALWAYSVIS);
 	ExtraImageIconsIndex[3]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[3],hicon );		
-	DestroyIcon(hicon);
+	//DestroyIcon(hicon);
 
 	hicon=LoadIconFromExternalFile("clisticons.dll",6,TRUE,FALSE,"NeverVis","Contact List",Translate("Never Visible"),-IDI_NEVERVIS);
 	ExtraImageIconsIndex[4]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[4],hicon );		
-	DestroyIcon(hicon);
+	//DestroyIcon(hicon);
 
 	CluiIconsChanged(wParam,lParam);
 	NotifyEventHooks(ME_SKIN_ICONSCHANGED,0,0);
@@ -214,11 +214,11 @@ void ReloadExtraIcons()
 			ImageList_AddIcon(hExtraImageList,LoadSkinnedProtoIcon(protos[i]->szName,ID_STATUS_ONLINE));
 		}
 
-		hicon=LoadIconFromExternalFile("clisticons.dll",5,TRUE,FALSE,"AlwaysVis","Contact List",Translate("Always Visible"),-IDI_ALWAYSVIS);
+		hicon=LoadIconFromExternalFile("clisticons.dll",5,TRUE,TRUE,"AlwaysVis","Contact List",Translate("Always Visible"),-IDI_ALWAYSVIS);
 		if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_ALWAYSVIS));
 		ExtraImageIconsIndex[3]=ImageList_AddIcon(hExtraImageList,hicon );
 
-		hicon=LoadIconFromExternalFile("clisticons.dll",6,TRUE,FALSE,"NeverVis","Contact List",Translate("Never Visible"),-IDI_NEVERVIS);
+		hicon=LoadIconFromExternalFile("clisticons.dll",6,TRUE,TRUE,"NeverVis","Contact List",Translate("Never Visible"),-IDI_NEVERVIS);
 		if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_NEVERVIS));
 		ExtraImageIconsIndex[4]=ImageList_AddIcon(hExtraImageList,hicon );
 
