@@ -1712,7 +1712,6 @@ BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
              sd.pfnClcOptionsChanged = pcli->pfnClcOptionsChanged;
              sd.hwndCLUI = pcli->hwndContactList;
              hwndSkinEdit = (HWND)CallService(MS_CLNSE_INVOKE, 0, (LPARAM)&sd);
-             _DebugTraceA("skinedit: %d", hwndSkinEdit);
          }
 
          /*
