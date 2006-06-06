@@ -5,10 +5,10 @@ BOOL ON_SETALLEXTRAICON_CYCLE=0;
 
 //int ImageList_AddIcon_FixAlpha(HIMAGELIST himl,HICON hicon);
 extern int LoadPositionsFromDB(BYTE * OrderPos);
-#define EXTRACOLUMNCOUNT 9
+#define EXTRACOLUMNCOUNT 10
 int EnabledColumnCount=0;
 boolean visar[EXTRACOLUMNCOUNT];
-#define ExtraImageIconsIndexCount 3
+#define ExtraImageIconsIndexCount 5
 int ExtraImageIconsIndex[ExtraImageIconsIndexCount];
 
 static HANDLE hExtraImageListRebuilding,hExtraImageApplying;
@@ -28,15 +28,16 @@ boolean ImageCreated=FALSE;
 void ReloadExtraIcons();
 BYTE ExtraOrder[]=
 {
-	0, // EXTRA_ICON_EMAIL	
-	1, // EXTRA_ICON_PROTO	
-	2, // EXTRA_ICON_SMS	
-	3, // EXTRA_ICON_ADV1	
-	4, // EXTRA_ICON_ADV2	
-	5, // EXTRA_ICON_WEB	
+	1, // EXTRA_ICON_EMAIL	
+	2, // EXTRA_ICON_PROTO	
+	3, // EXTRA_ICON_SMS	
+	4, // EXTRA_ICON_ADV1	
+	5, // EXTRA_ICON_ADV2	
+	6, // EXTRA_ICON_WEB	
 	6, // EXTRA_ICON_CLIENT 
-	7, // EXTRA_ICON_ADV3	
-	8, // EXTRA_ICON_ADV4	
+	0, // EXTRA_ICON_VISMODE 
+	8, // EXTRA_ICON_ADV3	
+	9, // EXTRA_ICON_ADV4	
 };
 boolean isColumnVisible(int extra)
 {
@@ -53,6 +54,7 @@ boolean isColumnVisible(int extra)
 				case EXTRA_ICON_ADV2:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV2",1));	
 				case EXTRA_ICON_WEB:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_WEB",1));
 				case EXTRA_ICON_CLIENT:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_CLIENT",1));
+				case EXTRA_ICON_VISMODE:	return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_VISMODE",1));
 				case EXTRA_ICON_ADV3:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV3",0));
 				case EXTRA_ICON_ADV4:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV4",0));			
 			}
@@ -72,6 +74,7 @@ void GetVisColumns()
 	visar[6]=isColumnVisible(6);
 	visar[7]=isColumnVisible(7);
 	visar[8]=isColumnVisible(8);
+	visar[9]=isColumnVisible(9);
 };
 
 __inline int bti(boolean b)
@@ -150,12 +153,23 @@ int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 	HICON hicon;
 	hicon=LoadIconFromExternalFile("clisticons.dll",0,TRUE,FALSE,"Email","Contact List",Translate("Email Icon"),-IDI_EMAIL);
 	ExtraImageIconsIndex[0]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[0],hicon );		
+    DestroyIcon(hicon);
 
 	hicon=LoadIconFromExternalFile("clisticons.dll",1,TRUE,FALSE,"Sms","Contact List",Translate("Sms Icon"),-IDI_SMS);
 	ExtraImageIconsIndex[1]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[1],hicon );		
+	DestroyIcon(hicon);
 
 	hicon=LoadIconFromExternalFile("clisticons.dll",4,TRUE,FALSE,"Web","Contact List",Translate("Web Icon"),-IDI_GLOBUS);
 	ExtraImageIconsIndex[2]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[2],hicon );		
+	DestroyIcon(hicon);
+
+	hicon=LoadIconFromExternalFile("clisticons.dll",5,TRUE,FALSE,"AlwaysVis","Contact List",Translate("Always Visible"),-IDI_ALWAYSVIS);
+	ExtraImageIconsIndex[3]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[3],hicon );		
+	DestroyIcon(hicon);
+
+	hicon=LoadIconFromExternalFile("clisticons.dll",6,TRUE,FALSE,"NeverVis","Contact List",Translate("Never Visible"),-IDI_NEVERVIS);
+	ExtraImageIconsIndex[4]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[4],hicon );		
+	DestroyIcon(hicon);
 
 	CluiIconsChanged(wParam,lParam);
 	NotifyEventHooks(ME_SKIN_ICONSCHANGED,0,0);
@@ -191,12 +205,23 @@ void ReloadExtraIcons()
 
 		hicon=LoadIconFromExternalFile("clisticons.dll",4,TRUE,TRUE,"Web","Contact List",Translate("Web Icon"),-IDI_GLOBUS);
 		if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_GLOBUS));
-		ExtraImageIconsIndex[2]=ImageList_AddIcon(hExtraImageList,hicon );	
+		ExtraImageIconsIndex[2]=ImageList_AddIcon(hExtraImageList,hicon );
+		
+
 		//calc only needed protocols
 		for(i=0;i<count;i++) {
 			if(protos[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
 			ImageList_AddIcon(hExtraImageList,LoadSkinnedProtoIcon(protos[i]->szName,ID_STATUS_ONLINE));
 		}
+
+		hicon=LoadIconFromExternalFile("clisticons.dll",5,TRUE,FALSE,"AlwaysVis","Contact List",Translate("Always Visible"),-IDI_ALWAYSVIS);
+		if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_ALWAYSVIS));
+		ExtraImageIconsIndex[3]=ImageList_AddIcon(hExtraImageList,hicon );
+
+		hicon=LoadIconFromExternalFile("clisticons.dll",6,TRUE,FALSE,"NeverVis","Contact List",Translate("Never Visible"),-IDI_NEVERVIS);
+		if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_NEVERVIS));
+		ExtraImageIconsIndex[4]=ImageList_AddIcon(hExtraImageList,hicon );
+
 		SendMessage(pcli->hwndContactTree,CLM_SETEXTRAIMAGELIST,0,(LPARAM)hExtraImageList);		
 		//SetAllExtraIcons(hImgList);
 		SetNewExtraColumnCount();
@@ -360,6 +385,15 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 				};
 			};				
 		};
+		if(ExtraToColumnNum(EXTRA_ICON_VISMODE)!=-1) 
+		{
+			if (pdnce->ApparentMode==ID_STATUS_OFFLINE)
+				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_VISMODE),ExtraImageIconsIndex[4]));	
+			else if (pdnce->ApparentMode==ID_STATUS_ONLINE)
+				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_VISMODE),ExtraImageIconsIndex[3]));	
+			else 
+				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_VISMODE),0xFF));	
+		}
 		NotifyEventHooks(hExtraImageApplying,(WPARAM)hContact,0);
 		if (hcontgiven) break;
 		Sleep(0);

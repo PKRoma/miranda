@@ -587,6 +587,7 @@ case WM_NCHITTEST:
 		int result=DefWindowProc(hwnd,WM_NCHITTEST,wParam,lParam);
 		return result;
 	}
+/*
 case WM_CONTEXTMENU:
 	{
 		struct ClcContact *contact;
@@ -594,21 +595,22 @@ case WM_CONTEXTMENU:
 		int hit = pcli->pfnGetRowByIndex(dat, dat->selection, &contact, NULL);
 		if (hit!=-1) {
 			dat->menuOwnerType=contact->type;
-			dat->menuOwnerID=pcli->pfnContactToHItem(contact);
+			dat->menuOwnerID=(int)pcli->pfnContactToHItem(contact);
 		} else {
 			dat->menuOwnerType=CLCIT_INVALID;
-			dat->menuOwnerID=NULL;
+			dat->menuOwnerID=0;
 		}
 
 		return res;
 	}
+*/
 case WM_COMMAND:
 	{
 		struct ClcContact *contact;
-		//int hit = pcli->pfnGetRowByIndex(dat, dat->selection, &contact, NULL);
-		int hit = pcli->pfnFindItem(hwnd,dat,dat->menuOwnerID,&contact,NULL,FALSE);
-		dat->menuOwnerID=-1;
-		dat->menuOwnerType=CLCIT_INVALID;
+		int hit = pcli->pfnGetRowByIndex(dat, dat->selection, &contact, NULL);
+		//int hit = pcli->pfnFindItem(hwnd,dat,dat->menuOwnerID,&contact,NULL,FALSE);
+		//dat->menuOwnerID=-1;
+		//dat->menuOwnerType=CLCIT_INVALID;
 		if (hit == 0)
 			return 0;
 		if (contact->type == CLCIT_CONTACT)
@@ -753,7 +755,12 @@ case INTM_NAMECHANGED:
 		
 		return ret;
 	}
+case INTM_APPARENTMODECHANGED:
+	{
+		int res=saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 
+		return res;
+	}
 case INTM_STATUSMSGCHANGED:
 	{
 		struct ClcContact *contact;

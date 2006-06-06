@@ -874,9 +874,21 @@ void Cache_GetThirdLineText(struct ClcData *dat, PDNCE pdnce)
 }
 
 
+void RemoveTag(TCHAR *to, TCHAR *tag)
+{
+	TCHAR * st=to;
+	int len=_tcslen(tag);
+	int lastsize=_tcslen(to);
+	while (st=_tcsstr(st,tag)) 
+	{
+		lastsize-=len;
+		memmove((void*)st,(void*)(st+len),(lastsize)*sizeof(TCHAR));
+	}
+}
 
 /*
 *	Copy string with removing Escape chars from text
+*   And BBcodes
 */
 int CopySkipUnPrintableChars(TCHAR *to, TCHAR * buf, DWORD size)
 {
@@ -900,6 +912,24 @@ int CopySkipUnPrintableChars(TCHAR *to, TCHAR * buf, DWORD size)
 		} 
 	}
 	*cp=0;
+	{
+		//remove bbcodes: [b] [i] [u] <b> <i> <u>
+		RemoveTag(to,_T("[b]")); RemoveTag(to,_T("[/b]"));
+		RemoveTag(to,_T("[u]")); RemoveTag(to,_T("[/u]"));
+		RemoveTag(to,_T("[i]")); RemoveTag(to,_T("[/i]"));
+
+		RemoveTag(to,_T("<b>")); RemoveTag(to,_T("</b>"));
+		RemoveTag(to,_T("<u>")); RemoveTag(to,_T("</u>"));
+		RemoveTag(to,_T("<i>")); RemoveTag(to,_T("</i>"));		
+
+		RemoveTag(to,_T("[B]")); RemoveTag(to,_T("[/b]"));
+		RemoveTag(to,_T("[U]")); RemoveTag(to,_T("[/u]"));
+		RemoveTag(to,_T("[I]")); RemoveTag(to,_T("[/i]"));
+
+		RemoveTag(to,_T("<B>")); RemoveTag(to,_T("</B>"));
+		RemoveTag(to,_T("<U>")); RemoveTag(to,_T("</U>"));
+		RemoveTag(to,_T("<I>")); RemoveTag(to,_T("</I>"));
+	}
 	return i;
 }
 

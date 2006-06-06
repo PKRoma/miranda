@@ -302,6 +302,8 @@ LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 // remains consistent on all systems.
 IDI_BLANK               ICON                    "res\\blank.ico"
 IDI_MIRANDA             ICON                    "res\\Miranda.ico"
+IDI_ALWAYSVIS           ICON                    "res\\AlwaysVis.ico"
+IDI_NEVERVIS            ICON                    "res\\NeverVis.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

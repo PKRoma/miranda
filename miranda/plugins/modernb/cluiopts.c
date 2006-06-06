@@ -89,6 +89,7 @@ typedef struct _OrderTreeData
 
 TOrderTreeData OrderTreeData[]=
 {
+	{EXTRA_ICON_VISMODE, _T("Visibility"), EXTRA_ICON_VISMODE,  "EXTRA_ICON_VISMODE", TRUE},
 	{EXTRA_ICON_EMAIL, _T("E-mail"), EXTRA_ICON_EMAIL, "EXTRA_ICON_EMAIL", TRUE},
 	{EXTRA_ICON_PROTO, _T("Protocol"), EXTRA_ICON_PROTO, "EXTRA_ICON_PROTO", TRUE},
 	{EXTRA_ICON_SMS, _T("Phone/SMS"), EXTRA_ICON_SMS,	 "EXTRA_ICON_SMS", TRUE},
@@ -100,7 +101,7 @@ TOrderTreeData OrderTreeData[]=
 	{EXTRA_ICON_ADV4, _T("Advanced #4"), EXTRA_ICON_ADV4,	"EXTRA_ICON_ADV4", TRUE}
 };
 
-#define PrVer 3
+#define PrVer 4
 
 char **settingname;
 int arrlen;

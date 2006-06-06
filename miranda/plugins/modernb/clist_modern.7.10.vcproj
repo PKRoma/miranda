@@ -1439,6 +1439,9 @@
 				RelativePath=".\res\addgoupp.ico">
 			</File>
 			<File
+				RelativePath=".\res\AlwaysVis.ico">
+			</File>
+			<File
 				RelativePath=".\res\away.ico">
 			</File>
 			<File
@@ -1521,6 +1524,9 @@
 			</File>
 			<File
 				RelativePath=".\res\neo_meta_move.cur">
+			</File>
+			<File
+				RelativePath=".\res\NeverVis.ico">
 			</File>
 			<File
 				RelativePath=".\res\notick.ico">

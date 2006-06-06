@@ -1099,7 +1099,7 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 }
 
 
-#define NUM_ITEM_OPTION_PAGES 9
+
 
 typedef struct _ItemOptionConf 
 { 
@@ -1114,6 +1114,22 @@ typedef struct _ItemOptionData
 	HWND hwnd;				// dialog handle
 } ItemOptionData; 
 
+static ItemOptionConf opt_items[] = { 
+	{ _T("Row"), IDD_OPT_ITEM_ROW, DlgProcItemRowOpts },
+#ifdef _DEBUG
+	{ _T("Row design"), IDD_OPT_ROWTMPL, DlgTmplEditorOpts },
+#endif
+	{ _T("Avatar"), IDD_OPT_ITEM_AVATAR, DlgProcItemAvatarOpts },
+	{ _T("Icon"), IDD_OPT_ITEM_ICON, DlgProcItemIconOpts },
+	{ _T("Contact time"), IDD_OPT_ITEM_CONTACT_TIME, DlgProcItemContactTimeOpts },
+	{ _T("Text"), IDD_OPT_ITEM_TEXT, DlgProcItemTextOpts },
+	{ _T("Second Line"), IDD_OPT_ITEM_SECOND_LINE, DlgProcItemSecondLineOpts },
+	{ _T("Third Line"), IDD_OPT_ITEM_THIRD_LINE, DlgProcItemThirdLineOpts },
+	{ _T("Extra Icons"), IDD_OPT_ITEM_EXTRAICONS, DlgProcExtraIconsOpts}
+};
+
+#define NUM_ITEM_OPTION_PAGES SIZEOF(opt_items)
+
 typedef struct _WndItemsData 
 { 
 	ItemOptionData items[NUM_ITEM_OPTION_PAGES];
@@ -1121,17 +1137,6 @@ typedef struct _WndItemsData
 	int selected_item;
 } WndItemsData; 
 
-static ItemOptionConf opt_items[] = { 
-{ _T("Row"), IDD_OPT_ITEM_ROW, DlgProcItemRowOpts },
-{ _T("Row design"), IDD_OPT_ROWTMPL, DlgTmplEditorOpts },
-{ _T("Avatar"), IDD_OPT_ITEM_AVATAR, DlgProcItemAvatarOpts },
-{ _T("Icon"), IDD_OPT_ITEM_ICON, DlgProcItemIconOpts },
-{ _T("Contact time"), IDD_OPT_ITEM_CONTACT_TIME, DlgProcItemContactTimeOpts },
-{ _T("Text"), IDD_OPT_ITEM_TEXT, DlgProcItemTextOpts },
-{ _T("Second Line"), IDD_OPT_ITEM_SECOND_LINE, DlgProcItemSecondLineOpts },
-{ _T("Third Line"), IDD_OPT_ITEM_THIRD_LINE, DlgProcItemThirdLineOpts },
-{ _T("Extra Icons"), IDD_OPT_ITEM_EXTRAICONS, DlgProcExtraIconsOpts}
-};
 
 
 
