@@ -552,6 +552,63 @@ nowindowcreate:
     return 0;
 }
 
+#if defined(_UNICODE)
+static int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
+{
+    HWND hwnd;
+	char *szProto;
+    struct NewMessageWindowLParam newData = { 0 };
+    struct ContainerWindowData *pContainer = 0;
+    
+    int isSplit = 1;
+    
+    /* does the HCONTACT's protocol support IM messages? */
+    szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+    if (szProto) {
+		if (!CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND)
+			return 0;
+    }
+    else {
+		/* unknown contact */
+        return 0;
+    }
+
+    EnterCriticalSection(&cs_sessions);
+    if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
+        if (lParam) {
+            HWND hEdit;
+            hEdit = GetDlgItem(hwnd, IDC_MESSAGE);
+            SendMessage(hEdit, EM_SETSEL, -1, SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0));
+            SendMessage(hEdit, EM_REPLACESEL, FALSE, (LPARAM) (TCHAR *) lParam);
+        }
+        SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM) &pContainer);          // ask the message window about its parent...
+		ActivateExistingTab(pContainer, hwnd);
+    }
+    else {
+        TCHAR szName[CONTAINER_NAMELEN + 1];
+        /*
+         * attempt to fix "double tabs" opened by MS_MSG_SENDMESSAGE
+         * strange problem, maybe related to the window list service in miranda?
+         */
+        if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "trayfix", 0)) {
+            if(myGlobals.hLastOpenedContact == (HANDLE)wParam) {
+                LeaveCriticalSection(&cs_sessions);
+                return 0;
+            }
+        }
+        myGlobals.hLastOpenedContact = (HANDLE)wParam;
+        GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
+        pContainer = FindContainerByName(szName);
+        if (pContainer == NULL)
+            pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
+		CreateNewTabForContact(pContainer, (HANDLE) wParam, 1, (const char *) lParam, TRUE, TRUE, FALSE, 0);
+    }
+    LeaveCriticalSection(&cs_sessions);
+    return 0;
+}
+
+#endif
+
 static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 {
     HWND hwnd;
@@ -600,7 +657,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
         pContainer = FindContainerByName(szName);
         if (pContainer == NULL)
             pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
-		CreateNewTabForContact(pContainer, (HANDLE) wParam, !isSplit, (const char *) lParam, TRUE, TRUE, FALSE, 0);
+		CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, (const char *) lParam, TRUE, TRUE, FALSE, 0);
     }
     LeaveCriticalSection(&cs_sessions);
     return 0;
@@ -776,7 +833,7 @@ static void RestoreUnreadMessageAlerts(void)
                 if (0) {
                     struct NewMessageWindowLParam newData = { 0 };
                     newData.hContact = hContact;
-                    newData.isSend = 0;
+                    newData.isWchar = 0;
                     CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLITNEW), NULL, DlgProcMessage, (LPARAM) & newData);
                 }
                 else {
@@ -1463,7 +1520,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
     }
     
 	newData.hContact = hContact;
-    newData.isSend = isSend;
+    newData.isWchar = isSend;
     newData.szInitialText = pszInitialText;
     szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) newData.hContact, 0);
 
@@ -1627,7 +1684,7 @@ static void InitAPI()
     
     CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
 #if defined(_UNICODE)
-    CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand);
+    CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand_W);
 #endif
     CreateServiceFunction(MS_MSG_FORWARDMESSAGE, ForwardMessage);
     CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);

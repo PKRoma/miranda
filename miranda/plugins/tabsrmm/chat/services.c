@@ -595,7 +595,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
         }
     }
 	newData.hContact = hContact;
-    newData.isSend = 0;
+    newData.isWchar = 0;
     newData.szInitialText = NULL;
     szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) newData.hContact, 0);
 

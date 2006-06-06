@@ -133,7 +133,7 @@ typedef struct _settextex {
 
 struct NewMessageWindowLParam {
 	HANDLE hContact;
-	int isSend;
+	int isWchar;
 	const char *szInitialText;
 	int iTabID;				// XXX mod: tab support
 	int iTabImage;			// XXX mod tabs...
