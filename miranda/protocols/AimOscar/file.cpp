@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_DEPRECATE 1
 #include "file.h"
 void sending_file(HANDLE hContact, HANDLE hNewConnection)
 {

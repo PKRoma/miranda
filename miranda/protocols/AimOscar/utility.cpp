@@ -1,10 +1,3 @@
-//#define _strtok_s strtok
-#define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
-#define _CRT_SECURE_CPP_OVERLOAD_SECURE_NAMES 1
-#define  _CRT_SECURE_NO_DEPRECATE
-//#if _MSC_VER >= 1400
-	
-//#endif
 #include <string.h>
 #include "utility.h"
 void broadcast_status(int status)
