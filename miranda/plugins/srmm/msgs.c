@@ -120,7 +120,8 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
+#if defined(_UNICODE)
+static int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
 	struct NewMessageWindowLParam newData = { 0 };
@@ -152,6 +153,46 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 	else {
 		newData.hContact = (HANDLE) wParam;
 		newData.szInitialText = (const char *) lParam;
+		newData.isWchar = 1;
+		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
+	}
+	return 0;
+}
+#endif
+
+static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
+{
+	HWND hwnd;
+	struct NewMessageWindowLParam newData = { 0 };
+
+	{
+		/* does the HCONTACT's protocol support IM messages? */
+		char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+		if (szProto) {
+			if (!CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND)
+				return 1;
+		}
+		else {
+			/* unknown contact */
+			return 1;
+		}                       //if
+	}
+
+	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam)) {
+		if (lParam) {
+			HWND hEdit;
+			hEdit = GetDlgItem(hwnd, IDC_MESSAGE);
+			SendMessage(hEdit, EM_SETSEL, -1, SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0));
+			SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM) (char *) lParam);
+		}
+		ShowWindow(hwnd, SW_SHOWNORMAL);
+		SetForegroundWindow(hwnd);
+		SetFocus(hwnd);
+	}
+	else {
+		newData.hContact = (HANDLE) wParam;
+		newData.szInitialText = (const char *) lParam;
+		newData.isWchar = 0;
 		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
 	}
 	return 0;
@@ -416,7 +457,7 @@ int LoadSendRecvMessageModule(void)
 	HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
 	CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
 #if defined(_UNICODE)
-	CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand);
+	CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand_W);
 #endif
 	CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);
 	CreateServiceFunction(MS_MSG_GETWINDOWCLASS, GetWindowClass);

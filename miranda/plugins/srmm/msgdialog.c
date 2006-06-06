@@ -19,6 +19,9 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
+#define _USE_32BIT_TIME_T
+
 #include "commonheaders.h"
 #pragma hdrstop
 
@@ -599,7 +602,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
 				if (newData->szInitialText) {
 					int len;
+#if defined(_UNICODE)
+                    if(newData->isWchar)
+    					SetDlgItemText(hwndDlg, IDC_MESSAGE, (TCHAR *)newData->szInitialText);
+    				else
+    					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);                    
+#else					
 					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
+#endif					
 					len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 					PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
 				}
