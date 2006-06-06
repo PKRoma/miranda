@@ -30,7 +30,7 @@ void HotKeysUnregister(HWND hwnd);
 //void LoadContactTree(void);
 
 static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -39,6 +39,7 @@ extern BOOL CALLBACK DlgProcExtraIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 static UINT expertOnlyControls[]={IDC_ALWAYSSTATUS};
 int CListOptInit(WPARAM wParam,LPARAM lParam)
 {
+	
 	OPTIONSDIALOGPAGE odp;
 
 	ZeroMemory(&odp,sizeof(odp));
@@ -52,7 +53,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.nIDBottomSimpleControl=IDC_STCLISTGROUP;
 	odp.expertOnlyControls=expertOnlyControls;
 	odp.nExpertOnlyControls=sizeof(expertOnlyControls)/sizeof(expertOnlyControls[0]);
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	//CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize=sizeof(odp);
@@ -65,17 +66,17 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
-	/*
-	odp.position=-900000000;
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
-	odp.pszTitle=Translate("Hotkeys");
-	odp.pszGroup=Translate("Events");
-	odp.pfnDlgProc=DlgProcHotkeyOpts;
-	odp.nIDBottomSimpleControl=0;
-	odp.nExpertOnlyControls=0;
-	odp.expertOnlyControls=NULL;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-	*/
+	
+// 	odp.position=-900000000;
+// 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
+// 	odp.pszTitle=Translate("Hotkeys");
+// 	odp.pszGroup=Translate("Events");
+// 	odp.pfnDlgProc=DlgProcHotkeyOpts;
+// 	odp.nIDBottomSimpleControl=0;
+// 	odp.nExpertOnlyControls=0;
+// 	odp.expertOnlyControls=NULL;
+// 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	
 	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize=sizeof(odp);
 	odp.position=-200000000;
@@ -86,6 +87,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pszTitle=Translate("Hotkeys2");
 	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	
 	return 0;
 }
 
@@ -1097,7 +1099,7 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 }
 
 
-#define NUM_ITEM_OPTION_PAGES 9
+
 
 typedef struct _ItemOptionConf 
 { 
@@ -1112,6 +1114,22 @@ typedef struct _ItemOptionData
 	HWND hwnd;				// dialog handle
 } ItemOptionData; 
 
+static ItemOptionConf opt_items[] = { 
+	{ _T("Row"), IDD_OPT_ITEM_ROW, DlgProcItemRowOpts },
+#ifdef _DEBUG
+	{ _T("Row design"), IDD_OPT_ROWTMPL, DlgTmplEditorOpts },
+#endif
+	{ _T("Avatar"), IDD_OPT_ITEM_AVATAR, DlgProcItemAvatarOpts },
+	{ _T("Icon"), IDD_OPT_ITEM_ICON, DlgProcItemIconOpts },
+	{ _T("Contact time"), IDD_OPT_ITEM_CONTACT_TIME, DlgProcItemContactTimeOpts },
+	{ _T("Text"), IDD_OPT_ITEM_TEXT, DlgProcItemTextOpts },
+	{ _T("Second Line"), IDD_OPT_ITEM_SECOND_LINE, DlgProcItemSecondLineOpts },
+	{ _T("Third Line"), IDD_OPT_ITEM_THIRD_LINE, DlgProcItemThirdLineOpts },
+	{ _T("Extra Icons"), IDD_OPT_ITEM_EXTRAICONS, DlgProcExtraIconsOpts}
+};
+
+#define NUM_ITEM_OPTION_PAGES SIZEOF(opt_items)
+
 typedef struct _WndItemsData 
 { 
 	ItemOptionData items[NUM_ITEM_OPTION_PAGES];
@@ -1119,17 +1137,6 @@ typedef struct _WndItemsData
 	int selected_item;
 } WndItemsData; 
 
-static ItemOptionConf opt_items[] = { 
-{ _T("Row"), IDD_OPT_ITEM_ROW, DlgProcItemRowOpts },
-{ _T("Row design"), IDD_OPT_ROWTMPL, DlgTmplEditorOpts },
-{ _T("Avatar"), IDD_OPT_ITEM_AVATAR, DlgProcItemAvatarOpts },
-{ _T("Icon"), IDD_OPT_ITEM_ICON, DlgProcItemIconOpts },
-{ _T("Contact time"), IDD_OPT_ITEM_CONTACT_TIME, DlgProcItemContactTimeOpts },
-{ _T("Text"), IDD_OPT_ITEM_TEXT, DlgProcItemTextOpts },
-{ _T("Second Line"), IDD_OPT_ITEM_SECOND_LINE, DlgProcItemSecondLineOpts },
-{ _T("Third Line"), IDD_OPT_ITEM_THIRD_LINE, DlgProcItemThirdLineOpts },
-{ _T("Extra Icons"), IDD_OPT_ITEM_EXTRAICONS, DlgProcExtraIconsOpts}
-};
 
 
 
@@ -1311,7 +1318,7 @@ static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	return 0;
 }
 
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{

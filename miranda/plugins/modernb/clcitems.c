@@ -444,8 +444,29 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 
 void cli_SortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort )
 {
+	HANDLE hSelItem;
+	struct ClcContact *selcontact;
+	struct ClcGroup *group = &dat->list, *selgroup;
 	lockdat;
+	if ( 1 ) {
+		if (pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) == -1)
+			hSelItem = NULL;
+		else
+			hSelItem = pcli->pfnContactToHItem(selcontact);
+	}
 	saveSortCLC(hwnd,dat,useInsertionSort);
+	if (hSelItem)
+		if (pcli->pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
+		{
+			if (!selcontact->isSubcontact)
+				dat->selection =pcli->pfnGetRowsPriorTo(&dat->list, selgroup, li.List_IndexOf((SortedList*)&selgroup->cl,selcontact));
+			else
+			{  
+				int i=selcontact->isSubcontact;
+				dat->selection=pcli->pfnGetRowsPriorTo(&dat->list, selgroup, li.List_IndexOf((SortedList*)&selgroup->cl,selcontact->subcontacts));
+				if (dat->selection!=-1) dat->selection+=i;
+			}
+		}
 	ulockdat;
 }
 

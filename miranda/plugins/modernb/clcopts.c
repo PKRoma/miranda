@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_clc.h"
 #include "clc.h"
+#include "commonprototypes.h"
 
 
 #define DBFONTF_BOLD       1
@@ -211,32 +212,58 @@ int BgStatusBarChange(WPARAM wParam,LPARAM lParam)
   return 0;
 }
 
+BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
+
+static TabItemOptionConf clist_opt_items[] = { 
+	{ _T("General"), IDD_OPT_CLIST, DlgProcGenOpts},
+	{ _T("List"), IDD_OPT_CLC, DlgProcClcMainOpts },
+	{ _T("Window"), IDD_OPT_CLUI, DlgProcCluiOpts },
+	{ _T("Behaviour"), IDD_OPT_CLUI_2, DlgProcCluiOpts2 },
+	{ _T("Status Bar"), IDD_OPT_SBAR, DlgProcSBarOpts},	
+	{ _T("Additional stuffs"), IDD_OPT_META_CLC, DlgProcClcMetaOpts }
+};
+BOOL CALLBACK DlgProcClcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	int res=0;
+	if (msg==WM_INITDIALOG)
+	{
+      wParam=SIZEOF(clist_opt_items);
+      lParam=(LPARAM)(void**)(&clist_opt_items);
+	}
+	res=DlgProcTabbedOpts(hwndDlg,msg,wParam,lParam);
+	return res;
+}
+
 int ClcOptInit(WPARAM wParam,LPARAM lParam)
 {
-  OPTIONSDIALOGPAGE odp;
-
-  ZeroMemory(&odp,sizeof(odp));
-  odp.cbSize=sizeof(odp);
-  odp.position=0;
-  odp.hInstance=g_hInst;
-  odp.pszGroup=Translate("Contact List");
-  odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLC);
-  odp.pszTitle=Translate("List");
-  odp.pfnDlgProc=DlgProcClcMainOpts;
-  odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
-  CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-
-
-  odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_META_CLC);
-  odp.pszTitle=Translate("Additional stuffs");
-  odp.pfnDlgProc=DlgProcClcMetaOpts;
-  CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-
-  odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLCTEXT);
-  odp.pszGroup=Translate("Customize");
-  odp.pszTitle=Translate("List Text");
-  odp.pfnDlgProc=DlgProcClcTextOpts;
-  CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+   OPTIONSDIALOGPAGE odp;
+   ZeroMemory(&odp,sizeof(odp));
+   odp.cbSize=sizeof(odp);
+   odp.position=0;
+   odp.hInstance=g_hInst;
+   odp.pszGroup="";//Translate("Contact List");
+   odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLC);
+   odp.pszTitle=Translate("List");
+   odp.pfnDlgProc=DlgProcClcMainOpts;
+   odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
+   //CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+   CreateTabPage(NULL,Translate("Contact List"), wParam, DlgProcClcTabbedOpts);
+ 
+   odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_META_CLC);
+   odp.pszTitle=Translate("Additional stuffs");
+   odp.pfnDlgProc=DlgProcClcMetaOpts;
+  // CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+ 
+   odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLCTEXT);
+   odp.pszGroup=Translate("Customize");
+   odp.pszTitle=Translate("List Text");
+   odp.pfnDlgProc=DlgProcClcTextOpts;
+   CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
   return 0;
 }
@@ -377,7 +404,7 @@ struct CheckBoxToStyleEx_t {
             EnableWindow(GetDlgItem(hwndDlg,IDC_SUBINDENTSPIN),t);
             EnableWindow(GetDlgItem(hwndDlg,IDC_SUBINDENT),t);
           }
-          if((LOWORD(wParam)==IDC_GROUPINDENT) && (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus())) return 0;
+          if((LOWORD(wParam)==IDC_SUBINDENT) && (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus())) return 0;
           SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
           return TRUE;
         case WM_NOTIFY:

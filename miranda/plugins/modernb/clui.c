@@ -953,7 +953,11 @@ int OnSettingChanging(WPARAM wParam,LPARAM lParam)
 	else
 	{		
 		if (dbcws==NULL){return(0);};
-
+		if (dbcws->value.type==DBVT_WORD&&!mir_strcmp(dbcws->szSetting,"ApparentMode"))
+		{
+			SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
+			return(0);
+		};
 		if (dbcws->value.type==DBVT_ASCIIZ&&(!mir_strcmp(dbcws->szSetting,"e-mail") || !mir_strcmp(dbcws->szSetting,"Mye-mail0")))
 		{
 			SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);

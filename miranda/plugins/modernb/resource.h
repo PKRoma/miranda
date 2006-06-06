@@ -175,6 +175,11 @@
 #define IDI_ROWCONT1                    416
 #define IDI_ROWCONT2                    417
 #define IDI_ROWCONT3                    418
+#define IDD_TAB                         450
+#define IDD_OPT_CLUI_2                  451
+#define IDI_ALWAYSVIS                   453
+#define IDI_ICON6                       454
+#define IDI_NEVERVIS                    454
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -502,6 +507,7 @@
 #define IDC_BITMAP                      1363
 #define IDC_STWINDOWGROUP               1364
 #define IDC_STATIC01                    1365
+#define IDC_STWINDOWGROUP3              1365
 #define IDC_CATEGORYLIST                1366
 #define IDC_STATIC2                     1366
 #define IDC_STATIC3                     1367
@@ -879,7 +885,6 @@
 #define IDC_S_SIZE                      1888
 #define IDC_EXTRAORDER                  1889
 #define IDC_SKIN_TAB                    1890
-
 #define IDC_ROWTREE                     1955
 #define IDC_ADDCONTAINER                1956
 #define IDC_BUTTON2                     1957
@@ -893,7 +898,6 @@
 #define IDC_CONTUP                      1969
 #define IDC_BUTTON3                     1970
 #define IDC_CONTDOWN                    1970
-
 #define IDC_CLSORT1                     6666
 #define IDC_CLSORT2                     6667
 #define IDC_CLSORT3                     6668
@@ -960,7 +964,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        450
+#define _APS_NEXT_RESOURCE_VALUE        455
 #define _APS_NEXT_COMMAND_VALUE         40020
 #define _APS_NEXT_CONTROL_VALUE         2000
 #define _APS_NEXT_SYMED_VALUE           101

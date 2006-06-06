@@ -212,7 +212,7 @@ int FillTree(HWND hwnd)
 			return(0);
 };
 
-static BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {	struct ProtocolOrderData *dat;
 
 	dat=(struct ProtocolOrderData*)GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_USERDATA);
@@ -431,11 +431,12 @@ static int ProtocolOrderInit(WPARAM wParam,LPARAM lParam) {
 
 	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize=sizeof(odp);
-	odp.position=-1000000000;
+	odp.position=-10000000;
+    odp.groupPosition=1000000;
 	odp.hInstance=g_hInst;//GetModuleHandle(NULL);
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_PROTOCOLORDER);
-	odp.pszGroup=Translate("Contact List");
-	odp.pszTitle=Translate("Protocols");
+	odp.pszGroup=Translate("Network");
+	odp.pszTitle=Translate("Protocol order");
 	odp.pfnDlgProc=ProtocolOrderOpts;
 	odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);

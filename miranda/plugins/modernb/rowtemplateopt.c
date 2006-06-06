@@ -28,6 +28,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "io.h"
 #include "commonprototypes.h"
 #include "modern_row.h"
+
+extern const ROWCELL * rowAddCell(pROWCELL*, int );
+extern void rowDeleteTree(pROWCELL cell);
+extern BOOL rowParse(pROWCELL*cell, ROWCELL* parent, char *tbuf, int *hbuf, int *sequence, ROWCELL* *RowTabAccess );
+extern void rowSizeWithReposition(pROWCELL* root, int width);
+
 void RefreshTree(HWND hwndDlg,HTREEITEM hti);
 static char* rowOptTmplStr;
 static pROWCELL rowOptTmplRoot;
@@ -195,7 +201,7 @@ void rowOptAddContainer(HWND htree, HTREEITEM hti)
 			tvis.hParent = NULL;
 			tvis.hInsertAfter = TVI_ROOT;
 			tvis.item.pszText=_T("Line");
-			tvis.item.lParam = rowOptTmplRoot;
+			tvis.item.lParam = (LPARAM)rowOptTmplRoot;
 			cell = rowOptTmplRoot;
 		}	
 	}
@@ -231,7 +237,7 @@ void rowOptAddContainer(HWND htree, HTREEITEM hti)
 		tvis.hInsertAfter=TVI_LAST;
 	}
 	
-	tvis.item.lParam = cell;
+	tvis.item.lParam = (LPARAM)cell;
 	tvis.hParent = hti;
 
 	tvis.item.mask = TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
@@ -251,7 +257,7 @@ void rowOptAddContainer(HWND htree, HTREEITEM hti)
 	{
 		int i = 0;
 		ZeroMemory(rowOptTA,sizeof(&rowOptTA));
-		rowOptBuildTA(rowOptTmplRoot, &rowOptTA, &i);
+		rowOptBuildTA(rowOptTmplRoot, (pROWCELL*)&rowOptTA, &i);
 	}
 
 }
@@ -288,7 +294,7 @@ void rowOptDelContainer(HWND htree, HTREEITEM hti)
 		}
 		else
 		{
-			rowOptTmplRoot = tvpi.lParam = NULL; 
+			rowOptTmplRoot = (pROWCELL)tvpi.lParam = (LPARAM)NULL; 
 		}
 		
 	}
@@ -299,14 +305,14 @@ void rowOptDelContainer(HWND htree, HTREEITEM hti)
 	{
 		int i = 0;
 		ZeroMemory(rowOptTA,sizeof(&rowOptTA));
-		rowOptBuildTA(tvpi.lParam, &rowOptTA, &i);
+		rowOptBuildTA((pROWCELL)tvpi.lParam, (pROWCELL*)&rowOptTA, &i);
 	}
 
 	TreeView_DeleteItem(htree, hti);
 	
 
 	// Change icon at parent item
-	if (!prnt | prnt!=prev) return;
+	if (!prnt || (prnt!=prev)) return;
 						
 	if ( TreeView_GetChild(htree, prnt) )
 	{
@@ -379,7 +385,7 @@ BOOL CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			rowOptTmplStr = DBGetStringA(NULL, "ModernData", "RowTemplate");
 			if (!rowOptTmplStr) rowOptTmplStr=mir_strdup("<TR />");
 			{	
-				HIMAGELIST himlTreeIcons;
+				//HIMAGELIST himlTreeIcons;
 				//himlTreeIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,3,2);
 				//ImageList_AddIcon(himlTreeIcons,LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_ROWCONT1)));
 				//ImageList_AddIcon(himlTreeIcons,LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_ROWCONT2)));
@@ -429,7 +435,7 @@ BOOL CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			rowParse(&rowOptTmplRoot, rowOptTmplRoot, rowOptTmplStr, &hbuf, &seq, rowOptTA);
 			seq = 0;
 			ZeroMemory(rowOptTA,sizeof(&rowOptTA));
-			rowOptBuildTA(rowOptTmplRoot, &rowOptTA, &seq);
+			rowOptBuildTA(rowOptTmplRoot, (pROWCELL*)&rowOptTA, &seq);
 
 			rowOptFillRowTree(htree);
 			RefreshTree(hwndDlg,NULL);

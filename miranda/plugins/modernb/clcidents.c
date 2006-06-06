@@ -40,7 +40,7 @@ highlight
 3) hItem handle. Either the hContact or (hGroup|HCONTACT_ISGROUP). Used
 exclusively externally
 
-1->2: GetRowsPriorTo()
+1->2: cliGetRowsPriorTo()
 1->3: ContactToHItem()
 3->1: FindItem()
 2->1: GetRowByIndex()
@@ -54,7 +54,7 @@ int GetContactIndex(struct ClcGroup *group,struct ClcContact *contact)
   return -1;
 }
 
-int GetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex)
+int cliGetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex)
 {
 	int count=0;
 	BYTE k;

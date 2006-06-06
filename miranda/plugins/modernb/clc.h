@@ -107,9 +107,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLCDEFAULT_GREYOUTFLAGS  0
 #define CLCDEFAULT_FULLGREYOUTFLAGS  (MODEF_OFFLINE|PF2_INVISIBLE|GREYF_UNFOCUS)
 #define CLCDEFAULT_SELBKCOLOUR   GetSysColor(COLOR_HIGHLIGHT)
-#ifdef CLCDEFAULT_TEXTCOLOUR
 #undef CLCDEFAULT_TEXTCOLOUR
-#endif
+#undef CLCDEFAULT_SELTEXTCOLOUR
 #define CLCDEFAULT_TEXTCOLOUR    GetSysColor(COLOR_WINDOWTEXT)
 #define CLCDEFAULT_SELTEXTCOLOUR RGB(0,0,128) //GetSysColor(COLOR_HIGHLIGHTTEXT)
 #define CLCDEFAULT_HOTTEXTCOLOUR (IsWinVer98Plus()?RGB(0,0,255):GetSysColor(COLOR_HOTLIGHT))
@@ -412,13 +411,15 @@ struct ClcData {
 	BOOL third_line_use_name_and_message_for_xstatus;
 	struct ClcModernFontInfo fontModernInfo[FONTID_MODERN_MAX+1];
 	HWND hWnd;
+	BYTE menuOwnerType;
+	int menuOwnerID;
 };
 
 //clc.c
 void ClcOptionsChanged(void);
 
 //clcidents.c
-int GetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);
+int cliGetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);
 int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible, BOOL isIgnoreSubcontacts );
 int cliGetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,struct ClcGroup **subgroup);
 HANDLE ContactToHItem(struct ClcContact *contact);

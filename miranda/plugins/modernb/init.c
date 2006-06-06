@@ -50,6 +50,8 @@ void	cliOnCreateClc(void);
 int		cli_AddItemToGroup(struct ClcGroup *group, int iAboveItem);
 int		cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
 
+int cliGetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);
+
 //current module global variables
 HINSTANCE g_hInst = 0;
 PLUGINLINK * pluginLink;
@@ -231,6 +233,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnTrayIconSetToBase	= cliTrayIconSetToBase;
 	pcli->pfnFindItem			= cliFindItem;
 	pcli->pfnGetRowByIndex		= cliGetRowByIndex;
+	pcli->pfnGetRowsPriorTo		= cliGetRowsPriorTo;
 
 	//partialy overloaded - call default handlers from inside
 	saveLoadCluiGlobalOpts		= pcli->pfnLoadCluiGlobalOpts;
