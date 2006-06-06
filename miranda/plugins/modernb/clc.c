@@ -609,7 +609,7 @@ case WM_COMMAND:
 		int hit = pcli->pfnFindItem(hwnd,dat,dat->menuOwnerID,&contact,NULL,FALSE);
 		dat->menuOwnerID=-1;
 		dat->menuOwnerType=CLCIT_INVALID;
-		if (hit == -1)
+		if (hit == 0)
 			return 0;
 		if (contact->type == CLCIT_CONTACT)
 			if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) contact->hContact))
@@ -912,7 +912,7 @@ default:
 					{
 						if (changeGroupExpand==1 && !contact->SubExpanded) 
 						{
-							dat->selection=GetRowsPriorTo(&dat->list,group,-1);
+							dat->selection=cliGetRowsPriorTo(&dat->list,group,-1);
 							selMoved=1;   
 						}
 						else if (changeGroupExpand==1 && contact->SubExpanded)
@@ -951,7 +951,7 @@ default:
 								int k=sizeof(struct ClcContact);
 								if(FindItem(hwnd,dat,contact->hContact,&contact2,&group2,NULL,FALSE))
 								{
-									i=GetRowsPriorTo(&dat->list,group2,GetContactIndex(group2,contact2));
+									i=cliGetRowsPriorTo(&dat->list,group2,GetContactIndex(group2,contact2));
 									pcli->pfnEnsureVisible(hwnd,dat,i+contact->SubAllocated,0);
 								}
 							}
@@ -964,7 +964,7 @@ default:
 				{
 					if(changeGroupExpand==1 && contact->type==CLCIT_CONTACT) {
 						if(group==&dat->list) {SetCapture(hwnd); return 0;}
-						dat->selection=GetRowsPriorTo(&dat->list,group,-1);
+						dat->selection=cliGetRowsPriorTo(&dat->list,group,-1);
 						selMoved=1;
 					}
 					else {
@@ -1055,7 +1055,7 @@ case WM_TIMER:
 				int k=sizeof(struct ClcContact);
 				if(FindItem(hwnd,dat,hitcontact->hContact,&contact,&group,NULL,FALSE))
 				{
-					i=GetRowsPriorTo(&dat->list,group,GetContactIndex(group,contact));          
+					i=cliGetRowsPriorTo(&dat->list,group,GetContactIndex(group,contact));          
 					pcli->pfnEnsureVisible(hwnd,dat,i+hitcontact->SubAllocated,0);
 				}
 			}
@@ -1151,8 +1151,8 @@ case WM_LBUTTONDOWN:
 					dat->selection=cliGetRowByIndex(dat,dat->selection,&selcontact,&selgroup);
 					pcli->pfnSetGroupExpand(hwnd,dat,contact->group,-1);
 					if(dat->selection!=-1) {
-						dat->selection=GetRowsPriorTo(&dat->list,selgroup,GetContactIndex(selgroup,selcontact));
-						if(dat->selection==-1) dat->selection=GetRowsPriorTo(&dat->list,contact->group,-1);
+						dat->selection=cliGetRowsPriorTo(&dat->list,selgroup,GetContactIndex(selgroup,selcontact));
+						if(dat->selection==-1) dat->selection=cliGetRowsPriorTo(&dat->list,contact->group,-1);
 					}
 					cliInvalidateRect(hwnd,NULL,FALSE);
 					UpdateWindow(hwnd);
