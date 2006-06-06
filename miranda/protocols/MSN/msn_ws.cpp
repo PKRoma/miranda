@@ -153,8 +153,8 @@ LBL_RecvAgain:
 
 	if ( ret == 0 ) {
 		mGatewayTimeout += 2;
-		if ( mGatewayTimeout > 16 ) 
-			mGatewayTimeout = 16;
+		if ( mGatewayTimeout > 8 ) 
+			mGatewayTimeout = 8;
 
 		char szHttpPostUrl[300];
 		getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), true );
