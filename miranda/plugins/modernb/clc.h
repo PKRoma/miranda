@@ -412,6 +412,8 @@ struct ClcData {
 	BOOL third_line_use_name_and_message_for_xstatus;
 	struct ClcModernFontInfo fontModernInfo[FONTID_MODERN_MAX+1];
 	HWND hWnd;
+	BYTE menuOwnerType;
+	int menuOwnerID;
 };
 
 //clc.c

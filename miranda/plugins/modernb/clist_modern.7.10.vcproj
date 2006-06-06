@@ -1176,6 +1176,9 @@
 				<File
 					RelativePath=".\SkinOpt.c">
 				</File>
+				<File
+					RelativePath=".\tabbedoptions.c">
+				</File>
 				<Filter
 					Name="CPP files"
 					Filter="">

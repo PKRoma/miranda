@@ -30,7 +30,7 @@ void HotKeysUnregister(HWND hwnd);
 //void LoadContactTree(void);
 
 static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -39,6 +39,7 @@ extern BOOL CALLBACK DlgProcExtraIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 static UINT expertOnlyControls[]={IDC_ALWAYSSTATUS};
 int CListOptInit(WPARAM wParam,LPARAM lParam)
 {
+	
 	OPTIONSDIALOGPAGE odp;
 
 	ZeroMemory(&odp,sizeof(odp));
@@ -52,7 +53,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.nIDBottomSimpleControl=IDC_STCLISTGROUP;
 	odp.expertOnlyControls=expertOnlyControls;
 	odp.nExpertOnlyControls=sizeof(expertOnlyControls)/sizeof(expertOnlyControls[0]);
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	//CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize=sizeof(odp);
@@ -65,17 +66,17 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
-	/*
-	odp.position=-900000000;
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
-	odp.pszTitle=Translate("Hotkeys");
-	odp.pszGroup=Translate("Events");
-	odp.pfnDlgProc=DlgProcHotkeyOpts;
-	odp.nIDBottomSimpleControl=0;
-	odp.nExpertOnlyControls=0;
-	odp.expertOnlyControls=NULL;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-	*/
+	
+// 	odp.position=-900000000;
+// 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
+// 	odp.pszTitle=Translate("Hotkeys");
+// 	odp.pszGroup=Translate("Events");
+// 	odp.pfnDlgProc=DlgProcHotkeyOpts;
+// 	odp.nIDBottomSimpleControl=0;
+// 	odp.nExpertOnlyControls=0;
+// 	odp.expertOnlyControls=NULL;
+// 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	
 	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize=sizeof(odp);
 	odp.position=-200000000;
@@ -86,6 +87,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pszTitle=Translate("Hotkeys2");
 	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	
 	return 0;
 }
 
@@ -1311,7 +1313,7 @@ static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	return 0;
 }
 
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{

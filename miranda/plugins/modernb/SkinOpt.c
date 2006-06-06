@@ -81,7 +81,7 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pszTitle=Translate("Skin");
 	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-
+   
 	return 0;
 }
 

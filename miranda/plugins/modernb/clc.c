@@ -570,6 +570,8 @@ case WM_CREATE:
 		sortBy[1]=DBGetContactSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT);
 		sortBy[2]=DBGetContactSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT);
 		sortNoOfflineBottom=DBGetContactSettingByte(NULL,"CList","NoOfflineBottom",SETTING_NOOFFLINEBOTTOM_DEFAULT);
+		dat->menuOwnerID=-1;
+		dat->menuOwnerType=CLCIT_INVALID;
 		//InitDisplayNameCache(&dat->lCLCContactsCache);
 		//LoadCLCOptions(hwnd,dat);
 		saveContactListControlWndProc(hwnd, msg, wParam, lParam);	
@@ -585,11 +587,28 @@ case WM_NCHITTEST:
 		int result=DefWindowProc(hwnd,WM_NCHITTEST,wParam,lParam);
 		return result;
 	}
+case WM_CONTEXTMENU:
+	{
+		struct ClcContact *contact;
+		int res=saveContactListControlWndProc(hwnd, msg, wParam, lParam);
+		int hit = pcli->pfnGetRowByIndex(dat, dat->selection, &contact, NULL);
+		if (hit!=-1) {
+			dat->menuOwnerType=contact->type;
+			dat->menuOwnerID=pcli->pfnContactToHItem(contact);
+		} else {
+			dat->menuOwnerType=CLCIT_INVALID;
+			dat->menuOwnerID=NULL;
+		}
 
+		return res;
+	}
 case WM_COMMAND:
 	{
 		struct ClcContact *contact;
-		int hit = pcli->pfnGetRowByIndex(dat, dat->selection, &contact, NULL);
+		//int hit = pcli->pfnGetRowByIndex(dat, dat->selection, &contact, NULL);
+		int hit = pcli->pfnFindItem(hwnd,dat,dat->menuOwnerID,&contact,NULL,FALSE);
+		dat->menuOwnerID=-1;
+		dat->menuOwnerType=CLCIT_INVALID;
 		if (hit == -1)
 			return 0;
 		if (contact->type == CLCIT_CONTACT)

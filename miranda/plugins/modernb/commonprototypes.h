@@ -146,3 +146,16 @@ void UnloadAvatarOverlayIcon();
 void FreeRowCell ();
 void UninitCustomMenus(void);
 extern HICON mod_ImageList_GetIcon(HIMAGELIST himl, int i, UINT fStyle);
+int CreateTabPage(char *Group, char * Title, WPARAM wParam, DLGPROC DlgProcOpts);
+BOOL CALLBACK DlgProcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
+#ifndef _COMMONPROTOTYPES
+#define _COMMONPROTOTYPES
+typedef struct _TabItemOptionConf 
+{ 
+	TCHAR *name;			// Tab name
+	int id;					// Dialog id
+	DLGPROC wnd_proc;		// Dialog function
+} TabItemOptionConf;
+#endif
+
