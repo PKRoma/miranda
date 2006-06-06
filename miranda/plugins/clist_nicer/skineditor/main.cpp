@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO), 
-	"cln skinedit",
+	"Skin editor",
 	PLUGIN_MAKE_VERSION(0, 0, 0, 1), 
 	"Skin editor for clist_nicer+", 
 	"Nightwish", 
@@ -546,6 +546,10 @@ static UINT _controls_to_refresh[] = {
      IDC_CORNER_BR,         
      IDC_CORNER_BL,
      IDC_IGNORE,
+     IDC_ALPHALABLE,
+     IDC_COLOR2LABLE,
+     IDC_COLORLABLE,
+     IDC_TEXTCOLOURLABLE,
      IDC_COLOR2_TRANSPARENT,
      0
 };
