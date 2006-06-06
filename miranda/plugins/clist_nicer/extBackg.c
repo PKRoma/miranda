@@ -1505,8 +1505,8 @@ void extbk_import(char *file, HWND hwndDlg)
     ReloadThemedOptions();
     SetTBSKinned(g_CluiData.bSkinnedToolbar);
     // refresh
-    //if(hwndDlg)
-    //    FillOptionDialogByCurrentSel(hwndDlg);
+    if(hwndDlg && ServiceExists(MS_CLNSE_FILLBYCURRENTSEL))
+        CallService(MS_CLNSE_FILLBYCURRENTSEL, (WPARAM)hwndDlg, 0);
     pcli->pfnClcOptionsChanged();
     ConfigureCLUIGeometry();
     SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
@@ -1709,20 +1709,12 @@ BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
              sd.hWndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB);
              sd.pfnSaveCompleteStruct = SaveCompleteStructToDB;
              sd.lastItem = ID_EXTBK_LAST;
+             sd.firstItem = ID_STATUS_OFFLINE;
              sd.pfnClcOptionsChanged = pcli->pfnClcOptionsChanged;
              sd.hwndCLUI = pcli->hwndContactList;
              hwndSkinEdit = (HWND)CallService(MS_CLNSE_INVOKE, 0, (LPARAM)&sd);
          }
 
-         /*
-         tci.mask = TCIF_PARAM|TCIF_TEXT;
-         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_EXTBKG), hwnd, DlgProcClcExtBkgOpts);
-         hwndSkinEdit = (HWND)tci.lParam;
-         tci.pszText = TranslateT("Skin items");
-            TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
-         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-60,1);
-         ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
-         */
          if(hwndSkinEdit) {
              ShowWindow(hwndSkinEdit, oPage == 1 ? SW_SHOW : SW_HIDE);
              ShowWindow(sd.hwndImageEdit, oPage == 2 ? SW_SHOW : SW_HIDE);

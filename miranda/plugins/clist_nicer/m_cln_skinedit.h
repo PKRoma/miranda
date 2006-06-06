@@ -3,6 +3,7 @@
  */
 
 #define MS_CLNSE_INVOKE "CLN_Skinedit/Invoke"
+#define MS_CLNSE_FILLBYCURRENTSEL "CLN_Skinedit/FillByCurrentSel"
 
 /*
  * data structs
@@ -91,6 +92,7 @@ typedef struct _tagSkinDescription {
     DWORD           cbSize;
     StatusItems_t   *StatusItems;
     int             lastItem;
+    int             firstItem;
     char            szModule[100];
     HWND            hWndParent, hWndTab;
     HWND            hwndCLUI;
