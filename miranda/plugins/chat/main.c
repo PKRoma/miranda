@@ -22,27 +22,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //globals
 struct MM_INTERFACE	mmi = {0};					// structure which keeps pointers to mirandas alloc, free and realloc
-HINSTANCE		g_hInst;
-PLUGINLINK		*pluginLink;
-HANDLE			g_hWindowList;
-HMENU			g_hMenu = NULL;
+HINSTANCE   g_hInst;
+PLUGINLINK  *pluginLink;
+HANDLE      g_hWindowList;
+HMENU       g_hMenu = NULL;
 
-FONTINFO		aFonts[OPTIONS_FONTCOUNT];
-HICON			hIcons[30];
-BOOL			SmileyAddInstalled = FALSE;
-BOOL			IEviewInstalled = FALSE;
-BOOL			PopUpInstalled = FALSE;
-HBRUSH			hEditBkgBrush = NULL;
-HBRUSH			hListBkgBrush = NULL;
+FONTINFO    aFonts[OPTIONS_FONTCOUNT];
+HICON       hIcons[30];
+BOOL        SmileyAddInstalled = FALSE;
+BOOL        IEviewInstalled = FALSE;
+BOOL        PopUpInstalled = FALSE;
+HBRUSH      hEditBkgBrush = NULL;
+HBRUSH      hListBkgBrush = NULL;
 
-HIMAGELIST		hImageList = NULL;
+HIMAGELIST  hImageList = NULL;
 
 struct GlobalLogSettings_t g_Settings;
 
-HIMAGELIST		hIconsList = NULL;
+HIMAGELIST  hIconsList = NULL;
 
-char *			pszActiveWndID = 0;
-char *			pszActiveWndModule = 0;
+char*       pszActiveWndID = 0;
+char*       pszActiveWndModule = 0;
 
 static void InitREOleCallback(void);
 
@@ -53,7 +53,7 @@ PLUGININFO pluginInfo = {
 	#else
 		"Chat",
 	#endif
-	PLUGIN_MAKE_VERSION(0,3,2,1),
+	PLUGIN_MAKE_VERSION(0,6,0,1),
 	"Provides chat rooms for protocols supporting it",
 	"MatriX",
 	"project-info@miranda-im.org",
