@@ -29,6 +29,7 @@ extern "C" {
 #endif
 
 enum yahoo_status {
+	YAHOO_STATUS_DISCONNECTED = -1,
 	YAHOO_STATUS_AVAILABLE = 0,
 	YAHOO_STATUS_BRB,
 	YAHOO_STATUS_BUSY,

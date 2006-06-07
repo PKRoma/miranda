@@ -8,7 +8,7 @@ The following list is borrowed from the official libyahoo2 site
 
 [D] Implemented in the plugin
 [P] Part implemented in the plugin
-[-] Not used/possible in Miranda at 'this' time
+[-] Not used/possible/implemented in Miranda at 'this' time
 [ ] Not yet implemented
 
 Note that some Yahoo feature are already existing under Miranda and
@@ -31,6 +31,12 @@ plugin'
 [-]         Group renaming
 
 [P]     Yahoo Address book support
+[D]	    Loading Yahoo Address Book
+[ ]	    Don't load the whole YAB every time. Only track changes.
+[ ]	    Parse lots of new YAB fields. (We only support a small subset)
+[ ]	    Update YAB according to current miranda database settings.(Like Nick, etc)
+[ ]	    Delete YAB entry when removing a buddy from our buddy list.(Optionally?)
+[ ]	    Create new YAB entry when adding a new buddy to buddy list.
 
 [D]     Changing Status:
 [D]         Regular status messages
@@ -75,8 +81,13 @@ plugin'
 [D]	    Hide your own online status from certain buddies.
 [ ]	    Show yourself online to certain buddies while being invisible to everybody else.
 
-[P]	ServerSide IgnoreList
+[D]	ServerSide IgnoreList
 [D]	   Add yahoo id to server ignore list.
 [D]	   Remove yahoo id from server ignore list.
+[D]	   Drop IMs from ignored contacts.
+
+[D]	Yahoo Calendar support
+[D]	   Yahoo Calendar link in main menu w/ auto-login
+[D]	   Yahoo Calendar Reminders via IM.
 
 libyahoo2 does not yet have support for Voice messages, nor for IMvironments.

@@ -281,9 +281,11 @@ File List Cancel:
 	YAHOO_SERVICE_PICTURE_UPDATE = 0xc1,
 	YAHOO_SERVICE_PICTURE_UPLOAD = 0xc2,
 	YAHOO_SERVICE_YAB_UPDATE = 0xc4,
-	YAHOO_SERVICE_YAHOO6_VISIBLE_TOGGLE = 0xc5,
-	YAHOO_SERVICE_YAHOO6_STATUS_UPDATE = 0xc6,
-	YAHOO_SERVICE_AVATAR_UPDATE = 0xc7,
+	YAHOO_SERVICE_YAHOO6_VISIBLE_TOGGLE = 0xc5, /* YMSG13, key 13: 2 = invisible, 1 = visible */
+	YAHOO_SERVICE_YAHOO6_STATUS_UPDATE = 0xc6,  /* YMSG13 */
+	/* Kopete Calls YAHOO_SERVICE_AVATAR_UPDATE = ServicePictureStatus ? */
+	YAHOO_SERVICE_AVATAR_UPDATE = 0xc7,			/* YMSG13, key 213: 0 = none, 1 = avatar, 2 = picture */
+	
 	YAHOO_SERVICE_AUDIBLE = 0xd0,
 /*
 	YAHOO_SERVICE_YAHOO?_??? = 0xd4 (212) ?? 
@@ -297,8 +299,13 @@ File List Cancel:
 	   5: id
 	  13: 1
 	*/	
-	
-	YAHOO_SERVICE_YAHOO7_CHANGE_GROUP = 0xe7,
+	YAHOO_SERVICE_YAHOO7_CONTACT_DETAILS = 0xd3,	/* YMSG13 */
+	YAHOO_SERVICE_YAHOO7_CHAT_SESSION = 0xd4,	
+	YAHOO_SERVICE_YAHOO7_AUTH = 0xd6,	/* YMSG13 */
+	YAHOO_SERVICE_YAHOO7_FILETRANSFER = 0xdc,	/* YMSG13 */
+	YAHOO_SERVICE_YAHOO7_FILETRANSFERINFO,	/* YMSG13 */
+	YAHOO_SERVICE_YAHOO7_FILETRANSFERACCEPT,	/* YMSG13 */
+	YAHOO_SERVICE_YAHOO7_CHANGE_GROUP = 0xe7, /* YMSG13 */
 	YAHOO_SERVICE_WEBLOGIN = 0x0226,
 	YAHOO_SERVICE_SMS_MSG = 0x02ea
 };
@@ -377,6 +384,12 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_YAHOO6_STATUS_UPDATE,"YAHOO_SERVICE_YAHOO6_STATUS_UPDATE"},
 	{YAHOO_SERVICE_AVATAR_UPDATE,"YAHOO_SERVICE_AVATAR_UPDATE"},
 	{YAHOO_SERVICE_AUDIBLE,"YAHOO_SERVICE_AUDIBLE"},
+	{YAHOO_SERVICE_YAHOO7_CONTACT_DETAILS,"YAHOO_SERVICE_YAHOO7_CONTACT_DETAILS"},
+	{YAHOO_SERVICE_YAHOO7_CHAT_SESSION,	"YAHOO_SERVICE_YAHOO7_CHAT_SESSION"},
+	{YAHOO_SERVICE_YAHOO7_AUTH,"YAHOO_SERVICE_YAHOO7_AUTH"},
+	{YAHOO_SERVICE_YAHOO7_FILETRANSFER,"YAHOO_SERVICE_YAHOO7_FILETRANSFER"},
+	{YAHOO_SERVICE_YAHOO7_FILETRANSFERINFO,"YAHOO_SERVICE_YAHOO7_FILETRANSFERINFO"},
+	{YAHOO_SERVICE_YAHOO7_FILETRANSFERACCEPT,"YAHOO_SERVICE_YAHOO7_FILETRANSFERACCEPT"},
 	{YAHOO_SERVICE_YAHOO7_CHANGE_GROUP, "YAHOO_SERVICE_YAHOO7_CHANGE_GROUP"},
 	{YAHOO_SERVICE_WEBLOGIN,"YAHOO_SERVICE_WEBLOGIN"},
 	{YAHOO_SERVICE_SMS_MSG,"YAHOO_SERVICE_SMS_MSG"},
@@ -384,6 +397,7 @@ static const value_string ymsg_service_vals[] = {
 };
 
 static const value_string ymsg_status_vals[] = {
+	{YAHOO_STATUS_DISCONNECTED, "YAHOO_STATUS_DISCONNECTED"},
 	{YAHOO_STATUS_AVAILABLE, "YAHOO_STATUS_AVAILABLE"},
 	{YAHOO_STATUS_BRB, "YAHOO_STATUS_BRB"},
 	{YAHOO_STATUS_BUSY, "YAHOO_STATUS_BUSY"},
@@ -399,6 +413,7 @@ static const value_string ymsg_status_vals[] = {
 	{YAHOO_STATUS_IDLE, "YAHOO_STATUS_IDLE"},
 	{YAHOO_STATUS_OFFLINE, "YAHOO_STATUS_OFFLINE"},
 	{YAHOO_STATUS_NOTIFY, "YAHOO_STATUS_NOTIFY"},
+	{YAHOO_STATUS_WEBLOGIN, "YAHOO_STATUS_WEBLOGIN"},
 	{0, NULL}
 };
 
@@ -472,6 +487,7 @@ static const value_string packet_keys[]={
 	{197, "Avatars"},
 	{206, "display image type"},
 	{213, "share avatar type"},
+	{219, "cookie separator?"},
 	{230, "the audible, in foo.bar.baz format"},
 	{231, "audible text"},
 	{232, "weird number (md5 hash?) [audible]"},
@@ -1820,7 +1836,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 	int mobile = 0;
 	char *msg = NULL;
 	
-	if(pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == -1) {
+	if(pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YAHOO_STATUS_DISCONNECTED) {
 		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_DUPL, NULL);
 		return;
 	}
@@ -2560,7 +2576,7 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 		strcat(resp_96, byte);
 	}
 
-	pack = yahoo_packet_new(YAHOO_SERVICE_AUTHRESP, yd->initial_status, yd->session_id);
+	pack = yahoo_packet_new(YAHOO_SERVICE_AUTHRESP, (yd->initial_status == YAHOO_STATUS_INVISIBLE) ?YAHOO_STATUS_INVISIBLE:YAHOO_STATUS_WEBLOGIN, yd->session_id);
 	yahoo_packet_hash(pack, 6, resp_6);
 	yahoo_packet_hash(pack, 96, resp_96);
 	yahoo_packet_hash(pack, 0, sn);
@@ -4478,10 +4494,8 @@ static void yahoo_connected(int fd, int error, void *data)
 	if(fd < 0)
 		return;
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_AUTH, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_VERIFY, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	NOTICE(("Sending initial packet"));
-
-	yahoo_packet_hash(pkt, 1, yd->user);
 
 	yid = y_new0(struct yahoo_input_data, 1);
 	yid->yd = yd;

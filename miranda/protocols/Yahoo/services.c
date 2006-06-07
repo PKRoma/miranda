@@ -1449,18 +1449,29 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	return GAIR_NOAVATAR;
 }
 
+/*
+ * --=[ AVS / LoadAvatars API/Services ]=--
+ */
+
+#define PS_ISAVATARFORMATSUPPORTED "/IsAvatarFormatSupported"
+#define PS_GETMYAVATARMAXSIZE "/GetMyAvatarMaxSize"
 #define PS_SETMYAVATAR "/SetMyAvatar"
 #define PS_GETMYAVATAR "/GetMyAvatar"
-#define PS_GETMYAVATARMAXSIZE "/GetMyAvatarMaxSize"
 
-int YahooSetAvatarUI( WPARAM wParam, LPARAM lParam )
+/*
+Optional. Will pass PNG or BMP if this is not found
+wParam = 0
+lParam = PA_FORMAT_*   // avatar format
+return = 1 (supported) or 0 (not supported)
+*/
+int YahooAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
 {
-	/*char szFileName[ MAX_PATH ];
-	if ( MSN_EnterBitmapFileName( szFileName ) != ERROR_SUCCESS )
-		return 1;
-
-	return MsnSetAvatar( 0, ( LPARAM )szFileName );*/
-	return 1; /* error for now */
+  YAHOO_DebugLog("[YahooAvatarFormatSupported]");
+  
+  if (lParam == PA_FORMAT_PNG)
+    return 1;
+  else
+    return 0;
 }
 
 /*
@@ -1471,7 +1482,7 @@ return=0
 */
 int YahooGetAvatarSize(WPARAM wParam, LPARAM lParam)
 {
-	YAHOO_DebugLog("[YAHOO_GETAVATARSIZE]");
+	YAHOO_DebugLog("[YahooGetAvatarSize]");
 	
 	if (wParam != 0) *((int*) wParam) = 96;
 	if (lParam != 0) *((int*) lParam) = 96;
@@ -1490,7 +1501,8 @@ int YahooGetMyAvatar(WPARAM wParam, LPARAM lParam)
 	char *buffer = (char *)wParam;
 	int size = (int)lParam;
 
-	YAHOO_DebugLog("[YAHOO_GETMYAVATAR]");
+	YAHOO_DebugLog("[YahooGetMyAvatar]");
+	
 	if (buffer == NULL || size <= 0)
 		return -1;
 	
@@ -1518,6 +1530,32 @@ int YahooGetMyAvatar(WPARAM wParam, LPARAM lParam)
 		return ret;
 	}
 }
+
+/*
+#define PS_SETMYAVATAR "/SetMyAvatar"
+wParam=0
+lParam=(const char *)Avatar file name
+return=0 for sucess
+*/
+
+int YahooSetMyAvatar( WPARAM wParam, LPARAM lParam )
+{
+	char *szFile = (char *)lParam;
+
+	YAHOO_DebugLog("[YahooSetMyAvatar]");
+	
+	HANDLE avt = YAHOO_SetAvatar(szFile);
+
+	if (avt) {
+		DeleteObject(avt); // we release old avatar if any
+		return 0; 
+	} else 
+		return 1; /* error for now */
+}
+
+/*
+ * --=[ ]=--
+ */
 
 //=======================================================
 //Send a nudge
@@ -1690,6 +1728,8 @@ int LoadYahooServices( void )
 	YAHOO_CreateProtoServiceFunction( PS_GETAVATARINFO,	YahooGetAvatarInfo);
 	YAHOO_CreateProtoServiceFunction( PS_GETMYAVATARMAXSIZE, YahooGetAvatarSize);
 	YAHOO_CreateProtoServiceFunction( PS_GETMYAVATAR, YahooGetMyAvatar);
+	YAHOO_CreateProtoServiceFunction( PS_SETMYAVATAR, YahooSetMyAvatar);
+	YAHOO_CreateProtoServiceFunction( PS_ISAVATARFORMATSUPPORTED, YahooAvatarFormatSupported);
 	return 0;
 }
 

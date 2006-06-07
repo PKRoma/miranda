@@ -980,7 +980,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 {
 	HANDLE 	hContact = 0;
 		
-	LOG(("ext_yahoo_got_picture for %s with url %s (checksum: %d) type: %d", who, pic_url, cksum, type));
+	LOG(("[ext_yahoo_got_picture] for %s with url %s (checksum: %d) type: %d", who, pic_url, cksum, type));
 	
 	
 	/*
@@ -1012,10 +1012,11 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 					LOG(("[ext_yahoo_got_picture] Expired. Re-uploading"));
 					YAHOO_SendAvatar(dbv.pszVal);
 					DBFreeVariant(&dbv);
+					break;
 				}
 				
 				if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)) {
-					LOG(("[ext_yahoo_got_picture] Sending url:%s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
+					LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
 					//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
 					yahoo_send_picture_info(id, who, 2, dbv.pszVal, cksum);
 					DBFreeVariant(&dbv);
@@ -1159,7 +1160,7 @@ void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int b
 		DBDeleteContactSetting(hContact, "ContactPhoto", "File");	
 	} //else if (buddy_icon == 2) {
 	//	YAHOO_request_avatar(who);	
-		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
+		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
 	//}
 	
 }
@@ -1229,7 +1230,7 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 {
 	int cksum = 0;
 	
-	LOG(("ext_yahoo_got_picture_upload URL:%s timestamp: %d", url, ts));
+	LOG(("[ext_yahoo_got_picture_upload] url: %s timestamp: %d", url, ts));
 
 	if (!url) {
 		LOG(("[ext_yahoo_got_picture_upload] Problem with upload?"));
@@ -1244,9 +1245,6 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		//YAHOO_SetDword("AvatarTS", ts);
 		YAHOO_SetDword("AvatarTS", time(NULL) + 60*60*24);
 		
-/*		yahoo_send_picture_checksum(id, NULL, cksum);
-		YAHOO_bcast_picture_update(2);
-		yahoo_send_avatar_update(id,2);// YIM7 does this? YIM6 doesn't like this!*/
 		YAHOO_bcast_picture_checksum(cksum);
 	}
 }
