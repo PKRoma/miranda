@@ -611,7 +611,7 @@ case WM_COMMAND:
 		//int hit = pcli->pfnFindItem(hwnd,dat,dat->menuOwnerID,&contact,NULL,FALSE);
 		//dat->menuOwnerID=-1;
 		//dat->menuOwnerType=CLCIT_INVALID;
-		if (hit == 0)
+		if (hit == -1)
 			return 0;
 		if (contact->type == CLCIT_CONTACT)
 			if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) contact->hContact))
