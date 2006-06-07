@@ -83,6 +83,7 @@ CLEAN :
 	-@erase "$(INTDIR)\SkinEditor.obj"
 	-@erase "$(INTDIR)\SkinEngine.obj"
 	-@erase "$(INTDIR)\SkinOpt.obj"
+	-@erase "$(INTDIR)\tabbedoptions.obj"
 	-@erase "$(INTDIR)\utf.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
@@ -141,12 +142,13 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_statusbar.obj" \
 	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\rowtemplateopt.obj" \
 	"$(INTDIR)\SkinEditor.obj" \
 	"$(INTDIR)\SkinEngine.obj" \
 	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\rowtemplateopt.obj"
+	"$(INTDIR)\tabbedoptions.obj"
 
 "..\..\bin\release\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -205,6 +207,7 @@ CLEAN :
 	-@erase "$(INTDIR)\SkinEditor.obj"
 	-@erase "$(INTDIR)\SkinEngine.obj"
 	-@erase "$(INTDIR)\SkinOpt.obj"
+	-@erase "$(INTDIR)\tabbedoptions.obj"
 	-@erase "$(INTDIR)\utf.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
@@ -264,12 +267,13 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_statusbar.obj" \
 	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\rowtemplateopt.obj" \
 	"$(INTDIR)\SkinEditor.obj" \
 	"$(INTDIR)\SkinEngine.obj" \
 	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\rowtemplateopt.obj"
+	"$(INTDIR)\tabbedoptions.obj"
 
 "..\..\bin\debug\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -328,6 +332,7 @@ CLEAN :
 	-@erase "$(INTDIR)\SkinEditor.obj"
 	-@erase "$(INTDIR)\SkinEngine.obj"
 	-@erase "$(INTDIR)\SkinOpt.obj"
+	-@erase "$(INTDIR)\tabbedoptions.obj"
 	-@erase "$(INTDIR)\utf.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
@@ -386,12 +391,13 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_statusbar.obj" \
 	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\rowtemplateopt.obj" \
 	"$(INTDIR)\SkinEditor.obj" \
 	"$(INTDIR)\SkinEngine.obj" \
 	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\rowtemplateopt.obj"
+	"$(INTDIR)\tabbedoptions.obj"
 
 "..\..\bin\release Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -450,6 +456,7 @@ CLEAN :
 	-@erase "$(INTDIR)\SkinEditor.obj"
 	-@erase "$(INTDIR)\SkinEngine.obj"
 	-@erase "$(INTDIR)\SkinOpt.obj"
+	-@erase "$(INTDIR)\tabbedoptions.obj"
 	-@erase "$(INTDIR)\utf.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
@@ -508,12 +515,13 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_statusbar.obj" \
 	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\rowtemplateopt.obj" \
 	"$(INTDIR)\SkinEditor.obj" \
 	"$(INTDIR)\SkinEngine.obj" \
 	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\rowtemplateopt.obj"
+	"$(INTDIR)\tabbedoptions.obj"
 
 "..\..\bin\debug Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1741,6 +1749,11 @@ SOURCE=.\SkinEngine.c
 SOURCE=.\SkinOpt.c
 
 "$(INTDIR)\SkinOpt.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
+
+
+SOURCE=.\tabbedoptions.c
+
+"$(INTDIR)\tabbedoptions.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
 
 
 SOURCE=.\utf.c

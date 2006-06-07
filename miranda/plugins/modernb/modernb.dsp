@@ -626,6 +626,10 @@ SOURCE=.\SkinOpt.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\tabbedoptions.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\utf.c
 # End Source File
 # End Group
