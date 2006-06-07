@@ -4,7 +4,7 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
@@ -458,7 +458,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         {
           DWORD dwCookie;
 
-          NetLog_Server("Contact could not be added without authorisation, add with await auth flag.");
+          NetLog_Server("Contact could not be added without authorization, add with await auth flag.");
 
           ICQWriteContactSettingByte(sc->hContact, "Auth", 1); // we need auth
           dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, sc->dwUin, sc);
@@ -1608,18 +1608,18 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
   {
 
   case 0:
-    NetLog_Server("Authorisation request %s by %s", "denied", strUID(dwUin, szUid));
+    NetLog_Server("Authorization request %s by %s", "denied", strUID(dwUin, szUid));
     // TODO: Add to system history as soon as new auth system is ready
     break;
 
   case 1:
     ICQWriteContactSettingByte(hContact, "Auth", 0);
-    NetLog_Server("Authorisation request %s by %s", "granted", strUID(dwUin, szUid));
+    NetLog_Server("Authorization request %s by %s", "granted", strUID(dwUin, szUid));
     // TODO: Add to system history as soon as new auth system is ready
     break;
 
   default:
-    NetLog_Server("Unknown Authorisation request response (%u) from %s", bResponse, strUID(dwUin, szUid));
+    NetLog_Server("Unknown Authorization request response (%u) from %s", bResponse, strUID(dwUin, szUid));
     break;
 
   }

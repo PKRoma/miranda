@@ -23,7 +23,7 @@ ______________
   WORD "CodePage" in ICQ scope
 
 - When synchronising server-list, users get added with await auth flag or receive added
-  message. The way which ICQ servers handle authorisations, we cannot do it better - when
+  message. The way which ICQ servers handle authorizations, we cannot do it better - when
   uploading contacts to server account has to be a new one, then contacts can be added
   and uploaded without auth... If the account is an old one they cannot be added without
   auth if they require one. So they are added with flag awaiting auth. With the new
@@ -151,7 +151,7 @@ Bugfixes:
   Server-list operations is now scheduled correctly
   Newly added contact with privacy setting is not hidden anymore
   Fixed unicode message receiving from Icq2Go! (messages were corrupted)
-  Fixed Grant authorisation - not showed correctly and crashing randomly
+  Fixed Grant authorization - not showed correctly and crashing randomly
   Move to group was not working properly
   On accept/decline filetransfer miranda was sometimes disconnected
   Group with subgroups was deleted if empty, that messed up subgroups
@@ -178,7 +178,7 @@ Improvements:
 0.3.4.2 (not published)
 
 Bugfixes:
-  Fixed authorisation reply
+  Fixed authorization reply
   Fixed contact transfer ack
   Now parses URL send ack correctly, no more timeout
   Now sending ack on contacts receive
@@ -191,7 +191,7 @@ New features:
   Added support for sending and receiving Idle time.
   Added reliable client identification (if not identified, gives appropriate ICQ client)
   Added support for avatar images (downloading only).
-  Added Grant authorisation option (send & recognize)
+  Added Grant authorization option (send & recognize)
 
 Improvements:
   Server-side list support rewritten, now uses acking, partly supports groups (without sub-groups for now).
