@@ -185,7 +185,7 @@ int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
 	}
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)conn.hHTMLAwayContextMenuItem,(LPARAM)&mi);
 	char* item= new char[strlen(AIM_KEY_BI)+10];
-	mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d","1");
+	mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 	if(!DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, item,0)&&conn.state==1)
 	{
 		mi.flags=CMIM_FLAGS|CMIF_NOTONLINE;
