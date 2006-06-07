@@ -84,7 +84,8 @@ enum yahoo_log_level {
 
 /* Yahoo Protocol versions. Thanks to GAIM devs.*/
 #define YAHOO_WEBMESSENGER_PROTO_VER 0x0065
-#define YAHOO_PROTO_VER 0x000c
+//#define YAHOO_PROTO_VER 0x000c
+#define YAHOO_PROTO_VER 0x000d
 
 /* Yahoo style/color directives */
 #define YAHOO_COLOR_BLACK "\033[30m"

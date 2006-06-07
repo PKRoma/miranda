@@ -2573,10 +2573,11 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	yahoo_packet_hash(pack, 2, "1");
 	yahoo_packet_hash(pack, 1, sn);
 	// A little experiment ;) HEHEHE
-	//yahoo_packet_hash(pack, 244, "524223");  // Features??? I wonder...
+	yahoo_packet_hash(pack, 244, "524223");  // Features??? I wonder...
 	/////////////
-	yahoo_packet_hash(pack, 135, "6,0,0,1922"); 
-	yahoo_packet_hash(pack, 148, "300"); 
+	//yahoo_packet_hash(pack, 135, "6,0,0,1922"); 
+	yahoo_packet_hash(pack, 135, "7,0,2,120"); 
+	yahoo_packet_hash(pack, 148, "300");  // ???
 	/* mmmm GAIM does it differently???
 	yahoo_packet_hash(pack, 0, sn);
 	yahoo_packet_hash(pack, 6, resp_6);
