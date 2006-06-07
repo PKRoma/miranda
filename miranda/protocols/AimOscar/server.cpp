@@ -511,8 +511,8 @@ void snac_contact_list(SNAC &snac)//family 0x0013
 					{
 						char* item= new char[strlen(AIM_KEY_BI)+10];
 						char* group= new char[strlen(AIM_KEY_GI)+10];
-						mir_snprintf(item,strlen(item)+10,AIM_KEY_BI"%d",i);
-						mir_snprintf(group,strlen(group)+10,AIM_KEY_GI"%d",i);
+						mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+						mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 						if(!DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, item,0))
 						{
 							DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, item, item_id);	

@@ -389,8 +389,8 @@ static int ContactDeleted(WPARAM wParam,LPARAM lParam)
 		{
 			char* item= new char[strlen(AIM_KEY_BI)+10];
 			char* group= new char[strlen(AIM_KEY_GI)+10];
-			mir_snprintf(item,strlen(item)+10,AIM_KEY_BI"%d",i);
-			mir_snprintf(group,strlen(group)+10,AIM_KEY_GI"%d",i);
+			mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+			mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 			if(unsigned short item_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, item,0))
 			{
 				unsigned short group_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, group,0);

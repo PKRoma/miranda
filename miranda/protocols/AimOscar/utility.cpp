@@ -103,7 +103,7 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	bool group_exist=1;
 	char* groupNum= new char[strlen(AIM_KEY_GI)+10];
-	mir_snprintf(groupNum,strlen(groupNum)+10,AIM_KEY_GI"%d","1");
+	mir_snprintf(groupNum,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d","1");
 	unsigned short old_group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, groupNum,0);		
 	delete[] groupNum;
 	if(old_group_id)
@@ -131,7 +131,7 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 		}
 	}
 	char* buddyNum= new char[strlen(AIM_KEY_BI)+10];
-	mir_snprintf(buddyNum,sizeof(buddyNum)+10,AIM_KEY_BI"%d","1");
+	mir_snprintf(buddyNum,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d","1");
 	unsigned short item_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, buddyNum,0);
 	delete[] buddyNum;
 	new_group_id=DBGetContactSettingWord(NULL, GROUP_ID_KEY,group,0);
@@ -150,7 +150,7 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 		if(!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
 		{
 			char* groupNum= new char[strlen(AIM_KEY_GI)+10];
-			mir_snprintf(groupNum,strlen(groupNum)+10,AIM_KEY_GI"%d","1");
+			mir_snprintf(groupNum,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d","1");
 			DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, groupNum, new_group_id);
 			unsigned short user_id_array_size;
 			char* user_id_array=get_members_of_group(new_group_id,user_id_array_size);
@@ -177,7 +177,7 @@ void add_contacts_to_groups()
 		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
 		{
 			char* group= new char[strlen(AIM_KEY_GI)+10];
-			mir_snprintf(group,strlen(group)+10,AIM_KEY_GI"%d","1");
+			mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d","1");
 			unsigned short group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, group,0);	
 			delete[] group;
 			if(group_id)
@@ -257,8 +257,8 @@ void offline_contact(HANDLE hContact, bool remove_settings)
 		{
 			char* item= new char[strlen(AIM_KEY_BI)+10];
 			char* group= new char[strlen(AIM_KEY_GI)+10];
-			mir_snprintf(item,strlen(item)+10,AIM_KEY_BI"%d",i);
-			mir_snprintf(group,strlen(group)+10,AIM_KEY_GI"%d",i);
+			mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+			mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 			if(DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, item,0))
 			{
 				DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, item);
@@ -611,7 +611,7 @@ unsigned short search_for_free_item_id(HANDLE hbuddy)//returns a free item id an
 				while(1)
 				{
 					char* item= new char[strlen(AIM_KEY_BI)+10];
-					mir_snprintf(item,strlen(item)+10,AIM_KEY_BI"%d",i);
+					mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 					if(unsigned short item_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, item,0))
 					{
 						if(item_id==id)
@@ -637,7 +637,7 @@ unsigned short search_for_free_item_id(HANDLE hbuddy)//returns a free item id an
 		if(!used_id)
 		{
 			char* item= new char[strlen(AIM_KEY_BI)+10];
-			mir_snprintf(item,strlen(item)+10,AIM_KEY_BI"%d","1");
+			mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d","1");
 			DBWriteContactSettingWord(hbuddy, AIM_PROTOCOL_NAME, item, id);
 			delete[] item;
 			return id;
@@ -660,8 +660,8 @@ char* get_members_of_group(unsigned short group_id,unsigned short &size)//return
 				{
 					char* item= new char[strlen(AIM_KEY_BI)+10];
 					char* group= new char[strlen(AIM_KEY_GI)+10];
-					mir_snprintf(item,strlen(item)+10,AIM_KEY_BI"%d",i);
-					mir_snprintf(group,strlen(group)+10,AIM_KEY_GI"%d",i);
+					mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+					mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 					if(unsigned short user_group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME,group,0))
 					{
 						if(group_id==user_group_id)
