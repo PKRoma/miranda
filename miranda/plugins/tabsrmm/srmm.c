@@ -189,10 +189,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				UINT build_nr = 0;
 
 				CallService(MS_SYSTEM_GETVERSIONTEXT, 500, (LPARAM)szVersion);
-				if((found = strchr(szVersion, '#')) != NULL) {
-					build_nr = atoi(found + 1);
-					mir_snprintf(buildstr, 50, "[Build #%d]", build_nr);
-				}
+				mir_snprintf(buildstr, 50, "[Miranda 0.5.0.0]", build_nr);
 #if defined(_UNICODE)
 				mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d (Unicode) %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
 #else

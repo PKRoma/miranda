@@ -409,7 +409,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                             SendMessageA(hWnd, SB_GETTIPTEXTA, MAKEWPARAM(i, 500), (LPARAM)szTip);
                             szTip[500] = 0;
                             if(szTip[0]) {
-                                CallService("mToolTip/ShowTip", (WPARAM)szTip, &ti);
+                                CallService("mToolTip/ShowTip", (WPARAM)szTip, (LPARAM)&ti);
                                 tooltip_active = TRUE;
                             }
                             break;

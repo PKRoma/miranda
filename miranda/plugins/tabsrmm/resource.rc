@@ -272,7 +272,6 @@ BEGIN
     CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",BS_AUTORADIOBUTTON,10,187,138,10
     CONTROL         "Load previous events less than",IDC_LOADTIME,"Button",BS_AUTORADIOBUTTON,10,200,138,10
     CONTROL         "Always trim message log to",IDC_ALWAYSTRIM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,212,146,10
-    CONTROL         "Attempt to fix ""future"" timestamps",IDC_TSFIX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,173,148,11
     EDITTEXT        IDC_LOADCOUNTN,170,185,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
     CONTROL         "Spin1",IDC_LOADCOUNTSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,203,184,10,14
     EDITTEXT        IDC_LOADTIMEN,170,198,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
@@ -488,7 +487,7 @@ BEGIN
     LTEXT           "tabSRMM",IDC_TABSRMM,5,7,150,15
     CTEXT           "Copyright © 2004-2005 by the Miranda IM project. More  \ndetailed copyright information can be found in the included README file.\n\nThis software is distributed and licensed under the terms of the GNU General Public License V2 or any later version.",IDC_COPYRIGHT,5,39,217,47
     ICON            0,IDC_LOGO,201,2,20,20
-    LTEXT           "Version",IDC_VERSION,5,19,150,15
+    LTEXT           "Version",IDC_VERSION,5,19,190,15
     CTEXT           "build time",IDC_BUILDTIME,37,105,150,11
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,117,228,1
     CONTROL         "Support and latest version information",IDC_SUPPORT,
