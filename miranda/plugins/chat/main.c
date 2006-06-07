@@ -22,27 +22,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //globals
 struct MM_INTERFACE	mmi = {0};					// structure which keeps pointers to mirandas alloc, free and realloc
-HINSTANCE		g_hInst;
-PLUGINLINK		*pluginLink;
-HANDLE			g_hWindowList;
-HMENU			g_hMenu = NULL;
+HINSTANCE   g_hInst;
+PLUGINLINK  *pluginLink;
+HANDLE      g_hWindowList;
+HMENU       g_hMenu = NULL;
 
-FONTINFO		aFonts[OPTIONS_FONTCOUNT];
-HICON			hIcons[30];
-BOOL			SmileyAddInstalled = FALSE;
-BOOL			IEviewInstalled = FALSE;
-BOOL			PopUpInstalled = FALSE;
-HBRUSH			hEditBkgBrush = NULL;
-HBRUSH			hListBkgBrush = NULL;
+FONTINFO    aFonts[OPTIONS_FONTCOUNT];
+HICON       hIcons[30];
+BOOL        SmileyAddInstalled = FALSE;
+BOOL        IEviewInstalled = FALSE;
+BOOL        PopUpInstalled = FALSE;
+HBRUSH      hEditBkgBrush = NULL;
+HBRUSH      hListBkgBrush = NULL;
 
-HIMAGELIST		hImageList = NULL;
+HIMAGELIST  hImageList = NULL;
 
 struct GlobalLogSettings_t g_Settings;
 
-HIMAGELIST		hIconsList = NULL;
+HIMAGELIST  hIconsList = NULL;
 
-char *			pszActiveWndID = 0;
-char *			pszActiveWndModule = 0;
+char*       pszActiveWndID = 0;
+char*       pszActiveWndModule = 0;
 
 static void InitREOleCallback(void);
 
@@ -53,14 +53,14 @@ PLUGININFO pluginInfo = {
 	#else
 		"Chat",
 	#endif
-	PLUGIN_MAKE_VERSION(0,3,2,1),
+	PLUGIN_MAKE_VERSION(0,5,0,1),
 	"Provides chat rooms for protocols supporting it",
 	"MatriX",
 	"project-info@miranda-im.org",
 	"© 2003 - 2005 Jörgen Persson",
 	"http://miranda-im.org/",
 	0,
-	0		
+	0
 };
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
@@ -121,7 +121,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	}
 
 //	RichUtil_Load();
-	
+
 	UpgradeCheck();
 
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &mmi);
@@ -213,9 +213,9 @@ void UpgradeCheck(void)
 			DBDeleteContactSetting(NULL, "Chat",		"SplitterY");
 			DBDeleteContactSetting(NULL, "Chat",		"IconFlags");
 			DBDeleteContactSetting(NULL, "Chat",		"LogIndentEnabled");
-			
+
 		}
-		
+
 	}
 	DBWriteContactSettingDword(NULL, "Chat", "OldVersion", pluginInfo.version);
 	return;
@@ -254,7 +254,7 @@ void LoadIcons(void)
 		hIcons[i] = NULL;
 
 	LoadLogIcons();
-	
+
 	LoadMsgLogBitmaps();
 
 	hImageList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK,0,3);
