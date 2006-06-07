@@ -1209,11 +1209,15 @@ case TIM_CALLBACK:
 		*/
 		hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDTRAY,(WPARAM)0,(LPARAM)0);
 		OnTrayRightClick=1;
+		
 		SetForegroundWindow(msg->hwnd);
 		SetFocus(msg->hwnd);
+		
 		GetCursorPos(&pt);
 
 		TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN|TPM_LEFTBUTTON, pt.x, pt.y, 0, msg->hwnd, NULL);
+		PostMessage(msg->hwnd, WM_NULL, 0, 0);
+
 	}
 		else if (msg->lParam == WM_MOUSEMOVE) {
 			s_LastHoverIconID=msg->wParam;
