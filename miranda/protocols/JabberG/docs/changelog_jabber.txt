@@ -4,6 +4,10 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.5.0.1
+===============
+[!] bug #0002065 fixed: Sends a malformed JID when trying to download my own vCard (in ANSI version only)
+
 Version 0.4.3.2
 ===============
 [!] bug #0002029 fixed: IDC_JID truncated on login dialog box

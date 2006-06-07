@@ -383,12 +383,7 @@ LBL_Exit:
 			jabberConnected = TRUE;
 			int len = _tcslen( info->username ) + strlen( info->server )+1;
 			jabberJID = ( TCHAR* )mir_alloc( sizeof( TCHAR)*( len+1 ));
-			#if defined( _UNICODE )
-				#define PRINT_FORMAT _T("%s@%S")
-			#else
-				#define PRINT_FORMAT _T("%s@%S")
-			#endif
-			mir_sntprintf( jabberJID, len+1, PRINT_FORMAT, info->username, info->server );
+			mir_sntprintf( jabberJID, len+1, _T("%s@") _T(TCHAR_STR_PARAM), info->username, info->server );
 			if ( JGetByte( "KeepAlive", 1 ))
 				jabberSendKeepAlive = TRUE;
 			else
