@@ -59,7 +59,7 @@ HANDLE hxstatusiconchanged;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
-  PLUGIN_MAKE_VERSION(0,3,6,18),
+  PLUGIN_MAKE_VERSION(0,3,7,0),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -225,9 +225,11 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PS_ICQ_GETMYAVATAR, IcqGetMyAvatar);
   ICQCreateServiceFunction(PS_ICQ_SETMYAVATAR, IcqSetMyAvatar);
   // Custom Status API
-  ICQCreateServiceFunction(PS_ICQ_SETCUSTOMSTATUS, IcqSetXStatus);
+  ICQCreateServiceFunction(PS_ICQ_SETCUSTOMSTATUS, IcqSetXStatus); // obsolete (remove in next version)
+  ICQCreateServiceFunction(PS_ICQ_GETCUSTOMSTATUS, IcqGetXStatus); // obsolete
+  ICQCreateServiceFunction(PS_ICQ_SETCUSTOMSTATUSEX, IcqSetXStatusEx);
+  ICQCreateServiceFunction(PS_ICQ_GETCUSTOMSTATUSEX, IcqGetXStatusEx);
   ICQCreateServiceFunction(PS_ICQ_GETCUSTOMSTATUSICON, IcqGetXStatusIcon);
-  ICQCreateServiceFunction(PS_ICQ_GETCUSTOMSTATUS, IcqGetXStatus);
   ICQCreateServiceFunction(PS_ICQ_REQUESTCUSTOMSTATUS, IcqRequestXStatusDetails);
 
   {
