@@ -56,6 +56,8 @@ CRITICAL_SECTION connectionHandleMutex;
 HANDLE hsmsgrequest;
 HANDLE hxstatusiconchanged;
 
+extern int bHideXStatusUI;
+
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   "IcqOscarJ Protocol",
@@ -463,7 +465,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 
 
-static void CListShowMenuItem(HANDLE hMenuItem, BYTE bShow)
+void CListShowMenuItem(HANDLE hMenuItem, BYTE bShow)
 {
   CLISTMENUITEM mi = {0};
 
@@ -478,7 +480,7 @@ static void CListShowMenuItem(HANDLE hMenuItem, BYTE bShow)
 
 
 
-static void CListSetMenuItemIcon(HANDLE hMenuItem, HICON hIcon)
+void CListSetMenuItemIcon(HANDLE hMenuItem, HICON hIcon)
 {
   CLISTMENUITEM mi = {0};
 
@@ -500,8 +502,8 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
   CListShowMenuItem(hUserMenuRevoke, (BYTE)(ICQGetContactSettingByte(NULL, "PrivacyItems", 0) && !ICQGetContactSettingByte((HANDLE)wParam, "Grant", 0)));
 
   bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
-  CListShowMenuItem(hUserMenuXStatus, bXStatus);
-  if (bXStatus)
+  CListShowMenuItem(hUserMenuXStatus, (BYTE)(bHideXStatusUI ? 0 : bXStatus));
+  if (bXStatus && !bHideXStatusUI)
   {
     HICON iXStatus = GetXStatusIcon(bXStatus);
     CListSetMenuItemIcon(hUserMenuXStatus, iXStatus);

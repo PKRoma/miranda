@@ -42,7 +42,7 @@ extern void setUserInfo();
 
 extern HANDLE hxstatusiconchanged;
 
-static int bHideUI = 0;
+int bHideXStatusUI = 0;
 static int bStatusMenu = 0;
 static int bXStatusMenuBuilt = 0;
 static HANDLE hHookExtraIconsRebuild = NULL;
@@ -51,6 +51,8 @@ static HANDLE hHookExtraIconsApply = NULL;
 static HANDLE hXStatusIcons[32];
 static HANDLE hXStatusItems[33];
 
+void CListShowMenuItem(HANDLE hMenuItem, BYTE bShow);
+void CListSetMenuItemIcon(HANDLE hMenuItem, HICON hIcon);
 
 
 DWORD sendXStatusDetailsRequest(HANDLE hContact)
@@ -885,6 +887,8 @@ void InitXStatusIcons()
   char str[MAX_PATH], prt[MAX_PATH];
   int i;
   
+  if (!gbXStatusEnabled) return;
+
   null_snprintf(szSection, sizeof(szSection), ICQTranslateUtfStatic("%s/Custom Status", str), ICQTranslateUtfStatic(gpszICQProtoName, prt));
 
   for (i = 0; i < 32; i++) 
@@ -905,20 +909,17 @@ void InitXStatusIcons()
 
 void ChangedIconsXStatus()
 { // reload icons
-  CLISTMENUITEM mi;
   int i;
 
-  ZeroMemory(&mi, sizeof(mi));
-  mi.cbSize = sizeof(mi);
-
-  mi.flags = CMIM_FLAGS | CMIM_ICON;
+  if (!gbXStatusEnabled) return;
 
   for (i = 1; i < 33; i++)
   {
-    mi.hIcon = GetXStatusIcon(i);
-    CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[i], (LPARAM)&mi);
+    HICON hIcon = GetXStatusIcon(i);
+
+    CListSetMenuItemIcon(hXStatusItems[i], hIcon);
     if (!IconLibInstalled())
-      DestroyIcon(mi.hIcon); // if not IconLib resource release
+      DestroyIcon(hIcon); // if not IconLib resource release
   }
 }
 
@@ -939,6 +940,8 @@ int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam)
 
 int IcqSetXStatus(WPARAM wParam, LPARAM lParam)
 { // obsolete (TODO: remove in next version)
+  if (!gbXStatusEnabled) return 0;
+
   if (wParam >= 0 && wParam <= 32)
   {
     setXStatusEx((BYTE)wParam, 1);
@@ -953,6 +956,8 @@ int IcqSetXStatus(WPARAM wParam, LPARAM lParam)
 int IcqGetXStatus(WPARAM wParam, LPARAM lParam)
 { // obsolete (TODO: remove in next version)
   BYTE status = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
+
+  if (!gbXStatusEnabled) return 0;
 
   if (!icqOnline) return 0;
 
@@ -969,6 +974,8 @@ int IcqGetXStatus(WPARAM wParam, LPARAM lParam)
 int IcqSetXStatusEx(WPARAM wParam, LPARAM lParam)
 {
   ICQ_CUSTOM_STATUS *pData = (ICQ_CUSTOM_STATUS*)lParam;
+
+  if (!gbXStatusEnabled) return 1;
 
   if (pData->cbSize < sizeof(ICQ_CUSTOM_STATUS)) return 1; // Failure
   
@@ -1018,7 +1025,12 @@ int IcqSetXStatusEx(WPARAM wParam, LPARAM lParam)
 
   if (pData->flags & CSSF_DISABLE_UI)
   { // hide menu items
-    bHideUI = (*pData->wParam) ? 0 : 1;
+    int n;
+
+    bHideXStatusUI = (*pData->wParam) ? 0 : 1;
+
+    for (n = 0; n<=32; n++)
+      CListShowMenuItem(hXStatusItems[n], (BYTE)!bHideXStatusUI);
   }
 
   return 0; // Success
@@ -1031,7 +1043,9 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
   ICQ_CUSTOM_STATUS *pData = (ICQ_CUSTOM_STATUS*)lParam;
   HANDLE hContact = (HANDLE)wParam;
 
-  if (pData->cbSize < sizeof(ICQ_CUSTOM_STATUS)) return 0; // Failure
+  if (!gbXStatusEnabled) return 1;
+
+  if (pData->cbSize < sizeof(ICQ_CUSTOM_STATUS)) return 1; // Failure
 
   if (pData->flags & CSSF_MASK_STATUS)
   { // fill status member
@@ -1102,7 +1116,7 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
 
   if (pData->flags & CSSF_DISABLE_UI)
   {
-    if (pData->wParam) *pData->wParam = !bHideUI;
+    if (pData->wParam) *pData->wParam = !bHideXStatusUI;
   }
 
   if (pData->flags & CSSF_STATUSES_COUNT)
@@ -1143,6 +1157,8 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
 
 int IcqGetXStatusIcon(WPARAM wParam, LPARAM lParam)
 {
+  if (!gbXStatusEnabled) return 0;
+
   if (!wParam)
     wParam = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
 
@@ -1163,6 +1179,8 @@ int IcqGetXStatusIcon(WPARAM wParam, LPARAM lParam)
 int IcqRequestXStatusDetails(WPARAM wParam, LPARAM lParam)
 {
   HANDLE hContact = (HANDLE)wParam;
+
+  if (!gbXStatusEnabled) return 0;
 
   if (hContact && !ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO) &&
     ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0))
