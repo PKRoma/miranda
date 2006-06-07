@@ -49,7 +49,7 @@ __________
 Changes
 _______
 
-0.3.6
+0.3.7
 
 Bugfixes:
   Our own contact in list now correctly handles events
