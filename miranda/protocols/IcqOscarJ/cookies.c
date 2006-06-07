@@ -351,7 +351,7 @@ message_cookie_data *CreateMessageCookie(WORD bMsgType, BYTE bAckType)
     pCookie->bMessageType = bMsgType;
     pCookie->nAckType = bAckType;
     pCookie->dwMsgID1 = time(NULL);
-    pCookie->dwMsgID2 = RandRange(0, 0x00FF);
+    pCookie->dwMsgID2 = RandRange(0, 0x0FFFF);
   }
   return pCookie;
 }

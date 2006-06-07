@@ -1091,7 +1091,7 @@ BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf
 
   if ((wLen > 0) && (**buf) && ((*buf)[wLen-1]==0)) // Make sure we have a proper string
   {
-    WORD wCp = ICQGetContactSettingWord(hContact, "InfoCodePage", CP_ACP);
+    WORD wCp = ICQGetContactSettingWord(hContact, "InfoCodePage", ICQGetContactSettingWord(hContact, "InfoCP", CP_ACP));
 
     if (wCp != CP_ACP)
     {

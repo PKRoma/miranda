@@ -61,8 +61,10 @@ int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam);
 
 // custom status public services
 int IcqSetXStatus(WPARAM wParam, LPARAM lParam);
-int IcqGetXStatusIcon(WPARAM wParam, LPARAM lParam);
 int IcqGetXStatus(WPARAM wParam, LPARAM lParam);
+int IcqSetXStatusEx(WPARAM wParam, LPARAM lParam);
+int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam);
+int IcqGetXStatusIcon(WPARAM wParam, LPARAM lParam);
 int IcqRequestXStatusDetails(WPARAM wParam, LPARAM lParam);
 
 #endif /* __ICQ_XTRAZ_H */
