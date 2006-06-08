@@ -463,6 +463,13 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		CCSDATA ccs;
 		HANDLE tContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 1, 1 );
 
+		int isRtl = FALSE;
+		{	const char* p = tHeader[ "X-MMS-Format" ];
+			if ( p != NULL )
+				if ( strstr( p, "RL=1" ) != NULL )
+					isRtl = TRUE;
+		}
+
 		wchar_t* tRealBody = NULL;
 		int      tRealBodyLen = 0;
 		if ( strstr( tContentType, "charset=UTF-8" ))
@@ -534,7 +541,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		else {
 			PROTORECVEVENT pre;
 			pre.szMessage = ( char* )tMsgBuf;
-			pre.flags = PREF_UNICODE;
+			pre.flags = PREF_UNICODE + ( isRtl ) ? PREF_RTL : 0;
 			pre.timestamp = ( DWORD )time(NULL);
 			pre.lParam = 0;
 
@@ -1216,7 +1223,7 @@ LBL_InvalidCommand:
 				if ( tFound != 0 ) {
 					do {
 						if ( E.msgSize == 0 ) {
-							info->sendMessage( E.msgType, E.message, 0 );
+							info->sendMessage( E.msgType, E.message, E.flags );
 							MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
 						}
 						else info->sendRawMessage( E.msgType, E.message, E.msgSize );

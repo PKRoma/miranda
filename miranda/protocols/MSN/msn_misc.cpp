@@ -325,8 +325,8 @@ LONG ThreadData::sendMessage( int msgType, const char* parMsg, int parFlags )
 
 		mir_snprintf( tHeader + sizeof( sttHeaderStart )-1, sizeof( tHeader )-sizeof( sttHeaderStart ),
 			"Content-Type: text/plain; charset=UTF-8\r\n"
-			"X-MMS-IM-Format: FN=%s; EF=%s; CO=%x; CS=0; PF=31\r\n\r\n",
-			tFontName, tFontStyle, tFontColor );
+			"X-MMS-IM-Format: FN=%s; EF=%s; CO=%x; CS=0; PF=31%s\r\n\r\n",
+			tFontName, tFontStyle, tFontColor, (parFlags & MSG_RTL) ? ";RL=1" : "" );
 	}
 
 	return sendPacket( "MSG", "%c %d\r\n%s%s", msgType, strlen( parMsg )+strlen( tHeader ), tHeader, parMsg );

@@ -355,8 +355,9 @@ struct TQueueItem
 	char data[1];
 };
 
-#define	MSG_DISABLE_HDR		1
-#define	MSG_REQUIRE_ACK		2
+#define MSG_DISABLE_HDR      1
+#define MSG_REQUIRE_ACK      2
+#define MSG_RTL              4
 
 struct ThreadData
 {
@@ -470,9 +471,10 @@ struct MsgQueueEntry
 	filetransfer*	ft;
 	int				seq;
 	int				allocatedToThread;
+	int            flags;
 };
 
-int		__stdcall MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msglen, filetransfer* ft = NULL );
+int		__stdcall MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msglen, filetransfer* ft = NULL, int flags = 0 );
 HANDLE	__stdcall MsgQueue_CheckContact( HANDLE hContact );
 HANDLE	__stdcall MsgQueue_GetNextRecipient( void );
 int		__stdcall MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal );
