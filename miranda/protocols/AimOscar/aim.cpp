@@ -184,7 +184,9 @@ int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
 		mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE|CMIF_HIDDEN;
 	}
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)conn.hHTMLAwayContextMenuItem,(LPARAM)&mi);
-	if(!DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_BI,0)&&conn.state==1)
+	char* item= new char[strlen(AIM_KEY_BI)+10];
+	mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
+	if(!DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, item,0)&&conn.state==1)
 	{
 		mi.flags=CMIM_FLAGS|CMIF_NOTONLINE;
 	}
@@ -192,6 +194,7 @@ int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
 	{
 		mi.flags=CMIM_FLAGS|CMIF_NOTONLINE|CMIF_HIDDEN;
 	}
+	delete[] item;
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)conn.hAddToServerListContextMenuItem,(LPARAM)&mi);
 	return 0;
 }

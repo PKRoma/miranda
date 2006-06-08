@@ -1,10 +1,3 @@
-//#define _strtok_s strtok
-#define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
-#define _CRT_SECURE_CPP_OVERLOAD_SECURE_NAMES 1
-#define  _CRT_SECURE_NO_DEPRECATE
-//#if _MSC_VER >= 1400
-	
-//#endif
 #include <string.h>
 #include "utility.h"
 void broadcast_status(int status)
@@ -109,7 +102,10 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 	//make sure group exist serverside then add buddy to it
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	bool group_exist=1;
-	unsigned short old_group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);		
+	char* groupNum= new char[strlen(AIM_KEY_GI)+10];
+	mir_snprintf(groupNum,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+	unsigned short old_group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, groupNum,0);		
+	delete[] groupNum;
 	if(old_group_id)
 	{
 		char group_id_string[32];
@@ -134,7 +130,10 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 				}		
 		}
 	}
-	unsigned short item_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_BI,0);
+	char* buddyNum= new char[strlen(AIM_KEY_BI)+10];
+	mir_snprintf(buddyNum,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
+	unsigned short item_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, buddyNum,0);
+	delete[] buddyNum;
 	new_group_id=DBGetContactSettingWord(NULL, GROUP_ID_KEY,group,0);
 	if(!new_group_id)
 	{
@@ -150,7 +149,9 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 		DBVARIANT dbv;
 		if(!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
 		{
-			DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI, new_group_id);
+			char* groupNum= new char[strlen(AIM_KEY_GI)+10];
+			mir_snprintf(groupNum,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+			DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, groupNum, new_group_id);
 			unsigned short user_id_array_size;
 			char* user_id_array=get_members_of_group(new_group_id,user_id_array_size);
 			if(old_group_id)
@@ -175,7 +176,10 @@ void add_contacts_to_groups()
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
 		{
-			unsigned short group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);	
+			char* group= new char[strlen(AIM_KEY_GI)+10];
+			mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+			unsigned short group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, group,0);	
+			delete[] group;
 			if(group_id)
 			{
 				char group_id_string[32];
@@ -207,49 +211,38 @@ void add_contacts_to_groups()
 						DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_NC);
 					}
 				}
-					/*
-					if(!DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))//ascii
-					{
-						if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME,AIM_KEY_SG,0))
-						{
-							if(strcmpi(outer_group,dbv.pszVal))
-							{
-								DBVARIANT dbv2;
-								if(!DBGetContactSetting(hContact,MOD_KEY_CL,OTH_KEY_GP,&dbv2))
-								{
-									if(strcmpi(dbv2.pszVal,dbv.pszVal))//compare current group to the new group
-										DBWriteContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
-								}
-								else
-									DBWriteContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
-							}
-							else
-								DBDeleteContactSetting(hContact,MOD_KEY_CL,OTH_KEY_GP);
-							DBFreeVariant(&dbv);
-						}
-						else
-						{
-							if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME,AIM_KEY_SG,0))
-							{
-								DBWriteContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
-								DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_SG);
-							}
-						}
-					}
-				}*/
-				//free(outer_group);
 			}
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 }
-void offline_contact(HANDLE hContact)
+void offline_contact(HANDLE hContact, bool remove_settings)
 {
-	if(conn.status==ID_STATUS_OFFLINE)
+	if(remove_settings)
 	{
 		//We need some of this stuff if we are still online.
-		DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI);
-		DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_BI);
+		int i=1;
+		while(1)
+		{
+			char* item= new char[strlen(AIM_KEY_BI)+10];
+			char* group= new char[strlen(AIM_KEY_GI)+10];
+			mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+			mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+			if(DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, item,0))
+			{
+				DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, item);
+				DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, group);
+				delete[] item;
+				delete[] group;
+			}
+			else
+			{
+				delete[] item;
+				delete[] group;
+				break;
+			}
+			i++;
+		}
 		DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FT);
 		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FN);
 		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FD);
@@ -288,7 +281,7 @@ void offline_contacts()
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
-			offline_contact(hContact);
+			offline_contact(hContact,1);
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 	delete_module(GROUP_ID_KEY,0);
@@ -574,7 +567,7 @@ unsigned short search_for_free_group_id(char *name)//searches for a free group i
 }
 unsigned short search_for_free_item_id(HANDLE hbuddy)//returns a free item id and links the id to the buddy
 {
-	for(unsigned short i=1;i<0xFFFF;i++)
+	for(unsigned short id=1;id<0xFFFF;id++)
 	{
 		bool used_id=0;
 		HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -582,20 +575,41 @@ unsigned short search_for_free_item_id(HANDLE hbuddy)//returns a free item id an
 		{
 			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 			if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
-			{
-				unsigned short item_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_BI,0);
-				
-				if(item_id&&item_id==i)
+			{		
+				int i=1;
+				while(1)
 				{
-					used_id=1;
+					char* item= new char[strlen(AIM_KEY_BI)+10];
+					mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+					if(unsigned short item_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, item,0))
+					{
+						if(item_id==id)
+						{
+							used_id=1;
+							delete[] item;
+							break;//found one no need to look through anymore
+						}
+					}
+					else
+					{
+						delete[] item;
+						break;//no more ids for this user
+					}
+					delete[] item;
+					i++;
 				}
+				if(used_id)
+					break;
 			}
 			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 		}
 		if(!used_id)
 		{
-			DBWriteContactSettingWord(hbuddy, AIM_PROTOCOL_NAME, AIM_KEY_BI, i);
-			return i;
+			char* item= new char[strlen(AIM_KEY_BI)+10];
+			mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
+			DBWriteContactSettingWord(hbuddy, AIM_PROTOCOL_NAME, item, id);
+			delete[] item;
+			return id;
 		}
 	}
 	return 0;
@@ -610,17 +624,35 @@ char* get_members_of_group(unsigned short group_id,unsigned short &size)//return
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
 		{
-			unsigned short user_group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);
-			if(user_group_id&&group_id==user_group_id)
-			{
-				unsigned short buddy_id=htons(DBGetContactSettingWord(hContact,AIM_PROTOCOL_NAME,AIM_KEY_BI,0));
-				if(buddy_id)
+				int i=1;
+				while(1)
 				{
-					list=renew(list,size,2);
-					memcpy(&list[size],&buddy_id,2);
-					size=size+2;
+					char* item= new char[strlen(AIM_KEY_BI)+10];
+					char* group= new char[strlen(AIM_KEY_GI)+10];
+					mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+					mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+					if(unsigned short user_group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME,group,0))
+					{
+						if(group_id==user_group_id)
+						{
+							if(unsigned short buddy_id=htons(DBGetContactSettingWord(hContact,AIM_PROTOCOL_NAME,item,0)))
+							{
+								list=renew(list,size,2);
+								memcpy(&list[size],&buddy_id,2);
+								size=size+2;
+							}
+						}
+					}
+					else
+					{
+						delete[] item;
+						delete[] group;
+						break;
+					}
+					delete[] item;
+					delete[] group;
+					i++;
 				}
-			}
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}

@@ -470,7 +470,7 @@ void snac_user_offline(SNAC &snac)//family 0x0003
 			hContact=add_contact(buddy);
 		}
 		if(hContact)
-			offline_contact(hContact);
+			offline_contact(hContact,0);
 		delete[] buddy;
 	}
 }
@@ -489,23 +489,12 @@ void snac_contact_list(SNAC &snac)//family 0x0013
 	if(snac.subcmp(0x0006))
 	{
 		conn.buddy_list_received=1;
-		//int item_length=snac.len()-7;// +4 for end of snac
-		//char* items=snac.part(3,item_length);
 		for(int offset=3;offset<snac.len();)
 		{	
 			unsigned short name_length=snac.ushort(offset);
-			//char name[257];
-			//ZeroMemory(name,sizeof(name));
-			//memcpy(name,&items[offset+TLV_PART_SIZE],*name_length);
 			char* name=snac.part(offset+2,name_length);
-			//unsigned short group_id=(unsigned short*)&items[offset+(TLV_PART_SIZE)+*name_length];
 			unsigned short group_id=snac.ushort(offset+2+name_length);
-			//*group_id=htons(*group_id);//flip bytes
-			//unsigned short* item_id=(unsigned short*)&items[offset+(TLV_PART_SIZE*2)+*name_length];
-			//*item_id=htons(*item_id);//flip bytes
 			unsigned short item_id=snac.ushort(offset+4+name_length);
-			//unsigned short* type=(unsigned short*)&items[offset+(TLV_PART_SIZE*3)+*name_length];//item type
-			//*type=htons(*type);//flip bytes
 			unsigned short type=snac.ushort(offset+6+name_length);
 			if(type==0x0000)//buddy record
 			{
@@ -517,10 +506,27 @@ void snac_contact_list(SNAC &snac)//family 0x0013
 				}
 				if(hContact)
 				{
-					DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_BI, item_id);	
-                	DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_GI, group_id);	
+					int i=1;
+					while(1)
+					{
+						char* item= new char[strlen(AIM_KEY_BI)+10];
+						char* group= new char[strlen(AIM_KEY_GI)+10];
+						mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+						mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+						if(!DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, item,0))
+						{
+							DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, item, item_id);	
+                			DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, group, group_id);
+							delete[] item;
+							delete[] group;
+							break;
+						}
+						delete[] item;
+						delete[] group;
+						i++;
+					}
 					DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
-				}	
+				}
 			}
 			else if(type==0x0001)//group record
 			{
@@ -536,13 +542,10 @@ void snac_contact_list(SNAC &snac)//family 0x0013
 					DBWriteContactSettingWord(NULL, GROUP_ID_KEY,name, group_id);
 				}
 			}
-			//unsigned short* tlv_size=(unsigned short*)&items[offset+(TLV_PART_SIZE*4)+name_length];//getting tlv size
 			unsigned short tlv_size=snac.ushort(offset+8+name_length);
-			//*tlv_size=htons(*tlv_size);//flip bytes
 			offset+=(name_length+10+tlv_size);
 			delete[] name;
 		}
-		//delete[] items;
 	}
 }
 void snac_message_accepted(SNAC &snac)//family 0x004
@@ -565,12 +568,7 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0
 	{   
 		
 		HANDLE hContact;
-		//ZeroMemory(icbm_cookie,sizeof(icbm_cookie));
-		//memcpy(icbm_cookie,buf,8);
-		//char sn[33];
 		unsigned char sn_length=snac.ubyte(10);
-		//ZeroMemory(sn,sizeof(sn));
-		//memcpy(sn,&buf[SNAC_SIZE*2+1],sn_length);
 		char* sn=snac.part(11,sn_length);
 		int offset=15+sn_length;
 		CCSDATA ccs;

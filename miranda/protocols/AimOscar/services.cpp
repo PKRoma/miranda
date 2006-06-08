@@ -384,10 +384,29 @@ static int ContactDeleted(WPARAM wParam,LPARAM lParam)
 	DBVARIANT dbv;
 	if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
 	{
-		unsigned short group_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_GI,0);		
-		unsigned short item_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_BI,0);
-		if(group_id&&item_id)
-			aim_delete_contact(conn.hServerConn,conn.seqno,dbv.pszVal,item_id,group_id);
+		int i=1;
+		while(1)
+		{
+			char* item= new char[strlen(AIM_KEY_BI)+10];
+			char* group= new char[strlen(AIM_KEY_GI)+10];
+			mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+			mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+			if(unsigned short item_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, item,0))
+			{
+				unsigned short group_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, group,0);
+				if(group_id)
+					aim_delete_contact(conn.hServerConn,conn.seqno,dbv.pszVal,item_id,group_id);
+			}
+			else
+			{
+				delete[] item;
+				delete[] group;
+				break;
+			}
+			delete[] item;
+			delete[] group;
+			i++;
+		}	
 		DBFreeVariant(&dbv);
 	}
 	return 0;
