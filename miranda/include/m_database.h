@@ -359,6 +359,8 @@ db/time/x below with useful stuff for dealing with it.
                            //event was received.
 #define DBEF_READ     4    //event has been read by the user. It does not need
                            //to be processed any more except for history.
+#define DBEF_RTL      8    //event contains the right-to-left aligned text
+
 typedef struct {
 	int cbSize;       //size of the structure in bytes
 	char *szModule;	  //pointer to name of the module that 'owns' this
