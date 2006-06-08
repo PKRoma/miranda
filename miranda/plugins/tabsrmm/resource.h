@@ -3,6 +3,7 @@
 // Used by resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
+#define VS_VERSION_INFO                 1
 #define IDD_USERPREFS                   2
 #define IDD_TABCONFIG                   4
 #define IDD_VARIABLEHELP                5
@@ -255,7 +256,6 @@
 #define IDC_APPARENTMODE                1212
 #define IDC_FULLUSERNAME                1212
 #define IDC_TOGGLENOTES                 1214
-#define IDC_TOGGLESIDEBAR               1299
 #define IDC_NOTES                       1215
 #define IDC_TRANSPARENCY                1215
 #define IDC_PANELSPLITTER               1216
@@ -371,6 +371,7 @@
 #define IDC_DROPSHADOW                  1294
 #define IDC_SENDFORMAT                  1295
 #define IDC_FLATMSGLOG                  1296
+#define IDC_TOGGLESIDEBAR               1299
 #define IDC_CNTNOSTATUSBAR              1299
 #define IDC_AUTOCLOSELAST               1300
 #define IDC_CHECKICONDLL                1302
@@ -411,7 +412,6 @@
 #define IDC_STATUSGROUP                 1338
 #define IDC_ALLOWSENDBUTTONHIDE         1340
 #define IDC_VERTICALMAX                 1341
-#define IDC_TSFIX                       1342
 #define IDC_ICONDLLNAME                 1343
 #define IDC_SAVETEMPLATE                1344
 #define IDC_SELECTICONDLL               1345

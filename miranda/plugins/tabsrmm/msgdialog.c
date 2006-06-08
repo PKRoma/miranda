@@ -1811,7 +1811,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     int len;
 #if defined(_UNICODE)
                     if(newData->isWchar)
-                        SetDlgItemText(hwndDlg, IDC_MESSAGE, (TCHAR *)newData->szInitialText);
+                        SetDlgItemTextW(hwndDlg, IDC_MESSAGE, (TCHAR *)newData->szInitialText);
                     else
                         SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
 #else

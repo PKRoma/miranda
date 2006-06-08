@@ -603,8 +603,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg, IDC_LOADTIMESPIN, UDM_SETRANGE, 0, MAKELONG(12 * 60, 0));
 			SendDlgItemMessage(hwndDlg, IDC_LOADTIMESPIN, UDM_SETPOS, 0, DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADTIME, SRMSGDEFSET_LOADTIME));
 
-			CheckDlgButton(hwndDlg, IDC_TSFIX, DBGetContactSettingByte(NULL, SRMSGMOD_T, "no_future", 1));
-
 			SetDlgItemInt(hwndDlg, IDC_INDENTAMOUNT, DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0), FALSE);
 			SendDlgItemMessage(hwndDlg, IDC_INDENTSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 0));
 			SendDlgItemMessage(hwndDlg, IDC_INDENTSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_INDENTAMOUNT, &translated, FALSE));
@@ -648,10 +646,12 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
 				return TRUE;
 			break;
+        /*
 		case IDC_TSFIX:
 			if(IsDlgButtonChecked(hwndDlg, IDC_TSFIX))
 				MessageBoxA(0, "Caution: This attempt to fix the 'future timestamp issue' may have side effects. Also, it only works for events while the session is active, NOT for loading the history", "Warning", MB_OK | MB_ICONHAND);
 			break;
+        */
 		case IDC_MODIFY:
 			{
 				TemplateEditorNew teNew = {0, 0, hwndDlg};
@@ -715,7 +715,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 					DBWriteContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", (DWORD) GetDlgItemInt(hwndDlg, IDC_INDENTAMOUNT, &translated, FALSE));
 					DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", (DWORD) GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
-					DBWriteContactSettingByte(NULL, SRMSGMOD_T, "no_future", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TSFIX));
 
 					/*
 					* scan the tree view and obtain the options...
@@ -1532,7 +1531,7 @@ void ReloadGlobals()
      myGlobals.m_FormatWholeWordsOnly = 1;
      myGlobals.m_AllowSendButtonHidden = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "hidesend", 0);
      myGlobals.m_ToolbarHideMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbarhidemode", 0);
-     myGlobals.m_FixFutureTimestamps = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "no_future", 1);
+     myGlobals.m_FixFutureTimestamps = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "do_fft", 1);
      myGlobals.m_RTLDefault = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "rtldefault", 0);
      myGlobals.m_SplitterSaveOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitsavemode", 1);
      myGlobals.m_WheelDefault = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "no_wheelhack", 0);

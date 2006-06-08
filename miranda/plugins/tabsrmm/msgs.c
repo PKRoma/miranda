@@ -601,7 +601,7 @@ static int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
         pContainer = FindContainerByName(szName);
         if (pContainer == NULL)
             pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
-		CreateNewTabForContact(pContainer, (HANDLE) wParam, 1, (const char *) lParam, TRUE, TRUE, FALSE, 0);
+		CreateNewTabForContact(pContainer, (HANDLE) wParam, 1, (const char *)lParam, TRUE, TRUE, FALSE, 0);
     }
     LeaveCriticalSection(&cs_sessions);
     return 0;

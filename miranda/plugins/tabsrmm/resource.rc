@@ -272,7 +272,6 @@ BEGIN
     CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",BS_AUTORADIOBUTTON,10,187,138,10
     CONTROL         "Load previous events less than",IDC_LOADTIME,"Button",BS_AUTORADIOBUTTON,10,200,138,10
     CONTROL         "Always trim message log to",IDC_ALWAYSTRIM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,212,146,10
-    CONTROL         "Attempt to fix ""future"" timestamps",IDC_TSFIX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,173,148,11
     EDITTEXT        IDC_LOADCOUNTN,170,185,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
     CONTROL         "Spin1",IDC_LOADCOUNTSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,203,184,10,14
     EDITTEXT        IDC_LOADTIMEN,170,198,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
@@ -937,17 +936,28 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
+IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
+IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,208
- PRODUCTVERSION 0,9,9,208
- FILEFLAGSMASK 0x3fL
+ FILEVERSION 1,1,0,1
+ PRODUCTVERSION 1,1,0,1
+ FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
- FILEFLAGS 0x29L
+ FILEFLAGS 0x1L
 #else
- FILEFLAGS 0x28L
+ FILEFLAGS 0x0L
 #endif
  FILEOS 0x4L
  FILETYPE 0x2L
@@ -957,17 +967,15 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "CompanyName", "Miranda Open Source Project"
-            VALUE "FileDescription", "Tabbed message plugin for Miranda IM"
-            VALUE "FileVersion", "0, 9, 9, 208"
+            VALUE "CompanyName", "Miranda IM project"
+            VALUE "FileDescription", "tabSRMM.dll"
+            VALUE "FileVersion", "1, 1, 0, 1"
             VALUE "InternalName", "tabSRMsg"
-            VALUE "LegalCopyright", "Copyright © 2006 The Miranda IM project"
-            VALUE "LegalTrademarks", "Gnu General Public License V2"
-            VALUE "OriginalFilename", "tabSRMM.dll"
-            VALUE "PrivateBuild", "No"
-            VALUE "ProductName", " tabSRMM Dynamic Link Library (DLL)"
-            VALUE "ProductVersion", "0, 9, 9, 208"
-            VALUE "SpecialBuild", "53"
+            VALUE "LegalCopyright", "Copyright (C) 2006"
+            VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
+            VALUE "OriginalFilename", "tabsrmm.dll"
+            VALUE "ProductName", "tabSRMM Message window plugin"
+            VALUE "ProductVersion", "1, 1, 0, 1"
         END
     END
     BLOCK "VarFileInfo"
@@ -976,17 +984,6 @@ BEGIN
     END
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
-IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
-IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 
