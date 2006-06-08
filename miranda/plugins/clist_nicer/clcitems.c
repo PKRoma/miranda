@@ -126,7 +126,7 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 		if (p->ace != NULL && p->ace->cbSize != sizeof(struct avatarCacheEntry))
 			p->ace = NULL;
 		if (p->ace != NULL)
-			p->ace->t_lastAccess = time(NULL);
+			p->ace->t_lastAccess = g_CluiData.t_now;
 	}
 
 	if(dat->bisEmbedded)
@@ -411,11 +411,12 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     
     index = contact->extraCacheEntry;
 
-    firstTime = DBGetContactSettingDword(contact->hContact, "CList", "mf_firstEvent", 0);
-    count = DBGetContactSettingDword(contact->hContact, "CList", "mf_count", 0);
-    new_freq = count ? (time(NULL) - firstTime) / count : 0x7fffffff;
-    g_ExtraCache[index].msgFrequency = new_freq;
-    DBWriteContactSettingDword(contact->hContact, "CList", "mf_freq", new_freq);
+    //firstTime = DBGetContactSettingDword(contact->hContact, "CList", "mf_firstEvent", 0);
+    //count = DBGetContactSettingDword(contact->hContact, "CList", "mf_count", 0);
+    //new_freq = count ? (g_CluiData.t_now - firstTime) / count : 0x7fffffff;
+    g_ExtraCache[index].msgFrequency = DBGetContactSettingDword(contact->hContact, "CList", "mf_freq", 0x7fffffff);
+    //g_ExtraCache[index].msgFrequency = new_freq;
+    //DBWriteContactSettingDword(contact->hContact, "CList", "mf_freq", new_freq);
 
     if(index >= 0 && index < g_nextExtraCacheEntry) {
         if(g_ExtraCache[index].valid)
@@ -616,7 +617,7 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
 			DWORD now;
 			int iEntry = GetExtraCache(hContact, szProto);
 			if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry) {
-				now = time(NULL);
+				now = g_CluiData.t_now;
 				now -= g_CluiData.lastMsgFilter;
 				if(g_CluiData.bFilterEffective & CLVM_FILTER_LASTMSG_OLDERTHAN)
 					filterResult = filterResult & (g_ExtraCache[iEntry].dwLastMsgTime < now);

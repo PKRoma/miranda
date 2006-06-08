@@ -201,7 +201,7 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 				lstrcpyn(szTip, szPrefix, tipSize);
 		} else {
 			if(mToolTipTrayTips)
-				mir_sntprintf(szTip, tipSize, _T("<b>%-12-12s</b>\t%s"), sztProto, szStatus);
+				mir_sntprintf(szTip, tipSize, _T("<b>%-12.12s</b>\t%s"), sztProto, szStatus);
 			else
 				mir_sntprintf(szTip, tipSize, _T("%s %s"), sztProto, szStatus);
 		}

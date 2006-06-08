@@ -335,7 +335,7 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 		else
 			dAspect = 1.0;
 		hbm = contact->ace->hbmPic;
-		contact->ace->t_lastAccess = time(NULL);
+		contact->ace->t_lastAccess = g_CluiData.t_now;
 	}
 	else if (g_CluiData.dwFlags & CLUI_FRAME_ALWAYSALIGNNICK)
 		return avatar_size + 2;
@@ -526,7 +526,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	DWORD dwFlags = g_CluiData.dwFlags;
 	int scanIndex;
 	BOOL check_selected;
-
+    
 	rowHeight -= g_CluiData.bRowSpacing;
 	savedCORNER = -1;
 
@@ -597,8 +597,10 @@ set_bg_l:
 			ChangeToFont(hdcMem, dat, FONTID_GROUPS, &fontHeight);
 		else
 			ChangeToFont(hdcMem, dat, FONTID_CONTACTS, &fontHeight);
-	} else if (type == CLCIT_DIVIDER)
-		ChangeToFont(hdcMem, dat, FONTID_DIVIDERS, &fontHeight);
+	} else if (type == CLCIT_DIVIDER) {
+        ChangeToFont(hdcMem, dat, FONTID_DIVIDERS, &fontHeight);
+        GetTextExtentPoint32(hdcMem, contact->szText, lstrlen(contact->szText), &textSize);
+    }
 	else if (type == CLCIT_CONTACT && flags & CONTACTF_NOTONLIST)
 		ChangeToFont(hdcMem, dat, FONTID_NOTONLIST, &fontHeight);
 	else if (type == CLCIT_CONTACT && ((flags & CONTACTF_INVISTO && GetRealStatus(contact, my_status) != ID_STATUS_INVISIBLE) || (flags & CONTACTF_VISTO && GetRealStatus(contact, my_status) == ID_STATUS_INVISIBLE))) {
@@ -609,9 +611,10 @@ set_bg_l:
 		ChangeToFont(hdcMem, dat, FONTID_OFFLINE, &fontHeight);
 	else
 		ChangeToFont(hdcMem, dat, FONTID_CONTACTS, &fontHeight);
-	GetTextExtentPoint32(hdcMem, contact->szText, lstrlen(contact->szText), &textSize);
-	width = textSize.cx;
-	if (type == CLCIT_GROUP) {
+
+    if (type == CLCIT_GROUP) {
+        GetTextExtentPoint32(hdcMem, contact->szText, lstrlen(contact->szText), &textSize);
+        width = textSize.cx;
 		szCounts = pcli->pfnGetGroupCountsText(dat, contact);
 		if (szCounts[0]) {
 			GetTextExtentPoint32(hdcMem, _T(" "), 1, &spaceSize);
@@ -741,6 +744,7 @@ set_bg_l:
 				rc.top = y + slastitem->MARGIN_TOP;
 				rc.right = clRect->right - slastitem->MARGIN_RIGHT - bg_indent_r;
 				rc.bottom = y + rowHeight - slastitem->MARGIN_BOTTOM;
+                rc.bottom = y + rowHeight - slastitem->MARGIN_BOTTOM;
 
 				// draw odd/even contact underlay
 				if ((scanIndex == 0 || scanIndex % 2 == 0) && !sevencontact_pos->IGNORED) {
@@ -865,18 +869,16 @@ set_bg_l:
 				rc.top = y + sempty->MARGIN_TOP;
 				rc.right = clRect->right - sempty->MARGIN_RIGHT - bg_indent_r;
 				rc.bottom = y + rowHeight - sempty->MARGIN_BOTTOM;
-				//if (check_selected)
 				DrawAlpha(hdcMem, &rc, sempty->COLOR, sempty->ALPHA, sempty->COLOR2, sempty->COLOR2_TRANSPARENT, sempty->GRADIENT, sempty->CORNER, sempty->BORDERSTYLE, sempty->imageItem);
 				savedCORNER = sempty->CORNER;
 				oldGroupColor = SetTextColor(hdcMem, sempty->TEXTCOLOR);
 			}
-		} else if (contact->group->expanded & 0x0000ffff) {
+		} else if (contact->group->expanded) {
 			if (!sexpanded->IGNORED) {
 				rc.left = sexpanded->MARGIN_LEFT + bg_indent_l;
 				rc.top = y + sexpanded->MARGIN_TOP;
 				rc.right = clRect->right - sexpanded->MARGIN_RIGHT - bg_indent_r;
 				rc.bottom = y + rowHeight - (char) sexpanded->MARGIN_BOTTOM;
-				//if (check_selected)
 				DrawAlpha(hdcMem, &rc, sexpanded->COLOR, sexpanded->ALPHA, sexpanded->COLOR2, sexpanded->COLOR2_TRANSPARENT, sexpanded->GRADIENT, sexpanded->CORNER, sexpanded->BORDERSTYLE, sexpanded->imageItem);
 				savedCORNER = sexpanded->CORNER;
 				oldGroupColor = SetTextColor(hdcMem, sexpanded->TEXTCOLOR);
@@ -888,7 +890,6 @@ set_bg_l:
 				rc.top = y + scollapsed->MARGIN_TOP;
 				rc.right = clRect->right - scollapsed->MARGIN_RIGHT - bg_indent_r;
 				rc.bottom = y + rowHeight - scollapsed->MARGIN_BOTTOM;
-				//if (check_selected)
 				DrawAlpha(hdcMem, &rc, scollapsed->COLOR, scollapsed->ALPHA, scollapsed->COLOR2, scollapsed->COLOR2_TRANSPARENT, scollapsed->GRADIENT, scollapsed->CORNER, scollapsed->BORDERSTYLE, scollapsed->imageItem);
 				savedCORNER = scollapsed->CORNER;
 				oldGroupColor = SetTextColor(hdcMem, scollapsed->TEXTCOLOR);
@@ -929,12 +930,10 @@ set_bg_l:
 		pfnSetLayout(hdcMem, LAYOUT_RTL | LAYOUT_BITMAPORIENTATIONPRESERVED);
 bgskipped:
 
-	rcContent.top = y;
-	rcContent.bottom = y + rowHeight;
-	//rcContent.left = rtl ? dat->rightMargin : leftX;
-	//rcContent.right = rtl ? clRect->right - leftX : clRect->right - dat->rightMargin;
-	rcContent.left = leftX;
-	rcContent.right = clRect->right - dat->rightMargin;
+    rcContent.top = y;
+    rcContent.bottom = y + rowHeight;
+    rcContent.left = leftX;
+    rcContent.right = clRect->right - dat->rightMargin;
 	twoRows = ((dat->fontInfo[FONTID_STATUS].fontHeight + fontHeight <= rowHeight + 1) && (g_CluiData.dualRowMode != MULTIROW_NEVER)) && !dat->bisEmbedded;
 	pi_avatar = !dat->bisEmbedded && type == CLCIT_CONTACT && (av_wanted) && contact->ace != 0 && !(contact->ace->dwFlags & AVS_HIDEONCLIST);
 
@@ -968,7 +967,7 @@ bgskipped:
 	}
 
 	if (type == CLCIT_GROUP)
-		iImage = (contact->group->expanded & 0x0000ffff) ? IMAGE_GROUPOPEN : IMAGE_GROUPSHUT;
+		iImage = (contact->group->expanded) ? IMAGE_GROUPOPEN : IMAGE_GROUPSHUT;
 	else if (type == CLCIT_CONTACT)
 		iImage = contact->iImage;
 
@@ -1088,7 +1087,7 @@ text:
 		RECT rc;
 		int leftMargin = 0, countStart = 0, leftLineEnd, rightLineStart;
 		fontHeight = dat->fontInfo[FONTID_GROUPS].fontHeight;
-		rc.top = y + ((rowHeight - fontHeight) >> 1);
+		rc.top = y + ((rowHeight - fontHeight) >> 1) + g_CluiData.group_padding;
 		rc.bottom = rc.top + textSize.cy;
 		if (szCounts[0]) {
 			int required, labelWidth, offset = 0;
@@ -1227,7 +1226,7 @@ text:
 				char szResult[80];
 				int  idOldFont;
 				DWORD final_time;
-				DWORD now = time(NULL);
+				DWORD now = g_CluiData.t_now;
 				SIZE szTime;
 				RECT rc = rcContent;
 				COLORREF oldColor;
@@ -1446,8 +1445,8 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 	my_status = GetGeneralisedStatus();
 	g_HDC = hdc;
 
-
-	g_CluiData.bUseFastGradients = g_CluiData.bWantFastGradients && (MyGradientFill != 0);
+    g_CluiData.t_now = time(NULL);
+    g_CluiData.bUseFastGradients = g_CluiData.bWantFastGradients && (MyGradientFill != 0);
 
 	g_gdiPlus = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS && g_gdiplusToken);
 	g_gdiPlusText = DBGetContactSettingByte(NULL, "CLC", "gdiplustext", 0) && g_gdiPlus;
@@ -1617,7 +1616,7 @@ bgdone:
 		}
 		index++;
 		y += dat->row_heights[line_num];
-		if (group->cl.items[group->scanIndex]->type == CLCIT_GROUP && (group->cl.items[group->scanIndex]->group->expanded & 0x0000ffff)) {
+		if (group->cl.items[group->scanIndex]->type == CLCIT_GROUP && (group->cl.items[group->scanIndex]->group->expanded)) {
 			group = group->cl.items[group->scanIndex]->group;
 			indent++;
 			group->scanIndex = 0;

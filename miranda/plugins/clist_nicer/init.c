@@ -109,12 +109,12 @@ void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 
 PLUGININFO pluginInfo = {
 #if defined(_UNICODE)
-	sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 6, 0, 8),
+	sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 7, 0, 0),
 #else
-	sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 6, 0, 8),
+	sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 7, 0, 0),
 #endif
 		"Display contacts, event notifications, protocol status",
-		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2005 Miranda-IM project", "http://www.miranda-im.org",
+		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2006 Miranda-IM project", "http://www.miranda-im.org",
 		UNICODE_AWARE,
 		DEFMOD_CLISTALL
 };
@@ -285,7 +285,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	g_CluiData.autoalpha = DBGetContactSettingByte(NULL, "CList", "AutoAlpha", SETTING_ALPHA_DEFAULT);
 	g_CluiData.fadeinout = DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", 0);
 	g_CluiData.autosize = DBGetContactSettingByte(NULL, "CLUI", "AutoSize", 0);
-	g_CluiData.titleBarHeight = DEFAULT_TITLEBAR_HEIGHT;
 	g_CluiData.dwExtraImageMask = DBGetContactSettingDword(NULL, "CLUI", "ximgmask", 0);
 	g_CluiData.bNoOfflineAvatars = DBGetContactSettingByte(NULL, "CList", "NoOfflineAV", 1);
 	g_CluiData.bFullTransparent = DBGetContactSettingByte(NULL, "CLUI", "fulltransparent", 0);
@@ -409,6 +408,7 @@ int __declspec(dllexport) Unload(void)
 	if (IsWindow(pcli->hwndContactList))
 		DestroyWindow(pcli->hwndContactList);
 	ClcShutdown(0, 0);
+    UnLoadCLUIFramesModule();
 	return 0;
 }
 

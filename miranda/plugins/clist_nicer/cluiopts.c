@@ -252,7 +252,6 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				oldFading = g_CluiData.fadeinout;
 				g_CluiData.fadeinout = FALSE;
 
-				SendMessage(pcli->hwndContactList, WM_SETREDRAW, FALSE, FALSE);
 				DBWriteContactSettingByte(NULL, "CLUI", "WindowStyle", windowStyle);
 				g_CluiData.gapBetweenFrames = GetDlgItemInt(hwndDlg, IDC_FRAMEGAP, &translated, FALSE);
 
@@ -266,10 +265,9 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				g_CluiData.bCBottom = (BYTE)SendDlgItemMessage(hwndDlg, IDC_CBOTTOMSPIN, UDM_GETPOS, 0, 0);
 
 				DBWriteContactSettingDword(NULL, "CLUI", "clmargins", MAKELONG(MAKEWORD(g_CluiData.bCLeft, g_CluiData.bCRight), MAKEWORD(g_CluiData.bCTop, g_CluiData.bCBottom)));
-				ConfigureCLUIGeometry();
 				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 
-				DBWriteContactSettingByte(NULL, "CList", "BringToFront", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_BRINGTOFRONT));
+                DBWriteContactSettingByte(NULL, "CList", "BringToFront", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_BRINGTOFRONT));
 				if (windowStyle != SETTING_WINDOWSTYLE_DEFAULT) {
 					// Window must be hidden to dynamically remove the taskbar button.
 					// See http://msdn.microsoft.com/library/en-us/shellcc/platform/shell/programmersguide/shell_int/shell_int_programming/taskbar.asp
@@ -283,12 +281,14 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				} else
 					SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
 
-				if (IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP)) {
-					HWND hProgMan = FindWindowA("Progman", NULL);
-					if (IsWindow(hProgMan))
-						SetParent(pcli->hwndContactList, hProgMan);
-				} else
-					SetParent(pcli->hwndContactList, NULL);
+                if (IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP)) {
+                    HWND hProgMan = FindWindowA("Progman", NULL);
+                    if (IsWindow(hProgMan)) {
+                        SetParent(pcli->hwndContactList, hProgMan);
+                        SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+                    }
+                } else
+                    SetParent(pcli->hwndContactList, NULL);
 
 				__setFlag(CLUI_SHOWCLIENTICONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWCLIENTICONS));
 				__setFlag(CLUI_SHOWXSTATUS, IsDlgButtonChecked(hwndDlg, IDC_SHOWEXTENDEDSTATUS));
@@ -398,6 +398,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 				RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
 
+                ConfigureCLUIGeometry(1);
 				if(oldexIconScale != g_CluiData.exIconScale) {
 					ImageList_RemoveAll(himlExtraImages);
 					ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
@@ -496,13 +497,14 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			}
 			if (IsDlgButtonChecked(hwndDlg, IDC_SHOWSBAR)) {
 				ShowWindow(pcli->hwndStatus, SW_SHOW);
+                SendMessage(pcli->hwndStatus, WM_SIZE, 0, 0);
 				g_CluiData.dwFlags |= CLUI_FRAME_SBARSHOW;
 			} else {
 				ShowWindow(pcli->hwndStatus, SW_HIDE);
 				g_CluiData.dwFlags &= ~CLUI_FRAME_SBARSHOW;
 			}
 			DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
-			ConfigureCLUIGeometry();
+			ConfigureCLUIGeometry(1);
 			SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 			CluiProtocolStatusChanged(0, 0);
 			PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
@@ -722,7 +724,7 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				if(!pDrawAlpha)
 					pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS  && g_gdiplusToken) ? (pfnDrawAlpha)GDIp_DrawAlpha : (pfnDrawAlpha)DrawAlpha;
 				ConfigureFrame();
-				ConfigureCLUIGeometry();
+				ConfigureCLUIGeometry(1);
 				ConfigureEventArea(pcli->hwndContactList);
 				SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);
 				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);

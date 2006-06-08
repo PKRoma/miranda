@@ -43,8 +43,6 @@ typedef struct tagProtocolData {
 #define MS_INT_MENUPROCESSCOMMAND "CLUIFrames/IntMenuProcessCommand"
 #define MS_INT_MODIFYMENUITEM "CLUIFrames/IntModifyMenuItem"
 
-#define DEFAULT_TITLEBAR_HEIGHT		18
-
 typedef struct _DockOpt {
     HWND    hwndLeft;
     HWND    hwndRight;

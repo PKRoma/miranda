@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define  EXTRA_ICON_SMS		3
 #define  EXTRA_ICON_ADV1	4
 #define  EXTRA_ICON_ADV2	5
+#define DEFAULT_TITLEBAR_HEIGHT		18
 
 #define CLS_SKINNEDFRAME	0x0800   //this control will be the main contact list (v. 0.3.4.3+ 2004/11/02)
 

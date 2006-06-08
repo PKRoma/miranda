@@ -348,6 +348,9 @@ struct CluiData {
 	BYTE bGroupAlign;
     BYTE bSkinnedScrollbar;
     DWORD langPackCP;
+    BOOL fOnDesktop;
+    int  group_padding;
+    DWORD t_now;
 };
 
 #define SORTBY_NAME 1
@@ -449,7 +452,7 @@ void FreeProtocolData( void );
 void GetClientID(struct ClcContact *contact, char *client);
 int LoadCLCButtonModule(void);
 void SetButtonStates(HWND hwnd);
-void ConfigureCLUIGeometry();
+void ConfigureCLUIGeometry(int mode);
 void IcoLibReloadIcons();
 int CompareContacts(const struct ClcContact* p1, const struct ClcContact* p2);
 void PaintNotifyArea(HDC hDC, RECT *rc);
@@ -537,7 +540,7 @@ int CoolSB_SetupScrollBar();
 
 #define SETTING_WINDOWSTYLE_TOOLWINDOW 1
 #define SETTING_WINDOWSTYLE_THINBORDER 2
-#define SETTING_WINDOWSTYLE_NOBORDER 4
+#define SETTING_WINDOWSTYLE_NOBORDER 3
 
 #define CLCDEFAULT_EXSTYLE       (CLS_EX_EDITLABELS|CLS_EX_TRACKSELECT|CLS_EX_SHOWGROUPCOUNTS|CLS_EX_HIDECOUNTSWHENEMPTY|CLS_EX_TRACKSELECT|CLS_EX_NOTRANSLUCENTSEL)  //plus CLS_EX_NOSMOOTHSCROLL is got from the system
 #define CLCDEFAULT_SCROLLTIME    150

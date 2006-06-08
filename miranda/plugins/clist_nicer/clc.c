@@ -117,7 +117,9 @@ static int ClcEventAdded(WPARAM wParam, LPARAM lParam)
 	int iEntry;
     DWORD new_freq = 0;
 
-	if(wParam && lParam) {
+    g_CluiData.t_now = time(NULL);
+
+    if(wParam && lParam) {
         dbei.cbSize = sizeof(dbei);
         dbei.pBlob = 0;
         dbei.cbBlob = 0;

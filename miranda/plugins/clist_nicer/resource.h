@@ -122,6 +122,7 @@
 #define IDI_NEWGROUP2                   283
 #define IDC_ACTIVEPERC                  1000
 #define IDC_RESETPROTOCOLDATA           1000
+#define IDC_OPTIONSTAB                  1000
 #define IDC_SAVE                        1001
 #define IDC_ADD                         1002
 #define IDI_OUTTOLUNCH                  1003
@@ -703,7 +704,11 @@
 #define IDC_CORNERRAD                   1751
 #define IDC_CORNERSPIN                  1752
 #define IDC_AVATARPADDING               1753
+#define IDC_GRPTOPPADDING               1753
 #define IDC_AVATARPADDINGSPIN           1754
+#define IDC_GRPPADDINGSPIN              1754
+#define IDC_LASTITEMPADDING             1755
+#define IDC_LASTITEMPADDINGSPIN         1756
 #define IDC_TBHIDEOFFLINE               1800
 #define IDC_TBHIDEGROUPS                1801
 #define IDC_TBSOUND                     1802
@@ -859,7 +864,6 @@
 #define POPUP_FLOATER_AUTOHIDE          40058
 #define ID_APPEARANCE_SHOWEVENTAREAINFLOATER 40059
 #define POPUP_FLOATER_EVENTS            40060
-#define IDC_OPTIONSTAB                  1000
 
 // Next default values for new objects
 // 

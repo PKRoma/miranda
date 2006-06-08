@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern int g_hottrack;
 extern struct CluiData g_CluiData;
+extern struct ClcData *g_clcData;
+
 extern HWND g_hwndViewModeFrame;
 extern HIMAGELIST himlExtraImages;
 extern HANDLE hPreBuildStatusMenuEvent;
@@ -457,12 +459,19 @@ void SaveNonStatusItemsSettings(HWND hwndDlg)
     g_CluiData.bUsePerProto = IsDlgButtonChecked(hwndDlg, IDC_USEPERPROTO) ? 1 : 0;
 	g_CluiData.bWantFastGradients = IsDlgButtonChecked(hwndDlg, IDC_FASTGRADIENT) ? 1 : 0;
     g_CluiData.bOverridePerStatusColors = IsDlgButtonChecked(hwndDlg, IDC_OVERRIDEPERSTATUSCOLOR) ? 1 : 0;
+    g_CluiData.titleBarHeight = (BYTE)GetDlgItemInt(hwndDlg, IDC_LASTITEMPADDING, &translated, FALSE);
+    g_CluiData.group_padding = GetDlgItemInt(hwndDlg, IDC_GRPTOPPADDING, &translated, FALSE);
+
     DBWriteContactSettingByte(NULL, "CLCExt", "CornerRad", g_CluiData.cornerRadius);
     DBWriteContactSettingByte(NULL, "CLCExt", "applyindentbg", g_CluiData.bApplyIndentToBg);
     DBWriteContactSettingByte(NULL, "CLCExt", "useperproto", g_CluiData.bUsePerProto);
     DBWriteContactSettingByte(NULL, "CLCExt", "override_status", g_CluiData.bOverridePerStatusColors);
     DBWriteContactSettingByte(NULL, "CLCExt", "bskinned", IsDlgButtonChecked(hwndDlg, IDC_SETALLBUTTONSKINNED) ? 1 : 0);
 	DBWriteContactSettingByte(NULL, "CLCExt", "FastGradients", g_CluiData.bWantFastGradients);
+
+    DBWriteContactSettingDword(NULL, "CLCExt", "grp_padding", g_CluiData.group_padding);
+    DBWriteContactSettingByte(NULL, "CLCExt", "frame_height", g_CluiData.titleBarHeight);
+
     Reload3dBevelColors();
     SetButtonToSkinned();
 }
@@ -1040,48 +1049,60 @@ static void BTN_ReadItem(char *itemName, char *file)
     tmpItem.dwFlags |= GetPrivateProfileIntA(itemName, "toggle", 0, file) ? BUTTON_ISTOGGLE : 0;
 
     GetPrivateProfileStringA(itemName, "Pressed", "None", szBuffer, 1000, file);
-    while(imgItem) {
-        if(!stricmp(imgItem->szName, szBuffer)) {
-            tmpItem.imgPressed = imgItem;
-            break;
+    if(!stricmp(szBuffer, "default"))
+        tmpItem.imgPressed = StatusItems[ID_EXTBKTBBUTTONSPRESSED - ID_STATUS_OFFLINE].imageItem;
+    else {
+        while(imgItem) {
+            if(!stricmp(imgItem->szName, szBuffer)) {
+                tmpItem.imgPressed = imgItem;
+                break;
+            }
+            imgItem = imgItem->nextItem;
         }
-        imgItem = imgItem->nextItem;
     }
 
     imgItem = g_ImageItems;
     GetPrivateProfileStringA(itemName, "Normal", "None", szBuffer, 1000, file);
-    while(imgItem) {
-        if(!stricmp(imgItem->szName, szBuffer)) {
-            tmpItem.imgNormal = imgItem;
-            break;
+    if(!stricmp(szBuffer, "default"))
+        tmpItem.imgNormal = StatusItems[ID_EXTBKTBBUTTONSNPRESSED - ID_STATUS_OFFLINE].imageItem;
+    else {
+        while(imgItem) {
+            if(!stricmp(imgItem->szName, szBuffer)) {
+                tmpItem.imgNormal = imgItem;
+                break;
+            }
+            imgItem = imgItem->nextItem;
         }
-        imgItem = imgItem->nextItem;
     }
 
     imgItem = g_ImageItems;
     GetPrivateProfileStringA(itemName, "Hover", "None", szBuffer, 1000, file);
-    while(imgItem) {
-        if(!stricmp(imgItem->szName, szBuffer)) {
-            tmpItem.imgHover = imgItem;
-            break;
+    if(!stricmp(szBuffer, "default"))
+        tmpItem.imgHover = StatusItems[ID_EXTBKTBBUTTONMOUSEOVER - ID_STATUS_OFFLINE].imageItem;
+    else {
+        while(imgItem) {
+            if(!stricmp(imgItem->szName, szBuffer)) {
+                tmpItem.imgHover = imgItem;
+                break;
+            }
+            imgItem = imgItem->nextItem;
         }
-        imgItem = imgItem->nextItem;
     }
 
-    GetPrivateProfileStringA(itemName, "NormalGlyph", "0, 0, 20, 20", szBuffer, 1000, file);
+    GetPrivateProfileStringA(itemName, "NormalGlyph", "0, 0, 0, 0", szBuffer, 1000, file);
     sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.normalGlyphMetrics[0], &tmpItem.normalGlyphMetrics[1],
            &tmpItem.normalGlyphMetrics[2], &tmpItem.normalGlyphMetrics[3]);
     tmpItem.normalGlyphMetrics[2] = (tmpItem.normalGlyphMetrics[2] - tmpItem.normalGlyphMetrics[0]) + 1;
     tmpItem.normalGlyphMetrics[3] = (tmpItem.normalGlyphMetrics[3] - tmpItem.normalGlyphMetrics[1]) + 1;
 
-    GetPrivateProfileStringA(itemName, "PressedGlyph", "0, 0, 20, 20", szBuffer, 1000, file);
+    GetPrivateProfileStringA(itemName, "PressedGlyph", "0, 0, 0, 0", szBuffer, 1000, file);
     sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.pressedGlyphMetrics[0], &tmpItem.pressedGlyphMetrics[1],
            &tmpItem.pressedGlyphMetrics[2], &tmpItem.pressedGlyphMetrics[3]);
     tmpItem.pressedGlyphMetrics[2] = (tmpItem.pressedGlyphMetrics[2] - tmpItem.pressedGlyphMetrics[0]) + 1;
     tmpItem.pressedGlyphMetrics[3] = (tmpItem.pressedGlyphMetrics[3] - tmpItem.pressedGlyphMetrics[1]) + 1;
 
 
-    GetPrivateProfileStringA(itemName, "HoverGlyph", "0, 0, 20, 20", szBuffer, 1000, file);
+    GetPrivateProfileStringA(itemName, "HoverGlyph", "0, 0, 0, 0", szBuffer, 1000, file);
     sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.hoverGlyphMetrics[0], &tmpItem.hoverGlyphMetrics[1],
            &tmpItem.hoverGlyphMetrics[2], &tmpItem.hoverGlyphMetrics[3]);
     tmpItem.hoverGlyphMetrics[2] = (tmpItem.hoverGlyphMetrics[2] - tmpItem.hoverGlyphMetrics[0]) + 1;
@@ -1277,7 +1298,7 @@ void IMG_LoadItems()
             i++;
         }
         g_CluiData.dwFlags &= ~CLUI_FRAME_SHOWTOPBUTTONS;
-        ConfigureCLUIGeometry();
+        ConfigureCLUIGeometry(0);
     }
     if(g_ImageItems) {
         DBWriteContactSettingByte(NULL, "CLCExt", "bskinned", 1);
@@ -1508,7 +1529,7 @@ void extbk_import(char *file, HWND hwndDlg)
     if(hwndDlg && ServiceExists(MS_CLNSE_FILLBYCURRENTSEL))
         CallService(MS_CLNSE_FILLBYCURRENTSEL, (WPARAM)hwndDlg, 0);
     pcli->pfnClcOptionsChanged();
-    ConfigureCLUIGeometry();
+    ConfigureCLUIGeometry(1);
     SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
     RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
     if(oldexIconScale != g_CluiData.exIconScale) {
@@ -1559,6 +1580,13 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
             SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
             SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, g_CluiData.cornerRadius);
+
+            SendDlgItemMessage(hwndDlg, IDC_GRPPADDINGSPIN, UDM_SETRANGE, 0, MAKELONG(20, 0));
+            SendDlgItemMessage(hwndDlg, IDC_GRPPADDINGSPIN, UDM_SETPOS, 0, g_CluiData.group_padding);
+
+            SendDlgItemMessage(hwndDlg, IDC_LASTITEMPADDINGSPIN, UDM_SETRANGE, 0, MAKELONG(40, 0));
+            SendDlgItemMessage(hwndDlg, IDC_LASTITEMPADDINGSPIN, UDM_SETPOS, 0, g_CluiData.titleBarHeight);
+
             CheckDlgButton(hwndDlg, IDC_APPLYINDENTBG, g_CluiData.bApplyIndentToBg);
             CheckDlgButton(hwndDlg, IDC_USEPERPROTO, g_CluiData.bUsePerProto);
             CheckDlgButton(hwndDlg, IDC_OVERRIDEPERSTATUSCOLOR, g_CluiData.bOverridePerStatusColors);

@@ -66,7 +66,6 @@ typedef struct {
     int MARGIN_TOP;
     int MARGIN_RIGHT;
     int MARGIN_BOTTOM;
-
     BYTE IGNORED;
     DWORD BORDERSTYLE;
     ImageItem *imageItem;
