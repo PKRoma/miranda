@@ -1541,11 +1541,11 @@ return=0 for sucess
 int YahooSetMyAvatar( WPARAM wParam, LPARAM lParam )
 {
 	char *szFile = (char *)lParam;
+	HANDLE avt;
 
 	YAHOO_DebugLog("[YahooSetMyAvatar]");
 	
-	HANDLE avt = YAHOO_SetAvatar(szFile);
-
+	avt = YAHOO_SetAvatar(szFile);
 	if (avt) {
 		DeleteObject(avt); // we release old avatar if any
 		return 0; 
