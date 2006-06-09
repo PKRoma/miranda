@@ -819,7 +819,7 @@ nogroup:
                 }
                 case 'D':           // long date
                     if(showTime && showDate) {
-                        szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, 'D');
+                        szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, (TCHAR)'D');
                         AppendTimeStamp(szFinalTimestamp, isSent, &buffer, &bufferEnd, &bufferAlloced, skipFont, dat, iFontIDOffset);
                     }
                     else
@@ -827,7 +827,7 @@ nogroup:
                     break;
                 case 'E':           // short date...
                     if(showTime && showDate) {
-                        szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, 'E');
+                        szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, (TCHAR)'E');
                         AppendTimeStamp(szFinalTimestamp, isSent, &buffer, &bufferEnd, &bufferAlloced, skipFont, dat, iFontIDOffset);
                     }
                     else
@@ -1616,6 +1616,7 @@ void BuildCodePageList()
     EnumSystemCodePagesA(LangAddCallback, CP_INSTALLED);
 }
 
+#if defined(_UNICODE)
 static TCHAR *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, TCHAR code)
 {
     static TCHAR szResult[100];
@@ -1623,19 +1624,19 @@ static TCHAR *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t ch
     szResult[0] = 0;
     dbtts.cbDest = 70;;
     dbtts.szDest = szResult;
-
-    if((code == 'R' || code == 'r') && check >= today) {
+    
+    if((code == (TCHAR)'R' || code == (TCHAR)'r') && check >= today) {
         lstrcpy(szResult, szToday);
     }
-    else if((code == 'R' || code == 'r') && check > (today - 86400)) {
+    else if((code == (TCHAR)'R' || code == (TCHAR)'r') && check > (today - 86400)) {
         lstrcpy(szResult, szYesterday);
     }
     else {
-        if(code == 'D' || code == 'R')
+        if(code == (TCHAR)'D' || code == (TCHAR)'R')
             dbtts.szFormat = _T("D");
-        else if(code == _T('T'))
+        else if(code == (TCHAR)'T')
             dbtts.szFormat = _T("s");
-        else if(code == 't')
+        else if(code == (TCHAR)'t')
             dbtts.szFormat = _T("t");
         else
             dbtts.szFormat = _T("d");
@@ -1643,7 +1644,35 @@ static TCHAR *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t ch
     }
     return szResult;
 }   
+#else
+static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, char code)
+{
+    static char szResult[100];
+    DBTIMETOSTRING dbtts;
+    szResult[0] = 0;
+    dbtts.cbDest = 70;;
+    dbtts.szDest = szResult;
 
+    if((code == 'R' || code == 'r') && check >= today) {
+        lstrcpyA(szResult, szToday);
+    }
+    else if((code == 'R' || code == 'r') && check > (today - 86400)) {
+        lstrcpyA(szResult, szYesterday);
+    }
+    else {
+        if(code == 'D' || code == 'R')
+            dbtts.szFormat = "D";
+        else if(code == 'T')
+            dbtts.szFormat = "s";
+        else if(code == 't')
+            dbtts.szFormat = "t";
+        else
+            dbtts.szFormat = "d";
+        CallService(MS_DB_TIME_TIMESTAMPTOSTRING, check, (LPARAM)&dbtts);
+    }
+    return szResult;
+}   
+#endif
 /*
  * decodes UTF-8 to unicode
  * taken from jabber protocol implementation and slightly modified

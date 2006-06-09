@@ -136,7 +136,8 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             TranslateDialogDefault(hwndDlg);
             
             ZeroMemory((void *) dat, sizeof(struct MessageWindowData));
-            dat->pContainer = (struct ContainerWindowData *)malloc(sizeof(TemplateEditorInfo));
+            dat->pContainer = (struct ContainerWindowData *)malloc(sizeof(struct ContainerWindowData));
+            ZeroMemory((void *)dat->pContainer, sizeof(struct ContainerWindowData));
             teInfo = (TemplateEditorInfo *)dat->pContainer;
             ZeroMemory((void *)teInfo, sizeof(TemplateEditorInfo));
             teInfo->hContact = teNew->hContact;
@@ -174,13 +175,8 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
             EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
             for(i = 0; i <= TMPL_ERRMSG; i++) {
-					 TCHAR* p = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)TemplateNames[i]);
-					 if (( int )p != CALLSERVICE_NOTFOUND )
-						 SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)p );
-					 else
-						 SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)Translate(TemplateNames[i]));
-					 mir_free(p);
-					 SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_SETITEMDATA, i, (LPARAM)i);
+                SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)TemplateNames[i]);
+                SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_SETITEMDATA, i, (LPARAM)i);
             }
             EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), FALSE);
             EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), FALSE);
@@ -330,12 +326,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
             }
 				{
-					TCHAR* p = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)TemplateNames[iItem]);
-					if (( int )p != CALLSERVICE_NOTFOUND )
-		            TextOut(dis->hDC, dis->rcItem.left, dis->rcItem.top, p, lstrlen(p));
-					else
 		            TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, Translate(TemplateNames[iItem]), lstrlenA(Translate(TemplateNames[iItem])));
-					mir_free(p);
 				}
             return TRUE;
         }
