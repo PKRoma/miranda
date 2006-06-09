@@ -227,6 +227,7 @@ static void PrepareFlashAvatar(HWND hwndDlg, AvtDlgProcData* pData)
   FLASHAVATAR fa = {0};
 
   fa.hContact = pData->hContact;
+  fa.cProto = gpszICQProtoName;
   fa.id = FA_MAGIC_ID;
   CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
   if (fa.hWindow)
@@ -252,6 +253,7 @@ static void ReleaseFlashAvatar(AvtDlgProcData* pData)
     FLASHAVATAR fa;
 
     fa.hContact = pData->hContact;
+    fa.cProto = gpszICQProtoName;
     fa.id = FA_MAGIC_ID; // icqj magic id
     CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
     pData->hFlashAvatar = NULL;
