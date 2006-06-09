@@ -464,7 +464,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		HANDLE tContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 1, 1 );
 
 		int isRtl = FALSE;
-		{	const char* p = tHeader[ "X-MMS-Format" ];
+		{	const char* p = tHeader[ "X-MMS-IM-Format" ];
 			if ( p != NULL )
 				if ( strstr( p, "RL=1" ) != NULL )
 					isRtl = TRUE;
@@ -541,7 +541,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		else {
 			PROTORECVEVENT pre;
 			pre.szMessage = ( char* )tMsgBuf;
-			pre.flags = PREF_UNICODE + ( isRtl ) ? PREF_RTL : 0;
+			pre.flags = PREF_UNICODE + (( isRtl ) ? PREF_RTL : 0);
 			pre.timestamp = ( DWORD )time(NULL);
 			pre.lParam = 0;
 
