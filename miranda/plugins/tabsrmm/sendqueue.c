@@ -14,7 +14,7 @@ extern      TCHAR *pszIDCSAVE_save, *pszIDCSAVE_close;
 extern      const UINT errorControls[5], infoPanelControls[8];
 extern      struct SendJob sendJobs[NR_SENDJOBS];
 
-char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat, int isUnicode)
+char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat, int dwFlags)
 {
 #ifdef _UNICODE
     char szServiceName[100];
@@ -22,7 +22,7 @@ char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat, int isUnico
     if (szProto == NULL)
         return PSS_MESSAGE;
 
-    if(dat->sendMode & SMODE_FORCEANSI || isUnicode == 0)
+    if(dat->sendMode & SMODE_FORCEANSI || !(dwFlags & PREF_UNICODE))
         return PSS_MESSAGE;
     
     _snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
@@ -44,7 +44,7 @@ DWORD WINAPI DoMultiSend(LPVOID param)
     int i;
     
     for(i = 0; i < sendJobs[iIndex].sendCount; i++) {
-		sendJobs[iIndex].hSendId[i] = (HANDLE) CallContactService(sendJobs[iIndex].hContact[i], MsgServiceName(sendJobs[iIndex].hContact[i], dat, sendJobs[iIndex].dwFlags), dat->sendMode & SMODE_FORCEANSI ? 0 : sendJobs[iIndex].dwFlags, (LPARAM) sendJobs[iIndex].sendBuffer);
+		sendJobs[iIndex].hSendId[i] = (HANDLE) CallContactService(sendJobs[iIndex].hContact[i], MsgServiceName(sendJobs[iIndex].hContact[i], dat, sendJobs[iIndex].dwFlags), (dat->sendMode & SMODE_FORCEANSI) ? (sendJobs[iIndex].dwFlags & ~PREF_UNICODE) : sendJobs[iIndex].dwFlags, (LPARAM) sendJobs[iIndex].sendBuffer);
         SetTimer(sendJobs[iIndex].hwndOwner, TIMERID_MULTISEND_BASE + (iIndex * SENDJOBS_MAX_SENDS) + i, myGlobals.m_MsgTimeout, NULL);
         Sleep((50 * i) + dwDelay + dwDelayAdd);
         if(i > 2)
@@ -89,7 +89,7 @@ void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
  * add a message to the sending queue.
  * iLen = required size of the memory block to hold the message
  */
-int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int isUnicode)
+int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int dwFlags)
 {
     int iLength = 0, i;
     int iFound = NR_SENDJOBS;
@@ -127,7 +127,7 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int is
         }
         CopyMemory(sendJobs[iFound].sendBuffer, dat->sendBuffer, iLen);
     }
-    sendJobs[iFound].dwFlags = isUnicode ? PREF_UNICODE : 0;
+    sendJobs[iFound].dwFlags = dwFlags;
     SaveInputHistory(hwndDlg, dat, 0, 0);
     SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
     EnableSendButton(hwndDlg, FALSE);
@@ -184,12 +184,12 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
 
 		sendJobs[iEntry].sendCount = 1;
         sendJobs[iEntry].hContact[0] = dat->hContact;
-        sendJobs[iEntry].hSendId[0] = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact, dat, sendJobs[iEntry].dwFlags), dat->sendMode & SMODE_FORCEANSI ? 0 : sendJobs[iEntry].dwFlags, (LPARAM) sendJobs[iEntry].sendBuffer);
+        sendJobs[iEntry].hSendId[0] = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact, dat, sendJobs[iEntry].dwFlags), (dat->sendMode & SMODE_FORCEANSI) ? (sendJobs[iEntry].dwFlags & ~PREF_UNICODE) : sendJobs[iEntry].dwFlags, (LPARAM) sendJobs[iEntry].sendBuffer);
         sendJobs[iEntry].hOwner = dat->hContact;
         sendJobs[iEntry].hwndOwner = hwndDlg;
         sendJobs[iEntry].iStatus = SQ_INPROGRESS;
         sendJobs[iEntry].iAcksNeeded = 1;
-        if(dat->sendMode & SMODE_NOACK) {               // fake the ack
+        if(dat->sendMode & SMODE_NOACK) {               // fake the ack if we are not interested in receiving real acks
             ACKDATA ack = {0};
             ack.hContact = dat->hContact;
             ack.hProcess = sendJobs[iEntry].hSendId[0];
@@ -435,3 +435,34 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
+/*                                                              
+ * searches string for characters typical for RTL text (hebrew and other RTL languages                                                                
+*/
+
+#if defined(_UNICODE)
+int RTL_Detect(WCHAR *pszwText)
+{
+    WORD *infoTypeC2;
+    int i;
+    int iLen = lstrlenW(pszwText);
+
+    infoTypeC2 = (WORD *)malloc(sizeof(WORD) * (iLen + 2));
+
+    if(infoTypeC2) {
+        ZeroMemory(infoTypeC2, sizeof(WORD) * (iLen + 2));
+
+        GetStringTypeW(CT_CTYPE2, pszwText, iLen, infoTypeC2);
+
+        for(i = 0; i < iLen; i++) {
+            if(infoTypeC2[i] == C2_RIGHTTOLEFT) {
+                free(infoTypeC2);
+                //_DebugTraceA("RTL text found");
+                return 1;
+            }
+        }
+        free(infoTypeC2);
+        //_DebugTraceA("NO RTL text detected");
+    }
+    return 0;
+}
+#endif

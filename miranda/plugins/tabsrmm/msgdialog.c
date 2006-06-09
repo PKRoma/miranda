@@ -3253,7 +3253,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             for (i = 0; i < sendJobs[dat->iCurrentQueueError].sendCount; i++) {
                                 if (sendJobs[dat->iCurrentQueueError].hSendId[i] == NULL && sendJobs[dat->iCurrentQueueError].hContact[i] == NULL)
                                     continue;
-                                sendJobs[dat->iCurrentQueueError].hSendId[i] = (HANDLE) CallContactService(sendJobs[dat->iCurrentQueueError].hContact[i], MsgServiceName(sendJobs[dat->iCurrentQueueError].hContact[i], dat, sendJobs[dat->iCurrentQueueError].dwFlags), dat->sendMode & SMODE_FORCEANSI ? 0 : sendJobs[dat->iCurrentQueueError].dwFlags, (LPARAM) sendJobs[dat->iCurrentQueueError].sendBuffer);
+                                sendJobs[dat->iCurrentQueueError].hSendId[i] = (HANDLE) CallContactService(sendJobs[dat->iCurrentQueueError].hContact[i], 
+                                                                                                           MsgServiceName(sendJobs[dat->iCurrentQueueError].hContact[i], dat, sendJobs[dat->iCurrentQueueError].dwFlags), (dat->sendMode & SMODE_FORCEANSI) ? (sendJobs[dat->iCurrentQueueError].dwFlags & ~PREF_UNICODE) : sendJobs[dat->iCurrentQueueError].dwFlags, (LPARAM) sendJobs[dat->iCurrentQueueError].sendBuffer);
                                 resent++;
                             }
                         }
@@ -3641,12 +3642,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             switch (LOWORD(wParam)) {
                 case IDOK:
                     {
-                    int bufSize = 0, memRequired = 0, isUnicode = 0;
+                    int bufSize = 0, memRequired = 0, isUnicode = 0, isRtl = 0;
                     char *streamOut = NULL;
                     TCHAR *decoded = NULL, *converted = NULL;
                     FINDTEXTEXA fi = {0};
                     int final_sendformat = dat->SendFormat;
-                    
+                    HWND hwndEdit = GetDlgItem(hwndDlg, IDC_MESSAGE);
+                    PARAFORMAT2 pf2 = {0};
+
                     // don't parse text formatting when the message contains curly braces - these are used by the rtf syntax
                     // and the parser currently cannot handle them properly in the text - XXX needs to be fixed later.
                     
@@ -3685,7 +3688,22 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 isUnicode = TRUE;
                                 memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
                             }
-                            
+
+                            /* 
+                             * try to detect RTL
+                             */
+
+                            SendMessage(hwndEdit, WM_SETREDRAW, FALSE, 0);
+                            pf2.cbSize = sizeof(pf2);
+                            pf2.dwMask = PFM_RTLPARA;
+                            SendMessage(hwndEdit, EM_SETSEL, 0, -1);
+                            SendMessage(hwndEdit, EM_GETPARAFORMAT, 0, (LPARAM)&pf2);
+                            if(pf2.wEffects & PFE_RTLPARA)
+                                isRtl = RTL_Detect(decoded);
+                            SendMessage(hwndEdit, WM_SETREDRAW, TRUE, 0);
+                            SendMessage(hwndEdit, EM_SETSEL, -1, -1);
+                            InvalidateRect(hwndEdit, NULL, FALSE);
+
                             if(memRequired > dat->iSendBufferSize) {
                                 dat->sendBuffer = (char *) realloc(dat->sendBuffer, memRequired);
                                 dat->iSendBufferSize = memRequired;
@@ -3785,7 +3803,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
                     }
                     DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_SEND);
-                    AddToSendQueue(hwndDlg, dat, memRequired, isUnicode);
+                    AddToSendQueue(hwndDlg, dat, memRequired, (isUnicode ? PREF_UNICODE : 0) | (isRtl ? PREF_RTL : 0));
                     return TRUE;
                     }
                 case IDC_QUOTE:
