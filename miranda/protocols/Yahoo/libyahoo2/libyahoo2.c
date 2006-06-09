@@ -299,9 +299,10 @@ File List Cancel:
 	   5: id
 	  13: 1
 	*/	
+	YAHOO_SERVICE_YAHOO7_PHOTO_SHARING = 0xd2,
 	YAHOO_SERVICE_YAHOO7_CONTACT_DETAILS = 0xd3,	/* YMSG13 */
 	YAHOO_SERVICE_YAHOO7_CHAT_SESSION = 0xd4,	
-	YAHOO_SERVICE_YAHOO7_AUTH = 0xd6,	/* YMSG13 */
+	YAHOO_SERVICE_YAHOO7_AUTHORIZATION = 0xd6,	/* YMSG13 */
 	YAHOO_SERVICE_YAHOO7_FILETRANSFER = 0xdc,	/* YMSG13 */
 	YAHOO_SERVICE_YAHOO7_FILETRANSFERINFO,	/* YMSG13 */
 	YAHOO_SERVICE_YAHOO7_FILETRANSFERACCEPT,	/* YMSG13 */
@@ -386,7 +387,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_AUDIBLE,"YAHOO_SERVICE_AUDIBLE"},
 	{YAHOO_SERVICE_YAHOO7_CONTACT_DETAILS,"YAHOO_SERVICE_YAHOO7_CONTACT_DETAILS"},
 	{YAHOO_SERVICE_YAHOO7_CHAT_SESSION,	"YAHOO_SERVICE_YAHOO7_CHAT_SESSION"},
-	{YAHOO_SERVICE_YAHOO7_AUTH,"YAHOO_SERVICE_YAHOO7_AUTH"},
+	{YAHOO_SERVICE_YAHOO7_AUTHORIZATION,"YAHOO_SERVICE_YAHOO7_AUTHORIZATION"},
 	{YAHOO_SERVICE_YAHOO7_FILETRANSFER,"YAHOO_SERVICE_YAHOO7_FILETRANSFER"},
 	{YAHOO_SERVICE_YAHOO7_FILETRANSFERINFO,"YAHOO_SERVICE_YAHOO7_FILETRANSFERINFO"},
 	{YAHOO_SERVICE_YAHOO7_FILETRANSFERACCEPT,"YAHOO_SERVICE_YAHOO7_FILETRANSFERACCEPT"},
@@ -422,7 +423,7 @@ static const value_string packet_keys[]={
 	{  1, "ID" },
 	{  2, "id?" },
 	{  3, "my id"},
-	{  4, "From"},
+	{  4, "ID/Nick"},
 	{  5, "To"},
 	{  7, "Buddy" },
 	{  8, "# buddies"}, 
@@ -438,6 +439,7 @@ static const value_string packet_keys[]={
 	{ 18, "subject/topic?"},
 	{ 19, "custom msg"},
 	{ 20, "url"},
+	{ 24, "session timestamp"},
 	{ 27, "filename"},
 	{ 28, "filesize"},
 	{ 31, "visibility?"},
@@ -488,11 +490,13 @@ static const value_string packet_keys[]={
 	{206, "display image type"},
 	{213, "share avatar type"},
 	{219, "cookie separator?"},
+	{223, "authorized?"},
 	{230, "the audible, in foo.bar.baz format"},
 	{231, "audible text"},
 	{232, "weird number (md5 hash?) [audible]"},
 	{244, "YIM6/YIM7 detection.(278527 - YIM6, 524223 - YIM7)"},
 	{1002, "YIM6+"},
+	{10093, "YIM7 (sets it to 4 for Tping/IM)"},
 	{10097, "Region (SMS?)"},
 	{ -1, "" }
 };
