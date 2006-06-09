@@ -152,28 +152,6 @@ int calcMD5Hash(char* szFile)
 void upload_avt(int id, int fd, int error, void *data);
 
 /**************** Send Avatar ********************/
-void __cdecl yahoo_send_avt_thread(void *psf) 
-{
-	y_filetransfer *sf = psf;
-	long tFileSize = 0;
-	struct _stat statbuf;
-	
-	if (sf == NULL) {
-		YAHOO_DebugLog("SF IS NULL!!!");
-		return;
-	}
-	
-	YAHOO_DebugLog("[Uploading avatar] filename: %s ", sf->filename);
-	
-	if ( _stat( sf->filename, &statbuf ) == 0 ) {
-		tFileSize = statbuf.st_size;
-
-		yahoo_send_avatar(ylad->id, sf->filename, tFileSize, &upload_avt, sf);
-	}
-
-	free(sf->filename);
-	free(sf);
-}
 
 HBITMAP YAHOO_SetAvatar(const char *szFile)
 {
@@ -195,7 +173,7 @@ HBITMAP YAHOO_SetAvatar(const char *szFile)
 				
 		hash = calcMD5Hash(szMyFile);
 		if (hash) {
-			YAHOO_DebugLog("[Avatar Info] File: '%s' CK: %d", szMyFile, hash);	
+			LOG(("[YAHOO_SetAvatar] File: '%s' CK: %d", szMyFile, hash));	
 			  
 			/* now check and make sure we don't reupload same thing over again */
 			if (hash != YAHOO_GetDword("AvatarHash", 0) || time(NULL) > YAHOO_GetDword("AvatarTS",0)) {
@@ -204,7 +182,7 @@ HBITMAP YAHOO_SetAvatar(const char *szFile)
 			
 				YAHOO_SendAvatar(szMyFile);
 			} else {
-				YAHOO_DebugLog("[Avatar Info] Same checksum and avatar on YahooFT. Not Reuploading.");	  
+				LOG(("[YAHOO_SetAvatar] Same checksum and avatar on YahooFT. Not Reuploading."));	  
 			}
 		}
 	}
@@ -438,23 +416,17 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 void upload_avt(int id, int fd, int error, void *data)
 {
     y_filetransfer *sf = (y_filetransfer*) data;
-    long size = 0, rsize = 0;
+    long size = 0;
 	char buf[1024];
-	DWORD dw;
-	struct _stat statbuf;
+	int rw;			/* */
+	DWORD dw;		/* needed for ReadFile */
 	HANDLE myhFile;
-	NETLIBSELECT nls;
 	
 	if (fd < 0 || error) {
 		LOG(("[get_fd] Connect Failed!"));
 		return;
 	}
 
-	if (_stat( sf->filename, &statbuf ) != 0 ) {
-		LOG(("[get_fd] Error reading File information?!"));
-		return;
-	}
-	
     myhFile  = CreateFile(sf->filename,
                           GENERIC_READ,
                           FILE_SHARE_READ|FILE_SHARE_WRITE,
@@ -463,98 +435,65 @@ void upload_avt(int id, int fd, int error, void *data)
 			           FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
 			           0);
 
-	if (myhFile ==INVALID_HANDLE_VALUE) {
+	if (myhFile == INVALID_HANDLE_VALUE) {
 		LOG(("[get_fd] Can't open file for reading?!"));
 		return;
 	}
 	
-	//LOG(("proto: %s, hContact: %p", yahooProtocolName, sf->hContact));
-	nls.cbSize = sizeof(nls);
-	nls.dwTimeout = 10; // 1000 millis = 1 sec 
-
-	nls.hReadConns[0] = (HANDLE)fd;
-	nls.hReadConns[1] = NULL;
-	nls.hWriteConns[0] = NULL;
-	nls.hExceptConns[0] = NULL;
-
-	LOG(("Sending file: %s", sf->filename));
+	LOG(("Sending file: %s size: %ld", sf->filename, sf->fsize));
 	
 	do {
-		dw = CallService(MS_NETLIB_SELECT, (WPARAM) 0, (LPARAM)&nls);
-		
-		if (dw > 0) {
-			dw = Netlib_Recv((HANDLE)fd, buf, 1024, 0);
-			LOG(("Got: %ld bytes", dw));
-			if (dw > 0 && rsize == 0) {
-				//parse the response code we expecting 200 OK here
-				if (strnicmp(buf,"HTTP/", 5) == 0) {
-					int z=8; // HTTP/1.0
-					
-					while (z < dw && buf[z] == ' ') z++;
-					
-					if (strnicmp(&buf[z],"200", 3) != 0) {
-						// we got a problem!!!!
-						sf->cancel = 1; //cancel things
-						LOG(("NOT A 200 OK response!!!"));
-					} else {
-						LOG(("200 OK response."));
-					}
-				}
-				
-				rsize +=dw;
-			} else if (dw <= 0) {
-				LOG(("Connection closed? Bytes read: %ld", rsize));
-				error = 1; // make sure we exit!!!
+		rw = ReadFile(myhFile, buf, 1024, &dw, NULL);
+	
+		if (rw != 0) {
+			rw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
+			
+			if (rw < 1) {
+				LOG(("Upload Failed. Send error?"));
 				break;
 			}
 			
-		} else if (dw < 0) {
-			// something went wrong
-			LOG(("Negative result? Connection closed?"));
-			
-			if (size < statbuf.st_size) {
-				LOG(("Upload Failed. Receive error?"));
-				error = 1;
-			}
-			break;
+			size += rw;
 		}
-
-		if (size < statbuf.st_size) {
-			ReadFile(myhFile, buf, 1024, &dw, NULL);
-		
-			if (dw) {
-				//dw = send(fd, buf, dw, 0);
-				dw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
-				
-				if (dw < 1) {
-					LOG(("Upload Failed. Send error?"));
-					error = 1;
-					break;
-				}
-				
-				size += dw;
-			}
-		}
-			
-		if (sf->cancel) {
-			LOG(("Upload Cancelled! "));
-			error = 1;
-			break;
-		}
-	} while (dw >= 0 && !error);
+	} while (rw >= 0 && size < sf->fsize);
 	
 	CloseHandle(myhFile);
 	
     LOG(("File send complete!"));
 }
 
+void __cdecl yahoo_send_avt_thread(void *psf) 
+{
+	y_filetransfer *sf = psf;
+	
+	if (sf == NULL) {
+		YAHOO_DebugLog("[yahoo_send_avt_thread] SF IS NULL!!!");
+		return;
+	}
+	
+	yahoo_send_avatar(ylad->id, sf->filename, sf->fsize, &upload_avt, sf);
+
+	free(sf->filename);
+	free(sf);
+}
+
 void YAHOO_SendAvatar(const char *szFile)
 {
 	y_filetransfer *sf;
+	struct _stat statbuf;
+	
+	if ( _stat( szFile, &statbuf ) != 0 ) {
+		LOG(("[YAHOO_SendAvatar] Error reading File information?!"));
+		return;
+	}
 
 	sf = (y_filetransfer*) malloc(sizeof(y_filetransfer));
 	sf->filename = strdup(szFile);
 	sf->cancel = 0;
+	sf->fsize = statbuf.st_size;
+	
+	YAHOO_DebugLog("[Uploading avatar] filename: %s size: %ld", sf->filename, sf->fsize);
+
 	pthread_create(yahoo_send_avt_thread, sf);
 }
 
