@@ -604,74 +604,80 @@ int ExtraIconsRebuild(WPARAM wParam, LPARAM lParam)
 }
 int ExtraIconsApply(WPARAM wParam, LPARAM lParam) 
 {
-  if (ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
-  {
-		int account_type=DBGetContactSettingByte((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_AC,0);		
-		if(account_type==ACCOUNT_TYPE_ADMIN)
+	if (ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
+	{
+		if(!DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT,0))
 		{
-			char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-			memcpy(data,&conn.admin_icon,sizeof(HANDLE));
-			memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-			unsigned short column_type=EXTRA_ICON_ADV2;
-			memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-			ForkThread((pThreadFunc)set_extra_icon,data);
+			int account_type=DBGetContactSettingByte((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_AC,0);		
+			if(account_type==ACCOUNT_TYPE_ADMIN)
+			{
+				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
+				memcpy(data,&conn.admin_icon,sizeof(HANDLE));
+				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
+				unsigned short column_type=EXTRA_ICON_ADV2;
+				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+				ForkThread((pThreadFunc)set_extra_icon,data);
+			}
+			else if(account_type==ACCOUNT_TYPE_AOL)
+			{
+				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
+				memcpy(data,&conn.aol_icon,sizeof(HANDLE));
+				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
+				unsigned short column_type=EXTRA_ICON_ADV2;
+				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+				ForkThread((pThreadFunc)set_extra_icon,data);
+			}
+			else if(account_type==ACCOUNT_TYPE_ICQ)
+			{
+				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
+				memcpy(data,&conn.icq_icon,sizeof(HANDLE));
+				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
+				unsigned short column_type=EXTRA_ICON_ADV2;
+				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+				ForkThread((pThreadFunc)set_extra_icon,data);
+			}
+			else if(account_type==ACCOUNT_TYPE_UNCONFIRMED)
+			{
+				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
+				memcpy(data,&conn.unconfirmed_icon,sizeof(HANDLE));
+				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
+				unsigned short column_type=EXTRA_ICON_ADV2;
+				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+				ForkThread((pThreadFunc)set_extra_icon,data);
+			}
+			else if(account_type==ACCOUNT_TYPE_CONFIRMED)
+			{
+				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
+				memcpy(data,&conn.confirmed_icon,sizeof(HANDLE));
+				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
+				unsigned short column_type=EXTRA_ICON_ADV2;
+				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+				ForkThread((pThreadFunc)set_extra_icon,data);
+			}
 		}
-		else if(account_type==ACCOUNT_TYPE_AOL)
+		if(!DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES,0))
 		{
-			char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-			memcpy(data,&conn.aol_icon,sizeof(HANDLE));
-			memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-			unsigned short column_type=EXTRA_ICON_ADV2;
-			memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-			ForkThread((pThreadFunc)set_extra_icon,data);
+			int es_type=DBGetContactSettingByte((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_ET,0);		
+			if(es_type==EXTENDED_STATUS_BOT)
+			{
+				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
+				memcpy(data,&conn.bot_icon,sizeof(HANDLE));
+				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
+				unsigned short column_type=EXTRA_ICON_ADV3;
+				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+				ForkThread((pThreadFunc)set_extra_icon,data);
+			}
+			else if(es_type==EXTENDED_STATUS_HIPTOP)
+			{
+				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
+				memcpy(data,&conn.hiptop_icon,sizeof(HANDLE));
+				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
+				unsigned short column_type=EXTRA_ICON_ADV3;
+				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
+				ForkThread((pThreadFunc)set_extra_icon,data);
+			}
 		}
-		else if(account_type==ACCOUNT_TYPE_ICQ)
-		{
-			char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-			memcpy(data,&conn.icq_icon,sizeof(HANDLE));
-			memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-			unsigned short column_type=EXTRA_ICON_ADV2;
-			memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-			ForkThread((pThreadFunc)set_extra_icon,data);
-		}
-		else if(account_type==ACCOUNT_TYPE_UNCONFIRMED)
-		{
-			char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-			memcpy(data,&conn.unconfirmed_icon,sizeof(HANDLE));
-			memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-			unsigned short column_type=EXTRA_ICON_ADV2;
-			memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-			ForkThread((pThreadFunc)set_extra_icon,data);
-		}
-		else if(account_type==ACCOUNT_TYPE_CONFIRMED)
-		{
-			char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-			memcpy(data,&conn.confirmed_icon,sizeof(HANDLE));
-			memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-			unsigned short column_type=EXTRA_ICON_ADV2;
-			memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-			ForkThread((pThreadFunc)set_extra_icon,data);
-		}
-		int es_type=DBGetContactSettingByte((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_ET,0);		
-		if(es_type==EXTENDED_STATUS_BOT)
-		{
-			char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-			memcpy(data,&conn.bot_icon,sizeof(HANDLE));
-			memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-			unsigned short column_type=EXTRA_ICON_ADV3;
-			memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-			ForkThread((pThreadFunc)set_extra_icon,data);
-		}
-		else if(es_type==EXTENDED_STATUS_HIPTOP)
-		{
-			char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-			memcpy(data,&conn.hiptop_icon,sizeof(HANDLE));
-			memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-			unsigned short column_type=EXTRA_ICON_ADV3;
-			memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-			ForkThread((pThreadFunc)set_extra_icon,data);
-		}
-  }
+	}
   return 0;
 }
 void CreateServices()
