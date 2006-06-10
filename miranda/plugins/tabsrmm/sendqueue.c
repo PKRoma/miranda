@@ -94,6 +94,9 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int dw
     int iLength = 0, i;
     int iFound = NR_SENDJOBS;
     
+    if(dwFlags & PREF_RTL)
+        _DebugTraceA("setting PREF_RTL");
+
     if(myGlobals.iSendJobCurrent >= NR_SENDJOBS) {
         _DebugMessage(hwndDlg, dat, "Send queue full");
         return 0;
@@ -142,10 +145,6 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
 {
     DWORD dwThreadId;
     
-    /*
-    if(dat->hAckEvent == 0)
-        dat->hAckEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_EVENTSENT);
-    */
     if (dat->sendMode & SMODE_MULTIPLE) {            // implement multiple later...
         HANDLE hContact, hItem;
         //ClearSendJob(iEntry);
@@ -443,9 +442,9 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 int RTL_Detect(WCHAR *pszwText)
 {
     WORD *infoTypeC2;
-    int i;
+    int i, n = 0;
     int iLen = lstrlenW(pszwText);
-
+    
     infoTypeC2 = (WORD *)malloc(sizeof(WORD) * (iLen + 2));
 
     if(infoTypeC2) {
@@ -454,13 +453,11 @@ int RTL_Detect(WCHAR *pszwText)
         GetStringTypeW(CT_CTYPE2, pszwText, iLen, infoTypeC2);
 
         for(i = 0; i < iLen; i++) {
-            if(infoTypeC2[i] == C2_RIGHTTOLEFT) {
-                free(infoTypeC2);
-                //_DebugTraceA("RTL text found");
-                return 1;
-            }
+            if(infoTypeC2[i] == C2_RIGHTTOLEFT)
+                n++;
         }
         free(infoTypeC2);
+        return(n >= 3 ? 1 : 0);
         //_DebugTraceA("NO RTL text detected");
     }
     return 0;

@@ -2080,6 +2080,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             return 0;
         }
         case DM_OPTIONSAPPLIED:
+            dat->szSep1[0] = 0;
             if (wParam == 1) {      // 1 means, the message came from message log options page, so reload the defaults...
                 if(DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) == 0) {
                     dat->dwFlags &= ~(MWF_LOG_ALL);
@@ -2210,6 +2211,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             
             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
             SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+
             break;
         case DM_UPDATETITLE:
             {
@@ -2817,6 +2819,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
             return 0;
         case DM_REMAKELOG:
+            dat->szSep1[0] = 0;
             dat->lastEventTime = 0;
             dat->iLastEventType = -1;
             StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0, NULL);
@@ -5099,6 +5102,8 @@ quote_from_last:
 #if defined( _UNICODE )
                 if(sendJobs[iFound].dwFlags & PREF_UNICODE)
                     dbei.cbBlob *= sizeof(TCHAR) + 1;
+                if(sendJobs[iFound].dwFlags & PREF_RTL)
+                    dbei.flags |= DBEF_RTL;
 #endif
                 dbei.pBlob = (PBYTE) sendJobs[iFound].sendBuffer;
                 hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) sendJobs[iFound].hContact[i], (LPARAM) & dbei);

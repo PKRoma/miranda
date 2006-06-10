@@ -371,6 +371,9 @@ struct MessageWindowData {
 	BYTE bFlatMsgLog;
     BYTE isIRC;
     PVOID si;
+    char  szSep1[152], szMicroLf[128], szExtraLf[50];
+    char  szSep1_RTL[152], szMicroLf_RTL[128], szExtraLf_RTL[50];
+    DWORD isAutoRTL;
 };
 
 typedef struct _recentinfo {

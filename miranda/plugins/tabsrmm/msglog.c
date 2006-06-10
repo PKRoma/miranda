@@ -70,7 +70,7 @@ static TCHAR months_translated[12][30];
 
 static time_t today;
 
-char szSep0[40], szSep1[152], szSep2[40], szMicroLf[128], szExtraLf[50];
+char szSep0[40], szSep2[40], szSep0_RTL[50], szSep2_RTL[50];
 char szMsgPrefixColon[5], szMsgPrefixNoColon[5];
 DWORD dwExtraLf = 0;
 
@@ -535,8 +535,8 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
     }
         
     // RTL-Support
-	if (dat->dwFlags & MWF_LOG_RTL) 
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}\\rtlpar");
+	if (dat->dwFlags & MWF_LOG_RTL || dat->isAutoRTL && 1) 
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}\\pard");
 	else 
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}\\pard");
 
@@ -623,8 +623,9 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     struct tm event_time;
     TemplateSet *this_templateset;
     BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
-	//char *this_par = dat->dwFlags & MWF_LOG_RTL ? g_rtlpar : g_par;
-	char *this_par = g_par;
+	char *this_par;
+    BOOL isRTL;
+    DWORD dwEffectiveFlags;
 
     if(streamData->dbei != 0)
         dbei = *(streamData->dbei);
@@ -641,7 +642,17 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
         }
     }
     dat->stats.lastReceivedChars = 0;
-    
+
+    // RTL setup
+
+    if(dbei.flags & DBEF_RTL)
+        dat->isAutoRTL |= 1;
+
+    dwEffectiveFlags = (dat->isAutoRTL & 1) ? (dat->dwFlags & ~(MWF_LOG_GRID | MWF_LOG_INDIVIDUALBKG)) : dat->dwFlags;
+
+    isRTL = 0; //(dbei.flags & DBEF_RTL);
+    this_par = (isRTL ? g_rtlpar : g_par);
+
     dat->isHistory = (dbei.timestamp < (DWORD)dat->stats.started && (dbei.flags & DBEF_READ || dbei.flags & DBEF_SENT));
     iFontIDOffset = dat->isHistory ? 8 : 0;     // offset into the font table for either history (old) or new events... (# of fonts per configuration set)
     isSent = (dbei.flags & DBEF_SENT);
@@ -657,6 +668,17 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     buffer[0] = '\0';
     g_groupBreak = TRUE;
     
+    if(dat->isAutoRTL & 1) {
+        if(dbei.flags & DBEF_RTL)
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", "\\rtlpar\\rtlmark ");
+        else
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", "\\ltrpar\\ltrmark ");
+        if(dat->isAutoRTL & 2) {                     // first append flag
+            dat->isAutoRTL &= ~2;
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", "\\par");
+        }
+    }
+
     if(dat->dwFlags & MWF_DIVIDERWANTED) {
         static char szStyle_div[128] = "\0";
         if(szStyle_div[0] == 0)
@@ -675,34 +697,33 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
         dat->dwFlags &= ~MWF_DIVIDERWANTED;
         */
     }
-//    if(dat->dwFlags & MWF_LOG_GROUPMODE && dbei.flags == LOWORD(dat->iLastEventType) && dbei.eventType == EVENTTYPE_MESSAGE && HIWORD(dat->iLastEventType) == EVENTTYPE_MESSAGE && ((dbei.timestamp - dat->lastEventTime) < 86400)) {
-    if(dat->dwFlags & MWF_LOG_GROUPMODE && dbei.flags == LOWORD(dat->iLastEventType) && dbei.eventType == EVENTTYPE_MESSAGE && HIWORD(dat->iLastEventType) == EVENTTYPE_MESSAGE && (dbei.timestamp - dat->lastEventTime) < 86400) {
+    if(dwEffectiveFlags & MWF_LOG_GROUPMODE && ((dbei.flags & ~DBEF_RTL) == (LOWORD(dat->iLastEventType) & ~DBEF_RTL)) && dbei.eventType == EVENTTYPE_MESSAGE && HIWORD(dat->iLastEventType) == EVENTTYPE_MESSAGE && (dbei.timestamp - dat->lastEventTime) < 86400) {
         g_groupBreak = FALSE;
         if((time_t)dbei.timestamp > today && dat->lastEventTime < today) {
             g_groupBreak = TRUE;
             goto nogroup;
         }
         if(prefixParaBreak)
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep2);
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dbei.flags & DBEF_RTL ? szSep2_RTL : szSep2);
     }
     else {
 nogroup:        
-        if (prefixParaBreak) {
+        if (prefixParaBreak) { // || ((dbei.flags & DBEF_RTL) != (LOWORD(dat->iLastEventType) & DBEF_RTL))) {
             if(dwExtraLf)
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szExtraLf, MSGDLGFONTCOUNT + 1 + ((LOWORD(dat->iLastEventType) & DBEF_SENT) ? 1 : 0));
-            if(dat->dwFlags & MWF_LOG_GRID) {
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep0, GetRTFFont(MSGDLGFONTCOUNT));
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep1, MSGDLGFONTCOUNT + 4);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, isRTL ? dat->szExtraLf_RTL : dat->szExtraLf, MSGDLGFONTCOUNT + 1 + ((LOWORD(dat->iLastEventType) & DBEF_SENT) ? 1 : 0));
+            if(dwEffectiveFlags & MWF_LOG_GRID) {
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, isRTL ? szSep0_RTL : szSep0, GetRTFFont(MSGDLGFONTCOUNT));
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, isRTL ? dat->szSep1_RTL : dat->szSep1, MSGDLGFONTCOUNT + 4);
             }
             else
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep2);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dbei.flags & DBEF_RTL ? szSep2_RTL : szSep2);
         }
     }
 
     /* OnO: highlight start */
-    if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
+    if(dwEffectiveFlags & MWF_LOG_INDIVIDUALBKG)
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
-    else if(dat->dwFlags & MWF_LOG_GRID)
+    else if(dwEffectiveFlags & MWF_LOG_GRID)
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 3);
     else
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 3);
@@ -719,7 +740,7 @@ nogroup:
         _tzset();
         event_time = *localtime(&final_time);
     }
-    this_templateset = dat->dwFlags & MWF_LOG_RTL ? dat->rtl_templates : dat->ltr_templates;
+    this_templateset = (dat->dwFlags & MWF_LOG_RTL || dbei.flags & DBEF_RTL) ? dat->rtl_templates : dat->ltr_templates;
     
     if(dbei.eventType == EVENTTYPE_STATUSCHANGE)
         szTemplate = this_templateset->szTemplates[TMPL_STATUSCHG];
@@ -745,6 +766,8 @@ nogroup:
 		dat->hHistoryEvents[dat->curHistory++] = hDbEvent;
 	}
 
+    //if(dbei.flags & DBEF_RTL)
+    //    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "~~<>~~");
     while(i < iTemplateLen) {
         ci = szTemplate[i];
         if(ci == '%') {
@@ -993,7 +1016,7 @@ nogroup:
                     break;
                 }
                 case 'n':           // hard line break
-                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, this_par);
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dbei.flags & DBEF_RTL ? "\\par\\rtlpar" : "\\par");
                     break;
                 case 'l':           // soft line break
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
@@ -1127,14 +1150,19 @@ nogroup:
                 case '-':       // grid line
                 {
                     TCHAR color = szTemplate[i + 2];
-                    if(color >= '0' && color <= '4') {
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s%s\\sl-1", this_par, GetRTFFont(MSGDLGFONTCOUNT));
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep1, MSGDLGFONTCOUNT + 5 + (color - '0'));
-                        i++;
-                    }
-                    else {
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s%s\\sl-1", this_par, GetRTFFont(MSGDLGFONTCOUNT));
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep1, MSGDLGFONTCOUNT + 4);
+                    if(dat->isAutoRTL & 1) {
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s%s\\sl-1", g_par, GetRTFFont(MSGDLGFONTCOUNT));
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dbei.flags & DBEF_RTL ? dat->szSep1_RTL : dat->szSep1, MSGDLGFONTCOUNT + 3);
+                    } else {
+                        if(color >= '0' && color <= '4') {
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s%s\\sl-1", this_par, GetRTFFont(MSGDLGFONTCOUNT));
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dat->szSep1, MSGDLGFONTCOUNT + 5 + (color - '0'));
+                            i++;
+                        }
+                        else {
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s%s\\sl-1", this_par, GetRTFFont(MSGDLGFONTCOUNT));
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dat->szSep1, MSGDLGFONTCOUNT + 4);
+                        }
                     }
                     break;
                 }
@@ -1144,12 +1172,17 @@ nogroup:
                 case 'H':           // highlight
                 {
                     TCHAR color = szTemplate[i + 2];
-                    if(color >= '0' && color <= '4') {
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 5 + (color - '0'));
-                        i++;
+
+                    if(!dat->isAutoRTL & 1) {
+                        if(color >= '0' && color <= '4') {
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 5 + (color - '0'));
+                            i++;
+                        }
+                        else
+                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", (dat->dwFlags & MWF_LOG_INDIVIDUALBKG) ? (MSGDLGFONTCOUNT + 1 + (isSent ? 1 : 0)) : MSGDLGFONTCOUNT + 3);
                     }
                     else
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", (dat->dwFlags & MWF_LOG_INDIVIDUALBKG) ? (MSGDLGFONTCOUNT + 1 + (isSent ? 1 : 0)) : MSGDLGFONTCOUNT + 3);
+                        skipToNext = TRUE;
                     break;
                 }
                 case '|':       // tab
@@ -1219,11 +1252,15 @@ skip:
             i++;
         }
     }
-	if(dat->hHistoryEvents)
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMicroLf, MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0), hDbEvent);
+
+    //if(dbei.flags & DBEF_RTL)
+    //    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "~~><~~");
+    // 
+    if(dat->hHistoryEvents)
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dbei.flags & DBEF_RTL ? dat->szMicroLf_RTL : dat->szMicroLf, MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0), hDbEvent);
 	else
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMicroLf);
-    
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dbei.flags & DBEF_RTL ? dat->szMicroLf_RTL : dat->szMicroLf);
+
     if(streamData->dbei == 0)
         free(dbei.pBlob);
     
@@ -1279,6 +1316,35 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
         dat->buffer = NULL;
     }
     return 0;
+}
+
+void SetupLogFormatting(struct MessageWindowData *dat)
+{
+    DWORD   dwExtraLf = myGlobals.m_ExtraMicroLF;
+
+    if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG || dat->dwFlags & MWF_LOG_GRID) {
+        mir_snprintf(dat->szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", GetRTFFont(H_MSGFONTID_YOURTIME));
+        mir_snprintf(dat->szSep1_RTL, 151, "\\highlight%s \\rtlpar\\sl0%s", "%d", GetRTFFont(H_MSGFONTID_YOURTIME));
+    }
+    else {
+        mir_snprintf(dat->szSep1, 151, "\\par\\sl0%s", GetRTFFont(H_MSGFONTID_YOURTIME));
+        mir_snprintf(dat->szSep1_RTL, 151, "\\rtlpar\\sl0%s", GetRTFFont(H_MSGFONTID_YOURTIME));
+    }
+
+    if(dat->hHistoryEvents) {
+        mir_snprintf(dat->szMicroLf, sizeof(dat->szMicroLf), "%s%s\\ltrpar \\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), "\\v\\cf%d \\ ~-+%d+-~\\v0 ", GetRTFFont(MSGDLGFONTCOUNT));
+        mir_snprintf(dat->szMicroLf_RTL, sizeof(dat->szMicroLf_RTL), "%s%s\\rtlpar \\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), "\\v\\cf%d \\ ~-+%d+-~\\v0 ", GetRTFFont(MSGDLGFONTCOUNT));
+        //mir_snprintf(dat->szMicroLf, sizeof(dat->szMicroLf), "%s%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), "\\v\\cf%d \\ ~-+%d+-~\\v0 ", GetRTFFont(MSGDLGFONTCOUNT));
+        //mir_snprintf(dat->szMicroLf_RTL, sizeof(dat->szMicroLf_RTL), "%s%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), "\\v\\cf%d \\ ~-+%d+-~\\v0 ", GetRTFFont(MSGDLGFONTCOUNT));
+    }
+    else {
+        mir_snprintf(dat->szMicroLf, sizeof(dat->szMicroLf), "%s\\ltrpar \\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), GetRTFFont(MSGDLGFONTCOUNT));
+        mir_snprintf(dat->szMicroLf_RTL, sizeof(dat->szMicroLf_RTL), "%s\\rtlpar \\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), GetRTFFont(MSGDLGFONTCOUNT));
+        //mir_snprintf(dat->szMicroLf, sizeof(dat->szMicroLf), "%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), GetRTFFont(MSGDLGFONTCOUNT));
+        //mir_snprintf(dat->szMicroLf_RTL, sizeof(dat->szMicroLf_RTL), "%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), GetRTFFont(MSGDLGFONTCOUNT));
+    }
+    mir_snprintf(dat->szExtraLf, sizeof(dat->szExtraLf), dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? "\\par\\sl-%d\\highlight%s \\par" : "\\par\\sl-%d \\par", dwExtraLf * 15, "%d");
+    mir_snprintf(dat->szExtraLf_RTL, sizeof(dat->szExtraLf_RTL), dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? "\\par\\sl-%d\\highlight%s \\par" : "\\par\\sl-%d \\par", dwExtraLf * 15, "%d");
 }
 
 void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, DBEVENTINFO *dbei_s)
@@ -1339,20 +1405,18 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     // separator strings used for grid lines, message separation and so on...
     
     dwExtraLf = myGlobals.m_ExtraMicroLF;
+    if(dat->szSep1[0] == 0)
+        SetupLogFormatting(dat);
 
 	strcpy(szSep0, fAppend ? "\\par%s\\sl-1" : "%s\\sl-1");
+    strcpy(szSep0_RTL, fAppend ? "\\rtlpar%s\\sl-1" : "%s\\sl-1");
 
-    if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG || dat->dwFlags & MWF_LOG_GRID)
-        mir_snprintf(szSep1, 151, "\\highlight%s \\par\\sl0%s", "%d", GetRTFFont(H_MSGFONTID_YOURTIME));
-    else
-        mir_snprintf(szSep1, 151, "\\par\\sl0%s", GetRTFFont(H_MSGFONTID_YOURTIME));
-    
-	strcpy(szSep2, fAppend ? "\\par\\sl0" : "\\sl1000");
-	if(dat->hHistoryEvents)
-		mir_snprintf(szMicroLf, sizeof(szMicroLf), "%s%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), "\\v\\cf%d \\ ~-+%d+-~\\v0 ", GetRTFFont(MSGDLGFONTCOUNT));
-	else
-		mir_snprintf(szMicroLf, sizeof(szMicroLf), "%s\\par\\sl-1%s", GetRTFFont(MSGDLGFONTCOUNT), GetRTFFont(MSGDLGFONTCOUNT));
-	mir_snprintf(szExtraLf, sizeof(szExtraLf), dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? "\\par\\sl-%d\\highlight%s \\par" : "\\par\\sl-%d \\par", dwExtraLf * 15, "%d");
+	//strcpy(szSep2, fAppend ? "\\par\\sl0" : "\\sl1000");
+    //strcpy(szSep2_RTL, fAppend ? "\\par\\rtlpar\\rtlmark\\sl0" : "\\sl1000");
+
+    strcpy(szSep2, "\\sl1000");
+    strcpy(szSep2_RTL, "\\rtlpar\\rtlmark\\sl1000");
+
     strcpy(szMsgPrefixColon, ": ");
     strcpy(szMsgPrefixNoColon, " ");
 
@@ -1455,8 +1519,11 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, FALSE, 0);
     dat->hDbEventLast = streamData.hDbEventLast;
     
+
     if (fAppend) {
         GETTEXTLENGTHEX gtxl = {0};
+        PARAFORMAT2 pf2 = {0};
+
 #if defined(_UNICODE)
         gtxl.codepage = 1200;
         gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
@@ -1467,8 +1534,33 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         sel.cpMax = SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
         sel.cpMin = sel.cpMax - 1;
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
-        SendDlgItemMessage(hwndDlg, IDC_LOG, EM_REPLACESEL, FALSE, (LPARAM)_T(""));
-    }
+        if(!(dat->isAutoRTL & 1))
+            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_REPLACESEL, FALSE, (LPARAM)_T(""));
+#if defined(_UNICODE)
+        if(dat->iLastEventType & DBEF_RTL || dat->isAutoRTL & 1) {
+            pf2.dwMask = PFM_RTLPARA;
+            pf2.wEffects = PFE_RTLPARA;
+            pf2.cbSize = sizeof(pf2);
+            sel.cpMin = startAt;
+            sel.cpMax = -1;
+            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM)&sel);
+            if(dat->iLastEventType & DBEF_RTL)
+                SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+            if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG) {
+                COLORREF col = (LOWORD(dat->iLastEventType) & DBEF_SENT ? dat->theme.outbg : dat->theme.inbg);
+                CHARFORMAT2 cf2 = {0};
+
+                cf2.cbSize = sizeof(cf2);
+                cf2.dwMask = CFM_BACKCOLOR;
+                cf2.crBackColor = col;
+                SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
+            }
+        }
+#endif
+    } else
+        dat->isAutoRTL |= 2;                           // set first append flag
+
+
     ReplaceIcons(hwndDlg, dat, startAt, fAppend);
 
     if(ci.pszVal)
@@ -1524,7 +1616,6 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
         }
         ReleaseRichEditOle(ole);
     }
-
     /*
      * do smiley replacing, using the service
      */
