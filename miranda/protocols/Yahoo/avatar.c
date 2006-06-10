@@ -443,7 +443,7 @@ void upload_avt(int id, int fd, int error, void *data)
 	LOG(("Sending file: %s size: %ld", sf->filename, sf->fsize));
 	
 	do {
-		rw = ReadFile(myhFile, buf, 1024, &dw, NULL);
+		rw = ReadFile(myhFile, buf, sizeof(buf), &dw, NULL);
 	
 		if (rw != 0) {
 			rw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
@@ -458,6 +458,11 @@ void upload_avt(int id, int fd, int error, void *data)
 	} while (rw >= 0 && size < sf->fsize);
 	
 	CloseHandle(myhFile);
+	
+	do {
+		rw = Netlib_Recv((HANDLE)fd, buf, sizeof(buf), 0);
+		LOG(("Got: %d bytes", rw));
+	} while (rw > 0);
 	
     LOG(("File send complete!"));
 }
