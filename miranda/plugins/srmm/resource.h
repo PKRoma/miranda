@@ -15,15 +15,10 @@
 #define IDD_OPT_MSGLOG                  245
 #define IDI_DOWNARROW                   264
 #define IDI_TYPING                      268
-#define IDI_TYPING32                    270
-#define IDI_DOWNARROW32                 271
-#define IDI_HISTORY32                   272
-#define IDI_USERDETAILS32               274
 #define IDD_OPT_MSGTYPE                 275
 #define IDI_INCOMING                    276
 #define IDI_OUTGOING                    277
 #define IDI_NOTICE                      282
-#define IDI_ADDCONTACT32                285
 #define IDC_LOG                         1001
 #define IDC_MESSAGE                     1002
 #define IDC_AUTOCLOSE                   1004
