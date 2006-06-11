@@ -425,9 +425,9 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       {
         szClient = "uIM";
       }
-      else if (MatchCap(caps, wLen, &capAimIcon, 0x10))
+      else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && !dwFT1 && !dwFT2 && !dwFT3 && !wVersion)
       { // this is what I really hate, but as it seems to me, there is no other way to detect libgaim
-        szClient = "libgaim";
+        szClient = "libgaim"; // TODO: fix detection of libgaim & its derivatives
       }
       else if (szClient == cliLibicq2k)
       { // try to determine which client is behind libicq2000

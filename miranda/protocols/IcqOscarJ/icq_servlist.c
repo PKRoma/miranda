@@ -1030,7 +1030,7 @@ int GroupNameExistsUtf(const char *name,int skipGroup)
 
 
 // utility function which counts > on start of a server group name
-int countGroupNameLevel(const char *szGroupName)
+static int countGroupNameLevel(const char *szGroupName)
 {
   int nNameLen = strlennull(szGroupName);
   int i = 0;
@@ -1056,6 +1056,19 @@ int countGroupLevel(WORD wGroupId)
     cnt = countGroupNameLevel(szGroupName);
 
   return cnt;
+}
+
+
+
+static int countClistGroupLevel(const char *szClistName)
+{
+  int nNameLen = strlennull(szClistName);
+  int i, level = 0;
+
+  for (i = 0; i < nNameLen; i++)
+    if (szClistName[i] == '\\') level++;
+
+  return level;
 }
 
 
@@ -1674,10 +1687,11 @@ void renameServGroup(WORD wGroupId, char* szGroupName)
   if (!szGroup) return;
 
   for (i=0;i<level;i++)
-  {
+  { // create level prefix
     szGroup[i] = '>';
   }
   strcat(szGroup, szLast);
+  // truncate other possible sub-groups
   szLast = strstr(szGroup, "\\");
   if (szLast)
     szLast[0] = '\0';
@@ -1791,7 +1805,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
         { // the target group is not known - it is probably rename
           if (getServerGroupIDUtf(szGroup))
           { // source group not known -> already renamed
-            if (countGroupNameLevel(szNewGroup) == countGroupLevel(wGroupId))
+            if (countClistGroupLevel(szNewGroup) == countGroupLevel(wGroupId))
             { // renamed groups can be only in the same level, if not it is move
               if (!IsGroupRenamed(wGroupId))
               { // is rename in progress ?
