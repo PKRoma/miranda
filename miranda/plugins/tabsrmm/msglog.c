@@ -535,10 +535,7 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
     }
         
     // RTL-Support
-	if (dat->dwFlags & MWF_LOG_RTL || dat->isAutoRTL && 1) 
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}\\pard");
-	else 
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}\\pard");
+	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}\\pard");
 
     // indent
 	if(dat->dwFlags & MWF_LOG_INDENT) {
@@ -673,10 +670,6 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
             dat->isAutoRTL &= ~2;
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", LOWORD(dat->iLastEventType) & DBEF_RTL ? "\\rtlpar\\rtlmark\\par " : "\\par ");
         }
-        if(dbei.flags & DBEF_RTL)
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", "\\rtlpar\\rtlmark ");
-        else
-            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", "\\ltrpar\\ltrmark ");
     }
 
     if(dat->dwFlags & MWF_DIVIDERWANTED) {
@@ -705,9 +698,9 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
         }
         if(prefixParaBreak) {
             if(!(dat->isAutoRTL & 1))
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dbei.flags & DBEF_RTL ? szSep2_RTL : szSep2);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep2);
             else
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dbei.flags & DBEF_RTL ? "\\rtlpar\\rtlmark\\sl1000" : "\\sl1000");
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, LOWORD(dat->iLastEventType) & DBEF_RTL ? "\\rtlpar\\rtlmark\\sl1000" : "\\sl1000");
         }
     }
     else {
@@ -720,10 +713,17 @@ nogroup:
                 AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dat->szSep1, MSGDLGFONTCOUNT + 4);
             }
             else if(!(dat->isAutoRTL & 1))
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dbei.flags & DBEF_RTL ? szSep2_RTL : szSep2);
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, szSep2);
             else
-                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dbei.flags & DBEF_RTL ? "\\rtlpar\\rtlmark\\sl1000" : "\\sl1000");
+                AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, LOWORD(dat->iLastEventType) & DBEF_RTL ? "\\rtlpar\\rtlmark\\sl1000" : "\\sl1000");
         }
+    }
+
+    if(dat->isAutoRTL & 1) {
+        if(dbei.flags & DBEF_RTL)
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", "\\rtlpar\\rtlmark ");
+        else
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", "\\ltrpar\\ltrmark ");
     }
 
     /* OnO: highlight start */
@@ -1357,10 +1357,17 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     FINDTEXTEXA fi;
     struct tm tm_now, tm_today;
     time_t now;
+    SCROLLINFO si = {0};
+    POINT pt;
 
     /*
      * calc time limit for grouping
      */
+
+    si.cbSize = sizeof(si);
+    si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;;
+    GetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si);
+    SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETSCROLLPOS, 0, (LPARAM) &pt);
 
     rtfFonts = dat->theme.rtfFonts ? dat->theme.rtfFonts : &(rtfFontsGlobal[0][0]);
     now = time(NULL);
@@ -1559,6 +1566,13 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 
     if(ci.pszVal)
         mir_free(ci.pszVal);
+
+    SendMessage(hwndDlg, DM_FORCESCROLL, (WPARAM)&pt, (LPARAM)&si);
+    SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, TRUE, 0);
+    InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
+    //SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
+    EnableWindow(GetDlgItem(hwndDlg, IDC_QUOTE), dat->hDbEventLast != NULL);
+
 }
 
 void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend)
@@ -1668,11 +1682,6 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
 		    SendMessageA(hwndrtf, EM_REPLACESEL, TRUE, (LPARAM)"");
 		}
 	}
-    SendMessage(hwndDlg, DM_FORCESCROLL, 0, 0);
-    SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, TRUE, 0);
-    InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
-    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_QUOTE), dat->hDbEventLast != NULL);
 }
 
 /* 

@@ -2876,13 +2876,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     else {
                         HWND hwnd = GetDlgItem(hwndDlg, IDC_LOG);
-                        //if ((GetWindowLong(hwnd, GWL_STYLE) & WS_VSCROLL) == 0)
-                        //    break;
+
                         if(lParam)
                             SendMessage(hwnd, WM_SIZE, 0, 0);
+
                         si.cbSize = sizeof(si);
-                        si.fMask = SIF_PAGE | SIF_RANGE;
-                        GetScrollInfo(hwnd, SB_VERT, &si);
+                        si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;;
+                        GetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si);
                         si.fMask = SIF_POS;
                         si.nPos = si.nMax - si.nPage + 1;
                         SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
@@ -2901,12 +2901,22 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
         case DM_FORCESCROLL:
             {
+                SCROLLINFO *psi = (SCROLLINFO *)lParam;
+                POINT *ppt = (POINT *)wParam;
+
+                HWND hwnd = GetDlgItem(hwndDlg, IDC_LOG);
                 int len;
 
                 if(dat->hwndLog == 0) {
                     len = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG));
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, len - 1, len - 1);
                 }
+
+                if ((UINT)psi->nPos >= (UINT)psi->nMax-psi->nPage-5 || psi->nMax-psi->nMin-psi->nPage < 50)
+                    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                else
+                    SendMessage(hwnd, EM_SETSCROLLPOS, 0, (LPARAM)ppt);
+                
                 return 0;
             }
             /*

@@ -2804,16 +2804,10 @@ LABEL_SHOWWINDOW:
             iTabs = TabCtrl_GetItemCount(hwndTab);
             if(iTabs == 1) {
                 if(!bForced && g_sessionshutdown == 0) {
-#ifdef _DEBUG
-                    _DebugTraceA("UNforced close of last tab posting close to container %d", g_sessionshutdown);
-#endif
                     PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
                     return 1;
                 }
                 else {
-#ifdef _DEBUG
-                    _DebugTraceA("forced close of last tab (gc_closewindow param = 2)");
-#endif
                 }
             }
             dat->pContainer->iChilds--;

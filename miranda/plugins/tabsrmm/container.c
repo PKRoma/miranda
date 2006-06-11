@@ -2451,9 +2451,6 @@ panel_found:
                 while(node) {
                     if(node->pContainer == pContainer) {
                         node->pContainer = 0;
-#ifdef _DEBUG
-                        _DebugTraceA("removing container from %x", node);
-#endif                        
                     }
                     node = node->next;
                 }

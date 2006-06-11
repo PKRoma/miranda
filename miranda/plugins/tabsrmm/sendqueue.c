@@ -94,9 +94,6 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int dw
     int iLength = 0, i;
     int iFound = NR_SENDJOBS;
     
-    if(dwFlags & PREF_RTL)
-        _DebugTraceA("setting PREF_RTL");
-
     if(myGlobals.iSendJobCurrent >= NR_SENDJOBS) {
         _DebugMessage(hwndDlg, dat, "Send queue full");
         return 0;
